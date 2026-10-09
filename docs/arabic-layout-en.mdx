@@ -125,7 +125,7 @@ Three rules follow from the joins, and hold for every word that holds an Arabic-
 - **No letter-spacing.** Spacing joined letters apart breaks the joins. A style's `letterSpacing` and the tracking of justification skip Arabic words; the build reports a body or heading style that sets letter-spacing on Arabic text (`joiningScriptLetterSpacing`).
 - **No cuts.** A word wider than the line is never cut between its letters. It overflows the measure, the line is marked (`VDTLine.wordOverflow`) and the build reports it (`unbreakableWordOverflow`). This happens in narrow table cells and side columns; widen them or rewrite the text.
 
-A style change inside a word, such as a coloured letter or a bold vowel mark (`كتا**ب**`), does not break the word in two: it is measured and shaped whole, and the styled part is painted over it. The PDF and the HTML colour the exact letters; the canvas estimates where the letter falls inside the shaped word, and a colour may reach its neighbour by a hair. A design text never cuts an Arabic word while wrapping or truncating, and a drop cap is not drawn when the first letter joins the next one.
+A style change inside a word, such as a coloured letter or a bold vowel mark (`كتا**ب**`), does not break the word in two: it is measured and shaped whole, and the styled part is painted over it. The PDF and the HTML colour the exact letters; the canvas estimates where the letter falls inside the shaped word, and a colour may reach its neighbour by a hair. A design text never cuts an Arabic word while wrapping or truncating, and a drop cap, in a design text or opening a paragraph, is not drawn when the first letter joins the next one: such a paragraph raises a `dropCap` warning (see [Drop caps](/en/docs/configuration#drop-caps)). A letter that does not join the next (ا, د, ر, و) and a Hebrew letter are set as initials on the right, the lines shortened on that side.
 
 ## Justification and kashida
 
@@ -289,8 +289,11 @@ Write the poem in a `:::verse` block, one bayt a line, its hemistichs separated 
 - **An overlong hemistich** first tightens its spaces; if it still does not fit, its bayt is set staggered: the ṣadr flush right on its own line, the ʿajuz flush left on the next.
 - **Keeping together.** A bayt is never split between columns or pages, a poem follows the paragraphs' orphan and widow rules, and the line that introduces it («فأنشد يقول:») stays with its first bayts.
 - **Type.** The poem takes the body's face and size; `style` names a paragraph style, which is how a vocalised poem gets the leading its marks need. A poem in Latin transliteration in an English book is set the same way, its ṣadr on the left.
+- **Line numbers.** With `lineNumbers` on, a poem counts one number per bayt, printed in the margin beside it; the ʿajuz of a staggered bayt, on a line of its own, takes no number. `position: 'start'` puts the numbers on the right of every page of an Arabic book. See [Configuration › Line numbers](/en/docs/configuration#line-numbers).
 
 The plain text keeps the poem as written, one bayt per line, and leaves out the kashidas and the ornament. See [`:::verse`](/en/docs/document-format#verse) in the document format.
+
+**Free verse and Latin poems.** A poem whose lines carry no `||` — modern free verse, or a Latin poem quoted in an Arabic book (`:::verse{dir=ltr lang=en}`) — is set line by line instead: each source line a line of verse, blank lines between stanzas, leading spaces an indent measured from the poem's own start side, overlong lines turned over with a hanging indent. See [`:::verse` › Line by line](/en/docs/document-format#line-by-line).
 
 ## Contents and index
 
@@ -303,6 +306,8 @@ The plain text keeps the poem as written, one bayt per line, and leaves out the 
 ```
 
 A contents row is set right to left: the number and title on the right, the leader, the page number on the left. A Latin title in an Arabic book keeps its page number on the left, and its own words read left to right.
+
+**Tab stops.** Tab stops in body text work the same way (see [Tabs and tab stops](/en/docs/document-format#tabs-and-tab-stops)): a stop's position is measured from the right edge of the measure, an `end` stop sits at the left, and a leader runs between the parts in visual order. A price list or a list of contents typed as paragraphs, `الفصل الأول :tab 12` under a style whose stop is `{ position: 'end', align: 'end', leader: '.' }`, sets the title on the right and the number on the left, behind dots.
 
 **Index.** A back-of-book index of an Arabic book sorts its entries in alphabetical (hijāʾī) order and groups them under their first letter. It ignores the definite article: البصرة files under ب, between بدر and بغداد, and prints as written (`index.ignoreArticle`, on by default when the index language is Arabic; الله keeps its article). It also ignores the vowel marks and the tatweel, files أ إ آ ٱ under ا, and sorts ة with ه and ى with ي. The page numbers are joined with the Arabic comma (، ) and a cross-reference reads انظر or انظر أيضًا. An entry with its own `sort` key keeps that key's article. See [Back-of-book index](/en/docs/configuration#back-of-book-index).
 
@@ -444,8 +449,9 @@ The chapters start with `:::numbering{format="abjad" startAt=1}` before the intr
 - **Vowel marks** may reach past the edge of a box or a table cell, whose clip does not grow for them; `tashkil` leaves the marks of captions, table cells and design text.
 - **Numbers.** Citation numbers print in European digits; ordinal words are written in the nominative, definite form that headings use.
 - **Index**: ة is filed under ه, and names are not sorted past ابن or أبو; there are no rhyme or root indexes.
-- **Verse**: no run-in verse inside prose, no numbered bayts, no strophic forms with a centred refrain beyond single centred lines; a hemistich wider than the measure wraps from the start side, without a hanging indent.
+- **Verse**: no run-in verse inside prose, no strophic forms with a centred refrain beyond single centred lines; a hemistich wider than the measure wraps from the start side, without a hanging indent.
 - **Kashida**: the text copied from the HTML output still holds the inserted tatweels, and kashidas on neighbouring lines are not kept from stacking up one above the other.
+- **Code listings** read left to right in a right-to-left book: each line is set from the box's far side, as an English quotation is, its line numbers in the gutter on its left, its copied text in logical order. See [Code listings](/en/docs/configuration#code-listings).
 
 ## Sources
 

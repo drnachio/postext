@@ -254,6 +254,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
     { value: 'body', label: labels.wordTargetBody },
     { value: 'heading', label: labels.wordTargetHeading },
     ...(paragraphStyles.length ? [{ value: 'paragraphs' as const, label: labels.wordTargetParagraphs }] : []),
+    { value: 'verse', label: labels.wordTargetVerse },
     ...(calloutStyles.length ? [
       { value: 'callout' as const, label: labels.wordTargetCallout },
       { value: 'calloutTitle' as const, label: labels.wordTargetCalloutTitle },
@@ -272,6 +273,9 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
         break;
       case 'paragraphs':
         setParagraph(name, { kind, style: paragraphStyles[0]?.id ?? '' });
+        break;
+      case 'verse':
+        setParagraph(name, current.kind === 'paragraphs' && current.style ? { kind, style: current.style } : { kind });
         break;
       case 'callout':
       case 'calloutTitle':
@@ -306,6 +310,15 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
         )}
         {t.kind === 'paragraphs' && (
           <Select size="sm" value={t.style} onValueChange={(v) => setParagraph(name, { kind: 'paragraphs', style: v })} options={named(paragraphStyles, t.style)} ariaLabel={aria(labels.wordTargetStyle)} />
+        )}
+        {t.kind === 'verse' && paragraphStyles.length > 0 && (
+          <Select
+            size="sm"
+            value={t.style ?? ''}
+            onValueChange={(v) => setParagraph(name, v ? { kind: 'verse', style: v } : { kind: 'verse' })}
+            options={[{ value: '', label: labels.wordTargetNoVerseStyle }, ...named(paragraphStyles, t.style)]}
+            ariaLabel={aria(labels.wordTargetStyle)}
+          />
         )}
         {(t.kind === 'callout' || t.kind === 'calloutTitle') && (
           <Select size="sm" value={t.type} onValueChange={(v) => setParagraph(name, { kind: t.kind, type: v })} options={named(calloutStyles, t.type)} ariaLabel={aria(labels.wordTargetType)} />
@@ -570,7 +583,7 @@ function WordImportPopup({ file, onClose }: { file: WordImportFile; onClose: () 
           <Section title={labels.wordOptionsHeading}>
             {optionRow(labels.wordOptionLineBreaks, (
               <Select size="sm" value={working.options.lineBreaks} onValueChange={(v) => setOption('lineBreaks', v)} ariaLabel={labels.wordOptionLineBreaks}
-                options={[{ value: 'space', label: labels.wordOptionLineBreaksSpace }, { value: 'paragraph', label: labels.wordOptionLineBreaksParagraph }]} />
+                options={[{ value: 'break', label: labels.wordOptionLineBreaksBreak }, { value: 'space', label: labels.wordOptionLineBreaksSpace }, { value: 'paragraph', label: labels.wordOptionLineBreaksParagraph }]} />
             ))}
             {optionRow(labels.wordOptionDirect, (
               <Select size="sm" value={working.options.directFormatting} onValueChange={(v) => setOption('directFormatting', v)} ariaLabel={labels.wordOptionDirect}

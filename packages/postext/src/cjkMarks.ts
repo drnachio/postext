@@ -58,7 +58,7 @@ export function segmentPositions(line: VDTLine, block: BlockLike): { xs: number[
       else wordWidth += seg.width;
       natural += seg.width;
     }
-    if (spaces > 0 && ((!line.isLastLine && !line.ragged) || natural > effectiveWidth)) justified = (effectiveWidth - wordWidth) / spaces;
+    if (spaces > 0 && !line.tabbed && ((!line.isLastLine && !line.ragged) || natural > effectiveWidth)) justified = (effectiveWidth - wordWidth) / spaces;
   } else if (block.textAlign === 'center' || block.textAlign === 'right') {
     const trailing = lineTrailingTracking(line, tracking);
     const slack = Math.max(0, effectiveWidth - (lineInkExtent(line, 0).width - trailing));

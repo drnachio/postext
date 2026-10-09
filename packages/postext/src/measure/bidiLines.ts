@@ -61,7 +61,7 @@ function alignLine(segments: readonly VDTLineSegment[], text: string, from: numb
   for (const seg of segments) {
     const idx = new Int32Array(seg.text.length).fill(-1);
     at.push(idx);
-    if (seg.inserted) continue;
+    if (seg.inserted || seg.leader) continue;
     for (let k = 0; k < seg.text.length; k++) {
       const c = seg.text[k]!;
       let q = p;
@@ -86,7 +86,7 @@ function sameChar(printed: string, source: string): boolean {
  *  the renderer's shaper orders inside). */
 function isAtomic(seg: VDTLineSegment): boolean {
   return (seg.kind !== 'text' && seg.kind !== 'space') || seg.refResourceId !== undefined || seg.footnoteId !== undefined
-    || seg.chip !== undefined || seg.stacked === true || seg.labelTab === true || seg.mathRender !== undefined;
+    || seg.chip !== undefined || seg.stacked === true || seg.labelTab === true || seg.leader !== undefined || seg.mathRender !== undefined;
 }
 
 /** The runs of a word set in several styles (`runs`) that fall in

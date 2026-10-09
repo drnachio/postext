@@ -734,6 +734,7 @@ describe("detect", () => {
       ":::callout{type=\"note\"}",
       "Press :chip[Ctrl] and see :ref{id=\"f\"}, :swatch{color=\"ok\"}, $x^2$, H~2~O, 10^3^ and \\$5.",
       ":::",
+      "Soup :tab 8.50, and 3:table stays text",
       "::resource{id=\"f\"}",
       "$$E = mc^2$$",
       ":::pagebreak{parity=\"odd\"}",
@@ -741,7 +742,7 @@ describe("detect", () => {
     ].join("\n");
     expect(markdownConstructs(md)).toEqual({
       directives: [":::callout", "::resource", "$$", ":::pagebreak"],
-      inline: ["{attrs}", "\\\\", ":ref", ":chip", ":swatch", "$…$", "^…^", "~…~"],
+      inline: ["{attrs}", "\\\\", ":ref", ":chip", ":swatch", "$…$", "^…^", "~…~", ":tab"],
       unknown: ["aside"],
     });
   });

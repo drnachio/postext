@@ -109,7 +109,7 @@ const LAYOUT_CONTENT_KINDS: ReadonlySet<string> = new Set([
   'indexSeeUnknown', 'indexRangeUnclosed', 'indexReadingMissing', 'cjkLooseLine',
   'cjkMarksExceedLeading', 'rubyExceedsLeading', 'kuntenExceedsLeading', 'arabicMarksExceedLeading',
   'unbreakableWordOverflow', 'joiningScriptLetterSpacing',
-  'comicPanelLetterbox', 'comicBalloonOverflow',
+  'comicPanelLetterbox', 'comicBalloonOverflow', 'lineNumberOverlap', 'dropCap', 'codeOverflow',
 ]);
 
 /** Warnings the layout itself raised (`doc.warnings`): a box the engine
@@ -286,6 +286,17 @@ function collectContainerWarnings(markdown: string, issues: ParseIssue[]): Warni
   const out: Warning[] = [];
   let idx = 0;
   for (const issue of issues) {
+    if (issue.kind === 'unclosedCodeBlock') {
+      // A code fence left open (#624): the rest of the text is code.
+      out.push({
+        id: `code-unclosed-${idx++}-${issue.sourceStart}`,
+        payload: { kind: 'unclosedCodeBlock', delimiter: issue.delimiter, ...(issue.lang ? { lang: issue.lang } : {}) },
+        sourceStart: issue.sourceStart,
+        sourceEnd: issue.sourceEnd,
+        line: lineNumberForOffset(markdown, issue.sourceStart),
+      });
+      continue;
+    }
     if (issue.kind !== 'unclosedContainer') continue;
     out.push({
       id: `container-unclosed-${idx++}-${issue.sourceStart}`,
@@ -327,7 +338,8 @@ function chipBoxesOf(block: VDTBlock, line: VDTLine): ChipBox[] {
   }
   let x = line.bbox.x;
   let spaceWidth: number | undefined;
-  if (block.textAlign === 'justify' && spaces > 0 && ((!line.isLastLine && !line.ragged) || natural > effectiveWidth)) {
+  // A line holding a tab stop is set as measured (#622).
+  if (block.textAlign === 'justify' && spaces > 0 && !line.tabbed && ((!line.isLastLine && !line.ragged) || natural > effectiveWidth)) {
     spaceWidth = (effectiveWidth - words) / spaces;
   } else if (block.textAlign === 'center' || block.textAlign === 'right') {
     const slack = Math.max(0, effectiveWidth - natural);
@@ -1107,7 +1119,12 @@ function computeDocumentWarnings(params: {
   const warnings: Warning[] = [];
   // Always parse so we can surface math issues (unclosed delimiters) even
   // when other toggles are off.
-  const { blocks, issues } = parseMarkdownWithIssues(markdown);
+  // Code fences as the configuration reads them (#624): a book stored
+  // before them reads their lines as Markdown.
+  const code = config.codeStyle;
+  const { blocks, issues } = parseMarkdownWithIssues(markdown, code && (code.blocks === false || code.indentedCode === true)
+    ? { fences: code.blocks !== false, indentedCode: code.indentedCode === true }
+    : undefined);
 
   if (toggles.missingFont) {
     // Duplicate (weight, style) slots apply to every declared custom

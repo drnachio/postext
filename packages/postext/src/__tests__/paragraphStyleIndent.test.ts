@@ -43,11 +43,36 @@ const para = (doc: VDTDocument): VDTBlock => doc.blocks.find((b) => b.type === '
 const starts = (b: VDTBlock): number[] => b.lines.map((l) => l.bbox.x - b.bbox.x);
 
 describe('paragraphStyles[].indent (EF-128)', () => {
-  it('without it, firstLineIndent is ignored once hangingIndent is set (unchanged)', () => {
+  it('without it, a first-line indent the style sets pairs with its hanging indent (#620)', () => {
     const b = para(build({ firstLineIndent: em(1.5), hangingIndent: em(4) }));
     expect(b.lines.length).toBeGreaterThan(1);
-    expect(starts(b)[0]).toBeCloseTo(0, 5);
+    expect(starts(b)[0]).toBeCloseTo(15, 5);
     for (const x of starts(b).slice(1)) expect(x).toBeCloseTo(40, 5);
+  });
+
+  it('sets the first line at an explicit firstLineIndent and the turnovers at the hanging indent (#620)', () => {
+    const b = para(build({ firstLineIndent: em(1), hangingIndent: em(3) }));
+    expect(b.lines.length).toBeGreaterThan(1);
+    expect(starts(b)[0]).toBeCloseTo(10, 5);
+    for (const x of starts(b).slice(1)) expect(x).toBeCloseTo(30, 5);
+    // With `indent`, both count from there.
+    const indented = para(build({ indent: em(2), firstLineIndent: em(1), hangingIndent: em(3) }));
+    expect(starts(indented)[0]).toBeCloseTo(30, 5);
+    for (const x of starts(indented).slice(1)) expect(x).toBeCloseTo(50, 5);
+    for (const l of indented.lines) expect(l.bbox.x + l.bbox.width).toBeLessThanOrEqual(indented.bbox.x + indented.bbox.width + 0.01);
+  });
+
+  it('keeps a style that sets only hangingIndent as it was: the body\'s first-line indent gives way (#620)', () => {
+    const doc = buildDocument(
+      { markdown: `:::paragraphs{style="v"}\n${VERSE}\n:::` },
+      { ...config({ hangingIndent: em(3) }), bodyText: { fontSize: pt(10), lineHeight: pt(14), firstLineIndent: em(1.5), hyphenation: { enabled: false } } },
+    );
+    const b = para(doc);
+    expect(starts(b)[0]).toBeCloseTo(0, 5);
+    for (const x of starts(b).slice(1)) expect(x).toBeCloseTo(30, 5);
+    const body = resolveBodyTextConfig();
+    expect(resolveParagraphStylesConfig([{ id: 'a', hangingIndent: em(3) }], body)[0]!.ownFirstLineIndent).toBeUndefined();
+    expect(resolveParagraphStylesConfig([{ id: 'a', firstLineIndent: em(0) }], body)[0]!.ownFirstLineIndent).toBe(true);
   });
 
   it('indents every line, and hangs the turnover from there', () => {

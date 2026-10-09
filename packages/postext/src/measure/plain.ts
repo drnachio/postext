@@ -1,3 +1,4 @@
+import { FORCED_BREAK } from './hardBreaks';
 import {
   prepareWithSegments,
   layoutNextLine,
@@ -15,7 +16,7 @@ import {
 } from '../knuthPlass';
 import { SOFT_HYPHEN } from './types';
 import { GEMINATE_DOT, endsInsideGeminate, withLineEndHyphen } from './geminate';
-import { lineMeasure, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
+import { lineIndentAt, lineMeasure, maxLineIndent, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import { isRuntLastLine } from './runts';
 import { measureRichBlock } from './rich';
@@ -228,6 +229,11 @@ export function measureBlock(
     return withMeasureWritingMode(opts.writingMode!, () => measureBlock(text, font, maxWidthPx, lineHeightPx, opts));
   }
 
+  // A forced line break (#620): the word-by-word breaker breaks the text
+  // between two of them on its own (`measure/hardBreaks.ts`).
+  if (text.includes(FORCED_BREAK)) {
+    return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
+  }
   // Words set without spaces (Chinese, Japanese, Korean): the formatted
   // path's breaker, which composes a CJK paragraph (clreq line breaking,
   // inter-character justification) and breaks a Latin one that quotes CJK
@@ -252,8 +258,8 @@ export function measureBlock(
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   const shouldHyphenate = options?.hyphenate ?? false;
-  const indentPx = options?.firstLineIndentPx ?? 0;
-  const hanging = options?.hangingIndent ?? false;
+  const indentOf = (li: number): number => lineIndentAt(options, li);
+  const widestIndent = maxLineIndent(options);
   const textAlign = options?.textAlign ?? 'left';
   // A hyphenation zone (ragged text) needs the word-level breakers, which
   // weigh each dictionary syllable against the gap it would leave and tell
@@ -267,13 +273,13 @@ export function measureBlock(
   // word-by-word breaker glues all four (EF-66).
   // A glued group wider than the narrowest line likewise (EF-66): pretext
   // would cut it between characters.
-  if (text.includes(FIGURE_SPACE) || hasOverwideGluedGroup(text, font, Math.min(maxWidthPx, ...(options?.restWidths ?? []).map((s) => s.maxWidthPx)) - Math.max(0, indentPx))) {
+  if (text.includes(FIGURE_SPACE) || hasOverwideGluedGroup(text, font, Math.min(maxWidthPx, ...(options?.restWidths ?? []).map((s) => s.maxWidthPx)) - widestIndent)) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   // Words of a joining script stay whole: pretext would break one at a soft
   // hyphen its author typed, and cut one wider than the line between two
   // letters. The word-by-word breaker does neither.
-  if (joiningScriptIn(text) && (text.includes(SOFT_HYPHEN) || hasOverwideJoiningWord(text, font, Math.min(maxWidthPx, ...(options?.restWidths ?? []).map((s) => s.maxWidthPx)) - Math.max(0, indentPx)))) {
+  if (joiningScriptIn(text) && (text.includes(SOFT_HYPHEN) || hasOverwideJoiningWord(text, font, Math.min(maxWidthPx, ...(options?.restWidths ?? []).map((s) => s.maxWidthPx)) - widestIndent))) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   // A hyphen repeated at the start of the line after a compound's break
@@ -286,7 +292,7 @@ export function measureBlock(
   // break, so Knuth–Plass must have it. A part of one wider than the line
   // is divided at its syllables by the word-by-word breaker.
   const keepCompounds = shouldHyphenate && options?.hyphenateCompounds === false;
-  if (keepCompounds && hasOverwideCompoundPart(text, font, maxWidthPx - Math.max(0, indentPx))) {
+  if (keepCompounds && hasOverwideCompoundPart(text, font, maxWidthPx - widestIndent)) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   const processedText = shouldHyphenate
@@ -315,19 +321,8 @@ export function measureBlock(
     const hardHyphens = ragged || options.breakAfterHyphens === true || keepCompounds;
     const dotWidth = geminateDotWidth(text, font);
     const items = pretextSegmentsToItems(prepared, spaceWidth, maxStretchRatio, minShrinkRatio, options.breakAfterDashes === true, hardHyphens, ragged || keepCompounds ? 1 : 2, dotWidth);
-    const lineWidthFn = (li: number) => {
-      const isFirst = li === 0;
-      const indent = indentPx > 0
-        ? (hanging ? (isFirst ? 0 : indentPx) : (isFirst ? indentPx : 0))
-        : 0;
-      return lineMeasure(maxWidthPx, options.restWidths, li) - indent;
-    };
-    const lineIndentFn = (li: number) => {
-      const isFirst = li === 0;
-      return indentPx > 0
-        ? (hanging ? (isFirst ? 0 : indentPx) : (isFirst ? indentPx : 0))
-        : 0;
-    };
+    const lineWidthFn = (li: number) => lineMeasure(maxWidthPx, options.restWidths, li) - indentOf(li);
+    const lineIndentFn = indentOf;
     const runtPenalty = options.runtPenalty ?? 0;
     const runtMinWidth = runtPenalty > 0
       ? (options.runtMinCharacters ?? 0) * spaceWidth
@@ -344,7 +339,7 @@ export function measureBlock(
       ...(options.avoidHyphenAtLines ? { avoidHyphenAtLines: options.avoidHyphenAtLines } : {}),
       ...(options.keepBreaks?.path === 'plain' ? { fixedBreaks: options.keepBreaks.at } : {}),
       looseness: options.looseness ?? 0,
-      lineWidthUniformFrom: uniformMeasureFrom(options.restWidths),
+      lineWidthUniformFrom: uniformMeasureFrom(options.restWidths, options.lineIndentsPx),
       trackingPerChar,
       ...(ragged ? { raggedStretch: raggedStretchPx(font) } : {}),
     });
@@ -374,11 +369,9 @@ export function measureBlock(
   let lineIndex = 0;
 
   while (true) {
-    // First line indent: indent line 0 only. Hanging indent: indent all lines except 0.
-    const isFirstLine = lineIndex === 0;
-    const lineIndent = indentPx > 0
-      ? (hanging ? (isFirstLine ? 0 : indentPx) : (isFirstLine ? indentPx : 0))
-      : 0;
+    // The line's own indent (`lineIndentAt`): the first line's, a hanging
+    // one, or the line's entry in `lineIndentsPx`.
+    const lineIndent = indentOf(lineIndex);
     const lineMaxWidth = lineMeasure(maxWidthPx, options?.restWidths, lineIndex) - lineIndent;
 
     const line = layoutNextLine(prepared, cursor, lineMaxWidth);

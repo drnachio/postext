@@ -13,6 +13,7 @@ import type {
   WordRun,
   WordStyle,
   WordTable,
+  WordTabStop,
   WordTextRun,
 } from './model';
 import { ommlToTex } from './omml';
@@ -110,6 +111,7 @@ function readStyles(root: XmlElement | undefined): { styles: Map<string, WordSty
       numId: attr(child(numPr, 'numId'), 'val'),
       ilvl: numPr ? Number(attr(child(numPr, 'ilvl'), 'val') ?? 0) : undefined,
       outlineLevel: outline !== undefined ? Number(outline) : undefined,
+      ...(child(pPr, 'tabs') ? { tabs: readTabs(pPr) } : {}),
     };
     styles.set(id, style);
     const isDefault = s.attrs['w:default'];
@@ -376,6 +378,19 @@ function readParagraphContent(el: XmlElement, ctx: ReadContext, out: WordRun[], 
   }
 }
 
+/** The tab stops of a `w:pPr` (#622). */
+function readTabs(pPr: XmlElement | undefined): WordTabStop[] {
+  const out: WordTabStop[] = [];
+  for (const t of children(child(pPr, 'tabs'), 'tab')) {
+    const val = attr(t, 'val');
+    const pos = Number(attr(t, 'pos'));
+    if (!val || !Number.isFinite(pos)) continue;
+    const leader = attr(t, 'leader');
+    out.push({ val, pos, ...(leader && leader !== 'none' ? { leader } : {}) });
+  }
+  return out;
+}
+
 function readParagraph(p: XmlElement, ctx: ReadContext): WordParagraph[] {
   const pPr = child(p, 'pPr');
   const styleId = attr(child(pPr, 'pStyle'), 'val') ?? '';
@@ -406,6 +421,7 @@ function readParagraph(p: XmlElement, ctx: ReadContext): WordParagraph[] {
     ...(list ? { list } : {}),
     ...(onOff(child(pPr, 'pageBreakBefore')) ? { pageBreakBefore: true } : {}),
     ...(manualLayout ? { manualLayout } : {}),
+    ...(child(pPr, 'tabs') ? { tabs: readTabs(pPr) } : {}),
     ...(boxes.length ? { textBoxes: boxes } : {}),
   };
   // A paragraph whose mark is a tracked deletion merges into the next one;

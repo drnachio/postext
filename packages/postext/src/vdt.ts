@@ -44,6 +44,8 @@ import type {
   PostextConfig,
   FolioPaperConfig,
   ResolvedComicsConfig,
+  ResolvedLineNumbersConfig,
+  ResolvedCodeStyleConfig,
 } from './types';
 import type { NumeralStyle } from './numbering';
 import type { MathRender } from './math/types';
@@ -133,6 +135,13 @@ export interface ResolvedConfig {
    *  hashes) as before. Read it with `resolvedComics()`, which falls back
    *  to the defaults of the document language. */
   comics?: ResolvedComicsConfig;
+  /** Line numbers (`PostextConfig.lineNumbers`, #621), resolved, when the
+   *  config sets the section; absent otherwise (no numbers). */
+  lineNumbers?: ResolvedLineNumbersConfig;
+  /** Code listings and inline code (`PostextConfig.codeStyle`, #624),
+   *  resolved, when the config sets the section; absent otherwise (the
+   *  defaults apply, `resolvedCodeStyle`). */
+  codeStyle?: ResolvedCodeStyleConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -147,7 +156,10 @@ export type VDTBlockType =
   | 'listItem'
   | 'footnoteRef'
   | 'mathDisplay'
-  | 'callout';
+  | 'callout'
+  /** A line of a code listing (#624): one line per source line, set as
+   *  written (see `VDTLine.codeLine`), inside the listing's box. */
+  | 'code';
 
 export type TextAlign = 'left' | 'justify' | 'center' | 'right';
 
@@ -269,6 +281,22 @@ export interface VDTLineSegment {
   /** A space of a bibliography entry's label column (#290): its width is
    *  set, so renderers paint the line segment by segment. */
   labelTab?: true;
+  /** A leader (#622): the dots of a contents row, or of a tab stop in body
+   *  text, painted over the room before the text at the stop. `'text'`:
+   *  `text` is the run of the leader character, painted like a word;
+   *  `'rule'`: a line drawn across the segment's `width` a little under the
+   *  baseline (`text` is empty). A leader is no character of the
+   *  paragraph: it is not in the line's `text`, copied or extracted text,
+   *  search or the source map; the HTML viewer hides it from assistive
+   *  technology and the tagged PDF paints it as an artifact. */
+  leader?: 'text' | 'rule';
+  /** A tab at its stop (#622; the `space` segment flagged `labelTab`, text
+   *  `'\t'`): how the stop aligns the text after it and where it stands,
+   *  px from the start edge of the measure (the measure being the line's
+   *  box less its indent: `bbox.x` is that edge plus the line's indent).
+   *  Read by outputs that cannot keep the stops exactly (the reflowable
+   *  EPUB). */
+  tab?: { align: import('./types').TabStopAlign; at: number };
   /** True when this segment is part of a caption's numbered label, so renderers
    *  paint it in the configured caption-label colour. */
   captionLabel?: boolean;
@@ -631,9 +659,25 @@ export interface VDTLine {
   segments?: VDTLineSegment[];
   /** Whether this is the last line of the paragraph (ragged even when justified) */
   isLastLine?: boolean;
+  /** The line ends at a forced line break the author typed inside the
+   *  paragraph (#620: a backslash ending a source line, or `\\`): it is set
+   *  at its natural width like a last line ({@link isLastLine} is set), the
+   *  paragraph goes on on the next line, copied text takes a line feed
+   *  there, the reflowable EPUB a `<br/>`. Absent otherwise. */
+  hardBreak?: true;
+  /** The line holds a tab that went to a tab stop (#622): its `space`
+   *  segment flagged `labelTab`, `text` `'\t'`, is as wide as the stop asks,
+   *  followed, when the stop has a leader, by the leader's segment and the
+   *  gap after it (an empty `space`). The widths are final: in a justified
+   *  paragraph the line is {@link ragged} and the measurer gave the slack
+   *  to the word spaces after the last tab; in a centred or right-aligned
+   *  one a last empty `space` fills the line to its measure, so every
+   *  renderer sets it from its start side. Absent otherwise. */
+  tabbed?: true;
   /** Set ragged inside a justified paragraph: a line a URL made unfillable
-   *  (its few word spaces would stretch past the loose-line threshold), or
-   *  a CJK line flagged {@link cjkLoose}. */
+   *  (its few word spaces would stretch past the loose-line threshold), a
+   *  CJK line flagged {@link cjkLoose}, or a line holding a tab stop
+   *  ({@link tabbed}). */
   ragged?: boolean;
   /** A justified CJK line that needed more inter-character spacing than the
    *  cap (½ em, or `bodyText.maxJustifyTracking` when it is set): it is set
@@ -724,6 +768,27 @@ export interface VDTLine {
    *  paint them as they are. A column or page never breaks between two
    *  lines of one bayt. Absent on any other line. */
   verse?: { bayt: number; part: 'bayt' | 'sadr' | 'ajuz' | 'single' };
+  /** A line of a `:::verse` poem in the line layout (#620): the stanza it
+   *  sets (0-based, in its poem), the line of verse (0-based, counted
+   *  through the whole poem) and whether it is a turnover, the part of a
+   *  line of verse too wide for the measure set on the line after it. A
+   *  column or page never breaks between a line and its turnover.
+   *  `indent` is the line's indent (px, from the poem's start side: its
+   *  leading spaces × `indentStep`, or where a stepped line starts), set
+   *  on its first line when not 0. `stanzaEnd` is set on the last line of
+   *  a stanza another follows (copied text puts a blank line there). The
+   *  widths of the line's segments are final (the block is set flush
+   *  left): renderers paint them as they are. Absent on any other line. */
+  verseLine?: { stanza: number; line: number; turnover: boolean; indent?: number; stanzaEnd?: true };
+  /** A line of a code listing (#624, a `code` block): `line` is the source
+   *  line it sets (0-based in the listing), `number` its printed number
+   *  when the listing is numbered (never on a continuation), `continued`
+   *  a continuation of a wrapped line, `highlight` a line the fence's
+   *  `highlight` names, `wrapped` a line that goes on in the next one,
+   *  `clipped` a line cut at the box's edge. The segments carry final
+   *  widths from the block's left edge (spaces are kept, never
+   *  stretched). Absent on any other line. */
+  codeLine?: { line: number; number?: string; continued?: true; highlight?: true; wrapped?: true; clipped?: true };
   /** The first line of an entry of a back-of-book index (`:::index`): the
    *  entry's level (0 a main entry, 1 a sub-entry…). A block of the index
    *  may set more than one entry (the page-less entries heading its
@@ -1139,6 +1204,13 @@ export function lineTextAlign(line: Pick<VDTLine, 'measure'>, textAlign: TextAli
   return textAlign === 'right' ? 'left' : textAlign === 'center' ? 'center' : 'right';
 }
 
+/** A rule leader (`VDTLineSegment.leader: 'rule'`, #622) at a text size of
+ *  `fontSizePx`: its centre `dy` px under the baseline and its stroke
+ *  `thickness` px, the same on every renderer. */
+export function leaderRuleGeometry(fontSizePx: number): { dy: number; thickness: number } {
+  return { dy: fontSizePx * 0.1, thickness: Math.max(0.5, fontSizePx * 0.05) };
+}
+
 export function pageIsMirrored(page: Pick<VDTPage, 'flow'>): boolean {
   return page.flow?.writingMode === 'horizontal-tb' && page.flow.direction === 'rtl';
 }
@@ -1327,6 +1399,50 @@ export interface ResolvedResourceBlock {
   continuesLines: VDTLine[];
 }
 
+/**
+ * A paragraph's drop cap (#623, {@link VDTBlock.dropCap}), in page
+ * coordinates of the flow frame, as a list marker's are. The block's
+ * lines do not hold it: its first line starts after it. Its plain text and
+ * source range are the paragraph's own, so the block's `sourceMap` and the
+ * first line's `plainStart` (which counts past it) read the word whole.
+ */
+export interface VDTDropCap {
+  /** The initial as printed: its letters, with an opening mark set with
+   *  the cap (`punctuation: 'with-cap'`). */
+  text: string;
+  fontString: string;
+  /** Hex. */
+  color: string;
+  /** Left edge of the initial's advance. */
+  x: number;
+  /** The baseline it stands on: that of the paragraph's line `sink`. */
+  baselineY: number;
+  /** Its advance width. */
+  width: number;
+  /** Its size (px) and how many lines it spans and sinks. */
+  fontSizePx: number;
+  lines: number;
+  sink: number;
+  /** Source range of the characters it prints (an opening mark hung or set
+   *  with it included). */
+  sourceStart?: number;
+  sourceEnd?: number;
+  /** The paragraph's plain-text range it stands for, from 0 (the first
+   *  line's `plainStart` counts past it). */
+  plainStart: number;
+  plainEnd: number;
+  /** The whole first word as the paragraph reads it, the initial
+   *  included ("Se" of "Se puso"): a tagged PDF gives it as the
+   *  `/ActualText` of the initial and the rest of the word. */
+  word: string;
+  /** How many characters of the first line's text finish that word (the
+   *  "e" of "Se"); 0 when the initial is a word of its own. */
+  wordRest: number;
+  /** An opening mark hung before the initial at text size
+   *  (`punctuation: 'hang'`), on the first line's baseline. */
+  hang?: { text: string; fontString: string; x: number; baselineY: number; width: number };
+}
+
 /** See {@link VDTBlock.stripCaption}. */
 export interface VDTStripCaption {
   /** Index of the first caption line in the block's `lines`, and how many
@@ -1508,6 +1624,20 @@ export interface VDTBlock {
   /** Absolute page X coordinate where the prefix run starts (on the
    *  bullet's `bulletY` / `bulletBaselineY`, as the separator). */
   prefixX?: number;
+  /** A drop cap opening the paragraph (#623), on the fragment that holds
+   *  its first line only: renderers paint it beside the lines, which were
+   *  set short of it. */
+  dropCap?: VDTDropCap;
+  /** A code listing's lines (#624, `type: 'code'`): its language as the
+   *  fence names it; when its lines are numbered, the numbers' face and
+   *  colour and the room between them and the code (they are set in the
+   *  page's `lineNumbers` slot, out of the text, right-aligned before the
+   *  code); and how its lines were fitted when one was too wide. */
+  code?: {
+    lang?: string;
+    numbers?: { gap: number; fontString: string; color: string };
+    fit?: { mode: 'wrap' | 'shrink' | 'clip'; lines: number; scale: number };
+  };
   /** List kind for `listItem` blocks — drives bullet shape and text decoration. */
   listKind?: 'unordered' | 'ordered' | 'task';
   /** When true, the canvas backend draws a strikethrough through the block's lines (completed tasks). */
@@ -2175,6 +2305,29 @@ export interface VDTPage {
    *  split lines and lettering, in sheet coordinates. The page's columns
    *  are empty: nothing flows on it. */
   comic?: VDTComicPage;
+  /** The line numbers printed on the page (`lineNumbers`, #621): one text
+   *  block per number, physical like the header and footer, each flagged
+   *  `artifact` (a tagged PDF marks it so, the HTML hides it from
+   *  assistive technology and from selection). Absent on a page with
+   *  none. */
+  lineNumbers?: VDTDesignSlot;
+  /** The line each block of {@link lineNumbers} labels, in the same order:
+   *  for overlays and references. */
+  lineNumberMarks?: VDTLineNumberMark[];
+}
+
+/** The line a printed line number labels (#621). */
+export interface VDTLineNumberMark {
+  /** The line's number in the count. */
+  number: number;
+  /** The number as printed (in `lineNumbers.format`). */
+  label: string;
+  /** The column the line sits in (`VDTColumn.index`). */
+  columnIndex: number;
+  /** The line's block (`VDTBlock.id`) and its index in the block's
+   *  `lines`. */
+  blockId: string;
+  lineIndex: number;
 }
 
 /** Something the layout could not set as asked and placed anyway — a box
@@ -2234,8 +2387,10 @@ export interface ConfigWarning {
    *  the word it is closest to, when one is close.
    *  `unknownNumerals`: a `numerals` value that is not `'auto'`,
    *  `'latn'`, `'arab'` or `'arabext'`; the digits follow the document
-   *  language, and `used` is the digit system that gives. */
-  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'columnCountClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals';
+   *  language, and `used` is the digit system that gives.
+   *  `lineNumbersUnsupported`: `lineNumbers.enabled` on a vertical
+   *  document (#621), which gets no line numbers; `used` is `false`. */
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'columnCountClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals' | 'lineNumbersUnsupported';
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
    *  `headingStyles[2].layout.sideColumnPercent`. */
@@ -2422,6 +2577,9 @@ export type ContentWarning = ContentWarningBase & (
    *  not applied, and the resource floats in its own `span` (#188). Points
    *  at its first use. */
   | { kind: 'rotateIgnoredVertical'; resourceId: string }
+  /** A `:tab` in a block set in vertical text (#622): tab stops are set in
+   *  horizontal text only, so the tab is a word space. */
+  | { kind: 'tabInVerticalText' }
   /** A comic page's `split` attribute the grammar cannot read whole (a
    *  stray character, an unclosed `[`, `/` and `|` mixed in one list, a
    *  bracketed list on its parent's axis): the readable part is used, an
@@ -2464,6 +2622,28 @@ export type ContentWarning = ContentWarningBase & (
    *  tails point off the panel. Only raised on pages whose pictures mark
    *  anchors. Informational. Points at the first line of that speaker. */
   | { kind: 'comicUnknownSpeaker'; speaker: string }
+  /** A line number set in the side column (`lineNumbers.position:
+   *  'side'`, #621) overlaps a side box, a side caption or another float
+   *  of that column: both are painted where they are. Points at the line
+   *  it numbers; `number` is the number as printed. */
+  | { kind: 'lineNumberOverlap'; number: string }
+  /** A paragraph a drop cap opens (#623) that could not take it as
+   *  configured. `reason`: `'shortParagraph'`, fewer lines than the
+   *  initial sinks (`handling` says what `shortParagraph` did: kept the
+   *  room, shrank the initial to `lines`, or left it out); `'split'`, the
+   *  paragraph broke before the initial's last line, alone in a column
+   *  too short for it; `'joiningScript'`, its first letter joins the next
+   *  (Arabic, Syriac, N'Ko) and is not set apart; `'verticalText'`, drop
+   *  caps are set in horizontal text only; `'noLetter'`, it opens with no
+   *  letter or digit to set large (a reference, a formula, a note mark).
+   *  `text` is the paragraph's first line. Found by the layout. */
+  | { kind: 'dropCap'; reason: 'shortParagraph' | 'split' | 'joiningScript' | 'verticalText' | 'noLetter'; handling?: 'reserve' | 'shrink' | 'skip'; lines?: number; text: string }
+  /** `codeOverflow` (#624): a code listing has lines wider than its box,
+   *  fitted as `codeStyle.overflow` says: turned over (`'wrap'`), set
+   *  smaller (`'shrink'`, at `scale` of its size; past `minFontScale` its
+   *  lines wrap too) or cut at the box's edge (`'clip'`). `lines` counts
+   *  the source lines too wide. Found by the layout. */
+  | { kind: 'codeOverflow'; mode: 'wrap' | 'shrink' | 'clip'; lines: number; scale?: number; lang?: string }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout
@@ -2565,6 +2745,16 @@ export interface VDTDocument {
    *  effect on the page of the first block placed after its fence
    *  (`afterContentIndex`, the fence's closing content index). */
   partMarks?: { afterContentIndex: number; number: string; title: string; palette?: Record<string, string> }[];
+  /** The number of the last line the document counted (`lineNumbers`,
+   *  #621), printed or not; absent when line numbers are off or nothing
+   *  was counted. A host laying out a book chapter by chapter hands it to
+   *  the next chapter (`continuation.lineNumber`) when lines are counted
+   *  through the book. */
+  lastLineNumber?: number;
+  /** Set when the count of {@link lastLineNumber} started again inside
+   *  the document (a restart, a poem's `lineStart`): it does not depend on
+   *  the number the document inherited. */
+  lineNumberRestarted?: true;
 }
 
 // ---------------------------------------------------------------------------

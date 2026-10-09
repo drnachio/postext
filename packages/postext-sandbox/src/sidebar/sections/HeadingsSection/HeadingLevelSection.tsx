@@ -1,7 +1,9 @@
 'use client';
 
-import type { useSandboxLabels } from '../../../context/SandboxContext';
-import { DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual, resolveDesignSlot } from 'postext';
+import { useMemo } from 'react';
+import { useSandboxSelector, type useSandboxLabels } from '../../../context/SandboxContext';
+import { DEFAULT_HEADINGS_CONFIG, dimensionsEqual, colorsEqual, resolveBodyTextConfig, resolveDesignSlot } from 'postext';
+import { DropCapFields } from '../../settings/DropCapFields';
 import type { HeadingLevelConfig, HeadingBreakBeforeConfig, HeadingBreakParity, HeadingSpan, HeadingTextTransform, HeadingAdvancedDesignConfig, ResolvedHeadingLevelConfig, ColorValue, Dimension, DimensionUnit, DesignSlot, ResolvedDesignSlot } from 'postext';
 import { SlotEditor } from '../HeaderFooterSection/SlotEditor';
 import { breakParityOptions } from './breakParityOptions';
@@ -61,6 +63,10 @@ export function HeadingLevelSection({
   labels: ReturnType<typeof useSandboxLabels>;
 }) {
   const defLevel = D.levels.find((l) => l.level === level)!;
+  // A drop cap after the heading (#623) opens a body paragraph: unset
+  // fields take the body text's face, weight and colour.
+  const bodyConfig = useSandboxSelector((s) => s.config.bodyText);
+  const body = useMemo(() => resolveBodyTextConfig(bodyConfig), [bodyConfig]);
 
   const isSizeDefault = dimensionsEqual(resolved.fontSize, defLevel.fontSize);
   const isLhDefault = dimensionsEqual(resolved.lineHeight, generalLineHeight);
@@ -216,6 +222,23 @@ export function HeadingLevelSection({
         isDefault={raw?.jidori === undefined}
         onReset={() => onReset(level, 'jidori')}
       />
+      <ToggleSwitch
+        label={labels.headingDropCap}
+        checked={raw?.dropCap !== undefined && raw.dropCap !== false}
+        onChange={(v) => (v ? onUpdate(level, { dropCap: { ...(raw?.dropCap || {}) } }) : onReset(level, 'dropCap'))}
+        tooltip={labels.headingDropCapTooltip}
+        isDefault={raw?.dropCap === undefined}
+        onReset={() => onReset(level, 'dropCap')}
+      />
+      {raw?.dropCap && (
+        <DropCapFields
+          kind="body"
+          value={raw.dropCap}
+          onChange={(dropCap) => onUpdate(level, { dropCap })}
+          inherited={{ fontFamily: body.fontFamily, fontWeight: body.fontWeight, color: body.color }}
+          fieldId={`heading-level-dropcap-${level}`}
+        />
+      )}
       <ToggleSwitch
         label={labels.headingItalic}
         checked={resolved.italic}

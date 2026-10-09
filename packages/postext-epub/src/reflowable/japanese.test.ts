@@ -54,8 +54,8 @@ describe('Japanese stylesheet', () => {
     expect(ruleOf(keepAll, 'body')).toContain('word-break: keep-all;');
     const styled = (await render([layOut(PHRASES, ja({ paragraphStyles: [{ id: 'primer', wordBreak: 'keep-all' }, { id: 'prose', wordBreak: 'normal' }] }))])).css;
     expect(ruleOf(styled, 'body')).not.toContain('word-break');
-    expect(ruleOf(styled, 'p.ps-primer, div.pt-verse.ps-primer')).toContain('word-break: keep-all;');
-    expect(ruleOf(styled, 'p.ps-prose, div.pt-verse.ps-prose')).toContain('word-break: normal;');
+    expect(ruleOf(styled, 'p.ps-primer, div.pt-verse.ps-primer, div.pt-stanza.ps-primer')).toContain('word-break: keep-all;');
+    expect(ruleOf(styled, 'p.ps-prose, div.pt-verse.ps-prose, div.pt-stanza.ps-prose')).toContain('word-break: normal;');
     expect((await render([layOut(PHRASES, ja())])).css).not.toContain('word-break');
   });
 

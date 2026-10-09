@@ -110,7 +110,12 @@ export interface ProbeFacts {
   indexWarnings?: { kind: string; page: number | null; detail: string }[];
   /** Content warnings on how the text is set (`arabicMarksExceedLeading`,
    *  `unbreakableWordOverflow`, `joiningScriptLetterSpacing`), with the
-   *  words they name. */
+   *  words they name, `lineNumberOverlap` (a line number in the side
+   *  column on a side box or float), with the number,
+   *  `tabInVerticalText` (a `:tab` set as a word space in vertical text),
+   *  `dropCap` (a paragraph whose drop cap could not be set as
+   *  configured), with its reason and first line, and `codeOverflow` (a
+   *  code listing with lines wider than its box), with what was done. */
   textWarnings?: { kind: string; page: number | null; detail: string }[];
   /** `doc.configWarnings` of the builds, one per value: settings the engine
    *  could not use as written and what it used instead (C31). */
@@ -422,6 +427,7 @@ const CONFIG_WARNING_SEVERITY: Record<string, Severity> = {
   unknownNumerals: "fail",
   unknownConfigValue: "fail",
   unknownConfigKey: "fail",
+  lineNumbersUnsupported: "fail",
   fontFamilyStack: "warn",
 };
 
@@ -443,6 +449,8 @@ export function configWarningText(w: ProbeConfigWarning): string {
       return `unknownConfigValue: ${w.path} ${value} is not one of its choices${w.suggestion ? ` (${w.suggestion}?)` : ""}; the engine used ${w.used}`;
     case "unknownConfigKey":
       return `unknownConfigKey: ${w.path} is no key of that setting${w.suggestion ? ` (${w.suggestion}?)` : ""}; the engine ignores it`;
+    case "lineNumbersUnsupported":
+      return `lineNumbersUnsupported: ${w.path}: vertical documents get no line numbers`;
     case "fontFamilyStack":
       return `fontFamilyStack: ${w.path} ${value} is a font stack; the text is set in ${w.used} alone`;
     default:
@@ -538,8 +546,9 @@ function collect(input: CheckInput): Finding[] {
   // a numbering format or digit system it does not know, a value outside a
   // setting's choices and a key no setting has all give a page other than
   // the one the recipe's config claims, and a reader copies that config: they
-  // fail. A font stack is set in its first family, the face the recipe loads,
-  // so the page is the one shown: a warning. A kind this list does not know
+  // fail; so do line numbers asked of a vertical document, which prints none.
+  // A font stack is set in its first family, the face the recipe loads, so
+  // the page is the one shown: a warning. A kind this list does not know
   // yet (a newer engine) warns until it is judged here.
   for (const w of facts.configWarnings ?? []) {
     if (expected.has(w.kind)) continue;

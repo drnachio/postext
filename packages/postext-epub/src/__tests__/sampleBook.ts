@@ -37,6 +37,8 @@ const pt = (value: number) => ({ value, unit: 'pt' as const });
 const config: PostextConfig = {
   page: { width: pt(360), height: pt(480), margins: { top: pt(24), bottom: pt(24), left: pt(24), right: pt(24) } },
   locale: 'en-us',
+  // The poem's every second line numbered (#621), in both renditions.
+  lineNumbers: { enabled: true, interval: 2 },
   footer: {
     elements: [{
       kind: 'text', id: 'pn', content: '{pageNumber}', fontSize: pt(8), overflow: 'ellipsis-end',
@@ -57,9 +59,39 @@ const resources: Resource[] = [{
 }];
 
 const para = 'Body text that runs on for a while so the page fills and the paragraph wraps over several lines. ';
+/** A poem set line by line (#620): two stanzas, an indent, a turnover. */
+const SAMPLE_POEM = [
+  ':::verse',
+  'Whose woods these are I think I know.',
+  '  His house is in the village though; this line runs on past the measure and turns over.',
+  '',
+  'He will not see me stopping here',
+  '  To watch his woods fill up with snow.',
+  ':::',
+];
+
+/** Tab stops (#622): a dot leader to a price flush right, and a rule to
+ *  the end of the line. */
+const SAMPLE_TABS = [
+  'Soup of the day :tab{at=end align=end leader="."} 8.50',
+  '',
+  'Signed: :tab{at=end leader=rule}',
+];
+
+/** A code listing (#624): a language, a title, numbered lines, a
+ *  highlighted one, a tab. */
+const SAMPLE_CODE = [
+  '```js {title="count.js" lineNumbers highlight="2"}',
+  'for (let i = 0; i < 3; i++) {',
+  '\tconsole.log(`line ${i}`); // print',
+  '}',
+  '```',
+];
+
 export const SAMPLE_CHAPTERS = [
   ['---', 'title: Sample book', 'author: Ada Lovelace', '---', '', '# Opening chapter {#opening}', '', `See :ref{id=f1} and the [closing words](#closing). ${para.repeat(3)}`, '', '::resource{id=f1}', '', '## A section', '', para.repeat(12)].join('\n'),
-  ['# Second chapter', '', `Back to the [opening](#opening). ${para.repeat(6)}`, '', '## Closing words {#closing}', '', para.repeat(4)].join('\n'),
+  // The chapter opens with a drop cap (#623).
+  ['# Second chapter {dropcap}', '', `Back to the [opening](#opening). ${para.repeat(6)}`, '', '## Closing words {#closing}', '', para.repeat(4), '', ...SAMPLE_POEM, '', ...SAMPLE_TABS, '', ...SAMPLE_CODE].join('\n'),
 ];
 
 export function sampleBook(): VDTDocument[] {

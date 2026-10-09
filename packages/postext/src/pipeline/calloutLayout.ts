@@ -76,6 +76,7 @@ import { directDesignTextBlock } from '../design/bidiText';
 import { containerStyle, paragraphStyleIdOf, type ParagraphContainerPlan } from './paragraphContainers';
 import { joiningScriptIn } from '../measure/joining';
 import { getMeasureDirection, shiftLineX } from '../measure/bidiLines';
+import { resolvedCodeStyle } from '../defaults/codeStyle';
 
 // ---------------------------------------------------------------------------
 // Pre-pass: callout ranges keyed by the start marker's content-block index.
@@ -125,7 +126,9 @@ export function pickCalloutStyle(
     const match = styles.find((s) => s.id === type);
     if (match) return match;
   }
-  return styles[0];
+  // The build's own boxes (page-span embeds, code listings) are no style
+  // an unknown type falls back to.
+  return styles.find((s) => !s.id.startsWith('__postext-'));
 }
 
 // ---------------------------------------------------------------------------
@@ -175,6 +178,9 @@ export function deriveCalloutResolvedConfig(
       hyphenation: { ...resolved.bodyText.hyphenation, enabled: body.hyphenation },
       paragraphSpacing: body.paragraphSpacing,
       firstLineIndent: body.firstLineIndent,
+      // The box's own tab stops replace the body's (#622).
+      ...(body.tabStops ? { tabStops: body.tabStops } : {}),
+      ...(body.tabInterval ? { tabInterval: body.tabInterval } : {}),
     },
     unorderedLists: {
       ...ul,
@@ -628,6 +634,9 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   // of the tallest column.
   const childBlocks: VDTBlock[] = [];
   const units: CalloutUnit[] = [];
+  /** The lines of the box's code listing a fence highlights (#624),
+   *  box-relative. */
+  const highlights: { y: number; height: number }[] = [];
   const nestPath = input.nestPath && input.nestPath.length > 0 ? input.nestPath : undefined;
   const columnGapPx = px(style.columnGap);
   /** Stacking state shared by the box and each columns group. */
@@ -783,7 +792,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const measuredBlock = measureFirstChildAcrossWidths(raw, blockIdx, k, width, styleOverride)
       ?? measureContentBlock(raw, blockIdx, width, derivedCtx, { styleOverride });
     if (!measuredBlock) return undefined;
-    const { kind, measured, prefixLen, absoluteSourceMap, mathDisplayRender, resourceBlock, letterSpacingPx } = measuredBlock;
+    const { kind, measured, prefixLen, absoluteSourceMap, mathDisplayRender, resourceBlock, letterSpacingPx, code } = measuredBlock;
     const { vdtType, headingLevel, numberPrefix, numberSeparator, headingNumber, listBullet, listDepth, listKind, bulletXOffsetInColumn, strikethroughText } = kind;
     // A structural heading (`hidden`) keeps its lines' text but prints
     // nothing and takes no room: no line height, no margins, and the
@@ -891,6 +900,13 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       line.baseline += st.cursorY;
     }
     if (blk.resourceBlock) offsetResourceBlock(blk.resourceBlock, x, st.cursorY);
+    // A code listing (#624): its language, numbers and fit; the lines a
+    // fence highlights get a band across the box.
+    if (code) {
+      blk.code = code;
+      if (measuredBlock.direction) blk.direction = measuredBlock.direction;
+      for (const line of blk.lines) if (line.codeLine?.highlight) highlights.push({ y: line.bbox.y, height: line.bbox.height });
+    }
 
     if (listBullet && !openedMidRun) {
       blk.listDepth = listDepth;
@@ -1302,6 +1318,18 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         borderRadiusPx: px(style.borderRadius),
       },
     });
+  }
+  // The highlighted lines of a listing (#624): a band across the inner
+  // area and its padding, under the text.
+  if (highlights.length > 0) {
+    const tint = resolvedCodeStyle(input.resolved).highlightBackground.hex;
+    for (const h of highlights) {
+      overlayBlocks.push({
+        kind: 'box',
+        bbox: createBoundingBox(innerX - padL, h.y, innerWidth + padL + padR, h.height),
+        box: { backgroundColor: tint, borderWidthPx: 0, borderRadiusPx: 0 },
+      });
+    }
   }
   if (stripeOn) {
     const stripeBox = topStripe

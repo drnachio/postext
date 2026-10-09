@@ -5,11 +5,11 @@
  * positions back into the original markdown.
  */
 
-import type { ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue } from './types';
+import type { CodeBlockInfo, ContainerName, ContentBlock, DirectiveAttrs, DirectiveName, ListKind, ParseIssue, ParseOptions, VerseLineInfo, VerseStanza } from './types';
 import { attachEquationAnchors } from './equationLabels';
 import { parseAttrBlobStrict, parseDirectiveAttrs } from './attrs';
 import { extractInlineMath, fixMathSourceMap, injectMathSpans } from './inlineMath';
-import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, titleBreakIndices, trimSpans } from './inlineFormatting';
+import { BREAK_PLACEHOLDER, TITLE_BREAK_RE, extractInlineChips, extractInlineFootnotes, extractInlineRefs, injectFootnoteSpans, extractInlineSwatches, injectChipSpans, injectRefSpans, injectSwatchSpans, parseInlineFormatting, protectCodeSpans, replaceBodyBreaks, BODY_BREAK_MARK, bodyBreakSpans, titleBreakIndices, trimSpans, extractInlineTabs, injectTabSpans } from './inlineFormatting';
 import { buildBlockMapping } from './sourceMapping';
 import { extractInlineCitations, injectCitationSpans } from './citations';
 import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks';
@@ -17,8 +17,10 @@ import { joinEastAsianLines } from './softBreaks';
 import { asciiDigits } from '../arabicNumerals';
 import { indentColumn, listDepth, nestListItem } from './listNesting';
 import { parseComicFence } from '../comics/page';
+import { closesCodeFence, codeFenceOpen } from './codeFence';
 
 export { parseDirectiveAttrs, spaceDirectiveLines, MAX_SPACE_LINES } from './attrs';
+export { codeFenceOpen } from './codeFence';
 
 const HEADING_RE = /^(#{1,6})\s+(.+)$/;
 /** `:::name` or `:::name{attrs}` on its own line. Shared by single-line
@@ -26,6 +28,9 @@ const HEADING_RE = /^(#{1,6})\s+(.+)$/;
 const DIRECTIVE_RE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 /** A bare `:::` line: closes the innermost open container. */
 const CONTAINER_CLOSE_RE = /^:::\s*$/;
+/** A bayt's hemistichs cut at a `\\` with a space on each side (the
+ *  Wikisource markup, #378). */
+const HEMISTICH_WIKI_RE = /\s\\\\\s/;
 /** Set of directive names recognized today. Unknown names fall through to
  *  paragraph-parsing and downstream warnings flag them. */
 export const KNOWN_DIRECTIVES: ReadonlySet<DirectiveName> = new Set(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'references', 'verse', 'page', 'strip']);
@@ -81,28 +86,78 @@ const INTERRUPTING_MATH_SINGLE_RE = /^\s*\$\$((?:(?!\$\$)[\s\S])+)\$\$\s*$/;
  *  (missing/empty id, extra attrs) fall through to paragraph parsing. */
 const RESOURCE_DIRECTIVE_RE = /^::resource\s*\{id="([^"]+)"\}\s*$/;
 
-// Small LRU memo used by parseMarkdownMemo, keyed by the input string. The
-// returned array and its ContentBlocks are treated as read-only by the rest
-// of the pipeline. A few slots (not one) because a book is counted chapter
-// by chapter — continuation, outline, warnings and the layout itself each
-// parse the same few chapters in turn, and a single slot thrashed between
-// them.
-const PARSE_MEMO_SLOTS = 8;
-const _parseMemo = new Map<string, { blocks: ContentBlock[]; issues: ParseIssue[] }>();
+/** A fence's info string read (#624): the first word is the language
+ *  (lower-cased); a `{…}` block after it, or `key=value` pairs, are
+ *  attributes in the directive grammar; anything else after the language
+ *  is the title (```` ```console Terminal ````). */
+export function readCodeInfo(info: string): Pick<CodeBlockInfo, 'lang' | 'attrs' | 'title'> {
+  let rest = info.trim();
+  let lang: string | undefined;
+  const first = /^([^\s{]+)\s*/.exec(rest);
+  if (first) {
+    lang = first[1]!.toLowerCase();
+    rest = rest.slice(first[0].length);
+  }
+  let attrs: DirectiveAttrs = {};
+  const brace = /\{([^{}]*)\}\s*$/.exec(rest);
+  if (brace) {
+    attrs = parseDirectiveAttrs(brace[1]!);
+    rest = rest.slice(0, brace.index).trim();
+  } else if (/[=\uFF1D]/.test(rest)) {
+    attrs = parseDirectiveAttrs(rest);
+    rest = '';
+  }
+  const title = attrs.title !== undefined ? attrs.title : rest !== '' ? rest : undefined;
+  return { ...(lang ? { lang } : {}), attrs, ...(title !== undefined && title.trim() !== '' ? { title: title.trim() } : {}) };
+}
 
-function parseMemoLookup(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
-  const hit = _parseMemo.get(markdown);
+/** How far a line of indented code is indented (#624): the length of the
+ *  leading whitespace that reaches column 4 (a tab to the next multiple of
+ *  4), or -1 when it does not reach it. */
+function indentedCodeCut(line: string): number {
+  let col = 0;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === ' ') col += 1;
+    else if (c === '\t') col = col - (col % 4) + 4;
+    else return -1;
+    if (col >= 4) return i + 1;
+  }
+  return -1;
+}
+
+// Small LRU memo used by parseMarkdownMemo, keyed by the input string (one
+// per way of reading it, see `ParseOptions`). The returned array and its
+// ContentBlocks are treated as read-only by the rest of the pipeline. A few
+// slots (not one) because a book is counted chapter by chapter —
+// continuation, outline, warnings and the layout itself each parse the same
+// few chapters in turn, and a single slot thrashed between them.
+const PARSE_MEMO_SLOTS = 8;
+const _parseMemos = new Map<string, Map<string, { blocks: ContentBlock[]; issues: ParseIssue[] }>>();
+
+/** The options as one key: the default reading is `''`. */
+function optionsKey(options: ParseOptions | undefined): string {
+  const fences = options?.fences !== false;
+  const indented = options?.indentedCode === true;
+  return fences && !indented ? '' : `${fences ? 'f' : 'n'}${indented ? 'i' : ''}`;
+}
+
+function parseMemoLookup(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  const key = optionsKey(options);
+  let memo = _parseMemos.get(key);
+  if (!memo) _parseMemos.set(key, (memo = new Map()));
+  const hit = memo.get(markdown);
   if (hit) {
     // Refresh recency: a Map iterates in insertion order.
-    _parseMemo.delete(markdown);
-    _parseMemo.set(markdown, hit);
+    memo.delete(markdown);
+    memo.set(markdown, hit);
     return hit;
   }
-  const result = parseMarkdownWithIssues(markdown);
-  _parseMemo.set(markdown, result);
-  if (_parseMemo.size > PARSE_MEMO_SLOTS) {
-    const oldest = _parseMemo.keys().next().value;
-    if (oldest !== undefined) _parseMemo.delete(oldest);
+  const result = parseMarkdownWithIssues(markdown, options);
+  memo.set(markdown, result);
+  if (memo.size > PARSE_MEMO_SLOTS) {
+    const oldest = memo.keys().next().value;
+    if (oldest !== undefined) memo.delete(oldest);
   }
   return result;
 }
@@ -116,16 +171,16 @@ export const PARSE_MEMO_CAPACITY = PARSE_MEMO_SLOTS;
  * This avoids reparsing a document on each keystroke when upstream
  * recomputes only because a sibling state changed.
  */
-export function parseMarkdownMemo(markdown: string): ContentBlock[] {
-  return parseMemoLookup(markdown).blocks;
+export function parseMarkdownMemo(markdown: string, options?: ParseOptions): ContentBlock[] {
+  return parseMemoLookup(markdown, options).blocks;
 }
 
-export function parseMarkdownWithIssuesMemo(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
-  return parseMemoLookup(markdown);
+export function parseMarkdownWithIssuesMemo(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  return parseMemoLookup(markdown, options);
 }
 
-export function parseMarkdown(markdown: string): ContentBlock[] {
-  return parseMarkdownWithIssues(markdown).blocks;
+export function parseMarkdown(markdown: string, options?: ParseOptions): ContentBlock[] {
+  return parseMarkdownWithIssues(markdown, options).blocks;
 }
 
 /**
@@ -133,15 +188,43 @@ export function parseMarkdown(markdown: string): ContentBlock[] {
  * non-blank, non-special lines into paragraphs. Index marks (`:index…`)
  * are taken out first and attached to the blocks holding them
  * (`ContentBlock.indexMarks`); every source offset still points into
- * `markdown`.
+ * `markdown`. `options` picks how code is read (#624): fences on, indented
+ * code off by default.
  */
-export function parseMarkdownWithIssues(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
-  const marks = extractIndexMarks(markdown);
-  if (!marks) return attachDirections(attachContainerAnchors(attachEquationAnchors(parseBlocks(markdown), markdown)));
-  const result = parseBlocks(marks.text);
+export function parseMarkdownWithIssues(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  const marks = extractIndexMarks(markdown, { fences: options?.fences !== false });
+  if (!marks) return attachInlineCode(attachDirections(attachContainerAnchors(attachEquationAnchors(parseBlocks(markdown, options), markdown))), markdown);
+  const result = parseBlocks(marks.text, options);
   attachIndexMarks(result.blocks, marks.marks);
   remapParseOffsets(result, marks.toOriginal);
-  return attachDirections(attachContainerAnchors(attachEquationAnchors(result, markdown)));
+  return attachInlineCode(attachDirections(attachContainerAnchors(attachEquationAnchors(result, markdown))), markdown);
+}
+
+/** Inline code (`` `x` ``, outside an escape) between two backticks on
+ *  one line, as `protectCodeSpans` reads it. */
+const INLINE_CODE_RE = /(?<!\\)`([^`\n]+?)`/g;
+
+/** Text blocks whose inline code a layout may set in the code face. */
+const INLINE_CODE_HOSTS = new Set<ContentBlock['type']>(['heading', 'paragraph', 'blockquote', 'listItem']);
+
+/**
+ * The inline code of each text block (#624): the source ranges of the text
+ * between the backticks of its code spans (`ContentBlock.inlineCode`), read
+ * from the block's own source. Blocks without a backtick are left alone.
+ */
+function attachInlineCode<T extends { blocks: ContentBlock[] }>(result: T, markdown: string): T {
+  for (const b of result.blocks) {
+    if (!INLINE_CODE_HOSTS.has(b.type) || b.verse || b.sourceEnd <= b.sourceStart) continue;
+    const source = markdown.slice(b.sourceStart, b.sourceEnd);
+    if (!source.includes('`')) continue;
+    const ranges: Array<{ start: number; end: number }> = [];
+    INLINE_CODE_RE.lastIndex = 0;
+    for (let m = INLINE_CODE_RE.exec(source); m; m = INLINE_CODE_RE.exec(source)) {
+      ranges.push({ start: b.sourceStart + m.index + 1, end: b.sourceStart + m.index + 1 + m[1]!.length });
+    }
+    if (ranges.length > 0) b.inlineCode = ranges;
+  }
+  return result;
 }
 
 /** The direction a `dir` attribute names (`{dir=rtl}`, any case), or
@@ -190,7 +273,9 @@ function attachDirections<T extends { blocks: ContentBlock[] }>(result: T): T {
     const own = b.type === 'heading' ? directionAttr(b.attrs) : b.verse ? directionAttr(b.verse.attrs) : undefined;
     const d = own ?? inherited;
     if (d) b.direction = d;
-    if (inheritedLang) b.lang = inheritedLang;
+    // A poem's own `lang` (`:::verse{dir=ltr lang=en}`, #620).
+    const lang = (b.verse ? langAttr(b.verse.attrs) : undefined) ?? inheritedLang;
+    if (lang) b.lang = lang;
   }
   return result;
 }
@@ -235,7 +320,9 @@ function joinedLines(
   return joinEastAsianLines(markdown, mapping.text, mapping.spans, mapping.sourceMap) ?? mapping;
 }
 
-function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+function parseBlocks(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  const fences = options?.fences !== false;
+  const indentedCode = options?.indentedCode === true;
   const blocks: ContentBlock[] = [];
   const issues: ParseIssue[] = [];
   const rawLines = markdown.split('\n');
@@ -258,35 +345,83 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
   /** The spans, plain text and source map of a run of inline Markdown
    *  (`raw`, whose source runs from `srcStart` to `srcEnd`): chips,
    *  footnote markers, references, citations, swatches, maths and the
-   *  inline formatting, as a paragraph's text is read. */
-  const inlineRun = (raw: string, srcStart: number, srcEnd: number): { text: string; spans: ContentBlock['spans']; sourceMap: number[] } => {
+   *  inline formatting, as a paragraph's text is read. With `hardBreaks`
+   *  its forced line breaks (#620) become `BREAK_PLACEHOLDER` (see
+   *  `replaceBodyBreaks`; `raw` joins its lines with a line feed after a
+   *  line that ends in a backslash). Maths issues are reported once, by
+   *  the reading with `report`. */
+  const inlineRun = (raw: string, srcStart: number, srcEnd: number, hardBreaks = false, report = true): { text: string; spans: ContentBlock['spans']; sourceMap: number[] } => {
     const chipExtract = extractInlineChips(protectCodeSpans(raw), srcStart);
     const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
     const refExtract = extractInlineRefs(fnExtract.cleaned, srcStart);
     const citeExtract = extractInlineCitations(refExtract.cleaned, srcStart);
     const swExtract = extractInlineSwatches(citeExtract.cleaned, srcStart);
     const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
-    issues.push(...mathExtract.issues);
+    if (report) issues.push(...mathExtract.issues);
+    // Tabs (#622): `:tab` and tab characters, outside code and maths.
+    const tabExtract = extractInlineTabs(mathExtract.cleaned);
+    const formatted = hardBreaks
+      ? bodyBreakSpans(parseInlineFormatting(replaceBodyBreaks(tabExtract.cleaned, BODY_BREAK_MARK)))
+      : parseInlineFormatting(tabExtract.cleaned);
     const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
-      injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches), citeExtract.citations),
+      injectMathSpans(injectTabSpans(formatted, tabExtract.tabs), mathExtract.maths), swExtract.swatches), citeExtract.citations),
       refExtract.refs,
     ), fnExtract.markers), chipExtract.chips);
     return joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));
   };
 
   /**
-   * A `:::verse` poem whose fence is line `start` (#378): every non-blank
-   * line up to the closing `:::` is a bayt, its two hemistichs split at the
-   * first `||` (or a `\\` with a space on each side, the Wikisource
-   * markup); a line without one is a single hemistich. The poem is one
-   * paragraph block (`ContentBlock.verse`) whose text joins the
-   * hemistichs with a tab and the bayts with a line feed; each hemistich
-   * is read as inline Markdown on its own, and the tab maps to the
-   * separator in the source, the line feed to the line's end. An unclosed
-   * poem runs to the end of the text. A poem with no line is dropped.
+   * A block's lines (trimmed) read as one run of inline Markdown with its
+   * forced line breaks (#620): joined with a space, or with a line feed
+   * after a line that ends in a backslash, for `replaceBodyBreaks`. When
+   * the block has a break, `literalBreaks` is the reading postext 1.22
+   * made of it (every line joined with a space, the backslashes printed).
    */
-  const parseVerse = (start: number, attrsRaw: string): { block?: ContentBlock; next: number } => {
-    let k = start + 1;
+  const breakingRun = (lines: readonly string[], srcStart: number, srcEnd: number): ReturnType<typeof inlineRun> & { literalBreaks?: ContentBlock['literalBreaks'] } => {
+    let raw = '';
+    lines.forEach((l, k) => {
+      if (k > 0) raw += lines[k - 1]!.endsWith('\\') ? '\n' : ' ';
+      raw += l;
+    });
+    if (!raw.includes('\\')) return inlineRun(raw, srcStart, srcEnd);
+    const mapping = inlineRun(raw, srcStart, srcEnd, true);
+    if (!mapping.text.includes(BREAK_PLACEHOLDER)) return mapping;
+    const literal = inlineRun(lines.join(' '), srcStart, srcEnd, false, false);
+    return { ...mapping, literalBreaks: { text: literal.text, spans: literal.spans, sourceMap: literal.sourceMap } };
+  };
+
+  /** Poems in the line layout read so far (`VerseStanza.poem`). */
+  let poemCount = 0;
+
+  /**
+   * A `:::verse` poem whose fence is line `start` (#378, #620), up to the
+   * closing `:::` (an unclosed poem runs to the end of the text). The fence's
+   * `layout` picks how its lines are read: `bayt` (see {@link parseBayts}),
+   * `lines` (see {@link parseVerseLines}), or, unset or `auto`, `bayt` when
+   * any line carries a hemistich separator (`||`, a spaced `\\`) and
+   * `lines` otherwise.
+   */
+  const parseVerse = (start: number, attrsRaw: string): { blocks: ContentBlock[]; next: number } => {
+    const attrs = parseDirectiveAttrs(attrsRaw);
+    let end = start + 1;
+    while (end < rawLines.length && !CONTAINER_CLOSE_RE.test(rawLines[end]!.trim())) end++;
+    const layout = attrs.layout?.trim().toLowerCase();
+    const separated = rawLines.slice(start + 1, end).some((raw) => raw.includes('||') || HEMISTICH_WIKI_RE.test(raw));
+    if (layout === 'bayt' || (layout !== 'lines' && separated)) return parseBayts(start, end, attrs);
+    return parseVerseLines(start, end, attrs, layout !== 'lines');
+  };
+
+  /**
+   * A poem in the bayt layout (#378): every non-blank line is a bayt, its
+   * two hemistichs split at the first `||` (or a `\\` with a space on
+   * each side, the Wikisource markup); a line without one is a single
+   * hemistich. The poem is one paragraph block (`ContentBlock.verse`) whose
+   * text joins the hemistichs with a tab and the bayts with a line feed;
+   * each hemistich is read as inline Markdown on its own, and the tab maps
+   * to the separator in the source, the line feed to the line's end. A
+   * poem with no line is dropped.
+   */
+  const parseBayts = (start: number, end: number, attrs: DirectiveAttrs): { blocks: ContentBlock[]; next: number } => {
     let text = '';
     const spans: ContentBlock['spans'] = [];
     const sourceMap: number[] = [];
@@ -306,14 +441,13 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       sourceMap.push(...run.sourceMap);
     };
     let lastLine = start;
-    for (; k < rawLines.length; k++) {
+    for (let k = start + 1; k < end; k++) {
       const raw = rawLines[k]!;
-      if (CONTAINER_CLOSE_RE.test(raw.trim())) break;
       if (raw.trim() === '') continue;
       if (text !== '') sep('\n', lineOffsets[k]! - 1);
       const lineStart = lineOffsets[k]!;
       const bar = raw.indexOf('||');
-      const wiki = bar < 0 ? /\s\\\\\s/.exec(raw) : null;
+      const wiki = bar < 0 ? HEMISTICH_WIKI_RE.exec(raw) : null;
       const cut = bar >= 0 ? bar : wiki ? wiki.index + 1 : -1;
       if (cut >= 0) {
         hemistich(lineStart, lineStart + cut);
@@ -324,22 +458,139 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       }
       lastLine = k;
     }
-    const closed = k < rawLines.length;
-    const next = closed ? k + 1 : k;
-    if (text === '') return { next };
-    const attrs = parseDirectiveAttrs(attrsRaw);
+    const closed = end < rawLines.length;
+    const next = closed ? end + 1 : end;
+    if (text === '') return { blocks: [], next };
     return {
-      block: {
+      blocks: [{
         type: 'paragraph',
         text,
         spans,
         verse: { attrs },
         sourceStart: lineOffsets[start]!,
-        sourceEnd: closed ? lineEndOffset(k) : lineEndOffset(lastLine),
+        sourceEnd: closed ? lineEndOffset(end) : lineEndOffset(lastLine),
         sourceMap,
-      },
+      }],
       next,
     };
+  };
+
+  /**
+   * A poem in the line layout (#620): every non-blank line is a line of
+   * verse, read as inline Markdown on its own; a run of blank lines ends a
+   * stanza. Each stanza is a paragraph block (`VerseInfo.stanza`) whose text
+   * joins its lines with a line feed, mapped to the source's line end. A
+   * line's leading whitespace is its indent (`VerseLineInfo.indent`), kept
+   * out of the text; a line written `+ …` is a stepped line. With
+   * `keepSpaces` on the fence, a run of two or more spaces inside a line (a
+   * caesura) is kept as a fixed space of its width. The first stanza opens
+   * on the fence line, the last closes on the closing fence.
+   */
+  const parseVerseLines = (start: number, end: number, attrs: DirectiveAttrs, auto: boolean): { blocks: ContentBlock[]; next: number } => {
+    const closed = end < rawLines.length;
+    const next = closed ? end + 1 : end;
+    const keepSpaces = attrs.keepSpaces !== undefined && attrs.keepSpaces.trim().toLowerCase() !== 'false';
+    // The stanzas, as runs of source line indices.
+    const groups: number[][] = [];
+    let run: number[] = [];
+    for (let k = start + 1; k < end; k++) {
+      if (rawLines[k]!.trim() === '') {
+        if (run.length > 0) groups.push(run);
+        run = [];
+      } else {
+        run.push(k);
+      }
+    }
+    if (run.length > 0) groups.push(run);
+    interface Stanza { text: string; spans: ContentBlock['spans']; sourceMap: number[]; lines: VerseLineInfo[]; from: number; to: number }
+    const stanzas: Stanza[] = [];
+    for (const rows of groups) {
+      const st: Stanza = { text: '', spans: [], sourceMap: [], lines: [], from: rows[0]!, to: rows[0]! };
+      for (const k of rows) {
+        const raw = rawLines[k]!;
+        const lineStart = lineOffsets[k]!;
+        let p = 0;
+        let indent = 0;
+        for (; p < raw.length; p++) {
+          const c = raw[p];
+          if (c === ' ') indent += 1;
+          else if (c === '\t') indent += 4;
+          else if (c === '\u3000') indent += 2;
+          else break;
+        }
+        let stepped = false;
+        // `\+ …`: a line that opens with a plus sign, not a stepped one.
+        if (raw[p] === '\\' && raw[p + 1] === '+') p++;
+        else if (raw[p] === '+' && (raw[p + 1] === ' ' || raw[p + 1] === '\t')) {
+          stepped = true;
+          p++;
+          while (raw[p] === ' ' || raw[p] === '\t') p++;
+        }
+        const bodyEnd = raw.trimEnd().length;
+        // The line's pieces of text, and the caesura gaps between them.
+        const pieces: { from: number; to: number; gap: boolean }[] = [];
+        if (keepSpaces) {
+          const gapRe = / {2,}/g;
+          let at = p;
+          for (let m = gapRe.exec(raw); m && m.index < bodyEnd; m = gapRe.exec(raw)) {
+            if (m.index < p) continue;
+            if (m.index > at) pieces.push({ from: at, to: m.index, gap: false });
+            pieces.push({ from: m.index, to: m.index + m[0].length, gap: true });
+            at = m.index + m[0].length;
+          }
+          if (at < bodyEnd) pieces.push({ from: at, to: bodyEnd, gap: false });
+        } else if (p < bodyEnd) {
+          pieces.push({ from: p, to: bodyEnd, gap: false });
+        }
+        let text = '';
+        const spans: ContentBlock['spans'] = [];
+        const sourceMap: number[] = [];
+        for (const piece of pieces) {
+          if (piece.gap) {
+            if (text === '') continue;
+            const width = piece.to - piece.from;
+            text += ' '.repeat(width);
+            spans.push({ text: ' '.repeat(width), bold: false, italic: false, fixedSpace: true });
+            for (let c = piece.from; c < piece.to; c++) sourceMap.push(lineStart + c);
+            continue;
+          }
+          const r = inlineRun(raw.slice(piece.from, piece.to), lineStart + piece.from, lineStart + piece.to);
+          text += r.text;
+          spans.push(...r.spans);
+          sourceMap.push(...r.sourceMap);
+        }
+        if (text.trim() === '') continue;
+        if (st.text !== '') {
+          st.text += '\n';
+          st.spans.push({ text: '\n', bold: false, italic: false });
+          st.sourceMap.push(lineStart - 1);
+        }
+        st.text += text;
+        st.spans.push(...spans);
+        st.sourceMap.push(...sourceMap);
+        st.lines.push({ indent, ...(stepped ? { stepped: true as const } : {}) });
+        st.to = k;
+      }
+      if (st.lines.length > 0) stanzas.push(st);
+    }
+    if (stanzas.length === 0) return { blocks: [], next };
+    const poem = poemCount++;
+    let firstLine = 0;
+    const blocks = stanzas.map((st, index): ContentBlock => {
+      const last = index === stanzas.length - 1;
+      const stanza: VerseStanza = { poem, index, last, firstLine, lines: st.lines, ...(auto ? { auto: true as const } : {}) };
+      firstLine += st.lines.length;
+      return {
+        type: 'paragraph',
+        text: st.text,
+        spans: st.spans,
+        verse: { attrs, stanza },
+        sourceStart: index === 0 ? lineOffsets[start]! : lineOffsets[st.from]!,
+        sourceEnd: last && closed ? lineEndOffset(end) : lineEndOffset(st.to),
+        sourceMap: st.sourceMap,
+      };
+    });
+    return { blocks, next };
   };
 
   // Open fenced containers, innermost last. Each entry remembers what it
@@ -379,6 +630,94 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
    *  block closes it. */
   let openListItems: readonly number[] = [];
 
+  /**
+   * A code block (#624) of source lines `from` … `to - 1`, each cut at
+   * `cuts[k]` characters from its start (the fence's indentation, the four
+   * columns of indented code); the block's range runs from `srcStart` to
+   * `srcEnd`. The lines are kept as written (a carriage return before the
+   * line feed dropped), joined with a line feed mapped to the source's
+   * line end.
+   */
+  const codeBlock = (from: number, to: number, cuts: readonly number[], srcStart: number, srcEnd: number, info: Omit<CodeBlockInfo, 'lines' | 'lineStarts'>): ContentBlock => {
+    const lines: string[] = [];
+    const lineStarts: number[] = [];
+    let text = '';
+    const sourceMap: number[] = [];
+    for (let k = from; k < to; k++) {
+      const raw = rawLines[k]!;
+      const cut = Math.min(cuts[k - from] ?? 0, raw.length);
+      const body = raw.slice(cut).replace(/\r$/, '');
+      const at = lineOffsets[k]! + cut;
+      if (k > from) {
+        text += '\n';
+        sourceMap.push(lineEndOffset(k - 1));
+      }
+      lines.push(body);
+      lineStarts.push(at);
+      text += body;
+      for (let j = 0; j < body.length; j++) sourceMap.push(at + j);
+    }
+    return {
+      type: 'code',
+      text,
+      spans: text.length > 0 ? [{ text, bold: false, italic: false }] : [],
+      code: { ...info, lines, lineStarts },
+      sourceStart: srcStart,
+      sourceEnd: srcEnd,
+      sourceMap,
+    };
+  };
+
+  /** A fenced code block (#624) opening at line `start`, up to its closing
+   *  fence; a fence left open runs to the end of the text and is reported
+   *  (`unclosedCodeBlock`). */
+  const parseCodeFence = (start: number, open: { indent: number; marker: string; info: string }): number => {
+    let end = start + 1;
+    while (end < rawLines.length && !closesCodeFence(rawLines[end]!, open.marker)) end++;
+    const closed = end < rawLines.length;
+    const cuts: number[] = [];
+    for (let k = start + 1; k < end; k++) {
+      // The fence's indentation comes off each line, as far as it has
+      // leading spaces.
+      const lead = /^ */.exec(rawLines[k]!)![0].length;
+      cuts.push(Math.min(open.indent, lead));
+    }
+    const fence = open.marker[0] === '`' ? '```' as const : '~~~' as const;
+    const info = readCodeInfo(open.info);
+    const srcStart = lineOffsets[start]!;
+    const srcEnd = closed ? lineEndOffset(end) : lineEndOffset(rawLines.length - 1);
+    blocks.push(codeBlock(start + 1, end, cuts, srcStart, srcEnd, { ...info, info: open.info, fence }));
+    if (!closed) {
+      issues.push({
+        kind: 'unclosedCodeBlock',
+        delimiter: fence,
+        ...(info.lang ? { lang: info.lang } : {}),
+        sourceStart: srcStart,
+        sourceEnd: lineEndOffset(start),
+      });
+    }
+    return closed ? end + 1 : end;
+  };
+
+  /** Indented code (#624, `codeStyle.indentedCode`): the run of lines from
+   *  `start` indented four columns or blank, its trailing blank lines left
+   *  out. */
+  const parseIndentedCode = (start: number): number => {
+    let end = start;
+    let last = start;
+    while (end < rawLines.length) {
+      const raw = rawLines[end]!;
+      if (raw.trim() === '') { end++; continue; }
+      if (indentedCodeCut(raw) < 0) break;
+      last = end;
+      end++;
+    }
+    const cuts: number[] = [];
+    for (let k = start; k <= last; k++) cuts.push(Math.max(0, indentedCodeCut(rawLines[k]!)));
+    blocks.push(codeBlock(start, last + 1, cuts, lineOffsets[start]!, lineEndOffset(last), { info: '', attrs: {}, fence: 'indent' }));
+    return last + 1;
+  };
+
   let i = 0;
   while (i < rawLines.length) {
     const line = rawLines[i]!;
@@ -387,6 +726,25 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
     // Skip blank lines
     if (trimmed === '') {
       i++;
+      continue;
+    }
+
+    // A code block (#624): a ``` or ~~~ fence, everything up to its
+    // closing fence kept as written.
+    const fenceOpen = fences ? codeFenceOpen(line) : undefined;
+    if (fenceOpen) {
+      i = parseCodeFence(i, fenceOpen);
+      continue;
+    }
+    // Indented code, when the reading asks for it: four columns in, after
+    // a blank line (or at the start), and not a list item under a list.
+    if (
+      indentedCode
+      && (i === 0 || rawLines[i - 1]!.trim() === '')
+      && indentedCodeCut(line) >= 0
+      && !(blocks[blocks.length - 1]?.type === 'listItem' && (TASK_ITEM_RE.test(line) || ORDERED_LIST_ITEM_RE.test(line) || LIST_ITEM_RE.test(line)))
+    ) {
+      i = parseIndentedCode(i);
       continue;
     }
 
@@ -539,10 +897,11 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       continue;
     }
 
-    // A poem (#378): `:::verse{attrs}` … `:::`, one bayt a line.
+    // A poem (#378, #620): `:::verse{attrs}` … `:::`, a bayt or a line of
+    // verse a line.
     if (refsMatch && refsMatch[1] === 'verse') {
       const verse = parseVerse(i, refsMatch[2] ?? '');
-      if (verse.block) blocks.push(verse.block);
+      blocks.push(...verse.blocks);
       i = verse.next;
       continue;
     }
@@ -717,23 +1076,13 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
 
           const contentOffset = leading + markerLength;
           const itemSrcStart = srcStart + contentOffset;
-          const chipExtract = extractInlineChips(protectCodeSpans(itemText), itemSrcStart);
-          const fnExtract = extractInlineFootnotes(chipExtract.cleaned, itemSrcStart);
-          const refExtract = extractInlineRefs(fnExtract.cleaned, itemSrcStart);
-          const citeExtract = extractInlineCitations(refExtract.cleaned, itemSrcStart);
-          const swExtract = extractInlineSwatches(citeExtract.cleaned, itemSrcStart);
-          const mathExtract = extractInlineMath(swExtract.cleaned, null, itemSrcStart, srcEnd);
-          issues.push(...mathExtract.issues);
-          const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
-            injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches), citeExtract.citations),
-            refExtract.refs,
-          ), fnExtract.markers), chipExtract.chips);
-          const mapping = buildBlockMapping(markdown, itemSrcStart, srcEnd, rawSpans);
-          fixMathSourceMap(mapping.text, mapping.spans, mapping.sourceMap);
+          // A `\\` in the item is a forced line break (#620).
+          const mapping = breakingRun([itemText], itemSrcStart, srcEnd);
           const block: ContentBlock = {
             type: 'listItem',
             text: mapping.text,
             spans: mapping.spans.length > 0 ? mapping.spans : [{ text: '', bold: false, italic: false }],
+            ...(mapping.literalBreaks ? { literalBreaks: mapping.literalBreaks } : {}),
             depth,
             listKind,
             sourceStart: srcStart,
@@ -776,20 +1125,9 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       }
       const srcStart = lineOffsets[startIdx]!;
       const srcEnd = lineEndOffset(lastIdx);
-      const chipExtract = extractInlineChips(protectCodeSpans(quoteLines.join(' ')), srcStart);
-      const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
-      const refExtract = extractInlineRefs(fnExtract.cleaned, srcStart);
-      const citeExtract = extractInlineCitations(refExtract.cleaned, srcStart);
-      const swExtract = extractInlineSwatches(citeExtract.cleaned, srcStart);
-      const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
-      issues.push(...mathExtract.issues);
-      const rawSpans = injectChipSpans(injectFootnoteSpans(injectRefSpans(injectCitationSpans(injectSwatchSpans(
-        injectMathSpans(parseInlineFormatting(mathExtract.cleaned), mathExtract.maths), swExtract.swatches), citeExtract.citations),
-        refExtract.refs,
-      ), fnExtract.markers), chipExtract.chips);
       // Lines join with a space, except between Chinese or Japanese
-      // characters (#181).
-      const mapping = joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, rawSpans));
+      // characters (#181) and at a forced line break (#620).
+      const mapping = breakingRun(quoteLines, srcStart, srcEnd);
       blocks.push({
         type: 'blockquote',
         text: mapping.text,
@@ -797,6 +1135,7 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
         sourceStart: srcStart,
         sourceEnd: srcEnd,
         sourceMap: mapping.sourceMap,
+        ...(mapping.literalBreaks ? { literalBreaks: mapping.literalBreaks } : {}),
       });
       continue;
     }
@@ -813,6 +1152,8 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
       const pl = rawLine.trim();
       if (pl === '' || pl.match(HEADING_RE) || pl.startsWith('>') || rawLine.match(LIST_ITEM_RE)) break;
       if (i > startIdx && isFenceLine(pl)) break;
+      // A code fence interrupts the paragraph (#624).
+      if (i > startIdx && fences && codeFenceOpen(rawLine)) break;
       // A footnote definition opens a paragraph of its own.
       if (i > startIdx && FOOTNOTE_DEF_RE.test(pl)) break;
       // A display formula on its own line interrupts the paragraph, blank
@@ -841,11 +1182,12 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
         srcStart += rawLines[startIdx]!.indexOf(def[0]) + def[0].length;
       }
       const srcEnd = lineEndOffset(lastIdx);
-      const mapping = inlineRun(paraLines.join(' '), srcStart, srcEnd);
+      const mapping = breakingRun(paraLines, srcStart, srcEnd);
       blocks.push({
         type: 'paragraph',
         text: mapping.text,
         spans: mapping.spans,
+        ...(mapping.literalBreaks ? { literalBreaks: mapping.literalBreaks } : {}),
         ...(startIdx === lastDisplayEnd + 1 && !def ? { continuesParagraph: true } : {}),
         ...(def ? { footnoteDef: def[1]! } : {}),
         sourceStart: srcStart,

@@ -3,6 +3,7 @@
 import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
 import type { Completion, CompletionContext, CompletionResult } from '@codemirror/autocomplete';
+import { inFencedCode } from './codeFences';
 
 /**
  * Editor support for index marks (`:index[word]{…}`, `:index{term="…"}`,
@@ -78,7 +79,7 @@ function buildDecorations(view: EditorView): DecorationSet {
     let pos = from;
     while (pos <= to) {
       const line = doc.lineAt(pos);
-      if (line.text.includes(':index')) {
+      if (line.text.includes(':index') && !inFencedCode(doc, line.number)) {
         for (const r of indexRanges(line.text)) {
           const mark = r.kind === 'delim' ? delimMark : r.kind === 'text' ? textMark : attrMark;
           builder.add(line.from + r.from, line.from + r.to, mark);

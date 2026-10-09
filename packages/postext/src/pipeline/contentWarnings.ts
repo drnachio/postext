@@ -27,6 +27,7 @@ import { DEFAULT_CHIP_STYLES } from '../defaults/chipStyles';
 import { DEFAULT_PARAGRAPH_STYLES } from '../defaults/paragraphStyles';
 import { DEFAULT_HEADING_STYLES } from '../defaults/headingStyles';
 import { resolveAllConfig } from './config';
+import { codeParseOptions } from './codeBlocks';
 import { planHeadingSections, sectionWritingMode } from './headingStyles';
 import { comicSourceWarnings } from '../comics/warnings';
 import { resolvedComics } from '../defaults/comics';
@@ -154,7 +155,7 @@ export function collectContentWarnings(
   } catch {
     // Malformed frontmatter: the build reports it; scan the text as is.
   }
-  const blocks = parseMarkdownMemo(body);
+  const blocks = parseMarkdownMemo(body, codeParseOptions(resolveAllConfig(config)));
   const out: ContentWarning[] = [];
   const abs = (r: SourceRange) => ({ sourceStart: r.start + offset, sourceEnd: r.end + offset });
 
@@ -231,6 +232,11 @@ export function collectContentWarnings(
       if (style !== undefined && !chipStyles.has(style)) {
         out.push({ kind: 'unknownChipStyle', style, ...abs(inlineRange(body, at, b.sourceEnd)) });
       }
+      // A `:tab` down a vertical page is a word space (#622).
+      if (span.tab && !span.tab.literal && verticalAt(blockIdx)) {
+        const end = body.startsWith(':tab{', at) ? body.indexOf('}', at) + 1 : at + 4;
+        out.push({ kind: 'tabInVerticalText', ...abs({ start: at, end: end > at ? end : at + 4 }) });
+      }
       plain += span.text.length;
     }
     // Index marks that name no term index nothing.
@@ -287,7 +293,9 @@ export function collectContentWarnings(
       case 'paragraph': {
         // A poem's `{style=…}` names a paragraph style (#378): its fence
         // line is the range.
-        const verseStyle = b.verse?.attrs.style;
+        // A poem set line by line (#620) is a block a stanza: its first
+        // reports it.
+        const verseStyle = (b.verse?.stanza?.index ?? 0) === 0 ? b.verse?.attrs.style : undefined;
         if (verseStyle !== undefined && !paragraphStyles.has(verseStyle)) {
           const fenceEnd = body.indexOf('\n', b.sourceStart);
           out.push({ kind: 'unknownParagraphStyle', style: verseStyle, ...abs({ start: b.sourceStart, end: fenceEnd < 0 ? b.sourceEnd : fenceEnd }) });
@@ -597,6 +605,35 @@ export function joiningLetterSpacingWarnings(doc: VDTDocument, blocks: ReadonlyS
   return out;
 }
 
+/** A `dropCap` warning for the first placed part of each paragraph (by
+ *  content index) whose drop cap could not be set as configured (#623). */
+export function dropCapWarnings(
+  doc: VDTDocument,
+  notes: ReadonlyMap<number, { reason: Extract<ContentWarning, { kind: 'dropCap' }>['reason']; handling?: 'reserve' | 'shrink' | 'skip'; lines?: number }>,
+): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  const seen = new Set<number>();
+  for (const block of doc.blocks) {
+    const idx = block.contentIndex;
+    if (idx === undefined || seen.has(idx) || block.type !== 'paragraph') continue;
+    const note = notes.get(idx);
+    if (!note) continue;
+    seen.add(idx);
+    const start = block.dropCap?.sourceStart ?? block.sourceStart;
+    out.push({
+      kind: 'dropCap',
+      reason: note.reason,
+      ...(note.handling ? { handling: note.handling } : {}),
+      ...(note.lines !== undefined ? { lines: note.lines } : {}),
+      text: (block.dropCap?.text ?? '') + (block.lines[0]?.text ?? ''),
+      ...(start !== undefined ? { sourceStart: start } : {}),
+      ...(block.sourceEnd !== undefined ? { sourceEnd: block.sourceEnd } : {}),
+      ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
+    });
+  }
+  return out;
+}
+
 /** Where a warning sits, for a message: `page 3` / `offset 120`. A
  *  configuration warning names its setting in the text instead. */
 function where(w: LayoutWarning | ContentWarning | ConfigWarning | RenderWarning | HeadingDesignCut): string {
@@ -692,6 +729,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'attributeKeyInvalid':
       text = `The attribute key "${w.key}" is not read — keys are written in ASCII letters, digits, _ and -`;
       break;
+    case 'tabInVerticalText':
+      text = 'A :tab in vertical text is set as a word space — tab stops are set in horizontal text only';
+      break;
     case 'raggedTableGrid':
       text = w.reason === 'spanOverlap'
         ? `Table "${w.resourceId}": the cell at row ${w.row + 1}, column ${w.col + 1} sits under a merged cell — keep covered cells with hiddenBy (mergeCells) or the cells shift`
@@ -710,6 +750,26 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'joiningScriptLetterSpacing':
       text = `"${w.text}": its style sets letter-spacing, which Arabic-script words do not take (it breaks their joins) — they are set without it`;
       break;
+    case 'dropCap':
+      text = w.reason === 'shortParagraph'
+        ? `"${w.text}": the paragraph has fewer lines than its drop cap sinks — ${w.handling === 'shrink' ? `the initial spans its ${w.lines ?? 1} line${(w.lines ?? 1) === 1 ? '' : 's'}` : w.handling === 'skip' ? 'it is set without one' : 'the room under the initial is kept'}`
+        : w.reason === 'split'
+          ? `"${w.text}": the paragraph breaks before the last line of its drop cap — alone in a column too short for the initial`
+          : w.reason === 'joiningScript'
+            ? `"${w.text}": its first letter joins the next — the drop cap is not set`
+            : w.reason === 'verticalText'
+              ? `"${w.text}": drop caps are set in horizontal text only — the paragraph is set without one`
+              : `"${w.text}": the paragraph opens with no letter to set as a drop cap — it is set without one`;
+      break;
+    case 'codeOverflow': {
+      const what = `${w.lines === 1 ? 'A line' : `${w.lines} lines`} of a${w.lang ? ` ${w.lang}` : ''} code listing ${w.lines === 1 ? 'is' : 'are'} wider than its box`;
+      text = w.mode === 'wrap'
+        ? `${what} — turned over`
+        : w.mode === 'clip'
+          ? `${what} — cut at the box's edge`
+          : `${what} — the listing is set at ${Math.round((w.scale ?? 1) * 100)} % of its size, and what still does not fit is turned over`;
+      break;
+    }
     case 'cjkMarksExceedLeading':
       text = `The paragraph "${w.text}" has emphasis dots or name and title lines in a line gap of ${w.gapEm} em — they need ${w.neededEm} em; set it with more leading`;
       break;

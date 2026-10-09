@@ -16,10 +16,14 @@ a reading, and whether the bundled fonts have a glyph for every character the
 chapters set (with fontTools installed; without it that check is skipped);
 for Arabic text, the document language and direction, the fonts that set it
 (and their glyphs and shaping tables), letter-spacing on its styles, forced
-hyphenation and italic emphasis; for comics (`:::page`, `:::strip`), the
-split expressions, panels, script lines, balloon and panel styles, the
-`comics` config, speaker anchors and safe areas, the lettering faces, and
-whether every edition sets the same pages. Pure Python otherwise.
+hyphenation and italic emphasis; tab stops (`tabStops`, `:tab{…}`, `:tab`
+in vertical text, tab characters no style turns into tabs); drop caps
+(`dropCap` settings, `{dropcap}` attributes, a chapter's opening words drawn
+as a heading attribute by a design's drop cap); for comics
+(`:::page`, `:::strip`), the split expressions, panels, script lines,
+balloon and panel styles, the `comics` config, speaker anchors and safe
+areas, the lettering faces, and whether every edition sets the same pages.
+Pure Python otherwise.
 
 Exit code 1 when there are errors (or warnings with --strict).
 """
@@ -85,6 +89,11 @@ class Report:
     def info(self, where: str, msg: str) -> None:
         self.items.append(("INFO", where, msg))
 
+
+
+# A code fence (postext >= 1.23): 3+ backticks or tildes, up to 3 spaces in.
+CODE_FENCE_OPEN_RE = re.compile(r"^( {0,3})(`{3,}|~{3,})(.*)$")
+CODE_FENCE_CLOSE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})\s*$")
 
 def parse_attrs(blob: str | None) -> dict[str, str]:
     out: dict[str, str] = {}
@@ -227,6 +236,316 @@ def check_config(cfg: dict, where: str, fonts: set[str], rep: Report, partial: b
         if path.endswith("fontFamily") and isinstance(val, str) and fonts and val not in fonts:
             rep.warn(where, f"{path} = {val!r} is not a bundled family (only the browser can fetch Google Fonts; "
                             "the PDF and headless renders need the files)")
+
+
+LINE_NUMBERS_ENUMS = {
+    "count": {"verse", "all"},
+    "restart": {"document", "chapter", "section", "page", "poem"},
+    "position": {"outer", "inner", "left", "right", "start", "end", "side"},
+    "multiColumn": {"each", "gutter", "outer-edges"},
+    "align": {"auto", "left", "right"},
+}
+LINE_NUMBERS_KEYS = set(LINE_NUMBERS_ENUMS) | {"enabled", "interval", "numberFirst", "startAt", "gap", "fontFamily",
+                                               "fontSize", "fontWeight", "italic", "color", "format"}
+
+
+def _whole(v, lo: int) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and v == int(v) and v >= lo
+
+
+def check_line_numbers(cfg: dict, where: str, rep: Report) -> None:
+    """`lineNumbers` (postext >= 1.23): keys, values the resolver drops, and
+    settings that print no numbers."""
+    for i, ps in enumerate(cfg.get("paragraphStyles") or []):
+        if isinstance(ps, dict) and "lineNumbers" in ps and not isinstance(ps["lineNumbers"], bool):
+            rep.warn(where, f"paragraphStyles[{i}].lineNumbers must be true or false (ignored)")
+    ln = cfg.get("lineNumbers")
+    if ln is None:
+        return
+    if not isinstance(ln, dict):
+        rep.error(where, "lineNumbers must be an object")
+        return
+    for k, v in ln.items():
+        if k not in LINE_NUMBERS_KEYS:
+            rep.warn(where, f"lineNumbers.{k} is not a lineNumbers key (ignored)")
+        elif k in LINE_NUMBERS_ENUMS and v not in LINE_NUMBERS_ENUMS[k]:
+            rep.warn(where, f"lineNumbers.{k} {v!r} is not one of {sorted(LINE_NUMBERS_ENUMS[k])}: the default is used")
+    for k, lo in (("interval", 1), ("startAt", 0)):
+        if k in ln and not _whole(ln[k], lo):
+            rep.warn(where, f"lineNumbers.{k} {ln[k]!r} is not a whole number >= {lo}: the default is used")
+    if not ln.get("enabled"):
+        if len(ln) > 1:
+            rep.info(where, "lineNumbers is set but not enabled: no numbers are printed")
+        return
+    if (cfg.get("layout") or {}).get("writingMode") == "vertical-rl":
+        rep.warn(where, "lineNumbers.enabled: vertical documents get no line numbers (lineNumbersUnsupported)")
+    lay = cfg.get("layout") or {}
+    if ln.get("position") == "side" and not (lay.get("layoutType") == "oneAndHalf" and lay.get("sideColumnRole") == "floats"):
+        rep.info(where, "lineNumbers.position 'side' needs layout oneAndHalf with sideColumnRole 'floats'; "
+                        "pages without that side column set the numbers 'outer'")
+
+
+CODE_STYLE_ENUMS = {
+    "overflow": {"wrap", "shrink", "clip"},
+    "highlight": {"builtin", "none"},
+    "span": {"column", "page"},
+}
+CODE_STYLE_KEYS = set(CODE_STYLE_ENUMS) | {
+    "blocks", "indentedCode", "fontFamily", "fontSize", "fontWeight", "boldFontWeight", "lineHeight", "snapToGrid",
+    "color", "backgroundEnabled", "background", "padding", "border", "borderRadius", "marginTop", "marginBottom",
+    "tabSize", "wrapIndent", "wrapMarker", "minFontScale", "lineNumbers", "lineNumberColor", "lineNumberGap",
+    "highlightBackground", "keepTogether", "splitMinLines", "repeatTitle", "continuesMarkerEnabled",
+    "continuesMarker", "titleStyle", "label", "tokens", "inline"}
+CODE_TOKEN_KINDS = {"keyword", "string", "number", "comment", "function", "type", "operator", "punctuation",
+                    "variable", "meta", "prompt", "output"}
+INLINE_CODE_KEYS = {"fontFamily", "fontSize", "color", "bold", "italic", "background", "borderColor", "borderWidth",
+                    "borderRadius", "paddingX", "paddingY"}
+
+
+def check_code_style(cfg: dict, where: str, rep: Report) -> None:
+    """`codeStyle` (postext >= 1.23): keys, values the resolver drops, token
+    kinds and inline code."""
+    cs = cfg.get("codeStyle")
+    if cs is None:
+        return
+    if not isinstance(cs, dict):
+        rep.error(where, "codeStyle must be an object")
+        return
+    for k, v in cs.items():
+        if k not in CODE_STYLE_KEYS:
+            rep.warn(where, f"codeStyle.{k} is not a codeStyle key (ignored)")
+        elif k in CODE_STYLE_ENUMS and v not in CODE_STYLE_ENUMS[k]:
+            rep.warn(where, f"codeStyle.{k} {v!r} is not one of {sorted(CODE_STYLE_ENUMS[k])}: the default is used")
+    for k, lo in (("tabSize", 1), ("wrapIndent", 0), ("splitMinLines", 1)):
+        if k in cs and not _whole(cs[k], lo):
+            rep.warn(where, f"codeStyle.{k} {cs[k]!r} is not a whole number >= {lo}: the default is used")
+    tokens = cs.get("tokens")
+    if isinstance(tokens, dict):
+        for kind, look in tokens.items():
+            if kind not in CODE_TOKEN_KINDS:
+                rep.warn(where, f"codeStyle.tokens.{kind} is not a token kind (ignored): {sorted(CODE_TOKEN_KINDS)}")
+            elif isinstance(look, dict):
+                for k in look:
+                    if k not in ("color", "bold", "italic"):
+                        rep.warn(where, f"codeStyle.tokens.{kind}.{k} is not a token style key (ignored)")
+    inline = cs.get("inline")
+    if isinstance(inline, dict):
+        for k in inline:
+            if k not in INLINE_CODE_KEYS:
+                rep.warn(where, f"codeStyle.inline.{k} is not an inline code key (ignored)")
+    if cs.get("blocks") is False:
+        rep.info(where, "codeStyle.blocks false: ``` fences are read as Markdown, as up to postext 1.22")
+
+
+TAB_STOP_KEYS = {"position", "align", "leader", "leaderGap", "decimalChar"}
+TAB_STOP_ALIGNS = {"start", "end", "center", "decimal"}
+TAB_ATTR_KEYS = {"at", "align", "leader", "gap", "decimal"}
+_LENGTH_UNITS = {"cm", "mm", "in", "pt", "px", "em", "rem"}
+_LENGTH_TEXT_RE = re.compile(r"^\s*(-?\d+(?:\.\d+)?|-?\.\d+)\s*(cm|mm|in|pt|px|em|rem)?\s*$", re.I)
+# `:tab` or `:tab{…}`; a bare `:tab` followed by a letter is text (`3:table`).
+TAB_DIRECTIVE_RE = re.compile(r":tab(?:\{([^}\n]*)\}|(?![^\W\d_]))")
+_CODE_SPAN_RE = re.compile(r"`[^`\n]*`")
+
+
+def _is_dimension(v) -> bool:
+    return (isinstance(v, dict) and isinstance(v.get("value"), (int, float)) and not isinstance(v.get("value"), bool)
+            and v.get("unit") in _LENGTH_UNITS)
+
+
+def _tab_position_ok(v) -> bool:
+    """A stop position the engine reads (defaults/tabStops.ts): a Dimension,
+    'end', a percentage or a length written as text."""
+    if isinstance(v, dict):
+        return _is_dimension(v)
+    if not isinstance(v, str):
+        return False
+    t = v.strip().lower()
+    return t == "end" or bool(re.fullmatch(r"(\d+(?:\.\d+)?|\.\d+)\s*%", t)) or bool(_LENGTH_TEXT_RE.match(t))
+
+
+def _tab_settings(cfg: dict) -> list[tuple[str, dict]]:
+    """Every place that sets tab stops: body text, paragraph styles, callout bodies."""
+    out: list[tuple[str, dict]] = []
+    if isinstance(cfg.get("bodyText"), dict):
+        out.append(("bodyText", cfg["bodyText"]))
+    for i, ps in enumerate(cfg.get("paragraphStyles") or []):
+        if isinstance(ps, dict):
+            out.append((f"paragraphStyles[{i}]", ps))
+    for i, cs in enumerate(cfg.get("calloutStyles") or []):
+        if isinstance(cs, dict) and isinstance(cs.get("body"), dict):
+            out.append((f"calloutStyles[{i}].body", cs["body"]))
+    return out
+
+
+def check_tab_stops(cfg: dict, where: str, texts: list[tuple[str, str]], rep: Report) -> None:
+    """Tab stops (postext >= 1.23): `tabStops` / `tabInterval` on the body,
+    paragraph styles and callout bodies, `:tab{…}` attributes, `:tab` in
+    vertical text, and tab characters no style turns into tabs."""
+    any_stops = False
+    for path, node in _tab_settings(cfg):
+        if "tabInterval" in node:
+            any_stops = True
+            if not _is_dimension(node["tabInterval"]) or node["tabInterval"]["value"] <= 0:
+                rep.warn(where, f"{path}.tabInterval must be a length above 0 ({{value, unit}}): ignored")
+        if "tabStops" not in node:
+            continue
+        stops = node["tabStops"]
+        if not isinstance(stops, list):
+            rep.warn(where, f"{path}.tabStops must be a list of stops: ignored")
+            continue
+        any_stops = any_stops or bool(stops)
+        for j, stop in enumerate(stops):
+            p = f"{path}.tabStops[{j}]"
+            if not isinstance(stop, dict):
+                rep.warn(where, f"{p} must be an object {{position, align?, leader?, leaderGap?, decimalChar?}}")
+                continue
+            for k in stop:
+                if k not in TAB_STOP_KEYS:
+                    near = difflib.get_close_matches(k, sorted(TAB_STOP_KEYS), n=1)
+                    rep.warn(where, f"{p}.{k} is not a tab stop key{f' ({near[0]}?)' if near else ''} (ignored)")
+            if not _tab_position_ok(stop.get("position")):
+                rep.warn(where, f"{p}.position {stop.get('position')!r} is no length, 'end' or percentage: "
+                                "the stop is left out")
+            if "align" in stop and stop["align"] not in TAB_STOP_ALIGNS:
+                rep.warn(where, f"{p}.align {stop['align']!r} is not one of {sorted(TAB_STOP_ALIGNS)}: read as 'start'")
+            if "leader" in stop and not (isinstance(stop["leader"], str) and stop["leader"]):
+                rep.warn(where, f"{p}.leader must be a non-empty string ('.', '. ', '·', '_', '-', 'rule'): no leader")
+            if "leaderGap" in stop and not _is_dimension(stop["leaderGap"]):
+                rep.warn(where, f"{p}.leaderGap must be a length ({{value, unit}}): the default 0.5em is used")
+            if stop.get("decimalChar") is not None and stop.get("align") != "decimal":
+                rep.info(where, f"{p}.decimalChar only counts on an align 'decimal' stop")
+    vertical = (cfg.get("layout") or {}).get("writingMode") == "vertical-rl"
+    for name, text in texts:
+        literal_tab_at = None
+        for i, raw in enumerate(text.split("\n")):
+            line = _CODE_SPAN_RE.sub("", raw.strip())
+            if line.startswith("#"):
+                continue  # headings keep their own meaning of a tab
+            for m in TAB_DIRECTIVE_RE.finditer(line):
+                at = f"{name}:{i + 1}"
+                if vertical:
+                    rep.warn(at, ":tab in vertical text is set as a word space (tabInVerticalText): "
+                                 "tab stops are set in horizontal text only")
+                    continue
+                if m.group(1) is None:
+                    continue
+                attrs = parse_attrs(m.group(1))
+                for k in attrs:
+                    if k not in TAB_ATTR_KEYS:
+                        rep.warn(at, f":tab{{{k}=…}} is not read (keys: at, align, leader, gap, decimal)")
+                if not _tab_position_ok(attrs.get("at")):
+                    rep.warn(at, f":tab{{at={attrs.get('at', '')}}} is no length, 'end' or percentage: the tab takes "
+                                 "the paragraph's stops instead")
+                if "align" in attrs and attrs["align"].strip().lower() not in TAB_STOP_ALIGNS:
+                    rep.warn(at, f":tab{{align={attrs['align']}}} is not one of {sorted(TAB_STOP_ALIGNS)}: read as 'start'")
+                if "gap" in attrs and not _LENGTH_TEXT_RE.match(attrs["gap"]):
+                    rep.warn(at, f":tab{{gap={attrs['gap']}}} is no length: the default 0.5em is used")
+            if literal_tab_at is None and re.search(r"\S\t", re.sub(r"^(?:[-*+]|\d+[.)])\s+", "", line)):
+                literal_tab_at = i + 1
+        if literal_tab_at is not None and not any_stops and not vertical:
+            rep.warn(f"{name}:{literal_tab_at}", "a tab character inside a line is a word space unless the paragraph's "
+                                                 "style sets tabStops or tabInterval; give the style stops, or write :tab")
+
+
+DROP_CAP_KEYS = {"lines", "sink", "characters", "fontFamily", "fontWeight", "italic", "fontSize", "color",
+                 "gap", "punctuation", "leadIn", "shortParagraph", "each"}
+DROP_CAP_ENUMS = {"punctuation": {"with-cap", "hang", "text"}, "shortParagraph": {"reserve", "shrink", "skip"}}
+LEAD_IN_KEYS = {"words", "smallCaps", "uppercase"}
+DROPCAP_ATTR_RE = re.compile(r"\{[^{}\n]*\bdrop[cC]ap(?:=(\"[^\"]*\"|'[^']*'|[^\s}]*))?[^{}\n]*\}")
+
+
+def _drop_cap_settings(cfg: dict):
+    """Every drop cap setting of a config: paragraph styles, heading levels
+    and heading styles (a level's or style's `false` is a valid "none")."""
+    for i, ps in enumerate(cfg.get("paragraphStyles") or []):
+        if isinstance(ps, dict) and "dropCap" in ps:
+            yield f"paragraphStyles[{i}].dropCap", ps["dropCap"], False
+    for i, lvl in enumerate((cfg.get("headings") or {}).get("levels") or []):
+        if isinstance(lvl, dict) and "dropCap" in lvl:
+            yield f"headings.levels[{i}].dropCap", lvl["dropCap"], True
+    for i, hs in enumerate(cfg.get("headingStyles") or []):
+        if isinstance(hs, dict) and "dropCap" in hs:
+            yield f"headingStyles[{i}].dropCap", hs["dropCap"], True
+
+
+def _design_lead_caps(cfg: dict) -> bool:
+    """Whether a heading design draws a heading attribute with a design
+    text `dropCap` (the chapter's opening words set apart from the text)."""
+    slots = []
+    for lvl in (cfg.get("headings") or {}).get("levels") or []:
+        if isinstance(lvl, dict):
+            slots.append(((lvl.get("advancedDesign") or {}).get("slot") or {}))
+    for hs in cfg.get("headingStyles") or []:
+        if isinstance(hs, dict):
+            slots.append(((hs.get("advancedDesign") or {}).get("slot") or {}))
+    for slot in slots:
+        for el in slot.get("elements") or []:
+            if isinstance(el, dict) and el.get("kind") == "text" and el.get("dropCap") and "{attr." in str(el.get("content", "")):
+                return True
+    return False
+
+
+def check_drop_caps(cfg: dict, where: str, texts: list[tuple[str, str]], rep: Report) -> None:
+    """Drop caps in body paragraphs (postext >= 1.23): the `dropCap`
+    settings of paragraph styles, heading levels and heading styles, the
+    `{dropcap}` attribute, and the chapter openings still drawn as a heading
+    attribute by a design text's `dropCap`."""
+    any_cap = False
+    for path, cap, may_be_false in _drop_cap_settings(cfg):
+        if cap is False and may_be_false:
+            continue
+        if not isinstance(cap, dict):
+            rep.warn(where, f"{path} must be an object (or false on a heading level or style): ignored")
+            continue
+        any_cap = True
+        for k in cap:
+            if k not in DROP_CAP_KEYS:
+                near = difflib.get_close_matches(k, sorted(DROP_CAP_KEYS), n=1)
+                rep.warn(where, f"{path}.{k} is not a drop cap key{f' ({near[0]}?)' if near else ''} (ignored)")
+        for k, words in DROP_CAP_ENUMS.items():
+            if k in cap and cap[k] not in words:
+                rep.warn(where, f"{path}.{k} {cap[k]!r} is not one of {sorted(words)}: the default is used")
+        for k in ("lines", "sink", "characters"):
+            v = cap.get(k)
+            if v is not None and not (isinstance(v, (int, float)) and not isinstance(v, bool) and v >= 1):
+                rep.warn(where, f"{path}.{k} {v!r} is not a whole number >= 1: the default is used")
+        if isinstance(cap.get("sink"), (int, float)) and isinstance(cap.get("lines"), (int, float)) and cap["sink"] > cap["lines"]:
+            rep.info(where, f"{path}.sink is more than lines: it sinks no further than its lines")
+        if "each" in cap and path.startswith(("headings", "headingStyles")):
+            rep.info(where, f"{path}.each only counts in a paragraph style")
+        lead = cap.get("leadIn")
+        if lead is not None:
+            if not isinstance(lead, dict):
+                rep.warn(where, f"{path}.leadIn must be an object {{words, smallCaps?, uppercase?}}: ignored")
+            else:
+                for k in lead:
+                    if k not in LEAD_IN_KEYS:
+                        near = difflib.get_close_matches(k, sorted(LEAD_IN_KEYS), n=1)
+                        rep.warn(where, f"{path}.leadIn.{k} is not a lead-in key{f' ({near[0]}?)' if near else ''} (ignored)")
+                w = lead.get("words")
+                if w is not None and w != "line" and not (isinstance(w, int) and not isinstance(w, bool) and w >= 1):
+                    rep.warn(where, f"{path}.leadIn.words {w!r} must be a whole number >= 1 or 'line': no lead-in")
+    vertical = (cfg.get("layout") or {}).get("writingMode") == "vertical-rl"
+    used_attr = False
+    lead_attrs = False
+    for name, text in texts:
+        for i, raw in enumerate(text.split("\n")):
+            line = raw.strip()
+            if not (line.startswith("#") or line.startswith(":::paragraphs")):
+                continue
+            for m in DROPCAP_ATTR_RE.finditer(line):
+                used_attr = True
+                v = (m.group(1) or "").strip("\"'").strip().lower()
+                if v and v not in ("true", "yes", "on", "false", "no", "off", "0", "none") and not (v.isdigit() and int(v) >= 1):
+                    rep.warn(f"{name}:{i + 1}", f"{{dropcap={v}}} reads as nothing: write dropcap, dropcap=false or dropcap=N (lines)")
+            if line.startswith("#") and re.search(r"\blead=", line):
+                lead_attrs = True
+    if vertical and (any_cap or used_attr):
+        rep.warn(where, "drop caps are set in horizontal text only: a vertical book sets none (dropCap content warning)")
+    if lead_attrs and _design_lead_caps(cfg):
+        rep.warn(where, "a heading design draws a `lead` attribute with a design text dropCap: keep the chapter's opening "
+                        "words in its first paragraph and give the heading level a dropCap (postext >= 1.23, "
+                        "configuration.md §4b)")
 
 
 FOLIO_ENUMS = {
@@ -1622,6 +1941,7 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
     prev_kind = ""
     in_math = False
     in_refs = False  # inside a :::references or :::verse block: its body is not paragraphs
+    code_fence: str | None = None  # the marker of an open ``` / ~~~ code listing (postext >= 1.23): read as written
     fn_cited: dict[str, str] = {}
     fn_defined: dict[str, str] = {}
     comic: dict | None = None  # an open :::page / :::strip block, read raw to its closing :::
@@ -1629,6 +1949,18 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
         raw = lines[i]
         line = raw.strip()
         where = f"{name}:{i + 1}"
+        if code_fence is not None:
+            m = CODE_FENCE_CLOSE_RE.match(raw)
+            if m and m.group(1)[0] == code_fence[0] and len(m.group(1)) >= len(code_fence):
+                code_fence = None
+                prev_nonblank, prev_kind = True, "fence"
+            continue
+        if comic is None and not in_math and not in_refs:
+            m = CODE_FENCE_OPEN_RE.match(raw)
+            if m and not (m.group(2)[0] == "`" and "`" in m.group(3)):
+                code_fence = m.group(2)
+                prev_nonblank, prev_kind = True, "fence"
+                continue
         if comic is not None:
             if line == ":::":
                 check_comic_block(name, comic["kind"], comic["attrs"], comic["body"], comic["line"], comic_ctx, rep)
@@ -1653,8 +1985,8 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
         if not line.startswith((":::", "::resource")) and ":index" in line:
             collect_index_marks(re.sub(r"`[^`\n]+`", "", line), where, rep, index)
         # CommonMark habits
-        if line.startswith("```") or line.startswith("~~~"):
-            rep.error(where, "code fences are not supported (they print literally): use :::paragraphs{style=\"code\"}")
+        if raw.startswith("\u2060\u00a0") or (raw.startswith("\u2060") and "\u00a0\u00a0" in raw):
+            rep.warn(where, "a code line kept with a word joiner and no-break spaces: write the listing as a ``` fence (postext >= 1.23), as written")
         if re.match(r"^\|.*\|$", line) and not (i > 0 and re.match(r"^\|.*\|$", lines[i - 1].strip())):
             rep.error(where, "pipe tables are not supported: tables are resources (kind \"table\") cited with :ref / ::resource")
         if re.fullmatch(r"(-{3,}|\*{3,}|_{3,})", line):
@@ -1792,6 +2124,12 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                     in_refs = True
                 if fname == "numbering" and "format" in attrs and attrs["format"] not in NUMBERING_FORMATS | NUMBERING_TOKENS:
                     rep.error(where, f"numbering format {attrs['format']!r} is invalid")
+                if fname == "numbering" and "lines" in attrs and not re.fullmatch(r"\s*\d+\s*", attrs["lines"]):
+                    rep.warn(where, f"numbering lines {attrs['lines']!r} is not a whole number >= 0 (ignored)")
+                if fname == "verse":
+                    for k, lo in (("lineStart", 0), ("interval", 1)):
+                        if k in attrs and not (re.fullmatch(r"\s*\d+\s*", attrs[k]) and int(attrs[k]) >= lo):
+                            rep.warn(where, f"verse {k} {attrs[k]!r} is not a whole number >= {lo} (ignored)")
             else:
                 rep.error(where, f":::{fname} is not a Postext container or directive (prints literally). "
                                  f"Containers: {sorted(KNOWN_CONTAINERS)}; directives: {sorted(KNOWN_DIRECTIVES - COMIC_BLOCKS)}; "
@@ -1939,16 +2277,18 @@ def main() -> None:
     if m.get("version") not in (1, 2):
         rep.error("preset.json", "version must be 1 or 2")
     cv = m.get("configVersion")
-    if isinstance(cv, bool) or not isinstance(cv, (int, float)) or cv < 8:
-        rep.warn("preset.json", "configVersion is missing or below 8: the bundle reads with older rules "
+    if isinstance(cv, bool) or not isinstance(cv, (int, float)) or cv < 9:
+        rep.warn("preset.json", "configVersion is missing or below 9: the bundle reads with older rules "
                  "(up to 1.4: H1 breaks pinned, maths x 1.1312, inline gap 'above'; below 6: heading marks plain, "
                  "drop caps at the 1.4 size, one line of room under a colon line before its list, no gap around "
                  "inline figures in boxes, box cuts that may leave one line of a paragraph; below 7: no line "
                  "break after a closed dash, ragged text set line by line; below 8: no Knuth-Plass break "
                  "after a compound's hyphen in a justified paragraph without formatting, a paragraph under a "
                  "heading at a column foot split 1.4's way, as many lines as fit however few go on, and the "
-                 "space under a :::paragraphs container added to the next block's instead of merged with it); "
-                 "set \"configVersion\": 8 for today's rules")
+                 "space under a :::paragraphs container added to the next block's instead of merged with it; "
+                 "below 9: a :::verse poem with no || set as centred hemistichs, a paragraph style's "
+                 "firstLineIndent dropped when it also hangs, a backslash ending a line printed instead of "
+                 "breaking it, a ``` fence's lines read as Markdown); set \"configVersion\": 9 for today's rules")
     for k in ("id", "name"):
         if not m.get(k):
             rep.error("preset.json", f"{k} is required")
@@ -2043,6 +2383,8 @@ def main() -> None:
             for k, v in loc["config"].items():
                 if isinstance(v, dict) and isinstance(shared.get(k), dict) and set(shared[k]) - set(v):
                     rep.warn(f"localized.{lang}.config.{k}", f"replaces the shared `{k}` wholesale; missing keys {sorted(set(shared[k]) - set(v))[:6]} fall back to defaults")
+        check_line_numbers(cfg, f"config ({lang})", rep)
+        check_code_style(cfg, f"config ({lang})", rep)
         ids = style_ids(cfg)
         for r in resources:
             if r.get("typeId") and r["typeId"] not in ids["types"]:
@@ -2072,6 +2414,8 @@ def main() -> None:
                 check_cjk_lines(c["file"], chapter, rep, japanese_book or is_japanese_text(
                     len(KANA_RE.findall(chapter)), len(HAN_RE.findall(chapter))))
         check_index(index, rep, lang, japanese_book)
+        check_tab_stops(cfg, f"config ({lang})", texts, rep)
+        check_drop_caps(cfg, f"config ({lang})", texts, rep)
         embedded |= comic_ctx["arts"]  # panel pictures are placed by art=, not cited
         check_comic_edition(lang, cfg, comic_ctx, resources, m.get("fonts", []), rep)
         if comic_ctx["blocks"]:

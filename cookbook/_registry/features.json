@@ -2172,6 +2172,541 @@
       ]
     }
   },
+  "verse": {
+    "label": {
+      "en": "Verse line by line",
+      "es": "Verso línea a línea",
+      "ca": "Vers línia a línia",
+      "zh": "逐行排诗",
+      "ar": "الشعر سطرًا سطرًا",
+      "ja": "行ごとの詩",
+      "pt": "Verso linha a linha"
+    },
+    "definition": {
+      "en": ":::verse sets a poem as it is written: one line of verse a line of Markdown, blank lines between stanzas, leading spaces as indents; an overlong line turns over with a hanging indent or flush right behind a bracket, never parted from its line at a page break, and short stanzas can be kept whole.",
+      "es": ":::verse compone un poema tal como se escribe: un verso por línea de Markdown, líneas en blanco entre estrofas, espacios iniciales como sangría; un verso demasiado largo se parte con sangría colgada o a la derecha tras un corchete, nunca separado de su línea en un salto de página, y las estrofas cortas pueden quedar enteras.",
+      "ca": ":::verse compon un poema tal com s'escriu: un vers per línia de Markdown, línies en blanc entre estrofes, espais inicials com a sagnat; un vers massa llarg es parteix amb sagnat penjat o a la dreta darrere d'un claudàtor, mai separat de la seva línia en un salt de pàgina, i les estrofes curtes poden quedar senceres.",
+      "zh": ":::verse按书写原样排诗：Markdown的一行就是一行诗，诗节之间空行，行首空格为缩进；过长的诗行以悬挂缩进转行，或在方括号后靠右排，分页时绝不与本行分开，短诗节可以保持完整。",
+      "ar": "يصفّ :::verse القصيدة كما كُتبت: سطر من الشعر في كل سطر من Markdown، وأسطر فارغة بين المقاطع، والمسافات البادئة إزاحة؛ والسطر الأطول من اللازم يُكمَل بإزاحة معلّقة أو إلى الطرف بعد قوس معقوف، ولا ينفصل عن سطره عند فاصل الصفحة، ويمكن إبقاء المقاطع القصيرة كاملة.",
+      "ja": ":::verseは詩を書いたとおりに組みます。Markdownの1行が詩の1行、連のあいだは空行、行頭の空白は字下げです。長すぎる行はぶら下げるか角括弧の後ろで行末側に寄せて折り返し、頁の区切りで元の行と離れず、短い連は分けずに保てます。",
+      "pt": ":::verse compõe um poema como foi escrito: um verso por linha de Markdown, linhas em branco entre estrofes, espaços iniciais como recuo; um verso longo demais se parte com recuo pendente ou à direita depois de um colchete, nunca separado da sua linha em uma quebra de página, e as estrofes curtas podem ficar inteiras."
+    },
+    "aliases": {
+      "en": [
+        "poem",
+        "poetry",
+        "stanza",
+        "line breaks in verse",
+        "turnover",
+        "hanging indent verse",
+        "haiku",
+        "tanka",
+        "free verse"
+      ],
+      "es": [
+        "poema",
+        "poesía",
+        "estrofa",
+        "saltos de línea en verso",
+        "verso partido",
+        "sangría colgada en verso",
+        "haiku",
+        "tanka",
+        "verso libre"
+      ],
+      "ca": [
+        "poema",
+        "poesia",
+        "estrofa",
+        "salts de línia en vers",
+        "vers partit",
+        "sagnat penjat en vers",
+        "haiku",
+        "tanka",
+        "vers lliure"
+      ],
+      "zh": [
+        "诗",
+        "诗歌",
+        "诗节",
+        "诗歌换行",
+        "转行",
+        "悬挂缩进",
+        "俳句",
+        "短歌",
+        "自由诗"
+      ],
+      "ar": [
+        "قصيدة",
+        "شعر",
+        "مقطع",
+        "كسر الأسطر في الشعر",
+        "تتمة السطر",
+        "إزاحة معلقة",
+        "هايكو",
+        "تانكا",
+        "شعر حر"
+      ],
+      "ja": [
+        "詩",
+        "韻文",
+        "連",
+        "詩の改行",
+        "折り返し",
+        "ぶら下げ",
+        "俳句",
+        "短歌",
+        "自由詩"
+      ],
+      "pt": [
+        "poema",
+        "poesia",
+        "estrofe",
+        "quebras de linha em verso",
+        "verso partido",
+        "recuo pendente em verso",
+        "haicai",
+        "tanka",
+        "verso livre"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::verse`",
+        "es": "`:::verse`",
+        "ca": "`:::verse`",
+        "zh": "`:::verse`",
+        "ar": "`:::verse`",
+        "ja": "`:::verse`",
+        "pt": "`:::verse`"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "^:::verse(?:\\{[^}\\n]*\\})?[ \\t]*\\n(?:(?![ \\t]*:::)(?![^\\n]*\\|\\|)[^\\n]*\\n)+[ \\t]*:::[ \\t]*$"
+      ]
+    },
+    "since": "1.23.0"
+  },
+  "line-numbers": {
+    "label": {
+      "en": "Line numbers",
+      "es": "Numeración de líneas",
+      "ca": "Numeració de línies",
+      "zh": "行号",
+      "ar": "ترقيم الأسطر",
+      "ja": "行番号",
+      "pt": "Numeração de linhas"
+    },
+    "definition": {
+      "en": "lineNumbers prints the number of every fifth line (or every Nth) in the margin, the gutter or the side column: the lines of :::verse poems or every line of the text, restarting at each poem, page, chapter or section or running on through the book, without moving a line.",
+      "es": "lineNumbers imprime el número de cada quinta línea (o de cada N) en el margen, en el medianil o en la columna lateral: los versos de los poemas :::verse o todas las líneas del texto, con la cuenta reiniciada en cada poema, página, capítulo o sección o seguida a lo largo del libro, sin mover ninguna línea.",
+      "ca": "lineNumbers imprimeix el número de cada cinquena línia (o de cada N) al marge, a l'entrecolumna o a la columna lateral: els versos dels poemes :::verse o totes les línies del text, amb el compte reiniciat a cada poema, pàgina, capítol o secció o seguit al llarg del llibre, sense moure cap línia.",
+      "zh": "lineNumbers在页边、栏间或边栏中为每第五行（或每第N行）印出行号：可数:::verse诗中的诗行，也可数正文的每一行；计数在每首诗、每页、每章或每节重新开始，或贯穿全书，不移动任何一行。",
+      "ar": "يطبع lineNumbers رقم كل سطر خامس (أو كل N أسطر) في الهامش أو بين العمودين أو في العمود الجانبي: أسطر قصائد :::verse أو كل أسطر النص، ويبدأ العدّ من جديد عند كل قصيدة أو صفحة أو فصل أو قسم أو يستمر على امتداد الكتاب، دون أن يحرّك أي سطر.",
+      "ja": "lineNumbersは5行ごと（またはN行ごと）の行番号を余白、段間、サイド段に印字します。数えるのは:::verseの詩の行か本文のすべての行で、詩、ページ、章、節ごとに振り直すか本全体で通し、行は動かしません。",
+      "pt": "lineNumbers imprime o número de cada quinta linha (ou de cada N) na margem, no intercolúnio ou na coluna lateral: os versos dos poemas :::verse ou todas as linhas do texto, com a contagem reiniciada a cada poema, página, capítulo ou seção ou seguida ao longo do livro, sem mover nenhuma linha."
+    },
+    "aliases": {
+      "en": [
+        "line numbering",
+        "numbered lines",
+        "verse numbers",
+        "line numbers in the margin",
+        "every fifth line",
+        "critical edition",
+        "lineNumbers"
+      ],
+      "es": [
+        "números de línea",
+        "numeración de versos",
+        "versos numerados",
+        "numeración al margen",
+        "cada cinco versos",
+        "edición crítica",
+        "lineNumbers"
+      ],
+      "ca": [
+        "números de línia",
+        "numeració de versos",
+        "versos numerats",
+        "numeració al marge",
+        "cada cinc versos",
+        "edició crítica",
+        "lineNumbers"
+      ],
+      "zh": [
+        "行号",
+        "给行编号",
+        "诗行编号",
+        "页边行号",
+        "每五行一个行号",
+        "校勘本",
+        "lineNumbers"
+      ],
+      "ar": [
+        "أرقام الأسطر",
+        "أسطر مرقّمة",
+        "أرقام الأبيات",
+        "أرقام الأسطر في الهامش",
+        "كل سطر خامس",
+        "طبعة محققة",
+        "lineNumbers"
+      ],
+      "ja": [
+        "行の番号付け",
+        "詩の行番号",
+        "余白の行番号",
+        "5行ごとの番号",
+        "校訂版",
+        "lineNumbers"
+      ],
+      "pt": [
+        "números de linha",
+        "linhas numeradas",
+        "numeração de versos",
+        "números na margem",
+        "a cada cinco linhas",
+        "edição crítica",
+        "lineNumbers"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Line numbers",
+        "es": "Numeración de líneas",
+        "ca": "Numeració de línies",
+        "zh": "行号",
+        "ar": "ترقيم الأسطر",
+        "ja": "行番号",
+        "pt": "Numeração de linhas"
+      }
+    },
+    "detect": {
+      "config": [
+        "lineNumbers"
+      ]
+    },
+    "since": "1.23.0"
+  },
+  "tab-stops": {
+    "label": {
+      "en": "Tab stops and leaders",
+      "es": "Tabuladores y rellenos",
+      "ca": "Tabuladors i farciments",
+      "zh": "制表位与前导符",
+      "ar": "مواضع الجدولة ونقاط التوجيه",
+      "ja": "タブストップとリーダー",
+      "pt": "Paradas de tabulação e pontilhados"
+    },
+    "definition": {
+      "en": "tabStops on a paragraph style, bodyText or a callout's body, with :tab in the text, aligns the words after each tab at a stop (start, end, centre or decimal point), with an optional leader of dots or a rule before it: menus, price lists, cast lists, exam marks and forms set as text.",
+      "es": "tabStops en un estilo de párrafo, en bodyText o en el body de un recuadro, con :tab en el texto, alinea las palabras que siguen a cada tabulación en un tabulador (por el inicio, el final, el centro o la coma decimal), con un relleno opcional de puntos o una línea antes: cartas, listas de precios, repartos, puntuaciones de examen y formularios compuestos como texto.",
+      "ca": "tabStops en un estil de paràgraf, a bodyText o al body d'un requadre, amb :tab al text, alinea les paraules que segueixen cada tabulació en un tabulador (per l'inici, el final, el centre o la coma decimal), amb un farciment opcional de punts o una línia abans: cartes, llistes de preus, repartiments, puntuacions d'examen i formularis compostos com a text.",
+      "zh": "在段落样式、bodyText或提示框的body中设置tabStops，并在文字中写:tab，每个制表符后面的文字就在制表位上对齐（按起点、终点、中心或小数点），前面可加点状或线状前导符：菜单、价目表、演员表、试卷分值和表单都能作为文字排版。",
+      "ar": "يحاذي tabStops في نمط فقرة أو في bodyText أو في body الإطار، مع :tab في النص، الكلماتِ التي تلي كل جدولة عند موضع جدولة (من البداية أو النهاية أو الوسط أو الفاصلة العشرية)، مع نقاط توجيه اختيارية أو خط قبلها: قوائم الطعام والأسعار والممثلين ودرجات الامتحان والاستمارات منضَّدة نصًّا.",
+      "ja": "段落スタイル、bodyText、囲みのbodyのtabStopsと本文の:tabで、各タブの後ろの語をタブ位置（先頭、末尾、中央、小数点）にそろえ、手前に点線や線のリーダーを入れられます。メニュー、価格表、配役表、試験の配点、記入欄を文字として組めます。",
+      "pt": "tabStops em um estilo de parágrafo, em bodyText ou no body de um boxe, com :tab no texto, alinha as palavras depois de cada tabulação em uma parada (pelo início, pelo fim, pelo centro ou pela vírgula decimal), com um pontilhado opcional ou uma linha antes: cardápios, listas de preços, elencos, pontuações de prova e formulários compostos como texto."
+    },
+    "aliases": {
+      "en": [
+        "tabs",
+        "tab leaders",
+        "dot leaders",
+        "right-aligned prices",
+        "decimal tab",
+        "aligned columns of text",
+        ":tab",
+        "tabStops"
+      ],
+      "es": [
+        "tabulaciones",
+        "tabulador con puntos",
+        "precios alineados a la derecha",
+        "tabulador decimal",
+        "columnas de texto alineadas",
+        ":tab",
+        "tabStops"
+      ],
+      "ca": [
+        "tabulacions",
+        "tabulador amb punts",
+        "preus alineats a la dreta",
+        "tabulador decimal",
+        "columnes de text alineades",
+        ":tab",
+        "tabStops"
+      ],
+      "zh": [
+        "制表符",
+        "Tab对齐",
+        "前导符",
+        "点状前导符",
+        "价格右对齐",
+        "小数点对齐",
+        ":tab",
+        "tabStops"
+      ],
+      "ar": [
+        "الجدولة",
+        "نقاط التوجيه",
+        "محاذاة الأسعار",
+        "جدولة عشرية",
+        "أعمدة نص محاذاة",
+        ":tab",
+        "tabStops"
+      ],
+      "ja": [
+        "タブ",
+        "タブリーダー",
+        "点線リーダー",
+        "価格の右揃え",
+        "小数点揃え",
+        "テキストの桁そろえ",
+        ":tab",
+        "tabStops"
+      ],
+      "pt": [
+        "tabulações",
+        "tabulação com pontilhado",
+        "preços alinhados à direita",
+        "tabulação decimal",
+        "colunas de texto alinhadas",
+        ":tab",
+        "tabStops"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Tab stops",
+        "es": "Tabulaciones",
+        "ca": "Tabulacions",
+        "zh": "制表位",
+        "ar": "مواضع الجدولة",
+        "ja": "タブ位置",
+        "pt": "Paradas de tabulação"
+      }
+    },
+    "detect": {
+      "config": [
+        "bodyText.tabStops",
+        "bodyText.tabInterval",
+        "paragraphStyles[].tabStops",
+        "paragraphStyles[].tabInterval",
+        "calloutStyles[].body.tabStops",
+        "calloutStyles[].body.tabInterval"
+      ],
+      "markdown": [
+        ":tab(?:\\{|(?![A-Za-z\\u00C0-\\u024F\\u0370-\\u03FF\\u0400-\\u04FF]))"
+      ]
+    },
+    "since": "1.23.0"
+  },
+  "code-listings": {
+    "label": {
+      "en": "Code listings",
+      "es": "Listados de código",
+      "ca": "Llistats de codi",
+      "zh": "代码清单",
+      "ar": "قوائم الشيفرة",
+      "ja": "コードリスト",
+      "pt": "Listagens de código"
+    },
+    "definition": {
+      "en": "``` fences set as code: line by line as typed, in a box, with syntax colours, line numbers, highlighted lines and long lines turned over, set smaller or cut.",
+      "es": "Vallas ``` compuestas como código: línea a línea tal como se escribieron, en una caja, con colores de sintaxis, números de línea, líneas resaltadas y líneas largas que pasan a la siguiente, se componen más pequeñas o se cortan.",
+      "ca": "Tanques ``` compostes com a codi: línia a línia tal com es van escriure, en una caixa, amb colors de sintaxi, números de línia, línies ressaltades i línies llargues que passen a la següent, es componen més petites o es tallen.",
+      "zh": "把```围栏排成代码：按书写原样逐行排在框中，带语法着色、行号和高亮行；过长的行转行、缩小或截断。",
+      "ar": "أسوار ``` تُنضَّد شيفرةً: سطرًا سطرًا كما كُتبت، في إطار، بألوان الصياغة وترقيم الأسطر وأسطر مميّزة، وتنتقل الأسطر الطويلة إلى ما تحتها أو تُصغَّر أو تُقطع.",
+      "ja": "```のフェンスをコードとして組みます。書いたとおり1行ずつ枠の中に組み、構文の色分け、行番号、強調する行を付け、長い行は次の行へ送るか、小さく組むか、切り落とします。",
+      "pt": "Cercas ``` compostas como código: linha a linha como foram escritas, numa caixa, com cores de sintaxe, números de linha, linhas realçadas e linhas longas que passam para baixo, são compostas menores ou cortadas."
+    },
+    "aliases": {
+      "en": [
+        "code block",
+        "```",
+        "fenced code",
+        "code listing",
+        "syntax highlighting",
+        "inline code",
+        "monospace block"
+      ],
+      "es": [
+        "bloque de código",
+        "```",
+        "listado de código",
+        "resaltado de sintaxis",
+        "código en línea",
+        "bloque monoespaciado"
+      ],
+      "ca": [
+        "bloc de codi",
+        "```",
+        "llistat de codi",
+        "ressaltat de sintaxi",
+        "codi en línia",
+        "bloc monoespaiat"
+      ],
+      "zh": [
+        "代码块",
+        "```",
+        "代码清单",
+        "语法高亮",
+        "行内代码",
+        "等宽字体",
+        "code block"
+      ],
+      "ar": [
+        "كتلة شيفرة",
+        "```",
+        "قائمة شيفرة",
+        "تلوين الصياغة",
+        "الشيفرة المضمّنة",
+        "code block"
+      ],
+      "ja": [
+        "コードブロック",
+        "```",
+        "コードリスト",
+        "シンタックスハイライト",
+        "インラインコード",
+        "等幅"
+      ],
+      "pt": [
+        "bloco de código",
+        "```",
+        "listagem de código",
+        "realce de sintaxe",
+        "código em linha",
+        "bloco monoespaçado"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Code listings",
+        "es": "Listados de código",
+        "ca": "Llistats de codi",
+        "zh": "代码清单",
+        "ar": "قوائم الشيفرة",
+        "ja": "コードリスト",
+        "pt": "Listagens de código"
+      }
+    },
+    "detect": {
+      "config": [
+        "codeStyle"
+      ],
+      "markdown": [
+        "(?:^|\\n) {0,3}(?:`{3,}|~{3,})"
+      ]
+    },
+    "since": "1.23.0"
+  },
+  "body-drop-caps": {
+    "label": {
+      "en": "Drop caps in body paragraphs",
+      "es": "Capitulares en párrafos de texto",
+      "ca": "Caplletres en paràgrafs de text",
+      "zh": "正文段落的首字下沉",
+      "ar": "الحروف الاستهلالية في فقرات المتن",
+      "ja": "本文段落のドロップキャップ",
+      "pt": "Capitulares em parágrafos do texto"
+    },
+    "definition": {
+      "en": "dropCap on a heading level, a heading style or a paragraph style opens a body paragraph with its first letter set large beside its first lines, which are shortened and set with the text; a raised initial, an opening quote hung or set with the letter, a lead-in in small capitals.",
+      "es": "dropCap en un nivel de título, un estilo de título o un estilo de párrafo abre un párrafo del texto con su primera letra en grande junto a sus primeras líneas, que se acortan y se componen con el texto; una inicial elevada, una comilla de apertura colgada o junto a la letra, una entrada en versalitas.",
+      "ca": "dropCap en un nivell de títol, un estil de títol o un estil de paràgraf obre un paràgraf del text amb la primera lletra en gran al costat de les primeres línies, que s'escurcen i es componen amb el text; una inicial elevada, unes cometes d'obertura penjades o amb la lletra, una entrada en versaletes.",
+      "zh": "在标题级别、标题样式或段落样式上设置dropCap，正文段落就以放大的首字开头，首字旁的几行缩短并与正文一起排；可做凸起首字、悬挂或随首字放大的开引号，以及小型大写字母的引导词。",
+      "ar": "يفتتح dropCap في مستوى عنوان أو نمط عنوان أو نمط فقرة فقرةً من المتن بحرفها الأول مكبّرًا إلى جانب أسطرها الأولى، التي تُقصَّر وتُصفّ مع النص؛ ومنه الحرف البارز، وعلامة التنصيص الافتتاحية معلّقة أو مع الحرف، وكلمات الاستهلال بحروف كبيرة صغيرة.",
+      "ja": "見出しレベル、見出しスタイル、段落スタイルのdropCapで、本文の段落を最初の文字を大きくして冒頭の数行の横に置いて始めます。その行は短くなり本文と一緒に組まれます。レイズドイニシャル、ぶら下げや頭文字と一緒の始め引用符、スモールキャピタルのリードインも組めます。",
+      "pt": "dropCap em um nível de título, um estilo de título ou um estilo de parágrafo abre um parágrafo do texto com a primeira letra em tamanho grande ao lado das primeiras linhas, que são encurtadas e compostas com o texto; uma inicial elevada, aspas de abertura penduradas ou junto da letra, uma abertura em versaletes."
+    },
+    "aliases": {
+      "en": [
+        "drop cap",
+        "initial letter",
+        "raised initial",
+        "versal",
+        "lead-in small caps",
+        "dropCap"
+      ],
+      "es": [
+        "capitular",
+        "letra capital",
+        "inicial elevada",
+        "versal",
+        "entrada en versalitas",
+        "dropCap"
+      ],
+      "ca": [
+        "caplletra",
+        "lletra capital",
+        "inicial elevada",
+        "entrada en versaletes",
+        "dropCap"
+      ],
+      "zh": [
+        "首字下沉",
+        "首字放大",
+        "凸起首字",
+        "drop cap",
+        "dropCap"
+      ],
+      "ar": [
+        "حرف استهلالي",
+        "حرف بارز",
+        "الحرف الأول الكبير",
+        "dropCap"
+      ],
+      "ja": [
+        "ドロップキャップ",
+        "イニシャル",
+        "レイズドイニシャル",
+        "リードイン",
+        "dropCap"
+      ],
+      "pt": [
+        "capitular",
+        "letra capitular",
+        "inicial elevada",
+        "versal",
+        "abertura em versaletes",
+        "dropCap"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Drop caps",
+        "es": "Letras capitulares",
+        "ca": "Caplletres",
+        "zh": "首字下沉",
+        "ar": "الحروف الاستهلالية",
+        "ja": "ドロップキャップ",
+        "pt": "Capitulares"
+      }
+    },
+    "detect": {
+      "config": [
+        "headings.levels[].dropCap",
+        "headingStyles[].dropCap",
+        "paragraphStyles[].dropCap"
+      ],
+      "markdown": [
+        "\\{[^{}\\n]*\\bdropcap\\b"
+      ]
+    },
+    "since": "1.23.0"
+  },
   "bibliography": {
     "label": {
       "en": "Bibliographies and glossaries",
@@ -14263,7 +14798,7 @@
     },
     "detect": {
       "markdown": [
-        "^:::verse"
+        "^:::verse[^\\n]*\\n(?:(?![ \\t]*:::)[^\\n]*\\n)*?[^\\n]*(?:\\|\\||\\s\\\\\\\\\\s)"
       ]
     },
     "since": "1.15.0"

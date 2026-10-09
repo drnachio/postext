@@ -12,9 +12,15 @@ import type {
   TableCellNode,
   TableNode,
   TocNode,
+  StanzaNode,
+  CodeNode,
+  TabItem,
   VerseNode,
 } from './model';
 import { bridgeLinks, formatKey, idOf, linkKey, wrapFormat, xmlAttr, xmlText } from './inline';
+
+/** Style id of a code listing's box (`postext` `CODE_BOX_STYLE_ID`). */
+const CODE_BOX_STYLE = '__postext-code';
 import type { BookModel, Loc } from './walk';
 
 /** What a content document needs from the rest of the book. */
@@ -198,9 +204,62 @@ class Writer {
    *  in them (digits, punctuation) resolve the same without one and are
    *  left bare. */
   inline(items: InlineItem[]): string {
+    if (items.some((i) => i.t === 'tab')) return this.tabbed(items);
     const base = this.dir === 'rtl' ? 1 : 0;
     const levels = bidiLevels(items, base);
     return levels ? this.nested(items, levels, base) : this.flat(items);
+  }
+
+  /**
+   * Items holding tabs at their stops (#622). A reflowed page cannot keep
+   * the stops: each line of the text that holds a tab (lines end at the
+   * author's breaks, `<br/>`) is written as a flex row of the parts
+   * between its tabs. An end, centre or decimal stop, or one with a
+   * leader, is a filler that pushes the next part to the row's end, its
+   * leader a dotted or solid border; a start stop keeps the part before it
+   * at least as wide as in print, and the part after it takes the rest of
+   * the row and wraps there.
+   */
+  private tabbed(items: InlineItem[]): string {
+    const lines: InlineItem[][] = [[]];
+    for (const item of items) {
+      if (item.t === 'raw' && item.xhtml === '<br/>') lines.push([]);
+      else lines[lines.length - 1]!.push(item);
+    }
+    let out = '';
+    let prevRow = false;
+    lines.forEach((line, k) => {
+      const row = line.some((i) => i.t === 'tab');
+      if (k > 0 && !row && !prevRow) out += '<br/>';
+      prevRow = row;
+      if (!row) {
+        out += this.inline(line);
+        return;
+      }
+      const parts: InlineItem[][] = [[]];
+      const tabs: TabItem[] = [];
+      for (const item of line) {
+        if (item.t === 'tab') {
+          tabs.push(item);
+          parts.push([]);
+        } else {
+          parts[parts.length - 1]!.push(item);
+        }
+      }
+      out += '<span class="pt-tab-row">';
+      parts.forEach((part, j) => {
+        const tab = tabs[j];
+        const min = tab && !tab.fill && tab.minEm !== undefined ? ` style="min-width:${Math.max(0, Math.round((tab.minEm - 0.5) * 100) / 100)}em"` : '';
+        const rest = j > 0 && !tabs[j - 1]!.fill ? ' pt-tab-rest' : '';
+        out += `<span class="pt-tab-part${rest}"${min}>${this.inline(part)}</span>`;
+        if (tab) {
+          const leader = tab.leader ? ` pt-leader-${tab.leader === 'rule' ? 'rule' : 'dots'}` : '';
+          out += `<span class="${tab.fill ? 'pt-tab-fill' : 'pt-tab-gap'}${leader}" aria-hidden="true"></span>`;
+        }
+      });
+      out += '</span>';
+    });
+    return out;
   }
 
   private nested(items: InlineItem[], levels: readonly number[], base: number): string {
@@ -232,7 +291,8 @@ class Writer {
   }
 
   private flat(items: InlineItem[]): string {
-    const inl = bridgeLinks([...items]);
+    // A tab never reaches here (see `tabbed`): one that did reads as a space.
+    const inl = bridgeLinks(items.map((it): InlineItem => (it.t === 'tab' ? { t: 'text', text: ' ', fmt: {} } : it))) as Exclude<InlineItem, TabItem>[];
     let out = '';
     let i = 0;
     while (i < inl.length) {
@@ -303,6 +363,12 @@ class Writer {
       case 'list':
         return this.list(node);
       case 'callout': {
+        // A code listing's box (#624): a plain block, its title over the
+        // listing.
+        if (node.styleId === CODE_BOX_STYLE) {
+          const heading = node.title ? `<p class="pt-code-title">${xmlText(node.title)}</p>\n` : '';
+          return `<div class="pt-code-box">\n${heading}${this.nodes(node.children)}\n</div>`;
+        }
         const title = node.title ? `<p class="pt-callout-title">${xmlText(node.title)}</p>\n` : '';
         // A pull quote keeps its box on the page; one that repeats the
         // text is hidden from assistive technology (`doc-pullquote`, a
@@ -323,6 +389,10 @@ class Writer {
       }
       case 'verse':
         return this.verse(node);
+      case 'stanza':
+        return this.stanza(node);
+      case 'code':
+        return this.code(node);
       case 'toc':
         return this.toc(node);
       case 'marker':
@@ -393,6 +463,42 @@ class Writer {
       return `<p class="pt-bayt"><span class="pt-sadr">${this.inline(b.sadr)}</span>${ornament} <span class="pt-ajuz">${this.inline(b.ajuz)}</span></p>`;
     }));
     return `<div${this.classAttr(['pt-verse', ...(node.cls ?? [])])}${this.dirAttr(node.dir)}>${pre}\n${bayts.join('\n')}\n</div>`;
+  }
+
+  /**
+   * A stanza of a poem set line by line (#620): one element, each line of
+   * verse a block-level span that hangs its turnovers (`padding-inline-
+   * start` the line's indent plus the hang, `text-indent` the hang back),
+   * so the reading system turns an overlong line over as the print does.
+   */
+  private stanza(node: StanzaNode): string {
+    const pre = this.inline(node.pre);
+    const hang = round2(node.hangEm);
+    const lines = this.within(node.dir, () => node.lines.map((l) => {
+      const style = `padding-inline-start: ${round2(l.indentEm + node.hangEm)}em; text-indent: -${hang}em`;
+      const num = l.num !== undefined ? `<span class="pt-line-number" aria-hidden="true">${xmlText(l.num)}</span>` : '';
+      return `<span class="pt-verse-line" style="${style}">${num}${this.inline(l.inl)}</span>`;
+    }));
+    return `<div${this.classAttr(['pt-stanza', ...(node.cls ?? [])])}${this.dirAttr(node.dir)}>${pre}\n${lines.join('\n')}\n</div>`;
+  }
+
+  /** A code listing (#624): `<pre><code>` as written, one source line a
+   *  line, its tokens in their colours, the lines a fence highlights
+   *  marked; the numbers, padded to one width, hidden from assistive
+   *  technology. Read left to right in any book. */
+  private code(node: CodeNode): string {
+    const pre = this.inline(node.pre);
+    const width = Math.max(0, ...node.lines.map((l) => l.num?.length ?? 0));
+    const body = node.lines.map((l) => {
+      const num = l.num !== undefined ? `<span class="pt-code-num" aria-hidden="true">${xmlText(l.num.padStart(width))}</span>` : '';
+      const runs = l.runs.map((r) => {
+        const decl = [r.color && `color:${r.color}`, r.bold && 'font-weight:bold', r.italic && 'font-style:italic'].filter(Boolean).join(';');
+        return decl ? `<span style="${xmlAttr(decl)}">${xmlText(r.text)}</span>` : xmlText(r.text);
+      }).join('');
+      return num + (l.highlight ? `<mark class="pt-code-hl">${runs}</mark>` : runs);
+    }).join('\n');
+    const lang = node.lang ? ` class="language-${xmlAttr(node.lang.replace(/[^\w+#.-]/g, ''))}"` : '';
+    return `${pre ? `<div>${pre}</div>\n` : ''}<pre class="pt-code" dir="ltr"><code${lang}>${body}</code></pre>`;
   }
 
   private list(node: ListNode): string {
@@ -589,4 +695,9 @@ ${notes}
 </body>
 </html>
 `;
+}
+
+/** A length in ems for a style attribute: at most three decimals. */
+function round2(v: number): string {
+  return String(Math.round(v * 1000) / 1000);
 }

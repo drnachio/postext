@@ -310,6 +310,21 @@ A letter's date and signature are set flush with the end of the line (地付き)
 
 `headings.keepWithNext` keeps a heading from closing a column. JLReq §4.1.7 lets a heading close the last column of an even page, since its text then opens the facing page of the same spread; `headings.keepWithNextSpread: true` allows that, in left- and right-bound books alike.
 
+### Poems, haiku and tanka
+
+Write a poem in a `:::verse` block, one line of verse a line of Markdown, a blank line between stanzas. Leading spaces indent a line: an ideographic space (U+3000) or two ASCII spaces is one character at the default `indentStep`. In vertical text each line of verse is a column hanging from the head (`align` defaults to `start`), its indent counted down from the head; a line longer than the column turns over with the line-break rules of the text. `keepStanzas` keeps short stanzas on one page: three lines for a haiku, five for a tanka.
+
+```md
+:::verse{keepStanzas=5}
+田子の浦に
+　うち出でてみれば
+白妙の
+　富士の高嶺に
+雪は降りつつ
+:::
+```
+
+
 ## Notes
 
 Japanese books place notes in more ways than Western ones (JLReq §4.2), and Postext adds two markers and one placement for them. A marker goes before a sentence-final 。: write <span lang="ja" className="font-body">先生[^1]。</span>. The marker stays with the character before it and 。 never opens a line, so the three are never parted.
@@ -570,6 +585,10 @@ The showcase shelf has Natsume Sōseki's *Kokoro* (<span lang="ja" className="fo
 - **Index**: the separator stays `, `; Latin entries come before the kana, with no option to put them last; an invisible mark does not borrow a reading from ruby elsewhere on the line.
 - **Citations**: SIST 02 is the only Japanese style bundled; author-date citations keep ASCII punctuation; bibliographies are not sorted by reading.
 - **Tables**: cell and caption text is horizontal on every page.
+- **Line numbers** are not printed in vertical text: a vertical book that turns `lineNumbers` on gets none, with a `lineNumbersUnsupported` configuration warning. Horizontal books number their lines like any other ([Configuration › Line numbers](/en/docs/configuration#line-numbers)).
+- **Tabs.** A horizontal paragraph that holds a tab (`:tab`, or a tab character under a style with tab stops) is set line by line: broken between characters under kinsoku, but without yakumono compression or justification between characters. In vertical text there are no tab stops: a tab is a word space, and a `:tab` raises the `tabInVerticalText` content warning. A paragraph with ruby, warichu or kanbun marks also sets its tabs as word spaces. See [Tabs and tab stops](/en/docs/document-format#tabs-and-tab-stops).
+- **Drop caps.** A horizontal paragraph can open with a drop cap of one character, set from a paragraph style or a heading level (see [Drop caps](/en/docs/configuration#drop-caps)): its size takes the character's own height against the text's, and the composer sets the shortened lines under kinsoku as usual. Vertical text has no drop caps: a paragraph that would open with one is set without it and raises the `dropCap` content warning.
+- **Code listings.** A horizontal listing is set line by line in its code face; in a monospaced face with kanji (BIZ UDGothic), a full-width character takes two cells, so columns line up, and a tab counts it as two. In vertical text a listing follows the vertical flow, its Latin turned sideways as vertical text sets it, and takes no line numbers. See [Code listings](/en/docs/configuration#code-listings).
 - **Fonts**: one family per style with no fallback; CFF faces embedded whole; vertical proportional metrics (`vpal`) are not used.
 - **Design text** (running heads, openers, box titles) breaks Japanese between any two characters, without kinsoku or yakumono spacing, and prints readings and marks as plain text.
 

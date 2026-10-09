@@ -359,6 +359,14 @@ The `bodyText.optimalLineBreaking` property (default: `true`) controls which lin
 
 When Knuth-Plass is active and produces no valid breaks (which can happen with extremely narrow columns or words longer than the column width), the engine automatically falls back to greedy breaking for that paragraph.
 
+### Tabbed lines
+
+A paragraph that holds a tab (see [Document format › Tabs and tab stops](/en/docs/document-format#tabs-and-tab-stops)) is set line by line, as word processors and InDesign set tabbed text, never with Knuth–Plass, whatever `optimalLineBreaking` says. Where a tab lands depends on where its line has got to, and the optimal search adds up the widths of each candidate line as if they did not. The same holds for Chinese and Japanese text: a paragraph with a tab is broken between characters under the document's line-breaking rules, without punctuation compression or justification between characters.
+
+In a justified paragraph, a line that holds a tab is not stretched before its last tab, since the stops fix where each part of it starts. Only the word spaces after the last tab take the slack, and only when the line is not the paragraph's last; a line with no word space after its last tab is set as it falls. Ragged lines are not affected. The line records that it holds a tab (`VDTLine.tabbed`); each tab is a space segment that carries its stop (`VDTLineSegment.tab`), and each leader a segment of its own (`VDTLineSegment.leader`, `'text'` or `'rule'`).
+
+Column balancing never re-breaks such a paragraph looser and never tracks it: it stays as measured, so its stops do not move.
+
 
 ### Chinese, Japanese and Korean
 
@@ -498,6 +506,7 @@ A short column is sometimes the *correct* output, and balancing knows to step as
 - The **last column of a page** is only balanced when the page flows naturally into the next one. Pages ended by `:::pagebreak`, a heading's `breakBefore`, or a chapter opener keep their short last column — a chapter legitimately ends mid-page.
 - The **last page of the document** is never balanced.
 - A column with **no usable stretch point** (no eligible heading, list end, or loosenable paragraph) keeps its gap rather than degrade the typography.
+- A **paragraph that holds a tab** is never loosened or tracked (see [Tabbed lines](#tabbed-lines)).
 
 ```js
 const doc = buildDocument(content, {

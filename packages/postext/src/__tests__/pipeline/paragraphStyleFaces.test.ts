@@ -126,7 +126,13 @@ describe('unknown paragraph style keys (EF-173)', () => {
       textAlign: 'left', boldColor: { hex: '#000000', model: 'hex' }, italicColor: { hex: '#000000', model: 'hex' },
       fontWeight: 400, boldFontWeight: 700, italic: false, smallCaps: false, hyphenation: false, indent: pt(0), endIndent: pt(9),
       firstLineIndent: pt(0), hangingIndent: pt(0), spaceBetween: pt(0), marginTop: pt(0), marginBottom: pt(0),
-      snapToGrid: true, textTransform: 'none', wordBreak: 'keep-all',
+      snapToGrid: true, textTransform: 'none', wordBreak: 'keep-all', lineNumbers: true,
+      tabStops: [{ position: { value: 30, unit: 'mm' }, align: 'end', leader: '.', leaderGap: pt(2), decimalChar: ',' }], tabInterval: pt(36),
+      dropCap: {
+        lines: 3, sink: 2, characters: 1, fontFamily: 'Inter', fontWeight: 700, italic: false, fontSize: pt(30),
+        color: { hex: '#000000', model: 'hex' }, gap: pt(2), punctuation: 'hang', shortParagraph: 'shrink', each: true,
+        leadIn: { words: 3, smallCaps: true, uppercase: false },
+      },
     };
     expect(collectConfigWarnings({ paragraphStyles: [style] })).toEqual([]);
   });

@@ -144,11 +144,20 @@ Use H1 with `span: "page"`, `breakBefore` (parity from the book) and an
 
 - band, big number (`{chapterNumber}`), label and `{titleText}` (wrapped,
   fixed width);
-- author (`{attr.author}`), lead and standfirst (`{attr.lead}`, with an
-  optional `dropCap`);
+- author (`{attr.author}`) and a standfirst set apart from the text
+  (`{attr.standfirst}`);
 - illustration (`image` element), credit;
 - `minHeight` = the distance from the top margin to where the body starts.
 
+- The chapter's first paragraph stays in the body text (postext ≥ 1.23). A
+  drop cap, a raised initial or a first line in small capitals is the
+  level's `dropCap` (configuration.md §4b): `{ lines: 3 }` for a three-line
+  initial, `{ lines: 1, fontSize: … }` (or `{ lines: 3, sink: 1 }`) for a
+  raised one, `leadIn: { words: 'line' }` for the first line in small
+  capitals, the face and colour of the opener. One heading style per opener
+  kind can carry its own. Never copy the opening words into a `lead`
+  attribute drawn by a design text: that text is set apart, ragged, and
+  copy-fitted by hand.
 - `\\` in the heading forces a break in the designed title only. The TOC,
   running heads and bookmarks show one line. In Chinese the bookmarks and the
   PDF title join the break with nothing where a Chinese character meets a
@@ -290,23 +299,55 @@ paper, `pintura-espanola` lay-flat on 170 g matte, `openstax-fisica` and
 ## B. Text
 
 ### B1. Verse, poems, song lyrics
-(Classical Arabic poems, a bayt in two hemistichs, are `:::verse`: F8.)
-Use one paragraph per line, blank lines between, inside a paragraph style
-with no indent, no hyphenation, left alignment, a hanging indent for wrapped
-lines and `spaceBetween: 0`. Put stanza gaps between separate containers. A
-poem title goes in its own style.
+Postext ≥ 1.23 sets a poem as it is written in `:::verse` (document-format.md
+§12; classical Arabic poems with `||` take the bayt layout of the same fence:
+F8). Write one line of verse a line, a blank line between stanzas, and the
+source's indents as leading spaces (two spaces = 1 em at the default
+`indentStep`; set `indentStep` to the source's step). Give the poem a paragraph
+style for its face, size, leading, `indent` and margins, and its
+`hangingIndent` for wrapped lines (2 em when none); `turnover=right` sets
+turnovers flush right behind `[` as English and Spanish editions do. A poem
+title goes in its own style, outside the fence.
 
 ```md
-:::paragraphs{style="song-title"}
-Grisóstomo's song
+:::paragraphs{style="poem-title"}
+Stopping by Woods on a Snowy Evening
 :::
 
-:::paragraphs{style="verse"}
-Since thou dost in thy cruelty desire
+:::verse{style="verse"}
+Whose woods these are I think I know.
+His house is in the village though;
+  He will not see me stopping here
+  To watch his woods fill up with snow.
 
-the ruthless rigour of thy tyranny
+My little horse must think it queer
+To stop without a farmhouse near
 :::
 ```
+
+- Stanza space: one line of the poem's leading (`stanzaSpace`), whole grid
+  lines on the grid. Short forms that must not break: `keepStanzas=3` (haiku),
+  `keepStanzas=5` (tanka), not invisible callouts.
+- Shared lines of dramatic verse: `+ ` opens a line that starts where the line
+  above ended. A caesura or a gap the poet set: `keepSpaces` on the fence.
+- Vertical Japanese or Chinese poems: leading U+3000 (two units each) or
+  spaces indent from the head; `align` defaults to `start` there.
+- Line numbers (postext ≥ 1.23): set config `lineNumbers` (configuration.md
+  §19f), never typed in the text and never side boxes after every fifth line.
+  Poems: `{"enabled": true}` numbers every fifth line of verse in the outer
+  margin, from 1 in each poem; `restart: "document"` runs on through a long
+  poem split into chapters (books, cantos); a poem resumed after a commentary
+  takes `:::verse{lineStart=37}`; a motto or song left out takes
+  `numbered=false`. Prose (statutes, Bibles, line-referenced teaching texts):
+  `count: "all"`, `restart: "page"` (or `"chapter"`), and `multiColumn:
+  "gutter"` on a two-column page; a paragraph style with `lineNumbers: false`
+  keeps headnotes and summaries out. A critical edition with a narrow
+  fore-edge column: `position: "side"` in a `oneAndHalf` layout with
+  `sideColumnRole: "floats"`; side glosses there may collide with a number
+  (`lineNumberOverlap`). Match the source's interval, side, size and italics;
+  strip the source's own numbers when extracting (they come out of PDFs as
+  stray digits at line ends). Notes keyed to lines keep the number typed in
+  the note (`:chip[8]{style="line"}`): the engine does not key them.
 
 ### B2. Margin glosses and side notes
 Use `layout.layoutType: "oneAndHalf"`, `sideColumnRole: "floats"` and
@@ -339,7 +380,18 @@ Drop reference-number superscripts when the notes themselves are dropped.
 ### B4. Epigraphs, dedications, signatures, interview questions, sources lines
 Each gets a paragraph style (`:::paragraphs{style="…"}`), including
 right-aligned ones, a question in the accent colour with `boldColor`, and a
-source line in a small face.
+source line in a small face. A block of short lines that belong together (a
+signature with its title, an address, a dedication over two lines) is one
+paragraph whose lines end in a backslash (postext ≥ 1.23; document-format.md
+§3.3), not one paragraph per line: it then keeps together by the paragraph
+rules and its lines are never justified.
+
+```md
+:::paragraphs{style="signature"}
+Ana Ruiz\
+Director of the Observatory
+:::
+```
 
 ### B5. Equations
 - A real math source (LaTeX, MathML, OMML) becomes `$…$` / `$$…$$`, with
@@ -391,6 +443,99 @@ symbol face if needed). Every item is one line; type the real numbers.
 Use a paragraph style: smaller size, tighter leading, a hanging indent, and a
 negative `marginTop` to sit closer to its heading. One paragraph per entry;
 in a PDF, a new entry starts on each un-indented line.
+
+### B13. Tab stops: menus, price lists, cast lists, marks, forms, run-in indexes
+Text the source aligns at fixed positions inside a line (postext ≥ 1.23;
+configuration.md §4a, document-format.md §10.9) is paragraphs whose style has
+`tabStops`, with `:tab` where the source has a tab. Never rebuild it as a
+two-column table resource, runs of no-break spaces, `:::space` or chips
+pushed apart. How to read the source: a value whose right edge lines up
+from line to line is an `end` stop (at `'end'` when it touches the margin,
+else at the measured distance from the start of the text); values lined up
+on their decimal point are `decimal`; columns whose left edges line up are
+`start` stops at lengths; dots, a dotted line or a ruled blank between are
+the leader (`'.'`, `'. '` when the dots are spaced, `'·'`, `'rule'`). Measure
+positions from the start of the paragraph's measure, after the style's
+`indent`.
+
+- **Menu, price list, wine list**: a `menu` style with one stop
+  `{position: 'end', align: 'end'}` (add `leader: '. '` when the source sets
+  dots) and one paragraph per dish, `Leek and potato soup :tab 8.50`. A dish
+  with its translation under it: one paragraph whose first line ends in a
+  backslash (`Sopa de puerros\` over `Leek and potato soup :tab 8.50`). A
+  long dish name takes its last word down with the price instead of
+  overrunning it. Two price columns (glass, bottle): two stops,
+  `{position: '78%', align: 'end'}` and `{position: 'end', align: 'end'}`;
+  their headings (12 cl, 75 cl) are one more paragraph in the same style. A
+  wine list with region rows spanning the card may read better as a table
+  resource: keep it there only when it needs merged rows or rules.
+- **Cast list, dramatis personae**: `{position: 'end', align: 'end', leader:
+  '.'}` with `smallCaps` for the roles if the source sets them so,
+  `Ophelia :tab Marta Gil`. A role that wraps keeps the actor on its last
+  line.
+- **Exam papers, worksheets**: marks flush right on the question's last line,
+  `… take place? :tab :chip[1 mark]{style="marks"}`, with the list's stop
+  from `bodyText.tabStops: [{position: 'end', align: 'end'}]` (or
+  `:tab{at=end align=end}` in the line). Answer lines are still
+  `:::space{lines=N}` in a box (C1); a single ruled blank after a prompt is a
+  `rule` leader.
+- **Forms**: `Name :tab` in a style whose stop is `{position: 'end', leader:
+  'rule'}`; labels in a column, blanks after it: a `start` stop at the
+  label column's width plus the ruled `end` stop, `Name :tab :tab`.
+- **Run-in indexes, lists of figures, catalogue entries**: `{position:
+  'end', align: 'end', leader: '.'}` and `Coleridge, S. T. :tab 12, 48`. The
+  book's own contents and back-of-book index are generated (`:::toc`,
+  `:::index`); do not type them with tabs.
+- **Small accounts and tables inside prose** (two or three aligned values, no
+  header rules): start stops at lengths, a `decimal` stop for amounts
+  (`decimalChar` follows the locale). A real grid with a header row, rules,
+  fills or merged cells stays a table resource (D9).
+- Paragraphs holding a tab are set line by line, never Knuth–Plass, and
+  justified lines stretch only after their last tab, so set such styles
+  `textAlign: 'left'` unless the source justifies the text after the tab.
+  Vertical books have no tab stops: a `:tab` there is a word space
+  (`tabInVerticalText`); set such lists as a table resource or as lines with
+  `:::paragraphs` styles.
+- Word sources: the Sandbox's Word import turns each Word tab into `:tab`
+  with the attributes of the stop Word set for it (its paragraph's and its
+  style's `w:tabs`, as one-off `:tab{at=… align=… leader=…}`); the extractor
+  scripts write a tab as a space, so put `:tab` back where the source aligns
+  text, and give the paragraph style the stops (from the IDML `TabList` or
+  the Word style) so the text keeps bare `:tab`.
+
+### B14. Code listings, terminal sessions, configuration files
+A program, a shell session or a file shown in the text is a ```` ``` ```` fence
+(postext ≥ 1.23; document-format.md §3.4, configuration.md §12b), copied as
+the source sets it: indentation, blank lines, columns of output. Never
+rebuild it as one paragraph per line in `:::paragraphs` or a callout, with
+word joiners, no-break spaces and escaped `* _ ^ ~ $`, and never colour it
+with bold and italic runs.
+
+- **The fence**: the language first (`js`, `python`, `bash`, `console` for a
+  session with prompts, `json`, `sql`…), then the file name the source prints
+  over it as a bare title (`` ```bash backup.sh ``) or `title="…"`; the
+  source's line numbers as `lineNumbers start=N`; lines it shades as
+  `highlight="3,5-7"`; a listing across both columns as `span=page`.
+- **The look** goes in `codeStyle`: the source's mono face (`fontFamily`;
+  for Japanese or Chinese comments a mono face with kanji, BIZ UDGothic, so
+  full-width characters take two cells), its size against the text, the
+  box's tint or dark ground (`background`, `color`), padding, radius, border.
+  A file name on a tab at the box's top edge: `codeStyle.label` (the title
+  then prints there). Lines the source turns over behind a mark: `overflow:
+  'wrap'` with its `wrapMarker`; a source that sets a long listing smaller:
+  `overflow: 'shrink'` with `minFontScale`.
+- **Colours**: measure the source's colours per kind (keywords, strings,
+  comments, numbers, the prompt and the output of a session) into
+  `codeStyle.tokens`; link them to palette entries when parts recolour the
+  book. A language the tokenizer does not know is set plain: register a
+  highlighter (`registerCodeHighlighter`) in the host when it must be
+  coloured, or accept plain.
+- **Inline code** in a mono face (`grep`, `--force`): `codeStyle.inline`
+  (with `background` when the source tints it). Keyboard keys stay chips.
+- **Checks**: `codeOverflow` names listings with lines wider than the box;
+  shorten the box's padding, the size, or choose `shrink`/`clip` as the
+  source does. A preset stamped below `configVersion` 9 reads fences as
+  Markdown: write 9.
 
 ---
 
@@ -530,6 +675,9 @@ recoloured to tints of `main-color`). This disables print masters.
   one table: merge it and drop the repeated header.
 - "Tables" that are really framed text boxes: one row per paragraph, or a
   callout.
+- "Tables" that are really tabbed text (a menu, a cast list, a list of
+  entries with page numbers at the margin, a form): paragraphs with tab
+  stops (B13), not a table resource.
 - Cell lists: `• item` lines, two spaces per nesting level.
 - Tables cited and printed right under their paragraph: placement `here` +
   `::resource`. The rest float.

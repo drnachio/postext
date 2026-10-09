@@ -3,6 +3,7 @@
 import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
 import { orientationMarkAt } from 'postext';
+import { inFencedCode } from './codeFences';
 
 /**
  * Editor support for the orientation marks of vertical text (`:tcy[12]`,
@@ -50,7 +51,7 @@ function buildDecorations(view: EditorView): DecorationSet {
     let pos = from;
     while (pos <= to) {
       const line = doc.lineAt(pos);
-      if (line.text.includes(':tcy[') || line.text.includes(':upright[') || line.text.includes(':sideways[')) {
+      if ((line.text.includes(':tcy[') || line.text.includes(':upright[') || line.text.includes(':sideways[')) && !inFencedCode(doc, line.number)) {
         for (const r of orientationRanges(line.text)) {
           builder.add(line.from + r.from, line.from + r.to, r.kind === 'delim' ? delimMark : textMark);
         }

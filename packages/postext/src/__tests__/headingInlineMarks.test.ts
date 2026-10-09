@@ -138,7 +138,7 @@ describe('heading marks in configurations stored before they printed (EF-122 pin
     expect(pinLegacyHeadingMarks(named)).toBe(named);
     const today: PostextConfig = { headings: { fontFamily: 'Georgia' } };
     expect(migrateConfig(today, CONFIG_VERSION, { content: MARKED })).toBe(today);
-    expect(CONFIG_VERSION).toBe(8);
+    expect(CONFIG_VERSION).toBe(9);
   });
 
   it('lays an unversioned document out as postext 1.4 did', () => {

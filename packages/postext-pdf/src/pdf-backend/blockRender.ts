@@ -1,7 +1,7 @@
 import { popGraphicsState, pushGraphicsState } from 'pdf-lib';
-import { isJapaneseLanguage, lineTextAlign, segmentOrientation } from 'postext';
+import { isJapaneseLanguage, leaderRuleGeometry, lineTextAlign, segmentOrientation } from 'postext';
 import type { Color, PDFFont } from 'pdf-lib';
-import type { VDTBlock, VDTLine, VDTLineSegment, MathRender } from 'postext';
+import type { VDTBlock, VDTDropCap, VDTLine, VDTLineSegment, MathRender } from 'postext';
 import { parseFontString } from '../fontString';
 import { FontCache } from '../fontCache';
 import { type PageCtx, alphaOf, alphaStateOp, beginActualTextSpan, counterFlipPx, cjkLineText, readText, compressedMarkSpacingPx, drawLinePx, drawMeasuredTextPx, drawSwatchPx, drawTextPx, colorFromHex, endActualTextSpan, fillRectPx, setTrackingPx, type LineTextState } from './primitives';
@@ -194,9 +194,16 @@ function renderSegments(
   /** The character spacing the line is painted with (block + line, px);
    *  a segment's own tracking (a justified CJK line) goes on top of it. */
   tracking = 0,
+  /** The first line of a paragraph a drop cap opens (#623). */
+  capLead?: CapLead,
 ): void {
   let x = startX;
   const refRun = new RefRun();
+  // The first word, which the drop cap opens: its text segments on this
+  // line read as the whole word (the initial reads as nothing) and join
+  // the word's `Span`.
+  let capPrefix = capLead?.prefix;
+  let capRest = capLead?.rest ?? 0;
   const uris = new UriRuns(ctx, line, linkRegistry, elem);
   const repeatedAt = repeatedHyphenSegment(line, segments);
   const composed = line.cjkComposed === true || ctx.vertical !== undefined;
@@ -251,6 +258,23 @@ function renderSegments(
       }
       // A Han–Latin space keeps the width the composer set.
       x += composed && seg.autospace ? seg.width : justifiedSpaceWidth ?? seg.width;
+      continue;
+    }
+    if (seg.leader) {
+      // A leader (a contents row's, a tab stop's, #622): a layout artifact
+      // under an empty `/ActualText`, so no text extraction reads it.
+      uris.other();
+      tagArtifact(ctx, { type: 'Layout' });
+      if (seg.leader === 'rule') {
+        const { dy, thickness } = leaderRuleGeometry(blockSize);
+        fillRectPx(ctx, x, baseline + dy - thickness / 2, seg.width, thickness, blockColor);
+      } else {
+        const fontStr = seg.fontString ?? pickSegmentFont(!!seg.bold, !!seg.italic, block);
+        const colorHex = seg.color ?? pickSegmentColor(!!seg.bold, !!seg.italic, block);
+        drawTextPx(ctx, seg.text, x, baseline, fontCache.get(fontStr) ?? blockFont, parseFontString(fontStr)?.sizePx ?? blockSize,
+          colorHex === block.color ? blockColor : colorFromHex(colorHex, ctx.colorSpace), undefined, '');
+      }
+      x += seg.width;
       continue;
     }
     if (seg.kind !== 'text' || seg.chip) uris.other();
@@ -309,9 +333,17 @@ function renderSegments(
     // A ruby base is the `RB` of a `Ruby` whose `RT` holds its reading (#194).
     const holder = link ?? pageElem ?? uriElem ?? textElem;
     const rubyElem = composed && seg.ruby && holder ? holder.child('Ruby') : undefined;
-    tagContent(ctx, rubyElem ? rubyElem.child('RB') : holder);
     // The hyphen repeated from the line before is painted but not read.
-    const actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
+    let actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
+    let capHolder: StructElem | undefined;
+    if (capPrefix !== undefined || capRest > 0) {
+      const at = Math.min(capRest, seg.text.length);
+      actualText = (capPrefix ?? '') + seg.text.slice(at);
+      capRest -= at;
+      capPrefix = undefined;
+      capHolder = capLead?.elem;
+    }
+    tagContent(ctx, rubyElem ? rubyElem.child('RB') : capHolder ?? holder);
     // On a line with directions each segment is one run: HarfBuzz shapes a
     // right-to-left one (and any complex text), and a word set in several
     // styles. The kashidas justification inserted are painted, not read.
@@ -400,10 +432,11 @@ function renderLine(
   fontCache: FontCache,
   linkRegistry: LinkRegistry | undefined,
   elem: StructElem | undefined,
+  capLead?: CapLead,
 ): void {
   const tracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
   if (tracking !== 0) setTrackingPx(ctx, tracking);
-  renderLineText(ctx, line, block, columnWidth, columnX, fontCache, linkRegistry, elem, tracking, trailingTracking(line, tracking));
+  renderLineText(ctx, line, block, columnWidth, columnX, fontCache, linkRegistry, elem, tracking, trailingTracking(line, tracking), capLead);
   if (tracking !== 0) setTrackingPx(ctx, 0);
 }
 
@@ -435,6 +468,7 @@ function renderLineText(
   elem: StructElem | undefined,
   tracking: number,
   trailing = 0,
+  capLead?: CapLead,
 ): void {
   const blockFont = fontCache.get(block.fontString);
   if (!blockFont) return;
@@ -471,9 +505,9 @@ function renderLineText(
       else wordWidth += seg.width;
       naturalWidth += seg.width;
     }
-    if (spaceCount > 0 && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
+    if (spaceCount > 0 && !line.tabbed && ((!line.isLastLine && !line.ragged) || naturalWidth > effectiveWidth)) {
       const justifiedSpaceWidth = (effectiveWidth - wordWidth) / spaceCount;
-      renderSegments(ctx, segments, lineX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, justifiedSpaceWidth, tracking);
+      renderSegments(ctx, segments, lineX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, justifiedSpaceWidth, tracking, capLead);
       return;
     }
   }
@@ -484,7 +518,7 @@ function renderLineText(
     for (const seg of segments) if (!(composed && seg.hangs)) contentWidth += seg.width;
     const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
     const startX = lineX + (align === 'center' ? slack / 2 : slack);
-    renderSegments(ctx, segments, startX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking);
+    renderSegments(ctx, segments, startX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking, capLead);
     return;
   }
 
@@ -495,19 +529,21 @@ function renderLineText(
   // it in Japanese text only, #427: it is shaped and tagged in it);
   // otherwise one text object paints the line.
   const ownLanguage = line.cjkComposed === true && segments !== undefined && segments.some((s) => s.lang !== undefined);
-  if (segments && (isDirected(line) || ownLanguage || segments.some(composed ? composedSegmentIsStyled : segmentIsStyled))) {
-    renderSegments(ctx, segments, lineX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking);
+  if (segments && (capLead !== undefined || isDirected(line) || ownLanguage || segments.some(composed ? composedSegmentIsStyled : segmentIsStyled))) {
+    renderSegments(ctx, segments, lineX, line.baseline, line, block, blockFont, blockSize, blockColor, fontCache, linkRegistry, elem, undefined, tracking, capLead);
     return;
   }
 
-  tagContent(ctx, elem);
+  tagContent(ctx, capLead?.elem ?? elem);
   const plainSlack = Math.max(0, effectiveWidth - (line.bbox.width - trailing));
   const plainX = lineX + (align === 'right' ? plainSlack : align === 'center' ? plainSlack / 2 : 0);
   // Each word where the layout measured it (EF-137): the embedded face's
   // own widths could differ, most of all for a character it has no glyph
   // for, and would carry the rest of the line along.
   // The hyphen repeated from the line before is painted but not read.
-  const actualText = line.repeatedHyphen && line.text.startsWith('-') ? line.text.slice(1) : undefined;
+  const actualText = capLead
+    ? capLead.prefix + line.text.slice(capLead.rest)
+    : line.repeatedHyphen && line.text.startsWith('-') ? line.text.slice(1) : undefined;
   // A line with right-to-left or joining letters and no directions (a VDT
   // from before the engine resolved bidi levels) is set as one text, cut
   // into bidi runs and shaped by HarfBuzz; with fontkit when HarfBuzz is
@@ -524,7 +560,7 @@ function renderLineText(
  *  `:upright`, `:sideways`) keeps its segment apart. */
 function segmentIsStyled(s: VDTLineSegment): boolean {
   return s.bold || s.italic || s.runs !== undefined || s.sideMarker !== undefined || s.kind === 'math' || s.kind === 'swatch' || s.kind === 'chip' || s.refResourceId !== undefined || s.href !== undefined || s.pageLink !== undefined || s.fontString !== undefined || s.color !== undefined || s.baselineShift !== undefined
-    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined;
+    || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined || s.leader !== undefined;
 }
 
 /** {@link segmentIsStyled} for a line of the CJK composer or one down a
@@ -607,6 +643,39 @@ function renderBullet(ctx: PageCtx, block: VDTBlock, fontCache: FontCache, elem:
   if (sepFont && block.separatorText && block.separatorX !== undefined) {
     drawTextPx(ctx, block.separatorText, block.separatorX, sepY, sepFont, sepSize, sepColor);
   }
+}
+
+/** The first line of a paragraph a drop cap opens (#623): its first
+ *  `rest` characters finish the word the initial starts, and the first of
+ *  its text segments reads as `prefix` (the whole word, a word space after
+ *  a one-letter one) followed by its own text past them, so copying and
+ *  text extraction read the word once, where the line is. `elem` is the
+ *  word's `Span` in a tagged render. */
+interface CapLead {
+  prefix: string;
+  rest: number;
+  elem?: StructElem;
+}
+
+function dropCapLead(cap: VDTDropCap, elem: StructElem | undefined): CapLead {
+  const prefix = cap.wordRest > 0 ? cap.word : `${cap.word} `;
+  return { prefix, rest: cap.wordRest, ...(elem ? { elem: elem.child('Span', { actualText: prefix }) } : {}) };
+}
+
+/** A paragraph's drop cap (#623) and an opening mark hung before it, part
+ *  of the paragraph's text in a tagged render, read as nothing (the first
+ *  line reads the word whole, see {@link CapLead}). */
+function renderDropCap(ctx: PageCtx, cap: VDTDropCap, fontCache: FontCache, elem: StructElem | undefined): void {
+  const color = colorFromHex(cap.color, ctx.colorSpace);
+  const paint = (text: string, fontString: string, x: number, baseline: number): void => {
+    const font = fontCache.get(fontString);
+    if (!font) return;
+    const size = parseFontString(fontString)?.sizePx ?? 0;
+    tagContent(ctx, elem);
+    drawTextPx(ctx, text, x, baseline, font, size, color, undefined, '');
+  };
+  if (cap.hang) paint(cap.hang.text, cap.hang.fontString, cap.hang.x, cap.hang.baselineY);
+  paint(cap.text, cap.fontString, cap.x, cap.baselineY);
 }
 
 function renderStrikethrough(ctx: PageCtx, block: VDTBlock): void {
@@ -722,6 +791,11 @@ export function renderBlock(
   if (block.type === 'listItem') {
     renderBullet(ctx, block, fontCache, structure?.bulletElem(block) ?? elem);
   }
+  // A drop cap (#623): the initial and the rest of its word are one `Span`
+  // whose `/ActualText` is the word.
+  const cap = block.dropCap;
+  const capLead = cap ? dropCapLead(cap, elem) : undefined;
+  if (cap) renderDropCap(ctx, cap, fontCache, capLead?.elem ?? elem);
   // A note is where its markers link to.
   if (block.footnoteNote !== undefined && linkRegistry) {
     // The top left of the note's box on the sheet.
@@ -732,11 +806,11 @@ export function renderBlock(
   // inside callouts are narrower than their column.
   void columnWidth;
   void columnX;
-  for (const line of block.lines) {
-    renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, linkRegistry, elem);
+  block.lines.forEach((line, i) => {
+    renderLine(ctx, line, block, block.bbox.width, block.bbox.x, fontCache, linkRegistry, elem, i === 0 ? capLead : undefined);
     // Emphasis dots, proper-name and book-title lines (#193).
     if (line.marks) paintLineMarks(ctx, line, colorFromHex(block.color, ctx.colorSpace));
-  }
+  });
   if (targetPage !== undefined && linkRegistry) {
     const contents = block.lines.map((l) => l.text).join(' ');
     linkRegistry.addPageLink(ctx.page, rectOfBlock(ctx, block), targetPage, link ? { elem: link, contents } : undefined);

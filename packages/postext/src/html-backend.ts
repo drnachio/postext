@@ -4,6 +4,7 @@ import type {
   VDTPage,
   VDTComicPage,
   VDTBlock,
+  VDTDropCap,
   VDTLine,
   VDTLineSegment,
   VDTAnchor,
@@ -22,7 +23,7 @@ import type {
   RoundedOutline,
   RenderWarning,
 } from './vdt';
-import { lineTextAlign, tableCellFillRects, tableFrameOutline } from './vdt';
+import { leaderRuleGeometry, lineTextAlign, tableCellFillRects, tableFrameOutline } from './vdt';
 import { dimensionToPx } from './units';
 import { documentInkHex, isSingleInkSvgUrl, singleInkColorMatrix } from './svg/singleInk';
 import { lineInkExtent, lineTrailingTracking } from './lineInk';
@@ -733,8 +734,10 @@ function lineEndHtml(text: string, x: number): string {
  * What a copy puts between a line and the one after it in the same block
  * (`next`), or after a block's last line (#403): nothing after a line that
  * ends inside a word or on a hyphen or dash (`VDTLine.hyphenated`); a
- * newline after a line of verse and after the last line of a paragraph (or
- * of a heading, a caption, a cell); between two lines of a block, a space
+ * space before the turnover of a line of verse, a blank line after a
+ * stanza (#620); a newline after a line of verse, after a line that ends
+ * at a forced line break (`VDTLine.hardBreak`, #620) and after the last line
+ * of a paragraph (or of a heading, a caption, a cell); between two lines of a block, a space
  * where the break consumed one — the plain text skips a character between
  * them (`plainEnd` / `plainStart`) — and nothing where it did not (between
  * two ideographs). Lines without those offsets, and a block's last line
@@ -744,7 +747,14 @@ function lineEndHtml(text: string, x: number): string {
  */
 function lineEndText(line: VDTLine, next: VDTLine | undefined): string {
   if (line.hyphenated) return '';
-  if (line.verse || (!next && line.isLastLine !== false)) return '\n';
+  // A line of verse in the line layout (#620): a space before its
+  // turnover, a newline after it, a blank line after a stanza.
+  if (line.verseLine) return next?.verseLine?.turnover ? ' ' : line.verseLine.stanzaEnd ? '\n\n' : '\n';
+  // A line of a code listing (#624): nothing before its continuation (a
+  // wrapped line reads whole), a newline after each source line.
+  if (line.codeLine) return next?.codeLine?.continued ? '' : '\n';
+  // A forced line break the author typed (#620).
+  if (line.verse || line.hardBreak || (!next && line.isLastLine !== false)) return '\n';
   if (next && line.plainEnd !== undefined && next.plainStart !== undefined) return next.plainStart > line.plainEnd ? ' ' : '';
   return cjkAt(Array.from(line.text.trimEnd()).pop()) || cjkAt(next && Array.from(next.text.trimStart())[0]) ? '' : ' ';
 }
@@ -817,7 +827,7 @@ function renderSegments(
   // so honor that by compressing the spaces to fit the measure exactly.
   const useJustify =
     block.textAlign === 'justify' && spaceCount > 0 &&
-    ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
+    !line.tabbed && ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
   const justifiedSpaceWidth = useJustify
     ? (effectiveWidth - wordWidth) / spaceCount
     : 0;
@@ -836,7 +846,7 @@ function renderSegments(
   // x are taken in that order; the markup stays in logical order, so the
   // text copies as written.
   const at = line.order ? orderedOffsets(segs, line.order, leadingGap, useJustify ? justifiedSpaceWidth : undefined) : undefined;
-  const cjk = block.tocEntry !== undefined || hasCJK(line.text);
+  const cjk = block.tocEntry !== undefined || hasCJK(line.text) || (line.tabbed === true && segs.some((sg) => sg.leader === 'text'));
   const paintText = (seg: VDTLineSegment, at: number, inLink = false): string => {
     const font = quoteFontString(pickSegmentFont(seg, block));
     const color = pickSegmentColor(seg, block);
@@ -853,6 +863,13 @@ function renderSegments(
       parts.push(links.space(segs[i + 1] && segmentHref(segs[i + 1]!)));
       parts.push(copyTextHtml(seg.text, x, useJustify ? justifiedSpaceWidth - seg.width : 0));
       x += useJustify ? justifiedSpaceWidth : seg.width;
+      continue;
+    }
+    if (seg.leader) {
+      // A leader (#622): painted, hidden from assistive technology and
+      // left out of a selection.
+      parts.push(leaderHtml(seg, x, line.baseline - line.bbox.y, block));
+      x += seg.width;
       continue;
     }
     parts.push(links.at(segmentHref(seg)));
@@ -950,7 +967,7 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
   // so honor that by compressing the spaces to fit the measure exactly.
   const useJustify =
     block.textAlign === 'justify' && spaceCount > 0 &&
-    ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
+    !line.tabbed && ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
   const justifiedSpaceWidth = useJustify
     ? (effectiveWidth - wordWidth) / spaceCount
     : 0;
@@ -988,6 +1005,13 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
       parts.push(links.space(segs[i + 1] && segmentHref(segs[i + 1]!)));
       parts.push(copyTextHtml(seg.text, x, gap - seg.width));
       x += gap;
+      continue;
+    }
+    if (seg.leader) {
+      // A leader (#622): painted, hidden from assistive technology and
+      // left out of a selection.
+      parts.push(leaderHtml(seg, x, line.baseline - line.bbox.y, block));
+      x += seg.width;
       continue;
     }
     parts.push(links.at(segmentHref(seg)));
@@ -1043,6 +1067,28 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
   // Emphasis dots, proper-name and book-title lines (#193).
   if (line.marks) parts.push(lineMarksHtml(line, block.color));
   return parts.join('');
+}
+
+/** A leader (#622, `VDTLineSegment.leader`): a contents row's or a tab
+ *  stop's dots in the segment's font, or a rule under the baseline
+ *  (`baselineOffset` from the line top), `aria-hidden` and unselectable,
+ *  so neither a screen reader nor a copy reads it. */
+function leaderHtml(seg: VDTLineSegment, x: number, baselineOffset: number, block: VDTBlock): string {
+  const color = pickSegmentColor(seg, block);
+  const hidden = 'aria-hidden="true"';
+  const noSelect = 'user-select:none;-webkit-user-select:none;pointer-events:none;';
+  if (seg.leader === 'rule') {
+    const m = /(\d*\.?\d+)px/.exec(block.fontString);
+    const { dy, thickness } = leaderRuleGeometry(m ? Number(m[1]) : 16);
+    return `<span ${hidden} style="position:absolute;left:${x.toFixed(3)}px;top:${(baselineOffset + dy - thickness / 2).toFixed(3)}px;`
+      + `width:${seg.width.toFixed(3)}px;height:${thickness.toFixed(3)}px;background:${color};${noSelect}"></span>`;
+  }
+  const font = quoteFontString(pickSegmentFont(seg, block));
+  const fontDecl = font !== quoteFontString(block.fontString) ? `font:${font};` : '';
+  const colorDecl = color !== block.color ? `color:${color};` : '';
+  const pos = `position:absolute;left:${x.toFixed(3)}px;top:0;white-space:pre;${noSelect}`;
+  if (fontDecl) return `<span ${hidden} style="${pos}"><span style="${fontDecl}line-height:0;${colorDecl}">${esc(seg.text)}</span></span>`;
+  return `<span ${hidden} style="${pos}${colorDecl}">${esc(seg.text)}</span>`;
 }
 
 /** Inline colour swatch (`:swatch{…}`): a square of `side` px on the line's
@@ -1170,6 +1216,9 @@ function renderLine(
   rootLang?: string,
   /** The block's line after this one (see {@link lineEndText}). */
   next?: VDTLine,
+  /** Markup set at the start of the line's box, before its text (a drop
+   *  cap, #623). */
+  lead = '',
 ): string {
   const font = quoteFontString(block.fontString);
   const strikethroughDecl = block.strikethroughText ? 'text-decoration:line-through;' : '';
@@ -1189,8 +1238,27 @@ function renderLine(
     strikethroughDecl +
     trackingDecl +
     (lineCjkDecl(line) ? CJK_TEXT_DECL : '') +
-    `">${renderSegments(line, block, targets, rootDir, rootLang, lineEndText(line, next))}</div>`
+    `">${lead}${renderSegments(line, block, targets, rootDir, rootLang, lineEndText(line, next))}</div>`
   );
+}
+
+/**
+ * A paragraph's drop cap (#623), as the first runs of its first line's box:
+ * an opening mark hung before it, then the initial, each standing on its
+ * baseline (a box in the line's font shifted down to it, the glyphs in an
+ * inner box of their own face with no line height, as a contents number
+ * sits on its line). In the markup they come right before the line's text,
+ * with nothing between, so a copy and a screen reader read the first word
+ * whole.
+ */
+function dropCapHtml(cap: VDTDropCap, line: VDTLine, lineFont: string): string {
+  const run = (text: string, font: string, x: number, baselineY: number, width: number, cls: string): string =>
+    `<span class="${cls}" style="position:absolute;left:${(x - line.bbox.x).toFixed(3)}px;top:${(baselineY - line.baseline).toFixed(3)}px;` +
+    `width:${width.toFixed(3)}px;height:${line.bbox.height}px;font:${lineFont};color:${cap.color};white-space:pre;` +
+    (hasCJK(text) ? CJK_TEXT_DECL : '') +
+    `"><span style="font:${quoteFontString(font)};line-height:0;">${esc(text)}</span></span>`;
+  const hang = cap.hang ? run(cap.hang.text, cap.hang.fontString, cap.hang.x, cap.hang.baselineY, cap.hang.width, 'pt-dropcap-hang') : '';
+  return hang + run(cap.text, cap.fontString, cap.x, cap.baselineY, cap.width, 'pt-dropcap');
 }
 
 // ---------------------------------------------------------------------------
@@ -1346,7 +1414,7 @@ function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHtml, tar
   }
   const contentWidth = line.segments && line.segments.length > 0 ? lineInkExtent(line, 0).width : line.bbox.width;
   const useJustify = block.textAlign === 'justify' && spaceCount > 0
-    && ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
+    && !line.tabbed && ((!line.isLastLine && !line.ragged) || contentWidth > effectiveWidth);
   const justifiedSpaceWidth = useJustify ? (effectiveWidth - wordWidth) / spaceCount : 0;
   const slack = Math.max(0, effectiveWidth - (contentWidth - trailing));
   let x = block.textAlign === 'center' ? slack / 2 : block.textAlign === 'right' ? slack : 0;
@@ -2199,7 +2267,8 @@ function renderBlockInner(block: VDTBlock, options: HtmlPaint): string {
   parts.push(v ? renderVerticalBullet(block, v) : renderBullet(block, options.dir));
   block.lines.forEach((line, i) => {
     const next = block.lines[i + 1];
-    parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets, next) : renderLine(line, block, options.linkTargets, options.dir, options.rootLang, next));
+    const lead = i === 0 && block.dropCap && !v ? dropCapHtml(block.dropCap, line, quoteFontString(block.fontString)) : '';
+    parts.push(v ? renderVerticalLine(line, block, v, options.linkTargets, next) : renderLine(line, block, options.linkTargets, options.dir, options.rootLang, next, lead));
   });
   return parts.join('');
 }
@@ -2341,6 +2410,12 @@ function renderPageDetailed(
   // Running heads and folios stay on the sheet, horizontal.
   const sheetOptions: HtmlPaint = options.vertical ? { ...options, vertical: undefined } : options;
   const slotParts: string[] = [];
+  // Line numbers (#621): on the sheet, hidden from assistive technology
+  // (each block is an artifact) and left out of a selection, so copied
+  // text runs from line to line without them.
+  if (page.lineNumbers) {
+    slotParts.push(`<div class="pt-line-numbers" style="user-select:none;-webkit-user-select:none;pointer-events:none;">${renderDesignSlot(page.lineNumbers, sheetOptions)}</div>`);
+  }
   if (page.header) slotParts.push(renderDesignSlot(page.header, sheetOptions));
   if (page.footer) slotParts.push(renderDesignSlot(page.footer, sheetOptions));
   // Whether or not a picture on the page uses it: a host patching blocks

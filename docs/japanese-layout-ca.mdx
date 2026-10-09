@@ -310,6 +310,21 @@ La data i la signatura d'una carta es componen arran del final de la línia (地
 
 `headings.keepWithNext` impedeix que un títol tanqui una columna. JLReq §4.1.7 permet que un títol tanqui l'última columna d'una pàgina parella, perquè llavors el seu text obre la pàgina del davant, en el mateix plec; `headings.keepWithNextSpread: true` ho permet, tant en llibres enquadernats per l'esquerra com per la dreta.
 
+### Poemes, haikus i tankes
+
+Escriu un poema en un bloc `:::verse`, un vers per línia de Markdown i una línia en blanc entre estrofes. Els espais inicials sagnen el vers: un espai ideogràfic (U+3000) o dos espais ASCII equivalen a un caràcter amb l'`indentStep` per defecte. En text vertical cada vers és una columna que penja del capdamunt (`align` val `start` per defecte) i el seu sagnat es compta cap avall des del capdamunt; un vers més llarg que la columna es parteix amb les regles de tall de línia del text. `keepStanzas` manté les estrofes curtes en una sola pàgina: tres línies per a un haiku, cinc per a una tanka.
+
+```md
+:::verse{keepStanzas=5}
+田子の浦に
+　うち出でてみれば
+白妙の
+　富士の高嶺に
+雪は降りつつ
+:::
+```
+
+
 ## Notes
 
 Els llibres japonesos col·loquen les notes de més maneres que els occidentals (JLReq §4.2), i Postext hi afegeix dues crides i una col·locació. Una crida va davant d'un 。 que tanca la frase: s'escriu <span lang="ja" className="font-body">先生[^1]。</span>. La crida es queda amb el caràcter anterior i 。 mai no obre una línia, així que els tres no se separen mai.
@@ -570,6 +585,10 @@ La prestatgeria de mostra té *Kokoro* (<span lang="ja" className="font-body">�
 - **Índex**: el separador continua sent `, `; les entrades llatines van abans dels kana, sense opció per posar-les al final; una marca invisible no pren la lectura d'un ruby que sigui en una altra part de la línia.
 - **Citacions**: SIST 02 és l'únic estil japonès inclòs; les citacions autor-data conserven la puntuació ASCII; les bibliografies no s'ordenen per la lectura.
 - **Taules**: el text de les cel·les i dels peus és horitzontal a totes les pàgines.
+- **Números de línia**: no s'imprimeixen en text vertical; un llibre vertical que activa `lineNumbers` no en porta cap, amb un avís de configuració `lineNumbersUnsupported`. Els llibres horitzontals numeren les seves línies com qualsevol altre ([Configuració › Numeració de línies](/ca/docs/configuration#numeració-de-línies)).
+- **Tabuladors**: un paràgraf horitzontal amb un tabulador (`:tab`, o un caràcter de tabulació sota un estil amb tabulacions) es compon línia a línia: es talla entre caràcters segons el kinsoku, però sense compressió dels yakumono ni justificació entre caràcters. En text vertical no hi ha tabulacions: un tabulador és un espai entre paraules, i un `:tab` genera l'avís de contingut `tabInVerticalText`. Un paràgraf amb ruby, warichu o marques de kanbun també compon els seus tabuladors com a espais entre paraules. Vegeu [Tabuladors i tabulacions](/ca/docs/document-format#tabuladors-i-tabulacions).
+- **Caplletres**: un paràgraf horitzontal pot començar amb una caplletra d'un caràcter, fixada des d'un estil de paràgraf o un nivell d'encapçalament (vegeu [Caplletres](/ca/docs/configuration#caplletres)): la seva mida es calcula amb l'alçada pròpia del caràcter respecte de la del text, i el compositor compon les línies escurçades segons el kinsoku, com sempre. El text vertical no té caplletres: un paràgraf que en començaria amb una es compon sense i genera l'avís de contingut `dropCap`.
+- **Llistats de codi**: un llistat horitzontal es compon línia a línia en la seva lletra de codi; en una lletra monoespaiada amb kanji (BIZ UDGothic), un caràcter d'amplada completa ocupa dues cel·les, de manera que les columnes queden alineades, i un tabulador també el compta com a dues. En text vertical, un llistat segueix el flux vertical, amb el text llatí ajagut com el compon el text vertical, i no porta números de línia. Vegeu [Llistats de codi](/ca/docs/configuration#llistats-de-codi).
 - **Fonts**: una família per estil, sense recórrer a una altra; les fonts CFF s'incrusten senceres; no es fan servir les mètriques verticals proporcionals (`vpal`).
 - **El text dels dissenys** (capçaleres, obertures, títols de requadre) talla el japonès entre dos caràcters qualssevol, sense kinsoku ni espaiat dels yakumono, i imprimeix les lectures i les marques com a text normal.
 

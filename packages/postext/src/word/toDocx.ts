@@ -6,8 +6,8 @@
 // travels inside the file, so the re-import maps every style back.
 
 import { strToU8, zipSync } from 'fflate';
-import type { PostextConfig, Dimension, ColorValue } from '../types';
-import { parseInline, type InlineRun } from './inline';
+import type { PostextConfig, Dimension, ColorValue, TabStop } from '../types';
+import { LINE_BREAK, parseInline, type InlineRun } from './inline';
 import {
   calloutStylesOf,
   chipStylesOf,
@@ -20,6 +20,7 @@ import {
 } from './template';
 import { TEMPLATE_XML_NS, TEMPLATE_XML_ROOT } from './docxRead';
 import { escapeAttr, escapeXml } from './xml';
+import { closesCodeFence, codeFenceOpen } from '../parse/codeFence';
 
 export interface ExportChapter {
   title: string;
@@ -91,6 +92,13 @@ function attrPairs(blob: string): Array<[string, string | true]> {
   return out;
 }
 
+/** A paragraph's lines as one text: joined with a space, or with a line
+ *  feed after a line that ends in a backslash, a forced line break (#620)
+ *  `parseInline` reads. */
+function joinLines(parts: readonly string[]): string {
+  return parts.reduce((text, part, k) => (k === 0 ? part : `${text}${parts[k - 1]!.endsWith('\\') ? '\n' : ' '}${part}`), '');
+}
+
 function isBlank(line: string): boolean {
   return line.trim() === '';
 }
@@ -100,7 +108,7 @@ function isBlank(line: string): boolean {
 function startsBlock(trimmed: string, raw: string): boolean {
   return HEADING_RE.test(trimmed) || trimmed.startsWith('>') || FENCE_RE.test(trimmed) || CLOSE_RE.test(trimmed)
     || TASK_RE.test(raw) || ORDERED_RE.test(raw) || BULLET_RE.test(raw) || RESOURCE_RE.test(trimmed)
-    || MATH_SINGLE_RE.test(trimmed) || MATH_FENCE_RE.test(trimmed) || NOTE_DEF_RE.test(trimmed);
+    || MATH_SINGLE_RE.test(trimmed) || MATH_FENCE_RE.test(trimmed) || NOTE_DEF_RE.test(trimmed) || codeFenceOpen(raw) !== undefined;
 }
 
 interface ParsedChapter {
@@ -156,6 +164,17 @@ function parseChapter(markdown: string, listRunBase: { n: number }): ParsedChapt
     if (isBlank(raw)) {
       blankBefore = true;
       i++;
+      continue;
+    }
+    // A code listing (#624): written verbatim, fences and all, in the
+    // Postext Markup style (no Word mapping of code yet).
+    const code = codeFenceOpen(raw);
+    if (code) {
+      endList();
+      pushBlock({ kind: 'markup', text: raw });
+      i++;
+      while (i < lines.length && !closesCodeFence(lines[i]!, code.marker)) blocks.push({ kind: 'markup', text: lines[i++]! });
+      if (i < lines.length) blocks.push({ kind: 'markup', text: lines[i++]! });
       continue;
     }
     const fence = FENCE_RE.exec(t);
@@ -261,7 +280,7 @@ function parseChapter(markdown: string, listRunBase: { n: number }): ParsedChapt
       endList();
       const parts: string[] = [];
       while (i < lines.length && lines[i]!.trim().startsWith('>')) parts.push(lines[i++]!.trim().replace(/^>\s?/, ''));
-      pushBlock({ kind: 'para', text: parts.join(' ').trim(), role: { kind: 'quote' } });
+      pushBlock({ kind: 'para', text: joinLines(parts).trim(), role: { kind: 'quote' } });
       continue;
     }
     const task = TASK_RE.exec(raw);
@@ -291,7 +310,7 @@ function parseChapter(markdown: string, listRunBase: { n: number }): ParsedChapt
     const parts: string[] = [t];
     i++;
     while (i < lines.length && !isBlank(lines[i]!) && !startsBlock(lines[i]!.trim(), lines[i]!)) parts.push(lines[i++]!.trim());
-    const text = parts.join(' ');
+    const text = joinLines(parts);
     const def = NOTE_DEF_RE.exec(text);
     if (def) {
       const id = def[1]!;
@@ -334,6 +353,26 @@ function halfPoints(d: Dimension | undefined, base = 10): number | undefined {
 function twips(d: Dimension | undefined, base = 10): number | undefined {
   const hp = halfPoints(d, base);
   return hp !== undefined ? hp * 10 : undefined;
+}
+
+/** A paragraph style's tab stops as Word's `w:tabs` (#622): the stops at a
+ *  length (`'end'` and percentages need the page Word sets the text on, and
+ *  are left out), their leaders as Word's nearest. */
+function tabsXml(stops: readonly TabStop[] | undefined, fontSize: Dimension | undefined): string {
+  if (!stops || stops.length === 0) return '';
+  const base = fontSize?.unit === 'pt' ? fontSize.value : 10;
+  const val: Record<string, string> = { start: 'left', end: 'right', center: 'center', decimal: 'decimal' };
+  const leaders: Record<string, string> = { '.': 'dot', '. ': 'dot', '…': 'dot', '-': 'hyphen', '_': 'underscore', rule: 'underscore', '·': 'middleDot' };
+  const tabs: string[] = [];
+  for (const st of stops) {
+    const p = st.position;
+    if (typeof p !== 'object' || !p) continue;
+    const pt = p.unit === 'pt' ? p.value : p.unit === 'px' ? p.value * 0.75 : p.unit === 'mm' ? p.value * 2.8346 : p.unit === 'cm' ? p.value * 28.346 : p.unit === 'in' ? p.value * 72 : p.value * base;
+    if (!(pt > 0) || pt > 1584) continue;
+    const leader = st.leader ? leaders[st.leader] : undefined;
+    tabs.push(`<w:tab w:val="${val[st.align ?? 'start'] ?? 'left'}"${leader ? ` w:leader="${leader}"` : ''} w:pos="${Math.round(pt * 20)}"/>`);
+  }
+  return tabs.length > 0 ? `<w:tabs>${tabs.join('')}</w:tabs>` : '';
 }
 
 const hex = (c: ColorValue | undefined): string | undefined => (c?.hex && /^#[0-9a-fA-F]{6}$/.test(c.hex) ? c.hex.slice(1).toUpperCase() : undefined);
@@ -440,7 +479,8 @@ class Styles {
       const sz = halfPoints(ps?.fontSize);
       if (sz) rPr += `<w:sz w:val="${sz}"/>`;
       const jc = ps?.textAlign === 'center' ? 'center' : ps?.textAlign === 'right' || ps?.textAlign === 'end' ? 'right' : ps?.textAlign === 'justify' ? 'both' : ps?.textAlign ? 'left' : undefined;
-      // Schema order: ind before jc.
+      // Schema order: tabs, then ind before jc.
+      pPr += tabsXml(ps?.tabStops, ps?.fontSize);
       const ind = twips(ps?.indent);
       if (ind) pPr += `<w:ind w:left="${ind}"/>`;
       if (jc) pPr += `<w:jc w:val="${jc}"/>`;
@@ -510,10 +550,11 @@ class Styles {
 const W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
 
 function textXml(text: string): string {
-  // Tabs and newlines inside a verbatim run.
-  return text.split(/(\t|\n)/).map((piece) => {
+  // Tabs and newlines inside a verbatim run, and the forced line breaks of
+  // a paragraph (#620).
+  return text.split(/(\t|\n|\u2028)/).map((piece) => {
     if (piece === '\t') return '<w:tab/>';
-    if (piece === '\n') return '<w:br/>';
+    if (piece === '\n' || piece === LINE_BREAK) return '<w:br/>';
     return piece ? `<w:t xml:space="preserve">${escapeXml(piece)}</w:t>` : '';
   }).join('');
 }

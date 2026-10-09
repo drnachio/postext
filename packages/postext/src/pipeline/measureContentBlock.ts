@@ -25,6 +25,7 @@ import { runMeasurement } from './buildMeasurement';
 import { linkSegments } from '../measure/links';
 import { kashidaMeasureOptions } from '../measure/kashida';
 import { measureVerse } from './verse';
+import { measureVerseLines, verseLinesSettings, versesLineByLine } from './verseLines';
 import { composesAsCjk } from '../measure/cjkCompose';
 import { measuringVertically } from '../measure/vertical';
 import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRefContext } from './resourceLayout';
@@ -40,6 +41,12 @@ import { dimensionToPx } from '../units';
 import { joiningScriptIn, mostlyJoiningScript } from '../measure/joining';
 import { getMeasureDirection, mirrorLineSpans, shiftLineX } from '../measure/bidiLines';
 import { startEndAsLeftRight } from '../defaults/shared';
+import { prepareTabs } from './tabs';
+import { fullPlainOffset, paragraphDropCap, prepareDropCap, type MeasuredDropCap, type PreparedDropCap } from './dropCap';
+import { lineIndentAt } from '../measure/types';
+import { measureCodeLines } from './codeLines';
+import { withInlineCode } from './codeInline';
+import type { VDTBlock } from '../vdt';
 
 /** Everything `measureContentBlock` needs that is constant across one
  *  placement pass. Built once before the loop; `blockIdx` and the paragraph
@@ -77,6 +84,18 @@ export interface BlockMeasureContext
    *  script (Arabic…), which is set without it. The build reports them
    *  (`joiningScriptLetterSpacing`). */
   joiningLetterSpacing?: Set<number>;
+  /** Filled by the measurement: the content indices of the paragraphs a
+   *  drop cap was meant to open and could not as configured (#623), and
+   *  why; the build reports them (`dropCap` content warnings). */
+  dropCapNotes?: Map<number, DropCapNote>;
+}
+
+/** Why a paragraph's drop cap was not set as configured (see
+ *  `BlockMeasureContext.dropCapNotes`). */
+export interface DropCapNote {
+  reason: 'shortParagraph' | 'joiningScript' | 'verticalText' | 'noLetter' | 'split';
+  handling?: 'reserve' | 'shrink' | 'skip';
+  lines?: number;
 }
 
 /** Index of the `containerStart` marker that the `containerEnd` at `endIdx`
@@ -106,6 +125,15 @@ export interface MeasuredContentBlock {
   /** Tracking the text was measured with (px per glyph), when column
    *  balancing asked for it — renderers must paint the block with it. */
   letterSpacingPx?: number;
+  /** A paragraph a drop cap opens (#623): the letter, relative to the
+   *  column. Its lines were set short of it. */
+  dropCap?: MeasuredDropCap;
+  /** A code listing (#624): its language, numbers and fit (see
+   *  `VDTBlock.code`). */
+  code?: NonNullable<VDTBlock['code']>;
+  /** A code listing set from the far side of a mirrored frame (#624): its
+   *  block reads left to right. */
+  direction?: 'ltr';
 }
 
 export interface MeasureContentBlockOptions {
@@ -139,6 +167,11 @@ export interface MeasureContentBlockOptions {
    *  `columnWidth` px wide (see `MeasureBlockOptions.restWidths`). Such a
    *  measurement is not cached. */
   restColumnWidths?: readonly { fromLine: number; columnWidth: number }[];
+  /** Internal to the drop cap (#623): the paragraph measured again set
+   *  without it (`skip`), with the initial over `lines` lines (a short
+   *  paragraph's `'shrink'`), or with a lead-in of `leadInWords` words
+   *  (the first line's, counted by the first setting). */
+  dropCap?: { skip?: true; lines?: number; leadInWords?: number };
 }
 
 /**
@@ -146,72 +179,12 @@ export interface MeasureContentBlockOptions {
  * there is nothing to place inline: empty text, an unknown resource id, or a
  * resource that floats to a page band.
  */
-export function measureContentBlock(
-  rawBlock: ContentBlock,
-  blockIdx: number,
-  columnWidth: number,
-  ctx: BlockMeasureContext,
-  opts?: MeasureContentBlockOptions,
-): MeasuredContentBlock | null {
-  const { resolved, bodyStyle, contentBlocks, cache, bodyOffset } = ctx;
-
-  // A block of an expanded `:::toc`: title, number, leader, page label.
-  if (rawBlock.toc) return measureTocBlock(rawBlock, columnWidth, ctx);
-  // A block of an expanded `:::index`: an entry and its page numbers.
-  if (rawBlock.index) return measureIndexBlock(rawBlock, columnWidth, ctx);
-
-  const kind = resolveBlockKind(rawBlock, {
-    ...ctx,
-    blockIdx,
-    paragraphStyleOverride: opts?.styleOverride,
-  });
-  const { style, vdtType, listBullet } = kind;
-  let contentBlock = kind.contentBlock;
-  const mathEnabled = resolved.math.enabled;
-
-  // --- Resource blocks (image / svg / table + caption) -----------------
-  // Laid out as one atomic group. Unknown ids produce nothing (the warnings
-  // phase surfaces them); floated resources are anchored by their directive
-  // but land in a page band, so they are never measured inline.
-  if (vdtType === 'resource') {
-    if (!kind.resource || ctx.floatedIds.has(kind.resource.id)) return null;
-    // A resource narrower than its column (`placement.width`) sits in it
-    // per `placement.align`.
-    const rawFrac = kind.resource.placement?.width ?? kind.resourceType?.defaultPlacement?.width;
-    const frac = typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
-    const align = startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
-    const embedWidth = columnWidth * frac;
-    const { resourceBlock, measured } = runMeasurement({
-      vdtType,
-      rawBlock,
-      contentBlock,
-      style,
-      measureMaxWidth: embedWidth,
-      measureOptions: { textAlign: style.textAlign },
-      mathEnabled,
-      useRich: false,
-      resolved,
-      resources: ctx.resources,
-      resourceTypes: ctx.resourceTypes,
-      resourceNumbering: ctx.resourceNumbering,
-      ...(ctx.captionCitations ? { captionCitations: ctx.captionCitations } : {}),
-      resource: kind.resource,
-      resourceType: kind.resourceType,
-      resourceNumber: kind.resourceNumber,
-      ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
-      ...(opts?.figureHeightDelta ? { bodyHeightDelta: opts.figureHeightDelta } : {}),
-      ...(opts?.uprightMaxLength !== undefined ? { upright: { maxLength: opts.uprightMaxLength } } : {}),
-    });
-    if (!resourceBlock) return null;
-    if (frac < 1) {
-      const dx = (columnWidth - embedWidth) * (align === 'center' ? 0.5 : align === 'right' ? 1 : 0);
-      // An upright block (a vertical page) moves its frame along the flow.
-      if (resourceBlock.rotation) resourceBlock.rotation.originX += dx;
-      else shiftResourceBlockX(resourceBlock, dx);
-    }
-    return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock };
-  }
-
+/** The spans of a block as they are measured: inline maths rendered,
+ *  `:ref` labels, footnote markers, swatches and chips resolved, small
+ *  capitals and Chinese and Japanese annotations applied. */
+function resolveInlineSpans(block: ContentBlock, style: BlockStyle, ctx: BlockMeasureContext): ContentBlock {
+  const { resolved, bodyStyle } = ctx;
+  let contentBlock = block;
   // Resolve inline math on spans (no-op when the block has no math).
   contentBlock = enrichMathSpans(contentBlock, style, resolved);
 
@@ -290,11 +263,153 @@ export function measureContentBlock(
       spans: resolveAnnotationSpans(contentBlock.spans, { cjk: resolved.cjk, dpi: resolved.page.dpi, fontString: style.fontString, fontSizePx: style.fontSizePx }),
     };
   }
+  return contentBlock;
+}
+
+/** The stanzas of the poem `raw` (a stanza of the line layout, #620) sets,
+ *  in order, as content indices: the run of blocks around it that carry
+ *  the same poem. */
+function poemStanzaIndices(contentBlocks: readonly ContentBlock[], raw: ContentBlock, blockIdx: number): number[] {
+  const stanza = raw.verse?.stanza;
+  const at = contentBlocks[blockIdx] === raw ? blockIdx : contentBlocks.indexOf(raw);
+  if (!stanza || at < 0) return [];
+  const of = (i: number) => contentBlocks[i]?.verse?.stanza;
+  let from = at;
+  while (from > 0 && of(from - 1)?.poem === stanza.poem && of(from - 1)!.index === of(from)!.index - 1) from--;
+  let to = at;
+  while (to + 1 < contentBlocks.length && of(to + 1)?.poem === stanza.poem && of(to + 1)!.index === of(to)!.index + 1) to++;
+  return Array.from({ length: to - from + 1 }, (_, k) => from + k);
+}
+
+export function measureContentBlock(
+  rawBlock: ContentBlock,
+  blockIdx: number,
+  columnWidth: number,
+  ctx: BlockMeasureContext,
+  opts?: MeasureContentBlockOptions,
+): MeasuredContentBlock | null {
+  const { resolved, contentBlocks, cache, bodyOffset } = ctx;
+
+  // A block of an expanded `:::toc`: title, number, leader, page label.
+  if (rawBlock.toc) return measureTocBlock(rawBlock, columnWidth, ctx);
+  // A block of an expanded `:::index`: an entry and its page numbers.
+  if (rawBlock.index) return measureIndexBlock(rawBlock, columnWidth, ctx);
+
+  const kind = resolveBlockKind(rawBlock, {
+    ...ctx,
+    blockIdx,
+    paragraphStyleOverride: opts?.styleOverride,
+  });
+
+  // A code listing (#624): line by line as written, in its box's measure.
+  if (rawBlock.type === 'code') {
+    const mirrored = getMeasureDirection() === 'rtl' && !measuringVertically();
+    const measured = measureCodeLines({
+      block: rawBlock,
+      fontSizePx: kind.style.fontSizePx,
+      lineHeightPx: kind.style.lineHeightPx,
+      color: kind.style.color,
+      measure: columnWidth,
+      resolved,
+      bodyOffset,
+      ...(mirrored ? { mirrored: true } : {}),
+    });
+    if (measured.lines.length === 0) return null;
+    const code: NonNullable<VDTBlock['code']> = {
+      ...(rawBlock.code?.lang ? { lang: rawBlock.code.lang } : {}),
+      ...(measured.numbers ? { numbers: measured.numbers } : {}),
+      ...(measured.fit ? { fit: measured.fit } : {}),
+    };
+    return {
+      kind,
+      contentBlock: rawBlock,
+      measured: { lines: measured.lines, totalHeight: measured.totalHeight },
+      prefixLen: 0,
+      absoluteSourceMap: rawBlock.sourceMap.map((o) => o + bodyOffset),
+      code,
+      ...(mirrored ? { direction: 'ltr' as const } : {}),
+    };
+  }
+  const { style, vdtType, listBullet } = kind;
+  let contentBlock = kind.contentBlock;
+  const mathEnabled = resolved.math.enabled;
+
+  // --- Resource blocks (image / svg / table + caption) -----------------
+  // Laid out as one atomic group. Unknown ids produce nothing (the warnings
+  // phase surfaces them); floated resources are anchored by their directive
+  // but land in a page band, so they are never measured inline.
+  if (vdtType === 'resource') {
+    if (!kind.resource || ctx.floatedIds.has(kind.resource.id)) return null;
+    // A resource narrower than its column (`placement.width`) sits in it
+    // per `placement.align`.
+    const rawFrac = kind.resource.placement?.width ?? kind.resourceType?.defaultPlacement?.width;
+    const frac = typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
+    const align = startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
+    const embedWidth = columnWidth * frac;
+    const { resourceBlock, measured } = runMeasurement({
+      vdtType,
+      rawBlock,
+      contentBlock,
+      style,
+      measureMaxWidth: embedWidth,
+      measureOptions: { textAlign: style.textAlign },
+      mathEnabled,
+      useRich: false,
+      resolved,
+      resources: ctx.resources,
+      resourceTypes: ctx.resourceTypes,
+      resourceNumbering: ctx.resourceNumbering,
+      ...(ctx.captionCitations ? { captionCitations: ctx.captionCitations } : {}),
+      resource: kind.resource,
+      resourceType: kind.resourceType,
+      resourceNumber: kind.resourceNumber,
+      ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
+      ...(opts?.figureHeightDelta ? { bodyHeightDelta: opts.figureHeightDelta } : {}),
+      ...(opts?.uprightMaxLength !== undefined ? { upright: { maxLength: opts.uprightMaxLength } } : {}),
+    });
+    if (!resourceBlock) return null;
+    if (frac < 1) {
+      const dx = (columnWidth - embedWidth) * (align === 'center' ? 0.5 : align === 'right' ? 1 : 0);
+      // An upright block (a vertical page) moves its frame along the flow.
+      if (resourceBlock.rotation) resourceBlock.rotation.originX += dx;
+      else shiftResourceBlockX(resourceBlock, dx);
+    }
+    return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock };
+  }
+
+  // Inline code in the code face (#624, `codeStyle.inline`), before the
+  // spans are resolved: they still match the parsed text then.
+  contentBlock = withInlineCode(contentBlock, rawBlock, resolved, style.fontSizePx);
+  contentBlock = resolveInlineSpans(contentBlock, style, ctx);
 
   // The orientation marks of vertical text change nothing in horizontal
   // text, which is measured as before them.
   const vertical = measuringVertically();
-  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace || s.labelTab
+  // Tabs (#622): a tab character is a tab only under tab stops, and only
+  // the formatted-text breaker sets tabs.
+  const hasRichFonts = !!(style.boldFontString && style.italicFontString && style.boldItalicFontString);
+  const prepared = prepareTabs(contentBlock, style, resolved, { vertical, rich: hasRichFonts });
+  contentBlock = prepared.block;
+  // A drop cap (#623): the initial comes out of the text the measurers
+  // break, and the lines it stands beside are indented by it.
+  let dropCap: PreparedDropCap | undefined;
+  const capSettings = vdtType === 'paragraph' && !opts?.dropCap?.skip ? paragraphDropCap(rawBlock, blockIdx, style, ctx) : undefined;
+  if (capSettings) {
+    if (!opts?.dropCap) ctx.dropCapNotes?.delete(blockIdx);
+    const shrunk = opts?.dropCap?.lines;
+    const settings = shrunk !== undefined ? { ...capSettings, lines: shrunk, sink: Math.min(capSettings.sink, shrunk) } : capSettings;
+    if (vertical) {
+      ctx.dropCapNotes?.set(blockIdx, { reason: 'verticalText' });
+    } else {
+      const prep = prepareDropCap(contentBlock, settings, style, resolved, opts?.dropCap?.leadInWords);
+      if (typeof prep === 'string') ctx.dropCapNotes?.set(blockIdx, { reason: prep });
+      else {
+        dropCap = prep;
+        contentBlock = prep.block;
+      }
+    }
+  }
+  const hasRichSpans = contentBlock.spans.some((s) => s.bold || s.italic || s.mathRender || s.ref || s.footnote || s.swatch || s.chip || s.script || s.smallCaps || s.fixedSpace || s.labelTab || s.tab
     || s.emphasisMark || s.properName !== undefined || s.bookTitle || s.ruby || s.warichu || s.inserted || s.sideline || s.kunten
     // An inline `:rtl[…]` / `:ltr[…]` isolate is read on the spans.
     || s.direction !== undefined
@@ -306,7 +421,37 @@ export function measureContentBlock(
     lineXShift,
     measureFirstLineIndent,
     measureHangingIndent,
+    measureLineIndents,
   } = computeMeasureViewport(columnWidth, style, listBullet);
+
+  // A poem in the line layout (#620): each line of verse measured on its
+  // own by `pipeline/verseLines.ts`, against the poem's other stanzas
+  // (their longest line centres the poem); none of the paragraph's levers
+  // apply.
+  if (contentBlock.verse?.stanza && versesLineByLine(rawBlock, resolved)) {
+    const direction = contentBlock.direction ?? getMeasureDirection();
+    const indices = poemStanzaIndices(contentBlocks, rawBlock, blockIdx);
+    const poem = indices.length === 0 ? [contentBlock] : indices.map((j) => {
+      if (j === blockIdx) return contentBlock;
+      const sibling = resolveBlockKind(contentBlocks[j]!, { ...ctx, blockIdx: j, paragraphStyleOverride: opts?.styleOverride });
+      return prepareTabs(resolveInlineSpans(sibling.contentBlock, sibling.style, ctx), sibling.style, resolved, { vertical, rich: hasRichFonts }).block;
+    });
+    const measured = measureVerseLines({
+      contentBlock,
+      poem,
+      style,
+      measureMaxWidth,
+      settings: verseLinesSettings(contentBlock.verse.attrs, style, resolved, vertical),
+      direction,
+      frameDirection: getMeasureDirection(),
+      ...(cache ? { cache } : {}),
+    });
+    if (measured.lines.length === 0) return null;
+    if (lineXShift > 0) for (const line of measured.lines) shiftLineX(line, lineXShift);
+    const linked = { ...measured, lines: linkSegments(measured.lines, contentBlock.spans) };
+    const { prefixLen, absoluteSourceMap } = stampSourceRanges(linked, rawBlock, contentBlock, bodyOffset, ctx.source);
+    return { kind, contentBlock, measured: linked, prefixLen, absoluteSourceMap };
+  }
 
   // A poem (#378): its bayts are laid out by `pipeline/verse.ts`, each
   // hemistich measured on its own; none of the paragraph's levers apply.
@@ -387,7 +532,6 @@ export function measureContentBlock(
       || (vdtType === 'listItem' && resolved.bodyText.avoidRuntsInLists));
   // Tracking is measured on the rich path (per-token canvas widths); left
   // undefined when unused so the common-case cache keys stay unchanged.
-  const hasRichFonts = !!(style.boldFontString && style.italicFontString && style.boldItalicFontString);
   // The style's own tracking (a heading level's `letterSpacing`, EF-83),
   // plus what column balancing asks of a loose paragraph.
   const letterSpacingPx = hasRichFonts
@@ -401,6 +545,15 @@ export function measureContentBlock(
   // The paragraph's base direction: its own (`{dir=…}`), else the
   // document's (`setMeasureDirection`). Passed only when the block sets
   // one, so the measurements of every other block keep their cache keys.
+  // The drop cap's lines (#623): its width and gap on each line it sinks,
+  // the paragraph's own indents after them (its first-line indent dropped).
+  const capIndents = dropCap
+    ? (() => {
+      const base = { firstLineIndentPx: effectiveFirstLineIndent, hangingIndent: measureHangingIndent, ...(measureLineIndents ? { lineIndentsPx: measureLineIndents } : {}) };
+      const after = dropCap.sink === 0 ? 0 : lineIndentAt(base, dropCap.sink);
+      return [...dropCap.indents, measureHangingIndent || measureLineIndents ? after : 0];
+    })()
+    : undefined;
   const measureOptions = {
     ...(contentBlock.direction !== undefined ? { direction: contentBlock.direction } : {}),
     textAlign: style.textAlign,
@@ -408,11 +561,17 @@ export function measureContentBlock(
     // A paragraph style's own `wordBreak`: passed only when set, so the
     // measurements of every other block keep their cache keys.
     ...(style.cjkWordBreak !== undefined ? { cjkWordBreak: style.cjkWordBreak } : {}),
-    firstLineIndentPx: effectiveFirstLineIndent,
-    hangingIndent: measureHangingIndent,
+    firstLineIndentPx: capIndents ? 0 : effectiveFirstLineIndent,
+    hangingIndent: capIndents ? false : measureHangingIndent,
+    // A first-line indent paired with a hanging one (#620), or the lines a
+    // drop cap shortens (#623): passed only then, so every other block
+    // keeps its cache key.
+    ...(capIndents ? { lineIndentsPx: capIndents } : measureLineIndents ? { lineIndentsPx: measureLineIndents } : {}),
     // A numbered bibliography entry (#290): its label in a column as wide
     // as the turnover lines' indent.
-    ...(measureHangingIndent && contentBlock.spans.some((s) => s.labelTab) ? { labelColumnPx: measureFirstLineIndent } : {}),
+    ...(measureHangingIndent && !measureLineIndents && !capIndents && contentBlock.spans.some((s) => s.labelTab) ? { labelColumnPx: measureFirstLineIndent } : {}),
+    // Tab stops (#622): passed only to a block that holds a tab.
+    ...(prepared.tabs ? { tabs: prepared.tabs } : {}),
     optimal: resolved.bodyText.optimalLineBreaking,
     maxStretchRatio: resolved.bodyText.maxWordSpacing,
     minShrinkRatio: resolved.bodyText.minWordSpacing,
@@ -548,6 +707,24 @@ export function measureContentBlock(
 
   if (measured.lines.length === 0) return null;
 
+  if (dropCap) {
+    // A lead-in of the whole first line: its words, counted on this
+    // setting, set again in small capitals (two settings at most).
+    if (dropCap.settings.leadIn?.words === 'line' && opts?.dropCap?.leadInWords === undefined) {
+      const first = measured.lines[0]!;
+      const words = first.text.trim().split(/\s+/).filter((w) => w.length > 0).length - (first.hyphenated && measured.lines.length > 1 ? 1 : 0);
+      return measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { ...opts, dropCap: { ...opts?.dropCap, leadInWords: Math.max(1, words) } });
+    }
+    // A paragraph of fewer lines than the initial sinks.
+    const n = measured.lines.length;
+    if (n < dropCap.sink && opts?.dropCap?.lines === undefined) {
+      const handling = dropCap.settings.shortParagraph;
+      ctx.dropCapNotes?.set(blockIdx, { reason: 'shortParagraph', handling, ...(handling === 'shrink' ? { lines: n } : {}) });
+      if (handling === 'skip') return measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { ...opts, dropCap: { skip: true } });
+      if (handling === 'shrink') return measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { ...opts, dropCap: { ...opts?.dropCap, lines: n } });
+    }
+  }
+
   // A callout style's end mark (a proof's ∎, #530): flush right on the
   // last line.
   if (contentBlock.endMark !== undefined) measured = flushEndMark(measured, contentBlock.endMark, measureMaxWidth);
@@ -577,6 +754,53 @@ export function measureContentBlock(
 
   // Per-line source-range mapping using the block's plain→source map.
   // Accounts for heading numbering prefix which prepends chars with no source.
+  if (dropCap) {
+    // The lines were cut from the text without the initial: they are
+    // stamped against it, and their plain offsets then count past it, so
+    // they index the paragraph's own text and source map.
+    const { start, end } = dropCap.removed;
+    const strippedRaw: ContentBlock = {
+      ...rawBlock,
+      text: rawBlock.text.slice(0, start) + rawBlock.text.slice(end),
+      sourceMap: [...rawBlock.sourceMap.slice(0, start), ...rawBlock.sourceMap.slice(end)],
+      sourceStart: start === 0 ? rawBlock.sourceMap[end] ?? rawBlock.sourceStart : rawBlock.sourceStart,
+    };
+    stampSourceRanges(measured, strippedRaw, contentBlock, bodyOffset, ctx.source);
+    for (const line of measured.lines) {
+      if (line.plainStart !== undefined) line.plainStart = fullPlainOffset(dropCap, line.plainStart);
+      if (line.plainEnd !== undefined) line.plainEnd = fullPlainOffset(dropCap, line.plainEnd);
+    }
+    const map = rawBlock.sourceMap;
+    const width = dropCap.width;
+    const capX = (opposite ? measureMaxWidth - width : 0) + xShift;
+    const placed: MeasuredDropCap = {
+      text: dropCap.text,
+      fontString: dropCap.fontString,
+      fontSizePx: dropCap.fontSizePx,
+      color: dropCap.color,
+      width,
+      x: capX,
+      lines: dropCap.lines,
+      sink: dropCap.sink,
+      rise: dropCap.rise,
+      minLines: dropCap.settings.shortParagraph === 'reserve' ? dropCap.sink : 0,
+      plainStart: dropCap.plainStart,
+      plainEnd: dropCap.plainEnd,
+      // From the block's start when it opens the paragraph (markup before
+      // the letter, `**L`, included), so the block's range is unchanged.
+      ...(map.length > dropCap.plainStart
+        ? { sourceStart: (dropCap.plainStart === 0 ? rawBlock.sourceStart : map[dropCap.plainStart]!) + bodyOffset, sourceEnd: map[dropCap.plainEnd - 1]! + 1 + bodyOffset }
+        : {}),
+      word: dropCap.word,
+      wordRest: dropCap.wordRest,
+      ...(dropCap.hang ? { hang: { ...dropCap.hang, x: opposite ? capX + width : capX - dropCap.hang.width } } : {}),
+    };
+    return {
+      kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: rawBlock.sourceMap.map((o) => o + bodyOffset), mathDisplayRender,
+      ...(trackingPx !== 0 ? { letterSpacingPx: trackingPx } : {}),
+      dropCap: placed,
+    };
+  }
   const { prefixLen, absoluteSourceMap } = stampSourceRanges(measured, rawBlock, contentBlock, bodyOffset, ctx.source);
 
   return {

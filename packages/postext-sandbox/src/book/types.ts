@@ -129,6 +129,11 @@ export interface ChapterLayout {
   lastPageNumber: ChapterPageNumber;
   /** Page-number format on the last page. */
   lastPageFormat: NumeralStyle;
+  /** The number of the last line the chapter counted (`lineNumbers`,
+   *  #621): `delta` from the number it inherited (or from `startAt − 1`
+   *  when it inherited none), `value` when the count started again inside
+   *  the chapter. Absent when line numbers are off. */
+  lastLineNumber?: ChapterPageNumber;
   /** Where each entry of the chapter's outline (its headings and parts, in
    *  the order `contentOutline` gives them from the text) landed; null for
    *  an entry that reached no page. The book's table of contents is

@@ -133,7 +133,7 @@ export async function ShowcaseSection() {
       </div>
 
       <ul className="mx-auto mt-10 flex max-w-[100vw] snap-x snap-mandatory gap-8 overflow-x-auto px-6 pt-2 pb-6 md:gap-10 lg:justify-center lg:overflow-visible lg:flex-wrap 2xl:px-8">
-        <Book href={`/${locale}/sandbox#preset=postext-guide&lang=${guideLang}&view=canvas`} name={t("guideName")} description={t("guideDescription")}>
+        <Book href={`/${locale}/sandbox#preset=postext-guide&lang=${guideLang}&view=canvas&restore=ask`} name={t("guideName")} description={t("guideDescription")}>
           <GuideCover kicker={hero("kicker")} title="Postext" subtitle={hero("colophon")} label={hero("artAlt")} />
         </Book>
         {presets.map((p) => {
@@ -141,7 +141,7 @@ export async function ShowcaseSection() {
           return (
           <Book
             key={p.id}
-            href={`/${locale}/sandbox#preset=${p.id}&lang=${p.openLocale ?? lang}&view=canvas`}
+            href={`/${locale}/sandbox#preset=${p.id}&lang=${p.openLocale ?? lang}&view=canvas&restore=ask`}
             name={t.has(`books.${p.id}`) ? t(`books.${p.id}`) : p.name}
             description={t.has(`descriptions.${p.id}`) ? t(`descriptions.${p.id}`) : indexDescription(p.description, locale)}
             binding={p.binding}

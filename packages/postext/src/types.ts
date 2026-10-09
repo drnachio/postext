@@ -634,6 +634,13 @@ export interface LayoutContinuation {
    *  numbered through the book (`footnotes.numbering: 'document'`) go on
    *  from it. */
   footnoteNumber?: number;
+  /** The number of the last line the preceding content counted (#621), so
+   *  line numbers counted through the book (`lineNumbers.restart:
+   *  'document'`) go on from it. `continuationAfter` counts the lines of
+   *  verse from the text; a count of every line (`count: 'all'`) depends
+   *  on the layout, and the host takes it from the previous chapter's
+   *  `VDTDocument.lastLineNumber`. */
+  lineNumber?: number;
   /** The `:::part` in effect at the end of the preceding content — the last
    *  part opened, whether or not its fence has closed — so a chapter laid
    *  out on its own keeps `{partTitle}` / `{partNumber}` and the part's
@@ -1217,6 +1224,28 @@ export interface BodyTextConfig {
    *  `pinLegacyHyphenBreaks`). Applies to the running text, headings, lists,
    *  blockquotes and boxes. */
   breakAfterHyphens?: boolean;
+  /** Read a backslash at the end of a source line, and `\\` before a space,
+   *  as a forced line break inside a paragraph, a quotation or a list item
+   *  (CommonMark's hard break, #620): the next words start a new line
+   *  of the same paragraph, and the line before the break is set at its
+   *  natural width, as a paragraph's last line is. A backslash that ends
+   *  the paragraph prints. Two trailing spaces are no break (they are
+   *  invisible, and editors leave them behind). Default `true`. `false`
+   *  keeps postext 1.22's reading: the backslashes print and the lines
+   *  join with a space (configurations stored before `configVersion` 9
+   *  whose text has such a backslash read with it, see
+   *  `pinLegacyHardBreaks`). Titles (`\\` in a heading), captions, notes
+   *  and table cells break at `\\` either way. */
+  hardLineBreaks?: boolean;
+  /** Tab stops of every paragraph, list item and quotation (#622): where a
+   *  tab (`:tab`, or a tab character in the text) sends the words after
+   *  it. A paragraph style or a callout body that sets its own replaces
+   *  them. Unset: none; a tab character is then a word space, as before. */
+  tabStops?: TabStop[];
+  /** Default stops every `tabInterval` past the last of {@link tabStops}
+   *  (#622), from the start of the measure. Unset: a tab past the last stop
+   *  is a word space. */
+  tabInterval?: Dimension;
   /** Start the line after a break at a compound's hyphen with a hyphen too:
    *  "vencer-" | "-se", as Portuguese spelling and the Spanish Academy's
    *  2010 rules ask ("léxico-" | "-semántico"), so the reader knows the
@@ -1233,6 +1262,9 @@ export interface BodyTextConfig {
    *  postext 1.4 gave them: grey (`#666666`), italic, the body's first-line
    *  indent and no side indent. */
   blockquote?: BlockquoteConfig;
+  /** How `:::verse` poems in the line layout are set (#620): each fence
+   *  attribute of the same name overrides the setting for its poem. */
+  verse?: VerseConfig;
   /** When true, discourage a paragraph from ending with fewer than `orphanMinLines`
    *  lines at the top of the next column. Soft (penalty-based). Default true. */
   avoidOrphans?: boolean;
@@ -1426,6 +1458,353 @@ export interface BlockquoteConfig {
   firstLineIndent?: Dimension;
 }
 
+/** How a turnover of verse is set (#620): `'hang'` on a line of its own,
+ *  indented from the line's start; `'right'` flush with the end side,
+ *  behind an opening bracket (`turnoverMark`), the custom of English and
+ *  Spanish editions of poetry. */
+export type VerseTurnover = 'hang' | 'right';
+
+/** The defaults of `:::verse` poems (#620). A poem's fence names any of
+ *  them for itself (`:::verse{indentStep=1em turnover=right}`). */
+export interface VerseConfig {
+  /** How a poem whose fence names no `layout` is set. `'auto'` (default):
+   *  as bayts (#378) when a line carries a hemistich separator (`||`, a
+   *  spaced `\\`), line by line otherwise. `'bayt'`: as bayts always, a
+   *  poem with no separator as centred single hemistichs, as postext 1.22
+   *  set it (configurations stored before #620 are read with it when they
+   *  hold such a poem). */
+  layout?: 'auto' | 'bayt';
+  /** The width of one leading space of a line of verse (a tab counts four,
+   *  an ideographic space two); `em` is the poem's size. Default `0.5em`:
+   *  two spaces indent a line one em. */
+  indentStep?: Dimension;
+  /** How a line wider than the measure turns over. Default `'hang'`. */
+  turnover?: VerseTurnover;
+  /** The indent of a hanging turnover, from its line's own start, when
+   *  the poem's paragraph style sets no `hangingIndent`; `em` is the
+   *  poem's size. Default `2em`. */
+  hang?: Dimension;
+  /** The mark before a turnover set flush right (`turnover: 'right'`).
+   *  Default `[`. */
+  turnoverMark?: string;
+  /** The space between two stanzas, in lines of the poem's leading. On
+   *  the baseline grid it comes out a whole number of grid lines (a
+   *  paragraph style with `snapToGrid: false` keeps it exact). Default
+   *  `1`. */
+  stanzaSpace?: number;
+  /** Keep any stanza of this many lines of verse or fewer whole in one
+   *  column (a haiku, a tanka): it moves on whole when it does not fit.
+   *  Default `0`, off. */
+  keepStanzas?: number;
+}
+
+export interface ResolvedVerseConfig {
+  layout: 'auto' | 'bayt';
+  indentStep: Dimension;
+  turnover: VerseTurnover;
+  hang: Dimension;
+  turnoverMark: string;
+  stanzaSpace: number;
+  keepStanzas: number;
+}
+
+/** What `lineNumbers` counts (#621): `'verse'`, the lines of `:::verse`
+ *  poems (a turnover takes no number); `'all'`, every laid-out line of the
+ *  body text — paragraphs, list items, quotations and verse. */
+export type LineNumbersCount = 'verse' | 'all';
+/** Where the line count starts again (#621): never (`'document'`, which
+ *  runs on through the chapters of a book), at every level-1 heading
+ *  (`'chapter'`), at every level-1 or level-2 heading (`'section'`), on
+ *  every page (`'page'`) or at every `:::verse` poem (`'poem'`). */
+export type LineNumbersRestart = 'document' | 'chapter' | 'section' | 'page' | 'poem';
+/** The side of the text the numbers stand on (#621): the outer margin
+ *  (away from the spine: right on a recto, left on a verso), the inner
+ *  one, the physical `'left'` or `'right'`, the start or end side of the
+ *  document's direction (`'start'` is the right of a right-to-left
+ *  book), or the side column of a one-and-a-half layout (`'side'`, set
+ *  flush with its edge next to the text). */
+export type LineNumbersPosition = 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+/** Where the numbers of a page of two or more text columns go (#621):
+ *  beside every column on the {@link LineNumbersPosition} side (`'each'`),
+ *  in the gutters (`'gutter'`: the first column's on its right, the
+ *  others' on their left) or on the outer edges of the first and last
+ *  columns (`'outer-edges'`, columns between them as `'each'`). */
+export type LineNumbersMultiColumn = 'each' | 'gutter' | 'outer-edges';
+
+/** Line numbers in the margin (#621): every Nth line of the text gets its
+ *  number beside it, as critical editions, poetry, legal texts and
+ *  line-referenced school texts print them. The numbers are painted on
+ *  the line's baseline and never move a line. Off unless `enabled`. */
+export interface LineNumbersConfig {
+  /** Default `false`. */
+  enabled?: boolean;
+  /** What is counted. Default `'verse'`. */
+  count?: LineNumbersCount;
+  /** Print the number of every Nth line (the multiples of N). Default
+   *  `5`; a `:::verse` fence sets its own with `interval=N`. */
+  interval?: number;
+  /** Also print the number of the first line after each restart. Default
+   *  `false`. */
+  numberFirst?: boolean;
+  /** Where the count starts again. Default `'poem'` when {@link count} is
+   *  `'verse'`, `'page'` when it is `'all'`. `:::numbering{lines=N}`
+   *  restarts it anywhere. */
+  restart?: LineNumbersRestart;
+  /** The number of the first line after a restart. Default `1`. */
+  startAt?: number;
+  /** Default `'outer'`. */
+  position?: LineNumbersPosition;
+  /** Pages of two or more text columns. Default `'outer-edges'`. */
+  multiColumn?: LineNumbersMultiColumn;
+  /** The distance from the column's edge to the number; `em` is the
+   *  number's size. Default `1em`. Not used with `position: 'side'`, where
+   *  the number stands flush with the side column's edge. */
+  gap?: Dimension;
+  /** How a number aligns: `'auto'` flush toward the text (right-aligned
+   *  in a left margin, left-aligned in a right one), `'left'` or
+   *  `'right'` within the width of the widest number of the page. Default
+   *  `'auto'`. */
+  align?: 'auto' | 'left' | 'right';
+  /** Default: the body font family. */
+  fontFamily?: string;
+  /** Default: 0.8 of the body font size. */
+  fontSize?: Dimension;
+  /** Default: the body font weight. */
+  fontWeight?: number;
+  /** Default `false`. */
+  italic?: boolean;
+  /** Default: the body text colour. A palette-linked colour follows part
+   *  and section palettes. */
+  color?: ColorValue;
+  /** The numbering format, in any spelling a list or a page number takes
+   *  (`decimal`, `lower-roman`, `arabic-indic`, `一`…). Default decimal,
+   *  in the document's digits (`numerals`). */
+  format?: string;
+}
+
+export interface ResolvedLineNumbersConfig {
+  enabled: boolean;
+  count: LineNumbersCount;
+  interval: number;
+  numberFirst: boolean;
+  restart: LineNumbersRestart;
+  startAt: number;
+  position: LineNumbersPosition;
+  multiColumn: LineNumbersMultiColumn;
+  gap: Dimension;
+  align: 'auto' | 'left' | 'right';
+  fontFamily: string;
+  fontSize: Dimension;
+  fontWeight: number;
+  italic: boolean;
+  color: ColorValue;
+  /** As written; unset for decimal. */
+  format?: string;
+}
+
+/** The kinds of token a code listing is coloured by (#624): what the
+ *  built-in tokenizer and a registered highlighter
+ *  (`registerCodeHighlighter`) name, and what `codeStyle.tokens` colours.
+ *  `prompt` and `output` are a shell session's (`console`): the prompt and
+ *  what the program prints. */
+export type CodeTokenKind =
+  | 'keyword' | 'string' | 'number' | 'comment' | 'function' | 'type' | 'operator'
+  | 'punctuation' | 'variable' | 'meta' | 'prompt' | 'output';
+
+/** How a code line wider than its box is set (#624): `'wrap'` turns it
+ *  over, `'shrink'` sets the whole listing smaller, `'clip'` cuts it at the
+ *  box's inner edge. */
+export type CodeOverflow = 'wrap' | 'shrink' | 'clip';
+
+/** The look of one kind of token. Unset fields keep the listing's own. */
+export interface CodeTokenStyle {
+  color?: ColorValue;
+  bold?: boolean;
+  italic?: boolean;
+}
+
+/** Inline code (`` `x` ``) set in a code face (#624). The span is set as
+ *  one unit, as a chip is: it never breaks across lines. */
+export interface InlineCodeStyleConfig {
+  /** Default: `codeStyle.fontFamily`. */
+  fontFamily?: string;
+  /** Size; `em` is the surrounding text's. Default `0.9em`. */
+  fontSize?: Dimension;
+  /** Default: the surrounding text's colour. */
+  color?: ColorValue;
+  bold?: boolean;
+  italic?: boolean;
+  /** A fill behind the span. Default none. */
+  background?: ColorValue;
+  /** Outline colour. Default none. */
+  borderColor?: ColorValue;
+  /** Outline width. Default `0.5pt` when a border colour is set. */
+  borderWidth?: Dimension;
+  /** Corner radius; `em` is the span's size. Default `0.2em`. */
+  borderRadius?: Dimension;
+  /** Room left and right of the text inside the fill; `em` is the span's
+   *  size. Default `0.2em` with a fill or a border, `0` without. */
+  paddingX?: Dimension;
+  /** Room above and below the text band; paints outside the line box.
+   *  Default `0.1em`. */
+  paddingY?: Dimension;
+}
+
+/** Code listings (#624): ```` ``` ```` and `~~~` fences, and indented code
+ *  behind {@link indentedCode}, set line by line in a box. */
+export interface CodeStyleConfig {
+  /** Read fences as code blocks. Default `true`; `false` reads a fence's
+   *  lines as Markdown, as postext 1.22 did (stored documents written
+   *  before #624 get it, see `pinLegacyCodeBlocks`). */
+  blocks?: boolean;
+  /** Read a run of lines indented by four spaces (or a tab) after a blank
+   *  line as a code block. Default `false`: Postext text often indents
+   *  with spaces, and nested lists read leading spaces. */
+  indentedCode?: boolean;
+  /** Default `'Source Code Pro'`. */
+  fontFamily?: string;
+  /** `em` is the body's size. Default `0.85em`. */
+  fontSize?: Dimension;
+  fontWeight?: number;
+  /** Weight of bold tokens. Default `700`. */
+  boldFontWeight?: number;
+  /** Leading of the code lines; `em` is the code's size. Default: the
+   *  body's baseline grid line. */
+  lineHeight?: Dimension;
+  /** The text after a listing goes back to the baseline grid. Default
+   *  `true`; `false` keeps the exact `marginBottom`. */
+  snapToGrid?: boolean;
+  /** Default: the body text colour. */
+  color?: ColorValue;
+  /** Default `true`. */
+  backgroundEnabled?: boolean;
+  /** Default `#f4f4f4`. */
+  background?: ColorValue;
+  /** Default `0.6em` on every side. */
+  padding?: CalloutPaddingConfig;
+  /** Default off, `#cccccc`, `0.5pt`. */
+  border?: CalloutBorderConfig;
+  /** Default `0`. */
+  borderRadius?: Dimension;
+  /** Default `0.75em`. */
+  marginTop?: Dimension;
+  /** Default `0.75em`. */
+  marginBottom?: Dimension;
+  /** Default `'column'`; a fence sets its own with `span=page`. */
+  span?: 'column' | 'page';
+  /** Columns a tab advances to. Default `4`. */
+  tabSize?: number;
+  /** Default `'wrap'`. */
+  overflow?: CodeOverflow;
+  /** Indent of a wrapped line's continuations, in character cells.
+   *  Default `2`. */
+  wrapIndent?: number;
+  /** Set in the indent of a continuation line. Default `'»'` (a mark
+   *  every Latin face carries; `'↪'` is missing from most code faces);
+   *  `''` sets none. */
+  wrapMarker?: string;
+  /** `'shrink'`: the smallest size the listing is set at, as a share of
+   *  `fontSize`; past it the lines wrap. Default `0.8`. */
+  minFontScale?: number;
+  /** Number the lines of every listing. Default `false`; a fence sets its
+   *  own with `lineNumbers` / `lineNumbers=false` and `start=N`. */
+  lineNumbers?: boolean;
+  /** Default `#8a8a8a`. */
+  lineNumberColor?: ColorValue;
+  /** Room between the numbers and the code; `em` is the code's size.
+   *  Default `1em`. */
+  lineNumberGap?: Dimension;
+  /** The tint behind the lines a fence's `highlight="3,5-7"` names.
+   *  Default `#fff4c2`. */
+  highlightBackground?: ColorValue;
+  /** Default `false`: a listing splits between lines across columns and
+   *  pages. */
+  keepTogether?: boolean;
+  /** Fewest lines on each side of a split. Default `2`. */
+  splitMinLines?: number;
+  /** Repeat the title on each continuation. Default `false`. */
+  repeatTitle?: boolean;
+  /** Mark a part that goes on ("Continued"). Default `false`. */
+  continuesMarkerEnabled?: boolean;
+  /** Default `"Continued"` in the document language. */
+  continuesMarker?: string;
+  /** The title row a fence's `title` prints. Default: the code face at
+   *  0.85 of the code size, bold. */
+  titleStyle?: CalloutTitleStyleConfig;
+  /** When set, the fence's `title` prints in a label tab on the box's top
+   *  edge (a callout label) instead of a title row. */
+  label?: CalloutLabelConfig;
+  /** Default `'builtin'`: the built-in tokenizer colours `js`/`ts`,
+   *  `json`, `python`, `bash`/`sh`/`zsh`, `console`, `css`, `html`/`xml`,
+   *  `markdown` and `sql`; a registered highlighter takes precedence.
+   *  `'none'` sets every listing plain. */
+  highlight?: 'builtin' | 'none';
+  /** The look of each kind of token. Defaults: a muted palette (see
+   *  `DEFAULT_CODE_TOKENS`). */
+  tokens?: Partial<Record<CodeTokenKind, CodeTokenStyle>>;
+  /** Inline code in a code face. Unset: inline code is set in the body
+   *  face, as before #624. */
+  inline?: InlineCodeStyleConfig;
+}
+
+export interface ResolvedInlineCodeStyleConfig {
+  fontFamily: string;
+  fontSize: Dimension;
+  color?: ColorValue;
+  bold: boolean;
+  italic: boolean;
+  background?: ColorValue;
+  borderColor?: ColorValue;
+  borderWidth: Dimension;
+  borderRadius: Dimension;
+  paddingX: Dimension;
+  paddingY: Dimension;
+}
+
+export interface ResolvedCodeStyleConfig {
+  blocks: boolean;
+  indentedCode: boolean;
+  fontFamily: string;
+  fontSize: Dimension;
+  fontWeight: number;
+  boldFontWeight: number;
+  /** Absent: the body's baseline grid line. */
+  lineHeight?: Dimension;
+  snapToGrid: boolean;
+  color: ColorValue;
+  backgroundEnabled: boolean;
+  background: ColorValue;
+  padding: { top: Dimension; right: Dimension; bottom: Dimension; left: Dimension };
+  border: { enabled: boolean; color: ColorValue; width: Dimension };
+  borderRadius: Dimension;
+  marginTop: Dimension;
+  marginBottom: Dimension;
+  span: 'column' | 'page';
+  tabSize: number;
+  overflow: CodeOverflow;
+  wrapIndent: number;
+  wrapMarker: string;
+  minFontScale: number;
+  lineNumbers: boolean;
+  lineNumberColor: ColorValue;
+  lineNumberGap: Dimension;
+  highlightBackground: ColorValue;
+  keepTogether: boolean;
+  splitMinLines: number;
+  repeatTitle: boolean;
+  continuesMarkerEnabled: boolean;
+  /** Absent: the document language's. */
+  continuesMarker?: string;
+  /** As written; absent: the default title row. */
+  titleStyle?: CalloutTitleStyleConfig;
+  /** As written; absent: no label tab. */
+  label?: CalloutLabelConfig;
+  highlight: 'builtin' | 'none';
+  tokens: Record<CodeTokenKind, { color?: ColorValue; bold: boolean; italic: boolean }>;
+  /** Absent: inline code in the body face. */
+  inline?: ResolvedInlineCodeStyleConfig;
+}
+
 export interface ResolvedBlockquoteConfig {
   color: ColorValue;
   italic: boolean;
@@ -1470,8 +1849,14 @@ export interface ResolvedBodyTextConfig {
   optimalRagged: boolean;
   breakAfterDashes: boolean;
   breakAfterHyphens: boolean;
+  hardLineBreaks: boolean;
+  /** Absent when unset (see {@link BodyTextConfig.tabStops}). */
+  tabStops?: TabStop[];
+  /** Absent when unset (see {@link BodyTextConfig.tabInterval}). */
+  tabInterval?: Dimension;
   repeatHyphen: boolean;
   blockquote: ResolvedBlockquoteConfig;
+  verse: ResolvedVerseConfig;
   avoidOrphans: boolean;
   orphanMinLines: number;
   orphanPenalty: number;
@@ -1873,6 +2258,90 @@ export interface ResolvedVideoStyleConfig {
  *  optional and inherits the body text when unset, so a style only needs to
  *  spell out what differs from running text. See
  *  {@link ResolvedParagraphStyleConfig}. */
+/** How a drop cap treats an opening quote, `¿`, `¡` or bracket before
+ *  the letter (#623; see {@link ParagraphDropCap.punctuation}). */
+export type DropCapPunctuation = 'with-cap' | 'hang' | 'text';
+
+/** What a drop cap does in a paragraph of fewer lines than it sinks
+ *  (#623; see {@link ParagraphDropCap.shortParagraph}). */
+export type DropCapShortParagraph = 'reserve' | 'shrink' | 'skip';
+
+/** The first words after a drop cap set in small capitals or capitals
+ *  (#623; see {@link ParagraphDropCap.leadIn}). */
+export interface DropCapLeadIn {
+  /** How many words, or `'line'` for the whole first line. */
+  words?: number | 'line';
+  /** Small capitals (as `:smallcaps[…]`). Default `true` unless
+   *  {@link uppercase} is set. */
+  smallCaps?: boolean;
+  /** Capitals. Default `false`. */
+  uppercase?: boolean;
+}
+
+/**
+ * A drop cap (or a raised initial) opening a body paragraph (#623): the
+ * first letter set large at the start of the paragraph, its first
+ * {@link sink} lines shortened around it on the start side (the left in
+ * Latin text, the right in Arabic and Hebrew). The paragraph is broken,
+ * justified and hyphenated as any other, and it never breaks before its
+ * line {@link sink}, so the letter keeps its lines across columns and
+ * pages. Set by a paragraph style (the first paragraph of a
+ * `:::paragraphs{style=…}` group, or every one with {@link each}) or a
+ * heading level or style (the first body paragraph after the heading);
+ * `{dropcap}`, `{dropcap=false}` and `{dropcap=N}` on the group's fence or
+ * the heading line switch it on, off or set its lines.
+ */
+export interface ParagraphDropCap {
+  /** Lines the initial spans, from the top of its capitals to its
+   *  baseline. Default `3`; `1` with a larger {@link fontSize} is a raised
+   *  initial standing on the first baseline. */
+  lines?: number;
+  /** Lines the initial drops into the text: it stands on the baseline of
+   *  line `sink`, and those lines are shortened. Fewer than {@link lines}
+   *  raises the initial above the first line, and the paragraph keeps that
+   *  rise clear above it (whole grid lines). Default {@link lines} (a true
+   *  drop cap). */
+  sink?: number;
+  /** Grapheme clusters set large: `É`, a letter with a combining mark, a
+   *  surrogate pair each count one. Default `1`. */
+  characters?: number;
+  /** Face of the initial. Default the paragraph's. */
+  fontFamily?: string;
+  /** Default the paragraph's weight. */
+  fontWeight?: number;
+  /** Default `false`. */
+  italic?: boolean;
+  /** Size of the initial. Default: the size that sets the top of its
+   *  capitals level with the capitals of the first line while it stands
+   *  {@link lines} lines down, both cap heights measured from the faces
+   *  (0.72 of the size when a face gives none). */
+  fontSize?: Dimension;
+  /** Default the paragraph's colour; a palette-linked colour follows part
+   *  and section palettes. */
+  color?: ColorValue;
+  /** Space between the initial and the shortened lines. Default `0.15em`
+   *  of the text size. */
+  gap?: Dimension;
+  /** An opening quote, `¿`, `¡` or bracket before the letter:
+   *  `'with-cap'` sets it at the initial's size as part of it, `'hang'`
+   *  at text size outside the measure before the initial, `'text'` at text
+   *  size at the start of the first line, after the initial. Default
+   *  `'with-cap'`. */
+  punctuation?: DropCapPunctuation;
+  /** The first words after the initial in small capitals or capitals. */
+  leadIn?: DropCapLeadIn;
+  /** A paragraph of fewer lines than {@link sink}: `'reserve'` keeps the
+   *  block {@link sink} lines tall so the next block clears the initial,
+   *  `'shrink'` sets the initial over the paragraph's own lines, `'skip'`
+   *  sets the paragraph without one. A content warning says so in each
+   *  case. Default `'reserve'`. */
+  shortParagraph?: DropCapShortParagraph;
+  /** A paragraph style's drop cap opens every paragraph of its group (a
+   *  catalogue of entries), not the first only. Read on paragraph styles
+   *  alone. Default `false`. */
+  each?: boolean;
+}
+
 export interface ParagraphStyleConfig {
   /** Identifier referenced from `:::paragraphs{style="…"}`. */
   id: string;
@@ -1927,12 +2396,19 @@ export interface ParagraphStyleConfig {
    *  N字上げ) is `textAlign: 'end'` with `endIndent: 'Nem'`; 地付き is the
    *  same at `0`. Default `0`; a negative value counts as `0`. */
   endIndent?: Dimension;
-  /** Defaults to the body first-line indent. Ignored when
-   *  {@link hangingIndent} is non-zero. */
+  /** Indent of the first line, from {@link indent}. Defaults to the body
+   *  first-line indent. With a non-zero {@link hangingIndent} it applies
+   *  only when the style sets it itself: the first line starts at
+   *  `indent + firstLineIndent` and its turnovers at `indent +
+   *  hangingIndent` (a line of verse indented one em that hangs its
+   *  turnover three, #620); inherited from the body it gives way, and the
+   *  first line starts at `indent`. */
   firstLineIndent?: Dimension;
   /** Indent applied to every line except the first (bibliographies,
-   *  glossaries), from {@link indent}. Non-zero replaces
-   *  {@link firstLineIndent}. Default `0`. */
+   *  glossaries, the turnover of a line of verse), from {@link indent}.
+   *  The first line starts at {@link indent}, or at `indent +
+   *  firstLineIndent` when the style sets {@link firstLineIndent} itself.
+   *  Default `0`. */
   hangingIndent?: Dimension;
   /** Vertical gap between consecutive paragraphs in the container. Default
    *  `0` — entries abut, off the baseline grid until the container closes. */
@@ -1962,6 +2438,56 @@ export interface ParagraphStyleConfig {
    *  punctuation (phrase-spaced kana text, 分かち書き), `'normal'` between
    *  any two characters. Unset: the document's `cjk.wordBreak`. */
   wordBreak?: CjkWordBreak;
+  /** Whether line numbers (`lineNumbers`, #621) count the lines of the
+   *  style's paragraphs. Unset: counted when `lineNumbers.count` is
+   *  `'all'` (or, in a poem set in the style, when it counts verse);
+   *  `true` counts them under `'verse'` too, and inside a callout, whose
+   *  text is otherwise never counted; `false` never. */
+  lineNumbers?: boolean;
+  /** Tab stops of the style's paragraphs (#622; see {@link TabStop}). A
+   *  tab character in their text is then a tab, and `:tab` goes to them.
+   *  Unset: the body's (`bodyText.tabStops`). An empty list sets none. */
+  tabStops?: TabStop[];
+  /** Default stops past the last of {@link tabStops}. Unset: the body's. */
+  tabInterval?: Dimension;
+  /** A drop cap opening the first paragraph of each `:::paragraphs` group
+   *  in the style (#623; every paragraph with `each: true`). Unset: none. */
+  dropCap?: ParagraphDropCap;
+}
+
+/** Where a tab stop stands (#622): a length from the start edge of the
+ *  paragraph's measure (after a paragraph style's `indent`; `em` being the
+ *  paragraph's own size), `'end'` for the measure's end edge, or a share of
+ *  the measure (`'50%'`). */
+export type TabStopPosition = Dimension | 'end' | `${number}%`;
+
+/** How the text after a tab sits at its stop (#622): `'start'` starts
+ *  there, `'end'` ends there, `'center'` is centred on it and `'decimal'`
+ *  puts its decimal separator on it (a run with none ends there). */
+export type TabStopAlign = 'start' | 'end' | 'center' | 'decimal';
+
+/**
+ * A tab stop of body text (#622): a menu's prices flush right, a cast
+ * list's actors after a dot leader, an exam's marks at the margin. A tab
+ * goes to the first stop past the text before it; a line holding a tab is
+ * set by the line-by-line breaker (never Knuth–Plass), and in justified
+ * text only its word spaces after the last tab take the slack.
+ */
+export interface TabStop {
+  position: TabStopPosition;
+  /** Default `'start'`. */
+  align?: TabStopAlign;
+  /** Repeated over the room before the stop, flush with its end so the
+   *  leaders of several lines line up: `'.'`, `'. '`, `'·'`, `'_'`, `'-'`
+   *  or any short text in the paragraph's face; `'rule'` draws a line on
+   *  the baseline (a form's blank). Default none. */
+  leader?: string;
+  /** Room kept between the text and the leader, and between the leader and
+   *  the text at the stop. Default `0.5em` (the contents' `leader.gap`). */
+  leaderGap?: Dimension;
+  /** `'decimal'` stops: the separator. Default the document language's
+   *  (`.` in English, `,` in Spanish, Catalan, Portuguese…). */
+  decimalChar?: string;
 }
 
 export type ParagraphTextTransform = 'none' | 'uppercase';
@@ -1982,10 +2508,17 @@ export interface ResolvedParagraphStyleConfig {
   italic: boolean;
   smallCaps: boolean;
   hyphenation: boolean;
+  /** The style sets {@link hyphenation} itself: a poem in the style
+   *  hyphenates its turnovers only then (#620). Absent when inherited. */
+  ownHyphenation?: true;
   indent: Dimension;
   /** Absent when the style sets none (or `0`). */
   endIndent?: Dimension;
   firstLineIndent: Dimension;
+  /** The style sets {@link firstLineIndent} itself (it is not the body's):
+   *  with a non-zero {@link hangingIndent} the two pair up (#620). Absent
+   *  when inherited. */
+  ownFirstLineIndent?: true;
   hangingIndent: Dimension;
   spaceBetween: Dimension;
   marginTop: Dimension;
@@ -1994,6 +2527,15 @@ export interface ResolvedParagraphStyleConfig {
   textTransform: ParagraphTextTransform;
   /** Absent when the style sets none (the document's `cjk.wordBreak`). */
   wordBreak?: CjkWordBreak;
+  /** Absent when the style sets none (see
+   *  {@link ParagraphStyleConfig.lineNumbers}). */
+  lineNumbers?: boolean;
+  /** Absent when the style sets none: its paragraphs take the body's. */
+  tabStops?: TabStop[];
+  /** Absent when the style sets none. */
+  tabInterval?: Dimension;
+  /** Absent when the style sets none (#623). */
+  dropCap?: ParagraphDropCap;
 }
 
 // ---------------------------------------------------------------------------
@@ -2221,6 +2763,11 @@ export interface CalloutBodyStyleConfig {
   hyphenation?: boolean;
   paragraphSpacing?: boolean;
   firstLineIndent?: Dimension;
+  /** Tab stops of the box's paragraphs and list items (#622). Unset: the
+   *  body's (`bodyText.tabStops`). */
+  tabStops?: TabStop[];
+  /** Default stops past the last of {@link tabStops}. Unset: the body's. */
+  tabInterval?: Dimension;
 }
 
 /** List typography inside the callout. Every field inherits
@@ -2515,6 +3062,9 @@ export interface ResolvedCalloutStyleConfig {
     hyphenation: boolean;
     paragraphSpacing: boolean;
     firstLineIndent: Dimension;
+    /** Absent when the style sets none. */
+    tabStops?: TabStop[];
+    tabInterval?: Dimension;
   };
   lists: {
     bulletChar: string;
@@ -2820,6 +3370,12 @@ export interface HeadingLevelConfig {
    *  `{jidori=N}` (`{jidori=0}` turns it off). Unset (default): no
    *  spacing. */
   jidori?: number;
+  /** A drop cap opening the first body paragraph after a heading of this
+   *  level or style (#623), found past markers, boxes that left the flow
+   *  and floated figures; never a paragraph inside a box. A heading turns
+   *  it off with `{dropcap=false}` or sets its lines with `{dropcap=N}`; a
+   *  heading style turns its level's off with `false`. Unset: none. */
+  dropCap?: ParagraphDropCap | false;
 }
 
 export type HeadingTextTransform = 'none' | 'uppercase';
@@ -2860,6 +3416,9 @@ export interface ResolvedHeadingLevelConfig {
   indent?: Dimension;
   /** Absent unless set (see {@link HeadingLevelConfig.jidori}). */
   jidori?: number;
+  /** Absent unless set (see {@link HeadingLevelConfig.dropCap}); a heading
+   *  style's `false` lays an explicit `undefined` over its level's. */
+  dropCap?: ParagraphDropCap;
 }
 
 export interface HeadingsConfig {
@@ -5882,6 +6441,12 @@ export interface PostextConfig {
   /** East Asian typography: line breaking and justification of Chinese,
    *  Japanese and Korean text (see {@link CjkConfig}). */
   cjk?: CjkConfig;
+  /** Line numbers in the margin, for verse or for every line of the text
+   *  (#621). Off by default. */
+  lineNumbers?: LineNumbersConfig;
+  /** Code listings (fenced and indented code blocks) and inline code
+   *  (#624). */
+  codeStyle?: CodeStyleConfig;
   header?: HeaderFooterSlot;
   footer?: HeaderFooterSlot;
 

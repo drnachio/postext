@@ -3,7 +3,7 @@
 // supplied by the caller.
 
 import type { PostextConfig, Resource } from 'postext';
-import { CONFIG_VERSION, migrateConfig as migrateEngineConfig, pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking } from 'postext/bundle';
+import { CONFIG_VERSION, migrateConfig as migrateEngineConfig, pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHardBreaks, pinLegacyCodeBlocks, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyPairedIndents, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking, pinLegacyVerseLayout } from 'postext/bundle';
 import { deriveChapterTitle, newChapter } from '../book/chapterOps';
 import type { BookContent, Chapter } from '../book/types';
 import type { ProjectThumbnail } from './projects';
@@ -28,12 +28,19 @@ import type { ProjectThumbnail } from './projects';
  *  breaks at a compound's hyphen, the split of a paragraph under a heading
  *  and the space under their `:::paragraphs` containers (see {@link
  *  pinLegacyHyphenBreaks}, {@link pinLegacyHeadingSplit} and {@link
- *  pinLegacyParagraphContainerSpacing}). Records 1 and 2 were numbered by
- *  the Sandbox alone, before 1.5; they are older than 3 on every count.
- *  Records 3 to 7 were written by the 1.5 prereleases: 3 before the maths
- *  size changed, 4 before the inline gap did, 5 before the five version-6
- *  rules did, 6 before the two version-7 rules did, 7 before the three
- *  version-8 rules did. */
+ *  pinLegacyParagraphContainerSpacing}), and records saved before 9 their
+ *  poems with no hemistich separator, the indents of their paragraph
+ *  styles that set both a first-line and a hanging indent, the
+ *  backslashes they printed where #620 reads a forced line break and the
+ *  code fences they read as Markdown (see {@link pinLegacyVerseLayout},
+ *  {@link pinLegacyPairedIndents}, {@link pinLegacyHardBreaks}, #620, and
+ *  {@link pinLegacyCodeBlocks}, #624).
+ *  Records 1 and 2 were numbered by the Sandbox alone, before 1.5; they
+ *  are older than 3 on every count. Records 3 to 7 were written by the 1.5
+ *  prereleases: 3 before the maths size changed, 4 before the inline gap
+ *  did, 5 before the five version-6 rules did, 6 before the two version-7
+ *  rules did, 7 before the three version-8 rules did; records 8 by postext
+ *  1.5 to 1.22. */
 export const PROJECT_RECORD_VERSION: number = CONFIG_VERSION;
 
 export interface MigrationDeps {
@@ -95,9 +102,11 @@ export function normalizeBookContent(raw: unknown, deps: MigrationDeps): BookCon
  *  `pinLegacyBoxResourceGap`, `pinLegacyHeadingMarks`,
  *  `pinLegacyDropCapSize`, `pinLegacyColonListRoom`,
  *  `pinLegacyBoxChildCut`, `pinLegacyDashBreaks`, `pinLegacyHyphenBreaks`,
- *  `pinLegacyRaggedBreaking`, `pinLegacyHeadingSplit` and
- *  `pinLegacyParagraphContainerSpacing` in `postext/bundle`). */
-export { pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking };
+ *  `pinLegacyRaggedBreaking`, `pinLegacyHeadingSplit`,
+ *  `pinLegacyParagraphContainerSpacing`, `pinLegacyVerseLayout`,
+ *  `pinLegacyPairedIndents`, `pinLegacyHardBreaks` and
+ *  `pinLegacyCodeBlocks` in `postext/bundle`). */
+export { pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHardBreaks, pinLegacyCodeBlocks, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyPairedIndents, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking, pinLegacyVerseLayout };
 
 export interface MigratedProjectRecord extends BookContent {
   version: typeof PROJECT_RECORD_VERSION;

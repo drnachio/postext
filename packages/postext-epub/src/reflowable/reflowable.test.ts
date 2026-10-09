@@ -139,6 +139,19 @@ describe('joining lines', () => {
     expect(sink.inl.map((i) => (i.t === 'text' ? i.text : i.t === 'raw' ? i.xhtml : '')).join('')).toBe('Roses red,<br/>violets');
   });
 
+  it('keeps a forced line break (#620), across a page break too', () => {
+    const sink: TextSink = { inl: [] };
+    appendLines(sink, [line([seg('Roses'), space(), seg('red,')], { isLastLine: true, hardBreak: true })], ctx());
+    // The next fragment of the paragraph, on the next page.
+    appendLines(sink, [line([seg('violets')]), line([seg('blue.')], { isLastLine: true })], ctx());
+    expect(sink.inl.map((i) => (i.t === 'text' ? i.text : i.t === 'raw' ? i.xhtml : '')).join('')).toBe('Roses red,<br/>violets blue.');
+  });
+
+  it('writes a forced line break of the text as <br/> (#620)', async () => {
+    const { all } = await render([layOut(`First line\\\nand the paragraph goes on.\n\n${para}`)]);
+    expect(all).toContain('First line<br/>and the paragraph goes on.');
+  });
+
   it('sets ruby without the <rp> brackets EPUB discourages', () => {
     const sink: TextSink = { inl: [] };
     appendLine(sink, line([seg('漢', { ruby: { text: 'ㄏㄢˋ', position: 'right' } as VDTLineSegment['ruby'] })]), ctx('zh-Hant'));
@@ -443,7 +456,8 @@ describe('reflowable rendition: the engine names styles and index levels', () =>
     ':::paragraphs{style="lead"}', 'A lead paragraph.', ':::', '',
     ':::paragraphs{style="coda"}', 'A closing paragraph.', ':::', '',
     ':::callout{type="note"}', ':::paragraphs{style="lead"}', 'A lead inside a box.', ':::', ':::', '',
-    ':::verse{style="poem"}', 'One line of verse', ':::',
+    ':::verse{style="poem"}', 'One line || of verse', ':::', '',
+    ':::verse{style="poem"}', 'A line of verse', '  set line by line', ':::',
   ].join('\n');
 
   it('classes paragraphs, boxed ones and poems by the style they were set in', async () => {
@@ -453,8 +467,9 @@ describe('reflowable rendition: the engine names styles and index levels', () =>
     expect(all).toContain('<p class="ps-coda">A closing paragraph.</p>');
     expect(all).toMatch(/<aside class="pt-callout pt-callout-note">\n<p class="ps-lead">A lead inside a box\.<\/p>/);
     expect(all).toMatch(/<div class="pt-verse ps-poem">/);
+    expect(all).toMatch(/<div class="pt-stanza ps-poem">/);
     const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
-    expect(css).toContain('p.ps-poem, div.pt-verse.ps-poem {');
+    expect(css).toContain('p.ps-poem, div.pt-verse.ps-poem, div.pt-stanza.ps-poem {');
   });
 
   it('tells an older document\'s styles from their faces', async () => {
@@ -462,6 +477,7 @@ describe('reflowable rendition: the engine names styles and index levels', () =>
     // Same face: no class to give.
     expect(all).toMatch(/<p>(?:<span epub:type="pagebreak"[^>]*><\/span>)?A lead paragraph\.<\/p>/);
     expect(all).toMatch(/<div class="pt-verse">/);
+    expect(all).toMatch(/<div class="pt-stanza">/);
   });
 
   it('nests index entries by the level the engine gives, not by their indent', async () => {
@@ -576,5 +592,163 @@ describe('reflowable rendition: Japanese note markers (JLReq §4.2.3)', () => {
     const { pub } = await render([layOut(`${para}[^a]\n\n[^a]: Note.`)]);
     const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
     expect(css).not.toContain('pt-note-');
+  });
+});
+
+describe('reflowable rendition: verse line by line (#620)', () => {
+  const poem = [
+    'Before the poem.', '',
+    ':::verse{align=start}',
+    'Whose woods these are I think I know.',
+    '  His house is in the village though; and this line runs on past the measure of the page, so it turns over',
+    '',
+    'He will not see me stopping here',
+    ':::', '',
+    'After the poem.',
+  ].join('\n');
+
+  it('writes a stanza an element, a line of verse a block that hangs its turnovers', async () => {
+    const { pub, files, all } = await render([layOut(poem, baseConfig)]);
+    expectSound(pub, files);
+    const stanzas = all.match(/<div class="pt-stanza">[\s\S]*?<\/div>/g) ?? [];
+    expect(stanzas).toHaveLength(2);
+    const lines = stanzas[0]!.match(/<span class="pt-verse-line" style="([^"]*)">([\s\S]*?)<\/span>/g) ?? [];
+    expect(lines).toHaveLength(2);
+    // The indented line: its own indent plus the hang, the hang taken back.
+    const [, style, text] = /style="([^"]*)">([\s\S]*?)<\/span>$/.exec(lines[1]!)!;
+    const [pad, hang] = /padding-inline-start: ([\d.]+)em; text-indent: -([\d.]+)em/.exec(style!)!.slice(1).map(Number);
+    expect(hang).toBeGreaterThan(0);
+    expect(pad! - hang!).toBeCloseTo(1, 2);
+    // The line and its turnover read as one line.
+    expect(text!.replace(/<[^>]+>/g, '')).toContain('His house is in the village though; and this line runs on past the measure of the page, so it turns over');
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('.pt-verse-line {');
+    expect(css).toContain('.pt-stanza {');
+  });
+
+  it('leaves the bracket of a turnover set flush right out', async () => {
+    const md = poem.replace('{align=start}', '{align=start turnover=right}');
+    const { all } = await render([layOut(md, baseConfig)]);
+    const stanza = (all.match(/<div class="pt-stanza">[\s\S]*?<\/div>/) ?? [''])[0]!;
+    expect(stanza).not.toContain('[');
+  });
+});
+
+describe('reflowable rendition: line numbers of verse (#621)', () => {
+  const poem = [':::verse{align=start}', ...Array.from({ length: 12 }, (_, i) => `Line ${i + 1} of the poem`), ':::'].join('\n');
+
+  it('writes every Nth line\'s number in the margin, hidden from assistive technology', async () => {
+    const { pub, files, all } = await render([layOut(poem, { ...baseConfig, lineNumbers: { enabled: true } })]);
+    expectSound(pub, files);
+    const numbers = [...all.matchAll(/<span class="pt-line-number" aria-hidden="true">([^<]*)<\/span>Line (\d+)/g)].map((m) => [m[1], m[2]]);
+    expect(numbers).toEqual([['5', '5'], ['10', '10']]);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('.pt-line-number {');
+  });
+
+  it('writes none without line numbers', async () => {
+    const { pub, all } = await render([layOut(poem, baseConfig)]);
+    expect(all).not.toContain('pt-line-number');
+    expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('.pt-line-number');
+  });
+});
+
+describe('reflowable rendition: hanging paragraph styles (#620)', () => {
+  it('hangs the turnovers of a style, its first line at the indent it sets itself', async () => {
+    const em = (value: number) => ({ value, unit: 'em' as const });
+    const config = { ...baseConfig, paragraphStyles: [{ id: 'bib', hangingIndent: em(2) }, { id: 'pair', firstLineIndent: em(1), hangingIndent: em(3) }] };
+    const md = [':::paragraphs{style="bib"}', 'An entry.', ':::', '', ':::paragraphs{style="pair"}', 'A line.', ':::'].join('\n');
+    const { pub } = await render([layOut(md, config)]);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toMatch(/p\.ps-bib \{\n {2}padding-inline-start: 2em;\n {2}text-indent: -2em;\n\}/);
+    expect(css).toMatch(/p\.ps-pair \{\n {2}padding-inline-start: 3em;\n {2}text-indent: -2em;\n\}/);
+  });
+});
+
+describe('reflowable rendition: tab stops (#622)', () => {
+  const config = { ...baseConfig, bodyText: { ...baseConfig.bodyText, tabStops: [{ position: 'end' as const, align: 'end' as const, leader: '.' }] } };
+
+  it('writes a line holding tabs as a row of its parts, the leader a border hidden from assistive technology', async () => {
+    const md = ['Soup of the day\t8.50', '', 'Roast lamb\t21.00', '', para].join('\n');
+    const { pub, files, all } = await render([layOut(md, config)]);
+    expectSound(pub, files);
+    expect(all).toContain('<p><span class="pt-tab-row"><span class="pt-tab-part">Roast lamb</span><span class="pt-tab-fill pt-leader-dots" aria-hidden="true"></span><span class="pt-tab-part">21.00</span></span></p>');
+    expect(all).not.toMatch(/\.\.\./);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('.pt-tab-row {');
+    expect(css).toContain('.pt-leader-dots {');
+  });
+
+  it('keeps a start stop\'s part at its printed width, the rest of the row after it', async () => {
+    const start = { ...baseConfig, bodyText: { ...baseConfig.bodyText, tabStops: [{ position: { value: 3, unit: 'em' as const } }] } };
+    const { all } = await render([layOut('Q1\tThe question that follows the number.', start)]);
+    expect(all).toMatch(/<span class="pt-tab-part" style="min-width:[\d.]+em">(?:<span epub:type="pagebreak"[^>]*><\/span>)?Q1<\/span><span class="pt-tab-gap" aria-hidden="true"><\/span><span class="pt-tab-part pt-tab-rest">The question/);
+  });
+
+  it('writes no tab rules for a book without tabs', async () => {
+    const { pub } = await render([layOut(para, baseConfig)]);
+    expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('.pt-tab-row');
+  });
+});
+
+describe('reflowable rendition: drop caps (#623)', () => {
+  const config = { ...baseConfig, headings: { levels: [{ level: 1, dropCap: { lines: 3 } }] } };
+
+  it('writes the initial in a span right before the rest of its word, set as a CSS initial letter', async () => {
+    const md = ['# One', '', `Long before ${para}${para}`, '', para].join('\n');
+    const { pub, files, all } = await render([layOut(md, config)]);
+    expectSound(pub, files);
+    expect(all).toMatch(/<p class="pt-has-dropcap">(?:<span epub:type="pagebreak"[^>]*><\/span>)?<span class="pt-dropcap pt-dropcap-3-3" style="[^"]*">L<\/span>ong before/);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('initial-letter: 3 3;');
+    expect(css).toContain('.pt-dropcap {');
+    expect(css).toContain('.pt-has-dropcap {');
+  });
+
+  it('writes no drop cap rules for a book without drop caps', async () => {
+    const { pub } = await render([layOut(para, baseConfig)]);
+    expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('pt-dropcap');
+  });
+});
+
+describe('reflowable rendition: code listings (#624)', () => {
+  const md = [
+    'A listing:', '',
+    '```js {title="app.js" lineNumbers highlight="2"}',
+    'function f(a) {',
+    '\treturn a < 1 ? "x" : 2; // note',
+    '}',
+    '```', '', para,
+  ].join('\n');
+
+  it('writes the listing in its box as <pre><code>, its tokens coloured, its numbers hidden', async () => {
+    const { pub, files, all } = await render([layOut(md, baseConfig)]);
+    expectSound(pub, files);
+    expect(all).toContain('<div class="pt-code-box">');
+    expect(all).toContain('<p class="pt-code-title">app.js</p>');
+    expect(all).toMatch(/<pre class="pt-code" dir="ltr"><code class="language-js">/);
+    expect(all).toContain('<span class="pt-code-num" aria-hidden="true">1</span><span style="color:#8b2c8f">function</span>');
+    expect(all).toMatch(/<mark class="pt-code-hl">\t<span style="color:#8b2c8f">return<\/span> a &lt; <span style="color:#985f00">1<\/span>/);
+    expect(all).toContain('<span style="color:#7a7f87;font-style:italic">// note</span>');
+    // The source text, line by line, once the markup is gone.
+    const code = /<code class="language-js">([\s\S]*?)<\/code>/.exec(all)![1]!
+      .replace(/<span class="pt-code-num"[^>]*>[^<]*<\/span>/g, '').replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+    expect(code).toBe('function f(a) {\n\treturn a < 1 ? "x" : 2; // note\n}');
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('pre.pt-code {');
+    expect(css).toContain('tab-size: 4;');
+    expect(css).toContain('.pt-code-box {');
+  });
+
+  it('joins a line the print turned over', async () => {
+    const long = `const s = "${'a'.repeat(120)}";`;
+    const { all } = await render([layOut(['```js', long, '```'].join('\n'), baseConfig)]);
+    const code = /<code class="language-js">([\s\S]*?)<\/code>/.exec(all)![1]!.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"');
+    expect(code).toBe(long);
+  });
+
+  it('writes no code rules for a book without code', async () => {
+    const { pub } = await render([layOut(para, baseConfig)]);
+    expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('pt-code');
   });
 });

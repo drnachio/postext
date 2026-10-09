@@ -14,6 +14,7 @@ import { UnorderedListsSection } from './UnorderedListsSection';
 import { OrderedListsSection } from './OrderedListsSection';
 import { MathSection } from './MathSection';
 import { FootnotesSection } from './FootnotesSection';
+import { LineNumbersSection } from './LineNumbersSection';
 import { CrossRefsSection } from './CrossRefsSection';
 import { CitationsSection } from './CitationsSection';
 import { CjkSection } from './CjkSection';
@@ -24,6 +25,7 @@ import { CaptionStyleSection } from './CaptionStyleSection';
 import { ParagraphStylesSection } from './ParagraphStylesSection';
 import { CalloutStylesSection } from './CalloutStylesSection';
 import { ChipStylesSection } from './ChipStylesSection';
+import { CodeStyleSection } from './CodeStyleSection';
 import { DiagramStyleSection } from './DiagramStyleSection';
 import { VideoStyleSection } from './VideoStyleSection';
 import { ResourceTypesSection } from './ResourceTypesSection';
@@ -58,6 +60,7 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'ordered-lists': OrderedListsSection,
   'math': MathSection,
   'footnotes': FootnotesSection,
+  'lineNumbers': LineNumbersSection,
   'crossRefs': CrossRefsSection,
   'citations': CitationsSection,
   'cjk': CjkSection,
@@ -69,6 +72,7 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'videoStyle': VideoStyleSection,
   'calloutStyles': CalloutStylesSection,
   'chipStyles': ChipStylesSection,
+  'codeStyle': CodeStyleSection,
   'comicsPanels': ComicsPanelsSection,
   'comicsPanelStyles': ComicsPanelStylesSection,
   'comicsLettering': ComicsLetteringSection,

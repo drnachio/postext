@@ -51,7 +51,7 @@ Posa el valor entre cometes per imprimir-lo exactament com està escrit —un no
 
 ## Construccions de bloc
 
-Postext reconeix set tipus de bloc de prosa, a més de les directives i les insercions de recursos que es descriuen més endavant en aquesta pàgina. Els blocs sempre acaben en trobar una línia en blanc o l'inici d'un altre bloc.
+Postext reconeix set tipus de bloc de prosa i els llistats de codi, a més de les directives i les insercions de recursos que es descriuen més endavant en aquesta pàgina. Els blocs sempre acaben en trobar una línia en blanc o l'inici d'un altre bloc.
 
 <Illustration name="BlockTypesGallery" data='{"title": "Construccions de bloc de prosa d’un cop d’ull", "desc": "Els set tipus de bloc de prosa que reconeix Postext: encapçalament, paràgraf, cita, llista no ordenada, llista ordenada, llista de tasques i fórmula en bloc, cadascun amb la seva sintaxi markdown. Les directives i les insercions de recursos es descriuen per separat.", "caption": "Cada tipus de bloc de prosa i la seva entrada en markdown.", "blocks": [{"name": "Encapçalament", "syntax": "# Títol", "color": "blue"}, {"name": "Paràgraf", "syntax": "Línies de text pla", "color": "orange"}, {"name": "Cita", "syntax": "> text citat", "color": "green"}, {"name": "Llista no ordenada", "syntax": "- element", "color": "purple"}, {"name": "Llista ordenada", "syntax": "1. element", "color": "pink"}, {"name": "Llista de tasques", "syntax": "- [x] fet", "color": "teal"}, {"name": "Fórmula en bloc", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
@@ -72,7 +72,7 @@ Postext reconeix set tipus de bloc de prosa, a més de les directives i les inse
     <tr>
       <td>Paràgraf</td>
       <td>Text pla en una o més línies</td>
-      <td>Les línies no buides i no especials consecutives s'uneixen amb un únic espai i s'emeten com un sol paràgraf. Entre dos caràcters xinesos o japonesos (ideogrames, kana, puntuació d'amplada completa, i cometes tipogràfiques, guions llargs o punts suspensius al costat d'aquests) el final de línia desapareix, com en CSS, de manera que un paràgraf xinès es pot tallar en qualsevol punt del codi font. Entre dos d'aquests signes (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) decideixen els caràcters que hi ha més enllà: el final de línia desapareix si un d'ells és xinès o japonès, i <code>“hello”⏎“bye”</code> conserva el seu espai. El coreà conserva el seu espai. Els salts de línia manuals dins d'un paràgraf no es conserven — fes servir una línia en blanc per començar un paràgraf nou.</td>
+      <td>Les línies no buides i no especials consecutives s'uneixen amb un únic espai i s'emeten com un sol paràgraf. Entre dos caràcters xinesos o japonesos (ideogrames, kana, puntuació d'amplada completa, i cometes tipogràfiques, guions llargs o punts suspensius al costat d'aquests) el final de línia desapareix, com en CSS, de manera que un paràgraf xinès es pot tallar en qualsevol punt del codi font. Entre dos d'aquests signes (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) decideixen els caràcters que hi ha més enllà: el final de línia desapareix si un d'ells és xinès o japonès, i <code>“hello”⏎“bye”</code> conserva el seu espai. El coreà conserva el seu espai. Un salt de línia escrit al text no es conserva, tret que la línia acabi en una barra inversa (un salt de línia forçat, vegeu <a href="#salts-de-línia">Salts de línia</a>); una línia en blanc comença un paràgraf nou. Un tabulador escrit al text també és un espai entre paraules, tret que l'estil del paràgraf fixi tabulacions; <code>:tab</code> sempre és un tabulador (vegeu <a href="#tabuladors-i-tabulacions">Tabuladors i tabulacions</a>). Un poema, les línies del qual han de quedar tal com s'escriuen, va en un bloc <a href="#verse"><code>:::verse</code></a>.</td>
     </tr>
     <tr>
       <td>Cita (blockquote)</td>
@@ -98,6 +98,11 @@ Postext reconeix set tipus de bloc de prosa, a més de les directives i les inse
       <td>Fórmula en bloc</td>
       <td><code>$$ … $$</code></td>
       <td>Una fórmula LaTeX composta com a bloc propi. Es renderitza centrada a la columna, ajustada a la retícula de base com una capçalera, i es manté vectorial al PDF. Les formes d'una sola línia i de tanca multilínia es descriuen a <a href="#fórmules-matemàtiques">Fórmules matemàtiques</a>.</td>
+    </tr>
+    <tr>
+      <td>Bloc de codi</td>
+      <td><code>```js</code> … <code>```</code>, <code>~~~</code> … <code>~~~</code></td>
+      <td>Un llistat, conservat tal com està escrit: cada espai, cada tabulador i cada salt de línia, sense llegir res com a Markdown. Es compon línia a línia en la lletra del codi, dins d'una caixa. Vegeu <a href="#blocs-de-codi">Blocs de codi</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -137,6 +142,78 @@ Uns altres dos canvien el que imprimeix un encapçalament i com compta. `hidden=
 
 # Dades en brut {style="apendice"}
 ```
+
+### Caplletres
+
+Un paràgraf comença amb una caplletra quan la hi dona el nivell o l'estil del seu encapçalament, o l'estil de paràgraf del seu grup `:::paragraphs` (vegeu [Configuració › Caplletres](/ca/docs/configuration#caplletres)): la primera lletra es compon gran al costat de les primeres línies, que s'escurcen al seu voltant. El paràgraf no porta cap marcatge; el text s'escriu com sempre, i la lletra continua formant part de la seva paraula per a la còpia, la cerca i el mapa d'origen. Un atribut `dropcap` la canvia per a un capítol o un grup:
+
+```markdown
+# Perduts {dropcap=false}
+
+# Les mines {dropcap=2}
+
+:::paragraphs{style="entrada" dropcap}
+El fanal de la primera entrada comença amb una inicial.
+:::
+```
+
+En una línia d'encapçalament, `dropcap=false` deixa el paràgraf que segueix l'encapçalament sense la caplletra que fixa el seu nivell o el seu estil, `dropcap=N` la compon sobre `N` línies, i un `dropcap` sol dona una caplletra a aquest paràgraf (de tres línies, amb la font del paràgraf) quan el nivell no en fixa cap. A la línia d'obertura d'un `:::paragraphs`, l'atribut fa el mateix per al primer paràgraf del grup, o per a tots els paràgrafs quan l'estil diu `each: true`. El paràgraf que segueix un encapçalament es busca més enllà de les línies d'obertura i tancament dels contenidors, les directives, les caixes que han sortit del flux i les figures flotants; un paràgraf dins d'una caixa, un element de llista, una cita o un poema no porta mai caplletra. Des de postext 1.23.
+
+### Blocs de codi
+
+Un llistat va entre dues tanques de tres o més accents greus (o tres o més titlles), cadascuna en una línia pròpia i amb tres espais de sagnat com a màxim. Tot el que hi ha entre elles es conserva tal com està escrit: els espais del principi i les sèries d'espais, els tabuladors, les línies en blanc i les línies que comencen per `#`, `-`, `1.`, `>`, `$` o `:::`. A dins no es llegeix res com a Markdown: ni èmfasis, ni `:ref`, ni fórmules, ni xips, ni directives, ni encapçalaments. La tanca de tancament fa servir el mateix caràcter que la d'obertura i és almenys igual de llarga, de manera que un llistat que mostra una tanca va dins d'una de més llarga o de titlles:
+
+~~~markdown
+```bash {title="copia.sh" lineNumbers start=12 highlight="3,5-7"}
+#!/usr/bin/env bash
+# Copia les fotos al disc de còpies de seguretat
+rsync -a --delete ~/Photos/ /Volumes/Backup/Photos/
+echo "fet: $(date)"
+```
+~~~
+
+La cadena d'informació que segueix la tanca d'obertura indica el llenguatge (la seva primera paraula: `js`, `ts`, `python`, `bash`, `console`, `json`…), i la resta es llegeix com a atributs amb la [sintaxi dels atributs](#valors-dels-atributs), entre claus o sense (`title="app.js" lineNumbers`). Qualsevol altra cosa després del llenguatge és el títol: ```` ```console Terminal ```` i ```` ```python normalize.py ```` imprimeixen *Terminal* i *normalize.py* damunt del llistat.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Atribut</th>
+      <th>Efecte</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>title="…"</code></td>
+      <td>Un títol damunt del llistat, en una fila de títol (o en una pestanya d'etiqueta a la vora de la caixa quan hi ha <code>codeStyle.label</code>).</td>
+    </tr>
+    <tr>
+      <td><code>label="…"</code></td>
+      <td>El text de la pestanya d'etiqueta de la caixa, com el d'un <code>:::callout</code> (amb <code>codeStyle.label</code>).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code>, <code>lineNumbers=false</code></td>
+      <td>Numera les línies d'aquest llistat (o no), digui el que digui <code>codeStyle.lineNumbers</code>. Els números van en un marge davant del codi i no es copien amb ell.</td>
+    </tr>
+    <tr>
+      <td><code>start=N</code></td>
+      <td>El número de la primera línia (numera el llistat quan res més no ho fa).</td>
+    </tr>
+    <tr>
+      <td><code>highlight="3,5-7"</code></td>
+      <td>Acoloreix el fons de les línies indicades (comptades des de la primera línia del llistat, que és l'1): línies soltes i intervals, separats per comes.</td>
+    </tr>
+    <tr>
+      <td><code>span=page</code></td>
+      <td>En una pàgina de diverses columnes, el llistat les ocupa totes.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una tanca acaba el paràgraf de damunt, amb línia en blanc o sense, i el text que segueix la tanca de tancament comença un paràgraf nou. Una tanca que es queda oberta arriba fins al final del text i apareix als avisos (`unclosedCodeBlock`). Una tanca dins d'un `:::callout` és una caixa niada dins seu; dins de `:::paragraphs`, el llistat conserva l'estil del codi, no el de paràgraf. Postext no continua els elements de llista, així que una tanca després d'un element de llista tanca la llista. Les marques d'índex i les àncores escrites dins d'un llistat es queden tal com estan escrites.
+
+El codi sagnat (quatre espais o un tabulador, després d'una línia en blanc) només es llegeix com a llistat quan `codeStyle.indentedCode` està activat: els textos de Postext sovint sagnen amb espais, i les llistes niades llegeixen els espais del principi.
+
+L'aspecte d'un llistat (la lletra, la caixa, l'amplada del tabulador, què passa amb una línia més ampla que la caixa, els números de línia, els colors dels seus elements) el fixa `codeStyle`; vegeu [Configuració › Llistats de codi](/ca/docs/configuration#llistats-de-codi). El codi en línia (`` `x` ``) es queda en la lletra del text llevat que `codeStyle.inline` li'n doni una. Un llibre desat abans de postext 1.23 amb tanques al text les continua llegint com aleshores, com a Markdown (`codeStyle.blocks: false`). Des de postext 1.23.
 
 ## Directives
 
@@ -200,7 +277,7 @@ Les directives són etiquetes de control d'una sola línia escrites com a `:::no
     </tr>
     <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
-      <td>Un poema a la manera àrab clàssica: un bayt per línia, amb els dos hemistiquis separats per <code>||</code>, compostos l'un al costat de l'altre amb una amplada comuna. Vegeu <a href="#verse">més avall</a>.</td>
+      <td>Un poema, compost línia a línia tal com s'escriu (cada línia un vers, línies en blanc entre estrofes, espais inicials com a sagnat), o a la manera àrab clàssica quan les seves línies separen els hemistiquis amb <code>||</code>. Vegeu <a href="#verse">més avall</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -259,7 +336,7 @@ Es reconeixen quatre noms de contenidor al flux del text (un cinquè, `:::column
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>Una sèrie de paràgrafs composta amb un estil de paràgraf amb nom (una entradeta, un epígraf, unes notes en lletra petita) en lloc de l'estil del cos. <code>align</code>, <code>indent</code> i <code>endIndent</code> fixen l'alineació i els sagnats, amb estil o sense: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compon una data a un caràcter del final de la línia (地から1字上げ).</td>
+      <td>Una sèrie de paràgrafs composta amb un estil de paràgraf amb nom (una entradeta, un epígraf, unes notes en lletra petita) en lloc de l'estil del cos. <code>align</code>, <code>indent</code> i <code>endIndent</code> fixen l'alineació i els sagnats, amb estil o sense: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compon una data a un caràcter del final de la línia (地から1字上げ). <code>dropcap</code> activa o desactiva una <a href="#caplletres">caplletra</a> al seu primer paràgraf.</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
@@ -490,6 +567,14 @@ Els canvis només de format (sense `startAt`) mantenen el comptador viu — úti
 
 `format` accepta qualsevol grafia d'un format de numeració: `roman-lower` i `i` funcionen igual que `lower-roman`, `arabic` igual que `decimal`, i `一` i `あ` igual que `japanese-informal` i `hiragana` (consulta [Configuració › Grafies dels formats de numeració](/ca/docs/configuration#grafies-dels-formats-de-numeració)). Un valor que no és cap d'aquestes deixa el format com estava, i el sandbox ho assenyala.
 
+`lines` reinicia el compte de la [numeració de línies](/ca/docs/configuration#numeració-de-línies), no el comptador de pàgines: la línia següent que es compta porta el número donat, digui el que digui `lineNumbers.restart`. Un valor que no és un nombre enter igual o més gran que 0 s'ignora.
+
+```md
+## Acte II
+
+:::numbering{lines=1}
+```
+
 ### `:::space`
 
 `:::space` deixa espai vertical entre dos blocs: per separar una línia de tancament del text que la precedeix, baixar una mica un epígraf o una signatura, o obrir un *blanc de separació* entre dos trams de text. Les línies en blanc de més al Markdown no ho fan — com en qualsevol Markdown, una sèrie de línies en blanc és un únic separador de paràgrafs, i així un document no canvia de maquetació quan un editor o un formatador afegeix o retalla espais.
@@ -525,6 +610,72 @@ Per a un salt fix en lloc d'espai, fes servir `:::columnbreak` o `:::pagebreak`.
 
 
 ### `:::verse`
+
+Un poema. `:::verse` el compon d'una de dues maneres: **línia a línia**, com s'imprimeixen la majoria dels poemes, o a la **manera àrab clàssica** d'una qaṣīda, cada bayt en dos hemistiquis l'un al costat de l'altre. Un poema les línies del qual porten separador d'hemistiquis (`||`, o un `\\` entre espais) pren la manera àrab, i qualsevol altre la composició línia a línia; `layout=lines` o `layout=bayt` a l'obertura en tria una.
+
+#### Línia a línia
+
+Escriu el poema com s'imprimeix: un vers per línia de Markdown, una línia en blanc entre estrofes i espais davant d'un vers per sagnar-lo.
+
+```md
+:::verse
+Ja els passerells s'arreceren
+a la vora del camí;
+  el sol de migdia empeny
+  la terra cap al ponent.
+
+Tot calla dins la clariana,
+tot dorm sota l'om antic.
+:::
+```
+
+- **Versos.** Cada línia no buida és un vers, llegit com a Markdown en línia per si sol: cursives, versaletes, notes i referències funcionen. Una sèrie de línies en blanc és un sol canvi d'estrofa.
+- **Sagnats.** Cada espai inicial mesura `indentStep`, 0,5 em per defecte, de manera que dos espais sagnen el vers un em; un tabulador en compta quatre i un espai ideogràfic (U+3000), dos.
+- **Versos partits.** Un vers més ample que la caixa es parteix en un espai entre paraules. Amb `turnover=hang` (per defecte) la resta penja a la línia següent, `hang` cap a dins des de l'inici del mateix vers: la `hangingIndent` de l'estil de paràgraf del poema, o 2 em (`bodyText.verse.hang`). Amb `turnover=right` es compon contra el final de la caixa darrere d'un claudàtor d'obertura (`turnoverMark`, `[` per defecte), el costum de les edicions castellanes i angleses. El vers no es divideix amb guionet si el seu estil de paràgraf no fixa `hyphenation: true` per si mateix. Un vers i la seva resta no se separen mai en un salt de columna o de pàgina.
+- **Estrofes.** L'espai entre dues estrofes és una línia de l'interlineat del poema; `stanzaSpace=0.5` el deixa en mitja línia, i una longitud (`stanzaSpace=6pt`) el fixa exacte. A la retícula de base surt en línies senceres. Les columnes i les pàgines es tallen primer entre estrofes; dins d'una estrofa, segons les regles de vídues i òrfenes, que llavors compten les línies de l'estrofa. `keepStanzas=N` manté sencera tota estrofa de N línies o menys: un haiku porta `keepStanzas=3` i una tanka `keepStanzas=5`.
+- **Posició.** El poema es centra a la caixa sobre el seu vers més llarg, amb tots els versos alineats a l'inici del poema (`align=center`, l'habitual per a un poema citat en prosa); `align=start` l'alinea amb l'inici de la caixa, que és el predeterminat en text vertical. El paràgraf que presenta el poema conserva la seva última línia amb els primers versos.
+- **Versos esglaonats.** Un vers escrit `+ …` comença on va acabar el de dalt, un espai més enllà, com el vers compartit entre dos personatges al teatre en vers. Escriu `\+` per a un vers que comença amb un signe més.
+- **Cesures.** Amb `keepSpaces` a l'obertura, una sèrie de dos o més espais dins d'un vers conserva la seva amplada; sense, els espais es redueixen a un com en qualsevol paràgraf.
+- **Tipus i direcció.** `style` anomena un estil de paràgraf, que dona la família, el cos, l'interlineat, la `indent` i l'espai damunt i davall del poema. `dir` i `lang` en fixen la direcció i l'idioma: un poema llatí en un llibre àrab (`dir=ltr`) es sagna des del seu propi costat d'inici. En text vertical cada vers és una columna, sagnada des del capdamunt.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>Atribut</th>
+      <th style={{ width: '200px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>layout</code></td><td><code>auto</code></td><td><code>lines</code>, <code>bayt</code> o <code>auto</code>: a la manera àrab quan una línia porta separador.</td></tr>
+    <tr><td><code>indentStep</code></td><td><code>0.5em</code></td><td>Amplada d'un espai inicial.</td></tr>
+    <tr><td><code>turnover</code></td><td><code>hang</code></td><td><code>hang</code> o <code>right</code>.</td></tr>
+    <tr><td><code>hang</code></td><td>la <code>hangingIndent</code> de l'estil, o <code>2em</code></td><td>Sagnat de la resta penjada des de l'inici del seu vers.</td></tr>
+    <tr><td><code>turnoverMark</code></td><td><code>[</code></td><td>El signe davant d'una resta composta a la dreta.</td></tr>
+    <tr><td><code>stanzaSpace</code></td><td><code>1</code></td><td>Espai entre estrofes: un nombre sol compta línies de l'interlineat del poema, una longitud és aquesta longitud.</td></tr>
+    <tr><td><code>keepStanzas</code></td><td><code>0</code></td><td>No partir estrofes d'aquestes línies o menys; 0 ho desactiva.</td></tr>
+    <tr><td><code>keepSpaces</code></td><td>desactivat</td><td>Conservar les sèries de dos o més espais dins d'un vers.</td></tr>
+    <tr><td><code>align</code></td><td><code>center</code> (<code>start</code> en text vertical)</td><td>Centrar el poema sobre el seu vers més llarg o alinear-lo a l'inici.</td></tr>
+    <tr><td><code>style</code>, <code>dir</code>, <code>lang</code></td><td>—</td><td>Estil de paràgraf, direcció i idioma del poema.</td></tr>
+    <tr><td><code>numbered</code></td><td><code>true</code></td><td><code>false</code> deixa el poema fora de la numeració de línies: els seus versos no es compten.</td></tr>
+    <tr><td><code>lineStart</code></td><td>—</td><td>El número de línia del primer vers del poema. El compte torna a començar aquí, digui el que digui <code>lineNumbers.restart</code>.</td></tr>
+    <tr><td><code>interval</code></td><td><code>lineNumbers.interval</code></td><td>L'interval propi del poema: imprimir el número de cada enèsim vers.</td></tr>
+  </tbody>
+</table>
+
+`bodyText.verse` fixa els valors per defecte de tots els poemes (vegeu [Configuració › Vers](/ca/docs/configuration#vers)). El text pla conserva el poema tal com es va escriure, un salt de línia entre versos i una línia en blanc entre estrofes, de manera que un passatge copiat i una cerca el llegeixen vers a vers; l'EPUB adaptable compon cada estrofa com un element els versos del qual pengen la seva resta, i el PDF etiquetat marca cada estrofa com un paràgraf.
+
+**Numeració de línies.** Amb `lineNumbers` activat, els versos d'un poema es compten (vegeu [Configuració › Numeració de línies](/ca/docs/configuration#numeració-de-línies)). Cada vers compta una vegada: la seva resta no porta número, i l'espai entre estrofes no es compta. Per defecte cada cinquè vers imprimeix el seu número al marge exterior i el compte torna a començar a cada poema. Un poema a la manera àrab clàssica compta una línia per bayt. L'obertura ajusta un poema: `lineStart=N` dona un número al seu primer vers, `interval=N` li dona un interval propi i `numbered=false` el deixa fora.
+
+```md
+:::verse{lineStart=37}
+…
+:::
+```
+
+Amb l'interval per defecte, 5, aquest poema imprimeix 40, 45, etc. al costat dels seus versos.
+
+#### Manera àrab clàssica
 
 Un poema a la manera àrab clàssica (una qaṣīda, una qiṭʿa): cada vers, el *bayt*, en una línia i en dues meitats, el *ṣadr* al costat de l'inici (la dreta en àrab) i l'*ʿajuz* al costat del final, amb un buit entre totes dues. Escriu un bayt per línia, amb els hemistiquis separats per `||` (també val `\\` amb un espai a cada banda, com als textos de Wikisource). Una línia sense separador és un hemistiqui solt, centrat al poema.
 
@@ -567,6 +718,27 @@ Els números de pàgina són els que el document imprimeix realment. Un document
 
 :::index
 ```
+
+### Salts de línia
+
+Les línies d'un paràgraf s'uneixen amb un espai. Per acabar una línia dins d'un paràgraf sense començar-ne un altre (una adreça, la salutació d'una carta, una dedicatòria), acaba la línia del text amb una barra inversa, el salt forçat de CommonMark, o escriu `\\` seguit d'un espai:
+
+```md
+Al guardià del far,\
+al final del moll nord.
+
+Anna Puig \\ Carrer Major 4 \\ 08001 Barcelona
+```
+
+- La línia anterior a un salt es compon amb la seva amplada natural, com l'última línia d'un paràgraf, sense estirar-se fins a la caixa. El text que segueix obre una línia nova del mateix paràgraf, sense sagnat de primera línia ni espai a sobre; amb sagnat francès penja com qualsevol línia després de la primera.
+- L'admeten els paràgrafs, les cites (`> Primera línia\` sobre `> segona línia`), les notes al peu i els elements de llista. Un element de llista ocupa una sola línia del text, així que es parteix amb `\\`.
+- Una barra inversa al final del paràgraf s'imprimeix, com a CommonMark, i dos salts seguits són un de sol: per a una línia buida, comença un paràgraf nou o afegeix un [`:::space`](#space).
+- Un `\\` enganxat al caràcter següent no és un salt: `\\*` imprimeix una barra inversa i un asterisc escapat, `C:\\Temp` les dues barres. Al codi en línia i en una fórmula les barres són del codi i de la fórmula.
+- Dos espais al final d'una línia, l'altre salt forçat de CommonMark, no ho són: no es veuen en un editor i molts editors els hi deixen oblidats, així que partirien línies que ningú no volia partir.
+- El text copiat del visor HTML porta un salt de línia en aquest punt, l'EPUB adaptable un `<br/>`, el text del PDF un final de línia i una exportació a Word un salt de línia manual (Maj+Retorn), que la importació de Word torna a llegir com a salt.
+- Un poema conserva els versos, els sagnats i les estrofes en un bloc [`:::verse`](#verse), sense una barra a cada línia.
+
+Fins a postext 1.22 la barra inversa s'imprimia i les línies s'unien amb un espai. Un llibre desat aleshores el text del qual acaba una línia amb una barra inversa, o posa `\\` davant d'un espai, conserva aquesta lectura (`bodyText.hardLineBreaks: false`, vegeu [Configuració › Paquets escrits per postext 1.4 o anterior](/ca/docs/configuration#paquets-escrits-per-postext-14-o-anterior)).
 
 ### Salts de línia als títols
 
@@ -644,7 +816,7 @@ El marcatge en línia es reconeix dins de qualsevol bloc de text (encapçalament
     <tr>
       <td>Codi en línia</td>
       <td><code>`código`</code></td>
-      <td>Les cometes inverses s'eliminen; el tram es renderitza com a text pla, tal com es va escriure: un <code>{':ref{…}'}</code>, un xip, una fórmula, un enllaç o un signe de marca a dins s'imprimeixen literalment, que és com un text mostra la sintaxi. L'estil diferenciat per al codi és al full de ruta.</td>
+      <td>Les cometes inverses s'eliminen; el tram es renderitza com a text pla, tal com es va escriure: un <code>{':ref{…}'}</code>, un xip, una fórmula, un enllaç o un signe de marca a dins s'imprimeixen literalment, que és com un text mostra la sintaxi. Es compon en la lletra del text o, amb <code>codeStyle.inline</code>, en la lletra del codi com una sola unitat (vegeu <a href="/ca/docs/configuration#llistats-de-codi">Configuració › Llistats de codi</a>). Un llistat va en un <a href="#blocs-de-codi">bloc de codi</a>.</td>
     </tr>
     <tr>
       <td>Escapament</td>
@@ -669,7 +841,12 @@ El marcatge en línia es reconeix dins de qualsevol bloc de text (encapçalament
     <tr>
       <td>Xip</td>
       <td><code>:chip[texto]</code></td>
-      <td>Un fragment de text en una caixa que passa de línia com una unitat: un banc de paraules, una tecla, una etiqueta. En defineixen lâestil els <code>chipStyles</code>; vegeu <a href="#xips-en-línia">Xips en línia</a>.</td>
+      <td>Un fragment de text en una caixa que passa de línia com una unitat: un banc de paraules, una tecla, una etiqueta. En defineixen l'estil els <code>chipStyles</code>; vegeu <a href="#xips-en-línia">Xips en línia</a>.</td>
+    </tr>
+    <tr>
+      <td>Tabulador</td>
+      <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
+      <td>Porta les paraules que el segueixen a la tabulació següent: una de les tabulacions de l'estil del paràgraf, o la que fixen els seus atributs. Un caràcter de tabulació escrit al text només és un tabulador on l'estil fixa tabulacions. Vegeu <a href="#tabuladors-i-tabulacions">Tabuladors i tabulacions</a>.</td>
     </tr>
     <tr>
       <td>Matemàtiques en línia</td>
@@ -736,6 +913,72 @@ L'informe de la :smallcaps[unesco] i les pautes de l':smallcaps[oms].
 - **On.** Paràgrafs, elements de llista, cites, requadres, cel·les de taula, llegendes i notes, i encapçalaments mentre `headings.inlineMarks` estigui activat (ho està per defecte); si es desactiva, el marcatge s'elimina de l'encapçalament i el text s'imprimeix tal qual.
 - **Paràgrafs sencers.** Un estil de paràgraf o el cos d'un requadre amb `smallCaps: true` componen així tot el seu text (vegeu [Estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)).
 - **Text.** El canvas, l'HTML i el PDF porten les lletres tal com es pinten: en copiar `:smallcaps[Hamlet]` s'obté «HAMLET».
+
+### Tabuladors i tabulacions
+
+Un tabulador porta les paraules que el segueixen a una tabulació de la línia: el preu d'un plat arran del final de la mesura darrere d'una filera de punts, l'actor després del paper en un repartiment, la puntuació d'una pregunta d'examen al marge. Escriu `:tab` on va el tabulador; els espais que l'envolten hi queden inclosos. Les tabulacions es fixen a la configuració: `bodyText.tabStops` per a tots els paràgrafs, elements de llista i cites, els `tabStops` d'un estil de paràgraf per als paràgrafs d'un grup `:::paragraphs`, i el `body.tabStops` d'un estil de requadre dins de les seves caixes (vegeu [Configuració › Tabulacions](/ca/docs/configuration#tabulacions)). Un menú amb els preus arran del final de la mesura, darrere de punts:
+
+```ts
+paragraphStyles: [
+  { id: 'menu', firstLineIndent: { value: 0, unit: 'em' }, tabStops: [{ position: 'end', align: 'end', leader: '. ' }] },
+],
+```
+
+```markdown
+:::paragraphs{style="menu"}
+Sopa de ceba :tab 8,50
+
+Orada a la brasa amb fonoll i llimona :tab 21,00
+:::
+```
+
+`:tab{…}` fixa una tabulació només per a aquell tabulador, sense cap estil: el buit d'un formulari fins al final de la línia, un import alineat a la coma decimal.
+
+```markdown
+Nom i cognoms :tab{at=end leader=rule}
+
+Total a pagar :tab{at=80% align=decimal} 1.234,50
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Atribut</th>
+      <th>Significat</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>at</code></td>
+      <td>On és la tabulació, des de la vora d'inici de la mesura del paràgraf: una longitud (<code>120mm</code>, <code>4cm</code>, <code>2em</code>; un nombre sol és en punts), <code>end</code> per al final de la mesura, o una part de la mesura (<code>60%</code>). Sense <code>at</code>, <code>:tab&#123;…&#125;</code> va a les tabulacions de l'estil, com un <code>:tab</code> sol.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>start</code> (per defecte): el text que segueix el tabulador comença a la tabulació. <code>end</code>: hi acaba (el text fins al tabulador següent o fins al final del paràgraf). <code>center</code>: s'hi centra. <code>decimal</code>: el seu separador decimal queda a la tabulació; un tram sense separador hi acaba.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>El farciment: un text que es repeteix al llarg de l'espai abans de la tabulació, <code>"."</code>, <code>". "</code>, <code>"·"</code>, <code>"_"</code>, <code>"-"</code> o un altre text breu, amb la lletra i el color del paràgraf. <code>rule</code> traça una línia una mica per sota de la línia de base, el buit d'un formulari. Per defecte, cap.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>L'espai que es deixa entre el farciment i el text a cada costat. Per defecte <code>0.5em</code> del cos del paràgraf; un nombre sol és en punts.</td>
+    </tr>
+    <tr>
+      <td><code>decimal</code></td>
+      <td>El separador amb què s'alinea una tabulació <code>decimal</code>. Per defecte, el de la llengua del document: <code>.</code> en anglès, xinès, japonès i àrab, <code>,</code> en castellà, català, portuguès, francès, alemany i altres.</td>
+    </tr>
+  </tbody>
+</table>
+
+- **On va un tabulador.** A la primera tabulació que queda més enllà del text que el precedeix, entre les que segueixen la que ha pres el tabulador anterior de la línia, de manera que el segon tabulador d'una línia sol anar a la segona tabulació. Passada l'última, `tabInterval` fixa més tabulacions a cada interval des de l'inici de la mesura; sense aquest valor, el tabulador és un espai entre paraules.
+- **Caràcters de tabulació.** Un tabulador escrit al text (U+0009) només és un tabulador en un paràgraf l'estil del qual fixa `tabStops` o `tabInterval`. A tot arreu més és l'espai entre paraules que sempre ha estat, de manera que un document escrit amb tabuladors en lloc d'espais conserva la seva composició. Diversos caràcters de tabulació seguits avancen tantes tabulacions. Un tabulador al començament d'una línia del text es retalla amb els altres blancs inicials de la línia: escriu `:tab` per començar una línia en una tabulació.
+- **El que queda com a text.** Un `:tab` seguit d'una lletra (`3:table`), i un `:tab` dins de codi en línia, d'una fórmula, de l'adreça d'un enllaç o dels atributs d'una directiva.
+- **On.** Paràgrafs, elements de llista, cites, requadres i grups `:::paragraphs`. Els encapçalaments, els peus, les cel·les de taula i el text dels dissenys (obertures, capçaleres) no tenen tabulacions.
+- **Text que passa de la tabulació.** Quan el text anterior a un tabulador ja ha passat totes les tabulacions que queden a la seva línia, una tabulació `end`, `center` o `decimal` s'emporta l'última paraula anterior al tabulador a la línia següent juntament amb el text de la tabulació, i el text anterior es compon més estret, com una línia de l'índex general fa saltar el títol per conservar el número de pàgina. Una tabulació `start` talla la línia abans del tabulador, i el text que el segueix comença la línia següent a la seva tabulació. Un tabulador que obre la seva línia i tampoc no troba cap tabulació no ocupa espai.
+- **Farciments.** Un farciment omple l'espai que hi ha abans de la seva tabulació i acaba arran del final d'aquest espai, de manera que els punts de diverses línies queden alineats sigui quin sigui el text que els precedeix. `gap` el separa del text pels dos costats; no hi ha separació abans quan el tabulador obre la línia, ni després quan no el segueix res.
+- **Tall de línies.** Un paràgraf amb un tabulador es compon línia a línia, mai amb Knuth-Plass. En text justificat només els espais entre paraules que segueixen l'últim tabulador d'una línia absorbeixen el sobrant, i l'última línia del paràgraf no s'estira (vegeu [Partició de mots i justificació › Línies amb tabulador](/ca/docs/justification#línies-amb-tabulador)). Un paràgraf centrat o alineat a la dreta compon les línies amb tabulador des del costat d'inici, perquè les tabulacions són posicions de la mesura. De dreta a esquerra, les tabulacions es mesuren des de la dreta i una tabulació `end` queda a l'esquerra (vegeu [Composició àrab](/ca/docs/arabic-layout#índex-general-i-índex-analític)). En text vertical un tabulador és un espai entre paraules, i un `:tab` hi genera l'avís de contingut `tabInVerticalText`.
+- **Text i sortides.** El text pla porta un caràcter de tabulació (`\t`) a cada tabulador; els farciments no són text, i les còpies, les cerques i el mapa del text font els ometen. El canvas, el visor HTML i l'EPUB de maquetació fixa els pinten (ocults als lectors de pantalla a l'HTML); un PDF etiquetat els marca com a artefactes, així que el seu text diu `Sopa de ceba 8,50`. L'EPUB adaptable no pot conservar les tabulacions exactes: cada línia d'un paràgraf amb tabuladors es converteix en una fila de les parts que hi ha entre els seus tabuladors, on una tabulació `end`, `center` o `decimal`, o una amb farciment, empeny la part següent al final de la fila (el seu farciment, una vora puntejada o contínua), i una tabulació `start` manté la part anterior amb la seva amplada impresa. Una exportació a Word escriu `:tab` com un tabulador de Word, i la importació de Word torna a llegir un tabulador del text corrent com a `:tab` amb la tabulació que Word li havia fixat (vegeu [Sandbox › Documents de Word](/ca/docs/sandbox#documents-de-word)).
 
 ### Orientació en text vertical
 
@@ -1588,12 +1831,12 @@ Un `:::strip` té el cos d'una pàgina però va dins del text com una sola caixa
 Postext no reconeix les característiques següents de CommonMark. O es tracten com a text pla (i per tant apareixeran literalment a la sortida) o es descarten silenciosament:
 
 - **Encapçalaments tipus setext** — la forma amb subratllat `===` / `---`. Usa encapçalaments ATX (`#`).
-- **Blocs de codi amb tanques o amb sagnat** — tanques ` ``` ` o `~~~` i sagnat de 4 espais. Les línies de dins es llegeixen com a Markdown corrent, no es conserven com un llistat: les línies sense una línia en blanc entre elles s'uneixen en un sol paràgraf i perden els espais inicials, una línia que comença per `#` i un espai es converteix en un títol (`#!/usr/bin/env` continua sent text) i una que comença per `-` o `1.` i un espai, en un element de llista, un parell de signes `$` es converteix en una fórmula, i les línies de la tanca s'imprimeixen com a text: una tanca ` ``` ` com un accent greu, la d'obertura seguida de la cadena d'informació (`` `bash``), i una tanca `~~~` com una `~` petita composta com a subíndex. Per compondre un llistat, escriu cada línia com un paràgraf propi (amb una línia en blanc entre línies) dins d'un bloc `:::paragraphs` amb un estil de paràgraf que fixi una `fontFamily` monoespaiada, i tanca cada línia entre accents greus, que conserven `#`, `$`, `*` i els altres tal com estan escrits. Els espais normals al principi d'una línia es descarten i una sèrie d'espais dins de la línia es redueix a un, també entre els accents greus, així que sagna i alinea amb espais de no separació (U+00A0) i posa'ls dins dels accents greus: un davant de l'accent greu d'obertura també es descarta. El codi en línia es reconeix, però no té tipografia de codi: vegeu [Format en línia](#format-en-línia).
 - **HTML en brut** — les etiquetes `<tag>` no s'interpreten. Tampoc no s'admeten etiquetes d'estil MDX; la font Postext és markdown pur.
 - **Línies horitzontals** — `---`, `***`, `___`.
 - **Taules** — les taules amb barres verticals no s'analitzen. Les taules es modelen com a recursos estructurats a `PostextContent.resources`.
 - **Enllaços per referència** — `[texto][id]` amb el seu bloc de definició.
 - **Autoenllaços** — `<https://example.com>`.
+- **Salts de línia amb dos espais al final** — els espais es retallen. Acaba la línia amb una barra inversa (vegeu [Salts de línia](#salts-de-línia)).
 - **Ratllat** — `~~texto~~`. El renderitzador de ratllat està reservat actualment per a tasques completades.
 - **Notes al marge** — no estan implementades, i el motor ignora `PostextContent.notes`, encara que els tipus ho acceptin. Les notes a peu de pàgina i les de final de capítol s'escriuen amb `[^id]` (vegeu [Notes a peu de pàgina](#notes-a-peu-de-pàgina)); fins a postext 1.5 calia compondre-les com a text.
 

@@ -96,6 +96,7 @@ Conversion at `page.dpi` (default 300):
 | `paragraphStyles` | ParagraphStyleConfig[] | `[]` | §11 `:::paragraphs{style=…}` |
 | `calloutStyles` | CalloutStyleConfig[] | `[{id:'note',name:'Note'}]` | §12 `:::callout{type=…}` — declaring replaces the default list |
 | `chipStyles` | ChipStyleConfig[] | `[{id:'chip',name:'Chip'}]` | §13 inline `:chip[…]{style=…}` |
+| `codeStyle` | CodeStyleConfig | §12b | code listings (```` ``` ```` / `~~~` fences, postext ≥ 1.23): face, box, tab width, long lines, line numbers, token colours, inline code |
 | `resourceTypes` | ResourceType[] | Figure + Table in the document language (`locale`, else the hyphenation locale; English for other languages) | §15 numbering, caption prefix, default placement |
 | `tableStyle` | TableStyleConfig | §16 | document table style |
 | `tableStyles` | NamedTableStyleConfig[] | `[]` | §16 per-table via `resource.table.styleId` |
@@ -106,6 +107,7 @@ Conversion at `page.dpi` (default 300):
 | `footnotes` | FootnotesConfig | §19a | `[^id]` notes: placement, numbering, type, rule |
 | `index` | IndexConfig | §19b | what `:::index` prints: type, indents, separators, ranges, letter heads |
 | `cjk` | CjkConfig | §19c | Chinese, Japanese and Korean composition: region, line breaking, punctuation widths, Han–Latin space, character grid, upright digits, marks, ruby, warichu (postext ≥ 1.9); Japanese summary §19c2 (≥ 1.16) |
+| `lineNumbers` | LineNumbersConfig | §19f | line numbers in the margin, the gutter or the side column (postext ≥ 1.23): verse or every body line, interval, restarts, position, face; off by default |
 | `comics` | ComicsConfig | §19e | comic pages and strips (`:::page`, `:::strip`, postext ≥ 1.20): reading direction, frame, gutters, panel styles, lettering, balloon styles, cast; full reference in comics.md |
 | `colorPalette` | ColorPaletteEntry[] | `[main-color #295AA3]` | §0 |
 | `locale` | LocaleTag (any BCP 47 tag: `'es'`, `'es-ES'`, `'pt-BR'`, `'zh-Hant-TW'`) | `'en-us'` | document language: hyphenation fallback, built-in resource types and table continuation strings, PDF `/Lang`, HTML `lang`. Chinese: the script picks the strings (图/圖), the region the `cjk` defaults (§19c); hyphenation is off. Japanese (`'ja'`, `'ja-JP'`; never `'jp'`, ≥ 1.16): the `japan` region (§19c2), 図/表, （続き）, 第{n}章 references, 参考文献, `{1:一}` = 百一 (japanese-informal), note defaults by writing mode (§19a), gojūon index, ja-JP citations, JAN glyph forms in the PDF |
@@ -121,7 +123,6 @@ Conversion at `page.dpi` (default 300):
 Not configurable (no config exists — don't look for it): margin notes (emulate with
 `span:'side'` callouts; footnotes and endnotes are `footnotes`, §19a), a blockquote's own family, size,
 leading or alignment (quotes take the body's; colour, italics and indents are `bodyText.blockquote`),
-body drop caps (only design text elements have `dropCap`),
 table line height (= body leading ratio × table font size), heading hyphenation (off),
 per-level heading `textAlign` (only `headings.textAlign`). Document metadata (`{title}`,
 `{subtitle}`, `{author}`, `{publishDate}`) comes from the **front matter of the first chapter**,
@@ -262,6 +263,9 @@ bodyText
 ├─ hangingIndent     boolean         false           indent all lines but the first
 ├─ indentAfterHeading boolean        true            false = first paragraph after a heading unindented (classic book style)
 ├─ blockquote        { color=#666666, italic=true, indent=0, firstLineIndent=<body's> }   how `> …` quotes are set (colour palette-linkable; indent = every line, first line counted from it)
+├─ verse             { layout='auto', indentStep=0.5em, turnover='hang', hang=2em, turnoverMark='[', stanzaSpace=1, keepStanzas=0 }   (≥ 1.23) defaults of `:::verse` poems set line by line; the fence's attributes of the same name win. layout 'bayt' = 1.22's centred single hemistichs for poems with no `||` (stored configs < 9 get it); stanzaSpace in lines of the poem's leading
+├─ tabStops          TabStop[]       unset           (≥ 1.23, §4a) tab stops of every paragraph, list item and quotation; a paragraph style or a callout body that sets its own replaces them
+├─ tabInterval       Dimension       unset           (≥ 1.23, §4a) default stops every interval past the last stop, from the start of the measure; unset = a tab past the last stop is a word space
 └─ hyphenation       { enabled=true, locale=<config.locale ?? 'en-us'>, ragged=false, zone=3em, compounds=true }
                       locale: any BCP 47 tag; patterns for 'en-us'|'es'|'fr'|'de'|'it'|'pt'|'ca'|'nl' (region ignored; other languages → en-us + console warning)
                       ragged: also hyphenate ragged text, only where the word does not fit and sending it down would leave a gap wider than zone (em = text size); line by line ≤ 2 hyphenated lines in a row, with optimalRagged two in a row are only discouraged
@@ -269,7 +273,7 @@ bodyText
 ```
 H&J / Knuth–Plass
 ```
-├─ optimalLineBreaking  boolean  true   Knuth-Plass (false = greedy)
+├─ optimalLineBreaking  boolean  true   Knuth-Plass (false = greedy); a paragraph holding a tab is always set greedy (§4a)
 ├─ optimalRagged        boolean  true   ragged running text (body, blockquotes, lists, ragged paragraph styles, box bodies, part and section bodies) broken with Knuth-Plass too: even edge, runt rules work;
 │                        false = line by line (1.4; a preset without configVersion 7 that sets running text ragged reads false)
 ├─ breakAfterDashes     boolean  true   a line may end after an em/en dash set closed between words (say—that's, riddles.—I); never after an opening dash (—dijo, said "—Hola), before punctuation, a quote or a bracket (thinking—" and, says—“no”), or inside 1914–1918;
@@ -277,6 +281,8 @@ H&J / Knuth–Plass
 ├─ breakAfterHyphens    boolean  true   Knuth-Plass may end a line after a compound's hyphen (well- | known) in every paragraph;
 │                        false = 1.4 breaks: a justified paragraph without formatting never breaks there (a preset without configVersion 8 whose chapters set a compound reads false)
 ├─ repeatHyphen         boolean  false  the line after a break at a compound's hyphen opens with a hyphen too (vencer- | -se; Portuguese, Spanish RAE 2010); line.repeatedHyphen; never in a URL
+├─ hardLineBreaks       boolean  true   (≥ 1.23) a backslash ending a source line, or `\\` + space, is a forced line break in paragraphs, quotes, list items;
+│                        false = 1.22: the backslashes print (a preset below configVersion 9 whose chapters end a line with `\` reads false)
 ├─ maxWordSpacing       number   2      × normal space; also the cap for balancing "loose" paragraphs
 ├─ minWordSpacing       number   0.6    × normal space
 ├─ avoidRunts           true;  runtMinCharacters 20;  runtPenalty 1000;  avoidRuntsInLists true
@@ -307,6 +313,140 @@ Gotchas
 - For a Spanish book set top-level `locale: 'es'` (hyphenation follows unless `hyphenation.locale` is set).
 - All widow/orphan/runt rules are soft penalties, never hard.
 - No-break spaces (U+00A0, U+202F, U+2007) and the word joiner (U+2060) glue their neighbours on every breaker; type the character, not `&nbsp;`. U+00A0 is in practically every face; a face without U+202F/U+2007 gets half a word space / a digit width.
+
+### 4a. Tab stops — `TabStop` (postext ≥ 1.23)
+
+Text aligned at positions across the measure inside a paragraph: a menu's
+prices flush right after the dish, a cast list's actors after a dot leader,
+an exam question's marks at the margin, a form's blanks, a run-in index
+entry's page numbers. **Set these as paragraphs with tab stops, never as
+two-column tables, `:::space`, runs of no-break spaces or chips.** A tab is
+written `:tab` in the text (document-format.md §10.9).
+
+`tabStops?: TabStop[]` and `tabInterval?: Dimension` go in three places:
+`bodyText` (every paragraph, list item and quotation), a paragraph style
+(§11; replaces the body's, unset = the body's, `[]` = none) and a callout
+style's `body` (§12; replaces the body's inside the box). All absent by
+default.
+
+| `TabStop` key | default | notes |
+|---|---|---|
+| `position` | required | from the start edge of the paragraph's measure (after a paragraph style's `indent`): a Dimension (`em` = the paragraph's own size; a length as text such as `"120mm"` also reads), `'end'` = the line's end edge, or a share of the measure (`'50%'`). Anything else: the stop is left out (`unknownConfigValue`) |
+| `align` | `'start'` | `'start'` (the text after the tab starts at the stop), `'end'` (ends there: prices, page numbers, marks), `'center'`, `'decimal'` (the first decimal separator sits on the stop; a run with none ends on it). An unknown word reads `'start'` (`unknownConfigValue`) |
+| `leader` | none | repeated over the room before the stop: `'.'`, `'. '` (spaced dots), `'·'`, `'_'`, `'-'`, any short text in the paragraph's face, or `'rule'` (a line drawn a little under the baseline: a form's blank). Set flush with the END of its room, so the leaders of several lines line up; in the paragraph's face and colour |
+| `leaderGap` | `0.5em` | room between the text and the leader and between the leader and the text at the stop (the contents' `leader.gap`); none before a leader that opens the line, none after one with nothing after it |
+| `decimalChar` | the document language's | `'decimal'` stops: `.` in en/zh/ja/ar, `,` in es/ca/pt/fr/de… |
+
+An unknown key in a stop raises `unknownConfigKey` (`leaders` → `leader`?).
+
+How a tab is set:
+- A tab goes to the first stop past the text before it, among the stops after
+  the one the line's previous tab took (the n-th tab of a line usually takes
+  the n-th stop). Past the last stop: with `tabInterval`, the next multiple
+  of it from the start of the measure; without, a word space.
+- **Overrun** (the text before the tab already passed every remaining stop):
+  an `end`, `center` or `decimal` stop takes the last word before the tab
+  down to the next line with the text at the stop (the text before sets
+  narrower, as a contents row narrows its title for its page number); a
+  `start` stop breaks the line before the tab, so the text after it starts
+  the next line at its stop.
+- A paragraph holding a tab is set **line by line** (greedy), never
+  Knuth–Plass, and column balancing never loosens or tracks it. Chinese and
+  Japanese text in it breaks between characters by the document's rules,
+  without punctuation compression or inter-character justification;
+  paragraphs with ruby, warichu or kanbun set their tabs as word spaces.
+- Justified text: a line holding a tab is not stretched before its last tab;
+  only the word spaces after it take the slack, and only on a line that is
+  not the paragraph's last. A centred or right-aligned paragraph sets its
+  tabbed lines from the start side (stops are positions on the measure).
+- Right to left: stops are measured from the right; an `end` stop sits at the
+  left, leaders run between in visual order.
+- Vertical text (`layout.writingMode: 'vertical-rl'`): no stops; a `:tab` is a
+  word space and raises the content warning `tabInVerticalText`.
+- Not in headings, captions, table cells, design text (openers, running
+  heads) or `:::toc` rows (those keep `toc.leader`, §9). No `leaderColor`.
+
+Outputs: canvas, PDF, HTML viewer and fixed EPUB paint the leaders; they are
+never text (plain text, copy, search and the source map have `\t` at each tab
+and no dots), the HTML hides them from screen readers and tagged PDF sets
+them as artifacts (pdftotext reads "Soup 8.50"). Reflowable EPUB turns each
+tabbed line into a flex row: an `end`, `center` or `decimal` stop, or one
+with a leader, pushes the next part to the row's end (a leader becomes a
+dotted or solid border); a `start` stop keeps the part before it at its
+printed width. VDT: `line.tabbed`, the tab's `space` segment carries
+`tab: {align, at}`, leader segments `leader: 'text' | 'rule'`.
+
+```json
+"paragraphStyles": [
+  { "id": "menu", "firstLineIndent": {"value": 0, "unit": "em"}, "textAlign": "left",
+    "tabStops": [{ "position": "end", "align": "end", "leader": ". " }] },
+  { "id": "cast", "firstLineIndent": {"value": 0, "unit": "em"}, "smallCaps": true,
+    "tabStops": [{ "position": "end", "align": "end", "leader": "." }] },
+  { "id": "form", "firstLineIndent": {"value": 0, "unit": "em"},
+    "tabStops": [{ "position": {"value": 30, "unit": "mm"} },
+                 { "position": "end", "leader": "rule" }] },
+  { "id": "prices", "tabStops": [{ "position": "70%", "align": "decimal" },
+                                 { "position": "end", "align": "end" }] }
+]
+```
+
+### 4b. Drop caps — `ParagraphDropCap` (postext ≥ 1.23)
+
+A body paragraph opening with its first letter set large beside its first
+lines (a chapter's first paragraph, each entry of a catalogue). **Set it on
+the paragraph, never as a heading attribute drawn by an opener design
+(`{attr.lead}` + a design text `dropCap`)**: the paragraph is then broken,
+justified and hyphenated with the rest of the text, the letter keeps its
+lines across columns and pages, and copying reads the word whole.
+
+Where it goes (all absent by default):
+- `headings.levels[].dropCap` / `headingStyles[].dropCap`: the first body
+  paragraph after a heading of that level or style (one setting per chapter
+  level, one per opener style). A style's `dropCap: false` takes the level's
+  off. Found past fences, directives, side/floated/fixed boxes and floated
+  figures; never a paragraph inside a box, a list, a quotation or a poem.
+- `paragraphStyles[].dropCap`: the first paragraph of each
+  `:::paragraphs{style=…}` group; `each: true` = every paragraph (entries).
+- In the Markdown: `# Title {dropcap=false}` (off for that chapter),
+  `{dropcap=2}` (two lines), bare `{dropcap}` (on, 3 lines); the same on a
+  `:::paragraphs` fence. No paragraph-level syntax.
+
+| `ParagraphDropCap` key | default | notes |
+|---|---|---|
+| `lines` | 3 | lines it spans (top of its capitals to its baseline); `1` + a larger `fontSize` = a raised initial on the first baseline |
+| `sink` | `lines` | lines it drops into the text (stands on line `sink`'s baseline; those lines are shortened). < `lines` = raised; the paragraph keeps the rise clear above it in whole grid lines |
+| `characters` | 1 | grapheme clusters set large (É, a combining mark, a surrogate pair = 1); no further than the first word |
+| `fontFamily`, `fontWeight`, `italic` | the paragraph's; false | collected for loading and embedding |
+| `fontSize` | auto | unset: its capitals level with line 1's, both cap heights MEASURED from the faces (0.72 fallback): no per-face CAP_HEIGHT table needed |
+| `color` | paragraph's | palette-linked colours follow part/section palettes |
+| `gap` | `0.15em` | between the letter and the shortened lines (em = text size) |
+| `punctuation` | `'with-cap'` | an opening “ ¿ ¡ ( before the letter: `'with-cap'` (large, part of the initial), `'hang'` (text size, outside the measure), `'text'` (text size, start of line 1) |
+| `leadIn` | none | `{ words: N | 'line', smallCaps?: true, uppercase?: false }`: first words after the initial in small caps (or capitals) |
+| `shortParagraph` | `'reserve'` | fewer lines than `sink`: `'reserve'` (block keeps `sink` lines), `'shrink'` (initial over the paragraph's lines), `'skip'` (none); each raises a `dropCap` content warning |
+| `each` | false | paragraph styles only |
+
+Rules: the rest of the first word follows the initial with no space (a
+one-letter word keeps its space); the paragraph's first-line indent is
+dropped; it never breaks before line `sink` (moves on whole; alone in a
+too-short column it breaks and warns `dropCap` `split`); a heading kept with
+its text keeps those lines under it; the continuation fragment has no
+initial. Start side: left in Latin, right in Arabic/Hebrew; a letter that
+joins the next (Arabic, Syriac, N'Ko) is not set apart (warning); horizontal
+CJK takes a one-character initial; vertical text none (warning). Outputs:
+canvas, PDF (tagged: the initial + rest of the word = a `Span` with
+`/ActualText` of the word), HTML viewer / fixed EPUB, reflowable EPUB (CSS
+`initial-letter`). VDT: `VDTBlock.dropCap` on the first fragment. Unknown
+keys → `unknownConfigKey`; a bad `punctuation`/`shortParagraph`/`lines`/
+`sink`/`characters` → `unknownConfigValue`.
+
+```json
+"headings": { "levels": [
+  { "level": 1, "dropCap": { "lines": 3, "fontFamily": "Libre Bodoni", "fontWeight": 700,
+    "color": {"hex": "#8b2e2a", "model": "hex", "paletteId": "accent"}, "leadIn": { "words": 3 } } } ] },
+"paragraphStyles": [
+  { "id": "entry", "dropCap": { "lines": 2, "each": true } }
+]
+```
 
 ---------------------------------------------------------------------------------
 
@@ -354,6 +494,7 @@ headings
   breakBefore: { enabled: boolean, parity: 'any'|'odd'|'even'|'always-odd'|'always-even' }
   span: 'column'|'page'                'column'
   advancedDesign: { enabled: boolean, slot: DesignSlot, minHeight?: Dimension(abs) }
+  dropCap?: ParagraphDropCap | false   (≥ 1.23, §4b) the first body paragraph after the heading opens with a drop cap
   hidden: boolean                      false → structural heading: prints nothing, takes no room
                                        (in the flow and inside callouts), still breaks / counts /
                                        is listed / bookmarked
@@ -473,7 +614,8 @@ running heads, margins, layout, body typography, palette.
   // any HeadingLevelConfig field except level:
   fontFamily, fontSize, lineHeight, color, fontWeight, marginTop, marginBottom, italic,
   letterSpacing, textTransform, breakBefore (merged field by field over the level's), span,
-  advancedDesign, hidden, snapToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's)
+  advancedDesign, hidden, snapToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's),
+  dropCap (≥ 1.23, §4b; false clears the level's: e.g. a preface style without the chapters' initial)
   header?: DesignSlot, footer?: DesignSlot      replace document running heads on the section's pages ({elements:[]} = none)
   margins?: PageMargins                          each side inherits page margin; pair with breakBefore
   layout?: LayoutConfig                          e.g. {layoutType:'single'} — resolved from scratch (unset fields = layout DEFAULTS, not the document layout!),
@@ -556,7 +698,8 @@ bottom folio only there). Parity/pages are ignored inside heading slots.
     counts neither for centre/right alignment nor for an auto width, and a justified line's last glyph
     ends on the edge), textTransform?: 'none'|'uppercase',
   hyphenate?: boolean (wrap only), box?: ElementBoxStyle,
-  dropCap?: { lines=2, fontFamily?, fontWeight?, fontSize?, color?, gap? }   (the text wraps whatever its
+  dropCap?: { lines=2, fontFamily?, fontWeight?, fontSize?, color?, gap? }   (design text only; a chapter's
+            first PARAGRAPH takes a body drop cap instead, §4b; capitals fixed at 0.72; the text wraps whatever its
     overflow; default size = text size + (lines−1) × leading / 0.72, top level with the first line's
     capitals; a preset without configVersion 6 gets its 1.4 size written out as fontSize),
   paragraphIndent?: Dimension     ('\n' in content separates paragraphs)
@@ -660,7 +803,7 @@ toc
 │     numberFontWeight (= entry weight ?? body bold weight), numberColor, marginTop=0, marginBottom=0
 ├─ unnumbered   TocEntryStyleConfig partial — for headings of a style with numbered:false
 ├─ pageNumber   { fontFamily, fontSize (= level-1), fontWeight (= body weight), italic=false, color, width=2em }
-├─ leader       { enabled=true, char='.', gap=0.5em }      ('. ' spaces the dots)
+├─ leader       { enabled=true, char='.', gap=0.5em }      ('. ' spaces the dots; the leader code body tab stops use, §4a; an artifact in tagged PDF ≥ 1.23)
 ├─ subtitle     { enabled=false, attr='author', fontFamily, fontSize, fontWeight, italic=true, color, indent=0 }
 └─ parts        { enabled=true, breakBefore=false, design: DesignSlot (row; placeholders {number} {numberRoman}… {titleText} {pageNumber}),
                   height = 2em (twice the body size, not two body lines), marginTop=0, marginBottom=0 }
@@ -736,11 +879,20 @@ in another the outer list's `itemSpacing` applies on both sides. List margins of
   endIndent: Dimension = 0       (≥ 1.16; from the END side: right of a horizontal line, foot of a vertical
                                  one; em = the style's size). With textAlign 'end': 地からN字上げ; textAlign
                                  'end' alone is 地付き (a letter's date and signature)
-  hangingIndent: Dimension = 0   (non-zero replaces firstLineIndent; counts from indent)
+  hangingIndent: Dimension = 0   (lines 2+, from indent. The first line keeps a firstLineIndent the style
+                                 sets ITSELF (≥ 1.23: first at indent + firstLineIndent, turnovers at
+                                 indent + hangingIndent); an inherited one gives way and line 1 starts at indent)
   spaceBetween = 0, marginTop = 0, marginBottom = 0 (minimum; flow snaps back to grid after)
   snapToGrid = true              (false = exact space under the container, flow stays off the grid)
   textTransform = 'none'         ('uppercase' = capitals, chip words and :ref labels too, length-preserving; maths untouched)
-  wordBreak?: 'normal'|'keep-all' (≥ 1.16; unset = cjk.wordBreak; CJK lines only) }
+  wordBreak?: 'normal'|'keep-all' (≥ 1.16; unset = cjk.wordBreak; CJK lines only)
+  lineNumbers?: boolean          (≥ 1.23, §19f; unset = counted when lineNumbers.count is 'all', and a poem
+                                 set in the style counts under 'verse'; true = counted under 'verse' too and
+                                 inside a callout; false = never)
+  tabStops?: TabStop[]           (≥ 1.23, §4a; unset = bodyText.tabStops, [] = none; a tab character in the
+                                 style's text is then a tab too) — menus, price lists, cast lists, forms, marks
+  tabInterval?: Dimension        (≥ 1.23, §4a; unset = the body's)
+  dropCap?: ParagraphDropCap     (≥ 1.23, §4b; the group's first paragraph, every one with each: true) }
 ```
 Inside the container the flow leaves the baseline grid. When it closes on a paragraph, the space under it merges
 with the next block's own (a heading's `marginTop`) and is at least the text's paragraph spacing
@@ -765,7 +917,7 @@ All em values = the callout body font size.
   sideAtColumnEnd = 'before'         side box whose following text continues on the next page (full column, or a
                                      paragraph/heading the break rules move on): 'before' = at the fence, beside
                                      the text before it (slides up; glosses), 'after' = level with the first line
-                                     of the text after it, on that page (line numbers, marginal heads)
+                                     of the text after it, on that page (marginal heads)
   fixed = { anchor: {to:'container', edge:'bottom-left'}, offset: {x:0pt, y:0pt} }   for placement:'fixed' (container = content area)
   floatBarrier = false               pending figures placed before this box (chapter-closing summaries)
   width = 'fill'                     'auto' = shrink-wrap title only (badge), children ignored
@@ -790,7 +942,8 @@ All em values = the callout body font size.
                  color=main, textTransform='none'|'uppercase', gap=0.5em, letterSpacing=0, indent=0,
                  lineHeight=1.2em (em = title size; set the body leading to keep boxes a whole number of lines) }
   body = { fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight,
-           textAlign: 'left'|'justify', hyphenation: boolean, paragraphSpacing, firstLineIndent }   → inherit bodyText
+           textAlign: 'left'|'justify', hyphenation: boolean, paragraphSpacing, firstLineIndent,
+           tabStops, tabInterval (≥ 1.23, §4a: replace the body's inside the box) }   → inherit bodyText
          + italic = false, smallCaps = false   (paragraphs, list items and blockquotes of the box)
   lists = { bulletChar, color, indent, gap, itemSpacing, bulletFontSize?, bulletFontWeight? }  → inherit unorderedLists
            (a set `color` also colours ordered-list numbers, even when equal to unorderedLists.color)
@@ -819,6 +972,51 @@ so boxes with coloured bold need `body.boldColor`. `span:'page'` in a multi-colu
 the page into bands (text above levelled). Nested callouts take their own style but ignore
 span/placement/floatBarrier/snapToGrid. Ordered-list numbers inside a box come from the global
 `orderedLists` (callout `lists` has bullet fields only); `:::columns` groups share the box body.
+
+---------------------------------------------------------------------------------
+
+## 12b. `codeStyle` — CodeStyleConfig (postext ≥ 1.23)
+
+Code listings: the ```` ``` ```` / `~~~` fences of the text (document-format.md §3.4) and inline
+code. Every listing is set line by line as written in a box built from these fields (the callout
+machinery: it nests in a `:::callout`, splits between lines across columns and pages, spans the
+page). Unset fields keep their defaults; the section is absent from most presets.
+```
+codeStyle
+├─ blocks          boolean  true      false = fences read as Markdown (1.22; a preset below configVersion 9 whose chapters hold a fence reads false)
+├─ indentedCode    boolean  false     also read 4-space / tab-indented runs after a blank line (off: lists and prose indent with spaces)
+├─ fontFamily      string   'Source Code Pro'   monospaced; a CJK mono face (BIZ UDGothic) sets full-width characters at two cells
+├─ fontSize        Dimension 0.85em   em = body size
+├─ fontWeight 400 / boldFontWeight 700
+├─ lineHeight      Dimension (unset = the body grid line; em = code size)
+├─ snapToGrid      true     color = body colour
+├─ backgroundEnabled true  background=#f4f4f4   border {enabled=false, color=#cccccc, width=0.5pt}   borderRadius=0
+├─ padding         {top,right,bottom,left} 0.6em (em = code size)   marginTop / marginBottom 0.75em
+├─ span            'column' | 'page'   (fence: span=page)
+├─ tabSize         4        a tab = segment to the next multiple of N cells (kept as \t when copied)
+├─ overflow        'wrap' | 'shrink' | 'clip'   ('wrap': break after the last space/punctuation that fits, rest
+│                  wrapIndent=2 cells in behind wrapMarker='»'; 'shrink': whole listing smaller down to
+│                  minFontScale=0.8, then wrap; 'clip': cut at the box edge). Each raises `codeOverflow`.
+├─ lineNumbers     false    gutter numbers (fence: lineNumbers, lineNumbers=false, start=N); lineNumberColor=#8a8a8a, lineNumberGap=1em
+├─ highlightBackground #fff4c2  band behind fence highlight="3,5-7"
+├─ keepTogether false  splitMinLines 2  repeatTitle false  continuesMarkerEnabled false  continuesMarker (doc language)
+├─ titleStyle      CalloutTitleStyleConfig (default code face, bold, 0.9 size)   label? CalloutLabelConfig → title in a label tab
+├─ highlight       'builtin' | 'none'
+├─ tokens          Partial<Record<kind, {color?, bold?, italic?}>>   kinds: keyword string number comment function type
+│                  operator punctuation variable meta prompt output; merged per kind onto a quiet default palette;
+│                  palette-linked colours follow colorPalette and :::part palettes
+└─ inline          { fontFamily (= codeStyle.fontFamily), fontSize=0.9em, color?, bold, italic, background?, borderColor?,
+                     borderWidth=0.5pt, borderRadius=0.2em, paddingX (0.2em with a fill, else 0), paddingY=0.1em }
+                   unset = inline code in the body face (as ≤ 1.22). Set = one unbreakable unit, like a chip.
+```
+- **Built-in tokenizer**: js/ts (jsx, tsx), json, python, bash/sh/zsh, console (prompt lines vs
+  output), css, html/xml, markdown, sql. Other languages are plain. `registerCodeHighlighter(lang | '*',
+  fn)` (from `postext`) plugs in Shiki/Prism: `fn(code, lang)` returns lines of `{text, token?, color?}`
+  runs; register inside the layout worker. A fence's title (`title=`, or a bare second word) prints in a
+  title row, or in the label tab when `codeStyle.label` is set.
+- **Recipes**: a dark terminal box = `background` dark, `color` light, `tokens.prompt {bold}`,
+  `tokens.output {color}`; a manual's listing in the text face's tint = `background` the tint,
+  `fontFamily` a CJK mono face. Copy the source's colours into `tokens`, never into bold/italic runs.
 
 ---------------------------------------------------------------------------------
 
@@ -1273,6 +1471,74 @@ panel `borderWidth`/`borderRadius` in em throw (use mm/pt); balloon
 `padding`, `tailWidth`, `strokeWidth`, `halo` and `letterSpacing` are in em
 of the balloon text. Bundle the lettering and sound-effect faces.
 
+## 19f. `lineNumbers` — LineNumbersConfig (postext ≥ 1.23)
+
+Numbers beside every Nth line, as critical editions, poetry editions, legal
+texts and line-referenced teaching texts print them. The numbers are painted
+in the margin (or the gutter, or the side column) and never move a line: they
+take no room from the text, so leave a margin at least `gap` + the widest
+number wide. Never number lines in the text or with side boxes.
+
+| key | default | notes |
+|---|---|---|
+| `enabled` | `false` | |
+| `count` | `'verse'` | `'verse'` = the lines of `:::verse` poems, one number per line of verse (a turnover takes none, stanza gaps are not counted; a bayt counts once); `'all'` = every laid-out line of body paragraphs, list items, blockquotes and verse, in reading order (page by page, column by column, top to bottom) |
+| `interval` | `5` | print the multiples of N (5, 10, 15…); `1` = every line |
+| `numberFirst` | `false` | also print the first line after each restart |
+| `restart` | `'poem'` for `count:'verse'`, `'page'` for `'all'` | `'document'` (runs on through the chapters of a book), `'chapter'` (each level-1 heading), `'section'` (each level-1 or level-2 heading), `'page'`, `'poem'` (each `:::verse`) |
+| `startAt` | `1` | number of the first line after a restart |
+| `position` | `'outer'` | `'outer'` = away from the spine (right on a recto, left on a verso; mirrored for a right-bound book), `'inner'`, physical `'left'`/`'right'`, `'start'`/`'end'` (follow the document direction: `start` is the right in an RTL book), `'side'` = in the side column of a `oneAndHalf` layout with `sideColumnRole:'floats'`, flush with its edge next to the text (`gap` unused; a page without a side column falls back to `'outer'`) |
+| `multiColumn` | `'outer-edges'` | pages with 2+ columns side by side: `'outer-edges'` = first column's numbers on its left, last column's on its right, the ones between as `each`; `'gutter'` = in the gutters (first column on its right, the others on their left); `'each'` = every column on the `position` side |
+| `gap` | `1em` | text edge → number; em = the number's own size |
+| `align` | `'auto'` | `'auto'` = flush toward the text (right-aligned in a left margin, left-aligned in a right one); `'left'`/`'right'` within the width of the page's widest number |
+| `fontFamily` / `fontWeight` | body | bundle the family like any other face |
+| `fontSize` | `0.8em` | em = body size; each number sits on its line's baseline in its own size |
+| `italic` | `false` | |
+| `color` | body colour | a palette-linked colour follows part and section palettes |
+| `format` | decimal in the document's digits (`numerals`) | any numbering spelling: `'lower-roman'`, `'upper-roman'`, `'arabic-indic'`, `'一'`… |
+
+Never counted: headings, captions, tables and pictures, display maths,
+design text (openers, running heads), footnotes and chapter-end notes, the
+contents, the index and bibliography entries, blank pages, and callout text.
+Prose under `count:'verse'` and the text of a callout are counted only when
+their paragraph style says `lineNumbers: true` (§11); `lineNumbers: false`
+keeps a style out under `'all'`.
+
+Per block (document-format.md §12): `:::verse{numbered=false}` skips a poem,
+`lineStart=N` numbers its first line N and restarts the count there in any
+mode (a poem resumed after a commentary), `interval=N` is the poem's own
+interval; `:::numbering{lines=N}` numbers the next counted line N.
+
+- Books: with `restart:'document'` the count runs on through the chapters
+  (`continuation.lineNumber`; for `count:'all'` the Sandbox takes it from the
+  previous chapter's layout).
+- Vertical documents (`layout.writingMode:'vertical-rl'`) get no numbers; the
+  Sandbox warns `lineNumbersUnsupported`.
+- With `position:'side'` a number that falls on a side box, side caption or
+  float in the side column is painted anyway and the Sandbox warns
+  `lineNumberOverlap` (it points at the numbered line).
+- Outputs: canvas, PDF, HTML viewer and fixed EPUB paint them; tagged PDF
+  sets them as artifacts (copied and read-aloud text runs line to line), the
+  HTML hides them from copy and screen readers. Reflowable EPUB prints only
+  the verse numbers, beside the stanza. VDT: `page.lineNumbers` (a design
+  slot) and `page.lineNumberMarks` (`{number, label, columnIndex, blockId,
+  lineIndex}`).
+- Not supported: a `:ref` to a line, notes keyed to line numbers by the
+  engine (type the line number in the note: `:chip[8]{style="line"}`),
+  numbers inside table cells, captions or code.
+
+```json
+"lineNumbers": { "enabled": true, "interval": 5, "position": "outer",
+  "fontSize": {"value": 0.75, "unit": "em"}, "italic": true }
+```
+A Bible or statute numbered by page, every line, in the gutter of a
+two-column page: `{ "enabled": true, "count": "all", "restart": "page",
+"multiColumn": "gutter" }`. A critical edition with the numbers in a narrow
+fore-edge column: `"layout": {"layoutType": "oneAndHalf", "sideColumnPercent":
+8, "sideColumnRole": "floats", "sideColumnSide": "outer"}` (with
+`page.margins.mirror`) and `"lineNumbers": {"enabled": true, "position":
+"side"}`.
+
 ## 20. Fonts — `customFonts` and what goes in preset.json
 
 `CustomFontFamily = { name, variants: [{ weight 100–900, style 'normal'|'italic', fileId, format 'woff2'|'woff'|'ttf'|'otf', fileName? }], redistributable?: boolean (default true) }`.
@@ -1287,7 +1553,7 @@ of the balloon text. Bundle the lettering and sound-effect faces.
 
 **preset.json** — `version: 2` manifest (full reference: project-format.md):
 ```
-{ version: 2, configVersion: 8, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
+{ version: 2, configVersion: 9, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
   default?, view?: { canvasScope?: 'book'|'chapter' },
   chapters: [{title, file}] | { "<locale>": [{title, file}] },
   config: PostextConfig,                          // WITHOUT customFonts
@@ -1297,7 +1563,7 @@ of the balloon text. Bundle the lettering and sound-effect faces.
                               resources?: [{ id, caption?, note?, altText?, table?, file?, pdfFile?, width?, height? }],
                               view?: { canvasScope?: 'book'|'chapter' } } } }   // the edition's view over `view` (≥ 1.9.2)
 ```
-`configVersion: 8` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
+`configVersion: 9` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
 the bundle reads as postext 1.4 wrote it: H1 breaks pinned, maths × 1.1312 when a chapter has `$`,
 `layout.inlineResourceGap: 'above'` when a chapter embeds a `::resource`, `layout.inlineResourceGapInBoxes: false`
 when one is embedded inside a `:::callout`, `headings.inlineMarks: false` when a heading carries `*`, `_`, `^`,
@@ -1308,7 +1574,11 @@ running text ragged, `bodyText.breakAfterHyphens: false` when a chapter sets a h
 `headings.keepWithNextSplit: 'fill'` when a chapter has a heading, `bodyText.paragraphContainerSpacing: 'add'`
 when the config declares a paragraph style and a chapter opens a `:::paragraphs` container, and every design
 drop cap's 1.4 size written out. A manifest stamped 5 gets the pins of rules 6, 7 and 8 only; one stamped 6,
-those of rules 7 and 8; one stamped 7, those of rules 8. The pins keep what those rules changed, not
+those of rules 7 and 8; one stamped 7, those of rules 8; one stamped 8 (postext 1.5 to 1.22), those of rules 9:
+`bodyText.verse.layout: 'bayt'` when a chapter sets a `:::verse` poem with no `||`, the `firstLineIndent` of a
+paragraph style that also hangs dropped, `bodyText.hardLineBreaks: false` when a chapter ends a line with a
+backslash or sets `\\` before a space, and `codeStyle.blocks: false` when a chapter opens a ```` ``` ```` or `~~~`
+fence (its lines then read as Markdown). The pins keep what those rules changed, not
 every 1.4 page: 1.5's layout fixes (page-span opener measure, drop caps in heading designs, tracking in boxes,
 the loose-paragraph limit…) apply to an old bundle too.
 Must NOT go in `config`: `customFonts` (built from `fonts[]`; fileIds are storage-local —

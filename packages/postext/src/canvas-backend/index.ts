@@ -285,6 +285,8 @@ function paintContext(
   // strips set in its flow, on the sheet (never through the flow frame).
   for (const comic of pageComics(page)) renderComicPage(ctx, comic, inkHex);
 
+  // Line numbers (#621) stand on the sheet beside the lines they number.
+  if (page.lineNumbers) renderHeaderFooterSlot(ctx, page.lineNumbers, inkHex);
   if (page.header) renderHeaderFooterSlot(ctx, page.header, inkHex);
   if (page.footer) renderHeaderFooterSlot(ctx, page.footer, inkHex);
 

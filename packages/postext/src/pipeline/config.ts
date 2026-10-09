@@ -24,6 +24,8 @@ import {
   resolveTocConfig,
   resolveIndexConfig,
   resolveFootnotesConfig,
+  resolveLineNumbersConfig,
+  resolveCodeStyleConfig,
   resolveCrossRefsConfig,
   resolveCitationsConfig,
   resolveCjkConfig,
@@ -133,6 +135,13 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     ...(config?.print ? { print: resolvePrintConfig(config.print) } : {}),
     // Not used by layout either: the Folio 3D viewer reads it.
     ...(config?.folio ? { folio: resolveFolioConfig(config.folio, page.sizePreset) } : {}),
+    // Line numbers (#621): only a config that sets the section carries
+    // it, so a document without them resolves (and hashes) as before.
+    ...(config?.lineNumbers ? { lineNumbers: resolveLineNumbersConfig(config.lineNumbers, bodyText) } : {}),
+    // Code listings (#624): only a config that sets the section carries
+    // it, so a document without one resolves (and hashes) as before; the
+    // layout reads the defaults then (`resolvedCodeStyle`).
+    ...(config?.codeStyle ? { codeStyle: resolveCodeStyleConfig(config.codeStyle, bodyText) } : {}),
     // Comic pages: only a config that sets the section carries it (a
     // `:::page` without one reads the defaults, `resolvedComics`).
     ...(config?.comics ? { comics: resolveComicsConfig(config.comics, documentLocale) } : {}),

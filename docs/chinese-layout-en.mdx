@@ -412,11 +412,15 @@ In the Sandbox, **Design › Writing system** holds the document language, the w
 - **Korean** is set with the mainland Chinese defaults; its own rules (KLREQ) are not implemented. Japanese follows its own rules since postext 1.16 ([Japanese layout](/en/docs/japanese-layout)).
 - **Design text** (running heads, openers, box titles) breaks Chinese between any two characters, without the line-start and line-end rules or the punctuation widths. Fit such titles by hand.
 - **One writing mode per page.** A horizontal box inside a vertical page, native vertical tables with the header row on the right, and captions beside an upright figure are not available. Inline formulas, chips and swatches are turned sideways with a vertical line.
+- **Line numbers** are not printed in vertical text: a vertical book that turns `lineNumbers` on gets none, with a `lineNumbersUnsupported` configuration warning. Horizontal books number their lines like any other ([Configuration › Line numbers](/en/docs/configuration#line-numbers)).
+- **Tabs.** A horizontal paragraph that holds a tab (`:tab`, or a tab character under a style with tab stops) is set line by line: broken between characters under the document's line-breaking rules, but without punctuation compression or justification between characters. In vertical text there are no tab stops: a tab is a word space, and a `:tab` raises the `tabInVerticalText` content warning. A paragraph with ruby or warichu also sets its tabs as word spaces. See [Tabs and tab stops](/en/docs/document-format#tabs-and-tab-stops).
+- **Drop caps.** A horizontal paragraph can open with a drop cap of one character (首字下沉), set from a paragraph style or a heading level (see [Drop caps](/en/docs/configuration#drop-caps)): its size takes the character's own height against the text's, and the composer sets the shortened lines with its usual compression and justification. Vertical text has no drop caps: a paragraph that would open with one is set without it and raises the `dropCap` content warning.
 - **Sizes in points.** There are no 号 or Q units.
 - **Vertical metrics.** Every upright character advances one em; proportional vertical metrics (`vpal`) and vertical kerning are not used.
 - **Ruby and warichu**: no double-sided ruby, no automatic readings, no single-row notes; notes and readings in design text print as plain text.
 - **Fonts**: no fallback from one family to another, no italics in Chinese faces, CFF fonts embedded whole.
 - **Index**: a character with several readings takes the collator's usual one unless its entry has a `sort` key; radical order is not available.
+- **Code listings.** A horizontal listing is set line by line in its code face; in a monospaced face with Han characters, a full-width character takes two cells, so columns line up, and a tab counts it as two. In vertical text a listing follows the vertical flow, its Latin turned sideways as vertical text sets it, and takes no line numbers. See [Code listings](/en/docs/configuration#code-listings).
 
 ## Sources
 

@@ -54,8 +54,8 @@ const CONFIGURATION_PAGES: { page: string; title: string; sections: string[] }[]
   },
   {
     page: "Configuration-Notes-and-References",
-    title: "Configuration: notes, references, contents and index",
-    sections: ["Footnotes", "Cross-references", "Citations", "Table of contents", "Back-of-book index"],
+    title: "Configuration: notes, line numbers, references, contents and index",
+    sections: ["Footnotes", "Line numbers", "Cross-references", "Citations", "Table of contents", "Back-of-book index"],
   },
   {
     page: "Configuration-East-Asian-Typography",
@@ -69,8 +69,8 @@ const CONFIGURATION_PAGES: { page: string; title: string; sections: string[] }[]
   },
   {
     page: "Configuration-Styles",
-    title: "Configuration: paragraph, chip, callout and heading styles, parts",
-    sections: ["Paragraph styles", "Chip styles", "Callout styles", "Parts", "Heading styles"],
+    title: "Configuration: paragraph, chip, code, callout and heading styles, parts",
+    sections: ["Paragraph styles", "Chip styles", "Code listings", "Callout styles", "Parts", "Heading styles"],
   },
   {
     page: "Configuration-Comics",

@@ -21,6 +21,12 @@ import { tagArtifact, tagContent, type ArtifactSpec, type StructAttrs, type Stru
  *  has text; without `figure` (running heads) it stays an artifact. Rules,
  *  boxes and pictures without alternative text are artifacts of class
  *  `artifact`. */
+/** How a slot's text is painted: `silent`, left out of text extraction
+ *  and copying (the line numbers, #621). */
+export interface SlotPaintOptions {
+  silent?: boolean;
+}
+
 export interface SlotMark {
   text?: () => StructElem;
   artifact: ArtifactSpec;
@@ -170,7 +176,11 @@ export function renderTextBlock(
   block: VDTDesignTextBlock,
   fontCache: FontCache,
   mark: SlotMark | undefined,
+  options?: SlotPaintOptions,
 ): void {
+  // Text extraction reads nothing of a silent block (an empty
+  // `/ActualText` over each run).
+  const actualText = options?.silent ? '' : undefined;
   if (block.box) {
     if (mark) tagArtifact(ctx, mark.artifact);
     drawRoundedBox(ctx, block.bbox.x, block.bbox.y, block.bbox.width, block.bbox.height, block.box);
@@ -203,7 +213,7 @@ export function renderTextBlock(
   const originX = vertical ? 0 : block.bbox.x;
   for (const line of block.lines) {
     if (!line.runs) {
-      drawTextPx(ctx, line.text, originX + line.xOffset, line.baselineY, font, size, color, outline);
+      drawTextPx(ctx, line.text, originX + line.xOffset, line.baselineY, font, size, color, outline, actualText);
       continue;
     }
     // Inline marks, or a line with right-to-left text: each run in its own
@@ -215,9 +225,10 @@ export function renderTextBlock(
       const runFont = fontCache.get(run.fontString) ?? font;
       const runSize = parseFontString(run.fontString)?.sizePx ?? size;
       const y = line.baselineY + (run.baselineShift ?? 0);
-      if (run.rtl) drawRightToLeftRun(ctx, run.text, x, y, runFont, runSize, color, outline);
+      if (run.rtl && actualText !== undefined) drawTextPx(ctx, run.text, x, y, runFont, runSize, color, outline, actualText, undefined, 'rtl');
+      else if (run.rtl) drawRightToLeftRun(ctx, run.text, x, y, runFont, runSize, color, outline);
       // A vertical line: the orientation its author gave the run.
-      else drawTextPx(ctx, run.text, x, y, runFont, runSize, color, outline, undefined, segmentOrientation(run));
+      else drawTextPx(ctx, run.text, x, y, runFont, runSize, color, outline, actualText, segmentOrientation(run));
       x += run.width;
     }
   }
@@ -293,10 +304,11 @@ export function renderHeaderFooterSlot(
   fontCache: FontCache,
   images?: ResourceImageMap,
   mark?: SlotMark,
+  options?: SlotPaintOptions,
 ): void {
   for (const block of slot.blocks) {
     if (block.kind === 'text') {
-      renderTextBlock(ctx, block, fontCache, mark);
+      renderTextBlock(ctx, block, fontCache, mark, options);
       continue;
     }
     if (block.kind === 'image' && block.altText && mark?.figure) {

@@ -756,6 +756,48 @@
       }
     }
   },
+  "unclosedCodeBlock": {
+    "source": "parse",
+    "label": {
+      "en": "Unclosed code fence",
+      "es": "Valla de código sin cerrar",
+      "ca": "Tanca de codi sense tancar",
+      "zh": "代码围栏未闭合",
+      "ar": "سور شيفرة غير مغلق",
+      "ja": "閉じていないコードフェンス",
+      "pt": "Cerca de código não fechada"
+    },
+    "cause": {
+      "en": "A ``` or ~~~ fence has no closing fence of the same character, at least as long, so the rest of the text is set as code.",
+      "es": "Una valla ``` o ~~~ no tiene una valla de cierre del mismo carácter y al menos igual de larga, así que el resto del texto se compone como código.",
+      "ca": "Una tanca ``` o ~~~ no té una tanca de tancament del mateix caràcter i almenys igual de llarga, de manera que la resta del text es compon com a codi.",
+      "zh": "```或~~~围栏没有用同一字符、长度至少相同的结束围栏，因此其后的全部文字都按代码排版。",
+      "ar": "لسور ``` أو ~~~ لا سور إغلاق من المحرف نفسه وبالطول نفسه على الأقل، فيُنضَّد ما تبقى من النص شيفرةً.",
+      "ja": "```または~~~のフェンスに、同じ文字で同じ長さ以上の閉じるフェンスがないため、以降の本文はすべてコードとして組まれます。",
+      "pt": "Uma cerca ``` ou ~~~ não tem uma cerca de fecho do mesmo caractere e pelo menos do mesmo comprimento, por isso o resto do texto é composto como código."
+    },
+    "fix": {
+      "en": "Close the listing with a line of three or more of the same character (``` after ```, ~~~ after ~~~). To show a fence inside a listing, open it with a longer fence or the other character.",
+      "es": "Cierra el listado con una línea de tres o más caracteres iguales (``` tras ```, ~~~ tras ~~~). Para mostrar una valla dentro de un listado, ábrelo con una valla más larga o con el otro carácter.",
+      "ca": "Tanca el llistat amb una línia de tres o més caràcters iguals (``` després de ```, ~~~ després de ~~~). Per mostrar una tanca dins d'un llistat, obre'l amb una tanca més llarga o amb l'altre caràcter.",
+      "zh": "用一行三个或更多相同字符结束清单（```对应```，~~~对应~~~）。要在清单中展示围栏，就用更长的围栏或另一种字符开始清单。",
+      "ar": "أغلق القائمة بسطر من ثلاثة محارف متماثلة أو أكثر (``` بعد ``` و~~~ بعد ~~~). ولإظهار سور داخل قائمة، افتحها بسور أطول أو بالمحرف الآخر.",
+      "ja": "同じ文字を3つ以上並べた行でコードリストを閉じてください（```には```、~~~には~~~）。コードリストの中でフェンスを見せるには、より長いフェンスか、もう一方の文字で開きます。",
+      "pt": "Feche a listagem com uma linha de três ou mais caracteres iguais (``` depois de ```, ~~~ depois de ~~~). Para mostrar uma cerca dentro de uma listagem, abra-a com uma cerca mais longa ou com o outro caractere."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Code blocks",
+        "es": "Bloques de código",
+        "ca": "Blocs de codi",
+        "zh": "代码块",
+        "ar": "كتل الشيفرة",
+        "ja": "コードブロック",
+        "pt": "Blocos de código"
+      }
+    }
+  },
   "headerFooterUnknownPlaceholder": {
     "source": "sandbox",
     "label": {
@@ -3783,6 +3825,216 @@
         "ar": "الفحص قبل الطباعة",
         "ja": "プリフライト",
         "pt": "Preflight"
+      }
+    }
+  },
+  "lineNumbersUnsupported": {
+    "source": "engine",
+    "label": {
+      "en": "Line numbers in vertical text",
+      "es": "Numeración de líneas en texto vertical",
+      "ca": "Numeració de línies en text vertical",
+      "zh": "竖排文本的行号",
+      "ar": "ترقيم الأسطر في النص العمودي",
+      "ja": "縦組みの行番号",
+      "pt": "Numeração de linhas em texto vertical"
+    },
+    "cause": {
+      "en": "`lineNumbers.enabled` is on in a document set vertically (`layout.writingMode: 'vertical-rl'`). Vertical pages get no line numbers.",
+      "es": "`lineNumbers.enabled` está activado en un documento compuesto en vertical (`layout.writingMode: 'vertical-rl'`). Las páginas verticales no llevan números de línea.",
+      "ca": "`lineNumbers.enabled` està activat en un document compost en vertical (`layout.writingMode: 'vertical-rl'`). Les pàgines verticals no porten números de línia.",
+      "zh": "竖排文档（`layout.writingMode: 'vertical-rl'`）中开启了`lineNumbers.enabled`。竖排页面不印行号。",
+      "ar": "`lineNumbers.enabled` مفعَّل في مستند منضَّد عموديًّا (`layout.writingMode: 'vertical-rl'`). والصفحات العمودية لا تُطبع فيها أرقام الأسطر.",
+      "ja": "縦組みの文書（`layout.writingMode: 'vertical-rl'`）で`lineNumbers.enabled`がオンになっています。縦組みのページには行番号を印字しません。",
+      "pt": "`lineNumbers.enabled` está ligado em um documento composto na vertical (`layout.writingMode: 'vertical-rl'`). As páginas verticais não recebem números de linha."
+    },
+    "fix": {
+      "en": "Remove `lineNumbers` from the vertical edition, or set that edition horizontally.",
+      "es": "Quita `lineNumbers` de la edición vertical, o compón esa edición en horizontal.",
+      "ca": "Treu `lineNumbers` de l'edició vertical, o compon aquesta edició en horitzontal.",
+      "zh": "从竖排版本中删掉`lineNumbers`，或把该版本改为横排。",
+      "ar": "أزل `lineNumbers` من الطبعة العمودية، أو نضّد تلك الطبعة أفقيًّا.",
+      "ja": "縦組みの版から`lineNumbers`を削除するか、その版を横組みにしてください。",
+      "pt": "Remova `lineNumbers` da edição vertical, ou componha essa edição na horizontal."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Configuration warnings",
+        "es": "Avisos de configuración",
+        "ca": "Avisos de configuració",
+        "zh": "配置警告",
+        "ar": "تحذيرات الإعدادات",
+        "ja": "設定の警告",
+        "pt": "Avisos de configuração"
+      }
+    }
+  },
+  "lineNumberOverlap": {
+    "source": "engine",
+    "label": {
+      "en": "Line number on a side box",
+      "es": "Número de línea sobre un recuadro lateral",
+      "ca": "Número de línia sobre un requadre lateral",
+      "zh": "行号压在侧框上",
+      "ar": "رقم سطر فوق إطار جانبي",
+      "ja": "行番号がサイドの囲みと重なる",
+      "pt": "Número de linha sobre um boxe lateral"
+    },
+    "cause": {
+      "en": "With `lineNumbers.position: 'side'`, a line number falls on a side box, a side caption or a figure in the side column. The number is painted anyway and neither of them moves.",
+      "es": "Con `lineNumbers.position: 'side'`, un número de línea cae sobre un recuadro lateral, un pie lateral o una figura de la columna lateral. El número se pinta igualmente y ninguno de los dos se mueve.",
+      "ca": "Amb `lineNumbers.position: 'side'`, un número de línia cau sobre un requadre lateral, un peu lateral o una figura de la columna lateral. El número es pinta igualment i cap dels dos no es mou.",
+      "zh": "在`lineNumbers.position: 'side'`下，某个行号落在边栏中的侧框、侧边图注或图上。行号照样印出，两者都不移动。",
+      "ar": "مع `lineNumbers.position: 'side'` يقع رقم سطر على إطار جانبي أو تعليق جانبي أو شكل في العمود الجانبي. ويُرسم الرقم رغم ذلك، ولا يتحرك أيّ منهما.",
+      "ja": "`lineNumbers.position: 'side'`のとき、行番号がサイド段の囲み、横置きのキャプション、図に重なっています。番号はそのまま印字され、どちらも動きません。",
+      "pt": "Com `lineNumbers.position: 'side'`, um número de linha cai sobre um boxe lateral, uma legenda lateral ou uma figura da coluna lateral. O número é pintado mesmo assim e nenhum dos dois se move."
+    },
+    "fix": {
+      "en": "Move the box or figure to a line that carries no number, put the numbers in the margin (`position: 'outer'`), or change the interval.",
+      "es": "Lleva el recuadro o la figura a una línea sin número, pon los números en el margen (`position: 'outer'`) o cambia el intervalo.",
+      "ca": "Porta el requadre o la figura a una línia sense número, posa els números al marge (`position: 'outer'`) o canvia l'interval.",
+      "zh": "把侧框或图移到不带行号的行旁，把行号改排在页边（`position: 'outer'`），或改变间隔。",
+      "ar": "انقل الإطار أو الشكل إلى سطر لا يحمل رقمًا، أو ضع الأرقام في الهامش (`position: 'outer'`)، أو غيّر الفاصل.",
+      "ja": "囲みや図を番号のない行の横へ移すか、番号を余白に置く（`position: 'outer'`）か、間隔を変えてください。",
+      "pt": "Leve o boxe ou a figura para uma linha sem número, ponha os números na margem (`position: 'outer'`) ou mude o intervalo."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Line numbers",
+        "es": "Numeración de líneas",
+        "ca": "Numeració de línies",
+        "zh": "行号",
+        "ar": "ترقيم الأسطر",
+        "ja": "行番号",
+        "pt": "Numeração de linhas"
+      }
+    }
+  },
+  "tabInVerticalText": {
+    "source": "engine",
+    "label": {
+      "en": ":tab in vertical text",
+      "es": ":tab en texto vertical",
+      "ca": ":tab en text vertical",
+      "zh": "竖排文本中的:tab",
+      "ar": ":tab في نص عمودي",
+      "ja": "縦組みの:tab",
+      "pt": ":tab em texto vertical"
+    },
+    "cause": {
+      "en": "A `:tab` stands in a paragraph set vertically (`layout.writingMode: 'vertical-rl'`). Tab stops are set in horizontal text only, so the tab is set as a word space.",
+      "es": "Hay un `:tab` en un párrafo compuesto en vertical (`layout.writingMode: 'vertical-rl'`). Los tabuladores solo se componen en texto horizontal, así que la tabulación se compone como un espacio entre palabras.",
+      "ca": "Hi ha un `:tab` en un paràgraf compost en vertical (`layout.writingMode: 'vertical-rl'`). Els tabuladors només es componen en text horitzontal, així que la tabulació es compon com un espai entre paraules.",
+      "zh": "竖排（`layout.writingMode: 'vertical-rl'`）的段落中有`:tab`。制表位只用于横排文本，所以这个制表符排成词间空格。",
+      "ar": "في فقرة منضَّدة عموديًّا (`layout.writingMode: 'vertical-rl'`) يوجد `:tab`. ومواضع الجدولة لا تُنضَّد إلا في النص الأفقي، فتُنضَّد الجدولة مسافةً بين كلمتين.",
+      "ja": "縦組み（`layout.writingMode: 'vertical-rl'`）の段落に`:tab`があります。タブストップは横組みでしか使えないため、このタブは語間のスペースとして組まれます。",
+      "pt": "Há um `:tab` em um parágrafo composto na vertical (`layout.writingMode: 'vertical-rl'`). As paradas de tabulação só são compostas em texto horizontal, então a tabulação é composta como um espaço entre palavras."
+    },
+    "fix": {
+      "en": "Remove the `:tab` from the vertical edition, or set the aligned lines as a table resource there.",
+      "es": "Quita el `:tab` de la edición vertical, o compón ahí las líneas alineadas como un recurso de tabla.",
+      "ca": "Treu el `:tab` de l'edició vertical, o compon-hi les línies alineades com un recurs de taula.",
+      "zh": "从竖排版本中删掉`:tab`，或在该版本中把需要对齐的各行改用表资源排。",
+      "ar": "أزل `:tab` من الطبعة العمودية، أو نضّد الأسطر المحاذاة فيها مورد جدول.",
+      "ja": "縦組みの版から`:tab`を削除するか、その版ではそろえたい行を表リソースで組んでください。",
+      "pt": "Remova o `:tab` da edição vertical, ou componha ali as linhas alinhadas como um recurso de tabela."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Tab stops",
+        "es": "Tabulaciones",
+        "ca": "Tabulacions",
+        "zh": "制表位",
+        "ar": "مواضع الجدولة",
+        "ja": "タブ位置",
+        "pt": "Paradas de tabulação"
+      }
+    }
+  },
+  "dropCap": {
+    "source": "engine",
+    "label": {
+      "en": "Drop cap not set as configured",
+      "es": "Capitular no compuesta como se pidió",
+      "ca": "Caplletra no composta com es demanava",
+      "zh": "首字下沉未按设置排出",
+      "ar": "حرف استهلالي لم يُصفّ كما ضُبط",
+      "ja": "ドロップキャップが設定どおりに組まれていない",
+      "pt": "Capitular não composta como pedido"
+    },
+    "cause": {
+      "en": "A paragraph a dropCap opens cannot take it as set: it has fewer lines than the initial sinks (shortParagraph kept the room, shrank the initial or left it out), it broke before the initial's last line alone in a column too short, its first letter joins the next (Arabic), it is set vertically, or it opens with no letter (a reference, a formula, a note mark).",
+      "es": "Un párrafo que abre un dropCap no puede llevarlo como está: tiene menos líneas de las que baja la inicial (shortParagraph reservó el espacio, la encogió o la quitó), se cortó antes de la última línea de la inicial solo en una columna demasiado corta, su primera letra se une a la siguiente (árabe), está compuesto en vertical o no empieza por una letra (una referencia, una fórmula, una llamada de nota).",
+      "ca": "Un paràgraf que obre un dropCap no el pot portar tal com està: té menys línies de les que baixa la inicial (shortParagraph en va reservar l'espai, la va encongir o la va treure), es va tallar abans de l'última línia de la inicial sol en una columna massa curta, la primera lletra s'uneix a la següent (àrab), està compost en vertical o no comença per una lletra (una referència, una fórmula, una crida de nota).",
+      "zh": "dropCap所开头的段落无法按设置排出：段落行数少于首字下沉的行数（shortParagraph保留了空间、缩小了首字或取消了它）；段落独占一栏而该栏太短，在首字最后一行之前分开；首字母与后一个字母相连（阿拉伯文）；段落竖排；或段落开头不是字母（引用、公式、注号）。",
+      "ar": "فقرة يفتتحها dropCap لا يمكن أن تحمله كما ضُبط: أسطرها أقل مما ينزله الحرف (حفظ shortParagraph المكان أو صغّر الحرف أو أسقطه)، أو انقسمت قبل آخر سطر يجاور الحرف وهي وحدها في عمود قصير، أو حرفها الأول يتصل بما بعده (العربية)، أو صُفّت عموديًا، أو لا تبدأ بحرف (إحالة أو معادلة أو علامة حاشية).",
+      "ja": "dropCapで始まる段落が設定どおりに組めません。段落の行数が頭文字の沈む行数より少ない（shortParagraphが空きを取った、頭文字を小さくした、外した）、短い段に単独で置かれて頭文字の最後の行より前で分かれた、最初の文字が次の文字とつながる（アラビア文字）、縦組みである、文字で始まらない（参照、数式、注の合印）のいずれかです。",
+      "pt": "Um parágrafo que um dropCap abre não pode levá-lo como definido: tem menos linhas do que a inicial desce (shortParagraph reservou o espaço, reduziu a inicial ou a retirou), dividiu-se antes da última linha da inicial sozinho numa coluna curta demais, a primeira letra se liga à seguinte (árabe), está composto na vertical ou não começa por uma letra (uma referência, uma fórmula, uma chamada de nota)."
+    },
+    "fix": {
+      "en": "Choose shortParagraph for short paragraphs, give a column room for the initial's lines, or turn the drop cap off for that chapter with {dropcap=false} on its heading.",
+      "es": "Elige shortParagraph para los párrafos cortos, deja en la columna sitio para las líneas de la inicial o quita la capitular de ese capítulo con {dropcap=false} en su título.",
+      "ca": "Tria shortParagraph per als paràgrafs curts, deixa a la columna espai per a les línies de la inicial o treu la caplletra d'aquell capítol amb {dropcap=false} al seu títol.",
+      "zh": "为短段落选择shortParagraph，在栏中给首字的几行留出空间，或在该章标题上写{dropcap=false}取消首字下沉。",
+      "ar": "اختر shortParagraph للفقرات القصيرة، أو اترك في العمود مكانًا لأسطر الحرف، أو ألغِ الحرف الاستهلالي لذلك الفصل بـ{dropcap=false} على عنوانه.",
+      "ja": "短い段落にはshortParagraphを選ぶか、段に頭文字の行が入る余地を残すか、その章の見出しに{dropcap=false}を書いてドロップキャップを外してください。",
+      "pt": "Escolha shortParagraph para os parágrafos curtos, deixe na coluna espaço para as linhas da inicial ou retire a capitular desse capítulo com {dropcap=false} no título."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Drop caps",
+        "es": "Letras capitulares",
+        "ca": "Caplletres",
+        "zh": "首字下沉",
+        "ar": "الحروف الاستهلالية",
+        "ja": "ドロップキャップ",
+        "pt": "Capitulares"
+      }
+    }
+  },
+  "codeOverflow": {
+    "source": "engine",
+    "label": {
+      "en": "Code line wider than its box",
+      "es": "Línea de código más ancha que su caja",
+      "ca": "Línia de codi més ampla que la seva caixa",
+      "zh": "代码行宽于其框",
+      "ar": "سطر شيفرة أعرض من إطاره",
+      "ja": "枠より長いコード行",
+      "pt": "Linha de código mais larga que a sua caixa"
+    },
+    "cause": {
+      "en": "A line of a listing is wider than the box's inner width, so codeStyle.overflow turned it over behind the wrap mark ('wrap'), set the whole listing smaller ('shrink') or cut it at the edge ('clip'); the warning says which and how many lines.",
+      "es": "Una línea de un listado es más ancha que el interior de su caja, así que codeStyle.overflow la pasó a la siguiente tras la marca ('wrap'), compuso todo el listado más pequeño ('shrink') o la cortó en el borde ('clip'); el aviso dice cuál y cuántas líneas.",
+      "ca": "Una línia d'un llistat és més ampla que l'interior de la seva caixa, de manera que codeStyle.overflow la va passar a la següent darrere la marca ('wrap'), va compondre tot el llistat més petit ('shrink') o la va tallar a la vora ('clip'); l'avís diu quin i quantes línies.",
+      "zh": "清单中的某行比框的内宽更宽，codeStyle.overflow于是把它在转行标记后转到下一行（'wrap'）、把整段清单缩小（'shrink'）或在边缘截断（'clip'）；警告会说明采用了哪种方式以及涉及多少行。",
+      "ar": "سطر من قائمة شيفرة أعرض من العرض الداخلي لإطاره، فنقله codeStyle.overflow إلى ما تحته خلف علامة الالتفاف ('wrap') أو صغّر القائمة كلها ('shrink') أو قطعه عند الحافة ('clip')؛ ويذكر التنبيه أيها وكم سطرًا.",
+      "ja": "コードリストの行が枠の内側の幅より長いため、codeStyle.overflowがその行を折り返しの印の後ろで次の行へ送った（'wrap'）、コードリスト全体を小さく組んだ（'shrink'）、端で切り落とした（'clip'）のいずれかです。警告にはどれを何行に行ったかが出ます。",
+      "pt": "Uma linha de uma listagem é mais larga que o interior da sua caixa, então codeStyle.overflow passou-a para baixo atrás da marca ('wrap'), compôs a listagem inteira menor ('shrink') ou cortou-a na borda ('clip'); o aviso diz qual e quantas linhas."
+    },
+    "fix": {
+      "en": "Shorten the line (break a long call over two lines), set the code smaller or the box wider (span=page), or keep the overflow mode the warning names if it reads well; 'clip' loses the text past the edge.",
+      "es": "Acorta la línea (parte una llamada larga en dos líneas), compón el código más pequeño o la caja más ancha (span=page), o quédate con el modo que nombra el aviso si se lee bien; 'clip' pierde el texto que pasa del borde.",
+      "ca": "Escurça la línia (parteix una crida llarga en dues línies), compon el codi més petit o la caixa més ampla (span=page), o queda't amb el mode que anomena l'avís si es llegeix bé; 'clip' perd el text que passa de la vora.",
+      "zh": "缩短这一行（把长调用拆成两行），把代码排小或把框加宽（span=page）；如果读起来没问题，也可以保留警告所说的方式。'clip'会丢掉超出边缘的文字。",
+      "ar": "قصّر السطر (اقسم الاستدعاء الطويل على سطرين)، أو صغّر الشيفرة أو وسّع الإطار (span=page)، أو أبقِ الطريقة التي يذكرها التنبيه إن كانت مقروءة؛ أما 'clip' فيُضيع النص المتجاوز للحافة.",
+      "ja": "行を短くする（長い呼び出しを2行に分ける）、コードを小さくするか枠を広げる（span=page）、または読みやすければ警告にある方式のままにします。'clip'では端を越えた文字が失われます。",
+      "pt": "Encurte a linha (quebre uma chamada longa em duas linhas), componha o código menor ou a caixa mais larga (span=page), ou mantenha o modo que o aviso nomeia se ficar legível; 'clip' perde o texto que passa da borda."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Code listings",
+        "es": "Listados de código",
+        "ca": "Llistats de codi",
+        "zh": "代码清单",
+        "ar": "قوائم الشيفرة",
+        "ja": "コードリスト",
+        "pt": "Listagens de código"
       }
     }
   }

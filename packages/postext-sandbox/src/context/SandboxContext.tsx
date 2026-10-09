@@ -20,6 +20,7 @@ import type { HashBundleResolver } from '../types/props';
 import { DEFAULT_LABELS } from '../types';
 import {
   EMPTY_VIEW_HASH,
+  hashAsksRestore,
   hashNamesOtherBook,
   parseHashBundle,
   isViewportTab,
@@ -282,10 +283,12 @@ export interface SandboxState {
   projectError?: string;
   /** Transient message from the last project operation (export warnings). */
   projectNotice: string | null;
-  /** A host bundle link names a book the reader imported before: the
-   *  question whether to keep their copy or replace it (see
+  /** A link names a book the reader has their own version of — a host
+   *  bundle (`#recipe=…`) imported before, or a homepage preset link
+   *  (`restore=ask`) whose preset holds a draft: the question whether to
+   *  keep their version or replace it with the published one (see
    *  `answerBundleReplace`). */
-  bundleReplacePrompt: { projectId: string; name: string } | null;
+  bundleReplacePrompt: { kind: 'bundle' | 'preset'; id: string; name: string } | null;
 }
 
 export type SandboxAction =
@@ -1192,6 +1195,12 @@ export function SandboxProvider({
   // rewrite the fragment before then.
   const initialHashRef = useRef<ViewHash | null>(null);
   if (initialHashRef.current === null) initialHashRef.current = readViewHash();
+  // A homepage link (`restore=ask`) offers the original of a preset that
+  // opens on a draft (see the mount seeding).
+  const initialAsksRestoreRef = useRef<boolean | null>(null);
+  if (initialAsksRestoreRef.current === null) {
+    initialAsksRestoreRef.current = typeof window !== 'undefined' && hashAsksRestore(window.location.hash);
+  }
   // Host bundle links (`#recipe=…`): the resolvers are read live, the keys
   // and the link the page was opened with once.
   const hashBundlesRef = useRef(hashBundles);
@@ -1499,6 +1508,14 @@ export function SandboxProvider({
 
   // Settles the pending `bundleReplacePrompt` (see `answerBundleReplace`).
   const bundleReplaceAnswerRef = useRef<((replace: boolean) => void) | null>(null);
+  /** Ask the keep-or-replace question; resolves to true for replace. A
+   *  question still open is answered "keep" first. */
+  const askBundleReplace = (payload: NonNullable<SandboxState['bundleReplacePrompt']>): Promise<boolean> =>
+    new Promise<boolean>((resolve) => {
+      bundleReplaceAnswerRef.current?.(false);
+      bundleReplaceAnswerRef.current = resolve;
+      dispatch({ type: 'SET_BUNDLE_REPLACE_PROMPT', payload });
+    });
 
   /** Open the book a host bundle link names (`hashBundles`): the project
    *  imported from it before, else a fresh import; then the fragment names
@@ -1520,11 +1537,10 @@ export function SandboxProvider({
         activate: (id) => (id === keep ? Promise.resolve() : projectActions.activate(id)),
         // The published book may have been corrected since the reader
         // imported it: they choose between their copy and a fresh one.
-        confirmReplace: (id) => new Promise<boolean>((resolve) => {
-          bundleReplaceAnswerRef.current?.(false);
-          bundleReplaceAnswerRef.current = resolve;
-          const name = list.find((p) => p.id === id)?.name ?? stateRef.current.projects.find((p) => p.id === id)?.name ?? id;
-          dispatch({ type: 'SET_BUNDLE_REPLACE_PROMPT', payload: { projectId: id, name } });
+        confirmReplace: (id) => askBundleReplace({
+          kind: 'bundle',
+          id,
+          name: list.find((p) => p.id === id)?.name ?? stateRef.current.projects.find((p) => p.id === id)?.name ?? id,
         }),
         removeProject: (id) => projectActions.remove(id, { offScreen: true }),
         fetchBytes: fetchBundleBytes,
@@ -1659,6 +1675,38 @@ export function SandboxProvider({
             ? before.presetApplied.locale ?? null
             : null,
         };
+        // A homepage link (`restore=ask`) to a preset the reader has edited
+        // in the locale it opens in: they choose between their version and
+        // the original, as a cookbook link asks for a book imported before.
+        // Restoring drops that locale's draft (the original replaces it when
+        // it is the book on screen); the fragment stops asking either way.
+        if (!bundleRef && initialAsksRestoreRef.current && wanted.preset !== null && wanted.project === null) {
+          initialAsksRestoreRef.current = false;
+          writeViewHash({});
+          const provider = providers.find((p) => p.summary.id === wanted.preset);
+          const presetOnScreen = onScreen.preset === wanted.preset;
+          const choice = provider
+            ? choosePresetOpen({
+                summary: provider.summary,
+                requested: wanted.lang ?? undefined,
+                current: presetOnScreen ? onScreen.lang : null,
+                viewer: stateRef.current.locale,
+                drafts: draftsRef.current,
+              })
+            : null;
+          if (provider && choice?.draft) {
+            const restore = await askBundleReplace({ kind: 'preset', id: provider.summary.id, name: provider.summary.name });
+            if (cancelled) return;
+            if (restore) {
+              const draftLocale = choice.draft.locale;
+              const reapplies = presetOnScreen && draftLocale === (onScreen.lang ?? '');
+              if (!reapplies) await saveOutgoing();
+              await restorePresetOriginalRef.current(provider.summary.id, draftLocale);
+              if (reapplies || cancelled) return;
+            }
+          }
+        }
+
         // `lang=zh-TW` names the `zh-Hant` edition on screen: it stays, and
         // is seeded below as any visit's book.
         if (!bundleRef && !linkNamesBookOnScreen(wanted, onScreen, summaries)) {

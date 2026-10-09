@@ -74,7 +74,7 @@ export function collectFontText(doc: VDTDocument, into: FontText = new Map()): F
     }
     // Floated resources live on their page's float band, not in a column.
     for (const block of page.floats ?? []) addBlockFonts(block, out, vertical);
-    for (const slot of [page.header, page.footer, page.openerBand]) addSlotFonts(slot, out);
+    for (const slot of [page.header, page.footer, page.openerBand, page.lineNumbers]) addSlotFonts(slot, out);
     // The lettering of the page's comics (its comic page or half of a
     // spread, its strips): design text in their balloons.
     for (const comic of pageComics(page)) for (const balloon of comic.balloons) addSlotFonts({ blocks: balloon.text }, out);
@@ -120,6 +120,11 @@ function addBlockFonts(block: VDTBlock, out: FontText, vertical?: VerticalSettin
       for (const cell of t.cells) addLinesFonts(cell.lines, cell.isHeader ? header : body, out);
     }
     return;
+  }
+  // A drop cap (#623) and an opening mark hung before it.
+  if (block.dropCap) {
+    add(out, block.dropCap.fontString, block.dropCap.text);
+    if (block.dropCap.hang) add(out, block.dropCap.hang.fontString, block.dropCap.hang.text);
   }
   if (block.type === 'listItem' && block.bulletText && block.bulletFontString && block.bulletOffsetX !== undefined && block.lines[0]) {
     add(out, block.bulletFontString, block.bulletText);

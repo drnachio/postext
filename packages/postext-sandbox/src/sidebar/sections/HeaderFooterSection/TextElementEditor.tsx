@@ -29,6 +29,7 @@ import {
 import { NestedGroup } from '../../../controls';
 import { lineHeightFieldValue, lineHeightFromField } from './lineHeight';
 import { PlaceholderPicker } from './PlaceholderPicker';
+import { DropCapFields } from '../../settings/DropCapFields';
 import { useRightToLeftFlow } from '../../settings/flowSides';
 import { PlacementFields, PagesSelect, type Sibling } from './PlacementFields';
 import {
@@ -84,18 +85,6 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
     { value: 'odd', label: labels.headerFooterElementParityOdd },
     { value: 'even', label: labels.headerFooterElementParityEven },
   ];
-
-  type DropCap = NonNullable<DesignTextElement['dropCap']>;
-  /** Merge into `dropCap`; a field reset drops just that key (the group
-   *  stays enabled until its toggle is switched off). */
-  const updateDropCap = (partial: Partial<DropCap>) => {
-    update({ dropCap: { ...raw.dropCap, ...partial } });
-  };
-  const resetDropCapField = (field: keyof DropCap) => {
-    const dropCap: DropCap = { ...raw.dropCap };
-    delete dropCap[field];
-    update({ dropCap });
-  };
 
   type Stroke = NonNullable<DesignTextElement['stroke']>;
   /** Merge into `stroke`; a zero width drops the outline altogether, and
@@ -520,66 +509,13 @@ export function TextElementEditor({ raw, resolved, slotKind, siblings = [], onCh
         }}
       />
       {raw.dropCap && (
-        <NestedGroup>
-          <NumberInput
-            label={labels.headerFooterElementDropCapLines}
-            value={raw.dropCap.lines ?? 2}
-            onChange={(v) => updateDropCap({ lines: v })}
-            min={1}
-            max={10}
-            step={1}
-            isDefault={raw.dropCap.lines === undefined}
-            onReset={() => resetDropCapField('lines')}
-          />
-          <FontPicker
-            label={labels.headerFooterElementDropCapFont}
-            value={raw.dropCap.fontFamily ?? resolved.fontFamily}
-            onChange={(v) => updateDropCap({ fontFamily: v })}
-            isDefault={raw.dropCap.fontFamily === undefined}
-            onReset={() => resetDropCapField('fontFamily')}
-            searchPlaceholder={labels.headingFontSearch}
-            noResultsLabel={labels.headingFontNoResults}
-          />
-          <NumberInput
-            label={labels.headerFooterElementDropCapWeight}
-            value={raw.dropCap.fontWeight ?? resolved.fontWeight}
-            onChange={(v) => updateDropCap({ fontWeight: v })}
-            min={100}
-            max={900}
-            step={10}
-            isDefault={raw.dropCap.fontWeight === undefined}
-            onReset={() => resetDropCapField('fontWeight')}
-          />
-          <DimensionInput
-            label={labels.headerFooterElementDropCapSize}
-            value={raw.dropCap.fontSize ?? ZERO}
-            onChange={(dim: Dimension) => updateDropCap({ fontSize: dim })}
-            min={0}
-            step={0.5}
-            units={TEXT_SIZE_UNITS}
-            tooltip={labels.headerFooterElementDropCapSizeTooltip}
-            isDefault={raw.dropCap.fontSize === undefined}
-            onReset={() => resetDropCapField('fontSize')}
-          />
-          <ColorPicker
-            label={labels.headerFooterElementDropCapColor}
-            value={raw.dropCap.color ?? resolved.color}
-            onChange={(c: ColorValue) => updateDropCap({ color: c })}
-            isDefault={raw.dropCap.color === undefined}
-            onReset={() => resetDropCapField('color')}
-            fieldId={`headerFooter-text-dropcap-${raw.id}`}
-          />
-          <DimensionInput
-            label={labels.headerFooterElementDropCapGap}
-            value={raw.dropCap.gap ?? ZERO}
-            onChange={(dim: Dimension) => updateDropCap({ gap: dim })}
-            min={0}
-            step={0.1}
-            units={BOX_SIZE_UNITS}
-            isDefault={raw.dropCap.gap === undefined}
-            onReset={() => resetDropCapField('gap')}
-          />
-        </NestedGroup>
+        <DropCapFields
+          kind="design"
+          value={raw.dropCap}
+          onChange={(dropCap) => update({ dropCap })}
+          inherited={{ fontFamily: resolved.fontFamily, fontWeight: resolved.fontWeight, color: resolved.color }}
+          fieldId={`headerFooter-text-dropcap-${raw.id}`}
+        />
       )}
       <ToggleSwitch
         label={labels.headerFooterElementInlineMarks}

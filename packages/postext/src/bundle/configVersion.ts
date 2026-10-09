@@ -3,17 +3,19 @@
 // the number as `configVersion` (every writer since postext 1.5 sets it);
 // the Sandbox numbers its stored projects the same way.
 
-import type { BodyTextConfig, Dimension, DimensionUnit, HeadingBreakBeforeConfig, HeadingsConfig, LayoutConfig, MathConfig, PostextConfig } from '../types';
+import type { BodyTextConfig, CodeStyleConfig, Dimension, DimensionUnit, HeadingBreakBeforeConfig, HeadingsConfig, LayoutConfig, MathConfig, PostextConfig } from '../types';
 import { DEFAULT_MATH_CONFIG } from '../defaults/math';
 import { dimensionsEqual } from '../defaults/shared';
 import { DEFAULT_TEXT_ELEMENT, resolveDesignLineHeight } from '../defaults/headerFooter';
 import { DEFAULT_PAGE_CONFIG } from '../defaults/page';
 import { dimensionToPx } from '../units';
 import { KNOWN_CONTAINERS } from '../parse/blockParser';
+import { codeFenceOpen } from '../parse/codeFence';
 
 /**
- * The configuration rules this engine writes: 8 since postext 1.5. Thirteen
- * rules changed in that release, and a configuration stored under an older
+ * The configuration rules this engine writes: 9 since #620 (8 from postext
+ * 1.5). Thirteen rules changed in 1.5 and two since, and a configuration
+ * stored under an older
  * number (or none) is read through {@link migrateConfig}:
  * - 3: a heading level's `breakBefore` (and a heading style's) merges field
  *   by field onto the level's default — H1's being `always-odd`
@@ -64,6 +66,22 @@ import { KNOWN_CONTAINERS } from '../parse/blockParser';
  *     paragraph (`bodyText.breakAfterHyphens`), where up to 1.4 a justified
  *     paragraph with no inline formatting never broke there ({@link
  *     pinLegacyHyphenBreaks}).
+ * - 9 (#620, #624), four rules:
+ *   - a `:::verse` poem whose fence names no layout and whose lines carry
+ *     no hemistich separator is set line by line (`bodyText.verse.layout:
+ *     'auto'`), where up to 1.22 its lines were single hemistichs centred
+ *     in the measure ({@link pinLegacyVerseLayout});
+ *   - a paragraph style that sets `firstLineIndent` itself and a non-zero
+ *     `hangingIndent` indents its first line by the one and its turnovers
+ *     by the other, where up to 1.22 the hanging indent replaced the
+ *     first-line indent ({@link pinLegacyPairedIndents});
+ *   - a backslash that ends a line of a paragraph, a quotation or a list
+ *     item, and `\\` in one, is a forced line break
+ *     (`bodyText.hardLineBreaks`), where up to 1.22 it printed ({@link
+ *     pinLegacyHardBreaks});
+ *   - a ```` ``` ```` or `~~~` fence opens a code block (#624,
+ *     `codeStyle.blocks`), where up to 1.22 its lines were read as
+ *     Markdown ({@link pinLegacyCodeBlocks}).
  *
  * A configuration stored without a version was written for postext 1.4 or
  * earlier. One stored under 3 to 7 was written by a 1.5 prerelease, and
@@ -71,9 +89,11 @@ import { KNOWN_CONTAINERS } from '../parse/blockParser';
  * inline-gap, version-6, version-7 and version-8 pins, under 4 the
  * inline-gap, version-6, version-7 and version-8 pins, under 5 the
  * version-6, version-7 and version-8 pins, under 6 the version-7 and
- * version-8 pins, under 7 the version-8 pins.
+ * version-8 pins, under 7 the version-8 pins. One stored under 8 was
+ * written by postext 1.5 to 1.22 and gets the version-9 pins (which every
+ * older one gets too).
  */
-export const CONFIG_VERSION = 8;
+export const CONFIG_VERSION = 9;
 
 /** The rules that merge a partial heading break onto its level's. */
 const HEADING_BREAK_RULES = 3;
@@ -105,6 +125,16 @@ const PARAGRAPH_CONTAINER_RULES = 8;
 /** The rules that let Knuth–Plass break after a compound's hyphen in every
  *  paragraph. */
 const HYPHEN_BREAK_RULES = 8;
+/** The rules that set a poem with no hemistich separator line by line. */
+const VERSE_LAYOUT_RULES = 9;
+/** The rules that pair a paragraph style's own first-line indent with its
+ *  hanging one. */
+const PAIRED_INDENT_RULES = 9;
+/** The rules that read a backslash ending a line, or `\\`, as a forced line
+ *  break. */
+const HARD_BREAK_RULES = 9;
+/** The rules that read a code fence as a code block. */
+const CODE_BLOCK_RULES = 9;
 
 /** Up to 1.4 a drop cap with no `fontSize` was as tall as the line boxes it
  *  spans divided by this, the share of a letter's size its capitals take. */
@@ -391,10 +421,179 @@ function mayHaveCompounds(content: string | readonly string[] | undefined): bool
   return content.some((text) => COMPOUND_RE.test(text));
 }
 
+/**
+ * A configuration written before #620 (postext 1.22 or earlier), pinned to
+ * the way it set a `:::verse` poem with no hemistich separator:
+ * `bodyText.verse.layout: 'bayt'`, every line a single hemistich centred in
+ * the measure, where today such a poem is set line by line. A
+ * configuration that names the setting already is returned as it is (the
+ * same object).
+ */
+export function pinLegacyVerseLayout<T extends Partial<PostextConfig>>(config: T): T {
+  const bodyText: BodyTextConfig = isRecord(config.bodyText) ? config.bodyText : {};
+  const verse = isRecord(bodyText.verse) ? bodyText.verse : {};
+  if (verse.layout !== undefined) return config;
+  return { ...config, bodyText: { ...bodyText, verse: { ...verse, layout: 'bayt' } } };
+}
+
+/** A `:::verse` fence on a line of its own, its attributes, and the poem's
+ *  lines up to its closing `:::` (or the end of the text). */
+const VERSE_POEM_RE = /^[^\S\n]*:::[^\S\n]*verse[^\S\n]*(\{[^}\n]*\})?[^\S\n]*\n([\s\S]*?)(?:^[^\S\n]*:::[^\S\n]*$|(?![\s\S]))/gm;
+
+/** Whether markdown holds a poem the line layout changes: a `:::verse`
+ *  fence naming no layout over lines with no hemistich separator. */
+function hasPlainPoem(text: string): boolean {
+  if (!text.includes(':::')) return false;
+  for (const m of text.matchAll(VERSE_POEM_RE)) {
+    if (m[1] && /\blayout\s*=/.test(m[1])) continue;
+    const body = m[2] ?? '';
+    if (body.trim() !== '' && !body.includes('||') && !/\s\\\\\s/.test(body)) return true;
+  }
+  return false;
+}
+
+/** Whether markdown may hold such a poem. Unknown content (undefined)
+ *  may. */
+function mayHavePlainPoems(content: string | readonly string[] | undefined): boolean {
+  if (content === undefined) return true;
+  if (typeof content === 'string') return hasPlainPoem(content);
+  return content.some(hasPlainPoem);
+}
+
+/**
+ * A configuration written before #620 (postext 1.22 or earlier), pinned to
+ * the indents of its paragraph styles: a style that sets both
+ * `firstLineIndent` and a non-zero `hangingIndent` loses the
+ * `firstLineIndent`, which up to 1.22 the hanging indent replaced (today
+ * the first line starts at it). The styles of its HTML viewer's overrides
+ * are pinned the same way. A configuration with no such style is returned
+ * as it is (the same object).
+ */
+export function pinLegacyPairedIndents<T extends Partial<PostextConfig>>(config: T): T {
+  const pinStyles = (styles: unknown): unknown[] | undefined => {
+    if (!Array.isArray(styles)) return undefined;
+    let changed = false;
+    const out = styles.map((s: unknown) => {
+      if (!isRecord(s) || s.firstLineIndent === undefined || !isRecord(s.hangingIndent)) return s;
+      const hang = s.hangingIndent.value;
+      if (typeof hang !== 'number' || !(hang > 0)) return s;
+      changed = true;
+      const { firstLineIndent: _first, ...rest } = s;
+      void _first;
+      return rest;
+    });
+    return changed ? out : undefined;
+  };
+  let out: T = config;
+  const own = pinStyles((config as Record<string, unknown>).paragraphStyles);
+  if (own) out = { ...out, paragraphStyles: own };
+  const viewer = (config as Record<string, unknown>).htmlViewer;
+  if (isRecord(viewer) && isRecord(viewer.overrides)) {
+    const overrides = pinStyles(viewer.overrides.paragraphStyles);
+    if (overrides) out = { ...out, htmlViewer: { ...viewer, overrides: { ...viewer.overrides, paragraphStyles: overrides } } };
+  }
+  return out;
+}
+
 /** Whether a `textAlign` value sets text ragged (anything but `'justify'`;
  *  an unset one follows the body). */
 function isRaggedAlign(value: unknown): boolean {
   return typeof value === 'string' && value !== 'justify';
+}
+
+/**
+ * A configuration written before #620 (postext 1.22 or earlier), pinned to
+ * the way it read a backslash that ends a line of a paragraph, a quotation
+ * or a list item, and `\\` in one: `bodyText.hardLineBreaks: false`, the
+ * backslashes printed and the lines joined with a space, where today they
+ * are forced line breaks. A configuration that names the setting already
+ * is returned as it is (the same object).
+ */
+export function pinLegacyHardBreaks<T extends Partial<PostextConfig>>(config: T): T {
+  const bodyText: BodyTextConfig = isRecord(config.bodyText) ? config.bodyText : {};
+  if (bodyText.hardLineBreaks !== undefined) return config;
+  return { ...config, bodyText: { ...bodyText, hardLineBreaks: false } };
+}
+
+/**
+ * A configuration written before #624 (postext 1.22 or earlier), pinned to
+ * the way it read a ```` ``` ```` or `~~~` fence: `codeStyle.blocks: false`,
+ * the fence and the lines inside it read as Markdown (paragraphs, headings,
+ * lists…), where today they are a code block set as written. A
+ * configuration that names the setting already is returned as it is (the
+ * same object).
+ */
+export function pinLegacyCodeBlocks<T extends Partial<PostextConfig>>(config: T): T {
+  const codeStyle: CodeStyleConfig = isRecord(config.codeStyle) ? config.codeStyle : {};
+  if (codeStyle.blocks !== undefined) return config;
+  return { ...config, codeStyle: { ...codeStyle, blocks: false } };
+}
+
+/** Whether markdown holds a line that opens a code fence. */
+function hasCodeFence(text: string): boolean {
+  if (!text.includes('```') && !text.includes('~~~')) return false;
+  return text.split('\n').some((line) => codeFenceOpen(line) !== undefined);
+}
+
+/** Whether markdown may hold a code fence. Unknown content (undefined)
+ *  may. */
+function mayHaveCodeFences(content: string | readonly string[] | undefined): boolean {
+  if (content === undefined) return true;
+  if (typeof content === 'string') return hasCodeFence(content);
+  return content.some(hasCodeFence);
+}
+
+/** A line that opens a block of its own, which a paragraph's lines never
+ *  run into: a heading, a fence, a display formula, a list item, a
+ *  resource embed. */
+const BLOCK_LINE_RE = /^(?:#{1,6}\s|:::|::resource\b|\$\$|(?:[-*+]|\d+[.)]|[\u0660-\u0669]+[.)]|[\u06f0-\u06f9]+[.)])\s)/;
+const LIST_LINE_RE = /^(?:[-*+]|\d+[.)]|[\u0660-\u0669]+[.)]|[\u06f0-\u06f9]+[.)])\s/;
+
+/** Whether markdown holds a forced line break as #620 reads one: in a
+ *  paragraph, a quotation or a list item, `\\` before a space and more
+ *  text, or a backslash ending a line the block goes on after (a list item
+ *  is one line). Inline code and maths, display formulas, headings (whose
+ *  `\\` always broke the title) and `:::verse` poems (whose spaced `\\`
+ *  cuts a bayt) are passed over. */
+function hasForcedBreak(text: string): boolean {
+  if (!text.includes('\\')) return false;
+  const lines = text.split('\n').map((l) => l.trim());
+  let verse = false;
+  let display = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]!;
+    if (display) {
+      if (line.endsWith('$$')) display = false;
+      continue;
+    }
+    if (verse) {
+      if (FENCE_CLOSE_RE.test(line)) verse = false;
+      continue;
+    }
+    if (/^:::\s*verse\b/.test(line)) {
+      verse = true;
+      continue;
+    }
+    if (line.startsWith('$$')) {
+      display = !(line.length > 2 && line.endsWith('$$'));
+      continue;
+    }
+    if (!line.includes('\\') || /^#{1,6}\s/.test(line)) continue;
+    const body = line.replace(/^>\s?/, '').replace(/`[^`\n]+?`/g, '').replace(/\$[^$\n]*\$/g, '');
+    if (/\\\\[ \t]+\S/.test(body)) return true;
+    if (!body.endsWith('\\') || LIST_LINE_RE.test(body)) continue;
+    const next = lines[i + 1] ?? '';
+    if (next !== '' && !BLOCK_LINE_RE.test(next) && (next.startsWith('>') === line.startsWith('>'))) return true;
+  }
+  return false;
+}
+
+/** Whether markdown may hold a forced line break. Unknown content
+ *  (undefined) may. */
+function mayHaveForcedBreaks(content: string | readonly string[] | undefined): boolean {
+  if (content === undefined) return true;
+  if (typeof content === 'string') return hasForcedBreak(content);
+  return content.some(hasForcedBreak);
 }
 
 /** Whether `config` (or the screen overrides of its HTML viewer) sets some
@@ -683,10 +882,18 @@ export interface MigrateConfigOptions {
    * `:::paragraphs` container is not given the 1.4 space under containers
    * (see {@link pinLegacyParagraphContainerSpacing}); and text with no
    * hyphen between two letters is not given the 1.4 compound breaks (see
-   * {@link pinLegacyHyphenBreaks}). That keeps a stored configuration as
+   * {@link pinLegacyHyphenBreaks}); and text with no `:::verse` poem whose
+   * lines carry no hemistich separator is not given the 1.22 verse layout
+   * (see {@link pinLegacyVerseLayout}); and text with no backslash ending a
+   * line a paragraph goes on after, and no `\\` in running text, is not
+   * given the 1.22 literal backslashes (see {@link pinLegacyHardBreaks});
+   * and text with no ```` ``` ```` or `~~~` fence is not given the 1.22
+   * reading of fences (see {@link pinLegacyCodeBlocks}).
+   * That keeps a stored configuration as
    * short as it was. Without it the size is pinned whenever maths is on,
    * and the gaps, the room, the heading marks, the box cut, the dash
-   * breaks, the split under a heading and the compound breaks always, and
+   * breaks, the split under a heading, the compound breaks, the verse
+   * layout and the literal backslashes always, and
    * the container space always when the configuration declares a paragraph
    * style.
    * Any iterable of texts will do, a generator or a Map's `values()`
@@ -720,7 +927,13 @@ export interface MigrateConfigOptions {
  * pinLegacyParagraphContainerSpacing}, when it declares a paragraph style,
  * unless `options.content` shows no such container, and its compound
  * breaks by {@link pinLegacyHyphenBreaks}, unless `options.content` shows
- * no compound. A current one is returned as it is (the same object).
+ * no compound; one older than 9 has its poems with no hemistich separator
+ * pinned by {@link pinLegacyVerseLayout}, unless `options.content` shows
+ * none, its paragraph styles' indents by {@link pinLegacyPairedIndents},
+ * its forced line breaks by {@link pinLegacyHardBreaks}, unless
+ * `options.content` shows none, and its code fences by {@link
+ * pinLegacyCodeBlocks}, unless `options.content` shows none. A current one
+ * is returned as it is (the same object).
  * Migrate a stored configuration once and store it again under
  * `CONFIG_VERSION`: the maths pin multiplies a scale, so a configuration
  * read twice under its old number would grow twice.
@@ -745,6 +958,10 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   if (rules < HEADING_SPLIT_RULES && mayHaveHeadings(content)) out = pinLegacyHeadingSplit(out);
   if (rules < PARAGRAPH_CONTAINER_RULES && mayHaveParagraphContainers(content)) out = pinLegacyParagraphContainerSpacing(out);
   if (rules < HYPHEN_BREAK_RULES && mayHaveCompounds(content)) out = pinLegacyHyphenBreaks(out);
+  if (rules < VERSE_LAYOUT_RULES && mayHavePlainPoems(content)) out = pinLegacyVerseLayout(out);
+  if (rules < PAIRED_INDENT_RULES) out = pinLegacyPairedIndents(out);
+  if (rules < HARD_BREAK_RULES && mayHaveForcedBreaks(content)) out = pinLegacyHardBreaks(out);
+  if (rules < CODE_BLOCK_RULES && mayHaveCodeFences(content)) out = pinLegacyCodeBlocks(out);
   return out;
 }
 
@@ -790,5 +1007,9 @@ export function migrateBundleConfig(
   if (rules < HEADING_SPLIT_RULES && mayHaveHeadings(content)) merged = pinLegacyHeadingSplit(merged);
   if (rules < PARAGRAPH_CONTAINER_RULES && mayHaveParagraphContainers(content)) merged = pinLegacyParagraphContainerSpacing(merged);
   if (rules < HYPHEN_BREAK_RULES && mayHaveCompounds(content)) merged = pinLegacyHyphenBreaks(merged);
+  if (rules < VERSE_LAYOUT_RULES && mayHavePlainPoems(content)) merged = pinLegacyVerseLayout(merged);
+  if (rules < PAIRED_INDENT_RULES) merged = pinLegacyPairedIndents(merged);
+  if (rules < HARD_BREAK_RULES && mayHaveForcedBreaks(content)) merged = pinLegacyHardBreaks(merged);
+  if (rules < CODE_BLOCK_RULES && mayHaveCodeFences(content)) merged = pinLegacyCodeBlocks(merged);
   return merged;
 }

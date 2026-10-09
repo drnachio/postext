@@ -56,14 +56,22 @@ describe("C5: content warnings on how the text is set (#401)", () => {
     { kind: "arabicMarksExceedLeading", page: 3, detail: "وَقَالَ" },
     { kind: "unbreakableWordOverflow", page: null, detail: "https://example.org/a-very-long-path" },
     { kind: "joiningScriptLetterSpacing", page: 1, detail: "كتاب" },
+    { kind: "lineNumberOverlap", page: 2, detail: "line 40" },
+    { kind: "tabInVerticalText", page: null, detail: ":tab" },
+    { kind: "dropCap", page: 1, detail: "shortParagraph (reserve): A short paragraph." },
+    { kind: "codeOverflow", page: 2, detail: "wrap: 1 line(s) of js" },
   ];
 
-  it("fails a recipe on the Arabic and word-overflow warnings it does not expect", () => {
+  it("fails a recipe on the Arabic, word-overflow, line-number and tab warnings it does not expect", () => {
     const c5 = of("C5", runChecks(input({ facts: facts({ textWarnings }) })));
     expect(c5.map((f) => [f.severity, f.detail])).toEqual([
       ["fail", 'arabicMarksExceedLeading "وَقَالَ" on page 3'],
       ["fail", 'unbreakableWordOverflow "https://example.org/a-very-long-path"'],
       ["fail", 'joiningScriptLetterSpacing "كتاب" on page 1'],
+      ["fail", 'lineNumberOverlap "line 40" on page 2'],
+      ["fail", 'tabInVerticalText ":tab"'],
+      ["fail", 'dropCap "shortParagraph (reserve): A short paragraph." on page 1'],
+      ["fail", 'codeOverflow "wrap: 1 line(s) of js" on page 2'],
     ]);
   });
 
@@ -241,6 +249,34 @@ describe("right-binding detection", () => {
   const registry = loadRegistry();
   const found = (paths: string[]) => detectFeatures(registry, { paths, markdown: "", apis: [] }).detected;
 
+  it("finds tab stops in the config and :tab in the text (#622)", () => {
+    const tabs = (paths: string[], markdown = "") => detectFeatures(registry, { paths, markdown, apis: [] }).detected.includes("tab-stops");
+    expect(tabs(["paragraphStyles.tabStops"])).toBe(true);
+    expect(tabs(["calloutStyles.body.tabInterval"])).toBe(true);
+    expect(tabs(["bodyText.tabStops"])).toBe(true);
+    expect(tabs([], "Soup :tab 8.50")).toBe(true);
+    expect(tabs([], "Marks :tab{at=end align=end} 2")).toBe(true);
+    expect(tabs([], "Chapter 3:table of results")).toBe(false);
+  });
+
+  it("finds body drop caps in the config and the {dropcap} attribute (#623)", () => {
+    const caps = (paths: string[], markdown = "") => detectFeatures(registry, { paths, markdown, apis: [] }).detected.includes("body-drop-caps");
+    expect(caps(["headings.levels.dropCap"])).toBe(true);
+    expect(caps(["headingStyles.dropCap"])).toBe(true);
+    expect(caps(["paragraphStyles.dropCap"])).toBe(true);
+    expect(caps([], "# Lost {dropcap=false}")).toBe(true);
+    expect(caps([], ':::paragraphs{style="entry" dropcap}')).toBe(true);
+    expect(caps(["headings.levels.advancedDesign.slot.elements.dropCap"])).toBe(false);
+  });
+
+  it("finds code listings in codeStyle and in a ``` or ~~~ fence (#624)", () => {
+    const code = (paths: string[], markdown = "") => detectFeatures(registry, { paths, markdown, apis: [] }).detected.includes("code-listings");
+    expect(code(["codeStyle.tokens.keyword.color"])).toBe(true);
+    expect(code([], "Text.\n\n```js\nlet a = 1;\n```")).toBe(true);
+    expect(code([], "~~~~ console\n$ ls\n~~~~")).toBe(true);
+    expect(code([], "Inline `code` only, and a ``double`` span.")).toBe(false);
+  });
+
   it("comes from the binding, not from any writing mode", () => {
     expect(found(["page.binding"])).toContain("right-binding");
     // An explicit horizontal-tb, or a vertical heading in a left-bound book.
@@ -322,6 +358,7 @@ describe("C31: config values the engine replaced (#468)", () => {
       { kind: "unknownConfigValue", path: "footnotes.placement", value: "spread", used: "column" },
       { kind: "unknownConfigValue", path: "comics.balloonStyles[0].shape", value: "ovl", used: "oval", suggestion: "oval" },
       { kind: "unknownConfigKey", path: "headingStyles[3].minHeight", value: "minHeight", used: "", suggestion: "lineHeight" },
+      { kind: "lineNumbersUnsupported", path: "lineNumbers.enabled", value: "true", used: "false" },
       { kind: "fontFamilyStack", path: "bodyText.fontFamily", value: "Zen Old Mincho, serif", used: "Zen Old Mincho" },
     ];
     const c31 = of("C31", runChecks(input({ facts: facts({ configWarnings }) })));
@@ -333,6 +370,7 @@ describe("C31: config values the engine replaced (#468)", () => {
       ["fail", 'unknownConfigValue: footnotes.placement "spread" is not one of its choices; the engine used column'],
       ["fail", 'unknownConfigValue: comics.balloonStyles[0].shape "ovl" is not one of its choices (oval?); the engine used oval'],
       ["fail", "unknownConfigKey: headingStyles[3].minHeight is no key of that setting (lineHeight?); the engine ignores it"],
+      ["fail", "lineNumbersUnsupported: lineNumbers.enabled: vertical documents get no line numbers"],
       ["warn", 'fontFamilyStack: bodyText.fontFamily "Zen Old Mincho, serif" is a font stack; the text is set in Zen Old Mincho alone'],
     ]);
   });

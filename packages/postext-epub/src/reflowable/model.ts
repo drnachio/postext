@@ -71,7 +71,20 @@ export type InlineItem =
   /** The start of a printed page (`epub:type="pagebreak"`). */
   | { t: 'page'; bookIndex: number }
   /** An anchor set in the text (an empty element carrying its id). */
-  | { t: 'anchor'; id: string };
+  | { t: 'anchor'; id: string }
+  /** A tab at its stop (#622): the line it is on is written as a row of
+   *  the parts between its tabs (`pt-tab-row`). `fill`: the stop pushes
+   *  the text after it to the row's end (an end, centre or decimal stop, or
+   *  any with a leader); otherwise the part before it is at least `minEm`
+   *  wide (a start stop, its place in the print). */
+  | TabItem;
+
+export interface TabItem {
+  t: 'tab';
+  fill: boolean;
+  leader?: 'text' | 'rule';
+  minEm?: number;
+}
 
 export interface ParagraphNode {
   k: 'p';
@@ -184,6 +197,60 @@ export interface VerseNode {
   dir?: 'ltr' | 'rtl';
 }
 
+/** A line of verse of a stanza (#620): its text, the turnovers run on
+ *  after it, and its own indent. */
+export interface VerseLineNode {
+  inl: InlineItem[];
+  /** The line's indent, in ems of the stanza's text. */
+  indentEm: number;
+  /** The number printed beside the line (#621): written in the margin on
+   *  the line's start side, hidden from assistive technology. */
+  num?: string;
+}
+
+/** A stanza of a `:::verse` poem set line by line (#620): one block-level
+ *  line a line of verse, each hanging its turnovers `hangEm` in, so a
+ *  reading system's reflow turns an overlong line over as the print does. */
+export interface StanzaNode {
+  k: 'stanza';
+  /** Page starts and anchors that come before its first line. */
+  pre: InlineItem[];
+  lines: VerseLineNode[];
+  /** The turnovers' hang, in ems of the stanza's text. */
+  hangEm: number;
+  /** The paragraph style its fence names (`ps-<id>`). */
+  cls?: string[];
+  dir?: 'ltr' | 'rtl';
+}
+
+/** A run of a line of code (#624): its text and the colour, weight and
+ *  slant the print set it in. */
+export interface CodeRun {
+  text: string;
+  color?: string;
+  bold?: boolean;
+  italic?: boolean;
+}
+
+/** A source line of a code listing (#624): its runs (a line the print
+ *  turned over is joined again), its number and whether the fence
+ *  highlights it. */
+export interface CodeLineNode {
+  runs: CodeRun[];
+  num?: string;
+  highlight?: boolean;
+}
+
+/** A code listing (#624): `<pre><code>`, line by line as written. */
+export interface CodeNode {
+  k: 'code';
+  /** Page starts and anchors that come before its first line. */
+  pre: InlineItem[];
+  /** The fence's language (`language-<lang>` on the `<code>`). */
+  lang?: string;
+  lines: CodeLineNode[];
+}
+
 export interface MathNode {
   k: 'math';
   pre: InlineItem[];
@@ -260,6 +327,8 @@ export type Node =
   | TableNode
   | MathNode
   | VerseNode
+  | StanzaNode
+  | CodeNode
   | TocNode
   | ComicNode
   | MarkerNode;

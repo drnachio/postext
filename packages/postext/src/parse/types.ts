@@ -9,20 +9,92 @@ export type ContentBlockType =
   | 'resourceBlock'
   | 'directive'
   | 'containerStart'
-  | 'containerEnd';
+  | 'containerEnd'
+  /** A code listing (#624): a ```` ``` ```` or `~~~` fence, or indented
+   *  code under `codeStyle.indentedCode` (see {@link CodeBlockInfo}). */
+  | 'code';
 
 /** Attributes parsed from a `:::name{key="v" other=bare flag}` directive.
  *  Values are kept as strings; directive consumers validate/coerce. A bare
  *  `flag` becomes `{ flag: '' }`. */
 export type DirectiveAttrs = Record<string, string>;
 
-/** A `:::verse` poem (#378): one bayt per source line, its hemistichs (the
- *  ṣadr, then the ʿajuz) split at `||` (or a spaced `\\`, the Wikisource
- *  convention); a line without one is a single hemistich, centred. */
+/** A `:::verse` poem. The bayt layout (#378): one bayt per source line,
+ *  its hemistichs (the ṣadr, then the ʿajuz) split at `||` (or a spaced
+ *  `\\`, the Wikisource convention); a line without one is a single
+ *  hemistich, centred. The line layout (#620): one line of verse per
+ *  source line, a stanza per run of lines between blank lines, each stanza
+ *  a block of its own (see {@link VerseStanza}). */
 export interface VerseInfo {
   /** The fence's attributes as written (`gap`, `width`, `align`,
-   *  `ornament`, `style`, `dir`); `pipeline/verse.ts` reads them. */
+   *  `ornament`, `style`, `dir`, `layout`, `indentStep`, `turnover`,
+   *  `stanzaSpace`, `keepStanzas`, …); `pipeline/verse.ts` and
+   *  `pipeline/verseLines.ts` read them. */
   attrs: DirectiveAttrs;
+  /** Set on the blocks of a poem in the line layout (#620): which stanza
+   *  of which poem the block sets. Unset: the bayt layout, one block. */
+  stanza?: VerseStanza;
+}
+
+/** One stanza of a poem in the line layout (#620). Its block's text holds
+ *  the lines of verse, a line feed (`\n`) between two, mapped to the
+ *  source's line end; leading whitespace is not in the text but in
+ *  {@link lines}. */
+export interface VerseStanza {
+  /** The poem, numbered from 0 in the document's order: the stanzas of a
+   *  poem share it. */
+  poem: number;
+  /** The stanza's index in its poem, from 0. */
+  index: number;
+  /** Whether it is the poem's last stanza. */
+  last: boolean;
+  /** Poem-wide index of the stanza's first line of verse, from 0. */
+  firstLine: number;
+  /** The stanza's lines, in order. */
+  lines: VerseLineInfo[];
+  /** The fence named no layout and the poem has no hemistich separator:
+   *  the line layout was picked by `layout="auto"`. A configuration
+   *  stored before #620 (`bodyText.verse.layout: 'bayt'`) sets such a
+   *  stanza as single hemistichs, as postext 1.22 did. */
+  auto?: true;
+}
+
+/** A line of verse in the line layout (#620). */
+export interface VerseLineInfo {
+  /** Its indent in spaces as written: each leading space counts 1, a tab
+   *  4, an ideographic space (U+3000) 2. Multiplied by the poem's
+   *  `indentStep`. */
+  indent: number;
+  /** The line was written `+ …`: a stepped line (a line of dramatic verse
+   *  shared between speakers), set to start where the line above ended. */
+  stepped?: true;
+}
+
+/** A code listing (#624): the lines between a ```` ``` ```` or `~~~`
+ *  fence and its closing fence (or a run of indented lines), kept as
+ *  written: no inline Markdown, no directives, every space and tab. The
+ *  block's `text` joins the lines with a line feed, mapped to the source
+ *  line end, so the plain text and the source map read the listing as
+ *  written. */
+export interface CodeBlockInfo {
+  /** The first word of the info string (`js`, `python`, `console`),
+   *  lower-cased; absent when the fence names none. */
+  lang?: string;
+  /** The info string as written, after the fence. */
+  info: string;
+  /** The rest of the info string read in the directive attribute grammar
+   *  (`{title="backup.sh" lineNumbers start=12 highlight="3,5-7"}`). */
+  attrs: DirectiveAttrs;
+  /** The title: the `title` attribute, else a bare second word of the info
+   *  string (```` ```console Terminal ````). */
+  title?: string;
+  /** The listing's lines, the fence's indentation (or the four columns of
+   *  indented code) taken off, tabs kept. */
+  lines: string[];
+  /** Source offset of each line's first kept character. */
+  lineStarts: number[];
+  /** How the listing was written. */
+  fence: '```' | '~~~' | 'indent';
 }
 
 /** Recognized directive names. Unknown names are not parsed as directives —
@@ -54,6 +126,22 @@ export interface MathMeta {
 
 /** A Markdown link inside an inline span: the characters `[start, end)` of
  *  the span's `text`, pointing at `href` (see {@link InlineSpan.links}). */
+/** A tab of the text (see {@link InlineSpan.tab}). */
+export interface InlineTab {
+  /** A tab character of the source (not `:tab`). */
+  literal?: true;
+  /** Tab characters in a row (with nothing but spaces between them): one
+   *  character of the plain text, which goes on this many stops. Read as
+   *  a word space, they are one, as collapsed whitespace always was. */
+  count?: number;
+  /** The one-off stop of `:tab{at=…}`: the tab goes there, whatever the
+   *  paragraph's own stops. */
+  stop?: import('../types').TabStop;
+  /** {@link stop} in px, resolved by the pipeline against the paragraph's
+   *  size (see `resolveTabStop`). */
+  px?: import('../measure/tabs').TabStopPx;
+}
+
 export interface InlineLink {
   start: number;
   end: number;
@@ -98,6 +186,14 @@ export interface InlineSpan {
    *  (a right-aligned label). Neither breaks nor stretches. Set by the
    *  pipeline. */
   labelTab?: 'lead' | 'gap';
+  /** A tab (#622): `:tab` or `:tab{at=… align=… leader=…}`, or a tab
+   *  character inside a line of a paragraph, a list item or a quotation
+   *  (`literal`). The span's `text` is `'\t'`, one character of the plain
+   *  text, and the spaces around the tab are taken into it. A literal tab
+   *  stays a tab only in a paragraph whose style sets tab stops; elsewhere
+   *  the pipeline sets it back as the word space it always was
+   *  (`pipeline/tabs.ts`). */
+  tab?: InlineTab;
   /** Marks this span as a resource caption's numbered label (e.g. "Figure 1.")
    *  so renderers can paint it in the configured label colour. Flows span →
    *  token → segment, mirroring {@link ref}. */
@@ -393,11 +489,11 @@ export type MathSpan = InlineSpan & { math: MathMeta };
 
 export type ListKind = 'unordered' | 'ordered' | 'task';
 
-export type ParseIssueKind = 'unclosedMath' | 'unclosedMathBlock' | 'unclosedContainer';
+export type ParseIssueKind = 'unclosedMath' | 'unclosedMathBlock' | 'unclosedContainer' | 'unclosedCodeBlock';
 
 interface ParseIssueBase {
   kind: ParseIssueKind;
-  delimiter: '$' | '$$' | ':::';
+  delimiter: '$' | '$$' | ':::' | '```' | '~~~';
   /** Absolute source offset of the unmatched opening delimiter. */
   sourceStart: number;
   /** End of the scanned region (usually the line or block end). */
@@ -423,7 +519,27 @@ export interface UnclosedContainerIssue extends ParseIssueBase {
   containerId: number;
 }
 
-export type ParseIssue = UnclosedMathIssue | UnclosedContainerIssue;
+/** A ```` ``` ```` or `~~~` code fence still open at the end of the text
+ *  (#624): the listing runs to the end; `sourceStart`/`sourceEnd` cover
+ *  the opening fence line. */
+export interface UnclosedCodeBlockIssue extends ParseIssueBase {
+  kind: 'unclosedCodeBlock';
+  delimiter: '```' | '~~~';
+  /** The fence's language, when it names one. */
+  lang?: string;
+}
+
+export type ParseIssue = UnclosedMathIssue | UnclosedContainerIssue | UnclosedCodeBlockIssue;
+
+/** How a text is read (see `parseMarkdownWithIssues`). */
+export interface ParseOptions {
+  /** Read ```` ``` ```` / `~~~` fences as code blocks (#624). Default
+   *  `true`; `false` reads their lines as Markdown, as postext 1.22 did. */
+  fences?: boolean;
+  /** Read indented code (four spaces or a tab after a blank line) as a
+   *  code block. Default `false`. */
+  indentedCode?: boolean;
+}
 
 /** What one block of an expanded `:::toc` prints. */
 export interface TocBlockInfo {
@@ -541,6 +657,14 @@ export interface ContentBlock {
   attrSources?: Record<string, { start: number; end: number }>;
   /** Plain-text indices of forced title breaks (`\\` in the source). */
   titleBreaks?: number[];
+  /** A paragraph, quotation or list item with forced line breaks (#620): a
+   *  backslash ending a source line, or `\\`, which its text holds as
+   *  `BREAK_PLACEHOLDER` (U+2028). This is the block as postext 1.22 read
+   *  it, every such backslash printed and the lines joined with a space,
+   *  which a configuration stored before #620 lays out instead
+   *  (`bodyText.hardLineBreaks: false`, see `literalBreaksFor`). Absent on
+   *  a block with no forced break. */
+  literalBreaks?: { text: string; spans: InlineSpan[]; sourceMap: number[] };
   /** A numbered heading whose level or style sets `numberPosition:
    *  'replace'`: its title is emptied before layout and the generated
    *  number is printed (and listed) as the whole title (#401). */
@@ -583,7 +707,9 @@ export interface ContentBlock {
    *  block's `type` is `'paragraph'`; its text holds the hemistichs, a tab
    *  (`\t`) where a bayt's two hemistichs meet (the source's `||`) and a
    *  line feed (`\n`) between bayts, so the plain text and the source map
-   *  read the poem as written (see `pipeline/verse.ts`). */
+   *  read the poem as written (see `pipeline/verse.ts`). A poem in the line
+   *  layout (#620) is one such block per stanza, its lines joined by line
+   *  feeds (`VerseInfo.stanza`, `pipeline/verseLines.ts`). */
   verse?: VerseInfo;
   /** For a `:::page` block (a comic page, #555) or a `:::strip` block (a
    *  comic in the text flow, #566): its split, panels and script, read
@@ -607,6 +733,14 @@ export interface ContentBlock {
   /** The anchors set in this block's text (`:anchor{#id}`, `[text]{#id}`),
    *  in source order (#261). */
   anchorMarks?: AnchorMark[];
+  /** For a `code` block (#624): the listing (see {@link CodeBlockInfo}). */
+  code?: CodeBlockInfo;
+  /** The inline code spans (`` `x` ``) of a paragraph, a heading, a
+   *  quotation or a list item, as source ranges of their text (between the
+   *  backticks, absolute offsets into the markdown), in order: a layout
+   *  with `codeStyle.inline` sets the characters mapped into them in the
+   *  code face (#624). Absent when the block has none. */
+  inlineCode?: Array<{ start: number; end: number }>;
   /** For `resourceBlock` blocks: the referenced `Resource.id`. */
   resourceId?: string;
   /** For `containerStart` / `containerEnd` marker blocks: the container

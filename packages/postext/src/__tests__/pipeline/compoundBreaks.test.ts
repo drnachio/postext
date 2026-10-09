@@ -132,7 +132,7 @@ describe('a break after a compound’s hyphen on both paths (EF-186)', () => {
   });
 
   it('is pinned off for configurations stored before rules 8 whose text sets a compound', () => {
-    expect(CONFIG_VERSION).toBe(8);
+    expect(CONFIG_VERSION).toBe(9);
     const stored: PostextConfig = { bodyText: { fontFamily: 'Georgia' } };
     for (const version of [undefined, 3, 6, 7]) {
       expect(migrateConfig(stored, version, { content: EN }).bodyText?.breakAfterHyphens, `${version}`).toBe(false);

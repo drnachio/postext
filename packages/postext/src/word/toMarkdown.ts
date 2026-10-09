@@ -4,8 +4,8 @@
 // footnotes, pictures and tables become resources placed where they were.
 
 import type { PostextConfig, TableCell, TableModel } from '../types';
-import { guardLineStart, renderInline, WORD_JOINER, type InlineRun } from './inline';
-import type { WordBlock, WordDocument, WordMedia, WordParagraph, WordRun, WordTable, WordTextRun } from './model';
+import { guardLineStart, LINE_BREAK, renderInline, WORD_JOINER, type InlineRun } from './inline';
+import type { WordBlock, WordDocument, WordMedia, WordParagraph, WordRun, WordStyle, WordTable, WordTabStop, WordTextRun } from './model';
 import {
   guessCharacterTarget,
   guessParagraphTarget,
@@ -56,6 +56,40 @@ export interface ImportSettings {
   existingIds: ReadonlySet<string>;
   /** Title of text before the first chapter break. */
   untitledChapter: string;
+}
+
+/** The tab stops a Word paragraph has (#622): its style chain's, base
+ *  first, then its own; a `clear` removes the stop at its position. Sorted,
+ *  the alignments Postext sets only. */
+export function paragraphTabs(doc: WordDocument, p: WordParagraph): WordTabStop[] {
+  const chain: WordStyle[] = [];
+  let s = doc.styles.get(p.styleId || doc.defaultParagraphStyle);
+  for (let guard = 0; s && guard < 12; guard++) {
+    chain.unshift(s);
+    s = s.basedOn ? doc.styles.get(s.basedOn) : undefined;
+  }
+  const at = new Map<number, WordTabStop>();
+  for (const list of [...chain.map((x) => x.tabs), p.tabs]) {
+    for (const t of list ?? []) {
+      if (t.val === 'clear') at.delete(t.pos);
+      else at.set(t.pos, t);
+    }
+  }
+  return [...at.values()].filter((t) => TAB_ALIGN[t.val] !== undefined).sort((a, b) => a.pos - b.pos);
+}
+
+const TAB_ALIGN: Record<string, string> = { left: 'start', start: 'start', right: 'end', end: 'end', center: 'center', decimal: 'decimal' };
+const TAB_LEADER: Record<string, string> = { dot: '.', hyphen: '-', middleDot: '·', underscore: 'rule', heavy: 'rule' };
+
+/** `:tab`, with the attributes of the Word stop it goes to (#622). */
+function tabDirective(stop: WordTabStop | undefined): string {
+  if (!stop) return ':tab';
+  const attrs = [`at=${Math.round((stop.pos / 20) * 10) / 10}pt`];
+  const align = TAB_ALIGN[stop.val];
+  if (align && align !== 'start') attrs.push(`align=${align}`);
+  const leader = stop.leader ? TAB_LEADER[stop.leader] : undefined;
+  if (leader) attrs.push(`leader="${leader}"`);
+  return `:tab{${attrs.join(' ')}}`;
 }
 
 /** The target of a paragraph style: the template's, else a guess. */
@@ -110,10 +144,18 @@ const FENCE_OPEN_RE = /^:::\s*(callout|paragraphs|part|columns|paper|verse|refer
 const FENCE_CLOSE_RE = /^:::\s*$/;
 
 interface Group {
-  kind: 'callout' | 'paragraphs';
+  kind: 'callout' | 'paragraphs' | 'verse';
   key: string;
   title?: string;
   chunks: Chunk[];
+  /** A poem (#620): its last stanza came from a one-line paragraph, which
+   *  the next one-line paragraph runs on (verse typed a line a paragraph). */
+  runOn?: boolean;
+  /** A poem: an empty paragraph ended its last stanza. */
+  stanzaBreak?: boolean;
+  /** A poem: a line carries a hemistich separator (`||`), so the fence
+   *  names the line layout. */
+  layoutLines?: boolean;
 }
 
 interface ListLevel { ilvl: number; indent: number; width: number }
@@ -177,9 +219,11 @@ class Converter {
     if (!g) return;
     this.group = null;
     if (g.chunks.length === 0 && !g.title) return;
+    const verseAttrs = [...(g.key ? [`style=${attrValue(g.key)}`] : []), ...(g.layoutLines ? ['layout=lines'] : [])];
     const attrs = g.kind === 'callout'
       ? `{type=${attrValue(g.key)}${g.title ? ` title=${attrValue(g.title)}` : ''}}`
-      : `{style=${attrValue(g.key)}}`;
+      : g.kind === 'verse' ? (verseAttrs.length ? `{${verseAttrs.join(' ')}}` : '')
+        : `{style=${attrValue(g.key)}}`;
     const inner = joinChunks(g.chunks);
     this.chunks.push({ kind: 'block', text: `:::${g.kind}${attrs}${inner ? `\n${inner}` : ''}\n:::` });
     this.list = [];
@@ -221,8 +265,11 @@ class Converter {
 
   /** Runs → inline runs, split at line breaks when `split` (verse typed
    *  with Shift+Enter) and at page breaks. Notes are numbered here. */
-  private inlineRuns(runs: WordRun[], opts: { heading?: boolean; splitLines?: boolean; inCell?: boolean; inNote?: boolean }): { lines: InlineRun[][]; images: Array<Extract<WordRun, { type: 'image' }>>; pageBreak: boolean; displayMath: string[] } {
+  private inlineRuns(runs: WordRun[], opts: { heading?: boolean; splitLines?: boolean; inCell?: boolean; inNote?: boolean; verse?: boolean; tabs?: readonly WordTabStop[] }): { lines: InlineRun[][]; images: Array<Extract<WordRun, { type: 'image' }>>; pageBreak: boolean; displayMath: string[] } {
     const lines: InlineRun[][] = [[]];
+    // Tabs since the start of the line (#622): the n-th goes to the n-th
+    // stop the paragraph has.
+    let tabsOnLine = 0;
     const images: Array<Extract<WordRun, { type: 'image' }>> = [];
     const displayMath: string[] = [];
     let pageBreak = false;
@@ -237,13 +284,21 @@ class Converter {
           break;
         }
         case 'tab':
-          cur().push({ text: ' ' });
+          // A tab at the start of a line of verse indents it (#620); in
+          // body text it is a tab (#622), to the stop Word set for it.
+          if (opts.verse) cur().push({ text: '\t' });
+          else if (opts.heading || opts.inCell || opts.inNote) cur().push({ text: ' ' });
+          else cur().push({ text: ` ${tabDirective(opts.tabs?.[tabsOnLine])} `, raw: true });
+          tabsOnLine++;
           break;
         case 'break':
+          if (r.kind === 'line') tabsOnLine = 0;
           if (r.kind === 'page') pageBreak = true;
           if (r.kind === 'line' && opts.heading) cur().push({ text: ' \\\\ ', raw: true });
           else if (r.kind === 'line' && opts.splitLines) lines.push([]);
           else if (r.kind === 'line' && opts.inCell && !opts.inNote) cur().push({ text: '\n', raw: true });
+          // A forced line break inside the paragraph (#620).
+          else if (r.kind === 'line' && !opts.inCell && this.s.template.options.lineBreaks === 'break') cur().push({ text: LINE_BREAK });
           else cur().push({ text: ' ' });
           break;
         case 'note': {
@@ -407,6 +462,23 @@ class Converter {
     return { indent: ' '.repeat(indent), marker };
   }
 
+  /** A line of verse (#620): its leading tabs and spaces kept as its
+   *  indent, the rest rendered; a line that would read as a stepped line
+   *  (`+ …`) keeps its plus sign. */
+  private verseLine(runs: InlineRun[]): string {
+    const rest = runs.map((r) => ({ ...r }));
+    let lead = '';
+    while (rest.length > 0 && !rest[0]!.raw && rest[0]!.note === undefined && /^[ \t]/.test(rest[0]!.text)) {
+      const ws = /^[ \t]+/.exec(rest[0]!.text)![0];
+      lead += ws;
+      rest[0]!.text = rest[0]!.text.slice(ws.length);
+      if (!rest[0]!.text) rest.shift();
+    }
+    const text = this.render(rest.map((r) => (r.raw ? r : { ...r, text: r.text.replace(/\t/g, ' ') })));
+    if (!text) return '';
+    return lead + (/^\+\s/.test(text) ? `\\${text}` : text);
+  }
+
   private isManualHeading(p: WordParagraph, text: string): boolean {
     if (!this.s.template.options.manualHeadings || p.list) return false;
     const runs = p.runs.filter((r): r is WordTextRun => r.type === 'text' && r.text.trim() !== '');
@@ -461,8 +533,41 @@ class Converter {
       return;
     }
 
+    // A poem (#620): each line typed with Shift+Enter a line of verse, its
+    // leading tabs and spaces its indent; a paragraph of lines a stanza,
+    // one-line paragraphs in a row one stanza, an empty paragraph a
+    // stanza break.
+    if (target.kind === 'verse') {
+      this.flushCaption();
+      const key = target.style ?? '';
+      if (!(this.group?.kind === 'verse' && this.group.key === key)) this.openGroup('verse', key);
+      const g = this.group!;
+      const { lines, images, displayMath } = this.inlineRuns(p.runs, { splitLines: true, verse: true });
+      const verse = lines.map((l) => this.verseLine(l)).filter((l) => l.trim() !== '');
+      if (verse.length === 0) {
+        g.stanzaBreak = true;
+      } else {
+        if (verse.some((l) => l.includes('||') || /\s\\\\\s/.test(l))) g.layoutLines = true;
+        const last = g.chunks[g.chunks.length - 1];
+        if (verse.length === 1 && last && g.runOn && !g.stanzaBreak) last.text += `\n${verse[0]}`;
+        else g.chunks.push({ kind: 'block', text: verse.join('\n') });
+        g.runOn = verse.length === 1;
+        g.stanzaBreak = false;
+      }
+      if (images.length > 0 || displayMath.length > 0) {
+        this.closeGroup();
+        for (const tex of displayMath) this.out({ kind: 'block', text: `$$${tex}$$` });
+        this.emitImages(images);
+      }
+      return;
+    }
+
     const splitLines = this.s.template.options.lineBreaks === 'paragraph' && !p.list;
-    const { lines, images, pageBreak, displayMath } = this.inlineRuns(p.runs, { splitLines });
+    // Word's stops, unless the paragraph goes to a style of the book that
+    // sets its own (a Sandbox export coming back).
+    const styleId = target.kind === 'paragraphs' ? target.style : undefined;
+    const own = (styleId !== undefined ? this.s.config.paragraphStyles?.find((st) => st.id === styleId)?.tabStops : undefined) ?? this.s.config.bodyText?.tabStops;
+    const { lines, images, pageBreak, displayMath } = this.inlineRuns(p.runs, { splitLines, ...(own?.length ? {} : { tabs: paragraphTabs(this.doc, p) }) });
     const rendered = lines.map((l) => this.render(l)).filter(Boolean);
 
     if (target.kind === 'caption') {
@@ -502,10 +607,11 @@ class Converter {
 
     if (rendered.length) {
       if (p.list) {
+        // A list item is one line: its forced breaks are `\\` (#620).
         const { indent, marker } = this.listMarker(p);
-        this.out({ kind: 'list', text: indent + marker + rendered.join(' ') });
+        this.out({ kind: 'list', text: indent + marker + rendered.join(' ').replace(/\\\n/g, ' \\\\ ') });
       } else if (target.kind === 'quote') {
-        for (const line of rendered) this.out({ kind: 'block', text: `> ${line}` });
+        for (const line of rendered) this.out({ kind: 'block', text: `> ${line.replace(/\n/g, '\n> ')}` });
       } else {
         for (const line of rendered) this.out({ kind: 'block', text: guardLineStart(line) });
       }

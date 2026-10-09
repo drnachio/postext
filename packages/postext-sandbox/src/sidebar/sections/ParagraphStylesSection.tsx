@@ -19,6 +19,8 @@ import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
 import { defaultDocumentLocale } from '../../controls/hyphenation';
+import { TabStopsField } from '../settings/TabStopsField';
+import { DropCapFields } from '../settings/DropCapFields';
 
 const FONT_SIZE_UNITS: DimensionUnit[] = ['pt', 'px', 'em', 'rem'];
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -97,6 +99,11 @@ function ParagraphStyleCard({
   // style follows the document's `cjk.wordBreak`.
   const cjkDocument = useSandboxSelector((s) => isCjkLanguage(s.config.locale ?? s.config.bodyText?.hyphenation?.locale ?? defaultDocumentLocale(s.locale)));
   const documentWordBreak = useSandboxSelector((s) => s.config.cjk?.wordBreak ?? DEFAULT_CJK_CONFIG.wordBreak);
+  // Line numbers (#621): shown once the document numbers lines, or when
+  // the style says whether its lines are counted.
+  const lineNumbersOn = useSandboxSelector((s) => s.config.lineNumbers?.enabled === true);
+  // Tab stops (#622): an unset interval is the body's.
+  const bodyTabInterval = useSandboxSelector((s) => s.config.bodyText?.tabInterval);
   const [idDraft, setIdDraft] = useState(style.id);
   const draftSlug = slugifyStyleId(idDraft);
   const idTaken = draftSlug.length > 0 && draftSlug !== style.id && otherIds.has(draftSlug);
@@ -308,6 +315,23 @@ function ParagraphStyleCard({
           onReset={() => onResetField('wordBreak')}
         />
       )}
+      {(lineNumbersOn || style.lineNumbers !== undefined) && (
+        <SelectInput
+          label={labels.paragraphStyleLineNumbers}
+          value={style.lineNumbers === undefined ? 'auto' : style.lineNumbers ? 'on' : 'off'}
+          variant="segmented"
+          stacked
+          options={[
+            { value: 'auto', label: labels.paragraphStyleLineNumbersAuto },
+            { value: 'on', label: labels.paragraphStyleLineNumbersOn },
+            { value: 'off', label: labels.paragraphStyleLineNumbersOff },
+          ]}
+          onChange={(v) => (v === 'auto' ? onResetField('lineNumbers') : onChange({ lineNumbers: v === 'on' }))}
+          tooltip={labels.paragraphStyleLineNumbersTooltip}
+          isDefault={unset('lineNumbers')}
+          onReset={() => onResetField('lineNumbers')}
+        />
+      )}
       {(resolved.textAlign === 'justify' || raggedHyphenation) && (
         <ToggleSwitch
           label={labels.bodyHyphenation}
@@ -361,6 +385,32 @@ function ParagraphStyleCard({
         isDefault={unset('hangingIndent')}
         onReset={() => onResetField('hangingIndent')}
       />
+      <TabStopsField
+        inherits
+        stops={style.tabStops}
+        interval={style.tabInterval}
+        inheritedInterval={bodyTabInterval}
+        onStopsChange={(next) => (next === undefined ? onResetField('tabStops') : onChange({ tabStops: next }))}
+        onIntervalChange={(next) => (next === undefined ? onResetField('tabInterval') : onChange({ tabInterval: next }))}
+      />
+      <ToggleSwitch
+        label={labels.paragraphStyleDropCap}
+        checked={style.dropCap !== undefined}
+        onChange={(v) => (v ? onChange({ dropCap: { ...style.dropCap } }) : onResetField('dropCap'))}
+        tooltip={labels.paragraphStyleDropCapTooltip}
+        isDefault={unset('dropCap')}
+        onReset={() => onResetField('dropCap')}
+      />
+      {style.dropCap && (
+        <DropCapFields
+          kind="body"
+          each
+          value={style.dropCap}
+          onChange={(dropCap) => onChange({ dropCap })}
+          inherited={{ fontFamily: resolved.fontFamily, fontWeight: resolved.fontWeight, color: resolved.color }}
+          fieldId={`paragraph-style-dropcap-${style.id}`}
+        />
+      )}
       <DimensionInput
         label={labels.paragraphStyleSpaceBetween}
         value={resolved.spaceBetween}

@@ -13,9 +13,12 @@ import { chipHighlight, chipTheme } from './chipSyntax';
 import { smallCapsHighlight, smallCapsTheme } from './smallCapsSyntax';
 import { orientationHighlight, orientationTheme } from './orientationSyntax';
 import { verseHighlight, verseTheme } from './verseSyntax';
+import { hardBreakHighlight, hardBreakTheme } from './hardBreakSyntax';
+import { tabHighlight, tabTheme } from './tabSyntax';
 import { comicHighlight, comicTheme } from './comicSyntax';
 import { annotationHighlight, annotationTheme } from './annotationSyntax';
 import { indexHighlight, indexTheme } from './indexSyntax';
+import { codeFenceHighlight, codeFenceTheme } from './codeFences';
 import { bidiLines, rtlEditor } from './bidiLines';
 import { refCompletion, type RefCompletionContext } from './refCompletion';
 import { minimalChange } from '../book/textChanges';
@@ -101,12 +104,18 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       orientationHighlight,
       verseTheme,
       verseHighlight,
+      hardBreakTheme,
+      hardBreakHighlight,
+      tabTheme,
+      tabHighlight,
       comicTheme,
       comicHighlight,
       annotationTheme,
       annotationHighlight,
       indexTheme,
       indexHighlight,
+      codeFenceTheme,
+      codeFenceHighlight,
       bidiLines,
       rtlEditor.of(rtl),
       refCompletion(() => getRefContextRef.current?.() ?? { resources: [], types: [] }),

@@ -40,6 +40,7 @@ import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, setMe
 import { stampCentralBaselines } from './verticalMetrics';
 import { orientLinesToFrames } from './mirrorFrame';
 import { verseMarginTopPx } from './buildBlockKind';
+import { verseLinesSettings, versesLineByLine } from './verseLines';
 import type { MeasurementCache } from '../measure';
 import { resolveAllConfig, computeBaselineGrid, resolvedDirection, resolvedLocale } from './config';
 import { asciiDigits } from '../arabicNumerals';
@@ -118,7 +119,7 @@ import {
   prevNonMarkerBlock,
   rollbackTrailingBlocks,
 } from './buildHelpers';
-import { measureContentBlock, type BlockMeasureContext, type MeasureContentBlockOptions, type MeasuredContentBlock } from './measureContentBlock';
+import { measureContentBlock, type BlockMeasureContext, type DropCapNote, type MeasureContentBlockOptions, type MeasuredContentBlock } from './measureContentBlock';
 import { containerStyle, paragraphStyleIdOf, planParagraphContainers } from './paragraphContainers';
 import {
   appendChapterEndNotes,
@@ -175,7 +176,10 @@ import {
 } from './resourceNumbering';
 import { documentLocale, effectiveResourceTypes } from '../defaults/resourceTypes';
 import { resolveCalloutStylesConfig } from '../defaults/calloutStyles';
+import { codeBoxStyle, codeParseOptions, wrapCodeBlocks } from './codeBlocks';
+import { buildCodeLineNumbers, codeOverflowWarnings } from './codeLines';
 import { pickTableStyle } from '../defaults/tableStyle';
+import { buildLineNumbers, lineNumberWarnings } from './lineNumbers';
 import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
 import { flowColorValues } from './partPalette';
 import { chapterNumberCounter, leadingBoldText } from './placeholders';
@@ -195,10 +199,12 @@ import {
   type BandCapZone,
 } from './bandCaps';
 import { raggedLooseLines } from './raggedLines';
-import { cjkLooseLineWarnings, collectContentWarnings, joiningLetterSpacingWarnings, locateContentWarnings, wordOverflowWarnings } from './contentWarnings';
+import { cjkLooseLineWarnings, collectContentWarnings, dropCapWarnings, joiningLetterSpacingWarnings, locateContentWarnings, wordOverflowWarnings } from './contentWarnings';
+import { dropCapSinkAfter } from './dropCap';
 import { mostlyJoiningScript } from '../measure/joining';
 import { annotateDocument } from '../cjkMarks';
 import { annotateArabicMarks } from '../arabicMarks';
+import { literalBreaksFor } from './hardBreaks';
 import { tashkilFor } from './tashkil';
 import { overlineEmphasis } from '../emphasisOverline';
 import { withBookTitleBrackets } from './annotations';
@@ -397,6 +403,12 @@ function measureLooseParagraph(
 ): MeasuredContentBlock | null {
   const base = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride });
   if (!base) return null;
+  // A paragraph with a tab at a stop (#622) is set line by line, as
+  // measured: neither looseness nor tracking moves its stops' text.
+  if (base.measured.lines.some((l) => l.tabbed)) {
+    looseOutcome.set(blockIdx, null);
+    return base;
+  }
   const target = base.measured.lines.length + extraLines;
   // The breaker's optimum, before any runt fix (a looseness of 0 skips it).
   const optimum = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride, looseness: 0 });
@@ -593,7 +605,11 @@ function placeDocumentPass(
   // bibliography takes `:::bibliography`'s place or follows the text.
   // Arabic vowel marks out of the text when `bodyText.tashkil` says so
   // (#376), for the outline and the layout alike.
-  const parsedBody = numberTitlesFor(headingMarksFor(tashkilFor(parseMarkdownMemo(markdownBody), resolved.bodyText.tashkil), resolved), resolved);
+  // A configuration stored before #620 prints the backslashes of forced
+  // line breaks (`bodyText.hardLineBreaks: false`).
+  // Code fences (#624) as `codeStyle` reads them: a configuration stored
+  // before #624 reads their lines as Markdown (`codeStyle.blocks: false`).
+  const parsedBody = numberTitlesFor(headingMarksFor(tashkilFor(literalBreaksFor(parseMarkdownMemo(markdownBody, codeParseOptions(resolved)), resolved), resolved.bodyText.tashkil), resolved), resolved);
   const citationContext = content.citations
     ?? (needsCitationContext(parsedBody, frontmatterMeta) ? bookCitationContexts([{ metadata: frontmatterMeta as Record<string, unknown>, blocks: parsedBody }], content.resources)[0] : undefined);
   const citationsApplied = citationContext
@@ -659,7 +675,10 @@ function placeDocumentPass(
   // page where it stands (#535): each goes in a frameless page-span box,
   // set by the span-block path like any other.
   const spanEmbeds = wrapPageSpanEmbeds(numberedBlocks, content.resources ?? [], effectiveResourceTypes(config, content.resources ?? []));
-  const contentBlocks = spanEmbeds.blocks;
+  // Code listings (#624): each in a box of the code style, which the
+  // callout machinery places and splits.
+  const codeBoxes = wrapCodeBlocks(spanEmbeds.blocks, resolved);
+  const contentBlocks = codeBoxes.blocks;
   if (indexExpanded.warnings.length > 0) indexWarnings.set(doc, indexExpanded.warnings);
   const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, resolved);
 
@@ -711,9 +730,17 @@ function placeDocumentPass(
   // The callout styles, with the frameless box of the page-span embeds
   // when there are any: the float gap (a line) above and below it, as an
   // inline resource keeps in a column.
-  const calloutStyles = spanEmbeds.wrapped
-    ? [...resolved.calloutStyles, ...resolveCalloutStylesConfig([spanEmbedStyle(bodyStyle.lineHeightPx, resolved.layout.inlineResourceGap !== 'above')], resolved.bodyText, resolved.headings, resolved.unorderedLists, config?.locale)]
+  // The listings' box (#624) likewise.
+  const syntheticBoxes = [
+    ...(spanEmbeds.wrapped ? [spanEmbedStyle(bodyStyle.lineHeightPx, resolved.layout.inlineResourceGap !== 'above')] : []),
+    ...(codeBoxes.wrapped ? [codeBoxStyle(resolved)] : []),
+  ];
+  const calloutStyles = syntheticBoxes.length > 0
+    ? [...resolved.calloutStyles, ...resolveCalloutStylesConfig(syntheticBoxes, resolved.bodyText, resolved.headings, resolved.unorderedLists, config?.locale)]
     : resolved.calloutStyles;
+  // A box nested in another looks its style up in the configuration it is
+  // laid out with: the listings' box among them.
+  const calloutResolved: ResolvedConfig = codeBoxes.wrapped ? { ...resolved, calloutStyles } : resolved;
   const blockquoteStyle = resolveBlockquoteStyle(resolved);
   const listLevelIndentsPx = computeLevelIndentsPx(resolved, bodyStyle.fontSizePx);
   const orderedMetrics = computeOrderedListRunMetrics(contentBlocks, resolved, bodyStyle.fontSizePx);
@@ -2232,6 +2259,8 @@ function placeDocumentPass(
   /** Blocks whose style tracks text of a joining script, which is set
    *  untracked (see `BlockMeasureContext.joiningLetterSpacing`). */
   const joiningLetterSpacing = new Set<number>();
+  /** Paragraphs whose drop cap could not be set as configured (#623). */
+  const dropCapNotes = new Map<number, DropCapNote>();
   // Everything per-block measurement needs that is constant for this pass.
   const measureCtx: BlockMeasureContext = {
     resolved,
@@ -2257,6 +2286,7 @@ function placeDocumentPass(
     floatedIds,
     leftFlow: calloutsOutOfFlow,
     joiningLetterSpacing,
+    dropCapNotes,
     ...(footnoteNumbering.numbers.size > 0 ? { footnoteNumbers: footnoteNumbering.numbers } : {}),
     ...(anchorRefContext ? { anchorRefs: anchorRefContext } : {}),
   };
@@ -3407,7 +3437,7 @@ function placeDocumentPass(
         childStartIdx: startIdx + 1 + from.child,
         width,
         ctx: measureCtx,
-        resolved,
+        resolved: calloutResolved,
         containerId: plan.containerId,
         frameId,
         nextChildId: () => `${frameId}-c${n++}`,
@@ -3497,8 +3527,10 @@ function placeDocumentPass(
     if (full.units.length === 0) return null;
     // A head that goes on also carries the style's continuation marker.
     const tail = tailOf(full) + full.continuesMarkerPx;
-    /** Candidate cuts with the head's content bottom. */
-    const candidates: { cut: CalloutCut; bottom: number }[] = [];
+    /** Candidate cuts with the head's content bottom. A `soft` cut parts a
+     *  wrapped code line from its continuation (#624): taken only when no
+     *  other cut fits. */
+    const candidates: { cut: CalloutCut; bottom: number; soft?: true }[] = [];
     /** Collect the cuts among `units` (one box's items; `below` = the tails
      *  of the nested boxes around them), each side of a cut holding enough
      *  by the box's `min` lines: a block counts as one line, a nested box
@@ -3542,6 +3574,7 @@ function placeDocumentPass(
                 candidates.push({
                   cut: { child: k, line: lineBase + l, widths: k === from.child ? cutWidths(from, width) : [{ fromLine: 0, width }] },
                   bottom: line.bbox.y + line.bbox.height + below,
+                  ...(c.lines[l]?.codeLine?.continued ? { soft: true as const } : {}),
                 });
               }
             }
@@ -3566,6 +3599,9 @@ function placeDocumentPass(
     const viable = candidates
       .filter((c) => !insideGroup(c.cut))
       .sort((a, b) => b.bottom - a.bottom);
+    // A wrapped code line stays with its continuations when a cut
+    // elsewhere fits (#624).
+    viable.sort((a, b) => (a.soft ? 1 : 0) - (b.soft ? 1 : 0));
     for (const c of viable) {
       if (c.bottom + tail > roomPx + 0.01) continue;
       const result = L.layoutRange(from, c.cut, width, frameId, continuation, mirrored);
@@ -5227,6 +5263,10 @@ function placeDocumentPass(
     }
     if (!measuredBlock) continue;
     const { kind, contentBlock, measured, prefixLen, absoluteSourceMap, mathDisplayRender } = measuredBlock;
+    /** The drop cap opening the paragraph (#623): stamped on the fragment
+     *  that holds its first line. A paragraph broken again for a column of
+     *  another width takes the one of that setting. */
+    let capInfo = measuredBlock.dropCap;
     /** Tracking the block's lines are set with; a paragraph moved whole into
      *  a column of another width is measured again, and may change it. */
     let { letterSpacingPx } = measuredBlock;
@@ -5317,6 +5357,31 @@ function placeDocumentPass(
 
 
     const finalizeListItem = (blk: VDTBlock, isFirstPart: boolean) => {
+      // The drop cap (#623) stands on the baseline of the line it sinks to,
+      // beside the first fragment only.
+      const capLine = blk.lines[0];
+      if (isFirstPart && capInfo && capLine) {
+        const cap = capInfo;
+        blk.dropCap = {
+          text: cap.text,
+          fontString: cap.fontString,
+          color: cap.color,
+          x: blk.bbox.x + cap.x,
+          baselineY: capLine.baseline + (cap.sink - 1) * style.lineHeightPx,
+          width: cap.width,
+          fontSizePx: cap.fontSizePx,
+          lines: cap.lines,
+          sink: cap.sink,
+          ...(cap.sourceStart !== undefined ? { sourceStart: cap.sourceStart, sourceEnd: cap.sourceEnd } : {}),
+          plainStart: cap.plainStart,
+          plainEnd: cap.plainEnd,
+          word: cap.word,
+          wordRest: cap.wordRest,
+          ...(cap.hang ? { hang: { text: cap.hang.text, fontString: cap.hang.fontString, x: blk.bbox.x + cap.hang.x, baselineY: capLine.baseline, width: cap.hang.width } } : {}),
+        };
+        // The block's source range starts at the initial.
+        if (cap.sourceStart !== undefined && (blk.sourceStart === undefined || cap.sourceStart < blk.sourceStart)) blk.sourceStart = cap.sourceStart;
+      }
       if (!listBullet) return;
       blk.listDepth = listDepth;
       blk.listKind = listKind;
@@ -5388,7 +5453,12 @@ function placeDocumentPass(
       (vdtType === 'paragraph' && isContainerTail && paragraphContainer?.snapToGrid !== false) ||
       // A poem, like a container of one block: its own leading and the
       // margins of its style are off the grid, the text after it is not.
-      (vdtType === 'paragraph' && rawBlock.verse !== undefined && verseSnaps(rawBlock.verse.attrs.style, resolved)) ||
+      // A stanza between two of a poem in the line layout snaps too, so the
+      // space between stanzas is whole grid lines (#620); one of a poem set
+      // as single hemistichs (a configuration stored before #620) does not,
+      // as the one block postext 1.22 set it in did not.
+      (vdtType === 'paragraph' && rawBlock.verse !== undefined && verseSnaps(rawBlock.verse.attrs.style, resolved)
+        && (rawBlock.verse.stanza === undefined || rawBlock.verse.stanza.last || versesLineByLine(rawBlock, resolved))) ||
       vdtType === 'mathDisplay'
     );
 
@@ -5467,6 +5537,7 @@ function placeDocumentPass(
           // Nothing placed yet: the whole block, for this column.
           const again = measureContentBlock(rawBlock, blockIdx, curCol.bbox.width, blockMeasureCtx, { styleOverride });
           if (again && again.measured.lines.length > 0) {
+            capInfo = again.dropCap;
             brokenForWidth = curCol.bbox.width;
             laterWidths = [];
             letterSpacingPx = again.letterSpacingPx;
@@ -5599,6 +5670,11 @@ function placeDocumentPass(
           balancing = { levers: [vdtType === 'heading' ? 'heading' : 'afterFloat'], spaceAbove: extraPx };
         }
       }
+      // A raised initial (#623) keeps its rise clear above the paragraph,
+      // in whole grid lines.
+      if (partIndex === 0 && capInfo && capInfo.rise > 0.5) {
+        spacingBefore += Math.ceil((capInfo.rise - 0.5) / baselineGrid) * baselineGrid;
+      }
       // A loose paragraph's extra line is balancing height too (it lands
       // whole in this column — loose candidates are never split parts).
       const looseTracking = looseOutcome.get(blockIdx);
@@ -5638,6 +5714,11 @@ function placeDocumentPass(
       // actual content bottom so the reserved block height (and the
       // subsequent marginBottom + grid snap) starts from there.
       let effectiveRemainHeight = totalRemainHeight;
+      // A paragraph shorter than its drop cap sinks (#623, `'reserve'`):
+      // the block keeps the room under the initial.
+      if (partIndex === 0 && capInfo && capInfo.minLines > remainingLines.length) {
+        effectiveRemainHeight = capInfo.minLines * style.lineHeightPx;
+      }
       /** How far the lines of a 行取り heading go down its band (#424). */
       let lineSpanShift = 0;
       if (lineSpan !== undefined && partIndex === 0) {
@@ -5937,9 +6018,11 @@ function placeDocumentPass(
             ? Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid
             : naturalBottom;
           const remainAfterHeading = curCol.bbox.height - snappedBottom;
-          const minLinesNeeded = resolved.bodyText.avoidWidows
-            ? Math.max(1, resolved.bodyText.widowMinLines)
-            : 1;
+          // A drop cap opening the text (#623) needs its lines under it.
+          const minLinesNeeded = Math.max(
+            resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1,
+            dropCapSinkAfter(blockIdx, blockMeasureCtx),
+          );
           // A `:::space` between the heading and its text needs room too.
           const minSpaceAfter = minLinesNeeded * bodyStyle.lineHeightPx
             + spaceLinesAfter(contentBlocks, blockIdx) * baselineGrid;
@@ -6097,7 +6180,8 @@ function placeDocumentPass(
         // (the no-fit branch below rolls it back).
         const headingRun = partIndex === 0 ? trailingHeadingRun(curCol) : 0;
         if (choice.splitAt === 0 && headingRun > 0 && headingRun < curCol.blocks.length) {
-          const minKeep = effectiveAvoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
+          // A drop cap's lines stay with it (#623).
+          const minKeep = Math.max(effectiveAvoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1, partIndex === 0 && capInfo ? capInfo.sink : 1);
           const minTail = effectiveAvoidOrphans && resolved.headings.keepWithNextSplit === 'rules'
             ? Math.max(1, resolved.bodyText.orphanMinLines)
             : 1;
@@ -6223,10 +6307,24 @@ function placeDocumentPass(
           }
         }
         // A poem's bayt set staggered over two lines (or more) stays in one
-        // column (#378): the cut goes before it — in an empty column, which
-        // the poem cannot leave, after its first line at least.
-        while (choice.splitAt > (curCol.blocks.length === 0 ? 1 : 0) && sameBayt(remainingLines[choice.splitAt - 1], remainingLines[choice.splitAt])) {
+        // column (#378), and so does a line of verse with its turnovers
+        // (#620): the cut goes before it — in an empty column, which the
+        // poem cannot leave, after its first line at least.
+        while (choice.splitAt > (curCol.blocks.length === 0 ? 1 : 0) && sameVerseLine(remainingLines[choice.splitAt - 1], remainingLines[choice.splitAt])) {
           choice = { splitAt: choice.splitAt - 1, demerit: choice.demerit };
+        }
+        // A paragraph a drop cap opens never breaks before the initial's
+        // last line (#623): it moves on whole, unless it is alone in an
+        // empty column too short for those lines, where it breaks all the
+        // same (and says so).
+        if (partIndex === 0 && capInfo && choice.splitAt > 0 && choice.splitAt < Math.min(capInfo.sink, remainingLines.length)) {
+          if (curCol.blocks.length > 0) choice = { splitAt: 0, demerit: choice.demerit };
+          else blockMeasureCtx.dropCapNotes?.set(blockIdx, { reason: 'split' });
+        }
+        // A stanza `keepStanzas` covers (a haiku, a tanka) moves on whole,
+        // unless the column is empty: it cannot do better anywhere.
+        if (choice.splitAt > 0 && partIndex === 0 && curCol.blocks.length > 0 && keepsStanzaWhole(rawBlock, resolved)) {
+          choice = { splitAt: 0, demerit: choice.demerit };
         }
         if (choice.splitAt > 0) {
           // Consume spacing (negative: a container margin pulling the block up)
@@ -6475,6 +6573,10 @@ function placeDocumentPass(
     .map((s) => s.startPageIndex);
   if (restarts.length > 0) doc.pageNumberRestarts = restarts;
 
+  // Line numbers (#621): the lines of this pass counted where they landed,
+  // before the running heads (whose palettes recolour them).
+  buildLineNumbers(doc, contentBlocks, continuation);
+
   buildHeadersAndFooters(doc, resourceById, {
     // Where two palette entries share a base value, each kind of flow
     // colour follows its own settings under a part or section palette.
@@ -6490,6 +6592,9 @@ function placeDocumentPass(
       return text.length > 0 ? { styleId, text } : undefined;
     },
   });
+  // The line numbers of code listings (#624), in the same slot, after the
+  // margin numbers' palette pass: they keep `codeStyle.lineNumberColor`.
+  if (codeBoxes.wrapped) buildCodeLineNumbers(doc);
 
   // Vertical pages: the axis each font's upright characters turn about.
   if (doc.pages.some((p) => pageIsVertical(p))) stampCentralBaselines(doc);
@@ -6500,6 +6605,7 @@ function placeDocumentPass(
   doc.converged = true;
   doc.iterationCount = 1;
   if (joiningLetterSpacing.size > 0) joiningSpacingWarnings.set(doc, joiningLetterSpacingWarnings(doc, joiningLetterSpacing));
+  if (dropCapNotes.size > 0) dropCapWarningsByDoc.set(doc, dropCapWarnings(doc, dropCapNotes));
 
   return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, captionUnderProposals };
 }
@@ -6577,7 +6683,8 @@ export function* buildDocumentGen(
   // Justified CJK lines the composer could not fill within its tracking
   // cap; words of a joining script that run past their line, and styles
   // whose letter-spacing such words do not take.
-  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? [])];
+  // Line numbers set over a float of the side column (#621).
+  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc), ...codeOverflowWarnings(doc)];
   // Comic panels whose cell cannot hold their picture's safe area (#556).
   for (const page of doc.pages) {
     if (page.comic) loose.push(...comicPageLayoutWarnings(page.comic));
@@ -6613,11 +6720,13 @@ const indexWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
 /** The `joiningScriptLetterSpacing` warnings of the last pass, per
  *  document. */
 const joiningSpacingWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
+/** The `dropCap` warnings of the last pass, per document (#623). */
+const dropCapWarningsByDoc = new WeakMap<VDTDocument, ContentWarning[]>();
 
 /** `doc` with the page of each of its index marks (`doc.indexMarks`). */
 function withIndexMarks(doc: VDTDocument, content: PostextContent): VDTDocument {
   const { content: body, contentOffset } = extractFrontmatter(content.markdown);
-  const blocks = parseMarkdownMemo(body);
+  const blocks = parseMarkdownMemo(body, codeParseOptions(doc.config));
   if (content.markdown.includes(':index')) {
     const marks = locateIndexMarks(doc, blocks, contentOffset);
     if (marks) doc.indexMarks = marks;
@@ -6642,7 +6751,7 @@ function* buildDocumentRounds(
   // follows, and a numbering restart after the front matter usually settles
   // it in one extra round.
   if (content.outline === undefined) {
-    const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content);
+    const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content, codeParseOptions(resolveAllConfig(config)));
     // A reference printing an anchor's page (#263) settles the same way.
     const pageRefs = (): boolean => {
       if (!hasAnchorRefs(parsed, new Set((content.resources ?? []).map((r) => r.id)))) return false;
@@ -7157,6 +7266,22 @@ function* buildDocumentBalanced(
  *  column never cuts. */
 function sameBayt(a: VDTLine | undefined, b: VDTLine | undefined): boolean {
   return a?.verse !== undefined && b?.verse !== undefined && a.verse.bayt === b.verse.bayt;
+}
+
+/** Whether a column may not break between two lines of verse: they set one
+ *  bayt (#378), or `b` is a turnover of the line of verse `a` sets or
+ *  turns over (#620). */
+function sameVerseLine(a: VDTLine | undefined, b: VDTLine | undefined): boolean {
+  return sameBayt(a, b) || (a?.verseLine !== undefined && b?.verseLine?.turnover === true);
+}
+
+/** Whether a stanza of the line layout is kept whole (#620): it has no
+ *  more lines of verse than `keepStanzas` asks for. */
+function keepsStanzaWhole(raw: ContentBlock, resolved: ResolvedConfig): boolean {
+  const stanza = raw.verse?.stanza;
+  if (!stanza || !versesLineByLine(raw, resolved)) return false;
+  const keep = verseLinesSettings(raw.verse!.attrs, { fontSizePx: 0, lineHeightPx: 0 }, resolved, false).keepStanzas;
+  return keep > 0 && stanza.lines.length <= keep;
 }
 
 /** Whether the text after a poem goes back to the baseline grid: unless

@@ -163,6 +163,12 @@ export class StructureFlow {
         case 'callout':
           elem = this.calloutTitle(block, parent);
           break;
+        case 'code':
+          // A code listing (#624): a paragraph holding one `Code` element
+          // (PDF/UA-1 knows `Code` as an inline element; its lines read in
+          // it one after another).
+          elem = parent.child('P').child('Code');
+          break;
         default:
           // A bibliography entry (#269): a paragraph holding a `BibEntry`.
           elem = block.footnoteNote !== undefined

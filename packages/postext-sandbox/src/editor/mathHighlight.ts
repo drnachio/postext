@@ -2,6 +2,7 @@
 
 import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate } from '@codemirror/view';
 import { Prec, RangeSetBuilder } from '@codemirror/state';
+import { inFencedCode } from './codeFences';
 
 const displayMark = Decoration.mark({ class: 'cm-math-display' });
 const inlineMark = Decoration.mark({ class: 'cm-math-inline' });
@@ -48,7 +49,7 @@ function buildDecorations(view: EditorView): DecorationSet {
       const line = doc.lineAt(pos);
       // Skip front-matter lines (between leading `---` fences) — they're
       // coloured by frontmatterHighlight and shouldn't carry math marks.
-      scanLine(line.text, line.from, builder);
+      if (!inFencedCode(doc, line.number)) scanLine(line.text, line.from, builder);
       pos = line.to + 1;
     }
   }

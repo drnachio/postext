@@ -1,4 +1,4 @@
-import type { CjkWordBreak, EmphasisStyle, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TextAlign } from '../types';
+import type { CjkWordBreak, Dimension, EmphasisStyle, ParagraphDropCap, ResolvedHeadingLevelConfig, ResolvedParagraphStyleConfig, TabStop, TextAlign } from '../types';
 import { dimensionToPx } from '../units';
 import type { ResolvedConfig } from '../vdt';
 import { buildFontString } from '../measure';
@@ -31,6 +31,12 @@ export interface BlockStyle {
   marginBottomPx: number;
   firstLineIndentPx: number;
   hangingIndent: boolean;
+  /** The indent of every line but the first (px) when the style pairs a
+   *  first-line indent with a hanging one (#620): `firstLineIndentPx` is
+   *  then the first line's own and `hangingIndent` is on. Unset: with
+   *  `hangingIndent`, `firstLineIndentPx` is the hang and the first line
+   *  is not indented. */
+  hangingIndentPx?: number;
   /** Indent of every line (px) from the left edge of the column or box —
    *  a paragraph style's `indent`; the first-line and hanging indents are
    *  measured from it. Unset: none. */
@@ -66,6 +72,20 @@ export interface BlockStyle {
   /** Where the block's CJK lines break between characters (a paragraph
    *  style's `wordBreak`). Unset: the document's `cjk.wordBreak`. */
   cjkWordBreak?: CjkWordBreak;
+  /** The block's tab stops and default interval (#622): a paragraph
+   *  style's, a callout body's or the body's (`bodyText.tabStops`), as
+   *  written; `measureContentBlock` resolves them. Unset: none. */
+  tabStops?: TabStop[];
+  tabInterval?: Dimension;
+  /** A paragraph style's drop cap (#623), as written: the first paragraph
+   *  of a group in the style opens with it (every one with `each`).
+   *  `measureContentBlock` reads it. Unset: none. */
+  dropCap?: ParagraphDropCap;
+}
+
+/** The tab stop fields of a style (#622), absent when unset. */
+function tabFields(stops: TabStop[] | undefined, interval: Dimension | undefined): Pick<BlockStyle, 'tabStops' | 'tabInterval'> {
+  return { ...(stops ? { tabStops: stops } : {}), ...(interval ? { tabInterval: interval } : {}) };
 }
 
 /** The four faces of a text style: `italic` sets the regular text in
@@ -141,7 +161,7 @@ export function resolveBodyStyle(resolved: ResolvedConfig): BlockStyle {
   const firstLineIndentPx = dimensionToPx(body.firstLineIndent, dpi, fontSizePx);
   const hangingIndent = body.hangingIndent;
   const marginBottomPx = body.paragraphSpacing ? lineHeightPx : 0;
-  return { ...faces, fontSizePx, lineHeightPx, color: body.color.hex, boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex, ...(body.emphasis ? emphasisFields(body.emphasis, { boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex }) : {}), referenceColor: body.referenceColor.hex, referenceBold: body.referenceBold, referenceItalic: body.referenceItalic, textAlign, ...hyphenation, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent, ...(body.smallCaps ? { smallCaps: true } : {}) };
+  return { ...faces, fontSizePx, lineHeightPx, color: body.color.hex, boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex, ...(body.emphasis ? emphasisFields(body.emphasis, { boldColor: body.boldColor?.hex, italicColor: body.italicColor?.hex }) : {}), referenceColor: body.referenceColor.hex, referenceBold: body.referenceBold, referenceItalic: body.referenceItalic, textAlign, ...hyphenation, marginTopPx: 0, marginBottomPx, firstLineIndentPx, hangingIndent, ...(body.smallCaps ? { smallCaps: true } : {}), ...tabFields(body.tabStops, body.tabInterval) };
 }
 
 export function resolveHeadingStyle(
@@ -258,6 +278,7 @@ export function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
     ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}),
     ...(body.smallCaps ? { smallCaps: true } : {}),
     ...(body.emphasis ? { emphasis: body.emphasis } : {}),
+    ...tabFields(body.tabStops, body.tabInterval),
   };
 }
 
@@ -266,7 +287,8 @@ export function resolveBlockquoteStyle(resolved: ResolvedConfig): BlockStyle {
  *  text; the bold and italic colours too, unless the style sets its own)
  *  with the style's own face, weights, slant, size, leading, alignment,
  *  indents and small caps. A non-zero `hangingIndent`
- *  turns into the measurer's hanging mode (lines 2+ indented), and `indent`
+ *  turns into the measurer's hanging mode (lines 2+ indented; the first
+ *  line keeps a first-line indent the style sets itself, #620), and `indent`
  *  shifts every line (`indentPx`); `spaceBetween` lands in
  *  `marginBottomPx`, the same slot body `paragraphSpacing` uses, so the gap
  *  flows through pending spacing and the grid snap like any other margin. */
@@ -286,7 +308,10 @@ export function resolveParagraphStyle(
   const hyphenation = hyphenationFor(style.hyphenation, textAlign, resolved, fontSizePx);
   const hangingIndentPx = dimensionToPx(style.hangingIndent, dpi, fontSizePx);
   const hangingIndent = hangingIndentPx > 0;
-  const firstLineIndentPx = hangingIndent
+  // A first-line indent the style sets itself pairs with its hanging one
+  // (#620); one inherited from the body gives way to it.
+  const paired = hangingIndent && style.ownFirstLineIndent === true;
+  const firstLineIndentPx = hangingIndent && !paired
     ? hangingIndentPx
     : dimensionToPx(style.firstLineIndent, dpi, fontSizePx);
   const marginBottomPx = dimensionToPx(style.spaceBetween, dpi, fontSizePx);
@@ -309,10 +334,13 @@ export function resolveParagraphStyle(
     marginBottomPx,
     firstLineIndentPx,
     hangingIndent,
+    ...(paired ? { hangingIndentPx } : {}),
     ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}),
     ...(Number.isFinite(endIndentPx) && endIndentPx > 0 ? { endIndentPx } : {}),
     ...(style.smallCaps ? { smallCaps: true } : {}),
     ...(style.textTransform === 'uppercase' ? { uppercase: true } : {}),
     ...(style.wordBreak ? { cjkWordBreak: style.wordBreak } : {}),
+    ...tabFields(style.tabStops ?? body.tabStops, style.tabInterval ?? body.tabInterval),
+    ...(style.dropCap ? { dropCap: style.dropCap } : {}),
   };
 }

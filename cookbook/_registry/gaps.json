@@ -66,24 +66,24 @@
       ]
     },
     "explanation": {
-      "en": "Triple-backtick fences and indented code are set line by line as ordinary paragraphs. Set listings with a monospace paragraph style, hyphenation off and left aligned, inside :::paragraphs or a callout; inline code works.",
-      "es": "Las vallas de tres acentos graves y el código sangrado se componen línea a línea como párrafos normales. Compón los listados con un estilo de párrafo monoespaciado, sin separación silábica y alineado a la izquierda, dentro de :::paragraphs o de un recuadro; el código en línea sí funciona.",
-      "ca": "Les tanques de tres accents greus i el codi sagnat es componen línia a línia com a paràgrafs normals. Compon els llistats amb un estil de paràgraf monoespaiat, sense partició de mots i alineat a l'esquerra, dins de :::paragraphs o d'un requadre; el codi en línia sí que funciona.",
-      "zh": "三个反引号的围栏和缩进代码都按普通段落逐行排版。排代码清单时，在:::paragraphs或标注框中使用等宽字体的段落样式，关闭断词并左对齐；行内代码可以正常使用。",
-      "ar": "تُنضَّد الأسوار ذات العلامات الثلاث والشيفرة ذات المسافة البادئة سطرًا سطرًا كفقرات عادية. انضد قوائم الشيفرة بنمط فقرة بخط ثابت العرض، مع تعطيل تقسيم الكلمات والمحاذاة إلى اليسار، داخل :::paragraphs أو إطار؛ أما الشيفرة المضمّنة فتعمل.",
-      "ja": "3連バッククォートのフェンスやインデントしたコードは、通常の段落として1行ずつ組まれます。コードリストは、等幅の段落スタイル（ハイフネーションなし、左そろえ）を使って:::paragraphsか囲みの中に組んでください。インラインコードは使えます。",
-      "pt": "Os blocos delimitados por três crases e o código recuado são compostos linha a linha como parágrafos comuns. Componha as listagens com um estilo de parágrafo monoespaçado, sem hifenização e alinhado à esquerda, dentro de :::paragraphs ou de um boxe; o código inline funciona."
+      "en": "Fixed in postext 1.23: a ``` or ~~~ fence is a code listing, set line by line as typed in a box that codeStyle designs: indents, tabs and runs of spaces kept, long lines turned over behind a mark, set smaller or cut, line numbers, highlighted lines and a title from the info string. codeStyle.indentedCode reads indented code too, and codeStyle.inline sets `code` in the code face. Up to 1.22 a fence's lines were set as ordinary paragraphs, so listings were monospace paragraph styles in :::paragraphs or a callout, with escapes and no-break spaces.",
+      "es": "Resuelto en postext 1.23: una valla ``` o ~~~ es un listado de código, compuesto línea a línea tal como se escribió en una caja que diseña codeStyle: se conservan las sangrías, los tabuladores y las series de espacios; las líneas largas pasan a la siguiente tras una marca, se componen más pequeñas o se cortan, y hay números de línea, líneas resaltadas y un título tomado de la cadena de información. codeStyle.indentedCode lee también el código sangrado, y codeStyle.inline compone `código` en la letra del código. Hasta la 1.22 las líneas de una valla se componían como párrafos normales, así que los listados eran estilos de párrafo monoespaciados dentro de :::paragraphs o de un recuadro, con escapes y espacios de no separación.",
+      "ca": "Resolt a postext 1.23: una tanca ``` o ~~~ és un llistat de codi, compost línia a línia tal com es va escriure en una caixa que dissenya codeStyle: es conserven els sagnats, els tabuladors i les sèries d'espais; les línies llargues passen a la següent darrere una marca, es componen més petites o es tallen, i hi ha números de línia, línies ressaltades i un títol pres de la cadena d'informació. codeStyle.indentedCode llegeix també el codi sagnat, i codeStyle.inline compon `codi` en la lletra del codi. Fins a la 1.22 les línies d'una tanca es componien com a paràgrafs normals, de manera que els llistats eren estils de paràgraf monoespaiats dins de :::paragraphs o d'un requadre, amb escapaments i espais no separables.",
+      "zh": "已在postext 1.23中解决：```或~~~围栏就是一段代码清单，按书写原样逐行排在由codeStyle设计的框中：保留缩进、制表符和连续空格；过长的行在标记后转到下一行、缩小排版或截断；可加行号、高亮行，并以信息字符串中的文字为标题。codeStyle.indentedCode也会读取缩进代码，codeStyle.inline用代码字体排`代码`。1.22及以前，围栏中的各行按普通段落排版，代码清单只能在:::paragraphs或标注框中用等宽段落样式排，并借助转义和不换行空格。",
+      "ar": "حُلّت في postext 1.23: السور ``` أو ~~~ قائمة شيفرة تُنضَّد سطرًا سطرًا كما كُتبت في إطار يصممه codeStyle: تُحفظ المسافات البادئة والجدولات وتتابع المسافات، وتنتقل الأسطر الطويلة إلى ما تحتها خلف علامة أو تُصغَّر أو تُقطع، ومعها ترقيم الأسطر والأسطر المميّزة وعنوان من سلسلة المعلومات. يقرأ codeStyle.indentedCode الشيفرة ذات المسافة البادئة أيضًا، ويضع codeStyle.inline `الشيفرة` بخط الشيفرة. حتى 1.22 كانت أسطر السور تُنضَّد فقرات عادية، فكانت القوائم أنماط فقرات بخط ثابت العرض داخل :::paragraphs أو إطار، مع محارف الهروب والمسافات غير الفاصلة.",
+      "ja": "postext 1.23で解決しました。```または~~~のフェンスはコードリストで、codeStyleが設計する枠の中に、書いたとおり1行ずつ組まれます。インデント、タブ、連続する空白はそのまま残り、長い行は印の後ろで次の行へ送るか、小さく組むか、切り落とします。行番号、強調する行、情報文字列から取るタイトルも付けられます。codeStyle.indentedCodeはインデントしたコードも読み、codeStyle.inlineは`コード`をコードの書体で組みます。1.22までは、フェンスの各行は通常の段落として組まれたので、コードリストは:::paragraphsや囲みの中の等幅の段落スタイルで、エスケープとノーブレークスペースを使って組んでいました。",
+      "pt": "Corrigido no postext 1.23: uma cerca ``` ou ~~~ é uma listagem de código, composta linha a linha como foi escrita numa caixa que o codeStyle desenha: recuos, tabulações e sequências de espaços são mantidos; as linhas longas passam para baixo atrás de uma marca, são compostas menores ou cortadas; há números de linha, linhas realçadas e um título tirado da string de informação. codeStyle.indentedCode lê também o código recuado, e codeStyle.inline compõe `código` na fonte do código. Até a 1.22 as linhas de uma cerca eram compostas como parágrafos comuns, então as listagens eram estilos de parágrafo monoespaçados dentro de :::paragraphs ou de um boxe, com escapes e espaços não separáveis."
     },
     "docs": {
       "slug": "document-format",
       "heading": {
-        "en": "What is NOT supported",
-        "es": "Qué NO se soporta",
-        "ca": "Què NO s'admet",
-        "zh": "不支持的内容",
-        "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法",
-        "pt": "O que NÃO é suportado"
+        "en": "Code blocks",
+        "es": "Bloques de código",
+        "ca": "Blocs de codi",
+        "zh": "代码块",
+        "ar": "كتل الشيفرة",
+        "ja": "コードブロック",
+        "pt": "Blocos de código"
       }
     }
   },
@@ -141,24 +141,24 @@
       ]
     },
     "explanation": {
-      "en": "There is no code colouring. A listing can use bold and italic runs whose colours the style sets, but keywords and strings are not detected.",
-      "es": "No hay coloreado de código. Un listado puede usar fragmentos en negrita y cursiva cuyos colores fija el estilo, pero las palabras clave y las cadenas no se detectan.",
-      "ca": "No hi ha coloració de codi. Un llistat pot fer servir fragments en negreta i cursiva amb els colors que fixa l'estil, però les paraules clau i les cadenes no es detecten.",
-      "zh": "不支持代码着色。代码清单可以使用粗体和斜体片段，颜色由样式设定，但不会识别关键字和字符串。",
-      "ar": "لا يوجد تلوين للشيفرة. يمكن أن تستعمل قائمة الشيفرة مقاطع عريضة ومائلة يحدد النمط ألوانها، لكن الكلمات المفتاحية والسلاسل النصية لا تُكتشف.",
-      "ja": "コードの色分けはありません。コードリストには太字やイタリックの範囲を使え、その色はスタイルで設定できますが、キーワードや文字列は検出されません。",
-      "pt": "Não há coloração de código. Uma listagem pode usar trechos em negrito e itálico cujas cores o estilo define, mas palavras-chave e strings não são detectadas."
+      "en": "Fixed in postext 1.23: a fence's language (```js, ```python, ```bash, ```console …) colours its listing with the built-in tokenizer, and codeStyle.tokens sets the colour, bold and italic of each kind of token (keyword, string, comment, prompt, output …). registerCodeHighlighter plugs in a highlighter for other languages; highlight: 'none' sets every listing plain. Up to 1.22 a listing could only use bold and italic runs whose colours the style set, written by hand.",
+      "es": "Resuelto en postext 1.23: el lenguaje de una valla (```js, ```python, ```bash, ```console…) colorea su listado con el analizador incorporado, y codeStyle.tokens fija el color, la negrita y la cursiva de cada clase de elemento (keyword, string, comment, prompt, output…). registerCodeHighlighter conecta un coloreador para otros lenguajes; highlight: 'none' compone todos los listados sin color. Hasta la 1.22 un listado solo podía usar fragmentos en negrita y cursiva, marcados a mano, con los colores que fijaba el estilo.",
+      "ca": "Resolt a postext 1.23: el llenguatge d'una tanca (```js, ```python, ```bash, ```console…) acoloreix el llistat amb l'analitzador incorporat, i codeStyle.tokens fixa el color, la negreta i la cursiva de cada classe d'element (keyword, string, comment, prompt, output…). registerCodeHighlighter connecta un acoloridor per a altres llenguatges; highlight: 'none' compon tots els llistats sense color. Fins a la 1.22 un llistat només podia fer servir fragments en negreta i cursiva, marcats a mà, amb els colors que fixava l'estil.",
+      "zh": "已在postext 1.23中解决：围栏的语言（```js、```python、```bash、```console等）让内置分词器为清单着色，codeStyle.tokens设定每类记号（keyword、string、comment、prompt、output等）的颜色、粗体和斜体。registerCodeHighlighter可以为其他语言接入着色器；highlight: 'none'让所有清单不着色。1.22及以前，清单只能用手工标出的粗体和斜体片段，颜色由样式设定。",
+      "ar": "حُلّت في postext 1.23: لغة السور (```js و```python و```bash و```console …) تلوّن قائمتها بالمحلل المدمج، ويضبط codeStyle.tokens لون كل نوع من العناصر وثخانته وميله (keyword وstring وcomment وprompt وoutput …). يربط registerCodeHighlighter ملوِّنًا للغات أخرى؛ ويجعل highlight: 'none' كل القوائم بلا تلوين. حتى 1.22 لم يكن للقائمة إلا مقاطع عريضة ومائلة تُعلَّم يدويًا ويحدد النمط ألوانها.",
+      "ja": "postext 1.23で解決しました。フェンスの言語（```js、```python、```bash、```consoleなど）に応じて、組み込みのトークナイザーがコードリストを色分けし、codeStyle.tokensがトークンの種類（keyword、string、comment、prompt、outputなど）ごとに色、太字、イタリックを決めます。registerCodeHighlighterでほかの言語のハイライターを組み込めます。highlight: 'none'にするとすべてのコードリストを色なしで組みます。1.22までは、手で付けた太字やイタリックの範囲に、スタイルで決めた色を付けることしかできませんでした。",
+      "pt": "Corrigido no postext 1.23: a linguagem de uma cerca (```js, ```python, ```bash, ```console…) colore a listagem com o analisador embutido, e codeStyle.tokens define a cor, o negrito e o itálico de cada tipo de token (keyword, string, comment, prompt, output…). registerCodeHighlighter conecta um realçador para outras linguagens; highlight: 'none' compõe todas as listagens sem cor. Até a 1.22 uma listagem só podia usar trechos em negrito e itálico, marcados à mão, com as cores que o estilo definia."
     },
     "docs": {
-      "slug": "document-format",
+      "slug": "configuration",
       "heading": {
-        "en": "What is NOT supported",
-        "es": "Qué NO se soporta",
-        "ca": "Què NO s'admet",
-        "zh": "不支持的内容",
-        "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法",
-        "pt": "O que NÃO é suportado"
+        "en": "Syntax colouring",
+        "es": "Coloreado de sintaxis",
+        "ca": "Colors de sintaxi",
+        "zh": "语法着色",
+        "ar": "تلوين الصياغة",
+        "ja": "構文の色分け",
+        "pt": "Coloração de sintaxe"
       }
     }
   },
@@ -529,24 +529,24 @@
       ]
     },
     "explanation": {
-      "en": "Drop caps exist only in design text elements. Put the lead paragraph in a heading attribute and draw it with a dropCap in the opener design.",
-      "es": "Las capitulares solo existen en los elementos de texto de diseño. Pon la entradilla en un atributo del título y dibújala con dropCap en el diseño de la apertura.",
-      "ca": "Les caplletres només existeixen als elements de text de disseny. Posa l'entradeta en un atribut del títol i dibuixa-la amb dropCap al disseny de l'obertura.",
-      "zh": "首字下沉只存在于版面设计的文本元素中。把开头一段放进标题属性，在章首页设计中用dropCap画出来。",
-      "ar": "لا توجد الحروف الاستهلالية إلا في عناصر نص التصميم. ضع الفقرة الأولى في سمة عنوان وارسمها بـ dropCap في تصميم صفحة الافتتاح.",
-      "ja": "ドロップキャップはデザインのテキスト要素にしかありません。冒頭の段落を見出しの属性に入れ、章扉のデザインでdropCapを使って描いてください。",
-      "pt": "As capitulares só existem nos elementos de texto do design. Ponha o parágrafo de abertura em um atributo do título e desenhe-o com dropCap no design da abertura."
+      "en": "A heading level's or heading style's dropCap opens the first paragraph after the heading with its first letter set large, and a paragraph style's opens the first paragraph of each :::paragraphs group (every one with each: true). The lines beside the letter are shortened and set with the rest of the text: justified, hyphenated, never broken before the letter's last line. lines, sink (a raised initial), punctuation, a lead-in in small capitals and {dropcap=false} or {dropcap=2} on a heading or a fence; the cap heights are measured from the faces.",
+      "es": "El dropCap de un nivel o de un estilo de título abre el primer párrafo tras el título con su primera letra en grande, y el de un estilo de párrafo abre el primer párrafo de cada grupo :::paragraphs (cada uno con each: true). Las líneas junto a la letra se acortan y se componen con el resto del texto: justificadas, con división silábica y sin cortarse antes de la última línea de la letra. lines, sink (una inicial elevada), punctuation, una entrada en versalitas y {dropcap=false} o {dropcap=2} en un título o una apertura de grupo; las alturas de mayúscula se miden en las fuentes.",
+      "ca": "El dropCap d'un nivell o d'un estil de títol obre el primer paràgraf després del títol amb la primera lletra en gran, i el d'un estil de paràgraf obre el primer paràgraf de cada grup :::paragraphs (cadascun amb each: true). Les línies al costat de la lletra s'escurcen i es componen amb la resta del text: justificades, amb partició de mots i sense tallar-se abans de l'última línia de la lletra. lines, sink (una inicial elevada), punctuation, una entrada en versaletes i {dropcap=false} o {dropcap=2} en un títol o una obertura de grup; les altures de majúscula es mesuren en les fonts.",
+      "zh": "标题级别或标题样式的dropCap让标题后的第一段以放大的首字开头，段落样式的dropCap让每个:::paragraphs组的第一段（each: true时每一段）这样开头。首字旁的几行随之缩短，与其余文字一起排：两端对齐、断字，不会在首字的最后一行之前分开。可设lines、sink（凸起首字）、punctuation、小型大写字母的引导词，并在标题或组开头用{dropcap=false}或{dropcap=2}；大写字母高度按字体实测。",
+      "ar": "يفتتح dropCap في مستوى عنوان أو نمط عنوان أولَ فقرة بعد العنوان بحرفها الأول مكبّرًا، ويفتتح dropCap في نمط فقرة أولَ فقرة من كل مجموعة :::paragraphs (كل فقرة مع each: true). تُقصَّر الأسطر المجاورة للحرف وتُصفّ مع بقية النص: مضبوطة وموصولة، ولا تنقسم قبل آخر سطر يجاور الحرف. ومنها lines وsink (حرف بارز) وpunctuation وكلمات استهلال بحروف كبيرة صغيرة و{dropcap=false} أو {dropcap=2} على عنوان أو فاتحة مجموعة؛ وتُقاس ارتفاعات الحروف الكبيرة من الخطوط.",
+      "ja": "見出しレベルや見出しスタイルのdropCapは見出しのあとの最初の段落を、段落スタイルのdropCapは各:::paragraphsグループの最初の段落（each: trueならすべての段落）を、最初の文字を大きくして始めます。文字の横の行は短くなり、ほかの本文と同じく両端揃え・ハイフネーションで組まれ、文字の最後の行より前で分かれません。lines、sink（レイズドイニシャル）、punctuation、スモールキャピタルのリードイン、見出しやグループ開始行の{dropcap=false}や{dropcap=2}が使えます。大文字の高さはフォントから測ります。",
+      "pt": "O dropCap de um nível ou de um estilo de título abre o primeiro parágrafo após o título com a primeira letra em tamanho grande, e o de um estilo de parágrafo abre o primeiro parágrafo de cada grupo :::paragraphs (cada um com each: true). As linhas ao lado da letra são encurtadas e compostas com o resto do texto: justificadas, hifenizadas, sem se dividir antes da última linha da letra. lines, sink (uma inicial elevada), punctuation, uma abertura em versaletes e {dropcap=false} ou {dropcap=2} em um título ou na abertura de um grupo; as alturas das maiúsculas são medidas nas fontes."
     },
     "docs": {
       "slug": "configuration",
       "heading": {
-        "en": "Text elements",
-        "es": "Elementos de texto",
-        "ca": "Elements de text",
-        "zh": "文本元素",
-        "ar": "عناصر النص",
-        "ja": "テキスト要素",
-        "pt": "Elementos de texto"
+        "en": "Drop caps",
+        "es": "Letras capitulares",
+        "ca": "Caplletres",
+        "zh": "首字下沉",
+        "ar": "الحروف الاستهلالية",
+        "ja": "ドロップキャップ",
+        "pt": "Capitulares"
       }
     }
   },
@@ -564,17 +564,32 @@
       "en": [
         "tabs",
         "tab leaders",
-        "aligned columns of text"
+        "aligned columns of text",
+        "dot leaders",
+        "right tab",
+        "decimal tab",
+        ":tab",
+        "tabStops"
       ],
       "es": [
         "tabulaciones",
         "tabulador con puntos",
-        "columnas de texto alineadas"
+        "columnas de texto alineadas",
+        "tabulador derecho",
+        "tabulador decimal",
+        "relleno de puntos",
+        ":tab",
+        "tabStops"
       ],
       "ca": [
         "tabulacions",
         "tabulador amb punts",
-        "columnes de text alineades"
+        "columnes de text alineades",
+        "tabulador dret",
+        "tabulador decimal",
+        "farciment de punts",
+        ":tab",
+        "tabStops"
       ],
       "zh": [
         "制表位",
@@ -582,46 +597,62 @@
         "Tab对齐",
         "前导符",
         "文字对齐成列",
-        "tabs"
+        "tabs",
+        "右对齐制表位",
+        "小数点对齐",
+        ":tab",
+        "tabStops"
       ],
       "ar": [
         "الجدولة",
         "نقاط توجيه الجدولة",
         "أعمدة نص محاذاة",
-        "tab"
+        "tab",
+        "جدولة يمنى",
+        "جدولة عشرية",
+        ":tab",
+        "tabStops"
       ],
       "ja": [
         "タブ",
         "タブリーダー",
-        "テキストの桁そろえ"
+        "テキストの桁そろえ",
+        "右揃えタブ",
+        "小数点揃えタブ",
+        ":tab",
+        "tabStops"
       ],
       "pt": [
         "tabulações",
         "tabulação",
         "tabulação com pontilhado",
         "pontilhado",
-        "colunas de texto alinhadas"
+        "colunas de texto alinhadas",
+        "tabulação à direita",
+        "tabulação decimal",
+        ":tab",
+        "tabStops"
       ]
     },
     "explanation": {
-      "en": "Tab characters are not typeset. Align values with a table resource; dot leaders exist only in the table of contents.",
-      "es": "Los caracteres de tabulación no se componen. Alinea los valores con una tabla como recurso; las líneas de puntos solo existen en el índice de contenidos.",
-      "ca": "Els caràcters de tabulació no es componen. Alinea els valors amb una taula com a recurs; les línies de punts només existeixen a la taula de continguts.",
-      "zh": "制表符不参与排版。用表资源来对齐数值；点状前导符只在目录中提供。",
-      "ar": "لا تُنضَّد حروف الجدولة. حاذِ القيم بمورد جدول؛ ونقاط التوجيه لا توجد إلا في جدول المحتويات.",
-      "ja": "タブ文字は組版されません。値をそろえるには表リソースを使ってください。点線のリーダーは目次にしかありません。",
-      "pt": "Os caracteres de tabulação não são compostos. Alinhe valores com um recurso de tabela; os pontilhados existem apenas no sumário."
+      "en": "Tab stops align text inside a paragraph: write :tab where the text jumps to a stop (Soup :tab 8.50) and set tabStops on a paragraph style, on bodyText or on a callout's body. A stop stands at a length, at 'end' (the end of the line) or at a percentage, and aligns the text after it by its start, its end, its centre or its decimal separator. Its leader fills the room before it with dots ('.', '. ', '·') or with a line ('rule') for a form's blank, and the leaders of several lines line up. :tab{at=120mm align=end leader=\".\"} sets a stop for that one tab with no style, and a tab character is a tab in any paragraph whose style has stops. Menus, price lists, cast lists, exam marks and indexes with page numbers at the margin are set as text. A paragraph holding a tab is broken line by line, and vertical text has no tab stops. Up to postext 1.22 tab characters were set as word spaces, aligned values needed a two-column table resource, and dot leaders existed only in the table of contents.",
+      "es": "Los tabuladores alinean texto dentro de un párrafo: escribe :tab donde el texto salta a un tabulador (Sopa :tab 8,50) y define tabStops en un estilo de párrafo, en bodyText o en el body de un recuadro. Un tabulador se sitúa a una distancia, en 'end' (el final de la línea) o en un porcentaje, y alinea el texto que lo sigue por su inicio, su final, su centro o su separador decimal. Su relleno ocupa el hueco anterior con puntos ('.', '. ', '·') o con una línea ('rule') para el espacio en blanco de un formulario, y los rellenos de varias líneas quedan alineados. :tab{at=120mm align=end leader=\".\"} fija un tabulador solo para esa tabulación, sin estilo, y un carácter de tabulación es un tabulador en cualquier párrafo cuyo estilo tenga tabuladores. Así se componen como texto cartas de restaurante, listas de precios, repartos, puntuaciones de examen e índices con el número de página al margen. Un párrafo con una tabulación se parte línea a línea, y el texto vertical no tiene tabuladores. Hasta postext 1.22 los caracteres de tabulación se componían como espacios entre palabras, los valores alineados necesitaban una tabla de dos columnas como recurso y las líneas de puntos solo existían en el índice de contenidos.",
+      "ca": "Els tabuladors alineen text dins d'un paràgraf: escriu :tab on el text salta a un tabulador (Sopa :tab 8,50) i defineix tabStops en un estil de paràgraf, a bodyText o al body d'un requadre. Un tabulador se situa a una distància, a 'end' (el final de la línia) o en un percentatge, i alinea el text que el segueix pel seu inici, pel seu final, pel seu centre o pel separador decimal. El seu farciment omple l'espai anterior amb punts ('.', '. ', '·') o amb una línia ('rule') per a l'espai en blanc d'un formulari, i els farciments de diverses línies queden alineats. :tab{at=120mm align=end leader=\".\"} fixa un tabulador només per a aquella tabulació, sense estil, i un caràcter de tabulació és un tabulador en qualsevol paràgraf amb un estil que tingui tabuladors. Així es componen com a text cartes de restaurant, llistes de preus, repartiments, puntuacions d'examen i índexs amb el número de pàgina al marge. Un paràgraf amb una tabulació es parteix línia a línia, i el text vertical no té tabuladors. Fins a postext 1.22 els caràcters de tabulació es componien com a espais entre paraules, els valors alineats necessitaven una taula de dues columnes com a recurs i les línies de punts només existien a la taula de continguts.",
+      "zh": "制表位让段落内的文字对齐：在文字要跳到制表位的地方写:tab（汤 :tab 8.50），并在段落样式、bodyText或提示框的body中设置tabStops。制表位可以设在某个长度处、'end'（行的末端）或某个百分比处，其后的文字按起点、终点、中心或小数点对齐。前导符用点（'.'、'. '、'·'）或线（'rule'，即表单中的填写横线）填满它前面的空白，各行的前导符上下对齐。:tab{at=120mm align=end leader=\".\"}不用样式就能只为这一处设一个制表位；在样式设有制表位的段落中，制表符字符也是制表符。菜单、价目表、演员表、试卷分值和页码排在行末的索引都可以作为文字排版。含制表符的段落逐行断行，竖排文本没有制表位。在postext 1.22及以前，制表符字符排成词间空格，要对齐数值只能用两栏的表资源，点状前导符只在目录中提供。",
+      "ar": "تحاذي مواضع الجدولة النص داخل الفقرة: اكتب :tab حيث يقفز النص إلى موضع جدولة (حساء :tab 8.50)، وحدّد tabStops في نمط فقرة أو في bodyText أو في body الإطار. يقع الموضع على بُعد معيّن أو عند 'end' (نهاية السطر) أو عند نسبة مئوية، ويحاذي النص الذي يليه من بدايته أو نهايته أو وسطه أو فاصلته العشرية. وتملأ نقاط التوجيه الفراغ الذي قبله بنقاط ('.' أو '. ' أو '·') أو بخط ('rule') لخانة تُملأ في استمارة، وتصطف نقاط التوجيه في الأسطر المتتالية. ويضع :tab{at=120mm align=end leader=\".\"} موضعًا لهذه الجدولة وحدها دون نمط، ويكون حرف الجدولة جدولةً في كل فقرة لنمطها مواضع جدولة. وهكذا تُنضَّد قوائم الطعام وقوائم الأسعار وقوائم الممثلين ودرجات الامتحان والفهارس التي تقع أرقام صفحاتها في الهامش نصًّا. والفقرة التي فيها جدولة تُكسَر سطرًا سطرًا، والنص العمودي لا مواضع جدولة فيه. وحتى postext 1.22 كانت حروف الجدولة تُنضَّد مسافاتٍ بين الكلمات، وكانت محاذاة القيم تتطلب مورد جدول من عمودين، ولم تكن نقاط التوجيه موجودة إلا في جدول المحتويات.",
+      "ja": "タブストップは段落の中で文字をそろえます。文字がタブ位置へ飛ぶところに:tabと書き（スープ :tab 8.50）、段落スタイル、bodyText、囲みのbodyにtabStopsを設定します。タブ位置は長さ、'end'（行の終わり）、割合のいずれかで決め、後ろの文字を先頭、末尾、中央、小数点のどれかでそろえます。リーダーは手前の空きを点（'.'、'. '、'·'）か線（'rule'、記入欄の下線）で埋め、複数行のリーダーは縦にそろいます。:tab{at=120mm align=end leader=\".\"}はスタイルなしでそのタブだけの位置を決め、スタイルにタブ位置がある段落ではタブ文字もタブになります。メニュー、価格表、配役表、試験の配点、ページ番号を行末に置く索引を文字として組めます。タブを含む段落は1行ずつ改行し、縦組みにはタブストップがありません。postext 1.22までは、タブ文字は語間のスペースとして組まれ、値をそろえるには2列の表リソースが必要で、点線のリーダーは目次にしかありませんでした。",
+      "pt": "As paradas de tabulação alinham texto dentro de um parágrafo: escreva :tab onde o texto salta para uma parada (Sopa :tab 8,50) e defina tabStops em um estilo de parágrafo, em bodyText ou no body de um boxe. Uma parada fica a uma distância, em 'end' (o fim da linha) ou em uma porcentagem, e alinha o texto seguinte pelo início, pelo fim, pelo centro ou pelo separador decimal. O pontilhado preenche o espaço anterior com pontos ('.', '. ', '·') ou com uma linha ('rule') para o espaço em branco de um formulário, e os pontilhados de várias linhas ficam alinhados. :tab{at=120mm align=end leader=\".\"} define uma parada só para aquela tabulação, sem estilo, e um caractere de tabulação é uma tabulação em qualquer parágrafo cujo estilo tenha paradas. Assim, cardápios, listas de preços, elencos, pontuações de prova e índices com o número da página na margem são compostos como texto. Um parágrafo com uma tabulação é quebrado linha a linha, e o texto vertical não tem paradas de tabulação. Até o postext 1.22 os caracteres de tabulação eram compostos como espaços entre palavras, valores alinhados exigiam um recurso de tabela de duas colunas e os pontilhados existiam apenas no sumário."
     },
     "docs": {
-      "slug": "document-format",
+      "slug": "configuration",
       "heading": {
-        "en": "What is NOT supported",
-        "es": "Qué NO se soporta",
-        "ca": "Què NO s'admet",
-        "zh": "不支持的内容",
-        "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法",
-        "pt": "O que NÃO é suportado"
+        "en": "Tab stops",
+        "es": "Tabulaciones",
+        "ca": "Tabulacions",
+        "zh": "制表位",
+        "ar": "مواضع الجدولة",
+        "ja": "タブ位置",
+        "pt": "Paradas de tabulação"
       }
     }
   },
@@ -1547,7 +1578,8 @@
         "line breaks in verse",
         "leading spaces",
         "indented line of verse",
-        "poem indentation"
+        "poem indentation",
+        "backslash at the end of a line"
       ],
       "es": [
         "salto de línea manual",
@@ -1556,7 +1588,8 @@
         "saltos de línea en verso",
         "espacios iniciales",
         "verso sangrado",
-        "sangría de un poema"
+        "sangría de un poema",
+        "barra invertida al final de línea"
       ],
       "ca": [
         "salt de línia manual",
@@ -1565,7 +1598,8 @@
         "salts de línia en vers",
         "espais inicials",
         "vers sagnat",
-        "sagnat d'un poema"
+        "sagnat d'un poema",
+        "barra inversa al final de línia"
       ],
       "zh": [
         "强制换行",
@@ -1574,7 +1608,8 @@
         "诗歌换行",
         "行首空格",
         "诗行缩进",
-        "hard line break"
+        "hard line break",
+        "行末反斜杠"
       ],
       "ar": [
         "كسر سطر إجباري",
@@ -1582,7 +1617,8 @@
         "سطر جديد داخل الفقرة",
         "كسر الأسطر في الشعر",
         "مسافات بادئة",
-        "إزاحة أبيات القصيدة"
+        "إزاحة أبيات القصيدة",
+        "شرطة مائلة عكسية في آخر السطر"
       ],
       "ja": [
         "強制改行",
@@ -1590,7 +1626,8 @@
         "ソフトリターン",
         "詩の改行",
         "行頭の空白",
-        "詩の字下げ"
+        "詩の字下げ",
+        "行末のバックスラッシュ"
       ],
       "pt": [
         "quebra de linha forçada",
@@ -1600,28 +1637,29 @@
         "espaços iniciais",
         "verso recuado",
         "recuo de poema",
-        "poesia"
+        "poesia",
+        "barra invertida no fim da linha"
       ]
     },
     "explanation": {
-      "en": "The lines of a Markdown paragraph are joined with a space and its leading spaces are trimmed, so a paragraph keeps neither a poem's line breaks nor its indents, and a paragraph style cannot pair a first-line indent with a hanging indent. Give every line a paragraph of its own in a :::paragraphs container, and write an indent as em spaces (U+2003) behind a word joiner (U+2060), which nothing trims.",
-      "es": "Las líneas de un párrafo de Markdown se unen con un espacio y sus espacios iniciales se recortan, así que un párrafo no conserva ni los saltos de línea de un poema ni sus sangrías, y un estilo de párrafo no admite a la vez sangría de primera línea y sangría francesa. Da a cada verso un párrafo propio en un contenedor :::paragraphs, y escribe una sangría como espacios eme (U+2003) tras un unidor de palabras (U+2060), que nada recorta.",
-      "ca": "Les línies d'un paràgraf de Markdown s'uneixen amb un espai i se'n retallen els espais inicials, de manera que un paràgraf no conserva ni els salts de línia d'un poema ni els seus sagnats, i un estil de paràgraf no admet alhora sagnat de primera línia i sagnat francès. Dona a cada vers un paràgraf propi dins un contenidor :::paragraphs, i escriu un sagnat com a espais eme (U+2003) després d'un unidor de paraules (U+2060), que res no retalla.",
-      "zh": "Markdown段落中的各行以空格连接，行首空格被去掉，所以段落既保留不了诗的分行，也保留不了缩进；段落样式也无法把首行缩进和悬挂缩进搭配使用。在:::paragraphs容器中让每一行自成一段，缩进写成放在连接符（U+2060）后面的em空格（U+2003），这样就不会被去掉。",
-      "ar": "تُوصل أسطر فقرة Markdown بمسافة وتُقتطع مسافاتها البادئة، فلا تحتفظ الفقرة بكسر أسطر القصيدة ولا بإزاحاتها، ولا يستطيع نمط الفقرة الجمع بين مسافة بادئة للسطر الأول ومسافة بادئة معلّقة. أعطِ كل سطر فقرة مستقلة في حاوية :::paragraphs، واكتب الإزاحة مسافاتِ em (U+2003) بعد رابط كلمات (U+2060)، فلا شيء يقتطعها.",
-      "ja": "Markdownの段落の各行は空白でつながれ、行頭の空白は取り除かれます。そのため段落には詩の改行も字下げも残らず、段落スタイルで1行目の字下げとぶら下げインデントを組み合わせることもできません。:::paragraphsコンテナーの中で各行を独立した段落にし、字下げは単語結合子（U+2060）の後ろにem幅の空白（U+2003）を置いて書いてください。これはどこでも取り除かれません。",
-      "pt": "As linhas de um parágrafo de Markdown são unidas com um espaço e os espaços iniciais são removidos, então um parágrafo não preserva as quebras de linha de um poema nem os seus recuos, e um estilo de parágrafo não combina recuo de primeira linha com recuo deslocado. Dê a cada linha um parágrafo próprio em um contêiner :::paragraphs e escreva um recuo como espaços eme (U+2003) depois de um word joiner (U+2060), que nada remove."
+      "en": "A :::verse block keeps a poem as it is written: each line of Markdown is a line of verse, a blank line starts a new stanza and leading spaces indent the line (two spaces an em). An overlong line turns over with a hanging indent, or flush right behind a bracket, and keepStanzas keeps a haiku or a tanka whole. A paragraph style that sets its own firstLineIndent pairs it with its hangingIndent. In running text a backslash at the end of a line, or \\\\ before a space, breaks the line without starting a new paragraph (an address, the greeting of a letter). Up to postext 1.22 every line of a poem needed a paragraph of its own in a :::paragraphs container, its indent written as em spaces (U+2003) behind a word joiner (U+2060), and a backslash ending a line printed.",
+      "es": "Un bloque :::verse conserva el poema tal como se escribe: cada línea de Markdown es un verso, una línea en blanco abre otra estrofa y los espacios iniciales sangran el verso (dos espacios, un eme). Un verso demasiado largo se parte con sangría colgada, o a la derecha tras un corchete, y keepStanzas mantiene entero un haiku o una tanka. Un estilo de párrafo que fija su propia firstLineIndent la combina con su hangingIndent. En el texto corrido, una barra invertida al final de una línea, o \\\\ ante un espacio, parte la línea sin empezar otro párrafo (una dirección, el saludo de una carta). Hasta postext 1.22 cada verso de un poema necesitaba un párrafo propio en un contenedor :::paragraphs, con la sangría escrita como espacios eme (U+2003) tras un unidor de palabras (U+2060), y una barra invertida al final de una línea se imprimía.",
+      "ca": "Un bloc :::verse conserva el poema tal com s'escriu: cada línia de Markdown és un vers, una línia en blanc obre una altra estrofa i els espais inicials sagnen el vers (dos espais, un eme). Un vers massa llarg es parteix amb sagnat penjat, o a la dreta darrere d'un claudàtor, i keepStanzas manté sencer un haiku o una tanka. Un estil de paràgraf que fixa la seva pròpia firstLineIndent la combina amb la seva hangingIndent. En el text corrent, una barra inversa al final d'una línia, o \\\\ davant d'un espai, parteix la línia sense començar un altre paràgraf (una adreça, la salutació d'una carta). Fins a postext 1.22 cada vers d'un poema necessitava un paràgraf propi dins un contenidor :::paragraphs, amb el sagnat escrit com a espais eme (U+2003) després d'un unidor de paraules (U+2060), i una barra inversa al final d'una línia s'imprimia.",
+      "zh": ":::verse块按原样保留诗：Markdown的每一行就是一行诗，空行开始新的诗节，行首空格缩进该行（两个空格为一个em）。过长的诗行以悬挂缩进转行，或在方括号后靠右排；keepStanzas让俳句或短歌保持完整。段落样式自己设置的firstLineIndent可以与其hangingIndent搭配使用。在正文中，行末的反斜杠或后跟空格的\\\\会在段落内换行而不另起一段（地址、书信的称呼）。在postext 1.22及以前，诗的每一行都要在:::paragraphs容器中自成一段，缩进写成放在连接符（U+2060）后面的em空格（U+2003），行末的反斜杠也会照样印出。",
+      "ar": "تحفظ كتلة :::verse القصيدة كما كُتبت: كل سطر من Markdown سطر من الشعر، والسطر الفارغ يبدأ مقطعًا جديدًا، والمسافات البادئة تزيح السطر (مسافتان تساويان em واحدًا). والسطر الأطول من اللازم يُكمَل بإزاحة معلّقة، أو إلى الطرف بعد قوس معقوف، ويُبقي keepStanzas الهايكو أو التانكا كاملًا. ونمط الفقرة الذي يحدّد firstLineIndent بنفسه يجمعها مع hangingIndent. وفي النص الجاري تكسر الشرطة المائلة العكسية في آخر السطر، أو \\\\ المتبوعة بمسافة، السطرَ دون بدء فقرة جديدة (عنوان بريدي، تحية رسالة). وحتى postext 1.22 كان كل سطر من القصيدة يحتاج إلى فقرة مستقلة في حاوية :::paragraphs، وتُكتب إزاحته مسافاتِ em (U+2003) بعد رابط كلمات (U+2060)، وكانت الشرطة المائلة العكسية في آخر السطر تُطبع.",
+      "ja": ":::verseブロックは詩を書いたとおりに保ちます。Markdownの1行が詩の1行、空行で次の連が始まり、行頭の空白で字下げします（空白2つで1 em）。長すぎる行はぶら下げて折り返すか、角括弧の後ろに置いて行末側に寄せ、keepStanzasは俳句や短歌を分けずに保ちます。段落スタイル自身が決めたfirstLineIndentは、そのhangingIndentと組み合わせて使えます。地の文では、行末のバックスラッシュ、または後ろにスペースのある\\\\で、新しい段落を始めずに段落の中で改行します（住所、手紙の宛名など）。postext 1.22までは、詩の各行を:::paragraphsコンテナーの中の独立した段落にし、字下げを単語結合子（U+2060）の後ろのem幅の空白（U+2003）で書く必要があり、行末のバックスラッシュはそのまま印字されていました。",
+      "pt": "Um bloco :::verse mantém o poema como foi escrito: cada linha de Markdown é um verso, uma linha em branco abre outra estrofe e os espaços iniciais recuam o verso (dois espaços, um eme). Um verso longo demais se parte com recuo pendente, ou à direita depois de um colchete, e keepStanzas mantém inteiro um haicai ou um tanka. Um estilo de parágrafo que define o seu próprio firstLineIndent o combina com o seu hangingIndent. No texto corrido, uma barra invertida no fim de uma linha, ou \\\\ antes de um espaço, quebra a linha sem começar outro parágrafo (um endereço, a saudação de uma carta). Até o postext 1.22 cada verso de um poema precisava de um parágrafo próprio em um contêiner :::paragraphs, com o recuo escrito como espaços eme (U+2003) depois de um word joiner (U+2060), e uma barra invertida no fim de uma linha era impressa."
     },
     "docs": {
       "slug": "document-format",
       "heading": {
-        "en": "Block constructs",
-        "es": "Construcciones de bloque",
-        "ca": "Construccions de bloc",
-        "zh": "块结构",
-        "ar": "البنى الكتلية",
-        "ja": "ブロック要素",
-        "pt": "Construções de bloco"
+        "en": "`:::verse`",
+        "es": "`:::verse`",
+        "ca": "`:::verse`",
+        "zh": "`:::verse`",
+        "ar": "`:::verse`",
+        "ja": "`:::verse`",
+        "pt": "`:::verse`"
       }
     }
   },
@@ -1642,7 +1680,8 @@
         "verse numbers",
         "line numbers in the margin",
         "every fifth line",
-        "critical edition"
+        "critical edition",
+        "lineNumbers"
       ],
       "es": [
         "números de línea",
@@ -1650,7 +1689,8 @@
         "versos numerados",
         "numeración al margen",
         "cada cinco versos",
-        "edición crítica"
+        "edición crítica",
+        "lineNumbers"
       ],
       "ca": [
         "números de línia",
@@ -1658,7 +1698,8 @@
         "versos numerats",
         "numeració al marge",
         "cada cinc versos",
-        "edició crítica"
+        "edició crítica",
+        "lineNumbers"
       ],
       "zh": [
         "行号",
@@ -1667,7 +1708,8 @@
         "页边行号",
         "每五行一个行号",
         "校勘本",
-        "line numbers"
+        "line numbers",
+        "lineNumbers"
       ],
       "ar": [
         "ترقيم الأسطر",
@@ -1675,7 +1717,8 @@
         "أرقام الأبيات",
         "أرقام الأسطر في الهامش",
         "كل سطر خامس",
-        "طبعة محققة"
+        "طبعة محققة",
+        "lineNumbers"
       ],
       "ja": [
         "行番号",
@@ -1683,7 +1726,8 @@
         "詩の行番号",
         "余白の行番号",
         "5行ごとの番号",
-        "校訂版"
+        "校訂版",
+        "lineNumbers"
       ],
       "pt": [
         "números de linha",
@@ -1691,28 +1735,29 @@
         "numeração de versos",
         "números na margem",
         "a cada cinco linhas",
-        "edição crítica"
+        "edição crítica",
+        "lineNumbers"
       ]
     },
     "explanation": {
-      "en": "Postext does not count or number lines. For verse, give each line a paragraph of its own and count them with a short preprocessor that adds, after every fifth line, a side box holding the number, set in a side column reserved for floats.",
-      "es": "Postext no cuenta ni numera líneas. En verso, da a cada línea un párrafo propio y cuéntalas con un preprocesador breve que, tras cada quinto verso, añade un recuadro lateral con el número, compuesto en una columna lateral reservada a los flotantes.",
-      "ca": "Postext no compta ni numera línies. En vers, dona a cada línia un paràgraf propi i compta-les amb un preprocessador breu que, després de cada cinquè vers, afegeix un requadre lateral amb el número, compost en una columna lateral reservada als flotants.",
-      "zh": "Postext不统计也不编排行号。排诗时，让每一行自成一段，用一个简短的预处理脚本来数行，每隔五行加一个装有行号的侧框，排在为浮动体预留的边栏中。",
-      "ar": "لا يعدّ Postext الأسطر ولا يرقّمها. للشعر، أعطِ كل سطر فقرة مستقلة وعُدّها بمعالج مسبق قصير يضيف بعد كل سطر خامس صندوقًا جانبيًّا يحمل الرقم، يُنضَّد في عمود جانبي مخصص للعناصر العائمة.",
-      "ja": "Postextは行を数えず、番号も振りません。韻文では各行を独立した段落にし、短い前処理スクリプトで行を数えて、5行ごとに番号を入れたサイドボックスを追加します。そのボックスは、フロート用に確保したサイド段に組みます。",
-      "pt": "O Postext não conta nem numera linhas. Em verso, dê a cada linha um parágrafo próprio e conte-as com um pré-processador curto que acrescenta, depois de cada quinta linha, um boxe lateral com o número, composto em uma coluna lateral reservada aos flutuantes."
+      "en": "The lineNumbers setting prints the number of every fifth line (or every Nth) in the margin, the gutter or the side column. With count 'verse' it counts the lines of :::verse poems, a turnover taking no number; with 'all', every line of the text. The count starts again at each poem, page, chapter or section, or runs on through the book; :::verse{lineStart=37} resumes a poem part-way, numbered=false leaves one out and :::numbering{lines=1} restarts the count anywhere. The numbers never move a line, stay out of copied text and are artifacts in a tagged PDF. Vertical text gets no numbers. Up to postext 1.22 each line of verse needed a paragraph of its own, and a preprocessor added after every fifth line a side box holding the number, in a side column reserved for floats.",
+      "es": "El ajuste lineNumbers imprime el número de cada quinta línea (o de cada N) en el margen, en el medianil o en la columna lateral. Con count 'verse' cuenta los versos de los poemas :::verse, sin numerar las partes que se pasan a la línea siguiente; con 'all', todas las líneas del texto. La cuenta vuelve a empezar en cada poema, página, capítulo o sección, o sigue a lo largo del libro; :::verse{lineStart=37} retoma un poema a medias, numbered=false deja uno fuera y :::numbering{lines=1} reinicia la cuenta en cualquier punto. Los números nunca mueven una línea, quedan fuera del texto copiado y son artefactos en un PDF etiquetado. El texto vertical no lleva números. Hasta postext 1.22 cada verso necesitaba un párrafo propio, y un preprocesador añadía tras cada quinto verso un recuadro lateral con el número, en una columna lateral reservada a los flotantes.",
+      "ca": "L'ajust lineNumbers imprimeix el número de cada cinquena línia (o de cada N) al marge, a l'entrecolumna o a la columna lateral. Amb count 'verse' compta els versos dels poemes :::verse, sense numerar les parts que passen a la línia següent; amb 'all', totes les línies del text. El compte torna a començar a cada poema, pàgina, capítol o secció, o continua al llarg del llibre; :::verse{lineStart=37} reprèn un poema a mitges, numbered=false en deixa un fora i :::numbering{lines=1} reinicia el compte en qualsevol punt. Els números no mouen mai cap línia, queden fora del text copiat i són artefactes en un PDF etiquetat. El text vertical no porta números. Fins a postext 1.22 cada vers necessitava un paràgraf propi, i un preprocessador afegia després de cada cinquè vers un requadre lateral amb el número, en una columna lateral reservada als flotants.",
+      "zh": "lineNumbers设置在页边、栏间或边栏中为每第五行（或每第N行）印出行号。count为'verse'时数:::verse诗中的诗行，转行部分不编号；为'all'时数正文的每一行。计数可以在每首诗、每页、每章或每节重新开始，也可以贯穿全书；:::verse{lineStart=37}让一首诗从中间接着编号，numbered=false让某首诗不编号，:::numbering{lines=1}可在任意位置重新计数。行号从不移动任何一行，不进入复制的文本，在带标签的PDF中作为工件。竖排文本不编行号。在postext 1.22及以前，每行诗都要自成一段，再由预处理脚本每隔五行加一个装有行号的侧框，排在为浮动体预留的边栏中。",
+      "ar": "يطبع الإعداد lineNumbers رقم كل سطر خامس (أو كل N أسطر) في الهامش أو بين العمودين أو في العمود الجانبي. مع count 'verse' تُعدّ أسطر قصائد :::verse ولا تأخذ تتمة السطر رقمًا؛ ومع 'all' تُعدّ كل أسطر النص. ويبدأ العدّ من جديد عند كل قصيدة أو صفحة أو فصل أو قسم، أو يستمر على امتداد الكتاب؛ ويستأنف :::verse{lineStart=37} قصيدةً من منتصفها، ويستثني numbered=false قصيدةً، ويعيد :::numbering{lines=1} العدّ في أي موضع. لا تحرّك الأرقام أي سطر، ولا تدخل في النص المنسوخ، وهي عناصر غير محتوى (artifacts) في ملف PDF الموسوم. ولا يُرقَّم النص العمودي. وحتى postext 1.22 كان كل سطر من الشعر يحتاج إلى فقرة مستقلة، ويضيف معالج مسبق بعد كل سطر خامس صندوقًا جانبيًّا يحمل الرقم، في عمود جانبي مخصص للعناصر العائمة.",
+      "ja": "lineNumbers設定は、5行ごと（またはN行ごと）の行番号を余白、段間、またはサイド段に印字します。countを'verse'にすると:::verseの詩の行を数え（折り返した部分には番号を振りません）、'all'にすると本文のすべての行を数えます。番号は詩、ページ、章、節ごとに振り直すか、本全体で通します。:::verse{lineStart=37}は途中から続く詩の番号を引き継ぎ、numbered=falseはその詩を数えず、:::numbering{lines=1}は任意の位置で数え直します。番号が行を動かすことはなく、コピーしたテキストには入らず、タグ付きPDFではアーティファクトになります。縦組みには番号を振りません。postext 1.22までは、詩の各行を独立した段落にし、前処理スクリプトで5行ごとに番号入りのサイドボックスを加えて、フロート用に確保したサイド段に組む必要がありました。",
+      "pt": "A configuração lineNumbers imprime o número de cada quinta linha (ou de cada N) na margem, no intercolúnio ou na coluna lateral. Com count 'verse' ela conta os versos dos poemas :::verse, sem numerar as partes que passam para a linha seguinte; com 'all', todas as linhas do texto. A contagem recomeça a cada poema, página, capítulo ou seção, ou segue ao longo do livro; :::verse{lineStart=37} retoma um poema pela metade, numbered=false deixa um de fora e :::numbering{lines=1} reinicia a contagem em qualquer ponto. Os números nunca movem uma linha, ficam fora do texto copiado e são artefatos em um PDF etiquetado. O texto vertical não recebe números. Até o postext 1.22 cada verso precisava de um parágrafo próprio, e um pré-processador acrescentava depois de cada quinto verso um boxe lateral com o número, em uma coluna lateral reservada aos flutuantes."
     },
     "docs": {
-      "slug": "document-format",
+      "slug": "configuration",
       "heading": {
-        "en": "What is NOT supported",
-        "es": "Qué NO se soporta",
-        "ca": "Què NO s'admet",
-        "zh": "不支持的内容",
-        "ar": "ما لا يدعمه Postext",
-        "ja": "対応していない記法",
-        "pt": "O que NÃO é suportado"
+        "en": "Line numbers",
+        "es": "Numeración de líneas",
+        "ca": "Numeració de línies",
+        "zh": "行号",
+        "ar": "ترقيم الأسطر",
+        "ja": "行番号",
+        "pt": "Numeração de linhas"
       }
     }
   },

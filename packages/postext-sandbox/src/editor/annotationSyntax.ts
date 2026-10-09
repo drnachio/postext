@@ -4,6 +4,7 @@ import { ViewPlugin, Decoration, EditorView, type DecorationSet, type ViewUpdate
 import { Prec, RangeSetBuilder } from '@codemirror/state';
 import type { CompletionContext, CompletionResult } from '@codemirror/autocomplete';
 import { findAnnotations, type AnnotationName } from 'postext';
+import { inFencedCode } from './codeFences';
 
 /**
  * Editor support for the Chinese and Japanese annotations (#193–#195,
@@ -67,7 +68,7 @@ function buildDecorations(view: EditorView): DecorationSet {
     let pos = from;
     while (pos <= to) {
       const line = doc.lineAt(pos);
-      for (const r of annotationRanges(line.text)) {
+      for (const r of inFencedCode(doc, line.number) ? [] : annotationRanges(line.text)) {
         if (r.to <= r.from) continue;
         builder.add(line.from + r.from, line.from + r.to, r.kind === 'delim' ? delimMark : TEXT_MARKS[r.kind]);
       }

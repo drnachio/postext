@@ -54,8 +54,8 @@ public-domain or openly licensed sample instead.
 
 Postext Markdown is **not CommonMark**. These habits break a port:
 
-- **No pipe tables, code fences, raw HTML, `---` rules or inline
-  images.** They print literally or vanish. Tables and figures are
+- **No pipe tables, raw HTML, `---` rules or inline images.** They
+  print literally or vanish. Tables and figures are
   *resources* (JSON), cited with `:ref{id="…"}` or placed with
   `::resource{id="…"}`.
 - **Blank lines around every block.** An ordered list or a `::resource`
@@ -74,16 +74,42 @@ Postext Markdown is **not CommonMark**. These habits break a port:
   `:::columns`, only inside a callout, and `:::paper`, a run of pages on
   another paper stock for the Folio viewer) and six directives
   (`:::pagebreak`, `:::numbering`, `:::columnbreak`, `:::space`, `:::toc`,
-  `:::index`), the fenced `:::references` and `:::verse` (a classical Arabic
-  poem, one bayt a line split at `||`), plus inline index marks
+  `:::index`), the fenced `:::references` and `:::verse` (a poem: line by
+  line as written, or a classical Arabic poem, one bayt a line split at
+  `||`), plus inline index marks
   (`:index[…]`, `:index{term="…"}`), and the comic blocks `:::page` and
   `:::strip` (comics.md). Anything else prints literally.
 - **Extra blank lines add no space.** Where the source has deliberate
   vertical space (a scene break, room above a signature), write
   `:::space` (one body line) or `:::space{lines=N}`.
-- **No hard line breaks**: verse (other than an Arabic poem in `:::verse`),
-  addresses and code lines need one paragraph per line inside
-  `:::paragraphs{style="…"}`.
+- **Line breaks inside a paragraph** (postext ≥ 1.23): end the source line
+  with a backslash, or write `\\` and a space, for an address, a letter's
+  greeting or a signature block kept in one paragraph (document-format.md
+  §3.3). Two trailing spaces are no break. Write a poem as `:::verse`, one
+  line of verse a line, a blank line between stanzas, leading spaces for its
+  indents (§12).
+- **Tabs** (postext ≥ 1.23): write `:tab` where the source aligns text at a
+  stop (a price, an actor, marks at the margin), and give the paragraph's
+  style `tabStops` (document-format.md §10.9, configuration.md §4a). A tab
+  character is a tab only in a paragraph whose style has stops; elsewhere it
+  is a word space.
+- **Drop caps** (postext ≥ 1.23): a chapter's first paragraph stays in the
+  text, and its drop cap, raised initial or small-capital first words come
+  from the heading level's (or heading style's) `dropCap`; a catalogue's
+  entries from a paragraph style's `dropCap` with `each: true`
+  (configuration.md §4b). `# Title {dropcap=false}` leaves one chapter
+  without it. Never copy the opening words into a `lead` attribute drawn by
+  a design text.
+- **Code listings** (postext ≥ 1.23): copy a source's code as a ```` ``` ````
+  or `~~~` fence, as written (`` ```bash backup.sh `` or
+  `` ```js {title="app.js" lineNumbers highlight="3"} ``). Nothing inside is
+  read as Markdown, so nothing needs escaping, and leading spaces, tabs and
+  blank lines stay. The face, box, long lines, numbers and token colours
+  come from `codeStyle` (configuration.md §12b), inline code in a code face
+  from `codeStyle.inline`. Never rebuild a listing as one paragraph per
+  line with word joiners and no-break spaces, nor fake colours with bold
+  and italic runs. A preset stamped below `configVersion` 9 reads fences as
+  Markdown: write 9.
 
 Config traps:
 
@@ -203,7 +229,8 @@ Arabic and right-to-left traps (postext ≥ 1.15; playbooks F7–F8; configurati
   orthography (فى، مائة), the harakat. Quranic ﴿…﴾ typed U+FD3F first.
   Strip only justification tatweels a PDF extraction brings in.
 - **Verse**: a classical poem is `:::verse`, one bayt a line `ṣadr || ʿajuz`;
-  give vocalised verse a paragraph style with 1.9–2.1 em leading.
+  give vocalised verse a paragraph style with 1.9–2.1 em leading. Free verse
+  (no `||`) is the same fence set line by line.
 - **Fonts**: one family per style, no fallback: Amiri, Noto Naskh Arabic,
   Scheherazade New (Noto Kufi Arabic, Reem Kufi, Aref Ruqaa for headings);
   subset with `--ranges latin,punct,arabic` keeping GSUB/GPOS (`lint_project.py`
@@ -249,8 +276,8 @@ Full references (load the one you need):
   geometry, grid, type, colour, boxes, openers and placement, and mapping
   them to config.
 - [references/playbooks.md](references/playbooks.md): the unusual cases
-  already solved (parts with palettes, openers, verse, glosses, footnotes,
-  back-of-book indexes,
+  already solved (parts with palettes, openers, verse, line numbers, glosses,
+  footnotes, back-of-book indexes, tab stops for menus, cast lists and forms,
   floated/split/nested boxes, print masters, live-text figures, cell
   pictures, rotated tables, translated editions, Chinese books set
   horizontally and vertically, CJK fonts, Japanese books (horizontal, and
@@ -445,7 +472,17 @@ Read each chapter against the source pages and apply
   rebuilt from the source's markup or, for a printed index,
   `scripts/index_marks.py parse|place` once the text is final
   (playbooks A10);
-- verse one line per paragraph;
+- poems as `:::verse` blocks, line by line with their indents and stanza
+  breaks (`keepStanzas` for haiku and tanka);
+- line numbers in the margin (critical editions, poetry, statutes) from the
+  config `lineNumbers` (postext ≥ 1.23, configuration.md §19f), with the
+  source's typed numbers removed from the text, never side boxes;
+- menus, price lists, cast lists, exam marks, forms and run-in indexes as
+  paragraphs with tab stops and `:tab` (postext ≥ 1.23, playbooks B13), never
+  as two-column tables or runs of spaces;
+- drop caps and raised initials on the chapter's own first paragraph, from
+  the heading level's `dropCap` (postext ≥ 1.23, playbooks A5), never as a
+  heading attribute set apart by the opener design;
 - sizes that grow with the text and reflowable content wherever they make
   sense, not fixed sizes or breaks copied from the source pages (see Rules
   of thumb).

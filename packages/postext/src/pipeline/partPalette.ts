@@ -22,6 +22,7 @@ import type { CaptionStyleConfig, ColorPaletteEntry, ColorValue, PostextConfig, 
 import type { ResolvedConfig, VDTBlock, VDTDesignBlock, VDTDocument, VDTLine, VDTResourceTableCell, ResolvedResourceBlock } from '../vdt';
 import { resolveAllConfig } from './config';
 import { mergeCaptionStyle } from '../defaults/captionStyle';
+import { CODE_BOX_STYLE_ID } from './codeBlocks';
 
 type Remap = (hex: string | undefined) => string | undefined;
 
@@ -43,7 +44,7 @@ const TABLE_KEYS = [
 /** The colour of a block's text a setting sets: its running text, bold and
  *  italic runs, references, list marker (a bullet or a number), or a
  *  number's separator. */
-export type TextColorRole = 'color' | 'bold' | 'italic' | 'ref' | 'bullet' | 'separator';
+export type TextColorRole = 'color' | 'bold' | 'italic' | 'ref' | 'bullet' | 'separator' | 'dropCap' | 'code';
 
 /** The colours of a contents row: the entry's text (bold and italic runs
  *  included), its number, and its page number and subtitle. */
@@ -139,6 +140,9 @@ function frameRoles(rest: string): FrameColorRole[] {
  *  at `path` sets: none for a design, the page, the debug overlay… */
 function kindsOfPath(path: readonly string[], cfg: ResolvedConfig): FlowColorKind[] {
   if (path.some((k) => DESIGN_KEYS.has(k))) return [];
+  // A body paragraph's drop cap (#623), set by a paragraph style or a
+  // heading level or style.
+  if (path.includes('dropCap')) return ['text:dropCap'];
   const [top, second] = path;
   const index = Number(second);
   // The setting inside a style, indices left out (`note.color`).
@@ -184,6 +188,16 @@ function kindsOfPath(path: readonly string[], cfg: ResolvedConfig): FlowColorKin
     }
     case 'captionStyle':
       return [`caption:${rest(1)}`];
+    case 'codeStyle': {
+      // Code listings (#624): the code and its tokens, the box's frame
+      // (a box of the build's own style), inline code (a chip).
+      const setting = rest(1);
+      if (second === 'inline') return [`chip:${rest(2)}@${CODE_BOX_STYLE_ID}`];
+      if (setting === 'background' || setting === 'highlightBackground') return [`box:fill@${CODE_BOX_STYLE_ID}`];
+      if (setting === 'border.color') return [`box:border@${CODE_BOX_STYLE_ID}`];
+      if (second === 'titleStyle' || second === 'label') return frameRoles(setting).map((role): FlowColorKind => `box:${role}@${CODE_BOX_STYLE_ID}`);
+      return ['text:code'];
+    }
     default:
       return [];
   }
@@ -395,8 +409,10 @@ function recolorBlock(block: VDTBlock, r: PageRemaps): void {
     rec[key] = r.by(groups)(rec[key]);
   }
   // A run with a colour of its own: a contents entry's page number or
-  // subtitle.
-  recolorLines(block.lines, r.by(toc ? [['toc:segment']] : heading ?? []), r);
+  // subtitle; a token of a code listing (#624).
+  recolorLines(block.lines, r.by(toc ? [['toc:segment']] : block.type === 'code' ? [['text:code'], ['text:color']] : heading ?? []), r);
+  // A drop cap (#623): its own setting's colour, or the paragraph's.
+  if (block.dropCap) block.dropCap.color = r.by([['text:dropCap'], ['text:color']])(block.dropCap.color) ?? block.dropCap.color;
   // A callout frame's decoration (background, border, stripe, title) is a
   // design overlay resolved from the style's palette-linked colours.
   if (block.type === 'callout' && block.designOverlay) recolorFrame(block.designOverlay.blocks, block.callout?.styleId, r);

@@ -20,6 +20,17 @@ function samePageNumber(a: ChapterPageNumber, b: ChapterPageNumber): boolean {
   return 'delta' in a ? 'delta' in b && a.delta === b.delta : 'value' in b && a.value === b.value;
 }
 
+function sameLineNumber(a: ChapterPageNumber | undefined, b: ChapterPageNumber | undefined): boolean {
+  return a === undefined || b === undefined ? a === b : samePageNumber(a, b);
+}
+
+/** The number a line count starts from when it inherits none
+ *  (`lineNumbers.startAt − 1`, #621). */
+function lineCountBase(config: PostextConfig): number {
+  const startAt = config.lineNumbers?.startAt;
+  return (typeof startAt === 'number' && Number.isFinite(startAt) && startAt >= 0 ? Math.floor(startAt) : 1) - 1;
+}
+
 function sameOutlinePages(a: readonly (OutlinePage | null)[], b: readonly (OutlinePage | null)[]): boolean {
   if (a.length !== b.length) return false;
   for (let i = 0; i < a.length; i++) {
@@ -161,7 +172,8 @@ export function sameLayoutInputs(a: ChapterPlan, b: ChapterPlan): boolean {
   return ca.pageIndexOffset === cb.pageIndexOffset
     && ca.pageNumbering?.format === cb.pageNumbering?.format
     && ca.pageNumbering?.startAt === cb.pageNumbering?.startAt
-    && ca.bookPageCount === cb.bookPageCount;
+    && ca.bookPageCount === cb.bookPageCount
+    && ca.lineNumber === cb.lineNumber;
 }
 
 /** Whether two layout records say the same thing about a chapter: built
@@ -182,6 +194,7 @@ export function sameChapterLayout(a: ChapterLayout | undefined, b: ChapterLayout
     && a.firstContentPageFormat === b.firstContentPageFormat
     && samePageNumber(a.lastPageNumber, b.lastPageNumber)
     && a.lastPageFormat === b.lastPageFormat
+    && sameLineNumber(a.lastLineNumber, b.lastLineNumber)
     && a.outlineKey === b.outlineKey
     && sameOutlinePages(a.outlinePages, b.outlinePages);
 }
@@ -342,8 +355,16 @@ export function createBookPlanner(): BookPlanner {
       // every chapter when the configuration prints `{bookTotalPages}`. It
       // never moves a page, so the records stay current when it changes.
       let bookPageCount: number | undefined;
+      // Line numbers counted through the book (#621): the number each
+      // chapter goes on from, from the layouts of the chapters before it
+      // while the chain places them (a count of every line depends on the
+      // layout); undefined where unknown, and the chapter then inherits
+      // the count of its verse from the text (`continuationAfter`).
+      const lineStarts: (number | undefined)[] = [];
       {
         let pages: PageStart | null = { physical: 0, number: numbering.startAt, format: numbering.format };
+        let lines: number | undefined;
+        let linesKnown = true;
         let countersFingerprint = '';
         chapters.forEach((chapter, index) => {
           const continuationKey = index === 0
@@ -356,6 +377,13 @@ export function createBookPlanner(): BookPlanner {
           starts.push(pages);
           keys.push(continuationKey);
           records.push(layout);
+          lineStarts.push(linesKnown ? lines : undefined);
+          if (layout && pages) {
+            const last = layout.lastLineNumber;
+            if (last) lines = 'value' in last ? last.value : (lines ?? lineCountBase(config)) + last.delta;
+          } else {
+            linesKnown = false;
+          }
           if (layout && pages) {
             pages = {
               physical: pages.physical + layout.pageCount,
@@ -473,6 +501,7 @@ export function createBookPlanner(): BookPlanner {
           : {
             ...counters,
             ...(pages ? { pageIndexOffset: pages.physical, pageNumbering: { format: pages.format, startAt: pages.number } } : provisional),
+            ...(lineStarts[index] !== undefined ? { lineNumber: lineStarts[index] } : {}),
             ...total,
           };
         const { outline: printedOutline, key: printedKey } = chapterOutline(entries[index]!);
@@ -578,6 +607,11 @@ export function chapterLayoutFromDoc(
     firstContentPageFormat: firstContentPage.pageNumberFormat,
     lastPageNumber: numberOf(pageCount - 1),
     lastPageFormat: lastPage.pageNumberFormat,
+    // The last line counted (#621), relative to the count the chapter
+    // inherited unless it started again inside the chapter.
+    ...(doc.lastLineNumber !== undefined
+      ? { lastLineNumber: doc.lineNumberRestarted ? { value: doc.lastLineNumber } : { delta: doc.lastLineNumber - (plan.continuation?.lineNumber ?? lineCountBase(inputs.config)) } }
+      : {}),
     outlinePages,
     outlineKey: plan.outlineKey,
   };

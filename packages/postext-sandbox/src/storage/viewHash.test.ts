@@ -148,6 +148,18 @@ describe('view hash', () => {
   });
 });
 
+describe('hashAsksRestore', () => {
+  it('reads the homepage flag, which the fragment never writes back', async () => {
+    const { hashAsksRestore } = await import('./viewHash');
+    const link = '#preset=deep-sky&lang=es&view=canvas&restore=ask';
+    expect(hashAsksRestore(link)).toBe(true);
+    expect(hashAsksRestore('#preset=deep-sky&lang=es')).toBe(false);
+    expect(hashAsksRestore('#preset=deep-sky&restore=yes')).toBe(false);
+    expect(parseViewHash(link)).toMatchObject({ preset: 'deep-sky', lang: 'es', view: 'canvas' });
+    expect(viewHashFragment(parseViewHash(link))).toBe('#preset=deep-sky&lang=es&view=canvas');
+  });
+});
+
 describe('parseHashBundle / hashNamesOtherBook', () => {
   it('reads a host key with its id and lang', async () => {
     const { parseHashBundle, hashBundleOrigin } = await import('./viewHash');

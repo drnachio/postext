@@ -51,7 +51,7 @@ Quote a value to print it exactly as written — a number that must keep its dig
 
 ## Block constructs
 
-Postext recognises seven prose block types, plus the directives and resource embeds covered later on this page. Blocks are always terminated by a blank line or by the start of another block.
+Postext recognises seven prose block types and code listings, plus the directives and resource embeds covered later on this page. Blocks are always terminated by a blank line or by the start of another block.
 
 <Illustration name="BlockTypesGallery" data='{"title": "Prose block constructs at a glance", "desc": "The seven prose block types Postext recognises: heading, paragraph, blockquote, unordered list, ordered list, task list, and display math, each with its markdown syntax. Directives and resource embeds are covered separately.", "caption": "Every prose block type and its markdown entry point.", "blocks": [{"name": "Heading", "syntax": "# Title", "color": "blue"}, {"name": "Paragraph", "syntax": "Plain text lines", "color": "orange"}, {"name": "Blockquote", "syntax": "> quoted text", "color": "green"}, {"name": "Unordered list", "syntax": "- item", "color": "purple"}, {"name": "Ordered list", "syntax": "1. item", "color": "pink"}, {"name": "Task list", "syntax": "- [x] done", "color": "teal"}, {"name": "Display math", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
@@ -72,7 +72,7 @@ Postext recognises seven prose block types, plus the directives and resource emb
     <tr>
       <td>Paragraph</td>
       <td>Plain text over one or more lines</td>
-      <td>Consecutive non-blank, non-special lines are joined with a single space and emitted as one paragraph. Between two Chinese or Japanese characters (ideographs, kana, fullwidth punctuation, and curly quotes, dashes or an ellipsis beside them) the line end is dropped instead, as CSS does, so a Chinese paragraph may be wrapped anywhere in the source. Between two such marks (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) the characters past them decide: the line end goes when one of them is Chinese or Japanese, and <code>“hello”⏎“bye”</code> keeps its space. Korean keeps its space. Manual line breaks inside a paragraph are not preserved — use a blank line to start a new paragraph.</td>
+      <td>Consecutive non-blank, non-special lines are joined with a single space and emitted as one paragraph. Between two Chinese or Japanese characters (ideographs, kana, fullwidth punctuation, and curly quotes, dashes or an ellipsis beside them) the line end is dropped instead, as CSS does, so a Chinese paragraph may be wrapped anywhere in the source. Between two such marks (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) the characters past them decide: the line end goes when one of them is Chinese or Japanese, and <code>“hello”⏎“bye”</code> keeps its space. Korean keeps its space. A line break typed in the source is not kept, unless the line ends with a backslash (a forced line break, see <a href="#line-breaks">Line breaks</a>); a blank line starts a new paragraph. A tab typed in the text is a word space too, unless the paragraph's style sets tab stops; <code>:tab</code> is always a tab (see <a href="#tabs-and-tab-stops">Tabs and tab stops</a>). A poem, whose lines must stay as written, goes in a <a href="#verse"><code>:::verse</code></a> block.</td>
     </tr>
     <tr>
       <td>Blockquote</td>
@@ -98,6 +98,11 @@ Postext recognises seven prose block types, plus the directives and resource emb
       <td>Display math</td>
       <td><code>$$ … $$</code></td>
       <td>A LaTeX formula set as its own block. Rendered centred on the column, snapped to the baseline grid like a heading, and kept vectorial in the PDF output. The single-line and fenced multi-line forms are described under <a href="#mathematical-formulas">Mathematical formulas</a>.</td>
+    </tr>
+    <tr>
+      <td>Code block</td>
+      <td><code>```js</code> … <code>```</code>, <code>~~~</code> … <code>~~~</code></td>
+      <td>A listing, kept as written: every space, tab and line break, nothing read as Markdown. Set line by line in the code face, in a box. See <a href="#code-blocks">Code blocks</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -137,6 +142,78 @@ Two more change what a heading prints and how it counts. `hidden="true"` (or `"f
 
 # Raw data {style="appendix"}
 ```
+
+### Drop caps
+
+A paragraph opens with a drop cap when its heading level or style, or the paragraph style of its `:::paragraphs` group, sets one (see [Configuration › Drop caps](/en/docs/configuration#drop-caps)): the first letter is set large beside the first lines, which are shortened around it. There is no markup in the paragraph itself; the text is written as usual, and the letter stays part of its word for copying, search and the source map. A `dropcap` attribute switches it for one chapter or one group:
+
+```markdown
+# Lost {dropcap=false}
+
+# The mines {dropcap=2}
+
+:::paragraphs{style="entry" dropcap}
+The lamp of the first entry opens with an initial.
+:::
+```
+
+On a heading line, `dropcap=false` leaves the paragraph after that heading without the drop cap its level or style sets, `dropcap=N` sets it over `N` lines, and a bare `dropcap` gives that paragraph one (three lines, the paragraph's face) where the level sets none. On a `:::paragraphs` fence the attribute does the same for the group's first paragraph, or for every paragraph when the style says `each: true`. The paragraph after a heading is found past fences, directives, boxes that left the flow and floated figures; a paragraph inside a box, a list item, a quotation or a poem never takes a drop cap. Since postext 1.23.
+
+### Code blocks
+
+A listing goes between two fences of three or more backticks (or three or more tildes), each on a line of its own, up to three spaces in. Everything between them is kept as written: leading spaces and runs of spaces, tabs, blank lines, and lines that start with `#`, `-`, `1.`, `>`, `$` or `:::`. Nothing inside is read as Markdown: no emphasis, no `:ref`, no maths, no chips, no directives, no headings. The closing fence uses the opening one's character and is at least as long, so a listing that shows a fence goes in a longer one or in tildes:
+
+~~~markdown
+```bash {title="backup.sh" lineNumbers start=12 highlight="3,5-7"}
+#!/usr/bin/env bash
+# Copy the photos to the backup disk
+rsync -a --delete ~/Photos/ /Volumes/Backup/Photos/
+echo "done: $(date)"
+```
+~~~
+
+The info string after the opening fence names the language (its first word: `js`, `ts`, `python`, `bash`, `console`, `json`…), and the rest is read as attributes in the [attribute syntax](#attribute-values), in braces or bare (`title="app.js" lineNumbers`). Anything else after the language is the title: ```` ```console Terminal ```` and ```` ```python normalize.py ```` print *Terminal* and *normalize.py* over the listing.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Attribute</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>title="…"</code></td>
+      <td>A title over the listing, in a title row (or in a label tab on the box's edge when <code>codeStyle.label</code> is set).</td>
+    </tr>
+    <tr>
+      <td><code>label="…"</code></td>
+      <td>The text of the box's label tab, as a <code>:::callout</code>'s (with <code>codeStyle.label</code>).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code>, <code>lineNumbers=false</code></td>
+      <td>Numbers the lines of this listing (or not), whatever <code>codeStyle.lineNumbers</code> says. The numbers stand in a gutter before the code and are not copied with it.</td>
+    </tr>
+    <tr>
+      <td><code>start=N</code></td>
+      <td>The first line's number (numbers the listing when nothing else does).</td>
+    </tr>
+    <tr>
+      <td><code>highlight="3,5-7"</code></td>
+      <td>Tints the lines named (counted from the listing's first line, 1-based): single lines and ranges, separated by commas.</td>
+    </tr>
+    <tr>
+      <td><code>span=page</code></td>
+      <td>On a page of several columns, the listing spans them all.</td>
+    </tr>
+  </tbody>
+</table>
+
+A fence ends the paragraph above it, blank line or not, and the text after the closing fence starts a new paragraph. A fence left open runs to the end of the text and is reported (`unclosedCodeBlock`). A fence inside a `:::callout` is a box nested in it; inside `:::paragraphs` the listing keeps the code style, not the paragraph style. Postext has no list-item continuation, so a fence after a list item closes the list. Index marks and anchors written inside a listing stay as written.
+
+Indented code (four spaces or a tab, after a blank line) is read as a listing only when `codeStyle.indentedCode` is on: Postext text often indents with spaces, and nested list items read leading spaces.
+
+How a listing looks (its face, box, tab width, what happens to a line wider than the box, line numbers, the colours of its tokens) is set by `codeStyle`; see [Configuration › Code listings](/en/docs/configuration#code-listings). Inline code (`` `x` ``) stays in the text's face unless `codeStyle.inline` gives it one. A book stored before postext 1.23 with fences in its text reads them as it did then, as Markdown (`codeStyle.blocks: false`). Since postext 1.23.
 
 ## Directives
 
@@ -200,7 +277,7 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
     </tr>
     <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
-      <td>A poem in classical Arabic layout: one bayt a line, its two hemistichs separated by <code>||</code>, set side by side at one common width. See <a href="#verse">below</a>.</td>
+      <td>A poem, set line by line as written (each line a line of verse, blank lines between stanzas, leading spaces an indent), or in the classical Arabic layout when its lines part their hemistichs with <code>||</code>. See <a href="#verse">below</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -259,7 +336,7 @@ Four container names are recognized in the text flow (a fifth, `:::columns`, wor
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>A run of paragraphs typeset with a named paragraph style (a lead-in, an epigraph, a set of small-print notes) instead of the body style. <code>align</code>, <code>indent</code> and <code>endIndent</code> set the alignment and indents with or without a style: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> sets a date one character up from the end of the line (地から1字上げ).</td>
+      <td>A run of paragraphs typeset with a named paragraph style (a lead-in, an epigraph, a set of small-print notes) instead of the body style. <code>align</code>, <code>indent</code> and <code>endIndent</code> set the alignment and indents with or without a style: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> sets a date one character up from the end of the line (地から1字上げ). <code>dropcap</code> switches a <a href="#drop-caps">drop cap</a> on its first paragraph.</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
@@ -491,6 +568,14 @@ Format-only changes (no `startAt`) keep the counter flowing — useful for, say,
 
 `format` takes any spelling of a numbering format — `roman-lower` and `i` work as well as `lower-roman`, `arabic` as well as `decimal`, `一` and `あ` as well as `japanese-informal` and `hiragana` (see [Configuration › Numbering format spellings](/en/docs/configuration#numbering-format-spellings)). A value that is none of them leaves the format as it was, and the sandbox flags it.
 
+`lines` restarts the count of [line numbers](/en/docs/configuration#line-numbers), not the page counter: the next line that is counted takes the number given, whatever `lineNumbers.restart` says. A value that is not a whole number of 0 or more is ignored.
+
+```md
+## Act II
+
+:::numbering{lines=1}
+```
+
 ### `:::space`
 
 `:::space` leaves vertical space between two blocks: to separate a closing line from the text above it, to push an epigraph or a signature down a little, or to open a *space break* between two runs of text. Extra blank lines in the Markdown do not do this — as in any Markdown, a run of blank lines is just one paragraph separator, which keeps a document from changing layout when an editor or formatter adds or trims whitespace.
@@ -526,6 +611,72 @@ For a fixed break rather than space, use `:::columnbreak` or `:::pagebreak`.
 
 
 ### `:::verse`
+
+A poem. `:::verse` sets it in one of two layouts: **line by line**, as most poems are printed, or the **classical Arabic layout** of a qaṣīda, each bayt in two hemistichs side by side. A poem whose lines carry a hemistich separator (`||`, or a spaced `\\`) takes the Arabic layout and any other the line layout; `layout=lines` or `layout=bayt` on the fence names one.
+
+#### Line by line
+
+Write the poem as it is printed: one line of verse a line of Markdown, a blank line between stanzas, and spaces before a line to indent it.
+
+```md
+:::verse
+Whose woods these are I think I know.
+His house is in the village though;
+  He will not see me stopping here
+  To watch his woods fill up with snow.
+
+My little horse must think it queer
+To stop without a farmhouse near
+:::
+```
+
+- **Lines.** Every non-blank line is a line of verse, read as inline Markdown on its own: italics, small capitals, notes and references all work. A run of blank lines is one stanza break.
+- **Indents.** Each leading space is `indentStep` wide, 0.5 em by default, so two spaces indent a line one em; a tab counts four spaces and an ideographic space (U+3000) two.
+- **Turnovers.** A line wider than the measure turns over at a word space. With `turnover=hang` (the default) the rest hangs on the next line, `hang` in from the line's own start: the `hangingIndent` of the poem's paragraph style, else 2 em (`bodyText.verse.hang`). With `turnover=right` it is set flush with the end of the measure behind an opening bracket (`turnoverMark`, `[` by default), the custom of English and Spanish editions. Verse is not hyphenated unless its paragraph style sets `hyphenation: true` itself. A line and its turnover never part at a column or page break.
+- **Stanzas.** The space between two stanzas is one line of the poem's leading; `stanzaSpace=0.5` makes it half a line, and a length (`stanzaSpace=6pt`) sets it exactly. On the baseline grid it comes out whole grid lines. Columns and pages break between stanzas first; inside a stanza they break by the orphan and widow rules, which then count the stanza's lines. `keepStanzas=N` keeps any stanza of N lines or fewer whole: a haiku takes `keepStanzas=3`, a tanka `keepStanzas=5`.
+- **Placement.** The poem is centred in the measure on its longest line, every line flush with the poem's start (`align=center`, the usual setting for a poem quoted in prose); `align=start` sets it flush with the start of the measure, the default in vertical text. The paragraph that introduces the poem keeps its last line with the first lines of verse.
+- **Stepped lines.** A line written `+ …` starts where the line above ended, a word space on, as a line of dramatic verse shared between two speakers. Write `\+` for a line that opens with a plus sign.
+- **Caesuras.** With `keepSpaces` on the fence, a run of two or more spaces inside a line keeps its width; without it, spaces collapse as in any paragraph.
+- **Type and direction.** `style` names a paragraph style, which gives the face, size, leading, `indent`, and the space above and below the poem. `dir` and `lang` set its direction and language: a Latin poem in an Arabic book (`dir=ltr`) is indented from its own start side. In vertical text each line of verse is a column, indented from the head.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>Attribute</th>
+      <th style={{ width: '200px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>layout</code></td><td><code>auto</code></td><td><code>lines</code>, <code>bayt</code>, or <code>auto</code>: the bayt layout when a line carries a separator.</td></tr>
+    <tr><td><code>indentStep</code></td><td><code>0.5em</code></td><td>Width of one leading space.</td></tr>
+    <tr><td><code>turnover</code></td><td><code>hang</code></td><td><code>hang</code> or <code>right</code>.</td></tr>
+    <tr><td><code>hang</code></td><td>the style's <code>hangingIndent</code>, else <code>2em</code></td><td>Indent of a hanging turnover from its line's start.</td></tr>
+    <tr><td><code>turnoverMark</code></td><td><code>[</code></td><td>The mark before a turnover set flush right.</td></tr>
+    <tr><td><code>stanzaSpace</code></td><td><code>1</code></td><td>Space between stanzas: a bare number counts lines of the poem's leading, a length is that length.</td></tr>
+    <tr><td><code>keepStanzas</code></td><td><code>0</code></td><td>Keep stanzas of this many lines or fewer whole; 0 is off.</td></tr>
+    <tr><td><code>keepSpaces</code></td><td>off</td><td>Keep runs of two or more spaces inside a line.</td></tr>
+    <tr><td><code>align</code></td><td><code>center</code> (<code>start</code> in vertical text)</td><td>Centre the poem on its longest line, or set it flush with the start.</td></tr>
+    <tr><td><code>style</code>, <code>dir</code>, <code>lang</code></td><td>—</td><td>Paragraph style, direction and language of the poem.</td></tr>
+    <tr><td><code>numbered</code></td><td><code>true</code></td><td><code>false</code> leaves the poem out of the line numbers: its lines are not counted.</td></tr>
+    <tr><td><code>lineStart</code></td><td>—</td><td>The line number of the poem's first line. The count starts again there, whatever <code>lineNumbers.restart</code> says.</td></tr>
+    <tr><td><code>interval</code></td><td><code>lineNumbers.interval</code></td><td>The poem's own interval: print the number of every Nth line.</td></tr>
+  </tbody>
+</table>
+
+`bodyText.verse` sets the defaults for every poem (see [Configuration › Verse](/en/docs/configuration#verse)). The plain text keeps the poem as written, a line feed between lines and a blank line between stanzas, so a copied passage and a search read it line by line; the reflowable EPUB sets a stanza an element whose lines hang their turnovers, and the tagged PDF tags a stanza a paragraph.
+
+**Line numbers.** With `lineNumbers` on, the lines of a poem are counted (see [Configuration › Line numbers](/en/docs/configuration#line-numbers)). Each line of verse counts once: a turnover takes no number, and the space between stanzas is not counted. By default every fifth line prints its number in the outer margin and the count starts again at each poem. A poem in the classical Arabic layout counts one line per bayt. The fence adjusts one poem: `lineStart=N` gives its first line a number, `interval=N` its own interval, and `numbered=false` leaves it out.
+
+```md
+:::verse{lineStart=37}
+…
+:::
+```
+
+With the default interval of 5, this poem prints 40, 45 and so on beside its lines.
+
+#### Classical Arabic layout
 
 A poem in the classical Arabic layout (a qaṣīda, a qiṭʿa): each verse, the *bayt*, on one line in two halves, the *ṣadr* on the start side (the right in Arabic) and the *ʿajuz* on the end side, with a gap between them. Write one bayt a line, its hemistichs separated by `||` (a `\\` with a space on each side, as in Wikisource texts, works too). A line without a separator is a single hemistich, centred on the poem.
 
@@ -567,6 +718,27 @@ The page numbers are the ones the document actually prints. A document laid out 
 
 :::index
 ```
+
+### Line breaks
+
+The lines of a paragraph join with a space. To end a line inside a paragraph without starting a new one (an address, the greeting of a letter, a dedication), end the source line with a backslash, CommonMark's hard break, or write `\\` followed by a space:
+
+```md
+To the keeper of the lighthouse,\
+at the end of the northern pier.
+
+Ana Ruiz \\ Calle Mayor 4 \\ 28013 Madrid
+```
+
+- The line before a break is set at its natural width, as the last line of a paragraph is, never stretched to the measure. The text after it opens a new line of the same paragraph, with no first-line indent and no space above; under a hanging indent it hangs like any line after the first.
+- Paragraphs, quotations (`> First line\` over `> second line`), footnotes and list items take it. A list item is one line of source, so it breaks at `\\`.
+- A backslash that ends the paragraph prints, as in CommonMark, and two breaks in a row make one: for an empty line, start a new paragraph or add a [`:::space`](#space).
+- A `\\` glued to the next character is no break: `\\*` prints a backslash and an escaped asterisk, `C:\\Temp` both backslashes. In inline code and in a formula the backslashes belong to the code and to the formula.
+- Two spaces at the end of a line, CommonMark's other hard break, are not one: they cannot be seen in an editor, and many editors leave them behind, so they would break lines nobody meant to break.
+- Text copied from the HTML viewer has a line feed at the break, the reflowable EPUB a `<br/>`, the text of the PDF a line end, and a Word export a manual line break (Shift+Enter), which the Word import reads back as a break.
+- A poem keeps its lines, indents and stanzas in a [`:::verse`](#verse) block, with no backslash on every line.
+
+Up to postext 1.22 the backslash printed and the lines joined with a space. A book stored then whose text ends a line with a backslash, or sets `\\` before a space, keeps that reading (`bodyText.hardLineBreaks: false`, see [Configuration › Bundles written by postext 1.4 or earlier](/en/docs/configuration#bundles-written-by-postext-14-or-earlier)).
 
 ### Line breaks in titles
 
@@ -644,7 +816,7 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
     <tr>
       <td>Inline code</td>
       <td><code>`code`</code></td>
-      <td>Backticks are stripped; the span is rendered as plain text, exactly as written: a <code>{':ref{…}'}</code>, a chip, maths, a link or an emphasis marker inside it prints literally, which is how a text shows the syntax. Distinct code styling is on the roadmap.</td>
+      <td>Backticks are stripped; the span is rendered as plain text, exactly as written: a <code>{':ref{…}'}</code>, a chip, maths, a link or an emphasis marker inside it prints literally, which is how a text shows the syntax. It is set in the text's face, or, with <code>codeStyle.inline</code>, in the code face as one unit (see <a href="/en/docs/configuration#code-listings">Configuration › Code listings</a>). A listing goes in a <a href="#code-blocks">code block</a>.</td>
     </tr>
     <tr>
       <td>Escape</td>
@@ -670,6 +842,11 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>Chip</td>
       <td><code>:chip[text]</code></td>
       <td>A boxed run of text that wraps as one unit — a word bank, a key, a tag. Styled by <code>chipStyles</code>; see <a href="#inline-chips">Inline chips</a>.</td>
+    </tr>
+    <tr>
+      <td>Tab</td>
+      <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
+      <td>Sends the words after it to the next tab stop: one of the stops of the paragraph's style, or the one its attributes set. A tab character typed in the text is a tab only where the style sets stops. See <a href="#tabs-and-tab-stops">Tabs and tab stops</a>.</td>
     </tr>
     <tr>
       <td>Inline math</td>
@@ -736,6 +913,72 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 - **Where.** Paragraphs, list items, blockquotes, callouts, table cells, captions and notes, and headings while `headings.inlineMarks` is on (the default); with it off, the markup is removed from a heading and the text prints as written.
 - **Whole paragraphs.** A paragraph style or a callout body with `smallCaps: true` sets all its text this way (see [Paragraph styles](/en/docs/configuration#paragraph-styles)).
 - **Text.** The canvas, the HTML and the PDF carry the letters as painted: copying `:smallcaps[Hamlet]` gives "HAMLET".
+
+### Tabs and tab stops
+
+A tab sends the words after it to a stop on the line: the price of a dish flush with the end of the measure behind a row of dots, the actor after the part in a cast list, the marks of an exam question at the margin. Write `:tab` where the tab goes; the spaces around it are taken into it. The stops are set in the configuration: `bodyText.tabStops` for every paragraph, list item and quotation, a paragraph style's `tabStops` for the paragraphs of a `:::paragraphs` group, and a callout style's `body.tabStops` inside its boxes (see [Configuration › Tab stops](/en/docs/configuration#tab-stops)). A menu whose prices end at the end of the measure, behind dots:
+
+```ts
+paragraphStyles: [
+  { id: 'menu', firstLineIndent: { value: 0, unit: 'em' }, tabStops: [{ position: 'end', align: 'end', leader: '. ' }] },
+],
+```
+
+```markdown
+:::paragraphs{style="menu"}
+Onion soup :tab 8.50
+
+Grilled sea bream with fennel and lemon :tab 21.00
+:::
+```
+
+`:tab{…}` sets a stop for that one tab, with no style: a form's blank to the end of the line, an amount on its decimal point.
+
+```markdown
+Name and surname :tab{at=end leader=rule}
+
+Total due :tab{at=80% align=decimal} 1,234.50
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Attribute</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>at</code></td>
+      <td>Where the stop stands, from the start edge of the paragraph's measure: a length (<code>120mm</code>, <code>4cm</code>, <code>2em</code>; a bare number is in points), <code>end</code> for the end of the measure, or a share of it (<code>60%</code>). Without <code>at</code>, <code>:tab&#123;…&#125;</code> goes to the style's stops as a bare <code>:tab</code> does.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>start</code> (the default): the text after the tab starts at the stop. <code>end</code>: it ends there (the text up to the next tab or the end of the paragraph). <code>center</code>: it is centred on the stop. <code>decimal</code>: its decimal separator sits on the stop; a run with none ends there.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>Text repeated over the room before the stop: <code>"."</code>, <code>". "</code>, <code>"·"</code>, <code>"_"</code>, <code>"-"</code> or another short text, in the paragraph's face and colour. <code>rule</code> draws a line a little under the baseline, a form's blank. Default none.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>Room kept between the leader and the text on either side. Default <code>0.5em</code> of the paragraph's size; a bare number is in points.</td>
+    </tr>
+    <tr>
+      <td><code>decimal</code></td>
+      <td>The separator a <code>decimal</code> stop aligns on. Default the document language's: <code>.</code> in English, Chinese, Japanese and Arabic, <code>,</code> in Spanish, Catalan, Portuguese, French, German and others.</td>
+    </tr>
+  </tbody>
+</table>
+
+- **Where a tab goes.** To the first stop past the text before it, among the stops after the one the line's previous tab took, so the second tab of a line usually takes the second stop. Past the last stop, `tabInterval` sets more stops every interval from the start of the measure; without it the tab is a word space.
+- **Tab characters.** A tab typed in the text (U+0009) is a tab only in a paragraph whose style sets `tabStops` or `tabInterval`. Everywhere else it is the word space it always was, so a document written with tabs for spaces keeps its layout. Tab characters in a row go on that many stops. A tab at the start of a source line is trimmed with the line's other leading blanks: write `:tab` to start a line at a stop.
+- **What stays text.** A `:tab` followed by a letter (`3:table`), and a `:tab` in inline code, in a formula, in a link's address or in a directive's attributes.
+- **Where.** Paragraphs, list items, quotations, boxes and `:::paragraphs` groups. Headings, captions, table cells and the text of designs (openers, running heads) have no tab stops.
+- **Text past the stop.** When the text before a tab has already passed every stop left on its line, an `end`, `center` or `decimal` stop takes the last word before the tab down to the next line with the text at the stop, and the text before it is set narrower, as a contents row wraps its title to keep the page number. A `start` stop breaks the line before the tab, and the text after it starts the next line at its stop. A tab that opens its line and still finds no stop takes no room.
+- **Leaders.** A leader fills the room before its stop and ends flush with the end of that room, so the dots of several lines line up whatever the text before them. `gap` keeps it clear of the text on both sides; there is no gap before it when the tab opens the line, and none after it when nothing follows.
+- **Line breaking.** A paragraph that holds a tab is set line by line, never with Knuth–Plass. In justified text only the word spaces after a line's last tab take the slack, and the paragraph's last line is not stretched (see [Justification › Tabbed lines](/en/docs/justification#tabbed-lines)). A centred or right-aligned paragraph sets its tabbed lines from the start side, since the stops are positions on the measure. Right to left, the stops are measured from the right and an `end` stop sits at the left (see [Arabic layout](/en/docs/arabic-layout#contents-and-index)). In vertical text a tab is a word space, and a `:tab` there raises the content warning `tabInVerticalText`.
+- **Text and outputs.** The plain text has a tab character (`\t`) at each tab; the leaders are not text, and copies, searches and the source map leave them out. The canvas, the HTML viewer and the fixed-layout EPUB paint them (hidden from screen readers in the HTML); a tagged PDF marks them as artifacts, so its text reads `Onion soup 8.50`. The reflowable EPUB cannot keep the stops exactly: each line of a tabbed paragraph becomes a row of the parts between its tabs, where an `end`, `center` or `decimal` stop, or one with a leader, pushes the next part to the end of the row (its leader a dotted or solid border), and a `start` stop keeps the part before it at its printed width. A Word export writes `:tab` as a Word tab, and the Word import reads a tab in body text back as `:tab` with the stop Word set for it (see [Sandbox › Word documents](/en/docs/sandbox#word-documents)).
 
 ### Orientation in vertical text
 
@@ -1589,12 +1832,12 @@ A `:::strip` has the body of a page but sits in the text as one unbreakable box,
 Postext does not recognise the following CommonMark features. They are either treated as plain text (and therefore will appear literally in the output) or silently dropped:
 
 - **Setext-style headings** — the `===` / `---` underline form. Use ATX (`#`) headings.
-- **Fenced or indented code blocks** — ` ``` ` or `~~~` fences and 4-space indentation. The lines inside are read as ordinary Markdown, not kept as a listing: lines with no blank line between them join into one paragraph and lose their leading spaces, a line that starts with `#` and a space becomes a heading (`#!/usr/bin/env` stays text) and one that starts with `-` or `1.` and a space a list item, a pair of `$` signs becomes a formula, and the fence lines print as text: a ` ``` ` fence as one backtick, the opening one followed by the info string (`` `bash``), and a `~~~` fence as one small `~` set as a subscript. To set a listing, write each line as a paragraph of its own (a blank line between lines) inside a `:::paragraphs` block whose paragraph style sets a monospaced `fontFamily`, and wrap each line in backticks, which keep `#`, `$`, `*` and the rest as written. Ordinary spaces at the start of a line are dropped and a run of them inside a line shrinks to one, inside the backticks too, so indent and align with no-break spaces (U+00A0) and put them inside the backticks: one before the opening backtick is dropped as well. Inline code is recognised, but it has no code face: see [Inline formatting](#inline-formatting).
 - **HTML passthrough** — raw `<tags>` are not interpreted. MDX-style tags are not supported either; Postext source is pure markdown.
 - **Horizontal rules** — `---`, `***`, `___`.
 - **Tables** — pipe tables are not parsed. Tables are modeled as structured resources on `PostextContent.resources`.
 - **Reference-style links** — `[text][id]` plus a definition block.
 - **Autolinks** — `<https://example.com>`.
+- **Hard line breaks made with two trailing spaces** — the spaces are trimmed. End the line with a backslash instead (see [Line breaks](#line-breaks)).
 - **Strikethrough** — `~~text~~`. The strikethrough renderer is currently reserved for completed task items.
 - **Margin notes** — not implemented, and `PostextContent.notes`, which the types accept, is ignored by the engine. Footnotes and chapter-end notes are written with `[^id]` (see [Footnotes](#footnotes)); up to postext 1.5 they had to be set as text.
 

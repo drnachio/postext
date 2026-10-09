@@ -5,6 +5,7 @@ import type {
   ResolvedBodyTextConfig,
 } from '../types';
 import { dimensionsEqual, startEndAsLeftRight } from './shared';
+import { isDropCap } from './dropCap';
 
 /** No paragraph styles ship by default — a document declares its own. */
 export const DEFAULT_PARAGRAPH_STYLES: ParagraphStyleConfig[] = [];
@@ -33,18 +34,29 @@ function resolveParagraphStyleConfig(
     italic: partial.italic ?? false,
     smallCaps: partial.smallCaps ?? false,
     hyphenation: partial.hyphenation ?? bodyText.hyphenation.enabled,
+    ...(partial.hyphenation === true ? { ownHyphenation: true as const } : {}),
     indent: partial.indent ?? ZERO,
     // Absent unless set, so styles without it resolve as before (#424).
     ...(partial.endIndent && partial.endIndent.value > 0 ? { endIndent: partial.endIndent } : {}),
     firstLineIndent: partial.firstLineIndent ?? bodyText.firstLineIndent,
+    // Set or inherited: a first-line indent pairs with a hanging one only
+    // when the style sets it (#620).
+    ...(partial.firstLineIndent !== undefined ? { ownFirstLineIndent: true as const } : {}),
     hangingIndent: partial.hangingIndent ?? ZERO,
     spaceBetween: partial.spaceBetween ?? ZERO,
     marginTop: partial.marginTop ?? ZERO,
     marginBottom: partial.marginBottom ?? ZERO,
     snapToGrid: partial.snapToGrid ?? true,
     textTransform: partial.textTransform === 'uppercase' ? 'uppercase' : 'none',
+    // Absent unless set: line numbers follow `lineNumbers.count` (#621).
+    ...(typeof partial.lineNumbers === 'boolean' ? { lineNumbers: partial.lineNumbers } : {}),
     // Absent unless set: the paragraphs follow `cjk.wordBreak`.
     ...(partial.wordBreak === 'normal' || partial.wordBreak === 'keep-all' ? { wordBreak: partial.wordBreak } : {}),
+    // Absent unless set: the paragraphs take the body's tab stops (#622).
+    ...(Array.isArray(partial.tabStops) ? { tabStops: partial.tabStops } : {}),
+    ...(partial.tabInterval ? { tabInterval: partial.tabInterval } : {}),
+    // Absent unless set: no drop cap (#623).
+    ...(isDropCap(partial.dropCap) ? { dropCap: partial.dropCap } : {}),
   };
 }
 
@@ -89,6 +101,10 @@ export function stripParagraphStylesDefaults(
     if (s.snapToGrid === false) r.snapToGrid = false;
     if (s.textTransform !== undefined && s.textTransform !== 'none') r.textTransform = s.textTransform;
     if (s.wordBreak !== undefined) r.wordBreak = s.wordBreak;
+    if (s.lineNumbers !== undefined) r.lineNumbers = s.lineNumbers;
+    if (Array.isArray(s.tabStops)) r.tabStops = s.tabStops;
+    if (s.tabInterval !== undefined) r.tabInterval = s.tabInterval;
+    if (isDropCap(s.dropCap)) r.dropCap = s.dropCap;
     return r;
   });
 }

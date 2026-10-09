@@ -36,10 +36,12 @@ export type SettingsSectionId =
   | 'index'
   | 'paragraphStyles'
   | 'chipStyles'
+  | 'codeStyle'
   | 'unordered-lists'
   | 'ordered-lists'
   | 'math'
   | 'footnotes'
+  | 'lineNumbers'
   | 'crossRefs'
   | 'citations'
   | 'cjk'
@@ -109,8 +111,10 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'bodyText', group: 'text', labelKey: 'bodyText', configKeys: ['bodyText'] },
   { id: 'paragraphStyles', group: 'text', labelKey: 'paragraphStylesSection', configKeys: ['paragraphStyles'] },
   { id: 'chipStyles', group: 'text', labelKey: 'chipStylesSection', configKeys: ['chipStyles'] },
+  { id: 'codeStyle', group: 'text', labelKey: 'codeStyleSection', configKeys: ['codeStyle'] },
   { id: 'math', group: 'text', labelKey: 'mathSection', configKeys: ['math'] },
   { id: 'footnotes', group: 'text', labelKey: 'footnotesSection', configKeys: ['footnotes'] },
+  { id: 'lineNumbers', group: 'text', labelKey: 'lineNumbersSection', configKeys: ['lineNumbers'] },
   { id: 'citations', group: 'text', labelKey: 'citationsSection', configKeys: ['citations'] },
   { id: 'headings', group: 'headings', labelKey: 'headings', configKeys: ['headings'] },
   { id: 'headingStyles', group: 'headings', labelKey: 'headingStylesSection', configKeys: ['headingStyles'] },

@@ -51,7 +51,7 @@ YAML会给值赋予类型：`1984`是数字，`2026-04-15`是日期，`[Ana Gil,
 
 ## 块结构
 
-Postext识别七种正文块类型，另外还有本页后文介绍的指令和资源嵌入。块总是以空行或另一个块的开始作为结束。
+Postext识别七种正文块类型和代码清单，另外还有本页后文介绍的指令和资源嵌入。块总是以空行或另一个块的开始作为结束。
 
 <Illustration name="BlockTypesGallery" data='{"title": "正文块结构一览", "desc": "Postext识别的七种正文块类型：标题、段落、引用块、无序列表、有序列表、任务列表和行间公式，以及各自的Markdown语法。指令和资源嵌入另行介绍。", "caption": "每种正文块类型及其Markdown写法。", "blocks": [{"name": "标题", "syntax": "# Title", "color": "blue"}, {"name": "段落", "syntax": "纯文本行", "color": "orange"}, {"name": "引用块", "syntax": "> quoted text", "color": "green"}, {"name": "无序列表", "syntax": "- item", "color": "purple"}, {"name": "有序列表", "syntax": "1. item", "color": "pink"}, {"name": "任务列表", "syntax": "- [x] done", "color": "teal"}, {"name": "行间公式", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
@@ -72,7 +72,7 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
     <tr>
       <td>段落</td>
       <td>一行或多行纯文本</td>
-      <td>连续的非空、非特殊行用一个空格连接，作为一个段落输出。在两个中文或日文字符（表意文字、假名、全角标点，以及紧挨它们的弯引号、破折号或省略号）之间，换行符则直接去掉，与CSS的做法相同，因此中文段落在源文本中可以在任意位置换行。在两个这样的符号之间（<code>“你好”⏎“再见”</code>、<code>他说……⏎“好”</code>），由符号外侧的字符决定：其中一个是中文或日文时，换行符去掉；<code>“hello”⏎“bye”</code>则保留空格。韩文保留空格。段落内的手动换行不会保留，要开始新段落请用空行。</td>
+      <td>连续的非空、非特殊行用一个空格连接，作为一个段落输出。在两个中文或日文字符（表意文字、假名、全角标点，以及紧挨它们的弯引号、破折号或省略号）之间，换行符则直接去掉，与CSS的做法相同，因此中文段落在源文本中可以在任意位置换行。在两个这样的符号之间（<code>“你好”⏎“再见”</code>、<code>他说……⏎“好”</code>），由符号外侧的字符决定：其中一个是中文或日文时，换行符去掉；<code>“hello”⏎“bye”</code>则保留空格。韩文保留空格。源文本中的换行不会保留，除非该行以反斜杠结尾（强制换行，见<a href="#段落内的换行">段落内的换行</a>）；要开始新段落请用空行。在文字中输入的制表符同样当作词间空格，除非段落的样式设了制表位；<code>:tab</code>总是制表符（见<a href="#制表符与制表位">制表符与制表位</a>）。诗的各行要按原样保留，请放进<a href="#verse"><code>:::verse</code></a>块。</td>
     </tr>
     <tr>
       <td>引用块</td>
@@ -98,6 +98,11 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
       <td>行间公式</td>
       <td><code>$$ … $$</code></td>
       <td>单独成块排版的LaTeX公式。在栏内居中渲染，像标题一样对齐基线网格，在PDF输出中保持矢量。单行形式和围栏多行形式见<a href="#mathematical-formulas">数学公式</a>。</td>
+    </tr>
+    <tr>
+      <td>代码块</td>
+      <td><code>```js</code> … <code>```</code>、<code>~~~</code> … <code>~~~</code></td>
+      <td>一段代码清单，按原样保留：每个空格、制表符和换行都保留，其中的内容都不按Markdown读取。用代码字体逐行排在框中。见<a href="#代码块">代码块</a>。</td>
     </tr>
   </tbody>
 </table>
@@ -137,6 +142,78 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
 
 # Raw data {style="appendix"}
 ```
+
+### 首字下沉
+
+当段落所在的标题级别或标题样式，或其`:::paragraphs`组的段落样式设了首字下沉时，段落以首字下沉开头（见[配置 › 首字下沉](/zh/docs/configuration#首字下沉)）：第一个字母放大，排在前几行旁边，这几行围绕它缩短。段落本身不需要任何标记，文字照常书写，这个字母在复制、搜索和源映射中仍属于它所在的词。`dropcap`属性为某一章或某一组切换首字下沉：
+
+```markdown
+# Lost {dropcap=false}
+
+# The mines {dropcap=2}
+
+:::paragraphs{style="entry" dropcap}
+The lamp of the first entry opens with an initial.
+:::
+```
+
+在标题行上，`dropcap=false`让该标题后的段落不带其级别或样式设定的首字下沉，`dropcap=N`把首字下沉设为`N`行，单独的`dropcap`在级别没有设定时也给这一段加上首字下沉（三行，用段落的字体）。在`:::paragraphs`围栏上，这个属性对组的第一段起同样的作用，样式设为`each: true`时对每一段都起作用。标题后的段落会越过围栏、指令、离开文字流的框和浮动图来查找；框、列表项、引文或诗中的段落从不带首字下沉。自postext 1.23起。
+
+### 代码块
+
+代码清单写在两条由三个或更多反引号（或三个或更多波浪号）组成的围栏之间，每条围栏单独占一行，最多缩进三个空格。两条围栏之间的内容都按原样保留：行首空格和连续的空格、制表符、空行，以及以`#`、`-`、`1.`、`>`、`$`或`:::`开头的行。其中的内容都不按Markdown读取：没有强调，没有`:ref`，没有公式，没有行内标签，没有指令，也没有标题。结束围栏所用的字符与开始围栏相同，长度至少与它相等，所以要展示围栏的清单，就放进更长的围栏或波浪号围栏中：
+
+~~~markdown
+```bash {title="backup.sh" lineNumbers start=12 highlight="3,5-7"}
+#!/usr/bin/env bash
+# Copy the photos to the backup disk
+rsync -a --delete ~/Photos/ /Volumes/Backup/Photos/
+echo "done: $(date)"
+```
+~~~
+
+开始围栏后的信息字符串给出语言（它的第一个词：`js`、`ts`、`python`、`bash`、`console`、`json`……），其余部分按[属性写法](#属性值)读作属性，放在花括号里或不加花括号都可以（`title="app.js" lineNumbers`）。语言之后的其他文字是标题：```` ```console Terminal ````和```` ```python normalize.py ````在清单上方印出*Terminal*和*normalize.py*。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>属性</th>
+      <th>作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>title="…"</code></td>
+      <td>清单上方的标题，排在标题行中（设了<code>codeStyle.label</code>时排在框边的标签中）。</td>
+    </tr>
+    <tr>
+      <td><code>label="…"</code></td>
+      <td>框的标签中的文字，与<code>:::callout</code>的相同（需设<code>codeStyle.label</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code>、<code>lineNumbers=false</code></td>
+      <td>为这段清单的行编号（或不编号），不管<code>codeStyle.lineNumbers</code>怎样设置。行号排在代码前的边栏中，复制代码时不会带上。</td>
+    </tr>
+    <tr>
+      <td><code>start=N</code></td>
+      <td>第一行的行号（其他设置都不编号时，它也让清单带上行号）。</td>
+    </tr>
+    <tr>
+      <td><code>highlight="3,5-7"</code></td>
+      <td>为指定的行加底色（从清单的第一行起算，从1开始）：单独的行和范围，用逗号分隔。</td>
+    </tr>
+    <tr>
+      <td><code>span=page</code></td>
+      <td>在分为几栏的页面上，清单横跨所有栏。</td>
+    </tr>
+  </tbody>
+</table>
+
+围栏会结束它上面的段落，不论中间有没有空行；结束围栏之后的文字开始一个新段落。没有闭合的围栏一直延续到文字末尾，并给出警告（`unclosedCodeBlock`）。`:::callout`中的围栏是嵌套在其中的框；在`:::paragraphs`中，清单保持代码样式，而不采用段落样式。Postext没有列表项的延续写法，所以列表项之后的围栏会结束列表。写在清单中的索引标记和锚点照原样保留。
+
+缩进代码（空行之后以四个空格或一个制表符缩进）只有在打开`codeStyle.indentedCode`时才读作代码清单：Postext的正文常用空格缩进，嵌套列表项也要读行首空格。
+
+清单的外观（字体、框、制表符宽度、比框更宽的行如何处理、行号、各类记号的颜色）由`codeStyle`设定，见[配置 › 代码清单](/zh/docs/configuration#代码清单)。行内代码（`` `x` ``）用正文字体，除非`codeStyle.inline`给它指定一种字体。postext 1.23之前保存、正文含围栏的书仍按当时的方式读取这些围栏，即按Markdown读取（`codeStyle.blocks: false`）。自postext 1.23起。
 
 ## 指令
 
@@ -200,7 +277,7 @@ Postext识别七种正文块类型，另外还有本页后文介绍的指令和�
     </tr>
     <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
-      <td>按古典阿拉伯排法排的诗：每行一联（bayt），两个半行用<code>||</code>分开，以同一宽度并排。见<a href="#verse">下文</a>。</td>
+      <td>一首诗：按书写逐行排（每行一行诗，空行分隔诗节，行首空格为缩进）；各行用<code>||</code>分开两个半行时，按古典阿拉伯排法排。见<a href="#verse">下文</a>。</td>
     </tr>
   </tbody>
 </table>
@@ -259,7 +336,7 @@ Keep the lantern lit **every** night.
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>一段用命名段落样式（导语、题词、一组小字注释）而不是正文样式排版的段落。<code>align</code>、<code>indent</code>和<code>endIndent</code>设置对齐和缩进，有没有样式都可以：<code>:::paragraphs&#123;align=end endIndent=1&#125;</code>把日期排在离行尾一个字的位置（地から1字上げ）。</td>
+      <td>一段用命名段落样式（导语、题词、一组小字注释）而不是正文样式排版的段落。<code>align</code>、<code>indent</code>和<code>endIndent</code>设置对齐和缩进，有没有样式都可以：<code>:::paragraphs&#123;align=end endIndent=1&#125;</code>把日期排在离行尾一个字的位置（地から1字上げ）。<code>dropcap</code>切换其第一段的<a href="#首字下沉">首字下沉</a>。</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
@@ -491,6 +568,14 @@ title: "A Book With Front Matter"
 
 `format`接受编号格式的任何写法：`roman-lower`和`i`与`lower-roman`等效，`arabic`与`decimal`等效，`一`和`あ`与`japanese-informal`和`hiragana`等效（见[配置 › 编号格式的写法](/zh/docs/configuration#编号格式的写法)）。不属于其中任何一种的值会保留原有格式，沙盒会标出它。
 
+`lines`重新开始的是[行号](/zh/docs/configuration#行号)的计数，而不是页码：下一个计入的行编为给定的号，不论`lineNumbers.restart`怎样设置。不是0或更大整数的值会被忽略。
+
+```md
+## 第二幕
+
+:::numbering{lines=1}
+```
+
 ### `:::space`
 
 `:::space`在两个块之间留出垂直空白：把结尾的一行与上方文字隔开，把题词或署名稍稍往下推，或者在两段文字之间形成*空行分隔*。Markdown中多余的空行做不到这一点：与任何Markdown一样，连续的空行只是一个段落分隔符，这样编辑器或格式化工具增删空白时，文档的版面不会改变。
@@ -526,6 +611,72 @@ Two lines lower still.
 
 
 ### `:::verse`
+
+一首诗。`:::verse`有两种排法：**逐行**，大多数诗都这样印；或者qaṣīda的**古典阿拉伯排法**，每一联分成两个半行并排。各行带有半行分隔符（`||`，或两边有空格的`\\`）的诗按阿拉伯排法排，其他的诗逐行排；开始标记上的`layout=lines`或`layout=bayt`可以指定其一。
+
+#### 逐行
+
+照印出来的样子写诗：Markdown的一行就是一行诗，诗节之间空一行，行首加空格表示缩进。
+
+```md
+:::verse
+轻轻的我走了，
+  正如我轻轻的来；
+我轻轻的招手，
+  作别西天的云彩。
+
+那河畔的金柳，
+  是夕阳中的新娘；
+:::
+```
+
+- **诗行。** 每个非空行是一行诗，单独按行内Markdown读取：斜体、小型大写、注释和引用都可用。连续的空行只算一次换节。
+- **缩进。** 每个行首空格宽`indentStep`，默认0.5 em，所以两个空格缩进一个字；制表符算四个空格，全角空格（U+3000）算两个。
+- **转行。** 比版心宽的诗行在词间空格处转行（中文诗行按中文的断行规则在字间转行）。`turnover=hang`（默认）时，余下部分悬挂在下一行，从该行自身的起点缩进`hang`：诗的段落样式的`hangingIndent`，没有则为2 em（`bodyText.verse.hang`）。`turnover=right`时，余下部分贴齐版心末端，前面加开方括号（`turnoverMark`，默认`[`），这是英语和西班牙语诗集的做法。诗行不加连字符断词，除非其段落样式自己设置了`hyphenation: true`。一行诗和它的转行绝不在分栏或分页处分开。
+- **诗节。** 两个诗节之间的间距是诗的一行行距；`stanzaSpace=0.5`为半行，长度值（`stanzaSpace=6pt`）则精确设定。在基线网格上取整到网格行。分栏和分页优先落在诗节之间；在诗节内部则按孤行和寡行规则断开，这时只计该诗节的行数。`keepStanzas=N`让不超过N行的诗节保持完整：俳句用`keepStanzas=3`，短歌用`keepStanzas=5`。
+- **位置。** 诗以最长的一行为准在版心中居中，各行与诗的起点对齐（`align=center`，散文中引诗的常见排法）；`align=start`让诗与版心起点对齐，这也是竖排的默认值。引出诗的段落，其最后一行与诗的前几行留在一起。
+- **错行。** 写成`+ …`的行从上一行结束处、隔一个词间空格开始，即诗剧中两个角色共用的一行。以加号开头的行写作`\+`。
+- **停顿。** 开始标记上有`keepSpaces`时，行内两个及以上的连续空格保持其宽度；没有时，空格像在任何段落中一样合并为一个。
+- **字体与方向。** `style`指定一个段落样式，给出字体、字号、行距、`indent`以及诗上下的间距。`dir`和`lang`设置诗的方向和语言：阿拉伯文书中的拉丁文诗（`dir=ltr`）从其自身的起始一侧缩进。竖排时每行诗是一列，从天头起缩进。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>属性</th>
+      <th style={{ width: '200px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>layout</code></td><td><code>auto</code></td><td><code>lines</code>、<code>bayt</code>或<code>auto</code>：某行带分隔符时用阿拉伯排法。</td></tr>
+    <tr><td><code>indentStep</code></td><td><code>0.5em</code></td><td>一个行首空格的宽度。</td></tr>
+    <tr><td><code>turnover</code></td><td><code>hang</code></td><td><code>hang</code>或<code>right</code>。</td></tr>
+    <tr><td><code>hang</code></td><td>样式的<code>hangingIndent</code>，没有则为<code>2em</code></td><td>悬挂转行从该行起点缩进的量。</td></tr>
+    <tr><td><code>turnoverMark</code></td><td><code>[</code></td><td>靠右转行前的标记。</td></tr>
+    <tr><td><code>stanzaSpace</code></td><td><code>1</code></td><td>诗节间距：单独的数字按诗的行距计行数，长度值即为该长度。</td></tr>
+    <tr><td><code>keepStanzas</code></td><td><code>0</code></td><td>不超过此行数的诗节保持完整；0为关闭。</td></tr>
+    <tr><td><code>keepSpaces</code></td><td>关闭</td><td>保留行内两个及以上的连续空格。</td></tr>
+    <tr><td><code>align</code></td><td><code>center</code>（竖排为<code>start</code>）</td><td>以最长的一行为准居中，或与起点对齐。</td></tr>
+    <tr><td><code>style</code>、<code>dir</code>、<code>lang</code></td><td>—</td><td>诗的段落样式、方向和语言。</td></tr>
+    <tr><td><code>numbered</code></td><td><code>true</code></td><td><code>false</code>让这首诗不参加行号：它的诗行不计数。</td></tr>
+    <tr><td><code>lineStart</code></td><td>—</td><td>诗第一行的行号。计数从这里重新开始，不论<code>lineNumbers.restart</code>怎样设置。</td></tr>
+    <tr><td><code>interval</code></td><td><code>lineNumbers.interval</code></td><td>这首诗自己的间隔：每第N行印出行号。</td></tr>
+  </tbody>
+</table>
+
+`bodyText.verse`设置所有诗的默认值（见[配置 › 诗歌](/zh/docs/configuration#诗歌)）。纯文本按原样保留诗：行与行之间一个换行，诗节之间一个空行，所以复制的段落和搜索都逐行读取；流式EPUB把每个诗节排成一个元素，其中各行悬挂转行，带标签的PDF把每个诗节标为一个段落。
+
+**行号。** 打开`lineNumbers`时，诗的诗行会被计数（见[配置 › 行号](/zh/docs/configuration#行号)）。每个诗行只数一次：转行的部分不编号，诗节之间的空白也不计数。默认每第五行在外侧页边印出行号，每首诗重新计数。按古典阿拉伯排法排的诗每联数一行。开始标记可以调整单首诗：`lineStart=N`给它的第一行编号，`interval=N`设定它自己的间隔，`numbered=false`让它不参加计数。
+
+```md
+:::verse{lineStart=37}
+…
+:::
+```
+
+按默认间隔5，这首诗在诗行旁印出40、45等行号。
+
+#### 古典阿拉伯排法
 
 按古典阿拉伯排法排的诗（qaṣīda、qiṭʿa）：每一联（*bayt*）排一行，分成两半，前半行（*ṣadr*）在起始一侧（阿拉伯文为右侧），后半行（*ʿajuz*）在结束一侧，中间留空。每行写一联，两个半行用`||`分开（也可以像维基文库的文本那样，用两边各有一个空格的`\\`）。没有分隔符的行是单独的半行，在诗中居中。
 
@@ -567,6 +718,27 @@ Two lines lower still.
 
 :::index
 ```
+
+### 段落内的换行
+
+段落的各行用空格连接（中文字符之间不加空格）。要在段落内换行而不另起一段（地址、书信的称呼、题献），在源文本的行末写一个反斜杠，即CommonMark的硬换行，或者写`\\`再加一个空格：
+
+```md
+致北码头尽头的\
+守塔人：
+
+李明 \\ 北京市东城区王府井大街1号 \\ 100006
+```
+
+- 换行前的一行按自然宽度排，与段落末行一样，不拉伸到版心宽度。换行后的文字在同一段落中另起一行，没有首行缩进，上方也不加段间距；有悬挂缩进时，它和首行之后的各行一样悬挂。
+- 段落、引文（`> 第一行\`下接`> 第二行`）、脚注和列表项都可以这样换行。列表项在源文本中只占一行，所以用`\\`换行。
+- 段落末尾的反斜杠照样印出，与CommonMark相同；连续两个换行只算一个：要空一行，请另起一段或加一个[`:::space`](#space)。
+- 紧贴下一个字符的`\\`不是换行：`\\*`印出一个反斜杠和一个转义的星号，`C:\\Temp`印出两个反斜杠。行内代码和公式中的反斜杠属于代码和公式。
+- 行末两个空格是CommonMark的另一种硬换行，这里不算换行：编辑器里看不见，许多编辑器还会留下多余的空格，会在无意之处断行。
+- 从HTML查看器复制的文字在换行处有换行符，流式EPUB写成`<br/>`，PDF提取的文字在此处断行，导出到Word时写成手动换行符（Shift+Enter），从Word导入时又读回为换行。
+- 诗歌请放进[`:::verse`](#verse)块，各行、缩进和诗节都会保留，不必每行写反斜杠。
+
+在postext 1.22及以前，反斜杠会照样印出，各行用空格连接。当时保存、文字中有行以反斜杠结尾或有后跟空格的`\\`的书，仍按原来的方式读取（`bodyText.hardLineBreaks: false`，见[配置 › postext 1.4及更早版本写出的文件包](/zh/docs/configuration#postext-14及更早版本写出的文件包)）。
 
 ### 标题中的换行
 
@@ -644,7 +816,7 @@ Two lines lower still.
     <tr>
       <td>行内代码</td>
       <td><code>`code`</code></td>
-      <td>去掉反引号，片段按原样以纯文本渲染：其中的<code>{':ref{…}'}</code>、行内标签、公式、链接或强调符号都照字面印出，正文要展示语法时就这样写。独立的代码样式已列入路线图。</td>
+      <td>去掉反引号，片段按原样以纯文本渲染：其中的<code>{':ref{…}'}</code>、行内标签、公式、链接或强调符号都照字面印出，正文要展示语法时就这样写。它用正文字体排，设了<code>codeStyle.inline</code>时则用代码字体，作为一个整体排出（见<a href="/zh/docs/configuration#代码清单">配置 › 代码清单</a>）。代码清单写在<a href="#代码块">代码块</a>中。</td>
     </tr>
     <tr>
       <td>转义</td>
@@ -670,6 +842,11 @@ Two lines lower still.
       <td>行内标签</td>
       <td><code>:chip[text]</code></td>
       <td>带框的一段文字，作为一个整体换行：词库、按键、标签。样式由<code>chipStyles</code>设定；见<a href="#inline-chips">行内标签</a>。</td>
+    </tr>
+    <tr>
+      <td>制表符</td>
+      <td><code>:tab</code>、<code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
+      <td>把其后的文字送到下一个制表位：段落样式的某个制表位，或由它的属性设定的制表位。在文字中输入的制表符字符只在样式设了制表位的地方才是制表符。见<a href="#制表符与制表位">制表符与制表位</a>。</td>
     </tr>
     <tr>
       <td>行内公式</td>
@@ -736,6 +913,72 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 - **适用位置**。段落、列表项、引用块、标注框、表格单元格、题注和注释，以及`headings.inlineMarks`开启（默认）时的标题；关闭时，标题中的标记被移除，文本按原样印出。
 - **整段。**`smallCaps: true`的段落样式或标注框正文会把全部文本这样排（见[段落样式](/zh/docs/configuration#段落样式)）。
 - **文本**。Canvas、HTML和PDF承载的是画出的字母：复制`:smallcaps[Hamlet]`得到“HAMLET”。
+
+### 制表符与制表位
+
+制表符把其后的文字送到行上的一个制表位：菜单里菜品的价格排在一行点之后，与版心末端对齐；演员表里角色之后的演员名；试题的分值排在页边。在制表符的位置写`:tab`，它两侧的空格并入制表符。制表位在配置中设置：`bodyText.tabStops`用于每个段落、列表项和引文，段落样式的`tabStops`用于`:::paragraphs`组中的段落，标注框样式的`body.tabStops`用于它的框内（见[配置 › 制表位](/zh/docs/configuration#制表位)）。下面的菜单让价格止于版心末端，前面是一行点：
+
+```ts
+paragraphStyles: [
+  { id: 'menu', firstLineIndent: { value: 0, unit: 'em' }, tabStops: [{ position: 'end', align: 'end', leader: '. ' }] },
+],
+```
+
+```markdown
+:::paragraphs{style="menu"}
+洋葱汤 :tab 8.50
+
+茴香柠檬烤鲷鱼 :tab 21.00
+:::
+```
+
+`:tab{…}`只为这一个制表符设一个制表位，不需要样式：表单上一直延伸到行末的填写横线，按小数点对齐的金额。
+
+```markdown
+姓名 :tab{at=end leader=rule}
+
+应付总额 :tab{at=80% align=decimal} 1,234.50
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>属性</th>
+      <th>含义</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>at</code></td>
+      <td>制表位所在的位置，从段落版心的起始边量起：一个长度（<code>120mm</code>、<code>4cm</code>、<code>2em</code>；纯数字以点为单位）、表示版心末端的<code>end</code>，或版心宽度的一个比例（<code>60%</code>）。没有<code>at</code>时，<code>:tab&#123;…&#125;</code>与单独的<code>:tab</code>一样跳到样式的制表位。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>start</code>（默认）：制表符后的文字从制表位开始。<code>end</code>：文字在这里结束（到下一个制表符或段落末尾为止的文字）。<code>center</code>：文字以制表位为中心。<code>decimal</code>：文字的小数点落在制表位上；没有小数点的文字在这里结束。</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>在制表位前的空白中重复排出的文字：<code>"."</code>、<code>". "</code>、<code>"·"</code>、<code>"_"</code>、<code>"-"</code>或另一小段文字，使用段落的字体和颜色。<code>rule</code>在基线稍下方画一条线，即表单上的填写横线。默认没有。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>前导符与两侧文字之间保留的空白。默认为段落字号的<code>0.5em</code>；纯数字以点为单位。</td>
+    </tr>
+    <tr>
+      <td><code>decimal</code></td>
+      <td><code>decimal</code>制表位所对齐的小数点字符。默认取文档语言的：英语、中文、日语和阿拉伯语为<code>.</code>，西班牙语、加泰罗尼亚语、葡萄牙语、法语、德语等为<code>,</code>。</td>
+    </tr>
+  </tbody>
+</table>
+
+- **制表符跳到哪里**。跳到越过它前面文字的第一个制表位，只在该行上一个制表符所用制表位之后的制表位中找，所以一行的第二个制表符通常落在第二个制表位上。越过最后一个制表位后，`tabInterval`从版心起始边起每隔一个间隔再设一个制表位；没有它时，制表符是一个词间空格。
+- **制表符字符**。在文字中输入的制表符（U+0009）只在样式设了`tabStops`或`tabInterval`的段落中才是制表符。在其他地方，它仍是原来的词间空格，所以用制表符代替空格写成的文档版面不变。连续几个制表符字符跳过同样多个制表位。源文本行首的制表符与该行其他的行首空白一起被去掉：要让一行从制表位开始，请写`:tab`。
+- **仍是文字的情形**。后接字母的`:tab`（`3:table`），以及行内代码、公式、链接地址或指令属性中的`:tab`。
+- **适用位置**。段落、列表项、引文、标注框和`:::paragraphs`组。标题、题注、表格单元格和设计文字（章首页、书眉）没有制表位。
+- **越过制表位的文字**。制表符前的文字已经越过该行剩下的所有制表位时，`end`、`center`或`decimal`制表位把制表符前的最后一个词连同制表位处的文字一起带到下一行，制表符前的文字排得窄一些，就像目录行为了保住页码而让标题换行一样。`start`制表位在制表符之前断行，制表符后的文字在下一行从它的制表位开始。位于行首的制表符仍找不到制表位时，不占空间。
+- **前导符**。前导符填满制表位前的空白，末端与这段空白的末端齐平，所以不论前面的文字如何，各行的点都上下对齐。`gap`让它与两侧的文字保持距离；制表符位于行首时，前导符前面没有间隙，后面没有文字时，后面也没有间隙。
+- **断行**。含有制表符的段落逐行排，从不用Knuth-Plass。两端对齐的文字中，只有一行最后一个制表符之后的词间空格分担多余的空白，段落的末行不拉伸（见[断词与两端对齐 › 含制表符的行](/zh/docs/justification#含制表符的行)）。居中或右对齐的段落从起始一侧排含制表符的行，因为制表位是版心上的位置。从右到左时，制表位从右边量起，`end`制表位在左边（见[阿拉伯文排版](/zh/docs/arabic-layout#目录与索引)）。竖排文字中制表符是一个词间空格，那里的`:tab`会引发内容警告`tabInVerticalText`。
+- **文本与输出**。纯文本在每个制表符处有一个制表符字符（`\t`）；前导符不是文字，复制、搜索和源映射都不包括它们。Canvas、HTML查看器和固定版式EPUB绘制前导符（在HTML中对屏幕阅读器隐藏）；带标签的PDF把它们标为版式工件，所以其文本读作`洋葱汤 8.50`。流式EPUB无法精确保留制表位：含制表符的段落的每一行变成由各制表符之间的部分组成的一行，`end`、`center`或`decimal`制表位以及带前导符的制表位把下一部分推到这一行的末端（前导符变成点线或实线边框），`start`制表位让它前面的部分保持印刷时的宽度。导出到Word时，`:tab`写成Word制表符；从Word导入时，正文中的制表符读回为`:tab`，并带上Word为它设的制表位（见[沙盒 › Word文档](/zh/docs/sandbox#word文档)）。
 
 ### 竖排中的文字方向
 
@@ -1590,12 +1833,12 @@ otto: 好吗？
 Postext不识别以下CommonMark功能。它们要么被当作普通文本（因此会原样出现在输出中），要么被悄悄丢弃：
 
 - **Setext式标题**：即`===` / `---`下划线形式。请使用ATX（`#`）标题。
-- **围栏式或缩进式代码块**：即` ``` `或`~~~`围栏以及4个空格的缩进。其中的行会作为普通Markdown读取，而不是保留为代码清单：彼此之间没有空行的行会合并为一个段落，并丢失行首空格；以`#`加空格开头的行会变成标题（`#!/usr/bin/env`仍是文本），以`-`或`1.`加空格开头的行会变成列表项，一对`$`符号会变成公式，围栏行则作为文本印出：` ``` `围栏印成一个反引号，开头的那个后面还跟着信息字符串（`` `bash``），`~~~`围栏印成一个作为下标排出的小`~`。要排代码清单，把每一行写成单独的段落（行与行之间空一行），放进一个`:::paragraphs`块，其段落样式设置等宽的`fontFamily`，并用反引号包住每一行，反引号会让`#`、`$`、`*`等字符照原样保留。行首的普通空格会被丢弃，行内连续的空格会缩成一个，反引号内也是如此，所以要用不换行空格（U+00A0）来缩进和对齐，并把它们放在反引号之内：开头反引号之前的不换行空格同样会被丢弃。行内代码能被识别，但没有代码字体：见[行内格式](#行内格式)。
 - **HTML透传**：原始的`<tags>`不会被解释。MDX式标签也不支持；Postext源文件是纯Markdown。
 - **水平线**：`---`、`***`、`___`。
 - **表格**：管道表格不会被解析。表格作为结构化资源建模，位于`PostextContent.resources`中。
 - **引用式链接**：`[text][id]`加上定义块。
 - **自动链接**：`<https://example.com>`。
+- **用行末两个空格表示的换行**：这两个空格会被删去。请改在行末写反斜杠（见[段落内的换行](#段落内的换行)）。
 - **删除线**：`~~text~~`。删除线渲染器目前保留给已完成的任务项使用。
 - **边注**：尚未实现；类型定义接受的`PostextContent.notes`会被引擎忽略。脚注和章末注用`[^id]`书写（见[脚注](#脚注)）；在postext 1.5及以前，它们只能作为文本排出。
 

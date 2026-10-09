@@ -38,9 +38,13 @@ import type {
   TableNode,
   TocNode,
   TocRowNode,
+  StanzaNode,
+  CodeNode,
+  CodeRun,
+  VerseLineNode,
   VerseNode,
 } from './model';
-import { appendLine, appendLines, fontPx, idOf, mathSvg, plainText, type InlineContext, type TextSink } from './inline';
+import { appendLine, appendLines, fontPx, idOf, mathSvg, plainText, xmlText, type InlineContext, type TextSink } from './inline';
 
 /** Where an id landed: its content document and element id. */
 export interface Loc {
@@ -66,6 +70,17 @@ export interface BookModel {
   maths: boolean;
   /** Whether a `:::verse` poem was read. */
   verse: boolean;
+  /** Whether a poem set line by line was read (#620). */
+  stanzas?: boolean;
+  /** Whether a line of verse carries its number (#621). */
+  lineNumbers?: boolean;
+  /** Whether a line holds a tab at its stop (#622). */
+  tabs?: boolean;
+  /** Whether a code listing was read (#624). */
+  code?: boolean;
+  /** The drop caps the paragraphs open with (#623), as `lines-sink`
+   *  pairs: one rule each. */
+  dropCaps?: Set<string>;
   /** The classes of emphasis marks other than the filled dot on the
    *  default side the text uses (`inline.ts` `dotsClasses`, #428). */
   dots: Set<string>;
@@ -119,6 +134,20 @@ interface Container {
 interface Sink extends TextSink {
   top: Node;
   file: FileModel;
+}
+
+/** A stanza of a poem set line by line being read, across the fragments
+ *  of its block (#620). */
+interface OpenCode {
+  node: CodeNode;
+  top: Node;
+}
+
+interface OpenStanza {
+  node: StanzaNode;
+  top: Node;
+  /** Where the last line's text goes: its turnovers run on there. */
+  sink?: TextSink;
 }
 
 /** A poem being read, across the fragments of its block. */
@@ -178,6 +207,11 @@ class DocWalker {
   private callouts = new Map<number, { node: CalloutNode; state: Container }>();
   private readonly sinks = new Map<string, Sink>();
   private readonly verses = new Map<string, OpenVerse>();
+  private readonly stanzas = new Map<string, OpenStanza>();
+  private readonly codes = new Map<string, OpenCode>();
+  /** The numbers printed beside lines (#621), by block id and line
+   *  index: a line of verse carries its own. */
+  private readonly lineNumbers = new Map<string, string>();
   private readonly tables = new Map<string, TableNode>();
   private readonly figures = new Set<string>();
   /** Text blocks read so far, with their content index: where floats go. */
@@ -215,6 +249,9 @@ class DocWalker {
     }
     for (const b of doc.blocks) {
       if (b.sourceStart !== undefined && hasPageLink(b)) this.indexRanges.add(rangeKey(b));
+    }
+    for (const page of doc.pages) {
+      for (const m of page.lineNumberMarks ?? []) this.lineNumbers.set(`${m.blockId}\u0000${m.lineIndex}`, m.label);
     }
     this.styleHints = [...doc.blocks, ...doc.pages.flatMap((p) => p.floats ?? [])].some((b) => b.paragraphStyleId !== undefined || b.indexLevel !== undefined);
     for (const a of doc.anchors ?? []) {
@@ -506,6 +543,7 @@ class DocWalker {
 
   private appendBlockLines(sink: TextSink, block: VDTBlock, lines: readonly VDTLine[] = block.lines, before: InlineItem[] = []): void {
     const ctx = this.ctx(block);
+    if (lines.some((l) => l.tabbed)) this.book.tabs = true;
     appendLines(sink, lines, ctx, (line, i) => [...(i === 0 ? before : []), ...this.anchorsAt(block, line)]);
   }
 
@@ -534,6 +572,17 @@ class DocWalker {
       this.enter(block, root);
       this.verseLines(verse, block);
       this.record(block, verse.top);
+      return;
+    }
+    const stanza = this.stanzas.get(key);
+    if (stanza) {
+      this.enter(block, root);
+      this.stanzaLines(stanza, block);
+      this.record(block, stanza.top);
+      return;
+    }
+    if (block.type === 'code') {
+      this.code(block, root, key);
       return;
     }
     const sink = this.sinks.get(key);
@@ -681,6 +730,10 @@ class DocWalker {
       this.verse(block, state, key);
       return;
     }
+    if (block.lines.some((l) => l.verseLine !== undefined)) {
+      this.stanza(block, state, key);
+      return;
+    }
     const node: ParagraphNode = { k: 'p', inl: [], ...(block.direction ? { dir: block.direction } : {}) };
     const cls: string[] = [];
     if (block.bibEntry !== undefined) {
@@ -694,10 +747,28 @@ class DocWalker {
       const style = this.paragraphStyle(block);
       if (style) cls.push(idOf('ps-', style));
     }
+    // A paragraph a drop cap opens sets no first-line indent.
+    if (block.dropCap) cls.push('pt-has-dropcap');
     if (cls.length) node.cls = cls;
     state.nodes.push(node);
     const top = this.topOf(state, node);
     const sink = this.newSink(key, node.inl, top);
+    // A drop cap (#623): the initial (and a mark hung before it) in a span
+    // of its own right before the first line's text, so the word reads
+    // whole; CSS sets it as an initial letter.
+    const cap = block.dropCap;
+    if (cap) {
+      const shape = `${cap.lines}-${cap.sink}`;
+      (this.book.dropCaps ??= new Set()).add(shape);
+      const font = /^(?:(italic)\s+)?(?:(\d{3}|bold)\s+)?[\d.]+px\s+(.+)$/.exec(cap.fontString.trim());
+      const decls = [
+        ...(font ? [`font-family:${font[3]!.replace(/"/g, "'")}`] : []),
+        ...(font?.[2] && font[2] !== '400' ? [`font-weight:${font[2]}`] : []),
+        ...(font?.[1] ? ['font-style:italic'] : []),
+        `color:${cap.color}`,
+      ];
+      node.inl.push({ t: 'raw', xhtml: `<span class="pt-dropcap pt-dropcap-${shape}" style="${decls.join(';')}">${xmlText((cap.hang?.text ?? '') + cap.text)}</span>` });
+    }
     this.appendBlockLines(sink, block, block.lines, this.takePages());
     this.record(block, top);
     if (!this.floating && block.bibEntry !== undefined && !this.book.bibliography && node.id) this.book.bibliography = { file: this.file!, id: node.id };
@@ -727,6 +798,93 @@ class DocWalker {
     this.verses.set(key, open);
     this.verseLines(open, block);
     this.record(block, open.top);
+  }
+
+  /** A stanza of a poem set line by line (#620): its lines of verse, each
+   *  with its indent and the hang of its turnovers, in ems of its text. */
+  private stanza(block: VDTBlock, state: Container, key: string): void {
+    const style = this.styleHints ? block.paragraphStyleId : undefined;
+    const em = fontPx(block.fontString) || this.bodyPx;
+    // The hang the print gave a turnover, else the configuration's.
+    let hangPx = dimensionToPx(this.config.bodyText.verse.hang, this.config.page.dpi, em);
+    for (let i = 1; i < block.lines.length; i++) {
+      const line = block.lines[i]!;
+      const head = block.lines[i - 1]!;
+      if (line.verseLine?.turnover && !head.verseLine?.turnover && !line.segments?.[0]?.inserted) {
+        hangPx = Math.abs(line.bbox.x - head.bbox.x);
+        break;
+      }
+    }
+    const node: StanzaNode = {
+      k: 'stanza',
+      pre: this.takePages(),
+      lines: [],
+      hangEm: hangPx / em,
+      ...(style ? { cls: [idOf('ps-', style)] } : {}),
+      ...(block.direction ? { dir: block.direction } : {}),
+    };
+    state.nodes.push(node);
+    this.book.stanzas = true;
+    const open: OpenStanza = { node, top: this.topOf(state, node) };
+    this.stanzas.set(key, open);
+    this.stanzaLines(open, block);
+    this.record(block, open.top);
+  }
+
+  /** A code listing's fragment (#624): a source line opens a line of the
+   *  listing, a continuation of a wrapped line runs on in it; the wrap
+   *  marker and the numbers are print, left out. */
+  private code(block: VDTBlock, root: Container, key: string): void {
+    const state = this.enter(block, root);
+    let open = this.codes.get(key);
+    if (!open) {
+      const node: CodeNode = { k: 'code', pre: this.takePages(), lines: [], ...(block.code?.lang ? { lang: block.code.lang } : {}) };
+      state.nodes.push(node);
+      this.book.code = true;
+      open = { node, top: this.topOf(state, node) };
+      this.codes.set(key, open);
+    }
+    const lines = open.node.lines;
+    for (const line of block.lines) {
+      const runs: CodeRun[] = [];
+      for (const seg of line.segments ?? []) {
+        if (seg.leader || seg.inserted) continue;
+        const text = seg.kind === 'space' && seg.labelTab ? '\t' : seg.text;
+        if (!text) continue;
+        runs.push({ text, ...(seg.color ? { color: seg.color } : {}), ...(seg.bold ? { bold: true } : {}), ...(seg.italic ? { italic: true } : {}) });
+      }
+      const info = line.codeLine;
+      if (info?.continued && lines.length > 0) {
+        lines[lines.length - 1]!.runs.push(...runs);
+        continue;
+      }
+      lines.push({ runs, ...(info?.number !== undefined ? { num: info.number } : {}), ...(info?.highlight ? { highlight: true } : {}) });
+    }
+    this.record(block, open.top);
+  }
+
+  /** The lines of a stanza's fragment: a line of verse opens a line, its
+   *  turnovers run on in it (the mark of a turnover set flush right is
+   *  print, left out). Page starts waiting for text open the next line. */
+  private stanzaLines(open: OpenStanza, block: VDTBlock): void {
+    const ctx = this.ctx(block);
+    const em = fontPx(block.fontString) || this.bodyPx;
+    block.lines.forEach((line, i) => {
+      const before = [...this.takePages(), ...this.anchorsAt(block, line)];
+      const v = line.verseLine;
+      const segs = (line.segments ?? []).filter((g, j) => !(j === 0 && v?.turnover && g.inserted));
+      if (v?.turnover && open.sink) {
+        appendLine(open.sink, line, ctx, before, segs);
+        return;
+      }
+      // The number the print sets beside the line (#621), if any.
+      const num = this.lineNumbers.get(`${block.id}\u0000${i}`);
+      if (num !== undefined) this.book.lineNumbers = true;
+      const verseLine: VerseLineNode = { inl: [], indentEm: (v?.indent ?? 0) / em, ...(num !== undefined ? { num } : {}) };
+      open.node.lines.push(verseLine);
+      open.sink = { inl: verseLine.inl };
+      appendLine(open.sink, line, ctx, before, segs);
+    });
   }
 
   /**
@@ -1144,6 +1302,9 @@ class DocWalker {
           }
           case 'verse':
             for (const b of n.bayts) text.push(plainText(b.sadr), plainText(b.ajuz));
+            break;
+          case 'stanza':
+            for (const l of n.lines) text.push(plainText(l.inl));
             break;
           default:
             break;

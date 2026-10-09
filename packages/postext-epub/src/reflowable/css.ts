@@ -5,7 +5,7 @@
 // rule sets a width the screen would have to honour.
 
 import type { ColorValue, Dimension, ResolvedConfig } from 'postext';
-import { dimensionToPx, primaryFontFamily } from 'postext';
+import { dimensionToPx, primaryFontFamily, resolvedCodeStyle } from 'postext';
 import { idOf, round } from './inline';
 
 /** What the walk found that decides the writing mode of the book. */
@@ -14,6 +14,16 @@ export interface StylesheetOptions {
   vertical: boolean;
   /** The book sets a `:::verse` poem (its rules are written only then). */
   verse?: boolean;
+  /** The book sets a poem line by line (#620): the stanza rules. */
+  stanzas?: boolean;
+  /** Lines of verse carry their numbers (#621): the margin they stand in. */
+  lineNumbers?: boolean;
+  /** A line holds a tab at its stop (#622): the tab rows. */
+  tabs?: boolean;
+  /** The book sets a code listing (#624): the listing's box and lines. */
+  code?: boolean;
+  /** The drop caps the paragraphs open with (#623), as `lines-sink`. */
+  dropCaps?: readonly string[];
   /** Classes of emphasis marks the text uses beyond `pt-dots` (the
    *  filled dot on the default side): their rules are written only then
    *  (`inline.ts` `dotsClasses`, #428). */
@@ -393,7 +403,7 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   for (const s of config.paragraphStyles) {
     const sPx = px(s.fontSize);
     const cls = idOf('ps-', s.id);
-    out.push(rule(`p.${cls}, div.pt-verse.${cls}`, [
+    out.push(rule(`p.${cls}, div.pt-verse.${cls}, div.pt-stanza.${cls}`, [
       fam(s.fontFamily),
       `font-size: ${round(sPx / bodyPx)}em`,
       lh(s.lineHeight, sPx),
@@ -413,6 +423,14 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
       px(s.marginTop, sPx) > 0 && `margin-block-start: ${round(px(s.marginTop, sPx) / sPx)}em`,
       px(s.marginBottom, sPx) > 0 && `margin-block-end: ${round(px(s.marginBottom, sPx) / sPx)}em`,
     ]));
+    // A hanging indent: the paragraph's turnovers padded in, its first line
+    // taken back to its own indent (the style's, when it sets one, #620).
+    // A poem's lines hang on their own (`.pt-verse-line`).
+    const hang = px(s.hangingIndent, sPx);
+    if (hang > 0) {
+      const first = s.ownFirstLineIndent ? px(s.firstLineIndent, sPx) : 0;
+      out.push(rule(`p.${cls}`, [`padding-inline-start: ${round(hang / sPx)}em`, `text-indent: ${round((first - hang) / sPx)}em`]));
+    }
   }
 
   // --- notes, contents, bibliography, index -------------------------------
@@ -522,6 +540,80 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   // with the end side, so the rhymes stand in one column as in print. On
   // a narrow screen the two halves stagger, the ʿajuz on its own line
   // flush with the end, as the print does when they do not fit.
+  // A stanza set line by line (#620): its lines of verse, a blank line
+  // between stanzas, never hyphenated; each line's hang is on its own
+  // element.
+  if (options.stanzas) {
+    out.push(rule('.pt-stanza', ['margin: 0 0 1em', 'text-indent: 0', 'text-align: start', 'hyphens: manual']));
+    out.push(rule('.pt-verse-line', ['display: block']));
+  }
+  // Line numbers (#621): a poem's every Nth line carries its number in a
+  // margin on the start side of the stanza, out of the reading order.
+  if (options.stanzas && options.lineNumbers) {
+    out.push(rule('.pt-stanza', ['padding-left: 3em']));
+    out.push(rule('.pt-verse-line', ['position: relative']));
+    out.push(rule('.pt-line-number', [
+      'position: absolute', 'right: 100%', 'margin-right: 0.8em', 'text-indent: 0', 'font-size: 0.8em',
+      'white-space: nowrap', '-webkit-user-select: none', 'user-select: none',
+    ]));
+    out.push(rule('[dir="rtl"] .pt-stanza, .pt-stanza[dir="rtl"]', ['padding-left: 0', 'padding-right: 3em']));
+    out.push(rule('[dir="rtl"] .pt-line-number, .pt-stanza[dir="rtl"] .pt-line-number', ['right: auto', 'left: 100%', 'margin-right: 0', 'margin-left: 0.8em']));
+  }
+  // Tab stops (#622): a line holding tabs is a row of its parts; a filler
+  // (with its leader as a border on the baseline) pushes the part after it
+  // to the row's end, a start stop's part keeps its printed width.
+  if (options.tabs) {
+    out.push(rule('.pt-tab-row', ['display: flex', 'align-items: baseline', 'text-indent: 0']));
+    out.push(rule('.pt-tab-part', ['flex: 0 1 auto']));
+    out.push(rule('.pt-tab-rest', ['flex: 1 1 0']));
+    out.push(rule('.pt-tab-fill', ['flex: 1 1 auto', 'min-width: 1em', 'margin: 0 0.5em']));
+    out.push(rule('.pt-tab-gap', ['flex: 0 0 0.5em']));
+    out.push(rule('.pt-leader-dots', ['border-bottom: 0.12em dotted currentColor']));
+    out.push(rule('.pt-leader-rule', ['border-bottom: 0.06em solid currentColor']));
+  }
+  // Code listings (#624): the box of `codeStyle` around `<pre><code>`, the
+  // lines as written in the code face, turned over by the reading system
+  // when the screen is narrow (`pre-wrap`); numbers and wrap left out of a
+  // selection; the highlighted lines tinted.
+  if (options.code) {
+    const cs = resolvedCodeStyle(config);
+    const codePx = dimensionToPx(cs.fontSize, dpi, bodyPx);
+    const bodyLead = body.lineHeight.unit === 'em' || body.lineHeight.unit === 'rem' ? body.lineHeight.value * bodyPx : px(body.lineHeight);
+    const codeLead = cs.lineHeight ? lh(cs.lineHeight, codePx) : `line-height: ${round(bodyLead / codePx)}`;
+    const len = (d: Dimension) => em(d, codePx);
+    out.push(rule('.pt-code-box', [
+      'display: block',
+      `margin: ${em(cs.marginTop, codePx)} 0 ${em(cs.marginBottom, codePx)}`,
+      `font-size: ${round(codePx / bodyPx)}em`,
+      cs.backgroundEnabled && color(cs.background, 'background-color'),
+      cs.border.enabled && `border: ${round(px(cs.border.width) / codePx)}em solid ${cs.border.color.hex}`,
+      px(cs.borderRadius, codePx) > 0 && `border-radius: ${len(cs.borderRadius)}`,
+      `padding: ${len(cs.padding.top)} ${len(cs.padding.right)} ${len(cs.padding.bottom)} ${len(cs.padding.left)}`,
+      'text-indent: 0',
+    ]));
+    out.push(rule('.pt-code-title', [fam(cs.titleStyle?.fontFamily ?? cs.fontFamily), 'font-weight: bold', 'margin: 0 0 0.4em', 'text-indent: 0']));
+    out.push(rule('pre.pt-code', [
+      fam(cs.fontFamily), 'font-size: 1em', codeLead, 'margin: 0', color(cs.color),
+      'white-space: pre-wrap', 'overflow-wrap: anywhere', `tab-size: ${cs.tabSize}`, `-moz-tab-size: ${cs.tabSize}`,
+      'text-align: left', 'hyphens: none',
+    ]));
+    out.push(rule('pre.pt-code code', ['font: inherit', 'background: none']));
+    out.push(rule('.pt-code-num', [color(cs.lineNumberColor), 'margin-right: 1em', '-webkit-user-select: none', 'user-select: none']));
+    out.push(rule('mark.pt-code-hl', [color(cs.highlightBackground, 'background-color'), 'color: inherit']));
+  }
+  // Drop caps (#623): CSS initial letters, `lines` tall, sunk `sink`
+  // lines; a reading system without `initial-letter` floats the letter,
+  // about as tall, on the start side.
+  if (options.dropCaps && options.dropCaps.length > 0) {
+    out.push(rule('.pt-has-dropcap', ['text-indent: 0']));
+    out.push(rule('.pt-dropcap', ['float: left', 'line-height: 0.85', 'margin: 0.05em 0.08em 0 0', 'text-indent: 0']));
+    out.push(rule('[dir="rtl"] .pt-dropcap, p[dir="rtl"] .pt-dropcap', ['float: right', 'margin: 0.05em 0 0 0.08em']));
+    for (const shape of options.dropCaps) {
+      const [lines, sink] = shape.split('-').map(Number) as [number, number];
+      out.push(rule(`.pt-dropcap-${shape}`, [`font-size: ${round(lines * 1.25)}em`]));
+      out.push(`@supports (initial-letter: 1) or (-webkit-initial-letter: 1) {\n  .pt-dropcap-${shape} { float: none; margin: 0 0.08em 0 0; font-size: 1em; line-height: inherit; -webkit-initial-letter: ${lines} ${sink}; initial-letter: ${lines} ${sink}; }\n}\n`);
+    }
+  }
   if (options.verse) {
     // The poem as wide as its widest bayt, centred: its hemistichs share
     // one width, as in print, instead of drifting to the screen's edges.

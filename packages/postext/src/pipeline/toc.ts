@@ -11,6 +11,7 @@
  */
 
 import { flowTextWidth } from '../measure/vertical';
+import { fitLeader } from '../measure/leader';
 import type { ContentBlock, InlineSpan, TocBlockInfo } from '../parse';
 import type { OutlineEntry, ResolvedTocEntryStyleConfig } from '../types';
 import type { VDTLine, VDTLineSegment } from '../vdt';
@@ -121,40 +122,6 @@ function segmentsOf(line: VDTLine): VDTLineSegment[] {
   const segs: VDTLineSegment[] = [{ kind: 'text', text: line.text, width: line.bbox.width }];
   line.segments = segs;
   return segs;
-}
-
-/**
- * The leader run for `room` px: the leader character repeated as often as
- * one character's width allows, or fewer times when the run, measured as a
- * whole, is wider than the room. A face may kern the character against
- * itself: Public Sans 700 sets one full stop 6.74 px wide at 25 px and a
- * run of thirty at 7.58 px a dot, and a leader counted from one dot then ran
- * over the gap into the page number (EF-148). Null when not one fits.
- */
-function fitLeader(char: string, font: string, room: number): { text: string; width: number } | null {
-  const unit = flowTextWidth(char, font);
-  const most = unit > 0 ? Math.floor(room / unit) : 0;
-  if (most <= 0) return null;
-  // Rounding in the width sums is not an overrun.
-  const fits = (width: number) => width <= room + 0.01;
-  const widthOf = (n: number) => flowTextWidth(char.repeat(n), font);
-  let width = widthOf(most);
-  if (fits(width)) return { text: char.repeat(most), width };
-  // The longest shorter run that fits (a run widens with every character).
-  let lo = 0;
-  let hi = most - 1;
-  let loWidth = 0;
-  while (lo < hi) {
-    const mid = Math.ceil((lo + hi) / 2);
-    width = widthOf(mid);
-    if (fits(width)) {
-      lo = mid;
-      loWidth = width;
-    } else {
-      hi = mid - 1;
-    }
-  }
-  return lo > 0 ? { text: char.repeat(lo), width: loWidth } : null;
 }
 
 /**
@@ -304,11 +271,11 @@ export function measureTocBlock(
     let x = contentW;
     const pushSpace = (w: number) => { if (w > 0) { segs.push({ kind: 'space', text: ' ', width: w }); x += w; } };
     if (toc.leader.enabled && toc.leader.char.length > 0 && leaderEnd - leaderStart > 0) {
-      const leader = fitLeader(toc.leader.char, labelFont, leaderEnd - leaderStart);
+      const leader = fitLeader(toc.leader.char, leaderEnd - leaderStart, (run) => flowTextWidth(run, labelFont));
       if (leader) {
         const { text: dots, width: dotsW } = leader;
         pushSpace(leaderEnd - dotsW - x);
-        segs.push({ kind: 'text', text: dots, width: dotsW, fontString: labelFont, color: labelColor });
+        segs.push({ kind: 'text', text: dots, width: dotsW, fontString: labelFont, color: labelColor, leader: 'text' });
         x += dotsW;
       }
     }

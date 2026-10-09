@@ -24,7 +24,7 @@ geometry, media and scan pages, and names the next command.
 | HTML / web pages | `pandoc_to_postext.py`, or a small parser for one site's markup | screenshots / print CSS | strip navigation, boilerplate and embeds |
 | InDesign (.indd) | export **IDML** + print PDF, then `idml_extract.py` | the print PDF | IDML has styles and text but not the final positions |
 | LaTeX | `pandoc_to_postext.py` (keeps `$…$` math and turns `\index{…}` into `:index` marks; a display in mid-paragraph stays glued to it, so the "where …" after it continues the paragraph) | the compiled PDF | custom macros need a pandoc Lua filter or manual care |
-| Markdown (GitHub/pandoc) | `pandoc_to_postext.py SOURCE --from markdown` | — | never copy CommonMark as is: tables, fences, `---` are not Postext (`[^n]` footnotes are) |
+| Markdown (GitHub/pandoc) | `pandoc_to_postext.py SOURCE --from markdown` | — | never copy CommonMark as is: tables and `---` are not Postext (`[^n]` footnotes and, ≥ 1.23, ```` ``` ```` fences are) |
 | XML (JATS, DocBook, CNXML, TEI) | pandoc (`jats`, `docbook`) or a small ElementTree walker | the publisher's PDF | two passes: register ids, then write |
 | Plain text (Gutenberg…) | a small script: slice by heading regex, blank-line paragraphs | — | `_it_` → `*it*`; verse detection |
 | Aozora Bunko (青空文庫) text | `aozora.py` (CP932 zip or .txt) | the base edition (底本) named in its credits, or a design of your own | furigana, bōten, headings, indents, 外字 converted; "Japanese sources" |
@@ -41,9 +41,10 @@ geometry, media and scan pages, and names the next command.
    design role is usually one unique (font, size, colour). Name the roles:
    body, h1–h6, caption, footnote, box text (`callout:<type>`), box titles
    (`callout-title:<type>`), special paragraphs (`paragraphs:<style>`),
-   credits, and `skip` for running heads, folios and label text inside
-   artwork. Split a style with position conditions (`top_mm`, `x_mm`) when
-   the same face serves two roles.
+   credits, and `skip` for running heads, folios, marginal line numbers
+   (they come back from `config.lineNumbers`, configuration.md §19f) and
+   label text inside artwork. Split a style with position conditions
+   (`top_mm`, `x_mm`) when the same face serves two roles.
 3. `pdf_extract.py markdown book.pdf --roles roles.json --out draft --lang es --link-refs`.
    The extractor:
    - reads column by column, with page-wide bands between;
@@ -84,6 +85,11 @@ Gotchas:
   bullets.
 - **Small caps** extract as lower case: restore roman numerals ("xix" → "XIX")
   and acronyms.
+- **Tabbed lines** (a menu, a cast list, a price list, marks at the margin):
+  the extractor joins the parts with a space and drops the dot leader, or
+  keeps the dots as text. Delete typed leaders, write `:tab` between the
+  parts and set the stops on the paragraph's style (playbooks B13);
+  `extract_tables.py` may read such a page as a table: it is not one.
 - **Infographic pages** (hundreds of vector drawings, little text): cut them
   as figures, or transcribe the data as tables/callouts. Retyping data is
   legitimate.
@@ -137,6 +143,11 @@ Gotchas:
 - Tracked changes: accept or reject them in Word first.
 - Word's "manual" formatting (bold paragraphs used as headings) has no
   style. Map by inspection, or add styles in Word before converting.
+- Tabs: `pandoc_to_postext.py` writes a Word tab as a space. Where the
+  source aligns text at tab stops (menus, cast lists, forms), write `:tab`
+  there and copy the stops of the Word style (Paragraph → Tabs) into the
+  paragraph style's `tabStops` (playbooks B13). The Sandbox's Word import
+  does both by itself.
 
 ## PowerPoint (.pptx)
 
@@ -177,7 +188,10 @@ Gotchas:
   printed line there. A side box goes before the first paragraph that starts
   after it; a page-wide box goes before the first paragraph that ends after it.
 - Tab-led centred paragraphs are usually displayed equations
-  (`:::paragraphs{style="equation"}`). Paragraphs set smaller than body to
+  (`:::paragraphs{style="equation"}`). `idml_extract.py` writes every tab as
+  a space; where a paragraph style aligns text with its `TabList` (a menu, a
+  cast list, a price list), write `:tab` and copy the stops into the
+  paragraph style's `tabStops` (playbooks B13). Paragraphs set smaller than body to
   copy-fit a page belong in a `compact` paragraph style.
 - Linked artwork (`.ai`, `.psd`, `.tif`, `.eps`) is in the package's Links
   folder. Convert it with `convert_assets.py` (`.ai`/`.pdf` → SVG) and
@@ -207,8 +221,8 @@ Gotchas:
   `*` and `_`.
 - ALL-CAPS headings → sentence case, with a list of proper nouns to restore.
 - **Verse**: a block of 2 or more short lines (≤ ~58 characters) is a stanza.
-  Emit `:::paragraphs{style="verse"}` with **one paragraph per line**, blank
-  lines between. Postext has no hard line break.
+  Emit a `:::verse{style="verse"}` block (postext ≥ 1.23): the lines as they
+  are, a blank line between stanzas, the source's indents as leading spaces.
 
 ## Chinese, Japanese and Korean sources
 

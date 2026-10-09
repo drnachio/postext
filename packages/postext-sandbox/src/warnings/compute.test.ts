@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { buildDocument } from 'postext';
 import type { PostextConfig, Resource, VDTDocument } from 'postext';
 import { computeWarnings } from './compute';
+import { warningCategory } from './categories';
 import type { WarningPayload } from './types';
 import type { ComposedBook } from '../book/types';
 
@@ -434,6 +436,44 @@ describe('engine content warnings', () => {
   it('flags an attribute key written in Chinese (#181)', () => {
     const found = find(':::callout{type="note" 作者=曹雪芹}\n正文\n:::', 'attributeKeyInvalid');
     expect(found.map((w) => [w.payload.key, w.line])).toEqual([['作者', 1]]);
+  });
+
+  it('flags a :tab in vertical text, set as a word space (#622)', () => {
+    const md = '品名 :tab 値段';
+    const vertical: PostextConfig = { layout: { layoutType: 'single', writingMode: 'vertical-rl' }, locale: 'ja' };
+    const found = find(md, 'tabInVerticalText', vertical);
+    expect(found.map((w) => [md.slice(w.sourceStart, w.sourceEnd), w.line])).toEqual([[':tab', 1]]);
+    expect(find(md, 'tabInVerticalText')).toEqual([]);
+  });
+
+  it('lists a paragraph whose drop cap could not be set as configured (#623)', () => {
+    // A measuring canvas for the layout (no DOM here): 7 px a glyph.
+    const g = globalThis as unknown as { OffscreenCanvas?: unknown };
+    g.OffscreenCanvas ??= class { getContext() { return { font: '', measureText: (t: string) => ({ width: t.length * 7 }) }; } };
+    const md = '# One\n\nA short paragraph.';
+    const config: PostextConfig = { headings: { levels: [{ level: 1, dropCap: { lines: 3, shortParagraph: 'shrink' } }] } };
+    const doc = buildDocument({ markdown: md }, config);
+    const found = computeWarnings({ markdown: md, config, doc, resources: [] })
+      .filter((w): w is typeof w & { payload: Extract<WarningPayload, { kind: 'dropCap' }> } => w.payload.kind === 'dropCap');
+    expect(found.map((w) => [w.payload.reason, w.payload.handling, w.line])).toEqual([['shortParagraph', 'shrink', 3]]);
+    expect(warningCategory('dropCap')).toBe('typesetting');
+  });
+
+  it('lists a code listing wider than its box, and a code fence left open (#624)', () => {
+    const g = globalThis as unknown as { OffscreenCanvas?: unknown };
+    g.OffscreenCanvas ??= class { getContext() { return { font: '', measureText: (t: string) => ({ width: t.length * 7 }) }; } };
+    const md = ['Text.', '', '```js', `const s = "${'a'.repeat(200)}";`, '```', '', '```py', 'open()'].join('\n');
+    const config: PostextConfig = {};
+    const doc = buildDocument({ markdown: md }, config);
+    const all = computeWarnings({ markdown: md, config, doc, resources: [] });
+    const overflow = all.filter((w): w is typeof w & { payload: Extract<WarningPayload, { kind: 'codeOverflow' }> } => w.payload.kind === 'codeOverflow');
+    expect(overflow.map((w) => [w.payload.mode, w.payload.lines, w.payload.lang, w.line])).toEqual([['wrap', 1, 'js', 4]]);
+    expect(warningCategory('codeOverflow')).toBe('typesetting');
+    const open = all.filter((w) => w.payload.kind === 'unclosedCodeBlock');
+    expect(open.map((w) => [w.payload, w.line])).toEqual([[{ kind: 'unclosedCodeBlock', delimiter: '```', lang: 'py' }, 7]]);
+    // A book stored before #624 reads its fences as Markdown: no listing, no warning.
+    const legacy = computeWarnings({ markdown: md, config: { codeStyle: { blocks: false } }, doc: null, resources: [] });
+    expect(legacy.map((w) => w.payload.kind)).not.toContain('unclosedCodeBlock');
   });
 
   it('flags an image the previews cannot read, unless storage itself is out', () => {

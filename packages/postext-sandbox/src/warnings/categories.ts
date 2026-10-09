@@ -46,6 +46,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'cjkGridClamped':
     case 'unknownNumberFormat':
     case 'unknownNumerals':
+    case 'lineNumbersUnsupported':
     case 'unknownConfigKey':
     case 'unknownConfigValue':
     case 'headingDesignCut':
@@ -61,6 +62,9 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'calloutOverflow':
     case 'alphaPdfOverflow':
     case 'chipOverlap':
+    case 'lineNumberOverlap':
+    case 'dropCap':
+    case 'codeOverflow':
     case 'parityCascade':
     case 'unsupportedHyphenationLocale':
     case 'comicBalloonOverflow':

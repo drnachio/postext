@@ -32,7 +32,7 @@ function project(config: object, text = CHAPTER, withFont = false): string {
     fonts.push({ name: "Noto Serif TC", variants: [{ weight: 400, style: "normal", file: "fonts/NotoSerifTC-Regular.woff2" }] });
   }
   const manifest = {
-    version: 2, configVersion: 8, id: "t", name: "T", locale: "zh-Hant",
+    version: 2, configVersion: 9, id: "t", name: "T", locale: "zh-Hant",
     chapters: { "zh-Hant": [{ title: "第一回", file: "chapters/zh-Hant/01-hui.md" }] },
     config: { header: { elements: [] }, layout: { layoutType: "single" }, ...config },
     resources: [], fonts,
@@ -85,7 +85,7 @@ describe.skipIf(!python)("postext-port lint on Chinese text", () => {
       extra,
     ].join("\n");
     const manifest = {
-      version: 2, configVersion: 8, id: "t", name: "T", locale: "en",
+      version: 2, configVersion: 9, id: "t", name: "T", locale: "en",
       chapters: { en: [{ title: "One", file: "chapters/01.md" }] },
       config: {
         locale: "en", header: { elements: [] }, layout: { layoutType: "single" },
@@ -179,6 +179,136 @@ describe.skipIf(!python)("postext-port lint on the Folio settings", () => {
   });
 });
 
+describe.skipIf(!python)("postext-port lint on line numbers", () => {
+  const fonts = { bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
+  const poem = CHAPTER + "\n:::verse{lineStart=x interval=0}\n滿紙荒唐言，\n一把辛酸淚！\n:::\n\n:::numbering{lines=-1}\n";
+
+  it("checks lineNumbers values, the vertical case and the per-block attributes", () => {
+    const { out } = lint(project({
+      ...fonts,
+      layout: { layoutType: "single", writingMode: "vertical-rl" },
+      lineNumbers: { enabled: true, count: "prose", interval: 0, every: 5 },
+      paragraphStyles: [{ id: "verse", lineNumbers: "yes" }],
+    }, poem));
+    expect(out).toContain("lineNumbers.count 'prose' is not one of ['all', 'verse']");
+    expect(out).toContain("lineNumbers.interval 0 is not a whole number >= 1");
+    expect(out).toContain("lineNumbers.every is not a lineNumbers key (ignored)");
+    expect(out).toContain("lineNumbers.enabled: vertical documents get no line numbers (lineNumbersUnsupported)");
+    expect(out).toContain("paragraphStyles[0].lineNumbers must be true or false");
+    expect(out).toContain("verse lineStart 'x' is not a whole number >= 0");
+    expect(out).toContain("verse interval '0' is not a whole number >= 1");
+    expect(out).toContain("numbering lines '-1' is not a whole number >= 0");
+  });
+
+  it("passes well-formed line numbers", () => {
+    const text = CHAPTER + "\n:::verse{lineStart=37 interval=5}\n滿紙荒唐言，\n一把辛酸淚！\n:::\n\n:::numbering{lines=1}\n";
+    const { out } = lint(project({ ...fonts, lineNumbers: { enabled: true, count: "all", restart: "page", multiColumn: "gutter" } }, text));
+    expect(out).not.toMatch(/lineNumbers|verse lineStart|verse interval|numbering lines/);
+  });
+});
+
+describe.skipIf(!python)("postext-port lint on tab stops", () => {
+  const fonts = { bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
+  const mm = (value: number) => ({ value, unit: "mm" });
+
+  it("checks the stops, the :tab attributes and tab characters no style sets", () => {
+    const text = CHAPTER + "\n湯 :tab{at=wide align=right size=2} 八元\n\n茶\t三元\n";
+    const { out } = lint(project({
+      ...fonts,
+      paragraphStyles: [{ id: "menu", tabStops: [{ position: "far", align: "right", leaders: "." }, "end"], tabInterval: mm(0) }],
+      calloutStyles: [{ id: "box", body: { tabStops: { position: "end" } } }],
+    }, text));
+    expect(out).toContain("paragraphStyles[0].tabStops[0].position 'far' is no length, 'end' or percentage: the stop is left out");
+    expect(out).toContain("paragraphStyles[0].tabStops[0].align 'right' is not one of ['center', 'decimal', 'end', 'start']: read as 'start'");
+    expect(out).toContain("paragraphStyles[0].tabStops[0].leaders is not a tab stop key (leader?) (ignored)");
+    expect(out).toContain("paragraphStyles[0].tabStops[1] must be an object");
+    expect(out).toContain("paragraphStyles[0].tabInterval must be a length above 0");
+    expect(out).toContain("calloutStyles[0].body.tabStops must be a list of stops");
+    expect(out).toContain(":tab{size=…} is not read");
+    expect(out).toContain(":tab{at=wide} is no length, 'end' or percentage");
+    expect(out).toContain(":tab{align=right} is not one of");
+    expect(lint(project(fonts, text)).out).toContain("a tab character inside a line is a word space unless the paragraph's style sets tabStops");
+  });
+
+  it("warns that a :tab in vertical text is a word space", () => {
+    const { out } = lint(project({ ...fonts, layout: { layoutType: "single", writingMode: "vertical-rl" } }, CHAPTER + "\n湯 :tab 八元\n"));
+    expect(out).toContain(":tab in vertical text is set as a word space (tabInVerticalText)");
+  });
+
+  it("passes well-formed stops and leaves 3:table alone", () => {
+    const text = CHAPTER + "\n湯 :tab 八元\n\n茶\t三元 :tab{at=120mm align=end leader=\". \" gap=2pt}\n\n3:table\n";
+    const { out } = lint(project({
+      ...fonts,
+      bodyText: { ...fonts.bodyText, tabInterval: mm(12.5) },
+      paragraphStyles: [{ id: "menu", tabStops: [{ position: mm(40) }, { position: "end", align: "end", leader: "rule", leaderGap: mm(1) }, { position: "75%", align: "decimal", decimalChar: "," }] }],
+    }, text));
+    expect(out).not.toMatch(/tabStops|tabInterval|:tab|tab character/);
+  });
+});
+
+describe.skipIf(!python)("postext-port lint on code listings", () => {
+  const fonts = { bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
+
+  it("reads a fence as a listing and leaves its lines alone", () => {
+    const text = `${CHAPTER}\n\`\`\`bash {title="x.sh"}\n| not | a table |\n<b>not html</b> ~~no~~\n\`\`\`\n`;
+    const { out } = lint(project(fonts, text));
+    expect(out).not.toContain("code fences are not supported");
+    expect(out).not.toContain("pipe tables are not supported");
+    expect(out).not.toContain("HTML tags/entities print literally");
+    expect(out).not.toContain("~~strike~~");
+  });
+
+  it("flags a listing rebuilt with word joiners and no-break spaces, and checks codeStyle", () => {
+    const text = `${CHAPTER}\n:::paragraphs{style="code"}\n\u2060\u00a0\u00a0return x\n:::\n`;
+    const { out } = lint(project({ ...fonts, paragraphStyles: [{ id: "code" }], codeStyle: { overflow: "warp", tabsize: 2, tokens: { keywrd: {} }, inline: { colour: "#000" } } }, text));
+    expect(out).toContain("write the listing as a ``` fence");
+    expect(out).toContain("codeStyle.overflow 'warp' is not one of");
+    expect(out).toContain("codeStyle.tabsize is not a codeStyle key");
+    expect(out).toContain("codeStyle.tokens.keywrd is not a token kind");
+    expect(out).toContain("codeStyle.inline.colour is not an inline code key");
+  });
+});
+
+describe.skipIf(!python)("postext-port lint on drop caps", () => {
+  const fonts = { bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
+
+  it("checks the settings and the dropcap attribute", () => {
+    const text = CHAPTER.replace("# 第一回　甄士隱夢幻識通靈", "# 第一回　甄士隱夢幻識通靈 {dropcap=big}");
+    const { out } = lint(project({
+      ...fonts,
+      paragraphStyles: [{ id: "entry", dropCap: { line: 3, punctuation: "hanging", shortParagraph: "skipp", sink: 0, leadIn: { word: 2 } } }],
+      headingStyles: [{ id: "none", dropCap: false }, { id: "bad", dropCap: 3 }],
+    }, text));
+    expect(out).toContain("paragraphStyles[0].dropCap.line is not a drop cap key (lines?) (ignored)");
+    expect(out).toContain("paragraphStyles[0].dropCap.punctuation 'hanging' is not one of ['hang', 'text', 'with-cap']");
+    expect(out).toContain("paragraphStyles[0].dropCap.shortParagraph 'skipp' is not one of");
+    expect(out).toContain("paragraphStyles[0].dropCap.sink 0 is not a whole number >= 1");
+    expect(out).toContain("paragraphStyles[0].dropCap.leadIn.word is not a lead-in key (words?) (ignored)");
+    expect(out).toContain("headingStyles[1].dropCap must be an object");
+    expect(out).not.toContain("headingStyles[0].dropCap");
+    expect(out).toContain("{dropcap=big} reads as nothing");
+  });
+
+  it("flags drop caps in vertical text and openings drawn as a heading attribute", () => {
+    const vertical = lint(project({ ...fonts, layout: { layoutType: "single", writingMode: "vertical-rl" }, paragraphStyles: [{ id: "e", dropCap: { lines: 2 } }] }));
+    expect(vertical.out).toContain("drop caps are set in horizontal text only");
+    const lead = CHAPTER.replace("# 第一回　甄士隱夢幻識通靈", '# 第一回　甄士隱夢幻識通靈 {lead="此開卷第一回也。"}');
+    const design = { enabled: true, slot: { elements: [{ kind: "text", id: "lead", content: "{attr.lead}", overflow: "wrap", dropCap: { lines: 2 } }] } };
+    const { out } = lint(project({ ...fonts, headings: { ...fonts.headings, levels: [{ level: 1, breakBefore: { enabled: true }, advancedDesign: design }] } }, lead));
+    expect(out).toContain("keep the chapter's opening words in its first paragraph and give the heading level a dropCap");
+  });
+
+  it("passes well-formed drop caps", () => {
+    const text = CHAPTER.replace("# 第一回　甄士隱夢幻識通靈", "# 第一回　甄士隱夢幻識通靈 {dropcap=2}");
+    const { out } = lint(project({
+      ...fonts,
+      headings: { ...fonts.headings, levels: [{ level: 1, breakBefore: { enabled: true }, dropCap: { lines: 3, sink: 1, punctuation: "hang", leadIn: { words: "line" } } }] },
+      paragraphStyles: [{ id: "entry", dropCap: { lines: 2, each: true, shortParagraph: "shrink" } }],
+    }, text));
+    expect(out).not.toMatch(/dropCap|dropcap|drop caps/);
+  });
+});
+
 /** An Arabic chapter with a Latin marker word, in a one-locale project. */
 function arabicProject(config: object, text?: string, fonts: object[] = []): string {
   const dir = mkdtempSync(path.join(os.tmpdir(), "postext-lint-ar-"));
@@ -190,7 +320,7 @@ function arabicProject(config: object, text?: string, fonts: object[] = []): str
     "",
   ].join("\n"));
   const manifest = {
-    version: 2, configVersion: 8, id: "t", name: "T", locale: "ar",
+    version: 2, configVersion: 9, id: "t", name: "T", locale: "ar",
     chapters: { ar: [{ title: "الفصل الأول", file: "chapters/ar/01.md" }] },
     config: { header: { elements: [] }, layout: { layoutType: "single" }, ...config },
     resources: [], fonts,
@@ -267,7 +397,7 @@ function japaneseProject(config: object, text = JA_CHAPTER): string {
   mkdirSync(path.join(dir, "chapters/ja"), { recursive: true });
   writeFileSync(path.join(dir, "chapters/ja/01.md"), text);
   const manifest = {
-    version: 2, configVersion: 8, id: "t", name: "T",
+    version: 2, configVersion: 9, id: "t", name: "T",
     chapters: { ja: [{ title: "上", file: "chapters/ja/01.md" }] },
     config: { header: { elements: [] }, layout: { layoutType: "single" }, ...config },
     resources: [], fonts: [],
@@ -393,7 +523,7 @@ function comicProject(config: object, chapters: Record<string, string>, resource
     anchors: [{ id: "ana", x: 0.3, y: 0.5, face: { x: 0.2, y: 0.3, width: 0.2, height: 0.2 } }, { id: "ben", x: 0.7, y: 0.5 }],
   }));
   const manifest = {
-    version: 2, configVersion: 8, id: "t", name: "T", locale: Object.keys(chapters)[0],
+    version: 2, configVersion: 9, id: "t", name: "T", locale: Object.keys(chapters)[0],
     chapters: specs,
     config: { header: { elements: [] }, layout: { layoutType: "single" }, locale: "en", ...config },
     resources: pictures, fonts,

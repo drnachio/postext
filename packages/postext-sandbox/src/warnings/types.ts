@@ -28,7 +28,9 @@ export type WarningKind =
   | 'malformedEmbed'
   | 'fullwidthMarkup'
   | 'attributeKeyInvalid'
+  | 'tabInVerticalText'
   | 'unclosedContainer'
+  | 'unclosedCodeBlock'
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
   | 'unknownChipStyle'
@@ -77,6 +79,10 @@ export type WarningKind =
   | 'fontFamilyStack'
   | 'unknownNumberFormat'
   | 'unknownNumerals'
+  | 'lineNumbersUnsupported'
+  | 'lineNumberOverlap'
+  | 'dropCap'
+  | 'codeOverflow'
   | 'unknownConfigKey'
   | 'unknownConfigValue'
   | 'unsupportedHyphenationLocale'
@@ -162,9 +168,13 @@ export type WarningPayload =
   /** An attribute key with letters outside ASCII (`作者=曹雪芹`): the
    *  attribute is ignored. */
   | { kind: 'attributeKeyInvalid'; key: string }
+  /** A `:tab` in a block set in vertical text (#622): tab stops are set
+   *  in horizontal text only, so the tab is a word space. */
+  | { kind: 'tabInVerticalText' }
   /** A `:::name` container fence was still open at the end of the document;
    *  the parser auto-closed it. Points at the opening fence. */
   | { kind: 'unclosedContainer'; name: string }
+  | { kind: 'unclosedCodeBlock'; delimiter: '```' | '~~~'; lang?: string }
   /** A `:::paragraphs{style="…"}` container names a style id that is not in
    *  `config.paragraphStyles`; the paragraphs render as body text. */
   | { kind: 'unknownParagraphStyle'; style: string }
@@ -312,6 +322,15 @@ export type WarningPayload =
   /** A `numerals` value that names no digit system: the digits follow
    *  the document language, `used` the system that gives. */
   | { kind: 'unknownNumerals'; path: string; value: string; used: string }
+  /** `lineNumbers.enabled` on a vertical document (#621): it gets no line
+   *  numbers. */
+  | { kind: 'lineNumbersUnsupported'; path: string; value: string; used: string }
+  /** A line number set in the side column overlaps a side box, caption or
+   *  figure (#621); both are painted. `number` as printed. */
+  | { kind: 'lineNumberOverlap'; number: string }
+  /** A paragraph's drop cap could not be set as configured (#623). */
+  | { kind: 'codeOverflow'; mode: 'wrap' | 'shrink' | 'clip'; lines: number; scale?: number; lang?: string }
+  | { kind: 'dropCap'; reason: 'shortParagraph' | 'split' | 'joiningScript' | 'verticalText' | 'noLetter'; handling?: 'reserve' | 'shrink' | 'skip'; lines?: number; text: string }
   /** A key the heading settings do not have (`headings`, its `balancing`
    *  and `levels`, `headingStyles`): the engine ignores it. `value` is the
    *  key; `suggestion` names the setting it is closest to, when one is. */

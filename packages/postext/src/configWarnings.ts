@@ -22,6 +22,14 @@ import type {
   LetteringConfig,
   BalloonStyleConfig,
   ComicCastMember,
+  LineNumbersConfig,
+  ResolvedLineNumbersConfig,
+  CodeStyleConfig,
+  InlineCodeStyleConfig,
+  CodeTokenStyle,
+  TabStop,
+  ParagraphDropCap,
+  DropCapLeadIn,
 } from './types';
 import type { ConfigWarning, ResolvedConfig } from './vdt';
 import { parseNumberFormat } from './numbering';
@@ -36,14 +44,18 @@ import { defaultEmphasisFor, isEmphasisStyle, isTashkilMode } from './defaults/b
 import { parseFootnoteNumberFormat } from './defaults/footnotes';
 import { COMIC_CHOICES, isComicChoice, resolveComicsConfig } from './defaults/comics';
 import { resolvePrintConfig } from './defaults/print';
+import { isTabStopAlign, parseTabStopPosition } from './defaults/tabStops';
+import { DROP_CAP_PUNCTUATION, DROP_CAP_SHORT_PARAGRAPH, isDropCap, readDropCap } from './defaults/dropCap';
 import { outputProfileInfo } from './color/catalogue';
+import { CODE_OVERFLOWS, CODE_TOKEN_KINDS } from './defaults/codeStyle';
+import { LINE_NUMBERS_ALIGNS, LINE_NUMBERS_COUNTS, LINE_NUMBERS_MULTI_COLUMN, LINE_NUMBERS_POSITIONS, LINE_NUMBERS_RESTARTS } from './defaults/lineNumbers';
 
 /** The format fields and the decimal spelling each falls back to. A
  *  `format` is a format field only under `pageNumbering`. */
 function numberFormatFallback(key: string, parentKey: string | undefined): string | undefined {
   if (key === 'numberFormat') return 'arabic';
   if (key === 'counterFormat') return 'decimal';
-  if (key === 'format' && parentKey === 'pageNumbering') return 'decimal';
+  if (key === 'format' && (parentKey === 'pageNumbering' || parentKey === 'lineNumbers')) return 'decimal';
   return undefined;
 }
 
@@ -121,6 +133,133 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   }
   out.push(...collectComicChoiceWarnings(config));
   out.push(...collectPrintChoiceWarnings(config));
+  out.push(...collectLineNumbersWarnings(config));
+  out.push(...collectCodeStyleWarnings(config));
+  out.push(...collectTabStopWarnings(config));
+  out.push(...collectDropCapWarnings(config));
+  return out;
+}
+
+/** The drop cap settings of a config (#623): each paragraph style's, each
+ *  heading level's and each heading style's (and those of the HTML
+ *  viewer's overrides), with their paths. */
+function dropCapSettings(config: PostextConfig): { cap: ParagraphDropCap; path: string }[] {
+  const out: { cap: ParagraphDropCap; path: string }[] = [];
+  const add = (cap: unknown, path: string) => {
+    if (isDropCap(cap)) out.push({ cap, path });
+  };
+  const from = (c: Pick<PostextConfig, 'headings' | 'headingStyles' | 'paragraphStyles'> | undefined, prefix: string) => {
+    if (!c) return;
+    (c.paragraphStyles ?? []).forEach((s, i) => add((s as { dropCap?: unknown } | undefined)?.dropCap, `${prefix}paragraphStyles[${i}].dropCap`));
+    const levels = (c.headings as { levels?: unknown } | undefined)?.levels;
+    if (Array.isArray(levels)) levels.forEach((l, i) => add((l as { dropCap?: unknown } | undefined)?.dropCap, `${prefix}headings.levels[${i}].dropCap`));
+    (c.headingStyles ?? []).forEach((s, i) => add((s as { dropCap?: unknown } | undefined)?.dropCap, `${prefix}headingStyles[${i}].dropCap`));
+  };
+  from(config, '');
+  from(config.htmlViewer?.overrides, 'htmlViewer.overrides.');
+  return out;
+}
+
+/** A drop cap whose `punctuation` or `shortParagraph` is not one of its
+ *  words, or whose `lines`, `sink` or `characters` is no whole number from
+ *  1 (#623): the default is used. */
+function collectDropCapWarnings(config: PostextConfig): ConfigWarning[] {
+  const out: ConfigWarning[] = [];
+  for (const { cap, path } of dropCapSettings(config)) {
+    const read = readDropCap(cap);
+    if (cap.punctuation !== undefined && !(DROP_CAP_PUNCTUATION as readonly unknown[]).includes(cap.punctuation)) {
+      const suggestion = closestKey(String(cap.punctuation), DROP_CAP_PUNCTUATION);
+      out.push({ kind: 'unknownConfigValue', path: `${path}.punctuation`, value: String(cap.punctuation), used: read.punctuation, ...(suggestion ? { suggestion } : {}) });
+    }
+    if (cap.shortParagraph !== undefined && !(DROP_CAP_SHORT_PARAGRAPH as readonly unknown[]).includes(cap.shortParagraph)) {
+      const suggestion = closestKey(String(cap.shortParagraph), DROP_CAP_SHORT_PARAGRAPH);
+      out.push({ kind: 'unknownConfigValue', path: `${path}.shortParagraph`, value: String(cap.shortParagraph), used: read.shortParagraph, ...(suggestion ? { suggestion } : {}) });
+    }
+    for (const key of ['lines', 'sink', 'characters'] as const) {
+      const v: unknown = cap[key];
+      if (v !== undefined && !(typeof v === 'number' && Number.isFinite(v) && v >= 1)) {
+        out.push({ kind: 'unknownConfigValue', path: `${path}.${key}`, value: String(v), used: String(read[key]) });
+      }
+    }
+  }
+  return out;
+}
+
+/** The tab stop lists of a config (#622): the body's, each paragraph
+ *  style's and each callout body's, with their paths. */
+function tabStopLists(config: PostextConfig): { stops: unknown[]; path: string }[] {
+  const out: { stops: unknown[]; path: string }[] = [];
+  const add = (stops: unknown, path: string) => {
+    if (Array.isArray(stops)) out.push({ stops, path });
+  };
+  add(config.bodyText?.tabStops, 'bodyText.tabStops');
+  (config.paragraphStyles ?? []).forEach((s, i) => add((s as { tabStops?: unknown } | undefined)?.tabStops, `paragraphStyles[${i}].tabStops`));
+  (config.calloutStyles ?? []).forEach((s, i) => add((s as { body?: { tabStops?: unknown } } | undefined)?.body?.tabStops, `calloutStyles[${i}].body.tabStops`));
+  return out;
+}
+
+/** A tab stop whose `align` is not one of its words (read as `'start'`),
+ *  or whose `position` is no length, `'end'` or percentage (the stop is
+ *  left out: `used` `'none'`). */
+function collectTabStopWarnings(config: PostextConfig): ConfigWarning[] {
+  const out: ConfigWarning[] = [];
+  for (const { stops, path } of tabStopLists(config)) {
+    stops.forEach((raw, i) => {
+      if (!raw || typeof raw !== 'object') return;
+      const stop = raw as { position?: unknown; align?: unknown };
+      if (stop.align !== undefined && !isTabStopAlign(stop.align)) {
+        out.push({ kind: 'unknownConfigValue', path: `${path}[${i}].align`, value: String(stop.align), used: 'start' });
+      }
+      if (parseTabStopPosition(stop.position) === undefined) {
+        out.push({ kind: 'unknownConfigValue', path: `${path}[${i}].position`, value: typeof stop.position === 'object' ? JSON.stringify(stop.position) : String(stop.position), used: 'none' });
+      }
+    });
+  }
+  return out;
+}
+
+/** The line number settings that take one of a few words (#621), and line
+ *  numbers asked of a vertical document, which gets none
+ *  (`lineNumbersUnsupported`). */
+function collectLineNumbersWarnings(config: PostextConfig): ConfigWarning[] {
+  const ln = config.lineNumbers as unknown;
+  if (!ln || typeof ln !== 'object' || Array.isArray(ln)) return [];
+  const c = ln as LineNumbersConfig;
+  const out: ConfigWarning[] = [];
+  let resolved: ResolvedLineNumbersConfig | undefined;
+  const res = () => (resolved ??= resolveAllConfig(config).lineNumbers!);
+  const check = (value: unknown, choices: readonly string[], key: keyof LineNumbersConfig): void => {
+    if (value === undefined || (typeof value === 'string' && choices.includes(value))) return;
+    const written = String(value);
+    const suggestion = closestKey(written, choices);
+    out.push({ kind: 'unknownConfigValue', path: `lineNumbers.${key}`, value: written, used: String(res()[key as keyof ResolvedLineNumbersConfig]), ...(suggestion ? { suggestion } : {}) });
+  };
+  check(c.count, LINE_NUMBERS_COUNTS, 'count');
+  check(c.restart, LINE_NUMBERS_RESTARTS, 'restart');
+  check(c.position, LINE_NUMBERS_POSITIONS, 'position');
+  check(c.multiColumn, LINE_NUMBERS_MULTI_COLUMN, 'multiColumn');
+  check(c.align, LINE_NUMBERS_ALIGNS, 'align');
+  if (c.enabled === true && resolveAllConfig(config).layout.writingMode === 'vertical-rl') {
+    out.push({ kind: 'lineNumbersUnsupported', path: 'lineNumbers.enabled', value: 'true', used: 'false' });
+  }
+  return out;
+}
+
+/** The code style settings that take one of a few words (#624). */
+function collectCodeStyleWarnings(config: PostextConfig): ConfigWarning[] {
+  const cs = config.codeStyle as unknown;
+  if (!cs || typeof cs !== 'object' || Array.isArray(cs)) return [];
+  const c = cs as CodeStyleConfig;
+  const out: ConfigWarning[] = [];
+  const check = (value: unknown, choices: readonly string[], key: string, used: string): void => {
+    if (value === undefined || (typeof value === 'string' && choices.includes(value))) return;
+    const written = String(value);
+    const suggestion = closestKey(written, choices);
+    out.push({ kind: 'unknownConfigValue', path: `codeStyle.${key}`, value: written, used, ...(suggestion ? { suggestion } : {}) });
+  };
+  check(c.overflow, CODE_OVERFLOWS, 'overflow', 'wrap');
+  check(c.highlight, ['builtin', 'none'], 'highlight', 'builtin');
+  check(c.span, ['column', 'page'], 'span', 'column');
   return out;
 }
 
@@ -232,7 +371,7 @@ const HEADING_LEVEL_KEYS = {
   level: true, fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true,
   marginTop: true, marginBottom: true, numberingTemplate: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true,
   breakBefore: true, span: true, spanBreak: true, advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
-  lineSpan: true, indent: true, jidori: true,
+  lineSpan: true, indent: true, jidori: true, dropCap: true,
 } satisfies Record<keyof HeadingLevelConfig, true>;
 const HEADING_STYLE_KEYS = {
   id: true, name: true, numberingTemplate: true, numbered: true, toc: true, runningChapter: true, header: true, footer: true,
@@ -240,13 +379,49 @@ const HEADING_STYLE_KEYS = {
   fontSize: true, lineHeight: true, fontFamily: true, color: true, fontWeight: true, marginTop: true,
   marginBottom: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true, breakBefore: true, span: true, spanBreak: true,
   advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true, lineSpan: true, indent: true, jidori: true,
+  dropCap: true,
 } satisfies Record<keyof HeadingStyleConfig, true>;
 const PARAGRAPH_STYLE_KEYS = {
   id: true, name: true, fontFamily: true, fontSize: true, lineHeight: true, color: true, textAlign: true,
   boldColor: true, italicColor: true, fontWeight: true, boldFontWeight: true, italic: true, smallCaps: true,
   hyphenation: true, indent: true, endIndent: true, firstLineIndent: true, hangingIndent: true, spaceBetween: true,
-  marginTop: true, marginBottom: true, snapToGrid: true, textTransform: true, wordBreak: true,
+  marginTop: true, marginBottom: true, snapToGrid: true, textTransform: true, wordBreak: true, lineNumbers: true,
+  tabStops: true, tabInterval: true, dropCap: true,
 } satisfies Record<keyof ParagraphStyleConfig, true>;
+// A body paragraph's drop cap (#623) and its lead-in.
+const DROP_CAP_KEYS = {
+  lines: true, sink: true, characters: true, fontFamily: true, fontWeight: true, italic: true, fontSize: true,
+  color: true, gap: true, punctuation: true, leadIn: true, shortParagraph: true, each: true,
+} satisfies Record<keyof ParagraphDropCap, true>;
+const DROP_CAP_LEAD_IN_KEYS = { words: true, smallCaps: true, uppercase: true } satisfies Record<keyof DropCapLeadIn, true>;
+// A tab stop (#622).
+const TAB_STOP_KEYS = {
+  position: true, align: true, leader: true, leaderGap: true, decimalChar: true,
+} satisfies Record<keyof TabStop, true>;
+
+// Line numbers (#621).
+const LINE_NUMBERS_KEYS = {
+  enabled: true, count: true, interval: true, numberFirst: true, restart: true, startAt: true, position: true,
+  multiColumn: true, gap: true, align: true, fontFamily: true, fontSize: true, fontWeight: true, italic: true,
+  color: true, format: true,
+} satisfies Record<keyof LineNumbersConfig, true>;
+
+// Code listings and inline code (#624).
+const CODE_STYLE_KEYS = {
+  blocks: true, indentedCode: true, fontFamily: true, fontSize: true, fontWeight: true, boldFontWeight: true,
+  lineHeight: true, snapToGrid: true, color: true, backgroundEnabled: true, background: true, padding: true,
+  border: true, borderRadius: true, marginTop: true, marginBottom: true, span: true, tabSize: true, overflow: true,
+  wrapIndent: true, wrapMarker: true, minFontScale: true, lineNumbers: true, lineNumberColor: true,
+  lineNumberGap: true, highlightBackground: true, keepTogether: true, splitMinLines: true, repeatTitle: true,
+  continuesMarkerEnabled: true, continuesMarker: true, titleStyle: true, label: true, highlight: true, tokens: true,
+  inline: true,
+} satisfies Record<keyof CodeStyleConfig, true>;
+const CODE_TOKEN_STYLE_KEYS = { color: true, bold: true, italic: true } satisfies Record<keyof CodeTokenStyle, true>;
+const INLINE_CODE_KEYS = {
+  fontFamily: true, fontSize: true, color: true, bold: true, italic: true, background: true, borderColor: true,
+  borderWidth: true, borderRadius: true, paddingX: true, paddingY: true,
+} satisfies Record<keyof InlineCodeStyleConfig, true>;
+const CODE_TOKEN_KIND_KEYS: Record<string, true> = Object.fromEntries(CODE_TOKEN_KINDS.map((k) => [k, true]));
 
 // The comics tables (#562).
 const COMICS_KEYS = {
@@ -342,6 +517,25 @@ function collectUnknownKeyWarnings(config: PostextConfig): ConfigWarning[] {
   };
   checkConfig(config, '');
   checkConfig(config.htmlViewer?.overrides, 'htmlViewer.overrides.');
+  for (const { stops, path } of tabStopLists(config)) stops.forEach((st, i) => check(st, TAB_STOP_KEYS, `${path}[${i}]`));
+  for (const { cap, path } of dropCapSettings(config)) {
+    check(cap, DROP_CAP_KEYS, path);
+    check(cap.leadIn, DROP_CAP_LEAD_IN_KEYS, `${path}.leadIn`);
+  }
+  check(config.lineNumbers, LINE_NUMBERS_KEYS, 'lineNumbers');
+  // Code listings (#624): the section, its token kinds and inline code.
+  const codeStyle = config.codeStyle as unknown;
+  if (codeStyle && typeof codeStyle === 'object' && !Array.isArray(codeStyle)) {
+    const c = codeStyle as CodeStyleConfig;
+    check(c, CODE_STYLE_KEYS, 'codeStyle');
+    check(c.tokens, CODE_TOKEN_KIND_KEYS, 'codeStyle.tokens');
+    if (c.tokens && typeof c.tokens === 'object') {
+      for (const [kind, look] of Object.entries(c.tokens)) {
+        if (CODE_TOKEN_KIND_KEYS[kind]) check(look, CODE_TOKEN_STYLE_KEYS, `codeStyle.tokens.${kind}`);
+      }
+    }
+    check(c.inline, INLINE_CODE_KEYS, 'codeStyle.inline');
+  }
   // Comics: the section, its frame, gutters, panel styles, lettering,
   // balloon styles and cast.
   const comics = config.comics as unknown;

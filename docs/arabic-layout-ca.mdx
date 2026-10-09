@@ -125,7 +125,7 @@ Dels enllaços se'n segueixen tres regles, que valen per a tota paraula que cont
 - **Sense espaiat entre lletres.** Separar lletres enllaçades trenca els enllaços. El `letterSpacing` d'un estil i el *tracking* de la justificació se salten les paraules àrabs; la composició avisa d'un estil de cos o de títol que fixi espaiat entre lletres sobre text àrab (`joiningScriptLetterSpacing`).
 - **Sense talls.** Una paraula més ampla que la línia no es talla mai entre les seves lletres. Desborda la mesura, la línia queda marcada (`VDTLine.wordOverflow`) i la composició avisa (`unbreakableWordOverflow`). Passa en cel·les de taula estretes i en columnes laterals; eixampla-les o reescriu el text.
 
-Un canvi d'estil dins d'una paraula, com una lletra en color o un signe vocàlic en negreta (`كتا**ب**`), no parteix la paraula en dues: es mesura i se li donen les formes sencera, i la part amb estil es pinta al damunt. El PDF i l'HTML pinten exactament aquestes lletres; el canvas calcula on cau la lletra dins de la paraula ja formada, i el color pot tocar la veïna per un pèl. Un text de disseny no talla mai una paraula àrab en ajustar línies o en truncar, i no es dibuixa cap caplletra quan la primera lletra s'enllaça amb la següent.
+Un canvi d'estil dins d'una paraula, com una lletra en color o un signe vocàlic en negreta (`كتا**ب**`), no parteix la paraula en dues: es mesura i se li donen les formes sencera, i la part amb estil es pinta al damunt. El PDF i l'HTML pinten exactament aquestes lletres; el canvas calcula on cau la lletra dins de la paraula ja formada, i el color pot tocar la veïna per un pèl. Un text de disseny no talla mai una paraula àrab en ajustar línies o en truncar, i una caplletra, en un text de disseny o obrint un paràgraf, no es dibuixa quan la primera lletra s'enllaça amb la següent: aquest paràgraf genera un avís `dropCap` (vegeu [Caplletres](/ca/docs/configuration#caplletres)). Una lletra que no s'enllaça amb la següent (ا, د, ر, و) i una lletra hebrea es componen com a inicials a la dreta, amb les línies escurçades per aquest costat.
 
 ## Justificació i caixida
 
@@ -289,8 +289,11 @@ Escriu el poema en un bloc `:::verse`, un bayt per línia, amb els hemistiquis s
 - **Un hemistiqui massa llarg** estreny primer els espais; si tot i així no hi cap, el seu bayt es compon esglaonat: el ṣadr alineat a la dreta en una línia pròpia i l'ʿajuz alineat a l'esquerra a la següent.
 - **Cohesió.** Un bayt no es reparteix mai entre columnes ni entre pàgines, un poema segueix les regles d'òrfenes i vídues dels paràgrafs, i la línia que el presenta («فأنشد يقول:») es queda amb els primers bayts.
 - **Tipus de lletra.** El poema pren el tipus i el cos del text; `style` anomena un estil de paràgraf, i així és com un poema vocalitzat rep l'interlineat que demanen els seus signes. Un poema en transliteració llatina dins d'un llibre en català es compon igual, amb el ṣadr a l'esquerra.
+- **Numeració de línies.** Amb `lineNumbers` activat, un poema compta un número per bayt, imprès al marge al seu costat; l'ʿajuz d'un bayt esglaonat, en una línia pròpia, no porta número. `position: 'start'` posa els números a la dreta de totes les pàgines d'un llibre àrab. Vegeu [Configuració › Numeració de línies](/ca/docs/configuration#numeració-de-línies).
 
 El text pla conserva el poema tal com es va escriure, un bayt per línia, i en deixa fora les caixides i l'ornament. Vegeu [`:::verse`](/ca/docs/document-format#verse) al format de document.
+
+**Vers lliure i poemes llatins.** Un poema les línies del qual no porten `||` — vers lliure modern, o un poema llatí citat en un llibre àrab (`:::verse{dir=ltr lang=ca}`) — es compon en canvi línia a línia: cada línia del text és un vers, les línies en blanc separen estrofes, els espais inicials sagnen des del propi costat d'inici del poema i els versos massa llargs es parteixen amb sagnat penjat. Vegeu [`:::verse` › Línia a línia](/ca/docs/document-format#línia-a-línia).
 
 ## Índex general i índex analític
 
@@ -303,6 +306,8 @@ El text pla conserva el poema tal com es va escriure, un bayt per línia, i en d
 ```
 
 Una línia de l'índex general es compon de dreta a esquerra: el número i el títol a la dreta, la línia de punts i el número de pàgina a l'esquerra. Un títol llatí en un llibre àrab conserva el número de pàgina a l'esquerra, i les seves paraules es llegeixen d'esquerra a dreta.
+
+**Tabulacions.** Les tabulacions del text corrent funcionen igual (vegeu [Tabuladors i tabulacions](/ca/docs/document-format#tabuladors-i-tabulacions)): la posició d'una tabulació es mesura des de la vora dreta de la mesura, una tabulació `end` queda a l'esquerra, i el farciment va entre les parts en ordre visual. Una llista de preus o un índex escrit com a paràgrafs, `الفصل الأول :tab 12` sota un estil la tabulació del qual és `{ position: 'end', align: 'end', leader: '.' }`, compon el títol a la dreta i el número a l'esquerra, darrere de punts.
 
 **Índex analític.** L'índex analític d'un llibre àrab ordena les entrades per ordre alfabètic (hijāʾī) i les agrupa sota la primera lletra. No té en compte l'article determinat: البصرة s'ordena sota ب, entre بدر i بغداد, i s'imprimeix tal com està escrit (`index.ignoreArticle`, activat per defecte quan la llengua de l'índex és l'àrab; الله conserva l'article). Tampoc no té en compte els signes vocàlics ni el tatweel, ordena أ إ آ ٱ sota ا, i ordena ة amb ه i ى amb ي. Els números de pàgina se separen amb la coma àrab (، ) i una remissió diu انظر o انظر أيضًا. Una entrada amb una clau `sort` pròpia conserva l'article d'aquesta clau. Vegeu [Índex analític](/ca/docs/configuration#índex-analític).
 
@@ -444,8 +449,9 @@ Els capítols comencen amb `:::numbering{format="abjad" startAt=1}` abans de la 
 - **Els signes vocàlics** poden sobresortir de la vora d'un requadre o d'una cel·la de taula, el retall dels quals no creix per ells; `tashkil` deixa els signes dels peus, les cel·les de taula i el text dels dissenys.
 - **Números.** Els números de cita s'imprimeixen en xifres europees; els ordinals en lletres s'escriuen en la forma determinada i en nominatiu que fan servir els títols.
 - **Índex analític**: ة s'ordena sota ه, i els noms no s'ordenen saltant ابن o أبو; no hi ha índexs de rimes ni d'arrels.
-- **Vers**: no hi ha vers seguit dins de la prosa, ni bayts numerats, ni formes estròfiques amb una tornada centrada més enllà de línies centrades soltes; un hemistiqui més ample que la mesura es parteix des del costat d'inici, sense sagnat francès.
+- **Vers**: no hi ha vers seguit dins de la prosa, ni formes estròfiques amb una tornada centrada més enllà de línies centrades soltes; un hemistiqui més ample que la mesura es parteix des del costat d'inici, sense sagnat francès.
 - **Caixida**: el text que es copia de la sortida HTML conserva els tatweels inserits, i res no impedeix que les caixides de línies veïnes s'apilin l'una sobre l'altra.
+- **Els llistats de codi** es llegeixen d'esquerra a dreta en un llibre de dreta a esquerra: cada línia es compon des del costat més allunyat de la caixa, com una cita en anglès, amb els seus números de línia al marge de l'esquerra i el text copiat en ordre lògic. Vegeu [Llistats de codi](/ca/docs/configuration#llistats-de-codi).
 
 ## Referències
 

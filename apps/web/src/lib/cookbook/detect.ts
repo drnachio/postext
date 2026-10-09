@@ -16,7 +16,7 @@ export const CONFIG_KEYS: readonly string[] = [
   "page", "layout", "bodyText", "headings", "tableStyle", "tableStyles", "captionStyle",
   "diagramStyle", "videoStyle", "paragraphStyles", "calloutStyles", "chipStyles", "parts", "headingStyles", "toc",
   "index", "unorderedLists", "orderedLists", "math", "footnotes", "crossRefs", "citations", "cjk", "header", "footer", "locale", "direction", "numerals", "debug",
-  "htmlViewer", "pdfGeneration", "folio", "colorPalette", "customFonts", "resourceTypes", "comics", "print",
+  "htmlViewer", "pdfGeneration", "folio", "colorPalette", "customFonts", "resourceTypes", "comics", "print", "lineNumbers", "codeStyle",
 ];
 
 /** The parser's single-line directives and fenced containers
@@ -479,7 +479,7 @@ export function fontFamilies(faces: readonly FontFaceSpec[]): string[] {
 export interface MarkdownConstructs {
   /** `:::name` directives and containers, `::resource`, `$$` display math. */
   directives: string[];
-  /** `:ref`, `:chip`, `:swatch`, `$…$`, `^…^`, `~…~`, `{attrs}` (heading attributes), `\\` (title break). */
+  /** `:ref`, `:chip`, `:swatch`, `:tab`, `$…$`, `^…^`, `~…~`, `{attrs}` (heading attributes), `\\` (title break). */
   inline: string[];
   /** `:::name` lines whose name the parser does not know (printed as text). */
   unknown: string[];
@@ -513,6 +513,8 @@ export function markdownConstructs(markdown: string): MarkdownConstructs {
     if (/:ref\{/.test(line)) inline.add(":ref");
     if (/:chip\[/.test(line)) inline.add(":chip");
     if (/:swatch\{/.test(line)) inline.add(":swatch");
+    // A bare `:tab` followed by a letter is text (`3:table`), as the parser reads it.
+    if (/:tab(?:\{|(?!\p{L}))/u.test(line)) inline.add(":tab");
     const withoutDisplay = line.replace(/\$\$[\s\S]*?\$\$/g, "").replace(/\\\$/g, "");
     if (/\$[^$\s][^$]*\$/.test(withoutDisplay)) inline.add("$…$");
     if (/\^[^\s^]([^^]*[^\s^])?\^/.test(line)) inline.add("^…^");

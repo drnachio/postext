@@ -22,12 +22,14 @@ import { defaultDocumentLocale } from '../../../controls/hyphenation';
 import { useOpenSettingsGroup } from '../../../context/settingsNavigation';
 import { JustificationSubsection, KashidaFields, RaggedBreakingSubsection } from './JustificationSubsection';
 import { BlockquoteSubsection } from './BlockquoteSubsection';
+import { VerseSubsection } from './VerseSubsection';
 import { RaggedHyphenationSubsection } from './HyphenationFields';
 import { TypeSample } from '../../settings/TypeSample';
 import { AlignPicture } from '../../settings/pictures';
 import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections';
 import { isArabicScriptLanguage } from '../../../context/arabicDefaults';
 import { flowSideLabels, useRightToLeftFlow } from '../../settings/flowSides';
+import { TabStopsField } from '../../settings/TabStopsField';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 
@@ -329,6 +331,14 @@ export const BodyTextSection = memo(function BodyTextSection() {
           onReset={() => resetField('breakAfterHyphens')}
         />
         <ToggleSwitch
+          label={labels.bodyHardLineBreaks}
+          checked={bodyText.hardLineBreaks}
+          onChange={(checked) => updateBodyText({ hardLineBreaks: checked })}
+          tooltip={labels.bodyHardLineBreaksTooltip}
+          isDefault={bodyText.hardLineBreaks === D.hardLineBreaks}
+          onReset={() => resetField('hardLineBreaks')}
+        />
+        <ToggleSwitch
           label={labels.bodyRepeatHyphen}
           checked={bodyText.repeatHyphen}
           onChange={(checked) => updateBodyText({ repeatHyphen: checked })}
@@ -370,6 +380,12 @@ export const BodyTextSection = memo(function BodyTextSection() {
           tooltip={labels.bodyParagraphSpacingTooltip}
           isDefault={isParagraphSpacingDefault}
           onReset={() => resetField('paragraphSpacing')}
+        />
+        <TabStopsField
+          stops={raw?.tabStops}
+          interval={raw?.tabInterval}
+          onStopsChange={(next) => (next === undefined ? resetField('tabStops') : updateBodyText({ tabStops: next }))}
+          onIntervalChange={(next) => (next === undefined ? resetField('tabInterval') : updateBodyText({ tabInterval: next }))}
         />
       </FieldGroup>
       <FieldGroup title={labels.bodyGroupColor}>
@@ -510,6 +526,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
         )}
       </CollapsibleSection>
       <BlockquoteSubsection bodyText={bodyText} raw={raw} updateBodyText={updateBodyText} labels={labels} />
+      <VerseSubsection bodyText={bodyText} raw={raw} updateBodyText={updateBodyText} labels={labels} />
       <CollapsibleSection title={labels.bodyGroupReferences} sectionId="bodyText-references" variant="subsection">
         <ColorPicker
           label={labels.bodyReferenceColor}

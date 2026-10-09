@@ -131,6 +131,14 @@ export function viewHashFragment(view: Partial<ViewHash>): string {
   return parts.length ? `#${parts.join('&')}` : '';
 }
 
+/** Whether the fragment asks to offer the original when the preset it
+ *  names opens on a draft (`restore=ask`, carried by the host's homepage
+ *  links). It is never written back: the next write of the fragment drops
+ *  it, so a reload does not ask again. */
+export function hashAsksRestore(hash: string): boolean {
+  return readParam(hash, 'restore') === 'ask';
+}
+
 /** Store a view in the hash without adding a history entry. Only the
  *  parts given change: a viewer reporting its page leaves the book alone,
  *  the provider naming the book leaves the page alone. Null drops a part. */
@@ -167,7 +175,7 @@ export function pdfPageFragment(pageIndex: number | null): string {
 }
 
 /** Keys of the fragment's own syntax: never a host's bundle key. */
-const RESERVED_KEYS = new Set(['preset', 'project', 'lang', 'view', 'chapter', 'page']);
+const RESERVED_KEYS = new Set(['preset', 'project', 'lang', 'view', 'chapter', 'page', 'restore']);
 const BUNDLE_KEY_RE = /^[a-z][a-z0-9-]{0,31}$/;
 
 /** A book a host links to by a key of its own (`#recipe=ID&lang=L`, see

@@ -125,7 +125,7 @@ Três regras decorrem das ligações e valem para toda palavra que contenha uma 
 - **Sem espaçamento entre letras.** Afastar letras ligadas quebra as ligações. O `letterSpacing` de um estilo e o tracking da justificação ignoram as palavras árabes; a composição avisa sobre um estilo de corpo ou de título que defina espaçamento entre letras em texto árabe (`joiningScriptLetterSpacing`).
 - **Sem cortes.** Uma palavra mais larga que a linha nunca é cortada entre suas letras. Ela ultrapassa a medida, a linha é marcada (`VDTLine.wordOverflow`) e a composição avisa (`unbreakableWordOverflow`). Isso acontece em células de tabela estreitas e em colunas laterais; alargue-as ou reescreva o texto.
 
-Uma mudança de estilo dentro de uma palavra, como uma letra colorida ou um sinal vocálico em negrito (`كتا**ب**`), não parte a palavra em duas: ela é medida e recebe as formas inteira, e a parte estilizada é pintada por cima. O PDF e o HTML colorem exatamente as letras; o canvas estima onde a letra cai dentro da palavra com formas aplicadas, e uma cor pode invadir a vizinha por um fio. Um texto de design nunca corta uma palavra árabe ao quebrar linhas ou truncar, e uma capitular não é desenhada quando a primeira letra se liga à seguinte.
+Uma mudança de estilo dentro de uma palavra, como uma letra colorida ou um sinal vocálico em negrito (`كتا**ب**`), não parte a palavra em duas: ela é medida e recebe as formas inteira, e a parte estilizada é pintada por cima. O PDF e o HTML colorem exatamente as letras; o canvas estima onde a letra cai dentro da palavra com formas aplicadas, e uma cor pode invadir a vizinha por um fio. Um texto de design nunca corta uma palavra árabe ao quebrar linhas ou truncar, e uma capitular, num texto de design ou abrindo um parágrafo, não é desenhada quando a primeira letra se liga à seguinte: um parágrafo assim emite um aviso `dropCap` (veja [Capitulares](/pt/docs/configuration#capitulares)). Uma letra que não se liga à seguinte (ا, د, ر, و) e uma letra hebraica são compostas como iniciais à direita, com as linhas encurtadas desse lado.
 
 ## Justificação e kashida
 
@@ -289,8 +289,11 @@ Escreva o poema em um bloco `:::verse`, um bayt por linha, com os hemistíquios 
 - **Um hemistíquio longo demais** primeiro aperta seus espaços; se ainda não couber, o bayt é composto em escada: o ṣadr alinhado à direita em uma linha própria, o ʿajuz alinhado à esquerda na seguinte.
 - **Manter junto.** Um bayt nunca é dividido entre colunas ou páginas, um poema segue as regras de órfãs e viúvas dos parágrafos, e a linha que o introduz («فأنشد يقول:») fica com seus primeiros bayts.
 - **Tipo.** O poema usa a fonte e o corpo do texto corrido; `style` indica um estilo de parágrafo, e é assim que um poema vocalizado recebe a entrelinha de que seus sinais precisam. Um poema em transliteração latina em um livro em inglês é composto da mesma forma, com o ṣadr à esquerda.
+- **Numeração de linhas.** Com `lineNumbers` ligado, um poema conta um número por bayt, impresso na margem ao lado dele; o ʿajuz de um bayt composto em escada, numa linha própria, não recebe número. `position: 'start'` põe os números à direita de todas as páginas de um livro árabe. Veja [Configuração › Numeração de linhas](/pt/docs/configuration#numeração-de-linhas).
 
 O texto simples mantém o poema como foi escrito, um bayt por linha, e deixa de fora as kashidas e o ornamento. Veja [`:::verse`](/pt/docs/document-format#verse) no formato de documento.
+
+**Verso livre e poemas latinos.** Um poema cujas linhas não trazem `||` — verso livre moderno, ou um poema latino citado em um livro árabe (`:::verse{dir=ltr lang=pt}`) — é composto linha a linha: cada linha do texto é um verso, as linhas em branco separam estrofes, os espaços iniciais recuam a partir do próprio lado de início do poema e os versos longos demais se partem com recuo pendente. Veja [`:::verse` › Linha a linha](/pt/docs/document-format#linha-a-linha).
 
 ## Sumário e índice remissivo
 
@@ -303,6 +306,8 @@ O texto simples mantém o poema como foi escrito, um bayt por linha, e deixa de 
 ```
 
 Uma linha do sumário é composta da direita para a esquerda: o número e o título à direita, a linha de pontos, o número da página à esquerda. Um título latino em um livro árabe mantém o número da página à esquerda, e suas próprias palavras são lidas da esquerda para a direita.
+
+**Paradas de tabulação.** As paradas de tabulação do texto corrido funcionam da mesma forma (veja [Tabulações e paradas de tabulação](/pt/docs/document-format#tabulações-e-paradas-de-tabulação)): a posição de uma parada é medida a partir da borda direita da medida, uma parada `end` fica à esquerda, e o preenchimento corre entre as partes na ordem visual. Uma lista de preços ou um sumário digitado como parágrafos, `الفصل الأول :tab 12` sob um estilo cuja parada é `{ position: 'end', align: 'end', leader: '.' }`, põe o título à direita e o número à esquerda, atrás de pontos.
 
 **Índice remissivo.** O índice remissivo de um livro árabe ordena suas entradas em ordem alfabética (hijāʾī) e as agrupa pela primeira letra. Ele ignora o artigo definido: البصرة fica sob ب, entre بدر e بغداد, e é impresso como foi escrito (`index.ignoreArticle`, ligado por padrão quando o idioma do índice é o árabe; الله mantém seu artigo). Também ignora os sinais vocálicos e o tatweel, classifica أ إ آ ٱ sob ا, e ordena ة junto com ه e ى junto com ي. Os números de página são unidos pela vírgula árabe (، ) e uma referência cruzada diz انظر ou انظر أيضًا. Uma entrada com sua própria chave `sort` mantém o artigo dessa chave. Veja [Índice remissivo](/pt/docs/configuration#índice-remissivo).
 
@@ -444,8 +449,9 @@ Os capítulos começam com `:::numbering{format="abjad" startAt=1}` antes da int
 - **Sinais vocálicos** podem ultrapassar a borda de um boxe ou de uma célula de tabela, cujo recorte não cresce por causa deles; `tashkil` mantém os sinais de legendas, células de tabela e texto de design.
 - **Números.** Os números de citação são impressos em algarismos europeus; os ordinais por extenso são escritos na forma definida e no nominativo que os títulos usam.
 - **Índice remissivo**: ة fica sob ه, e os nomes não são ordenados ignorando ابن ou أبو; não há índices de rimas nem de raízes.
-- **Verso**: não há verso corrido dentro da prosa, nem bayts numerados, nem formas estróficas com refrão centralizado além de linhas centralizadas soltas; um hemistíquio mais largo que a medida quebra a partir do lado de início, sem recuo deslocado.
+- **Verso**: não há verso corrido dentro da prosa, nem formas estróficas com refrão centralizado além de linhas centralizadas soltas; um hemistíquio mais largo que a medida quebra a partir do lado de início, sem recuo deslocado.
 - **Kashida**: o texto copiado da saída HTML ainda contém os tatweels inseridos, e nada impede que kashidas de linhas vizinhas se empilhem uma sobre a outra.
+- **Listagens de código** são lidas da esquerda para a direita num livro da direita para a esquerda: cada linha é composta a partir do lado oposto da caixa, como uma citação em inglês, com os números de linha na margem à sua esquerda e o texto copiado na ordem lógica. Veja [Listagens de código](/pt/docs/configuration#listagens-de-código).
 
 ## Fontes de consulta
 

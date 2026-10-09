@@ -57,6 +57,7 @@ describe('inline marks', () => {
     'Escaped \\* star, \\_ under, \\$5 and `code *x*`.',
     'snake_case stays and a lone * star.',
     'Index mark:index{term="Heart!valves"} here.',
+    'A forced\\\nline break and **one\\\ninside** bold.',
   ];
   for (const md of cases) {
     it(`round-trips: ${md}`, () => {
@@ -133,6 +134,33 @@ describe('Markdown → Word → Markdown', () => {
     const back = roundTrip(md);
     expect(back).toContain('---\ntitle: "Pintura"\nauthor: "Anon"\n---');
     expect(back).toContain(':::verse{gap=2em}\nfirst || second\n\nthird || fourth\n:::');
+    expect(blocksOf(back)).toEqual(blocksOf(md));
+  });
+
+  it('keeps a poem set line by line: its indents and stanza breaks (#620)', () => {
+    const md = [
+      'Before.',
+      '',
+      ':::verse{style="verso"}',
+      'Whose woods these are I think I know.',
+      '  His house is in the village though;',
+      '',
+      '',
+      'He will not see me stopping here',
+      '\tTo watch his woods fill up with snow.',
+      ':::',
+      '',
+      'After.',
+    ].join('\n');
+    const back = roundTrip(md);
+    expect(back).toContain(':::verse{style="verso"}\nWhose woods these are I think I know.\n  His house is in the village though;\n\n\nHe will not see me stopping here\n\tTo watch his woods fill up with snow.\n:::');
+    expect(blocksOf(back)).toEqual(blocksOf(md));
+  });
+
+  it('keeps a code listing verbatim (#624)', () => {
+    const md = ['Run this:', '', '```bash {title="x.sh"}', '# not a heading', '  - not a list', '', 'echo "$HOME"  # two spaces', '```', '', 'After.'].join('\n');
+    const back = roundTrip(md);
+    expect(back).toContain('```bash {title="x.sh"}\n# not a heading\n  - not a list\n\necho "$HOME"  # two spaces\n```');
     expect(blocksOf(back)).toEqual(blocksOf(md));
   });
 
@@ -238,9 +266,8 @@ describe('Word → Postext', () => {
       'Segundo párrafo.',
       ':::',
       '',
-      ':::paragraphs{style="verso"}',
+      ':::verse{style="verso"}',
       'Nunca fuera caballero',
-      '',
       'de damas tan bien servido',
       ':::',
       '',
@@ -265,6 +292,35 @@ describe('Word → Postext', () => {
       headerRowCount: 1,
       columnWidths: [1, 2],
     });
+  });
+
+  it('reads a poem from a verse style: lines, indents, stanzas (#620)', () => {
+    const poem = [
+      p('Poem', r('Whose woods these are') + '<w:r><w:br/></w:r><w:r><w:tab/></w:r>' + r('His house is in the village')),
+      p('Poem', r('')),
+      p('Poem', r('He will not see me')),
+      p('Poem', r('+ stopping here || at all')),
+      p('', r('After.')),
+    ].join('');
+    const doc = readDocx(docx(poem));
+    expect(guessParagraphTarget('Poem', config)).toEqual({ kind: 'verse' });
+    expect(guessParagraphTarget('Verso', config)).toEqual({ kind: 'verse', style: 'verso' });
+    const md = wordToPostext(doc, { template: emptyTemplate(), config, chapters: 'single', existingIds: new Set(), untitledChapter: 'x' }).chapters[0]!.markdown;
+    expect(md).toBe([
+      ':::verse{layout=lines}',
+      'Whose woods these are',
+      '\tHis house is in the village',
+      '',
+      'He will not see me',
+      '\\+ stopping here || at all',
+      ':::',
+      '',
+      'After.',
+      '',
+    ].join('\n'));
+    const stanzas = parseMarkdown(md).filter((b) => b.verse);
+    expect(stanzas.map((b) => b.verse!.stanza!.lines.map((l) => l.indent))).toEqual([[0, 4], [0, 0]]);
+    expect(stanzas[1]!.text).toBe('He will not see me\n+ stopping here || at all');
   });
 
   it('turns hand-made headings into headings when asked', () => {
@@ -299,6 +355,80 @@ describe('Word → Postext', () => {
 
   it('rejects a file that is not a Word document', () => {
     expect(() => readDocx(strToU8('not a zip'))).toThrow();
+  });
+});
+
+describe('forced line breaks (#620)', () => {
+  it('write a soft return in Word and come back as a backslash ending the line', () => {
+    const md = [
+      'First line\\',
+      'second line, and `C:\\\\x` stays.',
+      '',
+      '> Quoted\\',
+      '> and broken.',
+      '',
+      '- An item \\\\ broken',
+      '',
+      'Ends with a backslash\\',
+    ].join('\n');
+    const bytes = postextToDocx([{ title: 'One', markdown: md }], { template: emptyTemplate(), config, book: false });
+    const doc = readDocx(bytes);
+    const paragraphs = doc.blocks.filter((b) => b.type === 'paragraph');
+    const breaks = paragraphs.map((b) => b.type === 'paragraph' ? b.runs.filter((r) => r.type === 'break' && r.kind === 'line').length : 0);
+    expect(breaks).toEqual([1, 1, 1, 0]);
+    const back = roundTrip(md);
+    expect(blocksOf(back)).toEqual(blocksOf(md));
+    expect(back).toContain('First line\\\nsecond line');
+  });
+
+  it('read a soft return in body text as a forced break, or a space when asked', () => {
+    const body = p('', r('One') + '<w:r><w:br/></w:r>' + r('- two')) + p('Cita', r('Q1') + '<w:r><w:br/></w:r>' + r('Q2')) + p('', r('i1') + '<w:r><w:br/></w:r>' + r('i2'), list(1));
+    const doc = readDocx(docx(body));
+    const read = (lineBreaks: 'break' | 'space') => wordToPostext(doc, { template: { ...emptyTemplate(), options: { ...emptyTemplate().options, lineBreaks } }, config, chapters: 'single', existingIds: new Set(), untitledChapter: 'x' }).chapters[0]!.markdown;
+    const md = read('break');
+    expect(emptyTemplate().options.lineBreaks).toBe('break');
+    // The line after the break opens with a word joiner, so `- two` stays text.
+    expect(md).toContain(`One\\\n${'\u2060'}- two`);
+    expect(md).toContain('> Q1\\\n> Q2');
+    expect(md).toContain('- i1 \\\\ i2');
+    const blocks = parseMarkdown(md);
+    expect(blocks[0]!.text).toBe(`One\u2028\u2060- two`);
+    expect(blocks.find((b) => b.type === 'blockquote')!.text).toBe('Q1\u2028Q2');
+    expect(blocks.find((b) => b.type === 'listItem')!.text).toBe('i1\u2028i2');
+    expect(read('space')).toContain('One - two');
+  });
+});
+
+describe('tabs (#622)', () => {
+  const tab = '<w:r><w:tab/></w:r>';
+  const read = (body: string, styles = '') => wordToPostext(readDocx(docx(body, { styles })), { template: emptyTemplate(), config, chapters: 'single', existingIds: new Set(), untitledChapter: 'x' }).chapters[0]!.markdown.trim();
+
+  it('read a tab as `:tab`, to the stop Word set for it, a style\'s stops under the paragraph\'s', () => {
+    expect(read(p('', r('Name') + tab + r('Value')))).toBe('Name :tab Value');
+    const menu = '<w:style w:type="paragraph" w:styleId="Menu"><w:name w:val="Menu"/><w:pPr><w:tabs><w:tab w:val="right" w:leader="dot" w:pos="8640"/></w:tabs></w:pPr></w:style>';
+    expect(read(p('Menu', r('Soup') + tab + r('8.50')), menu)).toBe('Soup :tab{at=432pt align=end leader="."} 8.50');
+    // The paragraph clears the style's stop and sets its own.
+    const own = '<w:tabs><w:tab w:val="clear" w:pos="8640"/><w:tab w:val="left" w:pos="1440"/></w:tabs>';
+    expect(read(p('Menu', r('Q1') + tab + r('Question'), own), menu)).toBe('Q1 :tab{at=72pt} Question');
+    // A heading or a table cell reads it as a space.
+    expect(read(p('Ttulo1', r('One') + tab + r('Two')))).toBe('# One Two');
+    // The parser reads it back as a tab.
+    expect(parseMarkdown('Soup :tab{at=432pt align=end leader="."} 8.50')[0]!.spans.find((x) => x.tab)!.tab!.stop).toEqual({ position: { value: 432, unit: 'pt' }, align: 'end', leader: '.' });
+  });
+
+  it('write `:tab` as Word\'s tab and a paragraph style\'s stops as `w:tabs`, and come back', () => {
+    const cfg = { ...config, paragraphStyles: [...(config.paragraphStyles ?? []), { id: 'menu', name: 'Menu', tabStops: [{ position: { value: 120, unit: 'mm' }, align: 'end', leader: '.' }] }] } as PostextConfig;
+    const md = ['Name :tab Value', '', ':::paragraphs{style="menu"}', 'Soup :tab 8.50', ':::', '', 'Signed :tab{at=end leader=rule}'].join('\n');
+    const bytes = postextToDocx([{ title: 'One', markdown: md }], { template: emptyTemplate(), config: cfg, book: false });
+    const doc = readDocx(bytes);
+    const first = doc.blocks.find((b) => b.type === 'paragraph')!;
+    expect(first.type === 'paragraph' && first.runs.map((x) => x.type)).toEqual(['text', 'tab', 'text']);
+    const style = [...doc.styles.values()].find((st) => st.name === 'Menu');
+    expect(style?.tabs).toEqual([{ val: 'right', pos: 6803, leader: 'dot' }]);
+    const back = wordToPostext(doc, { template: parseTemplate(doc.embeddedTemplate)!, config: cfg, chapters: 'single', existingIds: new Set(), untitledChapter: 'x' }).chapters[0]!.markdown;
+    expect(back).toContain('Name :tab Value');
+    expect(back).toContain('Soup :tab 8.50');
+    expect(back).toContain('Signed :tab{at=end leader=rule}');
   });
 });
 

@@ -310,6 +310,21 @@ La fecha y la firma de una carta se componen a ras del final de la línea (地�
 
 `headings.keepWithNext` impide que un título cierre una columna. JLReq §4.1.7 permite que un título cierre la última columna de una página par, porque entonces su texto abre la página de enfrente del mismo pliego; `headings.keepWithNextSpread: true` lo permite, tanto en libros encuadernados por la izquierda como por la derecha.
 
+### Poemas, haikus y tankas
+
+Escribe un poema en un bloque `:::verse`, un verso por línea de Markdown y una línea en blanco entre estrofas. Los espacios iniciales sangran el verso: un espacio ideográfico (U+3000) o dos espacios ASCII equivalen a un carácter con el `indentStep` por defecto. En texto vertical cada verso es una columna que cuelga de la cabeza (`align` vale `start` por defecto) y su sangría se cuenta hacia abajo desde la cabeza; un verso más largo que la columna se parte con las reglas de corte de línea del texto. `keepStanzas` mantiene las estrofas cortas en una sola página: tres líneas para un haiku, cinco para una tanka.
+
+```md
+:::verse{keepStanzas=5}
+田子の浦に
+　うち出でてみれば
+白妙の
+　富士の高嶺に
+雪は降りつつ
+:::
+```
+
+
 ## Notas
 
 Los libros japoneses colocan las notas de más maneras que los occidentales (JLReq §4.2), y Postext añade para ellas dos llamadas y una colocación. Una llamada va delante de un 。 que cierra la oración: se escribe <span lang="ja" className="font-body">先生[^1]。</span>. La llamada se queda con el carácter anterior y 。 nunca abre una línea, así que los tres nunca se separan.
@@ -570,6 +585,10 @@ La estantería de muestra tiene *Kokoro* (<span lang="ja" className="font-body">
 - **Índice**: el separador sigue siendo `, `; las entradas latinas van antes de los kana, sin opción para ponerlas al final; una marca invisible no toma la lectura de un ruby que esté en otra parte de la línea.
 - **Citas**: SIST 02 es el único estilo japonés incluido; las citas autor-fecha conservan la puntuación ASCII; las bibliografías no se ordenan por la lectura.
 - **Tablas**: el texto de las celdas y de los pies es horizontal en todas las páginas.
+- **Números de línea**: no se imprimen en texto vertical; un libro vertical que activa `lineNumbers` no lleva ninguno, con un aviso de configuración `lineNumbersUnsupported`. Los libros horizontales numeran sus líneas como cualquier otro ([Configuración › Numeración de líneas](/es/docs/configuration#numeración-de-líneas)).
+- **Tabuladores.** Un párrafo horizontal con un tabulador (`:tab`, o un carácter de tabulación bajo un estilo con tabulaciones) se compone línea a línea: se corta entre caracteres según el kinsoku, pero sin comprimir los yakumono ni justificar entre caracteres. En texto vertical no hay tabulaciones: un tabulador es un espacio entre palabras, y un `:tab` da el aviso de contenido `tabInVerticalText`. Un párrafo con ruby, warichu o marcas de kanbun también compone sus tabuladores como espacios entre palabras. Véase [Tabuladores y tabulaciones](/es/docs/document-format#tabuladores-y-tabulaciones).
+- **Capitulares.** Un párrafo horizontal puede abrirse con una capitular de un carácter, fijada desde un estilo de párrafo o un nivel de encabezado (ver [Letras capitulares](/es/docs/configuration#letras-capitulares)): su cuerpo se calcula con la altura del propio carácter frente a la del texto, y el compositor compone las líneas acortadas con el kinsoku de siempre. El texto vertical no tiene capitulares: un párrafo que se abriría con una se compone sin ella y da el aviso de contenido `dropCap`.
+- **Listados de código.** Un listado horizontal se compone línea a línea en su letra de código; en una letra monoespaciada con kanji (BIZ UDGothic), un carácter de ancho completo ocupa dos celdas, de modo que las columnas quedan alineadas, y un tabulador lo cuenta como dos. En texto vertical, un listado sigue el flujo vertical, con su texto latino tumbado como lo compone el texto vertical, y no lleva números de línea. Ver [Listados de código](/es/docs/configuration#listados-de-código).
 - **Fuentes**: una familia por estilo, sin recurrir a otra; las fuentes CFF se incrustan enteras; no se usan las métricas verticales proporcionales (`vpal`).
 - **El texto de los diseños** (cabeceras, aperturas, títulos de recuadro) corta el japonés entre dos caracteres cualesquiera, sin kinsoku ni espaciado de los yakumono, e imprime las lecturas y las marcas como texto normal.
 

@@ -176,7 +176,7 @@ describe('layout.boxChildSplitMinLines', () => {
   it('is pinned to 1 for configurations stored before rules 6 whose book holds a box', () => {
     const cfg: PostextConfig = { layout: { layoutType: 'single', inlineResourceGap: 'around', inlineResourceGapInBoxes: true } };
     const box = twoLineItems(3);
-    expect(CONFIG_VERSION).toBe(8);
+    expect(CONFIG_VERSION).toBe(9);
     // Unversioned (1.4) and stamped 5 (a 1.5 prerelease): pinned.
     expect(migrateConfig(cfg, undefined, { content: box }).layout?.boxChildSplitMinLines).toBe(1);
     expect(migrateConfig(cfg, 5, { content: ['No box here.', box] }).layout?.boxChildSplitMinLines).toBe(1);

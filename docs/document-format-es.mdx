@@ -51,7 +51,7 @@ Pon el valor entre comillas para imprimirlo exactamente como está escrito —un
 
 ## Construcciones de bloque
 
-Postext reconoce siete tipos de bloque de prosa, además de las directivas y las inserciones de recursos que se describen más adelante en esta página. Los bloques siempre terminan al encontrar una línea en blanco o el inicio de otro bloque.
+Postext reconoce siete tipos de bloque de prosa y los listados de código, además de las directivas y las inserciones de recursos que se describen más adelante en esta página. Los bloques siempre terminan al encontrar una línea en blanco o el inicio de otro bloque.
 
 <Illustration name="BlockTypesGallery" data='{"title": "Construcciones de bloque de prosa de un vistazo", "desc": "Los siete tipos de bloque de prosa que reconoce Postext: encabezado, párrafo, cita, lista no ordenada, lista ordenada, lista de tareas y fórmula en bloque, cada uno con su sintaxis markdown. Las directivas y las inserciones de recursos se describen por separado.", "caption": "Cada tipo de bloque de prosa y su entrada en markdown.", "blocks": [{"name": "Encabezado", "syntax": "# Título", "color": "blue"}, {"name": "Párrafo", "syntax": "Líneas de texto plano", "color": "orange"}, {"name": "Cita", "syntax": "> texto citado", "color": "green"}, {"name": "Lista no ordenada", "syntax": "- item", "color": "purple"}, {"name": "Lista ordenada", "syntax": "1. item", "color": "pink"}, {"name": "Lista de tareas", "syntax": "- [x] hecho", "color": "teal"}, {"name": "Fórmula en bloque", "syntax": "$$ \\int f(x) $$", "color": "blue"}]}' />
 
@@ -72,7 +72,7 @@ Postext reconoce siete tipos de bloque de prosa, además de las directivas y las
     <tr>
       <td>Párrafo</td>
       <td>Texto plano en una o más líneas</td>
-      <td>Las líneas no vacías y no especiales consecutivas se unen con un único espacio y se emiten como un solo párrafo. Entre dos caracteres chinos o japoneses (ideogramas, kana, puntuación de ancho completo, y comillas tipográficas, rayas o puntos suspensivos junto a ellos) el fin de línea desaparece, como en CSS, así que un párrafo chino puede cortarse en cualquier punto del fuente. Entre dos de esos signos (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) deciden los caracteres que hay más allá: el fin de línea desaparece si uno de ellos es chino o japonés, y <code>“hello”⏎“bye”</code> conserva su espacio. El coreano conserva su espacio. Los saltos de línea manuales dentro de un párrafo no se conservan — usa una línea en blanco para empezar un nuevo párrafo.</td>
+      <td>Las líneas no vacías y no especiales consecutivas se unen con un único espacio y se emiten como un solo párrafo. Entre dos caracteres chinos o japoneses (ideogramas, kana, puntuación de ancho completo, y comillas tipográficas, rayas o puntos suspensivos junto a ellos) el fin de línea desaparece, como en CSS, así que un párrafo chino puede cortarse en cualquier punto del fuente. Entre dos de esos signos (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) deciden los caracteres que hay más allá: el fin de línea desaparece si uno de ellos es chino o japonés, y <code>“hello”⏎“bye”</code> conserva su espacio. El coreano conserva su espacio. Un salto de línea escrito en el texto no se conserva, salvo si la línea termina en una barra invertida (un salto de línea forzado, ver <a href="#saltos-de-línea">Saltos de línea</a>); una línea en blanco empieza un párrafo nuevo. Un tabulador escrito en el texto también cuenta como un espacio entre palabras, salvo si el estilo del párrafo fija tabulaciones; <code>:tab</code> es siempre un tabulador (ver <a href="#tabuladores-y-tabulaciones">Tabuladores y tabulaciones</a>). Un poema, cuyas líneas deben quedar como están escritas, va en un bloque <a href="#verse"><code>:::verse</code></a>.</td>
     </tr>
     <tr>
       <td>Cita (blockquote)</td>
@@ -98,6 +98,11 @@ Postext reconoce siete tipos de bloque de prosa, además de las directivas y las
       <td>Fórmula en bloque</td>
       <td><code>$$ … $$</code></td>
       <td>Una fórmula LaTeX compuesta como bloque propio. Se renderiza centrada en la columna, ajustada a la rejilla de línea base como una cabecera, y se mantiene vectorial en el PDF. Las formas de una sola línea y de valla multilínea se describen en <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
+    </tr>
+    <tr>
+      <td>Bloque de código</td>
+      <td><code>```js</code> … <code>```</code>, <code>~~~</code> … <code>~~~</code></td>
+      <td>Un listado, conservado tal como está escrito: cada espacio, cada tabulador y cada salto de línea, sin leer nada como Markdown. Se compone línea a línea en la letra del código, dentro de una caja. Ver <a href="#bloques-de-código">Bloques de código</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -137,6 +142,78 @@ Otros dos cambian lo que imprime un encabezado y cómo cuenta. `hidden="true"` (
 
 # Datos en bruto {style="apendice"}
 ```
+
+### Letras capitulares
+
+Un párrafo se abre con una capitular cuando la fija el nivel o el estilo de su encabezado, o el estilo de párrafo de su grupo `:::paragraphs` (ver [Configuración › Letras capitulares](/es/docs/configuration#letras-capitulares)): la primera letra se compone en grande junto a las primeras líneas, que se acortan a su alrededor. El párrafo no lleva marcado propio; el texto se escribe como siempre, y la letra sigue formando parte de su palabra al copiar, al buscar y en el mapa de fuente. Un atributo `dropcap` la cambia para un capítulo o para un grupo:
+
+```markdown
+# Perdidos {dropcap=false}
+
+# Las minas {dropcap=2}
+
+:::paragraphs{style="entrada" dropcap}
+La lámpara de la primera entrada se abre con una capitular.
+:::
+```
+
+En la línea de un encabezado, `dropcap=false` deja sin la capitular que fija su nivel o su estilo al párrafo que sigue a ese encabezado, `dropcap=N` la compone sobre `N` líneas, y un `dropcap` solo le da una a ese párrafo (de tres líneas, en la fuente del párrafo) cuando el nivel no fija ninguna. En la valla de un `:::paragraphs`, el atributo hace lo mismo con el primer párrafo del grupo, o con todos cuando el estilo dice `each: true`. El párrafo que sigue a un encabezado se busca pasando por encima de vallas, directivas, cajas que salieron del flujo y figuras flotantes; un párrafo dentro de un recuadro, de un elemento de lista, de una cita o de un poema nunca lleva capitular. Desde postext 1.23.
+
+### Bloques de código
+
+Un listado va entre dos vallas de tres o más comillas invertidas (o de tres o más virgulillas), cada una en su propia línea y con hasta tres espacios delante. Todo lo que queda entre ellas se conserva tal como está escrito: los espacios del principio y las series de espacios, los tabuladores, las líneas en blanco y las líneas que empiezan por `#`, `-`, `1.`, `>`, `$` o `:::`. Dentro no se lee nada como Markdown: ni énfasis, ni `:ref`, ni fórmulas, ni chips, ni directivas, ni encabezados. La valla de cierre usa el mismo carácter que la de apertura y es al menos igual de larga, así que un listado que muestra una valla va en una más larga o en una de virgulillas:
+
+~~~markdown
+```bash {title="copia.sh" lineNumbers start=12 highlight="3,5-7"}
+#!/usr/bin/env bash
+# Copia las fotos al disco de respaldo
+rsync -a --delete ~/Fotos/ /Volumes/Respaldo/Fotos/
+echo "hecho: $(date)"
+```
+~~~
+
+La cadena de información que sigue a la valla de apertura nombra el lenguaje (su primera palabra: `js`, `ts`, `python`, `bash`, `console`, `json`…), y el resto se lee como atributos con la [sintaxis de atributos](#valores-de-los-atributos), entre llaves o sin ellas (`title="app.js" lineNumbers`). Cualquier otra cosa que siga al lenguaje es el título: ```` ```console Terminal ```` y ```` ```python normalize.py ```` imprimen *Terminal* y *normalize.py* sobre el listado.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Atributo</th>
+      <th>Efecto</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>title="…"</code></td>
+      <td>Un título sobre el listado, en una fila de título (o en una pestaña de etiqueta en el borde de la caja cuando se fija <code>codeStyle.label</code>).</td>
+    </tr>
+    <tr>
+      <td><code>label="…"</code></td>
+      <td>El texto de la pestaña de etiqueta de la caja, como el de un <code>:::callout</code> (con <code>codeStyle.label</code>).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code>, <code>lineNumbers=false</code></td>
+      <td>Numera las líneas de este listado (o no), diga lo que diga <code>codeStyle.lineNumbers</code>. Los números van en un margen delante del código y no se copian con él.</td>
+    </tr>
+    <tr>
+      <td><code>start=N</code></td>
+      <td>El número de la primera línea (numera el listado aunque nada más lo haga).</td>
+    </tr>
+    <tr>
+      <td><code>highlight="3,5-7"</code></td>
+      <td>Tiñe las líneas indicadas (contadas desde la primera línea del listado, empezando en 1): líneas sueltas e intervalos, separados por comas.</td>
+    </tr>
+    <tr>
+      <td><code>span=page</code></td>
+      <td>En una página de varias columnas, el listado las ocupa todas.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una valla termina el párrafo de encima, haya línea en blanco o no, y el texto que sigue a la valla de cierre empieza un párrafo nuevo. Una valla que se queda abierta llega hasta el final del texto y se señala (`unclosedCodeBlock`). Una valla dentro de un `:::callout` es una caja anidada en él; dentro de `:::paragraphs`, el listado conserva el estilo de código, no el estilo de párrafo. Postext no continúa los elementos de lista, así que una valla tras un elemento de lista cierra la lista. Las marcas de índice y las anclas escritas dentro de un listado se quedan tal como están escritas.
+
+El código sangrado (cuatro espacios o un tabulador, tras una línea en blanco) se lee como listado solo cuando `codeStyle.indentedCode` está activado: los textos de Postext sangran a menudo con espacios, y las listas anidadas leen los espacios del principio.
+
+El aspecto de un listado (su letra, su caja, el ancho del tabulador, qué pasa con una línea más ancha que la caja, los números de línea, los colores de sus elementos) lo fija `codeStyle`; ver [Configuración › Listados de código](/es/docs/configuration#listados-de-código). El código en línea (`` `x` ``) se queda en la letra del texto salvo que `codeStyle.inline` le dé otra. Un libro guardado antes de postext 1.23 con vallas en su texto las lee como entonces, como Markdown (`codeStyle.blocks: false`). Desde postext 1.23.
 
 ## Directivas
 
@@ -200,7 +277,7 @@ Las directivas son etiquetas de control de una sola línea escritas como `:::nom
     </tr>
     <tr>
       <td><code>:::verse</code> … <code>:::</code></td>
-      <td>Un poema a la manera árabe clásica: un bayt por línea, sus dos hemistiquios separados por <code>||</code>, compuestos uno junto a otro con una anchura común. Véase <a href="#verse">más abajo</a>.</td>
+      <td>Un poema, compuesto línea a línea tal como se escribe (cada línea un verso, líneas en blanco entre estrofas, espacios iniciales como sangría), o a la manera árabe clásica cuando sus líneas separan los hemistiquios con <code>||</code>. Véase <a href="#verse">más abajo</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -259,7 +336,7 @@ Se reconocen cuatro nombres de contenedor en el flujo del texto (un quinto, `:::
     </tr>
     <tr>
       <td><code>:::paragraphs&#123;…&#125;</code> … <code>:::</code></td>
-      <td>Una serie de párrafos compuesta con un estilo de párrafo con nombre (una entradilla, un epígrafe, unas notas en letra pequeña) en lugar del estilo del cuerpo. <code>align</code>, <code>indent</code> y <code>endIndent</code> fijan la alineación y las sangrías, con estilo o sin él: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compone una fecha a un carácter del final de la línea (地から1字上げ).</td>
+      <td>Una serie de párrafos compuesta con un estilo de párrafo con nombre (una entradilla, un epígrafe, unas notas en letra pequeña) en lugar del estilo del cuerpo. <code>align</code>, <code>indent</code> y <code>endIndent</code> fijan la alineación y las sangrías, con estilo o sin él: <code>:::paragraphs&#123;align=end endIndent=1&#125;</code> compone una fecha a un carácter del final de la línea (地から1字上げ). <code>dropcap</code> activa o desactiva una <a href="#letras-capitulares">capitular</a> en su primer párrafo.</td>
     </tr>
     <tr>
       <td><code>:::part&#123;…&#125;</code> … <code>:::</code></td>
@@ -491,6 +568,14 @@ Los cambios solo de formato (sin `startAt`) mantienen el contador vivo — útil
 
 `format` acepta cualquier grafía de un formato de numeración: `roman-lower` e `i` funcionan igual que `lower-roman`, `arabic` igual que `decimal`, y `一` y `あ` igual que `japanese-informal` y `hiragana` (consulta [Configuración › Grafías de los formatos de numeración](/es/docs/configuration#grafías-de-los-formatos-de-numeración)). Un valor que no es ninguna de ellas deja el formato como estaba, y el sandbox lo señala.
 
+`lines` reinicia la cuenta de la [numeración de líneas](/es/docs/configuration#numeración-de-líneas), no el contador de páginas: la siguiente línea que se cuenta lleva el número dado, diga lo que diga `lineNumbers.restart`. Un valor que no es un número entero igual o mayor que 0 se ignora.
+
+```md
+## Acto II
+
+:::numbering{lines=1}
+```
+
 ### `:::space`
 
 `:::space` deja espacio vertical entre dos bloques: para separar una línea de cierre del texto que la precede, bajar un poco un epígrafe o una firma, o abrir un *blanco de separación* entre dos tramos de texto. Las líneas en blanco de más en el Markdown no lo hacen — como en cualquier Markdown, una serie de líneas en blanco es un único separador de párrafos, y así un documento no cambia de maquetación cuando un editor o un formateador añade o recorta espacios.
@@ -526,6 +611,72 @@ Para un salto fijo en lugar de espacio, usa `:::columnbreak` o `:::pagebreak`.
 
 
 ### `:::verse`
+
+Un poema. `:::verse` lo compone de una de dos maneras: **línea a línea**, como se imprime la mayoría de los poemas, o a la **manera árabe clásica** de una qaṣīda, cada bayt en dos hemistiquios uno junto a otro. Un poema cuyas líneas llevan separador de hemistiquios (`||`, o un `\\` entre espacios) toma la manera árabe y cualquier otro la composición línea a línea; `layout=lines` o `layout=bayt` en la apertura elige una.
+
+#### Línea a línea
+
+Escribe el poema como se imprime: un verso por línea de Markdown, una línea en blanco entre estrofas y espacios delante de un verso para sangrarlo.
+
+```md
+:::verse
+Nunca fuera caballero
+de damas tan bien servido
+  como fuera Lanzarote
+  cuando de Bretaña vino,
+
+que dueñas curaban dél,
+doncellas del su rocino.
+:::
+```
+
+- **Versos.** Cada línea no vacía es un verso, leído como Markdown en línea por sí mismo: cursivas, versalitas, notas y referencias funcionan. Una serie de líneas en blanco es un solo cambio de estrofa.
+- **Sangrías.** Cada espacio inicial mide `indentStep`, 0,5 em por defecto, de modo que dos espacios sangran el verso un em; un tabulador cuenta cuatro espacios y un espacio ideográfico (U+3000), dos.
+- **Versos partidos.** Un verso más ancho que la caja se parte en un espacio entre palabras. Con `turnover=hang` (por defecto) el resto cuelga en la línea siguiente, `hang` hacia dentro desde el inicio del propio verso: la `hangingIndent` del estilo de párrafo del poema, o 2 em (`bodyText.verse.hang`). Con `turnover=right` se compone contra el final de la caja tras un corchete de apertura (`turnoverMark`, `[` por defecto), la costumbre de las ediciones españolas e inglesas. El verso no se divide con guion salvo que su estilo de párrafo fije `hyphenation: true` por sí mismo. Un verso y su resto nunca se separan en un salto de columna o de página.
+- **Estrofas.** El espacio entre dos estrofas es una línea del interlineado del poema; `stanzaSpace=0.5` lo deja en media línea, y una longitud (`stanzaSpace=6pt`) lo fija exacto. En la retícula de base resulta en líneas enteras. Las columnas y las páginas se cortan antes entre estrofas; dentro de una estrofa, según las reglas de viudas y huérfanas, que entonces cuentan las líneas de la estrofa. `keepStanzas=N` mantiene entera toda estrofa de N líneas o menos: un haiku lleva `keepStanzas=3` y una tanka `keepStanzas=5`.
+- **Posición.** El poema se centra en la caja sobre su verso más largo, con todos los versos alineados al comienzo del poema (`align=center`, lo habitual para un poema citado en prosa); `align=start` lo alinea con el comienzo de la caja, que es lo predeterminado en texto vertical. El párrafo que presenta el poema conserva su última línea junto a los primeros versos.
+- **Versos escalonados.** Un verso escrito `+ …` empieza donde terminó el de arriba, un espacio más allá, como el verso compartido entre dos personajes en el teatro en verso. Escribe `\+` para un verso que empieza con un signo más.
+- **Cesuras.** Con `keepSpaces` en la apertura, una serie de dos o más espacios dentro de un verso conserva su anchura; sin él, los espacios se reducen a uno como en cualquier párrafo.
+- **Tipo y dirección.** `style` nombra un estilo de párrafo, que da la familia, el cuerpo, el interlineado, la `indent` y el espacio encima y debajo del poema. `dir` y `lang` fijan su dirección y su idioma: un poema latino en un libro árabe (`dir=ltr`) se sangra desde su propio lado de comienzo. En texto vertical cada verso es una columna, sangrada desde la cabeza.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>Atributo</th>
+      <th style={{ width: '200px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>layout</code></td><td><code>auto</code></td><td><code>lines</code>, <code>bayt</code> o <code>auto</code>: a la manera árabe cuando una línea lleva separador.</td></tr>
+    <tr><td><code>indentStep</code></td><td><code>0.5em</code></td><td>Anchura de un espacio inicial.</td></tr>
+    <tr><td><code>turnover</code></td><td><code>hang</code></td><td><code>hang</code> o <code>right</code>.</td></tr>
+    <tr><td><code>hang</code></td><td>la <code>hangingIndent</code> del estilo, o <code>2em</code></td><td>Sangría del resto colgado desde el inicio de su verso.</td></tr>
+    <tr><td><code>turnoverMark</code></td><td><code>[</code></td><td>El signo ante un resto compuesto a la derecha.</td></tr>
+    <tr><td><code>stanzaSpace</code></td><td><code>1</code></td><td>Espacio entre estrofas: un número solo cuenta líneas del interlineado del poema, una longitud es esa longitud.</td></tr>
+    <tr><td><code>keepStanzas</code></td><td><code>0</code></td><td>No partir estrofas de estas líneas o menos; 0 lo desactiva.</td></tr>
+    <tr><td><code>keepSpaces</code></td><td>desactivado</td><td>Conservar las series de dos o más espacios dentro de un verso.</td></tr>
+    <tr><td><code>align</code></td><td><code>center</code> (<code>start</code> en texto vertical)</td><td>Centrar el poema sobre su verso más largo o alinearlo al comienzo.</td></tr>
+    <tr><td><code>style</code>, <code>dir</code>, <code>lang</code></td><td>—</td><td>Estilo de párrafo, dirección e idioma del poema.</td></tr>
+    <tr><td><code>numbered</code></td><td><code>true</code></td><td><code>false</code> deja el poema fuera de la numeración de líneas: sus versos no se cuentan.</td></tr>
+    <tr><td><code>lineStart</code></td><td>—</td><td>El número de línea del primer verso del poema. La cuenta vuelve a empezar ahí, diga lo que diga <code>lineNumbers.restart</code>.</td></tr>
+    <tr><td><code>interval</code></td><td><code>lineNumbers.interval</code></td><td>El intervalo propio del poema: imprimir el número de cada enésimo verso.</td></tr>
+  </tbody>
+</table>
+
+`bodyText.verse` fija los valores por defecto de todos los poemas (véase [Configuración › Verso](/es/docs/configuration#verso)). El texto plano conserva el poema como se escribió, un salto de línea entre versos y una línea en blanco entre estrofas, así que un pasaje copiado y una búsqueda lo leen verso a verso; el EPUB adaptable compone cada estrofa como un elemento cuyos versos cuelgan sus restos, y el PDF etiquetado marca cada estrofa como un párrafo.
+
+**Numeración de líneas.** Con `lineNumbers` activado, los versos de un poema se cuentan (véase [Configuración › Numeración de líneas](/es/docs/configuration#numeración-de-líneas)). Cada verso cuenta una vez: su resto no lleva número, y el espacio entre estrofas no se cuenta. Por defecto cada quinto verso imprime su número en el margen exterior y la cuenta vuelve a empezar en cada poema. Un poema a la manera árabe clásica cuenta una línea por bayt. La apertura ajusta un poema: `lineStart=N` da un número a su primer verso, `interval=N` le da su propio intervalo y `numbered=false` lo deja fuera.
+
+```md
+:::verse{lineStart=37}
+…
+:::
+```
+
+Con el intervalo por defecto, 5, este poema imprime 40, 45, etc. junto a sus versos.
+
+#### Manera árabe clásica
 
 Un poema a la manera árabe clásica (una qaṣīda, una qiṭʿa): cada verso, el *bayt*, en una línea y en dos mitades, el *ṣadr* en el lado del comienzo (la derecha en árabe) y el *ʿajuz* en el lado del final, con un hueco entre ambos. Escribe un bayt por línea, con los hemistiquios separados por `||` (también vale `\\` con un espacio a cada lado, como en los textos de Wikisource). Una línea sin separador es un hemistiquio suelto, centrado en el poema.
 
@@ -567,6 +718,27 @@ Los números de página son los que el documento imprime realmente. Un documento
 
 :::index
 ```
+
+### Saltos de línea
+
+Las líneas de un párrafo se unen con un espacio. Para terminar una línea dentro de un párrafo sin empezar otro (una dirección, el saludo de una carta, una dedicatoria), termina la línea del texto con una barra invertida, el salto forzado de CommonMark, o escribe `\\` seguido de un espacio:
+
+```md
+Al guardián del faro,\
+al final del muelle norte.
+
+Ana Ruiz \\ Calle Mayor 4 \\ 28013 Madrid
+```
+
+- La línea anterior a un salto se compone con su anchura natural, como la última línea de un párrafo, sin estirarse hasta la caja. El texto que sigue abre una línea nueva del mismo párrafo, sin sangría de primera línea ni espacio encima; con sangría francesa cuelga como cualquier línea tras la primera.
+- Lo admiten los párrafos, las citas (`> Primera línea\` sobre `> segunda línea`), las notas al pie y los elementos de lista. Un elemento de lista ocupa una sola línea del texto, así que se parte con `\\`.
+- Una barra invertida al final del párrafo se imprime, como en CommonMark, y dos saltos seguidos son uno: para una línea vacía, empieza un párrafo nuevo o añade un [`:::space`](#space).
+- Un `\\` pegado al carácter siguiente no es un salto: `\\*` imprime una barra invertida y un asterisco escapado, `C:\\Temp` las dos barras. En el código en línea y en una fórmula las barras son del código y de la fórmula.
+- Dos espacios al final de una línea, el otro salto forzado de CommonMark, no lo son: no se ven en un editor y muchos editores los dejan olvidados, así que partirían líneas que nadie quiso partir.
+- El texto copiado del visor HTML lleva un salto de línea en ese punto, el EPUB adaptable un `<br/>`, el texto del PDF un fin de línea y una exportación a Word un salto de línea manual (Mayús+Intro), que la importación de Word vuelve a leer como salto.
+- Un poema conserva sus versos, sangrías y estrofas en un bloque [`:::verse`](#verse), sin una barra en cada línea.
+
+Hasta postext 1.22 la barra invertida se imprimía y las líneas se unían con un espacio. Un libro guardado entonces cuyo texto termina una línea con una barra invertida, o pone `\\` ante un espacio, conserva esa lectura (`bodyText.hardLineBreaks: false`, ver [Configuración › Paquetes escritos por postext 1.4 o anterior](/es/docs/configuration#paquetes-escritos-por-postext-14-o-anterior)).
 
 ### Saltos de línea en los títulos
 
@@ -644,7 +816,7 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
     <tr>
       <td>Código en línea</td>
       <td><code>`código`</code></td>
-      <td>Las comillas invertidas se eliminan; el tramo se renderiza como texto plano, tal cual se escribió: un <code>{':ref{…}'}</code>, un chip, una fórmula, un enlace o un signo de marca dentro de él se imprimen literalmente, que es como un texto muestra la sintaxis. El estilo diferenciado para código está en el roadmap.</td>
+      <td>Las comillas invertidas se eliminan; el tramo se renderiza como texto plano, tal cual se escribió: un <code>{':ref{…}'}</code>, un chip, una fórmula, un enlace o un signo de marca dentro de él se imprimen literalmente, que es como un texto muestra la sintaxis. Se compone en la letra del texto o, con <code>codeStyle.inline</code>, en la letra del código como una sola unidad (ver <a href="/es/docs/configuration#listados-de-código">Configuración › Listados de código</a>). Un listado va en un <a href="#bloques-de-código">bloque de código</a>.</td>
     </tr>
     <tr>
       <td>Escape</td>
@@ -670,6 +842,11 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
       <td>Chip</td>
       <td><code>:chip[texto]</code></td>
       <td>Un fragmento de texto en una caja que pasa de línea como una unidad: un banco de palabras, una tecla, una etiqueta. Lo estilan los <code>chipStyles</code>; ver <a href="#chips-en-línea">Chips en línea</a>.</td>
+    </tr>
+    <tr>
+      <td>Tabulador</td>
+      <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
+      <td>Lleva las palabras que lo siguen a la tabulación siguiente: una de las tabulaciones del estilo del párrafo, o la que fijan sus atributos. Un tabulador escrito en el texto solo es un tabulador donde el estilo fija tabulaciones. Ver <a href="#tabuladores-y-tabulaciones">Tabuladores y tabulaciones</a>.</td>
     </tr>
     <tr>
       <td>Matemáticas en línea</td>
@@ -736,6 +913,72 @@ El informe de la :smallcaps[unesco] y las pautas de la :smallcaps[oms].
 - **Dónde.** Párrafos, elementos de lista, citas, recuadros, celdas de tabla, leyendas y notas, y encabezados mientras `headings.inlineMarks` esté activado (lo está por defecto); si se desactiva, el marcado se elimina del encabezado y el texto se imprime tal cual.
 - **Párrafos enteros.** Un estilo de párrafo o el cuerpo de un recuadro con `smallCaps: true` componen así todo su texto (ver [Estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)).
 - **Texto.** El canvas, el HTML y el PDF llevan las letras tal como se pintan: al copiar `:smallcaps[Hamlet]` se obtiene «HAMLET».
+
+### Tabuladores y tabulaciones
+
+Un tabulador lleva las palabras que lo siguen a una posición fija de la línea, una tabulación: el precio de un plato al final de la medida tras una línea de puntos, el actor tras el papel en un reparto, la puntuación de una pregunta de examen junto al margen. Escribe `:tab` donde va el tabulador; los espacios que lo rodean quedan dentro de él. Las tabulaciones se fijan en la configuración: `bodyText.tabStops` para todos los párrafos, elementos de lista y citas, el `tabStops` de un estilo de párrafo para los párrafos de un grupo `:::paragraphs`, y el `body.tabStops` de un estilo de recuadro dentro de sus cajas (ver [Configuración › Tabulaciones](/es/docs/configuration#tabulaciones)). Una carta cuyos precios terminan al final de la medida, tras una línea de puntos:
+
+```ts
+paragraphStyles: [
+  { id: 'carta', firstLineIndent: { value: 0, unit: 'em' }, tabStops: [{ position: 'end', align: 'end', leader: '. ' }] },
+],
+```
+
+```markdown
+:::paragraphs{style="carta"}
+Sopa de cebolla :tab 8,50
+
+Dorada a la plancha con hinojo y limón :tab 21,00
+:::
+```
+
+`:tab{…}` fija una tabulación para ese único tabulador, sin estilo: la línea en blanco de un formulario hasta el final de la línea, un importe alineado por la coma decimal.
+
+```markdown
+Nombre y apellidos :tab{at=end leader=rule}
+
+Total a pagar :tab{at=80% align=decimal} 1.234,50
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Atributo</th>
+      <th>Significado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>at</code></td>
+      <td>Dónde está la tabulación, desde el borde inicial de la medida del párrafo: una longitud (<code>120mm</code>, <code>4cm</code>, <code>2em</code>; un número sin unidad va en puntos), <code>end</code> para el final de la medida, o una parte de ella (<code>60%</code>). Sin <code>at</code>, <code>:tab&#123;…&#125;</code> va a las tabulaciones del estilo, como un <code>:tab</code> a secas.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>start</code> (por defecto): el texto que sigue al tabulador empieza en la tabulación. <code>end</code>: termina en ella (el texto hasta el tabulador siguiente o hasta el final del párrafo). <code>center</code>: se centra en ella. <code>decimal</code>: su separador decimal cae en la tabulación; un tramo que no lo tiene termina en ella.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>Relleno: el texto que se repite en el hueco anterior a la tabulación: <code>"."</code>, <code>". "</code>, <code>"·"</code>, <code>"_"</code>, <code>"-"</code> u otro texto breve, en la fuente y el color del párrafo. <code>rule</code> traza una línea un poco por debajo de la línea base, la línea en blanco de un formulario. Por defecto, ninguno.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>Espacio que se deja entre el relleno y el texto a cada lado. Por defecto, <code>0.5em</code> del cuerpo del párrafo; un número sin unidad va en puntos.</td>
+    </tr>
+    <tr>
+      <td><code>decimal</code></td>
+      <td>El separador en el que se alinea una tabulación <code>decimal</code>. Por defecto, el del idioma del documento: <code>.</code> en inglés, chino, japonés y árabe, <code>,</code> en español, catalán, portugués, francés, alemán y otros.</td>
+    </tr>
+  </tbody>
+</table>
+
+- **Adónde va un tabulador.** A la primera tabulación que queda más allá del texto que lo precede, entre las que siguen a la que tomó el tabulador anterior de la línea, así que el segundo tabulador de una línea suele tomar la segunda tabulación. Pasada la última, `tabInterval` pone más tabulaciones a intervalos regulares desde el principio de la medida; sin él, el tabulador es un espacio entre palabras.
+- **Caracteres de tabulación.** Un tabulador escrito en el texto (U+0009) solo es un tabulador en un párrafo cuyo estilo fija `tabStops` o `tabInterval`. En los demás sigue siendo el espacio entre palabras que siempre fue, así que un documento escrito con tabuladores en lugar de espacios conserva su composición. Varios tabuladores seguidos van a otras tantas tabulaciones. Un tabulador al principio de una línea del texto se recorta con los demás blancos iniciales de la línea: escribe `:tab` para empezar una línea en una tabulación.
+- **Lo que queda como texto.** Un `:tab` seguido de una letra (`3:table`), y un `:tab` dentro de código en línea, de una fórmula, de la dirección de un enlace o de los atributos de una directiva.
+- **Dónde.** Párrafos, elementos de lista, citas, recuadros y grupos `:::paragraphs`. Los títulos, los pies, las celdas de tabla y los textos de diseño (aperturas, titulillos) no tienen tabulaciones.
+- **Texto que pasa de la tabulación.** Cuando el texto anterior a un tabulador ya ha rebasado todas las tabulaciones que le quedan a su línea, una tabulación `end`, `center` o `decimal` baja a la línea siguiente la última palabra anterior al tabulador junto con el texto de la tabulación, y el texto anterior se compone más estrecho, como una fila del índice general pasa de línea su título para conservar el número de página. Una tabulación `start` corta la línea antes del tabulador, y el texto que lo sigue empieza la línea siguiente en su tabulación. Un tabulador que abre su línea y aun así no encuentra tabulación no ocupa sitio.
+- **Rellenos.** Un relleno llena el hueco anterior a su tabulación y termina a ras del final de ese hueco, de modo que los puntos de varias líneas quedan alineados sea cual sea el texto que los precede. `gap` lo separa del texto a ambos lados; no hay hueco antes de él cuando el tabulador abre la línea, ni después cuando no le sigue nada.
+- **Corte de líneas.** Un párrafo con un tabulador se compone línea a línea, nunca con Knuth–Plass. En un texto justificado solo los espacios entre palabras que siguen al último tabulador de la línea absorben lo que falta, y la última línea del párrafo no se estira (ver [Justificación › Líneas con tabuladores](/es/docs/justification#líneas-con-tabuladores)). Un párrafo centrado o alineado a la derecha compone sus líneas con tabuladores desde el lado inicial, porque las tabulaciones son posiciones en la medida. De derecha a izquierda, las tabulaciones se miden desde la derecha y una tabulación `end` queda a la izquierda (ver [Composición árabe](/es/docs/arabic-layout#índice-general-e-índice-analítico)). En texto vertical un tabulador es un espacio entre palabras, y un `:tab` allí da el aviso de contenido `tabInVerticalText`.
+- **Texto y salidas.** El texto plano lleva un carácter de tabulación (`\t`) en cada tabulador; los rellenos no son texto, y las copias, las búsquedas y el mapa de posiciones los omiten. El canvas, el visor HTML y el EPUB de maquetación fija los pintan (ocultos para los lectores de pantalla en el HTML); un PDF etiquetado los marca como artefactos, así que su texto se lee `Sopa de cebolla 8,50`. El EPUB adaptable no puede conservar las tabulaciones con exactitud: cada línea de un párrafo con tabuladores pasa a ser una fila de las partes que hay entre sus tabuladores, donde una tabulación `end`, `center` o `decimal`, o una con relleno, empuja la parte siguiente al final de la fila (su relleno, un borde punteado o continuo), y una tabulación `start` conserva la parte anterior con su anchura impresa. Una exportación a Word escribe `:tab` como un tabulador de Word, y la importación de Word vuelve a leer un tabulador del texto como `:tab` con la tabulación que Word le fijó (ver [Sandbox › Documentos de Word](/es/docs/sandbox#documentos-de-word)).
 
 ### Orientación en texto vertical
 
@@ -1589,12 +1832,12 @@ Un `:::strip` tiene el cuerpo de una página pero va en el texto como una sola c
 Postext no reconoce las siguientes características de CommonMark. O se tratan como texto plano (y por tanto aparecerán literalmente en la salida) o se descartan silenciosamente:
 
 - **Encabezados tipo setext** — la forma con subrayado `===` / `---`. Usa encabezados ATX (`#`).
-- **Bloques de código con cercas o con indentación** — cercas ` ``` ` o `~~~` e indentación de 4 espacios. Las líneas de dentro se leen como Markdown corriente, no se conservan como un listado: las líneas sin una línea en blanco entre ellas se unen en un solo párrafo y pierden sus espacios iniciales, una línea que empieza por `#` y un espacio se convierte en un título (`#!/usr/bin/env` sigue siendo texto) y una que empieza por `-` o `1.` y un espacio en un elemento de lista, un par de signos `$` se convierte en una fórmula, y las líneas de la cerca se imprimen como texto: una cerca ` ``` ` como un acento grave, la de apertura seguida de la cadena de información (`` `bash``), y una cerca `~~~` como una `~` pequeña compuesta como subíndice. Para componer un listado, escribe cada línea como un párrafo propio (con una línea en blanco entre líneas) dentro de un bloque `:::paragraphs` cuyo estilo de párrafo fije una `fontFamily` monoespaciada, y encierra cada línea entre acentos graves, que conservan `#`, `$`, `*` y los demás tal como están escritos. Los espacios normales al principio de una línea se descartan y una serie de ellos dentro de la línea se reduce a uno, también entre los acentos graves, así que sangra y alinea con espacios de no separación (U+00A0) y ponlos dentro de los acentos graves: uno delante del acento grave de apertura también se descarta. El código en línea se reconoce, pero no tiene tipografía de código: ver [Formato en línea](#formato-en-línea).
 - **HTML en crudo** — las etiquetas `<tag>` no se interpretan. Tampoco se admiten etiquetas estilo MDX; la fuente Postext es markdown puro.
 - **Líneas horizontales** — `---`, `***`, `___`.
 - **Tablas** — las tablas con pipes no se parsean. Las tablas se modelan como recursos estructurados en `PostextContent.resources`.
 - **Enlaces por referencia** — `[texto][id]` con su bloque de definición.
 - **Autolinks** — `<https://example.com>`.
+- **Saltos de línea con dos espacios al final** — los espacios se recortan. Termina la línea con una barra invertida (ver [Saltos de línea](#saltos-de-línea)).
 - **Tachado** — `~~texto~~`. El renderizador de tachado está reservado actualmente para tareas completadas.
 - **Notas al margen** — no están implementadas, y el motor ignora `PostextContent.notes`, aunque los tipos lo acepten. Las notas al pie y las de final de capítulo se escriben con `[^id]` (ver [Notas al pie](#notas-al-pie)); hasta postext 1.5 había que componerlas como texto.
 

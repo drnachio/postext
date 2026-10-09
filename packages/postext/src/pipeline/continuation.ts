@@ -15,10 +15,12 @@ import type { HeadingCounters, LayoutContinuation, OutlineEntry, PartState, Post
 import { computeHeadingContext, computeResourceNumberingState } from './resourceNumbering';
 import { planParts } from './parts';
 import { resolveAllConfig } from './config';
+import { codeParseOptions } from './codeBlocks';
 import { headingIsNumbered } from './headingStyles';
 import { computeOutline, hasIndexDirective, hasTocDirective } from './outline';
 import { lastFootnoteNumber, numberFootnotes, splitFootnoteDefinitions } from './footnotes';
 import { numberStatements } from './statementNumbering';
+import { lastVerseLineNumber } from './lineNumbers';
 
 const NO_HEADINGS: HeadingCounters = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 };
 
@@ -32,8 +34,8 @@ export function continuationAfter(
   before?: LayoutContinuation,
 ): LayoutContinuation {
   const body = extractFrontmatter(content.markdown).content;
-  const blocks = parseMarkdownMemo(body);
   const resolved = resolveAllConfig(config);
+  const blocks = parseMarkdownMemo(body, codeParseOptions(resolved));
   const headingContext = computeHeadingContext(blocks, before?.headings, (b) => headingIsNumbered(b, resolved));
   const headings = headingContext.length > 0
     ? headingContext[headingContext.length - 1]!
@@ -71,12 +73,17 @@ export function continuationAfter(
     ...(before?.headings ? { headings: before.headings } : {}),
     ...(before?.statementCounters ? { counters: before.statementCounters } : {}),
   }).counters;
+  // Lines of verse counted through the book (#621); a count of every line
+  // is the layout's (`VDTDocument.lastLineNumber`), and the inherited
+  // number is handed on as it was.
+  const lineNumber = lastVerseLineNumber(blocks, resolved, before?.lineNumber) ?? before?.lineNumber;
   return {
     headings,
     resourceCounters: counters,
     resourceNumbers: map,
     ...(Object.keys(statementCounters).length > 0 ? { statementCounters } : {}),
     ...(footnoteNumber > 0 ? { footnoteNumber } : {}),
+    ...(lineNumber !== undefined ? { lineNumber } : {}),
     ...(part ? { part } : {}),
     ...(afterPartPage ? { afterPartPage } : {}),
   };
@@ -110,8 +117,8 @@ export function contentOutline(
   before?: LayoutContinuation,
 ): { outline: OutlineEntry[]; hasToc: boolean; hasIndex: boolean; hasRefs: boolean } {
   const body = extractFrontmatter(content.markdown).content;
-  const blocks = parseMarkdownMemo(body);
   const resolved = resolveAllConfig(config);
+  const blocks = parseMarkdownMemo(body, codeParseOptions(resolved));
   return {
     outline: computeOutline(blocks, resolved, before?.headings, before?.statementCounters),
     hasToc: hasTocDirective(blocks),
