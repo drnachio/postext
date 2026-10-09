@@ -79,6 +79,15 @@ export function bitmapResolutionOf(value: unknown): BitmapResolution | undefined
   return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
+/** The share of a column a float heading the page that cites it may take
+ *  (`layout.maxTopFraction`, #633). */
+export const DEFAULT_MAX_TOP_FRACTION = 0.7;
+
+/** A `maxTopFraction` as written: a number in (0, 1], else `undefined`. */
+export function maxTopFractionOf(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 && value <= 1 ? value : undefined;
+}
+
 export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   layoutType: 'double',
   columnCount: 3,
@@ -91,6 +100,8 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   bitmapResolution: 'document',
   floatShrink: { mode: 'never', minScale: DEFAULT_FLOAT_MIN_SCALE },
   wrap: { ...DEFAULT_TEXT_WRAP },
+  floatsAtCitingPage: false,
+  maxTopFraction: DEFAULT_MAX_TOP_FRACTION,
   hugClosingFloats: true,
   inlineResourceGap: 'around',
   inlineResourceGapInBoxes: true,
@@ -119,6 +130,8 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
     bitmapResolution: bitmapResolutionOf(partial.bitmapResolution) ?? DEFAULT_LAYOUT_CONFIG.bitmapResolution,
     floatShrink: resolveFloatShrink(partial.floatShrink),
     wrap: resolveTextWrap(partial.wrap),
+    floatsAtCitingPage: partial.floatsAtCitingPage === true,
+    maxTopFraction: maxTopFractionOf(partial.maxTopFraction) ?? DEFAULT_MAX_TOP_FRACTION,
     hugClosingFloats: partial.hugClosingFloats ?? DEFAULT_LAYOUT_CONFIG.hugClosingFloats,
     inlineResourceGap: partial.inlineResourceGap === 'above' ? 'above' : DEFAULT_LAYOUT_CONFIG.inlineResourceGap,
     inlineResourceGapInBoxes: partial.inlineResourceGapInBoxes ?? DEFAULT_LAYOUT_CONFIG.inlineResourceGapInBoxes,
@@ -193,6 +206,15 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
       result.wrap = w;
       hasOverride = true;
     }
+  }
+  if (layout.floatsAtCitingPage !== undefined && layout.floatsAtCitingPage !== DEFAULT_LAYOUT_CONFIG.floatsAtCitingPage) {
+    result.floatsAtCitingPage = layout.floatsAtCitingPage;
+    hasOverride = true;
+  }
+  const maxTopFraction = maxTopFractionOf(layout.maxTopFraction);
+  if (maxTopFraction !== undefined && maxTopFraction !== DEFAULT_LAYOUT_CONFIG.maxTopFraction) {
+    result.maxTopFraction = maxTopFraction;
+    hasOverride = true;
   }
   if (layout.hugClosingFloats !== undefined && layout.hugClosingFloats !== DEFAULT_LAYOUT_CONFIG.hugClosingFloats) {
     result.hugClosingFloats = layout.hugClosingFloats;

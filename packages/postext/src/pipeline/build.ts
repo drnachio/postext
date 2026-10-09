@@ -309,6 +309,18 @@ export interface PassHints {
   /** Trailing-cap passes: the page each floated resource took in the layout
    *  the caps level (see `proposeTrailingCap`). */
   floatPages?: ReadonlyMap<string, number>;
+  /** Floats (resource ids) that head the page or column their citing line
+   *  lands on (`placement.citingPage`, #633): an earlier pass found the line
+   *  there and the float on a later page or column. The page is opened
+   *  with the float at its head, before any text. */
+  citingPageFloats?: ReadonlyMap<string, CitingPageSlot>;
+}
+
+/** Where a float set at the head of its citing page goes (#633): the page
+ *  and the band-0 text column its citing line landed in. */
+export interface CitingPageSlot {
+  pageIndex: number;
+  columnIndex: number;
 }
 
 /** The page each floated resource of `doc` lies on (its first slice's). */
@@ -321,6 +333,16 @@ function floatPagesOf(doc: VDTDocument): Map<string, number> {
     }
   }
   return out;
+}
+
+/** Whether `pageIndex` opens a run of pages after an explicit break (the
+ *  document's first page, the page after a chapter's opener break, a part
+ *  or a `:::pagebreak`, past the blank pages parity put between them): no
+ *  float heads such a page ahead of its citing line (#633). */
+function opensAfterBreak(pages: readonly VDTPage[], pageIndex: number, forcedBreakPages: ReadonlySet<number>): boolean {
+  let p = pageIndex - 1;
+  while (p >= 0 && (pages[p]?.blankForParity || pages[p]?.blankForForce)) p--;
+  return p < 0 || forcedBreakPages.has(p);
 }
 
 export interface PassResult extends BandPassReport {
@@ -344,7 +366,20 @@ export interface PassResult extends BandPassReport {
    *  side float that had to overflow the side column: candidates for
    *  `PassHints.captionUnder` in the next pass. */
   captionUnderProposals: Set<string>;
+  /** Floats that may head the page or column their citing line landed on
+   *  in this pass (`placement.citingPage`, #633) and landed later:
+   *  candidates for `PassHints.citingPageFloats`. */
+  citingPageProposals: Map<string, CitingPageSlot>;
+  /** Floats of `PassHints.citingPageFloats` this pass could not keep at the
+   *  head of their citing page: not set there (it did not fit, an earlier
+   *  float of its sequence was still waiting, the page opened at a break),
+   *  or set there and the text it pushed down took the citing line to
+   *  another page or column. With the reason, for the record. */
+  citingPageRefused: Map<string, CitingPageRefusal>;
 }
+
+/** Why a float was not kept at the head of its citing page (#633). */
+export type CitingPageRefusal = 'notSet' | 'citationMoved';
 
 /** `{chapterNumber}` at each content block: the value of the last level-1
  *  heading at or before it ('' before the first), by the counter the
@@ -513,7 +548,7 @@ function placeDocumentPass(
   options: BuildDocumentOptions | undefined,
   hints: PassHints,
 ): PassResult {
-  const { balanceExtraPx, balanceLooseness, balanceLooseBudget, bandCaps, captionUnder, floatPages } = hints;
+  const { balanceExtraPx, balanceLooseness, balanceLooseBudget, bandCaps, captionUnder, floatPages, citingPageFloats } = hints;
   const captionUnderProposals = new Set<string>();
   /** Side columns whose foot a figure's side caption has cut, by the figure. */
   const asideCutBy = new WeakMap<VDTColumn, string>();
@@ -808,7 +843,8 @@ function placeDocumentPass(
   // mode of the styled section the reference sits in (a horizontal
   // appendix of a vertical book turns its figures as asked).
   const floatPlan = computeFloatPlan(contentBlocks, resources, resourceTypes, incorporated,
-    (blockIdx) => sectionWritingMode(sectionPlan, resolved, blockIdx) === 'vertical-rl', resolved.layout.floatShrink, resolved.layout.wrap);
+    (blockIdx) => sectionWritingMode(sectionPlan, resolved, blockIdx) === 'vertical-rl', resolved.layout.floatShrink, resolved.layout.wrap,
+    resolved.layout.floatsAtCitingPage);
   const floatedIds = floatedResourceIds(floatPlan, incorporated, resources, resourceTypes);
   const floatsByFirstBlock = new Map<number, PlannedFloat[]>();
   for (const f of floatPlan) {
@@ -2207,7 +2243,7 @@ function placeDocumentPass(
    *  column float of its sequence still gets the page's foot once that one
    *  is set. A float that does not fit holds up the ones behind it in its
    *  numbering sequence (see `heldBack`), never the other sequence. */
-  const flushFloatsIntoPage = (page: VDTPage): void => {
+  const flushPendingFloatsIntoPage = (page: VDTPage): void => {
     if (pendingFloats.length === 0) { flushSideBoxesIntoPage(page); return; }
     // A floated box heading the page goes first: the figures then take
     // the foot under it (a figure set first would claim the foot and push
@@ -2410,6 +2446,209 @@ function placeDocumentPass(
       }
       i = settle(i, r);
     }
+  };
+
+  // --- Floats at the head of the page that cites them (#633) ---------------
+  // A float that may head its citing page (`placement.citingPage`) is placed
+  // as any other in the first pass; when its citing line lands on a page (a
+  // column) whose head it would fit while the float went on to a later one,
+  // the pass proposes that head (`settleCitingPageFloats`), and the next
+  // pass opens the page with the float there, before any text, the text
+  // above the reference moving down under it. The driver keeps the slot
+  // while the citing line stays on that page (that column).
+  /** The floats `PassHints.citingPageFloats` sets at the head of each page,
+   *  in first-reference order (the order of their numbers). */
+  const citingHeadsByPage = new Map<number, PlannedFloat[]>();
+  if (citingPageFloats && citingPageFloats.size > 0) {
+    for (const f of floatPlan) {
+      const slot = citingPageFloats.get(f.resourceId);
+      if (!slot || !f.citingPage) continue;
+      const list = citingHeadsByPage.get(slot.pageIndex);
+      if (list) list.push(f);
+      else citingHeadsByPage.set(slot.pageIndex, [f]);
+    }
+  }
+  /** The floats this pass set at the head of their citing page. */
+  const citingHeadsSet = new Set<string>();
+  const floatPlanOrder = new Map(floatPlan.map((f, i) => [f.resourceId, i]));
+  /** Whether every float of `f`'s numbering sequence first cited before it
+   *  is set already: figure 4 never heads a page while figure 3 waits. */
+  const sequenceSetBefore = (f: PlannedFloat): boolean => {
+    const typeId = resourceById.get(f.resourceId)?.typeId;
+    const at = floatPlanOrder.get(f.resourceId) ?? 0;
+    for (let i = 0; i < at; i++) {
+      const g = floatPlan[i]!;
+      if (resourceById.get(g.resourceId)?.typeId !== typeId) continue;
+      if (!enqueuedFloatIds.has(g.resourceId) || pendingFloats.some((p) => p.resourceId === g.resourceId)) return false;
+    }
+    return true;
+  };
+  /** The text columns of `page`'s first band (no span block above them). */
+  const firstBandTextColumns = (page: VDTPage): VDTColumn[] =>
+    page.columns.filter((c) => c.kind !== 'span' && c.kind !== 'side' && (c.band ?? 0) === 0);
+  /** Whether a float takes the page's whole width on `page` (as
+   *  `flushFloatsIntoPage` reads it). */
+  const spansPageOn = (page: VDTPage, f: PlannedFloat, textCols: readonly VDTColumn[]): boolean => {
+    const across = Math.min(f.columns ?? 1, textCols.length);
+    return (f.span === 'page' || (across > 1 && across === textCols.length)) && (textCols.length > 1 || sideColumns(page).length > 0);
+  };
+  /** The columns a column float heading its citing column `columnIndex`
+   *  takes: that column, or the run of `columns` from it (ending at the
+   *  band's last column when fewer follow it). */
+  const citingColumnsOf = (f: PlannedFloat, textCols: readonly VDTColumn[], columnIndex: number): VDTColumn[] | undefined => {
+    const across = Math.min(f.columns ?? 1, textCols.length);
+    const at = textCols.findIndex((c) => c.index === columnIndex);
+    if (at < 0) return undefined;
+    const from = Math.max(0, Math.min(at, textCols.length - across));
+    return textCols.slice(from, from + across);
+  };
+  /** Set the floats that head `page` (`PassHints.citingPageFloats`), after
+   *  the floats the page owes to earlier pages (cited before them, read
+   *  before them): each where its citing line lands, when its sequence is
+   *  set up to it and it fits within `layout.maxTopFraction` of the column,
+   *  the text room kept under it. One that does not is placed as usual. */
+  const placeCitingHeads = (page: VDTPage): void => {
+    const heads = citingHeadsByPage.get(page.index);
+    if (!heads) return;
+    if (opensAfterBreak(doc.pages, page.index, forcedBreakPages) || page.openerBand || page.partInfo) return;
+    const textCols = firstBandTextColumns(page);
+    if (textCols.length === 0 || textCols.some((c) => c.blocks.length > 0)) return;
+    const maxTop = resolved.layout.maxTopFraction;
+    for (const planned of heads) {
+      const id = planned.resourceId;
+      if (citingHeadsSet.has(id)) continue;
+      const at = pendingFloats.findIndex((p) => p.resourceId === id);
+      // Placed already, or queued with its citing line placed (on an
+      // earlier page): the usual slots are its.
+      if (at >= 0 ? !awaitsCitation(pendingFloats[at]!) : enqueuedFloatIds.has(id)) continue;
+      if (!sequenceSetBefore(planned)) continue;
+      const pageSpan = spansPageOn(page, planned, textCols);
+      const cols = pageSpan ? [...textCols, ...sideColumns(page)] : citingColumnsOf(planned, textCols, citingPageFloats!.get(id)!.columnIndex);
+      if (!cols) continue;
+      const f: PlannedFloat = { ...planned, refPageIndex: page.index };
+      const probe = probeFloatBand(page, f, cols, 'top', pageSpan, false);
+      if (!probe) continue;
+      const fits = cols.filter((c) => c.kind !== 'side').every((c) => {
+        const r = reservedOf(c);
+        const full = c.bbox.height + r.top + r.bottom;
+        return r.top + probe.need <= maxTop * full + 0.01 && probe.need <= c.availableHeight - minTextPx + 0.01;
+      });
+      if (!fits) continue;
+      // A page opened for a block that cannot split keeps its room.
+      if (freshPageHold && cols.includes(freshPageHold.col)
+        && availableAfterBand(freshPageHold.col, 'top', probe, false) < freshPageHold.px - FIT_EPS) continue;
+      const r = placeFloatInColumns(page, f, cols, 'top', pageSpan, 'strict');
+      if (r === 'defer' || r === 'skip') continue;
+      enqueuedFloatIds.add(id);
+      citationGates.delete(id);
+      citingHeadsSet.add(id);
+      if (at >= 0) pendingFloats.splice(at, 1);
+      // A table cut to the head after all goes on as any rest does.
+      if (typeof r === 'object') pendingFloats.push(r.rest);
+    }
+  };
+  /**
+   * After the pass: the floats that may head their citing page and went on
+   * to a later page (or column), with the head their citing line's page
+   * (column) offers — proposals for the next pass — and the floats the
+   * hints asked to head a page this pass did not keep there. A float is
+   * proposed when its citing line lands in the first band of a page that
+   * no explicit break opened (no opener, part or `:::pagebreak` above it),
+   * as one slice (not a table split across pages), when the earlier floats
+   * of its sequence went no later than that page, and when it fits within
+   * `layout.maxTopFraction` of the column.
+   */
+  const settleCitingPageFloats = (): { proposals: Map<string, CitingPageSlot>; refused: Map<string, CitingPageRefusal> } => {
+    const proposals = new Map<string, CitingPageSlot>();
+    const refused = new Map<string, CitingPageRefusal>();
+    const candidates = floatPlan.filter((f) => f.citingPage);
+    if (candidates.length === 0) return { proposals, refused };
+    const byId = new Map(candidates.map((f) => [f.resourceId, f]));
+    // Where each one's citation landed: the first line that cites it, or
+    // for a `::resource` directive the first line placed after it.
+    const cited = new Map<string, { pageIndex: number; col: VDTColumn }>();
+    const directives = candidates.filter((f) => contentBlocks[f.firstBlockIdx]?.type === 'resourceBlock');
+    for (const page of doc.pages) {
+      for (const col of page.columns) {
+        for (const b of col.blocks) {
+          for (const f of directives) {
+            if (!cited.has(f.resourceId) && b.contentIndex !== undefined && b.contentIndex > f.firstBlockIdx && b.lines.length > 0) {
+              cited.set(f.resourceId, { pageIndex: page.index, col });
+            }
+          }
+          for (const l of b.lines) {
+            for (const seg of l.segments ?? []) {
+              const id = seg.refResourceId;
+              if (id !== undefined && byId.has(id) && !cited.has(id)) cited.set(id, { pageIndex: page.index, col });
+            }
+          }
+        }
+      }
+    }
+    const landed = floatPagesOf(doc);
+    const landedColumn = new Map<string, { columnIndex: number; slices: number }>();
+    for (const page of doc.pages) {
+      for (const fb of page.floats ?? []) {
+        const id = fb.resourceBlock?.resource.id;
+        if (id === undefined || !byId.has(id)) continue;
+        const l = landedColumn.get(id);
+        if (l) l.slices++;
+        else landedColumn.set(id, { columnIndex: fb.columnIndex ?? 0, slices: 1 });
+      }
+    }
+    const positionIn = (cols: readonly VDTColumn[], index: number): number => cols.findIndex((c) => c.index === index);
+    for (const f of candidates) {
+      const id = f.resourceId;
+      const c = cited.get(id);
+      const slot = citingPageFloats?.get(id);
+      if (slot) {
+        // Hinted: kept when it was set at the head and its citing line is
+        // still under it, on that page, in a column it heads.
+        if (!citingHeadsSet.has(id)) { refused.set(id, 'notSet'); continue; }
+        const page = doc.pages[slot.pageIndex];
+        let kept = !!page && c !== undefined && c.pageIndex === slot.pageIndex;
+        if (kept && page) {
+          const textCols = firstBandTextColumns(page);
+          if (!spansPageOn(page, f, textCols)) {
+            const cols = citingColumnsOf(f, textCols, slot.columnIndex);
+            kept = cols !== undefined && cols.includes(c!.col);
+          }
+        }
+        if (!kept) refused.set(id, 'citationMoved');
+        continue;
+      }
+      const l = landedColumn.get(id);
+      const landedPage = landed.get(id);
+      if (!c || !l || landedPage === undefined || l.slices > 1) continue;
+      const page = doc.pages[c.pageIndex]!;
+      if (c.col.kind === 'span' || c.col.kind === 'side' || (c.col.band ?? 0) !== 0) continue;
+      if (opensAfterBreak(doc.pages, c.pageIndex, forcedBreakPages) || page.openerBand || page.partInfo) continue;
+      const textCols = firstBandTextColumns(page);
+      const pageSpan = spansPageOn(page, f, textCols);
+      const later = landedPage > c.pageIndex
+        || (!pageSpan && landedPage === c.pageIndex && positionIn(textCols, l.columnIndex) > positionIn(textCols, c.col.index));
+      if (!later) continue;
+      // The earlier floats of its sequence went no later than that page.
+      const typeId = resourceById.get(id)?.typeId;
+      const order = floatPlanOrder.get(id) ?? 0;
+      if (floatPlan.slice(0, order).some((g) => resourceById.get(g.resourceId)?.typeId === typeId && (landed.get(g.resourceId) ?? Infinity) > c.pageIndex)) continue;
+      // It fits the head within `layout.maxTopFraction` of the column.
+      const cols = pageSpan ? textCols : citingColumnsOf(f, textCols, c.col.index);
+      if (!cols || cols.length === 0) continue;
+      const slotWidth = pageSpan ? page.contentArea.width : cols[cols.length - 1]!.bbox.x + cols[cols.length - 1]!.bbox.width - cols[0]!.bbox.x;
+      const width = f.widthFraction && f.widthFraction < 1 ? slotWidth * f.widthFraction : slotWidth;
+      const m = measureFloat(id, width);
+      if (!m || m.height + floatGapPx > resolved.layout.maxTopFraction * page.contentArea.height + 0.01) continue;
+      proposals.set(id, { pageIndex: c.pageIndex, columnIndex: c.col.index });
+    }
+    return { proposals, refused };
+  };
+
+  /** Reserve the floats a freshly opened page owes: those waiting for a
+   *  page's bands, then those that head the page citing them (#633). */
+  const flushFloatsIntoPage = (page: VDTPage): void => {
+    flushPendingFloatsIntoPage(page);
+    if (citingHeadsByPage.size > 0) placeCitingHeads(page);
   };
 
   /** Reserve floats on each freshly opened content page. Passed only to the
@@ -7090,12 +7329,18 @@ function placeDocumentPass(
   if (shrunk.length > 0) floatShrinkWarningsByDoc.set(doc, shrunk);
   if (textWrapNotes.length > 0) textWrapWarningsByDoc.set(doc, textWrapNotes);
 
-  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals };
+  const { proposals: citingPageProposals, refused: citingPageRefused } = settleCitingPageFloats();
+
+  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused };
 }
 
 /** Passes a document printing its own contents gets at most, beyond the
  *  first, for the page labels it prints to settle. */
 const MAX_TOC_ROUNDS = 3;
+
+/** Rounds of proposals for floats heading their citing page (#633), each a
+ *  placement pass, before the band caps run. */
+const MAX_CITING_PAGE_ROUNDS = 3;
 
 export function buildDocument(
   content: PostextContent,
@@ -7339,10 +7584,21 @@ function* buildDocumentBalanced(
   // Loose paragraphs any pass found would gain their line only off the
   // character grid (#632): the columns they leave short say so.
   const looseOffGrid = new Set<number>();
+  // Floats heading the page or column that cites them (#633,
+  // `PassHints.citingPageFloats`): once a pass keeps one there, every later
+  // pass opens that page with it; a float refused once (its citing line
+  // left the page, or it could not be set there) is never proposed again.
+  const citingPage = new Map<string, CitingPageSlot>();
+  const citingRefused = new Set<string>();
   const runPass = (hints?: PassHints): PassResult => {
     passIndex++;
     const started = onPass ? now() : 0;
-    const result = buildDocumentPass(content, config, cache, passOptions, { ...hints, captionUnder, ...(footnoteNumbers ? { footnoteNumbers } : {}) });
+    const result = buildDocumentPass(content, config, cache, passOptions, {
+      ...hints,
+      captionUnder,
+      ...(footnoteNumbers ? { footnoteNumbers } : {}),
+      ...(citingPage.size > 0 ? { citingPageFloats: new Map(citingPage) } : {}),
+    });
     for (const id of result.captionUnderProposals) captionUnder.add(id);
     for (const k of result.looseOffGrid) looseOffGrid.add(k);
     onPass?.({ pass: passIndex, tocRound, ms: now() - started, pages: result.doc.pages.length });
@@ -7361,12 +7617,53 @@ function* buildDocumentBalanced(
     if (captionUnder.size === before) break;
   }
 
+  // --- Floats at the head of their citing page (#633) --------------------
+  // A float that may head the page (column) its citing line lands on and
+  // went on to a later one is proposed there; the next pass opens that
+  // page with it. A pass that could not keep one there (the text it pushed
+  // down took the citing line to the next page) drops it for good. A few
+  // rounds at most, as the side captions get; then any hint still refused
+  // is dropped, each pass with fewer, until every one left holds.
+  /** Drop the hints `r` could not keep; whether there were any. */
+  const dropRefusedCiting = (r: PassResult): boolean => {
+    let dropped = false;
+    for (const id of r.citingPageRefused.keys()) {
+      citingRefused.add(id);
+      if (citingPage.delete(id)) dropped = true;
+    }
+    return dropped;
+  };
+  for (let round = 0; round < MAX_CITING_PAGE_ROUNDS; round++) {
+    let changed = dropRefusedCiting(initial);
+    for (const [id, slot] of initial.citingPageProposals) {
+      if (citingRefused.has(id) || citingPage.has(id)) continue;
+      citingPage.set(id, slot);
+      changed = true;
+    }
+    if (!changed) break;
+    initial = runPass();
+    yield;
+  }
+  while (dropRefusedCiting(initial)) {
+    initial = runPass();
+    yield;
+  }
+
   // --- Band caps (page-span blocks mid-page) -----------------------------
   // A span block that arrived in an uneven band proposes a cap; the driver
   // re-places the document with it (and grows / drops caps whose band
   // overflowed) before balancing runs. Documents without such blocks get
   // their first pass back untouched — no extra pass.
-  const bands = yield* resolveBandCapsGen(initial, (bandCaps) => runPass({ bandCaps }));
+  let bands = yield* resolveBandCapsGen(initial, (bandCaps) => runPass({ bandCaps }));
+  // A cap that took a citing line off the page its float heads: drop that
+  // float's hint and settle the caps again without it.
+  while (dropRefusedCiting(bands.result)) {
+    initial = runPass();
+    yield;
+    const passes = bands.passCount;
+    bands = yield* resolveBandCapsGen(initial, (bandCaps) => runPass({ bandCaps }));
+    bands = { ...bands, passCount: bands.passCount + passes + 1 };
+  }
   let best = bands.result;
   const bandCaps = bands.bandCaps;
   let passCount = bands.passCount;
@@ -7558,6 +7855,8 @@ function* buildDocumentBalanced(
       looseOutcome: mergeMap(best.looseOutcome, next.looseOutcome),
       looseOffGrid: new Set([...best.looseOffGrid, ...next.looseOffGrid]),
       captionUnderProposals: new Set([...best.captionUnderProposals, ...next.captionUnderProposals]),
+      citingPageProposals: best.citingPageProposals,
+      citingPageRefused: best.citingPageRefused,
     };
   };
 
@@ -7676,7 +7975,10 @@ function* buildDocumentBalanced(
         // a levelled closing band spills past its cut) is a regression —
         // capped columns without their box are not a layout we may keep.
         const capsDelivered = [...bandCaps.keys()].every((i) => !inRange(s.range, capPage.get(i)) || next.spanPlacedInBand.has(i));
-        const score = capsDelivered && wholeIntact(next, s, si === segments.length - 1)
+        // So is one that loses a float heading its citing page (#633): the
+        // levers pushed its citing line off it.
+        const citingKept = ![...next.citingPageRefused.keys()].some((id) => inRange(s.range, citingPage.get(id)?.pageIndex));
+        const score = capsDelivered && citingKept && wholeIntact(next, s, si === segments.length - 1)
           ? gapLinesIn(nextGaps, s.range)
           : Infinity;
         // Loose paragraphs that gained no line at any tracking rung are
@@ -7750,7 +8052,9 @@ function* buildDocumentBalanced(
       (caps) => runPass({ ...frozen, bandCaps: caps, floatPages: floatPagesOf(best.doc) }),
     );
     passCount += trailing.passCount;
-    if (trailing.result !== best) {
+    // A cap that takes a citing line off the page its float heads (#633)
+    // is not kept.
+    if (trailing.result !== best && trailing.result.citingPageRefused.size === 0) {
       best = trailing.result;
       for (const [i, cap] of trailing.caps) bandCaps.set(i, cap);
       // The capped layout is a new problem: the polish round gets its own

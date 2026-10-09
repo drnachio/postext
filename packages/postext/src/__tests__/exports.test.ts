@@ -300,6 +300,7 @@ describe("package exports", () => {
       "resolvePageConfig",
       "DEFAULT_LAYOUT_CONFIG",
       "DEFAULT_FLOAT_MIN_SCALE",
+      "DEFAULT_MAX_TOP_FRACTION",
       "DEFAULT_TEXT_WRAP",
       "DEFAULT_COLUMN_RULE",
       "DEFAULT_COLUMN_BALANCING",

@@ -155,6 +155,23 @@ export interface ResourcePlacement {
    *  again (rounded up to whole grid lines). Default `layout.wrap.gap`,
    *  else one body line, the float gap. */
   wrapGap?: Dimension;
+  /** Let a `'top'` or `'auto'` float head the page (a page-span float) or
+   *  the column (a column float, across {@link columns} too) where the line
+   *  that first cites it lands, as LaTeX's `t` placement does, instead of
+   *  the first free slot after that line (#633). The text above the
+   *  reference moves down under it. It takes that head only when it fits
+   *  there within `layout.maxTopFraction` of the column, when the earlier
+   *  floats of its numbering sequence are already set, when the page is
+   *  not the first of a chapter or the page after a forced break (an
+   *  opener, a part, a `:::pagebreak`), and when nothing spanning the page
+   *  (a heading, a box) stands above the citing line; and only when, so
+   *  set, the citing line still lands on that page (that column). The
+   *  engine settles this over a few extra placement passes; a float that
+   *  does not qualify takes its usual slot. Rotated floats, side-column
+   *  floats and the rest of a table split across pages never do. Default:
+   *  the type's `defaultPlacement`, then `layout.floatsAtCitingPage`, then
+   *  `false`. */
+  citingPage?: boolean;
 }
 
 /** The side of its column a resource or a box sits on with text running
@@ -1019,6 +1036,18 @@ export interface LayoutConfig {
    *  default width (see {@link TextWrapConfig}). A resource opts in with
    *  `placement.wrap`, a box with its `wrap` attribute. */
   wrap?: TextWrapConfig;
+  /** The document default of `placement.citingPage` (#633): a `'top'` or
+   *  `'auto'` float may head the page or column where its citing line
+   *  lands, the text above the reference moving down under it. A
+   *  resource's placement, then its type's `defaultPlacement`, override
+   *  it. Default `false`: a float takes the first free slot after the line
+   *  that cites it. */
+  floatsAtCitingPage?: boolean;
+  /** The largest share of a column's height, 0 to 1, a float set at the
+   *  head of the page or column that cites it (`placement.citingPage`) may
+   *  take with the floats already standing there, so the page keeps some
+   *  text above the fold (LaTeX's `\topfraction`). Default 0.7. */
+  maxTopFraction?: number;
   /** On the closing page of a chapter (and of the document), move the
    *  page-wide figures and tables set below the last band of text up to sit
    *  one float gap under it, stacked in their order, instead of at the page
@@ -1109,6 +1138,8 @@ export interface ResolvedLayoutConfig {
   bitmapResolution: BitmapResolution;
   floatShrink: { mode: FloatShrinkMode; minScale: number };
   wrap: ResolvedTextWrapConfig;
+  floatsAtCitingPage: boolean;
+  maxTopFraction: number;
   hugClosingFloats: boolean;
   inlineResourceGap: InlineResourceGap;
   inlineResourceGapInBoxes: boolean;
