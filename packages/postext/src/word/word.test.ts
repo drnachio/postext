@@ -57,6 +57,7 @@ describe('inline marks', () => {
     'Escaped \\* star, \\_ under, \\$5 and `code *x*`.',
     'snake_case stays and a lone * star.',
     'Index mark:index{term="Heart!valves"} here.',
+    'A forced\\\nline break and **one\\\ninside** bold.',
   ];
   for (const md of cases) {
     it(`round-trips: ${md}`, () => {
@@ -347,6 +348,47 @@ describe('Word → Postext', () => {
 
   it('rejects a file that is not a Word document', () => {
     expect(() => readDocx(strToU8('not a zip'))).toThrow();
+  });
+});
+
+describe('forced line breaks (#620)', () => {
+  it('write a soft return in Word and come back as a backslash ending the line', () => {
+    const md = [
+      'First line\\',
+      'second line, and `C:\\\\x` stays.',
+      '',
+      '> Quoted\\',
+      '> and broken.',
+      '',
+      '- An item \\\\ broken',
+      '',
+      'Ends with a backslash\\',
+    ].join('\n');
+    const bytes = postextToDocx([{ title: 'One', markdown: md }], { template: emptyTemplate(), config, book: false });
+    const doc = readDocx(bytes);
+    const paragraphs = doc.blocks.filter((b) => b.type === 'paragraph');
+    const breaks = paragraphs.map((b) => b.type === 'paragraph' ? b.runs.filter((r) => r.type === 'break' && r.kind === 'line').length : 0);
+    expect(breaks).toEqual([1, 1, 1, 0]);
+    const back = roundTrip(md);
+    expect(blocksOf(back)).toEqual(blocksOf(md));
+    expect(back).toContain('First line\\\nsecond line');
+  });
+
+  it('read a soft return in body text as a forced break, or a space when asked', () => {
+    const body = p('', r('One') + '<w:r><w:br/></w:r>' + r('- two')) + p('Cita', r('Q1') + '<w:r><w:br/></w:r>' + r('Q2')) + p('', r('i1') + '<w:r><w:br/></w:r>' + r('i2'), list(1));
+    const doc = readDocx(docx(body));
+    const read = (lineBreaks: 'break' | 'space') => wordToPostext(doc, { template: { ...emptyTemplate(), options: { ...emptyTemplate().options, lineBreaks } }, config, chapters: 'single', existingIds: new Set(), untitledChapter: 'x' }).chapters[0]!.markdown;
+    const md = read('break');
+    expect(emptyTemplate().options.lineBreaks).toBe('break');
+    // The line after the break opens with a word joiner, so `- two` stays text.
+    expect(md).toContain(`One\\\n${'\u2060'}- two`);
+    expect(md).toContain('> Q1\\\n> Q2');
+    expect(md).toContain('- i1 \\\\ i2');
+    const blocks = parseMarkdown(md);
+    expect(blocks[0]!.text).toBe(`One\u2028\u2060- two`);
+    expect(blocks.find((b) => b.type === 'blockquote')!.text).toBe('Q1\u2028Q2');
+    expect(blocks.find((b) => b.type === 'listItem')!.text).toBe('i1\u2028i2');
+    expect(read('space')).toContain('One - two');
   });
 });
 

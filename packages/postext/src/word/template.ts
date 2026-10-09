@@ -41,9 +41,12 @@ export type ParagraphTargetKind = ParagraphTarget['kind'];
 export type CharacterTargetKind = CharacterTarget['kind'];
 
 export interface WordImportOptions {
-  /** Soft returns (Shift+Enter) inside a paragraph: a space, or a new
-   *  paragraph of the same style (verse typed line by line). */
-  lineBreaks: 'space' | 'paragraph';
+  /** Soft returns (Shift+Enter) inside a paragraph: a forced line break
+   *  (#620, a backslash at the end of the Markdown line; `\\` in a list
+   *  item), a space, or a new paragraph of the same style. A paragraph in
+   *  a verse style is a poem either way, a line of verse at each soft
+   *  return. */
+  lineBreaks: 'break' | 'space' | 'paragraph';
   /** Bold, italic, small caps and scripts set by hand on runs. */
   directFormatting: 'keep' | 'ignore';
   /** Short bold paragraphs in body text (headings typed by hand) become
@@ -70,7 +73,7 @@ export interface WordTemplate {
 }
 
 export const DEFAULT_IMPORT_OPTIONS: WordImportOptions = {
-  lineBreaks: 'space',
+  lineBreaks: 'break',
   directFormatting: 'keep',
   manualHeadings: 0,
   pageBreaks: 'drop',
@@ -271,7 +274,7 @@ function parseOptions(v: unknown): WordImportOptions {
   const d = DEFAULT_IMPORT_OPTIONS;
   const level = Number(o.manualHeadings);
   return {
-    lineBreaks: o.lineBreaks === 'paragraph' ? 'paragraph' : o.lineBreaks === 'space' ? 'space' : d.lineBreaks,
+    lineBreaks: o.lineBreaks === 'paragraph' || o.lineBreaks === 'space' || o.lineBreaks === 'break' ? o.lineBreaks : d.lineBreaks,
     directFormatting: o.directFormatting === 'ignore' ? 'ignore' : o.directFormatting === 'keep' ? 'keep' : d.directFormatting,
     manualHeadings: Number.isInteger(level) && level >= 0 && level <= 6 ? level : d.manualHeadings,
     pageBreaks: o.pageBreaks === 'keep' ? 'keep' : o.pageBreaks === 'drop' ? 'drop' : d.pageBreaks,

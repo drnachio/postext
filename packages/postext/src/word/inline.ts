@@ -21,6 +21,11 @@ export interface InlineRun {
 
 export const WORD_JOINER = '⁠';
 
+/** A forced line break inside a paragraph (#620) in a run's text: Word's
+ *  soft return (`<w:br/>`, Shift+Enter), Postext Markdown's backslash at
+ *  the end of a line (or `\\` before a space). */
+export const LINE_BREAK = '\u2028';
+
 // ---------------------------------------------------------------------------
 // Runs → Postext Markdown
 // ---------------------------------------------------------------------------
@@ -278,7 +283,17 @@ export function renderInline(input: InlineRun[], opts: { collapseSpaces?: boolea
   }
   if (opts.collapseSpaces === false) return out;
   // Spaces typed twice are a Word habit; an export keeps the source's.
-  return ctx.tidy ? out.replace(/[ \t\r\n]+/g, ' ') : out.replace(/\r?\n/g, ' ');
+  const flat = ctx.tidy ? out.replace(/[ \t\r\n]+/g, ' ') : out.replace(/\r?\n/g, ' ');
+  return flat.includes(LINE_BREAK) ? withLineBreaks(flat) : flat;
+}
+
+/** The forced line breaks of a rendered paragraph (#620) written as a
+ *  backslash ending the line, each line after one kept from opening a
+ *  block. A break at either end, or after another, adds nothing (the
+ *  engine reads it so). */
+function withLineBreaks(text: string): string {
+  const lines = text.split(/[ \t]*\u2028[ \t]*/).filter((l) => l.trim() !== '');
+  return lines.map((l, i) => (i === 0 ? l : guardLineStart(l))).join('\\\n');
 }
 
 // ---------------------------------------------------------------------------
@@ -302,7 +317,8 @@ export interface ParseInlineOptions {
   /** Called for each note marker taken; return false to keep it verbatim
    *  (a note cited twice is one Word note). */
   takeNote?: (id: string) => boolean;
-  /** Heading text: `\\` (a title break) stays verbatim. */
+  /** Heading text: `\\` (a title break) stays verbatim. Elsewhere a forced
+   *  line break (#620) becomes a {@link LINE_BREAK} in the text. */
   heading?: boolean;
 }
 
@@ -373,6 +389,16 @@ function protect(text: string, opts: ParseInlineOptions): { s: string; atoms: At
         const m = /^[ \t]*\\\\[ \t]*/.exec(rest)!;
         add({ kind: 'raw', text: m[0] });
         i += m[0].length;
+        continue;
+      }
+      // A forced line break in body text (#620): a backslash before the
+      // line feed that joins two lines of the paragraph, or `\\` before a
+      // space. Not at the paragraph's end, where the engine prints it.
+      const brk = opts.heading ? null : /^\\(?:\n|\\(?:[ \t]+|\n|$))\s*/.exec(rest);
+      if (brk && text.slice(i + brk[0].length).trim() !== '' && s.trim() !== '') {
+        s = s.replace(/[ \t]+$/, '');
+        add({ kind: 'char', text: LINE_BREAK });
+        i += brk[0].length;
         continue;
       }
       const n = text[i + 1];

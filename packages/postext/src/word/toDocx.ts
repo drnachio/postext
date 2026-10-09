@@ -7,7 +7,7 @@
 
 import { strToU8, zipSync } from 'fflate';
 import type { PostextConfig, Dimension, ColorValue } from '../types';
-import { parseInline, type InlineRun } from './inline';
+import { LINE_BREAK, parseInline, type InlineRun } from './inline';
 import {
   calloutStylesOf,
   chipStylesOf,
@@ -89,6 +89,13 @@ function attrPairs(blob: string): Array<[string, string | true]> {
   let m: RegExpExecArray | null;
   while ((m = re.exec(blob))) out.push([m[1]!, m[2] ?? m[3] ?? m[4] ?? true]);
   return out;
+}
+
+/** A paragraph's lines as one text: joined with a space, or with a line
+ *  feed after a line that ends in a backslash, a forced line break (#620)
+ *  `parseInline` reads. */
+function joinLines(parts: readonly string[]): string {
+  return parts.reduce((text, part, k) => (k === 0 ? part : `${text}${parts[k - 1]!.endsWith('\\') ? '\n' : ' '}${part}`), '');
 }
 
 function isBlank(line: string): boolean {
@@ -261,7 +268,7 @@ function parseChapter(markdown: string, listRunBase: { n: number }): ParsedChapt
       endList();
       const parts: string[] = [];
       while (i < lines.length && lines[i]!.trim().startsWith('>')) parts.push(lines[i++]!.trim().replace(/^>\s?/, ''));
-      pushBlock({ kind: 'para', text: parts.join(' ').trim(), role: { kind: 'quote' } });
+      pushBlock({ kind: 'para', text: joinLines(parts).trim(), role: { kind: 'quote' } });
       continue;
     }
     const task = TASK_RE.exec(raw);
@@ -291,7 +298,7 @@ function parseChapter(markdown: string, listRunBase: { n: number }): ParsedChapt
     const parts: string[] = [t];
     i++;
     while (i < lines.length && !isBlank(lines[i]!) && !startsBlock(lines[i]!.trim(), lines[i]!)) parts.push(lines[i++]!.trim());
-    const text = parts.join(' ');
+    const text = joinLines(parts);
     const def = NOTE_DEF_RE.exec(text);
     if (def) {
       const id = def[1]!;
@@ -510,10 +517,11 @@ class Styles {
 const W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
 
 function textXml(text: string): string {
-  // Tabs and newlines inside a verbatim run.
-  return text.split(/(\t|\n)/).map((piece) => {
+  // Tabs and newlines inside a verbatim run, and the forced line breaks of
+  // a paragraph (#620).
+  return text.split(/(\t|\n|\u2028)/).map((piece) => {
     if (piece === '\t') return '<w:tab/>';
-    if (piece === '\n') return '<w:br/>';
+    if (piece === '\n' || piece === LINE_BREAK) return '<w:br/>';
     return piece ? `<w:t xml:space="preserve">${escapeXml(piece)}</w:t>` : '';
   }).join('');
 }

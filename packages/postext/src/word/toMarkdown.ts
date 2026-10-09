@@ -4,7 +4,7 @@
 // footnotes, pictures and tables become resources placed where they were.
 
 import type { PostextConfig, TableCell, TableModel } from '../types';
-import { guardLineStart, renderInline, WORD_JOINER, type InlineRun } from './inline';
+import { guardLineStart, LINE_BREAK, renderInline, WORD_JOINER, type InlineRun } from './inline';
 import type { WordBlock, WordDocument, WordMedia, WordParagraph, WordRun, WordTable, WordTextRun } from './model';
 import {
   guessCharacterTarget,
@@ -255,6 +255,8 @@ class Converter {
           if (r.kind === 'line' && opts.heading) cur().push({ text: ' \\\\ ', raw: true });
           else if (r.kind === 'line' && opts.splitLines) lines.push([]);
           else if (r.kind === 'line' && opts.inCell && !opts.inNote) cur().push({ text: '\n', raw: true });
+          // A forced line break inside the paragraph (#620).
+          else if (r.kind === 'line' && !opts.inCell && this.s.template.options.lineBreaks === 'break') cur().push({ text: LINE_BREAK });
           else cur().push({ text: ' ' });
           break;
         case 'note': {
@@ -559,10 +561,11 @@ class Converter {
 
     if (rendered.length) {
       if (p.list) {
+        // A list item is one line: its forced breaks are `\\` (#620).
         const { indent, marker } = this.listMarker(p);
-        this.out({ kind: 'list', text: indent + marker + rendered.join(' ') });
+        this.out({ kind: 'list', text: indent + marker + rendered.join(' ').replace(/\\\n/g, ' \\\\ ') });
       } else if (target.kind === 'quote') {
-        for (const line of rendered) this.out({ kind: 'block', text: `> ${line}` });
+        for (const line of rendered) this.out({ kind: 'block', text: `> ${line.replace(/\n/g, '\n> ')}` });
       } else {
         for (const line of rendered) this.out({ kind: 'block', text: guardLineStart(line) });
       }
