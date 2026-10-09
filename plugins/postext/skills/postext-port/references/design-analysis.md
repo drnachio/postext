@@ -170,7 +170,7 @@ alignment, indent, space before and after (in grid lines), and hyphenation.
 | Paragraph variants (bibliography, epigraph, verse, signature, equations, copy-fitted text, sources) | `paragraphStyles[]` + `:::paragraphs{style="id"}` |
 | Lists | `unorderedLists`/`orderedLists`: `indent`, `gap`, per-level bullets (`levels[].bulletChar`, `numberFormat`: `arabic`, not `decimal`), put margins on the grid |
 | Captions | `captionStyle` (+ per-type `resourceTypes[].captionStyle`): label colour/weight, description style, note (credit) style, position above/below, caption bar background |
-| Tables | `tableStyle` (+ named `tableStyles`): header fill/typography, rules, borders, padding, radius, `overflow: "split"` |
+| Tables | `tableStyle` (+ named `tableStyles`): header fill/typography, rules (`booktabs` for top/mid/bottom rules), borders, padding, radius, `overflow: "split"` |
 | Boxes | `calloutStyles[]` (§5) |
 | Inline chips / key caps | `chipStyles[]` |
 | Text aligned at stops inside a line (menu prices, cast lists, marks, forms, entries with page numbers) | `tabStops` on the paragraph style, `bodyText` or a callout `body` (configuration.md §4a) + `:tab` in the text; not a table |

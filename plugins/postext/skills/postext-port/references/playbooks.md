@@ -684,6 +684,10 @@ recoloured to tints of `main-color`). This disables print masters.
 - Captions above (`resourceTypes[].captionStyle.position: "above"`), with a
   caption bar (`backgroundEnabled`). Table looks: `tableStyle` / named
   `tableStyles` + `table.styleId`, and `borderRadius` for rounded frames.
+- Tables ruled only above, under the header and under the last row (journals,
+  papers, LaTeX `booktabs`): `rules: "booktabs"`, no header fill, ink rules;
+  a head over several columns gets its short rule from the model's `colSpan`,
+  a group row (one cell across the table) a light rule with `groupRules`.
 
 ### D10. Colour-coded cells and legends
 Use cell `background` linked to palette ids (`table-compatible`,

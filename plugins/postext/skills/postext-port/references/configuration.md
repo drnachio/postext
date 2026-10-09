@@ -1094,8 +1094,16 @@ bodyBackgroundEnabled = false, bodyBackground = #ffffff
 bodyAlternateBackgroundEnabled = false, bodyAlternateBackground = #f2f2f2   (zebra rows: every second body row after the header)
 borders = true, borderColor = body colour, borderWidth = 0.75pt
 cellPadding = 0.375em (em = table body size)
-rules = 'grid' | 'horizontal' | 'outer' | 'none'   ('grid')
-borderRadius = 0pt   (outer frame; fills clipped)
+rules = 'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'   ('grid')
+borderRadius = 0pt   (outer frame; fills clipped; booktabs rules stay straight)
+booktabs (≥ 1.24) — journal tables: heavy rule above + under the last row, light rule under the header,
+  no verticals; borderWidth is ignored, borderColor colours the rules (em = body cell size):
+  heavyRuleWidth = 0.08em, lightRuleWidth = 0.05em, spanRuleWidth = 0.03em   (0 drops that rule)
+  spanRules = 'trimmed' | 'full' | 'none' ('trimmed': rule under a head spanning columns above the
+    last header row, shortened by spanRuleTrim = 0.5em at both ends, LaTeX \cmidrule(lr))
+  groupRules = false   (light rule above body rows that head a group: one cell across the table)
+  continuedFootRule = 'bottom' | 'light' | 'none' ('light': a split part that goes on ends light;
+    every part repeats the header with top + header rules; only the last part gets the heavy rule)
 overflow = 'split' | 'clip' | 'hide'                ('split': repeats header rows, caption + continuedSuffix)
 continuedSuffix = '(cont.)', continuesMarkerEnabled = true, continuesMarker = 'Continued' | 'Continúa' (by locale)
 ```
@@ -1106,6 +1114,9 @@ Not in config (lives in the resource's TableModel): `columnWidths` (relative wei
 Table line height = body leading ratio × table font size (no key; `bodyLineHeight` is ignored).
 Zebra rows: `bodyAlternateBackgroundEnabled` + `bodyAlternateBackground` (counted by model row after the
 header rows; a cell's own `background` wins; a split table keeps each row's stripe).
+Journal, paper and textbook tables with three rules (top, mid, bottom) and short rules under spanning
+heads: `rules: 'booktabs'` with `headerBackgroundEnabled: false` and black (ink) `borderColor`; not
+`'horizontal'` with pale hairlines, which rules every row.
 
 ---------------------------------------------------------------------------------
 
