@@ -358,6 +358,13 @@ export function TableStyleFields({
           isDefault={unset('overflow')}
           onReset={() => resetField('overflow')}
         />
+        <ToggleSwitch
+          label={labels.tableSplitInline} tooltip={labels.tableSplitInlineTooltip}
+          checked={ts.splitInline}
+          onChange={(v) => update({ splitInline: v })}
+          isDefault={unset('splitInline')}
+          onReset={() => resetField('splitInline')}
+        />
         {ts.overflow === 'split' && (
           <>
             {booktabs && (

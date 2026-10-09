@@ -2387,6 +2387,8 @@ export interface SandboxLabels {
   tableOverflowSplit: string;
   tableOverflowClip: string;
   tableOverflowHide: string;
+  tableSplitInline: string;
+  tableSplitInlineTooltip: string;
   tableContinuedSuffix: string;
   tableContinuedSuffixTooltip: string;
   tableContinuesMarkerEnabled: string;

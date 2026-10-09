@@ -2189,6 +2189,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     tableOverflowSplit: t("tableOverflowSplit"),
     tableOverflowClip: t("tableOverflowClip"),
     tableOverflowHide: t("tableOverflowHide"),
+    tableSplitInline: t("tableSplitInline"),
+    tableSplitInlineTooltip: t("tableSplitInlineTooltip"),
     tableContinuedSuffix: t("tableContinuedSuffix"),
     tableContinuedSuffixTooltip: t("tableContinuedSuffixTooltip"),
     tableContinuesMarkerEnabled: t("tableContinuesMarkerEnabled"),
