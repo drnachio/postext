@@ -3,10 +3,10 @@
 // templates kept in the browser.
 
 import { useCallback, useState } from 'react';
-import type { Resource, ResourceType } from 'postext';
+import { bitmapInfo, type Resource, type ResourceType } from 'postext';
 import { putBlob } from '../storage/blobStore';
 import { isValidSvg, svgIntrinsicSize } from '../panels/resources/svgIntrinsic';
-import { parseTemplate, type ImportResult, type WordTemplate } from 'postext/word';
+import { parseTemplate, pictureResolution, type ImportResult, type WordTemplate } from 'postext/word';
 
 const BITMAP_FORMATS: Record<string, 'png' | 'jpeg' | 'webp' | 'gif'> = {
   'image/png': 'png',
@@ -43,18 +43,21 @@ export async function importedResources(result: ImportResult, types: readonly Re
       }
       const format = BITMAP_FORMATS[pic.media.contentType];
       if (!format) continue;
-      let width = 0;
-      let height = 0;
+      const info = bitmapInfo(pic.media.bytes);
+      let width = info?.width ?? 0;
+      let height = info?.height ?? 0;
       try {
         const bitmap = await createImageBitmap(new Blob([own(pic.media.bytes)], { type: pic.media.contentType }));
         width = bitmap.width;
         height = bitmap.height;
         bitmap.close();
       } catch {
-        // Undecodable here (an odd GIF): the engine reads the size later.
+        // Undecodable here (an odd GIF): the header's size stands.
       }
+      // The resolution Word printed it at (its extent), else the file's (#631).
+      const fileResolution = pictureResolution(pic, width) ?? info?.resolution?.x;
       const fileId = await putBlob(own(pic.media.bytes), pic.media.contentType);
-      out.push({ id: pic.id, typeId: figure, kind: 'bitmap', bitmap: { fileId, format, width, height }, ...meta });
+      out.push({ id: pic.id, typeId: figure, kind: 'bitmap', bitmap: { fileId, format, width, height, ...(fileResolution ? { fileResolution } : {}) }, ...meta });
     } catch {
       // A picture that cannot be stored is left out; its `::resource` line
       // stays and the warnings panel names the missing resource.

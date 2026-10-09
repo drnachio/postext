@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, useSandboxStateGetter } from '../../context/SandboxContext';
 import { resolveLayoutConfig, resolveBodyTextConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, dimensionsEqual, colorsEqual } from 'postext';
 import type { LayoutConfig, Dimension, ColorValue, FloatShrinkMode, TextWrapConfig } from 'postext';
 import {
@@ -18,6 +18,7 @@ import { HighlightZone } from '../settings/previewHighlight';
 import { ColumnsPicture } from '../settings/pictures';
 import { MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN } from '../settings/multipleColumns';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
+import { applyFileResolutions, readFileResolutions } from '../../panels/resources/fileResolutions';
 
 const D = DEFAULT_LAYOUT_CONFIG;
 
@@ -26,6 +27,7 @@ export const LayoutSection = memo(function LayoutSection() {
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.layout);
   const layout = resolveLayoutConfig(raw);
+  const getState = useSandboxStateGetter();
 
   const updateLayout = (partial: Partial<LayoutConfig>) => {
     dispatch({
@@ -286,6 +288,51 @@ export const LayoutSection = memo(function LayoutSection() {
         isDefault={layout.fitFiguresToPage === D.fitFiguresToPage}
         onReset={() => resetField('fitFiguresToPage')}
       />
+      {/* How a bitmap without a resolution of its own takes its print
+          size (#631): its pixels at the page dpi, the resolution its file
+          states, or a fixed ppi. */}
+      <SelectInput
+        label={labels.bitmapResolution}
+        value={typeof layout.bitmapResolution === 'number' ? 'fixed' : layout.bitmapResolution}
+        options={[
+          { value: 'document', label: labels.bitmapResolutionDocument },
+          { value: 'file', label: labels.bitmapResolutionFile },
+          { value: 'fixed', label: labels.bitmapResolutionFixed },
+        ]}
+        onChange={(v) => {
+          if (v === 'fixed') {
+            updateLayout({ bitmapResolution: 300 });
+          } else if (v === 'file') {
+            updateLayout({ bitmapResolution: 'file' });
+            // Bitmaps stored before their file's resolution was kept.
+            void readFileResolutions(getState().resources).then((found) => {
+              const next = found.size > 0 ? applyFileResolutions(getState().resources, found) : null;
+              if (next) dispatch({ type: 'SET_RESOURCES', payload: next });
+            });
+          } else {
+            resetField('bitmapResolution');
+          }
+        }}
+        tooltip={labels.bitmapResolutionTooltip}
+        isDefault={layout.bitmapResolution === D.bitmapResolution}
+        onReset={() => resetField('bitmapResolution')}
+      />
+      {typeof layout.bitmapResolution === 'number' && (
+        <NestedGroup>
+          <NumberInput
+            label={labels.bitmapResolutionPpi}
+            value={layout.bitmapResolution}
+            onChange={(v) => updateLayout({ bitmapResolution: Math.max(1, v) })}
+            min={1}
+            max={4800}
+            step={1}
+            suffix="ppi"
+            tooltip={labels.bitmapResolutionPpiTooltip}
+            isDefault={false}
+            onReset={() => resetField('bitmapResolution')}
+          />
+        </NestedGroup>
+      )}
       {/* Floated pictures scaled to the room of their slot (#626): the
           default a resource type or a resource may override. */}
       <SelectInput

@@ -7,6 +7,7 @@ import { chapterLayoutFromDoc, leadingBlankPageCount } from '../../book/paginati
 import { stitchDocuments, type StitchedBook } from '../../book/stitch';
 import type { ComposedBook } from '../../book/types';
 import { buildBookChapters, type HeldChapterDoc } from '../../book/buildBook';
+import { preflightInputs } from '../../print/preflightInputs';
 import { dimensionToPx, preflightDocument, renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
 import type { BoundingBox, PrintPreview } from 'postext';
 import { previewFor, usePrintSetup } from '../../print/printSetup';
@@ -238,7 +239,9 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
         let byPage = marks.get(doc);
         if (!byPage) {
           byPage = new Map();
-          const issues = preflightDocument(doc, { print: printSetup.print, transform: printSetup.transform, resources: resourcesRef.current, cmyk: true });
+          // The files' real pixels, as the Checks panel reads them (#631).
+          const { imageSize } = preflightInputs(config.print, resourcesRef.current);
+          const issues = preflightDocument(doc, { print: printSetup.print, transform: printSetup.transform, resources: resourcesRef.current, imageSize, cmyk: true });
           const offset = doc.pageIndexOffset ?? 0;
           for (const issue of issues) {
             if (!issue.rect) continue;

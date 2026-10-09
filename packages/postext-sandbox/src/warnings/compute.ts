@@ -995,6 +995,7 @@ export function collectPreflightWarnings(doc: VDTDocument, config: PostextConfig
     resources,
     cmyk,
     imageColor: inputs.imageColor,
+    imageSize: inputs.imageSize,
     ...(inputs.transform ? { transform: inputs.transform } : {}),
   });
   const offset = doc.pageIndexOffset ?? 0;

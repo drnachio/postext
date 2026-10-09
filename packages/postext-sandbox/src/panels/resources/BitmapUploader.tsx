@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 import { ImagePlus, Loader2 } from 'lucide-react';
+import { bitmapInfo } from 'postext';
 import { putBlob } from '../../storage/blobStore';
 import { useSandboxLabels } from '../../context/SandboxContext';
 
@@ -11,6 +12,8 @@ export interface BitmapUploadResult {
   format: string;
   width: number;
   height: number;
+  /** The resolution the file states (ppi), when it states one (#631). */
+  fileResolution?: number;
   filename: string;
 }
 
@@ -49,8 +52,10 @@ export function BitmapUploader({ onUploaded, compact = false }: BitmapUploaderPr
       setBusy(true);
       try {
         const buffer = await file.arrayBuffer();
-        let width = 0;
-        let height = 0;
+        // The header: the pixels, and the resolution the file states.
+        const info = bitmapInfo(buffer);
+        let width = info?.width ?? 0;
+        let height = info?.height ?? 0;
         try {
           const bitmap = await createImageBitmap(file);
           width = bitmap.width;
@@ -58,9 +63,7 @@ export function BitmapUploader({ onUploaded, compact = false }: BitmapUploaderPr
           bitmap.close();
         } catch {
           // Some browsers cannot decode certain GIFs/animated images via
-          // createImageBitmap; fall back to zero dimensions rather than fail.
-          width = 0;
-          height = 0;
+          // createImageBitmap; the header's size (or zero) stands.
         }
         const fileId = await putBlob(buffer, file.type);
         onUploaded({
@@ -68,6 +71,7 @@ export function BitmapUploader({ onUploaded, compact = false }: BitmapUploaderPr
           format: formatFromMime(file.type),
           width,
           height,
+          ...(info?.resolution ? { fileResolution: info.resolution.x } : {}),
           filename: file.name,
         });
       } catch {

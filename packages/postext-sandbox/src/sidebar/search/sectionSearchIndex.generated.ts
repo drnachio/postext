@@ -106,8 +106,15 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
   },
   'layout': {
     sources: ['color', 'dimension'],
-    literals: [],
+    literals: ["ppi"],
     keys: [
+      'bitmapResolution',
+      'bitmapResolutionDocument',
+      'bitmapResolutionFile',
+      'bitmapResolutionFixed',
+      'bitmapResolutionPpi',
+      'bitmapResolutionPpiTooltip',
+      'bitmapResolutionTooltip',
       'boxChildSplitMinLines',
       'boxChildSplitMinLinesTooltip',
       'columnCount',

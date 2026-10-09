@@ -20,6 +20,7 @@ import { DimensionInput, NumberInput, SelectInput, ToggleSwitch } from '../../co
 import { wrapSideOf } from '../../sidebar/settings/textWrap';
 import { ResourcePreview } from './ResourcePreview';
 import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
+import { BitmapResolutionField } from './BitmapResolutionField';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
 import { PdfMasterUploader } from './PdfMasterUploader';
 import { SafeAreaField } from './SafeAreaEditor';
@@ -213,7 +214,13 @@ export function ResourceDetail({
     onChange(
       touch({
         kind: 'bitmap',
-        bitmap: { fileId: r.fileId, format: r.format, width: r.width, height: r.height },
+        // A declared resolution is the author's and stays; the file's is
+        // the new file's (#631).
+        bitmap: {
+          fileId: r.fileId, format: r.format, width: r.width, height: r.height,
+          ...(resource.bitmap?.resolution ? { resolution: resource.bitmap.resolution } : {}),
+          ...(r.fileResolution ? { fileResolution: r.fileResolution } : {}),
+        },
         svg: undefined,
         table: undefined,
         video: undefined,
@@ -593,12 +600,14 @@ export function ResourceDetail({
         )}
         {resource.kind === 'bitmap' && (
           <Field label={labels.resourceImageLabel}>
-            {resource.bitmap && (
-              <span style={{ ...labelStyle }} className="mb-1">
-                {resource.bitmap.width}×{resource.bitmap.height}px · {resource.bitmap.format}
-              </span>
-            )}
             <BitmapUploader onUploaded={applyBitmap} compact={!!resource.bitmap} />
+          </Field>
+        )}
+        {/* Pixels, file resolution, natural size, effective ppi where it
+            is placed, and its own resolution (#631). */}
+        {resource.kind === 'bitmap' && resource.bitmap?.fileId && (
+          <Field label={labels.resourceBitmapSizeLabel}>
+            <BitmapResolutionField bitmap={resource.bitmap} onChange={(bitmap) => onChange(touch({ bitmap }))} />
           </Field>
         )}
         {resource.kind === 'svg' && (
