@@ -570,6 +570,10 @@ numbers" panels, grey boxes, badges. In Markdown write
 ### C3. Placement
 - Mid-page box across the columns: `span: "page"`.
 - Side-column box: `span: "side"`. It stacks beside the text and never floats.
+- Pull quote or sidebar with the text running beside it inside the column:
+  `:::callout{wrap="right" width=0.4}` (≥ 1.24; `placement="top"` floats it to
+  a column's head with the column's first lines beside it). Not a
+  `:::columns` group: the text after the box runs on beside it and under it.
 - Boxes the book always sets at the head or foot of a page: style
   `placement: "top"` / `"bottom"` / `"auto"`. The text after the box keeps
   filling the page. Floated boxes are placed in order, so **put each fence

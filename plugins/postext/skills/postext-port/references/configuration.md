@@ -187,6 +187,7 @@ layout
 ├─ columnRule         { enabled=false, color=#cccccc, lineWidth=0.5pt }
 ├─ fitFiguresToPage   boolean                                default false (HTML viewer sets it)   hard cap at the content area
 ├─ floatShrink        { mode='never', minScale=0.7 }          ≥ 1.24 document default of placement.shrink / minScale (see §ResourcePlacement)
+├─ wrap               { gap?, minTextWidth=12em, minLinesBeside=2, defaultWidth=0.45 }   ≥ 1.24 text wrap defaults (placement.wrap, callout wrap); gap unset = one body line; minTextWidth a Dimension or a share of the column
 ├─ hugClosingFloats   boolean                                default true   closing page: page-wide floats below the last text move up under it
 ├─ inlineResourceGap  'around' | 'above'                     default 'around'  (a preset without configVersion ≥ 5 reads 'above')
 ├─ inlineResourceGapInBoxes boolean                          default true  (a preset below configVersion 6 reads false)
@@ -1087,6 +1088,16 @@ minScale?: number        ≥ 1.24, 0–1, default 0.7 (then layout.floatShrink.m
                          warning with overflowPx)
 captionMeasure?: 'slot' (default) | 'body'   ≥ 1.24: caption and note of a picture narrower than its slot at the
                          picture's width, placed per align (floats and inline embeds)
+wrap?:    'none' (default) | 'left' | 'right' | 'start' | 'end'   ≥ 1.24: text runs beside the resource, which sits at that
+                         side of its column (flow sides, as align; start/end synonyms). position 'here': the paragraphs,
+                         quotes and list items after the ::resource line run beside it, then full width under it (one
+                         paragraph can do both); a 1-column span:'column' float at the head/foot of a column: the column's
+                         first/last lines. Width = width, else layout.wrap.defaultWidth (0.45). Headings, display maths,
+                         figures, tables, boxes and poems go under it. Page-span, multi-column, side, rotated floats and
+                         vertical text keep their band. Too narrow (layout.wrap.minTextWidth) or too short
+                         (minLinesBeside) = band + textWrap warning; columns with a wrap are not balanced
+wrapGap?: Dimension      ≥ 1.24: space between the wrapped item (caption included) and the text beside and under it;
+                         default layout.wrap.gap, else one body line
 ```
 Gotchas
 - **Engine default types follow the document language**: with `resourceTypes` unset, the
@@ -1365,7 +1376,7 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 Content warnings to expect: `cjkLooseLine` (a justified line needing more than ½ em between characters, set
 short), `cjkMarksExceedLeading` / `rubyExceedsLeading` (line gap under ½ em with marks on one side, ⅝ with both;
 give annotated text more leading), `kuntenExceedsLeading` (送り仮名 need half an em on the reading side),
-`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block); config
+`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `textWrap` (≥ 1.24: a resource or box with wrap kept its band: `tooNarrow`, `fewLines`, `verticalText`, or an inline one `moved` to the next column), `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block); config
 warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`.
 
 ```json

@@ -465,7 +465,9 @@ Read each chapter against the source pages and apply
 - openers as heading attributes (`# Title {author="…" lead="…"}`);
 - figures cited with `:ref` in the sentence that first mentions them
   (`style="full"`, `case="lower"` to keep the authored form);
-- ornaments and inline tables with `::resource`;
+- ornaments and inline tables with `::resource`; a picture or a box the
+  text runs beside with `placement.wrap` / `:::callout{wrap=… width=…}`
+  (≥ 1.24), not a `:::columns` group;
 - footnotes as `[^n]` markers + `[^n]: text` definitions (not in headings,
   captions or cells), margin notes as side callouts;
 - a back-of-book index as `:index` marks plus a closing `:::index` chapter,

@@ -298,6 +298,8 @@ per-resource `placement`:
 | Figure in the main column with its caption in the margin | `span: "column"`, `captionSide: true` |
 | Across some of a newspaper's columns (2 of 5) | `span: "column"`, `columns: 2` (≥ 1.18; boxes: callout `columns`) |
 | Narrower than the column | `width: 0.7`, `align: "center"` |
+| Picture with the text running beside it (newsletter, magazine, a portrait in a profile) | `position: "here"`, `wrap: "right"`, `width: 0.4` + `::resource{id}` before the paragraph (≥ 1.24) |
+| Picture at the head of a column, the column's first lines beside it | `position: "top"`, `span: "column"`, `wrap: "left"`, `width: 0.5` (≥ 1.24) |
 | Landscape table on its own page | `span: "page"`, `rotate: "ccw"` |
 | Tall plate that must fit the page | `shrink: "page"` (≥ 1.24; `minScale` default 0.7), `captionMeasure: "body"`, `align: "center"` |
 | Figure that should stay on the page that cites it, a little smaller, rather than move on | `shrink: "slot"`, `minScale: 0.8` (≥ 1.24) |
