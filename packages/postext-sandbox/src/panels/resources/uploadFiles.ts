@@ -1,4 +1,4 @@
-import type { Resource } from 'postext';
+import { bitmapInfo, type Resource } from 'postext';
 import { putBlob } from '../../storage/blobStore';
 import { slugifyFilename, uniqueSlug } from './slugify';
 import { isValidSvg, svgIntrinsicSize } from './svgIntrinsic';
@@ -68,15 +68,18 @@ export async function resourceFromFile(
   const format = IMAGE_FORMATS[file.type];
   if (format) {
     const buffer = await file.arrayBuffer();
-    let width = 0;
-    let height = 0;
+    // The header: the pixels, and the resolution the file states (#631).
+    const info = bitmapInfo(buffer);
+    let width = info?.width ?? 0;
+    let height = info?.height ?? 0;
     try {
       const bitmap = await createImageBitmap(file);
       width = bitmap.width;
       height = bitmap.height;
       bitmap.close();
     } catch {
-      // Some animated GIFs can't decode via createImageBitmap; keep zero dims.
+      // Some animated GIFs can't decode via createImageBitmap; the header's
+      // size (or zero) stands.
     }
     const fileId = await putBlob(buffer, file.type);
     const id = uniqueSlug(slugifyFilename(file.name), existingIds, 'image');
@@ -85,7 +88,7 @@ export async function resourceFromFile(
       id,
       typeId,
       kind: 'bitmap',
-      bitmap: { fileId, format, width, height },
+      bitmap: { fileId, format, width, height, ...(info?.resolution ? { fileResolution: info.resolution.x } : {}) },
       createdAt: now,
       updatedAt: now,
     };

@@ -78,6 +78,6 @@ With parity `'odd'`, Stevenson moves to page 9 behind a blank page 8. The two fr
 
 ## Pitfalls
 
-- Hazlitt quotes verse in the middle of his sentences. A paragraph keeps no line breaks, so each line of verse is a paragraph of its own in a `:::paragraphs{style="verse"}` container, and the sentence that resumes after it goes in a `runon` style with no indent. A Markdown blockquote would print in a fixed `#666666` grey italic, with the body’s first-line indent and no side indent, and no setting changes that in 1.4.1.
+- Hazlitt quotes verse in the middle of his sentences. The lines of verse go in a `:::verse{style="verse" align=start}` block, a line of Markdown a line of verse set 8 mm in, and the sentence that resumes after it goes in a `runon` style with no indent. A Markdown blockquote would print in a fixed `#666666` grey italic, with the body’s first-line indent and no side indent, and no setting changes that in 1.4.1.
 - An attribute that a heading lacks prints nothing and raises no warning. Without `author="…"`, an essay’s byline and verso head come out empty and its line under the title disappears from the contents.
 - The 14.4 pt of step 2 holds for Gloock only. For another face, find how far above the baseline Chrome puts its middle: `measureText('I').alphabeticBaseline` with `textBaseline = 'middle'` returns it, negated, in pixels. Then set `numberFontSize` to 0.3 × the entry size divided by that distance in em (Hanken Grotesk’s is 0.2675 em).

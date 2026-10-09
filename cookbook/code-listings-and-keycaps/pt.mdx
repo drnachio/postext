@@ -1,40 +1,40 @@
 ---
-title: "Listagens de código e teclas sem blocos de código"
-summary: "Um guia do terminal cujos blocos de código viram boxes escuros antes da composição, com negrito e itálico como cores de sintaxe e as teclas como chips."
-plain: "Três páginas de um guia para iniciantes na linha de comando do computador. Mostra como transformar exemplos de código em caixas escuras coloridas e desenhar teclas como Ctrl como botõezinhos no texto."
-description: "Listagens de código e teclas no Postext: os blocos de código são reescritos como boxes escuros que entram na margem, e teclas como Ctrl viram chips de tecla."
-question: "Como mostro listagens de código e atalhos de teclado se não há suporte a blocos de código?"
-aliases: ["bloco de código", "código cercado", "código-fonte", "sessão de terminal", "saída do terminal", "monoespaçada", "realce de sintaxe", "colorir código", "atalho de teclado", "kbd", "tecla", "colinha", "folha de consulta", "código em linha"]
-pageNotes: { "1": "A abertura do capítulo 4: um pequeno chapéu âmbar, CHAPTER 4, o título “Small tools, joined” numa sem serifa bem pesada, um texto de abertura em itálico e dois parágrafos justificados com os nomes dos comandos em fonte monoespaçada e uma tecla Enter, ao lado de uma nota na margem, The prompt, sob um fio âmbar. Abaixo, um boxe quase preto com a aba Terminal vai da coluna de texto até a margem externa: os comandos digitados em negrito âmbar depois do cifrão do prompt, as respostas do shell em cinza-claro. O parágrafo depois do boxe começa sem recuo.", "2": "A seção “When a command will not stop”: uma nota On a Mac na margem externa, ao lado do título; teclas como Ctrl, C, Tab e a seta para cima são pequenas teclas contornadas dentro das linhas justificadas, e quatro passos são numerados em âmbar com um separador › cinza. No pé, um boxe quase preto, “Cheat sheet · bash and zsh”, atravessa o texto e a margem e emparelha em duas colunas as teclas Ctrl e uma letra com o que elas fazem.", "3": "A seção “A script to keep”: um boxe quase preto sob uma aba backup.sh com letras verdes, as palavras-chave em negrito âmbar, as strings em itálico verde e os comentários em cinza; depois, dois parágrafos sobre o script ao lado de uma nota Archive mode, o parágrafo final e o colofão na margem." }
+title: "Listagens de código e teclas"
+summary: "Um guia do terminal cujos blocos de código cercados saem como listagens em boxes escuros, coloridas por elemento, com as teclas como chips."
+plain: "Três páginas de um guia para iniciantes na linha de comando do computador. Mostra como compor exemplos de código em caixas escuras coloridas e desenhar teclas como Ctrl como botõezinhos no texto."
+description: "Listagens de código e teclas no Postext: blocos cercados em boxes escuros que entram na margem, coloridos por elemento, e teclas como Ctrl em chips de tecla."
+question: "Como mostro listagens de código e atalhos de teclado?"
+aliases: ["bloco de código", "código cercado", "código-fonte", "sessão de terminal", "saída do terminal", "monoespaçada", "coloração de sintaxe", "realce de sintaxe", "codeStyle", "atalho de teclado", "kbd", "tecla", "colinha", "código em linha"]
+pageNotes: { "1": "A abertura do capítulo 4: um pequeno chapéu âmbar, CHAPTER 4, o título “Small tools, joined” numa sem serifa bem pesada, um texto de abertura em itálico e dois parágrafos justificados com os nomes dos comandos em fonte monoespaçada e uma tecla Enter, ao lado de uma nota na margem, The prompt, sob um fio âmbar. Abaixo, um boxe quase preto com a aba Terminal vai da coluna de texto até a margem externa: as linhas digitadas, com o cifrão do prompt, em negrito âmbar, as respostas do shell em cinza-claro. O parágrafo depois do boxe começa sem recuo.", "2": "A seção “When a command will not stop”: uma nota On a Mac na margem externa, ao lado do título; teclas como Ctrl, C, Tab e a seta para cima são pequenas teclas contornadas dentro das linhas justificadas, e quatro passos são numerados em âmbar com um separador › cinza. No pé, um boxe quase preto, “Cheat sheet · bash and zsh”, atravessa o texto e a margem e emparelha em duas colunas as teclas Ctrl e uma letra com o que elas fazem.", "3": "A seção “A script to keep”: um boxe quase preto sob uma aba backup.sh com letras verdes, as palavras-chave em negrito âmbar, as strings em itálico verde e os comentários em cinza, o corpo do laço recuado; depois, dois parágrafos sobre o script ao lado de uma nota Archive mode, o parágrafo final e o colofão na margem." }
 ---
 
 ## O que você vai compor
 
-Três páginas do capítulo 4 de *The Shell, Gently*, um guia de bolso inventado sobre a linha de comando, numa página de 178 × 229 mm. O texto vai justificado em Charis SIL, numa coluna de 100 mm, com uma coluna lateral do lado externo para as notas. Cada listagem é um boxe quase preto em JetBrains Mono que entra nessa coluna, sob uma aba com o nome do arquivo ou da sessão. Palavras-chave e comandos digitados saem em âmbar, strings em verde e comentários em cinza. Teclas como Ctrl e Tab são pequenas teclas contornadas dentro das linhas justificadas, e uma colinha de atalhos com Ctrl, em duas colunas, ocupa o pé da página 50. O Markdown mantém os blocos de código cercados de sempre; uma função curta transforma cada um num boxe antes da composição.
+Três páginas do capítulo 4 de *The Shell, Gently*, um guia de bolso inventado sobre a linha de comando, numa página de 178 × 229 mm. O texto vai justificado em Charis SIL, numa coluna de 100 mm, com uma coluna lateral do lado externo para as notas. Cada listagem é um boxe quase preto em JetBrains Mono que entra nessa coluna, sob uma aba com o nome do arquivo ou da sessão. Palavras-chave e comandos digitados saem em âmbar, strings em verde e comentários em cinza. Teclas como Ctrl e Tab são pequenas teclas contornadas dentro das linhas justificadas, e uma colinha de atalhos com Ctrl, em duas colunas, ocupa o pé da página 50. O Markdown mantém os blocos de código cercados de sempre, e o motor os compõe como estão.
 
 ## Preparo
 
-### 1 · Transformar cada bloco cercado num boxe antes da composição
+### 1 · Dar um boxe às cercas
 
-O código deste passo é [a resposta curta](#a-resposta-curta) lá em cima. O Postext 1.4.1 lê um bloco cercado como Markdown comum: as suas linhas se juntam num só parágrafo, cada par de cifrões vira uma fórmula, um sublinhado abre itálico e o comentário `# Copy each folder…` vira um título de capítulo. `listings()` reescreve cada bloco como um boxe `listing` com um parágrafo por linha e uma barra invertida antes de cada caractere que o Markdown interpretaria. O word joiner (U+2060) que abre cada linha preserva o recuo. Sem ele, o analisador apara os espaços não separáveis, o corpo do laço de `backup.sh` perde o recuo e as duas linhas em branco do script somem. O que vem depois da linguagem na linha de abertura do bloco (`backup.sh`, `Terminal`) é impresso na [aba de rótulo](/pt/docs/configuration#estilos-de-boxe) do boxe. O parágrafo depois de uma listagem vai em `:::paragraphs{style="resume"}`, então começa sem recuo, como depois de um título.
+O código deste passo é [a resposta curta](#a-resposta-curta) lá em cima. Cada cerca ```` ``` ```` do Markdown é um [bloco de código](/pt/docs/document-format#blocos-de-código): o Postext compõe as suas linhas como foram digitadas, uma linha de código por linha composta, mantendo os recuos, as linhas em branco do script e as duas colunas da saída de `du`. `codeStyle` desenha todas as listagens de uma vez ([listagens de código](/pt/docs/configuration#listagens-de-código)): a fonte e a sua entrelinha, o preenchimento quase preto, o espaçamento interno e o espaço acima e abaixo. O que vem depois da linguagem na linha da cerca (`Terminal`, `backup.sh`) é o título da listagem, e como `codeStyle.label` está definido ele é impresso numa [aba de rótulo](/pt/docs/configuration#estilos-de-boxe) na borda superior do boxe, e não numa linha de título. `codeStyle.inline` compõe o código em linha do texto corrido, `ls` ou `grep -c`, na mesma fonte a 0,88 em ([código em linha](/pt/docs/configuration#código-em-linha)). O parágrafo depois de uma listagem vai em `:::paragraphs{style="resume"}`, então começa sem recuo, como depois de um título.
 
 ### 2 · Manter o texto estreito e deixar o código atravessar a margem
 
 <Excerpt region="page" />
 
-A 10 pt, a Charis SIL compõe cerca de 62 caracteres na coluna de 100 mm. A coluna lateral deste [layout de coluna e meia](/pt/docs/configuration#tipos-de-layout) só recebe flutuantes e notas, então o texto nunca entra nela. O `span: 'page'` do estilo da listagem (na resposta curta) estende cada listagem pelas duas colunas, 143 mm. Dentro do preenchimento, um boxe comporta 73 caracteres de JetBrains Mono a 8,6 pt; a linha mais longa destas páginas, a segunda de `backup.sh`, tem 71.
+A 10 pt, a Charis SIL compõe cerca de 62 caracteres na coluna de 100 mm. A coluna lateral deste [layout de coluna e meia](/pt/docs/configuration#tipos-de-layout) só recebe flutuantes e notas, então o texto nunca entra nela. O `span: 'page'` de `codeStyle` estende cada listagem pelas duas colunas, 143 mm. Dentro do espaçamento interno, um boxe comporta 73 caracteres de JetBrains Mono a 8,6 pt; a linha mais longa destas páginas, o comentário que abre `backup.sh`, tem 71.
 
-### 3 · Colorir o código com negrito e itálico
+### 3 · Colorir o código por elemento
 
 <Excerpt region="paint" />
 
-O Postext não tem realce de sintaxe, mas um boxe imprime os seus trechos em negrito no seu próprio `boldColor` e os trechos em itálico no `italicColor`, então `paint()` põe as palavras-chave em negrito (âmbar) e as strings entre aspas em itálico (verde). Os comentários recebem uma terceira cor de `rem`, um estilo de chip sem preenchimento, contorno, espaçamento interno nem margem, que imprime o texto em cinza na fonte monoespaçada. `KEYWORDS` lista as palavras reservadas do shell e alguns comandos internos (`set`, `echo`, `cd`); programas como `mkdir` e `rsync` ficam sem destaque. Num bloco `console`, `session()` põe em negrito o que você digita depois do prompt e deixa sem destaque a resposta do shell.
+A linguagem da cerca (`console`, `bash`) escolhe o tokenizador embutido, e `codeStyle.tokens` dá a cada tipo de elemento a sua cor, o seu peso e a sua inclinação ([coloração de sintaxe](/pt/docs/configuration#coloração-de-sintaxe)). Em `backup.sh`, palavras-chave como `for` e `done` e comandos internos como `set` e `echo` saem em negrito âmbar, as strings em itálico verde e os comentários em cinza; programas como `mkdir` e `rsync` ficam sem destaque. O estilo padrão põe os comentários em itálico, então `italic: false` os mantém em redondo. Numa cerca `console`, uma linha que abre com um prompt é um elemento `prompt` e todas as outras são `output`, então os comandos que você digita saem em negrito âmbar e a resposta do shell fica no cinza-claro da listagem. Os tipos que a receita não quer colorir, entre eles números, variáveis e opções, também recebem esse cinza.
 
-### 4 · Compor teclas e código em linha como chips
+### 4 · Compor as teclas como chips
 
 <Excerpt region="keycaps" />
 
-O Postext descarta os acentos graves e compõe o código em linha na fonte do texto ([formatação em linha](/pt/docs/document-format#formatação-em-linha)), então `inlineCode()` transforma cada trecho num chip `code`: a monoespaçada a 0,88 em, sem caixa. As teclas são chips `key`, com um preenchimento claro e um contorno de 0,6 pt. O tamanho delas é dado em pontos, então uma tecla mede 7,8 pt no texto de 10 pt, na nota de margem de 8,6 pt e na colinha de 8,4 pt; `em(0.78)` encolheria as teclas da colinha para 6,6 pt. Um chip nunca se divide entre linhas nem se estica ([chips em linha](/pt/docs/document-format#chips-em-linha)), então uma linha com teclas joga toda a folga nos espaços entre palavras. `spacing` faz o algoritmo de quebra de linhas tentar outras quebras antes de deixar um espaço passar de 140 % da sua largura normal. No padrão, 200 %, seis linhas destas páginas se esticam além disso; com o ajuste, a mais aberta chega a 132 %.
+As teclas são chips `key`, com um preenchimento claro e um contorno de 0,6 pt. O tamanho delas é dado em pontos, então uma tecla mede 7,8 pt no texto de 10 pt, na nota de margem de 8,6 pt e na colinha de 8,4 pt; `em(0.78)` encolheria as teclas da colinha para 6,6 pt. Um chip nunca se divide entre linhas nem se estica ([chips em linha](/pt/docs/document-format#chips-em-linha)), então uma linha com teclas joga toda a folga nos espaços entre palavras. `spacing` faz o algoritmo de quebra de linhas tentar outras quebras antes de deixar um espaço passar de 140 % da sua largura normal. No padrão, 200 %, seis linhas destas páginas se esticam além disso; com o ajuste, a mais aberta chega a 132 %.
 
 ### 5 · Numerar os passos na grade
 
@@ -46,7 +46,7 @@ Os números são Sora 800 na cor de destaque, e o separador é um `›` monoespa
 
 <Excerpt region="sheet" />
 
-A colinha reaproveita o estilo da listagem, com Sora para as ações, e `placement: 'bottom'` a faz flutuar até o pé da página 50 ([boxes flutuantes](/pt/docs/configuration#o-contêiner-callout)). Deixado no fluxo, um boxe na largura da página precisa de espaço para si e para duas linhas de texto embaixo. Aqui o boxe passaria para a página 51, deixando 58 mm vazios sob os passos, e o capítulo iria para quatro páginas. No Markdown, `:::columns{count=2 breaks="8"}` abre a coluna da direita no oitavo bloco, o seu título. O balanceamento sozinho corta pela altura, e quando uma ação ocupa uma segunda linha ele deixa *Commands and history* no pé da coluna da esquerda. Toda entrada começa com os mesmos dois chips, `Ctrl` e uma letra, ambos na monoespaçada, então cada ação começa à mesma distância da borda esquerda da sua coluna.
+A colinha é um estilo de boxe com o preenchimento das listagens, Sora para as ações e `placement: 'bottom'`, que a faz flutuar até o pé da página 50 ([boxes flutuantes](/pt/docs/configuration#o-contêiner-callout)). Deixado no fluxo, um boxe na largura da página precisa de espaço para si e para duas linhas de texto embaixo. Aqui o boxe passaria para a página 51, deixando 58 mm vazios sob os passos, e o capítulo iria para quatro páginas. No Markdown, `:::columns{count=2 breaks="8"}` abre a coluna da direita no oitavo bloco, o seu título. O balanceamento sozinho corta pela altura, e quando uma ação ocupa uma segunda linha ele deixa *Commands and history* no pé da coluna da esquerda. Toda entrada começa com os mesmos dois chips, `Ctrl` e uma letra, ambos na monoespaçada, então cada ação começa à mesma distância da borda esquerda da sua coluna.
 
 ## Variações
 
@@ -59,17 +59,26 @@ A aba passa para o canto superior direito do boxe, que num recto fica sobre a co
 +    position: 'top-right' },
 ```
 
-### Dar aos comentários a cor das strings
+### Numerar as linhas
 
-Sem o chip `rem`, um comentário é um trecho em itálico, então sai no mesmo verde das strings.
+Cada listagem ganha números de linha em cinza numa margem dentro do seu boxe. A margem ocupa uns quatro dos 73 caracteres, então o comentário que abre `backup.sh` deixa de caber: ele quebra depois de `backup`, e `disk.` continua abaixo, atrás de um `»`. A verificação das Receitas o aponta como um aviso `codeOverflow`; encurte o comentário para manter o script nas suas 13 linhas. Uma só listagem recebe números com `{lineNumbers}` na linha da sua cerca.
 
 ```diff
--    else if (comment) out += `:chip[${chipText(comment)}]{style="rem"}`;
-+    else if (comment) out += `*${escape(comment)}*`;
++  lineNumbers: true, lineNumberColor: col('slate'),
+   tokens: tokens(), // the colours, below
+```
+
+### Dar aos comentários a cor das strings
+
+Os comentários recebem o verde das strings, em itálico.
+
+```diff
+-    comment: { color: col('slate'), italic: false }, // upright: the default comment is italic
++    comment: { color: col('phosphor'), italic: true }, // the strings' green italic
 ```
 
 ## Erros comuns
 
-- Recue as listagens com espaços. `codeLine()` transforma os espaços iniciais e as sequências de espaços em espaços não separáveis, enquanto uma tabulação sai como um espaço comum.
-- Mantenha toda linha de código em até 73 caracteres. Uma linha mais longa quebra num espaço, e um comentário, que é um chip, nunca quebra: ele desce para uma linha só sua e passa da borda do boxe.
-- Os escapes de `codeLine()` também valem na prosa. Um parágrafo que começa com um ano, como `1998. The lab opened`, vira o item 1998 de uma lista se não vier antes um word joiner, e `\$40` impede que um preço vire fórmula. Um diálogo que começa com travessão não precisa de escape; um hífen e um espaço abririam uma lista.
+- Mantenha toda linha de código em até 73 caracteres. Uma linha mais longa quebra no último espaço ou sinal de pontuação que cabe e continua abaixo, atrás de um `»`, e o motor gera um aviso `codeOverflow`; `overflow: 'shrink'` compõe a listagem inteira menor, e `'clip'` corta a linha na borda do boxe.
+- Uma tabulação numa listagem avança até o múltiplo seguinte de quatro colunas (`codeStyle.tabSize`). Um script recuado com tabulações que o seu editor mostra com oito colunas de largura sai mais estreito aqui.
+- Com `codeStyle.inline` definido, o código em linha nunca se divide entre linhas, como um chip. Um caminho longo no texto corrido, como `~/Pictures/2025/IMG_0977.MOV`, passa inteiro para a linha seguinte e pode deixar para trás uma linha frouxa.

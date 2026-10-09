@@ -75,10 +75,10 @@ Discurso de Lincoln del 19 de noviembre de 1863 en la inauguración del Cementer
 
 11. Lee la fuente A y responde en las líneas de la página 4.
   1. Lincoln empieza con las palabras «Hace ochenta y siete años».
-    1. ¿A qué año se remonta? :chip[0,5 puntos]{style="marks"}
-    2. ¿Por qué no cuenta desde 1787, el año de la Constitución? :chip[1 punto]{style="marks"}
-  2. La guerra pone a prueba «si esa nación […] puede perdurar». Describe dos éxitos de la Unión entre enero y noviembre de 1863. :chip[1,5 puntos]{style="marks"}
-  3. «El discurso honra a los muertos y dice poco del futuro de la nación». ¿Estás de acuerdo? Usa la fuente A y tus conocimientos. :chip[2 puntos]{style="marks"}
+    1. ¿A qué año se remonta? :tab :chip[0,5 puntos]{style="marks"}
+    2. ¿Por qué no cuenta desde 1787, el año de la Constitución? :tab :chip[1 punto]{style="marks"}
+  2. La guerra pone a prueba «si esa nación […] puede perdurar». Describe dos éxitos de la Unión entre enero y noviembre de 1863. :tab :chip[1,5 puntos]{style="marks"}
+  3. «El discurso honra a los muertos y dice poco del futuro de la nación». ¿Estás de acuerdo? Usa la fuente A y tus conocimientos. :tab :chip[2 puntos]{style="marks"}
 
 :::pagebreak
 

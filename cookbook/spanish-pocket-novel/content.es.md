@@ -7,9 +7,9 @@ author: "Benito Pérez Galdós"
 
 ::resource{id="plano"}
 
-# Perdido {ordinal="primero" lead="Se puso el sol. Tras el breve crepúsculo vino tranquila"}
+# Perdido {ordinal="primero"}
 
-y oscura la noche, en cuyo negro seno murieron poco a poco los últimos rumores de la tierra soñolienta, y el viajero siguió adelante en su camino, apresurando su paso a medida que avanzaba la noche. Iba por angosta vereda, de esas que sobre el césped traza el constante pisar de hombres y brutos, y subía sin cansancio por un cerro en cuyas vertientes se alzaban pintorescos grupos de guinderos, hayas y robles. (Ya se ve que estamos en el Norte de España.)
+Se puso el sol. Tras el breve crepúsculo vino tranquila y oscura la noche, en cuyo negro seno murieron poco a poco los últimos rumores de la tierra soñolienta, y el viajero siguió adelante en su camino, apresurando su paso a medida que avanzaba la noche. Iba por angosta vereda, de esas que sobre el césped traza el constante pisar de hombres y brutos, y subía sin cansancio por un cerro en cuyas vertientes se alzaban pintorescos grupos de guinderos, hayas y robles. (Ya se ve que estamos en el Norte de España.)
 
 Era un hombre de mediana edad, de complexión recia, buena talla, ancho de espaldas, resuelto de ademanes, firme de andadura, basto de facciones, de mirar osado y vivo, ligero a pesar de su regular obesidad, y (dígase de una vez aunque sea prematuro) excelente persona por doquiera que se le mirara. Vestía el traje propio de los señores acomodados que viajan en verano, con el redondo sombrerete, que debe a su fealdad el nombre de hongo, gemelos de campo pendientes de una correa, y grueso bastón que, entre paso y paso, le servía para apalear las zarzas cuando extendían sus ramas llenas de afiladas uñas para atraparle la ropa.
 

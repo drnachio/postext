@@ -183,7 +183,7 @@ describe('optimalRagged in the configuration', () => {
   });
 
   it('is pinned off for configurations stored before rules 7 that set running text ragged', () => {
-    expect(CONFIG_VERSION).toBe(9);
+    expect(CONFIG_VERSION).toBe(10);
     const ragged: PostextConfig = { bodyText: { textAlign: 'left' } };
     for (const version of [undefined, 3, 5, 6]) {
       expect(migrateConfig(ragged, version, { content: 'Text.' }).bodyText, `${version}`).toEqual({ textAlign: 'left', optimalRagged: false });

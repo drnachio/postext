@@ -170,7 +170,7 @@ alignment, indent, space before and after (in grid lines), and hyphenation.
 | Paragraph variants (bibliography, epigraph, verse, signature, equations, copy-fitted text, sources) | `paragraphStyles[]` + `:::paragraphs{style="id"}` |
 | Lists | `unorderedLists`/`orderedLists`: `indent`, `gap`, per-level bullets (`levels[].bulletChar`, `numberFormat`: `arabic`, not `decimal`), put margins on the grid |
 | Captions | `captionStyle` (+ per-type `resourceTypes[].captionStyle`): label colour/weight, description style, note (credit) style, position above/below, caption bar background |
-| Tables | `tableStyle` (+ named `tableStyles`): header fill/typography, rules, borders, padding, radius, `overflow: "split"` |
+| Tables | `tableStyle` (+ named `tableStyles`): header fill/typography, rules (`booktabs` for top/mid/bottom rules), borders, padding, radius, `overflow: "split"` |
 | Boxes | `calloutStyles[]` (§5) |
 | Inline chips / key caps | `chipStyles[]` |
 | Text aligned at stops inside a line (menu prices, cast lists, marks, forms, entries with page numbers) | `tabStops` on the paragraph style, `bodyText` or a callout `body` (configuration.md §4a) + `:tab` in the text; not a table |
@@ -249,8 +249,9 @@ paint order: text, rule, box and image elements (configuration.md §7).
   `{attr.<key>}`. For the book title in running heads, a literal string is
   safer than `{title}`.
 - Text element tops from a measured baseline: top ≈ baseline − 0.8 × size ×
-  line-height. Cap long titles with `size.maxWidth` and
-  `overflow: "ellipsis-end"`. Right/bottom anchors need negative offsets.
+  line-height. Cap long running-head titles with `size.maxWidth` (a running
+  head ends in `…` by default; opener and part titles wrap, ≥ 1.24, so leave
+  their `overflow` out). Right/bottom anchors need negative offsets.
 - **Chapter opener**: H1 `span: "page"`, `breakBefore` (parity from the book:
   odd = recto), and `advancedDesign.enabled` with elements for:
   - bleed band;
@@ -297,8 +298,11 @@ per-resource `placement`:
 | Figure in the main column with its caption in the margin | `span: "column"`, `captionSide: true` |
 | Across some of a newspaper's columns (2 of 5) | `span: "column"`, `columns: 2` (≥ 1.18; boxes: callout `columns`) |
 | Narrower than the column | `width: 0.7`, `align: "center"` |
+| Picture with the text running beside it (newsletter, magazine, a portrait in a profile) | `position: "here"`, `wrap: "right"`, `width: 0.4` + `::resource{id}` before the paragraph (≥ 1.24) |
+| Picture at the head of a column, the column's first lines beside it | `position: "top"`, `span: "column"`, `wrap: "left"`, `width: 0.5` (≥ 1.24) |
 | Landscape table on its own page | `span: "page"`, `rotate: "ccw"` |
-| Tall plate that must fit the page | `width = min(1, aspect × maxHeight / textWidth)`: the engine does not shrink an over-tall page float |
+| Tall plate that must fit the page | `shrink: "page"` (≥ 1.24; `minScale` default 0.7), `captionMeasure: "body"`, `align: "center"` |
+| Figure that should stay on the page that cites it, a little smaller, rather than move on | `shrink: "slot"`, `minScale: 0.8` (≥ 1.24) |
 
 Floats of one numbering sequence never overtake each other. Resources are
 numbered by their first mention.

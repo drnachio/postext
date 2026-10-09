@@ -14,6 +14,7 @@ import { resourceRefId, unprefixedId } from './crossRefs';
 import { citationIssues } from './citations';
 import { bookCitationContexts, needsCitationContext } from '../citations/context';
 import { duplicateAnchors } from './anchors';
+import { computeChapterTitles } from './placeholders';
 import type { ContentBlock } from '../parse';
 import { KNOWN_CONTAINERS, KNOWN_DIRECTIVES, parseInlineSnippetSpans, parseMarkdownMemo } from '../parse';
 import { invalidAttributeKeys } from '../parse/attrs';
@@ -146,17 +147,14 @@ export function collectContentWarnings(
    *  of its chapters; its own references count either way. */
   bookCitationKeys?: ReadonlySet<string>,
 ): ContentWarning[] {
-  let body = markdown;
-  let offset = 0;
-  try {
-    const fm = extractFrontmatter(markdown);
-    body = fm.content;
-    offset = fm.contentOffset;
-  } catch {
-    // Malformed frontmatter: the build reports it; scan the text as is.
-  }
+  const fm = extractFrontmatter(markdown);
+  const body = fm.content;
+  const offset = fm.contentOffset;
   const blocks = parseMarkdownMemo(body, codeParseOptions(resolveAllConfig(config)));
   const out: ContentWarning[] = [];
+  // Front matter that does not parse: the document is set without its
+  // metadata.
+  if (fm.error) out.push({ kind: 'invalidFrontmatter', message: fm.error.message, sourceStart: fm.error.sourceStart, sourceEnd: fm.error.sourceEnd });
   const abs = (r: SourceRange) => ({ sourceStart: r.start + offset, sourceEnd: r.end + offset });
 
   const byId = new Map<string, Resource>();
@@ -443,12 +441,7 @@ export function collectContentWarnings(
   }
 
   // Citations (#268): keys no reference defines, data that cannot be read.
-  let metadata: Record<string, unknown> | undefined;
-  try {
-    metadata = extractFrontmatter(markdown).metadata as Record<string, unknown>;
-  } catch {
-    metadata = undefined;
-  }
+  const metadata = fm.metadata as Record<string, unknown>;
   if (needsCitationContext(blocks, metadata)) {
     const ctx = bookCitationContexts([{ metadata, blocks }])[0]!;
     const keys = bookCitationKeys ? new Set([...bookCitationKeys, ...ctx.items.map((i) => i.id)]) : undefined;
@@ -584,6 +577,51 @@ export function wordOverflowWarnings(doc: VDTDocument): ContentWarning[] {
   return out;
 }
 
+/** A `designTextTruncated` warning for each design text cut to fit its
+ *  width (`VDTDesignTextBlock.truncated`, #628): one per element and page
+ *  for a heading design, a part page or a contents part row; one per
+ *  element and chapter for a running head or folio, which repeats the cut
+ *  on every page (a chapter title, a folio's page number), on the first
+ *  page that shows it. */
+export function designTruncationWarnings(doc: VDTDocument): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  const seen = new Set<string>();
+  let chapters: string[] | undefined;
+  const slot = (s: VDTDesignSlot | undefined, pageIndex: number): void => {
+    for (const b of s?.blocks ?? []) {
+      if (b.kind !== 'text' || !b.truncated) continue;
+      const t = b.truncated;
+      let key: string;
+      if (t.slot === 'header' || t.slot === 'footer') {
+        chapters ??= computeChapterTitles(doc.blocks, doc.pages.length, doc.pages);
+        key = `${t.slot}\u0000${t.elementId}\u0000${chapters[pageIndex] ?? ''}`;
+      } else {
+        key = `${pageIndex}\u0000${t.slot}\u0000${t.elementId}\u0000${b.sourceStart ?? ''}`;
+      }
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({
+        kind: 'designTextTruncated',
+        slot: t.slot,
+        elementId: t.elementId,
+        text: t.text,
+        mode: t.mode,
+        ...(b.sourceStart !== undefined ? { sourceStart: b.sourceStart } : {}),
+        ...(b.sourceEnd !== undefined ? { sourceEnd: b.sourceEnd } : {}),
+        pageIndex,
+      });
+    }
+  };
+  doc.pages.forEach((page, i) => {
+    slot(page.header, i);
+    slot(page.openerBand, i);
+    for (const col of page.columns) for (const block of col.blocks) slot(block.designOverlay, i);
+    for (const block of page.floats ?? []) slot(block.designOverlay, i);
+    slot(page.footer, i);
+  });
+  return out;
+}
+
 /** A `joiningScriptLetterSpacing` warning for the first placed part of
  *  each block (by content index, `blocks`) whose style tracks words of a
  *  joining script, which are set untracked. */
@@ -601,6 +639,36 @@ export function joiningLetterSpacingWarnings(doc: VDTDocument, blocks: ReadonlyS
       ...(block.sourceEnd !== undefined ? { sourceEnd: block.sourceEnd } : {}),
       ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
     });
+  }
+  return out;
+}
+
+/** A `floatShrunk` warning for each floated picture the layout set smaller
+ *  to fit the room of its slot (`placement.shrink`, #626), with how far it
+ *  still runs past the text block's foot when even its smallest scale did
+ *  not fit. `sourceRangeOf` gives the range of the content block that first
+ *  cites it. */
+export function floatShrinkWarnings(
+  doc: VDTDocument,
+  sourceRangeOf?: (contentIndex: number) => { start: number; end: number } | undefined,
+): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  for (const page of doc.pages) {
+    for (const block of page.floats ?? []) {
+      const rb = block.resourceBlock;
+      if (!rb || rb.shrinkScale === undefined) continue;
+      const foot = page.contentArea.y + page.contentArea.height;
+      const overflowPx = Math.round(block.bbox.y + block.bbox.height - foot);
+      const range = block.contentIndex !== undefined ? sourceRangeOf?.(block.contentIndex) : undefined;
+      out.push({
+        kind: 'floatShrunk',
+        resourceId: rb.resource.id,
+        scale: Math.round(rb.shrinkScale * 1000) / 1000,
+        ...(overflowPx > 0 ? { overflowPx } : {}),
+        ...(range ? { sourceStart: range.start, sourceEnd: range.end } : {}),
+        pageIndex: page.index,
+      });
+    }
   }
   return out;
 }
@@ -671,6 +739,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
         : w.usage === 'cellImage'
           ? `Unknown resource id "${w.resourceId}" for a table cell image${inRes} — the cell stays text-only`
           : `Unknown resource id "${w.resourceId}" in :ref${inRes} — it prints "?" (or its text= label), with no number or link`;
+      break;
+    case 'invalidFrontmatter':
+      text = `The front matter cannot be read: ${w.message} — the document is set without its metadata`;
       break;
     case 'unknownDirective':
       text = `Unknown directive ":::${w.name}" — the line is set as text`;
@@ -744,6 +815,11 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'cjkLooseLine':
       text = `The justified line "${w.text}" needs more space between its characters than the cap allows — it is set short of the measure`;
       break;
+    case 'designTextTruncated':
+      text = w.mode === 'clip'
+        ? `The ${w.slot} text "${w.text}" (element "${w.elementId}") is wider than its box and clipped`
+        : `The ${w.slot} text "${w.text}" (element "${w.elementId}") does not fit its width and ends in an ellipsis — set overflow: 'wrap' to break it onto more lines, or give it more room`;
+      break;
     case 'unbreakableWordOverflow':
       text = `The line "${w.text}" holds an Arabic-script word wider than the line — such a word is never divided, so it runs past the measure`;
       break;
@@ -770,6 +846,22 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
           : `${what} — the listing is set at ${Math.round((w.scale ?? 1) * 100)} % of its size, and what still does not fit is turned over`;
       break;
     }
+    case 'textWrap': {
+      const what = w.resourceId !== undefined ? `The resource "${w.resourceId}"` : `A "${w.box ?? 'callout'}" box`;
+      text = w.reason === 'moved'
+        ? `${what} wraps text round it but is too tall for the room left in its column — it moved on to the next column with its anchor`
+        : w.reason === 'tooNarrow'
+          ? `${what} would leave the text beside it narrower than layout.wrap.minTextWidth — it takes its band whole, with no text beside it`
+          : w.reason === 'verticalText'
+            ? `${what} asks for text wrap, which is set in horizontal text only — in vertical text it takes its band whole`
+            : `${what} is shorter than layout.wrap.minLinesBeside lines — it takes its band whole, with no text beside it`;
+      break;
+    }
+    case 'floatShrunk':
+      text = w.overflowPx !== undefined
+        ? `The picture "${w.resourceId}" is set at its smallest scale, ${Math.round(w.scale * 100)} % of its size, and still runs ${w.overflowPx} px past the foot of the page's text block`
+        : `The picture "${w.resourceId}" is set at ${Math.round(w.scale * 100)} % of its size to fit the room left on its page`;
+      break;
     case 'cjkMarksExceedLeading':
       text = `The paragraph "${w.text}" has emphasis dots or name and title lines in a line gap of ${w.gapEm} em — they need ${w.neededEm} em; set it with more leading`;
       break;
@@ -833,6 +925,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'comicAnchorOutsideSafeArea':
       text = `The anchor "${w.anchorId}" of "${w.resourceId}" lies outside the picture's safe area — a crop may cut it off`;
+      break;
+    case 'wrapUnsupported':
+      text = `${w.path}: text wraps in horizontal text only — in this vertical document "${w.value}" is ignored and the figures keep their bands whole`;
       break;
     case 'cjkGridClamped':
       text = `${w.path}: ${w.value} ${w.path.endsWith('charsPerLine') ? 'characters per line' : 'lines'} do not fit inside the margins — the grid is set with ${w.used}`;

@@ -24,6 +24,7 @@ export type WarningKind =
   | 'unclosedMath'
   | 'headerFooterUnknownPlaceholder'
   | 'headerFooterMetadataMissing'
+  | 'invalidFrontmatter'
   | 'unknownDirective'
   | 'malformedEmbed'
   | 'fullwidthMarkup'
@@ -62,6 +63,7 @@ export type WarningKind =
   | 'designCyclicAnchor'
   | 'designDanglingAnchor'
   | 'designTextClipAlwaysTruncates'
+  | 'designTextTruncated'
   | 'headingSpanWithoutBreak'
   | 'headingAdvancedWithoutTitleText'
   | 'unknownResourceId'
@@ -80,9 +82,12 @@ export type WarningKind =
   | 'unknownNumberFormat'
   | 'unknownNumerals'
   | 'lineNumbersUnsupported'
+  | 'wrapUnsupported'
   | 'lineNumberOverlap'
   | 'dropCap'
+  | 'textWrap'
   | 'codeOverflow'
+  | 'floatShrunk'
   | 'unknownConfigKey'
   | 'unknownConfigValue'
   | 'unsupportedHyphenationLocale'
@@ -156,6 +161,9 @@ export type WarningPayload =
       elementIndex: number;
       name: string;
     }
+  /** The front matter is not valid YAML; the chapter is set without its
+   *  metadata. `message` is the parser's reason (line:column). */
+  | { kind: 'invalidFrontmatter'; message: string }
   | { kind: 'unknownDirective'; name: string }
   /** A `::name` line that is not a well-formed embed on its own (after a
    *  blank line, `::resource{id="…"}`): it prints as text. */
@@ -265,6 +273,18 @@ export type WarningPayload =
       level?: number;
       elementId: string;
     }
+  /** A design text the layout cut to fit its width (#628): with an
+   *  ellipsis (`mode` its `overflow`) or clipped with ink past its box.
+   *  `slot` is where the design is painted, `page` the book page it was
+   *  first cut on (a running head once a chapter), `text` the whole text. */
+  | {
+      kind: 'designTextTruncated';
+      slot: 'header' | 'footer' | 'heading' | 'part' | 'tocRow';
+      elementId: string;
+      text: string;
+      mode: 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip';
+      page: number;
+    }
   | { kind: 'headingSpanWithoutBreak'; level: number }
   | { kind: 'headingAdvancedWithoutTitleText'; level: number }
   /** A `::resource{id=…}` block, a `:ref{id=…}` inline reference or a table
@@ -325,11 +345,22 @@ export type WarningPayload =
   /** `lineNumbers.enabled` on a vertical document (#621): it gets no line
    *  numbers. */
   | { kind: 'lineNumbersUnsupported'; path: string; value: string; used: string }
+  /** A resource type's `defaultPlacement.wrap` in a vertical document
+   *  (#627): ignored, the figures keep their bands whole. */
+  | { kind: 'wrapUnsupported'; path: string; value: string; used: string }
+  /** A resource or a box set to wrap text round it that does not (#627):
+   *  the text beside it would be too narrow, it is too short for lines
+   *  beside it, it moved on to the next column, or the text is vertical. */
+  | { kind: 'textWrap'; reason: 'tooNarrow' | 'fewLines' | 'moved' | 'verticalText'; resourceId?: string; box?: string }
   /** A line number set in the side column overlaps a side box, caption or
    *  figure (#621); both are painted. `number` as printed. */
   | { kind: 'lineNumberOverlap'; number: string }
   /** A paragraph's drop cap could not be set as configured (#623). */
   | { kind: 'codeOverflow'; mode: 'wrap' | 'shrink' | 'clip'; lines: number; scale?: number; lang?: string }
+  /** A floated picture set smaller to fit the room of its slot
+   *  (`placement.shrink`, #626), at `scale` of its width; `overflowMm`:
+   *  at its smallest scale it still runs that far past the text block. */
+  | { kind: 'floatShrunk'; resourceId: string; scale: number; overflowMm?: number }
   | { kind: 'dropCap'; reason: 'shortParagraph' | 'split' | 'joiningScript' | 'verticalText' | 'noLetter'; handling?: 'reserve' | 'shrink' | 'skip'; lines?: number; text: string }
   /** A key the heading settings do not have (`headings`, its `balancing`
    *  and `levels`, `headingStyles`): the engine ignores it. `value` is the

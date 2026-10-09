@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "poetry-collection",
-  "sourceHash": "e1119c7dbe24da03d4461d3ac88fa83e243ec4d2023bc8c8ef529bbef6b5c45b",
+  "sourceHash": "9fe3feb4fa261854e3df62d3bbe1a681fc34801a682f68fb059b6a9cab085464",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.293Z",
+  "capturedAt": "2026-10-09T18:25:13.486Z",
   "variants": {
     "en": {
-      "hash8": "744cd425",
-      "vdtHash": "5d8ba73bdefd65e33b2ae86313449515085fe33e",
+      "hash8": "c12f38b5",
+      "vdtHash": "6f34e685fb292bf6fd80f59acad0e217d78802af",
       "timings": {
-        "importMs": 157,
-        "fontsMs": 1863,
-        "buildMs": 195,
-        "totalMs": 3624,
+        "importMs": 580,
+        "fontsMs": 5939,
+        "buildMs": 56,
+        "totalMs": 7211,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Sorts Mill Goudy"
         ],
         "pages": 8,
-        "ownLines": 172
+        "ownLines": 163
       },
       "pages": [
         {
@@ -93,7 +93,7 @@
           "h": 1543,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 61478,
+          "bytes": 61316,
           "alt": "Opening page 5: I God’s Grandeur."
         },
         {
@@ -104,7 +104,7 @@
           "h": 1543,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 70400,
+          "bytes": 70334,
           "alt": "Opening page 6: II The Windhover."
         },
         {
@@ -115,7 +115,7 @@
           "h": 1543,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 45962,
+          "bytes": 45948,
           "alt": "Opening page 7: III Pied Beauty."
         },
         {
@@ -166,7 +166,7 @@
       },
       "sandbox": {
         "file": "poetry-collection.postext",
-        "bytes": 370802,
+        "bytes": 370777,
         "folio": "6d3a2b7c"
       },
       "detected": {
@@ -307,12 +307,13 @@
           "resourceTypes",
           "toc"
         ],
-        "configLeaves": 263,
+        "configLeaves": 262,
         "designElements": 12,
         "directives": [
           ":::toc",
           ":::space",
           ":::paragraphs",
+          ":::verse",
           "::resource"
         ],
         "inline": [
@@ -360,6 +361,7 @@
           "section-running-heads",
           "toc",
           "unnumbered-headings",
+          "verse",
           "vertical-space"
         ],
         "suggestedLevel": 3
@@ -372,7 +374,13 @@
           "share": 0,
           "worst": 1.51
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

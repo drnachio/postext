@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "code-listings-and-keycaps",
-  "sourceHash": "128163734d40f6ef3abd3e258d2a7093fcd5df91d8772ea0dcf2b72d103c27f8",
+  "sourceHash": "23aac31a3a08110445f455d3ac052e4ffbe4cc2ff4002b61e502d45f60b2107a",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.860Z",
+  "capturedAt": "2026-10-09T18:30:14.541Z",
   "variants": {
     "en": {
-      "hash8": "0c86805c",
-      "vdtHash": "ddd5bcee45064eb7a44250e3f89ae31c1ac7a72b",
+      "hash8": "f4806a7c",
+      "vdtHash": "8b3311fe4bda801d997d19193889d8a025dee896",
       "timings": {
-        "importMs": 160,
-        "fontsMs": 35,
-        "buildMs": 15,
-        "totalMs": 873,
+        "importMs": 431,
+        "fontsMs": 825,
+        "buildMs": 10,
+        "totalMs": 1960,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Sora"
         ],
         "pages": 3,
-        "ownLines": 180
+        "ownLines": 148
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1287,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 74026,
+          "bytes": 74218,
           "alt": "Opening page 49: Small tools, joined."
         },
         {
@@ -100,7 +100,7 @@
       },
       "sandbox": {
         "file": "code-listings-and-keycaps.postext",
-        "bytes": 24557,
+        "bytes": 24531,
         "folio": "e7298095"
       },
       "detected": {
@@ -137,16 +137,6 @@
           "calloutStyles[].body.textAlign",
           "calloutStyles[].columnGap",
           "calloutStyles[].id",
-          "calloutStyles[].label",
-          "calloutStyles[].label.background",
-          "calloutStyles[].label.color",
-          "calloutStyles[].label.fontFamily",
-          "calloutStyles[].label.fontSize",
-          "calloutStyles[].label.fontWeight",
-          "calloutStyles[].label.height",
-          "calloutStyles[].label.offset",
-          "calloutStyles[].label.paddingX",
-          "calloutStyles[].label.position",
           "calloutStyles[].marginBottom",
           "calloutStyles[].marginTop",
           "calloutStyles[].padding",
@@ -171,7 +161,6 @@
           "calloutStyles[].titleStyle.textTransform",
           "chipStyles",
           "chipStyles[].background",
-          "chipStyles[].backgroundEnabled",
           "chipStyles[].bold",
           "chipStyles[].borderColor",
           "chipStyles[].borderRadius",
@@ -183,6 +172,45 @@
           "chipStyles[].id",
           "chipStyles[].paddingX",
           "chipStyles[].paddingY",
+          "codeStyle",
+          "codeStyle.background",
+          "codeStyle.color",
+          "codeStyle.fontFamily",
+          "codeStyle.fontSize",
+          "codeStyle.inline",
+          "codeStyle.inline.fontSize",
+          "codeStyle.label",
+          "codeStyle.label.background",
+          "codeStyle.label.color",
+          "codeStyle.label.fontFamily",
+          "codeStyle.label.fontSize",
+          "codeStyle.label.fontWeight",
+          "codeStyle.label.height",
+          "codeStyle.label.offset",
+          "codeStyle.label.paddingX",
+          "codeStyle.label.position",
+          "codeStyle.lineHeight",
+          "codeStyle.marginBottom",
+          "codeStyle.marginTop",
+          "codeStyle.padding",
+          "codeStyle.padding.bottom",
+          "codeStyle.padding.left",
+          "codeStyle.padding.right",
+          "codeStyle.padding.top",
+          "codeStyle.span",
+          "codeStyle.tokens",
+          "codeStyle.tokens.comment",
+          "codeStyle.tokens.function",
+          "codeStyle.tokens.keyword",
+          "codeStyle.tokens.meta",
+          "codeStyle.tokens.number",
+          "codeStyle.tokens.operator",
+          "codeStyle.tokens.output",
+          "codeStyle.tokens.prompt",
+          "codeStyle.tokens.punctuation",
+          "codeStyle.tokens.string",
+          "codeStyle.tokens.type",
+          "codeStyle.tokens.variable",
           "colorPalette",
           "colorPalette[].id",
           "colorPalette[].name",
@@ -264,6 +292,7 @@
           "bodyText",
           "calloutStyles",
           "chipStyles",
+          "codeStyle",
           "colorPalette",
           "footer",
           "header",
@@ -274,7 +303,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 320,
+        "configLeaves": 318,
         "designElements": 8,
         "directives": [
           ":::callout",
@@ -283,7 +312,8 @@
         ],
         "inline": [
           "{attrs}",
-          ":chip"
+          ":chip",
+          "$…$"
         ],
         "resources": {
           "svg": 0,
@@ -334,11 +364,12 @@
         ],
         "features": [
           "callout-columns",
-          "callout-label-tabs",
           "callout-styles",
           "chips",
+          "code-listings",
           "column-and-a-half",
           "heading-attributes",
+          "math",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
@@ -364,13 +395,13 @@
       }
     },
     "es": {
-      "hash8": "49365852",
-      "vdtHash": "9f072fae6f594938c4d73209868336609bc46a95",
+      "hash8": "c65dd8a5",
+      "vdtHash": "f61d6e1ac7d69bfb6a85cc1f21905dd10cfc0c68",
       "timings": {
-        "importMs": 158,
-        "fontsMs": 25,
-        "buildMs": 15,
-        "totalMs": 821,
+        "importMs": 167,
+        "fontsMs": 43,
+        "buildMs": 13,
+        "totalMs": 909,
         "builds": 2
       },
       "specimen": {
@@ -393,7 +424,7 @@
           "Sora"
         ],
         "pages": 3,
-        "ownLines": 180
+        "ownLines": 148
       },
       "pages": [
         {
@@ -404,7 +435,7 @@
           "h": 1287,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 75858,
+          "bytes": 76046,
           "alt": "Página de apertura 49: Piezas que encajan."
         },
         {
@@ -454,7 +485,7 @@
       },
       "sandbox": {
         "file": "code-listings-and-keycaps.postext",
-        "bytes": 24890,
+        "bytes": 24872,
         "folio": "e7298095"
       },
       "detected": {
@@ -491,16 +522,6 @@
           "calloutStyles[].body.textAlign",
           "calloutStyles[].columnGap",
           "calloutStyles[].id",
-          "calloutStyles[].label",
-          "calloutStyles[].label.background",
-          "calloutStyles[].label.color",
-          "calloutStyles[].label.fontFamily",
-          "calloutStyles[].label.fontSize",
-          "calloutStyles[].label.fontWeight",
-          "calloutStyles[].label.height",
-          "calloutStyles[].label.offset",
-          "calloutStyles[].label.paddingX",
-          "calloutStyles[].label.position",
           "calloutStyles[].marginBottom",
           "calloutStyles[].marginTop",
           "calloutStyles[].padding",
@@ -525,7 +546,6 @@
           "calloutStyles[].titleStyle.textTransform",
           "chipStyles",
           "chipStyles[].background",
-          "chipStyles[].backgroundEnabled",
           "chipStyles[].bold",
           "chipStyles[].borderColor",
           "chipStyles[].borderRadius",
@@ -537,6 +557,45 @@
           "chipStyles[].id",
           "chipStyles[].paddingX",
           "chipStyles[].paddingY",
+          "codeStyle",
+          "codeStyle.background",
+          "codeStyle.color",
+          "codeStyle.fontFamily",
+          "codeStyle.fontSize",
+          "codeStyle.inline",
+          "codeStyle.inline.fontSize",
+          "codeStyle.label",
+          "codeStyle.label.background",
+          "codeStyle.label.color",
+          "codeStyle.label.fontFamily",
+          "codeStyle.label.fontSize",
+          "codeStyle.label.fontWeight",
+          "codeStyle.label.height",
+          "codeStyle.label.offset",
+          "codeStyle.label.paddingX",
+          "codeStyle.label.position",
+          "codeStyle.lineHeight",
+          "codeStyle.marginBottom",
+          "codeStyle.marginTop",
+          "codeStyle.padding",
+          "codeStyle.padding.bottom",
+          "codeStyle.padding.left",
+          "codeStyle.padding.right",
+          "codeStyle.padding.top",
+          "codeStyle.span",
+          "codeStyle.tokens",
+          "codeStyle.tokens.comment",
+          "codeStyle.tokens.function",
+          "codeStyle.tokens.keyword",
+          "codeStyle.tokens.meta",
+          "codeStyle.tokens.number",
+          "codeStyle.tokens.operator",
+          "codeStyle.tokens.output",
+          "codeStyle.tokens.prompt",
+          "codeStyle.tokens.punctuation",
+          "codeStyle.tokens.string",
+          "codeStyle.tokens.type",
+          "codeStyle.tokens.variable",
           "colorPalette",
           "colorPalette[].id",
           "colorPalette[].name",
@@ -618,6 +677,7 @@
           "bodyText",
           "calloutStyles",
           "chipStyles",
+          "codeStyle",
           "colorPalette",
           "footer",
           "header",
@@ -628,7 +688,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 320,
+        "configLeaves": 318,
         "designElements": 8,
         "directives": [
           ":::callout",
@@ -637,7 +697,8 @@
         ],
         "inline": [
           "{attrs}",
-          ":chip"
+          ":chip",
+          "$…$"
         ],
         "resources": {
           "svg": 0,
@@ -688,11 +749,12 @@
         ],
         "features": [
           "callout-columns",
-          "callout-label-tabs",
           "callout-styles",
           "chips",
+          "code-listings",
           "column-and-a-half",
           "heading-attributes",
+          "math",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",

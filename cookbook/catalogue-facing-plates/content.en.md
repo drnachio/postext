@@ -5,7 +5,13 @@ author: "The Print Room"
 
 # Doré {style="cover" kicker="The Print Room · A cabinet exhibition" subtitle="Three plates for Don Quixote, 1863" foot="Wood engravings by Héliodore Pisan after Gustave Doré"}
 
-# Don Quixote \\ in His Library {chapter="Part I · Chapter I" tombstone="Wood engraving\nHéliodore Pisan after Gustave Doré\nParis: L. Hachette et Cie, 1863, vol. I" lead="Doré opens the book with its hero wide awake. Seated upright in a carved chair, the hidalgo holds up a sword in his right hand and a book in his left, while everything he has read comes loose from the page and fills the room around him."}
+# Don Quixote \\ in His Library {chapter="Part I · Chapter I" tombstone="Wood engraving\nHéliodore Pisan after Gustave Doré\nParis: L. Hachette et Cie, 1863, vol. I"}
+
+:::paragraphs{style="lead"}
+Doré opens the book with its hero wide awake. Seated upright in a carved chair, the hidalgo holds up a sword in his right hand and a book in his left, while everything he has read comes loose from the page and fills the room around him.
+:::
+
+:::space
 
 The plate (:ref{id="library"}, opposite) sets out the sentence in which the hidalgo loses his wits. In John Ormsby’s translation his fancy grew full of ‘enchantments, quarrels, battles, challenges, wounds, wooings, loves, agonies, and all sorts of impossible nonsense’, and Doré draws the list almost item by item. Knights ride out from behind the chair, a dragon uncoils above a shield of arms, a knight no taller than a folio stands on a book beside a giant’s severed head, and a lady in chains kneels at the fore-edge of a volume lettered AMADIS.
 
@@ -15,7 +21,13 @@ Daylight comes in at the window on the left and falls on his face and on the ope
 
 In wood engraving whatever the tool cuts away prints white, so Pisan had to turn each of Doré’s greys into a pattern of strokes: close parallel cuts for the heavy curtain, finer and more open ones for the light on the wall, broken curls for the smoke of figures behind the chair. Both men signed the block, Doré in script at the lower left and Pisan in capitals at the lower right.
 
-# The Vigil \\ of Arms {chapter="Part I · Chapter III" tombstone="Wood engraving\nHéliodore Pisan after Gustave Doré\nParis: L. Hachette et Cie, 1863, vol. I" lead="The innkeeper has no chapel, so Don Quixote keeps his vigil of arms in the yard. Doré makes the scene a nocturne: the armour stands on the well-head, and the bareheaded knight lifts his lance towards a full moon breaking through cloud."}
+# The Vigil \\ of Arms {chapter="Part I · Chapter III" tombstone="Wood engraving\nHéliodore Pisan after Gustave Doré\nParis: L. Hachette et Cie, 1863, vol. I"}
+
+:::paragraphs{style="lead"}
+The innkeeper has no chapel, so Don Quixote keeps his vigil of arms in the yard. Doré makes the scene a nocturne: the armour stands on the well-head, and the bareheaded knight lifts his lance towards a full moon breaking through cloud.
+:::
+
+:::space
 
 The plate (:ref{id="vigil"}, opposite) follows the text closely. The innkeeper has told his guest that armour may be watched anywhere, so Don Quixote lays his on a trough beside the well and paces up and down in front of it. In Ormsby’s translation the night closes in ‘with a light from the moon so brilliant that it might vie with his that lent it’.
 
@@ -25,7 +37,13 @@ Cervantes plays the vigil as farce. Two carriers come in turn to water their mul
 
 In this sky Pisan widens his level cuts as they near the moon, until the black left between them thins to hairlines around the halo. Short flicks pick out the edges of the clouds. A dark bar of cloud crosses the disc on the left, and a few faint strokes shade the moon’s face.
 
-# The Adventure \\ of the Windmills {chapter="Part I · Chapter VIII" tombstone="Wood engraving\nHéliodore Pisan after Gustave Doré\nParis: L. Hachette et Cie, 1863, vol. I" lead="Doré passes over the charge and draws the moment after it. The turning sail has caught the lance and lifted horse and rider clear of the plain, and Rocinante’s legs thrash at the empty air below them."}
+# The Adventure \\ of the Windmills {chapter="Part I · Chapter VIII" tombstone="Wood engraving\nHéliodore Pisan after Gustave Doré\nParis: L. Hachette et Cie, 1863, vol. I"}
+
+:::paragraphs{style="lead"}
+Doré passes over the charge and draws the moment after it. The turning sail has caught the lance and lifted horse and rider clear of the plain, and Rocinante’s legs thrash at the empty air below them.
+:::
+
+:::space
 
 The plate (:ref{id="windmills"}, opposite) illustrates the sentence in which the charge ends. As the knight drove his lance into the sail, in Ormsby’s words, ‘the wind whirled it round with such force that it shivered the lance to pieces, sweeping with it horse and rider, who went rolling over on the plain’. Doré stops before the fall. The broken lance is still caught in the canvas, and the knight hangs tangled against the sail with his shield flung out beside him.
 

@@ -30,7 +30,7 @@ import type { InlineSpan } from '../parse/types';
 import { sliceSpan } from '../parse/links';
 import type { VDTLine } from '../vdt';
 import type { BreakTrace, LineWidthStep, MeasureBlockOptions, MeasuredBlock } from './types';
-import { lineIndentAt, lineMeasure } from './types';
+import { lineIndentAt, lineMeasure, type LineInsetStep } from './types';
 
 /** The forced line break in a paragraph's text (`BREAK_PLACEHOLDER`). */
 export const FORCED_BREAK = ' ';
@@ -77,7 +77,7 @@ export function pieceOptions(
   last: boolean,
   looseness: number,
 ): MeasureBlockOptions {
-  const { firstLineIndentPx: _first, hangingIndent: _hanging, lineIndentsPx: _table, labelColumnPx, restWidths, avoidHyphenAtLines, keepBreaks, looseness: _loose, runtPenalty, ...rest } = options ?? {};
+  const { firstLineIndentPx: _first, hangingIndent: _hanging, lineIndentsPx: _table, labelColumnPx, restWidths, lineInsets, avoidHyphenAtLines, keepBreaks, looseness: _loose, runtPenalty, ...rest } = options ?? {};
   void _first;
   void _hanging;
   void _table;
@@ -99,6 +99,16 @@ export function pieceOptions(
     if (restWidths.some((s) => s.fromLine <= n)) steps.push({ fromLine: 0, maxWidthPx: at });
     for (const s of restWidths) if (s.fromLine > n) steps.push({ fromLine: s.fromLine - n, maxWidthPx: s.maxWidthPx });
     if (steps.length > 0) out.restWidths = steps;
+  }
+  // The lines set short beside a wrapped picture (#627), counted from the
+  // piece's first line.
+  if (lineInsets && lineInsets.length > 0) {
+    const steps: LineInsetStep[] = [];
+    for (const s of lineInsets) {
+      if (s.toLine !== undefined && s.toLine < n) continue;
+      steps.push({ ...s, fromLine: Math.max(0, s.fromLine - n), ...(s.toLine !== undefined ? { toLine: s.toLine - n } : {}) });
+    }
+    if (steps.length > 0) out.lineInsets = steps;
   }
   if (avoidHyphenAtLines) {
     const lines = avoidHyphenAtLines.filter((l) => l > n).map((l) => l - n);

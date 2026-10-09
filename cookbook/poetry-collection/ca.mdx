@@ -1,22 +1,22 @@
 ---
 title: "Poemes compostos vers a vers"
-summary: "Cada vers és un paràgraf, i el que no hi cap continua amb 4 em de sagnat francès. Els espais eme guarden els sagnats de 1918; :::space separa les estrofes."
+summary: "Cada poema és un bloc :::verse escrit com s'imprimeix: els sagnats de 1918 són espais inicials i els versos partits pengen 2 em del seu vers."
 plain: "Un llibret amb quatre poemes sobre la natura de Gerard Manley Hopkins. Ensenya a respectar cada vers per separat, amb els sagnats originals del poeta i una línia en blanc entre estrofes."
-description: "Quatre poemes de Hopkins amb Postext: un paràgraf per vers, els sagnats de 1918, sagnat francès als llargs, :::space entre estrofes i índex amb punts."
+description: "Quatre poemes de Hopkins amb Postext: blocs :::verse amb els sagnats de 1918, versos partits penjats, una línia entre estrofes i índex amb punts."
 question: "Com componc poemes vers a vers, amb sagnats, estrofes separades, sagnat francès i sense partir paraules?"
-aliases: ["poesia", "poema", "vers", "estrofa", "espai entre estrofes", "vers sagnat", "sagnat", "espai eme", "unidor de paraules", "vers llarg", "vers partit", "sagnat francès", "salts de línia", "poemari", "plaquette", "línies de punts", "punts guia", "dedicatòria", "data del poema", "ornament", "vinyeta", "cul-de-llàntia", "frontispici", "avantportada", "Gerard Manley Hopkins"]
+aliases: ["poesia", "poema", "vers", ":::verse", "estrofa", "espai entre estrofes", "vers sagnat", "sagnat", "vers llarg", "vers partit", "sagnat francès", "salts de línia", "poemari", "plaquette", "línies de punts", "punts guia", "dedicatòria", "data del poema", "ornament", "vinyeta", "cul-de-llàntia", "frontispici", "avantportada", "Gerard Manley Hopkins"]
 pageNotes: { "2": "El frontispici: un fotograma d'una fronda de falguera i una branca de server amb baies, en blanc sobre un fons sàlvia donat a pinzellades, amb el peu a sota en cursiva.", "4": "L'índex: quatre títols en cursiva després dels seus números, línies de punts espaiats fins al número de pàgina, i després una breu nota sobre el text i el colofó.", "6": "The Windhover: la dedicatòria va damunt del primer vers, els versos que rimen en -iding i en -illion entren 2 em, i quatre versos llargs continuen a la línia de sota amb 4 em de sagnat francès.", "7": "Pied Beauty: els versos entren 1 o 2 em segons la rima, i el mig vers final, Praise him., queda a 8 em del marge." }
 ---
 
 ## Què compondràs
 
-Un poemari de 140 × 216 mm amb quatre poemes de Gerard Manley Hopkins sobre la natura, segons la primera edició (1918). Després de l'avantportada, un fotograma de falguera i server fa de frontispici davant de la portada, composta en Italiana. L'índex dona el número romà i el títol en cursiva de cada poema, amb punts espaiats fins a la pàgina. Cada poema obre pàgina sota el seu número. Els versos són paràgrafs i conserven els sagnats de 1918: a *Pied Beauty* s'esglaonen segons la rima, i els llargs de *The Windhover* continuen a la línia de sota amb 4 em de sagnat, el doble que els seus sagnats. Entre estrofes queda una línia en blanc, i cap paraula no es parteix tret d'on la va partir Hopkins. Sota cada poema va la data, a la dreta, i després de l'últim, una branqueta de server. Els poemes porten el foli centrat a baix.
+Un poemari de 140 × 216 mm amb quatre poemes de Gerard Manley Hopkins sobre la natura, segons la primera edició (1918). Després de l'avantportada, un fotograma de falguera i server fa de frontispici davant de la portada, composta en Italiana. L'índex dona el número romà i el títol en cursiva de cada poema, amb punts espaiats fins a la pàgina. Cada poema obre pàgina sota el seu número. Cada poema és un bloc `:::verse` i conserva els sagnats de 1918: a *Pied Beauty* s'esglaonen segons la rima, i els llargs de *The Windhover* continuen a la línia de sota amb 4 em de sagnat, el doble que els seus sagnats. Entre estrofes queda una línia en blanc, i cap paraula no es parteix tret d'on la va partir Hopkins. Sota cada poema va la data, a la dreta, i després de l'últim, una branqueta de server. Els poemes porten el foli centrat a baix.
 
 ## Elaboració
 
-### 1 · Cada vers és un paràgraf
+### 1 · Un poema és un bloc :::verse
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. Postext ajunta en una sola les línies d'un paràgraf de Markdown, i per això cada vers ha de ser un paràgraf. L'estil del vers els compon en bandera, perquè justificats estirarien fins a la mesura la primera part d'un vers partit. El que passa a la línia següent porta 4 em de sagnat francès, més que els 1 o 2 em dels versos sagnats per la rima, perquè ningú no ho prengui per un altre vers ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). Un paràgraf perd els espais amb què comença, també els espais eme, i un estil amb sagnat francès no aplica el de primera línia. Per això `indentVerse` converteix cada parell d'espais inicials en un espai eme precedit d'un unidor de paraules, un caràcter d'amplada zero on s'atura el retall. Els versos que rimen entre si queden a la mateixa distància del marge, com el 1918. Les línies en blanc no afegeixen espai: cada separació entre estrofes és una línia `:::space` dins del contenidor, que deixa una línia de la retícula de base i es descarta si cau al capdamunt d'una pàgina ([`:::space`](/ca/docs/document-format#space)).
+Un bloc `:::verse` conserva cada línia del Markdown com un vers, de manera que el poema s'escriu com s'imprimeix ([`:::verse`](/ca/docs/document-format#verse)). Els espais inicials en són els sagnats, dos per eme, de manera que els versos que rimen entre si queden a la mateixa distància del marge, com el 1918. Una línia en blanc entre estrofes deixa una línia de la retícula base i es descarta si cau al capdamunt d'una pàgina. Un vers que no cap a la mesura es parteix en un espai entre paraules i penja segons la `hangingIndent` de l'estil del vers, comptada des de l'inici del mateix vers: 2 em més enllà d'un vers sense sagnat, 4 em sota un de sagnat 2 em, perquè ningú no prengui la resta per un altre vers. `align=start` alinea cada poema amb el marge; sense, el poema es centra sobre el seu vers més llarg. El vers no es divideix amb guionet, i un vers no se separa mai de la seva resta en un salt de pàgina.
 
 <PageShot page={6} crop="0.08,0.22,0.86,0.48" caption="The Windhover, pàgina 6: els versos que rimen en -iding entren 2 em, i els quatre que no hi caben continuen a la línia de sota, amb 4 em de sagnat francès." />
 
@@ -57,17 +57,18 @@ Una imatge al text és un recurs, i tot recurs té un tipus. El tipus de l'ornam
 Amb un sagnat francès més gran, la resta de cada vers partit queda més lluny del marge. Serveix per a poemes en què molts versos no caben a la línia.
 
 ```diff
--  hangingIndent: em(4), // a turned line hangs past the 1 and 2 em indents
-+  hangingIndent: em(6), // a turned line hangs past the 1 and 2 em indents
+-  hangingIndent: em(2), // a turnover hangs 2 em past its line's start: 4 em under a 2 em indent
++  hangingIndent: em(4), // a turnover hangs 2 em past its line's start: 4 em under a 2 em indent
 ```
 
-### Comença tots els versos al marge
+### Compon els versos partits a la dreta
 
-Sense `indentVerse`, Postext retalla els espais inicials i tots els versos comencen al marge; només els versos partits continuen sagnats.
+Amb `turnover: 'right'` a `bodyText.verse`, la resta d'un vers que no cap a la mesura passa a la línia de sota alineada a la dreta, darrere d'un claudàtor d'obertura, com la componen moltes edicions de poesia.
 
 ```diff
--const verses = indentVerse(markdown); // the leading spaces of verse, as em spaces
-+const verses = markdown; // leading spaces left to the trim
+     indentAfterHeading: false, minWordSpacing: 0.8, maxWordSpacing: 1.6,
++    verse: { turnover: 'right' }, // a turnover flush right, behind [
+   },
 ```
 
 ### Obre cada poema en pàgina senar
@@ -91,8 +92,8 @@ L'estil del comptador a la plantilla canvia alhora el número de la pàgina del 
 
 ## Errors freqüents
 
-- Deixa una línia en blanc després de cada vers. Dos versos sense una línia en blanc entre ells formen un sol paràgraf, i el poema es recompon com a prosa.
-- Dona a l'estil del vers el seu propi `textAlign`. Un estil de paràgraf hereta el del cos, i el vers justificat estira fins a la mesura la primera part de cada vers partit.
-- Un vers que comença per un any i un punt, com «1877. », o per un guionet i un espai es converteix en un element de llista, perquè cada vers és un paràgraf. Posa-hi al davant un unidor de paraules (U+2060), com fa `indentVerse` abans d'un sagnat.
+- Mantén junts els versos d'una estrofa: una línia en blanc dins d'un bloc `:::verse` obre una altra estrofa, siguin quantes siguin les línies en blanc.
+- Un vers que comença amb un signe més i un espai és un vers esglaonat, que comença on va acabar el de dalt; escriu `\+` per imprimir el signe més.
+- Sense `align=start` cada poema es centra sobre el seu vers més llarg, i llavors cadascun queda a una distància diferent del marge.
 - Perquè dues paraules passin juntes a la línia de sota, uneix-les amb un espai de no separació (U+00A0), com *the soil* i *bright wings.* a la pàgina 5. Es manté en un vers de text pla; en un amb cursiva o negreta el motor continua tallant-hi.
 - Un element del peu de pàgina amb `pages` a `'all'` s'imprimeix també a les pàgines en blanc. Aquí el foli es compon de dos elements, un per a les obertures i un altre per a les pàgines de text, així que una pàgina parella en blanc queda en blanc.

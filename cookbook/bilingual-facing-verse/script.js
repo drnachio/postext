@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 043 · Facing translation, stanza by stanza ═══════════════════
 // https://postext.dev/en/cookbook/bilingual-facing-verse
 // Code: MIT · Text: original (CC BY 4.0) · Salt pans and flamingo: diffusion models
-// Fonts: Castoro, Castoro Titling, Tenor Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Castoro, Castoro Titling, Tenor Sans (SIL OFL 1.1) · Needs postext ≥ 1.23.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
 } from 'https://esm.sh/postext';
@@ -53,11 +53,12 @@ const poem = {
 };
 // #endregion
 
-// #region verse: a paragraph per line, turnovers that hang, a title over each column
-// Every line of verse is a paragraph of this style, set ragged so that no line is stretched.
-// A line too long for its 55 mm column turns over 2 em in, where it cannot pass for the
-// next line; the Spanish stanza opposite then ends with :::space{lines=2}, not :::space.
-const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(2) };
+// #region verse: a :::verse block per column, turnovers that hang, a title over each column
+// Each half of a poem is a :::verse block, a line of verse a line of Markdown and a blank line
+// between stanzas. A line too long for its 55 mm column turns over 2 em in, where it cannot
+// pass for the next line; the Spanish half then ends that stanza's block and a
+// :::space{lines=2} before the next keeps the stanzas level across the gutter.
+const verse = { id: 'verse', hangingIndent: em(2) };
 // Castoro Titling draws capitals only. A paragraph style's margins do not count inside a box
 // (gotcha: box-paragraph-margins), so :::space{lines=0.5} sets each title off its poem.
 const poemTitle = { id: 'poem-title', fontFamily: 'Castoro Titling', fontSize: pt(9.5),

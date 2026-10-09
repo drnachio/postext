@@ -65,120 +65,60 @@ subtitle: "俳句と短歌"
 
 # 一握の砂 {author="石川啄木"}
 
-:::callout{type="tanka"}
-:::paragraphs{style="tanka"}
+:::verse{style="tanka" keepStanzas=3}
 {東海|とうかい}の{小島|こじま}の{磯|いそ}の{白砂|しらすな}に
-
 われ{泣|な}きぬれて
-
 {蟹|かに}とたはむる
-:::
-:::
 
-:::callout{type="tanka"}
-:::paragraphs{style="tanka"}
 {頬|ほ}につたふ
-
 なみだのごはず
-
 {一握|いちあく}の砂を{示|しめ}しし人を忘れず
-:::
-:::
 
-:::callout{type="tanka"}
-:::paragraphs{style="tanka"}
 いのちなき砂のかなしさよ
-
 さらさらと
-
 {握|にぎ}れば指のあひだより落つ
-:::
-:::
 
-:::callout{type="tanka"}
-:::paragraphs{style="tanka"}
 たはむれに母を{背負|せお}ひて
-
 そのあまり{軽|かろ}きに泣きて
-
 三歩あゆまず
-:::
-:::
 
-:::callout{type="tanka"}
-:::paragraphs{style="tanka"}
 はたらけど
-
 はたらけど{猶|なほ}わが{生活|くらし}楽にならざり
-
 ぢっと手を見る
 :::
-:::
 
 :::paragraphs{style="ornament"}
 ＊
 :::
 
-:::callout{type="tanka"}
-:::paragraphs{style="tanka"}
+:::verse{style="tanka" keepStanzas=3}
 {不来方|こずかた}のお城の草に寝ころびて
-
 空に吸はれし
-
 {十五|じふご}の心
-:::
-:::
 
-:::callout{type="tanka"}
-:::paragraphs{style="tanka"}
 ふるさとの{訛|なまり}なつかし
-
 {停車場|ていしやば}の人ごみの中に
-
 そを{聴|き}きにゆく
-:::
-:::
 
-:::callout{type="tanka"}
-:::paragraphs{style="tanka"}
 石をもて追はるるごとく
-
 ふるさとを{出|い}でしかなしみ
-
 消ゆる時なし
-:::
-:::
 
-:::callout{type="tanka"}
-:::paragraphs{style="tanka"}
 やはらかに柳あをめる
-
 {北上|きたかみ}の{岸辺|きしべ}目に見ゆ
-
 泣けとごとくに
-:::
-:::
 
-:::callout{type="tanka"}
-:::paragraphs{style="tanka"}
 ふるさとの山に向ひて
-
 言ふことなし
-
 ふるさとの山はありがたきかな
 :::
-:::
 
 :::paragraphs{style="ornament"}
 ＊
 :::
 
-:::callout{type="tanka"}
-:::paragraphs{style="tanka"}
+:::verse{style="tanka" keepStanzas=3}
 {函館|はこだて}の{青柳町|あをやぎちやう}こそかなしけれ
-
 友の{恋歌|こひうた}
-
 矢ぐるまの花
-:::
 :::

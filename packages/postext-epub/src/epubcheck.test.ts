@@ -10,7 +10,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { renderToEpub } from './index';
 import type { RenderToEpubOptions } from './types';
-import { AMIRI, LORA, MP4, PNG, arabicSampleBook, comicSampleBook, sampleBook, stripCaptionSampleBook, stripSpreadSampleBook, videoSampleBook, japaneseSampleBook } from './__tests__/sampleBook';
+import { AMIRI, LORA, MP4, PNG, arabicSampleBook, booktabsSampleBook, wrapSampleBook, comicSampleBook, sampleBook, stripCaptionSampleBook, stripSpreadSampleBook, videoSampleBook, japaneseSampleBook } from './__tests__/sampleBook';
 
 const available = process.env.EPUBCHECK === '1' && spawnSync('epubcheck', ['--version'], { encoding: 'utf8' }).status === 0;
 
@@ -90,6 +90,12 @@ const samples: { name: string; options: RenderToEpubOptions; book?: () => Return
   // Captioned strips, one numbered and named by a :ref (#590).
   { name: 'strip-caption-fixed', options: base('fixed'), book: stripCaptionSampleBook },
   { name: 'strip-caption-reflowable', options: base('reflowable'), book: stripCaptionSampleBook },
+  // Booktabs tables and a named table style (#625).
+  { name: 'booktabs-fixed', options: base('fixed'), book: booktabsSampleBook },
+  { name: 'booktabs-reflowable', options: base('reflowable'), book: booktabsSampleBook },
+  // A figure and a box text wraps round (#627).
+  { name: 'wrap-fixed', options: base('fixed'), book: wrapSampleBook },
+  { name: 'wrap-reflowable', options: base('reflowable'), book: wrapSampleBook },
 ];
 
 describe.skipIf(!available)('EPUBCheck', () => {

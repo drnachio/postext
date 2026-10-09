@@ -88,6 +88,18 @@ export function withHeadingIndentAttr(style: BlockStyle, value: string | undefin
   return rest;
 }
 
+/** A heading's own `{firstLineIndent=N}` (#636) over its level's or
+ *  style's `firstLineIndent`, read as `{indent=N}` is: body ems for a bare
+ *  number and `em`, `0` clears it, anything that is not a length leaves
+ *  the level's as it is. */
+export function withHeadingFirstLineIndentAttr(style: BlockStyle, value: string | undefined, resolved: ResolvedConfig): BlockStyle {
+  if (value === undefined) return style;
+  const dpi = resolved.page.dpi;
+  const px = lengthAttr(value, dpi, dimensionToPx(resolved.bodyText.fontSize, dpi));
+  if (px === undefined || !Number.isFinite(px)) return style;
+  return { ...style, firstLineIndentPx: Math.max(0, px) };
+}
+
 /** Upper-case `text` one UTF-16 code unit at a time, keeping any character
  *  whose upper-case form is not exactly one code unit (`ß` → `SS`, ligatures)
  *  so the result has the same length as the input and per-character source
@@ -140,10 +152,10 @@ export function resolveBlockKind(
     case 'heading': {
       const level = rawBlock.level ?? 1;
       const levelCfg = ctx.headingLevels?.forBlock(rawBlock) ?? resolved.headings.levels.find((l) => l.level === level);
-      const style = withHeadingIndentAttr(
+      const style = withHeadingFirstLineIndentAttr(withHeadingIndentAttr(
         resolveHeadingStyle(level, resolved, levelCfg, rawBlock.spans.some((s) => s.bold)),
         rawBlock.attrs?.indent, resolved,
-      );
+      ), rawBlock.attrs?.firstLineIndent, resolved);
       const numberPrefix = headingPrefixes[blockIdx];
       const headingNumber = ctx.headingNumbers?.[blockIdx];
       let contentBlock: ContentBlock = rawBlock;

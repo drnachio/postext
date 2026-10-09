@@ -188,9 +188,11 @@ next page, because the opener owns the top band.
 ### A7. Catalogue: entry on the verso, plate on the facing recto
 Open each entry on a verso (H1 `breakBefore: {"parity": "even"}`). Give the
 plate type the default placement `top`/`page`, and cite the plate on the
-opener page. It floats onto the next page, the facing recto. Size tall plates
-with `width = min(1, aspect × maxHeight / textWidth)`, because the engine does
-not shrink an over-tall page float. One part per artist
+opener page. It floats onto the next page, the facing recto. Let the engine
+size a plate taller than the page (≥ 1.24): `shrink: "page"` scales it to the
+band the recto keeps, `captionMeasure: "body"` and `align: "center"` set the
+caption at the plate's width under it, and `minScale` (default 0.7) is the
+smallest share of its width it may shrink to. One part per artist
 (`:::part{title="El Greco" palette="band=#3d4a63"}` with the artist's dates
 and bio as the part body).
 
@@ -306,8 +308,11 @@ source's indents as leading spaces (two spaces = 1 em at the default
 `indentStep`; set `indentStep` to the source's step). Give the poem a paragraph
 style for its face, size, leading, `indent` and margins, and its
 `hangingIndent` for wrapped lines (2 em when none); `turnover=right` sets
-turnovers flush right behind `[` as English and Spanish editions do. A poem
-title goes in its own style, outside the fence.
+turnovers flush right behind `[` as English and Spanish editions do. Since
+1.24 a line only a few points too long tightens its word spaces (down to
+`bodyText.minWordSpacing`) and stays on one line, as a print edition sets it:
+keep the source's lines, never break or shorten them by hand. A poem title
+goes in its own style, outside the fence.
 
 ```md
 :::paragraphs{style="poem-title"}
@@ -565,6 +570,10 @@ numbers" panels, grey boxes, badges. In Markdown write
 ### C3. Placement
 - Mid-page box across the columns: `span: "page"`.
 - Side-column box: `span: "side"`. It stacks beside the text and never floats.
+- Pull quote or sidebar with the text running beside it inside the column:
+  `:::callout{wrap="right" width=0.4}` (≥ 1.24; `placement="top"` floats it to
+  a column's head with the column's first lines beside it). Not a
+  `:::columns` group: the text after the box runs on beside it and under it.
 - Boxes the book always sets at the head or foot of a page: style
   `placement: "top"` / `"bottom"` / `"auto"`. The text after the box keeps
   filling the page. Floated boxes are placed in order, so **put each fence
@@ -656,7 +665,10 @@ a crop is tuned).
   exact.
 - Scans or plates: greyscale, autocontrast and a white-border trim; crop off
   a printed caption by fraction box.
-- Downscale to about 300 dpi at the printed size, JPEG q80–85.
+- Downscale to about 300 dpi at the printed size, JPEG q80–85. Declare the file's real pixels and,
+  when the page is laid out at another dpi (a newspaper at 150), `resolution: 300` on the picture or
+  `layout.bitmapResolution: 300` (≥ 1.24) instead of print-size pixels worked out by hand; with
+  sources whose files state their resolution, `layout.bitmapResolution: 'file'`.
 - A multi-part figure sent as separate files: join them side by side
   (`images.py join`).
 - Pulling a raster out of the book PDF: `pdf_figures.py image --xref`.
@@ -684,6 +696,10 @@ recoloured to tints of `main-color`). This disables print masters.
 - Captions above (`resourceTypes[].captionStyle.position: "above"`), with a
   caption bar (`backgroundEnabled`). Table looks: `tableStyle` / named
   `tableStyles` + `table.styleId`, and `borderRadius` for rounded frames.
+- Tables ruled only above, under the header and under the last row (journals,
+  papers, LaTeX `booktabs`): `rules: "booktabs"`, no header fill, ink rules;
+  a head over several columns gets its short rule from the model's `colSpan`,
+  a group row (one cell across the table) a light rule with `groupRules`.
 
 ### D10. Colour-coded cells and legends
 Use cell `background` linked to palette ids (`table-compatible`,

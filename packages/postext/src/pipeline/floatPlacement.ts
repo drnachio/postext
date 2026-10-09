@@ -19,6 +19,9 @@
 import { resourceRefId } from './crossRefs';
 import type { ContentBlock } from '../parse';
 import type {
+  Dimension,
+  FloatShrinkMode,
+  ResolvedTextWrapConfig,
   Resource,
   ResourceType,
   ResourceFloatPosition,
@@ -26,6 +29,8 @@ import type {
   ResourceRotation,
 } from '../types';
 import { floatColumnCount, startEndAsLeftRight } from '../defaults/shared';
+import { DEFAULT_FLOAT_MIN_SCALE, floatMinScaleOf, floatShrinkModeOf } from '../defaults/layout';
+import { resolveResourceWrap } from './textWrap';
 
 export { floatColumnCount };
 
@@ -41,6 +46,11 @@ export interface ResolvedPlacement {
   captionSide: boolean;
   /** Adjacent columns a column float takes (1 = its own column). */
   columns: number;
+  /** How the float is scaled to the room of a slot (`placement.shrink`,
+   *  #626) and the smallest scale it takes; `'never'` for anything but an
+   *  upright picture. */
+  shrink: FloatShrinkMode;
+  minScale: number;
 }
 
 /** A planned float: the resource, its resolved placement, and the index of the
@@ -71,6 +81,19 @@ export interface PlannedFloat {
   /** A `span: 'column'` float across this many adjacent columns (absent
    *  for one; see `ResourcePlacement.columns`). */
   columns?: number;
+  /** A picture scaled to the room of a slot rather than moved on
+   *  (`placement.shrink`, #626), never below `minScale`. Absent for
+   *  `'never'`. */
+  shrink?: 'page' | 'slot';
+  minScale?: number;
+  /** Text wraps round the float (#627, `placement.wrap`): a one-column
+   *  float at the head or foot of its column, at this side of it; the
+   *  column's first or last lines run beside it. `widthFraction` and
+   *  `align` then say where it stands. Absent for a float that keeps its
+   *  band whole. */
+  wrap?: 'left' | 'right';
+  /** The wrap's own gap (`placement.wrapGap`, else `layout.wrap.gap`). */
+  wrapGap?: Dimension;
   /** For the rest of a table split across pages: the first model row still
    *  to place (the header rows are repeated above it). Absent (or `0`) for
    *  a whole resource. */
@@ -86,15 +109,24 @@ export interface PlannedFloat {
   callout?: { startIdx: number };
 }
 
+/** The document default for `placement.shrink` (`layout.floatShrink`). */
+export interface FloatShrinkDefault {
+  mode: FloatShrinkMode;
+  minScale: number;
+}
+
 /** Resolve a resource's placement: own `placement` → its type's
  *  `defaultPlacement` → the built-in default (`auto` / `column`). A rotated
  *  resource is always a page-span float; an inline (`here`) embed is never
  *  rotated, and neither is any resource of a vertical flow (`noRotation`:
- *  every resource there stands upright, in its own span). */
+ *  every resource there stands upright, in its own span). `shrink` falls
+ *  back to `shrinkDefault` (`layout.floatShrink`), and applies to upright
+ *  pictures only (bitmap, SVG, video poster). */
 export function resolveResourcePlacement(
   resource: Resource,
   type: ResourceType | undefined,
   noRotation = false,
+  shrinkDefault?: FloatShrinkDefault,
 ): ResolvedPlacement {
   const position =
     resource.placement?.position ?? type?.defaultPlacement?.position ?? 'auto';
@@ -107,7 +139,13 @@ export function resolveResourcePlacement(
   const align = startEndAsLeftRight(resource.placement?.align ?? type?.defaultPlacement?.align ?? 'left');
   const captionSide = resource.placement?.captionSide ?? type?.defaultPlacement?.captionSide ?? false;
   const columns = floatColumnCount(resource.placement?.columns ?? type?.defaultPlacement?.columns);
-  return { position, span, widthFraction, align, captionSide, columns, ...(rotate ? { rotate } : {}) };
+  const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
+  const shrink = picture && !rotate && position !== 'here'
+    ? floatShrinkModeOf(resource.placement?.shrink) ?? floatShrinkModeOf(type?.defaultPlacement?.shrink) ?? shrinkDefault?.mode ?? 'never'
+    : 'never';
+  const minScale = floatMinScaleOf(resource.placement?.minScale) ?? floatMinScaleOf(type?.defaultPlacement?.minScale)
+    ?? shrinkDefault?.minScale ?? DEFAULT_FLOAT_MIN_SCALE;
+  return { position, span, widthFraction, align, captionSide, columns, shrink, minScale, ...(rotate ? { rotate } : {}) };
 }
 
 /**
@@ -132,6 +170,11 @@ export function computeFloatPlan(
    *  resource is first referred to in: a styled section may set its own
    *  writing mode). */
   noRotation: boolean | ((blockIdx: number) => boolean) = false,
+  /** `layout.floatShrink`: the default of `placement.shrink`. */
+  shrinkDefault?: FloatShrinkDefault,
+  /** `layout.wrap`: how a float that asks for text wrap is set (#627);
+   *  absent, no float wraps. */
+  wrapSettings?: ResolvedTextWrapConfig,
 ): PlannedFloat[] {
   const noRotationAt = typeof noRotation === 'function' ? noRotation : () => noRotation;
   const resourceById = new Map<string, Resource>();
@@ -149,8 +192,22 @@ export function computeFloatPlan(
     if (!resource) return;
     const type = typeById.get(resource.typeId);
     const upright = noRotationAt(blockIdx);
-    const { position, span, rotate, widthFraction, align, captionSide, columns } = resolveResourcePlacement(resource, type, upright);
+    const { position, span, rotate, widthFraction, align, captionSide, columns, shrink, minScale } = resolveResourcePlacement(resource, type, upright, shrinkDefault);
     if (position === 'here') return;
+    // Text wrap (#627): a one-column float of horizontal text, upright,
+    // its caption under it; any other keeps its band whole.
+    const wrap = wrapSettings && !upright && !rotate && span === 'column' && columns === 1 && !captionSide
+      ? resolveResourceWrap(resource, type, wrapSettings)
+      : undefined;
+    if (wrap) {
+      plan.push({
+        resourceId, firstBlockIdx: blockIdx, position, span,
+        widthFraction: wrap.width, align: wrap.side, wrap: wrap.side,
+        ...(wrap.gap ? { wrapGap: wrap.gap } : {}),
+        ...(shrink !== 'never' ? { shrink, minScale } : {}),
+      });
+      return;
+    }
     plan.push({
       resourceId, firstBlockIdx: blockIdx, position, span,
       ...(rotate ? { rotate } : {}),
@@ -160,6 +217,7 @@ export function computeFloatPlan(
         : upright && align !== 'left' ? { align } : {}),
       ...(captionSide && span === 'column' && columns === 1 ? { captionSide } : {}),
       ...(columns > 1 && span === 'column' && !rotate ? { columns } : {}),
+      ...(shrink !== 'never' && !upright ? { shrink, minScale } : {}),
     });
   };
 

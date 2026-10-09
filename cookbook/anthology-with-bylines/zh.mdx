@@ -78,6 +78,6 @@ Markdown中的`:::toc`为每个列入的标题印一条目录项：编号、标�
 
 ## 常见问题
 
-- Hazlitt在句子中间引用诗句。段落不保留换行，所以每行诗都单独成段，放在`:::paragraphs{style="verse"}`容器里，诗后接续的句子用不缩进的`runon`样式。如果用Markdown引用块，它会印成固定的`#666666`灰色斜体，带正文的首行缩进而没有左右缩进，1.4.1里也没有设置可以改变这一点。
+- Hazlitt在句子中间引用诗句。诗句放在`:::verse{style="verse" align=start}`块里，Markdown的一行就是一行诗，缩进8 mm，诗后接续的句子用不缩进的`runon`样式。如果用Markdown引用块，它会印成固定的`#666666`灰色斜体，带正文的首行缩进而没有左右缩进，1.4.1里也没有设置可以改变这一点。
 - 标题缺少的属性什么也不印，也不报警告。缺了`author="…"`，这篇随笔的署名行和左页书眉都是空的，目录中标题下的那一行也会消失。
 - 第2步的14.4 pt只适用于Gloock。换其他字体时，要先查出Chrome把它的中线放在基线之上多远：设`textBaseline = 'middle'`，`measureText('I').alphabeticBaseline`返回这个距离的相反数，单位是像素。然后把`numberFontSize`设为0.3 × 目录项字号除以这个以em计的距离（Hanken Grotesk是0.2675 em）。

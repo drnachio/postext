@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { basename, extname, join } from 'node:path';
 import type { PostextConfig, Resource } from 'postext';
-import { bitmapSize, bundleBaseConfig, createBundle, svgSize } from 'postext/bundle';
-import { analyzeDocx, emptyTemplate, parseTemplate, readDocx, wordToPostext, type ImportResult } from 'postext/word';
+import { bitmapInfo, bundleBaseConfig, createBundle, svgSize } from 'postext/bundle';
+import { analyzeDocx, emptyTemplate, parseTemplate, pictureResolution, readDocx, wordToPostext, type ImportResult } from 'postext/word';
 import { CliError, UsageError } from '../args';
 import type { CommandContext } from '../context';
 import { deepMerge } from '../input';
@@ -29,8 +29,12 @@ function importedResources(result: ImportResult, files: Map<string, Uint8Array>)
     if (!format) continue;
     const fileId = `resources/${pic.id}.${EXT[format]}`;
     files.set(fileId, pic.media.bytes);
-    const size = bitmapSize(pic.media.bytes) ?? { width: 0, height: 0 };
-    out.push({ id: pic.id, typeId: 'figure', kind: 'bitmap', bitmap: { fileId, format, width: size.width, height: size.height }, ...meta });
+    const info = bitmapInfo(pic.media.bytes);
+    const size = info ?? { width: 0, height: 0 };
+    // The resolution the picture was printed at in Word (its extent), else
+    // the one its file states (#631).
+    const fileResolution = pictureResolution(pic, size.width) ?? info?.resolution?.x;
+    out.push({ id: pic.id, typeId: 'figure', kind: 'bitmap', bitmap: { fileId, format, width: size.width, height: size.height, ...(fileResolution ? { fileResolution } : {}) }, ...meta });
   }
   for (const t of result.tables) {
     out.push({ id: t.id, typeId: 'table', kind: 'table', table: { model: t.model }, ...(t.caption ? { caption: t.caption } : {}), createdAt: 0, updatedAt: 0 });

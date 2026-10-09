@@ -16,6 +16,7 @@ import type {
   CodeNode,
   TabItem,
   VerseNode,
+  WrapFloat,
 } from './model';
 import { bridgeLinks, formatKey, idOf, linkKey, wrapFormat, xmlAttr, xmlText } from './inline';
 
@@ -376,7 +377,8 @@ class Writer {
         const pull = node.pullQuote
           ? ` epub:type="pullquote"${node.pullQuote === 'echo' ? ' role="doc-pullquote" aria-hidden="true"' : ''}`
           : '';
-        return `<aside${this.classAttr(['pt-callout', node.styleId && idOf('pt-callout-', node.styleId), node.pullQuote && 'pt-pullquote'])}${pull}>\n${title}${this.nodes(node.children)}\n</aside>`;
+        const wrap = this.wrapAttrs(node.wrap);
+        return `<aside${this.classAttr(['pt-callout', node.styleId && idOf('pt-callout-', node.styleId), node.pullQuote && 'pt-pullquote', wrap.cls])}${wrap.style}${pull}>\n${title}${this.nodes(node.children)}\n</aside>`;
       }
       case 'figure':
         return this.figure(node);
@@ -551,6 +553,15 @@ class Writer {
     return video.linkPoster && video.link ? `<a class="pt-video-link" href="${xmlAttr(video.link)}">${picture}</a>` : picture;
   }
 
+  /** The class and style of a figure or a box text wrapped round in
+   *  print (#627): floated to its side, its share of the text wide, the
+   *  gap on the text's side. */
+  private wrapAttrs(wrap: WrapFloat | undefined): { cls: string; style: string } {
+    if (!wrap) return { cls: '', style: '' };
+    const margin = wrap.side === 'left' ? `margin-right:${wrap.gap}%` : `margin-left:${wrap.gap}%`;
+    return { cls: `pt-wrap pt-wrap-${wrap.side}`, style: ` style="width:${wrap.width}%;${margin}"` };
+  }
+
   private figure(node: Extract<Node, { k: 'figure' }>): string {
     const href = node.fileId ? this.ctx.imageHref(node.fileId) : undefined;
     const body = node.video
@@ -565,14 +576,16 @@ class Writer {
     // the picture when there is no caption), a space apart, so a reader
     // without the style sheet, or reading the text aloud, does not run the
     // caption's last word into the note's first.
+    const wrap = this.wrapAttrs(node.wrap);
+    const open = `<figure id="${node.id}"${wrap.cls ? ` class="${wrap.cls}"` : ''}${wrap.style}>`;
     if (node.caption.length === 0) {
-      return `<figure id="${node.id}">${pre}${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
+      return `${open}${pre}${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
     }
     if (node.captionAbove) {
-      return `<figure id="${node.id}"><figcaption>${pre}${this.caption(node.caption)}</figcaption>\n${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
+      return `${open}<figcaption>${pre}${this.caption(node.caption)}</figcaption>\n${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
     }
     const caption = `<figcaption>${this.caption(node.caption)}${note ? ` <span class="pt-note">${note}</span>` : ''}</figcaption>`;
-    return `<figure id="${node.id}">${pre}${body}\n${caption}</figure>`;
+    return `${open}${pre}${body}\n${caption}</figure>`;
   }
 
   private cell(cell: TableCellNode, scope: string): string {
@@ -613,8 +626,16 @@ class Writer {
     const order = [...rows.keys()].sort((a, b) => a - b);
     const head = order.filter((r) => r < node.headerRows && rows.get(r)!.every((c) => c.header));
     const body = order.filter((r) => !head.includes(r));
+    // A body row heads a group when its only cell runs across every column
+    // (in a table of several) or all its cells are header cells: with
+    // booktabs group rules it is ruled above (#625).
+    const colCount = Math.max(0, ...[...node.cells.values()].map((c) => c.col + c.colSpan));
+    const heads = (r: number) => {
+      const cells = rows.get(r)!;
+      return (cells.length === 1 && cells[0]!.colSpan >= colCount && colCount > 1) || cells.every((c) => c.header);
+    };
     const row = (r: number, inHead: boolean) =>
-      `<tr>${rows.get(r)!.sort((a, b) => a.col - b.col).map((c) => this.cell(c, inHead ? 'col' : c.col === 0 ? 'row' : '')).join('')}</tr>`;
+      `<tr${this.classAttr([!inHead && node.groupRules && heads(r) && 'pt-group'])}>${rows.get(r)!.sort((a, b) => a.col - b.col).map((c) => this.cell(c, inHead ? 'col' : c.col === 0 ? 'row' : '')).join('')}</tr>`;
     const widths = node.columnWidths && node.columnWidths.every((w) => w > 0) ? node.columnWidths : undefined;
     const total = widths?.reduce((a, b) => a + b, 0) ?? 0;
     const cols = widths ? `<colgroup>${widths.map((w) => `<col style="width:${Math.round((w / total) * 1000) / 10}%"/>`).join('')}</colgroup>\n` : '';
@@ -623,7 +644,7 @@ class Writer {
     const tbody = body.length > 0 ? `<tbody>\n${body.map((r) => row(r, false)).join('\n')}\n</tbody>\n` : '';
     const note = node.note.length > 0 ? `\n<p class="pt-note">${this.inline(node.note)}</p>` : '';
     const pre = this.inline(node.pre);
-    return `<div class="pt-table">${pre}<table id="${node.id}">\n${caption}${cols}${thead}${tbody}</table>${note}</div>`;
+    return `<div class="pt-table">${pre}<table id="${node.id}"${this.classAttr([node.styleClass])}>\n${caption}${cols}${thead}${tbody}</table>${note}</div>`;
   }
 
   private toc(node: TocNode): string {

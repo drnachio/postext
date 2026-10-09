@@ -16,13 +16,37 @@ import type {
   ResolvedDesignRuleElement,
   ResolvedDesignSlot,
   ResolvedDesignTextElement,
+  TextOverflow,
 } from '../types';
 import { DEFAULT_MAIN_COLOR } from './shared';
 import { dimensionToPx } from '../units';
 
 export type HeaderFooterSlotKind = 'header' | 'footer';
 
+/** Where a design slot is painted (#628): a running head or folio
+ *  (`'header'`, `'footer'`, a heading style's own included), a heading
+ *  design (`'heading'`: `advancedDesign.slot`, an opener or an in-column
+ *  title), a part page and its verso (`'part'`), or a part row of the
+ *  contents (`'tocRow'`). It sets the default `overflow` of the slot's text
+ *  elements ({@link defaultTextOverflow}). */
+export type DesignSlotKind = HeaderFooterSlotKind | 'heading' | 'part' | 'tocRow';
+
+/** The `overflow` of a text element of a `kind` slot that sets none: a
+ *  heading or part title wraps onto more lines, a running head, a folio
+ *  and a contents part row (whose height is fixed) end in `…`. */
+export function defaultTextOverflow(kind: DesignSlotKind): TextOverflow {
+  return kind === 'heading' || kind === 'part' ? 'wrap' : 'ellipsis-end';
+}
+
+/** The running-head side a legacy (pre-placement) slot of `kind` is
+ *  migrated as: a footer's anchors from the foot, every other from the
+ *  head. */
+function legacyKind(kind: DesignSlotKind): HeaderFooterSlotKind {
+  return kind === 'footer' ? 'footer' : 'header';
+}
+
 const DEFAULT_MARGIN_FROM_BODY: Dimension = { value: 6, unit: 'pt' };
+const EMPTY_SLOT: ResolvedDesignSlot = { elements: [] };
 
 function mainColor(): ColorValue {
   return { ...DEFAULT_MAIN_COLOR };
@@ -30,7 +54,9 @@ function mainColor(): ColorValue {
 
 export const DEFAULT_HEADER_FOOTER_SLOT: ResolvedDesignSlot = { elements: [] };
 
-/** Reference defaults for a freshly-created text element. */
+/** Reference defaults for a freshly-created text element. Its `overflow`
+ *  is a running head's: an element that sets none takes its slot's
+ *  ({@link defaultTextOverflow}). */
 export const DEFAULT_TEXT_ELEMENT: ResolvedDesignTextElement = {
   kind: 'text',
   id: 'text',
@@ -167,8 +193,10 @@ export const DEFAULT_FOOTER_SLOT: ResolvedDesignSlot = {
   ],
 };
 
-function defaultSlotFor(kind: HeaderFooterSlotKind): ResolvedDesignSlot {
-  return kind === 'header' ? DEFAULT_HEADER_SLOT : DEFAULT_FOOTER_SLOT;
+function defaultSlotFor(kind: DesignSlotKind): ResolvedDesignSlot {
+  if (kind === 'header') return DEFAULT_HEADER_SLOT;
+  if (kind === 'footer') return DEFAULT_FOOTER_SLOT;
+  return EMPTY_SLOT;
 }
 
 // ---------------------------------------------------------------------------
@@ -343,7 +371,7 @@ export function resolveDesignLineHeight(
   return { lineHeight: equivalent, lineHeightLength: length };
 }
 
-function resolveTextElement(el: DesignTextElement, idx: number): ResolvedDesignTextElement {
+function resolveTextElement(el: DesignTextElement, idx: number, kind: DesignSlotKind): ResolvedDesignTextElement {
   return {
     kind: 'text',
     id: el.id ?? `text-${idx + 1}`,
@@ -366,7 +394,7 @@ function resolveTextElement(el: DesignTextElement, idx: number): ResolvedDesignT
     verticalAlign: el.verticalAlign ?? DEFAULT_TEXT_ELEMENT.verticalAlign,
     ...resolveDesignLineHeight(el.lineHeight, el.fontSize ?? DEFAULT_TEXT_ELEMENT.fontSize),
     letterSpacing: el.letterSpacing,
-    overflow: el.overflow ?? DEFAULT_TEXT_ELEMENT.overflow,
+    overflow: el.overflow ?? defaultTextOverflow(kind),
     hyphenate: el.hyphenate,
     ...(el.textTransform ? { textTransform: el.textTransform } : {}),
     ...(el.dropCap ? { dropCap: el.dropCap } : {}),
@@ -433,25 +461,27 @@ function resolveImageElement(el: DesignImageElement, idx: number): ResolvedDesig
   };
 }
 
-function resolveElement(el: DesignElement, idx: number): ResolvedDesignElement {
-  if (el.kind === 'text') return resolveTextElement(el, idx);
+function resolveElement(el: DesignElement, idx: number, kind: DesignSlotKind): ResolvedDesignElement {
+  if (el.kind === 'text') return resolveTextElement(el, idx, kind);
   if (el.kind === 'rule') return resolveRuleElement(el, idx);
   if (el.kind === 'image') return resolveImageElement(el, idx);
   return resolveBoxElement(el, idx);
 }
 
-/** Resolve a design slot used for header/footer. `undefined` returns the
- *  built-in default for `kind`. Legacy slots are migrated on the fly. */
+/** Resolve a design slot painted as `kind` (see {@link DesignSlotKind}),
+ *  which sets the default `overflow` of its text elements. `undefined`
+ *  returns the built-in default for `kind` (empty but for a running head
+ *  and a folio). Legacy slots are migrated on the fly. */
 export function resolveDesignSlot(
   slot: DesignSlot | undefined,
-  kind: HeaderFooterSlotKind = 'header',
+  kind: DesignSlotKind = 'header',
 ): ResolvedDesignSlot {
   if (slot === undefined) return cloneResolvedSlot(defaultSlotFor(kind));
   const maybeMigrated = isLegacyHeaderFooterSlot(slot)
-    ? migrateLegacyHeaderFooterConfig(slot, kind) ?? slot
+    ? migrateLegacyHeaderFooterConfig(slot, legacyKind(kind)) ?? slot
     : slot;
   return {
-    elements: (maybeMigrated.elements ?? []).map(resolveElement),
+    elements: (maybeMigrated.elements ?? []).map((el, i) => resolveElement(el, i, kind)),
   };
 }
 
@@ -468,17 +498,18 @@ function deepClone<T>(v: T): T {
 // Strip is intentionally minimal: only returns `undefined` when the slot
 // deep-equals the default (so persisted configs omit it entirely). Per-field
 // stripping across the new union is not worth the complexity — the slot is
-// stored as-is otherwise.
+// stored as-is otherwise. A heading, part or contents row slot has no
+// default to compare with, so it is never stripped.
 export function stripDesignSlotDefaults(
   slot: DesignSlot | undefined,
-  kind: HeaderFooterSlotKind = 'header',
+  kind: DesignSlotKind = 'header',
 ): DesignSlot | undefined {
   if (!slot) return undefined;
-  const def = defaultSlotFor(kind);
   const migrated = isLegacyHeaderFooterSlot(slot)
-    ? migrateLegacyHeaderFooterConfig(slot, kind) ?? slot
+    ? migrateLegacyHeaderFooterConfig(slot, legacyKind(kind)) ?? slot
     : slot;
-  if (JSON.stringify(migrated) === JSON.stringify(def)) return undefined;
+  if (kind !== 'header' && kind !== 'footer') return migrated;
+  if (JSON.stringify(migrated) === JSON.stringify(defaultSlotFor(kind))) return undefined;
   return migrated;
 }
 

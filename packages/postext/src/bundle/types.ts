@@ -43,6 +43,14 @@ export type BundleResourceSpec = Omit<Resource, 'createdAt' | 'updatedAt' | 'bit
   poster?: string;
   width?: number;
   height?: number;
+  /** Bitmap resources only (#631): the picture's ppi at its natural print
+   *  size (`Resource.bitmap.resolution`). */
+  resolution?: number;
+  /** Bitmap resources only: the resolution the file states
+   *  (`Resource.bitmap.fileResolution`). Read from the file when the
+   *  bundle is opened under `layout.bitmapResolution: 'file'` and the spec
+   *  omits it. */
+  fileResolution?: number;
   /** Source line / credits set under the resource (`Resource.note`). */
   note?: string;
 };
@@ -80,7 +88,7 @@ export interface BundleLocaleOverrides {
   /** How this language's edition opens, over the manifest's `view` (a
    *  vertical edition read whole, its translation a chapter at a time). */
   view?: BundleViewSpec;
-  resources?: (Pick<BundleResourceSpec, 'id'> & Partial<Pick<BundleResourceSpec, 'caption' | 'note' | 'altText' | 'table' | 'file' | 'pdfFile' | 'poster' | 'video' | 'width' | 'height'>>)[];
+  resources?: (Pick<BundleResourceSpec, 'id'> & Partial<Pick<BundleResourceSpec, 'caption' | 'note' | 'altText' | 'table' | 'file' | 'pdfFile' | 'poster' | 'video' | 'width' | 'height' | 'resolution' | 'fileResolution'>>)[];
 }
 
 /** What a canvas lays out: the active chapter (continued after the ones
@@ -159,10 +167,31 @@ export interface BundleIdScheme {
   font: (file: string) => string;
 }
 
-/** Intrinsic pixel size of a picture. */
+/** Intrinsic pixel size of a picture. A bitmap's may carry the
+ *  resolution its file states (see {@link BitmapInfo}). */
 export interface BundleImageSize {
   width: number;
   height: number;
+  resolution?: BitmapFileResolution;
+}
+
+/** Where a bitmap's resolution was read: a PNG `pHYs` chunk, a JPEG JFIF
+ *  header, or EXIF (JPEG or WebP). */
+export type BitmapResolutionSource = 'pHYs' | 'jfif' | 'exif';
+
+/** The resolution a bitmap's file states, in pixels per inch. */
+export interface BitmapFileResolution {
+  x: number;
+  y: number;
+  source: BitmapResolutionSource;
+}
+
+/** A bitmap's pixel size and the resolution its file states, if any
+ *  (`bitmapInfo`). */
+export interface BitmapInfo {
+  width: number;
+  height: number;
+  resolution?: BitmapFileResolution;
 }
 
 /** A chapter as read from a bundle. `title` is the manifest's (possibly

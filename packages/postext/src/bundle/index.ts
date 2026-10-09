@@ -13,7 +13,7 @@ export { readBundle, planBundle, resolveBundleFiles, bundleBaseConfig, EXPORTABL
 export type { ReadBundleOptions, ReadBundleResult, BundleMeta, BundleContent, BundleLocaleContent, PlannedFile, BundlePlan, BundleByteSources, ResolvedBundleFiles } from './codec';
 export { openBundleZip, zipBundle, POSTEXT_EXTENSION, POSTEXT_MIME, MANIFEST_FILE } from './zip';
 export type { OpenedBundleZip, ZipBundleOptions } from './zip';
-export { CONFIG_VERSION, LEGACY_MATH_SIZE, migrateConfig, pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHardBreaks, pinLegacyCodeBlocks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyPairedIndents, pinLegacyVerseLayout, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking } from './configVersion';
+export { CONFIG_VERSION, LEGACY_MATH_SIZE, migrateConfig, pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHardBreaks, pinLegacyCodeBlocks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyPairedIndents, pinLegacyVerseLayout, pinLegacyVerseTightening, pinLegacyDesignOverflow, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking } from './configVersion';
 export type { MigrateConfigOptions } from './configVersion';
 export {
   isBundleManifest,
@@ -41,6 +41,7 @@ export {
   resourceFromSpec,
   svgSize,
   bitmapSize,
+  bitmapInfo,
 } from './manifest';
 export type { BundleFontFiles } from './manifest';
 export type {
@@ -58,6 +59,9 @@ export type {
   BundleFileReader,
   BundleIdScheme,
   BundleImageSize,
+  BitmapInfo,
+  BitmapFileResolution,
+  BitmapResolutionSource,
   BundleChapter,
   BundleBlob,
   BundleFontFile,

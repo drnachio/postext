@@ -75,10 +75,10 @@ Lincoln’s address at the dedication of the Soldiers’ National Cemetery, Gett
 
 11. Study Source A, then answer every part on the lines on page 4.
   1. Lincoln counts back “four score and seven years” in his first line.
-    1. Which year is he counting back to? :chip[1 mark]{style="marks"}
-    2. Explain why Lincoln dated the nation’s birth from that year, and not from 1787, when the Constitution was written. :chip[2 marks]{style="marks"}
-  2. Lincoln says the war is “testing whether that nation … can long endure”. Describe two ways in which the Union was stronger in November 1863 than in January. :chip[4 marks]{style="marks"}
-  3. “The address honours the dead but says little about the future of the nation.” How far do you agree? Explain your answer with Source A and your own knowledge. :chip[8 marks]{style="marks"}
+    1. Which year is he counting back to? :tab :chip[1 mark]{style="marks"}
+    2. Explain why Lincoln dated the nation’s birth from that year, and not from 1787, when the Constitution was written. :tab :chip[2 marks]{style="marks"}
+  2. Lincoln says the war is “testing whether that nation … can long endure”. Describe two ways in which the Union was stronger in November 1863 than in January. :tab :chip[4 marks]{style="marks"}
+  3. “The address honours the dead but says little about the future of the nation.” How far do you agree? Explain your answer with Source A and your own knowledge. :tab :chip[8 marks]{style="marks"}
 
 :::pagebreak
 

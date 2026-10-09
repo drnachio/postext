@@ -1805,8 +1805,7 @@
       "ja": "韻文の行番号、それに対応する注",
       "pt": "Numeração de versos e notas remetidas a ela"
     },
-    "theme": "type",
-    "gap": "line-numbers"
+    "theme": "type"
   },
   "Q83": {
     "kind": "how",

@@ -18,19 +18,19 @@ pageNotes: { "1": "Capítol u, «La veu»: un avantítol vermell espaiat, un tí
 
 <Excerpt region="literary" />
 
-El capítol u no porta estil, així que pren el disseny del nivell 1, del qual parteix cada estil ([la resposta curta](#la-resposta-curta) mostra el nivell i els estils). Les caplletres només existeixen al text de disseny, de manera que el primer paràgraf del capítol surt de `lead="…"` a la línia del títol i `lead()` el compon a l'obertura; el cos del text continua a sota. El motor recolza la lletra a la cinquena línia de base, però amb el cos per defecte la majúscula mesura el mateix que les cinc caixes de línia juntes i sobresurt 2,2 mm per sobre de les majúscules de la primera línia. `dropSize()` calcula el cos a partir de l'alçada de les majúscules de Lora i Fraunces (0,7 em), i així la M queda enrasada per dalt amb elles.
+El capítol u no porta estil, així que pren el disseny del nivell 1, del qual parteix cada estil ([la resposta curta](#la-resposta-curta) mostra el nivell i els estils). El primer paràgraf del capítol és al Markdown, dins d'un grup `:::paragraphs{style="lead"}` un cos més gran que el text (12/17 punts enfront dels 10,8/14,5), i el `dropCap` del nivell l'obre ([caplletres](/ca/docs/configuration#caplletres)): la M es recolza a la cinquena línia de base i, sense `fontSize`, la seva part alta queda enrasada amb les majúscules de la primera línia, i totes dues alçades de majúscula es mesuren a Fraunces i Lora. L'obertura acaba amb una caixa buida, `room()`, 17 mm sota el títol, on comença l'entradeta; un `:::space` sota l'entradeta deixa una línia i fa començar el text arran.
 
 ### 2 · Emmarca el títol amb dues caixes
 
 <Excerpt region="framed" />
 
-L'ordre de l'array és l'ordre de pintat: primer les caixes i al damunt el text; el floró és un element d'imatge, que dibuixa un recurs SVG registrat que no es numera ni se cita mai. Un element d'imatge també serveix per donar a cada capítol la seva pròpia foto: des de postext 1.8 el seu `resourceId` admet marcadors, així que amb `resourceId: '{attr.foto}'` un mateix estil dibuixa la foto que anomena cada títol, `# El marco {style="framed" foto="lago"}`, com les receptes de <RecipeLink slug="recipe-card">la fitxa de cuina</RecipeLink> ([elements d'imatge](/ca/docs/configuration#elements-dimatge)). L'estil `framed` de la resposta curta fa servir `palette` per tornar blau `accent` a les pàgines d'aquest capítol, de manera que els filets, l'avantítol i el foli surten en blau, i els seus `margins` centren la caixa de text sota el marc. A la 1.4.1, el `color` d'una caplletra no segueix la paleta de la secció; per això la inicial porta el blau escrit amb `col('lapis')`.
+L'ordre de l'array és l'ordre de pintat: primer les caixes i al damunt el text; el floró és un element d'imatge, que dibuixa un recurs SVG registrat que no es numera ni se cita mai. Un element d'imatge també serveix per donar a cada capítol la seva pròpia foto: des de postext 1.8 el seu `resourceId` admet marcadors, així que amb `resourceId: '{attr.foto}'` un mateix estil dibuixa la foto que anomena cada títol, `# El marco {style="framed" foto="lago"}`, com les receptes de <RecipeLink slug="recipe-card">la fitxa de cuina</RecipeLink> ([elements d'imatge](/ca/docs/configuration#elements-dimatge)). L'estil `framed` de la resposta curta fa servir `palette` per tornar blau `accent` a les pàgines d'aquest capítol, de manera que els filets, l'avantítol i el foli surten en blau, i els seus `margins` centren la caixa de text sota el marc. El `dropCap` del mateix estil porta `col('accent')`, que la paleta també torna blau, i així la L de tres línies fa joc amb el marc.
 
 ### 3 · Apila el títol i posa la inicial en una caixa
 
 <Excerpt region="stacked" />
 
-Els talls del títol s'escriuen al Markdown: `# Salta \\ a la \\ vista.` parteix `{titleText}` a cada `\\`, mentre que les capçaleres i els marcadors del PDF llegeixen el títol en una sola línia ([salts de línia en els títols](/ca/docs/document-format#salts-de-línia-als-títols)). El camp penja de la vora superior de la zona de sang, a tota l'amplada i amb 130 mm d'alçada, i l'entradeta comença 8 mm per sota. La inicial en caixa es fa amb dos elements. La caplletra de l'entradeta compon la M en tres línies, i la caixa magenta que es pinta abans es calcula a partir de la caixa de línia de l'entradeta i de les mides de Geist Mono, de manera que el color que queda a sobre i a sota de la M mesura el mateix que el seu blanc lateral.
+Els talls del títol s'escriuen al Markdown: `# Salta \\ a la \\ vista.` parteix `{titleText}` a cada `\\`, mentre que les capçaleres i els marcadors del PDF llegeixen el títol en una sola línia ([salts de línia en els títols](/ca/docs/document-format#salts-de-línia-als-títols)). El camp penja de la vora superior de la zona de sang, a tota l'amplada i amb 130 mm d'alçada, i l'entradeta comença a la primera línia de la retícula, 8 mm per sota (`TEXT_TOP`). La inicial en caixa es fa amb dues peces. El `dropCap` de l'estil compon la M en blanc sobre tres línies de l'entradeta, i l'obertura pinta a sota una caixa magenta, situada a partir de `TEXT_TOP`, de l'interlineat de l'entradeta i de les mides de Geist Mono, de manera que el color que queda a sobre i a sota de la M mesura el mateix que el seu blanc lateral. La caixa no ocupa lloc a l'obertura (`reserve: false`); una caixa `room` buida acaba l'obertura on comença l'entradeta.
 
 ### 4 · Dona al manual la seva insígnia, dues columnes i les seves capçaleres
 
@@ -42,7 +42,7 @@ La insígnia és un element de text amb fons i farciment interior però sense am
 
 <Excerpt region="quiet" />
 
-L'avantítol penja 92 mm per sota del començament de la caixa de text, i la inicial elevada és una caplletra d'una sola línia: el seu peu es recolza a la primera línia de base i, amb 46 punts, sobresurt cap al blanc de dalt en lloc d'enfonsar-se al paràgraf. A l'estil `quiet`, `margins` estrenyen la mesura a 106 mm, `bodyStyle` compon el text en bandera a 12,5/17,5 punts, `footer` canvia el foli de l'obertura per un de petit a la cantonada exterior del peu i `palette` torna gris l'avantítol. En aquesta pàgina no s'imprimeix cap número de capítol, així que `numbered: false` només es notaria en un capítol afegit després de la coda, que continuaria sent el cinquè.
+L'avantítol penja 92 mm per sota del començament de la caixa de text, i la inicial elevada és la caplletra d'una sola línia de l'estil `quiet`: el seu peu es recolza a la primera línia de base i, amb 46 punts, sobresurt cap al blanc de dalt en lloc d'enfonsar-se al paràgraf. El paràgraf li reserva aquest espai per sobre en línies senceres, així que el `room` de l'obertura sota el títol només fa 3 mm. A l'estil `quiet`, `margins` estrenyen la mesura a 106 mm, `bodyStyle` compon el text en bandera a 12,5/17,5 punts, `footer` canvia el foli de l'obertura per un de petit a la cantonada exterior del peu i `palette` torna gris l'avantítol. En aquesta pàgina no s'imprimeix cap número de capítol, així que `numbered: false` només es notaria en un capítol afegit després de la coda, que continuaria sent el cinquè.
 
 ## Variants
 
@@ -57,16 +57,24 @@ Amb `'odd'`, tots els capítols comencen en pàgina senar i del segon al cinquè
 
 ### Deixa la caplletra en tres línies
 
-`dropSize()` rep el nombre de línies, així que una caplletra de tres línies també queda enrasada amb les majúscules de la primera.
+Sense `fontSize`, el cos segueix el nombre de línies, així que una caplletra de tres línies també queda enrasada amb les majúscules de la primera.
 
 ```diff
--    lines: 5, fontSize: dropSize(5), fontFamily: 'Fraunces', fontWeight: 400,
-+    lines: 3, fontSize: dropSize(3), fontFamily: 'Fraunces', fontWeight: 400,
+-  dropCap: { lines: 5, fontFamily: 'Fraunces', fontWeight: 400, color: col('accent'),
++  dropCap: { lines: 3, fontFamily: 'Fraunces', fontWeight: 400, color: col('accent'),
+```
+
+### Versaletes després de la inicial
+
+`leadIn` compon en versaletes les primeres paraules després de la lletra, com fan moltes novel·les; `words: 'line'` hi inclou tota la primera línia.
+
+```diff
+-    gap: mm(2.5) } });
++    gap: mm(2.5), leadIn: { words: 'line' } } });
 ```
 
 ## Errors freqüents
 
-- El text de disseny no es justifica mai, així que el primer paràgraf d'una obertura surt en bandera encara que el llibre vagi justificat. Dona-li un cos propi (aquí 12/17 punts enfront dels 10,8/14,5 del text) perquè la bandera sembli buscada.
-- La inicial en caixa està ajustada a mà a Lora 12/17, a la M de Geist Mono i a la línia de base del text de disseny, que la 1.4.1 situa a 0,8 de la caixa de línia (`BASE`) sense cap opció per llegir-la. Si canvies la font, el cos o l'interlineat de l'entradeta, la lletra inicial, el nombre de línies o la versió del motor, torna a comprovar la caixa contra les majúscules de la primera línia.
-- Una caplletra que ocupa totes les línies del seu paràgraf reserva igualment la seva caixa de línia completa: a la versió 1.4.1, l'alçada de l'obertura s'allarga 3,5 mm per sota de l'entradeta del capítol tres, i això pot baixar el text una línia de la retícula de base. Amb el camp a 130 mm d'alçada, aquest sobrant no afegeix cap línia de la retícula; si canvies l'alçada, revisa el blanc sota l'entradeta.
+- Les entradetes es componen en bandera, com a l'obertura d'una revista; una entradeta justificada al costat d'una inicial de cinc línies pot obrir molt els espais en una línia de poques paraules.
+- La caixa magenta està ajustada a mà a Lora 12/17, a la M de Geist Mono i a la línia de base de la línia, a 0,8 de la seva caixa de línia (`BASE`). Si canvies la font, el cos o l'interlineat de l'entradeta, la lletra inicial, el nombre de línies o l'alçada del camp, torna a comprovar la caixa contra les majúscules de la primera línia.
 - Els títols no es giren mai ni van en vertical: el text de disseny és sempre horitzontal. Apila les paraules amb `\\`, com fa el capítol tres.

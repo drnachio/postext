@@ -7,6 +7,7 @@ import { fill } from './fillTokens';
 export function preflightTitle(check: PreflightCheck, labels: SandboxLabels): string {
   switch (check.kind) {
     case 'lowImageResolution': return labels.preflightLowImageResolution;
+    case 'declaredPixelsMismatch': return labels.preflightDeclaredPixelsMismatch;
     case 'rgbImage': return labels.preflightRgbImage;
     case 'thinRule': return labels.preflightThinRule;
     case 'smallProcessText': return labels.preflightSmallProcessText;
@@ -32,6 +33,11 @@ export function preflightDetail(check: PreflightCheck, labels: SandboxLabels): s
   switch (check.kind) {
     case 'lowImageResolution':
       return fill(labels.preflightLowImageResolutionDetail, { ppi: check.ppi, min: check.minimum });
+    case 'declaredPixelsMismatch':
+      return fill(labels.preflightDeclaredPixelsMismatchDetail, {
+        declared: `${check.declared.width}×${check.declared.height}`,
+        actual: `${check.actual.width}×${check.actual.height}`,
+      });
     case 'rgbImage':
       return check.converted ? labels.preflightRgbImageConverted : labels.preflightRgbImageKept;
     case 'thinRule':

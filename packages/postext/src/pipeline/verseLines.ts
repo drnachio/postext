@@ -12,7 +12,11 @@
  * - A line's indent is its leading spaces × `indentStep` (a tab counts
  *   four spaces, an ideographic space two). A stepped line (`+ …`) starts
  *   where the line above ended, a word space on.
- * - A line wider than the measure turns over: `turnover="hang"` sets the
+ * - A line a little wider than the measure tightens its word spaces, down
+ *   to `bodyText.minWordSpacing` of their natural width (the shrink limit
+ *   of justified text), and stays on one line (`tighten`, default on); the
+ *   segments carry the tighter spaces, so every renderer paints them.
+ * - A line still wider than the measure turns over: `turnover="hang"` sets the
  *   rest on the line after it, `hang` (the style's `hangingIndent`, else
  *   `bodyText.verse.hang`) in from the line's own start; `turnover="right"`
  *   sets it flush with the end side behind an opening bracket
@@ -63,6 +67,9 @@ export interface VerseLinesSettings {
   /** Stanzas of this many lines or fewer stay whole; 0: off. */
   keepStanzas: number;
   align: 'center' | 'start';
+  /** Whether a line too wide for the measure tightens its word spaces
+   *  (down to `bodyText.minWordSpacing`) before it turns over. */
+  tighten: boolean;
 }
 
 /** Whether a stanza block is set line by line: a stanza of the line layout,
@@ -72,6 +79,13 @@ export interface VerseLinesSettings {
 export function versesLineByLine(raw: ContentBlock, resolved: ResolvedConfig): boolean {
   const stanza = raw.verse?.stanza;
   return stanza !== undefined && !(stanza.auto && resolved.bodyText.verse.layout === 'bayt');
+}
+
+/** `tighten=false` / `tighten=true` on a fence; undefined when absent or
+ *  neither. */
+function switchAttr(value: string | undefined): boolean | undefined {
+  const v = value?.trim().toLowerCase();
+  return v === 'true' || v === '' ? true : v === 'false' ? false : undefined;
 }
 
 /** A whole number of lines or none (`keepStanzas=5`). */
@@ -121,6 +135,7 @@ export function verseLinesSettings(
     stanzaSpacePx: Math.max(0, stanzaSpaceAttr(attrs.stanzaSpace, style.lineHeightPx, dpi, em) ?? cfg.stanzaSpace * style.lineHeightPx),
     keepStanzas: countAttr(attrs.keepStanzas) ?? cfg.keepStanzas,
     align: align === 'start' || align === 'center' ? align : vertical ? 'start' : 'center',
+    tighten: switchAttr(attrs.tighten) ?? cfg.tighten,
   };
 }
 
@@ -152,7 +167,37 @@ export interface VerseLinesInput {
   /** The poem's direction and its frame's. */
   direction: 'ltr' | 'rtl';
   frameDirection: 'ltr' | 'rtl';
+  /** `bodyText.minWordSpacing`: how far a word space may tighten, as a
+   *  share of its natural width. */
+  minWordSpacing: number;
   cache?: MeasurementCache;
+}
+
+/** A line's word spaces tightened, down to `minWordSpacing` of their
+ *  natural width each and in proportion to what each can give, so the
+ *  line comes to `excess` px narrower; undefined when they cannot give
+ *  that much. Fixed spaces (a `keepSpaces` caesura) are text and never
+ *  tighten, nor does a CJK autospace. The segments are copies: the
+ *  measured line stays as the cache holds it. */
+export function tightenedSegments(segments: readonly VDTLineSegment[], excess: number, minWordSpacing: number): { segments: VDTLineSegment[]; ratio: number } | undefined {
+  const floor = Math.max(0, Math.min(1, minWordSpacing));
+  const give = (seg: VDTLineSegment): number => (seg.kind === 'space' && !seg.autospace && !seg.labelTab ? Math.max(0, seg.width * (1 - floor)) : 0);
+  let natural = 0;
+  let shrinkable = 0;
+  for (const seg of segments) {
+    const g = give(seg);
+    if (g > 0) {
+      natural += seg.width;
+      shrinkable += g;
+    }
+  }
+  if (excess <= 0 || shrinkable <= 0 || excess > shrinkable + 1e-6) return undefined;
+  const share = Math.min(1, excess / shrinkable);
+  const out = segments.map((seg) => {
+    const g = give(seg);
+    return g > 0 ? { ...seg, width: seg.width - g * share } : seg;
+  });
+  return { segments: out, ratio: (natural - shrinkable * share) / natural };
 }
 
 /** Lay a stanza out (see the module comment). */
@@ -205,7 +250,9 @@ export function measureVerseLines(input: VerseLinesInput): MeasuredBlock {
   // The poem's lines in order, each with its natural width and indent: a
   // stepped line starts a word space past the end of the line above (its
   // last turnover's end), or flush with the end side when it would not fit.
-  interface Row { spans: InlineSpan[]; width: number; indent: number; stanza: number }
+  // A line too wide by no more than its word spaces can give is set
+  // tightened to the room left (`tight`), and its width is that room.
+  interface Row { spans: InlineSpan[]; line: VDTLine | undefined; width: number; indent: number; stanza: number; tight?: { segments: VDTLineSegment[]; ratio: number } }
   const rows: Row[] = [];
   let prevEnd = 0;
   for (const block of input.poem) {
@@ -213,11 +260,16 @@ export function measureVerseLines(input: VerseLinesInput): MeasuredBlock {
     if (!st) continue;
     stanzaRows(block.spans).forEach((spans, i) => {
       const info = st.lines[i] ?? { indent: 0 };
-      const width = widthOf(measureSpans(spans, ONE_LINE, base)[0]);
+      const line = measureSpans(spans, ONE_LINE, base)[0];
+      let width = widthOf(line);
       // An indent past half the measure would leave its turnovers no room.
       let indent = Math.min(info.indent * settings.indentStepPx, measure / 2);
       if (info.stepped && rows.length > 0) indent = Math.max(0, Math.min(prevEnd + space, measure - width));
-      rows.push({ spans, width, indent, stanza: st.index });
+      const tight = settings.tighten && line && indent + width > measure + 0.01
+        ? tightenedSegments(line.segments ?? [], indent + width - measure, input.minWordSpacing)
+        : undefined;
+      if (tight) width = measure - indent;
+      rows.push({ spans, line, width, indent, stanza: st.index, ...(tight ? { tight } : {}) });
       prevEnd = indent + width <= measure + 0.01 ? indent + width : endOfTurnover(spans, indent);
     });
   }
@@ -252,8 +304,12 @@ export function measureVerseLines(input: VerseLinesInput): MeasuredBlock {
   rows.forEach((row, i) => {
     if (row.stanza !== stanza.index) return;
     const verseLine = (turnover: boolean) => ({ stanza: stanza.index, line: i, turnover, ...(!turnover && row.indent > 0 ? { indent: row.indent } : {}) });
+    if (row.tight && row.line) {
+      push(row.line, row.tight.segments, x0 + row.indent, { ...verseLine(false), spaceRatio: row.tight.ratio });
+      return;
+    }
     if (row.indent + row.width <= measure + 0.01) {
-      const [line] = measureSpans(row.spans, ONE_LINE, base);
+      const line = row.line;
       if (line) push(line, line.segments ?? [], x0 + row.indent, verseLine(false));
       return;
     }

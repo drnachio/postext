@@ -396,7 +396,7 @@ describe('bundles written by postext 1.4 or earlier', () => {
       { readBlob: async () => null, readFont: async () => null },
     );
     const opened = openBundleZip(zipBundle(built.files));
-    expect((opened.manifest as { configVersion?: number }).configVersion).toBe(9);
+    expect((opened.manifest as { configVersion?: number }).configVersion).toBe(10);
     const loaded = await parseBundle(opened.manifest, opened.readFile, { locale: 'en', summary });
     expect(loaded.config.headings).toEqual({ fontFamily: 'Georgia' });
   });

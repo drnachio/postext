@@ -26,7 +26,7 @@ La diferència amb el xinès és als signes. Un llibre xinès del continent posa
 
 <Excerpt region="listing" />
 
-Postext no compon blocs de codi delimitats, així que el pen reescriu el Markdown abans de compondre. Cada línia del bloc es converteix en un paràgraf d'un recuadre tenyit, i cada `` `nom` ``, en un xip en BIZ UDGothic. La lletra hi compta: la cadena de l'exemple, ｶﾞｲﾄﾞ ＡＢＣ ①, necessita katakana de mitja amplada, lletres d'amplada completa i xifres encerclades, que una lletra de codi occidental no té. BIZ UDGothic compon el llatí de mitja amplada i el kana d'amplada completa amb pas fix, i el llistat conserva les columnes ([Xips en línia](/ca/docs/document-format#xips-en-línia)).
+La tanca és un [bloc de codi](/ca/docs/document-format#blocs-de-codi): Postext en compon les línies tal com estan escrites, en la lletra que indica `codeStyle`, dins d'un recuadre tenyit sota el títol `normalize.py` que porta la línia de la tanca ([llistats de codi](/ca/docs/configuration#llistats-de-codi)). `highlight: 'none'` deixa el llistat en una sola tinta, com la resta de la pàgina, i `codeStyle.inline` compon cada `` `nom` `` en la mateixa lletra, en verd blavós. La lletra hi compta: la cadena de l'exemple, ｶﾞｲﾄﾞ ＡＢＣ ①, necessita katakana de mitja amplada, lletres d'amplada completa i xifres encerclades, que una lletra de codi occidental no té. BIZ UDGothic compon el llatí de mitja amplada i el kana d'amplada completa amb pas fix, i un llistat compta cada caràcter d'amplada completa com dues cel·les, de manera que les columnes es mantenen.
 
 ### 3 · 図3-1 i 表3-1
 
@@ -70,4 +70,4 @@ Algunes editorials componen les paraules llatines enganxades al kana, sense el q
 
 - Una paraula llatina no es pot tallar dins d'una línia japonesa, així que una de llarga al final de línia deixa l'anterior espaiada entre els caràcters. El primer esborrany d'aquest capítol glossava els termes en anglès, 正準等価（canonical equivalence）, i dues línies van sortir fluixes; es van treure els termes anglesos allà on no ajudaven el lector.
 - Tria la lletra del codi pels caràcters que conté. M PLUS 1 Code, la primera que es va provar aquí, no té katakana de mitja amplada: la pantalla va recórrer a una lletra del sistema per a ｶﾞｲﾄﾞ i al PDF hi faltaven els glifs.
-- Un llistat és un recuadre i, per defecte, no es parteix. A la pàgina 43 només quedaven quatre línies sota 3.3, massa poques per al llistat, així que obre la pàgina 44.
+- Un llistat es divideix entre línies d'una pàgina a l'altra, amb almenys dues línies a cada costat (`codeStyle.splitMinLines`). A la pàgina 43, l'espai que queda sota 3.3 només admet el títol i una línia, no dues, així que el llistat sencer obre la pàgina 44; `keepTogether: true` manté cada llistat d'una peça.

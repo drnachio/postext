@@ -28,9 +28,9 @@ pageNotes: { "1": "卷首插图：一幅推想的Socartes矿区地图，用虚�
 
 <Excerpt region="opener" />
 
-编号模板只印数字（1、01、I、i、A、a），不印文字，所以*capítulo primero*来自标题自己的`ordinal`属性（[标题属性](/zh/docs/document-format#标题属性)）。Postext只在设计文字中绘制首字，而设计文字是齐左排的，并且只有在该文字设了`overflow: 'wrap'`时才会绘制。为了藏起不齐的右边，首字旁只放一行：`lines: 1`让首字抬高，与`lead`属性中的那一行并排，并反复调整`INITIAL_GAP`，直到这一行恰好排满，离行长只差0.1 mm。段落在Markdown中接着排，不缩进（[文字元素](/zh/docs/configuration#文本元素)）。章这一级的`marginBottom: 0`取代默认的外边距（默认值会多出一个空行），正文便紧接在导语下一行排起。
+编号模板只印数字（1、01、I、i、A、a），不印文字，所以*capítulo primero*来自标题自己的`ordinal`属性（[标题属性](/zh/docs/document-format#标题属性)）。首字属于章这一级：它的`dropCap`给每个一级标题后的第一段开头，段落就按原样写在Markdown里（[首字下沉](/zh/docs/configuration#首字下沉)）。`lines: 1`加上相当于三个行距的`fontSize`，让它成为抬高的首字，立在第一条基线上；第一行让出首字的宽度和默认间距，与段落其余各行一起两端对齐。字母高出第一行，段落会在上方以整行为单位为这段升高留出空间：这里是两行（`RISE`），所以`minHeight`让章首页在第`SINK - RISE`行结束，正文第一行仍落在第`SINK`行，即页面往下四分之一处。章这一级的`marginBottom: 0`取代默认的外边距（默认值会多出一个空行）。带首字下沉的段落不用首行缩进。
 
-<PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="Page 9: the chapter’s label and title, and the raised initial beside a first line that ends flush with the justified text under it." />
+<PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="第9页：本章的章序和标题，以及与两端对齐正文第一行并排的抬高首字。" />
 
 ### 4 · 地图作为Figura 1与章首相对
 
@@ -74,5 +74,5 @@ pageNotes: { "1": "卷首插图：一幅推想的Socartes矿区地图，用虚�
 ## 常见问题
 
 - 章首页正文起点下移九行而不是八行时，第11页短了一行，因为`avoidWidows`不允许在页面最后一行开始一个段落。修改设置或文字之后，要检查每页的页脚。
-- `lead`属性在句中（*…vino tranquila*）停下，Markdown段落从那里接着排（*y oscura la noche*），因为它恰好容纳首字旁放得下的那些词。换字体、字号、行长或`INITIAL_GAP`都会破坏这种恰好排满的效果：在两者之间挪动词语，直到这一行再次排满。
+- `RISE`是抬高的首字在正文上方留出的行数。换字体或字号会改变这段升高：较小的首字可能只需一行，这时除非`minHeight`随之调整，否则正文会上移一行。
 - 这几款字体的Fontsource latin文件中都没有星号三角⁂（U+2042），浏览器会从系统字体中取用。无论如何，西班牙语图书用三个隔开的星号标出段落分隔。

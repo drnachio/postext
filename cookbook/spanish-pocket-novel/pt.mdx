@@ -28,9 +28,9 @@ A margem inferior é calculada a partir do refile, da margem superior e de `LINE
 
 <Excerpt region="opener" />
 
-Os modelos de numeração só imprimem algarismos (1, 01, I, i, A, a), nunca palavras, por isso *capítulo primero* vem do atributo `ordinal` do próprio título ([atributos de título](/pt/docs/document-format#atributos-de-título)). O Postext só desenha uma capitular em texto de design, que é composto em bandeira, e só quando esse texto tem `overflow: 'wrap'`. Para esconder a borda irregular, a capitular recebe uma única linha: `lines: 1` a eleva ao lado da linha guardada no atributo `lead`, e `INITIAL_GAP` foi ajustado até essa linha terminar rente, a 0,1 mm do fim da medida. O parágrafo continua no Markdown sem recuo ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). O `marginBottom: 0` do nível de capítulo substitui a margem padrão, que acrescentaria uma linha em branco, e assim o texto continua na linha logo abaixo da linha de abertura.
+Os modelos de numeração só imprimem algarismos (1, 01, I, i, A, a), nunca palavras, por isso *capítulo primero* vem do atributo `ordinal` do próprio título ([atributos de título](/pt/docs/document-format#atributos-de-título)). A capitular vem do nível dos capítulos: o seu `dropCap` abre o primeiro parágrafo depois de cada título de nível 1, e o parágrafo se escreve no Markdown tal como se lê ([capitulares](/pt/docs/configuration#capitulares)). `lines: 1` com um `fontSize` de três entrelinhas faz dela uma capitular elevada, apoiada na primeira linha de base; a primeira linha é encurtada pela largura dela e pelo espaçamento padrão, e justificada com o resto do parágrafo. A letra sobe acima da primeira linha, e o parágrafo mantém essa subida livre acima dele em linhas inteiras: duas aqui (`RISE`), por isso `minHeight` termina a abertura em `SINK - RISE` linhas e a primeira linha do texto continua caindo na linha `SINK`, a um quarto da altura da página. O `marginBottom: 0` do nível de capítulo substitui a margem padrão, que acrescentaria uma linha em branco. Um parágrafo com capitular perde o recuo da primeira linha.
 
-<PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="Página 9: o rótulo e o título do capítulo, e a capitular elevada ao lado de uma primeira linha que termina rente ao texto justificado embaixo dela." />
+<PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="Página 9: o rótulo e o título do capítulo, e a capitular elevada ao lado da primeira linha do texto justificado." />
 
 ### 4 · O mapa fica de frente para o capítulo como Figura 1
 
@@ -74,5 +74,5 @@ Sem ajustes, os tipos espanhóis embutidos numeram as figuras dentro de cada tí
 ## Erros comuns
 
 - Um rebaixo de nove linhas em vez de oito deixou a página 11 com uma linha a menos, porque `avoidWidows` não deixaria um parágrafo começar na última linha da página. Depois de qualquer mudança nos ajustes ou no texto, confira o pé de cada página.
-- O atributo `lead` para no meio da frase (*…vino tranquila*), onde o parágrafo do Markdown continua (*y oscura la noche*), porque guarda exatamente as palavras que cabem ao lado da capitular. Outra fonte, outro corpo, outra medida ou outro `INITIAL_GAP` desfazem o ajuste rente: passe palavras de um para o outro até a linha terminar rente de novo.
+- `RISE` é o número de linhas que a capitular elevada mantém livres acima do texto. Outra fonte ou outro corpo mudam essa subida: uma inicial menor pode precisar de uma linha só, e o texto então começa uma linha mais acima, a menos que `minHeight` mude junto.
 - Nenhuma destas fontes tem o asterismo ⁂ (U+2042) no arquivo latin do Fontsource, então o navegador o tiraria de uma fonte do sistema. De todo modo, os livros espanhóis marcam a pausa com três asteriscos espaçados.

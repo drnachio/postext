@@ -14,11 +14,12 @@
   ],
   "features": {
     "primary": [
+      "verse",
       "paragraph-styles",
-      "vertical-space",
       "toc"
     ],
     "also": [
+      "vertical-space",
       "paragraph-indents",
       "escapes",
       "heading-numbering",
@@ -44,9 +45,7 @@
     "Q44",
     "Q73"
   ],
-  "gaps": [
-    "hard-line-breaks"
-  ],
+  "gaps": [],
   "gotchas": [
     "ragged-no-hyphenation",
     "digit-period-list",
@@ -113,15 +112,10 @@
       "followup": "EF-66",
       "package": "postext",
       "note": "the two ties in God’s Grandeur (the soil, bright wings.) sit in verse lines with no italic or bold, where U+00A0 holds; in a line with inline formatting it would still break"
-    },
-    {
-      "followup": "EF-128",
-      "package": "postext",
-      "note": "a paragraph style cannot indent a line and also hang its turnover (hangingIndent overrides firstLineIndent), so indentVerse() turns each pair of leading spaces into em spaces behind a word joiner and the verse style keeps only hangingIndent"
     }
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.23.0"
   },
   "kit": [
     "core",

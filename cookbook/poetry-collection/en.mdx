@@ -1,22 +1,22 @@
 ---
 title: "Poems set line by line"
-summary: "Each line of verse is a paragraph whose turnovers hang 4 em in. Em spaces hold the 1918 indents, and :::space puts one line between stanzas."
+summary: "Each poem is a :::verse block written as printed: the 1918 indents are leading spaces, turnovers hang 2 em past their line, blank lines part stanzas."
 plain: "A small book of four nature poems by Gerard Manley Hopkins. It shows how to keep each line of verse on its own, with the poet's original indents and a blank line between verses."
-description: "Four Hopkins poems set with Postext: a paragraph per line, the 1918 indents, hanging turnovers, :::space between stanzas and a contents page with dot leaders."
+description: "Four Hopkins poems set with Postext: :::verse blocks with the 1918 indents, hanging turnovers, a line between stanzas and a contents page with dot leaders."
 question: "How do I set poems line by line, with their indents, stanza breaks, hanging turnovers and no hyphenation?"
-aliases: ["poetry", "poem", "verse", "stanza", "stanza break", "line of verse", "indented line", "indent", "em space", "word joiner", "turnover", "turned line", "long lines", "hanging indent", "line breaks", "chapbook", "dot leaders", "dedication", "date line", "ornament", "fleuron", "tailpiece", "frontispiece", "half-title", "Gerard Manley Hopkins"]
+aliases: ["poetry", "poem", "verse", ":::verse", "stanza", "stanza break", "line of verse", "indented line", "indent", "turnover", "turned line", "long lines", "hanging indent", "line breaks", "chapbook", "dot leaders", "dedication", "date line", "ornament", "fleuron", "tailpiece", "frontispiece", "half-title", "Gerard Manley Hopkins"]
 pageNotes: { "2": "The frontispiece: a photogram of a fern frond and a sprig of rowan in berry, left white on a brushed sage ground, captioned underneath in italic.", "4": "The contents: four italic titles after their numerals, spaced dot leaders to the page numbers, then a short note on the text and the colophon.", "6": "The Windhover: its dedication stands above the first line, the lines that rhyme in -iding and -illion start 2 em in, and four long lines turn over, hanging 4 em in.", "7": "Pied Beauty: the lines step in by 1 or 2 em according to their rhyme, and the closing half-line, Praise him., stands 8 em in." }
 ---
 
 ## What you'll build
 
-A chapbook of four nature poems by Gerard Manley Hopkins, 140 × 216 mm, in the text of the 1918 first edition. After the half-title, a frontispiece photogram of fern and rowan faces a title page set in Italiana. The contents list each poem by numeral and italic title, with spaced dots to the page number. Each poem opens a page under a sage numeral and its italic title. Every line of verse is a paragraph, indented as in 1918: the lines of *Pied Beauty* step in by rhyme, and the long lines of *The Windhover* turn over and hang 4 em in, twice as deep as its indents. Stanzas are one line apart, and no word is broken except where Hopkins broke it. The date goes under each poem, flush right, and a rowan sprig follows the last one. The poem pages carry a centred folio at the foot.
+A chapbook of four nature poems by Gerard Manley Hopkins, 140 × 216 mm, in the text of the 1918 first edition. After the half-title, a frontispiece photogram of fern and rowan faces a title page set in Italiana. The contents list each poem by numeral and italic title, with spaced dots to the page number. Each poem opens a page under a sage numeral and its italic title. Every poem is a `:::verse` block, indented as in 1918: the lines of *Pied Beauty* step in by rhyme, and the long lines of *The Windhover* turn over and hang 4 em in, twice as deep as its indents. Stanzas are one line apart, and no word is broken except where Hopkins broke it. The date goes under each poem, flush right, and a rowan sprig follows the last one. The poem pages carry a centred folio at the foot.
 
 ## Method
 
-### 1 · A line of verse is a paragraph
+### 1 · A poem is a :::verse block
 
-The code is [the short answer](#the-short-answer) above. Postext joins the lines of a Markdown paragraph into one, so a poem needs a paragraph per line. The verse style sets those paragraphs ragged, because justifying them would stretch the first part of a turned line across the measure. It hangs the rest of the line 4 em in, past the 1 and 2 em indents of the rhyming lines, so a turnover does not read as a line of its own ([paragraph styles](/en/docs/configuration#paragraph-styles)). A paragraph loses its leading spaces, em spaces included, and a style with a hanging indent ignores its first-line indent. `indentVerse` therefore writes each pair of leading spaces as an em space behind a word joiner, a zero-width character where the trim stops. Lines that rhyme with one another keep the same indent, as in 1918. Blank lines add no space. Each stanza break is a `:::space` line inside the container, which leaves one line of the grid and is dropped at the top of a page ([`:::space`](/en/docs/document-format#space)).
+A `:::verse` block keeps each line of the Markdown as a line of verse, so the poem is written as it is printed ([`:::verse`](/en/docs/document-format#verse)). Its leading spaces are its indents, two to an em, so the lines that rhyme with one another start the same distance in, as in 1918. A blank line between stanzas leaves one line of the grid, and is dropped at the top of a page. A line too long for the measure turns over at a word space and hangs by the verse style's `hangingIndent`, counted from the line's own start: 2 em past an unindented line, 4 em under a line indented 2 em, so a turnover never reads as a line of its own. `align=start` sets each poem flush with the margin; without it a poem is centred on its longest line. Verse is not hyphenated, and a line never parts from its turnover at a page break.
 
 <PageShot page={6} crop="0.08,0.22,0.86,0.48" caption="The Windhover, page 6: the lines that rhyme in -iding start 2 em in, and the four lines too long for the page turn over and hang 4 em in." />
 
@@ -57,17 +57,18 @@ A picture in the text is a resource, and every resource has a type. The ornament
 A deeper hanging indent sets the rest of a turned line further from the margin, for poems whose lines turn over often.
 
 ```diff
--  hangingIndent: em(4), // a turned line hangs past the 1 and 2 em indents
-+  hangingIndent: em(6), // a turned line hangs past the 1 and 2 em indents
+-  hangingIndent: em(2), // a turnover hangs 2 em past its line's start: 4 em under a 2 em indent
++  hangingIndent: em(4), // a turnover hangs 2 em past its line's start: 4 em under a 2 em indent
 ```
 
-### Set every line at the margin
+### Set the turnovers flush right
 
-Without `indentVerse`, Postext trims the leading spaces and every line of verse starts flush left; only the turnovers still hang.
+With `turnover: 'right'` in `bodyText.verse`, the rest of a line too long for the measure goes flush right on the line below, behind an opening bracket, as many English editions of poetry set it.
 
 ```diff
--const verses = indentVerse(markdown); // the leading spaces of verse, as em spaces
-+const verses = markdown; // leading spaces left to the trim
+     indentAfterHeading: false, minWordSpacing: 0.8, maxWordSpacing: 1.6,
++    verse: { turnover: 'right' }, // a turnover flush right, behind [
+   },
 ```
 
 ### Open every poem on a right-hand page
@@ -91,8 +92,8 @@ The template's counter style changes the numeral on the poem's page and in the c
 
 ## Pitfalls
 
-- Leave a blank line after every line of verse. Two lines with no blank line between them are one paragraph, and the poem reflows as prose.
-- Give the verse style its own `textAlign`. A paragraph style inherits the body's, and justified verse stretches the first part of every turned line across the measure.
-- A line of verse that starts with a year and a full stop, such as "1877. ", or with a hyphen and a space becomes a list item, because every line is a paragraph. Put a word joiner (U+2060) in front of it, as `indentVerse` does before an indent.
+- Keep the lines of a stanza together: a blank line inside a `:::verse` block starts a new stanza, however many blank lines there are.
+- A line that starts with a plus sign and a space is a stepped line, set where the line above ended; write `\+` to print the plus sign.
+- Without `align=start` each poem is centred on its longest line, and every poem then sits at a different distance from the margin.
 - To turn two words over together, tie them with a no-break space (U+00A0), as *the soil* and *bright wings.* are on page 5. It holds in a line of plain text; in a line with italic or bold the engine still breaks there.
 - A footer element with `pages` left at `'all'` prints on blank pages too. The folio here is two elements, one for openers and one for body pages, so a blank verso stays blank.

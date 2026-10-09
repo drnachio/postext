@@ -26,7 +26,7 @@ The difference from Chinese is in the marks. A mainland Chinese book sets 、 an
 
 <Excerpt region="listing" />
 
-Postext sets no fenced code blocks, so the pen rewrites the Markdown before the build. Each line of a fence becomes a paragraph of a tinted box, and each `` `name` `` becomes a chip in BIZ UDGothic. The face matters: the example’s string ｶﾞｲﾄﾞ ＡＢＣ ① needs half-width katakana, full-width letters and circled digits, which a Western code face lacks. BIZ UDGothic sets half-width Latin and full-width kana at fixed pitch, so the listing keeps its columns ([Inline chips](/en/docs/document-format#inline-chips)).
+The fence is a [code block](/en/docs/document-format#code-blocks): Postext sets its lines as typed, in the face `codeStyle` names, in a tinted box under the title `normalize.py` from the fence line ([code listings](/en/docs/configuration#code-listings)). `highlight: 'none'` keeps the listing in one ink, as the rest of the page, and `codeStyle.inline` sets each `` `name` `` in the same face, in teal. The face matters: the example’s string ｶﾞｲﾄﾞ ＡＢＣ ① needs half-width katakana, full-width letters and circled digits, which a Western code face lacks. BIZ UDGothic sets half-width Latin and full-width kana at fixed pitch, and a listing counts a full-width character as two cells, so the columns hold.
 
 ### 3 · 図3-1 and 表3-1
 
@@ -70,4 +70,4 @@ Some publishers set Latin words solid against the kana, with no quarter em.
 
 - A Latin word cannot be broken inside a Japanese line, so a long one at the end of a line leaves the line before it spread between its characters. The first draft of this chapter glossed its terms in English, 正準等価（canonical equivalence）, and two lines came out loose; the English terms were dropped where they did not help the reader.
 - Choose the code face by the characters the code holds. M PLUS 1 Code, the first face tried here, has no half-width katakana: the screen fell back to a system face for ｶﾞｲﾄﾞ and the PDF lacked the glyphs.
-- A listing is one box, kept together by default. On page 43 the four lines left under 3.3 could not hold it, so it opens page 44.
+- A listing splits between its lines across pages, with at least two lines on each side (`codeStyle.splitMinLines`). On page 43 the room left under 3.3 holds the title and one line, not two, so the whole listing opens page 44; `keepTogether: true` keeps every listing in one piece.

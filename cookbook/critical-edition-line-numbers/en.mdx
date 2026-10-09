@@ -1,6 +1,6 @@
 ---
 title: "Critical edition: line numbers and line-keyed notes"
-summary: "Milton’s Lycidas in the 1645 text: a script counts the lines and adds a side box after every fifth, and each note opens on its line number, set as a chip."
+summary: "Milton’s Lycidas in the 1645 text: lineNumbers prints every fifth line number in the side column, and each note opens on its line number, set as a chip."
 plain: "A scholarly edition of a poem by Milton. Every fifth line is numbered in the margin, and the notes after the poem point to the lines they explain by their number."
 description: "Milton’s Lycidas set as a critical edition in Postext, with every fifth line numbered in a 6 mm column at the fore-edge and the notes keyed to those numbers."
 question: "How do I number every fifth line of a poem in the margin and key my notes to those line numbers?"
@@ -14,21 +14,21 @@ pageNotes: { "1": "The opening page: a sprig of bay laurel with unripe berries e
 
 ## Method
 
-### 1 · Count the lines before the layout
+### 1 · Count the lines of verse
 
-The code for this step is [the short answer](#the-short-answer) above. Postext does not number lines, so `numberVerse()` counts them in the Markdown before the build. It gives every line a paragraph of its own and, after every fifth, adds a `:::callout{type="lineno" span="side"}` that holds the number. A side box starts in the side column at the height the text has reached at its fence, so this one starts under the line it follows. The style’s top padding of minus one line (−14.5 pt) lifts the number back beside that line and leaves the box no height ([callout styles](/en/docs/configuration#callout-styles)). Fenced before its line, the box would stand level with it on most pages, but where the numbered line opens a page, the box slides up beside the last line of the page before. Inside the box, the `number` paragraph style aligns the figures right, so the numbers share a right edge, and gives them the verse’s 14.5 pt leading, which puts each one on the baseline of its line.
+The code for this step is [the short answer](#the-short-answer) above. `lineNumbers` counts the lines of the poem and prints the number of every fifth beside its line, on its baseline, in 7.5 pt Libre Franklin and laurel green ([line numbers](/en/docs/configuration#line-numbers)). `count: 'verse'` counts the lines of `:::verse` poems only, so the note on the text and the notes after the poem take no numbers, and a line too long for the measure would still count once: its turnover takes no number. `restart: 'document'` keeps one count through the poem. The numbers are painted beside lines the layout has already set, so they never move a line.
 
 ### 2 · A channel six millimetres wide
 
 <Excerpt region="page" />
 
-With `sideColumnRole: 'floats'`, the narrow column of a `oneAndHalf` layout takes side boxes and never text ([layout types](/en/docs/configuration#layout-types)). `sideColumnPercent` is a share of the text block, so the pen derives it from millimetres: 6 of 90 mm, enough for the widest number. Libre Franklin’s figures are proportional, and at 7.5 pt the zero is the widest of them (1.8 mm, against 1.2 mm for the one), so 100, at 4.9 mm, is the widest number in the poem; 180 and 190 set 4.8 mm. `'outer'` follows the mirrored margins, so the numbers stand right of the verse on a recto and left of it on a verso; on a recto they end on the same edge as the folio above them. The verse column is 80 mm, 1.9 mm more than line 31, the longest, so no line turns over.
+With `sideColumnRole: 'floats'`, the narrow column of a `oneAndHalf` layout never takes text ([layout types](/en/docs/configuration#layout-types)), and `position: 'side'` sets the numbers in it, flush with its edge next to the verse; the 4 mm gutter is the space between a line and its number. `sideColumnPercent` is a share of the text block, so the pen derives it from millimetres: 6 of 90 mm, enough for the widest number. Libre Franklin’s figures are proportional, and at 7.5 pt the zero is the widest of them (1.8 mm, against 1.2 mm for the one), so 100, at 4.9 mm, is the widest number in the poem; 180 and 190 set 4.8 mm. `'outer'` follows the mirrored margins, so the numbers stand right of the verse on a recto, set flush left, and left of it on a verso, set flush right: on both they start or end the same distance from the verse. The verse column is 80 mm, 1.9 mm more than line 31, the longest, so no line turns over.
 
-### 3 · Each line of verse is a paragraph
+### 3 · The poem is one `:::verse` block
 
 <Excerpt region="verse" />
 
-Postext joins the lines of a Markdown paragraph, so each line of verse needs a paragraph of its own, and `numberVerse()` puts each in a `:::paragraphs` container with the verse style ([paragraph styles](/en/docs/configuration#paragraph-styles)). One style cannot indent a line and also hang its turnover, so Milton’s fourteen short lines, line 4 among them, take a style of their own: in a one-line paragraph, a first-line indent of 2 em moves the whole line. A blank line between verse paragraphs becomes `:::space{lines=1}`, one line of the grid. At the head of a page it is dropped ([`:::space`](/en/docs/document-format#space)), so page 2 starts on line 15 at the top of the text block, and the paragraph break between lines 14 and 15 does not show (see Pitfalls).
+A `:::verse` block keeps the poem as it is written: each line of Markdown a line of verse, a blank line between verse paragraphs, and the spaces before a line its indent ([`:::verse`](/en/docs/document-format#verse)). The fence names the verse style and `align=start`, which sets the poem flush with the margin instead of centring it on its longest line. Each verse paragraph is a stanza, and a blank line of the grid stands between two (`stanzaSpace`, one line). Milton’s fourteen short lines, line 4 among them, start with two spaces, and `indentStep: em(1)` makes those 2 em. A stanza space is dropped at the head of a page, so page 2 starts on line 15 at the top of the text block, and the paragraph break between lines 14 and 15 does not show (see Pitfalls).
 
 ### 4 · The laurel, the title and the headnote
 
@@ -57,8 +57,8 @@ Each element is anchored to the page and filtered by `parity` and `pages: 'body'
 Long poems are often numbered by tens; the 6 mm column needs no change.
 
 ```diff
--const EVERY = 5;
-+const EVERY = 10;
+-  interval: 5,
++  interval: 10,
 ```
 
 ### Keep every number right of the verse
@@ -72,6 +72,6 @@ With the side column fixed on the right, the numbers stand right of the verse on
 
 ## Pitfalls
 
-- A numbered line that turns over carries its number beside the turnover, because the side box is fenced after the whole paragraph. At 80 mm no line of *Lycidas* turns over; if you narrow the measure, check the numbered lines.
-- `:::space` is dropped at the head of a page, so the paragraph break between lines 14 and 15, which falls at the turn from page 1 to page 2, does not show. If your edition must show every break, give the first line of each verse paragraph an indent instead, as 1645 does.
-- [The card on side boxes](#gotcha-side-box-starts-at-fence) tells you to fence a gloss before its paragraph, so that it starts level with the paragraph’s first line. A line number is fenced after its line and lifted back by the negative padding instead: fenced before, the number of a line that opens a page slides up beside the last line of the page before (step 1).
+- The stanza space is dropped at the head of a page, so the paragraph break between lines 14 and 15, which falls at the turn from page 1 to page 2, does not show. If your edition must show every break, give the first line of each verse paragraph an indent instead, as 1645 does: two leading spaces on that line.
+- The numbers share the side column with any side box or side caption you add. A number that lands on one is still printed, and the Sandbox reports it (`lineNumberOverlap`); move the box, or set the numbers in the outer margin with `position: 'outer'`.
+- The notes still type their line numbers (`:chip[8]{style="line"}`): a note cannot yet point at a line and print its number. If you change the text, check the numbers in the notes against the margin.

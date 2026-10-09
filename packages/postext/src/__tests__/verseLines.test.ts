@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { parseMarkdown } from '../parse';
 import { buildDocument } from '../pipeline';
 import { renderToHtml } from '../html-backend';
-import { CONFIG_VERSION, migrateConfig, migrateBundleConfig, pinLegacyPairedIndents, pinLegacyVerseLayout } from '../bundle/configVersion';
+import { renderPageToCanvas } from '../index';
+import { CONFIG_VERSION, migrateConfig, migrateBundleConfig, pinLegacyPairedIndents, pinLegacyVerseLayout, pinLegacyVerseTightening } from '../bundle/configVersion';
 import { resolveVerseConfig, stripVerseDefaults, DEFAULT_VERSE_CONFIG } from '../defaults/verse';
 import { stripBodyTextDefaults } from '../defaults/bodyText';
 import type { PostextConfig } from '../types';
@@ -257,6 +258,107 @@ describe(':::verse line by line: turnovers', () => {
   });
 });
 
+describe(':::verse line by line: a line a little too wide tightens its spaces', () => {
+  // 46 letters and 10 spaces: 362 px, 2 px past the 360 px measure; its
+  // spaces can give 1.6 px each at the default minWordSpacing (0.6).
+  const NEAR = 'Aaaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaaa';
+  // 52 letters and 4 spaces: 380 px, 20 px past; its spaces give 6.4 px.
+  const FAR = 'Aaaaaaaaaaaaa aaaaaaaaaa aaaaaaaaaa aaaaaaaaa aaaaaaaaaa';
+  const poem = (line: string, attrs = '') => `:::verse{${attrs}}
+Short line.
+${line}
+Short again.
+:::`;
+  const spaces = (l: VDTLine) => l.segments!.filter((s) => s.kind === 'space');
+
+  it('measures the fixtures as described', () => {
+    expect(NEAR.length * 7 - (NEAR.split(' ').length - 1) * 3).toBe(362);
+    expect(FAR.length * 7 - (FAR.split(' ').length - 1) * 3).toBe(380);
+  });
+
+  it('keeps a line 2 pt too long on one line, its word spaces tightened to fit the measure', () => {
+    const ls = verseLines(buildDocument({ markdown: poem(NEAR) }, config()));
+    expect(ls).toHaveLength(3);
+    expect(ls.some((l) => l.verseLine!.turnover)).toBe(false);
+    const near = ls[1]!;
+    expect(near.text).toBe(NEAR);
+    expect(near.bbox.width).toBeCloseTo(360, 6);
+    // The poem is as wide as the measure: every line starts at its left.
+    expect(near.bbox.x).toBeCloseTo(20, 6);
+    expect(ls[0]!.bbox.x).toBeCloseTo(20, 6);
+    expect(near.segments!.reduce((s, seg) => s + seg.width, 0)).toBeCloseTo(360, 6);
+    for (const sp of spaces(near)) expect(sp.width).toBeCloseTo(3.8, 6);
+    expect(near.verseLine!.spaceRatio).toBeCloseTo(0.95, 6);
+    expect(ls[0]!.verseLine!.spaceRatio).toBeUndefined();
+  });
+
+  it('never tightens a space below minWordSpacing of its width', () => {
+    for (const minWordSpacing of [0.6, 0.85]) {
+      const ls = verseLines(buildDocument({ markdown: poem(NEAR) }, config({ bodyText: { minWordSpacing } })));
+      const near = ls.find((l) => l.verseLine!.spaceRatio !== undefined)!;
+      expect(near.verseLine!.spaceRatio!).toBeGreaterThanOrEqual(minWordSpacing - 1e-9);
+      for (const sp of spaces(near)) expect(sp.width).toBeGreaterThanOrEqual(4 * minWordSpacing - 1e-9);
+    }
+    // At 0.96 the ten spaces give 1.6 px, short of the 2 px: it turns over.
+    const tight = verseLines(buildDocument({ markdown: poem(NEAR) }, config({ bodyText: { minWordSpacing: 0.96 } })));
+    expect(tight.some((l) => l.verseLine!.turnover)).toBe(true);
+  });
+
+  it('turns over a line 20 pt too long, at its natural spacing', () => {
+    const ls = verseLines(buildDocument({ markdown: poem(FAR) }, config()));
+    const lines = ls.filter((l) => l.verseLine!.line === 1);
+    expect(lines.length).toBe(2);
+    expect(lines[1]!.verseLine!.turnover).toBe(true);
+    for (const l of lines) {
+      expect(l.verseLine!.spaceRatio).toBeUndefined();
+      for (const sp of spaces(l)) expect(sp.width).toBe(4);
+    }
+  });
+
+  it('turns the line over with tighten=false on the fence or bodyText.verse.tighten: false', () => {
+    const turned = (markdown: string, extra: PostextConfig = {}) => verseLines(buildDocument({ markdown }, config(extra))).some((l) => l.verseLine!.turnover);
+    expect(turned(poem(NEAR, 'tighten=false'))).toBe(true);
+    expect(turned(poem(NEAR), { bodyText: { verse: { tighten: false } } })).toBe(true);
+    expect(turned(poem(NEAR, 'tighten=true'), { bodyText: { verse: { tighten: false } } })).toBe(false);
+  });
+
+  it('tightens an indented line against the room its indent leaves', () => {
+    // Two leading spaces indent 20 px: 342 px of letters and spaces fill
+    // 340 px with the spaces tightened.
+    const line = 'Aaaa aaaa aaaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa';
+    expect(line.length * 7 - (line.split(' ').length - 1) * 3).toBe(342);
+    const [, l] = verseLines(buildDocument({ markdown: poem(`  ${line}`) }, config()));
+    expect(l!.verseLine!.turnover).toBe(false);
+    expect(l!.bbox.x).toBeCloseTo(40, 6);
+    expect(l!.bbox.x + l!.bbox.width).toBeCloseTo(380, 6);
+  });
+
+  it('paints the tightened spaces on canvas: the last word ends on the measure', () => {
+    const doc = buildDocument({ markdown: poem(NEAR) }, config());
+    const texts: { text: string; x: number }[] = [];
+    const ctx: Record<string | symbol, unknown> = new Proxy({}, {
+      get(target: Record<string | symbol, unknown>, key) {
+        if (key === 'fillText') return (text: string, x: number) => { texts.push({ text, x }); };
+        if (key === 'measureText') return (str: string) => new StubCtx().measureText(str);
+        if (key in target) return target[key];
+        return () => undefined;
+      },
+      set(target, key, value) { target[key] = value; return true; },
+    });
+    renderPageToCanvas(doc.pages[0]!, doc, { width: 0, height: 0, getContext: () => ctx } as unknown as HTMLCanvasElement);
+    const last = texts.filter((t) => t.text === 'aaaaa').at(-1)!;
+    expect(last.x + 35).toBeCloseTo(380, 6);
+    expect(texts.some((t) => t.text === NEAR)).toBe(false);
+  });
+
+  it('paints the tightened spaces in the HTML viewer', () => {
+    const html = renderToHtml(buildDocument({ markdown: poem(NEAR) }, config()));
+    // The last word ends on the measure's right edge, 380 − 20 px into the
+    // line's box: its left is 360 − 35.
+    expect(html).toContain('left:325.000px');
+  });
+});
+
 describe(':::verse line by line: columns and pages', () => {
   const page = (stanza: string[], n: number) => `${'Some words of running text here. '.repeat(n)}\n\n:::verse\n${stanza.join('\n')}\n:::`;
   const TANKA = ['the first line', 'the second line', 'the third line', 'the fourth line', 'the fifth line'];
@@ -363,19 +465,23 @@ describe('bodyText.verse and the configurations stored before #620', () => {
     expect(resolveVerseConfig({ turnover: 'right', keepStanzas: 5.7, stanzaSpace: -1 })).toEqual({ ...DEFAULT_VERSE_CONFIG, turnover: 'right', keepStanzas: 5 });
     expect(stripVerseDefaults({ ...DEFAULT_VERSE_CONFIG })).toBeUndefined();
     expect(stripVerseDefaults({ indentStep: em(0.5), stanzaSpace: 2 })).toEqual({ stanzaSpace: 2 });
+    expect(resolveVerseConfig({ tighten: false }).tighten).toBe(false);
+    expect(stripVerseDefaults({ tighten: true })).toBeUndefined();
+    expect(stripVerseDefaults({ tighten: false })).toEqual({ tighten: false });
     expect(stripBodyTextDefaults({ verse: { turnover: 'hang', keepStanzas: 3 } })).toEqual({ verse: { keepStanzas: 3 } });
   });
 
   const PLAIN = ':::verse\nA line\nAnother\n:::';
   const BAYT = ':::verse\nA || B\n:::';
   it('pins the 1.22 verse layout when the text holds a poem with no separator', () => {
-    expect(CONFIG_VERSION).toBe(9);
+    expect(CONFIG_VERSION).toBe(10);
     const stored: PostextConfig = { bodyText: { fontFamily: 'Georgia' } };
     for (const version of [undefined, 3, 7, 8]) {
       expect(migrateConfig(stored, version, { content: PLAIN }).bodyText?.verse, `${version}`).toEqual({ layout: 'bayt' });
     }
-    expect(migrateConfig(stored, 8).bodyText?.verse).toEqual({ layout: 'bayt' });
-    for (const content of [BAYT, 'No poem.', ':::verse{layout=lines}\nA line\n:::', [BAYT, 'Text.']]) {
+    // Unknown content: the verse layout and the 1.23 turnovers.
+    expect(migrateConfig(stored, 8).bodyText?.verse).toEqual({ layout: 'bayt', tighten: false });
+    for (const content of [BAYT, 'No poem.', [BAYT, 'Text.']]) {
       expect(migrateConfig(stored, 8, { content }), JSON.stringify(content)).toBe(stored);
     }
     expect(migrateConfig(stored, CONFIG_VERSION, { content: PLAIN })).toBe(stored);
@@ -383,6 +489,34 @@ describe('bodyText.verse and the configurations stored before #620', () => {
     expect(pinLegacyVerseLayout(named)).toBe(named);
     const merged = migrateBundleConfig({}, [{ bodyText: { fontFamily: 'Georgia' } }], 8, { content: [PLAIN] });
     expect(merged.bodyText).toEqual({ fontFamily: 'Georgia', verse: { layout: 'bayt' } });
+  });
+
+  it('pins the 1.23 turnovers when the text holds a poem set line by line', () => {
+    const stored: PostextConfig = { bodyText: { fontFamily: 'Georgia' } };
+    const LINES = ':::verse{layout=lines}\nA line\n:::';
+    for (const content of [PLAIN, LINES, ':::verse{layout="lines" align=start}\nA || B\n:::', [BAYT, PLAIN]]) {
+      expect(migrateConfig(stored, 9, { content }).bodyText, JSON.stringify(content)).toEqual({ fontFamily: 'Georgia', verse: { tighten: false } });
+    }
+    expect(migrateConfig(stored, 9).bodyText?.verse).toEqual({ tighten: false });
+    for (const content of [BAYT, 'No poem.', ':::verse{layout=bayt}\nA line\n:::', [BAYT, 'Text.']]) {
+      expect(migrateConfig(stored, 9, { content }), JSON.stringify(content)).toBe(stored);
+    }
+    // Before 1.23 a plain poem is pinned to the bayt layout, which never
+    // turned over; a poem that names the line layout is set line by line.
+    expect(migrateConfig(stored, 8, { content: LINES }).bodyText?.verse).toEqual({ tighten: false });
+    expect(migrateConfig(stored, 8, { content: [PLAIN, LINES] }).bodyText?.verse).toEqual({ layout: 'bayt', tighten: false });
+    const bayts: PostextConfig = { bodyText: { verse: { layout: 'bayt' } } };
+    expect(migrateConfig(bayts, 9, { content: PLAIN })).toBe(bayts);
+    expect(migrateConfig(stored, CONFIG_VERSION, { content: PLAIN })).toBe(stored);
+    const named: PostextConfig = { bodyText: { verse: { tighten: true } } };
+    expect(pinLegacyVerseTightening(named)).toBe(named);
+    const merged = migrateBundleConfig({}, [{ bodyText: { fontFamily: 'Georgia' } }], 9, { content: [PLAIN] });
+    expect(merged.bodyText).toEqual({ fontFamily: 'Georgia', verse: { tighten: false } });
+    // The pinned configuration lays the line out as 1.23 did.
+    const near = ':::verse\nShort line.\nAaaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaa aaaaa\n:::';
+    const pinned = migrateConfig(config(), 9, { content: near });
+    expect(verseLines(buildDocument({ markdown: near }, pinned)).some((l) => l.verseLine!.turnover)).toBe(true);
+    expect(verseLines(buildDocument({ markdown: near }, config())).some((l) => l.verseLine!.turnover)).toBe(false);
   });
 
   it('pins a style\'s first-line indent away when it sets a hanging one too', () => {

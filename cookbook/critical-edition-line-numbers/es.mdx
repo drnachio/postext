@@ -1,6 +1,6 @@
 ---
 title: "Edición crítica: numeración de versos y notas por verso"
-summary: "El Lycidas de Milton, texto de 1645: una función cuenta los versos, pone el número cada cinco en un recuadro lateral y abre cada nota con el número del verso."
+summary: "El Lycidas de Milton, texto de 1645: lineNumbers numera los versos de cinco en cinco en la columna lateral, y cada nota se abre con el número de su verso."
 plain: "Una edición crítica de un poema de Milton. Cada cinco versos aparece un número en el margen, y las notas tras el poema remiten por número a los versos que explican."
 description: "Lycidas como edición crítica en Postext, con los versos numerados de cinco en cinco en una columna lateral de 6 mm y las notas remitidas a esos números."
 question: "¿Cómo numero al margen los versos de un poema de cinco en cinco y remito las notas a esos números?"
@@ -14,21 +14,21 @@ pageNotes: { "1": "La página de apertura: una rama de laurel con bayas verdes e
 
 ## Elaboración
 
-### 1 · Cuenta los versos antes de componer
+### 1 · Cuenta los versos
 
-El código de este paso es [la respuesta corta](#la-respuesta-corta), más arriba. Postext no numera líneas, así que `numberVerse()` cuenta los versos en el Markdown antes de componer. Da a cada verso un párrafo propio y, cada cinco versos, añade un `:::callout{type="lineno" span="side"}` con el número. Un recuadro lateral se coloca en su columna a la altura a la que ha llegado el texto en su valla, así que este empieza debajo del verso al que sigue. El relleno superior del estilo, de menos una línea (−14,5 pt), sube el número al nivel de ese verso y deja el recuadro sin altura ([estilos de aviso](/es/docs/configuration#estilos-de-aviso)). Con la valla antes del verso, el recuadro quedaría a su altura en casi todas las páginas, pero cuando el verso numerado abre página, el recuadro sube junto a la última línea de la página anterior. Dentro del recuadro, el estilo de párrafo `number` alinea las cifras a la derecha y les da el interlineado del verso, 14,5 pt, con lo que cada número cae en la línea base de su verso.
+El código de este paso es [la respuesta corta](#la-respuesta-corta), más arriba. `lineNumbers` cuenta los versos del poema e imprime el número de cada quinto a su lado, sobre su línea base, en Libre Franklin de 7,5 pt y verde laurel ([numeración de líneas](/es/docs/configuration#numeración-de-líneas)). `count: 'verse'` cuenta solo los versos de los poemas `:::verse`, así que la nota sobre el texto y las notas tras el poema no llevan número, y un verso demasiado largo para la medida contaría una sola vez: lo que pasa a la línea siguiente no lleva número. `restart: 'document'` mantiene una sola cuenta en todo el poema. Los números se pintan junto a versos que la composición ya ha colocado, así que nunca mueven ninguno.
 
 ### 2 · Una columna de seis milímetros
 
 <Excerpt region="page" />
 
-Con `sideColumnRole: 'floats'`, la columna estrecha de una disposición `oneAndHalf` recibe recuadros laterales y nunca texto ([tipos de disposición](/es/docs/configuration#tipos-de-disposición)). `sideColumnPercent` es un porcentaje de la caja de texto, y el código lo calcula a partir de milímetros: 6 de 90 mm, suficientes para el número más ancho. Las cifras de Libre Franklin son proporcionales, y a 7,5 pt el cero es la más ancha (1,8 mm, frente a 1,2 mm del uno), así que el número más ancho del poema es el 100, con 4,9 mm; el 180 y el 190 miden 4,8 mm. `'outer'` sigue a los márgenes simétricos, de modo que los números quedan a la derecha del verso en las páginas impares y a la izquierda en las pares; en las impares acaban en el mismo borde que el folio de encima. La columna del verso mide 80 mm, 1,9 mm más que el verso 31, el más largo, así que ningún verso pasa a la línea siguiente.
+Con `sideColumnRole: 'floats'`, la columna estrecha de una disposición `oneAndHalf` nunca recibe texto ([tipos de disposición](/es/docs/configuration#tipos-de-disposición)), y `position: 'side'` compone en ella los números, contra su borde del lado del verso; el medianil de 4 mm es la distancia entre un verso y su número. `sideColumnPercent` es un porcentaje de la caja de texto, y el código lo calcula a partir de milímetros: 6 de 90 mm, suficientes para el número más ancho. Las cifras de Libre Franklin son proporcionales, y a 7,5 pt el cero es la más ancha (1,8 mm, frente a 1,2 mm del uno), así que el número más ancho del poema es el 100, con 4,9 mm; el 180 y el 190 miden 4,8 mm. `'outer'` sigue a los márgenes simétricos, de modo que los números quedan a la derecha del verso en las páginas impares, alineados a la izquierda, y a su izquierda en las pares, alineados a la derecha: en unas y otras empiezan o acaban a la misma distancia del verso. La columna del verso mide 80 mm, 1,9 mm más que el verso 31, el más largo, así que ningún verso pasa a la línea siguiente.
 
-### 3 · Cada verso es un párrafo
+### 3 · El poema es un solo bloque `:::verse`
 
 <Excerpt region="verse" />
 
-Postext une las líneas de un párrafo de Markdown, así que cada verso necesita un párrafo propio, y `numberVerse()` pone cada uno en un contenedor `:::paragraphs` con el estilo del verso ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). Un mismo estilo no puede sangrar un verso y dar a la vez sangría francesa a lo que no le quepa en la línea, así que los catorce versos cortos de Milton, el 4 entre ellos, llevan un estilo propio: en un párrafo de una sola línea, una sangría de primera línea de 2 em desplaza todo el verso. Cada línea en blanco entre estrofas se convierte en `:::space{lines=1}`, una línea de la rejilla. Al principio de una página se descarta ([`:::space`](/es/docs/document-format#space)), así que la página 2 empieza con el verso 15 en lo alto de la caja de texto y el cambio de estrofa entre los versos 14 y 15 no se ve (mira «Errores frecuentes»).
+Un bloque `:::verse` conserva el poema tal como se escribe: cada línea de Markdown es un verso, una línea en blanco separa las estrofas y los espacios delante de un verso son su sangría ([`:::verse`](/es/docs/document-format#verse)). La apertura nombra el estilo del verso y `align=start`, que alinea el poema con el margen en lugar de centrarlo sobre su verso más largo. Entre dos estrofas queda una línea en blanco de la rejilla (`stanzaSpace`, una línea). Los catorce versos cortos de Milton, el 4 entre ellos, empiezan con dos espacios, e `indentStep: em(1)` los convierte en 2 em. El espacio entre estrofas se descarta al principio de una página, así que la página 2 empieza con el verso 15 en lo alto de la caja de texto y el cambio de estrofa entre los versos 14 y 15 no se ve (mira «Errores frecuentes»).
 
 ### 4 · El laurel, el título y la nota preliminar
 
@@ -57,8 +57,8 @@ Cada elemento se ancla a la página y se filtra con `parity` y `pages: 'body'` (
 Los poemas largos suelen numerarse de diez en diez; la columna de 6 mm se queda como está.
 
 ```diff
--const EVERY = 5;
-+const EVERY = 10;
+-  interval: 5,
++  interval: 10,
 ```
 
 ### Deja todos los números a la derecha del verso
@@ -72,6 +72,6 @@ Con la columna lateral fija a la derecha, los números quedan a la derecha del v
 
 ## Errores frecuentes
 
-- Un verso numerado que no cabe en la medida lleva el número junto a su última línea, porque la valla del recuadro lateral va detrás del párrafo entero. A 80 mm ningún verso de *Lycidas* pasa a la línea siguiente; si estrechas la medida, revisa los versos numerados.
-- `:::space` se descarta al principio de una página, así que el cambio de estrofa entre los versos 14 y 15, que coincide con el paso de la página 1 a la 2, no se ve. Si tu edición tiene que marcar todos los cambios de estrofa, sangra el primer verso de cada una en lugar de dejar una línea en blanco, como hace la edición de 1645.
-- [La tarjeta sobre recuadros laterales](#gotcha-side-box-starts-at-fence) aconseja poner la valla de una glosa antes de su párrafo, para que empiece a la altura de su primera línea. El número de verso, en cambio, va después de su verso y sube con el relleno negativo: con la valla antes, el número de un verso que abre página sube junto a la última línea de la página anterior (paso 1).
+- El espacio entre estrofas se descarta al principio de una página, así que el cambio de estrofa entre los versos 14 y 15, que coincide con el paso de la página 1 a la 2, no se ve. Si tu edición tiene que marcar todos los cambios de estrofa, sangra el primer verso de cada una en lugar de dejar una línea en blanco, como hace la edición de 1645: dos espacios delante de ese verso.
+- Los números comparten la columna lateral con cualquier recuadro o pie lateral que añadas. Un número que cae sobre uno de ellos se imprime igualmente, y el Sandbox lo avisa (`lineNumberOverlap`); mueve el recuadro o lleva los números al margen exterior con `position: 'outer'`.
+- Las notas siguen escribiendo a mano sus números de verso (`:chip[8]{style="line"}`): una nota todavía no puede apuntar a un verso e imprimir su número. Si cambias el texto, coteja los números de las notas con los del margen.

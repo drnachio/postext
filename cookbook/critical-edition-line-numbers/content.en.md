@@ -5,7 +5,7 @@ author: "John Milton"
 
 # Lycidas {headnote="In this Monody the Author bewails a learned Friend, unfortunatly drown’d in his Passage from Chester on the Irish Seas, 1637. And by occasion foretels the ruine of our corrupted Clergy then in their height."}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 Yet once more, O ye Laurels, and once more
 Ye Myrtles brown, with Ivy never-sear,
 I com to pluck your Berries harsh and crude,

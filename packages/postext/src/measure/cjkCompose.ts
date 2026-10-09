@@ -37,7 +37,7 @@ import type { InlineKunten, InlineRuby, InlineSpan, InlineWarichu } from '../par
 import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineSegment, VDTSegmentMarks, VDTWarichu } from '../vdt';
 import { createBoundingBox } from '../vdt';
 import { isJapaneseLanguage } from '../locale';
-import { lineIndentAt, lineMeasure, type MeasuredBlock, type MeasureBlockOptions } from './types';
+import { lineIndentAt, lineInsetsAt, lineMeasure, markInsetLines, type MeasuredBlock, type MeasureBlockOptions } from './types';
 import { measureInkBox, measureInkExtent, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import {
   atomicSpanToken,
@@ -2787,8 +2787,11 @@ export function composeCjkParagraph(
   // The first line's indent gives way to an opening bracket that starts it
   // (`paragraphStartIndent`); the others are as asked (`lineIndentAt`).
   const firstIndent = paragraphStartIndent(units, lineIndentAt(options, 0), composition);
-  const indentOf = (li: number): number => (li === 0 ? firstIndent : lineIndentAt(options, li));
-  const measureOf = (li: number): number => lineMeasure(maxWidthPx, options?.restWidths, li) - indentOf(li);
+  // A line beside a picture text wraps round (#627) starts past its start
+  // inset and ends short of its end inset.
+  const insetOf = (li: number) => lineInsetsAt(options?.lineInsets, li);
+  const indentOf = (li: number): number => (li === 0 ? firstIndent : lineIndentAt(options, li)) + insetOf(li).start;
+  const measureOf = (li: number): number => lineMeasure(maxWidthPx, options?.restWidths, li) - insetOf(li).end - indentOf(li);
   const sizeMatch = FONT_SIZE_RE.exec(normalFont);
   const em = sizeMatch ? parseFloat(sizeMatch[1]!) : 16;
   const trackingCap = options?.justifyTrackingPx && options.justifyTrackingPx > 0 ? Math.min(em / 2, options.justifyTrackingPx) : em / 2;
@@ -2863,6 +2866,7 @@ export function composeCjkParagraph(
   if (lines.some((l) => l.segments?.some((s) => (s as PendingSegment).smallCaps))) {
     expandSmallCaps(lines, normalFont, boldFont, italicFont, boldItalicFont, letterSpacingPx);
   }
+  markInsetLines(lines, maxWidthPx, options);
   return { lines, totalHeight: lines.length * lineHeightPx };
 }
 

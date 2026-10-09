@@ -106,7 +106,82 @@ export interface ResourcePlacement {
    *  figure's top (its bottom for a bottom float). A page without such a
    *  column keeps the caption under the figure. Column floats only. */
   captionSide?: boolean;
+  /** Scale a floated picture (bitmap, SVG, a video's poster) down, keeping
+   *  its proportions, to the room a slot has, instead of moving it on
+   *  (#626). `'never'`: a float either fits a slot at its size or waits
+   *  for a later one. `'page'`: a float too tall for the band of a fresh
+   *  page — the content area less what already stands there: an opener,
+   *  other floats, footnotes, the float gap — shrinks to that band.
+   *  `'slot'`: as `'page'`, and a float too tall for a slot of the page it
+   *  is cited on (or for a fresh page's band beside another float) shrinks
+   *  to it when it fits there at {@link minScale} or more; the slots are
+   *  tried in their usual order. A picture with a safe area is cropped
+   *  within it first. Tables (which split), floated boxes, comic strips,
+   *  rotated floats and inline embeds are never scaled by it. Default:
+   *  the type's `defaultPlacement`, then `layout.floatShrink.mode`, then
+   *  `'never'`. */
+  shrink?: FloatShrinkMode;
+  /** The smallest scale {@link shrink} sets a picture at, 0 to 1 (default
+   *  0.7, then `layout.floatShrink.minScale`). A slot that needs less is
+   *  passed over; on a fresh page, where the float has nowhere else to go,
+   *  it is set at this scale and runs past the band. */
+  minScale?: number;
+  /** The measure of a picture's caption and note when the picture is
+   *  narrower than its slot (scaled by {@link shrink} or
+   *  `layout.fitFiguresToPage`, or a bitmap smaller than the column):
+   *  `'slot'` (the default) keeps the slot's measure; `'body'` sets them
+   *  as wide as the picture, under it per {@link align}. */
+  captionMeasure?: 'slot' | 'body';
+  /** Run the text beside the resource (#627): it sits at this side of its
+   *  column, and the lines beside it are set to the measure left over,
+   *  {@link wrapGap} clear of its box (caption included), then return to
+   *  the full measure under it. `'left'` / `'right'` are sides of the body
+   *  flow, as {@link align}'s (on a right-to-left document's mirrored
+   *  pages `'left'` is the sheet's right); `'start'` / `'end'` are the
+   *  same sides by their logical names. Applies to an inline embed
+   *  (`position: 'here'`, the text after the `::resource` line runs beside
+   *  it) and to a `span: 'column'` float at the head or foot of one column
+   *  (the column's first or last lines run beside it); a page-span float,
+   *  a float across several columns, a side-column float, a rotated one
+   *  and anything in vertical text keep their whole band. The resource
+   *  takes {@link width} of the column, or `layout.wrap.defaultWidth`
+   *  when it sets none. Where the text left beside it would be narrower
+   *  than `layout.wrap.minTextWidth`, or the resource shorter than
+   *  `layout.wrap.minLinesBeside` lines, it takes its band whole and a
+   *  `textWrap` warning says so. Default `'none'`. */
+  wrap?: WrapSide;
+  /** The space between a wrapped resource's box (caption included) and
+   *  the text beside it, and under it before the text runs full width
+   *  again (rounded up to whole grid lines). Default `layout.wrap.gap`,
+   *  else one body line, the float gap. */
+  wrapGap?: Dimension;
 }
+
+/** The side of its column a resource or a box sits on with text running
+ *  beside it (see `ResourcePlacement.wrap`, #627). */
+export type WrapSide = 'none' | 'left' | 'right' | 'start' | 'end';
+
+/** The document's text wrap settings (`LayoutConfig.wrap`, #627). */
+export interface TextWrapConfig {
+  /** Default `ResourcePlacement.wrapGap`: the space between a wrapped
+   *  picture and the text. Default: one body line (the float gap). */
+  gap?: Dimension;
+  /** The narrowest measure the text beside a wrapped picture may take: a
+   *  length, or a share of the column (`0.3`). Narrower, the picture takes
+   *  its band whole (`textWrap` warning). Default 12 em of body text. */
+  minTextWidth?: Dimension | number;
+  /** The fewest lines of text worth setting beside a picture. A picture
+   *  shorter than that (gap included) takes its band whole (`textWrap`
+   *  warning). Default 2. */
+  minLinesBeside?: number;
+  /** The share of the column a wrapped resource takes when its placement
+   *  sets no `width`, 0 to 1. Default 0.45. */
+  defaultWidth?: number;
+}
+
+/** How a floated picture is scaled to the room of a slot (see
+ *  `ResourcePlacement.shrink`). */
+export type FloatShrinkMode = 'never' | 'page' | 'slot';
 
 /** A user-definable category of resource (e.g. "Figure", "Table"). Drives
  *  numbering, caption prefixes, and inline-reference labels. */
@@ -383,8 +458,21 @@ export interface Resource {
   bitmap?: {
     fileId: string;
     format: string;
+    /** The file's width in pixels (not its print size). */
     width: number;
+    /** The file's height in pixels. */
     height: number;
+    /** Pixels per inch of the picture at its natural print size (#631):
+     *  its natural width in layout px is `width × page.dpi / resolution`
+     *  (the height likewise), and the column still caps it. Absent:
+     *  `layout.bitmapResolution` decides (by default the pixels are read
+     *  at `page.dpi`). */
+    resolution?: number;
+    /** The resolution stored in the file (PNG `pHYs`, JPEG JFIF / EXIF,
+     *  WebP EXIF; a Word picture's printed extent), as the host read it,
+     *  horizontal ppi. Used under `layout.bitmapResolution: 'file'`, where
+     *  72 and 96 count as unset; shown by the Sandbox. */
+    fileResolution?: number;
   };
   /** Present when `kind === 'svg'`. */
   svg?: {
@@ -805,6 +893,10 @@ export interface PageConfig {
   width?: Dimension;
   height?: Dimension;
   margins?: PageMargins;
+  /** Layout px per inch: every length is converted at this rate, and a
+   *  bitmap without a resolution of its own (see `Resource.bitmap.resolution`
+   *  and `layout.bitmapResolution`) is laid out one pixel per layout px.
+   *  Default 300. */
   dpi?: number;
   cutLines?: CutLinesConfig;
   baselineGrid?: BaselineGridConfig;
@@ -902,6 +994,25 @@ export interface LayoutConfig {
    *  pages are sized for their figures; the HTML viewer, whose pages are as
    *  tall as the screen, turns it on. */
   fitFiguresToPage?: boolean;
+  /** How a bitmap without its own `resolution` takes its natural print
+   *  size (#631): `'document'` (default) reads its pixels at `page.dpi`;
+   *  a number is the ppi of every such bitmap; `'file'` uses the
+   *  resolution read from the file (`Resource.bitmap.fileResolution`),
+   *  72 and 96 counting as unset, else `page.dpi`. The column caps the
+   *  natural size either way; a smaller picture is never enlarged. */
+  bitmapResolution?: BitmapResolution;
+  /** The document's default for scaling a floated picture to the room of
+   *  its slot (#626): `mode` as `ResourcePlacement.shrink`, `minScale` as
+   *  `ResourcePlacement.minScale` (default 0.7). A resource's placement,
+   *  then its type's `defaultPlacement`, override it. Default
+   *  `{ mode: 'never' }`. Unlike {@link fitFiguresToPage}, a hard cap at
+   *  the content area, this looks at the band the float would take. */
+  floatShrink?: FloatShrinkConfig;
+  /** Text wrap round a resource or a box narrower than its column (#627):
+   *  the gap, the narrowest text measure, the fewest lines beside and the
+   *  default width (see {@link TextWrapConfig}). A resource opts in with
+   *  `placement.wrap`, a box with its `wrap` attribute. */
+  wrap?: TextWrapConfig;
   /** On the closing page of a chapter (and of the document), move the
    *  page-wide figures and tables set below the last band of text up to sit
    *  one float gap under it, stacked in their order, instead of at the page
@@ -955,6 +1066,25 @@ export interface LayoutConfig {
   writingMode?: WritingMode;
 }
 
+/** How bitmaps without a resolution of their own are sized (see
+ *  `LayoutConfig.bitmapResolution`): `'document'`, `'file'` or a ppi. */
+export type BitmapResolution = 'document' | 'file' | number;
+
+/** The document default for scaling floated pictures (see
+ *  `LayoutConfig.floatShrink`). */
+export interface FloatShrinkConfig {
+  mode?: FloatShrinkMode;
+  minScale?: number;
+}
+
+/** {@link TextWrapConfig} resolved; `gap` absent is one body line. */
+export interface ResolvedTextWrapConfig {
+  gap?: Dimension;
+  minTextWidth: Dimension | number;
+  minLinesBeside: number;
+  defaultWidth: number;
+}
+
 /** Where an inline resource keeps the float gap (see
  *  `LayoutConfig.inlineResourceGap`). */
 export type InlineResourceGap = 'around' | 'above';
@@ -970,6 +1100,9 @@ export interface ResolvedLayoutConfig {
   sideColumnSide: SideColumnSide;
   columnRule: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
   fitFiguresToPage: boolean;
+  bitmapResolution: BitmapResolution;
+  floatShrink: { mode: FloatShrinkMode; minScale: number };
+  wrap: ResolvedTextWrapConfig;
   hugClosingFloats: boolean;
   inlineResourceGap: InlineResourceGap;
   inlineResourceGapInBoxes: boolean;
@@ -1496,6 +1629,13 @@ export interface VerseConfig {
    *  column (a haiku, a tanka): it moves on whole when it does not fit.
    *  Default `0`, off. */
   keepStanzas?: number;
+  /** A line of verse a little wider than the measure tightens its word
+   *  spaces, down to `bodyText.minWordSpacing` of their natural width, and
+   *  stays on one line; only a line that does not fit even then turns
+   *  over. `false`: every line wider than the measure turns over, as
+   *  postext 1.23 set them (configurations stored by 1.23 are read with it
+   *  when they hold a poem set line by line). Default `true`. */
+  tighten?: boolean;
 }
 
 export interface ResolvedVerseConfig {
@@ -1506,6 +1646,7 @@ export interface ResolvedVerseConfig {
   turnoverMark: string;
   stanzaSpace: number;
   keepStanzas: number;
+  tighten: boolean;
 }
 
 /** What `lineNumbers` counts (#621): `'verse'`, the lines of `:::verse`
@@ -1952,14 +2093,50 @@ export interface TableStyleConfig {
   borderWidth?: Dimension;
   /** Inner padding inside each cell. Default `0.375em`. */
   cellPadding?: Dimension;
-  /** Which rules to stroke when {@link borders} is on. Default `'grid'`. */
+  /** Which rules to stroke when {@link borders} is on. Default `'grid'`.
+   *  `'booktabs'` strokes its own widths ({@link heavyRuleWidth},
+   *  {@link lightRuleWidth}, {@link spanRuleWidth}) and ignores
+   *  {@link borderWidth}. */
   rules?: TableRules;
   /** Corner radius of the table's outer frame. Default `0` (square). The
    *  cell fills are clipped to the rounded frame, whatever the rules (with
    *  `'none'` the fills alone show the rounded shape); the inner rules stay
    *  straight. A table split across pages rounds the top corners of its
-   *  first part and the bottom corners of its last. */
+   *  first part and the bottom corners of its last. `'booktabs'` rules
+   *  have no frame to round: they stay straight (the fills are still
+   *  clipped). */
   borderRadius?: Dimension;
+  /** `'booktabs'` (#625): width of the rules above the table and under its
+   *  last row (LaTeX `\heavyrulewidth`). An `em` value is relative to
+   *  {@link bodyFontSize}. Default `0.08em`. */
+  heavyRuleWidth?: Dimension;
+  /** `'booktabs'`: width of the rule under the header rows and of the
+   *  group rules (`\lightrulewidth`). An `em` value is relative to
+   *  {@link bodyFontSize}. Default `0.05em`. */
+  lightRuleWidth?: Dimension;
+  /** `'booktabs'`: width of the rules under header cells that span several
+   *  columns (`\cmidrulewidth`). An `em` value is relative to
+   *  {@link bodyFontSize}. Default `0.03em`. */
+  spanRuleWidth?: Dimension;
+  /** `'booktabs'`: the rules under header cells that span more than one
+   *  column, above the last header row: shortened at both ends by
+   *  {@link spanRuleTrim} so neighbouring rules do not touch
+   *  (`'trimmed'`, the default, `\cmidrule(lr)`), across the whole cell
+   *  (`'full'`), or none (`'none'`). */
+  spanRules?: TableSpanRules;
+  /** `'booktabs'`: how much a `'trimmed'` span rule is shortened at each
+   *  end. An `em` value is relative to {@link bodyFontSize}. Default
+   *  `0.5em`. */
+  spanRuleTrim?: Dimension;
+  /** `'booktabs'`: a light rule above every body row that heads a group
+   *  (one cell across every column, or all header cells), except one that
+   *  opens a page. Default `false`. */
+  groupRules?: boolean;
+  /** `'booktabs'`: the rule that closes a part of a split table that goes
+   *  on overleaf: the heavy bottom rule (`'bottom'`), a light rule
+   *  (`'light'`, the default: the heavy rule closes only the real last
+   *  row), or none (`'none'`). */
+  continuedFootRule?: TableContinuedFootRule;
   /** What happens to a table taller than the space a page offers: continue
    *  it on the following pages (`'split'`, the default), keep only the rows
    *  that fit (`'clip'`), or leave it out (`'hide'`). See {@link TableOverflow}. */
@@ -1995,8 +2172,19 @@ export interface ResolvedNamedTableStyleConfig extends ResolvedTableStyleConfig 
 export type TableTextTransform = 'none' | 'uppercase';
 
 /** Rule pattern of a table: the full cell grid, horizontal rules only (top
- *  and bottom edge of every row), the outer frame only, or none. */
-export type TableRules = 'grid' | 'horizontal' | 'outer' | 'none';
+ *  and bottom edge of every row), the outer frame only, none, or the
+ *  booktabs pattern of journal tables (#625): a heavy rule above the table
+ *  and under its last row, a light rule under the header, short rules
+ *  under spanning header cells and no vertical rules. */
+export type TableRules = 'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs';
+
+/** Rules of a `'booktabs'` table under header cells that span several
+ *  columns (`TableStyleConfig.spanRules`). */
+export type TableSpanRules = 'trimmed' | 'full' | 'none';
+
+/** What closes a part of a `'booktabs'` table that continues on the next
+ *  page (`TableStyleConfig.continuedFootRule`). */
+export type TableContinuedFootRule = 'bottom' | 'light' | 'none';
 
 /** Behaviour of a table taller than the page: `'split'` breaks it between
  *  rows and continues on the following pages, repeating the header rows and
@@ -2027,6 +2215,13 @@ export interface ResolvedTableStyleConfig {
   cellPadding: Dimension;
   rules: TableRules;
   borderRadius: Dimension;
+  heavyRuleWidth: Dimension;
+  lightRuleWidth: Dimension;
+  spanRuleWidth: Dimension;
+  spanRules: TableSpanRules;
+  spanRuleTrim: Dimension;
+  groupRules: boolean;
+  continuedFootRule: TableContinuedFootRule;
   overflow: TableOverflow;
   continuedSuffix: string;
   continuesMarkerEnabled: boolean;
@@ -3363,6 +3558,18 @@ export interface HeadingLevelConfig {
    *  book). The measure narrows by it; a centred heading centres in what is
    *  left. Default `0`. */
   indent?: Dimension;
+  /** Indent of the heading's first line only (#636), measured from
+   *  {@link indent} (so the first line starts `indent + firstLineIndent`
+   *  in): the lines it wraps onto start at `indent`, as a body paragraph's
+   *  turnover lines start at the margin. GB/T 9704 sets every level of
+   *  head two cells in with its turnover back at the margin:
+   *  `{ value: 2, unit: 'em' }`. `em` is the BODY size, as for `indent`,
+   *  so two ems are two cells of the body grid at any heading size. A
+   *  numbered heading's number comes after the indent. A centred heading
+   *  takes it as a centred body paragraph does: its first line centres in
+   *  the room after the indent. A heading overrides it with
+   *  `{firstLineIndent=N}` (`0` clears it). Default `0`. */
+  firstLineIndent?: Dimension;
   /** 字取り (jidori, JLReq §3.7.3, §4.1): a heading shorter than this many
    *  of its own characters is spaced out evenly to fill exactly that width
    *  (`jidori: 3` sets 序章 as 序　章). Applies to a heading that fits one
@@ -3414,6 +3621,8 @@ export interface ResolvedHeadingLevelConfig {
   lineSpan?: number;
   /** Absent unless set (see {@link HeadingLevelConfig.indent}). */
   indent?: Dimension;
+  /** Absent unless set (see {@link HeadingLevelConfig.firstLineIndent}). */
+  firstLineIndent?: Dimension;
   /** Absent unless set (see {@link HeadingLevelConfig.jidori}). */
   jidori?: number;
   /** Absent unless set (see {@link HeadingLevelConfig.dropCap}); a heading
@@ -5207,7 +5416,16 @@ export interface ElementBoxStyle {
  *  mid-word only when what the boundary leaves, that punctuation dropped,
  *  is less than half of what fits (a long word, a URL). A no-break space
  *  or hyphen (U+2011) is no boundary. `'ellipsis-middle'` cuts anywhere but
- *  drops the spaces beside it. */
+ *  drops the spaces beside it.
+ *
+ *  An element that sets none takes its slot's default (#628): `'wrap'` in a
+ *  heading design (`advancedDesign.slot`, an opener or an in-column title)
+ *  and on a part page (`parts.design`, `parts.versoDesign`), where a long
+ *  title should break onto more lines; `'ellipsis-end'` in a running head
+ *  or folio (`header`, `footer`, a heading style's own) and in a contents
+ *  part row (`toc.parts.design`, whose row has a fixed height). A line cut
+ *  by an ellipsis, or clipped with ink past the box, is reported as a
+ *  `designTextTruncated` content warning. */
 export type TextOverflow = 'wrap' | 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip';
 
 /** Outline drawn around the glyphs of a design text (a hollow display
@@ -5290,7 +5508,11 @@ export interface DesignTextElement {
    *  number, a malformed dimension) sets the default leading. */
   lineHeight?: number | Dimension;
   letterSpacing?: Dimension;
-  overflow: TextOverflow;
+  /** What a line wider than the element's room does (see
+   *  {@link TextOverflow}). Unset, the slot decides: `'wrap'` in heading
+   *  and part designs, `'ellipsis-end'` in running heads, folios and
+   *  contents part rows. */
+  overflow?: TextOverflow;
   /** When true, break long words at syllable boundaries while wrapping.
    *  Uses the document's active hyphenation locale. */
   hyphenate?: boolean;
@@ -5425,8 +5647,10 @@ export interface DesignSlot {
 // layout time (see design/layout.ts).
 // ---------------------------------------------------------------------------
 
-export interface ResolvedDesignTextElement extends Omit<DesignTextElement, 'fontFamily' | 'fontWeight' | 'italic' | 'color' | 'align' | 'verticalAlign' | 'lineHeight' | 'parity'> {
+export interface ResolvedDesignTextElement extends Omit<DesignTextElement, 'fontFamily' | 'fontWeight' | 'italic' | 'color' | 'align' | 'verticalAlign' | 'lineHeight' | 'parity' | 'overflow'> {
   parity: PageParity;
+  /** The element's own `overflow`, else its slot's default. */
+  overflow: TextOverflow;
   fontFamily: string;
   fontWeight: number;
   italic: boolean;

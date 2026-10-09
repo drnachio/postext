@@ -16,13 +16,13 @@ Uma plaquete bilíngue de cinco poemas sobre uma salina no sul da Espanha, em 15
 
 ### 1 · Um poema é um boxe com uma quebra de coluna fixa
 
-O código está [na resposta curta](#a-resposta-curta), mais acima. `:::columns` só funciona dentro de um boxe, por isso cada poema é um boxe cujo estilo tira o fundo e o preenchimento e imprime o `title` da cerca, que é o numeral ([`:::columns`](/pt/docs/document-format#columns)). Sem `breaks`, o grupo corta onde as duas colunas ficam niveladas. As duas metades destes poemas têm a mesma altura, então o corte cai no título inglês de qualquer maneira; mas alongue dois versos de *The Rake* até eles não caberem, e o corte desce um bloco e deixa THE RAKE no pé da coluna espanhola. `breaks="14"` indica o bloco que abre a segunda coluna, e o título inglês a encabeça seja qual for a altura das duas metades.
+O código está [na resposta curta](#a-resposta-curta), mais acima. `:::columns` só funciona dentro de um boxe, por isso cada poema é um boxe cujo estilo tira o fundo e o preenchimento e imprime o `title` da cerca, que é o numeral ([`:::columns`](/pt/docs/document-format#columns)). Sem `breaks`, o grupo corta onde as duas colunas ficam niveladas. As duas metades destes poemas têm a mesma altura, então o corte cai no título inglês de qualquer maneira; mas alongue dois versos de *The Rake* até eles não caberem, e o corte desce um bloco e deixa THE RAKE no pé da coluna espanhola. `breaks="5"` indica o bloco que abre a segunda coluna, e o título inglês a encabeça seja qual for a altura das duas metades.
 
-### 2 · Um parágrafo por verso, um :::space por quebra de estrofe
+### 2 · Um bloco :::verse por coluna, uma linha em branco por quebra de estrofe
 
 <Excerpt region="verse" />
 
-O Markdown junta as linhas de um parágrafo, então cada verso é um parágrafo à parte, no estilo `verse`, em bandeira, que a versão 1.4.1 nunca hifeniza. Um `:::space` entre estrofes deixa uma linha em branco em cada coluna. Ele não é um bloco, e por isso `breaks` não o conta ([`:::space`](/pt/docs/document-format#space)). O verso inglês *each one standing on its own reflection.* é longo demais para a coluna de 55 mm e continua na linha de baixo com recuo de 2 em; a estrofe espanhola em frente termina com `:::space{lines=2}`, e as estrofes seguintes começam na mesma linha.
+Cada metade de um poema é um bloco `:::verse`: um verso por linha do Markdown, em bandeira e sem hifenização, e uma linha em branco entre estrofes, que deixa uma linha em branco na coluna ([`:::verse`](/pt/docs/document-format#verse)). Cada estrofe é um bloco, então `breaks` conta estrofes, não versos. O verso inglês *each one standing on its own reflection.* é longo demais para a coluna de 55 mm e continua na linha de baixo com recuo de 2 em; a metade espanhola fecha o seu bloco depois da estrofe em frente e põe um `:::space{lines=2}` antes da seguinte, e as estrofes seguintes começam na mesma linha. Um `:::space` não é um bloco, e `breaks` não o conta ([`:::space`](/pt/docs/document-format#space)).
 
 <PageShot page={3} crop="0.1,0.385,0.8,0.248" caption="O poema I na página 3: reflection. passa para a linha de baixo no inglês, e a estrofe espanhola termina com duas linhas em branco em vez de uma." />
 
@@ -48,7 +48,7 @@ A página par traz o título espanhol e a ímpar o inglês, na ordem das colunas
 
 ### Alargar a medianiz
 
-Com 12 mm, as colunas ficam com 53 mm, e *Los turistas paran y hacen fotos:* deixa de caber no poema III, então a segunda estrofe começa uma linha abaixo da inglesa; termine a estrofe inglesa com `:::space{lines=2}` para nivelá-las.
+Com 12 mm, as colunas ficam com 53 mm, e *Los turistas paran y hacen fotos:* deixa de caber no poema III, então a segunda estrofe começa uma linha abaixo da inglesa; feche o bloco inglês depois dessa estrofe e ponha um `:::space{lines=2}` antes da seguinte para nivelá-las.
 
 ```diff
 -const GAP = 8; // mm between the original and the translation: each column is 55 mm wide
@@ -67,4 +67,4 @@ Com 3 em, *reflection.* na página 3 começa um em mais para dentro.
 ## Erros comuns
 
 - Um `:::space` posto antes do título inglês desaparece: a segunda coluna abre no bloco que `breaks` indica, e o espaço cai no corte. Ponha-o depois do título, como o `:::space{lines=0.5}` sob o título de cada coluna aqui.
-- Conte `breaks` a partir do título espanhol: com um título e 12 versos, o título inglês é o bloco 14. Cada verso é um bloco, então um verso espanhol a mais leva o título inglês para o bloco 15, e `breaks` precisa subir junto.
+- Conte `breaks` a partir do título espanhol: com um título e três estrofes, o título inglês é o bloco 5. Cada estrofe é um bloco, então uma estrofe espanhola a mais leva o título inglês para o bloco 6, e `breaks` precisa subir junto; um verso a mais dentro de uma estrofe não muda nada.

@@ -16,13 +16,13 @@ Vuit pàgines d'un llibret de poesia en una pàgina 四六判 de 127 × 188 mm, 
 
 ### 1 · Un vers és un paràgraf, i el seu estil diu on comença
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. Postext no té salt de línia manual, així que cada vers d'un poema és un paràgraf propi dins d'un contenidor `:::paragraphs`, i l'estil del contenidor fixa el sagnat: `indent: em(3)` baixa un haiku tres caràcters des del cap de la línia (el text d'Aozora els posa a dos; tres els donen més aire), i `firstLineIndent: em(0)` evita que s'hi sumi el sagnat d'un caràcter del text. Els 17 sons, poc o molt, d'un haiku caben en qualsevol línia de 36, així que mai no salten. La signatura és un altre paràgraf: `textAlign: 'end'` la recolza al peu de la línia (地付き, jitsuki) i `endIndent: em(5)` l'aixeca cinc caràcters des d'allà (地から五字上げ), com fa l'edició d'on surt el text ([Estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)).
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Un haiku és una sola línia, així que és un paràgraf propi dins d'un contenidor `:::paragraphs`, i l'estil del contenidor fixa el sagnat: `indent: em(3)` baixa un haiku tres caràcters des del cap de la línia (el text d'Aozora els posa a dos; tres els donen més aire), i `firstLineIndent: em(0)` evita que s'hi sumi el sagnat d'un caràcter del text. Els 17 sons, poc o molt, d'un haiku caben en qualsevol línia de 36, així que mai no salten. La signatura és un altre paràgraf: `textAlign: 'end'` la recolza al peu de la línia (地付き, jitsuki) i `endIndent: em(5)` l'aixeca cinc caràcters des d'allà (地から五字上げ), com fa l'edició d'on surt el text ([Estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)).
 
 ### 2 · Mantén cada tanka en una sola pàgina
 
 <Excerpt region="tanka" />
 
-Els tres versos d'una tanka són tres paràgrafs, i el motor manté juntes les línies d'un paràgraf, però mai un paràgraf amb el següent. Un requadre sí que manté junt el seu contingut, així que cada tanka va en un `:::callout` l'estil del qual no dibuixa res: sense fons, sense farciment i amb un marge d'una línia al darrere, la línia en blanc entre poemes. A la pàgina 5 la tercera tanka no cap sota el títol de la part i les dues primeres, així que obre sencera la pàgina 6 en lloc de deixar enrere el primer vers ([Estils d'avís](/ca/docs/configuration#estils-davís)).
+Les tankes de Takuboku formen un bloc `:::verse`, cada tanka una estrofa: els seus tres versos són tres línies del Markdown, i la línia en blanc entre dues tankes del text deixa una línia en blanc de la retícula entre els poemes. L'estil del poema dona el sagnat de dos caràcters i la línia sota el grup, i els versos pengen del capdamunt com qualsevol columna. `keepStanzas=3` manté sencera cada estrofa de tres versos: a la pàgina 5 la tercera tanka no cap sota el títol de la part i les dues primeres, així que obre sencera la pàgina 6 en lloc de deixar enrere el primer vers. L'ornament entre dos grups presenta el següent, així que passa amb la seva primera tanka en lloc de quedar-se sol al peu d'una pàgina ([`:::verse`](/ca/docs/document-format#verse)).
 
 ### 3 · Espaia els noms de lloc a una mateixa amplada
 
@@ -55,9 +55,9 @@ Algunes antologies escolars posen un espai ideogràfic entre els 5, 7 i 5 sons, 
 
 ### Deixa que una tanka llarga es parteixi
 
-Un estil de requadre amb `keepTogether: false` deixa que una tanka comenci al peu d'una pàgina i continuï a la següent, com faria una antologia atapeïda de mil poemes.
+Sense `keepStanzas`, una tanka pot començar al peu d'una pàgina i continuar a la següent segons les regles de vídues i òrfenes, com faria una antologia atapeïda de mil poemes.
 
 ```diff
--const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: true,
-+const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: false,
+-:::verse{style="tanka" keepStanzas=3}
++:::verse{style="tanka"}
 ```

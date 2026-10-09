@@ -935,20 +935,23 @@ function renderComposedSegments(line: VDTLine, block: VDTBlock, targets?: Readon
   // right alignment leave it out (EF-153), as the canvas does.
   const lineTracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
   const trailing = lineTrailingTracking(line, lineTracking);
+  // A line beside a wrapped picture (#627) fills its own span.
+  const wrapRoom = line.measure?.wrap ? line.measure.width : undefined;
   if (!line.segments || line.segments.length === 0) {
     const plainIndent = line.bbox.x - block.bbox.x;
     const plainWidth = line.bbox.width - trailing;
+    const plainRoom = wrapRoom ?? block.bbox.width - plainIndent;
     const plainLeft = block.textAlign === 'right'
-      ? Math.max(0, block.bbox.width - plainIndent - plainWidth)
+      ? Math.max(0, plainRoom - plainWidth)
       : block.textAlign === 'center'
-        ? Math.max(0, (block.bbox.width - plainIndent - plainWidth) / 2)
+        ? Math.max(0, (plainRoom - plainWidth) / 2)
         : 0;
     return `<span style="position:absolute;left:${plainLeft.toFixed(3)}px;top:0;white-space:pre;">${esc(line.text)}</span>` + lineEndHtml(end, plainLeft + plainWidth);
   }
 
   // Match canvas justification: stretch inter-word spaces to fill effective width.
   const lineIndent = line.bbox.x - block.bbox.x;
-  const effectiveWidth = block.bbox.width - lineIndent;
+  const effectiveWidth = wrapRoom ?? block.bbox.width - lineIndent;
 
   let wordWidth = 0;
   let spaceCount = 0;
@@ -1896,7 +1899,23 @@ function renderResourceTable(rb: ResolvedResourceBlock, bx: number, by: number, 
     }
   }
   parts.push(rounded ? clipToOutline(fills.join(''), outline(0)) : fills.join(''));
-  if (t.borderWidthPx > 0) {
+  if (t.strokes) {
+    // Booktabs (#625): one box per stroke of the layout, centred on its
+    // line (the rules are horizontal; a vertical one is drawn as tall).
+    for (const s of t.strokes) {
+      const x = bx + Math.min(s.x1, s.x2);
+      const y = by + Math.min(s.y1, s.y2);
+      const w = Math.abs(s.x2 - s.x1);
+      const h = Math.abs(s.y2 - s.y1);
+      parts.push(
+        `<div aria-hidden="true" style="position:absolute;` +
+        (h === 0
+          ? `left:${x}px;top:${y - s.widthPx / 2}px;width:${w}px;height:${s.widthPx}px;`
+          : `left:${x - s.widthPx / 2}px;top:${y}px;width:${s.widthPx}px;height:${h}px;`) +
+        `background:${t.borderColor};"></div>`,
+      );
+    }
+  } else if (t.borderWidthPx > 0) {
     // Border boxes are inflated by half the stroke so the border centres on
     // the cell edge — adjacent cells overlap exactly, like canvas strokeRect.
     const bw = t.borderWidthPx;

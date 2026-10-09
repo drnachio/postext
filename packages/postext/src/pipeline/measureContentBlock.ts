@@ -42,8 +42,9 @@ import { joiningScriptIn, mostlyJoiningScript } from '../measure/joining';
 import { getMeasureDirection, mirrorLineSpans, shiftLineX } from '../measure/bidiLines';
 import { startEndAsLeftRight } from '../defaults/shared';
 import { prepareTabs } from './tabs';
+import { resolveResourceWrap } from './textWrap';
 import { fullPlainOffset, paragraphDropCap, prepareDropCap, type MeasuredDropCap, type PreparedDropCap } from './dropCap';
-import { lineIndentAt } from '../measure/types';
+import { lineIndentAt, lineInsetsAt, type LineInsetStep } from '../measure/types';
 import { measureCodeLines } from './codeLines';
 import { withInlineCode } from './codeInline';
 import type { VDTBlock } from '../vdt';
@@ -167,6 +168,12 @@ export interface MeasureContentBlockOptions {
    *  `columnWidth` px wide (see `MeasureBlockOptions.restWidths`). Such a
    *  measurement is not cached. */
   restColumnWidths?: readonly { fromLine: number; columnWidth: number }[];
+  /** Lines set short beside a picture that text wraps round (#627, see
+   *  `MeasureBlockOptions.lineInsets`): `startInsetPx` is the room the
+   *  picture takes on the column's left in the flow, `endInsetPx` on its
+   *  right; both add to the block's own indents. Such a measurement is not
+   *  cached. */
+  lineInsets?: readonly LineInsetStep[];
   /** Internal to the drop cap (#623): the paragraph measured again set
    *  without it (`skip`), with the initial over `lines` lines (a short
    *  paragraph's `'shrink'`), or with a lead-in of `leadInWords` words
@@ -342,9 +349,12 @@ export function measureContentBlock(
     if (!kind.resource || ctx.floatedIds.has(kind.resource.id)) return null;
     // A resource narrower than its column (`placement.width`) sits in it
     // per `placement.align`.
+    // A picture text wraps round (#627) takes its share of the column at
+    // its side (horizontal text only).
+    const wrap = measuringVertically() ? undefined : resolveResourceWrap(kind.resource, kind.resourceType, resolved.layout.wrap);
     const rawFrac = kind.resource.placement?.width ?? kind.resourceType?.defaultPlacement?.width;
-    const frac = typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
-    const align = startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
+    const frac = wrap ? wrap.width : typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
+    const align = wrap ? wrap.side : startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
     const embedWidth = columnWidth * frac;
     const { resourceBlock, measured } = runMeasurement({
       vdtType,
@@ -427,7 +437,8 @@ export function measureContentBlock(
   // A poem in the line layout (#620): each line of verse measured on its
   // own by `pipeline/verseLines.ts`, against the poem's other stanzas
   // (their longest line centres the poem); none of the paragraph's levers
-  // apply.
+  // apply but the word spaces' shrink, down to `minWordSpacing`, that
+  // keeps a line a little too wide on one line.
   if (contentBlock.verse?.stanza && versesLineByLine(rawBlock, resolved)) {
     const direction = contentBlock.direction ?? getMeasureDirection();
     const indices = poemStanzaIndices(contentBlocks, rawBlock, blockIdx);
@@ -444,6 +455,7 @@ export function measureContentBlock(
       settings: verseLinesSettings(contentBlock.verse.attrs, style, resolved, vertical),
       direction,
       frameDirection: getMeasureDirection(),
+      minWordSpacing: resolved.bodyText.minWordSpacing,
       ...(cache ? { cache } : {}),
     });
     if (measured.lines.length === 0) return null;
@@ -589,6 +601,7 @@ export function measureContentBlock(
         })),
       }
       : {}),
+    ...(opts?.lineInsets && opts.lineInsets.length > 0 ? { lineInsets: opts.lineInsets } : {}),
     looseness: opts?.looseness,
     letterSpacingPx: letterSpacingPx !== 0 ? letterSpacingPx : undefined,
     hyphenationZonePx: style.hyphenationZonePx,
@@ -738,7 +751,7 @@ export function measureContentBlock(
   // marker the room on its right (`mirrorListMarker`).
   const opposite = contentBlock.direction !== undefined && contentBlock.direction !== getMeasureDirection();
   if (opposite) {
-    mirrorLineSpans(measured.lines, measureMaxWidth, measureOptions.restWidths);
+    mirrorLineSpans(measured.lines, measureMaxWidth, measureOptions.restWidths, measureOptions.lineInsets);
   }
 
   const xShift = opposite ? Math.max(0, columnWidth - lineXShift - measureMaxWidth) : lineXShift;
@@ -772,7 +785,9 @@ export function measureContentBlock(
     }
     const map = rawBlock.sourceMap;
     const width = dropCap.width;
-    const capX = (opposite ? measureMaxWidth - width : 0) + xShift;
+    // Beside a wrapped picture (#627) the initial stands past its inset.
+    const capInset = lineInsetsAt(measureOptions.lineInsets, 0);
+    const capX = (opposite ? measureMaxWidth - width - capInset.end : capInset.start) + xShift;
     const placed: MeasuredDropCap = {
       text: dropCap.text,
       fontString: dropCap.fontString,

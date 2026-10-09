@@ -117,7 +117,7 @@ const document = buildDocument(content, {
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>レイアウトが扱う1インチあたりのピクセル数です。物理単位（cm、mm、in、pt）をレイアウトのピクセルに換算するときに使われます。画像の解像度ではありませんが、原寸で配置したビットマップは画像の1ピクセルがレイアウトの1ピクセルになるため、この値のppiで印刷されます。印刷用には300のままにしてください。各画像の実効解像度は[プリフライト](#プリフライト)で確認します。</td>
+      <td>レイアウトが扱う1インチあたりのピクセル数です。物理単位（cm、mm、in、pt）をレイアウトのピクセルに換算するときに使われます。自身の解像度を持たないビットマップは、画像の1ピクセルがレイアウトの1ピクセルになるため、この値のppiで印刷されます。印刷用には300のままにするか、画像に解像度を指定してください（<code>Resource.bitmap.resolution</code>、<code>layout.bitmapResolution</code>。[ドキュメント形式 › ビットマップのサイズ](/ja/docs/document-format#ビットマップのサイズ)を参照）。各画像の実効解像度は[プリフライト](#プリフライト)で確認します。</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -460,6 +460,24 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td>画像、キャプション、注を合わせた高さが版面より高くなる図（ビットマップまたはSVG）を、収まるまで縮小します（セーフエリア<code>Resource.safeArea</code>を持つ画像は、まず全幅のままセーフエリアの範囲内でトリミングされ、それでも収まらないときだけ縮小されます）。また、段に残った空きに対して少しだけ高すぎるインラインの図を小さく組み（幅の半分まで。キャプションは段の幅のまま）、本文から離れないようにします。縮小された画像は<code>placement.align</code>に従って枠の中に置かれます。HTMLビューアーはページの高さが画面の高さまでしかないため、この設定を有効にします。印刷用のページは図に合わせた大きさになっています。</td>
     </tr>
     <tr>
+      <td><code>bitmapResolution</code></td>
+      <td><code>'document' | 'file' | number</code></td>
+      <td><code>'document'</code></td>
+      <td>自身の<code>bitmap.resolution</code>を持たないビットマップが、原寸の印刷サイズをどう決めるかを指定します。<code>'document'</code>はピクセルを<code>page.dpi</code>で読みます。数値はそうしたビットマップすべてのppiになります（<code>300</code>なら、2400 pxの画像はページのdpiにかかわらず幅203.2 mm）。<code>'file'</code>はファイルに記載された解像度（<code>bitmap.fileResolution</code>）を使い、記載がなければ<code>page.dpi</code>になります。72と96は記載なしとして扱います。画像は段の幅を上限とするのは変わらず、それより小さい画像が拡大されることはありません。<a href="/ja/docs/document-format#ビットマップのサイズ">ドキュメント形式 › ビットマップのサイズ</a>を参照。postext 1.24から。</td>
+    </tr>
+    <tr>
+      <td><code>floatShrink</code></td>
+      <td><code>FloatShrinkConfig</code></td>
+      <td><code>mode: 'never'</code></td>
+      <td>フロートの図版の<code>placement.shrink</code>（<code>mode</code>：<code>'never'</code>、<code>'page'</code>、<code>'slot'</code>）と<code>placement.minScale</code>（<code>minScale</code>、未設定なら0.7）のドキュメント既定値です。図版を次へ送らずに、縦横比を保って置き場所の空きまで縮小します（<a href="/ja/docs/document-format#配置">ドキュメント形式 › 配置</a>を参照）。リソース自身の配置、次にその種類の<code>defaultPlacement</code>がこれより優先します。<code>fitFiguresToPage</code>はすべての図を版面に収める上限です。<code>floatShrink</code>は、扉の下、ほかのフロートの横、脚注の上など、フロートが実際に使う帯を見ます。postext 1.24から。</td>
+    </tr>
+    <tr>
+      <td><code>wrap</code></td>
+      <td><code>TextWrapConfig</code></td>
+      <td><code>minTextWidth: 12em</code>, <code>minLinesBeside: 2</code>, <code>defaultWidth: 0.45</code></td>
+      <td>段より狭い図版やボックスの横に組む本文（<code>placement.wrap</code>、ボックスの<code>wrap</code>）：<code>gap</code>は対象と本文との間隔（未設定なら本文 1 行分）、<code>minTextWidth</code>は横の本文の最小行長で、長さまたは段幅の割合（これより狭いと対象は全幅を占め、<code>textWrap</code>警告が出ます）、<code>minLinesBeside</code>は横に組む意味のある最少行数、<code>defaultWidth</code>は<code>width</code>のない回り込む対象が占める段幅の割合。<a href="/ja/docs/document-format#回り込み">文書の書式 › 回り込み</a>を参照。postext 1.24以降。</td>
+    </tr>
+    <tr>
       <td><code>hugClosingFloats</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -686,8 +704,8 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
     <tr>
       <td><code>overflow</code></td>
       <td><code>'wrap' | 'ellipsis-start' | 'ellipsis-middle' | 'ellipsis-end' | 'clip'</code></td>
-      <td><code>'ellipsis-end'</code></td>
-      <td>要素で使える幅を超えるテキストを、エンジンがどう扱うか。<code>'wrap'</code>は行を複数行に折り返します。省略記号の各モードは各行を1行に保ち、先頭、中央、末尾のいずれかを<code>…</code>で省略します。<code>'clip'</code>は文字を挿入せずに、要素のバウンディングボックスで切り取ります。内容中の改行はどのモードでも有効で、省略と切り取りのモードは各行を個別に省略または切り取ります。<code>overflow</code>を省略した要素は<code>'ellipsis-end'</code>になるため、複数行になりうるもの（住所、長いタイトル）には<code>'wrap'</code>を指定してください。<code>dropCap</code>を持つテキストは、この値にかかわらず折り返します。<code>'clip'</code>の場合も、高さ固定のボックスの端で行は切り取られます。<code>'ellipsis-end'</code>と<code>'ellipsis-start'</code>は単語の境界で切り（<em>The history of th…</em>ではなく<em>The history of…</em>）、省略記号にスペースやつなぎの約物（コンマ、コロン、ダッシュ、スラッシュ、始め括弧）が接することはありません。単語の途中で切るのは、それが避けられない場合、つまりその約物を除いた境界で切ると収まる分の半分未満しか残らない場合だけです。長い1語やURLがこれに当たります（<em>http…</em>ではなく<em>http://exampl…</em>）。ノーブレークスペースとノーブレークハイフン（U+2011。<em>MS‑DOS</em>など）は単語の境界になりません。<code>'ellipsis-middle'</code>はどこででも切りますが、その両側のスペースは取り除きます。postext 1.4までは、どのモードもスペースを含め、収まる最後の文字で切っていました。</td>
+      <td>見出しと部のデザインでは<code>'wrap'</code>、それ以外は<code>'ellipsis-end'</code></td>
+      <td>要素で使える幅を超えるテキストを、エンジンがどう扱うか。<code>'wrap'</code>は行を複数行に折り返します。省略記号の各モードは各行を1行に保ち、先頭、中央、末尾のいずれかを<code>…</code>で省略します。<code>'clip'</code>は文字を挿入せずに、要素のバウンディングボックスで切り取ります。内容中の改行はどのモードでも有効で、省略と切り取りのモードは各行を個別に省略または切り取ります。<code>overflow</code>を省略した要素は配置先の既定値に従います。見出しのデザイン（<code>advancedDesign.slot</code>）と部扉（<code>parts.design</code>、<code>parts.versoDesign</code>）では折り返し、柱・ノンブル・目次の部の行（<code>toc.parts.design</code>、高さ固定の行）では<code>…</code>で終わります。複数行になりうる柱（住所など）には<code>'wrap'</code>を、章扉で1行に収めたいリードには省略記号を指定してください。省略記号で切り詰められた行や、<code>'clip'</code>でボックスの外にはみ出した部分を切り取られた行は、内容の警告<code>designTextTruncated</code>として要素とページごとに1回（柱とノンブルは要素と章ごとに1回）報告されます。postext 1.24より前に保存した構成（<code>configVersion</code>が9以前）は、overflowを設定していない見出しと部のテキストを<code>'ellipsis-end'</code>として読み込むので、ページは動きません。<code>dropCap</code>を持つテキストは、この値にかかわらず折り返します。<code>'clip'</code>の場合も、高さ固定のボックスの端で行は切り取られます。<code>'ellipsis-end'</code>と<code>'ellipsis-start'</code>は単語の境界で切り（<em>The history of th…</em>ではなく<em>The history of…</em>）、省略記号にスペースやつなぎの約物（コンマ、コロン、ダッシュ、スラッシュ、始め括弧）が接することはありません。単語の途中で切るのは、それが避けられない場合、つまりその約物を除いた境界で切ると収まる分の半分未満しか残らない場合だけです。長い1語やURLがこれに当たります（<em>http…</em>ではなく<em>http://exampl…</em>）。ノーブレークスペースとノーブレークハイフン（U+2011。<em>MS‑DOS</em>など）は単語の境界になりません。<code>'ellipsis-middle'</code>はどこででも切りますが、その両側のスペースは取り除きます。postext 1.4までは、どのモードもスペースを含め、収まる最後の文字で切っていました。</td>
     </tr>
     <tr>
       <td><code>verticalAlign</code></td>
@@ -908,7 +926,7 @@ PDFでは、太字とイタリックのランに要素のファミリーの対�
 
 自分で書いたテキスト要素は次の値から始まります。意外に思えるものもあります。
 
-- **`overflow`は`'ellipsis-end'`**。幅に収まらないテキストは`…`付きの1行に切り詰められます。住所、著者名の行、長くなりうるタイトルには`overflow: 'wrap'`を指定してください。内容中の改行（改行文字、またはテンプレートや属性値に書いた`\n`）はどのモードでも新しい行を始め、省略記号のモードは各行を個別に切り詰めます。
+- **`overflow`は配置先で決まる**。見出しのデザインと部扉では長い題が複数行に折り返し、柱・ノンブル・目次の部の行では幅に収まらないテキストが`…`付きの1行に切り詰められます。長くなりうる柱（住所、著者名の行）には`overflow: 'wrap'`を指定し、切り詰められたテキストについては`designTextTruncated`警告を確認してください。内容中の改行（改行文字、またはテンプレートや属性値に書いた`\n`）はどのモードでも新しい行を始め、省略記号のモードは各行を個別に切り詰めます。
 - **`align`は`'center'`、`verticalAlign`は`'middle'`**。自動幅の要素は最も長い行に合わせて縮むため、各行は互いに中央そろえになります。左そろえのブロックにするには`align: 'left'`を指定します（別の要素にアンカーした自動幅の要素は、アンカー側に自動的に行をそろえます。前述）。
 - **書体はEB Garamond 8 pt、黒、`lineHeight`は1.2**。本文が何を使っていても変わりません。設定内のほかの行送りと異なり、デザインのテキストの`lineHeight`は通常は単純な倍数（`1.2`）で書きます。`Dimension`も使えます（前述）。
 
@@ -1593,6 +1611,12 @@ Sandboxでは、これらは**本文**セクションの**引用ブロック**�
       <td><code>0</code></td>
       <td>この行数以下の連は1つの段に収めます。<code>0</code>はオフです。</td>
     </tr>
+    <tr>
+      <td><code>tighten</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>行長よりわずかに長い詩行の語間を、自然な幅の<code>bodyText.minWordSpacing</code>まで詰めて一行に収めます。詰めても収まらない行だけを折り返します。このために字間は変えません。<code>false</code>では行長より長い行をすべて折り返します（postext 1.23と同じ）。リフロー型EPUBは行分割を閲覧システムに任せるので詰めません。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1603,7 +1627,7 @@ bodyText: {
 }
 ```
 
-これらの設定より前に保存された設定（`configVersion`が8以前）で、区切りのない詩を組んでいるものは`layout: 'bayt'`として読まれ、詩はpostext 1.22で組まれたとおり中央に置かれます。
+これらの設定より前に保存された設定（`configVersion`が8以前）で、区切りのない詩を組んでいるものは`layout: 'bayt'`として読まれ、詩はpostext 1.22で組まれたとおり中央に置かれます。postext 1.23で保存された設定（`configVersion`が9）で、一行ずつ組む詩を含むものは`tighten: false`として読まれ、詩行は1.23で折り返した位置で折り返します。
 
 Sandboxでは、これらは**本文**セクションの**詩**グループにあります。
 
@@ -2503,6 +2527,12 @@ headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enab
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
       <td>見出しの行頭からの字下げ。<code>em</code>は<strong>本文</strong>のサイズで、日本の書籍が見出しの字下げを本文の字数で数えるのに合わせています（JLReq §4.1.3）。<code>&#123; value: 6, unit: 'em' &#125;</code>は、見出しのサイズにかかわらず6字下げです。行長はその分狭くなり、中央そろえの見出しは残りの幅の中央に置かれます。postext 1.16以降。</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>見出しの1行目だけの字下げ。<code>indent</code>の位置から測り、<code>indent</code>と同じく<strong>本文</strong>のemで数えます。長い見出しの2行目以降は<code>indent</code>の位置（未設定なら行頭）から始まります。GB/T 9704は各レベルの見出しを2字下げ、折り返した行を行頭に戻して組みます：<code>&#123; value: 2, unit: 'em' &#125;</code>。<code>cjk.grid</code>が有効なら、本文の2 emはグリッドの2マスです。番号付きの見出しは字下げのあとに番号を置くので、番号テンプレートに全角スペースを入れる必要はありません（入れると目次とPDFのしおりにも出力されます）。縦組み（行頭から）、CJKコンポーザー（見出しの先頭の始め括弧は段落と同じく行頭の規則に従います）、Knuth–Plassで働きます。中央そろえの見出しは中央そろえの段落と同じ扱いで、1行目を字下げのあとに残る幅の中央に置きます。見出しのタイトルのあとに<code>&#123;firstLineIndent=N&#125;</code>と書くとその見出しだけに指定でき、<code>&#123;firstLineIndent=0&#125;</code>はレベルの指定を外します。postext 1.24以降。</td>
     </tr>
     <tr>
       <td><code>jidori</code></td>
@@ -4351,6 +4381,8 @@ interface ResourcePlacement {
   align?: 'left' | 'center' | 'right';           // where a float narrower than its column sits; default 'left'
   captionSide?: boolean;                         // caption beside the figure, in the side column of a oneAndHalf layout (column floats only)
   columns?: number;                              // 'column'フロートがまたがる隣り合う段の数（1.18以降）
+  wrap?: 'none' | 'left' | 'right' | 'start' | 'end'; // リソースの横に本文を組み、リソースは段のその側（1.24以降）
+  wrapGap?: Dimension;                           // 回り込むリソースと本文との間隔（1.24以降）
 }
 
 interface ResourceType {
@@ -4366,7 +4398,7 @@ interface ResourceType {
 }
 ```
 
-`ResourcePlacement`は、リソースが自身の`placement`に設定するものと同じ形です。`position`はフロートが入れる空き位置の種類を選びます。`auto`（既定値）は最初の参照の後にある最初の空き位置を取り、`top`／`bottom`はその種類の帯に限定し、`here`はリソースをインラインで埋め込みます。`span`はフロートの範囲を、1段、本文領域の全幅、または1段半レイアウトのフロート専用サイド段から決めます。`rotate`はリソースを90度回転させ、独立したページに置くページ幅のフロートにします。`width`はフロートを段の幅（ページ幅のフロートではページの幅）の一部に狭めます。たとえば広い段に置く小さな表です。`align`は、そのように狭めたフロートを置く位置（既定は左、ほかに中央と右）と、空き位置より狭い画像をその中のどこに置くかを決めます。段より小さいビットマップや、`layout.fitFiguresToPage`が縮小した画像が対象です。キャプションと注は空き位置の行長を保ちます（postext 1.4までは、そうした画像は常に左そろえでした）。`captionSide`は、1段半レイアウト（`layout.sideColumnRole: 'floats'`）のフロート専用サイド段で、キャプションを図の横、図の上端（下側のフロートでは下端）の高さに置きます。段幅のフロートにだけ適用され、そうした段のないページではキャプションは図の下のままです。リソースもその種類も配置を設定しない場合、組み込みの既定値は`auto`／`column`です。
+`ResourcePlacement`は、リソースが自身の`placement`に設定するものと同じ形です。`position`はフロートが入れる空き位置の種類を選びます。`auto`（既定値）は最初の参照の後にある最初の空き位置を取り、`top`／`bottom`はその種類の帯に限定し、`here`はリソースをインラインで埋め込みます。`span`はフロートの範囲を、1段、本文領域の全幅、または1段半レイアウトのフロート専用サイド段から決めます。`rotate`はリソースを90度回転させ、独立したページに置くページ幅のフロートにします。`width`はフロートを段の幅（ページ幅のフロートではページの幅）の一部に狭めます。たとえば広い段に置く小さな表です。`align`は、そのように狭めたフロートを置く位置（既定は左、ほかに中央と右）と、空き位置より狭い画像をその中のどこに置くかを決めます。段より小さいビットマップや、`layout.fitFiguresToPage`が縮小した画像が対象です。キャプションと注は空き位置の行長を保ちます（postext 1.4までは、そうした画像は常に左そろえでした）。`captionSide`は、1段半レイアウト（`layout.sideColumnRole: 'floats'`）のフロート専用サイド段で、キャプションを図の横、図の上端（下側のフロートでは下端）の高さに置きます。段幅のフロートにだけ適用され、そうした段のないページではキャプションは図の下のままです。リソースもその種類も配置を設定しない場合、組み込みの既定値は`auto`／`column`です。`shrink`（`'never'`、`'page'`、`'slot'`）と`minScale`（未設定なら0.7）は、フロートの図版を次へ送らずに置き場所の空きまで縮小し、`captionMeasure: 'body'`は置き場所より幅の狭い図版のキャプションと注を図版の幅で組みます（[ドキュメント形式 › 配置](/ja/docs/document-format#配置)を参照）。前の2つのドキュメント既定値は`layout.floatShrink`で決めます。`wrap`は本文中の埋め込みや 1 段幅のフロートを段の片側に置き、`wrapGap`離して本文を横に組みます。既定値は`layout.wrap`にあります（[文書の書式 › 回り込み](/ja/docs/document-format#回り込み)を参照）。
 
 `columns`（postext 1.18以降）は、複数の段があるページで、`span: 'column'`のフロートを指定した数の隣り合う段にまたがって置きます。新聞の5段のうち2段にまたがる写真などです。幅はそれらの段とその間の段間を合わせたものです。上端のそろった空の段の並びの頭か、引用した段とその後の空の段の足に置かれます。ページの段数以上を指定すると、ページ幅のフロートになります。`'page'`と`'side'`のspan、回転したリソース（`rotate`）、インラインの埋め込み（`here`）では無視され、`captionSide`は1段幅のフロートにだけ効きます。
 
@@ -4640,7 +4672,7 @@ const config: PostextConfig = {
       <td><code>borderWidth</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75pt</code></td>
-      <td>罫線の太さ（96 DPIで約1px。ページのDPIに応じて変わります）。</td>
+      <td>罫線の太さ（96 DPIで約1px。ページのDPIに応じて変わります）。<code>'booktabs'</code>はこれを使わず、独自の太さを使います。</td>
     </tr>
     <tr>
       <td><code>cellPadding</code></td>
@@ -4650,15 +4682,57 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>rules</code></td>
-      <td><code>'grid' | 'horizontal' | 'outer' | 'none'</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'</code></td>
       <td><code>'grid'</code></td>
-      <td><code>borders</code>がオンのときに引く罫線です。セルの格子全体、水平の罫線だけ（各行の上端と下端。縦の罫線はなし）、外枠だけ、なしのいずれかです。</td>
+      <td><code>borders</code>がオンのときに引く罫線です。セルの格子全体、水平の罫線だけ（各行の上端と下端。縦の罫線はなし）、外枠だけ、なし、または学術誌の表の三本罫（<a href="#booktabs-の罫線">booktabs の罫線</a>を参照）のいずれかです。</td>
     </tr>
     <tr>
       <td><code>borderRadius</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>表の外枠の角の半径です。外枠は角を丸めて引かれ（<code>grid</code>または<code>outer</code>の罫線の場合）、セルの塗りと見出しの背景はこの形で切り抜かれます。<code>rules: 'none'</code>のときや罫線がオフのときも同じです。水平の罫線は外側の輪郭に合わせて切り詰められ、内側の罫線はまっすぐなままです。ページをまたいで分割された表は、最初の部分の上の角と最後の部分の下の角を丸めます。値は表の幅と高さの半分までに制限されます。</td>
+      <td>表の外枠の角の半径です。外枠は角を丸めて引かれ（<code>grid</code>または<code>outer</code>の罫線の場合）、セルの塗りと見出しの背景はこの形で切り抜かれます。<code>rules: 'none'</code>のときや罫線がオフのときも同じです。水平の罫線は外側の輪郭に合わせて切り詰められ、内側の罫線はまっすぐなままです。ページをまたいで分割された表は、最初の部分の上の角と最後の部分の下の角を丸めます。値は表の幅と高さの半分までに制限されます。<code>'booktabs'</code>の罫線は直線のままです（塗りは角に合わせて切り抜かれます）。</td>
+    </tr>
+    <tr>
+      <td><code>heavyRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>booktabs：表の上と最終行の下の罫線。<code>em</code>は本文セルの文字サイズです。</td>
+    </tr>
+    <tr>
+      <td><code>lightRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>booktabs：見出し行の下の罫線とグループ罫。</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.03em</code></td>
+      <td>booktabs：複数列にまたがる見出しセルの下の罫線。</td>
+    </tr>
+    <tr>
+      <td><code>spanRules</code></td>
+      <td><code>'trimmed' | 'full' | 'none'</code></td>
+      <td><code>'trimmed'</code></td>
+      <td>booktabs：最後の見出し行より上で複数列にまたがる見出しセルの下の罫線。両端を<code>spanRuleTrim</code>ずつ詰める、セル幅いっぱいに引く、引かない、のいずれか。</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleTrim</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>booktabs：両端を詰めるまとめ罫を、片側でどれだけ短くするか。</td>
+    </tr>
+    <tr>
+      <td><code>groupRules</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>booktabs：グループの見出しとなる本体行の上に細罫を引きます。</td>
+    </tr>
+    <tr>
+      <td><code>continuedFootRule</code></td>
+      <td><code>'bottom' | 'light' | 'none'</code></td>
+      <td><code>'light'</code></td>
+      <td>booktabs：分割した表のうち次のページへ続く部分を閉じる罫線。</td>
     </tr>
     <tr>
       <td><code>overflow</code></td>
@@ -4708,6 +4782,29 @@ const config: PostextConfig = {
 
 VDTでは、交互の行のセルが`alternate: true`を持ち、表のレイアウトが`bodyAlternateBackground`を持ちます。`tableCellFill(table, cell)`は、セルを塗る色（セル自身の色、見出しの色、交互の色、本体の色のいずれか）を返し、キャンバス、HTML、PDFのバックエンドはどれもこの色で塗ります。隣り合う塗りは継ぎ目なく接します。端数のピクセル比で表示するブラウザーやPDFビューアーは塗りを1つずつアンチエイリアス処理するため、そのままでは2つのセルの間にヘアライン状にページが透けて見えます。そこでHTMLとPDFのバックエンドは`tableCellFillRects(table)`を塗ります。これは各セルの塗りに、後から塗るセルと共有するすべての辺をまたぐ細い帯を加えたもので、その帯は後のセルが覆います。キャンバスは塗りをデバイスピクセルに合わせます。
 
+### booktabs の罫線
+
+学術誌や教科書の表は、縦罫を使わず三本の罫線で組むのが普通です。表の上に太罫、見出しの下に細罫、最終行の下に太罫を引き、複数列をまとめる見出しの下には短い罫を引きます（LaTeX の`booktabs`パッケージの`\toprule`、`\midrule`、`\cmidrule`、`\bottomrule`）。`rules: 'booktabs'`はこの形を描きます。
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    rules: 'booktabs',
+    borderColor: { hex: '#000000', model: 'hex' },
+    headerBackgroundEnabled: false,
+  },
+};
+```
+
+- 表の上の罫線と最終行の下の罫線の太さは`heavyRuleWidth`（`0.08em`）、見出し行の下の罫線は`lightRuleWidth`（`0.05em`）です。見出し行のない表には見出しの罫線がありません。
+- 最後の見出し行より上で複数列にまたがる見出しセルの下には、太さ`spanRuleWidth`（`0.03em`）の罫線を引きます。`spanRules: 'trimmed'`（既定）では両端を`spanRuleTrim`（`0.5em`）ずつ詰めるので、隣り合う二つの見出しの罫線は接しません。`'full'`はセル幅いっぱいに引き、`'none'`は引きません。
+- `groupRules: true`は、グループの見出しとなる本体行（表の全幅にわたる一つのセル、または見出しセルだけの行）の上に細罫を加えます。その行が表やページの先頭に来るときは、見出しの罫線がすでにあるので加えません。
+- 太さは本文セルの文字サイズ（`bodyFontSize`）を基準に解決するので、見出しの文字が大きくても見出しの罫線は太くなりません。太さを`0`にするとその罫線は引きません。
+- 罫線の色は`borderColor`です（パレットに結び付いた色はパレットと`:::part palette`に従います）。`borders: false`ですべて消えます。`borderWidth`も`borderRadius`も効きません。罫線は直線のままで、セルの塗りは角丸の枠に合わせて切り抜かれます。見出しの塗り、縞模様の行、セル自身の`background`はほかのパターンと同じく罫線の下に塗られます。
+- ページをまたいで分割した表は各部分で見出し行を繰り返すので、どの部分も太罫と見出しの罫線で始まります。最終行の下の太罫は最後の部分だけを閉じます。次のページへ続く部分は`continuedFootRule`で終わります。細罫（`'light'`、既定）、太罫（`'bottom'`）、なし（`'none'`）のいずれかです。
+
+罫線はレイアウトが一度だけ計算します。VDT の表はそれを`strokes`（`{ x1, y1, x2, y2, widthPx }`、表本体の左上隅からの相対位置）として持ち、キャンバス、HTML ビューア、PDF、固定レイアウトの EPUB はそのとおりに引きます。タグ付き PDF ではレイアウトのアーティファクトです。リフロー型 EPUB では表と見出しの CSS の罫線として書き出し、両端を詰めた罫線は背景の線で描きます。Sandbox では、**罫線**のリストで**booktabs**（三本罫）を選ぶとこれらの項目が表示され、**罫線の太さ**と**角の半径**は隠れます。
+
 ### 名前付きの表スタイル
 
 文書の表がすべて同じ体裁であることはまれです。角を丸めた外枠付きの紺の格子のチェックリスト、外枠だけで囲んだ選択肢の行、水平の罫線だけのデータ表、といった具合です。`tableStyles`で名前付きの変種を宣言し、表リソースは`table.styleId`でその1つを選びます。スタイルが設定していないフィールドは、まず`tableStyle`から、次に本文から読み取られるため、スタイルにはその表を区別する点だけを書けば済みます。`styleId`のない表や、どのスタイルも宣言していないidを持つ表は`tableStyle`のままです。`tableStyles`のない文書は、これまでとまったく同じに描画されます。
@@ -4739,11 +4836,11 @@ const resource: Resource = {
 };
 ```
 
-各エントリーは`tableStyle`のすべてのフィールドに加えて、`id`（`table.styleId`が参照するもの）と、エディター向けの省略可能な`name`（既定値はid）を取ります。スタイルで設定できるものはすべて表ごとに適用されます。文字組み、塗り、罫線、罫線の引き方、角の半径、内側余白、そして続きの文字列を含む、ページに収まらないときの扱いです。`resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)`は解決済みのリストを、`pickTableStyle(resolved, styleId)`は表を組むスタイルを返し、`stripTableStylesDefaults`は未設定のフィールドを取り除きます（組み込みの既定値と等しいフィールドは残します。そのフィールドは、異なる`tableStyle`の値を引き続き上書きするからです）。
+各エントリーは`tableStyle`のすべてのフィールドに加えて、`id`（`table.styleId`が参照するもの）と、エディター向けの省略可能な`name`（既定値はid）を取ります。スタイルで設定できるものはすべて表ごとに適用されます。文字組み、塗り、罫線、罫線の引き方、角の半径、内側余白、そして続きの文字列を含む、ページに収まらないときの扱いです。`resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)`は解決済みのリストを、`pickTableStyle(resolved, styleId)`は表を組むスタイルを返し、`stripTableStylesDefaults`は未設定のフィールドを取り除きます（組み込みの既定値と等しいフィールドは残します。そのフィールドは、異なる`tableStyle`の値を引き続き上書きするからです）。リフロー型 EPUB では、名前付きスタイルは表のクラス（`pt-table-<id>`）になり、本のスタイルシートがそれを装飾します。
 
 ### ページより高い表
 
-フロートの表が、渡された新しいページに収まらない場合でも、縮められたりはみ出したりはしません。`overflow: 'split'`（既定値）では、エンジンがページに収まる最後の行境界で表を分割し、必要なだけ次のページに続けます。続きの各部分は表の見出し行（`TableModel.headerRowCount`、未設定なら見出しのセルだけからなる先頭の行）を繰り返し、説明の後に`continuedSuffix`を付けたキャプションを再び掲げます（「Table 6-4. Title *(cont.)*」）。次に続く各部分の下には、注記の書体で`continuesMarker`を右そろえに置きます。表の注記は最後の部分まで持ち越されます。分割は結合したセルを横切りません（行方向に結合したセルは丸ごと次の部分に移ります）。また、下に続く行の見出しとなる行、つまり表の全幅にわたる1つのセルからなる行は、ページの末尾に取り残されず、次の部分へ送られます。
+フロートの表が、渡された新しいページに収まらない場合でも、縮められたりはみ出したりはしません。`overflow: 'split'`（既定値）では、エンジンがページに収まる最後の行境界で表を分割し、必要なだけ次のページに続けます。続きの各部分は表の見出し行（`TableModel.headerRowCount`、未設定なら見出しのセルだけからなる先頭の行）を繰り返し、説明の後に`continuedSuffix`を付けたキャプションを再び掲げます（「Table 6-4. Title *(cont.)*」）。次に続く各部分の下には、注記の書体で`continuesMarker`を右そろえに置きます。表の注記は最後の部分まで持ち越されます。分割は結合したセルを横切りません（行方向に結合したセルは丸ごと次の部分に移ります）。また、下に続く行の見出しとなる行、つまり表の全幅にわたる1つのセルからなる行は、ページの末尾に取り残されず、次の部分へ送られます。booktabs の表は、続く各部分を`continuedFootRule`で閉じます（[booktabs の罫線](#booktabs-の罫線)を参照）。
 
 **最初の部分の終わる位置**。参照の後で空の段の頭を渡された表は、そこに収まる行を取り、次の枠に続きます。段を単独で占めるときは、段の下端まで埋めます。部分の下に本文の行が3行未満しか残らない場合は、テキストの切れ端を残さず、その行も取ります。段にすでに別のフロートの帯がある場合（たとえばページの頭を横切る全幅の図）は、部分は段の下端から少なくとも本文3行分手前で止まります。これは、フロートがほかのフロートと段を共有するときに残すテキストの余地で、段がフロートだけで終わらず、表の下にいくらかテキストが来るようにするためです。長い表を段の下端まで続けたい場合は、表が始まるページにほかのフロートがない位置で参照するか（たとえば全幅の図のあるページの次）、行を段に収まるようにしてください。
 
@@ -6622,7 +6719,7 @@ const config: PostextConfig = {
       <td>レベルのフィールド</td>
       <td><code>headings.levels[]</code>と同じ</td>
       <td>そのレベルの値</td>
-      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>breakBefore</code>、<code>span</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：設定したものはそれぞれ、このスタイルの見出しについて見出しのレベルの値を置き換えます（<code>dropCap: false</code>はレベルのドロップキャップを外します）。<code>breakBefore</code>はレベルの値にフィールドごとにマージされます。<code>parity</code>だけを設定したスタイルはレベルの<code>enabled</code>を保ち、<code>enabled: true</code>だけを設定したスタイルはレベルの奇偶を保ちます（postext 1.4までは、欠けたフィールドは改ページなしの既定値から取られていました）。</td>
+      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>breakBefore</code>、<code>span</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>firstLineIndent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：設定したものはそれぞれ、このスタイルの見出しについて見出しのレベルの値を置き換えます（<code>dropCap: false</code>はレベルのドロップキャップを外します）。<code>breakBefore</code>はレベルの値にフィールドごとにマージされます。<code>parity</code>だけを設定したスタイルはレベルの<code>enabled</code>を保ち、<code>enabled: true</code>だけを設定したスタイルはレベルの奇偶を保ちます（postext 1.4までは、欠けたフィールドは改ページなしの既定値から取られていました）。</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -8102,7 +8199,7 @@ interface PrintPreflightConfig {
   </thead>
   <tbody>
     <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>検査を実行します。</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>印刷サイズ（トリミングを含む）での1インチあたりの画素数がこれを下回る、配置したビットマップに警告を出します。対象は図、表のセルの画像、デザインの画像、漫画のコマです。原寸で配置したビットマップは`page.dpi`で印刷されるので、150 dpiで組んだページでは、そうした画像はすべて150 ppiで印刷されます。</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>印刷サイズ（トリミングを含む）での1インチあたりの画素数がこれを下回る、配置したビットマップに警告を出します。対象は図、表のセルの画像、デザインの画像、漫画のコマです。自身の解像度を持たないビットマップは原寸では`page.dpi`で印刷されるので、150 dpiで組んだページでは、そうした画像はすべて150 ppiで印刷されます。解像度（`bitmap.resolution`、`layout.bitmapResolution`）を持つビットマップは、原寸ではその解像度で印刷されます。</td></tr>
     <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>これを下回ると、警告は重大になります。`minImageResolution`より大きくはなりません。</td></tr>
     <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>これより細い罫線、枠、段間罫、表の罫、漫画のコマの枠。</td></tr>
     <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>これより小さく、複数のインキ（プロセスカラー、リッチブラック）で刷る文字。版がずれるとにじみます。K版だけの黒い文字は対象になりません。</td></tr>
@@ -8112,10 +8209,10 @@ interface PrintPreflightConfig {
   </tbody>
 </table>
 
-`preflightDocument(doc, options)`は組み上がった文書を検査し、問題の一覧を返します。各問題は、`kind`、`severity`（`'critical'`、`'warning'`、`'info'`）、本全体での`pageIndex`、問題のある`rect`（ページのpx）と、要素が持っていればそのソースの範囲を持ちます。`kind`は`lowImageResolution`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`、`nearTrim`です。`transform`を渡さないときは、無彩色を1色、それ以外の色を3色と数え、インキ量は検査しません。渡すと、色数もインキ量も正確に求めます。
+`preflightDocument(doc, options)`は組み上がった文書を検査し、問題の一覧を返します。各問題は、`kind`、`severity`（`'critical'`、`'warning'`、`'info'`）、本全体での`pageIndex`、問題のある`rect`（ページのpx）と、要素が持っていればそのソースの範囲を持ちます。`kind`は`lowImageResolution`、`declaredPixelsMismatch`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`、`nearTrim`です。`transform`を渡さないときは、無彩色を1色、それ以外の色を3色と数え、インキ量は検査しません。渡すと、色数もインキ量も正確に求めます。画像の解像度は、リソースが宣言するピクセル数から求めます。`imageSize(fileId)`がファイル自体のピクセル数を返すとき（バイト列に対する`bitmapInfo`、またはデコードした画像）は、そちらを使います。宣言がファイルと1ピクセルより大きく食い違うと`declaredPixelsMismatch`として1回報告され、ファイルにあるより多いピクセル数を宣言している場合は警告になります。`placedImageResolutions(doc, { resources, imageSize })`は、プリフライトの有効・無効にかかわらず、配置したすべてのビットマップをその実効ppiとともに一覧にします。
 
 ```ts
-import { outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
 import { inspectPrintMaster } from 'postext-pdf';
 
 const print = resolvePrintConfig(config.print);
@@ -8124,6 +8221,7 @@ const issues = preflightDocument(doc, {
   print,
   transform,
   resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
   imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
 });
 if (issues.some((i) => i.severity === 'critical')) process.exit(1);
@@ -8623,6 +8721,7 @@ debug: {
 - **不明な設定**：`headings`、`headings.balancing`、見出しレベル、見出しスタイル、段落スタイルにないキーです。たとえば綴りを誤った`letterSpacng`、別のツールから持ち込んだ`tracking`、見出しスタイルに付けた`level`、段落スタイルに付けた`fontStyle: 'italic'`（段落スタイルは`italic: true`を取ります）などです。タブ位置も同じように検査されます（`leader`を`leaders`と書いた場合など）。エンジンはこれを無視します（postext 1.4までは何も知らせずに無視していました）。`value`はそのキー、`used`は空で、`suggestion`は、1、2文字の違いか大文字小文字の違いだけで済む設定があれば、その最も近い設定の名前を示します（`unknownConfigKey`）。
 - **不明な設定値**：いくつかの語のうち1つを取る設定に、別の値が入っている場合です。たとえば`direction: 'right'`です（`auto`、`ltr`、`rtl`のいずれかを取ります）。エンジンは代わりに既定値を読み、`used`がその結果を示します。`direction`なら文書の言語の方向になります（`unknownConfigValue`）。タブ位置の`align`が4つの語のどれでもなければ`'start'`として読み、`position`が長さでも`'end'`でも割合でもなければそのタブ位置を除外します（`used`は`'none'`）。漫画の設定の語も検査されます（[漫画 › 漫画の警告](/ja/docs/comics#漫画の警告)）。そのとき`used`は設定が解決された値（組み込みの吹き出しのスタイルでは、そのスタイル自身の既定値）で、近い語があれば`suggestion`がその語を示します。
 - **縦組みの行番号**：縦組みの文書（`layout.writingMode: 'vertical-rl'`）で`lineNumbers.enabled: true`を指定した場合です。縦組みのページには行番号が付かず、`used`は`false`です（`lineNumbersUnsupported`。[行番号](#行番号)を参照）。
+- **縦組みでの回り込み** — 縦組みの文書でのリソースタイプの`defaultPlacement.wrap`。縦組みのページでは図版の横に本文を組まず、`used`は`none`です（`wrapUnsupported`。[文書の書式 › 回り込み](/ja/docs/document-format#回り込み)を参照）。側を指さない`wrap`は不明な設定値です。
 
 Sandboxはこれらを**検査**パネルに、設定のパスとともに表示します。コードでは、`buildDocument`が文書に`configWarnings`として付け（設定に問題がなければ存在しません）、`collectConfigWarnings(config)`はレイアウトを行わずにこれらを返します：
 
@@ -8686,6 +8785,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>calloutOverflow</code></td>
       <td><code>:::callout</code>のボックスがどの段にも収まらず、どこで切っても分割できない。</td>
       <td>それでも配置され、段から<code>overflowPx</code>だけはみ出します（<code>pageIndex</code> / <code>columnIndex</code>の位置）。<code>doc.warnings</code>に入る唯一の種類で、以下の種類は<code>doc.contentWarnings</code>に入ります。</td>
+    </tr>
+    <tr>
+      <td><code>invalidFrontmatter</code></td>
+      <td>フロントマターが正しいYAMLではありません（閉じていない引用符、引用符で囲んだ値の後に続く文字など）。<code>message</code>はパーサーが示す理由と、その行と列です。</td>
+      <td>文書はメタデータなしで組版されます。閉じの<code>---</code>より後の本文は通常どおり組版されます。</td>
     </tr>
     <tr>
       <td><code>unknownResourceId</code></td>
@@ -8781,6 +8885,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>codeOverflow</code></td>
       <td><a href="#コードリスト">コードリスト</a>に枠より長い行がある。<code>mode</code>は<code>codeStyle.overflow</code>が行った処理（<code>'wrap'</code>、<code>'shrink'</code>、<code>'clip'</code>）、<code>lines</code>は長すぎた元の行の数、<code>scale</code>は縮小したコードリストを組んだサイズ（<code>fontSize</code>に対する割合）、<code>lang</code>はフェンスの言語です。コードリストを指します。</td>
       <td><code>mode</code>が示すとおり、行は折り返されるか、小さく組まれるか、切られます。</td>
+    </tr>
+    <tr>
+      <td><code>floatShrunk</code></td>
+      <td>フロートの図版を、置き場所の空きに収めるため元より小さく組みました（<code>placement.shrink</code>）。<code>resourceId</code>はその図版、<code>scale</code>は保った幅の比率です。<code>overflowPx</code>があれば、ほかに行き場のない新しいページで、最小倍率（<code>placement.minScale</code>）で組んでもなお版面の下端からはみ出す量です。最初に引用している段落を指します。</td>
+      <td>図版はその倍率で印刷されます。版面からはみ出すのは<code>overflowPx</code>があるときだけです。</td>
+    </tr>
+    <tr>
+      <td><code>textWrap</code></td>
+      <td>本文を回り込ませる設定のリソースまたはボックス（<code>placement.wrap</code>、ボックスの<code>wrap</code>）が指定どおりに組まれなかったこと。<code>reason</code>：<code>'tooNarrow'</code>（横の本文が<code>layout.wrap.minTextWidth</code>より狭くなる）、<code>'fewLines'</code>（<code>layout.wrap.minLinesBeside</code>行より低い）、<code>'moved'</code>（段の残りに収まらない本文中の対象がアンカーとともに次の段へ移った）、<code>'verticalText'</code>。<code>resourceId</code>はリソース、<code>box</code>はボックスのスタイル。埋め込みまたはボックスを指します。</td>
+      <td>理由に応じて、対象は全幅を占めるか、次の段に置かれます。</td>
     </tr>
   </tbody>
 </table>
@@ -9836,7 +9950,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.cutLines.enabled: true`** — 仕上がり線の周りに裁ち落とし領域とトンボを加え、各ページにTrimBoxとBleedBoxを設定します。[トンボ](#トンボ)を参照してください。
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`**（または`'pdfx1a'`） — 印刷所が確認する出力インテント、識別情報、ボックスを備えたPDF/Xファイルを書き出します。すべての色とRGBの画像はICCプロファイルで分版され、K 100%はオーバープリントになり、大きな黒い面はリッチブラックで刷られます。[印刷出力（設定）](#印刷出力設定)を参照してください。
 - **`colorSpace: 'cmyk'`**（または`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`） — PDF/Xの識別情報なしで、同じ分版を行います（トンボは常にレジストレーションカラーです）。PDFの印刷用マスターはそのまま埋め込まれます。
-- **`page.dpi: 300`** — レイアウトの1インチあたりのpx数です。原寸で配置したビットマップは、この解像度で印刷されます。印刷サイズで300 ppiに満たない画像は、[プリフライト](#プリフライト)が報告します。
+- **`page.dpi: 300`** — レイアウトの1インチあたりのpx数です。自身の解像度を持たないビットマップは、原寸ではこの解像度で印刷されます。印刷サイズで300 ppiに満たない画像は、[プリフライト](#プリフライト)が報告します。
 - **`ColorValue.cmyk`** — CMYKで指定した色は、その値のまま印刷されます。
 - **`{ pageNegative: true }`**（`RenderToPdfOptions`のオプション） — Differenceブレンドモードで仕上がり領域を反転します（トンボは反転しません）。明るい地に暗い文字の組版を、プリフライトで確認するのに便利です。
 
@@ -10061,7 +10175,7 @@ bundle.files;      // Map<path, Uint8Array>: every file of the bundle
 
 #### postext 1.4以前で書き出したバンドル
 
-`createBundle`とSandboxが書き出すマニフェストには、必ず`configVersion: 9`が入っています。これは、その`config`がどの設定規則を前提に書かれたかを示します。これを持たないマニフェストはpostext 1.4以前で書き出されたもので、次の17点の扱いが現在と異なります。
+`createBundle`とSandboxが書き出すマニフェストには、必ず`configVersion: 10`が入っています。これは、その`config`がどの設定規則を前提に書かれたかを示します。これを持たないマニフェストはpostext 1.4以前で書き出されたもので、次の18点の扱いが現在と異なります。
 
 - **見出しの改ページ**（規則3）：1.4までは、H1の改ページを持たない`headings`オブジェクトでは改ページが入りませんでした（[レベルごとの上書き](#レベルごとの上書き)を参照）。
 - **数式のサイズ**（規則4）：1.4までは、数式が`fontSizeScale`の指定より1.131倍大きく組まれていました（[数式のサイズ](#数式)を参照）。
@@ -10080,8 +10194,9 @@ bundle.files;      // Map<path, Uint8Array>: every file of the bundle
 - **1行目の字下げとぶら下げインデントの併用**（規則9）：1.22までは、段落スタイルの`hangingIndent`が`firstLineIndent`に取って代わり、1行目は`indent`から始まっていました（[段落スタイル](#段落スタイル)を参照）。
 - **行末のバックスラッシュ**（規則9）：1.22までは、段落・引用・リスト項目の行末のバックスラッシュと、後ろにスペースのある`\\`はそのまま印字され、行はスペースを挟んでつながっていました（[本文](#本文)の`bodyText.hardLineBreaks`を参照）。
 - **コードフェンス**（規則9）：1.22までは、```` ``` ````や`~~~`のフェンスとその中の行をMarkdownとして読んでいました。行は段落に結合され、`#`の行は見出しになり、フェンスは印字されていました（[コードリスト](#コードリスト)の`codeStyle.blocks`を参照）。
+- **詩行の折り返し**（規則10）：1.23では、一行ずつ組む詩で行長より長い行は、はみ出しがわずかでも自然な語間のまま折り返していました（[詩](#詩)の`bodyText.verse.tighten`を参照）。
 
-`openBundle`と`readBundle`は、そのようなマニフェストの`config`と、各ロケールの`localized`の設定を`migrateConfig`を通して読み込みます。この関数は1.4が組んだ改ページを明示的に書き出し、数式の倍率に1.131を掛けます（`em`で指定した別行立て数式のアキはこの値で割ります）。1.5のプレリリースが書いた`3`から`7`の値を持つマニフェストには、その値より後の規則の固定だけが入ります。`3`なら数式のサイズ、インラインのアキ、規則6の5つの固定、規則7の2つ、規則8の3つ。`4`ならインラインのアキと、規則6、7、8の固定。`5`なら規則6、7、8の固定。`6`なら規則7と8の固定。`7`なら規則8の固定だけです。見出しの下での分割（`pinLegacyHeadingSplit`）は、各層を重ねた結果有効になる`headings`に`headings.keepWithNextSplit: 'fill'`として書き込まれます。条件は、読み込んだ章に見出しがあり、設定が独自の値を指定しておらず、`headings.keepWithNext`を有効のままにし、`bodyText.avoidOrphans`を無効にしていないことです。複合語の改行（`pinLegacyHyphenBreaks`）は、有効な`bodyText`に`bodyText.breakAfterHyphens: false`として書き込まれます。条件は、読み込んだ章に2文字の間のハイフンがあり、設定がこの値をすでに設定しておらず、`optimalLineBreaking`も無効にしていないことです。コンテナーの下のアキ（`pinLegacyParagraphContainerSpacing`）は、有効な`bodyText`に`bodyText.paragraphContainerSpacing: 'add'`として書き込まれます。条件は、設定が段落スタイルを（`paragraphStyles`またはHTMLビューアーの上書きで）宣言し、読み込んだ章が単独の行で`:::paragraphs`コンテナーを開き、設定がこの値をすでに設定していないことです。ダッシュでの改行（`pinLegacyDashBreaks`）は、有効な`bodyText`に`bodyText.breakAfterDashes: false`として書き込まれます。条件は、読み込んだ章に語と語の間に前後を詰めて置いたemダッシュやenダッシュがあり（前に文字、数字、閉じる約物があり、後ろに文字、数字、開き括弧や開き引用符があるもの。ダッシュの前の引用符は、その引用符の前に文字、数字、閉じる約物、ノーブレークスペースがあれば数に入ります。`"no"—and`は該当し、`said "—Hola`は該当しません。ダッシュや引用符に接するインラインのマーク、たとえば`**riddles.**—I`の`**`は、どちら側にあっても数に入ります）、設定がこの値をすでに設定していないことです。行末不ぞろいの改行（`pinLegacyRaggedBreaking`）は、有効な`bodyText`に`bodyText.optimalRagged: false`として書き込まれます。条件は、設定が本文テキストのどこかを行末不ぞろいにし（本文テキスト、段落スタイル、囲みの本文、部の本文、節のスタイルの本文（`headingStyles[].bodyStyle`）、またはHTMLビューアーの上書きで、`'justify'`以外の`textAlign`を指定する）、この値をすでに設定しておらず、`optimalLineBreaking`も無効にしていないことです。ボックスの中のアキ（`pinLegacyBoxResourceGap`）は、有効な`layout`に`layout.inlineResourceGapInBoxes: false`として書き込まれます。条件は、読み込んだ章の`:::callout`の中にリソースが単独の行で埋め込まれ、設定がこの値をすでに設定していないことです。ボックスの分割（`pinLegacyBoxChildCut`）は、有効な`layout`に`layout.boxChildSplitMinLines: 1`として書き込まれます。条件は、読み込んだ章が単独の行で`:::callout`を開き、設定がこの値をすでに設定していないことです。見出しのマーク（`pinLegacyHeadingMarks`）は、各層を重ねた結果有効になる`headings`に`headings.inlineMarks: false`として書き込まれます。条件は、読み込んだ章の見出しがマーク（タイトル内の`*`、`_`、`^`、`~`、`:smallcaps[`、またはリンク）を含み、設定が独自の値を指定していないことです。ドロップキャップ（`pinLegacyDropCapSize`）は、どこにあっても1.4のサイズが`dropCap.fontSize`として書き出されます。単位は、要素の行送りが長さで指定されていればその単位、そうでなければフォントサイズの単位です。コロンで終わる行の下の余地（`pinLegacyColonListRoom`）は、有効な`bodyText`に`bodyText.colonListRoom: 'line'`として書き込まれます。条件は、読み込んだ章のリストがコロンで終わる行に続き（間に空行があってもかまいません）、設定が余地を指定しておらず、`keepColonWithList`も無効にしていないことです。インラインのアキ（`pinLegacyInlineGap`）は、各層を重ねた結果有効になる`layout`に`layout.inlineResourceGap: 'above'`として書き込まれます。条件は、読み込んだ章のある行がリソースを埋め込み（パーサーの解釈どおり、`::resource{id="…"}`が単独で行にあるもの。本文中やコードスパンでの言及は数に入りません）、設定が独自のアキを指定していないことです。サイズは、各層を重ねた結果有効になる`math`に固定されます（ロケール独自の`math`は共有のものを置き換えます）。これは読み込んだ章に`$`がある場合に限られ、数式のないバンドルの`config`は書かれたまま残ります。マニフェストもロケールも`math`を指定しない場合、有効なものは`readBundle`の`baseConfig`（読み込む側自身の設定）のもので、これも固定されます。1.4はバンドルの数式をそのサイズで組んでいたからです。基本設定の`fontSizeScale: 1.5`は1.5 × 1.1312として読まれます。基本設定の見出しの改ページはそのまま使われます。このように古いバンドルはこれらの規則で組まれた結果を保ち、`bundle.config`には、実際に組むときの改ページ、数式のサイズ、アキ、見出しのマーク、ドロップキャップのサイズ、コロンで終わる行の下の余地、ボックスの分割、ダッシュでの改行、複合語の改行、行末不ぞろいの改行、見出しの下での分割、コンテナーの下のアキが表示されます。1.5のレイアウトの修正には固定がなく、ほかの本と同じく古いバンドルにも適用されるため、それらが関わるページは動くことがあります（一覧は[数式のサイズ](#数式)を参照）。現在の規則に合わせて手で書く`preset.json`には`"configVersion": 9`を指定します。古いバンドルのマニフェストにこの値を書き込むのも、現在の規則で読み込むための1行で済む方法です（その場合、バージョンのないバンドルは見出しの改ページの固定も失います）。`8`と記されたマニフェスト（postext 1.5〜1.22が書いたもの）は規則9の4つの固定だけを受け、それより古いものも同様に受けます。詩の組み方（`pinLegacyVerseLayout`）は、読んだ章に開始行で組み方を指定せず行に半句の区切りもない`:::verse`の詩があり、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.verse.layout: 'bayt'`として書き込まれます。組になった字下げ（`pinLegacyPairedIndents`）は、0でない`hangingIndent`も決めている段落スタイル（`paragraphStyles`またはHTMLビューアーの上書き設定のもの）すべてから`firstLineIndent`を外します。強制改行（`pinLegacyHardBreaks`）は、読んだ章に、段落・引用・リスト項目の行末がバックスラッシュで終わって次の行に続く箇所か、後ろにスペースと文字が続く`\\`があり（インラインのコードと数式、別行立ての数式、見出し、`:::verse`の詩は除く）、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.hardLineBreaks: false`として書き込まれます。コードフェンス（`pinLegacyCodeBlocks`）は、読んだ章が```` ``` ````か`~~~`のフェンス（3文字以上、行頭からのインデントは3スペースまで）を開き、設定がまだ決めていなければ、`codeStyle.blocks: false`として書き込まれます。
+`openBundle`と`readBundle`は、そのようなマニフェストの`config`と、各ロケールの`localized`の設定を`migrateConfig`を通して読み込みます。この関数は1.4が組んだ改ページを明示的に書き出し、数式の倍率に1.131を掛けます（`em`で指定した別行立て数式のアキはこの値で割ります）。1.5のプレリリースが書いた`3`から`7`の値を持つマニフェストには、その値より後の規則の固定だけが入ります。`3`なら数式のサイズ、インラインのアキ、規則6の5つの固定、規則7の2つ、規則8の3つ。`4`ならインラインのアキと、規則6、7、8の固定。`5`なら規則6、7、8の固定。`6`なら規則7と8の固定。`7`なら規則8の固定だけです。見出しの下での分割（`pinLegacyHeadingSplit`）は、各層を重ねた結果有効になる`headings`に`headings.keepWithNextSplit: 'fill'`として書き込まれます。条件は、読み込んだ章に見出しがあり、設定が独自の値を指定しておらず、`headings.keepWithNext`を有効のままにし、`bodyText.avoidOrphans`を無効にしていないことです。複合語の改行（`pinLegacyHyphenBreaks`）は、有効な`bodyText`に`bodyText.breakAfterHyphens: false`として書き込まれます。条件は、読み込んだ章に2文字の間のハイフンがあり、設定がこの値をすでに設定しておらず、`optimalLineBreaking`も無効にしていないことです。コンテナーの下のアキ（`pinLegacyParagraphContainerSpacing`）は、有効な`bodyText`に`bodyText.paragraphContainerSpacing: 'add'`として書き込まれます。条件は、設定が段落スタイルを（`paragraphStyles`またはHTMLビューアーの上書きで）宣言し、読み込んだ章が単独の行で`:::paragraphs`コンテナーを開き、設定がこの値をすでに設定していないことです。ダッシュでの改行（`pinLegacyDashBreaks`）は、有効な`bodyText`に`bodyText.breakAfterDashes: false`として書き込まれます。条件は、読み込んだ章に語と語の間に前後を詰めて置いたemダッシュやenダッシュがあり（前に文字、数字、閉じる約物があり、後ろに文字、数字、開き括弧や開き引用符があるもの。ダッシュの前の引用符は、その引用符の前に文字、数字、閉じる約物、ノーブレークスペースがあれば数に入ります。`"no"—and`は該当し、`said "—Hola`は該当しません。ダッシュや引用符に接するインラインのマーク、たとえば`**riddles.**—I`の`**`は、どちら側にあっても数に入ります）、設定がこの値をすでに設定していないことです。行末不ぞろいの改行（`pinLegacyRaggedBreaking`）は、有効な`bodyText`に`bodyText.optimalRagged: false`として書き込まれます。条件は、設定が本文テキストのどこかを行末不ぞろいにし（本文テキスト、段落スタイル、囲みの本文、部の本文、節のスタイルの本文（`headingStyles[].bodyStyle`）、またはHTMLビューアーの上書きで、`'justify'`以外の`textAlign`を指定する）、この値をすでに設定しておらず、`optimalLineBreaking`も無効にしていないことです。ボックスの中のアキ（`pinLegacyBoxResourceGap`）は、有効な`layout`に`layout.inlineResourceGapInBoxes: false`として書き込まれます。条件は、読み込んだ章の`:::callout`の中にリソースが単独の行で埋め込まれ、設定がこの値をすでに設定していないことです。ボックスの分割（`pinLegacyBoxChildCut`）は、有効な`layout`に`layout.boxChildSplitMinLines: 1`として書き込まれます。条件は、読み込んだ章が単独の行で`:::callout`を開き、設定がこの値をすでに設定していないことです。見出しのマーク（`pinLegacyHeadingMarks`）は、各層を重ねた結果有効になる`headings`に`headings.inlineMarks: false`として書き込まれます。条件は、読み込んだ章の見出しがマーク（タイトル内の`*`、`_`、`^`、`~`、`:smallcaps[`、またはリンク）を含み、設定が独自の値を指定していないことです。ドロップキャップ（`pinLegacyDropCapSize`）は、どこにあっても1.4のサイズが`dropCap.fontSize`として書き出されます。単位は、要素の行送りが長さで指定されていればその単位、そうでなければフォントサイズの単位です。コロンで終わる行の下の余地（`pinLegacyColonListRoom`）は、有効な`bodyText`に`bodyText.colonListRoom: 'line'`として書き込まれます。条件は、読み込んだ章のリストがコロンで終わる行に続き（間に空行があってもかまいません）、設定が余地を指定しておらず、`keepColonWithList`も無効にしていないことです。インラインのアキ（`pinLegacyInlineGap`）は、各層を重ねた結果有効になる`layout`に`layout.inlineResourceGap: 'above'`として書き込まれます。条件は、読み込んだ章のある行がリソースを埋め込み（パーサーの解釈どおり、`::resource{id="…"}`が単独で行にあるもの。本文中やコードスパンでの言及は数に入りません）、設定が独自のアキを指定していないことです。サイズは、各層を重ねた結果有効になる`math`に固定されます（ロケール独自の`math`は共有のものを置き換えます）。これは読み込んだ章に`$`がある場合に限られ、数式のないバンドルの`config`は書かれたまま残ります。マニフェストもロケールも`math`を指定しない場合、有効なものは`readBundle`の`baseConfig`（読み込む側自身の設定）のもので、これも固定されます。1.4はバンドルの数式をそのサイズで組んでいたからです。基本設定の`fontSizeScale: 1.5`は1.5 × 1.1312として読まれます。基本設定の見出しの改ページはそのまま使われます。このように古いバンドルはこれらの規則で組まれた結果を保ち、`bundle.config`には、実際に組むときの改ページ、数式のサイズ、アキ、見出しのマーク、ドロップキャップのサイズ、コロンで終わる行の下の余地、ボックスの分割、ダッシュでの改行、複合語の改行、行末不ぞろいの改行、見出しの下での分割、コンテナーの下のアキが表示されます。1.5のレイアウトの修正には固定がなく、ほかの本と同じく古いバンドルにも適用されるため、それらが関わるページは動くことがあります（一覧は[数式のサイズ](#数式)を参照）。現在の規則に合わせて手で書く`preset.json`には`"configVersion": 10`を指定します。古いバンドルのマニフェストにこの値を書き込むのも、現在の規則で読み込むための1行で済む方法です（その場合、バージョンのないバンドルは見出しの改ページの固定も失います）。`8`と記されたマニフェスト（postext 1.5〜1.22が書いたもの）は規則9の4つの固定だけを受け、それより古いものも同様に受けます。詩の組み方（`pinLegacyVerseLayout`）は、読んだ章に開始行で組み方を指定せず行に半句の区切りもない`:::verse`の詩があり、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.verse.layout: 'bayt'`として書き込まれます。組になった字下げ（`pinLegacyPairedIndents`）は、0でない`hangingIndent`も決めている段落スタイル（`paragraphStyles`またはHTMLビューアーの上書き設定のもの）すべてから`firstLineIndent`を外します。強制改行（`pinLegacyHardBreaks`）は、読んだ章に、段落・引用・リスト項目の行末がバックスラッシュで終わって次の行に続く箇所か、後ろにスペースと文字が続く`\\`があり（インラインのコードと数式、別行立ての数式、見出し、`:::verse`の詩は除く）、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.hardLineBreaks: false`として書き込まれます。コードフェンス（`pinLegacyCodeBlocks`）は、読んだ章が```` ``` ````か`~~~`のフェンス（3文字以上、行頭からのインデントは3スペースまで）を開き、設定がまだ決めていなければ、`codeStyle.blocks: false`として書き込まれます。`9`が付いたマニフェスト（postext 1.23で書き出したもの）には規則10の固定だけが適用され、それより古いものにも適用されます。詩行の折り返し（`pinLegacyVerseTightening`）は、読んだ章が詩を一行ずつ組んでいて（`:::verse`のフェンスが`layout=lines`を指定しているか、組み方を指定せず各行に半句の区切りがなく、設定がそのような詩をバイトとして組んでいない場合）、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.verse.tighten: false`として書き込まれます。
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -10091,7 +10206,7 @@ migrateConfig({ headings: { fontFamily: 'Georgia' } }, undefined, { content: 'A 
 migrateConfig({ math: { fontSizeScale: 1.2 } }, 3);
 // => { math: { fontSizeScale: 1.35746…, marginTop: { value: 0.7072, unit: 'em' }, marginBottom: { value: 0.7072, unit: 'em' } },
 //      layout: { inlineResourceGap: 'above', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 },
-//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false }, codeStyle: { blocks: false } }
+//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false } }
 migrateConfig({ layout: { layoutType: 'single' } }, 4, { content: 'Text.\n\n::resource{id="fig"}' });
 // => { layout: { layoutType: 'single', inlineResourceGap: 'above' } }
 migrateConfig({ layout: { layoutType: 'single' } }, 5, { content: ':::callout\nText.\n\n::resource{id="fig"}\n:::' });
@@ -10105,7 +10220,7 @@ migrateConfig({ bodyText: { fontFamily: 'Georgia' } }, 7, { content: 'A well-kno
 migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 ```
 
-`content`は、その設定で組むMarkdownです（文字列または章のリスト）。これがない場合、数式のサイズは数式が有効なら常に、コンテナーの下のアキは設定が段落スタイルを宣言していれば常に固定されます。2つのアキ、見出しのマーク、コロンで終わる行の下の余地、ボックスの分割、ダッシュでの改行、見出しの下での分割、複合語の改行は無条件に固定されます。本に数式、`:::paragraphs`コンテナー、インラインの図、マークを含む見出し、コロンで導入するリスト、ボックス、詰めて置いたダッシュ、見出し、複合語があるかどうかを、エンジンが判断できないためです。行末不ぞろいの改行は、内容の有無にかかわらず設定だけで固定されます。保存した設定は一度だけ移行し、`CONFIG_VERSION`で保存し直してください。数式の固定は倍率に掛け算をするので、2回移行した設定は2回大きくなります。これがないときは詩の組み方とコードフェンスも固定されます。本に区切りのない`:::verse`の詩やフェンスがあるかもしれないからです。組になった字下げは設定だけを見て固定されます。
+`content`は、その設定で組むMarkdownです（文字列または章のリスト）。これがない場合、数式のサイズは数式が有効なら常に、コンテナーの下のアキは設定が段落スタイルを宣言していれば常に固定されます。2つのアキ、見出しのマーク、コロンで終わる行の下の余地、ボックスの分割、ダッシュでの改行、見出しの下での分割、複合語の改行は無条件に固定されます。本に数式、`:::paragraphs`コンテナー、インラインの図、マークを含む見出し、コロンで導入するリスト、ボックス、詰めて置いたダッシュ、見出し、複合語があるかどうかを、エンジンが判断できないためです。行末不ぞろいの改行は、内容の有無にかかわらず設定だけで固定されます。保存した設定は一度だけ移行し、`CONFIG_VERSION`で保存し直してください。数式の固定は倍率に掛け算をするので、2回移行した設定は2回大きくなります。これがないときは詩の組み方とコードフェンスも固定されます。本に区切りのない`:::verse`の詩やフェンスがあるかもしれないからです。組になった字下げは設定だけを見て固定されます。1.23の詩行の折り返しも固定されます。本に一行ずつ組む詩があるかもしれないからです。
 
 ### バンドルを組んで描画する
 
@@ -10250,9 +10365,9 @@ Sandbox、エージェントスキル、`postext`パッケージはどれも同�
 `postext/bundle`は、`openBundle`と`createBundle`の土台になる部品も書き出しています。バンドルを独自の方法で保存したり配信したりするホスト（HTTPで配信する展開済みのディレクトリー、データベースのレコードなど）向けです。
 
 - **`openBundleZip(bytes)` / `zipBundle(files, { mtime })`**：アーカイブの層。開くときはトップレベルのフォルダーを許容し、`__MACOSX`の項目とドットファイルを無視します。バンドルの外に出るパスは拒否します。`mtime`は`createBundle`の入力と同じようにファイルの日時を決めます。
-- **`readBundle(manifest, readFile, options)`**：マニフェストと`readFile(path)`コールバックから、章、設定、リソース、画像、フォントを読み込みます。`options`では、ロケール、ファイルidの命名方法（`ids`）、基本設定（`baseConfig`。マニフェストの設定の下に置かれます。既定ではバンドルの言語での`bundleBaseConfig`のパレットとリソースタイプで、その言語は`resolveBundleConfigLocale(manifest, locale)`が返します。独自の`baseConfig`を渡すホストは、それをこの言語にローカライズしてください。`configVersion: 4`より古いマニフェストではその`math`がバンドルのものと一緒に固定され、5より古ければ`layout`のインラインのアキ、6より古ければ`layout`のボックスの中のアキ、`bodyText`のコロンで終わる行の下の余地、`headings`のインラインのマーク、ドロップキャップのサイズ、7より古ければ`bodyText`のダッシュでの改行と行末不ぞろいの改行、8より古ければ`headings`の見出しの下での分割と、`bodyText`の複合語の改行および`:::paragraphs`コンテナーの下のアキが固定されます。[postext 1.4以前で書き出したバンドル](#postext-14以前で書き出したバンドル)を参照）、固有のサイズの計測方法を指定します。
+- **`readBundle(manifest, readFile, options)`**：マニフェストと`readFile(path)`コールバックから、章、設定、リソース、画像、フォントを読み込みます。`options`では、ロケール、ファイルidの命名方法（`ids`）、基本設定（`baseConfig`。マニフェストの設定の下に置かれます。既定ではバンドルの言語での`bundleBaseConfig`のパレットとリソースタイプで、その言語は`resolveBundleConfigLocale(manifest, locale)`が返します。独自の`baseConfig`を渡すホストは、それをこの言語にローカライズしてください。`configVersion: 4`より古いマニフェストではその`math`がバンドルのものと一緒に固定され、5より古ければ`layout`のインラインのアキ、6より古ければ`layout`のボックスの中のアキ、`bodyText`のコロンで終わる行の下の余地、`headings`のインラインのマーク、ドロップキャップのサイズ、7より古ければ`bodyText`のダッシュでの改行と行末不ぞろいの改行、8より古ければ`headings`の見出しの下での分割と、`bodyText`の複合語の改行および`:::paragraphs`コンテナーの下のアキが固定されます。[postext 1.4以前で書き出したバンドル](#postext-14以前で書き出したバンドル)を参照）、固有のサイズの計測方法を指定します。`readResolution`は各ビットマップの解像度をファイルから読み取り、`bitmap.fileResolution`に入れます。バンドルが`layout.bitmapResolution: 'file'`を指定しているときは、既定でtrueです。
 - **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**：書き出し側。純粋な計画（ファイル名とマニフェスト）と、`readBlob` / `readFont`コールバックによるバイト列の解決に分かれています。
-- **`isBundleManifest(value)`**、ロケールの選択関数（`pickChapterSpecs`、`pickLocaleOverrides`、`pickBundleView`、`resolveBundleLocale`、`resolveBundleConfigLocale`）、`svgSize` / `bitmapSize`、形式の型（`BundleManifest`、`BundleResourceSpec`、`BundleFontFamilySpec`、…）。
+- **`isBundleManifest(value)`**、ロケールの選択関数（`pickChapterSpecs`、`pickLocaleOverrides`、`pickBundleView`、`resolveBundleLocale`、`resolveBundleConfigLocale`）、`svgSize` / `bitmapSize` / `bitmapInfo`（ビットマップのピクセル数と、ファイルに記載された解像度）、形式の型（`BundleManifest`、`BundleResourceSpec`、`BundleFontFamilySpec`、…）。
 - **`CONFIG_VERSION`、`migrateConfig(config, configVersion, { content })`、`pinLegacyHeadingBreaks(config)`、`pinLegacyMathSize(config)`、`pinLegacyInlineGap(config)`、`pinLegacyBoxResourceGap(config)`、`pinLegacyHeadingMarks(config)`、`pinLegacyDropCapSize(config)`、`pinLegacyColonListRoom(config)`、`pinLegacyBoxChildCut(config)`、`pinLegacyDashBreaks(config)`、`pinLegacyRaggedBreaking(config)`、`pinLegacyHeadingSplit(config)`、`pinLegacyParagraphContainerSpacing(config)`、`pinLegacyHyphenBreaks(config)`、`LEGACY_MATH_SIZE`**（0.5 ÷ 0.442）：保存した設定を現在の規則で表したものにします（[postext 1.4以前で書き出したバンドル](#postext-14以前で書き出したバンドル)を参照）。`readBundle`はこれを適用します。設定を独自の方法で保存するホストも、保存したコピーごとに1回ずつ適用できます。
 
 Sandboxはこれらの上に作られています。Sandboxは独自の保存用idと`layouts.json`のページ記録を加えます。

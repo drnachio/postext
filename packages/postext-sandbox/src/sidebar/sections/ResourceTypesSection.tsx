@@ -8,8 +8,10 @@ import type {
   ResourceCounterFormat,
   ResourceCounterReset,
   ResourcePlacement,
+  FloatShrinkMode,
 } from 'postext';
 import {
+  DEFAULT_FLOAT_MIN_SCALE,
   defaultResourceTypes,
   mergeCaptionStyle,
   resolveBodyTextConfig,
@@ -23,7 +25,8 @@ import {
 } from '../../context/SandboxContext';
 import type { SandboxLabels } from '../../types/labels';
 import { arabicNumberFormatOptions, eastAsianNumberFormatOptions } from '../settings/eastAsianOptions';
-import { CollapsibleSection, NumberInput, SelectInput, ToggleSwitch } from '../../controls';
+import { CollapsibleSection, DimensionInput, NumberInput, SelectInput, ToggleSwitch } from '../../controls';
+import { wrapSideOf } from '../settings/textWrap';
 import { Button, ConfirmPopover, IconButton } from '../../ui';
 import { FieldRow } from '../../controls/FieldRow';
 import { SearchScope } from '../search/SearchScope';
@@ -94,6 +97,9 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
   const language = documentLanguage(config, locale ?? 'en');
   const digits = documentDigits(config.numerals, language);
   const isDefault = config.resourceTypes === undefined;
+  // The document's default for a type that sets no shrink (#626).
+  const floatShrinkMode: FloatShrinkMode = config.layout?.floatShrink?.mode ?? 'never';
+  const floatShrinkMinScale = config.layout?.floatShrink?.minScale ?? DEFAULT_FLOAT_MIN_SCALE;
   // Per-type caption overrides are shown merged over the resolved global
   // caption style so every control displays the value that will render.
   const globalCaption = resolveCaptionStyleConfig(
@@ -401,6 +407,76 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                     tooltip={labels.resourceTypePlacementCaptionSideTooltip}
                     isDefault={type.defaultPlacement?.captionSide === undefined}
                     onReset={() => updateTypePlacement(type, { captionSide: undefined })}
+                  />
+                  {/* Text wrap (#627): resources of this type at a side of
+                      their column, the text running beside them. */}
+                  <SelectInput
+                    variant="segmented"
+                    label={labels.resourceTypePlacementWrap}
+                    value={wrapSideOf(type.defaultPlacement?.wrap)}
+                    options={[
+                      { value: 'none', label: labels.resourceWrapNone },
+                      { value: 'left', label: floatSide.left },
+                      { value: 'right', label: floatSide.right },
+                    ]}
+                    onChange={(v) => updateTypePlacement(type, { wrap: v === 'left' || v === 'right' ? v : undefined })}
+                    tooltip={labels.resourceTypePlacementWrapTooltip}
+                    isDefault={type.defaultPlacement?.wrap === undefined}
+                    onReset={() => updateTypePlacement(type, { wrap: undefined })}
+                  />
+                  {wrapSideOf(type.defaultPlacement?.wrap) !== 'none' && (
+                    <DimensionInput
+                      label={labels.resourceTypePlacementWrapGap}
+                      value={type.defaultPlacement?.wrapGap ?? config.layout?.wrap?.gap ?? resolveBodyTextConfig(config.bodyText).lineHeight}
+                      onChange={(v) => updateTypePlacement(type, { wrapGap: v })}
+                      units={['pt', 'mm', 'em']}
+                      tooltip={labels.resourceTypePlacementWrapGapTooltip}
+                      isDefault={type.defaultPlacement?.wrapGap === undefined}
+                      onReset={() => updateTypePlacement(type, { wrapGap: undefined })}
+                    />
+                  )}
+                  {/* A floated picture of this type scaled to the room of its
+                      slot (#626); the document default is
+                      `layout.floatShrink`. */}
+                  <SelectInput
+                    label={labels.resourceTypePlacementShrink}
+                    value={type.defaultPlacement?.shrink ?? floatShrinkMode}
+                    options={[
+                      { value: 'never', label: labels.resourceShrinkNever },
+                      { value: 'page', label: labels.resourceShrinkPage },
+                      { value: 'slot', label: labels.resourceShrinkSlot },
+                    ]}
+                    onChange={(v) => updateTypePlacement(type, { shrink: v as FloatShrinkMode })}
+                    tooltip={labels.resourceTypePlacementShrinkTooltip}
+                    isDefault={type.defaultPlacement?.shrink === undefined}
+                    onReset={() => updateTypePlacement(type, { shrink: undefined })}
+                  />
+                  {(type.defaultPlacement?.shrink ?? floatShrinkMode) !== 'never' && (
+                    <NumberInput
+                      label={labels.resourceTypePlacementMinScale}
+                      value={Math.round((type.defaultPlacement?.minScale ?? floatShrinkMinScale) * 100)}
+                      onChange={(v) => updateTypePlacement(type, { minScale: Math.min(100, Math.max(5, v)) / 100 })}
+                      min={5}
+                      max={100}
+                      step={5}
+                      suffix="%"
+                      tooltip={labels.resourceTypePlacementMinScaleTooltip}
+                      isDefault={type.defaultPlacement?.minScale === undefined}
+                      onReset={() => updateTypePlacement(type, { minScale: undefined })}
+                    />
+                  )}
+                  <SelectInput
+                    variant="segmented"
+                    label={labels.resourceTypePlacementCaptionMeasure}
+                    value={type.defaultPlacement?.captionMeasure ?? 'slot'}
+                    options={[
+                      { value: 'slot', label: labels.resourceCaptionMeasureSlot },
+                      { value: 'body', label: labels.resourceCaptionMeasurePicture },
+                    ]}
+                    onChange={(v) => updateTypePlacement(type, { captionMeasure: v === 'body' ? 'body' : undefined })}
+                    tooltip={labels.resourceTypePlacementCaptionMeasureTooltip}
+                    isDefault={type.defaultPlacement?.captionMeasure === undefined}
+                    onReset={() => updateTypePlacement(type, { captionMeasure: undefined })}
                   />
                   <Field label={labels.resourceTypePlacementRotate} tooltip={labels.resourceTypePlacementRotateTooltip}>
                     <select

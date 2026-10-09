@@ -435,9 +435,10 @@ function renderLine(
   // Ragged (left-aligned) rendering — also used for last lines of justified
   // blocks. Segments are needed when any of them styles differently from the
   // block (bold/italic/math/ref/own font or colour), or when a tracked line
-  // holds a word of a joining script, which is painted untracked; otherwise
-  // one fillText paints the line.
-  if (segments && (directed || segments.some(segmentIsStyled) || (tracking !== 0 && joiningScriptIn(line.text)))) {
+  // holds a word of a joining script, which is painted untracked, or when
+  // a line of verse tightened its word spaces to fit (#620); otherwise one
+  // fillText paints the line.
+  if (segments && (directed || line.verseLine?.spaceRatio !== undefined || segments.some(segmentIsStyled) || (tracking !== 0 && joiningScriptIn(line.text)))) {
     renderSegments(ctx, segments, lineX, line.baseline, style, undefined, cjk, tracking, order);
     return;
   }
@@ -466,7 +467,8 @@ function renderComposedLine(
   ctx.textBaseline = 'alphabetic';
 
   const lineIndent = line.bbox.x - columnX;
-  const effectiveWidth = columnWidth - lineIndent;
+  // A line beside a wrapped picture (#627) fills its own span.
+  const effectiveWidth = line.measure?.wrap ? line.measure.width : columnWidth - lineIndent;
   const segments = line.segments;
   // A line of the CJK composer was measured character by character, any
   // other word by word: two marks that meet are painted apart where they

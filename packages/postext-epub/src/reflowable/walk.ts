@@ -18,7 +18,7 @@
 //     document of its own and the chapter goes on in a new one.
 
 import type { ResolvedConfig, VDTBlock, VDTComicPage, VDTDocument, VDTLine, VDTLineSegment } from 'postext';
-import { canonicalLocaleTag, comicBalloonKind, comicBalloonText, comicSpeakerName, dimensionToPx, isComicSpreadPartner, joinComicSpread, primaryFontFamily } from 'postext';
+import { canonicalLocaleTag, comicBalloonKind, comicBalloonText, comicSpeakerName, dimensionToPx, isComicSpreadPartner, joinComicSpread, pickTableStyle, primaryFontFamily } from 'postext';
 import type {
   CalloutNode,
   ComicNode,
@@ -43,6 +43,7 @@ import type {
   CodeRun,
   VerseLineNode,
   VerseNode,
+  WrapFloat,
 } from './model';
 import { appendLine, appendLines, fontPx, idOf, mathSvg, plainText, xmlText, type InlineContext, type TextSink } from './inline';
 
@@ -78,6 +79,8 @@ export interface BookModel {
   tabs?: boolean;
   /** Whether a code listing was read (#624). */
   code?: boolean;
+  /** Whether a figure or a box text wraps round was read (#627). */
+  wraps?: boolean;
   /** The drop caps the paragraphs open with (#623), as `lines-sink`
    *  pairs: one rule each. */
   dropCaps?: Set<string>;
@@ -228,6 +231,9 @@ class DocWalker {
   /** The first half of a spread, waiting for the other (#567). */
   private spreadHalf?: VDTComicPage;
 
+  /** Figures and boxes text wraps round (#627), by block id. */
+  private readonly wraps = new Map<string, WrapFloat>();
+
   constructor(
     private readonly book: BookModel,
     private readonly doc: VDTDocument,
@@ -252,6 +258,20 @@ class DocWalker {
     }
     for (const page of doc.pages) {
       for (const m of page.lineNumberMarks ?? []) this.lineNumbers.set(`${m.blockId}\u0000${m.lineIndex}`, m.label);
+      // What text wrapped round (#627), by the block that wraps it: its
+      // side on the sheet (a right-to-left book's flow is mirrored) and
+      // its share of the column.
+      for (const col of page.columns) {
+        for (const ex of col.exclusions ?? []) {
+          if (!(col.bbox.width > 0)) continue;
+          const flowLeft = ex.side === 'left';
+          this.wraps.set(ex.ownerId, {
+            side: flowLeft !== (this.dir === 'rtl') ? 'left' : 'right',
+            width: Math.round(((ex.width - ex.gap) / col.bbox.width) * 1000) / 10,
+            gap: Math.round((ex.gap / col.bbox.width) * 1000) / 10,
+          });
+        }
+      }
     }
     this.styleHints = [...doc.blocks, ...doc.pages.flatMap((p) => p.floats ?? [])].some((b) => b.paragraphStyleId !== undefined || b.indexLevel !== undefined);
     for (const a of doc.anchors ?? []) {
@@ -655,6 +675,11 @@ class DocWalker {
     this.calloutState(cid, path, root);
     const own = this.callouts.get(path.length > 0 ? path[path.length - 1]! : cid)!.node;
     if (block.callout?.styleId) own.styleId = block.callout.styleId;
+    const wrap = this.wraps.get(block.id);
+    if (wrap && own.wrap === undefined) {
+      own.wrap = wrap;
+      this.book.wraps = true;
+    }
     if ((block.callout?.part ?? 0) === 0 && own.title === undefined) {
       const title = (block.designOverlay?.blocks ?? [])
         .flatMap((b) => (b.kind === 'text' && !b.artifact ? [b.lines.map((l) => l.text).join(' ')] : []))
@@ -1153,6 +1178,11 @@ class DocWalker {
           ...(res.table?.model.columnWidths ? { columnWidths: res.table.model.columnWidths } : {}),
           cells: new Map(),
         };
+        // A named table style is a class the stylesheet styles (#625).
+        const styleId = res.table?.styleId;
+        if (styleId && this.config.tableStyles?.some((st) => st.id === styleId)) node.styleClass = idOf('pt-table-', styleId);
+        const style = pickTableStyle(this.config, styleId);
+        if (style.borders && style.rules === 'booktabs' && style.groupRules) node.groupRules = true;
         this.tables.set(res.id, node);
         state.nodes.push(node);
         if (!this.book.resources.has(res.id)) this.book.resources.set(res.id, { file: this.file!, id: node.id });
@@ -1206,7 +1236,9 @@ class DocWalker {
       captionAbove,
       note: lines(rb.noteLines),
       ...(rb.video ? { video: rb.video } : {}),
+      ...(this.wraps.has(block.id) ? { wrap: this.wraps.get(block.id)! } : {}),
     };
+    if (node.wrap) this.book.wraps = true;
     if (rb.fileId) this.book.images.add(rb.fileId);
     if (alt) this.book.altText = true;
     else this.book.missingAlt = true;

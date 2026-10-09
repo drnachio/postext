@@ -63,6 +63,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'headerFooterUnknownPlaceholder':
     case 'headerFooterMetadataMissing':
       return FileText;
+    case 'invalidFrontmatter':
     case 'unknownDirective':
     case 'malformedEmbed':
     case 'fullwidthMarkup':
@@ -100,6 +101,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'designCyclicAnchor':
     case 'designDanglingAnchor':
     case 'designTextClipAlwaysTruncates':
+    case 'designTextTruncated':
       return FileWarning;
     case 'headingSpanWithoutBreak':
     case 'headingAdvancedWithoutTitleText':
@@ -110,6 +112,8 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'duplicateResourceId':
     case 'danglingTypeRef':
     case 'bitmapTooSmall':
+    case 'floatShrunk':
+    case 'textWrap':
     case 'unknownTableStyle':
     case 'raggedTableGrid':
     case 'videoWithoutPoster':
@@ -126,6 +130,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'unknownNumberFormat':
     case 'unknownNumerals':
     case 'lineNumbersUnsupported':
+    case 'wrapUnsupported':
       return List;
     case 'unknownConfigKey':
     case 'unknownConfigValue':
@@ -195,6 +200,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsHeaderFooterUnknownPlaceholderTitle;
     case 'headerFooterMetadataMissing':
       return labels.warningsHeaderFooterMetadataMissingTitle;
+    case 'invalidFrontmatter':
+      return labels.warningsInvalidFrontmatterTitle;
     case 'unknownDirective':
       return labels.warningsUnknownDirectiveTitle;
     case 'malformedEmbed':
@@ -270,6 +277,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsDesignDanglingAnchorTitle;
     case 'designTextClipAlwaysTruncates':
       return labels.warningsDesignTextClipAlwaysTruncatesTitle;
+    case 'designTextTruncated':
+      return labels.warningsDesignTextTruncatedTitle;
     case 'headingSpanWithoutBreak':
       return labels.warningsHeadingSpanWithoutBreakTitle;
     case 'headingAdvancedWithoutTitleText':
@@ -282,6 +291,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsDanglingTypeRefTitle;
     case 'bitmapTooSmall':
       return labels.warningsBitmapTooSmallTitle;
+    case 'floatShrunk':
+      return labels.warningsFloatShrunkTitle;
     case 'unknownTableStyle':
       return labels.warningsUnknownTableStyleTitle;
     case 'raggedTableGrid':
@@ -306,6 +317,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownNumeralsTitle;
     case 'lineNumbersUnsupported':
       return labels.warningsLineNumbersUnsupportedTitle;
+    case 'wrapUnsupported':
+      return labels.warningsWrapUnsupportedTitle;
+    case 'textWrap':
+      return labels.warningsTextWrapTitle;
     case 'lineNumberOverlap':
       return labels.warningsLineNumberOverlapTitle;
     case 'dropCap':
@@ -438,6 +453,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${slotWhere(payload)} · {${payload.name}} — ${labels.warningsHeaderFooterUnknownPlaceholderDetail}`;
     case 'headerFooterMetadataMissing':
       return `${slotWhere(payload)} · {${payload.name}} — ${labels.warningsHeaderFooterMetadataMissingDetail}`;
+    case 'invalidFrontmatter':
+      return `--- — ${payload.message} — ${labels.warningsInvalidFrontmatterDetail}`;
     case 'unknownDirective':
       return `:::${payload.name} — ${labels.warningsUnknownDirectiveDetail.replace('__names__', KNOWN_FENCE_NAMES)}`;
     case 'unclosedContainer':
@@ -526,6 +543,11 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       const where = slotWhere(payload);
       return `${where} · #${payload.elementId} — ${labels.warningsDesignTextClipAlwaysTruncatesDetail}`;
     }
+    case 'designTextTruncated': {
+      const where = payload.slot === 'tocRow' ? 'toc.parts.design' : payload.slot;
+      const detail = payload.mode === 'clip' ? labels.warningsDesignTextTruncatedClipDetail : labels.warningsDesignTextTruncatedDetail;
+      return `${where} · #${payload.elementId} — ${detail.replace('__text__', payload.text)}`;
+    }
     case 'headingSpanWithoutBreak':
       return `H${payload.level} — ${labels.warningsHeadingSpanWithoutBreakDetail}`;
     case 'headingAdvancedWithoutTitleText':
@@ -543,6 +565,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `#${payload.resourceId} → ${payload.typeId} — ${labels.warningsDanglingTypeRefDetail}`;
     case 'bitmapTooSmall':
       return `#${payload.resourceId} · ${payload.renderedWidth}px / ${payload.bitmapWidth}px — ${labels.warningsBitmapTooSmallDetail}`;
+    case 'floatShrunk':
+      return `#${payload.resourceId} — ${(payload.overflowMm !== undefined ? labels.warningsFloatShrunkOverflowDetail : labels.warningsFloatShrunkDetail)
+        .replace('__scale__', String(Math.round(payload.scale * 100)))
+        .replace('__mm__', String(payload.overflowMm ?? 0))}`;
     case 'unknownTableStyle':
       return `#${payload.resourceId} · styleId="${payload.styleId}" — ${labels.warningsUnknownTableStyleDetail}`;
     case 'raggedTableGrid': {
@@ -571,6 +597,15 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `${payload.path}: "${payload.value}" — ${labels.warningsUnknownNumeralsDetail.replace('__used__', payload.used)}`;
     case 'lineNumbersUnsupported':
       return `${payload.path} — ${labels.warningsLineNumbersUnsupportedDetail}`;
+    case 'wrapUnsupported':
+      return `${payload.path}: "${payload.value}" — ${labels.warningsWrapUnsupportedDetail}`;
+    case 'textWrap': {
+      const detail = payload.reason === 'tooNarrow' ? labels.warningsTextWrapTooNarrow
+        : payload.reason === 'fewLines' ? labels.warningsTextWrapFewLines
+          : payload.reason === 'moved' ? labels.warningsTextWrapMoved
+            : labels.warningsTextWrapVertical;
+      return `${payload.resourceId !== undefined ? `#${payload.resourceId}` : `:::callout${payload.box ? ` (${payload.box})` : ''}`} — ${detail}`;
+    }
     case 'lineNumberOverlap':
       return labels.warningsLineNumberOverlapDetail.replace('__number__', payload.number);
     case 'codeOverflow': {
@@ -671,7 +706,9 @@ function WarningItem({
   onClick: (w: Warning) => void;
 }) {
   const Icon = iconFor(warning.payload.kind);
-  const preflightPage = warning.payload.kind === 'preflight' ? warning.payload.page : undefined;
+  // A preflight finding, or a design text cut on a page (#628), names its
+  // book page.
+  const preflightPage = warning.payload.kind === 'preflight' || warning.payload.kind === 'designTextTruncated' ? warning.payload.page : undefined;
   const critical = warning.payload.kind === 'preflight' && warning.payload.check.severity === 'critical';
   const clickable = warning.sourceStart !== undefined || isFontWarning(warning.payload.kind) || preflightPage !== undefined;
   const title = titleFor(warning.payload, labels);
@@ -715,6 +752,9 @@ export function WarningsPanel() {
       goToBookPage(w.payload.page);
       return;
     }
+    // A cut design text opens its page; one that prints a heading or a
+    // frontmatter field also selects it in the editor.
+    if (w.payload.kind === 'designTextTruncated') goToBookPage(w.payload.page);
     if (isFontWarning(w.payload.kind)) {
       // Surface the custom-font manager so the user can upload the missing
       // variant, re-add the family, or disambiguate duplicates.

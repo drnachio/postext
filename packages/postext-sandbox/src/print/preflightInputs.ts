@@ -6,7 +6,7 @@
  * either arrives.
  */
 
-import { resolvePrintConfig, type OutputTransform, type PrintConfig, type Resource } from 'postext';
+import { bitmapInfo, resolvePrintConfig, type OutputTransform, type PrintConfig, type Resource } from 'postext';
 import type { PrintMasterReport } from 'postext-pdf';
 import { getBlob } from '../storage/blobStore';
 import { loadPrintProfile, printTransform, profileKey } from './printSetup';
@@ -16,6 +16,8 @@ let version = 0;
 const transforms = new Map<string, OutputTransform | null>();
 const masters = new Map<string, PrintMasterReport | null>();
 const imageColors = new Map<string, 'rgb' | 'cmyk' | 'gray' | null>();
+/** The pixels each bitmap's file really has (#631), from its header. */
+const imageSizes = new Map<string, { width: number; height: number } | null>();
 
 function changed(): void {
   version++;
@@ -38,6 +40,8 @@ export interface PreflightInputs {
   masters: ReadonlyMap<string, PrintMasterReport>;
   /** The colour of a bitmap's file, once its bytes have been read. */
   imageColor: (fileId: string) => 'rgb' | 'cmyk' | 'gray' | undefined;
+  /** The pixel size of a bitmap's file, once its bytes have been read. */
+  imageSize: (fileId: string) => { width: number; height: number } | undefined;
 }
 
 /** The inputs for a config and resources as far as they have loaded,
@@ -76,7 +80,12 @@ export function preflightInputs(raw: PrintConfig | undefined, resources: readonl
     }
   }
   const transform = transforms.get(key) ?? undefined;
-  return { ...(transform ? { transform } : {}), masters: reports, imageColor: (id) => imageColors.get(id) ?? undefined };
+  return {
+    ...(transform ? { transform } : {}),
+    masters: reports,
+    imageColor: (id) => imageColors.get(id) ?? undefined,
+    imageSize: (id) => imageSizes.get(id) ?? undefined,
+  };
 }
 
 /** The colour of a bitmap from its header: a JPEG's component count, a
@@ -109,10 +118,10 @@ async function sniffColor(fileId: string): Promise<void> {
     const record = await getBlob(fileId);
     if (!record) return;
     const color = bitmapColor(new Uint8Array(record.bytes, 0, Math.min(record.bytes.byteLength, 65536)));
-    if (color) {
-      imageColors.set(fileId, color);
-      changed();
-    }
+    const info = bitmapInfo(record.bytes);
+    if (info && info.width > 0 && info.height > 0) imageSizes.set(fileId, { width: info.width, height: info.height });
+    if (color) imageColors.set(fileId, color);
+    if (color || info) changed();
   } catch {
     // Unreadable: no colour check for it.
   }

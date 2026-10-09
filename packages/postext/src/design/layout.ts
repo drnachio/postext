@@ -1,4 +1,5 @@
 import { flowTextWidth, getMeasureWritingMode, lineBaselineOffset, withMeasureWritingMode } from '../measure/vertical';
+import { bitmapLayoutSize } from '../bitmapResolution';
 import type {
   AnchorEdge,
   ColorValue,
@@ -44,6 +45,7 @@ import {
   ellipsisMiddleCut,
   ellipsisStartCut,
   parseRichDesignText,
+  plainDesignText,
   singleRichLine,
   wrapRich,
   type DesignTextRun,
@@ -135,6 +137,9 @@ export interface ResolvedTextPrimitive extends ResolvedElementGeometry {
   contentWidth: number;
   contentHeight: number;
   box?: ResolvedElementBox;
+  /** A line was cut to fit: by an ellipsis, or clipped with ink wider than
+   *  the box (#628). Absent when every line shows whole. */
+  truncated?: TextTruncation;
   /** Set vertically (`DesignTextElement.writingMode: 'vertical-rl'`): `x`,
    *  `y`, `width`, `height` are the box as it stands, every other number
    *  (the lines, the content box) is in the box's own frame turned a
@@ -231,11 +236,15 @@ export interface DesignSlotLayout {
   issues: LayoutIssue[];
 }
 
-export interface LayoutIssue {
-  kind: 'cyclicAnchor' | 'danglingAnchor';
-  elementId: string;
-  targetId?: string;
-}
+/** How a design text lost part of a line (#628): cut with an ellipsis, or
+ *  clipped with ink past its box. */
+export type TextTruncation = 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip';
+
+export type LayoutIssue =
+  | { kind: 'cyclicAnchor' | 'danglingAnchor'; elementId: string; targetId?: string }
+  /** A text element did not fit its width and was cut (`mode`); `text` is
+   *  the whole text it was given (placeholders filled). */
+  | { kind: 'textTruncated'; elementId: string; mode: TextTruncation; text: string };
 
 /** Page-level reference frames (absolute page px) that elements may anchor
  *  to instead of the slot container: `page` is the trim box, `bleed` the
@@ -719,7 +728,14 @@ interface TextMeasurement {
   contentWidth: number;
   contentHeight: number;
   needsClip: boolean;
+  /** A line lost characters to an ellipsis, or is wider than the room a
+   *  clip leaves it. */
+  truncated?: boolean;
 }
+
+/** How much wider than its room a clipped line may be before it counts as
+ *  cut: rounding, not a hidden glyph. */
+const CLIP_SLACK_PX = 0.5;
 
 /** Lines stacked from the top of the content box, `lineHeightPx` apart. */
 function stackLines(rows: { text: string; width: number; runs?: DesignTextRun[] }[], lineHeightPx: number): WrappedLine[] {
@@ -767,6 +783,7 @@ function layoutText(
       contentWidth: maxContentWidth === undefined ? natural : Math.min(natural, maxContentWidth),
       contentHeight: lines.length * lineHeightPx,
       needsClip: maxContentWidth !== undefined,
+      ...(maxContentWidth !== undefined && natural > maxContentWidth + CLIP_SLACK_PX ? { truncated: true } : {}),
     };
   }
   // ellipsis-*
@@ -774,8 +791,10 @@ function layoutText(
     overflow === 'ellipsis-start' ? 'start'
     : overflow === 'ellipsis-middle' ? 'middle'
     : 'end';
+  let truncated = false;
   const lines = stackLines(rows.map((t) => {
     const visible = ellipsize(t, measure, maxContentWidth, mode);
+    if (visible !== t) truncated = true;
     return { text: visible, width: measure(visible) };
   }), lineHeightPx);
   return {
@@ -783,6 +802,7 @@ function layoutText(
     contentWidth: lines.reduce((m, l) => Math.max(m, l.width), 0),
     contentHeight: lines.length * lineHeightPx,
     needsClip: false,
+    ...(truncated ? { truncated: true } : {}),
   };
 }
 
@@ -797,11 +817,17 @@ function layoutRichText(
 ): TextMeasurement {
   const rows: RichLine[] = [];
   let start = 0;
+  let truncated = false;
   const text = m.rt.text;
   for (const row of text.split('\n')) {
     const end = start + row.length;
     if (overflow === 'wrap') rows.push(...wrapRich(m, start, end, () => maxContentWidth, hyphenate ?? false));
-    else rows.push(singleRichLine(m, start, end, maxContentWidth, overflow));
+    else {
+      // `singleRichLine` cuts exactly when the whole line is wider.
+      const whole = m.measure(start, end);
+      if (whole > maxContentWidth + (overflow === 'clip' ? CLIP_SLACK_PX : 0)) truncated = true;
+      rows.push(singleRichLine(m, start, end, maxContentWidth, overflow));
+    }
     start = end + 1;
   }
   const lines = stackLines(rows, lineHeightPx);
@@ -811,6 +837,7 @@ function layoutRichText(
     contentWidth: overflow === 'clip' ? Math.min(natural, maxContentWidth) : natural,
     contentHeight: lines.length * lineHeightPx,
     needsClip: overflow === 'clip',
+    ...(truncated ? { truncated: true } : {}),
   };
 }
 
@@ -972,6 +999,11 @@ export function layoutDesignSlot(
         : layoutTextElement(el, textContent.get(el.id) ?? '', pin, fillRef, context.dpi, useElementEdge, context);
       resolvedGeo.set(el.id, prims[0]!);
       primsByElement.set(el, prims);
+      const truncated = prims[0]!.truncated;
+      if (truncated) {
+        const text = textContent.get(el.id) ?? '';
+        issues.push({ kind: 'textTruncated', elementId: el.id, mode: truncated, text: el.inlineMarks ? plainDesignText(text) : text });
+      }
     } else if (el.kind === 'rule') {
       const prim = layoutRuleElement(el, {
         anchorX,
@@ -1407,6 +1439,7 @@ function layoutTextElement(
     align: effectiveAlign,
     verticalAlign: el.verticalAlign,
     needsClip: m.needsClip || el.overflow === 'clip',
+    ...(m.truncated && el.overflow !== 'wrap' ? { truncated: el.overflow } : {}),
     letterSpacingPx,
     ...(base === 'rtl' ? { direction: 'rtl' as const } : {}),
     ...((base === 'rtl') !== mirrored ? { startRight: true as const } : {}),
@@ -1584,8 +1617,10 @@ function layoutImageElement(
   const payload = resource?.bitmap ?? resource?.svg;
   const fileId = payload?.fileId;
   if (!fileId) return undefined;
-  const picW = payload?.width && payload.width > 0 ? payload.width : 1;
-  const picH = payload?.height && payload.height > 0 ? payload.height : 1;
+  // A bitmap's own size is its pixels at its resolution (#631).
+  const own = resource?.bitmap ? bitmapLayoutSize(resource.bitmap, dpi) : payload;
+  const picW = own?.width && own.width > 0 ? own.width : 1;
+  const picH = own?.height && own.height > 0 ? own.height : 1;
   const natW = upright ? picH : picW;
   const natH = upright ? picW : picH;
   const widthSize = resolveFixedSize(el.placement.size?.width, dpi);

@@ -228,7 +228,7 @@ export const PartsSection = memo(function PartsSection() {
         <SlotEditor
           slotKey="part"
           raw={raw?.design}
-          resolved={resolveDesignSlot(raw?.design, 'header')}
+          resolved={resolveDesignSlot(raw?.design, 'part')}
           onUpdate={(slot: DesignSlot | undefined) => {
             setGroup('design', slot && slot.elements.length > 0 ? slot : undefined);
           }}
@@ -249,7 +249,7 @@ export const PartsSection = memo(function PartsSection() {
         <SlotEditor
           slotKey="part"
           raw={raw?.versoDesign}
-          resolved={resolveDesignSlot(raw?.versoDesign, 'header')}
+          resolved={resolveDesignSlot(raw?.versoDesign, 'part')}
           onUpdate={(slot: DesignSlot | undefined) => {
             setGroup('versoDesign', slot && slot.elements.length > 0 ? slot : undefined);
           }}

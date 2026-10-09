@@ -147,7 +147,8 @@ page
 │   └─ mirror   boolean, default false. Odd pages keep left/right as written, even pages swap.
 ├─ backgroundColor  ColorValue, default {hex:'transparent'}
 ├─ dpi          number, default 300: the layout's px per inch (the px unit). Not image resolution, but a
-│               bitmap set at its own size prints at this many ppi: keep 300 for print
+│               bitmap with no resolution of its own prints at this many ppi: keep 300 for print, or
+│               give pictures a resolution (layout.bitmapResolution / bitmap.resolution, ≥ 1.24)
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
 ├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY
 ├─ pageNumbering { format='decimal'|'lower-roman'|'upper-roman'|'lower-alpha'|'upper-alpha'|<East Asian style, §10>, startAt=1 }
@@ -185,7 +186,13 @@ layout
 ├─ sideColumnRole     'text' | 'floats'                      default 'text'   oneAndHalf only
 ├─ sideColumnSide     'right'|'left'|'outer'|'inner'         default 'right'  oneAndHalf only
 ├─ columnRule         { enabled=false, color=#cccccc, lineWidth=0.5pt }
-├─ fitFiguresToPage   boolean                                default false (HTML viewer sets it)
+├─ fitFiguresToPage   boolean                                default false (HTML viewer sets it)   hard cap at the content area
+├─ bitmapResolution   'document'|'file'|number                default 'document'   ≥ 1.24 natural size of bitmaps without
+│                                                             their own bitmap.resolution: 'document' = pixels at page.dpi;
+│                                                             300 = every such bitmap at 300 ppi; 'file' = the file's
+│                                                             pHYs/JFIF/EXIF (bitmap.fileResolution), 72/96 = unset
+├─ floatShrink        { mode='never', minScale=0.7 }          ≥ 1.24 document default of placement.shrink / minScale (see §ResourcePlacement)
+├─ wrap               { gap?, minTextWidth=12em, minLinesBeside=2, defaultWidth=0.45 }   ≥ 1.24 text wrap defaults (placement.wrap, callout wrap); gap unset = one body line; minTextWidth a Dimension or a share of the column
 ├─ hugClosingFloats   boolean                                default true   closing page: page-wide floats below the last text move up under it
 ├─ inlineResourceGap  'around' | 'above'                     default 'around'  (a preset without configVersion ≥ 5 reads 'above')
 ├─ inlineResourceGapInBoxes boolean                          default true  (a preset below configVersion 6 reads false)
@@ -263,7 +270,7 @@ bodyText
 ├─ hangingIndent     boolean         false           indent all lines but the first
 ├─ indentAfterHeading boolean        true            false = first paragraph after a heading unindented (classic book style)
 ├─ blockquote        { color=#666666, italic=true, indent=0, firstLineIndent=<body's> }   how `> …` quotes are set (colour palette-linkable; indent = every line, first line counted from it)
-├─ verse             { layout='auto', indentStep=0.5em, turnover='hang', hang=2em, turnoverMark='[', stanzaSpace=1, keepStanzas=0 }   (≥ 1.23) defaults of `:::verse` poems set line by line; the fence's attributes of the same name win. layout 'bayt' = 1.22's centred single hemistichs for poems with no `||` (stored configs < 9 get it); stanzaSpace in lines of the poem's leading
+├─ verse             { layout='auto', indentStep=0.5em, turnover='hang', hang=2em, turnoverMark='[', stanzaSpace=1, keepStanzas=0, tighten=true }   (≥ 1.23) defaults of `:::verse` poems set line by line; the fence's attributes of the same name win. layout 'bayt' = 1.22's centred single hemistichs for poems with no `||` (stored configs < 9 get it); stanzaSpace in lines of the poem's leading; tighten (≥ 1.24) = a line a little wider than the measure shrinks its word spaces down to minWordSpacing and stays on one line, only a line still too wide turns over (false = 1.23: every overlong line turns over; stored configs < 10 with a line-by-line poem get false)
 ├─ tabStops          TabStop[]       unset           (≥ 1.23, §4a) tab stops of every paragraph, list item and quotation; a paragraph style or a callout body that sets its own replaces them
 ├─ tabInterval       Dimension       unset           (≥ 1.23, §4a) default stops every interval past the last stop, from the start of the measure; unset = a tab past the last stop is a word space
 └─ hyphenation       { enabled=true, locale=<config.locale ?? 'en-us'>, ragged=false, zone=3em, compounds=true }
@@ -506,6 +513,12 @@ headings
                                        level in a vertical book); a centred heading centres in the rest;
                                        `{indent=N}` on a heading line overrides it (body ems), `{indent=0}`
                                        sets that heading at the line start
+  firstLineIndent: Dimension           0 (≥ 1.24) the FIRST line only, measured from `indent`, em = the BODY
+                                       size; the turnover lines start at `indent`. GB/T 9704 heads (two
+                                       cells in, turnover at the margin): {value: 2, unit: 'em'} on every
+                                       level. Never type U+3000 into numberingTemplate for it (the spaces
+                                       become the number and print in :::toc and the PDF bookmarks).
+                                       `{firstLineIndent=N}` on a heading line overrides it, `=0` clears it
   jidori: number                       unset (≥ 1.16) 字取り: a one-line heading narrower than N of its OWN ems
                                        is spaced evenly to exactly that width (3: 序章 → 序　章); `{jidori=N}`
                                        on a heading line overrides it, `{jidori=0}` turns it off
@@ -615,6 +628,7 @@ running heads, margins, layout, body typography, palette.
   fontFamily, fontSize, lineHeight, color, fontWeight, marginTop, marginBottom, italic,
   letterSpacing, textTransform, breakBefore (merged field by field over the level's), span,
   advancedDesign, hidden, snapToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's),
+  firstLineIndent (≥ 1.24; 0 clears the level's),
   dropCap (≥ 1.23, §4b; false clears the level's: e.g. a preface style without the chapters' initial)
   header?: DesignSlot, footer?: DesignSlot      replace document running heads on the section's pages ({elements:[]} = none)
   margins?: PageMargins                          each side inherits page margin; pair with breakBefore
@@ -687,7 +701,8 @@ bottom folio only there). Parity/pages are ignored inside heading slots.
 **text** (`DesignTextElement`, )
 ```
 { kind:'text', id, placement, content: string (template; '{{' '}}' = literal braces),
-  fontSize: Dimension(abs)  REQUIRED,  overflow: 'wrap'|'ellipsis-start'|'ellipsis-end'|'ellipsis-middle'|'clip'  REQUIRED in type
+  fontSize: Dimension(abs)  REQUIRED,  overflow?: 'wrap'|'ellipsis-start'|'ellipsis-end'|'ellipsis-middle'|'clip'
+    (≥ 1.24 unset = the slot's: 'wrap' in heading and part designs, 'ellipsis-end' in header/footer/toc rows)
   fontFamily='EB Garamond', fontWeight=400, italic=false, color=#000000,
   align='center' ('left'|'center'|'right'|'justify' — justify: word spaces stretched on every wrapped line
     but a paragraph's last; with hyphenate a word is also cut at a syllable to fill), verticalAlign='middle'
@@ -717,8 +732,15 @@ and the container edge it grows toward: an offset toward that edge shrinks it (t
 `top`/`bottom`), one past it leaves it empty (ellipsis) or one letter per line (wrap) — use a
 fixed `size.width` or anchor to `'page'`.
 Element defaults are NOT the built-in header's (Open Sans 8pt/600 main colour) — set everything.
-Resolver falls back to `overflow: 'ellipsis-end'` if omitted; use `'wrap'` for multi-line titles
-with a fixed `size.width`.
+`overflow` left out (≥ 1.24) follows the slot: `'wrap'` in heading designs (`advancedDesign.slot`, levels
+and heading styles) and part pages (`parts.design`, `parts.versoDesign`), `'ellipsis-end'` in running
+heads, folios (`header`, `footer`, a style's own) and contents part rows (`toc.parts.design`, fixed
+height). So leave it out on opener and part titles, and set it only where the slot's default is wrong (a
+running head that should wrap, a one-line kicker in an opener). Before 1.24 every slot fell back to
+`'ellipsis-end'`: when the pen pins an older engine, write `'wrap'` on titles. Every line cut by an
+ellipsis, or clipped with ink past its box, raises the content warning `designTextTruncated` (≥ 1.24;
+`slot`, `elementId`, `text`, `mode`, `pageIndex`, once a chapter for a running head): read it in the
+render and fix the title or the box unless the cut is meant.
 Header/footer placeholders: `{pageNumber}` (the page LABEL, e.g. "xii"), `{totalPages}`,
 `{title}`, `{subtitle}`, `{author}`, `{publishDate}` (front matter), `{chapterTitle}` (latest H1),
 `{chapterNumber}`, `{chapterTitleAtTop}` / `{chapterNumberAtTop}` (the chapter in force at the top
@@ -1068,6 +1090,26 @@ captionSide?: boolean    caption in the float-only side column, level with the f
 columns?: number         ≥ 1.18: a span:'column' float across this many adjacent columns (picture across 2 of 5);
                          ≥ the page's column count = page-wide; ignored for page/side spans, rotate, here;
                          captionSide only on 1-column floats
+shrink?:  'never' (default) | 'page' | 'slot'   ≥ 1.24, pictures only (bitmap, svg, video poster): scale the float,
+                         proportions kept, to the room of its slot instead of moving it on. 'page': only when it is
+                         too tall for a fresh page's band (opener, other floats, footnotes deducted); 'slot': also into
+                         a slot of the citing page when it fits at minScale or more. Safe area cropped first.
+                         Falls back to layout.floatShrink.mode. Tables split instead; rotated floats keep their own fit
+minScale?: number        ≥ 1.24, 0–1, default 0.7 (then layout.floatShrink.minScale): smallest scale. A slot needing
+                         less is skipped; on a fresh page the picture is set at minScale and overruns (floatShrunk
+                         warning with overflowPx)
+captionMeasure?: 'slot' (default) | 'body'   ≥ 1.24: caption and note of a picture narrower than its slot at the
+                         picture's width, placed per align (floats and inline embeds)
+wrap?:    'none' (default) | 'left' | 'right' | 'start' | 'end'   ≥ 1.24: text runs beside the resource, which sits at that
+                         side of its column (flow sides, as align; start/end synonyms). position 'here': the paragraphs,
+                         quotes and list items after the ::resource line run beside it, then full width under it (one
+                         paragraph can do both); a 1-column span:'column' float at the head/foot of a column: the column's
+                         first/last lines. Width = width, else layout.wrap.defaultWidth (0.45). Headings, display maths,
+                         figures, tables, boxes and poems go under it. Page-span, multi-column, side, rotated floats and
+                         vertical text keep their band. Too narrow (layout.wrap.minTextWidth) or too short
+                         (minLinesBeside) = band + textWrap warning; columns with a wrap are not balanced
+wrapGap?: Dimension      ≥ 1.24: space between the wrapped item (caption included) and the text beside and under it;
+                         default layout.wrap.gap, else one body line
 ```
 Gotchas
 - **Engine default types follow the document language**: with `resourceTypes` unset, the
@@ -1094,8 +1136,16 @@ bodyBackgroundEnabled = false, bodyBackground = #ffffff
 bodyAlternateBackgroundEnabled = false, bodyAlternateBackground = #f2f2f2   (zebra rows: every second body row after the header)
 borders = true, borderColor = body colour, borderWidth = 0.75pt
 cellPadding = 0.375em (em = table body size)
-rules = 'grid' | 'horizontal' | 'outer' | 'none'   ('grid')
-borderRadius = 0pt   (outer frame; fills clipped)
+rules = 'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'   ('grid')
+borderRadius = 0pt   (outer frame; fills clipped; booktabs rules stay straight)
+booktabs (≥ 1.24) — journal tables: heavy rule above + under the last row, light rule under the header,
+  no verticals; borderWidth is ignored, borderColor colours the rules (em = body cell size):
+  heavyRuleWidth = 0.08em, lightRuleWidth = 0.05em, spanRuleWidth = 0.03em   (0 drops that rule)
+  spanRules = 'trimmed' | 'full' | 'none' ('trimmed': rule under a head spanning columns above the
+    last header row, shortened by spanRuleTrim = 0.5em at both ends, LaTeX \cmidrule(lr))
+  groupRules = false   (light rule above body rows that head a group: one cell across the table)
+  continuedFootRule = 'bottom' | 'light' | 'none' ('light': a split part that goes on ends light;
+    every part repeats the header with top + header rules; only the last part gets the heavy rule)
 overflow = 'split' | 'clip' | 'hide'                ('split': repeats header rows, caption + continuedSuffix)
 continuedSuffix = '(cont.)', continuesMarkerEnabled = true, continuesMarker = 'Continued' | 'Continúa' (by locale)
 ```
@@ -1106,6 +1156,9 @@ Not in config (lives in the resource's TableModel): `columnWidths` (relative wei
 Table line height = body leading ratio × table font size (no key; `bodyLineHeight` is ignored).
 Zebra rows: `bodyAlternateBackgroundEnabled` + `bodyAlternateBackground` (counted by model row after the
 header rows; a cell's own `background` wins; a split table keeps each row's stripe).
+Journal, paper and textbook tables with three rules (top, mid, bottom) and short rules under spanning
+heads: `rules: 'booktabs'` with `headerBackgroundEnabled: false` and black (ink) `borderColor`; not
+`'horizontal'` with pale hairlines, which rules every row.
 
 ---------------------------------------------------------------------------------
 
@@ -1335,7 +1388,7 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 Content warnings to expect: `cjkLooseLine` (a justified line needing more than ½ em between characters, set
 short), `cjkMarksExceedLeading` / `rubyExceedsLeading` (line gap under ½ em with marks on one side, ⅝ with both;
 give annotated text more leading), `kuntenExceedsLeading` (送り仮名 need half an em on the reading side),
-`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`; config
+`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `textWrap` (≥ 1.24: a resource or box with wrap kept its band: `tooNarrow`, `fewLines`, `verticalText`, or an inline one `moved` to the next column), `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block); config
 warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`.
 
 ```json
@@ -1553,17 +1606,17 @@ fore-edge column: `"layout": {"layoutType": "oneAndHalf", "sideColumnPercent":
 
 **preset.json** — `version: 2` manifest (full reference: project-format.md):
 ```
-{ version: 2, configVersion: 9, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
+{ version: 2, configVersion: 10, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
   default?, view?: { canvasScope?: 'book'|'chapter' },
   chapters: [{title, file}] | { "<locale>": [{title, file}] },
   config: PostextConfig,                          // WITHOUT customFonts
-  resources: [ Resource minus createdAt/updatedAt/bitmap/svg, plus file?, pdfFile?, width?, height?, note? ],
+  resources: [ Resource minus createdAt/updatedAt/bitmap/svg, plus file?, pdfFile?, width?, height?, resolution?, fileResolution?, note? ],
   fonts: [ { name, variants: [{ weight, style, file: "fonts/X.woff2" }], redistributable? } ],
   localized?: { "<locale>": { config?: Partial<PostextConfig> (top-level keys REPLACED wholesale),
                               resources?: [{ id, caption?, note?, altText?, table?, file?, pdfFile?, width?, height? }],
                               view?: { canvasScope?: 'book'|'chapter' } } } }   // the edition's view over `view` (≥ 1.9.2)
 ```
-`configVersion: 9` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
+`configVersion: 10` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
 the bundle reads as postext 1.4 wrote it: H1 breaks pinned, maths × 1.1312 when a chapter has `$`,
 `layout.inlineResourceGap: 'above'` when a chapter embeds a `::resource`, `layout.inlineResourceGapInBoxes: false`
 when one is embedded inside a `:::callout`, `headings.inlineMarks: false` when a heading carries `*`, `_`, `^`,
@@ -1578,7 +1631,10 @@ those of rules 7 and 8; one stamped 7, those of rules 8; one stamped 8 (postext 
 `bodyText.verse.layout: 'bayt'` when a chapter sets a `:::verse` poem with no `||`, the `firstLineIndent` of a
 paragraph style that also hangs dropped, `bodyText.hardLineBreaks: false` when a chapter ends a line with a
 backslash or sets `\\` before a space, and `codeStyle.blocks: false` when a chapter opens a ```` ``` ```` or `~~~`
-fence (its lines then read as Markdown). The pins keep what those rules changed, not
+fence (its lines then read as Markdown); one stamped 9 (postext 1.23), those of rules 10:
+`bodyText.verse.tighten: false` when a chapter sets a poem line by line, and `overflow: 'ellipsis-end'` written
+on every text element of a heading design or a part page (`parts.design`, `parts.versoDesign`) that sets none
+(in `htmlViewer.overrides` too). The pins keep what those rules changed, not
 every 1.4 page: 1.5's layout fixes (page-span opener measure, drop caps in heading designs, tracking in boxes,
 the loose-paragraph limit…) apply to an old bundle too.
 Must NOT go in `config`: `customFonts` (built from `fonts[]`; fileIds are storage-local —
@@ -1623,7 +1679,8 @@ metadata (front matter of chapter 1), `view` (top-level of the manifest, not con
 - A PDF/X file carries no link annotations (bookmarks stay) and every page gets a TrimBox/BleedBox.
 - `pdfGeneration.colorSpace: 'cmyk'` separates through the same profile without the PDF/X marks.
 - `postext check my-book --preflight` lists the preflight with chapter file:line and page; `render.mjs` prints `PREFLIGHT <severity> <kind> page N` lines for a book set up for print (or
-  with `--preflight`): low-resolution pictures, thin rules, small text in several inks, ink over the
+  with `--preflight`): low-resolution pictures (from the files' real pixels; ≥ 1.24 a declared size the file does not
+  have is `declaredPixelsMismatch`), thin rules, small text in several inks, ink over the
   limit, text in the safe zone, boxes stopping short of the trim. Fix the critical ones.
 
 `htmlViewer`: `{ maxCharsPerLine = 70, columnGap = 50 (CSS px number), optimalLineBreaking = false, overrides?: Omit<PostextConfig,'htmlViewer'> }`.
@@ -1710,7 +1767,7 @@ shows the reverse page more than any stock but bible (its coldset ink soaks into
 
 1. `page.margins` default: docs "2 cm all sides"; code top/bottom 2 cm, **left/right 1.5 cm**.
 2. Lists `fontFamily`/`fontWeight`/`italic`/`color`: docs "item text"; code = **marker only**, item text is body style.
-3. Design text `overflow` default: docs `'wrap'`; resolver fallback `'ellipsis-end'` (field is required in the type anyway).
+3. (Fixed in 1.24) Design text `overflow` default: follows the slot (`'wrap'` in heading and part designs, `'ellipsis-end'` elsewhere); up to 1.23 the resolver fell back to `'ellipsis-end'` everywhere and the type required the field.
 4. `bodyText.textAlign`: docs list 2 values; type is full `TextAlign` (`left|justify|center|right`). (`headings.textAlign` is documented with all four.) Caption `align` and `note.align` take all four; `center` / `right` work since 1.5 (1.4 set them flush left).
 5. postext 1.4 and earlier: the H1 `breakBefore` default only survives when `headings` is entirely absent. Fixed since (merged per field); restate it for older versions.
 6. (Fixed) `defaultResourceTypes(locale)` is locale-aware, and the engine now calls it with the document language when `resourceTypes` is unset; older engines used English there.

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "bistro-menu",
-  "sourceHash": "89f4587a9b0e785a45f8c5be2d2754927ff58d0ca3365735cdd5272cfacba436",
+  "sourceHash": "4388a686a5592fea8fc06b71ab1a885155a18d1e77df2a8900c7e2aecb93dd0e",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.702Z",
+  "capturedAt": "2026-10-09T18:25:13.499Z",
   "variants": {
     "en": {
-      "hash8": "6eac598d",
-      "vdtHash": "ea916ad1081e90ade4234f4ce4e935877a96d01b",
+      "hash8": "ba308faf",
+      "vdtHash": "006ad9e905a6d78d3dea4d05c500815703794116",
       "timings": {
-        "importMs": 176,
-        "fontsMs": 33,
+        "importMs": 117,
+        "fontsMs": 42,
         "buildMs": 7,
-        "totalMs": 858,
+        "totalMs": 805,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Noticia Text"
         ],
         "pages": 2,
-        "ownLines": 153
+        "ownLines": 149
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1348,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 70884,
+          "bytes": 71200,
           "alt": "Page 1: Les Tanneurs."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1348,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 51054,
+          "bytes": 51076,
           "alt": "Page 2: La Cave."
         }
       ],
@@ -88,7 +88,7 @@
       },
       "sandbox": {
         "file": "bistro-menu.postext",
-        "bytes": 26001,
+        "bytes": 25572,
         "folio": "bda6e41d"
       },
       "detected": {
@@ -161,10 +161,17 @@
           "page.width",
           "paragraphStyles",
           "paragraphStyles[].color",
+          "paragraphStyles[].endIndent",
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
+          "paragraphStyles[].indent",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].name",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].tabStops",
+          "paragraphStyles[].tabStops[].align",
+          "paragraphStyles[].tabStops[].position",
+          "paragraphStyles[].textAlign",
           "resourceTypes",
           "resourceTypes[].captionPrefix",
           "resourceTypes[].counterFormat",
@@ -199,7 +206,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 141,
+        "configLeaves": 150,
         "designElements": 3,
         "directives": [
           "::resource",
@@ -207,12 +214,13 @@
           ":::pagebreak"
         ],
         "inline": [
-          ":chip"
+          ":chip",
+          ":tab"
         ],
         "resources": {
           "svg": 2,
           "bitmap": 0,
-          "table": 5
+          "table": 1
         },
         "fonts": [
           {
@@ -250,6 +258,7 @@
           "paragraph-styles",
           "resource-types",
           "resources",
+          "tab-stops",
           "table-model"
         ],
         "suggestedLevel": 2
@@ -266,13 +275,13 @@
       }
     },
     "es": {
-      "hash8": "28ee820b",
-      "vdtHash": "a0db979bcfd05eacd43b6a286b7926c7d4c7c405",
+      "hash8": "3e5c6308",
+      "vdtHash": "d5f60de0e53f5cd6ee29178611c26a9a557f506b",
       "timings": {
-        "importMs": 160,
-        "fontsMs": 39,
-        "buildMs": 9,
-        "totalMs": 831,
+        "importMs": 116,
+        "fontsMs": 28,
+        "buildMs": 6,
+        "totalMs": 756,
         "builds": 2
       },
       "specimen": {
@@ -294,7 +303,7 @@
           "Noticia Text"
         ],
         "pages": 2,
-        "ownLines": 153
+        "ownLines": 149
       },
       "pages": [
         {
@@ -305,7 +314,7 @@
           "h": 1348,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 73972,
+          "bytes": 74536,
           "alt": "Página 1: Les Tanneurs."
         },
         {
@@ -316,7 +325,7 @@
           "h": 1348,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 50738,
+          "bytes": 50422,
           "alt": "Página 2: La Cave."
         }
       ],
@@ -344,7 +353,7 @@
       },
       "sandbox": {
         "file": "bistro-menu.postext",
-        "bytes": 26331,
+        "bytes": 26055,
         "folio": "bda6e41d"
       },
       "detected": {
@@ -417,10 +426,17 @@
           "page.width",
           "paragraphStyles",
           "paragraphStyles[].color",
+          "paragraphStyles[].endIndent",
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
+          "paragraphStyles[].indent",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].name",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].tabStops",
+          "paragraphStyles[].tabStops[].align",
+          "paragraphStyles[].tabStops[].position",
+          "paragraphStyles[].textAlign",
           "resourceTypes",
           "resourceTypes[].captionPrefix",
           "resourceTypes[].counterFormat",
@@ -455,7 +471,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 141,
+        "configLeaves": 150,
         "designElements": 3,
         "directives": [
           "::resource",
@@ -463,12 +479,13 @@
           ":::pagebreak"
         ],
         "inline": [
-          ":chip"
+          ":chip",
+          ":tab"
         ],
         "resources": {
           "svg": 2,
           "bitmap": 0,
-          "table": 5
+          "table": 1
         },
         "fonts": [
           {
@@ -506,6 +523,7 @@
           "paragraph-styles",
           "resource-types",
           "resources",
+          "tab-stops",
           "table-model"
         ],
         "suggestedLevel": 2

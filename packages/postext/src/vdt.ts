@@ -747,8 +747,11 @@ export interface VDTLine {
    *  direction opposes its frame's (an English quotation in an Arabic book),
    *  whose indent and ragged edge fall on the other side. Absent
    *  otherwise. Its start side is the right of the span: renderers align
-   *  the line there (see {@link lineTextAlign}). */
-  measure?: { x: number; width: number };
+   *  the line there (see {@link lineTextAlign}).
+   *  Also set, flagged `wrap`, on a line set short beside a picture that
+   *  text wraps round (#627): the span is the line's narrowed measure, and
+   *  the line keeps its block's alignment in it. */
+  measure?: { x: number; width: number; wrap?: true };
   /** How many kashidas (tatweels, U+0640) justification inserted into the
    *  line's words, for warnings and overlays. The tatweels themselves are in
    *  the segments' text, and each segment lists where
@@ -776,10 +779,13 @@ export interface VDTLine {
    *  `indent` is the line's indent (px, from the poem's start side: its
    *  leading spaces × `indentStep`, or where a stepped line starts), set
    *  on its first line when not 0. `stanzaEnd` is set on the last line of
-   *  a stanza another follows (copied text puts a blank line there). The
-   *  widths of the line's segments are final (the block is set flush
+   *  a stanza another follows (copied text puts a blank line there).
+   *  `spaceRatio` is set on a line a little too wide for the measure whose
+   *  word spaces were tightened so it stays on one line: their width as a
+   *  share of their natural width (never under `bodyText.minWordSpacing`).
+   *  The widths of the line's segments are final (the block is set flush
    *  left): renderers paint them as they are. Absent on any other line. */
-  verseLine?: { stanza: number; line: number; turnover: boolean; indent?: number; stanzaEnd?: true };
+  verseLine?: { stanza: number; line: number; turnover: boolean; indent?: number; stanzaEnd?: true; spaceRatio?: number };
   /** A line of a code listing (#624, a `code` block): `line` is the source
    *  line it sets (0-based in the listing), `number` its printed number
    *  when the listing is numbered (never on a continuation), `continued`
@@ -887,12 +893,29 @@ export interface VDTResourceTableLayout {
   rowEdges: number[];
   /** Which rules to stroke with `borderWidthPx` (`'grid'` when absent). */
   rules?: TableRules;
+  /** The rules of a `'booktabs'` table (#625), computed by the layout: the
+   *  renderers stroke exactly these, in `borderColor`, and skip the
+   *  {@link rules} pattern (and the rounded frame). Coordinates are
+   *  relative to the table body's top-left corner, like {@link rowEdges};
+   *  each stroke is centred on its line. `borderWidthPx` is then the
+   *  widest stroke. Absent for the other patterns. */
+  strokes?: VDTTableStroke[];
   /** Radii (px) of the outer frame's corners — top-left, top-right,
    *  bottom-right, bottom-left — from `tableStyle.borderRadius`, clamped to
    *  half the table's width and height. The frame is stroked round and the
    *  cell fills are clipped to it. A part of a split table keeps square the
    *  corners where it continues. Absent for a square frame. */
   frameRadii?: [number, number, number, number];
+}
+
+/** One rule of a table (`VDTResourceTableLayout.strokes`): a straight
+ *  line from `(x1, y1)` to `(x2, y2)`, `widthPx` thick, with butt ends. */
+export interface VDTTableStroke {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  widthPx: number;
 }
 
 /** A rounded outline: a rect and its corner radii (top-left, top-right,
@@ -1196,11 +1219,12 @@ export function pageIsVertical(page: Pick<VDTPage, 'flow'>): boolean {
  * block set against its frame's direction), whose start side is the right
  * of its span: `left` (the start; also the last line of a justified
  * paragraph, `justify` coming back as `right`) is flush right, `right` (the
- * end) flush left, and a centred line stays centred. A justified line that
+ * end) flush left, and a centred line stays centred. A span flagged `wrap`
+ * (a line beside a wrapped picture, #627) keeps the block's alignment. A justified line that
  * is not its paragraph's last is filled across the span either way.
  */
 export function lineTextAlign(line: Pick<VDTLine, 'measure'>, textAlign: TextAlign): TextAlign {
-  if (!line.measure) return textAlign;
+  if (!line.measure || line.measure.wrap) return textAlign;
   return textAlign === 'right' ? 'left' : textAlign === 'center' ? 'center' : 'right';
 }
 
@@ -1359,6 +1383,11 @@ export interface ResolvedResourceBlock {
    *  safe area (the room the fit and balancing levers have), and the px
    *  the levers already set it taller (`delta`, negative when shorter). */
   bodyFlex?: { shrink: number; grow: number; delta: number };
+  /** For a floated picture scaled to the room of its slot
+   *  (`placement.shrink`, #626): the share of its width it keeps, below 1.
+   *  Absent when the picture is set at its size (or only cropped within
+   *  its safe area). */
+  shrinkScale?: number;
   /** For bitmap/svg: the out-of-band binary id to resolve at render time. */
   fileId?: string;
   /** For bitmap: the source format (e.g. `'png'`, `'jpeg'`, `'webp'`). */
@@ -1786,6 +1815,31 @@ export interface VDTColumn {
    *  level: its bottom is the level cut, and column balancing fills the
    *  column up to it even though the page does not flow on. */
   trailingCap?: boolean;
+  /** Regions of the column that text wraps round (#627): a picture or a
+   *  box narrower than the column, set at one of its sides, with the lines
+   *  beside it set short. Page coordinates of the flow frame (as `bbox`);
+   *  each covers the item and its gap on the text's side and under it, its
+   *  height in whole grid lines from its top. Absent when nothing in the
+   *  column wraps. */
+  exclusions?: VDTExclusion[];
+}
+
+/** A region of a column that text wraps round (see `VDTColumn.exclusions`,
+ *  #627). */
+export interface VDTExclusion {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** The side of the column it stands at, in the flow (the text runs on the
+   *  other side). */
+  side: 'left' | 'right';
+  /** The space between the item and the text beside it (px), part of
+   *  `width`. */
+  gap: number;
+  /** The id of the block that wraps the text: an inline figure's block, a
+   *  float's, or a box's frame. */
+  ownerId: string;
 }
 
 /** The notes set at the foot of one column (`footnotes.placement:
@@ -1925,6 +1979,13 @@ export interface VDTDesignTextBlock {
    *  runs were ordered at that paragraph level, and an HTML line takes
    *  `dir="rtl"`. Absent for left-to-right text. */
   direction?: 'rtl';
+  /** The element lost part of a line to fit its width (#628): `mode` is
+   *  how (its `overflow`, or `'clip'` with ink past the box), `elementId`
+   *  the element's id, `slot` where its design is painted and `text` the
+   *  whole text it was given. The build reports it as a
+   *  `designTextTruncated` content warning. Absent when every line shows
+   *  whole. */
+  truncated?: { elementId: string; slot: VDTDesignSlotKind; mode: 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip'; text: string };
   /** Set vertically on a page or a slot whose text is horizontal
    *  (`DesignTextElement.writingMode: 'vertical-rl'`): the lines are laid
    *  out in the block's own frame, turned a quarter turn clockwise about
@@ -2389,8 +2450,11 @@ export interface ConfigWarning {
    *  `'latn'`, `'arab'` or `'arabext'`; the digits follow the document
    *  language, and `used` is the digit system that gives.
    *  `lineNumbersUnsupported`: `lineNumbers.enabled` on a vertical
-   *  document (#621), which gets no line numbers; `used` is `false`. */
-  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'columnCountClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals' | 'lineNumbersUnsupported';
+   *  document (#621), which gets no line numbers; `used` is `false`.
+   *  `wrapUnsupported`: a resource type's `defaultPlacement.wrap` in a
+   *  vertical document (#627), whose figures keep their bands whole;
+   *  `used` is `none`. */
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'columnCountClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals' | 'lineNumbersUnsupported' | 'wrapUnsupported';
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
    *  `headingStyles[2].layout.sideColumnPercent`. */
@@ -2443,6 +2507,10 @@ export type ContentWarning = ContentWarningBase & (
   /** A `:::references` block could not be read (malformed JSON or YAML, or
    *  BibTeX without an engine). */
   | { kind: 'referencesUnreadable'; message: string }
+  /** The front matter block is not valid YAML (an unclosed quote, text
+   *  after a quoted value): the document is set without its metadata.
+   *  `message` is the parser's reason, with the line and column. */
+  | { kind: 'invalidFrontmatter'; message: string }
   /** A `:::name` line whose name is neither a directive nor a container:
    *  it is set as text. */
   | { kind: 'unknownDirective'; name: string }
@@ -2644,7 +2712,41 @@ export type ContentWarning = ContentWarningBase & (
    *  lines wrap too) or cut at the box's edge (`'clip'`). `lines` counts
    *  the source lines too wide. Found by the layout. */
   | { kind: 'codeOverflow'; mode: 'wrap' | 'shrink' | 'clip'; lines: number; scale?: number; lang?: string }
+  /** `floatShrunk` (#626): a floated picture was set smaller than its size
+   *  to fit the room of its slot (`placement.shrink`), at `scale` of its
+   *  width. `overflowPx`: at its smallest scale (`placement.minScale`) it
+   *  still runs this far past the foot of the page's text block, on a page
+   *  where it had nowhere else to go. Found by the layout; information
+   *  more than a fault, unless it overflows. */
+  | { kind: 'floatShrunk'; resourceId: string; scale: number; overflowPx?: number }
+  /** `textWrap` (#627): a resource or a box set to wrap text round it
+   *  (`placement.wrap`, a box's `wrap`) that does not as asked.
+   *  `'tooNarrow'`: the text beside it would be narrower than
+   *  `layout.wrap.minTextWidth`, so it takes its band whole; `'fewLines'`:
+   *  it is shorter than `layout.wrap.minLinesBeside` lines, so it takes
+   *  its band whole; `'moved'`: an inline one was too tall for the room
+   *  left in its column and moved on to the next, its anchor with it;
+   *  `'verticalText'`: text wraps in horizontal text only, so in a
+   *  vertical flow it takes its band whole. `resourceId` names a
+   *  resource, `box` a box's style. Found by the layout. */
+  | { kind: 'textWrap'; reason: 'tooNarrow' | 'fewLines' | 'moved' | 'verticalText'; resourceId?: string; box?: string }
+  /** `designTextTruncated` (#628): a design text element did not fit its
+   *  width and lost part of a line: cut by an ellipsis (`mode`
+   *  `'ellipsis-*'`, its `overflow`) or clipped with ink past its box
+   *  (`'clip'`). `slot` is where the design is painted (a running head or
+   *  folio, a heading design, a part page, a contents part row),
+   *  `elementId` the element's id and `text` the whole text it was given.
+   *  One per element and page; a running head or folio once per element
+   *  and chapter (a chapter title cut on every page of its chapter is one
+   *  warning). `sourceStart` / `sourceEnd` when the text mirrors a heading
+   *  or a frontmatter field. Found by the layout. */
+  | { kind: 'designTextTruncated'; slot: VDTDesignSlotKind; elementId: string; text: string; mode: 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip' }
 );
+
+/** Where a design slot is painted: a running head (`'header'`), a folio
+ *  (`'footer'`), a heading design (`'heading'`), a part page or its verso
+ *  (`'part'`), a part row of the contents (`'tocRow'`). */
+export type VDTDesignSlotKind = 'header' | 'footer' | 'heading' | 'part' | 'tocRow';
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout
  *  had to force ({@link CalloutOverflowWarning}), with the shape it has had

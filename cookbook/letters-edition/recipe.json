@@ -27,7 +27,7 @@
       "design-images",
       "title-line-breaks",
       "running-heads",
-      "page-role-filters",
+      "verse",
       "mirrored-margins",
       "page-background",
       "page-breaks",
@@ -58,7 +58,7 @@
     "design-text-no-inline-marks"
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.23.0"
   },
   "kit": [
     "core",
@@ -168,9 +168,7 @@
   },
   "created": "2026-09-26",
   "updated": "2026-09-26",
-  "gaps": [
-    "hard-line-breaks"
-  ],
+  "gaps": [],
   "explainsWarnings": [],
   "workarounds": [
     {

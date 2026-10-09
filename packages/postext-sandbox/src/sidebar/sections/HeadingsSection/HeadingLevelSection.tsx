@@ -211,6 +211,17 @@ export function HeadingLevelSection({
         onReset={() => onReset(level, 'indent')}
         units={INDENT_UNITS}
       />
+      <DimensionInput
+        label={labels.headingFirstLineIndent}
+        value={resolved.firstLineIndent ?? ZERO_EM}
+        onChange={(dim) => onUpdate(level, { firstLineIndent: dim })}
+        min={0}
+        step={0.5}
+        tooltip={labels.headingFirstLineIndentTooltip}
+        isDefault={raw?.firstLineIndent === undefined}
+        onReset={() => onReset(level, 'firstLineIndent')}
+        units={INDENT_UNITS}
+      />
       <NumberInput
         label={labels.headingJidori}
         value={resolved.jidori ?? 0}
@@ -376,7 +387,7 @@ export function HeadingLevelSection({
           <SlotEditor
             slotKey="heading"
             raw={rawAdvanced?.slot}
-            resolved={(resolveDesignSlot(rawAdvanced?.slot, 'header') as ResolvedDesignSlot)}
+            resolved={(resolveDesignSlot(rawAdvanced?.slot, rawAdvanced?.slot === undefined ? 'header' : 'heading') as ResolvedDesignSlot)}
             onUpdate={(slot: DesignSlot | undefined) => {
               updateAdvanced({ enabled: true, slot: slot ?? { elements: [] } });
             }}

@@ -16,14 +16,12 @@
     "primary": [
       "paragraph-styles",
       "emphasis-colours",
-      "table-model"
+      "tab-stops"
     ],
     "also": [
       "paragraph-indents",
       "heading-typography",
       "chapter-breaks",
-      "table-style",
-      "table-styles",
       "resource-types",
       "inline-embeds",
       "heading-styles",
@@ -41,14 +39,11 @@
   "answers": [
     "Q84",
     "Q50",
-    "Q65",
     "Q73"
   ],
   "gotchas": [
     "headings-drop-h1-break",
     "style-italic-colour",
-    "merged-cells-hiddenby",
-    "here-table-no-split",
     "resource-double-quotes",
     "palette-skips-designs",
     "design-lineheight-multiple",
@@ -57,11 +52,10 @@
     "hyphenation-locales",
     "fonts-first",
     "opener-clipped-at-top",
-    "opener-image-no-reserve",
-    "table-fill-seams"
+    "opener-image-no-reserve"
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.23.0"
   },
   "kit": [
     "core",
@@ -163,10 +157,7 @@
   },
   "created": "2026-09-26",
   "updated": "2026-09-26",
-  "gaps": [
-    "pipe-tables",
-    "tab-stops"
-  ],
+  "gaps": [],
   "related": [
     "screenplay-format",
     "poetry-collection",
@@ -188,21 +179,6 @@
       "followup": "EF-173",
       "package": "postext",
       "note": "a paragraph style has no italic switch, so every direction and the scene description are written *…* in the Markdown"
-    },
-    {
-      "followup": "EF-34",
-      "package": "postext",
-      "note": "the spanning rows of the cast list (its header) and of the scenes (the time of the action) are joined with mergeCells, which writes the hiddenBy placeholder the covered cell needs"
-    },
-    {
-      "followup": "EF-64",
-      "package": "postext",
-      "note": "the cast list has a single header row, merged into one cell: the canvas leaves a pale seam between two filled header cells side by side"
-    },
-    {
-      "followup": "EF-174",
-      "package": "postext",
-      "note": "a table style has no textTransform or letterSpacing, so the header row takes its small capitals from the face itself, Playfair Display SC at 400"
     },
     {
       "followup": "EF-71",

@@ -11,6 +11,21 @@ export interface ParsedFrontmatter {
    *  by field name — what a design element such as `{title}` maps back to.
    *  Absent when there is no frontmatter block. */
   fieldSources?: Record<string, { start: number; end: number }>;
+  /** Set when the block does not parse (YAML a reader is still typing, an
+   *  unclosed quote): `metadata` is then empty and `content` is the text
+   *  after the block's closing line, as with a block that parses. */
+  error?: FrontmatterError;
+}
+
+/** Why a front-matter block could not be read, and where it is. */
+export interface FrontmatterError {
+  /** The parser's reason, with the line and column it stopped at
+   *  (`unexpected end of the stream within a double quoted scalar (3:1)`). */
+  message: string;
+  /** The block's source range, from its opening `---` to the end of its
+   *  closing line (or of the text, when it is never closed). */
+  sourceStart: number;
+  sourceEnd: number;
 }
 
 /** Offsets of the `key: value` values of a frontmatter block: line 1 is the
@@ -137,8 +152,68 @@ export function normalizeMetadata(metadata: DocumentMetadata, locale?: string, n
   return out ?? metadata;
 }
 
+/** gray-matter's split of a leading front-matter block, without parsing
+ *  it: the block opens with `---` (a fourth `-` makes it no block), the rest
+ *  of that line names its language, and it closes at the next line starting
+ *  with `---`; the body is what follows, minus one line break. `undefined`
+ *  when the text has no block. */
+function splitFrontmatter(markdown: string): { blockEnd: number; content: string } | undefined {
+  if (!markdown.startsWith('---') || markdown.charAt(3) === '-') return undefined;
+  let pos = 3;
+  // As gray-matter reads it: up to the first line break (all but the last
+  // character when there is none).
+  const rest = markdown.slice(pos);
+  pos += rest.slice(0, rest.search(/\r?\n/)).length;
+  const close = markdown.indexOf('\n---', pos);
+  if (close === -1) return { blockEnd: markdown.length, content: '' };
+  let start = close + 4;
+  const lineEnd = markdown.indexOf('\n', start);
+  const blockEnd = lineEnd === -1 ? markdown.length : lineEnd + 1;
+  if (markdown[start] === '\r') start++;
+  if (markdown[start] === '\n') start++;
+  return { blockEnd, content: markdown.slice(start) };
+}
+
+/** The YAML reason of a parse failure, with the line (in `markdown`) and
+ *  column it stopped at when the parser gives them. */
+function frontmatterErrorMessage(error: unknown): string {
+  const e = error as { reason?: unknown; message?: unknown; mark?: { line?: unknown; column?: unknown } } | null;
+  const reason = typeof e?.reason === 'string' && e.reason ? e.reason : typeof e?.message === 'string' ? e.message.split('\n')[0]! : String(error);
+  const line = e?.mark?.line;
+  const column = e?.mark?.column;
+  // The YAML text begins with the line break that ends the opening `---`
+  // line, so its line k is the document's line k + 1.
+  return typeof line === 'number' && typeof column === 'number' ? `${reason} (${line + 1}:${column + 1})` : reason;
+}
+
+/** gray-matter caches a text before parsing it, so a text whose block
+ *  throws is cached half-made: asked again, it comes back unparsed, block
+ *  and all, with no error. */
+function forgetFailedParse(markdown: string): void {
+  const cache = (matter as unknown as { cache?: Record<string, unknown> }).cache;
+  if (cache) delete cache[markdown.replace(/^\uFEFF/, '')];
+}
+
+/**
+ * The front matter of `markdown` and the text after it. Never throws: a
+ * block that does not parse (YAML being typed, an unclosed quote) gives no
+ * metadata, the text after the block as `content`, and the reason in
+ * `error` — `collectContentWarnings` reports it as `invalidFrontmatter`.
+ */
 export function extractFrontmatter(markdown: string): ParsedFrontmatter {
-  const { data, content } = matter(markdown);
+  let data: unknown;
+  let content: string;
+  let error: FrontmatterError | undefined;
+  try {
+    ({ data, content } = matter(markdown));
+  } catch (e) {
+    forgetFailedParse(markdown);
+    const bom = markdown.startsWith('\uFEFF') ? 1 : 0;
+    const split = splitFrontmatter(markdown.slice(bom));
+    data = {};
+    content = split ? split.content : markdown.slice(bom);
+    error = { message: frontmatterErrorMessage(e), sourceStart: bom, sourceEnd: bom + (split?.blockEnd ?? 0) };
+  }
   // gray-matter strips the leading frontmatter block and one trailing newline.
   // Recover the body offset by searching for the content's prefix — fall back
   // to 0 when there is no frontmatter (content === markdown).
@@ -147,6 +222,9 @@ export function extractFrontmatter(markdown: string): ParsedFrontmatter {
     const idx = markdown.indexOf(content);
     if (idx >= 0) contentOffset = idx;
   }
-  const fieldSources = content !== markdown ? frontmatterFieldSources(markdown) : undefined;
-  return { metadata: data as DocumentMetadata, content, contentOffset, ...(fieldSources ? { fieldSources } : {}) };
+  const fieldSources = content !== markdown && !error ? frontmatterFieldSources(markdown) : undefined;
+  // A block of YAML that is not a mapping (a bare list or scalar) names no
+  // fields.
+  const metadata = data !== null && typeof data === 'object' && !Array.isArray(data) ? (data as DocumentMetadata) : {};
+  return { metadata, content, contentOffset, ...(fieldSources ? { fieldSources } : {}), ...(error ? { error } : {}) };
 }

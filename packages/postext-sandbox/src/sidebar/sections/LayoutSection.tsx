@@ -1,9 +1,9 @@
 'use client';
 
 import { memo } from 'react';
-import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
-import { resolveLayoutConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, dimensionsEqual, colorsEqual } from 'postext';
-import type { LayoutConfig, Dimension, ColorValue } from 'postext';
+import { useSandboxDispatch, useSandboxLabels, useSandboxSelector, useSandboxStateGetter } from '../../context/SandboxContext';
+import { resolveLayoutConfig, resolveBodyTextConfig, DEFAULT_LAYOUT_CONFIG, DEFAULT_COLUMN_RULE, dimensionsEqual, colorsEqual } from 'postext';
+import type { LayoutConfig, Dimension, ColorValue, FloatShrinkMode, TextWrapConfig } from 'postext';
 import {
   ChoiceInput,
   CollapsibleSection,
@@ -18,6 +18,7 @@ import { HighlightZone } from '../settings/previewHighlight';
 import { ColumnsPicture } from '../settings/pictures';
 import { MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN } from '../settings/multipleColumns';
 import { flowSideLabels, useRightToLeftFlow } from '../settings/flowSides';
+import { applyFileResolutions, readFileResolutions } from '../../panels/resources/fileResolutions';
 
 const D = DEFAULT_LAYOUT_CONFIG;
 
@@ -26,6 +27,7 @@ export const LayoutSection = memo(function LayoutSection() {
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.layout);
   const layout = resolveLayoutConfig(raw);
+  const getState = useSandboxStateGetter();
 
   const updateLayout = (partial: Partial<LayoutConfig>) => {
     dispatch({
@@ -53,6 +55,25 @@ export const LayoutSection = memo(function LayoutSection() {
       payload: { layout: hasKeys ? next : undefined },
     });
   };
+
+  const resetFloatShrinkField = (field: 'mode' | 'minScale') => {
+    if (!raw?.floatShrink) return;
+    const next = { ...raw.floatShrink };
+    delete next[field];
+    if (Object.keys(next).length > 0) updateLayout({ floatShrink: next });
+    else resetField('floatShrink');
+  };
+
+  const resetWrapField = (field: keyof TextWrapConfig) => {
+    if (!raw?.wrap) return;
+    const next = { ...raw.wrap };
+    delete next[field];
+    if (Object.keys(next).length > 0) updateLayout({ wrap: next });
+    else resetField('wrap');
+  };
+  // The wrap gap's default: one body line (#627).
+  const bodyText = useSandboxSelector((s) => s.config.bodyText);
+  const bodyLine = resolveBodyTextConfig(bodyText).lineHeight;
 
   const resetColumnRuleField = (field: 'enabled' | 'color' | 'lineWidth') => {
     if (!raw?.columnRule) return;
@@ -267,6 +288,142 @@ export const LayoutSection = memo(function LayoutSection() {
         isDefault={layout.fitFiguresToPage === D.fitFiguresToPage}
         onReset={() => resetField('fitFiguresToPage')}
       />
+      {/* How a bitmap without a resolution of its own takes its print
+          size (#631): its pixels at the page dpi, the resolution its file
+          states, or a fixed ppi. */}
+      <SelectInput
+        label={labels.bitmapResolution}
+        value={typeof layout.bitmapResolution === 'number' ? 'fixed' : layout.bitmapResolution}
+        options={[
+          { value: 'document', label: labels.bitmapResolutionDocument },
+          { value: 'file', label: labels.bitmapResolutionFile },
+          { value: 'fixed', label: labels.bitmapResolutionFixed },
+        ]}
+        onChange={(v) => {
+          if (v === 'fixed') {
+            updateLayout({ bitmapResolution: 300 });
+          } else if (v === 'file') {
+            updateLayout({ bitmapResolution: 'file' });
+            // Bitmaps stored before their file's resolution was kept.
+            void readFileResolutions(getState().resources).then((found) => {
+              const next = found.size > 0 ? applyFileResolutions(getState().resources, found) : null;
+              if (next) dispatch({ type: 'SET_RESOURCES', payload: next });
+            });
+          } else {
+            resetField('bitmapResolution');
+          }
+        }}
+        tooltip={labels.bitmapResolutionTooltip}
+        isDefault={layout.bitmapResolution === D.bitmapResolution}
+        onReset={() => resetField('bitmapResolution')}
+      />
+      {typeof layout.bitmapResolution === 'number' && (
+        <NestedGroup>
+          <NumberInput
+            label={labels.bitmapResolutionPpi}
+            value={layout.bitmapResolution}
+            onChange={(v) => updateLayout({ bitmapResolution: Math.max(1, v) })}
+            min={1}
+            max={4800}
+            step={1}
+            suffix="ppi"
+            tooltip={labels.bitmapResolutionPpiTooltip}
+            isDefault={false}
+            onReset={() => resetField('bitmapResolution')}
+          />
+        </NestedGroup>
+      )}
+      {/* Floated pictures scaled to the room of their slot (#626): the
+          default a resource type or a resource may override. */}
+      <SelectInput
+        label={labels.floatShrink}
+        value={layout.floatShrink.mode}
+        options={[
+          { value: 'never', label: labels.resourceShrinkNever },
+          { value: 'page', label: labels.resourceShrinkPage },
+          { value: 'slot', label: labels.resourceShrinkSlot },
+        ]}
+        onChange={(v) => updateLayout({ floatShrink: { ...raw?.floatShrink, mode: v as FloatShrinkMode } })}
+        tooltip={labels.floatShrinkTooltip}
+        isDefault={layout.floatShrink.mode === D.floatShrink.mode}
+        onReset={() => resetFloatShrinkField('mode')}
+      />
+      {layout.floatShrink.mode !== 'never' && (
+        <NestedGroup>
+          <NumberInput
+            label={labels.floatShrinkMinScale}
+            value={Math.round(layout.floatShrink.minScale * 100)}
+            onChange={(v) => updateLayout({ floatShrink: { ...raw?.floatShrink, minScale: Math.min(100, Math.max(5, v)) / 100 } })}
+            min={5}
+            max={100}
+            step={5}
+            suffix="%"
+            tooltip={labels.floatShrinkMinScaleTooltip}
+            isDefault={layout.floatShrink.minScale === D.floatShrink.minScale}
+            onReset={() => resetFloatShrinkField('minScale')}
+          />
+        </NestedGroup>
+      )}
+      {/* Text wrap round pictures and boxes (#627): the defaults a
+          resource, a resource type or a box may set aside. */}
+      <DimensionInput
+        label={labels.textWrapGap}
+        value={layout.wrap.gap ?? bodyLine}
+        onChange={(v) => updateLayout({ wrap: { ...raw?.wrap, gap: v } })}
+        units={['pt', 'mm', 'em']}
+        tooltip={labels.textWrapGapTooltip}
+        isDefault={raw?.wrap?.gap === undefined}
+        onReset={() => resetWrapField('gap')}
+      />
+      <NestedGroup>
+        {typeof layout.wrap.minTextWidth === 'number' ? (
+          <NumberInput
+            label={labels.textWrapMinTextWidth}
+            value={Math.round(layout.wrap.minTextWidth * 100)}
+            onChange={(v) => updateLayout({ wrap: { ...raw?.wrap, minTextWidth: Math.min(100, Math.max(1, v)) / 100 } })}
+            min={1}
+            max={100}
+            step={5}
+            suffix="%"
+            tooltip={labels.textWrapMinTextWidthTooltip}
+            isDefault={raw?.wrap?.minTextWidth === undefined}
+            onReset={() => resetWrapField('minTextWidth')}
+          />
+        ) : (
+          <DimensionInput
+            label={labels.textWrapMinTextWidth}
+            value={layout.wrap.minTextWidth}
+            onChange={(v) => updateLayout({ wrap: { ...raw?.wrap, minTextWidth: v } })}
+            units={['em', 'mm', 'pt']}
+            tooltip={labels.textWrapMinTextWidthTooltip}
+            isDefault={raw?.wrap?.minTextWidth === undefined}
+            onReset={() => resetWrapField('minTextWidth')}
+          />
+        )}
+        <NumberInput
+          label={labels.textWrapMinLinesBeside}
+          value={layout.wrap.minLinesBeside}
+          onChange={(v) => updateLayout({ wrap: { ...raw?.wrap, minLinesBeside: Math.max(1, Math.round(v)) } })}
+          min={1}
+          max={10}
+          step={1}
+          tooltip={labels.textWrapMinLinesBesideTooltip}
+          isDefault={layout.wrap.minLinesBeside === D.wrap.minLinesBeside}
+          onReset={() => resetWrapField('minLinesBeside')}
+        />
+        <NumberInput
+          label={labels.textWrapDefaultWidth}
+          value={Math.round(layout.wrap.defaultWidth * 100)}
+          onChange={(v) => updateLayout({ wrap: { ...raw?.wrap, defaultWidth: Math.min(95, Math.max(5, v)) / 100 } })}
+          min={5}
+          max={95}
+          step={5}
+          suffix="%"
+          tooltip={labels.textWrapDefaultWidthTooltip}
+          isDefault={layout.wrap.defaultWidth === D.wrap.defaultWidth}
+          onReset={() => resetWrapField('defaultWidth')}
+        />
+      </NestedGroup>
       <SelectInput
         label={labels.inlineResourceGap}
         value={layout.inlineResourceGap}

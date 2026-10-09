@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "critical-edition-line-numbers",
-  "sourceHash": "e3310e1b035222b42f99a50bfe759313b1d24874e538cb9adf2b3e86dba0d6f2",
+  "sourceHash": "3032338aef8b7e7caec2846fac2483f17761366db4f75a8f52f411491bb3b6ab",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.879Z",
+  "capturedAt": "2026-10-09T18:24:37.913Z",
   "variants": {
     "en": {
-      "hash8": "ef9e4a22",
-      "vdtHash": "e64b45362d3fbc3b1cf4bae923e85995656eb549",
+      "hash8": "c5eec724",
+      "vdtHash": "d112c5c149b78cce98f43c19953d68b86338782d",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 44,
+        "importMs": 124,
+        "fontsMs": 45,
         "buildMs": 30,
-        "totalMs": 891,
+        "totalMs": 868,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Linden Hill"
         ],
         "pages": 9,
-        "ownLines": 189
+        "ownLines": 171
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1565,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 91586,
+          "bytes": 91694,
           "alt": "Opening page 1: Lycidas."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1565,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 98672,
+          "bytes": 98588,
           "alt": "Page 3."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1565,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 56062,
+          "bytes": 56086,
           "alt": "Page 7."
         },
         {
@@ -152,7 +152,7 @@
       },
       "sandbox": {
         "file": "critical-edition-line-numbers.postext",
-        "bytes": 108732,
+        "bytes": 108018,
         "folio": "bc0e5eea"
       },
       "detected": {
@@ -173,14 +173,8 @@
           "bodyText.lineHeight",
           "bodyText.referenceColor",
           "bodyText.textAlign",
-          "calloutStyles",
-          "calloutStyles[].backgroundEnabled",
-          "calloutStyles[].id",
-          "calloutStyles[].padding",
-          "calloutStyles[].padding.bottom",
-          "calloutStyles[].padding.left",
-          "calloutStyles[].padding.right",
-          "calloutStyles[].padding.top",
+          "bodyText.verse",
+          "bodyText.verse.indentStep",
           "chipStyles",
           "chipStyles[].backgroundEnabled",
           "chipStyles[].borderWidth",
@@ -245,6 +239,15 @@
           "layout.sideColumnPercent",
           "layout.sideColumnRole",
           "layout.sideColumnSide",
+          "lineNumbers",
+          "lineNumbers.color",
+          "lineNumbers.count",
+          "lineNumbers.enabled",
+          "lineNumbers.fontFamily",
+          "lineNumbers.fontSize",
+          "lineNumbers.interval",
+          "lineNumbers.position",
+          "lineNumbers.restart",
           "page",
           "page.dpi",
           "page.height",
@@ -258,18 +261,15 @@
           "page.width",
           "paragraphStyles",
           "paragraphStyles[].color",
-          "paragraphStyles[].firstLineIndent",
           "paragraphStyles[].fontFamily",
           "paragraphStyles[].fontSize",
           "paragraphStyles[].hangingIndent",
           "paragraphStyles[].id",
           "paragraphStyles[].lineHeight",
-          "paragraphStyles[].marginTop",
-          "paragraphStyles[].textAlign"
+          "paragraphStyles[].marginTop"
         ],
         "configSections": [
           "bodyText",
-          "calloutStyles",
           "chipStyles",
           "colorPalette",
           "footer",
@@ -277,15 +277,15 @@
           "headingStyles",
           "headings",
           "layout",
+          "lineNumbers",
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 238,
+        "configLeaves": 233,
         "designElements": 11,
         "directives": [
-          ":::paragraphs",
-          ":::callout",
-          ":::space"
+          ":::verse",
+          ":::paragraphs"
         ],
         "inline": [
           "{attrs}",
@@ -325,19 +325,18 @@
         ],
         "features": [
           "bibliography",
-          "callout-styles",
           "chips",
           "column-and-a-half",
           "heading-attributes",
           "heading-styles",
+          "line-numbers",
           "opener-band",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
           "resources",
-          "side-boxes",
           "side-column-floats",
-          "vertical-space"
+          "verse"
         ],
         "suggestedLevel": 3
       },
@@ -349,7 +348,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

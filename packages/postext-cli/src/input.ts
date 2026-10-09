@@ -7,7 +7,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, extname, join, relative, resolve, sep } from 'node:path';
 import type { PostextConfig, Resource } from 'postext';
 import {
-  bitmapSize,
+  bitmapInfo,
   createBundle,
   fontFormatFromFile,
   isBitmapFile,
@@ -211,7 +211,9 @@ function looseResources(dir: string): { resources: Resource[]; files: Map<string
   const sizeOf = (file: string) => {
     const bytes = tree.get(file);
     if (!bytes) return undefined;
-    return isSvgFile(file) ? svgSize(new TextDecoder().decode(bytes)) : bitmapSize(bytes);
+    // A bitmap's size comes with the resolution its file states (#631),
+    // kept as `fileResolution` for `layout.bitmapResolution: 'file'`.
+    return isSvgFile(file) ? svgSize(new TextDecoder().decode(bytes)) : bitmapInfo(bytes);
   };
   if (existsSync(specFile)) {
     const specs = readJson(specFile, 'Resources') as BundleResourceSpec[];

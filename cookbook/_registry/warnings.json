@@ -4037,5 +4037,215 @@
         "pt": "Listagens de código"
       }
     }
+  },
+  "floatShrunk": {
+    "source": "engine",
+    "label": {
+      "en": "Picture shrunk to fit",
+      "es": "Imagen reducida para que quepa",
+      "ca": "Imatge reduïda perquè hi càpiga",
+      "zh": "图片已缩小以放下",
+      "ar": "صورة مصغَّرة لتتسع",
+      "ja": "収まるよう縮小した図版",
+      "pt": "Imagem reduzida para caber"
+    },
+    "cause": {
+      "en": "A floated picture with placement.shrink (or layout.floatShrink) was taller than the room of its slot, so the engine set it smaller, at the scale the warning gives. With overflowPx it did not fit even at minScale on a fresh page, where it had nowhere else to go, and runs past the foot of the text block.",
+      "es": "Una imagen flotante con placement.shrink (o layout.floatShrink) era más alta que el sitio de su hueco, así que el motor la compuso más pequeña, a la escala que da el aviso. Con overflowPx no cabía ni a minScale en una página nueva, donde no tenía otro sitio adonde ir, y sobresale del pie de la caja de texto.",
+      "ca": "Una imatge flotant amb placement.shrink (o layout.floatShrink) era més alta que l'espai del seu buit, de manera que el motor la va compondre més petita, a l'escala que dona l'avís. Amb overflowPx no hi cabia ni a minScale en una pàgina nova, on no tenia cap altre lloc on anar, i sobresurt del peu de la caixa de text.",
+      "zh": "设了placement.shrink（或layout.floatShrink）的浮动图片高于所在位置的空间，引擎于是按警告给出的比例把它缩小。带overflowPx时，表示它在没有别处可去的新页上即使缩到minScale也放不下，超出了版心底部。",
+      "ar": "كانت صورة عائمة ذات placement.shrink (أو layout.floatShrink) أطول من حيّز موضعها، فصفّها المحرّك أصغر، بالمقياس الذي يذكره التنبيه. ومع overflowPx لم تتسع حتى بمقياس minScale في صفحة جديدة لم يكن لها مكان آخر تذهب إليه، فهي تتجاوز أسفل مساحة النص.",
+      "ja": "placement.shrink（またはlayout.floatShrink）を設定したフロートの図版が置き場所の空きより高かったため、エンジンが警告にある倍率で小さく組みました。overflowPxがあるときは、ほかに行き場のない新しいページでminScaleでも収まらず、版面の下端からはみ出しています。",
+      "pt": "Uma imagem flutuante com placement.shrink (ou layout.floatShrink) era mais alta que o espaço da sua posição, então o motor a compôs menor, na escala que o aviso indica. Com overflowPx ela não coube nem em minScale numa página nova, onde não tinha outro lugar para onde ir, e ultrapassa o pé da mancha de texto."
+    },
+    "fix": {
+      "en": "Nothing to do when the scale reads well: the warning is information. If the picture comes out too small, raise minScale (it then moves on instead), give it more room (a shorter caption, span: 'page'), or switch shrink to 'never'. With overflowPx, lower minScale or let the picture take a page of its own.",
+      "es": "Nada que hacer si la escala se lee bien: el aviso es informativo. Si la imagen queda demasiado pequeña, sube minScale (entonces sigue adelante), dale más sitio (un pie más corto, span: 'page') o pon shrink en 'never'. Con overflowPx, baja minScale o deja que la imagen ocupe una página propia.",
+      "ca": "Res a fer si l'escala es llegeix bé: l'avís és informatiu. Si la imatge queda massa petita, apuja minScale (aleshores continua endavant), dona-li més espai (un peu més curt, span: 'page') o posa shrink a 'never'. Amb overflowPx, abaixa minScale o deixa que la imatge ocupi una pàgina pròpia.",
+      "zh": "比例读起来合适就无需处理：这条警告只是提示。图片显得太小时，提高minScale（这样它会移到后面）、给它更多空间（缩短题注、span: 'page'），或把shrink设为'never'。带overflowPx时，降低minScale，或让图片单独占一页。",
+      "ar": "لا شيء يلزم إن كان المقياس مقروءًا: التنبيه للعلم. وإن خرجت الصورة صغيرة جدًّا، فارفع minScale (فتنتقل حينئذ إلى ما بعده)، أو امنحها حيّزًا أكبر (تعليق أقصر، span: 'page')، أو اجعل shrink مساويًا لـ'never'. ومع overflowPx، اخفض minScale أو دع الصورة تأخذ صفحة خاصة بها.",
+      "ja": "倍率が読みやすければ対応は不要で、この警告は情報です。図版が小さすぎるなら、minScaleを上げる（そのときは次へ送られます）、空きを増やす（短いキャプション、span: 'page'）、shrinkを'never'にする、のいずれかにします。overflowPxがあるときは、minScaleを下げるか、図版に1ページを丸ごと使わせます。",
+      "pt": "Nada a fazer se a escala ficar legível: o aviso é informativo. Se a imagem sair pequena demais, aumente minScale (ela então segue adiante), dê-lhe mais espaço (uma legenda mais curta, span: 'page') ou ponha shrink em 'never'. Com overflowPx, diminua minScale ou deixe a imagem ocupar uma página só para ela."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación",
+        "ca": "Col·locació",
+        "zh": "位置",
+        "ar": "الموضع",
+        "ja": "配置",
+        "pt": "Posicionamento"
+      }
+    }
+  },
+  "designTextTruncated": {
+    "source": "engine",
+    "label": {
+      "en": "Design text cut short",
+      "es": "Texto de diseño recortado",
+      "ca": "Text de disseny retallat",
+      "zh": "版式文字被截断",
+      "ar": "نص تصميم مقتطع",
+      "ja": "デザインのテキストが切り詰められています",
+      "pt": "Texto de design cortado"
+    },
+    "cause": {
+      "en": "A text element of a design (a running head, a folio, a chapter opener, a part page, a contents part row) was wider than its room and lost part of a line: cut with an ellipsis, as its overflow asks, or clipped with ink past its box under overflow: 'clip'. Running heads, folios and contents part rows end in an ellipsis by default; heading and part designs wrap unless the element says otherwise. A running head cut on every page of a chapter is reported once.",
+      "es": "Un elemento de texto de un diseño (un encabezado, un folio, una apertura de capítulo, una página de parte, una fila de parte del índice) era más ancho que su sitio y perdió parte de una línea: se cortó con puntos suspensivos, como pide su overflow, o se recortó con tinta fuera de su caja con overflow: 'clip'. Los encabezados, los folios y las filas de parte del índice terminan en puntos suspensivos por defecto; los diseños de título y de parte pasan de línea salvo que el elemento diga otra cosa. Un encabezado recortado en todas las páginas de un capítulo se avisa una sola vez.",
+      "ca": "Un element de text d'un disseny (una capçalera, un foli, una obertura de capítol, una pàgina de part, una fila de part de l'índex) era més ample que el seu espai i va perdre part d'una línia: es va tallar amb punts suspensius, com demana el seu overflow, o es va retallar amb tinta fora de la caixa amb overflow: 'clip'. Les capçaleres, els folis i les files de part de l'índex acaben en punts suspensius per defecte; els dissenys de títol i de part passen de línia tret que l'element digui una altra cosa. Una capçalera retallada a totes les pàgines d'un capítol s'avisa una sola vegada.",
+      "zh": "版式中的文本元素（书眉、页码、章首、篇章页、目录中的篇行）比它的空间宽，一行被截掉了一部分：按overflow的设置以省略号截断，或在overflow: 'clip'下超出框的部分被裁掉。书眉、页码和目录篇行默认以省略号截断；标题版式和篇章版式默认换行，除非元素另有设置。一章每页都被截断的书眉只报告一次。",
+      "ar": "كان عنصر نص في تصميم (ترويسة صفحة، ترقيم، افتتاحية فصل، صفحة جزء، سطر جزء في الفهرس) أعرض من حيّزه ففقد جزءًا من سطر: اقتُطع بعلامة حذف كما يطلب overflow الخاص به، أو قُصّ حبره خارج صندوقه مع overflow: 'clip'. تنتهي ترويسات الصفحات والترقيم وأسطر الأجزاء في الفهرس بعلامة حذف افتراضيًا؛ وتلتف تصاميم العناوين والأجزاء ما لم يقل العنصر غير ذلك. وترويسة مقتطعة في كل صفحات الفصل يُبلَّغ عنها مرة واحدة.",
+      "ja": "デザインのテキスト要素（柱、ノンブル、章扉、部扉、目次の部の行）が使える幅より広く、行の一部が失われました。overflowの指定どおり省略記号で切り詰められたか、overflow: 'clip'でボックスの外にはみ出した部分が切り取られています。柱・ノンブル・目次の部の行は既定で省略記号になり、見出しと部のデザインは要素に指定がなければ折り返します。章のすべてのページで切り詰められる柱は一度だけ報告されます。",
+      "pt": "Um elemento de texto de um design (um cabeçalho, um fólio, uma abertura de capítulo, uma página de parte, uma linha de parte do sumário) era mais largo que o seu espaço e perdeu parte de uma linha: foi cortado com reticências, como pede o seu overflow, ou recortado com tinta além da caixa com overflow: 'clip'. Cabeçalhos, fólios e linhas de parte do sumário terminam em reticências por padrão; designs de título e de parte quebram linha a menos que o elemento diga outra coisa. Um cabeçalho cortado em todas as páginas de um capítulo é avisado uma só vez."
+    },
+    "fix": {
+      "en": "Set overflow: 'wrap' on the element to break the text onto more lines, give it more room (a wider size.width or maxWidth, a smaller fontSize, tighter letterSpacing) or shorten the text. Keep the ellipsis where a single line is the design, as in a running head; the warning then only confirms what was cut.",
+      "es": "Pon overflow: 'wrap' en el elemento para repartir el texto en más líneas, dale más sitio (un size.width o maxWidth mayor, un fontSize menor, un letterSpacing más apretado) o acorta el texto. Deja los puntos suspensivos donde el diseño es una sola línea, como en un encabezado; el aviso solo confirma entonces lo que se cortó.",
+      "ca": "Posa overflow: 'wrap' a l'element per repartir el text en més línies, dona-li més espai (un size.width o maxWidth més gran, un fontSize més petit, un letterSpacing més estret) o escurça el text. Deixa els punts suspensius on el disseny és una sola línia, com en una capçalera; l'avís només confirma aleshores el que s'ha tallat.",
+      "zh": "给元素设overflow: 'wrap'让文字分成几行，或给它更多空间（加大size.width或maxWidth、缩小fontSize、收紧letterSpacing），或缩短文字。设计本来就是单行的地方（如书眉）保留省略号即可，这时警告只是确认被截掉的内容。",
+      "ar": "اضبط overflow: 'wrap' على العنصر ليتوزع النص على أسطر أكثر، أو امنحه حيّزًا أكبر (size.width أو maxWidth أوسع، fontSize أصغر، letterSpacing أضيق)، أو اختصر النص. أبقِ علامة الحذف حيث يكون التصميم سطرًا واحدًا، كما في ترويسة الصفحة؛ فالتنبيه حينئذ يؤكد ما اقتُطع فحسب.",
+      "ja": "要素にoverflow: 'wrap'を設定して複数行に折り返すか、幅を増やす（size.widthやmaxWidthを広げる、fontSizeを小さくする、letterSpacingを詰める）か、テキストを短くします。柱のように1行であること自体がデザインなら省略記号のままでよく、その場合この警告は切り詰めた内容の確認になります。",
+      "pt": "Defina overflow: 'wrap' no elemento para dividir o texto em mais linhas, dê-lhe mais espaço (um size.width ou maxWidth maior, um fontSize menor, um letterSpacing mais apertado) ou encurte o texto. Mantenha as reticências onde o design é uma só linha, como num cabeçalho; o aviso então só confirma o que foi cortado."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Text elements",
+        "es": "Elementos de texto",
+        "ca": "Elements de text",
+        "zh": "文本元素",
+        "ar": "عناصر النص",
+        "ja": "テキスト要素",
+        "pt": "Elementos de texto"
+      }
+    }
+  },
+  "textWrap": {
+    "source": "engine",
+    "label": {
+      "en": "Wrapped picture or box",
+      "es": "Imagen o caja con texto alrededor",
+      "ca": "Imatge o caixa amb text al voltant",
+      "zh": "绕排的图片或框",
+      "ar": "صورة أو صندوق يلتف حوله النص",
+      "ja": "回り込む図版・ボックス",
+      "pt": "Imagem ou caixa com texto ao redor"
+    },
+    "cause": {
+      "en": "A resource with placement.wrap, or a box with wrap, did not run the text beside it as asked: the text beside it would be narrower than layout.wrap.minTextWidth (tooNarrow), it is shorter than layout.wrap.minLinesBeside lines (fewLines), the text is set vertically (verticalText), or an inline one was too tall for the room left in its column and moved on to the next with its anchor (moved).",
+      "es": "Un recurso con placement.wrap, o una caja con wrap, no compuso el texto a su lado como se pedía: el texto de al lado quedaría más estrecho que layout.wrap.minTextWidth (tooNarrow), es más bajo que layout.wrap.minLinesBeside líneas (fewLines), el texto se compone en vertical (verticalText), o uno en línea era demasiado alto para el espacio que quedaba en su columna y pasó a la siguiente con su ancla (moved).",
+      "ca": "Un recurs amb placement.wrap, o una caixa amb wrap, no va compondre el text al costat com es demanava: el text del costat quedaria més estret que layout.wrap.minTextWidth (tooNarrow), és més baix que layout.wrap.minLinesBeside línies (fewLines), el text es compon en vertical (verticalText), o un en línia era massa alt per a l'espai que quedava a la columna i va passar a la següent amb la seva àncora (moved).",
+      "zh": "设了placement.wrap的资源或设了wrap的框没有按要求让正文排在旁边：旁边的正文会窄于layout.wrap.minTextWidth（tooNarrow），它矮于layout.wrap.minLinesBeside行（fewLines），正文为竖排（verticalText），或行内对象高于所在栏剩余空间，已随锚点移到下一栏（moved）。",
+      "ar": "لم يصفّ مورد ذو placement.wrap، أو صندوق ذو wrap، النصَّ بجانبه كما طُلب: سيكون النص المجاور أضيق من layout.wrap.minTextWidth (tooNarrow)، أو هو أقصر من layout.wrap.minLinesBeside سطرًا (fewLines)، أو النص مكتوب عموديًّا (verticalText)، أو كان عنصر داخل النص أطول من المساحة المتبقية في عموده فانتقل إلى العمود التالي مع مرساته (moved).",
+      "ja": "placement.wrapを設定したリソース、またはwrapを設定したボックスが、指定どおりに本文を横に組みませんでした。横の本文がlayout.wrap.minTextWidthより狭くなる（tooNarrow）、layout.wrap.minLinesBeside行より低い（fewLines）、本文が縦組み（verticalText）、または本文中の対象が段の残りに収まらずアンカーとともに次の段へ移った（moved）ためです。",
+      "pt": "Um recurso com placement.wrap, ou uma caixa com wrap, não compôs o texto ao lado como pedido: o texto ao lado ficaria mais estreito que layout.wrap.minTextWidth (tooNarrow), ele é mais baixo que layout.wrap.minLinesBeside linhas (fewLines), o texto está na vertical (verticalText), ou um em linha era alto demais para o espaço que restava na coluna e passou para a seguinte com a âncora (moved)."
+    },
+    "fix": {
+      "en": "tooNarrow: give it a smaller width, or lower layout.wrap.minTextWidth. fewLines: lower minLinesBeside, or leave wrap off for so short an item. moved: put the ::resource line earlier, set the picture smaller, or accept the move. verticalText: remove wrap from the vertical edition.",
+      "es": "tooNarrow: dale un width menor o baja layout.wrap.minTextWidth. fewLines: baja minLinesBeside o quita wrap a un elemento tan bajo. moved: adelanta la línea ::resource, compón la imagen más pequeña o acepta el cambio de columna. verticalText: quita wrap de la edición vertical.",
+      "ca": "tooNarrow: dona-li un width més petit o abaixa layout.wrap.minTextWidth. fewLines: abaixa minLinesBeside o treu wrap a un element tan baix. moved: avança la línia ::resource, compon la imatge més petita o accepta el canvi de columna. verticalText: treu wrap de l'edició vertical.",
+      "zh": "tooNarrow：把width调小，或降低layout.wrap.minTextWidth。fewLines：降低minLinesBeside，或对这么矮的对象不用wrap。moved：把::resource行提前、把图片缩小，或接受换栏。verticalText：从竖排版本中去掉wrap。",
+      "ar": "tooNarrow: أعطه width أصغر، أو اخفض layout.wrap.minTextWidth. fewLines: اخفض minLinesBeside، أو لا تستعمل wrap لعنصر بهذا القِصَر. moved: قدّم سطر ::resource، أو صغّر الصورة، أو اقبل الانتقال. verticalText: أزل wrap من الطبعة العمودية.",
+      "ja": "tooNarrow：widthを小さくするか、layout.wrap.minTextWidthを下げます。fewLines：minLinesBesideを下げるか、そのように低い対象ではwrapを使いません。moved：::resource行を前に移す、図版を小さくする、または段の移動を受け入れます。verticalText：縦組みの版からwrapを削除します。",
+      "pt": "tooNarrow: dê a ele um width menor ou diminua layout.wrap.minTextWidth. fewLines: diminua minLinesBeside ou não use wrap num elemento tão baixo. moved: adiante a linha ::resource, componha a imagem menor ou aceite a mudança de coluna. verticalText: remova wrap da edição vertical."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Text wrap",
+        "es": "Ajuste del texto",
+        "ca": "Ajust del text",
+        "zh": "文字绕排",
+        "ar": "التفاف النص",
+        "ja": "回り込み",
+        "pt": "Contorno de texto"
+      }
+    }
+  },
+  "wrapUnsupported": {
+    "source": "engine",
+    "label": {
+      "en": "Text wrap in vertical text",
+      "es": "Ajuste del texto en escritura vertical",
+      "ca": "Ajust del text en escriptura vertical",
+      "zh": "竖排中的文字绕排",
+      "ar": "التفاف النص في الكتابة العمودية",
+      "ja": "縦組みでの回り込み",
+      "pt": "Contorno de texto na escrita vertical"
+    },
+    "cause": {
+      "en": "A resource type's defaultPlacement.wrap is set in a document set vertically (layout.writingMode: 'vertical-rl'). Vertical pages set no text beside a figure: its figures keep their bands whole.",
+      "es": "El defaultPlacement.wrap de un tipo de recurso está fijado en un documento compuesto en vertical (layout.writingMode: 'vertical-rl'). Las páginas verticales no componen texto al lado de una figura: sus figuras conservan su banda entera.",
+      "ca": "El defaultPlacement.wrap d'un tipus de recurs està fixat en un document compost en vertical (layout.writingMode: 'vertical-rl'). Les pàgines verticals no componen text al costat d'una figura: les figures conserven la banda sencera.",
+      "zh": "竖排文档（layout.writingMode: 'vertical-rl'）中为资源类型设置了defaultPlacement.wrap。竖排页面不在图旁排正文：图片保持整条。",
+      "ar": "ضُبط defaultPlacement.wrap لنوع مورد في مستند مكتوب عموديًّا (layout.writingMode: 'vertical-rl'). الصفحات العمودية لا تصفّ نصًّا بجانب الشكل: تحتفظ الأشكال بشرائطها كاملة.",
+      "ja": "縦組みの文書（layout.writingMode: 'vertical-rl'）でリソースタイプのdefaultPlacement.wrapが設定されています。縦組みのページでは図版の横に本文を組まず、図版は全幅のままです。",
+      "pt": "O defaultPlacement.wrap de um tipo de recurso está definido num documento composto na vertical (layout.writingMode: 'vertical-rl'). Páginas verticais não compõem texto ao lado de uma figura: as figuras mantêm a faixa inteira."
+    },
+    "fix": {
+      "en": "Remove wrap from the vertical edition's resource types, or set that edition horizontally.",
+      "es": "Quita wrap de los tipos de recurso de la edición vertical, o compón esa edición en horizontal.",
+      "ca": "Treu wrap dels tipus de recurs de l'edició vertical, o compon aquesta edició en horitzontal.",
+      "zh": "从竖排版本的资源类型中去掉wrap，或把该版本改为横排。",
+      "ar": "أزل wrap من أنواع الموارد في الطبعة العمودية، أو نضّد تلك الطبعة أفقيًّا.",
+      "ja": "縦組みの版のリソースタイプからwrapを削除するか、その版を横組みにしてください。",
+      "pt": "Remova wrap dos tipos de recurso da edição vertical, ou componha essa edição na horizontal."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Configuration warnings",
+        "es": "Avisos de configuración",
+        "ca": "Avisos de configuració",
+        "zh": "配置警告",
+        "ar": "تحذيرات الإعدادات",
+        "ja": "設定の警告",
+        "pt": "Avisos de configuração"
+      }
+    }
+  },
+  "invalidFrontmatter": {
+    "source": "engine",
+    "label": {
+      "en": "Invalid front matter",
+      "es": "Front matter no válido",
+      "ca": "Front matter no vàlid",
+      "zh": "前置元数据无效",
+      "ar": "بيانات تمهيدية غير صالحة",
+      "ja": "フロントマターが不正",
+      "pt": "Front matter inválido"
+    },
+    "cause": {
+      "en": "The block between the --- lines is not valid YAML, so the chapter is set without its metadata (title, author, language) and the block is left out of the text.",
+      "es": "El bloque entre las líneas --- no es YAML válido, así que el capítulo se compone sin sus metadatos (título, autor, idioma) y el bloque queda fuera del texto.",
+      "ca": "El bloc entre les línies --- no és YAML vàlid, de manera que el capítol es compon sense les seves metadades (títol, autor, llengua) i el bloc queda fora del text.",
+      "zh": "---两行之间的块不是有效的YAML，因此该章在没有元数据（标题、作者、语言）的情况下排版，该块也不进入正文。",
+      "ar": "الكتلة بين سطرَي --- ليست YAML صالحًا، فيُنضَّد الفصل بلا بياناته الوصفية (العنوان والمؤلف واللغة) وتبقى الكتلة خارج النص.",
+      "ja": "---の行に挟まれたブロックが正しいYAMLではないため、章はメタデータ（タイトル、著者、言語）なしで組まれ、ブロックは本文に入りません。",
+      "pt": "O bloco entre as linhas --- não é YAML válido, então o capítulo é composto sem seus metadados (título, autor, idioma) e o bloco fica fora do texto."
+    },
+    "fix": {
+      "en": "Read the line and column the warning gives and check quotes, colons and indentation there; quote every value that holds a colon.",
+      "es": "Lee la línea y la columna que da el aviso y revisa allí comillas, dos puntos y sangrías; entrecomilla todo valor que lleve dos puntos.",
+      "ca": "Llegeix la línia i la columna que dona l'avís i revisa-hi cometes, dos punts i sagnats; posa entre cometes tot valor que porti dos punts.",
+      "zh": "查看警告给出的行和列，检查那里的引号、冒号和缩进；含冒号的值一律加引号。",
+      "ar": "اقرأ السطر والعمود اللذين يذكرهما التحذير وافحص هناك علامات الاقتباس والنقطتين والإزاحة؛ ضع بين علامتي اقتباس كل قيمة فيها نقطتان.",
+      "ja": "警告が示す行と列を見て、そこの引用符、コロン、インデントを確かめてください。コロンを含む値はすべて引用符で囲みます。",
+      "pt": "Leia a linha e a coluna que o aviso indica e confira ali aspas, dois-pontos e recuos; ponha entre aspas todo valor que tenha dois-pontos."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Frontmatter",
+        "es": "Frontmatter",
+        "ca": "Frontmatter",
+        "zh": "前置元数据",
+        "ar": "البيانات التمهيدية (frontmatter)",
+        "ja": "フロントマター",
+        "pt": "Frontmatter"
+      }
+    }
   }
 }

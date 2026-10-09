@@ -1,34 +1,34 @@
 ---
-title: "Bistro menu: prices aligned without tab stops"
-summary: "A bistro menu printed on both sides, with the prices set in borderless tables and a brass rule anchored to either side of each course head."
-plain: "A two-sided menu for a made-up Paris restaurant. It shows how to line up dish names and prices in neat rows using tables with no visible lines."
-description: "The autumn menu of an imaginary Paris bistro, set with Postext in tables with no rules: dishes and prices on the front, wines by region on the back."
-question: "How do I line up a menu's prices on the right, with a head row and merged rows, when there are no tab stops?"
-aliases: ["menu", "restaurant menu", "carte", "wine list", "price list", "tab stops", "right-aligned prices", "borderless table", "table without borders", "dietary badges", "heading between rules"]
+title: "Bistro menu: prices on a tab stop"
+summary: "A two-sided bistro menu: prices set flush right on a tab stop, wines in a borderless table, and a brass rule anchored to either side of each course head."
+plain: "A two-sided menu for a made-up Paris restaurant. It shows how to push each price to the right edge with a tab, and how to set a wine list in a table with no visible lines."
+description: "The autumn menu of an imaginary Paris bistro, set with Postext: dishes priced on a tab stop on the front, wines by region in a table with no rules on the back."
+question: "How do I set a menu's prices flush right, and its wine list with a head row and merged rows?"
+aliases: ["menu", "restaurant menu", "carte", "wine list", "price list", "tab stops", "tab stop", "right tab", "right-aligned prices", "borderless table", "table without borders", "dietary badges", "heading between rules"]
 pageNotes: { "1": "The front of the card on cream stock: a wine-red and straw awning on a brass rod, Les Tanneurs in wine-red Limelight, and Bistrot parisien depuis 1931 and Carte d’automne 2026 under it. Three centred course heads, Entrées, Plats and Desserts, each between two brass rules that run to the margins and each over four dishes: the French name in bold and its garnish, an English line in italic beneath it and the price in bold at the right margin. Four dishes carry a dark green V disc and five an outlined SG pill. At the foot, two small centred lines: the key to the badges, then the origin of the beef and a note that service is included.", "2": "The back: two glasses, four bottles and a carafe on a brass shelf over La Cave. A wine list headed Appellation · cépage, 12 cl and 75 cl, with the regions Bulles, Blancs and Rouges centred across it; the Saint-Émilion has a dash in the glass column. Below, Le Comptoir, between two brass rules, lists kir, pastis, draught beer and coffee, and a small centred colophon runs along the foot." }
 ---
 
 ## What you'll build
 
-The autumn card of Les Tanneurs, an imaginary Paris bistro: one sheet, 230 × 310 mm, printed on both sides. On the front, a striped awning hangs over the name, set in Limelight. Each course head stands between two brass rules that run out to the margins, with four dishes below it. A dish is its French name in bold with the garnish, an English line in italic beneath it and the price in bold, flush right. A dark green V disc marks the vegetarian dishes and an outlined SG pill the gluten-free ones. On the back, the wine list sits under a shelf of bottles, with the glass and bottle prices in columns headed 12 cl and 75 cl. Postext has no tab stops, so every price column belongs to a table with no rules and no caption.
+The autumn card of Les Tanneurs, an imaginary Paris bistro: one sheet, 230 × 310 mm, printed on both sides. On the front, a striped awning hangs over the name, set in Limelight. Each course head stands between two brass rules that run out to the margins, with four dishes below it. A dish is its French name in bold with the garnish, an English line in italic beneath it and the price in bold, flush right. A dark green V disc marks the vegetarian dishes and an outlined SG pill the gluten-free ones. Each dish is one paragraph, and a tab sends its price to a stop at the right margin. On the back, the wine list sits under a shelf of bottles, with the glass and bottle prices in columns headed 12 cl and 75 cl, in a table with no rules and no caption.
 
 ## Method
 
-### 1 · A table where the tab stops would be
+### 1 · A tab stop where the price goes
 
-The code is in [the short answer](#the-short-answer) above. Each course is a two-column table. The dish, a line break and the translation in italics share the first cell, and the price stands flush right in the second, on the dish's first baseline, because both cells start at the top of their row. `columnWidths` takes weights, so `[6, 1]` gives the prices 22.6 mm of the 158 mm measure. `rules: 'none'` and `headerBackgroundEnabled: false` remove the grid and the grey head row that the [default table style](/en/docs/configuration#table-style) draws. `cellPadding: pt(LEAD / 4)` makes each dish two and a half lines of the 14.5 pt leading, so a course of four dishes ends on its tenth grid line. At the default padding, 0.375 em, each course ends 0.9 mm below that line, every head after it drops a line and the card runs to four pages.
+The code is in [the short answer](#the-short-answer) above. Each course is a `:::paragraphs{style="dish"}` group, one paragraph to a dish ([Paragraph styles](/en/docs/configuration#paragraph-styles)). The dish style has one tab stop, at `'end'`, the end of the measure, with `align: 'end'`: the text after a tab ends on the stop. So `:tab **7**` after the garnish and the badges sends the price flush right, however long the dish ([Tabs and tab stops](/en/docs/document-format#tabs-and-tab-stops)). `:tab` takes the spaces around it, and the backslash at the end of the line is a forced line break, so the English line in italics starts a second line of the same paragraph and the price stays on the first. `spaceBetween` puts half a line between two dishes, so each dish takes two and a half lines of the 14.5 pt leading. `indent` and `endIndent` of a quarter line keep the dishes in line with the text of the wine list's cells on the back. A tabbed paragraph is set line by line; here every line is set ragged anyway.
 
 ### 2 · One resource type, in place and never numbered
 
 <Excerpt region="type" />
 
-The built-in figure and table types print a caption line and float each resource to the first free slot after its first reference. The `menu` type has no caption prefix and its pieces have no caption, so nothing prints under a course. Give it `captionPrefix: 'Menu'` and a numbered line prints under every piece, starting with “Menu 1.” under the awning, which takes the card to four pages. `defaultPlacement` sets each table and drawing at its `::resource` line ([Block embed](/en/docs/document-format#block-embed-optional-explicit-inline-placement)). Without it the three course heads run together at the top of the front and the tables float below them, desserts first. The awning and the bottles are SVG resources of the same type, drawn in code and registered with the kit's `loadSvg`.
+The built-in figure and table types print a caption line and float each resource to the first free slot after its first reference. The `menu` type has no caption prefix and its pieces have no caption, so nothing prints under the drawings or the wine list. Give it `captionPrefix: 'Menu'` and a numbered line prints under every piece, starting with “Menu 1.” under the awning, which takes the card to four pages. `defaultPlacement` sets the wine list and each drawing at its `::resource` line ([Block embed](/en/docs/document-format#block-embed-optional-explicit-inline-placement)). Without it the wine list floats to the foot of the back, under Le Comptoir and the colophon. The awning and the bottles are SVG resources of the same type, drawn in code and registered with the kit's `loadSvg`.
 
 ### 3 · Merge the region rows
 
 <Excerpt region="wines" />
 
-In 1.4.1 `parseTSV` marks no row as a header, so `wineList` sets `headerRowCount: 1` by hand. Appellation · cépage, 12 cl and 75 cl then print over their columns in the header face, Josefin Sans. A line with a single field names a region. Its cell becomes a centred header cell, and `mergeCells` spreads it across the three columns and marks the two cells it covers `hiddenBy` ([Building table models](/en/docs/configuration#building-table-models)). Centred in the first column alone, BLANCS would stand 22.6 mm left of the axis that La Cave and Le Comptoir are centred on. A blank line in the TSV becomes a row of empty cells, one and a half lines tall, and that row is the gap above Blancs and Rouges.
+The wine list stays a table: its two prices stand in columns under their heads, 12 cl and 75 cl, which a row of tab stops would leave without a head. `parseTSV` marks no row as a header, so `wineList` sets `headerRowCount: 1` by hand. Appellation · cépage, 12 cl and 75 cl then print over their columns in the header face, Josefin Sans. A line with a single field names a region. Its cell becomes a centred header cell, and `mergeCells` spreads it across the three columns and marks the two cells it covers `hiddenBy` ([Building table models](/en/docs/configuration#building-table-models)). Centred in the first column alone, BLANCS would stand 22.6 mm left of the axis that La Cave and Le Comptoir are centred on. A blank line in the TSV becomes a row of empty cells, one and a half lines tall, and that row is the gap above Blancs and Rouges.
 
 ### 4 · Hang a rule on each side of the course title
 
@@ -40,13 +40,13 @@ A course head is a design in the column. The `{titleText}` element has no width,
 
 <Excerpt region="badges" />
 
-A chip draws a box round a run of text inside the line ([Chip styles](/en/docs/configuration#chip-styles)), so `:chip[V]{style="veg"}` typed after the garnish puts the disc on the dish's French line, in a table cell as in a paragraph. The chip styles set `bold: true` because a chip takes the weight of the text around it, 400 after a garnish, and `FONTS` loads Josefin Sans in 700 only. The notes under the desserts and the colophon on the back are `:::paragraphs` blocks at 9 and 7.5 pt, and both styles carry a `marginTop` of one line ([Paragraph styles](/en/docs/configuration#paragraph-styles)), because a table set `'here'` leaves no space below itself. Without that margin the notes start on the line after the cheese plate's English line, as if they belonged to the dish.
+A chip draws a box round a run of text inside the line ([Chip styles](/en/docs/configuration#chip-styles)), so `:chip[V]{style="veg"}` typed after the garnish puts the disc on the dish's French line, before the tab. The chip styles set `bold: true` because a chip takes the weight of the text around it, 400 after a garnish, and `FONTS` loads Josefin Sans in 700 only. The notes under the desserts and the colophon on the back are `:::paragraphs` blocks at 9 and 7.5 pt, and both styles carry a `marginTop` of one line ([Paragraph styles](/en/docs/configuration#paragraph-styles)). Without that margin the notes start on the line after the cheese plate's English line, as if they belonged to the dish.
 
 ### 6 · Centre the card on one axis
 
 <Excerpt region="centred" />
 
-`headings.textAlign` and `bodyText.textAlign` put everything that is not a table on the card's centre line. `lineHeight: pt(3 * LEAD)` gives the 48 pt name three grid lines. Without it the name takes the default leading and four lines, the second line of notes moves onto a page of its own and the card runs to four pages. In 1.4.1 any `headings` object drops the H1 break, and level 1 states `breakBefore: { enabled: false }` all the same, because the name and La Cave belong on the page of the drawing above them. Restore the default, `{ enabled: true, parity: 'always-odd' }`, and each drawing stands alone on a page, seven pages in all. The config sets no `locale`, because 1.4.1 hyphenates justified body text only and nothing on this card is justified.
+`headings.textAlign` and `bodyText.textAlign` put everything but the dishes and the wine list on the card's centre line. `lineHeight: pt(3 * LEAD)` gives the 48 pt name three grid lines. Without it the name takes the default leading and four lines, the second line of notes moves onto a page of its own and the card runs to four pages. Level 1 turns the H1 break off, `breakBefore: { enabled: false }`, because the name and La Cave belong on the page of the drawing above them. Leave the default, `{ enabled: true, parity: 'always-odd' }`, and each drawing stands alone on a page, seven pages in all. The config sets no `locale`: nothing on this card is justified, and ragged text is hyphenated only with `bodyText.hyphenation.ragged` on.
 
 ## Variations
 
@@ -59,16 +59,25 @@ A fixed width in place of `'fill'` keeps each rule 20 mm long and 4 mm from the 
 +    size: { width: mm(20) }, // 20 mm, wherever the title ends
 ```
 
-### Rule the rows like a ledger
+### Run dots to the price
 
-`rules: 'horizontal'` draws a 0.5 pt brass hairline over and under every row. Rules take no room, so both sides keep their layout, and the blank rows above Blancs and Rouges get a pair of hairlines of their own.
+A leader fills the room before the stop. `'. '` repeats a full stop and a space, from half an em after the dish's last badge or word to half an em before its price.
 
 ```diff
--const tableStyle = { rules: 'none', cellPadding: pt(LEAD / 4), // a dish: 2½ lines of LEAD
+-  tabStops: [{ position: 'end', align: 'end' }],
++  tabStops: [{ position: 'end', align: 'end', leader: '. ' }],
+```
+
+### Rule the wine list like a ledger
+
+`rules: 'horizontal'` draws a 0.5 pt brass hairline over and under every row of the wine list. Rules take no room, so both sides keep their layout, and the blank rows above Blancs and Rouges get a pair of hairlines of their own.
+
+```diff
+-const tableStyle = { rules: 'none', cellPadding: pt(LEAD / 4), // a row: 1½ lines of LEAD
 +const tableStyle = { rules: 'horizontal', borderColor: col('brass'),
 +  borderWidth: pt(0.5), cellPadding: pt(LEAD / 4),
 ```
 
 ## Pitfalls
 
-Give every rule element a `thickness`. In 1.4.1 a rule without one paints nothing, although the configuration reference gives 0.5 pt as the default. Delete it from `rule()` and both rules of every course head disappear.
+Leave room for the price on the dish's first line. When the dish and the garnish run past the place the price needs, the stop takes the dish's last word down to the next line with the price, and the English line comes after them: the dish then takes three lines and the course ends a line lower.

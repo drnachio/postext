@@ -31,6 +31,7 @@
  * row metrics the full-table layout reports.
  */
 
+import { bitmapLayoutSize } from '../bitmapResolution';
 import { findAnchorTarget, resolveAnchorRefLabel, unprefixedId, type AnchorTargets, type CrossRefStrings } from './crossRefs';
 import { measuringVertically, withMeasureWritingMode } from '../measure/vertical';
 import { getMeasureDirection, setMeasureDirection, shiftLineX } from '../measure/bidiLines';
@@ -40,6 +41,7 @@ import { resourceSafeArea, safeAreaHeightRange, safeAreaSource } from './safeAre
 import { layoutVideo } from './videoOverlay';
 import type {
   ColorPaletteEntry,
+  Dimension,
   ResolvedCaptionStyleConfig,
   ResolvedCjkConfig,
   ResolvedMathConfig,
@@ -72,6 +74,7 @@ import { isBlankText } from '../measure/spaces';
 import { linkSegments } from '../measure/links';
 import { graphemeCount } from '../measure/graphemes';
 import { dimensionToPx } from '../units';
+import { booktabsStrokes, type BooktabsRuleSpec } from '../table/booktabs';
 // Caption / table-cell / note content is parsed with the shared snippet
 // parser so measurement and the sandbox's glyph→snippet mapping agree on
 // one span list (`:ref{…}` becomes a one-char placeholder span).
@@ -153,6 +156,21 @@ export interface ResourceLayoutInput {
   /** Widest a figure's image (bitmap or SVG) may be set; the caption and
    *  note keep `columnWidth`. Defaults to `columnWidth`. */
   maxBodyWidth?: number;
+  /** Tallest a picture's body (bitmap, SVG, video poster) may be set: a
+   *  float scaled to the room of its slot (`placement.shrink`, #626). The
+   *  picture is cropped within its safe area first (keeping its width),
+   *  then scaled, width and height together, never below `minBodyScale`;
+   *  the result records the scale (`shrinkScale`). The caption and note
+   *  are not counted: the caller takes them off the slot's room. Ignored
+   *  for tables and turned blocks. */
+  maxBodyHeight?: number;
+  /** The smallest scale `maxBodyHeight` sets the picture at (0–1); the
+   *  body then stands taller than the cap. Default 0. */
+  minBodyScale?: number;
+  /** Measure the caption and note at this width instead of the slot's,
+   *  set under the picture per `placement.align`: the layout's own rounds
+   *  for `placement.captionMeasure: 'body'`. */
+  captionWidth?: number;
   /** Make a picture with a safe area (`Resource.safeArea`) this many px
    *  taller (or shorter, when negative) than it would be set, by cropping
    *  outside its safe area; clamped to the range the safe area allows (see
@@ -387,6 +405,8 @@ interface CellFontSet {
 
 /** Fully-resolved table styling consumed by {@link layoutTable}. */
 interface TableLayoutStyle {
+  /** Layout px per inch (`page.dpi`), for a cell picture's natural size. */
+  dpi: number;
   body: CellFontSet;
   header: CellFontSet;
   borderColor: string;
@@ -643,6 +663,7 @@ function fitCellImage(
   align: TableCellAlign,
   innerWidth: number,
   resources: Resource[],
+  dpi: number,
 ): FittedCellImage | null {
   if (!image) return null;
   const resource = resources.find((r) => r.id === image.resourceId);
@@ -661,7 +682,9 @@ function fitCellImage(
     kind = 'bitmap';
     fileId = resource.bitmap.fileId;
     format = resource.bitmap.format;
-    const fit = fitWidth(resource.bitmap.width, resource.bitmap.height, target);
+    // At its natural print size (#631), never enlarged.
+    const natural = bitmapLayoutSize(resource.bitmap, dpi);
+    const fit = fitWidth(natural.width, natural.height, target);
     width = fit.width;
     height = fit.height;
   } else if (resource.kind === 'svg' && resource.svg) {
@@ -685,6 +708,13 @@ function fitCellImage(
  *  on screen, but 0.5pt (≈0.67px at 96dpi) hairlines must survive intact —
  *  the previous `max(1, round(px))` rounded them up to a full pixel. */
 const MIN_BORDER_PX = 0.25;
+
+/** A booktabs rule width (px): `0` drops the rule, anything thinner than
+ *  {@link MIN_BORDER_PX} is raised to it. `em` is the body cell size. */
+function rulePx(width: Dimension, dpi: number, bodyFontPx: number): number {
+  const px = dimensionToPx(width, dpi, bodyFontPx);
+  return px > 0 ? Math.max(MIN_BORDER_PX, px) : 0;
+}
 
 /**
  * Column x-edges (length = columnCount + 1) for a table model laid out at
@@ -938,7 +968,7 @@ function layoutTableIn(
       );
       // An embedded image sits at the top of the cell; the text (when
       // there is any) runs under it, a padding's worth below.
-      const image = cell.hiddenBy ? null : fitCellImage(cell.image, align, Math.max(1, cellWidth), resources);
+      const image = cell.hiddenBy ? null : fitCellImage(cell.image, align, Math.max(1, cellWidth), resources, style.dpi);
       const textHeight = m.totalHeight;
       const textY = image ? image.height + (textHeight > 0 ? cellPaddingPx : 0) : 0;
       const lines = image && textHeight > 0 ? shiftLines(m.lines, 0, textY) : m.lines;
@@ -1316,7 +1346,10 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   if (resource.kind === 'bitmap' && resource.bitmap) {
     fileId = resource.bitmap.fileId;
     format = resource.bitmap.format;
-    const fit = fitWidth(resource.bitmap.width, resource.bitmap.height, Math.min(columnWidth, input.maxBodyWidth ?? columnWidth));
+    // Its pixels at its own resolution (#631), else at `page.dpi`; the
+    // column caps it, a smaller picture keeps its size.
+    const natural = bitmapLayoutSize(resource.bitmap, dpi);
+    const fit = fitWidth(natural.width, natural.height, Math.min(columnWidth, input.maxBodyWidth ?? columnWidth));
     bodyWidth = fit.width;
     bodyHeight = fit.height;
   } else if (resource.kind === 'svg' && resource.svg) {
@@ -1350,7 +1383,22 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const hBase = ts.headerItalic ? 'italic' : 'normal';
     const hFlip = ts.headerItalic ? 'normal' : 'italic';
     const headerTrackingPx = dimensionToPx(ts.headerLetterSpacing, dpi, headerFontPx);
+    // Booktabs (#625): its own three widths, all resolved against the body
+    // cell size (a larger header size must not thicken the header rule); a
+    // width of 0 drops that rule.
+    const booktabs: BooktabsRuleSpec | undefined = ts.borders && ts.rules === 'booktabs'
+      ? {
+          heavyPx: rulePx(ts.heavyRuleWidth, dpi, bodyFontPx),
+          lightPx: rulePx(ts.lightRuleWidth, dpi, bodyFontPx),
+          spanPx: rulePx(ts.spanRuleWidth, dpi, bodyFontPx),
+          spanRules: ts.spanRules,
+          spanTrimPx: Math.max(0, dimensionToPx(ts.spanRuleTrim, dpi, bodyFontPx)),
+          groupRules: ts.groupRules,
+          continuedFootRule: ts.continuedFootRule,
+        }
+      : undefined;
     const style: TableLayoutStyle = {
+      dpi,
       body: {
         fontString: buildFontString(ts.bodyFontFamily, bodyFontPx, normalWeight),
         boldFontString: buildFontString(ts.bodyFontFamily, bodyFontPx, boldWeight),
@@ -1370,9 +1418,11 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
         ...(ts.headerTextTransform === 'uppercase' ? { uppercase: true } : {}),
       },
       borderColor: ts.borderColor.hex,
-      borderWidthPx: ts.borders && ts.rules !== 'none'
-        ? Math.max(MIN_BORDER_PX, dimensionToPx(ts.borderWidth, dpi))
-        : 0,
+      borderWidthPx: booktabs
+        ? Math.max(booktabs.heavyPx, booktabs.lightPx, booktabs.spanPx)
+        : ts.borders && ts.rules !== 'none'
+          ? Math.max(MIN_BORDER_PX, dimensionToPx(ts.borderWidth, dpi))
+          : 0,
       cellPaddingPx: dimensionToPx(ts.cellPadding, dpi, bodyFontPx),
       headerBackground: ts.headerBackgroundEnabled ? ts.headerBackground.hex : undefined,
       bodyBackground: ts.bodyBackgroundEnabled ? ts.bodyBackground.hex : undefined,
@@ -1401,9 +1451,16 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     const radiusPx = Math.min(dimensionToPx(ts.borderRadius, dpi, bodyFontPx), columnWidth / 2, height / 2);
     const top = slice?.continued ? 0 : radiusPx;
     const bottom = slice?.continues ? 0 : radiusPx;
-    table = radiusPx > 0 && (top > 0 || bottom > 0)
-      ? { ...layout, frameRadii: [top, top, bottom, bottom] }
-      : layout;
+    // Booktabs rules are computed here, where the slice is known and the
+    // cells of a table that runs the other way are already mirrored.
+    const strokes = booktabs
+      ? booktabsStrokes(layout, tableHeaderRowCount(resource.table.model), booktabs, slice?.continues ?? false)
+      : undefined;
+    table = {
+      ...layout,
+      ...(radiusPx > 0 && (top > 0 || bottom > 0) ? { frameRadii: [top, top, bottom, bottom] as [number, number, number, number] } : {}),
+      ...(strokes ? { strokes } : {}),
+    };
     tableRows = metrics;
     bodyWidth = columnWidth;
     bodyHeight = height;
@@ -1419,7 +1476,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     resourceType,
     number,
     resolved,
-    width: input.captionAside?.width ?? columnWidth,
+    width: input.captionAside?.width ?? input.captionWidth ?? columnWidth,
     resourceNumbering,
     resourceTypes,
     resources,
@@ -1467,7 +1524,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     measuredNote = measureSnippetLines(
       slanted,
       [noteFontString, noteBoldFontString, noteItalicFontString, noteBoldItalicFontString],
-      Math.max(1, input.captionAside?.width ?? columnWidth),
+      Math.max(1, input.captionAside?.width ?? input.captionWidth ?? columnWidth),
       noteLineHeightPx,
       { textAlign: cs.note.align },
     );
@@ -1554,6 +1611,25 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     }
     pageRoom = room;
   }
+  // A float scaled to the room of its slot (`placement.shrink`, #626): the
+  // caller gives the tallest body the slot holds. A picture with a safe
+  // area is cropped first, keeping its width; then width and height scale
+  // together, never below `minBodyScale`.
+  let shrinkScale: number | undefined;
+  // The balancing lever never grows the body past that room.
+  if (input.maxBodyHeight !== undefined && picture && !rotate) {
+    const cap = Math.max(0, input.maxBodyHeight);
+    if (bodyHeight > cap + 0.01 && bodyHeight > 0) {
+      if (flexRange) bodyHeight = Math.max(cap, flexRange(bodyWidth).min);
+      if (bodyHeight > cap + 0.01) {
+        const k = Math.max(Math.min(1, Math.max(0, input.minBodyScale ?? 0)), cap / bodyHeight);
+        bodyWidth *= k;
+        bodyHeight *= k;
+        if (k < 1 - 1e-6) shrinkScale = k;
+      }
+    }
+    pageRoom = Math.min(pageRoom ?? Infinity, Math.max(cap, bodyHeight));
+  }
 
   // A picture with a safe area set taller or shorter than its own ratio:
   // the lever's delta, within what the safe area (and the page) allows.
@@ -1569,6 +1645,25 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     bodyFlex = { shrink: Math.max(0, bodyHeight - range.min), grow: Math.max(0, max - bodyHeight), delta: bodyHeight - before };
   }
 
+  // A picture narrower than its slot whose caption takes its width
+  // (`placement.captionMeasure: 'body'`): laid out again with the caption
+  // and note at the picture's width. A narrower caption may wrap onto more
+  // lines and leave the picture less room (`fitFiguresToPage`), so a few
+  // rounds follow the width down.
+  const captionMeasure = resource.placement?.captionMeasure ?? resourceType?.defaultPlacement?.captionMeasure;
+  if (
+    captionMeasure === 'body' && picture && !rotate && !input.captionAside
+    && input.captionWidth === undefined && bodyWidth < columnWidth - 0.5
+  ) {
+    let width = bodyWidth;
+    let out = layoutResourceBlock({ ...input, captionWidth: width });
+    for (let round = 0; round < 2 && out.block.bodyRect.width < width - 0.5; round++) {
+      width = out.block.bodyRect.width;
+      out = layoutResourceBlock({ ...input, captionWidth: width });
+    }
+    return out;
+  }
+
   // --- Vertical stacking -------------------------------------------------
   // above: [caption band] gap [body] noteGap [note]
   // below: [body] gap [caption band] noteGap [note]
@@ -1580,6 +1675,11 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     : captionAbove ? 0 : bodyHeight + (captionBandHeight > 0 ? captionGapPx : 0);
   const bodyY = captionAbove ? captionHeight : 0;
   const asideDx = aside ? aside.dx : 0;
+  // A caption measured to the picture (`placement.captionMeasure: 'body'`)
+  // sits under it per `placement.align`, as the picture sits in the slot.
+  const captionDx = !aside && input.captionWidth !== undefined && input.captionWidth < columnWidth
+    ? (columnWidth - input.captionWidth) * alignFactor(resource.placement?.align ?? resourceType?.defaultPlacement?.align)
+    : asideDx;
   // A picture narrower than its slot — shrunk to fit the page or the room
   // left (`layout.fitFiguresToPage`), or a bitmap smaller than the column —
   // sits in the slot per `placement.align`, as a float narrowed by
@@ -1604,21 +1704,21 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       })),
     };
   }
-  const captionLines = shiftLines(measuredCaption, asideDx + captionPaddingPx, captionBandY + captionPaddingPx);
+  const captionLines = shiftLines(measuredCaption, captionDx + captionPaddingPx, captionBandY + captionPaddingPx);
   // A table's rules are stroked centred on the cell edges, so its outer
   // frame reaches half a stroke beyond the body on each side; the caption
   // bar spans that same outer extent, or it would read a hair narrower.
   const barOverhang = table ? table.borderWidthPx / 2 : 0;
   const captionBar = cs.backgroundEnabled && captionBandHeight > 0
     ? {
-        rect: createBoundingBox(asideDx - barOverhang || 0, captionBandY, (aside?.width ?? columnWidth) + 2 * barOverhang, captionBandHeight),
+        rect: createBoundingBox(captionDx - barOverhang || 0, captionBandY, (aside?.width ?? input.captionWidth ?? columnWidth) + 2 * barOverhang, captionBandHeight),
         background: cs.background.hex,
       }
     : undefined;
   const noteY = aside
     ? captionBandY + captionBandHeight + noteGapPx
     : (captionAbove ? bodyY + bodyHeight : bodyHeight + captionHeight) + noteGapPx;
-  const noteLines = shiftLines(measuredNote, asideDx, noteY);
+  const noteLines = shiftLines(measuredNote, captionDx, noteY);
   // The marker takes the note's slot (a continuing slice has no note).
   const continuesLines = shiftLines(measuredContinues, 0, aside ? bodyHeight + noteGapPx : noteY);
   const totalHeight = aside
@@ -1636,6 +1736,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
     bodyRect,
     ...(bodySource ? { bodySource } : {}),
     ...(bodyFlex ? { bodyFlex } : {}),
+    ...(shrinkScale !== undefined ? { shrinkScale } : {}),
     fileId,
     format,
     captionLines,

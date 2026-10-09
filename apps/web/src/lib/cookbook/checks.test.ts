@@ -60,6 +60,8 @@ describe("C5: content warnings on how the text is set (#401)", () => {
     { kind: "tabInVerticalText", page: null, detail: ":tab" },
     { kind: "dropCap", page: 1, detail: "shortParagraph (reserve): A short paragraph." },
     { kind: "codeOverflow", page: 2, detail: "wrap: 1 line(s) of js" },
+    { kind: "floatShrunk", page: 3, detail: "plate at 70 %: 18 px past the text block" },
+    { kind: "textWrap", page: 2, detail: "bed: tooNarrow" },
   ];
 
   it("fails a recipe on the Arabic, word-overflow, line-number and tab warnings it does not expect", () => {
@@ -72,6 +74,8 @@ describe("C5: content warnings on how the text is set (#401)", () => {
       ["fail", 'tabInVerticalText ":tab"'],
       ["fail", 'dropCap "shortParagraph (reserve): A short paragraph." on page 1'],
       ["fail", 'codeOverflow "wrap: 1 line(s) of js" on page 2'],
+      ["fail", 'floatShrunk "plate at 70 %: 18 px past the text block" on page 3'],
+      ["fail", 'textWrap "bed: tooNarrow" on page 2'],
     ]);
   });
 

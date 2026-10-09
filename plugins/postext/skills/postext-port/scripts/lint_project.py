@@ -2056,6 +2056,15 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                             rep.error(where, f"callout columns={attrs['columns']!r} is not a whole number from 1 (read as 1)")
                         elif attrs.get("placement") in ("here", "fixed") or attrs.get("span") in ("page", "side"):
                             rep.warn(where, "callout columns only applies to a floated span='column' box (placement auto/top/bottom)")
+                    if "wrap" in attrs:
+                        # postext >= 1.24: text wrap round a box.
+                        if attrs["wrap"] not in ("none", "left", "right", "start", "end"):
+                            rep.error(where, f"callout wrap={attrs['wrap']!r} is ignored (none | left | right | start | end)")
+                        elif attrs.get("span") in ("page", "side") or attrs.get("placement") == "fixed":
+                            rep.warn(where, "callout wrap only applies to a span='column' box set here or floated (auto/top/bottom)")
+                        w = attrs.get("width")
+                        if w is not None and not re.fullmatch(r"0?\.\d+", w):
+                            rep.warn(where, f"callout width={w!r} is no share of the column between 0 and 1 (layout.wrap.defaultWidth is used)")
                     if "title" in attrs and re.search(r"\*\*|\*[^*]+\*", attrs["title"]):
                         rep.warn(where, "callout titles are plain text: ** / * print literally")
                 elif fname == "paragraphs":
@@ -2277,8 +2286,8 @@ def main() -> None:
     if m.get("version") not in (1, 2):
         rep.error("preset.json", "version must be 1 or 2")
     cv = m.get("configVersion")
-    if isinstance(cv, bool) or not isinstance(cv, (int, float)) or cv < 9:
-        rep.warn("preset.json", "configVersion is missing or below 9: the bundle reads with older rules "
+    if isinstance(cv, bool) or not isinstance(cv, (int, float)) or cv < 10:
+        rep.warn("preset.json", "configVersion is missing or below 10: the bundle reads with older rules "
                  "(up to 1.4: H1 breaks pinned, maths x 1.1312, inline gap 'above'; below 6: heading marks plain, "
                  "drop caps at the 1.4 size, one line of room under a colon line before its list, no gap around "
                  "inline figures in boxes, box cuts that may leave one line of a paragraph; below 7: no line "
@@ -2288,7 +2297,8 @@ def main() -> None:
                  "space under a :::paragraphs container added to the next block's instead of merged with it; "
                  "below 9: a :::verse poem with no || set as centred hemistichs, a paragraph style's "
                  "firstLineIndent dropped when it also hangs, a backslash ending a line printed instead of "
-                 "breaking it, a ``` fence's lines read as Markdown); set \"configVersion\": 9 for today's rules")
+                 "breaking it, a ``` fence's lines read as Markdown; below 10: a line of verse a little too wide "
+                 "turned over instead of tightening its word spaces); set \"configVersion\": 10 for today's rules")
     for k in ("id", "name"):
         if not m.get(k):
             rep.error("preset.json", f"{k} is required")
@@ -2453,6 +2463,16 @@ def main() -> None:
         for r in resources:
             rid = r.get("id")
             pos = (r.get("placement") or {}).get("position") or ((types.get(r.get("typeId")) or {}).get("defaultPlacement") or {}).get("position") or "auto"
+            pl = {**((types.get(r.get("typeId")) or {}).get("defaultPlacement") or {}), **(r.get("placement") or {})}
+            wrap = pl.get("wrap")
+            if wrap not in (None, "none"):
+                # postext >= 1.24: text wrap round a picture.
+                if wrap not in ("left", "right", "start", "end"):
+                    rep.warn(f"resource {rid}", f"placement.wrap {wrap!r} is no side (left | right | start | end): it keeps its band")
+                elif pl.get("rotate") or pl.get("span") in ("page", "side") or (pl.get("columns") or 1) > 1 or pl.get("captionSide"):
+                    rep.warn(f"resource {rid}", "placement.wrap applies to an inline embed or a one-column float: this one keeps its band")
+                elif ((cfg.get("layout") or {}).get("writingMode")) == "vertical-rl":
+                    rep.warn(f"resource {rid}", "placement.wrap is ignored in vertical text (textWrap verticalText)")
             if pos == "here" and rid in referenced and rid not in embedded:
                 rep.warn(f"resource {rid}", f"placement 'here' but only :ref'd, never ::resource'd: it is numbered but never placed ({lang})")
             if rid not in referenced and rid not in embedded and rid not in design_refs:

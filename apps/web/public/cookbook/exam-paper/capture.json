@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "exam-paper",
-  "sourceHash": "8f7eaecb814f3776004a7da97d7d3717c9ebca6b9030cc517be7d354d411a284",
+  "sourceHash": "bf0a4e4a8881ee3dab64a5b4e44e29dfb870841f290ba611bfba6dd5a5b941e7",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.924Z",
+  "capturedAt": "2026-10-09T18:24:37.926Z",
   "variants": {
     "en": {
-      "hash8": "a3741e28",
-      "vdtHash": "404fad4279d9ebe8644ce42e9f0d8cb0b8850f91",
+      "hash8": "4c8c8de4",
+      "vdtHash": "40947dc6a255294ab358d98d23e56a26aa6379a2",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 37,
-        "buildMs": 19,
-        "totalMs": 873,
+        "importMs": 138,
+        "fontsMs": 49,
+        "buildMs": 16,
+        "totalMs": 814,
         "builds": 2
       },
       "specimen": {
@@ -70,7 +70,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 120790,
+          "bytes": 120804,
           "alt": "Page 3: Source-based questions."
         },
         {
@@ -113,7 +113,7 @@
       },
       "sandbox": {
         "file": "exam-paper.postext",
-        "bytes": 23315,
+        "bytes": 23341,
         "folio": "059452bc"
       },
       "detected": {
@@ -134,6 +134,9 @@
           "bodyText.lineHeight",
           "bodyText.paragraphSpacing",
           "bodyText.referenceColor",
+          "bodyText.tabStops",
+          "bodyText.tabStops[].align",
+          "bodyText.tabStops[].position",
           "bodyText.textAlign",
           "calloutStyles",
           "calloutStyles[].background",
@@ -333,7 +336,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 424,
+        "configLeaves": 426,
         "designElements": 16,
         "directives": [
           "::resource",
@@ -345,7 +348,8 @@
         ],
         "inline": [
           "{attrs}",
-          ":chip"
+          ":chip",
+          ":tab"
         ],
         "resources": {
           "svg": 1,
@@ -403,6 +407,7 @@
           "resource-types",
           "resources",
           "section-geometry",
+          "tab-stops",
           "table-styles",
           "vertical-space"
         ],
@@ -416,17 +421,23 @@
           "share": 0,
           "worst": 1.67
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "e650602e",
-      "vdtHash": "421b8820269cb541ebd3caa3a403fef3f7d9a763",
+      "hash8": "24f7f7ff",
+      "vdtHash": "ed19a464103b6e973aace41efbe1c9b983aa281b",
       "timings": {
-        "importMs": 148,
-        "fontsMs": 24,
-        "buildMs": 21,
-        "totalMs": 2841,
+        "importMs": 117,
+        "fontsMs": 25,
+        "buildMs": 15,
+        "totalMs": 756,
         "builds": 2
       },
       "specimen": {
@@ -480,7 +491,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 123682,
+          "bytes": 123702,
           "alt": "Página 3: Comentario de una fuente."
         },
         {
@@ -523,7 +534,7 @@
       },
       "sandbox": {
         "file": "exam-paper.postext",
-        "bytes": 23762,
+        "bytes": 23794,
         "folio": "059452bc"
       },
       "detected": {
@@ -544,6 +555,9 @@
           "bodyText.lineHeight",
           "bodyText.paragraphSpacing",
           "bodyText.referenceColor",
+          "bodyText.tabStops",
+          "bodyText.tabStops[].align",
+          "bodyText.tabStops[].position",
           "bodyText.textAlign",
           "calloutStyles",
           "calloutStyles[].background",
@@ -743,7 +757,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 424,
+        "configLeaves": 426,
         "designElements": 16,
         "directives": [
           "::resource",
@@ -755,7 +769,8 @@
         ],
         "inline": [
           "{attrs}",
-          ":chip"
+          ":chip",
+          ":tab"
         ],
         "resources": {
           "svg": 1,
@@ -813,6 +828,7 @@
           "resource-types",
           "resources",
           "section-geometry",
+          "tab-stops",
           "table-styles",
           "vertical-space"
         ],
@@ -826,7 +842,13 @@
           "share": 0,
           "worst": 1.46
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

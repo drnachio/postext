@@ -34,43 +34,24 @@ Fédéric.
 
 # Frédéric à Voltaire {place="À Charlottembourg" date="12 juin 1740"}
 
-:::paragraphs{style="verse"}
-Non, ce n’est plus du mont Rémus,
-
-Douce et studieuse retraite
-
-D’où mes vers vous sont parvenus,
-
-Que je date ces vers confus:
-
-Car dans ce moment le poète
-
-Et le prince sont confondus.
-
-Désormais mon peuple que j’aime
-
-Est l’unique Dieu que je sers:
-
-Adieu les vers et les concerts.
-
-Tous les plaisirs. Voltaire même;
-
-Mon devoir est mon Dieu suprême.
-
-Qu’il entraîne de soins divers!
-
-Quel fardeau que le diadème!
-
-Quand ce dieu sera satisfait,
-
-Alors dans vos bras, cher Voltaire,
-
-Je volerai, plus prompt qu’un trait,
-:::
-
-:::paragraphs{style="verse-long"}
+:::verse{style="verse" align=start indentStep=3.5mm}
+  Non, ce n’est plus du mont Rémus,
+  Douce et studieuse retraite
+  D’où mes vers vous sont parvenus,
+  Que je date ces vers confus:
+  Car dans ce moment le poète
+  Et le prince sont confondus.
+  Désormais mon peuple que j’aime
+  Est l’unique Dieu que je sers:
+  Adieu les vers et les concerts.
+  Tous les plaisirs. Voltaire même;
+  Mon devoir est mon Dieu suprême.
+  Qu’il entraîne de soins divers!
+  Quel fardeau que le diadème!
+  Quand ce dieu sera satisfait,
+  Alors dans vos bras, cher Voltaire,
+  Je volerai, plus prompt qu’un trait,
 Puiser, dans les leçons de mon ami sincère,
-
 Quel doit être d’un roi le sacré caractère.
 :::
 

@@ -1,9 +1,9 @@
-// ═══ Postext Cookbook · Nº 052 · Bistro menu: prices aligned without tab stops ═══════
+// ═══ Postext Cookbook · Nº 052 · Bistro menu: prices on a tab stop ═══════════════════
 // https://postext.dev/en/cookbook/bistro-menu
 // Code: MIT · Text: original, in French (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Limelight, Noticia Text, Josefin Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-// The autumn menu of an imaginary Paris bistro: two sides of one card, every price column a
-// table with its rules switched off.
+// Fonts: Limelight, Noticia Text, Josefin Sans (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// The autumn menu of an imaginary Paris bistro: two sides of one card, each dish a paragraph
+// whose price a tab sends to the right margin, the wine list a table with no rules.
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
   parseTSV, mergeCells } from 'https://esm.sh/postext';
 
@@ -22,30 +22,27 @@ const colorPalette = Object.entries({ ...palette, 'main-color': palette.wine })
 const [TEXT, DISPLAY, LABEL] = ['Noticia Text', 'Limelight', 'Josefin Sans'];
 const [BODY, LEAD] = [10.5, 14.5]; // pt: the text, and the leading every table row keeps
 
-// #region answer: dish on the left, price flush right: a two-column table with no rules
-// Postext has no tab stops, so each course is a table. The document's tableStyle turns off
-// every rule and fill, so nothing on the page shows that a table is there. The wine list's head
-// row and merged region rows are in #region wines.
-const tableStyle = { rules: 'none', cellPadding: pt(LEAD / 4), // a dish: 2½ lines of LEAD
+// #region answer: dish on the left, price flush right: a tab stop at the end of the measure
+// Each course is a :::paragraphs group in the dish style. Its one tab stop stands at the end of
+// the measure and ends there the text after the tab, so `:tab **7**` sets the price flush right
+// however long the dish is. A backslash at the end of the line breaks it: the dish and its
+// translation are one paragraph, and the price shares the dish's first line.
+const dish = { id: 'dish', name: 'Dish', textAlign: 'left', // the card is centred; a dish is not
+  tabStops: [{ position: 'end', align: 'end' }],
+  spaceBetween: pt(LEAD / 2), // half a line between two dishes: each dish 2½ lines of LEAD
+  marginTop: pt(LEAD), // a line of air under the course head
+  indent: pt(LEAD / 4), endIndent: pt(LEAD / 4) }; // in line with the wine list's cell text
+// The wine list stays a table: its prices stand in two columns under the heads 12 cl and 75 cl.
+// The document's tableStyle turns off every rule and fill (#region wines).
+const tableStyle = { rules: 'none', cellPadding: pt(LEAD / 4), // a row: 1½ lines of LEAD
   bodyFontFamily: TEXT, bodyFontSize: pt(BODY), bodyColor: col('ink'),
   headerFontFamily: LABEL, headerFontSize: pt(8.5), headerColor: col('wine'),
   headerBackgroundEnabled: false }; // header cells: the wine list's labels
-// The kitchen keeps the menu as TSV: course · dish · the dish in the reader's language · price.
-function course(id, tsv) {
-  const rows = parseTSV(tsv).rows.filter(([c]) => c.content === id)
-    .map(([, dish, translation, price]) => [
-      { content: `${dish.content}\n*${translation.content}*` }, // one cell, two lines
-      // Both cells start at the top of the row, so the price shares the dish's first baseline.
-      { content: `**${price.content}**`, align: 'right' },
-    ]);
-  // columnWidths are weights: the price column takes 1/7 of the 158 mm measure, 22.6 mm.
-  return piece(id, 'table', { table: { model: { rows, columnWidths: [6, 1] } } });
-}
 // #endregion
 
 // #region type: one resource type for the whole card: set where it stands, never numbered
-// No caption prefix and no caption, so no 'Table 1' line prints under a course. Placement
-// 'here' sets each piece at its ::resource line; such a table never splits, so a course that
+// No caption prefix and no caption, so no 'Table 1' line prints under the wine list. Placement
+// 'here' sets each piece at its ::resource line; such a table never splits, so a list that
 // outgrows the page moves to the next one whole (gotcha: here-table-no-split).
 const resourceTypes = [{ id: 'menu', name: 'Menu', shortLabel: 'Menu', captionPrefix: '',
   numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal',
@@ -76,7 +73,7 @@ function wineList(tsv) {
 // rule hangs off one edge of the title ('left-of', 'right-of'), 4 mm away, and 'fill' runs it
 // to the column's edge: 66.7 mm beside PLATS, 56.2 mm beside the longer LE COMPTOIR.
 const rule = (edge, x) => ({ kind: 'rule', id: `rule-${edge}`, color: col('brass'),
-  thickness: pt(0.75), // required in 1.4.1: a rule without it paints nothing
+  thickness: pt(0.75), // heavier than the default 0.5 pt hairline
   placement: { anchor: { to: '#title', edge },
     size: { width: 'fill' }, // to the column's edge
     offset: { x: mm(x), y: pt(6) } } }); // 6 pt down: the middle of Limelight's capitals
@@ -102,9 +99,9 @@ const chipStyles = [
   { id: 'gf', name: 'Gluten-free', ...badge, paddingX: em(0.45), backgroundEnabled: false,
     borderColor: col('bottle'), borderWidth: pt(0.6), color: col('bottle') },
 ];
-// The notes under the desserts and the colophon on the back: smaller, on the card's axis.
-// marginTop gives the line of air that a table set 'here' does not leave below itself.
-const paragraphStyles = [
+// The notes under the desserts and the colophon on the back: smaller, on the card's axis, a
+// line of air above each.
+const paragraphStyles = [dish,
   { id: 'notes', name: 'Notes', fontSize: pt(9), marginTop: pt(LEAD) },
   { id: 'colophon', name: 'Colophon', fontSize: pt(7.5), color: col('muted'),
     marginTop: pt(LEAD) },
@@ -112,17 +109,17 @@ const paragraphStyles = [
 // #endregion
 
 // #region centred: one axis for the card: the name, the course heads and the notes centred
-// bodyText (in config) centres the lines under the name and the notes; only the tables keep a
-// left edge. A centred line is never hyphenated (gotcha: ragged-no-hyphenation), so the config
-// sets no locale: French patterns would change nothing on this card.
+// bodyText (in config) centres the lines under the name and the notes; only the dishes and the
+// wine list keep a left edge. A ragged line is never hyphenated (gotcha: ragged-no-hyphenation),
+// so the config sets no locale: French patterns would change nothing on this card.
 const headings = { fontFamily: DISPLAY, fontWeight: 400, color: col('wine'), textAlign: 'center',
   levels: [ // Limelight ships one weight, 400, and no italic
-    // Any headings object drops the H1 break (gotcha: headings-drop-h1-break). Stated off, since
-    // a break before an H1 would part the name from the awning and La Cave from its bottles.
+    // The H1 break is off: by default an H1 opens a recto, which would part the name from the
+    // awning and La Cave from its bottles.
     { level: 1, fontSize: pt(48), lineHeight: pt(3 * LEAD), breakBefore: { enabled: false },
       marginTop: pt(LEAD), marginBottom: pt(0) }, // three grid lines, one of air above
     { level: 2, lineHeight: pt(LEAD), advancedDesign: courseHead, // one line; #region heads
-      marginTop: pt(LEAD), marginBottom: pt(0) }, // the table below adds a line of its own
+      marginTop: pt(LEAD), marginBottom: pt(0) }, // the dishes below add a line of their own
   ] };
 // #endregion
 
@@ -211,15 +208,13 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // the two sides of the card, in French
-const dishes = /* @content:carte */ ''; // TSV: course · dish · translation · price
 const wines = /* @content:cave */ ''; // TSV: head row, regions, wines; one file for both editions
 const resources = [
   piece('awning', 'svg', { svg: { fileId: 'awning.svg', width: 1660, height: 212 },
     altText: 'A striped wine-red and straw awning on a brass rod.' }),
   piece('bottles', 'svg', { svg: { fileId: 'bottles.svg', width: 1660, height: 300 },
     altText: 'Two glasses of red wine, four bottles and a carafe on a brass shelf.' }),
-  course('entrees', dishes), course('plats', dishes), course('desserts', dishes),
-  wineList(wines), course('counter', dishes),
+  wineList(wines),
 ];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
@@ -228,7 +223,7 @@ const FONTS = { 'Noticia Text': ['400', '400i', '700'], Limelight: ['400'],
   'Josefin Sans': ['700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-const allText = markdown + dishes + wines;
+const allText = markdown + wines;
 await loadFonts(FONTS, allText);
 await loadSvg('awning.svg', awning());
 await loadSvg('bottles.svg', bottles());

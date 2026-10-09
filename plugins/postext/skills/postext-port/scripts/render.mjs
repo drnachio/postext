@@ -209,7 +209,7 @@ function svgSize(text) {
 const blobs = new Map();
 const resources = (manifest.resources ?? []).map((spec) => {
   const s = { ...spec, ...(wording.get(spec.id) ?? {}) };
-  const { file, pdfFile, width, height, source, ...rest } = s;
+  const { file, pdfFile, width, height, resolution, fileResolution, source, ...rest } = s;
   const base = { ...rest, createdAt: 0, updatedAt: 0 };
   if (!file) return base;
   const bytes = new Uint8Array(readFileSync(join(BUNDLE, file)));
@@ -220,7 +220,16 @@ const resources = (manifest.resources ?? []).map((spec) => {
     return { ...base, kind: 'svg', svg: { fileId: file, ...size, ...master } };
   }
   const ext = file.split('.').pop().toLowerCase();
-  return { ...base, kind: 'bitmap', bitmap: { fileId: file, format: ext === 'jpg' ? 'jpeg' : ext, width: width ?? 0, height: height ?? 0 } };
+  // postext >= 1.24: a bitmap's own resolution, and the one its file states
+  // (read for layout.bitmapResolution: 'file').
+  const fileRes = fileResolution ?? postext.bitmapInfo?.(bytes)?.resolution?.x;
+  return {
+    ...base, kind: 'bitmap',
+    bitmap: {
+      fileId: file, format: ext === 'jpg' ? 'jpeg' : ext, width: width ?? 0, height: height ?? 0,
+      ...(resolution ? { resolution } : {}), ...(fileRes ? { fileResolution: fileRes } : {}),
+    },
+  };
 });
 
 // ---- config: defaults <- config <- localized config -----------------------------
@@ -233,7 +242,8 @@ let config = { colorPalette: postext.cloneDefaultColorPalette(), resourceTypes: 
 // hyphens, ragged breaking, the split under a heading and the space under
 // paragraph containers; one stamped 8 (postext 1.5 to 1.22), a poem with no
 // separator set as centred hemistichs and the backslashes that end a line
-// printed. `migrateConfig` looks at every chapter of this
+// printed; one stamped 9 (postext 1.23), lines of verse turned over where
+// they could tighten. `migrateConfig` looks at every chapter of this
 // language, as the Sandbox loads them all.
 if (typeof bundleApi?.migrateConfig === 'function') {
   const content = chapterSpecs.map((c) => readFileSync(join(BUNDLE, c.file), 'utf8'));
@@ -271,6 +281,7 @@ if (typeof bundleApi?.migrateConfig === 'function') {
     [(c) => c.bodyText?.verse?.layout, 'centred lines of a poem with no separator'],
     [(c) => c.bodyText?.hardLineBreaks, 'printed line-end backslashes'],
     [(c) => c.codeStyle?.blocks, 'code fences read as Markdown'],
+    [(c) => c.bodyText?.verse?.tighten, 'verse turnovers at natural word spacing'],
   ].filter(([of]) => of(read) !== of(config)).map(([, what]) => what);
   if (kept.length) {
     const v = manifest.configVersion;
@@ -362,7 +373,12 @@ if (postext.preflightDocument && printConfig?.preflight.enabled
         preserveNeutrals: printConfig.black.kOnlyNeutrals,
       })
     : undefined;
-  const issues = postext.preflightDocument(doc, { print: printConfig, resources, cmyk: printConfig.standard !== 'none' || cmykPdf, ...(transform ? { transform } : {}) });
+  // The pixels each file really has (postext >= 1.24): a declaration that
+  // disagrees is reported as declaredPixelsMismatch.
+  const imageSize = postext.bitmapInfo
+    ? (fileId) => { const b = blobs.get(fileId); const i = b ? postext.bitmapInfo(b) : undefined; return i ? { width: i.width, height: i.height } : undefined; }
+    : undefined;
+  const issues = postext.preflightDocument(doc, { print: printConfig, resources, cmyk: printConfig.standard !== 'none' || cmykPdf, ...(imageSize ? { imageSize } : {}), ...(transform ? { transform } : {}) });
   for (const i of issues) {
     const { kind, severity, pageIndex, rect: _r, sourceStart, sourceEnd: _e, ...detail } = i;
     console.log(`PREFLIGHT ${severity} ${kind} page ${doc.pages[pageIndex]?.pageNumberValue ?? pageIndex + 1}${sourceStart != null ? ` at ${where(sourceStart)}` : ''}: ${JSON.stringify(detail)}`);

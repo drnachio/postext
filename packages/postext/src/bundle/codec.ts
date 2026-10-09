@@ -7,7 +7,7 @@
 import type { PostextConfig, Resource } from '../types';
 import { cloneDefaultColorPalette, defaultResourceTypes, stripConfigDefaults } from '../defaults';
 import {
-  bitmapSize,
+  bitmapInfo,
   chapterFileName,
   extensionForBitmapFormat,
   extensionForImageMime,
@@ -90,9 +90,16 @@ export interface ReadBundleOptions {
   baseConfig?: PostextConfig;
   /** Intrinsic size of an SVG whose spec omits it. Defaults to `svgSize`. */
   measureSvg?: (markup: string) => BundleImageSize | undefined;
-  /** Intrinsic size of a bitmap whose spec omits it. Defaults to reading
-   *  the image header (`bitmapSize`). */
+  /** Intrinsic size of a bitmap whose spec omits it, and the resolution
+   *  its file states when there is one (`BundleImageSize.resolution`).
+   *  Defaults to reading the image header (`bitmapInfo`). */
   measureBitmap?: (bytes: ArrayBuffer, mime: string) => Promise<BundleImageSize | undefined> | BundleImageSize | undefined;
+  /** Read each bitmap's resolution from its file into
+   *  `Resource.bitmap.fileResolution` when its spec gives none (#631).
+   *  Defaults to true when the bundle's `layout.bitmapResolution` is
+   *  `'file'`, the one policy that lays the pictures out by it; else the
+   *  resources come back as the manifest declares them. */
+  readResolution?: boolean;
   onWarning?: (message: string) => void;
 }
 
@@ -183,7 +190,7 @@ export async function readBundle(
   const ids = options.ids ?? identityIds;
   const onWarning = options.onWarning;
   const measureSvg = options.measureSvg ?? svgSize;
-  const measureBitmap = options.measureBitmap ?? ((bytes: ArrayBuffer) => bitmapSize(bytes));
+  const measureBitmap = options.measureBitmap ?? ((bytes: ArrayBuffer) => bitmapInfo(bytes));
 
   const decoder = new TextDecoder();
   // Only the chosen locale's chapters, several at a time (a 120-chapter
@@ -208,9 +215,14 @@ export async function readBundle(
       if (wording.width === undefined) delete merged.width;
       if (wording.height === undefined) delete merged.height;
       if (wording.pdfFile === undefined) delete merged.pdfFile;
+      if (wording.fileResolution === undefined) delete merged.fileResolution;
     }
     return merged;
   });
+
+  // The file's own resolution, when the pictures are laid out by it.
+  const layoutPolicy = (overrides?.config?.layout ?? manifest.config?.layout ?? options.baseConfig?.layout)?.bitmapResolution;
+  const readResolution = options.readResolution ?? layoutPolicy === 'file';
 
   const blobs: BundleBlob[] = [];
   const resources: Resource[] = await Promise.all(
@@ -259,6 +271,14 @@ export async function readBundle(
       if (spec.width === undefined || spec.height === undefined) {
         if (isSvgFile(file)) size = measureSvg(decoder.decode(bytes));
         else if (isBitmapFile(file)) size = await measureBitmap(bytes, mime);
+      }
+      if (isBitmapFile(file)) {
+        if (!readResolution) {
+          if (size?.resolution) size = { width: size.width, height: size.height };
+        } else if (resolved.fileResolution === undefined && !size?.resolution) {
+          const info = bitmapInfo(bytes);
+          if (info?.resolution) size = { ...(size ?? { width: info.width, height: info.height }), resolution: info.resolution };
+        }
       }
       return resourceFromSpec(resolved, size, ids.blob);
     }),
@@ -454,6 +474,8 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
       ...(pdfFile ? { pdfFile } : {}),
       ...(width ? { width } : {}),
       ...(height ? { height } : {}),
+      ...(bitmap?.resolution ? { resolution: bitmap.resolution } : {}),
+      ...(bitmap?.fileResolution ? { fileResolution: bitmap.fileResolution } : {}),
     });
   }
 
@@ -574,7 +596,9 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
         const height = r.bitmap?.height ?? r.svg?.height;
         if (width) spec.width = width;
         if (height) spec.height = height;
+        if (r.bitmap?.fileResolution) spec.fileResolution = r.bitmap.fileResolution;
       }
+      if (r.bitmap?.resolution && r.bitmap.resolution !== base.bitmap?.resolution) spec.resolution = r.bitmap.resolution;
       if (ownMaster) {
         spec.pdfFile = `resources/${localeFolder(locale)}/${name}.pdf`;
         files.push({ path: spec.pdfFile, fileId: pdfFileId!, kind: 'blob', owner: r.id, locale });

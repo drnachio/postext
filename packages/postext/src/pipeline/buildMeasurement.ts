@@ -134,7 +134,7 @@ export function runMeasurement(input: MeasurementInput): MeasurementResult {
 
   // Kept breaks and later measures are not part of the cache key: such a
   // measurement goes around the cache.
-  const measured = cache && !measureOptions?.keepBreaks && !measureOptions?.restWidths
+  const measured = cache && !measureOptions?.keepBreaks && !measureOptions?.restWidths && !measureOptions?.lineInsets
     ? (useRich
         ? cachedMeasureRichBlock(contentBlock.spans, style.fontString, style.boldFontString!, style.italicFontString!, style.boldItalicFontString!, measureMaxWidth, style.lineHeightPx, measureOptions, cache)
         : cachedMeasureBlock(contentBlock.text, style.fontString, measureMaxWidth, style.lineHeightPx, measureOptions, cache))

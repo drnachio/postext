@@ -125,7 +125,7 @@ describe('colonListRoom: \'line\' keeps the postext 1.4 room check (EF-110)', ()
 describe('configurations stored before rules 6 keep the 1.4 colon-list room', () => {
   const LIST = 'Look for these signs:\n\n- one\n- two';
   it('pins a configuration older than 6 whose book introduces a list with a colon, once', () => {
-    expect(CONFIG_VERSION).toBe(9);
+    expect(CONFIG_VERSION).toBe(10);
     const stored: PostextConfig = { bodyText: { fontFamily: 'Georgia' } };
     for (const version of [undefined, 3, 4, 5]) {
       expect(migrateConfig(stored, version, { content: LIST }).bodyText, `${version}`)

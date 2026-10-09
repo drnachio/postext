@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "letters-edition",
-  "sourceHash": "42f180f48b0710812650e0aa27b768f50691f61785cfd57e1850adf04b0becc5",
+  "sourceHash": "619432ec8bdc9ccc267998797913f7c3b09e26bff41be942e96aba95757e53e4",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.122Z",
+  "capturedAt": "2026-10-09T18:24:37.896Z",
   "variants": {
     "en": {
-      "hash8": "ab59a980",
-      "vdtHash": "b52b77b62812f0fd80502a361efa4ad6be58dec8",
+      "hash8": "7da1f370",
+      "vdtHash": "e27c3dec29bb6b01261122cb9444978832ead1ac",
       "timings": {
-        "importMs": 148,
-        "fontsMs": 47,
-        "buildMs": 16,
-        "totalMs": 882,
+        "importMs": 113,
+        "fontsMs": 51,
+        "buildMs": 13,
+        "totalMs": 812,
         "builds": 2
       },
       "specimen": {
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "letters-edition.postext",
-        "bytes": 212133,
+        "bytes": 212156,
         "folio": "a3ceaa8c"
       },
       "detected": {
@@ -201,6 +201,7 @@
           "paragraphStyles[].fontFamily",
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
+          "paragraphStyles[].indent",
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginBottom",
           "paragraphStyles[].marginTop",
@@ -218,11 +219,12 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 223,
+        "configLeaves": 221,
         "designElements": 12,
         "directives": [
           ":::pagebreak",
-          ":::paragraphs"
+          ":::paragraphs",
+          ":::verse"
         ],
         "inline": [
           "{attrs}",
@@ -268,7 +270,8 @@
           "resources",
           "super-subscripts",
           "title-line-breaks",
-          "unnumbered-headings"
+          "unnumbered-headings",
+          "verse"
         ],
         "suggestedLevel": 3
       },
@@ -280,17 +283,23 @@
           "share": 0,
           "worst": 1.97
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "85eb5277",
-      "vdtHash": "b52b77b62812f0fd80502a361efa4ad6be58dec8",
+      "hash8": "f2436521",
+      "vdtHash": "e27c3dec29bb6b01261122cb9444978832ead1ac",
       "timings": {
-        "importMs": 168,
-        "fontsMs": 47,
-        "buildMs": 16,
-        "totalMs": 886,
+        "importMs": 120,
+        "fontsMs": 37,
+        "buildMs": 13,
+        "totalMs": 822,
         "builds": 2
       },
       "specimen": {
@@ -399,7 +408,7 @@
       },
       "sandbox": {
         "file": "letters-edition.postext",
-        "bytes": 212168,
+        "bytes": 212189,
         "folio": "a3ceaa8c"
       },
       "detected": {
@@ -475,6 +484,7 @@
           "paragraphStyles[].fontFamily",
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
+          "paragraphStyles[].indent",
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginBottom",
           "paragraphStyles[].marginTop",
@@ -492,11 +502,12 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 223,
+        "configLeaves": 221,
         "designElements": 12,
         "directives": [
           ":::pagebreak",
-          ":::paragraphs"
+          ":::paragraphs",
+          ":::verse"
         ],
         "inline": [
           "{attrs}",
@@ -542,7 +553,8 @@
           "resources",
           "super-subscripts",
           "title-line-breaks",
-          "unnumbered-headings"
+          "unnumbered-headings",
+          "verse"
         ],
         "suggestedLevel": 3
       },
@@ -554,7 +566,13 @@
           "share": 0,
           "worst": 1.97
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

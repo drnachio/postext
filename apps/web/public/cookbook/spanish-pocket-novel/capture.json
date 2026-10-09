@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "spanish-pocket-novel",
-  "sourceHash": "890a9e92a57813fb57c052cea6e984520df5fbb3d1975841f2c4660ec51f8a7c",
+  "sourceHash": "de7588f3265d8da66a90e9ed45437d18de7606d40989d06845f2c755e49c9626",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.450Z",
+  "capturedAt": "2026-10-09T18:24:37.952Z",
   "variants": {
     "es": {
-      "hash8": "d23e4327",
-      "vdtHash": "6e5b9cab7670dce9f2eaaca91437208943bc0ac8",
+      "hash8": "f784e87e",
+      "vdtHash": "bb126315f9ebc5c6545bba48f33c62e9e98b73ef",
       "timings": {
-        "importMs": 151,
-        "fontsMs": 33,
-        "buildMs": 16,
-        "totalMs": 828,
+        "importMs": 119,
+        "fontsMs": 36,
+        "buildMs": 14,
+        "totalMs": 6452,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Marcellus SC"
         ],
         "pages": 5,
-        "ownLines": 180
+        "ownLines": 176
       },
       "pages": [
         {
@@ -60,7 +60,7 @@
           "h": 1565,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 129456,
+          "bytes": 129486,
           "alt": "Página de apertura 9: Perdido."
         },
         {
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "spanish-pocket-novel.postext",
-        "bytes": 43118,
+        "bytes": 43046,
         "folio": "bb7ddf9c"
       },
       "detected": {
@@ -202,6 +202,7 @@
           "headings.levels",
           "headings.levels[].advancedDesign",
           "headings.levels[].breakBefore",
+          "headings.levels[].dropCap",
           "headings.levels[].level",
           "headings.levels[].marginBottom",
           "layout",
@@ -251,8 +252,8 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 246,
-        "designElements": 11,
+        "configLeaves": 233,
+        "designElements": 10,
         "directives": [
           "::resource",
           ":::space",
@@ -294,18 +295,13 @@
             "style": "normal"
           },
           {
-            "family": "Libre Bodoni",
-            "weight": 700,
-            "style": "normal"
-          },
-          {
             "family": "Marcellus SC",
             "weight": 400,
             "style": "normal"
           }
         ],
         "features": [
-          "drop-caps",
+          "body-drop-caps",
           "figure-citations",
           "heading-attributes",
           "heading-styles",
@@ -331,6 +327,11 @@
           "worst": 1.6500000000000001
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

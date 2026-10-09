@@ -16,7 +16,7 @@ import {
 } from '../knuthPlass';
 import { SOFT_HYPHEN } from './types';
 import { GEMINATE_DOT, endsInsideGeminate, withLineEndHyphen } from './geminate';
-import { lineIndentAt, lineMeasure, maxLineIndent, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
+import { lineStartAt, lineWidthAt, lineWidthFunction, markInsetLines, maxLineIndent, maxLineInset, uniformMeasureFrom, type MeasuredBlock, type MeasureBlockOptions } from './types';
 import { cleanSoftHyphens, measureTextWidth, normalSpaceWidthFor } from './canvas';
 import { isRuntLastLine } from './runts';
 import { measureRichBlock } from './rich';
@@ -258,8 +258,9 @@ export function measureBlock(
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   const shouldHyphenate = options?.hyphenate ?? false;
-  const indentOf = (li: number): number => lineIndentAt(options, li);
-  const widestIndent = maxLineIndent(options);
+  // Each line's start: its indent past its inset beside a picture (#627).
+  const indentOf = (li: number): number => lineStartAt(options, li);
+  const widestIndent = maxLineIndent(options) + maxLineInset(options?.lineInsets);
   const textAlign = options?.textAlign ?? 'left';
   // A hyphenation zone (ragged text) needs the word-level breakers, which
   // weigh each dictionary syllable against the gap it would leave and tell
@@ -321,7 +322,7 @@ export function measureBlock(
     const hardHyphens = ragged || options.breakAfterHyphens === true || keepCompounds;
     const dotWidth = geminateDotWidth(text, font);
     const items = pretextSegmentsToItems(prepared, spaceWidth, maxStretchRatio, minShrinkRatio, options.breakAfterDashes === true, hardHyphens, ragged || keepCompounds ? 1 : 2, dotWidth);
-    const lineWidthFn = (li: number) => lineMeasure(maxWidthPx, options.restWidths, li) - indentOf(li);
+    const lineWidthFn = lineWidthFunction(maxWidthPx, options);
     const lineIndentFn = indentOf;
     const runtPenalty = options.runtPenalty ?? 0;
     const runtMinWidth = runtPenalty > 0
@@ -339,7 +340,7 @@ export function measureBlock(
       ...(options.avoidHyphenAtLines ? { avoidHyphenAtLines: options.avoidHyphenAtLines } : {}),
       ...(options.keepBreaks?.path === 'plain' ? { fixedBreaks: options.keepBreaks.at } : {}),
       looseness: options.looseness ?? 0,
-      lineWidthUniformFrom: uniformMeasureFrom(options.restWidths, options.lineIndentsPx),
+      lineWidthUniformFrom: uniformMeasureFrom(options.restWidths, options.lineIndentsPx, options.lineInsets),
       trackingPerChar,
       ...(ragged ? { raggedStretch: raggedStretchPx(font) } : {}),
     });
@@ -350,6 +351,7 @@ export function measureBlock(
         trackingPerChar, lineBaselineOffset(lineHeightPx, font), dotWidth,
       );
       if (!hasOverfullLine(kpLines, lineWidthFn, ragged)) {
+        markInsetLines(kpLines, maxWidthPx, options);
         return {
           lines: kpLines,
           totalHeight: kpLines.length * lineHeightPx,
@@ -370,9 +372,10 @@ export function measureBlock(
 
   while (true) {
     // The line's own indent (`lineIndentAt`): the first line's, a hanging
-    // one, or the line's entry in `lineIndentsPx`.
+    // one, or the line's entry in `lineIndentsPx`; past its inset beside a
+    // picture (#627).
     const lineIndent = indentOf(lineIndex);
-    const lineMaxWidth = lineMeasure(maxWidthPx, options?.restWidths, lineIndex) - lineIndent;
+    const lineMaxWidth = lineWidthAt(maxWidthPx, options, lineIndex);
 
     const line = layoutNextLine(prepared, cursor, lineMaxWidth);
     if (line === null) break;
@@ -435,6 +438,7 @@ export function measureBlock(
     lastLine.isLastLine = true;
     delete lastLine.justifiedSpaceRatio;
   }
+  markInsetLines(lines, maxWidthPx, options);
 
   return { lines, totalHeight: y };
 }

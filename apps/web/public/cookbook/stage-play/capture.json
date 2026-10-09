@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "stage-play",
-  "sourceHash": "4ca21c85b0916156fc7b1cac50d422ddbd4ef0f3bcaa5479d56250bb420655fa",
+  "sourceHash": "4b09eac196da08a8304d29c7e83df3a8813d65e14ba9d602f131fb857499e16f",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.453Z",
+  "capturedAt": "2026-10-09T18:24:37.944Z",
   "variants": {
     "en": {
-      "hash8": "1ecca2b6",
-      "vdtHash": "b12614a321672887d08e9b5256516fee7625679d",
+      "hash8": "13c0f1e2",
+      "vdtHash": "1777610edf6f1bf575d4067c8bcfec3d1b4b3774",
       "timings": {
-        "importMs": 137,
-        "fontsMs": 29,
-        "buildMs": 12,
-        "totalMs": 817,
+        "importMs": 115,
+        "fontsMs": 28,
+        "buildMs": 10,
+        "totalMs": 759,
         "builds": 2
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Playfair Display SC"
         ],
         "pages": 5,
-        "ownLines": 180
+        "ownLines": 163
       },
       "pages": [
         {
@@ -60,7 +60,7 @@
           "h": 1543,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 67974,
+          "bytes": 75552,
           "alt": "Page 2: The Persons of the Play."
         },
         {
@@ -125,15 +125,13 @@
       },
       "sandbox": {
         "file": "stage-play.postext",
-        "bytes": 22834,
+        "bytes": 22482,
         "folio": "059474f1"
       },
       "detected": {
         "apis": [
           "buildDocument",
           "clearMeasurementCache",
-          "mergeCells",
-          "parseTSV",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -224,9 +222,16 @@
           "paragraphStyles",
           "paragraphStyles[].color",
           "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
+          "paragraphStyles[].marginBottom",
           "paragraphStyles[].marginTop",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].tabStops",
+          "paragraphStyles[].tabStops[].align",
+          "paragraphStyles[].tabStops[].leader",
+          "paragraphStyles[].tabStops[].position",
           "paragraphStyles[].textAlign",
           "resourceTypes",
           "resourceTypes[].captionPrefix",
@@ -239,22 +244,7 @@
           "resourceTypes[].name",
           "resourceTypes[].numberingTemplate",
           "resourceTypes[].resetOn",
-          "resourceTypes[].shortLabel",
-          "tableStyle",
-          "tableStyle.bodyFontSize",
-          "tableStyle.borderColor",
-          "tableStyle.borderWidth",
-          "tableStyle.cellPadding",
-          "tableStyle.headerBackground",
-          "tableStyle.headerBold",
-          "tableStyle.headerColor",
-          "tableStyle.headerFontFamily",
-          "tableStyle.headerFontSize",
-          "tableStyle.rules",
-          "tableStyles",
-          "tableStyles[].cellPadding",
-          "tableStyles[].id",
-          "tableStyles[].rules"
+          "resourceTypes[].shortLabel"
         ],
         "configSections": [
           "bodyText",
@@ -267,25 +257,24 @@
           "locale",
           "page",
           "paragraphStyles",
-          "resourceTypes",
-          "tableStyle",
-          "tableStyles"
+          "resourceTypes"
         ],
-        "configLeaves": 296,
+        "configLeaves": 295,
         "designElements": 14,
         "directives": [
           ":::pagebreak",
-          "::resource",
           ":::paragraphs",
+          "::resource",
           ":::space"
         ],
         "inline": [
-          "{attrs}"
+          "{attrs}",
+          ":tab"
         ],
         "resources": {
           "svg": 2,
           "bitmap": 0,
-          "table": 2
+          "table": 0
         },
         "fonts": [
           {
@@ -326,8 +315,7 @@
           "resource-types",
           "resources",
           "section-running-heads",
-          "table-model",
-          "table-styles",
+          "tab-stops",
           "vertical-space"
         ],
         "suggestedLevel": 3
@@ -340,17 +328,23 @@
           "share": 0,
           "worst": 1.78
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "c10c31dc",
-      "vdtHash": "1756aa6f89b40c1a24819d3fad53cd247b69f6c8",
+      "hash8": "b1ed06a7",
+      "vdtHash": "5b62fc26b136fb58c44a197bc8755ec2d92d5634",
       "timings": {
-        "importMs": 141,
-        "fontsMs": 35,
-        "buildMs": 16,
-        "totalMs": 824,
+        "importMs": 115,
+        "fontsMs": 30,
+        "buildMs": 13,
+        "totalMs": 758,
         "builds": 2
       },
       "specimen": {
@@ -372,7 +366,7 @@
           "Playfair Display SC"
         ],
         "pages": 5,
-        "ownLines": 180
+        "ownLines": 163
       },
       "pages": [
         {
@@ -394,7 +388,7 @@
           "h": 1543,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 73222,
+          "bytes": 80192,
           "alt": "Página 2: Personajes de la obra."
         },
         {
@@ -459,15 +453,13 @@
       },
       "sandbox": {
         "file": "stage-play.postext",
-        "bytes": 22893,
+        "bytes": 22552,
         "folio": "059474f1"
       },
       "detected": {
         "apis": [
           "buildDocument",
           "clearMeasurementCache",
-          "mergeCells",
-          "parseTSV",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -558,9 +550,16 @@
           "paragraphStyles",
           "paragraphStyles[].color",
           "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
+          "paragraphStyles[].marginBottom",
           "paragraphStyles[].marginTop",
+          "paragraphStyles[].spaceBetween",
+          "paragraphStyles[].tabStops",
+          "paragraphStyles[].tabStops[].align",
+          "paragraphStyles[].tabStops[].leader",
+          "paragraphStyles[].tabStops[].position",
           "paragraphStyles[].textAlign",
           "resourceTypes",
           "resourceTypes[].captionPrefix",
@@ -573,22 +572,7 @@
           "resourceTypes[].name",
           "resourceTypes[].numberingTemplate",
           "resourceTypes[].resetOn",
-          "resourceTypes[].shortLabel",
-          "tableStyle",
-          "tableStyle.bodyFontSize",
-          "tableStyle.borderColor",
-          "tableStyle.borderWidth",
-          "tableStyle.cellPadding",
-          "tableStyle.headerBackground",
-          "tableStyle.headerBold",
-          "tableStyle.headerColor",
-          "tableStyle.headerFontFamily",
-          "tableStyle.headerFontSize",
-          "tableStyle.rules",
-          "tableStyles",
-          "tableStyles[].cellPadding",
-          "tableStyles[].id",
-          "tableStyles[].rules"
+          "resourceTypes[].shortLabel"
         ],
         "configSections": [
           "bodyText",
@@ -601,25 +585,24 @@
           "locale",
           "page",
           "paragraphStyles",
-          "resourceTypes",
-          "tableStyle",
-          "tableStyles"
+          "resourceTypes"
         ],
-        "configLeaves": 296,
+        "configLeaves": 295,
         "designElements": 14,
         "directives": [
           ":::pagebreak",
-          "::resource",
           ":::paragraphs",
+          "::resource",
           ":::space"
         ],
         "inline": [
-          "{attrs}"
+          "{attrs}",
+          ":tab"
         ],
         "resources": {
           "svg": 2,
           "bitmap": 0,
-          "table": 2
+          "table": 0
         },
         "fonts": [
           {
@@ -660,8 +643,7 @@
           "resource-types",
           "resources",
           "section-running-heads",
-          "table-model",
-          "table-styles",
+          "tab-stops",
           "vertical-space"
         ],
         "suggestedLevel": 3
@@ -674,7 +656,13 @@
           "share": 0,
           "worst": 1.59
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

@@ -904,7 +904,10 @@ function renderTable(
   // Borders: the full cell grid, horizontal rules only, or the outer frame.
   // `drawLinePx` strokes exactly `borderWidthPx` (scaled to pt), so fractional
   // hairlines such as 0.5pt survive.
-  if (t.borderWidthPx > 0) {
+  if (t.strokes) {
+    // Booktabs (#625): the layout's strokes, each its own (fractional) width.
+    for (const s of t.strokes) drawLinePx(ctx, bx + s.x1, by + s.y1, bx + s.x2, by + s.y2, borderColor, s.widthPx);
+  } else if (t.borderWidthPx > 0) {
     const rules = t.rules ?? 'grid';
     const bw = t.borderWidthPx;
     if (rules === 'outer') {

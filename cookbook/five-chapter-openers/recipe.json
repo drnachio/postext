@@ -9,7 +9,7 @@
   "genres": ["any"],
   "outputs": ["canvas"],
   "features": {
-    "primary": ["heading-styles", "section-geometry", "drop-caps"],
+    "primary": ["heading-styles", "section-geometry", "body-drop-caps"],
     "also": [
       "section-running-heads", "opener-design", "part-palettes", "unnumbered-headings",
       "opener-band", "design-elements", "design-images", "heading-attributes", "bleed-bands",
@@ -18,9 +18,9 @@
     ]
   },
   "answers": ["Q29", "Q28", "Q27", "Q33"],
-  "gaps": ["body-drop-cap", "rotated-text"],
+  "gaps": ["rotated-text"],
   "gotchas": [
-    "attr-values", "drop-cap-palette", "palette-skips-designs", "headings-drop-h1-break",
+    "attr-values", "palette-skips-designs", "headings-drop-h1-break",
     "overflow-ellipsis-default", "design-lineheight-multiple", "config-cache-identity", "fonts-first",
     "hyphenation-locales"
   ],
@@ -31,16 +31,12 @@
     "photo-essay-full-bleed"
   ],
   "workarounds": [
-    { "followup": "EF-107", "package": "postext", "note": "a heading style's palette recolours the design elements of its pages but not dropCap.color, so the framed chapter's initial names the frame's blue, col('lapis'), and the coda's names col('graphite'), instead of 'accent' (gotcha drop-cap-palette)" },
-    { "followup": "EF-108", "package": "postext", "note": "a drop cap that spans every line of its design text counts its whole line box in the opener's reserved height, 0.24 × its size below the last baseline it spans (3.5 mm past chapter three's lead), so the stacked field ends at 130 mm, where that overhang costs the text no extra grid line (at 134 mm it did; gotcha drop-cap-extra-line)" },
     { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside the paletteId, because 1.4.1 paints design elements from the hex (gotcha palette-skips-designs); the style palettes still swap 'accent' on their own pages" },
-    { "followup": "EF-56", "package": "postext", "note": "every design text's lineHeight is a multiple of its size (the lead's 17/12, the coda's 17.5/12.5), never pt(): a Dimension would drop the opener's reservation (gotcha design-lineheight-multiple)" },
     { "followup": "EF-59", "package": "postext", "note": "the spec badge prints {chapterNumber} in an H1 opener without a numberingTemplate, measured empty but painted as the ordinal; harmless here, because an empty design text still takes one line box and the hairline below the badge sets the reservation" },
     { "followup": "EF-05", "package": "postext", "note": "any headings object drops the level's default odd break; span 'page' still opens every chapter on a new page, so levels[0].breakBefore is restated with parity 'any' to state the side on purpose (the hook for the 'odd' Variation), and the styles inherit it" },
-    { "followup": "EF-14", "package": "postext", "note": "hyphenation matches exact codes only, so the config sets locale: t({ en: 'en-us', es: 'es' }) (gotcha hyphenation-locales)" },
-    { "followup": "EF-127", "package": "postext", "note": "dropSize() gives every initial an explicit fontSize: without one a dropCap is set at lines × lineHeight / 0.72, as tall as all its line boxes, so a five-line capital rises about 2.2 mm above the first line's capitals" }
+    { "followup": "EF-14", "package": "postext", "note": "hyphenation matches exact codes only, so the config sets locale: t({ en: 'en-us', es: 'es' }) (gotcha hyphenation-locales)" }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.23.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -68,5 +64,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-28"
+  "updated": "2026-10-09"
 }

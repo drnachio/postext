@@ -23,25 +23,22 @@ Set in Spectral, Gloock and Hanken Grotesk (SIL Open Font License). The essays a
 
 One of the pleasantest things in the world is going a journey; but I like to go by myself. I can enjoy society in a room; but out of doors, nature is company enough for me. I am then never less alone than when alone.
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 *The fields his study, nature was his book.*
 :::
 
 I cannot see the wit of walking and talking at the same time. When I am in the country I wish to vegetate like the country. I am not for criticising hedge-rows and black cattle. I go out of town in order to forget the town and all that is in it. There are those who for this purpose go to watering-places, and carry the metropolis with them. I like more elbow-room and fewer encumbrances. I like solitude, when I give myself up to it, for the sake of solitude; nor do I ask for
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 *A friend in my retreat,*
-
 *Whom I may whisper solitude is sweet.*
 :::
 
 The soul of a journey is liberty, perfect liberty, to think, feel, do, just as one pleases. We go a journey chiefly to be free of all impediments and of all inconveniences; to leave ourselves behind much more to get rid of others. It is because I want a little breathing-space to muse on indifferent matters, where Contemplation
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 *May plume her feathers and let grow her wings,*
-
 *That in the various bustle of resort*
-
 *Were all too ruffled, and sometimes impair’d,*
 :::
 

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "haiku-and-tanka",
-  "sourceHash": "b8e15956e93e2e8755994f9b1a79a5706e9f88eca370df8d0c79789847da6112",
+  "sourceHash": "47f6f39ce13fa46e94c7c54a80cef678d0ad4a075abc9d3e0b3c64a3c541c3b4",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.23.0",
+    "postextPdf": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.995Z",
+  "capturedAt": "2026-10-09T18:24:37.835Z",
   "variants": {
     "en": {
-      "hash8": "2f5fd74c",
-      "vdtHash": "dd665adf477343b4015910b2dfe3e4e9e458f551",
+      "hash8": "72bab16b",
+      "vdtHash": "ce39168b13414f54a299bebc7a5239ed507221e5",
       "timings": {
-        "importMs": 215,
-        "fontsMs": 313,
-        "buildMs": 61,
-        "totalMs": 1171,
+        "importMs": 29962,
+        "fontsMs": 2416,
+        "buildMs": 148,
+        "totalMs": 37204,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Shippori Mincho"
         ],
         "pages": 8,
-        "ownLines": 149
+        "ownLines": 152
       },
       "pages": [
         {
@@ -104,7 +104,7 @@
           "h": 1480,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 22062,
+          "bytes": 21834,
           "alt": "Page 六."
         },
         {
@@ -115,7 +115,7 @@
           "h": 1480,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 20464,
+          "bytes": 20834,
           "alt": "Page 七."
         },
         {
@@ -167,12 +167,12 @@
       },
       "pdf": {
         "file": "haiku-and-tanka.pdf",
-        "bytes": 222011,
+        "bytes": 221323,
         "pages": 8
       },
       "sandbox": {
         "file": "haiku-and-tanka.postext",
-        "bytes": 17865,
+        "bytes": 17722,
         "folio": "7e0edbf5"
       },
       "detected": {
@@ -196,23 +196,6 @@
           "bodyText.lineHeight",
           "bodyText.referenceColor",
           "bodyText.textAlign",
-          "calloutStyles",
-          "calloutStyles[].backgroundEnabled",
-          "calloutStyles[].body",
-          "calloutStyles[].body.color",
-          "calloutStyles[].body.firstLineIndent",
-          "calloutStyles[].body.fontFamily",
-          "calloutStyles[].body.fontSize",
-          "calloutStyles[].body.lineHeight",
-          "calloutStyles[].id",
-          "calloutStyles[].keepTogether",
-          "calloutStyles[].marginBottom",
-          "calloutStyles[].marginTop",
-          "calloutStyles[].padding",
-          "calloutStyles[].padding.bottom",
-          "calloutStyles[].padding.left",
-          "calloutStyles[].padding.right",
-          "calloutStyles[].padding.top",
           "cjk",
           "cjk.grid",
           "cjk.grid.charsPerLine",
@@ -285,7 +268,6 @@
         ],
         "configSections": [
           "bodyText",
-          "calloutStyles",
           "cjk",
           "colorPalette",
           "footer",
@@ -297,11 +279,11 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 190,
+        "configLeaves": 175,
         "designElements": 8,
         "directives": [
           ":::paragraphs",
-          ":::callout"
+          ":::verse"
         ],
         "inline": [
           "{attrs}"
@@ -329,8 +311,6 @@
           }
         ],
         "features": [
-          "callout-splitting",
-          "callout-styles",
           "character-grid",
           "cjk-line-breaking",
           "furigana",
@@ -347,6 +327,7 @@
           "roman-front-matter",
           "ruby",
           "section-running-heads",
+          "verse",
           "vertical-writing"
         ],
         "suggestedLevel": 2
@@ -368,13 +349,13 @@
       }
     },
     "es": {
-      "hash8": "37f80a3f",
-      "vdtHash": "bd8892e326a453bb715b186c1d64f935a83d4b61",
+      "hash8": "46bb8598",
+      "vdtHash": "1354e2318a2f7dceeb5cf30eb53f854430c494a0",
       "timings": {
-        "importMs": 207,
-        "fontsMs": 302,
-        "buildMs": 59,
-        "totalMs": 1142,
+        "importMs": 29916,
+        "fontsMs": 278,
+        "buildMs": 55,
+        "totalMs": 30869,
         "builds": 1
       },
       "specimen": {
@@ -395,7 +376,7 @@
           "Shippori Mincho"
         ],
         "pages": 8,
-        "ownLines": 149
+        "ownLines": 152
       },
       "pages": [
         {
@@ -461,7 +442,7 @@
           "h": 1480,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 22062,
+          "bytes": 21834,
           "alt": "Página 六."
         },
         {
@@ -472,7 +453,7 @@
           "h": 1480,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 20464,
+          "bytes": 20834,
           "alt": "Página 七."
         },
         {
@@ -524,12 +505,12 @@
       },
       "pdf": {
         "file": "haiku-and-tanka.pdf",
-        "bytes": 222035,
+        "bytes": 221341,
         "pages": 8
       },
       "sandbox": {
         "file": "haiku-and-tanka.postext",
-        "bytes": 17853,
+        "bytes": 17714,
         "folio": "7e0edbf5"
       },
       "detected": {
@@ -553,23 +534,6 @@
           "bodyText.lineHeight",
           "bodyText.referenceColor",
           "bodyText.textAlign",
-          "calloutStyles",
-          "calloutStyles[].backgroundEnabled",
-          "calloutStyles[].body",
-          "calloutStyles[].body.color",
-          "calloutStyles[].body.firstLineIndent",
-          "calloutStyles[].body.fontFamily",
-          "calloutStyles[].body.fontSize",
-          "calloutStyles[].body.lineHeight",
-          "calloutStyles[].id",
-          "calloutStyles[].keepTogether",
-          "calloutStyles[].marginBottom",
-          "calloutStyles[].marginTop",
-          "calloutStyles[].padding",
-          "calloutStyles[].padding.bottom",
-          "calloutStyles[].padding.left",
-          "calloutStyles[].padding.right",
-          "calloutStyles[].padding.top",
           "cjk",
           "cjk.grid",
           "cjk.grid.charsPerLine",
@@ -642,7 +606,6 @@
         ],
         "configSections": [
           "bodyText",
-          "calloutStyles",
           "cjk",
           "colorPalette",
           "footer",
@@ -654,11 +617,11 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 190,
+        "configLeaves": 175,
         "designElements": 8,
         "directives": [
           ":::paragraphs",
-          ":::callout"
+          ":::verse"
         ],
         "inline": [
           "{attrs}"
@@ -686,8 +649,6 @@
           }
         ],
         "features": [
-          "callout-splitting",
-          "callout-styles",
           "character-grid",
           "cjk-line-breaking",
           "furigana",
@@ -704,6 +665,7 @@
           "roman-front-matter",
           "ruby",
           "section-running-heads",
+          "verse",
           "vertical-writing"
         ],
         "suggestedLevel": 2

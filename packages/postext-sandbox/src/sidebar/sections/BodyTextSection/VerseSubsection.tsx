@@ -2,7 +2,7 @@
 
 import { DEFAULT_VERSE_CONFIG, dimensionsEqual } from 'postext';
 import type { BodyTextConfig, ResolvedBodyTextConfig, VerseConfig } from 'postext';
-import { CollapsibleSection, DimensionInput, NumberInput, SelectInput, TextInput } from '../../../controls';
+import { CollapsibleSection, DimensionInput, NumberInput, SelectInput, TextInput, ToggleSwitch } from '../../../controls';
 import type { useSandboxLabels } from '../../../context/SandboxContext';
 import { INDENT_UNITS } from './constants';
 
@@ -111,6 +111,14 @@ export function VerseSubsection({ bodyText, raw, updateBodyText, labels }: Props
         tooltip={labels.bodyVerseKeepStanzasTooltip}
         isDefault={verse.keepStanzas === D.keepStanzas}
         onReset={() => reset('keepStanzas')}
+      />
+      <ToggleSwitch
+        label={labels.bodyVerseTighten}
+        checked={verse.tighten}
+        onChange={(tighten) => update({ tighten })}
+        tooltip={labels.bodyVerseTightenTooltip}
+        isDefault={verse.tighten === D.tighten}
+        onReset={() => reset('tighten')}
       />
     </CollapsibleSection>
   );

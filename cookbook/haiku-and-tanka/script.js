@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 119 · Haiku and tanka set vertically ═══════════════════
 // https://postext.dev/en/cookbook/haiku-and-tanka
 // Code: MIT · Text: 芭蕉『おくのほそ道』, 啄木『一握の砂』, Aozora Bunko (PD) · Pictures: none
-// Fonts: Shippori Mincho, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Shippori Mincho, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.23.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
@@ -30,12 +30,13 @@ const [BODY, LEAD, CHARS, LINES] = [10, 19, 36, 14]; // pt, pt: 36字 × 14行, 
 const lines = (n) => pt(n * LEAD);
 
 // #region answer: a haiku on one line three characters down, a tanka in three, 地付き names
-// Each line of verse is a paragraph of its own, so a style sets where it starts. A haiku
-// stands three characters down from the head of the line; Takuboku's tanka keep his three
-// lines, two down; 曾良 signs his haiku raised five characters from the foot (地から五字上げ).
+// A haiku is a paragraph of one line, so a style sets where it starts: three characters down
+// from the head of the line. Takuboku's tanka keep his three lines in a :::verse block, two
+// down; 曾良 signs his haiku raised five characters from the foot (地から五字上げ).
 const paragraphStyles = [
   { id: 'haiku', indent: em(3), firstLineIndent: em(0), marginTop: pt(0), marginBottom: pt(0) },
-  { id: 'tanka', indent: em(2), firstLineIndent: em(0), marginTop: pt(0), marginBottom: pt(0) },
+  // A poem's style gives its indent and the space under the poem: one blank line.
+  { id: 'tanka', indent: em(2), marginTop: pt(0), marginBottom: pt(LEAD) },
   { id: 'by', textAlign: 'end', endIndent: em(5), firstLineIndent: em(0) },
   // The ornament between groups of poems, in the middle of its line.
   { id: 'ornament', textAlign: 'center', firstLineIndent: em(0), color: col('persimmon') },
@@ -45,16 +46,19 @@ const paragraphStyles = [
 //   :::                                :::
 // #endregion
 
-// #region tanka: a box with nothing drawn round it keeps each tanka on one page
-// Postext has no hard line break and never keeps one paragraph with the next, so each tanka
-// sits in a box with nothing drawn round it: a box moves on whole (keepTogether, its
-// default), and a tanka is never cut at the foot of a page. One blank line follows each.
-//   :::callout{type="tanka"}  :::paragraphs{style="tanka"} … three lines …  :::  :::
-const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: true,
-  padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) },
-  marginTop: pt(0), marginBottom: pt(LEAD),
-  body: { fontFamily: MINCHO, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
-    firstLineIndent: em(0) } }];
+// #region tanka: a stanza a tanka, each kept on one page
+// The tanka of a group are one :::verse block, each a stanza of three lines with a blank
+// line between: a line of verse a line of Markdown, one blank line of the grid between two
+// tanka. keepStanzas=3 keeps a stanza of three lines whole, so a tanka is never cut at the
+// foot of a page: it moves on to the next.
+//   :::verse{style="tanka" keepStanzas=3}
+//   東海の小島の磯の白砂に
+//   われ泣きぬれて
+//   蟹とたはむる
+//
+//   頬につたふ
+//   …
+//   :::
 // #endregion
 
 // #region places: the place names take two lines, spaced to three characters
@@ -131,7 +135,6 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: { fontFamily: MINCHO, color: col('ink'), levels: [part, place] },
   headingStyles: [first],
   paragraphStyles,
-  calloutStyles,
   header,
   footer: none,
 });

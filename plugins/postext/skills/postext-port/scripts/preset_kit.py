@@ -57,8 +57,11 @@ from typing import Any
 # :::paragraphs containers pinned to 1.4. A manifest stamped 8 (postext 1.5
 # to 1.22) gets the rules-9 pins: a :::verse poem with no separator as
 # centred hemistichs, a first-line indent dropped from a style that hangs, a
-# backslash ending a line printed. An engine older than 1.23 reads 9 as 8.
-CONFIG_VERSION = 9
+# backslash ending a line printed. A manifest stamped 9 (postext 1.23) gets
+# the rules-10 pin: a line of verse a little too wide turns over instead of
+# tightening its word spaces. An engine older than 1.23 reads 9 as 8, one
+# older than 1.24 reads 10 as 9.
+CONFIG_VERSION = 10
 
 # ---------------------------------------------------------------------------
 # primitives
@@ -121,16 +124,19 @@ def place(anchor: str = "page", edge: str = "top-left", x: float = 0, y: float =
 
 def text_el(id_: str, content: str, placement: dict, *, font: str, size: float, weight: int = 400,
             italic: bool = False, fill: dict | None = None, align: str = "left", valign: str = "top",
-            overflow: str = "ellipsis-end", line_height: float | None = None, uppercase: bool = False,
+            overflow: str | None = None, line_height: float | None = None, uppercase: bool = False,
             letter_spacing: float | None = None, parity: str | None = None, pages: str | None = None,
             **extra) -> dict:
     """Design text element. `content` is a template: {pageNumber}, {chapterTitle},
     {chapterNumber}, {partTitle}, {partNumber}, {title}, {titleText}, {number},
     {attr.<key>}… Set every typographic field: element defaults are not the
-    body's."""
+    body's. `overflow` left out follows the slot (postext ≥ 1.24): a heading
+    or part design wraps, a running head, folio or contents row ends in `…`."""
     el = {"kind": "text", "id": id_, "placement": placement, "content": content,
           "fontFamily": font, "fontSize": pt(size), "fontWeight": weight, "italic": italic,
-          "color": fill or color("#000000"), "align": align, "verticalAlign": valign, "overflow": overflow}
+          "color": fill or color("#000000"), "align": align, "verticalAlign": valign}
+    if overflow:
+        el["overflow"] = overflow
     if line_height:
         el["lineHeight"] = line_height
     if uppercase:
@@ -249,15 +255,18 @@ def _picture_marks(r: dict, safe_area: dict | None, anchors: list | None, avoid:
 def bitmap(project: Path | str, id_: str, file: str, caption: str = "", *, type_id: str = "figure",
            alt: str | None = None, note: str | None = None, position: str | None = None,
            span: str | None = None, safe_area: dict | None = None, anchors: list | None = None,
-           avoid: list | None = None, **placement) -> dict:
+           avoid: list | None = None, resolution: float | None = None, **placement) -> dict:
     """A bitmap resource with its pixel size (Node renderers cannot decode it).
-    A comic panel picture takes `safe_area`, `anchors` and `avoid`
-    (references/comics.md §9)."""
+    `resolution` (postext >= 1.24) is its ppi at its natural print size, on a
+    page of any dpi. A comic panel picture takes `safe_area`, `anchors` and
+    `avoid` (references/comics.md §9)."""
     size = image_size(Path(project) / file)
     r = {"id": id_, "typeId": type_id, "kind": "bitmap", "file": file, "caption": caption,
          "altText": alt if alt is not None else re.sub(r"[*_^~]", "", caption)}
     if size:
         r["width"], r["height"] = size
+    if resolution:
+        r["resolution"] = resolution
     _picture_marks(r, safe_area, anchors, avoid)
     if note:
         r["note"] = note
@@ -532,7 +541,7 @@ def resources() -> list:
 def main() -> None:
     primary = LANGS[0]
     manifest = {{
-        "version": 2, "configVersion": 9, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
+        "version": 2, "configVersion": 10, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
         "view": {{"canvasScope": "book"}},
         "chapters": {{lang: chapters_from_dir(HERE, lang) for lang in LANGS}},
         "config": config(primary),

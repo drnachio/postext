@@ -12,6 +12,7 @@ import {
   mirroredFlowFrame,
   verticalFlowFrame,
 } from '../vdt';
+import { settleColumnWraps } from './textWrap';
 import type { HeadingBreakParity } from '../types';
 import { computeColumnBboxes, hasFloatSideColumn } from './config';
 import { contentAreaForPage, flowPageMirrored, mirrorContentArea, pageMirrored, sheetRectToFlow, widthLessEndIndent, type PageMetrics } from './buildHelpers';
@@ -368,6 +369,11 @@ export function advanceToNextColumn(
   onNewPage?: (page: VDTPage) => void,
 ): void {
   const page = doc.pages[cursor.pageIndex]!;
+  // The column the flow leaves keeps the room of what text wrapped round
+  // in it (#627): it ends under the picture, or at the top of one at its
+  // foot.
+  const leaving = page.columns[cursor.columnIndex];
+  if (leaving) settleColumnWraps(leaving);
   // The flow skips float-only side columns: they never take body text.
   let next = cursor.columnIndex + 1;
   while (next < page.columns.length && page.columns[next]!.kind === 'side') next++;

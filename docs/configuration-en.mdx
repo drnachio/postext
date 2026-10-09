@@ -117,7 +117,7 @@ The `page` property controls the physical dimensions and appearance of the page.
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>The pixels per inch the layout works in: how physical units (cm, mm, in, pt) become its pixels. It is not the resolution of pictures, but a bitmap set at its own size takes one layout pixel per image pixel, so it prints at this many ppi: keep 300 for print. The [preflight](#preflight) checks each picture's effective resolution.</td>
+      <td>The pixels per inch the layout works in: how physical units (cm, mm, in, pt) become its pixels. A bitmap without a resolution of its own takes one layout pixel per image pixel, so it prints at this many ppi: keep 300 for print, or give the pictures a resolution (<code>Resource.bitmap.resolution</code>, <code>layout.bitmapResolution</code>; see [Document format › Bitmap size](/en/docs/document-format#bitmap-size)). The [preflight](#preflight) checks each picture's effective resolution.</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -460,6 +460,24 @@ The `layout` property controls how columns are arranged within the content area.
       <td>Shrink a figure (bitmap or SVG) whose image, caption and note would stand taller than the content area until they fit it (a picture with a safe area, <code>Resource.safeArea</code>, is first cropped within it at its full width, and only shrunk if it still does not fit), and set an inline figure a little too tall for the room left in its column smaller (down to half its width, the caption keeping the column's measure) so it stays with its text. A shrunk image sits in its slot per <code>placement.align</code>. The HTML viewer turns it on, since its pages are only as tall as the screen; printed pages are sized for their figures.</td>
     </tr>
     <tr>
+      <td><code>bitmapResolution</code></td>
+      <td><code>'document' | 'file' | number</code></td>
+      <td><code>'document'</code></td>
+      <td>How a bitmap without its own <code>bitmap.resolution</code> takes its natural print size. <code>'document'</code> reads its pixels at <code>page.dpi</code>; a number is the ppi of every such bitmap (<code>300</code>: a 2400 px picture is 203.2 mm wide whatever the page's dpi); <code>'file'</code> uses the resolution its file states (<code>bitmap.fileResolution</code>), 72 and 96 counting as unset, else <code>page.dpi</code>. The column still caps the picture, and a smaller one is never enlarged. See <a href="/en/docs/document-format#bitmap-size">Document format › Bitmap size</a>. Since postext 1.24.</td>
+    </tr>
+    <tr>
+      <td><code>floatShrink</code></td>
+      <td><code>FloatShrinkConfig</code></td>
+      <td><code>mode: 'never'</code></td>
+      <td>The document default for a floated picture's <code>placement.shrink</code> (<code>mode</code>: <code>'never'</code>, <code>'page'</code> or <code>'slot'</code>) and <code>placement.minScale</code> (<code>minScale</code>, 0.7 when unset): scale the picture down, keeping its proportions, to the room of its slot instead of moving it on (see <a href="/en/docs/document-format#placement">Document format › Placement</a>). A resource's placement, then its type's <code>defaultPlacement</code>, override it. <code>fitFiguresToPage</code> caps every figure at the content area; <code>floatShrink</code> looks at the band a float would really take, under an opener, beside other floats or over footnotes. Since postext 1.24.</td>
+    </tr>
+    <tr>
+      <td><code>wrap</code></td>
+      <td><code>TextWrapConfig</code></td>
+      <td><code>minTextWidth: 12em</code>, <code>minLinesBeside: 2</code>, <code>defaultWidth: 0.45</code></td>
+      <td>Text running beside a picture or a box narrower than its column (<code>placement.wrap</code>, a box's <code>wrap</code>): <code>gap</code>, the space between the item and the text (one body line when unset); <code>minTextWidth</code>, the narrowest measure the text beside it may take, a length or a share of the column (narrower: the item takes its band whole, with a <code>textWrap</code> warning); <code>minLinesBeside</code>, the fewest lines worth setting beside it; <code>defaultWidth</code>, the share of the column a wrapped item takes when it sets no <code>width</code>. See <a href="/en/docs/document-format#text-wrap">Document format › Text wrap</a>. Since postext 1.24.</td>
+    </tr>
+    <tr>
       <td><code>hugClosingFloats</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -686,8 +704,8 @@ The defaults in the table below are those of a text element you add yourself. Th
     <tr>
       <td><code>overflow</code></td>
       <td><code>'wrap' | 'ellipsis-start' | 'ellipsis-middle' | 'ellipsis-end' | 'clip'</code></td>
-      <td><code>'ellipsis-end'</code></td>
-      <td>How the engine handles text that exceeds the element's available width. <code>'wrap'</code> breaks the line into multiple lines; the ellipsis variants keep each line on one line and truncate it with <code>…</code> at the start, middle, or end; <code>'clip'</code> hard-clips to the element's bounding box without inserting any character. Line breaks in the content apply in every mode: the ellipsis and clip modes truncate or clip each line on its own. An element that leaves <code>overflow</code> out gets <code>'ellipsis-end'</code>, so set <code>'wrap'</code> for anything that may run to several lines (an address, a long title). A text with a <code>dropCap</code> wraps whatever this says; with <code>'clip'</code> its lines are still cut at the edge of a box of fixed height. <code>'ellipsis-end'</code> and <code>'ellipsis-start'</code> cut at a word boundary — <em>The history of…</em>, not <em>The history of th…</em> — and no space or joining punctuation (comma, colon, dash, slash, opening bracket) touches the ellipsis. A word is cut where it must only when the boundary, that punctuation dropped, would keep less than half of what fits: one long word, or a URL (<em>http://exampl…</em>, not <em>http…</em>). A no-break space or a no-break hyphen (U+2011, as in <em>MS‑DOS</em>) is not a word boundary; <code>'ellipsis-middle'</code> cuts anywhere but drops the spaces beside it. Up to postext 1.4 every mode cut at the last character that fitted, spaces included.</td>
+      <td><code>'wrap'</code> in heading and part designs, else <code>'ellipsis-end'</code></td>
+      <td>How the engine handles text that exceeds the element's available width. <code>'wrap'</code> breaks the line into multiple lines; the ellipsis variants keep each line on one line and truncate it with <code>…</code> at the start, middle, or end; <code>'clip'</code> hard-clips to the element's bounding box without inserting any character. Line breaks in the content apply in every mode: the ellipsis and clip modes truncate or clip each line on its own. An element that leaves <code>overflow</code> out takes its slot's default: in a heading design (<code>advancedDesign.slot</code>) or on a part page (<code>parts.design</code>, <code>parts.versoDesign</code>) it wraps, in a running head, a folio or a contents part row (<code>toc.parts.design</code>, a row of fixed height) it ends in <code>…</code>. Set <code>'wrap'</code> on a running head that may run to several lines (an address), or an ellipsis on a kicker that must stay on one line in an opener. A line cut by an ellipsis, or clipped with ink past the box, is reported as a <code>designTextTruncated</code> content warning, once per element and page (a running head or a folio once per element and chapter). A configuration stored before postext 1.24 (<code>configVersion</code> 9 or older) is read with <code>'ellipsis-end'</code> on every heading and part text that sets none, so its pages do not move. A text with a <code>dropCap</code> wraps whatever this says; with <code>'clip'</code> its lines are still cut at the edge of a box of fixed height. <code>'ellipsis-end'</code> and <code>'ellipsis-start'</code> cut at a word boundary — <em>The history of…</em>, not <em>The history of th…</em> — and no space or joining punctuation (comma, colon, dash, slash, opening bracket) touches the ellipsis. A word is cut where it must only when the boundary, that punctuation dropped, would keep less than half of what fits: one long word, or a URL (<em>http://exampl…</em>, not <em>http…</em>). A no-break space or a no-break hyphen (U+2011, as in <em>MS‑DOS</em>) is not a word boundary; <code>'ellipsis-middle'</code> cuts anywhere but drops the spaces beside it. Up to postext 1.4 every mode cut at the last character that fitted, spaces included.</td>
     </tr>
     <tr>
       <td><code>verticalAlign</code></td>
@@ -908,7 +926,7 @@ In the PDF, bold and italic runs embed the matching faces of the element's famil
 
 A text element you write yourself starts from these values, some of which surprise:
 
-- **`overflow` is `'ellipsis-end'`.** A text too wide for its room is cut to one line with `…`. Set `overflow: 'wrap'` for an address, a byline or any title that may run long. A line break in the content (a newline, or `\n` in the template or in an attribute value) starts a new line in every mode; the ellipsis modes cut each line on its own.
+- **`overflow` follows the slot.** In a heading design or on a part page a long title wraps onto more lines; in a running head, a folio or a contents part row a text too wide for its room is cut to one line with `…`. Set `overflow: 'wrap'` on a running head that may run long (an address, a byline), and look at the `designTextTruncated` warnings for the texts that were cut. A line break in the content (a newline, or `\n` in the template or in an attribute value) starts a new line in every mode; the ellipsis modes cut each line on its own.
 - **`align` is `'center'` and `verticalAlign` is `'middle'`.** An auto-width element shrink-wraps its longest line, so its lines are centred against one another; set `align: 'left'` for a flush-left block (an auto-width element anchored to another element aligns its lines on the side of its anchor by itself, see above).
 - **The face is EB Garamond 8 pt, black, `lineHeight` 1.2**, whatever the body text uses. Unlike the other leadings of the configuration, a design text's `lineHeight` is usually a plain multiple (`1.2`); a `Dimension` works too (see above).
 
@@ -1593,6 +1611,12 @@ A `:::verse` poem whose lines carry no hemistich separator is set line by line (
       <td><code>0</code></td>
       <td>Keep any stanza of this many lines of verse or fewer whole in one column. <code>0</code> is off.</td>
     </tr>
+    <tr>
+      <td><code>tighten</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Tighten the word spaces of a line a little wider than the measure, down to <code>bodyText.minWordSpacing</code> of their natural width, and keep it on one line; only a line still too wide turns over. Letters are never tracked for it. <code>false</code> turns every line wider than the measure over, as postext 1.23 did. The reflowable EPUB, whose lines the reading system breaks, does not tighten.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1603,7 +1627,7 @@ bodyText: {
 }
 ```
 
-A configuration stored before these settings (`configVersion` 8 or older) that lays out a poem with no separator is read with `layout: 'bayt'`, so the poem keeps the centred lines postext 1.22 gave it.
+A configuration stored before these settings (`configVersion` 8 or older) that lays out a poem with no separator is read with `layout: 'bayt'`, so the poem keeps the centred lines postext 1.22 gave it. One stored by postext 1.23 (`configVersion` 9) that lays out a poem line by line is read with `tighten: false`, so its lines turn over where 1.23 turned them.
 
 In the Sandbox these are the **Verse** group of the Body text section.
 
@@ -2503,6 +2527,12 @@ Per-level overrides support the same properties as the general defaults — `fon
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
       <td>Indent of the heading from the line start (字下げ), <code>em</code> being the <strong>body</strong> size, as Japanese books count heading indents in body characters (JLReq §4.1.3): <code>&#123; value: 6, unit: 'em' &#125;</code> is 6字下げ whatever the heading's size. The measure narrows by it, and a centred heading centres in the rest. Since postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Indent of the heading's first line only, measured from <code>indent</code> and, like it, in <strong>body</strong> ems: the lines a long heading wraps onto start at <code>indent</code> (at the line start when it is unset), as GB/T 9704 sets every level of head two cells in with its turnover at the margin: <code>&#123; value: 2, unit: 'em' &#125;</code>. With <code>cjk.grid</code> on, two body ems are two cells of the grid. A numbered heading prints its number after the indent, so the numbering template needs no ideographic spaces, which would also print in the contents and the PDF bookmarks. It works in vertical text (from the top of the line), with the CJK composer (an opening bracket at the start of the heading follows the line-start rules, as in a paragraph) and with Knuth–Plass. A centred heading takes it as a centred paragraph does: its first line centres in the room after the indent. <code>&#123;firstLineIndent=N&#125;</code> after a heading's title sets one heading, and <code>&#123;firstLineIndent=0&#125;</code> takes its level's off. Since postext 1.24.</td>
     </tr>
     <tr>
       <td><code>jidori</code></td>
@@ -4351,6 +4381,8 @@ interface ResourcePlacement {
   align?: 'left' | 'center' | 'right';           // where a float narrower than its column sits; default 'left'
   captionSide?: boolean;                         // caption beside the figure, in the side column of a oneAndHalf layout (column floats only)
   columns?: number;                              // a 'column' float across this many adjacent columns (since 1.18)
+  wrap?: 'none' | 'left' | 'right' | 'start' | 'end'; // text beside the resource, at that side of its column (since 1.24)
+  wrapGap?: Dimension;                           // space between the wrapped resource and the text (since 1.24)
 }
 
 interface ResourceType {
@@ -4366,7 +4398,7 @@ interface ResourceType {
 }
 ```
 
-`ResourcePlacement` is the same shape a resource sets on its own `placement`. `position` picks the kind of free slot a float may take — `auto` (the default) takes the first one after the first reference, `top` / `bottom` restrict it to that kind of band, `here` embeds the resource inline. `span` sets the float's extent: one column, the full content width, or the float-only side column of a column-and-a-half layout. `rotate` turns the resource a quarter turn and makes it a page-span float on a page of its own. `width` narrows a float to a fraction of its column (or of the page for a page-span float) — a small table in a wide column, say. `align` says where such a narrower float sits — left by default, centre or right — and where a picture narrower than its slot sits in it: a bitmap smaller than the column, or an image `layout.fitFiguresToPage` shrank. The caption and the note keep the slot's measure. (Up to postext 1.4 such a picture was always set flush left.) `captionSide` sets the caption beside the figure in the float-only side column of a column-and-a-half layout (`layout.sideColumnRole: 'floats'`), level with the figure's top (its bottom for a bottom float); it applies to column floats only, and a page without such a column keeps the caption under the figure. When neither the resource nor its type sets a placement, the built-in default is `auto` / `column`.
+`ResourcePlacement` is the same shape a resource sets on its own `placement`. `position` picks the kind of free slot a float may take — `auto` (the default) takes the first one after the first reference, `top` / `bottom` restrict it to that kind of band, `here` embeds the resource inline. `span` sets the float's extent: one column, the full content width, or the float-only side column of a column-and-a-half layout. `rotate` turns the resource a quarter turn and makes it a page-span float on a page of its own. `width` narrows a float to a fraction of its column (or of the page for a page-span float) — a small table in a wide column, say. `align` says where such a narrower float sits — left by default, centre or right — and where a picture narrower than its slot sits in it: a bitmap smaller than the column, or an image `layout.fitFiguresToPage` shrank. The caption and the note keep the slot's measure. (Up to postext 1.4 such a picture was always set flush left.) `captionSide` sets the caption beside the figure in the float-only side column of a column-and-a-half layout (`layout.sideColumnRole: 'floats'`), level with the figure's top (its bottom for a bottom float); it applies to column floats only, and a page without such a column keeps the caption under the figure. When neither the resource nor its type sets a placement, the built-in default is `auto` / `column`. `shrink` (`'never'`, `'page'`, `'slot'`) and `minScale` (0.7 when unset) scale a floated picture down to the room of its slot instead of moving it on, and `captionMeasure: 'body'` sets the caption and note of a picture narrower than its slot at the picture's width (see [Document format › Placement](/en/docs/document-format#placement)); `layout.floatShrink` gives the document default for the first two. `wrap` sets an inline embed or a one-column float at one side of its column with the text running beside it, `wrapGap` clear of it; `layout.wrap` holds the defaults (see [Document format › Text wrap](/en/docs/document-format#text-wrap)).
 
 `columns` (since postext 1.18) sets a `span: 'column'` float across that many adjacent columns on a page of several: a picture across two of a newspaper's five columns. Its measure is those columns and the gutters between them. It takes the head of a run of empty columns that start level, or the foot of the column that cites it and of the empty columns after it; as many columns as the page has, or more, make it a page-span float. It is ignored by `'page'` and `'side'` spans, by a turned resource (`rotate`) and by an inline (`here`) embed, and `captionSide` applies only to a float one column wide.
 
@@ -4640,7 +4672,7 @@ const config: PostextConfig = {
       <td><code>borderWidth</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75pt</code></td>
-      <td>Border stroke width (≈1px at 96 DPI; scales with page DPI).</td>
+      <td>Border stroke width (≈1px at 96 DPI; scales with page DPI). Not used by <code>'booktabs'</code>, which has widths of its own.</td>
     </tr>
     <tr>
       <td><code>cellPadding</code></td>
@@ -4650,15 +4682,57 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>rules</code></td>
-      <td><code>'grid' | 'horizontal' | 'outer' | 'none'</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'</code></td>
       <td><code>'grid'</code></td>
-      <td>Which rules to stroke when <code>borders</code> is on: the full cell grid, horizontal rules only (top and bottom edge of every row, no verticals), the outer frame only, or none.</td>
+      <td>Which rules to stroke when <code>borders</code> is on: the full cell grid, horizontal rules only (top and bottom edge of every row, no verticals), the outer frame only, none, or the three rules of a journal table (see <a href="#booktabs-rules">booktabs rules</a>).</td>
     </tr>
     <tr>
       <td><code>borderRadius</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>Corner radius of the table's outer frame. The frame is stroked round (with <code>grid</code> or <code>outer</code> rules), the cell fills and the header background are clipped to it — also with <code>rules: 'none'</code> or borders off — and horizontal rules are trimmed to its outer contour; the inner rules stay straight. A table split across pages rounds the top corners of its first part and the bottom corners of its last. Clamped to half the table's width and height.</td>
+      <td>Corner radius of the table's outer frame. The frame is stroked round (with <code>grid</code> or <code>outer</code> rules), the cell fills and the header background are clipped to it — also with <code>rules: 'none'</code> or borders off — and horizontal rules are trimmed to its outer contour; the inner rules stay straight. A table split across pages rounds the top corners of its first part and the bottom corners of its last. Clamped to half the table's width and height. <code>'booktabs'</code> rules stay straight (the fills are still clipped).</td>
+    </tr>
+    <tr>
+      <td><code>heavyRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Booktabs: the rules above the table and under its last row. An <code>em</code> is the body cell size.</td>
+    </tr>
+    <tr>
+      <td><code>lightRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Booktabs: the rule under the header rows, and the group rules.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.03em</code></td>
+      <td>Booktabs: the rules under header cells that span several columns.</td>
+    </tr>
+    <tr>
+      <td><code>spanRules</code></td>
+      <td><code>'trimmed' | 'full' | 'none'</code></td>
+      <td><code>'trimmed'</code></td>
+      <td>Booktabs: the rules under header cells that span several columns, above the last header row: shortened at both ends by <code>spanRuleTrim</code>, across the whole cell, or none.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleTrim</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Booktabs: how much a trimmed span rule is shortened at each end.</td>
+    </tr>
+    <tr>
+      <td><code>groupRules</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Booktabs: a light rule above every body row that heads a group.</td>
+    </tr>
+    <tr>
+      <td><code>continuedFootRule</code></td>
+      <td><code>'bottom' | 'light' | 'none'</code></td>
+      <td><code>'light'</code></td>
+      <td>Booktabs: what closes a part of a split table that goes on overleaf.</td>
     </tr>
     <tr>
       <td><code>overflow</code></td>
@@ -4708,6 +4782,29 @@ Rows are counted from the first row after the header rows (`TableModel.headerRow
 
 In the VDT the cells of the alternate rows carry `alternate: true`, and the table layout carries `bodyAlternateBackground`. `tableCellFill(table, cell)` returns the fill a cell is painted with — its own, the header's, the alternate or the body fill — which is what the canvas, HTML and PDF backends all paint. Neighbouring fills meet without a seam: a browser at a fractional pixel ratio or a PDF viewer anti-aliases each fill on its own and would let the page show through a hairline between two cells, so the HTML and PDF backends paint `tableCellFillRects(table)` — each cell's fill with a strip across every edge it shares with a cell painted after it, which that cell then covers — and the canvas snaps its fills to device pixels.
 
+### Booktabs rules
+
+Journal and textbook tables are usually set with three rules and no vertical lines: a heavy rule above the table, a light one under the header and a heavy one under the last row, with short rules under the heads that group several columns (the LaTeX `booktabs` package: `\toprule`, `\midrule`, `\cmidrule`, `\bottomrule`). `rules: 'booktabs'` draws that pattern:
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    rules: 'booktabs',
+    borderColor: { hex: '#000000', model: 'hex' },
+    headerBackgroundEnabled: false,
+  },
+};
+```
+
+- The rule above the table and the one under its last row are `heavyRuleWidth` thick (`0.08em`), the rule under the header rows `lightRuleWidth` (`0.05em`). A table without header rows has no header rule.
+- A header cell that spans several columns above the last header row gets a rule `spanRuleWidth` thick (`0.03em`) under it. With `spanRules: 'trimmed'` (the default) the rule is shortened by `spanRuleTrim` (`0.5em`) at both ends, so the rules under two neighbouring heads do not touch; `'full'` runs it across the whole cell and `'none'` leaves it out.
+- `groupRules: true` adds a light rule above every body row that heads a group (a single cell across the whole table, or a row of header cells), unless the row opens the table or a page, where the header rule already stands.
+- The widths are resolved against the body cell size (`bodyFontSize`), so a larger header size does not thicken the header rule. A width of `0` drops that rule.
+- The rules take `borderColor` (a palette-linked colour follows the palette and `:::part palette`), and `borders: false` turns them off. `borderWidth` does not apply, nor does `borderRadius`: the rules stay straight, while the cell fills are still clipped to the rounded frame. Header fills, zebra rows and a cell's own `background` work as with the other patterns, under the rules.
+- A table split across pages repeats its header rows on every part, so every part opens with the heavy rule and the header rule. The heavy rule under the last row closes only the last part; a part that goes on overleaf ends with `continuedFootRule`: a light rule (`'light'`, the default), the heavy rule (`'bottom'`) or none (`'none'`).
+
+The layout computes the rules once. The VDT table carries them as `strokes` (`{ x1, y1, x2, y2, widthPx }`, relative to the top-left corner of the table body), and the canvas, the HTML viewer, the PDF and the fixed-layout EPUB stroke exactly those; in a tagged PDF they are layout artifacts. The reflowable EPUB writes them as CSS borders on the table and its header, with the trimmed rules drawn as background lines. In the Sandbox, **Booktabs** in the *Rules* select shows these fields and hides *Border width* and *Corner radius*.
+
 ### Named table styles
 
 A document rarely sets every table alike: a checklist in a navy grid with a rounded frame, an option row boxed by its outer frame only, a data table in plain horizontal rules. `tableStyles` declares named variants, and a table resource picks one with `table.styleId`. Every field a style leaves unset is read from `tableStyle` first and from the body text after that, so a style states only what sets its tables apart. A table without a `styleId`, or with an id no style declares, keeps `tableStyle` — a document without `tableStyles` renders exactly as before.
@@ -4739,11 +4836,11 @@ const resource: Resource = {
 };
 ```
 
-Each entry takes every `tableStyle` field plus `id` (what `table.styleId` references) and an optional `name` for the editor (defaults to the id). Everything a style can set applies per table — typography, fills, borders, rules, corner radius, padding and the overflow behaviour with its continuation strings. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` returns the resolved list, `pickTableStyle(resolved, styleId)` the style a table is set in, and `stripTableStylesDefaults` drops the unset fields (it keeps a field equal to its built-in default, which still overrides a different `tableStyle` value).
+Each entry takes every `tableStyle` field plus `id` (what `table.styleId` references) and an optional `name` for the editor (defaults to the id). Everything a style can set applies per table — typography, fills, borders, rules, corner radius, padding and the overflow behaviour with its continuation strings. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` returns the resolved list, `pickTableStyle(resolved, styleId)` the style a table is set in, and `stripTableStylesDefaults` drops the unset fields (it keeps a field equal to its built-in default, which still overrides a different `tableStyle` value). In a reflowable EPUB a named style is a class on the table (`pt-table-<id>`), styled by the book's stylesheet.
 
 ### Tables taller than the page
 
-A floated table that does not fit the fresh page it is offered is not squeezed or overflowed: with `overflow: 'split'` (the default) the engine cuts it between rows at the last edge that fits the page and continues it on the following pages, as many as it takes. Every continued part repeats the table's header rows (`TableModel.headerRowCount`, or the leading rows made of header cells when it is unset) and carries the caption again with `continuedSuffix` after the description — "Table 6-4. Title *(cont.)*". Every part that goes on gets `continuesMarker` under it, flush right, in the note typeface; the table's note is held back for the last part. A cut never runs through a merged cell (a rowspan moves whole to the next part), and a row that heads the rows below it — a single cell across the whole table — is carried to the next part rather than left stranded at the foot of a page.
+A floated table that does not fit the fresh page it is offered is not squeezed or overflowed: with `overflow: 'split'` (the default) the engine cuts it between rows at the last edge that fits the page and continues it on the following pages, as many as it takes. Every continued part repeats the table's header rows (`TableModel.headerRowCount`, or the leading rows made of header cells when it is unset) and carries the caption again with `continuedSuffix` after the description — "Table 6-4. Title *(cont.)*". Every part that goes on gets `continuesMarker` under it, flush right, in the note typeface; the table's note is held back for the last part. A cut never runs through a merged cell (a rowspan moves whole to the next part), and a row that heads the rows below it — a single cell across the whole table — is carried to the next part rather than left stranded at the foot of a page. A booktabs table closes each part that goes on with `continuedFootRule` (see [booktabs rules](#booktabs-rules)).
 
 **Where the first part ends.** A table offered the head of an empty column after its reference takes the rows that fit there and continues in the next slot. It fills the column to its foot when it has the column to itself: a part that would leave fewer than three body lines under it takes those too, rather than leave a stub of text. When the column already holds another float band — a page-wide figure across the head of the page, say — the part stops at least three body lines short of the foot instead, the room for text any float leaves when it shares a column with another, so the column ends with some text under the table rather than with floats alone. To have a long table run to the foot of its column, cite it where the page it starts on carries no other float (after the page of a page-wide figure, for instance), or fit its rows to the column.
 
@@ -6622,7 +6719,7 @@ const config: PostextConfig = {
       <td>level fields</td>
       <td>as in <code>headings.levels[]</code></td>
       <td>the level's values</td>
-      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: each one set replaces the heading level's value for headings of this style (<code>dropCap: false</code> takes the level's drop cap off). <code>breakBefore</code> merges field by field over the level's: a style that only sets <code>parity</code> keeps the level's <code>enabled</code>, and one that only sets <code>enabled: true</code> keeps its parity (up to postext 1.4, the missing field came from the no-break default instead).</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: each one set replaces the heading level's value for headings of this style (<code>dropCap: false</code> takes the level's drop cap off). <code>breakBefore</code> merges field by field over the level's: a style that only sets <code>parity</code> keeps the level's <code>enabled</code>, and one that only sets <code>enabled: true</code> keeps its parity (up to postext 1.4, the missing field came from the no-break default instead).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>
@@ -8103,7 +8200,7 @@ interface PrintPreflightConfig {
   </thead>
   <tbody>
     <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Run the checks.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>A placed bitmap under this many pixels per inch at its printed size, crop included, gets a warning: figures, table-cell pictures, design images, comic panels. A bitmap set at its own size prints at `page.dpi`, so a page laid out at 150 dpi prints every such picture at 150 ppi.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>A placed bitmap under this many pixels per inch at its printed size, crop included, gets a warning: figures, table-cell pictures, design images, comic panels. A bitmap with no resolution of its own prints at `page.dpi` at its natural size, so a page laid out at 150 dpi prints every such picture at 150 ppi; one with a resolution (`bitmap.resolution`, `layout.bitmapResolution`) prints at that resolution at its natural size.</td></tr>
     <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Under this the warning is critical. Never above `minImageResolution`.</td></tr>
     <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Rules, borders, column rules, table rules and comic panel borders thinner than this.</td></tr>
     <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Text under this size set in more than one ink (a process colour, rich black): it blurs when the plates shift. Black text, K only, never counts.</td></tr>
@@ -8113,10 +8210,10 @@ interface PrintPreflightConfig {
   </tbody>
 </table>
 
-`preflightDocument(doc, options)` runs the checks on a laid-out document and returns a list of issues, each with a `kind`, a `severity` (`'critical'`, `'warning'` or `'info'`), the book-absolute `pageIndex`, the offending `rect` (page px) and, when the element has one, its source range. The kinds are `lowImageResolution`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` and `nearTrim`. Without a `transform` a neutral counts one ink and any other colour three, and coverage is not checked; with one, the counts and the coverage are exact.
+`preflightDocument(doc, options)` runs the checks on a laid-out document and returns a list of issues, each with a `kind`, a `severity` (`'critical'`, `'warning'` or `'info'`), the book-absolute `pageIndex`, the offending `rect` (page px) and, when the element has one, its source range. The kinds are `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` and `nearTrim`. Without a `transform` a neutral counts one ink and any other colour three, and coverage is not checked; with one, the counts and the coverage are exact. The resolution of a picture is worked out from the pixels its resource declares, or from the file's own when `imageSize(fileId)` gives them (`bitmapInfo` on the bytes, or the decoded image): a declaration more than a pixel away from the file is reported once as `declaredPixelsMismatch`, a warning when it claims more pixels than the file has. `placedImageResolutions(doc, { resources, imageSize })` lists every placed bitmap with its effective ppi, whether the preflight is on or not.
 
 ```ts
-import { outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
 import { inspectPrintMaster } from 'postext-pdf';
 
 const print = resolvePrintConfig(config.print);
@@ -8125,6 +8222,7 @@ const issues = preflightDocument(doc, {
   print,
   transform,
   resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
   imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
 });
 if (issues.some((i) => i.severity === 'critical')) process.exit(1);
@@ -8624,6 +8722,7 @@ Eight mistakes in the configuration itself are never silent, and no toggle hides
 - **Unknown heading setting** — a key that `headings`, `headings.balancing`, a heading level, a heading style or a paragraph style does not have: a misspelt `letterSpacng`, a `tracking` borrowed from another tool, a `level` on a heading style, a `fontStyle: 'italic'` on a paragraph style (which takes `italic: true`). A tab stop is checked the same way (a `leaders` for `leader`). The engine ignores it (up to postext 1.4 it did so without a word). `value` is the key, `used` is empty, and `suggestion` names the setting it is closest to, when one is a letter or two away or differs only in case (`unknownConfigKey`).
 - **Unknown setting value** — a setting that takes one of a few words holding another, such as `direction: 'right'` (it takes `auto`, `ltr` or `rtl`). The engine reads the default instead, and `used` names what that came to: for `direction`, the direction of the document language (`unknownConfigValue`). A tab stop's `align` that is none of its four words is read as `'start'`, and a `position` that is no length, `'end'` or percentage leaves the stop out (`used` is `'none'`). The words of the comics settings are checked too ([Comics › Comic warnings](/en/docs/comics#comic-warnings)): `used` is the value the setting resolved to (a balloon style's own default, for a built-in style), and `suggestion` names the word the value is closest to, when one is close.
 - **Line numbers in vertical text** — `lineNumbers.enabled: true` in a document set vertically (`layout.writingMode: 'vertical-rl'`). Vertical pages get no line numbers, and `used` is `false` (`lineNumbersUnsupported`; see [Line numbers](#line-numbers)).
+- **Text wrap in vertical text** — a resource type's `defaultPlacement.wrap` in a document set vertically. Vertical pages set no text beside a figure, and `used` is `none` (`wrapUnsupported`; see [Document format › Text wrap](/en/docs/document-format#text-wrap)). A `wrap` that names no side is an unknown setting value.
 
 The Sandbox lists them in the **Checks** panel with the path of the setting. In code, `buildDocument` puts them on the document as `configWarnings` (absent when the configuration is clean), and `collectConfigWarnings(config)` returns them without laying anything out:
 
@@ -8687,6 +8786,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>calloutOverflow</code></td>
       <td>A <code>:::callout</code> box fits no column and no cut can split it.</td>
       <td>It is placed anyway, overflowing its column by <code>overflowPx</code> (on <code>pageIndex</code> / <code>columnIndex</code>). The one kind listed in <code>doc.warnings</code>; the kinds below are in <code>doc.contentWarnings</code>.</td>
+    </tr>
+    <tr>
+      <td><code>invalidFrontmatter</code></td>
+      <td>The front matter is not valid YAML (an unclosed quote, text after a quoted value). <code>message</code> is the parser's reason with its line and column.</td>
+      <td>The document is set without its metadata; the body after the closing <code>---</code> is laid out as usual.</td>
     </tr>
     <tr>
       <td><code>unknownResourceId</code></td>
@@ -8782,6 +8886,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>codeOverflow</code></td>
       <td>A <a href="#code-listings">code listing</a> has lines wider than its box. <code>mode</code> is what <code>codeStyle.overflow</code> did (<code>'wrap'</code>, <code>'shrink'</code>, <code>'clip'</code>), <code>lines</code> how many source lines were too wide, <code>scale</code> the size a shrunk listing was set at (a share of <code>fontSize</code>), <code>lang</code> the fence's language. Points at the listing.</td>
       <td>The lines are turned over, set smaller or cut, as <code>mode</code> says.</td>
+    </tr>
+    <tr>
+      <td><code>floatShrunk</code></td>
+      <td>A floated picture was set smaller than its size to fit the room of its slot (<code>placement.shrink</code>). <code>resourceId</code> names it, <code>scale</code> is the share of its width it keeps, and <code>overflowPx</code>, when present, how far it still runs past the foot of the text block at its smallest scale (<code>placement.minScale</code>), on a fresh page where it had nowhere else to go. Points at the paragraph that first cites it.</td>
+      <td>The picture is printed at that scale; past the text block only when <code>overflowPx</code> says so.</td>
+    </tr>
+    <tr>
+      <td><code>textWrap</code></td>
+      <td>A resource or a box set to wrap the text round it (<code>placement.wrap</code>, a box's <code>wrap</code>) that does not as asked. <code>reason</code>: <code>'tooNarrow'</code> (the text beside it would be narrower than <code>layout.wrap.minTextWidth</code>), <code>'fewLines'</code> (it is shorter than <code>layout.wrap.minLinesBeside</code> lines), <code>'moved'</code> (an inline one too tall for the room left in its column moved on to the next, its anchor with it) or <code>'verticalText'</code>. <code>resourceId</code> names a resource, <code>box</code> a box's style. Points at the embed or the box.</td>
+      <td>The item takes its band whole, or stands in the next column, as the reason says.</td>
     </tr>
   </tbody>
 </table>
@@ -9837,7 +9951,7 @@ For production print workflows, tune these configuration options before renderin
 - **`page.cutLines.enabled: true`** — adds bleed area and crop marks around the trim, and gives every page a TrimBox and a BleedBox. See [Cut lines](#cut-lines).
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`** (or `'pdfx1a'`) — a PDF/X file with the output intent, the identification and the boxes a printer checks; every colour and RGB picture separated through the ICC profile, 100 % K overprinting and large black areas in rich black. See [Print production (config)](#print-production-config).
 - **`colorSpace: 'cmyk'`** (or `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — the same separation without the PDF/X identification (crop marks are always in registration colour). PDF print masters are embedded as they are.
-- **`page.dpi: 300`** — the layout's px per inch: a bitmap set at its own size prints at this resolution. The [preflight](#preflight) reports pictures under 300 ppi at their printed size.
+- **`page.dpi: 300`** — the layout's px per inch: a bitmap with no resolution of its own prints at this resolution at its natural size. The [preflight](#preflight) reports pictures under 300 ppi at their printed size.
 - **`ColorValue.cmyk`** — a colour authored in CMYK prints with its exact values.
 - **`{ pageNegative: true }`** in `RenderToPdfOptions` — inverts the trim area using a Difference blend mode (cut marks stay un-inverted). Useful for preflight checks on dark-on-light typography.
 
@@ -10062,7 +10176,7 @@ A payload's **`fileId` is its path inside the bundle**. `resource.svg.fileId`, `
 
 #### Bundles written by postext 1.4 or earlier
 
-Every manifest `createBundle` and the Sandbox write carries `configVersion: 9`: the configuration rules its `config` was written for. A manifest without it was written by postext 1.4 or earlier, which set seventeen things differently:
+Every manifest `createBundle` and the Sandbox write carries `configVersion: 10`: the configuration rules its `config` was written for. A manifest without it was written by postext 1.4 or earlier, which set eighteen things differently:
 
 - **Heading breaks** (rules 3): up to 1.4, a `headings` object with no H1 break had none (see [Per-level overrides](#per-level-overrides)).
 - **The maths size** (rules 4): up to 1.4, formulas came out 1.131 times larger than `fontSizeScale` says (see [Formula size](#math)).
@@ -10081,8 +10195,9 @@ Every manifest `createBundle` and the Sandbox write carries `configVersion: 9`: 
 - **A first-line indent beside a hanging indent** (rules 9): up to 1.22, a paragraph style's `hangingIndent` replaced its `firstLineIndent`, and the first line started at `indent` (see [Paragraph styles](#paragraph-styles)).
 - **A backslash at the end of a line** (rules 9): up to 1.22, a backslash that ended a line of a paragraph, a quotation or a list item, and `\\` before a space, printed, and the lines joined with a space (see `bodyText.hardLineBreaks` under [Body text](#body-text)).
 - **Code fences** (rules 9): up to 1.22, a ```` ``` ```` or `~~~` fence and the lines inside it were read as Markdown: lines joined into paragraphs, a `#` line became a heading, the fences printed (see `codeStyle.blocks` under [Code listings](#code-listings)).
+- **Verse turnovers** (rules 10): in 1.23, a line of a poem set line by line that was wider than the measure turned over at its natural word spacing, however little it overflowed (see `bodyText.verse.tighten` under [Verse](#verse)).
 
-`openBundle` and `readBundle` read such a manifest's `config`, and each locale's `localized` configuration, through `migrateConfig`, which writes out the breaks 1.4 laid out and multiplies the maths scale by 1.131 (its `em` display margins divided by it). A manifest stamped `3` to `7`, written by a 1.5 prerelease, only gets the pins of the rules after its stamp. With `3` that is the maths size, the inline gap, the five pins of rules 6, the two of rules 7 and the three of rules 8; with `4`, the inline gap and the pins of rules 6, 7 and 8; with `5`, the pins of rules 6, 7 and 8; with `6`, the pins of rules 7 and 8; with `7`, the pins of rules 8 alone. The split under a heading (`pinLegacyHeadingSplit`) is written as `headings.keepWithNextSplit: 'fill'` on the `headings` the layers leave in force, when a chapter read has a heading and the configuration names no value of its own, keeps `headings.keepWithNext` on and does not turn `bodyText.avoidOrphans` off. The compound breaks (`pinLegacyHyphenBreaks`) are written as `bodyText.breakAfterHyphens: false` on the `bodyText` in force, when a chapter read sets a hyphen between two letters and the configuration neither sets it already nor turns `optimalLineBreaking` off. The space under containers (`pinLegacyParagraphContainerSpacing`) is written as `bodyText.paragraphContainerSpacing: 'add'` on the `bodyText` in force, when the configuration declares a paragraph style (in `paragraphStyles` or the HTML viewer's overrides), a chapter read opens a `:::paragraphs` container on a line of its own, and the configuration does not set it already. The dash breaks (`pinLegacyDashBreaks`) are written as `bodyText.breakAfterDashes: false` on the `bodyText` in force, when a chapter read sets an em or en dash closed between words (a letter, a digit or closing punctuation before it, a letter, a digit or an opening bracket or quote after it; a quotation mark before it counts when a letter, a digit, closing punctuation or a no-break space stands before the quote, as in `"no"—and`, not in `said "—Hola`; an inline mark touching the dash or the quote, such as the `**` of `**riddles.**—I`, counts on either side) and the configuration does not set it already. The ragged breaking (`pinLegacyRaggedBreaking`) is written as `bodyText.optimalRagged: false` on the `bodyText` in force, when the configuration sets some running text ragged (a `textAlign` other than `'justify'` on the body text, a paragraph style, a box body, the body of a part or the body of a section style (`headingStyles[].bodyStyle`), or in the HTML viewer's overrides), does not set it already and does not turn `optimalLineBreaking` off. The gap in boxes (`pinLegacyBoxResourceGap`) is written as `layout.inlineResourceGapInBoxes: false` on the `layout` in force, when a resource is embedded on its own line inside a `:::callout` of the chapters read and the configuration does not set it already. The box cut (`pinLegacyBoxChildCut`) is written as `layout.boxChildSplitMinLines: 1` on the `layout` in force, when a chapter read opens a `:::callout` on a line of its own and the configuration does not set it already. The heading marks (`pinLegacyHeadingMarks`) are written as `headings.inlineMarks: false` on the `headings` the layers leave in force, when a heading of the chapters read carries a mark (`*`, `_`, `^`, `~`, `:smallcaps[` or a link in its title) and the configuration names no value of its own. The drop caps (`pinLegacyDropCapSize`) get their 1.4 size written out as `dropCap.fontSize`, wherever they sit: in the unit of the element's leading when that is a length, else in the unit of its font size. The colon-line room (`pinLegacyColonListRoom`) is written as `bodyText.colonListRoom: 'line'` on the `bodyText` in force, when a list of the chapters read follows a line ending in a colon (blank lines between them allowed) and the configuration neither names a room nor turns `keepColonWithList` off. The inline gap (`pinLegacyInlineGap`) is written as `layout.inlineResourceGap: 'above'` on the `layout` the layers leave in force, when a line of the chapters read embeds a resource (`::resource{id="…"}` alone on its line, as the parser reads it: a mention in running text or in a code span does not count) and the configuration names no gap of its own. The size is pinned on the `math` the layers leave in force (a locale's own `math` replaces the shared one), and only when the chapters read have a `$`: a bundle without maths keeps its `config` as written. When neither the manifest nor the locale names a `math`, the one in force is `readBundle`'s `baseConfig` (the reader's own), and it is pinned too, since 1.4 set the bundle's formulas at that size: a base `fontSizeScale: 1.5` reads as 1.5 × 1.1312. The base's heading breaks are taken as they are. An old bundle therefore keeps what these rules laid out, and `bundle.config` shows the breaks, the maths size, the gaps, the heading marks, the drop-cap sizes, the colon-line room, the box cut, the dash breaks, the compound breaks, the ragged breaking, the split under a heading and the space under containers it is laid out with. The layout fixes of 1.5 have no pin and apply to it as to any book, so a page they touch can still move (see [Formula size](#math) for the list). A `preset.json` written by hand for today's rules sets `"configVersion": 9`; stamping an old bundle's manifest with it is also the one-line way to read it with today's rules (an unversioned bundle then loses its heading-break pin too). A manifest stamped `8`, written by postext 1.5 to 1.22, gets the four pins of rules 9 alone, as every older one does too: the verse layout (`pinLegacyVerseLayout`) is written as `bodyText.verse.layout: 'bayt'` on the `bodyText` in force, when a chapter read sets a `:::verse` poem whose fence names no layout and whose lines carry no hemistich separator and the configuration does not set it already; the paired indents (`pinLegacyPairedIndents`) drop the `firstLineIndent` of every paragraph style (in `paragraphStyles` or the HTML viewer's overrides) that also sets a non-zero `hangingIndent`; the forced line breaks (`pinLegacyHardBreaks`) are written as `bodyText.hardLineBreaks: false` on the `bodyText` in force, when a chapter read ends a line of a paragraph, a quotation or a list item with a backslash and the block goes on below it, or sets `\\` before a space and more text (inline code and maths, display formulas, headings and `:::verse` poems aside), and the configuration does not set it already; and the code fences (`pinLegacyCodeBlocks`) are written as `codeStyle.blocks: false`, when a chapter read opens a ```` ``` ```` or `~~~` fence (three or more, up to three spaces in) and the configuration does not set it already.
+`openBundle` and `readBundle` read such a manifest's `config`, and each locale's `localized` configuration, through `migrateConfig`, which writes out the breaks 1.4 laid out and multiplies the maths scale by 1.131 (its `em` display margins divided by it). A manifest stamped `3` to `7`, written by a 1.5 prerelease, only gets the pins of the rules after its stamp. With `3` that is the maths size, the inline gap, the five pins of rules 6, the two of rules 7 and the three of rules 8; with `4`, the inline gap and the pins of rules 6, 7 and 8; with `5`, the pins of rules 6, 7 and 8; with `6`, the pins of rules 7 and 8; with `7`, the pins of rules 8 alone. The split under a heading (`pinLegacyHeadingSplit`) is written as `headings.keepWithNextSplit: 'fill'` on the `headings` the layers leave in force, when a chapter read has a heading and the configuration names no value of its own, keeps `headings.keepWithNext` on and does not turn `bodyText.avoidOrphans` off. The compound breaks (`pinLegacyHyphenBreaks`) are written as `bodyText.breakAfterHyphens: false` on the `bodyText` in force, when a chapter read sets a hyphen between two letters and the configuration neither sets it already nor turns `optimalLineBreaking` off. The space under containers (`pinLegacyParagraphContainerSpacing`) is written as `bodyText.paragraphContainerSpacing: 'add'` on the `bodyText` in force, when the configuration declares a paragraph style (in `paragraphStyles` or the HTML viewer's overrides), a chapter read opens a `:::paragraphs` container on a line of its own, and the configuration does not set it already. The dash breaks (`pinLegacyDashBreaks`) are written as `bodyText.breakAfterDashes: false` on the `bodyText` in force, when a chapter read sets an em or en dash closed between words (a letter, a digit or closing punctuation before it, a letter, a digit or an opening bracket or quote after it; a quotation mark before it counts when a letter, a digit, closing punctuation or a no-break space stands before the quote, as in `"no"—and`, not in `said "—Hola`; an inline mark touching the dash or the quote, such as the `**` of `**riddles.**—I`, counts on either side) and the configuration does not set it already. The ragged breaking (`pinLegacyRaggedBreaking`) is written as `bodyText.optimalRagged: false` on the `bodyText` in force, when the configuration sets some running text ragged (a `textAlign` other than `'justify'` on the body text, a paragraph style, a box body, the body of a part or the body of a section style (`headingStyles[].bodyStyle`), or in the HTML viewer's overrides), does not set it already and does not turn `optimalLineBreaking` off. The gap in boxes (`pinLegacyBoxResourceGap`) is written as `layout.inlineResourceGapInBoxes: false` on the `layout` in force, when a resource is embedded on its own line inside a `:::callout` of the chapters read and the configuration does not set it already. The box cut (`pinLegacyBoxChildCut`) is written as `layout.boxChildSplitMinLines: 1` on the `layout` in force, when a chapter read opens a `:::callout` on a line of its own and the configuration does not set it already. The heading marks (`pinLegacyHeadingMarks`) are written as `headings.inlineMarks: false` on the `headings` the layers leave in force, when a heading of the chapters read carries a mark (`*`, `_`, `^`, `~`, `:smallcaps[` or a link in its title) and the configuration names no value of its own. The drop caps (`pinLegacyDropCapSize`) get their 1.4 size written out as `dropCap.fontSize`, wherever they sit: in the unit of the element's leading when that is a length, else in the unit of its font size. The colon-line room (`pinLegacyColonListRoom`) is written as `bodyText.colonListRoom: 'line'` on the `bodyText` in force, when a list of the chapters read follows a line ending in a colon (blank lines between them allowed) and the configuration neither names a room nor turns `keepColonWithList` off. The inline gap (`pinLegacyInlineGap`) is written as `layout.inlineResourceGap: 'above'` on the `layout` the layers leave in force, when a line of the chapters read embeds a resource (`::resource{id="…"}` alone on its line, as the parser reads it: a mention in running text or in a code span does not count) and the configuration names no gap of its own. The size is pinned on the `math` the layers leave in force (a locale's own `math` replaces the shared one), and only when the chapters read have a `$`: a bundle without maths keeps its `config` as written. When neither the manifest nor the locale names a `math`, the one in force is `readBundle`'s `baseConfig` (the reader's own), and it is pinned too, since 1.4 set the bundle's formulas at that size: a base `fontSizeScale: 1.5` reads as 1.5 × 1.1312. The base's heading breaks are taken as they are. An old bundle therefore keeps what these rules laid out, and `bundle.config` shows the breaks, the maths size, the gaps, the heading marks, the drop-cap sizes, the colon-line room, the box cut, the dash breaks, the compound breaks, the ragged breaking, the split under a heading and the space under containers it is laid out with. The layout fixes of 1.5 have no pin and apply to it as to any book, so a page they touch can still move (see [Formula size](#math) for the list). A `preset.json` written by hand for today's rules sets `"configVersion": 10`; stamping an old bundle's manifest with it is also the one-line way to read it with today's rules (an unversioned bundle then loses its heading-break pin too). A manifest stamped `8`, written by postext 1.5 to 1.22, gets the four pins of rules 9 alone, as every older one does too: the verse layout (`pinLegacyVerseLayout`) is written as `bodyText.verse.layout: 'bayt'` on the `bodyText` in force, when a chapter read sets a `:::verse` poem whose fence names no layout and whose lines carry no hemistich separator and the configuration does not set it already; the paired indents (`pinLegacyPairedIndents`) drop the `firstLineIndent` of every paragraph style (in `paragraphStyles` or the HTML viewer's overrides) that also sets a non-zero `hangingIndent`; the forced line breaks (`pinLegacyHardBreaks`) are written as `bodyText.hardLineBreaks: false` on the `bodyText` in force, when a chapter read ends a line of a paragraph, a quotation or a list item with a backslash and the block goes on below it, or sets `\\` before a space and more text (inline code and maths, display formulas, headings and `:::verse` poems aside), and the configuration does not set it already; and the code fences (`pinLegacyCodeBlocks`) are written as `codeStyle.blocks: false`, when a chapter read opens a ```` ``` ```` or `~~~` fence (three or more, up to three spaces in) and the configuration does not set it already. A manifest stamped `9`, written by postext 1.23, gets the pin of rules 10 alone, as every older one does too: the verse turnovers (`pinLegacyVerseTightening`) are written as `bodyText.verse.tighten: false` on the `bodyText` in force, when a chapter read sets a poem line by line (a `:::verse` fence that names `layout=lines`, or names no layout over lines with no hemistich separator while the configuration does not set such poems as bayts) and the configuration does not set it already.
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -10092,7 +10207,7 @@ migrateConfig({ headings: { fontFamily: 'Georgia' } }, undefined, { content: 'A 
 migrateConfig({ math: { fontSizeScale: 1.2 } }, 3);
 // => { math: { fontSizeScale: 1.35746…, marginTop: { value: 0.7072, unit: 'em' }, marginBottom: { value: 0.7072, unit: 'em' } },
 //      layout: { inlineResourceGap: 'above', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 },
-//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false }, codeStyle: { blocks: false } }
+//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false } }
 migrateConfig({ layout: { layoutType: 'single' } }, 4, { content: 'Text.\n\n::resource{id="fig"}' });
 // => { layout: { layoutType: 'single', inlineResourceGap: 'above' } }
 migrateConfig({ layout: { layoutType: 'single' } }, 5, { content: ':::callout\nText.\n\n::resource{id="fig"}\n:::' });
@@ -10106,7 +10221,7 @@ migrateConfig({ bodyText: { fontFamily: 'Georgia' } }, 7, { content: 'A well-kno
 migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 ```
 
-`content` is the markdown the configuration lays out (a string or a list of chapters). Without it the maths size is pinned whenever maths is on, the space under containers whenever the configuration declares a paragraph style, and the two gaps, the heading marks, the colon-line room, the box cut, the dash breaks, the split under a heading and the compound breaks always, since the engine cannot tell whether the book has a formula, a `:::paragraphs` container, an inline figure, a marked heading, a list introduced by a colon, a box, a closed dash, a heading or a compound. The ragged breaking is pinned by the configuration alone, content or not. Migrate a stored configuration once and store it again under `CONFIG_VERSION`: the maths pin multiplies the scale, so a configuration migrated twice would grow twice. The verse layout and the code fences are pinned without it too, since the book may hold a `:::verse` poem with no separator or a fence, and the paired indents are pinned by the configuration alone.
+`content` is the markdown the configuration lays out (a string or a list of chapters). Without it the maths size is pinned whenever maths is on, the space under containers whenever the configuration declares a paragraph style, and the two gaps, the heading marks, the colon-line room, the box cut, the dash breaks, the split under a heading and the compound breaks always, since the engine cannot tell whether the book has a formula, a `:::paragraphs` container, an inline figure, a marked heading, a list introduced by a colon, a box, a closed dash, a heading or a compound. The ragged breaking is pinned by the configuration alone, content or not. Migrate a stored configuration once and store it again under `CONFIG_VERSION`: the maths pin multiplies the scale, so a configuration migrated twice would grow twice. The verse layout and the code fences are pinned without it too, since the book may hold a `:::verse` poem with no separator or a fence, and the paired indents are pinned by the configuration alone. So are the 1.23 verse turnovers, since the book may set a poem line by line.
 
 ### Laying out and rendering a bundle
 
@@ -10251,9 +10366,9 @@ Because the Sandbox, the agent skill and the `postext` package all read and writ
 `postext/bundle` also exports the building blocks behind `openBundle` and `createBundle`, for hosts that store or serve bundles their own way (an unzipped directory over HTTP, records in a database):
 
 - **`openBundleZip(bytes)` / `zipBundle(files, { mtime })`**: the archive layer. Opening tolerates a top-level folder and ignores `__MACOSX` entries and dotfiles. Paths that escape the bundle are refused. `mtime` dates the files as `createBundle`'s input does.
-- **`readBundle(manifest, readFile, options)`** reads a manifest plus a `readFile(path)` callback into chapters, config, resources, pictures and fonts. `options` sets the locale, how file ids are named (`ids`), the base configuration (`baseConfig`, under the manifest's; by default the palette and the resource types of `bundleBaseConfig` in the bundle's language, which `resolveBundleConfigLocale(manifest, locale)` returns, and a host that passes its own `baseConfig` should localise it to that language; under a manifest older than `configVersion: 4` its `math` is pinned with the bundle's, under one older than 5 its `layout`'s inline gap, under one older than 6 its `layout`'s gap in boxes, its `bodyText`'s colon-line room, its `headings`' inline marks and its drop-cap sizes, under one older than 7 its `bodyText`'s dash breaks and ragged breaking, and under one older than 8 its `headings`' split under a heading and its `bodyText`'s compound breaks and space under `:::paragraphs` containers, see [Bundles written by postext 1.4 or earlier](#bundles-written-by-postext-14-or-earlier)) and how intrinsic sizes are measured.
+- **`readBundle(manifest, readFile, options)`** reads a manifest plus a `readFile(path)` callback into chapters, config, resources, pictures and fonts. `options` sets the locale, how file ids are named (`ids`), the base configuration (`baseConfig`, under the manifest's; by default the palette and the resource types of `bundleBaseConfig` in the bundle's language, which `resolveBundleConfigLocale(manifest, locale)` returns, and a host that passes its own `baseConfig` should localise it to that language; under a manifest older than `configVersion: 4` its `math` is pinned with the bundle's, under one older than 5 its `layout`'s inline gap, under one older than 6 its `layout`'s gap in boxes, its `bodyText`'s colon-line room, its `headings`' inline marks and its drop-cap sizes, under one older than 7 its `bodyText`'s dash breaks and ragged breaking, and under one older than 8 its `headings`' split under a heading and its `bodyText`'s compound breaks and space under `:::paragraphs` containers, see [Bundles written by postext 1.4 or earlier](#bundles-written-by-postext-14-or-earlier)) and how intrinsic sizes are measured. `readResolution` reads each bitmap's resolution from its file into `bitmap.fileResolution`; it defaults to true when the bundle sets `layout.bitmapResolution: 'file'`.
 - **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**: the writing side, split into a pure plan (file names and manifest) and resolving the bytes through `readBlob` / `readFont` callbacks.
-- **`isBundleManifest(value)`**, the locale pickers (`pickChapterSpecs`, `pickLocaleOverrides`, `pickBundleView`, `resolveBundleLocale`, `resolveBundleConfigLocale`), `svgSize` / `bitmapSize`, and the format types (`BundleManifest`, `BundleResourceSpec`, `BundleFontFamilySpec`, …).
+- **`isBundleManifest(value)`**, the locale pickers (`pickChapterSpecs`, `pickLocaleOverrides`, `pickBundleView`, `resolveBundleLocale`, `resolveBundleConfigLocale`), `svgSize` / `bitmapSize` / `bitmapInfo` (a bitmap's pixels and the resolution its file states), and the format types (`BundleManifest`, `BundleResourceSpec`, `BundleFontFamilySpec`, …).
 - **`CONFIG_VERSION`, `migrateConfig(config, configVersion, { content })`, `pinLegacyHeadingBreaks(config)`, `pinLegacyMathSize(config)`, `pinLegacyInlineGap(config)`, `pinLegacyBoxResourceGap(config)`, `pinLegacyHeadingMarks(config)`, `pinLegacyDropCapSize(config)`, `pinLegacyColonListRoom(config)`, `pinLegacyBoxChildCut(config)`, `pinLegacyDashBreaks(config)`, `pinLegacyRaggedBreaking(config)`, `pinLegacyHeadingSplit(config)`, `pinLegacyParagraphContainerSpacing(config)`, `pinLegacyHyphenBreaks(config)` and `LEGACY_MATH_SIZE`** (0.5 ÷ 0.442): a stored configuration in today's terms (see [Bundles written by postext 1.4 or earlier](#bundles-written-by-postext-14-or-earlier)). `readBundle` applies it; a host that stores configurations its own way can too, once per stored copy.
 
 The Sandbox is built on these. It adds its own storage ids and the `layouts.json` page records.

@@ -32,7 +32,7 @@ function project(config: object, text = CHAPTER, withFont = false): string {
     fonts.push({ name: "Noto Serif TC", variants: [{ weight: 400, style: "normal", file: "fonts/NotoSerifTC-Regular.woff2" }] });
   }
   const manifest = {
-    version: 2, configVersion: 9, id: "t", name: "T", locale: "zh-Hant",
+    version: 2, configVersion: 10, id: "t", name: "T", locale: "zh-Hant",
     chapters: { "zh-Hant": [{ title: "第一回", file: "chapters/zh-Hant/01-hui.md" }] },
     config: { header: { elements: [] }, layout: { layoutType: "single" }, ...config },
     resources: [], fonts,
@@ -85,7 +85,7 @@ describe.skipIf(!python)("postext-port lint on Chinese text", () => {
       extra,
     ].join("\n");
     const manifest = {
-      version: 2, configVersion: 9, id: "t", name: "T", locale: "en",
+      version: 2, configVersion: 10, id: "t", name: "T", locale: "en",
       chapters: { en: [{ title: "One", file: "chapters/01.md" }] },
       config: {
         locale: "en", header: { elements: [] }, layout: { layoutType: "single" },
@@ -309,6 +309,39 @@ describe.skipIf(!python)("postext-port lint on drop caps", () => {
   });
 });
 
+describe.skipIf(!python)("postext-port lint on text wrap", () => {
+  const fonts = { bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
+  /** The project with `resources` added and a chapter that embeds them. */
+  function wrapped(config: object, resources: object[], text: string): string {
+    const dir = project({ ...fonts, ...config }, text);
+    const file = path.join(dir, "preset.json");
+    const manifest = JSON.parse(readFileSync(file, "utf8"));
+    manifest.resources = resources;
+    writeFileSync(file, JSON.stringify(manifest));
+    return dir;
+  }
+  const figure = (id: string, placement: object) => ({ id, typeId: "figure", kind: "svg", caption: "圖", createdAt: 0, updatedAt: 0, svg: { fileId: `${id}.svg`, width: 400, height: 300 }, placement });
+
+  it("checks a resource's wrap and a box's wrap attributes", () => {
+    const text = `${CHAPTER}\n::resource{id="a"}\n\n::resource{id="b"}\n\n::resource{id="c"}\n\n:::callout{wrap="middle"}\n此開卷第一回也。\n:::\n\n:::callout{wrap="right" span="page"}\n此開卷第一回也。\n:::\n`;
+    const { out } = lint(wrapped({}, [
+      figure("a", { position: "here", wrap: "rigth" }),
+      figure("b", { position: "top", span: "page", wrap: "left" }),
+      figure("c", { position: "here", wrap: "right", width: 0.4 }),
+    ], text));
+    expect(out).toContain("placement.wrap 'rigth' is no side");
+    expect(out).toContain("resource b: placement.wrap applies to an inline embed or a one-column float");
+    expect(out).not.toContain("resource c: placement.wrap");
+    expect(out).toContain("callout wrap='middle' is ignored");
+    expect(out).toContain("callout wrap only applies to a span='column' box");
+  });
+
+  it("flags text wrap in vertical text", () => {
+    const { out } = lint(wrapped({ layout: { layoutType: "single", writingMode: "vertical-rl" } }, [figure("a", { position: "here", wrap: "start" })], `${CHAPTER}\n::resource{id="a"}\n`));
+    expect(out).toContain("placement.wrap is ignored in vertical text");
+  });
+});
+
 /** An Arabic chapter with a Latin marker word, in a one-locale project. */
 function arabicProject(config: object, text?: string, fonts: object[] = []): string {
   const dir = mkdtempSync(path.join(os.tmpdir(), "postext-lint-ar-"));
@@ -320,7 +353,7 @@ function arabicProject(config: object, text?: string, fonts: object[] = []): str
     "",
   ].join("\n"));
   const manifest = {
-    version: 2, configVersion: 9, id: "t", name: "T", locale: "ar",
+    version: 2, configVersion: 10, id: "t", name: "T", locale: "ar",
     chapters: { ar: [{ title: "الفصل الأول", file: "chapters/ar/01.md" }] },
     config: { header: { elements: [] }, layout: { layoutType: "single" }, ...config },
     resources: [], fonts,
@@ -397,7 +430,7 @@ function japaneseProject(config: object, text = JA_CHAPTER): string {
   mkdirSync(path.join(dir, "chapters/ja"), { recursive: true });
   writeFileSync(path.join(dir, "chapters/ja/01.md"), text);
   const manifest = {
-    version: 2, configVersion: 9, id: "t", name: "T",
+    version: 2, configVersion: 10, id: "t", name: "T",
     chapters: { ja: [{ title: "上", file: "chapters/ja/01.md" }] },
     config: { header: { elements: [] }, layout: { layoutType: "single" }, ...config },
     resources: [], fonts: [],
@@ -523,7 +556,7 @@ function comicProject(config: object, chapters: Record<string, string>, resource
     anchors: [{ id: "ana", x: 0.3, y: 0.5, face: { x: 0.2, y: 0.3, width: 0.2, height: 0.2 } }, { id: "ben", x: 0.7, y: 0.5 }],
   }));
   const manifest = {
-    version: 2, configVersion: 9, id: "t", name: "T", locale: Object.keys(chapters)[0],
+    version: 2, configVersion: 10, id: "t", name: "T", locale: Object.keys(chapters)[0],
     chapters: specs,
     config: { header: { elements: [] }, layout: { layoutType: "single" }, locale: "en", ...config },
     resources: pictures, fonts,

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "five-chapter-openers",
-  "sourceHash": "2f7ea41a08d58a3a406885386490344bc59411fae0386f495f9feaeceda0df60",
+  "sourceHash": "4af25014203f3c2eb8ba97ba98b6b0c1184174073f77a5be6334a18953aaee90",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.953Z",
+  "capturedAt": "2026-10-09T18:24:37.967Z",
   "variants": {
     "en": {
-      "hash8": "0c3f9cf4",
-      "vdtHash": "d3ca5795d2de5c0ffbb1f843d8ececf3f187c2e5",
+      "hash8": "2526933a",
+      "vdtHash": "45587f7495f542a963e19fb3590dbea4a204e252",
       "timings": {
-        "importMs": 156,
-        "fontsMs": 44,
-        "buildMs": 116,
-        "totalMs": 2319,
+        "importMs": 112,
+        "fontsMs": 42,
+        "buildMs": 49,
+        "totalMs": 900,
         "builds": 2
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 101126,
+          "bytes": 100996,
           "alt": "Opening page 1: The Voice."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 95060,
+          "bytes": 95420,
           "alt": "Opening page 4: The Frame."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 67330,
+          "bytes": 66788,
           "alt": "Opening page 5: Say it out loud."
         },
         {
@@ -116,7 +116,7 @@
           "h": 1333,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 30840,
+          "bytes": 30798,
           "alt": "Opening page 7: Leave Room."
         }
       ],
@@ -152,7 +152,7 @@
       },
       "sandbox": {
         "file": "five-chapter-openers.postext",
-        "bytes": 28562,
+        "bytes": 28451,
         "folio": "8cdc51df"
       },
       "detected": {
@@ -219,6 +219,13 @@
           "headingStyles[].bodyStyle.fontSize",
           "headingStyles[].bodyStyle.lineHeight",
           "headingStyles[].bodyStyle.textAlign",
+          "headingStyles[].dropCap",
+          "headingStyles[].dropCap.color",
+          "headingStyles[].dropCap.fontFamily",
+          "headingStyles[].dropCap.fontSize",
+          "headingStyles[].dropCap.fontWeight",
+          "headingStyles[].dropCap.gap",
+          "headingStyles[].dropCap.lines",
           "headingStyles[].footer",
           "headingStyles[].footer.elements",
           "headingStyles[].header",
@@ -240,6 +247,7 @@
           "headings.levels",
           "headings.levels[].advancedDesign",
           "headings.levels[].breakBefore",
+          "headings.levels[].dropCap",
           "headings.levels[].fontSize",
           "headings.levels[].fontWeight",
           "headings.levels[].level",
@@ -283,10 +291,11 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 606,
+        "configLeaves": 591,
         "designElements": 34,
         "directives": [
-          ":::paragraphs"
+          ":::paragraphs",
+          ":::space"
         ],
         "inline": [
           "{attrs}",
@@ -306,11 +315,6 @@
           {
             "family": "Fraunces",
             "weight": 300,
-            "style": "normal"
-          },
-          {
-            "family": "Fraunces",
-            "weight": 400,
             "style": "normal"
           },
           {
@@ -370,7 +374,7 @@
           }
         ],
         "features": [
-          "drop-caps",
+          "body-drop-caps",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -383,29 +387,36 @@
           "section-geometry",
           "section-running-heads",
           "title-line-breaks",
-          "unnumbered-headings"
+          "unnumbered-headings",
+          "vertical-space"
         ],
         "suggestedLevel": 3
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 2,
+        "iterationCount": 1,
         "looseLines": {
           "count": 1,
           "share": 0.0143,
           "worst": 1.62
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "147fba9a",
-      "vdtHash": "463172280380e8471d29bd1270fda4670df8753c",
+      "hash8": "8de20fbc",
+      "vdtHash": "12a9a52a7154dc26eeb05039fb7610dfba8e4749",
       "timings": {
-        "importMs": 156,
-        "fontsMs": 35,
-        "buildMs": 23,
-        "totalMs": 883,
+        "importMs": 115,
+        "fontsMs": 31,
+        "buildMs": 150,
+        "totalMs": 1095,
         "builds": 2
       },
       "specimen": {
@@ -439,7 +450,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 105360,
+          "bytes": 98458,
           "alt": "Página de apertura 1: La voz."
         },
         {
@@ -450,7 +461,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 167230,
+          "bytes": 159958,
           "alt": "Página 2."
         },
         {
@@ -461,7 +472,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 36062,
+          "bytes": 50262,
           "alt": "Página 3."
         },
         {
@@ -472,7 +483,7 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 88286,
+          "bytes": 88778,
           "alt": "Página de apertura 4: El marco."
         },
         {
@@ -483,7 +494,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 71398,
+          "bytes": 71564,
           "alt": "Página de apertura 5: Salta a la vista."
         },
         {
@@ -505,7 +516,7 @@
           "h": 1333,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 33242,
+          "bytes": 33322,
           "alt": "Página de apertura 7: Deja aire."
         }
       ],
@@ -541,7 +552,7 @@
       },
       "sandbox": {
         "file": "five-chapter-openers.postext",
-        "bytes": 28252,
+        "bytes": 28169,
         "folio": "8cdc51df"
       },
       "detected": {
@@ -608,6 +619,13 @@
           "headingStyles[].bodyStyle.fontSize",
           "headingStyles[].bodyStyle.lineHeight",
           "headingStyles[].bodyStyle.textAlign",
+          "headingStyles[].dropCap",
+          "headingStyles[].dropCap.color",
+          "headingStyles[].dropCap.fontFamily",
+          "headingStyles[].dropCap.fontSize",
+          "headingStyles[].dropCap.fontWeight",
+          "headingStyles[].dropCap.gap",
+          "headingStyles[].dropCap.lines",
           "headingStyles[].footer",
           "headingStyles[].footer.elements",
           "headingStyles[].header",
@@ -629,6 +647,7 @@
           "headings.levels",
           "headings.levels[].advancedDesign",
           "headings.levels[].breakBefore",
+          "headings.levels[].dropCap",
           "headings.levels[].fontSize",
           "headings.levels[].fontWeight",
           "headings.levels[].level",
@@ -672,10 +691,11 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 606,
+        "configLeaves": 591,
         "designElements": 34,
         "directives": [
-          ":::paragraphs"
+          ":::paragraphs",
+          ":::space"
         ],
         "inline": [
           "{attrs}",
@@ -695,11 +715,6 @@
           {
             "family": "Fraunces",
             "weight": 300,
-            "style": "normal"
-          },
-          {
-            "family": "Fraunces",
-            "weight": 400,
             "style": "normal"
           },
           {
@@ -759,7 +774,7 @@
           }
         ],
         "features": [
-          "drop-caps",
+          "body-drop-caps",
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
@@ -772,19 +787,26 @@
           "section-geometry",
           "section-running-heads",
           "title-line-breaks",
-          "unnumbered-headings"
+          "unnumbered-headings",
+          "vertical-space"
         ],
         "suggestedLevel": 3
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 1,
+        "iterationCount": 2,
         "looseLines": {
           "count": 1,
-          "share": 0.0143,
+          "share": 0.0139,
           "worst": 1.61
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

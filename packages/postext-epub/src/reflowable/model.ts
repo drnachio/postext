@@ -134,6 +134,18 @@ export interface CalloutNode {
    *  the words are read once), `'own'` when only its style names it one
    *  (walk.ts `markPullQuotes`). */
   pullQuote?: 'echo' | 'own';
+  /** Text wrapped round the box in print (#627). */
+  wrap?: WrapFloat;
+}
+
+/** A figure or a box text wrapped round in print (#627): the reflowable
+ *  book floats it to that side, as wide a share of the text as it took. */
+export interface WrapFloat {
+  /** The physical side it floats to. */
+  side: 'left' | 'right';
+  /** Its width and the gap beside it, in percent of the text's width. */
+  width: number;
+  gap: number;
 }
 
 export interface FigureNode {
@@ -148,6 +160,8 @@ export interface FigureNode {
   note: InlineItem[];
   /** A video resource (#454): what it plays; `fileId` is its poster. */
   video?: VDTResourceVideo;
+  /** Text wrapped round it in print (#627). */
+  wrap?: WrapFloat;
 }
 
 export interface TableCellNode {
@@ -174,6 +188,11 @@ export interface TableNode {
   headerRows: number;
   columnWidths?: number[];
   cells: Map<string, TableCellNode>;
+  /** The class of its named table style (`pt-table-<id>`, #625). */
+  styleClass?: string;
+  /** Mark the body rows that head a group (`pt-group`): its style draws a
+   *  booktabs rule above them (`groupRules`). */
+  groupRules?: boolean;
 }
 
 /** One bayt of a `:::verse` poem (#378): its ṣadr and ʿajuz, or a lone

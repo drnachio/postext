@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 070 · Play script: cast list, speakers and stage directions ═══
 // https://postext.dev/en/cookbook/stage-play
 // Code: MIT · Text: Oscar Wilde, 1895 (PD, Gutenberg #844), Spanish: the Cookbook · Art: in code
-// Fonts: Libre Baskerville, Abril Fatface, Playfair Display SC (OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  parseTSV, mergeCells } from 'https://esm.sh/postext';
+// Fonts: Libre Baskerville, Abril Fatface, Playfair Display SC (OFL 1.1) · Needs postext ≥ 1.23.0
+import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
+  from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'stage-play';
@@ -15,7 +15,6 @@ const palette = { // every colour in the config links to one of these
   gold: '#b48a45', // rules and ornaments
   gilt: '#c9aa77', // gold lightened for small type on the plum ground (5.3:1)
   muted: '#6c6168', // stage directions and running heads (5.5:1 on the paper)
-  rule: '#d8cbb7', // hairlines between the persons of the cast list
   paper: '#fbf6ec', // a cream stock
 };
 // The hex travels with the id: designs do not read the palette (gotcha: palette-skips-designs).
@@ -68,28 +67,20 @@ const headings = {
 };
 // #endregion
 
-// #region cast: the cast list: a table from tab-separated lines, with merged rows
-// One row per line, cells split by tabs. A line with no tab spans the table: mergeCells
-// joins its cells (gotcha: merged-cells-hiddenby). Each column has its own alignment.
-function billTable(tsv, widths, align, headerRowCount = 0) {
-  let model = { ...parseTSV(tsv.trim()), columnWidths: widths, headerRowCount };
-  model.rows.forEach((row) => row.forEach((cell, c) => { cell.align = align[c]; }));
-  tsv.trim().split('\n').forEach((line, r) => {
-    if (line.includes('\t')) return;
-    model.rows[r][0].align = 'center';
-    const end = { row: r, col: widths.length - 1 };
-    model = mergeCells(model, { start: { row: r, col: 0 }, end });
-  });
-  return model;
-}
-// One filled header cell: two side by side would show a seam (gotcha: table-fill-seams).
-const tableStyle = {
-  rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
-  headerBackground: col('plum'), headerColor: col('paper'), headerFontFamily: LABEL,
-  headerFontSize: pt(8.5), headerBold: false, // small capitals from the face itself
-  bodyFontSize: pt(8.8), cellPadding: mm(1.5), // the body's face and ink, a size smaller
-};
-const tableStyles = [{ id: 'scenes', rules: 'none', cellPadding: mm(1) }]; // the scenes
+// #region cast: the cast list: each person a paragraph, the actor after a dot leader
+// A tab sends the actor to a stop at the end of the measure that ends the text there; the stop's
+// leader fills the room before it with dots, from half an em after the person to half an em
+// before the actor. The bill's head is a centred line in the face's own small capitals.
+const person = { id: 'person', fontSize: pt(8.8), firstLineIndent: pt(0), textAlign: 'left',
+  tabStops: [{ position: 'end', align: 'end', leader: '.' }],
+  spaceBetween: pt(LEAD / 2) }; // a person every line and a half
+const billHead = { id: 'bill-head', fontFamily: LABEL, fontSize: pt(8.5), color: col('plum'),
+  textAlign: 'center', firstLineIndent: pt(0), marginTop: pt(LEAD / 2),
+  marginBottom: pt(LEAD / 2) };
+// The scenes: two stops, so `:tab Act I :tab Algernon’s flat` ends the act on the first
+// (15 mm in) and starts the place on the second, 2 mm after it, as a two-column list would.
+const scene = { id: 'scene', textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD / 2),
+  tabStops: [{ position: mm(15), align: 'end' }, { position: mm(17) }] };
 // #endregion
 
 // #region ornament: a resource type for artwork with no number and no caption
@@ -98,7 +89,6 @@ const unnumbered = (id, name, defaultPlacement) => ({ id, name, shortLabel: '', 
   numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal', defaultPlacement });
 const resourceTypes = [
   unnumbered('ornament', 'Ornament', { position: 'here', width: 0.24, align: 'center' }),
-  unnumbered('bill', 'Bill', { position: 'here' }),
 ];
 // #endregion
 
@@ -166,18 +156,14 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   bodyText: dialogue,
   headings,
   headingStyles: [playbill],
-  paragraphStyles: [direction, { id: 'colophon', fontSize: pt(7.5), color: col('muted'),
-    textAlign: 'center', firstLineIndent: pt(0), marginTop: pt(LEAD) }],
-  tableStyle,
-  tableStyles,
+  paragraphStyles: [direction, person, billHead, scene, { id: 'colophon', fontSize: pt(7.5),
+    color: col('muted'), textAlign: 'center', firstLineIndent: pt(0), marginTop: pt(LEAD) }],
   header,
   footer,
 });
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
-const cast = /* @content:cast */ ''; // content.cast.<lang>.md: the persons, tab-separated
-const scenes = /* @content:scenes */ ''; // content.scenes.<lang>.md: the acts and their places
 
 // #region art: the title page's ground and double frame, and the carnation fleuron, in mm
 let seed = 1895; // Mulberry32, a seeded PRNG: never Math.random() in a recipe
@@ -307,19 +293,14 @@ const art = [
   svg('fleuron', 30, 11, 'Ornament: a plum carnation between two gold scrolls.'),
 ];
 // #endregion
-const table = (id, model, styleId) => ({ id, typeId: 'bill', kind: 'table',
-  table: { model, styleId }, createdAt: 0, updatedAt: 0 });
-const resources = [...art,
-  table('persons', billTable(cast, [2, 1], ['left', 'right'], 1)), // the first line heads it
-  table('scenes', billTable(scenes, [3, 17], ['right', 'left']), 'scenes'),
-];
+const resources = art;
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { 'Libre Baskerville': ['400', '400i', '700'], 'Abril Fatface': ['400'],
   'Playfair Display SC': ['400'] }; // all loaded before the first build (gotcha: fonts-first)
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown + cast + scenes);
+await loadFonts(FONTS, markdown);
 const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
 showPages(doc, { title: doc.metadata.title }); // the frontmatter's title
 

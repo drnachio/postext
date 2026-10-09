@@ -4,7 +4,7 @@
 // and a small XML reader): runs in the browser, a Worker and Node.
 
 export { readDocx, DocxReadError, TEMPLATE_XML_ROOT, TEMPLATE_XML_NS } from './docxRead';
-export { wordToPostext, paragraphTargetOf, characterTargetOf, stripCaptionLabel, tableModel } from './toMarkdown';
+export { wordToPostext, pictureResolution, paragraphTargetOf, characterTargetOf, stripCaptionLabel, tableModel } from './toMarkdown';
 export type { ChapterMode, ImportedPicture, ImportedTable, ImportedChapter, ImportResult, ImportSettings } from './toMarkdown';
 export { postextToDocx, DEFAULT_STYLE_NAMES } from './toDocx';
 export type { ExportChapter, WordStyleNames, ExportSettings } from './toDocx';
