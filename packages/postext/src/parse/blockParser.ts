@@ -408,7 +408,9 @@ function parseBlocks(markdown: string): { blocks: ContentBlock[]; issues: ParseI
           else break;
         }
         let stepped = false;
-        if (raw[p] === '+' && (raw[p + 1] === ' ' || raw[p + 1] === '\t')) {
+        // `\+ …`: a line that opens with a plus sign, not a stepped one.
+        if (raw[p] === '\\' && raw[p + 1] === '+') p++;
+        else if (raw[p] === '+' && (raw[p + 1] === ' ' || raw[p + 1] === '\t')) {
           stepped = true;
           p++;
           while (raw[p] === ' ' || raw[p] === '\t') p++;

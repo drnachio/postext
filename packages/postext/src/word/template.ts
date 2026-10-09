@@ -14,6 +14,9 @@ export type ParagraphTarget =
   | { kind: 'paragraphs'; style: string }
   | { kind: 'callout'; type: string }
   | { kind: 'calloutTitle'; type: string }
+  /** A `:::verse` poem (#620): Shift+Enter breaks lines, a paragraph is a
+   *  stanza, a run of one-line paragraphs one stanza. */
+  | { kind: 'verse'; style?: string }
   | { kind: 'quote' }
   | { kind: 'caption' }
   /** Postext Markdown written as text: passed through verbatim. */
@@ -137,6 +140,9 @@ function chain(doc: WordDocument | undefined, style: WordStyle | undefined): Wor
   return out;
 }
 
+/** Style names that say verse, in the site's languages. */
+const VERSE_STYLE_RE = /^(?:verse|verses|poem|poetry|poesía|poesia|poema|poemes|poemas|versos?|vers|诗|詩|诗歌|詩歌|韻文|شعر|قصيدة)(?:\s*\d+)?$/i;
+
 /** A built-in role Word gives a style name (heading N, Title, Quote…). */
 function builtinRole(name: string): ParagraphTarget | undefined {
   const level = builtinHeadingLevel(name);
@@ -172,6 +178,9 @@ export function guessParagraphTarget(name: string, config: PostextConfig, doc?: 
     return outline !== undefined && outline < 6 ? outline + 1 : 1;
   };
   const para = findNamed(config.paragraphStyles, name);
+  // A style named for verse (Verse, Poem, Poesía, 诗…) sets poems (#620),
+  // in the paragraph style of that name when there is one.
+  if (VERSE_STYLE_RE.test(name.trim())) return { kind: 'verse', ...(para ? { style: para.id } : {}) };
   if (para) return { kind: 'paragraphs', style: para.id };
   const callout = findNamed(calloutStylesOf(config), name);
   if (callout) return { kind: 'callout', type: callout.id };
@@ -215,7 +224,7 @@ export function guessCharacterTarget(name: string, config: PostextConfig, doc?: 
 // Validation (templates come from JSON files and from `.docx` files)
 // ---------------------------------------------------------------------------
 
-const PARA_KINDS = new Set<ParagraphTargetKind>(['body', 'heading', 'paragraphs', 'callout', 'calloutTitle', 'quote', 'caption', 'markup', 'chapter', 'drop']);
+const PARA_KINDS = new Set<ParagraphTargetKind>(['body', 'heading', 'paragraphs', 'verse', 'callout', 'calloutTitle', 'quote', 'caption', 'markup', 'chapter', 'drop']);
 const CHAR_KINDS = new Set<CharacterTargetKind>(['text', 'bold', 'italic', 'boldItalic', 'smallCaps', 'sup', 'sub', 'chip', 'markup', 'drop']);
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -238,6 +247,10 @@ function parseParagraphTarget(v: unknown): ParagraphTarget | undefined {
     case 'calloutTitle': {
       const type = str(v.type);
       return type ? { kind: v.kind, type } : undefined;
+    }
+    case 'verse': {
+      const style = str(v.style);
+      return { kind: 'verse', ...(style ? { style } : {}) };
     }
     default:
       return { kind: v.kind as 'body' };

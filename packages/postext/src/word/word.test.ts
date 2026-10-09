@@ -136,6 +136,26 @@ describe('Markdown → Word → Markdown', () => {
     expect(blocksOf(back)).toEqual(blocksOf(md));
   });
 
+  it('keeps a poem set line by line: its indents and stanza breaks (#620)', () => {
+    const md = [
+      'Before.',
+      '',
+      ':::verse{style="verso"}',
+      'Whose woods these are I think I know.',
+      '  His house is in the village though;',
+      '',
+      '',
+      'He will not see me stopping here',
+      '\tTo watch his woods fill up with snow.',
+      ':::',
+      '',
+      'After.',
+    ].join('\n');
+    const back = roundTrip(md);
+    expect(back).toContain(':::verse{style="verso"}\nWhose woods these are I think I know.\n  His house is in the village though;\n\n\nHe will not see me stopping here\n\tTo watch his woods fill up with snow.\n:::');
+    expect(blocksOf(back)).toEqual(blocksOf(md));
+  });
+
   it('keeps two adjacent paragraph groups of one style apart', () => {
     const md = ':::paragraphs{style="firma"}\nA\n:::\n\n:::paragraphs{style="firma"}\nB\n:::\n';
     expect(blocksOf(roundTrip(md))).toEqual(blocksOf(md));
@@ -238,9 +258,8 @@ describe('Word → Postext', () => {
       'Segundo párrafo.',
       ':::',
       '',
-      ':::paragraphs{style="verso"}',
+      ':::verse{style="verso"}',
       'Nunca fuera caballero',
-      '',
       'de damas tan bien servido',
       ':::',
       '',
@@ -265,6 +284,35 @@ describe('Word → Postext', () => {
       headerRowCount: 1,
       columnWidths: [1, 2],
     });
+  });
+
+  it('reads a poem from a verse style: lines, indents, stanzas (#620)', () => {
+    const poem = [
+      p('Poem', r('Whose woods these are') + '<w:r><w:br/></w:r><w:r><w:tab/></w:r>' + r('His house is in the village')),
+      p('Poem', r('')),
+      p('Poem', r('He will not see me')),
+      p('Poem', r('+ stopping here || at all')),
+      p('', r('After.')),
+    ].join('');
+    const doc = readDocx(docx(poem));
+    expect(guessParagraphTarget('Poem', config)).toEqual({ kind: 'verse' });
+    expect(guessParagraphTarget('Verso', config)).toEqual({ kind: 'verse', style: 'verso' });
+    const md = wordToPostext(doc, { template: emptyTemplate(), config, chapters: 'single', existingIds: new Set(), untitledChapter: 'x' }).chapters[0]!.markdown;
+    expect(md).toBe([
+      ':::verse{layout=lines}',
+      'Whose woods these are',
+      '\tHis house is in the village',
+      '',
+      'He will not see me',
+      '\\+ stopping here || at all',
+      ':::',
+      '',
+      'After.',
+      '',
+    ].join('\n'));
+    const stanzas = parseMarkdown(md).filter((b) => b.verse);
+    expect(stanzas.map((b) => b.verse!.stanza!.lines.map((l) => l.indent))).toEqual([[0, 4], [0, 0]]);
+    expect(stanzas[1]!.text).toBe('He will not see me\n+ stopping here || at all');
   });
 
   it('turns hand-made headings into headings when asked', () => {

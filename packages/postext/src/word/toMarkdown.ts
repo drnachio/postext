@@ -110,10 +110,18 @@ const FENCE_OPEN_RE = /^:::\s*(callout|paragraphs|part|columns|paper|verse|refer
 const FENCE_CLOSE_RE = /^:::\s*$/;
 
 interface Group {
-  kind: 'callout' | 'paragraphs';
+  kind: 'callout' | 'paragraphs' | 'verse';
   key: string;
   title?: string;
   chunks: Chunk[];
+  /** A poem (#620): its last stanza came from a one-line paragraph, which
+   *  the next one-line paragraph runs on (verse typed a line a paragraph). */
+  runOn?: boolean;
+  /** A poem: an empty paragraph ended its last stanza. */
+  stanzaBreak?: boolean;
+  /** A poem: a line carries a hemistich separator (`||`), so the fence
+   *  names the line layout. */
+  layoutLines?: boolean;
 }
 
 interface ListLevel { ilvl: number; indent: number; width: number }
@@ -177,9 +185,11 @@ class Converter {
     if (!g) return;
     this.group = null;
     if (g.chunks.length === 0 && !g.title) return;
+    const verseAttrs = [...(g.key ? [`style=${attrValue(g.key)}`] : []), ...(g.layoutLines ? ['layout=lines'] : [])];
     const attrs = g.kind === 'callout'
       ? `{type=${attrValue(g.key)}${g.title ? ` title=${attrValue(g.title)}` : ''}}`
-      : `{style=${attrValue(g.key)}}`;
+      : g.kind === 'verse' ? (verseAttrs.length ? `{${verseAttrs.join(' ')}}` : '')
+        : `{style=${attrValue(g.key)}}`;
     const inner = joinChunks(g.chunks);
     this.chunks.push({ kind: 'block', text: `:::${g.kind}${attrs}${inner ? `\n${inner}` : ''}\n:::` });
     this.list = [];
@@ -221,7 +231,7 @@ class Converter {
 
   /** Runs → inline runs, split at line breaks when `split` (verse typed
    *  with Shift+Enter) and at page breaks. Notes are numbered here. */
-  private inlineRuns(runs: WordRun[], opts: { heading?: boolean; splitLines?: boolean; inCell?: boolean; inNote?: boolean }): { lines: InlineRun[][]; images: Array<Extract<WordRun, { type: 'image' }>>; pageBreak: boolean; displayMath: string[] } {
+  private inlineRuns(runs: WordRun[], opts: { heading?: boolean; splitLines?: boolean; inCell?: boolean; inNote?: boolean; verse?: boolean }): { lines: InlineRun[][]; images: Array<Extract<WordRun, { type: 'image' }>>; pageBreak: boolean; displayMath: string[] } {
     const lines: InlineRun[][] = [[]];
     const images: Array<Extract<WordRun, { type: 'image' }>> = [];
     const displayMath: string[] = [];
@@ -237,7 +247,8 @@ class Converter {
           break;
         }
         case 'tab':
-          cur().push({ text: ' ' });
+          // A tab at the start of a line of verse indents it (#620).
+          cur().push({ text: opts.verse ? '\t' : ' ' });
           break;
         case 'break':
           if (r.kind === 'page') pageBreak = true;
@@ -407,6 +418,23 @@ class Converter {
     return { indent: ' '.repeat(indent), marker };
   }
 
+  /** A line of verse (#620): its leading tabs and spaces kept as its
+   *  indent, the rest rendered; a line that would read as a stepped line
+   *  (`+ …`) keeps its plus sign. */
+  private verseLine(runs: InlineRun[]): string {
+    const rest = runs.map((r) => ({ ...r }));
+    let lead = '';
+    while (rest.length > 0 && !rest[0]!.raw && rest[0]!.note === undefined && /^[ \t]/.test(rest[0]!.text)) {
+      const ws = /^[ \t]+/.exec(rest[0]!.text)![0];
+      lead += ws;
+      rest[0]!.text = rest[0]!.text.slice(ws.length);
+      if (!rest[0]!.text) rest.shift();
+    }
+    const text = this.render(rest.map((r) => (r.raw ? r : { ...r, text: r.text.replace(/\t/g, ' ') })));
+    if (!text) return '';
+    return lead + (/^\+\s/.test(text) ? `\\${text}` : text);
+  }
+
   private isManualHeading(p: WordParagraph, text: string): boolean {
     if (!this.s.template.options.manualHeadings || p.list) return false;
     const runs = p.runs.filter((r): r is WordTextRun => r.type === 'text' && r.text.trim() !== '');
@@ -458,6 +486,35 @@ class Converter {
         else if (!attrs) text += ` {style=${attrValue(target.style)}}`;
       } else if (text.endsWith('}') && !/\s\{[^{}]*\}$/.test(text)) text += WORD_JOINER;
       this.out({ kind: 'block', text: `${'#'.repeat(level)} ${text}` });
+      return;
+    }
+
+    // A poem (#620): each line typed with Shift+Enter a line of verse, its
+    // leading tabs and spaces its indent; a paragraph of lines a stanza,
+    // one-line paragraphs in a row one stanza, an empty paragraph a
+    // stanza break.
+    if (target.kind === 'verse') {
+      this.flushCaption();
+      const key = target.style ?? '';
+      if (!(this.group?.kind === 'verse' && this.group.key === key)) this.openGroup('verse', key);
+      const g = this.group!;
+      const { lines, images, displayMath } = this.inlineRuns(p.runs, { splitLines: true, verse: true });
+      const verse = lines.map((l) => this.verseLine(l)).filter((l) => l.trim() !== '');
+      if (verse.length === 0) {
+        g.stanzaBreak = true;
+      } else {
+        if (verse.some((l) => l.includes('||') || /\s\\\\\s/.test(l))) g.layoutLines = true;
+        const last = g.chunks[g.chunks.length - 1];
+        if (verse.length === 1 && last && g.runOn && !g.stanzaBreak) last.text += `\n${verse[0]}`;
+        else g.chunks.push({ kind: 'block', text: verse.join('\n') });
+        g.runOn = verse.length === 1;
+        g.stanzaBreak = false;
+      }
+      if (images.length > 0 || displayMath.length > 0) {
+        this.closeGroup();
+        for (const tex of displayMath) this.out({ kind: 'block', text: `$$${tex}$$` });
+        this.emitImages(images);
+      }
       return;
     }
 
