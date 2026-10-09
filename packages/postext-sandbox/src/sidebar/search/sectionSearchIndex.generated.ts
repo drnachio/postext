@@ -1161,6 +1161,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'bodyVerseLayoutTooltip',
       'bodyVerseStanzaSpace',
       'bodyVerseStanzaSpaceTooltip',
+      'bodyVerseTighten',
+      'bodyVerseTightenTooltip',
       'bodyVerseTurnover',
       'bodyVerseTurnoverHang',
       'bodyVerseTurnoverMark',

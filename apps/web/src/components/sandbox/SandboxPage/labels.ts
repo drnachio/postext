@@ -983,6 +983,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     bodyVerseStanzaSpaceTooltip: t("bodyVerseStanzaSpaceTooltip"),
     bodyVerseKeepStanzas: t("bodyVerseKeepStanzas"),
     bodyVerseKeepStanzasTooltip: t("bodyVerseKeepStanzasTooltip"),
+    bodyVerseTighten: t("bodyVerseTighten"),
+    bodyVerseTightenTooltip: t("bodyVerseTightenTooltip"),
     bodyAvoidOrphans: t("bodyAvoidOrphans"),
     bodyAvoidOrphansTooltip: t("bodyAvoidOrphansTooltip"),
     bodyOrphanMinLines: t("bodyOrphanMinLines"),

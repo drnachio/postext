@@ -1602,6 +1602,8 @@
     "bodyVerseStanzaSpaceTooltip": "連のあいだの空行が空ける量で、詩の行送りを単位にします。ベースライングリッド上では整数行になります。既定は 1 です。",
     "bodyVerseKeepStanzas": "短い連を分けない",
     "bodyVerseKeepStanzasTooltip": "この行数以下の連は段や頁をまたいで分けず、まるごと次へ送ります（俳句は 3、短歌は 5）。既定は 0（オフ）です。",
+    "bodyVerseTighten": "折り返す前に詰める",
+    "bodyVerseTightenTooltip": "行長よりわずかに長い詩行は語間を最小語間まで詰めて一行に収め、それでも収まらない行だけを折り返します。オフ：行長より長い行はすべて折り返します（postext 1.23 と同じ）。1.23 で保存した、一行ずつ組む詩を含む本はオフで開きます。",
     "bodyAvoidOrphans": "オーファンの回避",
     "bodyAvoidOrphansTooltip": "段落の最終行（複数行の場合も）が次の段の先頭に孤立して残るのを抑えます。",
     "bodyOrphanMinLines": "最小行数",

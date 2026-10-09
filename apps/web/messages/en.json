@@ -1602,6 +1602,8 @@
     "bodyVerseStanzaSpaceTooltip": "The space a blank line between stanzas leaves, in lines of the poem’s leading. On the baseline grid it comes out whole grid lines. 1 by default.",
     "bodyVerseKeepStanzas": "Keep Short Stanzas Whole",
     "bodyVerseKeepStanzasTooltip": "A stanza of this many lines or fewer never breaks across columns or pages: it moves on whole (a haiku 3, a tanka 5). 0, off, by default.",
+    "bodyVerseTighten": "Tighten Before Turning Over",
+    "bodyVerseTightenTooltip": "A line of verse a little wider than the measure tightens its word spaces, down to the minimum word spacing, and stays on one line; only a line still too wide turns over. Off: every line wider than the measure turns over, as in postext 1.23. Books saved with 1.23 that hold a poem set line by line open with it off.",
     "bodyAvoidOrphans": "Avoid orphans",
     "bodyAvoidOrphansTooltip": "Discourage leaving a paragraph's last line(s) alone at the top of the next column.",
     "bodyOrphanMinLines": "Min lines",

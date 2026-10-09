@@ -1056,6 +1056,8 @@ export interface SandboxLabels {
   bodyVerseStanzaSpaceTooltip: string;
   bodyVerseKeepStanzas: string;
   bodyVerseKeepStanzasTooltip: string;
+  bodyVerseTighten: string;
+  bodyVerseTightenTooltip: string;
   bodyAvoidOrphans: string;
   bodyAvoidOrphansTooltip: string;
   bodyOrphanMinLines: string;

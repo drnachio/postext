@@ -1602,6 +1602,8 @@
     "bodyVerseStanzaSpaceTooltip": "L’espai que deixa una línia en blanc entre estrofes, en línies de l’interlineat del poema. A la retícula de base surt en línies senceres. 1 per defecte.",
     "bodyVerseKeepStanzas": "No partir estrofes curtes",
     "bodyVerseKeepStanzasTooltip": "Una estrofa d’aquestes línies o menys mai no es parteix entre columnes o pàgines: passa sencera (un haiku 3, una tanka 5). 0, desactivat, per defecte.",
+    "bodyVerseTighten": "Estrènyer abans de partir",
+    "bodyVerseTightenTooltip": "Un vers una mica més ample que la caixa estreny els espais entre paraules, fins a l’espaiat mínim, i cap en una línia; només el que continua sense cabre es parteix. Desactivat: tot vers més ample que la caixa es parteix, com a postext 1.23. Els llibres desats amb 1.23 que tenen un poema vers a vers s’obren amb aquesta opció desactivada.",
     "bodyAvoidOrphans": "Evitar òrfenes",
     "bodyAvoidOrphansTooltip": "Desaconsella que les últimes línies d'un paràgraf quedin soles al començament de la columna següent.",
     "bodyOrphanMinLines": "Mín. línies",

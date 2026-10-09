@@ -2265,6 +2265,8 @@
     "bodyVerseStanzaSpaceTooltip": "El espacio que deja una línea en blanco entre estrofas, en líneas del interlineado del poema. En la retícula de base resulta en líneas enteras. 1 por defecto.",
     "bodyVerseKeepStanzas": "No partir estrofas cortas",
     "bodyVerseKeepStanzasTooltip": "Una estrofa de estas líneas o menos nunca se parte entre columnas o páginas: pasa entera (un haiku 3, una tanka 5). 0, desactivado, por defecto.",
+    "bodyVerseTighten": "Apretar antes de partir",
+    "bodyVerseTightenTooltip": "Un verso un poco más ancho que la caja aprieta sus espacios entre palabras, hasta el espaciado mínimo, y cabe en una línea; solo el que sigue sin caber se parte. Desactivado: todo verso más ancho que la caja se parte, como en postext 1.23. Los libros guardados con 1.23 que tienen un poema verso a verso se abren con esta opción desactivada.",
     "bodyAvoidOrphans": "Evitar huérfanas",
     "bodyAvoidOrphansTooltip": "Desalienta que las últimas líneas de un párrafo queden solas al inicio de la columna siguiente.",
     "bodyOrphanMinLines": "Mín. líneas",

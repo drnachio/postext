@@ -1602,6 +1602,8 @@
     "bodyVerseStanzaSpaceTooltip": "O espaço que uma linha em branco deixa entre estrofes, em linhas da entrelinha do poema. Na grade de linhas de base resulta em linhas inteiras. 1 por padrão.",
     "bodyVerseKeepStanzas": "Não partir estrofes curtas",
     "bodyVerseKeepStanzasTooltip": "Uma estrofe com este número de linhas ou menos nunca se parte entre colunas ou páginas: passa inteira (um haicai 3, um tanka 5). 0, desligado, por padrão.",
+    "bodyVerseTighten": "Apertar antes de partir",
+    "bodyVerseTightenTooltip": "Um verso um pouco mais largo que a mancha aperta os espaços entre palavras, até o espaçamento mínimo, e cabe em uma linha; só o que continua sem caber é partido. Desligado: todo verso mais largo que a mancha é partido, como no postext 1.23. Livros salvos com a 1.23 que têm um poema verso a verso abrem com esta opção desligada.",
     "bodyAvoidOrphans": "Evitar órfãs",
     "bodyAvoidOrphansTooltip": "Evita que as últimas linhas de um parágrafo fiquem sozinhas no alto da coluna seguinte.",
     "bodyOrphanMinLines": "Mín. de linhas",

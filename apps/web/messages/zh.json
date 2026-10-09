@@ -1602,6 +1602,8 @@
     "bodyVerseStanzaSpaceTooltip": "诗节之间空行留出的间距，以诗的行距为单位。在基线网格上取整到网格行。默认 1。",
     "bodyVerseKeepStanzas": "短诗节不拆分",
     "bodyVerseKeepStanzasTooltip": "不超过此行数的诗节绝不跨栏或跨页拆开，而是整体移到下一栏（俳句 3，短歌 5）。默认 0，关闭。",
+    "bodyVerseTighten": "先收紧再转行",
+    "bodyVerseTightenTooltip": "比版心稍宽的诗行先收紧词间距（不小于最小词距），保持一行；只有收紧后仍放不下的诗行才转行。关闭：凡比版心宽的诗行都转行，与 postext 1.23 相同。用 1.23 保存、含逐行排的诗的书打开时此项为关闭。",
     "bodyAvoidOrphans": "避免段末孤行",
     "bodyAvoidOrphansTooltip": "尽量不让段落的最后一行（或几行）单独留在下一栏的栏顶。",
     "bodyOrphanMinLines": "最少行数",
