@@ -24,6 +24,8 @@ export interface StylesheetOptions {
   code?: boolean;
   /** The drop caps the paragraphs open with (#623), as `lines-sink`. */
   dropCaps?: readonly string[];
+  /** A figure or a box text wraps round (#627): the float rules. */
+  wraps?: boolean;
   /** Classes of emphasis marks the text uses beyond `pt-dots` (the
    *  filled dot on the default side): their rules are written only then
    *  (`inline.ts` `dotsClasses`, #428). */
@@ -685,6 +687,16 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
       out.push(rule(`.pt-dropcap-${shape}`, [`font-size: ${round(lines * 1.25)}em`]));
       out.push(`@supports (initial-letter: 1) or (-webkit-initial-letter: 1) {\n  .pt-dropcap-${shape} { float: none; margin: 0 0.08em 0 0; font-size: 1em; line-height: inherit; -webkit-initial-letter: ${lines} ${sink}; initial-letter: ${lines} ${sink}; }\n}\n`);
     }
+  }
+  // Text wrap (#627): a figure or a box floated to its side; what cannot
+  // run beside it in print (headings, other figures, tables, boxes,
+  // formulas, poems) clears it.
+  if (options.wraps) {
+    out.push(rule('.pt-wrap', ['margin-top: 0', 'margin-bottom: 1em']));
+    out.push(rule('.pt-wrap-left', ['float: left', 'clear: left']));
+    out.push(rule('.pt-wrap-right', ['float: right', 'clear: right']));
+    out.push(rule('.pt-wrap img', ['max-width: 100%', 'height: auto']));
+    out.push(rule('h1, h2, h3, h4, h5, h6, figure:not(.pt-wrap), table, aside:not(.pt-wrap), .pt-math-display, .pt-stanza, .pt-verse', ['clear: both']));
   }
   if (options.verse) {
     // The poem as wide as its widest bayt, centred: its hemistichs share

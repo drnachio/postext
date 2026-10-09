@@ -711,6 +711,36 @@ describe('reflowable rendition: drop caps (#623)', () => {
   });
 });
 
+describe('reflowable rendition: text wrap (#627)', () => {
+  const config = { ...baseConfig, layout: { layoutType: 'single' as const } };
+  const wrapped: Resource[] = [{ ...resources[0]!, placement: { position: 'here', wrap: 'right', width: 0.4 } }];
+
+  it('floats a wrapped figure and a wrapped box to their sides, and clears headings', async () => {
+    const md = [para, '', '::resource{id="f1"}', '', `${para}${para}${para}`, '', ':::callout{wrap="left" width=0.35}', 'Sow thinly.', ':::', '', `${para}${para}`, '', '## Next', '', para].join('\n');
+    const doc = layOut(md, config, wrapped);
+    expect(doc.pages[0]!.columns[0]!.exclusions?.length).toBe(2);
+    const { pub, files, all } = await render([doc]);
+    expectSound(pub, files);
+    expect(all).toMatch(/<figure id="[^"]+" class="pt-wrap pt-wrap-right" style="width:40%;margin-left:[\d.]+%">/);
+    expect(all).toMatch(/<aside class="pt-callout[^"]* pt-wrap pt-wrap-left" style="width:35%;margin-right:[\d.]+%">/);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('.pt-wrap-right {');
+    expect(css).toMatch(/h1, h2, h3, h4, h5, h6, [^{]*\{[^}]*clear: both/);
+  });
+
+  it('floats to the sheet\'s side in a right-to-left book', async () => {
+    const arabic = 'كان الكتاب على الطاولة وكان القارئ يقرأ بصوت هادئ في الغرفة الكبيرة. '.repeat(6);
+    const doc = layOut(['::resource{id="f1"}', '', arabic].join('\n'), { ...config, locale: 'ar', direction: 'rtl' }, [{ ...resources[0]!, placement: { position: 'here', wrap: 'start', width: 0.4 } }]);
+    const { all } = await render([doc]);
+    expect(all).toContain('class="pt-wrap pt-wrap-right"');
+  });
+
+  it('writes no wrap rules for a book without wraps', async () => {
+    const { pub } = await render([layOut(para, baseConfig)]);
+    expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('pt-wrap');
+  });
+});
+
 describe('reflowable rendition: code listings (#624)', () => {
   const md = [
     'A listing:', '',

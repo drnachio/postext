@@ -104,6 +104,17 @@ export function layOutBook(chapters: string[], overrides: PostextConfig = {}): V
   return buildBundle({ chapters: chapters.map((markdown) => ({ markdown })), config: { ...config, ...overrides } });
 }
 
+/** Text wrap (#627): a figure with text running beside it on the right,
+ *  a box on the left, in one column. */
+export function wrapSampleBook(): VDTDocument[] {
+  const figure = resources.find((r) => r.id === 'f1')!;
+  return buildBundle({
+    chapters: [{ markdown: ['# Beds', '', para.repeat(2), '', '::resource{id=f1}', '', para.repeat(6), '', ':::callout{wrap="left" width=0.4}', 'Sow thinly.', ':::', '', para.repeat(6), '', '## Later', '', para.repeat(2)].join('\n') }],
+    config: { ...config, layout: { layoutType: 'single' } },
+    resources: [{ ...figure, placement: { position: 'here', wrap: 'right', width: 0.4 } }],
+  });
+}
+
 /** Journal tables (#625): the document's style and a named one set with
  *  booktabs rules, a head over two columns and group rules. */
 export function booktabsSampleBook(): VDTDocument[] {

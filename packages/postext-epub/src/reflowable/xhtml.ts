@@ -16,6 +16,7 @@ import type {
   CodeNode,
   TabItem,
   VerseNode,
+  WrapFloat,
 } from './model';
 import { bridgeLinks, formatKey, idOf, linkKey, wrapFormat, xmlAttr, xmlText } from './inline';
 
@@ -376,7 +377,8 @@ class Writer {
         const pull = node.pullQuote
           ? ` epub:type="pullquote"${node.pullQuote === 'echo' ? ' role="doc-pullquote" aria-hidden="true"' : ''}`
           : '';
-        return `<aside${this.classAttr(['pt-callout', node.styleId && idOf('pt-callout-', node.styleId), node.pullQuote && 'pt-pullquote'])}${pull}>\n${title}${this.nodes(node.children)}\n</aside>`;
+        const wrap = this.wrapAttrs(node.wrap);
+        return `<aside${this.classAttr(['pt-callout', node.styleId && idOf('pt-callout-', node.styleId), node.pullQuote && 'pt-pullquote', wrap.cls])}${wrap.style}${pull}>\n${title}${this.nodes(node.children)}\n</aside>`;
       }
       case 'figure':
         return this.figure(node);
@@ -551,6 +553,15 @@ class Writer {
     return video.linkPoster && video.link ? `<a class="pt-video-link" href="${xmlAttr(video.link)}">${picture}</a>` : picture;
   }
 
+  /** The class and style of a figure or a box text wrapped round in
+   *  print (#627): floated to its side, its share of the text wide, the
+   *  gap on the text's side. */
+  private wrapAttrs(wrap: WrapFloat | undefined): { cls: string; style: string } {
+    if (!wrap) return { cls: '', style: '' };
+    const margin = wrap.side === 'left' ? `margin-right:${wrap.gap}%` : `margin-left:${wrap.gap}%`;
+    return { cls: `pt-wrap pt-wrap-${wrap.side}`, style: ` style="width:${wrap.width}%;${margin}"` };
+  }
+
   private figure(node: Extract<Node, { k: 'figure' }>): string {
     const href = node.fileId ? this.ctx.imageHref(node.fileId) : undefined;
     const body = node.video
@@ -565,14 +576,16 @@ class Writer {
     // the picture when there is no caption), a space apart, so a reader
     // without the style sheet, or reading the text aloud, does not run the
     // caption's last word into the note's first.
+    const wrap = this.wrapAttrs(node.wrap);
+    const open = `<figure id="${node.id}"${wrap.cls ? ` class="${wrap.cls}"` : ''}${wrap.style}>`;
     if (node.caption.length === 0) {
-      return `<figure id="${node.id}">${pre}${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
+      return `${open}${pre}${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
     }
     if (node.captionAbove) {
-      return `<figure id="${node.id}"><figcaption>${pre}${this.caption(node.caption)}</figcaption>\n${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
+      return `${open}<figcaption>${pre}${this.caption(node.caption)}</figcaption>\n${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
     }
     const caption = `<figcaption>${this.caption(node.caption)}${note ? ` <span class="pt-note">${note}</span>` : ''}</figcaption>`;
-    return `<figure id="${node.id}">${pre}${body}\n${caption}</figure>`;
+    return `${open}${pre}${body}\n${caption}</figure>`;
   }
 
   private cell(cell: TableCellNode, scope: string): string {
