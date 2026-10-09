@@ -293,7 +293,7 @@ per-resource `placement`:
 |---|---|
 | Top or bottom of the column, near the first citation | `position: "auto"`, `span: "column"` |
 | Across the page, at the top | `position: "top"`, `span: "page"` |
-| Exactly where it is mentioned, including ornaments and small tables under their paragraph | `position: "here"` + `::resource{id}` |
+| Exactly where it is mentioned, including ornaments and tables under their paragraph (a long one splits across columns from 1.25) | `position: "here"` + `::resource{id}` |
 | In the outer margin column | `span: "side"` (layout `oneAndHalf`, side role `floats`) |
 | Figure in the main column with its caption in the margin | `span: "column"`, `captionSide: true` |
 | Across some of a newspaper's columns (2 of 5) | `span: "column"`, `columns: 2` (≥ 1.18; boxes: callout `columns`) |

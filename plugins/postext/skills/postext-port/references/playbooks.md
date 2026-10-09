@@ -566,6 +566,7 @@ numbers" panels, grey boxes, badges. In Markdown write
 | Key terms in colour inside | `body.boldColor` |
 | Two columns inside the box | `:::columns{count=2 breaks="4"}` inside the callout (`breaks` = index of the first block of column 2, from the printed page) + `columnGap` |
 | A 3-up "in numbers" panel | a dark callout (`span: "page"`) with `:::columns{count=3}` of `**22 000 000** people…` paragraphs |
+| Columns with no frame, in the text (briefs, a poster band) | no box: `:::columns{count=3 span="page"}` in the running text (≥ 1.25), `rule` for a rule down each gap |
 
 ### C3. Placement
 - Mid-page box across the columns: `span: "page"`.
@@ -729,6 +730,11 @@ To cut them from a PDF: on a copy of the page, redact the cell's own text
   and there is a "(cont.)" suffix and a "Continued" marker in the document
   locale. The split never falls inside a rowspan or after a group-head row,
   and the tail keeps at least 3 rows.
+- A table set `here` splits the same way (≥ 1.25, `tableStyle.splitInline`):
+  keep it where the source has it (a menu course, a timetable, a parts list);
+  do not float it only to make it split. It goes on at the head of the next
+  column, before the text after it. Only turned (landscape) tables need a
+  float.
 
 ### D13. Infographics and charts
 Cut them as figures, or transcribe the data: a table resource, a callout

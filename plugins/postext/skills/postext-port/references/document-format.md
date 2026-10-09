@@ -382,11 +382,13 @@ Sources: ; .
 # The lantern and its parts
 ```
 
-### 7.4 `:::columns{count=N breaks="…"}` (multi-column group, callouts only)
+### 7.4 `:::columns{count=N breaks="…"}` (multi-column group)
 
 Source: ; .
-- **Only inside a `:::callout`.** Elsewhere the fences are ignored and the blocks flow normally.
-- `count`: integer, default 2.
+- **In a `:::callout`, or (postext ≥ 1.25, `layout.flowColumns`) in the running text.** In a box the columns share its inner width, `columnGap` apart, in the box typography. In the text they share the text column, a body line apart, in the text's own typography; `span="page"` on a page of several columns cuts the page into a band, like a page-span box (columns above close level, text resumes in every column below). Headings inside keep their style, number and TOC entry; footnotes go to the column foot. Up to 1.24 (and with `flowColumns: false`) the fences are ignored outside a box.
+- Use a main-flow group for column bands in the text (newspaper briefs, a poster's three columns, an index-like list) instead of a frameless page-span callout that only holds a group.
+- `count`: integer 2–6, default 2. `gap`: a length (`12pt`, `1em`); default `columnGap` in a box, a body line in the column, `layout.gutterWidth` across the page. `rule`: a rule down each gap (`layout.columnRule` colour/width).
+- **Splitting (≥ 1.25).** A group that does not fit (the rest of its column, or a box that splits) is cut and goes on in the next column/page. `flow="snake"` (default without `breaks`): one galley, columns filled in turn, cut between blocks or lines (≥ `layout.boxChildSplitMinLines` per side), the last part balanced. `flow="parallel"` (default with `breaks`): each `breaks` run is a stream kept in its own column, every stream going on in the same column of the next part: a poem and its translation stay level. A nested box in a group stays whole; a group inside a nested box is never cut. Groups that fit lay out as before. Warnings `columnsFlowUnknown`, `columnsTooNarrow`.
 - `breaks`: a comma list of **1-based block indices** within the group where columns 2, 3, … start. Values must be > 1. Without `breaks`, the columns are balanced, and a cut may fall inside a paragraph or list item. With `breaks`, there is no mid-paragraph cut.
 - `breaks` counts blocks only: paragraphs, list items (one each), display formulas, figures, tables; a nested callout counts as **one**. Directives (`:::space`) are **not** counted. A value past the last block or not after the previous break is ignored.
 - `:::space` inside the group separates blocks, but is **dropped at the top of the group and at each column head** (so equal stanza gaps line up across columns). Put space before the `:::columns` fence to push the group down.
@@ -809,7 +811,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 
 ## 14. Discrepancies: docs (`docs/document-format-en.mdx`) vs code
 
-1. **Containers:** the docs table says "Three container names" (callout, paragraphs, part). The code has **four**, including `columns`. The docs do describe `:::columns` in a later section.
+1. **Containers:** older docs said `:::columns` works only inside a callout. Since postext 1.25 it also runs in the main flow (`layout.flowColumns`, pinned off for presets below configVersion 11 that hold a group).
 2. **Callout `placement`:** the docs list `here|top|bottom|fixed`. The code also accepts **`auto`**, which floats to the first free band, top or bottom.
 3. **"Inline markup is recognised inside any text block (headings…)":** true for headings only with `headings.inlineMarks` on, the default since `configVersion` 6. A preset without it whose headings carry marks reads `inlineMarks: false`, and its headings stay plain (only refs, swatches and math survive).
 4. **Ordered list start:** the docs imply the start number is kept and the list counts from it. In fact **every item prints its own literal number**.
@@ -855,6 +857,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Bulleted/numbered list | One line per item. 2 spaces per nesting level. Type the real numbers. Letter or roman item labels are set by the config `numberFormat`, not the source. |
 | List item with several paragraphs | Not possible. Merge into one line, or follow the item with a plain paragraph. |
 | Sidebar / box / "Key points" / exercise | `:::callout{type="…" title="…" label="…"}`. Two columns inside use `:::columns`. Answer boxes use a nested callout. |
+| Column bands in the running text (briefs in three columns, a poster's columns across a two-column page, a bilingual poem side by side) | `:::columns{count=3 span="page" rule}` … `:::` in the text (≥ 1.25); `breaks` + the default `flow="parallel"` for side-by-side streams that must stay level across pages. No frameless box needed. |
 | Figure / photo / diagram | A resource plus `:ref{id="…"}` in the sentence that first cites it (auto float). For an unnumbered ornament or a fixed spot: `placement.position:"here"` plus `::resource{id="…"}` on its own line. |
 | Table | A table resource (`TableModel` JSON). Cite it with `:ref`. Math inside cells is impossible; use `^ ^`/`~ ~`/Unicode. Text the source aligned with tab stops (a menu, a cast list, marks at the margin, a form) is not a table: paragraphs with tab stops (rows above). |
 | Cross-reference "see Fig. 3.2" | `see :ref{id="fig-x"}`. For "Figure 3.2" use `style="full"`; for "figure 3.2" add `case="lower"`; for a bare number use `style="number"`. |
@@ -908,7 +911,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 4. Escape stray `*`, `_` (including inside words and URLs), `^`, `~` and `$` with a backslash.
 5. Attribute values contain no `}`. Quotes don't clash. `::resource` uses exactly `{id="…"}`.
 6. Every `type=`, `style=` and `:chip{style}` id exists in the config. Every `:ref` / `::resource` id exists in `resources`.
-7. Every opened `:::callout|paragraphs|part|columns` has its closing `:::`. `:::columns` appears only inside a callout.
+7. Every opened `:::callout|paragraphs|part|columns` has its closing `:::`. A `:::columns` outside a callout needs postext ≥ 1.25 (`layout.flowColumns`; below `configVersion` 11 it is ignored).
 8. No headings end in brace text unless it is meant as attributes. No `:chip` in headings.
 9. Frontmatter appears only in the book's first chapter.
 10. No GFM tables, code fences, HTML, or `---` rules remain. Every `[^id]` marker has one `[^id]:` definition in its chapter, and none sits in a heading, caption or cell.

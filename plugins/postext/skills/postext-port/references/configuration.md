@@ -199,6 +199,7 @@ layout
 ├─ inlineResourceGap  'around' | 'above'                     default 'around'  (a preset without configVersion ≥ 5 reads 'above')
 ├─ inlineResourceGapInBoxes boolean                          default true  (a preset below configVersion 6 reads false)
 ├─ boxChildSplitMinLines number                              default 2  lines of a paragraph/item a box cut leaves per side (a preset below configVersion 6 with a :::callout reads 1)
+├─ flowColumns        boolean                                default true   ≥ 1.25 :::columns outside a box sets sub-columns in the text (span="page" across a multi-column page), and a group, in a box or in the text, is cut across columns/pages; false = 1.24 (fence ignored outside a box, group never cut; a preset below configVersion 11 with a :::columns fence reads false)
 └─ writingMode        'horizontal-tb' | 'vertical-rl'         default 'horizontal-tb'   postext ≥ 1.9; a heading style's layout may set its own
 ```
 Geometry:
@@ -982,7 +983,7 @@ All em values = the callout body font size.
          + italic = false, smallCaps = false   (paragraphs, list items and blockquotes of the box)
   lists = { bulletChar, color, indent, gap, itemSpacing, bulletFontSize?, bulletFontWeight? }  → inherit unorderedLists
            (a set `color` also colours ordered-list numbers, even when equal to unorderedLists.color)
-  columnGap = 1.5em                  for :::columns{count=N} groups inside the box
+  columnGap = 1.5em                  for :::columns{count=N} groups inside the box (a fence `gap=` overrides it)
   marginTop = 0.75em, marginBottom = 0.75em (minimum; grid-snapped after)
   snapToGrid = true                  false = exact marginBottom (stacked-box worksheets)
   keepTogether = true                false = may split between children / lines; continuation drops icon (its column stays, empty) (+ title unless repeatTitle)
@@ -1006,7 +1007,9 @@ Gotchas: `body.textAlign` only `'left'|'justify'`. Callout body inherits body te
 so boxes with coloured bold need `body.boldColor`. `span:'page'` in a multi-column layout cuts
 the page into bands (text above levelled). Nested callouts take their own style but ignore
 span/placement/floatBarrier/snapToGrid. Ordered-list numbers inside a box come from the global
-`orderedLists` (callout `lists` has bullet fields only); `:::columns` groups share the box body.
+`orderedLists` (callout `lists` has bullet fields only); `:::columns` groups share the box body. A box
+that splits cuts inside a group too (≥ 1.25, `layout.flowColumns`): snake groups fill their columns in
+turn, parallel ones (`breaks`) go on stream by stream; a nested box in a group stays whole.
 
 ---------------------------------------------------------------------------------
 
@@ -1167,6 +1170,10 @@ booktabs (≥ 1.24) — journal tables: heavy rule above + under the last row, l
   continuedFootRule = 'bottom' | 'light' | 'none' ('light': a split part that goes on ends light;
     every part repeats the header with top + header rules; only the last part gets the heavy rule)
 overflow = 'split' | 'clip' | 'hide'                ('split': repeats header rows, caption + continuedSuffix)
+splitInline = true   (≥ 1.25) overflow applies to `here` tables too: one that does not fit the rest of its column is
+  cut between rows (first part ≥ header + 2 rows, else the whole table moves on; parts go on at the head of the
+  next column at its width; < 5 body rows never cut); 'clip'/'hide' for one taller than a column; not inside boxes
+  or on vertical pages. false = 1.24 (moves whole); a preset below configVersion 11 embedding a resource reads false
 continuedSuffix = '(cont.)', continuesMarkerEnabled = true, continuesMarker = 'Continued' | 'Continúa' (by locale)
 ```
 tableStyles[]: `{ id (REQUIRED), name?, …any tableStyle field }` — unset fields inherit
@@ -1414,7 +1421,7 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 Content warnings to expect: `cjkLooseLine` (a justified line needing more than ½ em between characters, set
 short), `cjkMarksExceedLeading` / `rubyExceedsLeading` (line gap under ½ em with marks on one side, ⅝ with both;
 give annotated text more leading), `kuntenExceedsLeading` (送り仮名 need half an em on the reading side),
-`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `textWrap` (≥ 1.24: a resource or box with wrap kept its band: `tooNarrow`, `fewLines`, `verticalText`, or an inline one `moved` to the next column), `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block); config
+`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `textWrap` (≥ 1.24: a resource or box with wrap kept its band: `tooNarrow`, `fewLines`, `verticalText`, or an inline one `moved` to the next column), `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block), `columnsFlowUnknown` (≥ 1.25: a `:::columns` flow other than snake/parallel; the default applies), `columnsTooNarrow` (≥ 1.25: sub-columns under six ems of their text: fewer columns or a smaller `gap`); config
 warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`.
 
 ```json
@@ -1661,7 +1668,8 @@ fence (its lines then read as Markdown); one stamped 9 (postext 1.23), those of 
 `bodyText.verse.tighten: false` when a chapter sets a poem line by line, and `overflow: 'ellipsis-end'` written
 on every text element of a heading design or a part page (`parts.design`, `parts.versoDesign`) that sets none
 (in `htmlViewer.overrides` too); one stamped 10 (postext 1.24), that of rules 11:
-`headings.balancing.enabled: true` on a horizontal `cjk.grid` config that does not set it. The pins keep what those rules changed, not
+`headings.balancing.enabled: true` on a horizontal `cjk.grid` config that does not set it, `tableStyle.splitInline: false`
+when a chapter embeds a resource and `layout.flowColumns: false` when a chapter opens a `:::columns` fence (#634). The pins keep what those rules changed, not
 every 1.4 page: 1.5's layout fixes (page-span opener measure, drop caps in heading designs, tracking in boxes,
 the loose-paragraph limit…) apply to an old bundle too.
 Must NOT go in `config`: `customFonts` (built from `fonts[]`; fileIds are storage-local —
