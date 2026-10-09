@@ -632,7 +632,7 @@ Two lines lower still.
 
 - **詩の行。** 空でない各行が詩の1行で、それぞれ単独でインラインのMarkdownとして読みます。強調、スモールキャピタル、注、参照が使えます。続く空行はまとめて1回の連の区切りです。
 - **字下げ。** 行頭の空白1つの幅は`indentStep`で、既定は0.5 emなので、空白2つで1字下がります。タブは空白4つ、全角スペース（U+3000）は2つと数えます。
-- **折り返し。** 行長より長い詩の行は語間の空白で折り返します（日本語の行は日本語の行分割の規則で字間で折り返します）。`turnover=hang`（既定）では残りを次の行にぶら下げ、その行自身の頭から`hang`だけ下げます。`hang`は詩の段落スタイルの`hangingIndent`、なければ2 em（`bodyText.verse.hang`）です。`turnover=right`では、残りを開き角括弧（`turnoverMark`、既定は`[`）の後ろに置いて行末側に寄せます。英語とスペイン語の詩集の組み方です。段落スタイル自身が`hyphenation: true`を決めていない限り、詩はハイフンで分割しません。詩の行とその折り返しは、段や頁の区切りで離れることはありません。
+- **折り返し。** 行長よりわずかに長い詩の行は、まず語間の空白を自然な幅の`bodyText.minWordSpacing`まで詰めて（両端揃えの文の詰めの限度）一行に収めます。開始行に`tighten=false`を書くか`bodyText.verse.tighten: false`とすると、詰めずに折り返します。詰めても収まらない行は語間の空白で折り返します（日本語の行は日本語の行分割の規則で字間で折り返します）。`turnover=hang`（既定）では残りを次の行にぶら下げ、その行自身の頭から`hang`だけ下げます。`hang`は詩の段落スタイルの`hangingIndent`、なければ2 em（`bodyText.verse.hang`）です。`turnover=right`では、残りを開き角括弧（`turnoverMark`、既定は`[`）の後ろに置いて行末側に寄せます。英語とスペイン語の詩集の組み方です。段落スタイル自身が`hyphenation: true`を決めていない限り、詩はハイフンで分割しません。詩の行とその折り返しは、段や頁の区切りで離れることはありません。
 - **連。** 連と連のあきは詩の行送り1行分です。`stanzaSpace=0.5`で半行、長さ（`stanzaSpace=6pt`）で正確な量になります。ベースライングリッド上では整数行になります。段と頁はまず連のあいだで区切り、連の中ではウィドウ・オーファンの規則で区切ります。そのときはその連の行数を数えます。`keepStanzas=N`はN行以下の連を分けずに保ちます。俳句なら`keepStanzas=3`、短歌なら`keepStanzas=5`です。
 - **配置。** 横組みでは、詩はいちばん長い行を基準に行長の中央に置かれ、各行は詩の行頭にそろいます（`align=center`、散文の中に詩を引くときの通常の組み方）。`align=start`は行長の行頭にそろえ、縦組みではこれが既定です。詩を導く段落は、最後の行を詩の最初の行と一緒に保ちます。
 - **段落ちの行。** `+ …`と書いた行は、上の行の終わりから語間の空白1つ分あとに始まります。詩劇で2人の人物が分け合う1行の組み方です。プラス記号で始まる行は`\+`と書きます。
@@ -655,6 +655,7 @@ Two lines lower still.
     <tr><td><code>turnoverMark</code></td><td><code>[</code></td><td>行末側に寄せた折り返しの前の記号。</td></tr>
     <tr><td><code>stanzaSpace</code></td><td><code>1</code></td><td>連と連のあき。数字だけなら詩の行送りの行数、長さならその長さ。</td></tr>
     <tr><td><code>keepStanzas</code></td><td><code>0</code></td><td>この行数以下の連を分けない。0はオフ。</td></tr>
+    <tr><td><code>tighten</code></td><td><code>true</code></td><td>わずかに長い行を折り返す前に、語間を<code>bodyText.minWordSpacing</code>まで詰める。</td></tr>
     <tr><td><code>keepSpaces</code></td><td>オフ</td><td>行の中で2つ以上続く空白を保つ。</td></tr>
     <tr><td><code>align</code></td><td><code>center</code>（縦組みでは<code>start</code>）</td><td>いちばん長い行を基準に中央に置くか、行頭にそろえる。</td></tr>
     <tr><td><code>style</code>、<code>dir</code>、<code>lang</code></td><td>—</td><td>詩の段落スタイル、方向、言語。</td></tr>

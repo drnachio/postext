@@ -1596,6 +1596,12 @@ bodyText: {
       <td><code>0</code></td>
       <td>不超过此行数的诗节整个留在一栏中。<code>0</code>为关闭。</td>
     </tr>
+    <tr>
+      <td><code>tighten</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>比版心稍宽的诗行收紧词间空格，最多收到其自然宽度的<code>bodyText.minWordSpacing</code>，保持一行；收紧后仍放不下的才转行。不为此调整字距。<code>false</code>：凡比版心宽的诗行都转行，与postext 1.23相同。流式EPUB的行由阅读系统断开，不收紧。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -1606,7 +1612,7 @@ bodyText: {
 }
 ```
 
-在这些设置出现之前保存的配置（`configVersion`为8或更早），如果其中有不带分隔符的诗，读取时使用`layout: 'bayt'`，诗保持postext 1.22给出的居中排法。
+在这些设置出现之前保存的配置（`configVersion`为8或更早），如果其中有不带分隔符的诗，读取时使用`layout: 'bayt'`，诗保持postext 1.22给出的居中排法。用postext 1.23保存的配置（`configVersion`为9），如果其中有逐行排的诗，读取时使用`tighten: false`，诗行仍在1.23转行的地方转行。
 
 在沙盒中，这些设置位于“正文”部分的**诗歌**分组。
 
@@ -10134,7 +10140,7 @@ bundle.files;      // Map<path, Uint8Array>：文件包中的所有文件
 
 #### postext 1.4及更早版本写出的文件包
 
-`createBundle`和沙盒写出的每份清单都带有`configVersion: 9`，表示其`config`是按哪一版配置规则写的。没有这个字段的清单出自postext 1.4或更早版本，当时有十七处设定与现在不同：
+`createBundle`和沙盒写出的每份清单都带有`configVersion: 10`，表示其`config`是按哪一版配置规则写的。没有这个字段的清单出自postext 1.4或更早版本，当时有十八处设定与现在不同：
 
 - **标题分页**（规则3）：1.4及以前，`headings`对象若没有给H1设置分页，H1就不分页（见[按级别覆盖](#按级别覆盖)）。
 - **公式字号**（规则4）：1.4及以前，公式排出的大小是`fontSizeScale`所规定的1.131倍（见[公式字号](#数学公式)）。
@@ -10153,8 +10159,9 @@ bundle.files;      // Map<path, Uint8Array>：文件包中的所有文件
 - **首行缩进与悬挂缩进并用**（规则9）：1.22及以前，段落样式的`hangingIndent`取代其`firstLineIndent`，首行从`indent`开始（见[段落样式](#段落样式)）。
 - **行末的反斜杠**（规则9）：1.22及以前，段落、引文或列表项中行末的反斜杠，以及后跟空格的`\\`，都照样印出，各行用空格连接（见[正文](#正文)下的`bodyText.hardLineBreaks`）。
 - **代码围栏**（规则9）：1.22及以前，```` ``` ````或`~~~`围栏及其中的行按Markdown读取：各行合并成段落，以`#`开头的行变成标题，围栏照样印出（见[代码清单](#代码清单)下的`codeStyle.blocks`）。
+- **诗行转行**（规则10）：在1.23中，逐行排的诗里比版心宽的诗行一律以自然词距转行，哪怕只超出一点（见[诗歌](#诗歌)下的`bodyText.verse.tighten`）。
 
-`openBundle`和`readBundle`读取这类清单的`config`以及每种语言的`localized`配置时，会经过`migrateConfig`：它把1.4排出的分页明确写出来，并把公式缩放乘以1.131（其以`em`为单位的公式外边距则除以1.131）。标记为`3`到`7`的清单出自1.5的预发布版本，只会补上其标记之后那些规则的固定值。标记为`3`时，固定公式字号、行内间距、规则6的五项、规则7的两项和规则8的三项；为`4`时，固定行内间距以及规则6、7、8的各项；为`5`时，固定规则6、7、8的各项；为`6`时，固定规则7和8的各项；为`7`时，只固定规则8的各项。标题下方的切分（`pinLegacyHeadingSplit`）写成`headings.keepWithNextSplit: 'fill'`，加在各层叠加后生效的`headings`上，条件是：读取的某一章有标题，配置本身没有给出值，`headings.keepWithNext`保持开启，且没有关闭`bodyText.avoidOrphans`。复合词断行（`pinLegacyHyphenBreaks`）写成`bodyText.breakAfterHyphens: false`，加在生效的`bodyText`上，条件是：读取的某一章在两个字母之间用了连字符，且配置既没有设置该项，也没有关闭`optimalLineBreaking`。容器下方的间距（`pinLegacyParagraphContainerSpacing`）写成`bodyText.paragraphContainerSpacing: 'add'`，加在生效的`bodyText`上，条件是：配置声明了段落样式（在`paragraphStyles`或HTML查看器的覆盖项中），读取的某一章在单独一行打开了`:::paragraphs`容器，且配置没有设置该项。破折号断行（`pinLegacyDashBreaks`）写成`bodyText.breakAfterDashes: false`，加在生效的`bodyText`上，条件是：读取的某一章在两词之间不留空格地使用了长破折号或短破折号（前面是字母、数字或闭合标点，后面是字母、数字或开括号、开引号；前面是引号时，只要引号前是字母、数字、闭合标点或不间断空格也算，如`"no"—and`，而`said "—Hola`不算；紧贴破折号或引号的行内标记，如`**riddles.**—I`中的`**`，在哪一侧都算），且配置没有设置该项。齐左断行（`pinLegacyRaggedBreaking`）写成`bodyText.optimalRagged: false`，加在生效的`bodyText`上，条件是：配置把某些正文设为齐左（正文、段落样式、框体、篇的正文或章节样式的正文（`headingStyles[].bodyStyle`）的`textAlign`不是`'justify'`，或在HTML查看器的覆盖项中如此设置），没有设置该项，也没有关闭`optimalLineBreaking`。框内间距（`pinLegacyBoxResourceGap`）写成`layout.inlineResourceGapInBoxes: false`，加在生效的`layout`上，条件是：读取的章节中，某个`:::callout`内有单独一行嵌入的资源，且配置没有设置该项。框的切分（`pinLegacyBoxChildCut`）写成`layout.boxChildSplitMinLines: 1`，加在生效的`layout`上，条件是：读取的某一章在单独一行打开了`:::callout`，且配置没有设置该项。标题标记（`pinLegacyHeadingMarks`）写成`headings.inlineMarks: false`，加在各层叠加后生效的`headings`上，条件是：读取的章节中某个标题带有标记（标题中有`*`、`_`、`^`、`~`、`:smallcaps[`或链接），且配置本身没有给出值。首字下沉（`pinLegacyDropCapSize`）不论位于何处，都把1.4时的大小写成`dropCap.fontSize`：元素的行距是长度时用行距的单位，否则用其字号的单位。冒号行下方的空间（`pinLegacyColonListRoom`）写成`bodyText.colonListRoom: 'line'`，加在生效的`bodyText`上，条件是：读取的章节中有列表紧跟在以冒号结尾的行之后（中间允许有空行），且配置既没有指定空间，也没有关闭`keepColonWithList`。行内间距（`pinLegacyInlineGap`）写成`layout.inlineResourceGap: 'above'`，加在各层叠加后生效的`layout`上，条件是：读取的章节中有一行嵌入了资源（按解析器的读法，`::resource{id="…"}`单独占一行；正文或代码片段中提及不算），且配置本身没有给出间距。公式字号固定在各层叠加后生效的`math`上（某种语言自己的`math`会取代共享的那个），而且只在读取的章节中有`$`时才这样做：没有公式的文件包保持其`config`原样。若清单和语言都没有给出`math`，生效的就是`readBundle`的`baseConfig`（读取方自己的配置），它也会被固定，因为1.4就是按这个字号排文件包里的公式的：基础配置的`fontSizeScale: 1.5`读出来是1.5 × 1.1312。基础配置的标题分页保持原样。因此，旧文件包会保留这些规则排出的效果，`bundle.config`会显示排版时所用的分页、公式字号、各项间距、标题标记、首字下沉大小、冒号行下方空间、框的切分、破折号断行、复合词断行、齐左断行、标题下方的切分和容器下方的间距。1.5的版面修正没有对应的固定值，对它和对其他书一样生效，所以受影响的页面仍可能有变化（清单见[公式字号](#数学公式)）。为现行规则手写的`preset.json`应设置`"configVersion": 9`；给旧文件包的清单加上这个标记，也是用现行规则读取它的一行做法（此时没有版本号的文件包也会失去标题分页的固定值）。标为`8`的清单（由postext 1.5至1.22写出）只得到规则9的四项固定，更早的清单也会得到：诗的排法（`pinLegacyVerseLayout`）写成生效的`bodyText`上的`bodyText.verse.layout: 'bayt'`，条件是读取的章节中有开始标记未指定排法、各行不带半句分隔符的`:::verse`诗，且配置尚未设置该项；成对的缩进（`pinLegacyPairedIndents`）去掉同时设置了非零`hangingIndent`的每个段落样式（在`paragraphStyles`或HTML查看器的覆盖设置中）的`firstLineIndent`；强制换行（`pinLegacyHardBreaks`）写成生效的`bodyText`上的`bodyText.hardLineBreaks: false`，条件是读取的章节中有段落、引文或列表项的某行以反斜杠结尾且该块在下一行继续，或有后跟空格和其他文字的`\\`（行内代码和公式、独立公式、标题和`:::verse`诗除外），且配置尚未设置该项；代码围栏（`pinLegacyCodeBlocks`）写成`codeStyle.blocks: false`，条件是读取的章节中打开了```` ``` ````或`~~~`围栏（三个或更多字符，最多缩进三个空格），且配置尚未设置该项。
+`openBundle`和`readBundle`读取这类清单的`config`以及每种语言的`localized`配置时，会经过`migrateConfig`：它把1.4排出的分页明确写出来，并把公式缩放乘以1.131（其以`em`为单位的公式外边距则除以1.131）。标记为`3`到`7`的清单出自1.5的预发布版本，只会补上其标记之后那些规则的固定值。标记为`3`时，固定公式字号、行内间距、规则6的五项、规则7的两项和规则8的三项；为`4`时，固定行内间距以及规则6、7、8的各项；为`5`时，固定规则6、7、8的各项；为`6`时，固定规则7和8的各项；为`7`时，只固定规则8的各项。标题下方的切分（`pinLegacyHeadingSplit`）写成`headings.keepWithNextSplit: 'fill'`，加在各层叠加后生效的`headings`上，条件是：读取的某一章有标题，配置本身没有给出值，`headings.keepWithNext`保持开启，且没有关闭`bodyText.avoidOrphans`。复合词断行（`pinLegacyHyphenBreaks`）写成`bodyText.breakAfterHyphens: false`，加在生效的`bodyText`上，条件是：读取的某一章在两个字母之间用了连字符，且配置既没有设置该项，也没有关闭`optimalLineBreaking`。容器下方的间距（`pinLegacyParagraphContainerSpacing`）写成`bodyText.paragraphContainerSpacing: 'add'`，加在生效的`bodyText`上，条件是：配置声明了段落样式（在`paragraphStyles`或HTML查看器的覆盖项中），读取的某一章在单独一行打开了`:::paragraphs`容器，且配置没有设置该项。破折号断行（`pinLegacyDashBreaks`）写成`bodyText.breakAfterDashes: false`，加在生效的`bodyText`上，条件是：读取的某一章在两词之间不留空格地使用了长破折号或短破折号（前面是字母、数字或闭合标点，后面是字母、数字或开括号、开引号；前面是引号时，只要引号前是字母、数字、闭合标点或不间断空格也算，如`"no"—and`，而`said "—Hola`不算；紧贴破折号或引号的行内标记，如`**riddles.**—I`中的`**`，在哪一侧都算），且配置没有设置该项。齐左断行（`pinLegacyRaggedBreaking`）写成`bodyText.optimalRagged: false`，加在生效的`bodyText`上，条件是：配置把某些正文设为齐左（正文、段落样式、框体、篇的正文或章节样式的正文（`headingStyles[].bodyStyle`）的`textAlign`不是`'justify'`，或在HTML查看器的覆盖项中如此设置），没有设置该项，也没有关闭`optimalLineBreaking`。框内间距（`pinLegacyBoxResourceGap`）写成`layout.inlineResourceGapInBoxes: false`，加在生效的`layout`上，条件是：读取的章节中，某个`:::callout`内有单独一行嵌入的资源，且配置没有设置该项。框的切分（`pinLegacyBoxChildCut`）写成`layout.boxChildSplitMinLines: 1`，加在生效的`layout`上，条件是：读取的某一章在单独一行打开了`:::callout`，且配置没有设置该项。标题标记（`pinLegacyHeadingMarks`）写成`headings.inlineMarks: false`，加在各层叠加后生效的`headings`上，条件是：读取的章节中某个标题带有标记（标题中有`*`、`_`、`^`、`~`、`:smallcaps[`或链接），且配置本身没有给出值。首字下沉（`pinLegacyDropCapSize`）不论位于何处，都把1.4时的大小写成`dropCap.fontSize`：元素的行距是长度时用行距的单位，否则用其字号的单位。冒号行下方的空间（`pinLegacyColonListRoom`）写成`bodyText.colonListRoom: 'line'`，加在生效的`bodyText`上，条件是：读取的章节中有列表紧跟在以冒号结尾的行之后（中间允许有空行），且配置既没有指定空间，也没有关闭`keepColonWithList`。行内间距（`pinLegacyInlineGap`）写成`layout.inlineResourceGap: 'above'`，加在各层叠加后生效的`layout`上，条件是：读取的章节中有一行嵌入了资源（按解析器的读法，`::resource{id="…"}`单独占一行；正文或代码片段中提及不算），且配置本身没有给出间距。公式字号固定在各层叠加后生效的`math`上（某种语言自己的`math`会取代共享的那个），而且只在读取的章节中有`$`时才这样做：没有公式的文件包保持其`config`原样。若清单和语言都没有给出`math`，生效的就是`readBundle`的`baseConfig`（读取方自己的配置），它也会被固定，因为1.4就是按这个字号排文件包里的公式的：基础配置的`fontSizeScale: 1.5`读出来是1.5 × 1.1312。基础配置的标题分页保持原样。因此，旧文件包会保留这些规则排出的效果，`bundle.config`会显示排版时所用的分页、公式字号、各项间距、标题标记、首字下沉大小、冒号行下方空间、框的切分、破折号断行、复合词断行、齐左断行、标题下方的切分和容器下方的间距。1.5的版面修正没有对应的固定值，对它和对其他书一样生效，所以受影响的页面仍可能有变化（清单见[公式字号](#数学公式)）。为现行规则手写的`preset.json`应设置`"configVersion": 10`；给旧文件包的清单加上这个标记，也是用现行规则读取它的一行做法（此时没有版本号的文件包也会失去标题分页的固定值）。标为`8`的清单（由postext 1.5至1.22写出）只得到规则9的四项固定，更早的清单也会得到：诗的排法（`pinLegacyVerseLayout`）写成生效的`bodyText`上的`bodyText.verse.layout: 'bayt'`，条件是读取的章节中有开始标记未指定排法、各行不带半句分隔符的`:::verse`诗，且配置尚未设置该项；成对的缩进（`pinLegacyPairedIndents`）去掉同时设置了非零`hangingIndent`的每个段落样式（在`paragraphStyles`或HTML查看器的覆盖设置中）的`firstLineIndent`；强制换行（`pinLegacyHardBreaks`）写成生效的`bodyText`上的`bodyText.hardLineBreaks: false`，条件是读取的章节中有段落、引文或列表项的某行以反斜杠结尾且该块在下一行继续，或有后跟空格和其他文字的`\\`（行内代码和公式、独立公式、标题和`:::verse`诗除外），且配置尚未设置该项；代码围栏（`pinLegacyCodeBlocks`）写成`codeStyle.blocks: false`，条件是读取的章节中打开了```` ``` ````或`~~~`围栏（三个或更多字符，最多缩进三个空格），且配置尚未设置该项。标为`9`的清单（由postext 1.23写出）只得到规则10的固定值，更早的清单也都会得到：诗行转行（`pinLegacyVerseTightening`）写成生效的`bodyText`上的`bodyText.verse.tighten: false`，条件是读取的章节中有逐行排的诗（`:::verse`开始标记写明`layout=lines`，或未写排法且各行没有半句分隔符，而配置并未把这类诗排成双半句），且配置尚未设置该项。
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -10164,7 +10171,7 @@ migrateConfig({ headings: { fontFamily: 'Georgia' } }, undefined, { content: 'A 
 migrateConfig({ math: { fontSizeScale: 1.2 } }, 3);
 // => { math: { fontSizeScale: 1.35746…, marginTop: { value: 0.7072, unit: 'em' }, marginBottom: { value: 0.7072, unit: 'em' } },
 //      layout: { inlineResourceGap: 'above', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 },
-//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt' }, hardLineBreaks: false }, codeStyle: { blocks: false } }
+//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false } }
 migrateConfig({ layout: { layoutType: 'single' } }, 4, { content: 'Text.\n\n::resource{id="fig"}' });
 // => { layout: { layoutType: 'single', inlineResourceGap: 'above' } }
 migrateConfig({ layout: { layoutType: 'single' } }, 5, { content: ':::callout\nText.\n\n::resource{id="fig"}\n:::' });
@@ -10178,7 +10185,7 @@ migrateConfig({ bodyText: { fontFamily: 'Georgia' } }, 7, { content: 'A well-kno
 migrateConfig(config, CONFIG_VERSION); // 现行规则：返回`config`本身
 ```
 
-`content`是该配置要排版的Markdown（一个字符串或一组章节）。不提供它时，只要开启了公式就固定公式字号，只要配置声明了段落样式就固定容器下方的间距，而两项间距、标题标记、冒号行下方空间、框的切分、破折号断行、标题下方的切分和复合词断行总是固定，因为引擎无法判断书中是否有公式、`:::paragraphs`容器、行内图、带标记的标题、冒号引出的列表、框、不留空格的破折号、标题或复合词。齐左断行只看配置决定是否固定，与有无内容无关。存储的配置只迁移一次，然后以`CONFIG_VERSION`重新存储：公式的固定值会乘以缩放，迁移两次就会放大两次。没有它时，诗的排法和代码围栏也会被固定，因为书中可能有不带分隔符的`:::verse`诗或围栏；成对的缩进则只看配置本身。
+`content`是该配置要排版的Markdown（一个字符串或一组章节）。不提供它时，只要开启了公式就固定公式字号，只要配置声明了段落样式就固定容器下方的间距，而两项间距、标题标记、冒号行下方空间、框的切分、破折号断行、标题下方的切分和复合词断行总是固定，因为引擎无法判断书中是否有公式、`:::paragraphs`容器、行内图、带标记的标题、冒号引出的列表、框、不留空格的破折号、标题或复合词。齐左断行只看配置决定是否固定，与有无内容无关。存储的配置只迁移一次，然后以`CONFIG_VERSION`重新存储：公式的固定值会乘以缩放，迁移两次就会放大两次。没有它时，诗的排法和代码围栏也会被固定，因为书中可能有不带分隔符的`:::verse`诗或围栏；成对的缩进则只看配置本身。1.23的诗行转行也会被固定，因为书中可能有逐行排的诗。
 
 ### 排版和渲染文件包
 
