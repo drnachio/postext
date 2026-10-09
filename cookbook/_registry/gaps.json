@@ -1463,7 +1463,8 @@
         "ja": "booktabs の罫線",
         "pt": "Fios booktabs"
       }
-    }
+    },
+    "fixedIn": "1.24.0"
   },
   "pdf-x": {
     "label": {

@@ -46,7 +46,7 @@ A `:::paragraphs` fence applies the `references` [paragraph style](/en/docs/conf
 
 <Excerpt region="figures" />
 
-One array, `runs`, feeds Table 1 and the dots of Figure 2, and the table's predicted column is Eq. (6) evaluated at each amplitude. The text cites each resource with `:ref{id="…" style="full"}`, which prints “Figure 2” in bold ink and floats the resource into the first free slot after the citation. Captions and table cells take no maths in 1.4.1, so they use plain `~sub~` and `^sup^` markup (`*T*~0~`), and symbols in running text stay `$T_0$`. An SVG figure is drawn as an image and cannot use the page's web fonts, so `tex()` calls `renderMath` for each label and writes the outlines into the SVG as paths. The *θ*₀ of Figure 1 is the glyph the formulas use, and it stays vector in the PDF.
+One array, `runs`, feeds Table 1 and the dots of Figure 2, and the table's predicted column is Eq. (6) evaluated at each amplitude. The table takes the [booktabs rules](/en/docs/configuration#booktabs-rules) of a journal, `rules: 'booktabs'` in ink: a heavy rule above it and under the last row, a light one under the header, no vertical lines. The text cites each resource with `:ref{id="…" style="full"}`, which prints “Figure 2” in bold ink and floats the resource into the first free slot after the citation. Captions and table cells take no maths in 1.4.1, so they use plain `~sub~` and `^sup^` markup (`*T*~0~`), and symbols in running text stay `$T_0$`. An SVG figure is drawn as an image and cannot use the page's web fonts, so `tex()` calls `renderMath` for each label and writes the outlines into the SVG as paths. The *θ*₀ of Figure 1 is the glyph the formulas use, and it stays vector in the PDF.
 
 ## Variations
 
