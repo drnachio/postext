@@ -5085,7 +5085,7 @@ const config: PostextConfig = {
 
 ## ダイアグラムスタイル
 
-`diagramStyle`プロパティは、埋め込んだSVGのダイアグラム（`kind: 'svg'`のリソース）の色の付け方を設定します。現在の機能は**単色刷りモード**の1つだけです。ダイアグラム内のすべての色を1つのインキの濃淡に置き換える色変換の処理で、1色の特色で印刷する文書でも図が忠実に再現されます。
+`diagramStyle`プロパティは、埋め込んだSVGのダイアグラム（`kind: 'svg'`のリソース）の色の付け方と、その文字を組むフォントを設定します。**単色刷りモード**は、ダイアグラム内のすべての色を1つのインキの濃淡に置き換える色変換の処理で、1色の特色で印刷する文書でも図が忠実に再現されます。**フォントの埋め込み**は、各SVGの文字が指定するフェイスをそのSVGに埋め込む処理で、ラベルがキャンバス、HTML、EPUBのどこでも文書のフォントで組まれます（[SVGの文字のフォント](#svgの文字のフォント)を参照）。
 
 ```ts
 const config: PostextConfig = {
@@ -5117,6 +5117,12 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td>メインカラー（<code>#295AA3</code>）</td>
       <td>インキです。既定値は文書のパレットのメインカラーで（<code>paletteId: 'main-color'</code>でパレットに連動）、パレットの色見本を差し替えると、見出しや太字の範囲と一緒にダイアグラムの色も変わります。</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>各SVGを画像として表示する前に、その文字が指定するフェイス（<code>font-family</code>）を<code>@font-face</code>のデータURIとして埋め込みます。対象はキャンバス、HTML、EPUB、PDFのラスターのフォールバックです。保存されたファイルには書き込みません。リソース単位では<code>svg.inlineFonts: false</code>で無効にできます（postext 1.25以降）。</td>
     </tr>
   </tbody>
 </table>
@@ -5198,6 +5204,72 @@ const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
 `renderToHtml`は`singleInk`の既定値をリゾルバー自身のフラグから取るため、`bundleImageUrl(bundle)`にはオプションが要りません。
 
 マークアップの処理が書き換えるすべての色（16進、`rgb()`、`hsl()`の値、`white`と`black`。[単色刷りの仕組み](#単色刷りの仕組み)を参照）について、ピクセルの対応付けは、アンチエイリアスのかかった縁やグラデーションも含めて同じ結果になります。両者が異なるのは、マークアップの処理が色をそのまま残す場合です。`white`と`black`以外の名前付きの色、`currentColor`、塗りのない図形やテキスト（既定の黒で描かれるもの）、SVGに埋め込まれたビットマップは、画面では色付けされますが、PDFでは元の色のままです。まったく同じ出力を得るには、ダイアグラムのすべての要素に16進、`rgb()`、`hsl()`のいずれかで明示的に色を指定してください。キャンバスがピクセルを読み戻せない場合（別のオリジンからCORSなしで読み込んだ`<img>`）、画像は色付けされずに描かれます。
+
+### SVGの文字のフォント
+
+SVGの画像は、キャンバス、HTML、EPUBのいずれでも`<img>`という画像として表示されます。画像の文書からはページのWebフォントが見えないため、`<text font-family="IBM Plex Sans">`はシステムのフォントに置き換わってしまいます。postext 1.25以降、エンジンは画像をデコードする前、またはURLとして渡す前に、文字が指定するフェイスをマークアップに埋め込みます。フォントファイル1つにつき1つの`@font-face`規則を作り、そのバイト列をデータURIにして、ルートの`<svg>`タグの直後の`<style>`に入れます。PDFにはこの処理は要りません。PDFはSVGの文字を、埋め込んだフォントで実際のテキストとして組みます（[リソースのバイト列と印刷用マスター](#リソースのバイト列と印刷用マスター)を参照）。
+
+文字が求めるフェイスは、`font-family`、`font-weight`、`font-style`、`font`から読み取ります。属性に書かれたもの、`style`属性の中にあるもの、外側のグループから継承したもののいずれも対象です。ファミリーを指定する`<style>`の規則も数えます。総称ファミリー（`serif`、`sans-serif`など）と、`<title>`や`<desc>`の中の文字は除きます。SVG自身が`@font-face`で宣言しているファミリーには手を加えません。各テキストは`font-family`のリストを順にたどり、フェイスのある最初のファミリーを使います。単色刷りの色変換が先で、フォントの埋め込みはその後です。
+
+フェイスは**プロバイダー**から得ます。その取り決めはpostext-pdfの`PdfFontProvider`と同じなので、1つのプロバイダーを両方で使えます。プロバイダーはファミリー、ウェイト、スタイルと、SVGがそのフェイスで組む文字を受け取り、ファイルを1つまたは複数返します。unicode-rangeのスライスで配信されるファミリー（Fontsource、Google Fonts）には、それらの文字に必要なスライスだけが返されるので、ラベルがラテン文字だけのSVGには`latin`のファイルしか入りません。既定のプロバイダーはエンジンのフォントレジストリを読みます。`loadBundleFonts`はバンドルのフェイスをそこに登録し、ホストは自前のフェイスを`registerFontBytes(family, weight, style, bytes, { unicodeRange })`で登録できます。SVGが初めて必要とした時点で取得するファイルなら`registerFontUrl(…)`を使います。どこにも登録されていないファミリーは、ページの読み取り可能なスタイルシートの`@font-face`規則から探します。バイト列から`document.fonts`に追加した`FontFace`はバイト列を保持しないため、エンジンは読み戻せません。そうしたフェイスも登録してください。
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // 色変換、フォントの埋め込み、デコード、登録
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+処理が行われる場所は次のとおりです。
+
+- **キャンバス**：`registerSvgImage(fileId, svgText, options)`は、画像を色変換し（`inkHex`）、フォントを埋め込み（`fonts`はプロバイダー。`inlineFonts: false`で省略）、デコードしてベクターのソースとして登録し、各フェイスがどう扱われたかを返します。`registerBundleImages(bundle)`はバンドルのSVGに同じことを行い、まずバンドル自身のフェイスを使います。自分でデコードするホストには、`prepareSvgMarkup(svgText, options)`が処理済みのマークアップを返します。
+- **HTML**：`bundleImageUrl(bundle)`は、バンドルのフェイスを埋め込んだSVGマークアップを返します。`renderToHtml(doc, { inlineSvgFonts: true })`は、`resourceImageUrl`が返すSVGの`data:` URIに、レジストリがメモリに持つフェイスを埋め込みます（`inlineSvgFonts: { fonts, maxBytes, withhold }`の形でも指定できます）。オブジェクトURLは同期的に読めないので、blob URLを渡すホストはURLを作る前に埋め込んでください。
+- **EPUB**：`postext-epub`は、SVGを書き出す前に、本の`fonts`から、次に`svgFonts.provider`からフェイスを埋め込みます（[EPUBの本](#epubの本postext-epub)を参照）。
+- **PDF**：SVGの文字は、埋め込んだフォントで実際のテキストとして組まれます。`@font-face`規則だけを含む`<style>`（作者が埋め込んだフェイス）があっても、図はもうラスターに切り替わりません。図がラスターになる場合（フィルターやグラデーション）は、PDFの`fontProvider`から得たフェイスを埋め込んでからラスターを作ります。
+
+下位の関数もエクスポートされています。`svgFontRequests(svgText)`は各テキストのファミリー、ウェイト、スタイル、文字を列挙します。`inlineSvgFonts(svgText, provider, options)`と`inlineSvgFontsSync(svgText, syncProvider, options)`はマークアップを返し、`inlineSvgFontsDetailed`はそれに各フェイスの結果（`inlined`、`declared`、`unavailable`、`withheld`、`tooLarge`）を加えて返します。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>オプション</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>1つのSVGに埋め込むフォントのバイト数の上限です（base64にする前の値で、base64にすると3分の1増えます）。フェイスの合計がこれを超えると1つも埋め込まず、<code>svgFontsTooLarge</code>を報告します。</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>4つすべて</td>
+      <td>埋め込むファイル形式です。それ以外の形式のファイルは飛ばします。</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>なし</td>
+      <td>アプリの外に出るファイルから除くファミリーです（再配布できないもの）。参照は残り、読む側では別のフォントに置き換わります。除いたファミリーは1つずつ<code>onWithheld(family)</code>に通知されます。</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>なし</td>
+      <td>フェイスのないファミリー（<code>svgFontUnavailable</code>）と、サイズ上限の超過（<code>svgFontsTooLarge</code>）を受け取ります。</td>
+    </tr>
+  </tbody>
+</table>
+
+**無効にする**：`diagramStyle.inlineFonts: false`にすると、すべてのSVGが保存されたままになります。リソースに`svg.inlineFonts: false`を指定すると、そのSVGだけがバイト単位でそのまま残ります。自前のフェイスを持つSVGや、変更してはならないSVGに使います。バンドルは、リソースのこの指定を`preset.json`に`"inlineFonts": false`として書き込みます。
+
+**ライセンス**：埋め込みを行うと、アプリの外に出ることのある画像（HTMLの書き出し、EPUB）の中にフォントファイルが入ります。埋め込むのは画像を表示するときか書き出すときだけで、保存されたリソースのバイト列には書き込みません。また`withhold`は、ライセンス上ほかに渡せないファミリーを除きます。EPUBのライターは`redistributable: false`と指定されたフェイスを、Sandboxは再配布不可と指定されたカスタムファミリーを除きます。
 
 
 ## 動画スタイル
@@ -8937,7 +9009,7 @@ const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownR
 
 `formatWarning(w)`は英語の説明を1行で返します。メッセージをローカライズするホストは、代わりに`kind`で分岐してください。マイナーリリースで種類が増えることがあるので、既定の分岐も残しておきます。`collectContentWarnings(markdown, config, resources)`は、何もレイアウトせずに内容の警告を返します（ビルドが加えるのと同じリストで、`pageIndex`はありません）。入力しながらテキストを検査するエディター向けです。`collectHeadingDesignCuts(doc)`は、組み上がったレイアウトを調べ、見出しデザインのテキストがページや段の下端を越えているものを探します（`kind: 'headingDesignCut'`。[確保する高さ](#確保する高さ)を参照）。これはレイアウト自体は報告しないもので、その結果も`formatWarning`で説明できます。Sandboxの**検査**パネルは、これらをすべて一覧にします。
 
-レンダラーは、指定どおりに描けなかったものを`onWarning`オプションで報告します。対象は`renderPageToCanvas`、`renderPage`、`renderToCanvas`（`RenderPageOptions`）、`renderToHtml`と`renderToHtmlIndexed`（`RenderHtmlOptions`）、`renderToPdf`（`RenderToPdfOptions`。PDFワーカー経由でも可）です。描画時の種類は現在1つだけで、`missingImage`です。描くものがない画像（図、表のセルの画像、囲みのアイコン、デザイン画像）は中立的なプレースホルダーとして描かれ、`fileId`と描画呼び出しごとに1回報告されます。報告には`pageIndex`、描画側がわかる場合は`resourceId`（図とセルの画像）、PDFでは複数文書の描画における`documentIndex`が含まれます。描くものがないとは、canvasではその`fileId`の`registerResourceImage`がないこと、HTMLでは`resourceImageUrl`からURLが得られないこと、PDFでは`resourceBytes`からバイト列が得られないか、得られたバイト列をデコードできないことを指します。`fileId`をまったく持たないビットマップやSVGのリソースは、要求するものがないので、報告なしにプレースホルダーとして描かれます。描画時の警告はVDTには保存されません。ホストが用意できるものはレイアウトの後で変わるからです。
+レンダラーは、指定どおりに描けなかったものを`onWarning`オプションで報告します。対象は`renderPageToCanvas`、`renderPage`、`renderToCanvas`（`RenderPageOptions`）、`renderToHtml`と`renderToHtmlIndexed`（`RenderHtmlOptions`）、`renderToPdf`（`RenderToPdfOptions`。PDFワーカー経由でも可）です。描画時の主な種類は`missingImage`です。描くものがない画像（図、表のセルの画像、囲みのアイコン、デザイン画像）は中立的なプレースホルダーとして描かれ、`fileId`と描画呼び出しごとに1回報告されます。報告には`pageIndex`、描画側がわかる場合は`resourceId`（図とセルの画像）、PDFでは複数文書の描画における`documentIndex`が含まれます。描くものがないとは、canvasではその`fileId`の`registerResourceImage`がないこと、HTMLでは`resourceImageUrl`からURLが得られないこと、PDFでは`resourceBytes`からバイト列が得られないか、得られたバイト列をデコードできないことを指します。`fileId`をまったく持たないビットマップやSVGのリソースは、要求するものがないので、報告なしにプレースホルダーとして描かれます。ほかに2つの種類が、SVGの画像にフォントを埋め込むホスト（`registerSvgImage`、`registerBundleImages`、`bundleImageUrl`、`inlineSvgFonts`を指定した`renderToHtml`、postext-epub。[SVGの文字のフォント](#svgの文字のフォント)を参照）から、画像の`fileId`と`resourceId`とともに報告されます。`svgFontUnavailable`（`family`、`weight`、`style`）は、文字が指定するファミリーに埋め込めるフェイスがないことを示し、画像はその文字を代替のフェイスで組みます。`svgFontsTooLarge`（`bytes`、`maxBytes`）は、フェイスがサイズ上限を超え、1つも埋め込まれなかったことを示します。描画時の警告はVDTには保存されません。ホストが用意できるものはレイアウトの後で変わるからです。
 
 ```ts
 import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
@@ -9854,7 +9926,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 `resourceBytes(fileId)`は画像の生のバイト列を返し、バックエンドはその形式を判別します。
 
 - PNG、JPEG、GIF、WebPは画像として埋め込まれます
-- SVGのマークアップはベクターのパスとして描かれます。ベクターのサブセットにない機能を使っている場合は、ブラウザーで600 dpiでラスタライズされます
+- SVGのマークアップはベクターのパスとして描かれ、その`text`は文書に埋め込んだフォントで実際のテキストとして組まれます。ベクターのサブセットにない機能を使っている場合は、ブラウザーで600 dpiでラスタライズされます。`@font-face`規則だけを含む`<style>`（作者が埋め込んだフェイス）は読み飛ばされ、図はベクターのままです（postext-pdf 1.25以降）。それ以外のスタイルシートがあると図はラスターになり、そのラスターは、文字が指定するフェイスを`fontProvider`から得て埋め込んでから作られます（`diagramStyle.inlineFonts`またはリソースの`svg.inlineFonts`が`false`の場合を除きます）
 - PDFは最初のページがそのまま、フォームXObjectとして埋め込まれます
 
 各画像は、何回描かれてもファイルには1回だけ格納されます。ベクターのパスとして描かれるSVGは、すべてのページが描画するフォームXObjectになるので、30ページのドキュメントのページデザインにある枠やロゴは、30回ではなく1回だけ書き込まれます。ページが1つ増えるごとに増えるのは数百バイトです。postext-pdf 1.4までは、各ページがパスのコピーをそれぞれ持っていました。
@@ -10129,10 +10201,10 @@ const bytes = await renderToEpub(docs, {
 
 単独のドキュメントは、1章だけの本として渡します（`renderToEpub([doc], options)`）。
 
-- **`renderToEpub(docs, options): Promise<Uint8Array>`**：ファイルを書き出します。`options`は`{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`です。
+- **`renderToEpub(docs, options): Promise<Uint8Array>`**：ファイルを書き出します。`options`は`{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`です。
 - **`metadata`**：`title`と`language`（BCP 47タグ）は必須で、`subtitle`、`creators`、`identifier`、`date`、`publisher`、`rights`、`description`、`modified`は省略できます。ISBNだけを書くと`urn:isbn:…`になります。`identifier`がなければ、本にはタイトル、著者、言語から導いた`urn:uuid:`が付くので、同じ本の新しい版も読者のライブラリーで同じ位置を保ちます。バイト単位で同一の出力を得るには、`modified`も渡してください。
-- **`fonts`**：埋め込むフェイス。`{ family, weight, style, bytes, format, unicodeRange? }`の形で、`format`は`woff2`、`woff`、`ttf`、`otf`のいずれかです。各フェイスは1つのファイルと1つの`@font-face`規則になり、`unicodeRange`を持つ複数のファイルで1つのフェイスを構成することもできます（Google Fontsのスライス）。ページが使うファミリー、ウェイト、スタイルに埋め込みフェイスがない場合は`missingFont`として報告され、リーディングシステムが独自のフォントで代替します。ライセンスが許すフォントだけを埋め込んでください。
-- **`resourceBytes(fileId)`**：ページが配置する画像を、同期または非同期で`{ bytes, mediaType }`として返します。`mediaType`が空ならバイト列から判別します。ビットマップは格納されたまま、SVGはソースのまま渡し、PDFの印刷用マスター（`svg.pdfFileId`）は渡さないでください。各画像は1回だけ格納されます。単色インクの本（`diagramStyle.singleInk`）では、ファイル内のSVGが色替えされます。バイト列のない画像は`missingImage`として報告され、空の枠として残ります。
+- **`fonts`**：埋め込むフェイス。`{ family, weight, style, bytes, format, unicodeRange? }`の形で、`format`は`woff2`、`woff`、`ttf`、`otf`のいずれかです。各フェイスは1つのファイルと1つの`@font-face`規則になり、`unicodeRange`を持つ複数のファイルで1つのフェイスを構成することもできます（Google Fontsのスライス）。ページが使うファミリー、ウェイト、スタイルに埋め込みフェイスがない場合は`missingFont`として報告され、リーディングシステムが独自のフォントで代替します。ライセンスが許すフォントだけを埋め込んでください。`redistributable: false`のフェイスがファイルに書き込まれることはありません（本をそのフェイスで組むことはできますが、ファイル自体は入らず、SVGの画像にも入りません）。
+- **`resourceBytes(fileId)`**：ページが配置する画像を、同期または非同期で`{ bytes, mediaType }`として返します。`mediaType`が空ならバイト列から判別します。ビットマップは格納されたまま、SVGはソースのまま渡し、PDFの印刷用マスター（`svg.pdfFileId`）は渡さないでください。各画像は1回だけ格納されます。単色インクの本（`diagramStyle.singleInk`）では、ファイル内のSVGが色替えされます。リーディングシステムはSVGを本のフォントが見えない画像として表示するので、SVGには文字が指定するフェイスが埋め込まれます（[SVGの文字のフォント](#svgの文字のフォント)を参照）。まず`fonts`から（その文字を収めるスライス）、本文で使われていないファミリーは次に<strong>`svgFonts.provider`</strong>から取ります。`redistributable: false`と指定されたフェイスのファミリーと、`svgFonts.withhold(family)`が指定するファミリーは入れず、それぞれ1回ずつ`fontWithheld`として報告します。フェイスのないファミリーは`svgFontUnavailable`、`svgFonts.maxBytes`（2 MiB）を超えるフェイスは`svgFontsTooLarge`として報告されます。`svgFonts.inline: false`、`diagramStyle.inlineFonts: false`、リソースの`svg.inlineFonts: false`のいずれかを指定すると、バイト列は渡されたままになります。バイト列のない画像は`missingImage`として報告され、空の枠として残ります。
 - **`cover`**：`{ bytes, mediaType, alt? }`。JPEG、PNG、WebP、SVGの画像です。指定すると、本はそれを収めた表紙の文書から始まり、その画像がパッケージの`cover-image`（ライブラリーのサムネイル）になります。指定しなければ、固定レイアウトでは最初のページが表紙として指定され、リフロー型の本には表紙画像がありません。
 - **`onProgress({ phase, done, total })`**：`resources`（フォントと画像）、`documents`（固定レイアウトではページ、リフロー型では章）、`package`の順に進みます。**`signal`**：ステップの合間で中止します。
 - **`readEpub(bytes)`**：ビューアーのためにファイルを読み戻します。`DOMParser`は使いません。レイアウト、メタデータ、読む方向、パスごとのすべてのファイル、マニフェスト、スパイン、目次、ページリスト、固定レイアウトのビューポート、表紙を返します。Sandboxのリーダーはこれをもとに作られています。
@@ -10248,8 +10320,8 @@ migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 
 開いたバンドルをエンジンとバックエンドにつなぐヘルパーは4つあります。
 
-- **`loadBundleFonts(bundle)`**：バンドルのフェイスを`document.fonts`に登録します。レイアウトはブラウザーが持つフォントでテキストを計測するので、組む前にその完了を待ってください。バンドルが指定していても収めていないファミリー（Google Fonts）は、ほかの文書と同じく自分で読み込む必要があります。
-- **`registerBundleImages(bundle)`**：canvasバックエンド（`renderPage`、`renderToCanvas`）のために画像をデコードします。動画のポスターも含みます。`renderToHtml`のリゾルバーは2つあり、**`bundleImageUrl(bundle)`**（`resourceImageUrl`）は画像を、**`bundleVideoUrl(bundle)`**（`resourceVideoUrl`）はバンドルが収める動画ファイルを解決します。どちらも`diagramStyle.singleInk`が有効な場合はSVGの図を一度だけ色替えします。マークアップを色替えし、画像に印を付けて、どのバックエンドも重ねて色を付けないようにします（[キャンバスとHTMLでの単色刷り](#キャンバスとhtmlでの単色刷り)を参照）。
+- **`loadBundleFonts(bundle)`**：バンドルのフェイスを`document.fonts`に登録し、SVGの画像のために、そのバイト列をエンジンのフォントレジストリにも登録します（`registerFontBytes`）。レイアウトはブラウザーが持つフォントでテキストを計測するので、組む前にその完了を待ってください。バンドルが指定していても収めていないファミリー（Google Fonts）は、ほかの文書と同じく自分で読み込む必要があります。
+- **`registerBundleImages(bundle)`**：canvasバックエンド（`renderPage`、`renderToCanvas`）のために画像をデコードします。動画のポスターも含みます。`renderToHtml`のリゾルバーは2つあり、**`bundleImageUrl(bundle)`**（`resourceImageUrl`）は画像を、**`bundleVideoUrl(bundle)`**（`resourceVideoUrl`）はバンドルが収める動画ファイルを解決します。どちらも`diagramStyle.singleInk`が有効な場合はSVGの図を一度だけ色替えします。マークアップを色替えし、画像に印を付けて、どのバックエンドも重ねて色を付けないようにします（[キャンバスとHTMLでの単色刷り](#キャンバスとhtmlでの単色刷り)を参照）。どちらも、各SVGに文字が指定するフェイスを、まずバンドル自身のフォントから、次にエンジンに登録されたフェイスから埋め込みます（[SVGの文字のフォント](#svgの文字のフォント)を参照）。`registerBundleImages(bundle, { onWarning })`と`bundleImageUrl(bundle, { onWarning })`は、フェイスのないファミリーを報告します。
 - **`buildBundle(bundle)`**：章を順に組み、章ごとに1つの`VDTDocument`を返します。各章は前の章を引き継ぎます。見出しとリソースのカウンター、開いている部、ページの奇偶、ノンブルです。目次（`:::toc`）や索引（`:::index`）を印字する章は、本全体のアウトラインを受け取ります。`buildDocument`と同じオプションに加えて、バンドルの設定を上書きする`config`、計測キャッシュを共有する`cache`、`metadata`（後述）を受け付けます。
 - **`bundleResourceBytes(bundle)`**、**`bundleFontProvider(bundle, { decodeWoff2, fallback })`**：`postext-pdf`の`renderToPdf`の`resourceBytes`オプションと`fontProvider`オプションです。フォントプロバイダーは、求められたスタイルのうち最も近いウェイトをバンドルから選びます。`.woff2`のフェイスには`decompressWoff2`が必要です。バンドルが収めていないファミリーについては、`request`を含むレンダラーの引数で`fallback`を呼び、その戻り値をそのまま渡します。ファミリーの`latin`ファイルだけを取得するフォールバックでは、バンドルが埋め込んでいない中国語のファミリーが空の四角として印字されます。[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)の`sliceFontProvider`のようにスライスで応えるフォールバックなら、すべて印字されます。
 

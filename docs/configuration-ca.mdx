@@ -5071,7 +5071,7 @@ Les sobreescriptures per tipus es combinen amb `mergeCaptionStyle(resolvedCaptio
 
 ## Estil dels diagrames
 
-La propietat `diagramStyle` controla com s'acoloreixen els diagrames SVG incrustats (recursos amb `kind: 'svg'`). Avui la seva única funció és el **mode d'una sola tinta**: una passada de recoloració que converteix cada color del diagrama en un matís d'una única tinta, de manera que les figures es reprodueixin fidelment quan el document s'imprimeix amb una sola tinta plana.
+La propietat `diagramStyle` controla com s'acoloreixen els diagrames SVG incrustats (recursos amb `kind: 'svg'`) i amb quines fonts es compon el seu text. El **mode d'una sola tinta** és una passada de recoloració que converteix cada color del diagrama en un matís d'una única tinta, de manera que les figures es reprodueixin fidelment quan el document s'imprimeix amb una sola tinta plana. Les **fonts incrustades** posen dins de cada SVG les variants que anomena el seu text, perquè els seus rètols es componguin amb les fonts del document al canvas, en HTML i en EPUB (consulta [Fonts al text dels SVG](#fonts-al-text-dels-svg)).
 
 ```ts
 const config: PostextConfig = {
@@ -5103,6 +5103,12 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td>Color principal (<code>#295AA3</code>)</td>
       <td>La tinta. Per defecte és el color principal de la paleta del document (enllaçat mitjançant <code>paletteId: 'main-color'</code>), de manera que canviar la mostra de la paleta torna a tenyir els diagrames juntament amb els encapçalaments i les negretes.</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Incrustar a cada SVG les variants que anomena el seu text (<code>font-family</code>) com a data URI de <code>@font-face</code> abans de mostrar-lo com a imatge: al canvas, en HTML, en EPUB i al ràster de reserva del PDF. No s'escriu mai al fitxer desat. Un recurs en queda exclòs amb <code>svg.inlineFonts: false</code> (des de postext 1.25).</td>
     </tr>
   </tbody>
 </table>
@@ -5184,6 +5190,72 @@ const html = renderToHtml(doc, { resourceImageUrl: urlDe, singleInk: true });
 `renderToHtml` pren el valor per defecte del seu `singleInk` de la indicació del mateix resolutor, així que `bundleImageUrl(bundle)` no necessita l'opció.
 
 Per a cada color que reescriu la passada sobre el marcatge (valors hexadecimals, `rgb()` i `hsl()`, `white` i `black`; consulta [Com funciona la tinta única](#com-funciona-la-tinta-única)), el mapatge per píxels dona el mateix resultat, inclosos les vores suavitzades i els degradats. Tots dos difereixen on la passada sobre el marcatge deixa un color com està: els colors amb nom diferents de `white` i `black`, `currentColor`, les formes i els textos sense emplenament (dibuixats en el negre per defecte) i els mapes de bits incrustats a l'SVG es tenyeixen en pantalla però conserven el seu color al PDF. Dona a cada element del diagrama un color explícit en hexadecimal, `rgb()` o `hsl()` per obtenir la mateixa sortida. Quan el canvas no pot tornar a llegir els píxels (un `<img>` d'un altre origen, carregat sense CORS), la imatge es pinta sense tenyir.
+
+### Fonts al text dels SVG
+
+Un dibuix SVG es mostra a través d'una imatge: un `<img>` al canvas, en HTML i en EPUB. Un document d'imatge no veu les fonts web de la pàgina, així que `<text font-family="IBM Plex Sans">` cauria en una font del sistema. Des de postext 1.25 el motor incrusta al marcatge les variants que anomena el text abans de descodificar la imatge o de lliurar-la com a URL: una regla `@font-face` per fitxer de font, amb els seus bytes com a data URI, en un `<style>` just després de l'etiqueta `<svg>` arrel. El PDF no necessita res d'això: compon el text SVG com a text real amb les seves fonts incrustades (consulta [Bytes de recursos i màsters d'impressió](#bytes-de-recursos-i-màsters-dimpressió)).
+
+El que demana el text es llegeix de `font-family`, `font-weight`, `font-style` i `font`, com a atributs, dins d'atributs `style` i heretat dels grups que el contenen; també compta una regla de `<style>` que anomeni una família. En queden fora les famílies genèriques (`serif`, `sans-serif`…) i el text de `<title>` o `<desc>`, i una família que el mateix SVG declara amb `@font-face` no es toca. Un tram recorre la seva llista de `font-family` fins a la primera família que tingui variant. Primer es recoloreix per a la tinta única i després s'incrusten les fonts.
+
+Les variants les dona un **proveïdor** amb el contracte del `PdfFontProvider` de postext-pdf, de manera que un mateix proveïdor serveix per a tots dos: se'l crida amb la família, el pes i l'estil, i els caràcters que l'SVG compon en aquesta variant, i respon amb un fitxer o amb diversos. A una família servida en trams d'`unicode-range` (Fontsource, Google Fonts) se li respon amb els trams que necessiten aquests caràcters, de manera que un SVG amb rètols llatins porta només el fitxer `latin`. El proveïdor per defecte llegeix el registre de fonts del motor: `loadBundleFonts` hi registra les variants d'un paquet, i un amfitrió hi registra les seves amb `registerFontBytes(family, weight, style, bytes, { unicodeRange })`, o amb `registerFontUrl(…)` per a un fitxer que es descarrega la primera vegada que un SVG el necessita. Una família que ningú no ha registrat es busca a les regles `@font-face` dels fulls d'estil llegibles de la pàgina. Un `FontFace` afegit a `document.fonts` a partir de bytes no en conserva els bytes, així que el motor no el pot tornar a llegir: registra també aquestes variants.
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // recolorit, fonts incrustades, descodificat, registrat
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+On passa:
+
+- **Canvas.** `registerSvgImage(fileId, svgText, options)` recoloreix (`inkHex`), incrusta les fonts (`fonts`, un proveïdor; `inlineFonts: false` ho omet), descodifica i registra la imatge com a font vectorial, i es resol amb el que ha passat amb cada variant. `registerBundleImages(bundle)` fa el mateix amb els SVG d'un paquet, primer amb les variants del mateix paquet. `prepareSvgMarkup(svgText, options)` retorna el marcatge preparat per a un amfitrió que descodifica pel seu compte.
+- **HTML.** `bundleImageUrl(bundle)` serveix el marcatge SVG amb les variants del paquet incrustades. `renderToHtml(doc, { inlineSvgFonts: true })` incrusta als data URI SVG que retorna `resourceImageUrl` les variants que el registre té a la memòria (o `inlineSvgFonts: { fonts, maxBytes, withhold }`). Una URL d'objecte no es pot llegir de manera síncrona, així que un amfitrió que serveix URL blob incrusta abans de crear-les.
+- **EPUB.** `postext-epub` incrusta des de les `fonts` del llibre, i després des de `svgFonts.provider`, abans d'escriure un SVG (consulta [Llibres EPUB](#llibres-epub-postext-epub)).
+- **PDF.** El text SVG es compon com a text real amb les fonts incrustades. Un `<style>` que només conté regles `@font-face` (variants que va incrustar l'autor) ja no fa que la figura passi a ràster. Quan una figura sí que passa a ràster (un filtre, un degradat), el seu ràster es fa amb les variants incrustades des del `fontProvider` del PDF.
+
+També s'exporten les funcions de nivell més baix: `svgFontRequests(svgText)` enumera les famílies, el pes, l'estil i els caràcters de cada tram; `inlineSvgFonts(svgText, provider, options)` i `inlineSvgFontsSync(svgText, syncProvider, options)` retornen el marcatge; `inlineSvgFontsDetailed` hi afegeix un informe de cada variant (`inlined`, `declared`, `unavailable`, `withheld`, `tooLarge`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Opció</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>Màxim de bytes de font incrustats en un SVG (abans del base64, que n'hi afegeix un terç). Si les variants juntes el superen, no se n'incrusta cap i s'avisa amb <code>svgFontsTooLarge</code>.</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>tots quatre</td>
+      <td>Els formats de fitxer que s'incrusten; els fitxers d'altres formats s'ometen.</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>cap</td>
+      <td>Famílies que es deixen fora d'un fitxer que surt de l'aplicació (no redistribuïbles). La seva referència es manté i el lector fa servir una font de reserva; <code>onWithheld(family)</code> rep avís de cadascuna.</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>cap</td>
+      <td>Rep avís d'una família sense variant (<code>svgFontUnavailable</code>) i del límit de mida (<code>svgFontsTooLarge</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+**Desactivar-ho.** `diagramStyle.inlineFonts: false` deixa tots els SVG tal com estan desats; `svg.inlineFonts: false` en un recurs deixa aquell SVG byte a byte com és, per a un SVG que porta les seves pròpies variants o que no ha de canviar. Un paquet escriu l'exclusió del recurs com a `"inlineFonts": false` al seu `preset.json`.
+
+**Llicències.** Incrustar posa fitxers de font dins d'imatges que poden sortir de l'aplicació (una exportació HTML, un EPUB). Passa quan una imatge es mostra o s'exporta, mai als bytes desats del recurs, i `withhold` deixa fora les famílies que una llicència no et permet cedir: l'escriptor d'EPUB reté les variants marcades amb `redistributable: false`, i el Sandbox, les famílies personalitzades marcades així.
 
 
 ## Estil de vídeo
@@ -8919,7 +8991,7 @@ const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownR
 
 `formatWarning(w)` retorna una descripció en anglès d'una línia. Un amfitrió que localitza els seus missatges distingeix per `kind` —i conserva una branca per defecte, perquè les versions menors poden afegir tipus—. `collectContentWarnings(markdown, config, resources)` retorna els avisos de contingut sense maquetar res (la llista que afegeix la composició, sense `pageIndex`), per a un editor que revisa el text mentre s'escriu. `collectHeadingDesignCuts(doc)` revisa una maquetació acabada a la recerca de dissenys d'encapçalament amb un text que passa del peu de la seva pàgina o de la seva columna (`kind: 'headingDesignCut'`; vegeu [Alçada reservada](#alçada-reservada)), que la maquetació mateixa no avisa, i `formatWarning` també en descriu els resultats. El tauler **Revisió** del Sandbox els mostra tots.
 
-Els renderitzadors notifiquen el que no poden pintar com es demana mitjançant una opció `onWarning`: `renderPageToCanvas`, `renderPage` i `renderToCanvas` (`RenderPageOptions`), `renderToHtml` i `renderToHtmlIndexed` (`RenderHtmlOptions`), i `renderToPdf` (`RenderToPdfOptions`, també a través del worker de PDF). Avui hi ha un únic tipus d'avís de renderitzat, `missingImage`: una imatge —una figura, la imatge d'una cel·la de taula, la icona d'un avís, una imatge de disseny— sense res a dibuixar es pinta com un marcador de posició neutre i es notifica, una vegada per `fileId` i crida de renderitzat, amb el seu `pageIndex`, el `resourceId` quan el renderitzador el coneix (figures i imatges de cel·la) i, al PDF, el `documentIndex` d'un renderitzat de diversos documents. Res a dibuixar vol dir: cap `registerResourceImage` per al `fileId` al canvas, cap URL de `resourceImageUrl` en HTML, i cap byte de `resourceBytes` —o bytes que no es descodifiquen— al PDF. Un recurs de mapa de bits o SVG que no anomena cap `fileId` no té res a demanar: es dibuixa com a marcador de posició sense avís. Els avisos de renderitzat no es desen al VDT: el que un amfitrió pot aportar canvia després de la maquetació.
+Els renderitzadors notifiquen el que no poden pintar com es demana mitjançant una opció `onWarning`: `renderPageToCanvas`, `renderPage` i `renderToCanvas` (`RenderPageOptions`), `renderToHtml` i `renderToHtmlIndexed` (`RenderHtmlOptions`), i `renderToPdf` (`RenderToPdfOptions`, també a través del worker de PDF). El principal tipus d'avís de renderitzat és `missingImage`: una imatge —una figura, la imatge d'una cel·la de taula, la icona d'un avís, una imatge de disseny— sense res a dibuixar es pinta com un marcador de posició neutre i es notifica, una vegada per `fileId` i crida de renderitzat, amb el seu `pageIndex`, el `resourceId` quan el renderitzador el coneix (figures i imatges de cel·la) i, al PDF, el `documentIndex` d'un renderitzat de diversos documents. Res a dibuixar vol dir: cap `registerResourceImage` per al `fileId` al canvas, cap URL de `resourceImageUrl` en HTML, i cap byte de `resourceBytes` —o bytes que no es descodifiquen— al PDF. Un recurs de mapa de bits o SVG que no anomena cap `fileId` no té res a demanar: es dibuixa com a marcador de posició sense avís. Dos tipus més vénen dels amfitrions que incrusten fonts a les imatges SVG (`registerSvgImage`, `registerBundleImages`, `bundleImageUrl`, `renderToHtml` amb `inlineSvgFonts`, postext-epub; consulta [Fonts al text dels SVG](#fonts-al-text-dels-svg)), amb el `fileId` i el `resourceId` de la imatge: `svgFontUnavailable` (`family`, `weight`, `style`), una família que anomena el seu text sense variant per incrustar, de manera que la imatge compon aquest text amb una font de reserva; i `svgFontsTooLarge` (`bytes`, `maxBytes`), variants per sobre del límit de mida, de les quals no se n'incrusta cap. Els avisos de renderitzat no es desen al VDT: el que un amfitrió pot aportar canvia després de la maquetació.
 
 ```ts
 import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
@@ -9836,7 +9908,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 `resourceBytes(fileId)` retorna els bytes en brut d'una imatge, i el backend els identifica pel seu contingut:
 
 - PNG, JPEG, GIF i WebP s'incrusten com a imatges;
-- el marcatge SVG es dibuixa com a traçats vectorials, o es rasteritza a 600 ppp al navegador quan fa servir funcions que queden fora del subconjunt vectorial;
+- el marcatge SVG es dibuixa com a traçats vectorials, amb el seu `text` compost com a text real amb les fonts incrustades del document, o es rasteritza a 600 ppp al navegador quan fa servir funcions que queden fora del subconjunt vectorial. Un `<style>` que només conté regles `@font-face` (variants que va incrustar l'autor) s'omet i la figura continua sent vectorial (des de postext-pdf 1.25); qualsevol altre full d'estil la converteix en ràster, fet amb les variants que anomena el seu text incrustades des de `fontProvider` (llevat que `diagramStyle.inlineFonts` o el `svg.inlineFonts` del recurs sigui `false`);
 - d'un PDF s'incrusta tal qual la primera pàgina, com un XObject de formulari.
 
 Cada imatge es desa una sola vegada al fitxer, encara que es dibuixi moltes vegades. Un SVG dibuixat amb traçats vectorials es converteix en un XObject de formulari que pinta cada pàgina, de manera que un marc o un logotip en el disseny de pàgina d'un document de trenta pàgines s'escriu una vegada i no trenta; cada pàgina més afegeix uns centenars de bytes. Fins a postext-pdf 1.4 cada pàgina portava la seva pròpia còpia dels traçats.
@@ -10110,10 +10182,10 @@ const bytes = await renderToEpub(docs, {
 
 Un document sol és un llibre d'un capítol: `renderToEpub([doc], options)`.
 
-- **`renderToEpub(docs, options): Promise<Uint8Array>`** escriu el fitxer. `options` és `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** escriu el fitxer. `options` és `{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
 - **`metadata`**: `title` i `language` (una etiqueta BCP 47) són obligatoris; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` i `modified` són opcionals. Un ISBN sense prefix passa a `urn:isbn:…`. Sense `identifier`, el llibre rep un `urn:uuid:` derivat del títol, els autors i l'idioma, de manera que una versió nova del mateix llibre conserva el seu lloc a la biblioteca del lector. Passa també `modified` per obtenir un fitxer idèntic byte a byte.
-- **`fonts`**: les variants que s'incrusten, `{ family, weight, style, bytes, format, unicodeRange? }`, amb `format` un de `woff2`, `woff`, `ttf`, `otf`. Cada variant passa a ser un fitxer i una regla `@font-face`; diversos fitxers amb el seu `unicodeRange` formen una sola variant (els trams de Google Fonts). Una família, un pes o un estil que les pàgines fan servir sense variant incrustada s'avisa com a `missingFont`, i els lectors en posen una de seva. Incrusta només les lletres la llicència de les quals ho permeti.
-- **`resourceBytes(fileId)`**: les imatges que col·loquen les pàgines, de manera síncrona o asíncrona, com a `{ bytes, mediaType }`; un `mediaType` buit es llegeix dels bytes. Dona els mapes de bits tal com estan desats i els SVG com el seu codi font, no el màster PDF d'impremta (`svg.pdfFileId`). Cada imatge es desa una vegada. En un llibre a una tinta (`diagramStyle.singleInk`) els SVG es recoloren al fitxer. Una imatge sense bytes s'avisa com a `missingImage` i queda com un marc buit.
+- **`fonts`**: les variants que s'incrusten, `{ family, weight, style, bytes, format, unicodeRange? }`, amb `format` un de `woff2`, `woff`, `ttf`, `otf`. Cada variant passa a ser un fitxer i una regla `@font-face`; diversos fitxers amb el seu `unicodeRange` formen una sola variant (els trams de Google Fonts). Una família, un pes o un estil que les pàgines fan servir sense variant incrustada s'avisa com a `missingFont`, i els lectors en posen una de seva. Incrusta només les lletres la llicència de les quals ho permeti: una variant amb `redistributable: false` no s'escriu mai al fitxer (el llibre es pot compondre amb ella, però el seu fitxer en queda fora, també de les imatges SVG).
+- **`resourceBytes(fileId)`**: les imatges que col·loquen les pàgines, de manera síncrona o asíncrona, com a `{ bytes, mediaType }`; un `mediaType` buit es llegeix dels bytes. Dona els mapes de bits tal com estan desats i els SVG com el seu codi font, no el màster PDF d'impremta (`svg.pdfFileId`). Cada imatge es desa una vegada. En un llibre a una tinta (`diagramStyle.singleInk`) els SVG es recoloren al fitxer. Cada SVG porta incrustades les variants que anomena el seu text, perquè un lector el mostra com una imatge que no veu les fonts del llibre (consulta [Fonts al text dels SVG](#fonts-al-text-dels-svg)): des de `fonts` (els trams que contenen els seus caràcters) i després des de **`svgFonts.provider`** per a una família que el text del llibre no fa servir. Les famílies de variants marcades amb `redistributable: false`, i les que anomeni `svgFonts.withhold(family)`, en queden fora i s'avisen una vegada cadascuna com a `fontWithheld`; una família sense variant s'avisa com a `svgFontUnavailable`, i les variants que superen `svgFonts.maxBytes` (2 MiB), com a `svgFontsTooLarge`. `svgFonts.inline: false`, `diagramStyle.inlineFonts: false` i el `svg.inlineFonts: false` d'un recurs conserven els bytes tal com es donen. Una imatge sense bytes s'avisa com a `missingImage` i queda com un marc buit.
 - **`cover`**: `{ bytes, mediaType, alt? }`, una imatge JPEG, PNG, WebP o SVG. Aleshores el llibre s'obre amb un document de coberta que la conté, i és la `cover-image` del paquet (la miniatura en una biblioteca). Sense coberta, la maquetació fixa anomena coberta la seva primera pàgina i el llibre fluid no té imatge de coberta.
 - **`onProgress({ phase, done, total })`**: `resources` (lletres i imatges), `documents` (pàgines en la maquetació fixa, capítols en la fluida) i després `package`. **`signal`** interromp entre passos.
 - **`readEpub(bytes)`** llegeix un fitxer per a un visor, sense `DOMParser`: maquetació, metadades, sentit de lectura, cada fitxer pel seu camí, el manifest, l'spine, el sumari, la llista de pàgines, el viewport de la maquetació fixa i la coberta. El lector del Sandbox s'hi basa.
@@ -10229,8 +10301,8 @@ migrateConfig(config, CONFIG_VERSION); // regles actuals: la mateixa `config`
 
 Quatre utilitats connecten un paquet obert amb el motor i els backends:
 
-- **`loadBundleFonts(bundle)`** registra les fonts del paquet a `document.fonts`. Espera-la abans de compondre, perquè la composició mesura el text amb les fonts que té el navegador. Les famílies que el paquet anomena però no inclou (Google Fonts) les has de carregar tu, com en qualsevol altre document.
-- **`registerBundleImages(bundle)`** descodifica les imatges per al backend canvas (`renderPage`, `renderToCanvas`), incloses les portades dels vídeos. **`bundleImageUrl(bundle)`** és el resolvedor `resourceImageUrl` de `renderToHtml`, i **`bundleVideoUrl(bundle)`** el seu resolvedor `resourceVideoUrl` per als fitxers de vídeo que porta un paquet. Totes dues recoloren les figures SVG quan `diagramStyle.singleInk` és actiu, una sola vegada: recoloren el marcatge i marquen les imatges perquè cap backend no les torni a tenyir (consulta [Tinta única en canvas i en HTML](#tinta-única-en-canvas-i-en-html)).
+- **`loadBundleFonts(bundle)`** registra les fonts del paquet a `document.fonts`, i els seus bytes al registre de fonts del motor per a les imatges SVG (`registerFontBytes`). Espera-la abans de compondre, perquè la composició mesura el text amb les fonts que té el navegador. Les famílies que el paquet anomena però no inclou (Google Fonts) les has de carregar tu, com en qualsevol altre document.
+- **`registerBundleImages(bundle)`** descodifica les imatges per al backend canvas (`renderPage`, `renderToCanvas`), incloses les portades dels vídeos. **`bundleImageUrl(bundle)`** és el resolvedor `resourceImageUrl` de `renderToHtml`, i **`bundleVideoUrl(bundle)`** el seu resolvedor `resourceVideoUrl` per als fitxers de vídeo que porta un paquet. Totes dues recoloren les figures SVG quan `diagramStyle.singleInk` és actiu, una sola vegada: recoloren el marcatge i marquen les imatges perquè cap backend no les torni a tenyir (consulta [Tinta única en canvas i en HTML](#tinta-única-en-canvas-i-en-html)). Totes dues incrusten, a més, a cada SVG les variants que anomena el seu text, primer des de les fonts del mateix paquet i després des de les variants registrades al motor (consulta [Fonts al text dels SVG](#fonts-al-text-dels-svg)); `registerBundleImages(bundle, { onWarning })` i `bundleImageUrl(bundle, { onWarning })` avisen d'una família sense variant.
 - **`buildBundle(bundle)`** compon els capítols en ordre i retorna un `VDTDocument` per capítol. Cada capítol continua l'anterior: comptadors d'encapçalaments i de recursos, la part oberta, la paritat de pàgina i la numeració. Un capítol que imprimeix l'índex de continguts (`:::toc`) o l'analític (`:::index`) rep l'esquema del llibre sencer. Admet les mateixes opcions que `buildDocument`, més `config` per substituir la configuració del paquet, `cache` per compartir una memòria cau de mesures i `metadata` (vegeu més avall).
 - **`bundleResourceBytes(bundle)`** i **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** són les opcions `resourceBytes` i `fontProvider` de `renderToPdf` de `postext-pdf`. El proveïdor de fonts tria del paquet el pes més proper de l'estil demanat. Per a una variant `.woff2` necessita `decompressWoff2`, i per a una família que el paquet no inclou crida `fallback` amb els arguments del renderitzador, `request` inclòs, i lliura el que retorni. Un `fallback` que només baixa el fitxer `latin` de la família imprimeix com a caixes buides una família xinesa que el paquet no incrusta; un que respon amb els fragments, com `sliceFontProvider` a [Fonts xineses, japoneses i coreanes](#fonts-xineses-japoneses-i-coreanes), la imprimeix completa.
 

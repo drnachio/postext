@@ -5082,7 +5082,7 @@ const config: PostextConfig = {
 
 ## 图示样式
 
-`diagramStyle`属性控制嵌入的SVG图示（`kind: 'svg'`资源）如何着色。目前它只有一项功能：**单色模式**。这一步重新着色会把图示中的每种颜色映射为同一种油墨的某个浓淡，文档用单一专色印刷时，图也能如实还原。
+`diagramStyle`属性控制嵌入的SVG图示（`kind: 'svg'`资源）如何着色，以及其中的文字用什么字体排。**单色模式**是一步重新着色，把图示中的每种颜色映射为同一种油墨的某个浓淡，文档用单一专色印刷时，图也能如实还原。**内嵌字体**把每个SVG的文字所指定的字体嵌入该SVG，使其中的标注在Canvas、HTML和EPUB中都以文档的字体排出（见[SVG文字中的字体](#svg文字中的字体)）。
 
 ```ts
 const config: PostextConfig = {
@@ -5114,6 +5114,12 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td>主色（<code>#295AA3</code>）</td>
       <td>所用油墨。默认取文档调色板的主色（通过<code>paletteId: 'main-color'</code>与调色板关联），因此更换调色板色样时，图示会与标题、粗体文字一起换色。</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>每个SVG作为图片显示之前，把其文字指定的字体（<code>font-family</code>）以<code>@font-face</code> data URI的形式嵌入其中：Canvas、HTML、EPUB以及PDF的栅格化后备都是如此。存储的文件从不改写。单个资源可用<code>svg.inlineFonts: false</code>退出（自postext 1.25起）。</td>
     </tr>
   </tbody>
 </table>
@@ -5195,6 +5201,72 @@ const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
 `renderToHtml`的`singleInk`默认值取自解析函数自身的标志，所以`bundleImageUrl(bundle)`无需额外选项。
 
 对于标记层面处理会改写的每种颜色（十六进制、`rgb()`和`hsl()`值、`white`和`black`；见[单色模式的工作原理](#单色模式的工作原理)），像素映射给出相同的结果，抗锯齿边缘和渐变也不例外。两者的差别在于标记处理不改动的颜色：`white`和`black`以外的命名颜色、`currentColor`、没有填充的形状和文本（以默认黑色绘制），以及嵌入SVG中的位图，在屏幕上会着色，在PDF中却保留原色。给图示的每个元素指定明确的十六进制、`rgb()`或`hsl()`颜色，就能得到完全一致的输出。Canvas无法读回像素时（来自其他源、未启用CORS加载的`<img>`），图片不着色绘制。
+
+### SVG文字中的字体
+
+SVG图片是通过图像显示的：在Canvas、HTML和EPUB中都是一个`<img>`。图像文档看不到页面的网络字体，所以`<text font-family="IBM Plex Sans">`会退回到系统字体。自postext 1.25起，引擎在图片解码或作为URL交出之前，把文字指定的字体嵌入标记：每个字体文件一条`@font-face`规则，字节写成data URI，放在紧跟根`<svg>`标签的`<style>`中。PDF不需要这一步：它把SVG文字作为真正的文字，用其嵌入的字体排出（见[资源字节与印刷母版](#资源字节与印刷母版)）。
+
+文字要求什么字体，从`font-family`、`font-weight`、`font-style`和`font`读取，无论它们写成属性、写在`style`属性中，还是从外层的组继承；`<style>`中指定了字体族的规则也算在内。通用字体族（`serif`、`sans-serif`……）以及`<title>`或`<desc>`中的文字不计入；SVG自己用`@font-face`声明的字体族保持不动。一段文字沿着它的`font-family`列表往下找，用第一个有字体可用的字体族。先做单色重新着色，再嵌入字体。
+
+字体来自一个**提供函数**，其约定与postext-pdf的`PdfFontProvider`相同，因此一个提供函数可以两处共用：调用时传入字体族、字重和样式，以及SVG用这种字体排出的字符，它返回一个或多个文件。以unicode-range切片提供的字体族（Fontsource、Google Fonts）只返回这些字符所需的切片，所以标注全是拉丁字母的SVG只带`latin`文件。默认的提供函数读取引擎的字体注册表：`loadBundleFonts`把文件包的字体注册在那里，宿主则用`registerFontBytes(family, weight, style, bytes, { unicodeRange })`注册自己的字体，或者用`registerFontUrl(…)`注册一个在SVG首次需要时才获取的文件。注册表中没有的字体族，会到页面可读样式表的`@font-face`规则中查找。从字节添加到`document.fonts`的`FontFace`不保留字节，引擎无法把它读回，所以这些字体也要注册。
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // 重新着色、嵌入字体、解码、注册
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+在哪里进行：
+
+- **Canvas**。`registerSvgImage(fileId, svgText, options)`对图片重新着色（`inkHex`）、嵌入字体（`fonts`，一个提供函数；`inlineFonts: false`跳过这一步）、解码，并把它注册为矢量源，返回的Promise给出每种字体的处理结果。`registerBundleImages(bundle)`对文件包中的SVG做同样的事，优先使用文件包自己的字体。`prepareSvgMarkup(svgText, options)`返回处理好的标记，供自行解码的宿主使用。
+- **HTML**。`bundleImageUrl(bundle)`提供已嵌入文件包字体的SVG标记。`renderToHtml(doc, { inlineSvgFonts: true })`把注册表在内存中持有的字体嵌入`resourceImageUrl`返回的SVG `data:` URI（也可写成`inlineSvgFonts: { fonts, maxBytes, withhold }`）。对象URL无法同步读取，所以提供blob URL的宿主要在生成URL之前嵌入。
+- **EPUB**。`postext-epub`在写出SVG之前，先从书的`fonts`、再从`svgFonts.provider`取字体嵌入（见[EPUB电子书](#epub电子书postext-epub)）。
+- **PDF**。SVG文字作为真正的文字，用嵌入的字体排出。只含`@font-face`规则的`<style>`（作者嵌入的字体）不再使图退回栅格。图确实退回栅格时（滤镜、渐变），其栅格图用从PDF的`fontProvider`取来的字体嵌入后生成。
+
+较底层的函数也已导出：`svgFontRequests(svgText)`列出每段文字的字体族、字重、样式和字符；`inlineSvgFonts(svgText, provider, options)`和`inlineSvgFontsSync(svgText, syncProvider, options)`返回标记；`inlineSvgFontsDetailed`另外报告每种字体的结果（`inlined`、`declared`、`unavailable`、`withheld`、`tooLarge`）。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>选项</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '120px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>一个SVG中嵌入的字体字节数上限（按base64编码之前计，编码会再增加三分之一）。几种字体合计超出上限时一种也不嵌入，并报告<code>svgFontsTooLarge</code>。</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>四种全部</td>
+      <td>要嵌入的文件格式；其他格式的文件跳过。</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>无</td>
+      <td>文件要离开应用时不写入其中的字体族（不可再分发）。对它们的引用保留，阅读端退回其他字体；每扣下一个，都会通知<code>onWithheld(family)</code>。</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>无</td>
+      <td>接收没有字体可嵌入的字体族（<code>svgFontUnavailable</code>）和超出大小上限（<code>svgFontsTooLarge</code>）的通知。</td>
+    </tr>
+  </tbody>
+</table>
+
+**退出**。`diagramStyle.inlineFonts: false`让每个SVG保持存储时的样子；资源上的`svg.inlineFonts: false`让这一个SVG逐字节保持原样，适用于自带字体或不得改动的SVG。文件包把资源的退出写在`preset.json`中，即`"inlineFonts": false`。
+
+**许可证**。嵌入会把字体文件放进可能离开应用的图片中（HTML导出、EPUB）。它只在图片显示或导出时进行，从不写入存储的资源字节；`withhold`则把许可证不允许转交的字体族挡在外面：EPUB写出器扣下标记为`redistributable: false`的字体，沙盒扣下标记为不可再分发的自定义字体族。
 
 
 ## 视频样式
@@ -8934,7 +9006,7 @@ const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownR
 
 `formatWarning(w)`返回一行英文描述。需要本地化消息的宿主应改为按`kind`分支处理，并保留一个默认分支，因为次版本可能增加新的类型。`collectContentWarnings(markdown, config, resources)`不做任何排版，直接返回内容类警告（即构建时加入的那份列表，但不带`pageIndex`），供编辑器在输入时检查文本。`collectHeadingDesignCuts(doc)`检查已完成的版面，找出文字超出所在页或栏底部的标题设计（`kind: 'headingDesignCut'`；见[预留高度](#保留高度)）。排版本身不报告这类问题，`formatWarning`同样可以描述它的结果。沙盒的**检查**面板会列出所有这些警告。
 
-渲染器通过`onWarning`选项报告无法按要求绘制的内容：`renderPageToCanvas`、`renderPage`和`renderToCanvas`（`RenderPageOptions`），`renderToHtml`和`renderToHtmlIndexed`（`RenderHtmlOptions`），以及`renderToPdf`（`RenderToPdfOptions`，经由PDF工作线程时也一样）。目前只有一种渲染警告：`missingImage`。一张图片（图、表格单元格中的图片、标注框图标、设计图片）没有可绘制的内容时，会画成一个中性的占位框并报告，每个`fileId`在每次渲染调用中报告一次，带有它的`pageIndex`；绘制方知道`resourceId`时（图和单元格图片）也会带上；在PDF中，多文档渲染还会带上`documentIndex`。“没有可绘制的内容”指：在Canvas上，该`fileId`没有调用过`registerResourceImage`；在HTML中，`resourceImageUrl`没有给出URL；在PDF中，`resourceBytes`没有给出字节，或给出的字节无法解码。根本没有指定`fileId`的位图或SVG资源无从请求，会直接画成占位框而不报告。渲染警告不存储在VDT中，因为宿主能提供的内容在排版之后还会变化。
+渲染器通过`onWarning`选项报告无法按要求绘制的内容：`renderPageToCanvas`、`renderPage`和`renderToCanvas`（`RenderPageOptions`），`renderToHtml`和`renderToHtmlIndexed`（`RenderHtmlOptions`），以及`renderToPdf`（`RenderToPdfOptions`，经由PDF工作线程时也一样）。最主要的渲染警告是`missingImage`：一张图片（图、表格单元格中的图片、标注框图标、设计图片）没有可绘制的内容时，会画成一个中性的占位框并报告，每个`fileId`在每次渲染调用中报告一次，带有它的`pageIndex`；绘制方知道`resourceId`时（图和单元格图片）也会带上；在PDF中，多文档渲染还会带上`documentIndex`。“没有可绘制的内容”指：在Canvas上，该`fileId`没有调用过`registerResourceImage`；在HTML中，`resourceImageUrl`没有给出URL；在PDF中，`resourceBytes`没有给出字节，或给出的字节无法解码。根本没有指定`fileId`的位图或SVG资源无从请求，会直接画成占位框而不报告。另有两种警告来自在SVG图片中嵌入字体的宿主（`registerSvgImage`、`registerBundleImages`、`bundleImageUrl`、带`inlineSvgFonts`的`renderToHtml`、postext-epub；见[SVG文字中的字体](#svg文字中的字体)），带有图片的`fileId`和`resourceId`：`svgFontUnavailable`（`family`、`weight`、`style`），文字指定的字体族没有可嵌入的字体，图片会用后备字体排这段文字；`svgFontsTooLarge`（`bytes`、`maxBytes`），字体超出大小上限，一种也不嵌入。渲染警告不存储在VDT中，因为宿主能提供的内容在排版之后还会变化。
 
 ```ts
 import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
@@ -9851,7 +9923,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 `resourceBytes(fileId)`返回图片的原始字节，后端会识别其格式：
 
 - PNG、JPEG、GIF和WebP作为图像嵌入；
-- SVG标记绘制为矢量路径；如果用到矢量子集之外的特性，则在浏览器中以600 dpi栅格化；
+- SVG标记绘制为矢量路径，其中的`text`作为真正的文字，用文档嵌入的字体排出；如果用到矢量子集之外的特性，则在浏览器中以600 dpi栅格化。只含`@font-face`规则的`<style>`（作者嵌入的字体）会被跳过，图仍保持矢量（自postext-pdf 1.25起）；其他任何样式表都会使图成为栅格图，生成时从`fontProvider`取来其文字指定的字体嵌入（除非`diagramStyle.inlineFonts`或资源的`svg.inlineFonts`为`false`）；
 - PDF的第一页原样嵌入，作为一个表单XObject。
 
 每张图片在文件中只存一次，不论绘制多少次。绘制为矢量路径的SVG会成为一个表单XObject，由每一页绘制，所以一份三十页的文档，页面设计中的边框或标志只写入一次，而不是三十次；每多一页只增加几百字节。postext-pdf 1.4及以前，每一页都带着自己的一份路径。
@@ -10126,10 +10198,10 @@ const bytes = await renderToEpub(docs, {
 
 单个文档就是只有一章的书：`renderToEpub([doc], options)`。
 
-- <strong>`renderToEpub(docs, options): Promise<Uint8Array>`</strong>写出文件。`options`为`{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`。
+- <strong>`renderToEpub(docs, options): Promise<Uint8Array>`</strong>写出文件。`options`为`{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`。
 - **`metadata`**：`title`和`language`（BCP 47语言标签）必填；`subtitle`、`creators`、`identifier`、`date`、`publisher`、`rights`、`description`和`modified`可选。不带前缀的ISBN会写成`urn:isbn:…`。没有`identifier`时，书会得到一个由书名、作者和语言派生的`urn:uuid:`，这样同一本书的新版本在读者书库中保持原位。再传入`modified`即可得到逐字节相同的输出。
-- **`fonts`**：要嵌入的字形，`{ family, weight, style, bytes, format, unicodeRange? }`，`format`为`woff2`、`woff`、`ttf`、`otf`之一。每个字形成为一个文件和一条`@font-face`规则；带各自`unicodeRange`的多个文件合成一个字形（Google Fonts的分片）。页面用到却没有嵌入字形的字体族、字重或字形会以`missingFont`提醒，阅读器会改用自己的字体。只嵌入许可证允许嵌入的字体。
-- **`resourceBytes(fileId)`**：页面放置的图片，同步或异步返回`{ bytes, mediaType }`；`mediaType`为空时从字节判断类型。位图按存储时的样子给出，SVG给出源代码，而不是PDF印刷母版（`svg.pdfFileId`）。每张图片只存一次。单色书（`diagramStyle.singleInk`）的SVG会在文件中重新着色。没有字节的图片以`missingImage`提醒，原处留下空框。
+- **`fonts`**：要嵌入的字形，`{ family, weight, style, bytes, format, unicodeRange? }`，`format`为`woff2`、`woff`、`ttf`、`otf`之一。每个字形成为一个文件和一条`@font-face`规则；带各自`unicodeRange`的多个文件合成一个字形（Google Fonts的分片）。页面用到却没有嵌入字形的字体族、字重或字形会以`missingFont`提醒，阅读器会改用自己的字体。只嵌入许可证允许嵌入的字体：`redistributable: false`的字形绝不写入文件（书可以用它排版，但它的文件不会放进去，SVG图片中也不会）。
+- **`resourceBytes(fileId)`**：页面放置的图片，同步或异步返回`{ bytes, mediaType }`；`mediaType`为空时从字节判断类型。位图按存储时的样子给出，SVG给出源代码，而不是PDF印刷母版（`svg.pdfFileId`）。每张图片只存一次。单色书（`diagramStyle.singleInk`）的SVG会在文件中重新着色。SVG会嵌入其文字指定的字形，因为阅读系统把它作为图像显示，而图像看不到书的字体（见[SVG文字中的字体](#svg文字中的字体)）：先取自`fonts`（包含其字符的分片），书的正文没有用到的字体族再取自<strong>`svgFonts.provider`</strong>。标记为`redistributable: false`的字形所属的字体族，以及`svgFonts.withhold(family)`指定的字体族，不放进SVG，每个以`fontWithheld`报告一次；没有字形的字体族以`svgFontUnavailable`报告，超出`svgFonts.maxBytes`（2 MiB）的字形以`svgFontsTooLarge`报告。`svgFonts.inline: false`、`diagramStyle.inlineFonts: false`和资源的`svg.inlineFonts: false`都让字节保持原样。没有字节的图片以`missingImage`提醒，原处留下空框。
 - **`cover`**：`{ bytes, mediaType, alt? }`，JPEG、PNG、WebP或SVG图片。书会以包含它的封面文档开头，它也是包文件的`cover-image`（书库中的缩略图）。没有封面时，固定版式把第一页标为封面，流式版式的书没有封面图片。
 - **`onProgress({ phase, done, total })`**：依次为`resources`（字体和图片）、`documents`（固定版式为页，流式版式为章）、`package`。<strong>`signal`</strong>可在步骤之间中止。
 - <strong>`readEpub(bytes)`</strong>为查看器读回文件，不需要`DOMParser`：版式、元数据、阅读方向、按路径列出的所有文件、清单、spine、目录、页码列表、固定版式的视口和封面。沙盒的阅读器就建立在它之上。
@@ -10245,8 +10317,8 @@ migrateConfig(config, CONFIG_VERSION); // 现行规则：返回`config`本身
 
 有四个辅助函数把打开的文件包接到引擎和各个后端上：
 
-- <strong>`loadBundleFonts(bundle)`</strong>把文件包的字面注册到`document.fonts`。排版前要等它完成，因为排版时是用浏览器已有的字体测量文字的。文件包中提到但没有携带的字体家族（Google Fonts）仍需你自己加载，和其他文档一样。
-- <strong>`registerBundleImages(bundle)`</strong>为Canvas后端（`renderPage`、`renderToCanvas`）解码图片，包括视频封面。<strong>`bundleImageUrl(bundle)`</strong>是`renderToHtml`的`resourceImageUrl`解析器，<strong>`bundleVideoUrl(bundle)`</strong>则是它的`resourceVideoUrl`解析器，用于文件包携带的视频文件。开启`diagramStyle.singleInk`时，两者都会对SVG图重新着色一次：它们改写标记本身并给图片打上标记，任何后端都不会再次着色（见[Canvas与HTML中的单色墨](#canvas与html中的单色模式)）。
+- <strong>`loadBundleFonts(bundle)`</strong>把文件包的字面注册到`document.fonts`，并把它们的字节注册到引擎的字体注册表，供SVG图片使用（`registerFontBytes`）。排版前要等它完成，因为排版时是用浏览器已有的字体测量文字的。文件包中提到但没有携带的字体家族（Google Fonts）仍需你自己加载，和其他文档一样。
+- <strong>`registerBundleImages(bundle)`</strong>为Canvas后端（`renderPage`、`renderToCanvas`）解码图片，包括视频封面。<strong>`bundleImageUrl(bundle)`</strong>是`renderToHtml`的`resourceImageUrl`解析器，<strong>`bundleVideoUrl(bundle)`</strong>则是它的`resourceVideoUrl`解析器，用于文件包携带的视频文件。开启`diagramStyle.singleInk`时，两者都会对SVG图重新着色一次：它们改写标记本身并给图片打上标记，任何后端都不会再次着色（见[Canvas与HTML中的单色墨](#canvas与html中的单色模式)）。两者还会在每个SVG中嵌入其文字指定的字面，先取文件包自己的字体，再取向引擎注册的字体（见[SVG文字中的字体](#svg文字中的字体)）；`registerBundleImages(bundle, { onWarning })`和`bundleImageUrl(bundle, { onWarning })`会报告没有字面可用的字体族。
 - <strong>`buildBundle(bundle)`</strong>按顺序排版各章，每章返回一个`VDTDocument`。每一章都接续前一章：标题和资源的计数器、当前所在的篇、页的奇偶和页码。印出目录（`:::toc`）或索引（`:::index`）的章会拿到整本书的大纲。它接受与`buildDocument`相同的选项，另加用来覆盖文件包配置的`config`、共享测量缓存的`cache`，以及`metadata`（见下文）。
 - <strong>`bundleResourceBytes(bundle)`</strong>和<strong>`bundleFontProvider(bundle, { decodeWoff2, fallback })`</strong>分别对应`postext-pdf`的`renderToPdf`的`resourceBytes`和`fontProvider`选项。字体提供器从文件包中为所请求的样式挑选最接近的字重。对`.woff2`字面，它需要`decompressWoff2`；对文件包没有携带的字体家族，它以渲染器传来的参数（包括`request`）调用`fallback`，并原样转交其返回值。如果后备函数只获取某个家族的`latin`文件，文件包没有嵌入的中文字体就会印成空方框；如果它按分片应答，例如[中文、日文和韩文字体](#中文日文和韩文字体)中的`sliceFontProvider`，就能完整印出。
 

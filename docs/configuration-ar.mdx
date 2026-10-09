@@ -5085,7 +5085,7 @@ const config: PostextConfig = {
 
 ## نمط المخططات
 
-تتحكم الخاصية `diagramStyle` في تلوين مخططات SVG المضمّنة (موارد `kind: 'svg'`). وميزتها الوحيدة حاليًا هي **وضع الحبر الواحد** (single ink): تمريرة إعادة تلوين تحوّل كل لون في المخطط إلى درجة من حبر واحد، فتُستنسخ الأشكال بأمانة حين يُطبع المستند بلون خاص (spot colour) واحد.
+تتحكم الخاصية `diagramStyle` في تلوين مخططات SVG المضمّنة (موارد `kind: 'svg'`) وفي الخطوط التي يُنضَّد بها نصها. **وضع الحبر الواحد** (single ink) تمريرة إعادة تلوين تحوّل كل لون في المخطط إلى درجة من حبر واحد، فتُستنسخ الأشكال بأمانة حين يُطبع المستند بلون خاص (spot colour) واحد. و**الخطوط المضمَّنة** تضع في كل SVG أوجه الخطوط التي يسمّيها نصه، فتُنضَّد تسمياته بخطوط المستند على اللوحة (Canvas) وفي HTML وفي EPUB (انظر [الخطوط في نصوص SVG](#الخطوط-في-نصوص-svg)).
 
 ```ts
 const config: PostextConfig = {
@@ -5117,6 +5117,12 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td>اللون الرئيسي (<code>#295AA3</code>)</td>
       <td>الحبر. قيمته الافتراضية هي اللون الرئيسي في لوحة ألوان المستند (مرتبط بلوحة الألوان عبر <code>paletteId: 'main-color'</code>)، فتغيير عيّنة اللون في اللوحة يعيد تلوين المخططات مع العناوين والمقاطع الغامقة.</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>ضمّن في كل SVG أوجه الخطوط التي يسمّيها نصه (<code>font-family</code>) في هيئة <code>@font-face</code> بعناوين data URI قبل عرضه صورةً: على اللوحة، وفي HTML، وفي EPUB، وفي الصورة النقطية البديلة في PDF. ولا يُكتب ذلك أبدًا في الملف المخزَّن. ويستثني المورد نفسه بـ <code>svg.inlineFonts: false</code> (منذ postext 1.25).</td>
     </tr>
   </tbody>
 </table>
@@ -5198,6 +5204,72 @@ const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
 تأخذ `renderToHtml` قيمة `singleInk` الافتراضية من العلامة الخاصة بدالة الحسم، فلا تحتاج `bundleImageUrl(bundle)` إلى أي خيار.
 
 لكل لون تعيد تمريرة الشيفرة كتابته (القيم الست عشرية، وقيم `rgb()` و`hsl()`، و`white` و`black`؛ انظر [كيف يعمل الحبر الواحد](#كيف-يعمل-الحبر-الواحد))، يعطي تحويل البكسلات النتيجة نفسها، بما في ذلك الحواف المنعَّمة والتدرجات. ويختلفان حيث تترك تمريرة الشيفرة اللون كما هو: الألوان المسمّاة غير `white` و`black`، و`currentColor`، والأشكال والنصوص التي بلا تعبئة (المرسومة بالأسود الافتراضي)، والصور النقطية المضمّنة في SVG، فهذه تُلوَّن على الشاشة وتحتفظ بلونها في PDF. أعطِ كل عنصر في المخطط لونًا صريحًا بصيغة ست عشرية أو `rgb()` أو `hsl()` لتحصل على مُخرَج متطابق. وحين لا تستطيع اللوحة قراءة البكسلات من جديد (`<img>` من أصل آخر، محمّلة دون CORS)، تُرسم الصورة دون تلوين.
+
+### الخطوط في نصوص SVG
+
+تُعرض صورة SVG عبر صورة: عنصر `<img>` على اللوحة وفي HTML وفي EPUB. ومستند الصورة لا يرى خطوط الويب في الصفحة، فيُنضَّد `<text font-family="IBM Plex Sans">` بخط بديل من خطوط النظام. ومنذ postext 1.25 يضمّن المحرّك في الشيفرة أوجه الخطوط التي يسمّيها النص قبل فكّ ترميز الصورة أو تسليمها عنوانَ URL: قاعدة `@font-face` لكل ملف خط، وبايتاته في هيئة data URI، داخل `<style>` يلي وسم `<svg>` الجذر مباشرة. ولا يحتاج PDF إلى شيء من هذا: فهو ينضّد نص SVG نصًا حقيقيًا بخطوطه المضمَّنة (انظر [بايتات الموارد والنسخ الأصلية للطباعة](#بايتات-الموارد-والنسخ-الأصلية-للطباعة)).
+
+يُقرأ ما يطلبه النص من `font-family` و`font-weight` و`font-style` و`font`، سماتٍ مستقلة وداخل سمات `style` وموروثةً من المجموعات المحيطة؛ وتُحتسب كذلك قاعدة `<style>` تسمّي عائلة. وتُستبعد العائلات العامة (`serif` و`sans-serif`…) والنص الذي في `<title>` أو `<desc>`، وتُترك العائلة التي يصرّح بها SVG نفسه بـ `@font-face` على حالها. ويمضي كل مقطع في قائمة `font-family` حتى أول عائلة لها وجه. ويأتي التلوين بالحبر الواحد أولًا، ثم الخطوط.
+
+تأتي الأوجه من **مزوّد** له عقد `PdfFontProvider` في postext-pdf، فيخدم مزوّد واحد الطرفين: يُستدعى بالعائلة والوزن والنمط والحروف التي ينضّدها SVG بذلك الوجه، ويجيب بملف واحد أو بعدة ملفات. والعائلة المقدَّمة شرائحَ بحسب unicode-range (Fontsource وGoogle Fonts) يُجاب عنها بالشرائح التي تحتاجها تلك الحروف، فلا يحمل SVG ذو التسميات اللاتينية إلا ملف `latin`. ويقرأ المزوّد الافتراضي سجلّ الخطوط في المحرّك: تسجّل فيه `loadBundleFonts` أوجه الحزمة، ويسجّل المضيف أوجهه بـ `registerFontBytes(family, weight, style, bytes, { unicodeRange })`، أو بـ `registerFontUrl(…)` لملف يُجلب أول مرة يحتاجه فيها SVG. والعائلة التي لم يسجّلها شيء يُبحث عنها في قواعد `@font-face` من أوراق أنماط الصفحة القابلة للقراءة. أما `FontFace` المضاف إلى `document.fonts` من بايتات فلا يحتفظ بها، فلا يستطيع المحرّك قراءتها من جديد: سجّل هذه الأوجه أيضًا.
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // recoloured, fonts inlined, decoded, registered
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+أين يحدث ذلك:
+
+- **اللوحة (Canvas).** تعيد `registerSvgImage(fileId, svgText, options)` تلوين الصورة (`inkHex`)، وتضمّن خطوطها (`fonts`، وهو مزوّد؛ و`inlineFonts: false` تتخطى ذلك)، وتفكّ ترميزها وتسجّلها مصدرًا متجهيًا، وتُحَلّ بما آل إليه كل وجه. وتفعل `registerBundleImages(bundle)` الشيء نفسه بملفات SVG في الحزمة، بدءًا بأوجه الحزمة نفسها. وتعيد `prepareSvgMarkup(svgText, options)` الشيفرة المُعدّة للمضيف الذي يفكّ الترميز بنفسه.
+- **HTML.** تقدّم `bundleImageUrl(bundle)` شيفرة SVG وقد ضُمّنت فيها أوجه الحزمة. وتضمّن `renderToHtml(doc, { inlineSvgFonts: true })` الخطوط في عناوين SVG من نوع `data:` التي تعيدها `resourceImageUrl`، من الأوجه التي يحفظها السجل في الذاكرة (أو `inlineSvgFonts: { fonts, maxBytes, withhold }`). ولا يمكن قراءة عنوان الكائن (object URL) بطريقة متزامنة، فالمضيف الذي يقدّم عناوين blob يضمّن الخطوط قبل أن ينشئها.
+- **EPUB.** تضمّن `postext-epub` الخطوط من `fonts` الخاصة بالكتاب، ثم من `svgFonts.provider`، قبل أن تكتب ملف SVG (انظر [كتب EPUB](#كتب-epub-postext-epub)).
+- **PDF.** يُنضَّد نص SVG نصًا حقيقيًا بالخطوط المضمَّنة. ولم يعد `<style>` لا يحوي إلا قواعد `@font-face` (أوجهًا ضمّنها المؤلف) يجعل الشكل يلجأ إلى صورة نقطية. وحين يلجأ الشكل إليها فعلًا (بسبب مرشّح أو تدرّج)، تُصنع صورته النقطية والأوجه مضمَّنة فيها من `fontProvider` الخاص بملف PDF.
+
+والدوال الأدنى مستوى مصدَّرة أيضًا: تسرد `svgFontRequests(svgText)` عائلات كل مقطع ووزنه ونمطه وحروفه؛ وتعيد `inlineSvgFonts(svgText, provider, options)` و`inlineSvgFontsSync(svgText, syncProvider, options)` الشيفرة؛ وتضيف `inlineSvgFontsDetailed` تقريرًا عن كل وجه (`inlined`، `declared`، `unavailable`، `withheld`، `tooLarge`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخيار</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '120px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>أقصى ما يُضمَّن من بايتات الخطوط في SVG واحد (قبل base64، الذي يزيدها الثلث). والأوجه التي تتجاوزه مجتمعةً لا يُضمَّن منها شيء، ويُبلَّغ عن <code>svgFontsTooLarge</code>.</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>الصيغ الأربع</td>
+      <td>صيغ الملفات التي تُضمَّن؛ وتُتخطّى ملفات الصيغ الأخرى.</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>لا شيء</td>
+      <td>العائلات التي تُستبعد من ملف يغادر التطبيق (لا يجوز إعادة توزيعها). تبقى الإشارة إليها ويلجأ القارئ إلى خط بديل؛ ويُبلَّغ <code>onWithheld(family)</code> بكل واحدة منها.</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>لا شيء</td>
+      <td>يُبلَّغ بالعائلة التي لا وجه لها (<code>svgFontUnavailable</code>) وبتجاوز حد الحجم (<code>svgFontsTooLarge</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+**الاستثناء.** يترك `diagramStyle.inlineFonts: false` كل ملفات SVG كما خُزّنت؛ ويترك `svg.inlineFonts: false` على مورد ذلك المورد كما هو بايتًا ببايت، لملف SVG يحمل أوجهه بنفسه أو يجب ألا يتغيّر. وتكتب الحزمة استثناء المورد `"inlineFonts": false` في ملف `preset.json` الخاص بها.
+
+**التراخيص.** يضع التضمين ملفات خطوط داخل صور قد تغادر التطبيق (تصدير HTML، ملف EPUB). ويحدث ذلك حين تُعرض الصورة أو تُصدَّر، لا في بايتات المورد المخزَّنة أبدًا، ويُبقي `withhold` خارج الملف العائلات التي لا يسمح ترخيصها بتمريرها إلى غيرك: يحجب كاتب EPUB الأوجه المعلَّمة بـ `redistributable: false`، ويحجب Sandbox العائلات المخصّصة المعلَّمة كذلك.
 
 
 ## نمط الفيديو
@@ -8938,7 +9010,7 @@ const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownR
 
 تُعيد `formatWarning(w)` وصفًا بالإنجليزية في سطر واحد. أما المضيف الذي يترجم رسائله فيتفرّع بحسب `kind` بدلًا من ذلك، ويحتفظ بفرع افتراضي، لأن الإصدارات الفرعية قد تضيف أنواعًا. وتُعيد `collectContentWarnings(markdown, config, resources)` تحذيرات المحتوى دون إخراج أي شيء (القائمة التي يضيفها البناء، دون `pageIndex`)، لمحرّر يفحص النص أثناء الكتابة. وتفحص `collectHeadingDesignCuts(doc)` إخراجًا مكتملًا بحثًا عن تصاميم عناوين يتجاوز نصها أسفل صفحتها أو عمودها (`kind: 'headingDesignCut'`؛ انظر [الارتفاع المحجوز](#الارتفاع-المحجوز))، وهو ما لا يُبلّغ عنه الإخراج نفسه، وتصف `formatWarning` نتائجها كذلك. وتعرضها لوحة **الفحوص** في Sandbox جميعًا.
 
-تُبلّغ المُخرِجات (renderers) عمّا لا تستطيع رسمه كما طُلب منها عبر خيار `onWarning`: `renderPageToCanvas` و`renderPage` و`renderToCanvas` (`RenderPageOptions`)، و`renderToHtml` و`renderToHtmlIndexed` (`RenderHtmlOptions`)، و`renderToPdf` (`RenderToPdfOptions`، وعبر عامل PDF أيضًا). يوجد اليوم نوع واحد من تحذيرات العرض هو `missingImage`: الصورة التي لا يوجد ما يُرسم لها، سواء أكانت شكلًا أم صورة في خلية جدول أم أيقونة إطار أم صورة تصميم، تُرسم عنصرًا نائبًا محايدًا ويُبلَّغ عنها مرة واحدة لكل `fileId` ولكل استدعاء عرض، ومعها `pageIndex`، و`resourceId` حين يعرفه الراسم (للأشكال وصور الخلايا)، و`documentIndex` في PDF عند عرض عدة مستندات. ويعني «لا يوجد ما يُرسم» غياب `registerResourceImage` للمعرّف `fileId` في Canvas، وغياب عنوان URL من `resourceImageUrl` في HTML، وغياب البايتات من `resourceBytes` في PDF، أو وجود بايتات يتعذّر فكّ ترميزها. أما المورد النقطي أو SVG الذي لا يذكر أي `fileId` فليس لديه ما يطلبه: فيُرسم عنصرًا نائبًا دون تبليغ. ولا تُخزَّن تحذيرات العرض في VDT، لأن ما يستطيع المضيف توفيره يتغيّر بعد الإخراج.
+تُبلّغ المُخرِجات (renderers) عمّا لا تستطيع رسمه كما طُلب منها عبر خيار `onWarning`: `renderPageToCanvas` و`renderPage` و`renderToCanvas` (`RenderPageOptions`)، و`renderToHtml` و`renderToHtmlIndexed` (`RenderHtmlOptions`)، و`renderToPdf` (`RenderToPdfOptions`، وعبر عامل PDF أيضًا). النوع الرئيسي من تحذيرات العرض هو `missingImage`: الصورة التي لا يوجد ما يُرسم لها، سواء أكانت شكلًا أم صورة في خلية جدول أم أيقونة إطار أم صورة تصميم، تُرسم عنصرًا نائبًا محايدًا ويُبلَّغ عنها مرة واحدة لكل `fileId` ولكل استدعاء عرض، ومعها `pageIndex`، و`resourceId` حين يعرفه الراسم (للأشكال وصور الخلايا)، و`documentIndex` في PDF عند عرض عدة مستندات. ويعني «لا يوجد ما يُرسم» غياب `registerResourceImage` للمعرّف `fileId` في Canvas، وغياب عنوان URL من `resourceImageUrl` في HTML، وغياب البايتات من `resourceBytes` في PDF، أو وجود بايتات يتعذّر فكّ ترميزها. أما المورد النقطي أو SVG الذي لا يذكر أي `fileId` فليس لديه ما يطلبه: فيُرسم عنصرًا نائبًا دون تبليغ. ويأتي نوعان آخران من المضيفات التي تضمّن الخطوط في صور SVG (`registerSvgImage` و`registerBundleImages` و`bundleImageUrl` و`renderToHtml` مع `inlineSvgFonts` وpostext-epub؛ انظر [الخطوط في نصوص SVG](#الخطوط-في-نصوص-svg))، ومعهما `fileId` الصورة و`resourceId`: النوع `svgFontUnavailable` (`family` و`weight` و`style`)، عائلة يسمّيها نصها ولا وجه لها يُضمَّن، فتنضّد الصورة ذلك النص بخط بديل؛ والنوع `svgFontsTooLarge` (`bytes` و`maxBytes`)، أوجه تتجاوز حد الحجم، فلا يُضمَّن منها شيء. ولا تُخزَّن تحذيرات العرض في VDT، لأن ما يستطيع المضيف توفيره يتغيّر بعد الإخراج.
 
 ```ts
 import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
@@ -9855,7 +9927,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 تعيد `resourceBytes(fileId)` البايتات الخام لصورة، ويتعرّف المُخرِج على صيغتها من البايتات:
 
 - تُضمَّن صور PNG وJPEG وGIF وWebP صورًا؛
-- تُرسم شيفرة SVG مسارات متجهية، أو تُحوَّل إلى صورة نقطية بدقة 600 dpi في المتصفح حين تستخدم ميزات خارج المجموعة المتجهية المدعومة؛
+- تُرسم شيفرة SVG مسارات متجهية، ويُنضَّد `text` فيها نصًا حقيقيًا بالخطوط المضمَّنة في المستند، أو تُحوَّل إلى صورة نقطية بدقة 600 dpi في المتصفح حين تستخدم ميزات خارج المجموعة المتجهية المدعومة. ويُتخطّى `<style>` لا يحوي إلا قواعد `@font-face` (أوجهًا ضمّنها المؤلف) فيبقى الشكل متجهيًا (منذ postext-pdf 1.25)؛ أما أي ورقة أنماط أخرى فتجعله صورة نقطية، تُصنع والأوجه التي يسمّيها نصه مضمَّنة فيها من `fontProvider` (ما لم تكن `diagramStyle.inlineFonts` أو `svg.inlineFonts` الخاصة بالمورد `false`)؛
 - ملف PDF تُضمَّن صفحته الأولى كما هي، في هيئة form XObject.
 
 تُخزَّن كل صورة في الملف مرة واحدة، مهما تكرر رسمها. يصبح ملف SVG المرسوم مسارات متجهية form XObject ترسمه كل صفحة، فالإطار أو الشعار في تصميم صفحات مستند من ثلاثين صفحة يُكتب مرة واحدة لا ثلاثين مرة؛ وتضيف كل صفحة إضافية بضع مئات من البايتات. وحتى الإصدار 1.4 من postext-pdf، كانت كل صفحة تحمل نسختها الخاصة من المسارات.
@@ -10130,10 +10202,10 @@ const bytes = await renderToEpub(docs, {
 
 المستند الواحد كتاب من فصل واحد: `renderToEpub([doc], options)`.
 
-- **`renderToEpub(docs, options): Promise<Uint8Array>`** تكتب الملف. و`options` هي `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** تكتب الملف. و`options` هي `{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
 - **`metadata`**: الحقلان `title` و`language` (وسم BCP 47) مطلوبان؛ و`subtitle` و`creators` و`identifier` و`date` و`publisher` و`rights` و`description` و`modified` اختيارية. ويصبح رقم ISBN المجرّد `urn:isbn:…`. ودون `identifier` يحصل الكتاب على `urn:uuid:` مشتق من عنوانه ومؤلفيه ولغته، فتحتفظ النسخة الجديدة من الكتاب نفسه بمكانها في مكتبة القارئ. ومرّر `modified` أيضًا لتحصل على مخرجات متطابقة بايتًا ببايت.
-- **`fonts`**: الوجوه المراد تضمينها، `{ family, weight, style, bytes, format, unicodeRange? }` حيث `format` واحد من `woff2` و`woff` و`ttf` و`otf`. يصبح كل وجه ملفًا وقاعدة `@font-face`؛ وعدة ملفات لكل منها `unicodeRange` تشكّل وجهًا واحدًا (شرائح Google Fonts). والعائلة أو الوزن أو النمط الذي تستخدمه الصفحات دون وجه مضمَّن يُبلَّغ عنه بتحذير `missingFont`، وتستبدل به أنظمة القراءة خطوطها الخاصة. ولا تضمّن إلا الخطوط التي تسمح تراخيصها بذلك.
-- **`resourceBytes(fileId)`**: الصور التي تضعها الصفحات، متزامنةً أو غير متزامنة، في هيئة `{ bytes, mediaType }`؛ و`mediaType` الفارغ يُستنتج من البايتات. أعطِ الصور النقطية كما خُزّنت، وملفات SVG بمصدرها، لا بنسخة PDF الأصلية للطباعة (`svg.pdfFileId`). تُخزَّن كل صورة مرة واحدة. والكتاب أحادي الحبر (`diagramStyle.singleInk`) يُعاد تلوين ملفات SVG فيه داخل الملف. والصورة التي لا بايتات لها يُبلَّغ عنها بتحذير `missingImage` وتُترك إطارًا فارغًا.
+- **`fonts`**: الوجوه المراد تضمينها، `{ family, weight, style, bytes, format, unicodeRange? }` حيث `format` واحد من `woff2` و`woff` و`ttf` و`otf`. يصبح كل وجه ملفًا وقاعدة `@font-face`؛ وعدة ملفات لكل منها `unicodeRange` تشكّل وجهًا واحدًا (شرائح Google Fonts). والعائلة أو الوزن أو النمط الذي تستخدمه الصفحات دون وجه مضمَّن يُبلَّغ عنه بتحذير `missingFont`، وتستبدل به أنظمة القراءة خطوطها الخاصة. ولا تضمّن إلا الخطوط التي تسمح تراخيصها بذلك: فالوجه الذي يحمل `redistributable: false` لا يُكتب في الملف أبدًا (قد يُنضَّد به الكتاب، لكن ملفه يبقى خارجه، وخارج صور SVG أيضًا).
+- **`resourceBytes(fileId)`**: الصور التي تضعها الصفحات، متزامنةً أو غير متزامنة، في هيئة `{ bytes, mediaType }`؛ و`mediaType` الفارغ يُستنتج من البايتات. أعطِ الصور النقطية كما خُزّنت، وملفات SVG بمصدرها، لا بنسخة PDF الأصلية للطباعة (`svg.pdfFileId`). تُخزَّن كل صورة مرة واحدة. والكتاب أحادي الحبر (`diagramStyle.singleInk`) يُعاد تلوين ملفات SVG فيه داخل الملف. ويُضمَّن في كل SVG أوجه الخطوط التي يسمّيها نصه، لأن نظام القراءة يعرضه صورةً لا ترى خطوط الكتاب (انظر [الخطوط في نصوص SVG](#الخطوط-في-نصوص-svg)): من `fonts` (الشرائح التي تحوي حروفه)، ثم من **`svgFonts.provider`** للعائلة التي لا يستخدمها نص الكتاب. وتبقى خارج الملف عائلات الأوجه المعلَّمة بـ `redistributable: false` والعائلات التي يسمّيها `svgFonts.withhold(family)`، ويُبلَّغ عن كل منها مرة واحدة بتحذير `fontWithheld`؛ ويُبلَّغ عن العائلة التي لا وجه لها بتحذير `svgFontUnavailable`، وعن الأوجه التي تتجاوز `svgFonts.maxBytes` (2 MiB) بتحذير `svgFontsTooLarge`. ويُبقي `svgFonts.inline: false` و`diagramStyle.inlineFonts: false` و`svg.inlineFonts: false` الخاص بالمورد البايتاتِ كما أُعطيت. والصورة التي لا بايتات لها يُبلَّغ عنها بتحذير `missingImage` وتُترك إطارًا فارغًا.
 - **`cover`**: `{ bytes, mediaType, alt? }`، صورة JPEG أو PNG أو WebP أو SVG. يُفتح الكتاب حينئذ على مستند غلاف يحملها، وتكون هي `cover-image` الخاصة بالحزمة (الصورة المصغّرة في المكتبة). ودونها، يسمّي التخطيط الثابت صفحته الأولى غلافًا، ولا تكون للكتاب المتدفق صورة غلاف.
 - **`onProgress({ phase, done, total })`**: `resources` (الخطوط والصور)، ثم `documents` (الصفحات في التخطيط الثابت، والفصول في المتدفق)، ثم `package`. و<strong>`signal`</strong> يُلغي العملية بين الخطوات.
 - **`readEpub(bytes)`** تقرأ الملف من جديد لأداة عرض، دون `DOMParser`: التخطيط، والبيانات الوصفية، واتجاه القراءة، وكل ملف بمساره، والبيان (manifest)، والعمود الفقري (spine)، وجدول المحتويات، وقائمة الصفحات، ونافذة العرض (viewport) للتخطيط الثابت، والغلاف. وقارئ Sandbox مبني عليها.
@@ -10249,8 +10321,8 @@ migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 
 أربع أدوات مساعدة تصل الحزمة المفتوحة بالمحرّك وبالمُخرِجات:
 
-- **`loadBundleFonts(bundle)`** يسجّل أوجه خطوط الحزمة في `document.fonts`. انتظر اكتماله (await) قبل الإخراج، لأن الإخراج يقيس النص بالخطوط المتاحة في المتصفح. أما العائلات التي تسمّيها الحزمة ولا تحملها (Google Fonts) فعليك تحميلها بنفسك، كما في أي مستند آخر.
-- **`registerBundleImages(bundle)`** يفكّ ترميز الصور لمُخرِج Canvas (`renderPage` و`renderToCanvas`)، ومنها أغلفة مقاطع الفيديو. و<strong>`bundleImageUrl(bundle)`</strong> هو المحلِّل `resourceImageUrl` الذي يحتاجه `renderToHtml`، و<strong>`bundleVideoUrl(bundle)`</strong> محلِّله `resourceVideoUrl` لملفات الفيديو التي تحملها الحزمة. وكلاهما يعيد تلوين أشكال SVG حين يكون `diagramStyle.singleInk` مفعَّلًا، مرة واحدة: يعيدان تلوين الشيفرة ويعلّمان الصور كي لا يلوّنها أي مُخرِج مرة أخرى (انظر [الحبر الواحد على Canvas وفي HTML](#الحبر-الواحد-على-اللوحة-canvas-وفي-html)).
+- **`loadBundleFonts(bundle)`** يسجّل أوجه خطوط الحزمة في `document.fonts`، وبايتاتها في سجلّ الخطوط في المحرّك لصور SVG (`registerFontBytes`). انتظر اكتماله (await) قبل الإخراج، لأن الإخراج يقيس النص بالخطوط المتاحة في المتصفح. أما العائلات التي تسمّيها الحزمة ولا تحملها (Google Fonts) فعليك تحميلها بنفسك، كما في أي مستند آخر.
+- **`registerBundleImages(bundle)`** يفكّ ترميز الصور لمُخرِج Canvas (`renderPage` و`renderToCanvas`)، ومنها أغلفة مقاطع الفيديو. و<strong>`bundleImageUrl(bundle)`</strong> هو المحلِّل `resourceImageUrl` الذي يحتاجه `renderToHtml`، و<strong>`bundleVideoUrl(bundle)`</strong> محلِّله `resourceVideoUrl` لملفات الفيديو التي تحملها الحزمة. وكلاهما يعيد تلوين أشكال SVG حين يكون `diagramStyle.singleInk` مفعَّلًا، مرة واحدة: يعيدان تلوين الشيفرة ويعلّمان الصور كي لا يلوّنها أي مُخرِج مرة أخرى (انظر [الحبر الواحد على Canvas وفي HTML](#الحبر-الواحد-على-اللوحة-canvas-وفي-html)). ويضمّن كلاهما أيضًا في كل SVG أوجه الخطوط التي يسمّيها نصه، من خطوط الحزمة نفسها أولًا، ثم من الأوجه المسجّلة في المحرّك (انظر [الخطوط في نصوص SVG](#الخطوط-في-نصوص-svg))؛ ويُبلّغ `registerBundleImages(bundle, { onWarning })` و`bundleImageUrl(bundle, { onWarning })` عن العائلة التي لا وجه لها.
 - **`buildBundle(bundle)`** يُخرج الفصول بالترتيب ويعيد `VDTDocument` لكل فصل. كل فصل يتابع ما قبله: عدّادات العناوين والموارد، والجزء المفتوح، وزوجية الصفحة، وترقيم الصفحات. والفصل الذي يطبع المحتويات (`:::toc`) أو الفهرس الأبجدي (`:::index`) يتلقى مخطط الكتاب كله. ويقبل الخيارات نفسها التي يقبلها `buildDocument`، إضافةً إلى `config` لتجاوز إعدادات الحزمة، و`cache` لمشاركة ذاكرة تخزين مؤقت للقياسات، و`metadata` (انظر أدناه).
 - **`bundleResourceBytes(bundle)`** و<strong>`bundleFontProvider(bundle, { decodeWoff2, fallback })`</strong> هما الخياران `resourceBytes` و`fontProvider` للدالة `renderToPdf` في `postext-pdf`. يختار مزوّد الخطوط من الحزمة أقرب وزن للنمط المطلوب. ويحتاج لوجه `.woff2` إلى `decompressWoff2`، وللعائلة التي لا تحملها الحزمة يستدعي `fallback` بمعاملات المُخرِج، بما فيها `request`، ويمرّر ما تعيده كما هو. والبديل الذي لا يجلب إلا ملف `latin` للعائلة يطبع العائلة الصينية التي لا تضمّنها الحزمة مربعاتٍ فارغة؛ أما البديل الذي يجيب بشرائح، مثل `sliceFontProvider` في [خطوط الصينية واليابانية والكورية](#خطوط-الصينية-واليابانية-والكورية)، فيطبعها كاملة.
 

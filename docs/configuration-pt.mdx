@@ -5087,7 +5087,7 @@ As substituições por tipo são mescladas com `mergeCaptionStyle(resolvedCaptio
 
 ## Estilo de diagramas
 
-A propriedade `diagramStyle` controla a cor dos diagramas SVG incorporados (recursos `kind: 'svg'`). O seu único recurso hoje é o **modo de tinta única**: uma passada de recoloração que converte cada cor de um diagrama numa retícula de uma única tinta, para que as figuras se reproduzam fielmente quando o documento é impresso com uma só cor especial.
+A propriedade `diagramStyle` controla a cor dos diagramas SVG incorporados (recursos `kind: 'svg'`) e as fontes em que o texto deles é composto. O **modo de tinta única** é uma passada de recoloração que converte cada cor de um diagrama numa retícula de uma única tinta, para que as figuras se reproduzam fielmente quando o documento é impresso com uma só cor especial. As **fontes incorporadas** colocam em cada SVG as variantes que o seu texto nomeia, para que os rótulos saiam nas fontes do documento no canvas, no HTML e no EPUB (veja [Fontes no texto dos SVG](#fontes-no-texto-dos-svg)).
 
 ```ts
 const config: PostextConfig = {
@@ -5119,6 +5119,12 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td>Cor principal (<code>#295AA3</code>)</td>
       <td>A tinta. Por padrão é a cor principal da paleta do documento (ligada à paleta por <code>paletteId: 'main-color'</code>), de modo que trocar essa amostra de cor da paleta tinge de novo os diagramas junto com os títulos e os trechos em negrito.</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Incorpora em cada SVG as variantes que o seu texto nomeia (<code>font-family</code>), como URIs de dados em <code>@font-face</code>, antes que ele seja exibido como imagem: no canvas, no HTML, no EPUB e na rasterização de reserva do PDF. Nunca é gravado no arquivo armazenado. Um recurso fica de fora com <code>svg.inlineFonts: false</code> (desde o postext 1.25).</td>
     </tr>
   </tbody>
 </table>
@@ -5200,6 +5206,72 @@ const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
 `renderToHtml` tira o seu padrão de `singleInk` da indicação do próprio resolvedor, então `bundleImageUrl(bundle)` não precisa de opção.
 
 Para cada cor que a passada sobre o código reescreve (valores hexadecimais, `rgb()` e `hsl()`, `white` e `black`; veja [Como funciona a tinta única](#como-funciona-a-tinta-única)), o mapeamento por pixel dá o mesmo resultado, bordas suavizadas e gradientes incluídos. Os dois diferem onde a passada sobre o código deixa uma cor intacta: cores nomeadas além de `white` e `black`, `currentColor`, formas e textos sem preenchimento (desenhados no preto padrão) e bitmaps embutidos no SVG são tingidos na tela, mas mantêm a sua cor no PDF. Dê a cada elemento de um diagrama uma cor explícita em hexadecimal, `rgb()` ou `hsl()` para obter uma saída idêntica. Quando o canvas não consegue ler os pixels de volta (um `<img>` de outra origem, carregado sem CORS), a imagem é pintada sem tingir.
+
+### Fontes no texto dos SVG
+
+Uma imagem SVG é exibida por meio de uma imagem: um `<img>` no canvas, no HTML e no EPUB. Um documento de imagem não enxerga as fontes web da página, então `<text font-family="IBM Plex Sans">` cairia numa fonte do sistema. Desde o postext 1.25, o motor incorpora na marcação as variantes que o texto nomeia antes de a imagem ser decodificada ou entregue como URL: uma regra `@font-face` por arquivo de fonte, com os bytes numa URI de dados, num `<style>` logo depois da tag `<svg>` raiz. O PDF não precisa de nada disso: ele compõe o texto dos SVG como texto real nas suas fontes incorporadas (veja [Bytes de recursos e matrizes de impressão](#bytes-de-recursos-e-matrizes-de-impressão)).
+
+O que o texto pede é lido de `font-family`, `font-weight`, `font-style` e `font`, como atributos, dentro de atributos `style` e herdado dos grupos que o envolvem; uma regra de `<style>` que nomeia uma família também conta. As famílias genéricas (`serif`, `sans-serif`…) e o texto dentro de `<title>` ou `<desc>` ficam de fora, e uma família que o próprio SVG declara com `@font-face` não é mexida. Cada trecho percorre a sua lista `font-family` até a primeira família que tenha uma variante. A recoloração da tinta única vem primeiro; depois, as fontes.
+
+As variantes vêm de um **provedor** com o contrato do `PdfFontProvider` do postext-pdf, de modo que um único provedor serve aos dois: ele é chamado com a família, o peso e o estilo, além dos caracteres que o SVG compõe nessa variante, e responde com um arquivo ou com vários. Uma família servida em fatias por unicode-range (Fontsource, Google Fonts) é respondida com as fatias de que esses caracteres precisam, então um SVG com rótulos latinos leva só o arquivo `latin`. O provedor padrão lê o registro de fontes do motor: `loadBundleFonts` registra ali as variantes de um pacote, e um host registra as suas com `registerFontBytes(family, weight, style, bytes, { unicodeRange })`, ou com `registerFontUrl(…)` para um arquivo baixado na primeira vez que um SVG precisa dele. Uma família que ninguém registrou é procurada nas regras `@font-face` das folhas de estilo legíveis da página. Uma `FontFace` adicionada a `document.fonts` a partir de bytes não guarda esses bytes, então o motor não consegue lê-los de volta: registre essas variantes também.
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // recolorido, fontes incorporadas, decodificado, registrado
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+Onde isso acontece:
+
+- **Canvas.** `registerSvgImage(fileId, svgText, options)` recolore (`inkHex`), incorpora as fontes (`fonts`, um provedor; `inlineFonts: false` pula essa etapa), decodifica e registra a imagem como fonte vetorial, e resolve com o que aconteceu a cada variante. `registerBundleImages(bundle)` faz o mesmo com os SVGs de um pacote, a partir das variantes do próprio pacote primeiro. `prepareSvgMarkup(svgText, options)` devolve a marcação preparada para um host que decodifica por conta própria.
+- **HTML.** `bundleImageUrl(bundle)` serve a marcação SVG com as variantes do pacote incorporadas. `renderToHtml(doc, { inlineSvgFonts: true })` incorpora as fontes nas URIs `data:` de SVG que `resourceImageUrl` devolve, a partir das variantes que o registro guarda na memória (ou `inlineSvgFonts: { fonts, maxBytes, withhold }`). Uma URL de objeto não pode ser lida de forma síncrona, então um host que serve URLs blob incorpora as fontes antes de criá-las.
+- **EPUB.** O `postext-epub` incorpora a partir das `fonts` do livro e, depois, de `svgFonts.provider`, antes de gravar um SVG (veja [Livros EPUB](#livros-epub-postext-epub)).
+- **PDF.** O texto dos SVG é composto como texto real nas fontes incorporadas. Um `<style>` que contém só regras `@font-face` (variantes que o autor incorporou) já não faz a figura cair numa rasterização. Quando uma figura cai mesmo nela (um filtro, um gradiente), a rasterização é feita com as variantes incorporadas a partir do `fontProvider` do PDF.
+
+As funções de nível mais baixo também são exportadas: `svgFontRequests(svgText)` lista as famílias, o peso, o estilo e os caracteres de cada trecho; `inlineSvgFonts(svgText, provider, options)` e `inlineSvgFontsSync(svgText, syncProvider, options)` devolvem a marcação; `inlineSvgFontsDetailed` acrescenta um relatório de cada variante (`inlined`, `declared`, `unavailable`, `withheld`, `tooLarge`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Opção</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>O máximo de bytes de fonte incorporados num SVG (antes do base64, que acrescenta um terço). Variantes que juntas passam desse limite não são incorporadas, e <code>svgFontsTooLarge</code> é informado.</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>os quatro</td>
+      <td>Os formatos de arquivo a incorporar; arquivos de outros formatos são ignorados.</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>nenhum</td>
+      <td>Famílias a deixar fora de um arquivo que sai do app (não redistribuíveis). A referência a elas fica e o leitor usa uma fonte substituta; <code>onWithheld(family)</code> é avisado de cada uma.</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>nenhum</td>
+      <td>Avisado de uma família sem variante (<code>svgFontUnavailable</code>) e do limite de tamanho (<code>svgFontsTooLarge</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+**Como desativar.** `diagramStyle.inlineFonts: false` deixa todos os SVGs como estão armazenados; `svg.inlineFonts: false` num recurso deixa esse SVG intacto, byte a byte, para um SVG que traz as próprias variantes ou que não pode mudar. Um pacote grava a exclusão do recurso como `"inlineFonts": false` no seu `preset.json`.
+
+**Licenças.** A incorporação põe arquivos de fonte dentro de imagens que podem sair do app (uma exportação HTML, um EPUB). Ela acontece quando uma imagem é exibida ou exportada, nunca nos bytes armazenados do recurso, e `withhold` deixa de fora as famílias cuja licença não permite repassá-las: o gravador de EPUB retém as variantes marcadas com `redistributable: false`, e o Sandbox, as famílias personalizadas marcadas assim.
 
 
 ## Estilo de vídeo
@@ -8940,7 +9012,7 @@ const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownR
 
 `formatWarning(w)` devolve uma descrição de uma linha em inglês. Um host que traduz suas mensagens escolhe a mensagem pelo `kind` (e mantém um ramo padrão, já que versões menores podem acrescentar tipos). `collectContentWarnings(markdown, config, resources)` devolve os avisos de conteúdo sem diagramar nada (a lista que a compilação acrescenta, sem `pageIndex`), para um editor que verifica o texto enquanto ele é digitado. `collectHeadingDesignCuts(doc)` examina uma diagramação pronta em busca de designs de título cujo texto passa do pé da página ou da coluna (`kind: 'headingDesignCut'`; veja [Altura reservada](#altura-reservada)), algo que a própria diagramação não relata, e `formatWarning` também descreve esses resultados. O painel **Verificações** do Sandbox lista todos eles.
 
-Os renderizadores relatam o que não conseguem pintar como foi pedido por meio de uma opção `onWarning`: `renderPageToCanvas`, `renderPage` e `renderToCanvas` (`RenderPageOptions`), `renderToHtml` e `renderToHtmlIndexed` (`RenderHtmlOptions`), e `renderToPdf` (`RenderToPdfOptions`, também pelo worker de PDF). Hoje há um único tipo de renderização, `missingImage`: uma imagem (uma figura, a imagem de uma célula de tabela, um ícone de boxe, uma imagem de design) sem nada para desenhar é pintada como um marcador de posição neutro e relatada, uma vez por `fileId` e por chamada de renderização, com seu `pageIndex`, o `resourceId` quando o pintor o conhece (figuras e imagens de célula) e, no PDF, o `documentIndex` de uma renderização de vários documentos. Nada para desenhar significa nenhum `registerResourceImage` para o `fileId` no canvas, nenhuma URL vinda de `resourceImageUrl` no HTML, e nenhum byte vindo de `resourceBytes` (ou bytes que não se decodificam) no PDF. Um recurso bitmap ou SVG que não cita nenhum `fileId` não tem o que pedir: ele é desenhado como marcador de posição sem relato. Os avisos de renderização não ficam guardados na VDT: o que um host pode fornecer muda depois da diagramação.
+Os renderizadores relatam o que não conseguem pintar como foi pedido por meio de uma opção `onWarning`: `renderPageToCanvas`, `renderPage` e `renderToCanvas` (`RenderPageOptions`), `renderToHtml` e `renderToHtmlIndexed` (`RenderHtmlOptions`), e `renderToPdf` (`RenderToPdfOptions`, também pelo worker de PDF). O principal tipo de renderização é `missingImage`: uma imagem (uma figura, a imagem de uma célula de tabela, um ícone de boxe, uma imagem de design) sem nada para desenhar é pintada como um marcador de posição neutro e relatada, uma vez por `fileId` e por chamada de renderização, com seu `pageIndex`, o `resourceId` quando o pintor o conhece (figuras e imagens de célula) e, no PDF, o `documentIndex` de uma renderização de vários documentos. Nada para desenhar significa nenhum `registerResourceImage` para o `fileId` no canvas, nenhuma URL vinda de `resourceImageUrl` no HTML, e nenhum byte vindo de `resourceBytes` (ou bytes que não se decodificam) no PDF. Um recurso bitmap ou SVG que não cita nenhum `fileId` não tem o que pedir: ele é desenhado como marcador de posição sem relato. Outros dois tipos vêm dos hosts que incorporam fontes em imagens SVG (`registerSvgImage`, `registerBundleImages`, `bundleImageUrl`, `renderToHtml` com `inlineSvgFonts`, postext-epub; veja [Fontes no texto dos SVG](#fontes-no-texto-dos-svg)), com o `fileId` e o `resourceId` da imagem: `svgFontUnavailable` (`family`, `weight`, `style`), uma família que o texto dela nomeia sem variante para incorporar, de modo que a imagem compõe esse texto numa fonte substituta; e `svgFontsTooLarge` (`bytes`, `maxBytes`), variantes acima do limite de tamanho, nenhuma incorporada. Os avisos de renderização não ficam guardados na VDT: o que um host pode fornecer muda depois da diagramação.
 
 ```ts
 import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
@@ -9857,7 +9929,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 `resourceBytes(fileId)` devolve os bytes brutos de uma imagem, e o renderizador identifica o formato:
 
 - PNG, JPEG, GIF e WebP são incorporados como imagens;
-- a marcação SVG é desenhada como caminhos vetoriais, ou rasterizada a 600 dpi no navegador quando usa recursos fora do subconjunto vetorial;
+- a marcação SVG é desenhada como caminhos vetoriais, com o seu `text` composto como texto real nas fontes incorporadas do documento, ou rasterizada a 600 dpi no navegador quando usa recursos fora do subconjunto vetorial. Um `<style>` que contém só regras `@font-face` (variantes que o autor incorporou) é ignorado e mantém a figura vetorial (desde o postext-pdf 1.25); qualquer outra folha de estilo a torna uma rasterização, feita com as variantes que o seu texto nomeia incorporadas a partir de `fontProvider` (a menos que `diagramStyle.inlineFonts` ou o `svg.inlineFonts` do recurso seja `false`);
 - de um PDF, a primeira página é incorporada tal como está, como um form XObject.
 
 Cada imagem é guardada no arquivo uma única vez, por mais vezes que seja desenhada. Um SVG desenhado como caminhos vetoriais vira um form XObject que todas as páginas pintam, de modo que uma moldura ou um logotipo no design de página de um documento de trinta páginas é escrito uma vez, não trinta; cada página a mais acrescenta algumas centenas de bytes. Até o postext-pdf 1.4, cada página levava a sua própria cópia dos caminhos.
@@ -10132,10 +10204,10 @@ const bytes = await renderToEpub(docs, {
 
 Um documento único é um livro de um capítulo: `renderToEpub([doc], options)`.
 
-- **`renderToEpub(docs, options): Promise<Uint8Array>`** grava o arquivo. `options` é `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** grava o arquivo. `options` é `{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
 - **`metadata`**: `title` e `language` (uma tag BCP 47) são obrigatórios; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` e `modified` são opcionais. Um ISBN sozinho vira `urn:isbn:…`. Sem um `identifier`, o livro recebe um `urn:uuid:` derivado do título, dos criadores e do idioma, para que uma nova versão do mesmo livro mantenha o seu lugar na biblioteca do leitor. Passe também `modified` para obter uma saída idêntica byte a byte.
-- **`fonts`**: as variantes a incorporar, `{ family, weight, style, bytes, format, unicodeRange? }`, com `format` igual a `woff2`, `woff`, `ttf` ou `otf`. Cada variante vira um arquivo e uma regra `@font-face`; vários arquivos com o seu `unicodeRange` formam uma variante (as fatias do Google Fonts). Uma família, peso ou estilo que as páginas usam sem variante incorporada é informado como `missingFont`, e os sistemas de leitura o substituem pelos seus. Incorpore apenas fontes cuja licença permita isso.
-- **`resourceBytes(fileId)`**: as imagens que as páginas posicionam, de forma síncrona ou assíncrona, como `{ bytes, mediaType }`; um `mediaType` vazio é deduzido dos bytes. Entregue os bitmaps como estão armazenados e os SVGs como o seu código-fonte, não a matriz de impressão em PDF (`svg.pdfFileId`). Cada imagem é guardada uma única vez. Um livro em tinta única (`diagramStyle.singleInk`) tem os seus SVGs recoloridos no arquivo. Uma imagem sem bytes é informada como `missingImage` e fica como um quadro vazio.
+- **`fonts`**: as variantes a incorporar, `{ family, weight, style, bytes, format, unicodeRange? }`, com `format` igual a `woff2`, `woff`, `ttf` ou `otf`. Cada variante vira um arquivo e uma regra `@font-face`; vários arquivos com o seu `unicodeRange` formam uma variante (as fatias do Google Fonts). Uma família, peso ou estilo que as páginas usam sem variante incorporada é informado como `missingFont`, e os sistemas de leitura o substituem pelos seus. Incorpore apenas fontes cuja licença permita isso: uma variante com `redistributable: false` nunca é gravada no arquivo (o livro pode ser composto com ela, mas o arquivo dela fica de fora, inclusive das imagens SVG).
+- **`resourceBytes(fileId)`**: as imagens que as páginas posicionam, de forma síncrona ou assíncrona, como `{ bytes, mediaType }`; um `mediaType` vazio é deduzido dos bytes. Entregue os bitmaps como estão armazenados e os SVGs como o seu código-fonte, não a matriz de impressão em PDF (`svg.pdfFileId`). Cada imagem é guardada uma única vez. Um livro em tinta única (`diagramStyle.singleInk`) tem os seus SVGs recoloridos no arquivo. Um SVG recebe incorporadas as variantes que o seu texto nomeia, já que um sistema de leitura o exibe como uma imagem que não enxerga as fontes do livro (veja [Fontes no texto dos SVG](#fontes-no-texto-dos-svg)): a partir de `fonts` (as fatias que contêm os seus caracteres) e, depois, de **`svgFonts.provider`** para uma família que o texto do livro não usa. As famílias de variantes marcadas com `redistributable: false`, e as que `svgFonts.withhold(family)` indica, ficam de fora e são informadas uma vez cada como `fontWithheld`; uma família sem variante é informada como `svgFontUnavailable`, e variantes acima de `svgFonts.maxBytes` (2 MiB), como `svgFontsTooLarge`. `svgFonts.inline: false`, `diagramStyle.inlineFonts: false` e o `svg.inlineFonts: false` de um recurso mantêm os bytes como foram entregues. Uma imagem sem bytes é informada como `missingImage` e fica como um quadro vazio.
 - **`cover`**: `{ bytes, mediaType, alt? }`, uma imagem JPEG, PNG, WebP ou SVG. O livro então abre em um documento de capa que a contém, e ela é a `cover-image` do pacote (a miniatura na biblioteca). Sem ela, o layout fixo nomeia a primeira página como capa e o livro refluível fica sem imagem de capa.
 - **`onProgress({ phase, done, total })`**: `resources` (fontes e imagens), `documents` (páginas em um layout fixo, capítulos em um refluível) e, por fim, `package`. **`signal`** interrompe entre as etapas.
 - **`readEpub(bytes)`** lê um arquivo de volta para um visualizador, sem `DOMParser`: layout, metadados, direção de leitura, todos os arquivos por caminho, o manifesto, a spine, o sumário, a lista de páginas, o viewport do layout fixo e a capa. O leitor do Sandbox é construído sobre ele.
@@ -10251,8 +10323,8 @@ migrateConfig(config, CONFIG_VERSION); // regras de hoje: o próprio `config`
 
 Quatro funções auxiliares ligam um pacote aberto ao motor e aos renderizadores:
 
-- **`loadBundleFonts(bundle)`** registra as variantes do pacote em `document.fonts`. Aguarde-a antes de diagramar, porque o layout mede o texto com as fontes que o navegador tem. As famílias que o pacote nomeia mas não traz (Google Fonts) ainda precisam ser carregadas por você, como em qualquer outro documento.
-- **`registerBundleImages(bundle)`** decodifica as imagens para o renderizador de canvas (`renderPage`, `renderToCanvas`), pôsteres de vídeo incluídos. **`bundleImageUrl(bundle)`** é o resolvedor `resourceImageUrl` para `renderToHtml`, e **`bundleVideoUrl(bundle)`** o seu resolvedor `resourceVideoUrl` para os arquivos de vídeo que um pacote traz. Os dois recolorem as figuras SVG quando `diagramStyle.singleInk` está ativado, uma única vez: recolorem a marcação e marcam as imagens para que nenhum renderizador as tinja de novo (veja [Tinta única no canvas e no HTML](#tinta-única-no-canvas-e-no-html)).
+- **`loadBundleFonts(bundle)`** registra as variantes do pacote em `document.fonts`, e os bytes delas no registro de fontes do motor para as imagens SVG (`registerFontBytes`). Aguarde-a antes de diagramar, porque o layout mede o texto com as fontes que o navegador tem. As famílias que o pacote nomeia mas não traz (Google Fonts) ainda precisam ser carregadas por você, como em qualquer outro documento.
+- **`registerBundleImages(bundle)`** decodifica as imagens para o renderizador de canvas (`renderPage`, `renderToCanvas`), pôsteres de vídeo incluídos. **`bundleImageUrl(bundle)`** é o resolvedor `resourceImageUrl` para `renderToHtml`, e **`bundleVideoUrl(bundle)`** o seu resolvedor `resourceVideoUrl` para os arquivos de vídeo que um pacote traz. Os dois recolorem as figuras SVG quando `diagramStyle.singleInk` está ativado, uma única vez: recolorem a marcação e marcam as imagens para que nenhum renderizador as tinja de novo (veja [Tinta única no canvas e no HTML](#tinta-única-no-canvas-e-no-html)). Os dois também incorporam em cada SVG as variantes que o seu texto nomeia, a partir das fontes do próprio pacote primeiro e, depois, das variantes registradas no motor (veja [Fontes no texto dos SVG](#fontes-no-texto-dos-svg)); `registerBundleImages(bundle, { onWarning })` e `bundleImageUrl(bundle, { onWarning })` informam uma família sem variante.
 - **`buildBundle(bundle)`** diagrama os capítulos em ordem e devolve um `VDTDocument` por capítulo. Cada capítulo continua o anterior: contadores de títulos e de recursos, a parte aberta, a paridade de página e a numeração de páginas. Um capítulo que imprime o sumário (`:::toc`) ou o índice remissivo (`:::index`) recebe a estrutura do livro inteiro. Aceita as mesmas opções que `buildDocument`, mais `config` para substituir a configuração do pacote, `cache` para compartilhar um cache de medição e `metadata` (veja abaixo).
 - **`bundleResourceBytes(bundle)`** e **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** são as opções `resourceBytes` e `fontProvider` do `renderToPdf` do `postext-pdf`. O provedor de fontes escolhe no pacote o peso mais próximo do estilo pedido. Para uma variante `.woff2` ele precisa de `decompressWoff2`, e para uma família que o pacote não traz ele chama `fallback` com os argumentos do renderizador, `request` incluído, e repassa o que ele devolver. Um fallback que busca só o arquivo `latin` de uma família imprime como caixas vazias uma família chinesa que o pacote não incorpora; um que responde com fatias, como `sliceFontProvider` em [Fontes chinesas, japonesas e coreanas](#fontes-chinesas-japonesas-e-coreanas), a imprime inteira.
 
