@@ -2172,6 +2172,124 @@
       ]
     }
   },
+  "verse": {
+    "label": {
+      "en": "Verse line by line",
+      "es": "Verso línea a línea",
+      "ca": "Vers línia a línia",
+      "zh": "逐行排诗",
+      "ar": "الشعر سطرًا سطرًا",
+      "ja": "行ごとの詩",
+      "pt": "Verso linha a linha"
+    },
+    "definition": {
+      "en": ":::verse sets a poem as it is written: one line of verse a line of Markdown, blank lines between stanzas, leading spaces as indents; an overlong line turns over with a hanging indent or flush right behind a bracket, never parted from its line at a page break, and short stanzas can be kept whole.",
+      "es": ":::verse compone un poema tal como se escribe: un verso por línea de Markdown, líneas en blanco entre estrofas, espacios iniciales como sangría; un verso demasiado largo se parte con sangría colgada o a la derecha tras un corchete, nunca separado de su línea en un salto de página, y las estrofas cortas pueden quedar enteras.",
+      "ca": ":::verse compon un poema tal com s'escriu: un vers per línia de Markdown, línies en blanc entre estrofes, espais inicials com a sagnat; un vers massa llarg es parteix amb sagnat penjat o a la dreta darrere d'un claudàtor, mai separat de la seva línia en un salt de pàgina, i les estrofes curtes poden quedar senceres.",
+      "zh": ":::verse按书写原样排诗：Markdown的一行就是一行诗，诗节之间空行，行首空格为缩进；过长的诗行以悬挂缩进转行，或在方括号后靠右排，分页时绝不与本行分开，短诗节可以保持完整。",
+      "ar": "يصفّ :::verse القصيدة كما كُتبت: سطر من الشعر في كل سطر من Markdown، وأسطر فارغة بين المقاطع، والمسافات البادئة إزاحة؛ والسطر الأطول من اللازم يُكمَل بإزاحة معلّقة أو إلى الطرف بعد قوس معقوف، ولا ينفصل عن سطره عند فاصل الصفحة، ويمكن إبقاء المقاطع القصيرة كاملة.",
+      "ja": ":::verseは詩を書いたとおりに組みます。Markdownの1行が詩の1行、連のあいだは空行、行頭の空白は字下げです。長すぎる行はぶら下げるか角括弧の後ろで行末側に寄せて折り返し、頁の区切りで元の行と離れず、短い連は分けずに保てます。",
+      "pt": ":::verse compõe um poema como foi escrito: um verso por linha de Markdown, linhas em branco entre estrofes, espaços iniciais como recuo; um verso longo demais se parte com recuo pendente ou à direita depois de um colchete, nunca separado da sua linha em uma quebra de página, e as estrofes curtas podem ficar inteiras."
+    },
+    "aliases": {
+      "en": [
+        "poem",
+        "poetry",
+        "stanza",
+        "line breaks in verse",
+        "turnover",
+        "hanging indent verse",
+        "haiku",
+        "tanka",
+        "free verse"
+      ],
+      "es": [
+        "poema",
+        "poesía",
+        "estrofa",
+        "saltos de línea en verso",
+        "verso partido",
+        "sangría colgada en verso",
+        "haiku",
+        "tanka",
+        "verso libre"
+      ],
+      "ca": [
+        "poema",
+        "poesia",
+        "estrofa",
+        "salts de línia en vers",
+        "vers partit",
+        "sagnat penjat en vers",
+        "haiku",
+        "tanka",
+        "vers lliure"
+      ],
+      "zh": [
+        "诗",
+        "诗歌",
+        "诗节",
+        "诗歌换行",
+        "转行",
+        "悬挂缩进",
+        "俳句",
+        "短歌",
+        "自由诗"
+      ],
+      "ar": [
+        "قصيدة",
+        "شعر",
+        "مقطع",
+        "كسر الأسطر في الشعر",
+        "تتمة السطر",
+        "إزاحة معلقة",
+        "هايكو",
+        "تانكا",
+        "شعر حر"
+      ],
+      "ja": [
+        "詩",
+        "韻文",
+        "連",
+        "詩の改行",
+        "折り返し",
+        "ぶら下げ",
+        "俳句",
+        "短歌",
+        "自由詩"
+      ],
+      "pt": [
+        "poema",
+        "poesia",
+        "estrofe",
+        "quebras de linha em verso",
+        "verso partido",
+        "recuo pendente em verso",
+        "haicai",
+        "tanka",
+        "verso livre"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::verse`",
+        "es": "`:::verse`",
+        "ca": "`:::verse`",
+        "zh": "`:::verse`",
+        "ar": "`:::verse`",
+        "ja": "`:::verse`",
+        "pt": "`:::verse`"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "^:::verse(?:\\{[^}\\n]*\\})?[ \\t]*\\n(?:(?![ \\t]*:::)(?![^\\n]*\\|\\|)[^\\n]*\\n)+[ \\t]*:::[ \\t]*$"
+      ]
+    },
+    "since": "1.23.0"
+  },
   "bibliography": {
     "label": {
       "en": "Bibliographies and glossaries",
@@ -14263,7 +14381,7 @@
     },
     "detect": {
       "markdown": [
-        "^:::verse"
+        "^:::verse[^\\n]*\\n(?:(?![ \\t]*:::)[^\\n]*\\n)*?[^\\n]*(?:\\|\\||\\s\\\\\\\\\\s)"
       ]
     },
     "since": "1.15.0"
