@@ -476,6 +476,14 @@ export const LayoutSection = memo(function LayoutSection() {
         onReset={() => resetField('boxChildSplitMinLines')}
       />
       <ToggleSwitch
+        label={labels.flowColumns}
+        checked={layout.flowColumns}
+        onChange={(v) => updateLayout({ flowColumns: v })}
+        tooltip={labels.flowColumnsTooltip}
+        isDefault={layout.flowColumns === D.flowColumns}
+        onReset={() => resetField('flowColumns')}
+      />
+      <ToggleSwitch
         label={labels.hugClosingFloats}
         checked={layout.hugClosingFloats}
         onChange={(v) => updateLayout({ hugClosingFloats: v })}

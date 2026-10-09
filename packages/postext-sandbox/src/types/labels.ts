@@ -288,6 +288,8 @@ export interface SandboxLabels {
   warningsUnknownParagraphStyleDetail: string;
   warningsUnknownCalloutTypeTitle: string;
   warningsUnknownCalloutTypeDetail: string;
+  warningsColumnsFlowUnknownTitle: string;
+  warningsColumnsFlowUnknownDetail: string;
   warningsUnknownChipStyleTitle: string;
   warningsUnknownChipStyleDetail: string;
   warningsDuplicateAnchorTitle: string;
@@ -1556,6 +1558,7 @@ export interface SandboxLabels {
   pagebreakDirectiveTooltip: string;
   spaceDirective: string;
   spaceDirectiveTooltip: string;
+  columnsDirective: string;
   chipInline: string;
   numberingDirective: string;
   numberingDirectiveTooltip: string;
@@ -1782,6 +1785,8 @@ export interface SandboxLabels {
   warningsFloatShrunkDetail: string;
   warningsFloatShrunkOverflowDetail: string;
   warningsTextWrapTitle: string;
+  warningsColumnsTooNarrowTitle: string;
+  warningsColumnsTooNarrowDetail: string;
   warningsTextWrapTooNarrow: string;
   warningsTextWrapFewLines: string;
   warningsTextWrapMoved: string;
@@ -3103,6 +3108,8 @@ export interface SandboxLabels {
   inlineResourceGapInBoxesTooltip: string;
   boxChildSplitMinLines: string;
   boxChildSplitMinLinesTooltip: string;
+  flowColumns: string;
+  flowColumnsTooltip: string;
   pageGroupSize: string;
   pageGroupMargins: string;
   pageGroupMarginsDescription: string;

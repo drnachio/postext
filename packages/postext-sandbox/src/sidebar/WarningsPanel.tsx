@@ -51,6 +51,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'lineNumberOverlap':
     case 'dropCap':
     case 'codeOverflow':
+    case 'columnsTooNarrow':
       return FileWarning;
     case 'headingHierarchy':
       return Heading;
@@ -73,6 +74,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'unclosedContainer':
     case 'unclosedCodeBlock':
     case 'unknownParagraphStyle':
+    case 'columnsFlowUnknown':
     case 'unknownCalloutType':
     case 'unknownChipStyle':
     case 'duplicateAnchor':
@@ -225,6 +227,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownParagraphStyleTitle;
     case 'unknownCalloutType':
       return labels.warningsUnknownCalloutTypeTitle;
+    case 'columnsFlowUnknown':
+      return labels.warningsColumnsFlowUnknownTitle;
     case 'unknownChipStyle':
       return labels.warningsUnknownChipStyleTitle;
     case 'duplicateAnchor':
@@ -336,6 +340,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsDropCapTitle;
     case 'codeOverflow':
       return labels.warningsCodeOverflowTitle;
+    case 'columnsTooNarrow':
+      return labels.warningsColumnsTooNarrowTitle;
     case 'unknownConfigKey':
       return labels.warningsUnknownConfigKeyTitle;
     case 'unknownConfigValue':
@@ -485,6 +491,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `:::paragraphs{style="${payload.style}"} — ${labels.warningsUnknownParagraphStyleDetail}`;
     case 'unknownCalloutType':
       return `:::callout{type="${payload.type}"} — ${labels.warningsUnknownCalloutTypeDetail}`;
+    case 'columnsFlowUnknown':
+      return `:::columns{flow="${payload.value}"} — ${labels.warningsColumnsFlowUnknownDetail}`;
     case 'unknownChipStyle':
       return `${inResource(payload.inResource)}:chip[…]{style="${payload.style}"} — ${labels.warningsUnknownChipStyleDetail}`;
     case 'duplicateAnchor':
@@ -624,6 +632,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     }
     case 'lineNumberOverlap':
       return labels.warningsLineNumberOverlapDetail.replace('__number__', payload.number);
+    case 'columnsTooNarrow':
+      return labels.warningsColumnsTooNarrowDetail.replace('__columns__', String(payload.columns));
     case 'codeOverflow': {
       const detail = payload.mode === 'wrap' ? labels.warningsCodeOverflowWrap
         : payload.mode === 'clip' ? labels.warningsCodeOverflowClip

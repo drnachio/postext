@@ -35,6 +35,7 @@ export type WarningKind =
   | 'unclosedCodeBlock'
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
+  | 'columnsFlowUnknown'
   | 'unknownChipStyle'
   | 'duplicateAnchor'
   | 'unknownCitationKey'
@@ -89,6 +90,7 @@ export type WarningKind =
   | 'lineNumberOverlap'
   | 'dropCap'
   | 'textWrap'
+  | 'columnsTooNarrow'
   | 'codeOverflow'
   | 'floatShrunk'
   | 'unknownConfigKey'
@@ -196,6 +198,9 @@ export type WarningPayload =
   /** A `:::callout{type="…"}` container names a type that is not in
    *  `config.calloutStyles`. */
   | { kind: 'unknownCalloutType'; type: string }
+  /** `:::columns{flow=…}` names neither `snake` nor `parallel` (#634): the
+   *  group takes the default. */
+  | { kind: 'columnsFlowUnknown'; value: string }
   /** A `:chip[…]{style="…"}` names a style that is not in
    *  `config.chipStyles`; the chip takes the first style. `inResource`
    *  names the resource whose caption, note or cell holds the chip. */
@@ -366,6 +371,9 @@ export type WarningPayload =
    *  the text beside it would be too narrow, it is too short for lines
    *  beside it, it moved on to the next column, or the text is vertical. */
   | { kind: 'textWrap'; reason: 'tooNarrow' | 'fewLines' | 'moved' | 'verticalText'; resourceId?: string; box?: string }
+  /** The sub-columns of a `:::columns` group are narrower than six ems of
+   *  their text (#634). */
+  | { kind: 'columnsTooNarrow'; columns: number; widthPx: number }
   /** A line number set in the side column overlaps a side box, caption or
    *  figure (#621); both are painted. `number` as printed. */
   | { kind: 'lineNumberOverlap'; number: string }

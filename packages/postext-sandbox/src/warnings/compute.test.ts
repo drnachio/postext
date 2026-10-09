@@ -77,6 +77,15 @@ describe('fenced-container warnings', () => {
     const known = { calloutStyles: [{ id: 'danger' }] } as PostextConfig;
     expect(kinds(md, known)).not.toContain('unknownCalloutType');
   });
+
+  it('reports a :::columns flow it does not know (#634)', () => {
+    const found = find(':::columns{count=2 flow="zigzag"}\nA.\n:::', 'columnsFlowUnknown');
+    expect(found).toHaveLength(1);
+    expect(found[0]!.payload.value).toBe('zigzag');
+    expect(warningCategory('columnsFlowUnknown')).toBe('markup');
+    expect(kinds(':::columns{count=2 flow="parallel" breaks="2"}\nA.\n\nB.\n:::')).not.toContain('columnsFlowUnknown');
+  });
+
 });
 
 describe('chip warnings', () => {
@@ -523,6 +532,15 @@ describe('engine content warnings', () => {
     // A book stored before #624 reads its fences as Markdown: no listing, no warning.
     const legacy = computeWarnings({ markdown: md, config: { codeStyle: { blocks: false } }, doc: null, resources: [] });
     expect(legacy.map((w) => w.payload.kind)).not.toContain('unclosedCodeBlock');
+  });
+
+  it('reports sub-columns too narrow for their text (#634)', () => {
+    const md = `:::columns{count=6}\n${Array.from({ length: 6 }, (_, i) => `Item ${i} of the group.`).join('\n\n')}\n:::`;
+    const config: PostextConfig = { page: { width: { value: 200, unit: 'pt' }, height: { value: 300, unit: 'pt' } } };
+    const doc = buildDocument({ markdown: md }, config);
+    const found = computeWarnings({ markdown: md, config, doc }).filter((w) => w.payload.kind === 'columnsTooNarrow');
+    expect(found).toHaveLength(1);
+    expect(warningCategory('columnsTooNarrow')).toBe('typesetting');
   });
 
   it('flags an image the previews cannot read, unless storage itself is out', () => {
