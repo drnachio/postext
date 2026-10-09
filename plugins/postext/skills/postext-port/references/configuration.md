@@ -147,7 +147,8 @@ page
 │   └─ mirror   boolean, default false. Odd pages keep left/right as written, even pages swap.
 ├─ backgroundColor  ColorValue, default {hex:'transparent'}
 ├─ dpi          number, default 300: the layout's px per inch (the px unit). Not image resolution, but a
-│               bitmap set at its own size prints at this many ppi: keep 300 for print
+│               bitmap with no resolution of its own prints at this many ppi: keep 300 for print, or
+│               give pictures a resolution (layout.bitmapResolution / bitmap.resolution, ≥ 1.24)
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
 ├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY
 ├─ pageNumbering { format='decimal'|'lower-roman'|'upper-roman'|'lower-alpha'|'upper-alpha'|<East Asian style, §10>, startAt=1 }
@@ -186,6 +187,10 @@ layout
 ├─ sideColumnSide     'right'|'left'|'outer'|'inner'         default 'right'  oneAndHalf only
 ├─ columnRule         { enabled=false, color=#cccccc, lineWidth=0.5pt }
 ├─ fitFiguresToPage   boolean                                default false (HTML viewer sets it)   hard cap at the content area
+├─ bitmapResolution   'document'|'file'|number                default 'document'   ≥ 1.24 natural size of bitmaps without
+│                                                             their own bitmap.resolution: 'document' = pixels at page.dpi;
+│                                                             300 = every such bitmap at 300 ppi; 'file' = the file's
+│                                                             pHYs/JFIF/EXIF (bitmap.fileResolution), 72/96 = unset
 ├─ floatShrink        { mode='never', minScale=0.7 }          ≥ 1.24 document default of placement.shrink / minScale (see §ResourcePlacement)
 ├─ wrap               { gap?, minTextWidth=12em, minLinesBeside=2, defaultWidth=0.45 }   ≥ 1.24 text wrap defaults (placement.wrap, callout wrap); gap unset = one body line; minTextWidth a Dimension or a share of the column
 ├─ hugClosingFloats   boolean                                default true   closing page: page-wide floats below the last text move up under it
@@ -1598,7 +1603,7 @@ fore-edge column: `"layout": {"layoutType": "oneAndHalf", "sideColumnPercent":
   default?, view?: { canvasScope?: 'book'|'chapter' },
   chapters: [{title, file}] | { "<locale>": [{title, file}] },
   config: PostextConfig,                          // WITHOUT customFonts
-  resources: [ Resource minus createdAt/updatedAt/bitmap/svg, plus file?, pdfFile?, width?, height?, note? ],
+  resources: [ Resource minus createdAt/updatedAt/bitmap/svg, plus file?, pdfFile?, width?, height?, resolution?, fileResolution?, note? ],
   fonts: [ { name, variants: [{ weight, style, file: "fonts/X.woff2" }], redistributable? } ],
   localized?: { "<locale>": { config?: Partial<PostextConfig> (top-level keys REPLACED wholesale),
                               resources?: [{ id, caption?, note?, altText?, table?, file?, pdfFile?, width?, height? }],
@@ -1667,7 +1672,8 @@ metadata (front matter of chapter 1), `view` (top-level of the manifest, not con
 - A PDF/X file carries no link annotations (bookmarks stay) and every page gets a TrimBox/BleedBox.
 - `pdfGeneration.colorSpace: 'cmyk'` separates through the same profile without the PDF/X marks.
 - `postext check my-book --preflight` lists the preflight with chapter file:line and page; `render.mjs` prints `PREFLIGHT <severity> <kind> page N` lines for a book set up for print (or
-  with `--preflight`): low-resolution pictures, thin rules, small text in several inks, ink over the
+  with `--preflight`): low-resolution pictures (from the files' real pixels; ≥ 1.24 a declared size the file does not
+  have is `declaredPixelsMismatch`), thin rules, small text in several inks, ink over the
   limit, text in the safe zone, boxes stopping short of the trim. Fix the critical ones.
 
 `htmlViewer`: `{ maxCharsPerLine = 70, columnGap = 50 (CSS px number), optimalLineBreaking = false, overrides?: Omit<PostextConfig,'htmlViewer'> }`.

@@ -131,7 +131,9 @@ embeds them with `::resource{id="…"}` (placement `here`).
 ```jsonc
 // bitmap — ALWAYS declare width/height in pixels (Node renderers cannot decode images)
 { "id": "neptune-spot", "typeId": "figure", "kind": "bitmap", "file": "resources/neptune-spot.jpg",
-  "width": 3200, "height": 1800,
+  "width": 3200, "height": 1800,                 // the file's pixels, never print-size arithmetic
+  "resolution": 300,                             // ≥ 1.24, optional: ppi at its natural print size (3200 px = 271 mm)
+                                                 // on a page of any dpi; or layout.bitmapResolution for every bitmap
   "caption": "Dark spot on *Neptune*.",          // inline markup allowed; the label/number is added
   "note": "Credit: ESO/P. Irwin et al.",         // credit line under the caption; `\\` (or `\` at a line end) starts a new line, in captions too
   "altText": "A blue planet with a dark oval",   // always write it (tagged PDF)

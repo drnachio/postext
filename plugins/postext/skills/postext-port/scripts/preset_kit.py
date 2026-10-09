@@ -255,15 +255,18 @@ def _picture_marks(r: dict, safe_area: dict | None, anchors: list | None, avoid:
 def bitmap(project: Path | str, id_: str, file: str, caption: str = "", *, type_id: str = "figure",
            alt: str | None = None, note: str | None = None, position: str | None = None,
            span: str | None = None, safe_area: dict | None = None, anchors: list | None = None,
-           avoid: list | None = None, **placement) -> dict:
+           avoid: list | None = None, resolution: float | None = None, **placement) -> dict:
     """A bitmap resource with its pixel size (Node renderers cannot decode it).
-    A comic panel picture takes `safe_area`, `anchors` and `avoid`
-    (references/comics.md §9)."""
+    `resolution` (postext >= 1.24) is its ppi at its natural print size, on a
+    page of any dpi. A comic panel picture takes `safe_area`, `anchors` and
+    `avoid` (references/comics.md §9)."""
     size = image_size(Path(project) / file)
     r = {"id": id_, "typeId": type_id, "kind": "bitmap", "file": file, "caption": caption,
          "altText": alt if alt is not None else re.sub(r"[*_^~]", "", caption)}
     if size:
         r["width"], r["height"] = size
+    if resolution:
+        r["resolution"] = resolution
     _picture_marks(r, safe_area, anchors, avoid)
     if note:
         r["note"] = note

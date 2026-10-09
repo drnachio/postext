@@ -665,7 +665,10 @@ a crop is tuned).
   exact.
 - Scans or plates: greyscale, autocontrast and a white-border trim; crop off
   a printed caption by fraction box.
-- Downscale to about 300 dpi at the printed size, JPEG q80–85.
+- Downscale to about 300 dpi at the printed size, JPEG q80–85. Declare the file's real pixels and,
+  when the page is laid out at another dpi (a newspaper at 150), `resolution: 300` on the picture or
+  `layout.bitmapResolution: 300` (≥ 1.24) instead of print-size pixels worked out by hand; with
+  sources whose files state their resolution, `layout.bitmapResolution: 'file'`.
 - A multi-part figure sent as separate files: join them side by side
   (`images.py join`).
 - Pulling a raster out of the book PDF: `pdf_figures.py image --xref`.
