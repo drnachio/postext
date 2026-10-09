@@ -3,7 +3,9 @@
 // embedded in every `.docx` the Sandbox exports, so a manuscript that went
 // out to Word comes back with the same mapping.
 
-import { DEFAULT_CALLOUT_STYLES, DEFAULT_CHIP_STYLES, type PostextConfig } from 'postext';
+import { DEFAULT_CALLOUT_STYLES } from '../defaults/calloutStyles';
+import { DEFAULT_CHIP_STYLES } from '../defaults/chipStyles';
+import type { PostextConfig } from '../types';
 import type { WordDocument, WordStyle } from './model';
 
 export type ParagraphTarget =
@@ -293,42 +295,6 @@ export function parseTemplate(v: unknown): WordTemplate | undefined {
 /** The JSON a template is shared as. */
 export function templateFile(t: WordTemplate): string {
   return JSON.stringify({ postextWordTemplate: { version: 1, ...t } }, null, 2) + '\n';
-}
-
-// ---------------------------------------------------------------------------
-// Browser storage
-// ---------------------------------------------------------------------------
-
-const STORAGE_KEY = 'postext-sandbox-word-templates';
-
-function storage(): Storage | null {
-  if (typeof window === 'undefined') return null;
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
-}
-
-export function loadTemplates(): WordTemplate[] {
-  try {
-    const raw = storage()?.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const list: unknown = JSON.parse(raw);
-    if (!Array.isArray(list)) return [];
-    return list.map(parseTemplate).filter((t): t is WordTemplate => !!t && !!t.id);
-  } catch {
-    return [];
-  }
-}
-
-export function saveTemplates(list: readonly WordTemplate[]): boolean {
-  try {
-    storage()?.setItem(STORAGE_KEY, JSON.stringify(list));
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 export function newTemplateId(): string {

@@ -10,10 +10,9 @@ import { generateId } from '../storage/ids';
 import { downloadBytes } from '../storage/persistence';
 import { Button, Collapsible, ConfirmPopover, IconButton, Select, Switch, announce, usePortalContainer, type SelectOption } from '../ui';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/surface';
-import { analyzeDocx, type FindingId, type QualityReport } from './analyze';
-import type { WordDocument } from './model';
 import { importedResources, loadLastTemplateId, saveLastTemplateId, useWordTemplates } from './sandboxImport';
 import {
+  analyzeDocx,
   calloutStylesOf,
   chipStylesOf,
   displayStyleName,
@@ -22,14 +21,19 @@ import {
   newTemplateId,
   parseTemplate,
   templateFile,
+  characterTargetOf,
+  paragraphTargetOf,
+  wordToPostext,
   type CharacterTarget,
   type CharacterTargetKind,
   type ParagraphTarget,
   type ParagraphTargetKind,
   type WordImportOptions,
   type WordTemplate,
-} from './template';
-import { characterTargetOf, paragraphTargetOf, wordToPostext } from './toMarkdown';
+  type FindingId,
+  type QualityReport,
+  type WordDocument,
+} from 'postext/word';
 import type { SandboxLabels } from '../types';
 
 export interface WordImportFile {

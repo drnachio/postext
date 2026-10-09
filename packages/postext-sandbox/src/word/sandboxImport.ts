@@ -6,8 +6,7 @@ import { useCallback, useState } from 'react';
 import type { Resource, ResourceType } from 'postext';
 import { putBlob } from '../storage/blobStore';
 import { isValidSvg, svgIntrinsicSize } from '../panels/resources/svgIntrinsic';
-import type { ImportResult } from './toMarkdown';
-import { loadTemplates, saveTemplates, type WordTemplate } from './template';
+import { parseTemplate, type ImportResult, type WordTemplate } from 'postext/word';
 
 const BITMAP_FORMATS: Record<string, 'png' | 'jpeg' | 'webp' | 'gif'> = {
   'image/png': 'png',
@@ -114,4 +113,40 @@ export function useWordTemplates(): {
     return saveTemplates(list);
   }, []);
   return { templates, save, remove };
+}
+
+// ---------------------------------------------------------------------------
+// Browser storage
+// ---------------------------------------------------------------------------
+
+const STORAGE_KEY = 'postext-sandbox-word-templates';
+
+function storage(): Storage | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+export function loadTemplates(): WordTemplate[] {
+  try {
+    const raw = storage()?.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const list: unknown = JSON.parse(raw);
+    if (!Array.isArray(list)) return [];
+    return list.map(parseTemplate).filter((t): t is WordTemplate => !!t && !!t.id);
+  } catch {
+    return [];
+  }
+}
+
+export function saveTemplates(list: readonly WordTemplate[]): boolean {
+  try {
+    storage()?.setItem(STORAGE_KEY, JSON.stringify(list));
+    return true;
+  } catch {
+    return false;
+  }
 }
