@@ -308,8 +308,11 @@ source's indents as leading spaces (two spaces = 1 em at the default
 `indentStep`; set `indentStep` to the source's step). Give the poem a paragraph
 style for its face, size, leading, `indent` and margins, and its
 `hangingIndent` for wrapped lines (2 em when none); `turnover=right` sets
-turnovers flush right behind `[` as English and Spanish editions do. A poem
-title goes in its own style, outside the fence.
+turnovers flush right behind `[` as English and Spanish editions do. Since
+1.24 a line only a few points too long tightens its word spaces (down to
+`bodyText.minWordSpacing`) and stays on one line, as a print edition sets it:
+keep the source's lines, never break or shorten them by hand. A poem title
+goes in its own style, outside the fence.
 
 ```md
 :::paragraphs{style="poem-title"}

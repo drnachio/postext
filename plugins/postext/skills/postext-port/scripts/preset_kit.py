@@ -57,8 +57,11 @@ from typing import Any
 # :::paragraphs containers pinned to 1.4. A manifest stamped 8 (postext 1.5
 # to 1.22) gets the rules-9 pins: a :::verse poem with no separator as
 # centred hemistichs, a first-line indent dropped from a style that hangs, a
-# backslash ending a line printed. An engine older than 1.23 reads 9 as 8.
-CONFIG_VERSION = 9
+# backslash ending a line printed. A manifest stamped 9 (postext 1.23) gets
+# the rules-10 pin: a line of verse a little too wide turns over instead of
+# tightening its word spaces. An engine older than 1.23 reads 9 as 8, one
+# older than 1.24 reads 10 as 9.
+CONFIG_VERSION = 10
 
 # ---------------------------------------------------------------------------
 # primitives
@@ -532,7 +535,7 @@ def resources() -> list:
 def main() -> None:
     primary = LANGS[0]
     manifest = {{
-        "version": 2, "configVersion": 9, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
+        "version": 2, "configVersion": 10, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
         "view": {{"canvasScope": "book"}},
         "chapters": {{lang: chapters_from_dir(HERE, lang) for lang in LANGS}},
         "config": config(primary),

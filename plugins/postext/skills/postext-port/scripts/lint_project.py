@@ -2277,8 +2277,8 @@ def main() -> None:
     if m.get("version") not in (1, 2):
         rep.error("preset.json", "version must be 1 or 2")
     cv = m.get("configVersion")
-    if isinstance(cv, bool) or not isinstance(cv, (int, float)) or cv < 9:
-        rep.warn("preset.json", "configVersion is missing or below 9: the bundle reads with older rules "
+    if isinstance(cv, bool) or not isinstance(cv, (int, float)) or cv < 10:
+        rep.warn("preset.json", "configVersion is missing or below 10: the bundle reads with older rules "
                  "(up to 1.4: H1 breaks pinned, maths x 1.1312, inline gap 'above'; below 6: heading marks plain, "
                  "drop caps at the 1.4 size, one line of room under a colon line before its list, no gap around "
                  "inline figures in boxes, box cuts that may leave one line of a paragraph; below 7: no line "
@@ -2288,7 +2288,8 @@ def main() -> None:
                  "space under a :::paragraphs container added to the next block's instead of merged with it; "
                  "below 9: a :::verse poem with no || set as centred hemistichs, a paragraph style's "
                  "firstLineIndent dropped when it also hangs, a backslash ending a line printed instead of "
-                 "breaking it, a ``` fence's lines read as Markdown); set \"configVersion\": 9 for today's rules")
+                 "breaking it, a ``` fence's lines read as Markdown; below 10: a line of verse a little too wide "
+                 "turned over instead of tightening its word spaces); set \"configVersion\": 10 for today's rules")
     for k in ("id", "name"):
         if not m.get(k):
             rep.error("preset.json", f"{k} is required")

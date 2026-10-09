@@ -233,7 +233,8 @@ let config = { colorPalette: postext.cloneDefaultColorPalette(), resourceTypes: 
 // hyphens, ragged breaking, the split under a heading and the space under
 // paragraph containers; one stamped 8 (postext 1.5 to 1.22), a poem with no
 // separator set as centred hemistichs and the backslashes that end a line
-// printed. `migrateConfig` looks at every chapter of this
+// printed; one stamped 9 (postext 1.23), lines of verse turned over where
+// they could tighten. `migrateConfig` looks at every chapter of this
 // language, as the Sandbox loads them all.
 if (typeof bundleApi?.migrateConfig === 'function') {
   const content = chapterSpecs.map((c) => readFileSync(join(BUNDLE, c.file), 'utf8'));
@@ -271,6 +272,7 @@ if (typeof bundleApi?.migrateConfig === 'function') {
     [(c) => c.bodyText?.verse?.layout, 'centred lines of a poem with no separator'],
     [(c) => c.bodyText?.hardLineBreaks, 'printed line-end backslashes'],
     [(c) => c.codeStyle?.blocks, 'code fences read as Markdown'],
+    [(c) => c.bodyText?.verse?.tighten, 'verse turnovers at natural word spacing'],
   ].filter(([of]) => of(read) !== of(config)).map(([, what]) => what);
   if (kept.length) {
     const v = manifest.configVersion;
