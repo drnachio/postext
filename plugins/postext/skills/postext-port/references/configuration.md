@@ -748,7 +748,9 @@ and heading styles) and part pages (`parts.design`, `parts.versoDesign`), `'elli
 heads, folios (`header`, `footer`, a style's own) and contents part rows (`toc.parts.design`, fixed
 height). So leave it out on opener and part titles, and set it only where the slot's default is wrong (a
 running head that should wrap, a one-line kicker in an opener). Before 1.24 every slot fell back to
-`'ellipsis-end'`: when the pen pins an older engine, write `'wrap'` on titles. Every line cut by an
+`'ellipsis-end'`: when the pen pins an older engine, write `'wrap'` on titles. A row (between `\n`) in Chinese or
+Japanese is set by the CJK composer (≥ 1.25, `cjk.composeDesignText`): kinsoku, mark widths, Han–Latin space,
+book titles kept whole, as in the body; Latin rows wrap as before. Every line cut by an
 ellipsis, or clipped with ink past its box, raises the content warning `designTextTruncated` (≥ 1.24;
 `slot`, `elementId`, `text`, `mode`, `pageIndex`, once a chapter for a running head): read it in the
 render and fix the title or the box unless the cut is meant.
@@ -1394,6 +1396,9 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 | `spaceAfterQuestion` | `'auto'`: off / off / off / on | ≥ 1.16; one em after ？！ inside a paragraph unless a closing bracket or another mark follows; a typed U+3000 there becomes that space; none at a line end |
 | `paragraphStartBracket` | `'auto'`: as any line start (Chinese) / `half` (Japan) | ≥ 1.16; a paragraph whose first-line indent meets an opening bracket: `'indent'` (JLReq ①, indent then 「), `'half'` (③, the bracket fills the indent cell, text at 1 em: Japanese novels), `'flush'` (天付き) |
 | `wordBreak` | `'normal'` | ≥ 1.16; `'keep-all'`: lines break only at spaces (U+0020, U+3000) and next to punctuation the level allows, never between two letters (kana, kanji, hangul, Latin): kana written with a space between phrases (分かち書き: picture books, primers) and Korean; a phrase longer than the line breaks inside. Replaces word joiners (U+2060) between kana. A paragraph style may set its own `wordBreak` |
+| `titleMinChars` | `2` | ≥ 1.25; a line breaks inside a 《…》/〈…〉 title (typed or added by `bookTitleMark`, also 『』 round a Japanese `:book[…]`) or a wavy/bare `:book[…]` only with this many title characters on either side: no `《說` / `文》` split, titles of ≤ 3 characters stay whole; gives way when the line has no other break. `1` = break anywhere the level allows (pre-1.25). Do not cut or reword a source to dodge a title break |
+| `circledNumbers` | `'cjk'` | ≥ 1.25; ①–⑳, ⑴, ⒈, ⓐ, ❶, ➀ (U+2460–24FF, U+2776–2793) are CJK characters: one cell, no Han–Latin space, never at a line end (every level but `none` / `ja-loose`), so `**①**天也` needs no word joiner. `'western'` = pre-1.25 (Latin letters, ¼ em each side, may end a line). Vertical: upright either way |
+| `composeDesignText` | `true` | ≥ 1.25; design text (openers, heading designs, running heads, page designs, part pages) whose row has more CJK letters than word spaces takes the body's `lineBreak`, mark widths, `latinSpacing`, hanging and title rule (ragged; ruby/warichu/dots print plain). A note may be one sentence with `，；、`: no `\n` per clause to dodge full-width marks. `false` = pre-1.25 (wrapped at spaces, marks at the font's width) |
 | `latinSpacing` | `{0.25, em}` | Han ↔ Latin letter/digit; replaces a typed space; `0` off |
 | `uprightDigits` | `2` | vertical text: numbers of ≤ N digits in one upright cell (0, 2, 3, 4), but not inside a Latin sentence (a Latin word on both sides, past spaces, numbers and marks), where they run sideways with it; `:tcy[…]` / `:sideways[…]` by hand |
 | `grid` | off | `{enabled, charsPerLine, linesPerPage, show}`: rewrites margins so columns are whole ems and the type area whole lines; configured margins are minimums; warning `cjkGridClamped`. Column balancing is off on a grid unless `headings.balancing.enabled` (≥ 1.25, §5.2) |

@@ -879,6 +879,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Chinese emphasis dots (着重号) | `:dots[…]`, or `*…*` in a Chinese document (dots by default). |
 | Proper-name line (专名号) | `:name[…]`. |
 | Book-title mark (书名号) | Keep typed 《》 as text. A classical/Taiwan edition with wavy lines: `:book[…]` (prints what `cjk.bookTitleMark` says). |
+| Sense or item numbers ① ② in a dictionary or a list run into the text (≥ 1.25) | Type them as they are (`**①**天也`): a circled number stays with the text after it and takes no Han–Latin space (`cjk.circledNumbers`). No word joiner after it, no excerpt cut to move a break off a title (`cjk.titleMinChars` keeps 《說文》 whole). |
 | Ruby: pinyin or zhuyin over/beside characters | `{字|zì}` / `:ruby[漢字]{rt="hàn zì"}`; HTML `<ruby>紅<rt>hóng</rt></ruby>` → `{紅|hóng}`. |
 | Inline two-line commentary (双行夹注, 割注) | `:warichu[…]`; a one-line note in brackets stays as text in （）. |
 | Numbers upright in vertical text (纵中横) | Nothing for ≤ 2 digits (automatic, `cjk.uprightDigits`); `:tcy[…]` for 3–4 characters or `A+`; `:upright[…]` for an acronym read letter by letter. A short number inside a Latin sentence runs sideways with it by itself; one that opens or ends a Latin paragraph (`49 copies…`, `…page 7.`) stands: `:sideways[…]` turns it. |
