@@ -3,13 +3,13 @@
 // page itself left free while the book is written.
 
 import type { VDTDocument } from 'postext';
-import { placedFileIds } from '../shared/assets';
+import { placedFileIds, svgAssetPreparer } from '../shared/assets';
 import type { EpubResourceBytes, EpubSource, RenderToEpubOptions } from '../types';
 import type { EpubRequestMessage, EpubResourcePayload, EpubResponseMessage } from './protocol';
 import { cdnWorkerEntryUrl } from './entryUrl';
 
 export type { EpubResourcePayload } from './protocol';
-export type { EpubProgress, EpubWarning, EpubLayout, EpubMetadata, EpubFontFile, EpubCover } from '../types';
+export type { EpubProgress, EpubWarning, EpubLayout, EpubMetadata, EpubFontFile, EpubSvgFontOptions, EpubCover } from '../types';
 
 export interface EpubWorkerRenderOptions extends Omit<RenderToEpubOptions, 'resourceBytes'> {
   /** Picture bytes: a map by `fileId`, or the provider `renderToEpub`
@@ -73,6 +73,21 @@ export async function gatherResourceBytes(
   const fileIds = [...new Set(docs.flatMap(placedFileIds))];
   const found = await Promise.all(fileIds.map(async (fileId) => [fileId, await source(fileId)] as const));
   return found.filter((entry): entry is [string, EpubResourcePayload] => entry[1] !== undefined);
+}
+
+/** The SVG payloads with the book's fonts embedded on this thread (the
+ *  worker then leaves them as they are). */
+async function inlineSvgsOnHost(
+  docs: EpubSource,
+  resources: [string, EpubResourcePayload][],
+  options: EpubWorkerRenderOptions,
+): Promise<[string, EpubResourcePayload][]> {
+  const prepare = svgAssetPreparer(docs, options.fonts, options.svgFonts, options.onWarning);
+  return Promise.all(resources.map(async ([fileId, payload]): Promise<[string, EpubResourcePayload]> => {
+    if (payload.mediaType !== 'image/svg+xml') return [fileId, payload];
+    const svg = await prepare(fileId, new TextDecoder().decode(payload.bytes));
+    return [fileId, { bytes: new TextEncoder().encode(svg), mediaType: payload.mediaType }];
+  }));
 }
 
 /** The buffers to transfer with a request: those of the fonts, the
@@ -210,7 +225,15 @@ export function createEpubWorker(options?: CreateEpubWorkerOptions): EpubWorkerH
       const docs: VDTDocument[] = Array.isArray(input) ? [...input] : [input as VDTDocument];
       const { signal } = renderOptions;
       signal?.throwIfAborted();
-      const resourceBytes = await gatherResourceBytes(docs, renderOptions.resourceBytes);
+      const gathered = await gatherResourceBytes(docs, renderOptions.resourceBytes);
+      // A font provider or `withhold` cannot travel: the host embeds the
+      // SVGs' fonts itself and tells the worker not to (#630).
+      const svgFonts = renderOptions.svgFonts;
+      const onHost = !!(svgFonts?.provider || svgFonts?.withhold) && svgFonts?.inline !== false;
+      const resourceBytes = onHost ? await inlineSvgsOnHost(docs, gathered, renderOptions) : gathered;
+      const svgSettings = onHost
+        ? { inline: false }
+        : svgFonts ? { ...(svgFonts.inline !== undefined ? { inline: svgFonts.inline } : {}), ...(svgFonts.maxBytes !== undefined ? { maxBytes: svgFonts.maxBytes } : {}) } : undefined;
       signal?.throwIfAborted();
       const w = current();
       const id = nextId++;
@@ -239,7 +262,7 @@ export function createEpubWorker(options?: CreateEpubWorkerOptions): EpubWorkerH
           kind: 'render',
           id,
           docs,
-          settings: { layout, metadata, ...(fonts ? { fonts } : {}), ...(cover ? { cover } : {}) },
+          settings: { layout, metadata, ...(fonts ? { fonts } : {}), ...(cover ? { cover } : {}), ...(svgSettings ? { svgFonts: svgSettings } : {}) },
           resourceBytes,
         };
         try {

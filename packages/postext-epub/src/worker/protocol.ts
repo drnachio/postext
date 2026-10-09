@@ -13,7 +13,11 @@ export interface EpubResourcePayload {
 }
 
 /** The render options that travel to the worker as data. */
-export type EpubRenderSettings = Pick<RenderToEpubOptions, 'layout' | 'metadata' | 'fonts' | 'cover'>;
+export type EpubRenderSettings = Pick<RenderToEpubOptions, 'layout' | 'metadata' | 'fonts' | 'cover'> & {
+  /** The data part of `svgFonts` (#630): a provider or `withhold` stays
+   *  on the host, which inlines those SVGs itself before it posts. */
+  svgFonts?: { inline?: boolean; maxBytes?: number };
+};
 
 export type EpubRequestMessage =
   | {

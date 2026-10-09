@@ -134,7 +134,7 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
 
   // Fonts and pictures first: the pages link to their files.
   const fonts = fontAssets(options.fonts ?? []);
-  const images = await imageAssets(docs, options.resourceBytes, onWarning);
+  const images = await imageAssets(docs, options.resourceBytes, onWarning, options);
   const videos = await videoAssets(docs, options.resourceBytes);
   signal?.throwIfAborted();
   const imageItems = [...images.items, ...videos.items, ...remoteVideoItems(docs, videos)];
@@ -278,7 +278,7 @@ export async function buildFixedPublication(docs: EpubSource, options: RenderToE
     onProgress?.({ phase: 'documents', done: n + 1, total: plans.length });
     if (n % 16 === 15) signal?.throwIfAborted();
   }
-  for (const miss of missingFaces(uses, options.fonts ?? [])) {
+  for (const miss of missingFaces(uses, (options.fonts ?? []).filter((f) => f.redistributable !== false))) {
     onWarning?.({ kind: 'missingFont', ...miss });
   }
 

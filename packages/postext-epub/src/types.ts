@@ -12,7 +12,7 @@
 // renders), so numbering, footnotes, citations, cross-references, the TOC and
 // the index arrive resolved.
 
-import type { VDTDocument } from 'postext';
+import type { SvgFontProvider, VDTDocument } from 'postext';
 
 /** The two values of the EPUB 3 `rendition:layout` property, as the
  *  industry names them: a fixed layout (`pre-paginated`, FXL) reproduces
@@ -51,6 +51,30 @@ export interface EpubFontFile {
   format: 'woff2' | 'woff' | 'ttf' | 'otf';
   /** CSS `unicode-range` of a subset file (Google Fonts slices). */
   unicodeRange?: string;
+  /** False for a face the book may be set with but whose file must not be
+   *  handed on (`CustomFontFamily.redistributable`): it is never written
+   *  into the EPUB, neither as a book font nor inside an SVG picture, and
+   *  an SVG that names it is reported as `fontWithheld`. Default true. */
+  redistributable?: boolean;
+}
+
+/** How SVG pictures get the book's fonts (#630). An SVG is shown as an
+ *  image, which cannot see the book's fonts, so the faces its text names
+ *  are embedded in it as `@font-face` data URIs: from `fonts` first, then
+ *  from `provider`. */
+export interface EpubSvgFontOptions {
+  /** Embed them at all. Default true (also off under
+   *  `diagramStyle.inlineFonts: false`, and for a resource with
+   *  `svg.inlineFonts: false`). */
+  inline?: boolean;
+  /** Where a family `fonts` lacks comes from (a face only an SVG label
+   *  uses). The contract of postext-pdf's `PdfFontProvider`. */
+  provider?: SvgFontProvider;
+  /** Families to leave out, besides those of `fonts` marked
+   *  `redistributable: false`. */
+  withhold?: (family: string) => boolean;
+  /** Most font bytes embedded in one SVG. Default 2 MiB. */
+  maxBytes?: number;
 }
 
 /** Bytes of a resource picture by its `fileId` (bitmap or SVG source), with
@@ -89,12 +113,24 @@ export type EpubWarning =
   /** A family the documents use with no embedded face: readers fall back. */
   | { kind: 'missingFont'; family: string; weight?: number | string; style?: string }
   /** Something the rendition could not express (named in `detail`). */
-  | { kind: 'unsupported'; detail: string };
+  | { kind: 'unsupported'; detail: string }
+  /** A family an SVG picture's text names had no face to embed in it: the
+   *  reader sets that text in a fallback face (#630). */
+  | { kind: 'svgFontUnavailable'; fileId: string; family: string; weight: number; style: 'normal' | 'italic' }
+  /** The faces an SVG picture's text names exceed the size cap: none was
+   *  embedded in it. */
+  | { kind: 'svgFontsTooLarge'; fileId: string; bytes: number; maxBytes: number }
+  /** A family an SVG picture names was left out of it because it is not
+   *  redistributable: readers fall back. Once per family. */
+  | { kind: 'fontWithheld'; family: string; fileId?: string };
 
 export interface RenderToEpubOptions {
   layout: EpubLayout;
   metadata: EpubMetadata;
   fonts?: EpubFontFile[];
+  /** The book's fonts inside its SVG pictures (#630); see
+   *  {@link EpubSvgFontOptions}. */
+  svgFonts?: EpubSvgFontOptions;
   resourceBytes?: EpubResourceBytes;
   /** The cover picture. Without one, the fixed layout uses the book's first
    *  page as its cover document and the reflowable book has no cover image. */

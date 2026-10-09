@@ -112,6 +112,52 @@ describe('imageAssets', () => {
   });
 });
 
+// #630: SVG pictures carry the book's fonts their text names.
+describe('imageAssets: fonts in SVG pictures', () => {
+  const docOf = (svgResource?: { inlineFonts?: boolean }, config?: unknown) => ({
+    config,
+    pages: [{ columns: [{ blocks: [{ resourceBlock: { fileId: 'chart.svg', ...(svgResource ? { resource: { svg: { fileId: 'chart.svg', ...svgResource } } } : {}) } }] }] }],
+  }) as unknown as VDTDocument;
+  const chart = '<svg xmlns="http://www.w3.org/2000/svg"><text font-family="Plex Sans" font-weight="700">Q3</text>'
+    + '<text font-family="Licensed Serif">x</text><text font-family="Nowhere">y</text></svg>';
+  const bytes = () => ({ bytes: new TextEncoder().encode(chart), mediaType: 'image/svg+xml' });
+  const fonts = [
+    { family: 'Plex Sans', weight: 700, style: 'normal' as const, bytes: WOFF2, format: 'woff2' as const },
+    { family: 'Licensed Serif', weight: 400, style: 'normal' as const, bytes: TTF, format: 'ttf' as const, redistributable: false },
+  ];
+
+  it('embeds the faces it has, withholds the families not redistributable and reports the missing', async () => {
+    const warnings: EpubWarning[] = [];
+    const a = await imageAssets([docOf()], () => bytes(), (w) => warnings.push(w), { fonts });
+    const data = a.items[0]!.data as string;
+    expect(data).toMatch(/@font-face\{font-family:"Plex Sans";font-weight:700;font-style:normal;src:url\(data:font\/woff2;base64,/);
+    expect(data).not.toContain('Licensed Serif";');
+    expect(warnings).toEqual([
+      { kind: 'fontWithheld', family: 'Licensed Serif', fileId: 'chart.svg' },
+      { kind: 'svgFontUnavailable', fileId: 'chart.svg', family: 'Nowhere', weight: 400, style: 'normal' },
+    ]);
+  });
+
+  it('asks svgFonts.provider for a family the book fonts lack', async () => {
+    const a = await imageAssets([docOf()], () => bytes(), undefined, {
+      fonts,
+      svgFonts: { provider: async (family) => { if (family !== 'Nowhere') throw new Error('no'); return TTF; } },
+    });
+    expect(a.items[0]!.data as string).toContain('font-family:"Nowhere"');
+  });
+
+  it('keeps the bytes as given with svg.inlineFonts: false or diagramStyle.inlineFonts: false', async () => {
+    const off = await imageAssets([docOf({ inlineFonts: false })], () => bytes(), undefined, { fonts });
+    expect(off.items[0]!.data).toBeInstanceOf(Uint8Array);
+    const docOff = await imageAssets([docOf(undefined, { diagramStyle: { inlineFonts: false } })], () => bytes(), undefined, { fonts });
+    expect(docOff.items[0]!.data).toBeInstanceOf(Uint8Array);
+  });
+
+  it('never writes a face marked not redistributable as a book font', () => {
+    expect(fontAssets(fonts).items.map((i) => i.href)).toEqual(['fonts/plex-sans-700-normal.woff2']);
+  });
+});
+
 describe('pageProgressionOf', () => {
   it('is rtl for a right-bound book', () => {
     expect(pageProgressionOf([{ binding: 'right' } as VDTDocument])).toBe('rtl');

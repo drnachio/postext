@@ -27,7 +27,7 @@ export async function renderToEpub(input: EpubSource | VDTDocument, options: Ren
 
 export { packEpub } from './package/pack';
 export { readEpub, resolveHref, dirOf } from './package/read';
-export { bookIdentifier } from './shared/assets';
+export { bookIdentifier, epubFontProvider } from './shared/assets';
 export { uuidV5 } from './shared/uuid';
 export { buildFixedPublication } from './fixed';
 export { buildReflowablePublication } from './reflowable';
@@ -35,6 +35,7 @@ export type {
   EpubLayout,
   EpubMetadata,
   EpubFontFile,
+  EpubSvgFontOptions,
   EpubResourceBytes,
   EpubCover,
   EpubProgress,
