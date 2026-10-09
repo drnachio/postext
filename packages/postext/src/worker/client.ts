@@ -55,7 +55,7 @@ export interface LayoutWorkerHandle {
    * page's readable `@font-face` rules — sent with `registerFonts`: the
    * worker has a font set of its own. Resolves with the page's report.
    */
-  prepareFonts(content: PostextContent, config?: PostextConfig, options?: PrepareFontsOptions): Promise<FontReport>;
+  prepareFonts?(content: PostextContent, config?: PostextConfig, options?: PrepareFontsOptions): Promise<FontReport>;
   dispose(): void;
 }
 
