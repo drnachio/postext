@@ -4640,7 +4640,7 @@ const config: PostextConfig = {
       <td><code>borderWidth</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75pt</code></td>
-      <td>Grosor del trazo de los bordes (≈1px a 96 DPI; escala con los DPI de la página).</td>
+      <td>Grosor del trazo de los bordes (≈1px a 96 DPI; escala con los DPI de la página). <code>'booktabs'</code> no lo usa: tiene sus propios grosores.</td>
     </tr>
     <tr>
       <td><code>cellPadding</code></td>
@@ -4650,15 +4650,57 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>rules</code></td>
-      <td><code>'grid' | 'horizontal' | 'outer' | 'none'</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'</code></td>
       <td><code>'grid'</code></td>
-      <td>Qué filetes trazar cuando <code>borders</code> está activo: la rejilla completa de celdas, solo filetes horizontales (borde superior e inferior de cada fila, sin verticales), solo el marco exterior, o ninguno.</td>
+      <td>Qué filetes trazar cuando <code>borders</code> está activo: la rejilla completa de celdas, solo filetes horizontales (borde superior e inferior de cada fila, sin verticales), solo el marco exterior, ninguno, o los tres filetes de una tabla de revista (véase <a href="#filetes-booktabs">filetes booktabs</a>).</td>
     </tr>
     <tr>
       <td><code>borderRadius</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>Radio de las esquinas del marco exterior de la tabla. El marco se traza redondeado (con los filetes <code>grid</code> u <code>outer</code>), los fondos de las celdas y de la cabecera se recortan a él —también con <code>rules: 'none'</code> o sin bordes— y los filetes horizontales se recortan a su contorno exterior; los filetes interiores siguen rectos. Una tabla partida entre páginas redondea las esquinas superiores de su primera parte y las inferiores de la última. Se limita a la mitad del ancho y del alto de la tabla.</td>
+      <td>Radio de las esquinas del marco exterior de la tabla. El marco se traza redondeado (con los filetes <code>grid</code> u <code>outer</code>), los fondos de las celdas y de la cabecera se recortan a él —también con <code>rules: 'none'</code> o sin bordes— y los filetes horizontales se recortan a su contorno exterior; los filetes interiores siguen rectos. Una tabla partida entre páginas redondea las esquinas superiores de su primera parte y las inferiores de la última. Se limita a la mitad del ancho y del alto de la tabla. Los filetes <code>'booktabs'</code> siguen rectos (los fondos sí se recortan).</td>
+    </tr>
+    <tr>
+      <td><code>heavyRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Booktabs: los filetes de encima de la tabla y de debajo de su última fila. Un <code>em</code> es el cuerpo de las celdas.</td>
+    </tr>
+    <tr>
+      <td><code>lightRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Booktabs: el filete bajo las filas de cabecera y los filetes de grupo.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.03em</code></td>
+      <td>Booktabs: los filetes bajo las celdas de cabecera que abarcan varias columnas.</td>
+    </tr>
+    <tr>
+      <td><code>spanRules</code></td>
+      <td><code>'trimmed' | 'full' | 'none'</code></td>
+      <td><code>'trimmed'</code></td>
+      <td>Booktabs: los filetes bajo las celdas de cabecera que abarcan varias columnas, por encima de la última fila de cabecera: acortados por los dos extremos en <code>spanRuleTrim</code>, de lado a lado de la celda, o ninguno.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleTrim</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Booktabs: cuánto se acorta por cada extremo un filete de agrupación recortado.</td>
+    </tr>
+    <tr>
+      <td><code>groupRules</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Booktabs: un filete fino encima de cada fila del cuerpo que encabeza un grupo.</td>
+    </tr>
+    <tr>
+      <td><code>continuedFootRule</code></td>
+      <td><code>'bottom' | 'light' | 'none'</code></td>
+      <td><code>'light'</code></td>
+      <td>Booktabs: qué cierra la parte de una tabla partida que sigue en la página siguiente.</td>
     </tr>
     <tr>
       <td><code>overflow</code></td>
@@ -4708,6 +4750,29 @@ Las filas se cuentan desde la primera tras las filas de cabecera (`TableModel.he
 
 En el VDT, las celdas de las filas alternas llevan `alternate: true` y la maquetación de la tabla lleva `bodyAlternateBackground`. `tableCellFill(table, cell)` devuelve el relleno con que se pinta una celda —el suyo, el de cabecera, el alterno o el de cuerpo—, que es lo que pintan los backends de canvas, HTML y PDF. Los rellenos vecinos se juntan sin costura: un navegador con una densidad de píxeles fraccionaria o un visor de PDF suavizan cada relleno por separado y dejarían asomar el papel en un filete finísimo entre dos celdas, así que los backends de HTML y PDF pintan `tableCellFillRects(table)` —el relleno de cada celda con una franja sobre cada borde que comparte con una celda pintada después, que esa celda luego cubre— y el canvas ajusta sus rellenos a los píxeles del dispositivo.
 
+### Filetes booktabs
+
+Las tablas de revistas y libros de texto se suelen componer con tres filetes y ninguna línea vertical: uno grueso encima de la tabla, uno fino bajo la cabecera y otro grueso bajo la última fila, con filetes cortos bajo las cabeceras que agrupan varias columnas (el paquete `booktabs` de LaTeX: `\toprule`, `\midrule`, `\cmidrule`, `\bottomrule`). `rules: 'booktabs'` traza ese patrón:
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    rules: 'booktabs',
+    borderColor: { hex: '#000000', model: 'hex' },
+    headerBackgroundEnabled: false,
+  },
+};
+```
+
+- El filete de encima de la tabla y el de debajo de su última fila tienen el grosor `heavyRuleWidth` (`0.08em`); el de bajo las filas de cabecera, `lightRuleWidth` (`0.05em`). Una tabla sin filas de cabecera no lleva filete de cabecera.
+- Una celda de cabecera que abarca varias columnas por encima de la última fila de cabecera lleva debajo un filete de grosor `spanRuleWidth` (`0.03em`). Con `spanRules: 'trimmed'` (el valor por defecto) el filete se acorta en `spanRuleTrim` (`0.5em`) por los dos extremos, para que los filetes de dos cabeceras vecinas no se toquen; `'full'` lo extiende de lado a lado de la celda y `'none'` lo suprime.
+- `groupRules: true` añade un filete fino encima de cada fila del cuerpo que encabeza un grupo (una sola celda de lado a lado de la tabla, o una fila de celdas de cabecera), salvo si la fila abre la tabla o una página, donde ya está el filete de cabecera.
+- Los grosores se resuelven contra el cuerpo de las celdas (`bodyFontSize`), de modo que una cabecera de cuerpo mayor no engrosa su filete. Un grosor de `0` suprime ese filete.
+- Los filetes toman `borderColor` (un color enlazado a la paleta sigue la paleta y `:::part palette`), y `borders: false` los apaga. `borderWidth` no se aplica, ni tampoco `borderRadius`: los filetes siguen rectos, aunque los fondos de las celdas sí se recortan al marco redondeado. Los fondos de cabecera, las filas alternas y el `background` propio de una celda funcionan como con los demás patrones, bajo los filetes.
+- Una tabla partida entre páginas repite sus filas de cabecera en cada parte, así que cada parte empieza con el filete grueso y el de cabecera. El filete grueso bajo la última fila cierra solo la última parte; una parte que sigue en la página siguiente termina con `continuedFootRule`: un filete fino (`'light'`, el valor por defecto), el grueso (`'bottom'`) o ninguno (`'none'`).
+
+La maquetación calcula los filetes una sola vez. La tabla del VDT los lleva como `strokes` (`{ x1, y1, x2, y2, widthPx }`, relativos a la esquina superior izquierda del cuerpo de la tabla), y el lienzo, el visor HTML, el PDF y el EPUB de maquetación fija trazan exactamente esos; en un PDF etiquetado son artefactos de maquetación. El EPUB adaptable los escribe como bordes CSS de la tabla y su cabecera, con los filetes recortados dibujados como líneas de fondo. En el Sandbox, **Booktabs** en el selector *Filetes* muestra estos campos y oculta *Grosor del borde* y *Radio de las esquinas*.
+
 ### Estilos de tabla con nombre
 
 Un documento pocas veces compone todas sus tablas igual: una lista de comprobación en una cuadrícula azul marino con el marco redondeado, una fila de opciones encerrada solo por su marco exterior, una tabla de datos con filetes horizontales. `tableStyles` declara variantes con nombre, y un recurso de tabla elige una con `table.styleId`. Cada campo que un estilo deja sin definir se lee primero de `tableStyle` y después del texto de cuerpo, de modo que un estilo solo indica lo que distingue a sus tablas. Una tabla sin `styleId`, o con un id que ningún estilo declara, conserva `tableStyle`: un documento sin `tableStyles` se compone exactamente igual que antes.
@@ -4739,11 +4804,11 @@ const resource: Resource = {
 };
 ```
 
-Cada entrada admite todos los campos de `tableStyle` más `id` (lo que referencia `table.styleId`) y un `name` opcional para el editor (por defecto, el id). Todo lo que un estilo puede definir se aplica por tabla: tipografía, fondos, bordes, filetes, radio de las esquinas, relleno y el comportamiento de desbordamiento con sus cadenas de continuación. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` devuelve la lista resuelta, `pickTableStyle(resolved, styleId)` el estilo con el que se compone una tabla, y `stripTableStylesDefaults` elimina los campos sin definir (conserva un campo igual a su valor por defecto, que sigue sustituyendo a un valor distinto de `tableStyle`).
+Cada entrada admite todos los campos de `tableStyle` más `id` (lo que referencia `table.styleId`) y un `name` opcional para el editor (por defecto, el id). Todo lo que un estilo puede definir se aplica por tabla: tipografía, fondos, bordes, filetes, radio de las esquinas, relleno y el comportamiento de desbordamiento con sus cadenas de continuación. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` devuelve la lista resuelta, `pickTableStyle(resolved, styleId)` el estilo con el que se compone una tabla, y `stripTableStylesDefaults` elimina los campos sin definir (conserva un campo igual a su valor por defecto, que sigue sustituyendo a un valor distinto de `tableStyle`). En un EPUB adaptable, un estilo con nombre es una clase de la tabla (`pt-table-<id>`) a la que da estilo la hoja de estilos del libro.
 
 ### Tablas más altas que la página
 
-Una tabla flotante que no cabe en la página nueva que se le ofrece no se comprime ni se desborda: con `overflow: 'split'` (el valor por defecto) el motor la corta entre filas en el último borde que cabe en la página y la continúa en las páginas siguientes, tantas como haga falta. Cada parte continuada repite las filas de cabecera de la tabla (`TableModel.headerRowCount`, o las filas iniciales formadas por celdas de cabecera cuando no está definido) y lleva de nuevo el pie con `continuedSuffix` tras la descripción: «Tabla 6-4. Título *(cont.)*». Cada parte que sigue lleva `continuesMarker` debajo, alineado a la derecha, con la tipografía de la nota; la nota de la tabla se reserva para la última parte. Un corte nunca atraviesa una celda combinada (una celda con `rowSpan` pasa entera a la parte siguiente), y una fila que encabeza a las que la siguen —una sola celda a lo ancho de toda la tabla— pasa a la parte siguiente en lugar de quedar suelta al pie de la página.
+Una tabla flotante que no cabe en la página nueva que se le ofrece no se comprime ni se desborda: con `overflow: 'split'` (el valor por defecto) el motor la corta entre filas en el último borde que cabe en la página y la continúa en las páginas siguientes, tantas como haga falta. Cada parte continuada repite las filas de cabecera de la tabla (`TableModel.headerRowCount`, o las filas iniciales formadas por celdas de cabecera cuando no está definido) y lleva de nuevo el pie con `continuedSuffix` tras la descripción: «Tabla 6-4. Título *(cont.)*». Cada parte que sigue lleva `continuesMarker` debajo, alineado a la derecha, con la tipografía de la nota; la nota de la tabla se reserva para la última parte. Un corte nunca atraviesa una celda combinada (una celda con `rowSpan` pasa entera a la parte siguiente), y una fila que encabeza a las que la siguen —una sola celda a lo ancho de toda la tabla— pasa a la parte siguiente en lugar de quedar suelta al pie de la página. Una tabla booktabs cierra cada parte que sigue con `continuedFootRule` (véase [filetes booktabs](#filetes-booktabs)).
 
 **Dónde termina la primera parte.** Una tabla a la que se ofrece la cabeza de una columna vacía tras su referencia toma las filas que caben ahí y sigue en el hueco siguiente. Llena la columna hasta el pie cuando la tiene para ella sola: una parte que dejaría menos de tres líneas de texto debajo las ocupa también, en lugar de dejar un resto de texto suelto. Cuando la columna ya tiene otra banda de flotantes — una figura a ancho de página en la cabeza, por ejemplo —, la parte se detiene al menos tres líneas de texto antes del pie, el espacio para texto que deja cualquier flotante que comparte columna con otro, de modo que la columna termina con algo de texto bajo la tabla y no solo con flotantes. Para que una tabla larga llegue al pie de su columna, cítala donde la página en la que empieza no lleve otro flotante (tras la página de una figura a ancho de página, por ejemplo), o ajusta sus filas a la columna.
 

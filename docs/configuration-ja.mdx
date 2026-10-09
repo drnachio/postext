@@ -4640,7 +4640,7 @@ const config: PostextConfig = {
       <td><code>borderWidth</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75pt</code></td>
-      <td>罫線の太さ（96 DPIで約1px。ページのDPIに応じて変わります）。</td>
+      <td>罫線の太さ（96 DPIで約1px。ページのDPIに応じて変わります）。<code>'booktabs'</code>はこれを使わず、独自の太さを使います。</td>
     </tr>
     <tr>
       <td><code>cellPadding</code></td>
@@ -4650,15 +4650,57 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>rules</code></td>
-      <td><code>'grid' | 'horizontal' | 'outer' | 'none'</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'</code></td>
       <td><code>'grid'</code></td>
-      <td><code>borders</code>がオンのときに引く罫線です。セルの格子全体、水平の罫線だけ（各行の上端と下端。縦の罫線はなし）、外枠だけ、なしのいずれかです。</td>
+      <td><code>borders</code>がオンのときに引く罫線です。セルの格子全体、水平の罫線だけ（各行の上端と下端。縦の罫線はなし）、外枠だけ、なし、または学術誌の表の三本罫（<a href="#booktabs-の罫線">booktabs の罫線</a>を参照）のいずれかです。</td>
     </tr>
     <tr>
       <td><code>borderRadius</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>表の外枠の角の半径です。外枠は角を丸めて引かれ（<code>grid</code>または<code>outer</code>の罫線の場合）、セルの塗りと見出しの背景はこの形で切り抜かれます。<code>rules: 'none'</code>のときや罫線がオフのときも同じです。水平の罫線は外側の輪郭に合わせて切り詰められ、内側の罫線はまっすぐなままです。ページをまたいで分割された表は、最初の部分の上の角と最後の部分の下の角を丸めます。値は表の幅と高さの半分までに制限されます。</td>
+      <td>表の外枠の角の半径です。外枠は角を丸めて引かれ（<code>grid</code>または<code>outer</code>の罫線の場合）、セルの塗りと見出しの背景はこの形で切り抜かれます。<code>rules: 'none'</code>のときや罫線がオフのときも同じです。水平の罫線は外側の輪郭に合わせて切り詰められ、内側の罫線はまっすぐなままです。ページをまたいで分割された表は、最初の部分の上の角と最後の部分の下の角を丸めます。値は表の幅と高さの半分までに制限されます。<code>'booktabs'</code>の罫線は直線のままです（塗りは角に合わせて切り抜かれます）。</td>
+    </tr>
+    <tr>
+      <td><code>heavyRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>booktabs：表の上と最終行の下の罫線。<code>em</code>は本文セルの文字サイズです。</td>
+    </tr>
+    <tr>
+      <td><code>lightRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>booktabs：見出し行の下の罫線とグループ罫。</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.03em</code></td>
+      <td>booktabs：複数列にまたがる見出しセルの下の罫線。</td>
+    </tr>
+    <tr>
+      <td><code>spanRules</code></td>
+      <td><code>'trimmed' | 'full' | 'none'</code></td>
+      <td><code>'trimmed'</code></td>
+      <td>booktabs：最後の見出し行より上で複数列にまたがる見出しセルの下の罫線。両端を<code>spanRuleTrim</code>ずつ詰める、セル幅いっぱいに引く、引かない、のいずれか。</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleTrim</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>booktabs：両端を詰めるまとめ罫を、片側でどれだけ短くするか。</td>
+    </tr>
+    <tr>
+      <td><code>groupRules</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>booktabs：グループの見出しとなる本体行の上に細罫を引きます。</td>
+    </tr>
+    <tr>
+      <td><code>continuedFootRule</code></td>
+      <td><code>'bottom' | 'light' | 'none'</code></td>
+      <td><code>'light'</code></td>
+      <td>booktabs：分割した表のうち次のページへ続く部分を閉じる罫線。</td>
     </tr>
     <tr>
       <td><code>overflow</code></td>
@@ -4708,6 +4750,29 @@ const config: PostextConfig = {
 
 VDTでは、交互の行のセルが`alternate: true`を持ち、表のレイアウトが`bodyAlternateBackground`を持ちます。`tableCellFill(table, cell)`は、セルを塗る色（セル自身の色、見出しの色、交互の色、本体の色のいずれか）を返し、キャンバス、HTML、PDFのバックエンドはどれもこの色で塗ります。隣り合う塗りは継ぎ目なく接します。端数のピクセル比で表示するブラウザーやPDFビューアーは塗りを1つずつアンチエイリアス処理するため、そのままでは2つのセルの間にヘアライン状にページが透けて見えます。そこでHTMLとPDFのバックエンドは`tableCellFillRects(table)`を塗ります。これは各セルの塗りに、後から塗るセルと共有するすべての辺をまたぐ細い帯を加えたもので、その帯は後のセルが覆います。キャンバスは塗りをデバイスピクセルに合わせます。
 
+### booktabs の罫線
+
+学術誌や教科書の表は、縦罫を使わず三本の罫線で組むのが普通です。表の上に太罫、見出しの下に細罫、最終行の下に太罫を引き、複数列をまとめる見出しの下には短い罫を引きます（LaTeX の`booktabs`パッケージの`\toprule`、`\midrule`、`\cmidrule`、`\bottomrule`）。`rules: 'booktabs'`はこの形を描きます。
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    rules: 'booktabs',
+    borderColor: { hex: '#000000', model: 'hex' },
+    headerBackgroundEnabled: false,
+  },
+};
+```
+
+- 表の上の罫線と最終行の下の罫線の太さは`heavyRuleWidth`（`0.08em`）、見出し行の下の罫線は`lightRuleWidth`（`0.05em`）です。見出し行のない表には見出しの罫線がありません。
+- 最後の見出し行より上で複数列にまたがる見出しセルの下には、太さ`spanRuleWidth`（`0.03em`）の罫線を引きます。`spanRules: 'trimmed'`（既定）では両端を`spanRuleTrim`（`0.5em`）ずつ詰めるので、隣り合う二つの見出しの罫線は接しません。`'full'`はセル幅いっぱいに引き、`'none'`は引きません。
+- `groupRules: true`は、グループの見出しとなる本体行（表の全幅にわたる一つのセル、または見出しセルだけの行）の上に細罫を加えます。その行が表やページの先頭に来るときは、見出しの罫線がすでにあるので加えません。
+- 太さは本文セルの文字サイズ（`bodyFontSize`）を基準に解決するので、見出しの文字が大きくても見出しの罫線は太くなりません。太さを`0`にするとその罫線は引きません。
+- 罫線の色は`borderColor`です（パレットに結び付いた色はパレットと`:::part palette`に従います）。`borders: false`ですべて消えます。`borderWidth`も`borderRadius`も効きません。罫線は直線のままで、セルの塗りは角丸の枠に合わせて切り抜かれます。見出しの塗り、縞模様の行、セル自身の`background`はほかのパターンと同じく罫線の下に塗られます。
+- ページをまたいで分割した表は各部分で見出し行を繰り返すので、どの部分も太罫と見出しの罫線で始まります。最終行の下の太罫は最後の部分だけを閉じます。次のページへ続く部分は`continuedFootRule`で終わります。細罫（`'light'`、既定）、太罫（`'bottom'`）、なし（`'none'`）のいずれかです。
+
+罫線はレイアウトが一度だけ計算します。VDT の表はそれを`strokes`（`{ x1, y1, x2, y2, widthPx }`、表本体の左上隅からの相対位置）として持ち、キャンバス、HTML ビューア、PDF、固定レイアウトの EPUB はそのとおりに引きます。タグ付き PDF ではレイアウトのアーティファクトです。リフロー型 EPUB では表と見出しの CSS の罫線として書き出し、両端を詰めた罫線は背景の線で描きます。Sandbox では、**罫線**のリストで**booktabs（三本罫）**を選ぶとこれらの項目が表示され、**罫線の太さ**と**角の半径**は隠れます。
+
 ### 名前付きの表スタイル
 
 文書の表がすべて同じ体裁であることはまれです。角を丸めた外枠付きの紺の格子のチェックリスト、外枠だけで囲んだ選択肢の行、水平の罫線だけのデータ表、といった具合です。`tableStyles`で名前付きの変種を宣言し、表リソースは`table.styleId`でその1つを選びます。スタイルが設定していないフィールドは、まず`tableStyle`から、次に本文から読み取られるため、スタイルにはその表を区別する点だけを書けば済みます。`styleId`のない表や、どのスタイルも宣言していないidを持つ表は`tableStyle`のままです。`tableStyles`のない文書は、これまでとまったく同じに描画されます。
@@ -4739,11 +4804,11 @@ const resource: Resource = {
 };
 ```
 
-各エントリーは`tableStyle`のすべてのフィールドに加えて、`id`（`table.styleId`が参照するもの）と、エディター向けの省略可能な`name`（既定値はid）を取ります。スタイルで設定できるものはすべて表ごとに適用されます。文字組み、塗り、罫線、罫線の引き方、角の半径、内側余白、そして続きの文字列を含む、ページに収まらないときの扱いです。`resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)`は解決済みのリストを、`pickTableStyle(resolved, styleId)`は表を組むスタイルを返し、`stripTableStylesDefaults`は未設定のフィールドを取り除きます（組み込みの既定値と等しいフィールドは残します。そのフィールドは、異なる`tableStyle`の値を引き続き上書きするからです）。
+各エントリーは`tableStyle`のすべてのフィールドに加えて、`id`（`table.styleId`が参照するもの）と、エディター向けの省略可能な`name`（既定値はid）を取ります。スタイルで設定できるものはすべて表ごとに適用されます。文字組み、塗り、罫線、罫線の引き方、角の半径、内側余白、そして続きの文字列を含む、ページに収まらないときの扱いです。`resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)`は解決済みのリストを、`pickTableStyle(resolved, styleId)`は表を組むスタイルを返し、`stripTableStylesDefaults`は未設定のフィールドを取り除きます（組み込みの既定値と等しいフィールドは残します。そのフィールドは、異なる`tableStyle`の値を引き続き上書きするからです）。リフロー型 EPUB では、名前付きスタイルは表のクラス（`pt-table-<id>`）になり、本のスタイルシートがそれを装飾します。
 
 ### ページより高い表
 
-フロートの表が、渡された新しいページに収まらない場合でも、縮められたりはみ出したりはしません。`overflow: 'split'`（既定値）では、エンジンがページに収まる最後の行境界で表を分割し、必要なだけ次のページに続けます。続きの各部分は表の見出し行（`TableModel.headerRowCount`、未設定なら見出しのセルだけからなる先頭の行）を繰り返し、説明の後に`continuedSuffix`を付けたキャプションを再び掲げます（「Table 6-4. Title *(cont.)*」）。次に続く各部分の下には、注記の書体で`continuesMarker`を右そろえに置きます。表の注記は最後の部分まで持ち越されます。分割は結合したセルを横切りません（行方向に結合したセルは丸ごと次の部分に移ります）。また、下に続く行の見出しとなる行、つまり表の全幅にわたる1つのセルからなる行は、ページの末尾に取り残されず、次の部分へ送られます。
+フロートの表が、渡された新しいページに収まらない場合でも、縮められたりはみ出したりはしません。`overflow: 'split'`（既定値）では、エンジンがページに収まる最後の行境界で表を分割し、必要なだけ次のページに続けます。続きの各部分は表の見出し行（`TableModel.headerRowCount`、未設定なら見出しのセルだけからなる先頭の行）を繰り返し、説明の後に`continuedSuffix`を付けたキャプションを再び掲げます（「Table 6-4. Title *(cont.)*」）。次に続く各部分の下には、注記の書体で`continuesMarker`を右そろえに置きます。表の注記は最後の部分まで持ち越されます。分割は結合したセルを横切りません（行方向に結合したセルは丸ごと次の部分に移ります）。また、下に続く行の見出しとなる行、つまり表の全幅にわたる1つのセルからなる行は、ページの末尾に取り残されず、次の部分へ送られます。booktabs の表は、続く各部分を`continuedFootRule`で閉じます（[booktabs の罫線](#booktabs-の罫線)を参照）。
 
 **最初の部分の終わる位置**。参照の後で空の段の頭を渡された表は、そこに収まる行を取り、次の枠に続きます。段を単独で占めるときは、段の下端まで埋めます。部分の下に本文の行が3行未満しか残らない場合は、テキストの切れ端を残さず、その行も取ります。段にすでに別のフロートの帯がある場合（たとえばページの頭を横切る全幅の図）は、部分は段の下端から少なくとも本文3行分手前で止まります。これは、フロートがほかのフロートと段を共有するときに残すテキストの余地で、段がフロートだけで終わらず、表の下にいくらかテキストが来るようにするためです。長い表を段の下端まで続けたい場合は、表が始まるページにほかのフロートがない位置で参照するか（たとえば全幅の図のあるページの次）、行を段に収まるようにしてください。
 

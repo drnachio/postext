@@ -313,7 +313,7 @@ Os grupos, na ordem de navegação:
   - *Legendas* (`captionStyle`): tipo, corpo, alinhamento e **posição** acima ou abaixo do recurso. Há uma **barra de fundo** opcional, com cor e espaçamento interno, e o rótulo e a descrição têm estilos independentes. Um grupo **Nota** define o corpo, a cor, a inclinação, o alinhamento e a distância da nota do recurso.
   - *Tabelas* (`tableStyle`):
     - tipografia do corpo e do cabeçalho, com o **Espaçamento entre letras** (`headerLetterSpacing`) e a **Caixa** (`headerTextTransform`) do cabeçalho, e os preenchimentos;
-    - bordas, com um padrão de **fios**: grade completa, só horizontais, moldura externa ou nenhum;
+    - bordas, com um padrão de **fios**: grade completa, só horizontais, moldura externa, nenhum ou **Booktabs** (um fio grosso acima e abaixo da tabela, um fino sob o cabeçalho e fios encurtados sob os cabeçalhos agrupados). Booktabs mostra as espessuras dos seus fios, os fios sob cabeçalhos agrupados e o seu recuo, **Fios de grupo** e, em *Tabelas mais altas que a página*, o fio sob uma parte que continua na página seguinte, e esconde a espessura da borda e o raio dos cantos;
     - um **raio dos cantos** para a moldura externa;
     - espaçamento interno das células;
     - em *Células do corpo*, **Linhas zebradas** (`bodyAlternateBackgroundEnabled`), que preenche uma linha do corpo a cada duas com a **Cor das linhas alternadas** (`bodyAlternateBackground`), visível enquanto a chave está ativada.

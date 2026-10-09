@@ -4640,7 +4640,7 @@ const config: PostextConfig = {
       <td><code>borderWidth</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75pt</code></td>
-      <td>Border stroke width (≈1px at 96 DPI; scales with page DPI).</td>
+      <td>Border stroke width (≈1px at 96 DPI; scales with page DPI). Not used by <code>'booktabs'</code>, which has widths of its own.</td>
     </tr>
     <tr>
       <td><code>cellPadding</code></td>
@@ -4650,15 +4650,57 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>rules</code></td>
-      <td><code>'grid' | 'horizontal' | 'outer' | 'none'</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'</code></td>
       <td><code>'grid'</code></td>
-      <td>Which rules to stroke when <code>borders</code> is on: the full cell grid, horizontal rules only (top and bottom edge of every row, no verticals), the outer frame only, or none.</td>
+      <td>Which rules to stroke when <code>borders</code> is on: the full cell grid, horizontal rules only (top and bottom edge of every row, no verticals), the outer frame only, none, or the three rules of a journal table (see <a href="#booktabs-rules">booktabs rules</a>).</td>
     </tr>
     <tr>
       <td><code>borderRadius</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>Corner radius of the table's outer frame. The frame is stroked round (with <code>grid</code> or <code>outer</code> rules), the cell fills and the header background are clipped to it — also with <code>rules: 'none'</code> or borders off — and horizontal rules are trimmed to its outer contour; the inner rules stay straight. A table split across pages rounds the top corners of its first part and the bottom corners of its last. Clamped to half the table's width and height.</td>
+      <td>Corner radius of the table's outer frame. The frame is stroked round (with <code>grid</code> or <code>outer</code> rules), the cell fills and the header background are clipped to it — also with <code>rules: 'none'</code> or borders off — and horizontal rules are trimmed to its outer contour; the inner rules stay straight. A table split across pages rounds the top corners of its first part and the bottom corners of its last. Clamped to half the table's width and height. <code>'booktabs'</code> rules stay straight (the fills are still clipped).</td>
+    </tr>
+    <tr>
+      <td><code>heavyRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Booktabs: the rules above the table and under its last row. An <code>em</code> is the body cell size.</td>
+    </tr>
+    <tr>
+      <td><code>lightRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Booktabs: the rule under the header rows, and the group rules.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.03em</code></td>
+      <td>Booktabs: the rules under header cells that span several columns.</td>
+    </tr>
+    <tr>
+      <td><code>spanRules</code></td>
+      <td><code>'trimmed' | 'full' | 'none'</code></td>
+      <td><code>'trimmed'</code></td>
+      <td>Booktabs: the rules under header cells that span several columns, above the last header row: shortened at both ends by <code>spanRuleTrim</code>, across the whole cell, or none.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleTrim</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Booktabs: how much a trimmed span rule is shortened at each end.</td>
+    </tr>
+    <tr>
+      <td><code>groupRules</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Booktabs: a light rule above every body row that heads a group.</td>
+    </tr>
+    <tr>
+      <td><code>continuedFootRule</code></td>
+      <td><code>'bottom' | 'light' | 'none'</code></td>
+      <td><code>'light'</code></td>
+      <td>Booktabs: what closes a part of a split table that goes on overleaf.</td>
     </tr>
     <tr>
       <td><code>overflow</code></td>
@@ -4708,6 +4750,29 @@ Rows are counted from the first row after the header rows (`TableModel.headerRow
 
 In the VDT the cells of the alternate rows carry `alternate: true`, and the table layout carries `bodyAlternateBackground`. `tableCellFill(table, cell)` returns the fill a cell is painted with — its own, the header's, the alternate or the body fill — which is what the canvas, HTML and PDF backends all paint. Neighbouring fills meet without a seam: a browser at a fractional pixel ratio or a PDF viewer anti-aliases each fill on its own and would let the page show through a hairline between two cells, so the HTML and PDF backends paint `tableCellFillRects(table)` — each cell's fill with a strip across every edge it shares with a cell painted after it, which that cell then covers — and the canvas snaps its fills to device pixels.
 
+### Booktabs rules
+
+Journal and textbook tables are usually set with three rules and no vertical lines: a heavy rule above the table, a light one under the header and a heavy one under the last row, with short rules under the heads that group several columns (the LaTeX `booktabs` package: `\toprule`, `\midrule`, `\cmidrule`, `\bottomrule`). `rules: 'booktabs'` draws that pattern:
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    rules: 'booktabs',
+    borderColor: { hex: '#000000', model: 'hex' },
+    headerBackgroundEnabled: false,
+  },
+};
+```
+
+- The rule above the table and the one under its last row are `heavyRuleWidth` thick (`0.08em`), the rule under the header rows `lightRuleWidth` (`0.05em`). A table without header rows has no header rule.
+- A header cell that spans several columns above the last header row gets a rule `spanRuleWidth` thick (`0.03em`) under it. With `spanRules: 'trimmed'` (the default) the rule is shortened by `spanRuleTrim` (`0.5em`) at both ends, so the rules under two neighbouring heads do not touch; `'full'` runs it across the whole cell and `'none'` leaves it out.
+- `groupRules: true` adds a light rule above every body row that heads a group (a single cell across the whole table, or a row of header cells), unless the row opens the table or a page, where the header rule already stands.
+- The widths are resolved against the body cell size (`bodyFontSize`), so a larger header size does not thicken the header rule. A width of `0` drops that rule.
+- The rules take `borderColor` (a palette-linked colour follows the palette and `:::part palette`), and `borders: false` turns them off. `borderWidth` does not apply, nor does `borderRadius`: the rules stay straight, while the cell fills are still clipped to the rounded frame. Header fills, zebra rows and a cell's own `background` work as with the other patterns, under the rules.
+- A table split across pages repeats its header rows on every part, so every part opens with the heavy rule and the header rule. The heavy rule under the last row closes only the last part; a part that goes on overleaf ends with `continuedFootRule`: a light rule (`'light'`, the default), the heavy rule (`'bottom'`) or none (`'none'`).
+
+The layout computes the rules once. The VDT table carries them as `strokes` (`{ x1, y1, x2, y2, widthPx }`, relative to the top-left corner of the table body), and the canvas, the HTML viewer, the PDF and the fixed-layout EPUB stroke exactly those; in a tagged PDF they are layout artifacts. The reflowable EPUB writes them as CSS borders on the table and its header, with the trimmed rules drawn as background lines. In the Sandbox, **Booktabs** in the *Rules* select shows these fields and hides *Border width* and *Corner radius*.
+
 ### Named table styles
 
 A document rarely sets every table alike: a checklist in a navy grid with a rounded frame, an option row boxed by its outer frame only, a data table in plain horizontal rules. `tableStyles` declares named variants, and a table resource picks one with `table.styleId`. Every field a style leaves unset is read from `tableStyle` first and from the body text after that, so a style states only what sets its tables apart. A table without a `styleId`, or with an id no style declares, keeps `tableStyle` — a document without `tableStyles` renders exactly as before.
@@ -4739,11 +4804,11 @@ const resource: Resource = {
 };
 ```
 
-Each entry takes every `tableStyle` field plus `id` (what `table.styleId` references) and an optional `name` for the editor (defaults to the id). Everything a style can set applies per table — typography, fills, borders, rules, corner radius, padding and the overflow behaviour with its continuation strings. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` returns the resolved list, `pickTableStyle(resolved, styleId)` the style a table is set in, and `stripTableStylesDefaults` drops the unset fields (it keeps a field equal to its built-in default, which still overrides a different `tableStyle` value).
+Each entry takes every `tableStyle` field plus `id` (what `table.styleId` references) and an optional `name` for the editor (defaults to the id). Everything a style can set applies per table — typography, fills, borders, rules, corner radius, padding and the overflow behaviour with its continuation strings. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` returns the resolved list, `pickTableStyle(resolved, styleId)` the style a table is set in, and `stripTableStylesDefaults` drops the unset fields (it keeps a field equal to its built-in default, which still overrides a different `tableStyle` value). In a reflowable EPUB a named style is a class on the table (`pt-table-<id>`), styled by the book's stylesheet.
 
 ### Tables taller than the page
 
-A floated table that does not fit the fresh page it is offered is not squeezed or overflowed: with `overflow: 'split'` (the default) the engine cuts it between rows at the last edge that fits the page and continues it on the following pages, as many as it takes. Every continued part repeats the table's header rows (`TableModel.headerRowCount`, or the leading rows made of header cells when it is unset) and carries the caption again with `continuedSuffix` after the description — "Table 6-4. Title *(cont.)*". Every part that goes on gets `continuesMarker` under it, flush right, in the note typeface; the table's note is held back for the last part. A cut never runs through a merged cell (a rowspan moves whole to the next part), and a row that heads the rows below it — a single cell across the whole table — is carried to the next part rather than left stranded at the foot of a page.
+A floated table that does not fit the fresh page it is offered is not squeezed or overflowed: with `overflow: 'split'` (the default) the engine cuts it between rows at the last edge that fits the page and continues it on the following pages, as many as it takes. Every continued part repeats the table's header rows (`TableModel.headerRowCount`, or the leading rows made of header cells when it is unset) and carries the caption again with `continuedSuffix` after the description — "Table 6-4. Title *(cont.)*". Every part that goes on gets `continuesMarker` under it, flush right, in the note typeface; the table's note is held back for the last part. A cut never runs through a merged cell (a rowspan moves whole to the next part), and a row that heads the rows below it — a single cell across the whole table — is carried to the next part rather than left stranded at the foot of a page. A booktabs table closes each part that goes on with `continuedFootRule` (see [booktabs rules](#booktabs-rules)).
 
 **Where the first part ends.** A table offered the head of an empty column after its reference takes the rows that fit there and continues in the next slot. It fills the column to its foot when it has the column to itself: a part that would leave fewer than three body lines under it takes those too, rather than leave a stub of text. When the column already holds another float band — a page-wide figure across the head of the page, say — the part stops at least three body lines short of the foot instead, the room for text any float leaves when it shares a column with another, so the column ends with some text under the table rather than with floats alone. To have a long table run to the foot of its column, cite it where the page it starts on carries no other float (after the page of a page-wide figure, for instance), or fit its rows to the column.
 

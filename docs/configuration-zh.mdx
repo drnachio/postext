@@ -4637,7 +4637,7 @@ const config: PostextConfig = {
       <td><code>borderWidth</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75pt</code></td>
-      <td>边框线的粗细（96 DPI下约为1px；随页面DPI缩放）。</td>
+      <td>边框线的粗细（96 DPI下约为1px；随页面DPI缩放）。<code>'booktabs'</code>不使用它，而用自己的线宽。</td>
     </tr>
     <tr>
       <td><code>cellPadding</code></td>
@@ -4647,15 +4647,57 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>rules</code></td>
-      <td><code>'grid' | 'horizontal' | 'outer' | 'none'</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'</code></td>
       <td><code>'grid'</code></td>
-      <td><code>borders</code>开启时绘制哪些线：完整的单元格网格、只有横线（每行的上下边，无竖线）、只有外框，或都不画。</td>
+      <td><code>borders</code>开启时绘制哪些线：完整的单元格网格、只有横线（每行的上下边，无竖线）、只有外框、都不画，或期刊表格的三条线（见<a href="#三线表">三线表</a>）。</td>
     </tr>
     <tr>
       <td><code>borderRadius</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>表格外框的圆角半径。外框画成圆角（用<code>grid</code>或<code>outer</code>线型时），单元格填充色和表头背景按它裁切（即使<code>rules: 'none'</code>或关闭边框也是如此），横线裁到其外轮廓为止；内部的线保持直线。跨页拆分的表，第一部分圆上方两角，最后一部分圆下方两角。半径不超过表格宽度和高度的一半。</td>
+      <td>表格外框的圆角半径。外框画成圆角（用<code>grid</code>或<code>outer</code>线型时），单元格填充色和表头背景按它裁切（即使<code>rules: 'none'</code>或关闭边框也是如此），横线裁到其外轮廓为止；内部的线保持直线。跨页拆分的表，第一部分圆上方两角，最后一部分圆下方两角。半径不超过表格宽度和高度的一半。<code>'booktabs'</code>的线保持直线（填充色仍按圆角裁切）。</td>
+    </tr>
+    <tr>
+      <td><code>heavyRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>三线表：表格上方和末行下方的线。<code>em</code>以正文单元格字号计。</td>
+    </tr>
+    <tr>
+      <td><code>lightRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>三线表：表头行下的线，以及分组线。</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.03em</code></td>
+      <td>三线表：跨多列的表头单元格下的线。</td>
+    </tr>
+    <tr>
+      <td><code>spanRules</code></td>
+      <td><code>'trimmed' | 'full' | 'none'</code></td>
+      <td><code>'trimmed'</code></td>
+      <td>三线表：最后一行表头之上、跨多列的表头单元格下的线：两端各缩短<code>spanRuleTrim</code>、贯穿整个单元格，或不画。</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleTrim</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>三线表：两端缩短的跨栏线每端缩进多少。</td>
+    </tr>
+    <tr>
+      <td><code>groupRules</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>三线表：在每个作为分组标题的表体行上方画一条细线。</td>
+    </tr>
+    <tr>
+      <td><code>continuedFootRule</code></td>
+      <td><code>'bottom' | 'light' | 'none'</code></td>
+      <td><code>'light'</code></td>
+      <td>三线表：跨页表格中延续到下一页的部分以什么线收尾。</td>
     </tr>
     <tr>
       <td><code>overflow</code></td>
@@ -4705,6 +4747,29 @@ const config: PostextConfig = {
 
 在VDT中，交替行的单元格带有`alternate: true`，表格版面带有`bodyAlternateBackground`。`tableCellFill(table, cell)`返回单元格实际绘制的填充色（它自己的、表头的、交替的或正文的），Canvas、HTML和PDF后端绘制的都是这个值。相邻的填充色之间没有接缝：浏览器在非整数像素比下、PDF阅读器在显示时，会分别对每块填充做抗锯齿，两个单元格之间就会透出一条细线，露出页面底色。所以HTML和PDF后端绘制的是`tableCellFillRects(table)`：每个单元格的填充色都在它与后绘单元格共用的每条边上多出一条窄带，再由后绘的单元格盖住；Canvas则把填充对齐到设备像素。
 
+### 三线表
+
+期刊和教材里的表格通常只用三条线，不画竖线：表格上方一条粗线，表头下一条细线，末行下一条粗线；表头中跨几列的分组标题下另有短线（LaTeX 的`booktabs`宏包：`\toprule`、`\midrule`、`\cmidrule`、`\bottomrule`）。`rules: 'booktabs'`画的就是这种样式：
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    rules: 'booktabs',
+    borderColor: { hex: '#000000', model: 'hex' },
+    headerBackgroundEnabled: false,
+  },
+};
+```
+
+- 表格上方的线和末行下方的线粗`heavyRuleWidth`（`0.08em`），表头行下的线粗`lightRuleWidth`（`0.05em`）。没有表头行的表格不画表头线。
+- 在最后一行表头之上、跨多列的表头单元格下画一条粗`spanRuleWidth`（`0.03em`）的线。`spanRules: 'trimmed'`（默认）时，这条线两端各缩短`spanRuleTrim`（`0.5em`），相邻两个分组标题下的线因而互不相接；`'full'`让它贯穿整个单元格，`'none'`则不画。
+- `groupRules: true`在每个作为分组标题的表体行（一个单元格横贯全表，或一整行表头单元格）上方加一条细线；该行位于表格开头或页首时除外，那里已有表头线。
+- 各线宽以正文单元格字号（`bodyFontSize`）换算，表头字号较大也不会加粗表头线。线宽为`0`时不画该线。
+- 线的颜色取`borderColor`（关联调色板的颜色随调色板和`:::part palette`变化），`borders: false`关闭所有线。`borderWidth`不起作用，`borderRadius`也不起作用：线保持直线，单元格填充色仍按圆角外框裁切。表头填充、斑马纹和单元格自己的`background`与其他线型一样有效，画在线的下面。
+- 跨页拆分的表格每部分都重复表头行，所以每部分都以粗线和表头线开头。末行下的粗线只收尾最后一部分；延续到下一页的部分以`continuedFootRule`收尾：细线（`'light'`，默认）、粗线（`'bottom'`）或不画（`'none'`）。
+
+排版只计算一次这些线。VDT 中的表格以`strokes`（`{ x1, y1, x2, y2, widthPx }`，相对于表体左上角）携带它们，画布、HTML 查看器、PDF 和固定版式 EPUB 照此绘制；在带标签的 PDF 中它们是版面工件。流式 EPUB 把它们写成表格和表头的 CSS 边框，两端缩短的线用背景线绘制。在 Sandbox 中，于*线条*下拉框选择**三线表（booktabs）**会显示这些字段，并隐藏*边框宽度*和*圆角半径*。
+
 ### 命名表格样式
 
 一份文档里的表很少全都一个样：清单用藏青色网格加圆角外框，选项行只用外框围起来，数据表只用横线。`tableStyles`声明命名的变体，表格资源用`table.styleId`选用其中一个。样式没有设定的字段先从`tableStyle`读取，再从正文读取，所以一个样式只需写明它与众不同的地方。没有`styleId`的表，或者`styleId`指向未声明样式的表，仍用`tableStyle`；没有`tableStyles`的文档渲染结果与以前完全相同。
@@ -4736,11 +4801,11 @@ const resource: Resource = {
 };
 ```
 
-每个条目接受`tableStyle`的所有字段，外加`id`（供`table.styleId`引用）和可选的`name`（供编辑器显示，默认为id）。样式能设定的一切都按表生效：字体排印、填充色、边框、线型、圆角半径、内边距，以及溢出行为和它的续表文字。`resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)`返回解析后的列表，`pickTableStyle(resolved, styleId)`返回某张表所用的样式，`stripTableStylesDefaults`去掉未设定的字段（等于内置默认值的字段会保留，因为它仍会覆盖`tableStyle`中不同的值）。
+每个条目接受`tableStyle`的所有字段，外加`id`（供`table.styleId`引用）和可选的`name`（供编辑器显示，默认为id）。样式能设定的一切都按表生效：字体排印、填充色、边框、线型、圆角半径、内边距，以及溢出行为和它的续表文字。`resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)`返回解析后的列表，`pickTableStyle(resolved, styleId)`返回某张表所用的样式，`stripTableStylesDefaults`去掉未设定的字段（等于内置默认值的字段会保留，因为它仍会覆盖`tableStyle`中不同的值）。在流式 EPUB 中，命名样式是表格上的一个类（`pt-table-<id>`），由书的样式表设置样式。
 
 ### 比页面还高的表
 
-浮动表如果放不进为它提供的新页面，既不会被压缩，也不会溢出：在`overflow: 'split'`（默认）下，引擎在放得下的最后一条行边界处把它按行切开，在后续页面上接续，需要几页就接几页。每个续表部分都重复表头行（`TableModel.headerRowCount`，未设置时为由表头单元格组成的开头几行），并再次带上题注，在描述之后加上`continuedSuffix`，如“Table 6-4. Title *(cont.)*”。每个还要接续的部分下方都有右对齐、用注释字体排的`continuesMarker`；表的注释留到最后一部分。切分点从不穿过合并单元格（跨行单元格整体移到下一部分）；统领下面各行的一行（横跨整张表的单个单元格）会被带到下一部分，而不是孤零零地留在页面底部。
+浮动表如果放不进为它提供的新页面，既不会被压缩，也不会溢出：在`overflow: 'split'`（默认）下，引擎在放得下的最后一条行边界处把它按行切开，在后续页面上接续，需要几页就接几页。每个续表部分都重复表头行（`TableModel.headerRowCount`，未设置时为由表头单元格组成的开头几行），并再次带上题注，在描述之后加上`continuedSuffix`，如“Table 6-4. Title *(cont.)*”。每个还要接续的部分下方都有右对齐、用注释字体排的`continuesMarker`；表的注释留到最后一部分。切分点从不穿过合并单元格（跨行单元格整体移到下一部分）；统领下面各行的一行（横跨整张表的单个单元格）会被带到下一部分，而不是孤零零地留在页面底部。三线表的每个延续部分以`continuedFootRule`收尾（见[三线表](#三线表)）。
 
 **第一部分在哪里结束**。如果在引用之后为表提供的是某个空栏的顶部，表就取那里放得下的行，余下的接到下一个空位。当它独占该栏时，会一直排到栏底：若某部分下方只剩不到三行正文的空间，它就把这些空间也占上，而不留下一小截文字。当该栏已有另一条浮动版带时（比如页顶横跨整页的通栏图），这一部分会在栏底之前至少留出三行正文的位置就停下，这是浮动体与其他浮动体共用一栏时都要留给文字的空间，于是该栏在表下仍有一些文字，而不是只有浮动体。要让长表一直排到栏底，应在起始页没有其他浮动体的地方引用它（例如在通栏图那一页之后），或者调整它的行使其适合栏高。
 

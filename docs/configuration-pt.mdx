@@ -4642,7 +4642,7 @@ const config: PostextConfig = {
       <td><code>borderWidth</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75pt</code></td>
-      <td>Espessura do traço das bordas (≈1 px a 96 DPI; acompanha o DPI da página).</td>
+      <td>Espessura do traço das bordas (≈1 px a 96 DPI; acompanha o DPI da página). <code>'booktabs'</code> não o usa: tem as suas próprias espessuras.</td>
     </tr>
     <tr>
       <td><code>cellPadding</code></td>
@@ -4652,15 +4652,57 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>rules</code></td>
-      <td><code>'grid' | 'horizontal' | 'outer' | 'none'</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'</code></td>
       <td><code>'grid'</code></td>
-      <td>Quais fios traçar quando <code>borders</code> está ativado: a grade completa das células, só os fios horizontais (borda superior e inferior de cada linha, sem verticais), só a moldura externa, ou nenhum.</td>
+      <td>Quais fios traçar quando <code>borders</code> está ativado: a grade completa das células, só os fios horizontais (borda superior e inferior de cada linha, sem verticais), só a moldura externa, nenhum ou os três fios de uma tabela de revista (veja <a href="#fios-booktabs">fios booktabs</a>).</td>
     </tr>
     <tr>
       <td><code>borderRadius</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>Raio dos cantos da moldura externa da tabela. A moldura é traçada arredondada (com os fios <code>grid</code> ou <code>outer</code>), os fundos das células e o fundo do cabeçalho são recortados por ela (também com <code>rules: 'none'</code> ou com as bordas desativadas) e os fios horizontais são aparados no seu contorno externo; os fios internos continuam retos. Uma tabela dividida entre páginas arredonda os cantos superiores da primeira parte e os inferiores da última. Limitado à metade da largura e da altura da tabela.</td>
+      <td>Raio dos cantos da moldura externa da tabela. A moldura é traçada arredondada (com os fios <code>grid</code> ou <code>outer</code>), os fundos das células e o fundo do cabeçalho são recortados por ela (também com <code>rules: 'none'</code> ou com as bordas desativadas) e os fios horizontais são aparados no seu contorno externo; os fios internos continuam retos. Uma tabela dividida entre páginas arredonda os cantos superiores da primeira parte e os inferiores da última. Limitado à metade da largura e da altura da tabela. Os fios <code>'booktabs'</code> continuam retos (os preenchimentos são recortados).</td>
+    </tr>
+    <tr>
+      <td><code>heavyRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Booktabs: os fios acima da tabela e abaixo da última linha. Um <code>em</code> é o corpo das células.</td>
+    </tr>
+    <tr>
+      <td><code>lightRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Booktabs: o fio sob as linhas de cabeçalho e os fios de grupo.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.03em</code></td>
+      <td>Booktabs: os fios sob as células de cabeçalho que abrangem várias colunas.</td>
+    </tr>
+    <tr>
+      <td><code>spanRules</code></td>
+      <td><code>'trimmed' | 'full' | 'none'</code></td>
+      <td><code>'trimmed'</code></td>
+      <td>Booktabs: os fios sob as células de cabeçalho que abrangem várias colunas, acima da última linha de cabeçalho: encurtados nas duas pontas em <code>spanRuleTrim</code>, de ponta a ponta da célula ou nenhum.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleTrim</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Booktabs: quanto um fio de agrupamento encurtado perde em cada ponta.</td>
+    </tr>
+    <tr>
+      <td><code>groupRules</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Booktabs: um fio fino acima de cada linha do corpo que abre um grupo.</td>
+    </tr>
+    <tr>
+      <td><code>continuedFootRule</code></td>
+      <td><code>'bottom' | 'light' | 'none'</code></td>
+      <td><code>'light'</code></td>
+      <td>Booktabs: o que fecha a parte de uma tabela dividida que continua na página seguinte.</td>
     </tr>
     <tr>
       <td><code>overflow</code></td>
@@ -4710,6 +4752,29 @@ As linhas são contadas a partir da primeira linha depois das linhas de cabeçal
 
 Na VDT, as células das linhas alternadas levam `alternate: true`, e o layout da tabela leva `bodyAlternateBackground`. `tableCellFill(table, cell)` devolve o fundo com que uma célula é pintada (o próprio, o do cabeçalho, o alternado ou o do corpo), que é o que os renderizadores de canvas, HTML e PDF pintam. Fundos vizinhos se encontram sem emenda: um navegador com proporção de pixels fracionária ou um leitor de PDF suaviza cada fundo separadamente e deixaria a página aparecer num filete entre duas células, por isso os renderizadores de HTML e PDF pintam `tableCellFillRects(table)` (o fundo de cada célula com uma tira sobre cada borda que ela compartilha com uma célula pintada depois, que então a cobre), e o canvas ajusta os fundos aos pixels do dispositivo.
 
+### Fios booktabs
+
+As tabelas de revistas e livros didáticos costumam ser compostas com três fios e nenhuma linha vertical: um grosso acima da tabela, um fino sob o cabeçalho e outro grosso sob a última linha, com fios curtos sob os cabeçalhos que agrupam várias colunas (o pacote `booktabs` do LaTeX: `\toprule`, `\midrule`, `\cmidrule`, `\bottomrule`). `rules: 'booktabs'` traça esse padrão:
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    rules: 'booktabs',
+    borderColor: { hex: '#000000', model: 'hex' },
+    headerBackgroundEnabled: false,
+  },
+};
+```
+
+- O fio acima da tabela e o fio sob a última linha têm a espessura `heavyRuleWidth` (`0.08em`); o fio sob as linhas de cabeçalho, `lightRuleWidth` (`0.05em`). Uma tabela sem linhas de cabeçalho não tem fio de cabeçalho.
+- Uma célula de cabeçalho que abrange várias colunas acima da última linha de cabeçalho recebe embaixo um fio de espessura `spanRuleWidth` (`0.03em`). Com `spanRules: 'trimmed'` (o padrão) o fio é encurtado em `spanRuleTrim` (`0.5em`) nas duas pontas, para que os fios de dois cabeçalhos vizinhos não se toquem; `'full'` o estende de ponta a ponta da célula e `'none'` o omite.
+- `groupRules: true` acrescenta um fio fino acima de cada linha do corpo que abre um grupo (uma única célula de ponta a ponta da tabela, ou uma linha de células de cabeçalho), exceto quando a linha abre a tabela ou uma página, onde já está o fio de cabeçalho.
+- As espessuras são calculadas sobre o corpo das células (`bodyFontSize`), de modo que um cabeçalho de corpo maior não engrossa o seu fio. Uma espessura `0` omite esse fio.
+- Os fios usam `borderColor` (uma cor ligada à paleta segue a paleta e `:::part palette`), e `borders: false` os desliga. `borderWidth` não se aplica, nem `borderRadius`: os fios continuam retos, enquanto os preenchimentos das células continuam recortados pela moldura arredondada. Os preenchimentos do cabeçalho, as linhas zebradas e o `background` próprio de uma célula funcionam como nos outros padrões, sob os fios.
+- Uma tabela dividida entre páginas repete as linhas de cabeçalho em cada parte, então toda parte começa com o fio grosso e o fio de cabeçalho. O fio grosso sob a última linha fecha só a última parte; uma parte que continua na página seguinte termina com `continuedFootRule`: um fio fino (`'light'`, o padrão), o grosso (`'bottom'`) ou nenhum (`'none'`).
+
+A diagramação calcula os fios uma única vez. A tabela do VDT os leva como `strokes` (`{ x1, y1, x2, y2, widthPx }`, relativos ao canto superior esquerdo do corpo da tabela), e a tela, o visualizador HTML, o PDF e o EPUB de layout fixo traçam exatamente esses; num PDF etiquetado são artefatos de layout. O EPUB refluível os escreve como bordas CSS da tabela e do seu cabeçalho, com os fios encurtados desenhados como linhas de fundo. No Sandbox, **Booktabs** no seletor *Fios* mostra esses campos e esconde *Espessura da borda* e *Raio dos cantos*.
+
 ### Estilos de tabela nomeados
 
 Um documento raramente compõe todas as tabelas iguais: uma lista de verificação numa grade azul-marinho com moldura arredondada, uma linha de opções emoldurada só pela borda externa, uma tabela de dados com simples fios horizontais. `tableStyles` declara variantes nomeadas, e um recurso de tabela escolhe uma delas com `table.styleId`. Cada campo que um estilo deixa sem definir é lido primeiro de `tableStyle` e depois do texto corrido, então um estilo declara só o que distingue as suas tabelas. Uma tabela sem `styleId`, ou com um id que nenhum estilo declara, mantém `tableStyle`; um documento sem `tableStyles` sai exatamente como antes.
@@ -4741,11 +4806,11 @@ const resource: Resource = {
 };
 ```
 
-Cada entrada aceita todos os campos de `tableStyle`, mais `id` (o que `table.styleId` referencia) e um `name` opcional para o editor (por padrão, o id). Tudo o que um estilo pode definir vale por tabela: tipografia, fundos, bordas, fios, raio dos cantos, margem interna e o comportamento de transbordamento com os seus textos de continuação. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` devolve a lista resolvida, `pickTableStyle(resolved, styleId)` devolve o estilo em que uma tabela é composta, e `stripTableStylesDefaults` descarta os campos não definidos (mantém um campo igual ao seu padrão embutido, que ainda substitui um valor diferente de `tableStyle`).
+Cada entrada aceita todos os campos de `tableStyle`, mais `id` (o que `table.styleId` referencia) e um `name` opcional para o editor (por padrão, o id). Tudo o que um estilo pode definir vale por tabela: tipografia, fundos, bordas, fios, raio dos cantos, margem interna e o comportamento de transbordamento com os seus textos de continuação. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` devolve a lista resolvida, `pickTableStyle(resolved, styleId)` devolve o estilo em que uma tabela é composta, e `stripTableStylesDefaults` descarta os campos não definidos (mantém um campo igual ao seu padrão embutido, que ainda substitui um valor diferente de `tableStyle`). Num EPUB refluível, um estilo nomeado é uma classe da tabela (`pt-table-<id>`), estilizada pela folha de estilos do livro.
 
 ### Tabelas mais altas que a página
 
-Uma tabela flutuante que não cabe na página nova que lhe é oferecida não é espremida nem transborda: com `overflow: 'split'` (o padrão), o motor a corta entre linhas, na última borda que cabe na página, e a continua nas páginas seguintes, quantas forem necessárias. Cada parte de continuação repete as linhas de cabeçalho da tabela (`TableModel.headerRowCount`, ou as linhas iniciais formadas por células de cabeçalho quando ele não está definido) e traz a legenda de novo, com `continuedSuffix` depois da descrição: “Tabela 6-4. Título *(cont.)*”. Toda parte que continua recebe `continuesMarker` embaixo, alinhado à direita, na tipografia das notas; a nota da tabela fica para a última parte. Um corte nunca atravessa uma célula mesclada (uma célula com rowspan passa inteira para a parte seguinte), e uma linha que encabeça as linhas abaixo dela (uma única célula ocupando a tabela toda) é levada para a parte seguinte, em vez de ficar sozinha no pé de uma página.
+Uma tabela flutuante que não cabe na página nova que lhe é oferecida não é espremida nem transborda: com `overflow: 'split'` (o padrão), o motor a corta entre linhas, na última borda que cabe na página, e a continua nas páginas seguintes, quantas forem necessárias. Cada parte de continuação repete as linhas de cabeçalho da tabela (`TableModel.headerRowCount`, ou as linhas iniciais formadas por células de cabeçalho quando ele não está definido) e traz a legenda de novo, com `continuedSuffix` depois da descrição: “Tabela 6-4. Título *(cont.)*”. Toda parte que continua recebe `continuesMarker` embaixo, alinhado à direita, na tipografia das notas; a nota da tabela fica para a última parte. Um corte nunca atravessa uma célula mesclada (uma célula com rowspan passa inteira para a parte seguinte), e uma linha que encabeça as linhas abaixo dela (uma única célula ocupando a tabela toda) é levada para a parte seguinte, em vez de ficar sozinha no pé de uma página. Uma tabela booktabs fecha cada parte que continua com `continuedFootRule` (veja [fios booktabs](#fios-booktabs)).
 
 **Onde termina a primeira parte.** Uma tabela à qual é oferecido o topo de uma coluna vazia depois da sua referência fica com as linhas que cabem ali e continua no espaço seguinte. Ela preenche a coluna até o pé quando tem a coluna só para si: uma parte que deixaria menos de três linhas de texto embaixo dela fica também com essas linhas, em vez de deixar um toco de texto. Quando a coluna já tem outra faixa de flutuantes (uma figura de página inteira no topo da página, por exemplo), a parte para pelo menos três linhas de texto antes do pé, o espaço para texto que qualquer flutuante deixa quando divide a coluna com outro, de modo que a coluna termina com algum texto embaixo da tabela e não só com flutuantes. Para que uma tabela longa vá até o pé da coluna, cite-a num ponto em que a página onde ela começa não tenha outro flutuante (depois da página de uma figura de página inteira, por exemplo), ou ajuste as linhas dela à coluna.
 

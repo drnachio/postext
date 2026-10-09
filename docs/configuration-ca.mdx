@@ -4627,7 +4627,7 @@ const config: PostextConfig = {
       <td><code>borderWidth</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75pt</code></td>
-      <td>Gruix del traç de les vores (≈1px a 96 DPI; escala amb els DPI de la pàgina).</td>
+      <td>Gruix del traç de les vores (≈1px a 96 DPI; escala amb els DPI de la pàgina). <code>'booktabs'</code> no el fa servir: té els seus propis gruixos.</td>
     </tr>
     <tr>
       <td><code>cellPadding</code></td>
@@ -4637,15 +4637,57 @@ const config: PostextConfig = {
     </tr>
     <tr>
       <td><code>rules</code></td>
-      <td><code>'grid' | 'horizontal' | 'outer' | 'none'</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'</code></td>
       <td><code>'grid'</code></td>
-      <td>Quins filets traçar quan <code>borders</code> està actiu: la retícula completa de cel·les, només filets horitzontals (vora superior i inferior de cada fila, sense verticals), només el marc exterior, o cap.</td>
+      <td>Quins filets traçar quan <code>borders</code> està actiu: la retícula completa de cel·les, només filets horitzontals (vora superior i inferior de cada fila, sense verticals), només el marc exterior, cap, o els tres filets d’una taula de revista (vegeu <a href="#filets-booktabs">filets booktabs</a>).</td>
     </tr>
     <tr>
       <td><code>borderRadius</code></td>
       <td><code>Dimension</code></td>
       <td><code>0</code></td>
-      <td>Radi de les cantonades del marc exterior de la taula. El marc es traça arrodonit (amb els filets <code>grid</code> o <code>outer</code>), els fons de les cel·les i de la capçalera s'hi retallen —també amb <code>rules: 'none'</code> o sense vores— i els filets horitzontals es retallen al seu contorn exterior; els filets interiors continuen rectes. Una taula partida entre pàgines arrodoneix les cantonades superiors de la primera part i les inferiors de l'última. Es limita a la meitat de l'amplada i de l'alçada de la taula.</td>
+      <td>Radi de les cantonades del marc exterior de la taula. El marc es traça arrodonit (amb els filets <code>grid</code> o <code>outer</code>), els fons de les cel·les i de la capçalera s'hi retallen —també amb <code>rules: 'none'</code> o sense vores— i els filets horitzontals es retallen al seu contorn exterior; els filets interiors continuen rectes. Una taula partida entre pàgines arrodoneix les cantonades superiors de la primera part i les inferiors de l'última. Es limita a la meitat de l'amplada i de l'alçada de la taula. Els filets <code>'booktabs'</code> continuen rectes (els fons sí que es retallen).</td>
+    </tr>
+    <tr>
+      <td><code>heavyRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Booktabs: els filets de sobre la taula i de sota la seva última fila. Un <code>em</code> és el cos de les cel·les.</td>
+    </tr>
+    <tr>
+      <td><code>lightRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Booktabs: el filet sota les files de capçalera i els filets de grup.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.03em</code></td>
+      <td>Booktabs: els filets sota les cel·les de capçalera que abasten diverses columnes.</td>
+    </tr>
+    <tr>
+      <td><code>spanRules</code></td>
+      <td><code>'trimmed' | 'full' | 'none'</code></td>
+      <td><code>'trimmed'</code></td>
+      <td>Booktabs: els filets sota les cel·les de capçalera que abasten diverses columnes, per sobre de l’última fila de capçalera: escurçats pels dos extrems en <code>spanRuleTrim</code>, d’una banda a l’altra de la cel·la, o cap.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleTrim</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Booktabs: quant s’escurça per cada extrem un filet d’agrupació retallat.</td>
+    </tr>
+    <tr>
+      <td><code>groupRules</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Booktabs: un filet prim a sobre de cada fila del cos que encapçala un grup.</td>
+    </tr>
+    <tr>
+      <td><code>continuedFootRule</code></td>
+      <td><code>'bottom' | 'light' | 'none'</code></td>
+      <td><code>'light'</code></td>
+      <td>Booktabs: què tanca la part d’una taula dividida que continua a la pàgina següent.</td>
     </tr>
     <tr>
       <td><code>overflow</code></td>
@@ -4695,6 +4737,29 @@ Les files es compten des de la primera després de les files de capçalera (`Tab
 
 Al VDT, les cel·les de les files alternes porten `alternate: true` i la maquetació de la taula porta `bodyAlternateBackground`. `tableCellFill(table, cell)` retorna l'emplenament amb què es pinta una cel·la —el seu, el de capçalera, l'alternat o el de cos—, que és el que pinten els backends de canvas, HTML i PDF. Els emplenaments veïns s'ajunten sense costura: un navegador amb una densitat de píxels fraccionària o un visor de PDF suavitzen cada emplenament per separat i deixarien veure el paper en un filet finíssim entre dues cel·les, així que els backends d'HTML i PDF pinten `tableCellFillRects(table)` —l'emplenament de cada cel·la amb una franja sobre cada vora que comparteix amb una cel·la pintada després, que aquesta cel·la després cobreix— i el canvas ajusta els seus emplenaments als píxels del dispositiu.
 
+### Filets booktabs
+
+Les taules de revistes i de llibres de text se solen compondre amb tres filets i cap línia vertical: un de gruixut a sobre de la taula, un de prim sota la capçalera i un altre de gruixut sota l’última fila, amb filets curts sota les capçaleres que agrupen diverses columnes (el paquet `booktabs` de LaTeX: `\toprule`, `\midrule`, `\cmidrule`, `\bottomrule`). `rules: 'booktabs'` traça aquest patró:
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    rules: 'booktabs',
+    borderColor: { hex: '#000000', model: 'hex' },
+    headerBackgroundEnabled: false,
+  },
+};
+```
+
+- El filet de sobre la taula i el de sota la seva última fila tenen el gruix `heavyRuleWidth` (`0.08em`); el de sota les files de capçalera, `lightRuleWidth` (`0.05em`). Una taula sense files de capçalera no porta filet de capçalera.
+- Una cel·la de capçalera que abasta diverses columnes per sobre de l’última fila de capçalera porta a sota un filet de gruix `spanRuleWidth` (`0.03em`). Amb `spanRules: 'trimmed'` (el valor per defecte) el filet s’escurça en `spanRuleTrim` (`0.5em`) pels dos extrems, perquè els filets de dues capçaleres veïnes no es toquin; `'full'` l’estén d’una banda a l’altra de la cel·la i `'none'` el suprimeix.
+- `groupRules: true` afegeix un filet prim a sobre de cada fila del cos que encapçala un grup (una sola cel·la d’una banda a l’altra de la taula, o una fila de cel·les de capçalera), llevat que la fila obri la taula o una pàgina, on ja hi ha el filet de capçalera.
+- Els gruixos es resolen respecte al cos de les cel·les (`bodyFontSize`), de manera que una capçalera de cos més gran no engruixeix el seu filet. Un gruix de `0` suprimeix aquest filet.
+- Els filets prenen `borderColor` (un color enllaçat a la paleta segueix la paleta i `:::part palette`), i `borders: false` els apaga. `borderWidth` no s’hi aplica, ni tampoc `borderRadius`: els filets continuen rectes, tot i que els fons de les cel·les sí que es retallen al marc arrodonit. Els fons de capçalera, les files alternes i el `background` propi d’una cel·la funcionen com amb els altres patrons, sota els filets.
+- Una taula dividida entre pàgines repeteix les files de capçalera a cada part, així que cada part comença amb el filet gruixut i el de capçalera. El filet gruixut sota l’última fila tanca només l’última part; una part que continua a la pàgina següent acaba amb `continuedFootRule`: un filet prim (`'light'`, el valor per defecte), el gruixut (`'bottom'`) o cap (`'none'`).
+
+La maquetació calcula els filets una sola vegada. La taula del VDT els porta com a `strokes` (`{ x1, y1, x2, y2, widthPx }`, relatius a la cantonada superior esquerra del cos de la taula), i el llenç, el visor HTML, el PDF i l’EPUB de maquetació fixa tracen exactament aquests; en un PDF etiquetat són artefactes de maquetació. L’EPUB adaptable els escriu com a vores CSS de la taula i la seva capçalera, amb els filets retallats dibuixats com a línies de fons. Al Sandbox, **Booktabs** al selector *Filets* mostra aquests camps i amaga *Gruix de la vora* i *Radi de les cantonades*.
+
 ### Estils de taula amb nom
 
 Un document poques vegades compon totes les seves taules igual: una llista de comprovació en una quadrícula blau marí amb el marc arrodonit, una fila d'opcions tancada només pel seu marc exterior, una taula de dades amb filets horitzontals. `tableStyles` declara variants amb nom, i un recurs de taula en tria una amb `table.styleId`. Cada camp que un estil deixa sense definir es llegeix primer de `tableStyle` i després del text de cos, de manera que un estil només indica el que distingeix les seves taules. Una taula sense `styleId`, o amb un id que cap estil no declara, conserva `tableStyle`: un document sense `tableStyles` es compon exactament igual que abans.
@@ -4726,10 +4791,10 @@ const resource: Resource = {
 };
 ```
 
-Cada entrada admet tots els camps de `tableStyle` més `id` (el que referencia `table.styleId`) i un `name` opcional per a l'editor (per defecte, l'id). Tot el que un estil pot definir s'aplica per taula: tipografia, fons, vores, filets, radi de les cantonades, farciment i el comportament de desbordament amb les seves cadenes de continuació. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` retorna la llista resolta, `pickTableStyle(resolved, styleId)` l'estil amb què es compon una taula, i `stripTableStylesDefaults` elimina els camps sense definir (conserva un camp igual al seu valor per defecte, que continua substituint un valor diferent de `tableStyle`).
+Cada entrada admet tots els camps de `tableStyle` més `id` (el que referencia `table.styleId`) i un `name` opcional per a l'editor (per defecte, l'id). Tot el que un estil pot definir s'aplica per taula: tipografia, fons, vores, filets, radi de les cantonades, farciment i el comportament de desbordament amb les seves cadenes de continuació. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` retorna la llista resolta, `pickTableStyle(resolved, styleId)` l'estil amb què es compon una taula, i `stripTableStylesDefaults` elimina els camps sense definir (conserva un camp igual al seu valor per defecte, que continua substituint un valor diferent de `tableStyle`). En un EPUB adaptable, un estil amb nom és una classe de la taula (`pt-table-<id>`) a la qual dona estil el full d’estils del llibre.
 ### Taules més altes que la pàgina
 
-Una taula flotant que no cap a la pàgina nova que se li ofereix no es comprimeix ni es desborda: amb `overflow: 'split'` (el valor per defecte) el motor la talla entre files a l'última vora que cap a la pàgina i la continua a les pàgines següents, tantes com calgui. Cada part continuada repeteix les files de capçalera de la taula (`TableModel.headerRowCount`, o les files inicials formades per cel·les de capçalera quan no està definit) i torna a portar el peu amb `continuedSuffix` després de la descripció: «Taula 6-4. Títol *(cont.)*». Cada part que en segueix una altra porta `continuesMarker` a sota, alineat a la dreta, amb la tipografia de la nota; la nota de la taula es reserva per a l'última part. Un tall no travessa mai una cel·la combinada (una cel·la amb `rowSpan` passa sencera a la part següent), i una fila que encapçala les que la segueixen —una sola cel·la a l'amplada de tota la taula— passa a la part següent en lloc de quedar solta al peu de la pàgina.
+Una taula flotant que no cap a la pàgina nova que se li ofereix no es comprimeix ni es desborda: amb `overflow: 'split'` (el valor per defecte) el motor la talla entre files a l'última vora que cap a la pàgina i la continua a les pàgines següents, tantes com calgui. Cada part continuada repeteix les files de capçalera de la taula (`TableModel.headerRowCount`, o les files inicials formades per cel·les de capçalera quan no està definit) i torna a portar el peu amb `continuedSuffix` després de la descripció: «Taula 6-4. Títol *(cont.)*». Cada part que en segueix una altra porta `continuesMarker` a sota, alineat a la dreta, amb la tipografia de la nota; la nota de la taula es reserva per a l'última part. Un tall no travessa mai una cel·la combinada (una cel·la amb `rowSpan` passa sencera a la part següent), i una fila que encapçala les que la segueixen —una sola cel·la a l'amplada de tota la taula— passa a la part següent en lloc de quedar solta al peu de la pàgina. Una taula booktabs tanca cada part que continua amb `continuedFootRule` (vegeu [filets booktabs](#filets-booktabs)).
 
 **On acaba la primera part.** Una taula a la qual s'ofereix el cap d'una columna buida després de la seva referència pren les files que hi caben i continua en el buit següent. Omple la columna fins al peu quan la té per a ella sola: una part que deixaria menys de tres línies de text a sota també les ocupa, en lloc de deixar un residu de text solt. Quan la columna ja té una altra banda de flotants —una figura a l'amplada de pàgina al cap, per exemple—, la part s'atura almenys tres línies de text abans del peu, l'espai per a text que deixa qualsevol flotant que comparteix columna amb un altre, de manera que la columna acaba amb una mica de text sota la taula i no només amb flotants. Perquè una taula llarga arribi al peu de la seva columna, cita-la on la pàgina en què comença no porti cap altre flotant (després de la pàgina d'una figura a l'amplada de pàgina, per exemple), o ajusta'n les files a la columna.
 

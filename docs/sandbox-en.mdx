@@ -313,7 +313,7 @@ The groups, in browsing order:
   - *Captions* (`captionStyle`): typeface, size, alignment and **position** above or below the resource. There is an optional **background bar** with its colour and padding, and the label and description are styled independently. A **Note** group sets the resource note's size, colour, slant, alignment and gap.
   - *Tables* (`tableStyle`):
     - body and header typography, with the header's **Letter spacing** (`headerLetterSpacing`) and **Letter case** (`headerTextTransform`), and fills;
-    - borders, with a **rules** pattern: full grid, horizontal only, outer frame or none;
+    - borders, with a **rules** pattern: full grid, horizontal only, outer frame, none or **Booktabs** (a heavy rule above and under the table, a light one under the header, trimmed rules under spanning heads). Booktabs shows its rule widths, the rules under spanning heads and their trim, **Group rules** and, under *Tables taller than the page*, the rule under a part that goes on overleaf, and hides the border width and the corner radius;
     - a **corner radius** for the outer frame;
     - cell padding;
     - under *Body cells*, **Zebra rows** (`bodyAlternateBackgroundEnabled`), which fills every second body row with the **Alternate row color** (`bodyAlternateBackground`) shown while it is on.
