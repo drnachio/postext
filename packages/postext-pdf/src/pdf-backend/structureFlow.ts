@@ -288,11 +288,16 @@ export class StructureFlow {
   }
 
   /** The `Caption` child of a figure / table (created once). */
-  captionElem(owner: StructElem): StructElem {
+  captionElem(owner: StructElem, first = false): StructElem {
     let cap = this.captions.get(owner);
     if (!cap) {
       cap = owner.child('Caption');
       this.captions.set(owner, cap);
+      // The caption under the first slice of a split table (#634) is
+      // painted between its rows and the next slice's: a `Table` keeps
+      // its `Caption` first or last (PDF/UA-1, 7.2), so it leads.
+      const at = owner.kids.findIndex((k) => k.kind === 'elem' && k.elem === cap);
+      if (first && at > 0) owner.kids.unshift(...owner.kids.splice(at, 1));
     }
     return cap;
   }

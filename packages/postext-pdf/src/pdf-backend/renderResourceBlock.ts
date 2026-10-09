@@ -1143,7 +1143,7 @@ export function renderResourceBlock(
   };
   if (structure && rb.captionLines.length > 0 && continued) tagArtifact(ctx, { type: 'Layout' });
   const captionElem = structure && owner && rb.captionLines.length > 0 && !continued
-    ? structure.captionElem(owner)
+    ? structure.captionElem(owner, rb.kind === 'table' && !!rb.slice?.continues)
     : undefined;
   for (const line of rb.captionLines) {
     paintLine(ctx, line, captionFonts, fontCache, captionColor, linkColor, linkRegistry, refTarget, captionLabelColor, captionElem);
