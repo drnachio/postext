@@ -174,6 +174,38 @@ interface Candidate {
   breakCost: number;
 }
 
+/** Widths and lone-line penalties of the lines between two break points
+ *  (indices into the break points with the start prepended: a line from
+ *  after `j` to the end of `k`). The dynamic programmes of every line
+ *  count, width and shaping of a text ask for the same lines over and
+ *  over: each is worked out once, on first asking. */
+interface LineTable {
+  width(j: number, k: number): number;
+  lone(j: number, k: number): number;
+}
+
+function lineTable(all: readonly BreakPoint[], m: Measurer, lone: (a: number, b: number) => number): LineTable {
+  const P = all.length;
+  const widths: (Float64Array | undefined)[] = new Array(P);
+  const lones: (Float64Array | undefined)[] = new Array(P);
+  const startOf = (j: number) => (j === 0 ? 0 : all[j]!.next);
+  const row = (rows: (Float64Array | undefined)[], j: number) => (rows[j] ??= new Float64Array(P).fill(Number.NaN));
+  return {
+    width(j, k) {
+      const r = row(widths, j);
+      let v = r[k]!;
+      if (Number.isNaN(v)) r[k] = v = m.width(startOf(j), all[k]!.end);
+      return v;
+    },
+    lone(j, k) {
+      const r = row(lones, j);
+      let v = r[k]!;
+      if (Number.isNaN(v)) r[k] = v = lone(startOf(j), all[k]!.end);
+      return v;
+    },
+  };
+}
+
 /**
  * The best breaks for `n` lines aimed at a block `W` wide with an oval
  * profile (dynamic programme over the legal breaks). Forced breaks are
@@ -181,12 +213,11 @@ interface Candidate {
  */
 function bestBreaksFor(
   pts: readonly BreakPoint[],
-  m: Measurer,
+  t: LineTable,
   n: number,
   W: number,
   maxLen: number,
   penaltyWeight: number,
-  lone: (a: number, b: number) => number,
 ): number[] | undefined {
   const P = pts.length;
   // dp[i][k]: cost of i lines ending at point k (k = 0 is the start).
@@ -199,13 +230,12 @@ function bestBreaksFor(
     for (let j = 0; j < P; j++) {
       const base = dp[i]![j]!;
       if (base === INF) continue;
-      const start = j === 0 ? 0 : pts[j]!.next;
       for (let k = j + 1; k < P; k++) {
         const pt = pts[k]!;
-        const w = m.width(start, pt.end);
+        const w = t.width(j, k);
         // The same weights as `scoreLines`, so that the programme looks
         // for what the score rewards.
-        let c = (12 / n) * ((w - target) / W) ** 2 + pt.penalty * penaltyWeight + lone(start, pt.end);
+        let c = (12 / n) * ((w - target) / W) ** 2 + pt.penalty * penaltyWeight + t.lone(j, k);
         if (w > W * 1.15) c += 5 * (w / W - 1.15) + 1;
         if (w > maxLen) c += 20 * ((w - maxLen) / maxLen) + 20;
         const last = i === n - 1;
@@ -308,25 +338,41 @@ function loneLinePenalty(p: PreparedText, all: readonly BreakPoint[]): (a: numbe
   };
 }
 
-/** Line sets for every line count, each scored; the best first. */
-function candidatesFor(
-  p: PreparedText,
-  pts: readonly BreakPoint[],
-  m: Measurer,
-  em: number,
-  pitch: number,
-  vertical: boolean,
-  target: number,
-  maxLen: number,
-  penaltyWeight: number,
-): Candidate[] {
+/** What the line sets of a text are worked out from (in one writing
+ *  mode, font and break level), kept for its other shapings. */
+interface Breaking {
+  length: number;
+  all: BreakPoint[];
+  m: Measurer;
+  table: LineTable;
+  lone: (a: number, b: number) => number;
+  /** Line sets by longest line allowed and penalty weight. */
+  sets: Map<string, LineSet[]>;
+}
+
+interface LineSet {
+  breaks: number[];
+  lines: { start: number; end: number; width: number }[];
+  breakCost: number;
+}
+
+function breakingOf(p: PreparedText, pts: readonly BreakPoint[], m: Measurer): Breaking {
   const all = [{ end: 0, next: 0, penalty: 0, forced: false }, ...pts];
   const lone = loneLinePenalty(p, all);
-  const cjk = hasCJK(p.text);
-  const total = m.width(0, p.text.length);
-  const forcedCount = pts.filter((x) => x.forced).length;
-  const nMax = Math.max(forcedCount, Math.min(16, pts.length, Math.ceil(total / (1.5 * em)) + forcedCount));
-  const out: Candidate[] = [];
+  return { length: p.text.length, all, m, table: lineTable(all, m, lone), lone, sets: new Map() };
+}
+
+/** Distinct line sets for every line count, each the best of its
+ *  programme at a few block widths (the target aspect plays no part). */
+function lineSetsFor(b: Breaking, em: number, maxLen: number, penaltyWeight: number): LineSet[] {
+  const key = `${maxLen}|${penaltyWeight}`;
+  const cached = b.sets.get(key);
+  if (cached) return cached;
+  const { all, m, table, lone } = b;
+  const total = m.width(0, b.length);
+  const forcedCount = all.filter((x) => x.forced).length;
+  const nMax = Math.max(forcedCount, Math.min(16, all.length - 1, Math.ceil(total / (1.5 * em)) + forcedCount));
+  const out: LineSet[] = [];
   const seen = new Set<string>();
   for (let n = forcedCount; n <= nMax; n++) {
     let mean = 0;
@@ -335,7 +381,7 @@ function candidatesFor(
     const base = total / n / mean;
     for (const f of [0.85, 0.95, 1.05, 1.15, 1.3]) {
       const W = Math.min(base * f, maxLen);
-      const br = bestBreaksFor(all, m, n, W, maxLen, penaltyWeight, lone);
+      const br = bestBreaksFor(all, table, n, W, maxLen, penaltyWeight);
       if (!br) continue;
       const sig = br.join(',');
       if (seen.has(sig)) continue;
@@ -345,15 +391,39 @@ function candidatesFor(
         const end = all[k]!.end;
         return { start, end, width: m.width(start, end) };
       });
-      const { score, aspect } = scoreLines(lines, all, br, em, pitch, vertical, target, maxLen, penaltyWeight, lone, cjk);
       const breakCost = penaltyWeight * br.slice(0, -1).reduce((sum, k) => sum + all[k]!.penalty, 0)
         + lines.reduce((sum, l) => sum + lone(l.start, l.end), 0);
-      out.push({ breaks: br, lines, score, aspect, breakCost });
+      out.push({ breaks: br, lines, breakCost });
     }
   }
+  b.sets.set(key, out);
+  return out;
+}
+
+/** Line sets for every line count, each scored; the best first. */
+function candidatesFor(
+  p: PreparedText,
+  b: Breaking,
+  em: number,
+  pitch: number,
+  vertical: boolean,
+  target: number,
+  maxLen: number,
+  penaltyWeight: number,
+): Candidate[] {
+  const cjk = hasCJK(p.text);
+  const out: Candidate[] = lineSetsFor(b, em, maxLen, penaltyWeight).map(({ breaks, lines, breakCost }) => {
+    const { score, aspect } = scoreLines(lines, b.all, breaks, em, pitch, vertical, target, maxLen, penaltyWeight, b.lone, cjk);
+    return { breaks, lines, score, aspect, breakCost };
+  });
   out.sort((a, b) => a.score - b.score || a.lines.length - b.lines.length);
   return out;
 }
+
+/** The breakings of each prepared text, by writing mode, font and break
+ *  level: a balloon is shaped several times over (its preferred shape,
+ *  then wider, narrower and shorter ones), all from the same lines. */
+const breakings = new WeakMap<PreparedText, Map<string, Breaking>>();
 
 /** The writing mode a style sets its text in on a panel. */
 export function styleIsVertical(style: LetteringStyle, panelVertical: boolean): boolean {
@@ -395,14 +465,17 @@ export function shapeTextCandidates(p: PreparedText, style: LetteringStyle, opts
   const target = opts.aspect ?? style.aspect ?? (vertical ? DEFAULT_ASPECT_VERTICAL : DEFAULT_ASPECT_HORIZONTAL);
   const ownMax = vertical ? (style.maxColumnChars ?? 8) * em + 0.01 : Number.POSITIVE_INFINITY;
   const maxLen = opts.maxLength !== undefined && opts.maxLength > 0 ? Math.min(ownMax, Math.max(opts.maxLength, 1.01 * em)) : ownMax;
-  const pts = breakPoints(p, level, lang === 'ja');
   const mode = vertical ? 'vertical-rl' : 'horizontal-tb';
   const { cands, rich } = withMeasureWritingMode(mode, () => {
-    const m = measurerFor(p, style);
+    let byKey = breakings.get(p);
+    if (!byKey) breakings.set(p, (byKey = new Map()));
+    const key = [mode, region, level, lang === 'ja', fontString(style), style.letterSpacing ?? 0].join('|');
+    let b = byKey.get(key);
+    if (!b) byKey.set(key, (b = breakingOf(p, breakPoints(p, level, lang === 'ja'), measurerFor(p, style))));
     // Japanese phrase breaks weigh more than a perfect profile: columns
     // move by whole characters.
     const penaltyWeight = lang === 'ja' ? 1 : 0.5;
-    return { cands: candidatesFor(p, pts, m, em, pitch, vertical, target, maxLen, penaltyWeight), rich: m.rich };
+    return { cands: candidatesFor(p, b, em, pitch, vertical, target, maxLen, penaltyWeight), rich: b.m.rich };
   }, region);
   const out: ShapedText[] = [];
   for (const c of cands.slice(0, Math.max(1, count))) {
