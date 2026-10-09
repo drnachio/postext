@@ -4,6 +4,7 @@ import { DEFAULT_MAIN_COLOR, colorsEqual } from './shared';
 export const DEFAULT_DIAGRAM_STYLE_CONFIG: ResolvedDiagramStyleConfig = {
   singleInk: false,
   inkColor: DEFAULT_MAIN_COLOR,
+  inlineFonts: true,
 };
 
 export function resolveDiagramStyleConfig(partial?: DiagramStyleConfig): ResolvedDiagramStyleConfig {
@@ -11,6 +12,7 @@ export function resolveDiagramStyleConfig(partial?: DiagramStyleConfig): Resolve
   return {
     singleInk: partial.singleInk ?? DEFAULT_DIAGRAM_STYLE_CONFIG.singleInk,
     inkColor: partial.inkColor ?? DEFAULT_DIAGRAM_STYLE_CONFIG.inkColor,
+    inlineFonts: partial.inlineFonts ?? DEFAULT_DIAGRAM_STYLE_CONFIG.inlineFonts,
   };
 }
 
@@ -26,6 +28,10 @@ export function stripDiagramStyleDefaults(
   }
   if (diagramStyle.inkColor !== undefined && !colorsEqual(diagramStyle.inkColor, DEFAULT_DIAGRAM_STYLE_CONFIG.inkColor)) {
     result.inkColor = diagramStyle.inkColor;
+    hasOverride = true;
+  }
+  if (diagramStyle.inlineFonts !== undefined && diagramStyle.inlineFonts !== DEFAULT_DIAGRAM_STYLE_CONFIG.inlineFonts) {
+    result.inlineFonts = diagramStyle.inlineFonts;
     hasOverride = true;
   }
   return hasOverride ? result : undefined;

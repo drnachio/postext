@@ -26,6 +26,9 @@ import type {
 import { leaderRuleGeometry, lineTextAlign, tableCellFillRects, tableFrameOutline } from './vdt';
 import { dimensionToPx } from './units';
 import { documentInkHex, isSingleInkSvgUrl, singleInkColorMatrix } from './svg/singleInk';
+import { inlineSvgFontsDetailedSync, type SvgFontSyncProvider } from './svg/fonts';
+import { registeredFontSyncProvider } from './svg/fontRegistry';
+import { svgPictureFontWarning } from './svg/image';
 import { lineInkExtent, lineTrailingTracking } from './lineInk';
 import { CHARACTER_GRID_COLOR, cjkGridCells, type CjkGridCells } from './pipeline/cjkGrid';
 import { isJapaneseLanguage, renderLangOf } from './locale';
@@ -148,6 +151,22 @@ export interface RenderHtmlOptions {
    *  the resources all of them place ({@link anchoredResourceIds}), so a
    *  reference to a figure an earlier chapter placed links to it. */
   refTargets?: Iterable<string>;
+  /** Embed the document's fonts in the SVG pictures `resourceImageUrl`
+   *  serves as `data:image/svg+xml` URIs (#630): the faces their text
+   *  names, as `@font-face` data URIs, so an `<img>` sets the labels in
+   *  them. `true` takes the faces held in memory by the registry
+   *  (`registerFontBytes`, `loadBundleFonts`); an object names another
+   *  provider, the size cap per SVG and families to leave out. Skipped
+   *  under `diagramStyle.inlineFonts: false` and for a resource with
+   *  `svg.inlineFonts: false`. A family with no face is reported as
+   *  `svgFontUnavailable`, the cap as `svgFontsTooLarge`. Default off
+   *  (object URLs cannot be read synchronously; `bundleImageUrl` inlines
+   *  on its own). */
+  inlineSvgFonts?: boolean | {
+    fonts?: SvgFontSyncProvider;
+    maxBytes?: number;
+    withhold?: (family: string) => boolean;
+  };
 }
 
 /** The single-ink filter of one page: its element id and the colour
@@ -164,6 +183,9 @@ interface InkFilter {
 interface HtmlPaint extends RenderHtmlOptions {
   ink?: InkFilter;
   missingImage?: (fileId: string, resourceId?: string) => void;
+  /** The URL as served, SVG data URIs with their fonts inlined
+   *  ({@link RenderHtmlOptions.inlineSvgFonts}). */
+  svgUrl?: (url: string, fileId: string, resourceId?: string) => string;
   /** Resources a `:ref` links to: those this document anchors (see
    *  {@link anchoredResourceIds}) and the caller's `refTargets`. A `:ref`
    *  to any other one — a figure an earlier chapter placed, in a chapter
@@ -372,7 +394,67 @@ function inkFilterDefs(ink: InkFilter): string {
 function imageUrl(options: HtmlPaint | undefined, fileId: string, resourceId?: string): string | undefined {
   const url = options?.resourceImageUrl?.(fileId);
   if (!url) options?.missingImage?.(fileId, resourceId);
+  if (url && options?.svgUrl) return options.svgUrl(url, fileId, resourceId);
   return url || undefined;
+}
+
+/** The markup of an SVG `data:` URI; null for any other URL. */
+function svgDataUriText(url: string): string | null {
+  const head = /^data:image\/svg\+xml(;[^,]*)?,/i.exec(url);
+  if (!head) return null;
+  const body = url.slice(head[0].length);
+  try {
+    if (/;base64/i.test(head[1] ?? '')) {
+      const binary = atob(body);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return new TextDecoder().decode(bytes);
+    }
+    return decodeURIComponent(body);
+  } catch {
+    return null;
+  }
+}
+
+/** The `svgUrl` of a render (#630): SVG data URIs re-encoded with the
+ *  faces their text names, once per URL; null when inlining is off. */
+function svgFontInliner(doc: VDTDocument, options: RenderHtmlOptions): HtmlPaint['svgUrl'] | null {
+  const opt = options.inlineSvgFonts;
+  if (!opt || doc.config.diagramStyle?.inlineFonts === false) return null;
+  const settings = typeof opt === 'object' ? opt : {};
+  const provider = settings.fonts ?? registeredFontSyncProvider();
+  // Pictures whose resource opts out.
+  const keep = new Set<string>();
+  const note = (block: VDTBlock) => {
+    const r = block.resourceBlock?.resource;
+    if (r?.svg?.inlineFonts === false && r.svg.fileId) keep.add(r.svg.fileId);
+  };
+  for (const b of doc.blocks) note(b);
+  for (const p of doc.pages) for (const b of p.floats ?? []) note(b);
+  const done = new Map<string, string>();
+  const reported = new Set<string>();
+  return (url, fileId, resourceId) => {
+    if (keep.has(fileId)) return url;
+    const cached = done.get(url);
+    if (cached !== undefined) return cached;
+    const text = svgDataUriText(url);
+    let out = url;
+    if (text !== null) {
+      const result = inlineSvgFontsDetailedSync(text, provider, {
+        ...(settings.maxBytes !== undefined ? { maxBytes: settings.maxBytes } : {}),
+        ...(settings.withhold ? { withhold: settings.withhold } : {}),
+        onWarning: (w) => {
+          const key = `${fileId}|${w.kind}|${w.kind === 'svgFontUnavailable' ? `${w.family}|${w.weight}|${w.style}` : ''}`;
+          if (reported.has(key)) return;
+          reported.add(key);
+          options.onWarning?.(svgPictureFontWarning(w, fileId, resourceId));
+        },
+      });
+      if (result.svg !== text) out = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(result.svg)}`;
+    }
+    done.set(url, out);
+    return out;
+  };
 }
 
 const HTML_ESCAPE: Record<string, string> = {
@@ -2622,10 +2704,12 @@ export function renderToHtmlIndexed(
   const bleedInset = doc.trimOffset > 0
     ? Math.max(0, doc.trimOffset - dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi))
     : 0;
+  const svgUrl = svgFontInliner(doc, options);
   for (const p of doc.pages) {
     const pageOptions: HtmlPaint = onWarning
       ? {
           ...options,
+          ...(svgUrl ? { svgUrl } : {}),
           linkTargets,
           ...anchorPaint,
           missingImage: (fileId: string, resourceId?: string) => {
@@ -2634,7 +2718,7 @@ export function renderToHtmlIndexed(
             onWarning({ kind: 'missingImage', fileId, ...(resourceId !== undefined ? { resourceId } : {}), pageIndex: p.index });
           },
         }
-      : { ...options, linkTargets, ...anchorPaint };
+      : { ...options, ...(svgUrl ? { svgUrl } : {}), linkTargets, ...anchorPaint };
     const gridCells = doc.config.cjk?.grid?.show && !p.comic ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns, p.flow) : undefined;
     const detail = renderPageDetailed(p, p.background ?? background, pageOptions, ink, bleedInset, gridCells, doc.config.cjk?.region, doc.config.cjk?.uprightDigits);
     pageHtmlParts.push(detail.outerHtml);

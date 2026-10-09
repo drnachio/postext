@@ -812,6 +812,12 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'missingImage':
       text = `No image for file "${w.fileId}"${w.resourceId !== undefined ? ` (resource "${w.resourceId}")` : ''} — painted as a placeholder`;
       break;
+    case 'svgFontUnavailable':
+      text = `The SVG "${w.fileId}"${w.resourceId !== undefined ? ` (resource "${w.resourceId}")` : ''} sets text in "${w.family}" ${w.weight}${w.style === 'italic' ? ' italic' : ''}, which has no face to embed — the image sets it in a fallback face`;
+      break;
+    case 'svgFontsTooLarge':
+      text = `The fonts of the SVG "${w.fileId}"${w.resourceId !== undefined ? ` (resource "${w.resourceId}")` : ''} come to ${Math.round(w.bytes / 1024)} KB, over the ${Math.round(w.maxBytes / 1024)} KB cap — none was embedded`;
+      break;
     case 'cjkLooseLine':
       text = `The justified line "${w.text}" needs more space between its characters than the cap allows — it is set short of the measure`;
       break;

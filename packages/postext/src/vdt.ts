@@ -2795,8 +2795,38 @@ export interface MissingImageWarning {
   documentIndex?: number;
 }
 
-/** Warnings a renderer reports while painting. */
-export type RenderWarning = MissingImageWarning;
+/** `svgFontUnavailable` (#630): a family an SVG picture's text names had
+ *  no face to embed in it, so the image sets that text in a fallback
+ *  face. Reported by the hosts that inline fonts into SVGs
+ *  (`registerSvgImage`, `registerBundleImages`, `bundleImageUrl`,
+ *  `renderToHtml` with `inlineSvgFonts`, postext-epub). */
+export interface SvgFontUnavailableWarning {
+  kind: 'svgFontUnavailable';
+  fileId: string;
+  resourceId?: string;
+  family: string;
+  weight: number;
+  style: 'normal' | 'italic';
+}
+
+/** `svgFontsTooLarge` (#630): the faces an SVG picture's text names
+ *  together exceed the size cap (`maxBytes`, 2 MiB by default), so none
+ *  was embedded. */
+export interface SvgFontsTooLargeWarning {
+  kind: 'svgFontsTooLarge';
+  fileId: string;
+  resourceId?: string;
+  /** Font bytes the faces would have added. */
+  bytes: number;
+  maxBytes: number;
+}
+
+/** What inlining fonts into an SVG picture can report. */
+export type SvgPictureFontWarning = SvgFontUnavailableWarning | SvgFontsTooLargeWarning;
+
+/** Warnings a renderer reports while painting, or a host while it
+ *  prepares the pictures. */
+export type RenderWarning = MissingImageWarning | SvgPictureFontWarning;
 
 export interface VDTDocument {
   pages: VDTPage[];

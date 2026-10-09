@@ -508,6 +508,12 @@ export interface Resource {
      *  document, first column on the right). Its caption and note follow
      *  the document. */
     direction?: 'ltr' | 'rtl';
+    /** `false` keeps the markup byte-identical when the picture is shown as
+     *  an image: no `@font-face` is added for the families its text names
+     *  (`diagramStyle.inlineFonts`), for an SVG that carries its faces
+     *  already or must stay as it is. Default: the document's
+     *  `diagramStyle.inlineFonts` (on). */
+    inlineFonts?: boolean;
   };
   /** Present when `kind === 'video'`: a YouTube, Vimeo or self-hosted
    *  video, placed, captioned and numbered like a picture (its type is
@@ -2361,11 +2367,19 @@ export interface VideoPlayMarkConfig {
   shape?: 'circle' | 'rounded' | 'triangle';
   /** Default `'center'`. */
   position?: VideoOverlayPosition;
+  /** Embed the faces an SVG's text names (`font-family`) in the picture as
+   *  `@font-face` data URIs before it is shown as an image (canvas, HTML,
+   *  EPUB, the PDF's raster fallback), so its labels are set in the
+   *  document's fonts: an image cannot see the page's web fonts. Never
+   *  written into the stored file. A resource opts out with
+   *  `svg.inlineFonts: false`. Default `true`. */
+  inlineFonts?: boolean;
   /** Height of the mark (the disc's diameter). Default `12mm`; never more
    *  than 40 % of the poster's shorter side. */
   size?: Dimension;
   /** Distance from the poster's edges when the mark sits at a side or a
    *  corner. Default `4mm`. */
+  inlineFonts: boolean;
   inset?: Dimension;
   /** The triangle. Default white. */
   color?: ColorValue;

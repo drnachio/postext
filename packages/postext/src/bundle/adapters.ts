@@ -3,9 +3,13 @@
 // and its bytes to `postext-pdf`'s `resourceBytes` / `fontProvider`.
 
 import type { PostextConfig, Resource } from '../types';
+import type { SvgPictureFontWarning } from '../vdt';
 import { registerResourceImage } from '../canvas-backend';
 import { resolveColorValue, resolveDiagramStyleConfig } from '../defaults';
 import { applySingleInkToSvg } from '../svg/singleInk';
+import { chainSvgFontProviders, inlineSvgFontsDetailedSync, type SvgFontProvider, type SvgFontSyncProvider } from '../svg/fonts';
+import { registerFontBytes, registeredFontProvider, registeredFontSyncProvider } from '../svg/fontRegistry';
+import { decodeSvgImage, prepareSvgMarkup, svgPictureFontWarning } from '../svg/image';
 import type { PostextBundle } from './api';
 import { mimeForFile } from './manifest';
 import { videoMimeType } from '../video/url';
@@ -30,16 +34,78 @@ export function diagramInkHex(config: PostextConfig): string | null {
   return resolveColorValue(ds.inkColor, config.colorPalette, ds.inkColor).hex;
 }
 
-/** A picture's bytes as a Blob, SVGs recoloured when single-ink is on. */
-function pictureBlob(bundle: BundleSource, r: Resource, inkHex: string | null): Blob | null {
+/** Whether an SVG resource's pictures get the document's fonts inlined
+ *  (`diagramStyle.inlineFonts`, `svg.inlineFonts`, #630). */
+export function svgInlinesFonts(config: PostextConfig, r: Resource): boolean {
+  return resolveDiagramStyleConfig(config.diagramStyle).inlineFonts && r.svg?.inlineFonts !== false;
+}
+
+/** The bundle's own faces as an SVG font provider (#630): the cut nearest
+ *  to the weight asked for, the same style first, as stored (WOFF2 stays
+ *  WOFF2: an image takes it). */
+export function bundleSvgFontProvider(bundle: Pick<PostextBundle, 'fonts'>): SvgFontSyncProvider {
+  return (family, weight, style) => {
+    const faces = (bundle.fonts ?? []).filter((f) => f.family.toLowerCase() === family.toLowerCase());
+    if (faces.length === 0) return null;
+    const sameStyle = faces.filter((f) => f.style === style);
+    const pool = sameStyle.length > 0 ? sameStyle : faces;
+    const face = pool.reduce((best, f) => (Math.abs(f.weight - weight) < Math.abs(best.weight - weight) ? f : best), pool[0]!);
+    return bytesOfFace(face.bytes);
+  };
+}
+
+/** One `Uint8Array` per stored face, so a face inlined into several SVGs
+ *  is base64-encoded once. */
+const faceViews = new WeakMap<ArrayBuffer, Uint8Array>();
+function bytesOfFace(buffer: ArrayBuffer): Uint8Array {
+  let view = faceViews.get(buffer);
+  if (!view) {
+    view = new Uint8Array(buffer);
+    faceViews.set(buffer, view);
+  }
+  return view;
+}
+
+function syncAsAsync(p: SvgFontSyncProvider): SvgFontProvider {
+  return async (family, weight, style, request) => {
+    const answer = p(family, weight, style, request);
+    if (!answer || (Array.isArray(answer) && answer.length === 0)) throw new Error(`No face for "${family}"`);
+    return answer;
+  };
+}
+
+/** What the bundle adapters that inline SVG fonts accept. */
+export interface BundleImageOptions {
+  /** Told of an SVG family with no face to embed and of the size cap
+   *  (`svgFontUnavailable`, `svgFontsTooLarge`). */
+  onWarning?: (warning: SvgPictureFontWarning) => void;
+  /** Most font bytes embedded in one SVG (default 2 MiB). */
+  maxBytes?: number;
+}
+
+/** SVG markup of a resource as the screen shows it: recoloured when
+ *  single-ink is on, then with the bundle's fonts (and the registered
+ *  ones held in memory) inlined. */
+function svgMarkupSync(bundle: BundleSource, r: Resource, bytes: Uint8Array, inkHex: string | null, options?: BundleImageOptions): string {
+  let text = new TextDecoder().decode(bytes);
+  if (inkHex) text = applySingleInkToSvg(text, inkHex);
+  if (!svgInlinesFonts(bundle.config, r)) return text;
+  const own = bundleSvgFontProvider({ fonts: bundle.fonts ?? [] });
+  const registered = registeredFontSyncProvider();
+  const fileId = imageFileId(r) ?? '';
+  return inlineSvgFontsDetailedSync(text, (family, weight, style, request) => own(family, weight, style, request) ?? registered(family, weight, style, request), {
+    ...(options?.maxBytes !== undefined ? { maxBytes: options.maxBytes } : {}),
+    ...(options?.onWarning ? { onWarning: (w) => options.onWarning!(svgPictureFontWarning(w, fileId, r.id)) } : {}),
+  }).svg;
+}
+
+/** A picture's bytes as a Blob, SVGs recoloured when single-ink is on and
+ *  their fonts inlined. */
+function pictureBlob(bundle: BundleSource, r: Resource, inkHex: string | null, options?: BundleImageOptions): Blob | null {
   const fileId = imageFileId(r);
   const bytes = fileId ? bundle.files.get(fileId) : undefined;
   if (!fileId || !bytes) return null;
-  if (r.kind === 'svg') {
-    let text = new TextDecoder().decode(bytes);
-    if (inkHex) text = applySingleInkToSvg(text, inkHex);
-    return new Blob([text], { type: 'image/svg+xml' });
-  }
+  if (r.kind === 'svg') return new Blob([svgMarkupSync(bundle, r, bytes, inkHex, options)], { type: 'image/svg+xml' });
   return new Blob([bytes.slice()], { type: mimeForFile(fileId) });
 }
 
@@ -50,6 +116,9 @@ export async function loadBundleFonts(
   bundle: Pick<PostextBundle, 'fonts'>,
   fontSet: FontFaceSet | undefined = typeof document !== 'undefined' ? document.fonts : undefined,
 ): Promise<FontFace[]> {
+  // SVG pictures embed the same faces (#630): an image cannot see
+  // `document.fonts`, and a FontFace keeps no bytes.
+  for (const f of bundle.fonts) registerFontBytes(f.family, f.weight, f.style, bytesOfFace(f.bytes));
   if (!fontSet || typeof FontFace === 'undefined') return [];
   return Promise.all(bundle.fonts.map(async (f) => {
     const face = new FontFace(f.family, f.bytes, { weight: String(f.weight), style: f.style });
@@ -63,29 +132,36 @@ export async function loadBundleFonts(
  *  (`registerResourceImage`), recolouring SVG figures when the config asks
  *  for single-ink diagrams — with the markup pass, which gives the PDF's
  *  colours exactly, and registered with `singleInk: false`, so the canvas
- *  never tints them again. Await it before painting. */
-export async function registerBundleImages(bundle: BundleSource): Promise<void> {
+ *  never tints them again — and embedding in each SVG the faces its text
+ *  names (#630): the bundle's own, then those registered with
+ *  `registerFontBytes` / `registerFontUrl` or declared by the page's
+ *  `@font-face` rules (`diagramStyle.inlineFonts`, `svg.inlineFonts`).
+ *  Await it before painting. */
+export async function registerBundleImages(bundle: BundleSource, options?: BundleImageOptions): Promise<void> {
   const inkHex = diagramInkHex(bundle.config);
+  const fonts = chainSvgFontProviders(syncAsAsync(bundleSvgFontProvider({ fonts: bundle.fonts ?? [] })), registeredFontProvider());
   await Promise.all(bundle.resources.map(async (r) => {
     const fileId = imageFileId(r);
-    const blob = pictureBlob(bundle, r, inkHex);
-    if (!fileId || !blob) return;
+    const bytes = fileId ? bundle.files.get(fileId) : undefined;
+    if (!fileId || !bytes) return;
     if (r.kind === 'svg') {
-      const url = URL.createObjectURL(blob);
-      try {
-        const img = new Image();
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = () => reject(new Error(`Could not decode ${fileId}`));
-          img.src = url;
-        });
-        // Recoloured above already: the canvas must not tint it again.
-        registerResourceImage(fileId, img, { vector: true, singleInk: false });
-      } finally {
-        URL.revokeObjectURL(url);
-      }
+      const prepared = await prepareSvgMarkup(new TextDecoder().decode(bytes), {
+        fonts,
+        inkHex,
+        inlineFonts: svgInlinesFonts(bundle.config, r),
+        fileId,
+        resourceId: r.id,
+        ...(options?.maxBytes !== undefined ? { maxBytes: options.maxBytes } : {}),
+        ...(options?.onWarning ? { onWarning: options.onWarning } : {}),
+      });
+      const img = await decodeSvgImage(prepared.svg).catch(() => {
+        throw new Error(`Could not decode ${fileId}`);
+      });
+      // Recoloured above already: the canvas must not tint it again.
+      registerResourceImage(fileId, img, { vector: true, singleInk: false });
     } else {
-      registerResourceImage(fileId, await createImageBitmap(blob), { singleInk: false });
+      const blob = pictureBlob(bundle, r, inkHex);
+      if (blob) registerResourceImage(fileId, await createImageBitmap(blob), { singleInk: false });
     }
   }));
 }
@@ -93,13 +169,15 @@ export async function registerBundleImages(bundle: BundleSource): Promise<void> 
 /** A `resourceImageUrl` resolver for `renderToHtml`: object URLs over the
  *  bundle's pictures, built once. `revoke()` frees them. Its SVGs are
  *  recoloured for single ink already, which `singleInk: false` tells
- *  `renderToHtml` (so it adds no filter of its own). */
-export function bundleImageUrl(bundle: BundleSource): ((fileId: string) => string | undefined) & { revoke: () => void; singleInk: false } {
+ *  `renderToHtml` (so it adds no filter of its own), and carry the faces
+ *  their text names (#630): the bundle's own, and registered faces held in
+ *  memory (`registerFontBytes`). */
+export function bundleImageUrl(bundle: BundleSource, options?: BundleImageOptions): ((fileId: string) => string | undefined) & { revoke: () => void; singleInk: false } {
   const inkHex = diagramInkHex(bundle.config);
   const urls = new Map<string, string>();
   for (const r of bundle.resources) {
     const fileId = imageFileId(r);
-    const blob = pictureBlob(bundle, r, inkHex);
+    const blob = fileId && !urls.has(fileId) ? pictureBlob(bundle, r, inkHex, options) : null;
     if (fileId && blob && !urls.has(fileId)) urls.set(fileId, URL.createObjectURL(blob));
   }
   const resolve = (fileId: string): string | undefined => urls.get(fileId);
