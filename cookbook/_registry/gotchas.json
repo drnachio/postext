@@ -1014,22 +1014,22 @@
   },
   "overflow-ellipsis-default": {
     "title": {
-      "en": "Design text overflow defaults to 'ellipsis-end'",
-      "es": "El desbordamiento del texto de diseño es 'ellipsis-end' por defecto",
-      "ca": "El desbordament del text de disseny és 'ellipsis-end' per defecte",
-      "zh": "设计文本的overflow默认为'ellipsis-end'",
-      "ar": "فيض نص التصميم افتراضيًا 'ellipsis-end'",
-      "ja": "デザインのテキストのoverflowの既定値は'ellipsis-end'",
-      "pt": "O excesso de texto de design é 'ellipsis-end' por padrão"
+      "en": "Design text overflow depends on the slot",
+      "es": "El desbordamiento del texto de diseño depende del hueco",
+      "ca": "El desbordament del text de disseny depèn del buit",
+      "zh": "设计文本的overflow默认值取决于所在位置",
+      "ar": "فيض نص التصميم يتبع موضعه",
+      "ja": "デザインのテキストのoverflowの既定値は配置先で決まる",
+      "pt": "O excesso de texto de design depende do espaço"
     },
     "body": {
-      "en": "A design text element that does not fit its width ends in an ellipsis by default. Set overflow: 'wrap' for titles that should break onto more lines.",
-      "es": "Un elemento de texto de diseño que no cabe en su ancho termina en puntos suspensivos por defecto. Pon overflow: 'wrap' en los títulos que deban pasar a más líneas.",
-      "ca": "Un element de text de disseny que no cap en la seva amplada acaba en punts suspensius per defecte. Posa overflow: 'wrap' als títols que hagin de passar a més línies.",
-      "zh": "宽度放不下的设计文本元素默认以省略号结尾。需要折成多行的标题，设置overflow: 'wrap'。",
-      "ar": "عنصر نص التصميم الذي لا يتسع له عرضه ينتهي افتراضيًا بعلامة الحذف. اضبط overflow: 'wrap' للعناوين التي يجب أن تنكسر على أسطر أكثر.",
-      "ja": "幅に収まらないデザインのテキスト要素は、既定では省略記号で終わります。複数行に折り返したいタイトルにはoverflow: 'wrap'を設定してください。",
-      "pt": "Um elemento de texto de design que não cabe na sua largura termina em reticências por padrão. Use overflow: 'wrap' nos títulos que devem passar para mais linhas."
+      "en": "A design text element that sets no overflow takes its slot's default: a heading design or a part page wraps a long title onto more lines, while a running head, a folio or a contents part row ends in an ellipsis. Set overflow only where you want the other behaviour (a running head that should wrap, a one-line kicker in an opener), and read the designTextTruncated warning for every text that was cut.",
+      "es": "Un elemento de texto de diseño que no fija overflow toma el valor por defecto de su hueco: un diseño de título o una página de parte reparten un título largo en más líneas, mientras que un encabezado, un folio o una fila de parte del índice terminan en puntos suspensivos. Fija overflow solo donde quieras el otro comportamiento (un encabezado que deba pasar de línea, una entradilla de una línea en una apertura) y revisa el aviso designTextTruncated de cada texto que se haya cortado.",
+      "ca": "Un element de text de disseny que no fixa overflow pren el valor per defecte del seu buit: un disseny de títol o una pàgina de part reparteixen un títol llarg en més línies, mentre que una capçalera, un foli o una fila de part de l'índex acaben en punts suspensius. Fixa overflow només on vulguis l'altre comportament (una capçalera que hagi de passar de línia, una entradeta d'una línia en una obertura) i revisa l'avís designTextTruncated de cada text que s'hagi tallat.",
+      "zh": "没有设置overflow的设计文本元素取所在位置的默认值：标题版式和篇章页把长标题折成多行，书眉、页码和目录篇行则以省略号截断。只在需要另一种处理时设置overflow（需要换行的书眉、章首里只占一行的引题），并留意每段被截断文字的designTextTruncated警告。",
+      "ar": "عنصر نص التصميم الذي لا يضبط overflow يأخذ القيمة الافتراضية لموضعه: يلتف العنوان الطويل على أسطر أكثر في تصميم العنوان وصفحة الجزء، بينما تنتهي ترويسة الصفحة والترقيم وسطر الجزء في الفهرس بعلامة حذف. اضبط overflow فقط حيث تريد السلوك الآخر (ترويسة يجب أن تلتف، أو عبارة تمهيدية من سطر واحد في افتتاحية)، وراجع تنبيه designTextTruncated لكل نص اقتُطع.",
+      "ja": "overflowを設定していないデザインのテキスト要素は、配置先の既定値に従います。見出しのデザインと部扉は長い題を複数行に折り返し、柱・ノンブル・目次の部の行は省略記号で終わります。もう一方の動作にしたいところだけoverflowを設定し（折り返したい柱、章扉の1行のリードなど）、切り詰められたテキストごとに出るdesignTextTruncated警告を確認してください。",
+      "pt": "Um elemento de texto de design que não define overflow segue o padrão do seu espaço: um design de título ou uma página de parte quebram um título longo em mais linhas, enquanto um cabeçalho, um fólio ou uma linha de parte do sumário terminam em reticências. Defina overflow só onde quiser o outro comportamento (um cabeçalho que deva quebrar linha, um antetítulo de uma linha numa abertura) e confira o aviso designTextTruncated de cada texto cortado."
     },
     "feature": "design-elements"
   },

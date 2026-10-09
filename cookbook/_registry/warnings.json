@@ -4079,5 +4079,47 @@
         "pt": "Posicionamento"
       }
     }
+  },
+  "designTextTruncated": {
+    "source": "engine",
+    "label": {
+      "en": "Design text cut short",
+      "es": "Texto de diseño recortado",
+      "ca": "Text de disseny retallat",
+      "zh": "版式文字被截断",
+      "ar": "نص تصميم مقتطع",
+      "ja": "デザインのテキストが切り詰められています",
+      "pt": "Texto de design cortado"
+    },
+    "cause": {
+      "en": "A text element of a design (a running head, a folio, a chapter opener, a part page, a contents part row) was wider than its room and lost part of a line: cut with an ellipsis, as its overflow asks, or clipped with ink past its box under overflow: 'clip'. Running heads, folios and contents part rows end in an ellipsis by default; heading and part designs wrap unless the element says otherwise. A running head cut on every page of a chapter is reported once.",
+      "es": "Un elemento de texto de un diseño (un encabezado, un folio, una apertura de capítulo, una página de parte, una fila de parte del índice) era más ancho que su sitio y perdió parte de una línea: se cortó con puntos suspensivos, como pide su overflow, o se recortó con tinta fuera de su caja con overflow: 'clip'. Los encabezados, los folios y las filas de parte del índice terminan en puntos suspensivos por defecto; los diseños de título y de parte pasan de línea salvo que el elemento diga otra cosa. Un encabezado recortado en todas las páginas de un capítulo se avisa una sola vez.",
+      "ca": "Un element de text d'un disseny (una capçalera, un foli, una obertura de capítol, una pàgina de part, una fila de part de l'índex) era més ample que el seu espai i va perdre part d'una línia: es va tallar amb punts suspensius, com demana el seu overflow, o es va retallar amb tinta fora de la caixa amb overflow: 'clip'. Les capçaleres, els folis i les files de part de l'índex acaben en punts suspensius per defecte; els dissenys de títol i de part passen de línia tret que l'element digui una altra cosa. Una capçalera retallada a totes les pàgines d'un capítol s'avisa una sola vegada.",
+      "zh": "版式中的文本元素（书眉、页码、章首、篇章页、目录中的篇行）比它的空间宽，一行被截掉了一部分：按overflow的设置以省略号截断，或在overflow: 'clip'下超出框的部分被裁掉。书眉、页码和目录篇行默认以省略号截断；标题版式和篇章版式默认换行，除非元素另有设置。一章每页都被截断的书眉只报告一次。",
+      "ar": "كان عنصر نص في تصميم (ترويسة صفحة، ترقيم، افتتاحية فصل، صفحة جزء، سطر جزء في الفهرس) أعرض من حيّزه ففقد جزءًا من سطر: اقتُطع بعلامة حذف كما يطلب overflow الخاص به، أو قُصّ حبره خارج صندوقه مع overflow: 'clip'. تنتهي ترويسات الصفحات والترقيم وأسطر الأجزاء في الفهرس بعلامة حذف افتراضيًا؛ وتلتف تصاميم العناوين والأجزاء ما لم يقل العنصر غير ذلك. وترويسة مقتطعة في كل صفحات الفصل يُبلَّغ عنها مرة واحدة.",
+      "ja": "デザインのテキスト要素（柱、ノンブル、章扉、部扉、目次の部の行）が使える幅より広く、行の一部が失われました。overflowの指定どおり省略記号で切り詰められたか、overflow: 'clip'でボックスの外にはみ出した部分が切り取られています。柱・ノンブル・目次の部の行は既定で省略記号になり、見出しと部のデザインは要素に指定がなければ折り返します。章のすべてのページで切り詰められる柱は一度だけ報告されます。",
+      "pt": "Um elemento de texto de um design (um cabeçalho, um fólio, uma abertura de capítulo, uma página de parte, uma linha de parte do sumário) era mais largo que o seu espaço e perdeu parte de uma linha: foi cortado com reticências, como pede o seu overflow, ou recortado com tinta além da caixa com overflow: 'clip'. Cabeçalhos, fólios e linhas de parte do sumário terminam em reticências por padrão; designs de título e de parte quebram linha a menos que o elemento diga outra coisa. Um cabeçalho cortado em todas as páginas de um capítulo é avisado uma só vez."
+    },
+    "fix": {
+      "en": "Set overflow: 'wrap' on the element to break the text onto more lines, give it more room (a wider size.width or maxWidth, a smaller fontSize, tighter letterSpacing) or shorten the text. Keep the ellipsis where a single line is the design, as in a running head; the warning then only confirms what was cut.",
+      "es": "Pon overflow: 'wrap' en el elemento para repartir el texto en más líneas, dale más sitio (un size.width o maxWidth mayor, un fontSize menor, un letterSpacing más apretado) o acorta el texto. Deja los puntos suspensivos donde el diseño es una sola línea, como en un encabezado; el aviso solo confirma entonces lo que se cortó.",
+      "ca": "Posa overflow: 'wrap' a l'element per repartir el text en més línies, dona-li més espai (un size.width o maxWidth més gran, un fontSize més petit, un letterSpacing més estret) o escurça el text. Deixa els punts suspensius on el disseny és una sola línia, com en una capçalera; l'avís només confirma aleshores el que s'ha tallat.",
+      "zh": "给元素设overflow: 'wrap'让文字分成几行，或给它更多空间（加大size.width或maxWidth、缩小fontSize、收紧letterSpacing），或缩短文字。设计本来就是单行的地方（如书眉）保留省略号即可，这时警告只是确认被截掉的内容。",
+      "ar": "اضبط overflow: 'wrap' على العنصر ليتوزع النص على أسطر أكثر، أو امنحه حيّزًا أكبر (size.width أو maxWidth أوسع، fontSize أصغر، letterSpacing أضيق)، أو اختصر النص. أبقِ علامة الحذف حيث يكون التصميم سطرًا واحدًا، كما في ترويسة الصفحة؛ فالتنبيه حينئذ يؤكد ما اقتُطع فحسب.",
+      "ja": "要素にoverflow: 'wrap'を設定して複数行に折り返すか、幅を増やす（size.widthやmaxWidthを広げる、fontSizeを小さくする、letterSpacingを詰める）か、テキストを短くします。柱のように1行であること自体がデザインなら省略記号のままでよく、その場合この警告は切り詰めた内容の確認になります。",
+      "pt": "Defina overflow: 'wrap' no elemento para dividir o texto em mais linhas, dê-lhe mais espaço (um size.width ou maxWidth maior, um fontSize menor, um letterSpacing mais apertado) ou encurte o texto. Mantenha as reticências onde o design é uma só linha, como num cabeçalho; o aviso então só confirma o que foi cortado."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Text elements",
+        "es": "Elementos de texto",
+        "ca": "Elements de text",
+        "zh": "文本元素",
+        "ar": "عناصر النص",
+        "ja": "テキスト要素",
+        "pt": "Elementos de texto"
+      }
+    }
   }
 }
