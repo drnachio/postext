@@ -22,6 +22,9 @@ import { bridgeLinks, formatKey, idOf, linkKey, wrapFormat, xmlAttr, xmlText } f
 
 /** Style id of a code listing's box (`postext` `CODE_BOX_STYLE_ID`). */
 const CODE_BOX_STYLE = '__postext-code';
+/** Style ids of the frameless boxes of `:::columns` groups in the running
+ *  text (`postext` `FLOW_COLUMNS_STYLE_ID`, #634). */
+const FLOW_COLUMNS_STYLES: ReadonlySet<string> = new Set(['__postext-flow-columns', '__postext-flow-columns-page']);
 import type { BookModel, Loc } from './walk';
 
 /** What a content document needs from the rest of the book. */
@@ -369,6 +372,11 @@ class Writer {
         if (node.styleId === CODE_BOX_STYLE) {
           const heading = node.title ? `<p class="pt-code-title">${xmlText(node.title)}</p>\n` : '';
           return `<div class="pt-code-box">\n${heading}${this.nodes(node.children)}\n</div>`;
+        }
+        // A `:::columns` group of the running text (#634): its blocks in
+        // reading order, one column on a reflowable page.
+        if (node.styleId && FLOW_COLUMNS_STYLES.has(node.styleId)) {
+          return `<div class="pt-columns">\n${this.nodes(node.children)}\n</div>`;
         }
         const title = node.title ? `<p class="pt-callout-title">${xmlText(node.title)}</p>\n` : '';
         // A pull quote keeps its box on the page; one that repeats the

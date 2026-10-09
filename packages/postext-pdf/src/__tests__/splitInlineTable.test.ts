@@ -13,6 +13,8 @@ import { parseFontString } from '../fontString';
 // #634: an inline table cut across columns and pages. Its slices share one
 // `Table` element in the tagged PDF (the repeated header rows and the
 // suffixed caption of a continuation are artifacts), as a floated table's.
+// A `:::columns` group in the running text, cut across pages, reads as its
+// paragraphs in order inside a `Div`.
 
 const fontBytes = fs.readFileSync(new URL('../../../../apps/web/public/fonts/Lora-Regular.ttf', import.meta.url));
 const fontProvider = async () => new Uint8Array(fontBytes);
@@ -49,7 +51,12 @@ const resources: Resource[] = [{
   placement: { position: 'here' },
 }];
 const words = (n: number, tag: string) => Array.from({ length: n }, (_, i) => `${tag}${i}`).join(' ');
-const markdown = ['# Sowing', '', `${words(80, 'before')}.`, '', '::resource{id="sowing"}', '', `${words(60, 'after')}.`].join('\n');
+const markdown = [
+  '# Sowing', '', `${words(80, 'before')}.`, '', '::resource{id="sowing"}', '', `${words(60, 'after')}.`, '',
+  ':::columns{count=2 rule}',
+  ...Array.from({ length: 30 }, (_, i) => `${words(30, `g${i}w`)}.\n`),
+  ':::',
+].join('\n');
 
 const config: PostextConfig = {
   page: { width: pt(360), height: pt(420), margins: { top: pt(24), bottom: pt(24), left: pt(24), right: pt(24) } },
@@ -86,6 +93,21 @@ describe('a split inline table in the PDF (#634)', () => {
     const slices = doc.blocks.filter((b) => b.type === 'resource' && b.resourceBlock?.resource.id === 'sowing');
     expect(slices.length).toBeGreaterThan(1);
     expect(slices.every((b) => b.resourceBlock!.slice !== undefined)).toBe(true);
+  });
+
+  it('cuts the group in the running text across pages', () => {
+    const frames = doc.blocks.filter((b) => b.type === 'callout');
+    expect(frames.length).toBeGreaterThan(1);
+    expect(frames.every((f) => f.callout!.styleId === '__postext-flow-columns')).toBe(true);
+  });
+
+  it('tags the group as one Div holding its paragraphs in order', async () => {
+    const pdf = await PDFDocument.load(bytes);
+    const treeRoot = pdf.catalog.lookup(PDFName.of('StructTreeRoot'), PDFDict);
+    const root = readElem(pdf, (treeRoot.get(PDFName.of('K')) as PDFArray).get(0) as PDFRef);
+    const divs = root.kids.filter((k) => k.type === 'Div');
+    expect(divs).toHaveLength(1);
+    expect(divs[0]!.kids.filter((k) => k.type === 'P')).toHaveLength(30);
   });
 
   it('tags one Table with one header row and every body row once', async () => {

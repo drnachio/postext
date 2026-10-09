@@ -39,8 +39,14 @@ const HEADING: StructType[] = ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
 type Kid = StructElem['kids'][number];
 
 /** The id shared by every fragment of a block split across columns /
- *  pages: the head keeps the block id, continuations add `-cont-N`. */
+ *  pages: the head keeps the block id, continuations add `-cont-N`. A
+ *  block of a box is laid out again in each fragment of a split box, and
+ *  across the sub-columns of a `:::columns` group (#634), under new ids:
+ *  its parts share the box and the content block they set. */
 function fragmentKey(block: VDTBlock): string {
+  if (block.containerId !== undefined && block.contentIndex !== undefined && block.type !== 'callout' && block.type !== 'resource' && block.type !== 'heading') {
+    return `box:${block.containerId}:${(block.calloutPath ?? []).join('.')}:${block.contentIndex}`;
+  }
   return block.id.replace(/-cont-\d+$/, '');
 }
 
