@@ -20,6 +20,8 @@ export interface StylesheetOptions {
   lineNumbers?: boolean;
   /** A line holds a tab at its stop (#622): the tab rows. */
   tabs?: boolean;
+  /** The drop caps the paragraphs open with (#623), as `lines-sink`. */
+  dropCaps?: readonly string[];
   /** Classes of emphasis marks the text uses beyond `pt-dots` (the
    *  filled dot on the default side): their rules are written only then
    *  (`inline.ts` `dotsClasses`, #428). */
@@ -566,6 +568,19 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
     out.push(rule('.pt-tab-gap', ['flex: 0 0 0.5em']));
     out.push(rule('.pt-leader-dots', ['border-bottom: 0.12em dotted currentColor']));
     out.push(rule('.pt-leader-rule', ['border-bottom: 0.06em solid currentColor']));
+  }
+  // Drop caps (#623): CSS initial letters, `lines` tall, sunk `sink`
+  // lines; a reading system without `initial-letter` floats the letter,
+  // about as tall, on the start side.
+  if (options.dropCaps && options.dropCaps.length > 0) {
+    out.push(rule('.pt-has-dropcap', ['text-indent: 0']));
+    out.push(rule('.pt-dropcap', ['float: left', 'line-height: 0.85', 'margin: 0.05em 0.08em 0 0', 'text-indent: 0']));
+    out.push(rule('[dir="rtl"] .pt-dropcap, p[dir="rtl"] .pt-dropcap', ['float: right', 'margin: 0.05em 0 0 0.08em']));
+    for (const shape of options.dropCaps) {
+      const [lines, sink] = shape.split('-').map(Number) as [number, number];
+      out.push(rule(`.pt-dropcap-${shape}`, [`font-size: ${round(lines * 1.25)}em`]));
+      out.push(`@supports (initial-letter: 1) or (-webkit-initial-letter: 1) {\n  .pt-dropcap-${shape} { float: none; margin: 0 0.08em 0 0; font-size: 1em; line-height: inherit; -webkit-initial-letter: ${lines} ${sink}; initial-letter: ${lines} ${sink}; }\n}\n`);
+    }
   }
   if (options.verse) {
     // The poem as wide as its widest bayt, centred: its hemistichs share

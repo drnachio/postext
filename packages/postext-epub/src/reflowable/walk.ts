@@ -42,7 +42,7 @@ import type {
   VerseLineNode,
   VerseNode,
 } from './model';
-import { appendLine, appendLines, fontPx, idOf, mathSvg, plainText, type InlineContext, type TextSink } from './inline';
+import { appendLine, appendLines, fontPx, idOf, mathSvg, plainText, xmlText, type InlineContext, type TextSink } from './inline';
 
 /** Where an id landed: its content document and element id. */
 export interface Loc {
@@ -74,6 +74,9 @@ export interface BookModel {
   lineNumbers?: boolean;
   /** Whether a line holds a tab at its stop (#622). */
   tabs?: boolean;
+  /** The drop caps the paragraphs open with (#623), as `lines-sink`
+   *  pairs: one rule each. */
+  dropCaps?: Set<string>;
   /** The classes of emphasis marks other than the filled dot on the
    *  default side the text uses (`inline.ts` `dotsClasses`, #428). */
   dots: Set<string>;
@@ -730,10 +733,28 @@ class DocWalker {
       const style = this.paragraphStyle(block);
       if (style) cls.push(idOf('ps-', style));
     }
+    // A paragraph a drop cap opens sets no first-line indent.
+    if (block.dropCap) cls.push('pt-has-dropcap');
     if (cls.length) node.cls = cls;
     state.nodes.push(node);
     const top = this.topOf(state, node);
     const sink = this.newSink(key, node.inl, top);
+    // A drop cap (#623): the initial (and a mark hung before it) in a span
+    // of its own right before the first line's text, so the word reads
+    // whole; CSS sets it as an initial letter.
+    const cap = block.dropCap;
+    if (cap) {
+      const shape = `${cap.lines}-${cap.sink}`;
+      (this.book.dropCaps ??= new Set()).add(shape);
+      const font = /^(?:(italic)\s+)?(?:(\d{3}|bold)\s+)?[\d.]+px\s+(.+)$/.exec(cap.fontString.trim());
+      const decls = [
+        ...(font ? [`font-family:${font[3]!.replace(/"/g, "'")}`] : []),
+        ...(font?.[2] && font[2] !== '400' ? [`font-weight:${font[2]}`] : []),
+        ...(font?.[1] ? ['font-style:italic'] : []),
+        `color:${cap.color}`,
+      ];
+      node.inl.push({ t: 'raw', xhtml: `<span class="pt-dropcap pt-dropcap-${shape}" style="${decls.join(';')}">${xmlText((cap.hang?.text ?? '') + cap.text)}</span>` });
+    }
     this.appendBlockLines(sink, block, block.lines, this.takePages());
     this.record(block, top);
     if (!this.floating && block.bibEntry !== undefined && !this.book.bibliography && node.id) this.book.bibliography = { file: this.file!, id: node.id };

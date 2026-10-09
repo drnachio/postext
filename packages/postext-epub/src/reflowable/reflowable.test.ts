@@ -690,3 +690,23 @@ describe('reflowable rendition: tab stops (#622)', () => {
     expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('.pt-tab-row');
   });
 });
+
+describe('reflowable rendition: drop caps (#623)', () => {
+  const config = { ...baseConfig, headings: { levels: [{ level: 1, dropCap: { lines: 3 } }] } };
+
+  it('writes the initial in a span right before the rest of its word, set as a CSS initial letter', async () => {
+    const md = ['# One', '', `Long before ${para}${para}`, '', para].join('\n');
+    const { pub, files, all } = await render([layOut(md, config)]);
+    expectSound(pub, files);
+    expect(all).toMatch(/<p class="pt-has-dropcap">(?:<span epub:type="pagebreak"[^>]*><\/span>)?<span class="pt-dropcap pt-dropcap-3-3" style="[^"]*">L<\/span>ong before/);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('initial-letter: 3 3;');
+    expect(css).toContain('.pt-dropcap {');
+    expect(css).toContain('.pt-has-dropcap {');
+  });
+
+  it('writes no drop cap rules for a book without drop caps', async () => {
+    const { pub } = await render([layOut(para, baseConfig)]);
+    expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('pt-dropcap');
+  });
+});

@@ -121,6 +121,11 @@ function addBlockFonts(block: VDTBlock, out: FontText, vertical?: VerticalSettin
     }
     return;
   }
+  // A drop cap (#623) and an opening mark hung before it.
+  if (block.dropCap) {
+    add(out, block.dropCap.fontString, block.dropCap.text);
+    if (block.dropCap.hang) add(out, block.dropCap.hang.fontString, block.dropCap.hang.text);
+  }
   if (block.type === 'listItem' && block.bulletText && block.bulletFontString && block.bulletOffsetX !== undefined && block.lines[0]) {
     add(out, block.bulletFontString, block.bulletText);
     if (block.separatorText && block.separatorX !== undefined) add(out, block.separatorFontString ?? block.bulletFontString, block.separatorText);

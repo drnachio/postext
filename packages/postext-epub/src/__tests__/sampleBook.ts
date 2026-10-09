@@ -80,7 +80,8 @@ const SAMPLE_TABS = [
 
 export const SAMPLE_CHAPTERS = [
   ['---', 'title: Sample book', 'author: Ada Lovelace', '---', '', '# Opening chapter {#opening}', '', `See :ref{id=f1} and the [closing words](#closing). ${para.repeat(3)}`, '', '::resource{id=f1}', '', '## A section', '', para.repeat(12)].join('\n'),
-  ['# Second chapter', '', `Back to the [opening](#opening). ${para.repeat(6)}`, '', '## Closing words {#closing}', '', para.repeat(4), '', ...SAMPLE_POEM, '', ...SAMPLE_TABS].join('\n'),
+  // The chapter opens with a drop cap (#623).
+  ['# Second chapter {dropcap}', '', `Back to the [opening](#opening). ${para.repeat(6)}`, '', '## Closing words {#closing}', '', para.repeat(4), '', ...SAMPLE_POEM, '', ...SAMPLE_TABS].join('\n'),
 ];
 
 export function sampleBook(): VDTDocument[] {
