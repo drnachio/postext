@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 015 · Poems set line by line ═════════════════════════════
 // https://postext.dev/en/cookbook/poetry-collection
 // Code: MIT · Text: G. M. Hopkins, Poems, 1918 (PD) · Plate: diffusion models · Sprig: code
-// Fonts: Sorts Mill Goudy, Italiana, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Sorts Mill Goudy, Italiana, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.23.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
 } from 'https://esm.sh/postext';
@@ -27,31 +27,23 @@ const colorPalette = [
 const TRIM_W = 140, TRIM_H = 216; // mm: a poetry trim, tall enough for a sonnet's turnovers
 const LEAD = 15; // pt: the body's leading, the grid every line of verse sits on
 
-// #region answer: verse: a paragraph per line, indents kept, turnovers that hang, stanza space
-// A poem is one :::paragraphs{style="verse"} container with a paragraph per line, so no line
-// runs on into the next. An indented line starts with spaces, two to an em, and a :::space
-// line leaves one line of the grid between stanzas (blank lines only separate paragraphs):
-//   :::paragraphs{style="verse"}
+// #region answer: verse: a :::verse block keeps each line, its indent, the stanza breaks
+// A poem is one :::verse block written as it is printed: a line of verse a line, a blank line
+// between stanzas (one line of the grid), and spaces before an indented line, two to an em:
+//   :::verse{style="verse" align=start}
 //   The world is charged with the grandeur of God.
-//
 //       It will flame out, like shining from shook foil;
-//
-//   :::space
 //
 //   And for all this, nature is never spent;
 //   :::
+// align=start sets the poem flush with the margin (the default centres it on its longest line).
 const verse = {
   id: 'verse',
-  textAlign: 'left', // ragged: a line that turns over is not stretched to the measure
-  hangingIndent: em(4), // a turned line hangs past the 1 and 2 em indents
+  hangingIndent: em(2), // a turnover hangs 2 em past its line's start: 4 em under a 2 em indent
   // Verse is never hyphenated; ragged text is not in 1.4.1 either (gotcha: ragged-no-hyphenation).
   hyphenation: false,
 };
-// A paragraph loses its leading spaces, and hangingIndent overrides firstLineIndent, so in verse
-// each pair of leading spaces becomes an em space behind a word joiner, where the trim stops.
-const indentVerse = (md) => md.replace(/:::paragraphs\{style="verse"\}\n[\s\S]*?\n:::\n/g,
-  (poem) => poem.replace(/^((?: {2})+)(?=\S)/gm, (s) => `\u2060${'\u2003'.repeat(s.length / 2)}`));
-// Hook-up: paragraphStyles: [verse, …] and buildDocument({ markdown: indentVerse(markdown) }).
+// Hook-up: paragraphStyles: [verse, …]; the Markdown goes to buildDocument as it is written.
 // #endregion
 
 // #region lines: the lines around a poem: a dedication above it, a place and a date below
@@ -263,8 +255,7 @@ const FONTS = { 'Sorts Mill Goudy': ['400', '400i'], Italiana: ['400'], 'Marcell
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadFonts(FONTS, markdown);
 // :::toc lists the page each poem lands on: the build lays out again until those settle.
-const verses = indentVerse(markdown); // the leading spaces of verse, as em spaces
-const doc = await buildWithFonts(() => buildDocument({ markdown: verses, resources }, config()),
+const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()),
   markdown);
 showPages(doc, { title: 'Pied Beauty · four poems by Gerard Manley Hopkins' });
 

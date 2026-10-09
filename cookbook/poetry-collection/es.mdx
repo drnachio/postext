@@ -1,22 +1,22 @@
 ---
 title: "Poemas compuestos verso a verso"
-summary: "Cada verso es un párrafo, y el que no cabe sigue con 4 em de sangría francesa. Los espacios eme guardan las sangrías de 1918; :::space separa las estrofas."
+summary: "Cada poema es un bloque :::verse escrito como se imprime: las sangrías de 1918 son espacios iniciales y los versos partidos cuelgan 2 em de su verso."
 plain: "Un librito con cuatro poemas sobre la naturaleza de Gerard Manley Hopkins. Enseña a respetar cada verso por separado, con las sangrías originales del poeta y una línea en blanco entre estrofas."
-description: "Cuatro poemas de Hopkins con Postext: un párrafo por verso, las sangrías de 1918, sangría francesa en los largos, :::space entre estrofas e índice con puntos."
+description: "Cuatro poemas de Hopkins con Postext: bloques :::verse con las sangrías de 1918, versos partidos colgados, una línea entre estrofas e índice con puntos."
 question: "¿Cómo compongo poemas verso a verso, con sangrías, estrofas separadas, sangría francesa y sin partir palabras?"
-aliases: ["poesía", "poema", "verso", "estrofa", "espacio entre estrofas", "verso sangrado", "sangría", "espacio eme", "unidor de palabras", "verso largo", "verso partido", "sangría francesa", "saltos de línea", "poemario", "plaquette", "líneas de puntos", "puntos guía", "dedicatoria", "fecha del poema", "adorno", "viñeta", "remate", "frontispicio", "anteportada", "Gerard Manley Hopkins"]
+aliases: ["poesía", "poema", "verso", ":::verse", "estrofa", "espacio entre estrofas", "verso sangrado", "sangría", "verso largo", "verso partido", "sangría francesa", "saltos de línea", "poemario", "plaquette", "líneas de puntos", "puntos guía", "dedicatoria", "fecha del poema", "adorno", "viñeta", "remate", "frontispicio", "anteportada", "Gerard Manley Hopkins"]
 pageNotes: { "2": "El frontispicio: un fotograma de una fronda de helecho y una rama de serbal con bayas, en blanco sobre un fondo salvia dado a brochazos, con su pie debajo en cursiva.", "4": "El índice: cuatro títulos en cursiva tras sus números, líneas de puntos espaciados hasta el número de página, y después una breve nota sobre el texto y el colofón.", "6": "The Windhover: la dedicatoria va encima del primer verso, los versos que riman en -iding y en -illion entran 2 em, y cuatro versos largos siguen en la línea de abajo con 4 em de sangría francesa.", "7": "Pied Beauty: los versos entran 1 o 2 em según su rima, y el medio verso final, Praise him., queda a 8 em del margen." }
 ---
 
 ## Lo que vas a componer
 
-Un poemario de 140 × 216 mm con cuatro poemas de Gerard Manley Hopkins sobre la naturaleza, según la primera edición (1918). Tras la anteportada, un fotograma de helecho y serbal hace de frontispicio frente a la portada, compuesta en Italiana. El índice da el número romano y el título en cursiva de cada poema, con puntos espaciados hasta la página. Cada poema abre página bajo su número. Los versos son párrafos y conservan las sangrías de 1918: en *Pied Beauty* se escalonan según la rima, y los largos de *The Windhover* siguen en la línea de abajo con 4 em de sangría, el doble que sus sangrías. Entre estrofas queda una línea en blanco, y ninguna palabra se parte salvo donde la partió Hopkins. Debajo de cada poema va la fecha, a la derecha, y tras el último, una ramita de serbal. Los poemas llevan el folio centrado abajo.
+Un poemario de 140 × 216 mm con cuatro poemas de Gerard Manley Hopkins sobre la naturaleza, según la primera edición (1918). Tras la anteportada, un fotograma de helecho y serbal hace de frontispicio frente a la portada, compuesta en Italiana. El índice da el número romano y el título en cursiva de cada poema, con puntos espaciados hasta la página. Cada poema abre página bajo su número. Cada poema es un bloque `:::verse` y conserva las sangrías de 1918: en *Pied Beauty* se escalonan según la rima, y los largos de *The Windhover* siguen en la línea de abajo con 4 em de sangría, el doble que sus sangrías. Entre estrofas queda una línea en blanco, y ninguna palabra se parte salvo donde la partió Hopkins. Debajo de cada poema va la fecha, a la derecha, y tras el último, una ramita de serbal. Los poemas llevan el folio centrado abajo.
 
 ## Elaboración
 
-### 1 · Cada verso es un párrafo
+### 1 · Un poema es un bloque :::verse
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. Postext junta en una sola las líneas de un párrafo de Markdown, de ahí que cada verso tenga que ser un párrafo. El estilo del verso los compone en bandera, porque justificados estirarían hasta la medida la primera parte de un verso partido. Lo que pasa a la línea siguiente lleva 4 em de sangría francesa, más que los 1 o 2 em de los versos sangrados por la rima, para que nadie lo tome por otro verso ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). Un párrafo pierde los espacios con que empieza, también los espacios eme, y un estilo con sangría francesa no aplica la de primera línea. Por eso `indentVerse` convierte cada par de espacios iniciales en un espacio eme precedido de un unidor de palabras, un carácter de ancho cero donde se detiene el recorte. Los versos que riman entre sí quedan a la misma distancia del margen, como en 1918. Las líneas en blanco no añaden espacio: cada separación entre estrofas es una línea `:::space` dentro del contenedor, que deja una línea de la rejilla base y se descarta si cae en lo alto de una página ([`:::space`](/es/docs/document-format#space)).
+Un bloque `:::verse` conserva cada línea del Markdown como un verso, así que el poema se escribe como se imprime ([`:::verse`](/es/docs/document-format#verse)). Sus espacios iniciales son las sangrías, dos por eme, de modo que los versos que riman entre sí quedan a la misma distancia del margen, como en 1918. Una línea en blanco entre estrofas deja una línea de la rejilla base y se descarta si cae en lo alto de una página. Un verso que no cabe en la medida se parte en un espacio entre palabras y cuelga según la `hangingIndent` del estilo del verso, contada desde el inicio del propio verso: 2 em más allá de un verso sin sangría, 4 em bajo uno sangrado 2 em, para que nadie tome el resto por otro verso. `align=start` alinea cada poema con el margen; sin él, el poema se centra sobre su verso más largo. El verso no se divide con guion, y un verso nunca se separa de su resto en un salto de página.
 
 <PageShot page={6} crop="0.08,0.22,0.86,0.48" caption="The Windhover, página 6: los versos que riman en -iding entran 2 em, y los cuatro que no caben en la página siguen en la línea de abajo, con 4 em de sangría francesa." />
 
@@ -57,17 +57,18 @@ Una imagen en el texto es un recurso, y todo recurso tiene un tipo. El tipo del 
 Con una sangría francesa mayor, el resto de cada verso partido queda más lejos del margen. Sirve para poemas en los que muchos versos no caben en la línea.
 
 ```diff
--  hangingIndent: em(4), // a turned line hangs past the 1 and 2 em indents
-+  hangingIndent: em(6), // a turned line hangs past the 1 and 2 em indents
+-  hangingIndent: em(2), // a turnover hangs 2 em past its line's start: 4 em under a 2 em indent
++  hangingIndent: em(4), // a turnover hangs 2 em past its line's start: 4 em under a 2 em indent
 ```
 
-### Empieza todos los versos en el margen
+### Compón los versos partidos a la derecha
 
-Sin `indentVerse`, Postext recorta los espacios iniciales y todos los versos empiezan en el margen; solo los versos partidos siguen sangrados.
+Con `turnover: 'right'` en `bodyText.verse`, el resto de un verso que no cabe en la medida pasa a la línea de abajo alineado a la derecha, tras un corchete de apertura, como lo componen muchas ediciones de poesía.
 
 ```diff
--const verses = indentVerse(markdown); // the leading spaces of verse, as em spaces
-+const verses = markdown; // leading spaces left to the trim
+     indentAfterHeading: false, minWordSpacing: 0.8, maxWordSpacing: 1.6,
++    verse: { turnover: 'right' }, // a turnover flush right, behind [
+   },
 ```
 
 ### Abre cada poema en página impar
@@ -91,8 +92,8 @@ El estilo del contador en la plantilla cambia a la vez el número de la página 
 
 ## Errores frecuentes
 
-- Deja una línea en blanco después de cada verso. Dos versos sin una línea en blanco entre ellos forman un solo párrafo, y el poema se recompone como prosa.
-- Da al estilo del verso su propio `textAlign`. Un estilo de párrafo hereda el del cuerpo, y el verso justificado estira hasta la medida la primera parte de cada verso partido.
-- Un verso que empieza por un año y un punto, como «1877. », o por un guion y un espacio se convierte en un elemento de lista, porque cada verso es un párrafo. Pon delante un unidor de palabras (U+2060), como hace `indentVerse` antes de una sangría.
+- Mantén juntos los versos de una estrofa: una línea en blanco dentro de un bloque `:::verse` abre otra estrofa, sean cuantas sean las líneas en blanco.
+- Un verso que empieza con un signo más y un espacio es un verso escalonado, que empieza donde terminó el de arriba; escribe `\+` para imprimir el signo más.
+- Sin `align=start` cada poema se centra sobre su verso más largo, y entonces cada uno queda a una distancia distinta del margen.
 - Para que dos palabras pasen juntas a la línea de abajo, únelas con un espacio de no separación (U+00A0), como *the soil* y *bright wings.* en la página 5. Se mantiene en un verso de texto llano; en uno con cursiva o negrita el motor sigue cortando ahí.
 - Un elemento del pie de página con `pages` en `'all'` se imprime también en las páginas en blanco. Aquí el folio se compone de dos elementos, uno para las aperturas y otro para las páginas de texto, así que una página par en blanco se queda en blanco.

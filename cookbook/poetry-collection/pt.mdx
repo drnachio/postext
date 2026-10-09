@@ -1,22 +1,22 @@
 ---
 title: "Poemas compostos verso a verso"
-summary: "Cada verso é um parágrafo, e o que não cabe continua com 4 em de recuo deslocado. Espaços eme guardam os recuos de 1918, e :::space separa as estrofes."
+summary: "Cada poema é um bloco :::verse escrito como se imprime: os recuos de 1918 são espaços iniciais e os versos quebrados pendem 2 em do seu verso."
 plain: "Um livrinho com quatro poemas sobre a natureza de Gerard Manley Hopkins. Mostra como manter cada verso separado, com os recuos originais do poeta e uma linha em branco entre as estrofes."
-description: "Quatro poemas de Hopkins no Postext: um parágrafo por verso, os recuos de 1918, recuo deslocado nos versos longos, :::space entre estrofes e sumário pontilhado."
+description: "Quatro poemas de Hopkins no Postext: blocos :::verse com os recuos de 1918, versos quebrados pendentes, uma linha entre estrofes e sumário pontilhado."
 question: "Como faço para compor poemas verso a verso, com recuos, estrofes separadas, recuo deslocado e sem hifenização?"
-aliases: ["poesia", "poema", "verso", "estrofe", "espaço entre estrofes", "verso recuado", "recuo", "espaço eme", "word joiner", "unidor de palavras", "verso longo", "verso quebrado", "recuo deslocado", "quebras de linha", "livro de poemas", "plaquete", "linha pontilhada", "pontos de condução", "dedicatória", "data do poema", "ornamento", "vinheta", "fleuron", "remate", "frontispício", "falsa folha de rosto", "Gerard Manley Hopkins"]
+aliases: ["poesia", "poema", "verso", ":::verse", "estrofe", "espaço entre estrofes", "verso recuado", "recuo", "verso longo", "verso quebrado", "recuo deslocado", "quebras de linha", "livro de poemas", "plaquete", "linha pontilhada", "pontos de condução", "dedicatória", "data do poema", "ornamento", "vinheta", "fleuron", "remate", "frontispício", "falsa folha de rosto", "Gerard Manley Hopkins"]
 pageNotes: { "2": "O frontispício: um fotograma de uma folha de samambaia e um raminho de sorveira com frutos, em branco sobre um fundo verde-sálvia pincelado, com a legenda embaixo em itálico.", "4": "O sumário: quatro títulos em itálico depois dos numerais, linhas de pontos espaçados até os números de página e, depois, uma nota curta sobre o texto e o colofão.", "6": "The Windhover: a dedicatória fica acima do primeiro verso, os versos que rimam em -iding e -illion começam 2 em para dentro, e quatro versos longos continuam na linha de baixo com 4 em de recuo deslocado.", "7": "Pied Beauty: os versos entram 1 ou 2 em conforme a rima, e o meio verso final, Praise him., fica 8 em para dentro." }
 ---
 
 ## O que você vai compor
 
-Um livrinho de poemas de 140 × 216 mm com quatro poemas de Gerard Manley Hopkins sobre a natureza, no texto da primeira edição, de 1918. Depois da falsa folha de rosto, um fotograma de samambaia e sorveira serve de frontispício diante da folha de rosto, composta em Italiana. O sumário lista cada poema pelo numeral e pelo título em itálico, com pontos espaçados até o número da página. Cada poema abre uma página sob um numeral verde-sálvia e o seu título em itálico. Cada verso é um parágrafo, recuado como em 1918: os versos de *Pied Beauty* entram em degraus conforme a rima, e os versos longos de *The Windhover* continuam na linha de baixo com 4 em de recuo, o dobro dos seus recuos. As estrofes ficam a uma linha de distância, e nenhuma palavra é dividida, a não ser onde Hopkins a dividiu. A data vem embaixo de cada poema, alinhada à direita, e um raminho de sorveira vem depois do último. As páginas dos poemas trazem o fólio centralizado no pé.
+Um livrinho de poemas de 140 × 216 mm com quatro poemas de Gerard Manley Hopkins sobre a natureza, no texto da primeira edição, de 1918. Depois da falsa folha de rosto, um fotograma de samambaia e sorveira serve de frontispício diante da folha de rosto, composta em Italiana. O sumário lista cada poema pelo numeral e pelo título em itálico, com pontos espaçados até o número da página. Cada poema abre uma página sob um numeral verde-sálvia e o seu título em itálico. Cada poema é um bloco `:::verse`, recuado como em 1918: os versos de *Pied Beauty* entram em degraus conforme a rima, e os versos longos de *The Windhover* continuam na linha de baixo com 4 em de recuo, o dobro dos seus recuos. As estrofes ficam a uma linha de distância, e nenhuma palavra é dividida, a não ser onde Hopkins a dividiu. A data vem embaixo de cada poema, alinhada à direita, e um raminho de sorveira vem depois do último. As páginas dos poemas trazem o fólio centralizado no pé.
 
 ## Preparo
 
-### 1 · Um verso é um parágrafo
+### 1 · Um poema é um bloco :::verse
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. O Postext junta numa só as linhas de um parágrafo de Markdown, então um poema precisa de um parágrafo por verso. O estilo do verso compõe esses parágrafos alinhados à esquerda, porque justificá-los esticaria até a medida a primeira parte de um verso quebrado. O resto do verso fica com 4 em de recuo deslocado, mais fundo que os recuos de 1 e 2 em dos versos que rimam, para que a continuação não pareça um verso próprio ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). Um parágrafo perde os espaços iniciais, inclusive os espaços eme, e um estilo com recuo deslocado ignora o recuo de primeira linha. Por isso `indentVerse` transforma cada par de espaços iniciais num espaço eme precedido de um word joiner, um caractere de largura zero em que a remoção de espaços para. Os versos que rimam entre si mantêm o mesmo recuo, como em 1918. As linhas em branco não acrescentam espaço. Cada separação de estrofes é uma linha `:::space` dentro do contêiner, que deixa uma linha da grade e é descartada no alto de uma página ([`:::space`](/pt/docs/document-format#space)).
+Um bloco `:::verse` mantém cada linha do Markdown como um verso, de modo que o poema se escreve como se imprime ([`:::verse`](/pt/docs/document-format#verse)). Os seus espaços iniciais são os recuos, dois por eme, então os versos que rimam entre si começam à mesma distância da margem, como em 1918. Uma linha em branco entre estrofes deixa uma linha da grade de base e é descartada no alto de uma página. Um verso longo demais para a medida se quebra em um espaço entre palavras e pende pelo `hangingIndent` do estilo do verso, contado a partir do início do próprio verso: 2 em além de um verso sem recuo, 4 em sob um verso recuado 2 em, para que o resto nunca pareça outro verso. `align=start` alinha cada poema à margem; sem ele, o poema é centralizado pelo seu verso mais longo. O verso não é hifenizado, e um verso nunca se separa do seu resto em uma quebra de página.
 
 <PageShot page={6} crop="0.08,0.22,0.86,0.48" caption="The Windhover, página 6: os versos que rimam em -iding começam 2 em para dentro, e os quatro versos longos demais para a página continuam na linha de baixo com 4 em de recuo deslocado." />
 
@@ -57,17 +57,18 @@ Uma imagem no texto é um recurso, e todo recurso tem um tipo. O tipo do ornamen
 Um recuo deslocado maior afasta da margem o resto de um verso quebrado, para poemas em que os versos quebram com frequência.
 
 ```diff
--  hangingIndent: em(4), // a turned line hangs past the 1 and 2 em indents
-+  hangingIndent: em(6), // a turned line hangs past the 1 and 2 em indents
+-  hangingIndent: em(2), // a turnover hangs 2 em past its line's start: 4 em under a 2 em indent
++  hangingIndent: em(4), // a turnover hangs 2 em past its line's start: 4 em under a 2 em indent
 ```
 
-### Comece todos os versos na margem
+### Componha os versos quebrados à direita
 
-Sem `indentVerse`, o Postext remove os espaços iniciais e todos os versos começam alinhados à esquerda; só as continuações seguem recuadas.
+Com `turnover: 'right'` em `bodyText.verse`, o resto de um verso longo demais para a medida vai para a linha de baixo alinhado à direita, depois de um colchete de abertura, como o compõem muitas edições de poesia.
 
 ```diff
--const verses = indentVerse(markdown); // the leading spaces of verse, as em spaces
-+const verses = markdown; // leading spaces left to the trim
+     indentAfterHeading: false, minWordSpacing: 0.8, maxWordSpacing: 1.6,
++    verse: { turnover: 'right' }, // a turnover flush right, behind [
+   },
 ```
 
 ### Abra cada poema numa página ímpar
@@ -91,8 +92,8 @@ O estilo do contador no modelo muda ao mesmo tempo o numeral na página do poema
 
 ## Erros comuns
 
-- Deixe uma linha em branco depois de cada verso. Duas linhas sem linha em branco entre elas formam um só parágrafo, e o poema se recompõe como prosa.
-- Dê ao estilo do verso o seu próprio `textAlign`. Um estilo de parágrafo herda o do corpo, e o verso justificado estica até a medida a primeira parte de cada verso quebrado.
-- Um verso que começa com um ano e um ponto, como “1877. ”, ou com um hífen e um espaço vira item de lista, porque cada verso é um parágrafo. Ponha um word joiner (U+2060) na frente dele, como `indentVerse` faz antes de um recuo.
+- Mantenha juntos os versos de uma estrofe: uma linha em branco dentro de um bloco `:::verse` abre outra estrofe, sejam quantas forem as linhas em branco.
+- Um verso que começa com um sinal de mais e um espaço é um verso escalonado, que começa onde terminou o de cima; escreva `\+` para imprimir o sinal de mais.
+- Sem `align=start` cada poema é centralizado pelo seu verso mais longo, e então cada um fica a uma distância diferente da margem.
 - Para que duas palavras passem juntas para a linha de baixo, una-as com um espaço não separável (U+00A0), como *the soil* e *bright wings.* na página 5. Isso vale num verso de texto simples; num verso com itálico ou negrito, o motor ainda quebra ali.
 - Um elemento de rodapé com `pages` deixado em `'all'` sai também nas páginas em branco. Aqui o fólio são dois elementos, um para as páginas de abertura e outro para as páginas de texto, então uma página par em branco continua em branco.

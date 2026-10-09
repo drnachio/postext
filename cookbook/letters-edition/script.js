@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 064 · Letters edition: datelines and signatures ════════════
 // https://postext.dev/en/cookbook/letters-edition
 // Code: MIT · Text: Frederick II and Voltaire, 1740 and 1778 (PD) · Cover photo: diffusion models
-// Fonts: Crimson Pro, IM Fell French Canon, IM Fell DW Pica SC (SIL OFL) · Needs postext ≥ 1.4.1
+// Fonts: Crimson Pro, IM Fell French Canon, IM Fell DW Pica SC (SIL OFL) · Needs postext ≥ 1.23.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
 
@@ -151,10 +151,10 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: { fontFamily: 'IM Fell French Canon', fontWeight: 400, levels: [letters] },
   headingStyles: [cover],
   paragraphStyles: [...letterParts,
-    // Frederick's verses, one paragraph per line (a one-line paragraph is never stretched), with
-    // a line of space above and below; the two closing alexandrines start 7 mm further left.
-    { id: 'verse', firstLineIndent: mm(14), marginTop: pt(LEAD) },
-    { id: 'verse-long', firstLineIndent: mm(7), marginBottom: pt(LEAD) },
+    // Frederick's verses, a :::verse block 7 mm in with a line of space above and below; the
+    // octosyllables start two spaces (indentStep=3.5mm on the fence) further in, 14 mm, and the
+    // two closing alexandrines at 7 mm.
+    { id: 'verse', indent: mm(7), marginTop: pt(LEAD), marginBottom: pt(LEAD) },
     // The editor's headnote at 9.6 on 13 pt, italic through *…* in the Markdown, since a
     // paragraph style has no italic setting.
     { id: 'headnote', fontSize: pt(9.6), lineHeight: pt(13), firstLineIndent: pt(0) },

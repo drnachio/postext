@@ -16,13 +16,13 @@ Oito páginas de um pequeno livro de poesia numa página 四六判 de 127 × 188
 
 ### 1 · Um verso é um parágrafo, e o seu estilo diz onde ele começa
 
-O código está na [resposta curta](#a-resposta-curta), mais acima. O Postext não tem quebra de linha forçada, então cada verso de um poema é um parágrafo próprio dentro de um bloco `:::paragraphs`, e o estilo do bloco define o recuo: `indent: em(3)` põe um haicai três caracteres abaixo do alto da linha (o texto do Aozora os põe a dois; três dão mais respiro aos poemas), e `firstLineIndent: em(0)` impede que o recuo de um caractere do texto se some a ele. Os cerca de 17 caracteres de um haicai cabem em qualquer linha de 36, então ele nunca quebra. A assinatura é um parágrafo à parte: `textAlign: 'end'` a apoia no pé da linha (地付き, jitsuki) e `endIndent: em(5)` a sobe cinco caracteres a partir dali (地から五字上げ), como faz a edição de onde vem este texto ([Estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)).
+O código está na [resposta curta](#a-resposta-curta), mais acima. Um haicai é uma linha só, então é um parágrafo próprio dentro de um bloco `:::paragraphs`, e o estilo do bloco define o recuo: `indent: em(3)` põe um haicai três caracteres abaixo do alto da linha (o texto do Aozora os põe a dois; três dão mais respiro aos poemas), e `firstLineIndent: em(0)` impede que o recuo de um caractere do texto se some a ele. Os cerca de 17 caracteres de um haicai cabem em qualquer linha de 36, então ele nunca quebra. A assinatura é um parágrafo à parte: `textAlign: 'end'` a apoia no pé da linha (地付き, jitsuki) e `endIndent: em(5)` a sobe cinco caracteres a partir dali (地から五字上げ), como faz a edição de onde vem este texto ([Estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)).
 
 ### 2 · Mantenha cada tanka numa só página
 
 <Excerpt region="tanka" />
 
-Os três versos de um tanka são três parágrafos, e o motor mantém juntas as linhas de um parágrafo, mas nunca um parágrafo com o seguinte. Um boxe mantém o conteúdo junto, então cada tanka vai num `:::callout` cujo estilo não desenha nada: sem fundo, sem espaçamento interno e com uma margem de uma linha depois, a linha em branco entre os poemas. Na página 5 o terceiro tanka não cabe embaixo do título da parte e dos dois primeiros, então abre inteiro a página 6 em vez de deixar para trás o primeiro verso ([Estilos de boxe](/pt/docs/configuration#estilos-de-boxe)).
+Os tankas de Takuboku formam um bloco `:::verse`, cada tanka uma estrofe: os seus três versos são três linhas do Markdown, e a linha em branco entre dois tankas do texto deixa uma linha em branco da grade entre os poemas. O estilo do poema dá o recuo de dois caracteres e a linha embaixo do grupo, e os versos pendem do alto como qualquer coluna. `keepStanzas=3` mantém inteira cada estrofe de três versos: na página 5 o terceiro tanka não cabe embaixo do título da parte e dos dois primeiros, então abre inteiro a página 6 em vez de deixar para trás o primeiro verso. O ornamento entre dois grupos apresenta o seguinte, então passa com o seu primeiro tanka em vez de ficar sozinho no pé de uma página ([`:::verse`](/pt/docs/document-format#verse)).
 
 ### 3 · Espace os nomes de lugar até a mesma largura
 
@@ -55,9 +55,9 @@ Antologias escolares às vezes põem um espaço ideográfico entre os 5, 7 e 5 s
 
 ### Deixe um tanka longo se dividir
 
-Um estilo de boxe com `keepTogether: false` deixa um tanka começar no pé de uma página e continuar na seguinte, como faria uma antologia compacta de mil poemas.
+Sem `keepStanzas`, um tanka pode começar no pé de uma página e continuar na seguinte pelas regras de viúvas e órfãs, como faria uma antologia compacta de mil poemas.
 
 ```diff
--const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: true,
-+const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: false,
+-:::verse{style="tanka" keepStanzas=3}
++:::verse{style="tanka"}
 ```

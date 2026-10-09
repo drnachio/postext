@@ -11,6 +11,7 @@
   "features": {
     "primary": ["chapter-breaks", "heading-styles", "footnotes"],
     "also": [
+      "verse",
       "paragraph-styles",
       "character-grid",
       "cjk-fonts",
@@ -21,7 +22,6 @@
       "covers",
       "running-heads",
       "section-running-heads",
-      "page-role-filters",
       "mirrored-margins",
       "page-background",
       "color-palette",
@@ -31,7 +31,7 @@
     ]
   },
   "answers": ["Q103", "Q43", "Q45", "Q24"],
-  "gaps": ["hard-line-breaks"],
+  "gaps": [],
   "gotchas": [
     "style-inherits-break",
     "parity-page1-recto",
@@ -42,7 +42,7 @@
     "fonts-first"
   ],
   "related": ["bilingual-facing-verse", "catalogue-facing-plates", "poetry-collection", "chinese-novel-horizontal"],
-  "engine": { "postext": "1.11.0", "postextPdf": "1.11.0" },
+  "engine": { "postext": "1.23.0", "postextPdf": "1.23.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [2, 3], "card": "spread", "pages": "all" },

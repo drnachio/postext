@@ -16,13 +16,13 @@ Un quadern bilingüe de cinc poemes sobre una salina del sud d'Espanya, de 156 �
 
 ### 1 · Un poema és un requadre amb un tall de columna fix
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. `:::columns` només funciona dins d'un requadre, així que cada poema és un requadre l'estil del qual treu el fons i el farciment i imprimeix el `title` de la directiva, el número ([`:::columns`](/ca/docs/document-format#columns)). Sense `breaks`, el grup talla on les dues columnes queden igualades. En aquests poemes les dues meitats fan el mateix i el tall cau igualment al títol anglès, però si allargues dos versos de *The Rake* fins que no hi càpiguen, el tall baixa un bloc i THE RAKE es queda al peu de la columna castellana. `breaks="14"` fixa el bloc que obre la segona columna, així que el títol anglès l'encapçala facin el que facin les dues meitats.
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `:::columns` només funciona dins d'un requadre, així que cada poema és un requadre l'estil del qual treu el fons i el farciment i imprimeix el `title` de la directiva, el número ([`:::columns`](/ca/docs/document-format#columns)). Sense `breaks`, el grup talla on les dues columnes queden igualades. En aquests poemes les dues meitats fan el mateix i el tall cau igualment al títol anglès, però si allargues dos versos de *The Rake* fins que no hi càpiguen, el tall baixa un bloc i THE RAKE es queda al peu de la columna castellana. `breaks="5"` fixa el bloc que obre la segona columna, així que el títol anglès l'encapçala facin el que facin les dues meitats.
 
-### 2 · Un paràgraf per vers, un :::space per salt d'estrofa
+### 2 · Un bloc :::verse per columna, una línia en blanc per salt d'estrofa
 
 <Excerpt region="verse" />
 
-Markdown uneix les línies d'un paràgraf, així que cada vers és un paràgraf a part amb l'estil `verse`, en bandera, al qual la versió 1.4.1 no aplica mai la partició de mots. Un `:::space` entre estrofes deixa una línia en blanc a cada columna. No és un bloc, així que `breaks` no el compta ([`:::space`](/ca/docs/document-format#space)). El vers anglès *each one standing on its own reflection.* no cap a la seva columna de 55 mm i continua a la línia de sota, sagnat 2 em; l'estrofa castellana del davant acaba amb `:::space{lines=2}`, així que les estrofes següents comencen a la mateixa línia.
+Cada meitat d'un poema és un bloc `:::verse`: un vers per línia del Markdown, en bandera i sense partició de mots, i una línia en blanc entre estrofes, que deixa una línia en blanc a la columna ([`:::verse`](/ca/docs/document-format#verse)). Cada estrofa és un bloc, així que `breaks` compta estrofes, no versos. El vers anglès *each one standing on its own reflection.* no cap a la seva columna de 55 mm i continua a la línia de sota, sagnat 2 em; la meitat castellana tanca el seu bloc després de l'estrofa del davant i posa un `:::space{lines=2}` abans de la següent, així que les estrofes següents comencen a la mateixa línia. Un `:::space` no és un bloc, i `breaks` no el compta ([`:::space`](/ca/docs/document-format#space)).
 
 <PageShot page={3} crop="0.1,0.385,0.8,0.248" caption="El poema I a la pàgina 3: reflection. passa a la línia següent en l'anglès, i l'estrofa castellana acaba amb dues línies en blanc en lloc d'una." />
 
@@ -48,7 +48,7 @@ La pàgina parella porta el títol castellà i la senar l'anglès, en l'ordre de
 
 ### Eixampla l'espai entre columnes
 
-Amb 12 mm les columnes es queden en 53 mm, i *Los turistas paran y hacen fotos:* ja no cap al poema III, així que la seva segona estrofa comença una línia per sota de l'anglesa; acaba l'estrofa anglesa amb `:::space{lines=2}` per igualar-les.
+Amb 12 mm les columnes es queden en 53 mm, i *Los turistas paran y hacen fotos:* ja no cap al poema III, així que la seva segona estrofa comença una línia per sota de l'anglesa; tanca el bloc anglès després d'aquesta estrofa i posa un `:::space{lines=2}` abans de la següent per igualar-les.
 
 ```diff
 -const GAP = 8; // mm between the original and the translation: each column is 55 mm wide
@@ -67,4 +67,4 @@ Amb 3 em, *reflection.* comença a la pàgina 3 un em més endins.
 ## Errors freqüents
 
 - Un `:::space` posat abans del títol anglès desapareix: la segona columna s'obre al bloc que indica `breaks`, i l'espai cau al tall. Posa'l després del títol, com el `:::space{lines=0.5}` que segueix aquí el títol de cada columna.
-- Compta `breaks` des del títol castellà: amb un títol i 12 versos, el títol anglès és el bloc 14. Cada vers és un bloc, així que un vers castellà més porta el títol anglès al bloc 15, i `breaks` ha de pujar amb ell.
+- Compta `breaks` des del títol castellà: amb un títol i tres estrofes, el títol anglès és el bloc 5. Cada estrofa és un bloc, així que una estrofa castellana més porta el títol anglès al bloc 6, i `breaks` ha de pujar amb ell; un vers més dins d'una estrofa no mou res.

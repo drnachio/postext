@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 030 · Anthology with bylines ═══════════════════════════════
 // https://postext.dev/en/cookbook/anthology-with-bylines
 // Code: MIT · Text: Hazlitt, Thoreau, Stevenson (public domain) · Cover: diffusion models
-// Fonts: Spectral, Gloock, Hanken Grotesk (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Spectral, Gloock, Hanken Grotesk (SIL OFL 1.1) · Needs postext ≥ 1.23.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
   from 'https://esm.sh/postext';
 
@@ -163,9 +163,9 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: { fontFamily: 'Gloock', fontWeight: 400, levels: [essays] },
   headingStyles: [coverStyle, { id: 'contents', ...bare, advancedDesign: contentsOpener }],
   toc: contents,
-  // Quoted verse, one paragraph per line (a paragraph keeps no line breaks, and 1.4.1 prints a
-  // Markdown blockquote in a fixed #666666 grey); 'runon' resumes the sentence after it.
-  paragraphStyles: [{ id: 'verse', firstLineIndent: mm(8), textAlign: 'left' },
+  // Quoted verse is a :::verse block, a line of verse a line (1.4.1 prints a Markdown
+  // blockquote in a fixed #666666 grey), 8 mm in; 'runon' resumes the sentence after it.
+  paragraphStyles: [{ id: 'verse', indent: mm(8) },
     { id: 'runon', firstLineIndent: pt(0) },
     // In the note, under a :::space: a style's margins do not count inside a box (gotcha:
     // box-paragraph-margins). It takes the note body's indent, 0.

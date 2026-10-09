@@ -9,14 +9,14 @@
   "genres": ["poetry"],
   "outputs": ["canvas", "pdf"],
   "features": {
-    "primary": ["paragraph-styles", "gyodori-headings", "vertical-writing"],
-    "also": ["right-binding", "paragraph-indents", "furigana", "japanese-kinsoku", "japanese-numerals", "kana-scripts", "character-grid", "cjk-fonts", "aozora-import", "heading-styles", "opener-design", "design-elements", "running-heads", "page-role-filters", "mirrored-margins", "color-palette", "pdf-export"]
+    "primary": ["paragraph-styles", "verse", "vertical-writing"],
+    "also": ["gyodori-headings", "right-binding", "paragraph-indents", "furigana", "japanese-kinsoku", "japanese-numerals", "kana-scripts", "character-grid", "cjk-fonts", "aozora-import", "heading-styles", "opener-design", "design-elements", "running-heads", "mirrored-margins", "color-palette", "pdf-export"]
   },
   "answers": ["Q43", "Q145"],
-  "gaps": ["hard-line-breaks"],
+  "gaps": [],
   "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order", "quote-frontmatter", "font-range-holes"],
   "related": ["poetry-collection", "tang-poems-facing-english", "bunko-novel-furigana", "shaped-verse"],
-  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "engine": { "postext": "1.23.0", "postextPdf": "1.23.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [2, 3], "card": "spread", "pages": "all" },

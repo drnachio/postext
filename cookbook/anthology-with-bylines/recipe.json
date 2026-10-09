@@ -12,7 +12,7 @@
     "primary": ["toc", "heading-attributes", "running-heads"],
     "also": [
       "opener-design", "heading-numbering", "heading-styles", "unnumbered-headings", "covers",
-      "design-images", "design-anchoring", "page-role-filters", "mirrored-margins",
+      "design-images", "design-anchoring", "verse", "mirrored-margins",
       "paragraph-styles", "fixed-callouts", "callout-styles", "vertical-space", "frontmatter",
       "color-palette", "resources", "canvas-rendering"
     ]
@@ -23,7 +23,7 @@
     "heading-number-placeholders", "palette-skips-designs", "box-paragraph-margins",
     "runt-tracking-unpainted", "fonts-first", "overflow-ellipsis-default"
   ],
-  "gaps": ["hard-line-breaks"],
+  "gaps": [],
   "explainsWarnings": [],
   "workarounds": [
     {"followup": "EF-05", "package": "postext", "note": "headings.levels[0] restates breakBefore: { enabled: true, parity: 'any' }: in 1.4.1 any headings object drops the documented H1 page break, and the cover and contents styles inherit this one"},
@@ -34,10 +34,10 @@
     {"followup": "EF-09", "package": "postext", "note": "the essay numeral is {number} from numberingTemplate '{1:I}'; {numberRoman} prints nothing in a chapter opener in 1.4.1"},
     {"followup": "EF-77", "package": "postext", "note": "a :::space{lines=1} (one 12.5 pt line of the note's leading) separates the colophon from the note on the contents page: the colophon style's marginTop is ignored inside a box"},
     {"followup": "EF-111", "package": "postext", "note": "bodyText.maxRuntTracking is 0: a runt fix's negative tracking is measured but not painted in 1.4.1, so word spacing alone shortens runts"},
-    { "followup": "EF-135","package": "postext", "note": "the lines of verse Hazlitt quotes are a :::paragraphs{style=\"verse\"} container, one paragraph per line in *italics*, not a Markdown blockquote: 1.4.1 paints a blockquote in a hard-coded #666666 italic, with the body's first-line indent and no side indent, and no colour or indent setting reaches it"}
+    { "followup": "EF-135","package": "postext", "note": "the lines of verse Hazlitt quotes are a :::verse{style=\"verse\"} block in *italics*, not a Markdown blockquote: 1.4.1 paints a blockquote in a hard-coded #666666 italic, with the body's first-line indent and no side indent, and no colour or indent setting reaches it"}
   ],
   "related": ["front-matter-roman-to-arabic", "letters-edition", "running-heads-by-parity", "magazine-cover-and-contents"],
-  "engine": {"postext": "1.4.1"},
+  "engine": {"postext": "1.23.0"},
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": {"locales": ["en"]},
   "capture": {

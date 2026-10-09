@@ -78,6 +78,6 @@ Con la paridad `'odd'`, Stevenson pasa a la página 9, tras una página 8 en bla
 
 ## Errores frecuentes
 
-- Hazlitt cita versos en mitad de sus frases. Un párrafo no conserva los saltos de línea, así que cada verso es un párrafo propio dentro de un contenedor `:::paragraphs{style="verse"}`, y la frase que continúa después va en un estilo `runon`, sin sangría. Una cita en bloque de Markdown saldría en cursiva de un gris fijo, `#666666`, con la sangría de primera línea del cuerpo y sin sangría lateral, y ningún ajuste lo cambia en 1.4.1.
+- Hazlitt cita versos en mitad de sus frases. Los versos van en un bloque `:::verse{style="verse" align=start}`, una línea de Markdown por verso, entrados 8 mm, y la frase que continúa después va en un estilo `runon`, sin sangría. Una cita en bloque de Markdown saldría en cursiva de un gris fijo, `#666666`, con la sangría de primera línea del cuerpo y sin sangría lateral, y ningún ajuste lo cambia en 1.4.1.
 - Un atributo que falta en un título no imprime nada ni da aviso. Sin `author="…"`, la firma y la cabecera par de ese ensayo salen vacías y su línea bajo el título desaparece del índice.
 - Los 14,4 pt del paso 2 valen solo para Gloock. Con otra fuente, averigua a qué altura sobre la línea base pone Chrome su centro: `measureText('I').alphabeticBaseline` con `textBaseline = 'middle'` la devuelve en píxeles, con el signo cambiado. Después da a `numberFontSize` el valor de 0,3 veces el cuerpo de la entrada dividido por esa distancia en em (la de Hanken Grotesk es 0,2675 em).

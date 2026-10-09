@@ -22,40 +22,31 @@ El color de las balsas lo dan sobre todo un alga microscópica, *Dunaliella sali
 # Sal de agosto {style="poems" other="August Salt"}
 
 :::callout{type="poem" title="I"}
-:::columns{count=2 breaks="14"}
+:::columns{count=2 breaks="5"}
 :::paragraphs{style="poem-title"}
 La salina al alba
 :::
 
 :::space{lines=0.5}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 Antes del sol, la salina
-
 es una lámina de cobre.
-
 Los flamencos duermen de pie,
-
 cada uno sobre su reflejo.
+:::
 
 :::space{lines=2}
 
+:::verse{style="verse" align=start}
 El agua no se mueve.
-
 Tiene el color de la encía,
-
 de la gamba cocida,
-
 de una uña que aprieta.
 
-:::space
-
 Mi padre dice que es un alga
-
 y un camarón diminuto,
-
 que el flamenco se vuelve rosa
-
 de tanto comérselos.
 :::
 
@@ -65,73 +56,47 @@ The Salt Pans at Dawn
 
 :::space{lines=0.5}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 *Before the sun, the salt pan*
-
 *is a sheet of copper.*
-
 *The flamingos sleep upright,*
-
 *each one standing on its own reflection.*
 
-:::space
-
 *The water does not move.*
-
 *It is the colour of gums,*
-
 *of a boiled prawn,*
-
 *of a fingernail pressed down.*
 
-:::space
-
 *My father says it is an alga*
-
 *and a tiny shrimp,*
-
 *that the flamingos turn pink*
-
 *from eating so many.*
 :::
 :::
 :::
 
 :::callout{type="poem" title="II"}
-:::columns{count=2 breaks="14"}
+:::columns{count=2 breaks="5"}
 :::paragraphs{style="poem-title"}
 El rastro
 :::
 
 :::space{lines=0.5}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 A las seis ya está en la balsa
-
 con el agua a los tobillos
-
 y un rastro de madera
-
 más viejo que yo.
 
-:::space
-
 Tira de la sal hacia sí
-
 como quien recoge una red
-
 sin peces, nada más que luz
-
 que cruje.
 
-:::space
-
 Por la tarde tiene grietas
-
 en los nudillos, finas
-
 como las de la costra
-
 que deja el agua al irse.
 :::
 
@@ -141,63 +106,42 @@ The Rake
 
 :::space{lines=0.5}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 *By six he is in the pond*
-
 *with water to his ankles*
-
 *and a wooden rake*
-
 *older than I am.*
 
-:::space
-
 *He draws the salt towards him*
-
 *the way you haul in a net*
-
 *with no fish in it, only light*
-
 *that crunches.*
 
-:::space
-
 *By evening he has cracks*
-
 *across his knuckles, as fine*
-
 *as the ones in the crust*
-
 *the water leaves as it goes.*
 :::
 :::
 :::
 
 :::callout{type="poem" title="III"}
-:::columns{count=2 breaks="10"}
+:::columns{count=2 breaks="4"}
 :::paragraphs{style="poem-title"}
 Los montones
 :::
 
 :::space{lines=0.5}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 En agosto crecen montes
-
 blancos junto a la carretera.
-
 Los turistas paran y hacen fotos:
-
 creen que es nieve, o yeso.
 
-:::space
-
 Un camión se lleva uno
-
 cada mañana. A la vuelta
-
 la balsa ya tiene otra vez
-
 el cielo dentro.
 :::
 
@@ -207,53 +151,37 @@ The Heaps
 
 :::space{lines=0.5}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 *In August white hills grow*
-
 *beside the coast road.*
-
 *Tourists stop and take pictures:*
-
 *they think it is snow, or plaster.*
 
-:::space
-
 *A lorry takes one away*
-
 *every morning. On its return*
-
 *the pond already holds*
-
 *the sky again.*
 :::
 :::
 :::
 
 :::callout{type="poem" title="IV"}
-:::columns{count=2 breaks="10"}
+:::columns{count=2 breaks="4"}
 :::paragraphs{style="poem-title"}
 Levante
 :::
 
 :::space{lines=0.5}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 Cuando entra el levante
-
 la sal cuaja en tres días.
-
 Mi padre lo nota antes:
-
 se le pone ronca la voz.
 
-:::space
-
 Se anuda el pañuelo
-
 y mira el cielo del cabo
-
 como se mira a un perro
-
 que puede morder.
 :::
 
@@ -263,53 +191,37 @@ East Wind
 
 :::space{lines=0.5}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 *When the east wind comes in*
-
 *the salt sets in three days.*
-
 *My father feels it first:*
-
 *his voice goes hoarse.*
 
-:::space
-
 *He knots his neckerchief*
-
 *and looks at the sky over the cape*
-
 *the way you look at a dog*
-
 *that might bite.*
 :::
 :::
 :::
 
 :::callout{type="poem" title="V"}
-:::columns{count=2 breaks="10"}
+:::columns{count=2 breaks="4"}
 :::paragraphs{style="poem-title"}
 Septiembre
 :::
 
 :::space{lines=0.5}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 En septiembre se van todos.
-
 Se queda sola la iglesia
-
 entre las balsas vacías
-
 y un flamenco que no se decide.
 
-:::space
-
 Me queda en la boca
-
 el sabor de su pulgar
-
 cuando me limpiaba la cara
-
 antes de entrar a misa.
 :::
 
@@ -319,23 +231,15 @@ September
 
 :::space{lines=0.5}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse" align=start}
 *In September everyone leaves.*
-
 *The church is left alone*
-
 *among the empty ponds*
-
 *and one flamingo, undecided.*
 
-:::space
-
 *What stays in my mouth*
-
 *is the taste of his thumb*
-
 *when he wiped my face*
-
 *before we went in to Mass.*
 :::
 :::

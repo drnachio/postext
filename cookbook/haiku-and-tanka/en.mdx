@@ -16,13 +16,13 @@ Eight pages of a small poetry book on a 四六判 page of 127 × 188 mm, bound o
 
 ### 1 · A line of verse is a paragraph, and its style says where it starts
 
-The code is [the short answer](#the-short-answer) above. Postext has no hard line break, so each line of a poem is a paragraph of its own inside a `:::paragraphs` fence, and the fence's style sets the indent: `indent: em(3)` stands a haiku three characters below the head of the line (the Aozora text sets them two down; three gives the poems more air), and `firstLineIndent: em(0)` stops the body's one-character indent from adding to it. A haiku's 17 or so characters fit any line of 36, so it never wraps. The signature is a paragraph of its own: `textAlign: 'end'` sets it against the foot of the line (地付き, jitsuki) and `endIndent: em(5)` raises it five characters from there (地から五字上げ), as the edition this text comes from does ([Paragraph styles](/en/docs/configuration#paragraph-styles)).
+The code is [the short answer](#the-short-answer) above. A haiku is one line, so it is a paragraph of its own inside a `:::paragraphs` fence, and the fence's style sets the indent: `indent: em(3)` stands a haiku three characters below the head of the line (the Aozora text sets them two down; three gives the poems more air), and `firstLineIndent: em(0)` stops the body's one-character indent from adding to it. A haiku's 17 or so characters fit any line of 36, so it never wraps. The signature is a paragraph of its own: `textAlign: 'end'` sets it against the foot of the line (地付き, jitsuki) and `endIndent: em(5)` raises it five characters from there (地から五字上げ), as the edition this text comes from does ([Paragraph styles](/en/docs/configuration#paragraph-styles)).
 
 ### 2 · Keep each tanka on one page
 
 <Excerpt region="tanka" />
 
-A tanka's three lines are three paragraphs, and the engine keeps a paragraph's lines together but never one paragraph with the next. A box does keep its content together, so each tanka goes in a `:::callout` whose style draws nothing: no background, no padding, and a margin of one line after it, the blank line between poems. On page 5 the third tanka does not fit under the part title and the first two, so it opens page 6 whole, rather than leaving its first line behind ([Callout styles](/en/docs/configuration#callout-styles)).
+Takuboku's tanka are a `:::verse` block, each tanka a stanza: its three lines are three lines of the Markdown, and the blank line between two tanka in the source leaves a blank line of the grid between the poems. The poem's style gives the two-character indent and the line under the group, and the lines hang from the head as any column does. `keepStanzas=3` keeps every stanza of three lines whole: on page 5 the third tanka does not fit under the part title and the first two, so it opens page 6 whole, rather than leaving its first line behind. The ornament between two groups introduces the next one, so it goes on with its first tanka instead of standing alone at a page's foot ([`:::verse`](/en/docs/document-format#verse)).
 
 ### 3 · Space the place names to one width
 
@@ -55,9 +55,9 @@ School anthologies sometimes set an ideographic space between the 5, 7 and 5 sou
 
 ### Let a long tanka break
 
-A box style with `keepTogether: false` lets a tanka start at the foot of a page and go on overleaf, as a dense anthology of a thousand poems would.
+Without `keepStanzas`, a tanka may start at the foot of a page and go on overleaf as the orphan and widow rules allow, as a dense anthology of a thousand poems would.
 
 ```diff
--const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: true,
-+const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: false,
+-:::verse{style="tanka" keepStanzas=3}
++:::verse{style="tanka"}
 ```

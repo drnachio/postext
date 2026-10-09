@@ -78,6 +78,6 @@ Com a paridade `'odd'`, Stevenson passa para a página 9, depois de uma página 
 
 ## Erros comuns
 
-- Hazlitt cita versos no meio das frases. Um parágrafo não guarda quebras de linha, então cada verso é um parágrafo próprio dentro de um contêiner `:::paragraphs{style="verse"}`, e a frase que continua depois dele vai num estilo `runon`, sem recuo. Uma citação em bloco do Markdown sairia num itálico cinza fixo, `#666666`, com o recuo de primeira linha do corpo e sem recuo lateral, e nenhuma configuração muda isso na 1.4.1.
+- Hazlitt cita versos no meio das frases. Os versos vão num bloco `:::verse{style="verse" align=start}`, uma linha de Markdown por verso, recuados 8 mm, e a frase que continua depois dele vai num estilo `runon`, sem recuo. Uma citação em bloco do Markdown sairia num itálico cinza fixo, `#666666`, com o recuo de primeira linha do corpo e sem recuo lateral, e nenhuma configuração muda isso na 1.4.1.
 - Um atributo que falta num título não imprime nada e não gera aviso. Sem `author="…"`, a assinatura e o cabeço par de um ensaio saem vazios, e a linha dele sob o título some do sumário.
 - Os 14,4 pt do passo 2 valem só para a Gloock. Para outra fonte, descubra a que altura acima da linha de base o Chrome põe o centro dela: `measureText('I').alphabeticBaseline` com `textBaseline = 'middle'` devolve esse valor, com o sinal trocado, em pixels. Depois defina `numberFontSize` como 0,3 × o corpo da entrada dividido por essa distância em em (a da Hanken Grotesk é 0,2675 em).

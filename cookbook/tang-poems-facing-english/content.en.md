@@ -7,13 +7,10 @@ subtitle: "Tang Poems"
 
 # Night Thoughts {style="en" kicker="Li Bai · 701–762"}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse"}
 I wake, and moonbeams play around my bed,
-
   Glittering like hoar-frost to my wondering eyes;
-
 Up towards the glorious moon I raise my head,
-
   Then lay me down,—and thoughts of home arise.
 :::
 
@@ -31,37 +28,22 @@ Up towards the glorious moon I raise my head,
 
 # Drinking Alone under the Moon {style="en" kicker="Li Bai · 701–762"}
 
-:::paragraphs{style="verse-long"}
+:::verse{style="verse"}
 An arbour of flowers and a kettle of wine:
-
 Alas! in the bowers no companion is mine.
-
 Then the moon sheds her rays on my goblet and me,
-
 And my shadow betrays we’re a party of three.
 
-:::space{lines=1}
-
 Though the moon cannot swallow her share of the grog,
-
 And my shadow must follow wherever I jog,—
-
 Yet their friendship I’ll borrow and gaily carouse,
-
 And laugh away sorrow while spring-time allows.
 
-:::space{lines=1}
-
 See the moon,—how she glances response to my song;
-
 See my shadow,—it dances so lightly along!
-
 While sober I feel you are both my good friends;
-
 When drunken I reel, our companionship ends.
-
 But we’ll soon have a greeting without a good-bye,
-
 At our next merry meeting away in the sky.
 :::
 
@@ -95,13 +77,10 @@ At our next merry meeting away in the sky.
 
 # Stop-short {style="en" kicker="Du Fu · 712–770"}
 
-:::paragraphs{style="verse"}
+:::verse{style="verse"}
 White gleam the gulls across the darkling tide,
-
   On the green hills the red flowers seem to burn;
-
 Alas! I see another spring has died….
-
   When will it come—the day of my return?
 :::
 
@@ -119,13 +98,10 @@ Alas! I see another spring has died….
 
 # The Bamboo Lodge {style="en" kicker="Wang Wei · 701–761"}
 
-:::paragraphs{style="verse-short"}
+:::verse{style="verse"}
 Beneath the bamboo grove, alone,
-
   I seize my lute and sit and croon;
-
 No ear to hear me, save mine own:
-
   No eye to see me—save the moon.
 :::
 

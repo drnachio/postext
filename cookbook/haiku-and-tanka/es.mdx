@@ -16,13 +16,13 @@ Ocho páginas de un librito de poesía en una página 四六判 de 127 × 188 mm
 
 ### 1 · Un verso es un párrafo, y su estilo dice dónde empieza
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. Postext no tiene salto de línea manual, así que cada verso de un poema es un párrafo propio dentro de un contenedor `:::paragraphs`, y el estilo del contenedor fija la sangría: `indent: em(3)` baja un haiku tres caracteres desde la cabeza de la línea (el texto de Aozora los pone a dos; tres les dan más aire), y `firstLineIndent: em(0)` evita que se le sume la sangría de un carácter del texto. Los 17 sonidos más o menos de un haiku caben en cualquier línea de 36, así que nunca saltan. La firma es otro párrafo: `textAlign: 'end'` la apoya en el pie de la línea (地付き, jitsuki) y `endIndent: em(5)` la levanta cinco caracteres desde ahí (地から五字上げ), como hace la edición de la que procede el texto ([Estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)).
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un haiku es una sola línea, así que es un párrafo propio dentro de un contenedor `:::paragraphs`, y el estilo del contenedor fija la sangría: `indent: em(3)` baja un haiku tres caracteres desde la cabeza de la línea (el texto de Aozora los pone a dos; tres les dan más aire), y `firstLineIndent: em(0)` evita que se le sume la sangría de un carácter del texto. Los 17 sonidos más o menos de un haiku caben en cualquier línea de 36, así que nunca saltan. La firma es otro párrafo: `textAlign: 'end'` la apoya en el pie de la línea (地付き, jitsuki) y `endIndent: em(5)` la levanta cinco caracteres desde ahí (地から五字上げ), como hace la edición de la que procede el texto ([Estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)).
 
 ### 2 · Mantén cada tanka en una sola página
 
 <Excerpt region="tanka" />
 
-Los tres versos de un tanka son tres párrafos, y el motor mantiene juntas las líneas de un párrafo, pero nunca un párrafo con el siguiente. Un recuadro sí mantiene junto su contenido, así que cada tanka va en un `:::callout` cuyo estilo no dibuja nada: sin fondo, sin relleno y con un margen de una línea detrás, la línea en blanco entre poemas. En la página 5 el tercer tanka no cabe bajo el título de la parte y los dos primeros, así que abre entero la página 6 en lugar de dejar atrás su primer verso ([Estilos de aviso](/es/docs/configuration#estilos-de-aviso)).
+Los tankas de Takuboku forman un bloque `:::verse`, cada tanka una estrofa: sus tres versos son tres líneas del Markdown, y la línea en blanco entre dos tankas del texto deja una línea en blanco de la rejilla entre los poemas. El estilo del poema da la sangría de dos caracteres y la línea bajo el grupo, y los versos cuelgan de la cabeza como cualquier columna. `keepStanzas=3` mantiene entera cada estrofa de tres versos: en la página 5 el tercer tanka no cabe bajo el título de la parte y los dos primeros, así que abre entero la página 6 en lugar de dejar atrás su primer verso. El adorno entre dos grupos presenta el siguiente, así que pasa con su primer tanka en lugar de quedarse solo al pie de una página ([`:::verse`](/es/docs/document-format#verse)).
 
 ### 3 · Espacia los nombres de lugar a un mismo ancho
 
@@ -55,9 +55,9 @@ Algunas antologías escolares ponen un espacio ideográfico entre los 5, 7 y 5 s
 
 ### Deja que un tanka largo se parta
 
-Un estilo de recuadro con `keepTogether: false` deja que un tanka empiece al pie de una página y siga en la siguiente, como haría una antología apretada de mil poemas.
+Sin `keepStanzas`, un tanka puede empezar al pie de una página y seguir en la siguiente según las reglas de viudas y huérfanas, como haría una antología apretada de mil poemas.
 
 ```diff
--const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: true,
-+const calloutStyles = [{ id: 'tanka', backgroundEnabled: false, keepTogether: false,
+-:::verse{style="tanka" keepStanzas=3}
++:::verse{style="tanka"}
 ```

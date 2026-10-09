@@ -16,13 +16,13 @@ Un cuaderno bilingüe de cinco poemas sobre una salina del sur de España, de 15
 
 ### 1 · Un poema es un recuadro con un corte de columna fijo
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. `:::columns` solo funciona dentro de un recuadro, así que cada poema es un recuadro cuyo estilo quita el fondo y el relleno e imprime el `title` de la directiva, el número ([`:::columns`](/es/docs/document-format#columns)). Sin `breaks`, el grupo corta donde sus dos columnas quedan igualadas. En estos poemas las dos mitades miden lo mismo y el corte cae de todos modos en el título inglés, pero si alargas dos versos de *The Rake* hasta que no quepan, el corte baja un bloque y THE RAKE se queda al pie de la columna española. `breaks="14"` fija el bloque que abre la segunda columna, así que el título inglés la encabeza midan lo que midan las dos mitades.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `:::columns` solo funciona dentro de un recuadro, así que cada poema es un recuadro cuyo estilo quita el fondo y el relleno e imprime el `title` de la directiva, el número ([`:::columns`](/es/docs/document-format#columns)). Sin `breaks`, el grupo corta donde sus dos columnas quedan igualadas. En estos poemas las dos mitades miden lo mismo y el corte cae de todos modos en el título inglés, pero si alargas dos versos de *The Rake* hasta que no quepan, el corte baja un bloque y THE RAKE se queda al pie de la columna española. `breaks="5"` fija el bloque que abre la segunda columna, así que el título inglés la encabeza midan lo que midan las dos mitades.
 
-### 2 · Un párrafo por verso, un :::space por salto de estrofa
+### 2 · Un bloque :::verse por columna, una línea en blanco por salto de estrofa
 
 <Excerpt region="verse" />
 
-Markdown une las líneas de un párrafo, así que cada verso es un párrafo aparte con el estilo `verse`, en bandera, al que la versión 1.4.1 nunca aplica la separación silábica. Un `:::space` entre estrofas deja una línea en blanco en cada columna. No es un bloque, así que `breaks` no lo cuenta ([`:::space`](/es/docs/document-format#space)). El verso inglés *each one standing on its own reflection.* no cabe en su columna de 55 mm y sigue en la línea de abajo, sangrado 2 em; la estrofa española de enfrente termina con `:::space{lines=2}`, así que las estrofas siguientes empiezan en la misma línea.
+Cada mitad de un poema es un bloque `:::verse`: un verso por línea del Markdown, en bandera y sin separación silábica, y una línea en blanco entre estrofas, que deja una línea en blanco en la columna ([`:::verse`](/es/docs/document-format#verse)). Cada estrofa es un bloque, así que `breaks` cuenta estrofas, no versos. El verso inglés *each one standing on its own reflection.* no cabe en su columna de 55 mm y sigue en la línea de abajo, sangrado 2 em; la mitad española cierra su bloque tras la estrofa de enfrente y pone un `:::space{lines=2}` antes de la siguiente, así que las estrofas siguientes empiezan en la misma línea. Un `:::space` no es un bloque, y `breaks` no lo cuenta ([`:::space`](/es/docs/document-format#space)).
 
 <PageShot page={3} crop="0.1,0.385,0.8,0.248" caption="El poema I en la página 3: reflection. pasa a la línea siguiente en el inglés, y la estrofa española termina con dos líneas en blanco en vez de una." />
 
@@ -48,7 +48,7 @@ La página par lleva el título español y la impar el inglés, en el orden de l
 
 ### Ensancha el medianil
 
-Con 12 mm las columnas se quedan en 53 mm, y *Los turistas paran y hacen fotos:* ya no cabe en el poema III, así que su segunda estrofa empieza una línea por debajo de la inglesa; termina la estrofa inglesa con `:::space{lines=2}` para igualarlas.
+Con 12 mm las columnas se quedan en 53 mm, y *Los turistas paran y hacen fotos:* ya no cabe en el poema III, así que su segunda estrofa empieza una línea por debajo de la inglesa; cierra el bloque inglés tras esa estrofa y pon un `:::space{lines=2}` antes de la siguiente para igualarlas.
 
 ```diff
 -const GAP = 8; // mm between the original and the translation: each column is 55 mm wide
@@ -67,4 +67,4 @@ Con 3 em, *reflection.* empieza en la página 3 un em más adentro.
 ## Errores frecuentes
 
 - Un `:::space` puesto antes del título inglés desaparece: la segunda columna se abre en el bloque que nombra `breaks`, y el espacio cae en el corte. Ponlo después del título, como el `:::space{lines=0.5}` que sigue aquí al título de cada columna.
-- Cuenta `breaks` desde el título español: con un título y 12 versos, el título inglés es el bloque 14. Cada verso es un bloque, así que un verso español más lleva el título inglés al bloque 15, y `breaks` tiene que subir con él.
+- Cuenta `breaks` desde el título español: con un título y tres estrofas, el título inglés es el bloque 5. Cada estrofa es un bloque, así que una estrofa española más lleva el título inglés al bloque 6, y `breaks` tiene que subir con él; un verso más dentro de una estrofa no mueve nada.

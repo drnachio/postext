@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "bilingual-facing-verse",
-  "sourceHash": "ab0022b9df2ac64d4ce0ebaac1b9e63b22987175c36c33cb7d346594c1a43f43",
+  "sourceHash": "0d443a81ed43b5aac4c1a9c6d58b85dfde937a2c4a8af55d9de4ec2cbb349677",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.685Z",
+  "capturedAt": "2026-10-09T18:24:37.882Z",
   "variants": {
     "en": {
-      "hash8": "58ab40b9",
-      "vdtHash": "096708040825f52864cb9dff291f8c73cf27af74",
+      "hash8": "cf8d4f0a",
+      "vdtHash": "a47a526788d57f452ebd46387e78d7f3fa398b5d",
       "timings": {
-        "importMs": 174,
-        "fontsMs": 40,
-        "buildMs": 60,
-        "totalMs": 847,
+        "importMs": 116,
+        "fontsMs": 41,
+        "buildMs": 48,
+        "totalMs": 777,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Tenor Sans"
         ],
         "pages": 5,
-        "ownLines": 166
+        "ownLines": 167
       },
       "pages": [
         {
@@ -125,7 +125,7 @@
       },
       "sandbox": {
         "file": "bilingual-facing-verse.postext",
-        "bytes": 211117,
+        "bytes": 211095,
         "folio": "ee93f084"
       },
       "detected": {
@@ -252,13 +252,14 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 277,
+        "configLeaves": 276,
         "designElements": 16,
         "directives": [
           ":::paragraphs",
           ":::callout",
           ":::columns",
-          ":::space"
+          ":::space",
+          ":::verse"
         ],
         "inline": [
           "{attrs}"
@@ -302,6 +303,7 @@
           "paragraph-styles",
           "resources",
           "section-running-heads",
+          "verse",
           "vertical-space"
         ],
         "suggestedLevel": 3
@@ -314,17 +316,23 @@
           "share": 0,
           "worst": 1.32
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "629a03c6",
-      "vdtHash": "2e78ade8e30d078966fbfe46fc2ccbe04be7ae54",
+      "hash8": "8e119e0e",
+      "vdtHash": "287f506abf059d46be4750a587146658ce118134",
       "timings": {
-        "importMs": 208,
-        "fontsMs": 1293,
-        "buildMs": 175,
-        "totalMs": 4901,
+        "importMs": 162,
+        "fontsMs": 43,
+        "buildMs": 46,
+        "totalMs": 802,
         "builds": 1
       },
       "specimen": {
@@ -346,7 +354,7 @@
           "Tenor Sans"
         ],
         "pages": 5,
-        "ownLines": 166
+        "ownLines": 167
       },
       "pages": [
         {
@@ -433,7 +441,7 @@
       },
       "sandbox": {
         "file": "bilingual-facing-verse.postext",
-        "bytes": 211578,
+        "bytes": 211552,
         "folio": "ee93f084"
       },
       "detected": {
@@ -560,13 +568,14 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 277,
+        "configLeaves": 276,
         "designElements": 16,
         "directives": [
           ":::paragraphs",
           ":::callout",
           ":::columns",
-          ":::space"
+          ":::space",
+          ":::verse"
         ],
         "inline": [
           "{attrs}"
@@ -610,6 +619,7 @@
           "paragraph-styles",
           "resources",
           "section-running-heads",
+          "verse",
           "vertical-space"
         ],
         "suggestedLevel": 3
@@ -622,7 +632,13 @@
           "share": 0,
           "worst": 1.33
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "anthology-with-bylines",
-  "sourceHash": "50648987540d0f86fd15df48d5e6c7908646ee1bbf547ae3624eae4223f1b5b2",
+  "sourceHash": "46924e1fe8d5ee5ed9f94a3cbff9fb7320836180d26213caaa1e23a964a67a05",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.605Z",
+  "capturedAt": "2026-10-09T18:24:37.868Z",
   "variants": {
     "en": {
-      "hash8": "510db69f",
-      "vdtHash": "324ae92df9cd4b804d32a39018f9e201cd575b78",
+      "hash8": "db6c9ea7",
+      "vdtHash": "3a20b04ee50cb20bae50c8931025b36e54967128",
       "timings": {
-        "importMs": 163,
-        "fontsMs": 51,
-        "buildMs": 29,
-        "totalMs": 930,
+        "importMs": 116,
+        "fontsMs": 42,
+        "buildMs": 25,
+        "totalMs": 819,
         "builds": 2
       },
       "specimen": {
@@ -177,7 +177,7 @@
       },
       "sandbox": {
         "file": "anthology-with-bylines.postext",
-        "bytes": 243458,
+        "bytes": 243469,
         "folio": "6cdad6f3"
       },
       "detected": {
@@ -301,8 +301,8 @@
           "paragraphStyles[].firstLineIndent",
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
+          "paragraphStyles[].indent",
           "paragraphStyles[].lineHeight",
-          "paragraphStyles[].textAlign",
           "toc",
           "toc.leader",
           "toc.leader.char",
@@ -344,13 +344,14 @@
           "paragraphStyles",
           "toc"
         ],
-        "configLeaves": 347,
+        "configLeaves": 346,
         "designElements": 17,
         "directives": [
           ":::toc",
           ":::callout",
           ":::space",
-          ":::paragraphs"
+          ":::paragraphs",
+          ":::verse"
         ],
         "inline": [
           "{attrs}"
@@ -395,6 +396,7 @@
           "section-running-heads",
           "toc",
           "unnumbered-headings",
+          "verse",
           "vertical-space"
         ],
         "suggestedLevel": 3
@@ -412,6 +414,11 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 0.93 MB (warning at 0.9 MB for 9 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

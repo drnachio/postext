@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "tang-poems-facing-english",
-  "sourceHash": "60c99cd1344d7b45907f8f2223cb551437ae5b50445d1c772c8bfb07d8509c99",
+  "sourceHash": "b63ed03fc8a758b6cdeda04aa1a3a6a69eee75b430d660ac1781e90e159cf091",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.23.0",
+    "postextPdf": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.479Z",
+  "capturedAt": "2026-10-09T18:24:37.848Z",
   "variants": {
     "en": {
-      "hash8": "797564d0",
-      "vdtHash": "dd9d33ac21f45294c82a1c76d75b26a102161cef",
+      "hash8": "98fefe97",
+      "vdtHash": "fe8c3a47fa7b583c9e933c9c02686ce3641c7333",
       "timings": {
-        "importMs": 174,
-        "fontsMs": 269,
-        "buildMs": 19,
-        "totalMs": 1130,
+        "importMs": 154,
+        "fontsMs": 234,
+        "buildMs": 14,
+        "totalMs": 1080,
         "builds": 2
       },
       "specimen": {
@@ -41,7 +41,7 @@
           "Source Serif 4"
         ],
         "pages": 10,
-        "ownLines": 180
+        "ownLines": 178
       },
       "pages": [
         {
@@ -63,7 +63,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 23848,
+          "bytes": 23936,
           "alt": "Opening page 2: Night Thoughts."
         },
         {
@@ -85,7 +85,7 @@
           "h": 1419,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 66216,
+          "bytes": 66006,
           "alt": "Opening page 4: Drinking Alone under the Moon."
         },
         {
@@ -107,7 +107,7 @@
           "h": 1419,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 21134,
+          "bytes": 21182,
           "alt": "Opening page 6: Stop-short."
         },
         {
@@ -129,7 +129,7 @@
           "h": 1419,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 19928,
+          "bytes": 19924,
           "alt": "Opening page 8: The Bamboo Lodge."
         },
         {
@@ -195,12 +195,12 @@
       },
       "pdf": {
         "file": "tang-poems-facing-english.pdf",
-        "bytes": 153815,
+        "bytes": 153068,
         "pages": 10
       },
       "sandbox": {
         "file": "tang-poems-facing-english.postext",
-        "bytes": 14955,
+        "bytes": 14869,
         "folio": "e5860b68"
       },
       "detected": {
@@ -226,6 +226,8 @@
           "bodyText.lineHeight",
           "bodyText.referenceColor",
           "bodyText.textAlign",
+          "bodyText.verse",
+          "bodyText.verse.indentStep",
           "cjk",
           "cjk.grid",
           "cjk.grid.charsPerLine",
@@ -330,9 +332,10 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 329,
+        "configLeaves": 313,
         "designElements": 16,
         "directives": [
+          ":::verse",
           ":::paragraphs",
           ":::space"
         ],
@@ -409,6 +412,7 @@
           "pdf-export",
           "pdf-fonts",
           "section-running-heads",
+          "verse",
           "vertical-space"
         ],
         "suggestedLevel": 3
@@ -421,17 +425,23 @@
           "share": 0,
           "worst": 1.81
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "70601867",
-      "vdtHash": "3790ce61d78b2cc576613282dc9b71f2cad52d0f",
+      "hash8": "531cace4",
+      "vdtHash": "20379a704ae4498bfa893f920147d2e635607fa6",
       "timings": {
-        "importMs": 193,
-        "fontsMs": 272,
-        "buildMs": 25,
-        "totalMs": 3597,
+        "importMs": 150,
+        "fontsMs": 230,
+        "buildMs": 18,
+        "totalMs": 1010,
         "builds": 2
       },
       "specimen": {
@@ -455,7 +465,7 @@
           "Source Serif 4"
         ],
         "pages": 10,
-        "ownLines": 180
+        "ownLines": 178
       },
       "pages": [
         {
@@ -477,7 +487,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 23902,
+          "bytes": 23962,
           "alt": "Página de apertura 2: Night Thoughts."
         },
         {
@@ -499,7 +509,7 @@
           "h": 1419,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 66284,
+          "bytes": 66096,
           "alt": "Página de apertura 4: Drinking Alone under the Moon."
         },
         {
@@ -521,7 +531,7 @@
           "h": 1419,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 21192,
+          "bytes": 21228,
           "alt": "Página de apertura 6: Stop-short."
         },
         {
@@ -543,7 +553,7 @@
           "h": 1419,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 20014,
+          "bytes": 19952,
           "alt": "Página de apertura 8: The Bamboo Lodge."
         },
         {
@@ -609,12 +619,12 @@
       },
       "pdf": {
         "file": "tang-poems-facing-english.pdf",
-        "bytes": 156094,
+        "bytes": 155333,
         "pages": 10
       },
       "sandbox": {
         "file": "tang-poems-facing-english.postext",
-        "bytes": 15225,
+        "bytes": 15136,
         "folio": "e5860b68"
       },
       "detected": {
@@ -640,6 +650,8 @@
           "bodyText.lineHeight",
           "bodyText.referenceColor",
           "bodyText.textAlign",
+          "bodyText.verse",
+          "bodyText.verse.indentStep",
           "cjk",
           "cjk.grid",
           "cjk.grid.charsPerLine",
@@ -744,9 +756,10 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 329,
+        "configLeaves": 313,
         "designElements": 16,
         "directives": [
+          ":::verse",
           ":::paragraphs",
           ":::space"
         ],
@@ -823,6 +836,7 @@
           "pdf-export",
           "pdf-fonts",
           "section-running-heads",
+          "verse",
           "vertical-space"
         ],
         "suggestedLevel": 3
@@ -835,7 +849,13 @@
           "share": 0,
           "worst": 1.79
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

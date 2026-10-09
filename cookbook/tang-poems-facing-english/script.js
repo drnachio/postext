@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 083 · Tang poems facing their English verse ═══════════════
 // https://postext.dev/en/cookbook/tang-poems-facing-english
 // Code: MIT · Text: Tang poems, zh.wikisource; H. A. Giles, 1901, Project Gutenberg (PD)
-// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC, Source Serif 4 (OFL) · Needs postext ≥ 1.11.0
+// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC, Source Serif 4 (OFL) · Needs postext ≥ 1.23.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -64,19 +64,16 @@ const chinese = { id: 'zh', span: 'page', breakBefore: { enabled: true, parity: 
 // #endregion
 
 // #region verse: a Chinese row faces two lines of English on the grid both pages share
-// Each indent centres the longest line of the poems that use it on the 103.7 mm measure:
-// 97.8 mm in the moonlight poem, 91–93 mm in two quatrains, 66 mm in Wang Wei's.
-const verses = [['verse-long', 3], ['verse', 6], ['verse-short', 19]].map(([id, indent]) => ({
-  id, fontFamily: ROMAN, fontSize: pt(BODY), lineHeight: pt(LEAD), textAlign: 'left',
-  firstLineIndent: pt(0), indent: mm(indent) }));
+// Each English poem is a :::verse block: a line of verse a line of Markdown, Giles's indents
+// as two leading spaces (two ems: bodyText.verse.indentStep), a blank line between stanzas.
+// The block is centred on its longest line in the 103.7 mm measure, so a short poem and a
+// long one both sit in the middle.
+const verse = { id: 'verse', fontFamily: ROMAN, fontSize: pt(BODY), lineHeight: pt(LEAD) };
 const shi = { id: 'shi', fontFamily: KAI, fontSize: pt(SHI), lineHeight: pt(2 * LEAD),
   textAlign: 'left', firstLineIndent: pt(0), // two lines of verse to a row: 2 × LEAD
   // Five characters and a full-width mark, twice: 12 ems, centred in the 28 of the grid.
   // A fixed left edge, and the note numbers after each row's 。: every character keeps its column.
   indent: pt((CHARS * BODY - 12 * SHI) / 2) };
-// A paragraph drops its leading spaces (gap: hard-line-breaks): the two spaces Giles indents
-// his rhyming lines by become two em spaces behind a word joiner, which nothing trims.
-const indentVerse = (md) => md.replace(/^ {2}(?=\S)/gm, '\u2060\u2003\u2003');
 // #endregion
 
 // #region notes: glosses at the foot of the recto, in the edition's language
@@ -131,7 +128,7 @@ const header = { elements: [
 ] };
 // #endregion
 
-const paragraphStyles = [shi, ...verses,
+const paragraphStyles = [shi, verse,
   // Justified like the body, and divided by the patterns of the edition's language (bodyText).
   { id: 'prose', fontFamily: ROMAN, fontSize: pt(10), lineHeight: pt(LEAD),
     firstLineIndent: mm(4) },
@@ -152,7 +149,8 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   bodyText: { fontFamily: SERIF, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(2), indentAfterHeading: false,
-    hyphenation: { enabled: true, locale: LANG } }, // no Chinese patterns: the Latin's language
+    hyphenation: { enabled: true, locale: LANG }, // no Chinese patterns: the Latin's language
+    verse: { indentStep: em(1) } }, // Giles's two-space indents: two ems
   // The designs paint the titles; weight 400 keeps the heading blocks in a loaded face.
   // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
   headings: { fontFamily: SERIF, fontWeight: 400, levels: [{ level: 1, marginTop: pt(0),
@@ -187,7 +185,7 @@ await Promise.all([
 ]);
 // #endregion
 const doc = await buildWithFonts(
-  () => buildDocument({ markdown: indentVerse(markdown) }, config()), markdown);
+  () => buildDocument({ markdown }, config()), markdown);
 showPages(doc, { title: t({ en: 'Tang poems facing their English verse',
   es: 'Poemas Tang frente a su versión inglesa' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);
