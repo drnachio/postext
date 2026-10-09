@@ -50,6 +50,32 @@ node scripts/render.mjs my-book --lang es --jpeg /tmp/pages --pages 12-15   # + 
 node scripts/render.mjs my-book --lang es --out /tmp/my-book.pdf            # + the PDF (print checks)
 ```
 
+### The `postext` executable (no Node, no npm)
+
+The [postext command line](https://postext.dev/en/docs/command-line) lays a
+project out with the same engine and the Sandbox's reading of the manifest,
+from one self-contained executable (macOS, Linux, Windows; download it from
+`https://github.com/drnachio/postext/releases/latest/download/postext-<system>`,
+or `npx postext-cli`). Use it when the tools folder is not set up, or to check
+the delivered `.postext` exactly as a user will open it:
+
+```bash
+postext check my-book --locale es --json                         # every warning with chapter file:line and page; exit 3 on errors
+postext images my-book --locale es --pages 12-15 -f jpeg --dpi 100 -o /tmp/pages   # same page-NNN.jpg names as render.mjs
+postext image my-book --locale es --page '#40' --dpi 150 -o /tmp/p40.png
+postext pdf my-book --locale es -o /tmp/my-book.pdf              # print checks; --pdfx x4 --profile fogra51 to try print settings
+postext build my-book --locale es --images /tmp/pages --pages 12-15 -f jpeg --watch   # re-paints on every save
+postext info my-book --pages                                     # chapters, pages, where each font family comes from
+```
+
+Differences from `render.mjs`: `--chapters` is 1-based (`--chapters 3`
+is the third chapter file) and lays those chapters out as a short book;
+`check` reports the engine's warnings and the print preflight but not the
+Sandbox's extra checks that `render.mjs` adds with `SANDBOX-WARN`; a font
+family the project does not bundle is downloaded from Google Fonts (and
+cached) as the browser would, where `render.mjs` measures it with a
+stand-in face; `--offline` keeps it from downloading.
+
 ### Page JPEGs (the inner loop)
 
 `--jpeg DIR` paints pages with the engine's own canvas renderer
@@ -227,6 +253,9 @@ the page images instead of claiming the port is visually verified.
 
 ## 5. Print checks (when the PDF is the deliverable)
 
+- `postext check my-book --preflight` (or the PREFLIGHT lines of
+  `render.mjs`): low-resolution pictures, hairlines, small text in several
+  inks, ink over the limit, text near the trim, page by page.
 - `pdffonts out.pdf`: every face embedded.
 - `pdfimages -list out.pdf`: resolution of the photos. PyMuPDF `get_xobjects()`
   confirms print masters are embedded as pages.

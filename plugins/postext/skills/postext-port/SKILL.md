@@ -279,6 +279,13 @@ mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools \
 paint pages with the engine's own canvas renderer. Add it to an existing
 tools folder with `npm i @napi-rs/canvas`.
 
+No Node? The `postext` executable does the same layout, page images, checks
+and PDFs on its own (one file per system, no installation):
+`curl -fL -o postext https://github.com/drnachio/postext/releases/latest/download/postext-linux-x64 && chmod +x postext`
+(`postext-macos-arm64`, `postext-windows-x64.exe`… — see
+[the command line](https://postext.dev/en/docs/command-line)), or `npx postext-cli`.
+Verification.md §2 gives its commands.
+
 Optional: `ocrmypdf` (scans), `magick` (SVG fallback rasters, contact sheets),
 `verapdf` (PDF/UA).
 
@@ -490,6 +497,13 @@ book; its pages then number from its own first page). Compare with the source fr
 python3 scripts/compare_pages.py source.pdf /tmp/pages --source-pages 23-26 --render-pages 1-4 --out /tmp/cmp --sheet
 ```
 
+With the `postext` executable instead (same page files, same engine):
+
+```bash
+postext images my-book --locale es --pages 12-15 -f jpeg --dpi 100 -o /tmp/pages
+postext check my-book --locale es --json        # warnings with chapter file:line and page
+```
+
 Build the PDF (`--out`) for the print checks and once at the end, not on
 every iteration.
 
@@ -538,7 +552,10 @@ Use it when:
   (`openBundle`) — or copy the manifest's `config` (defaults already
   stripped) back into the code.
 
-`render.mjs` accepts a packed `.postext` as well as a project folder.
+`render.mjs` accepts a packed `.postext` as well as a project folder, and so
+does `postext`: run `postext check my-book.postext` and
+`postext images my-book.postext --pages '#1-#4' -f jpeg -o /tmp/final` on the
+delivered file before handing it over.
 
 ## Rules of thumb
 
@@ -562,9 +579,9 @@ Use it when:
   extractor over curated chapters.
 - **Semantic ids and styles.** Name things by role (`keypoints`, `band`,
   `fig-cohort-study`), never by number or position.
-- **Look at JPEGs, not PDFs, while iterating.** `render.mjs --jpeg` with
-  `--pages`; never build a PDF and rasterise it, or screenshot a browser,
-  just to see a page.
+- **Look at JPEGs, not PDFs, while iterating.** `render.mjs --jpeg` (or
+  `postext images -f jpeg`) with `--pages`; never build a PDF and rasterise
+  it, or screenshot a browser, just to see a page.
 - **The book is an object too.** Set `config.folio` (paper, binding,
   covers) from the source's specification; layout ignores it, so it costs
   nothing to get right (playbooks A11).

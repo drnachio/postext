@@ -318,10 +318,12 @@ export async function loadBook(inputs: readonly string[], opts: Options, reporte
   } else {
     let bytes: Uint8Array;
     let watchPaths: string[];
+    let looseFiles: string[] = [];
     if (kind === 'bundle') {
       bytes = new Uint8Array(readFileSync(inputs[0]!));
       watchPaths = [inputs[0]!];
     } else {
+      looseFiles = markdownFiles(inputs);
       const created = await createBundle(await looseBundleInput(inputs, opts));
       for (const w of created.warnings) warn(w);
       bytes = created.bytes;
@@ -338,7 +340,8 @@ export async function loadBook(inputs: readonly string[], opts: Options, reporte
       ...(opened.description ? { description: opened.description } : {}),
       locale: opened.locale,
       ...(opened.locales ? { locales: opened.locales } : {}),
-      chapters: opened.chapters.map((c) => ({ title: c.title, file: c.file, markdown: c.markdown })),
+      // Loose Markdown: warnings name the files given, not the bundle's paths.
+      chapters: opened.chapters.map((c, i) => ({ title: c.title, file: kind === 'markdown' ? looseFiles[i] ?? c.file : c.file, markdown: c.markdown })),
       config: opened.config,
       resources: opened.resources,
       fonts: opened.fonts,
