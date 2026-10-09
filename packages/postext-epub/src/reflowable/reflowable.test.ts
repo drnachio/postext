@@ -620,3 +620,15 @@ describe('reflowable rendition: verse line by line (#620)', () => {
     expect(stanza).not.toContain('[');
   });
 });
+
+describe('reflowable rendition: hanging paragraph styles (#620)', () => {
+  it('hangs the turnovers of a style, its first line at the indent it sets itself', async () => {
+    const em = (value: number) => ({ value, unit: 'em' as const });
+    const config = { ...baseConfig, paragraphStyles: [{ id: 'bib', hangingIndent: em(2) }, { id: 'pair', firstLineIndent: em(1), hangingIndent: em(3) }] };
+    const md = [':::paragraphs{style="bib"}', 'An entry.', ':::', '', ':::paragraphs{style="pair"}', 'A line.', ':::'].join('\n');
+    const { pub } = await render([layOut(md, config)]);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toMatch(/p\.ps-bib \{\n {2}padding-inline-start: 2em;\n {2}text-indent: -2em;\n\}/);
+    expect(css).toMatch(/p\.ps-pair \{\n {2}padding-inline-start: 3em;\n {2}text-indent: -2em;\n\}/);
+  });
+});

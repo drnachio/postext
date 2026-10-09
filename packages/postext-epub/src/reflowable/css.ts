@@ -415,6 +415,14 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
       px(s.marginTop, sPx) > 0 && `margin-block-start: ${round(px(s.marginTop, sPx) / sPx)}em`,
       px(s.marginBottom, sPx) > 0 && `margin-block-end: ${round(px(s.marginBottom, sPx) / sPx)}em`,
     ]));
+    // A hanging indent: the paragraph's turnovers padded in, its first line
+    // taken back to its own indent (the style's, when it sets one, #620).
+    // A poem's lines hang on their own (`.pt-verse-line`).
+    const hang = px(s.hangingIndent, sPx);
+    if (hang > 0) {
+      const first = s.ownFirstLineIndent ? px(s.firstLineIndent, sPx) : 0;
+      out.push(rule(`p.${cls}`, [`padding-inline-start: ${round(hang / sPx)}em`, `text-indent: ${round((first - hang) / sPx)}em`]));
+    }
   }
 
   // --- notes, contents, bibliography, index -------------------------------
