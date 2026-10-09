@@ -1976,6 +1976,13 @@ export interface VDTDesignTextBlock {
    *  runs were ordered at that paragraph level, and an HTML line takes
    *  `dir="rtl"`. Absent for left-to-right text. */
   direction?: 'rtl';
+  /** The element lost part of a line to fit its width (#628): `mode` is
+   *  how (its `overflow`, or `'clip'` with ink past the box), `elementId`
+   *  the element's id, `slot` where its design is painted and `text` the
+   *  whole text it was given. The build reports it as a
+   *  `designTextTruncated` content warning. Absent when every line shows
+   *  whole. */
+  truncated?: { elementId: string; slot: VDTDesignSlotKind; mode: 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip'; text: string };
   /** Set vertically on a page or a slot whose text is horizontal
    *  (`DesignTextElement.writingMode: 'vertical-rl'`): the lines are laid
    *  out in the block's own frame, turned a quarter turn clockwise about
@@ -2716,7 +2723,23 @@ export type ContentWarning = ContentWarningBase & (
    *  `resourceId` names a resource, `box` a box's style. Found by the
    *  layout. */
   | { kind: 'textWrap'; reason: 'tooNarrow' | 'fewLines' | 'moved'; resourceId?: string; box?: string }
+  /** `designTextTruncated` (#628): a design text element did not fit its
+   *  width and lost part of a line: cut by an ellipsis (`mode`
+   *  `'ellipsis-*'`, its `overflow`) or clipped with ink past its box
+   *  (`'clip'`). `slot` is where the design is painted (a running head or
+   *  folio, a heading design, a part page, a contents part row),
+   *  `elementId` the element's id and `text` the whole text it was given.
+   *  One per element and page; a running head or folio once per element
+   *  and chapter (a chapter title cut on every page of its chapter is one
+   *  warning). `sourceStart` / `sourceEnd` when the text mirrors a heading
+   *  or a frontmatter field. Found by the layout. */
+  | { kind: 'designTextTruncated'; slot: VDTDesignSlotKind; elementId: string; text: string; mode: 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip' }
 );
+
+/** Where a design slot is painted: a running head (`'header'`), a folio
+ *  (`'footer'`), a heading design (`'heading'`), a part page or its verso
+ *  (`'part'`), a part row of the contents (`'tocRow'`). */
+export type VDTDesignSlotKind = 'header' | 'footer' | 'heading' | 'part' | 'tocRow';
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout
  *  had to force ({@link CalloutOverflowWarning}), with the shape it has had

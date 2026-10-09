@@ -104,7 +104,7 @@ export function resolveTocConfig(
     parts: {
       enabled: parts?.enabled ?? d.parts.enabled,
       breakBefore: parts?.breakBefore ?? d.parts.breakBefore,
-      design: parts?.design ? resolveDesignSlot(parts.design, 'header') : { elements: [] },
+      design: parts?.design ? resolveDesignSlot(parts.design, 'tocRow') : { elements: [] },
       height: parts?.height ?? PART_HEIGHT,
       marginTop: parts?.marginTop ?? ZERO,
       marginBottom: parts?.marginBottom ?? ZERO,
@@ -158,7 +158,7 @@ export function stripTocDefaults(toc: TocConfig | undefined): TocConfig | undefi
     if (toc.parts.enabled !== undefined && toc.parts.enabled !== d.parts.enabled) p.enabled = toc.parts.enabled;
     if (toc.parts.breakBefore !== undefined && toc.parts.breakBefore !== d.parts.breakBefore) p.breakBefore = toc.parts.breakBefore;
     if (toc.parts.design) {
-      const slot = stripDesignSlotDefaults(toc.parts.design, 'header');
+      const slot = stripDesignSlotDefaults(toc.parts.design, 'tocRow');
       if (slot && slot.elements && slot.elements.length > 0) p.design = slot;
     }
     if (toc.parts.height !== undefined) p.height = toc.parts.height;

@@ -83,11 +83,14 @@ import { codeFenceOpen } from '../parse/codeFence';
  *   - a ```` ``` ```` or `~~~` fence opens a code block (#624,
  *     `codeStyle.blocks`), where up to 1.22 its lines were read as
  *     Markdown ({@link pinLegacyCodeBlocks}).
- * - 10 (#620 follow-up): a line of a poem set line by line that is a
- *   little wider than the measure tightens its word spaces, down to
- *   `bodyText.minWordSpacing`, and stays on one line
- *   (`bodyText.verse.tighten`), where 1.23 turned it over ({@link
- *   pinLegacyVerseTightening}).
+ * - 10, two rules:
+ *   - a line of a poem set line by line that is a little wider than the
+ *     measure tightens its word spaces, down to `bodyText.minWordSpacing`,
+ *     and stays on one line (`bodyText.verse.tighten`, #620 follow-up),
+ *     where 1.23 turned it over ({@link pinLegacyVerseTightening});
+ *   - a text element of a heading design or a part page that sets no
+ *     `overflow` wraps onto more lines (#628), where up to 1.23 it was cut
+ *     with an ellipsis ({@link pinLegacyDesignOverflow}).
  *
  * A configuration stored without a version was written for postext 1.4 or
  * earlier. One stored under 3 to 7 was written by a 1.5 prerelease, and
@@ -98,7 +101,7 @@ import { codeFenceOpen } from '../parse/codeFence';
  * version-8 pins, under 7 the version-8 pins. One stored under 8 was
  * written by postext 1.5 to 1.22 and gets the version-9 pins (which every
  * older one gets too); one stored under 9 was written by postext 1.23 and
- * gets the version-10 pin (which every older one gets too).
+ * gets the version-10 pins (which every older one gets too).
  */
 export const CONFIG_VERSION = 10;
 
@@ -145,6 +148,9 @@ const CODE_BLOCK_RULES = 9;
 /** The rules that tighten a line of verse a little too wide for the
  *  measure instead of turning it over. */
 const VERSE_TIGHTEN_RULES = 10;
+/** The rules that wrap a heading or part design text that sets no
+ *  `overflow`. */
+const DESIGN_OVERFLOW_RULES = 10;
 
 /** Up to 1.4 a drop cap with no `fontSize` was as tall as the line boxes it
  *  spans divided by this, the share of a letter's size its capitals take. */
@@ -484,6 +490,82 @@ export function pinLegacyVerseTightening<T extends Partial<PostextConfig>>(confi
   const verse = isRecord(bodyText.verse) ? bodyText.verse : {};
   if (verse.tighten !== undefined) return config;
   return { ...config, bodyText: { ...bodyText, verse: { ...verse, tighten: false } } };
+}
+
+/** `slot` (a design slot as stored) with `overflow: 'ellipsis-end'` written
+ *  on every text element that sets none; undefined when there is none. A
+ *  legacy-shaped element (no `placement`) is left alone: its migration
+ *  writes the ellipsis already. */
+function pinSlotOverflow(slot: unknown): Record<string, unknown> | undefined {
+  if (!isRecord(slot) || !Array.isArray(slot.elements)) return undefined;
+  let changed = false;
+  const elements = slot.elements.map((el: unknown) => {
+    if (!isRecord(el) || el.kind !== 'text' || el.overflow !== undefined || !isRecord(el.placement)) return el;
+    changed = true;
+    return { ...el, overflow: 'ellipsis-end' };
+  });
+  return changed ? { ...slot, elements } : undefined;
+}
+
+/** `entries` (heading levels or heading styles) with their
+ *  `advancedDesign.slot` pinned by {@link pinSlotOverflow}; undefined when
+ *  none changed. */
+function pinAdvancedDesigns(entries: unknown): unknown[] | undefined {
+  if (!Array.isArray(entries)) return undefined;
+  let changed = false;
+  const out = entries.map((entry: unknown) => {
+    if (!isRecord(entry) || !isRecord(entry.advancedDesign)) return entry;
+    const slot = pinSlotOverflow(entry.advancedDesign.slot);
+    if (!slot) return entry;
+    changed = true;
+    return { ...entry, advancedDesign: { ...entry.advancedDesign, slot } };
+  });
+  return changed ? out : undefined;
+}
+
+/** The heading and part designs of `config` (a configuration, or the
+ *  overrides of its HTML viewer) pinned by {@link pinSlotOverflow}; the
+ *  same object when nothing changed. */
+function pinDesignOverflows(config: Record<string, unknown>): Record<string, unknown> {
+  let out = config;
+  const headings = config.headings;
+  if (isRecord(headings)) {
+    const levels = pinAdvancedDesigns(headings.levels);
+    if (levels) out = { ...out, headings: { ...headings, levels } };
+  }
+  const styles = pinAdvancedDesigns(config.headingStyles);
+  if (styles) out = { ...out, headingStyles: styles };
+  const parts = config.parts;
+  if (isRecord(parts)) {
+    const design = pinSlotOverflow(parts.design);
+    const versoDesign = pinSlotOverflow(parts.versoDesign);
+    if (design || versoDesign) {
+      out = { ...out, parts: { ...parts, ...(design ? { design } : {}), ...(versoDesign ? { versoDesign } : {}) } };
+    }
+  }
+  return out;
+}
+
+/**
+ * A configuration written before #628 (postext 1.23 or earlier), pinned to
+ * the way its heading designs and part pages set a text too wide for its
+ * room: every text element of `headings.levels[].advancedDesign.slot`,
+ * `headingStyles[].advancedDesign.slot`, `parts.design` and
+ * `parts.versoDesign` that sets no `overflow` gets `'ellipsis-end'`, the
+ * default up to 1.23, where today such an element wraps. The same designs
+ * in its HTML viewer's overrides are pinned too. Running heads, folios and
+ * the contents' part rows keep the ellipsis by default, so they are left
+ * alone. A configuration with no such element is returned as it is (the
+ * same object).
+ */
+export function pinLegacyDesignOverflow<T extends Partial<PostextConfig>>(config: T): T {
+  let out = pinDesignOverflows(config as Record<string, unknown>);
+  const viewer = out.htmlViewer;
+  if (isRecord(viewer) && isRecord(viewer.overrides)) {
+    const overrides = pinDesignOverflows(viewer.overrides);
+    if (overrides !== viewer.overrides) out = { ...out, htmlViewer: { ...viewer, overrides } };
+  }
+  return out as T;
 }
 
 /** Whether markdown holds a poem set line by line: a `:::verse` fence
@@ -990,7 +1072,8 @@ export interface MigrateConfigOptions {
  * pinLegacyCodeBlocks}, unless `options.content` shows none; one older
  * than 10 has its verse turnovers pinned by {@link
  * pinLegacyVerseTightening}, unless `options.content` shows no poem set
- * line by line. A current one
+ * line by line, and the text elements of its heading and part designs
+ * that set no `overflow` by {@link pinLegacyDesignOverflow}. A current one
  * is returned as it is (the same object).
  * Migrate a stored configuration once and store it again under
  * `CONFIG_VERSION`: the maths pin multiplies a scale, so a configuration
@@ -1021,6 +1104,7 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   if (rules < HARD_BREAK_RULES && mayHaveForcedBreaks(content)) out = pinLegacyHardBreaks(out);
   if (rules < CODE_BLOCK_RULES && mayHaveCodeFences(content)) out = pinLegacyCodeBlocks(out);
   if (rules < VERSE_TIGHTEN_RULES && mayHaveLinePoems(content, out)) out = pinLegacyVerseTightening(out);
+  if (rules < DESIGN_OVERFLOW_RULES) out = pinLegacyDesignOverflow(out);
   return out;
 }
 
@@ -1039,7 +1123,8 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
  * breaking when the merged configuration sets some running text ragged,
  * the container space when it declares a paragraph style), the heading
  * marks and the split under a heading on the `headings` in force, and the
- * drop caps wherever they sit in the merged configuration.
+ * drop caps and the overflow of heading and part design texts wherever
+ * they sit in the merged configuration.
  * @internal `readBundle`'s; hosts call {@link migrateConfig}.
  */
 export function migrateBundleConfig(
@@ -1071,5 +1156,6 @@ export function migrateBundleConfig(
   if (rules < HARD_BREAK_RULES && mayHaveForcedBreaks(content)) merged = pinLegacyHardBreaks(merged);
   if (rules < CODE_BLOCK_RULES && mayHaveCodeFences(content)) merged = pinLegacyCodeBlocks(merged);
   if (rules < VERSE_TIGHTEN_RULES && mayHaveLinePoems(content, merged)) merged = pinLegacyVerseTightening(merged);
+  if (rules < DESIGN_OVERFLOW_RULES) merged = pinLegacyDesignOverflow(merged);
   return merged;
 }

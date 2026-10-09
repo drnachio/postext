@@ -471,6 +471,7 @@ describe("package exports", () => {
       "isLegacyHeaderFooterSlot",
       "resolveDesignSlot",
       "stripDesignSlotDefaults",
+      "defaultTextOverflow",
       "DEFAULT_BOX_ELEMENT",
       "resourceBlockToPage",
       "resourceBlockToLocal",

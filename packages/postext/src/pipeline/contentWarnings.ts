@@ -14,6 +14,7 @@ import { resourceRefId, unprefixedId } from './crossRefs';
 import { citationIssues } from './citations';
 import { bookCitationContexts, needsCitationContext } from '../citations/context';
 import { duplicateAnchors } from './anchors';
+import { computeChapterTitles } from './placeholders';
 import type { ContentBlock } from '../parse';
 import { KNOWN_CONTAINERS, KNOWN_DIRECTIVES, parseInlineSnippetSpans, parseMarkdownMemo } from '../parse';
 import { invalidAttributeKeys } from '../parse/attrs';
@@ -576,6 +577,51 @@ export function wordOverflowWarnings(doc: VDTDocument): ContentWarning[] {
   return out;
 }
 
+/** A `designTextTruncated` warning for each design text cut to fit its
+ *  width (`VDTDesignTextBlock.truncated`, #628): one per element and page
+ *  for a heading design, a part page or a contents part row; one per
+ *  element and chapter for a running head or folio, which repeats the cut
+ *  on every page (a chapter title, a folio's page number), on the first
+ *  page that shows it. */
+export function designTruncationWarnings(doc: VDTDocument): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  const seen = new Set<string>();
+  let chapters: string[] | undefined;
+  const slot = (s: VDTDesignSlot | undefined, pageIndex: number): void => {
+    for (const b of s?.blocks ?? []) {
+      if (b.kind !== 'text' || !b.truncated) continue;
+      const t = b.truncated;
+      let key: string;
+      if (t.slot === 'header' || t.slot === 'footer') {
+        chapters ??= computeChapterTitles(doc.blocks, doc.pages.length, doc.pages);
+        key = `${t.slot}\u0000${t.elementId}\u0000${chapters[pageIndex] ?? ''}`;
+      } else {
+        key = `${pageIndex}\u0000${t.slot}\u0000${t.elementId}\u0000${b.sourceStart ?? ''}`;
+      }
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({
+        kind: 'designTextTruncated',
+        slot: t.slot,
+        elementId: t.elementId,
+        text: t.text,
+        mode: t.mode,
+        ...(b.sourceStart !== undefined ? { sourceStart: b.sourceStart } : {}),
+        ...(b.sourceEnd !== undefined ? { sourceEnd: b.sourceEnd } : {}),
+        pageIndex,
+      });
+    }
+  };
+  doc.pages.forEach((page, i) => {
+    slot(page.header, i);
+    slot(page.openerBand, i);
+    for (const col of page.columns) for (const block of col.blocks) slot(block.designOverlay, i);
+    for (const block of page.floats ?? []) slot(block.designOverlay, i);
+    slot(page.footer, i);
+  });
+  return out;
+}
+
 /** A `joiningScriptLetterSpacing` warning for the first placed part of
  *  each block (by content index, `blocks`) whose style tracks words of a
  *  joining script, which are set untracked. */
@@ -768,6 +814,11 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       break;
     case 'cjkLooseLine':
       text = `The justified line "${w.text}" needs more space between its characters than the cap allows — it is set short of the measure`;
+      break;
+    case 'designTextTruncated':
+      text = w.mode === 'clip'
+        ? `The ${w.slot} text "${w.text}" (element "${w.elementId}") is wider than its box and clipped`
+        : `The ${w.slot} text "${w.text}" (element "${w.elementId}") does not fit its width and ends in an ellipsis — set overflow: 'wrap' to break it onto more lines, or give it more room`;
       break;
     case 'unbreakableWordOverflow':
       text = `The line "${w.text}" holds an Arabic-script word wider than the line — such a word is never divided, so it runs past the measure`;

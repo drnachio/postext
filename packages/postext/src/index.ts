@@ -84,7 +84,8 @@ export type { DesignPlaceholderContext, DesignContextKind, HeadingPlaceholderInf
 export { layoutDesignSlot } from './design/layout';
 export type { DesignSlotLayout, LayoutContext, LayoutIssue, ResolvedPrimitive, ResolvedTextPrimitive, ResolvedRulePrimitive, ResolvedBoxPrimitive, ResolvedImagePrimitive, WrappedLine, DesignFrames } from './design/layout';
 export { classifyPages } from './pipeline/pageRoles';
-export { migrateLegacyHeaderFooterConfig, isLegacyHeaderFooterSlot, resolveDesignSlot, stripDesignSlotDefaults, DEFAULT_BOX_ELEMENT } from './defaults/headerFooter';
+export { migrateLegacyHeaderFooterConfig, isLegacyHeaderFooterSlot, resolveDesignSlot, stripDesignSlotDefaults, defaultTextOverflow, DEFAULT_BOX_ELEMENT } from './defaults/headerFooter';
+export type { DesignSlotKind } from './defaults/headerFooter';
 export type {
   PostextContent,
   LayoutContinuation,
@@ -447,6 +448,7 @@ export type {
   VDTHeaderFooterTextBlock,
   VDTRuleBlock,
   VDTDesignSlot,
+  VDTDesignSlotKind,
   VDTDesignBlock,
   VDTDesignTextBlock,
   VDTDesignTextLine,

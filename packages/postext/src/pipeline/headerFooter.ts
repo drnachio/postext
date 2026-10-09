@@ -18,6 +18,7 @@ import {
   type VDTDesignRuleBlock,
   type VDTDesignBoxBlock,
   type VDTDesignImageBlock,
+  type VDTDesignSlotKind,
   type VDTPage,
 } from '../vdt';
 import { computeChapterTitles, computeChapterTitlesAtTop, computeChapterNumbers, computeChapterNumbersAtTop, computeChapterNumbersByBlock, computeChapterAttrs, computePageMarks, computePartValues, lineJoin, markSourceOf, type JoinedLine, type PageMarks } from './placeholders';
@@ -425,6 +426,9 @@ export interface SlotLayoutExtras {
    *  `{subtitle}`, `{publishDate}`) and the values themselves. */
   metadataSources?: Record<string, { start: number; end: number }>;
   metadata?: Record<string, unknown>;
+  /** Where the slot is painted: a text block cut to fit is flagged with it
+   *  (`VDTDesignTextBlock.truncated`, #628). Absent: nothing is flagged. */
+  slot?: VDTDesignSlotKind;
 }
 
 const HEADING_LINE_PLACEHOLDER = /\{(number|numberDecimal|numberRoman|numberRomanLower|numberAlpha|numberAlphaLower|numberWords|numberWordsLower|numberOrdinalWords|numberOrdinalWordsLower|numberHan|chapterNumber|chapterTitle)\}/;
@@ -535,8 +539,18 @@ export function layoutSlotToVdt(
       sourceByElement.set(el.id, keepMap ? withPrintedTitle(el, src, placeholders) : { start: src.start, end: src.end });
     }
   }
+  // The texts cut to fit (#628), flagged on the element's own block (not
+  // on its drop cap's).
+  const truncated = new Map<string, { mode: NonNullable<ResolvedTextPrimitive['truncated']>; text: string }>();
+  if (extras?.slot) {
+    for (const issue of result.issues) {
+      if (issue.kind === 'textTruncated') truncated.set(issue.elementId, { mode: issue.mode, text: issue.text });
+    }
+  }
   const blocks = result.primitives.map((prim) => {
     const block = primitiveToBlock(prim);
+    const cut = prim.kind === 'text' && !prim.dropCap ? truncated.get(prim.id) : undefined;
+    if (block.kind === 'text' && cut && extras?.slot) block.truncated = { elementId: prim.id, slot: extras.slot, mode: cut.mode, text: cut.text };
     const src = sourceByElement.get(prim.id);
     if (block.kind === 'text' && src) {
       block.sourceStart = src.start;
@@ -1181,7 +1195,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         page.index + pageIndexOffset,
         placeholders,
         dpi,
-        sheetExtras,
+        { ...sheetExtras, slot: 'header' },
       )));
     }
     // Back of a part divider: a blank page right after a part page takes the
@@ -1226,7 +1240,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         page.index + pageIndexOffset,
         placeholders,
         dpi,
-        extras,
+        { ...extras, slot: 'part' },
       );
     }
     // Part-divider page: the opener design covers the full trim box and is
@@ -1271,7 +1285,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         page.index + pageIndexOffset,
         placeholders,
         dpi,
-        { ...extras, titleSource: partTitleSource },
+        { ...extras, titleSource: partTitleSource, slot: 'part' },
       );
     }
     const opener = findOpenerHeading(page, headingLevels);
@@ -1322,6 +1336,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
             attrSources: opener.block.attrSources,
             attrs: opener.block.attrs,
             headingSource: headingLineSource(opener.block),
+            slot: 'heading',
           },
         );
         if (page.openerBand) {
@@ -1374,7 +1389,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
             page.index + pageIndexOffset,
             placeholders,
             dpi,
-            extras,
+            { ...extras, slot: 'tocRow' },
           );
           if (overlay) block.designOverlay = overlay;
           continue;
@@ -1434,6 +1449,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
             attrSources: block.attrSources,
             attrs: block.attrs,
             headingSource: headingLineSource(block),
+            slot: 'heading',
           },
         );
         if (overlay) block.designOverlay = overlay;
@@ -1463,7 +1479,7 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
         page.index + pageIndexOffset,
         placeholders,
         dpi,
-        sheetExtras,
+        { ...sheetExtras, slot: 'footer' },
       )));
     }
   }

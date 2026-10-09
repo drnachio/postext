@@ -45,8 +45,8 @@ export function resolvePartsConfig(
       right: partial?.margins?.right ?? pm.right,
       mirror: partial?.margins?.mirror ?? pm.mirror,
     },
-    design: partial?.design ? resolveDesignSlot(partial.design, 'header') : { elements: [] },
-    versoDesign: partial?.versoDesign ? resolveDesignSlot(partial.versoDesign, 'header') : { elements: [] },
+    design: partial?.design ? resolveDesignSlot(partial.design, 'part') : { elements: [] },
+    versoDesign: partial?.versoDesign ? resolveDesignSlot(partial.versoDesign, 'part') : { elements: [] },
     bodyStyle: {
       fontFamily: partial?.bodyStyle?.fontFamily ?? bodyText.fontFamily,
       fontSize: partial?.bodyStyle?.fontSize ?? bodyText.fontSize,
@@ -116,11 +116,11 @@ export function stripPartsDefaults(parts: PartsConfig | undefined): PartsConfig 
     if (kept) r.margins = kept;
   }
   if (parts.design) {
-    const slot = stripDesignSlotDefaults(parts.design, 'header');
+    const slot = stripDesignSlotDefaults(parts.design, 'part');
     if (slot && slot.elements && slot.elements.length > 0) r.design = slot;
   }
   if (parts.versoDesign) {
-    const slot = stripDesignSlotDefaults(parts.versoDesign, 'header');
+    const slot = stripDesignSlotDefaults(parts.versoDesign, 'part');
     if (slot && slot.elements && slot.elements.length > 0) r.versoDesign = slot;
   }
   if (parts.bodyStyle) {

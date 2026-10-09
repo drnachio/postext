@@ -5373,7 +5373,16 @@ export interface ElementBoxStyle {
  *  mid-word only when what the boundary leaves, that punctuation dropped,
  *  is less than half of what fits (a long word, a URL). A no-break space
  *  or hyphen (U+2011) is no boundary. `'ellipsis-middle'` cuts anywhere but
- *  drops the spaces beside it. */
+ *  drops the spaces beside it.
+ *
+ *  An element that sets none takes its slot's default (#628): `'wrap'` in a
+ *  heading design (`advancedDesign.slot`, an opener or an in-column title)
+ *  and on a part page (`parts.design`, `parts.versoDesign`), where a long
+ *  title should break onto more lines; `'ellipsis-end'` in a running head
+ *  or folio (`header`, `footer`, a heading style's own) and in a contents
+ *  part row (`toc.parts.design`, whose row has a fixed height). A line cut
+ *  by an ellipsis, or clipped with ink past the box, is reported as a
+ *  `designTextTruncated` content warning. */
 export type TextOverflow = 'wrap' | 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip';
 
 /** Outline drawn around the glyphs of a design text (a hollow display
@@ -5456,7 +5465,11 @@ export interface DesignTextElement {
    *  number, a malformed dimension) sets the default leading. */
   lineHeight?: number | Dimension;
   letterSpacing?: Dimension;
-  overflow: TextOverflow;
+  /** What a line wider than the element's room does (see
+   *  {@link TextOverflow}). Unset, the slot decides: `'wrap'` in heading
+   *  and part designs, `'ellipsis-end'` in running heads, folios and
+   *  contents part rows. */
+  overflow?: TextOverflow;
   /** When true, break long words at syllable boundaries while wrapping.
    *  Uses the document's active hyphenation locale. */
   hyphenate?: boolean;
@@ -5591,8 +5604,10 @@ export interface DesignSlot {
 // layout time (see design/layout.ts).
 // ---------------------------------------------------------------------------
 
-export interface ResolvedDesignTextElement extends Omit<DesignTextElement, 'fontFamily' | 'fontWeight' | 'italic' | 'color' | 'align' | 'verticalAlign' | 'lineHeight' | 'parity'> {
+export interface ResolvedDesignTextElement extends Omit<DesignTextElement, 'fontFamily' | 'fontWeight' | 'italic' | 'color' | 'align' | 'verticalAlign' | 'lineHeight' | 'parity' | 'overflow'> {
   parity: PageParity;
+  /** The element's own `overflow`, else its slot's default. */
+  overflow: TextOverflow;
   fontFamily: string;
   fontWeight: number;
   italic: boolean;

@@ -14,7 +14,9 @@ function resolveAdvancedDesign(raw?: HeadingAdvancedDesignConfig): ResolvedHeadi
   if (!raw) return { enabled: false, slot: { elements: [] } };
   return {
     enabled: raw.enabled ?? false,
-    slot: resolveDesignSlot(raw.slot, 'header'),
+    // A design text wraps unless it says otherwise (#628). A design with no
+    // slot has always resolved to the running head's default slot.
+    slot: raw.slot === undefined ? resolveDesignSlot(undefined, 'header') : resolveDesignSlot(raw.slot, 'heading'),
     ...(raw.minHeight ? { minHeight: raw.minHeight } : {}),
   };
 }
