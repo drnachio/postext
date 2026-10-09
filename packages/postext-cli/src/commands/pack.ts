@@ -3,7 +3,7 @@ import { basename, resolve } from 'node:path';
 import { createBundle, isBundleManifest, mimeForFile, zipBundle } from 'postext/bundle';
 import { CliError, UsageError } from '../args';
 import type { CommandContext } from '../context';
-import { inputKind, looseBundleInput, readTree } from '../input';
+import { inputKind, isProjectOnlyFile, looseBundleInput, readTree } from '../input';
 import { byteLength, writeOut } from '../io';
 
 /** Zip a book folder as it is, or loose Markdown through `createBundle`. */
@@ -16,7 +16,8 @@ export default async function pack(ctx: CommandContext): Promise<void> {
   let name: string;
   if (kind === 'folder') {
     const dir = inputs[0]!;
-    const files = readTree(dir);
+    // The book's files, without the project's sources, scripts and notes.
+    const files = new Map([...readTree(dir)].filter(([rel]) => !isProjectOnlyFile(rel)));
     const manifest = JSON.parse(new TextDecoder().decode(files.get('preset.json')!)) as unknown;
     if (!isBundleManifest(manifest)) throw new CliError(`${dir}/preset.json is not a postext manifest`);
     // A fixed date: the same folder always packs to the same bytes.

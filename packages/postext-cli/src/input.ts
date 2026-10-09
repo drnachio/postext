@@ -57,6 +57,30 @@ export interface Book {
 const MARKDOWN_EXT = new Set(['.md', '.markdown', '.mdx', '.txt']);
 const SKIP_DIRS = new Set(['node_modules', '.git']);
 
+const fileCache = new Map<string, { mtimeMs: number; size: number; bytes: Uint8Array }>();
+
+/** A file's bytes, read again only when its size or date changed. */
+export function readFileCached(path: string): Uint8Array {
+  const st = statSync(path);
+  const hit = fileCache.get(path);
+  if (hit && hit.mtimeMs === st.mtimeMs && hit.size === st.size) return hit.bytes;
+  const bytes = new Uint8Array(readFileSync(path));
+  fileCache.set(path, { mtimeMs: st.mtimeMs, size: st.size, bytes });
+  return bytes;
+}
+
+/** Files of a project folder that are not part of the book: the sources,
+ *  generator scripts and working files the postext-port skill keeps beside
+ *  it (the same list its `preset_kit.py pack` leaves out), and pagination
+ *  caches that go stale with the engine. */
+export function isProjectOnlyFile(rel: string): boolean {
+  const parts = rel.split('/');
+  if (parts.some((p) => p.startsWith('.') || p === '__pycache__' || p === 'node_modules')) return true;
+  if (parts[0] === 'source') return true;
+  if (rel.endsWith('.py') || ['resources.json', 'chapters.json', 'report.md', 'roles.json'].includes(rel)) return true;
+  return /^layouts(\.[\w-]+)?\.json$/.test(rel);
+}
+
 /** Every file under `dir`, by path relative to it with forward slashes. */
 export function readTree(dir: string): Map<string, Uint8Array> {
   const files = new Map<string, Uint8Array>();
@@ -284,20 +308,36 @@ export async function loadBook(inputs: readonly string[], opts: Options, reporte
   let book: Book;
   if (kind === 'folder') {
     const dir = inputs[0]!;
-    const files = readTree(dir);
+    // Only the files the manifest names are read (a project folder also
+    // holds its sources, scripts and notes), and a file that has not
+    // changed since the last build (--watch) is not read again.
+    const files = new Map<string, Uint8Array>();
+    const readInBook = (path: string): Uint8Array => {
+      if (path.split('/').includes('..')) throw new Error(`"${path}" points outside the book`);
+      const bytes = readFileCached(join(dir, path));
+      files.set(path, bytes);
+      return bytes;
+    };
     let manifest: unknown;
     try {
-      manifest = JSON.parse(new TextDecoder().decode(files.get('preset.json')!));
+      manifest = JSON.parse(new TextDecoder().decode(readInBook('preset.json')));
     } catch (err) {
       throw new CliError(`${join(dir, 'preset.json')} is not valid JSON: ${(err as Error).message}`);
     }
     const read = await readBundle(manifest, async (path) => {
-      const bytes = files.get(path);
-      if (!bytes) throw new Error(`Missing file "${path}" (named in preset.json)`);
-      return bytes.slice().buffer;
+      try {
+        return readInBook(path).slice().buffer;
+      } catch {
+        throw new Error(`Missing file "${path}" (named in preset.json)`);
+      }
     }, { ...(locale ? { locale } : {}), onWarning: warn }).catch((err: Error) => {
       throw new CliError(`${dir}: ${err.message}`);
     });
+    // Files the book names outside what the reader loads: the cover and a
+    // custom print profile.
+    for (const extra of [read.manifest.thumbnail, read.config.print?.customProfile?.fileId]) {
+      if (extra && existsSync(join(dir, extra))) readInBook(extra);
+    }
     const m = read.manifest;
     book = {
       kind,

@@ -1,11 +1,12 @@
 // One layout, several outputs; with --watch, again on every change.
 
 import { watch, type FSWatcher } from 'node:fs';
+import { resolve, sep } from 'node:path';
 import { createMeasurementCache } from 'postext';
 import { UsageError } from '../args';
 import type { CommandContext } from '../context';
 import { resolveFonts } from '../fonts';
-import { loadBook } from '../input';
+import { isProjectOnlyFile, loadBook } from '../input';
 import { layOut, selectChapters } from '../layout';
 import { Reporter, style } from '../log';
 import { writeDocx } from '../outputs/docx';
@@ -79,10 +80,15 @@ export default async function build(ctx: CommandContext): Promise<void> {
       }
     }
   };
-  const outputs = new Set(TARGETS.map((t) => opts.string(t)).filter((p): p is string => !!p));
+  const outputs = TARGETS.map((t) => opts.string(t)).filter((p): p is string => !!p).map((p) => resolve(p));
   const watchers: FSWatcher[] = paths.map((p) => watch(p, { recursive: true }, (_event, file) => {
-    // Our own outputs written inside a watched folder do not count.
-    if (file && [...outputs].some((o) => String(file).startsWith(o) || o.endsWith(String(file)))) return;
+    if (file) {
+      const changed = resolve(p, String(file));
+      // Our own outputs written inside a watched folder do not count, nor
+      // do a project's sources, scripts and notes.
+      if (outputs.some((o) => changed === o || changed.startsWith(o + sep))) return;
+      if (isProjectOnlyFile(String(file).split(sep).join('/'))) return;
+    }
     clearTimeout(timer);
     timer = setTimeout(() => void rebuild(), 150);
   }));

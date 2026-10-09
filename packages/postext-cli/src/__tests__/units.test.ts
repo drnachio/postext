@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { Options, parseArgs, UsageError } from '../args';
 import { BOOK_OPTIONS, COMMANDS, commandOptions, findCommand } from '../commands';
-import { applySet, deepMerge, parseChapterList } from '../input';
+import { applySet, deepMerge, isProjectOnlyFile, parseChapterList } from '../input';
 import { pageFileName, selectPages, type BookPage } from '../outputs/images';
 
 describe('parseArgs', () => {
@@ -51,6 +51,13 @@ describe('config edits', () => {
     expect(parseChapterList('1-9', 2)).toEqual([0, 1]);
     expect(() => parseChapterList('7', 3)).toThrow(UsageError);
     expect(() => parseChapterList('x', 3)).toThrow(UsageError);
+  });
+});
+
+describe('project folders', () => {
+  it('tells the book\'s files from the project\'s sources, scripts and notes', () => {
+    for (const f of ['preset.json', 'chapters/es/01.md', 'resources/fig.svg', 'fonts/A.woff2', 'thumbnail.jpg', 'CREDITS.md']) expect(isProjectOnlyFile(f), f).toBe(false);
+    for (const f of ['source/book.pdf', 'build_preset.py', 'resources.json', 'report.md', 'layouts.es.json', 'layouts.json', '.git/HEAD', 'x/__pycache__/a.pyc']) expect(isProjectOnlyFile(f), f).toBe(true);
   });
 });
 
