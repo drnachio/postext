@@ -409,7 +409,8 @@ class Writer {
     const hang = round2(node.hangEm);
     const lines = this.within(node.dir, () => node.lines.map((l) => {
       const style = `padding-inline-start: ${round2(l.indentEm + node.hangEm)}em; text-indent: -${hang}em`;
-      return `<span class="pt-verse-line" style="${style}">${this.inline(l.inl)}</span>`;
+      const num = l.num !== undefined ? `<span class="pt-line-number" aria-hidden="true">${xmlText(l.num)}</span>` : '';
+      return `<span class="pt-verse-line" style="${style}">${num}${this.inline(l.inl)}</span>`;
     }));
     return `<div${this.classAttr(['pt-stanza', ...(node.cls ?? [])])}${this.dirAttr(node.dir)}>${pre}\n${lines.join('\n')}\n</div>`;
   }

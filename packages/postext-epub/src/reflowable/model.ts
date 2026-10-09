@@ -190,6 +190,9 @@ export interface VerseLineNode {
   inl: InlineItem[];
   /** The line's indent, in ems of the stanza's text. */
   indentEm: number;
+  /** The number printed beside the line (#621): written in the margin on
+   *  the line's start side, hidden from assistive technology. */
+  num?: string;
 }
 
 /** A stanza of a `:::verse` poem set line by line (#620): one block-level

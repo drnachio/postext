@@ -634,6 +634,25 @@ describe('reflowable rendition: verse line by line (#620)', () => {
   });
 });
 
+describe('reflowable rendition: line numbers of verse (#621)', () => {
+  const poem = [':::verse{align=start}', ...Array.from({ length: 12 }, (_, i) => `Line ${i + 1} of the poem`), ':::'].join('\n');
+
+  it('writes every Nth line\'s number in the margin, hidden from assistive technology', async () => {
+    const { pub, files, all } = await render([layOut(poem, { ...baseConfig, lineNumbers: { enabled: true } })]);
+    expectSound(pub, files);
+    const numbers = [...all.matchAll(/<span class="pt-line-number" aria-hidden="true">([^<]*)<\/span>Line (\d+)/g)].map((m) => [m[1], m[2]]);
+    expect(numbers).toEqual([['5', '5'], ['10', '10']]);
+    const css = pub.items.find((i) => i.href === 'styles/book.css')!.data as string;
+    expect(css).toContain('.pt-line-number {');
+  });
+
+  it('writes none without line numbers', async () => {
+    const { pub, all } = await render([layOut(poem, baseConfig)]);
+    expect(all).not.toContain('pt-line-number');
+    expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('.pt-line-number');
+  });
+});
+
 describe('reflowable rendition: hanging paragraph styles (#620)', () => {
   it('hangs the turnovers of a style, its first line at the indent it sets itself', async () => {
     const em = (value: number) => ({ value, unit: 'em' as const });

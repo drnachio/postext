@@ -16,6 +16,8 @@ export interface StylesheetOptions {
   verse?: boolean;
   /** The book sets a poem line by line (#620): the stanza rules. */
   stanzas?: boolean;
+  /** Lines of verse carry their numbers (#621): the margin they stand in. */
+  lineNumbers?: boolean;
   /** Classes of emphasis marks the text uses beyond `pt-dots` (the
    *  filled dot on the default side): their rules are written only then
    *  (`inline.ts` `dotsClasses`, #428). */
@@ -538,6 +540,18 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   if (options.stanzas) {
     out.push(rule('.pt-stanza', ['margin: 0 0 1em', 'text-indent: 0', 'text-align: start', 'hyphens: manual']));
     out.push(rule('.pt-verse-line', ['display: block']));
+  }
+  // Line numbers (#621): a poem's every Nth line carries its number in a
+  // margin on the start side of the stanza, out of the reading order.
+  if (options.stanzas && options.lineNumbers) {
+    out.push(rule('.pt-stanza', ['padding-left: 3em']));
+    out.push(rule('.pt-verse-line', ['position: relative']));
+    out.push(rule('.pt-line-number', [
+      'position: absolute', 'right: 100%', 'margin-right: 0.8em', 'text-indent: 0', 'font-size: 0.8em',
+      'white-space: nowrap', '-webkit-user-select: none', 'user-select: none',
+    ]));
+    out.push(rule('[dir="rtl"] .pt-stanza, .pt-stanza[dir="rtl"]', ['padding-left: 0', 'padding-right: 3em']));
+    out.push(rule('[dir="rtl"] .pt-line-number, .pt-stanza[dir="rtl"] .pt-line-number', ['right: auto', 'left: 100%', 'margin-right: 0', 'margin-left: 0.8em']));
   }
   if (options.verse) {
     // The poem as wide as its widest bayt, centred: its hemistichs share

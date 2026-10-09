@@ -70,6 +70,8 @@ export interface BookModel {
   verse: boolean;
   /** Whether a poem set line by line was read (#620). */
   stanzas?: boolean;
+  /** Whether a line of verse carries its number (#621). */
+  lineNumbers?: boolean;
   /** The classes of emphasis marks other than the filled dot on the
    *  default side the text uses (`inline.ts` `dotsClasses`, #428). */
   dots: Set<string>;
@@ -192,6 +194,9 @@ class DocWalker {
   private readonly sinks = new Map<string, Sink>();
   private readonly verses = new Map<string, OpenVerse>();
   private readonly stanzas = new Map<string, OpenStanza>();
+  /** The numbers printed beside lines (#621), by block id and line
+   *  index: a line of verse carries its own. */
+  private readonly lineNumbers = new Map<string, string>();
   private readonly tables = new Map<string, TableNode>();
   private readonly figures = new Set<string>();
   /** Text blocks read so far, with their content index: where floats go. */
@@ -229,6 +234,9 @@ class DocWalker {
     }
     for (const b of doc.blocks) {
       if (b.sourceStart !== undefined && hasPageLink(b)) this.indexRanges.add(rangeKey(b));
+    }
+    for (const page of doc.pages) {
+      for (const m of page.lineNumberMarks ?? []) this.lineNumbers.set(`${m.blockId}\u0000${m.lineIndex}`, m.label);
     }
     this.styleHints = [...doc.blocks, ...doc.pages.flatMap((p) => p.floats ?? [])].some((b) => b.paragraphStyleId !== undefined || b.indexLevel !== undefined);
     for (const a of doc.anchors ?? []) {
@@ -791,19 +799,22 @@ class DocWalker {
   private stanzaLines(open: OpenStanza, block: VDTBlock): void {
     const ctx = this.ctx(block);
     const em = fontPx(block.fontString) || this.bodyPx;
-    for (const line of block.lines) {
+    block.lines.forEach((line, i) => {
       const before = [...this.takePages(), ...this.anchorsAt(block, line)];
       const v = line.verseLine;
       const segs = (line.segments ?? []).filter((g, j) => !(j === 0 && v?.turnover && g.inserted));
       if (v?.turnover && open.sink) {
         appendLine(open.sink, line, ctx, before, segs);
-        continue;
+        return;
       }
-      const verseLine: VerseLineNode = { inl: [], indentEm: (v?.indent ?? 0) / em };
+      // The number the print sets beside the line (#621), if any.
+      const num = this.lineNumbers.get(`${block.id}\u0000${i}`);
+      if (num !== undefined) this.book.lineNumbers = true;
+      const verseLine: VerseLineNode = { inl: [], indentEm: (v?.indent ?? 0) / em, ...(num !== undefined ? { num } : {}) };
       open.node.lines.push(verseLine);
       open.sink = { inl: verseLine.inl };
       appendLine(open.sink, line, ctx, before, segs);
-    }
+    });
   }
 
   /**

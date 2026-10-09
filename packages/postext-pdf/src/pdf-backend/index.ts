@@ -626,6 +626,12 @@ function paintPage(
   // Running headers and footers are pagination artifacts.
   const pagination = (subtype: 'Header' | 'Footer') =>
     structure ? { artifact: { type: 'Pagination' as const, subtype } } : undefined;
+  // Line numbers (#621): layout artifacts in a tagged PDF, and each set
+  // under an empty `/ActualText`, so text extraction and copying run from
+  // line to line without them.
+  if (vdtPage.lineNumbers) {
+    renderHeaderFooterSlot(ctx, vdtPage.lineNumbers, fontCache, resourceCtx.images, structure ? { artifact: { type: 'Layout' } } : undefined, { silent: true });
+  }
   if (vdtPage.header) renderHeaderFooterSlot(ctx, vdtPage.header, fontCache, resourceCtx.images, pagination('Header'));
   if (vdtPage.footer) renderHeaderFooterSlot(ctx, vdtPage.footer, fontCache, resourceCtx.images, pagination('Footer'));
 

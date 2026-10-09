@@ -74,7 +74,7 @@ export function collectFontText(doc: VDTDocument, into: FontText = new Map()): F
     }
     // Floated resources live on their page's float band, not in a column.
     for (const block of page.floats ?? []) addBlockFonts(block, out, vertical);
-    for (const slot of [page.header, page.footer, page.openerBand]) addSlotFonts(slot, out);
+    for (const slot of [page.header, page.footer, page.openerBand, page.lineNumbers]) addSlotFonts(slot, out);
     // The lettering of the page's comics (its comic page or half of a
     // spread, its strips): design text in their balloons.
     for (const comic of pageComics(page)) for (const balloon of comic.balloons) addSlotFonts({ blocks: balloon.text }, out);

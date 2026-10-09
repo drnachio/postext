@@ -37,6 +37,8 @@ const pt = (value: number) => ({ value, unit: 'pt' as const });
 const config: PostextConfig = {
   page: { width: pt(360), height: pt(480), margins: { top: pt(24), bottom: pt(24), left: pt(24), right: pt(24) } },
   locale: 'en-us',
+  // The poem's every second line numbered (#621), in both renditions.
+  lineNumbers: { enabled: true, interval: 2 },
   footer: {
     elements: [{
       kind: 'text', id: 'pn', content: '{pageNumber}', fontSize: pt(8), overflow: 'ellipsis-end',
