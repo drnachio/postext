@@ -78,20 +78,31 @@ describe('firstLineIndent on a heading level (#636)', () => {
 
   it('keeps the start-of-line rule for a head that opens with an opening bracket, as a body paragraph does', () => {
     // A heading at the body size beside a body paragraph with the same text
-    // and the same two-em first-line indent: the bracket's blank is trimmed
-    // after the indent alike (clreq), and the lines break alike.
+    // and the same two-em first-line indent: the bracket at the start of the
+    // indented line is set alike, under the mainland default (clreq: the
+    // indent, then the bracket at full width) and under each
+    // `cjk.paragraphStartBracket` pattern, and the lines break alike.
     const same: HeadingLevelConfig = { level: 2, fontSize: pt(BODY), lineHeight: pt(17.5), marginTop: pt(0), marginBottom: pt(0), firstLineIndent: em(2) };
-    const text = `（一）${ZH}`;
-    const c = config({ bodyText: { fontSize: pt(BODY), lineHeight: pt(17.5), textAlign: 'left', firstLineIndent: em(2), indentAfterHeading: true } }, [same]);
-    for (const cfg of [c, vertical(c)]) {
-      const doc = buildDocument({ markdown: `正文\n\n## ${text}\n\n${text}` }, cfg);
-      const h = heading(doc, '（一）');
-      const p = doc.blocks.filter((b) => b.type === 'paragraph')[1]!;
-      expect(h.lines.map((l) => [l.text, l.bbox.x - h.bbox.x, l.bbox.width])).toEqual(p.lines.map((l) => [l.text, l.bbox.x - p.bbox.x, l.bbox.width]));
-      expect(starts(h)[0]).toBeCloseTo(2 * BODY, 6);
-      // The bracket gave up its half-em blank before the glyph.
-      expect(h.lines[0]!.bbox.width).toBeLessThan(h.lines[0]!.text.length * BODY);
+    const text = `（一）${ZH}${ZH}`;
+    const body = { fontSize: pt(BODY), lineHeight: pt(17.5), textAlign: 'left' as const, firstLineIndent: em(2), indentAfterHeading: true };
+    const firstStart: Record<string, number> = {};
+    for (const bracket of [undefined, 'indent', 'half', 'flush'] as const) {
+      const c = config({ bodyText: body, ...(bracket ? { cjk: { paragraphStartBracket: bracket } } : {}) }, [same]);
+      for (const cfg of [c, vertical(c)]) {
+        const doc = buildDocument({ markdown: `正文\n\n## ${text}\n\n${text}` }, cfg);
+        const h = heading(doc, '（一）');
+        const p = doc.blocks.filter((b) => b.type === 'paragraph')[1]!;
+        expect(h.lines.length).toBeGreaterThan(1);
+        expect(h.lines.map((l) => [l.text, l.bbox.x - h.bbox.x, l.bbox.width])).toEqual(p.lines.map((l) => [l.text, l.bbox.x - p.bbox.x, l.bbox.width]));
+      }
+      firstStart[bracket ?? 'default'] = starts(heading(buildDocument({ markdown: `## ${text}` }, c), '（一）'))[0]!;
     }
+    expect(firstStart.default).toBeCloseTo(2 * BODY, 6);
+    // Pattern ③: the bracket's glyph in the second half of the indent.
+    expect(firstStart.half).toBeLessThan(2 * BODY);
+    expect(firstStart.half).toBeGreaterThan(BODY);
+    // 天付き: the bracket opens the line with no indent.
+    expect(firstStart.flush).toBeCloseTo(0, 6);
   });
 
   it('adds to indent: every line indent in, the first indent + firstLineIndent', () => {
