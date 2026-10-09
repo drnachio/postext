@@ -44,6 +44,7 @@ import type {
   PostextConfig,
   FolioPaperConfig,
   ResolvedComicsConfig,
+  ResolvedLineNumbersConfig,
 } from './types';
 import type { NumeralStyle } from './numbering';
 import type { MathRender } from './math/types';
@@ -133,6 +134,9 @@ export interface ResolvedConfig {
    *  hashes) as before. Read it with `resolvedComics()`, which falls back
    *  to the defaults of the document language. */
   comics?: ResolvedComicsConfig;
+  /** Line numbers (`PostextConfig.lineNumbers`, #621), resolved, when the
+   *  config sets the section; absent otherwise (no numbers). */
+  lineNumbers?: ResolvedLineNumbersConfig;
 }
 
 // ---------------------------------------------------------------------------
@@ -2193,6 +2197,29 @@ export interface VDTPage {
    *  split lines and lettering, in sheet coordinates. The page's columns
    *  are empty: nothing flows on it. */
   comic?: VDTComicPage;
+  /** The line numbers printed on the page (`lineNumbers`, #621): one text
+   *  block per number, physical like the header and footer, each flagged
+   *  `artifact` (a tagged PDF marks it so, the HTML hides it from
+   *  assistive technology and from selection). Absent on a page with
+   *  none. */
+  lineNumbers?: VDTDesignSlot;
+  /** The line each block of {@link lineNumbers} labels, in the same order:
+   *  for overlays and references. */
+  lineNumberMarks?: VDTLineNumberMark[];
+}
+
+/** The line a printed line number labels (#621). */
+export interface VDTLineNumberMark {
+  /** The line's number in the count. */
+  number: number;
+  /** The number as printed (in `lineNumbers.format`). */
+  label: string;
+  /** The column the line sits in (`VDTColumn.index`). */
+  columnIndex: number;
+  /** The line's block (`VDTBlock.id`) and its index in the block's
+   *  `lines`. */
+  blockId: string;
+  lineIndex: number;
 }
 
 /** Something the layout could not set as asked and placed anyway — a box
@@ -2252,8 +2279,10 @@ export interface ConfigWarning {
    *  the word it is closest to, when one is close.
    *  `unknownNumerals`: a `numerals` value that is not `'auto'`,
    *  `'latn'`, `'arab'` or `'arabext'`; the digits follow the document
-   *  language, and `used` is the digit system that gives. */
-  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'columnCountClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals';
+   *  language, and `used` is the digit system that gives.
+   *  `lineNumbersUnsupported`: `lineNumbers.enabled` on a vertical
+   *  document (#621), which gets no line numbers; `used` is `false`. */
+  kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'columnCountClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals' | 'lineNumbersUnsupported';
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,
    *  `headingStyles[2].layout.sideColumnPercent`. */
@@ -2482,6 +2511,11 @@ export type ContentWarning = ContentWarningBase & (
    *  tails point off the panel. Only raised on pages whose pictures mark
    *  anchors. Informational. Points at the first line of that speaker. */
   | { kind: 'comicUnknownSpeaker'; speaker: string }
+  /** A line number set in the side column (`lineNumbers.position:
+   *  'side'`, #621) overlaps a side box, a side caption or another float
+   *  of that column: both are painted where they are. Points at the line
+   *  it numbers; `number` is the number as printed. */
+  | { kind: 'lineNumberOverlap'; number: string }
 );
 
 /** What a build reports in `VDTDocument.warnings`: a construct the layout
@@ -2583,6 +2617,16 @@ export interface VDTDocument {
    *  effect on the page of the first block placed after its fence
    *  (`afterContentIndex`, the fence's closing content index). */
   partMarks?: { afterContentIndex: number; number: string; title: string; palette?: Record<string, string> }[];
+  /** The number of the last line the document counted (`lineNumbers`,
+   *  #621), printed or not; absent when line numbers are off or nothing
+   *  was counted. A host laying out a book chapter by chapter hands it to
+   *  the next chapter (`continuation.lineNumber`) when lines are counted
+   *  through the book. */
+  lastLineNumber?: number;
+  /** Set when the count of {@link lastLineNumber} started again inside
+   *  the document (a restart, a poem's `lineStart`): it does not depend on
+   *  the number the document inherited. */
+  lineNumberRestarted?: true;
 }
 
 // ---------------------------------------------------------------------------

@@ -22,6 +22,8 @@ import type {
   LetteringConfig,
   BalloonStyleConfig,
   ComicCastMember,
+  LineNumbersConfig,
+  ResolvedLineNumbersConfig,
 } from './types';
 import type { ConfigWarning, ResolvedConfig } from './vdt';
 import { parseNumberFormat } from './numbering';
@@ -37,13 +39,14 @@ import { parseFootnoteNumberFormat } from './defaults/footnotes';
 import { COMIC_CHOICES, isComicChoice, resolveComicsConfig } from './defaults/comics';
 import { resolvePrintConfig } from './defaults/print';
 import { outputProfileInfo } from './color/catalogue';
+import { LINE_NUMBERS_ALIGNS, LINE_NUMBERS_COUNTS, LINE_NUMBERS_MULTI_COLUMN, LINE_NUMBERS_POSITIONS, LINE_NUMBERS_RESTARTS } from './defaults/lineNumbers';
 
 /** The format fields and the decimal spelling each falls back to. A
  *  `format` is a format field only under `pageNumbering`. */
 function numberFormatFallback(key: string, parentKey: string | undefined): string | undefined {
   if (key === 'numberFormat') return 'arabic';
   if (key === 'counterFormat') return 'decimal';
-  if (key === 'format' && parentKey === 'pageNumbering') return 'decimal';
+  if (key === 'format' && (parentKey === 'pageNumbering' || parentKey === 'lineNumbers')) return 'decimal';
   return undefined;
 }
 
@@ -121,6 +124,34 @@ function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   }
   out.push(...collectComicChoiceWarnings(config));
   out.push(...collectPrintChoiceWarnings(config));
+  out.push(...collectLineNumbersWarnings(config));
+  return out;
+}
+
+/** The line number settings that take one of a few words (#621), and line
+ *  numbers asked of a vertical document, which gets none
+ *  (`lineNumbersUnsupported`). */
+function collectLineNumbersWarnings(config: PostextConfig): ConfigWarning[] {
+  const ln = config.lineNumbers as unknown;
+  if (!ln || typeof ln !== 'object' || Array.isArray(ln)) return [];
+  const c = ln as LineNumbersConfig;
+  const out: ConfigWarning[] = [];
+  let resolved: ResolvedLineNumbersConfig | undefined;
+  const res = () => (resolved ??= resolveAllConfig(config).lineNumbers!);
+  const check = (value: unknown, choices: readonly string[], key: keyof LineNumbersConfig): void => {
+    if (value === undefined || (typeof value === 'string' && choices.includes(value))) return;
+    const written = String(value);
+    const suggestion = closestKey(written, choices);
+    out.push({ kind: 'unknownConfigValue', path: `lineNumbers.${key}`, value: written, used: String(res()[key as keyof ResolvedLineNumbersConfig]), ...(suggestion ? { suggestion } : {}) });
+  };
+  check(c.count, LINE_NUMBERS_COUNTS, 'count');
+  check(c.restart, LINE_NUMBERS_RESTARTS, 'restart');
+  check(c.position, LINE_NUMBERS_POSITIONS, 'position');
+  check(c.multiColumn, LINE_NUMBERS_MULTI_COLUMN, 'multiColumn');
+  check(c.align, LINE_NUMBERS_ALIGNS, 'align');
+  if (c.enabled === true && resolveAllConfig(config).layout.writingMode === 'vertical-rl') {
+    out.push({ kind: 'lineNumbersUnsupported', path: 'lineNumbers.enabled', value: 'true', used: 'false' });
+  }
   return out;
 }
 
@@ -245,8 +276,15 @@ const PARAGRAPH_STYLE_KEYS = {
   id: true, name: true, fontFamily: true, fontSize: true, lineHeight: true, color: true, textAlign: true,
   boldColor: true, italicColor: true, fontWeight: true, boldFontWeight: true, italic: true, smallCaps: true,
   hyphenation: true, indent: true, endIndent: true, firstLineIndent: true, hangingIndent: true, spaceBetween: true,
-  marginTop: true, marginBottom: true, snapToGrid: true, textTransform: true, wordBreak: true,
+  marginTop: true, marginBottom: true, snapToGrid: true, textTransform: true, wordBreak: true, lineNumbers: true,
 } satisfies Record<keyof ParagraphStyleConfig, true>;
+
+// Line numbers (#621).
+const LINE_NUMBERS_KEYS = {
+  enabled: true, count: true, interval: true, numberFirst: true, restart: true, startAt: true, position: true,
+  multiColumn: true, gap: true, align: true, fontFamily: true, fontSize: true, fontWeight: true, italic: true,
+  color: true, format: true,
+} satisfies Record<keyof LineNumbersConfig, true>;
 
 // The comics tables (#562).
 const COMICS_KEYS = {
@@ -342,6 +380,7 @@ function collectUnknownKeyWarnings(config: PostextConfig): ConfigWarning[] {
   };
   checkConfig(config, '');
   checkConfig(config.htmlViewer?.overrides, 'htmlViewer.overrides.');
+  check(config.lineNumbers, LINE_NUMBERS_KEYS, 'lineNumbers');
   // Comics: the section, its frame, gutters, panel styles, lettering,
   // balloon styles and cast.
   const comics = config.comics as unknown;

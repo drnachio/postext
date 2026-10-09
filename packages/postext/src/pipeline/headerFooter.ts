@@ -2,6 +2,7 @@ import { resolvedComics } from '../defaults/comics';
 import { fontFamilyOf, getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode, measureCentralBaseline, setMeasureWritingMode, withMeasureWritingMode } from '../measure/vertical';
 import type { PartPageInfo } from './placeholders';
 import { applyPartPalettesToFlow, type FlowColorValues } from './partPalette';
+import { recolorLineNumbers } from './lineNumbers';
 import { TITLE_BREAK_RE, applyTitleBreaks, parseInlineFormatting } from '../parse/inlineFormatting';
 import type { ColorPaletteEntry, ColorValue, DesignTextAlign, DocumentMetadata, Resource, ResolvedDesignSlot, ResolvedDesignTextElement, ResolvedHeadingLevelConfig, TextAlign } from '../types';
 import {
@@ -1112,8 +1113,10 @@ function layoutHeadersAndFooters(doc: VDTDocument, resourceById: ReadonlyMap<str
     const section = sectionByPage[i];
     return section && Object.keys(section.palette).length > 0 ? { ...palette, ...section.palette } : palette;
   });
-  // The same overrides recolour the palette-linked colours of the flow.
+  // The same overrides recolour the palette-linked colours of the flow,
+  // and of the line numbers (#621).
   applyPartPalettesToFlow(doc, partPaletteByPageIndex, resolved.colorPalette, inputs.flowColorValues);
+  recolorLineNumbers(doc, partPaletteByPageIndex);
   // And the paper: a page whose overrides change the entry the page colour
   // links to paints that colour instead.
   stampPageBackgrounds(doc, partPaletteByPageIndex, resolved.page.backgroundColor, resolved.colorPalette);

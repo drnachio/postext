@@ -330,6 +330,7 @@ export function preflightDocument(doc: VDTDocument, options: PreflightOptions = 
     checkSlot(page.header);
     checkSlot(page.footer);
     checkSlot(page.openerBand);
+    checkSlot(page.lineNumbers);
     checkComic(page.comic);
   }
 

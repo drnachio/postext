@@ -28,6 +28,7 @@ import { stripCitationsDefaults } from './citations';
 import { stripIndexDefaults } from './indexConfig';
 import { stripCjkDefaults } from './cjk';
 import { stripComicsDefaults } from './comics';
+import { stripLineNumbersDefaults } from './lineNumbers';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, resolvePageConfig, stripPageDefaults } from './page';
@@ -58,6 +59,7 @@ export { DEFAULT_PARTS_CONFIG, resolvePartsConfig, stripPartsDefaults } from './
 export { DEFAULT_HEADING_STYLES, resolveHeadingStylesConfig, stripHeadingStylesDefaults } from './headingStyles';
 export { DEFAULT_TOC_CONFIG, resolveTocConfig, stripTocDefaults } from './toc';
 export { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, parseFootnoteNumberFormat } from './footnotes';
+export { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults, defaultLineNumbersRestart } from './lineNumbers';
 export { resolveCrossRefsConfig, stripCrossRefsDefaults } from './crossRefs';
 export { DEFAULT_CITATIONS_CONFIG, resolveCitationsConfig, stripCitationsDefaults } from './citations';
 export { DEFAULT_INDEX_CONFIG, resolveIndexConfig, stripIndexDefaults } from './indexConfig';
@@ -215,6 +217,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.footnotes = strippedFootnotes;
   } else {
     delete result.footnotes;
+  }
+  const strippedLineNumbers = stripLineNumbersDefaults(config.lineNumbers);
+  if (strippedLineNumbers) {
+    result.lineNumbers = strippedLineNumbers;
+  } else {
+    delete result.lineNumbers;
   }
   const strippedCrossRefs = stripCrossRefsDefaults(config.crossRefs);
   if (strippedCrossRefs) {

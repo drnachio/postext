@@ -634,6 +634,13 @@ export interface LayoutContinuation {
    *  numbered through the book (`footnotes.numbering: 'document'`) go on
    *  from it. */
   footnoteNumber?: number;
+  /** The number of the last line the preceding content counted (#621), so
+   *  line numbers counted through the book (`lineNumbers.restart:
+   *  'document'`) go on from it. `continuationAfter` counts the lines of
+   *  verse from the text; a count of every line (`count: 'all'`) depends
+   *  on the layout, and the host takes it from the previous chapter's
+   *  `VDTDocument.lastLineNumber`. */
+  lineNumber?: number;
   /** The `:::part` in effect at the end of the preceding content — the last
    *  part opened, whether or not its fence has closed — so a chapter laid
    *  out on its own keeps `{partTitle}` / `{partNumber}` and the part's
@@ -1492,6 +1499,100 @@ export interface ResolvedVerseConfig {
   keepStanzas: number;
 }
 
+/** What `lineNumbers` counts (#621): `'verse'`, the lines of `:::verse`
+ *  poems (a turnover takes no number); `'all'`, every laid-out line of the
+ *  body text — paragraphs, list items, quotations and verse. */
+export type LineNumbersCount = 'verse' | 'all';
+/** Where the line count starts again (#621): never (`'document'`, which
+ *  runs on through the chapters of a book), at every level-1 heading
+ *  (`'chapter'`), at every level-1 or level-2 heading (`'section'`), on
+ *  every page (`'page'`) or at every `:::verse` poem (`'poem'`). */
+export type LineNumbersRestart = 'document' | 'chapter' | 'section' | 'page' | 'poem';
+/** The side of the text the numbers stand on (#621): the outer margin
+ *  (away from the spine: right on a recto, left on a verso), the inner
+ *  one, the physical `'left'` or `'right'`, the start or end side of the
+ *  document's direction (`'start'` is the right of a right-to-left
+ *  book), or the side column of a one-and-a-half layout (`'side'`, set
+ *  flush with its edge next to the text). */
+export type LineNumbersPosition = 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+/** Where the numbers of a page of two or more text columns go (#621):
+ *  beside every column on the {@link LineNumbersPosition} side (`'each'`),
+ *  in the gutters (`'gutter'`: the first column's on its right, the
+ *  others' on their left) or on the outer edges of the first and last
+ *  columns (`'outer-edges'`, columns between them as `'each'`). */
+export type LineNumbersMultiColumn = 'each' | 'gutter' | 'outer-edges';
+
+/** Line numbers in the margin (#621): every Nth line of the text gets its
+ *  number beside it, as critical editions, poetry, legal texts and
+ *  line-referenced school texts print them. The numbers are painted on
+ *  the line's baseline and never move a line. Off unless `enabled`. */
+export interface LineNumbersConfig {
+  /** Default `false`. */
+  enabled?: boolean;
+  /** What is counted. Default `'verse'`. */
+  count?: LineNumbersCount;
+  /** Print the number of every Nth line (the multiples of N). Default
+   *  `5`; a `:::verse` fence sets its own with `interval=N`. */
+  interval?: number;
+  /** Also print the number of the first line after each restart. Default
+   *  `false`. */
+  numberFirst?: boolean;
+  /** Where the count starts again. Default `'poem'` when {@link count} is
+   *  `'verse'`, `'page'` when it is `'all'`. `:::numbering{lines=N}`
+   *  restarts it anywhere. */
+  restart?: LineNumbersRestart;
+  /** The number of the first line after a restart. Default `1`. */
+  startAt?: number;
+  /** Default `'outer'`. */
+  position?: LineNumbersPosition;
+  /** Pages of two or more text columns. Default `'outer-edges'`. */
+  multiColumn?: LineNumbersMultiColumn;
+  /** The distance from the column's edge to the number; `em` is the
+   *  number's size. Default `1em`. Not used with `position: 'side'`, where
+   *  the number stands flush with the side column's edge. */
+  gap?: Dimension;
+  /** How a number aligns: `'auto'` flush toward the text (right-aligned
+   *  in a left margin, left-aligned in a right one), `'left'` or
+   *  `'right'` within the width of the widest number of the page. Default
+   *  `'auto'`. */
+  align?: 'auto' | 'left' | 'right';
+  /** Default: the body font family. */
+  fontFamily?: string;
+  /** Default: 0.8 of the body font size. */
+  fontSize?: Dimension;
+  /** Default: the body font weight. */
+  fontWeight?: number;
+  /** Default `false`. */
+  italic?: boolean;
+  /** Default: the body text colour. A palette-linked colour follows part
+   *  and section palettes. */
+  color?: ColorValue;
+  /** The numbering format, in any spelling a list or a page number takes
+   *  (`decimal`, `lower-roman`, `arabic-indic`, `一`…). Default decimal,
+   *  in the document's digits (`numerals`). */
+  format?: string;
+}
+
+export interface ResolvedLineNumbersConfig {
+  enabled: boolean;
+  count: LineNumbersCount;
+  interval: number;
+  numberFirst: boolean;
+  restart: LineNumbersRestart;
+  startAt: number;
+  position: LineNumbersPosition;
+  multiColumn: LineNumbersMultiColumn;
+  gap: Dimension;
+  align: 'auto' | 'left' | 'right';
+  fontFamily: string;
+  fontSize: Dimension;
+  fontWeight: number;
+  italic: boolean;
+  color: ColorValue;
+  /** As written; unset for decimal. */
+  format?: string;
+}
+
 export interface ResolvedBlockquoteConfig {
   color: ColorValue;
   italic: boolean;
@@ -2037,6 +2138,12 @@ export interface ParagraphStyleConfig {
    *  punctuation (phrase-spaced kana text, 分かち書き), `'normal'` between
    *  any two characters. Unset: the document's `cjk.wordBreak`. */
   wordBreak?: CjkWordBreak;
+  /** Whether line numbers (`lineNumbers`, #621) count the lines of the
+   *  style's paragraphs. Unset: counted when `lineNumbers.count` is
+   *  `'all'` (or, in a poem set in the style, when it counts verse);
+   *  `true` counts them under `'verse'` too, and inside a callout, whose
+   *  text is otherwise never counted; `false` never. */
+  lineNumbers?: boolean;
 }
 
 export type ParagraphTextTransform = 'none' | 'uppercase';
@@ -2076,6 +2183,9 @@ export interface ResolvedParagraphStyleConfig {
   textTransform: ParagraphTextTransform;
   /** Absent when the style sets none (the document's `cjk.wordBreak`). */
   wordBreak?: CjkWordBreak;
+  /** Absent when the style sets none (see
+   *  {@link ParagraphStyleConfig.lineNumbers}). */
+  lineNumbers?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -5964,6 +6074,9 @@ export interface PostextConfig {
   /** East Asian typography: line breaking and justification of Chinese,
    *  Japanese and Korean text (see {@link CjkConfig}). */
   cjk?: CjkConfig;
+  /** Line numbers in the margin, for verse or for every line of the text
+   *  (#621). Off by default. */
+  lineNumbers?: LineNumbersConfig;
   header?: HeaderFooterSlot;
   footer?: HeaderFooterSlot;
 

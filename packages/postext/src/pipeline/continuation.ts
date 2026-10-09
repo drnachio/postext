@@ -19,6 +19,7 @@ import { headingIsNumbered } from './headingStyles';
 import { computeOutline, hasIndexDirective, hasTocDirective } from './outline';
 import { lastFootnoteNumber, numberFootnotes, splitFootnoteDefinitions } from './footnotes';
 import { numberStatements } from './statementNumbering';
+import { lastVerseLineNumber } from './lineNumbers';
 
 const NO_HEADINGS: HeadingCounters = { h1: 0, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 };
 
@@ -71,12 +72,17 @@ export function continuationAfter(
     ...(before?.headings ? { headings: before.headings } : {}),
     ...(before?.statementCounters ? { counters: before.statementCounters } : {}),
   }).counters;
+  // Lines of verse counted through the book (#621); a count of every line
+  // is the layout's (`VDTDocument.lastLineNumber`), and the inherited
+  // number is handed on as it was.
+  const lineNumber = lastVerseLineNumber(blocks, resolved, before?.lineNumber) ?? before?.lineNumber;
   return {
     headings,
     resourceCounters: counters,
     resourceNumbers: map,
     ...(Object.keys(statementCounters).length > 0 ? { statementCounters } : {}),
     ...(footnoteNumber > 0 ? { footnoteNumber } : {}),
+    ...(lineNumber !== undefined ? { lineNumber } : {}),
     ...(part ? { part } : {}),
     ...(afterPartPage ? { afterPartPage } : {}),
   };

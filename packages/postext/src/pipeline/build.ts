@@ -177,6 +177,7 @@ import {
 import { documentLocale, effectiveResourceTypes } from '../defaults/resourceTypes';
 import { resolveCalloutStylesConfig } from '../defaults/calloutStyles';
 import { pickTableStyle } from '../defaults/tableStyle';
+import { buildLineNumbers, lineNumberWarnings } from './lineNumbers';
 import { buildHeadersAndFooters, defaultOpenerTitle, headingDesignBoxes, measureDefaultOpenerHeight, measureHeadingDesign } from './headerFooter';
 import { flowColorValues } from './partPalette';
 import { chapterNumberCounter, leadingBoldText } from './placeholders';
@@ -6490,6 +6491,10 @@ function placeDocumentPass(
     .map((s) => s.startPageIndex);
   if (restarts.length > 0) doc.pageNumberRestarts = restarts;
 
+  // Line numbers (#621): the lines of this pass counted where they landed,
+  // before the running heads (whose palettes recolour them).
+  buildLineNumbers(doc, contentBlocks, continuation);
+
   buildHeadersAndFooters(doc, resourceById, {
     // Where two palette entries share a base value, each kind of flow
     // colour follows its own settings under a part or section palette.
@@ -6592,7 +6597,8 @@ export function* buildDocumentGen(
   // Justified CJK lines the composer could not fill within its tracking
   // cap; words of a joining script that run past their line, and styles
   // whose letter-spacing such words do not take.
-  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? [])];
+  // Line numbers set over a float of the side column (#621).
+  const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...lineNumberWarnings(doc)];
   // Comic panels whose cell cannot hold their picture's safe area (#556).
   for (const page of doc.pages) {
     if (page.comic) loose.push(...comicPageLayoutWarnings(page.comic));

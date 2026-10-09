@@ -2347,6 +2347,12 @@ function renderPageDetailed(
   // Running heads and folios stay on the sheet, horizontal.
   const sheetOptions: HtmlPaint = options.vertical ? { ...options, vertical: undefined } : options;
   const slotParts: string[] = [];
+  // Line numbers (#621): on the sheet, hidden from assistive technology
+  // (each block is an artifact) and left out of a selection, so copied
+  // text runs from line to line without them.
+  if (page.lineNumbers) {
+    slotParts.push(`<div class="pt-line-numbers" style="user-select:none;-webkit-user-select:none;pointer-events:none;">${renderDesignSlot(page.lineNumbers, sheetOptions)}</div>`);
+  }
   if (page.header) slotParts.push(renderDesignSlot(page.header, sheetOptions));
   if (page.footer) slotParts.push(renderDesignSlot(page.footer, sheetOptions));
   // Whether or not a picture on the page uses it: a host patching blocks

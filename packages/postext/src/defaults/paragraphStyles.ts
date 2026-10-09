@@ -47,6 +47,8 @@ function resolveParagraphStyleConfig(
     marginBottom: partial.marginBottom ?? ZERO,
     snapToGrid: partial.snapToGrid ?? true,
     textTransform: partial.textTransform === 'uppercase' ? 'uppercase' : 'none',
+    // Absent unless set: line numbers follow `lineNumbers.count` (#621).
+    ...(typeof partial.lineNumbers === 'boolean' ? { lineNumbers: partial.lineNumbers } : {}),
     // Absent unless set: the paragraphs follow `cjk.wordBreak`.
     ...(partial.wordBreak === 'normal' || partial.wordBreak === 'keep-all' ? { wordBreak: partial.wordBreak } : {}),
   };
@@ -93,6 +95,7 @@ export function stripParagraphStylesDefaults(
     if (s.snapToGrid === false) r.snapToGrid = false;
     if (s.textTransform !== undefined && s.textTransform !== 'none') r.textTransform = s.textTransform;
     if (s.wordBreak !== undefined) r.wordBreak = s.wordBreak;
+    if (s.lineNumbers !== undefined) r.lineNumbers = s.lineNumbers;
     return r;
   });
 }

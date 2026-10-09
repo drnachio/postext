@@ -86,6 +86,8 @@ export function configFontFamilies(config: PostextConfig, markdown?: FontContent
   for (const style of config.chipStyles ?? []) {
     if (style.fontFamily) families.add(style.fontFamily);
   }
+  // Line numbers (#621): a face of their own; unset, the body family.
+  if (config.lineNumbers?.fontFamily) families.add(config.lineNumbers.fontFamily);
   // Paragraph styles (`:::paragraphs`): a face of their own; unset, the
   // body family.
   for (const style of config.paragraphStyles ?? []) {
@@ -202,6 +204,14 @@ export function collectFontUsage(config: PostextConfig, doc?: FontUsageDocument)
     const slanted = resolveBodyTextConfig(config.bodyText, config.locale).emphasis === undefined;
     const italics = slanted && (!dots || doc?.latinEmphasis !== false);
     for (const v of STANDARD_FONT_VARIANTS) if (italics || v.style !== 'italic') add(primaryFontFamily(body), v);
+  }
+  // Line numbers (#621) with no face of their own: the body family (the
+  // engine's default when the config names none), in their weight and
+  // slant.
+  const ln = config.lineNumbers;
+  if (ln?.enabled && !(typeof ln.fontFamily === 'string' && ln.fontFamily.trim())) {
+    const bodyText = resolveBodyTextConfig(config.bodyText, config.locale);
+    add(primaryFontFamily(bodyText.fontFamily), { weight: typeof ln.fontWeight === 'number' ? ln.fontWeight : bodyText.fontWeight, style: ln.italic === true ? 'italic' : 'normal' });
   }
   return usage;
 }
