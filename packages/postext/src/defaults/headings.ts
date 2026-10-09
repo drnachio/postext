@@ -177,17 +177,19 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
   return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, ...(keepWithNextSpread ? { keepWithNextSpread } : {}), keepWithNextSplit, snapToGrid: generalSnapToGrid, inlineMarks, balancing, levels };
 }
 
-/** A level's `lineSpan`, `indent` and `jidori` (#424) as they resolve:
- *  each present only when set to something that takes effect (a whole
- *  number of lines from 1, a non-zero indent, a width over one character),
+/** A level's `lineSpan`, `indent` and `jidori` (#424) and its
+ *  `firstLineIndent` (#636) as they resolve: each present only when set to
+ *  something that takes effect (a whole number of lines from 1, a non-zero
+ *  indent, a width over one character),
  *  so a configuration without them resolves exactly as before. */
 export function headingPlacementFields(
-  partial: Pick<HeadingLevelConfig, 'lineSpan' | 'indent' | 'jidori' | 'dropCap'> | undefined,
-): Pick<ResolvedHeadingLevelConfig, 'lineSpan' | 'indent' | 'jidori' | 'dropCap'> {
-  const out: Pick<ResolvedHeadingLevelConfig, 'lineSpan' | 'indent' | 'jidori' | 'dropCap'> = {};
+  partial: Pick<HeadingLevelConfig, 'lineSpan' | 'indent' | 'firstLineIndent' | 'jidori' | 'dropCap'> | undefined,
+): Pick<ResolvedHeadingLevelConfig, 'lineSpan' | 'indent' | 'firstLineIndent' | 'jidori' | 'dropCap'> {
+  const out: Pick<ResolvedHeadingLevelConfig, 'lineSpan' | 'indent' | 'firstLineIndent' | 'jidori' | 'dropCap'> = {};
   const lineSpan = partial?.lineSpan;
   if (typeof lineSpan === 'number' && Number.isFinite(lineSpan) && lineSpan >= 1) out.lineSpan = Math.round(lineSpan);
   if (partial?.indent && partial.indent.value !== 0) out.indent = partial.indent;
+  if (partial?.firstLineIndent && partial.firstLineIndent.value !== 0) out.firstLineIndent = partial.firstLineIndent;
   const jidori = partial?.jidori;
   if (typeof jidori === 'number' && Number.isFinite(jidori) && jidori > 1) out.jidori = jidori;
   // The drop cap of the paragraph after the heading (#623).
@@ -228,6 +230,7 @@ export function resolveHeadingLevelOverrides(
   // takes it off its level's.
   if (partial.lineSpan !== undefined) out.lineSpan = headingPlacementFields(partial).lineSpan;
   if (partial.indent !== undefined) out.indent = headingPlacementFields(partial).indent;
+  if (partial.firstLineIndent !== undefined) out.firstLineIndent = headingPlacementFields(partial).firstLineIndent;
   if (partial.jidori !== undefined) out.jidori = headingPlacementFields(partial).jidori;
   // `dropCap: false` takes the level's off.
   if (partial.dropCap !== undefined) out.dropCap = headingPlacementFields(partial).dropCap;
@@ -465,6 +468,7 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
       const grid = headingPlacementFields(level);
       if (grid.lineSpan !== undefined) { entry.lineSpan = grid.lineSpan; levelHasOverride = true; }
       if (grid.indent !== undefined) { entry.indent = grid.indent; levelHasOverride = true; }
+      if (grid.firstLineIndent !== undefined) { entry.firstLineIndent = grid.firstLineIndent; levelHasOverride = true; }
       if (grid.jidori !== undefined) { entry.jidori = grid.jidori; levelHasOverride = true; }
       if (grid.dropCap !== undefined) { entry.dropCap = grid.dropCap; levelHasOverride = true; }
       if (level.advancedDesign && (level.advancedDesign.enabled || (level.advancedDesign.slot?.elements?.length ?? 0) > 0)) {

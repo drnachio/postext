@@ -3558,6 +3558,18 @@ export interface HeadingLevelConfig {
    *  book). The measure narrows by it; a centred heading centres in what is
    *  left. Default `0`. */
   indent?: Dimension;
+  /** Indent of the heading's first line only (#636), measured from
+   *  {@link indent} (so the first line starts `indent + firstLineIndent`
+   *  in): the lines it wraps onto start at `indent`, as a body paragraph's
+   *  turnover lines start at the margin. GB/T 9704 sets every level of
+   *  head two cells in with its turnover back at the margin:
+   *  `{ value: 2, unit: 'em' }`. `em` is the BODY size, as for `indent`,
+   *  so two ems are two cells of the body grid at any heading size. A
+   *  numbered heading's number comes after the indent. A centred heading
+   *  takes it as a centred body paragraph does: its first line centres in
+   *  the room after the indent. A heading overrides it with
+   *  `{firstLineIndent=N}` (`0` clears it). Default `0`. */
+  firstLineIndent?: Dimension;
   /** 字取り (jidori, JLReq §3.7.3, §4.1): a heading shorter than this many
    *  of its own characters is spaced out evenly to fill exactly that width
    *  (`jidori: 3` sets 序章 as 序　章). Applies to a heading that fits one
@@ -3609,6 +3621,8 @@ export interface ResolvedHeadingLevelConfig {
   lineSpan?: number;
   /** Absent unless set (see {@link HeadingLevelConfig.indent}). */
   indent?: Dimension;
+  /** Absent unless set (see {@link HeadingLevelConfig.firstLineIndent}). */
+  firstLineIndent?: Dimension;
   /** Absent unless set (see {@link HeadingLevelConfig.jidori}). */
   jidori?: number;
   /** Absent unless set (see {@link HeadingLevelConfig.dropCap}); a heading

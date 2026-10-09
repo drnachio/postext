@@ -213,12 +213,15 @@ export function resolveHeadingStyle(
   // Tracking (EF-83): left unset at zero so untracked headings measure (and
   // cache) exactly as before.
   const trackingPx = headingConfig.letterSpacing ? dimensionToPx(headingConfig.letterSpacing, dpi, fontSizePx) : 0;
-  // 字下げ (#424): counted in body characters, as the body grid is.
-  const indentPx = headingConfig.indent
-    ? dimensionToPx(headingConfig.indent, dpi, dimensionToPx(resolved.bodyText.fontSize, dpi))
-    : 0;
+  // 字下げ (#424): counted in body characters, as the body grid is; the
+  // first-line indent (#636) too, measured from it, its turnover lines back
+  // at `indent` (GB/T 9704's heads two cells in).
+  const bodyEmPx = dimensionToPx(resolved.bodyText.fontSize, dpi);
+  const indentPx = headingConfig.indent ? dimensionToPx(headingConfig.indent, dpi, bodyEmPx) : 0;
+  const firstLinePx = headingConfig.firstLineIndent ? dimensionToPx(headingConfig.firstLineIndent, dpi, bodyEmPx) : 0;
+  const firstLineIndentPx = Number.isFinite(firstLinePx) && firstLinePx > 0 ? firstLinePx : 0;
   const letterSpacingPx = Number.isFinite(trackingPx) && trackingPx !== 0 ? trackingPx : undefined;
-  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx: 0, hangingIndent: false, ...(letterSpacingPx !== undefined ? { letterSpacingPx } : {}), ...(emphasis ? { emphasis } : {}), ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}), ...(headingConfig.lineSpan !== undefined ? { lineSpan: headingConfig.lineSpan } : {}), ...(headingConfig.jidori !== undefined ? { jidori: headingConfig.jidori } : {}) };
+  return { fontString, boldFontString, italicFontString, boldItalicFontString, fontSizePx, lineHeightPx, color: headingConfig.color.hex, textAlign, hyphenate: false, marginTopPx, marginBottomPx, firstLineIndentPx, hangingIndent: false, ...(letterSpacingPx !== undefined ? { letterSpacingPx } : {}), ...(emphasis ? { emphasis } : {}), ...(Number.isFinite(indentPx) && indentPx > 0 ? { indentPx } : {}), ...(headingConfig.lineSpan !== undefined ? { lineSpan: headingConfig.lineSpan } : {}), ...(headingConfig.jidori !== undefined ? { jidori: headingConfig.jidori } : {}) };
 }
 
 export function resolveMathDisplayStyle(resolved: ResolvedConfig): BlockStyle {
