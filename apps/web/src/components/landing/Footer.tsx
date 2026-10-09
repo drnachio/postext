@@ -44,6 +44,7 @@ export async function Footer() {
                 <li><Link href="/cookbook" className={LINK}>{t("cookbook")}</Link></li>
                 <li><Link href="/sandbox" className={LINK}>{t("sandbox")}</Link></li>
                 <li><Link href="/docs/skill" className={LINK}>{t("skill")}</Link></li>
+                <li><Link href="/docs/command-line" className={LINK}>{t("commandLine")}</Link></li>
                 <li><Link href="/glossary" className={LINK}>{t("glossary")}</Link></li>
               </ul>
             </div>

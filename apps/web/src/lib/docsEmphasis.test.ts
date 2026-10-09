@@ -43,5 +43,7 @@ describe("docs emphasis", () => {
       }
     }
     expect(stray).toEqual([]);
-  });
+    // Every page of every language goes through the MDX compiler: about
+    // half a minute for the ninety-odd pages, more on a busy machine.
+  }, 120_000);
 });

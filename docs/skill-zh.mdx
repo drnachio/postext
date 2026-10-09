@@ -146,6 +146,8 @@ mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && n
 
 Word、PowerPoint、EPUB和HTML源文件需要Pandoc，生成源文件的页面图像需要poppler。Node包驱动无浏览器渲染器（需要Node 22.15或更高版本）；`@napi-rs/canvas`是预编译的画布，渲染器借助它直接把书页画成JPEG。可选工具：用于扫描件的`ocrmypdf`、ImageMagick，以及用于PDF/UA检查的veraPDF。
 
+没有Node？[命令行](/zh/docs/command-line)用一个无需安装的独立可执行文件完成同样的排版、页面图片、检查和PDF；在没有配置Node工具时，技能会改用它，也用它按读者打开的方式检查交付的`.postext`文件。
+
 ## 使用
 
 把源文件放进工作文件夹，然后提出移植要求。例如：

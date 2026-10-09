@@ -160,6 +160,8 @@ mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && n
 
 Pandocは、Word、PowerPoint、EPUB、HTMLの原稿に必要です。popplerは原稿のページ画像に使います。Nodeのパッケージはヘッドレスレンダラーを動かします（Node 22.15以降）。`@napi-rs/canvas`はビルド済みのcanvasで、これがあれば本のページを直接JPEGに描画できます。任意のツールとして、スキャン原稿には`ocrmypdf`、ほかにImageMagick、PDF/UAの検査にはveraPDFがあります。
 
+Nodeがない場合は、[コマンドライン](/ja/docs/command-line)が、インストール不要の単体の実行ファイルで、同じ組版、ページ画像、チェック、PDFを行います。スキルは、Nodeのツールが用意されていないときや、納品する`.postext`ファイルを読者が開くのと同じ形で確かめるときにこれを使います。
+
 ## 使い方
 
 原稿のファイルを作業フォルダーに置き、移植を頼みます。たとえば次のように頼みます。

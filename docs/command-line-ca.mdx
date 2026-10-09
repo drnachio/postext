@@ -1,0 +1,440 @@
+{/* docs/command-line-ca.mdx */}
+
+export const metadata = {
+  title: "Línia d'ordres: postext en un terminal, un script o un agent",
+  sidebarTitle: "Línia d'ordres",
+  description: "Un sol executable autònom per a macOS, Linux i Windows que converteix un llibre .postext, una carpeta de llibre o Markdown solt en PDF, HTML, EPUB, imatges de pàgina i Word, empaqueta paquets i revisa llibres, amb sortida JSON per a scripts i agents",
+  lang: 'ca',
+  lastUpdated: '2026-10-09',
+  readingTime: '10 min',
+  order: 13,
+  plainSummary: "Aquesta pàgina és per a qui vol fer llibres amb Postext des d'un terminal en lloc del web. Baixes un sol fitxer per al teu ordinador i l'executes, sense instal·lar res més. Li dones el teu llibre, o uns quants fitxers de text, i en fa un PDF, una pàgina web, un llibre electrònic, imatges de les pàgines o un document de Word. També pot revisar un llibre per trobar-hi problemes i reunir-ne tots els fitxers en un de sol. Els programes i els assistents d'intel·ligència artificial també el poden fer servir, perquè pot respondre en un format que llegeixen sense dificultat.",
+};
+
+# Línia d'ordres
+
+**`postext` compon el teu llibre des d'un terminal, un script o un agent.**
+
+Al [Sandbox](/ca/sandbox) escrius i dissenyes un llibre veient-lo. La línia
+d'ordres pren el mateix llibre i en produeix els fitxers sense navegador: un
+PDF a punt per a impremta, les pàgines en HTML, un EPUB, la imatge d'una pàgina
+o de totes, un document de Word. També empaqueta i desempaqueta paquets
+`.postext`, importa documents de Word, descriu un llibre i el revisa per
+trobar-hi problemes.
+
+És **un sol executable autònom** per sistema. A dins hi ha el motor de postext,
+els generadors de PDF, EPUB, HTML i Word, el pintor de pàgines (Skia), HarfBuzz
+per a l'àrab i altres escriptures complexes, els perfils ICC d'impremta i les
+fonts per defecte (EB Garamond i Open Sans). No cal instal·lar cap entorn
+d'execució, paquet ni biblioteca, i la maquetació és la del Sandbox: el mateix
+llibre es parteix en les mateixes pàgines.
+
+## Com obtenir-lo
+
+Cada versió de Postext publica els executables a la seva
+[GitHub Release](https://github.com/drnachio/postext/releases/latest), amb
+les seves sumes de verificació (`SHA256SUMS`) i un `readme.txt`:
+
+<table>
+  <thead>
+    <tr><th>Fitxer</th><th>Sistema</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>postext-macos-arm64</code></td><td>macOS amb Apple silicon (M1 i posteriors)</td></tr>
+    <tr><td><code>postext-macos-x64</code></td><td>macOS amb Intel</td></tr>
+    <tr><td><code>postext-linux-x64</code></td><td>Linux x86-64 amb glibc (Debian, Ubuntu, Fedora…)</td></tr>
+    <tr><td><code>postext-linux-arm64</code></td><td>Linux ARM64 amb glibc (Raspberry Pi OS de 64 bits, servidors ARM al núvol)</td></tr>
+    <tr><td><code>postext-linux-x64-musl</code></td><td>Linux x86-64 amb musl (Alpine; executa abans <code>apk add libstdc++ libgcc</code>)</td></tr>
+    <tr><td><code>postext-windows-x64.exe</code></td><td>Windows x64</td></tr>
+  </tbody>
+</table>
+
+Cada fitxer pesa entre 115 i 140 MB. L'enllaç
+`https://github.com/drnachio/postext/releases/latest/download/<file>` sempre
+dona el més recent.
+
+A Linux o macOS:
+
+```bash
+curl -fL -o postext https://github.com/drnachio/postext/releases/latest/download/postext-linux-x64
+chmod +x postext
+./postext
+```
+
+Mou-lo a una carpeta del teu `PATH` (`/usr/local/bin`, `~/.local/bin`) per
+executar-lo com a `postext` des de qualsevol lloc. macOS posa en quarantena els
+fitxers baixats amb un navegador; treu-li la marca una vegada:
+
+```bash
+xattr -d com.apple.quarantine postext-macos-arm64
+```
+
+A Windows, al PowerShell:
+
+```powershell
+Invoke-WebRequest https://github.com/drnachio/postext/releases/latest/download/postext-windows-x64.exe -OutFile postext.exe
+.\postext.exe
+```
+
+Si tens Node.js instal·lat, `npx postext-cli` baixa d'npm l'executable del teu
+sistema i l'executa, i `npm install -g postext-cli` el deixa instal·lat com a
+ordre `postext`.
+
+Sense arguments, `postext` mostra l'ajuda; `postext help <command>` llista les
+opcions d'una ordre.
+
+## Un primer llibre
+
+Tres fitxers Markdown en una carpeta ja són un llibre, un capítol per fitxer,
+per ordre de nom:
+
+```bash
+postext pdf chapters/ --name "Field notes" -o field-notes.pdf
+```
+
+El frontmatter del primer capítol dona al llibre el títol i l'autor, i els
+valors per defecte del motor fan la resta: dues columnes, una retícula de
+línies de base, text justificat i amb partició de mots, capçaleres. Afegeix-hi
+una configuració i imatges quan les necessitis:
+
+```bash
+postext pdf chapters/ --config design.json --resources pictures/ -o field-notes.pdf
+```
+
+Un llibre fet al Sandbox (**Llibres → Baixar (.postext)**) funciona tal com
+és:
+
+```bash
+postext pdf my-book.postext -o my-book.pdf
+postext image my-book.postext --page 1 -o cover.png
+```
+
+## Què pot ser un llibre
+
+Totes les ordres que llegeixen un llibre accepten qualsevol d'aquestes formes:
+
+- **Un fitxer `.postext`**: el paquet que el Sandbox exporta i obre (vegeu
+  [Paquets](/ca/docs/configuration#paquets-fitxers-postext)).
+- **Una carpeta de llibre**: un paquet desempaquetat, amb el seu `preset.json`,
+  els capítols, els recursos i les fonts. És el que lliura la skill per a
+  agents, i `postext unpack` n'escriu una.
+- **Markdown solt**: un o més fitxers `.md`, un capítol per fitxer en l'ordre
+  en què els dones, o una carpeta els fitxers `.md` de la qual es prenen per
+  nom (`01-intro.md`, `02-method.md`…). Amb aquests fitxers:
+  - `--config design.json`: la configuració, sigui un objecte de configuració
+    sol o un `preset.json` sencer;
+  - `--resources pictures/`: les imatges, cadascuna una figura amb el nom del
+    fitxer sense l'extensió (`map.png` és `::resource{id="map"}`); si a la
+    carpeta hi ha un `resources.json`, les descriu aquest fitxer (ids, tipus,
+    peus, text alternatiu), amb la mateixa forma que els `resources` d'un
+    `preset.json`;
+  - `--fonts fonts/`: fitxers de fonts que porta el llibre (TTF, OTF, WOFF2),
+    amb el nom de la família que indiquen les seves taules;
+  - `--name "Title"`: el nom del llibre.
+
+`--config` també funciona amb un paquet o una carpeta: es combina per sobre de
+la configuració pròpia del llibre. Un paquet en diverses llengües es llegeix en
+la seva llengua tret que `--locale` en demani una altra (`--locale en`).
+
+## Ordres
+
+<table>
+  <thead>
+    <tr><th>Ordre</th><th>Què fa</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>pdf</code></td><td>El PDF, amb marcadors, enllaços, fonts incrustades i, per defecte, etiquetat per a l'accessibilitat (PDF/UA); PDF/X i CMYK per a impremta.</td></tr>
+    <tr><td><code>html</code></td><td>Les pàgines en HTML amb text real: un fitxer autònom, o una carpeta amb <code>index.html</code> i <code>assets/</code>.</td></tr>
+    <tr><td><code>epub</code></td><td>Un llibre EPUB 3, amb pàgines fixes com les impreses o amb text refluïble.</td></tr>
+    <tr><td><code>image</code></td><td>Una pàgina com a imatge PNG, JPEG o WebP.</td></tr>
+    <tr><td><code>images</code></td><td>Totes les pàgines, o un interval, com a imatges en una carpeta.</td></tr>
+    <tr><td><code>docx</code></td><td>Els capítols com un document de Word que es torna a importar sense canvis.</td></tr>
+    <tr><td><code>import-docx</code></td><td>Un document de Word com a llibre de Postext (una carpeta o un <code>.postext</code>).</td></tr>
+    <tr><td><code>pack</code></td><td>Una carpeta de llibre o Markdown solt com un sol fitxer <code>.postext</code>.</td></tr>
+    <tr><td><code>unpack</code></td><td>Un fitxer <code>.postext</code> com a carpeta.</td></tr>
+    <tr><td><code>info</code></td><td>Els capítols, les llengües, els recursos i les fonts del llibre, i amb <code>--pages</code> el nombre de pàgines.</td></tr>
+    <tr><td><code>check</code></td><td>Compon el llibre i informa de cada problema; per a impremta, el preflight.</td></tr>
+    <tr><td><code>build</code></td><td>Compon el llibre una vegada i escriu diverses de les sortides anteriors; <code>--watch</code> continua en marxa i el torna a generar a cada desament.</td></tr>
+  </tbody>
+</table>
+
+Cada ordre escriu a la carpeta des d'on l'executes, amb el nom de l'entrada,
+tret que `-o` en doni la ruta. `-o -` escriu una única sortida a la sortida
+estàndard.
+
+### pdf
+
+```bash
+postext pdf book.postext -o book.pdf
+postext pdf book/ --pdfx x4 --profile fogra51 -o book-print.pdf
+postext pdf book/ --color-space grayscale --no-outlines
+```
+
+El PDF segueix els ajustos del mateix llibre (vegeu
+[Generació de PDF](/ca/docs/configuration#generació-de-pdf-configuració) i
+[Producció per a impremta](/ca/docs/configuration#producció-per-a-impremta-configuració));
+aquestes opcions els canvien per a una execució:
+
+- `--pdfx none|x1a|x4`: l'estàndard PDF/X per a una impremta.
+- `--profile NAME|FILE`: el perfil ICC de sortida, pel nom (`fogra39`,
+  `fogra51`, `fogra52`, `swop5`, `gracol2006`, `snap2007`, `ifra26` i els
+  altres perfils dels ajustos d'impremta) o un fitxer `.icc`.
+- `--color-space rgb|cmyk|grayscale`.
+- `--accessible` / `--no-accessible`: l'estructura etiquetada per als lectors
+  de pantalla.
+- `--no-outlines`: deixa fora els marcadors.
+- `--page-negative`: pàgines en negatiu, per a alguns fluxos d'impremta.
+
+### html
+
+```bash
+postext html book.postext -o book.html
+postext html book.postext -o site/ --mode single
+```
+
+Una ruta acabada en `.html` dona un sol fitxer amb les imatges i les fonts a
+dins, fàcil d'enviar. Qualsevol altra ruta és una carpeta: `index.html` al
+costat d'`assets/`, que conté les imatges, les fonts i els vídeos allotjats al
+llibre. `--assets embed|folder` tria una de les dues formes per a qualsevol
+ruta. Les pàgines són la maquetació impresa, mostrada a mida de pantalla:
+l'una al costat de l'altra (`--mode multi`, per defecte) o l'una sota l'altra
+(`--mode single`). Les fonts marcades `redistributable: false` s'anomenen però
+no es copien.
+
+### epub
+
+```bash
+postext epub book.postext -o book.epub
+postext epub book.postext --layout reflowable --cover cover.jpg
+```
+
+`--layout fixed` (per defecte) conserva cada pàgina com la impresa, amb text
+seleccionable; `--layout reflowable` deixa que el sistema de lectura torni a
+compondre el text per a la seva pantalla (vegeu
+[Llibres EPUB](/ca/docs/configuration#llibres-epub-postext-epub)). La coberta
+és la miniatura del llibre tret que `--cover` en doni una imatge. Les metadades
+del paquet (títol, autors, llengua, identificador) surten del frontmatter del
+primer capítol, com al Sandbox.
+
+### image i images
+
+```bash
+postext image book.postext --page 12 -o page-12.png
+postext image book.postext --page "#1" --dpi 300 -f jpeg -o cover.jpg
+postext images book.postext -o pages/ --dpi 100
+postext images book.postext --pages 1-10,iv -f webp --pattern "{chapter}-{label}"
+```
+
+Les pàgines s'anomenen **com estan impreses** (`12`, `iv`, un interval `7-9`)
+o **per la seva posició** al llibre amb `#` (`#1` és la primera pàgina,
+imprimeixi el que imprimeixi, `#10-#20`, `#30-` fins al final). `--pages`
+accepta una llista separada per comes. El pintor és el de la pestanya Canvas
+del Sandbox, així que una imatge mostra la pàgina exactament com s'ha
+compost, sense passar per un PDF.
+
+- `--format png|jpeg|webp` (o l'extensió de `-o`), `--quality 1-100` per a
+  JPEG i WebP.
+- `--dpi`: la resolució, 150 per defecte; amb 72–100 n'hi ha prou per llegir
+  una pàgina, 300 per a impremta.
+- `--pattern`: els noms de fitxer d'`images`, a partir de `{n}` (la posició;
+  `{n:03}` l'emplena fins a tres xifres), `{label}` (el número imprès) i
+  `{chapter}`; per defecte, `page-{n:03}`.
+- `--print-preview`: la pàgina com la reproduirà la impremta, passada pel
+  perfil de sortida, amb el tall i la sang dibuixats.
+- `--jobs N`: quantes imatges es codifiquen alhora.
+
+### docx i import-docx
+
+```bash
+postext docx book.postext -o book.docx
+postext import-docx manuscript.docx -o manuscript/ --locale es --report
+postext import-docx manuscript.docx -o manuscript.postext
+```
+
+`docx` escriu els capítols amb estils de Word per als títols, els paràgrafs,
+els requadres, les cites, les llistes i les notes. El que el Word no pot
+expressar es conserva tal com està escrit amb els estils *Postext Markup*, i la
+plantilla d'importació viatja dins del fitxer, de manera que el document es
+torna a importar sense canvis després que un editor hi hagi treballat.
+`import-docx` converteix un document de Word en un llibre: un capítol a cada
+títol de nivell 1 (`--no-split` en deixa un de sol), les imatges i les taules
+com a recursos, i `--report` imprimeix l'informe de qualitat que mostra el
+Sandbox (estils en ús, format directe, numeració escrita a mà…). `--template`
+pren una plantilla d'importació (un `.json` desat des del Sandbox o un `.docx`
+que en porti una).
+
+### pack i unpack
+
+```bash
+postext pack my-book/ -o my-book.postext
+postext pack 01.md 02.md --name "Notes" --config design.json --resources img/ -o notes.postext
+postext unpack my-book.postext -o my-book/
+```
+
+`pack` comprimeix en zip una carpeta de llibre tal com és, o construeix un
+paquet a partir de Markdown solt. La mateixa entrada dona sempre els mateixos
+bytes, així que un paquet es pot comparar o se'n pot calcular el hash.
+`unpack` es nega a escriure en una carpeta que no sigui buida tret que es doni
+`--force`.
+
+### info i check
+
+```bash
+postext info book.postext --pages
+postext check book.postext
+postext check chapters/ --strict --json
+```
+
+`info` llista els capítols (títol, paraules, fitxer i, amb `--pages`, les
+seves pàgines), els recursos i cada família tipogràfica amb la seva procedència
+(el llibre, una carpeta, l'executable, la memòria cau de baixades o la font de
+reserva).
+
+`check` compon el llibre i informa del mateix que mostra el Tauler de revisió
+del Sandbox: Markdown que no es tanca, recursos, directives i estils
+desconeguts, requadres que la maquetació ha hagut de forçar, fonts que falten,
+ajustos que el motor ha hagut de substituir i, en un llibre preparat per a
+impremta (o amb `--preflight`), el preflight: imatges de baixa resolució,
+filets fins, text petit en diverses tintes, tinta per sobre del límit, text a
+prop del tall. Cada problema indica el fitxer del capítol, la línia i la
+pàgina. El codi de sortida és 3 quan troba un error, o qualsevol avís amb
+`--strict`.
+
+### build i --watch
+
+```bash
+postext build book/ --pdf out/book.pdf --html out/book.html --images out/pages --pages 1-4
+postext build chapters/ --pdf book.pdf --watch
+```
+
+`build` compon el llibre una vegada i escriu totes les sortides que indiquis
+(`--pdf`, `--html`, `--epub`, `--images`, `--docx`), amb les opcions de cada
+ordre. `--watch` es queda en marxa: quan canvia un capítol, la configuració o
+una imatge, torna a compondre el llibre amb les fonts i el motor encara
+carregats, normalment en una fracció de segon per capítol, i torna a escriure
+les sortides. Un desament que trenca el llibre imprimeix l'error i conserva els
+últims fitxers bons.
+
+## Opcions per a qualsevol llibre
+
+<table>
+  <thead>
+    <tr><th>Opció</th><th>Què fa</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--locale TAG</code></td><td>La llengua en què es llegeix un llibre en diverses llengües (<code>es</code>, <code>en</code>, <code>pt-BR</code>…).</td></tr>
+    <tr><td><code>--chapters LIST</code></td><td>Compon només alguns capítols: <code>2</code>, <code>1,3-5</code>, <code>4-</code>. És més ràpid en un llibre llarg; les seves pàgines es numeren a partir de la seva pròpia primera pàgina.</td></tr>
+    <tr><td><code>--set PATH=VALUE</code></td><td>Canvia un ajust per a aquesta execució, com una ruta amb punts: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. El valor es llegeix com a JSON quan és possible (números, true i false, objectes) i, si no, com a text. Es pot repetir.</td></tr>
+    <tr><td><code>--config FILE</code></td><td>Una configuració (o un <code>preset.json</code>) per a Markdown solt, o combinada per sobre de la del llibre.</td></tr>
+    <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Imatges, fonts i títol per a Markdown solt.</td></tr>
+    <tr><td><code>--font-dir DIR</code></td><td>Una carpeta on buscar les fonts que el llibre no porta. Es pot repetir.</td></tr>
+    <tr><td><code>--offline</code></td><td>No baixa mai fonts.</td></tr>
+    <tr><td><code>--cache-dir DIR</code></td><td>On es guarden les fonts baixades.</td></tr>
+  </tbody>
+</table>
+
+I per a qualsevol ordre: `--json`, `--quiet` (`-q`, només errors), `--verbose`
+(el progrés i tots els avisos), `--no-color`, `--help`.
+
+## Fonts
+
+Un llibre que porta les seves fonts (un paquet, o `--fonts` amb Markdown solt)
+es compon amb aquestes fonts i cap altra. Per a cada família que anomena la
+configuració i que el llibre no porta, `postext` busca, per aquest ordre:
+
+1. a les carpetes indicades amb `--font-dir`;
+2. entre les fonts compilades dins de l'executable: EB Garamond i Open Sans,
+   les del motor per defecte;
+3. a la memòria cau de baixades;
+4. a [Google Fonts](https://fonts.google.com), que dona fitxers TrueType
+   estàtics complets; es guarden a la memòria cau, així que cada família es
+   baixa una sola vegada.
+
+La memòria cau és `~/.cache/postext` (`%LOCALAPPDATA%\postext\cache` a
+Windows); `POSTEXT_CACHE_DIR` o `--cache-dir` la canvien de lloc. `--offline`
+s'estalvia la baixada. Una família que no es troba enlloc es compon en EB
+Garamond amb el seu propi nom, de manera que la maquetació i el PDF continuen
+coincidint, i un avís `missingFont` l'anomena. `postext info` mostra d'on ha
+sortit cada família.
+
+## Per a scripts i agents
+
+La línia d'ordres està pensada perquè la facin servir altres programes, també
+els agents de programació.
+
+- **`--json`** imprimeix un objecte JSON a la sortida estàndard quan l'ordre
+  acaba; tots els missatges van a la sortida d'error estàndard. L'informe
+  llista el que s'ha escrit, les pàgines, cada avís amb el seu origen i quant
+  ha durat cada pas (en mil·lisegons):
+
+```json
+{
+  "ok": true,
+  "command": "pdf",
+  "version": "1.22.1",
+  "book": { "name": "notes", "id": "notes", "locale": "en", "chapters": 2 },
+  "pages": 3,
+  "outputs": [{ "kind": "pdf", "path": "notes.pdf", "bytes": 29746, "pages": 3 }],
+  "warnings": [
+    {
+      "kind": "unknownResourceId",
+      "severity": "warning",
+      "message": "Unknown resource id \"map\" in ::resource — nothing is embedded (offset 26)",
+      "at": "notes/02-more.md:5"
+    }
+  ],
+  "timings": { "read": 13, "fonts": 8.4, "math": 28.2, "layout": 51.6, "pdf": 132.1, "total": 1638 },
+  "exitCode": 0
+}
+```
+
+- **Codis de sortida**: `0` fet, `1` error, `2` ús incorrecte (una opció
+  desconeguda, una entrada que falta), `3` `check` ha trobat errors (o avisos
+  amb `--strict`).
+- **Cap pregunta.** No espera mai cap entrada; una carpeta que no és buida es
+  rebutja en lloc de preguntar què cal fer.
+- **Sortida estàndard**: `-o -` hi escriu un PDF, una imatge o un paquet, per
+  passar-lo per una canonada a una altra ordre.
+- **Velocitat.** L'executable arrenca en unes quantes centèsimes de segon. Un
+  llibre curt es converteix en un PDF o en la imatge d'una pàgina en molt menys
+  d'un segon; un de llarg triga el que trigui la seva maquetació (una novel·la
+  il·lustrada de 140 pàgines, uns deu segons). Per mirar unes quantes pàgines
+  d'un llibre llarg, combina `--chapters` amb `image` o `images --pages`. Per
+  treballar en un llibre al llarg de molts canvis, deixa en marxa
+  `postext build --watch` i llegeix-ne les sortides.
+
+La [skill per a agents](/ca/docs/skill) fa servir la línia d'ordres per pintar
+les pàgines en què treballa i per revisar un port.
+
+## Com està fet
+
+La línia d'ordres és el paquet `postext-cli` del
+[repositori](https://github.com/drnachio/postext/tree/main/packages/postext-cli).
+[Bun](https://bun.sh) el compila, amb el motor i els seus generadors, en un
+executable per sistema, i [Skia](https://skia.org) (a través de
+`@napi-rs/canvas`) mesura i pinta el text, com ho fa el canvas del navegador al
+Sandbox. A cada versió, els executables es construeixen, s'executen a Linux,
+Alpine, macOS i Windows i s'adjunten a la GitHub Release; npm rep
+`postext-cli` i un paquet `postext-cli-<system>` per executable.
+
+Per executar-lo des d'una còpia del repositori:
+
+```bash
+pnpm install
+pnpm --filter postext-cli start pdf book.postext
+pnpm --filter postext-cli build:bin --current
+```
+
+`start` l'executa des del codi font; `build:bin` escriu l'executable
+d'aquest ordinador a `packages/postext-cli/bin/`.
+
+## Diferències amb el Sandbox
+
+- **L'HTML** és la maquetació impresa mostrada a mida de pantalla. La pestanya
+  HTML del Sandbox torna a compondre el text per a la finestra.
+- **`--chapters`** compon els capítols per separat: la numeració de les seves
+  pàgines torna a començar, mentre que el Sandbox continua la numeració del
+  llibre.
+- **Les fonts** surten del llibre, de les teves carpetes, de l'executable o de
+  Google Fonts, mai de les fonts instal·lades a l'ordinador, així que un llibre
+  surt igual a qualsevol màquina.

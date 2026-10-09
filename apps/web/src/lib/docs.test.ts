@@ -20,6 +20,7 @@ describe("docs table of contents", () => {
       "contributing",
       "sandbox",
       "skill",
+      "command-line",
     ]);
     for (const doc of docs) {
       expect(Object.keys(doc.locales).sort(), doc.slug).toEqual(["ar", "ca", "en", "es", "ja", "pt", "zh"]);
@@ -57,10 +58,10 @@ describe("docs table of contents", () => {
     expect(docPart(8).key).toBe("craft");
     expect(docPart(9).key).toBe("craft");
     expect(docPart(order("document-format")!).key).toBe("craft");
-    for (const slug of ["contributing", "sandbox", "skill"]) {
+    for (const slug of ["contributing", "sandbox", "skill", "command-line"]) {
       expect(docPart(order(slug)!).key, slug).toBe("practice");
     }
-    expect([order("contributing"), order("sandbox"), order("skill")]).toEqual([10, 11, 12]);
+    expect([order("contributing"), order("sandbox"), order("skill"), order("command-line")]).toEqual([10, 11, 12, 13]);
   });
 
   it("gives the language sections h3 headings that anchors can target", () => {

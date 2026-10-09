@@ -1,0 +1,397 @@
+{/* docs/command-line-ar.mdx */}
+
+export const metadata = {
+  title: 'سطر الأوامر: postext في الطرفية أو في برنامج نصي أو لدى وكيل',
+  sidebarTitle: 'سطر الأوامر',
+  description: 'ملف تنفيذي واحد مكتفٍ بذاته لنظام macOS وLinux وWindows يحوّل كتاب .postext أو مجلد كتاب أو ملفات Markdown منفردة إلى PDF وHTML وEPUB وصور للصفحات وWord، ويحزم الحزم ويفحص الكتب، مع مخرجات JSON للبرامج النصية والوكلاء',
+  lang: 'ar',
+  lastUpdated: '2026-10-09',
+  readingTime: '10 دقائق',
+  order: 13,
+  plainSummary: "هذه الصفحة لمن يريد أن يصنع كتبًا بـPostext من الطرفية بدلًا من الموقع. تنزّل ملفًا واحدًا يناسب حاسوبك وتشغّله، دون أن تثبّت أي شيء. تعطيه كتابك أو بضعة ملفات نصية، فيصنع منها ملف PDF أو صفحة ويب أو كتابًا إلكترونيًا أو صورًا للصفحات أو مستند Word. ويستطيع أيضًا أن يفحص الكتاب بحثًا عن المشكلات، وأن يجمع ملفاته في ملف واحد. وتستطيع البرامج والمساعدات الذكية استعماله أيضًا، لأنه يجيب بصيغة تقرؤها بسهولة.",
+};
+
+# سطر الأوامر
+
+**ينضّد `postext` كتابك من الطرفية أو من برنامج نصي أو بيد وكيل.**
+
+[Sandbox](/ar/sandbox) هو المكان الذي تكتب فيه الكتاب وتصمّمه وأنت تراه. أما
+سطر الأوامر فيأخذ الكتاب نفسه ويُنتج ملفاته دون متصفح: ملف PDF جاهزًا للطباعة،
+والصفحات بصيغة HTML، وملف EPUB، وصورة لصفحة واحدة أو لكل الصفحات، ومستند Word.
+ويحزم أيضًا حزم `.postext` ويفكّها، ويستورد مستندات Word، ويصف الكتاب ويفحصه
+بحثًا عن المشكلات.
+
+وهو **ملف تنفيذي واحد مكتفٍ بذاته** لكل نظام. ففي داخله محرّك postext، وكاتبات
+PDF وEPUB وHTML وWord، ورسّام الصفحات (Skia)، وHarfBuzz للعربية وغيرها من
+أنظمة الكتابة المركّبة، وملفات تعريف ICC للطباعة، والخطوط الافتراضية (EB Garamond
+وOpen Sans). فلا بيئة تشغيل ولا حزمة ولا مكتبة تحتاج إلى تثبيتها، والإخراج هو
+إخراج Sandbox: يتوزّع الكتاب نفسه على الصفحات نفسها.
+
+## الحصول عليه
+
+ينشر كل إصدار من Postext الملفات التنفيذية في
+[إصدار GitHub](https://github.com/drnachio/postext/releases/latest) الخاص به، مع
+مجاميعها الاختبارية (`SHA256SUMS`) وملف `readme.txt`:
+
+<table>
+  <thead>
+    <tr><th>الملف</th><th>النظام</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>postext-macos-arm64</code></td><td>macOS على معالجات Apple (M1 وما بعده)</td></tr>
+    <tr><td><code>postext-macos-x64</code></td><td>macOS على معالجات Intel</td></tr>
+    <tr><td><code>postext-linux-x64</code></td><td>Linux x86-64 مع glibc (Debian وUbuntu وFedora…)</td></tr>
+    <tr><td><code>postext-linux-arm64</code></td><td>Linux ARM64 مع glibc (Raspberry Pi OS بنظام 64 بت، وخوادم ARM السحابية)</td></tr>
+    <tr><td><code>postext-linux-x64-musl</code></td><td>Linux x86-64 مع musl (Alpine؛ شغّل <code>apk add libstdc++ libgcc</code> أولًا)</td></tr>
+    <tr><td><code>postext-windows-x64.exe</code></td><td>Windows x64</td></tr>
+  </tbody>
+</table>
+
+يتراوح حجم كل ملف بين 115 و140 ميغابايت. والرابط
+`https://github.com/drnachio/postext/releases/latest/download/<file>` يعطي دائمًا
+أحدث نسخة.
+
+في Linux أو macOS:
+
+```bash
+curl -fL -o postext https://github.com/drnachio/postext/releases/latest/download/postext-linux-x64
+chmod +x postext
+./postext
+```
+
+انقله إلى مجلد في `PATH` لديك (`/usr/local/bin` أو `~/.local/bin`) لتشغّله باسم
+`postext` من أي مكان. ويضع macOS الملف المنزَّل بالمتصفح في الحجر؛ أزِل هذه
+العلامة مرة واحدة:
+
+```bash
+xattr -d com.apple.quarantine postext-macos-arm64
+```
+
+في Windows، داخل PowerShell:
+
+```powershell
+Invoke-WebRequest https://github.com/drnachio/postext/releases/latest/download/postext-windows-x64.exe -OutFile postext.exe
+.\postext.exe
+```
+
+وإن كان Node.js مثبّتًا، فإن `npx postext-cli` ينزّل من npm الملف التنفيذي المناسب
+لنظامك ويشغّله، و`npm install -g postext-cli` يبقيه أمرًا باسم `postext`.
+
+إذا شغّلت `postext` دون معاملات طبع تعليماته؛ و`postext help <command>` يسرد
+خيارات أمر واحد.
+
+## كتاب أول
+
+ثلاثة ملفات Markdown في مجلد تكوّن كتابًا، كل ملف فصل، بترتيب الأسماء:
+
+```bash
+postext pdf chapters/ --name "Field notes" -o field-notes.pdf
+```
+
+تعطي البيانات التمهيدية (front matter) للفصل الأول الكتابَ عنوانه ومؤلفه، وتتولى
+القيم الافتراضية للمحرّك الباقي: عمودان، وشبكة خطوط الأساس، ونص مضبوط الطرفين
+مقسَّم بالواصلات، وترويسات. وأضف الإعدادات والصور حين تحتاج إليها:
+
+```bash
+postext pdf chapters/ --config design.json --resources pictures/ -o field-notes.pdf
+```
+
+والكتاب المصنوع في Sandbox (**الكتب › تنزيل (.postext)**) يعمل كما هو:
+
+```bash
+postext pdf my-book.postext -o my-book.pdf
+postext image my-book.postext --page 1 -o cover.png
+```
+
+## ما الذي يمكن أن يكون كتابًا
+
+كل أمر يقرأ كتابًا يقبل أيًّا مما يلي:
+
+- **ملف `.postext`**: الحزمة التي يصدّرها Sandbox ويفتحها (انظر
+  [الحزم](/ar/docs/configuration#الحزم-ملفات-postext)).
+- **مجلد كتاب**: حزمة مفكوكة، فيها `preset.json` وفصولها ومواردها وخطوطها. وهذا
+  ما تسلّمه مهارة الوكيل، و`postext unpack` يكتب مجلدًا كهذا.
+- **ملفات Markdown منفردة**: ملف `.md` واحد أو أكثر، كل ملف فصل بالترتيب المعطى،
+  أو مجلد تؤخذ ملفات `.md` فيه بحسب أسمائها (`01-intro.md` و`02-method.md`…).
+  ومعها:
+  - `--config design.json`: الإعدادات، إما كائن إعدادات مجرّد وإما ملف
+    `preset.json` كامل؛
+  - `--resources pictures/`: الصور، كل صورة شكل يُسمّى باسم ملفها دون الامتداد
+    (`map.png` هي `::resource{id="map"}`)؛ وإذا وُجد في المجلد ملف `resources.json`
+    فهو الذي يصفها (المعرّفات، والأنواع، والتعليقات، والنص البديل)، بالصيغة نفسها
+    التي تأخذها `resources` في ملف `preset.json`؛
+  - `--fonts fonts/`: ملفات الخطوط التي يحملها الكتاب (TTF وOTF وWOFF2)، وتُسمّى
+    بالعائلة التي تذكرها جداولها؛
+  - `--name "Title"`: اسم الكتاب.
+
+ويعمل `--config` أيضًا مع الحزمة أو المجلد: فيُدمج فوق إعدادات الكتاب نفسه.
+والحزمة متعددة اللغات تُقرأ بلغتها ما لم يطلب `--locale` لغة أخرى (`--locale en`).
+
+## الأوامر
+
+<table>
+  <thead>
+    <tr><th>الأمر</th><th>ما الذي يفعله</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>pdf</code></td><td>ملف PDF، بإشارات مرجعية وروابط وخطوط مضمَّنة، وموسوم افتراضيًا لإتاحة الوصول (PDF/UA)؛ وPDF/X وCMYK للطباعة.</td></tr>
+    <tr><td><code>html</code></td><td>الصفحات بصيغة HTML بنص حقيقي: ملف واحد مكتفٍ بذاته، أو مجلد فيه <code>index.html</code> و<code>assets/</code>.</td></tr>
+    <tr><td><code>epub</code></td><td>كتاب EPUB 3، بصفحات ثابتة كما طُبعت أو بنص قابل لإعادة التدفق.</td></tr>
+    <tr><td><code>image</code></td><td>صفحة واحدة صورةً بصيغة PNG أو JPEG أو WebP.</td></tr>
+    <tr><td><code>images</code></td><td>كل الصفحات، أو مدى منها، صورًا في مجلد.</td></tr>
+    <tr><td><code>docx</code></td><td>الفصول مستندَ Word يعود عند استيراده كما كان.</td></tr>
+    <tr><td><code>import-docx</code></td><td>مستند Word كتابًا في Postext (مجلدًا أو ملف <code>.postext</code>).</td></tr>
+    <tr><td><code>pack</code></td><td>مجلد كتاب أو ملفات Markdown منفردة في ملف <code>.postext</code> واحد.</td></tr>
+    <tr><td><code>unpack</code></td><td>ملف <code>.postext</code> مجلدًا.</td></tr>
+    <tr><td><code>info</code></td><td>فصول الكتاب ولغاته وموارده وخطوطه، ومع <code>--pages</code> عدد صفحاته.</td></tr>
+    <tr><td><code>check</code></td><td>يُخرج الكتاب ويبلّغ عن كل مشكلة؛ وللطباعة، الفحص قبل الطباعة.</td></tr>
+    <tr><td><code>build</code></td><td>يُخرج الكتاب مرة واحدة ويكتب عدة مخرجات مما سبق؛ و<code>--watch</code> يبقيه يعمل ويعيد البناء عند كل حفظ.</td></tr>
+  </tbody>
+</table>
+
+يكتب كل أمر في المكان الذي تشغّله منه، باسم مأخوذ من المُدخل، ما لم يعطِ `-o`
+المسار. و`-o -` يكتب مُخرجًا واحدًا إلى المخرج القياسي.
+
+### pdf
+
+```bash
+postext pdf book.postext -o book.pdf
+postext pdf book/ --pdfx x4 --profile fogra51 -o book-print.pdf
+postext pdf book/ --color-space grayscale --no-outlines
+```
+
+يتبع ملف PDF إعدادات الكتاب نفسه (انظر
+[إنتاج PDF](/ar/docs/configuration#إنتاج-pdf-الإعدادات) و
+[الإنتاج الطباعي](/ar/docs/configuration#الإنتاج-الطباعي-الإعدادات))؛ وهذه الخيارات
+تغيّرها لتشغيل واحد:
+
+- `--pdfx none|x1a|x4`: معيار PDF/X الذي تطلبه المطبعة.
+- `--profile NAME|FILE`: ملف تعريف ICC للإخراج، باسمه (`fogra39` و`fogra51`
+  و`fogra52` و`swop5` و`gracol2006` و`snap2007` و`ifra26` وغيرها من ملفات تعريف
+  إعدادات الطباعة) أو ملف `.icc`.
+- `--color-space rgb|cmyk|grayscale`.
+- `--accessible` / `--no-accessible`: البنية الموسومة لقارئات الشاشة.
+- `--no-outlines`: يحذف الإشارات المرجعية.
+- `--page-negative`: صفحات سالبة، لبعض مسارات العمل الطباعية.
+
+### html
+
+```bash
+postext html book.postext -o book.html
+postext html book.postext -o site/ --mode single
+```
+
+المسار الذي ينتهي بـ`.html` يأخذ ملفًا واحدًا فيه الصور والخطوط، يسهل إرساله. وأي
+مسار آخر مجلد: `index.html` بجانب `assets/`، الذي يضم الصور والخطوط ومقاطع الفيديو
+المستضافة ذاتيًا. ويختار `--assets embed|folder` أحد الطريقين لأي مسار. والصفحات
+هي إخراج الطباعة معروضًا بحجم الشاشة: جنبًا إلى جنب (`--mode multi`، وهو الافتراضي)
+أو واحدة تحت الأخرى (`--mode single`). والخطوط المعلَّمة بـ`redistributable: false`
+تُذكر أسماؤها ولا تُنسخ.
+
+### epub
+
+```bash
+postext epub book.postext -o book.epub
+postext epub book.postext --layout reflowable --cover cover.jpg
+```
+
+`--layout fixed` (الافتراضي) يبقي كل صفحة كما طُبعت، بنص قابل للتحديد؛
+و`--layout reflowable` يترك لنظام القراءة أن يصفّ النص من جديد لشاشته (انظر
+[كتب EPUB](/ar/docs/configuration#كتب-epub-postext-epub)). والغلاف هو الصورة
+المصغّرة للكتاب ما لم يعطِ `--cover` صورة. وتأتي البيانات الوصفية للحزمة (العنوان،
+والمؤلفون، واللغة، والمعرّف) من البيانات التمهيدية للفصل الأول، كما في Sandbox.
+
+### image وimages
+
+```bash
+postext image book.postext --page 12 -o page-12.png
+postext image book.postext --page "#1" --dpi 300 -f jpeg -o cover.jpg
+postext images book.postext -o pages/ --dpi 100
+postext images book.postext --pages 1-10,iv -f webp --pattern "{chapter}-{label}"
+```
+
+تُسمّى الصفحات **كما طُبعت** (`12` و`iv` ومدى مثل `7-9`) أو **بموضعها** في الكتاب
+مع `#` (`#1` هي الصفحة الأولى أيًّا كان الرقم المطبوع عليها، و`#10-#20`، و`#30-`
+حتى النهاية). ويقبل `--pages` قائمة مفصولة بفواصل. والرسّام هو عرض Canvas في
+Sandbox، فتُظهر الصورة الصفحة كما أُخرجت تمامًا، دون المرور بملف PDF.
+
+- `--format png|jpeg|webp` (أو امتداد `-o`)، و`--quality 1-100` لصيغتي JPEG وWebP.
+- `--dpi`: الدقة، 150 افتراضيًا؛ ويكفي 72–100 لقراءة صفحة، و300 للطباعة.
+- `--pattern`: أسماء ملفات `images`، من `{n}` (الموضع، و`{n:03}` بثلاث خانات تُملأ
+  بالأصفار) و`{label}` (الرقم المطبوع) و`{chapter}`؛ والافتراضي `page-{n:03}`.
+- `--print-preview`: الصفحة كما ستعيد المطبعة إنتاجها، عبر ملف تعريف الإخراج، مع
+  رسم خط القص والنزف.
+- `--jobs N`: عدد الصور التي تُرمَّز في آن واحد.
+
+### docx وimport-docx
+
+```bash
+postext docx book.postext -o book.docx
+postext import-docx manuscript.docx -o manuscript/ --locale es --report
+postext import-docx manuscript.docx -o manuscript.postext
+```
+
+يكتب `docx` الفصول بأنماط Word للعناوين والفقرات والإطارات والاقتباسات والقوائم
+والحواشي. وما لا يستطيع Word التعبير عنه يبقى حرفيًا في أنماط *Postext Markup*،
+ويُنقل قالب الاستيراد داخل الملف، فيعود المستند عند استيراده كما كان بعد أن يعمل
+عليه محرّر. ويحوّل `import-docx` مستند Word إلى كتاب: فصل عند كل عنوان من المستوى
+الأول (و`--no-split` يبقيه فصلًا واحدًا)، والصور والجداول موارد، ويطبع `--report`
+تقرير الجودة الذي يعرضه Sandbox (الأنماط المستعملة، والتنسيق المباشر، والترقيم
+المكتوب يدويًا…). ويقبل `--template` قالب استيراد (ملف `.json` محفوظًا من Sandbox
+أو ملف `.docx` يحمل قالبًا).
+
+### pack وunpack
+
+```bash
+postext pack my-book/ -o my-book.postext
+postext pack 01.md 02.md --name "Notes" --config design.json --resources img/ -o notes.postext
+postext unpack my-book.postext -o my-book/
+```
+
+يضغط `pack` مجلد الكتاب كما هو، أو يبني حزمة من ملفات Markdown منفردة. والمُدخل
+نفسه يعطي دائمًا البايتات نفسها، فيمكن مقارنة الحزم أو حساب بصمتها. ويرفض `unpack`
+الكتابة في مجلد غير فارغ ما لم يُعطَ `--force`.
+
+### info وcheck
+
+```bash
+postext info book.postext --pages
+postext check book.postext
+postext check chapters/ --strict --json
+```
+
+يسرد `info` الفصول (العنوان، والكلمات، والملف، ومع `--pages` صفحاتها)، والموارد،
+وكل عائلة خطوط مع مصدرها (الكتاب، أو مجلد، أو الملف التنفيذي، أو ذاكرة التنزيل
+المؤقتة، أو الخط البديل).
+
+ويُخرج `check` الكتاب ويبلّغ عما تعرضه لوحة الفحوص في Sandbox: Markdown لا يُغلَق،
+وموارد وتوجيهات وأنماط مجهولة، وإطارات اضطر الإخراج إلى فرضها، وخطوط مفقودة،
+وإعدادات اضطر المحرّك إلى استبدالها، وفي الكتاب المُعدّ للطباعة (أو مع
+`--preflight`) الفحص قبل الطباعة: صور منخفضة الدقة، وخطوط رفيعة، ونص صغير بعدة
+أحبار، وحبر فوق الحد، ونص قرب خط القص. وتذكر كل مشكلة ملف الفصل والسطر والصفحة.
+ويكون رمز الخروج 3 حين يُعثر على خطأ، أو على أي تحذير مع `--strict`.
+
+### build و--watch
+
+```bash
+postext build book/ --pdf out/book.pdf --html out/book.html --images out/pages --pages 1-4
+postext build chapters/ --pdf book.pdf --watch
+```
+
+يُخرج `build` الكتاب مرة واحدة ويكتب كل مُخرج تذكره (`--pdf` و`--html` و`--epub`
+و`--images` و`--docx`)، بخيارات كل أمر. ويبقى `--watch` يعمل: حين يتغير فصل أو
+الإعدادات أو صورة، يُخرَج الكتاب من جديد والخطوط والمحرّك ما زالت محمّلة، وعادةً في
+جزء من الثانية للفصل الواحد، وتُعاد كتابة المخرجات. والحفظ الذي يُفسد الكتاب يطبع
+الخطأ ويحتفظ بآخر ملفات سليمة.
+
+## خيارات لكل كتاب
+
+<table>
+  <thead>
+    <tr><th>الخيار</th><th>ما الذي يفعله</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--locale TAG</code></td><td>اللغة التي يُقرأ بها الكتاب متعدد اللغات (<code>es</code> و<code>en</code> و<code>pt-BR</code>…).</td></tr>
+    <tr><td><code>--chapters LIST</code></td><td>يُخرج بعض الفصول فقط: <code>2</code> و<code>1,3-5</code> و<code>4-</code>. أسرع في الكتاب الطويل؛ وتُرقَّم صفحاتها بدءًا من صفحتها الأولى.</td></tr>
+    <tr><td><code>--set PATH=VALUE</code></td><td>يغيّر إعدادًا واحدًا لهذا التشغيل، بمسار تفصل النقاط بين أجزائه: <code>--set page.dpi=150</code> و<code>--set bodyText.fontFamily=Lora</code> و<code>--set headings.levels.0.italic=true</code>. تُقرأ القيمة بصيغة JSON حين يمكن ذلك (الأعداد، وtrue وfalse، والكائنات)، وإلا فنصًا. يمكن تكراره.</td></tr>
+    <tr><td><code>--config FILE</code></td><td>إعدادات (أو ملف <code>preset.json</code>) لملفات Markdown المنفردة، أو تُدمج فوق إعدادات الكتاب نفسه.</td></tr>
+    <tr><td><code>--resources DIR</code> و<code>--fonts DIR</code> و<code>--name TEXT</code></td><td>الصور والخطوط والعنوان لملفات Markdown المنفردة.</td></tr>
+    <tr><td><code>--font-dir DIR</code></td><td>مجلد يُبحث فيه عن الخطوط التي لا يحملها الكتاب. يمكن تكراره.</td></tr>
+    <tr><td><code>--offline</code></td><td>لا ينزّل الخطوط أبدًا.</td></tr>
+    <tr><td><code>--cache-dir DIR</code></td><td>مكان حفظ الخطوط المنزَّلة.</td></tr>
+  </tbody>
+</table>
+
+ولكل أمر: `--json` و`--quiet` (`-q`، الأخطاء فقط) و`--verbose` (التقدّم وكل
+تحذير) و`--no-color` و`--help`.
+
+## الخطوط
+
+الكتاب الذي يحمل خطوطه (حزمة، أو `--fonts` مع ملفات Markdown منفردة) يُنضَّد بها
+وحدها. ولكل عائلة تذكرها الإعدادات ولا يحملها الكتاب، يبحث `postext` بهذا الترتيب:
+
+1. في المجلدات المعطاة بـ`--font-dir`؛
+2. بين الخطوط المضمَّنة في الملف التنفيذي: EB Garamond وOpen Sans، وهما الخطان
+   الافتراضيان للمحرّك؛
+3. في ذاكرة التنزيل المؤقتة؛
+4. في [Google Fonts](https://fonts.google.com)، التي تعطي ملفات TrueType ثابتة
+   كاملة؛ وتُحفظ في الذاكرة المؤقتة، فلا تُنزَّل العائلة إلا مرة واحدة.
+
+الذاكرة المؤقتة هي `~/.cache/postext` (و`%LOCALAPPDATA%\postext\cache` في Windows)؛
+وينقلها `POSTEXT_CACHE_DIR` أو `--cache-dir`. ويتخطى `--offline` التنزيل.
+والعائلة التي لا توجد في أي مكان تُنضَّد بخط EB Garamond تحت اسمها، فيبقى الإخراج
+وملف PDF متفقين، ويذكرها تحذير `missingFont`. ويعرض `postext info` مصدر كل عائلة.
+
+## للبرامج النصية والوكلاء
+
+بُني سطر الأوامر لتقوده برامج أخرى، ومنها وكلاء البرمجة.
+
+- **`--json`** يطبع كائن JSON واحدًا على المخرج القياسي حين ينتهي الأمر؛ وتذهب كل
+  رسالة إلى مخرج الأخطاء القياسي. ويسرد التقرير ما كُتب، والصفحات، وكل تحذير مع
+  مصدره، والمدة التي استغرقتها كل خطوة (بالمللي ثانية):
+
+```json
+{
+  "ok": true,
+  "command": "pdf",
+  "version": "1.22.1",
+  "book": { "name": "notes", "id": "notes", "locale": "en", "chapters": 2 },
+  "pages": 3,
+  "outputs": [{ "kind": "pdf", "path": "notes.pdf", "bytes": 29746, "pages": 3 }],
+  "warnings": [
+    {
+      "kind": "unknownResourceId",
+      "severity": "warning",
+      "message": "Unknown resource id \"map\" in ::resource — nothing is embedded (offset 26)",
+      "at": "notes/02-more.md:5"
+    }
+  ],
+  "timings": { "read": 13, "fonts": 8.4, "math": 28.2, "layout": 51.6, "pdf": 132.1, "total": 1638 },
+  "exitCode": 0
+}
+```
+
+- **رموز الخروج**: `0` تمّ، و`1` فشل، و`2` استعمال خاطئ (خيار مجهول، أو مُدخل
+  مفقود)، و`3` وجد `check` أخطاء (أو تحذيرات مع `--strict`).
+- **بلا أسئلة.** لا ينتظر أي إدخال أبدًا؛ والمجلد غير الفارغ يُرفض بدلًا من السؤال
+  عنه.
+- **المخرج القياسي**: `-o -` يكتب إليه ملف PDF أو صورة أو حزمة، لتُمرَّر بأنبوب إلى
+  ما بعده.
+- **السرعة.** يبدأ الملف التنفيذي في بضعة أجزاء من مئة من الثانية. ويصير الكتاب
+  القصير ملف PDF أو صورة صفحة في أقل من ثانية بكثير؛ أما الطويل فيستغرق ما يستغرقه
+  إخراجه (رواية مصوّرة من 140 صفحة، نحو عشر ثوانٍ). ولتنظر في بضع صفحات من كتاب
+  طويل، اجمع `--chapters` مع `image` أو `images --pages`. ولتعمل على كتاب عبر
+  تغييرات كثيرة، أبقِ `postext build --watch` يعمل واقرأ مخرجاته.
+
+تستعمل [مهارة الوكيل](/ar/docs/skill) سطر الأوامر لترسم الصفحات التي تعمل عليها
+ولتفحص النقل.
+
+## كيف صُنع
+
+سطر الأوامر هو الحزمة `postext-cli` في
+[المستودع](https://github.com/drnachio/postext/tree/main/packages/postext-cli).
+يترجمه [Bun](https://bun.sh)، مع المحرّك وكاتباته، إلى ملف تنفيذي واحد لكل نظام،
+ويقيس [Skia](https://skia.org) (عبر `@napi-rs/canvas`) النص ويرسمه، كما تفعل لوحة
+الرسم في المتصفح داخل Sandbox. وفي كل إصدار تُبنى الملفات التنفيذية، وتُشغَّل على
+Linux وAlpine وmacOS وWindows، وتُرفق بإصدار GitHub؛ ويتلقى npm الحزمة `postext-cli`
+وحزمة `postext-cli-<system>` لكل ملف تنفيذي.
+
+لتشغيله من نسخة من المستودع:
+
+```bash
+pnpm install
+pnpm --filter postext-cli start pdf book.postext
+pnpm --filter postext-cli build:bin --current
+```
+
+الأمر الأول يشغّله من مصادره؛ والثاني يكتب الملف التنفيذي الخاص بهذا الحاسوب في
+`packages/postext-cli/bin/`.
+
+## الفروق عن Sandbox
+
+- **HTML** هو إخراج الطباعة معروضًا بحجم الشاشة. أما تبويب HTML في Sandbox فيصفّ
+  النص من جديد بحسب النافذة.
+- **`--chapters`** يُخرج الفصول كلًّا على حدة: تبدأ أرقام صفحاتها من جديد، في حين
+  يواصل Sandbox ترقيم الكتاب.
+- **الخطوط** تأتي من الكتاب، أو من مجلداتك، أو من الملف التنفيذي، أو من Google Fonts،
+  ولا تأتي أبدًا من الخطوط المثبّتة على الحاسوب، فيخرج الكتاب نفسه على كل جهاز.

@@ -515,6 +515,7 @@
     "cookbook": "Cookbook",
     "sandbox": "Sandbox",
     "skill": "Agent skill",
+    "commandLine": "Command line",
     "product": "Postext",
     "accessibility": "Accessibility"
   },
