@@ -464,6 +464,16 @@ function protect(text: string, opts: ParseInlineOptions): { s: string; atoms: At
       }
     }
     if (c === ':') {
+      // A tab (#622) is Word's tab, the spaces around it taken in; one with
+      // a stop of its own (`:tab{at=…}`) travels verbatim.
+      const tab = /^:tab(?![\p{L}{])/u.exec(rest);
+      if (tab && text[i - 1] !== '\\') {
+        s = s.replace(/[ \t]+$/, '');
+        add({ kind: 'char', text: '\t' });
+        i += tab[0].length;
+        while (text[i] === ' ' || text[i] === '\t') i++;
+        continue;
+      }
       const chip = /^:chip\[((?:\\.|[^\]\\\n])+)\](?:\{([^}\n]*)\})?/.exec(rest);
       if (chip) {
         const attrs = chip[2] ?? '';

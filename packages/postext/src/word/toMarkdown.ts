@@ -5,7 +5,7 @@
 
 import type { PostextConfig, TableCell, TableModel } from '../types';
 import { guardLineStart, LINE_BREAK, renderInline, WORD_JOINER, type InlineRun } from './inline';
-import type { WordBlock, WordDocument, WordMedia, WordParagraph, WordRun, WordTable, WordTextRun } from './model';
+import type { WordBlock, WordDocument, WordMedia, WordParagraph, WordRun, WordStyle, WordTable, WordTabStop, WordTextRun } from './model';
 import {
   guessCharacterTarget,
   guessParagraphTarget,
@@ -56,6 +56,40 @@ export interface ImportSettings {
   existingIds: ReadonlySet<string>;
   /** Title of text before the first chapter break. */
   untitledChapter: string;
+}
+
+/** The tab stops a Word paragraph has (#622): its style chain's, base
+ *  first, then its own; a `clear` removes the stop at its position. Sorted,
+ *  the alignments Postext sets only. */
+export function paragraphTabs(doc: WordDocument, p: WordParagraph): WordTabStop[] {
+  const chain: WordStyle[] = [];
+  let s = doc.styles.get(p.styleId || doc.defaultParagraphStyle);
+  for (let guard = 0; s && guard < 12; guard++) {
+    chain.unshift(s);
+    s = s.basedOn ? doc.styles.get(s.basedOn) : undefined;
+  }
+  const at = new Map<number, WordTabStop>();
+  for (const list of [...chain.map((x) => x.tabs), p.tabs]) {
+    for (const t of list ?? []) {
+      if (t.val === 'clear') at.delete(t.pos);
+      else at.set(t.pos, t);
+    }
+  }
+  return [...at.values()].filter((t) => TAB_ALIGN[t.val] !== undefined).sort((a, b) => a.pos - b.pos);
+}
+
+const TAB_ALIGN: Record<string, string> = { left: 'start', start: 'start', right: 'end', end: 'end', center: 'center', decimal: 'decimal' };
+const TAB_LEADER: Record<string, string> = { dot: '.', hyphen: '-', middleDot: '·', underscore: 'rule', heavy: 'rule' };
+
+/** `:tab`, with the attributes of the Word stop it goes to (#622). */
+function tabDirective(stop: WordTabStop | undefined): string {
+  if (!stop) return ':tab';
+  const attrs = [`at=${Math.round((stop.pos / 20) * 10) / 10}pt`];
+  const align = TAB_ALIGN[stop.val];
+  if (align && align !== 'start') attrs.push(`align=${align}`);
+  const leader = stop.leader ? TAB_LEADER[stop.leader] : undefined;
+  if (leader) attrs.push(`leader="${leader}"`);
+  return `:tab{${attrs.join(' ')}}`;
 }
 
 /** The target of a paragraph style: the template's, else a guess. */
@@ -231,8 +265,11 @@ class Converter {
 
   /** Runs → inline runs, split at line breaks when `split` (verse typed
    *  with Shift+Enter) and at page breaks. Notes are numbered here. */
-  private inlineRuns(runs: WordRun[], opts: { heading?: boolean; splitLines?: boolean; inCell?: boolean; inNote?: boolean; verse?: boolean }): { lines: InlineRun[][]; images: Array<Extract<WordRun, { type: 'image' }>>; pageBreak: boolean; displayMath: string[] } {
+  private inlineRuns(runs: WordRun[], opts: { heading?: boolean; splitLines?: boolean; inCell?: boolean; inNote?: boolean; verse?: boolean; tabs?: readonly WordTabStop[] }): { lines: InlineRun[][]; images: Array<Extract<WordRun, { type: 'image' }>>; pageBreak: boolean; displayMath: string[] } {
     const lines: InlineRun[][] = [[]];
+    // Tabs since the start of the line (#622): the n-th goes to the n-th
+    // stop the paragraph has.
+    let tabsOnLine = 0;
     const images: Array<Extract<WordRun, { type: 'image' }>> = [];
     const displayMath: string[] = [];
     let pageBreak = false;
@@ -247,10 +284,15 @@ class Converter {
           break;
         }
         case 'tab':
-          // A tab at the start of a line of verse indents it (#620).
-          cur().push({ text: opts.verse ? '\t' : ' ' });
+          // A tab at the start of a line of verse indents it (#620); in
+          // body text it is a tab (#622), to the stop Word set for it.
+          if (opts.verse) cur().push({ text: '\t' });
+          else if (opts.heading || opts.inCell || opts.inNote) cur().push({ text: ' ' });
+          else cur().push({ text: ` ${tabDirective(opts.tabs?.[tabsOnLine])} `, raw: true });
+          tabsOnLine++;
           break;
         case 'break':
+          if (r.kind === 'line') tabsOnLine = 0;
           if (r.kind === 'page') pageBreak = true;
           if (r.kind === 'line' && opts.heading) cur().push({ text: ' \\\\ ', raw: true });
           else if (r.kind === 'line' && opts.splitLines) lines.push([]);
@@ -521,7 +563,11 @@ class Converter {
     }
 
     const splitLines = this.s.template.options.lineBreaks === 'paragraph' && !p.list;
-    const { lines, images, pageBreak, displayMath } = this.inlineRuns(p.runs, { splitLines });
+    // Word's stops, unless the paragraph goes to a style of the book that
+    // sets its own (a Sandbox export coming back).
+    const styleId = target.kind === 'paragraphs' ? target.style : undefined;
+    const own = (styleId !== undefined ? this.s.config.paragraphStyles?.find((st) => st.id === styleId)?.tabStops : undefined) ?? this.s.config.bodyText?.tabStops;
+    const { lines, images, pageBreak, displayMath } = this.inlineRuns(p.runs, { splitLines, ...(own?.length ? {} : { tabs: paragraphTabs(this.doc, p) }) });
     const rendered = lines.map((l) => this.render(l)).filter(Boolean);
 
     if (target.kind === 'caption') {

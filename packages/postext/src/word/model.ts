@@ -23,6 +23,19 @@ export interface WordStyle {
   ilvl?: number;
   /** `w:outlineLvl` (0-based): a heading level the style declares. */
   outlineLevel?: number;
+  /** `w:tabs`: the tab stops the style sets or clears (#622). */
+  tabs?: WordTabStop[];
+}
+
+/** A tab stop of a Word paragraph or style (`w:tab` in `w:tabs`, #622):
+ *  `val` its alignment (`left`, `right`, `center`, `decimal`, `start`,
+ *  `end`; `clear` removes an inherited stop at `pos`), `pos` in twips from
+ *  the start of the text, `leader` Word's leader word (`dot`, `hyphen`,
+ *  `underscore`, `middleDot`, `heavy`, `none`). */
+export interface WordTabStop {
+  val: string;
+  pos: number;
+  leader?: string;
 }
 
 export interface WordTextRun {
@@ -63,6 +76,8 @@ export interface WordParagraph {
   pageBreakBefore?: boolean;
   /** The paragraph sets alignment, indents or spacing by hand. */
   manualLayout?: boolean;
+  /** `w:tabs` set on the paragraph itself (#622). */
+  tabs?: WordTabStop[];
   /** Paragraphs of text boxes anchored in this paragraph. */
   textBoxes?: WordBlock[];
 }

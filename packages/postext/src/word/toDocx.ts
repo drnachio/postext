@@ -6,7 +6,7 @@
 // travels inside the file, so the re-import maps every style back.
 
 import { strToU8, zipSync } from 'fflate';
-import type { PostextConfig, Dimension, ColorValue } from '../types';
+import type { PostextConfig, Dimension, ColorValue, TabStop } from '../types';
 import { LINE_BREAK, parseInline, type InlineRun } from './inline';
 import {
   calloutStylesOf,
@@ -343,6 +343,26 @@ function twips(d: Dimension | undefined, base = 10): number | undefined {
   return hp !== undefined ? hp * 10 : undefined;
 }
 
+/** A paragraph style's tab stops as Word's `w:tabs` (#622): the stops at a
+ *  length (`'end'` and percentages need the page Word sets the text on, and
+ *  are left out), their leaders as Word's nearest. */
+function tabsXml(stops: readonly TabStop[] | undefined, fontSize: Dimension | undefined): string {
+  if (!stops || stops.length === 0) return '';
+  const base = fontSize?.unit === 'pt' ? fontSize.value : 10;
+  const val: Record<string, string> = { start: 'left', end: 'right', center: 'center', decimal: 'decimal' };
+  const leaders: Record<string, string> = { '.': 'dot', '. ': 'dot', '…': 'dot', '-': 'hyphen', '_': 'underscore', rule: 'underscore', '·': 'middleDot' };
+  const tabs: string[] = [];
+  for (const st of stops) {
+    const p = st.position;
+    if (typeof p !== 'object' || !p) continue;
+    const pt = p.unit === 'pt' ? p.value : p.unit === 'px' ? p.value * 0.75 : p.unit === 'mm' ? p.value * 2.8346 : p.unit === 'cm' ? p.value * 28.346 : p.unit === 'in' ? p.value * 72 : p.value * base;
+    if (!(pt > 0) || pt > 1584) continue;
+    const leader = st.leader ? leaders[st.leader] : undefined;
+    tabs.push(`<w:tab w:val="${val[st.align ?? 'start'] ?? 'left'}"${leader ? ` w:leader="${leader}"` : ''} w:pos="${Math.round(pt * 20)}"/>`);
+  }
+  return tabs.length > 0 ? `<w:tabs>${tabs.join('')}</w:tabs>` : '';
+}
+
 const hex = (c: ColorValue | undefined): string | undefined => (c?.hex && /^#[0-9a-fA-F]{6}$/.test(c.hex) ? c.hex.slice(1).toUpperCase() : undefined);
 
 class Styles {
@@ -447,7 +467,8 @@ class Styles {
       const sz = halfPoints(ps?.fontSize);
       if (sz) rPr += `<w:sz w:val="${sz}"/>`;
       const jc = ps?.textAlign === 'center' ? 'center' : ps?.textAlign === 'right' || ps?.textAlign === 'end' ? 'right' : ps?.textAlign === 'justify' ? 'both' : ps?.textAlign ? 'left' : undefined;
-      // Schema order: ind before jc.
+      // Schema order: tabs, then ind before jc.
+      pPr += tabsXml(ps?.tabStops, ps?.fontSize);
       const ind = twips(ps?.indent);
       if (ind) pPr += `<w:ind w:left="${ind}"/>`;
       if (jc) pPr += `<w:jc w:val="${jc}"/>`;

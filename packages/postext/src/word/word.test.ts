@@ -392,6 +392,39 @@ describe('forced line breaks (#620)', () => {
   });
 });
 
+describe('tabs (#622)', () => {
+  const tab = '<w:r><w:tab/></w:r>';
+  const read = (body: string, styles = '') => wordToPostext(readDocx(docx(body, { styles })), { template: emptyTemplate(), config, chapters: 'single', existingIds: new Set(), untitledChapter: 'x' }).chapters[0]!.markdown.trim();
+
+  it('read a tab as `:tab`, to the stop Word set for it, a style\'s stops under the paragraph\'s', () => {
+    expect(read(p('', r('Name') + tab + r('Value')))).toBe('Name :tab Value');
+    const menu = '<w:style w:type="paragraph" w:styleId="Menu"><w:name w:val="Menu"/><w:pPr><w:tabs><w:tab w:val="right" w:leader="dot" w:pos="8640"/></w:tabs></w:pPr></w:style>';
+    expect(read(p('Menu', r('Soup') + tab + r('8.50')), menu)).toBe('Soup :tab{at=432pt align=end leader="."} 8.50');
+    // The paragraph clears the style's stop and sets its own.
+    const own = '<w:tabs><w:tab w:val="clear" w:pos="8640"/><w:tab w:val="left" w:pos="1440"/></w:tabs>';
+    expect(read(p('Menu', r('Q1') + tab + r('Question'), own), menu)).toBe('Q1 :tab{at=72pt} Question');
+    // A heading or a table cell reads it as a space.
+    expect(read(p('Ttulo1', r('One') + tab + r('Two')))).toBe('# One Two');
+    // The parser reads it back as a tab.
+    expect(parseMarkdown('Soup :tab{at=432pt align=end leader="."} 8.50')[0]!.spans.find((x) => x.tab)!.tab!.stop).toEqual({ position: { value: 432, unit: 'pt' }, align: 'end', leader: '.' });
+  });
+
+  it('write `:tab` as Word\'s tab and a paragraph style\'s stops as `w:tabs`, and come back', () => {
+    const cfg = { ...config, paragraphStyles: [...(config.paragraphStyles ?? []), { id: 'menu', name: 'Menu', tabStops: [{ position: { value: 120, unit: 'mm' }, align: 'end', leader: '.' }] }] } as PostextConfig;
+    const md = ['Name :tab Value', '', ':::paragraphs{style="menu"}', 'Soup :tab 8.50', ':::', '', 'Signed :tab{at=end leader=rule}'].join('\n');
+    const bytes = postextToDocx([{ title: 'One', markdown: md }], { template: emptyTemplate(), config: cfg, book: false });
+    const doc = readDocx(bytes);
+    const first = doc.blocks.find((b) => b.type === 'paragraph')!;
+    expect(first.type === 'paragraph' && first.runs.map((x) => x.type)).toEqual(['text', 'tab', 'text']);
+    const style = [...doc.styles.values()].find((st) => st.name === 'Menu');
+    expect(style?.tabs).toEqual([{ val: 'right', pos: 6803, leader: 'dot' }]);
+    const back = wordToPostext(doc, { template: parseTemplate(doc.embeddedTemplate)!, config: cfg, chapters: 'single', existingIds: new Set(), untitledChapter: 'x' }).chapters[0]!.markdown;
+    expect(back).toContain('Name :tab Value');
+    expect(back).toContain('Soup :tab 8.50');
+    expect(back).toContain('Signed :tab{at=end leader=rule}');
+  });
+});
+
 describe('details found in the browser', () => {
   it('falls back to the engine\'s callout and chip styles when the book lists none', () => {
     const bare = {} as PostextConfig;
