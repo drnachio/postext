@@ -513,6 +513,12 @@ headings
                                        level in a vertical book); a centred heading centres in the rest;
                                        `{indent=N}` on a heading line overrides it (body ems), `{indent=0}`
                                        sets that heading at the line start
+  firstLineIndent: Dimension           0 (≥ 1.24) the FIRST line only, measured from `indent`, em = the BODY
+                                       size; the turnover lines start at `indent`. GB/T 9704 heads (two
+                                       cells in, turnover at the margin): {value: 2, unit: 'em'} on every
+                                       level. Never type U+3000 into numberingTemplate for it (the spaces
+                                       become the number and print in :::toc and the PDF bookmarks).
+                                       `{firstLineIndent=N}` on a heading line overrides it, `=0` clears it
   jidori: number                       unset (≥ 1.16) 字取り: a one-line heading narrower than N of its OWN ems
                                        is spaced evenly to exactly that width (3: 序章 → 序　章); `{jidori=N}`
                                        on a heading line overrides it, `{jidori=0}` turns it off
@@ -622,6 +628,7 @@ running heads, margins, layout, body typography, palette.
   fontFamily, fontSize, lineHeight, color, fontWeight, marginTop, marginBottom, italic,
   letterSpacing, textTransform, breakBefore (merged field by field over the level's), span,
   advancedDesign, hidden, snapToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's),
+  firstLineIndent (≥ 1.24; 0 clears the level's),
   dropCap (≥ 1.23, §4b; false clears the level's: e.g. a preface style without the chapters' initial)
   header?: DesignSlot, footer?: DesignSlot      replace document running heads on the section's pages ({elements:[]} = none)
   margins?: PageMargins                          each side inherits page margin; pair with breakBefore
