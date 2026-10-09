@@ -359,12 +359,14 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     if (!ds.singleInk) return null;
     return resolveColorValue(ds.inkColor, deferredConfig.colorPalette, ds.inkColor).hex;
   }, [deferredConfig]);
+  // SVG text in the book's fonts (#630) unless diagramStyle.inlineFonts is off.
+  const inlineSvgFonts = deferredConfig.diagramStyle?.inlineFonts !== false;
   // The resources whose pictures are decoded: a new viewer opens with them
   // painted, not with placeholders.
   const [imagesFor, setImagesFor] = useState<readonly unknown[] | null>(null);
   useEffect(() => {
     let cancelled = false;
-    ensureResourceImages(deferredResources, diagramInkHex)
+    ensureResourceImages(deferredResources, diagramInkHex, { inlineFonts: inlineSvgFonts })
       .then((changed) => {
         if (!cancelled && changed) setPaintKey((k) => k + 1);
       })
@@ -377,7 +379,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     return () => {
       cancelled = true;
     };
-  }, [deferredResources, diagramInkHex]);
+  }, [deferredResources, diagramInkHex, inlineSvgFonts]);
 
   const pageNegative = useMemo(() => resolveDebugConfig(deferredConfig.debug).pageNegative.enabled, [deferredConfig]);
   // The print preview (#606): the pages proofed through the output profile,

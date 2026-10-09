@@ -23,6 +23,7 @@ import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { BitmapResolutionField } from './BitmapResolutionField';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
 import { PdfMasterUploader } from './PdfMasterUploader';
+import { SvgFontsField } from './SvgFontsField';
 import { SafeAreaField } from './SafeAreaEditor';
 import { applyMarks } from './pictureMarks';
 import { VideoEditor } from './VideoEditor';
@@ -236,9 +237,10 @@ export function ResourceDetail({
     onChange(
       touch({
         kind: 'svg',
-        // A replaced SVG keeps its print master: the master is the
-        // publisher's original and outlives screen-side re-exports.
-        svg: { fileId: r.fileId, width: r.width, height: r.height, pdfFileId: resource.svg?.pdfFileId },
+        // A replaced SVG keeps its print master (the master is the
+        // publisher's original and outlives screen-side re-exports) and its
+        // font opt-out (#630).
+        svg: { fileId: r.fileId, width: r.width, height: r.height, pdfFileId: resource.svg?.pdfFileId, ...(resource.svg?.inlineFonts === false ? { inlineFonts: false } : {}) },
         bitmap: undefined,
         table: undefined,
         video: undefined,
@@ -647,6 +649,9 @@ export function ResourceDetail({
               onRemoved={() => applyPdfMaster(undefined)}
             />
           </Field>
+        )}
+        {resource.kind === 'svg' && resource.svg?.fileId && (
+          <SvgFontsField resource={resource} onChange={(svg) => onChange(touch({ svg }))} />
         )}
         {resource.kind === 'svg' && resource.svg?.fileId && (
           <SvgSourceEditor

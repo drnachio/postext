@@ -95,6 +95,8 @@ export interface SandboxLabels {
   epubWarningMissingFace: string;
   epubWarningFontWithheld: string;
   epubWarningUnsupported: string;
+  epubWarningSvgFontUnavailable: string;
+  epubWarningSvgFontsTooLarge: string;
   epubPageFrame: string;
   epubChapterFrame: string;
 
@@ -336,6 +338,10 @@ export interface SandboxLabels {
   warningsRaggedTableGridMissingDetail: string;
   warningsMissingImageTitle: string;
   warningsMissingImageDetail: string;
+  warningsSvgFontUnavailableTitle: string;
+  warningsSvgFontUnavailableDetail: string;
+  warningsSvgFontsTooLargeTitle: string;
+  warningsSvgFontsTooLargeDetail: string;
   warningsMissingGlyphTitle: string;
   warningsMissingGlyphDetail: string;
   warningsVariableFontTitle: string;
@@ -2209,6 +2215,18 @@ export interface SandboxLabels {
   svgSourceHintUnlocked: string;
   resourcePdfMasterLabel: string;
   resourcePdfMasterHint: string;
+  resourceSvgFontsLabel: string;
+  resourceSvgFontsHint: string;
+  resourceSvgInlineFonts: string;
+  resourceSvgInlineFontsTooltip: string;
+  resourceSvgFontsNone: string;
+  resourceSvgFontsLoading: string;
+  resourceSvgFontInlined: string;
+  resourceSvgFontDeclared: string;
+  resourceSvgFontUnavailable: string;
+  resourceSvgFontWithheld: string;
+  resourceSvgFontTooLarge: string;
+  resourceSvgFontKept: string;
   resourceSafeAreaLabel: string;
   resourceSafeAreaHint: string;
   resourceSafeAreaNone: string;
@@ -2641,6 +2659,8 @@ export interface SandboxLabels {
   diagramSingleInkTooltip: string;
   diagramInkColor: string;
   diagramInkColorTooltip: string;
+  diagramInlineFonts: string;
+  diagramInlineFontsTooltip: string;
   parts: string;
   partsBreakBeforeParity: string;
   partsBreakBeforeParityTooltip: string;

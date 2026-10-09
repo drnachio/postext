@@ -11,14 +11,17 @@
 // reproduction, the SVG markup is recoloured (applySingleInkToSvg) before
 // decode. The per-file variant key records which ink a decode used, so
 // toggling the setting re-decodes and re-registers the affected SVGs. SVG
-// text is set in the sandbox's custom fonts by inlining them as `@font-face`
-// data URIs (svgFonts.ts) — an `<img>` cannot see the page's fonts.
+// text is set in the book's fonts (#630): the engine inlines the faces it
+// names as `@font-face` data URIs (`prepareSvgMarkup`) from the Sandbox's
+// provider (svgFontProvider.ts: custom fonts, then Google) — an `<img>`
+// cannot see the page's fonts. What became of each face is kept for the
+// Checks panel and the resource detail.
 
-import type { Resource } from 'postext';
-import { applySingleInkToSvg, registerResourceImage } from 'postext';
+import type { Resource, SvgFontFaceReport } from 'postext';
+import { prepareSvgMarkup, registerResourceImage } from 'postext';
 import { getBlob, type BlobRecord } from '../storage/blobStore';
 import { dropSvgTextIndex, ensureSvgTextIndex } from './svgTextIndex';
-import { inlineSvgFonts } from './svgFonts';
+import { sandboxSvgFontProvider, svgFontGeneration } from './svgFontProvider';
 
 /** Build the SVG text-glyph index for a blob (once per fileId) so the
  *  previews can hit-test and highlight the figure's text nodes. Indexed from
@@ -32,8 +35,8 @@ function indexSvgText(fileId: string, rec: BlobRecord): void {
   }
 }
 
-/** fileId → variant key of the registered decode (`''` plain, ink hex when
- *  single-ink recolouring was applied). */
+/** fileId → variant key of the registered decode (see {@link variantOf}:
+ *  the ink and the font generation of an SVG, `''` for a bitmap). */
 const decoded = new Map<string, string>();
 
 /** File ids whose payload the previews paint as placeholders (the Checks
@@ -74,6 +77,79 @@ export function onUnavailableResourceImagesChange(cb: () => void): () => void {
   };
 }
 
+/** What became of the faces each SVG picture's text names, by file id,
+ *  as its last decode found (#630). */
+const fontReports = new Map<string, SvgFontFaceReport[]>();
+const fontReportListeners = new Set<() => void>();
+
+function setFontReport(fileId: string, faces: SvgFontFaceReport[]): void {
+  const before = fontReports.get(fileId);
+  if (before && JSON.stringify(before) === JSON.stringify(faces)) return;
+  if (faces.length === 0 && !before) return;
+  if (faces.length === 0) fontReports.delete(fileId);
+  else fontReports.set(fileId, faces);
+  for (const cb of fontReportListeners) cb();
+}
+
+/** The faces an SVG picture's text names and whether each was inlined, as
+ *  its last decode found; undefined before any. */
+export function svgFontReport(fileId: string): readonly SvgFontFaceReport[] | undefined {
+  return fontReports.get(fileId);
+}
+
+/** The SVG pictures whose fonts could not all be inlined: a family with
+ *  no face (`unavailable`) or faces over the size cap (`tooLarge`). */
+export function svgFontIssues(): ReadonlyMap<string, readonly SvgFontFaceReport[]> {
+  const out = new Map<string, SvgFontFaceReport[]>();
+  for (const [fileId, faces] of fontReports) {
+    const issues = faces.filter((f) => f.status === 'unavailable' || f.status === 'tooLarge');
+    if (issues.length > 0) out.set(fileId, issues);
+  }
+  return out;
+}
+
+/** Be told when a font report changes; returns the unsubscribe function. */
+export function onSvgFontReportsChange(cb: () => void): () => void {
+  fontReportListeners.add(cb);
+  return () => {
+    fontReportListeners.delete(cb);
+  };
+}
+
+/** How the previews prepare SVG pictures. */
+export interface SvgImageOptions {
+  /** `diagramStyle.inlineFonts` (default true); a resource's own
+   *  `svg.inlineFonts: false` wins. */
+  inlineFonts?: boolean;
+}
+
+/** Whether a resource's SVG gets the book's fonts inlined. */
+function inlinesFonts(r: Resource, options: SvgImageOptions | undefined): boolean {
+  return options?.inlineFonts !== false && r.svg?.inlineFonts !== false;
+}
+
+/** The variant key of a decode: the ink, and the font generation when the
+ *  faces are inlined (a changed custom font makes it again). */
+function variantOf(r: Resource, inkHex: string | null, options: SvgImageOptions | undefined): string {
+  if (r.kind !== 'svg') return '';
+  const ink = inkHex ? inkHex.toLowerCase() : '';
+  return `${ink}|${inlinesFonts(r, options) ? `f${svgFontGeneration()}` : 'raw'}`;
+}
+
+/** An SVG blob's markup as the previews show it: recoloured to `inkHex`,
+ *  then with the book's fonts inlined (recorded in the font report). */
+async function svgMarkup(fileId: string, rec: BlobRecord, inkHex: string | null, inlineFonts: boolean): Promise<string> {
+  const prepared = await prepareSvgMarkup(new TextDecoder().decode(rec.bytes), {
+    inkHex,
+    inlineFonts,
+    fonts: sandboxSvgFontProvider(),
+    fileId,
+  });
+  if (inlineFonts) setFontReport(fileId, prepared.faces);
+  else setFontReport(fileId, []);
+  return prepared.svg;
+}
+
 /** The blob fileId backing a resource's image payload, if any. */
 function imageFileId(r: Resource): string | undefined {
   if (r.kind === 'bitmap') return r.bitmap?.fileId;
@@ -110,13 +186,12 @@ export async function ensureResourceVideoUrls(resources: Resource[]): Promise<bo
 
 /** Decode a blob into something the canvas backend can `drawImage`. SVGs load
  *  through an `<img>` (scaled to the requested box at draw time, recoloured
- *  first when `inkHex` is set); rasters decode via `createImageBitmap`. */
-async function decodeImage(rec: BlobRecord, inkHex: string | null): Promise<CanvasImageSource | null> {
+ *  first when `inkHex` is set, the book's fonts inlined); rasters decode via
+ *  `createImageBitmap`. */
+async function decodeImage(fileId: string, rec: BlobRecord, inkHex: string | null, inlineFonts: boolean): Promise<CanvasImageSource | null> {
   if (typeof document === 'undefined') return null;
   if (rec.contentType === 'image/svg+xml') {
-    let svgText = new TextDecoder().decode(rec.bytes);
-    if (inkHex) svgText = applySingleInkToSvg(svgText, inkHex);
-    svgText = await inlineSvgFonts(svgText);
+    const svgText = await svgMarkup(fileId, rec, inkHex, inlineFonts);
     const blob = new Blob([svgText], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
     try {
@@ -147,6 +222,7 @@ export function invalidateResourceImage(fileId: string): void {
   // The decode verdict was about the bytes being replaced; the next canvas
   // decode gives the new one.
   setFlag(undecodable, fileId, false);
+  setFontReport(fileId, []);
   dropSvgTextIndex(fileId);
   const entry = urls.get(fileId);
   if (entry) {
@@ -168,12 +244,13 @@ export function getResourceImageUrl(fileId: string): string | undefined {
 export async function ensureResourceImageUrls(
   resources: Resource[],
   inkHex: string | null = null,
+  options?: SvgImageOptions,
 ): Promise<boolean> {
   let changed = false;
   for (const r of resources) {
     const fileId = imageFileId(r);
     if (!fileId) continue;
-    const variant = r.kind === 'svg' && inkHex ? inkHex.toLowerCase() : '';
+    const variant = variantOf(r, inkHex, options);
     const existing = urls.get(fileId);
     if (existing && existing.variant === variant) continue;
     const rec = await getBlob(fileId).catch(() => null);
@@ -184,9 +261,7 @@ export async function ensureResourceImageUrls(
     indexSvgText(fileId, rec);
     let blob: Blob;
     if (rec.contentType === 'image/svg+xml') {
-      let svgText = new TextDecoder().decode(rec.bytes);
-      if (variant) svgText = applySingleInkToSvg(svgText, variant);
-      svgText = await inlineSvgFonts(svgText);
+      const svgText = await svgMarkup(fileId, rec, r.kind === 'svg' ? inkHex : null, inlinesFonts(r, options));
       blob = new Blob([svgText], { type: 'image/svg+xml' });
     } else {
       blob = new Blob([rec.bytes], { type: rec.contentType });
@@ -205,19 +280,21 @@ export async function ensureResourceImageUrls(
 export async function ensureResourceImages(
   resources: Resource[],
   inkHex: string | null = null,
+  options?: SvgImageOptions,
 ): Promise<boolean> {
   let changed = false;
   for (const r of resources) {
     const fileId = imageFileId(r);
     if (!fileId) continue;
-    // Ink only affects SVG decodes; bitmap registrations never go stale.
-    const variant = r.kind === 'svg' && inkHex ? inkHex.toLowerCase() : '';
+    // Ink and fonts only affect SVG decodes; bitmap registrations never go
+    // stale.
+    const variant = variantOf(r, inkHex, options);
     if (decoded.get(fileId) === variant) continue;
     const rec = await getBlob(fileId).catch(() => null);
     setFlag(missingPayloads, fileId, !rec);
     if (!rec) continue;
     indexSvgText(fileId, rec);
-    const img = await decodeImage(rec, variant || null).catch(() => null);
+    const img = await decodeImage(fileId, rec, r.kind === 'svg' ? inkHex : null, inlinesFonts(r, options)).catch(() => null);
     setFlag(undecodable, fileId, !img);
     if (!img) continue;
     // SVGs go in as vector sources: the canvas backend rasterises them once

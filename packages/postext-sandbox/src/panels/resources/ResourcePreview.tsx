@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import { FileCode, Table as TableIcon, ImageOff, Play } from 'lucide-react';
 import type { Resource, ResourceType } from 'postext';
-import { defaultCaptionLabels } from 'postext';
+import { defaultCaptionLabels, inlineSvgFonts } from 'postext';
 import { documentLanguage } from '../../context/documentDirection';
 import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext';
 import { getBlob } from '../../storage/blobStore';
-import { inlineSvgFonts } from '../../controls/svgFonts';
+import { sandboxSvgFontProvider } from '../../controls/svgFontProvider';
 import { parseInlinePreview } from '../../controls/InlineMarkdownInput';
 import { captionPreviewLabel } from './captionLabel';
 import { useRightToLeftFlow } from '../../sidebar/settings/flowSides';
@@ -36,10 +36,10 @@ export function useBlobObjectUrl(fileId: string | undefined): string | null {
           if (!cancelled) setUrl(null);
           return;
         }
-        // SVG text renders in the sandbox's custom fonts only when they are
-        // inlined; an <img> cannot reach the page's FontFaces.
+        // SVG text renders in the book's fonts only when they are inlined
+        // (#630); an <img> cannot reach the page's FontFaces.
         const blob = record.contentType === 'image/svg+xml'
-          ? new Blob([await inlineSvgFonts(new TextDecoder().decode(record.bytes))], { type: record.contentType })
+          ? new Blob([await inlineSvgFonts(new TextDecoder().decode(record.bytes), sandboxSvgFontProvider())], { type: record.contentType })
           : new Blob([record.bytes], { type: record.contentType });
         if (cancelled) return;
         const objectUrl = URL.createObjectURL(blob);

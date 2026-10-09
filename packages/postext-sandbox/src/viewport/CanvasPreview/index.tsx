@@ -632,6 +632,8 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     if (!ds.singleInk) return null;
     return resolveColorValue(ds.inkColor, deferredConfig.colorPalette, ds.inkColor).hex;
   }, [deferredConfig]);
+  // SVG text in the book's fonts (#630) unless diagramStyle.inlineFonts is off.
+  const inlineSvgFonts = deferredConfig.diagramStyle?.inlineFonts !== false;
 
   // Decode resource image payloads (bitmaps/SVGs) from IndexedDB and register
   // them with the canvas backend, then repaint. The worker lays out from the
@@ -643,7 +645,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // by the repaint of the call that supersedes it, or of the next build.
   useEffect(() => {
     let cancelled = false;
-    ensureResourceImages(deferredResources, diagramInkHex)
+    ensureResourceImages(deferredResources, diagramInkHex, { inlineFonts: inlineSvgFonts })
       .then((changed) => {
         if (!cancelled && changed) setPaintKey((k) => k + 1);
       })
@@ -651,7 +653,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     return () => {
       cancelled = true;
     };
-  }, [deferredResources, diagramInkHex]);
+  }, [deferredResources, diagramInkHex, inlineSvgFonts]);
 
   // LAYOUT effect — (re)builds the page DOM and repaints visible pages.
   // Runs when a new doc is produced, or when view mode changes. Resize is

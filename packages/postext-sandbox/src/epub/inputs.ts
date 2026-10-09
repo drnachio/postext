@@ -4,9 +4,9 @@
 // stores.
 
 import type { PostextConfig, VDTDocument } from 'postext';
-import type { EpubCover, EpubFontFile, EpubResourceBytes } from 'postext-epub';
+import type { EpubCover, EpubFontFile, EpubResourceBytes, EpubSvgFontOptions } from 'postext-epub';
 import { collectFontPayloadsForFamilies, getConfigFontFamilies, getCustomFontFamily } from '../controls/fontLoader';
-import { inlineSvgFonts } from '../controls/svgFonts';
+import { sandboxSvgFontProvider, withholdNonRedistributable } from '../controls/svgFontProvider';
 import { getBlob } from '../storage/blobStore';
 import { documentCodePoints, facesForText, fontFormatOf } from './fontSubsets';
 
@@ -38,20 +38,23 @@ export async function collectEpubFonts(
   return { fonts, withheld };
 }
 
-/** The pictures' bytes from the blob store: bitmaps as stored, SVGs as
- *  their source with the Sandbox's custom fonts inlined (an image cannot
- *  see the book's fonts), except families marked as not redistributable,
- *  which keep their reference and are told to `onWithheld`, as the font
- *  files are. Single ink is the writer's: it recolours the source. Never
- *  the PDF print master. */
-export function epubResourceBytes(onWithheld?: (family: string) => void): EpubResourceBytes {
+/** The pictures' bytes from the blob store, as stored: the EPUB writer
+ *  recolours single-ink SVGs and embeds the book's fonts in them
+ *  (`svgFonts`, #630), leaving out the families marked as not
+ *  redistributable. Never the PDF print master. */
+export function epubResourceBytes(): EpubResourceBytes {
   return async (fileId) => {
     const rec = await getBlob(fileId).catch(() => null);
     if (!rec) return undefined;
-    if (rec.contentType !== 'image/svg+xml') return { bytes: new Uint8Array(rec.bytes), mediaType: rec.contentType };
-    const svg = await inlineSvgFonts(new TextDecoder().decode(rec.bytes), { redistributableOnly: true, onWithheld });
-    return { bytes: new TextEncoder().encode(svg), mediaType: 'image/svg+xml' };
+    return { bytes: new Uint8Array(rec.bytes), mediaType: rec.contentType };
   };
+}
+
+/** How the EPUB writer embeds fonts in the SVG pictures (#630): from the
+ *  book's fonts, then the Sandbox's provider (custom families, then
+ *  Google), never a family marked as not redistributable. */
+export function epubSvgFonts(): EpubSvgFontOptions {
+  return { provider: sandboxSvgFontProvider(), withhold: withholdNonRedistributable };
 }
 
 /** Narrowest cover picture taken as the book's cover: the Books panel's

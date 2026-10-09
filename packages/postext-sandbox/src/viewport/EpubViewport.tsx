@@ -12,7 +12,7 @@ import { ensureConfigFontsLoaded, onCustomFontsChanged } from '../controls/fontL
 import { withHyphenationLocale } from '../controls/hyphenation';
 import { ensureResourceImages } from '../controls/resourceImages';
 import { renderCoverImage } from '../covers/useAutoCover';
-import { bookCoverPicture, collectEpubFonts, epubResourceBytes, RENDERED_COVER_WIDTH, usableCover } from '../epub/inputs';
+import { bookCoverPicture, collectEpubFonts, epubResourceBytes, epubSvgFonts, RENDERED_COVER_WIDTH, usableCover } from '../epub/inputs';
 import { epubFileName, epubMetadataOf, type EpubBookIdentity } from '../epub/metadata';
 import { downloadBytes } from '../storage/persistence';
 import { dockedToolbarReserve } from '../epub/viewer';
@@ -34,7 +34,9 @@ const noticeKey = (n: EpubNotice): string =>
   n.kind === 'missingImage' ? `img:${n.fileId}`
     : n.kind === 'unsupported' ? `x:${n.detail}`
       : n.kind === 'missingFont' ? `font:${n.family}:${n.weight ?? ''}:${n.style ?? ''}`
-        : `withheld:${n.family}`;
+        : n.kind === 'svgFontUnavailable' ? `svgfont:${n.fileId}:${n.family}:${n.weight}:${n.style}`
+          : n.kind === 'svgFontsTooLarge' ? `svgsize:${n.fileId}`
+            : `withheld:${n.family}`;
 
 /** The generated file and what it was made from. */
 interface Generated {
@@ -113,6 +115,7 @@ export function EpubViewport() {
     const withheldFamilies = new Set<string>();
     const note = (n: EpubNotice) => {
       const key = noticeKey(n);
+      if (n.kind === 'fontWithheld') withheldFamilies.add(n.family);
       if (seen.has(key) || (n.kind === 'missingFont' && withheldFamilies.has(n.family))) return;
       seen.add(key);
       found.push(n);
@@ -158,7 +161,8 @@ export function EpubViewport() {
         layout: snapshotLayout,
         metadata,
         fonts,
-        resourceBytes: epubResourceBytes(onWithheld),
+        resourceBytes: epubResourceBytes(),
+        svgFonts: epubSvgFonts(),
         ...(cover ? { cover } : {}),
         onProgress: (p) => setProgress({ phase: p.phase, done: p.done, total: p.total }),
         onWarning: note,
@@ -342,7 +346,7 @@ async function epubCoverOf(
   // The page's pictures as the canvas paints them.
   const ds = resolveDiagramStyleConfig(snapshot.config.diagramStyle);
   const ink = ds.singleInk ? resolveColorValue(ds.inkColor, snapshot.config.colorPalette, ds.inkColor).hex : null;
-  await ensureResourceImages(snapshot.resources, ink).catch(() => false);
+  await ensureResourceImages(snapshot.resources, ink, { inlineFonts: ds.inlineFonts }).catch(() => false);
   if (typeof document !== 'undefined' && document.fonts) await document.fonts.ready;
   const image = await renderCoverImage(page, first, true, { width: RENDERED_COVER_WIDTH, trimmed: true });
   if (!image || image === 'missing') return null;

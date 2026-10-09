@@ -32,6 +32,8 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'videoWithoutUrl':
     case 'videoUrlInvalid':
     case 'missingImage':
+    case 'svgFontUnavailable':
+    case 'svgFontsTooLarge':
     case 'comicUnknownArt':
     case 'comicPanelLetterbox':
     case 'comicAnchorOutsideSafeArea':

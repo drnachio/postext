@@ -76,6 +76,8 @@ export type WarningKind =
   | 'videoWithoutUrl'
   | 'videoUrlInvalid'
   | 'missingImage'
+  | 'svgFontUnavailable'
+  | 'svgFontsTooLarge'
   | 'storageUnavailable'
   | 'chapterFrontmatterIgnored'
   | 'fontFamilyStack'
@@ -325,6 +327,13 @@ export type WarningPayload =
    *  file is missing from storage or does not decode): it is painted as a
    *  placeholder. */
   | { kind: 'missingImage'; resourceId: string; fileId: string }
+  /** An SVG picture the document shows names a font family in its text
+   *  with no face to embed in it (#630): the image sets that text in a
+   *  fallback face. */
+  | { kind: 'svgFontUnavailable'; resourceId: string; fileId: string; family: string; weight: number; style: 'normal' | 'italic' }
+  /** The faces an SVG picture's text names exceed the size cap: none was
+   *  embedded (#630). */
+  | { kind: 'svgFontsTooLarge'; resourceId: string; fileId: string; bytes: number }
   /** IndexedDB is unavailable (private browsing / storage disabled), so
    *  uploaded bitmaps and SVGs cannot be persisted or resolved. */
   | { kind: 'storageUnavailable' }

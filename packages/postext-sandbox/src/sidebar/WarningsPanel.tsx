@@ -120,6 +120,8 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'videoWithoutUrl':
     case 'videoUrlInvalid':
     case 'missingImage':
+    case 'svgFontUnavailable':
+    case 'svgFontsTooLarge':
       return Image;
     case 'storageUnavailable':
       return Database;
@@ -305,6 +307,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsVideoUrlInvalidTitle;
     case 'missingImage':
       return labels.warningsMissingImageTitle;
+    case 'svgFontUnavailable':
+      return labels.warningsSvgFontUnavailableTitle;
+    case 'svgFontsTooLarge':
+      return labels.warningsSvgFontsTooLargeTitle;
     case 'storageUnavailable':
       return labels.warningsStorageUnavailableTitle;
     case 'chapterFrontmatterIgnored':
@@ -585,6 +591,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `#${payload.resourceId} · ${payload.url || '""'} — ${labels.warningsVideoUrlInvalidDetail}`;
     case 'missingImage':
       return `#${payload.resourceId} — ${labels.warningsMissingImageDetail}`;
+    case 'svgFontUnavailable':
+      return `#${payload.resourceId} — ${labels.warningsSvgFontUnavailableDetail.replace('__face__', `${payload.family} ${payload.weight}${payload.style === 'italic' ? ' italic' : ''}`)}`;
+    case 'svgFontsTooLarge':
+      return `#${payload.resourceId} — ${labels.warningsSvgFontsTooLargeDetail.replace('__size__', String(Math.round(payload.bytes / 1024)))}`;
     case 'storageUnavailable':
       return labels.warningsStorageUnavailableDetail;
     case 'chapterFrontmatterIgnored':

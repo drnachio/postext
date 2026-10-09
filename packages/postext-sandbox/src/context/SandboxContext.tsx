@@ -78,7 +78,7 @@ import { computeWarnings } from '../warnings/compute';
 import type { Warning } from '../warnings/types';
 import { hasIndexedDB } from '../storage/blobStore';
 import { folioSupported } from '../viewport/folioSupport';
-import { onUnavailableResourceImagesChange, unavailableResourceImages } from '../controls/resourceImages';
+import { onSvgFontReportsChange, onUnavailableResourceImagesChange, svgFontIssues, unavailableResourceImages } from '../controls/resourceImages';
 import { onPdfFontChecksChange, pdfFontChecks, pdfFontChecksFor } from '../controls/pdfFontWarnings';
 import { onPreflightInputsChange, preflightInputs, preflightInputsVersion } from '../print/preflightInputs';
 import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown';
@@ -2163,6 +2163,7 @@ export function SandboxProvider({
       resources: s.resources,
       storageUnavailable: !hasIndexedDB(),
       unavailableImages: unavailableResourceImages(),
+      svgFontIssues: svgFontIssues(),
       book,
       chapterTitles: new Map(s.chapters.map((c) => [c.id, c.title])),
       // Another book's are dropped; after an edit they are marked stale.
@@ -2229,10 +2230,12 @@ export function SandboxProvider({
       }, WARNINGS_DEBOUNCE_MS);
     };
     const offImages = onUnavailableResourceImagesChange(refresh);
+    const offSvgFonts = onSvgFontReportsChange(refresh);
     const offPdf = onPdfFontChecksChange(refresh);
     const offPreflight = onPreflightInputsChange(refresh);
     return () => {
       offImages();
+      offSvgFonts();
       offPdf();
       offPreflight();
       clearTimeout(timer);

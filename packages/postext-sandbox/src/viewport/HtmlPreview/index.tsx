@@ -440,7 +440,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       const inkHex = ds.singleInk
         ? resolveColorValue(ds.inkColor, currentConfig.colorPalette, ds.inkColor).hex
         : null;
-      await ensureResourceImageUrls(resourcesRef.current, inkHex).catch(() => false);
+      await ensureResourceImageUrls(resourcesRef.current, inkHex, { inlineFonts: ds.inlineFonts }).catch(() => false);
       // Uploaded videos play from object URLs too (#454).
       await ensureResourceVideoUrls(resourcesRef.current).catch(() => false);
       if (seq !== renderSeqRef.current) return;

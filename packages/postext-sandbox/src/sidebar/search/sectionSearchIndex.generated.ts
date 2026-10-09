@@ -3826,6 +3826,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
     keys: [
       'diagramInkColor',
       'diagramInkColorTooltip',
+      'diagramInlineFonts',
+      'diagramInlineFontsTooltip',
       'diagramSingleInk',
       'diagramSingleInkTooltip',
       'diagramStyleSection',
