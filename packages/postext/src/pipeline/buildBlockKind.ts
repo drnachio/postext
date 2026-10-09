@@ -125,6 +125,17 @@ function uppercaseSpan(span: InlineSpan): InlineSpan {
   };
 }
 
+/** A span with nothing but its text: not bold, not italic, and no other
+ *  property set (an annotation, a script, a link, a language…). A heading
+ *  number joins only such a span (#638). */
+function isPlainSpan(span: InlineSpan): boolean {
+  for (const [key, value] of Object.entries(span)) {
+    if (key === 'text') continue;
+    if (value !== undefined && value !== false) return false;
+  }
+  return true;
+}
+
 export function resolveBlockKind(
   rawBlock: ContentBlock,
   ctx: BlockKindContext,
@@ -194,14 +205,16 @@ export function resolveBlockKind(
       if (numberPrefix) {
         const sep = `${numberPrefix}${numberSeparator}`;
         const firstSpan = contentBlock.spans[0];
-        // A title that opens with a marked run (EF-122) keeps the number in
-        // the heading's own style: the number is a span of its own.
-        const marked = firstSpan && (firstSpan.bold || firstSpan.italic || firstSpan.script || firstSpan.smallCaps || firstSpan.links);
+        // The number joins the title's first span only when that span is
+        // plain text. A marked run (EF-122) or any annotation (a ruby base,
+        // emphasis dots, a name or title line, a warichu, a tcy cell, a
+        // language tag…) leaves the number a span of its own in the
+        // heading's style, so the mark never covers it (#638).
         const newSpans = !firstSpan
           ? [{ text: sep, bold: false, italic: false }]
-          : marked
-            ? [{ text: sep, bold: false, italic: false }, ...contentBlock.spans]
-            : [{ ...firstSpan, text: sep + firstSpan.text }, ...contentBlock.spans.slice(1)];
+          : isPlainSpan(firstSpan)
+            ? [{ ...firstSpan, text: sep + firstSpan.text }, ...contentBlock.spans.slice(1)]
+            : [{ text: sep, bold: false, italic: false }, ...contentBlock.spans];
         contentBlock = { ...contentBlock, text: sep + contentBlock.text, spans: newSpans };
       }
       return {
