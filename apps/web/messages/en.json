@@ -1092,7 +1092,7 @@
     "lineNumbersRestartSection": "Each section",
     "lineNumbersRestartPage": "Each page",
     "lineNumbersRestartPoem": "Each poem",
-    "lineNumbersRestartTooltip": "Where the count starts again: never (it runs through the chapters of the book), at every chapter (level-1 heading), at every section (level-1 or level-2 heading), on every page or at every poem. :::numbering{lines=1} restarts it anywhere, and a poem's lineStart=N gives its first line a number.",
+    "lineNumbersRestartTooltip": "Where the count starts again: never (it runs through the chapters of the book), at every chapter (level-1 heading), at every section (level-1 or level-2 heading), on every page or at every poem. :::numbering'{'lines=1'}' restarts it anywhere, and a poem's lineStart=N gives its first line a number.",
     "lineNumbersStartAt": "First number",
     "lineNumbersStartAtTooltip": "The number of the first line after a restart.",
     "lineNumbersPosition": "Position",

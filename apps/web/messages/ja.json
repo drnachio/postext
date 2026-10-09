@@ -1092,7 +1092,7 @@
     "lineNumbersRestartSection": "節ごと",
     "lineNumbersRestartPage": "ページごと",
     "lineNumbersRestartPoem": "詩ごと",
-    "lineNumbersRestartTooltip": "番号を数え直す位置：しない（本の章をまたいで通す）、章ごと（レベル1見出し）、節ごと（レベル1または2の見出し）、ページごと、詩ごと。:::numbering{lines=1} でどこでも数え直せ、詩の lineStart=N で最初の行の番号を指定できます。",
+    "lineNumbersRestartTooltip": "番号を数え直す位置：しない（本の章をまたいで通す）、章ごと（レベル1見出し）、節ごと（レベル1または2の見出し）、ページごと、詩ごと。:::numbering'{'lines=1'}' でどこでも数え直せ、詩の lineStart=N で最初の行の番号を指定できます。",
     "lineNumbersStartAt": "最初の番号",
     "lineNumbersStartAtTooltip": "数え直したあとの最初の行の番号。",
     "lineNumbersPosition": "位置",

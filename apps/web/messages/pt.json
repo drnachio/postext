@@ -1092,7 +1092,7 @@
     "lineNumbersRestartSection": "A cada seção",
     "lineNumbersRestartPage": "A cada página",
     "lineNumbersRestartPoem": "A cada poema",
-    "lineNumbersRestartTooltip": "Onde a contagem recomeça: nunca (segue pelos capítulos do livro), a cada capítulo (título de nível 1), a cada seção (título de nível 1 ou 2), a cada página ou a cada poema. :::numbering{lines=1} reinicia em qualquer ponto, e lineStart=N dá número à primeira linha de um poema.",
+    "lineNumbersRestartTooltip": "Onde a contagem recomeça: nunca (segue pelos capítulos do livro), a cada capítulo (título de nível 1), a cada seção (título de nível 1 ou 2), a cada página ou a cada poema. :::numbering'{'lines=1'}' reinicia em qualquer ponto, e lineStart=N dá número à primeira linha de um poema.",
     "lineNumbersStartAt": "Primeiro número",
     "lineNumbersStartAtTooltip": "O número da primeira linha depois de um reinício.",
     "lineNumbersPosition": "Posição",

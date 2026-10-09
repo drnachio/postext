@@ -1092,7 +1092,7 @@
     "lineNumbersRestartSection": "A cada secció",
     "lineNumbersRestartPage": "A cada pàgina",
     "lineNumbersRestartPoem": "A cada poema",
-    "lineNumbersRestartTooltip": "On torna a començar el compte: mai (continua al llarg dels capítols del llibre), a cada capítol (títol de nivell 1), a cada secció (títol de nivell 1 o 2), a cada pàgina o a cada poema. :::numbering{lines=1} el reinicia a qualsevol punt, i lineStart=N dona número a la primera línia d'un poema.",
+    "lineNumbersRestartTooltip": "On torna a començar el compte: mai (continua al llarg dels capítols del llibre), a cada capítol (títol de nivell 1), a cada secció (títol de nivell 1 o 2), a cada pàgina o a cada poema. :::numbering'{'lines=1'}' el reinicia a qualsevol punt, i lineStart=N dona número a la primera línia d'un poema.",
     "lineNumbersStartAt": "Primer número",
     "lineNumbersStartAtTooltip": "El número de la primera línia després d’un reinici.",
     "lineNumbersPosition": "Posició",

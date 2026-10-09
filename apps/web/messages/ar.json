@@ -1092,7 +1092,7 @@
     "lineNumbersRestartSection": "كل قسم",
     "lineNumbersRestartPage": "كل صفحة",
     "lineNumbersRestartPoem": "كل قصيدة",
-    "lineNumbersRestartTooltip": "أين يبدأ العدّ من جديد: أبدًا (يستمر عبر فصول الكتاب)، أو عند كل فصل (عنوان من المستوى 1)، أو كل قسم (عنوان من المستوى 1 أو 2)، أو كل صفحة، أو كل قصيدة. ‏:::numbering{lines=1} يعيد العدّ في أي موضع، و lineStart=N يعطي السطر الأول من القصيدة رقمه.",
+    "lineNumbersRestartTooltip": "أين يبدأ العدّ من جديد: أبدًا (يستمر عبر فصول الكتاب)، أو عند كل فصل (عنوان من المستوى 1)، أو كل قسم (عنوان من المستوى 1 أو 2)، أو كل صفحة، أو كل قصيدة. ‏:::numbering'{'lines=1'}' يعيد العدّ في أي موضع، و lineStart=N يعطي السطر الأول من القصيدة رقمه.",
     "lineNumbersStartAt": "الرقم الأول",
     "lineNumbersStartAtTooltip": "رقم السطر الأول بعد إعادة العدّ.",
     "lineNumbersPosition": "الموضع",

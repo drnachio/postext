@@ -1734,7 +1734,7 @@
     "lineNumbersRestartSection": "En cada sección",
     "lineNumbersRestartPage": "En cada página",
     "lineNumbersRestartPoem": "En cada poema",
-    "lineNumbersRestartTooltip": "Dónde vuelve a empezar la cuenta: nunca (sigue a lo largo de los capítulos del libro), en cada capítulo (título de nivel 1), en cada sección (título de nivel 1 o 2), en cada página o en cada poema. :::numbering{lines=1} la reinicia en cualquier punto, y lineStart=N da número a la primera línea de un poema.",
+    "lineNumbersRestartTooltip": "Dónde vuelve a empezar la cuenta: nunca (sigue a lo largo de los capítulos del libro), en cada capítulo (título de nivel 1), en cada sección (título de nivel 1 o 2), en cada página o en cada poema. :::numbering'{'lines=1'}' la reinicia en cualquier punto, y lineStart=N da número a la primera línea de un poema.",
     "lineNumbersStartAt": "Primer número",
     "lineNumbersStartAtTooltip": "El número de la primera línea tras un reinicio.",
     "lineNumbersPosition": "Posición",

@@ -1092,7 +1092,7 @@
     "lineNumbersRestartSection": "每节",
     "lineNumbersRestartPage": "每页",
     "lineNumbersRestartPoem": "每首诗",
-    "lineNumbersRestartTooltip": "计数从哪里重新开始：从不（贯穿全书各章）、每章（一级标题）、每节（一级或二级标题）、每页或每首诗。:::numbering{lines=1} 可在任何位置重新计数，诗的 lineStart=N 指定其第一行的行号。",
+    "lineNumbersRestartTooltip": "计数从哪里重新开始：从不（贯穿全书各章）、每章（一级标题）、每节（一级或二级标题）、每页或每首诗。:::numbering'{'lines=1'}' 可在任何位置重新计数，诗的 lineStart=N 指定其第一行的行号。",
     "lineNumbersStartAt": "起始行号",
     "lineNumbersStartAtTooltip": "重新计数后第一行的行号。",
     "lineNumbersPosition": "位置",
