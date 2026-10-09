@@ -38,7 +38,7 @@ Esta referência é longa. Estes são os blocos principais:
 - [Página](#página) — tamanho, margens, grade de linhas de base, marcas de corte, [encadernação](#encadernação).
 - [Diagramação](#diagramação) — número de colunas, medianizes, fios, [escrita vertical](#escrita-vertical).
 - [Cabeços e rodapés](#cabeços-e-rodapés) — elementos de texto e de fio por página, com marcadores, paridade e alinhamento.
-- [Texto do corpo](#texto-do-corpo) — tipografia, hifenização, órfãs e viúvas.
+- [Texto do corpo](#texto-do-corpo) — tipografia, hifenização, paradas de tabulação, órfãs e viúvas.
 - [Idioma do documento](#idioma-do-documento) — o `locale` de nível superior: alternativa para a hifenização, tipos de recurso embutidos e textos de continuação de tabelas e de boxes divididos, idioma marcado num PDF acessível; os [algarismos](#algarismos-do-documento) (`numerals`) e a [direção do texto](#direção-do-texto) (`direction`) que dele decorrem; e os [idiomas e sistemas de escrita](#idiomas-e-escritas) que o Postext compõe. O guia dos livros da direita para a esquerda é [Composição árabe](/pt/docs/arabic-layout).
 - [Tipografia do Leste Asiático](#tipografia-do-leste-asiático) — `cjk`: as convenções regionais e a quebra de linha do texto em chinês, japonês e coreano, como suas linhas justificadas se distribuem, as larguras da pontuação e a pontuação pendurada, o espaço entre caracteres Han e latinos, a grade de caracteres, os números em pé no texto vertical, e as marcas, o rubi, as notas warichu e as marcas de kanbun. Os guias de tudo isso são [Composição chinesa](/pt/docs/chinese-layout) e [Composição japonesa](/pt/docs/japanese-layout).
 - [Títulos](#títulos) — padrões comuns e substituições de H1 a H6.
@@ -1465,6 +1465,18 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td>Lê uma barra invertida no fim de uma linha do texto, e <code>{'\\\\'}</code> antes de um espaço, como uma quebra de linha forçada dentro de um parágrafo, de uma citação ou de um item de lista (a quebra forçada do CommonMark): as palavras seguintes começam uma linha nova do mesmo parágrafo, e a linha anterior é composta com a sua largura natural, como uma última linha. Uma barra invertida no fim do parágrafo é impressa, e dois espaços no fim de uma linha não são quebra (veja <a href="/pt/docs/document-format#quebras-de-linha">Formato do documento › Quebras de linha</a>). <code>false</code> mantém a leitura da 1.22: as barras são impressas e as linhas se unem com um espaço; as configurações salvas antes cujo texto tem uma barra assim são lidas com ela (veja <a href="#pacotes-gravados-pelo-postext-14-ou-anterior">Pacotes gravados pelo postext 1.4 ou anterior</a>). Os títulos, as legendas, as notas e as células de tabela quebram em <code>{'\\\\'}</code> nos dois casos.</td>
     </tr>
     <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td>não definido</td>
+      <td>Paradas de tabulação de todos os parágrafos, itens de lista e citações: para onde uma tabulação (<code>:tab</code>, ou um caractere de tabulação no texto) leva as palavras que vêm depois dela. Um estilo de parágrafo ou um corpo de boxe que define as suas próprias as substitui. Sem valor, um caractere de tabulação é um espaço entre palavras, como era antes, e um <code>:tab</code> sem parada para onde ir também. Veja <a href="#paradas-de-tabulação">Paradas de tabulação</a>. Desde o postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td>não definido</td>
+      <td>Paradas padrão a cada intervalo a partir do início da medida, depois da última de <code>tabStops</code>. Sem valor, uma tabulação depois da última parada é um espaço entre palavras. Desde o postext 1.23.</td>
+    </tr>
+    <tr>
       <td><code>blockquote</code></td>
       <td><code>BlockquoteConfig</code></td>
       <td>veja abaixo</td>
@@ -1594,6 +1606,69 @@ Uma configuração guardada antes destes ajustes (`configVersion` 8 ou anterior)
 
 No Sandbox, estas opções formam o grupo **Verso** da seção **Texto do corpo**.
 
+
+### Paradas de tabulação
+
+`bodyText.tabStops` lista as paradas para onde vai uma tabulação: `:tab`, ou um caractere de tabulação num parágrafo que tem paradas (veja [Formato do documento › Tabulações e paradas de tabulação](/pt/docs/document-format#tabulações-e-paradas-de-tabulação) para a marcação e para como uma linha é composta). O `tabStops` de um estilo de parágrafo as substitui nos seus parágrafos, e o `body.tabStops` de um estilo de boxe dentro dos seus boxes; uma lista vazia não define nenhuma. Cada parada é um `TabStop`:
+
+```ts
+bodyText: {
+  tabStops: [
+    { position: { value: 30, unit: 'mm' } },
+    { position: 'end', align: 'end', leader: '.', leaderGap: { value: 2, unit: 'pt' } },
+  ],
+  tabInterval: { value: 10, unit: 'mm' },
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>{"Dimension | 'end' | `${number}%`"}</code></td>
+      <td>obrigatório</td>
+      <td>Onde fica a parada, a partir da borda inicial da medida do parágrafo (depois do <code>indent</code> de um estilo de parágrafo; <code>em</code> é o corpo do próprio parágrafo): um comprimento, <code>'end'</code> para a borda final da medida, ou uma porcentagem da medida (<code>'50%'</code>). No texto da direita para a esquerda, a borda inicial é a da direita.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'start' | 'end' | 'center' | 'decimal'</code></td>
+      <td><code>'start'</code></td>
+      <td>Como o texto depois da tabulação fica na parada: começa nela, termina nela (o texto até a próxima tabulação ou até o fim do parágrafo), fica centralizado nela ou põe nela o seu separador decimal (um trecho sem separador termina nela).</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td><code>string</code></td>
+      <td>nenhum</td>
+      <td>O preenchimento, repetido no espaço antes da parada: <code>'.'</code>, <code>'. '</code>, <code>'·'</code>, <code>'_'</code>, <code>'-'</code> ou qualquer texto curto, na fonte e na cor do parágrafo; <code>'rule'</code> traça uma linha um pouco abaixo da linha de base. O preenchimento termina rente ao fim do seu espaço, de modo que os preenchimentos de várias linhas ficam alinhados. É medido como uma sequência inteira, como a linha de pontos de uma linha do sumário.</td>
+    </tr>
+    <tr>
+      <td><code>leaderGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Espaço mantido entre o preenchimento e o texto de cada lado, como o <code>leader.gap</code> do sumário. Nenhum antes do preenchimento quando a tabulação abre a sua linha, nenhum depois dele quando nada vem em seguida.</td>
+    </tr>
+    <tr>
+      <td><code>decimalChar</code></td>
+      <td><code>string</code></td>
+      <td>o do idioma do documento</td>
+      <td>O separador em que uma parada <code>'decimal'</code> se alinha: <code>.</code> em inglês, chinês, japonês e árabe, <code>,</code> em espanhol, catalão, português, francês, alemão e outros.</td>
+    </tr>
+  </tbody>
+</table>
+
+`tabInterval` acrescenta paradas a cada intervalo a partir do início da medida, depois da última parada da lista; sem ele, uma tabulação depois da última parada é um espaço entre palavras. Um caractere de tabulação digitado no texto só é uma tabulação num parágrafo cujo estilo tem paradas ou um intervalo, próprios ou do corpo; em qualquer outro lugar continua sendo o espaço entre palavras que sempre foi, de modo que um documento salvo é diagramado como antes e não precisa de fixação.
+
+As paradas são verificadas com o resto da configuração (veja [Avisos de configuração](#avisos-de-configuração)): uma chave desconhecida numa parada (`leaders`) é avisada como `unknownConfigKey`, com a chave mais próxima; um `align` que não é nenhuma das quatro palavras, como `unknownConfigValue`, e a parada é composta como `'start'`; uma `position` que não é um comprimento, `'end'` nem uma porcentagem, como `unknownConfigValue` com `used: 'none'`, e a parada é deixada de fora.
+
+A cor e a fonte do preenchimento são as do parágrafo; ainda não há uma configuração própria para elas.
 
 ### Uma família por `fontFamily`
 
@@ -5245,6 +5320,18 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>não definido</td>
       <td>Se a <a href="#numeração-de-linhas">numeração de linhas</a> conta as linhas dos parágrafos. Não definido: são contadas quando <code>lineNumbers.count</code> é <code>'all'</code>, e num poema composto no estilo quando se contam versos. <code>true</code>: são contadas também com <code>'verse'</code>, e dentro de um boxe, cujo texto de outro modo nunca é contado. <code>false</code>: nunca são contadas. Desde postext 1.23.</td>
     </tr>
+    <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td><code>bodyText.tabStops</code></td>
+      <td>Paradas de tabulação dos parágrafos do estilo (veja <a href="#paradas-de-tabulação">Paradas de tabulação</a>), medidas a partir do <code>indent</code> do estilo. Um caractere de tabulação no texto deles é uma tabulação quando o estilo tem paradas ou um intervalo, próprios ou do corpo. Sem valor: as do corpo; uma lista vazia não define nenhuma. Desde postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>bodyText.tabInterval</code></td>
+      <td>Paradas padrão depois da última de <code>tabStops</code>. Sem valor: o do corpo. Desde postext 1.23.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5275,6 +5362,29 @@ paragraphStyles: [
 ```
 
 Um verso em `verse-indented` começa a 1,5 em e a sua continuação a 4 em, na altura das continuações dos versos em `verse`. Sem `indent`, um estilo pode recuar a primeira linha ou pendurar as outras, não as duas coisas: `firstLineIndent` é ignorado assim que `hangingIndent` é definido.
+
+Um cardápio põe cada preço rente ao fim da medida, atrás de uma linha de pontos:
+
+```ts
+paragraphStyles: [
+  {
+    id: 'menu',
+    textAlign: 'left',
+    firstLineIndent: { value: 0, unit: 'em' },
+    tabStops: [{ position: 'end', align: 'end', leader: '. ' }],
+  },
+],
+```
+
+```md
+:::paragraphs{style="menu"}
+Sopa de cebola :tab 8,50
+
+Pargo grelhado com erva-doce e limão :tab 21,00
+:::
+```
+
+Os pontos de todas as linhas terminam a meio em do preço (`leaderGap`). Um prato longo demais para a sua linha quebra, e a última linha dele mantém o preenchimento e o preço; quando o preço não cabe ao lado da última palavra, essa palavra desce com ele.
 
 ### O contêiner `:::paragraphs`
 
@@ -5611,9 +5721,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
       <td>herda <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>Tipografia dos parágrafos e itens de lista dentro do boxe. Todo campo não definido herda o texto do corpo; <code>italicColor</code> define a cor dos trechos em itálico (uma citação em destaque em itálico na cor do boxe). <code>fontWeight</code> / <code>boldFontWeight</code> definem os pesos dos trechos regulares e em negrito; <code>italic</code> compõe o boxe em itálico, com os trechos <code>*…*</code> voltando ao redondo; <code>smallCaps</code> o compõe em versaletes. Veja <a href="#tipografia-dentro-de-um-boxe">Tipografia dentro de um boxe</a> para o que mais o texto do boxe recebe.</td>
+      <td>Tipografia dos parágrafos e itens de lista dentro do boxe. Todo campo não definido herda o texto do corpo; <code>italicColor</code> define a cor dos trechos em itálico (uma citação em destaque em itálico na cor do boxe). <code>fontWeight</code> / <code>boldFontWeight</code> definem os pesos dos trechos regulares e em negrito; <code>italic</code> compõe o boxe em itálico, com os trechos <code>*…*</code> voltando ao redondo; <code>smallCaps</code> o compõe em versaletes; <code>tabStops</code> e <code>tabInterval</code> substituem os do corpo dentro do boxe (veja <a href="#paradas-de-tabulação">Paradas de tabulação</a>). Veja <a href="#tipografia-dentro-de-um-boxe">Tipografia dentro de um boxe</a> para o que mais o texto do boxe recebe.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -6249,7 +6359,7 @@ const config: PostextConfig = {
       <td><code>leader</code></td>
       <td>object</td>
       <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
-      <td><code>char</code> se repete no espaço entre o título e o número da página, alinhado à direita para que os pontos de entradas seguidas fiquem alinhados (<code>'. '</code> os espaça); <code>gap</code> é o espaço mínimo mantido entre o título e a linha de pontos. A linha de pontos leva quantos caracteres couberem, medidos como uma sequência inteira na sua fonte, então uma fonte que afasta pontos finais seguidos com kerning recebe menos pontos, em vez de pontos que chegam até o número da página. (Até o postext 1.4 a contagem vinha de um único ponto, e numa fonte assim a linha de pontos corria do título até o número.) Um título que não deixaria espaço para o rótulo quebra um pouco antes.</td>
+      <td><code>char</code> se repete no espaço entre o título e o número da página, alinhado à direita para que os pontos de entradas seguidas fiquem alinhados (<code>'. '</code> os espaça); <code>gap</code> é o espaço mínimo mantido entre o título e a linha de pontos. A linha de pontos leva quantos caracteres couberem, medidos como uma sequência inteira na sua fonte, então uma fonte que afasta pontos finais seguidos com kerning recebe menos pontos, em vez de pontos que chegam até o número da página. (Até o postext 1.4 a contagem vinha de um único ponto, e numa fonte assim a linha de pontos corria do título até o número.) Um título que não deixaria espaço para o rótulo quebra um pouco antes. Num PDF com tags, os pontos são artefatos, deixados de fora do texto extraído. O texto do corpo compõe as mesmas linhas de pontos nas suas <a href="#paradas-de-tabulação">paradas de tabulação</a>.</td>
     </tr>
     <tr>
       <td><code>subtitle</code></td>
@@ -8095,8 +8205,8 @@ Oito erros na própria configuração nunca passam em silêncio, e nenhuma opç�
 - **Coluna lateral sem espaço**: um `sideColumnPercent` de um layout `'oneAndHalf'` (o do documento, ou o do `layout` próprio de um estilo de título) que deixaria uma das colunas com menos de 1% da largura do conteúdo, ou que não é um número. As colunas são cortadas no valor mais próximo que as duas aceitam, e `used` informa qual é (`sideColumnPercentClamped`; veja o [layout `'oneAndHalf'`](#tipos-de-layout)).
 - **Número de colunas fora do intervalo**: um `columnCount` de um layout `'multiple'` (o do documento, ou o do `layout` próprio de um estilo de título) que não é um número inteiro de 3 a 8. A página é dividida no número válido mais próximo (3 para um valor que não é número), e `used` informa qual é (`columnCountClamped`; veja o [layout `'multiple'`](#tipos-de-layout)).
 - **Grade de caracteres grande demais**: uma `cjk.grid` com mais caracteres por linha ou linhas por página do que as margens permitem. A grade é montada com o máximo que cabe, e `used` informa esse número (`cjkGridClamped`; veja [Grade de caracteres](#grade-de-caracteres)).
-- **Configuração de título desconhecida**: uma chave que `headings`, `headings.balancing`, um nível de título, um estilo de título ou um estilo de parágrafo não tem: um `letterSpacng` com erro de digitação, um `tracking` emprestado de outra ferramenta, um `level` em um estilo de título, um `fontStyle: 'italic'` em um estilo de parágrafo (que usa `italic: true`). O motor a ignora (até o postext 1.4, fazia isso sem dizer nada). `value` é a chave, `used` fica vazio e `suggestion` indica a configuração mais próxima, quando há uma a uma ou duas letras de distância ou que difere só em maiúsculas e minúsculas (`unknownConfigKey`).
-- **Valor de configuração desconhecido**: uma configuração que aceita uma entre poucas palavras contendo outra, como `direction: 'right'` (ela aceita `auto`, `ltr` ou `rtl`). O motor lê o valor padrão no lugar, e `used` informa no que ele resultou: para `direction`, a direção do idioma do documento (`unknownConfigValue`). As palavras das configurações de quadrinhos também são verificadas ([Quadrinhos › Avisos de quadrinhos](/pt/docs/comics#avisos-de-quadrinhos)): `used` é o valor em que a configuração se resolveu (o padrão próprio de um estilo de balão, no caso de um estilo embutido), e `suggestion` indica a palavra mais próxima do valor, quando há uma próxima.
+- **Configuração de título desconhecida**: uma chave que `headings`, `headings.balancing`, um nível de título, um estilo de título ou um estilo de parágrafo não tem: um `letterSpacng` com erro de digitação, um `tracking` emprestado de outra ferramenta, um `level` em um estilo de título, um `fontStyle: 'italic'` em um estilo de parágrafo (que usa `italic: true`). Uma parada de tabulação é verificada da mesma forma (um `leaders` em vez de `leader`). O motor a ignora (até o postext 1.4, fazia isso sem dizer nada). `value` é a chave, `used` fica vazio e `suggestion` indica a configuração mais próxima, quando há uma a uma ou duas letras de distância ou que difere só em maiúsculas e minúsculas (`unknownConfigKey`).
+- **Valor de configuração desconhecido**: uma configuração que aceita uma entre poucas palavras contendo outra, como `direction: 'right'` (ela aceita `auto`, `ltr` ou `rtl`). O motor lê o valor padrão no lugar, e `used` informa no que ele resultou: para `direction`, a direção do idioma do documento (`unknownConfigValue`). Um `align` de uma parada de tabulação que não é nenhuma das suas quatro palavras é lido como `'start'`, e uma `position` que não é um comprimento, `'end'` nem uma porcentagem deixa a parada de fora (`used` é `'none'`). As palavras das configurações de quadrinhos também são verificadas ([Quadrinhos › Avisos de quadrinhos](/pt/docs/comics#avisos-de-quadrinhos)): `used` é o valor em que a configuração se resolveu (o padrão próprio de um estilo de balão, no caso de um estilo embutido), e `suggestion` indica a palavra mais próxima do valor, quando há uma próxima.
 - **Números de linha em texto vertical**: `lineNumbers.enabled: true` num documento composto na vertical (`layout.writingMode: 'vertical-rl'`). Páginas verticais não recebem números de linha, e `used` é `false` (`lineNumbersUnsupported`; veja [Numeração de linhas](#numeração-de-linhas)).
 
 O Sandbox os lista no painel **Verificações** com o caminho da configuração. No código, `buildDocument` os coloca no documento como `configWarnings` (ausente quando a configuração está limpa), e `collectConfigWarnings(config)` os devolve sem diagramar nada:

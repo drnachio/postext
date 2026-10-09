@@ -38,7 +38,7 @@ This reference is long. These are the main blocks:
 - [Page](#page) — size, margins, baseline grid, cut lines, [binding](#binding).
 - [Layout](#layout) — column count, gutters, rules, [vertical writing](#vertical-writing).
 - [Headers & footers](#headers--footers) — per-page text and rule elements with placeholders, parity, and alignment.
-- [Body text](#body-text) — typography, hyphenation, orphans and widows.
+- [Body text](#body-text) — typography, hyphenation, tab stops, orphans and widows.
 - [Document language](#document-language) — the top-level `locale`: hyphenation fallback, built-in resource types and the continuation strings of tables and split callouts, the language tagged into an accessible PDF; the [digits](#document-digits) (`numerals`) and the [text direction](#text-direction) (`direction`) it implies; and the [languages and scripts](#languages-and-scripts) Postext sets. The guide to right-to-left books is [Arabic layout](/en/docs/arabic-layout).
 - [East Asian typography](#east-asian-typography) — `cjk`: the regional conventions and line breaking of Chinese, Japanese and Korean text, how their justified lines are spread, punctuation widths and hanging, the space between Han and Latin, the character grid, upright numbers in vertical text, and the marks, ruby, warichu notes and kanbun marks. The guides to all of it are [Chinese layout](/en/docs/chinese-layout) and [Japanese layout](/en/docs/japanese-layout).
 - [Headings](#headings) — shared defaults and H1–H6 overrides.
@@ -1465,6 +1465,18 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>Read a backslash that ends a source line, and <code>{'\\\\'}</code> before a space, as a forced line break inside a paragraph, a quotation or a list item (CommonMark's hard break): the next words start a new line of the same paragraph, and the line before is set at its natural width, as a last line is. A backslash ending the paragraph prints, and two spaces at the end of a line are no break (see <a href="/en/docs/document-format#line-breaks">Document format › Line breaks</a>). <code>false</code> keeps the 1.22 reading: the backslashes print and the lines join with a space; configurations stored earlier whose text has such a backslash read with it (see <a href="#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>). Titles, captions, notes and table cells break at <code>{'\\\\'}</code> either way.</td>
     </tr>
     <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td>unset</td>
+      <td>Tab stops of every paragraph, list item and quotation: where a tab (<code>:tab</code>, or a tab character in the text) sends the words after it. A paragraph style or a callout body that sets its own replaces them. Unset, a tab character is a word space, as it was before, and a <code>:tab</code> with no stop to go to is one too. See <a href="#tab-stops">Tab stops</a>. Since postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td>unset</td>
+      <td>Default stops every interval from the start of the measure, past the last of <code>tabStops</code>. Unset, a tab past the last stop is a word space. Since postext 1.23.</td>
+    </tr>
+    <tr>
       <td><code>blockquote</code></td>
       <td><code>BlockquoteConfig</code></td>
       <td>see below</td>
@@ -1594,6 +1606,69 @@ A configuration stored before these settings (`configVersion` 8 or older) that l
 
 In the Sandbox these are the **Verse** group of the Body text section.
 
+
+### Tab stops
+
+`bodyText.tabStops` lists the stops a tab goes to: `:tab`, or a tab character in a paragraph that has stops (see [Document format › Tabs and tab stops](/en/docs/document-format#tabs-and-tab-stops) for the markup and how a line is set). A paragraph style's `tabStops` replace them for its paragraphs and a callout style's `body.tabStops` inside its boxes; an empty list sets none. Each stop is a `TabStop`:
+
+```ts
+bodyText: {
+  tabStops: [
+    { position: { value: 30, unit: 'mm' } },
+    { position: 'end', align: 'end', leader: '.', leaderGap: { value: 2, unit: 'pt' } },
+  ],
+  tabInterval: { value: 10, unit: 'mm' },
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>{"Dimension | 'end' | `${number}%`"}</code></td>
+      <td>required</td>
+      <td>Where the stop stands, from the start edge of the paragraph's measure (after a paragraph style's <code>indent</code>; <code>em</code> is the paragraph's own size): a length, <code>'end'</code> for the end edge of the measure, or a share of the measure (<code>'50%'</code>). In right-to-left text the start edge is the right one.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'start' | 'end' | 'center' | 'decimal'</code></td>
+      <td><code>'start'</code></td>
+      <td>How the text after the tab sits at the stop: it starts there, ends there (the text up to the next tab or the end of the paragraph), is centred on it, or has its decimal separator on it (a run with none ends there).</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td><code>string</code></td>
+      <td>none</td>
+      <td>Repeated over the room before the stop: <code>'.'</code>, <code>'. '</code>, <code>'·'</code>, <code>'_'</code>, <code>'-'</code> or any short text, in the paragraph's face and colour; <code>'rule'</code> draws a line a little under the baseline. The leader ends flush with the end of its room, so the leaders of several lines line up. It is measured as a whole run, as a contents row's is.</td>
+    </tr>
+    <tr>
+      <td><code>leaderGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Room kept between the leader and the text on either side, as the contents' <code>leader.gap</code>. None before the leader when the tab opens its line, none after it when nothing follows.</td>
+    </tr>
+    <tr>
+      <td><code>decimalChar</code></td>
+      <td><code>string</code></td>
+      <td>the document language's</td>
+      <td>The separator a <code>'decimal'</code> stop aligns on: <code>.</code> in English, Chinese, Japanese and Arabic, <code>,</code> in Spanish, Catalan, Portuguese, French, German and others.</td>
+    </tr>
+  </tbody>
+</table>
+
+`tabInterval` adds stops every interval from the start of the measure, past the last stop of the list; without it a tab past the last stop is a word space. A tab character typed in the text is a tab only in a paragraph whose style has stops or an interval, its own or the body's; everywhere else it stays the word space it always was, so a stored document lays out as before and needs no pin.
+
+The stops are checked with the rest of the configuration (see [Configuration warnings](#configuration-warnings)): an unknown key in a stop (`leaders`) is reported as `unknownConfigKey` with the key it is closest to; an `align` that is none of the four as `unknownConfigValue`, and the stop is set as `'start'`; a `position` that is no length, `'end'` or percentage as `unknownConfigValue` with `used: 'none'`, and the stop is left out.
+
+The leader colour and face are the paragraph's; there is no setting of their own yet.
 
 ### One family per `fontFamily`
 
@@ -5243,6 +5318,18 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>unset</td>
       <td>Whether <a href="#line-numbers">line numbers</a> count the paragraphs' lines. Unset: counted when <code>lineNumbers.count</code> is <code>'all'</code>, and in a poem set in the style when it counts verse. <code>true</code>: counted under <code>'verse'</code> too, and inside a callout, whose text is otherwise never counted. <code>false</code>: never counted. Since postext 1.23.</td>
     </tr>
+    <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td><code>bodyText.tabStops</code></td>
+      <td>Tab stops of the style's paragraphs (see <a href="#tab-stops">Tab stops</a>), measured from the style's <code>indent</code>. A tab character in their text is a tab when the style has stops or an interval, its own or the body's. Unset: the body's; an empty list sets none. Since postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>bodyText.tabInterval</code></td>
+      <td>Default stops past the last of <code>tabStops</code>. Unset: the body's. Since postext 1.23.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5273,6 +5360,29 @@ paragraphStyles: [
 ```
 
 A line in `verse-indented` starts at 1.5 em and its turnover at 4 em, level with the turnovers of the lines in `verse`. Without `indent` a style can indent the first line or hang the others, not both: `firstLineIndent` is ignored once `hangingIndent` is set.
+
+A menu sets each price flush with the end of the measure, behind a dot leader:
+
+```ts
+paragraphStyles: [
+  {
+    id: 'menu',
+    textAlign: 'left',
+    firstLineIndent: { value: 0, unit: 'em' },
+    tabStops: [{ position: 'end', align: 'end', leader: '. ' }],
+  },
+],
+```
+
+```md
+:::paragraphs{style="menu"}
+Onion soup :tab 8.50
+
+Grilled sea bream with fennel and lemon :tab 21.00
+:::
+```
+
+The dots of every line end half an em before the price (`leaderGap`). A dish too long for its line wraps, and its last line keeps the leader and the price; when the price does not fit beside the last word, that word goes down with it.
 
 ### The `:::paragraphs` container
 
@@ -5609,9 +5719,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
       <td>inherits <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>Typography of the paragraphs and list items inside the box. Every field inherits the body text when unset; <code>italicColor</code> sets the colour of italic runs (a pull quote in italics in the box's colour). <code>fontWeight</code> / <code>boldFontWeight</code> set the weights of the regular and bold runs; <code>italic</code> sets the box in italics, with <code>*…*</code> runs turning upright; <code>smallCaps</code> sets it in small capitals. See <a href="#typography-inside-a-box">Typography inside a box</a> for what else the box's text takes.</td>
+      <td>Typography of the paragraphs and list items inside the box. Every field inherits the body text when unset; <code>italicColor</code> sets the colour of italic runs (a pull quote in italics in the box's colour). <code>fontWeight</code> / <code>boldFontWeight</code> set the weights of the regular and bold runs; <code>italic</code> sets the box in italics, with <code>*…*</code> runs turning upright; <code>smallCaps</code> sets it in small capitals; <code>tabStops</code> and <code>tabInterval</code> replace the body's inside the box (see <a href="#tab-stops">Tab stops</a>). See <a href="#typography-inside-a-box">Typography inside a box</a> for what else the box's text takes.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -6247,7 +6357,7 @@ const config: PostextConfig = {
       <td><code>leader</code></td>
       <td>object</td>
       <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
-      <td><code>char</code> is repeated across the gap between the title and the page number, right-aligned so the dots of consecutive entries line up (<code>'. '</code> spaces them out); <code>gap</code> is the least room kept between the title and the leader. The leader takes as many characters as fit, measured as a whole run in its face, so a face that kerns consecutive full stops apart gets fewer dots rather than dots that reach the page number. (Up to postext 1.4 the count was taken from one dot, and in such a face the leader ran from the title into the number.) A title that would leave the label no room wraps a little earlier.</td>
+      <td><code>char</code> is repeated across the gap between the title and the page number, right-aligned so the dots of consecutive entries line up (<code>'. '</code> spaces them out); <code>gap</code> is the least room kept between the title and the leader. The leader takes as many characters as fit, measured as a whole run in its face, so a face that kerns consecutive full stops apart gets fewer dots rather than dots that reach the page number. (Up to postext 1.4 the count was taken from one dot, and in such a face the leader ran from the title into the number.) A title that would leave the label no room wraps a little earlier. In a tagged PDF the dots are artifacts, left out of the extracted text. Body text sets the same leaders at its <a href="#tab-stops">tab stops</a>.</td>
     </tr>
     <tr>
       <td><code>subtitle</code></td>
@@ -8093,8 +8203,8 @@ Eight mistakes in the configuration itself are never silent, and no toggle hides
 - **Side column with no room** — a `'oneAndHalf'` layout's `sideColumnPercent` (the document's, or a heading style's own `layout`) that would leave one of the columns under 1% of the content width, or that is not a number. The columns are cut at the nearest value both can take, and `used` names it (`sideColumnPercentClamped`; see the [`'oneAndHalf'` layout](#layout-types)).
 - **Column count out of range** — a `'multiple'` layout's `columnCount` (the document's, or a heading style's own `layout`) that is not a whole number from 3 to 8. The page is cut into the nearest count that is (3 for a value that is not a number), and `used` names it (`columnCountClamped`; see the [`'multiple'` layout](#layout-types)).
 - **Character grid too large** — a `cjk.grid` with more characters per line or lines per page than the margins leave room for. The grid is set with the most that fit, and `used` names the number (`cjkGridClamped`; see [Character grid](#character-grid)).
-- **Unknown heading setting** — a key that `headings`, `headings.balancing`, a heading level, a heading style or a paragraph style does not have: a misspelt `letterSpacng`, a `tracking` borrowed from another tool, a `level` on a heading style, a `fontStyle: 'italic'` on a paragraph style (which takes `italic: true`). The engine ignores it (up to postext 1.4 it did so without a word). `value` is the key, `used` is empty, and `suggestion` names the setting it is closest to, when one is a letter or two away or differs only in case (`unknownConfigKey`).
-- **Unknown setting value** — a setting that takes one of a few words holding another, such as `direction: 'right'` (it takes `auto`, `ltr` or `rtl`). The engine reads the default instead, and `used` names what that came to: for `direction`, the direction of the document language (`unknownConfigValue`). The words of the comics settings are checked too ([Comics › Comic warnings](/en/docs/comics#comic-warnings)): `used` is the value the setting resolved to (a balloon style's own default, for a built-in style), and `suggestion` names the word the value is closest to, when one is close.
+- **Unknown heading setting** — a key that `headings`, `headings.balancing`, a heading level, a heading style or a paragraph style does not have: a misspelt `letterSpacng`, a `tracking` borrowed from another tool, a `level` on a heading style, a `fontStyle: 'italic'` on a paragraph style (which takes `italic: true`). A tab stop is checked the same way (a `leaders` for `leader`). The engine ignores it (up to postext 1.4 it did so without a word). `value` is the key, `used` is empty, and `suggestion` names the setting it is closest to, when one is a letter or two away or differs only in case (`unknownConfigKey`).
+- **Unknown setting value** — a setting that takes one of a few words holding another, such as `direction: 'right'` (it takes `auto`, `ltr` or `rtl`). The engine reads the default instead, and `used` names what that came to: for `direction`, the direction of the document language (`unknownConfigValue`). A tab stop's `align` that is none of its four words is read as `'start'`, and a `position` that is no length, `'end'` or percentage leaves the stop out (`used` is `'none'`). The words of the comics settings are checked too ([Comics › Comic warnings](/en/docs/comics#comic-warnings)): `used` is the value the setting resolved to (a balloon style's own default, for a built-in style), and `suggestion` names the word the value is closest to, when one is close.
 - **Line numbers in vertical text** — `lineNumbers.enabled: true` in a document set vertically (`layout.writingMode: 'vertical-rl'`). Vertical pages get no line numbers, and `used` is `false` (`lineNumbersUnsupported`; see [Line numbers](#line-numbers)).
 
 The Sandbox lists them in the **Checks** panel with the path of the setting. In code, `buildDocument` puts them on the document as `configWarnings` (absent when the configuration is clean), and `collectConfigWarnings(config)` returns them without laying anything out:

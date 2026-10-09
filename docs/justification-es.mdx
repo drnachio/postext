@@ -359,6 +359,14 @@ La propiedad `bodyText.optimalLineBreaking` (por defecto: `true`) controla qué 
 
 Cuando Knuth-Plass está activo y no produce cortes válidos (algo que puede ocurrir con columnas extremadamente estrechas o palabras más largas que el ancho de columna), el motor recurre automáticamente al corte voraz para ese párrafo.
 
+### Líneas con tabuladores
+
+Un párrafo con un tabulador (ver [Formato del documento › Tabuladores y tabulaciones](/es/docs/document-format#tabuladores-y-tabulaciones)) se compone línea a línea, como componen el texto tabulado los procesadores de texto e InDesign, nunca con Knuth-Plass, diga lo que diga `optimalLineBreaking`. Dónde cae un tabulador depende de hasta dónde ha llegado su línea, y la búsqueda óptima suma los anchos de cada línea candidata como si no fuera así. Lo mismo vale para el texto chino y japonés: un párrafo con un tabulador se corta entre caracteres según las reglas de corte de línea del documento, sin compresión de la puntuación ni justificación entre caracteres.
+
+En un párrafo justificado, una línea con un tabulador no se estira antes de su último tabulador, porque las tabulaciones fijan dónde empieza cada parte. Solo los espacios entre palabras que siguen al último tabulador absorben lo que falta, y solo si la línea no es la última del párrafo; una línea sin ningún espacio entre palabras tras su último tabulador se compone tal como cae. Las líneas en bandera no cambian. La línea anota que lleva un tabulador (`VDTLine.tabbed`); cada tabulador es un segmento de espacio que lleva su tabulación (`VDTLineSegment.tab`), y cada relleno, un segmento propio (`VDTLineSegment.leader`, `'text'` o `'rule'`).
+
+El equilibrado de columnas nunca recompone un párrafo así más flojo ni le aplica tracking: se queda como se midió, para que sus tabulaciones no se muevan.
+
 
 ### Chino, japonés y coreano
 
@@ -498,6 +506,7 @@ Una columna corta es a veces el resultado *correcto*, y el equilibrado sabe apar
 - La **última columna de una página** solo se equilibra cuando la página fluye de forma natural hacia la siguiente. Las páginas terminadas con `:::pagebreak`, con el `breakBefore` de un encabezado o con un inicio de capítulo conservan su última columna corta — un capítulo termina legítimamente a media página.
 - La **última página del documento** nunca se equilibra.
 - Una columna **sin ningún punto elástico utilizable** (sin encabezado elegible, final de lista ni párrafo recomponible) conserva su hueco antes que degradar la tipografía.
+- Un **párrafo con un tabulador** nunca se afloja ni recibe tracking (ver [Líneas con tabuladores](#líneas-con-tabuladores)).
 
 ```js
 const doc = buildDocument(content, {

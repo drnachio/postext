@@ -72,7 +72,7 @@ Postext reconeix set tipus de bloc de prosa, a més de les directives i les inse
     <tr>
       <td>Paràgraf</td>
       <td>Text pla en una o més línies</td>
-      <td>Les línies no buides i no especials consecutives s'uneixen amb un únic espai i s'emeten com un sol paràgraf. Entre dos caràcters xinesos o japonesos (ideogrames, kana, puntuació d'amplada completa, i cometes tipogràfiques, guions llargs o punts suspensius al costat d'aquests) el final de línia desapareix, com en CSS, de manera que un paràgraf xinès es pot tallar en qualsevol punt del codi font. Entre dos d'aquests signes (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) decideixen els caràcters que hi ha més enllà: el final de línia desapareix si un d'ells és xinès o japonès, i <code>“hello”⏎“bye”</code> conserva el seu espai. El coreà conserva el seu espai. Un salt de línia escrit al text no es conserva, tret que la línia acabi en una barra inversa (un salt de línia forçat, vegeu <a href="#salts-de-línia">Salts de línia</a>); una línia en blanc comença un paràgraf nou. Un poema, les línies del qual han de quedar tal com s'escriuen, va en un bloc <a href="#verse"><code>:::verse</code></a>.</td>
+      <td>Les línies no buides i no especials consecutives s'uneixen amb un únic espai i s'emeten com un sol paràgraf. Entre dos caràcters xinesos o japonesos (ideogrames, kana, puntuació d'amplada completa, i cometes tipogràfiques, guions llargs o punts suspensius al costat d'aquests) el final de línia desapareix, com en CSS, de manera que un paràgraf xinès es pot tallar en qualsevol punt del codi font. Entre dos d'aquests signes (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) decideixen els caràcters que hi ha més enllà: el final de línia desapareix si un d'ells és xinès o japonès, i <code>“hello”⏎“bye”</code> conserva el seu espai. El coreà conserva el seu espai. Un salt de línia escrit al text no es conserva, tret que la línia acabi en una barra inversa (un salt de línia forçat, vegeu <a href="#salts-de-línia">Salts de línia</a>); una línia en blanc comença un paràgraf nou. Un tabulador escrit al text també és un espai entre paraules, tret que l'estil del paràgraf fixi tabulacions; <code>:tab</code> sempre és un tabulador (vegeu <a href="#tabuladors-i-tabulacions">Tabuladors i tabulacions</a>). Un poema, les línies del qual han de quedar tal com s'escriuen, va en un bloc <a href="#verse"><code>:::verse</code></a>.</td>
     </tr>
     <tr>
       <td>Cita (blockquote)</td>
@@ -764,7 +764,12 @@ El marcatge en línia es reconeix dins de qualsevol bloc de text (encapçalament
     <tr>
       <td>Xip</td>
       <td><code>:chip[texto]</code></td>
-      <td>Un fragment de text en una caixa que passa de línia com una unitat: un banc de paraules, una tecla, una etiqueta. En defineixen lâestil els <code>chipStyles</code>; vegeu <a href="#xips-en-línia">Xips en línia</a>.</td>
+      <td>Un fragment de text en una caixa que passa de línia com una unitat: un banc de paraules, una tecla, una etiqueta. En defineixen l'estil els <code>chipStyles</code>; vegeu <a href="#xips-en-línia">Xips en línia</a>.</td>
+    </tr>
+    <tr>
+      <td>Tabulador</td>
+      <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
+      <td>Porta les paraules que el segueixen a la tabulació següent: una de les tabulacions de l'estil del paràgraf, o la que fixen els seus atributs. Un caràcter de tabulació escrit al text només és un tabulador on l'estil fixa tabulacions. Vegeu <a href="#tabuladors-i-tabulacions">Tabuladors i tabulacions</a>.</td>
     </tr>
     <tr>
       <td>Matemàtiques en línia</td>
@@ -831,6 +836,72 @@ L'informe de la :smallcaps[unesco] i les pautes de l':smallcaps[oms].
 - **On.** Paràgrafs, elements de llista, cites, requadres, cel·les de taula, llegendes i notes, i encapçalaments mentre `headings.inlineMarks` estigui activat (ho està per defecte); si es desactiva, el marcatge s'elimina de l'encapçalament i el text s'imprimeix tal qual.
 - **Paràgrafs sencers.** Un estil de paràgraf o el cos d'un requadre amb `smallCaps: true` componen així tot el seu text (vegeu [Estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)).
 - **Text.** El canvas, l'HTML i el PDF porten les lletres tal com es pinten: en copiar `:smallcaps[Hamlet]` s'obté «HAMLET».
+
+### Tabuladors i tabulacions
+
+Un tabulador porta les paraules que el segueixen a una tabulació de la línia: el preu d'un plat arran del final de la mesura darrere d'una filera de punts, l'actor després del paper en un repartiment, la puntuació d'una pregunta d'examen al marge. Escriu `:tab` on va el tabulador; els espais que l'envolten hi queden inclosos. Les tabulacions es fixen a la configuració: `bodyText.tabStops` per a tots els paràgrafs, elements de llista i cites, els `tabStops` d'un estil de paràgraf per als paràgrafs d'un grup `:::paragraphs`, i el `body.tabStops` d'un estil de requadre dins de les seves caixes (vegeu [Configuració › Tabulacions](/ca/docs/configuration#tabulacions)). Un menú amb els preus arran del final de la mesura, darrere de punts:
+
+```ts
+paragraphStyles: [
+  { id: 'menu', firstLineIndent: { value: 0, unit: 'em' }, tabStops: [{ position: 'end', align: 'end', leader: '. ' }] },
+],
+```
+
+```markdown
+:::paragraphs{style="menu"}
+Sopa de ceba :tab 8,50
+
+Orada a la brasa amb fonoll i llimona :tab 21,00
+:::
+```
+
+`:tab{…}` fixa una tabulació només per a aquell tabulador, sense cap estil: el buit d'un formulari fins al final de la línia, un import alineat a la coma decimal.
+
+```markdown
+Nom i cognoms :tab{at=end leader=rule}
+
+Total a pagar :tab{at=80% align=decimal} 1.234,50
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Atribut</th>
+      <th>Significat</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>at</code></td>
+      <td>On és la tabulació, des de la vora d'inici de la mesura del paràgraf: una longitud (<code>120mm</code>, <code>4cm</code>, <code>2em</code>; un nombre sol és en punts), <code>end</code> per al final de la mesura, o una part de la mesura (<code>60%</code>). Sense <code>at</code>, <code>:tab&#123;…&#125;</code> va a les tabulacions de l'estil, com un <code>:tab</code> sol.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>start</code> (per defecte): el text que segueix el tabulador comença a la tabulació. <code>end</code>: hi acaba (el text fins al tabulador següent o fins al final del paràgraf). <code>center</code>: s'hi centra. <code>decimal</code>: el seu separador decimal queda a la tabulació; un tram sense separador hi acaba.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>El farciment: un text que es repeteix al llarg de l'espai abans de la tabulació, <code>"."</code>, <code>". "</code>, <code>"·"</code>, <code>"_"</code>, <code>"-"</code> o un altre text breu, amb la lletra i el color del paràgraf. <code>rule</code> traça una línia una mica per sota de la línia de base, el buit d'un formulari. Per defecte, cap.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>L'espai que es deixa entre el farciment i el text a cada costat. Per defecte <code>0.5em</code> del cos del paràgraf; un nombre sol és en punts.</td>
+    </tr>
+    <tr>
+      <td><code>decimal</code></td>
+      <td>El separador amb què s'alinea una tabulació <code>decimal</code>. Per defecte, el de la llengua del document: <code>.</code> en anglès, xinès, japonès i àrab, <code>,</code> en castellà, català, portuguès, francès, alemany i altres.</td>
+    </tr>
+  </tbody>
+</table>
+
+- **On va un tabulador.** A la primera tabulació que queda més enllà del text que el precedeix, entre les que segueixen la que ha pres el tabulador anterior de la línia, de manera que el segon tabulador d'una línia sol anar a la segona tabulació. Passada l'última, `tabInterval` fixa més tabulacions a cada interval des de l'inici de la mesura; sense aquest valor, el tabulador és un espai entre paraules.
+- **Caràcters de tabulació.** Un tabulador escrit al text (U+0009) només és un tabulador en un paràgraf l'estil del qual fixa `tabStops` o `tabInterval`. A tot arreu més és l'espai entre paraules que sempre ha estat, de manera que un document escrit amb tabuladors en lloc d'espais conserva la seva composició. Diversos caràcters de tabulació seguits avancen tantes tabulacions. Un tabulador al començament d'una línia del text es retalla amb els altres blancs inicials de la línia: escriu `:tab` per començar una línia en una tabulació.
+- **El que queda com a text.** Un `:tab` seguit d'una lletra (`3:table`), i un `:tab` dins de codi en línia, d'una fórmula, de l'adreça d'un enllaç o dels atributs d'una directiva.
+- **On.** Paràgrafs, elements de llista, cites, requadres i grups `:::paragraphs`. Els encapçalaments, els peus, les cel·les de taula i el text dels dissenys (obertures, capçaleres) no tenen tabulacions.
+- **Text que passa de la tabulació.** Quan el text anterior a un tabulador ja ha passat totes les tabulacions que queden a la seva línia, una tabulació `end`, `center` o `decimal` s'emporta l'última paraula anterior al tabulador a la línia següent juntament amb el text de la tabulació, i el text anterior es compon més estret, com una línia de l'índex general fa saltar el títol per conservar el número de pàgina. Una tabulació `start` talla la línia abans del tabulador, i el text que el segueix comença la línia següent a la seva tabulació. Un tabulador que obre la seva línia i tampoc no troba cap tabulació no ocupa espai.
+- **Farciments.** Un farciment omple l'espai que hi ha abans de la seva tabulació i acaba arran del final d'aquest espai, de manera que els punts de diverses línies queden alineats sigui quin sigui el text que els precedeix. `gap` el separa del text pels dos costats; no hi ha separació abans quan el tabulador obre la línia, ni després quan no el segueix res.
+- **Tall de línies.** Un paràgraf amb un tabulador es compon línia a línia, mai amb Knuth-Plass. En text justificat només els espais entre paraules que segueixen l'últim tabulador d'una línia absorbeixen el sobrant, i l'última línia del paràgraf no s'estira (vegeu [Partició de mots i justificació › Línies amb tabulador](/ca/docs/justification#línies-amb-tabulador)). Un paràgraf centrat o alineat a la dreta compon les línies amb tabulador des del costat d'inici, perquè les tabulacions són posicions de la mesura. De dreta a esquerra, les tabulacions es mesuren des de la dreta i una tabulació `end` queda a l'esquerra (vegeu [Composició àrab](/ca/docs/arabic-layout#índex-general-i-índex-analític)). En text vertical un tabulador és un espai entre paraules, i un `:tab` hi genera l'avís de contingut `tabInVerticalText`.
+- **Text i sortides.** El text pla porta un caràcter de tabulació (`\t`) a cada tabulador; els farciments no són text, i les còpies, les cerques i el mapa del text font els ometen. El canvas, el visor HTML i l'EPUB de maquetació fixa els pinten (ocults als lectors de pantalla a l'HTML); un PDF etiquetat els marca com a artefactes, així que el seu text diu `Sopa de ceba 8,50`. L'EPUB adaptable no pot conservar les tabulacions exactes: cada línia d'un paràgraf amb tabuladors es converteix en una fila de les parts que hi ha entre els seus tabuladors, on una tabulació `end`, `center` o `decimal`, o una amb farciment, empeny la part següent al final de la fila (el seu farciment, una vora puntejada o contínua), i una tabulació `start` manté la part anterior amb la seva amplada impresa. Una exportació a Word escriu `:tab` com un tabulador de Word, i la importació de Word torna a llegir un tabulador del text corrent com a `:tab` amb la tabulació que Word li havia fixat (vegeu [Sandbox › Documents de Word](/ca/docs/sandbox#documents-de-word)).
 
 ### Orientació en text vertical
 

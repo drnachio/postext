@@ -38,7 +38,7 @@ const document = buildDocument(content, {
 - [ページ](#ページ)：サイズ、余白、ベースライングリッド、トンボ、[綴じ](#綴じ)。
 - [レイアウト](#レイアウト)：段数、段間、段間罫、[縦組み](#縦組み)。
 - [柱とノンブル](#柱とノンブル)：ページごとに置くテキスト要素と罫線要素。プレースホルダー、奇偶、そろえ位置を指定できます。
-- [本文](#本文)：文字組み、ハイフネーション、オーファンとウィドウ。
+- [本文](#本文)：文字組み、ハイフネーション、タブ位置、オーファンとウィドウ。
 - [文書の言語](#文書の言語)：最上位の`locale`。ハイフネーションのフォールバック、組み込みのリソースタイプ、表と分割された囲みの続きを示す文字列、アクセシブルなPDFにタグ付けされる言語を決めます。そこから導かれる[数字](#文書の数字)（`numerals`）と[テキストの方向](#テキストの方向)（`direction`）、Postextが組める[言語と文字体系](#言語と文字体系)もここで説明します。右から左に組む本のガイドは[アラビア語の組版](/ja/docs/arabic-layout)です。
 - [東アジアの組版](#東アジアの組版)：`cjk`。中国語・日本語・韓国語のテキストの地域ごとの慣習と行分割、両端そろえの行の空け方、約物の幅とぶら下げ、漢字とラテン文字の間のスペース、文字グリッド、縦組みでの数字の正立、そして圏点、ルビ、割注、漢文の訓点。全体のガイドは[中国語の組版](/ja/docs/chinese-layout)と[日本語の組版](/ja/docs/japanese-layout)です。
 - [見出し](#見出し)：共通の既定値と、H1〜H6ごとの上書き。
@@ -1465,6 +1465,18 @@ interface ElementPlacement {
       <td>原稿の行末のバックスラッシュと、後ろにスペースのある<code>{'\\\\'}</code>を、段落・引用・リスト項目の中の強制改行（CommonMarkのハードブレーク）として読みます。続く語は同じ段落の新しい行から始まり、改行の前の行は最終行と同じく自然な幅で組みます。段落の末尾のバックスラッシュはそのまま印字され、行末の2つのスペースは改行になりません（<a href="/ja/docs/document-format#段落内の改行">文書形式 › 段落内の改行</a>を参照）。<code>false</code>にすると1.22の読み方になり、バックスラッシュはそのまま印字され、行はスペースを挟んでつながります。それより前に保存され、文章にこのようなバックスラッシュを含む設定はこの値で読まれます（<a href="#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。見出し、キャプション、注、表のセルは、どちらの場合も<code>{'\\\\'}</code>で改行します。</td>
     </tr>
     <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td>未設定</td>
+      <td>すべての段落、リスト項目、引用のタブ位置です。タブ（<code>:tab</code>、または本文中のタブ文字）が、その後の語を送る先です。独自のタブ位置を設定した段落スタイルや囲みの本文では、そちらに置き換わります。未設定なら、タブ文字は従来どおり語間スペースで、行き先のタブ位置がない<code>:tab</code>も語間スペースになります。<a href="#タブ位置">タブ位置</a>を参照してください。postext 1.23から使えます。</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td>未設定</td>
+      <td><code>tabStops</code>の最後のタブ位置より先に、行長の始端から一定の間隔で置く既定のタブ位置です。未設定なら、最後のタブ位置より先のタブは語間スペースになります。postext 1.23から使えます。</td>
+    </tr>
+    <tr>
       <td><code>blockquote</code></td>
       <td><code>BlockquoteConfig</code></td>
       <td>後述</td>
@@ -1594,6 +1606,69 @@ bodyText: {
 
 Sandboxでは、これらは**本文**セクションの**詩**グループにあります。
 
+
+### タブ位置
+
+`bodyText.tabStops`は、タブ（`:tab`、またはタブ位置のある段落の中のタブ文字）の行き先となるタブ位置を並べます（記法と行の組み方は[文書形式 › タブとタブ位置](/ja/docs/document-format#タブとタブ位置)を参照）。段落スタイルの`tabStops`はそのスタイルの段落について、囲みスタイルの`body.tabStops`は囲みの中で、これを置き換えます。空のリストはタブ位置を1つも設定しません。各タブ位置は`TabStop`です。
+
+```ts
+bodyText: {
+  tabStops: [
+    { position: { value: 30, unit: 'mm' } },
+    { position: 'end', align: 'end', leader: '.', leaderGap: { value: 2, unit: 'pt' } },
+  ],
+  tabInterval: { value: 10, unit: 'mm' },
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>{"Dimension | 'end' | `${number}%`"}</code></td>
+      <td>必須</td>
+      <td>タブ位置の場所で、段落の行長の始端から測ります（段落スタイルの<code>indent</code>の後から。<code>em</code>は段落自身の文字サイズです）。長さ、行長の終端を表す<code>'end'</code>、または行長に対する割合（<code>'50%'</code>）です。右から左のテキストでは、始端は右端です。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'start' | 'end' | 'center' | 'decimal'</code></td>
+      <td><code>'start'</code></td>
+      <td>タブの後のテキストをタブ位置にどう置くかです。そこから始めるか、そこで終えるか（次のタブまたは段落の終わりまでのテキスト）、そこを中心に置くか、小数点をそこに合わせるか（小数点のないテキストはそこで終わります）です。</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td><code>string</code></td>
+      <td>なし</td>
+      <td>タブ位置の手前の空きに繰り返す文字列です。<code>'.'</code>、<code>'. '</code>、<code>'·'</code>、<code>'_'</code>、<code>'-'</code>、または任意の短い文字列で、段落の書体と色で組みます。<code>'rule'</code>はベースラインの少し下に線を引きます。リーダーは空きの終わりにそろえて終わるので、複数の行のリーダーは縦にそろいます。目次の行のリーダーと同じく、ひと続きの文字列として計測します。</td>
+    </tr>
+    <tr>
+      <td><code>leaderGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>リーダーと両側のテキストとのあいだに確保するアキで、目次の<code>leader.gap</code>にあたります。タブが行頭にあるときはリーダーの前に、後に何も続かないときはリーダーの後にアキを入れません。</td>
+    </tr>
+    <tr>
+      <td><code>decimalChar</code></td>
+      <td><code>string</code></td>
+      <td>文書の言語のもの</td>
+      <td><code>'decimal'</code>のタブ位置がそろえる小数点の文字です。英語、中国語、日本語、アラビア語では<code>.</code>、スペイン語、カタルーニャ語、ポルトガル語、フランス語、ドイツ語などでは<code>,</code>です。</td>
+    </tr>
+  </tbody>
+</table>
+
+`tabInterval`は、リストの最後のタブ位置より先に、行長の始端から一定の間隔でタブ位置を加えます。これがなければ、最後のタブ位置より先のタブは語間スペースになります。本文に入力したタブ文字は、スタイル（そのスタイル自身または本文）にタブ位置か間隔がある段落でだけタブになります。それ以外の場所では従来どおり語間スペースなので、保存済みの文書はこれまでと同じに組まれ、固定の必要はありません。
+
+タブ位置は設定のほかの部分と一緒に検査されます（[設定の警告](#設定の警告)を参照）。タブ位置の不明なキー（`leaders`）は`unknownConfigKey`として、最も近いキーとともに報告されます。4つのどれでもない`align`は`unknownConfigValue`として報告され、タブ位置は`'start'`として組まれます。長さでも`'end'`でも割合でもない`position`は`used: 'none'`の`unknownConfigValue`として報告され、そのタブ位置は除外されます。
+
+リーダーの色と書体は段落のものです。リーダー専用の設定はまだありません。
 
 ### `fontFamily`には1つのファミリー
 
@@ -5243,6 +5318,18 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>未設定</td>
       <td><a href="#行番号">行番号</a>で段落の行を数えるかどうかです。未設定：<code>lineNumbers.count</code>が<code>'all'</code>のときと、詩の行を数えるときにこのスタイルで組んだ詩で数えます。<code>true</code>：<code>'verse'</code>でも数え、囲みの中でも数えます（囲みのテキストは、そうでなければ決して数えません）。<code>false</code>：決して数えません。postext 1.23から使えます。</td>
     </tr>
+    <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td><code>bodyText.tabStops</code></td>
+      <td>スタイルの段落のタブ位置で（<a href="#タブ位置">タブ位置</a>を参照）、スタイルの<code>indent</code>から測ります。段落のテキスト中のタブ文字は、スタイル自身または本文にタブ位置か間隔があればタブになります。未設定なら本文のものを使い、空のリストはタブ位置を1つも設定しません。postext 1.23から使えます。</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>bodyText.tabInterval</code></td>
+      <td><code>tabStops</code>の最後のタブ位置より先の既定のタブ位置です。未設定なら本文のものを使います。postext 1.23から使えます。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5273,6 +5360,29 @@ paragraphStyles: [
 ```
 
 `verse-indented`の行は1.5 emから始まり、折り返しは4 emから始まるため、`verse`の行の折り返しとそろいます。`indent`がなければ、スタイルは1行目を字下げするか、ほかの行をぶら下げるかのどちらかしかできません。`hangingIndent`を設定すると`firstLineIndent`は無視されます。
+
+メニューでは、各料理の値段を点のリーダーの後に置き、行長の終わりにそろえます。
+
+```ts
+paragraphStyles: [
+  {
+    id: 'menu',
+    textAlign: 'left',
+    firstLineIndent: { value: 0, unit: 'em' },
+    tabStops: [{ position: 'end', align: 'end', leader: '. ' }],
+  },
+],
+```
+
+```md
+:::paragraphs{style="menu"}
+オニオンスープ :tab 850
+
+真鯛のグリル、フェンネルとレモン添え :tab 2,100
+:::
+```
+
+どの行の点も、値段の二分手前で終わります（`leaderGap`）。行に収まらない長い料理名は折り返し、その最終行がリーダーと値段を保ちます。値段が最後の語の隣に収まらないときは、その語も一緒に次の行へ送られます。
 
 ### `:::paragraphs`コンテナー
 
@@ -5609,9 +5719,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
       <td><code>bodyText</code>を継承。<code>italic</code>/<code>smallCaps</code>は<code>false</code></td>
-      <td>囲みの中の段落とリスト項目の文字組みです。未設定のフィールドはすべて本文テキストを継承します。<code>italicColor</code>はイタリックの部分の色を設定します（囲みの色でイタリックにした引用文など）。<code>fontWeight</code>/<code>boldFontWeight</code>は通常と太字の部分のウェイトを設定します。<code>italic</code>は囲み全体をイタリックにし、<code>*…*</code>の部分は立体に戻ります。<code>smallCaps</code>は囲み全体をスモールキャピタルにします。囲みのテキストがほかに何を引き継ぐかは<a href="#囲みの中の文字組み">囲みの中の文字組み</a>を参照してください。</td>
+      <td>囲みの中の段落とリスト項目の文字組みです。未設定のフィールドはすべて本文テキストを継承します。<code>italicColor</code>はイタリックの部分の色を設定します（囲みの色でイタリックにした引用文など）。<code>fontWeight</code>/<code>boldFontWeight</code>は通常と太字の部分のウェイトを設定します。<code>italic</code>は囲み全体をイタリックにし、<code>*…*</code>の部分は立体に戻ります。<code>smallCaps</code>は囲み全体をスモールキャピタルにします。<code>tabStops</code>と<code>tabInterval</code>は囲みの中で本文のものを置き換えます（<a href="#タブ位置">タブ位置</a>を参照）。囲みのテキストがほかに何を引き継ぐかは<a href="#囲みの中の文字組み">囲みの中の文字組み</a>を参照してください。</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -6246,7 +6356,7 @@ const config: PostextConfig = {
       <td><code>leader</code></td>
       <td>object</td>
       <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
-      <td><code>char</code>をタイトルとページ番号のあいだに繰り返して並べます。続く項目の点が縦にそろうよう右そろえで並べます（<code>'. '</code>とすると点の間隔が空きます）。<code>gap</code>はタイトルとリーダーのあいだに最低限残す間隔です。リーダーの文字数は、その書体でひと続きの文字列として測り、入るだけの数になります。そのため、連続するピリオドをカーニングで離す書体では、点がページ番号まで届くことはなく、点の数が少なくなります（postext 1.4までは点1つの幅から数を求めていたため、そうした書体ではリーダーがタイトルから番号に食い込んでいました）。ラベルの入る余地がなくなるタイトルは、少し手前で折り返します。</td>
+      <td><code>char</code>をタイトルとページ番号のあいだに繰り返して並べます。続く項目の点が縦にそろうよう右そろえで並べます（<code>'. '</code>とすると点の間隔が空きます）。<code>gap</code>はタイトルとリーダーのあいだに最低限残す間隔です。リーダーの文字数は、その書体でひと続きの文字列として測り、入るだけの数になります。そのため、連続するピリオドをカーニングで離す書体では、点がページ番号まで届くことはなく、点の数が少なくなります（postext 1.4までは点1つの幅から数を求めていたため、そうした書体ではリーダーがタイトルから番号に食い込んでいました）。ラベルの入る余地がなくなるタイトルは、少し手前で折り返します。タグ付きPDFでは点はアーティファクトになり、抽出したテキストには含まれません。本文も<a href="#タブ位置">タブ位置</a>で同じリーダーを組みます。</td>
     </tr>
     <tr>
       <td><code>subtitle</code></td>
@@ -8092,8 +8202,8 @@ debug: {
 - **範囲外のサイド段**：`'oneAndHalf'`レイアウトの`sideColumnPercent`（文書のもの、または見出しスタイル自身の`layout`のもの）が、いずれかの段を内容幅の1%未満にしてしまう場合、または数値でない場合です。段は両方が取れる最も近い値で分けられ、`used`がその値を示します（`sideColumnPercentClamped`。[`'oneAndHalf'`レイアウト](#レイアウトの種類)を参照）。
 - **範囲外の段数**：`'multiple'`レイアウトの`columnCount`（文書のもの、または見出しスタイル自身の`layout`のもの）が3〜8の整数ではない場合です。ページはいちばん近い有効な段数で分けられ（数値でなければ3）、`used`がその数を示します（`columnCountClamped`。[`'multiple'`レイアウト](#レイアウトの種類)を参照）。
 - **大きすぎる文字グリッド**：`cjk.grid`の1行の字数または1ページの行数が、余白の内側に収まる数より多い場合です。グリッドは収まる最大の数で組まれ、`used`がその数を示します（`cjkGridClamped`。[文字グリッド](#文字グリッド)を参照）。
-- **不明な設定**：`headings`、`headings.balancing`、見出しレベル、見出しスタイル、段落スタイルにないキーです。たとえば綴りを誤った`letterSpacng`、別のツールから持ち込んだ`tracking`、見出しスタイルに付けた`level`、段落スタイルに付けた`fontStyle: 'italic'`（段落スタイルは`italic: true`を取ります）などです。エンジンはこれを無視します（postext 1.4までは何も知らせずに無視していました）。`value`はそのキー、`used`は空で、`suggestion`は、1、2文字の違いか大文字小文字の違いだけで済む設定があれば、その最も近い設定の名前を示します（`unknownConfigKey`）。
-- **不明な設定値**：いくつかの語のうち1つを取る設定に、別の値が入っている場合です。たとえば`direction: 'right'`です（`auto`、`ltr`、`rtl`のいずれかを取ります）。エンジンは代わりに既定値を読み、`used`がその結果を示します。`direction`なら文書の言語の方向になります（`unknownConfigValue`）。漫画の設定の語も検査されます（[漫画 › 漫画の警告](/ja/docs/comics#漫画の警告)）。そのとき`used`は設定が解決された値（組み込みの吹き出しのスタイルでは、そのスタイル自身の既定値）で、近い語があれば`suggestion`がその語を示します。
+- **不明な設定**：`headings`、`headings.balancing`、見出しレベル、見出しスタイル、段落スタイルにないキーです。たとえば綴りを誤った`letterSpacng`、別のツールから持ち込んだ`tracking`、見出しスタイルに付けた`level`、段落スタイルに付けた`fontStyle: 'italic'`（段落スタイルは`italic: true`を取ります）などです。タブ位置も同じように検査されます（`leader`を`leaders`と書いた場合など）。エンジンはこれを無視します（postext 1.4までは何も知らせずに無視していました）。`value`はそのキー、`used`は空で、`suggestion`は、1、2文字の違いか大文字小文字の違いだけで済む設定があれば、その最も近い設定の名前を示します（`unknownConfigKey`）。
+- **不明な設定値**：いくつかの語のうち1つを取る設定に、別の値が入っている場合です。たとえば`direction: 'right'`です（`auto`、`ltr`、`rtl`のいずれかを取ります）。エンジンは代わりに既定値を読み、`used`がその結果を示します。`direction`なら文書の言語の方向になります（`unknownConfigValue`）。タブ位置の`align`が4つの語のどれでもなければ`'start'`として読み、`position`が長さでも`'end'`でも割合でもなければそのタブ位置を除外します（`used`は`'none'`）。漫画の設定の語も検査されます（[漫画 › 漫画の警告](/ja/docs/comics#漫画の警告)）。そのとき`used`は設定が解決された値（組み込みの吹き出しのスタイルでは、そのスタイル自身の既定値）で、近い語があれば`suggestion`がその語を示します。
 - **縦組みの行番号**：縦組みの文書（`layout.writingMode: 'vertical-rl'`）で`lineNumbers.enabled: true`を指定した場合です。縦組みのページには行番号が付かず、`used`は`false`です（`lineNumbersUnsupported`。[行番号](#行番号)を参照）。
 
 Sandboxはこれらを**検査**パネルに、設定のパスとともに表示します。コードでは、`buildDocument`が文書に`configWarnings`として付け（設定に問題がなければ存在しません）、`collectConfigWarnings(config)`はレイアウトを行わずにこれらを返します：

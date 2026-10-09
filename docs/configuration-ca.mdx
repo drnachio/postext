@@ -38,7 +38,7 @@ Aquesta referència és llarga. Aquests són els blocs principals:
 - [Pàgina](#pàgina) — mida, marges, retícula de base, marques de tall, [enquadernació](#enquadernació).
 - [Disposició](#disposició) — nombre de columnes, espai entre columnes, filets, [escriptura vertical](#escriptura-vertical).
 - [Capçaleres i peus](#capçaleres-i-peus) — elements de text i de línia per pàgina amb marcadors, paritat i alineació.
-- [Text de cos](#text-de-cos) — tipografia, partició de mots, vídues i òrfenes.
+- [Text de cos](#text-de-cos) — tipografia, partició de mots, tabulacions, vídues i òrfenes.
 - [Llengua del document](#llengua-del-document) — el `locale` de primer nivell: alternativa per a la partició de mots, tipus de recurs integrats i cadenes de continuació de taules i d'avisos partits, llengua etiquetada en un PDF accessible; les [xifres](#xifres-del-document) (`numerals`) i la [direcció del text](#direcció-del-text) (`direction`) que se'n desprenen; i les [llengües i escriptures](#llengües-i-escriptures) que Postext compon. La guia dels llibres de dreta a esquerra és [Composició àrab](/ca/docs/arabic-layout).
 - [Tipografia de l'Àsia oriental](#tipografia-de-làsia-oriental) — `cjk`: les convencions regionals i el tall de línia del text en xinès, japonès i coreà, com s'eixamplen les seves línies justificades, les amplades de la puntuació i la puntuació penjada, l'espai entre xinès i llatí, la retícula de caràcters, els números que van drets en text vertical, i les marques, el ruby, les notes warichu i les marques de kanbun. Les guies de tot plegat són [Composició xinesa](/ca/docs/chinese-layout) i [Composició japonesa](/ca/docs/japanese-layout).
 - [Encapçalaments](#encapçalaments) — valors generals i sobreescriptures H1–H6.
@@ -1461,6 +1461,18 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
       <td>Llegeix una barra inversa al final d'una línia del text, i <code>{'\\\\'}</code> davant d'un espai, com un salt de línia forçat dins d'un paràgraf, una cita o un element de llista (el salt forçat de CommonMark): les paraules següents comencen una línia nova del mateix paràgraf, i la línia anterior es compon amb la seva amplada natural, com una última línia. Una barra inversa al final del paràgraf s'imprimeix, i dos espais al final d'una línia no són un salt (vegeu <a href="/ca/docs/document-format#salts-de-línia">Format del document › Salts de línia</a>). <code>false</code> conserva la lectura de la 1.22: les barres s'imprimeixen i les línies s'uneixen amb un espai; les configuracions desades abans el text de les quals té una barra així es llegeixen amb aquest valor (vegeu <a href="#paquets-escrits-per-postext-14-o-anterior">Paquets escrits per postext 1.4 o anterior</a>). Els títols, els peus, les notes i les cel·les de taula es parteixen a <code>{'\\\\'}</code> en tots dos casos.</td>
     </tr>
     <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td>sense fixar</td>
+      <td>Tabulacions de tots els paràgrafs, elements de llista i cites: on porta un tabulador (<code>:tab</code>, o un caràcter de tabulació al text) les paraules que el segueixen. Un estil de paràgraf o el cos d'un requadre que fixa les seves les substitueix. Sense fixar, un caràcter de tabulació és un espai entre paraules, com fins ara, i un <code>:tab</code> sense cap tabulació on anar també ho és. Vegeu <a href="#tabulacions">Tabulacions</a>. Des de postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td>sense fixar</td>
+      <td>Tabulacions predeterminades a cada interval des de l'inici de la mesura, passada l'última de <code>tabStops</code>. Sense fixar, un tabulador més enllà de l'última tabulació és un espai entre paraules. Des de postext 1.23.</td>
+    </tr>
+    <tr>
       <td><code>blockquote</code></td>
       <td><code>BlockquoteConfig</code></td>
       <td>vegeu a sota</td>
@@ -1589,6 +1601,69 @@ Una configuració desada abans d'aquests ajustos (`configVersion` 8 o anterior) 
 
 Al Sandbox són el grup **Vers** de la secció **Text base**.
 
+
+### Tabulacions
+
+`bodyText.tabStops` enumera les tabulacions on va un tabulador: `:tab`, o un caràcter de tabulació en un paràgraf que té tabulacions (vegeu [Format del document › Tabuladors i tabulacions](/ca/docs/document-format#tabuladors-i-tabulacions) per al marcatge i per a com es compon una línia). Els `tabStops` d'un estil de paràgraf les substitueixen als seus paràgrafs, i el `body.tabStops` d'un estil de requadre dins de les seves caixes; una llista buida no en fixa cap. Cada tabulació és un `TabStop`:
+
+```ts
+bodyText: {
+  tabStops: [
+    { position: { value: 30, unit: 'mm' } },
+    { position: 'end', align: 'end', leader: '.', leaderGap: { value: 2, unit: 'pt' } },
+  ],
+  tabInterval: { value: 10, unit: 'mm' },
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>{"Dimension | 'end' | `${number}%`"}</code></td>
+      <td>obligatòria</td>
+      <td>On és la tabulació, des de la vora d'inici de la mesura del paràgraf (després de l'<code>indent</code> d'un estil de paràgraf; <code>em</code> és el cos del mateix paràgraf): una longitud, <code>'end'</code> per a la vora final de la mesura, o una part de la mesura (<code>'50%'</code>). En text de dreta a esquerra la vora d'inici és la dreta.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'start' | 'end' | 'center' | 'decimal'</code></td>
+      <td><code>'start'</code></td>
+      <td>Com es col·loca a la tabulació el text que segueix el tabulador: hi comença, hi acaba (el text fins al tabulador següent o fins al final del paràgraf), s'hi centra o hi posa el separador decimal (un tram sense separador hi acaba).</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td><code>string</code></td>
+      <td>cap</td>
+      <td>El farciment que es repeteix al llarg de l'espai abans de la tabulació: <code>'.'</code>, <code>'. '</code>, <code>'·'</code>, <code>'_'</code>, <code>'-'</code> o qualsevol text breu, amb la lletra i el color del paràgraf; <code>'rule'</code> traça una línia una mica per sota de la línia de base. El farciment acaba arran del final del seu espai, de manera que els farciments de diverses línies queden alineats. Es mesura com una tira sencera, com la línia de punts d'una entrada de l'índex general.</td>
+    </tr>
+    <tr>
+      <td><code>leaderGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>L'espai que es deixa entre el farciment i el text a cada costat, com el <code>leader.gap</code> de l'índex general. No n'hi ha abans del farciment quan el tabulador obre la seva línia, ni després quan no el segueix res.</td>
+    </tr>
+    <tr>
+      <td><code>decimalChar</code></td>
+      <td><code>string</code></td>
+      <td>el de la llengua del document</td>
+      <td>El separador amb què s'alinea una tabulació <code>'decimal'</code>: <code>.</code> en anglès, xinès, japonès i àrab, <code>,</code> en castellà, català, portuguès, francès, alemany i altres.</td>
+    </tr>
+  </tbody>
+</table>
+
+`tabInterval` afegeix tabulacions a cada interval des de l'inici de la mesura, passada l'última tabulació de la llista; sense aquest valor, un tabulador més enllà de l'última tabulació és un espai entre paraules. Un caràcter de tabulació escrit al text només és un tabulador en un paràgraf l'estil del qual té tabulacions o un interval, propis o del text de cos; a tot arreu més continua sent l'espai entre paraules que sempre ha estat, de manera que un document desat es compon com abans i no cal fixar-lo a cap versió.
+
+Les tabulacions es comproven amb la resta de la configuració (vegeu [Avisos de configuració](#avisos-de-configuració)): una clau desconeguda en una tabulació (`leaders`) es notifica com a `unknownConfigKey` amb la clau a què més s'assembla; un `align` que no és cap dels quatre, com a `unknownConfigValue`, i la tabulació es compon com a `'start'`; una `position` que no és una longitud, `'end'` ni un percentatge, com a `unknownConfigValue` amb `used: 'none'`, i la tabulació es deixa fora.
+
+El color i la lletra del farciment són els del paràgraf; encara no tenen cap ajust propi.
 
 ### Una sola família per `fontFamily`
 
@@ -5229,6 +5304,18 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>sense fixar</td>
       <td>Si la <a href="#numeració-de-línies">numeració de línies</a> compta les línies dels paràgrafs. Sense fixar: es compten quan <code>lineNumbers.count</code> és <code>'all'</code>, i en un poema compost amb l'estil quan es compten versos. <code>true</code>: es compten també amb <code>'verse'</code>, i dins d'un requadre, el text del qual no es compta mai altrament. <code>false</code>: no es compten mai. Des de postext 1.23.</td>
     </tr>
+    <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td><code>bodyText.tabStops</code></td>
+      <td>Tabulacions dels paràgrafs de l'estil (vegeu <a href="#tabulacions">Tabulacions</a>), mesurades des de l'<code>indent</code> de l'estil. Un caràcter de tabulació en el seu text és un tabulador quan l'estil té tabulacions o un interval, propis o del text de cos. Sense fixar: les del text de cos; una llista buida no en fixa cap. Des de postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>bodyText.tabInterval</code></td>
+      <td>Tabulacions predeterminades passada l'última de <code>tabStops</code>. Sense fixar: el del text de cos. Des de postext 1.23.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5259,6 +5346,30 @@ paragraphStyles: [
 ```
 
 Un vers en `verso-sangrado` comença a 1,5 em i la seva continuació a 4 em, a l'altura de les continuacions dels versos en `verso`. Sense `indent`, un estil pot sagnar la primera línia o les altres, no totes dues: `firstLineIndent` s'ignora tan bon punt hi ha `hangingIndent`.
+
+Un menú posa cada preu arran del final de la mesura, darrere d'una línia de punts:
+
+```ts
+paragraphStyles: [
+  {
+    id: 'menu',
+    textAlign: 'left',
+    firstLineIndent: { value: 0, unit: 'em' },
+    tabStops: [{ position: 'end', align: 'end', leader: '. ' }],
+  },
+],
+```
+
+```md
+:::paragraphs{style="menu"}
+Sopa de ceba :tab 8,50
+
+Orada a la brasa amb fonoll i llimona :tab 21,00
+:::
+```
+
+Els punts de cada línia acaben mig quadratí abans del preu (`leaderGap`). Un plat massa llarg per a la seva línia salta de línia, i la seva última línia conserva el farciment i el preu; quan el preu no cap al costat de l'última paraula, aquesta paraula baixa amb ell.
+
 ### El contenidor `:::paragraphs`
 
 Una línia `:::paragraphs{style="<id>"}` obre el contenidor i una línia `:::` tota sola el tanca; tots els paràgrafs del mig prenen l'estil indicat, mentre que els encapçalaments, les llistes i els altres blocs de l'interior conserven el seu estil habitual. Els contenidors es poden niar dins d'altres contenidors. Un `style` desconegut no és un error: els paràgrafs es componen com a text de cos normal.
@@ -5594,9 +5705,9 @@ El vidre continua calent una hora després d'apagar la flama.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
       <td>hereta de <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>Tipografia dels paràgrafs i elements de llista dins de la caixa. Cada camp hereta del text de cos quan no s'indica; <code>italicColor</code> fixa el color de les cursives (una cita destacada en cursiva amb el color de la caixa). <code>fontWeight</code> / <code>boldFontWeight</code> fixen el pes dels trams normals i en negreta; <code>italic</code> compon la caixa en cursiva, amb els trams <code>*…*</code> en rodona; <code>smallCaps</code>, en versaletes. Vegeu <a href="#tipografia-dins-dun-requadre">Tipografia dins d'un requadre</a> per a la resta del que pren el text de la caixa.</td>
+      <td>Tipografia dels paràgrafs i elements de llista dins de la caixa. Cada camp hereta del text de cos quan no s'indica; <code>italicColor</code> fixa el color de les cursives (una cita destacada en cursiva amb el color de la caixa). <code>fontWeight</code> / <code>boldFontWeight</code> fixen el pes dels trams normals i en negreta; <code>italic</code> compon la caixa en cursiva, amb els trams <code>*…*</code> en rodona; <code>smallCaps</code>, en versaletes; <code>tabStops</code> i <code>tabInterval</code> substitueixen els del text de cos dins de la caixa (vegeu <a href="#tabulacions">Tabulacions</a>). Vegeu <a href="#tipografia-dins-dun-requadre">Tipografia dins d'un requadre</a> per a la resta del que pren el text de la caixa.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -6229,7 +6340,7 @@ const config: PostextConfig = {
       <td><code>leader</code></td>
       <td>objecte</td>
       <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
-      <td><code>char</code> es repeteix al llarg del buit entre el títol i el número de pàgina, alineat a la dreta perquè els punts d'entrades consecutives quedin en línia (<code>'. '</code> els espaia); <code>gap</code> és el buit mínim entre el títol i la línia de punts. La línia porta tants caràcters com hi caben, mesurada com una tira sencera en la seva font, de manera que una font que separa amb el kerning els punts seguits posa menys punts en lloc de punts que arribin al número de pàgina. (Fins a postext 1.4 el compte sortia d'un sol punt, i amb una font així la línia de punts anava del títol fins a muntar-se sobre el número). Un títol que no deixés lloc a l'etiqueta salta de línia una mica abans.</td>
+      <td><code>char</code> es repeteix al llarg del buit entre el títol i el número de pàgina, alineat a la dreta perquè els punts d'entrades consecutives quedin en línia (<code>'. '</code> els espaia); <code>gap</code> és el buit mínim entre el títol i la línia de punts. La línia porta tants caràcters com hi caben, mesurada com una tira sencera en la seva font, de manera que una font que separa amb el kerning els punts seguits posa menys punts en lloc de punts que arribin al número de pàgina. (Fins a postext 1.4 el compte sortia d'un sol punt, i amb una font així la línia de punts anava del títol fins a muntar-se sobre el número). Un títol que no deixés lloc a l'etiqueta salta de línia una mica abans. En un PDF etiquetat els punts són artefactes, que el text extret omet. El text de cos posa els mateixos farciments a les seves <a href="#tabulacions">tabulacions</a>.</td>
     </tr>
     <tr>
       <td><code>subtitle</code></td>
@@ -8073,8 +8184,8 @@ Vuit errors de la configuració mateixa no passen mai en silenci, i cap interrup
 - **Columna lateral sense lloc**: un `sideColumnPercent` d'una disposició `'oneAndHalf'` (la del document, o el `layout` propi d'un estil d'encapçalament) que deixaria alguna de les columnes per sota de l'1% de l'amplada de l'àrea de contingut, o que no és un nombre. Les columnes es tallen al valor més proper que admeten totes dues, i `used` ho indica (`sideColumnPercentClamped`; vegeu la [disposició `'oneAndHalf'`](#tipus-de-disposició)).
 - **Nombre de columnes fora de rang**: un `columnCount` d'una disposició `'multiple'` (la del document, o el `layout` propi d'un estil d'encapçalament) que no és un nombre enter de 3 a 8. La pàgina es divideix en el nombre vàlid més proper (3 si el valor no és un nombre), i `used` l'indica (`columnCountClamped`; vegeu la [disposició `'multiple'`](#tipus-de-disposició)).
 - **Retícula de caràcters massa gran**: un `cjk.grid` amb més caràcters per línia o més línies per pàgina dels que caben entre els marges. La retícula es compon amb els que hi caben, i `used` n'indica el nombre (`cjkGridClamped`; vegeu [Retícula de caràcters](#retícula-de-caràcters)).
-- **Ajust d'encapçalament desconegut**: una clau que no existeix a `headings`, `headings.balancing`, un nivell d'encapçalament, un estil d'encapçalament o un estil de paràgraf: un `letterSpacng` mal escrit, un `tracking` pres d'una altra eina, un `level` en un estil d'encapçalament, un `fontStyle: 'italic'` en un estil de paràgraf (que porta `italic: true`). El motor la ignora (fins a postext 1.4 ho feia sense dir res). `value` és la clau, `used` va buit i `suggestion` anomena l'ajust al qual s'assembla més, quan en dista una o dues lletres o només canvia en majúscules (`unknownConfigKey`).
-- **Valor d'ajust desconegut**: un ajust que admet unes poques paraules en porta una altra, com ara `direction: 'right'` (admet `auto`, `ltr` o `rtl`). El motor llegeix en el seu lloc el valor per defecte, i `used` diu en què ha quedat: per a `direction`, la direcció de la llengua del document (`unknownConfigValue`). També es comproven les paraules dels ajustos de còmic ([Còmics › Avisos de còmic](/ca/docs/comics#avisos-de-còmic)): `used` és el valor en què s'ha resolt l'ajust (el valor per defecte propi d'un estil de bafarada, si és un estil integrat), i `suggestion` anomena la paraula a què més s'assembla el valor, quan n'hi ha una de propera.
+- **Ajust d'encapçalament desconegut**: una clau que no existeix a `headings`, `headings.balancing`, un nivell d'encapçalament, un estil d'encapçalament o un estil de paràgraf: un `letterSpacng` mal escrit, un `tracking` pres d'una altra eina, un `level` en un estil d'encapçalament, un `fontStyle: 'italic'` en un estil de paràgraf (que porta `italic: true`). Una tabulació es comprova igual (un `leaders` per `leader`). El motor la ignora (fins a postext 1.4 ho feia sense dir res). `value` és la clau, `used` va buit i `suggestion` anomena l'ajust al qual s'assembla més, quan en dista una o dues lletres o només canvia en majúscules (`unknownConfigKey`).
+- **Valor d'ajust desconegut**: un ajust que admet unes poques paraules en porta una altra, com ara `direction: 'right'` (admet `auto`, `ltr` o `rtl`). El motor llegeix en el seu lloc el valor per defecte, i `used` diu en què ha quedat: per a `direction`, la direcció de la llengua del document (`unknownConfigValue`). L'`align` d'una tabulació que no és cap de les seves quatre paraules es llegeix com a `'start'`, i una `position` que no és una longitud, `'end'` ni un percentatge deixa fora la tabulació (`used` és `'none'`). També es comproven les paraules dels ajustos de còmic ([Còmics › Avisos de còmic](/ca/docs/comics#avisos-de-còmic)): `used` és el valor en què s'ha resolt l'ajust (el valor per defecte propi d'un estil de bafarada, si és un estil integrat), i `suggestion` anomena la paraula a què més s'assembla el valor, quan n'hi ha una de propera.
 - **Números de línia en text vertical**: `lineNumbers.enabled: true` en un document compost en vertical (`layout.writingMode: 'vertical-rl'`). Les pàgines verticals no porten números de línia, i `used` és `false` (`lineNumbersUnsupported`; vegeu [Numeració de línies](#numeració-de-línies)).
 
 El Sandbox els mostra al tauler **Revisió** amb la ruta de l'ajust. En codi, `buildDocument` els deixa al document com a `configWarnings` (absent quan la configuració està neta), i `collectConfigWarnings(config)` els retorna sense compondre res:

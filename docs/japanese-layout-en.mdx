@@ -586,6 +586,7 @@ The showcase shelf has Natsume Sōseki's *Kokoro* (<span lang="ja" className="fo
 - **Citations**: SIST 02 is the only Japanese style bundled; author-date citations keep ASCII punctuation; bibliographies are not sorted by reading.
 - **Tables**: cell and caption text is horizontal on every page.
 - **Line numbers** are not printed in vertical text: a vertical book that turns `lineNumbers` on gets none, with a `lineNumbersUnsupported` configuration warning. Horizontal books number their lines like any other ([Configuration › Line numbers](/en/docs/configuration#line-numbers)).
+- **Tabs.** A horizontal paragraph that holds a tab (`:tab`, or a tab character under a style with tab stops) is set line by line: broken between characters under kinsoku, but without yakumono compression or justification between characters. In vertical text there are no tab stops: a tab is a word space, and a `:tab` raises the `tabInVerticalText` content warning. A paragraph with ruby, warichu or kanbun marks also sets its tabs as word spaces. See [Tabs and tab stops](/en/docs/document-format#tabs-and-tab-stops).
 - **Fonts**: one family per style with no fallback; CFF faces embedded whole; vertical proportional metrics (`vpal`) are not used.
 - **Design text** (running heads, openers, box titles) breaks Japanese between any two characters, without kinsoku or yakumono spacing, and prints readings and marks as plain text.
 

@@ -38,7 +38,7 @@ const document = buildDocument(content, {
 - [页面](#页面)：尺寸、页边距、基线网格、裁切线、[装订](#装订)。
 - [版式](#版式)：栏数、栏间距、栏线、[竖排](#竖排)。
 - [页眉与页脚](#页眉与页脚)：每页的文字元素和线条元素，支持占位符、奇偶页和对齐方式。
-- [正文](#正文)：排印、断词、段首孤行与段末孤行。
+- [正文](#正文)：排印、断词、制表位、段首孤行与段末孤行。
 - [文档语言](#文档语言)：顶层的`locale`，决定断词的后备语言、内置资源类型、表格和拆分标注框的续接文字、写入无障碍PDF的语言标签，以及由它决定的[数字](#文档数字)（`numerals`）和[文本方向](#文本方向)（`direction`）；另见Postext排版所支持的[语言与文字](#语言与文字)。从右到左书籍的说明见[阿拉伯文排版](/zh/docs/arabic-layout)。
 - [东亚排版](#东亚排版)：`cjk`，涵盖中文、日文和韩文的地区惯例与断行、两端对齐时行内空白的分配、标点宽度与悬挂、汉字与拉丁字母之间的空白、字符网格、竖排中的直立数字，以及着重号、注音、割注和汉文训读记号。完整指南见[中文排版](/zh/docs/chinese-layout)和[日文排版](/zh/docs/japanese-layout)。
 - [标题](#标题)：共享默认值以及H1–H6各自的覆盖设置。
@@ -1462,6 +1462,18 @@ interface ElementPlacement {
       <td>把源文本行末的反斜杠，以及后跟空格的<code>{'\\\\'}</code>，读作段落、引文或列表项内部的强制换行（CommonMark的硬换行）：后面的文字在同一段落中另起一行，换行前的一行按自然宽度排，与末行相同。段落末尾的反斜杠照样印出，行末两个空格不算换行（见<a href="/zh/docs/document-format#段落内的换行">文档格式 › 段落内的换行</a>）。<code>false</code>保留1.22的读法：反斜杠照样印出，各行用空格连接；更早保存、文字中有这种反斜杠的配置按此读取（见<a href="#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。标题、图注、注释和表格单元格在两种设置下都在<code>{'\\\\'}</code>处换行。</td>
     </tr>
     <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td>未设置</td>
+      <td>每个段落、列表项和引文的制表位：制表符（<code>:tab</code>，或文字中的制表符字符）把其后的文字送到哪里。段落样式或标注框正文设了自己的制表位时，替换这里的设置。未设置时，制表符字符与以前一样是词间空格，没有制表位可去的<code>:tab</code>也是。见<a href="#制表位">制表位</a>。自postext 1.23起。</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td>未设置</td>
+      <td>在<code>tabStops</code>的最后一个制表位之后，从版心起始边起每隔这个距离设一个默认制表位。未设置时，越过最后一个制表位的制表符是词间空格。自postext 1.23起。</td>
+    </tr>
+    <tr>
       <td><code>blockquote</code></td>
       <td><code>BlockquoteConfig</code></td>
       <td>见下文</td>
@@ -1591,6 +1603,69 @@ bodyText: {
 
 在沙盒中，这些设置位于“正文”部分的**诗歌**分组。
 
+
+### 制表位
+
+`bodyText.tabStops`列出制表符可去的制表位：`:tab`，或设有制表位的段落中的制表符字符（标记写法和一行如何排，见[文档格式 › 制表符与制表位](/zh/docs/document-format#制表符与制表位)）。段落样式的`tabStops`在它的段落中替换这些制表位，标注框样式的`body.tabStops`在它的框内替换；空列表表示不设制表位。每个制表位是一个`TabStop`：
+
+```ts
+bodyText: {
+  tabStops: [
+    { position: { value: 30, unit: 'mm' } },
+    { position: 'end', align: 'end', leader: '.', leaderGap: { value: 2, unit: 'pt' } },
+  ],
+  tabInterval: { value: 10, unit: 'mm' },
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>{"Dimension | 'end' | `${number}%`"}</code></td>
+      <td>必填</td>
+      <td>制表位所在的位置，从段落版心的起始边量起（在段落样式的<code>indent</code>之后；<code>em</code>以段落自身的字号为准）：一个长度，表示版心末端的<code>'end'</code>，或版心宽度的一个比例（<code>'50%'</code>）。在从右到左的文字中，起始边是右边。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'start' | 'end' | 'center' | 'decimal'</code></td>
+      <td><code>'start'</code></td>
+      <td>制表符后的文字如何对齐制表位：从这里开始，在这里结束（到下一个制表符或段落末尾为止的文字），以它为中心，或把小数点对齐到这里（没有小数点的文字在这里结束）。</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td><code>string</code></td>
+      <td>无</td>
+      <td>在制表位前的空白中重复排出：<code>'.'</code>、<code>'. '</code>、<code>'·'</code>、<code>'_'</code>、<code>'-'</code>或任意一小段文字，使用段落的字体和颜色；<code>'rule'</code>在基线稍下方画一条线。前导符的末端与这段空白的末端齐平，所以各行的前导符上下对齐。它与目录行的前导符一样，作为一整串字符来测量。</td>
+    </tr>
+    <tr>
+      <td><code>leaderGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>前导符与两侧文字之间保留的空白，与目录的<code>leader.gap</code>相同。制表符位于行首时前导符前面没有间隙，后面没有文字时后面也没有间隙。</td>
+    </tr>
+    <tr>
+      <td><code>decimalChar</code></td>
+      <td><code>string</code></td>
+      <td>文档语言的小数点</td>
+      <td><code>'decimal'</code>制表位所对齐的小数点字符：英语、中文、日语和阿拉伯语为<code>.</code>，西班牙语、加泰罗尼亚语、葡萄牙语、法语、德语等为<code>,</code>。</td>
+    </tr>
+  </tbody>
+</table>
+
+`tabInterval`在列表的最后一个制表位之后，从版心起始边起每隔一个间隔再加一个制表位；没有它时，越过最后一个制表位的制表符是词间空格。文字中输入的制表符字符只在样式（它自己的或正文的）设了制表位或间隔的段落中才是制表符；在其他地方，它仍是原来的词间空格，所以保存过的文档版面不变，不需要锁定版本。
+
+制表位与配置的其余部分一起检查（见[配置警告](#配置警告)）：制表位中的未知键（`leaders`）报告为`unknownConfigKey`，并给出最接近的键；不属于四个取值的`align`报告为`unknownConfigValue`，该制表位按`'start'`排；既不是长度、`'end'`也不是百分比的`position`报告为`unknownConfigValue`，`used: 'none'`，该制表位被略去。
+
+前导符的颜色和字体取段落的，目前还没有单独的设置。
 
 ### 每个`fontFamily`只写一个字体族
 
@@ -5240,6 +5315,18 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>未设置</td>
       <td><a href="#行号">行号</a>是否计入这些段落的行。未设置：<code>lineNumbers.count</code>为<code>'all'</code>时计入，以本样式排的诗在计数诗行时计入。<code>true</code>：<code>'verse'</code>时也计入，在标注框中也计入（框中文字本来从不计数）。<code>false</code>：从不计入。自postext 1.23起。</td>
     </tr>
+    <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td><code>bodyText.tabStops</code></td>
+      <td>这些段落的制表位（见<a href="#制表位">制表位</a>），从样式的<code>indent</code>处量起。样式（它自己的或正文的）设了制表位或间隔时，段落文字中的制表符字符才是制表符。未设置：取正文的；空列表表示不设制表位。自postext 1.23起。</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>bodyText.tabInterval</code></td>
+      <td><code>tabStops</code>最后一个制表位之后的默认制表位。未设置：取正文的。自postext 1.23起。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -5270,6 +5357,29 @@ paragraphStyles: [
 ```
 
 `verse-indented`中的诗行从1.5 em处开始，转行从4 em处开始，与`verse`中各行的转行对齐。没有`indent`时，一个样式只能缩进首行或悬挂其余各行，不能两者兼得：一旦设置了`hangingIndent`，`firstLineIndent`就被忽略。
+
+菜单把每个价格排在一行点之后，与版心末端对齐：
+
+```ts
+paragraphStyles: [
+  {
+    id: 'menu',
+    textAlign: 'left',
+    firstLineIndent: { value: 0, unit: 'em' },
+    tabStops: [{ position: 'end', align: 'end', leader: '. ' }],
+  },
+],
+```
+
+```md
+:::paragraphs{style="menu"}
+洋葱汤 :tab 8.50
+
+茴香柠檬烤鲷鱼 :tab 21.00
+:::
+```
+
+每一行的点都在价格前0.5 em处结束（`leaderGap`）。菜名太长、一行排不下时换行，最后一行保留前导符和价格；价格在最后一个词旁边放不下时，这个词随价格一起移到下一行。
 
 ### `:::paragraphs`容器
 
@@ -5604,9 +5714,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
       <td>继承<code>bodyText</code>；<code>italic</code> / <code>smallCaps</code>为<code>false</code></td>
-      <td>框内段落和列表项的排版。每个字段未设置时都继承正文；<code>italicColor</code>设置斜体文字的颜色（例如用框的颜色排成斜体的引文）。<code>fontWeight</code> / <code>boldFontWeight</code>设置常规和粗体文字的字重；<code>italic</code>把整个框排成斜体，此时<code>*…*</code>内的文字改为正体；<code>smallCaps</code>把它排成小型大写字母。框内文字还会采用哪些设置，见<a href="#typography-inside-a-box">框内的排版</a>。</td>
+      <td>框内段落和列表项的排版。每个字段未设置时都继承正文；<code>italicColor</code>设置斜体文字的颜色（例如用框的颜色排成斜体的引文）。<code>fontWeight</code> / <code>boldFontWeight</code>设置常规和粗体文字的字重；<code>italic</code>把整个框排成斜体，此时<code>*…*</code>内的文字改为正体；<code>smallCaps</code>把它排成小型大写字母；<code>tabStops</code>和<code>tabInterval</code>在框内替换正文的设置（见<a href="#制表位">制表位</a>）。框内文字还会采用哪些设置，见<a href="#框内的排版">框内的排版</a>。</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -6242,7 +6352,7 @@ const config: PostextConfig = {
       <td><code>leader</code></td>
       <td>object</td>
       <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
-      <td><code>char</code>在标题和页码之间的空当里重复排出，并且右对齐，使相邻条目的点对齐（<code>'. '</code>会把点拉开）；<code>gap</code>是标题和前导符之间至少保留的距离。前导符排入能放下的全部字符，按它所用字体把整串字符作为一个整体来测量，所以如果某种字体会把相邻句点的字偶距拉开，得到的是更少的点，而不是一直顶到页码的点。（postext 1.4及以前按单个点计数，在这类字体中前导符会从标题一直延伸进页码。）标题长到不给页码标签留位置时，会稍早一点换行。</td>
+      <td><code>char</code>在标题和页码之间的空当里重复排出，并且右对齐，使相邻条目的点对齐（<code>'. '</code>会把点拉开）；<code>gap</code>是标题和前导符之间至少保留的距离。前导符排入能放下的全部字符，按它所用字体把整串字符作为一个整体来测量，所以如果某种字体会把相邻句点的字偶距拉开，得到的是更少的点，而不是一直顶到页码的点。（postext 1.4及以前按单个点计数，在这类字体中前导符会从标题一直延伸进页码。）标题长到不给页码标签留位置时，会稍早一点换行。在带标签的PDF中，这些点是版式工件，不出现在提取的文字中。正文在其<a href="#制表位">制表位</a>处排出同样的前导符。</td>
     </tr>
     <tr>
       <td><code>subtitle</code></td>
@@ -8088,8 +8198,8 @@ debug: {
 - **侧栏没有空间**：`'oneAndHalf'`版式的`sideColumnPercent`（文档的，或标题样式自己的`layout`中的）会使其中一栏不足内容宽度的1%，或者不是数字。各栏按两者都能接受的最接近的值截取，`used`给出该值（`sideColumnPercentClamped`；见[`'oneAndHalf'`版式](#版式类型)）。
 - **栏数超出范围**：`'multiple'`版式的`columnCount`（文档的，或标题样式自己的`layout`中的）不是3到8之间的整数。页面按最接近的有效栏数分栏（不是数字时为3），`used`给出这个数（`columnCountClamped`；见[`'multiple'`版式](#版式类型)）。
 - **字符网格过大**：`cjk.grid`的每行字数或每页行数超出了页边距内能容纳的数量。网格按能容纳的最大数量排，`used`给出这个数（`cjkGridClamped`；见[字符网格](#字格)）。
-- **未知标题设置**：`headings`、`headings.balancing`、某个标题级别、标题样式或段落样式中没有的键：拼错的`letterSpacng`、从其他工具借来的`tracking`、标题样式上的`level`、段落样式上的`fontStyle: 'italic'`（段落样式要用`italic: true`）。引擎会忽略它（postext 1.4及以前是悄无声息地忽略）。`value`是这个键，`used`为空，如果某个设置与它只差一两个字母或只有大小写不同，`suggestion`会给出最接近的那个设置（`unknownConfigKey`）。
-- **未知设置值**：只能取几个固定词的设置写了别的值，例如`direction: 'right'`（可取`auto`、`ltr`或`rtl`）。引擎改用默认值，`used`给出实际结果：对`direction`而言，是文档语言的书写方向（`unknownConfigValue`）。漫画设置中的词同样会检查（[漫画 › 漫画警告](/zh/docs/comics#漫画警告)）：`used`是该设置最终解析出的值（对内置样式而言，是该对白框样式自己的默认值），值与某个词接近时，`suggestion`给出最接近的那个词。
+- **未知标题设置**：`headings`、`headings.balancing`、某个标题级别、标题样式或段落样式中没有的键：拼错的`letterSpacng`、从其他工具借来的`tracking`、标题样式上的`level`、段落样式上的`fontStyle: 'italic'`（段落样式要用`italic: true`）。制表位也同样检查（用`leaders`代替`leader`）。引擎会忽略它（postext 1.4及以前是悄无声息地忽略）。`value`是这个键，`used`为空，如果某个设置与它只差一两个字母或只有大小写不同，`suggestion`会给出最接近的那个设置（`unknownConfigKey`）。
+- **未知设置值**：只能取几个固定词的设置写了别的值，例如`direction: 'right'`（可取`auto`、`ltr`或`rtl`）。引擎改用默认值，`used`给出实际结果：对`direction`而言，是文档语言的书写方向（`unknownConfigValue`）。制表位的`align`不是它的四个取值之一时，按`'start'`读取；`position`既不是长度、`'end'`也不是百分比时，略去该制表位（`used`为`'none'`）。漫画设置中的词同样会检查（[漫画 › 漫画警告](/zh/docs/comics#漫画警告)）：`used`是该设置最终解析出的值（对内置样式而言，是该对白框样式自己的默认值），值与某个词接近时，`suggestion`给出最接近的那个词。
 - **竖排文字中的行号**：竖排文档（`layout.writingMode: 'vertical-rl'`）中写了`lineNumbers.enabled: true`。竖排页面不标行号，`used`为`false`（`lineNumbersUnsupported`；见[行号](#行号)）。
 
 沙盒在**检查**面板中列出这些警告，并附上设置的路径。在代码中，`buildDocument`把它们作为`configWarnings`放在文档上（配置没有问题时不存在该字段），`collectConfigWarnings(config)`则不做排版直接返回它们：

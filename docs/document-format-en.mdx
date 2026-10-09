@@ -72,7 +72,7 @@ Postext recognises seven prose block types, plus the directives and resource emb
     <tr>
       <td>Paragraph</td>
       <td>Plain text over one or more lines</td>
-      <td>Consecutive non-blank, non-special lines are joined with a single space and emitted as one paragraph. Between two Chinese or Japanese characters (ideographs, kana, fullwidth punctuation, and curly quotes, dashes or an ellipsis beside them) the line end is dropped instead, as CSS does, so a Chinese paragraph may be wrapped anywhere in the source. Between two such marks (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) the characters past them decide: the line end goes when one of them is Chinese or Japanese, and <code>“hello”⏎“bye”</code> keeps its space. Korean keeps its space. A line break typed in the source is not kept, unless the line ends with a backslash (a forced line break, see <a href="#line-breaks">Line breaks</a>); a blank line starts a new paragraph. A poem, whose lines must stay as written, goes in a <a href="#verse"><code>:::verse</code></a> block.</td>
+      <td>Consecutive non-blank, non-special lines are joined with a single space and emitted as one paragraph. Between two Chinese or Japanese characters (ideographs, kana, fullwidth punctuation, and curly quotes, dashes or an ellipsis beside them) the line end is dropped instead, as CSS does, so a Chinese paragraph may be wrapped anywhere in the source. Between two such marks (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) the characters past them decide: the line end goes when one of them is Chinese or Japanese, and <code>“hello”⏎“bye”</code> keeps its space. Korean keeps its space. A line break typed in the source is not kept, unless the line ends with a backslash (a forced line break, see <a href="#line-breaks">Line breaks</a>); a blank line starts a new paragraph. A tab typed in the text is a word space too, unless the paragraph's style sets tab stops; <code>:tab</code> is always a tab (see <a href="#tabs-and-tab-stops">Tabs and tab stops</a>). A poem, whose lines must stay as written, goes in a <a href="#verse"><code>:::verse</code></a> block.</td>
     </tr>
     <tr>
       <td>Blockquote</td>
@@ -767,6 +767,11 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>A boxed run of text that wraps as one unit — a word bank, a key, a tag. Styled by <code>chipStyles</code>; see <a href="#inline-chips">Inline chips</a>.</td>
     </tr>
     <tr>
+      <td>Tab</td>
+      <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
+      <td>Sends the words after it to the next tab stop: one of the stops of the paragraph's style, or the one its attributes set. A tab character typed in the text is a tab only where the style sets stops. See <a href="#tabs-and-tab-stops">Tabs and tab stops</a>.</td>
+    </tr>
+    <tr>
       <td>Inline math</td>
       <td><code>$…$</code></td>
       <td>A LaTeX formula that flows with the surrounding text, e.g. <code>$e^{'{i\\pi}'}+1=0$</code>. Typeset by MathJax and rendered as vector paths on every backend. Use <code>\\$</code> for a literal dollar sign. Scaling, the display (<code>$$ … $$</code>) form, and error handling are covered under <a href="#mathematical-formulas">Mathematical formulas</a>.</td>
@@ -831,6 +836,72 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 - **Where.** Paragraphs, list items, blockquotes, callouts, table cells, captions and notes, and headings while `headings.inlineMarks` is on (the default); with it off, the markup is removed from a heading and the text prints as written.
 - **Whole paragraphs.** A paragraph style or a callout body with `smallCaps: true` sets all its text this way (see [Paragraph styles](/en/docs/configuration#paragraph-styles)).
 - **Text.** The canvas, the HTML and the PDF carry the letters as painted: copying `:smallcaps[Hamlet]` gives "HAMLET".
+
+### Tabs and tab stops
+
+A tab sends the words after it to a stop on the line: the price of a dish flush with the end of the measure behind a row of dots, the actor after the part in a cast list, the marks of an exam question at the margin. Write `:tab` where the tab goes; the spaces around it are taken into it. The stops are set in the configuration: `bodyText.tabStops` for every paragraph, list item and quotation, a paragraph style's `tabStops` for the paragraphs of a `:::paragraphs` group, and a callout style's `body.tabStops` inside its boxes (see [Configuration › Tab stops](/en/docs/configuration#tab-stops)). A menu whose prices end at the end of the measure, behind dots:
+
+```ts
+paragraphStyles: [
+  { id: 'menu', firstLineIndent: { value: 0, unit: 'em' }, tabStops: [{ position: 'end', align: 'end', leader: '. ' }] },
+],
+```
+
+```markdown
+:::paragraphs{style="menu"}
+Onion soup :tab 8.50
+
+Grilled sea bream with fennel and lemon :tab 21.00
+:::
+```
+
+`:tab{…}` sets a stop for that one tab, with no style: a form's blank to the end of the line, an amount on its decimal point.
+
+```markdown
+Name and surname :tab{at=end leader=rule}
+
+Total due :tab{at=80% align=decimal} 1,234.50
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Attribute</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>at</code></td>
+      <td>Where the stop stands, from the start edge of the paragraph's measure: a length (<code>120mm</code>, <code>4cm</code>, <code>2em</code>; a bare number is in points), <code>end</code> for the end of the measure, or a share of it (<code>60%</code>). Without <code>at</code>, <code>:tab&#123;…&#125;</code> goes to the style's stops as a bare <code>:tab</code> does.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>start</code> (the default): the text after the tab starts at the stop. <code>end</code>: it ends there (the text up to the next tab or the end of the paragraph). <code>center</code>: it is centred on the stop. <code>decimal</code>: its decimal separator sits on the stop; a run with none ends there.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>Text repeated over the room before the stop: <code>"."</code>, <code>". "</code>, <code>"·"</code>, <code>"_"</code>, <code>"-"</code> or another short text, in the paragraph's face and colour. <code>rule</code> draws a line a little under the baseline, a form's blank. Default none.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>Room kept between the leader and the text on either side. Default <code>0.5em</code> of the paragraph's size; a bare number is in points.</td>
+    </tr>
+    <tr>
+      <td><code>decimal</code></td>
+      <td>The separator a <code>decimal</code> stop aligns on. Default the document language's: <code>.</code> in English, Chinese, Japanese and Arabic, <code>,</code> in Spanish, Catalan, Portuguese, French, German and others.</td>
+    </tr>
+  </tbody>
+</table>
+
+- **Where a tab goes.** To the first stop past the text before it, among the stops after the one the line's previous tab took, so the second tab of a line usually takes the second stop. Past the last stop, `tabInterval` sets more stops every interval from the start of the measure; without it the tab is a word space.
+- **Tab characters.** A tab typed in the text (U+0009) is a tab only in a paragraph whose style sets `tabStops` or `tabInterval`. Everywhere else it is the word space it always was, so a document written with tabs for spaces keeps its layout. Tab characters in a row go on that many stops. A tab at the start of a source line is trimmed with the line's other leading blanks: write `:tab` to start a line at a stop.
+- **What stays text.** A `:tab` followed by a letter (`3:table`), and a `:tab` in inline code, in a formula, in a link's address or in a directive's attributes.
+- **Where.** Paragraphs, list items, quotations, boxes and `:::paragraphs` groups. Headings, captions, table cells and the text of designs (openers, running heads) have no tab stops.
+- **Text past the stop.** When the text before a tab has already passed every stop left on its line, an `end`, `center` or `decimal` stop takes the last word before the tab down to the next line with the text at the stop, and the text before it is set narrower, as a contents row wraps its title to keep the page number. A `start` stop breaks the line before the tab, and the text after it starts the next line at its stop. A tab that opens its line and still finds no stop takes no room.
+- **Leaders.** A leader fills the room before its stop and ends flush with the end of that room, so the dots of several lines line up whatever the text before them. `gap` keeps it clear of the text on both sides; there is no gap before it when the tab opens the line, and none after it when nothing follows.
+- **Line breaking.** A paragraph that holds a tab is set line by line, never with Knuth–Plass. In justified text only the word spaces after a line's last tab take the slack, and the paragraph's last line is not stretched (see [Justification › Tabbed lines](/en/docs/justification#tabbed-lines)). A centred or right-aligned paragraph sets its tabbed lines from the start side, since the stops are positions on the measure. Right to left, the stops are measured from the right and an `end` stop sits at the left (see [Arabic layout](/en/docs/arabic-layout#contents-and-index)). In vertical text a tab is a word space, and a `:tab` there raises the content warning `tabInVerticalText`.
+- **Text and outputs.** The plain text has a tab character (`\t`) at each tab; the leaders are not text, and copies, searches and the source map leave them out. The canvas, the HTML viewer and the fixed-layout EPUB paint them (hidden from screen readers in the HTML); a tagged PDF marks them as artifacts, so its text reads `Onion soup 8.50`. The reflowable EPUB cannot keep the stops exactly: each line of a tabbed paragraph becomes a row of the parts between its tabs, where an `end`, `center` or `decimal` stop, or one with a leader, pushes the next part to the end of the row (its leader a dotted or solid border), and a `start` stop keeps the part before it at its printed width. A Word export writes `:tab` as a Word tab, and the Word import reads a tab in body text back as `:tab` with the stop Word set for it (see [Sandbox › Word documents](/en/docs/sandbox#word-documents)).
 
 ### Orientation in vertical text
 

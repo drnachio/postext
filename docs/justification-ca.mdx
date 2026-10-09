@@ -358,6 +358,14 @@ La propietat `bodyText.optimalLineBreaking` (per defecte: `true`) controla quin 
 
 Quan Knuth-Plass està actiu i no produeix talls vàlids (cosa que pot passar amb columnes extremadament estretes o paraules més llargues que l'amplada de columna), el motor recorre automàticament al tall voraç per a aquest paràgraf.
 
+### Línies amb tabulador
+
+Un paràgraf amb un tabulador (vegeu [Format del document › Tabuladors i tabulacions](/ca/docs/document-format#tabuladors-i-tabulacions)) es compon línia a línia, com componen el text tabulat els processadors de text i InDesign, mai amb Knuth-Plass, digui el que digui `optimalLineBreaking`. On cau un tabulador depèn de fins on ha arribat la seva línia, i la cerca òptima suma les amplades de cada línia candidata com si no en depengués. El mateix val per al text xinès i japonès: un paràgraf amb un tabulador es talla entre caràcters segons les regles de tall de línia del document, sense compressió de la puntuació ni justificació entre caràcters.
+
+En un paràgraf justificat, una línia amb un tabulador no s'estira abans del seu últim tabulador, perquè les tabulacions fixen on comença cada part de la línia. Només els espais entre paraules que segueixen l'últim tabulador absorbeixen el sobrant, i només quan la línia no és l'última del paràgraf; una línia sense cap espai entre paraules després del seu últim tabulador es compon tal com queda. Les línies en bandera no hi tenen res a veure. La línia registra que porta un tabulador (`VDTLine.tabbed`); cada tabulador és un segment d'espai que porta la seva tabulació (`VDTLineSegment.tab`), i cada farciment un segment propi (`VDTLineSegment.leader`, `'text'` o `'rule'`).
+
+L'equilibri de columnes no recompon mai un paràgraf així més fluix ni hi aplica tracking: es queda tal com s'ha mesurat, de manera que les seves tabulacions no es mouen.
+
 
 ### Xinès, japonès i coreà
 
@@ -497,6 +505,7 @@ Una columna curta és a vegades el resultat *correcte*, i l'equilibri sap fer-se
 - L'**última columna d'una pàgina** només s'equilibra quan la pàgina flueix de manera natural cap a la següent. Les pàgines acabades amb `:::pagebreak`, amb el `breakBefore` d'un encapçalament o amb un inici de capítol conserven la seva última columna curta — un capítol acaba legítimament a mitja pàgina.
 - L'**última pàgina del document** no s'equilibra mai.
 - Una columna **sense cap punt elàstic utilitzable** (sense encapçalament elegible, final de llista ni paràgraf recomponible) conserva el seu buit abans que degradar la tipografia.
+- Un **paràgraf amb un tabulador** no es recompon mai més fluix ni s'hi aplica tracking (vegeu [Línies amb tabulador](#línies-amb-tabulador)).
 
 ```js
 const doc = buildDocument(content, {

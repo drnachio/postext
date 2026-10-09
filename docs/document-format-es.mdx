@@ -72,7 +72,7 @@ Postext reconoce siete tipos de bloque de prosa, además de las directivas y las
     <tr>
       <td>Párrafo</td>
       <td>Texto plano en una o más líneas</td>
-      <td>Las líneas no vacías y no especiales consecutivas se unen con un único espacio y se emiten como un solo párrafo. Entre dos caracteres chinos o japoneses (ideogramas, kana, puntuación de ancho completo, y comillas tipográficas, rayas o puntos suspensivos junto a ellos) el fin de línea desaparece, como en CSS, así que un párrafo chino puede cortarse en cualquier punto del fuente. Entre dos de esos signos (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) deciden los caracteres que hay más allá: el fin de línea desaparece si uno de ellos es chino o japonés, y <code>“hello”⏎“bye”</code> conserva su espacio. El coreano conserva su espacio. Un salto de línea escrito en el texto no se conserva, salvo si la línea termina en una barra invertida (un salto de línea forzado, ver <a href="#saltos-de-línea">Saltos de línea</a>); una línea en blanco empieza un párrafo nuevo. Un poema, cuyas líneas deben quedar como están escritas, va en un bloque <a href="#verse"><code>:::verse</code></a>.</td>
+      <td>Las líneas no vacías y no especiales consecutivas se unen con un único espacio y se emiten como un solo párrafo. Entre dos caracteres chinos o japoneses (ideogramas, kana, puntuación de ancho completo, y comillas tipográficas, rayas o puntos suspensivos junto a ellos) el fin de línea desaparece, como en CSS, así que un párrafo chino puede cortarse en cualquier punto del fuente. Entre dos de esos signos (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>) deciden los caracteres que hay más allá: el fin de línea desaparece si uno de ellos es chino o japonés, y <code>“hello”⏎“bye”</code> conserva su espacio. El coreano conserva su espacio. Un salto de línea escrito en el texto no se conserva, salvo si la línea termina en una barra invertida (un salto de línea forzado, ver <a href="#saltos-de-línea">Saltos de línea</a>); una línea en blanco empieza un párrafo nuevo. Un tabulador escrito en el texto también cuenta como un espacio entre palabras, salvo si el estilo del párrafo fija tabulaciones; <code>:tab</code> es siempre un tabulador (ver <a href="#tabuladores-y-tabulaciones">Tabuladores y tabulaciones</a>). Un poema, cuyas líneas deben quedar como están escritas, va en un bloque <a href="#verse"><code>:::verse</code></a>.</td>
     </tr>
     <tr>
       <td>Cita (blockquote)</td>
@@ -767,6 +767,11 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
       <td>Un fragmento de texto en una caja que pasa de línea como una unidad: un banco de palabras, una tecla, una etiqueta. Lo estilan los <code>chipStyles</code>; ver <a href="#chips-en-línea">Chips en línea</a>.</td>
     </tr>
     <tr>
+      <td>Tabulador</td>
+      <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
+      <td>Lleva las palabras que lo siguen a la tabulación siguiente: una de las tabulaciones del estilo del párrafo, o la que fijan sus atributos. Un tabulador escrito en el texto solo es un tabulador donde el estilo fija tabulaciones. Ver <a href="#tabuladores-y-tabulaciones">Tabuladores y tabulaciones</a>.</td>
+    </tr>
+    <tr>
       <td>Matemáticas en línea</td>
       <td><code>$…$</code></td>
       <td>Una fórmula LaTeX que fluye con el texto que la rodea, p. ej. <code>$e^{'{i\\pi}'}+1=0$</code>. Se compone con MathJax y se renderiza como trazos vectoriales en todos los backends. Usa <code>\\$</code> para un signo de dólar literal. El escalado, la forma en bloque (<code>$$ … $$</code>) y el manejo de errores se describen en <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
@@ -831,6 +836,72 @@ El informe de la :smallcaps[unesco] y las pautas de la :smallcaps[oms].
 - **Dónde.** Párrafos, elementos de lista, citas, recuadros, celdas de tabla, leyendas y notas, y encabezados mientras `headings.inlineMarks` esté activado (lo está por defecto); si se desactiva, el marcado se elimina del encabezado y el texto se imprime tal cual.
 - **Párrafos enteros.** Un estilo de párrafo o el cuerpo de un recuadro con `smallCaps: true` componen así todo su texto (ver [Estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)).
 - **Texto.** El canvas, el HTML y el PDF llevan las letras tal como se pintan: al copiar `:smallcaps[Hamlet]` se obtiene «HAMLET».
+
+### Tabuladores y tabulaciones
+
+Un tabulador lleva las palabras que lo siguen a una posición fija de la línea, una tabulación: el precio de un plato al final de la medida tras una línea de puntos, el actor tras el papel en un reparto, la puntuación de una pregunta de examen junto al margen. Escribe `:tab` donde va el tabulador; los espacios que lo rodean quedan dentro de él. Las tabulaciones se fijan en la configuración: `bodyText.tabStops` para todos los párrafos, elementos de lista y citas, el `tabStops` de un estilo de párrafo para los párrafos de un grupo `:::paragraphs`, y el `body.tabStops` de un estilo de recuadro dentro de sus cajas (ver [Configuración › Tabulaciones](/es/docs/configuration#tabulaciones)). Una carta cuyos precios terminan al final de la medida, tras una línea de puntos:
+
+```ts
+paragraphStyles: [
+  { id: 'carta', firstLineIndent: { value: 0, unit: 'em' }, tabStops: [{ position: 'end', align: 'end', leader: '. ' }] },
+],
+```
+
+```markdown
+:::paragraphs{style="carta"}
+Sopa de cebolla :tab 8,50
+
+Dorada a la plancha con hinojo y limón :tab 21,00
+:::
+```
+
+`:tab{…}` fija una tabulación para ese único tabulador, sin estilo: la línea en blanco de un formulario hasta el final de la línea, un importe alineado por la coma decimal.
+
+```markdown
+Nombre y apellidos :tab{at=end leader=rule}
+
+Total a pagar :tab{at=80% align=decimal} 1.234,50
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Atributo</th>
+      <th>Significado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>at</code></td>
+      <td>Dónde está la tabulación, desde el borde inicial de la medida del párrafo: una longitud (<code>120mm</code>, <code>4cm</code>, <code>2em</code>; un número sin unidad va en puntos), <code>end</code> para el final de la medida, o una parte de ella (<code>60%</code>). Sin <code>at</code>, <code>:tab&#123;…&#125;</code> va a las tabulaciones del estilo, como un <code>:tab</code> a secas.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>start</code> (por defecto): el texto que sigue al tabulador empieza en la tabulación. <code>end</code>: termina en ella (el texto hasta el tabulador siguiente o hasta el final del párrafo). <code>center</code>: se centra en ella. <code>decimal</code>: su separador decimal cae en la tabulación; un tramo que no lo tiene termina en ella.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>Relleno: el texto que se repite en el hueco anterior a la tabulación: <code>"."</code>, <code>". "</code>, <code>"·"</code>, <code>"_"</code>, <code>"-"</code> u otro texto breve, en la fuente y el color del párrafo. <code>rule</code> traza una línea un poco por debajo de la línea base, la línea en blanco de un formulario. Por defecto, ninguno.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>Espacio que se deja entre el relleno y el texto a cada lado. Por defecto, <code>0.5em</code> del cuerpo del párrafo; un número sin unidad va en puntos.</td>
+    </tr>
+    <tr>
+      <td><code>decimal</code></td>
+      <td>El separador en el que se alinea una tabulación <code>decimal</code>. Por defecto, el del idioma del documento: <code>.</code> en inglés, chino, japonés y árabe, <code>,</code> en español, catalán, portugués, francés, alemán y otros.</td>
+    </tr>
+  </tbody>
+</table>
+
+- **Adónde va un tabulador.** A la primera tabulación que queda más allá del texto que lo precede, entre las que siguen a la que tomó el tabulador anterior de la línea, así que el segundo tabulador de una línea suele tomar la segunda tabulación. Pasada la última, `tabInterval` pone más tabulaciones a intervalos regulares desde el principio de la medida; sin él, el tabulador es un espacio entre palabras.
+- **Caracteres de tabulación.** Un tabulador escrito en el texto (U+0009) solo es un tabulador en un párrafo cuyo estilo fija `tabStops` o `tabInterval`. En los demás sigue siendo el espacio entre palabras que siempre fue, así que un documento escrito con tabuladores en lugar de espacios conserva su composición. Varios tabuladores seguidos van a otras tantas tabulaciones. Un tabulador al principio de una línea del texto se recorta con los demás blancos iniciales de la línea: escribe `:tab` para empezar una línea en una tabulación.
+- **Lo que queda como texto.** Un `:tab` seguido de una letra (`3:table`), y un `:tab` dentro de código en línea, de una fórmula, de la dirección de un enlace o de los atributos de una directiva.
+- **Dónde.** Párrafos, elementos de lista, citas, recuadros y grupos `:::paragraphs`. Los títulos, los pies, las celdas de tabla y los textos de diseño (aperturas, titulillos) no tienen tabulaciones.
+- **Texto que pasa de la tabulación.** Cuando el texto anterior a un tabulador ya ha rebasado todas las tabulaciones que le quedan a su línea, una tabulación `end`, `center` o `decimal` baja a la línea siguiente la última palabra anterior al tabulador junto con el texto de la tabulación, y el texto anterior se compone más estrecho, como una fila del índice general pasa de línea su título para conservar el número de página. Una tabulación `start` corta la línea antes del tabulador, y el texto que lo sigue empieza la línea siguiente en su tabulación. Un tabulador que abre su línea y aun así no encuentra tabulación no ocupa sitio.
+- **Rellenos.** Un relleno llena el hueco anterior a su tabulación y termina a ras del final de ese hueco, de modo que los puntos de varias líneas quedan alineados sea cual sea el texto que los precede. `gap` lo separa del texto a ambos lados; no hay hueco antes de él cuando el tabulador abre la línea, ni después cuando no le sigue nada.
+- **Corte de líneas.** Un párrafo con un tabulador se compone línea a línea, nunca con Knuth–Plass. En un texto justificado solo los espacios entre palabras que siguen al último tabulador de la línea absorben lo que falta, y la última línea del párrafo no se estira (ver [Justificación › Líneas con tabuladores](/es/docs/justification#líneas-con-tabuladores)). Un párrafo centrado o alineado a la derecha compone sus líneas con tabuladores desde el lado inicial, porque las tabulaciones son posiciones en la medida. De derecha a izquierda, las tabulaciones se miden desde la derecha y una tabulación `end` queda a la izquierda (ver [Composición árabe](/es/docs/arabic-layout#índice-general-e-índice-analítico)). En texto vertical un tabulador es un espacio entre palabras, y un `:tab` allí da el aviso de contenido `tabInVerticalText`.
+- **Texto y salidas.** El texto plano lleva un carácter de tabulación (`\t`) en cada tabulador; los rellenos no son texto, y las copias, las búsquedas y el mapa de posiciones los omiten. El canvas, el visor HTML y el EPUB de maquetación fija los pintan (ocultos para los lectores de pantalla en el HTML); un PDF etiquetado los marca como artefactos, así que su texto se lee `Sopa de cebolla 8,50`. El EPUB adaptable no puede conservar las tabulaciones con exactitud: cada línea de un párrafo con tabuladores pasa a ser una fila de las partes que hay entre sus tabuladores, donde una tabulación `end`, `center` o `decimal`, o una con relleno, empuja la parte siguiente al final de la fila (su relleno, un borde punteado o continuo), y una tabulación `start` conserva la parte anterior con su anchura impresa. Una exportación a Word escribe `:tab` como un tabulador de Word, y la importación de Word vuelve a leer un tabulador del texto como `:tab` con la tabulación que Word le fijó (ver [Sandbox › Documentos de Word](/es/docs/sandbox#documentos-de-word)).
 
 ### Orientación en texto vertical
 

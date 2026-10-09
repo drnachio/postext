@@ -72,7 +72,7 @@ O Postext reconhece sete tipos de bloco de texto, além das diretivas e dos recu
     <tr>
       <td>Parágrafo</td>
       <td>Texto simples em uma ou mais linhas</td>
-      <td>Linhas consecutivas que não estão em branco nem são especiais são unidas com um único espaço e saem como um só parágrafo. Entre dois caracteres chineses ou japoneses (ideogramas, kana, pontuação de largura total, e aspas curvas, travessões ou reticências ao lado deles), a quebra de linha é descartada, como faz o CSS, então um parágrafo em chinês pode ser quebrado em qualquer ponto do texto de origem. Entre duas dessas marcas (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>), decidem os caracteres que vêm depois delas: a quebra de linha some quando um deles é chinês ou japonês, e <code>“hello”⏎“bye”</code> mantém o espaço. O coreano mantém o espaço. Uma quebra de linha digitada no texto não se mantém, a não ser que a linha termine em uma barra invertida (uma quebra de linha forçada, veja <a href="#quebras-de-linha">Quebras de linha</a>); uma linha em branco começa um parágrafo novo. Um poema, cujas linhas devem ficar como foram escritas, vai em um bloco <a href="#verse"><code>:::verse</code></a>.</td>
+      <td>Linhas consecutivas que não estão em branco nem são especiais são unidas com um único espaço e saem como um só parágrafo. Entre dois caracteres chineses ou japoneses (ideogramas, kana, pontuação de largura total, e aspas curvas, travessões ou reticências ao lado deles), a quebra de linha é descartada, como faz o CSS, então um parágrafo em chinês pode ser quebrado em qualquer ponto do texto de origem. Entre duas dessas marcas (<code>“你好”⏎“再见”</code>, <code>他说……⏎“好”</code>), decidem os caracteres que vêm depois delas: a quebra de linha some quando um deles é chinês ou japonês, e <code>“hello”⏎“bye”</code> mantém o espaço. O coreano mantém o espaço. Uma quebra de linha digitada no texto não se mantém, a não ser que a linha termine em uma barra invertida (uma quebra de linha forçada, veja <a href="#quebras-de-linha">Quebras de linha</a>); uma linha em branco começa um parágrafo novo. Uma tabulação digitada no texto também é um espaço entre palavras, a não ser que o estilo do parágrafo defina paradas de tabulação; <code>:tab</code> é sempre uma tabulação (veja <a href="#tabulações-e-paradas-de-tabulação">Tabulações e paradas de tabulação</a>). Um poema, cujas linhas devem ficar como foram escritas, vai em um bloco <a href="#verse"><code>:::verse</code></a>.</td>
     </tr>
     <tr>
       <td>Citação</td>
@@ -766,6 +766,11 @@ A marcação em linha é reconhecida dentro de qualquer bloco de texto (títulos
       <td>Um trecho de texto dentro de uma caixa que quebra como uma unidade só: um banco de palavras, uma tecla, uma etiqueta. Estilizado por <code>chipStyles</code>; veja <a href="#chips-em-linha">Chips em linha</a>.</td>
     </tr>
     <tr>
+      <td>Tabulação</td>
+      <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
+      <td>Leva as palavras que vêm depois dela até a próxima parada de tabulação: uma das paradas do estilo do parágrafo, ou a que os seus atributos definem. Um caractere de tabulação digitado no texto só é uma tabulação onde o estilo define paradas. Veja <a href="#tabulações-e-paradas-de-tabulação">Tabulações e paradas de tabulação</a>.</td>
+    </tr>
+    <tr>
       <td>Fórmula em linha</td>
       <td><code>$…$</code></td>
       <td>Uma fórmula LaTeX que flui com o texto em volta, por exemplo <code>$e^{'{i\\pi}'}+1=0$</code>. Composta pelo MathJax e renderizada como contornos vetoriais em todos os renderizadores. Use <code>\\$</code> para um cifrão literal. A escala, a forma destacada (<code>$$ … $$</code>) e o tratamento de erros estão em <a href="#fórmulas-matemáticas">Fórmulas matemáticas</a>.</td>
@@ -830,6 +835,72 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 - **Onde.** Parágrafos, itens de lista, citações em bloco, boxes, células de tabela, legendas e notas, e títulos enquanto `headings.inlineMarks` estiver ativado (o padrão); com ele desativado, a marcação é removida do título e o texto sai como foi escrito.
 - **Parágrafos inteiros.** Um estilo de parágrafo ou o corpo de um boxe com `smallCaps: true` compõe todo o seu texto assim (veja [Estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)).
 - **Texto.** O canvas, o HTML e o PDF guardam as letras como foram pintadas: copiar `:smallcaps[Hamlet]` dá “HAMLET”.
+
+### Tabulações e paradas de tabulação
+
+Uma tabulação leva as palavras que vêm depois dela até uma parada na linha: o preço de um prato rente ao fim da medida, atrás de uma fileira de pontos, o ator depois do papel numa lista de elenco, a pontuação de uma questão de prova na margem. Escreva `:tab` onde vai a tabulação; os espaços em volta dela ficam dentro dela. As paradas são definidas na configuração: `bodyText.tabStops` para todos os parágrafos, itens de lista e citações, o `tabStops` de um estilo de parágrafo para os parágrafos de um grupo `:::paragraphs`, e o `body.tabStops` de um estilo de boxe dentro dos seus boxes (veja [Configuração › Paradas de tabulação](/pt/docs/configuration#paradas-de-tabulação)). Um cardápio cujos preços terminam no fim da medida, atrás de pontos:
+
+```ts
+paragraphStyles: [
+  { id: 'menu', firstLineIndent: { value: 0, unit: 'em' }, tabStops: [{ position: 'end', align: 'end', leader: '. ' }] },
+],
+```
+
+```markdown
+:::paragraphs{style="menu"}
+Sopa de cebola :tab 8,50
+
+Pargo grelhado com erva-doce e limão :tab 21,00
+:::
+```
+
+`:tab{…}` define uma parada só para aquela tabulação, sem estilo: a lacuna de um formulário até o fim da linha, um valor alinhado pela vírgula decimal.
+
+```markdown
+Nome e sobrenome :tab{at=end leader=rule}
+
+Total a pagar :tab{at=80% align=decimal} 1.234,50
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Atributo</th>
+      <th>Significado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>at</code></td>
+      <td>Onde fica a parada, a partir da borda inicial da medida do parágrafo: um comprimento (<code>120mm</code>, <code>4cm</code>, <code>2em</code>; um número sem unidade é em pontos), <code>end</code> para o fim da medida, ou uma porcentagem dela (<code>60%</code>). Sem <code>at</code>, <code>:tab&#123;…&#125;</code> vai para as paradas do estilo, como um <code>:tab</code> simples.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>start</code> (o padrão): o texto depois da tabulação começa na parada. <code>end</code>: termina nela (o texto até a próxima tabulação ou até o fim do parágrafo). <code>center</code>: fica centralizado nela. <code>decimal</code>: o seu separador decimal fica sobre a parada; um trecho sem separador termina nela.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>Texto repetido no espaço antes da parada (o preenchimento): <code>"."</code>, <code>". "</code>, <code>"·"</code>, <code>"_"</code>, <code>"-"</code> ou outro texto curto, na fonte e na cor do parágrafo. <code>rule</code> traça uma linha um pouco abaixo da linha de base, a lacuna de um formulário. Padrão: nenhum.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>Espaço mantido entre o preenchimento e o texto de cada lado. Padrão: <code>0.5em</code> do corpo do parágrafo; um número sem unidade é em pontos.</td>
+    </tr>
+    <tr>
+      <td><code>decimal</code></td>
+      <td>O separador em que uma parada <code>decimal</code> se alinha. Padrão: o do idioma do documento, <code>.</code> em inglês, chinês, japonês e árabe, <code>,</code> em espanhol, catalão, português, francês, alemão e outros.</td>
+    </tr>
+  </tbody>
+</table>
+
+- **Para onde vai uma tabulação.** Para a primeira parada depois do texto que vem antes dela, entre as paradas posteriores à que a tabulação anterior da linha ocupou; assim, a segunda tabulação de uma linha costuma ocupar a segunda parada. Depois da última parada, `tabInterval` define mais paradas a cada intervalo a partir do início da medida; sem ele, a tabulação é um espaço entre palavras.
+- **Caracteres de tabulação.** Uma tabulação digitada no texto (U+0009) só é uma tabulação num parágrafo cujo estilo define `tabStops` ou `tabInterval`. Em qualquer outro lugar é o espaço entre palavras que sempre foi, de modo que um documento escrito com tabulações no lugar de espaços mantém a sua diagramação. Vários caracteres de tabulação seguidos vão para outras tantas paradas. Uma tabulação no início de uma linha do texto de origem é cortada com os outros brancos iniciais da linha: escreva `:tab` para começar uma linha numa parada.
+- **O que continua texto.** Um `:tab` seguido de uma letra (`3:table`), e um `:tab` em código na linha, numa fórmula, no endereço de um link ou nos atributos de uma diretiva.
+- **Onde.** Parágrafos, itens de lista, citações, boxes e grupos `:::paragraphs`. Títulos, legendas, células de tabela e o texto dos designs (aberturas, cabeços) não têm paradas de tabulação.
+- **Texto que passa da parada.** Quando o texto antes de uma tabulação já passou de todas as paradas que restam na sua linha, uma parada `end`, `center` ou `decimal` leva a última palavra antes da tabulação para a linha seguinte junto com o texto da parada, e o texto antes dela é composto mais estreito, como uma linha do sumário quebra o título para manter o número da página. Uma parada `start` quebra a linha antes da tabulação, e o texto depois dela começa a linha seguinte na sua parada. Uma tabulação que abre a sua linha e mesmo assim não encontra parada não ocupa espaço.
+- **Preenchimentos.** Um preenchimento ocupa o espaço antes da sua parada e termina rente ao fim desse espaço, de modo que os pontos de várias linhas ficam alinhados, seja qual for o texto antes deles. `gap` o mantém afastado do texto dos dois lados; não há espaço antes dele quando a tabulação abre a linha, nem depois quando nada vem em seguida.
+- **Quebra de linha.** Um parágrafo que contém uma tabulação é composto linha a linha, nunca com Knuth–Plass. No texto justificado, só os espaços entre palavras depois da última tabulação de uma linha absorvem a folga, e a última linha do parágrafo não é esticada (veja [Justificação › Linhas com tabulação](/pt/docs/justification#linhas-com-tabulação)). Um parágrafo centralizado ou alinhado à direita compõe as suas linhas com tabulação a partir do lado inicial, já que as paradas são posições na medida. Da direita para a esquerda, as paradas são medidas a partir da direita e uma parada `end` fica à esquerda (veja [Composição árabe](/pt/docs/arabic-layout#sumário-e-índice-remissivo)). No texto vertical, uma tabulação é um espaço entre palavras, e um `:tab` ali gera o aviso de conteúdo `tabInVerticalText`.
+- **Texto e saídas.** O texto simples tem um caractere de tabulação (`\t`) em cada tabulação; os preenchimentos não são texto, e as cópias, as buscas e o mapa de origem os deixam de fora. O canvas, o visualizador HTML e o EPUB de layout fixo os pintam (ocultos para os leitores de tela no HTML); um PDF com tags os marca como artefatos, de modo que o seu texto diz `Sopa de cebola 8,50`. O EPUB refluível não consegue manter as paradas exatamente: cada linha de um parágrafo com tabulações vira uma fileira das partes entre as suas tabulações, em que uma parada `end`, `center` ou `decimal`, ou uma com preenchimento, empurra a parte seguinte para o fim da fileira (o preenchimento vira uma borda pontilhada ou contínua), e uma parada `start` mantém a parte anterior na sua largura impressa. Uma exportação para o Word escreve `:tab` como uma tabulação do Word, e a importação do Word lê de volta uma tabulação do texto corrido como `:tab` com a parada que o Word definiu para ela (veja [Sandbox › Documentos do Word](/pt/docs/sandbox#documentos-do-word)).
 
 ### Orientação no texto vertical
 

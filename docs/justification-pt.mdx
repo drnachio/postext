@@ -359,6 +359,14 @@ A propriedade `bodyText.optimalLineBreaking` (padrão: `true`) controla qual alg
 
 Quando o Knuth-Plass está ativo e não produz nenhuma quebra válida (o que pode acontecer em colunas extremamente estreitas ou com palavras mais longas que a largura da coluna), o motor recorre automaticamente à quebra gulosa para aquele parágrafo.
 
+### Linhas com tabulação
+
+Um parágrafo que contém uma tabulação (veja [Formato do documento › Tabulações e paradas de tabulação](/pt/docs/document-format#tabulações-e-paradas-de-tabulação)) é composto linha a linha, como os processadores de texto e o InDesign compõem o texto com tabulações, nunca com Knuth–Plass, diga o que disser `optimalLineBreaking`. O lugar onde uma tabulação cai depende de até onde a sua linha chegou, e a busca ótima soma as larguras de cada linha candidata como se não dependessem. O mesmo vale para o texto em chinês e japonês: um parágrafo com uma tabulação é quebrado entre caracteres segundo as regras de quebra de linha do documento, sem compressão da pontuação nem justificação entre caracteres.
+
+Num parágrafo justificado, uma linha que contém uma tabulação não é esticada antes da sua última tabulação, já que as paradas fixam onde começa cada parte dela. Só os espaços entre palavras depois da última tabulação absorvem a folga, e só quando a linha não é a última do parágrafo; uma linha sem espaço entre palavras depois da última tabulação fica como cai. As linhas em bandeira não são afetadas. A linha registra que contém uma tabulação (`VDTLine.tabbed`); cada tabulação é um segmento de espaço que leva a sua parada (`VDTLineSegment.tab`), e cada preenchimento, um segmento próprio (`VDTLineSegment.leader`, `'text'` ou `'rule'`).
+
+O balanceamento de colunas nunca volta a quebrar um parágrafo assim mais frouxo nem lhe aplica tracking: ele fica como foi medido, para que as suas paradas não se movam.
+
 
 ### Chinês, japonês e coreano
 
@@ -498,6 +506,7 @@ As quebras de coluna são *presas ao elemento*: o elemento que abre a coluna seg
 - A **última coluna de uma página** só é balanceada quando a página continua naturalmente na seguinte. Páginas encerradas por `:::pagebreak`, pelo `breakBefore` de um título ou por uma abertura de capítulo mantêm a sua última coluna curta: um capítulo pode muito bem terminar no meio da página.
 - A **última página do documento** nunca é balanceada.
 - Uma coluna **sem nenhum ponto elástico utilizável** (nenhum título elegível, fim de lista ou parágrafo que possa ficar mais frouxo) mantém o seu vão em vez de piorar a tipografia.
+- Um **parágrafo que contém uma tabulação** nunca fica mais frouxo nem recebe tracking (veja [Linhas com tabulação](#linhas-com-tabulação)).
 
 ```js
 const doc = buildDocument(content, {
