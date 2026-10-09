@@ -82,7 +82,7 @@ export interface TabLeaderPlacement {
 }
 
 export type TabPlacement =
-  | { kind: 'stop'; width: number; pos: number; leader?: TabLeaderPlacement }
+  | { kind: 'stop'; width: number; pos: number; align: TabStopAlign; leader?: TabLeaderPlacement }
   | { kind: 'space' }
   | { kind: 'overrun'; align: TabStopAlign };
 
@@ -125,14 +125,14 @@ export function placeTab(
     if (!clear) continue;
     const width = Math.max(0, at - x);
     const leader = stop.leader ? leaderFor(stop, x, width, run.width > 0, line.start, leaderWidth) : undefined;
-    return { kind: 'stop', width, pos, ...(leader ? { leader } : {}) };
+    return { kind: 'stop', width, pos, align: stop.align, ...(leader ? { leader } : {}) };
   }
   if (!oneOff && settings?.intervalPx !== undefined && settings.intervalPx > 0) {
     const interval = settings.intervalPx;
     const last = (settings.stops ?? []).reduce((m, s) => Math.max(m, tabStopPos(s, line)), -Infinity);
     const from = Math.max(x, last, line.usedPos);
     const pos = (Math.floor((from + EPS) / interval) + 1) * interval;
-    if (pos <= line.end + EPS) return { kind: 'stop', width: pos - x, pos };
+    if (pos <= line.end + EPS) return { kind: 'stop', width: pos - x, pos, align: 'start' };
     return { kind: 'overrun', align: candidates[candidates.length - 1]?.stop.align ?? 'start' };
   }
   if (candidates.length > 0) return { kind: 'overrun', align: candidates[candidates.length - 1]!.stop.align };

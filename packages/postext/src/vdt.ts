@@ -282,6 +282,13 @@ export interface VDTLineSegment {
    *  search or the source map; the HTML viewer hides it from assistive
    *  technology and the tagged PDF paints it as an artifact. */
   leader?: 'text' | 'rule';
+  /** A tab at its stop (#622; the `space` segment flagged `labelTab`, text
+   *  `'\t'`): how the stop aligns the text after it and where it stands,
+   *  px from the start edge of the measure (the measure being the line's
+   *  box less its indent: `bbox.x` is that edge plus the line's indent).
+   *  Read by outputs that cannot keep the stops exactly (the reflowable
+   *  EPUB). */
+  tab?: { align: import('./types').TabStopAlign; at: number };
   /** True when this segment is part of a caption's numbered label, so renderers
    *  paint it in the configured caption-label colour. */
   captionLabel?: boolean;

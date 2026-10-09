@@ -1,5 +1,6 @@
 import { FORCED_BREAK, measureForcedBreaks } from './hardBreaks';
 import { placeTab, type TabLeaderPlacement, type TabRun, type TabStopPx } from './tabs';
+import type { TabStopAlign } from '../types';
 import type { VDTAnnotationRun, VDTChip, VDTChipRun, VDTLine, VDTLineSegment, VDTSegmentMarks } from '../vdt';
 import { uprightArabicSpans, uprightFace } from '../uprightArabic';
 import { createBoundingBox } from '../vdt';
@@ -162,7 +163,9 @@ export interface RichToken {
    *  the one-off stop of `:tab{at=…}`. Never skipped at a line's start nor
    *  trimmed at its end. */
   tab?: { stop?: TabStopPx };
-  /** A tab placed at its stop, with a leader (see {@link setTabbedLine}). */
+  /** A tab placed at its stop: the stop (see `VDTLineSegment.tab`) and its
+   *  leader (see {@link setTabbedLine}). */
+  tabPlaced?: { align: TabStopAlign; at: number };
   tabLeader?: TabLeaderPlacement;
 }
 
@@ -1812,7 +1815,12 @@ function measureRichText(
           // At its stop; or opening its line with no stop the text after
           // it fits: it takes no room.
           const width = placement.kind === 'stop' ? placement.width : 0;
-          lineTokens.push({ ...token, width, ...(placement.kind === 'stop' && placement.leader ? { tabLeader: placement.leader } : {}) });
+          lineTokens.push({
+            ...token,
+            width,
+            tabPlaced: placement.kind === 'stop' ? { align: placement.align, at: placement.pos } : { align: 'start', at: x },
+            ...(placement.kind === 'stop' && placement.leader ? { tabLeader: placement.leader } : {}),
+          });
           lineWidth += width;
           tokenIdx++;
           if (placement.kind === 'stop') tabUsedPos = placement.pos;
@@ -1845,7 +1853,9 @@ function measureRichText(
         token = { ...space, width: tabSpaceWidth, labelTab: 'gap' };
       }
 
-      if (lineWidth + token.width <= lineMaxWidth) {
+      // The text a tab sent to its stop fits as measured: rounding in the
+      // sums is no overflow (#622).
+      if (lineWidth + token.width <= lineMaxWidth + (lineTabbed ? 0.01 : 0)) {
         lineTokens.push(token);
         lineWidth += token.width;
         tokenIdx++;
@@ -2125,12 +2135,14 @@ function setTabbedLine(
   segments.forEach((seg, i) => {
     const token = lineTokens[i];
     if (token?.tab) lastTab = out.length;
+    const placed = token?.tabPlaced;
     const leader = token?.tabLeader;
+    const tabSeg = placed ? { ...seg, tab: { align: placed.align, at: placed.at } } : seg;
     if (!token?.tab || !leader) {
-      out.push(seg);
+      out.push(tabSeg);
       return;
     }
-    out.push({ ...seg, width: Math.max(0, leader.end - leader.width) });
+    out.push({ ...tabSeg, width: Math.max(0, leader.end - leader.width) });
     out.push({ kind: 'text', text: leader.text, width: leader.width, leader: leader.rule ? 'rule' : 'text' });
     const after = seg.width - leader.end;
     if (after > 0) out.push({ kind: 'space', text: '', width: after, labelTab: true });

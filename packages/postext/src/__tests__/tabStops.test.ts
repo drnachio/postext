@@ -414,3 +414,17 @@ describe('plain text and source ranges (#622)', () => {
     expect(line!.sourceEnd).toBe(md.length);
   });
 });
+
+describe('rounding (#622)', () => {
+  it('keeps the text an end stop aligns on its line at any measure', () => {
+    for (let k = 0; k < 10; k++) {
+      const width = 250 + k * 0.1 + 0.03;
+      const { lines } = measureRichBlock(
+        [{ text: 'Roast lamb', bold: false, italic: false }, { text: '\t', bold: false, italic: false, tab: {} }, { text: '21.00', bold: false, italic: false }],
+        '16.3px Test', '700 16.3px Test', 'italic 16.3px Test', 'italic 700 16.3px Test', width, 24,
+        { tabs: { stops: [{ at: 'end', align: 'end', leader: '.', gapPx: 3.3, decimalChar: '.' }] } },
+      );
+      expect(lines, `measure ${width}`).toHaveLength(1);
+    }
+  });
+});
