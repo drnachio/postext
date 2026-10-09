@@ -2553,6 +2553,10 @@ export type ContentWarning = ContentWarningBase & (
    *  takes the first one. Not raised while `calloutStyles` is unset or
    *  empty (every type is then the built-in plain box). */
   | { kind: 'unknownCalloutType'; type: string }
+  /** `:::columns{flow=…}` names neither `'snake'` nor `'parallel'` (#634):
+   *  the group takes the default (`'parallel'` with `breaks`, `'snake'`
+   *  without). */
+  | { kind: 'columnsFlowUnknown'; value: string }
   /** A `:::paper{…}` attribute the engine cannot read: an unknown key, a
    *  stock, finish or texture it does not know, a number out of range, a
    *  shade that is neither a hex colour nor a palette id, a `showThrough`
@@ -2758,6 +2762,10 @@ export type ContentWarning = ContentWarningBase & (
    *  vertical flow it takes its band whole. `resourceId` names a
    *  resource, `box` a box's style. Found by the layout. */
   | { kind: 'textWrap'; reason: 'tooNarrow' | 'fewLines' | 'moved' | 'verticalText'; resourceId?: string; box?: string }
+  /** `columnsTooNarrow` (#634): the sub-columns of a `:::columns` group
+   *  are narrower than six ems of its text, `widthPx` each, `columns` of
+   *  them: few words fit a line. Found by the layout. */
+  | { kind: 'columnsTooNarrow'; columns: number; widthPx: number }
   /** `designTextTruncated` (#628): a design text element did not fit its
    *  width and lost part of a line: cut by an ellipsis (`mode`
    *  `'ellipsis-*'`, its `overflow`) or clipped with ink past its box

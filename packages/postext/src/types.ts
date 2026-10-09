@@ -1077,6 +1077,16 @@ export interface LayoutConfig {
    *  version is read with `false` when its chapters embed a resource (see
    *  `migrateConfig` in `postext/bundle`). */
   inlineResourceGapInBoxes?: boolean;
+  /** `:::columns` groups in the running text and groups that split (#634):
+   *  a `:::columns` fence outside a box sets its blocks in sub-columns of
+   *  the text column (or, with `span="page"`, across the page), and a
+   *  group, in a box or in the text, is cut between its sub-columns when
+   *  the box goes on in the next column or page. Default `true`. `false`
+   *  keeps the rules of postext 1.24 and earlier: a fence outside a box is
+   *  ignored and a box never cuts inside a group. A configuration stored
+   *  by an earlier version is read with `false` when its chapters hold a
+   *  `:::columns` fence (see `migrateConfig` in `postext/bundle`). */
+  flowColumns?: boolean;
   /** Fewest lines of a paragraph or list item that a cut inside it leaves
    *  on each side when a box splits (see `CalloutStyleConfig.splitMinLines`,
    *  which still counts every line on each side of the cut). A whole number,
@@ -1143,6 +1153,7 @@ export interface ResolvedLayoutConfig {
   hugClosingFloats: boolean;
   inlineResourceGap: InlineResourceGap;
   inlineResourceGapInBoxes: boolean;
+  flowColumns: boolean;
   boxChildSplitMinLines: number;
   writingMode: WritingMode;
 }
@@ -6021,7 +6032,7 @@ export interface HeadingStyleConfig extends Omit<HeadingLevelConfig, 'level' | '
    *  Only its page geometry is read from it (`layoutType`, `gutterWidth`,
    *  the side column, `columnRule`), plus its `fitFiguresToPage` when a
    *  figure could move from an empty column cut short to a whole one;
-   *  `inlineResourceGap`, `inlineResourceGapInBoxes`,
+   *  `inlineResourceGap`, `inlineResourceGapInBoxes`, `flowColumns`,
    *  `boxChildSplitMinLines` and `hugClosingFloats` stay the document's,
    *  and so does the `fitFiguresToPage` that shrinks figures.
    *  Unset, the section uses the document's `layout`. */

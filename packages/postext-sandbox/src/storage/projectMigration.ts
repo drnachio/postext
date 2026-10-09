@@ -3,7 +3,7 @@
 // supplied by the caller.
 
 import type { PostextConfig, Resource } from 'postext';
-import { CONFIG_VERSION, migrateConfig as migrateEngineConfig, pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHardBreaks, pinLegacyCodeBlocks, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyPairedIndents, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking, pinLegacyVerseLayout, pinLegacyVerseTightening, pinLegacyDesignOverflow, pinLegacyGridBalancing, pinLegacyInlineTableSplit } from 'postext/bundle';
+import { CONFIG_VERSION, migrateConfig as migrateEngineConfig, pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHardBreaks, pinLegacyCodeBlocks, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyPairedIndents, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking, pinLegacyVerseLayout, pinLegacyVerseTightening, pinLegacyDesignOverflow, pinLegacyGridBalancing, pinLegacyInlineTableSplit, pinLegacyFlowColumns } from 'postext/bundle';
 import { deriveChapterTitle, newChapter } from '../book/chapterOps';
 import type { BookContent, Chapter } from '../book/types';
 import type { ProjectThumbnail } from './projects';
@@ -41,7 +41,9 @@ import type { ProjectThumbnail } from './projects';
  *  pinLegacyDesignOverflow}, #628), and records saved before 11 the
  *  balancing of a horizontal page on a character grid (see {@link
  *  pinLegacyGridBalancing}, #632) and the inline tables that moved whole
- *  (see {@link pinLegacyInlineTableSplit}, #634).
+ *  (see {@link pinLegacyInlineTableSplit}, #634) and the `:::columns`
+ *  fences outside a box that were ignored (see {@link
+ *  pinLegacyFlowColumns}, #634).
  *  Records 1 and 2 were numbered by the Sandbox alone, before 1.5; they
  *  are older than 3 on every count. Records 3 to 7 were written by the 1.5
  *  prereleases: 3 before the maths size changed, 4 before the inline gap
@@ -114,8 +116,9 @@ export function normalizeBookContent(raw: unknown, deps: MigrationDeps): BookCon
  *  `pinLegacyPairedIndents`, `pinLegacyHardBreaks`,
  *  `pinLegacyCodeBlocks`, `pinLegacyVerseTightening`,
  *  `pinLegacyDesignOverflow`, `pinLegacyGridBalancing` and
- *  `pinLegacyInlineTableSplit` in `postext/bundle`). */
-export { pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHardBreaks, pinLegacyCodeBlocks, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyPairedIndents, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking, pinLegacyVerseLayout, pinLegacyVerseTightening, pinLegacyDesignOverflow, pinLegacyGridBalancing, pinLegacyInlineTableSplit };
+ *  `pinLegacyInlineTableSplit` and `pinLegacyFlowColumns` in
+ *  `postext/bundle`). */
+export { pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHardBreaks, pinLegacyCodeBlocks, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyPairedIndents, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking, pinLegacyVerseLayout, pinLegacyVerseTightening, pinLegacyDesignOverflow, pinLegacyGridBalancing, pinLegacyInlineTableSplit, pinLegacyFlowColumns };
 
 export interface MigratedProjectRecord extends BookContent {
   version: typeof PROJECT_RECORD_VERSION;

@@ -124,8 +124,9 @@ describe('configurations stored before rules 6 keep the 1.4 box spacing', () => 
     // Unversioned (1.4): both gap pins.
     expect(migrateConfig(config, undefined, { content: MD }).layout)
       .toEqual({ layoutType: 'single', boxChildSplitMinLines: 2, inlineResourceGap: 'above', inlineResourceGapInBoxes: false });
-    // Unknown content: pinned.
-    expect(migrateConfig(config, 5).layout).toEqual({ layoutType: 'single', boxChildSplitMinLines: 2, inlineResourceGapInBoxes: false });
+    // Unknown content: pinned (and, as it may hold a `:::columns` group,
+    // the version-11 pin of #634).
+    expect(migrateConfig(config, 5).layout).toEqual({ layoutType: 'single', boxChildSplitMinLines: 2, inlineResourceGapInBoxes: false, flowColumns: false });
     // Today's rules, or a book with no resource in a box: as it is.
     expect(migrateConfig(config, CONFIG_VERSION, { content: MD })).toBe(config);
     // (An embed outside a box still gets the version-11 inline table pin,
@@ -133,8 +134,9 @@ describe('configurations stored before rules 6 keep the 1.4 box spacing', () => 
     expect(migrateConfig(config, 5, { content: `${TEXT}\n\n::resource{id="t"}\n\n${boxed(TEXT)}` }).layout).toBe(config.layout);
     // Only a line inside an open `:::callout`, nested containers counted.
     expect(migrateConfig(config, 5, { content: `:::paragraphs\n::resource{id="t"}\n:::\n\n${boxed(TEXT)}` }).layout).toBe(config.layout);
+    // (A `:::columns` group also gets the version-11 pin of #634.)
     expect(migrateConfig(config, 5, { content: `:::callout\n:::columns{count=2}\nText.\n:::\n::resource{id="t"}\n:::` }).layout)
-      .toEqual({ layoutType: 'single', boxChildSplitMinLines: 2, inlineResourceGapInBoxes: false });
+      .toEqual({ layoutType: 'single', boxChildSplitMinLines: 2, inlineResourceGapInBoxes: false, flowColumns: false });
     expect(migrateConfig(config, 5, { content: ['No box.', `Text.\r\n${boxed('  ::resource{id="t"}  ')}`] }).layout)
       .toEqual({ layoutType: 'single', boxChildSplitMinLines: 2, inlineResourceGapInBoxes: false });
     // A configuration that says whether boxes keep the gap is not pinned.

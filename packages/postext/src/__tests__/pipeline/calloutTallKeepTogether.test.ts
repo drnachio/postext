@@ -160,9 +160,10 @@ describe('keep-together box taller than a full column', () => {
     const short = build(`${paras(3)}\n\n${note(filler(2), ' span="page" placement="top"')}\n\n${paras(8)}`, TWO_COL());
     expect(frames(short)).toHaveLength(1);
     expect(short.pages.flatMap((p) => p.floats ?? []).filter((b) => b.type === 'callout')).toHaveLength(1);
-    // So does a tall one no cut can split (a `:::columns` group).
+    // So does a tall one no cut can split (a `:::columns` group under
+    // 1.24's rules; since #634 a group is cut between its sub-columns).
     const group = [':::columns{count=2}', paras(30), ':::'].join('\n');
-    const unsplittable = build(`${paras(3)}\n\n${note(group, ' span="page" placement="top"')}\n\n${paras(2)}`, TWO_COL());
+    const unsplittable = build(`${paras(3)}\n\n${note(group, ' span="page" placement="top"')}\n\n${paras(2)}`, { ...TWO_COL(), layout: { layoutType: 'double', flowColumns: false } });
     expect(frames(unsplittable)).toHaveLength(1);
     expect(unsplittable.pages.flatMap((p) => p.floats ?? []).filter((b) => b.type === 'callout')).toHaveLength(1);
   }, 60000);
@@ -179,10 +180,10 @@ describe('keep-together box taller than a full column', () => {
   }, 60000);
 
   it('content no cut can split still overflows with a warning', () => {
-    // No cut falls inside a `:::columns` group: a group taller than a
-    // column leaves the box unsplittable.
+    // Under 1.24's rules no cut falls inside a `:::columns` group: a group
+    // taller than a column leaves the box unsplittable (#634 cuts it).
     const group = [':::columns{count=2}', paras(12), ':::'].join('\n');
-    const doc = build(note(group), SMALL_PAGE());
+    const doc = build(note(group), { ...SMALL_PAGE(), layout: { layoutType: 'single', flowColumns: false } });
     expect(frames(doc)).toHaveLength(1);
     expect(doc.warnings?.map((w) => w.kind)).toEqual(['calloutOverflow']);
   }, 60000);

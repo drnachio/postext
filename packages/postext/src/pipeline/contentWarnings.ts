@@ -261,6 +261,8 @@ export function collectContentWarnings(
           out.push({ kind: 'unknownParagraphStyle', style: attrs.style, ...abs(range) });
         } else if (b.containerName === 'callout' && calloutStyles.size > 0 && attrs.type !== undefined && !calloutStyles.has(attrs.type)) {
           out.push({ kind: 'unknownCalloutType', type: attrs.type, ...abs(range) });
+        } else if (b.containerName === 'columns' && attrs.flow !== undefined && attrs.flow !== 'snake' && attrs.flow !== 'parallel') {
+          out.push({ kind: 'columnsFlowUnknown', value: attrs.flow, ...abs(range) });
         } else if (b.containerName === 'paper') {
           for (const issue of parsePaperAttrs(attrs, config?.colorPalette).issues) {
             out.push({ kind: 'paperAttributeInvalid', key: issue.key, value: issue.value, ...abs(range) });
@@ -764,6 +766,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'unknownCalloutType':
       text = `Unknown callout type "${w.type}" — the box takes the first callout style`;
       break;
+    case 'columnsFlowUnknown':
+      text = `Unknown flow "${w.value}" for :::columns — the group fills its columns in turn ("snake"), or stream by stream ("parallel") when it sets breaks`;
+      break;
     case 'paperAttributeInvalid':
       text = `:::paper ${w.key}="${w.value}" is not a value it reads — dropped, the pages keep the document's paper for it`;
       break;
@@ -859,6 +864,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
           : `${what} — the listing is set at ${Math.round((w.scale ?? 1) * 100)} % of its size, and what still does not fit is turned over`;
       break;
     }
+    case 'columnsTooNarrow':
+      text = `The ${w.columns} columns of a :::columns group are ${Math.round(w.widthPx)} px wide, narrower than six ems of their text — few words fit a line; set fewer columns or a smaller gap`;
+      break;
     case 'textWrap': {
       const what = w.resourceId !== undefined ? `The resource "${w.resourceId}"` : `A "${w.box ?? 'callout'}" box`;
       text = w.reason === 'moved'

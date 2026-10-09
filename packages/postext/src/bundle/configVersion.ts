@@ -92,7 +92,7 @@ import { hasCJK } from '../measure/cjk';
  *   - a text element of a heading design or a part page that sets no
  *     `overflow` wraps onto more lines (#628), where up to 1.23 it was cut
  *     with an ellipsis ({@link pinLegacyDesignOverflow}).
- * - 11, five rules:
+ * - 11, six rules:
  *   - a horizontal page on a character grid (`cjk.grid.enabled`) is not
  *     balanced unless `headings.balancing.enabled` says so (#632), where
  *     up to 1.24 it was ({@link pinLegacyGridBalancing});
@@ -100,6 +100,10 @@ import { hasCJK } from '../measure/cjk';
  *     (`tableStyle.splitInline`, #634): one that does not fit the room
  *     left in its column is cut between rows, where up to 1.24 it moved
  *     whole to the next column ({@link pinLegacyInlineTableSplit});
+ *   - a `:::columns` fence outside a box sets its blocks in sub-columns,
+ *     and a box that splits may cut inside a group (`layout.flowColumns`,
+ *     #634), where up to 1.24 such a fence was ignored and a box never cut
+ *     inside a group ({@link pinLegacyFlowColumns});
  *   - a line breaks inside a book title only where two of its characters
  *     stand on either side (`cjk.titleMinChars: 2`, #637), where up to
  *     1.24 it could leave one ({@link pinLegacyTitleBreaks});
@@ -183,6 +187,8 @@ const CIRCLED_NUMBER_RULES = 11;
 const DESIGN_TEXT_RULES = 11;
 /** The rules that cut an inline table between rows. */
 const INLINE_TABLE_SPLIT_RULES = 11;
+/** The rules that set `:::columns` in the running text and cut groups. */
+const FLOW_COLUMNS_RULES = 11;
 
 /** Up to 1.4 a drop cap with no `fontSize` was as tall as the line boxes it
  *  spans divided by this, the share of a letter's size its capitals take. */
@@ -631,6 +637,31 @@ export function pinLegacyInlineTableSplit<T extends Partial<PostextConfig>>(conf
   const tableStyle: TableStyleConfig = isRecord(config.tableStyle) ? config.tableStyle : {};
   if (tableStyle.splitInline !== undefined) return config;
   return { ...config, tableStyle: { ...tableStyle, splitInline: false } };
+}
+
+/**
+ * A configuration written before #634 (postext 1.24 or earlier), pinned to
+ * the way 1.24 read `:::columns`: `layout.flowColumns: false`, so a fence
+ * outside a box is ignored (its blocks run at the full measure) and a box
+ * that splits never cuts inside a group, where today the one sets its
+ * blocks in sub-columns and the other cuts between them. A configuration
+ * that sets `flowColumns` is returned as it is (the same object).
+ */
+export function pinLegacyFlowColumns<T extends Partial<PostextConfig>>(config: T): T {
+  const layout: LayoutConfig = isRecord(config.layout) ? config.layout : {};
+  if (layout.flowColumns !== undefined) return config;
+  return { ...config, layout: { ...layout, flowColumns: false } };
+}
+
+/** A `:::columns` opening fence on a line of its own. */
+const COLUMNS_FENCE_LINE_RE = /^[^\S\n]*:::[^\S\n]*columns[^\S\n]*(?:\{[^}\n]*\})?[^\S\n]*$/m;
+
+/** Whether markdown may hold a `:::columns` group. Unknown content
+ *  (undefined) may. */
+function mayHaveColumnGroups(content: string | readonly string[] | undefined): boolean {
+  if (content === undefined) return true;
+  if (typeof content === 'string') return COLUMNS_FENCE_LINE_RE.test(content);
+  return content.some((text) => COLUMNS_FENCE_LINE_RE.test(text));
 }
 
 /** Whether markdown holds a poem set line by line: a `:::verse` fence
@@ -1226,7 +1257,8 @@ export interface MigrateConfigOptions {
  * than 11 has the balancing of a horizontal page on a character grid
  * pinned by {@link pinLegacyGridBalancing}, and its inline tables by {@link
  * pinLegacyInlineTableSplit}, unless `options.content` shows it embeds no
- * resource, its book titles by {@link pinLegacyTitleBreaks}, unless
+ * resource, its `:::columns` groups by {@link pinLegacyFlowColumns},
+ * unless `options.content` shows none, its book titles by {@link pinLegacyTitleBreaks}, unless
  * `options.content` shows none, its circled numbers by {@link
  * pinLegacyCircledNumbers}, unless `options.content` shows none, and its
  * design text by {@link pinLegacyDesignText}, unless neither
@@ -1266,6 +1298,7 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   if (rules < CIRCLED_NUMBER_RULES && mayHaveCircledNumbers(content)) out = pinLegacyCircledNumbers(out);
   if (rules < DESIGN_TEXT_RULES && mayHaveCjkDesignText(content, out)) out = pinLegacyDesignText(out);
   if (rules < INLINE_TABLE_SPLIT_RULES && mayEmbedResources(content)) out = pinLegacyInlineTableSplit(out);
+  if (rules < FLOW_COLUMNS_RULES && mayHaveColumnGroups(content)) out = pinLegacyFlowColumns(out);
   return out;
 }
 
@@ -1287,7 +1320,8 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
  * drop caps and the overflow of heading and part design texts wherever
  * they sit in the merged configuration, the balancing of a horizontal
  * character grid on the merged `cjk`, `layout` and `headings`, the
- * inline tables on the `tableStyle` in force, and the book titles, the
+ * inline tables on the `tableStyle` in force, the `:::columns` groups on
+ * the `layout` in force, and the book titles, the
  * circled numbers and the design text on the `cjk` in force.
  * @internal `readBundle`'s; hosts call {@link migrateConfig}.
  */
@@ -1326,5 +1360,6 @@ export function migrateBundleConfig(
   if (rules < CIRCLED_NUMBER_RULES && mayHaveCircledNumbers(content)) merged = pinLegacyCircledNumbers(merged);
   if (rules < DESIGN_TEXT_RULES && mayHaveCjkDesignText(content, merged)) merged = pinLegacyDesignText(merged);
   if (rules < INLINE_TABLE_SPLIT_RULES && mayEmbedResources(content)) merged = pinLegacyInlineTableSplit(merged);
+  if (rules < FLOW_COLUMNS_RULES && mayHaveColumnGroups(content)) merged = pinLegacyFlowColumns(merged);
   return merged;
 }

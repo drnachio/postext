@@ -105,6 +105,7 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   hugClosingFloats: true,
   inlineResourceGap: 'around',
   inlineResourceGapInBoxes: true,
+  flowColumns: true,
   boxChildSplitMinLines: 2,
   writingMode: 'horizontal-tb',
 };
@@ -135,6 +136,7 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
     hugClosingFloats: partial.hugClosingFloats ?? DEFAULT_LAYOUT_CONFIG.hugClosingFloats,
     inlineResourceGap: partial.inlineResourceGap === 'above' ? 'above' : DEFAULT_LAYOUT_CONFIG.inlineResourceGap,
     inlineResourceGapInBoxes: partial.inlineResourceGapInBoxes ?? DEFAULT_LAYOUT_CONFIG.inlineResourceGapInBoxes,
+    flowColumns: partial.flowColumns ?? DEFAULT_LAYOUT_CONFIG.flowColumns,
     // A whole number of lines, at least one; anything else is the default.
     boxChildSplitMinLines: Number.isInteger(partial.boxChildSplitMinLines) && partial.boxChildSplitMinLines! >= 1
       ? partial.boxChildSplitMinLines!
@@ -226,6 +228,10 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
   }
   if (layout.inlineResourceGapInBoxes !== undefined && layout.inlineResourceGapInBoxes !== DEFAULT_LAYOUT_CONFIG.inlineResourceGapInBoxes) {
     result.inlineResourceGapInBoxes = layout.inlineResourceGapInBoxes;
+    hasOverride = true;
+  }
+  if (layout.flowColumns !== undefined && layout.flowColumns !== DEFAULT_LAYOUT_CONFIG.flowColumns) {
+    result.flowColumns = layout.flowColumns;
     hasOverride = true;
   }
   if (layout.boxChildSplitMinLines !== undefined && layout.boxChildSplitMinLines !== DEFAULT_LAYOUT_CONFIG.boxChildSplitMinLines) {

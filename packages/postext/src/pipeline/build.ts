@@ -71,6 +71,7 @@ import { anchorTargetsOf, hasAnchorRefs, printsAnchorPages } from './crossRefs';
 import type { AnchorRefContext } from './resourceLayout';
 import { applyStatementNumbering, numberStatements, outlineLookup } from './statementNumbering';
 import { SPAN_EMBED_STYLE_ID, isPageSpanStrip, spanEmbedStyle, wrapPageSpanEmbeds } from './spanEmbeds';
+import { flowColumnsStyles, isFlowColumnsStyle, wrapFlowColumns } from './flowColumns';
 import { anchorOutline, computeOutline, hasIndexDirective, hasTocDirective, headingNumberingOptions, headingTemplatesOf, outlineFromDoc, sameOutline } from './outline';
 import { expandTocDirectives } from './toc';
 import { expandIndexDirectives, locateIndexMarks } from './indexDirective';
@@ -153,7 +154,9 @@ import {
   type CalloutUnit,
   type PlannedCallout,
   type CalloutLineWidth,
+  type GroupPos,
 } from './calloutLayout';
+import { fillGalley, galleyBreaks } from './columnsGroup';
 import { chooseTableSlice, layoutCaptionText, layoutResourceBlock, MIN_TAIL_ROWS, type TableRowMetrics, type TableSliceSpec } from './resourceLayout';
 import {
   computeFloatPlan,
@@ -753,7 +756,10 @@ function placeDocumentPass(
   // An inline `::resource` placed `here` with `span: 'page'` spans the
   // page where it stands (#535): each goes in a frameless page-span box,
   // set by the span-block path like any other.
-  const spanEmbeds = wrapPageSpanEmbeds(numberedBlocks, content.resources ?? [], effectiveResourceTypes(config, content.resources ?? []));
+  // A `:::columns` group in the running text (#634): each in a frameless
+  // box the callout machinery places, cuts and splits.
+  const flowGroups = resolved.layout.flowColumns ? wrapFlowColumns(numberedBlocks) : { blocks: numberedBlocks, wrapped: false };
+  const spanEmbeds = wrapPageSpanEmbeds(flowGroups.blocks, content.resources ?? [], effectiveResourceTypes(config, content.resources ?? []));
   // Code listings (#624): each in a box of the code style, which the
   // callout machinery places and splits.
   const codeBoxes = wrapCodeBlocks(spanEmbeds.blocks, resolved);
@@ -813,13 +819,23 @@ function placeDocumentPass(
   const syntheticBoxes = [
     ...(spanEmbeds.wrapped ? [spanEmbedStyle(bodyStyle.lineHeightPx, resolved.layout.inlineResourceGap !== 'above')] : []),
     ...(codeBoxes.wrapped ? [codeBoxStyle(resolved)] : []),
+    // The boxes of main-flow groups: sub-columns a body line apart in the
+    // text column, a gutter apart across the page.
+    ...(flowGroups.wrapped
+      ? flowColumnsStyles(
+        bodyStyle.lineHeightPx,
+        dimensionToPx(resolved.layout.gutterWidth, resolved.page.dpi, bodyStyle.fontSizePx),
+        resolved.bodyText.paragraphSpacing === false ? { value: 0, unit: 'px' } : { value: bodyStyle.marginBottomPx, unit: 'px' },
+        Math.max(resolved.bodyText.avoidOrphans ? resolved.bodyText.orphanMinLines : 1, resolved.bodyText.avoidWidows ? resolved.bodyText.widowMinLines : 1),
+      )
+      : []),
   ];
   const calloutStyles = syntheticBoxes.length > 0
     ? [...resolved.calloutStyles, ...resolveCalloutStylesConfig(syntheticBoxes, resolved.bodyText, resolved.headings, resolved.unorderedLists, config?.locale)]
     : resolved.calloutStyles;
   // A box nested in another looks its style up in the configuration it is
   // laid out with: the listings' box among them.
-  const calloutResolved: ResolvedConfig = codeBoxes.wrapped ? { ...resolved, calloutStyles } : resolved;
+  const calloutResolved: ResolvedConfig = codeBoxes.wrapped || flowGroups.wrapped ? { ...resolved, calloutStyles } : resolved;
   const blockquoteStyle = resolveBlockquoteStyle(resolved);
   const listLevelIndentsPx = computeLevelIndentsPx(resolved, bodyStyle.fontSizePx);
   const orderedMetrics = computeOrderedListRunMetrics(contentBlocks, resolved, bodyStyle.fontSizePx);
@@ -3761,6 +3777,25 @@ function placeDocumentPass(
    *  convert the laid-out box to absolute coordinates at the frame's placed
    *  origin, and push frame + children — in that order — to `doc.blocks`
    *  and to the column the frame landed in. */
+  /** `:::columns` groups whose sub-columns are too narrow (#634), once a
+   *  group. */
+  const columnsNotes: ContentWarning[] = [];
+  const narrowNoted = new Set<number>();
+  const noteNarrowGroups = (result: CalloutLayoutResult, pageIndex: number): void => {
+    for (const g of result.groups ?? []) {
+      if (!g.narrow || narrowNoted.has(g.contentIndex)) continue;
+      narrowNoted.add(g.contentIndex);
+      const raw = contentBlocks[g.contentIndex];
+      columnsNotes.push({
+        kind: 'columnsTooNarrow',
+        columns: g.columns,
+        widthPx: g.columnWidth,
+        ...(raw ? { sourceStart: raw.sourceStart + bodyOffset, sourceEnd: raw.sourceEnd + bodyOffset } : {}),
+        pageIndex,
+      });
+    }
+    for (const u of result.units) if (u.kind === 'box') noteNarrowGroups(u.box.result, pageIndex);
+  };
   const commitCallout = (
     result: CalloutLayoutResult,
     startIdx: number,
@@ -3769,6 +3804,7 @@ function placeDocumentPass(
     range?: { firstChildIdx: number; lastChildIdx: number },
   ): void => {
     const frame = result.frame;
+    noteNarrowGroups(result, cursor.pageIndex);
     stampCalloutSource(frame, startIdx, plan, range);
     offsetCalloutToAbsolute(result, frame.bbox.x, frame.bbox.y);
     doc.blocks.push(frame);
@@ -3801,6 +3837,10 @@ function placeDocumentPass(
      *  `CalloutLayoutInput.lineWidths`). A box that goes on in a column of
      *  another width breaks the child again from them. */
     widths?: readonly CalloutLineWidth[];
+    /** A cut inside the `:::columns` group whose opening marker is at
+     *  position `open` (#634): where each of its streams stands (one for a
+     *  snake group). `child` is then the earliest of them, `line` 0. */
+    group?: { open: number; pos: readonly GroupPos[] };
   }
   /** The widths a child's lines are counted at in a fragment `width` wide
    *  that opens `from` (see `CalloutCut.widths`). */
@@ -3823,7 +3863,8 @@ function placeDocumentPass(
     /** The cut past the last child (the end of the box). */
     end: CalloutCut;
     /** `:::columns` groups among the children ([start, end] marker
-     *  positions): no cut falls inside one. */
+     *  positions): only the cuts the group itself offers fall inside one
+     *  (#634), and none inside a group of a nested box. */
     groups: readonly [number, number][];
     /** Lay out the children from cut `from` to cut `to` at `width` as one
      *  box — a `continuation` (every fragment after the head) without
@@ -3862,19 +3903,25 @@ function placeDocumentPass(
     });
     const layoutRange = (from: CalloutCut, to: CalloutCut, width: number, frameId: string, continuation: boolean, mirrored = false) => {
       let n = 0;
+      // A fragment that opens inside a `:::columns` group starts at its
+      // opening marker and one that ends inside it at its closing marker:
+      // the group sets the part between the cut's positions (#634).
+      const fromChild = from.group ? from.group.open : from.child;
+      const closeOfGroup = (open: number): number => groups.find(([gs]) => gs === open)?.[1] ?? children.length - 1;
       // A cut inside child `to.child` includes that child (its first
       // `to.line` lines); a cut at a child's head excludes it.
-      const toChild = to.line > 0 ? to.child + 1 : to.child;
+      const toChild = to.group ? closeOfGroup(to.group.open) + 1 : to.line > 0 ? to.child + 1 : to.child;
+      const inSlice = (pos: readonly GroupPos[]): GroupPos[] => pos.map((p) => ({ ...p, child: p.child - fromChild }));
       // Nested boxes still open at `from` (their closing markers leading
       // the range close them): the fragment opens inside them.
       const open: { idx: number; block: ContentBlock }[] = [];
-      for (let k = 0; k < from.child; k++) {
+      for (let k = 0; k < fromChild; k++) {
         const c = children[k]!;
         if (c.containerName !== 'callout') continue;
         if (c.type === 'containerStart') open.push({ idx: startIdx + 1 + k, block: c });
         else if (c.type === 'containerEnd') open.pop();
       }
-      for (let k = from.child; k < children.length && open.length > 0; k++) {
+      for (let k = fromChild; k < children.length && open.length > 0; k++) {
         const c = children[k]!;
         if (c.type !== 'containerEnd' || c.containerId !== open[open.length - 1]!.block.containerId) break;
         open.pop();
@@ -3885,19 +3932,25 @@ function placeDocumentPass(
         ...(contentBlocks[startIdx]?.direction ? { direction: contentBlocks[startIdx]!.direction } : {}),
         continuation,
         // Any range short of the box's end is a fragment that goes on.
-        ...(to.child < children.length || to.line > 0 ? { continues: true } : {}),
-        children: children.slice(from.child, toChild),
-        childStartIdx: startIdx + 1 + from.child,
+        ...(to.child < children.length || to.line > 0 || to.group ? { continues: true } : {}),
+        children: children.slice(fromChild, toChild),
+        childStartIdx: startIdx + 1 + fromChild,
         width,
-        ctx: measureCtx,
+        // A main-flow group's box sets its blocks as the text around it is
+        // set: a styled section's or a part's body (#634).
+        ctx: isFlowColumnsStyle(style.id)
+          ? (partPlan.byBlock[startIdx] ? partMeasureCtx : sectionMeasureCtx(sectionPlan.byBlock[startIdx]))
+          : measureCtx,
         resolved: calloutResolved,
         containerId: plan.containerId,
         frameId,
         nextChildId: () => `${frameId}-c${n++}`,
         paragraphContainers,
-        ...(from.line > 0 ? { lineFrom: from.line } : {}),
-        ...(from.line > 0 && from.widths ? { lineWidths: from.widths } : {}),
-        ...(to.line > 0 ? { lineTo: to.line } : {}),
+        ...(from.line > 0 && !from.group ? { lineFrom: from.line } : {}),
+        ...(from.line > 0 && !from.group && from.widths ? { lineWidths: from.widths } : {}),
+        ...(to.line > 0 && !to.group ? { lineTo: to.line } : {}),
+        ...(from.group ? { groupFrom: inSlice(from.group.pos) } : {}),
+        ...(to.group ? { groupTo: inSlice(to.group.pos) } : {}),
         ...(open.length > 0 ? { openNested: open } : {}),
         mirrored,
         stripBlock: calloutStripBlock,
@@ -4047,8 +4100,64 @@ function placeDocumentPass(
       });
     };
     collect(full.units, minLines, 0);
+    // Inside a `:::columns` group of the box (#634): the cut the group
+    // offers for the room, where each of its sub-columns (each stream, in
+    // a parallel group) ends when the galley fills them in turn; at least
+    // one stream goes on and one moves on. A group of a nested box is
+    // never cut, nor any group under 1.24's rules (`layout.flowColumns`).
+    if (resolved.layout.flowColumns) {
+      const base = from.group ? from.group.open : from.child;
+      const childMin = Math.min(Math.max(1, minLines), resolved.layout.boxChildSplitMinLines);
+      for (const g of full.groups ?? []) {
+        const h = roomPx - tail - g.top;
+        if (h <= 0.5) continue;
+        const reopened = from.group?.open === g.open + base ? from.group : undefined;
+        const pos: GroupPos[] = [];
+        let moved = false;
+        let left = false;
+        let used = 0;
+        g.streams.forEach((items, s) => {
+          const end: GroupPos = { child: (g.ends[s] ?? g.close) + base, line: 0 };
+          if (items.length === 0) { pos.push(end); return; }
+          const breaks = galleyBreaks(items, childMin);
+          const fill = fillGalley(items, breaks, g.flow === 'snake' ? g.columns : 1, h);
+          if (fill.end) {
+            moved = true;
+            used = Math.max(used, fill.used);
+            pos.push(end);
+            return;
+          }
+          left = true;
+          if (fill.cuts.length === 0) {
+            // This stream takes nothing in the fragment: it stays where it is.
+            pos.push(reopened?.pos[s] ?? { child: items[0]!.child + base, line: 0 });
+            return;
+          }
+          moved = true;
+          used = Math.max(used, fill.used);
+          const b = breaks[fill.cuts[fill.cuts.length - 1]!]!;
+          const it = items[b.item]!;
+          if (b.line === 0) {
+            pos.push({ child: it.child + base, line: 0 });
+            return;
+          }
+          // The sub-column widths the paragraph's lines are set at.
+          const before = it.lineBase > 0 ? reopened?.pos[s]?.widths : undefined;
+          const lastW = before?.[before.length - 1];
+          const widths = !before || before.length === 0
+            ? [{ fromLine: 0, width: g.columnWidth }]
+            : Math.abs(lastW!.width - g.columnWidth) <= 0.5 ? before : [...before, { fromLine: it.lineBase, width: g.columnWidth }];
+          pos.push({ child: it.child + base, line: it.lineBase + b.line, widths });
+        });
+        if (!moved || !left) continue;
+        candidates.push({
+          cut: { child: Math.min(...pos.map((p) => p.child)), line: 0, group: { open: g.open + base, pos } },
+          bottom: g.top + used,
+        });
+      }
+    }
     const insideGroup = (cut: CalloutCut): boolean =>
-      L.groups.some(([gs, ge]) => (cut.line === 0 ? gs < cut.child && cut.child <= ge : gs < cut.child && cut.child < ge));
+      !cut.group && L.groups.some(([gs, ge]) => (cut.line === 0 ? gs < cut.child && cut.child <= ge : gs < cut.child && cut.child < ge));
     const viable = candidates
       .filter((c) => !insideGroup(c.cut))
       .sort((a, b) => b.bottom - a.bottom);
@@ -7482,7 +7591,7 @@ function placeDocumentPass(
     return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
   });
   if (shrunk.length > 0) floatShrinkWarningsByDoc.set(doc, shrunk);
-  if (textWrapNotes.length > 0) textWrapWarningsByDoc.set(doc, textWrapNotes);
+  if (textWrapNotes.length > 0 || columnsNotes.length > 0) textWrapWarningsByDoc.set(doc, [...textWrapNotes, ...columnsNotes]);
 
   const { proposals: citingPageProposals, refused: citingPageRefused } = settleCitingPageFloats();
 
@@ -7625,7 +7734,8 @@ const joiningSpacingWarnings = new WeakMap<VDTDocument, ContentWarning[]>();
 const dropCapWarningsByDoc = new WeakMap<VDTDocument, ContentWarning[]>();
 /** The `floatShrunk` warnings of a build (#626), found by its last pass. */
 const floatShrinkWarningsByDoc = new WeakMap<VDTDocument, ContentWarning[]>();
-/** The `textWrap` warnings of a build (#627), found by its last pass. */
+/** The `textWrap` warnings of a build (#627) and its `columnsTooNarrow`
+ *  ones (#634), found by its last pass. */
 const textWrapWarningsByDoc = new WeakMap<VDTDocument, ContentWarning[]>();
 
 /** `doc` with the page of each of its index marks (`doc.indexMarks`). */

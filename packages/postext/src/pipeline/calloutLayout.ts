@@ -78,6 +78,9 @@ import { containerStyle, paragraphStyleIdOf, type ParagraphContainerPlan } from 
 import { joiningScriptIn } from '../measure/joining';
 import { getMeasureDirection, shiftLineX } from '../measure/bidiLines';
 import { resolvedCodeStyle } from '../defaults/codeStyle';
+import { parseLengthText } from '../defaults/tabStops';
+import { isFlowColumnsStyle } from './flowColumns';
+import { fillGalley, galleyBreaks, minFillHeight, type GalleyItem } from './columnsGroup';
 
 // ---------------------------------------------------------------------------
 // Pre-pass: callout ranges keyed by the start marker's content-block index.
@@ -146,6 +149,9 @@ export function deriveCalloutResolvedConfig(
   resolved: ResolvedConfig,
   style: ResolvedCalloutStyleConfig,
 ): ResolvedConfig {
+  // A main-flow group's box (#634) lends its blocks nothing: they are set
+  // as the text around them.
+  if (isFlowColumnsStyle(style.id)) return resolved;
   const { body, lists } = style;
   const ul = resolved.unorderedLists;
   const ol = resolved.orderedLists;
@@ -219,6 +225,7 @@ export function deriveCalloutMeasureContext(
   ctx: BlockMeasureContext,
   style: ResolvedCalloutStyleConfig,
 ): BlockMeasureContext {
+  if (isFlowColumnsStyle(style.id)) return ctx;
   const resolved = deriveCalloutResolvedConfig(ctx.resolved, style);
   const bodyStyle = resolveBodyStyle(resolved);
   return {
@@ -305,6 +312,13 @@ export interface CalloutLayoutInput {
   /** `calloutPath` of the box's frame and children: set when the box is
    *  itself nested (see `VDTBlock.calloutPath`). */
   nestPath?: readonly number[];
+  /** The fragment opens inside the `:::columns` group whose opening marker
+   *  is `children[0]` (#634): each of its streams (one for a `'snake'`
+   *  group) from its position, positions counted in `children`. */
+  groupFrom?: readonly GroupPos[];
+  /** The fragment ends inside the group whose closing marker is the last
+   *  of `children`: each stream up to its position (exclusive). */
+  groupTo?: readonly GroupPos[];
   /** Lays out a comic strip among the children (`:::strip`, the one a
    *  page-wide strip's box holds, #590): its block `width` wide, its lines
    *  relative to its box, or undefined to leave it out. Without it strips
@@ -372,6 +386,74 @@ export interface CalloutLayoutResult {
    *  on (`continuesMarkerEnabled`); 0 without one. The split code ranks its
    *  cuts with it. */
   continuesMarkerPx: number;
+  /** The `:::columns` groups among the box's own children (not a nested
+   *  box's), as laid out: where a fragment may cut inside them (#634). */
+  groups?: CalloutGroupLayout[];
+}
+
+/** A position in a `:::columns` group's galley (#634): before child
+ *  `child` (a position in the box's children), past its first `line`
+ *  lines. A stream that is done sits at the next stream's first child (or
+ *  the group's closing marker). */
+export interface GroupPos {
+  child: number;
+  line: number;
+  /** For a cut inside a paragraph: the sub-column widths its lines up to
+   *  `line` were set at, from line `fromLine` on. */
+  widths?: readonly CalloutLineWidth[];
+}
+
+/** A `:::columns` group as a box laid it out (see
+ *  `CalloutLayoutResult.groups`). */
+export interface CalloutGroupLayout {
+  /** Positions in the box's children of its opening and closing markers. */
+  open: number;
+  close: number;
+  /** `'parallel'` only with streams (`breaks`). */
+  flow: 'snake' | 'parallel';
+  columns: number;
+  columnWidth: number;
+  /** The group's top in the box (frame-relative px). */
+  top: number;
+  /** The galley of each stream (one for a snake group), from where this
+   *  layout starts it; each galley's `y` from 0 at its first item. */
+  streams: GalleyItem[][];
+  /** Where each stream ends: the position of the next stream's first
+   *  child, the closing marker's for the last. */
+  ends: number[];
+  /** Content index of the opening marker. */
+  contentIndex: number;
+  /** The sub-columns are narrower than six ems of the box's text. */
+  narrow?: true;
+}
+
+/** The attributes of a `:::columns` fence (#634). */
+export interface ColumnsSpec {
+  count: number;
+  gapPx: number;
+  rule: boolean;
+  flow: 'snake' | 'parallel';
+  breaks?: number[];
+}
+
+/** Read a `:::columns` fence: `count` (2 by default, at most 6), `gap` (a
+ *  length; else `defaultGapPx`), `rule` (a rule down each gutter), `breaks`
+ *  (the children that open each column after the first) and `flow`
+ *  (`'parallel'` by default with `breaks`, `'snake'` without; an unknown
+ *  value takes the default). */
+export function columnsSpecOf(attrs: DirectiveAttrs, defaultGapPx: number, emPx: number, dpi: number): ColumnsSpec {
+  const count = Number.parseInt(attrs.count ?? '2', 10);
+  const breaks = (attrs.breaks ?? '').split(',').map((v) => Number.parseInt(v.trim(), 10)).filter((v) => Number.isFinite(v) && v > 1);
+  const gap = attrs.gap !== undefined ? parseLengthText(attrs.gap) : undefined;
+  const gapPx = gap ? dimensionToPx(gap, dpi, emPx) : defaultGapPx;
+  const flow = attrs.flow === 'snake' || attrs.flow === 'parallel' ? attrs.flow : breaks.length > 0 ? 'parallel' : 'snake';
+  return {
+    count: Number.isFinite(count) ? count : 2,
+    gapPx: Number.isFinite(gapPx) && gapPx >= 0 ? gapPx : defaultGapPx,
+    rule: attrs.rule !== undefined && attrs.rule !== 'false',
+    flow,
+    ...(breaks.length > 0 ? { breaks } : {}),
+  };
 }
 
 const VALID_SPANS: ReadonlySet<string> = new Set(['column', 'page', 'side']);
@@ -639,6 +721,10 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   // of the tallest column.
   const childBlocks: VDTBlock[] = [];
   const units: CalloutUnit[] = [];
+  /** The `:::columns` groups among the box's own children, as laid out
+   *  (#634), and the rules down their gutters. */
+  const groupLayouts: CalloutGroupLayout[] = [];
+  const groupRules: VDTDesignBlock[] = [];
   /** The lines of the box's code listing a fence highlights (#624),
    *  box-relative. */
   const highlights: { y: number; height: number }[] = [];
@@ -701,13 +787,6 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const lineFrom = input.lineFrom ?? 0;
     if (!history || history.length === 0 || lineFrom <= 0 || !isFirstRealOf(k)) return undefined;
     if (history.every((h) => Math.abs(h.width - input.width) <= 0.5)) return undefined;
-    // A split tries many cuts from the same start, and these measures are
-    // not cached by the measurement cache (they break at several widths).
-    let perBlock = acrossWidthsMemo.get(input.resolved);
-    if (!perBlock) acrossWidthsMemo.set(input.resolved, (perBlock = new WeakMap()));
-    let memo = perBlock.get(raw);
-    if (!memo) perBlock.set(raw, (memo = new Map()));
-    const styleAt = input.resolved.calloutStyles.indexOf(style);
     // Every fragment's measure: the head's, then each one after it, which
     // keeps the lines the fragments before it placed and breaks the rest
     // for its own width. The one this fragment is set from is the last.
@@ -715,7 +794,27 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const widths = Math.abs(last.width - input.width) <= 0.5
       ? history
       : [...history, { fromLine: lineFrom, width: input.width }];
-    const steps = widths.map((h) => ({ fromLine: h.fromLine, columnWidth: childWidthAt(h.width, width) }));
+    return measureAcrossSteps(raw, blockIdx, styleOverride, lineFrom, widths.map((h) => ({ fromLine: h.fromLine, columnWidth: childWidthAt(h.width, width) })));
+  };
+  /** A child set from line `lineFrom` on, its lines measured at the widths
+   *  of `steps` (the child's own measures, in line order), the lines placed
+   *  before kept as they were: see `measureFirstChildAcrossWidths`. A
+   *  paragraph of a `:::columns` group that goes on in sub-columns of
+   *  another width uses it too (#634). */
+  const measureAcrossSteps = (
+    raw: ContentBlock,
+    blockIdx: number,
+    styleOverride: MeasureContentBlockOptions['styleOverride'],
+    lineFrom: number,
+    steps: readonly { fromLine: number; columnWidth: number }[],
+  ) => {
+    // A split tries many cuts from the same start, and these measures are
+    // not cached by the measurement cache (they break at several widths).
+    let perBlock = acrossWidthsMemo.get(input.resolved);
+    if (!perBlock) acrossWidthsMemo.set(input.resolved, (perBlock = new WeakMap()));
+    let memo = perBlock.get(raw);
+    if (!memo) perBlock.set(raw, (memo = new Map()));
+    const styleAt = input.resolved.calloutStyles.indexOf(style);
     const base = steps[0]!.columnWidth;
     let prev: ReturnType<typeof measureContentBlock> | undefined;
     for (let i = 0; i < steps.length; i++) {
@@ -784,8 +883,20 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     return blk;
   };
   /** Lay out one child at `width` from `x`, appending it to `into` and
-   *  advancing the stack. */
-  const placeChild = (raw: ContentBlock, k: number, width: number, x: number, st: Stack, into: VDTBlock[], unitsInto: CalloutUnit[]): VDTBlock | undefined => {
+   *  advancing the stack. `lineCut`: the lines of the child to keep, in
+   *  place of the box's own line cuts — a paragraph of a `:::columns` group
+   *  a fragment opens (`from`) or ends (`to`) inside (#634); `widths` are
+   *  the sub-column widths its lines before `from` were set at. */
+  const placeChild = (
+    raw: ContentBlock,
+    k: number,
+    width: number,
+    x: number,
+    st: Stack,
+    into: VDTBlock[],
+    unitsInto: CalloutUnit[],
+    lineCut?: { from: number; to?: number; widths?: readonly CalloutLineWidth[] },
+  ): VDTBlock | undefined => {
     if (isStripChild(raw)) return placeStripChild(raw, k, width, x, st, into, unitsInto);
     const blockIdx = childStartIdx + k;
     // Inside a `:::paragraphs` container: its style, and for the block that
@@ -794,7 +905,15 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const next = children[k + 1];
     const isContainerTail = container !== undefined && next?.type === 'containerEnd' && next.containerId === container.id;
     const styleOverride = container ? containerStyle(container, isContainerTail, bodyStyle, derivedCtx.resolved.page.dpi) : undefined;
-    const measuredBlock = measureFirstChildAcrossWidths(raw, blockIdx, k, width, styleOverride)
+    const groupWidths = lineCut?.widths;
+    const acrossGroup = lineCut && lineCut.from > 0 && groupWidths && groupWidths.some((h) => Math.abs(h.width - width) > 0.5)
+      ? measureAcrossSteps(raw, blockIdx, styleOverride, lineCut.from, [
+        ...groupWidths.map((h) => ({ fromLine: h.fromLine, columnWidth: h.width })),
+        ...(Math.abs(groupWidths[groupWidths.length - 1]!.width - width) > 0.5 ? [{ fromLine: lineCut.from, columnWidth: width }] : []),
+      ])
+      : undefined;
+    const measuredBlock = acrossGroup
+      ?? (lineCut ? undefined : measureFirstChildAcrossWidths(raw, blockIdx, k, width, styleOverride))
       ?? measureContentBlock(raw, blockIdx, width, derivedCtx, { styleOverride });
     if (!measuredBlock) return undefined;
     const { kind, measured, prefixLen, absoluteSourceMap, mathDisplayRender, resourceBlock, letterSpacingPx, code } = measuredBlock;
@@ -858,9 +977,10 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     const isTextRun = !(vdtType === 'resource' && resourceBlock) && !(vdtType === 'mathDisplay' && mathDisplayRender);
     const isFirstReal = isFirstRealOf(k);
     const isLastReal = isLastRealOf(k);
-    const lineFrom = isTextRun && isFirstReal ? Math.max(0, input.lineFrom ?? 0) : 0;
-    const lineTo = isTextRun && isLastReal && input.lineTo !== undefined
-      ? Math.max(lineFrom + 1, Math.min(input.lineTo, measured.lines.length))
+    const lineFrom = !isTextRun ? 0 : lineCut ? Math.max(0, lineCut.from) : isFirstReal ? Math.max(0, input.lineFrom ?? 0) : 0;
+    const cutTo = lineCut ? lineCut.to : isLastReal ? input.lineTo : undefined;
+    const lineTo = isTextRun && cutTo !== undefined
+      ? Math.max(lineFrom + 1, Math.min(cutTo, measured.lines.length))
       : measured.lines.length;
     // A justified line the breaker could not fill is set ragged, as in the
     // running text (EF-104): a box's narrow measure is where it happens most.
@@ -1087,25 +1207,25 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     return tail;
   };
 
-  /** A `:::columns{count=N}` group: children `k0 … k1 - 1` in N columns.
-   *  A nested box among them is one item: never cut, moved whole. */
-  const placeColumnsGroup = (k0: number, k1: number, count: number, st: Stack, breaks?: number[]): void => {
-    const cols = Math.max(1, Math.min(6, count));
-    const colW = Math.max(1, (innerWidth - columnGapPx * (cols - 1)) / cols);
-    // Spacing above the group: as a block with no margin of its own.
-    const spacing = st.first ? st.prevMarginBottom : st.prevMarginBottom;
-    const groupTop = st.cursorY + spacing;
+  /** A stacked item of a `:::columns` group: a child block, or a nested
+   *  box's blocks (frame first), with the child's position and the lines
+   *  of it set before (a paragraph the fragment opens inside of). */
+  interface GroupItem { blocks: VDTBlock[]; unit: CalloutUnit; k: number; lineBase: number }
+  /** Lay children `kFrom … kTo - 1` of a group out in one galley at the
+   *  sub-column `width` (a nested box is one item: never cut, moved
+   *  whole). `open` / `close`: the position a fragment opens / ends at,
+   *  inside a paragraph when its `line` is past 0 (#634). */
+  const stackGroup = (kFrom: number, kTo: number, kEnd: number, width: number, open?: GroupPos, close?: GroupPos): GroupItem[] & { end?: number } => {
     const gst: Stack = { cursorY: 0, prevMarginBottom: 0, pull: false, prevWasListItem: false, first: true, keepLeadingSpace: false };
-    /** The group's items: a child block, or a nested box's blocks (frame first). */
-    const stack: { blocks: VDTBlock[]; unit: CalloutUnit }[] = [];
-    for (let k = k0; k < k1; k++) {
+    const stack: GroupItem[] = [];
+    for (let k = kFrom; k < kTo; k++) {
       const raw = children[k]!;
       const into: VDTBlock[] = [];
       const unitsInto: CalloutUnit[] = [];
       if (raw.type === 'containerStart' && raw.containerName === 'callout') {
         const e = closeOf(raw.containerId, k + 1);
-        if (placeNested(raw, childStartIdx + k, k + 1, Math.min(e, k1), colW, innerX, gst, into, unitsInto)) {
-          stack.push({ blocks: into, unit: unitsInto[0]! });
+        if (placeNested(raw, childStartIdx + k, k + 1, Math.min(e, kEnd), width, innerX, gst, into, unitsInto)) {
+          stack.push({ blocks: into, unit: unitsInto[0]!, k, lineBase: 0 });
           k = e;
           continue;
         }
@@ -1113,13 +1233,38 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       addSpace(raw, gst);
       containerMargin(raw, k, gst);
       if ((raw.type === 'directive' && !isStripChild(raw)) || isMarkerBlock(raw)) continue;
-      if (placeChild(raw, k, colW, innerX, gst, into, unitsInto)) stack.push({ blocks: into, unit: unitsInto[0]! });
+      const from = open && open.child === k && open.line > 0 ? open.line : 0;
+      const to = close && close.child === k && close.line > 0 ? close.line : undefined;
+      const lineCut = from > 0 || to !== undefined
+        ? { from, ...(to !== undefined ? { to } : {}), ...(from > 0 && open?.widths ? { widths: open.widths } : {}) }
+        : undefined;
+      if (placeChild(raw, k, width, innerX, gst, into, unitsInto, lineCut)) stack.push({ blocks: into, unit: unitsInto[0]!, k, lineBase: from });
     }
-    if (stack.length === 0) return;
-    const total = gst.cursorY;
+    // Where the stack ends, a `:::space` after its last item included.
+    return Object.assign(stack, { end: gst.cursorY });
+  };
+  /** The galley of stacked items, for the split code (see `columnsGroup.ts`). */
+  const galleyOf = (stack: readonly GroupItem[]): GalleyItem[] => stack.map((it) => {
+    const blk = it.blocks[0]!;
+    const cuttable = it.unit.kind === 'block' && blk.type !== 'resource' && blk.type !== 'mathDisplay' && blk.lines.length > 1 && !blk.mathRender;
+    return {
+      child: it.k,
+      lineBase: it.lineBase,
+      y: blk.bbox.y,
+      height: blk.bbox.height,
+      ...(cuttable ? { lineBottoms: blk.lines.map((l) => l.bbox.y + l.bbox.height - blk.bbox.y) } : {}),
+    };
+  });
+  /** A column start in a group's stack: before item `block`, or past its
+   *  first `line` lines, at `y` in the stack. */
+  interface ColumnCut { y: number; block: number; line: number }
+  /** Balanced cuts: each column start at the item or line boundary nearest
+   *  an even share of the stack's height. */
+  const balancedCuts = (stack: readonly GroupItem[] & { end?: number }, cols: number): ColumnCut[] => {
+    if (stack.length === 0) return [];
+    const total = stack.end ?? 0;
     // Cut candidates: item boundaries and the line boundaries of text blocks.
-    interface Cut { y: number; block: number; line: number }
-    const candidates: Cut[] = [];
+    const candidates: ColumnCut[] = [];
     stack.forEach((item, i) => {
       const blk = item.blocks[0]!;
       if (i > 0) candidates.push({ y: blk.bbox.y, block: i, line: 0 });
@@ -1128,40 +1273,46 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         for (let l = 1; l < blk.lines.length; l++) candidates.push({ y: blk.lines[l]!.bbox.y, block: i, line: l });
       }
     });
-    const cuts: Cut[] = [];
+    const cuts: ColumnCut[] = [];
     let prevY = 0;
-    if (breaks && breaks.length > 0) {
-      // Explicit column starts (`breaks="3"`: the third child opens the
-      // second column): block-level cuts, no balancing.
-      for (const b of breaks.slice(0, cols - 1)) {
-        const i = b - 1;
-        if (i <= 0 || i >= stack.length) continue;
-        const y = stack[i]!.blocks[0]!.bbox.y;
-        if (y <= prevY + 0.01) continue;
-        cuts.push({ y, block: i, line: 0 });
-        prevY = y;
+    for (let c = 1; c < cols; c++) {
+      const target = (total * c) / cols;
+      let best: ColumnCut | undefined;
+      for (const cand of candidates) {
+        if (cand.y <= prevY + 0.01) continue;
+        if (!best || Math.abs(cand.y - target) < Math.abs(best.y - target)) best = cand;
       }
-    } else {
-      for (let c = 1; c < cols; c++) {
-        const target = (total * c) / cols;
-        let best: Cut | undefined;
-        for (const cand of candidates) {
-          if (cand.y <= prevY + 0.01) continue;
-          if (!best || Math.abs(cand.y - target) < Math.abs(best.y - target)) best = cand;
-        }
-        if (!best) break;
-        cuts.push(best);
-        prevY = best.y;
-      }
+      if (!best) break;
+      cuts.push(best);
+      prevY = best.y;
     }
-    // Split the stack at the cuts into columns of items; a cut inside a
-    // text block leaves its head behind and opens the next column with the
-    // tail (a block of its own, bullet-less).
+    return cuts;
+  };
+  /** The stack indices `breaks` starts columns at (`breaks="3"`: the third
+   *  child opens the second column), at most `cols - 1` of them, rising. */
+  const breakStarts = (stack: readonly GroupItem[], cols: number, breaks: readonly number[]): number[] => {
+    const out: number[] = [];
+    let prevY = 0;
+    for (const b of breaks.slice(0, cols - 1)) {
+      const i = b - 1;
+      if (i <= 0 || i >= stack.length) continue;
+      const y = stack[i]!.blocks[0]!.bbox.y;
+      if (y <= prevY + 0.01) continue;
+      out.push(i);
+      prevY = y;
+    }
+    return out;
+  };
+  /** Set a stack in columns at its cuts, the first at `groupTop`; a cut
+   *  inside a text block leaves its head behind and opens the next column
+   *  with the tail (a block of its own, bullet-less). Returns the height
+   *  the columns take. */
+  const distributeGroup = (stack: GroupItem[], cuts: readonly ColumnCut[], colW: number, gap: number, groupTop: number): number => {
     const columns: { blocks: VDTBlock[]; unit: CalloutUnit }[][] = [[]];
-    const columnStarts: number[] = [0];
+    const columnStarts: number[] = [stack[0]?.blocks[0]?.bbox.y ?? 0];
     let cutIdx = 0;
     for (let i = 0; i < stack.length; i++) {
-      let item = stack[i]!;
+      let item: { blocks: VDTBlock[]; unit: CalloutUnit } = stack[i]!;
       while (cutIdx < cuts.length && cuts[cutIdx]!.block === i && cuts[cutIdx]!.line === 0) {
         columns.push([]); columnStarts.push(cuts[cutIdx]!.y); cutIdx++;
       }
@@ -1186,7 +1337,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     }
     let groupHeight = 0;
     columns.forEach((items, c) => {
-      const shiftX = c * (colW + columnGapPx);
+      const shiftX = c * (colW + gap);
       const shiftY = groupTop - (columnStarts[c] ?? 0);
       for (const item of items) {
         for (const blk of item.blocks) {
@@ -1197,6 +1348,127 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
         units.push(item.unit);
       }
     });
+    return groupHeight;
+  };
+
+  /** A `:::columns{count=N}` group: children `k0 … k1 - 1` in N columns
+   *  (`spec`). Set whole, its stack is cut where the columns balance best,
+   *  or at its `breaks`. A fragment that opens or ends inside it (#634,
+   *  `cut`) sets the part of the galley between its positions: a
+   *  `'snake'` group that goes on fills its columns as level as the cuts
+   *  allow, the closing part balances as a whole group does; a
+   *  `'parallel'` group sets each stream from its own position in its own
+   *  column, top-aligned. The galley this layout starts with is recorded
+   *  in `groupLayouts` for the split code. */
+  const placeColumnsGroup = (k0: number, k1: number, spec: ColumnsSpec, st: Stack, cut: { from?: readonly GroupPos[]; to?: readonly GroupPos[] } = {}): void => {
+    const cols = Math.max(1, Math.min(6, spec.count));
+    const gap = spec.gapPx;
+    const colW = Math.max(1, (innerWidth - gap * (cols - 1)) / cols);
+    // Spacing above the group: as a block with no margin of its own.
+    const groupTop = st.cursorY + st.prevMarginBottom;
+    const childMin = Math.min(Math.max(1, style.splitMinLines), input.resolved.layout.boxChildSplitMinLines);
+    const parallel = spec.flow === 'parallel' && (spec.breaks?.length ?? 0) > 0;
+    let groupHeight = 0;
+    let streams: GalleyItem[][] = [];
+    /** Where each stream ends: the next one's first child, the last at the
+     *  closing marker. */
+    let ends: number[] = [k1];
+    if (!cut.from && !cut.to) {
+      // The whole group (as before #634).
+      const stack = stackGroup(k0, k1, k1, colW);
+      if (stack.length === 0) return;
+      const starts = spec.breaks && spec.breaks.length > 0 ? breakStarts(stack, cols, spec.breaks) : undefined;
+      const galley = galleyOf(stack);
+      if (parallel && starts) {
+        const bounds = [0, ...starts, stack.length];
+        ends = [...starts.map((i) => stack[i]!.k), k1];
+        streams = bounds.slice(0, -1).map((b, s) => {
+          const part = galley.slice(b, bounds[s + 1]);
+          const y0 = part[0]?.y ?? 0;
+          return part.map((g) => ({ ...g, y: g.y - y0 }));
+        });
+      } else {
+        streams = [galley];
+      }
+      const cuts = starts
+        ? starts.map((i) => ({ y: stack[i]!.blocks[0]!.bbox.y, block: i, line: 0 }))
+        : balancedCuts(stack, cols);
+      groupHeight = distributeGroup(stack, cuts, colW, gap, groupTop);
+    } else if (!parallel) {
+      // A snake group cut across fragments: the part of its galley between
+      // the fragment's positions.
+      const a = cut.from?.[0];
+      const b = cut.to?.[0];
+      const kTo = b ? Math.min(k1, b.line > 0 ? b.child + 1 : b.child) : k1;
+      const stack = stackGroup(a ? Math.max(k0, a.child) : k0, kTo, k1, colW, a, b);
+      if (stack.length === 0) return;
+      const galley = galleyOf(stack);
+      streams = [galley];
+      let cuts: ColumnCut[];
+      if (b) {
+        const breaks = galleyBreaks(galley, childMin);
+        const fill = fillGalley(galley, breaks, cols, minFillHeight(galley, breaks, cols));
+        cuts = fill.cuts.map((j) => ({ y: breaks[j]!.startY, block: breaks[j]!.item, line: breaks[j]!.line }));
+      } else {
+        cuts = balancedCuts(stack, cols);
+      }
+      groupHeight = distributeGroup(stack, cuts, colW, gap, groupTop);
+    } else {
+      // A parallel group cut across fragments: its streams are the runs
+      // its breaks start in the whole group; each goes on from its own
+      // position, in its own column.
+      const whole = stackGroup(k0, k1, k1, colW);
+      if (whole.length === 0) return;
+      const starts = [0, ...breakStarts(whole, cols, spec.breaks!)];
+      const startChild = starts.map((i) => whole[i]!.k);
+      ends = [...startChild.slice(1), k1];
+      startChild.forEach((sk, s) => {
+        const ek = startChild[s + 1] ?? k1;
+        const a = cut.from?.[s];
+        const b = cut.to?.[s];
+        const kFrom = Math.max(sk, a?.child ?? sk);
+        const kTo = Math.min(ek, b ? (b.line > 0 ? b.child + 1 : b.child) : ek);
+        const stack = kFrom < kTo ? stackGroup(kFrom, kTo, k1, colW, a, b) : [];
+        streams.push(galleyOf(stack));
+        if (stack.length === 0) return;
+        const y0 = stack[0]!.blocks[0]!.bbox.y;
+        for (const item of stack) {
+          for (const blk of item.blocks) {
+            offsetBlock(blk, s * (colW + gap), groupTop - y0);
+            childBlocks.push(blk);
+            groupHeight = Math.max(groupHeight, blk.bbox.y + blk.bbox.height - groupTop);
+          }
+          units.push(item.unit);
+        }
+      });
+    }
+    groupLayouts.push({
+      open: k0 - 1,
+      close: k1,
+      flow: parallel ? 'parallel' : 'snake',
+      columns: cols,
+      columnWidth: colW,
+      top: groupTop,
+      streams,
+      ends,
+      contentIndex: childStartIdx + k0 - 1,
+      ...(colW < 6 * em ? { narrow: true as const } : {}),
+    });
+    // A rule down each gutter (`rule`), the page's column rule.
+    if (spec.rule && cols > 1 && groupHeight > 0) {
+      const ruleSpec = input.resolved.layout.columnRule;
+      const w = Math.max(0.25, px(ruleSpec.lineWidth));
+      for (let c = 1; c < cols; c++) {
+        const x = innerX + c * (colW + gap) - gap / 2;
+        groupRules.push({
+          kind: 'rule',
+          bbox: createBoundingBox(x - w / 2, groupTop, w, groupHeight),
+          color: ruleSpec.color.hex,
+          thicknessPx: w,
+          direction: 'vertical',
+        });
+      }
+    }
     st.cursorY = groupTop + groupHeight;
     st.prevMarginBottom = 0;
     st.pull = false;
@@ -1235,9 +1507,12 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       if (raw.type === 'containerStart' && raw.containerName === 'columns') {
         let e = k + 1;
         while (e < children.length && !(children[e]!.type === 'containerEnd' && children[e]!.containerName === 'columns' && children[e]!.containerId === raw.containerId)) e++;
-        const count = Number.parseInt(raw.containerAttrs?.count ?? '2', 10);
-        const breaks = (raw.containerAttrs?.breaks ?? '').split(',').map((v) => Number.parseInt(v.trim(), 10)).filter((v) => Number.isFinite(v) && v > 1);
-        placeColumnsGroup(k + 1, e, Number.isFinite(count) ? count : 2, st, breaks.length > 0 ? breaks : undefined);
+        // A fragment that opens inside the group (it is then the first
+        // child) or ends inside it (the last) sets its part (#634).
+        placeColumnsGroup(k + 1, e, columnsSpecOf(raw.containerAttrs ?? {}, columnGapPx, em, dpi), st, {
+          ...(k === 0 && input.groupFrom ? { from: input.groupFrom } : {}),
+          ...(e === children.length - 1 && input.groupTo ? { to: input.groupTo } : {}),
+        });
         k = e;
         continue;
       }
@@ -1304,6 +1579,8 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       if (titleBlock) offsetDesignBlock(titleBlock, 0, extra / 2);
       if (continuesBlock) offsetDesignBlock(continuesBlock, 0, extra / 2);
       for (const blk of childBlocks) offsetBlock(blk, 0, extra / 2);
+      for (const r of groupRules) offsetDesignBlock(r, 0, extra / 2);
+      for (const g of groupLayouts) g.top += extra / 2;
     }
     contentBottom += extra;
   }
@@ -1379,6 +1656,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
       iconFormat = built.format;
     }
   }
+  overlayBlocks.push(...groupRules);
   if (titleBlock) overlayBlocks.push(titleBlock);
   if (continuesBlock) overlayBlocks.push(continuesBlock);
 
@@ -1462,6 +1740,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
   if (markerColumn > 0 || boxDy > 0) {
     for (const b of overlayBlocks) offsetDesignBlock(b, markerColumn, boxDy);
     for (const blk of childBlocks) offsetBlock(blk, markerColumn, boxDy);
+    for (const g of groupLayouts) g.top += boxDy;
     innerRect.x += markerColumn;
     innerRect.y += boxDy;
   }
@@ -1496,6 +1775,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     for (const b of overlayBlocks) offsetDesignBlock(b, 0, labelRisePx);
     for (const b of markerBlocks) offsetDesignBlock(b, 0, labelRisePx);
     for (const blk of childBlocks) offsetBlock(blk, 0, labelRisePx);
+    for (const g of groupLayouts) g.top += labelRisePx;
     innerRect.y += labelRisePx;
   }
   const frameHeight = totalHeight + labelRisePx;
@@ -1534,6 +1814,7 @@ export function layoutCallout(input: CalloutLayoutInput): CalloutLayoutResult {
     marginTopPx: px(style.marginTop),
     marginBottomPx: px(style.marginBottom),
     continuesMarkerPx,
+    ...(groupLayouts.length > 0 ? { groups: groupLayouts } : {}),
   };
 }
 
