@@ -110,8 +110,9 @@ export interface ProbeFacts {
   indexWarnings?: { kind: string; page: number | null; detail: string }[];
   /** Content warnings on how the text is set (`arabicMarksExceedLeading`,
    *  `unbreakableWordOverflow`, `joiningScriptLetterSpacing`), with the
-   *  words they name, and `lineNumberOverlap` (a line number in the side
-   *  column on a side box or float), with the number. */
+   *  words they name, `lineNumberOverlap` (a line number in the side
+   *  column on a side box or float), with the number, and
+   *  `tabInVerticalText` (a `:tab` set as a word space in vertical text). */
   textWarnings?: { kind: string; page: number | null; detail: string }[];
   /** `doc.configWarnings` of the builds, one per value: settings the engine
    *  could not use as written and what it used instead (C31). */

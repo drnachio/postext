@@ -57,15 +57,17 @@ describe("C5: content warnings on how the text is set (#401)", () => {
     { kind: "unbreakableWordOverflow", page: null, detail: "https://example.org/a-very-long-path" },
     { kind: "joiningScriptLetterSpacing", page: 1, detail: "كتاب" },
     { kind: "lineNumberOverlap", page: 2, detail: "line 40" },
+    { kind: "tabInVerticalText", page: null, detail: ":tab" },
   ];
 
-  it("fails a recipe on the Arabic, word-overflow and line-number warnings it does not expect", () => {
+  it("fails a recipe on the Arabic, word-overflow, line-number and tab warnings it does not expect", () => {
     const c5 = of("C5", runChecks(input({ facts: facts({ textWarnings }) })));
     expect(c5.map((f) => [f.severity, f.detail])).toEqual([
       ["fail", 'arabicMarksExceedLeading "وَقَالَ" on page 3'],
       ["fail", 'unbreakableWordOverflow "https://example.org/a-very-long-path"'],
       ["fail", 'joiningScriptLetterSpacing "كتاب" on page 1'],
       ["fail", 'lineNumberOverlap "line 40" on page 2'],
+      ["fail", 'tabInVerticalText ":tab"'],
     ]);
   });
 
@@ -242,6 +244,16 @@ describe("spreads of a capture that takes two builds", () => {
 describe("right-binding detection", () => {
   const registry = loadRegistry();
   const found = (paths: string[]) => detectFeatures(registry, { paths, markdown: "", apis: [] }).detected;
+
+  it("finds tab stops in the config and :tab in the text (#622)", () => {
+    const tabs = (paths: string[], markdown = "") => detectFeatures(registry, { paths, markdown, apis: [] }).detected.includes("tab-stops");
+    expect(tabs(["paragraphStyles.tabStops"])).toBe(true);
+    expect(tabs(["calloutStyles.body.tabInterval"])).toBe(true);
+    expect(tabs(["bodyText.tabStops"])).toBe(true);
+    expect(tabs([], "Soup :tab 8.50")).toBe(true);
+    expect(tabs([], "Marks :tab{at=end align=end} 2")).toBe(true);
+    expect(tabs([], "Chapter 3:table of results")).toBe(false);
+  });
 
   it("comes from the binding, not from any writing mode", () => {
     expect(found(["page.binding"])).toContain("right-binding");

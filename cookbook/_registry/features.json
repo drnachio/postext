@@ -2393,6 +2393,121 @@
     },
     "since": "1.23.0"
   },
+  "tab-stops": {
+    "label": {
+      "en": "Tab stops and leaders",
+      "es": "Tabuladores y rellenos",
+      "ca": "Tabuladors i farciments",
+      "zh": "制表位与前导符",
+      "ar": "مواضع الجدولة ونقاط التوجيه",
+      "ja": "タブストップとリーダー",
+      "pt": "Paradas de tabulação e pontilhados"
+    },
+    "definition": {
+      "en": "tabStops on a paragraph style, bodyText or a callout's body, with :tab in the text, aligns the words after each tab at a stop (start, end, centre or decimal point), with an optional leader of dots or a rule before it: menus, price lists, cast lists, exam marks and forms set as text.",
+      "es": "tabStops en un estilo de párrafo, en bodyText o en el body de un recuadro, con :tab en el texto, alinea las palabras que siguen a cada tabulación en un tabulador (por el inicio, el final, el centro o la coma decimal), con un relleno opcional de puntos o una línea antes: cartas, listas de precios, repartos, puntuaciones de examen y formularios compuestos como texto.",
+      "ca": "tabStops en un estil de paràgraf, a bodyText o al body d'un requadre, amb :tab al text, alinea les paraules que segueixen cada tabulació en un tabulador (per l'inici, el final, el centre o la coma decimal), amb un farciment opcional de punts o una línia abans: cartes, llistes de preus, repartiments, puntuacions d'examen i formularis compostos com a text.",
+      "zh": "在段落样式、bodyText或提示框的body中设置tabStops，并在文字中写:tab，每个制表符后面的文字就在制表位上对齐（按起点、终点、中心或小数点），前面可加点状或线状前导符：菜单、价目表、演员表、试卷分值和表单都能作为文字排版。",
+      "ar": "يحاذي tabStops في نمط فقرة أو في bodyText أو في body الإطار، مع :tab في النص، الكلماتِ التي تلي كل جدولة عند موضع جدولة (من البداية أو النهاية أو الوسط أو الفاصلة العشرية)، مع نقاط توجيه اختيارية أو خط قبلها: قوائم الطعام والأسعار والممثلين ودرجات الامتحان والاستمارات منضَّدة نصًّا.",
+      "ja": "段落スタイル、bodyText、囲みのbodyのtabStopsと本文の:tabで、各タブの後ろの語をタブ位置（先頭、末尾、中央、小数点）にそろえ、手前に点線や線のリーダーを入れられます。メニュー、価格表、配役表、試験の配点、記入欄を文字として組めます。",
+      "pt": "tabStops em um estilo de parágrafo, em bodyText ou no body de um boxe, com :tab no texto, alinha as palavras depois de cada tabulação em uma parada (pelo início, pelo fim, pelo centro ou pela vírgula decimal), com um pontilhado opcional ou uma linha antes: cardápios, listas de preços, elencos, pontuações de prova e formulários compostos como texto."
+    },
+    "aliases": {
+      "en": [
+        "tabs",
+        "tab leaders",
+        "dot leaders",
+        "right-aligned prices",
+        "decimal tab",
+        "aligned columns of text",
+        ":tab",
+        "tabStops"
+      ],
+      "es": [
+        "tabulaciones",
+        "tabulador con puntos",
+        "precios alineados a la derecha",
+        "tabulador decimal",
+        "columnas de texto alineadas",
+        ":tab",
+        "tabStops"
+      ],
+      "ca": [
+        "tabulacions",
+        "tabulador amb punts",
+        "preus alineats a la dreta",
+        "tabulador decimal",
+        "columnes de text alineades",
+        ":tab",
+        "tabStops"
+      ],
+      "zh": [
+        "制表符",
+        "Tab对齐",
+        "前导符",
+        "点状前导符",
+        "价格右对齐",
+        "小数点对齐",
+        ":tab",
+        "tabStops"
+      ],
+      "ar": [
+        "الجدولة",
+        "نقاط التوجيه",
+        "محاذاة الأسعار",
+        "جدولة عشرية",
+        "أعمدة نص محاذاة",
+        ":tab",
+        "tabStops"
+      ],
+      "ja": [
+        "タブ",
+        "タブリーダー",
+        "点線リーダー",
+        "価格の右揃え",
+        "小数点揃え",
+        "テキストの桁そろえ",
+        ":tab",
+        "tabStops"
+      ],
+      "pt": [
+        "tabulações",
+        "tabulação com pontilhado",
+        "preços alinhados à direita",
+        "tabulação decimal",
+        "colunas de texto alinhadas",
+        ":tab",
+        "tabStops"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Tab stops",
+        "es": "Tabulaciones",
+        "ca": "Tabulacions",
+        "zh": "制表位",
+        "ar": "مواضع الجدولة",
+        "ja": "タブ位置",
+        "pt": "Paradas de tabulação"
+      }
+    },
+    "detect": {
+      "config": [
+        "bodyText.tabStops",
+        "bodyText.tabInterval",
+        "paragraphStyles[].tabStops",
+        "paragraphStyles[].tabInterval",
+        "calloutStyles[].body.tabStops",
+        "calloutStyles[].body.tabInterval"
+      ],
+      "markdown": [
+        ":tab(?:\\{|(?![A-Za-z\\u00C0-\\u024F\\u0370-\\u03FF\\u0400-\\u04FF]))"
+      ]
+    },
+    "since": "1.23.0"
+  },
   "bibliography": {
     "label": {
       "en": "Bibliographies and glossaries",

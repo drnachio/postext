@@ -3869,5 +3869,47 @@
         "pt": "Numeração de linhas"
       }
     }
+  },
+  "tabInVerticalText": {
+    "source": "engine",
+    "label": {
+      "en": ":tab in vertical text",
+      "es": ":tab en texto vertical",
+      "ca": ":tab en text vertical",
+      "zh": "竖排文本中的:tab",
+      "ar": ":tab في نص عمودي",
+      "ja": "縦組みの:tab",
+      "pt": ":tab em texto vertical"
+    },
+    "cause": {
+      "en": "A `:tab` stands in a paragraph set vertically (`layout.writingMode: 'vertical-rl'`). Tab stops are set in horizontal text only, so the tab is set as a word space.",
+      "es": "Hay un `:tab` en un párrafo compuesto en vertical (`layout.writingMode: 'vertical-rl'`). Los tabuladores solo se componen en texto horizontal, así que la tabulación se compone como un espacio entre palabras.",
+      "ca": "Hi ha un `:tab` en un paràgraf compost en vertical (`layout.writingMode: 'vertical-rl'`). Els tabuladors només es componen en text horitzontal, així que la tabulació es compon com un espai entre paraules.",
+      "zh": "竖排（`layout.writingMode: 'vertical-rl'`）的段落中有`:tab`。制表位只用于横排文本，所以这个制表符排成词间空格。",
+      "ar": "في فقرة منضَّدة عموديًّا (`layout.writingMode: 'vertical-rl'`) يوجد `:tab`. ومواضع الجدولة لا تُنضَّد إلا في النص الأفقي، فتُنضَّد الجدولة مسافةً بين كلمتين.",
+      "ja": "縦組み（`layout.writingMode: 'vertical-rl'`）の段落に`:tab`があります。タブストップは横組みでしか使えないため、このタブは語間のスペースとして組まれます。",
+      "pt": "Há um `:tab` em um parágrafo composto na vertical (`layout.writingMode: 'vertical-rl'`). As paradas de tabulação só são compostas em texto horizontal, então a tabulação é composta como um espaço entre palavras."
+    },
+    "fix": {
+      "en": "Remove the `:tab` from the vertical edition, or set the aligned lines as a table resource there.",
+      "es": "Quita el `:tab` de la edición vertical, o compón ahí las líneas alineadas como un recurso de tabla.",
+      "ca": "Treu el `:tab` de l'edició vertical, o compon-hi les línies alineades com un recurs de taula.",
+      "zh": "从竖排版本中删掉`:tab`，或在该版本中把需要对齐的各行改用表资源排。",
+      "ar": "أزل `:tab` من الطبعة العمودية، أو نضّد الأسطر المحاذاة فيها مورد جدول.",
+      "ja": "縦組みの版から`:tab`を削除するか、その版ではそろえたい行を表リソースで組んでください。",
+      "pt": "Remova o `:tab` da edição vertical, ou componha ali as linhas alinhadas como um recurso de tabela."
+    },
+    "docs": {
+      "slug": "configuration",
+      "heading": {
+        "en": "Tab stops",
+        "es": "Tabulaciones",
+        "ca": "Tabulacions",
+        "zh": "制表位",
+        "ar": "مواضع الجدولة",
+        "ja": "タブ位置",
+        "pt": "Paradas de tabulação"
+      }
+    }
   }
 }
