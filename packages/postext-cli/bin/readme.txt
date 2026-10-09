@@ -1,4 +1,4 @@
-postext command line 1.22.3
+postext command line 1.23.0
 ===========================
 
 One self-contained executable per system: no installation, no runtime and
@@ -22,7 +22,7 @@ Download the latest (every release of postext publishes them):
 
   e.g. https://github.com/drnachio/postext/releases/latest/download/postext-linux-x64
 
-or a given version: https://github.com/drnachio/postext/releases/tag/v1.22.3
+or a given version: https://github.com/drnachio/postext/releases/tag/v1.23.0
 SHA256SUMS lists the checksum of each file.
 
 Install
