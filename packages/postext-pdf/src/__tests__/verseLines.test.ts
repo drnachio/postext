@@ -115,3 +115,34 @@ describe('verse line by line in the PDF (#620)', () => {
     expect(out.stdout).toMatch(/^PASS /m);
   }, 120_000);
 });
+
+describe('a line of verse tightened to fit the measure in the PDF (#620)', () => {
+  // A line 2 pt wider than the measure at its natural spacing: the page is
+  // made that much narrower than the line needs.
+  const LINE = 'The soil is bare now, nor can foot feel, being shod.';
+  const markdown = `:::verse\nGenerations have trod, have trod.\n${LINE}\n:::`;
+  const wide = buildDocument({ markdown }, { ...config, page: { ...config.page, width: pt(600) } });
+  const pxPerPt = wide.pages[0]!.width / 600;
+  const natural = wide.blocks.flatMap((b) => b.lines as VDTLine[]).filter((l) => l.verseLine)[1]!.bbox.width / pxPerPt;
+  const measurePt = natural - 2;
+  const doc = buildDocument({ markdown }, { ...config, page: { ...config.page, width: pt(measurePt + 48) } });
+  const lines = doc.blocks.flatMap((b) => b.lines as VDTLine[]).filter((l) => l.verseLine);
+
+  it('keeps the line on one line with its word spaces tightened', () => {
+    expect(lines).toHaveLength(2);
+    expect(lines[1]!.verseLine!.spaceRatio).toBeGreaterThanOrEqual(0.6);
+    expect(lines[1]!.bbox.width / pxPerPt).toBeCloseTo(measurePt, 3);
+  });
+
+  it.skipIf(!hasPdftotext)('paints its last word ending on the measure', async () => {
+    const file = path.join(os.tmpdir(), `postext-verse-tight-${process.pid}.pdf`);
+    fs.writeFileSync(file, await renderToPdf(doc, { fontProvider }));
+    const html = execFileSync('pdftotext', ['-bbox', file, '-'], { encoding: 'utf8' });
+    fs.unlinkSync(file);
+    const last = [...html.matchAll(/<word xMin="([\d.]+)" yMin="[\d.]+" xMax="([\d.]+)"[^>]*>([^<]*)<\/word>/g)].find((m) => m[3] === 'shod.');
+    expect(last).toBeDefined();
+    // The right margin starts at 24 pt from the page's right edge.
+    expect(Number(last![2])).toBeLessThanOrEqual(measurePt + 24 + 0.5);
+    expect(Number(last![2])).toBeGreaterThan(measurePt + 24 - 1.5);
+  });
+});
