@@ -35,6 +35,7 @@ const DOC_PAGES: Record<string, string> = {
   contributing: "Contributing",
   sandbox: "Sandbox",
   skill: "Agent-Skill",
+  "command-line": "Command-Line",
 };
 
 /** The Configuration reference, split by its `##` sections. The text before
@@ -85,6 +86,7 @@ const CONFIGURATION_PAGES: { page: string; title: string; sections: string[] }[]
       "Color Palette",
       "HTML Viewer",
       "PDF generation (config)",
+      "Print production (config)",
       "Folio viewer (config)",
       "Debug",
     ],

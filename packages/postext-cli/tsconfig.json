@@ -1,0 +1,22 @@
+{
+  "extends": "@postext/typescript-config/library.json",
+  "compilerOptions": {
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "noEmit": true,
+    "rootDir": "..",
+    "types": [
+      "bun"
+    ]
+  },
+  "include": [
+    "src",
+    "scripts"
+  ],
+  "exclude": [
+    "node_modules",
+    "bin"
+  ]
+}

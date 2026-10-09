@@ -23,6 +23,10 @@
       "types": "./dist/bundle/index.d.ts",
       "default": "./dist/bundle/index.js"
     },
+    "./word": {
+      "types": "./dist/word/index.d.ts",
+      "default": "./dist/word/index.js"
+    },
     "./react": {
       "types": "./dist/react/index.d.ts",
       "default": "./dist/react/index.js"

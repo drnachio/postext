@@ -271,13 +271,25 @@ Full references (load the one you need):
 ```bash
 python3 -m pip install pymupdf pillow fonttools brotli numpy   # PDF, images, fonts, comic panels
 brew install pandoc poppler                                  # or apt: pandoc poppler-utils (DOCX/PPTX/EPUB/HTML, page images)
-mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools \
-  && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas   # headless render + page JPEGs (Node >= 22.15)
+mkdir -p ~/.local/bin && curl -fL -o ~/.local/bin/postext https://github.com/drnachio/postext/releases/latest/download/postext-macos-arm64 \
+  && chmod +x ~/.local/bin/postext                           # the work loop (layout, page JPEGs, checks, PDF); pick your system's file
 ```
 
-`@napi-rs/canvas` (prebuilt, no system libraries) lets `render.mjs --jpeg`
-paint pages with the engine's own canvas renderer. Add it to an existing
-tools folder with `npm i @napi-rs/canvas`.
+`postext` is the [postext command line](https://postext.dev/en/docs/command-line):
+one self-contained executable per system (`postext-macos-arm64`,
+`postext-macos-x64`, `postext-linux-x64`, `postext-linux-arm64`,
+`postext-linux-x64-musl`, `postext-windows-x64.exe`), no installation; with
+Node, `npx postext-cli` works too. It runs the real engine and reads a project
+folder as the Sandbox does. **Iterate with it in watch mode** (step 7).
+
+The Node tools are optional: `scripts/render.mjs` adds the Sandbox's extra
+checks (`SANDBOX-WARN`) and is the fallback when the executable cannot be
+downloaded:
+
+```bash
+mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools \
+  && npm init -y >/dev/null && npm i postext postext-pdf postext-citeproc react @pdf-lib/fontkit @napi-rs/canvas   # render.mjs (Node >= 22.15)
+```
 
 Optional: `ocrmypdf` (scans), `magick` (SVG fallback rasters, contact sheets),
 `verapdf` (PDF/UA).
@@ -433,7 +445,10 @@ Read each chapter against the source pages and apply
   rebuilt from the source's markup or, for a printed index,
   `scripts/index_marks.py parse|place` once the text is final
   (playbooks A10);
-- verse one line per paragraph.
+- verse one line per paragraph;
+- sizes that grow with the text and reflowable content wherever they make
+  sense, not fixed sizes or breaks copied from the source pages (see Rules
+  of thumb).
 
 Resources get descriptive ids, captions without the number, `note` credit
 lines, `altText`, and bitmap `width`/`height`. Keep the source's wording;
@@ -465,30 +480,64 @@ Then `python3 build_preset.py`.
 ### 7. Verify and iterate
 Follow [verification.md](references/verification.md).
 
-**Look at pages as JPEGs.** Inside the loop (change the config or a chapter,
-look, change again) render only the pages you need, straight from the
-layout, and open the files:
+**Work in watch mode, on the unpacked project.** Keep the project as a folder
+(`my-book/`, never the packed `.postext`, while you work; to rework an
+existing bundle, `postext unpack book.postext -o my-book` first). Start one
+watcher in the background on the pages you are working on, then loop: change
+a chapter or the generator, wait for the rebuild, open the JPEGs, change
+again. Each round takes about a second, even on a long book, because the
+engine and the fonts stay loaded, and the whole book is laid out every time,
+so folios, plate numbers and cross-references stay right:
 
 ```bash
-python3 scripts/lint_project.py my-book --quiet
-node scripts/render.mjs my-book --lang es --jpeg /tmp/pages --pages 12-15               # printed page numbers
-node scripts/render.mjs my-book --lang es --jpeg /tmp/pages --pages '#40' --dpi 150      # 40th page of the layout, sharper
+python3 scripts/lint_project.py my-book --quiet          # first, and at every milestone
+postext build my-book --locale es --images /tmp/pages --pages 12-15 -f jpeg --dpi 100 --watch > /tmp/watch.log 2>&1 &
+until grep -qE 'watching|^error' /tmp/watch.log; do sleep 0.2; done; cat /tmp/watch.log   # first build done
 ```
 
-Each page is `/tmp/pages/page-NNN.jpg` (NNN = position in the layout; the
-log line gives the number it prints). They are painted by the engine's
-canvas renderer, the painter of the Sandbox's Canvas tab, in about a second
-for a chapter: no PDF to build, no images to extract from it, no browser.
-`--dpi` defaults to 100 (enough to read body text); 150–200 for fine
-detail. `--chapters 2` lays out that chapter file alone (faster on a long
-book; its pages then number from its own first page). Compare with the source from the same folder:
+Then, for every change:
+
+```bash
+n=$(grep -cE 'rebuilt in|^error' /tmp/watch.log)        # before the change
+# … edit chapters/es/03-….md, or a constant in build_preset.py then `python3 build_preset.py` …
+until [ "$(grep -cE 'rebuilt in|^error' /tmp/watch.log)" -gt "$n" ]; do sleep 0.2; done
+tail -n 30 /tmp/watch.log                                 # the warnings of this build, or the error
+```
+
+and open `/tmp/pages/page-NNN.jpg` (NNN = position in the book; `--pages` takes
+printed numbers, `'#40'` for the 40th page of the layout). A save that breaks
+the book prints `error …` and keeps the last good pages. Changes in `source/`,
+`*.py` and the other project-only files are ignored; running the generator
+rewrites `preset.json`, which counts. `--dpi 100` reads body text; 150–200 for
+fine detail; a wider `--pages` range at `--dpi 72` gives a chapter at a
+glance. To look at other pages, stop the watcher
+(`pkill -f "postext build my-book"`) and start it again with the new
+`--pages`: the first build of a long book takes a few seconds, every later
+one about a second. Stop it when the pages are right.
+
+Design decisions go the same way: change one constant in `build_preset.py`
+(a margin, the leading, a heading size), run it, look, and keep or revert,
+before you move to the next. Compare with the source from the same folder:
 
 ```bash
 python3 scripts/compare_pages.py source.pdf /tmp/pages --source-pages 23-26 --render-pages 1-4 --out /tmp/cmp --sheet
 ```
 
-Build the PDF (`--out`) for the print checks and once at the end, not on
-every iteration.
+Without the executable, `render.mjs` paints the same files in one shot (a few
+seconds each time, the engine loaded afresh):
+
+```bash
+node scripts/render.mjs my-book --lang es --jpeg /tmp/pages --pages 12-15               # printed page numbers
+node scripts/render.mjs my-book --lang es --jpeg /tmp/pages --pages '#40' --dpi 150      # 40th page of the layout, sharper
+```
+
+At each milestone (a chapter done, before delivery) run the full checks, which
+the watch log does not replace: `lint_project.py`, `postext check my-book
+--locale es --json` (every warning with chapter file:line and page; exit 3 on
+errors) and, with the Node tools, `render.mjs` for its `SANDBOX-WARN` lines.
+
+Build the PDF (`postext pdf my-book -o /tmp/my-book.pdf`, or `render.mjs --out`)
+for the print checks and once at the end, not on every iteration.
 
 Fix the config or the Markdown until you reach:
 
@@ -535,7 +584,10 @@ Use it when:
   (`openBundle`) — or copy the manifest's `config` (defaults already
   stripped) back into the code.
 
-`render.mjs` accepts a packed `.postext` as well as a project folder.
+`render.mjs` accepts a packed `.postext` as well as a project folder, and so
+does `postext`: run `postext check my-book.postext` and
+`postext images my-book.postext --pages '#1-#4' -f jpeg -o /tmp/final` on the
+delivered file before handing it over.
 
 ## Rules of thumb
 
@@ -543,13 +595,27 @@ Use it when:
   If Postext cannot express something, say so, choose the closest
   expression, and note it as a gap.
 - **Measure, don't guess.** Every number in the generator has a source page.
+- **Let it grow with the text.** When Postext can express something as a
+  size that follows its content (auto heights, widths as fractions of the
+  measure, spacing in lines or em, boxes, tables and chips that size to
+  what they hold), prefer it to a fixed size copied from the source. Keep
+  whatever can reflow reflowable: live text over text baked into images,
+  real tables over pictures of tables, `:::space` and style spacing over
+  empty paragraphs, no hard line, column or page breaks the flow would
+  produce anyway. The text will be edited, translated and set at other
+  sizes; a fixed size that only fits today's wording breaks then. Fix a
+  size only where it is the design itself (page and type area, a cover, a
+  band or plate of set height, a comics panel) or where reflow makes no
+  sense, and note why.
 - **Draft, then curate.** Extractors produce drafts. Never re-run an
   extractor over curated chapters.
 - **Semantic ids and styles.** Name things by role (`keypoints`, `band`,
   `fig-cohort-study`), never by number or position.
-- **Look at JPEGs, not PDFs, while iterating.** `render.mjs --jpeg` with
-  `--pages`; never build a PDF and rasterise it, or screenshot a browser,
-  just to see a page.
+- **Iterate in watch mode and look at JPEGs.** One `postext build … --watch`
+  on the unpacked project and the pages at hand: change, wait for the
+  rebuild, look, change again, until the page is right; then stop it.
+  Never build a PDF and rasterise it, or screenshot a browser, just to see
+  a page, and do not start a fresh render for every look.
 - **The book is an object too.** Set `config.folio` (paper, binding,
   covers) from the source's specification; layout ignores it, so it costs
   nothing to get right (playbooks A11).

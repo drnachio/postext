@@ -6,7 +6,7 @@
 // travels inside the file, so the re-import maps every style back.
 
 import { strToU8, zipSync } from 'fflate';
-import type { PostextConfig, Dimension, ColorValue } from 'postext';
+import type { PostextConfig, Dimension, ColorValue } from '../types';
 import { parseInline, type InlineRun } from './inline';
 import {
   calloutStylesOf,

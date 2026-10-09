@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { strToU8, zipSync } from 'fflate';
-import { parseMarkdown, type PostextConfig } from 'postext';
+import { parseMarkdown } from '../parse';
+import type { PostextConfig } from '../types';
 import { analyzeDocx } from './analyze';
 import { readDocx } from './docxRead';
 import { parseInline, renderInline } from './inline';

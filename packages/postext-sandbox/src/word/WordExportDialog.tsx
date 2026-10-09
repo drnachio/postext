@@ -9,8 +9,7 @@ import { Button, IconButton, Select, announce, usePortalContainer, type SelectOp
 import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/surface';
 import { loadLastTemplateId, useWordTemplates } from './sandboxImport';
 import { isolate } from './WordImportDialog';
-import { emptyTemplate } from './template';
-import { postextToDocx } from './toDocx';
+import { emptyTemplate, postextToDocx } from 'postext/word';
 
 type Scope = 'chapter' | 'book';
 const AUTO = '__auto__';

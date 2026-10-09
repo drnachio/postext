@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'スキル',
   description: 'Claude Code、Codexなどのエージェントにpostext-portスキルを入れ、PDF、Word、PowerPoint、EPUB、InDesign、HTMLの原稿を、元のレイアウトに沿ったPostextプロジェクトに変換させます',
   lang: 'ja',
-  lastUpdated: '2026-10-05',
+  lastUpdated: '2026-10-09',
   readingTime: '8分',
   order: 12,
   plainSummary: "このページは、PDF、Word、InDesignなど別の形式の本や文書をすでに持っていて、それをPostextに移したい人のためのものです。エージェントと呼ばれるAIの助手に、スキルという小さな追加機能を渡せば、作業の大部分を任せられます。スキルは、元の文章を写し、デザインを組み直す方法をエージェントに教えます。このページでは、スキルの入れ方、頼み方、結果の確かめ方を説明します。約5分の動画で、すべての手順を見られます。",
@@ -160,6 +160,8 @@ mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && n
 
 Pandocは、Word、PowerPoint、EPUB、HTMLの原稿に必要です。popplerは原稿のページ画像に使います。Nodeのパッケージはヘッドレスレンダラーを動かします（Node 22.15以降）。`@napi-rs/canvas`はビルド済みのcanvasで、これがあれば本のページを直接JPEGに描画できます。任意のツールとして、スキャン原稿には`ocrmypdf`、ほかにImageMagick、PDF/UAの検査にはveraPDFがあります。
 
+作業のループは[コマンドライン](/ja/docs/command-line)で回します。インストール不要の単体の実行ファイルです。エージェントはプロジェクトを展開したまま、作業中のページを対象に`postext build --watch`を動かし続けるので、変更は長い本でもおよそ1秒後にJPEGとして現れます。Nodeのパッケージは任意で、Sandboxの追加チェックを行う`render.mjs`を動かします。
+
 ## 使い方
 
 原稿のファイルを作業フォルダーに置き、移植を頼みます。たとえば次のように頼みます。
@@ -175,7 +177,7 @@ Pandocは、Word、PowerPoint、EPUB、HTMLの原稿に必要です。popplerは
 2. **一覧と測定**。原稿を読み、測った事実を仕様書にまとめます。仕上がりサイズ、余白、段、行送り、書体の役割、配色、章扉、柱、囲みの種類、配置の傾向です。
 3. **プロジェクト**。`my-book/`のひな形を作ります。その中の`build_preset.py`という生成スクリプトが仕様を定数として持ち、`preset.json`を作ります。
 4. **コンテンツ**。適切な抽出スクリプトで章の下書きを取り出し、PostextのMarkdownに整えます。囲み、段落スタイル、部、章扉のための見出し属性、`:ref`による参照、表と図のリソースです。
-5. **確認**。プロジェクトをリンターにかけ、ヘッドレスでレイアウトし、作業中のページをJPEGに描画して目で確かめ、改ページ、図、囲みが一致するまで原稿とページごとに比べます。PDFは印刷向けの検査のために作るもので、見るたびに作るわけではありません。
+5. **確認**。プロジェクトをリンターにかけ、展開したプロジェクトで`postext build --watch`を動かし続けます。章や設定を変え、およそ1秒後に描き直されたページのJPEGを見て、改ページ、図、囲みが原稿とページごとに一致するまで変更を繰り返します。区切りごとに、すべてのチェック（`postext check`とリンター）を実行します。PDFは印刷向けの検査のために作るもので、見るたびに作るわけではありません。
 6. **納品**。Folioビューアー用に本の用紙、綴じ、表紙を設定し、`my-book.postext`にまとめます。
 
 結果は[Sandbox](/ja/sandbox)で開きます：**本 → 新規 → .postextファイルを開く…**。読み込まれるのは、Sandboxの言語に対応する章と文言です。Postextのローカルコピーでプロジェクトのフォルダーを扱うには、`POSTEXT_PRIVATE_PRESETS_DIR`を設定します（[Sandbox](/ja/docs/sandbox)を参照）。

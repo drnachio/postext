@@ -1,0 +1,302 @@
+{/* docs/command-line-ja.mdx */}
+
+export const metadata = {
+  title: 'コマンドライン：ターミナル、スクリプト、エージェントでpostextを使う',
+  sidebarTitle: 'コマンドライン',
+  description: 'macOS、Linux、Windows用の自己完結した1つの実行ファイルで、.postextの本、本のフォルダー、ばらのMarkdownからPDF、HTML、EPUB、ページ画像、Wordを作り、バンドルをまとめ、本を検査します。スクリプトとエージェント向けのJSON出力も備えています',
+  lang: 'ja',
+  lastUpdated: '2026-10-09',
+  readingTime: '10分',
+  order: 13,
+  plainSummary: "このページは、Webサイトではなくターミナルを使ってPostextで本を作りたい人のためのものです。自分のコンピューター用のファイルを1つダウンロードして実行するだけで、ほかに何もインストールする必要はありません。本や何本かのテキストファイルを渡すと、PDF、Webページ、電子書籍、ページの画像、Wordの文書を作ります。本に問題がないかを調べたり、本のファイルを1つにまとめたりすることもできます。プログラムが読みやすい形で答えを返せるので、ほかのプログラムやAIの助手からも使えます。",
+};
+
+# コマンドライン
+
+**`postext`は、ターミナル、スクリプト、エージェントから本を組みます。**
+
+[Sandbox](/ja/sandbox)は、目で確かめながら本を書き、デザインする場所です。コマンドラインは同じ本を受け取り、ブラウザーなしでそのファイルを作ります。印刷用のPDF、HTMLのページ、EPUB、1ページまたは全ページの画像、Wordの文書です。ほかに、`.postext`バンドルをまとめたり展開したり、Wordの文書を読み込んだり、本の内容を示したり、本に問題がないかを検査したりもします。
+
+システムごとに**自己完結した1つの実行ファイル**です。postextのエンジン、PDF、EPUB、HTML、Wordの書き出し、ページを描くペインター（Skia）、アラビア語などの複雑な文字のためのHarfBuzz、印刷用のICCプロファイル、既定のフォント（EB GaramondとOpen Sans）がすべて入っています。インストールするランタイム、パッケージ、ライブラリーはありません。レイアウトはSandboxと同じなので、同じ本は同じページに分かれます。
+
+## 入手する
+
+Postextのリリースごとに、実行ファイルが[GitHub Release](https://github.com/drnachio/postext/releases/latest)で公開されます。チェックサム（`SHA256SUMS`）と`readme.txt`も付いています。
+
+<table>
+  <thead>
+    <tr><th>ファイル</th><th>システム</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>postext-macos-arm64</code></td><td>Appleシリコン（M1以降）のmacOS</td></tr>
+    <tr><td><code>postext-macos-x64</code></td><td>IntelのmacOS</td></tr>
+    <tr><td><code>postext-linux-x64</code></td><td>glibcを使うLinux x86-64（Debian、Ubuntu、Fedora…）</td></tr>
+    <tr><td><code>postext-linux-arm64</code></td><td>glibcを使うLinux ARM64（64ビットのRaspberry Pi OS、クラウドのARMサーバー）</td></tr>
+    <tr><td><code>postext-linux-x64-musl</code></td><td>muslを使うLinux x86-64（Alpine。先に<code>apk add libstdc++ libgcc</code>を実行します）</td></tr>
+    <tr><td><code>postext-windows-x64.exe</code></td><td>Windows x64</td></tr>
+  </tbody>
+</table>
+
+各ファイルの大きさは115〜140 MBです。`https://github.com/drnachio/postext/releases/latest/download/<file>`のリンクは、つねに最新のものを指します。
+
+LinuxまたはmacOSでは次のとおりです。
+
+```bash
+curl -fL -o postext https://github.com/drnachio/postext/releases/latest/download/postext-linux-x64
+chmod +x postext
+./postext
+```
+
+`PATH`の通ったフォルダー（`/usr/local/bin`、`~/.local/bin`）に移すと、どこからでも`postext`として実行できます。macOSは、ブラウザーでダウンロードしたファイルを隔離します。一度だけ、そのフラグを外します。
+
+```bash
+xattr -d com.apple.quarantine postext-macos-arm64
+```
+
+Windowsでは、PowerShellで次のようにします。
+
+```powershell
+Invoke-WebRequest https://github.com/drnachio/postext/releases/latest/download/postext-windows-x64.exe -OutFile postext.exe
+.\postext.exe
+```
+
+Node.jsがあれば、`npx postext-cli`が自分のシステム用の実行ファイルをnpmからダウンロードして実行します。`npm install -g postext-cli`なら、`postext`コマンドとして残ります。
+
+引数なしで実行すると、`postext`はヘルプを表示します。`postext help <command>`は1つのコマンドのオプションを一覧にします。
+
+## 最初の本
+
+フォルダーに入れた3つのMarkdownファイルは、それだけで1冊の本です。ファイルごとに1章になり、名前の順に並びます。
+
+```bash
+postext pdf chapters/ --name "Field notes" -o field-notes.pdf
+```
+
+最初の章のフロントマターが本のタイトルと著者を決め、残りはエンジンの既定値が受け持ちます。2段組み、ベースライングリッド、両端そろえとハイフネーション、柱です。必要になったら、設定と画像を加えます。
+
+```bash
+postext pdf chapters/ --config design.json --resources pictures/ -o field-notes.pdf
+```
+
+Sandboxで作った本（**本**パネルの<strong>ダウンロード（.postext）</strong>）は、そのまま使えます。
+
+```bash
+postext pdf my-book.postext -o my-book.pdf
+postext image my-book.postext --page 1 -o cover.png
+```
+
+## 本として読めるもの
+
+本を読むコマンドは、どれも次のいずれかを受け付けます。
+
+- **`.postext`ファイル**：Sandboxが書き出し、開くバンドルです（[バンドル](/ja/docs/configuration#バンドルpostextファイル)を参照）。
+- **本のフォルダー**：展開したバンドルで、`preset.json`、章、リソース、フォントを持ちます。エージェントスキルが納品するのはこの形で、`postext unpack`もこれを書き出します。
+- **ばらのMarkdown**：1つ以上の`.md`ファイルで、指定した順に1ファイル1章になります。フォルダーを渡すと、その中の`.md`ファイルを名前の順に読みます（`01-intro.md`、`02-method.md`…）。あわせて次のものを指定できます。
+  - `--config design.json`：設定です。設定のオブジェクトだけでも、`preset.json`全体でもかまいません。
+  - `--resources pictures/`：画像です。それぞれ、拡張子を除いたファイル名を名前とする図になります（`map.png`は`::resource{id="map"}`）。フォルダーに`resources.json`があれば、代わりにそれが画像を記述します（id、種類、キャプション、代替テキスト）。形式は`preset.json`の`resources`と同じです。
+  - `--fonts fonts/`：本が持つフォントファイル（TTF、OTF、WOFF2）です。フォントのテーブルが示すファミリー名で識別されます。
+  - `--name "Title"`：本の名前です。
+
+`--config`はバンドルやフォルダーにも使え、本自身の設定の上に統合されます。多言語のバンドルは、`--locale`で別の言語を求めない限り（`--locale en`）、バンドル自身の言語で読まれます。
+
+## コマンド
+
+<table>
+  <thead>
+    <tr><th>コマンド</th><th>役割</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>pdf</code></td><td>PDF。しおり、リンク、埋め込みフォントを持ち、既定ではアクセシビリティのためのタグ付き（PDF/UA）です。印刷用にはPDF/XとCMYK。</td></tr>
+    <tr><td><code>html</code></td><td>実際のテキストを持つHTMLのページ。自己完結した1つのファイル、または<code>index.html</code>と<code>assets/</code>を持つフォルダーです。</td></tr>
+    <tr><td><code>epub</code></td><td>EPUB 3の本。印刷したとおりの固定ページか、リフローするテキストです。</td></tr>
+    <tr><td><code>image</code></td><td>1ページをPNG、JPEG、WebPの画像にします。</td></tr>
+    <tr><td><code>images</code></td><td>全ページ、または範囲を指定したページを、フォルダーの中の画像にします。</td></tr>
+    <tr><td><code>docx</code></td><td>章をWordの文書にします。読み込み直しても変わりません。</td></tr>
+    <tr><td><code>import-docx</code></td><td>Wordの文書をPostextの本（フォルダーまたは<code>.postext</code>）にします。</td></tr>
+    <tr><td><code>pack</code></td><td>本のフォルダーまたはばらのMarkdownを、1つの<code>.postext</code>ファイルにまとめます。</td></tr>
+    <tr><td><code>unpack</code></td><td><code>.postext</code>ファイルをフォルダーに展開します。</td></tr>
+    <tr><td><code>info</code></td><td>本の章、言語、リソース、フォント。<code>--pages</code>を付けるとページ数も示します。</td></tr>
+    <tr><td><code>check</code></td><td>本をレイアウトし、すべての問題を報告します。印刷用の本ではプリフライトも行います。</td></tr>
+    <tr><td><code>build</code></td><td>本を一度だけレイアウトし、上の出力のいくつかを書き出します。<code>--watch</code>を付けると動き続け、保存のたびに作り直します。</td></tr>
+  </tbody>
+</table>
+
+どのコマンドも、`-o`でパスを指定しない限り、実行した場所に入力の名前で書き出します。`-o -`は、1つの出力を標準出力に書き出します。
+
+### pdf
+
+```bash
+postext pdf book.postext -o book.pdf
+postext pdf book/ --pdfx x4 --profile fogra51 -o book-print.pdf
+postext pdf book/ --color-space grayscale --no-outlines
+```
+
+PDFは本自身の設定に従います（[PDF生成](/ja/docs/configuration#pdf生成設定)と[印刷出力](/ja/docs/configuration#印刷出力設定)を参照）。次のオプションは、1回の実行に限ってそれを変えます。
+
+- `--pdfx none|x1a|x4`：印刷所向けのPDF/X規格。
+- `--profile NAME|FILE`：出力ICCプロファイル。名前（`fogra39`、`fogra51`、`fogra52`、`swop5`、`gracol2006`、`snap2007`、`ifra26`など、印刷設定のプロファイル）か、`.icc`ファイルで指定します。
+- `--color-space rgb|cmyk|grayscale`。
+- `--accessible` / `--no-accessible`：スクリーンリーダーのためのタグ構造。
+- `--no-outlines`：しおりを入れません。
+- `--page-negative`：一部の印刷ワークフロー向けのネガのページ。
+
+### html
+
+```bash
+postext html book.postext -o book.html
+postext html book.postext -o site/ --mode single
+```
+
+`.html`で終わるパスには、画像とフォントを中に収めた1つのファイルを書き出します。送るのに便利です。それ以外のパスはフォルダーになり、`index.html`の横に`assets/`を置きます。`assets/`には画像、フォント、自前でホストする動画が入ります。`--assets embed|folder`を使うと、どのパスでもどちらかを選べます。ページは印刷用のレイアウトを画面の大きさで表示したもので、横に並べるか（`--mode multi`、既定）、縦に重ねるか（`--mode single`）を選べます。`redistributable: false`と指定したフォントは、名前は記されますがコピーはされません。
+
+### epub
+
+```bash
+postext epub book.postext -o book.epub
+postext epub book.postext --layout reflowable --cover cover.jpg
+```
+
+`--layout fixed`（既定）は、すべてのページを印刷したとおりに保ち、テキストは選択できます。`--layout reflowable`は、読書システムがその画面に合わせてテキストを組み直せるようにします（[EPUBの本](/ja/docs/configuration#epubの本postext-epub)を参照）。表紙は、`--cover`で画像を指定しない限り本のサムネイルです。パッケージのメタデータ（タイトル、著者、言語、識別子）は、Sandboxと同じく最初の章のフロントマターから取ります。
+
+### imageとimages
+
+```bash
+postext image book.postext --page 12 -o page-12.png
+postext image book.postext --page "#1" --dpi 300 -f jpeg -o cover.jpg
+postext images book.postext -o pages/ --dpi 100
+postext images book.postext --pages 1-10,iv -f webp --pattern "{chapter}-{label}"
+```
+
+ページは、**印刷された番号**（`12`、`iv`、範囲の`7-9`）か、`#`を付けた**本の中の位置**（`#1`は何が印刷されていても最初のページ、`#10-#20`、終わりまでの`#30-`）で指定します。`--pages`はコンマ区切りのリストを受け付けます。描画するのはSandboxのCanvasビューと同じペインターなので、画像はPDFを経ずに、レイアウトしたとおりのページを示します。
+
+- `--format png|jpeg|webp`（または`-o`の拡張子）。JPEGとWebPには`--quality 1-100`。
+- `--dpi`：解像度。既定は150です。ページを読むには72〜100で足り、印刷用には300です。
+- `--pattern`：`images`が書き出すファイルの名前。`{n}`（位置。`{n:03}`は3桁にゼロで埋めます）、`{label}`（印刷された番号）、`{chapter}`から作ります。既定は`page-{n:03}`です。
+- `--print-preview`：出力プロファイルを通して、印刷所が再現するとおりのページを、仕上がり線と塗り足しを描いて示します。
+- `--jobs N`：同時にエンコードする画像の数。
+
+### docxとimport-docx
+
+```bash
+postext docx book.postext -o book.docx
+postext import-docx manuscript.docx -o manuscript/ --locale es --report
+postext import-docx manuscript.docx -o manuscript.postext
+```
+
+`docx`は、見出し、段落、囲み、引用、リスト、注にWordのスタイルを使って章を書き出します。Wordで表現できないものは*Postext Markup*のスタイルでそのまま残り、読み込み用のテンプレートがファイルの中に入るので、編集者が手を加えたあとでも、文書は変わらずに読み込み直せます。`import-docx`はWordの文書を本にします。レベル1の見出しごとに章を分け（`--no-split`なら1章のまま）、画像と表はリソースになります。`--report`は、Sandboxが表示する品質レポート（使われているスタイル、直接の書式、手入力の番号…）を出力します。`--template`は読み込み用のテンプレート（Sandboxから保存した`.json`、またはテンプレートを持つ`.docx`）を受け付けます。
+
+### packとunpack
+
+```bash
+postext pack my-book/ -o my-book.postext
+postext pack 01.md 02.md --name "Notes" --config design.json --resources img/ -o notes.postext
+postext unpack my-book.postext -o my-book/
+```
+
+`pack`は本のフォルダーをそのままzipにするか、ばらのMarkdownからバンドルを作ります。同じ入力からはつねに同じバイト列ができるので、バンドルを比べたり、ハッシュを取ったりできます。`unpack`は、`--force`を付けない限り、空でないフォルダーには書き込みません。
+
+### infoとcheck
+
+```bash
+postext info book.postext --pages
+postext check book.postext
+postext check chapters/ --strict --json
+```
+
+`info`は、章（タイトル、語数、ファイル。`--pages`を付けるとページも）、リソース、そしてすべてのフォントファミリーとその出どころ（本、フォルダー、実行ファイル、ダウンロードのキャッシュ、代替フォント）を一覧にします。
+
+`check`は本をレイアウトし、Sandboxの**検査**パネルが示すものを報告します。閉じていないMarkdown、不明なリソース、ディレクティブ、スタイル、レイアウトが無理に収めた囲み、見つからないフォント、エンジンが置き換えた設定です。印刷用に設定した本（または`--preflight`を付けた場合）では、プリフライトも報告します。解像度不足の画像、細すぎる罫、複数インキの小さな文字、上限を超えるインキ量、仕上がり線に近い文字です。どの問題も、章のファイル、行、ページを示します。エラーが見つかると終了コードは3になります。`--strict`を付けると、警告が1つでもあれば3になります。
+
+### buildと--watch
+
+```bash
+postext build book/ --pdf out/book.pdf --html out/book.html --images out/pages --pages 1-4
+postext build chapters/ --pdf book.pdf --watch
+```
+
+`build`は本を一度だけレイアウトし、指定したすべての出力（`--pdf`、`--html`、`--epub`、`--images`、`--docx`）を、各コマンドのオプションとともに書き出します。`--watch`を付けると動き続けます。章、設定、画像が変わると、フォントとエンジンを読み込んだまま本をレイアウトし直し（1章ならたいてい1秒もかかりません）、出力を書き直します。保存した内容で本が壊れたときは、エラーを出力し、最後に正しく作れたファイルを残します。
+
+## すべての本に共通するオプション
+
+<table>
+  <thead>
+    <tr><th>オプション</th><th>役割</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--locale TAG</code></td><td>多言語の本を読む言語（<code>es</code>、<code>en</code>、<code>pt-BR</code>…）。</td></tr>
+    <tr><td><code>--chapters LIST</code></td><td>一部の章だけをレイアウトします：<code>2</code>、<code>1,3-5</code>、<code>4-</code>。長い本では速くなります。ページ番号はその章自身の最初のページから振られます。</td></tr>
+    <tr><td><code>--set PATH=VALUE</code></td><td>この実行に限って、1つの設定をドット区切りのパスで変えます：<code>--set page.dpi=150</code>、<code>--set bodyText.fontFamily=Lora</code>、<code>--set headings.levels.0.italic=true</code>。値は、読めるときはJSONとして（数値、trueとfalse、オブジェクト）、そうでなければテキストとして読みます。繰り返し指定できます。</td></tr>
+    <tr><td><code>--config FILE</code></td><td>ばらのMarkdownのための設定（または<code>preset.json</code>）。本の場合は本自身の設定の上に統合されます。</td></tr>
+    <tr><td><code>--resources DIR</code>、<code>--fonts DIR</code>、<code>--name TEXT</code></td><td>ばらのMarkdownのための画像、フォント、タイトル。</td></tr>
+    <tr><td><code>--font-dir DIR</code></td><td>本が持たないフォントを探すフォルダー。繰り返し指定できます。</td></tr>
+    <tr><td><code>--offline</code></td><td>フォントをダウンロードしません。</td></tr>
+    <tr><td><code>--cache-dir DIR</code></td><td>ダウンロードしたフォントを保存する場所。</td></tr>
+  </tbody>
+</table>
+
+さらに、すべてのコマンドで`--json`、`--quiet`（`-q`、エラーのみ）、`--verbose`（進行状況とすべての警告）、`--no-color`、`--help`が使えます。
+
+## フォント
+
+フォントを持つ本（バンドル、または`--fonts`を付けたばらのMarkdown）は、そのフォントだけで組まれます。設定が指定するファミリーのうち本が持たないものは、`postext`が次の順に探します。
+
+1. `--font-dir`で指定したフォルダー。
+2. 実行ファイルに組み込まれた書体。エンジンの既定であるEB GaramondとOpen Sansです。
+3. ダウンロードのキャッシュ。
+4. [Google Fonts](https://fonts.google.com)。静的なTrueTypeファイルを丸ごと取得します。取得したファイルはキャッシュに残るので、1つのファミリーのダウンロードは1回で済みます。
+
+キャッシュは`~/.cache/postext`（Windowsでは`%LOCALAPPDATA%\postext\cache`）です。`POSTEXT_CACHE_DIR`か`--cache-dir`で場所を変えられます。`--offline`はダウンロードを行いません。どこにも見つからないファミリーは、その名前のままEB Garamondで組まれるので、レイアウトとPDFは食い違いません。`missingFont`の警告がそのファミリーの名前を示します。各ファミリーの出どころは`postext info`で確かめられます。
+
+## スクリプトとエージェントから使う
+
+コマンドラインは、コーディングエージェントを含むほかのプログラムから動かせるように作られています。
+
+- **`--json`**：コマンドが終わったときに、1つのJSONオブジェクトを標準出力に出力します。メッセージはすべて標準エラーに出ます。レポートには、書き出したもの、ページ、出どころ付きのすべての警告、各段階にかかった時間（ミリ秒）が並びます。
+
+```json
+{
+  "ok": true,
+  "command": "pdf",
+  "version": "1.22.1",
+  "book": { "name": "notes", "id": "notes", "locale": "en", "chapters": 2 },
+  "pages": 3,
+  "outputs": [{ "kind": "pdf", "path": "notes.pdf", "bytes": 29746, "pages": 3 }],
+  "warnings": [
+    {
+      "kind": "unknownResourceId",
+      "severity": "warning",
+      "message": "Unknown resource id \"map\" in ::resource — nothing is embedded (offset 26)",
+      "at": "notes/02-more.md:5"
+    }
+  ],
+  "timings": { "read": 13, "fonts": 8.4, "math": 28.2, "layout": 51.6, "pdf": 132.1, "total": 1638 },
+  "exitCode": 0
+}
+```
+
+- **終了コード**：`0`は完了、`1`は失敗、`2`は使い方の誤り（不明なオプション、入力の指定漏れ）、`3`は`check`がエラー（`--strict`では警告）を見つけたことを示します。
+- **質問しません**。入力を待つことはありません。空でないフォルダーは、確認を求めずに拒否します。
+- **標準出力**：`-o -`は、PDF、画像、バンドルを標準出力に書き出し、パイプで先に渡せるようにします。
+- **速度**。実行ファイルは数百分の1秒で起動します。短い本なら、PDFやページ画像は1秒を大きく下回る時間でできます。長い本は、そのレイアウトにかかる時間がかかります（140ページの挿絵入りの小説で約10秒）。長い本の数ページを見るには、`--chapters`を`image`か`images --pages`と組み合わせます。多くの変更を重ねながら本に取り組むときは、`postext build --watch`を動かしたままにして、その出力を読みます。
+
+[エージェントスキル](/ja/docs/skill)は、作業中のページを描画したり、移植を検査したりするのにコマンドラインを使います。
+
+## しくみ
+
+コマンドラインは、[リポジトリ](https://github.com/drnachio/postext/tree/main/packages/postext-cli)の`postext-cli`パッケージです。[Bun](https://bun.sh)がそれをエンジンと書き出し機能とともに、システムごとに1つの実行ファイルにコンパイルします。テキストの計測と描画は、Sandboxでブラウザーのcanvasが行うのと同じように、[Skia](https://skia.org)（`@napi-rs/canvas`経由）が行います。リリースのたびに実行ファイルがビルドされ、Linux、Alpine、macOS、Windowsで実行されてから、GitHub Releaseに添付されます。npmには`postext-cli`と、実行ファイルごとに1つの`postext-cli-<system>`パッケージが公開されます。
+
+リポジトリのコピーから実行するには次のようにします。
+
+```bash
+pnpm install
+pnpm --filter postext-cli start pdf book.postext
+pnpm --filter postext-cli build:bin --current
+```
+
+1つ目はソースから実行します。2つ目は、このコンピューター用の実行ファイルを`packages/postext-cli/bin/`に書き出します。
+
+## Sandboxとの違い
+
+- **HTML**は、印刷用のレイアウトを画面の大きさで表示したものです。SandboxのHTMLタブは、ウィンドウに合わせてテキストを組み直します。
+- **`--chapters`**：指定した章だけを単独でレイアウトします。そのページ番号は振り直されますが、Sandboxは本全体の番号を続けます。
+- **フォント**は、本、指定したフォルダー、実行ファイル、Google Fontsから取り、コンピューターにインストールされたフォントは使いません。そのため、本はどの環境でも同じように仕上がります。

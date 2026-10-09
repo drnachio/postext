@@ -6,10 +6,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseMarkdown, type PostextConfig } from 'postext';
-import { readDocx } from '../src/word/docxRead';
-import { emptyTemplate, parseTemplate } from '../src/word/template';
-import { postextToDocx } from '../src/word/toDocx';
-import { wordToPostext } from '../src/word/toMarkdown';
+import { emptyTemplate, parseTemplate, postextToDocx, readDocx, wordToPostext } from 'postext/word';
 
 const ROOT = resolve(__dirname, '../../..');
 const run = process.env.WORD_CORPUS === '1';

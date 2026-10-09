@@ -8,7 +8,7 @@ import { useSandbox, useSandboxPresets, useSandboxProjects } from '../context/Sa
 import { exportMarkdownFile, importMarkdownFile } from '../storage/persistence';
 import { slugify } from '../panels/resources/slugify';
 import { ConfirmPopover, IconButton, PanelHeader, announce } from '../ui';
-import { DocxReadError, readDocx } from '../word/docxRead';
+import { DocxReadError, readDocx } from 'postext/word';
 import { WordImportDialog, isolate, type WordImportFile } from '../word/WordImportDialog';
 import { WordExportDialog } from '../word/WordExportDialog';
 

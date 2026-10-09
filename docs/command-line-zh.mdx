@@ -1,0 +1,302 @@
+{/* docs/command-line-zh.mdx */}
+
+export const metadata = {
+  title: '命令行：在终端、脚本或智能体中使用postext',
+  sidebarTitle: '命令行',
+  description: '一个适用于macOS、Linux和Windows的独立可执行文件，把.postext图书、图书文件夹或零散的Markdown文件转换成PDF、HTML、EPUB、页面图像和Word文档，打包文件包并检查图书，还为脚本和智能体输出JSON',
+  lang: 'zh',
+  lastUpdated: '2026-10-09',
+  readingTime: '10分钟',
+  order: 13,
+  plainSummary: "本页写给想在终端里而不是在网站上用Postext做书的人。你为自己的电脑下载一个文件，直接运行它，不用安装别的东西。你把书或者几个文本文件交给它，它就能做出PDF、网页、电子书、页面图片或Word文档。它还能检查书里的问题，并把书的所有文件打包成一个文件。其他程序和AI助手也能使用它，因为它可以用这些程序容易读懂的格式回答。",
+};
+
+# 命令行
+
+**`postext`在终端、脚本或智能体中排版你的书。**
+
+[沙盒](/zh/sandbox)是你凭眼睛撰写和设计一本书的地方。命令行拿同一本书，不用浏览器就能生成它的各种文件：可直接付印的PDF、HTML页面、EPUB、某一页或每一页的图像、Word文档。它还能打包和解包`.postext`文件包、导入Word文档、描述一本书并检查其中的问题。
+
+每个系统对应<strong>一个独立的可执行文件</strong>。postext引擎、PDF、EPUB、HTML和Word写入器、页面绘制器（Skia）、用于阿拉伯文和其他复杂文字的HarfBuzz、ICC印刷特性文件以及默认字体（EB Garamond和Open Sans）全都在里面。不需要安装任何运行时、包或库，版面与沙盒完全相同：同一本书分成同样的页面。
+
+## 获取
+
+Postext的每个版本都会在其[GitHub Release](https://github.com/drnachio/postext/releases/latest)上发布这些可执行文件，连同它们的校验和（`SHA256SUMS`）和一份`readme.txt`：
+
+<table>
+  <thead>
+    <tr><th>文件</th><th>系统</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>postext-macos-arm64</code></td><td>Apple芯片的macOS（M1及更新）</td></tr>
+    <tr><td><code>postext-macos-x64</code></td><td>Intel处理器的macOS</td></tr>
+    <tr><td><code>postext-linux-x64</code></td><td>使用glibc的Linux x86-64（Debian、Ubuntu、Fedora…）</td></tr>
+    <tr><td><code>postext-linux-arm64</code></td><td>使用glibc的Linux ARM64（64位Raspberry Pi OS、云端ARM服务器）</td></tr>
+    <tr><td><code>postext-linux-x64-musl</code></td><td>使用musl的Linux x86-64（Alpine；请先运行<code>apk add libstdc++ libgcc</code>）</td></tr>
+    <tr><td><code>postext-windows-x64.exe</code></td><td>Windows x64</td></tr>
+  </tbody>
+</table>
+
+每个文件的大小在115到140 MB之间。链接`https://github.com/drnachio/postext/releases/latest/download/<file>`总是指向最新的版本。
+
+在Linux或macOS上：
+
+```bash
+curl -fL -o postext https://github.com/drnachio/postext/releases/latest/download/postext-linux-x64
+chmod +x postext
+./postext
+```
+
+把它移到`PATH`中的某个文件夹（`/usr/local/bin`、`~/.local/bin`），就能在任何地方以`postext`运行。macOS会隔离用浏览器下载的文件；清除一次这个标记即可：
+
+```bash
+xattr -d com.apple.quarantine postext-macos-arm64
+```
+
+在Windows上，用PowerShell：
+
+```powershell
+Invoke-WebRequest https://github.com/drnachio/postext/releases/latest/download/postext-windows-x64.exe -OutFile postext.exe
+.\postext.exe
+```
+
+装有Node.js时，`npx postext-cli`会从npm下载适合你系统的可执行文件并运行它，`npm install -g postext-cli`则把它保留为`postext`命令。
+
+不带参数运行时，`postext`打印帮助；`postext help <command>`列出某个命令的选项。
+
+## 第一本书
+
+一个文件夹里的三个Markdown文件就是一本书，每个文件一章，按文件名排序：
+
+```bash
+postext pdf chapters/ --name "Field notes" -o field-notes.pdf
+```
+
+第一章的前置元数据给出书名和作者，其余的交给引擎的默认设置：双栏、基线网格、两端对齐并断词的正文、书眉。需要时再加上配置和图片：
+
+```bash
+postext pdf chapters/ --config design.json --resources pictures/ -o field-notes.pdf
+```
+
+在沙盒中做好的书（在**书库**面板中导出为`.postext`文件）可以直接使用：
+
+```bash
+postext pdf my-book.postext -o my-book.pdf
+postext image my-book.postext --page 1 -o cover.png
+```
+
+## 书可以是什么
+
+每个读取图书的命令都接受以下任意一种：
+
+- **`.postext`文件**：沙盒导出和打开的文件包（见[文件包](/zh/docs/configuration#文件包postext文件)）。
+- **图书文件夹**：解包后的文件包，含有它的`preset.json`、各章、资源和字体。智能体技能交付的就是这种文件夹，`postext unpack`也会写出一个。
+- **零散的Markdown**：一个或多个`.md`文件，按给出的顺序每个文件一章；或者一个文件夹，其中的`.md`文件按文件名排序（`01-intro.md`、`02-method.md`…）。与它们一起使用：
+  - `--config design.json`：配置，可以是单纯的配置对象，也可以是完整的`preset.json`；
+  - `--resources pictures/`：图片，每张都是一个图，以去掉扩展名的文件名命名（`map.png`就是`::resource{id="map"}`）；文件夹中如有`resources.json`，则改由它描述这些图片（id、类型、题注、替代文字），格式与`preset.json`中的`resources`相同；
+  - `--fonts fonts/`：书自带的字体文件（TTF、OTF、WOFF2），以字体表中给出的字体族命名；
+  - `--name "Title"`：书名。
+
+`--config`也可用于文件包或文件夹：它会合并到书本身的配置之上。多语言文件包按其原文语言读取，除非`--locale`要求另一种语言（`--locale en`）。
+
+## 命令
+
+<table>
+  <thead>
+    <tr><th>命令</th><th>作用</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>pdf</code></td><td>生成PDF，带书签、链接和嵌入的字体，默认带有无障碍标签（PDF/UA）；印刷时可用PDF/X和CMYK。</td></tr>
+    <tr><td><code>html</code></td><td>把页面生成为带真实文字的HTML：一个独立文件，或一个含有<code>index.html</code>和<code>assets/</code>的文件夹。</td></tr>
+    <tr><td><code>epub</code></td><td>生成EPUB 3电子书，可以是与印刷版相同的固定页面，也可以是流式文字。</td></tr>
+    <tr><td><code>image</code></td><td>把一页生成为PNG、JPEG或WebP图片。</td></tr>
+    <tr><td><code>images</code></td><td>把每一页或某个范围的页面生成为图片，放进一个文件夹。</td></tr>
+    <tr><td><code>docx</code></td><td>把各章生成为Word文档，再导入时内容不变。</td></tr>
+    <tr><td><code>import-docx</code></td><td>把Word文档转成Postext图书（文件夹或<code>.postext</code>文件）。</td></tr>
+    <tr><td><code>pack</code></td><td>把图书文件夹或零散的Markdown打包成一个<code>.postext</code>文件。</td></tr>
+    <tr><td><code>unpack</code></td><td>把<code>.postext</code>文件解包成文件夹。</td></tr>
+    <tr><td><code>info</code></td><td>列出书的各章、语言、资源和字体，加上<code>--pages</code>时还给出页数。</td></tr>
+    <tr><td><code>check</code></td><td>排版整本书并报告每个问题；用于印刷的书还会做印前检查。</td></tr>
+    <tr><td><code>build</code></td><td>把书排版一次，写出上面的多种输出；<code>--watch</code>持续运行，每次保存都重新生成。</td></tr>
+  </tbody>
+</table>
+
+每个命令都把文件写在运行它的位置，以输入的名称命名，除非`-o`给出路径。`-o -`把单个输出写到标准输出。
+
+### pdf
+
+```bash
+postext pdf book.postext -o book.pdf
+postext pdf book/ --pdfx x4 --profile fogra51 -o book-print.pdf
+postext pdf book/ --color-space grayscale --no-outlines
+```
+
+PDF遵循书本身的设置（见[PDF生成](/zh/docs/configuration#pdf生成配置)和[印刷输出](/zh/docs/configuration#印刷输出配置)）；以下选项只在本次运行中改变它们：
+
+- `--pdfx none|x1a|x4`：交给印厂的PDF/X标准。
+- `--profile NAME|FILE`：输出ICC特性文件，可以按名称指定（`fogra39`、`fogra51`、`fogra52`、`swop5`、`gracol2006`、`snap2007`、`ifra26`以及印刷设置中的其他特性文件），也可以给出一个`.icc`文件。
+- `--color-space rgb|cmyk|grayscale`。
+- `--accessible` / `--no-accessible`：供屏幕阅读器使用的标签结构。
+- `--no-outlines`：不写入书签。
+- `--page-negative`：负片页面，用于某些印刷流程。
+
+### html
+
+```bash
+postext html book.postext -o book.html
+postext html book.postext -o site/ --mode single
+```
+
+以`.html`结尾的路径得到一个文件，图片和字体都在里面，便于发送。其他路径都是文件夹：`index.html`旁边有`assets/`，存放图片、字体和自托管的视频。`--assets embed|folder`可以对任何路径选择其中一种方式。页面就是印刷版面，按屏幕尺寸显示：并排显示（`--mode multi`，默认），或上下排列（`--mode single`）。标记为`redistributable: false`的字体只写出名称，不复制文件。
+
+### epub
+
+```bash
+postext epub book.postext -o book.epub
+postext epub book.postext --layout reflowable --cover cover.jpg
+```
+
+`--layout fixed`（默认）让每一页保持印刷时的样子，文字可以选取；`--layout reflowable`让阅读系统按自己的屏幕重新排列文字（见[EPUB电子书](/zh/docs/configuration#epub电子书postext-epub)）。封面是书的缩略图，除非`--cover`给出一张图片。包的元数据（书名、作者、语言、标识符）来自第一章的前置元数据，与沙盒中相同。
+
+### image和images
+
+```bash
+postext image book.postext --page 12 -o page-12.png
+postext image book.postext --page "#1" --dpi 300 -f jpeg -o cover.jpg
+postext images book.postext -o pages/ --dpi 100
+postext images book.postext --pages 1-10,iv -f webp --pattern "{chapter}-{label}"
+```
+
+页面可以**按印出的页码**指定（`12`、`iv`、范围`7-9`），也可以用`#`**按在书中的位置**指定（`#1`是第一页，不管它印的是什么页码；`#10-#20`；`#30-`表示直到末页）。`--pages`接受以逗号分隔的列表。绘制器就是沙盒的Canvas视图，所以图像显示的页面与排版结果完全一致，不必经过PDF。
+
+- `--format png|jpeg|webp`（或由`-o`的扩展名决定），`--quality 1-100`用于JPEG和WebP。
+- `--dpi`：分辨率，默认150；阅读页面用72–100就够了，印刷用300。
+- `--pattern`：`images`的文件名，由`{n}`（位置，`{n:03}`补足到三位数）、`{label}`（印出的页码）和`{chapter}`组成；默认为`page-{n:03}`。
+- `--print-preview`：经过输出特性文件，按印厂复制的样子显示页面，并画出裁切线和出血。
+- `--jobs N`：同时编码多少张图片。
+
+### docx和import-docx
+
+```bash
+postext docx book.postext -o book.docx
+postext import-docx manuscript.docx -o manuscript/ --locale es --report
+postext import-docx manuscript.docx -o manuscript.postext
+```
+
+`docx`用Word样式写出各章的标题、段落、框、引文、列表和注释。Word无法表达的内容以*Postext Markup*样式按原样保留，导入模板也随文件一起保存，所以编辑修改过的文档能原样导入回来。`import-docx`把Word文档转成一本书：每个1级标题开始一章（`--no-split`保持为一章），图片和表格成为资源，`--report`打印沙盒显示的质量报告（使用中的样式、直接格式、手打的编号…）。`--template`接受一个导入模板（从沙盒保存的`.json`，或带有模板的`.docx`）。
+
+### pack和unpack
+
+```bash
+postext pack my-book/ -o my-book.postext
+postext pack 01.md 02.md --name "Notes" --config design.json --resources img/ -o notes.postext
+postext unpack my-book.postext -o my-book/
+```
+
+`pack`把图书文件夹原样压缩，或者用零散的Markdown构建一个文件包。同样的输入总是得到同样的字节，所以文件包可以比较或计算哈希。`unpack`拒绝写入非空的文件夹，除非给出`--force`。
+
+### info和check
+
+```bash
+postext info book.postext --pages
+postext check book.postext
+postext check chapters/ --strict --json
+```
+
+`info`列出各章（标题、字数、文件，加上`--pages`时还有页数）、资源，以及每个字体族及其来源（书本身、某个文件夹、可执行文件、下载缓存或后备字体）。
+
+`check`排版整本书，并报告沙盒检查面板显示的内容：没有闭合的Markdown，未知的资源、指令和样式，排版时不得不强制处理的框，缺失的字体，引擎不得不替换的设置；对于为印刷设置的书（或加上`--preflight`时），还有印前检查：低分辨率图片、过细线条、多色小字、超出上限的墨量、靠近裁切线的文字。每个问题都指明所在的章文件、行和页。发现错误时退出码为3，加上`--strict`时有任何警告也是3。
+
+### build和--watch
+
+```bash
+postext build book/ --pdf out/book.pdf --html out/book.html --images out/pages --pages 1-4
+postext build chapters/ --pdf book.pdf --watch
+```
+
+`build`把书排版一次，写出你指定的每种输出（`--pdf`、`--html`、`--epub`、`--images`、`--docx`），各自使用对应命令的选项。`--watch`保持运行：某一章、配置或某张图片改变时，在字体和引擎仍已加载的情况下重新排版，一章通常只需几分之一秒，然后重写各个输出。保存后书出错时，它打印错误并保留上一次正确的文件。
+
+## 适用于所有图书的选项
+
+<table>
+  <thead>
+    <tr><th>选项</th><th>作用</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>--locale TAG</code></td><td>读取多语言图书时使用的语言（<code>es</code>、<code>en</code>、<code>pt-BR</code>…）。</td></tr>
+    <tr><td><code>--chapters LIST</code></td><td>只排版部分章节：<code>2</code>、<code>1,3-5</code>、<code>4-</code>。长书这样更快；这些章的页码从它们自己的第一页开始。</td></tr>
+    <tr><td><code>--set PATH=VALUE</code></td><td>在本次运行中改变一项设置，用点号分隔的路径表示：<code>--set page.dpi=150</code>、<code>--set bodyText.fontFamily=Lora</code>、<code>--set headings.levels.0.italic=true</code>。能按JSON读取的值就按JSON读取（数字、true和false、对象），否则当作文本。可以重复使用。</td></tr>
+    <tr><td><code>--config FILE</code></td><td>用于零散Markdown的配置（或<code>preset.json</code>），或合并到书本身配置之上的配置。</td></tr>
+    <tr><td><code>--resources DIR</code>、<code>--fonts DIR</code>、<code>--name TEXT</code></td><td>零散Markdown的图片、字体和书名。</td></tr>
+    <tr><td><code>--font-dir DIR</code></td><td>查找书中未自带字体的文件夹。可以重复使用。</td></tr>
+    <tr><td><code>--offline</code></td><td>从不下载字体。</td></tr>
+    <tr><td><code>--cache-dir DIR</code></td><td>存放下载字体的位置。</td></tr>
+  </tbody>
+</table>
+
+此外，所有命令都有：`--json`、`--quiet`（`-q`，只显示错误）、`--verbose`（进度和每条警告）、`--no-color`、`--help`。
+
+## 字体
+
+自带字体的书（文件包，或零散Markdown加上`--fonts`）只用这些字体排版。对于配置中指定而书中未自带的每个字体族，`postext`依次查找：
+
+1. 用`--font-dir`给出的文件夹；
+2. 编译进可执行文件的字体：EB Garamond和Open Sans，即引擎的默认字体；
+3. 下载缓存；
+4. [Google Fonts](https://fonts.google.com)，它提供完整的静态TrueType文件；下载的文件保存在缓存中，所以每个字体族只下载一次。
+
+缓存位于`~/.cache/postext`（Windows上为`%LOCALAPPDATA%\postext\cache`）；`POSTEXT_CACHE_DIR`或`--cache-dir`可以改变它的位置。`--offline`跳过下载。在哪里都找不到的字体族以它自己的名称用EB Garamond排版，这样版面和PDF仍然一致，同时一条`missingFont`警告会指出它。`postext info`显示每个字体族的来源。
+
+## 用于脚本和智能体
+
+命令行就是为了让其他程序驱动而设计的，包括编程智能体。
+
+- <strong>`--json`</strong>在命令结束时向标准输出打印一个JSON对象；所有消息都写到标准错误。报告列出写出了什么、页数、每条警告及其来源，以及每一步用了多长时间（以毫秒计）：
+
+```json
+{
+  "ok": true,
+  "command": "pdf",
+  "version": "1.22.1",
+  "book": { "name": "notes", "id": "notes", "locale": "en", "chapters": 2 },
+  "pages": 3,
+  "outputs": [{ "kind": "pdf", "path": "notes.pdf", "bytes": 29746, "pages": 3 }],
+  "warnings": [
+    {
+      "kind": "unknownResourceId",
+      "severity": "warning",
+      "message": "Unknown resource id \"map\" in ::resource — nothing is embedded (offset 26)",
+      "at": "notes/02-more.md:5"
+    }
+  ],
+  "timings": { "read": 13, "fonts": 8.4, "math": 28.2, "layout": 51.6, "pdf": 132.1, "total": 1638 },
+  "exitCode": 0
+}
+```
+
+- **退出码**：`0`完成，`1`失败，`2`用法错误（未知选项、缺少输入），`3`表示`check`发现了错误（加上`--strict`时为警告）。
+- **不提问**。它从不等待输入；非空的文件夹直接拒绝，而不是询问。
+- **标准输出**：`-o -`把PDF、图像或文件包写到那里，以便通过管道交给下一个程序。
+- **速度**。可执行文件启动只需几百分之一秒。短书变成PDF或页面图像远不到一秒；长书所需的时间取决于它的排版（一本140页的插图小说，约十秒）。要查看长书中的几页，把`--chapters`与`image`或`images --pages`结合使用。要对一本书做许多修改，让`postext build --watch`保持运行，并读取它的输出。
+
+[智能体技能](/zh/docs/skill)用命令行渲染它正在处理的页面，并检查移植结果。
+
+## 构建方式
+
+命令行是[仓库](https://github.com/drnachio/postext/tree/main/packages/postext-cli)中的`postext-cli`包。[Bun](https://bun.sh)把它连同引擎及其写入器编译成每个系统一个的可执行文件，[Skia](https://skia.org)（通过`@napi-rs/canvas`）测量并绘制文字，就像沙盒中浏览器的canvas那样。每次发布时，这些可执行文件都会被构建出来，在Linux、Alpine、macOS和Windows上运行，并附加到GitHub Release；npm收到`postext-cli`，以及每个可执行文件对应的一个`postext-cli-<system>`包。
+
+在仓库的副本中运行它：
+
+```bash
+pnpm install
+pnpm --filter postext-cli start pdf book.postext
+pnpm --filter postext-cli build:bin --current
+```
+
+第一条从源码运行它；第二条把这台电脑的可执行文件写到`packages/postext-cli/bin/`。
+
+## 与沙盒的区别
+
+- **HTML**是按屏幕尺寸显示的印刷版面。沙盒的HTML标签页会按窗口重新排列文字。
+- <strong>`--chapters`</strong>单独排版这些章：它们的页码重新开始，而沙盒会延续整本书的页码。
+- **字体**来自书本身、你的文件夹、可执行文件或Google Fonts，从不来自电脑上安装的字体，所以一本书在每台机器上排出来都一样。

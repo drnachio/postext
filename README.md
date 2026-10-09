@@ -226,6 +226,12 @@ Everything below ships today in `postext` 1.16 and its companion packages (`post
 - It bundles verified references (document format, configuration, project format, per-source playbooks, the unusual cases solved in every preset) and scripts: type-role PDF extraction, figure and table cutting, pandoc/IDML converters, font and image tools, a linter, a headless renderer and page-by-page comparison.
 - Install it with `npx skills add drnachio/postext --skill postext-port`, or in Claude Code with `/plugin marketplace add drnachio/postext` + `/plugin install postext@postext`. See [the Skill docs](https://postext.dev/en/docs/skill).
 
+### Command line
+
+- **`postext`** is one self-contained executable per system (macOS arm64 and x64, Linux x64, arm64 and musl, Windows x64): no installation, no runtime, no libraries. The engine, the PDF, EPUB, HTML and Word writers, the page painter (Skia), the default fonts and the ICC print profiles are inside. Every release attaches them to its [GitHub Release](https://github.com/drnachio/postext/releases/latest); [`readme.txt`](packages/postext-cli/bin/readme.txt) lists them, and `npx postext-cli` fetches the right one.
+- It reads a `.postext` bundle, an unpacked book folder or loose Markdown files, and writes a PDF (PDF/X and ICC profiles included), HTML, EPUB, one page or every page as PNG, JPEG or WebP, and Word; it also packs and unpacks bundles, imports `.docx`, describes a book and checks it. `postext build --watch` keeps the engine warm and rebuilds on every save.
+- Made for scripts and agents: `--json` prints one report (outputs, pages, warnings with file and line, timings), exit codes are stable, `-o -` writes to stdout, and fonts a book does not carry are fetched once from Google Fonts and cached (`--offline` never fetches). Run `postext` with no arguments for the help.
+
 ---
 
 ## Project Structure
@@ -240,6 +246,7 @@ postext/
 │   ├── postext-folio/            # 3D book viewer (three.js)
 │   ├── postext-epub/             # EPUB 3 writer (fixed layout and reflowable)
 │   ├── postext-citeproc/         # CSL citations and bibliographies (citeproc-js)
+│   ├── postext-cli/              # Command line: self-contained executables (Bun)
 │   ├── postext-sandbox/          # Interactive sandbox UI (controls + viewports)
 │   └── typescript-config/        # Shared TypeScript configurations
 ├── docs/                         # MDX documentation, <topic>-<locale>.mdx in en, es, ca, zh, ar
@@ -258,6 +265,7 @@ postext/
 | `packages/postext-folio` | The 3D book viewer: a laid-out document (or any page images) as spreads whose leaves turn in three.js. Published to npm as `postext-folio`. |
 | `packages/postext-epub` | The EPUB 3 writer: a laid-out book as a fixed-layout or reflowable EPUB, plus `readEpub` for viewers. Published to npm as `postext-epub`. |
 | `packages/postext-citeproc` | The citation engine: formats Pandoc-syntax citations with citeproc-js and builds the bibliography, with 19 bundled CSL styles and 12 CSL locales. Published to npm as `postext-citeproc`. |
+| `packages/postext-cli` | The command line: `postext pdf`, `html`, `epub`, `image(s)`, `docx`, `import-docx`, `pack`, `unpack`, `info`, `check` and `build --watch`, compiled with Bun into a self-contained executable for each system (`pnpm --filter postext-cli build:bin` writes them to `bin/`). Released as GitHub Release assets and on npm as `postext-cli`. |
 | `packages/postext-sandbox` | The interactive sandbox UI — configuration controls and live Canvas/PDF/Folio/HTML/EPUB viewports — embedded by the web app. |
 | `apps/web` | Next.js 16 + Tailwind CSS 4 application: the documentation site, landing page, hosted sandbox and cookbook at [postext.dev](https://postext.dev), in seven languages. |
 | `packages/typescript-config` | Shared strict TypeScript configuration across all packages. |

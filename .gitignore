@@ -20,3 +20,8 @@ plugins/**/__pycache__/
 # Cookbook capture network cache
 apps/web/.cache/
 .env
+# postext CLI executables (built by `pnpm --filter postext-cli build:bin`,
+# published as release assets); bin/readme.txt is committed
+packages/postext-cli/bin/*
+!packages/postext-cli/bin/readme.txt
+packages/postext-cli/npm/dist/

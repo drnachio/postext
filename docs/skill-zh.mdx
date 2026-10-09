@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '技能',
   description: '在Claude Code、Codex或任意智能体中安装postext-port技能，让它把PDF、Word、PowerPoint、EPUB、InDesign或HTML源文件转换成沿用原版面的Postext项目',
   lang: 'zh',
-  lastUpdated: '2026-10-05',
+  lastUpdated: '2026-10-09',
   readingTime: '8分钟',
   order: 12,
   plainSummary: "本页写给已经有一本书或一份文档的人，比如PDF、Word或InDesign文件，想把它转成Postext。AI助手（也叫AI代理）可以完成大部分工作，只要你给它装上一个叫skill的小插件。这个skill教代理怎样复制文字，并按原样重建原书的设计。本页说明怎样安装它、该怎样提要求，以及怎样检查结果。一段大约五分钟的视频演示了每一步。",
@@ -146,6 +146,8 @@ mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && npm init -y && n
 
 Word、PowerPoint、EPUB和HTML源文件需要Pandoc，生成源文件的页面图像需要poppler。Node包驱动无浏览器渲染器（需要Node 22.15或更高版本）；`@napi-rs/canvas`是预编译的画布，渲染器借助它直接把书页画成JPEG。可选工具：用于扫描件的`ocrmypdf`、ImageMagick，以及用于PDF/UA检查的veraPDF。
 
+工作循环用的是[命令行](/zh/docs/command-line)，一个无需安装的独立可执行文件：智能体让项目保持解压状态，并让`postext build --watch`针对正在处理的页面一直运行，这样每次修改大约一秒后就会以JPEG的形式出现，长书也是如此。Node包是可选的：它们运行`render.mjs`，提供沙盒的额外检查。
+
 ## 使用
 
 把源文件放进工作文件夹，然后提出移植要求。例如：
@@ -161,7 +163,7 @@ Word、PowerPoint、EPUB和HTML源文件需要Pandoc，生成源文件的页面�
 2. **清点与测量**。它读取源文件，写出一份实测数据的规格表：成品尺寸、页边距、栏、行距、字体角色、调色板、章首页、书眉、标注框类别和排放习惯。
 3. **项目**。它搭建`my-book/`，其中有一个`build_preset.py`生成器，把规格作为常量保存，并生成`preset.json`。
 4. **内容**。它用合适的提取器提取章节草稿，再整理成Postext Markdown：标注框、段落样式、篇、用于章首页的标题属性、`:ref`引用、表和图资源。
-5. **核对**。它对项目做lint检查，在无浏览器环境中排版，把正在处理的页面渲染成JPEG查看，并与源文件逐页比较，直到分页、图和标注框都对上。PDF用于印刷检查，不是每次查看都要生成。
+5. **核对**。它对项目做lint检查，并让`postext build --watch`在解压后的项目上一直运行：修改一章或一项设置，大约一秒后查看重新绘制的页面JPEG，再接着修改，直到分页、图和标注框与源文件逐页对上。每完成一个阶段，它都运行完整的检查（`postext check`和lint）。PDF用于印刷检查，不是每次查看都要生成。
 6. **交付**。它为书页视图设置书的纸张、装订和封面，然后打包出`my-book.postext`。
 
 在[沙盒](/zh/sandbox)中打开结果：**书 → 新建 → 打开.postext文件…**。导入时采用沙盒当前语言的章节和文字。要在Postext的本地副本中处理存放多个项目的文件夹，请设置`POSTEXT_PRIVATE_PRESETS_DIR`（见[沙盒](/zh/docs/sandbox)）。

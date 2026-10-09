@@ -28,6 +28,13 @@ jobs:
 
       - run: pnpm turbo run test
 
+      # The command line as a self-contained executable: built for this
+      # runner and run with nothing else (the release builds every platform).
+      - name: CLI executable
+        run: |
+          pnpm --filter postext-cli build:bin linux-x64
+          sh packages/postext-cli/scripts/smoke.sh packages/postext-cli/bin/postext-linux-x64
+
       # W3C EPUBCheck on postext-epub's sample books (src/epubcheck.test.ts,
       # skipped by `pnpm test`): fixed and reflowable, with and without a
       # cover, must pass with no errors or warnings. The runner's Java runs

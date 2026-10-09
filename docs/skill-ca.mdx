@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Skill',
   description: 'Instal·la la skill postext-port a Claude Code, Codex o qualsevol agent i deixa que converteixi un PDF, Word, PowerPoint, EPUB, InDesign o HTML en un projecte de Postext que segueix la maquetació original',
   lang: 'ca',
-  lastUpdated: '2026-10-05',
+  lastUpdated: '2026-10-09',
   readingTime: '8 min',
   order: 12,
   plainSummary: "Aquesta pàgina és per a qui ja té un llibre o un document en un altre format, com ara PDF, Word o InDesign, i el vol passar a Postext. Un assistent d'intel·ligència artificial, que s'anomena agent, pot fer gairebé tota la feina si li dones un petit complement anomenat skill. La skill ensenya l'agent a copiar el text i a reconstruir el disseny de l'original. La pàgina explica com instal·lar-la, què demanar-li i com revisar el resultat. Un vídeo d'uns cinc minuts mostra cada pas.",
@@ -204,6 +204,8 @@ canvas precompilat amb què pinta les pàgines del llibre directament en
 JPEG. Eines opcionals: `ocrmypdf` per a
 escanejos, ImageMagick, i veraPDF per comprovar PDF/UA.
 
+El cicle de treball funciona amb la [línia d'ordres](/ca/docs/command-line), un executable autònom que no cal instal·lar: l'agent manté el projecte descomprimit i deixa `postext build --watch` en marxa sobre les pàgines en què treballa, de manera que cada canvi apareix com a JPEG al voltant d'un segon després, fins i tot en un llibre llarg. Els paquets de Node són opcionals: executen `render.mjs`, que afegeix les comprovacions addicionals del Sandbox.
+
 ## Com fer-la servir
 
 Deixa els fitxers d'origen a la teva carpeta de treball i demana el port. Per
@@ -233,10 +235,12 @@ L'agent segueix el flux de treball:
    els cura com a Markdown de Postext: requadres, estils de paràgraf, parts,
    atributs d'encapçalament per a les obertures, citacions `:ref`, recursos de
    taules i figures.
-5. **Verificació.** Passa el linter, compon el projecte sense navegador,
-   pinta com a JPEG les pàgines en què està treballant i les mira, i les
-   compara amb la font pàgina a pàgina fins que coincideixen els salts de
-   pàgina, les figures i els requadres. El PDF es genera per a les
+5. **Verificació.** Passa el linter i deixa `postext build --watch` en marxa
+   sobre el projecte descomprimit: canvia un capítol o un ajust, mira el JPEG
+   de la pàgina, repintat al voltant d'un segon després, i torna a canviar
+   fins que els salts de pàgina, les figures i els requadres coincideixen
+   amb la font pàgina a pàgina. A cada fita passa les comprovacions
+   completes (`postext check` i el linter). El PDF es genera per a les
    comprovacions d'impremta, no per a cada revisió.
 6. **Lliurament.** Fixa el paper, l'enquadernació i les cobertes del llibre
    per al visor Folio i empaqueta `mi-libro.postext`.

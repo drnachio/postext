@@ -1352,7 +1352,7 @@ metadata (front matter of chapter 1), `view` (top-level of the manifest, not con
   equivalents).
 - A PDF/X file carries no link annotations (bookmarks stay) and every page gets a TrimBox/BleedBox.
 - `pdfGeneration.colorSpace: 'cmyk'` separates through the same profile without the PDF/X marks.
-- `render.mjs` prints `PREFLIGHT <severity> <kind> page N` lines for a book set up for print (or
+- `postext check my-book --preflight` lists the preflight with chapter file:line and page; `render.mjs` prints `PREFLIGHT <severity> <kind> page N` lines for a book set up for print (or
   with `--preflight`): low-resolution pictures, thin rules, small text in several inks, ink over the
   limit, text in the safe zone, boxes stopping short of the trim. Fix the critical ones.
 

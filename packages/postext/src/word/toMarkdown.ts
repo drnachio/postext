@@ -3,7 +3,7 @@
 // become inline marks, Word lists become Postext lists, notes become
 // footnotes, pictures and tables become resources placed where they were.
 
-import type { PostextConfig, TableCell, TableModel } from 'postext';
+import type { PostextConfig, TableCell, TableModel } from '../types';
 import { guardLineStart, renderInline, WORD_JOINER, type InlineRun } from './inline';
 import type { WordBlock, WordDocument, WordMedia, WordParagraph, WordRun, WordTable, WordTextRun } from './model';
 import {

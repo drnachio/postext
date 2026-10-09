@@ -7,6 +7,11 @@
 
 import { pointInConvex, pathData, rectOf, boundsOf, add, insetConvex, type PathCmd } from './geom';
 import { hasCJK } from '../../measure/cjk';
+import { onTextWidthCacheClear } from '../../measure/canvas';
+import { getCjkLineBreak } from '../../measure/cjkClasses';
+import { getCjkComposition } from '../../measure/cjkPunctuation';
+import { getMeasureDirection } from '../../measure/bidiLines';
+import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode } from '../../measure/vertical';
 import { isCjkLanguage } from '../../locale';
 import { buildBody, buildNeck, buildTail, dashOf, translateBody, type Body } from './shapes';
 import { shapeTextCandidates, styleIsVertical, translateBlock, type ShapedText, type ShapeOptions } from './shape-text';
@@ -48,9 +53,71 @@ export function letterPanel(panel: LetteringPanel, items: readonly LetteringItem
   return letterPanelDetailed(panel, items, env).balloons;
 }
 
+/** Panels lettered by earlier builds, by everything their lettering is
+ *  worked out from: an edit to one balloon letters its panel again and
+ *  takes the others as they were. Dropped when the fonts change. */
+const lettered = new Map<string, LetteringResult>();
+const LETTERED_MAX = 512;
+onTextWidthCacheClear(() => lettered.clear());
+
 /** {@link letterPanel} with the diagnostics of balloons that could not be
  *  placed cleanly (warning `comicBalloonOverflow`). */
 export function letterPanelDetailed(panel: LetteringPanel, items: readonly LetteringItem[], env: LetteringEnv = {}): LetteringResult {
+  // Lettered with its source offsets counted from its own first one: an
+  // edit before the panel moves them all, and changes nothing else.
+  const base = offsetBase(items);
+  const local = base === 0 ? items : items.map((it) => ({
+    ...it,
+    sourceStart: it.sourceStart - base,
+    sourceEnd: it.sourceEnd - base,
+    ...(it.sourceMap ? { sourceMap: it.sourceMap.map((o) => (o < 0 ? o : o - base)) } : {}),
+  }));
+  const key = JSON.stringify([
+    panel, local, env,
+    getMeasureWritingMode(), getMeasureRegion(), getMeasureDirection(), getMeasureUprightDigits(), getCjkLineBreak(), getCjkComposition(),
+  ]);
+  let out = lettered.get(key);
+  if (out) {
+    lettered.delete(key);
+  } else {
+    out = letterPanelFresh(panel, local, env);
+    if (lettered.size >= LETTERED_MAX) lettered.delete(lettered.keys().next().value!);
+  }
+  lettered.set(key, out);
+  return shiftedSource(structuredClone(out), base);
+}
+
+/** The least source offset of a panel's items (0 when none is known). */
+function offsetBase(items: readonly LetteringItem[]): number {
+  let base = Number.POSITIVE_INFINITY;
+  for (const it of items) {
+    for (const o of [it.sourceStart, it.sourceEnd]) if (o >= 0 && o < base) base = o;
+    for (const o of it.sourceMap ?? []) if (o >= 0 && o < base) base = o;
+  }
+  return Number.isFinite(base) ? base : 0;
+}
+
+/** A lettering's source offsets moved on by `by` (in place). */
+function shiftedSource(r: LetteringResult, by: number): LetteringResult {
+  if (by === 0) return r;
+  const shift = (o: number) => (o < 0 ? o : o + by);
+  for (const b of r.balloons) {
+    b.sourceStart = shift(b.sourceStart);
+    b.sourceEnd = shift(b.sourceEnd);
+    for (const t of b.text) {
+      if (t.sourceStart !== undefined) t.sourceStart = shift(t.sourceStart);
+      if (t.sourceEnd !== undefined) t.sourceEnd = shift(t.sourceEnd);
+      if (t.sourceMap) t.sourceMap = t.sourceMap.map(shift);
+    }
+  }
+  for (const d of r.diagnostics) {
+    d.sourceStart = shift(d.sourceStart);
+    d.sourceEnd = shift(d.sourceEnd);
+  }
+  return r;
+}
+
+function letterPanelFresh(panel: LetteringPanel, items: readonly LetteringItem[], env: LetteringEnv): LetteringResult {
   const sorted = [...items].sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const pieces = sorted.map((item) => pieceOf(panel, item, env)).filter((p): p is Piece => p !== undefined);
   const groups = groupPieces(pieces, env);

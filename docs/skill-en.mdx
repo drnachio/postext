@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Skill',
   description: 'Install the postext-port skill in Claude Code, Codex or any agent and let it turn a PDF, Word, PowerPoint, EPUB, InDesign or HTML source into a Postext project that follows the original layout',
   lang: 'en',
-  lastUpdated: '2026-10-05',
+  lastUpdated: '2026-10-09',
   readingTime: '8 min',
   order: 12,
   plainSummary: "This page is for people who already have a book or document in another format, such as PDF, Word or InDesign, and want to move it into Postext. An AI helper, called an agent, can do most of the work if you give it a small add-on called a skill. The skill teaches the agent how to copy the text and rebuild the design of the original. The page explains how to install it, what to ask for and how to check the result. A video of about five minutes shows every step.",
@@ -196,6 +196,8 @@ newer); `@napi-rs/canvas` is a prebuilt canvas that lets it paint the book's
 pages straight to JPEG. Optional tools: `ocrmypdf` for scans, ImageMagick, and veraPDF for
 PDF/UA checks.
 
+The work loop runs on the [command line](/en/docs/command-line), one self-contained executable with nothing to install: the agent keeps the project unpacked and leaves `postext build --watch` running on the pages it is working on, so every change shows up as a JPEG about a second later, even in a long book. The Node packages are optional: they run `render.mjs`, which adds the Sandbox's extra checks.
+
 ## Using it
 
 Put the source files in your working folder and ask for the port. For example:
@@ -223,9 +225,11 @@ The agent follows the workflow:
    curates them into Postext Markdown: callouts, paragraph styles, parts,
    heading attributes for openers, `:ref` citations, table and figure
    resources.
-5. **Verification.** It lints the project, lays it out headlessly, renders
-   the pages it is working on as JPEGs and looks at them, and compares them
-   with the source page by page until page breaks, figures and boxes match.
+5. **Verification.** It lints the project and leaves `postext build --watch`
+   running on the unpacked project: it changes a chapter or a setting, looks
+   at the page's JPEG, repainted about a second later, and changes again
+   until page breaks, figures and boxes match the source page by page. At
+   each milestone it runs the full checks (`postext check` and the linter).
    The PDF is built for the print checks, not for every look.
 6. **Delivery.** It sets the book's paper, binding and covers for the Folio
    viewer and packs `my-book.postext`.

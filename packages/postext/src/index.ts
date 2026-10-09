@@ -506,3 +506,5 @@ export type {
   CitationProcessorOptions,
   CitationEngine,
 } from './citations/types';
+export { configFontFamilies, collectFontUsage, hasLatinEmphasis, STANDARD_FONT_VARIANTS } from './fonts/usage';
+export type { FontContentText, FontUsageDocument, FontVariantUse } from './fonts/usage';

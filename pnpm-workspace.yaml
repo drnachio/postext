@@ -8,6 +8,8 @@ overrides:
   # compatible in-major upgrade. Drop once next ships postcss >=8.5.10.
   "postcss@<8.5.10": ">=8.5.10"
 allowBuilds:
+  # postext-cli's pinned Bun links its platform binary on install
+  bun: true
   '@parcel/watcher': false
   '@swc/core': false
   msw: false
