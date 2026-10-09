@@ -36,7 +36,7 @@
  */
 
 import type { CjkHangingPunctuation, CjkParagraphStartBracket, CjkPunctuationWidth, CjkRegion, Dimension, ResolvedCjkConfig } from '../types';
-import type { CjkClass } from './cjkClasses';
+import { setCjkCircledNumbers, type CjkClass } from './cjkClasses';
 import { dimensionToPx } from '../units';
 import { languageOf } from '../locale';
 
@@ -70,7 +70,25 @@ export interface CjkComposition {
    *  characters the line-break level allows. A paragraph may set its own
    *  (`MeasureBlockOptions.cjkWordBreak`). */
   keepAll?: boolean;
+  /** How many characters of a book title (`《…》`, `〈…〉`, a `:book[…]`
+   *  span) a line break leaves on either side of it at least
+   *  (`cjk.titleMinChars`, #637); unset: {@link DEFAULT_TITLE_MIN_CHARS}.
+   *  1 lets a line break anywhere in a title the level allows. */
+  titleMinChars?: number;
+  /** `'western'`: the circled numbers ①–⑳ and their kin are Western
+   *  letters, as up to 1.24 (`cjk.circledNumbers`, #637); unset: Chinese
+   *  characters (see `setCjkCircledNumbers`). */
+  circledNumbers?: 'western';
+  /** Design text (openers, heading designs, running heads, page designs)
+   *  is wrapped word by word at the font's own advances, as up to 1.24
+   *  (`cjk.composeDesignText: false`, #637); unset: a design text that
+   *  composes as CJK is set by the CJK composer. */
+  plainDesignText?: true;
 }
+
+/** Characters of a book title a line break leaves on either side of it by
+ *  default (`cjk.titleMinChars`). */
+export const DEFAULT_TITLE_MIN_CHARS = 2;
 
 /** The composition outside a build: every mark at its full advance, no
  *  compression, no hanging, no Han–Latin space — CJK text set as the
@@ -92,6 +110,7 @@ let documentComposition: CjkComposition = PLAIN_CJK_COMPOSITION;
  *  line-break level. `undefined` restores {@link PLAIN_CJK_COMPOSITION}. */
 export function setCjkComposition(composition: CjkComposition | undefined): void {
   documentComposition = composition ?? PLAIN_CJK_COMPOSITION;
+  setCjkCircledNumbers(documentComposition.circledNumbers !== 'western');
 }
 
 /** The composition set by {@link setCjkComposition}. */
@@ -116,6 +135,9 @@ export function cjkCompositionOf(cjk: ResolvedCjkConfig, dpi: number, locale?: s
     ...(cjk.spaceAfterQuestion ? { spaceAfterQuestion: true } : {}),
     ...(cjk.paragraphStartBracket ? { paragraphStartBracket: cjk.paragraphStartBracket } : {}),
     ...(cjk.wordBreak === 'keep-all' ? { keepAll: true } : {}),
+    ...(cjk.titleMinChars !== DEFAULT_TITLE_MIN_CHARS ? { titleMinChars: cjk.titleMinChars } : {}),
+    ...(cjk.circledNumbers === 'western' ? { circledNumbers: 'western' as const } : {}),
+    ...(cjk.composeDesignText === false ? { plainDesignText: true as const } : {}),
   };
 }
 
@@ -169,7 +191,11 @@ export function cjkCompositionKey(c: CjkComposition): string {
   const lang = japaneseOrKorean(c) ? ':jk' : c.language === 'zh' ? ':zh' : '';
   // Japanese settings only where set, so other keys stay as they were.
   const ja = `${c.spaceAfterQuestion ? ':q' : ''}${c.paragraphStartBracket ? `:p${c.paragraphStartBracket}` : ''}${c.keepAll ? ':ka' : ''}`;
-  return `${c.region}:${c.punctuationWidth}:${c.compressAdjacent ? 1 : 0}:${c.trimLineStart ? 1 : 0}:${c.hangingPunctuation}:${ls}${c.vertical ? ':v' : ''}${lang}${ja}`;
+  // The title rule and the circled numbers (#637) only where they differ
+  // from the default.
+  const titles = c.titleMinChars !== undefined && c.titleMinChars !== DEFAULT_TITLE_MIN_CHARS ? `:t${c.titleMinChars}` : '';
+  const circled = c.circledNumbers === 'western' ? ':cw' : '';
+  return `${c.region}:${c.punctuationWidth}:${c.compressAdjacent ? 1 : 0}:${c.trimLineStart ? 1 : 0}:${c.hangingPunctuation}:${ls}${c.vertical ? ':v' : ''}${lang}${ja}${titles}${circled}`;
 }
 
 /** Whether a composition changes nothing: the text is set as without it. */

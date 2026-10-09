@@ -54,7 +54,8 @@ const firstLine = (doc: VDTDocument): VDTLine => doc.blocks.find((b) => b.type =
 
 describe('annotations on the canvas', () => {
   it('draws the dots, the lines, the readings and the note rows the layout placed', () => {
-    const doc = buildDocument({ markdown: MD }, config());
+    // The title broken after its first character, as before #637's rule.
+    const doc = buildDocument({ markdown: MD }, config({ cjk: { titleMinChars: 1 } }));
     const lines = doc.blocks.filter((b) => b.type === 'paragraph').flatMap((b) => b.lines);
     const marks = lines.flatMap((l) => (l.marks ?? []).map((m) => ({ ...m, x: m.x + l.bbox.x, y: m.y + l.baseline })));
     expect(marks.filter((m) => m.kind === 'dot')).toHaveLength(2);
@@ -109,7 +110,9 @@ describe('zhuyin tone marks on a vertical page', () => {
 
 describe('annotations in HTML', () => {
   it('writes the marks, the readings and the note as positioned boxes', () => {
-    const doc = buildDocument({ markdown: MD }, config());
+    // Lines broken as before the title rule (#637): the note splits where
+    // it did.
+    const doc = buildDocument({ markdown: MD }, config({ cjk: { titleMinChars: 1 } }));
     const html = renderToHtml(doc);
     // Dotted text is emphasis; the dots are aria-hidden boxes.
     expect(html).toContain('<em style="font-style:inherit;">不可</em>');

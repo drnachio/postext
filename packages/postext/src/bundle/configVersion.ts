@@ -3,7 +3,7 @@
 // the number as `configVersion` (every writer since postext 1.5 sets it);
 // the Sandbox numbers its stored projects the same way.
 
-import type { BodyTextConfig, CodeStyleConfig, Dimension, DimensionUnit, HeadingBreakBeforeConfig, HeadingsConfig, LayoutConfig, MathConfig, PostextConfig, TableStyleConfig } from '../types';
+import type { BodyTextConfig, CjkConfig, CodeStyleConfig, Dimension, DimensionUnit, HeadingBreakBeforeConfig, HeadingsConfig, LayoutConfig, MathConfig, PostextConfig, TableStyleConfig } from '../types';
 import { DEFAULT_MATH_CONFIG } from '../defaults/math';
 import { dimensionsEqual } from '../defaults/shared';
 import { DEFAULT_TEXT_ELEMENT, resolveDesignLineHeight } from '../defaults/headerFooter';
@@ -11,6 +11,7 @@ import { DEFAULT_PAGE_CONFIG } from '../defaults/page';
 import { dimensionToPx } from '../units';
 import { KNOWN_CONTAINERS } from '../parse/blockParser';
 import { codeFenceOpen } from '../parse/codeFence';
+import { hasCJK } from '../measure/cjk';
 
 /**
  * The configuration rules this engine writes: 11 since #632 (10 from
@@ -91,14 +92,24 @@ import { codeFenceOpen } from '../parse/codeFence';
  *   - a text element of a heading design or a part page that sets no
  *     `overflow` wraps onto more lines (#628), where up to 1.23 it was cut
  *     with an ellipsis ({@link pinLegacyDesignOverflow}).
- * - 11, two rules:
+ * - 11, five rules:
  *   - a horizontal page on a character grid (`cjk.grid.enabled`) is not
  *     balanced unless `headings.balancing.enabled` says so (#632), where
  *     up to 1.24 it was ({@link pinLegacyGridBalancing});
  *   - a table placed `here` follows its style's `overflow`
  *     (`tableStyle.splitInline`, #634): one that does not fit the room
  *     left in its column is cut between rows, where up to 1.24 it moved
- *     whole to the next column ({@link pinLegacyInlineTableSplit}).
+ *     whole to the next column ({@link pinLegacyInlineTableSplit});
+ *   - a line breaks inside a book title only where two of its characters
+ *     stand on either side (`cjk.titleMinChars: 2`, #637), where up to
+ *     1.24 it could leave one ({@link pinLegacyTitleBreaks});
+ *   - the circled numbers ①–⑳ and their kin are Chinese characters in CJK
+ *     text (`cjk.circledNumbers: 'cjk'`, #637), where up to 1.24 they were
+ *     Western letters ({@link pinLegacyCircledNumbers});
+ *   - a design text in Chinese or Japanese takes the body's CJK rules
+ *     (`cjk.composeDesignText`, #637), where up to 1.24 it was wrapped at
+ *     spaces with every mark at its own advance ({@link
+ *     pinLegacyDesignText}).
  *
  * A configuration stored without a version was written for postext 1.4 or
  * earlier. One stored under 3 to 7 was written by a 1.5 prerelease, and
@@ -164,6 +175,12 @@ const DESIGN_OVERFLOW_RULES = 10;
 /** The rules that leave a horizontal page on a character grid unbalanced
  *  by default. */
 const GRID_BALANCING_RULES = 11;
+/** The rules that keep two characters of a book title on either side of a
+ *  line break, set circled numbers as Chinese characters and compose CJK
+ *  design text (#637). */
+const TITLE_BREAK_RULES = 11;
+const CIRCLED_NUMBER_RULES = 11;
+const DESIGN_TEXT_RULES = 11;
 /** The rules that cut an inline table between rows. */
 const INLINE_TABLE_SPLIT_RULES = 11;
 
@@ -1041,6 +1058,85 @@ function mayHaveMaths(content: string | readonly string[] | undefined): boolean 
   return content.some((text) => text.includes('$'));
 }
 
+/** The `cjk` of a configuration, `{}` when it has none. */
+function cjkOf(config: Partial<PostextConfig>): CjkConfig {
+  return isRecord(config.cjk) ? config.cjk : {};
+}
+
+/**
+ * A configuration written before #637 (postext 1.24 or earlier), pinned to
+ * the way 1.24 broke lines inside a book title: `cjk.titleMinChars: 1`, a
+ * line breaking anywhere in a `《…》` or `〈…〉` title the level allows
+ * (`《說|文》`), where today two characters of it stand on either side of a
+ * break. A configuration that sets `titleMinChars` is returned as it is
+ * (the same object).
+ */
+export function pinLegacyTitleBreaks<T extends Partial<PostextConfig>>(config: T): T {
+  const cjk = cjkOf(config);
+  if (cjk.titleMinChars !== undefined) return config;
+  return { ...config, cjk: { ...cjk, titleMinChars: 1 } };
+}
+
+/**
+ * A configuration written before #637 (postext 1.24 or earlier), pinned to
+ * the way 1.24 set the circled numbers ①–⑳ and their kin in CJK text:
+ * `cjk.circledNumbers: 'western'`, as Western letters with the Han–Latin
+ * space on both sides and a line free to end on one, where today they are
+ * Chinese characters kept off a line end. A configuration that sets
+ * `circledNumbers` is returned as it is (the same object).
+ */
+export function pinLegacyCircledNumbers<T extends Partial<PostextConfig>>(config: T): T {
+  const cjk = cjkOf(config);
+  if (cjk.circledNumbers !== undefined) return config;
+  return { ...config, cjk: { ...cjk, circledNumbers: 'western' } };
+}
+
+/**
+ * A configuration written before #637 (postext 1.24 or earlier), pinned to
+ * the way 1.24 set design text in Chinese or Japanese (openers, heading
+ * designs, running heads, page designs): `cjk.composeDesignText: false`,
+ * wrapped at spaces with every mark at the font's own advance, where
+ * today it takes the body's CJK rules. A configuration that sets
+ * `composeDesignText` is returned as it is (the same object).
+ */
+export function pinLegacyDesignText<T extends Partial<PostextConfig>>(config: T): T {
+  const cjk = cjkOf(config);
+  if (cjk.composeDesignText !== undefined) return config;
+  return { ...config, cjk: { ...cjk, composeDesignText: false } };
+}
+
+/** A book title in brackets (《》 〈〉), or a `:book[…]` title. */
+const BOOK_TITLE_RE = /[《〈︽︿]|:book\[/;
+/** A circled, parenthesized or full-stop number or letter (①, ⑴, ⒈, ⓐ, ❶,
+ *  ➀). */
+const CIRCLED_RE = /[\u2460-\u24FF\u2776-\u2793]/;
+
+/** Whether markdown may set a book title. Unknown content (undefined)
+ *  may. */
+function mayHaveBookTitles(content: string | readonly string[] | undefined): boolean {
+  if (content === undefined) return true;
+  if (typeof content === 'string') return BOOK_TITLE_RE.test(content);
+  return content.some((text) => BOOK_TITLE_RE.test(text));
+}
+
+/** Whether markdown may set a circled number. Unknown content (undefined)
+ *  may. */
+function mayHaveCircledNumbers(content: string | readonly string[] | undefined): boolean {
+  if (content === undefined) return true;
+  if (typeof content === 'string') return CIRCLED_RE.test(content);
+  return content.some((text) => CIRCLED_RE.test(text));
+}
+
+/** Whether a design text may hold CJK: the markdown it prints from (a
+ *  heading, an attribute, a running head) or the configuration's own text
+ *  (a literal in a design element, a label). Unknown content (undefined)
+ *  may. */
+function mayHaveCjkDesignText(content: string | readonly string[] | undefined, config: Partial<PostextConfig>): boolean {
+  if (content === undefined) return true;
+  if (typeof content === 'string' ? hasCJK(content) : content.some(hasCJK)) return true;
+  return hasCJK(JSON.stringify(config));
+}
+
 export interface MigrateConfigOptions {
   /**
    * The markdown the configuration lays out (a bundle's chapters, a book's),
@@ -1072,7 +1168,12 @@ export interface MigrateConfigOptions {
    * and text with no ```` ``` ```` or `~~~` fence is not given the 1.22
    * reading of fences (see {@link pinLegacyCodeBlocks}); and text with no
    * poem set line by line is not given the 1.23 turnovers (see {@link
-   * pinLegacyVerseTightening}).
+   * pinLegacyVerseTightening}); and text with no book title is not given
+   * the 1.24 title breaks (see {@link pinLegacyTitleBreaks}), text with no
+   * circled number not the 1.24 Western circled numbers (see {@link
+   * pinLegacyCircledNumbers}), and text with no CJK (in a configuration
+   * whose own text holds none) not the 1.24 design text (see {@link
+   * pinLegacyDesignText}).
    * That keeps a stored configuration as
    * short as it was. Without it the size is pinned whenever maths is on,
    * and the gaps, the room, the heading marks, the box cut, the dash
@@ -1125,7 +1226,11 @@ export interface MigrateConfigOptions {
  * than 11 has the balancing of a horizontal page on a character grid
  * pinned by {@link pinLegacyGridBalancing}, and its inline tables by {@link
  * pinLegacyInlineTableSplit}, unless `options.content` shows it embeds no
- * resource. A current one is returned as it is (the same object).
+ * resource, its book titles by {@link pinLegacyTitleBreaks}, unless
+ * `options.content` shows none, its circled numbers by {@link
+ * pinLegacyCircledNumbers}, unless `options.content` shows none, and its
+ * design text by {@link pinLegacyDesignText}, unless neither
+ * `options.content` nor the configuration holds CJK text. A current one is returned as it is (the same object).
  * Migrate a stored configuration once and store it again under
  * `CONFIG_VERSION`: the maths pin multiplies a scale, so a configuration
  * read twice under its old number would grow twice.
@@ -1157,6 +1262,9 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   if (rules < VERSE_TIGHTEN_RULES && mayHaveLinePoems(content, out)) out = pinLegacyVerseTightening(out);
   if (rules < DESIGN_OVERFLOW_RULES) out = pinLegacyDesignOverflow(out);
   if (rules < GRID_BALANCING_RULES) out = pinLegacyGridBalancing(out);
+  if (rules < TITLE_BREAK_RULES && mayHaveBookTitles(content)) out = pinLegacyTitleBreaks(out);
+  if (rules < CIRCLED_NUMBER_RULES && mayHaveCircledNumbers(content)) out = pinLegacyCircledNumbers(out);
+  if (rules < DESIGN_TEXT_RULES && mayHaveCjkDesignText(content, out)) out = pinLegacyDesignText(out);
   if (rules < INLINE_TABLE_SPLIT_RULES && mayEmbedResources(content)) out = pinLegacyInlineTableSplit(out);
   return out;
 }
@@ -1178,8 +1286,9 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
  * marks and the split under a heading on the `headings` in force, the
  * drop caps and the overflow of heading and part design texts wherever
  * they sit in the merged configuration, the balancing of a horizontal
- * character grid on the merged `cjk`, `layout` and `headings`, and the
- * inline tables on the `tableStyle` in force.
+ * character grid on the merged `cjk`, `layout` and `headings`, the
+ * inline tables on the `tableStyle` in force, and the book titles, the
+ * circled numbers and the design text on the `cjk` in force.
  * @internal `readBundle`'s; hosts call {@link migrateConfig}.
  */
 export function migrateBundleConfig(
@@ -1213,6 +1322,9 @@ export function migrateBundleConfig(
   if (rules < VERSE_TIGHTEN_RULES && mayHaveLinePoems(content, merged)) merged = pinLegacyVerseTightening(merged);
   if (rules < DESIGN_OVERFLOW_RULES) merged = pinLegacyDesignOverflow(merged);
   if (rules < GRID_BALANCING_RULES) merged = pinLegacyGridBalancing(merged);
+  if (rules < TITLE_BREAK_RULES && mayHaveBookTitles(content)) merged = pinLegacyTitleBreaks(merged);
+  if (rules < CIRCLED_NUMBER_RULES && mayHaveCircledNumbers(content)) merged = pinLegacyCircledNumbers(merged);
+  if (rules < DESIGN_TEXT_RULES && mayHaveCjkDesignText(content, merged)) merged = pinLegacyDesignText(merged);
   if (rules < INLINE_TABLE_SPLIT_RULES && mayEmbedResources(content)) merged = pinLegacyInlineTableSplit(merged);
   return merged;
 }

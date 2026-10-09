@@ -64,9 +64,12 @@ import {
   isFullwidthAlnum,
   isFullwidthDigit,
   isJapaneseLineBreak,
+  getCjkCircledNumbers,
+  isLabelEndProhibited,
   isLineEndProhibited,
   isLineStartProhibited,
   isWordInnerMark,
+  setCjkCircledNumbers,
   type CjkClass,
   type CjkLineBreakLevel,
 } from './cjkClasses';
@@ -86,6 +89,7 @@ import {
   carryStopBlank,
   compositionFor,
   compressPair,
+  DEFAULT_TITLE_MIN_CHARS,
   getCjkComposition,
   isLatinSpacingHan,
   isLatinSpacingLatin,
@@ -1580,9 +1584,16 @@ function startProhibited(b: Unit, level: CjkLineBreakLevel): boolean {
   return isLineStartProhibited(b.first, level, edgeGrapheme(b, 'first', level));
 }
 
-/** Whether unit `a` may not close a line at `level`. */
+/** Whether unit `a` may not close a line at `level`: its class, or a
+ *  circled number that labels the text after it ({@link labelEnd}). */
 function endProhibited(a: Unit, level: CjkLineBreakLevel): boolean {
-  return isLineEndProhibited(a.last, level, edgeGrapheme(a, 'last', level));
+  return isLineEndProhibited(a.last, level, edgeGrapheme(a, 'last', level)) || labelEnd(a, level);
+}
+
+/** Whether unit `a` ends with a circled number set as a Chinese character
+ *  (①, #637), which no line ends on at `level` (`isLabelEndProhibited`). */
+function labelEnd(a: Unit, level: CjkLineBreakLevel): boolean {
+  return a.kind === 'text' && a.lastCjk && a.text !== '' && isLabelEndProhibited(lastGrapheme(a.text), level);
 }
 
 /** Whether a line may break before each unit (index 0 is never a break).
@@ -1620,9 +1631,89 @@ function breakOpportunities(units: readonly Unit[], level: CjkLineBreakLevel): U
     }
     if (b.glueBefore || a.solid || b.solid) continue;
     if (numberGlue(a, b) || fullwidthGlue(units, k)) continue;
-    if (cjkBreakAllowed(a.last, a.lastCjk, b.first, b.firstCjk, level, edgeGrapheme(a, 'last', level), edgeGrapheme(b, 'first', level))) out[k] = 1;
+    if (cjkBreakAllowed(a.last, a.lastCjk, b.first, b.firstCjk, level, edgeGrapheme(a, 'last', level), edgeGrapheme(b, 'first', level)) && !labelEnd(a, level)) out[k] = 1;
   }
   return out;
+}
+
+/** Opening and closing brackets of a book title: 《》 and 〈〉 and their
+ *  vertical presentation forms. */
+const TITLE_OPEN = '《〈︽︿';
+const TITLE_CLOSE = '》〉︾﹀';
+
+/**
+ * The extents of the book titles among `units`, as `[from, to)` of the
+ * title's own units (its brackets left out): every `《…》` or `〈…〉`
+ * (nested ones too, each matched with its own closing bracket; one never
+ * closed is no title), whether typed or added by `cjk.bookTitleMark`, and
+ * every run of units of one `:book[…]` title (`VDTSegmentMarks.bookTitle`,
+ * which a title set with the wavy line or bare carries alone).
+ */
+function titleExtents(units: readonly Unit[]): [number, number][] {
+  const out: [number, number][] = [];
+  const open: { at: number; kind: number }[] = [];
+  for (let k = 0; k < units.length; k++) {
+    const u = units[k]!;
+    if (u.kind !== 'text' || u.graphemes !== 1) continue;
+    const o = TITLE_OPEN.indexOf(u.text);
+    if (o >= 0) {
+      open.push({ at: k, kind: o });
+      continue;
+    }
+    const c = TITLE_CLOSE.indexOf(u.text);
+    if (c < 0) continue;
+    // The innermost title this bracket closes; brackets opened inside it
+    // and never closed are dropped.
+    let q = open.length - 1;
+    while (q >= 0 && open[q]!.kind !== c) q--;
+    if (q < 0) continue;
+    out.push([open[q]!.at + 1, k]);
+    open.length = q;
+  }
+  let k = 0;
+  while (k < units.length) {
+    const id = units[k]!.style.marks?.bookTitle;
+    if (id === undefined) {
+      k++;
+      continue;
+    }
+    let end = k + 1;
+    while (end < units.length && units[end]!.style.marks?.bookTitle === id) end++;
+    // The brackets `cjk.bookTitleMark` adds, when they carry the mark too.
+    let from = k;
+    let to = end;
+    if (TITLE_OPEN.includes(units[from]!.text) && units[from]!.graphemes === 1) from++;
+    if (to > from && TITLE_CLOSE.includes(units[to - 1]!.text) && units[to - 1]!.graphemes === 1) to--;
+    if (to > from) out.push([from, to]);
+    k = end;
+  }
+  return out;
+}
+
+/**
+ * The breaks of `breaks` that leave fewer than `min` characters of a book
+ * title on either side of them taken out (`cjk.titleMinChars`, #637): a
+ * line never ends on `《說` with `文》` opening the next. A character is a
+ * unit (a Western word inside the title counts as one); spaces do not
+ * count. `breaks` itself when no title holds such a break.
+ */
+function titleBreaks(units: readonly Unit[], breaks: Uint8Array, min: number): Uint8Array {
+  if (min <= 1) return breaks;
+  let out: Uint8Array | undefined;
+  for (const [from, to] of titleExtents(units)) {
+    // Characters of the title before each of its units.
+    let before = 0;
+    let total = 0;
+    for (let k = from; k < to; k++) if (units[k]!.kind !== 'space') total++;
+    for (let k = from; k < to; k++) {
+      if (k > from && breaks[k] && (before < min || total - before < min)) {
+        out ??= breaks.slice();
+        out[k] = 0;
+      }
+      if (units[k]!.kind !== 'space') before++;
+    }
+  }
+  return out ?? breaks;
 }
 
 /** Whether a unit opens (`first`) or ends (`last`) with a letter, which
@@ -2754,6 +2845,17 @@ export function composeCjkParagraph(
     const opts = options;
     return withMeasureWritingMode(opts.writingMode!, () => composeCjkParagraph(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, opts));
   }
+  // A composition of its own that sets the circled numbers otherwise than
+  // the document's (#637): the classes read it while this paragraph is set.
+  const asked = options?.cjkComposition;
+  if (asked !== undefined && (asked.circledNumbers !== 'western') !== getCjkCircledNumbers()) {
+    const prev = setCjkCircledNumbers(asked.circledNumbers !== 'western');
+    try {
+      return composeCjkParagraph(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
+    } finally {
+      setCjkCircledNumbers(prev);
+    }
+  }
   const fonts: Fonts = { normal: normalFont, bold: boldFont, italic: italicFont, boldItalic: boldItalicFont };
   const letterSpacingPx = options?.letterSpacingPx ?? 0;
   const vertical = getMeasureWritingMode() === 'vertical-rl';
@@ -2782,8 +2884,11 @@ export function composeCjkParagraph(
   // between phrases, and inside one only when it is longer than the line.
   const keepAll = options?.cjkWordBreak !== undefined ? options.cjkWordBreak === 'keep-all' : composition.keepAll === true;
   const levelBreaks = breakOpportunities(units, level);
-  const breaks = keepAll ? keepAllBreaks(units, levelBreaks) : levelBreaks;
-  const emergency = keepAll ? levelBreaks : undefined;
+  // Book titles keep `cjk.titleMinChars` characters on either side of a
+  // break (#637); a line with no other break falls back on the level's.
+  const titled = titleBreaks(units, levelBreaks, composition.titleMinChars ?? DEFAULT_TITLE_MIN_CHARS);
+  const breaks = keepAll ? keepAllBreaks(units, titled) : titled;
+  const emergency = keepAll || titled !== levelBreaks ? levelBreaks : undefined;
   // The first line's indent gives way to an opening bracket that starts it
   // (`paragraphStartIndent`); the others are as asked (`lineIndentAt`).
   const firstIndent = paragraphStartIndent(units, lineIndentAt(options, 0), composition);

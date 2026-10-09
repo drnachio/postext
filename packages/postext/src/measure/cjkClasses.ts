@@ -354,10 +354,53 @@ export function isFullwidthAlnum(cp: number): boolean {
   return (cp >= 0xFF10 && cp <= 0xFF19) || (cp >= 0xFF21 && cp <= 0xFF3A) || (cp >= 0xFF41 && cp <= 0xFF5A);
 }
 
+/** The circled, parenthesized and full-stop numbers and letters of
+ *  Enclosed Alphanumerics (①–⑳, ⑴–⒇, ⒈–⒛, ⒜–⒵, Ⓐ–ⓩ, ⓪, ⓫–⓿) and the
+ *  dingbat circled numbers (❶–❿, ➀–➓): East Asian Width ambiguous, wide
+ *  in East Asian text, where they number senses, items and steps. */
+export function isEnclosedAlphanumeric(cp: number): boolean {
+  return (cp >= 0x2460 && cp <= 0x24FF) || (cp >= 0x2776 && cp <= 0x2793);
+}
+
+/** Whether {@link isEnclosedAlphanumeric} characters are set as Chinese
+ *  characters (`cjk.circledNumbers: 'cjk'`, the default since #637): one
+ *  cell, no Han–Latin space, kept off a line end
+ *  ({@link isLabelEndProhibited}). Off, they are Western letters, as up to 1.24. The build
+ *  sets it with the document's composition (`setCjkComposition`). */
+let enclosedAsCjk = true;
+
+/** Set whether circled numbers are set as Chinese characters (see
+ *  {@link isEnclosedAlphanumeric}); returns the setting it replaces. */
+export function setCjkCircledNumbers(asCjk: boolean): boolean {
+  const prev = enclosedAsCjk;
+  enclosedAsCjk = asCjk;
+  return prev;
+}
+
+/** See {@link setCjkCircledNumbers}; true until a build sets it. */
+export function getCjkCircledNumbers(): boolean {
+  return enclosedAsCjk;
+}
+
+/** Whether a line may not end on `grapheme` at `level` because it is a
+ *  circled number set as a Chinese character (#637): it labels the text
+ *  after it (`①天也`), as a currency sign does its number, and is kept off
+ *  a line end at the levels that keep the prefix signs off one: `basic`,
+ *  `gb`, `strict`, `ja-very-strict` and `ja-strict`; `none` and
+ *  `ja-loose` let it end a line. */
+export function isLabelEndProhibited(grapheme: string | undefined, level: CjkLineBreakLevel): boolean {
+  if (!enclosedAsCjk || grapheme === undefined || level === 'none' || level === 'ja-loose') return false;
+  const cp = grapheme.codePointAt(0);
+  return cp !== undefined && isEnclosedAlphanumeric(cp);
+}
+
 /** Code points of the CJK scripts and their symbol blocks, classed
- *  `ideograph` unless a punctuation set above names them. */
+ *  `ideograph` unless a punctuation set above names them; the circled
+ *  numbers too, unless the document sets them as Western letters
+ *  ({@link setCjkCircledNumbers}). */
 function isCjkCodePoint(cp: number): boolean {
   if (cp >= 0x3371 && cp <= 0x33FF && isUnitSquare(cp)) return false;
+  if (cp >= 0x2460 && cp <= 0x2793 && isEnclosedAlphanumeric(cp)) return enclosedAsCjk;
   return (cp >= 0x1100 && cp <= 0x11FF) // Hangul Jamo
     || (cp >= 0x2E80 && cp <= 0x2FDF) // CJK and Kangxi radicals
     || (cp >= 0x2FF0 && cp <= 0x2FFF) // ideographic description characters

@@ -4856,6 +4856,35 @@ export interface CjkConfig {
    *  picture books) and Korean. Default `'normal'`. A paragraph style may
    *  set its own (`ParagraphStyleConfig.wordBreak`). */
   wordBreak?: CjkWordBreak;
+  /** Book titles kept from one-character breaks (#637): a line breaks
+   *  inside a `《…》` or `〈…〉` title (and inside a `:book[…]` title) only
+   *  where at least this many of its characters stand on either side of
+   *  the break, so a title of up to twice this less one never breaks.
+   *  When no other break fits the line, the line breaks inside the title
+   *  anyway, as the level allows, rather than run past the measure.
+   *  Default `2`; `1` lets a line break anywhere the level allows (as up
+   *  to postext 1.24). */
+  titleMinChars?: number;
+  /** How the circled, parenthesized and full-stop numbers and letters are
+   *  set in a CJK paragraph (①–⑳, ⑴–⒇, ⒈–⒛, ⓐ–ⓩ, ❶–❿, ➀–➓; #637).
+   *  `'cjk'` (the default): as Chinese characters, one cell with no
+   *  Han–Latin space around them, and a line never ends on one (it labels
+   *  the text after it) at the levels that keep a currency sign off a
+   *  line end: every one but `none` and `ja-loose`.
+   *  `'western'`: as Western letters, as up to postext 1.24: the Han–Latin
+   *  space on both sides and a line may end on one. Vertical text sets
+   *  them upright either way. */
+  circledNumbers?: 'cjk' | 'western';
+  /** Whether a design text in Chinese or Japanese (a heading design or an
+   *  opener, a running head, a page design, a part page) is set with the
+   *  CJK rules of the body (#637): the line-start and line-end rules of
+   *  `lineBreak`, the mark widths of `punctuationWidth` and
+   *  `compressAdjacent`, `latinSpacing`, `hangingPunctuation` and the title
+   *  rule. Default `true`; `false` wraps it at spaces and sets every mark
+   *  at the font's own advance, as up to postext 1.24. A text that holds
+   *  no CJK, or more word spaces than CJK letters, is wrapped as Latin
+   *  text either way. */
+  composeDesignText?: boolean;
   /** The space set between a Han character (or kana) and a Latin letter or
    *  a European digit next to it (`用 iPhone 拍照`), in em of the CJK
    *  text's size or any length. Default `{ value: 0.25, unit: 'em' }`; `0`
@@ -5192,6 +5221,14 @@ export interface ResolvedCjkConfig {
   /** Set only when `'keep-all'`: absent, lines break between any two
    *  characters (`normal`). */
   wordBreak?: 'keep-all';
+  /** Characters of a book title kept on either side of a break (1 or
+   *  more). */
+  titleMinChars: number;
+  /** Set only when `'western'`: absent, circled numbers are set as Chinese
+   *  characters. */
+  circledNumbers?: 'western';
+  /** Set (false) only when off: absent, CJK design text is composed. */
+  composeDesignText?: false;
   latinSpacing: Dimension;
   uprightDigits: 0 | 2 | 3 | 4;
   grid: ResolvedCjkGridConfig;
