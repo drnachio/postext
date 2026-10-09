@@ -7596,6 +7596,96 @@
       ]
     }
   },
+  "text-wrap": {
+    "label": {
+      "en": "Text wrap round pictures and boxes",
+      "es": "Texto alrededor de imágenes y cajas",
+      "ca": "Text al voltant d'imatges i caixes",
+      "zh": "图片和框的文字绕排",
+      "ar": "التفاف النص حول الصور والصناديق",
+      "ja": "図版とボックスの回り込み",
+      "pt": "Texto contornando imagens e caixas"
+    },
+    "definition": {
+      "en": "placement.wrap sets a picture or a table narrower than its column at one side of it, inline or as a one-column float at a column's head or foot, and the text runs beside it at the measure left over, then full width under it; a box takes wrap and width on its fence (a pull quote, a sidebar).",
+      "es": "placement.wrap coloca una imagen o una tabla más estrecha que su columna en uno de sus lados, en línea o como flotante de una columna en la cabecera o el pie de una columna, y el texto se compone a su lado a la medida que queda, y después a todo el ancho debajo; una caja admite wrap y width en su apertura (una cita destacada, un recuadro).",
+      "ca": "placement.wrap col·loca una imatge o una taula més estreta que la columna a un dels costats, en línia o com a flotant d'una columna al capdamunt o al peu d'una columna, i el text es compon al costat a la mesura que queda, i després a tota l'amplada a sota; una caixa admet wrap i width a la seva obertura (una cita destacada, un requadre).",
+      "zh": "placement.wrap把比栏窄的图片或表格放在栏的一侧，可以行内放置，也可以作为栏首或栏尾宽一栏的浮动体，正文按剩下的行宽排在旁边，到下方恢复全宽；框可在开头写wrap和width（引语、边栏）。",
+      "ar": "يضع placement.wrap صورة أو جدولًا أضيق من عموده في أحد جانبيه، داخل النص أو عنصرًا عائمًا بعرض عمود في أعلى العمود أو أسفله، ويُصفّ النص بجانبه بالعرض المتبقي ثم بكامل العرض تحته؛ ويقبل الصندوق wrap وwidth في سطر افتتاحه (اقتباس بارز، إطار جانبي).",
+      "ja": "placement.wrapは段より狭い図版や表を段の片側に、本文中にまたは段頭・段末の1段幅のフロートとして置き、本文を残りの行長でその横に、下では全幅で組みます。ボックスは開始行にwrapとwidthを書けます（引用、囲み記事）。",
+      "pt": "placement.wrap põe uma imagem ou tabela mais estreita que a coluna de um lado dela, em linha ou como flutuante de uma coluna no alto ou no pé de uma coluna, e o texto é composto ao lado na medida que sobra e depois na largura toda embaixo; uma caixa aceita wrap e width na abertura (um olho, um quadro)."
+    },
+    "aliases": {
+      "en": [
+        "text wrap",
+        "runaround",
+        "wrap around image",
+        "float left with text",
+        "pull quote beside text",
+        "placement.wrap"
+      ],
+      "es": [
+        "ajuste del texto",
+        "contorneo",
+        "texto alrededor de la imagen",
+        "cita destacada con texto al lado",
+        "placement.wrap"
+      ],
+      "ca": [
+        "ajust del text",
+        "contorneig",
+        "text al voltant de la imatge",
+        "placement.wrap"
+      ],
+      "zh": [
+        "文字绕排",
+        "图文绕排",
+        "绕图",
+        "text wrap",
+        "placement.wrap"
+      ],
+      "ar": [
+        "التفاف النص",
+        "النص حول الصورة",
+        "placement.wrap"
+      ],
+      "ja": [
+        "回り込み",
+        "テキストの回り込み",
+        "ランアラウンド",
+        "placement.wrap"
+      ],
+      "pt": [
+        "contorno de texto",
+        "texto em volta da imagem",
+        "runaround",
+        "placement.wrap"
+      ]
+    },
+    "group": "figures",
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Text wrap",
+        "es": "Ajuste del texto",
+        "ca": "Ajust del text",
+        "zh": "文字绕排",
+        "ar": "التفاف النص",
+        "ja": "回り込み",
+        "pt": "Contorno de texto"
+      }
+    },
+    "since": "1.24.0",
+    "detect": {
+      "config": [
+        "layout.wrap",
+        "resourceTypes[].defaultPlacement.wrap"
+      ],
+      "markdown": [
+        "^:::callout\\{[^}]*\\bwrap=\""
+      ]
+    }
+  },
   "inline-embeds": {
     "label": {
       "en": "Figures exactly here",
