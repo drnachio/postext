@@ -10,13 +10,14 @@ Where the online docs disagree, this file is right (§14).
 ## 0. Mental model (read this first)
 
 - Postext does **not** use remark or micromark and is **not** CommonMark. It is a hand-written, line-based tokenizer plus regular-expression inline passes.
-- The parser emits a **flat** list of `ContentBlock`s. There are 9 block types: `heading`, `paragraph`, `blockquote`, `listItem`, `mathDisplay`, `resourceBlock`, `directive`, `containerStart`, `containerEnd`. Containers are start/end marker pairs, not trees.
+- The parser emits a **flat** list of `ContentBlock`s. There are 10 block types: `heading`, `paragraph`, `blockquote`, `listItem`, `mathDisplay`, `resourceBlock`, `directive`, `containerStart`, `containerEnd` and `code` (a listing, postext ≥ 1.23). Containers are start/end marker pairs, not trees.
 - Constructs the parser does not recognise are **never dropped silently**. They become literal paragraph text, except that inline images are removed. A link `[text](url)` is recognised: its text is set in the flow and its URL becomes a live link in the HTML and PDF output (§4).
 - Figures, images, SVGs and tables are **not written in Markdown**. They are `Resource` objects (JSON) kept outside the text and cited by id (§9).
 - Visual styling lives in the config and is selected by id: callout `type`, paragraph-container `style`, heading `style`, chip `style`, palette ids. An unknown id falls back to a default and triggers a sandbox warning (§13).
 - Blank lines separate blocks. **Consecutive non-blank lines join into one paragraph with a single space.** A backslash at the end of a line, or `\\` before a space, forces a line break inside the paragraph (§3.3, postext ≥ 1.23); a poem keeps its lines in `:::verse` (§12).
 
 Block-level dispatch order for each non-blank line:
+0. a code fence: 3+ backticks or tildes, up to 3 spaces in (postext ≥ 1.23, §3.4); indented code only under `codeStyle.indentedCode`
 1. single-line display math `$$…$$`
 2. multi-line display-math fence `$$`
 3. `::resource{id="…"}`
@@ -144,6 +145,7 @@ The first line is always taken. Subsequent lines are appended (trimmed, joined w
 - an **unordered** list line (`^\s*[-*+]\s+`), which includes task items;
 - any `:::…` fence line: known or unknown directive/container, or a bare `:::`;
 - a whole display formula (postext ≥ 1.5): a `$$…$$` line, or a `$$` fence closed before the next blank line. The text right under the closing `$$` continues the paragraph, flush (§11). Up to 1.4 these lines were swallowed as text.
+- a code fence (postext ≥ 1.23, §3.4). The text right under its closing fence is a new paragraph.
 
 **Chinese and Japanese line ends** (postext ≥ 1.9): between two East Asian wide characters (Han, kana, full-width punctuation, and curly quotes, dashes or an ellipsis beside them) the joining space is dropped, as CSS does, so a Chinese source may be wrapped anywhere. Korean keeps its space. A space typed inside a line stays.
 
@@ -181,6 +183,16 @@ The same triggers also end a running paragraph mid-way (§3.1): a continuation l
 - **Japanese paragraph starts** (≥ 1.16): a paragraph opening with 「 needs no typed space; `cjk.paragraphStartBracket` (auto `half` in Japanese) sets the bracket in the indent. A paragraph that must stay flush (Aozora's paragraphs with neither U+3000 nor 「) goes in a `:::paragraphs` style with `firstLineIndent: 0`.
 - **Full-width markup is text**: `：：：`, `＃ `, `［＾1］`, `｛…｝` after a fence or heading, `＊＊…＊＊` typed with an input method print literally and raise `fullwidthMarkup`. Write the ASCII forms.
 
+### 3.4 Code listings: ```` ``` ```` and `~~~` fences (postext ≥ 1.23)
+
+- **Syntax:** an opening line of 3+ backticks or 3+ tildes (up to 3 spaces in), an info string, the lines, and a closing fence of the same character at least as long. A backtick fence's info string holds no backtick. The fence's indentation comes off each line.
+- **Literal:** every character, space, tab and blank line is kept; nothing inside is Markdown (no emphasis, `:ref`, maths, chips, directives, `#` headings, list items, index marks or anchors). Nothing needs escaping. A listing that shows a ```` ``` ```` fence goes in a longer fence or in tildes.
+- **Info string:** first word = language (`js`, `ts`, `python`, `bash`, `console`, `json`, `css`, `html`, `xml`, `markdown`, `sql` are coloured by the built-in tokenizer; any other is set plain); then attributes in the §8 grammar, braced or bare: `title="…"`, `label="…"`, `lineNumbers` / `lineNumbers=false`, `start=N`, `highlight="3,5-7"`, `span=page`. A bare rest is the title: `` ```console Terminal ``.
+- **Placement:** a fence interrupts a paragraph; one left open runs to the end of the text (`unclosedCodeBlock`). Inside `:::callout` it is a nested box; inside `:::paragraphs` it keeps `codeStyle`. A fence after a list item closes the list (no list continuation).
+- **Layout:** one line per source line in the code face, in a box (`codeStyle`, configuration.md §12b): never hyphenated or justified, spaces at full width, tabs to the next `tabSize` stop, overlong lines wrapped / shrunk / clipped (`codeOverflow`), numbers in a gutter (not copied), split between lines across columns and pages.
+- **Indented code** (4 spaces / a tab after a blank line) is a listing only under `codeStyle.indentedCode: true`.
+- **Stored presets:** a manifest below `configVersion` 9 whose chapters hold a fence reads them as Markdown (`codeStyle.blocks: false`). Write `"configVersion": 9`.
+
 ---
 
 ## 4. Inline formatting (paragraphs, list items, blockquotes)
@@ -205,7 +217,7 @@ Earlier passes shield their content from later ones. Math is extracted before em
 | Subscript | `~x~` | 58% of the size, lowered 0.15 em. Same rules. A subscript and a superscript that touch (`T~0~^2^`, either order) are stacked, the subscript 0.25 em down; a space, a letter or a word joiner (U+2060) between them sets them one after the other. A stacked pair never parts at a line break (a word too wide for the line breaks before it) | `:289-308` |
 | Tab (≥ 1.23) | `:tab`, `:tab{at=… align=… leader=…}` | goes to the paragraph's next tab stop, or to the one-off stop of its attributes; see §10.9 | |
 | Small caps | `:smallcaps[x]` | lowercase letters as capitals at 70% of the size (synthesised, identical on every backend). Takes marks inside and around it; `\]` for a literal `]`; empty or unclosed stays literal. Headings strip the markup. See §10.3 | |
-| Inline code | `` `x` `` | **backticks removed, rendered as plain body text, literally**: emphasis markers, `$`, links, `:ref{…}` and chips inside it print as written (the way to show syntax). | `:313-318` |
+| Inline code | `` `x` `` | **backticks removed, rendered literally**: emphasis markers, `$`, links, `:ref{…}` and chips inside it print as written (the way to show syntax). Set in the body face, or with `codeStyle.inline` (≥ 1.23, configuration.md §12b) in a code face as one unbreakable unit, optionally on a fill. | `:313-318` |
 | Link | `[text](url)` | text kept and set exactly as without the link. The URL becomes a live link in HTML (`<a>`) and PDF (a URI annotation), not on canvas. Only `http`, `https`, `mailto`, `tel`, `ftp` and relative URLs are linked; any other scheme keeps the text only. The destination takes **balanced parentheses** as in CommonMark (`[Wiki](…/A_(b))` links the whole URL); an unbalanced one ends at the first `)` and the text is set with no link. A `"title"` is ignored; `<…>` may hold spaces. Works in paragraphs, lists, quotes, callouts, captions, notes and cells, not in headings or chips | `replaceLinkSyntax`, `linkHref` |
 | Image | `![alt](src)` | **removed** from the text | `:315` |
 | Escapes | `\*` `\_` `\^` `\~` `` \` `` | the literal character (body, captions, cells, notes) | `:261-273` |
@@ -332,7 +344,7 @@ Answer box.
 - The container's `marginTop` is applied on entry and `marginBottom` after the last paragraph. Negative margins pull the flow up.
 - Works inside callouts too (nested boxes included). Unset fields inherit the document's `bodyText`, not the box's `body`.
 - A style may set `fontWeight` / `boldFontWeight`, `italic: true` (stage directions; `*…*` runs turn upright) and `smallCaps: true` (a cast list).
-- This is **the** way to do epigraphs, colophons, dedications, small print, lead-ins, signatures, code-like text (with a mono style) and centred lines. **Verse is not**: a poem goes in `:::verse{style="verso"}` (§12), which keeps its lines, indents and stanzas; the same paragraph style gives it face, size, leading and margins:
+- This is **the** way to do epigraphs, colophons, dedications, small print, lead-ins, signatures and centred lines. **Code is not**: a listing goes in a ```` ``` ```` fence (§3.4). **Verse is not**: a poem goes in `:::verse{style="verso"}` (§12), which keeps its lines, indents and stanzas; the same paragraph style gives it face, size, leading and margins:
 
 ```md
 :::verse{style="verso"}
@@ -780,6 +792,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 - `unknownResourceId` (embed or ref), `duplicateResourceId`, `danglingTypeRef`
 - `headingHierarchy`, `consecutiveHeadings`, `listAfterHeading`
 - `chapterFrontmatterIgnored`, `calloutOverflow`
+- `unclosedCodeBlock` (≥ 1.23: a code fence with no closing fence; the rest of the chapter is code) and `codeOverflow` (a listing's line wider than its box, turned over, shrunk or cut, per `codeStyle.overflow`)
 - `tabInVerticalText` (≥ 1.23: a `:tab` in vertical text, set as a word space), and the config warnings `unknownConfigKey` / `unknownConfigValue` for a tab stop's unknown key, `align` or position (configuration.md §4a)
 - `lineNumberOverlap` (≥ 1.23: a line number in the side column falls on a side box, side caption or float; painted anyway), and the config warning `lineNumbersUnsupported` (`lineNumbers.enabled` on a vertical document, which gets no numbers)
 - `dropCap` (≥ 1.23: a paragraph a drop cap opens could not take it as configured; `reason` `shortParagraph` (with `handling` reserve/shrink/skip), `split`, `joiningScript`, `verticalText`, `noLetter`), and the config warnings `unknownConfigKey` / `unknownConfigValue` for a drop cap's unknown key, `punctuation`, `shortParagraph`, `lines`, `sink` or `characters` (configuration.md §4b)
@@ -842,7 +855,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Footnote | Convert each to a `[^n]` marker after the cited word or punctuation plus a `[^n]: text` definition paragraph in the same chapter (under the paragraph, or all at the chapter's end). Numbers come from the order of citation, not the source. A note cited in a heading, caption or table cell: move the marker into the text, or set the note in the caption/cell itself. Endnotes: `footnotes.placement: 'chapterEnd'` (§10.4). |
 | Superscript / subscript / chemistry | `x^2^`, `H~2~O`, or `$\ce{H2O}$` (mhchem is available). |
 | Formula | `$…$` inline, `$$ … $$` display on its own lines with blank lines around; glue it under its lead-in line when the text after it continues the sentence ("where …", §11). Escape currency `$` as `\$`. |
-| Code listing | No code blocks. Use `:::paragraphs{style="code"}` with a mono style, one paragraph per line. Escape `* _ ^ ~ $` inside it. |
+| Code listing | A ```` ``` ```` or `~~~` fence with the language and title on its info string (`` ```bash backup.sh ``), lines copied as written, nothing escaped (postext ≥ 1.23, §3.4). Its look comes from `codeStyle` (configuration.md §12b); a terminal session is `console`. Up to 1.22: one paragraph per line in `:::paragraphs{style="code"}`, word joiners and no-break spaces, everything escaped. |
 | Horizontal rule / ornament / asterism | No `---`. Use a centred `:::paragraphs{style="asterism"}` with `⁂` or `* * *` (escape as `\* \* \*`), or an ornament resource with `::resource`. |
 | Forced page / column break | `:::pagebreak{parity="odd"}` / `:::columnbreak`. |
 | Extra vertical space (scene break, room above a signature) | `:::space` or `:::space{lines=2}` on its own line. Extra blank lines do nothing. |

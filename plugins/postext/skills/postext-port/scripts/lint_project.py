@@ -90,6 +90,11 @@ class Report:
         self.items.append(("INFO", where, msg))
 
 
+
+# A code fence (postext >= 1.23): 3+ backticks or tildes, up to 3 spaces in.
+CODE_FENCE_OPEN_RE = re.compile(r"^( {0,3})(`{3,}|~{3,})(.*)$")
+CODE_FENCE_CLOSE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})\s*$")
+
 def parse_attrs(blob: str | None) -> dict[str, str]:
     out: dict[str, str] = {}
     for m in ATTR_RE.finditer(blob or ""):
@@ -278,6 +283,58 @@ def check_line_numbers(cfg: dict, where: str, rep: Report) -> None:
     if ln.get("position") == "side" and not (lay.get("layoutType") == "oneAndHalf" and lay.get("sideColumnRole") == "floats"):
         rep.info(where, "lineNumbers.position 'side' needs layout oneAndHalf with sideColumnRole 'floats'; "
                         "pages without that side column set the numbers 'outer'")
+
+
+CODE_STYLE_ENUMS = {
+    "overflow": {"wrap", "shrink", "clip"},
+    "highlight": {"builtin", "none"},
+    "span": {"column", "page"},
+}
+CODE_STYLE_KEYS = set(CODE_STYLE_ENUMS) | {
+    "blocks", "indentedCode", "fontFamily", "fontSize", "fontWeight", "boldFontWeight", "lineHeight", "snapToGrid",
+    "color", "backgroundEnabled", "background", "padding", "border", "borderRadius", "marginTop", "marginBottom",
+    "tabSize", "wrapIndent", "wrapMarker", "minFontScale", "lineNumbers", "lineNumberColor", "lineNumberGap",
+    "highlightBackground", "keepTogether", "splitMinLines", "repeatTitle", "continuesMarkerEnabled",
+    "continuesMarker", "titleStyle", "label", "tokens", "inline"}
+CODE_TOKEN_KINDS = {"keyword", "string", "number", "comment", "function", "type", "operator", "punctuation",
+                    "variable", "meta", "prompt", "output"}
+INLINE_CODE_KEYS = {"fontFamily", "fontSize", "color", "bold", "italic", "background", "borderColor", "borderWidth",
+                    "borderRadius", "paddingX", "paddingY"}
+
+
+def check_code_style(cfg: dict, where: str, rep: Report) -> None:
+    """`codeStyle` (postext >= 1.23): keys, values the resolver drops, token
+    kinds and inline code."""
+    cs = cfg.get("codeStyle")
+    if cs is None:
+        return
+    if not isinstance(cs, dict):
+        rep.error(where, "codeStyle must be an object")
+        return
+    for k, v in cs.items():
+        if k not in CODE_STYLE_KEYS:
+            rep.warn(where, f"codeStyle.{k} is not a codeStyle key (ignored)")
+        elif k in CODE_STYLE_ENUMS and v not in CODE_STYLE_ENUMS[k]:
+            rep.warn(where, f"codeStyle.{k} {v!r} is not one of {sorted(CODE_STYLE_ENUMS[k])}: the default is used")
+    for k, lo in (("tabSize", 1), ("wrapIndent", 0), ("splitMinLines", 1)):
+        if k in cs and not _whole(cs[k], lo):
+            rep.warn(where, f"codeStyle.{k} {cs[k]!r} is not a whole number >= {lo}: the default is used")
+    tokens = cs.get("tokens")
+    if isinstance(tokens, dict):
+        for kind, look in tokens.items():
+            if kind not in CODE_TOKEN_KINDS:
+                rep.warn(where, f"codeStyle.tokens.{kind} is not a token kind (ignored): {sorted(CODE_TOKEN_KINDS)}")
+            elif isinstance(look, dict):
+                for k in look:
+                    if k not in ("color", "bold", "italic"):
+                        rep.warn(where, f"codeStyle.tokens.{kind}.{k} is not a token style key (ignored)")
+    inline = cs.get("inline")
+    if isinstance(inline, dict):
+        for k in inline:
+            if k not in INLINE_CODE_KEYS:
+                rep.warn(where, f"codeStyle.inline.{k} is not an inline code key (ignored)")
+    if cs.get("blocks") is False:
+        rep.info(where, "codeStyle.blocks false: ``` fences are read as Markdown, as up to postext 1.22")
 
 
 TAB_STOP_KEYS = {"position", "align", "leader", "leaderGap", "decimalChar"}
@@ -1884,6 +1941,7 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
     prev_kind = ""
     in_math = False
     in_refs = False  # inside a :::references or :::verse block: its body is not paragraphs
+    code_fence: str | None = None  # the marker of an open ``` / ~~~ code listing (postext >= 1.23): read as written
     fn_cited: dict[str, str] = {}
     fn_defined: dict[str, str] = {}
     comic: dict | None = None  # an open :::page / :::strip block, read raw to its closing :::
@@ -1891,6 +1949,18 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
         raw = lines[i]
         line = raw.strip()
         where = f"{name}:{i + 1}"
+        if code_fence is not None:
+            m = CODE_FENCE_CLOSE_RE.match(raw)
+            if m and m.group(1)[0] == code_fence[0] and len(m.group(1)) >= len(code_fence):
+                code_fence = None
+                prev_nonblank, prev_kind = True, "fence"
+            continue
+        if comic is None and not in_math and not in_refs:
+            m = CODE_FENCE_OPEN_RE.match(raw)
+            if m and not (m.group(2)[0] == "`" and "`" in m.group(3)):
+                code_fence = m.group(2)
+                prev_nonblank, prev_kind = True, "fence"
+                continue
         if comic is not None:
             if line == ":::":
                 check_comic_block(name, comic["kind"], comic["attrs"], comic["body"], comic["line"], comic_ctx, rep)
@@ -1915,8 +1985,8 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
         if not line.startswith((":::", "::resource")) and ":index" in line:
             collect_index_marks(re.sub(r"`[^`\n]+`", "", line), where, rep, index)
         # CommonMark habits
-        if line.startswith("```") or line.startswith("~~~"):
-            rep.error(where, "code fences are not supported (they print literally): use :::paragraphs{style=\"code\"}")
+        if raw.startswith("\u2060\u00a0") or (raw.startswith("\u2060") and "\u00a0\u00a0" in raw):
+            rep.warn(where, "a code line kept with a word joiner and no-break spaces: write the listing as a ``` fence (postext >= 1.23), as written")
         if re.match(r"^\|.*\|$", line) and not (i > 0 and re.match(r"^\|.*\|$", lines[i - 1].strip())):
             rep.error(where, "pipe tables are not supported: tables are resources (kind \"table\") cited with :ref / ::resource")
         if re.fullmatch(r"(-{3,}|\*{3,}|_{3,})", line):
@@ -2218,7 +2288,7 @@ def main() -> None:
                  "space under a :::paragraphs container added to the next block's instead of merged with it; "
                  "below 9: a :::verse poem with no || set as centred hemistichs, a paragraph style's "
                  "firstLineIndent dropped when it also hangs, a backslash ending a line printed instead of "
-                 "breaking it); set \"configVersion\": 9 for today's rules")
+                 "breaking it, a ``` fence's lines read as Markdown); set \"configVersion\": 9 for today's rules")
     for k in ("id", "name"):
         if not m.get(k):
             rep.error("preset.json", f"{k} is required")
@@ -2314,6 +2384,7 @@ def main() -> None:
                 if isinstance(v, dict) and isinstance(shared.get(k), dict) and set(shared[k]) - set(v):
                     rep.warn(f"localized.{lang}.config.{k}", f"replaces the shared `{k}` wholesale; missing keys {sorted(set(shared[k]) - set(v))[:6]} fall back to defaults")
         check_line_numbers(cfg, f"config ({lang})", rep)
+        check_code_style(cfg, f"config ({lang})", rep)
         ids = style_ids(cfg)
         for r in resources:
             if r.get("typeId") and r["typeId"] not in ids["types"]:

@@ -270,6 +270,7 @@ if (typeof bundleApi?.migrateConfig === 'function') {
     [(c) => c.bodyText?.paragraphContainerSpacing, 'space under paragraph containers'],
     [(c) => c.bodyText?.verse?.layout, 'centred lines of a poem with no separator'],
     [(c) => c.bodyText?.hardLineBreaks, 'printed line-end backslashes'],
+    [(c) => c.codeStyle?.blocks, 'code fences read as Markdown'],
   ].filter(([of]) => of(read) !== of(config)).map(([, what]) => what);
   if (kept.length) {
     const v = manifest.configVersion;

@@ -96,6 +96,7 @@ Conversion at `page.dpi` (default 300):
 | `paragraphStyles` | ParagraphStyleConfig[] | `[]` | §11 `:::paragraphs{style=…}` |
 | `calloutStyles` | CalloutStyleConfig[] | `[{id:'note',name:'Note'}]` | §12 `:::callout{type=…}` — declaring replaces the default list |
 | `chipStyles` | ChipStyleConfig[] | `[{id:'chip',name:'Chip'}]` | §13 inline `:chip[…]{style=…}` |
+| `codeStyle` | CodeStyleConfig | §12b | code listings (```` ``` ```` / `~~~` fences, postext ≥ 1.23): face, box, tab width, long lines, line numbers, token colours, inline code |
 | `resourceTypes` | ResourceType[] | Figure + Table in the document language (`locale`, else the hyphenation locale; English for other languages) | §15 numbering, caption prefix, default placement |
 | `tableStyle` | TableStyleConfig | §16 | document table style |
 | `tableStyles` | NamedTableStyleConfig[] | `[]` | §16 per-table via `resource.table.styleId` |
@@ -974,6 +975,51 @@ span/placement/floatBarrier/snapToGrid. Ordered-list numbers inside a box come f
 
 ---------------------------------------------------------------------------------
 
+## 12b. `codeStyle` — CodeStyleConfig (postext ≥ 1.23)
+
+Code listings: the ```` ``` ```` / `~~~` fences of the text (document-format.md §3.4) and inline
+code. Every listing is set line by line as written in a box built from these fields (the callout
+machinery: it nests in a `:::callout`, splits between lines across columns and pages, spans the
+page). Unset fields keep their defaults; the section is absent from most presets.
+```
+codeStyle
+├─ blocks          boolean  true      false = fences read as Markdown (1.22; a preset below configVersion 9 whose chapters hold a fence reads false)
+├─ indentedCode    boolean  false     also read 4-space / tab-indented runs after a blank line (off: lists and prose indent with spaces)
+├─ fontFamily      string   'Source Code Pro'   monospaced; a CJK mono face (BIZ UDGothic) sets full-width characters at two cells
+├─ fontSize        Dimension 0.85em   em = body size
+├─ fontWeight 400 / boldFontWeight 700
+├─ lineHeight      Dimension (unset = the body grid line; em = code size)
+├─ snapToGrid      true     color = body colour
+├─ backgroundEnabled true  background=#f4f4f4   border {enabled=false, color=#cccccc, width=0.5pt}   borderRadius=0
+├─ padding         {top,right,bottom,left} 0.6em (em = code size)   marginTop / marginBottom 0.75em
+├─ span            'column' | 'page'   (fence: span=page)
+├─ tabSize         4        a tab = segment to the next multiple of N cells (kept as \t when copied)
+├─ overflow        'wrap' | 'shrink' | 'clip'   ('wrap': break after the last space/punctuation that fits, rest
+│                  wrapIndent=2 cells in behind wrapMarker='»'; 'shrink': whole listing smaller down to
+│                  minFontScale=0.8, then wrap; 'clip': cut at the box edge). Each raises `codeOverflow`.
+├─ lineNumbers     false    gutter numbers (fence: lineNumbers, lineNumbers=false, start=N); lineNumberColor=#8a8a8a, lineNumberGap=1em
+├─ highlightBackground #fff4c2  band behind fence highlight="3,5-7"
+├─ keepTogether false  splitMinLines 2  repeatTitle false  continuesMarkerEnabled false  continuesMarker (doc language)
+├─ titleStyle      CalloutTitleStyleConfig (default code face, bold, 0.9 size)   label? CalloutLabelConfig → title in a label tab
+├─ highlight       'builtin' | 'none'
+├─ tokens          Partial<Record<kind, {color?, bold?, italic?}>>   kinds: keyword string number comment function type
+│                  operator punctuation variable meta prompt output; merged per kind onto a quiet default palette;
+│                  palette-linked colours follow colorPalette and :::part palettes
+└─ inline          { fontFamily (= codeStyle.fontFamily), fontSize=0.9em, color?, bold, italic, background?, borderColor?,
+                     borderWidth=0.5pt, borderRadius=0.2em, paddingX (0.2em with a fill, else 0), paddingY=0.1em }
+                   unset = inline code in the body face (as ≤ 1.22). Set = one unbreakable unit, like a chip.
+```
+- **Built-in tokenizer**: js/ts (jsx, tsx), json, python, bash/sh/zsh, console (prompt lines vs
+  output), css, html/xml, markdown, sql. Other languages are plain. `registerCodeHighlighter(lang | '*',
+  fn)` (from `postext`) plugs in Shiki/Prism: `fn(code, lang)` returns lines of `{text, token?, color?}`
+  runs; register inside the layout worker. A fence's title (`title=`, or a bare second word) prints in a
+  title row, or in the label tab when `codeStyle.label` is set.
+- **Recipes**: a dark terminal box = `background` dark, `color` light, `tokens.prompt {bold}`,
+  `tokens.output {color}`; a manual's listing in the text face's tint = `background` the tint,
+  `fontFamily` a CJK mono face. Copy the source's colours into `tokens`, never into bold/italic runs.
+
+---------------------------------------------------------------------------------
+
 ## 13. `chipStyles[]` — ChipStyleConfig
 
 Inline `:chip[text]{style="id"}` (word banks, keys, tags). Chip without style → first style.
@@ -1530,8 +1576,9 @@ when the config declares a paragraph style and a chapter opens a `:::paragraphs`
 drop cap's 1.4 size written out. A manifest stamped 5 gets the pins of rules 6, 7 and 8 only; one stamped 6,
 those of rules 7 and 8; one stamped 7, those of rules 8; one stamped 8 (postext 1.5 to 1.22), those of rules 9:
 `bodyText.verse.layout: 'bayt'` when a chapter sets a `:::verse` poem with no `||`, the `firstLineIndent` of a
-paragraph style that also hangs dropped, and `bodyText.hardLineBreaks: false` when a chapter ends a line with a
-backslash or sets `\\` before a space. The pins keep what those rules changed, not
+paragraph style that also hangs dropped, `bodyText.hardLineBreaks: false` when a chapter ends a line with a
+backslash or sets `\\` before a space, and `codeStyle.blocks: false` when a chapter opens a ```` ``` ```` or `~~~`
+fence (its lines then read as Markdown). The pins keep what those rules changed, not
 every 1.4 page: 1.5's layout fixes (page-span opener measure, drop caps in heading designs, tracking in boxes,
 the loose-paragraph limit…) apply to an old bundle too.
 Must NOT go in `config`: `customFonts` (built from `fonts[]`; fileIds are storage-local —

@@ -503,6 +503,40 @@ positions from the start of the paragraph's measure, after the style's
   text, and give the paragraph style the stops (from the IDML `TabList` or
   the Word style) so the text keeps bare `:tab`.
 
+### B14. Code listings, terminal sessions, configuration files
+A program, a shell session or a file shown in the text is a ```` ``` ```` fence
+(postext ≥ 1.23; document-format.md §3.4, configuration.md §12b), copied as
+the source sets it: indentation, blank lines, columns of output. Never
+rebuild it as one paragraph per line in `:::paragraphs` or a callout, with
+word joiners, no-break spaces and escaped `* _ ^ ~ $`, and never colour it
+with bold and italic runs.
+
+- **The fence**: the language first (`js`, `python`, `bash`, `console` for a
+  session with prompts, `json`, `sql`…), then the file name the source prints
+  over it as a bare title (`` ```bash backup.sh ``) or `title="…"`; the
+  source's line numbers as `lineNumbers start=N`; lines it shades as
+  `highlight="3,5-7"`; a listing across both columns as `span=page`.
+- **The look** goes in `codeStyle`: the source's mono face (`fontFamily`;
+  for Japanese or Chinese comments a mono face with kanji, BIZ UDGothic, so
+  full-width characters take two cells), its size against the text, the
+  box's tint or dark ground (`background`, `color`), padding, radius, border.
+  A file name on a tab at the box's top edge: `codeStyle.label` (the title
+  then prints there). Lines the source turns over behind a mark: `overflow:
+  'wrap'` with its `wrapMarker`; a source that sets a long listing smaller:
+  `overflow: 'shrink'` with `minFontScale`.
+- **Colours**: measure the source's colours per kind (keywords, strings,
+  comments, numbers, the prompt and the output of a session) into
+  `codeStyle.tokens`; link them to palette entries when parts recolour the
+  book. A language the tokenizer does not know is set plain: register a
+  highlighter (`registerCodeHighlighter`) in the host when it must be
+  coloured, or accept plain.
+- **Inline code** in a mono face (`grep`, `--force`): `codeStyle.inline`
+  (with `background` when the source tints it). Keyboard keys stay chips.
+- **Checks**: `codeOverflow` names listings with lines wider than the box;
+  shorten the box's padding, the size, or choose `shrink`/`clip` as the
+  source does. A preset stamped below `configVersion` 9 reads fences as
+  Markdown: write 9.
+
 ---
 
 ## C. Boxes (callouts)

@@ -770,16 +770,19 @@ class Converter:
             self.report["line blocks (verse) -> :::paragraphs{style=\"verse\"}"] += 1
             return [fence("paragraphs", [guard_line_start(self.inline(line)) for line in v if line], style="verse")]
         if k == "CodeBlock":
-            (_, classes, _), code = v
-            lines = []
-            for l in code.rstrip("\n").split("\n"):
-                l = l.rstrip().expandtabs(4)
-                lead = len(l) - len(l.lstrip(" "))
-                # lines are trimmed by the parser: a word joiner keeps the indent
-                lines.append(("\u2060" + "\u00a0" * lead if lead else "") + escape(l.lstrip(" ")))
-            self.report["code blocks -> :::paragraphs{style=\"code\"} (one paragraph per line)"] += 1
-            body = [guard_line_start(l) if l.strip() else "⁠" for l in lines]
-            return [fence("paragraphs", body, style="code")]
+            # A code listing (postext >= 1.23): a ``` fence, the lines as
+            # written (nothing escaped), the language and the file name the
+            # source gives it on the info string.
+            (_, classes, kv), code = v
+            body = code.rstrip("\n")
+            ticks = max([len(m) for m in re.findall(r"`{3,}", body)] + [2]) + 1
+            marker = "`" * max(3, ticks)
+            info = classes[0] if classes else ""
+            title = dict(kv).get("title") or dict(kv).get("filename")
+            if title:
+                info += f' {{title="{title.replace(chr(34), "")}"}}'
+            self.report["code blocks -> ``` fences (postext >= 1.23)"] += 1
+            return [f"{marker}{info}\n{body}\n{marker}"]
         if k == "RawBlock" and _raw_format(v[0]) in ("latex", "tex") and "\\index" in v[1]:
             marks = self.latex_index_marks(v[1])
             return ["".join(marks)] if marks else []
@@ -1139,7 +1142,7 @@ def main() -> None:
             lines.append(f"- `{k}`: {v}")
         lines.append("")
     lines.append("Paragraph styles introduced by the draft that the config must define: "
-                 "`notes`, `quote`, `verse`, `code`, `asterism` (only those that appear in the chapters).")
+                 "`notes`, `quote`, `verse`, `asterism` (only those that appear in the chapters).")
     (out / "report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
 

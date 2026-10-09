@@ -246,6 +246,29 @@ describe.skipIf(!python)("postext-port lint on tab stops", () => {
   });
 });
 
+describe.skipIf(!python)("postext-port lint on code listings", () => {
+  const fonts = { bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
+
+  it("reads a fence as a listing and leaves its lines alone", () => {
+    const text = `${CHAPTER}\n\`\`\`bash {title="x.sh"}\n| not | a table |\n<b>not html</b> ~~no~~\n\`\`\`\n`;
+    const { out } = lint(project(fonts, text));
+    expect(out).not.toContain("code fences are not supported");
+    expect(out).not.toContain("pipe tables are not supported");
+    expect(out).not.toContain("HTML tags/entities print literally");
+    expect(out).not.toContain("~~strike~~");
+  });
+
+  it("flags a listing rebuilt with word joiners and no-break spaces, and checks codeStyle", () => {
+    const text = `${CHAPTER}\n:::paragraphs{style="code"}\n\u2060\u00a0\u00a0return x\n:::\n`;
+    const { out } = lint(project({ ...fonts, paragraphStyles: [{ id: "code" }], codeStyle: { overflow: "warp", tabsize: 2, tokens: { keywrd: {} }, inline: { colour: "#000" } } }, text));
+    expect(out).toContain("write the listing as a ``` fence");
+    expect(out).toContain("codeStyle.overflow 'warp' is not one of");
+    expect(out).toContain("codeStyle.tabsize is not a codeStyle key");
+    expect(out).toContain("codeStyle.tokens.keywrd is not a token kind");
+    expect(out).toContain("codeStyle.inline.colour is not an inline code key");
+  });
+});
+
 describe.skipIf(!python)("postext-port lint on drop caps", () => {
   const fonts = { bodyText: { fontFamily: "Noto Serif TC" }, headings: { fontFamily: "Noto Serif TC", levels: [{ level: 1, breakBefore: { enabled: true } }] } };
 

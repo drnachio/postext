@@ -24,7 +24,7 @@ geometry, media and scan pages, and names the next command.
 | HTML / web pages | `pandoc_to_postext.py`, or a small parser for one site's markup | screenshots / print CSS | strip navigation, boilerplate and embeds |
 | InDesign (.indd) | export **IDML** + print PDF, then `idml_extract.py` | the print PDF | IDML has styles and text but not the final positions |
 | LaTeX | `pandoc_to_postext.py` (keeps `$…$` math and turns `\index{…}` into `:index` marks; a display in mid-paragraph stays glued to it, so the "where …" after it continues the paragraph) | the compiled PDF | custom macros need a pandoc Lua filter or manual care |
-| Markdown (GitHub/pandoc) | `pandoc_to_postext.py SOURCE --from markdown` | — | never copy CommonMark as is: tables, fences, `---` are not Postext (`[^n]` footnotes are) |
+| Markdown (GitHub/pandoc) | `pandoc_to_postext.py SOURCE --from markdown` | — | never copy CommonMark as is: tables and `---` are not Postext (`[^n]` footnotes and, ≥ 1.23, ```` ``` ```` fences are) |
 | XML (JATS, DocBook, CNXML, TEI) | pandoc (`jats`, `docbook`) or a small ElementTree walker | the publisher's PDF | two passes: register ids, then write |
 | Plain text (Gutenberg…) | a small script: slice by heading regex, blank-line paragraphs | — | `_it_` → `*it*`; verse detection |
 | Aozora Bunko (青空文庫) text | `aozora.py` (CP932 zip or .txt) | the base edition (底本) named in its credits, or a design of your own | furigana, bōten, headings, indents, 外字 converted; "Japanese sources" |

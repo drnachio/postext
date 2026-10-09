@@ -54,8 +54,8 @@ public-domain or openly licensed sample instead.
 
 Postext Markdown is **not CommonMark**. These habits break a port:
 
-- **No pipe tables, code fences, raw HTML, `---` rules or inline
-  images.** They print literally or vanish. Tables and figures are
+- **No pipe tables, raw HTML, `---` rules or inline images.** They
+  print literally or vanish. Tables and figures are
   *resources* (JSON), cited with `:ref{id="…"}` or placed with
   `::resource{id="…"}`.
 - **Blank lines around every block.** An ordered list or a `::resource`
@@ -87,8 +87,7 @@ Postext Markdown is **not CommonMark**. These habits break a port:
   greeting or a signature block kept in one paragraph (document-format.md
   §3.3). Two trailing spaces are no break. Write a poem as `:::verse`, one
   line of verse a line, a blank line between stanzas, leading spaces for its
-  indents (§12). Code lines still need one paragraph per line inside
-  `:::paragraphs{style="…"}`.
+  indents (§12).
 - **Tabs** (postext ≥ 1.23): write `:tab` where the source aligns text at a
   stop (a price, an actor, marks at the margin), and give the paragraph's
   style `tabStops` (document-format.md §10.9, configuration.md §4a). A tab
@@ -101,6 +100,16 @@ Postext Markdown is **not CommonMark**. These habits break a port:
   (configuration.md §4b). `# Title {dropcap=false}` leaves one chapter
   without it. Never copy the opening words into a `lead` attribute drawn by
   a design text.
+- **Code listings** (postext ≥ 1.23): copy a source's code as a ```` ``` ````
+  or `~~~` fence, as written (`` ```bash backup.sh `` or
+  `` ```js {title="app.js" lineNumbers highlight="3"} ``). Nothing inside is
+  read as Markdown, so nothing needs escaping, and leading spaces, tabs and
+  blank lines stay. The face, box, long lines, numbers and token colours
+  come from `codeStyle` (configuration.md §12b), inline code in a code face
+  from `codeStyle.inline`. Never rebuild a listing as one paragraph per
+  line with word joiners and no-break spaces, nor fake colours with bold
+  and italic runs. A preset stamped below `configVersion` 9 reads fences as
+  Markdown: write 9.
 
 Config traps:
 
