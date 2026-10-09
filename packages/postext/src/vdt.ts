@@ -1815,6 +1815,28 @@ export interface VDTColumn {
    *  level: its bottom is the level cut, and column balancing fills the
    *  column up to it even though the page does not flow on. */
   trailingCap?: boolean;
+  /** Regions of the column that text wraps round (#627): a picture or a
+   *  box narrower than the column, set at one of its sides, with the lines
+   *  beside it set short. Page coordinates of the flow frame (as `bbox`);
+   *  each covers the item and its gap on the text's side and under it, its
+   *  height in whole grid lines from its top. Absent when nothing in the
+   *  column wraps. */
+  exclusions?: VDTExclusion[];
+}
+
+/** A region of a column that text wraps round (see `VDTColumn.exclusions`,
+ *  #627). */
+export interface VDTExclusion {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  /** The side of the column it stands at, in the flow (the text runs on the
+   *  other side). */
+  side: 'left' | 'right';
+  /** The id of the block that wraps the text: an inline figure's block, a
+   *  float's, or a box's frame. */
+  ownerId: string;
 }
 
 /** The notes set at the foot of one column (`footnotes.placement:
@@ -2472,6 +2494,10 @@ export type ContentWarning = ContentWarningBase & (
   /** A `:::references` block could not be read (malformed JSON or YAML, or
    *  BibTeX without an engine). */
   | { kind: 'referencesUnreadable'; message: string }
+  /** The front matter block is not valid YAML (an unclosed quote, text
+   *  after a quoted value): the document is set without its metadata.
+   *  `message` is the parser's reason, with the line and column. */
+  | { kind: 'invalidFrontmatter'; message: string }
   /** A `:::name` line whose name is neither a directive nor a container:
    *  it is set as text. */
   | { kind: 'unknownDirective'; name: string }

@@ -1,4 +1,4 @@
-import type { FloatShrinkConfig, FloatShrinkMode, LayoutConfig, LayoutType, ResolvedLayoutConfig } from '../types';
+import type { Dimension, FloatShrinkConfig, FloatShrinkMode, LayoutConfig, LayoutType, ResolvedLayoutConfig, ResolvedTextWrapConfig, TextWrapConfig } from '../types';
 import { dimensionsEqual, colorsEqual } from './shared';
 
 export const DEFAULT_COLUMN_RULE = {
@@ -30,6 +30,48 @@ export function resolveFloatShrink(partial?: FloatShrinkConfig): { mode: FloatSh
   };
 }
 
+/** `layout.wrap` defaults (#627): no gap of its own (one body line), text
+ *  no narrower than 12 em, two lines beside, 45 % of the column. */
+export const DEFAULT_TEXT_WRAP: ResolvedTextWrapConfig = {
+  minTextWidth: { value: 12, unit: 'em' },
+  minLinesBeside: 2,
+  defaultWidth: 0.45,
+};
+
+function isDimension(value: unknown): value is Dimension {
+  return typeof value === 'object' && value !== null && typeof (value as Dimension).value === 'number' && Number.isFinite((value as Dimension).value)
+    && typeof (value as Dimension).unit === 'string';
+}
+
+/** A `minTextWidth` as written: a length, or a share of the column in
+ *  (0, 1]; else `undefined`. */
+export function wrapMinTextWidthOf(value: unknown): Dimension | number | undefined {
+  if (typeof value === 'number') return Number.isFinite(value) && value > 0 && value <= 1 ? value : undefined;
+  return isDimension(value) && value.value >= 0 ? value : undefined;
+}
+
+/** A `minLinesBeside` as written: a whole number, at least 1. */
+export function wrapMinLinesOf(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1 ? value : undefined;
+}
+
+/** A `defaultWidth` (or `placement.width`) as a wrap reads it: a share in
+ *  (0, 1). */
+export function wrapWidthOf(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 && value < 1 ? value : undefined;
+}
+
+/** `layout.wrap` resolved; misspelt values fall back to the defaults. */
+export function resolveTextWrap(partial?: TextWrapConfig): ResolvedTextWrapConfig {
+  const gap = isDimension(partial?.gap) && partial!.gap.value >= 0 ? partial!.gap : undefined;
+  return {
+    ...(gap ? { gap } : {}),
+    minTextWidth: wrapMinTextWidthOf(partial?.minTextWidth) ?? DEFAULT_TEXT_WRAP.minTextWidth,
+    minLinesBeside: wrapMinLinesOf(partial?.minLinesBeside) ?? DEFAULT_TEXT_WRAP.minLinesBeside,
+    defaultWidth: wrapWidthOf(partial?.defaultWidth) ?? DEFAULT_TEXT_WRAP.defaultWidth,
+  };
+}
+
 export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   layoutType: 'double',
   columnCount: 3,
@@ -40,6 +82,7 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   columnRule: { ...DEFAULT_COLUMN_RULE },
   fitFiguresToPage: false,
   floatShrink: { mode: 'never', minScale: DEFAULT_FLOAT_MIN_SCALE },
+  wrap: { ...DEFAULT_TEXT_WRAP },
   hugClosingFloats: true,
   inlineResourceGap: 'around',
   inlineResourceGapInBoxes: true,
@@ -48,7 +91,7 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
 };
 
 export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfig {
-  if (!partial) return { ...DEFAULT_LAYOUT_CONFIG, floatShrink: { ...DEFAULT_LAYOUT_CONFIG.floatShrink } };
+  if (!partial) return { ...DEFAULT_LAYOUT_CONFIG, floatShrink: { ...DEFAULT_LAYOUT_CONFIG.floatShrink }, wrap: resolveTextWrap() };
 
   return {
     layoutType: partial.layoutType ?? DEFAULT_LAYOUT_CONFIG.layoutType,
@@ -66,6 +109,7 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
       : { ...DEFAULT_COLUMN_RULE },
     fitFiguresToPage: partial.fitFiguresToPage ?? DEFAULT_LAYOUT_CONFIG.fitFiguresToPage,
     floatShrink: resolveFloatShrink(partial.floatShrink),
+    wrap: resolveTextWrap(partial.wrap),
     hugClosingFloats: partial.hugClosingFloats ?? DEFAULT_LAYOUT_CONFIG.hugClosingFloats,
     inlineResourceGap: partial.inlineResourceGap === 'above' ? 'above' : DEFAULT_LAYOUT_CONFIG.inlineResourceGap,
     inlineResourceGapInBoxes: partial.inlineResourceGapInBoxes ?? DEFAULT_LAYOUT_CONFIG.inlineResourceGapInBoxes,
@@ -120,6 +164,19 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
     if (minScale !== undefined && minScale !== DEFAULT_LAYOUT_CONFIG.floatShrink.minScale) fs.minScale = minScale;
     if (fs.mode !== undefined || fs.minScale !== undefined) {
       result.floatShrink = fs;
+      hasOverride = true;
+    }
+  }
+  if (layout.wrap) {
+    const w: TextWrapConfig = {};
+    const r = resolveTextWrap(layout.wrap);
+    if (r.gap) w.gap = r.gap;
+    const minText = wrapMinTextWidthOf(layout.wrap.minTextWidth);
+    if (minText !== undefined && (typeof minText === 'number' || typeof DEFAULT_TEXT_WRAP.minTextWidth === 'number' || !dimensionsEqual(minText, DEFAULT_TEXT_WRAP.minTextWidth))) w.minTextWidth = minText;
+    if (r.minLinesBeside !== DEFAULT_TEXT_WRAP.minLinesBeside) w.minLinesBeside = r.minLinesBeside;
+    if (r.defaultWidth !== DEFAULT_TEXT_WRAP.defaultWidth) w.defaultWidth = r.defaultWidth;
+    if (Object.keys(w).length > 0) {
+      result.wrap = w;
       hasOverride = true;
     }
   }

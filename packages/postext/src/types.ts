@@ -132,6 +132,51 @@ export interface ResourcePlacement {
    *  `'slot'` (the default) keeps the slot's measure; `'body'` sets them
    *  as wide as the picture, under it per {@link align}. */
   captionMeasure?: 'slot' | 'body';
+  /** Run the text beside the resource (#627): it sits at this side of its
+   *  column, and the lines beside it are set to the measure left over,
+   *  {@link wrapGap} clear of its box (caption included), then return to
+   *  the full measure under it. `'left'` / `'right'` are sides of the body
+   *  flow, as {@link align}'s (on a right-to-left document's mirrored
+   *  pages `'left'` is the sheet's right); `'start'` / `'end'` are the
+   *  same sides by their logical names. Applies to an inline embed
+   *  (`position: 'here'`, the text after the `::resource` line runs beside
+   *  it) and to a `span: 'column'` float at the head or foot of one column
+   *  (the column's first or last lines run beside it); a page-span float,
+   *  a float across several columns, a side-column float, a rotated one
+   *  and anything in vertical text keep their whole band. The resource
+   *  takes {@link width} of the column, or `layout.wrap.defaultWidth`
+   *  when it sets none. Where the text left beside it would be narrower
+   *  than `layout.wrap.minTextWidth`, or the resource shorter than
+   *  `layout.wrap.minLinesBeside` lines, it takes its band whole and a
+   *  `textWrap` warning says so. Default `'none'`. */
+  wrap?: WrapSide;
+  /** The space between a wrapped resource's box (caption included) and
+   *  the text beside it, and under it before the text runs full width
+   *  again (rounded up to whole grid lines). Default `layout.wrap.gap`,
+   *  else one body line, the float gap. */
+  wrapGap?: Dimension;
+}
+
+/** The side of its column a resource or a box sits on with text running
+ *  beside it (see `ResourcePlacement.wrap`, #627). */
+export type WrapSide = 'none' | 'left' | 'right' | 'start' | 'end';
+
+/** The document's text wrap settings (`LayoutConfig.wrap`, #627). */
+export interface TextWrapConfig {
+  /** Default `ResourcePlacement.wrapGap`: the space between a wrapped
+   *  picture and the text. Default: one body line (the float gap). */
+  gap?: Dimension;
+  /** The narrowest measure the text beside a wrapped picture may take: a
+   *  length, or a share of the column (`0.3`). Narrower, the picture takes
+   *  its band whole (`textWrap` warning). Default 12 em of body text. */
+  minTextWidth?: Dimension | number;
+  /** The fewest lines of text worth setting beside a picture. A picture
+   *  shorter than that (gap included) takes its band whole (`textWrap`
+   *  warning). Default 2. */
+  minLinesBeside?: number;
+  /** The share of the column a wrapped resource takes when its placement
+   *  sets no `width`, 0 to 1. Default 0.45. */
+  defaultWidth?: number;
 }
 
 /** How a floated picture is scaled to the room of a slot (see
@@ -939,6 +984,11 @@ export interface LayoutConfig {
    *  `{ mode: 'never' }`. Unlike {@link fitFiguresToPage}, a hard cap at
    *  the content area, this looks at the band the float would take. */
   floatShrink?: FloatShrinkConfig;
+  /** Text wrap round a resource or a box narrower than its column (#627):
+   *  the gap, the narrowest text measure, the fewest lines beside and the
+   *  default width (see {@link TextWrapConfig}). A resource opts in with
+   *  `placement.wrap`, a box with its `wrap` attribute. */
+  wrap?: TextWrapConfig;
   /** On the closing page of a chapter (and of the document), move the
    *  page-wide figures and tables set below the last band of text up to sit
    *  one float gap under it, stacked in their order, instead of at the page
@@ -999,6 +1049,14 @@ export interface FloatShrinkConfig {
   minScale?: number;
 }
 
+/** {@link TextWrapConfig} resolved; `gap` absent is one body line. */
+export interface ResolvedTextWrapConfig {
+  gap?: Dimension;
+  minTextWidth: Dimension | number;
+  minLinesBeside: number;
+  defaultWidth: number;
+}
+
 /** Where an inline resource keeps the float gap (see
  *  `LayoutConfig.inlineResourceGap`). */
 export type InlineResourceGap = 'around' | 'above';
@@ -1015,6 +1073,7 @@ export interface ResolvedLayoutConfig {
   columnRule: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
   fitFiguresToPage: boolean;
   floatShrink: { mode: FloatShrinkMode; minScale: number };
+  wrap: ResolvedTextWrapConfig;
   hugClosingFloats: boolean;
   inlineResourceGap: InlineResourceGap;
   inlineResourceGapInBoxes: boolean;
