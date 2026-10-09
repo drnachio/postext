@@ -692,8 +692,8 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
     <tr>
       <td><code>overflow</code></td>
       <td><code>'wrap' | 'ellipsis-start' | 'ellipsis-middle' | 'ellipsis-end' | 'clip'</code></td>
-      <td><code>'ellipsis-end'</code></td>
-      <td>要素で使える幅を超えるテキストを、エンジンがどう扱うか。<code>'wrap'</code>は行を複数行に折り返します。省略記号の各モードは各行を1行に保ち、先頭、中央、末尾のいずれかを<code>…</code>で省略します。<code>'clip'</code>は文字を挿入せずに、要素のバウンディングボックスで切り取ります。内容中の改行はどのモードでも有効で、省略と切り取りのモードは各行を個別に省略または切り取ります。<code>overflow</code>を省略した要素は<code>'ellipsis-end'</code>になるため、複数行になりうるもの（住所、長いタイトル）には<code>'wrap'</code>を指定してください。<code>dropCap</code>を持つテキストは、この値にかかわらず折り返します。<code>'clip'</code>の場合も、高さ固定のボックスの端で行は切り取られます。<code>'ellipsis-end'</code>と<code>'ellipsis-start'</code>は単語の境界で切り（<em>The history of th…</em>ではなく<em>The history of…</em>）、省略記号にスペースやつなぎの約物（コンマ、コロン、ダッシュ、スラッシュ、始め括弧）が接することはありません。単語の途中で切るのは、それが避けられない場合、つまりその約物を除いた境界で切ると収まる分の半分未満しか残らない場合だけです。長い1語やURLがこれに当たります（<em>http…</em>ではなく<em>http://exampl…</em>）。ノーブレークスペースとノーブレークハイフン（U+2011。<em>MS‑DOS</em>など）は単語の境界になりません。<code>'ellipsis-middle'</code>はどこででも切りますが、その両側のスペースは取り除きます。postext 1.4までは、どのモードもスペースを含め、収まる最後の文字で切っていました。</td>
+      <td>見出しと部のデザインでは<code>'wrap'</code>、それ以外は<code>'ellipsis-end'</code></td>
+      <td>要素で使える幅を超えるテキストを、エンジンがどう扱うか。<code>'wrap'</code>は行を複数行に折り返します。省略記号の各モードは各行を1行に保ち、先頭、中央、末尾のいずれかを<code>…</code>で省略します。<code>'clip'</code>は文字を挿入せずに、要素のバウンディングボックスで切り取ります。内容中の改行はどのモードでも有効で、省略と切り取りのモードは各行を個別に省略または切り取ります。<code>overflow</code>を省略した要素は配置先の既定値に従います。見出しのデザイン（<code>advancedDesign.slot</code>）と部扉（<code>parts.design</code>、<code>parts.versoDesign</code>）では折り返し、柱・ノンブル・目次の部の行（<code>toc.parts.design</code>、高さ固定の行）では<code>…</code>で終わります。複数行になりうる柱（住所など）には<code>'wrap'</code>を、章扉で1行に収めたいリードには省略記号を指定してください。省略記号で切り詰められた行や、<code>'clip'</code>でボックスの外にはみ出した部分を切り取られた行は、内容の警告<code>designTextTruncated</code>として要素とページごとに1回（柱とノンブルは要素と章ごとに1回）報告されます。postext 1.24より前に保存した構成（<code>configVersion</code>が9以前）は、overflowを設定していない見出しと部のテキストを<code>'ellipsis-end'</code>として読み込むので、ページは動きません。<code>dropCap</code>を持つテキストは、この値にかかわらず折り返します。<code>'clip'</code>の場合も、高さ固定のボックスの端で行は切り取られます。<code>'ellipsis-end'</code>と<code>'ellipsis-start'</code>は単語の境界で切り（<em>The history of th…</em>ではなく<em>The history of…</em>）、省略記号にスペースやつなぎの約物（コンマ、コロン、ダッシュ、スラッシュ、始め括弧）が接することはありません。単語の途中で切るのは、それが避けられない場合、つまりその約物を除いた境界で切ると収まる分の半分未満しか残らない場合だけです。長い1語やURLがこれに当たります（<em>http…</em>ではなく<em>http://exampl…</em>）。ノーブレークスペースとノーブレークハイフン（U+2011。<em>MS‑DOS</em>など）は単語の境界になりません。<code>'ellipsis-middle'</code>はどこででも切りますが、その両側のスペースは取り除きます。postext 1.4までは、どのモードもスペースを含め、収まる最後の文字で切っていました。</td>
     </tr>
     <tr>
       <td><code>verticalAlign</code></td>
@@ -914,7 +914,7 @@ PDFでは、太字とイタリックのランに要素のファミリーの対�
 
 自分で書いたテキスト要素は次の値から始まります。意外に思えるものもあります。
 
-- **`overflow`は`'ellipsis-end'`**。幅に収まらないテキストは`…`付きの1行に切り詰められます。住所、著者名の行、長くなりうるタイトルには`overflow: 'wrap'`を指定してください。内容中の改行（改行文字、またはテンプレートや属性値に書いた`\n`）はどのモードでも新しい行を始め、省略記号のモードは各行を個別に切り詰めます。
+- **`overflow`は配置先で決まる**。見出しのデザインと部扉では長い題が複数行に折り返し、柱・ノンブル・目次の部の行では幅に収まらないテキストが`…`付きの1行に切り詰められます。長くなりうる柱（住所、著者名の行）には`overflow: 'wrap'`を指定し、切り詰められたテキストについては`designTextTruncated`警告を確認してください。内容中の改行（改行文字、またはテンプレートや属性値に書いた`\n`）はどのモードでも新しい行を始め、省略記号のモードは各行を個別に切り詰めます。
 - **`align`は`'center'`、`verticalAlign`は`'middle'`**。自動幅の要素は最も長い行に合わせて縮むため、各行は互いに中央そろえになります。左そろえのブロックにするには`align: 'left'`を指定します（別の要素にアンカーした自動幅の要素は、アンカー側に自動的に行をそろえます。前述）。
 - **書体はEB Garamond 8 pt、黒、`lineHeight`は1.2**。本文が何を使っていても変わりません。設定内のほかの行送りと異なり、デザインのテキストの`lineHeight`は通常は単純な倍数（`1.2`）で書きます。`Dimension`も使えます（前述）。
 

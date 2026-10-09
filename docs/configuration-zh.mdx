@@ -690,8 +690,8 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
     <tr>
       <td><code>overflow</code></td>
       <td><code>'wrap' | 'ellipsis-start' | 'ellipsis-middle' | 'ellipsis-end' | 'clip'</code></td>
-      <td><code>'ellipsis-end'</code></td>
-      <td>文本超出元素可用宽度时引擎如何处理。<code>'wrap'</code>把一行折成多行；几种省略号模式让每行保持为一行，并在开头、中间或末尾用<code>…</code>截断；<code>'clip'</code>在元素的外框处硬性裁掉，不插入任何字符。内容中的换行在所有模式下都有效：省略号模式和裁切模式各自截断或裁切每一行。省略<code>overflow</code>的元素取<code>'ellipsis-end'</code>，所以凡是可能排成多行的内容（地址、长标题）都要设为<code>'wrap'</code>。带<code>dropCap</code>的文本无论这里怎么设都会折行；设为<code>'clip'</code>时，它的行仍会在固定高度方框的边缘被裁掉。<code>'ellipsis-end'</code>和<code>'ellipsis-start'</code>在词的边界处截断，得到<em>The history of…</em>，而不是<em>The history of th…</em>；省略号旁边不会紧挨空格或连接性标点（逗号、冒号、破折号、斜杠、左括号）。只有当在词边界截断（去掉这些标点后）保留的内容不到可容纳内容的一半时，才会在词中间截断：一个很长的词，或一个URL（<em>http://exampl…</em>，而不是<em>http…</em>）。不换行空格或不换行连字符（U+2011，如<em>MS‑DOS</em>）不算词边界；<code>'ellipsis-middle'</code>可以在任意位置截断，但会去掉两侧的空格。postext 1.4及更早版本中，所有模式都在最后一个放得下的字符处截断，空格也算在内。</td>
+      <td>标题版式和篇章版式中为<code>'wrap'</code>，其余为<code>'ellipsis-end'</code></td>
+      <td>文本超出元素可用宽度时引擎如何处理。<code>'wrap'</code>把一行折成多行；几种省略号模式让每行保持为一行，并在开头、中间或末尾用<code>…</code>截断；<code>'clip'</code>在元素的外框处硬性裁掉，不插入任何字符。内容中的换行在所有模式下都有效：省略号模式和裁切模式各自截断或裁切每一行。省略<code>overflow</code>的元素取所在位置的默认值：在标题版式（<code>advancedDesign.slot</code>）或篇章页（<code>parts.design</code>、<code>parts.versoDesign</code>）中换行，在书眉、页码或目录的篇行（<code>toc.parts.design</code>，行高固定）中以<code>…</code>截断。可能排成多行的书眉（如地址）要设为<code>'wrap'</code>，章首里必须保持一行的引题则设为省略号。被省略号截断、或在<code>'clip'</code>下墨迹超出框的行，会作为<code>designTextTruncated</code>内容警告报告，每个元素每页一次（书眉和页码每个元素每章一次）。postext 1.24之前保存的配置（<code>configVersion</code>为9或更早）读取时，未设置overflow的标题和篇章文字都按<code>'ellipsis-end'</code>处理，页面不会移动。带<code>dropCap</code>的文本无论这里怎么设都会折行；设为<code>'clip'</code>时，它的行仍会在固定高度方框的边缘被裁掉。<code>'ellipsis-end'</code>和<code>'ellipsis-start'</code>在词的边界处截断，得到<em>The history of…</em>，而不是<em>The history of th…</em>；省略号旁边不会紧挨空格或连接性标点（逗号、冒号、破折号、斜杠、左括号）。只有当在词边界截断（去掉这些标点后）保留的内容不到可容纳内容的一半时，才会在词中间截断：一个很长的词，或一个URL（<em>http://exampl…</em>，而不是<em>http…</em>）。不换行空格或不换行连字符（U+2011，如<em>MS‑DOS</em>）不算词边界；<code>'ellipsis-middle'</code>可以在任意位置截断，但会去掉两侧的空格。postext 1.4及更早版本中，所有模式都在最后一个放得下的字符处截断，空格也算在内。</td>
     </tr>
     <tr>
       <td><code>verticalAlign</code></td>
@@ -912,7 +912,7 @@ header: {
 
 你自己写的文本元素从以下取值开始，其中有些会出乎意料：
 
-- **`overflow`为`'ellipsis-end'`。** 对所在空间来说太宽的文本会被截成一行并加上`…`。地址、署名或任何可能较长的标题，都要设`overflow: 'wrap'`。内容中的换行（换行符，或模板、属性值中的`\n`）在所有模式下都会另起一行；省略号模式各自截断每一行。
+- **`overflow`取决于所在位置。** 在标题版式或篇章页中，长标题会折成多行；在书眉、页码或目录的篇行中，对所在空间来说太宽的文本会被截成一行并加上`…`。可能较长的书眉（地址、署名）要设`overflow: 'wrap'`，并查看被截断文字的`designTextTruncated`警告。内容中的换行（换行符，或模板、属性值中的`\n`）在所有模式下都会另起一行；省略号模式各自截断每一行。
 - **`align`为`'center'`，`verticalAlign`为`'middle'`。** 自动宽度的元素收缩到最长的一行，所以各行彼此居中；要排成齐左的一块，设`align: 'left'`（锚定到另一个元素的自动宽度元素会自行向锚点一侧对齐各行，见上文）。
 - **字体为EB Garamond 8 pt、黑色、`lineHeight` 1.2**，与正文用什么字体无关。与配置中的其他行距不同，设计文本的`lineHeight`通常写成一个简单的倍数（`1.2`）；`Dimension`也可以（见上文）。
 
