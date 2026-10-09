@@ -445,3 +445,31 @@ describe('text wrap in CJK and vertical text (#627)', () => {
     expect(misspelt.configWarnings?.find((w) => w.kind === 'unknownConfigValue')?.suggestion).toBe('right');
   });
 });
+
+describe('renderers paint the lines beside a wrapped picture at their measure (#627)', () => {
+  it('canvas: a justified line beside the picture ends at its span, one below it at the column', async () => {
+    const { renderPageToCanvas } = await import('../../index');
+    const doc = build(`::resource{id="fig"}\n\n${para(8)}`, [figure({ wrap: 'right', width: 0.4 })]);
+    const p = doc.blocks.find((b) => b.type === 'paragraph')!;
+    const painted: { text: string; x: number; y: number }[] = [];
+    const target: Record<string, unknown> = {};
+    const ctx = new Proxy(target, {
+      get(t, key) {
+        if (key === 'measureText') return (s: string) => ({ width: s.length * 7 });
+        if (key === 'fillText') return (text: string, x: number, y: number) => { painted.push({ text, x, y }); };
+        if (typeof key === 'string' && key in t) return t[key];
+        return () => undefined;
+      },
+      set(t, key, value) { t[key as string] = value; return true; },
+    });
+    renderPageToCanvas(doc.pages[0]!, doc, { width: 0, height: 0, getContext: () => ctx } as unknown as HTMLCanvasElement);
+    const rightEdge = (line: VDTLine): number => {
+      const runs = painted.filter((r) => Math.abs(r.y - line.baseline) < 0.01);
+      return Math.max(...runs.map((r) => r.x + r.text.length * 7));
+    };
+    const beside = p.lines.find((l, i) => l.measure && i > 0 && !l.isLastLine)!;
+    expect(rightEdge(beside)).toBeCloseTo(beside.measure!.x + beside.measure!.width, 0);
+    const below = p.lines.find((l) => !l.measure && !l.isLastLine)!;
+    expect(rightEdge(below)).toBeCloseTo(LEFT + MEASURE, 0);
+  });
+});
