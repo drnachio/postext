@@ -1734,13 +1734,13 @@
       "pt": "Boxe transborda a coluna"
     },
     "cause": {
-      "en": "A box that no cut can split (a figure, table or :::columns group taller than the column, or too high splitMinLines) was placed overflowing; the engine records it in doc.warnings and the Sandbox lists it.",
-      "es": "Una caja que ningún corte puede partir (una figura, una tabla o un grupo :::columns más alto que la columna, o un splitMinLines demasiado alto) se colocó desbordada; el motor lo anota en doc.warnings y el Sandbox lo muestra.",
-      "ca": "Una caixa que cap tall no pot partir (una figura, una taula o un grup :::columns més alt que la columna, o un splitMinLines massa alt) s'ha col·locat desbordada; el motor ho anota a doc.warnings i el Sandbox ho mostra.",
-      "zh": "某个无法在任何位置切开的框（比栏还高的图、表或:::columns组，或splitMinLines设得太高）被放置后溢出；引擎把它记在doc.warnings中，沙盒会列出它。",
-      "ar": "صندوق لا يمكن لأي قطع أن يقسمه (شكل أو جدول أو مجموعة :::columns أطول من العمود، أو قيمة splitMinLines مرتفعة جدًّا) وُضع فائضًا؛ يسجّله المحرّك في doc.warnings ويعرضه Sandbox في قائمته.",
-      "ja": "どこでも分割できないボックス（段より高い図、表、:::columnsグループ、または大きすぎるsplitMinLines）が、はみ出した状態で配置されました。エンジンはこれをdoc.warningsに記録し、Sandboxが一覧に表示します。",
-      "pt": "Uma caixa que nenhum corte consegue dividir (uma figura, uma tabela ou um grupo :::columns mais alto que a coluna, ou um splitMinLines alto demais) foi colocada transbordando; o motor registra isso em doc.warnings e o Sandbox mostra na lista."
+      "en": "A box that no cut can split (a figure, table or :::columns group taller than the column, or too high splitMinLines) was placed overflowing; the engine records it in doc.warnings and the Sandbox lists it. A span: 'side' box taller than an empty side column is placed overflowing too.",
+      "es": "Una caja que ningún corte puede partir (una figura, una tabla o un grupo :::columns más alto que la columna, o un splitMinLines demasiado alto) se colocó desbordada; el motor lo anota en doc.warnings y el Sandbox lo muestra. Un recuadro con span: 'side' más alto que una columna lateral vacía también se coloca desbordado.",
+      "ca": "Una caixa que cap tall no pot partir (una figura, una taula o un grup :::columns més alt que la columna, o un splitMinLines massa alt) s'ha col·locat desbordada; el motor ho anota a doc.warnings i el Sandbox ho mostra. Un requadre amb span: 'side' més alt que una columna lateral buida també es col·loca desbordat.",
+      "zh": "某个无法在任何位置切开的框（比栏还高的图、表或:::columns组，或splitMinLines设得太高）被放置后溢出；引擎把它记在doc.warnings中，沙盒会列出它。比空边栏还高的span: 'side'框同样会溢出放置。",
+      "ar": "صندوق لا يمكن لأي قطع أن يقسمه (شكل أو جدول أو مجموعة :::columns أطول من العمود، أو قيمة splitMinLines مرتفعة جدًّا) وُضع فائضًا؛ يسجّله المحرّك في doc.warnings ويعرضه Sandbox في قائمته. وكذلك يوضع فائضًا إطار span: 'side' أطول من عمود جانبي فارغ.",
+      "ja": "どこでも分割できないボックス（段より高い図、表、:::columnsグループ、または大きすぎるsplitMinLines）が、はみ出した状態で配置されました。エンジンはこれをdoc.warningsに記録し、Sandboxが一覧に表示します。空のサイド段より高いspan: 'side'の囲みも、はみ出した状態で配置されます。",
+      "pt": "Uma caixa que nenhum corte consegue dividir (uma figura, uma tabela ou um grupo :::columns mais alto que a coluna, ou um splitMinLines alto demais) foi colocada transbordando; o motor registra isso em doc.warnings e o Sandbox mostra na lista. Um boxe com span: 'side' mais alto que uma coluna lateral vazia também é colocado transbordando."
     },
     "fix": {
       "en": "Shorten the box, let it split with keepTogether: false, lower splitMinLines, or give it another span.",
@@ -4455,6 +4455,90 @@
         "ar": "`:::columns`",
         "ja": "`:::columns`",
         "pt": "`:::columns`"
+      }
+    }
+  },
+  "afterText": {
+    "source": "engine",
+    "label": {
+      "en": "Side box after the end of the text",
+      "es": "Recuadro lateral tras el final del texto",
+      "ca": "Requadre lateral després del final del text",
+      "zh": "边栏框排在正文结束之后",
+      "ar": "إطار جانبي بعد نهاية النص",
+      "ja": "本文の終わりより後に置かれた傍注の囲み",
+      "pt": "Boxe lateral depois do fim do texto"
+    },
+    "cause": {
+      "en": "A span: 'side' box (or a figure or table of the side column) was still waiting for room in the side column when the text of its chapter, or of the document, ended. It was set in the side column of a page opened after the text, which holds no text. The boxes take such pages in the order of their fences, and a side figure cited after them stands behind them. The engine lists it in doc.contentWarnings with its page.",
+      "es": "Un recuadro con span: 'side' (o una figura o tabla de la columna lateral) seguía esperando sitio en la columna lateral cuando terminó el texto de su capítulo, o del documento. Se compuso en la columna lateral de una página abierta después del texto, que no tiene texto. Los recuadros ocupan esas páginas en el orden de sus vallas, y una figura lateral citada después de ellos queda detrás. El motor lo anota en doc.contentWarnings con su página.",
+      "ca": "Un requadre amb span: 'side' (o una figura o taula de la columna lateral) encara esperava lloc a la columna lateral quan es va acabar el text del seu capítol, o del document. Es va compondre a la columna lateral d'una pàgina oberta després del text, que no té text. Els requadres ocupen aquestes pàgines en l'ordre de les seves tanques, i una figura lateral citada després d'ells queda al darrere. El motor ho anota a doc.contentWarnings amb la seva pàgina.",
+      "zh": "某个span: 'side'的框（或边栏中的图、表）在所在章或全文的正文结束时，仍在等边栏的空位。它被排进正文之后新开页面的边栏，那一页没有正文。这些框按各自围栏的先后依次占用这样的页面，在它们之后才被引用的边栏图排在它们后面。引擎把它连同页码记在doc.contentWarnings中。",
+      "ar": "إطار span: 'side' (أو شكل أو جدول في العمود الجانبي) كان ما زال ينتظر مكانًا في العمود الجانبي حين انتهى نص فصله أو نص المستند. فوُضع في العمود الجانبي لصفحة فُتحت بعد النص، وهي صفحة بلا نص. تأخذ الإطارات هذه الصفحات بترتيب أسوارها، والشكل الجانبي المُحال إليه بعدها يقف خلفها. يسجّله المحرّك في doc.contentWarnings مع صفحته.",
+      "ja": "span: 'side'の囲み（またはサイド段の図・表）が、章または文書の本文が終わった時点でまだサイド段の空きを待っていました。そのため、本文の後に開いたページのサイド段に置かれ、そのページには本文がありません。囲みはフェンスの順にこうしたページを取り、その後で参照されたサイド段の図はそれらの後ろに置かれます。エンジンはこれをページとともにdoc.contentWarningsに記録します。",
+      "pt": "Um boxe com span: 'side' (ou uma figura ou tabela da coluna lateral) ainda esperava lugar na coluna lateral quando o texto do seu capítulo, ou do documento, terminou. Ele foi composto na coluna lateral de uma página aberta depois do texto, que não tem texto. Os boxes ocupam essas páginas na ordem dos seus delimitadores, e uma figura lateral citada depois deles fica atrás. O motor registra isso em doc.contentWarnings com a sua página."
+    },
+    "fix": {
+      "en": "Fence the box earlier, beside a paragraph whose page still has room in the side column, or shorten it so that it shares the column with the boxes before it. A box that does not fit its page's side column waits for the next page: count what each page's side column holds when a chapter is short.",
+      "es": "Pon la valla del recuadro antes, junto a un párrafo cuya página aún tenga sitio en la columna lateral, o acórtalo para que comparta la columna con los recuadros anteriores. Un recuadro que no cabe en la columna lateral de su página espera a la siguiente: cuenta lo que cabe en la columna lateral de cada página cuando el capítulo es corto.",
+      "ca": "Posa la tanca del requadre abans, al costat d'un paràgraf la pàgina del qual encara tingui lloc a la columna lateral, o escurça'l perquè comparteixi la columna amb els requadres anteriors. Un requadre que no cap a la columna lateral de la seva pàgina espera la següent: compta què cap a la columna lateral de cada pàgina quan el capítol és curt.",
+      "zh": "把这个框的围栏往前移，放在所在页边栏还有空位的段落旁边，或者把它缩短，让它和前面的框共用一栏。放不进本页边栏的框会等到下一页：章节较短时，请数一数每页边栏能放下多少。",
+      "ar": "قدّم سور الإطار ليكون بجانب فقرة ما زال في العمود الجانبي لصفحتها مكان، أو قصّره ليشارك الإطارات التي قبله العمود. الإطار الذي لا يتسع له العمود الجانبي لصفحته ينتظر الصفحة التالية: احسب ما يتسع له العمود الجانبي في كل صفحة حين يكون الفصل قصيرًا.",
+      "ja": "囲みのフェンスをもっと前、サイド段にまだ空きのあるページの段落の横に置くか、短くして前の囲みと同じ段に収めてください。そのページのサイド段に入らない囲みは次のページを待ちます。章が短いときは、各ページのサイド段に入る量を数えてください。",
+      "pt": "Coloque o delimitador do boxe antes, ao lado de um parágrafo cuja página ainda tenha lugar na coluna lateral, ou encurte-o para que divida a coluna com os boxes anteriores. Um boxe que não cabe na coluna lateral da sua página espera a seguinte: conte o que cabe na coluna lateral de cada página quando o capítulo é curto."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación",
+        "ca": "Col·locació",
+        "zh": "位置",
+        "ar": "الموضع",
+        "ja": "配置",
+        "pt": "Posicionamento"
+      }
+    }
+  },
+  "unplaced": {
+    "source": "engine",
+    "label": {
+      "en": "Not on any page",
+      "es": "No está en ninguna página",
+      "ca": "No és a cap pàgina",
+      "zh": "未排入任何页面",
+      "ar": "ليس في أي صفحة",
+      "ja": "どのページにも置かれていません",
+      "pt": "Não está em nenhuma página"
+    },
+    "cause": {
+      "en": "A box or a floated resource was still waiting for a slot when the layout ended, so it is on no page: the pages opened for it could not take it. A span: 'side' box waiting for a side column is the usual case, when the pages after its fence belong to a section laid out without one. Up to postext 1.24 such content dropped out of the layout without a warning. The engine lists it in doc.contentWarnings with its source range and no page.",
+      "es": "Un recuadro o un recurso flotante seguía esperando un hueco cuando terminó la composición, así que no está en ninguna página: las páginas abiertas para él no pudieron acogerlo. El caso habitual es un recuadro con span: 'side' que espera una columna lateral cuando las páginas posteriores a su valla son de una sección compuesta sin ella. Hasta postext 1.24 ese contenido desaparecía de la composición sin aviso. El motor lo anota en doc.contentWarnings con su rango en la fuente y sin página.",
+      "ca": "Un requadre o un recurs flotant encara esperava un espai quan es va acabar la composició, de manera que no és a cap pàgina: les pàgines obertes per a ell no el van poder acollir. El cas habitual és un requadre amb span: 'side' que espera una columna lateral quan les pàgines posteriors a la seva tanca són d'una secció composta sense. Fins a postext 1.24 aquest contingut desapareixia de la composició sense avís. El motor ho anota a doc.contentWarnings amb el seu rang a la font i sense pàgina.",
+      "zh": "排版结束时，某个框或浮动资源仍在等空位，因此不在任何页面上：为它新开的页面放不下它。常见的情形是span: 'side'的框在等边栏，而它围栏之后的页面属于一个没有边栏的小节。在postext 1.24及以前，这样的内容会无声无息地从版面中消失。引擎把它记在doc.contentWarnings中，带源码范围，不带页码。",
+      "ar": "إطار أو مورد عائم كان ما زال ينتظر موضعًا حين انتهى التنضيد، فليس في أي صفحة: الصفحات التي فُتحت له لم تتسع له. والحالة المعتادة إطار span: 'side' ينتظر عمودًا جانبيًا والصفحات التي بعد سوره تتبع قسمًا مضبوطًا بلا عمود جانبي. حتى postext 1.24 كان هذا المحتوى يسقط من التنضيد بلا تنبيه. يسجّله المحرّك في doc.contentWarnings مع موضعه في المصدر وبلا صفحة.",
+      "ja": "組版が終わった時点で、囲みまたはフロートのリソースがまだ空きを待っていたため、どのページにもありません。そのために開いたページには置けませんでした。よくあるのは、span: 'side'の囲みがサイド段を待っているのに、フェンスより後のページがサイド段のないセクションに属している場合です。postext 1.24までは、こうした内容は警告なしに版面から消えていました。エンジンはこれをソース範囲つき、ページなしでdoc.contentWarningsに記録します。",
+      "pt": "Um boxe ou um recurso flutuante ainda esperava um espaço quando a diagramação terminou, por isso não está em nenhuma página: as páginas abertas para ele não o comportaram. O caso comum é um boxe com span: 'side' que espera uma coluna lateral quando as páginas depois do seu delimitador são de uma seção composta sem ela. Até o postext 1.24 esse conteúdo sumia da diagramação sem aviso. O motor registra isso em doc.contentWarnings com o seu intervalo na fonte e sem página."
+    },
+    "fix": {
+      "en": "Give it a span its pages have (span: 'column' in a section with no side column), fence it where its own section still has the side column, or give the section a layout with one.",
+      "es": "Dale un span que sus páginas tengan (span: 'column' en una sección sin columna lateral), pon su valla donde su sección aún tenga columna lateral o da a la sección un layout que la tenga.",
+      "ca": "Dona-li un span que les seves pàgines tinguin (span: 'column' en una secció sense columna lateral), posa'n la tanca on la seva secció encara tingui columna lateral o dona a la secció un layout que en tingui.",
+      "zh": "给它一个页面上有的span（在没有边栏的小节里用span: 'column'），把它的围栏放在所属小节还有边栏的地方，或者给该小节设一个带边栏的layout。",
+      "ar": "أعطِه امتدادًا تملكه صفحاته (span: 'column' في قسم بلا عمود جانبي)، أو ضع سوره حيث ما زال لقسمه عمود جانبي، أو أعطِ القسم layout فيه عمود جانبي.",
+      "ja": "そのページにあるspanを指定する（サイド段のないセクションではspan: 'column'）、セクションにまだサイド段があるところにフェンスを置く、またはセクションにサイド段のあるlayoutを与えてください。",
+      "pt": "Dê a ele um span que as suas páginas tenham (span: 'column' numa seção sem coluna lateral), coloque o seu delimitador onde a sua seção ainda tem coluna lateral ou dê à seção um layout que a tenha."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación",
+        "ca": "Col·locació",
+        "zh": "位置",
+        "ar": "الموضع",
+        "ja": "配置",
+        "pt": "Posicionamento"
       }
     }
   }

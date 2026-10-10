@@ -767,13 +767,13 @@
       "pt": "Boxes laterais nunca flutuam: esperam espaço"
     },
     "body": {
-      "en": "A span: 'side' box does not float: it sits beside the block it follows and, when the margin channel is full, waits for the next page. Put each gloss right after the paragraph it explains.",
-      "es": "Un recuadro con span: 'side' no flota: se coloca junto al bloque al que sigue y, si el canal del margen está lleno, espera a la página siguiente. Pon cada glosa justo después del párrafo que explica.",
-      "ca": "Un requadre amb span: 'side' no flota: es col·loca al costat del bloc al qual segueix i, si el canal del marge és ple, espera la pàgina següent. Posa cada glossa just després del paràgraf que explica.",
-      "zh": "span: 'side'的框不浮动：它排在所跟随的块旁边，页边的通道满了就等到下一页。把每条旁注紧跟在它解释的段落后面。",
-      "ar": "الإطار span: 'side' لا يطفو: يقف بجانب الكتلة التي يتبعها، وإذا امتلأت قناة الهامش انتظر الصفحة التالية. ضع كل حاشية جانبية بعد الفقرة التي تشرحها مباشرةً.",
-      "ja": "span: 'side'の囲みはフロートしません。直前のブロックの横に置かれ、サイド段が埋まっているときは次のページまで待ちます。注釈はそれぞれ、説明する段落の直後に置いてください。",
-      "pt": "Um boxe com span: 'side' não flutua: fica ao lado do bloco que ele segue e, quando o canal da margem está cheio, espera a página seguinte. Coloque cada glosa logo depois do parágrafo que ela explica."
+      "en": "A span: 'side' box does not float: it sits beside the block it follows and, when the margin channel is full, waits for the next page. Put each gloss right after the paragraph it explains. When the chapter ends with boxes still waiting, each takes the side column of a page after the text, in fence order, and the build reports it (afterText); up to postext 1.24 only one such page was opened and the boxes left were dropped without a warning.",
+      "es": "Un recuadro con span: 'side' no flota: se coloca junto al bloque al que sigue y, si el canal del margen está lleno, espera a la página siguiente. Pon cada glosa justo después del párrafo que explica. Si el capítulo termina con recuadros aún en espera, cada uno ocupa la columna lateral de una página posterior al texto, en el orden de sus vallas, y la composición lo avisa (afterText); hasta postext 1.24 solo se abría una de esas páginas y los recuadros restantes se perdían sin aviso.",
+      "ca": "Un requadre amb span: 'side' no flota: es col·loca al costat del bloc al qual segueix i, si el canal del marge és ple, espera la pàgina següent. Posa cada glossa just després del paràgraf que explica. Si el capítol s'acaba amb requadres encara en espera, cadascun ocupa la columna lateral d'una pàgina posterior al text, en l'ordre de les seves tanques, i la composició ho avisa (afterText); fins a postext 1.24 només s'obria una d'aquestes pàgines i els requadres restants es perdien sense avís.",
+      "zh": "span: 'side'的框不浮动：它排在所跟随的块旁边，页边的通道满了就等到下一页。把每条旁注紧跟在它解释的段落后面。如果一章结束时还有框在等，每个框依围栏的先后占用正文之后页面的边栏，排版会给出afterText警告；在postext 1.24及以前，只会开出一页，其余的框无声无息地丢失。",
+      "ar": "الإطار span: 'side' لا يطفو: يقف بجانب الكتلة التي يتبعها، وإذا امتلأت قناة الهامش انتظر الصفحة التالية. ضع كل حاشية جانبية بعد الفقرة التي تشرحها مباشرةً. وإذا انتهى الفصل وما زالت إطارات تنتظر، أخذ كلٌّ منها العمود الجانبي لصفحة بعد النص، بترتيب أسوارها، ونبّه التنضيد إلى ذلك (afterText)؛ حتى postext 1.24 لم تكن تُفتح إلا صفحة واحدة من هذا النوع وتسقط الإطارات الباقية بلا تنبيه.",
+      "ja": "span: 'side'の囲みはフロートしません。直前のブロックの横に置かれ、サイド段が埋まっているときは次のページまで待ちます。注釈はそれぞれ、説明する段落の直後に置いてください。囲みが待ったまま章が終わると、それぞれがフェンスの順に本文の後のページのサイド段に置かれ、ビルドがafterTextで知らせます。postext 1.24までは、そうしたページは1ページしか開かれず、残りの囲みは警告なしに失われていました。",
+      "pt": "Um boxe com span: 'side' não flutua: fica ao lado do bloco que ele segue e, quando o canal da margem está cheio, espera a página seguinte. Coloque cada glosa logo depois do parágrafo que ela explica. Quando o capítulo termina com boxes ainda à espera, cada um ocupa a coluna lateral de uma página depois do texto, na ordem dos seus delimitadores, e a diagramação avisa (afterText); até o postext 1.24 só uma dessas páginas era aberta e os boxes restantes sumiam sem aviso."
     },
     "feature": "side-boxes"
   },
