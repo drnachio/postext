@@ -3637,6 +3637,8 @@
     "boxChildSplitMinLinesTooltip": "When a box splits inside a paragraph or list item, the cut leaves at least this many lines of it on each side; a box style that keeps fewer lines on each side of a split sets the limit instead. 1 lets a cut leave a single line, as postext 1.4 did. Books saved before 1.5 whose chapters hold a box are read with 1.",
     "flowColumns": "Columns in the text, and groups that split",
     "flowColumnsTooltip": "A :::columns group outside a box sets its blocks in columns of its own, inside the text column or across the page with span=\"page\"; a group that does not fit, in a box or in the text, goes on in the next column or page. Off: the group works only inside a box and is never cut, as up to postext 1.24. Books saved before 1.25 that hold a :::columns group are read with it off.",
+    "floatsUnderOpener": "Floats under a page-wide heading, from the first column",
+    "floatsUnderOpenerTooltip": "Under a heading set across the page over two or more text columns, a top or automatic float fenced or embedded right after it takes the head of the first column, under the heading and level with the heads of the other columns; one across several columns starts there too. Off: the first column offers no slot there and such a float lands from the second column on, as up to postext 1.24. Books saved before 1.25 that set a page-wide heading are read with it off.",
     "pageGroupSize": "Size",
     "pageGroupMargins": "Margins",
     "pageGroupMarginsDescription": "White space around the text. Point at a field to see it on the drawing.",

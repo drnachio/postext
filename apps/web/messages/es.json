@@ -3637,6 +3637,8 @@
     "boxChildSplitMinLinesTooltip": "Cuando un recuadro se parte dentro de un párrafo o de un ítem de lista, el corte deja al menos estas líneas suyas a cada lado; si el estilo del recuadro conserva menos líneas a cada lado del corte, manda ese valor. Con 1, el corte puede dejar una línea sola, como hacía postext 1.4. Los libros guardados antes de la 1.5 que tienen recuadros se leen con 1.",
     "flowColumns": "Columnas en el texto y grupos que se parten",
     "flowColumnsTooltip": "Un grupo :::columns fuera de un recuadro reparte sus bloques en columnas propias, dentro de la columna de texto o a lo ancho de la página con span=\"page\"; un grupo que no cabe, en un recuadro o en el texto, sigue en la columna o página siguiente. Desactivado: el grupo solo funciona dentro de un recuadro y nunca se corta, como hasta postext 1.24. Los libros guardados antes de la 1.25 que tienen un grupo :::columns se leen con él desactivado.",
+    "floatsUnderOpener": "Flotantes bajo un encabezado a toda página, desde la primera columna",
+    "floatsUnderOpenerTooltip": "Bajo un encabezado compuesto a lo ancho de la página sobre dos o más columnas de texto, un flotante arriba o automático puesto justo después ocupa la cabeza de la primera columna, bajo el encabezado y a la altura de las cabezas de las demás columnas; uno de varias columnas también empieza ahí. Desactivado: la primera columna no ofrece ese hueco y el flotante cae a partir de la segunda, como hasta postext 1.24. Los libros guardados antes de la 1.25 que tienen un encabezado a toda página se leen con él desactivado.",
     "pageGroupSize": "Tamaño",
     "pageGroupMargins": "Márgenes",
     "pageGroupMarginsDescription": "Blanco alrededor del texto. Señala un campo para verlo en el dibujo.",

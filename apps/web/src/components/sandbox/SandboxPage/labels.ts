@@ -3019,6 +3019,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     boxChildSplitMinLinesTooltip: t("boxChildSplitMinLinesTooltip"),
     flowColumns: t("flowColumns"),
     flowColumnsTooltip: t("flowColumnsTooltip"),
+    floatsUnderOpener: t("floatsUnderOpener"),
+    floatsUnderOpenerTooltip: t("floatsUnderOpenerTooltip"),
     pageGroupSize: t("pageGroupSize"),
     pageGroupMargins: t("pageGroupMargins"),
     pageGroupMarginsDescription: t("pageGroupMarginsDescription"),

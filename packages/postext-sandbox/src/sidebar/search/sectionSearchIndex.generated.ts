@@ -133,6 +133,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'floatShrinkTooltip',
       'floatsAtCitingPage',
       'floatsAtCitingPageTooltip',
+      'floatsUnderOpener',
+      'floatsUnderOpenerTooltip',
       'flowColumns',
       'flowColumnsTooltip',
       'gutterWidth',

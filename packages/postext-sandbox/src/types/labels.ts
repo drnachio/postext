@@ -3114,6 +3114,8 @@ export interface SandboxLabels {
   boxChildSplitMinLinesTooltip: string;
   flowColumns: string;
   flowColumnsTooltip: string;
+  floatsUnderOpener: string;
+  floatsUnderOpenerTooltip: string;
   pageGroupSize: string;
   pageGroupMargins: string;
   pageGroupMarginsDescription: string;

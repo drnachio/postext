@@ -387,6 +387,16 @@ export const LayoutSection = memo(function LayoutSection() {
         isDefault={layout.maxTopFraction === D.maxTopFraction}
         onReset={() => resetField('maxTopFraction')}
       />
+      {/* The head of a page-span opener's own column as a float slot
+          (#639). */}
+      <ToggleSwitch
+        label={labels.floatsUnderOpener}
+        checked={layout.floatsUnderOpener}
+        onChange={(v) => updateLayout({ floatsUnderOpener: v })}
+        tooltip={labels.floatsUnderOpenerTooltip}
+        isDefault={layout.floatsUnderOpener === D.floatsUnderOpener}
+        onReset={() => resetField('floatsUnderOpener')}
+      />
       {/* Text wrap round pictures and boxes (#627): the defaults a
           resource, a resource type or a box may set aside. */}
       <DimensionInput

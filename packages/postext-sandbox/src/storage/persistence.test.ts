@@ -228,6 +228,11 @@ describe('working configuration', () => {
     // tables move whole and its :::columns fences are read as 1.24 read
     // them (#634).
     expect(configFromExport({ ...legacy, configVersion: 10 })).toMatchObject({ headings: { fontFamily: 'Georgia' }, tableStyle: { splitInline: false }, layout: { flowColumns: false }, cjk: { titleMinChars: 1, circledNumbers: 'western', composeDesignText: false } });
+    // And, with a page-span heading, the slots 1.24 offered a float under
+    // an opener (#639).
+    const opener = { ...legacy, config: { headings: { levels: [{ level: 1, span: 'page' as const }] } } };
+    expect(configFromExport({ ...opener, configVersion: 10 })).toMatchObject({ layout: { floatsUnderOpener: false } });
+    expect(configFromExport({ ...opener, configVersion: 11 })).toEqual(opener.config);
     // Exports carry the version since 1.5, and read back as they are.
     expect(configFromExport({ ...legacy, configVersion: 11 })).toEqual({ headings: { fontFamily: 'Georgia' } });
     expect(configFromExport({ ...styled, configVersion: 11 })).toEqual({ paragraphStyles: [{ id: 'verse' }] });
