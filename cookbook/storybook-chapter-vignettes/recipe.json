@@ -41,15 +41,7 @@
   ],
   "gaps": [],
   "gotchas": [
-    "opener-image-no-reserve",
-    "opener-clipped-at-top",
-    "attr-values",
-    "quote-frontmatter",
-    "headings-drop-h1-break",
-    "palette-skips-designs",
-    "design-lineheight-multiple",
-    "overflow-ellipsis-default",
-    "hyphenation-locales"
+    "attr-values"
   ],
   "explainsWarnings": [],
   "related": [
@@ -57,53 +49,7 @@
     "spanish-pocket-novel",
     "chapter-opener-bleed-band"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-90",
-      "package": "postext",
-      "note": "the chapter line is placed VIGNETTE.height + 6 mm below the top of the container and the summary hangs from it, so neither is anchored below #vignette. An image element reserves no height, and texts anchored to it are measured without the picture above them: without minHeight, chapter I's text would start 62 mm from the top of the page, inside the drawing (gotcha opener-image-no-reserve)"
-    },
-    {
-      "followup": "EF-113",
-      "package": "postext",
-      "note": "the frontispiece style sets span: 'page' in a one-column book: kept in its column, the sky field anchored to the page is cut at the 22 mm top margin (gotcha opener-clipped-at-top)"
-    },
-    {
-      "followup": "EF-153",
-      "package": "postext",
-      "note": "centred tracked labels (the title page's kicker and author, the running heads, the chapter line) move right by half their tracking, trail(), because 1.4.1 counts the tracking after the last letter when it centres a design text"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "headings.levels[0].breakBefore is restated with parity 'any': the headings object, there to name Fredericka the Great so that Open Sans is not loaded, drops the default H1 break"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside each paletteId, because 1.4.1 paints the title page, opener and folio elements from the hex; bodyText.referenceColor is set in ink although the book cites nothing, because the palette does not reach it and it would stay #295AA3 (gotcha palette-skips-designs)"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the chapter line and the summary give lineHeight as a multiple of their size (1 and 1.38), never pt(): a Dimension drops the opener's reservation, minHeight included (gotcha design-lineheight-multiple)"
-    },
-    {
-      "followup": "EF-14",
-      "package": "postext",
-      "note": "locale is 'it', the exact code of the bundled Italian patterns"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "every frontmatter value is quoted: title, subtitle and author print on the title page and in the verso running head"
-    },
-    {
-      "followup": "EF-66",
-      "package": "postext",
-      "note": "Collodi's dialogue dashes, di legno and in piedi are tied with U+00A0, which 1.4.1 holds only in paragraphs without inline marks; the one tied paragraph with an italic run (*ohi*, set on the rich path, where a no-break space can still break) was checked on the capture: its four ties fall mid-line or at the paragraph's end"
-    }
-  ],
+  "workarounds": [],
   "engine": {
     "postext": "1.25.0"
   },
