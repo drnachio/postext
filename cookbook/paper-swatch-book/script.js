@@ -112,7 +112,6 @@ const config = () => ({
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: 'Libre Caslon Display', color: col('ink'), fontWeight: 400, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
     // A :::paper fence already starts a new page, so the stock name breaks to any side.
     { level: 1, fontSize: pt(24), breakBefore: { enabled: true, parity: 'any' },
       marginTop: pt(0), marginBottom: pt(LEAD / 2), advancedDesign: card },

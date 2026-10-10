@@ -113,7 +113,7 @@ const config = () => ({
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: SANS, color: col('ink'), fontWeight: 800, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // parity 'any': a level-1 heading opens the next page, whichever side it falls on.
     { level: 1, fontSize: pt(25), breakBefore: { enabled: true, parity: 'any' } },
     { level: 2, fontSize: pt(10), lineHeight: pt(LEAD), fontWeight: 700, color: col('blue'),
       marginTop: pt(LEAD), marginBottom: pt(0) },
