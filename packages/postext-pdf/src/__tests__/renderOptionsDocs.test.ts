@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-// The option lists the configuration reference (English and Spanish) and
-// the package README give for `renderToPdf` name every field of
-// `RenderToPdfOptions`, and nothing else.
+// The option lists the configuration reference (its Programmatic usage page,
+// English and Spanish) and the package README give for `renderToPdf` name
+// every field of `RenderToPdfOptions`, and nothing else.
 
 const read = (path: string): string => fs.readFileSync(new URL(path, import.meta.url), 'utf8');
 
@@ -18,7 +18,7 @@ describe('the documented renderToPdf options', () => {
     expect(FIELDS.length).toBeGreaterThan(5);
   });
 
-  for (const doc of ['configuration-en.mdx', 'configuration-es.mdx']) {
+  for (const doc of ['configuration-programmatic-usage-en.mdx', 'configuration-programmatic-usage-es.mdx']) {
     it(`are all listed in the RenderToPdfOptions summary of ${doc}`, () => {
       const summary = /\*\*`RenderToPdfOptions`\*\* — `\{([^}]*)\}`/.exec(read(`../../../../docs/${doc}`))?.[1] ?? '';
       const listed = summary.split(',').map((f) => f.trim().replace(/\?$/, '')).filter(Boolean).sort();
