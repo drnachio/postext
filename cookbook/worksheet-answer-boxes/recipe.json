@@ -162,6 +162,10 @@
     {
       "package": "postext",
       "note": "a list number is centred 0.3 em above the text's baseline, so Baloo 2 800 numbers sat 0.6 mm high beside Andika; orderedLists.numberVerticalOffset pt(1.7) sets them on the baseline (measured within 1 px at 150 dpi)"
+    },
+    {
+      "package": "postext",
+      "note": "the foods table sits 2 mm under its question, the gap the answer boxes keep, not the line of text (6 mm) a box leaves over an embedded table by default: layout.inlineResourceGapInBoxes is false and a :::space{lines=0.33} precedes the ::resource line"
     }
   ]
 }

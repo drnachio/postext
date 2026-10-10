@@ -70,6 +70,7 @@ Completa cada frase con una palabra del banco de palabras.
 :::callout{type="card"}
 Comemos muchas partes distintas de las plantas. Traza una línea de cada alimento a la parte de la planta de la que procede.
 
+:::space{lines=0.33}
 ::resource{id="foods"}
 :::
 

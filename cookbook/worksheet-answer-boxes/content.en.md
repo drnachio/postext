@@ -70,6 +70,7 @@ Finish each sentence with a word from the word bank.
 :::callout{type="card"}
 We eat many different plant parts. Draw a line from each food to the part of the plant it comes from.
 
+:::space{lines=0.33}
 ::resource{id="foods"}
 :::
 

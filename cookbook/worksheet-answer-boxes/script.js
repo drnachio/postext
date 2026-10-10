@@ -139,7 +139,8 @@ const matchRow = (icon, food, part) => [cell('', { image: { resourceId: icon, wi
 cell(`:chip[${part}]{style="word"}`)];
 const sheetType = { id: 'sheet', name: 'Worksheet item', shortLabel: '', captionPrefix: '',
   numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal' }; // no caption, no number
-// Set 'here' in its card, a line under the question; built once FOODS exist.
+// Set 'here' in its card, built once FOODS exist. A box keeps a line of its text, 6 mm, over
+// an embedded table; with that off (see layout), a :::space{lines=0.33} sets ASK instead.
 const foods = () => ({ id: 'foods', typeId: 'sheet', kind: 'table', createdAt: 0, updatedAt: 0,
   placement: { position: 'here' }, table: { styleId: 'match', model: {
     columnWidths: [0.14, 0.25, 0.06, 0.31, 0.06, 0.18], // the widest gap: room to draw a line
@@ -152,7 +153,8 @@ const config = () => ({
   footer: { elements: [words('foot', '{title} · {subtitle} · {attr.unit} · {pageNumber}', LABEL,
     7.8, 600, at(SIDE, -11, undefined, 'bottom-left'), { ...tag, color: col('muted') })] },
   page: { width: mm(200), height: mm(260), dpi: 150, margins: { top: mm(TOP), bottom: mm(20),
-    left: mm(SIDE), right: mm(SIDE) } }, layout: { layoutType: 'single' },
+    left: mm(SIDE), right: mm(SIDE) } },
+  layout: { layoutType: 'single', inlineResourceGapInBoxes: false }, // ASK over the table
   bodyText: { fontFamily: TEXT, fontSize: pt(12), lineHeight: pt(17), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true },
