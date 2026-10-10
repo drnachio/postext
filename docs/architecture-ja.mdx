@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'アーキテクチャー',
   description: 'Postext組版エンジンの技術的なアーキテクチャー',
   lang: 'ja',
-  lastUpdated: '2026-10-04',
+  lastUpdated: '2026-10-10',
   readingTime: '38分',
   order: 2,
   plainSummary: "このページでは、Postextが内部でどう動いているかを、プログラマー向けに説明します。Postextはまず、画面に何も描かずにすべての単語の幅を測ります。そのためとても速く動き、次にすべての行、図、段をどこに置くかを決め、その計画をメモリーに保存します。何も動かなくなるまで、この作業を繰り返します。最後に、できあがったページをWebページ、canvasの画像、PDFファイルとして描きます。単語を1つ変えると、変わった部分だけをもう一度計算します。",
@@ -66,7 +66,7 @@ Reactを使ったことがあれば、中心となる仕掛けはすでにご存
     </tr>
     <tr>
       <td><strong>リソース</strong></td>
-      <td>idで本文と結び付けられる、テキスト以外の要素です。ビットマップ、SVG、表のいずれかです（<code>Resource</code>、<code>kind: 'bitmap' | 'svg' | 'table'</code>）。リソースは最初に参照された時点で種類ごとに番号が付き（図1、表2.1…）、その参照に近いページの天または地の帯にフロートとして配置されます。</td>
+      <td>idで本文と結び付けられる、テキスト以外の要素です。ビットマップ、SVG、表、動画のいずれかです（<code>Resource</code>、<code>kind: 'bitmap' | 'svg' | 'table' | 'video'</code>）。リソースは最初に参照された時点で種類ごとに番号が付き（図1、表2.1…）、その参照に近いページの天または地の帯にフロートとして配置されます。</td>
     </tr>
     <tr>
       <td><strong>注</strong></td>
@@ -110,7 +110,7 @@ Reactを使ったことがあれば、中心となる仕掛けはすでにご存
 
 ## システム構成
 
-<Illustration name="SystemArchitecture" data='{"title": "Postextのシステム構成", "desc": "拡張MarkdownとPostextConfigがパーサーに入り、パーサーが仮想文書ツリーを組み立てる。Pretextがテキストを計測する。7つのレイアウトのパスが収束ループの中でVDTを書き換える。バックエンドが最終的なVDTをHTMLまたはPDFに描画する。", "caption": "パーサー → VDT ↔ Pretext → 7つのレイアウトのパス → バックエンド → 出力。", "markdown": "拡張Markdown", "configTitle": "PostextConfig", "configSubtitle": "（段、規則、間隔）", "engine": "組版エンジン", "parser": "パーサー", "pass1": "パス1", "vdtLine1": "仮想文書ツリー", "vdtLine2": "（VDT）", "vdtAttr1": "可変、その場で書き換え", "vdtAttr2": "ページ > 段 > ブロック", "vdtAttr3": "全ノードがbboxを持つ", "vdtAttr4": "dirtyフラグで追跡", "pretext": "Pretext", "pretextSubtitle": "テキストの計測", "passesTitle": "レイアウトのパス（VDTを読んで書き換える）", "passes": [{"num": "パス2", "name": "テキストの計測（Pretextを使用）"}, {"num": "パス3", "name": "ページと段への配置"}, {"num": "パス4", "name": "リソースの配置"}, {"num": "パス5", "name": "組版の仕上げ"}, {"num": "パス6", "name": "段末そろえ"}, {"num": "パス7", "name": "垂直リズムのそろえ"}], "convergence": "収束（最大5回）", "backend": "バックエンド", "backendSubtitle": "（共通のインターフェイス）", "backendItems": ["Canvas / ブラウザー", "PDF", "サーバーサイド（予定）"], "output": "HTML / PDF", "outputSubtitle": "描画結果"}' />
+<Illustration name="SystemArchitecture" data='{"title": "Postextのシステム構成", "desc": "拡張MarkdownとPostextConfigがパーサーに入り、パーサーが仮想文書ツリーを組み立てる。Pretextがテキストを計測する。7つのレイアウトのパスが収束ループの中でVDTを書き換える。バックエンドが最終的なVDTをHTMLまたはPDFに描画する。", "caption": "パーサー → VDT ↔ Pretext → 7つのレイアウトのパス → バックエンド → 出力。", "markdown": "拡張Markdown", "configTitle": "PostextConfig", "configSubtitle": "（段、規則、間隔）", "engine": "組版エンジン", "parser": "パーサー", "pass1": "パス1", "vdtLine1": "仮想文書ツリー", "vdtLine2": "（VDT）", "vdtAttr1": "可変、その場で書き換え", "vdtAttr2": "ページ > 段 > ブロック", "vdtAttr3": "全ノードがbboxを持つ", "vdtAttr4": "dirtyフラグで追跡", "pretext": "Pretext", "pretextSubtitle": "テキストの計測", "passesTitle": "レイアウトのパス（VDTを読んで書き換える）", "passes": [{"num": "パス2", "name": "テキストの計測（Pretextを使用）"}, {"num": "パス3", "name": "ページと段への配置"}, {"num": "パス4", "name": "リソースの配置"}, {"num": "パス5", "name": "組版の仕上げ"}, {"num": "パス6", "name": "段末そろえ"}, {"num": "パス7", "name": "垂直リズムのそろえ"}], "convergence": "収束（最大5回）", "backend": "バックエンド", "backendSubtitle": "（共通のインターフェイス）", "backendItems": ["Canvas / ブラウザー", "PDF", "EPUB"], "output": "HTML / PDF", "outputSubtitle": "描画結果"}' />
 
 **コンテンツがエンジンの中でたどる道筋は次のとおりです。**
 
@@ -135,14 +135,14 @@ Reactを使ったことがあれば、中心となる仕掛けはすでにご存
 interface PostextContent {
   markdown: string;            // enriched markdown with :ref / ::resource markers
   metadata?: DocumentMetadata; // title, subtitle, author, publishDate, …
-  resources?: Resource[];      // bitmaps, SVGs, tables — referenced by id
+  resources?: Resource[];      // bitmaps, SVGs, tables, videos — referenced by id
   notes?: PostextNote[];       // not read: footnotes are written as [^id] in the markdown
 }
 
 interface Resource {
   id: string;                  // stable id, referenced by inline :refs
   typeId: string;              // ResourceType this resource belongs to ('figure', 'table', …)
-  kind: 'bitmap' | 'svg' | 'table';
+  kind: 'bitmap' | 'svg' | 'table' | 'video';
   caption?: string;            // the type prefix + number are computed, not written here
   altText?: string;
   createdAt: number;
@@ -151,15 +151,16 @@ interface Resource {
   bitmap?: { fileId: string; format: string; width: number; height: number };
   svg?: { fileId: string; width?: number; height?: number };
   table?: { model: TableModel };
+  video?: ResourceVideo;       // where it plays from; drawn on the page as its poster
   placement?: ResourcePlacement; // optional per-resource float override
   safeArea?: ResourceSafeArea;  // bitmap / svg: { x, y, width, height } in fractions, the part always shown
 }
 ```
 
 **リソース**は視覚的なデータを運びます。キャプション、代替テキスト、そして種類ごとのペイロードです。バイナリーのペイロード（ビットマップ、SVG）は帯域外に置かれます。リソースが保存するのは`fileId`だけで、レンダラーが描画時にそれを解決します（Sandboxはバイト列をIndexedDBに保存します）。表のリソースは例外で、その`TableModel`（結合とそろえを持つセルの格子）はインラインで運ばれます。バイト列ではなく、構造化されたデータだからです。
-**注**は、内容とマーカーのスタイルを運び、Markdown内のインラインの位置から参照されるものとして設計されています。まだ実装されていません。エンジンは`notes`を無視し、Markdownには注を参照する構文がありません。
+**注**はMarkdownの中に書きます。注を引用する箇所に`[^id]`のマーカーを置き、定義の`[^id]:`は独立した段落として章のどこにでも書けます。エンジンは最初に引用された順に注へ番号を付け、それぞれの注を、引用する行を含む段の下端に短い罫線をはさんで組みます。`footnotes.placement: 'chapterEnd'`を指定すると、章の最後のブロックのあとに組みます（[脚注](/ja/docs/document-format#脚注)と[設定 → 脚注](/ja/docs/configuration#脚注)を参照）。コンテンツモデルは今も`notes`配列を受け付けますが、パイプラインのどの段階もそれを読みません。
 
-この分離は意図を持った設計上の選択で、見た目以上に大きな意味があります。Markdownが受け持つのは「読む順序」と「意味の構造」です。何が先に来るか、何が見出しか、脚注がどこで参照されるか。リソースと注の配列が受け持つのは「視覚的なデータ」です。画像の寸法、キャプションの文章、注の内容。両者を分けておくことで、設定を変えるだけで同じMarkdownをまったく異なる方法でレイアウトできます。2段組みの学術論文のレイアウトと1段組みのブログ記事が、同じ原稿を共有できます。そしてエンジンは、原稿に一切手を触れずに配置を決められます。たとえば、ここに入らない画像を次の段へ送るといった判断です。
+この分離は意図を持った設計上の選択で、見た目以上に大きな意味があります。Markdownが受け持つのは「読む順序」と「意味の構造」です。何が先に来るか、何が見出しか、脚注がどこで引用され、何が書かれているか。リソースの配列が受け持つのは「視覚的なデータ」です。画像の寸法、キャプションの文章、表のセル。両者を分けておくことで、設定を変えるだけで同じMarkdownをまったく異なる方法でレイアウトできます。2段組みの学術論文のレイアウトと1段組みのブログ記事が、同じ原稿を共有できます。そしてエンジンは、原稿に一切手を触れずに配置を決められます。たとえば、ここに入らない画像を次の段へ送るといった判断です。
 
 ```typescript
 // Example: a simple article with a referenced figure
@@ -241,7 +242,7 @@ Italy by 1465 and France by 1470.
 
 ### 解析の方針
 
-解析は、パイプラインの中で意図的に最も単純にしてある段階です。Markdownが入力され、ASTに解析され、各ノードが`VDTBlock`になります。リソースの参照はIDによって`resources[]`配列と照合して解決されます（`notes[]`配列はまだ読みません。注は計画中で、実装されていません）。出力は、型と内容を持つブロックの平らなリストです。ただし、ページの割り当ても、段も、位置もありません。
+解析は、パイプラインの中で意図的に最も単純にしてある段階です。Markdownが入力され、ASTに解析され、各ノードが`VDTBlock`になります。リソースの参照はIDによって`resources[]`配列と照合して解決されます。脚注の定義（`[^id]:`で始まる段落）は流れから外され、それを引用するマーカーのためにidごとに保持されます。`notes[]`配列は読みません。出力は、型と内容を持つブロックの平らなリストです。ただし、ページの割り当ても、段も、位置もありません。
 
 目録のようなものだと考えてください。「見出しがあり、次に200語の段落、次に図の参照、次にまた段落がある」。計測はありません。位置決めもありません。レイアウトの判断は一切ありません。重い作業はパス2から始まります。
 
@@ -338,10 +339,10 @@ interface VDTLine {
   plainEnd?: number;
 }
 
-// A measured, placement-ready resource embed (bitmap / svg / table)
+// A measured, placement-ready resource embed (bitmap / svg / table / video)
 interface ResolvedResourceBlock {
   resource: Resource;
-  kind: 'bitmap' | 'svg' | 'table';
+  kind: 'bitmap' | 'svg' | 'table' | 'video';
   number: string;             // computed number, e.g. "1.7"
   captionPrefix: string;      // e.g. "Figure"
   bodyRect: BoundingBox;      // the image / table area
@@ -388,7 +389,7 @@ dirtyの追跡によって、エンジンはすでに正しく済ませた作業
 ### パス1：内容の構造化
 
 - **入力**：未処理の`PostextContent`
-- **処理**：MarkdownをASTに解析し、リソースの参照をIDによって`resources[]`と照合して解決し、最初の`VDTBlock`ノードを作ります（注、したがって`notes[]`は計画中で、まだ実装されていません）
+- **処理**：MarkdownをASTに解析し、リソースの参照をIDによって`resources[]`と照合して解決し、脚注の定義（`[^id]:`）を流れから外してマーカーに引用順の番号を付け、最初の`VDTBlock`ノードを作ります（`notes[]`は読みません）
 - **出力**：平らな`VDTBlock[]`（型と内容は持つものの、ページや段の割り当てはありません）
 - **1回だけ実行**（収束ループには含まれません）
 
@@ -469,7 +470,7 @@ const { height } = layout(prepared, columnWidth, 24); // 24px line-height
   </tbody>
 </table>
 
-- **配置の繰り延べ**：現在のページのどの枠にも入らないフロートは、流れが次に開くページを待ちます。縮小も分割もされません。章の境界では、境界より前に開かれたページへ送り出されます
+- **配置の繰り延べ**：現在のページのどの枠にも入らないフロートは、流れが次に開くページを待ちます。章の境界では、境界より前に開かれたページへ送り出されます。図版は元の大きさのままです。ただし`placement.shrink`（文書全体では`layout.floatShrink`）で認めれば、枠の空きに合わせて縮小されます。新しいページに収まらない高さの表は行の境界で分割され、見出し行を繰り返しながら次のページへ続きます（`tableStyle.overflow: 'split'`、既定値）
 - **出力**：リソースはページの帯（`page.floats`）に配置され、影響を受けた段の高さが減らされて、本文が帯を避けて流れます
 
 リソースの配置はおもしろいところです。フロートは空間を占めるだけでなく、周りの空間の形を変えるからです。参照を含むブロックが置かれると、保留中のフロートには、そのあとにある現在のページの空き枠が順に提示されます。まずその段の地、次に次の空の段の天と地です（ページ幅のフロートなら、どの段にもまだ余地があるときのページの地）。どこにも入らないものは次のページを待ち、そこでは保留中のフロートが、本文が流れ込む前に自分の帯を確保します。段は帯の間に収まるように縮み、本文は狭くなった段を途切れずに流れます。読者は、図が言及された位置の近く（ただしちょうどその位置ではない）に図を見ることになります。これはプロの組版では標準的な手法で、本ではいつも行われていることです。
@@ -533,7 +534,7 @@ const { height } = layout(prepared, columnWidth, 24); // 24px line-height
 ### パス6：段末そろえ
 
 - **入力**：組版を仕上げたVDT
-- **処理**：段の間でブロックを移動して高さの差を最小にし、各ページの段の高さをそろえます（これを切り替えるはずの`ColumnConfig.balancing`フラグは、宣言されているだけで接続されていないレガシーのオプションの1つです）
+- **処理**：段の間でブロックを移動して高さの差を最小にし、各ページの段の高さをそろえます（既定で有効です。`headings.balancing.enabled: false`で無効にできます。[設定 → 段末そろえ](/ja/docs/configuration#段末そろえ)を参照）
 - **制約**：パス5で確立したウィドウ・オーファンの規則に違反してはなりません
 - **出力**：ブロックが段の間を移動していることがあり、`dirty`としてマークされます
 
@@ -680,17 +681,17 @@ renderToEpub(docs, options): Promise<Uint8Array>;
       <td><strong>提供中</strong></td>
     </tr>
     <tr>
-      <td><strong>サーバーサイド</strong></td>
-      <td>Pretext + node-canvas</td>
-      <td>SSRやバッチ生成のためのヘッドレス描画</td>
-      <td>今後</td>
+      <td><strong>コマンドライン</strong></td>
+      <td>Skia（<code>@napi-rs/canvas</code>）上のPretext。Skiaがブラウザーのcanvasの代わりを務める</td>
+      <td>PDF、HTML、EPUBの書き出し、ページ画像、Wordを、ブラウザーなしでターミナルから実行する（<code>postext-cli</code>）</td>
+      <td><strong>提供中</strong></td>
     </tr>
   </tbody>
 </table>
 
-提供中の4つのバックエンドは、すべて同じ`VDTDocument`を受け取ります。canvasとHTMLのバックエンドを公開する`postext`と、PDFバックエンドを公開する`postext-pdf`に分かれているのは、純粋に依存関係の都合です。PDFの経路は`pdf-lib`と`@pdf-lib/fontkit`を取り込みますが、Webへの組み込みの多くではこれらは必要ありません。`postext-pdf`は、実際にPDFのバイト列を出力したいときだけインストールしてください。`postext-epub`も同じ理由で独立したパッケージになっており、必要になるのは電子書籍を作るときだけです。
+提供中の4つのバックエンドは、すべて同じ`VDTDocument`を受け取ります。canvasとHTMLのバックエンドを公開する`postext`と、PDFバックエンドを公開する`postext-pdf`に分かれているのは、純粋に依存関係の都合です。PDFの経路は`pdf-lib`と`@pdf-lib/fontkit`を取り込みますが、Webへの組み込みの多くではこれらは必要ありません。`postext-pdf`は、実際にPDFのバイト列を出力したいときだけインストールしてください。`postext-epub`も同じ理由で独立したパッケージになっており、必要になるのは電子書籍を作るときだけです。コマンドラインは5つ目のバックエンドではありません。`postext-cli`は、ブラウザーのない環境でこれらと同じ書き出しを実行します。
 
-**ブラウザー専用という制約**：フェーズ1では、レイアウトの計算はすべてクライアント側のブラウザーで行います。パイプラインはメインスレッド上（`buildDocument`）でも、専用のWeb Worker内（`postext/worker`の`createLayoutWorker`）でも実行できます。UIを持つアプリにはワーカーでの実行を推奨します。計測と収束ループをメインスレッドから外せること、`AbortSignal`による後勝ちのキャンセルに対応していること、独自の計測キャッシュと数式ラスターキャッシュを持つため再ビルドが続いても軽いままであることが理由です。組み込み方の全体は[設定 → Web Workerでレイアウトを実行する](/ja/docs/configuration#web-workerでレイアウトを実行する)を参照してください。サーバーサイドレンダリングは、意図的に後回しにしている範囲です。まずブラウザーでの体験を固め、ほかの環境への展開はそのあとにします。
+**レイアウトを実行する場所**：エンジンはテキストをcanvasで計測するので、canvasが与えられる環境ならどこでも動きます。ブラウザーでは、パイプラインはメインスレッド上（`buildDocument`）でも、専用のWeb Worker内（`postext/worker`の`createLayoutWorker`）でも実行できます。UIを持つアプリにはワーカーでの実行を推奨します。計測と収束ループをメインスレッドから外せること、`AbortSignal`による後勝ちのキャンセルに対応していること、独自の計測キャッシュと数式ラスターキャッシュを持つため再ビルドが続いても軽いままであることが理由です。組み込み方の全体は[設定 → Web Workerでレイアウトを実行する](/ja/docs/configuration#web-workerでレイアウトを実行する)を参照してください。ブラウザーの外では、[コマンドライン](/ja/docs/command-line)が、ブラウザーのcanvasの代わりにSkiaを使って同じパイプラインを実行します。そのため、ターミナルでも、スクリプトでも、ビルドサーバーでも、本は同じページに分かれます。
 
 
 ## パフォーマンス戦略
@@ -749,12 +750,11 @@ bench('layout 50-page document', () => {
 
 以下の制限はどれも意図的な選択です。エンジンはそれだけで十分に複雑であり、ほかが担うべき責任まで引き受けることは、いつまでも完成しない一番の近道になります。
 
-- **サーバーサイドレンダリング**。レイアウトはすべてブラウザーで実行されます。エンジンは（Pretextを介して）canvasのフォントメトリクスに依存しており、それにはブラウザー環境が必要です。`node-canvas`を使うサーバーサイドのバックエンドが将来加わる可能性はありますが、初期の設計には含まれていません。まずはブラウザーです。
 - **WYSIWYG編集**。Postextは組版エンジンであり、エディターではありません。コンテンツを受け取り、幾何情報を返します。カーソル管理、選択、取り消し・やり直し、入力処理といった対話的な編集画面を作ることは、まったく別の問題です。Postextはエディターの描画バックエンドにはなれますが、編集機能そのものは提供しません。
 - **CSSのcolumn-countのラッパー**。PostextはCSSの段組みレイアウトを置き換えるものであり、それを包むものではありません。配置済みの正確な幾何情報をゼロから計算します。ブラウザーの段組みアルゴリズムでは、リソースの配置、ウィドウ・オーファンの防止、段をまたぐ組版規則を制御できないからです。それこそがPostextの存在理由です。
 - **レスポンシブなブレークポイントの管理**。Postextは指定されたページサイズでレイアウトを計算します。いつレイアウトし直すか（ビューポートのリサイズ時、画面の向きの変更時など）は利用する側が決めます。Postextはブレークポイント、メディアクエリー、レスポンシブデザインの判断を管理しません。それは利用する側の仕事です。
 - **リアルタイムの共同編集**。Postextはステートレスなレイアウト計算（コンテンツを受け取り、幾何情報を返す）であり、競合解決、操作変換（operational transform）、複数ユーザーの状態把握を備えた共同編集用の文書システムではありません。
-- **フォントの読み込みや管理**。Postextは、フォントがすでに読み込まれていて計測に使える状態であることを前提にしています。フォントの読み込み、フォールバックの連鎖、フォントのサブセット化は利用する側の責任です。Postextがテキストを計測する時点でフォントが読み込まれていなければ、計測にはブラウザーの代替フォントが使われ、本来のフォントが読み込まれた時点でレイアウトは誤ったものになります。フォントは先に読み込んでください。
+- **フォントファイル**。`postext`パッケージはフォントを読み込みますが、フォントそのものは含みません。`prepareFonts`は最初のビルドの前に、設定とそのテキストが求めるすべてのフェイスを読み込み、フォントセットが用意できなかったフェイスは文書の警告に`fontFallback`として挙がります。ファイルはエンジンを組み込む側が用意します。ページの`@font-face`規則か、各フェイスの場所を答える`resolve`関数です。[設定 → レイアウトの前にフォントを読み込む](/ja/docs/configuration#レイアウトの前にフォントを読み込む)を参照してください。
 
 
 ## 付録：既存の型との対応
@@ -779,7 +779,7 @@ bench('layout 50-page document', () => {
     </tr>
     <tr>
       <td><code>Resource</code></td>
-      <td>種類を持つビットマップ／SVG／表のリソース。計測の段階で<code>ResolvedResourceBlock</code>になり、種類が<code>'resource'</code>のインラインの<code>VDTBlock</code>（配置が<code>'here'</code>の場合）か、ページの帯に置かれるフロートのどちらかになる（パス4）</td>
+      <td>種類を持つビットマップ／SVG／表／動画のリソース。計測の段階で<code>ResolvedResourceBlock</code>になり、種類が<code>'resource'</code>のインラインの<code>VDTBlock</code>（配置が<code>'here'</code>の場合）か、ページの帯に置かれるフロートのどちらかになる（パス4）</td>
     </tr>
     <tr>
       <td><code>ResourceType</code></td>

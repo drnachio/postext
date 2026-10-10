@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architecture',
   description: 'Technical architecture of the Postext layout engine',
   lang: 'en',
-  lastUpdated: '2026-10-04',
+  lastUpdated: '2026-10-10',
   readingTime: '38 min',
   order: 2,
   plainSummary: "This page explains how Postext works inside, and it is written for programmers. First, Postext measures every word without drawing anything on screen, which makes it very fast. Then it works out where every line, picture and column goes, and keeps that plan in memory. It repeats the work until nothing moves any more. Last, it draws the finished pages as a web page, a canvas image or a PDF file. When you change a word, only the parts that changed are worked out again.",
@@ -67,7 +67,7 @@ has gone fuzzy.
     </tr>
     <tr>
       <td><strong>Resource</strong></td>
-      <td>A non-text element connected to the prose by id: a bitmap, an SVG, or a table (<code>Resource</code>, with <code>kind: 'bitmap' | 'svg' | 'table'</code>). Resources are numbered per type (Figure 1, Table 2.1…) at first reference and floated to a band at the top or bottom of a page near that reference.</td>
+      <td>A non-text element connected to the prose by id: a bitmap, an SVG, a table or a video (<code>Resource</code>, with <code>kind: 'bitmap' | 'svg' | 'table' | 'video'</code>). Resources are numbered per type (Figure 1, Table 2.1…) at first reference and floated to a band at the top or bottom of a page near that reference.</td>
     </tr>
     <tr>
       <td><strong>Note</strong></td>
@@ -111,7 +111,7 @@ has gone fuzzy.
 
 ## System Architecture
 
-<Illustration name="SystemArchitecture" data='{"title": "Postext system architecture", "desc": "Enriched markdown and PostextConfig enter a parser that builds the Virtual Document Tree. Pretext measures text. Seven layout passes mutate the VDT inside a convergence loop. A backend renders the final VDT to HTML or PDF.", "caption": "Parser → VDT ↔ Pretext → seven layout passes → backend → output.", "markdown": "Enriched Markdown", "configTitle": "PostextConfig", "configSubtitle": "(columns, rules, spacing)", "engine": "Layout Engine", "parser": "Parser", "pass1": "Pass 1", "vdtLine1": "Virtual Document", "vdtLine2": "Tree (VDT)", "vdtAttr1": "mutable, in-place", "vdtAttr2": "pages > columns > blocks", "vdtAttr3": "every node has a bbox", "vdtAttr4": "dirty-flag tracking", "pretext": "Pretext", "pretextSubtitle": "text measurement", "passesTitle": "Layout Passes (read &amp; mutate the VDT)", "passes": [{"num": "Pass 2", "name": "Text Measurement (via Pretext)"}, {"num": "Pass 3", "name": "Page &amp; Column Placement"}, {"num": "Pass 4", "name": "Resource Placement"}, {"num": "Pass 5", "name": "Typographic Refinement"}, {"num": "Pass 6", "name": "Column Balancing"}, {"num": "Pass 7", "name": "Vertical Rhythm Alignment"}], "convergence": "convergence (max 5)", "backend": "Backend", "backendSubtitle": "(unified interface)", "backendItems": ["Canvas / Browser", "PDF", "Server-side (future)"], "output": "HTML / PDF", "outputSubtitle": "rendered output"}' />
+<Illustration name="SystemArchitecture" data='{"title": "Postext system architecture", "desc": "Enriched markdown and PostextConfig enter a parser that builds the Virtual Document Tree. Pretext measures text. Seven layout passes mutate the VDT inside a convergence loop. A backend renders the final VDT to HTML or PDF.", "caption": "Parser → VDT ↔ Pretext → seven layout passes → backend → output.", "markdown": "Enriched Markdown", "configTitle": "PostextConfig", "configSubtitle": "(columns, rules, spacing)", "engine": "Layout Engine", "parser": "Parser", "pass1": "Pass 1", "vdtLine1": "Virtual Document", "vdtLine2": "Tree (VDT)", "vdtAttr1": "mutable, in-place", "vdtAttr2": "pages > columns > blocks", "vdtAttr3": "every node has a bbox", "vdtAttr4": "dirty-flag tracking", "pretext": "Pretext", "pretextSubtitle": "text measurement", "passesTitle": "Layout Passes (read &amp; mutate the VDT)", "passes": [{"num": "Pass 2", "name": "Text Measurement (via Pretext)"}, {"num": "Pass 3", "name": "Page &amp; Column Placement"}, {"num": "Pass 4", "name": "Resource Placement"}, {"num": "Pass 5", "name": "Typographic Refinement"}, {"num": "Pass 6", "name": "Column Balancing"}, {"num": "Pass 7", "name": "Vertical Rhythm Alignment"}], "convergence": "convergence (max 5)", "backend": "Backend", "backendSubtitle": "(unified interface)", "backendItems": ["Canvas / Browser", "PDF", "EPUB"], "output": "HTML / PDF", "outputSubtitle": "rendered output"}' />
 
 **Here is the journey your content takes through the engine:**
 
@@ -136,14 +136,14 @@ The content model is a philosophy as much as it is a data structure. You describ
 interface PostextContent {
   markdown: string;            // enriched markdown with :ref / ::resource markers
   metadata?: DocumentMetadata; // title, subtitle, author, publishDate, …
-  resources?: Resource[];      // bitmaps, SVGs, tables — referenced by id
+  resources?: Resource[];      // bitmaps, SVGs, tables, videos — referenced by id
   notes?: PostextNote[];       // not read: footnotes are written as [^id] in the markdown
 }
 
 interface Resource {
   id: string;                  // stable id, referenced by inline :refs
   typeId: string;              // ResourceType this resource belongs to ('figure', 'table', …)
-  kind: 'bitmap' | 'svg' | 'table';
+  kind: 'bitmap' | 'svg' | 'table' | 'video';
   caption?: string;            // the type prefix + number are computed, not written here
   altText?: string;
   createdAt: number;
@@ -152,15 +152,16 @@ interface Resource {
   bitmap?: { fileId: string; format: string; width: number; height: number };
   svg?: { fileId: string; width?: number; height?: number };
   table?: { model: TableModel };
+  video?: ResourceVideo;       // where it plays from; drawn on the page as its poster
   placement?: ResourcePlacement; // optional per-resource float override
   safeArea?: ResourceSafeArea;  // bitmap / svg: { x, y, width, height } in fractions, the part always shown
 }
 ```
 
 **Resources** carry the visual data: captions, alt text, and a kind-specific payload. Binary payloads (bitmaps, SVGs) live *out-of-band* — the resource only stores a `fileId`, and the renderer resolves it at draw time (the sandbox keeps the bytes in IndexedDB). Table resources are the exception: their `TableModel` (a grid of cells with spans and alignment) travels inline, because it is structured data, not bytes.
-**Notes** are meant to carry content and a marker style, referenced from inline positions in the markdown. They are not implemented yet: the engine ignores `notes`, and the markdown has no note-reference syntax.
+**Notes** are written in the markdown: a `[^id]` marker where the note is cited and a `[^id]:` definition, a paragraph of its own anywhere in the chapter. The engine numbers the notes in the order they are first cited and sets each one at the foot of the column that holds the line citing it, under a short rule, or after the chapter's last block with `footnotes.placement: 'chapterEnd'` (see [Footnotes](/en/docs/document-format#footnotes) and [Configuration → Footnotes](/en/docs/configuration#footnotes)). The content model still accepts a `notes` array, but no stage of the pipeline reads it.
 
-This separation is an opinionated design choice, and it matters more than it looks. The markdown owns the *reading order* and *semantic structure* — what comes first, what is a heading, where a footnote is referenced. The resources and notes arrays own the *visual data* — image dimensions, caption text, note content. By keeping them apart, the same markdown can be laid out in completely different ways just by changing the configuration. A two-column academic layout and a single-column blog post can share the same source content. And the engine can make placement decisions — like deferring an image to the next column because it does not fit here — without ever touching your source content.
+This separation is an opinionated design choice, and it matters more than it looks. The markdown owns the *reading order* and *semantic structure* — what comes first, what is a heading, where a footnote is cited and what it says. The resources array owns the *visual data* — image dimensions, caption text, table cells. By keeping them apart, the same markdown can be laid out in completely different ways just by changing the configuration. A two-column academic layout and a single-column blog post can share the same source content. And the engine can make placement decisions — like deferring an image to the next column because it does not fit here — without ever touching your source content.
 
 ```typescript
 // Example: a simple article with a referenced figure
@@ -242,7 +243,7 @@ Every aspect of the layout pipeline is controlled by `PostextConfig`. The full s
 
 ### Parsing Strategy
 
-Parsing is deliberately the simplest step in the pipeline. Markdown goes in, gets parsed into an AST, and each node becomes a `VDTBlock`. Resource references are resolved against the `resources[]` array by ID (the `notes[]` array is not read yet: notes are planned, not implemented). The output is a flat list of typed, content-filled blocks — but with no page assignment, no column, no position.
+Parsing is deliberately the simplest step in the pipeline. Markdown goes in, gets parsed into an AST, and each node becomes a `VDTBlock`. Resource references are resolved against the `resources[]` array by ID. Footnote definitions (paragraphs that open with `[^id]:`) leave the flow and are kept by id for the markers that cite them; the `notes[]` array is not read. The output is a flat list of typed, content-filled blocks — but with no page assignment, no column, no position.
 
 Think of it as a manifest: "there is a heading, then a paragraph with 200 words, then a figure reference, then another paragraph." No measurements. No positioning. No layout decisions at all. The heavy work starts in Pass 2.
 
@@ -339,10 +340,10 @@ interface VDTLine {
   plainEnd?: number;
 }
 
-// A measured, placement-ready resource embed (bitmap / svg / table)
+// A measured, placement-ready resource embed (bitmap / svg / table / video)
 interface ResolvedResourceBlock {
   resource: Resource;
-  kind: 'bitmap' | 'svg' | 'table';
+  kind: 'bitmap' | 'svg' | 'table' | 'video';
   number: string;             // computed number, e.g. "1.7"
   captionPrefix: string;      // e.g. "Figure"
   bodyRect: BoundingBox;      // the image / table area
@@ -389,7 +390,7 @@ The key difference from a game engine is that a game renders each frame once and
 ### Pass 1: Content Structuring
 
 - **Input:** Raw `PostextContent`
-- **Action:** Parse markdown into an AST, resolve resource references against `resources[]` by ID, create initial `VDTBlock` nodes (notes, and so `notes[]`, are planned, not implemented yet)
+- **Action:** Parse markdown into an AST, resolve resource references against `resources[]` by ID, take the footnote definitions (`[^id]:`) out of the flow and number their markers in citation order, create initial `VDTBlock` nodes (`notes[]` is not read)
 - **Output:** Flat `VDTBlock[]` (typed and content-filled, but with no page or column assignment)
 - **Runs once** (not part of the convergence loop)
 
@@ -470,7 +471,7 @@ Before any content blocks land, the pass reserves space for structural elements 
   </tbody>
 </table>
 
-- **Deferred placement:** A float that fits in no slot of the current page waits for the next page the flow opens — it is never shrunk or split — and, at a chapter boundary, is drained onto pages opened ahead of the boundary
+- **Deferred placement:** A float that fits in no slot of the current page waits for the next page the flow opens and, at a chapter boundary, is drained onto pages opened ahead of the boundary. A picture keeps its size unless `placement.shrink` (or the document's `layout.floatShrink`) lets it scale down to the room a slot has. A table too tall for a fresh page is cut between rows and continues on the following pages with its header rows repeated (`tableStyle.overflow: 'split'`, the default)
 - **Output:** Resources positioned in page bands (`page.floats`), with the affected columns' heights reduced so text flows around the bands
 
 Resource placement is where things get interesting, because floats do not just occupy space — they reshape the space around them. Once the block holding a reference has landed, the pending float is offered the free slots of the current page after it — the bottom of that column, then the top and bottom of the next empty column (a page-span float: the page bottom, when every column still has room); what fits nowhere waits for the next page, where pending floats claim their bands before any text flows in. The columns shrink to fit between the bands, the text flows through the narrowed columns uninterrupted, and the reader sees the figure near (but not exactly at) the point where it is mentioned. This is standard practice in professional typesetting; books do it constantly.
@@ -538,7 +539,7 @@ These corrections are invisible when done well (a reader should never notice the
 ### Pass 6: Column Balancing
 
 - **Input:** VDT with refined typography
-- **Action:** Equalize column heights on each page by moving blocks between columns to minimize the height difference (the `ColumnConfig.balancing` flag that would gate this is one of the declared-but-unwired legacy options)
+- **Action:** Equalize column heights on each page by moving blocks between columns to minimize the height difference (on by default; `headings.balancing.enabled: false` turns it off, see [Configuration → Column balancing](/en/docs/configuration#column-balancing))
 - **Constraint:** Must not violate widow/orphan rules established in Pass 5
 - **Output:** Blocks may have moved between columns, marked `dirty`
 
@@ -689,17 +690,17 @@ Because binary resource payloads live out-of-band, each backend resolves `fileId
       <td><strong>Shipping</strong></td>
     </tr>
     <tr>
-      <td><strong>Server-side</strong></td>
-      <td>Pretext + node-canvas</td>
-      <td>Headless rendering for SSR / batch generation</td>
-      <td>Future</td>
+      <td><strong>Command line</strong></td>
+      <td>Pretext over Skia (<code>@napi-rs/canvas</code>), in place of the browser's canvas</td>
+      <td>The PDF, HTML and EPUB writers, page images and Word, run from a terminal with no browser (<code>postext-cli</code>)</td>
+      <td><strong>Shipping</strong></td>
     </tr>
   </tbody>
 </table>
 
-All four shipping backends consume the same `VDTDocument`. The split between `postext` (which exports the canvas and HTML backends) and `postext-pdf` (which exports the PDF backend) is purely about dependencies: the PDF path pulls in `pdf-lib` and `@pdf-lib/fontkit`, and most web integrations do not need them. Install `postext-pdf` only when you actually want to emit PDF bytes. `postext-epub` is a package of its own for the same reason, and is needed only for e-books.
+All four shipping backends consume the same `VDTDocument`. The split between `postext` (which exports the canvas and HTML backends) and `postext-pdf` (which exports the PDF backend) is purely about dependencies: the PDF path pulls in `pdf-lib` and `@pdf-lib/fontkit`, and most web integrations do not need them. Install `postext-pdf` only when you actually want to emit PDF bytes. `postext-epub` is a package of its own for the same reason, and is needed only for e-books. The command line is not a fifth backend: `postext-cli` runs these same writers where there is no browser.
 
-**Browser-only constraint:** In Phase 1, all layout computation happens client-side in the browser. The pipeline can run either on the main thread (`buildDocument`) or inside a dedicated Web Worker (`createLayoutWorker` from `postext/worker`) — the worker path is the recommended integration for UI-driven apps because it keeps measurement and the convergence loop off the main thread, supports last-wins cancellation via `AbortSignal`, and owns its own measurement cache and math raster cache so successive rebuilds stay cheap. See [Configuration → Running layout in a Web Worker](/en/docs/configuration#running-layout-in-a-web-worker) for the full integration pattern. Server-side rendering remains a deliberate scope decision for later — nail the browser experience first, expand to other targets later.
+**Where layout runs:** The engine measures text on a canvas, so it runs wherever it is given one. In a browser the pipeline runs either on the main thread (`buildDocument`) or inside a dedicated Web Worker (`createLayoutWorker` from `postext/worker`) — the worker path is the recommended integration for UI-driven apps because it keeps measurement and the convergence loop off the main thread, supports last-wins cancellation via `AbortSignal`, and owns its own measurement cache and math raster cache so successive rebuilds stay cheap. See [Configuration → Running layout in a Web Worker](/en/docs/configuration#running-layout-in-a-web-worker) for the full integration pattern. Outside a browser, the [command line](/en/docs/command-line) runs the same pipeline with Skia standing in for the browser's canvas, so a book breaks into the same pages in a terminal, a script or a build server.
 
 
 ## Performance Strategy
@@ -787,12 +788,11 @@ A caveat for honesty: `{ time: 100 }` is how long vitest *samples* the benchmark
 Each of these limits is a deliberate choice — the engine is complex enough on its own, and
 taking on responsibilities that belong elsewhere would be the fastest way to never finish.
 
-- **Server-side rendering.** All layout runs in the browser. The engine depends on canvas font metrics (via Pretext), which require a browser environment. A server-side backend using `node-canvas` may come later, but it is not part of the initial design. Browser first.
 - **WYSIWYG editing.** Postext is a layout engine, not an editor. Content in, geometry out. Building an interactive editing surface — cursor management, selection, undo/redo, input handling — is an entirely separate problem. Postext can serve as the rendering backend for an editor, but it does not provide editing capabilities itself.
 - **CSS column-count wrapper.** Postext replaces CSS multi-column layout; it does not wrap it. It computes precise positioned geometry from scratch, because the browser's column layout algorithm lacks control over resource placement, widow/orphan prevention, and cross-column typographic rules. Those are the whole point.
 - **Responsive breakpoint management.** Postext computes layout at a given page size. The consumer decides when to re-layout (on viewport resize, on orientation change). Postext does not manage breakpoints, media queries, or responsive design decisions. That is your job.
 - **Real-time collaborative editing.** Postext is a stateless layout computation — content in, geometry out — not a collaborative document system with conflict resolution, operational transforms, or multi-user awareness.
-- **Font loading or management.** Postext assumes fonts are already loaded and available for measurement. Font loading, font fallback chains, and font subsetting are the consumer's responsibility. If a font is not loaded when Postext measures text, the measurements will use the browser's fallback font, and the layout will be wrong once the real font loads. Load your fonts first.
+- **Font files.** The `postext` package loads fonts; it does not carry them. `prepareFonts` loads every face a configuration and its text ask for before the first build, and a face the font set could not give is listed in the document's warnings as `fontFallback`. The files themselves come from the host: an `@font-face` rule on the page, or a `resolve` function that says where each face lives. See [Configuration → Loading fonts before layout](/en/docs/configuration#loading-fonts-before-layout).
 
 
 ## Appendix: Relationship to Existing Types
@@ -817,7 +817,7 @@ Here is how the main types defined in `packages/postext/src/types.ts` map to the
     </tr>
     <tr>
       <td><code>Resource</code></td>
-      <td>A typed bitmap/SVG/table resource. Becomes a <code>ResolvedResourceBlock</code> during measurement and either an inline <code>VDTBlock</code> of type <code>'resource'</code> (placement <code>'here'</code>) or a page-band float (Pass 4)</td>
+      <td>A typed bitmap/SVG/table/video resource. Becomes a <code>ResolvedResourceBlock</code> during measurement and either an inline <code>VDTBlock</code> of type <code>'resource'</code> (placement <code>'here'</code>) or a page-band float (Pass 4)</td>
     </tr>
     <tr>
       <td><code>ResourceType</code></td>
