@@ -9055,8 +9055,8 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>fontFallback</code></td>
-      <td>テキストを組んだフェイス（<code>family</code>、<code>weight</code>、<code>style</code>）を、ビルドの時点でフォントセットが用意できなかったこと。<code>reason: 'missing'</code>は、そのファミリーのフェイスが1つも読み込まれておらず、インストールもされていない場合。<code>'synthesized'</code>は、そのウェイトや傾きをファミリーの別のフェイスから作っている場合です（400のレギュラーしかないファミリーに700のイタリックを求めたときなど）。フォントセットがある環境（<code>document.fonts</code>、ワーカーの<code>self.fonts</code>、<code>BuildDocumentOptions.fontSet</code>）で検査し、<code>debug.warnings.missingFont</code>で切り替えます。ページもソースの範囲も持ちません。</td>
-      <td>テキストは代替フォントで、またはブラウザーが太くしたり傾けたりしたフェイスで計測・描画されます。そのフェイスが届くと改行が変わります。<a href="#レイアウトの前にフォントを読み込む">レイアウトの前にフォントを読み込む</a>を参照してください。</td>
+      <td>テキストを組んだフェイス（<code>family</code>、<code>weight</code>、<code>style</code>）を、ビルドの時点でフォントセットが用意できなかったこと。<code>reason: 'missing'</code>は、そのファミリーのフェイスが1つも読み込まれておらず、インストールもされていない場合、またはそのウェイトと傾きに対応するフェイスがまだ読み込まれていなかった場合。<code>'synthesized'</code>は、ファミリーにそのウェイトや傾きのフェイスがなく、ブラウザーが別のフェイスをそのまま、あるいは太くしたり傾けたりして使っている場合です（600を700のフェイスで組んだとき、400のレギュラーしかないファミリーに700のイタリックを求めたときなど）。フォントセットがある環境（<code>document.fonts</code>、ワーカーの<code>self.fonts</code>、<code>BuildDocumentOptions.fontSet</code>）で検査し、<code>debug.warnings.missingFont</code>で切り替えます。ページもソースの範囲も持ちません。</td>
+      <td>テキストは代替フォントで、またはファミリーの別のフェイス（そのまま、あるいはブラウザーが太くしたり傾けたりしたもの）で計測・描画されます。そのフェイスが届くと改行が変わります。<a href="#レイアウトの前にフォントを読み込む">レイアウトの前にフォントを読み込む</a>を参照してください。</td>
     </tr>
   </tbody>
 </table>
@@ -9247,7 +9247,7 @@ const same = await buildDocumentWithFonts(content, config, { resolve });
 
 - **ページが宣言しているフェイス**（`@font-face`規則、追加済みの`FontFace`）は、フォントセットを通して読み込みます（`document.fonts.load`、ワーカーでは`self.fonts`）。**宣言していないフェイス**は`resolve(family, weight, style, { text, codePoints })`に問い合わせます。リゾルバーは、ファイル1つ（バイト列またはURL）、複数のファイル（1つのフェイスのスライス）、スライスや可変の範囲を表す`{ source, unicodeRange, weight, style }`、または`null`を返します。エンジンはすべての読み込みが終わってから、設定の順と各回答の順（リゾルバーがそう返せば、latin、latin-ext、greekの順）にそれらを`FontFace`として追加します。そのため、ファイルがどんな順で届いてもフォントセットは同じになります。さらに、[SVGの画像](#svgの文字のフォント)とレイアウトのワーカーが読むフォントレジストリにも登録します。リゾルバーが自分でフェイスを宣言し（スタイルシートを追加して）、`null`を返してもかまいません。
 - **レポート**には、読み込んだフェイス（またはインストール済みのファミリー）で賄えるフェイス、まだ`missing`のフェイス、ブラウザーが別のウェイトや傾きから`synthesize`するフェイスが並びます。待ち時間の上限は`timeoutMs`（既定は10 000）で、その時点でまだ読み込み中のフェイスは欠落として数えます。フォントセットがない環境（Node）では、`prepareFonts`は何もせず、すべてのフェイスを読み込み済みとして報告します。
-- **`buildDocumentWithFonts(content, config, options)`**：フォントを準備し、`buildDocumentAsync`でビルドし、ページが実際にテキストを組んだフェイスを読み取り、欠けていたものを読み込んで、もう一度ビルドします（追加のビルドは最大2回）。`withLoadedFonts(build, options)`は、任意のビルド関数のまわりで同じことを行います。章ごとにビルドする本や、複数の文書を返すバンドル（`buildBundle`）に使えます。`options.onFonts`は最終的なレポートを受け取ります。
+- **`buildDocumentWithFonts(content, config, options)`**：フォントを準備し、`buildDocumentAsync`でビルドし、ページが実際にテキストを組んだフェイスを読み取り、フォントセットが用意できなかったものを読み込んで（ページを組んで初めてわかるウェイトは、ファミリーの別のウェイトで代用できる場合でも`resolve`に求めます）、もう一度ビルドします（追加のビルドは最大2回）。`withLoadedFonts(build, options)`は、任意のビルド関数のまわりで同じことを行います。章ごとにビルドする本や、複数の文書を返すバンドル（`buildBundle`）に使えます。`options.onFonts`は最終的なレポートを受け取ります。
 - **ビルドの後**、テキストを組んだフェイスのうちフォントセットが用意できなかったものは、すべて`doc.contentWarnings`に`fontFallback`として挙がります（[文書の中の警告](#文書の中の警告)を参照）。
 
 後から届いたフェイスは、エンジンが自分で拾います。エンジンはフォントセットごとに、前回確かめたときに各ファミリーのどのフェイスが読み込まれていたかを覚えています。ビルドは開始時にもう一度確かめ（フォントセットが増えたか減ったか、フェイスの読み込みが終わったときだけ）、フェイスが変わったファミリーで計測した結果を捨てます。`watchFonts(fontSet)`はフェイスが読み込まれるたびに同じことを行い、一度に届くスライスがいくつあっても、アニメーションフレームあたり最大1回にとどめます。`onFontsChanged(listener)`は、どのファミリーが変わったかをホストに知らせるので、ホストはページをレイアウトし直せます。

@@ -9052,8 +9052,8 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>fontFallback</code></td>
-      <td>文字排版所用的某个字体（<code>family</code>、<code>weight</code>、<code>style</code>），在构建时字体集给不出来：<code>reason: 'missing'</code>表示该字体族没有任何字体已加载，系统中也没有安装；<code>'synthesized'</code>表示这个字重或倾斜取自该字体族的另一个字体（向只有400常规体的字体族要700斜体）。在有字体集的地方检查（<code>document.fonts</code>、工作线程的<code>self.fonts</code>，或<code>BuildDocumentOptions.fontSet</code>），由<code>debug.warnings.missingFont</code>控制。没有页码，也没有源文本范围。</td>
-      <td>文字用回退字体测量和绘制，或用浏览器加粗、倾斜后的字体；该字体到达后，断行会随之改变。见<a href="#排版前加载字体">排版前加载字体</a>。</td>
+      <td>文字排版所用的某个字体（<code>family</code>、<code>weight</code>、<code>style</code>），在构建时字体集给不出来：<code>reason: 'missing'</code>表示该字体族没有任何字体已加载，系统中也没有安装，或者对应这个字重和倾斜的字体当时还没有加载完；<code>'synthesized'</code>表示该字体族没有这个字重或倾斜的字体，浏览器取用族内的另一个字体，原样使用，或加粗、倾斜（用700的字体排600；向只有400常规体的字体族要700斜体）。在有字体集的地方检查（<code>document.fonts</code>、工作线程的<code>self.fonts</code>，或<code>BuildDocumentOptions.fontSet</code>），由<code>debug.warnings.missingFont</code>控制。没有页码，也没有源文本范围。</td>
+      <td>文字用回退字体测量和绘制，或用族内的另一个字体（原样使用，或经浏览器加粗、倾斜）；该字体到达后，断行会随之改变。见<a href="#排版前加载字体">排版前加载字体</a>。</td>
     </tr>
   </tbody>
 </table>
@@ -9244,7 +9244,7 @@ const same = await buildDocumentWithFonts(content, config, { resolve });
 
 - **页面声明的字体**（一条`@font-face`规则、一个已添加的`FontFace`）通过字体集加载（`document.fonts.load`，在工作线程中是`self.fonts`）。**页面没有声明的字体**交给`resolve(family, weight, style, { text, codePoints })`，它返回一个文件（字节或URL）、多个文件（一个字体的各个切片）、表示一个切片或一段可变范围的`{ source, unicodeRange, weight, style }`，或者`null`。引擎等它们全部加载完毕，再按配置的顺序和每次返回的顺序（解析函数这样返回时，先latin，再latin-ext，再greek）作为`FontFace`添加，所以无论文件以什么顺序到达，字体集都相同。引擎还把它们注册到字体注册表中，[SVG图片](#svg文字中的字体)和布局工作线程都从那里读取。解析函数也可以自己声明字体（添加一张样式表），然后返回`null`。
 - **报告**列出有已加载字体（或已安装的字体族）可用的字体、仍然`missing`的字体，以及浏览器会借另一个字重或倾斜`synthesize`出来的字体。`timeoutMs`（默认10 000）限定等待的时间，到时仍在加载的字体算作缺失。在没有字体集的环境（Node）中，`prepareFonts`什么也不做，并报告所有字体都已加载。
-- **`buildDocumentWithFonts(content, config, options)`**：准备字体，用`buildDocumentAsync`构建，读出页面实际排字所用的字体，加载其中缺少的，再构建一次（最多多构建两次）。`withLoadedFonts(build, options)`对任意构建函数做同样的事，适用于逐章构建的书，或返回多个文档的文件包（`buildBundle`）。`options.onFonts`接收最终的报告。
+- **`buildDocumentWithFonts(content, config, options)`**：准备字体，用`buildDocumentAsync`构建，读出页面实际排字所用的字体，加载其中字体集给不出来的（只有页面才显出的字重，即使族内另一个字重可以顶替，也会向`resolve`索要），再构建一次（最多多构建两次）。`withLoadedFonts(build, options)`对任意构建函数做同样的事，适用于逐章构建的书，或返回多个文档的文件包（`buildBundle`）。`options.onFonts`接收最终的报告。
 - **构建之后**，文字排版所用而字体集给不出来的每个字体，都在`doc.contentWarnings`中列为`fontFallback`（见[文档中的警告](#文档中的警告)）。
 
 之后才到达的字体，引擎会自己察觉。引擎为每个字体集记下它上次查看时每个字体族已加载了哪些字体；每次构建开始时再看一次（只在字体集变大、变小或有字体加载完成时），并丢弃在字体有变化的字体族中测得的结果。`watchFonts(fontSet)`在字体加载的过程中做同样的事，一批无论带来多少个切片，每个动画帧最多一次；`onFontsChanged(listener)`告诉宿主哪些字体族变了，以便它重新排版页面：
