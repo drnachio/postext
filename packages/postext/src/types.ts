@@ -562,8 +562,9 @@ export interface Resource {
   placement?: ResourcePlacement;
 }
 
-/** A footnote, endnote or margin note. Not implemented yet: the engine does
- *  not read `PostextContent.notes` (see there). */
+/** A footnote, endnote or margin note passed as data. The engine does not
+ *  read `PostextContent.notes` (see there): notes are written in the
+ *  markdown. */
 export interface PostextNote {
   id: string;
   type: 'footnote' | 'endnote' | 'marginNote';
@@ -591,10 +592,10 @@ export interface PostextContent {
    *  resolved out-of-band by the renderer; table resources carry their model
    *  inline. */
   resources?: Resource[];
-  /** Not implemented yet: accepted, but no stage of the pipeline reads it —
-   *  notes are neither laid out, numbered nor rendered, and the markdown has
-   *  no note-reference syntax. Set notes as text for now (a superscript
-   *  `^1^` marker and a `:::paragraphs` block of notes; see the docs). */
+  /** Accepted, but no stage of the pipeline reads it. Notes are written in
+   *  the markdown instead: a `[^id]` marker and a `[^id]: …` definition,
+   *  laid out as `PostextConfig.footnotes` says (foot of the citing column
+   *  by default, `placement: 'chapterEnd'` for endnotes). */
   notes?: PostextNote[];
   /** Counters carried over from content laid out before this document — a
    *  book chapter laid out on its own continues the numbering of the

@@ -12,7 +12,7 @@ postext is a layout engine that takes semantic content — enriched markdown wit
 npm install postext
 ```
 
-The main entry has no framework dependency. React (>= 18, a peer dependency) is used only by the `postext/react` subpath. PDF output lives in the companion package [`postext-pdf`](https://www.npmjs.com/package/postext-pdf).
+The main entry has no framework dependency. React (>= 18, a peer dependency) is used only by the `postext/react` subpath. PDF and EPUB output live in the companion packages [`postext-pdf`](https://www.npmjs.com/package/postext-pdf) and [`postext-epub`](https://www.npmjs.com/package/postext-epub).
 
 From a CDN, import it as a module — no build step:
 
@@ -89,14 +89,14 @@ The resolvers (`resolve*Config`), strippers (`strip*Defaults`), `DEFAULT_*` cons
 
 | Field | Type | Description |
 |---|---|---|
-| `markdown` | `string` | Enriched markdown: headings, lists, `:ref{id="…"}` citations, `::resource{id="…"}` embeds, `:::callout`, `:::part`, `:::toc`, `$…$` math, … |
+| `markdown` | `string` | Enriched markdown: headings, lists, code blocks, `[^id]` footnotes, `[@key]` citations, `:ref{id="…"}` references, `::resource{id="…"}` embeds, `:::callout`, `:::verse`, `:::part`, `:::toc`, `:::index`, `$…$` math, … |
 | `resources?` | `Resource[]` | Bitmaps, SVGs, tables and videos, referenced by `id` from the markdown. Binary payloads (pictures, a video's poster and own file) are referenced by `fileId`; tables carry their model inline. |
 | `metadata?` | `DocumentMetadata` | Title, author and dates (also read from the markdown's YAML frontmatter). |
 | `continuation?` | `LayoutContinuation` | Counters, page numbering and parity carried over from the chapters before, for a book laid out chapter by chapter. |
 | `outline?` | `OutlineEntry[]` | The book's outline, for a `:::toc` in a chapter laid out on its own. |
-| `notes?` | `PostextNote[]` | **Not implemented yet.** Accepted, but the engine ignores it: footnotes, endnotes and margin notes are not laid out. |
+| `notes?` | `PostextNote[]` | Accepted, but the engine does not read it: notes are written in the markdown (below). |
 
-Footnotes are on the roadmap. Until then, set notes as text: a superscript marker in the body (`^1^`) and the notes in a `:::paragraphs{style="notes"}` block at the end of the section.
+Footnotes are written in the markdown: a `[^id]` marker where the note is cited and a paragraph that opens with `[^id]:` for its text. Each note is set at the foot of the column that cites it; `footnotes.placement: 'chapterEnd'` gathers them after the chapter instead. See [Footnotes](https://postext.dev/en/docs/document-format#footnotes).
 
 ## Fonts
 
