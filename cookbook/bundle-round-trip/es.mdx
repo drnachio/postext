@@ -30,13 +30,13 @@ Un paquete lleva una fuente cuando `customFonts` la nombra y `files` guarda sus 
 
 <Excerpt region="resources" />
 
-Los dos dibujos son SVG que genera el propio pen y que se entregan en `files` con el `svg.fileId` de su recurso; la tabla son datos, así que viaja en `preset.json` con su pie. La sección y la tabla se colocan con `position: 'here'`: la sección en la cabeza del dorso y el horario bajo el párrafo que lo cita. En la versión 1.4.1, un recurso en línea no lleva aire debajo, así que una línea `:::space{lines=0.5}` tras la tabla deja 3,7 mm bajo el pie; sin ella, el párrafo siguiente empieza a 1,4 mm del pie.
+Los dos dibujos son SVG que genera el propio pen y que se entregan en `files` con el `svg.fileId` de su recurso; la tabla son datos, así que viaja en `preset.json` con su pie. La sección y la tabla se colocan con `position: 'here'`: la sección en la cabeza del dorso y el horario bajo el párrafo que lo cita. El folleto fija `layout.inlineResourceGap: 'above'`, que deja el aire de un recurso en línea solo por encima, y así el dorso cabe en una cara: el título que sigue a la sección trae su propio espacio, y una línea `:::space{lines=0.5}` tras la tabla deja 3,7 mm bajo el pie.
 
-### 4 · Escribe las etiquetas en el archivo
+### 4 · Mantén las etiquetas en el idioma del archivo
 
 <Excerpt region="labels" />
 
-Cuando un archivo no trae `resourceTypes`, `openBundle` los crea en el idioma que pide quien lo abre, no en el del archivo: el folleto en español abierto con `{ locale: 'en' }`, o importado en el Sandbox desde /en/sandbox, imprime Figure 1.1 sobre texto en español. Los tipos escritos en la configuración sustituyen a esos, así que el archivo en español imprime Figura 1 y Tabla 1 lo abra quien lo abra. `'{n}'` quita el número de capítulo, que un folleto de dos páginas no necesita ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)). La misma función `config()` fija `locale`, que elige los patrones de separación silábica del español (compuer-tas en el dorso) y el idioma que declara el PDF.
+Quien abre un archivo crea los tipos integrados en el idioma que ese archivo sirve: sin `resourceTypes` en la configuración, el folleto en español imprime Figura 1.1 y Tabla 1.1 lo abra quien lo abra, también el Sandbox desde /en/sandbox. El folleto escribe los tipos solo por sus números: `'{n}'` quita el número de capítulo, que un folleto de dos páginas no necesita ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)). La misma función `config()` fija `locale`, que elige los patrones de separación silábica del español (compuer-tas en el dorso) y el idioma que declara el PDF.
 
 ### 5 · Entrega los mismos bytes
 
@@ -48,7 +48,7 @@ El enlace ofrece los mismos `bytes` desde los que se compusieron las páginas: 1
 
 <Excerpt region="cover" />
 
-La portada es el diseño del título de cubierta: el dibujo anclado a la página a tamaño completo, el texto del título con `{titleText}`, el antetítulo, la entradilla y la línea de datos, que salen de sus atributos, y un texto con caja para la pestaña del idioma. El nivel 1 de los títulos lleva `span: 'page'`, así que el dibujo empieza en el borde del papel. Si se queda en la columna, el diseño se corta en los bordes superior e inferior de la caja de texto: el dibujo empezaría 12 mm más abajo y acabaría 13 mm antes del borde inferior, y la pestaña del idioma quedaría en una tira sin letras.
+La portada es el diseño del título de cubierta: el dibujo anclado a la página a tamaño completo, el texto del título con `{titleText}`, el antetítulo, la entradilla y la línea de datos, que salen de sus atributos, y un texto con caja para la pestaña del idioma. El nivel 1 de los títulos lleva `span: 'page'`, así que el dibujo llega al borde inferior del papel. Si se queda en la columna, el diseño se corta al pie de la caja de texto: el dibujo acabaría 13 mm antes del borde inferior.
 
 ## Variantes
 
@@ -62,9 +62,9 @@ La guía de Postext lleva en un solo archivo sus capítulos, su configuración y
 +const bundle = await openBundle(await guide.arrayBuffer(), { locale: LANG });
 ```
 
-### Deja que el lector elija las etiquetas
+### Numera las figuras por capítulo
 
-Sin los tipos, las etiquetas siguen el idioma con que se abre el archivo y las figuras cuentan desde el título de cubierta: la edición española imprime aquí Figura 1.1, y Figure 1.1 cuando la importa el Sandbox desde /en/sandbox.
+Sin los tipos, quien abre el archivo los crea en su idioma con la numeración por defecto, y las figuras cuentan desde el título de cubierta: Figura 1.1 y Tabla 1.1 en esta edición, Figure 1.1 y Table 1.1 en la inglesa.
 
 ```diff
 -  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
@@ -72,4 +72,4 @@ Sin los tipos, las etiquetas siguen el idioma con que se abre el archivo y las f
 
 ## Errores frecuentes
 
-- En postext 1.4.1, `createBundle` escribe un solo idioma por archivo. La entrada `localized` que describe [Paquetes bilingües](/es/docs/configuration#paquetes-bilingües) no está en esa versión, aunque `openBundle` 1.4.1 ya lee esos archivos.
+- Aquí cada edición es un archivo propio. Para llevar los dos idiomas en uno, pasa a `createBundle` un mapa `localized` ([Paquetes bilingües](/es/docs/configuration#paquetes-bilingües)); `openBundle(bytes, { locale })` lee entonces cualquiera de las dos ediciones.
