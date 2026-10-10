@@ -463,6 +463,8 @@ The Markdown only cites them.
 - **Head of the citing page** (≥ 1.25): `placement.citingPage: true` (or `layout.floatsAtCitingPage`) lets a `top`/`auto` float head the page (column) where its citing line lands instead; the text above the reference moves down under it. Cite where the text wants the reference, not earlier to pull a figure forward.
 - Floats of one type never overtake each other.
 - Floats are flushed at chapter openers (`breakBefore`), `:::part`, `floatBarrier` callouts, and the end of the document. `:::pagebreak` sends pending floats to the next page.
+- **Under a page-span opener** (≥ 1.25, `layout.floatsUnderOpener`): on a page of 2+ text columns, a `top`/`auto` float embedded with `::resource` right after the `span: 'page'` heading (or a `placement="top"` box fenced there) takes the head of column 1 under the opener; with `columns` it runs across k columns from column 1. Up to 1.24 it landed from column 2.
+- **Side boxes at the end of a chapter** (≥ 1.25): `span="side"` boxes still waiting for the side column when the text ends each take the side column of a page after the text, in fence order, with an `afterText` warning per box (≤ 1.24 dropped all but the first page of them). Treat `afterText` as a layout fault to fix: fence the box earlier or shorten it.
 
 ### 9.2 Block embed `::resource{id="…"}` (inline placement)
 
@@ -798,7 +800,8 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 - `numberingInvalidFormat`, `numberingInvalidStartAt`, `pagebreakInvalidParity`
 - `unknownResourceId` (embed or ref), `duplicateResourceId`, `danglingTypeRef`
 - `headingHierarchy`, `consecutiveHeadings`, `listAfterHeading`
-- `chapterFrontmatterIgnored`, `calloutOverflow`
+- `chapterFrontmatterIgnored`, `calloutOverflow` (also a `span="side"` box taller than an empty side column, ≥ 1.25)
+- `afterText` (≥ 1.25: a side box or side figure set on a page with no text, after its chapter's text ended) and `unplaced` (≥ 1.25: a box or float on no page)
 - `unclosedCodeBlock` (≥ 1.23: a code fence with no closing fence; the rest of the chapter is code) and `codeOverflow` (a listing's line wider than its box, turned over, shrunk or cut, per `codeStyle.overflow`)
 - `tabInVerticalText` (≥ 1.23: a `:tab` in vertical text, set as a word space), and the config warnings `unknownConfigKey` / `unknownConfigValue` for a tab stop's unknown key, `align` or position (configuration.md §4a)
 - `lineNumberOverlap` (≥ 1.23: a line number in the side column falls on a side box, side caption or float; painted anyway), and the config warning `lineNumbersUnsupported` (`lineNumbers.enabled` on a vertical document, which gets no numbers)

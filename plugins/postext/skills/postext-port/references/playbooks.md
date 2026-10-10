@@ -360,6 +360,10 @@ Use `layout.layoutType: "oneAndHalf"`, `sideColumnRole: "floats"` and
 (placement `here`, a light top stripe and a small-caps title for the lemma).
 Insert the callout right after the paragraph it glosses. Anchor it on a text
 fragment of that paragraph and fail loudly when a fragment is not found.
+A gloss the channel of its page cannot hold waits for the next page; at the
+end of a chapter the ones still waiting take pages after the text and raise
+`afterText` (postext ≥ 1.25; earlier releases dropped them): move those
+glosses up or shorten them until the warning is gone.
 
 ### B3. Footnotes
 Postext ≥ 1.6 sets real footnotes (document-format.md §10.4,

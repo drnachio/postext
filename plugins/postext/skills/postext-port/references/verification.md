@@ -149,6 +149,11 @@ writeFileSync('/tmp/p12.jpg', await canvas.encode('jpeg', 85));
 - `PARSE unclosedMath|unclosedContainer`: a stray `$` or a missing `:::`.
 - `WARN calloutOverflow`: a keep-together box does not fit a column. Set
   `keepTogether: false`, shorten it, or change the box's span.
+- `WARN afterText` (postext ≥ 1.25): a `span: "side"` box or a side figure
+  stands on a page with no text, because its chapter ended while it waited
+  for room in the side column. Fence it earlier or shorten it.
+  `WARN unplaced`: a box or float is on no page (a side box in a section
+  whose layout has no side column): change its span or the section's layout.
 - `WARN unknownResourceId|unknownDirective|malformedEmbed|unknown…Style|raggedTableGrid`
   (releases with engine content warnings): a reference, `:::` line, `::resource`
   line or style id the engine could not resolve, or a table whose merged cells

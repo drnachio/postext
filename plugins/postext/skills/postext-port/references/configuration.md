@@ -196,6 +196,7 @@ layout
 ├─ floatsAtCitingPage boolean                                default false  ≥ 1.25 document default of placement.citingPage (see §ResourcePlacement)
 ├─ maxTopFraction     number                                 default 0.7    ≥ 1.25 largest share of the column a float heading its citing page takes (with the floats already there)
 ├─ hugClosingFloats   boolean                                default true   closing page: page-wide floats below the last text move up under it
+├─ floatsUnderOpener  boolean                                default true   ≥ 1.25 under a span:'page' opener over 2+ text columns, the head of column 1 is a top slot; false = floats land from column 2, as ≤ 1.24 (a preset below configVersion 11 that sets a page-span heading reads false)
 ├─ inlineResourceGap  'around' | 'above'                     default 'around'  (a preset without configVersion ≥ 5 reads 'above')
 ├─ inlineResourceGapInBoxes boolean                          default true  (a preset below configVersion 6 reads false)
 ├─ boxChildSplitMinLines number                              default 2  lines of a paragraph/item a box cut leaves per side (a preset below configVersion 6 with a :::callout reads 1)
@@ -217,6 +218,11 @@ Geometry:
 - `sideColumnRole: 'floats'` = textbook margin column: body text never enters it; it receives
   resources / callouts with `span: 'side'` (stacked beside their first reference; side figures
   stack from the head of the channel on the citing page). `'text'`: text flows main → side column.
+  A side box its page's channel cannot hold takes the next page's. Where the chapter ends first, each
+  box still waiting takes the channel of a page after the text, in fence order (≥ 1.25; ≤ 1.24 dropped
+  all but the first such page), and the build reports each one (`afterText`): fence the glosses of a
+  short chapter early, or shorten them, until no `afterText` is left. A box taller than an empty
+  channel is set anyway (`calloutOverflow`).
 - Chapter-opener design containers (`span:'page'` headings) are the **whole content width**
   (main + gutter + side), not just the main column.
 - Default is `'double'`: a single-column book must say `layoutType: 'single'`.
@@ -580,6 +586,12 @@ headings
   snaps; 1.4 set it against the band when a heading followed the opener), a heading or display
   formula level with the first visible heading or display formula under the opener (balancing
   space above that one is not repeated), else with that text; what it snaps lands on the grid.
+  A floated box fenced right after the opener (`placement="top"`, with `columns="k"` for k columns),
+  or a `::resource` embed of a `top`/`auto` float there, takes the head of column 1 under the band,
+  level with the other columns' heads, and column 1's text starts under it (≥ 1.25,
+  `layout.floatsUnderOpener`; ≤ 1.24 it landed from column 2, so no teaser strip or page-span box is
+  needed to open a band first). Only over 2+ text columns; a float cited with `:ref` in the text still
+  follows its citing line.
 - Heading slot placeholders: `{titleText}`, `{number}`, `{numberDecimal}`, `{numberRoman}`,
   `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}`, `{chapterNumber}`, `{chapterTitle}`,
   `{partTitle}`, `{partNumber}`, `{pageNumber}`, `{totalPages}`, `{title}`, `{subtitle}`,
@@ -1421,7 +1433,7 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 Content warnings to expect: `cjkLooseLine` (a justified line needing more than ½ em between characters, set
 short), `cjkMarksExceedLeading` / `rubyExceedsLeading` (line gap under ½ em with marks on one side, ⅝ with both;
 give annotated text more leading), `kuntenExceedsLeading` (送り仮名 need half an em on the reading side),
-`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `textWrap` (≥ 1.24: a resource or box with wrap kept its band: `tooNarrow`, `fewLines`, `verticalText`, or an inline one `moved` to the next column), `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block), `columnsFlowUnknown` (≥ 1.25: a `:::columns` flow other than snake/parallel; the default applies), `columnsTooNarrow` (≥ 1.25: sub-columns under six ems of their text: fewer columns or a smaller `gap`); config
+`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `textWrap` (≥ 1.24: a resource or box with wrap kept its band: `tooNarrow`, `fewLines`, `verticalText`, or an inline one `moved` to the next column), `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block), `columnsFlowUnknown` (≥ 1.25: a `:::columns` flow other than snake/parallel; the default applies), `columnsTooNarrow` (≥ 1.25: sub-columns under six ems of their text: fewer columns or a smaller `gap`), `afterText` (≥ 1.25: a `span: 'side'` box or side figure set on a page with no text, because its chapter ended while it waited for the channel: fence it earlier or shorten it) and `unplaced` (≥ 1.25: a box or float no page could take, e.g. a side box in a section with no side column; it is on no page); config
 warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`.
 
 ```json
@@ -1669,7 +1681,8 @@ fence (its lines then read as Markdown); one stamped 9 (postext 1.23), those of 
 on every text element of a heading design or a part page (`parts.design`, `parts.versoDesign`) that sets none
 (in `htmlViewer.overrides` too); one stamped 10 (postext 1.24), that of rules 11:
 `headings.balancing.enabled: true` on a horizontal `cjk.grid` config that does not set it, `tableStyle.splitInline: false`
-when a chapter embeds a resource and `layout.flowColumns: false` when a chapter opens a `:::columns` fence (#634). The pins keep what those rules changed, not
+when a chapter embeds a resource, `layout.flowColumns: false` when a chapter opens a `:::columns` fence (#634) and
+`layout.floatsUnderOpener: false` when the config sets a `span: 'page'` heading (#639). The pins keep what those rules changed, not
 every 1.4 page: 1.5's layout fixes (page-span opener measure, drop caps in heading designs, tracking in boxes,
 the loose-paragraph limit…) apply to an old bundle too.
 Must NOT go in `config`: `customFonts` (built from `fonts[]`; fileIds are storage-local —
