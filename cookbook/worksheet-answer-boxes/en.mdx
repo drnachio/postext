@@ -24,7 +24,7 @@ In the short answer, each box's margins collapse with its neighbours' and the la
 
 <Excerpt region="chips" />
 
-A chip is an unbreakable box in the line, and its padding is painted beyond the line without making the line taller. A word bank is a row of chips in a nested `bank` box. The blanks, the dots to join and the circles to colour are chips too, each holding only a U+2060 word joiner, because in postext 1.4.1 a chip of spaces prints its markup ([inline chips](/en/docs/document-format#inline-chips)). `paddingX` sets the width: a blank is 34 mm wide in a sentence and 38 mm alone in a column, and a circle gets half its 1.25 em height on each side. In the checklist the circle stands where the bullet would be (`bulletChar: ''`). At 19.6 pt, a blank is taller than the 17 pt line, which is why each one has a list item to itself, 24 pt from the next. In 1.4.1 the Sandbox still shows the warning “Chips touch the next line” for `blank`, `wide` and `tick`, because it compares each chip with the 17 pt line pitch and leaves out the 7 pt between list items.
+A chip is an unbreakable box in the line, and its padding is painted beyond the line without making the line taller. A word bank is a row of chips in a nested `bank` box. The blanks, the dots to join and the circles to colour are chips too, each written `:chip[ ]`: a chip of one space is an empty box of padding and outline ([inline chips](/en/docs/document-format#inline-chips)). `paddingX` sets the width: a blank is 34 mm wide in a sentence and 38 mm alone in a column, and a circle gets half its 1.25 em height on each side. In the checklist the circle stands where the bullet would be (`bulletChar: ''`). At 19.6 pt, a blank is taller than the 17 pt line, which is why each one has a list item to itself, 24 pt from the next.
 
 ### 3 · Number the activities with a heading design
 
@@ -36,7 +36,7 @@ A level-2 heading with an `advancedDesign` keeps its place in the column, and th
 
 <Excerpt region="tables" />
 
-`TableCell.image` draws a resource inside its cell, here at 76 % of the cell's width, and the row grows to fit it. `verticalAlign: 'middle'` centres the food's name, the dots and the chip on the picture. The widest column, 31 % of the table, stays empty for the pupil's line. The named style rounds the table's frame and clips the white body fill to it. Its grid rules are white as well: the canvas leaves a faint hairline between filled cells, and a white 1 pt rule on the white panel covers it ([named table styles](/en/docs/configuration#named-table-styles)). Its resource type has an empty `captionPrefix` and the table has no caption text, so no caption prints under it. `placement: { position: 'here' }` sets the table where its `::resource` line stands, inside the card.
+`TableCell.image` draws a resource inside its cell, here at 76 % of the cell's width, and the row grows to fit it. `verticalAlign: 'middle'` centres the food's name, the dots and the chip on the picture. The widest column, 31 % of the table, stays empty for the pupil's line. The named style rounds the table's frame and clips the white body fill to it. It draws no rules, so the panel is the white fill alone ([named table styles](/en/docs/configuration#named-table-styles)). Its resource type has an empty `captionPrefix` and the table has no caption text, so no caption prints under it. `placement: { position: 'here' }` sets the table where its `::resource` line stands, inside the card.
 
 ## Variations
 
@@ -61,5 +61,5 @@ With the default `snapToGrid: true`, whatever follows a card drops to the next 1
 
 ## Pitfalls
 
-- In postext 1.4.1 a box cannot rule its own writing lines, because callout styles have no ruled background. The answer boxes stay blank and take their height from `:::space`, and the short fill-in lines are outlined chips.
+- A box cannot rule its own writing lines, because callout styles have no ruled background. The answer boxes stay blank and take their height from `:::space`, and the short fill-in lines are outlined chips.
 - A heading style with `numbered: false` still draws its level's design, with `{number}` left empty. Without a design of its own, the self-check would open with an empty green disc, so `review` copies the activity design and puts the star where the disc was.

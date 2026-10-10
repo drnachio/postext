@@ -24,7 +24,7 @@ En la respuesta corta, los márgenes de cada caja se funden con los de sus vecin
 
 <Excerpt region="chips" />
 
-Un chip es una caja indivisible dentro de la línea; su relleno se pinta por fuera de la línea sin hacerla más alta. Un banco de palabras es una fila de chips dentro de un recuadro anidado `bank`. Los huecos, los puntos para unir y los círculos para colorear también son chips, y solo llevan dentro un unidor de palabras (U+2060), porque en postext 1.4.1 un chip de espacios imprime su propio marcado ([chips en línea](/es/docs/document-format#chips-en-línea)). La anchura la fija `paddingX`: un hueco mide 34 mm dentro de una frase y 38 mm cuando va solo en su columna, y un círculo lleva a cada lado la mitad de su altura de 1,25 em. En la lista de comprobación, el círculo ocupa el sitio de la viñeta (`bulletChar: ''`). Con 19,6 pt de alto, un hueco es más alto que la línea de 17 pt, y por eso cada uno va en su propio elemento de lista, a 24 pt del siguiente. En la 1.4.1, el Sandbox sigue mostrando el aviso «Los chips tocan la línea siguiente» para `blank`, `wide` y `tick`, porque compara cada chip con el interlineado de 17 pt y no cuenta los 7 pt que separan los elementos de la lista.
+Un chip es una caja indivisible dentro de la línea; su relleno se pinta por fuera de la línea sin hacerla más alta. Un banco de palabras es una fila de chips dentro de un recuadro anidado `bank`. Los huecos, los puntos para unir y los círculos para colorear también son chips, y se escriben `:chip[ ]`: un chip con un espacio es una caja vacía, hecha de relleno y contorno ([chips en línea](/es/docs/document-format#chips-en-línea)). La anchura la fija `paddingX`: un hueco mide 34 mm dentro de una frase y 38 mm cuando va solo en su columna, y un círculo lleva a cada lado la mitad de su altura de 1,25 em. En la lista de comprobación, el círculo ocupa el sitio de la viñeta (`bulletChar: ''`). Con 19,6 pt de alto, un hueco es más alto que la línea de 17 pt, y por eso cada uno va en su propio elemento de lista, a 24 pt del siguiente.
 
 ### 3 · Numera las actividades con un diseño de título
 
@@ -36,7 +36,7 @@ Un título de nivel 2 con `advancedDesign` conserva su sitio en la columna, y en
 
 <Excerpt region="tables" />
 
-`TableCell.image` dibuja un recurso dentro de su celda, aquí al 76 % del ancho de la celda, y la fila crece para que quepa. `verticalAlign: 'middle'` centra respecto al dibujo el nombre del alimento, los puntos y el chip. La columna más ancha, el 31 % de la tabla, queda vacía para que el alumno trace la línea. El estilo con nombre redondea el marco de la tabla y recorta a esa forma el relleno blanco del cuerpo. Los filetes de la cuadrícula también son blancos: el lienzo deja un hilo claro entre celdas rellenas, y un filete blanco de 1 pt sobre el panel blanco lo tapa ([estilos de tabla con nombre](/es/docs/configuration#estilos-de-tabla-con-nombre)). Su tipo de recurso tiene el `captionPrefix` vacío y la tabla no lleva texto de pie, así que no se imprime ningún pie. `placement: { position: 'here' }` coloca la tabla donde está su línea `::resource`, dentro de la tarjeta.
+`TableCell.image` dibuja un recurso dentro de su celda, aquí al 76 % del ancho de la celda, y la fila crece para que quepa. `verticalAlign: 'middle'` centra respecto al dibujo el nombre del alimento, los puntos y el chip. La columna más ancha, el 31 % de la tabla, queda vacía para que el alumno trace la línea. El estilo con nombre redondea el marco de la tabla y recorta a esa forma el relleno blanco del cuerpo. No dibuja filetes, así que el panel es solo el relleno blanco ([estilos de tabla con nombre](/es/docs/configuration#estilos-de-tabla-con-nombre)). Su tipo de recurso tiene el `captionPrefix` vacío y la tabla no lleva texto de pie, así que no se imprime ningún pie. `placement: { position: 'here' }` coloca la tabla donde está su línea `::resource`, dentro de la tarjeta.
 
 ## Variantes
 
@@ -61,5 +61,5 @@ Con el valor por defecto, `snapToGrid: true`, lo que sigue a una tarjeta baja a 
 
 ## Errores frecuentes
 
-- En postext 1.4.1 un recuadro no puede pautar sus propias líneas de escritura, porque los estilos de recuadro no tienen fondo pautado. Las cajas de respuesta quedan en blanco y toman su altura de `:::space`, y las líneas cortas para rellenar son chips con contorno.
+- Un recuadro no puede pautar sus propias líneas de escritura, porque los estilos de recuadro no tienen fondo pautado. Las cajas de respuesta quedan en blanco y toman su altura de `:::space`, y las líneas cortas para rellenar son chips con contorno.
 - Un estilo de título con `numbered: false` sigue dibujando el diseño de su nivel, pero con `{number}` vacío. Sin un diseño propio, la autoevaluación empezaría con un disco verde sin nada dentro; por eso `review` copia el diseño de las actividades y pone la estrella donde iba el disco.

@@ -46,15 +46,8 @@
   ],
   "gotchas": [
     "space-dropped-box-top",
-    "empty-chip",
     "nested-callout-limits",
-    "chip-overlap",
-    "box-embed-no-gap",
-    "opener-image-no-reserve",
-    "headings-drop-h1-break",
-    "svg-no-webfonts",
-    "palette-skips-designs",
-    "hyphenation-locales"
+    "chip-overlap"
   ],
   "explainsWarnings": [
     "chipOverlap"
@@ -164,52 +157,11 @@
     {
       "followup": "EF-04",
       "package": "postext",
-      "note": "a :::space at the top of a box is dropped, so every answer box opens with a prompt line (Write here, My plant is called, I think, I saw) before its :::space; a box of :::space alone collapses to its 3.6 mm of padding (measured)"
+      "note": "a :::space that opens a box with other content is dropped, so every answer box sets its prompt line (Write here, My plant is called, I think, I saw) before its :::space"
     },
     {
-      "followup": "EF-02",
       "package": "postext",
-      "note": "a chip of spaces prints its markup, so the blanks, the matching dots and the checklist circles hold a U+2060 word joiner (EMPTY)"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore is restated because a headings object drops it"
-    },
-    {
-      "followup": "EF-90",
-      "package": "postext",
-      "note": "the opener's plant disc is an image and does not count towards the height the opener reserves; minHeight (DISC.y + DISC.d + AIR - TOP) holds the text below it"
-    },
-    {
-      "followup": "EF-64",
-      "package": "postext",
-      "note": "the canvas leaves hairline seams between filled table cells, so the white matching table draws a grid of white 1 pt rules over its white body fill"
-    },
-    {
-      "followup": "EF-14",
-      "package": "postext",
-      "note": "locale is the exact bundled code ('en-us' | 'es')"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "the palette does not reach design-slot colours or bodyText.referenceColor; col() writes the hex beside every paletteId, so the band, the dots and the footer keep their colours"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the band title's design lineHeight is the multiple 0.98, never a Dimension"
-    },
-    {
-      "followup": "EF-58",
-      "package": "postext",
-      "note": "list numbers are painted by the same renderBullet as contents numbers, centred 0.3 em above the text's baseline, so Baloo 2 800 numbers sat 0.6 mm high beside Andika; orderedLists.numberVerticalOffset pt(1.7) sets them on the baseline (measured within 1 px at 150 dpi)"
-    },
-    {
-      "followup": "EF-117",
-      "package": "postext",
-      "note": "a ::resource table (or figure) at position 'here' inside a callout gets no space above or below it (0 mm, against 4.2 mm above and 2.1 mm below in the running text, measured with the default config); the card puts :::space{lines=0.33} (2 mm, the ASK gap) before the embed (gotcha box-embed-no-gap)"
+      "note": "a list number is centred 0.3 em above the text's baseline, so Baloo 2 800 numbers sat 0.6 mm high beside Andika; orderedLists.numberVerticalOffset pt(1.7) sets them on the baseline (measured within 1 px at 150 dpi)"
     }
   ]
 }

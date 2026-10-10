@@ -24,7 +24,7 @@ Na resposta curta, as margens de cada caixa se fundem com as das vizinhas, e a m
 
 <Excerpt region="chips" />
 
-Um chip é uma caixa inquebrável na linha, e o preenchimento dele é pintado para além da linha sem deixá-la mais alta. Um banco de palavras é uma fileira de chips num boxe aninhado `bank`. As lacunas, os pontos para ligar e os círculos para colorir também são chips, cada um contendo só um word joiner U+2060, porque no postext 1.4.1 um chip feito de espaços imprime a própria marcação ([chips em linha](/pt/docs/document-format#chips-em-linha)). `paddingX` define a largura: uma lacuna tem 34 mm dentro de uma frase e 38 mm sozinha numa coluna, e um círculo ganha de cada lado metade da sua altura de 1,25 em. Na lista de verificação, o círculo fica onde estaria o marcador (`bulletChar: ''`). Com 19,6 pt, uma lacuna é mais alta que a linha de 17 pt, e por isso cada uma tem um item de lista só para ela, a 24 pt do seguinte. Na 1.4.1, o Sandbox ainda mostra o aviso “Chips encostam na linha vizinha” para `blank`, `wide` e `tick`, porque compara cada chip com o passo de 17 pt das linhas e deixa de fora os 7 pt entre os itens da lista.
+Um chip é uma caixa inquebrável na linha, e o preenchimento dele é pintado para além da linha sem deixá-la mais alta. Um banco de palavras é uma fileira de chips num boxe aninhado `bank`. As lacunas, os pontos para ligar e os círculos para colorir também são chips, cada um escrito `:chip[ ]`: um chip com um espaço é uma caixa vazia, feita de preenchimento e contorno ([chips em linha](/pt/docs/document-format#chips-em-linha)). `paddingX` define a largura: uma lacuna tem 34 mm dentro de uma frase e 38 mm sozinha numa coluna, e um círculo ganha de cada lado metade da sua altura de 1,25 em. Na lista de verificação, o círculo fica onde estaria o marcador (`bulletChar: ''`). Com 19,6 pt, uma lacuna é mais alta que a linha de 17 pt, e por isso cada uma tem um item de lista só para ela, a 24 pt do seguinte.
 
 ### 3 · Numerar as atividades com um desenho de título
 
@@ -36,7 +36,7 @@ Um título de nível 2 com `advancedDesign` mantém o seu lugar na coluna, e o d
 
 <Excerpt region="tables" />
 
-`TableCell.image` desenha um recurso dentro da célula, aqui com 76 % da largura da célula, e a linha cresce para caber. `verticalAlign: 'middle'` centraliza em relação ao desenho o nome do alimento, os pontos e o chip. A coluna mais larga, 31 % da tabela, fica vazia para o aluno traçar a linha. O estilo nomeado arredonda a moldura da tabela e recorta nela o preenchimento branco do corpo. Os fios da grade também são brancos: o canvas deixa um fio claro entre células preenchidas, e um fio branco de 1 pt sobre o painel branco o cobre ([estilos de tabela nomeados](/pt/docs/configuration#estilos-de-tabela-nomeados)). O tipo de recurso dela tem `captionPrefix` vazio, e a tabela não tem texto de legenda, então nenhuma legenda sai embaixo. `placement: { position: 'here' }` põe a tabela onde está a sua linha `::resource`, dentro do cartão.
+`TableCell.image` desenha um recurso dentro da célula, aqui com 76 % da largura da célula, e a linha cresce para caber. `verticalAlign: 'middle'` centraliza em relação ao desenho o nome do alimento, os pontos e o chip. A coluna mais larga, 31 % da tabela, fica vazia para o aluno traçar a linha. O estilo nomeado arredonda a moldura da tabela e recorta nela o preenchimento branco do corpo. Ele não desenha fios, então o painel é só o preenchimento branco ([estilos de tabela nomeados](/pt/docs/configuration#estilos-de-tabela-nomeados)). O tipo de recurso dela tem `captionPrefix` vazio, e a tabela não tem texto de legenda, então nenhuma legenda sai embaixo. `placement: { position: 'here' }` põe a tabela onde está a sua linha `::resource`, dentro do cartão.
 
 ## Variações
 
@@ -61,5 +61,5 @@ Com o padrão `snapToGrid: true`, o que vem depois de um cartão desce para a li
 
 ## Erros comuns
 
-- No postext 1.4.1, um boxe não consegue pautar as próprias linhas de escrita, porque os estilos de boxe não têm fundo pautado. As caixas de resposta ficam em branco e tiram a altura de `:::space`, e as linhas curtas de completar são chips contornados.
+- Um boxe não consegue pautar as próprias linhas de escrita, porque os estilos de boxe não têm fundo pautado. As caixas de resposta ficam em branco e tiram a altura de `:::space`, e as linhas curtas de completar são chips contornados.
 - Um estilo de título com `numbered: false` continua desenhando o design do seu nível, com `{number}` vazio. Sem um design próprio, a autoavaliação abriria com um disco verde vazio, então `review` copia o design das atividades e põe a estrela onde ficava o disco.
