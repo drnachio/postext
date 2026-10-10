@@ -46,18 +46,7 @@
   "gaps": [],
   "gotchas": [
     "widow-orphan-names",
-    "headings-drop-h1-break",
-    "heading-number-placeholders",
-    "hyphenation-locales",
-    "runt-tracking-unpainted",
-    "cover-pagebreak",
-    "opener-taller-than-column",
-    "opener-image-no-reserve",
-    "opener-clipped-at-top",
-    "numbering-next-page",
-    "palette-skips-designs",
-    "overflow-ellipsis-default",
-    "quote-frontmatter"
+    "numbering-next-page"
   ],
   "explainsWarnings": [],
   "related": [
@@ -66,73 +55,7 @@
     "justification-lab",
     "running-heads-by-parity"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the chapter level states breakBefore { enabled: false }: 1.4.1 already drops the H1 break once any headings object is given, and a release that keeps the level default would start every chapter on a new recto"
-    },
-    {
-      "followup": "EF-09",
-      "package": "postext",
-      "note": "the chapter numeral is {number} over numberingTemplate '{1:I}', because {numberRoman} is filled only on part pages"
-    },
-    {
-      "followup": "EF-14",
-      "package": "postext",
-      "note": "locale is the exact bundled code 'pt'; 'pt-BR' or 'pt-PT' would hyphenate the Portuguese with the American patterns"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside the paletteId, since the cover, plate, chapter heads and running heads do not read the palette; bodyText.referenceColor is restated in ink because main-color does not reach it (there is no :ref on these pages, but a reader who adds one gets ink, not blue)"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "the frontmatter title and author are quoted; the title feeds the verso running head and the author the cover"
-    },
-    {
-      "followup": "EF-03",
-      "package": "postext",
-      "note": "a :::pagebreak follows the cover and the plate in the text; on these pages the plate already fills its page, but without the plate the text would start on the cover page (see EF-91)"
-    },
-    {
-      "followup": "EF-91",
-      "package": "postext",
-      "note": "the cover's foot band runs past the foot of the text column, so 1.4.1 keeps only the cover's 3 mm heading line as the reserved room; the :::pagebreak after the cover keeps the text off it (without the break and without the plate, chapter CXVIII's text starts 19.5 mm from the top of the cover)"
-    },
-    {
-      "followup": "EF-90",
-      "package": "postext",
-      "note": "the plate's picture reserves no room, so the plate heading reserves only down to its caption at the foot of the page; the :::pagebreak after it keeps the text off the plate if the caption moves up (at 94 mm, eleven lines of chapter CXVIII would print over the sea)"
-    },
-    {
-      "followup": "EF-113",
-      "package": "postext",
-      "note": "the cover and plate styles set span: 'page' in a one-column book, so their page-anchored bands and picture are painted whole instead of stopping at the top and foot of the text column"
-    },
-    {
-      "followup": "EF-152",
-      "package": "postext",
-      "note": "span: 'page' also keeps the \\\\ break in the cover title; with the cover kept in the column, {titleText} prints Dom Casmurro on one line"
-    },
-    {
-      "followup": "EF-153",
-      "package": "postext",
-      "note": "centred tracked text (chapter titles, running heads, the cover's capitals) is offset left by half its letterSpacing, because 1.4.1 counts the tracking after the last letter when it centres, so the design shifts it right by half the tracking (TRACK / 2 for the chapter titles and the running heads)"
-    },
-    {
-      "followup": "EF-111",
-      "package": "postext",
-      "note": "bodyText.maxRuntTracking: 0, since 1.4.1 measures a runt fix's tracking but never paints it; no paragraph on these pages takes tracking, and the setting protects a reader who changes the text or the measure"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the design texts give lineHeight as a multiple (1 for the numerals and the cover title, 1.35 for the plate's quote); a Dimension would drop the heading's reserved room without a warning"
-    }
-  ],
+  "workarounds": [],
   "engine": {
     "postext": "1.25.0"
   },

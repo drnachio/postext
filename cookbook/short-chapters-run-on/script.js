@@ -17,7 +17,7 @@ const palette = {
   saffron: '#d9a03c', // the second ink: rules and drawings, never text on paper (2.1:1)
   muted: '#6b616e', // the running heads and the colophon (5.2:1 on paper)
 };
-// Design slots read the hex, not the id, in 1.4.1 (gotcha: palette-skips-designs).
+// Each colour names its palette entry and carries its hex.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -34,9 +34,8 @@ const caps = (size, track) => ({ fontFamily: LABEL, fontWeight: 600, fontSize: p
   letterSpacing: pt(track), textTransform: 'uppercase' });
 
 // #region answer: chapters that run on, each under a centred head drawn in the column
-// Machado's chapters run a page or two, so none opens a page. The level's break is off
-// (1.4.1 drops it anyway, gotcha: headings-drop-h1-break, but a release that keeps the H1
-// default would open each chapter on a recto) and a chapter starts two lines under the last.
+// Machado's chapters run a page or two, so none opens a page. The level's break is off (the
+// H1 default would open each chapter on a recto) and a chapter starts two lines under the last.
 const [NUMERAL, TITLE, TRACK, GAP] = [14, 7.5, 1.3, 1.6]; // pt, pt, pt, mm
 const RULE_Y = NUMERAL * PT + GAP + TITLE * 1.2 * PT + GAP; // mm: under the title's line
 const chapterHead = { enabled: true, slot: { elements: [ // no span: the head stays in the text
@@ -44,9 +43,9 @@ const chapterHead = { enabled: true, slot: { elements: [ // no span: the head st
     lineHeight: 1, color: col('plum'), align: 'center',
     placement: { ...at('container', 'top'), size: { width: 'fill' } } },
   { kind: 'text', id: 'title', content: '{titleText}', ...caps(TITLE, TRACK), color: col('ink'),
-    align: 'center', overflow: 'wrap', // a long title wraps instead of ending in '…'
-    placement: { anchor: { to: '#numeral', edge: 'below' }, // centred tracked text sits
-      offset: { x: pt(TRACK / 2), y: mm(GAP) }, size: { width: 'fill' } } }, // left by TRACK / 2
+    align: 'center', overflow: 'wrap', // a long title takes a second line
+    placement: { anchor: { to: '#numeral', edge: 'below' }, offset: { y: mm(GAP) },
+      size: { width: 'fill' } } },
   { kind: 'rule', id: 'rule', direction: 'horizontal', thickness: pt(1), color: col('saffron'),
     placement: { ...at('container', 'top', 0, RULE_Y), size: { width: mm(8) } } },
 ] } }; // 11.7 mm deep: the head takes three lines, and the text under it stays on the grid
@@ -62,16 +61,13 @@ const chapters = { level: 1, numberingTemplate: '{1:I}', // {number} prints CXIX
 
 // #region text: a pocket page of 33 lines, in Portuguese
 const bodyText = { fontFamily: TEXT, fontSize: pt(BODY), lineHeight: pt(LEAD),
-  color: col('ink'), referenceColor: col('ink'), // for a :ref added later: main-color does
-  // not reach it in 1.4.1, and it would print blue
-  firstLineIndent: mm(5), // every paragraph indented, the first after a head too
-  maxRuntTracking: 0 }; // 1.4.1 measures a runt fix's tracking but never paints it
-// (gotcha: runt-tracking-unpainted); the fix keeps its word spacing
+  color: col('ink'), referenceColor: col('ink'), // a :ref added later prints in ink
+  firstLineIndent: mm(5) }; // every paragraph indented, the first after a head too
 const page = { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
   backgroundColor: col('paper'),
   margins: { top: mm(TOP), bottom: mm(TRIM.height - TOP - LINES * LEAD * PT), // 16.3 mm
     left: mm(INNER), right: mm(OUTER), mirror: true } };
-const LOCALE = 'pt'; // the Portuguese patterns, by their exact code (gotcha: hyphenation-locales)
+const LOCALE = 'pt'; // the Portuguese hyphenation patterns
 // #endregion
 
 // #region heads: the book's title over the verso, the chapter over the recto, folios at the foot
@@ -80,7 +76,7 @@ const [HEAD_Y, FOLIO_Y] = [8.5, 167]; // mm below the top edge
 const head = (id, content, parity, x) => ({ kind: 'text', id, content, parity,
   pages: 'body', // never on the cover or the plate, which are opener pages
   ...caps(7.5, TRACK), color: col('muted'), align: 'center',
-  placement: at('page', 'top', x + (TRACK / 2) * PT, HEAD_Y) }); // tracking, as in the answer
+  placement: at('page', 'top', x, HEAD_Y) });
 const folio = (id, parity, edge, x) => ({ kind: 'text', id, content: '{pageNumber}', parity,
   pages: 'body', ...caps(7.5, 0), color: col('ink'), placement: at('page', edge, x, FOLIO_Y) });
 const header = { elements: [
@@ -92,18 +88,16 @@ const footer = { elements: [folio('verso-folio', 'even', 'top-left', OUTER),
 // #endregion
 
 // #region cover: the cover and the plate, heading styles that fill a page each
-// span: 'page', in one column too, paints their art whole and keeps the \\ in the title
-// (gotcha: opener-clipped-at-top). A :::pagebreak follows each in the text (gotcha:
-// cover-pagebreak): 1.4.1 drops the cover's reserved room, since its foot band runs past the
-// column (gotcha: opener-taller-than-column), and the plate reserves room down to its caption
-// only, since pictures do not count (gotcha: opener-image-no-reserve).
+// span: 'page', in one column too, makes each an opener page: its art runs past the foot of
+// the text column, and no running head or folio prints on it. Each design reaches the foot of
+// the page, so the heading reserves the whole page and the text starts on the next one.
 const onPage = (y, size) => ({ ...at('page', 'top', 0, y), ...(size && { size }) });
 const cover = { id: 'cover', numbered: false, span: 'page',
   advancedDesign: { enabled: true, slot: { elements: [
     { kind: 'box', id: 'top-band', style: { backgroundColor: col('plum') },
       placement: { ...at('page', 'top-left'), size: { width: 'fill', height: mm(62) } } },
     { kind: 'text', id: 'author', content: '{author}', ...caps(10, 2.4), color: col('paper'),
-      align: 'center', placement: at('page', 'top', 1.2 * PT, 44) },
+      align: 'center', placement: at('page', 'top', 0, 44) },
     { kind: 'text', id: 'title', content: '{titleText}', fontFamily: DISPLAY, fontSize: pt(44),
       lineHeight: 1, color: col('plum'), align: 'center', overflow: 'wrap',
       placement: onPage(72, { width: 'fill' }) },
@@ -114,7 +108,7 @@ const cover = { id: 'cover', numbered: false, span: 'page',
     { kind: 'image', id: 'roundel', resourceId: 'roundel',
       placement: onPage(133, { width: mm(20) }) },
     { kind: 'text', id: 'series', content: 'Coleção Casuarina', ...caps(7.5, 1.8),
-      color: col('saffron'), align: 'center', placement: at('page', 'top', 0.9 * PT, 159) },
+      color: col('saffron'), align: 'center', placement: at('page', 'top', 0, 159) },
   ] } } };
 // The plate faces the first page of text: the morning sea off Flamengo, captioned with the
 // line of chapter CXXIII it illustrates, which the heading carries in its quote attribute.
@@ -123,7 +117,7 @@ const plate = { id: 'plate', numbered: false, span: 'page',
     { kind: 'image', id: 'sea', resourceId: 'sea',
       placement: { ...at('page', 'top-left'), size: { width: 'fill', height: 'fill' } } },
     { kind: 'text', id: 'label', content: '{titleText}', ...caps(7.5, 1.6), color: col('saffron'),
-      align: 'center', placement: at('page', 'top', 0.8 * PT, 146) },
+      align: 'center', placement: at('page', 'top', 0, 146) },
     { kind: 'text', id: 'quote', content: '{attr.quote}', fontFamily: TEXT, italic: true,
       fontSize: pt(8.6), lineHeight: 1.35, color: col('paper'), align: 'center', overflow: 'wrap',
       placement: onPage(152, { width: mm(78) }) },
