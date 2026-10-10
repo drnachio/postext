@@ -4,7 +4,6 @@
 // Fonts: Noto Serif, Lexend, Barlow Semi Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
-  defaultResourceTypes,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -83,7 +82,7 @@ const moreStyles = [
 // #region opener: a cell cut by the corner of the page, the chapter number inside it
 const text = (id, content, family, size, color, placement, extra) => ({ kind: 'text', id,
   content, fontFamily: family, fontSize: pt(size), color: col(color), placement,
-  overflow: 'wrap', align: 'left', ...extra }); // gotcha: overflow-ellipsis-default
+  align: 'left', ...extra }); // an opener's texts wrap by default
 const below = (id, y, width) => ({ anchor: { to: `#${id}`, edge: 'below' },
   offset: { y: mm(y) }, size: { width: mm(width) } });
 const chapter = t({ en: 'Chapter {chapterNumber}', es: 'Capítulo {chapterNumber}' });
@@ -119,8 +118,7 @@ const footer = { elements: [{ ...head('drop', '{pageNumber}', 'all', 'bottom', 0
   pages: 'opener' }] };
 
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes only (gotcha: hyphenation-locales)
-  resourceTypes: defaultResourceTypes(LANG), // "Figura" (gotcha: resource-types-locale)
+  locale: t({ en: 'en-us', es: 'es' }), // hyphenation, and "Figura" in the Spanish captions
   colorPalette, header, footer,
   page: { width: mm(210), height: mm(280), dpi: 150, margins: { top: mm(24), bottom: mm(22),
     left: mm(20), right: mm(OUTER), mirror: true } }, // left is the inner margin
@@ -129,7 +127,7 @@ const config = () => ({
     color: col('ink'), boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('band'),
     textAlign: 'justify', firstLineIndent: mm(4), indentAfterHeading: false }, // hyphens: default
   headings: { fontFamily: 'Lexend', color: col('band'), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // 'odd': a chapter opens on a recto, with a blank verso before it only when needed.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
       marginTop: pt(0), marginBottom: pt(0), advancedDesign: opener },
     { level: 2, fontSize: pt(12.5), lineHeight: pt(LEAD), numberingTemplate: '{1}.{2}',
@@ -137,8 +135,8 @@ const config = () => ({
     { level: 3, fontSize: pt(10.5), lineHeight: pt(LEAD), color: col('tip'),
       marginTop: pt(LEAD), marginBottom: pt(0) }, // a line clear of the text, on its box
   ] },
-  // In 1.4.1 a box's lists.color reaches its numbers only if it differs from these bullets'.
-  unorderedLists: { color: col('ink'), marginTop: pt(0), marginBottom: pt(0) },
+  // Every list here is in a box, whose lists.color sets its bullets and its numbers alike.
+  unorderedLists: { marginTop: pt(0), marginBottom: pt(0) },
   orderedLists: { fontFamily: 'Lexend', color: col('tip'), marginTop: pt(0), marginBottom: pt(0) },
   calloutStyles: [...calloutStyles, ...moreStyles],
   captionStyle: { fontFamily: LABEL, fontSize: pt(8.8), color: col('ink'),
@@ -180,7 +178,7 @@ const resources = [
 // #endregion
 
 // #region art: the icons and the drawings, in the palette's colours (seeded)
-// No words in them: an SVG drawn as an image cannot use web fonts (gotcha: svg-no-webfonts).
+// No words in them: the captions name the colours, so one drawing serves both editions.
 function rng(seed) { // Mulberry32: the same drawing on every run
   return () => {
     seed = (seed + 0x6d2b79f5) | 0;

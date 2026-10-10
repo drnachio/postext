@@ -28,7 +28,7 @@ Six kinds of box share three hues: magenta for the objectives and the self-check
 
 ### 3 · Stripe, tab and badge
 
-The code is [the short answer](#the-short-answer) above. The objectives' stripe is 7.5 mm wide and its target 5 mm, so the icon sits inside the colour with room on either side. The tab's `offset` equals its `height`, which stands the tab on the top edge of the box, clear of the title. `'top-left'` is the outer corner of this verso; the flask follows the tab, and the rule runs along the top edge from the flask to the far corner. `position: 'corner'` hangs the warning's badge half its width past the edge, and `cornerSide: 'outer'` sends it to the fore-edge side, the left on this verso. On that side the engine indents the title to clear the badge unless the padding already covers half the badge plus the title gap, so the warning pads both sides by `BADGE / 2 + GAP` and its title lines up with its text. Only this box has a `borderRadius`. On a striped box the stripe is painted as a separate square bar, so the corners on that side would stay square ([callout styles](/en/docs/configuration#callout-styles)).
+The code is [the short answer](#the-short-answer) above. The objectives' stripe is 7.5 mm wide and its target 5 mm, so the icon sits inside the colour with room on either side. The tab's `offset` equals its `height`, which stands the tab on the top edge of the box, clear of the title. `'top-left'` is the outer corner of this verso; the flask follows the tab, and the rule runs along the top edge from the flask to the far corner. `position: 'corner'` hangs the warning's badge half its width past the edge, and `cornerSide: 'outer'` sends it to the fore-edge side, the left on this verso. On that side the engine indents the title to clear the badge unless the padding already covers half the badge plus the title gap, so the warning pads both sides by `BADGE / 2 + GAP` and its title lines up with its text. Only this box has a `borderRadius`: it is the one box with a frame, and a 1.4 mm radius softens its corners. A radius on a striped box would round the stripe's outer corners with it ([callout styles](/en/docs/configuration#callout-styles)).
 
 ### 4 · Three more devices
 
@@ -40,7 +40,7 @@ The study tip's stripe is 2.5 pt wide against a 6.4 mm bulb badge, so it prints 
 
 <Excerpt region="icons" />
 
-Every icon, the flask beside the tab and the opener's cell are SVG resources declared with the content and registered by file id. A style names them by resource id, and because the text never cites them, none of them becomes a numbered figure. Glyphs such as ✓ or ☞ would be shorter to write, but the Fontsource latin files the pages load do not have them: the canvas would borrow them from a system font, and a PDF would drop them. The drawings carry no words either, because an SVG drawn as an image cannot use the page's fonts; the captions name the colours instead.
+Every icon, the flask beside the tab and the opener's cell are SVG resources declared with the content and registered by file id. A style names them by resource id, and because the text never cites them, none of them becomes a numbered figure. Glyphs such as ✓ or ☞ would be shorter to write, but the Fontsource latin files the pages load do not have them: the canvas would borrow them from a system font, and a PDF would drop them. The drawings carry no words either: the captions name the colours, so one drawing serves both editions.
 
 ### 6 · Open the chapter with a cell
 
@@ -82,4 +82,4 @@ The cell is an image element anchored to the page's top-right corner and pushed 
 - The tab prints only when the fence has `label="BOX 2.1"` and the style has a `label` object. A style without one ignores the attribute.
 - Postext does not number boxes. The label is the fence's literal text, so you type each number, BOX 2.1, BOX 2.2, by hand.
 - A corner badge hangs half its width past the side of the box, into the margin on the outer side of the page. In the other column of the same page it hangs into the gutter, so keep boxes with badges in the outer column or leave them room.
-- A box recolours its bullets and numbers only where its `lists.color` differs from `unorderedLists.color`. If both are the same magenta, a numbered list inside the box takes `orderedLists.color` instead, which is why this document sets its own bullets in ink.
+- A box's `lists.color` colours its bullets and the numbers of its ordered lists alike, so the numbered steps and questions here print in their box's hue. To colour only a box's bullets, leave `lists.color` out of its style and set `unorderedLists.color` for the document; the numbers then keep `orderedLists.color`.
