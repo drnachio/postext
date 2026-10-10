@@ -18,7 +18,7 @@ pageNotes: { "1": "A capa: uma faixa azul-marinho nos três quintos superiores, 
 
 <Excerpt region="identity" />
 
-O postext-pdf grava o idioma das tags a partir de `locale`, aqui `/Lang es`, para que um leitor de tela leia o guia com pronúncia espanhola; sem isso, o arquivo declara `en-US`. O `title` e o `author` do frontmatter de `content.es.md` viram o título e o autor do PDF, e o arquivo pede aos visualizadores que mostrem esse título na barra da janela em vez do nome do arquivo. `defaultResourceTypes(LANG)` dá às legendas e às citações seus nomes em espanhol: “Figura 1.1”, “tabla 1.1”. [A resposta curta](#a-resposta-curta) dá à figura e às tabelas seu texto acessível: o `altText` vira a descrição alternativa da figura (`/Alt`) e o `/Summary` de cada tabela, e a primeira linha e a primeira coluna das duas tabelas são etiquetadas como células de cabeçalho.
+O postext-pdf grava o idioma das tags a partir de `locale`, aqui `/Lang es`, para que um leitor de tela leia o guia com pronúncia espanhola; sem isso, o arquivo declara `en-US`. O `title` e o `author` do frontmatter de `content.es.md` viram o título e o autor do PDF, e o arquivo pede aos visualizadores que mostrem esse título na barra da janela em vez do nome do arquivo. O mesmo `locale` dá às legendas e às citações seus nomes em espanhol: “Figura 1.1”, “tabla 1.1”. [A resposta curta](#a-resposta-curta) dá à figura e às tabelas seu texto acessível: o `altText` vira a descrição alternativa da figura (`/Alt`) e o `/Summary` de cada tabela, e a primeira linha e a primeira coluna das duas tabelas são etiquetadas como células de cabeçalho.
 
 ### 2 · Uma só estrutura de títulos, e uma faixa de capa só com o título
 
@@ -30,13 +30,13 @@ A árvore de tags tira seus elementos H1 e H2 dos títulos do Markdown, e os mar
 
 <Excerpt region="contents" />
 
-`:::toc` lista os H1 e os H2 com os números de página que eles imprimem, e no PDF cada uma das onze linhas leva ao alto da sua página. As citações `:ref` “figura 1.1” e “tabla 1.1”, na página 3, e “tabla 2.1”, na página 4, levam à figura e às tabelas. As linhas pontilhadas usam a letra dos números de página, Atkinson Hyperlegible Next Bold, porque na Public Sans uma sequência de pontos finais fica mais espaçada que o ponto isolado a partir do qual a linha é calculada, e os pontos invadiam os números.
+`:::toc` lista os H1 e os H2 com os números de página que eles imprimem, e no PDF cada uma das onze linhas leva ao alto da sua página. As citações `:ref` “figura 1.1” e “tabla 1.1”, na página 3, e “tabla 2.1”, na página 4, levam à figura e às tabelas. Os números de página vão na fonte do texto, Atkinson Hyperlegible Next Bold, e as linhas pontilhadas tomam a fonte dos números, não a Public Sans das entradas.
 
 ### 4 · A ordem de leitura, desenhada na página
 
 <Excerpt region="reading-order" />
 
-Um leitor de tela segue as tags, e `renderToPdf` etiqueta cada página na ordem em que a pinta: o título da faixa, a primeira coluna de cima para baixo, a segunda e, por fim, os flutuantes da página. Esta função repete essa ordem para numerar as caixas da página 3, e a árvore de estrutura do PDF lista os mesmos catorze elementos na mesma ordem. É por causa dessa ordem que a figura e as duas tabelas ficam no fluxo, com `placement: { position: 'here' }` e uma linha `::resource`. Flutuando no pé da primeira coluna, a figura 1.1 seria etiquetada depois da tabela 1.1, o último bloco da página. O parágrafo sobre o vidro que continua na segunda coluna mantém um só número, 9, porque o PDF etiqueta as duas partes como um único parágrafo.
+Um leitor de tela segue as tags. `renderToPdf` etiqueta primeiro o título da faixa e depois cada coluna de cima para baixo, e lê um flutuante logo depois do parágrafo que o cita, onde quer que a página o pinte. Esta função repete essa ordem para numerar as caixas da página 3, e a árvore de estrutura do PDF lista os mesmos catorze elementos na mesma ordem. A figura e as duas tabelas ficam no fluxo, com `placement: { position: 'here' }` e uma linha `::resource`, para que quem lê com os olhos também as encontre sob a frase que as cita. O parágrafo sobre o vidro que continua na segunda coluna mantém um só número, 9, porque o PDF etiqueta as duas partes como um único parágrafo.
 
 ### 5 · Cores escolhidas pelo contraste
 
@@ -48,7 +48,7 @@ O PDF/UA-1 não verifica cor, mas a WCAG 2.2 pede 4,5:1 entre o texto e o fundo.
 
 ### Deixe a figura flutuar
 
-Tire o posicionamento e a figura 1.1 flutua para o pé da primeira coluna da página 3, e o PDF a etiqueta depois da tabela 1.1, o último bloco da página.
+Tire o posicionamento e a figura 1.1 flutua para o pé da primeira coluna da página 3. O PDF continua a lê-la depois do parágrafo que a cita, de modo que a sobreposição mantém o número 3 e a ordem das tags não muda.
 
 ```diff
 -  { id: 'contenedores', typeId: 'figure', kind: 'svg', placement: { position: 'here' },
@@ -59,4 +59,4 @@ Tire o posicionamento e a figura 1.1 flutua para o pé da primeira coluna da pá
 
 O código não consegue validar o próprio PDF, porque o veraPDF roda fora do navegador. Baixe o arquivo e rode `verapdf -f ua1 accessible-tagged-pdf.pdf`; a cópia capturada para esta página passa. O validador não sabe dizer se um texto alternativo descreve a imagem, então ouça o guia também com um leitor de tela.
 
-Este guia foi capturado com o postext 1.4.1, em que um link de Markdown imprimia as palavras sem acrescentar nenhum link ao PDF; por isso o colofão imprime o endereço da web completo. A partir do postext 1.10, um link `[text](url)` funciona no PDF e é etiquetado como um elemento `Link` cujo texto são as palavras com o link.
+O colofão imprime o endereço da web completo porque o guia foi escrito para o postext 1.4.1, em que um link de Markdown imprimia as palavras sem acrescentar nenhum link ao PDF. A partir do postext 1.10, um link `[text](url)` funciona no PDF e é etiquetado como um elemento `Link` cujo texto são as palavras com o link.

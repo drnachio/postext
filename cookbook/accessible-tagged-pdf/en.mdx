@@ -18,7 +18,7 @@ pageNotes: { "1": "The cover: a navy band over the top three fifths, with the ti
 
 <Excerpt region="identity" />
 
-postext-pdf writes the language of the tags from `locale`, here `/Lang es`, so a screen reader reads the guide with Spanish pronunciation; without it the file declares `en-US`. The `title` and `author` of the frontmatter in `content.es.md` become the PDF's title and author, and the file asks viewers to show that title in the window bar instead of the file name. `defaultResourceTypes(LANG)` gives the captions and the citations their Spanish names: “Figura 1.1”, “tabla 1.1”. [The short answer](#the-short-answer) gives the figure and the tables their accessible text: `altText` becomes the figure's alternate description (`/Alt`) and each table's `/Summary`, and the first row and the first column of both tables are tagged as header cells.
+postext-pdf writes the language of the tags from `locale`, here `/Lang es`, so a screen reader reads the guide with Spanish pronunciation; without it the file declares `en-US`. The `title` and `author` of the frontmatter in `content.es.md` become the PDF's title and author, and the file asks viewers to show that title in the window bar instead of the file name. The same `locale` gives the captions and the citations their Spanish names: “Figura 1.1”, “tabla 1.1”. [The short answer](#the-short-answer) gives the figure and the tables their accessible text: `altText` becomes the figure's alternate description (`/Alt`) and each table's `/Summary`, and the first row and the first column of both tables are tagged as header cells.
 
 ### 2 · One outline, and a cover band with nothing but the title
 
@@ -30,13 +30,13 @@ The tag tree takes its H1 and H2 elements from the Markdown headings, and the PD
 
 <Excerpt region="contents" />
 
-`:::toc` lists the H1s and H2s with the page labels they print, and in the PDF each of its eleven rows links to the top of its page. The `:ref` citations “figura 1.1” and “tabla 1.1” on page 3 and “tabla 2.1” on page 4 link to the figure and the tables. The leaders take the page numbers' face, Atkinson Hyperlegible Next Bold, because in Public Sans a run of full stops is spaced wider than the single dot the leader is counted from, and the dots ran into the numbers.
+`:::toc` lists the H1s and H2s with the page labels they print, and in the PDF each of its eleven rows links to the top of its page. The `:ref` citations “figura 1.1” and “tabla 1.1” on page 3 and “tabla 2.1” on page 4 link to the figure and the tables. The page numbers are set in the text face, Atkinson Hyperlegible Next Bold, and the leaders take the numbers' face, not the Public Sans of the entries.
 
 ### 4 · Reading order, drawn on the page
 
 <Excerpt region="reading-order" />
 
-A screen reader follows the tags, and `renderToPdf` tags each page in the order it paints it: the band's title, the first column from top to bottom, the second, then the page's floats. This function replays that order to number the boxes on page 3, and the PDF's structure tree lists the same fourteen elements in the same order. That order is why the figure and both tables sit in the flow, with `placement: { position: 'here' }` and a `::resource` line. Floated to the foot of the first column, figure 1.1 would be tagged after table 1.1, the last block on its page. The paragraph on glass that runs into the second column keeps one number, 9, because the PDF tags both parts as one paragraph.
+A screen reader follows the tags. `renderToPdf` tags the band's title first, then each column from top to bottom, and it reads a float right after the paragraph that cites it, wherever the page paints it. This function replays that order to number the boxes on page 3, and the PDF's structure tree lists the same fourteen elements in the same order. The figure and both tables sit in the flow, with `placement: { position: 'here' }` and a `::resource` line, so a sighted reader also meets each one under the sentence that cites it. The paragraph on glass that runs into the second column keeps one number, 9, because the PDF tags both parts as one paragraph.
 
 ### 5 · Colours picked by contrast ratio
 
@@ -48,7 +48,7 @@ PDF/UA-1 does not check colour, but WCAG 2.2 asks for 4.5:1 between text and its
 
 ### Let the figure float
 
-Drop the placement and figure 1.1 floats to the foot of page 3's first column, and the PDF tags it after table 1.1, the last block on the page.
+Drop the placement and figure 1.1 floats to the foot of page 3's first column. The PDF still reads it after the paragraph that cites it, so the overlay keeps its number, 3, and the order of the tags does not change.
 
 ```diff
 -  { id: 'contenedores', typeId: 'figure', kind: 'svg', placement: { position: 'here' },
@@ -59,4 +59,4 @@ Drop the placement and figure 1.1 floats to the foot of page 3's first column, a
 
 The pen cannot validate its own PDF, because veraPDF runs outside the browser. Download the file and run `verapdf -f ua1 accessible-tagged-pdf.pdf`; the copy captured for this page passes. The checker cannot tell whether an alt text describes its picture, so listen to the guide with a screen reader as well.
 
-This guide was captured with postext 1.4.1, where a Markdown link printed its words and added no link to the PDF, so the colophon prints the web address in full. From postext 1.10 a `[text](url)` link is live in the PDF, tagged as a `Link` element whose text is the linked words.
+The colophon prints the web address in full because the guide was written for postext 1.4.1, where a Markdown link printed its words and added no link to the PDF. From postext 1.10 a `[text](url)` link is live in the PDF, tagged as a `Link` element whose text is the linked words.

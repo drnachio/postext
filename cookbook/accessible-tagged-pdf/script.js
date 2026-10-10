@@ -3,7 +3,7 @@
 // Code: MIT · Text: original (CC BY 4.0) · Pictograms: generated in code (CC BY 4.0)
 // Fonts: Atkinson Hyperlegible Next and Mono, Public Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes, parseTSV,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, parseTSV,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -21,7 +21,7 @@ const palette = {
   muted: '#4a5a6e', // footer and colophon: 7.0:1 on white
   paper: '#ffffff',
 };
-// hex beside the id: designs read the hex (gotcha: palette-skips-designs)
+// every colour is linked to its palette entry by id
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // 'main-color' is the id the engine's default styles link to: any default left in them is navy
 const colorPalette = [...Object.entries(palette), ['main-color', palette.navy]]
@@ -41,14 +41,14 @@ const face = (fontFamily, fontWeight, size, more) => ({ fontFamily, fontWeight, 
   ...more });
 const at = (to, edge, x = 0, y = 0) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) } });
 const text = (id, content, style, placement) => ({ kind: 'text', id, content, align: 'left',
-  overflow: 'wrap', ...style, placement }); // default: '…' (gotcha: overflow-ellipsis-default)
+  ...style, placement }); // a heading's design wraps its text; the footer clips its own
 
 // #region answer: the alt text and header cells the tags take from the resources
 // renderToPdf writes a tagged PDF by default: the tag tree follows the headings, paragraphs,
 // lists and boxes of the Markdown. Pictures and tables carry their own accessible text here.
 const table = (id, tsv, columnWidths, caption, altText) => ({ id, typeId: 'table', kind: 'table',
   caption, altText, createdAt: 0, updatedAt: 0, // altText → the Table's /Summary
-  placement: { position: 'here' }, // read where cited, not after the page (gotcha: float-read-last)
+  placement: { position: 'here' }, // set under the sentence that cites it
   table: { model: { headerRowCount: 1, columnWidths, // row 0: TH cells, scope Column
     rows: parseTSV(tsv).rows.map((row) => row.map(({ content }, c) => ({ content: cell(content),
       ...(c === 0 && { isHeader: true }) }))) } } }); // column 0: TH cells, scope Row
@@ -96,7 +96,7 @@ const headingStyles = [
   plain('presentacion', { breakBefore: { enabled: false } }), // gotcha: style-inherits-break
 ];
 const headings = { fontFamily: 'Public Sans', fontWeight: 800, color: col('ink'),
-  levels: [ // restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break)
+  levels: [ // parity 'any': a section opens the next page, whichever side it falls on
     { level: 1, numberingTemplate: '{1}', breakBefore: { enabled: true, parity: 'any' },
       span: 'page', advancedDesign: section, marginBottom: pt(LEAD) }, // 9.7 mm under the band
     { level: 2, fontWeight: 700, fontSize: pt(13.5), lineHeight: pt(LEAD), marginTop: pt(0),
@@ -109,7 +109,7 @@ const [NUMBER, GAP] = [6, 2.5]; // mm: the number column and the gap before a ti
 const toc = { levels: [{ level: 1, ...face('Public Sans', 700, 12), numberWidth: mm(NUMBER),
   numberGap: mm(GAP), marginTop: pt(LEAD / 2) }, { level: 2, indent: mm(NUMBER + GAP) }],
   unnumbered: { indent: mm(NUMBER + GAP) }, leader: { gap: mm(1.5) }, // Presentación: no number
-  // The leaders take this face, not Public Sans (gotcha: toc-leader-kerning)
+  // The page numbers, and the leaders with them, in the text face
   pageNumber: { fontFamily: 'Atkinson Hyperlegible Next', fontWeight: 700, width: mm(8) } };
 // #endregion
 
@@ -123,9 +123,8 @@ const footer = { elements: [ // the PDF tags these as pagination artifacts
 
 const config = () => ({
   // #region identity: the language the PDF declares, and captions in that language
-  locale: LANG, // → /Lang es (it hyphenates justified text only: gotcha ragged-no-hyphenation)
-  resourceTypes: defaultResourceTypes(LANG), // "Figura", "Tabla" (gotcha: resource-types-locale)
-  // /Title and /Author come from the frontmatter, every value quoted (gotcha: quote-frontmatter)
+  locale: LANG, // → /Lang es, and "Figura", "Tabla" in the captions and the citations
+  // /Title and /Author come from the frontmatter's title and author
   // #endregion
   colorPalette, headings, headingStyles, toc, footer,
   header: { elements: [] }, // each page opens with an H1, so the folio goes in the footer
@@ -134,7 +133,7 @@ const config = () => ({
   layout: { gutterWidth: mm(8) }, // two columns: the default layout
   bodyText: { fontFamily: 'Atkinson Hyperlegible Next', fontSize: pt(10.5), lineHeight: pt(LEAD),
     color: col('ink'), boldColor: col('ink'), italicColor: col('ink'), textAlign: 'left',
-    firstLineIndent: mm(0), paragraphSpacing: true }, // ragged, so no runt check: ragged-runts
+    firstLineIndent: mm(0), paragraphSpacing: true }, // ragged right
   unorderedLists: { color: col('ink'), marginTop: pt(0), marginBottom: pt(LEAD) },
   orderedLists: { color: col('ink'), fontWeight: 700, marginTop: pt(0), marginBottom: pt(LEAD) },
   paragraphStyles: [{ id: 'entradilla', fontSize: pt(17), lineHeight: pt(24) },
@@ -156,9 +155,10 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 const dudas = /* @content:dudas */ ''; // TSV, as a spreadsheet exports it: residuo, contenedor
 const horarios = /* @content:horarios */ ''; // TSV: contenedor, días, desde qué hora
 
-// #region reading-order: the order of the tags, which is the order renderToPdf paints the page in
-// An opener band's title, each column from top to bottom, then the page's floats. A paragraph
-// continued in the next column stays one element, so its second part keeps its number.
+// #region reading-order: the order of the tags renderToPdf writes for a page
+// An opener band's title, then each column from top to bottom; a float is read after the text
+// that cites it, wherever it is painted. A paragraph continued in the next column stays one
+// element, so its second part keeps its number.
 const tagOf = (b) => ({ heading: `H${b.headingLevel ?? 1}`, callout: 'Div', listItem: 'LI',
   resource: b.resourceBlock?.kind === 'table' ? 'Table' : 'Figure' })[b.type] ?? 'P';
 function readingOrder(page) {
@@ -170,10 +170,12 @@ function readingOrder(page) {
   };
   const blocks = page.columns.flatMap((c) => c.blocks);
   const title = blocks.find((b) => b.hidden && b.type === 'heading'); // drawn by the band
+  const flow = blocks.filter((b) => !b.hidden);
+  for (const float of page.floats ?? []) { // after the last block up to its place in the source
+    flow.splice(flow.findLastIndex((b) => b.contentIndex <= float.contentIndex) + 1, 0, float);
+  }
   return [...(page.openerBand && title ? [add(title, union(page.openerBand.blocks
-    .filter((b) => b.kind === 'text')))] : []),
-  ...blocks.filter((b) => !b.hidden).map((b) => add(b, b.bbox)),
-  ...(page.floats ?? []).map((b) => add(b, b.bbox))];
+    .filter((b) => b.kind === 'text')))] : []), ...flow.map((b) => add(b, b.bbox))];
 }
 // #endregion
 
