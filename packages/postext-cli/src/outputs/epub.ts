@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { applySingleInkToSvg } from 'postext';
 import { diagramInkHex, mimeForFile } from 'postext/bundle';
-import { renderToEpub, type EpubCover, type EpubFontFile, type RenderToEpubOptions } from 'postext-epub';
+import { renderToEpub, type EpubCover, type EpubFontFile, type EpubWarning, type RenderToEpubOptions } from 'postext-epub';
 import { epubMetadataOf } from '../../../postext-sandbox/src/epub/metadata';
 import type { Options } from '../args';
 import type { FontSet } from '../fonts';
@@ -32,6 +32,23 @@ function coverOf(book: Book, opts: Options): EpubCover | undefined {
   const bytes = book.files.get(book.thumbnail);
   const mediaType = COVER_TYPES[mimeForFile(book.thumbnail)];
   return bytes && mediaType ? { bytes, mediaType } : undefined;
+}
+
+function epubWarningMessage(w: EpubWarning): string {
+  switch (w.kind) {
+    case 'missingFont':
+      return `no face of "${w.family}"${w.weight !== undefined ? ` ${w.weight}` : ''}${w.style === 'italic' ? ' italic' : ''} to embed; readers fall back`;
+    case 'missingImage':
+      return `no bytes for picture ${w.fileId}`;
+    case 'svgFontUnavailable':
+      return `no face of "${w.family}" ${w.weight}${w.style === 'italic' ? ' italic' : ''} to embed in picture ${w.fileId}; its text falls back`;
+    case 'svgFontsTooLarge':
+      return `the faces picture ${w.fileId} names take ${w.bytes} bytes, over the ${w.maxBytes} cap; none was embedded in it`;
+    case 'fontWithheld':
+      return `"${w.family}" is not redistributable and was left out${w.fileId ? ` of picture ${w.fileId}` : ''}; readers fall back`;
+    case 'unsupported':
+      return w.detail;
+  }
 }
 
 export async function writeEpub(book: Book, layout: Layout, fonts: FontSet, opts: Options, reporter: Reporter, out: string): Promise<void> {
@@ -65,9 +82,7 @@ export async function writeEpub(book: Book, layout: Layout, fonts: FontSet, opts
     onWarning: (w) => reporter.warn({
       kind: `epub.${w.kind}`,
       severity: 'warning',
-      message: w.kind === 'missingFont'
-        ? `no face of "${w.family}"${w.weight !== undefined ? ` ${w.weight}` : ''}${w.style === 'italic' ? ' italic' : ''} to embed; readers fall back`
-        : w.kind === 'missingImage' ? `no bytes for picture ${w.fileId}` : w.detail,
+      message: epubWarningMessage(w),
     }),
   };
   const bytes = await reporter.time('epub', () => renderToEpub(layout.docs, options));
