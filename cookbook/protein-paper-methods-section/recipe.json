@@ -45,9 +45,7 @@
     "Q63"
   ],
   "gotchas": [
-    "headings-drop-h1-break",
-    "latin-subset",
-    "svg-no-webfonts"
+    "latin-subset"
   ],
   "engine": {
     "postext": "1.25.0",
