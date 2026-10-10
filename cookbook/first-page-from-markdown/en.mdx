@@ -24,7 +24,7 @@ Postext measures text with the faces the browser holds when the layout runs, so 
 
 <Excerpt region="palette" />
 
-Every colour in the config is `col('id')`, a palette id with its hex beside it. `bodyText.boldColor`, `italicColor`, `referenceColor` and `unorderedLists.color` name `ink`, and `headings.color` names the accent. The engine's defaults for headings, bold, italic and bullets link to `main-color`, and this palette points that entry at the accent, so any of them you leave out comes out indigo instead of blue. Postext 1.4.1 paints header, footer and opener elements, and `referenceColor`, from the hex and ignores the id, so the design objects are factories: `config()` calls them on every build, and `col()` copies the current hex out of `palette` each time. The end mark is an inline swatch that names `band`, so a retint reaches it as well. The default running head does not read the palette and stays blue until you replace it (step 5).
+Every colour in the config is `col('id')`, a palette id with its hex beside it. `bodyText.boldColor`, `italicColor`, `referenceColor` and `unorderedLists.color` name `ink`, and `headings.color` names the accent. The engine's defaults for headings, bold, italic and bullets link to `main-color`, and this palette points that entry at the accent, so any of them you leave out comes out indigo instead of blue. The design objects are functions that `config()` calls on every build, and `col()` copies the current hex out of `palette` each time, so one edit to `palette` reaches the text, the folios and the opener alike. The end mark is an inline swatch that names `band`, so a retint reaches it as well. The default running head links to `main-color` as well, so it would print in the accent until you replace it (step 5).
 
 ### 3 · A photograph cut to its frame
 
@@ -48,7 +48,7 @@ Leave `header` out and the engine's default comes back: Open Sans over a full-wi
 
 <Excerpt region="build" />
 
-`config()` is a function so that every build reads the palette as it stands: it calls the design functions of step 2 again. `buildDocumentWithFonts` takes the content, that config and the kit's font options, and resolves with the document. `showPages` lays the pages out as they sit in a bound book, page 1 alone on the right, and paints each one with `renderPageToCanvas`.
+`config()` is a function so that every build reads the palette as it stands: it calls the design functions of step 2 again. A single config object changed in place would work as well: since postext 1.25 the engine sees the change on the next build. `buildDocumentWithFonts` takes the content, that config and the kit's font options, and resolves with the document. `showPages` lays the pages out as they sit in a bound book, page 1 alone on the right, and paints each one with `renderPageToCanvas`.
 
 ## Variations
 
@@ -86,4 +86,4 @@ Change the accent and the next run paints the folios, the subheads and the end m
 
 ## Pitfalls
 
-- Young Serif ships a single weight. Headings default to bold, so `headings.fontWeight: 400` is required here: without it the kit looks for a bold Young Serif that Fontsource does not have, and the pen stops with an error.
+- Young Serif ships a single weight. Headings default to bold, so `headings.fontWeight: 400` is required here: without it the subheads ask for a bold Young Serif that Fontsource does not have, the browser thickens the regular, and `doc.contentWarnings` lists the face as `fontFallback`.

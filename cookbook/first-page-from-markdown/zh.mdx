@@ -24,7 +24,7 @@ Postext用排版时浏览器里已有的字体测量文字，所以赶在字体�
 
 <Excerpt region="palette" />
 
-配置里的每种颜色都写成`col('id')`，即调色板id加上旁边的十六进制值。`bodyText.boldColor`、`italicColor`、`referenceColor`和`unorderedLists.color`引用`ink`，`headings.color`引用强调色。引擎对标题、粗体、斜体和项目符号的默认颜色都链接到`main-color`，而这个调色板把该项指向强调色，所以你没写的那些会变成靛蓝而不是蓝色。Postext 1.4.1绘制页眉、页脚和章首页元素以及`referenceColor`时用的是十六进制值，忽略id，所以设计对象写成工厂函数：`config()`在每次构建时调用它们，`col()`每次都从`palette`里复制当前的十六进制值。文末符号是一个引用`band`的行内色块，所以换色也会影响它。默认书眉不读调色板，替换它之前一直是蓝色（第5步）。
+配置里的每种颜色都写成`col('id')`，即调色板id加上旁边的十六进制值。`bodyText.boldColor`、`italicColor`、`referenceColor`和`unorderedLists.color`引用`ink`，`headings.color`引用强调色。引擎对标题、粗体、斜体和项目符号的默认颜色都链接到`main-color`，而这个调色板把该项指向强调色，所以你没写的那些会变成靛蓝而不是蓝色。设计对象写成函数，`config()`在每次构建时调用它们，`col()`每次都从`palette`里复制当前的十六进制值，所以只改`palette`一处，正文、页码和章首页都会跟着变。文末符号是一个引用`band`的行内色块，所以换色也会影响它。默认书眉也链接到`main-color`，所以在替换它之前会印成强调色（第5步）。
 
 ### 3 · 裁成画框大小的照片
 
@@ -48,7 +48,7 @@ Postext用排版时浏览器里已有的字体测量文字，所以赶在字体�
 
 <Excerpt region="build" />
 
-`config()`是一个函数，这样每次构建都读到调色板当前的值：它会再次调用第2步里的设计工厂函数。`buildDocumentWithFonts`接收内容、这份配置和套件的字体选项，返回排好的文档。`showPages`按装订成书的样子摆放页面，第1页单独在右侧，并用`renderPageToCanvas`绘制每一页。
+`config()`是一个函数，这样每次构建都读到调色板当前的值：它会再次调用第2步里的设计函数。只用一个配置对象、就地修改也可以：从postext 1.25起，引擎会在下一次构建时发现改动。`buildDocumentWithFonts`接收内容、这份配置和套件的字体选项，返回排好的文档。`showPages`按装订成书的样子摆放页面，第1页单独在右侧，并用`renderPageToCanvas`绘制每一页。
 
 ## 变化
 
@@ -86,4 +86,4 @@ Postext用排版时浏览器里已有的字体测量文字，所以赶在字体�
 
 ## 常见问题
 
-- Young Serif只有一个字重。标题默认是粗体，所以这里必须写`headings.fontWeight: 400`：不写的话，工具会去找Fontsource没有的粗体Young Serif，pen会报错停止。
+- Young Serif只有一个字重。标题默认是粗体，所以这里必须写`headings.fontWeight: 400`：不写的话，标题会要Fontsource没有的粗体Young Serif，浏览器把常规体加粗凑数，`doc.contentWarnings`里会把这个字体记为`fontFallback`。

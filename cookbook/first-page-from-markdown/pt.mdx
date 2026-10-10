@@ -24,7 +24,7 @@ O Postext mede o texto com as fontes que o navegador tem na hora de compor, ent�
 
 <Excerpt region="palette" />
 
-Toda cor da configuração é `col('id')`, um identificador da paleta com o hexadecimal ao lado. `bodyText.boldColor`, `italicColor`, `referenceColor` e `unorderedLists.color` apontam para `ink`, e `headings.color` aponta para a cor de destaque. Os padrões do motor para títulos, negrito, itálico e marcadores estão ligados a `main-color`, e esta paleta aponta essa entrada para a cor de destaque, de modo que qualquer um deles que você deixar de fora sai anil, e não azul. O Postext 1.4.1 pinta os elementos de cabeçalho, de rodapé e de abertura, e também `referenceColor`, com o hexadecimal e ignora o identificador; por isso os objetos de design são funções: `config()` as chama a cada composição, e `col()` copia de `palette` o hexadecimal vigente toda vez. O sinal de fim é uma amostra de cor em linha que aponta para `band`, então uma troca de cor também chega a ele. O cabeço padrão não lê a paleta e continua azul até você substituí-lo (passo 5).
+Toda cor da configuração é `col('id')`, um identificador da paleta com o hexadecimal ao lado. `bodyText.boldColor`, `italicColor`, `referenceColor` e `unorderedLists.color` apontam para `ink`, e `headings.color` aponta para a cor de destaque. Os padrões do motor para títulos, negrito, itálico e marcadores estão ligados a `main-color`, e esta paleta aponta essa entrada para a cor de destaque, de modo que qualquer um deles que você deixar de fora sai anil, e não azul. Os objetos de design são funções que `config()` chama a cada composição, e `col()` copia de `palette` o hexadecimal vigente toda vez, então uma só mudança em `palette` chega do mesmo jeito ao texto, aos fólios e à abertura. O sinal de fim é uma amostra de cor em linha que aponta para `band`, então uma troca de cor também chega a ele. O cabeço padrão também está ligado a `main-color`, então sairia na cor de destaque até você substituí-lo (passo 5).
 
 ### 3 · Uma fotografia cortada no seu quadro
 
@@ -48,7 +48,7 @@ Deixe `header` de fora e volta o padrão do motor: Open Sans sobre um fio de lar
 
 <Excerpt region="build" />
 
-`config()` é uma função para que cada composição leia a paleta como ela está: chama de novo as funções de design do passo 2. `buildDocumentWithFonts` recebe o conteúdo, essa configuração e as opções de fontes do kit, e devolve o documento. `showPages` dispõe as páginas como ficam num livro encadernado, com a página 1 sozinha à direita, e pinta cada uma com `renderPageToCanvas`.
+`config()` é uma função para que cada composição leia a paleta como ela está: chama de novo as funções de design do passo 2. Um único objeto de configuração alterado no lugar também serviria: desde o postext 1.25 o motor vê a mudança na composição seguinte. `buildDocumentWithFonts` recebe o conteúdo, essa configuração e as opções de fontes do kit, e devolve o documento. `showPages` dispõe as páginas como ficam num livro encadernado, com a página 1 sozinha à direita, e pinta cada uma com `renderPageToCanvas`.
 
 ## Variações
 
@@ -86,4 +86,4 @@ Mude a cor de destaque e a execução seguinte pinta na nova cor os fólios, os 
 
 ## Erros comuns
 
-- A Young Serif tem um peso só. Os títulos saem em negrito por padrão, então aqui `headings.fontWeight: 400` é obrigatório: sem ele, o kit procura uma Young Serif negrito que o Fontsource não tem, e o pen para com um erro.
+- A Young Serif tem um peso só. Os títulos saem em negrito por padrão, então aqui `headings.fontWeight: 400` é obrigatório: sem ele, os títulos pedem uma Young Serif negrito que o Fontsource não tem, o navegador engrossa a regular e `doc.contentWarnings` registra a fonte como `fontFallback`.

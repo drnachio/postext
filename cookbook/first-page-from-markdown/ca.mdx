@@ -24,7 +24,7 @@ Postext mesura el text amb les fonts que el navegador té quan es compon, de man
 
 <Excerpt region="palette" />
 
-Cada color de la configuració és `col('id')`, un identificador de la paleta amb el seu valor hexadecimal al costat. `bodyText.boldColor`, `italicColor`, `referenceColor` i `unorderedLists.color` apunten a `ink`, i `headings.color`, a l'accent. Els valors per defecte del motor per a títols, negretes, cursives i pics estan enllaçats a `main-color`, i aquesta paleta dona a aquesta entrada el color de l'accent, de manera que qualsevol d'ells que no fixis surt anyil i no blau. A Postext 1.4.1, els elements de capçaleres, peus i obertures, i també `referenceColor`, es pinten amb el valor hexadecimal, no amb l'identificador; per això els objectes de disseny són funcions que `config()` crida a cada composició, i `col()` copia cada vegada el valor vigent de `palette`. El signe de fi és una mostra de color en línia que anomena `band`, així que també canvia amb la paleta. La capçalera per defecte no llegeix la paleta i es queda blava fins que la substitueixis (pas 5).
+Cada color de la configuració és `col('id')`, un identificador de la paleta amb el seu valor hexadecimal al costat. `bodyText.boldColor`, `italicColor`, `referenceColor` i `unorderedLists.color` apunten a `ink`, i `headings.color`, a l'accent. Els valors per defecte del motor per a títols, negretes, cursives i pics estan enllaçats a `main-color`, i aquesta paleta dona a aquesta entrada el color de l'accent, de manera que qualsevol d'ells que no fixis surt anyil i no blau. Els objectes de disseny són funcions que `config()` crida a cada composició, i `col()` copia cada vegada el valor vigent de `palette`, així que un sol canvi a `palette` arriba igualment al text, als folis i a l'obertura. El signe de fi és una mostra de color en línia que anomena `band`, així que també canvia amb la paleta. La capçalera per defecte també està enllaçada a `main-color`, així que sortiria en el color de l'accent fins que la substitueixis (pas 5).
 
 ### 3 · Una fotografia retallada al seu marc
 
@@ -48,7 +48,7 @@ Si omets `header`, torna la capçalera per defecte del motor: Open Sans sobre un
 
 <Excerpt region="build" />
 
-`config()` és una funció perquè cada composició llegeixi la paleta tal com està: torna a cridar les funcions de disseny del pas 2. `buildDocumentWithFonts` rep el contingut, aquesta configuració i les opcions de fonts del kit, i torna el document. `showPages` col·loca les pàgines com anirien en un llibre enquadernat, amb la pàgina 1 sola a la dreta, i pinta cadascuna amb `renderPageToCanvas`.
+`config()` és una funció perquè cada composició llegeixi la paleta tal com està: torna a cridar les funcions de disseny del pas 2. També valdria un únic objecte de configuració modificat al seu lloc: des de postext 1.25 el motor veu el canvi a la composició següent. `buildDocumentWithFonts` rep el contingut, aquesta configuració i les opcions de fonts del kit, i torna el document. `showPages` col·loca les pàgines com anirien en un llibre enquadernat, amb la pàgina 1 sola a la dreta, i pinta cadascuna amb `renderPageToCanvas`.
 
 ## Variants
 
@@ -86,4 +86,4 @@ Canvia l'accent i la següent execució pinta amb el nou color els folis, els su
 
 ## Errors freqüents
 
-- Young Serif només té un pes. Els títols van en negreta per defecte, així que aquí `headings.fontWeight: 400` és obligatori: sense això, el kit cerca una Young Serif negreta que Fontsource no té i el pen s'atura amb un error.
+- Young Serif només té un pes. Els títols van en negreta per defecte, així que aquí `headings.fontWeight: 400` és obligatori: sense això, els títols demanen una Young Serif negreta que Fontsource no té, el navegador engruixeix la normal i `doc.contentWarnings` anota la font com a `fontFallback`.

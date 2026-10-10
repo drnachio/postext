@@ -24,7 +24,7 @@ Postext mide el texto con las fuentes que el navegador tiene cuando se compone, 
 
 <Excerpt region="palette" />
 
-Cada color de la configuración es `col('id')`, un identificador de la paleta con su valor hexadecimal al lado. `bodyText.boldColor`, `italicColor`, `referenceColor` y `unorderedLists.color` apuntan a `ink`, y `headings.color`, al acento. Los valores por defecto del motor para títulos, negritas, cursivas y viñetas están enlazados a `main-color`, y esta paleta da a esa entrada el color del acento, de modo que cualquiera de ellos que no fijes sale añil y no azul. En Postext 1.4.1, los elementos de cabeceras, pies y aperturas, y también `referenceColor`, se pintan con el valor hexadecimal, no con el identificador; por eso los objetos de diseño son funciones que `config()` llama en cada composición, y `col()` copia cada vez el valor vigente de `palette`. El signo de fin es una muestra de color en línea que nombra `band`, así que también cambia con la paleta. La cabecera por defecto no lee la paleta y se queda azul hasta que la sustituyas (paso 5).
+Cada color de la configuración es `col('id')`, un identificador de la paleta con su valor hexadecimal al lado. `bodyText.boldColor`, `italicColor`, `referenceColor` y `unorderedLists.color` apuntan a `ink`, y `headings.color`, al acento. Los valores por defecto del motor para títulos, negritas, cursivas y viñetas están enlazados a `main-color`, y esta paleta da a esa entrada el color del acento, de modo que cualquiera de ellos que no fijes sale añil y no azul. Los objetos de diseño son funciones que `config()` llama en cada composición, y `col()` copia cada vez el valor vigente de `palette`, así que un solo cambio en `palette` llega por igual al texto, a los folios y a la apertura. El signo de fin es una muestra de color en línea que nombra `band`, así que también cambia con la paleta. La cabecera por defecto también está enlazada a `main-color`, así que saldría en el color del acento hasta que la sustituyas (paso 5).
 
 ### 3 · Una fotografía recortada a su marco
 
@@ -48,7 +48,7 @@ Si omites `header`, vuelve la cabecera por defecto del motor: Open Sans sobre un
 
 <Excerpt region="build" />
 
-`config()` es una función para que cada composición lea la paleta tal como está: vuelve a llamar a las funciones de diseño del paso 2. `buildDocumentWithFonts` recibe el contenido, esa configuración y las opciones de fuentes del kit, y devuelve el documento. `showPages` coloca las páginas como irían en un libro encuadernado, con la página 1 sola a la derecha, y pinta cada una con `renderPageToCanvas`.
+`config()` es una función para que cada composición lea la paleta tal como está: vuelve a llamar a las funciones de diseño del paso 2. También valdría un único objeto de configuración modificado en su sitio: desde postext 1.25 el motor ve el cambio en la composición siguiente. `buildDocumentWithFonts` recibe el contenido, esa configuración y las opciones de fuentes del kit, y devuelve el documento. `showPages` coloca las páginas como irían en un libro encuadernado, con la página 1 sola a la derecha, y pinta cada una con `renderPageToCanvas`.
 
 ## Variantes
 
@@ -86,4 +86,4 @@ Cambia el acento y la siguiente ejecución pinta con el nuevo color los folios, 
 
 ## Errores frecuentes
 
-- Young Serif tiene un solo peso. Los títulos van en negrita por defecto, así que aquí `headings.fontWeight: 400` es obligatorio: sin él, el kit busca una Young Serif negrita que Fontsource no tiene y el pen se detiene con un error.
+- Young Serif tiene un solo peso. Los títulos van en negrita por defecto, así que aquí `headings.fontWeight: 400` es obligatorio: sin él, los títulos piden una Young Serif negrita que Fontsource no tiene, el navegador engruesa la normal y `doc.contentWarnings` anota la fuente como `fontFallback`.

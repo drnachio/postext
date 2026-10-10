@@ -18,19 +18,8 @@
     ]
   },
   "answers": ["Q25", "Q16", "Q01"],
-  "gotchas": [
-    "palette-skips-designs", "headings-drop-h1-break", "quote-frontmatter",
-    "font-family-one-name", "hyphenation-locales",
-    "overflow-ellipsis-default", "design-lineheight-multiple"
-  ],
-  "workarounds": [
-    { "followup": "EF-71", "package": "postext", "note": "col() writes the palette hex beside each paletteId: 1.4.1 paints the colours of header, footer and opener elements from the inline hex (gotcha palette-skips-designs)" },
-    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
-    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted" },
-    { "followup": "EF-13", "package": "postext", "note": "one family name per fontFamily" },
-    { "followup": "EF-14", "package": "postext", "note": "locale is the exact bundled code ('en-us' | 'es' | 'pt'): a region-tagged code such as 'es-ES' silently hyphenates as American English (gotcha hyphenation-locales)" },
-    { "followup": "EF-56", "package": "postext", "note": "the opener's design texts give lineHeight as a multiple (1, 1.3), never pt(): a dimension measures the opener as NaN and drops its reservation with no warning (gotcha design-lineheight-multiple)" }
-  ],
+  "gotchas": [],
+  "workarounds": [],
   "related": ["magazine-feature-opener", "running-heads-by-parity", "chapter-opener-bleed-band"],
   "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
