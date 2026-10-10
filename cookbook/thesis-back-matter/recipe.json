@@ -47,17 +47,10 @@
     "Q30",
     "Q24"
   ],
-  "gaps": [
-    "ragged-hyphenation"
-  ],
+  "gaps": [],
   "gotchas": [
     "style-inherits-break",
-    "headings-drop-h1-break",
-    "palette-skips-designs",
-    "ragged-no-hyphenation",
-    "pdf-provider-all-styles",
-    "parity-page1-recto",
-    "quote-frontmatter"
+    "parity-page1-recto"
   ],
   "explainsWarnings": [],
   "related": [
@@ -68,54 +61,13 @@
   ],
   "workarounds": [
     {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore (parity odd) is restated because a headings object drops it"
-    },
-    {
       "followup": "EF-60",
       "package": "postext",
       "note": "every back-matter style sets breakBefore itself: without it the glossary, references and index would inherit the chapters’ odd parity and open after blank pages"
     },
     {
-      "followup": "EF-71",
       "package": "postext",
-      "note": "bodyText.referenceColor is restated in ink, and col() writes each colour’s hex beside its paletteId, because the palette reaches neither the reference colour nor the design slots"
-    },
-    {
-      "followup": "EF-113",
-      "package": "postext",
-      "note": "the H1 level keeps span: 'page' on the one-column chapter and appendix pages too: a band laid out in the column is clipped at the column’s top edge, 24 mm below the trim"
-    },
-    {
-      "followup": "EF-64",
-      "package": "postext",
-      "note": "table headers are bold on white between rules: a header filled in ink shows light seams between its cells on the canvas"
-    },
-    {
-      "followup": "EF-20",
-      "package": "postext-pdf",
-      "note": "the PDF asks for an italic Libertinus Serif Display, which Fontsource does not ship; the kit’s fontsourceProvider falls back to the upright"
-    },
-    {
-      "followup": "EF-21",
-      "package": "postext",
-      "note": "the glossary and the references are set ragged, and ragged text is never hyphenated; their entries are short enough that the rag stays shallow"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "every frontmatter value is quoted"
-    },
-    {
-      "followup": "EF-138",
-      "package": "postext",
-      "note": "the chapter numeral and the appendix letter are set at lineHeight 0.72 so that their line fits their box: design text whose line is taller than its box ignores verticalAlign 'bottom' and is set from the top, overflowing downwards"
-    },
-    {
-      "followup": "EF-27",
-      "package": "postext",
-      "note": "the appendix is lettered by hand: in 1.4.1 a heading style cannot change its level's numberingTemplate, so the heading is unnumbered, its letter is an attribute and its tables use a type numbered 'A.{n}'; the working tree's '{1:A}' templates and startAt attribute would replace this once released"
+      "note": "the appendix's tables take a resource type of their own, numbered 'A.{n}': a resource template's {h1} prints the heading counter as a number, never the letter the appendix style's '{1:A}' gives it, so a second appendix needs a second type"
     }
   ],
   "engine": {
