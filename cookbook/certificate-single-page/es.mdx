@@ -28,13 +28,13 @@ Un elemento de imagen dibuja un recurso al tamaño que le da su colocación ([el
 
 <Excerpt region="title" />
 
-Cada línea se ancla al borde `'top'` de la página, que la centra, con una `y` medida desde el corte, de modo que el bloque no se mueve aunque cambien los márgenes; `y()` estira esas posiciones del tamaño carta al A4. El nombre es el propio texto del título, que entra con `{titleText}`, así que aparece en los marcadores y en las etiquetas del PDF. Con `overflow: 'wrap'`, un nombre largo pasa a una segunda línea; con el valor por defecto se cortaría con puntos suspensivos. `centred()` desplaza cada línea espaciada a la derecha la mitad de su espaciado. Sin ese ajuste, cada una queda esa misma distancia a la izquierda del centro de la página: 0,4 mm el antetítulo, 0,5 mm *Diploma* y 0,7 mm *de aprovechamiento*.
+Cada línea se ancla al borde `'top'` de la página, que la centra, con una `y` medida desde el corte, de modo que el bloque no se mueve aunque cambien los márgenes; `y()` estira esas posiciones del tamaño carta al A4. El nombre es el propio texto del título, que entra con `{titleText}`, así que aparece en los marcadores y en las etiquetas del PDF. Un nombre largo pasa a una segunda línea, porque un diseño de título parte su texto (`overflow: 'wrap'`). Las líneas espaciadas no piden corrección: el espaciado que sigue a la última letra queda fuera de la medida, así que lo que se centra son las letras.
 
 ### 4 · Cuelga el sello y las firmas de un mismo borde
 
 <Excerpt region="signatures" />
 
-Todo lo que va en el pie se mide desde `SIGN`, el borde superior del sello, y el margen inferior del estilo cierra la caja de texto en ese mismo borde, así que un texto demasiado largo para la página pasa a la siguiente en vez de meterse bajo el sello. Si estuvieran en la apertura, las líneas y los nombres contarían para su altura ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)), y como llegan por debajo de la caja de texto, 1.4.1 descartaría la reserva entera: el texto empezaría 7,6 mm por debajo del margen superior, montado sobre el título. `LINE` toma el ancho que queda entre los márgenes de la página, le resta el disco del sello (34 mm), lo reparte entre las dos firmas y quita 3 mm a cada mitad, así que cada línea se detiene a 3 mm del sello en los dos formatos (53 mm de largo en A4 y 56 mm en tamaño carta). Cada nombre y cada cargo es un texto tan ancho como su línea, y así queda centrado bajo ella.
+Todo lo que va en el pie se mide desde `SIGN`, el borde superior del sello, y el margen inferior del estilo cierra la caja de texto en ese mismo borde, así que un texto demasiado largo para la página pasa a la siguiente en vez de meterse bajo el sello. Si estuvieran en la apertura, las líneas y los nombres contarían para su altura ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)), y como llegan por debajo de la caja de texto, la apertura se quedaría con la página entera y mandaría el texto a la siguiente. `LINE` toma el ancho que queda entre los márgenes de la página, le resta el disco del sello (34 mm), lo reparte entre las dos firmas y quita 3 mm a cada mitad, así que cada línea se detiene a 3 mm del sello en los dos formatos (53 mm de largo en A4 y 56 mm en tamaño carta). Cada nombre y cada cargo es un texto tan ancho como su línea, y así queda centrado bajo ella.
 
 ### 5 · Convierte la lista de clase en títulos
 
@@ -46,7 +46,7 @@ Cada fila se convierte en un título `#` que nombra el estilo y lleva el número
 
 <Excerpt region="pdf" />
 
-La clase es un único documento, así que `renderToPdf` escribe un solo archivo de tres páginas, con un marcador por título que lleva el nombre del alumno. `renderToPdf` también acepta una lista de documentos, como los capítulos de un libro, pero con un documento por alumno habría que llamar a `buildDocument` para cada uno. Con títulos, la clase entera se compone de una vez, y el visor muestra los tres diplomas de esa misma composición. Además de las cuatro variantes que imprimen las páginas, el PDF pide la negrita y la negrita cursiva de Rosarivo, que Fontsource no tiene: el proveedor de fuentes del kit ajusta cada petición a la variante más cercana de la familia ([¿por qué un proveedor de fuentes?](/es/docs/configuration#por-qué-un-proveedor-de-fuentes)).
+La clase es un único documento, así que `renderToPdf` escribe un solo archivo de tres páginas, con un marcador por título que lleva el nombre del alumno. `renderToPdf` también acepta una lista de documentos, como los capítulos de un libro, pero con un documento por alumno habría que llamar a `buildDocument` para cada uno. Con títulos, la clase entera se compone de una vez, y el visor muestra los tres diplomas de esa misma composición. El PDF incrusta las cuatro variantes que imprimen las páginas, y el proveedor de fuentes del kit las trae de Fontsource ([¿por qué un proveedor de fuentes?](/es/docs/configuration#por-qué-un-proveedor-de-fuentes)).
 
 ## Variantes
 
@@ -75,8 +75,3 @@ El dibujo SVG y la configuración leen el mismo objeto `palette`, así que al ca
 -  teal: '#1f5f5b', // the frame, the title lines
 +  teal: '#2b3a67', // the frame, the title lines
 ```
-
-## Errores frecuentes
-
-- En 1.4.1, un texto de diseño centrado con `letterSpacing` queda medio espacio a la izquierda de su ancla, y uno alineado a la derecha acaba un espacio antes de su ancla, porque su ancho incluye el espaciado que sigue a la última letra. `space()` devuelve las líneas espaciadas a su sitio.
-- postext-pdf 1.4.1 escribe un SVG en el contenido de cada página que lo dibuja, sin una copia compartida: la orla suma unos 205 KB a cada página, así que el PDF de tres páginas pesa 670 KB (58 KB sin la orla) y el de una clase de treinta pesaría unos 6,4 MB.

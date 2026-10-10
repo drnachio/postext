@@ -28,13 +28,13 @@ Um elemento de imagem desenha um recurso no tamanho da sua colocação ([element
 
 <Excerpt region="title" />
 
-Cada linha é ancorada na borda `'top'` da página, o que a centra, com um `y` medido a partir do refile, de modo que o bloco não sai do lugar, sejam quais forem as margens; `y()` estica essas posições do formato Carta para o A4. O nome é o próprio texto do título, lido com `{titleText}`, e por isso aparece nos marcadores e nas tags do PDF. Com `overflow: 'wrap'`, um nome longo passa para uma segunda linha; o valor padrão o cortaria com reticências. `centred()` desloca cada linha espacejada para a direita metade do seu tracking. Sem esse ajuste, cada uma fica essa mesma distância à esquerda do centro da página: 0,4 mm o sobretítulo, 0,5 mm *Certificate* e 0,7 mm *of completion*.
+Cada linha é ancorada na borda `'top'` da página, o que a centra, com um `y` medido a partir do refile, de modo que o bloco não sai do lugar, sejam quais forem as margens; `y()` estica essas posições do formato Carta para o A4. O nome é o próprio texto do título, lido com `{titleText}`, e por isso aparece nos marcadores e nas tags do PDF. Um nome longo passa para uma segunda linha, porque um design de título quebra o seu texto (`overflow: 'wrap'`). As linhas espacejadas não pedem correção: o tracking depois da última letra fica fora da medida, então o que se centra são as letras.
 
 ### 4 · Pendurar o selo e as assinaturas da mesma borda
 
 <Excerpt region="signatures" />
 
-Tudo o que vai no rodapé se mede a partir de `SIGN`, a borda superior do selo, e a margem inferior do estilo fecha a área de texto nessa mesma borda, de modo que um texto comprido demais para a página passa para a seguinte em vez de correr por baixo do selo. Se fossem para a abertura, as linhas e os nomes contariam na altura dela ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)); como descem abaixo da área de texto, a 1.4.1 descartaria a reserva inteira e o texto começaria 7,6 mm abaixo da margem superior, por cima do título. `LINE` pega a largura entre as margens da página, subtrai o disco de 34 mm do selo, divide o resto ao meio e tira 3 mm, então cada linha para a 3 mm do selo nos dois formatos (56 mm de comprimento no Carta, 53 mm no A4). Cada nome e cada função é um elemento de texto da largura da sua linha, e assim fica centrado sob ela.
+Tudo o que vai no rodapé se mede a partir de `SIGN`, a borda superior do selo, e a margem inferior do estilo fecha a área de texto nessa mesma borda, de modo que um texto comprido demais para a página passa para a seguinte em vez de correr por baixo do selo. Se fossem para a abertura, as linhas e os nomes contariam na altura dela ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)); como descem abaixo da área de texto, a abertura ficaria com a página inteira e mandaria o texto para a seguinte. `LINE` pega a largura entre as margens da página, subtrai o disco de 34 mm do selo, divide o resto ao meio e tira 3 mm, então cada linha para a 3 mm do selo nos dois formatos (56 mm de comprimento no Carta, 53 mm no A4). Cada nome e cada função é um elemento de texto da largura da sua linha, e assim fica centrado sob ela.
 
 ### 5 · Transformar a lista da turma em títulos
 
@@ -46,7 +46,7 @@ Cada linha da lista vira um título `#` que nomeia o estilo e leva o número de 
 
 <Excerpt region="pdf" />
 
-A turma é um único documento, então `renderToPdf` grava um só arquivo de três páginas com um marcador por título, cada um com o nome de um aluno. `renderToPdf` também aceita uma lista de documentos, como os capítulos de um livro, mas um documento por aluno exigiria uma chamada a `buildDocument` para cada um. Com títulos, a turma inteira é composta de uma vez, e o visualizador mostra os três certificados dessa mesma composição. Além das quatro variantes que as páginas imprimem, o PDF pede o negrito e o negrito itálico da Rosarivo, que a Fontsource não oferece: o provedor de fontes do kit ajusta cada pedido à variante mais próxima da família ([por que um provedor de fontes?](/pt/docs/configuration#por-que-um-provedor-de-fontes)).
+A turma é um único documento, então `renderToPdf` grava um só arquivo de três páginas com um marcador por título, cada um com o nome de um aluno. `renderToPdf` também aceita uma lista de documentos, como os capítulos de um livro, mas um documento por aluno exigiria uma chamada a `buildDocument` para cada um. Com títulos, a turma inteira é composta de uma vez, e o visualizador mostra os três certificados dessa mesma composição. O PDF incorpora as quatro variantes que as páginas imprimem, e o provedor de fontes do kit as busca na Fontsource ([por que um provedor de fontes?](/pt/docs/configuration#por-que-um-provedor-de-fontes)).
 
 ## Variações
 
@@ -75,8 +75,3 @@ O desenho SVG e a configuração leem o mesmo objeto `palette`, então trocar um
 -  teal: '#1f5f5b', // the frame, the title lines
 +  teal: '#2b3a67', // the frame, the title lines
 ```
-
-## Erros comuns
-
-- Na 1.4.1, um texto de design centrado com `letterSpacing` fica meio espaço de letra à esquerda da sua âncora, e um alinhado à direita termina um espaço inteiro antes, porque a sua largura inclui o tracking depois da última letra. `space()` devolve as linhas espacejadas ao lugar.
-- O postext-pdf 1.4.1 grava um SVG no fluxo de conteúdo de cada página que o desenha, sem uma cópia compartilhada: a moldura acrescenta cerca de 210 KB a cada página, então o PDF de três páginas pesa 694 KB (58 KB sem a moldura) e o de uma turma de trinta pesaria cerca de 6,6 MB.
