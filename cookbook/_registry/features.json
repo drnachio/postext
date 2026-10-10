@@ -8613,19 +8613,25 @@
         "booktabs",
         "horizontal rules",
         "rounded table",
-        "header fill"
+        "header fill",
+        "zebra rows",
+        "bodyAlternateBackground"
       ],
       "es": [
         "tableStyle",
         "filetes horizontales",
         "tabla redondeada",
-        "relleno de cabecera"
+        "relleno de cabecera",
+        "filas alternas",
+        "bodyAlternateBackground"
       ],
       "ca": [
         "tableStyle",
         "filets horitzontals",
         "taula arrodonida",
-        "emplenament de capçalera"
+        "emplenament de capçalera",
+        "files alternes",
+        "bodyAlternateBackground"
       ],
       "zh": [
         "表格样式",
@@ -8634,21 +8640,28 @@
         "圆角表格",
         "表头底色",
         "tableStyle",
-        "booktabs"
+        "booktabs",
+        "斑马纹",
+        "隔行变色",
+        "bodyAlternateBackground"
       ],
       "ar": [
         "tableStyle",
         "booktabs",
         "خطوط أفقية",
         "جدول مستدير الزوايا",
-        "تعبئة الرأس"
+        "تعبئة الرأس",
+        "صفوف متناوبة الألوان",
+        "bodyAlternateBackground"
       ],
       "ja": [
         "tableStyle",
         "booktabs",
         "横罫",
         "角丸の表",
-        "ヘッダーの塗り"
+        "ヘッダーの塗り",
+        "ゼブラ縞",
+        "bodyAlternateBackground"
       ],
       "pt": [
         "tableStyle",
@@ -8656,7 +8669,10 @@
         "fios horizontais",
         "tabela arredondada",
         "preenchimento do cabeçalho",
-        "tabela sem fios"
+        "tabela sem fios",
+        "linhas zebradas",
+        "zebrado",
+        "bodyAlternateBackground"
       ]
     },
     "group": "tables",
@@ -8868,13 +8884,13 @@
       "pt": "Preenchimento de células"
     },
     "definition": {
-      "en": "A palette-linked background per cell, for heat maps, compatibility matrices and zebra rows set by hand.",
-      "es": "Un fondo por celda enlazado a la paleta, para mapas de calor, matrices de compatibilidad y filas alternas hechas a mano.",
-      "ca": "Un fons per cel·la enllaçat a la paleta, per a mapes de calor, matrius de compatibilitat i files alternes fetes a mà.",
-      "zh": "与调色板关联的单元格背景，用于热图、兼容性矩阵和手工设置的斑马纹行。",
-      "ar": "خلفية مرتبطة بلوحة الألوان لكل خلية، للخرائط الحرارية ومصفوفات التوافق والصفوف متناوبة الألوان المضبوطة يدويًا.",
-      "ja": "パレットにひも付けたセルごとの背景色です。ヒートマップ、互換性の表、手作業で付けるゼブラ縞などに使います。",
-      "pt": "Um fundo por célula ligado à paleta, para mapas de calor, matrizes de compatibilidade e linhas zebradas feitas à mão."
+      "en": "A palette-linked background per cell, for heat maps, compatibility matrices and bands that follow the data; plain zebra rows are the table style's (bodyAlternateBackground).",
+      "es": "Un fondo por celda enlazado a la paleta, para mapas de calor, matrices de compatibilidad y bandas que siguen los datos; las filas alternas corrientes las pone el estilo de tabla (bodyAlternateBackground).",
+      "ca": "Un fons per cel·la enllaçat a la paleta, per a mapes de calor, matrius de compatibilitat i bandes que segueixen les dades; les files alternes corrents les posa l'estil de taula (bodyAlternateBackground).",
+      "zh": "与调色板关联的单元格背景，用于热图、兼容性矩阵和随数据变化的色带；普通的斑马纹行由表格样式设置（bodyAlternateBackground）。",
+      "ar": "خلفية مرتبطة بلوحة الألوان لكل خلية، للخرائط الحرارية ومصفوفات التوافق والأشرطة التي تتبع البيانات؛ أما الصفوف متناوبة الألوان العادية فيضعها نمط الجدول (bodyAlternateBackground).",
+      "ja": "パレットにひも付けたセルごとの背景色です。ヒートマップ、互換性の表、データに合わせて変わる帯などに使います。1行おきの普通のゼブラ縞は表スタイルで付けます（bodyAlternateBackground）。",
+      "pt": "Um fundo por célula ligado à paleta, para mapas de calor, matrizes de compatibilidade e faixas que acompanham os dados; as linhas zebradas comuns ficam por conta do estilo de tabela (bodyAlternateBackground)."
     },
     "aliases": {
       "en": [
