@@ -19,22 +19,12 @@
   },
   "answers": ["Q83", "Q40", "Q50", "Q30", "Q31"],
   "gotchas": [
-    "section-last-wins", "style-inherits-break", "headings-drop-h1-break", "header-paints-over-text",
-    "negative-offsets", "palette-skips-designs", "nbsp-breaks", "runt-tracking-unpainted",
-    "hyphenation-locales", "quote-frontmatter"
+    "section-last-wins", "style-inherits-break", "header-paints-over-text",
+    "negative-offsets"
   ],
   "related": ["thesis-back-matter", "anchoring-cheat-sheet", "parts-in-colour"],
   "workarounds": [
-    { "followup": "EF-71", "package": "postext", "note": "every colour of the tabs, the index, the letter heads and the title band carries its hex beside its paletteId, because design slots never read the palette: a reader who swaps colorPalette must rewrite those hexes too" },
-    { "followup": "EF-101", "package": "postext", "note": "a paper-coloured box 45 mm deep sits at the back of the title band: under a page-span heading the column rule starts at the top of the text block and would cross the title and the anchor, although the band is a whole number of grid lines deep" },
-    { "followup": "EF-100", "package": "postext", "note": "the title style sets its hidden heading at body size: a page-span heading is wrapped at the column width, and {titleText} joins the wrapped lines with a space, so at the default H1 size the title broke after 'Word-' and the band printed 'Word- Book'" },
-    { "followup": "EF-05", "package": "postext", "note": "level 1 states breakBefore: { enabled: false }: any headings object already drops the H1 page break in 1.4.1, and the explicit value keeps the letters running on in the column if that default comes back" },
-    { "followup": "EF-60", "package": "postext", "note": "the letter styles set no breakBefore and inherit level 1's disabled break, so B and C open mid-column; a letter that should open a page needs its own breakBefore on its style" },
-    { "followup": "EF-66", "package": "postext", "note": "Lloyd's classes are set closed up (A1, A2): a no-break space still breaks in paragraphs with bold or italic runs, and 'A 1' split across two lines; the Spanish translation is worded so that numbers stay beside their units" },
-    { "followup": "EF-111", "package": "postext", "note": "bodyText.maxRuntTracking: 0, because the negative tracking of a runt fix is measured but never painted" },
-    { "followup": "EF-14", "package": "postext", "note": "locale is the exact bundled code ('en-us' | 'es'); a region-tagged code such as 'es-ES' would hyphenate as American English" },
-    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted, so the verso running head's {title} always prints" },
-    { "followup": "EF-162", "package": "postext", "note": "the same body-size title heading keeps {titleText} on one line: 1.4.1 rebuilds {titleText} from the hidden heading's wrapped lines joined with a space, so a title that wraps after the hyphen of 'Word-Book' prints 'Word- Book' in the band" }
+    { "followup": "EF-60", "package": "postext", "note": "the letter styles set no breakBefore and inherit level 1's disabled break, so B and C open mid-column; a letter that should open a page needs its own breakBefore on its style" }
   ],
   "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
