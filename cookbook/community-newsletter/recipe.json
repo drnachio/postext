@@ -45,64 +45,13 @@
     "Q51"
   ],
   "gaps": [],
-  "gotchas": [
-    "quote-frontmatter",
-    "ragged-no-hyphenation",
-    "ragged-runts",
-    "nbsp-breaks",
-    "headings-drop-h1-break",
-    "palette-skips-designs",
-    "design-lineheight-multiple",
-    "svg-no-webfonts"
-  ],
+  "gotchas": [],
   "explainsWarnings": [],
   "related": [
     "textbook-margin-column",
     "riso-zine-single-ink",
     "figures-float-where-cited",
     "worksheet-answer-boxes"
-  ],
-  "workarounds": [
-    {
-      "followup": "EF-101",
-      "package": "postext",
-      "note": "the straw band of the masthead is drawn over the column rule, which 1.4.1 starts at the top of the text area (20 mm) on page 1, behind the page-span masthead, although the masthead reserves a whole number of grid lines (ten) and the narrow column starts at 67 mm: without the band's fill the rule runs through the name. The gotcha column-rule-through-opener (whole-line opener depth) does not cure it in this column-and-a-half layout, so the recipe explains it in an MDX Pitfalls line instead of citing that gotcha"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "every frontmatter value is quoted, so {publishDate} prints 'Spring 2026' in the issue tab and the running head (gotcha quote-frontmatter)"
-    },
-    {
-      "followup": "EF-21",
-      "package": "postext",
-      "note": "the text is ragged and so never hyphenated; nothing in the write-up claims hyphenation, and the rag in the 57 mm column is fitted by rewording (gotcha ragged-no-hyphenation)"
-    },
-    {
-      "followup": "EF-147",
-      "package": "postext",
-      "note": "ragged paragraphs get no runt control in 1.4.1, so the standfirst, the briefs, the notices and the box text were reworded in both editions until no paragraph ends on a lone short word (gotcha ragged-runts)"
-    },
-    {
-      "followup": "EF-66",
-      "package": "postext",
-      "note": "no no-break spaces: pairs such as 63 °C, 15 June, 30 centimetres, plot 52 and 30 de abril were reworded in each edition until they fall mid-line, since U+00A0 still breaks (gotcha nbsp-breaks)"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore is restated because any headings object drops it (gotcha headings-drop-h1-break); the masthead is the first block, so it breaks nothing today"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes each colour's hex beside its paletteId, because 1.4.1 does not apply colorPalette to design elements (the band, the nameplate, the tab, the running head), and bodyText.referenceColor is restated in leaf because the palette does not reach it either: the pages carry no :ref, but a label added later would print the default blue (gotcha palette-skips-designs)"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the nameplate's lineHeight is 0.9, a multiple of its 60 pt size: a pt() value would drop the masthead's reserved height (gotcha design-lineheight-multiple)"
-    }
   ],
   "engine": {
     "postext": "1.25.0"

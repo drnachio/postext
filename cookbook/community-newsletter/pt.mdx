@@ -22,7 +22,7 @@ As configurações de layout estão [na resposta curta](#a-resposta-curta), lá 
 
 <Excerpt region="masthead" />
 
-O H1 recebe um estilo de título cujo design desenha o cabeçalho do boletim, e `span: 'page'` põe esse design por cima das duas colunas. `{titleText}` em 60 pt quebra em duas linhas na sua caixa de 178 mm. A aba junta `{attr.issue}`, escrito na linha do H1, e `{publishDate}`, do frontmatter, que precisa ser uma string entre aspas ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). Sem `minHeight`, o cabeçalho reservaria espaço até a borda inferior da faixa, a 62 mm da borda superior, e o texto começaria na linha seguinte da grade, a 62,5 mm, encostado na faixa. Um `minHeight` de dez linhas da grade faz o texto começar a 67 mm.
+O H1 recebe um estilo de título cujo design desenha o cabeçalho do boletim, e `span: 'page'` põe esse design por cima das duas colunas. `{titleText}` em 60 pt quebra em duas linhas na sua caixa de 178 mm. A aba junta `{attr.issue}`, escrito na linha do H1, e `{publishDate}`, do frontmatter ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). Sem `minHeight`, o cabeçalho reservaria espaço até a borda inferior da faixa, a 62 mm da borda superior, e o texto começaria na linha seguinte da grade, a 62,5 mm, encostado na faixa. Um `minHeight` de dez linhas da grade faz o texto começar a 67 mm.
 
 ### 3 · Marque as notas com chips
 
@@ -56,7 +56,3 @@ A coluna larga continua sendo lida primeiro, então o mesmo Markdown põe a mat�
 ### Distribua as notas na largura da página
 
 O texto corrido tem no máximo duas colunas. A <RecipeLink slug="newspaper-front-page">primeira página de jornal</RecipeLink> espalha quatro notas na largura do pé da página num boxe com `:::columns{count=4}`.
-
-## Erros comuns
-
-- Neste layout, o fio entre colunas da página 1 começa no alto da mancha, atrás do cabeçalho, não importa quantas linhas da grade o cabeçalho reserve. A faixa cor de palha é pintada por cima; um cabeçalho sem faixa preenchida mostraria o fio atravessando o nome.

@@ -22,7 +22,7 @@ Los ajustes de la disposición están en [la respuesta corta](#la-respuesta-cort
 
 <Excerpt region="masthead" />
 
-El H1 lleva un estilo de título cuyo diseño dibuja la mancheta, y `span: 'page'` pone ese diseño sobre las dos columnas. `{titleText}`, a 60 pt, se parte en dos líneas en su caja de 178 mm. La pestaña une `{attr.issue}`, escrito en la línea del H1, y `{publishDate}`, del frontmatter, que tiene que ser una cadena entre comillas ([elementos de texto](/es/docs/configuration#elementos-de-texto)). Sin `minHeight`, la mancheta reservaría espacio hasta el pie de la franja, a 62 mm del borde superior, y el texto empezaría en la línea siguiente de la rejilla base, a 62,5 mm, pegado a la franja. Con un `minHeight` de diez líneas de la rejilla, empieza a 67 mm.
+El H1 lleva un estilo de título cuyo diseño dibuja la mancheta, y `span: 'page'` pone ese diseño sobre las dos columnas. `{titleText}`, a 60 pt, se parte en dos líneas en su caja de 178 mm. La pestaña une `{attr.issue}`, escrito en la línea del H1, y `{publishDate}`, del frontmatter ([elementos de texto](/es/docs/configuration#elementos-de-texto)). Sin `minHeight`, la mancheta reservaría espacio hasta el pie de la franja, a 62 mm del borde superior, y el texto empezaría en la línea siguiente de la rejilla base, a 62,5 mm, pegado a la franja. Con un `minHeight` de diez líneas de la rejilla, empieza a 67 mm.
 
 ### 3 · Etiqueta los breves con chips
 
@@ -56,7 +56,3 @@ La columna ancha se sigue leyendo primero, así que el mismo Markdown pone la no
 ### Pon los breves a lo ancho de la página
 
 El cuerpo tiene como mucho dos columnas de texto. La <RecipeLink slug="newspaper-front-page">portada de periódico</RecipeLink> reparte cuatro breves a lo ancho del pie de la página en un recuadro con `:::columns{count=4}`.
-
-## Errores frecuentes
-
-- En esta disposición, el filete de columna de la página 1 empieza en lo alto de la caja de texto, detrás de la mancheta, reserve esta las líneas que reserve. La franja color paja se pinta encima; una mancheta sin franja de color dejaría ver el filete cruzando el nombre.

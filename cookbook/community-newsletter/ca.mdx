@@ -22,7 +22,7 @@ La configuració de la disposició és a [la resposta curta](#la-resposta-curta)
 
 <Excerpt region="masthead" />
 
-L'H1 porta un estil de títol el disseny del qual dibuixa la capçalera, i `span: 'page'` posa aquest disseny sobre les dues columnes. `{titleText}`, a 60 pt, es parteix en dues línies a la seva caixa de 178 mm. La pestanya uneix `{attr.issue}`, escrit a la línia de l'H1, i `{publishDate}`, del frontmatter, que ha de ser una cadena entre cometes ([elements de text](/ca/docs/configuration#elements-de-text)). Sense `minHeight`, la capçalera reservaria espai fins al peu de la franja, a 62 mm de la vora superior, i el text començaria a la línia següent de la retícula de base, a 62,5 mm, enganxat a la franja. Amb un `minHeight` de deu línies de la retícula, comença a 67 mm.
+L'H1 porta un estil de títol el disseny del qual dibuixa la capçalera, i `span: 'page'` posa aquest disseny sobre les dues columnes. `{titleText}`, a 60 pt, es parteix en dues línies a la seva caixa de 178 mm. La pestanya uneix `{attr.issue}`, escrit a la línia de l'H1, i `{publishDate}`, del frontmatter ([elements de text](/ca/docs/configuration#elements-de-text)). Sense `minHeight`, la capçalera reservaria espai fins al peu de la franja, a 62 mm de la vora superior, i el text començaria a la línia següent de la retícula de base, a 62,5 mm, enganxat a la franja. Amb un `minHeight` de deu línies de la retícula, comença a 67 mm.
 
 ### 3 · Etiqueta els breus amb xips
 
@@ -56,7 +56,3 @@ La columna ampla es continua llegint primer, així que el mateix Markdown posa l
 ### Posa els breus a tota l'amplada de la pàgina
 
 El cos té com a màxim dues columnes de text. La <RecipeLink slug="newspaper-front-page">portada de diari</RecipeLink> reparteix quatre breus a tota l'amplada del peu de la pàgina en un requadre amb `:::columns{count=4}`.
-
-## Errors freqüents
-
-- En aquesta disposició, el filet de columna de la pàgina 1 comença a dalt de la caixa de text, darrere de la capçalera, sigui quin sigui el nombre de línies que aquesta reservi. La franja color palla es pinta a sobre; una capçalera sense franja de color deixaria veure el filet travessant el nom.

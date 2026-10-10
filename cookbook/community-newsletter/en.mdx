@@ -22,7 +22,7 @@ The layout settings are in [the short answer](#the-short-answer) above. In a `on
 
 <Excerpt region="masthead" />
 
-The H1 takes a heading style whose design draws the nameplate, and `span: 'page'` sets that design above both columns. `{titleText}` at 60 pt breaks into two lines in its 178 mm box. The tab joins `{attr.issue}`, written on the H1 line, and `{publishDate}` from the frontmatter, which has to be a quoted string ([text elements](/en/docs/configuration#text-elements)). Without `minHeight` the masthead would reserve room down to the foot of the band, 62 mm from the top edge, and the text would start on the next grid line, at 62.5 mm, touching the band. A `minHeight` of ten grid lines starts it at 67 mm.
+The H1 takes a heading style whose design draws the nameplate, and `span: 'page'` sets that design above both columns. `{titleText}` at 60 pt breaks into two lines in its 178 mm box. The tab joins `{attr.issue}`, written on the H1 line, and `{publishDate}` from the frontmatter ([text elements](/en/docs/configuration#text-elements)). Without `minHeight` the masthead would reserve room down to the foot of the band, 62 mm from the top edge, and the text would start on the next grid line, at 62.5 mm, touching the band. A `minHeight` of ten grid lines starts it at 67 mm.
 
 ### 3 · Tag the briefs with chips
 
@@ -56,7 +56,3 @@ The wide column still reads first, so the same Markdown sets the lead on the rig
 ### Set the briefs across the page
 
 Body text runs in two columns at most. The <RecipeLink slug="newspaper-front-page">newspaper front page</RecipeLink> runs four briefs across the foot of the page in a box with `:::columns{count=4}`.
-
-## Pitfalls
-
-- In this layout the column rule on page 1 starts at the top of the text area, behind the masthead, however many grid lines the masthead reserves. The straw band is drawn over it; a masthead without a filled band would show the rule running through the name.
