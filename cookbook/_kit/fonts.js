@@ -42,12 +42,13 @@ function kitRanges() {
  *  faces of `faces` = { 'Family Name': ['400', '400i', '700'] }. `text` is the sample:
  *  č ł † α χ also load latin-ext and greek files (kitSubsetsFor). With
  *  `optional`, a face Fontsource does not ship is skipped instead of failing.
- *  Resolves to the number of faces added. */
+ *  The files are added once all have loaded, in the order asked (latin, then
+ *  latin-ext, then greek), whatever order they arrive in: the last one added
+ *  wins a character two files hold. Resolves to the number of faces added. */
 async function loadFonts(faces, text = '', { optional = false } = {}) {
   kitStatus('Loading fonts…');
   const ranges = kitRanges();
   const jobs = [];
-  let added = 0;
   for (const [family, specs] of Object.entries(faces)) {
     const id = fontsourceId(family);
     const todo = [...new Set(specs)].map((spec) => [parseInt(spec, 10), spec.endsWith('i') ? 'italic' : 'normal'])
@@ -60,14 +61,14 @@ async function loadFonts(faces, text = '', { optional = false } = {}) {
         const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-${subset}-${weight}-${style}.woff2`;
         const face = new FontFace(family, `url(${url}) format('woff2')`,
           { weight: String(weight), style, unicodeRange: ranges[subset] });
-        jobs.push(face.load().then((ready) => { document.fonts.add(ready); added++; }, () => {
+        jobs.push(face.load().catch(() => {
           if (subset === 'latin' && !optional) throw new Error(`Fontsource has no ${family} ${weight} ${style}`);
         }));
       }
     }
   }
-  await Promise.all(jobs).catch((error) => { kitFail(error); throw error; });
-  return added;
+  const ready = await Promise.all(jobs).catch((error) => { kitFail(error); throw error; });
+  return ready.filter((face) => face && document.fonts.add(face)).length;
 }
 
 /** A loaded FontFace covers this family, weight and style (fonts.check() would
