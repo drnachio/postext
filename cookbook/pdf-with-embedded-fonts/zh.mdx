@@ -10,7 +10,7 @@ pageNotes: { "1": "封面：夜色蓝绿铺满到成品边缘，金色小号大�
 
 ## 成品一览
 
-一场黄昏独奏会的节目单，题为*Home from Sea*：四页A5，演出者是由女高音、大提琴和竖琴组成的小乐团。封面为夜色蓝绿，标题用金色Fraunces斜体，一排排金色波纹鳞片从页脚升起。内页的演出曲目是一个表格，表头用Tenor Sans大写字母、蓝绿底色，合计行着浅色。乐曲解说用两端对齐的Crimson Text。三首歌的歌词分别是朗费罗、史蒂文森和丁尼生的诗，按印刷版本的缩进排出。点*Build the PDF*按钮，得到的就是你要发给听众或放在场馆网站上的文件。它的四页与屏幕上逐行一致，只嵌入浏览器已加载的七个字体文件，每个标题都是一个书签。如果要交付商业印刷，参见<RecipeLink slug="print-ready-pdf">可直接付印的PDF</RecipeLink>。
+一场黄昏独奏会的节目单，题为*Home from Sea*：四页A5，演出者是由女高音、大提琴和竖琴组成的小乐团。封面为夜色蓝绿，标题用金色Fraunces斜体，一排排金色波纹鳞片从页脚升起。内页的演出曲目是一个表格，表头用Tenor Sans大写字母、蓝绿底色，合计行着浅色。乐曲解说用两端对齐的Crimson Text。三首歌的歌词分别是朗费罗、史蒂文森和丁尼生的诗，按印刷版本的缩进排出。点*Build the PDF*按钮，得到的就是你要发给听众或放在场馆网站上的文件。它的四页与屏幕上逐行一致，只嵌入浏览器已加载的五个字体文件，每个标题都是一个书签。如果要交付商业印刷，参见<RecipeLink slug="print-ready-pdf">可直接付印的PDF</RecipeLink>。
 
 ## 做法
 
@@ -22,13 +22,13 @@ pageNotes: { "1": "封面：夜色蓝绿铺满到成品边缘，金色小号大�
 
 <Excerpt region="build" />
 
-`registerFaces()`要等`FONTS`中的每款字体都加载完才会完成，所以第一次构建所用的字体就是PDF将要嵌入的字体。这也是唯一一次构建：`FONTS`列出了Crimson Text或Fraunces文本块可能用到的每种粗体和斜体，`buildDocumentWithFonts`要找的每款字体都已经声明好了（[排版前加载字体](/zh/docs/configuration#排版前加载字体)）。这项检查只对屏幕有用。如果`FONTS`漏了某款字体，引擎会向工具包要这款字体，加载Fontsource的文件并重新排版，控制台不给警告。但PDF拿到的仍是提供器手里最接近的那款字体。
+`registerFaces()`要等`FONTS`中的每款字体都加载完才会完成，所以第一次构建所用的字体就是PDF将要嵌入的字体。这也是唯一一次构建：`FONTS`列出了页面上用到的每款字体，`buildDocumentWithFonts`要找的每款字体都已经声明好了（[排版前加载字体](/zh/docs/configuration#排版前加载字体)）。这项检查只对屏幕有用。如果`FONTS`漏了某款字体，引擎会向工具包要这款字体，加载Fontsource的文件并重新排版，控制台不给警告。但PDF拿到的仍是提供器手里最接近的那款字体。
 
 ### 3 · 导出，并列出嵌入了什么
 
 <Excerpt region="pdf" />
 
-`renderToPdf`分三个阶段调用`onProgress`：字体和封面嵌入后为`prepare`，每排完一页为`pages`，写文件之前为`save`。这里它向提供器要了十款字体。状态行列出提供器给出的七个文件，正好是`FONTS`里的那些，另有三个替代，全是Tenor Sans的：这款字体只有常规400一种，这里也从不用粗体或斜体。除此之外的替代，都说明`FONTS`里缺了某款字体。如果删掉Crimson Text 600，状态行会报告`Crimson Text 600 → 400`，第4页粗体的*The Harbour Consort*会以常规字重印出。CodePen的预览无法显示PDF，所以工具包的`offerPdf`把按钮换成两个链接，一个在新标签页打开PDF，一个下载它（[生成PDF](/zh/docs/configuration#生成pdf)）。
+`renderToPdf`分三个阶段调用`onProgress`：字体和封面嵌入后为`prepare`，每排完一页为`pages`，写文件之前为`save`。它只向提供器要页面上实际印出的字体，这里是五款。状态行列出提供器给出的五个文件，正好是`FONTS`里的那些，没有替代。出现替代，就说明`FONTS`里缺了某款字体。如果删掉Crimson Text 600，状态行会报告`Crimson Text 600 → 400`，第4页粗体的*The Harbour Consort*会以常规字重印出。CodePen的预览无法显示PDF，所以工具包的`offerPdf`把按钮换成两个链接，一个在新标签页打开PDF，一个下载它（[生成PDF](/zh/docs/configuration#生成pdf)）。
 
 ### 4 · 标题树就是书签树
 
@@ -40,7 +40,7 @@ pageNotes: { "1": "封面：夜色蓝绿铺满到成品边缘，金色小号大�
 
 <Excerpt region="cover" />
 
-frontmatter的每个值都加了引号。封面通过`{author}`和`{subtitle}`印出其中两个，PDF的文档属性也从同一块里取标题*Home from Sea*和作者*The Harbour Consort*。日期和场地是封面标题的属性。它们背后的图案是一张与页面等宽的SVG，PDF将其保留为矢量路径。
+封面通过`{author}`和`{subtitle}`印出frontmatter里的两个值，PDF的文档属性也从同一块里取标题*Home from Sea*和作者*The Harbour Consort*。日期和场地是封面标题的属性。它们背后的图案是一张与页面等宽的SVG，PDF将其保留为矢量路径。
 
 ## 变化
 
@@ -67,6 +67,6 @@ frontmatter的每个值都加了引号。封面通过`{author}`和`{subtitle}`�
 
 ## 常见问题
 
-在`FONTS`中列出正文可能用到的每种粗体和斜体。漏了一种时，屏幕看上去仍然正确，因为工具包会不加警告地加载这款字体；但PDF印出的是提供器最接近的字体，只有状态行上的替代项会暴露这次调换。
+在`FONTS`中列出页面上用到的每款字体，正文的粗体和斜体也在内。漏了一种时，屏幕看上去仍然正确，因为工具包会不加警告地加载这款字体；但PDF印出的是提供器最接近的字体，只有状态行上的替代项会暴露这次调换。
 
 使用静态文件，每个字重和样式一个。对于可变WOFF2，PDF只嵌入它的默认实例，一段粗体会以常规字重印出（[为什么需要字体提供器？](/zh/docs/configuration#为什么需要字体提供函数)）。
