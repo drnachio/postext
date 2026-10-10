@@ -4,7 +4,7 @@
 // Fonts: IBM Plex Serif, Libre Franklin, Plex Sans Condensed (OFL) · Needs postext ≥ 1.25.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
-  defaultResourceTypes, parseTSV, mergeCells,
+  defaultResourceTypes, parseTSV, mergeCells, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -124,7 +124,7 @@ const config = () => ({
     referenceBold: false, firstLineIndent: mm(4), indentAfterHeading: false,
     maxJustifyTracking: 10 }, // up to 1 % tracking for a line spaces alone would leave loose
   headings: { fontFamily: LABEL, color: col('accent'), fontWeight: 600, levels: [
-    { level: 1, breakBefore: { enabled: false } }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: false } }, // a report runs on under the one before
     { level: 3, ...caps(8), lineHeight: pt(LEAD), marginTop: pt(LEAD / 2), marginBottom: pt(0) },
   ] },
   footnotes: { fontSize: pt(7.6), lineHeight: pt(10), color: col('muted'),
@@ -197,19 +197,8 @@ const PATIENTS = [
 ];
 const MONTHS = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'];
 const r2 = (v) => +v.toFixed(2);
-// An SVG drawn as an image cannot see the page's web fonts (gotcha: svg-no-webfonts), so the
-// chart carries its faces inline, as data URLs of the Fontsource files.
-async function inlineFace(family, weight) {
-  const id = family.toLowerCase().replace(/\s+/g, '-');
-  const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}`
-    + '-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return `<style>@font-face{font-family:F;font-weight:${weight};src:url(data:font/woff2;`
-    + `base64,${btoa(bin)}) format('woff2')}text{font-family:F}</style>`;
-}
-function timeline(faces) { // 178 × 47 mm: the width of the page's two columns
+// The chart's labels name their family on the root element: loadSvg embeds the faces they set.
+function timeline() { // 178 × 47 mm: the width of the page's two columns
   const [W, H, L, R, T, ROW] = [178, 49, 26, 2, 9.5, 6.2];
   const step = (W - L - R) / MONTHS.length;
   const x = (m) => L + m * step;
@@ -253,7 +242,7 @@ function timeline(faces) { // 178 × 47 mm: the width of the page's two columns
     + `stroke="${palette.ink}" stroke-width="0.35"/>` + label(L + 112, ly, 'dated CMV finding')
     + cross(L + 139, ly - 0.9) + label(L + 142, ly, 'died');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1780" height="490" `
-    + `viewBox="0 0 ${W} ${H}">${faces}${out}</svg>`;
+    + `viewBox="0 0 ${W} ${H}" font-family="${LABEL}">${out}</svg>`;
 }
 // #endregion
 
@@ -262,8 +251,7 @@ const FONTS = { 'IBM Plex Serif': ['400', '400i', '600', '600i'], 'Libre Frankli
   'IBM Plex Sans Condensed': ['400', '400i', '500', '600', '600i', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-const faces = await inlineFace(LABEL, 400) + await inlineFace(LABEL, 600);
-await loadSvg('timeline.svg', timeline(faces));
+await loadSvg('timeline.svg', timeline());
 const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Surveillance Notes · Reprint No. 1' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider,

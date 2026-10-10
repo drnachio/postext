@@ -43,10 +43,7 @@
     "Q65",
     "Q154"
   ],
-  "gotchas": [
-    "headings-drop-h1-break",
-    "svg-no-webfonts"
-  ],
+  "gotchas": [],
   "engine": {
     "postext": "1.25.0",
     "postextPdf": "1.25.0"

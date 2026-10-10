@@ -45,10 +45,7 @@
   ],
   "gotchas": [
     "math-bundle",
-    "dollar-math",
-    "svg-no-webfonts",
-    "headings-drop-h1-break",
-    "quote-frontmatter"
+    "dollar-math"
   ],
   "engine": {
     "postext": "1.25.0",
@@ -82,10 +79,6 @@
       "pages": [
         10,
         10
-      ],
-      "console": [
-        "module \"buffer\" not found",
-        "module \"esprima\" not found"
       ]
     }
   },

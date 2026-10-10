@@ -40,7 +40,7 @@ Rafailov、Sharma、Mitchell、Ermon、Manning、Finnの論文*Direct Preference
 
 <Excerpt region="art" />
 
-図1は原図の枠と語句をもとにSVGで描いています。画像として描かれるSVGにはページのWebフォントが見えないため、`inlineFace()`でラベルが使うWork Sansの2ファイルを埋め込み、`tex()`で`y_w ≻ y_l`をMathJaxのパスとして書きます。数式と同じ字形です。矢じりはSVGのmarkerではなくパスで描いているので、PDFでも図はベクターのままです。
+図1は原図の枠と語句をもとにSVGで描いています。ラベルは`font-family`でWork Sansを指定し、`loadSvg`がSVGをエンジンの`inlineSvgFonts`に渡して、ラベルが使うWork Sansの2ファイルを埋め込みます。`tex()`は`y_w ≻ y_l`をMathJaxのパスとして書きます。数式と同じ字形です。矢じりはSVGのmarkerではなくパスで描いているので、PDFでも図はベクターのままです。
 
 ## アレンジ
 
