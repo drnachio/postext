@@ -54,17 +54,7 @@
   "gotchas": [
     "math-bundle",
     "negative-offsets",
-    "merged-cells-hiddenby",
-    "svg-no-webfonts",
-    "resource-types-locale",
-    "nbsp-breaks",
-    "here-figure-no-space-after",
-    "ragged-run-punctuation",
-    "palette-skips-designs",
-    "headings-drop-h1-break",
-    "hyphenation-locales",
-    "runt-tracking-unpainted",
-    "quote-frontmatter"
+    "merged-cells-hiddenby"
   ],
   "explainsWarnings": [
     "invalidMath",
@@ -78,79 +68,13 @@
   ],
   "workarounds": [
     {
-      "followup": "EF-15",
       "package": "postext",
-      "note": "every symbol is imported from esm.sh/postext?bundle and initMathEngine() is awaited before the build"
-    },
-    {
-      "followup": "EF-80",
-      "package": "postext",
-      "note": "~sub~ drops its figure a third of an em, as far as ^sup^ rises: the 15 pt leading on 10.5 pt keeps every dropped subscript clear of the next line"
-    },
-    {
-      "followup": "EF-84",
-      "package": "postext",
-      "note": "a display formula does not keep with its lead-in: the copy of both editions is fitted so the [OH−] equation ends page 1 under the sentence that introduces it"
-    },
-    {
-      "followup": "EF-86",
-      "package": "postext",
-      "note": "justified text may end a page on a hyphen: after each copy-fit, page 3 of both editions was checked to end on a whole word"
-    },
-    {
-      "followup": "EF-66",
-      "package": "postext",
-      "note": "a no-break space still breaks, so the text uses none: units are written mol·dm^−3^ (one word), and every number–unit pair was checked to sit mid-line in both editions"
-    },
-    {
-      "followup": "EF-73",
-      "package": "postext",
-      "note": "ragged text breaks between adjacent runs with no space between them: the Flowers reference keeps its comma after *Chemistry 2e* mid-line in both editions, and the Table 1 caption is cut to one line, because at two lines the English one broke between 'mol·dm' and its superscript '−3'"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex as well as the palette id, since design slots read only the hex"
-    },
-    {
-      "followup": "EF-113",
-      "package": "postext",
-      "note": "the report style sets span: 'page' in this one-column report only so the band and the burette paint from the top of the page: a heading design kept in the column is clipped at the column's top edge, 24 mm down, and those 24 mm print white"
+      "note": "by default a display formula does not keep with its lead-in (math.keepWithLeadIn is off): the copy of both editions is fitted so the [OH−] equation ends page 1 under the sentence that introduces it"
     },
     {
       "followup": "EF-34",
       "package": "postext",
       "note": "the mean and standard-deviation labels span three columns through mergeCells, which writes the hiddenBy placeholders a merge needs"
-    },
-    {
-      "followup": "EF-64",
-      "package": "postext",
-      "note": "not routed around: the canvas pages show pale hairlines between the slate header cells of Table 1; the PDF is clean"
-    },
-    {
-      "followup": "EF-33",
-      "package": "postext",
-      "note": "resourceTypes: defaultResourceTypes(LANG), since the locale leaves Figure and Table in English"
-    },
-    {
-      "followup": "EF-14",
-      "package": "postext",
-      "note": "the hyphenation locale is an exact code: 'es' or 'en-us'"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore is restated because a headings object drops it"
-    },
-    {
-      "followup": "EF-111",
-      "package": "postext",
-      "note": "bodyText.maxRuntTracking: 0 is a guard: no paragraph of either edition triggers a runt fix today (removing it leaves both layouts unchanged), and a runt fix's negative tracking is measured but not painted"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "every frontmatter value is quoted"
     }
   ],
   "engine": {
@@ -185,10 +109,6 @@
       "pages": [
         4,
         5
-      ],
-      "console": [
-        "module \"buffer\" not found",
-        "module \"esprima\" not found"
       ]
     }
   },

@@ -5,7 +5,7 @@
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
   initMathEngine, renderMath, mergeCells,
-} from 'https://esm.sh/postext?bundle';
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'es'; // @lang: the language of the sample document ('es' | 'en')
@@ -21,7 +21,7 @@ const palette = { // white paper and phenolphthalein: pale at the end point, dee
   muted: '#626a73', // running heads, notes (5.5:1)
   paper: '#ffffff',
 };
-// The hex as well as the id: design slots read only the hex (gotcha: palette-skips-designs).
+// col() links a colour to its palette entry; the hex is the value the entry holds.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // 'main-color' as well: the engine's defaults are linked to it, so any left over turn pink.
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.phenol })
@@ -45,10 +45,8 @@ const heads = t({ es: ['Valoración', 'V~inicial~', 'V~final~', 'V~b~ gastado'],
   en: ['Titration', 'V~initial~', 'V~final~', 'V~b~ used'] })
   .map((head, i) => (i ? `${head} / ${units.cm3}` : head)); // 'V~b~ gastado / cm^3^'
 // Between $$ and $$ is TeX, set by MathJax as vector paths: the reaction, with mhchem's
-// \ce{…} (it lowers the 3 of CH3COOH by itself), and the equations. MathJax comes only with
-// the ?bundle build, which every postext symbol here is imported from: the plain URL makes
-// initMathEngine() throw, and a build that starts before it resolves prints grey boxes
-// (gotcha: math-bundle).
+// \ce{…} (it lowers the 3 of CH3COOH by itself), and the equations. initMathEngine() loads
+// MathJax; a build that starts before it resolves prints grey boxes (gotcha: math-bundle).
 await initMathEngine();
 // A formula's x-height is TeX's 0.442 em of the type size and Inria Serif's is 0.495 em, so
 // math.fontSizeScale lifts the formulas' lowercase to the height of the text's.
@@ -70,8 +68,8 @@ const hung = (size, color) => ({ enabled: true, slot: { elements: [
     placement: at('container', 'top-left') },
   hang('number', '{number}', size, color),
 ] } });
-const levels = [ // a headings object drops the H1 break (gotcha: headings-drop-h1-break)
-  { level: 1, breakBefore: { enabled: true, parity: 'any' } },
+const levels = [
+  { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // the next page, either side
   // One grid line per head: the design sets the type, the level's size and leading the flow.
   { level: 2, numberingTemplate: '{2}', fontSize: pt(13), lineHeight: pt(LEAD),
     marginTop: pt(LEAD), marginBottom: pt(0), advancedDesign: hung(13, 'phenol') }, // 5
@@ -95,10 +93,7 @@ const byline = [['{attr.authors}', t({ es: 'Autores', en: 'Authors' })],
     align: 'right', overflow: 'clip',
     placement: { ...at(`#value${i}`, 'left-of', -GAP, 0.7), size: { width: mm(HANG) } } },
 ]);
-// span: 'page' changes nothing in this one-column layout but where the design is painted:
-// a heading design kept in the column is clipped at the column's top edge, 24 mm down, so
-// the top of the band and the burette would print white.
-const report = { id: 'report', numbered: false, span: 'page', advancedDesign: { enabled: true,
+const report = { id: 'report', numbered: false, advancedDesign: { enabled: true,
   // The band is a box, and boxes count towards the height a head reserves, so the text
   // would start below its foot at 104 mm (where the burette ends too). minHeight sets a floor
   // 8 mm lower, which the H1's bottom margin and the 15 pt grid round up to 15 mm.
@@ -136,8 +131,9 @@ const header = { elements: [folio('top-left', 13, 'body'),
 const footer = { elements: [folio('bottom-left', -12, 'opener')] };
 
 // #region labels: Tabla and Figura in the report's language, and how their captions look
-// defaultResourceTypes(LANG) names them in Spanish (gotcha: resource-types-locale). Their
-// '{h1}.{n}' prints a plain 1: the H1 is unnumbered, and an empty {h1} drops out with its dot.
+// The built-in types follow the locale; defaultResourceTypes(LANG) hands them over so one can
+// change. Their '{h1}.{n}' prints a plain 1: the H1 is unnumbered, and an empty {h1} drops out
+// with its dot.
 const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id === 'table'
   ? { ...type, captionStyle: { position: 'above' } } : type)); // a table's caption goes on top
 const tableStyle = { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
@@ -172,7 +168,7 @@ const paragraphStyles = [
 // #endregion
 
 const config = () => ({
-  locale: t({ es: 'es', en: 'en-us' }), // exact codes (gotcha: hyphenation-locales)
+  locale: t({ es: 'es', en: 'en-us' }), // the hyphenation patterns of each edition
   resourceTypes, colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
     margins: { top: mm(TOP), bottom: mm(BOTTOM), left: mm(LEFT), right: mm(RIGHT) } },
@@ -180,8 +176,8 @@ const config = () => ({
   bodyText: { fontFamily: SERIF, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     referenceBold: false, // 'la tabla 1' reads as part of the sentence
-    firstLineIndent: mm(5), indentAfterHeading: false, minWordSpacing: 0.8, maxWordSpacing: 1.5,
-    maxRuntTracking: 0 }, // runt fixes tighten spaces only (gotcha: runt-tracking-unpainted)
+    firstLineIndent: mm(5), indentAfterHeading: false, minWordSpacing: 0.8,
+    maxWordSpacing: 1.5 },
   headings: { fontFamily: SANS, color: col('ink'), levels },
   // A display's marginBottom is a minimum that the 15 pt grid rounds up: at the default
   // 0.8 em a fraction got a line more air under it than over it.
@@ -249,9 +245,9 @@ const line = (x1, y1, x2, y2, color, width, extra = '') => `<line x1="${R(x1)}" 
   + `x2="${R(x2)}" y2="${R(y2)}" stroke="${palette[color]}" stroke-width="${width}" ${extra}/>`;
 const dot = (x, y, r, fill, extra = '') => `<circle cx="${R(x)}" cy="${R(y)}" r="${r}" `
   + `fill="${fill}" ${extra}/>`;
-// An SVG drawn as an image cannot use web fonts (gotcha: svg-no-webfonts): the labels are
-// MathJax paths, vector in the PDF like the formulas in the text. renderMath needs
-// initMathEngine() resolved: called before, it returns no paths and the labels go missing.
+// The curve's labels are MathJax paths: the glyphs of the formulas in the text, vector in
+// the PDF like them. renderMath needs initMathEngine() resolved: called before, it returns
+// no paths and the labels go missing.
 function tex(markup, x, y, size, anchor = 0, color = 'muted') { // anchor 0 left, .5 mid, 1 right
   const r = renderMath(markup, false, 100); // paths in MathJax units, 1000 to the em
   const k = size / 1000;
@@ -330,8 +326,7 @@ const resources = [BURETTE, // the head's picture: uncited, so never placed in t
     placement: { position: 'here' }, // set where ::resource{id="lecturas"} stands
     caption: t({ es: `Lecturas de la bureta: 25,0 ${units.cm3} de vinagre diluido frente a NaOH `
       + `0,100 ${units.conc}.`, en: `Burette readings, titrating 25.0 ${units.cm3} of diluted `
-      + `vinegar with 0.100 ${units.conc} NaOH.` }), // one line: at two, the English one broke
-    // between 'dm' and its '−3' (gotcha: ragged-run-punctuation)
+      + `vinegar with 0.100 ${units.conc} NaOH.` }),
     note: t({ es: `Lecturas sintéticas, con la apreciación de la bureta: 0,05 ${units.cm3}.`,
       en: `Synthetic readings, taken to the nearest 0.05 ${units.cm3}, as a burette is read.` }) },
   { id: 'curva', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,

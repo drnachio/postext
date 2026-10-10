@@ -16,7 +16,7 @@ Three Year 12 students titrate a cider vinegar with sodium hydroxide to find how
 
 ### 1 · Write formulas as text, keep TeX for the equations
 
-The code is [the short answer](#the-short-answer) above. [`~…~` and `^…^`](/en/docs/document-format#inline-formatting) set a run at 58 % of the text size in the text's own face, so `CH~3~COOH`, `OH^−^` (its minus is U+2212) and `cm^3^` keep the weight and colour of the sentence around them. The marks also work in captions and table cells, where TeX cannot be used. The reaction, written with mhchem's `\ce{…}`, and the equations are TeX between `$$`. The [maths engine](/en/docs/configuration#starting-the-math-engine) ships only in the `?bundle` build, so every symbol is imported from that build. `math.fontSizeScale` is 0.495 / 0.442, about 1.12: a formula's x-height is TeX's, 0.442 em of the type size, and Inria Serif's is 0.495 em, so the scale brings the lowercase of formula and text to the same height.
+The code is [the short answer](#the-short-answer) above. [`~…~` and `^…^`](/en/docs/document-format#inline-formatting) set a run at 58 % of the text size in the text's own face, so `CH~3~COOH`, `OH^−^` (its minus is U+2212) and `cm^3^` keep the weight and colour of the sentence around them. The marks also work in captions and table cells, where TeX cannot be used. The reaction, written with mhchem's `\ce{…}`, and the equations are TeX between `$$`. `await initMathEngine()` starts the [maths engine](/en/docs/configuration#starting-the-math-engine) before the build; it comes from the same import as every other symbol. `math.fontSizeScale` is 0.495 / 0.442, about 1.12: a formula's x-height is TeX's, 0.442 em of the type size, and Inria Serif's is 0.495 em, so the scale brings the lowercase of formula and text to the same height.
 
 ### 2 · Hang the section numbers in the margin
 
@@ -34,7 +34,7 @@ The report's one H1 takes the `report` [heading style](/en/docs/configuration#sp
 
 <Excerpt region="labels" />
 
-[`defaultResourceTypes(LANG)`](/en/docs/configuration#resource-types) gives Tabla and Figura in the Spanish edition, which the locale alone would leave in English. Their `{h1}.{n}` template prints a plain 1 here, because the report's H1 is unnumbered and an empty `{h1}` drops out with its dot. The table's caption goes above the table, where reports put it. The text cites table and figure with `:ref{id="lecturas" style="full"}`, in the ink and weight of the words around it.
+The built-in types follow the document's `locale`, so the Spanish edition says Tabla and Figura with no setting. [`defaultResourceTypes(LANG)`](/en/docs/configuration#resource-types) hands those types over so the recipe can change one of them. Their `{h1}.{n}` template prints a plain 1 here, because the report's H1 is unnumbered and an empty `{h1}` drops out with its dot. The table's caption goes above the table, where reports put it. The text cites table and figure with `:ref{id="lecturas" style="full"}`, in the ink and weight of the words around it.
 
 ### 5 · Compute the table and the curve from the same readings
 
@@ -46,7 +46,7 @@ The four pairs of burette readings give every cell of Table 1, the mean and the 
 
 <Excerpt region="references" />
 
-A `:::paragraphs{style="references"}` fence applies the [paragraph style](/en/docs/configuration#paragraph-styles) to each reference: 9 on 12.5 pt, ragged, with a 6 mm hanging indent and 4 pt between entries. In 1.4.1 ragged paragraphs are never hyphenated, so a long title such as *Fundamentals of Analytical Chemistry* breaks only between words. The colophon has a style of its own, Inria Sans at 7.4 pt, with one 15 pt line of space above it.
+A `:::paragraphs{style="references"}` fence applies the [paragraph style](/en/docs/configuration#paragraph-styles) to each reference: 9 on 12.5 pt, ragged, with a 6 mm hanging indent and 4 pt between entries. Ragged paragraphs are not hyphenated unless `bodyText.hyphenation.ragged` asks for it, so a long title such as *Fundamentals of Analytical Chemistry* breaks only between words. The colophon has a style of its own, Inria Sans at 7.4 pt, with one 15 pt line of space above it.
 
 ## Variations
 
@@ -74,8 +74,6 @@ The results become Table 5.1 and Figure 5.1, counted afresh in each section.
 
 ## Pitfalls
 
-- A display formula does not keep with the line that introduces it, so a lead-in ending in “so” can close a page with its equation on the next. The copy of both editions is fitted to end page 1 with the [OH⁻] equation under its sentence.
+- By default a display formula does not keep with the line that introduces it, so a lead-in ending in “so” can close a page with its equation on the next; `math.keepWithLeadIn: true` sends that line over with the formula. Here the copy of both editions is fitted to end page 1 with the [OH⁻] equation under its sentence.
 - The TeX glyphs are MathJax's own, not Inria Serif, so an equation reads a little lighter than the text around it. Keep formulas inside sentences as `~` and `^` marks, and reserve TeX for the lines that need it.
-- In 1.4.1 a heading design kept in the column is clipped at the column's top edge. The `report` style sets `span: 'page'` in this one-column report for that reason alone: without it the top 24 mm of the band and the burette print white.
-- A caption is set ragged, and in 1.4.1 a ragged line can break between a word and its superscript. At two lines, Table 1's caption broke between `mol·dm` and `−3`, so it is cut to one line; check every caption that carries a unit.
-- Web fonts do not reach an SVG drawn as an image, so the curve's tick labels and axis titles are MathJax outlines: `tex()` asks `renderMath` for the paths of each label and places them in the SVG. They stay vector in the PDF and use the same glyphs as the equations.
+- The curve's tick labels and axis titles are MathJax outlines, so they use the same glyphs as the equations and stay vector in the PDF: `tex()` asks `renderMath` for the paths of each label and places them in the SVG. They can only be drawn once `initMathEngine()` has resolved.
