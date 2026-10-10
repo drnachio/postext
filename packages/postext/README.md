@@ -70,6 +70,7 @@ document.body.append(...doc.pages.map((page) => renderPage(page, doc)));
 | Export | What it does |
 |---|---|
 | `buildDocument(content, config?)` | Lays the content out and returns the VDT (`VDTDocument`). |
+| `buildDocumentWithFonts(content, config?, options?)`, `prepareFonts(content, config?, options?)` | Load the faces the document sets, then lay it out (or only load them). See [Fonts](#fonts). |
 | `renderPage(page, doc)`, `renderPageToCanvas(page, doc, canvas, { scale? })` | Paint one page on a canvas. |
 | `renderToHtml(doc, options?)` | Absolutely positioned HTML for the pages. Pages are transparent unless you pass `background`. |
 | `renderToPdf(doc, { fontProvider })` | From `postext-pdf`: a print-ready, tagged PDF. |
@@ -99,7 +100,9 @@ Footnotes are on the roadmap. Until then, set notes as text: a superscript marke
 
 ## Fonts
 
-postext measures text with the browser's canvas, so the document's web fonts must be loaded before `buildDocument` (for example with `document.fonts.load('16px "EB Garamond"')`). Widths are cached: if you built before the fonts arrived, call `clearMeasurementCache()` and build again. A layout worker has its own font set; send it the font files with `registerFonts`.
+postext measures text with the browser's canvas, so the document's web fonts must be loaded before layout. `await buildDocumentWithFonts(content, config)` does both: it loads every face the configuration and the text ask for, lays the document out, and lays it out again when the pages used a face that was missing. `await prepareFonts(content, config)` only loads them, before a `buildDocument` of your own. Both load the faces the page declares (an `@font-face` rule, a `FontFace` you added) and take a `resolve(family, weight, style)` option that hands over the files of the rest.
+
+Measured widths follow the faces. When a face arrives after a build, the engine drops what it measured in that family and the next build measures it again, with no call from you; up to 1.24 that took `clearMeasurementCache()` and a second build. `doc.contentWarnings` lists a face that was measured with a fallback as `fontFallback`. A layout worker has its own font set; send it the font files with `registerFonts`.
 
 ## Bundles (`.postext` files)
 
