@@ -88,8 +88,8 @@ const footer = {
 // #endregion
 
 const config = {
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
-  resourceTypes: defaultResourceTypes(LANG), // "Figura" in Spanish (gotcha: resource-types-locale)
+  locale: t({ en: 'en-us', es: 'es' }), // the language the text is hyphenated in
+  resourceTypes: defaultResourceTypes(LANG), // "Figura" in Spanish
   colorPalette,
   page: {
     sizePreset: 'custom', width: mm(156), height: mm(234), dpi: 150,
@@ -106,8 +106,7 @@ const config = {
   headings: {
     fontFamily: 'Source Serif 4', color: col('ink'), fontWeight: 700,
     levels: [
-      // Restated on purpose: any headings object drops the H1 break
-      // (gotcha: headings-drop-h1-break).
+      // A chapter opens on a recto, with no blank verso forced before it.
       { level: 1, fontSize: pt(27), breakBefore: { enabled: true, parity: 'odd' },
         advancedDesign: opener },
       { level: 2, fontSize: pt(12.5), lineHeight: pt(LEAD), fontWeight: 400, italic: true,

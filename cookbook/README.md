@@ -304,9 +304,9 @@ Its functions are hoisted declarations you can call from anywhere in the script:
 | `mm(n)`, `pt(n)`, `em(n)` | core | Dimensions: `mm(18)` is `{ value: 18, unit: 'mm' }`. |
 | `t({ en, es })` | core | The string for the sample's language. |
 | `asset(file)` | core | The jsDelivr URL of `cookbook/<slug>/assets/<file>`. |
-| `kitFonts(FONTS)` | fonts | The options of the engine's `buildDocumentWithFonts`, `prepareFonts` and `withLoadedFonts` (import them from postext): the Fontsource resolver and the faces of `FONTS`. The engine loads every face the config and `FONTS` ask for before the first build, then any face the pages used that was missing, and builds again; a face it could not load is a `fontFallback` content warning. |
+| `kitFonts(FONTS)` | fonts | The options of the engine's `buildDocumentWithFonts`, `prepareFonts` and `withLoadedFonts` (import them from postext): the Fontsource resolver and the faces of `FONTS`. The engine loads every face the config and `FONTS` ask for before the first build, then any face the pages used that was missing, and builds again; a face it could not load is a `fontFallback` content warning. List the exact weights and slants the pages set, the bold of a label and the italic of a note too: a weight another face of the family answers without synthesis (a 600 italic set from the 700 italic) is not fetched, the PDF embeds the exact file, and C12 fails the difference. |
 | `fontsourceResolver` | fonts | The resolver itself: a face's latin file, plus latin-ext when the text has letters such as č ł †, and greek when it has Greek letters, for the families that ship those files (`kitSubsetsFor`; Lora and Gelasio have no greek file: set Greek in them as maths, `$\chi^2$`), always in that order; null for a weight or slant Fontsource does not ship. |
-| `loadFonts(FONTS, text)` | fonts | For the cjk, arabic and comics blocks, which add files of their own after it: the latin (and latin-ext, greek) files of `FONTS` added to `document.fonts` by hand. |
+| `loadFonts(FONTS, text)` | fonts | For the cjk, arabic and comics blocks, which add files of their own after it: the latin (and latin-ext, greek) files of `FONTS` added to `document.fonts` by hand, in that order once all have loaded. Such a pen builds with `withLoadedFonts(() => buildDocument(…), { ...kitFonts(FONTS), text })`. |
 | `showPages(doc \| docs, { title })` | viewer | The dark desk with facing spreads; sets `data-postext="ready"`. |
 | `offerPdf(makePdf, filename)` | pdf | A "Build the PDF" button, then open and download links. |
 | `fontsourceProvider` | pdf | The PDF font provider: snaps to shipped weights, falls back from missing italics, and embeds the latin file, then the latin-ext and greek files a face's letters need, as `loadFonts` loads them on screen. |
@@ -314,7 +314,7 @@ Its functions are hoisted declarations you can call from anywhere in the script:
 | `imageBytes`, `imageUrl` | images | The `resourceBytes` of `renderToPdf` and the `resourceImageUrl` of `renderToHtml`. |
 | `loadCjkFonts(faces, text, { vertical })` | cjk | Chinese, Japanese and Korean faces (the other families of `faces` are left to `loadFonts`): one `FontFace` per Fontsource unicode-range file, loading the files `text` touches; fails on a character no file has, or when api.fontsource.org does not answer. One face: `loadCjkFonts(FONTS, markdown)`. Several voices: one call per voice with the text it sets, `loadCjkFonts({ 'LXGW WenKai TC': ['400'] }, quotes)`, so the Kai and Hei faces do not fetch a file for every character of the book (C12 fails a character set from a file that was not loaded). `vertical: true` also loads each family's vertical punctuation for the canvas (import `loadVerticalAlternates`). |
 | `cjkPdfProvider` | cjk | The PDF font provider for such faces: the files that hold each face's characters. Other families get `fontsourceProvider`'s latin file (so list `pdf` too), and their latin-ext file as well when the face sets letters only that file has: ō ū in rōmaji, ǎ in pinyin. |
-| `loadArabicFonts(faces, text)` | arabic | The arabic file of every listed weight of each Arabic family (Amiri, Noto Naskh Arabic, Scheherazade New…; the other families of `faces` are left alone), after `loadFonts`, which loads their latin files. Fails on an Arabic-script character the arabic files lack, or when api.fontsource.org does not answer. List every weight the pages set in Arabic in `FONTS`: a weight `buildWithFonts` loads late gets its latin file only (C12 fails it). |
+| `loadArabicFonts(faces, text)` | arabic | The arabic file of every listed weight of each Arabic family (Amiri, Noto Naskh Arabic, Scheherazade New…; the other families of `faces` are left alone), after `loadFonts`, which loads their latin files. Fails on an Arabic-script character the arabic files lack, or when api.fontsource.org does not answer. List every weight the pages set in Arabic in `FONTS`: a weight the engine loads in its later round gets its latin file only (C12 fails it). |
 | `arabicPdfProvider` | arabic | The PDF font provider for such faces: the arabic file when the face sets Arabic, then latin, and latin-ext for letters such as ā ḥ ʿ; postext-pdf shapes the Arabic with HarfBuzz from those bytes. Other families go to `fontsourceProvider`, so list `pdf` too. |
 | `showBook(doc \| docs, { title, binding })` | book | `showPages` for a book bound on either edge: a right-bound document (`doc.binding`, `'right'` for `page.binding: 'right'` and, with the binding left to `'auto'`, for right-to-left text and vertical text) lies mirrored, page 1 alone on the left of the spine, then `[3 \| 2]`. The `cjk` block carries the same function for the Chinese recipes captured with it; a recipe lists one of the two. |
 | `loadComicFonts(faces, text)` | comics | After `loadFonts` (and `loadCjkFonts` or `loadArabicFonts` for those scripts): for each family, the regular, bold, italic and bold italic Fontsource does not ship are declared with its nearest file, so the bold of a shout or a sound effect and the italic of an inner voice measure and paint the letters the PDF embeds, not a bold or a slant the browser makes up. The comic faces of `defaultComicFont` and `defaultComicSfxFont` (Comic Neue, Zen Antique, Noto Sans SC, LXGW WenKai TC, Playpen Sans Arabic; Bangers, Dela Gothic One, ZCOOL KuaiLe, Lalezar) mostly ship one weight: list in `FONTS` only what Fontsource ships (`Bangers: ['400']`) and let this block add the rest. A CJK face needs the `cjk` block, an Arabic face setting Arabic the `arabic` block. |
@@ -329,8 +329,9 @@ whole Cookbook is verified again.
 - ES2022, two-space indent, single quotes, semicolons, lines of 100 characters or fewer.
   No classes, no frameworks, no dependencies beyond `postext` and `postext-pdf`.
 - Comments in English (the Spanish explanation lives in `es.mdx`). They say *why*, and cite
-  shared pitfalls by id: `// gotcha: headings-drop-h1-break`.
-- `const config = () => ({ … })`: the engine caches resolved configs by object identity.
+  shared pitfalls by id: `// gotcha: hyphenation-locales`.
+- `const config = { … }`, one object; a factory (`const config = () => ({ … })`) still lints.
+  Since postext 1.25 the engine sees a config changed in place.
 - Any `headings` object drops the H1 page break: restate
   `levels: [{ level: 1, breakBefore: { enabled: true, parity } }]`.
 - `fontFamily` holds one family, never a CSS stack.
@@ -798,14 +799,14 @@ longer matches the published pages.
 **Failures** block the write: script errors or timeouts (C1), console errors not listed in
 `expect.console` (C2), failed or disallowed network requests (C3), nothing built (C4), layout
 warnings not in `expect.warnings` (C5; with the index's warnings and the content warnings on how
-the text is set: `arabicMarksExceedLeading`, `unbreakableWordOverflow`, `joiningScriptLetterSpacing`, and every comic warning
+the text is set: `arabicMarksExceedLeading`, `unbreakableWordOverflow`, `joiningScriptLetterSpacing`, a side box or float set on a page after the text or on no page (`afterText`, `unplaced`), a `:::columns` group too narrow or with an unknown `flow` (`columnsTooNarrow`, `columnsFlowUnknown`), a face measured in a fallback or synthesized (`fontFallback`), and every comic warning
 but `comicUnknownSpeaker`: `comicPanelLetterbox`, `comicBalloonOverflow`, `comicPanelCount`…), a layout that did not converge (C6), parse issues
 (C7), unknown directives (C8), unknown style ids (C9), unknown references that print "?"
 (C10), unregistered images (C11), faces used but not loaded, or a CJK face setting characters
-whose files were not loaded when the layout ran (C12; an Arabic face counts the same way, so a weight the arabic block did not load fails it), `FONTS` incomplete (C13),
+whose files were not loaded when the layout ran (C12; an Arabic face counts the same way, so a weight the arabic block did not load fails it),
 PDF errors (C14), a tainted canvas (C15), "undefined" or "NaN" printed (C16), the default
-skin (C17), empty pages (C18), missing credits (C19), over budget (C20), a warm build over
-4 s (C21), and, for an `epub` output, no EPUB written before the module settled, or a file
+skin (C17), empty pages (C18), missing credits (C19), over budget (C20), a build over
+4 s (C21; the one build of `buildDocumentWithFonts` starts with nothing measured), and, for an `epub` output, no EPUB written before the module settled, or a file
 that `readEpub` cannot read back in its own layout (C30; the writer's `missingFont` and
 `missingImage` reports are warnings), and a config value the engine could not use as written
 (C31, from `doc.configWarnings`): a character grid or a side column cut to what the page holds
