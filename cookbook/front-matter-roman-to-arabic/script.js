@@ -36,8 +36,7 @@ const at = (edge, x, y, { width, to = 'container' } = {}) => ({ anchor: { to, ed
   offset: { x: mm(x), y: mm(y) }, ...(width !== undefined && { size: { width: wide(width) } }) });
 const onPage = (y) => at('top', 0, y, { to: 'page' }); // centred on the page, y mm from the trim
 const on = (id) => ({ color: col(id) }); // a design text's ink
-// overflow 'wrap', or a text too wide ends in '…' (gotcha: overflow-ellipsis-default). A number
-// lineHeight multiplies the size; never pt() (gotcha: design-lineheight-multiple).
+// overflow 'wrap' for the running heads too, where a text too wide would end in '…'.
 const text = (id, content, font, size, placement, extra = {}) => ({ kind: 'text', id, content,
   fontFamily: font, fontSize: pt(size), color: col('ink'), align: 'center', overflow: 'wrap',
   placement, ...extra });
@@ -91,9 +90,9 @@ const blind = { numbered: false, toc: false, breakBefore: { enabled: true, parit
   header: { elements: [] }, footer: { elements: [] } };
 const PLATE_H = 126; // mm: the frontispiece, as wide as the text block; its caption hangs below
 // mm from the trim: the imprint's eleven lines end on the text block's last baseline.
-const IMPRINT_TOP = 116.5; // re-tune it whenever the imprint changes
+const IMPRINT_TOP = 126.4; // re-tune it whenever the imprint changes
 const leaves = [
-  // i: bled to the trim. Type below the text block's foot would drop the heading's reserve.
+  // i: bled to the trim. The painting is as tall as the page, so the cover takes it whole.
   { id: 'cover', ...blind, advancedDesign: design([
     image('cover', at('top-left', 0, 0, { width: 'fill', to: 'bleed' })),
     label('author', '{author}', 9, onPage(22), 'bone', 2.6),
@@ -113,7 +112,6 @@ const leaves = [
     label('source', '{attr.source}', 7.5, at('top', 0, PLATE_H + 16), 'muted', 1.3),
   ]) },
   { id: 'title', ...blind, advancedDesign: design([ // v: four frontmatter fields, one attribute
-    // {publishDate} prints because the year is quoted (gotcha: quote-frontmatter).
     label('edition', 'The text of {publishDate}', 7.5, at('top', 0, 22), 'accent', 1.8),
     text('title', '{title}', 'Playfair Display SC', 33, at('top', 0, 30),
       { fontWeight: 700, letterSpacing: pt(0.4), lineHeight: 1 }),
@@ -125,12 +123,10 @@ const leaves = [
     label('publisher', '{attr.publisher}', 7.5, at('top', 0, 140), 'muted', 1.5),
   ]) },
   // vi: the section's margins set the small print low, in a 70 mm measure against the outer
-  // margin. With no element the design would print the title (gotcha: invisible-heading).
-  { id: 'imprint', ...blind, margins: { top: mm(IMPRINT_TOP), left: mm(TRIM_W - OUTER - 70) },
-    advancedDesign: design([{ kind: 'box', id: 'none', style: { backgroundColor: col('paper') },
-      placement: { ...at('top-left', 0, 0), size: { width: pt(0.1), height: pt(0.1) } } }]) },
-  // vii: dedication and epigraph, under a heading whose only element is an ornament, which
-  // also keeps its title from printing (gotcha: invisible-heading).
+  // margin. hidden: the heading opens the page and names its bookmark, and prints nothing.
+  { id: 'imprint', ...blind, hidden: true,
+    margins: { top: mm(IMPRINT_TOP), left: mm(TRIM_W - OUTER - 70) } },
+  // vii: dedication and epigraph, under a heading whose design is an ornament and no title.
   { id: 'quiet', ...blind,
     advancedDesign: design([image('crystal', at('top', 0, 24, { width: 6 }))], 34) },
 ];
@@ -139,8 +135,6 @@ const leaves = [
 const VERSE_IN = 22; // mm: the indent that centres the verse as a block
 const SOURCE_IN = 55; // mm: 'Paradise Lost' ends under the end of the longest line of verse
 const prelimStyles = [
-  // In ink, not muted: a paragraph style has no italic colour, so its italic title would take
-  // bodyText.italicColor and print darker than its words (gotcha: style-italic-colour).
   { id: 'small-print', fontSize: pt(7.6), lineHeight: pt(10.4), textAlign: 'left',
     firstLineIndent: pt(0), spaceBetween: pt(5.2) },
   // Small capitals, with the italic lines of the 1818 page, leaded as one inscription.
@@ -179,8 +173,8 @@ const opener = design([
     { color: col('bone'), lineHeight: 1 }),
   text('dateline', '{attr.dateline}', 'Fanwood Text', 10.5, onPage(44),
     { italic: true, color: col('bone') }),
-  // minHeight counts from the text block, TOP below the trim. The texts reserve their height,
-  // the drawing nothing (gotcha: opener-image-no-reserve), so minHeight sets the first line.
+  // The drawing reserves down to its foot. minHeight, counted from the text block (TOP below
+  // the trim), is a floor AIR mm lower, which sends the first line one grid line further down.
 ], BAND - TOP + AIR);
 // Walton's letters come before Chapter I: they take the novel's opener but no number.
 const letter = { id: 'letter', numbered: false };
@@ -203,7 +197,7 @@ const header = { elements: [
 // #endregion
 
 const config = () => ({
-  locale: 'en-us', // hyphenation patterns, by exact code (gotcha: hyphenation-locales)
+  locale: 'en-us', // the hyphenation patterns
   colorPalette, layout: { layoutType: 'single' },
   page: { // mirror: left is the inner margin; 150 dpi is for the screen
     sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
@@ -220,8 +214,8 @@ const config = () => ({
   },
   headings: {
     fontFamily: 'Playfair Display SC', fontWeight: 400, color: col('ink'),
-    // Break restated (gotcha: headings-drop-h1-break). span 'page' paints the opener unclipped,
-    // so the drawing reaches the trim; an in-column design is clipped to the text block.
+    // 'odd': the novel opens on a recto. span 'page': a design kept in the column is cut at
+    // the foot of the text block, and the cover's painting, a style of this level, runs on.
     levels: [{ level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
       marginTop: pt(0), marginBottom: pt(0), advancedDesign: opener }],
   },
@@ -286,8 +280,7 @@ await Promise.all(paintings.map(({ bitmap: b }) => loadImage(b.fileId, asset(b.f
 const resources = [...paintings, ...emblems];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Loaded before the first build. The PDF asks for a bold Fanwood and an
-// italic Cinzel too; the kit's provider snaps to shipped faces (gotcha: pdf-provider-all-styles).
+// Every face the pages set, loaded before the first build.
 const FONTS = { 'Fanwood Text': ['400', '400i'], Cinzel: ['400', '600'],
   'Playfair Display SC': ['400', '400i', '700'] };
 
