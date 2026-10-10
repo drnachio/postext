@@ -139,7 +139,7 @@ const config = () => ({
   headings: {
     fontFamily: HEI, color: col('seal'), fontWeight: 700,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // Each document opens on the next page, whichever side that is.
       { level: 1, breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
       { level: 2, fontSize: pt(BODY), lineHeight: pt(LEAD), marginTop: pt(LEAD),
         marginBottom: pt(0) },

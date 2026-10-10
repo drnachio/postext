@@ -94,7 +94,7 @@ const config = () => ({
   headings: {
     fontFamily: TEXT, color: col('ink'), fontWeight: 600,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // A chapter opens on the next page, recto or verso.
       { level: 1, numberingTemplate: '{1}', fontSize: pt(22),
         breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
       { level: 2, numberingTemplate: '{1}.{2}', numberSeparator: '  ', fontSize: pt(13),

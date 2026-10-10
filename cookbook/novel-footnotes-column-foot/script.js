@@ -17,7 +17,7 @@ const palette = {
   rule: '#c9bdae', // hairlines
   paper: '#fbf8f2',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// col(id): a colour linked to its palette entry, with the entry's hex beside the id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -98,7 +98,7 @@ const footer = { elements: [{ ...head('drop-folio', '{pageNumber}', 'all', 'bott
 // #endregion
 
 const config = { // one object: the switches below change it in place
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-us', es: 'es' }), // the language of the hyphenation patterns
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'),
@@ -111,8 +111,7 @@ const config = { // one object: the switches below change it in place
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: 'EB Garamond', color: col('ink'), levels: [
-    // Restated on purpose: any headings object drops the H1 break
-    // (gotcha: headings-drop-h1-break). 'any': the treatise opens on the next page.
+    // 'any': the treatise opens on the next page, recto or verso.
     { level: 1, span: 'page', advancedDesign: opener, marginBottom: pt(0),
       breakBefore: { enabled: true, parity: 'any' } },
     { level: 2, fontSize: pt(12.5), lineHeight: pt(LEAD), italic: true, fontWeight: 400,

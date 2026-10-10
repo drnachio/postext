@@ -79,7 +79,7 @@ const config = () => ({
   bodyText: { fontFamily: LETTERING, fontSize: pt(10), lineHeight: pt(14), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink') },
   headings: { fontFamily: SFX, color: col('ink'),
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // The story opens on the next page, recto or verso.
     levels: [{ level: 1, fontSize: pt(30), breakBefore: { enabled: true, parity: 'any' } }] },
   header: { elements: [] }, footer,
 });

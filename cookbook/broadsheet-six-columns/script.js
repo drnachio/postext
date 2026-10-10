@@ -34,11 +34,10 @@ const caps = (size, weight, colour = 'ink') => sans(size, weight, { color: col(c
   textTransform: 'uppercase', letterSpacing: pt(size * 0.14) });
 const at = (to, edge, x = 0, y = 0) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) } });
 const text = (id, content, look, placement) => ({ kind: 'text', id, content, align: 'left',
-  overflow: 'wrap', color: col('ink'), ...look, placement }); // (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', color: col('ink'), ...look, placement });
 const rule = (id, under, weight, gap = 0) => ({ kind: 'rule', id, thickness: pt(weight),
   color: col('ink'), placement: { ...at(under, 'above', 0, -gap), size: { width: 'fill' } } });
-// An empty box a whole number of grid lines deep sets each opener's depth, so no sliver of
-// column is left beside it for the rule to run through (gotcha: column-rule-through-opener).
+// An empty box sets each opener's depth: a whole number of grid lines.
 const depth = (lines) => ({ kind: 'box', id: 'depth', style: {}, placement: {
   ...at('container', 'top-left'), size: { width: 'fill', height: pt(lines * LEAD) } } });
 
@@ -55,7 +54,7 @@ const nameplate = { enabled: true, slot: { elements: [
       { ...at('#foot', 'above', 0, -1.5), size: { width: 'fill' } })),
   rule('thin', '#date-left', 0.5, 1.6), rule('heavy', '#thin', 3, 0.7),
   text('name', '{titleText}', { fontFamily: 'Playfair Display', fontSize: pt(64),
-    fontWeight: 900, lineHeight: 1, align: 'center' }, // (gotcha: design-lineheight-multiple)
+    fontWeight: 900, lineHeight: 1, align: 'center' },
   { ...at('#heavy', 'above', 0, -2.5), size: { width: 'fill' } }),
   ...ear('left', [['w-kicker', 'Weather', caps(7.5, 700, 'accent')],
     ['w-outlook', '{attr.outlook}', { fontFamily: 'Newsreader', fontSize: pt(9.5), italic: true,
@@ -161,7 +160,7 @@ const config = () => ({
   headings: { fontFamily: 'Playfair Display', fontWeight: 700, color: col('ink'),
     balancing: { trailing: false }, // every page closes a section: fill each column to the foot
     levels: [
-    // Restated (gotcha: headings-drop-h1-break): each section opens a page of its own.
+    // Each section opens a page of its own, recto or verso.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' }, advancedDesign: flag },
     { level: 2, fontSize: pt(17), lineHeight: pt(19), marginTop: pt(LEAD), marginBottom: pt(3) },
     { level: 3, fontFamily: 'Archivo Narrow', fontSize: pt(9.5), lineHeight: pt(LEAD),

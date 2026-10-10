@@ -36,9 +36,7 @@
     "cjk-no-fangsong",
     "cjk-fonts-slices",
     "cjk-locale-tag",
-    "headings-drop-h1-break",
-    "merged-cells-hiddenby",
-    "overflow-ellipsis-default"
+    "merged-cells-hiddenby"
   ],
   "explainsWarnings": ["cjkGridClamped"],
   "related": [

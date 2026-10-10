@@ -18,8 +18,7 @@
   },
   "answers": ["Q45"],
   "gotchas": [
-    "headings-drop-h1-break", "palette-skips-designs", "overflow-ellipsis-default",
-    "hyphenation-locales", "opener-reserves-anchored"
+    "opener-reserves-anchored"
   ],
   "explainsWarnings": ["undefinedFootnote", "unusedFootnote"],
   "related": [

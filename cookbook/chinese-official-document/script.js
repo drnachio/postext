@@ -87,7 +87,7 @@ const letterhead = { enabled: true, minHeight: pt(13 * LEAD), slot: { elements: 
 ] } };
 const notice = { level: 1, span: 'page', advancedDesign: letterhead,
   marginTop: pt(0), marginBottom: pt(LEAD), // 空一行: a blank line, then the addressee
-  breakBefore: { enabled: true, parity: 'any' } }; // gotcha: headings-drop-h1-break
+  breakBefore: { enabled: true, parity: 'any' } }; // a notice opens on the next page
 // #endregion
 
 // #region folios: “— 1 —” in 四号, 7 mm under the type area, a cell in from the outer edge

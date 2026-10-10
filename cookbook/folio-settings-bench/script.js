@@ -99,7 +99,7 @@ const config = () => ({
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: SANS, color: col('ink'), fontWeight: 600, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // A chapter opens on the next page, recto or verso.
     { level: 1, fontSize: pt(19), breakBefore: { enabled: true, parity: 'any' },
       marginBottom: pt(LEAD / 2), advancedDesign: opener },
   ] },

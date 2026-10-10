@@ -36,7 +36,6 @@
   "gotchas": [
     "arabic-locale-tag",
     "arabic-fonts-subset",
-    "headings-drop-h1-break",
     "digit-period-list"
   ],
   "engine": {

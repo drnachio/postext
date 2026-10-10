@@ -20,7 +20,9 @@
   "answers": ["Q95", "Q87", "Q90"],
   "gaps": [],
   "gotchas": [
-    "cjk-fonts-slices", "cjk-locale-tag", "cjk-spread-order", "headings-drop-h1-break"
+    "cjk-fonts-slices",
+    "cjk-locale-tag",
+    "cjk-spread-order"
   ],
   "explainsWarnings": [],
   "related": ["certificate-single-page", "chapter-opener-bleed-band", "din-business-letter"],

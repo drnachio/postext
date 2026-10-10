@@ -50,7 +50,7 @@ const config = () => ({
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(1.5), indentAfterHeading: false },
   headings: { fontFamily: LABEL, fontWeight: 700, color: col('green'), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // A chapter opens on an odd page, with no blank page forced before it.
     { level: 1, fontSize: pt(26), lineHeight: pt(41), numberingTemplate: 'الفصل {1}',
       numberSeparator: ': ', breakBefore: { enabled: true, parity: 'odd' },
       marginTop: pt(0), marginBottom: pt(10) },

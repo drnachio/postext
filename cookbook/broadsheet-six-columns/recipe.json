@@ -42,11 +42,7 @@
     "Q78"
   ],
   "gotchas": [
-    "column-rule-through-opener",
-    "bitmap-print-size",
-    "headings-drop-h1-break",
-    "overflow-ellipsis-default",
-    "design-lineheight-multiple"
+    "bitmap-print-size"
   ],
   "engine": {
     "postext": "1.25.0"

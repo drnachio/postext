@@ -33,10 +33,7 @@
   "answers": [
     "Q106"
   ],
-  "gotchas": [
-    "headings-drop-h1-break",
-    "quote-frontmatter"
-  ],
+  "gotchas": [],
   "engine": {
     "postext": "1.25.0",
     "postextPdf": "1.25.0"
