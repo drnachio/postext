@@ -16,8 +16,6 @@ const palette = { // every colour in the config links to one of these
   muted: '#6a6770', // running heads, folios, the author's name, the colophon
   paper: '#ffffff',
 };
-// col() writes the hex beside the id, since designs and running heads do not read the
-// palette (gotcha: palette-skips-designs).
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries(palette)
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -27,13 +25,13 @@ const LEAD = 14.5; // pt: the leading of the note and of every line of verse
 const GAP = 8; // mm between the original and the translation: each column is 55 mm wide
 
 // #region answer: a poem and its translation: a box with two columns and a fixed break
-// Each poem is a box titled with its numeral, holding one two-column group. breaks="14"
-// opens the second column at the group's 14th block, since the Spanish title and its 12
-// lines come before it. A :::space is not a block, so stanza gaps leave the count alone:
+// Each poem is a box titled with its numeral, holding one two-column group. breaks="5"
+// opens the second column at the group's 5th block, since the Spanish title and its three
+// stanzas come before it. A :::space is not a block, so the gaps leave the count alone:
 //   :::callout{type="poem" title="I"}
-//   :::columns{count=2 breaks="14"}
-//   Spanish title, :::space{lines=0.5}, 12 lines with a :::space between stanzas
-//   English title, :::space{lines=0.5}, 12 lines with a :::space between stanzas
+//   :::columns{count=2 breaks="5"}
+//   Spanish title, :::space{lines=0.5}, its stanzas in :::verse blocks
+//   English title, :::space{lines=0.5}, its stanzas in :::verse blocks
 //   :::
 //   :::
 // Both columns open on the same line, so matching :::space gaps keep the stanzas level.
@@ -46,8 +44,8 @@ const poem = {
   columnGap: mm(GAP),
   titleStyle: { fontFamily: 'Castoro Titling', fontSize: pt(22), fontWeight: 400,
     color: col('madder'), gap: pt(4) },
-  // A box starts on the first grid line at least two lines down: 10.2 mm under the picture,
-  // 12.3 mm under a poem, whose box ends off the grid. The default marginBottom (0.75 em)
+  // A box starts on the first grid line at least two lines down, under the picture as under
+  // a poem (12.3 mm there: its box ends off the grid). The default marginBottom (0.75 em)
   // would add to marginTop and open 17.4 mm between poems.
   marginTop: pt(LEAD * 2), marginBottom: pt(0),
   keepTogether: false, // a long poem goes on overleaf instead of moving whole
@@ -60,14 +58,14 @@ const poem = {
 // pass for the next line; the Spanish half then ends that stanza's block and a
 // :::space{lines=2} before the next keeps the stanzas level across the gutter.
 const verse = { id: 'verse', hangingIndent: em(2) };
-// Castoro Titling draws capitals only. A paragraph style's margins do not count inside a box
-// (gotcha: box-paragraph-margins), so :::space{lines=0.5} sets each title off its poem.
+// Castoro Titling draws capitals only. A :::space{lines=0.5} in the Markdown sets each title
+// off its poem.
 const poemTitle = { id: 'poem-title', fontFamily: 'Castoro Titling', fontSize: pt(9.5),
   color: col('madder'), firstLineIndent: pt(0) };
 // #endregion
 
 // #region note: the author's note, justified and hyphenated in the edition's language
-const LOCALE = t({ en: 'en-us', es: 'es' }); // exact codes (gotcha: hyphenation-locales)
+const LOCALE = t({ en: 'en-us', es: 'es' }); // the patterns of the edition's language
 const bodyText = {
   fontFamily: 'Castoro', fontSize: pt(10.5), lineHeight: pt(LEAD), color: col('ink'),
   italicColor: col('ink'), firstLineIndent: mm(4.5), indentAfterHeading: false,
@@ -96,7 +94,6 @@ const titlePage = {
   header: { elements: [] }, footer: { elements: [] }, // no running head, no folio
   advancedDesign: { enabled: true, slot: { elements: [
     face('author', '{author}', 'Tenor Sans', 9, 44, { ...tracked, color: col('muted') }),
-    // A multiple of the size, never pt() (gotcha: design-lineheight-multiple).
     face('title', '{titleText}', 'Castoro Titling', 34, 58, { lineHeight: 1 }),
     face('other', '{attr.other}', 'Castoro', 16, 76, { italic: true, color: col('madder') }),
     image('flamingo', { ...onPage(96), size: { width: mm(34) } }),
@@ -105,13 +102,11 @@ const titlePage = {
     face('press', '{attr.press}', 'Tenor Sans', 8, 206, { ...tracked, color: col('muted') }),
   ] } },
 };
-const BAND = 84; // mm: the picture of the salt pans, from the top edge of the page
-const UNDER = Math.floor((BAND - TOP) / ((LEAD * 25.4) / 72)); // 12 grid lines to its foot
+// The picture of the salt pans runs 84 mm down from the top edge of the page, and the heading
+// reserves down to its foot. No margin under it: the poem's own marginTop sets the gap.
 const poemsOpener = {
-  id: 'poems', span: 'page', // span 'page': a column clips its design
-  // An image reserves no height (gotcha: opener-image-no-reserve). minHeight, a whole number
-  // of lines, plus the level's one-line bottom margin end the heading at the picture's foot.
-  advancedDesign: { enabled: true, minHeight: pt(LEAD * (UNDER - 1)), slot: { elements: [
+  id: 'poems', marginBottom: pt(0),
+  advancedDesign: { enabled: true, slot: { elements: [
     image('salina', { anchor: { to: 'page', edge: 'top-left' }, size: { width: 'fill' } }),
     face('title', '{titleText}', 'Castoro Titling', 38, 17, { lineHeight: 1 }),
     face('other', '{attr.other}', 'Castoro', 15, 33, { italic: true, color: col('madder') }),
@@ -149,8 +144,8 @@ const config = () => ({
     // The headings print designs, but their blocks carry this face: left out, the build
     // would ask for Open Sans 700, and Castoro Titling ships a 400 only.
     fontFamily: 'Castoro Titling', fontWeight: 400,
-    balancing: { enabled: false }, // on, poem III drops 22.5 mm (gotcha: balancing-drops-last-box)
-    levels: [ // restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break)
+    balancing: { closingBox: 'off' }, // 'first', the default, drops poem III to the page's foot
+    levels: [ // parity 'any': the note and the poems open the next page, on either side
       { level: 1, marginBottom: pt(LEAD), breakBefore: { enabled: true, parity: 'any' } },
     ],
   },

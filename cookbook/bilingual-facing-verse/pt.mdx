@@ -16,7 +16,7 @@ Uma plaquete bilíngue de cinco poemas sobre uma salina no sul da Espanha, em 15
 
 ### 1 · Um poema é um boxe com uma quebra de coluna fixa
 
-O código está [na resposta curta](#a-resposta-curta), mais acima. `:::columns` só funciona dentro de um boxe, por isso cada poema é um boxe cujo estilo tira o fundo e o preenchimento e imprime o `title` da cerca, que é o numeral ([`:::columns`](/pt/docs/document-format#columns)). Sem `breaks`, o grupo corta onde as duas colunas ficam niveladas. As duas metades destes poemas têm a mesma altura, então o corte cai no título inglês de qualquer maneira; mas alongue dois versos de *The Rake* até eles não caberem, e o corte desce um bloco e deixa THE RAKE no pé da coluna espanhola. `breaks="5"` indica o bloco que abre a segunda coluna, e o título inglês a encabeça seja qual for a altura das duas metades.
+O código está [na resposta curta](#a-resposta-curta), mais acima. Cada poema é um boxe com um grupo `:::columns` dentro; o estilo dele tira o fundo e o preenchimento e imprime o `title` da cerca, que é o numeral ([`:::columns`](/pt/docs/document-format#columns)). Sem `breaks`, o grupo corta onde as duas colunas ficam niveladas. As duas metades destes poemas têm a mesma altura, então o corte cai no título inglês de qualquer maneira; mas alongue dois versos de *The Rake* até eles não caberem, e o corte desce um bloco e deixa THE RAKE no pé da coluna espanhola. `breaks="5"` indica o bloco que abre a segunda coluna, e o título inglês a encabeça seja qual for a altura das duas metades.
 
 ### 2 · Um bloco :::verse por coluna, uma linha em branco por quebra de estrofe
 
@@ -30,13 +30,13 @@ Cada metade de um poema é um bloco `:::verse`: um verso por linha do Markdown, 
 
 <Excerpt region="note" />
 
-`locale` escolhe os padrões de hifenização pelo código exato. Com `'es'`, a nota espanhola divide *ori-ginal* e *Duna-liella*; com os padrões ingleses as duas palavras vão inteiras para a linha seguinte, e só *arras-traba* se divide com ambos ([idiomas suportados](/pt/docs/justification#idiomas-compatíveis)). Os espaços entre palavras podem encolher até 0,8 e esticar até 1,35 da largura normal, e nenhuma linha justificada das duas notas passa disso. O título da nota é um design de um único elemento, o próprio título, colocado 36 mm abaixo do topo da mancha, e assim a nota começa a 73 mm da borda superior da página.
+`locale` escolhe os padrões de hifenização. Com `'es'`, a nota espanhola divide *ori-ginal* e *Duna-liella*; com os padrões ingleses as duas palavras vão inteiras para a linha seguinte, e só *arras-traba* se divide com ambos ([idiomas suportados](/pt/docs/justification#idiomas-compatíveis)). Os espaços entre palavras podem encolher até 0,8 e esticar até 1,35 da largura normal, e nenhuma linha justificada das duas notas passa disso. O título da nota é um design de um único elemento, o próprio título, colocado 36 mm abaixo do topo da mancha, e assim a nota começa a 73 mm da borda superior da página.
 
 ### 4 · A folha de rosto e a aquarela são títulos
 
 <Excerpt region="front" />
 
-Cada uma é um título de nível 1 com estilo próprio ([estilos de título](/pt/docs/configuration#estilos-de-título)): o design da folha de rosto pega `{author}` do frontmatter, e os dois designs pegam `{attr.other}` dos atributos do título. A aquarela começa na borda superior da página, acima da mancha, onde um design mantido na coluna seria cortado, por isso o estilo dela tem `span: 'page'`. Uma imagem não reserva altura: sem `minHeight`, o título tem 25,6 mm e o poema I começa a 58 mm da borda, em cima de uma imagem que vai até 84 mm. Um `minHeight` de onze linhas, mais a margem inferior de uma linha do nível, faz o título terminar a 83,4 mm.
+Cada uma é um título de nível 1 com estilo próprio ([estilos de título](/pt/docs/configuration#estilos-de-título)): o design da folha de rosto pega `{author}` do frontmatter, e os dois designs pegam `{attr.other}` dos atributos do título. A aquarela está ancorada na borda superior da página, acima da mancha, e o título reserva até o pé dela, a 84 mm da borda. O estilo define `marginBottom: pt(0)`, então o espaço sob a aquarela é a margem superior do próprio poema, de duas linhas, e o poema I começa na primeira linha da grade que fica pelo menos duas linhas abaixo da imagem.
 
 ### 5 · Os cabeços nomeiam as duas línguas
 
@@ -60,8 +60,8 @@ Com 12 mm, as colunas ficam com 53 mm, e *Los turistas paran y hacen fotos:* dei
 Com 3 em, *reflection.* na página 3 começa um em mais para dentro.
 
 ```diff
--const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(2) };
-+const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(3) };
+-const verse = { id: 'verse', hangingIndent: em(2) };
++const verse = { id: 'verse', hangingIndent: em(3) };
 ```
 
 ## Erros comuns

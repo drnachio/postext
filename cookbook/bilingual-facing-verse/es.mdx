@@ -16,7 +16,7 @@ Un cuaderno bilingüe de cinco poemas sobre una salina del sur de España, de 15
 
 ### 1 · Un poema es un recuadro con un corte de columna fijo
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. `:::columns` solo funciona dentro de un recuadro, así que cada poema es un recuadro cuyo estilo quita el fondo y el relleno e imprime el `title` de la directiva, el número ([`:::columns`](/es/docs/document-format#columns)). Sin `breaks`, el grupo corta donde sus dos columnas quedan igualadas. En estos poemas las dos mitades miden lo mismo y el corte cae de todos modos en el título inglés, pero si alargas dos versos de *The Rake* hasta que no quepan, el corte baja un bloque y THE RAKE se queda al pie de la columna española. `breaks="5"` fija el bloque que abre la segunda columna, así que el título inglés la encabeza midan lo que midan las dos mitades.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada poema es un recuadro con un grupo `:::columns` dentro; su estilo quita el fondo y el relleno e imprime el `title` de la directiva, el número ([`:::columns`](/es/docs/document-format#columns)). Sin `breaks`, el grupo corta donde sus dos columnas quedan igualadas. En estos poemas las dos mitades miden lo mismo y el corte cae de todos modos en el título inglés, pero si alargas dos versos de *The Rake* hasta que no quepan, el corte baja un bloque y THE RAKE se queda al pie de la columna española. `breaks="5"` fija el bloque que abre la segunda columna, así que el título inglés la encabeza midan lo que midan las dos mitades.
 
 ### 2 · Un bloque :::verse por columna, una línea en blanco por salto de estrofa
 
@@ -30,13 +30,13 @@ Cada mitad de un poema es un bloque `:::verse`: un verso por línea del Markdown
 
 <Excerpt region="note" />
 
-`locale` elige los patrones de separación silábica por su código exacto. Con `'es'`, la nota española corta *ori-ginal* y *Duna-liella*; con los patrones ingleses las dos palabras pasan enteras a la línea siguiente, y solo *arras-traba* se corta con ambos ([idiomas soportados](/es/docs/justification#idiomas-soportados)). Los espacios entre palabras pueden encogerse hasta 0,8 y estirarse hasta 1,35 de su ancho normal, y ninguna línea justificada de las dos notas pasa de ahí. El título de la nota es un diseño de un solo elemento, situado 36 mm por debajo del inicio de la caja de texto, así que la nota empieza a 73 mm del borde superior de su página.
+`locale` elige los patrones de separación silábica. Con `'es'`, la nota española corta *ori-ginal* y *Duna-liella*; con los patrones ingleses las dos palabras pasan enteras a la línea siguiente, y solo *arras-traba* se corta con ambos ([idiomas soportados](/es/docs/justification#idiomas-soportados)). Los espacios entre palabras pueden encogerse hasta 0,8 y estirarse hasta 1,35 de su ancho normal, y ninguna línea justificada de las dos notas pasa de ahí. El título de la nota es un diseño de un solo elemento, situado 36 mm por debajo del inicio de la caja de texto, así que la nota empieza a 73 mm del borde superior de su página.
 
 ### 4 · La portada y la acuarela son títulos
 
 <Excerpt region="front" />
 
-Cada uno es un título de nivel 1 con un estilo propio ([estilos de título](/es/docs/configuration#estilos-de-encabezado)): el diseño de la portada toma `{author}` del frontmatter, y los dos diseños toman `{attr.other}` de los atributos del título. La acuarela empieza en el borde superior de la página, por encima de la caja de texto, y un diseño que se queda en la columna se recorta por arriba, así que su estilo lleva `span: 'page'`. Una imagen no reserva altura: sin `minHeight`, el título mide 25,6 mm y el poema I empieza a 58 mm del borde, encima de una acuarela que llega a 84 mm. Con un `minHeight` de once líneas y el margen inferior del nivel, de una línea, el título termina a 83,4 mm.
+Cada uno es un título de nivel 1 con un estilo propio ([estilos de título](/es/docs/configuration#estilos-de-encabezado)): el diseño de la portada toma `{author}` del frontmatter, y los dos diseños toman `{attr.other}` de los atributos del título. La acuarela está anclada al borde superior de la página, por encima de la caja de texto, y el título reserva hasta su pie, a 84 mm del borde. El estilo pone `marginBottom: pt(0)`, así que el hueco bajo la acuarela es el margen superior del propio poema, de dos líneas, y el poema I empieza en la primera línea de la rejilla que queda al menos dos líneas por debajo de la imagen.
 
 ### 5 · Las cabeceras nombran los dos idiomas
 
@@ -60,8 +60,8 @@ Con 12 mm las columnas se quedan en 53 mm, y *Los turistas paran y hacen fotos:*
 Con 3 em, *reflection.* empieza en la página 3 un em más adentro.
 
 ```diff
--const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(2) };
-+const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(3) };
+-const verse = { id: 'verse', hangingIndent: em(2) };
++const verse = { id: 'verse', hangingIndent: em(3) };
 ```
 
 ## Errores frecuentes

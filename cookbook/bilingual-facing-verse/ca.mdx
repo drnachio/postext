@@ -16,7 +16,7 @@ Un quadern bilingüe de cinc poemes sobre una salina del sud d'Espanya, de 156 �
 
 ### 1 · Un poema és un requadre amb un tall de columna fix
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. `:::columns` només funciona dins d'un requadre, així que cada poema és un requadre l'estil del qual treu el fons i el farciment i imprimeix el `title` de la directiva, el número ([`:::columns`](/ca/docs/document-format#columns)). Sense `breaks`, el grup talla on les dues columnes queden igualades. En aquests poemes les dues meitats fan el mateix i el tall cau igualment al títol anglès, però si allargues dos versos de *The Rake* fins que no hi càpiguen, el tall baixa un bloc i THE RAKE es queda al peu de la columna castellana. `breaks="5"` fixa el bloc que obre la segona columna, així que el títol anglès l'encapçala facin el que facin les dues meitats.
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Cada poema és un requadre amb un grup `:::columns` a dins; el seu estil treu el fons i el farciment i imprimeix el `title` de la directiva, el número ([`:::columns`](/ca/docs/document-format#columns)). Sense `breaks`, el grup talla on les dues columnes queden igualades. En aquests poemes les dues meitats fan el mateix i el tall cau igualment al títol anglès, però si allargues dos versos de *The Rake* fins que no hi càpiguen, el tall baixa un bloc i THE RAKE es queda al peu de la columna castellana. `breaks="5"` fixa el bloc que obre la segona columna, així que el títol anglès l'encapçala facin el que facin les dues meitats.
 
 ### 2 · Un bloc :::verse per columna, una línia en blanc per salt d'estrofa
 
@@ -30,13 +30,13 @@ Cada meitat d'un poema és un bloc `:::verse`: un vers per línia del Markdown, 
 
 <Excerpt region="note" />
 
-`locale` tria els patrons de partició de mots pel seu codi exacte. Amb `'es'`, la nota castellana talla *ori-ginal* i *Duna-liella*; amb els patrons anglesos les dues paraules passen senceres a la línia següent, i només *arras-traba* es talla amb tots dos ([llengües admeses](/ca/docs/justification#llengües-compatibles)). Els espais entre paraules es poden encongir fins a 0,8 i estirar fins a 1,35 de la seva amplada normal, i cap línia justificada de les dues notes no passa d'aquí. El títol de la nota és un disseny d'un sol element, situat 36 mm per sota de l'inici de la caixa de text, així que la nota comença a 73 mm de la vora superior de la seva pàgina.
+`locale` tria els patrons de partició de mots. Amb `'es'`, la nota castellana talla *ori-ginal* i *Duna-liella*; amb els patrons anglesos les dues paraules passen senceres a la línia següent, i només *arras-traba* es talla amb tots dos ([llengües admeses](/ca/docs/justification#llengües-compatibles)). Els espais entre paraules es poden encongir fins a 0,8 i estirar fins a 1,35 de la seva amplada normal, i cap línia justificada de les dues notes no passa d'aquí. El títol de la nota és un disseny d'un sol element, situat 36 mm per sota de l'inici de la caixa de text, així que la nota comença a 73 mm de la vora superior de la seva pàgina.
 
 ### 4 · La portada i l'aquarel·la són títols
 
 <Excerpt region="front" />
 
-Cadascun és un títol de nivell 1 amb un estil propi ([estils de títol](/ca/docs/configuration#estils-dencapçalament)): el disseny de la portada pren `{author}` del frontmatter, i els dos dissenys prenen `{attr.other}` dels atributs del títol. L'aquarel·la comença a la vora superior de la pàgina, per sobre de la caixa de text, i un disseny que es queda a la columna es retalla per dalt, així que el seu estil porta `span: 'page'`. Una imatge no reserva alçada: sense `minHeight`, el títol fa 25,6 mm i el poema I comença a 58 mm de la vora, damunt d'una aquarel·la que arriba a 84 mm. Amb un `minHeight` d'onze línies i el marge inferior del nivell, d'una línia, el títol acaba a 83,4 mm.
+Cadascun és un títol de nivell 1 amb un estil propi ([estils de títol](/ca/docs/configuration#estils-dencapçalament)): el disseny de la portada pren `{author}` del frontmatter, i els dos dissenys prenen `{attr.other}` dels atributs del títol. L'aquarel·la està ancorada a la vora superior de la pàgina, per sobre de la caixa de text, i el títol reserva fins al seu peu, a 84 mm de la vora. L'estil posa `marginBottom: pt(0)`, així que l'espai sota l'aquarel·la és el marge superior del mateix poema, de dues línies, i el poema I comença a la primera línia de la retícula que queda almenys dues línies per sota de la imatge.
 
 ### 5 · Les capçaleres anomenen les dues llengües
 
@@ -60,8 +60,8 @@ Amb 12 mm les columnes es queden en 53 mm, i *Los turistas paran y hacen fotos:*
 Amb 3 em, *reflection.* comença a la pàgina 3 un em més endins.
 
 ```diff
--const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(2) };
-+const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(3) };
+-const verse = { id: 'verse', hangingIndent: em(2) };
++const verse = { id: 'verse', hangingIndent: em(3) };
 ```
 
 ## Errors freqüents
