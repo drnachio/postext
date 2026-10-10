@@ -16,13 +16,13 @@ A seven-page instruction manual for the Verra W1, an invented electric kettle, i
 
 ### 1 · A band that carries the triangle
 
-The code is [the short answer](#the-short-answer) above. `stripe` paints the band down the left edge. When a box has a side stripe, 1.4.1 centres the icon on the stripe instead of giving it a column of its own ([callout styles](/en/docs/configuration#callout-styles)), and `align: 'top'` puts the icon's top edge level with the title's. The `border` in the same colour closes the band into a frame; without it the text of the box would stand on the bare page beside a coloured bar. `PAD_Y` is worked out so that the title, its gap and the top and bottom padding add up to two lines of the 12.8 pt grid. The body keeps the grid's leading, so each box is a whole number of lines tall (WARNUNG 10, VORSICHT 8), and `marginTop: pt(LEAD)` leaves exactly one line between the two boxes on page 2. VORSICHT keeps amber for the band and the frame and sets its title and bullets in ink: amber on white measures 2.0:1, and small type needs 4.5:1. HINWEIS starts from the same base (`...notice(…)`) and turns the band and the frame off, so its info icon takes a column of its own and `borderRadius` rounds a plain tint.
+The code is [the short answer](#the-short-answer) above. `stripe` paints the band down the left edge. When a box has a side stripe, the icon is centred on the stripe instead of taking a column of its own ([callout styles](/en/docs/configuration#callout-styles)), and `align: 'top'` puts the icon's top edge level with the title's. The `border` in the same colour closes the band into a frame; without it the text of the box would stand on the bare page beside a coloured bar. `PAD_Y` is worked out so that the title, its gap and the top and bottom padding add up to two lines of the 12.8 pt grid. The body keeps the grid's leading, so each box is a whole number of lines tall (WARNUNG 10, VORSICHT 8), and `marginTop: pt(LEAD)` leaves exactly one line between the two boxes on page 2. VORSICHT keeps amber for the band and the frame and sets its title and bullets in ink: amber on white measures 2.0:1, and small type needs 4.5:1. HINWEIS starts from the same base (`...notice(…)`) and turns the band and the frame off, so its info icon takes a column of its own and `borderRadius` rounds a plain tint.
 
 ### 2 · German names for figures and tables
 
 <Excerpt region="types" />
 
-`locale: 'de'` gives the manual German hyphenation, but 1.4.1 has the names of resource types and the continuation notes of a split table in English and Spanish only. Without these lines the captions read Figure 2.1 and Table 5.1, and the note under the first part of the split table says Continued. A resource type written by hand has to give every field, the numbering included. `counted` supplies it: `{n}` with `resetOn: 'never'` counts through the whole manual (Abbildung 1, Tabelle 1 to 3) instead of starting again in every section. Only the table type sets `captionStyle.position: 'above'`, so tables take their caption over the head and the drawing keeps its caption underneath.
+`locale: 'de'` gives the manual German hyphenation and German names for the built-in types: with nothing else, the captions read Abbildung 2.1 and Tabelle 5.1, and the note under the first part of the split table says Wird fortgesetzt. The table style spells that note and the caption's suffix out, and `defaultResourceTypes('de')` is passed for two changes. `counted` is the first: `{n}` with `resetOn: 'never'` counts through the whole manual (Abbildung 1, Tabelle 1 to 3) instead of starting again in every section. Only the table type sets `captionStyle.position: 'above'`, so tables take their caption over the head and the drawing keeps its caption underneath.
 
 ### 3 · Keys, signal words and part numbers as chips
 
@@ -34,7 +34,7 @@ The code is [the short answer](#the-short-answer) above. `stripe` paints the ban
 
 <Excerpt region="steps" />
 
-The steps are an ordered list with the numbers in Red Hat Display 800 at 15 pt, in teal, with no separator. 1.4.1 centres a list number on its first line instead of standing it on the baseline, so a 15 pt figure beside 9.3 pt text hangs about 1 pt below the line. `numberVerticalOffset: pt(-1)`, a value measured on the capture, lifts its foot onto the baseline. `itemSpacing` separates the steps by 5 pt to make room for the large figures. The bullets nested under a step start at 6.5 mm, level with the step's text; they are teal dashes, and the third level has grey ones ([ordered lists](/en/docs/configuration#ordered-lists)).
+The steps are an ordered list with the numbers in Red Hat Display 800 at 15 pt, in teal, with no separator. A list number is centred on its first line, not stood on the baseline, so a 15 pt figure beside 9.3 pt text hangs about 1 pt below the line. `numberVerticalOffset: pt(-1)`, a value measured on the capture, lifts its foot onto the baseline. `itemSpacing` separates the steps by 5 pt to make room for the large figures. The bullets nested under a step start at 6.5 mm, level with the step's text; they are teal dashes, and the third level has grey ones ([ordered lists](/en/docs/configuration#ordered-lists)).
 
 ### 5 · Section numbers in a reversed tab
 
@@ -61,5 +61,4 @@ With the section number in the template and a reset at every section, the drawin
 
 ## Pitfalls
 
-- In 1.4.1 the item after a nested list is spaced by the nested list's `itemSpacing`, not by its own list's. With 5 pt between steps and none between bullets, a step that followed a bullet list would sit 5 pt closer than the others, so the bullets here hang from the last step only.
 - Column balancing pushes a box that closes a page down to the page's last grid line, so any room left on the page opens above the box ([column balancing](/en/docs/configuration#column-balancing)). The text of page 2 was fitted to fill its column exactly. Delete one VORSICHT bullet and the box still ends at the foot, while the gap between the two boxes grows from 4.5 to 13.6 mm; with `headings: { balancing: { enabled: false } }` the box stays one line under WARNUNG and the page ends two lines short.
