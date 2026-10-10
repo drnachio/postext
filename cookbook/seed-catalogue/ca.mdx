@@ -22,7 +22,7 @@ El codi és a [la resposta curta](#la-resposta-curta), més amunt. El TSV només
 
 <Excerpt region="split" />
 
-La carta de la pàgina 1 cita la llista amb `:ref{id="vegetables" text="the price list"}`, i `text` imprimeix aquestes paraules en lloc d'un número. Una taula citada flota al primer forat lliure després de la cita, que aquí és el cap de la pàgina 2. La llista no hi cap sencera, així que el motor la talla entre files després de Jimmy Nardello, mai dins d'una classe combinada. A la pàgina 3 es repeteixen la fila de capçalera i la banda del peu, ara amb el sufix; l'avís va sota la primera part i la nota, sota l'última ([taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). `parseTSV(tsv, { headerRows: 1 })` converteix la primera fila en la capçalera, que es pinta com a tal i es repeteix a la pàgina 3. El sufix i l'avís van en cursiva amb la lletra del peu, i per això la banda es compon en Gelasio i no en Cabin Condensed, que no té cursiva.
+La carta de la pàgina 1 cita la llista amb `:ref{id="vegetables" text="the price list"}`, i `text` imprimeix aquestes paraules en lloc d'un número. Una taula citada flota al primer forat lliure després de la cita, que aquí és el cap de la pàgina 2. La llista no hi cap sencera, així que el motor la talla entre files després de Jimmy Nardello, mai dins d'una classe combinada. A la pàgina 3 es repeteixen la fila de capçalera i la banda del peu, ara amb el sufix; l'avís va sota la primera part i la nota, sota l'última ([taules més altes que la pàgina](/ca/docs/configuration-resources#taules-més-altes-que-la-pàgina)). `parseTSV(tsv, { headerRows: 1 })` converteix la primera fila en la capçalera, que es pinta com a tal i es repeteix a la pàgina 3. El sufix i l'avís van en cursiva amb la lletra del peu, i per això la banda es compon en Gelasio i no en Cabin Condensed, que no té cursiva.
 
 ### 3 · Un recurs per a cada sobre
 
@@ -34,7 +34,7 @@ La imatge d'una cel·la remet a un recurs pel seu id, així que cada sobre és u
 
 <Excerpt region="forms" />
 
-Les dues taules del full de comanda fan servir l'estil amb nom `form`, amb filets en quadrícula, 2,5 mm de radi a les cantonades del marc exterior i un fons crema sobre el qual escriure. La llista de preus conserva el `tableStyle` del document ([estils de taula amb nom](/ca/docs/configuration#estils-de-taula-amb-nom)). Una cel·la buida no necessita cap text, perquè la seva fila ocupa igualment una línia, aquí de 7,3 mm. Cada total combina quatre columnes en un sol rètol alineat a la dreta. L'estil de títol del full de comanda passa la pàgina 4 a una sola columna, així que les dues taules ocupen tota la mesura, 157 mm.
+Les dues taules del full de comanda fan servir l'estil amb nom `form`, amb filets en quadrícula, 2,5 mm de radi a les cantonades del marc exterior i un fons crema sobre el qual escriure. La llista de preus conserva el `tableStyle` del document ([estils de taula amb nom](/ca/docs/configuration-resources#estils-de-taula-amb-nom)). Una cel·la buida no necessita cap text, perquè la seva fila ocupa igualment una línia, aquí de 7,3 mm. Cada total combina quatre columnes en un sol rètol alineat a la dreta. L'estil de títol del full de comanda passa la pàgina 4 a una sola columna, així que les dues taules ocupen tota la mesura, 157 mm.
 
 ### 5 · Mantén la carta sota la pintura
 

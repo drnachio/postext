@@ -16,7 +16,7 @@ Uma antologia de sete páginas com dois textos fundadores da República da China
 
 ### 1 · Deixar os números curtos para a configuração
 
-O código é [a resposta curta](#a-resposta-curta) lá em cima. Com `cjk.uprightDigits: 2`, toda sequência de um ou dois algarismos num texto vertical fica em pé numa casa de um eme, os dois algarismos lado a lado: 10月10日, 第35號 e 7章56條 não precisam de marcação. Um número mais longo é composto inteiro de lado, como uma palavra latina, que é como o clreq compõe os números de quatro algarismos, então 1912 e 1644 descem pela linha girados um quarto de volta. Um número de três algarismos que deva ficar em pé leva uma marca: `民國:tcy[115]年` comprime o 115 dentro do eme. `:upright[ROC]` põe cada letra em pé numa casa própria, uma embaixo da outra, e a linha nunca quebra no meio ([números em texto vertical](/pt/docs/configuration#números-em-texto-vertical)).
+O código é [a resposta curta](#a-resposta-curta) lá em cima. Com `cjk.uprightDigits: 2`, toda sequência de um ou dois algarismos num texto vertical fica em pé numa casa de um eme, os dois algarismos lado a lado: 10月10日, 第35號 e 7章56條 não precisam de marcação. Um número mais longo é composto inteiro de lado, como uma palavra latina, que é como o clreq compõe os números de quatro algarismos, então 1912 e 1644 descem pela linha girados um quarto de volta. Um número de três algarismos que deva ficar em pé leva uma marca: `民國:tcy[115]年` comprime o 115 dentro do eme. `:upright[ROC]` põe cada letra em pé numa casa própria, uma embaixo da outra, e a linha nunca quebra no meio ([números em texto vertical](/pt/docs/configuration-east-asian#números-em-texto-vertical)).
 
 <PageShot page={4} crop="0.43,0.145,0.45,0.74" caption="Página 4, as notas: 10月10日 e 2月12日 em pé, 1911 e Sun Yat-sen de lado, 268 e 115 comprimidos com :tcy, ROC empilhada com :upright." />
 
@@ -36,7 +36,7 @@ Um design de título não tem paridade, então a faixa sempre desce pela borda d
 
 <Excerpt region="heads" />
 
-`anchor.to: 'outer'` é a margem do lado oposto à lombada, então num livro encadernado pela direita os cabeços descem pela borda esquerda do recto e pela borda direita do verso. O título fica quatro caracteres abaixo do alto da mancha e o fólio termina cinco acima do pé, ambos na vertical, a 80 % do corpo do texto ([elementos de texto verticais](/pt/docs/configuration#elementos-de-texto-verticais)). `pageNumbering.format: 'trad-chinese-informal'` imprime os fólios 三, 四, 六 e 七, e `pages: 'body'` os tira das duas aberturas.
+`anchor.to: 'outer'` é a margem do lado oposto à lombada, então num livro encadernado pela direita os cabeços descem pela borda esquerda do recto e pela borda direita do verso. O título fica quatro caracteres abaixo do alto da mancha e o fólio termina cinco acima do pé, ambos na vertical, a 80 % do corpo do texto ([elementos de texto verticais](/pt/docs/configuration-page-layout#elementos-de-texto-verticais)). `pageNumbering.format: 'trad-chinese-informal'` imprime os fólios 三, 四, 六 e 七, e `pages: 'body'` os tira das duas aberturas.
 
 ### 4 · Sangrar a capa com um design na largura da página
 

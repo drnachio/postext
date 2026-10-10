@@ -16,7 +16,7 @@ Four pages of a 四六判 edition of Higuchi Ichiyō's *Child's Play* (たけく
 
 ### 1 · Gather the spread's notes at the left page's fore-edge
 
-The code is [the short answer](#the-short-answer) above. `footnotes.placement: 'spread'` sets the notes cited on pages 2 and 3 at the end of page 3's text, which in a book bound on the right is its fore-edge, and `numbering: 'spread'` starts each spread's notes at （1） ([Footnotes](/en/docs/configuration#footnotes)). A note cited on the right-hand page waits for the left one; if the notes leave the left page less than one line of text, the rest stay at the foot of the right page, as JLReq allows. A document tagged `ja` already sets a vertical book's markers as `（{n}）` at the right of the line, 0.7 em, with digits upright: the two lines written out show it. `numberGap: 'em'` puts a full note-character after the number and `hangingIndent: em(2)` lines the turnovers up past it.
+The code is [the short answer](#the-short-answer) above. `footnotes.placement: 'spread'` sets the notes cited on pages 2 and 3 at the end of page 3's text, which in a book bound on the right is its fore-edge, and `numbering: 'spread'` starts each spread's notes at （1） ([Footnotes](/en/docs/configuration-notes-references#footnotes)). A note cited on the right-hand page waits for the left one; if the notes leave the left page less than one line of text, the rest stay at the foot of the right page, as JLReq allows. A document tagged `ja` already sets a vertical book's markers as `（{n}）` at the right of the line, 0.7 em, with digits upright: the two lines written out show it. `numberGap: 'em'` puts a full note-character after the number and `hangingIndent: em(2)` lines the turnovers up past it.
 
 ### 2 · Write the markers where Japanese puts them
 
@@ -24,7 +24,7 @@ The Markdown writes `見返り柳[^1]` after the word the note explains and the 
 
 ### 3 · Keep the source's sesame marks
 
-`cjk.emphasisMark` decides what `*…*` and `:dots[…]` print in this book: sesame dots, at the right of a vertical line. A `ja` document already uses them; written out, they turn on the kenten in the feature list. The Aozora text marks ぎつちよんちよん with 傍点, and `aozora.py` wrote it as `:dots[ぎつちよんちよん]{style=sesame}`; Chinese books put dots under the line instead ([Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu)).
+`cjk.emphasisMark` decides what `*…*` and `:dots[…]` print in this book: sesame dots, at the right of a vertical line. A `ja` document already uses them; written out, they turn on the kenten in the feature list. The Aozora text marks ぎつちよんちよん with 傍点, and `aozora.py` wrote it as `:dots[ぎつちよんちよん]{style=sesame}`; Chinese books put dots under the line instead ([Marks, ruby and warichu](/en/docs/configuration-east-asian#marks-ruby-and-warichu)).
 
 ### 4 · Open on a spread
 

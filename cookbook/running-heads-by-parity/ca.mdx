@@ -18,13 +18,13 @@ Les pàgines 29 a 33 dels *Assajos* de Montaigne en edició de butxaca i traducc
 
 <Excerpt region="palette" />
 
-Cada color de la configuració enllaça amb una d'aquestes entrades. Si deixes `header` sense definir, el motor dibuixa la seva capçalera de sèrie: `{title}` a les senars i `{chapterTitle}` a les parelles sobre un filet d'1 pt, en Open Sans 600 de 8 pt i en blau `#295AA3` ([encapçalaments i peus](/ca/docs/configuration#capçaleres-i-peus)). Si `main-color` pren el valor del sèpia, canvien els colors per defecte del text i també el d'aquesta capçalera, però la lletra, el filet i el costat on va cada títol continuen sent els del motor. Per això aquí cada capçalera s'escriu sencera, amb cada color enllaçat a una entrada de la paleta. La negreta, la cursiva i les referències també prenen `main-color` per defecte, i `bodyText` els retorna el color de la tinta.
+Cada color de la configuració enllaça amb una d'aquestes entrades. Si deixes `header` sense definir, el motor dibuixa la seva capçalera de sèrie: `{title}` a les senars i `{chapterTitle}` a les parelles sobre un filet d'1 pt, en Open Sans 600 de 8 pt i en blau `#295AA3` ([encapçalaments i peus](/ca/docs/configuration-page-layout#capçaleres-i-peus)). Si `main-color` pren el valor del sèpia, canvien els colors per defecte del text i també el d'aquesta capçalera, però la lletra, el filet i el costat on va cada títol continuen sent els del motor. Per això aquí cada capçalera s'escriu sencera, amb cada color enllaçat a una entrada de la paleta. La negreta, la cursiva i les referències també prenen `main-color` per defecte, i `bodyText` els retorna el color de la tinta.
 
 ### 2 · Totes les capçaleres surten d'una pestanya
 
 <Excerpt region="tab" />
 
-La resposta curta ancora a `'page'` la pestanya de cada capçalera, així que els seus desplaçaments es mesuren des del tall. Des de la cantonada `top-right`, una `x` positiva treu la pestanya de la pàgina; per això la de la senar la porta negativa. De la pestanya penja el filet, i del filet, el títol ([posicionament d'elements](/ca/docs/configuration#posicionament-delements)). Les mesures de la pestanya van en constants perquè les altres peces es mesuren a partir d'aquestes. El filet fa `TAB_H` d'alt. El foli i els dos títols comparteixen una caixa de línia de 9 pt, i la línia de base d'un text de disseny cau al 80 % de l'alçada d'aquesta caixa, així que tots tres queden sobre la mateixa línia de base amb qualsevol cos.
+La resposta curta ancora a `'page'` la pestanya de cada capçalera, així que els seus desplaçaments es mesuren des del tall. Des de la cantonada `top-right`, una `x` positiva treu la pestanya de la pàgina; per això la de la senar la porta negativa. De la pestanya penja el filet, i del filet, el títol ([posicionament d'elements](/ca/docs/configuration-page-layout#posicionament-delements)). Les mesures de la pestanya van en constants perquè les altres peces es mesuren a partir d'aquestes. El filet fa `TAB_H` d'alt. El foli i els dos títols comparteixen una caixa de línia de 9 pt, i la línia de base d'un text de disseny cau al 80 % de l'alçada d'aquesta caixa, així que tots tres queden sobre la mateixa línia de base amb qualsevol cos.
 
 <PageShot page={2} crop="0.04,0.045,0.6,0.05" caption="Pàgina 30, parella: pestanya, filet i títol del llibre, cap endins des del marge exterior." />
 
@@ -46,7 +46,7 @@ L'obertura compon el títol complet amb `overflow: 'wrap'`, partit a cada `\\` d
 
 <Excerpt region="levels" />
 
-Amb `'odd'`, un assaig que acaba en senar va seguit d'una pàgina parella en blanc. Aquí el capítol IV acaba en <PageRef page={3}>una senar</PageRef>, de manera que la 32 queda en blanc i el V obre a la 33. El `pages: 'body'` de les capçaleres les deixa fora de les pàgines en blanc i de les obertures (les pàgines el primer bloc de les quals és aquest títol). El `pages: 'opener'` del peu imprimeix el foli només a les obertures ([elements de text](/ca/docs/configuration#elements-de-text)).
+Amb `'odd'`, un assaig que acaba en senar va seguit d'una pàgina parella en blanc. Aquí el capítol IV acaba en <PageRef page={3}>una senar</PageRef>, de manera que la 32 queda en blanc i el V obre a la 33. El `pages: 'body'` de les capçaleres les deixa fora de les pàgines en blanc i de les obertures (les pàgines el primer bloc de les quals és aquest títol). El `pages: 'opener'` del peu imprimeix el foli només a les obertures ([elements de text](/ca/docs/configuration-page-layout#elements-de-text)).
 
 ### 6 · Els folis comencen pel 29
 

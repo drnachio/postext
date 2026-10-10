@@ -18,13 +18,13 @@ As páginas 29 a 33 de uma edição de bolso dos *Ensaios* de Montaigne na tradu
 
 <Excerpt region="palette" />
 
-Cada cor da configuração aponta para uma destas entradas. Se você deixar `header` sem definir, o motor desenha o cabeço embutido: `{title}` nas ímpares e `{chapterTitle}` nas pares, sobre um fio de 1 pt, em Open Sans 600 de 8 pt e no azul `#295AA3` ([cabeçalhos e rodapés](/pt/docs/configuration#cabeços-e-rodapés)). Apontar `main-color` para o sépia muda as cores padrão do texto e a daquele cabeço também, mas a fonte, o fio e o lado em que cada título sai continuam sendo os do motor. Por isso cada cabeço aqui é escrito por inteiro, com cada cor ligada a uma entrada da paleta. O negrito, o itálico e as referências também usam `main-color` por padrão, e `bodyText` os devolve à cor da tinta.
+Cada cor da configuração aponta para uma destas entradas. Se você deixar `header` sem definir, o motor desenha o cabeço embutido: `{title}` nas ímpares e `{chapterTitle}` nas pares, sobre um fio de 1 pt, em Open Sans 600 de 8 pt e no azul `#295AA3` ([cabeçalhos e rodapés](/pt/docs/configuration-page-layout#cabeços-e-rodapés)). Apontar `main-color` para o sépia muda as cores padrão do texto e a daquele cabeço também, mas a fonte, o fio e o lado em que cada título sai continuam sendo os do motor. Por isso cada cabeço aqui é escrito por inteiro, com cada cor ligada a uma entrada da paleta. O negrito, o itálico e as referências também usam `main-color` por padrão, e `bodyText` os devolve à cor da tinta.
 
 ### 2 · Todos os cabeços saem de uma aba
 
 <Excerpt region="tab" />
 
-A resposta curta ancora a aba de cada cabeço em `'page'`, de modo que os deslocamentos são medidos a partir do refile. A partir do canto `top-right`, um `x` positivo sai da página, e por isso a aba da ímpar recebe um valor negativo. O fio pende da aba, e o título, do fio ([posicionamento de elementos](/pt/docs/configuration#posicionamento-de-elementos)). As medidas da aba ficam em constantes com nome porque as outras peças são medidas a partir delas. O fio tem `TAB_H` de altura. O fólio e os dois títulos dividem uma caixa de linha de 9 pt, e a linha de base de um texto de design fica a 80% da altura dessa caixa, então os três ficam sobre a mesma linha de base em qualquer corpo.
+A resposta curta ancora a aba de cada cabeço em `'page'`, de modo que os deslocamentos são medidos a partir do refile. A partir do canto `top-right`, um `x` positivo sai da página, e por isso a aba da ímpar recebe um valor negativo. O fio pende da aba, e o título, do fio ([posicionamento de elementos](/pt/docs/configuration-page-layout#posicionamento-de-elementos)). As medidas da aba ficam em constantes com nome porque as outras peças são medidas a partir delas. O fio tem `TAB_H` de altura. O fólio e os dois títulos dividem uma caixa de linha de 9 pt, e a linha de base de um texto de design fica a 80% da altura dessa caixa, então os três ficam sobre a mesma linha de base em qualquer corpo.
 
 <PageShot page={2} crop="0.04,0.045,0.6,0.05" caption="Página 30, par: aba, fio e título do livro, da margem externa para dentro." />
 
@@ -46,7 +46,7 @@ A abertura compõe o título completo com `overflow: 'wrap'` e o quebra em cada 
 
 <Excerpt region="levels" />
 
-Com `'odd'`, um ensaio que termina numa ímpar é seguido por uma página par em branco. A edição espanhola tem uma, porque lá o capítulo IV termina na página 31; aqui o capítulo IV termina na página 32, uma par, e o capítulo V abre na 33. O `pages: 'body'` dos cabeços os mantém fora das páginas em branco e das aberturas (as páginas cujo primeiro bloco é este título). O `pages: 'opener'` do rodapé imprime o fólio ao pé só nas aberturas ([elementos de texto](/pt/docs/configuration#elementos-de-texto)).
+Com `'odd'`, um ensaio que termina numa ímpar é seguido por uma página par em branco. A edição espanhola tem uma, porque lá o capítulo IV termina na página 31; aqui o capítulo IV termina na página 32, uma par, e o capítulo V abre na 33. O `pages: 'body'` dos cabeços os mantém fora das páginas em branco e das aberturas (as páginas cujo primeiro bloco é este título). O `pages: 'opener'` do rodapé imprime o fólio ao pé só nas aberturas ([elementos de texto](/pt/docs/configuration-page-layout#elementos-de-texto)).
 
 ### 6 · Comece os fólios em 29
 

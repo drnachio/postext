@@ -16,7 +16,7 @@ Vuit pàgines d'un llibret de poesia en una pàgina 四六判 de 127 × 188 mm, 
 
 ### 1 · Un vers és un paràgraf, i el seu estil diu on comença
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. Un haiku és una sola línia, així que és un paràgraf propi dins d'un contenidor `:::paragraphs`, i l'estil del contenidor fixa el sagnat: `indent: em(3)` baixa un haiku tres caràcters des del cap de la línia (el text d'Aozora els posa a dos; tres els donen més aire), i `firstLineIndent: em(0)` evita que s'hi sumi el sagnat d'un caràcter del text. Els 17 sons, poc o molt, d'un haiku caben en qualsevol línia de 36, així que mai no salten. La signatura és un altre paràgraf: `textAlign: 'end'` la recolza al peu de la línia (地付き, jitsuki) i `endIndent: em(5)` l'aixeca cinc caràcters des d'allà (地から五字上げ), com fa l'edició d'on surt el text ([Estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)).
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Un haiku és una sola línia, així que és un paràgraf propi dins d'un contenidor `:::paragraphs`, i l'estil del contenidor fixa el sagnat: `indent: em(3)` baixa un haiku tres caràcters des del cap de la línia (el text d'Aozora els posa a dos; tres els donen més aire), i `firstLineIndent: em(0)` evita que s'hi sumi el sagnat d'un caràcter del text. Els 17 sons, poc o molt, d'un haiku caben en qualsevol línia de 36, així que mai no salten. La signatura és un altre paràgraf: `textAlign: 'end'` la recolza al peu de la línia (地付き, jitsuki) i `endIndent: em(5)` l'aixeca cinc caràcters des d'allà (地から五字上げ), com fa l'edició d'on surt el text ([Estils de paràgraf](/ca/docs/configuration-styles#estils-de-paràgraf)).
 
 ### 2 · Mantén cada tanka en una sola pàgina
 
@@ -28,7 +28,7 @@ Les tankes de Takuboku formen un bloc `:::verse`, cada tanka una estrofa: els se
 
 <Excerpt region="places" />
 
-Les etapes del viatge són títols de segon nivell de dues línies del text (2行取り), perquè la prosa i els haikus que segueixen quedin a la retícula. `jidori: 3` espaia un nom més curt fins que ocupa tres dels seus propis caràcters (字取り): 平泉 s'imprimeix 平　泉, amb un caràcter sencer entre tots dos, i tots els noms acaben a la mateixa alçada que 立石寺 i 最上川. Un nom que ja té tres caràcters es queda com és ([Configuració per nivell](/ca/docs/configuration#configuració-per-nivell)).
+Les etapes del viatge són títols de segon nivell de dues línies del text (2行取り), perquè la prosa i els haikus que segueixen quedin a la retícula. `jidori: 3` espaia un nom més curt fins que ocupa tres dels seus propis caràcters (字取り): 平泉 s'imprimeix 平　泉, amb un caràcter sencer entre tots dos, i tots els noms acaben a la mateixa alçada que 立石寺 i 最上川. Un nom que ja té tres caràcters es queda com és ([Configuració per nivell](/ca/docs/configuration-text#configuració-per-nivell)).
 
 ### 4 · Obre cada part a la seva pròpia pàgina
 
@@ -40,7 +40,7 @@ Cada part és un títol de primer nivell el disseny del qual posa el títol, un 
 
 <Excerpt region="voices" />
 
-La prosa de Bashō escriu les paraules repetides amb la vella marca d'iteració 〻 (日〻, 人〻), i els textos antics també fan servir el くの字点 llarg, 〳〵. Zen Old Mincho no té cap de les dues: el llenç les agafaria d'una font del sistema i el PDF dibuixaria caixes buides. Shippori Mincho, Noto Serif JP i Shippori Mincho B1 tenen totes dues, així que els poemes van en Shippori Mincho ([Fonts xineses, japoneses i coreanes](/ca/docs/configuration#fonts-xineses-japoneses-i-coreanes)). El text d'Aozora conserva a més les notes de l'editor sobre grafies antigues, `とら{え|（へ）}て`, que imprimeixen el kana esperat al costat del que va escriure Bashō.
+La prosa de Bashō escriu les paraules repetides amb la vella marca d'iteració 〻 (日〻, 人〻), i els textos antics també fan servir el くの字点 llarg, 〳〵. Zen Old Mincho no té cap de les dues: el llenç les agafaria d'una font del sistema i el PDF dibuixaria caixes buides. Shippori Mincho, Noto Serif JP i Shippori Mincho B1 tenen totes dues, així que els poemes van en Shippori Mincho ([Fonts xineses, japoneses i coreanes](/ca/docs/configuration-programmatic-usage#fonts-xineses-japoneses-i-coreanes)). El text d'Aozora conserva a més les notes de l'editor sobre grafies antigues, `とら{え|（へ）}て`, que imprimeixen el kana esperat al costat del que va escriure Bashō.
 
 ## Variants
 

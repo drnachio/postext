@@ -16,13 +16,13 @@ Certificados de conclusão de curso para o Quoin Room, uma oficina fictícia de 
 
 ### 1 · Deixar um estilo de título desenhar a página
 
-O estilo completo é [a resposta curta](#a-resposta-curta) lá em cima. Um estilo de título governa as páginas da sua seção ([estilos de título](/pt/docs/configuration#estilos-de-título)): o seu `header` e o seu `footer` substituem os do documento, que aqui estão vazios, as suas `margins` definem a área de texto e o seu `advancedDesign` desenha a abertura. A altura de uma abertura é arredondada para cima em linhas inteiras da grade de 17 pt do texto corrido. Um `minHeight` de 106 mm vira 18 linhas, então o texto começa a 140 mm da borda superior; em A4, `y()` o transforma em 112,7 mm, ou 19 linhas, e o texto começa a 146 mm. Só o bloco do título faria o texto começar a 128 mm (134 mm em A4). Sem `marginBottom: 0`, o 0,5 em que fica por padrão sob um título levaria os mesmos 106 mm a 19 linhas.
+O estilo completo é [a resposta curta](#a-resposta-curta) lá em cima. Um estilo de título governa as páginas da sua seção ([estilos de título](/pt/docs/configuration-styles#estilos-de-título)): o seu `header` e o seu `footer` substituem os do documento, que aqui estão vazios, as suas `margins` definem a área de texto e o seu `advancedDesign` desenha a abertura. A altura de uma abertura é arredondada para cima em linhas inteiras da grade de 17 pt do texto corrido. Um `minHeight` de 106 mm vira 18 linhas, então o texto começa a 140 mm da borda superior; em A4, `y()` o transforma em 112,7 mm, ou 19 linhas, e o texto começa a 146 mm. Só o bloco do título faria o texto começar a 128 mm (134 mm em A4). Sem `marginBottom: 0`, o 0,5 em que fica por padrão sob um título levaria os mesmos 106 mm a 19 linhas.
 
 ### 2 · Pendurar a moldura na página, pelo cabeçalho
 
 <Excerpt region="frame" />
 
-Um elemento de imagem desenha um recurso no tamanho da sua colocação ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)): ancorado no canto superior esquerdo da página e com os dois lados em `'fill'`, o guilhochê cobre a área de refile, e o SVG, declarado com as proporções da página, a preenche sem deformar. O cabeçalho o pinta sobre `page.backgroundColor` e não reserva espaço, então são só as margens que mantêm o texto a pelo menos 32 mm do refile, dentro do fio interno, que está a 26 mm. Uma marca d’água posta no cabeçalho ficaria por cima das palavras, porque o cabeçalho é pintado depois do texto. Num cabeçalho, `{attr.serial}` lê o atributo do título a cuja seção a página pertence, e assim cada certificado imprime o seu próprio número.
+Um elemento de imagem desenha um recurso no tamanho da sua colocação ([elementos de imagem](/pt/docs/configuration-page-layout#elementos-de-imagem)): ancorado no canto superior esquerdo da página e com os dois lados em `'fill'`, o guilhochê cobre a área de refile, e o SVG, declarado com as proporções da página, a preenche sem deformar. O cabeçalho o pinta sobre `page.backgroundColor` e não reserva espaço, então são só as margens que mantêm o texto a pelo menos 32 mm do refile, dentro do fio interno, que está a 26 mm. Uma marca d’água posta no cabeçalho ficaria por cima das palavras, porque o cabeçalho é pintado depois do texto. Num cabeçalho, `{attr.serial}` lê o atributo do título a cuja seção a página pertence, e assim cada certificado imprime o seu próprio número.
 
 ### 3 · Deixar na abertura só o bloco do título
 
@@ -34,7 +34,7 @@ Cada linha é ancorada na borda `'top'` da página, o que a centra, com um `y` m
 
 <Excerpt region="signatures" />
 
-Tudo o que vai no rodapé se mede a partir de `SIGN`, a borda superior do selo, e a margem inferior do estilo fecha a área de texto nessa mesma borda, de modo que um texto comprido demais para a página passa para a seguinte em vez de correr por baixo do selo. Se fossem para a abertura, as linhas e os nomes contariam na altura dela ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)); como descem abaixo da área de texto, a abertura ficaria com a página inteira e mandaria o texto para a seguinte. `LINE` pega a largura entre as margens da página, subtrai o disco de 34 mm do selo, divide o resto ao meio e tira 3 mm, então cada linha para a 3 mm do selo nos dois formatos (56 mm de comprimento no Carta, 53 mm no A4). Cada nome e cada função é um elemento de texto da largura da sua linha, e assim fica centrado sob ela.
+Tudo o que vai no rodapé se mede a partir de `SIGN`, a borda superior do selo, e a margem inferior do estilo fecha a área de texto nessa mesma borda, de modo que um texto comprido demais para a página passa para a seguinte em vez de correr por baixo do selo. Se fossem para a abertura, as linhas e os nomes contariam na altura dela ([span e design avançado](/pt/docs/configuration-text#largura-e-design-avançado)); como descem abaixo da área de texto, a abertura ficaria com a página inteira e mandaria o texto para a seguinte. `LINE` pega a largura entre as margens da página, subtrai o disco de 34 mm do selo, divide o resto ao meio e tira 3 mm, então cada linha para a 3 mm do selo nos dois formatos (56 mm de comprimento no Carta, 53 mm no A4). Cada nome e cada função é um elemento de texto da largura da sua linha, e assim fica centrado sob ela.
 
 ### 5 · Transformar a lista da turma em títulos
 
@@ -46,7 +46,7 @@ Cada linha da lista vira um título `#` que nomeia o estilo e leva o número de 
 
 <Excerpt region="pdf" />
 
-A turma é um único documento, então `renderToPdf` grava um só arquivo de três páginas com um marcador por título, cada um com o nome de um aluno. `renderToPdf` também aceita uma lista de documentos, como os capítulos de um livro, mas um documento por aluno exigiria uma chamada a `buildDocument` para cada um. Com títulos, a turma inteira é composta de uma vez, e o visualizador mostra os três certificados dessa mesma composição. O PDF incorpora as quatro variantes que as páginas imprimem, e o provedor de fontes do kit as busca na Fontsource ([por que um provedor de fontes?](/pt/docs/configuration#por-que-um-provedor-de-fontes)).
+A turma é um único documento, então `renderToPdf` grava um só arquivo de três páginas com um marcador por título, cada um com o nome de um aluno. `renderToPdf` também aceita uma lista de documentos, como os capítulos de um livro, mas um documento por aluno exigiria uma chamada a `buildDocument` para cada um. Com títulos, a turma inteira é composta de uma vez, e o visualizador mostra os três certificados dessa mesma composição. O PDF incorpora as quatro variantes que as páginas imprimem, e o provedor de fontes do kit as busca na Fontsource ([por que um provedor de fontes?](/pt/docs/configuration-programmatic-usage#por-que-um-provedor-de-fontes)).
 
 ## Variações
 

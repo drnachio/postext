@@ -16,7 +16,7 @@ Four pages from the middle of a reader’s edition of the Kangxi Dictionary (康
 
 ### 1 · Guide words from the headwords
 
-The code is [the short answer](#the-short-answer) above. Every headword is a level-2 heading, and `{firstMark.h2}` and `{lastMark.h2}` print the text of the first and the last level-2 heading that starts on the page ([Text elements](/en/docs/configuration#text-elements)). The mark is the heading’s characters: `## {天|tiān}` marks 天, and the reading stays over the headword. An entry that runs on from one page to the next counts only where its headword stands: <PageRef page={2}>page 635</PageRef> opens with the end of 殄 and is headed 腆—髫. Level 1 is kept for the letters: none opens in these four pages, but a letter head would not count as a guide word.
+The code is [the short answer](#the-short-answer) above. Every headword is a level-2 heading, and `{firstMark.h2}` and `{lastMark.h2}` print the text of the first and the last level-2 heading that starts on the page ([Text elements](/en/docs/configuration-page-layout#text-elements)). The mark is the heading’s characters: `## {天|tiān}` marks 天, and the reading stays over the headword. An entry that runs on from one page to the next counts only where its headword stands: <PageRef page={2}>page 635</PageRef> opens with the end of 殄 and is headed 腆—髫. Level 1 is kept for the letters: none opens in these four pages, but a letter head would not count as a guide word.
 
 ### 2 · Pinyin over the headwords
 

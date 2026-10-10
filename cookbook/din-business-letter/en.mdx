@@ -18,7 +18,7 @@ Fensterwerkstatt Tessin, an invented Berlin workshop that restores box windows, 
 
 <Excerpt region="answer" highlight="1-4" />
 
-`at()` anchors an element by its top-left corner to `'page'`, the trim box ([element placement](/en/docs/configuration#element-placement)), so each `x` and `y` is a distance from the corner of the sheet and the figures of the standard go in unchanged: the address at 25 mm across and 62.7 mm down, the first label of the information block at 125 and 50. These elements form the design of the H1. The heading’s text is the subject (`{titleText}`) and its attributes hold the address and the references, so the config holds the stationery and the Markdown holds the letter. The subject, at 100.6 mm, is the lowest element, so the heading reserves the sheet down to the subject’s foot. `marginBottom` adds the two blank lines, and the salutation starts on the next grid line, at 117 mm.
+`at()` anchors an element by its top-left corner to `'page'`, the trim box ([element placement](/en/docs/configuration-page-layout#element-placement)), so each `x` and `y` is a distance from the corner of the sheet and the figures of the standard go in unchanged: the address at 25 mm across and 62.7 mm down, the first label of the information block at 125 and 50. These elements form the design of the H1. The heading’s text is the subject (`{titleText}`) and its attributes hold the address and the references, so the config holds the stationery and the Markdown holds the letter. The subject, at 100.6 mm, is the lowest element, so the heading reserves the sheet down to the subject’s foot. `marginBottom` adds the two blank lines, and the salutation starts on the next grid line, at 117 mm.
 
 The address is one attribute with `\n` between its lines, and each `\n` starts a new line in the design text. The heading sits in the text column, and its design still paints the band, the logo and the name above the 27 mm top margin, since each element is pinned to the page.
 
@@ -32,19 +32,19 @@ Only the first label is pinned to the sheet. Every other label is anchored `'bel
 
 <Excerpt region="letterhead" />
 
-The band is a box pinned to the corner of the sheet. `width: 'fill'` stretches it from edge to edge, and its 32 mm depth takes it 5 mm past the 27 mm top margin. The logo is an image element that draws a resource 18 mm tall and takes its width from the drawing ([image elements](/en/docs/configuration#image-elements)). The name hangs `'right-of'` the logo, and the trade line `'below'` the name. Eight 3 mm rules draw an angle at each corner of the 85 × 45 mm address field, the part of the sheet the envelope window shows.
+The band is a box pinned to the corner of the sheet. `width: 'fill'` stretches it from edge to edge, and its 32 mm depth takes it 5 mm past the 27 mm top margin. The logo is an image element that draws a resource 18 mm tall and takes its width from the drawing ([image elements](/en/docs/configuration-page-layout#image-elements)). The name hangs `'right-of'` the logo, and the trade line `'below'` the name. Eight 3 mm rules draw an angle at each corner of the 85 × 45 mm address field, the part of the sheet the envelope window shows.
 
 ### 4 · Put what every sheet shares in the header and footer
 
 <Excerpt region="furniture" />
 
-An element of the H1’s design pinned below the subject adds to the height the heading reserves. With the 210 mm fold mark in the design, the salutation drops to 222.8 mm and the letter runs to three pages. The header slot paints on every page and reserves no space, so the three marks go there ([headers and footers](/en/docs/configuration#headers--footers)). Page 1 opens with the H1, which makes it an `'opener'` page, so `pages: 'body'` limits the blue strip, the reference line and `Seite {pageNumber} von {totalPages}` to the sheets that follow. The reference line reads the H1’s attributes through `{attr.unser-zeichen}` and `{attr.datum}`.
+An element of the H1’s design pinned below the subject adds to the height the heading reserves. With the 210 mm fold mark in the design, the salutation drops to 222.8 mm and the letter runs to three pages. The header slot paints on every page and reserves no space, so the three marks go there ([headers and footers](/en/docs/configuration-page-layout#headers--footers)). Page 1 opens with the H1, which makes it an `'opener'` page, so `pages: 'body'` limits the blue strip, the reference line and `Seite {pageNumber} von {totalPages}` to the sheets that follow. The reference line reads the H1’s attributes through `{attr.unser-zeichen}` and `{attr.datum}`.
 
 ### 5 · Set the signature in the flow
 
 <Excerpt region="signature" />
 
-`::resource{id="signature"}` sets the drawing under “Mit freundlichen Grüßen”, and `width: 0.297` makes it 49 mm wide and 21.1 mm deep, just under four 15 pt lines. The text after a resource in the flow returns to the body’s grid. At `0.25` the drawing was 17.8 mm deep, and the 3.4 mm the grid added under it pushed the name away from the signature. The resource type has an empty `captionPrefix`, and Postext sets no caption when both the prefix and the caption are empty, so no label or number appears under the signature ([resource types](/en/docs/configuration#resource-types)). The logo is a resource of the same type, drawn only by the image element. No `:ref` or `::resource` names it, so it never enters the flow.
+`::resource{id="signature"}` sets the drawing under “Mit freundlichen Grüßen”, and `width: 0.297` makes it 49 mm wide and 21.1 mm deep, just under four 15 pt lines. The text after a resource in the flow returns to the body’s grid. At `0.25` the drawing was 17.8 mm deep, and the 3.4 mm the grid added under it pushed the name away from the signature. The resource type has an empty `captionPrefix`, and Postext sets no caption when both the prefix and the caption are empty, so no label or number appears under the signature ([resource types](/en/docs/configuration-resources#resource-types)). The logo is a resource of the same type, drawn only by the image element. No `:ref` or `::resource` names it, so it never enters the flow.
 
 ## Pitfalls
 

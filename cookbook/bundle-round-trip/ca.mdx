@@ -18,7 +18,7 @@ Les dues cares d'un fulletó DL de visita, de 99 × 210 mm, per a un molí de ma
 
 <Excerpt region="answer" highlight="14-17" />
 
-`createBundle` comprimeix en un zip el capítol, la configuració, els recursos i tots els fitxers que anomenen, i `openBundle` no rep res més que aquests bytes. Les fonts surten de `loadBundleFonts`, els dibuixos de `registerBundleImages` i el disseny de `bundle.config`. Una font que no sigui a `files` surt amb la font de reserva del navegador, i un dibuix que falti es descarta amb un avís i la seva remissió s'imprimeix com a (?). Dins el zip, cada `fileId` passa a ser una ruta (`mill.svg` ara és `resources/mill.svg`), i els recursos i el `customFonts` que retorna `openBundle` ja fan servir els noms nous ([obrir un paquet](/ca/docs/configuration#obrir-un-paquet)).
+`createBundle` comprimeix en un zip el capítol, la configuració, els recursos i tots els fitxers que anomenen, i `openBundle` no rep res més que aquests bytes. Les fonts surten de `loadBundleFonts`, els dibuixos de `registerBundleImages` i el disseny de `bundle.config`. Una font que no sigui a `files` surt amb la font de reserva del navegador, i un dibuix que falti es descarta amb un avís i la seva remissió s'imprimeix com a (?). Dins el zip, cada `fileId` passa a ser una ruta (`mill.svg` ara és `resources/mill.svg`), i els recursos i el `customFonts` que retorna `openBundle` ja fan servir els noms nous ([obrir un paquet](/ca/docs/configuration-programmatic-usage#obrir-un-paquet)).
 
 ### 2 · Posa les fonts dins el fitxer
 
@@ -36,13 +36,13 @@ Els dos dibuixos són SVG que genera el mateix pen i que es lliuren a `files` am
 
 <Excerpt region="labels" />
 
-Qui obre un fitxer crea els tipus integrats en la llengua que aquest fitxer serveix: sense `resourceTypes` a la configuració, el fulletó en castellà imprimeix Figura 1.1 i Tabla 1.1 l'obri qui l'obri, també el Sandbox des de /en/sandbox. El fulletó escriu els tipus només pels números: `'{n}'` treu el número de capítol, que un fulletó de dues pàgines no necessita ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). La mateixa funció `config()` fixa `locale`, que tria els patrons de partició de mots del castellà (compuer-tas al revers) i la llengua que declara el PDF.
+Qui obre un fitxer crea els tipus integrats en la llengua que aquest fitxer serveix: sense `resourceTypes` a la configuració, el fulletó en castellà imprimeix Figura 1.1 i Tabla 1.1 l'obri qui l'obri, també el Sandbox des de /en/sandbox. El fulletó escriu els tipus només pels números: `'{n}'` treu el número de capítol, que un fulletó de dues pàgines no necessita ([tipus de recurs](/ca/docs/configuration-resources#tipus-de-recurs)). La mateixa funció `config()` fixa `locale`, que tria els patrons de partició de mots del castellà (compuer-tas al revers) i la llengua que declara el PDF.
 
 ### 5 · Lliura els mateixos bytes
 
 <Excerpt region="handoff" />
 
-L'enllaç ofereix els mateixos `bytes` des dels quals es van compondre les pàgines: 132 KB amb les fonts. En importar-lo al Sandbox (*Llibres → Nou → Obrir un fitxer .postext…*), el fitxer es converteix en un llibre en castellà o en anglès que porta com a imatge la roda de `thumbnail`. El PDF pren les seves fonts de `bundleFontProvider`, que retorna la del paquet més propera en pes, amb el mateix estil si n'hi ha, i els seus dibuixos de `bundleResourceBytes`, així que no es baixa dues vegades cap font ni cap imatge ([compondre i renderitzar un paquet](/ca/docs/configuration#compondre-i-renderitzar-un-paquet)).
+L'enllaç ofereix els mateixos `bytes` des dels quals es van compondre les pàgines: 132 KB amb les fonts. En importar-lo al Sandbox (*Llibres → Nou → Obrir un fitxer .postext…*), el fitxer es converteix en un llibre en castellà o en anglès que porta com a imatge la roda de `thumbnail`. El PDF pren les seves fonts de `bundleFontProvider`, que retorna la del paquet més propera en pes, amb el mateix estil si n'hi ha, i els seus dibuixos de `bundleResourceBytes`, així que no es baixa dues vegades cap font ni cap imatge ([compondre i renderitzar un paquet](/ca/docs/configuration-programmatic-usage#compondre-i-renderitzar-un-paquet)).
 
 ### 6 · Dibuixa la portada amb un sol títol
 
@@ -72,4 +72,4 @@ Sense els tipus, qui obre el fitxer els crea en la seva llengua amb la numeraci�
 
 ## Errors freqüents
 
-- Aquí cada edició és un fitxer propi. Per portar les dues llengües en un de sol, passa a `createBundle` un mapa `localized` ([Paquets bilingües](/ca/docs/configuration#paquets-bilingües)); `openBundle(bytes, { locale })` llegeix llavors qualsevol de les dues edicions.
+- Aquí cada edició és un fitxer propi. Per portar les dues llengües en un de sol, passa a `createBundle` un mapa `localized` ([Paquets bilingües](/ca/docs/configuration-programmatic-usage#paquets-bilingües)); `openBundle(bytes, { locale })` llegeix llavors qualsevol de les dues edicions.

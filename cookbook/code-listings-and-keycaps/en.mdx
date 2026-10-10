@@ -16,19 +16,19 @@ Three pages from chapter 4 of *The Shell, Gently*, an invented pocket guide to t
 
 ### 1 · Give the fences a box
 
-The code for this step is [the short answer](#the-short-answer) above. Each ```` ``` ```` fence in the Markdown is a [code block](/en/docs/document-format#code-blocks): Postext sets its lines as typed, one line of code to a line of type, with the indents, the blank lines of the script and the two-column output of `du` kept. `codeStyle` designs every listing at once ([code listings](/en/docs/configuration#code-listings)): the face and its leading, the near-black fill, the padding and the room above and below. Whatever follows the language on the fence line (`Terminal`, `backup.sh`) is the listing's title, and because `codeStyle.label` is set it prints on a [label tab](/en/docs/configuration#callout-styles) on the box's top edge rather than in a title row. `codeStyle.inline` sets the inline code of the running text, `ls` or `grep -c`, in the same face at 0.88 em ([inline code](/en/docs/configuration#inline-code)). The paragraph after a listing goes in `:::paragraphs{style="resume"}`, so it starts flush, as it would after a heading.
+The code for this step is [the short answer](#the-short-answer) above. Each ```` ``` ```` fence in the Markdown is a [code block](/en/docs/document-format#code-blocks): Postext sets its lines as typed, one line of code to a line of type, with the indents, the blank lines of the script and the two-column output of `du` kept. `codeStyle` designs every listing at once ([code listings](/en/docs/configuration-styles#code-listings)): the face and its leading, the near-black fill, the padding and the room above and below. Whatever follows the language on the fence line (`Terminal`, `backup.sh`) is the listing's title, and because `codeStyle.label` is set it prints on a [label tab](/en/docs/configuration-styles#callout-styles) on the box's top edge rather than in a title row. `codeStyle.inline` sets the inline code of the running text, `ls` or `grep -c`, in the same face at 0.88 em ([inline code](/en/docs/configuration-styles#inline-code)). The paragraph after a listing goes in `:::paragraphs{style="resume"}`, so it starts flush, as it would after a heading.
 
 ### 2 · Keep the text narrow and let the code cross the margin
 
 <Excerpt region="page" />
 
-At 10 pt, Charis SIL sets about 62 characters in the 100 mm column. The side column of this [column-and-a-half layout](/en/docs/configuration#layout-types) takes only floats and notes, so the text never runs into it. `span: 'page'` in `codeStyle` stretches every listing across both columns, 143 mm. Inside its padding a box holds 73 characters of JetBrains Mono at 8.6 pt; the longest line on these pages, the comment that opens `backup.sh`, has 71.
+At 10 pt, Charis SIL sets about 62 characters in the 100 mm column. The side column of this [column-and-a-half layout](/en/docs/configuration-page-layout#layout-types) takes only floats and notes, so the text never runs into it. `span: 'page'` in `codeStyle` stretches every listing across both columns, 143 mm. Inside its padding a box holds 73 characters of JetBrains Mono at 8.6 pt; the longest line on these pages, the comment that opens `backup.sh`, has 71.
 
 ### 3 · Colour the code by token
 
 <Excerpt region="paint" />
 
-The language on the fence (`console`, `bash`) picks the built-in tokenizer, and `codeStyle.tokens` gives each kind of token its colour, weight and slant ([syntax colouring](/en/docs/configuration#syntax-colouring)). In `backup.sh`, keywords such as `for` and `done` and builtins such as `set` and `echo` print in amber bold, strings in green italic and comments in grey; programs like `mkdir` and `rsync` stay plain. The default style sets comments in italics, so `italic: false` keeps them upright. In a `console` fence a line that opens with a prompt is a `prompt` token and every other line is `output`, so the commands you type print in amber bold and the shell's answer stays in the listing's light grey. The kinds the recipe does not want coloured, numbers, variables and options among them, take that grey too.
+The language on the fence (`console`, `bash`) picks the built-in tokenizer, and `codeStyle.tokens` gives each kind of token its colour, weight and slant ([syntax colouring](/en/docs/configuration-styles#syntax-colouring)). In `backup.sh`, keywords such as `for` and `done` and builtins such as `set` and `echo` print in amber bold, strings in green italic and comments in grey; programs like `mkdir` and `rsync` stay plain. The default style sets comments in italics, so `italic: false` keeps them upright. In a `console` fence a line that opens with a prompt is a `prompt` token and every other line is `output`, so the commands you type print in amber bold and the shell's answer stays in the listing's light grey. The kinds the recipe does not want coloured, numbers, variables and options among them, take that grey too.
 
 ### 4 · Set keys as chips
 
@@ -40,13 +40,13 @@ Keys are `key` chips with a light fill and a 0.6 pt outline. Their size is given
 
 <Excerpt region="steps" />
 
-The numbers are Sora 800 in the accent, and the separator is a mono `›` in grey. The separator has its own face and colour, so it is drawn as a separate run ([ordered lists](/en/docs/configuration#ordered-lists)). The list margins are zero, so the steps continue on the 14.5 pt grid of the text around them. The default 1.5 em would open 5.3 mm above the steps and push the cheat sheet to page 51.
+The numbers are Sora 800 in the accent, and the separator is a mono `›` in grey. The separator has its own face and colour, so it is drawn as a separate run ([ordered lists](/en/docs/configuration-text#ordered-lists)). The list margins are zero, so the steps continue on the 14.5 pt grid of the text around them. The default 1.5 em would open 5.3 mm above the steps and push the cheat sheet to page 51.
 
 ### 6 · Float the cheat sheet to the foot of the page
 
 <Excerpt region="sheet" />
 
-The cheat sheet is a callout style with the listings' fill, Sora for the actions, and `placement: 'bottom'`, which floats it to the foot of page 50 ([floated boxes](/en/docs/configuration#the-callout-container)). Left in the flow, a box across the page needs room for itself and two lines of text under it. Here the box would move to page 51, leaving 58 mm empty under the steps, and the chapter would run to four pages. In the Markdown, `:::columns{count=2 breaks="8"}` opens the right column at the eighth block, its heading. Balancing alone cuts by height, and when one action runs to a second line it leaves *Commands and history* at the foot of the left column. Every entry opens with the same two chips, `Ctrl` and a letter, both in the mono face, so each action begins at the same distance from the left edge of its column.
+The cheat sheet is a callout style with the listings' fill, Sora for the actions, and `placement: 'bottom'`, which floats it to the foot of page 50 ([floated boxes](/en/docs/configuration-styles#the-callout-container)). Left in the flow, a box across the page needs room for itself and two lines of text under it. Here the box would move to page 51, leaving 58 mm empty under the steps, and the chapter would run to four pages. In the Markdown, `:::columns{count=2 breaks="8"}` opens the right column at the eighth block, its heading. Balancing alone cuts by height, and when one action runs to a second line it leaves *Commands and history* at the foot of the left column. Every entry opens with the same two chips, `Ctrl` and a letter, both in the mono face, so each action begins at the same distance from the left edge of its column.
 
 ## Variations
 

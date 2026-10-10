@@ -16,7 +16,7 @@ A ten-page picture book, かみの ふね (*The Paper Boat*), written for the re
 
 ### 1 · Keep each phrase whole
 
-The code is [the short answer](#the-short-answer) above. Japanese text may break between any two kana, so a space between phrases only adds room; on its own it does not stop a line from ending inside あか|い. `cjk.wordBreak: 'keep-all'` keeps only the breaks at a space and next to punctuation, after 、。」 or before 「, as CSS `word-break: keep-all` does, and the kinsoku rules still apply ([East Asian typography](/en/docs/configuration#east-asian-typography)). The space is an ordinary U+0020, 0.35 em in Klee One, and a line drops it at its end. A U+3000 is a phrase break too, but a fixed character one em wide, kept at the end of the line.
+The code is [the short answer](#the-short-answer) above. Japanese text may break between any two kana, so a space between phrases only adds room; on its own it does not stop a line from ending inside あか|い. `cjk.wordBreak: 'keep-all'` keeps only the breaks at a space and next to punctuation, after 、。」 or before 「, as CSS `word-break: keep-all` does, and the kinsoku rules still apply ([East Asian typography](/en/docs/configuration-east-asian#east-asian-typography)). The space is an ordinary U+0020, 0.35 em in Klee One, and a line drops it at its end. A U+3000 is a phrase break too, but a fixed character one em wide, kept at the end of the line.
 
 <PageShot page={3} crop="0.45,0.52,0.55,0.48" caption="Page 3: eight lines, each ending at a space or after 」 and 、: 「いって / らっしゃい。」 / みいちゃんが / そっと てを…" />
 
@@ -26,7 +26,7 @@ The text is set ragged. Justified, a short line would stretch its spaces and the
 
 <Excerpt region="layout" />
 
-In vertical text `'left'` is the top of the page, so a column-and-a-half layout with its side column on the left is two tiers: the pictures float into the upper tier (14 characters deep), and the text runs in the lower one (8 characters). Each page cites its picture with `::resource{id="…"}` and ends with `:::pagebreak`. The picture type has no caption prefix, and the pictures are 2.186 times as wide as they are tall, the shape of the tier, so each fills it ([vertical writing](/en/docs/configuration#vertical-writing)).
+In vertical text `'left'` is the top of the page, so a column-and-a-half layout with its side column on the left is two tiers: the pictures float into the upper tier (14 characters deep), and the text runs in the lower one (8 characters). Each page cites its picture with `::resource{id="…"}` and ends with `:::pagebreak`. The picture type has no caption prefix, and the pictures are 2.186 times as wide as they are tall, the shape of the tier, so each fills it ([vertical writing](/en/docs/configuration-page-layout#vertical-writing)).
 
 ### 3 · Make the cover a full-page picture
 
@@ -38,7 +38,7 @@ The cover is a page-wide heading design: the picture is anchored to the bleed wi
 
 <Excerpt region="pictures" />
 
-The ten pictures are paintings, JPEG files in the recipe's `assets/`. The nine scenes are cut to the tier's shape, 612 : 280, and the cover to the page's, 260 : 200, so each fills its frame and nothing is cropped. Each is a `bitmap` resource declared at its pixel size, with alt text in the book's language, and its file is loaded under the resource's `fileId` before the build. Scenes 1,400 px wide print at about 165 dpi across the tier ([resource types](/en/docs/configuration#resource-types)).
+The ten pictures are paintings, JPEG files in the recipe's `assets/`. The nine scenes are cut to the tier's shape, 612 : 280, and the cover to the page's, 260 : 200, so each fills its frame and nothing is cropped. Each is a `bitmap` resource declared at its pixel size, with alt text in the book's language, and its file is loaded under the resource's `fileId` before the build. Scenes 1,400 px wide print at about 165 dpi across the tier ([resource types](/en/docs/configuration-resources#resource-types)).
 
 ## Variations
 

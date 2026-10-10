@@ -16,13 +16,13 @@ End-of-course certificates for the Quoin Room, a fictional letterpress workshop 
 
 ### 1 · Let one heading style draw the page
 
-The style itself is [the short answer](#the-short-answer) above. A heading style governs the pages of its section ([heading styles](/en/docs/configuration#heading-styles)): its `header` and `footer` replace the document's, which are empty here, its `margins` set the text area and its `advancedDesign` draws the opener. An opener's height rounds up to whole lines of the 17 pt body grid. A `minHeight` of 106 mm becomes 18 lines, so the citation starts 140 mm from the top edge; on A4, `y()` makes it 112.7 mm, or 19 lines, and the citation starts at 146 mm. The title block alone would start the citation at 128 mm (134 mm on A4). Without `marginBottom: 0`, the default 0.5 em under a heading would push the same 106 mm to 19 lines.
+The style itself is [the short answer](#the-short-answer) above. A heading style governs the pages of its section ([heading styles](/en/docs/configuration-styles#heading-styles)): its `header` and `footer` replace the document's, which are empty here, its `margins` set the text area and its `advancedDesign` draws the opener. An opener's height rounds up to whole lines of the 17 pt body grid. A `minHeight` of 106 mm becomes 18 lines, so the citation starts 140 mm from the top edge; on A4, `y()` makes it 112.7 mm, or 19 lines, and the citation starts at 146 mm. The title block alone would start the citation at 128 mm (134 mm on A4). Without `marginBottom: 0`, the default 0.5 em under a heading would push the same 106 mm to 19 lines.
 
 ### 2 · Hang the frame from the page in the header
 
 <Excerpt region="frame" />
 
-An image element draws a resource at the size of its placement ([image elements](/en/docs/configuration#image-elements)): anchored to the page's top-left corner with both sides `'fill'`, the guilloche covers the trim box, and the SVG, declared with the page's proportions, fills it without stretching. The header paints it over `page.backgroundColor` and reserves no room, so the margins alone keep the text at least 32 mm from the trim, inside the inner rule at 26 mm. A watermark placed in the header would print over the words, because the header is painted after the text. In a header, `{attr.serial}` reads the attribute of the heading whose section the page belongs to, so each certificate prints its own number.
+An image element draws a resource at the size of its placement ([image elements](/en/docs/configuration-page-layout#image-elements)): anchored to the page's top-left corner with both sides `'fill'`, the guilloche covers the trim box, and the SVG, declared with the page's proportions, fills it without stretching. The header paints it over `page.backgroundColor` and reserves no room, so the margins alone keep the text at least 32 mm from the trim, inside the inner rule at 26 mm. A watermark placed in the header would print over the words, because the header is painted after the text. In a header, `{attr.serial}` reads the attribute of the heading whose section the page belongs to, so each certificate prints its own number.
 
 ### 3 · Keep only the title block in the opener
 
@@ -34,7 +34,7 @@ Each line is anchored to the page's `'top'` edge, which centres it, with a `y` m
 
 <Excerpt region="signatures" />
 
-Everything in the footer is measured from `SIGN`, the seal's top edge, and the style's bottom margin ends the text area at the same edge, so a citation too long for the page moves on to the next one instead of running under the seal. Moved into the opener, the lines and the names would count towards its height ([span and advanced design](/en/docs/configuration#span-and-advanced-design)); since they reach below the text area, the opener would claim the whole page and send the citation to the next one. `LINE` takes the width between the page margins, subtracts the seal's 34 mm disc, halves the rest and takes off 3 mm, so each line stops 3 mm short of the seal on both trims (56 mm long on Letter, 53 mm on A4). Each name and role is a text element as wide as its line, which centres it under the line.
+Everything in the footer is measured from `SIGN`, the seal's top edge, and the style's bottom margin ends the text area at the same edge, so a citation too long for the page moves on to the next one instead of running under the seal. Moved into the opener, the lines and the names would count towards its height ([span and advanced design](/en/docs/configuration-text#span-and-advanced-design)); since they reach below the text area, the opener would claim the whole page and send the citation to the next one. `LINE` takes the width between the page margins, subtracts the seal's 34 mm disc, halves the rest and takes off 3 mm, so each line stops 3 mm short of the seal on both trims (56 mm long on Letter, 53 mm on A4). Each name and role is a text element as wide as its line, which centres it under the line.
 
 ### 5 · Merge the class list into headings
 
@@ -46,7 +46,7 @@ Each row becomes a `#` heading that names the style and carries the serial as an
 
 <Excerpt region="pdf" />
 
-The class is one document, so `renderToPdf` writes a single three-page file with a bookmark per heading, each named after a student. `renderToPdf` also takes an array of documents, such as the chapters of a book, but a document per student means one `buildDocument` call for each. As headings, the whole class is laid out in one build, and the viewer shows all three certificates from that build. The PDF embeds the four faces the pages print, which the kit's font provider fetches from Fontsource ([why a font provider?](/en/docs/configuration#why-a-font-provider)).
+The class is one document, so `renderToPdf` writes a single three-page file with a bookmark per heading, each named after a student. `renderToPdf` also takes an array of documents, such as the chapters of a book, but a document per student means one `buildDocument` call for each. As headings, the whole class is laid out in one build, and the viewer shows all three certificates from that build. The PDF embeds the four faces the pages print, which the kit's font provider fetches from Fontsource ([why a font provider?](/en/docs/configuration-programmatic-usage#why-a-font-provider)).
 
 ## Variations
 

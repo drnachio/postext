@@ -16,7 +16,7 @@ Eight pages of a small poetry book on a 四六判 page of 127 × 188 mm, bound o
 
 ### 1 · A line of verse is a paragraph, and its style says where it starts
 
-The code is [the short answer](#the-short-answer) above. A haiku is one line, so it is a paragraph of its own inside a `:::paragraphs` fence, and the fence's style sets the indent: `indent: em(3)` stands a haiku three characters below the head of the line (the Aozora text sets them two down; three gives the poems more air), and `firstLineIndent: em(0)` stops the body's one-character indent from adding to it. A haiku's 17 or so characters fit any line of 36, so it never wraps. The signature is a paragraph of its own: `textAlign: 'end'` sets it against the foot of the line (地付き, jitsuki) and `endIndent: em(5)` raises it five characters from there (地から五字上げ), as the edition this text comes from does ([Paragraph styles](/en/docs/configuration#paragraph-styles)).
+The code is [the short answer](#the-short-answer) above. A haiku is one line, so it is a paragraph of its own inside a `:::paragraphs` fence, and the fence's style sets the indent: `indent: em(3)` stands a haiku three characters below the head of the line (the Aozora text sets them two down; three gives the poems more air), and `firstLineIndent: em(0)` stops the body's one-character indent from adding to it. A haiku's 17 or so characters fit any line of 36, so it never wraps. The signature is a paragraph of its own: `textAlign: 'end'` sets it against the foot of the line (地付き, jitsuki) and `endIndent: em(5)` raises it five characters from there (地から五字上げ), as the edition this text comes from does ([Paragraph styles](/en/docs/configuration-styles#paragraph-styles)).
 
 ### 2 · Keep each tanka on one page
 
@@ -28,7 +28,7 @@ Takuboku's tanka are a `:::verse` block, each tanka a stanza: its three lines ar
 
 <Excerpt region="places" />
 
-The stations of Bashō's route are second-level headings two body lines tall (2行取り), so the prose and haiku after them stay on the grid. `jidori: 3` spaces a shorter name out to three of its own characters (字取り): 平泉 prints 平　泉 with a full character between, and every name ends at the same height as 立石寺 and 最上川. A name already three characters long is left alone ([Per-level overrides](/en/docs/configuration#per-level-overrides)).
+The stations of Bashō's route are second-level headings two body lines tall (2行取り), so the prose and haiku after them stay on the grid. `jidori: 3` spaces a shorter name out to three of its own characters (字取り): 平泉 prints 平　泉 with a full character between, and every name ends at the same height as 立石寺 and 最上川. A name already three characters long is left alone ([Per-level overrides](/en/docs/configuration-text#per-level-overrides)).
 
 ### 4 · Open each part on its own page
 
@@ -40,7 +40,7 @@ Each part is a level-1 heading whose design sets the title, a small （抄）, "
 
 <Excerpt region="voices" />
 
-Bashō's prose writes repeated words with the old iteration mark 〻 (日〻, 人〻), and older texts use the long くの字点 〳〵 as well. Zen Old Mincho has neither: the canvas would borrow them from a system face and the PDF would draw empty boxes. Shippori Mincho, Noto Serif JP and Shippori Mincho B1 have both, so the poems are set in Shippori Mincho ([Chinese, Japanese and Korean fonts](/en/docs/configuration#chinese-japanese-and-korean-fonts)). The Aozora text also keeps the editor's notes on old spellings, `とら{え|（へ）}て`, which print the expected kana beside the one Bashō wrote.
+Bashō's prose writes repeated words with the old iteration mark 〻 (日〻, 人〻), and older texts use the long くの字点 〳〵 as well. Zen Old Mincho has neither: the canvas would borrow them from a system face and the PDF would draw empty boxes. Shippori Mincho, Noto Serif JP and Shippori Mincho B1 have both, so the poems are set in Shippori Mincho ([Chinese, Japanese and Korean fonts](/en/docs/configuration-programmatic-usage#chinese-japanese-and-korean-fonts)). The Aozora text also keeps the editor's notes on old spellings, `とら{え|（へ）}て`, which print the expected kana beside the one Bashō wrote.
 
 ## Variations
 

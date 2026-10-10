@@ -18,25 +18,25 @@ A conference poster for an invented study of street trees and sidewalk heat, set
 
 <Excerpt region="sheet" />
 
-At the default 300 dpi the poster breaks every line where it does at 72 dpi, but its page measures 7,087 × 9,449 px, or 268 MB of pixels once painted ([page size presets](/en/docs/configuration#page-size-presets)). At 72 dpi a point is a pixel. The viewer paints its thumbnails with `renderPageToCanvas` and a `scale`, and `renderPage` gives the 1,701 × 2,268 px PNG that a meeting's online gallery asks for ([rendering a page to a bitmap](/en/docs/configuration#rendering-a-page-to-a-bitmap)). The leading divides the 750 mm between the margins into 56 lines, so the keyword strip floated to the foot of the page ends on the bottom margin. At a round 38 pt only 55 lines fit, the last one 12.7 mm short of the margin; the keyword strip no longer fits under the panels and moves to a second page.
+At the default 300 dpi the poster breaks every line where it does at 72 dpi, but its page measures 7,087 × 9,449 px, or 268 MB of pixels once painted ([page size presets](/en/docs/configuration-page-layout#page-size-presets)). At 72 dpi a point is a pixel. The viewer paints its thumbnails with `renderPageToCanvas` and a `scale`, and `renderPage` gives the 1,701 × 2,268 px PNG that a meeting's online gallery asks for ([rendering a page to a bitmap](/en/docs/configuration-programmatic-usage#rendering-a-page-to-a-bitmap)). The leading divides the 750 mm between the margins into 56 lines, so the keyword strip floated to the foot of the page ends on the bottom margin. At a round 38 pt only 55 lines fit, the last one 12.7 mm short of the margin; the keyword strip no longer fits under the panels and moves to a second page.
 
 ### 2 · Draw the title band from the heading
 
 <Excerpt region="band" />
 
-The H1 carries the meeting, the poster number, the authors and the affiliations as attributes, and its design sets them over a page-anchored green box 158 mm deep ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The box ends 133 mm under the top margin. Without a `minHeight` the summary would start 0.9 mm under the green; a `minHeight` of eleven grid lines leaves 14 mm. The affiliation marks are the characters ¹ ² ³, the only superscript figures in the Latin-1 range.
+The H1 carries the meeting, the poster number, the authors and the affiliations as attributes, and its design sets them over a page-anchored green box 158 mm deep ([span and advanced design](/en/docs/configuration-text#span-and-advanced-design)). The box ends 133 mm under the top margin. Without a `minHeight` the summary would start 0.9 mm under the green; a `minHeight` of eleven grid lines leaves 14 mm. The affiliation marks are the characters ¹ ² ³, the only superscript figures in the Latin-1 range.
 
 ### 3 · Nest the panels in one box across the page
 
 <Excerpt region="answer" highlight="3-9,21" />
 
-The body runs in two columns and the panels in three, so the grid is a `:::columns{count=3}` group inside a frameless callout, and `span="page"` sets that callout across both body columns, under the summary ([`:::columns`](/en/docs/document-format#columns)). A group fenced straight into the text can span the page too, but it leaves a line of paragraph spacing under itself, 38 pt here, and the keyword strip would move to a second page. Each panel is a callout nested in the group: it takes its own style, the column's 175 mm width and 18 mm of `marginTop` under the panel above it ([the `:::callout` container](/en/docs/configuration#the-callout-container)). `breaks="3,4"` sends the third panel, Results, to the head of the middle column and the fourth, Conclusions, to the head of the last. Without it the group balances and cuts at the panel nearest each third of the stack. With this copy the cuts fall at the same two panels; the attribute keeps them there when the copy changes.
+The body runs in two columns and the panels in three, so the grid is a `:::columns{count=3}` group inside a frameless callout, and `span="page"` sets that callout across both body columns, under the summary ([`:::columns`](/en/docs/document-format#columns)). A group fenced straight into the text can span the page too, but it leaves a line of paragraph spacing under itself, 38 pt here, and the keyword strip would move to a second page. Each panel is a callout nested in the group: it takes its own style, the column's 175 mm width and 18 mm of `marginTop` under the panel above it ([the `:::callout` container](/en/docs/configuration-styles#the-callout-container)). `breaks="3,4"` sends the third panel, Results, to the head of the middle column and the fourth, Conclusions, to the head of the last. Without it the group balances and cuts at the panel nearest each third of the stack. With this copy the cuts fall at the same two panels; the attribute keeps them there when the copy changes.
 
 ### 4 · Keep each figure in its panel
 
 <Excerpt region="figures" />
 
-A figure placed `'here'` stays in the panel where `::resource` sets it; with the default placement the three drawings leave their panels and the poster runs to a second page. `numberingTemplate: '{n}'` numbers them 1, 2, 3, where the default `{h1}.{n}` prints Figure 1.1 under a title that is an H1 ([resource types](/en/docs/configuration#resource-types)). The note under each caption says the data are synthetic.
+A figure placed `'here'` stays in the panel where `::resource` sets it; with the default placement the three drawings leave their panels and the poster runs to a second page. `numberingTemplate: '{n}'` numbers them 1, 2, 3, where the default `{h1}.{n}` prints Figure 1.1 under a title that is an H1 ([resource types](/en/docs/configuration-resources#resource-types)). The note under each caption says the data are synthetic.
 
 ### 5 · Share the heat map's colours with its key
 
@@ -48,7 +48,7 @@ The heat map's cells and the four `:swatch{color="…"}` runs of its key name th
 
 <Excerpt region="type" />
 
-Paragraph styles apply inside boxes, nested ones included, so −4.2 °C is a `:::paragraphs{style="stat"}` block in Bitter at 150 pt inside the Results panel ([paragraph styles](/en/docs/configuration#paragraph-styles)). The figure is written in bold, so it prints in Bitter 700 and in the style's `boldColor`, the orange of the panel. A second style gives the references a 9 mm hanging indent. The keyword strip is a tinted box with `placement="bottom"`, floated to the foot of the page under the grid.
+Paragraph styles apply inside boxes, nested ones included, so −4.2 °C is a `:::paragraphs{style="stat"}` block in Bitter at 150 pt inside the Results panel ([paragraph styles](/en/docs/configuration-styles#paragraph-styles)). The figure is written in bold, so it prints in Bitter 700 and in the style's `boldColor`, the orange of the panel. A second style gives the references a 9 mm hanging indent. The keyword strip is a tinted box with `placement="bottom"`, floated to the foot of the page under the grid.
 
 ## Variations
 

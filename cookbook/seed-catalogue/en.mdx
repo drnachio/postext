@@ -22,7 +22,7 @@ The code is [the short answer](#the-short-answer) above. The TSV holds only word
 
 <Excerpt region="split" />
 
-The letter on page 1 cites the list with `:ref{id="vegetables" text="the price list"}`, and `text` prints those words in place of a number. A cited table floats to the first free slot after the citation, here the top of page 2. The list does not fit there, so the engine cuts it between rows after Jimmy Nardello, never inside a merged kind. Page 3 repeats the head row and the caption band with the suffix; the marker goes under the first part and the note under the last ([Tables taller than the page](/en/docs/configuration#tables-taller-than-the-page)). `parseTSV(tsv, { headerRows: 1 })` makes the first row the head row, which is painted as one and repeated on page 3. The suffix and the marker are italic and take the caption's face, so the band stays in Gelasio; Cabin Condensed has no italic.
+The letter on page 1 cites the list with `:ref{id="vegetables" text="the price list"}`, and `text` prints those words in place of a number. A cited table floats to the first free slot after the citation, here the top of page 2. The list does not fit there, so the engine cuts it between rows after Jimmy Nardello, never inside a merged kind. Page 3 repeats the head row and the caption band with the suffix; the marker goes under the first part and the note under the last ([Tables taller than the page](/en/docs/configuration-resources#tables-taller-than-the-page)). `parseTSV(tsv, { headerRows: 1 })` makes the first row the head row, which is painted as one and repeated on page 3. The suffix and the marker are italic and take the caption's face, so the band stays in Gelasio; Cabin Condensed has no italic.
 
 ### 3 · A resource for every packet
 
@@ -34,7 +34,7 @@ A cell image names a resource by id, so each packet is a bitmap resource of its 
 
 <Excerpt region="forms" />
 
-The two grids use the named style `form`, with grid rules, a 2.5 mm radius on the outer frame and a cream fill to write on. The price list keeps the document's `tableStyle` ([Named table styles](/en/docs/configuration#named-table-styles)). An empty cell needs no placeholder, because its row still takes a line, 7.3 mm here. Each total merges four columns into one label set flush right. The order sheet's heading style switches page 4 to a single column, so both grids run the full 157 mm measure.
+The two grids use the named style `form`, with grid rules, a 2.5 mm radius on the outer frame and a cream fill to write on. The price list keeps the document's `tableStyle` ([Named table styles](/en/docs/configuration-resources#named-table-styles)). An empty cell needs no placeholder, because its row still takes a line, 7.3 mm here. Each total merges four columns into one label set flush right. The order sheet's heading style switches page 4 to a single column, so both grids run the full 157 mm measure.
 
 ### 5 · Keep the letter under the painting
 

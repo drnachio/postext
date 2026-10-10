@@ -16,7 +16,7 @@ pageNotes: { "1": "章首页，在书脊左侧：自右起，黑体粗体的“�
 
 ### 1 · 注释体，排在行内
 
-代码就是上面的[简短回答](#简短回答)。GB/T 7714的注释体（`china-national-standard-gb-t-7714-2015-note`）把每处引文变成一条注，注里写出文献的完整著录项目（[引用](/zh/docs/configuration#引用)）。注释体默认把注排在页脚。`notes: 'warichu'`让每条注留在原来的行里，排成夹注：两行，字号为`cjk.warichu.fontSize`，即正文的一半，在行中居中，先读右边一行（[着重号、注音与夹注](/zh/docs/configuration#着重号注音与夹注)）。Markdown的写法和其他样式一样，`[@su1999]`跟在所依据的文字后面，夹注就排在引文的位置，在句末的“。”之前。
+代码就是上面的[简短回答](#简短回答)。GB/T 7714的注释体（`china-national-standard-gb-t-7714-2015-note`）把每处引文变成一条注，注里写出文献的完整著录项目（[引用](/zh/docs/configuration-notes-references#引用)）。注释体默认把注排在页脚。`notes: 'warichu'`让每条注留在原来的行里，排成夹注：两行，字号为`cjk.warichu.fontSize`，即正文的一半，在行中居中，先读右边一行（[着重号、注音与夹注](/zh/docs/configuration-east-asian#着重号注音与夹注)）。Markdown的写法和其他样式一样，`[@su1999]`跟在所依据的文字后面，夹注就排在引文的位置，在句末的“。”之前。
 
 <PageShot page={1} crop="0.48,0.17,0.16,0.7" caption="第1页：宿白一书的夹注从第三行行末开始，接到第四行行首，两处都是先读右边一行。" />
 
@@ -28,7 +28,7 @@ pageNotes: { "1": "章首页，在书脊左侧：自右起，黑体粗体的“�
 
 ### 3 · 繁体字，按大陆规范排
 
-`locale: 'zh-Hant-CN'`表示用繁体字、按大陆规范排版，北京、上海的出版社排古籍和文史著作多是这样：逗号、句号放在字格的右上角，竖排的书右翻。引文跟随这个标签：繁体字会选用zh-TW的CSL语言文件，所以样式添加的用语也是繁体。Noto Serif SC按大陆字形画繁体字，正合这个版本的需要；LXGW WenKai TC是台湾字形的字体，只用来排章题，章题里没有标点（数字怎样处理见[竖排中的数字](/zh/docs/configuration#竖排中的数字)）。
+`locale: 'zh-Hant-CN'`表示用繁体字、按大陆规范排版，北京、上海的出版社排古籍和文史著作多是这样：逗号、句号放在字格的右上角，竖排的书右翻。引文跟随这个标签：繁体字会选用zh-TW的CSL语言文件，所以样式添加的用语也是繁体。Noto Serif SC按大陆字形画繁体字，正合这个版本的需要；LXGW WenKai TC是台湾字形的字体，只用来排章题，章题里没有标点（数字怎样处理见[竖排中的数字](/zh/docs/configuration-east-asian#竖排中的数字)）。
 
 在夹注和书目中，拉丁字母的书名和四位数的年份横倒排，顺着行往下走。紧挨汉字的短数字，比如编号里的1，在字格里直立。
 
@@ -36,7 +36,7 @@ pageNotes: { "1": "章首页，在书脊左侧：自右起，黑体粗体的“�
 
 <Excerpt region="opener" />
 
-竖排页面上的标题设计按排版流的坐标布局：`x`沿行往下，`y`从页面右边缘横向往左，所以`'horizontal'`的线在纸面上是一条竖线。三条线隔出两行，行距30.4 pt。第一行是黑体粗体的“第三章”，第二行是楷体的章题（[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）。章号来自标题上的`startAt=3`和模板`第{1:一}章`，页码来自`pageNumbering`：`trad-chinese-informal`，从45起。书眉和页码沿书口一侧的页边竖排，做法与<RecipeLink slug="vertical-novel-right-bound">右翻的竖排中文小说</RecipeLink>相同（[竖排文本元素](/zh/docs/configuration#竖排文本元素)）。
+竖排页面上的标题设计按排版流的坐标布局：`x`沿行往下，`y`从页面右边缘横向往左，所以`'horizontal'`的线在纸面上是一条竖线。三条线隔出两行，行距30.4 pt。第一行是黑体粗体的“第三章”，第二行是楷体的章题（[通栏与高级设计](/zh/docs/configuration-text#通栏与高级设计)）。章号来自标题上的`startAt=3`和模板`第{1:一}章`，页码来自`pageNumbering`：`trad-chinese-informal`，从45起。书眉和页码沿书口一侧的页边竖排，做法与<RecipeLink slug="vertical-novel-right-bound">右翻的竖排中文小说</RecipeLink>相同（[竖排文本元素](/zh/docs/configuration-page-layout#竖排文本元素)）。
 
 <Excerpt region="palette" />
 

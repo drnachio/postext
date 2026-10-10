@@ -16,7 +16,7 @@ O começo do capítulo 1 da *História da pedra* no manuscrito Jiaxu, a cópia q
 
 ### 1 · Transforme a coluna lateral na margem superior
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. Uma página vertical é uma página horizontal girada um quarto de volta, então a coluna lateral de uma [diagramação em coluna e meia](/pt/docs/configuration#tipos-de-layout) vira uma faixa que atravessa a página, e `sideColumnSide: 'left'` põe essa faixa no alto ([Escrita vertical](/pt/docs/configuration#escrita-vertical)). A [grade de caracteres](/pt/docs/configuration#grade-de-caracteres) arredonda `sideColumnPercent: 19` para 10 caracteres do corpo, 120 pt, e a medianiz para dois; o fio de coluna vira o filete que separa os comentários do texto. O estilo dos comentários não tem caixa: Kai de 7 pt, 17 caracteres por coluna, um corpo em que nenhum dos dez comentários termina numa coluna de um só caractere, e `snapToGrid: false`, para que os comentários se empilhem no seu próprio passo de 10 pt em vez dos 21 pt do corpo.
+O código é [a resposta curta](#a-resposta-curta) logo acima. Uma página vertical é uma página horizontal girada um quarto de volta, então a coluna lateral de uma [diagramação em coluna e meia](/pt/docs/configuration-page-layout#tipos-de-layout) vira uma faixa que atravessa a página, e `sideColumnSide: 'left'` põe essa faixa no alto ([Escrita vertical](/pt/docs/configuration-page-layout#escrita-vertical)). A [grade de caracteres](/pt/docs/configuration-east-asian#grade-de-caracteres) arredonda `sideColumnPercent: 19` para 10 caracteres do corpo, 120 pt, e a medianiz para dois; o fio de coluna vira o filete que separa os comentários do texto. O estilo dos comentários não tem caixa: Kai de 7 pt, 17 caracteres por coluna, um corpo em que nenhum dos dez comentários termina numa coluna de um só caractere, e `snapToGrid: false`, para que os comentários se empilhem no seu próprio passo de 10 pt em vez dos 21 pt do corpo.
 
 Os dois tipos de comentário são marcados onde o manuscrito os tem. Um comentário lateral é um trecho [`:warichu[…]`](/pt/docs/document-format#marcas-chinesas-rubi-e-warichu), que `cjk.warichu` colore; um comentário da margem superior é um box delimitado com `span="side"` logo antes do trecho que ele discute:
 
@@ -38,7 +38,7 @@ Numa página vertical, a abertura é diagramada no quadro do fluxo: o texto desc
 
 <Excerpt region="fore-edge" />
 
-São os cabeços da borda externa de [Elementos de texto verticais](/pt/docs/configuration#elementos-de-texto-verticais): `anchor.to: 'outer'` é a margem do lado oposto à lombada, a esquerda de uma página ímpar e a direita de uma par num livro encadernado pela direita, e `writingMode: 'vertical-rl'` compõe o texto de cima para baixo. A mancha aqui inclui a faixa dos comentários, então os “quatro caracteres abaixo do alto” são medidos a partir do topo dos comentários vermelhos. `trad-chinese-informal` imprime os fólios de 一 a 六.
+São os cabeços da borda externa de [Elementos de texto verticais](/pt/docs/configuration-page-layout#elementos-de-texto-verticais): `anchor.to: 'outer'` é a margem do lado oposto à lombada, a esquerda de uma página ímpar e a direita de uma par num livro encadernado pela direita, e `writingMode: 'vertical-rl'` compõe o texto de cima para baixo. A mancha aqui inclui a faixa dos comentários, então os “quatro caracteres abaixo do alto” são medidos a partir do topo dos comentários vermelhos. `trad-chinese-informal` imprime os fólios de 一 a 六.
 
 ### 4 · Carregue cada voz com o texto que ela compõe
 

@@ -22,7 +22,7 @@ El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. 
 
 <Excerpt region="marks" />
 
-`findLooseLines` devuelve las líneas justificadas cuyos espacios se estiran por encima de un umbral, aquí el límite superior, cada una con la franja que cubre el resaltado ([Líneas flojas en tu propio canvas](/es/docs/configuration#líneas-flojas-en-tu-propio-canvas)). `marks()` añade lo que esa lista deja fuera, leído del [VDT](/es/docs/justification#depuración-de-líneas-flojas): una línea de más de 3× no tiene proporción, porque el motor [la compone en bandera](/es/docs/justification#líneas-que-el-algoritmo-no-puede-llenar) y la marca con `line.ragged`, y un párrafo partido entre dos columnas vuelve como un bloque por fragmento, que es como se encuentran las líneas solas. Con cuarenta caracteres por línea, los límites no bastan para que todas queden por debajo de 1,6; mientras se ajustaba el texto del ensayo, las marcas señalaron qué frases había que reescribir.
+`findLooseLines` devuelve las líneas justificadas cuyos espacios se estiran por encima de un umbral, aquí el límite superior, cada una con la franja que cubre el resaltado ([Líneas flojas en tu propio canvas](/es/docs/configuration-fonts-colors-viewers#líneas-flojas-en-tu-propio-canvas)). `marks()` añade lo que esa lista deja fuera, leído del [VDT](/es/docs/justification#depuración-de-líneas-flojas): una línea de más de 3× no tiene proporción, porque el motor [la compone en bandera](/es/docs/justification#líneas-que-el-algoritmo-no-puede-llenar) y la marca con `line.ragged`, y un párrafo partido entre dos columnas vuelve como un bloque por fragmento, que es como se encuentran las líneas solas. Con cuarenta caracteres por línea, los límites no bastan para que todas queden por debajo de 1,6; mientras se ajustaba el texto del ensayo, las marcas señalaron qué frases había que reescribir.
 
 ### 3 · Pon el control junto a la página publicada
 
@@ -40,7 +40,7 @@ Un recuadro compone todas las columnas de un grupo [`:::columns`](/es/docs/docum
 
 <Excerpt region="opener" />
 
-El diagrama es un [elemento de imagen](/es/docs/configuration#elementos-de-imagen) del diseño del H1. Como figura sería un flotante `top` a todo el ancho, y un flotante `top` citado en la página 1 abre la página 2. La banda baja más que el diagrama, y una apertura reserva altura hasta su elemento más bajo, así que el texto empieza bajo la banda sin `minHeight`, una línea más abajo por el `marginBottom` que el H1 trae por defecto. Los rótulos son texto de diseño colocado sobre las coordenadas del propio dibujo, compuesto y espaciado como los demás rótulos de la apertura.
+El diagrama es un [elemento de imagen](/es/docs/configuration-page-layout#elementos-de-imagen) del diseño del H1. Como figura sería un flotante `top` a todo el ancho, y un flotante `top` citado en la página 1 abre la página 2. La banda baja más que el diagrama, y una apertura reserva altura hasta su elemento más bajo, así que el texto empieza bajo la banda sin `minHeight`, una línea más abajo por el `marginBottom` que el H1 trae por defecto. Los rótulos son texto de diseño colocado sobre las coordenadas del propio dibujo, compuesto y espaciado como los demás rótulos de la apertura.
 
 ## Variantes
 

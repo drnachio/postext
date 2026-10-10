@@ -16,7 +16,7 @@ Cinco páginas do capítulo 3 de um livro japonês de programação inventado, �
 
 ### 1 · As regras japonesas vêm com a etiqueta de idioma
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. `locale: 'ja'` liga as regras do JLReq, os *Requirements for Japanese Text Layout* do W3C, e os valores escritos em `cjk` são os que `'auto'` escolhe para o japonês ([Tipografia do Leste Asiático](/pt/docs/configuration#tipografia-do-leste-asiático)). Com `ja-very-strict`, nenhuma linha começa com ー, um kana pequeno, 々 ou um sinal de fechamento, e nenhuma termina com um parêntese ou colchete de abertura. A pontuação (約物, yakumono) mantém seu eme inteiro dentro da linha, e dois sinais que se encontram, como 」、, dividem um eme. Na <PageRef page={1}>página 41</PageRef>, a linha que termina em 実際に変換し、 põe o seu 、 além da borda direita da medida: é o ぶら下げ (burasage), e o motor só o usa quando, sem ele, teria de empurrar o sinal para a linha seguinte. `latinSpacing` põe um quarto de eme (四分アキ, shibun aki) entre Unicode e では, e entre U+304C e を, embora o Markdown não tenha espaço ali.
+O código é [a resposta curta](#a-resposta-curta) logo acima. `locale: 'ja'` liga as regras do JLReq, os *Requirements for Japanese Text Layout* do W3C, e os valores escritos em `cjk` são os que `'auto'` escolhe para o japonês ([Tipografia do Leste Asiático](/pt/docs/configuration-east-asian#tipografia-do-leste-asiático)). Com `ja-very-strict`, nenhuma linha começa com ー, um kana pequeno, 々 ou um sinal de fechamento, e nenhuma termina com um parêntese ou colchete de abertura. A pontuação (約物, yakumono) mantém seu eme inteiro dentro da linha, e dois sinais que se encontram, como 」、, dividem um eme. Na <PageRef page={1}>página 41</PageRef>, a linha que termina em 実際に変換し、 põe o seu 、 além da borda direita da medida: é o ぶら下げ (burasage), e o motor só o usa quando, sem ele, teria de empurrar o sinal para a linha seguinte. `latinSpacing` põe um quarto de eme (四分アキ, shibun aki) entre Unicode e では, e entre U+304C e を, embora o Markdown não tenha espaço ali.
 
 <PageShot page={1} crop="0.08,0.27,0.84,0.09" caption="Página 41: um quarto de eme em volta de Unicode e Python, digitados sem espaço; o 、 no fim da segunda linha fica pendurado fora da medida." />
 
@@ -26,7 +26,7 @@ A diferença em relação ao chinês está nos sinais. Um livro chinês do conti
 
 <Excerpt region="listing" />
 
-A cerca é um [bloco de código](/pt/docs/document-format#blocos-de-código): o Postext compõe suas linhas como foram escritas, na fonte que `codeStyle` indica, num boxe com fundo de cor sob o título `normalize.py`, tirado da linha da cerca ([listagens de código](/pt/docs/configuration#listagens-de-código)). `highlight: 'none'` deixa a listagem numa só tinta, como o resto da página, e `codeStyle.inline` compõe cada `` `name` `` na mesma fonte, em verde-azulado. A fonte faz diferença: a string do exemplo, ｶﾞｲﾄﾞ ＡＢＣ ①, precisa de katakana de meia largura, letras de largura inteira e algarismos em círculo, que uma fonte de código ocidental não tem. A BIZ UDGothic compõe o latim de meia largura e o kana de largura inteira com passo fixo, e uma listagem conta cada caractere de largura inteira como duas células; assim as colunas se mantêm.
+A cerca é um [bloco de código](/pt/docs/document-format#blocos-de-código): o Postext compõe suas linhas como foram escritas, na fonte que `codeStyle` indica, num boxe com fundo de cor sob o título `normalize.py`, tirado da linha da cerca ([listagens de código](/pt/docs/configuration-styles#listagens-de-código)). `highlight: 'none'` deixa a listagem numa só tinta, como o resto da página, e `codeStyle.inline` compõe cada `` `name` `` na mesma fonte, em verde-azulado. A fonte faz diferença: a string do exemplo, ｶﾞｲﾄﾞ ＡＢＣ ①, precisa de katakana de meia largura, letras de largura inteira e algarismos em círculo, que uma fonte de código ocidental não tem. A BIZ UDGothic compõe o latim de meia largura e o kana de largura inteira com passo fixo, e uma listagem conta cada caractere de largura inteira como duas células; assim as colunas se mantêm.
 
 ### 3 · 図3-1 e 表3-1
 
@@ -38,7 +38,7 @@ A cerca é um [bloco de código](/pt/docs/document-format#blocos-de-código): o 
 
 <Excerpt region="notes" />
 
-As notas não pedem nenhum ajuste além do corpo: num documento japonês horizontal, os valores padrão são os que o JLReq descreve para livros horizontais, a nota no pé da coluna onde é citada, numerada a partir de 1 em cada página, com chamada sobrescrita e um fio de um terço da medida ([Notas de rodapé](/pt/docs/configuration#notas-de-rodapé)). A chamada vem antes do ponto final, `保存していた[^hfs]。`, para que o 。 nunca abra a linha seguinte separado dela.
+As notas não pedem nenhum ajuste além do corpo: num documento japonês horizontal, os valores padrão são os que o JLReq descreve para livros horizontais, a nota no pé da coluna onde é citada, numerada a partir de 1 em cada página, com chamada sobrescrita e um fio de um terço da medida ([Notas de rodapé](/pt/docs/configuration-notes-references#notas-de-rodapé)). A chamada vem antes do ponto final, `保存していた[^hfs]。`, para que o 。 nunca abra a linha seguinte separado dela.
 
 ### 5 · Um título de seção de três linhas
 

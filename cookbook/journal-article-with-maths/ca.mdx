@@ -16,13 +16,13 @@ Un article de recerca del número de setembre de *Measure*, revista fictícia de
 
 ### 1 · Engega MathJax i numera les equacions
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. Les [matemàtiques](/ca/docs/configuration#matemàtiques) les compon MathJax, que ve dins del paquet: `initMathEngine` s'importa de `https://esm.sh/postext` amb la resta de símbols, i cal esperar `initMathEngine()` abans de la primera composició; si no, cada fórmula surt com una caixa grisa. A partir d'aquí, `$…$` compon matemàtiques en línia i `$$…$$` fórmules destacades, i `renderToPdf` escriu cada fórmula com a traçats vectorials. Un `\tag{1}` al final d'una fórmula destacada la numera: la fórmula ocupa l'amplada de la seva columna, amb l'equació centrada i el número enganxat a la dreta a la mateixa línia. Aquí els números s'escriuen a mà, i el text els cita tal com són, «Eq. (6)».
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Les [matemàtiques](/ca/docs/configuration-text#matemàtiques) les compon MathJax, que ve dins del paquet: `initMathEngine` s'importa de `https://esm.sh/postext` amb la resta de símbols, i cal esperar `initMathEngine()` abans de la primera composició; si no, cada fórmula surt com una caixa grisa. A partir d'aquí, `$…$` compon matemàtiques en línia i `$$…$$` fórmules destacades, i `renderToPdf` escriu cada fórmula com a traçats vectorials. Un `\tag{1}` al final d'una fórmula destacada la numera: la fórmula ocupa l'amplada de la seva columna, amb l'equació centrada i el número enganxat a la dreta a la mateixa línia. Aquí els números s'escriuen a mà, i el text els cita tal com són, «Eq. (6)».
 
 ### 2 · Dibuixa el bloc del títol amb un estil de títol
 
 <Excerpt region="title" />
 
-El títol de l'article porta `#` (nivell 1), així que encapçala els marcadors del PDF, amb les seccions numerades a sota. El seu [estil de títol](/ca/docs/configuration#estils-dencapçalament) `article` el substitueix per una ranura d'elements de disseny: una banda a sang per dalt, el nom de la revista, la imatge estroboscòpica i el títol, partit en dos on el Markdown porta `\\`. Els autors i dues de les dates surten dels atributs del títol, i la de publicació, del `publishDate` del frontmatter. `minHeight` reserva 130 mm des del marge superior fins al peu dels autors, i el resum comença a sota.
+El títol de l'article porta `#` (nivell 1), així que encapçala els marcadors del PDF, amb les seccions numerades a sota. El seu [estil de títol](/ca/docs/configuration-styles#estils-dencapçalament) `article` el substitueix per una ranura d'elements de disseny: una banda a sang per dalt, el nom de la revista, la imatge estroboscòpica i el títol, partit en dos on el Markdown porta `\\`. Els autors i dues de les dates surten dels atributs del títol, i la de publicació, del `publishDate` del frontmatter. `minHeight` reserva 130 mm des del marge superior fins al peu dels autors, i el resum comença a sota.
 
 ### 3 · Numera les seccions, no el títol
 
@@ -34,19 +34,19 @@ Cada nivell té la seva plantilla i la seva tipografia: `{2}` numera les sis sec
 
 <Excerpt region="abstract" />
 
-Un requadre `span: 'page'` sota el bloc del títol compon el resum a tota l'amplada de la caixa, i les dues columnes comencen a sota. Un farciment de 22 mm a cada costat deixa les línies al voltant dels 90 caràcters. Les paraules clau són [chips](/ca/docs/configuration#estils-de-xip), que mai no es parteixen entre dues línies, i cadascuna porta `{style="keyword"}`. El seu estil de paràgraf, `keywords`, va en bandera, perquè en justificar una línia de chips els espais entre ells s'obren fins a deixar forats.
+Un requadre `span: 'page'` sota el bloc del títol compon el resum a tota l'amplada de la caixa, i les dues columnes comencen a sota. Un farciment de 22 mm a cada costat deixa les línies al voltant dels 90 caràcters. Les paraules clau són [chips](/ca/docs/configuration-styles#estils-de-xip), que mai no es parteixen entre dues línies, i cadascuna porta `{style="keyword"}`. El seu estil de paràgraf, `keywords`, va en bandera, perquè en justificar una línia de chips els espais entre ells s'obren fins a deixar forats.
 
 ### 5 · Tanca amb una bibliografia amb sagnat francès
 
 <Excerpt region="references" />
 
-Un contenidor `:::paragraphs` aplica a cada referència l'[estil de paràgraf](/ca/docs/configuration#estils-de-paràgraf) `references`, el `hangingIndent` del qual, de 5 mm, deixa el número al marge i sagna 5 mm les línies següents. L'equilibrat de columnes iguala l'última banda de l'article. A la <PageRef page={4}>pàgina 216</PageRef>, el final de les conclusions, les seccions finals i la bibliografia es reparteixen les dues columnes sota la figura 3. L'equilibrat només pot afegir espai i una referència de dues línies no es pot partir, així que les seccions finals es van reescriure amb dues línies menys fins que les dues columnes van acabar a la mateixa altura.
+Un contenidor `:::paragraphs` aplica a cada referència l'[estil de paràgraf](/ca/docs/configuration-styles#estils-de-paràgraf) `references`, el `hangingIndent` del qual, de 5 mm, deixa el número al marge i sagna 5 mm les línies següents. L'equilibrat de columnes iguala l'última banda de l'article. A la <PageRef page={4}>pàgina 216</PageRef>, el final de les conclusions, les seccions finals i la bibliografia es reparteixen les dues columnes sota la figura 3. L'equilibrat només pot afegir espai i una referència de dues línies no es pot partir, així que les seccions finals es van reescriure amb dues línies menys fins que les dues columnes van acabar a la mateixa altura.
 
 ### 6 · Calcula la taula i retola les figures amb MathJax
 
 <Excerpt region="figures" />
 
-Una sola llista, `runs`, alimenta la taula 1 i els punts de la figura 2, i la columna de valors previstos de la taula és l'equació (6) calculada per a cada amplitud. La taula porta els [filets booktabs](/ca/docs/configuration#filets-booktabs) d'una revista, `rules: 'booktabs'` en tinta: un filet gruixut a sobre i sota l'última fila, un de prim sota la capçalera i cap línia vertical. El text cita cada recurs amb `:ref{id="…" style="full"}`, que imprimeix «Figure 2» en negreta, en el color del text, i fa flotar el recurs fins al primer forat lliure després de la citació. Els peus i les cel·les fan servir el marcatge normal `~sub~` i `^sup^` (`*T*~0~`), que es queda en la seva pròpia lletra de pal sec, i els símbols dins del text són `$T_0$`. Els rètols de les figures també són matemàtiques: `tex()` crida `renderMath` per a cadascun i n'escriu els contorns a l'SVG com a traçats. La *θ*₀ de la figura 1 és el mateix glif de les fórmules i continua sent vectorial al PDF.
+Una sola llista, `runs`, alimenta la taula 1 i els punts de la figura 2, i la columna de valors previstos de la taula és l'equació (6) calculada per a cada amplitud. La taula porta els [filets booktabs](/ca/docs/configuration-resources#filets-booktabs) d'una revista, `rules: 'booktabs'` en tinta: un filet gruixut a sobre i sota l'última fila, un de prim sota la capçalera i cap línia vertical. El text cita cada recurs amb `:ref{id="…" style="full"}`, que imprimeix «Figure 2» en negreta, en el color del text, i fa flotar el recurs fins al primer forat lliure després de la citació. Els peus i les cel·les fan servir el marcatge normal `~sub~` i `^sup^` (`*T*~0~`), que es queda en la seva pròpia lletra de pal sec, i els símbols dins del text són `$T_0$`. Els rètols de les figures també són matemàtiques: `tex()` crida `renderMath` per a cadascun i n'escriu els contorns a l'SVG com a traçats. La *θ*₀ de la figura 1 és el mateix glif de les fórmules i continua sent vectorial al PDF.
 
 ## Variants
 

@@ -24,13 +24,13 @@ Um título abre uma página própria e vira um marcador no PDF; o design do seu 
 
 <Excerpt region="contents" />
 
-`:::toc` lista cada título que o seu estilo deixa entrar, com o rótulo da página onde ele cai ([sumário](/pt/docs/configuration#sumário)). O Contents e o Preface compartilham o estilo `front`, que define `toc: false`, e o Preface o sobrescreve com `{toc="true"}`. Nem o Preface nem a Letter I são numerados, então suas entradas não imprimem número de capítulo. A segunda linha da entrada da carta é o atributo `to="…"` dela. Os números de página vêm na fonte dos fólios. As entradas começam na mesma linha de base que a primeira linha do Preface, de modo que as duas páginas em frente se alinham.
+`:::toc` lista cada título que o seu estilo deixa entrar, com o rótulo da página onde ele cai ([sumário](/pt/docs/configuration-notes-references#sumário)). O Contents e o Preface compartilham o estilo `front`, que define `toc: false`, e o Preface o sobrescreve com `{toc="true"}`. Nem o Preface nem a Letter I são numerados, então suas entradas não imprimem número de capítulo. A segunda linha da entrada da carta é o atributo `to="…"` dela. Os números de página vêm na fonte dos fólios. As entradas começam na mesma linha de base que a primeira linha do Preface, de modo que as duas páginas em frente se alinham.
 
 ### 3 · O romance abre numa página ímpar, sob a aurora boreal
 
 <Excerpt region="letter" />
 
-A pintura sangra pelo alto da página e se dissolve no papel embaixo, onde a carta começa. A abertura reserva a página até o pé da pintura, a 104 mm do alto da página, e `minHeight` põe um piso 2 mm abaixo, o que faz a carta começar uma linha da grade depois, livre do esmaecimento ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). O chapéu e a linha de data vêm dos atributos `to` e `dateline` do título. A Letter I também leva `{style="letter"}`, um estilo cujo único ajuste é `numbered: false`, porque as cartas de Walton vêm antes do Chapter I e não têm número de capítulo.
+A pintura sangra pelo alto da página e se dissolve no papel embaixo, onde a carta começa. A abertura reserva a página até o pé da pintura, a 104 mm do alto da página, e `minHeight` põe um piso 2 mm abaixo, o que faz a carta começar uma linha da grade depois, livre do esmaecimento ([span e design avançado](/pt/docs/configuration-text#largura-e-design-avançado)). O chapéu e a linha de data vêm dos atributos `to` e `dateline` do título. A Letter I também leva `{style="letter"}`, um estilo cujo único ajuste é `numbered: false`, porque as cartas de Walton vêm antes do Chapter I e não têm número de capítulo.
 
 ### 4 · Os cabeços voltam com o romance
 
@@ -76,7 +76,7 @@ Apague o título `# Frontispiece` e mande a folha de rosto para uma página ímp
 
 ### Acrescente sangria e marcas de corte para a gráfica
 
-Com `cutLines`, a capa e a abertura, ambas ancoradas à sangria, passam 3 mm do refile; os fólios e o número de páginas não mudam ([marcas de corte](/pt/docs/configuration#marcas-de-corte)).
+Com `cutLines`, a capa e a abertura, ambas ancoradas à sangria, passam 3 mm do refile; os fólios e o número de páginas não mudam ([marcas de corte](/pt/docs/configuration-page-layout#marcas-de-corte)).
 
 ```diff
      backgroundColor: col('paper'), pageNumbering,

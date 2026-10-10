@@ -16,7 +16,7 @@ Oito páginas de um pequeno livro de poesia numa página 四六判 de 127 × 188
 
 ### 1 · Um verso é um parágrafo, e o seu estilo diz onde ele começa
 
-O código está na [resposta curta](#a-resposta-curta), mais acima. Um haicai é uma linha só, então é um parágrafo próprio dentro de um bloco `:::paragraphs`, e o estilo do bloco define o recuo: `indent: em(3)` põe um haicai três caracteres abaixo do alto da linha (o texto do Aozora os põe a dois; três dão mais respiro aos poemas), e `firstLineIndent: em(0)` impede que o recuo de um caractere do texto se some a ele. Os cerca de 17 caracteres de um haicai cabem em qualquer linha de 36, então ele nunca quebra. A assinatura é um parágrafo à parte: `textAlign: 'end'` a apoia no pé da linha (地付き, jitsuki) e `endIndent: em(5)` a sobe cinco caracteres a partir dali (地から五字上げ), como faz a edição de onde vem este texto ([Estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)).
+O código está na [resposta curta](#a-resposta-curta), mais acima. Um haicai é uma linha só, então é um parágrafo próprio dentro de um bloco `:::paragraphs`, e o estilo do bloco define o recuo: `indent: em(3)` põe um haicai três caracteres abaixo do alto da linha (o texto do Aozora os põe a dois; três dão mais respiro aos poemas), e `firstLineIndent: em(0)` impede que o recuo de um caractere do texto se some a ele. Os cerca de 17 caracteres de um haicai cabem em qualquer linha de 36, então ele nunca quebra. A assinatura é um parágrafo à parte: `textAlign: 'end'` a apoia no pé da linha (地付き, jitsuki) e `endIndent: em(5)` a sobe cinco caracteres a partir dali (地から五字上げ), como faz a edição de onde vem este texto ([Estilos de parágrafo](/pt/docs/configuration-styles#estilos-de-parágrafo)).
 
 ### 2 · Mantenha cada tanka numa só página
 
@@ -28,7 +28,7 @@ Os tankas de Takuboku formam um bloco `:::verse`, cada tanka uma estrofe: os seu
 
 <Excerpt region="places" />
 
-As estações do caminho de Bashō são títulos de nível 2 com a altura de duas linhas do texto (2行取り), para que a prosa e os haicais seguintes fiquem na grade. `jidori: 3` espaça um nome mais curto até ocupar três dos seus próprios caracteres (字取り): 平泉 sai 平　泉, com um caractere inteiro entre eles, e todos os nomes terminam na mesma altura que 立石寺 e 最上川. Um nome que já tem três caracteres fica como está ([Ajustes por nível](/pt/docs/configuration#sobrescritas-por-nível)).
+As estações do caminho de Bashō são títulos de nível 2 com a altura de duas linhas do texto (2行取り), para que a prosa e os haicais seguintes fiquem na grade. `jidori: 3` espaça um nome mais curto até ocupar três dos seus próprios caracteres (字取り): 平泉 sai 平　泉, com um caractere inteiro entre eles, e todos os nomes terminam na mesma altura que 立石寺 e 最上川. Um nome que já tem três caracteres fica como está ([Ajustes por nível](/pt/docs/configuration-text#sobrescritas-por-nível)).
 
 ### 4 · Abra cada parte numa página própria
 
@@ -40,7 +40,7 @@ Cada parte é um título de nível 1 cujo design põe o título, um pequeno （�
 
 <Excerpt region="voices" />
 
-A prosa de Bashō escreve palavras repetidas com o antigo sinal de iteração 〻 (日〻, 人〻), e textos mais antigos também usam o longo くの字点 〳〵. A Zen Old Mincho não tem nenhum dos dois: o canvas os pegaria de uma fonte do sistema e o PDF desenharia caixas vazias. Shippori Mincho, Noto Serif JP e Shippori Mincho B1 têm os dois, então os poemas são compostos em Shippori Mincho ([Fontes chinesas, japonesas e coreanas](/pt/docs/configuration#fontes-chinesas-japonesas-e-coreanas)). O texto do Aozora também mantém as notas do editor sobre grafias antigas, `とら{え|（へ）}て`, que imprimem o kana esperado ao lado daquele que Bashō escreveu.
+A prosa de Bashō escreve palavras repetidas com o antigo sinal de iteração 〻 (日〻, 人〻), e textos mais antigos também usam o longo くの字点 〳〵. A Zen Old Mincho não tem nenhum dos dois: o canvas os pegaria de uma fonte do sistema e o PDF desenharia caixas vazias. Shippori Mincho, Noto Serif JP e Shippori Mincho B1 têm os dois, então os poemas são compostos em Shippori Mincho ([Fontes chinesas, japonesas e coreanas](/pt/docs/configuration-programmatic-usage#fontes-chinesas-japonesas-e-coreanas)). O texto do Aozora também mantém as notas do editor sobre grafias antigas, `とら{え|（へ）}て`, que imprimem o kana esperado ao lado daquele que Bashō escreveu.
 
 ## Variações
 

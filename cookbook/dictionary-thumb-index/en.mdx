@@ -16,19 +16,19 @@ Four pages from a new edition of Admiral Smyth’s *Sailor’s Word-Book* (1867)
 
 ### 1 · Give each letter a heading style with its own tab
 
-The code is [the short answer](#the-short-answer) above. `TABS` lists 22 tabs, with the rare letters sharing one (QR, UV, XYZ). Each tab is two body lines (7.34 mm) deep, so together they fill the 44 lines of the text block. The loop gives each letter a heading style whose `header` adds that letter’s navy tab, one step lower than the last, to the running heads and the pale index ([heading styles](/en/docs/configuration#heading-styles)). Every cell is written twice, once per `parity`, and anchored to the outer edge of the page rather than to the header’s own container. That container is the head margin, as wide as the text block and reaching from the trim down to the text, while the tabs have to reach the fore-edge and run down all 44 lines. A page takes the header of the last section that starts on it, so <PageRef page={2}>page 2</PageRef> begins in A and shows the tab for B.
+The code is [the short answer](#the-short-answer) above. `TABS` lists 22 tabs, with the rare letters sharing one (QR, UV, XYZ). Each tab is two body lines (7.34 mm) deep, so together they fill the 44 lines of the text block. The loop gives each letter a heading style whose `header` adds that letter’s navy tab, one step lower than the last, to the running heads and the pale index ([heading styles](/en/docs/configuration-styles#heading-styles)). Every cell is written twice, once per `parity`, and anchored to the outer edge of the page rather than to the header’s own container. That container is the head margin, as wide as the text block and reaching from the trim down to the text, while the tabs have to reach the fore-edge and run down all 44 lines. A page takes the header of the last section that starts on it, so <PageRef page={2}>page 2</PageRef> begins in A and shows the tab for B.
 
 ### 2 · Keep the running heads off the first page
 
 <Excerpt region="running-heads" />
 
-The heads are text elements anchored to the page and filtered by `parity` and `pages: 'body'` ([text elements](/en/docs/configuration#text-elements)). The title on page 1 spans both columns, which makes page 1 an opener. The heads skip it, and its folio comes from the footer, an element set to `pages: 'opener'` that prints 6 mm below the text block. On a recto `{chapterTitle}` prints the letter of the last level-1 heading on or before the page, *Letter C*. `{firstMark.<key>}` and `{lastMark.<key>}` print a page’s first and last headword instead, the guide words most dictionaries carry; this recipe keeps the letter, which is what its tabs index.
+The heads are text elements anchored to the page and filtered by `parity` and `pages: 'body'` ([text elements](/en/docs/configuration-page-layout#text-elements)). The title on page 1 spans both columns, which makes page 1 an opener. The heads skip it, and its folio comes from the footer, an element set to `pages: 'opener'` that prints 6 mm below the text block. On a recto `{chapterTitle}` prints the letter of the last level-1 heading on or before the page, *Letter C*. `{firstMark.<key>}` and `{lastMark.<key>}` print a page’s first and last headword instead, the guide words most dictionaries carry; this recipe keeps the letter, which is what its tabs index.
 
 ### 3 · Colour the headwords and nothing else
 
 <Excerpt region="entries" />
 
-Each entry is one paragraph of a `:::paragraphs{style="entry"}` block, its turnover lines hung 1 em ([paragraph styles](/en/docs/configuration#paragraph-styles)). The body’s `boldColor` keeps **Note.** on page 1 in ink, and the entry style’s `boldColor` prints the headwords in navy. A paragraph style has no `italicColor`, so the italic sub-entries keep the body’s ink.
+Each entry is one paragraph of a `:::paragraphs{style="entry"}` block, its turnover lines hung 1 em ([paragraph styles](/en/docs/configuration-styles#paragraph-styles)). The body’s `boldColor` keeps **Note.** on page 1 in ink, and the entry style’s `boldColor` prints the headwords in navy. A paragraph style has no `italicColor`, so the italic sub-entries keep the body’s ink.
 
 ### 4 · Drop a four-line initial into the column
 
@@ -40,7 +40,7 @@ Each entry is one paragraph of a `:::paragraphs{style="entry"}` block, its turno
 
 <Excerpt region="title" />
 
-The title style spans the page with a band that holds the anchor, the name, a subtitle and a byline read from heading attributes, and a double rule ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The thin rule ends 45.1 mm below the top of the text block, so the band snaps to 13 grid lines, or 47.7 mm. The column rule starts under the band, on the line where the text of the two columns starts.
+The title style spans the page with a band that holds the anchor, the name, a subtitle and a byline read from heading attributes, and a double rule ([span and advanced design](/en/docs/configuration-text#span-and-advanced-design)). The thin rule ends 45.1 mm below the top of the text block, so the band snaps to 13 grid lines, or 47.7 mm. The column rule starts under the band, on the line where the text of the two columns starts.
 
 ## Variations
 

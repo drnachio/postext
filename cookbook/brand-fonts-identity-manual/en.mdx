@@ -18,13 +18,13 @@ Four pages of the identity manual for Metro de Alba, a fictional metro of five l
 
 <Excerpt region="build" />
 
-Layout measures every word with the faces in `document.fonts`, so `loadBrandFonts()` in [the short answer](#the-short-answer) fetches each file once, keeps its bytes and registers a `FontFace` built from them before `buildDocument` runs. The kit's `kitFonts` only fetches from Fontsource, and a brand serves its files from its own server. `renderToPdf` asks for the faces the pages paint, and `brandFontProvider` answers each request with the bytes already fetched; a weight or slant the brand lacks would get the closest file of the same family ([Why a font provider?](/en/docs/configuration#why-a-font-provider)). The PDF embeds the six files the canvas measured, each once.
+Layout measures every word with the faces in `document.fonts`, so `loadBrandFonts()` in [the short answer](#the-short-answer) fetches each file once, keeps its bytes and registers a `FontFace` built from them before `buildDocument` runs. The kit's `kitFonts` only fetches from Fontsource, and a brand serves its files from its own server. `renderToPdf` asks for the faces the pages paint, and `brandFontProvider` answers each request with the bytes already fetched; a weight or slant the brand lacks would get the closest file of the same family ([Why a font provider?](/en/docs/configuration-programmatic-usage#why-a-font-provider)). The PDF embeds the six files the canvas measured, each once.
 
 ### 2 · The colour system is one list
 
 <Excerpt region="colours" />
 
-Because the palette and Table 1.1 are built from the same nine rows, the table cannot list a value the pages do not use. `setCellBackground` fills the empty first cell of each row with that row's colour, linked to the palette. In the text, `:swatch{color="line-2"}` takes a palette id and draws a square outlined in the text colour. `main-color` has the hex of Ink, so headings and bold and italic runs, whose defaults link to it, print in Ink instead of the engine's blue. `bodyText.referenceColor: col('ink')` names Ink for references as well ([Color Palette](/en/docs/configuration#color-palette)).
+Because the palette and Table 1.1 are built from the same nine rows, the table cannot list a value the pages do not use. `setCellBackground` fills the empty first cell of each row with that row's colour, linked to the palette. In the text, `:swatch{color="line-2"}` takes a palette id and draws a square outlined in the text colour. `main-color` has the hex of Ink, so headings and bold and italic runs, whose defaults link to it, print in Ink instead of the engine's blue. `bodyText.referenceColor: col('ink')` names Ink for references as well ([Color Palette](/en/docs/configuration-fonts-colors-viewers#color-palette)).
 
 ### 3 · One opener, three line colours
 
@@ -36,13 +36,13 @@ Because the palette and Table 1.1 are built from the same nine rows, the table c
 
 <Excerpt region="do-dont" />
 
-A resource type can carry a partial `captionStyle`, and these two set only the label colour, Signal green for Do and Signal red for Don't ([Resource types](/en/docs/configuration#resource-types)). The signals reach 5.1:1 and 5.5:1 on white, while lines 1, 2, 3 and 5 stay under the 4.5:1 that small text needs. Both drawings float with `position: 'bottom'` and are cited in the same paragraph, the first under Drawing the map, so they share the foot of page 4, Do in the left column and Don't in the right.
+A resource type can carry a partial `captionStyle`, and these two set only the label colour, Signal green for Do and Signal red for Don't ([Resource types](/en/docs/configuration-resources#resource-types)). The signals reach 5.1:1 and 5.5:1 on white, while lines 1, 2, 3 and 5 stay under the 4.5:1 that small text needs. Both drawings float with `position: 'bottom'` and are cited in the same paragraph, the first under Drawing the map, so they share the foot of page 4, Do in the left column and Don't in the right.
 
 ### 5 · The bundle packs the fonts it may share
 
 <Excerpt region="bundle" />
 
-`createBundle` reads `config.customFonts`, looks up each variant's bytes in `files` by its `fileId` and writes them under `fonts/`, with a `fonts` entry in the manifest. The display family carries `redistributable: false`, standing in for a licence that forbids handing the files on (Big Shoulders Display itself is under the OFL). Its file stays out, and `warnings` names the family. The 81 KB file holds the chapter, the configuration, the three drawings and five font files. Layout never reads `customFonts`; the pages come out the same without it ([Creating a bundle](/en/docs/configuration#creating-a-bundle)).
+`createBundle` reads `config.customFonts`, looks up each variant's bytes in `files` by its `fileId` and writes them under `fonts/`, with a `fonts` entry in the manifest. The display family carries `redistributable: false`, standing in for a licence that forbids handing the files on (Big Shoulders Display itself is under the OFL). Its file stays out, and `warnings` names the family. The 81 KB file holds the chapter, the configuration, the three drawings and five font files. Layout never reads `customFonts`; the pages come out the same without it ([Creating a bundle](/en/docs/configuration-programmatic-usage#creating-a-bundle)).
 
 ## Variations
 

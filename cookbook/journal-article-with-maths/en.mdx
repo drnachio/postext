@@ -16,13 +16,13 @@ A research article from the September issue of *Measure*, a fictional open-acces
 
 ### 1 · Start MathJax and number the equations
 
-The code is [the short answer](#the-short-answer) above. [Maths](/en/docs/configuration#math) is set by MathJax, which ships inside the package: `initMathEngine` is imported from `https://esm.sh/postext` with every other symbol, and `await initMathEngine()` has to run before the first build, or every formula paints as a grey box. From then on `$…$` sets inline maths and `$$…$$` display maths, and `renderToPdf` writes each formula as vector paths. A `\tag{1}` at the end of a display formula numbers it: the formula takes the width of its column, with the equation centred and the number flush right on its line. The numbers are typed by hand here, and the text cites them as written, “Eq. (6)”.
+The code is [the short answer](#the-short-answer) above. [Maths](/en/docs/configuration-text#math) is set by MathJax, which ships inside the package: `initMathEngine` is imported from `https://esm.sh/postext` with every other symbol, and `await initMathEngine()` has to run before the first build, or every formula paints as a grey box. From then on `$…$` sets inline maths and `$$…$$` display maths, and `renderToPdf` writes each formula as vector paths. A `\tag{1}` at the end of a display formula numbers it: the formula takes the width of its column, with the equation centred and the number flush right on its line. The numbers are typed by hand here, and the text cites them as written, “Eq. (6)”.
 
 ### 2 · Draw the title block from a heading style
 
 <Excerpt region="title" />
 
-The article title is a level-1 heading (`#`), so it heads the PDF's outline, with the numbered sections under it. Its `article` [heading style](/en/docs/configuration#heading-styles) replaces the heading with a slot of design elements: a band that bleeds off the top, the masthead, the stroboscopic image, and the title, broken where the Markdown heading has its `\\`. The byline and two of the dates come from the heading's attributes, and the publication date from the frontmatter's `publishDate`. `minHeight` reserves 130 mm from the top margin to the foot of the byline, and the abstract starts below that.
+The article title is a level-1 heading (`#`), so it heads the PDF's outline, with the numbered sections under it. Its `article` [heading style](/en/docs/configuration-styles#heading-styles) replaces the heading with a slot of design elements: a band that bleeds off the top, the masthead, the stroboscopic image, and the title, broken where the Markdown heading has its `\\`. The byline and two of the dates come from the heading's attributes, and the publication date from the frontmatter's `publishDate`. `minHeight` reserves 130 mm from the top margin to the foot of the byline, and the abstract starts below that.
 
 ### 3 · Number the sections, not the title
 
@@ -34,19 +34,19 @@ Each level has its own template and type: `{2}` numbers the six sections 1 to 6 
 
 <Excerpt region="abstract" />
 
-A `span: 'page'` box under the title block sets the abstract across the full measure, and the two columns start below it. Padding of 22 mm on each side keeps its lines near 90 characters. The keywords are [chips](/en/docs/configuration#chip-styles), which never break across lines, each named with `{style="keyword"}`. Their paragraph style, `keywords`, is set ragged, because a justified line of chips stretches the spaces between them into gaps.
+A `span: 'page'` box under the title block sets the abstract across the full measure, and the two columns start below it. Padding of 22 mm on each side keeps its lines near 90 characters. The keywords are [chips](/en/docs/configuration-styles#chip-styles), which never break across lines, each named with `{style="keyword"}`. Their paragraph style, `keywords`, is set ragged, because a justified line of chips stretches the spaces between them into gaps.
 
 ### 5 · Close on a bibliography with hanging indents
 
 <Excerpt region="references" />
 
-A `:::paragraphs` fence applies the `references` [paragraph style](/en/docs/configuration#paragraph-styles) to every entry, and its 5 mm `hangingIndent` keeps the number at the margin and starts every turnover line 5 mm in. Column balancing levels the last band of the article. On <PageRef page={4}>page 216</PageRef> the end of the conclusions, the back matter and the references share the two columns under Figure 3. The balancer can only add space, and a two-line reference cannot split, so the back matter was rewritten two lines shorter until both columns ended level.
+A `:::paragraphs` fence applies the `references` [paragraph style](/en/docs/configuration-styles#paragraph-styles) to every entry, and its 5 mm `hangingIndent` keeps the number at the margin and starts every turnover line 5 mm in. Column balancing levels the last band of the article. On <PageRef page={4}>page 216</PageRef> the end of the conclusions, the back matter and the references share the two columns under Figure 3. The balancer can only add space, and a two-line reference cannot split, so the back matter was rewritten two lines shorter until both columns ended level.
 
 ### 6 · Compute the table, label the figures in MathJax
 
 <Excerpt region="figures" />
 
-One array, `runs`, feeds Table 1 and the dots of Figure 2, and the table's predicted column is Eq. (6) evaluated at each amplitude. The table takes the [booktabs rules](/en/docs/configuration#booktabs-rules) of a journal, `rules: 'booktabs'` in ink: a heavy rule above it and under the last row, a light one under the header, no vertical lines. The text cites each resource with `:ref{id="…" style="full"}`, which prints “Figure 2” in bold ink and floats the resource into the first free slot after the citation. The captions and the table cells use plain `~sub~` and `^sup^` markup (`*T*~0~`), which stays in their own sans, and symbols in running text are `$T_0$`. The labels inside the figures are maths too: `tex()` calls `renderMath` for each one and writes the outlines into the SVG as paths. The *θ*₀ of Figure 1 is the glyph the formulas use, and it stays vector in the PDF.
+One array, `runs`, feeds Table 1 and the dots of Figure 2, and the table's predicted column is Eq. (6) evaluated at each amplitude. The table takes the [booktabs rules](/en/docs/configuration-resources#booktabs-rules) of a journal, `rules: 'booktabs'` in ink: a heavy rule above it and under the last row, a light one under the header, no vertical lines. The text cites each resource with `:ref{id="…" style="full"}`, which prints “Figure 2” in bold ink and floats the resource into the first free slot after the citation. The captions and the table cells use plain `~sub~` and `^sup^` markup (`*T*~0~`), which stays in their own sans, and symbols in running text are `$T_0$`. The labels inside the figures are maths too: `tex()` calls `renderMath` for each one and writes the outlines into the SVG as paths. The *θ*₀ of Figure 1 is the glyph the formulas use, and it stays vector in the PDF.
 
 ## Variations
 

@@ -16,7 +16,7 @@ Siete páginas con dos textos fundacionales de la República de China: la procla
 
 ### 1 · Deja los números cortos a la configuración
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. Con `cjk.uprightDigits: 2`, cualquier grupo de una o dos cifras de un texto vertical se pone en pie en una casilla de un cuadratín, con las dos cifras una junto a otra: 10月10日, 第35號 y 7章56條 no llevan marca alguna. Un número más largo se compone entero de lado, como una palabra latina, que es como clreq compone los números de cuatro cifras, así que 1912 y 1644 bajan por la línea girados un cuarto de vuelta. Si quieres en pie un número de tres cifras, márcalo: `民國:tcy[115]年` estrecha el 115 hasta que quepa en el cuadratín. `:upright[ROC]` pone cada letra en pie en su propia casilla, una debajo de otra, y la línea nunca se corta dentro ([números en texto vertical](/es/docs/configuration#números-en-texto-vertical)).
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Con `cjk.uprightDigits: 2`, cualquier grupo de una o dos cifras de un texto vertical se pone en pie en una casilla de un cuadratín, con las dos cifras una junto a otra: 10月10日, 第35號 y 7章56條 no llevan marca alguna. Un número más largo se compone entero de lado, como una palabra latina, que es como clreq compone los números de cuatro cifras, así que 1912 y 1644 bajan por la línea girados un cuarto de vuelta. Si quieres en pie un número de tres cifras, márcalo: `民國:tcy[115]年` estrecha el 115 hasta que quepa en el cuadratín. `:upright[ROC]` pone cada letra en pie en su propia casilla, una debajo de otra, y la línea nunca se corta dentro ([números en texto vertical](/es/docs/configuration-east-asian#números-en-texto-vertical)).
 
 <PageShot page={4} crop="0.43,0.145,0.45,0.74" caption="Página 4, las notas: 10月10日 y 2月12日 en pie, 1911 y Sun Yat-sen de lado, 268 y 115 estrechados con :tcy, ROC apilada con :upright." />
 
@@ -36,7 +36,7 @@ Un diseño de título no distingue páginas pares e impares, así que la banda b
 
 <Excerpt region="heads" />
 
-`anchor.to: 'outer'` es el margen del lado opuesto al lomo, así que en un libro encuadernado por la derecha las cabeceras bajan por el borde izquierdo de la página impar y por el derecho de la par. El título queda cuatro caracteres por debajo de la cabeza de la mancha y el folio termina cinco por encima de su pie, ambos en vertical, al 80 % del cuerpo del texto ([elementos de texto verticales](/es/docs/configuration#elementos-de-texto-verticales)). `pageNumbering.format: 'trad-chinese-informal'` imprime los folios 三, 四, 六 y 七, y `pages: 'body'` los quita de las dos aperturas.
+`anchor.to: 'outer'` es el margen del lado opuesto al lomo, así que en un libro encuadernado por la derecha las cabeceras bajan por el borde izquierdo de la página impar y por el derecho de la par. El título queda cuatro caracteres por debajo de la cabeza de la mancha y el folio termina cinco por encima de su pie, ambos en vertical, al 80 % del cuerpo del texto ([elementos de texto verticales](/es/docs/configuration-page-layout#elementos-de-texto-verticales)). `pageNumbering.format: 'trad-chinese-informal'` imprime los folios 三, 四, 六 y 七, y `pages: 'body'` los quita de las dos aperturas.
 
 ### 4 · Lleva la cubierta a sangre con un diseño de página
 

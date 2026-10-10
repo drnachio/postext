@@ -18,7 +18,7 @@ Os dois lados de um folheto de visita no formato DL, 99 × 210 mm, para um moinh
 
 <Excerpt region="answer" highlight="14-17" />
 
-`createBundle` compacta num zip o capítulo, a configuração, os recursos e todos os arquivos que eles nomeiam; `openBundle` não recebe nada além desses bytes. As fontes vêm de `loadBundleFonts`, os desenhos de `registerBundleImages` e o design de `bundle.config`. Uma fonte deixada fora de `files` sai na fonte reserva do navegador, e um desenho que fica de fora é descartado com um aviso, e a referência a ele imprime (?). Dentro do zip, cada `fileId` vira um caminho (`mill.svg` passa a ser `resources/mill.svg`), e os recursos e o `customFonts` que `openBundle` devolve já usam os nomes novos ([abrir um pacote](/pt/docs/configuration#abrir-um-pacote)).
+`createBundle` compacta num zip o capítulo, a configuração, os recursos e todos os arquivos que eles nomeiam; `openBundle` não recebe nada além desses bytes. As fontes vêm de `loadBundleFonts`, os desenhos de `registerBundleImages` e o design de `bundle.config`. Uma fonte deixada fora de `files` sai na fonte reserva do navegador, e um desenho que fica de fora é descartado com um aviso, e a referência a ele imprime (?). Dentro do zip, cada `fileId` vira um caminho (`mill.svg` passa a ser `resources/mill.svg`), e os recursos e o `customFonts` que `openBundle` devolve já usam os nomes novos ([abrir um pacote](/pt/docs/configuration-programmatic-usage#abrir-um-pacote)).
 
 ### 2 · Pôr as fontes no arquivo
 
@@ -36,13 +36,13 @@ Os dois desenhos são marcação SVG gerada pelo pen e entregue a `files` sob o 
 
 <Excerpt region="labels" />
 
-Quem abre um arquivo monta os tipos embutidos na língua que esse arquivo serve: sem `resourceTypes` na configuração, o folheto em espanhol imprime Figura 1.1 e Tabla 1.1 onde quer que seja aberto, inclusive no Sandbox em /en/sandbox. O folheto grava os tipos só pelos números: `'{n}'` tira o número do capítulo, de que um folheto de duas páginas não precisa ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)). O mesmo `config()` define `locale`, que escolhe os padrões de hifenização do espanhol (compuer-tas no verso) e a língua que o PDF declara.
+Quem abre um arquivo monta os tipos embutidos na língua que esse arquivo serve: sem `resourceTypes` na configuração, o folheto em espanhol imprime Figura 1.1 e Tabla 1.1 onde quer que seja aberto, inclusive no Sandbox em /en/sandbox. O folheto grava os tipos só pelos números: `'{n}'` tira o número do capítulo, de que um folheto de duas páginas não precisa ([tipos de recurso](/pt/docs/configuration-resources#tipos-de-recurso)). O mesmo `config()` define `locale`, que escolhe os padrões de hifenização do espanhol (compuer-tas no verso) e a língua que o PDF declara.
 
 ### 5 · Repassar os mesmos bytes
 
 <Excerpt region="handoff" />
 
-O link oferece os `bytes` a partir dos quais as páginas foram diagramadas, 132 KB com as fontes. Importado no Sandbox (*Livros → Novo → Abrir um arquivo .postext…*), o arquivo vira um livro em espanhol ou inglês com a roda como imagem, tirada de `thumbnail`. O PDF pega as fontes de `bundleFontProvider`, que devolve a fonte do pacote mais próxima em peso, no mesmo estilo quando houver, e os desenhos de `bundleResourceBytes`, então nenhuma fonte ou imagem é baixada duas vezes ([diagramar e renderizar um pacote](/pt/docs/configuration#diagramar-e-renderizar-um-pacote)).
+O link oferece os `bytes` a partir dos quais as páginas foram diagramadas, 132 KB com as fontes. Importado no Sandbox (*Livros → Novo → Abrir um arquivo .postext…*), o arquivo vira um livro em espanhol ou inglês com a roda como imagem, tirada de `thumbnail`. O PDF pega as fontes de `bundleFontProvider`, que devolve a fonte do pacote mais próxima em peso, no mesmo estilo quando houver, e os desenhos de `bundleResourceBytes`, então nenhuma fonte ou imagem é baixada duas vezes ([diagramar e renderizar um pacote](/pt/docs/configuration-programmatic-usage#diagramar-e-renderizar-um-pacote)).
 
 ### 6 · Desenhar a frente com um só título
 
@@ -72,4 +72,4 @@ Sem os tipos, quem abre o arquivo os monta na língua dele com a numeração pad
 
 ## Erros comuns
 
-- Aqui cada edição é um arquivo próprio. Para levar as duas línguas num só, passe a `createBundle` um mapa `localized` ([Pacotes bilíngues](/pt/docs/configuration#pacotes-bilíngues)); `openBundle(bytes, { locale })` então lê qualquer uma das duas edições.
+- Aqui cada edição é um arquivo próprio. Para levar as duas línguas num só, passe a `createBundle` um mapa `localized` ([Pacotes bilíngues](/pt/docs/configuration-programmatic-usage#pacotes-bilíngues)); `openBundle(bytes, { locale })` então lê qualquer uma das duas edições.

@@ -16,7 +16,7 @@ Duas páginas de um artigo de pesquisa numa revista inventada de estudos editori
 
 ### 1 · O estilo, e o seu modelo para obras ocidentais
 
-O código está na [resposta curta](#a-resposta-curta), mais acima. O motor de citações é registrado uma vez, antes da primeira composição, e o `postext-citeproc` traz os três estilos da GB/T 7714: numérico, autor-data e de notas ([Citações](/pt/docs/configuration#citações-1)). No texto, uma citação é uma chave entre colchetes. `[@tinker1963]` imprime um [1] sobrescrito, e `[@rayner2016; @dyson2001; @lin2023]` imprime [2–4]. Dois números seguidos continuam como lista, [5,6]. Uma obra citada de novo mantém o primeiro número: [4] no terceiro parágrafo, e [1] e [2] mais adiante no artigo.
+O código está na [resposta curta](#a-resposta-curta), mais acima. O motor de citações é registrado uma vez, antes da primeira composição, e o `postext-citeproc` traz os três estilos da GB/T 7714: numérico, autor-data e de notas ([Citações](/pt/docs/configuration-notes-references#citações)). No texto, uma citação é uma chave entre colchetes. `[@tinker1963]` imprime um [1] sobrescrito, e `[@rayner2016; @dyson2001; @lin2023]` imprime [2–4]. Dois números seguidos continuam como lista, [5,6]. Uma obra citada de novo mantém o primeiro número: [4] no terceiro parágrafo, e [1] e [2] mais adiante no artigo.
 
 A norma pede “et al.” depois dos três primeiros autores de uma obra ocidental e 等 depois dos de uma chinesa. O arquivo CSL incluído tem dois modelos para isso, um deles para obras em inglês, e cada entrada tira o seu do próprio campo `language`: Rayner e quatro coautores viram “RAYNER K, SCHOTTER E R, MASSON M E J, et al.”, e 林岚 e três coautores viram “林岚, 周明远, 陈思齐, 等”. `locale: 'zh-CN'` escreve em chinês as demais palavras da lista.
 
@@ -30,13 +30,13 @@ As obras ficam num bloco `:::references{format=csl-yaml}` no fim do Markdown, no
 
 <Excerpt region="masthead" />
 
-O bloco de título é o design do H1, um estilo de título que ocupa as duas colunas. A faixa é uma caixa ancorada ao refile, e o nome da revista fica sobre ela em branco. O título, os autores e as filiações vêm do título e dos seus atributos, cada um posicionado embaixo do anterior (`#title`, `below`), então um título de três linhas empurra o resto para baixo ([Largura e design avançado](/pt/docs/configuration#largura-e-design-avançado)).
+O bloco de título é o design do H1, um estilo de título que ocupa as duas colunas. A faixa é uma caixa ancorada ao refile, e o nome da revista fica sobre ela em branco. O título, os autores e as filiações vêm do título e dos seus atributos, cada um posicionado embaixo do anterior (`#title`, `below`), então um título de três linhas empurra o resto para baixo ([Largura e design avançado](/pt/docs/configuration-text#largura-e-design-avançado)).
 
 ### 4 · O resumo e os seus rótulos
 
 <Excerpt region="abstract" />
 
-O resumo é um boxe na largura da página, recuado dois caracteres de cada lado. Os rótulos são chips: `:chip[摘　要：]{style="label"}` compõe a palavra em Hei negrito, no anil da revista, sem caixa ([Estilos de chip](/pt/docs/configuration#estilos-de-chip)). As revistas chinesas costumam compor o resumo em 楷体; esta o mantém em Song, pelo motivo explicado em “Erros comuns”.
+O resumo é um boxe na largura da página, recuado dois caracteres de cada lado. Os rótulos são chips: `:chip[摘　要：]{style="label"}` compõe a palavra em Hei negrito, no anil da revista, sem caixa ([Estilos de chip](/pt/docs/configuration-styles#estilos-de-chip)). As revistas chinesas costumam compor o resumo em 楷体; esta o mantém em Song, pelo motivo explicado em “Erros comuns”.
 
 <Excerpt region="palette" />
 

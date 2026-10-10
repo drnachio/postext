@@ -30,25 +30,25 @@ The dedication above *The Windhover* and the place and date under each poem are 
 
 <Excerpt region="poem-head" />
 
-Instead of its text, the heading prints a design in the column. In that design, `{number}` is the count as `numberingTemplate: '{1:I}'` formats it, I to IV, and `{titleText}` is the title ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The level has no bottom margin, and `minHeight` makes every head six grid lines deep (31.75 mm). The numeral and a one-line title fill four of them, and a title that wraps fills five, so every poem starts on the same line of its page. On <PageRef page={6}>page 6</PageRef> that line holds the dedication. Parity `'any'` breaks to the next page, recto or verso, so there are no blank pages between the poems.
+Instead of its text, the heading prints a design in the column. In that design, `{number}` is the count as `numberingTemplate: '{1:I}'` formats it, I to IV, and `{titleText}` is the title ([span and advanced design](/en/docs/configuration-text#span-and-advanced-design)). The level has no bottom margin, and `minHeight` makes every head six grid lines deep (31.75 mm). The numeral and a one-line title fill four of them, and a title that wraps fills five, so every poem starts on the same line of its page. On <PageRef page={6}>page 6</PageRef> that line holds the dedication. Parity `'any'` breaks to the next page, recto or verso, so there are no blank pages between the poems.
 
 ### 4 · The front matter is made of headings
 
 <Excerpt region="front" />
 
-A heading style can break to a new page and draw a design there, so the half-title, the frontispiece and the title page are one heading each, with a style of its own. `numbered: false` keeps them out of the count, and the first poem is still I. `toc: false` keeps them out of the contents, and an empty footer leaves their pages without a folio ([heading styles](/en/docs/configuration#heading-styles)). The styles span the page because the foot of the text block cuts a design kept in the column, which would crop the full-bleed plate there and lose its caption. The caption comes from the heading's `caption` attribute; the author, title and subtitle on the title page come from the frontmatter.
+A heading style can break to a new page and draw a design there, so the half-title, the frontispiece and the title page are one heading each, with a style of its own. `numbered: false` keeps them out of the count, and the first poem is still I. `toc: false` keeps them out of the contents, and an empty footer leaves their pages without a folio ([heading styles](/en/docs/configuration-styles#heading-styles)). The styles span the page because the foot of the text block cuts a design kept in the column, which would crop the full-bleed plate there and lose its caption. The caption comes from the heading's `caption` attribute; the author, title and subtitle on the title page come from the frontmatter.
 
 ### 5 · The contents fill themselves in
 
 <Excerpt region="contents" />
 
-`:::toc` lists every heading whose style lets it in, with the numeral from the same template and the label of the page where the heading lands. The build lays the book out again until those page labels stop changing ([table of contents](/en/docs/configuration#table-of-contents)). The page's own heading, Contents, has a style with `numbered: false`; without it, Contents would be poem I. The leader `'. '` puts a space after each dot. The dots are right-aligned, so they line up from one entry to the next, and they print in the page numbers' face and colour because `toc.leader` has no colour setting.
+`:::toc` lists every heading whose style lets it in, with the numeral from the same template and the label of the page where the heading lands. The build lays the book out again until those page labels stop changing ([table of contents](/en/docs/configuration-notes-references#table-of-contents)). The page's own heading, Contents, has a style with `numbered: false`; without it, Contents would be poem I. The leader `'. '` puts a space after each dot. The dots are right-aligned, so they line up from one entry to the next, and they print in the page numbers' face and colour because `toc.leader` has no colour setting.
 
 ### 6 · An ornament is a resource type with no label
 
 <Excerpt region="ornament" />
 
-A picture in the text is a resource, and every resource has a type. The ornament type has an empty caption prefix and the sprig has no caption, so no label such as "Figure 1" prints under it ([resource types](/en/docs/configuration#resource-types)). The type's `defaultPlacement` puts the sprig where `::resource{id="sprig"}` stands, centred and a fifth of the measure wide, so the tailpiece under *Inversnaid* takes one line of Markdown. `resourceTypes` replaces the default list, so this book has no Figure or Table type. To keep them, spread `defaultResourceTypes()` in front of the ornament.
+A picture in the text is a resource, and every resource has a type. The ornament type has an empty caption prefix and the sprig has no caption, so no label such as "Figure 1" prints under it ([resource types](/en/docs/configuration-resources#resource-types)). The type's `defaultPlacement` puts the sprig where `::resource{id="sprig"}` stands, centred and a fifth of the measure wide, so the tailpiece under *Inversnaid* takes one line of Markdown. `resourceTypes` replaces the default list, so this book has no Figure or Table type. To keep them, spread `defaultResourceTypes()` in front of the ornament.
 
 ## Variations
 

@@ -16,7 +16,7 @@ Cuatro páginas de una edición 四六判 de *Juegos de niños* (たけくらべ
 
 ### 1 · Reúne las notas del pliego en el corte de la página izquierda
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. `footnotes.placement: 'spread'` compone las notas citadas en las páginas 2 y 3 al final del texto de la página 3, que en un libro encuadernado por la derecha es su corte delantero, y `numbering: 'spread'` empieza en （1） las notas de cada pliego ([Notas al pie](/es/docs/configuration#notas-al-pie)). Una nota citada en la página derecha espera a la izquierda; si las notas dejaran a la página izquierda menos de una línea de texto, las que sobran se quedan al pie de la página derecha, como permite JLReq. Un documento `ja` ya compone las llamadas de un libro vertical como `（{n}）` a la derecha de la línea, a 0,7 em y con las cifras derechas, no tumbadas: las dos líneas escritas aquí lo muestran. `numberGap: 'em'` deja un carácter entero de nota tras el número y `hangingIndent: em(2)` alinea las líneas siguientes detrás de él.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `footnotes.placement: 'spread'` compone las notas citadas en las páginas 2 y 3 al final del texto de la página 3, que en un libro encuadernado por la derecha es su corte delantero, y `numbering: 'spread'` empieza en （1） las notas de cada pliego ([Notas al pie](/es/docs/configuration-notes-references#notas-al-pie)). Una nota citada en la página derecha espera a la izquierda; si las notas dejaran a la página izquierda menos de una línea de texto, las que sobran se quedan al pie de la página derecha, como permite JLReq. Un documento `ja` ya compone las llamadas de un libro vertical como `（{n}）` a la derecha de la línea, a 0,7 em y con las cifras derechas, no tumbadas: las dos líneas escritas aquí lo muestran. `numberGap: 'em'` deja un carácter entero de nota tras el número y `hangingIndent: em(2)` alinea las líneas siguientes detrás de él.
 
 ### 2 · Escribe las llamadas donde las pone el japonés
 
@@ -24,7 +24,7 @@ El Markdown escribe `見返り柳[^1]` tras la palabra que explica la nota, y la
 
 ### 3 · Conserva las marcas de sésamo del original
 
-`cjk.emphasisMark` decide qué imprimen `*…*` y `:dots[…]` en este libro: puntos de sésamo, a la derecha de una línea vertical. Un documento `ja` ya los usa; escritos, activan el kenten en la lista de funciones. El texto de Aozora marca ぎつちよんちよん con 傍点, y `aozora.py` lo escribió `:dots[ぎつちよんちよん]{style=sesame}`; los libros chinos ponen los puntos debajo de la línea ([Marcas, ruby y warichu](/es/docs/configuration#marcas-ruby-y-warichu)).
+`cjk.emphasisMark` decide qué imprimen `*…*` y `:dots[…]` en este libro: puntos de sésamo, a la derecha de una línea vertical. Un documento `ja` ya los usa; escritos, activan el kenten en la lista de funciones. El texto de Aozora marca ぎつちよんちよん con 傍点, y `aozora.py` lo escribió `:dots[ぎつちよんちよん]{style=sesame}`; los libros chinos ponen los puntos debajo de la línea ([Marcas, ruby y warichu](/es/docs/configuration-east-asian#marcas-ruby-y-warichu)).
 
 ### 4 · Abre en un pliego
 

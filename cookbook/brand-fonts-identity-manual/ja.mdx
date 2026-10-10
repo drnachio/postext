@@ -18,13 +18,13 @@ pageNotes: { "1": "表紙。黒いコンデンス体の大文字と小文字で1
 
 <Excerpt region="build" />
 
-レイアウトはすべての語を`document.fonts`にある書体で計測します。そのため[手短な答え](#手短な答え)の`loadBrandFonts()`は、各ファイルを一度だけ取得してバイト列を保持し、そのバイト列から作った`FontFace`を`buildDocument`の実行前に登録します。キットの`kitFonts`はFontsourceからしか取得しませんが、ブランドは自社のサーバーでファイルを配信しています。`renderToPdf`はページが描く書体だけを要求し、`brandFontProvider`は取得済みのバイト列で各要求に答えます。ブランドにないウェイトやイタリックを求められたら、同じファミリーで最も近いファイルを返します（[なぜフォントプロバイダーが必要か](/ja/docs/configuration#なぜフォントプロバイダーが必要か)）。PDFにはCanvasが計測した6ファイルが、それぞれ一度だけ埋め込まれます。
+レイアウトはすべての語を`document.fonts`にある書体で計測します。そのため[手短な答え](#手短な答え)の`loadBrandFonts()`は、各ファイルを一度だけ取得してバイト列を保持し、そのバイト列から作った`FontFace`を`buildDocument`の実行前に登録します。キットの`kitFonts`はFontsourceからしか取得しませんが、ブランドは自社のサーバーでファイルを配信しています。`renderToPdf`はページが描く書体だけを要求し、`brandFontProvider`は取得済みのバイト列で各要求に答えます。ブランドにないウェイトやイタリックを求められたら、同じファミリーで最も近いファイルを返します（[なぜフォントプロバイダーが必要か](/ja/docs/configuration-programmatic-usage#なぜフォントプロバイダーが必要か)）。PDFにはCanvasが計測した6ファイルが、それぞれ一度だけ埋め込まれます。
 
 ### 2 · 色の体系は1つのリスト
 
 <Excerpt region="colours" />
 
-パレットと表1.1は同じ9行から作られるので、ページで使わない値が表に載ることはありません。`setCellBackground`は各行の空いた1列目のセルをその行の色で塗り、パレットにリンクします。本文では`:swatch{color="line-2"}`がパレットのidを受け取り、テキストの色で縁取った正方形を描きます。`main-color`にはInkの16進値が入っているので、既定でこれにリンクしている見出しや太字・イタリックの文字列は、エンジンの青ではなくInkで印刷されます。`bodyText.referenceColor: col('ink')`は参照の色もInkと明記します（[カラーパレット](/ja/docs/configuration#カラーパレット)）。
+パレットと表1.1は同じ9行から作られるので、ページで使わない値が表に載ることはありません。`setCellBackground`は各行の空いた1列目のセルをその行の色で塗り、パレットにリンクします。本文では`:swatch{color="line-2"}`がパレットのidを受け取り、テキストの色で縁取った正方形を描きます。`main-color`にはInkの16進値が入っているので、既定でこれにリンクしている見出しや太字・イタリックの文字列は、エンジンの青ではなくInkで印刷されます。`bodyText.referenceColor: col('ink')`は参照の色もInkと明記します（[カラーパレット](/ja/docs/configuration-fonts-colors-viewers#カラーパレット)）。
 
 ### 3 · 扉は1つ、路線の色は3つ
 
@@ -36,13 +36,13 @@ pageNotes: { "1": "表紙。黒いコンデンス体の大文字と小文字で1
 
 <Excerpt region="do-dont" />
 
-リソースの種類には部分的な`captionStyle`を持たせることができます。この2つが設定するのはラベルの色だけで、DoはSignal green、Don'tはSignal redです（[リソースの種類](/ja/docs/configuration#リソースの種類)）。2つのシグナル色は白地に対して5.1:1と5.5:1に達しますが、路線1、2、3、5の色は小さな文字に必要な4.5:1に届きません。どちらの図も`position: 'bottom'`でフロートし、見出しDrawing the mapの直後の同じ段落で引用されます。そのため2点は4ページの地を分け合い、Doが左の段、Don'tが右の段に入ります。
+リソースの種類には部分的な`captionStyle`を持たせることができます。この2つが設定するのはラベルの色だけで、DoはSignal green、Don'tはSignal redです（[リソースの種類](/ja/docs/configuration-resources#リソースの種類)）。2つのシグナル色は白地に対して5.1:1と5.5:1に達しますが、路線1、2、3、5の色は小さな文字に必要な4.5:1に届きません。どちらの図も`position: 'bottom'`でフロートし、見出しDrawing the mapの直後の同じ段落で引用されます。そのため2点は4ページの地を分け合い、Doが左の段、Don'tが右の段に入ります。
 
 ### 5 · バンドルには共有してよいフォントを収める
 
 <Excerpt region="bundle" />
 
-`createBundle`は`config.customFonts`を読み、各バリアントのバイト列を`fileId`をもとに`files`から探して`fonts/`の下に書き込み、マニフェストに`fonts`項目を加えます。ディスプレイ書体のファミリーには`redistributable: false`が付いています。これはファイルを他者に渡すことを禁じるライセンスの代役です（Big Shoulders Display自体はOFLです）。そのファイルはバンドルに入らず、`warnings`がファミリー名を挙げます。81 KBのファイルには、章、設定、3点の図、5つのフォントファイルが収まります。レイアウトは`customFonts`を読まないので、これがなくてもページは同じに仕上がります（[バンドルを作成する](/ja/docs/configuration#バンドルを作成する)）。
+`createBundle`は`config.customFonts`を読み、各バリアントのバイト列を`fileId`をもとに`files`から探して`fonts/`の下に書き込み、マニフェストに`fonts`項目を加えます。ディスプレイ書体のファミリーには`redistributable: false`が付いています。これはファイルを他者に渡すことを禁じるライセンスの代役です（Big Shoulders Display自体はOFLです）。そのファイルはバンドルに入らず、`warnings`がファミリー名を挙げます。81 KBのファイルには、章、設定、3点の図、5つのフォントファイルが収まります。レイアウトは`customFonts`を読まないので、これがなくてもページは同じに仕上がります（[バンドルを作成する](/ja/docs/configuration-programmatic-usage#バンドルを作成する)）。
 
 ## アレンジ
 

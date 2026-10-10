@@ -16,7 +16,7 @@ pageNotes: { "1": "The Corrington Despatchの第1面。題字を天気と潮汐�
 
 ### 1 · ブランケット判に6段
 
-この手順のコードは上の[手短な答え](#手短な答え)です。`page.sizePreset: 'broadsheet'`で375 × 597 mmの判型になり、`layoutType: 'multiple'`と`columnCount: 6`で幅351 mmの版面を等幅の6段に分けます（[レイアウトの種類](/ja/docs/configuration#レイアウトの種類)）。1段は(351 − 5 × 4) / 6 = 55.2 mmで、9 ptのNewsreaderなら約38字。そのため本文にはハイフネーションが要り、`minWordSpacing: 0.8`で語間が詰まりすぎないようにし、`maxJustifyTracking: 15`で間延びした行のすき間を字間に配ります。段間罫は各段間に0.4 ptの細線を引き、段をまたぐフロートや囲みのところで途切れます。postext 1.17までは本文は2段が上限で、そのため<RecipeLink slug="newspaper-front-page">No. 027</RecipeLink>は4段の短信を囲みの中に入れていました。
+この手順のコードは上の[手短な答え](#手短な答え)です。`page.sizePreset: 'broadsheet'`で375 × 597 mmの判型になり、`layoutType: 'multiple'`と`columnCount: 6`で幅351 mmの版面を等幅の6段に分けます（[レイアウトの種類](/ja/docs/configuration-page-layout#レイアウトの種類)）。1段は(351 − 5 × 4) / 6 = 55.2 mmで、9 ptのNewsreaderなら約38字。そのため本文にはハイフネーションが要り、`minWordSpacing: 0.8`で語間が詰まりすぎないようにし、`maxJustifyTracking: 15`で間延びした行のすき間を字間に配ります。段間罫は各段間に0.4 ptの細線を引き、段をまたぐフロートや囲みのところで途切れます。postext 1.17までは本文は2段が上限で、そのため<RecipeLink slug="newspaper-front-page">No. 027</RecipeLink>は4段の短信を囲みの中に入れていました。
 
 ### 2 · k段にまたがるフロートは最初の空き段の並びに入る
 

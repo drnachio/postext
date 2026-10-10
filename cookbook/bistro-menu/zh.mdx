@@ -16,7 +16,7 @@ pageNotes: { "1": "菜单正面，米色纸：酒红与稻草色相间的遮阳�
 
 ### 1 · 在价格的位置设一个制表位
 
-代码见上文的[简短回答](#简短回答)。每个菜类是一个`:::paragraphs{style="dish"}`组，一道菜一个段落（[段落样式](/zh/docs/configuration#段落样式)）。菜品样式只有一个制表位，位于`'end'`即行长末端，并设`align: 'end'`：制表符之后的文字止于这个制表位。所以在配菜和标识之后写`:tab **7**`，无论菜名多长，价格都会靠右页边距排齐（[制表符与制表位](/zh/docs/document-format#制表符与制表位)）。`:tab`会并入它两侧的空格；行末的反斜杠是强制换行，所以斜体译文另起同一段落的第二行，价格留在第一行。`spaceBetween`在两道菜之间留出半行，所以每道菜占14.5 pt行距的两行半。`indent`和`endIndent`各为四分之一行，让菜品与背面酒单单元格中的文字对齐。含制表符的段落逐行排版；这里的每一行本来就是不齐行的。
+代码见上文的[简短回答](#简短回答)。每个菜类是一个`:::paragraphs{style="dish"}`组，一道菜一个段落（[段落样式](/zh/docs/configuration-styles#段落样式)）。菜品样式只有一个制表位，位于`'end'`即行长末端，并设`align: 'end'`：制表符之后的文字止于这个制表位。所以在配菜和标识之后写`:tab **7**`，无论菜名多长，价格都会靠右页边距排齐（[制表符与制表位](/zh/docs/document-format#制表符与制表位)）。`:tab`会并入它两侧的空格；行末的反斜杠是强制换行，所以斜体译文另起同一段落的第二行，价格留在第一行。`spaceBetween`在两道菜之间留出半行，所以每道菜占14.5 pt行距的两行半。`indent`和`endIndent`各为四分之一行，让菜品与背面酒单单元格中的文字对齐。含制表符的段落逐行排版；这里的每一行本来就是不齐行的。
 
 ### 2 · 一种资源类型，就地放置，从不编号
 
@@ -28,19 +28,19 @@ pageNotes: { "1": "菜单正面，米色纸：酒红与稻草色相间的遮阳�
 
 <Excerpt region="wines" />
 
-酒单仍是表格：两种价格分列在各自的表头12 cl和75 cl之下，而一行制表位无法给它们配上表头。`parseTSV(tsv, { headerRows: 1 })`把第一行读作表头行，所以Appellation · cépage、12 cl和75 cl用表头字体Josefin Sans印在各自的列上方。只有一个字段的行表示产区名。它的单元格成为居中的表头单元格，`mergeCells`把它横跨三列展开，并把它覆盖的两个单元格标为`hiddenBy`（[构建表格模型](/zh/docs/configuration#构建表格模型)）。如果只在第一列居中，BLANCS会比La Cave和Le Comptoir居中的轴线偏左22.6 mm。TSV中的空行会变成一行空单元格，高一行半，这一行就是Blancs和Rouges上方的空隙。
+酒单仍是表格：两种价格分列在各自的表头12 cl和75 cl之下，而一行制表位无法给它们配上表头。`parseTSV(tsv, { headerRows: 1 })`把第一行读作表头行，所以Appellation · cépage、12 cl和75 cl用表头字体Josefin Sans印在各自的列上方。只有一个字段的行表示产区名。它的单元格成为居中的表头单元格，`mergeCells`把它横跨三列展开，并把它覆盖的两个单元格标为`hiddenBy`（[构建表格模型](/zh/docs/configuration-resources#构建表格模型)）。如果只在第一列居中，BLANCS会比La Cave和Le Comptoir居中的轴线偏左22.6 mm。TSV中的空行会变成一行空单元格，高一行半，这一行就是Blancs和Rouges上方的空隙。
 
 ### 4 · 在菜类标题两侧各挂一条线
 
 <Excerpt region="heads" />
 
-菜类标题是栏内的一个版面设计。`{titleText}`元素不设宽度，所以它的框和大写字母一样宽，`'top'`锚点让它在栏中居中。每条线用`'left-of'`或`'right-of'`挂在标题的一侧，并一直填到栏的边缘（[元素定位](/zh/docs/configuration#元素定位)），所以PLATS两侧的线长66.7 mm，LE COMPTOIR两侧的线长56.2 mm，与字母都相距4 mm。标题的`lineHeight`是倍数0.96，使它的框高14.4 pt，保持在一条14.5 pt的网格线之内。设为1时框高15 pt，每个标题占两行，菜单会排到四页。
+菜类标题是栏内的一个版面设计。`{titleText}`元素不设宽度，所以它的框和大写字母一样宽，`'top'`锚点让它在栏中居中。每条线用`'left-of'`或`'right-of'`挂在标题的一侧，并一直填到栏的边缘（[元素定位](/zh/docs/configuration-page-layout#元素定位)），所以PLATS两侧的线长66.7 mm，LE COMPTOIR两侧的线长56.2 mm，与字母都相距4 mm。标题的`lineHeight`是倍数0.96，使它的框高14.4 pt，保持在一条14.5 pt的网格线之内。设为1时框高15 pt，每个标题占两行，菜单会排到四页。
 
 ### 5 · 标识用行内标签，小字用段落样式
 
 <Excerpt region="badges" />
 
-行内标签在行内给一段文字加框（[行内标签样式](/zh/docs/configuration#行内标签样式)），所以在配菜后面输入`:chip[V]{style="veg"}`，圆标就会出现在菜的法文行上，位于制表符之前。行内标签样式设了`bold: true`，因为行内标签沿用周围文字的字重，跟在配菜后面就是400，而`FONTS`只加载了700字重的Josefin Sans。甜点下的说明和背面的版权说明是9 pt和7.5 pt的`:::paragraphs`块，两种样式都带一行的`marginTop`（[段落样式](/zh/docs/configuration#段落样式)）。没有这个外边距，说明会紧接在奶酪拼盘英文行的下一行开始，看起来像是那道菜的一部分。
+行内标签在行内给一段文字加框（[行内标签样式](/zh/docs/configuration-styles#行内标签样式)），所以在配菜后面输入`:chip[V]{style="veg"}`，圆标就会出现在菜的法文行上，位于制表符之前。行内标签样式设了`bold: true`，因为行内标签沿用周围文字的字重，跟在配菜后面就是400，而`FONTS`只加载了700字重的Josefin Sans。甜点下的说明和背面的版权说明是9 pt和7.5 pt的`:::paragraphs`块，两种样式都带一行的`marginTop`（[段落样式](/zh/docs/configuration-styles#段落样式)）。没有这个外边距，说明会紧接在奶酪拼盘英文行的下一行开始，看起来像是那道菜的一部分。
 
 ### 6 · 让整张菜单沿一条轴线居中
 

@@ -16,7 +16,7 @@ Um livro ilustrado de dez páginas, かみの ふね (*O barco de papel*), escri
 
 ### 1 · Mantenha cada frase inteira
 
-O código está na [resposta curta](#a-resposta-curta), mais acima. O texto japonês pode quebrar entre dois kana quaisquer, então um espaço entre frases só acrescenta respiro; sozinho, não impede que uma linha termine dentro de あか|い. `cjk.wordBreak: 'keep-all'` mantém apenas as quebras num espaço e junto da pontuação, depois de 、。」 ou antes de 「, como faz o `word-break: keep-all` do CSS, e as regras de kinsoku continuam valendo ([Tipografia do Leste Asiático](/pt/docs/configuration#tipografia-do-leste-asiático)). O espaço é um U+0020 comum, de 0,35 em na Klee One, e a linha o descarta quando ele cai no fim. Um U+3000 também separa frases, mas é um caractere fixo de um eme de largura, que fica no fim da linha.
+O código está na [resposta curta](#a-resposta-curta), mais acima. O texto japonês pode quebrar entre dois kana quaisquer, então um espaço entre frases só acrescenta respiro; sozinho, não impede que uma linha termine dentro de あか|い. `cjk.wordBreak: 'keep-all'` mantém apenas as quebras num espaço e junto da pontuação, depois de 、。」 ou antes de 「, como faz o `word-break: keep-all` do CSS, e as regras de kinsoku continuam valendo ([Tipografia do Leste Asiático](/pt/docs/configuration-east-asian#tipografia-do-leste-asiático)). O espaço é um U+0020 comum, de 0,35 em na Klee One, e a linha o descarta quando ele cai no fim. Um U+3000 também separa frases, mas é um caractere fixo de um eme de largura, que fica no fim da linha.
 
 <PageShot page={3} crop="0.45,0.52,0.55,0.48" caption="Página 3: oito linhas, cada uma terminando num espaço ou depois de 」 e 、: 「いって / らっしゃい。」 / みいちゃんが / そっと てを…" />
 
@@ -26,7 +26,7 @@ O texto é alinhado sem justificação. Justificada, uma linha curta esticaria o
 
 <Excerpt region="layout" />
 
-No texto vertical, `'left'` é o alto da página, então uma diagramação de coluna e meia com a coluna lateral à esquerda vira duas faixas: as imagens flutuam na de cima (14 caracteres de altura) e o texto corre na de baixo (8 caracteres). Cada página cita a sua imagem com `::resource{id="…"}` e termina com `:::pagebreak`. O tipo de recurso das imagens não tem prefixo de legenda, e as imagens são 2,186 vezes mais largas do que altas, o formato da faixa, então cada uma a preenche ([escrita vertical](/pt/docs/configuration#escrita-vertical)).
+No texto vertical, `'left'` é o alto da página, então uma diagramação de coluna e meia com a coluna lateral à esquerda vira duas faixas: as imagens flutuam na de cima (14 caracteres de altura) e o texto corre na de baixo (8 caracteres). Cada página cita a sua imagem com `::resource{id="…"}` e termina com `:::pagebreak`. O tipo de recurso das imagens não tem prefixo de legenda, e as imagens são 2,186 vezes mais largas do que altas, o formato da faixa, então cada uma a preenche ([escrita vertical](/pt/docs/configuration-page-layout#escrita-vertical)).
 
 ### 3 · Faça da capa uma imagem de página inteira
 
@@ -38,7 +38,7 @@ A capa é um design de título na largura da página: a imagem é ancorada à sa
 
 <Excerpt region="pictures" />
 
-As dez imagens são pinturas, arquivos JPEG em `assets/` da receita. As nove cenas são cortadas no formato da faixa, 612 : 280, e a capa no da página, 260 : 200, então cada uma preenche o seu quadro e nada é cortado. Cada uma é um recurso `bitmap` declarado com o seu tamanho em pixels, com texto alternativo no idioma do livro, e o arquivo é carregado com o `fileId` do recurso antes da composição. Com 1.400 px de largura, as cenas saem impressas a cerca de 165 dpi ao longo da faixa ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)).
+As dez imagens são pinturas, arquivos JPEG em `assets/` da receita. As nove cenas são cortadas no formato da faixa, 612 : 280, e a capa no da página, 260 : 200, então cada uma preenche o seu quadro e nada é cortado. Cada uma é um recurso `bitmap` declarado com o seu tamanho em pixels, com texto alternativo no idioma do livro, e o arquivo é carregado com o `fileId` do recurso antes da composição. Com 1.400 px de largura, as cenas saem impressas a cerca de 165 dpi ao longo da faixa ([tipos de recurso](/pt/docs/configuration-resources#tipos-de-recurso)).
 
 ## Variações
 

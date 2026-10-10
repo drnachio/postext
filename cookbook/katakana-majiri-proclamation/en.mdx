@@ -16,7 +16,7 @@ An eight-page reprint of the Meiji Constitution as the Official Gazette (官報)
 
 ### 1 · Let a list counter write 第十八條
 
-The code is [the short answer](#the-short-answer) above. Each article is an item of a Markdown ordered list, and `orderedLists` turns its number into the Gazette's form: `numberFormat: 'japanese-informal'` writes 十八, not 一十八, `prefix: '第'` and `separator: '條'` wrap it, and `gap: em(1)` leaves the full-width space of the original. With `hangingIndent: false` the turnover lines go back to the head of the line instead of hanging under the text, as in the Gazette. Chapter two starts its list at `18.`, so the counter runs on across the chapters, and the chapters themselves are numbered 第一章 and 第二章 by the heading template `第{2:一}章`, the same counter style ([ordered lists](/en/docs/configuration#ordered-lists)).
+The code is [the short answer](#the-short-answer) above. Each article is an item of a Markdown ordered list, and `orderedLists` turns its number into the Gazette's form: `numberFormat: 'japanese-informal'` writes 十八, not 一十八, `prefix: '第'` and `separator: '條'` wrap it, and `gap: em(1)` leaves the full-width space of the original. With `hangingIndent: false` the turnover lines go back to the head of the line instead of hanging under the text, as in the Gazette. Chapter two starts its list at `18.`, so the counter runs on across the chapters, and the chapters themselves are numbered 第一章 and 第二章 by the heading template `第{2:一}章`, the same counter style ([ordered lists](/en/docs/configuration-text#ordered-lists)).
 
 <PageShot page={5} crop="0.1,0.12,0.8,0.76" caption="Page 5: 第一章　天皇 two characters down, articles 第一條 to 第八條 in bold, the second clause of article 8 one character down." />
 

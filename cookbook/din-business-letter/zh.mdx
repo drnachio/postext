@@ -18,7 +18,7 @@ Fensterwerkstatt Tessin是柏林一家虚构的作坊，专门修复箱式窗。
 
 <Excerpt region="answer" highlight="1-4" />
 
-`at()`用元素的左上角把它锚定到`'page'`，也就是成品尺寸框（[元素定位](/zh/docs/configuration#元素定位)），所以每个`x`和`y`都是到纸张角点的距离，标准里的数字可以原样填入：收信地址横向25 mm、纵向62.7 mm，信息栏的第一个标签在125和50处。这些元素构成H1的版面设计。标题的文字是事由（`{titleText}`），标题属性保存收信地址和各项编号，于是配置管信纸，Markdown管信的内容。事由位于100.6 mm处，是最低的元素，所以标题把纸面一直预留到事由的底部。`marginBottom`加上两个空行，称呼从下一个网格行开始，位于117 mm处。
+`at()`用元素的左上角把它锚定到`'page'`，也就是成品尺寸框（[元素定位](/zh/docs/configuration-page-layout#元素定位)），所以每个`x`和`y`都是到纸张角点的距离，标准里的数字可以原样填入：收信地址横向25 mm、纵向62.7 mm，信息栏的第一个标签在125和50处。这些元素构成H1的版面设计。标题的文字是事由（`{titleText}`），标题属性保存收信地址和各项编号，于是配置管信纸，Markdown管信的内容。事由位于100.6 mm处，是最低的元素，所以标题把纸面一直预留到事由的底部。`marginBottom`加上两个空行，称呼从下一个网格行开始，位于117 mm处。
 
 收信地址是一个属性，各行之间用`\n`分隔，每个`\n`都在设计文本里另起一行。标题留在正文栏内，它的版面设计照样把色带、标志和名称画在27 mm的上页边距之上，因为每个元素都固定在页面上。
 
@@ -32,19 +32,19 @@ Fensterwerkstatt Tessin是柏林一家虚构的作坊，专门修复箱式窗。
 
 <Excerpt region="letterhead" />
 
-色带是一个固定在纸张角上的框。`width: 'fill'`把它从一边拉到另一边，32 mm的高度使它越过27 mm的上页边距5 mm。标志是一个图像元素，把一个资源画成18 mm高，宽度由图形本身决定（[图像元素](/zh/docs/configuration#图像元素)）。名称用`'right-of'`挂在标志右侧，行业说明用`'below'`挂在名称下方。八条3 mm长的线在85 × 45 mm地址栏的每个角上画出一个角标，这个区域就是信封窗口露出的部分。
+色带是一个固定在纸张角上的框。`width: 'fill'`把它从一边拉到另一边，32 mm的高度使它越过27 mm的上页边距5 mm。标志是一个图像元素，把一个资源画成18 mm高，宽度由图形本身决定（[图像元素](/zh/docs/configuration-page-layout#图像元素)）。名称用`'right-of'`挂在标志右侧，行业说明用`'below'`挂在名称下方。八条3 mm长的线在85 × 45 mm地址栏的每个角上画出一个角标，这个区域就是信封窗口露出的部分。
 
 ### 4 · 把每页共有的内容放进页眉和页脚
 
 <Excerpt region="furniture" />
 
-H1版面设计中固定在事由下方的元素会增加标题预留的高度。如果把210 mm处的折叠标记放进版面设计，称呼就会降到222.8 mm，信会排成三页。页眉在每一页上绘制，不预留空间，所以三个标记放在那里（[页眉与页脚](/zh/docs/configuration#页眉与页脚)）。第1页以H1开始，因此是`'opener'`页，`pages: 'body'`把蓝条、编号行和`Seite {pageNumber} von {totalPages}`限制在后面的页上。编号行通过`{attr.unser-zeichen}`和`{attr.datum}`读取H1的属性。
+H1版面设计中固定在事由下方的元素会增加标题预留的高度。如果把210 mm处的折叠标记放进版面设计，称呼就会降到222.8 mm，信会排成三页。页眉在每一页上绘制，不预留空间，所以三个标记放在那里（[页眉与页脚](/zh/docs/configuration-page-layout#页眉与页脚)）。第1页以H1开始，因此是`'opener'`页，`pages: 'body'`把蓝条、编号行和`Seite {pageNumber} von {totalPages}`限制在后面的页上。编号行通过`{attr.unser-zeichen}`和`{attr.datum}`读取H1的属性。
 
 ### 5 · 把签名排进正文流
 
 <Excerpt region="signature" />
 
-`::resource{id="signature"}`把图形放在“Mit freundlichen Grüßen”下方，`width: 0.297`使它宽49 mm、高21.1 mm，略低于四个15 pt的行。正文流中资源之后的文字会回到正文的网格。设为`0.25`时，图形高17.8 mm，网格在它下方补上的3.4 mm把姓名推离了签名。这个资源类型的`captionPrefix`为空，而当前缀和题注都为空时，Postext不排题注，所以签名下方不会出现标签或编号（[资源类型](/zh/docs/configuration#资源类型)）。标志也是同一类型的资源，只由图像元素绘制。没有任何`:ref`或`::resource`引用它，所以它永远不会进入正文流。
+`::resource{id="signature"}`把图形放在“Mit freundlichen Grüßen”下方，`width: 0.297`使它宽49 mm、高21.1 mm，略低于四个15 pt的行。正文流中资源之后的文字会回到正文的网格。设为`0.25`时，图形高17.8 mm，网格在它下方补上的3.4 mm把姓名推离了签名。这个资源类型的`captionPrefix`为空，而当前缀和题注都为空时，Postext不排题注，所以签名下方不会出现标签或编号（[资源类型](/zh/docs/configuration-resources#资源类型)）。标志也是同一类型的资源，只由图像元素绘制。没有任何`:ref`或`::resource`引用它，所以它永远不会进入正文流。
 
 ## 常见问题
 

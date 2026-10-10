@@ -16,7 +16,7 @@ Cinco páginas del capítulo 3 de un libro japonés de programación inventado, 
 
 ### 1 · Las reglas japonesas vienen con la etiqueta
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. `locale: 'ja'` activa las reglas de JLReq, los *Requirements for Japanese Text Layout* del W3C, y los valores escritos bajo `cjk` son los que `'auto'` elige para el japonés ([Tipografía de Asia oriental](/es/docs/configuration#tipografía-de-asia-oriental)). Con `ja-very-strict`, ninguna línea empieza por ー, un kana pequeño, 々 o un signo de cierre, y ninguna acaba en un signo de apertura. La puntuación (約物, yakumono) conserva su cuadratín dentro de la línea, y dos signos que se juntan, como 」、, comparten uno. En la <PageRef page={1}>página 41</PageRef>, la línea que acaba en 実際に変換し、 saca su 、 más allá del margen derecho: es la ぶら下げ (burasage), y el motor solo la usa cuando, sin ella, tendría que pasar el signo a la línea siguiente. `latinSpacing` pone un cuarto de cuadratín (四分アキ, shibun aki) entre Unicode y では, y entre U+304C y を, aunque el Markdown no lleva espacio ahí.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `locale: 'ja'` activa las reglas de JLReq, los *Requirements for Japanese Text Layout* del W3C, y los valores escritos bajo `cjk` son los que `'auto'` elige para el japonés ([Tipografía de Asia oriental](/es/docs/configuration-east-asian#tipografía-de-asia-oriental)). Con `ja-very-strict`, ninguna línea empieza por ー, un kana pequeño, 々 o un signo de cierre, y ninguna acaba en un signo de apertura. La puntuación (約物, yakumono) conserva su cuadratín dentro de la línea, y dos signos que se juntan, como 」、, comparten uno. En la <PageRef page={1}>página 41</PageRef>, la línea que acaba en 実際に変換し、 saca su 、 más allá del margen derecho: es la ぶら下げ (burasage), y el motor solo la usa cuando, sin ella, tendría que pasar el signo a la línea siguiente. `latinSpacing` pone un cuarto de cuadratín (四分アキ, shibun aki) entre Unicode y では, y entre U+304C y を, aunque el Markdown no lleva espacio ahí.
 
 <PageShot page={1} crop="0.08,0.27,0.84,0.09" caption="Página 41: un cuarto de cuadratín alrededor de Unicode y Python, escritos sin espacio; el 、 del final de la segunda línea cuelga fuera de la medida." />
 
@@ -26,7 +26,7 @@ La diferencia con el chino está en los signos. Un libro chino del continente po
 
 <Excerpt region="listing" />
 
-La valla es un [bloque de código](/es/docs/document-format#bloques-de-código): Postext compone sus líneas tal como están escritas, en la letra que nombra `codeStyle`, dentro de un recuadro tintado bajo el título `normalize.py` que trae la línea de la valla ([listados de código](/es/docs/configuration#listados-de-código)). `highlight: 'none'` deja el listado en una sola tinta, como el resto de la página, y `codeStyle.inline` compone cada `` `nombre` `` en la misma letra, en verde azulado. La letra importa: la cadena del ejemplo, ｶﾞｲﾄﾞ ＡＢＣ ①, necesita katakana de medio ancho, letras de ancho completo y cifras en círculo, que una letra de código occidental no tiene. BIZ UDGothic compone el latín de medio ancho y el kana de ancho completo con paso fijo, y un listado cuenta cada carácter de ancho completo como dos celdas, así que las columnas se mantienen.
+La valla es un [bloque de código](/es/docs/document-format#bloques-de-código): Postext compone sus líneas tal como están escritas, en la letra que nombra `codeStyle`, dentro de un recuadro tintado bajo el título `normalize.py` que trae la línea de la valla ([listados de código](/es/docs/configuration-styles#listados-de-código)). `highlight: 'none'` deja el listado en una sola tinta, como el resto de la página, y `codeStyle.inline` compone cada `` `nombre` `` en la misma letra, en verde azulado. La letra importa: la cadena del ejemplo, ｶﾞｲﾄﾞ ＡＢＣ ①, necesita katakana de medio ancho, letras de ancho completo y cifras en círculo, que una letra de código occidental no tiene. BIZ UDGothic compone el latín de medio ancho y el kana de ancho completo con paso fijo, y un listado cuenta cada carácter de ancho completo como dos celdas, así que las columnas se mantienen.
 
 ### 3 · 図3-1 y 表3-1
 
@@ -38,7 +38,7 @@ La valla es un [bloque de código](/es/docs/document-format#bloques-de-código):
 
 <Excerpt region="notes" />
 
-Las notas no necesitan más ajuste que su cuerpo: en un documento japonés horizontal, los valores por omisión son los que JLReq describe para los libros horizontales, la nota al pie de la columna donde se cita, numerada desde 1 en cada página, con la llamada volada y un filete de un tercio de la medida ([Notas al pie](/es/docs/configuration#notas-al-pie)). La llamada va antes del punto, `保存していた[^hfs]。`, así que el 。 nunca abre la línea siguiente separado de ella.
+Las notas no necesitan más ajuste que su cuerpo: en un documento japonés horizontal, los valores por omisión son los que JLReq describe para los libros horizontales, la nota al pie de la columna donde se cita, numerada desde 1 en cada página, con la llamada volada y un filete de un tercio de la medida ([Notas al pie](/es/docs/configuration-notes-references#notas-al-pie)). La llamada va antes del punto, `保存していた[^hfs]。`, así que el 。 nunca abre la línea siguiente separado de ella.
 
 ### 5 · Un título de apartado de tres líneas
 

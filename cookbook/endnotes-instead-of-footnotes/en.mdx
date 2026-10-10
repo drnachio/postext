@@ -28,13 +28,13 @@ The preprocessor writes each marker as `**^n^**`. The carets set the number at 5
 
 <Excerpt region="notes" />
 
-The notes are 8.2 pt on 10.7 pt, about four fifths of the text size. The pen measures the style's `hangingIndent` in Libre Bodoni once the fonts are loaded: a bold 5 and an en space come to 1.12 em, so the first word of each note lines up with its turnover lines ([paragraph styles](/en/docs/configuration#paragraph-styles)). With the number out in the hang, the notes need no space between them. They are set ragged because justification would stretch that en space, and a justified 55 mm column of 8.2 pt type runs loose. Tildes set subscripts the way carets set superscripts, as in `C~25~H~52~` in note 4 and `H~2~O` in note 5.
+The notes are 8.2 pt on 10.7 pt, about four fifths of the text size. The pen measures the style's `hangingIndent` in Libre Bodoni once the fonts are loaded: a bold 5 and an en space come to 1.12 em, so the first word of each note lines up with its turnover lines ([paragraph styles](/en/docs/configuration-styles#paragraph-styles)). With the number out in the hang, the notes need no space between them. They are set ragged because justification would stretch that en space, and a justified 55 mm column of 8.2 pt type runs loose. Tildes set subscripts the way carets set superscripts, as in `C~25~H~52~` in note 4 and `H~2~O` in note 5.
 
 ### 4 · Give the notes a page in two columns
 
 <Excerpt region="section" />
 
-The heading `## Notes {style="notes" …}` opens a section whose pages take the style's layout and design. `parity: 'any'` starts it on the next page, odd or even, and `span: 'page'` runs the band across both columns, so it reaches the trim and the second column starts under it ([heading styles](/en/docs/configuration#heading-styles)). The band sets the reserve, but the first grid line clear of it lies only 3 mm under the soot, so `BAND_GAP` adds 5 mm to `minHeight` and the notes start a line lower. The hairline between the columns is the `columnRule` of the style's own `layout`, so only the pages of the notes draw it. Column balancing is on by default and cuts the closing page so that both columns end on the same line ([column balancing](/en/docs/configuration#column-balancing)).
+The heading `## Notes {style="notes" …}` opens a section whose pages take the style's layout and design. `parity: 'any'` starts it on the next page, odd or even, and `span: 'page'` runs the band across both columns, so it reaches the trim and the second column starts under it ([heading styles](/en/docs/configuration-styles#heading-styles)). The band sets the reserve, but the first grid line clear of it lies only 3 mm under the soot, so `BAND_GAP` adds 5 mm to `minHeight` and the notes start a line lower. The hairline between the columns is the `columnRule` of the style's own `layout`, so only the pages of the notes draw it. Column balancing is on by default and cuts the closing page so that both columns end on the same line ([column balancing](/en/docs/configuration-text#column-balancing)).
 
 ### 5 · Open the lecture on a field of soot
 

@@ -16,7 +16,7 @@ A small bilingual book of Tang poems, set the way parallel-text editions set a c
 
 ### 1 · A heading style for each side of the spread
 
-The code is [the short answer](#the-short-answer) above. Every poem is two level-1 headings: `# Night Thoughts {style="en" …}` with Giles’s verse, then `# 靜夜思 {style="zh" …}` with the poem. The `en` style breaks to the next even page, a verso; the `zh` style to the next odd page, the recto that faces it. While each poem fits its page no blank page goes in; an English version that ran over would push its original to the following recto, behind a blank verso ([Break before](/en/docs/configuration#break-before)). Both designs reserve six lines of the grid, so the English and the Chinese start on the same line. The Chinese style has `span: 'page'` because its first element, a box the size of the page, is the tinted leaf, and a design kept in the column stops at the column’s foot ([Span and advanced design](/en/docs/configuration#span-and-advanced-design)).
+The code is [the short answer](#the-short-answer) above. Every poem is two level-1 headings: `# Night Thoughts {style="en" …}` with Giles’s verse, then `# 靜夜思 {style="zh" …}` with the poem. The `en` style breaks to the next even page, a verso; the `zh` style to the next odd page, the recto that faces it. While each poem fits its page no blank page goes in; an English version that ran over would push its original to the following recto, behind a blank verso ([Break before](/en/docs/configuration-text#break-before)). Both designs reserve six lines of the grid, so the English and the Chinese start on the same line. The Chinese style has `span: 'page'` because its first element, a box the size of the page, is the tinted leaf, and a design kept in the column stops at the column’s foot ([Span and advanced design](/en/docs/configuration-text#span-and-advanced-design)).
 
 <PageShot page={2} crop="0,0.05,1,0.28" caption="Page 2: the English opens the verso six lines down, on the grid line where the Chinese opens on page 3." />
 
@@ -30,13 +30,13 @@ The Chinese rows have twice the leading of the English lines, 32 pt against 16, 
 
 <Excerpt region="notes" />
 
-The glosses are footnotes, one to a row: `疑是地上霜。[^bed]` closes the first row of the poem and `[^bed]: …` follows it, naming in bold each word it glosses, since the number no longer stands next to them. They are numbered as a Chinese book numbers its notes (页下注): circled numbers set on the baseline, counted from ① again on every page (`numberFormat: 'circled-decimal'`, `numbering: 'page'`). In the verse the marker is set at six tenths of the poem’s size, `markerSize: em(0.6)`, close to the size of the notes; at the foot of the page each note opens with its ① at the size of the note text ([Footnotes](/en/docs/configuration#footnotes)). Notes are set in the body face, and this book’s body face is Noto Serif TC because a gloss mixes characters and pinyin; the Latin letters of Noto Serif TC come from Source Serif, which is why the English pages are set in Source Serif 4. The notes are written in the edition’s language: with the verso’s running head and the note on the text, they are what the Spanish edition changes.
+The glosses are footnotes, one to a row: `疑是地上霜。[^bed]` closes the first row of the poem and `[^bed]: …` follows it, naming in bold each word it glosses, since the number no longer stands next to them. They are numbered as a Chinese book numbers its notes (页下注): circled numbers set on the baseline, counted from ① again on every page (`numberFormat: 'circled-decimal'`, `numbering: 'page'`). In the verse the marker is set at six tenths of the poem’s size, `markerSize: em(0.6)`, close to the size of the notes; at the foot of the page each note opens with its ① at the size of the note text ([Footnotes](/en/docs/configuration-notes-references#footnotes)). Notes are set in the body face, and this book’s body face is Noto Serif TC because a gloss mixes characters and pinyin; the Latin letters of Noto Serif TC come from Source Serif, which is why the English pages are set in Source Serif 4. The notes are written in the edition’s language: with the verso’s running head and the note on the text, they are what the Spanish edition changes.
 
 ### 4 · Running heads in the language of each page
 
 <Excerpt region="heads" />
 
-Every page of this book opens with a heading, so every page is an opener, and the heads use `pages: 'opener'`. A blank page added by a break would stay bare, and the title page clears them with an empty header of its own. The verso takes the book’s title from the frontmatter’s `subtitle`, which each edition writes in its language; the recto takes the poet’s name from the `name` attribute of the Chinese heading ([Headers & footers](/en/docs/configuration#headers--footers)).
+Every page of this book opens with a heading, so every page is an opener, and the heads use `pages: 'opener'`. A blank page added by a break would stay bare, and the title page clears them with an empty header of its own. The verso takes the book’s title from the frontmatter’s `subtitle`, which each edition writes in its language; the recto takes the poet’s name from the `name` attribute of the Chinese heading ([Headers & footers](/en/docs/configuration-page-layout#headers--footers)).
 
 ### 5 · A title page on a moon
 
@@ -48,7 +48,7 @@ The title page is a heading style as well, with `runningChapter: false` so it na
 
 <Excerpt region="voices" />
 
-Fontsource cuts each Chinese face into about a hundred files by character range, and `loadCjkFonts` fetches only the files its text needs ([Chinese, Japanese and Korean fonts](/en/docs/configuration#chinese-japanese-and-korean-fonts)). The Kai gets the poems and the seal, the Hei the poet lines and names, the bold Song the four titles and the notes’ headwords, and its black weight the two characters of the title page.
+Fontsource cuts each Chinese face into about a hundred files by character range, and `loadCjkFonts` fetches only the files its text needs ([Chinese, Japanese and Korean fonts](/en/docs/configuration-programmatic-usage#chinese-japanese-and-korean-fonts)). The Kai gets the poems and the seal, the Hei the poet lines and names, the bold Song the four titles and the notes’ headwords, and its black weight the two characters of the title page.
 
 ## Variations
 

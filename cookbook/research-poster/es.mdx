@@ -18,25 +18,25 @@ Un póster de congreso de 600 × 800 mm para un estudio inventado sobre arbolado
 
 <Excerpt region="sheet" />
 
-A 300 ppp, el valor por defecto, el póster corta cada línea en el mismo sitio que a 72 ppp, pero la página mide 7087 × 9449 px, que una vez pintados ocupan 268 MB ([tamaños de página predefinidos](/es/docs/configuration#tamaños-de-página-predefinidos)). A 72 ppp un punto es un píxel. El visor pinta sus miniaturas con `renderPageToCanvas` y una `scale`, y `renderPage` genera el PNG de 1701 × 2268 px que pide la galería en línea de un congreso ([renderizar una página a un bitmap](/es/docs/configuration#renderizar-una-página-a-un-bitmap)). La interlínea reparte en 56 líneas los 750 mm que hay entre los márgenes, así que la franja de palabras clave, flotada al pie de la página, acaba en el margen inferior. Con una interlínea redonda de 38 pt caben solo 55 líneas, y la última queda 12,7 mm por encima del margen; la franja ya no cabe bajo los paneles y pasa a una segunda página.
+A 300 ppp, el valor por defecto, el póster corta cada línea en el mismo sitio que a 72 ppp, pero la página mide 7087 × 9449 px, que una vez pintados ocupan 268 MB ([tamaños de página predefinidos](/es/docs/configuration-page-layout#tamaños-de-página-predefinidos)). A 72 ppp un punto es un píxel. El visor pinta sus miniaturas con `renderPageToCanvas` y una `scale`, y `renderPage` genera el PNG de 1701 × 2268 px que pide la galería en línea de un congreso ([renderizar una página a un bitmap](/es/docs/configuration-programmatic-usage#renderizar-una-página-a-un-bitmap)). La interlínea reparte en 56 líneas los 750 mm que hay entre los márgenes, así que la franja de palabras clave, flotada al pie de la página, acaba en el margen inferior. Con una interlínea redonda de 38 pt caben solo 55 líneas, y la última queda 12,7 mm por encima del margen; la franja ya no cabe bajo los paneles y pasa a una segunda página.
 
 ### 2 · Dibuja la banda del título desde el encabezado
 
 <Excerpt region="band" />
 
-El H1 lleva como atributos el encuentro, el número del póster, los autores y las filiaciones, y su diseño los compone sobre un rectángulo verde de 158 mm de alto, anclado a la página ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El rectángulo acaba 133 mm por debajo del margen superior. Sin `minHeight`, el resumen empezaría a 0,9 mm del verde; un `minHeight` de once líneas de la rejilla base lo separa 14 mm. Las llamadas de filiación son los caracteres ¹ ² ³, las únicas cifras voladas del rango Latin-1.
+El H1 lleva como atributos el encuentro, el número del póster, los autores y las filiaciones, y su diseño los compone sobre un rectángulo verde de 158 mm de alto, anclado a la página ([span y diseño avanzado](/es/docs/configuration-text#span-y-diseño-avanzado)). El rectángulo acaba 133 mm por debajo del margen superior. Sin `minHeight`, el resumen empezaría a 0,9 mm del verde; un `minHeight` de once líneas de la rejilla base lo separa 14 mm. Las llamadas de filiación son los caracteres ¹ ² ³, las únicas cifras voladas del rango Latin-1.
 
 ### 3 · Anida los paneles en un recuadro a todo el ancho
 
 <Excerpt region="answer" highlight="3-9,21" />
 
-El cuerpo va a dos columnas y los paneles a tres, así que la retícula es un grupo `:::columns{count=3}` dentro de un recuadro sin marco, y `span="page"` extiende ese recuadro sobre las dos columnas del cuerpo, bajo el resumen ([`:::columns`](/es/docs/document-format#columns)). Un grupo escrito directamente en el texto también puede ocupar todo el ancho, pero deja debajo una línea de separación entre párrafos, aquí 38 pt, y la franja de palabras clave pasaría a una segunda página. Cada panel es un recuadro anidado en el grupo: toma su propio estilo, los 175 mm de ancho de la columna y 18 mm de `marginTop` bajo el panel de encima ([el contenedor `:::callout`](/es/docs/configuration#el-contenedor-callout)). `breaks="3,4"` lleva el tercer panel, Resultados, a la cabeza de la columna central, y el cuarto, Conclusiones, a la de la última. Sin él, el grupo se equilibra y corta por el panel más próximo a cada tercio de la pila. Con este texto los cortes caen en los mismos dos paneles; el atributo los fija por si el texto cambia.
+El cuerpo va a dos columnas y los paneles a tres, así que la retícula es un grupo `:::columns{count=3}` dentro de un recuadro sin marco, y `span="page"` extiende ese recuadro sobre las dos columnas del cuerpo, bajo el resumen ([`:::columns`](/es/docs/document-format#columns)). Un grupo escrito directamente en el texto también puede ocupar todo el ancho, pero deja debajo una línea de separación entre párrafos, aquí 38 pt, y la franja de palabras clave pasaría a una segunda página. Cada panel es un recuadro anidado en el grupo: toma su propio estilo, los 175 mm de ancho de la columna y 18 mm de `marginTop` bajo el panel de encima ([el contenedor `:::callout`](/es/docs/configuration-styles#el-contenedor-callout)). `breaks="3,4"` lleva el tercer panel, Resultados, a la cabeza de la columna central, y el cuarto, Conclusiones, a la de la última. Sin él, el grupo se equilibra y corta por el panel más próximo a cada tercio de la pila. Con este texto los cortes caen en los mismos dos paneles; el atributo los fija por si el texto cambia.
 
 ### 4 · Deja cada figura en su panel
 
 <Excerpt region="figures" />
 
-Una figura con posición `'here'` se queda en el panel donde la pone `::resource`; con la colocación por defecto, los tres dibujos salen de sus paneles y el póster pasa a dos páginas. `numberingTemplate: '{n}'` las numera 1, 2 y 3, mientras que el `{h1}.{n}` por defecto imprime Figura 1.1 bajo un título que es un H1 ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)). La nota bajo cada pie avisa de que los datos son sintéticos.
+Una figura con posición `'here'` se queda en el panel donde la pone `::resource`; con la colocación por defecto, los tres dibujos salen de sus paneles y el póster pasa a dos páginas. `numberingTemplate: '{n}'` las numera 1, 2 y 3, mientras que el `{h1}.{n}` por defecto imprime Figura 1.1 bajo un título que es un H1 ([tipos de recurso](/es/docs/configuration-resources#tipos-de-recurso)). La nota bajo cada pie avisa de que los datos son sintéticos.
 
 ### 5 · Comparte los colores del mapa de calor con su leyenda
 
@@ -48,7 +48,7 @@ Las celdas del mapa de calor y las cuatro muestras `:swatch{color="…"}` de su 
 
 <Excerpt region="type" />
 
-Los estilos de párrafo se aplican dentro de los recuadros, también en los anidados, así que −4,2 °C es un bloque `:::paragraphs{style="stat"}` en Bitter a 150 pt dentro del panel de Resultados ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). La cifra va en negrita, así que sale en Bitter 700 y en el `boldColor` del estilo, el naranja del panel. Un segundo estilo da a las referencias una sangría francesa de 9 mm. La franja de palabras clave es un recuadro tintado con `placement="bottom"`, que flota al pie de la página bajo la retícula.
+Los estilos de párrafo se aplican dentro de los recuadros, también en los anidados, así que −4,2 °C es un bloque `:::paragraphs{style="stat"}` en Bitter a 150 pt dentro del panel de Resultados ([estilos de párrafo](/es/docs/configuration-styles#estilos-de-párrafo)). La cifra va en negrita, así que sale en Bitter 700 y en el `boldColor` del estilo, el naranja del panel. Un segundo estilo da a las referencias una sangría francesa de 9 mm. La franja de palabras clave es un recuadro tintado con `placement="bottom"`, que flota al pie de la página bajo la retícula.
 
 ## Variantes
 

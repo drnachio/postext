@@ -16,7 +16,7 @@ pageNotes: { "1": "第41页，章首页：页面上部三分之一是一条浅�
 
 ### 1 · 日文规则随语言标签而来
 
-代码就是上面的[简短回答](#简短回答)。`locale: 'ja'`启用JLReq，即W3C的《日文排版需求》（*Requirements for Japanese Text Layout*），`cjk`下写出的值就是`'auto'`为日文选择的值（[东亚排版](/zh/docs/configuration#东亚排版)）。在`ja-very-strict`级别下，ー、小写假名、々和闭合标点都不能出现在行首，开括号不能出现在行尾。标点（約物，yakumono）在行内保持一个em的宽度，两个标点相遇时，比如」、，二者合占一个em。<PageRef page={1}>第41页</PageRef>上以実際に変換し、结尾的那一行，把、排到了行长之外：这就是ぶら下げ（burasage，标点悬挂），只有在不悬挂就得把这个标点推到下一行时，引擎才这样做。`latinSpacing`在Unicode与では之间、U+304C与を之间各加四分之一em（四分アキ，shibun aki），而Markdown里这两处都没有空格。
+代码就是上面的[简短回答](#简短回答)。`locale: 'ja'`启用JLReq，即W3C的《日文排版需求》（*Requirements for Japanese Text Layout*），`cjk`下写出的值就是`'auto'`为日文选择的值（[东亚排版](/zh/docs/configuration-east-asian#东亚排版)）。在`ja-very-strict`级别下，ー、小写假名、々和闭合标点都不能出现在行首，开括号不能出现在行尾。标点（約物，yakumono）在行内保持一个em的宽度，两个标点相遇时，比如」、，二者合占一个em。<PageRef page={1}>第41页</PageRef>上以実際に変換し、结尾的那一行，把、排到了行长之外：这就是ぶら下げ（burasage，标点悬挂），只有在不悬挂就得把这个标点推到下一行时，引擎才这样做。`latinSpacing`在Unicode与では之间、U+304C与を之间各加四分之一em（四分アキ，shibun aki），而Markdown里这两处都没有空格。
 
 <PageShot page={1} crop="0.08,0.27,0.84,0.09" caption="第41页：Unicode和Python前后各有四分之一em，输入时并没有空格；第二行末尾的、悬挂在行长之外。" />
 
@@ -26,7 +26,7 @@ pageNotes: { "1": "第41页，章首页：页面上部三分之一是一条浅�
 
 <Excerpt region="listing" />
 
-这段围栏是一个[代码块](/zh/docs/document-format#代码块)：Postext按原样排它的各行，用`codeStyle`指定的字体，排在一个浅色框里，框上的标题`normalize.py`取自围栏那一行（[代码清单](/zh/docs/configuration#代码清单)）。`highlight: 'none'`让清单只用一种墨色，与页面其他部分一样；`codeStyle.inline`把每个`` `name` ``用同一种字体排成青绿色。字体要选对：示例里的字符串ｶﾞｲﾄﾞ ＡＢＣ ①需要半角片假名、全角字母和带圈数字，西文的代码字体没有这些字。BIZ UDGothic把半角拉丁字母和全角假名都排成固定字宽，清单又把每个全角字符算作两格，所以各列保持对齐。
+这段围栏是一个[代码块](/zh/docs/document-format#代码块)：Postext按原样排它的各行，用`codeStyle`指定的字体，排在一个浅色框里，框上的标题`normalize.py`取自围栏那一行（[代码清单](/zh/docs/configuration-styles#代码清单)）。`highlight: 'none'`让清单只用一种墨色，与页面其他部分一样；`codeStyle.inline`把每个`` `name` ``用同一种字体排成青绿色。字体要选对：示例里的字符串ｶﾞｲﾄﾞ ＡＢＣ ①需要半角片假名、全角字母和带圈数字，西文的代码字体没有这些字。BIZ UDGothic把半角拉丁字母和全角假名都排成固定字宽，清单又把每个全角字符算作两格，所以各列保持对齐。
 
 ### 3 · 図3-1和表3-1
 
@@ -38,7 +38,7 @@ pageNotes: { "1": "第41页，章首页：页面上部三分之一是一条浅�
 
 <Excerpt region="notes" />
 
-脚注只需设定字号：在日文横排文档里，默认值就是JLReq为横排书描述的做法，注文排在引用它的那一栏底部，每页从1编号，序号为上标，注线长为行长的三分之一（[脚注](/zh/docs/configuration#脚注)）。序号放在句号之前，`保存していた[^hfs]。`，这样。永远不会和序号分开、跑到下一行行首。
+脚注只需设定字号：在日文横排文档里，默认值就是JLReq为横排书描述的做法，注文排在引用它的那一栏底部，每页从1编号，序号为上标，注线长为行长的三分之一（[脚注](/zh/docs/configuration-notes-references#脚注)）。序号放在句号之前，`保存していた[^hfs]。`，这样。永远不会和序号分开、跑到下一行行首。
 
 ### 5 · 占三行位置的节标题
 

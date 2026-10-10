@@ -22,7 +22,7 @@ El código está en [la respuesta corta](#la-respuesta-corta), más arriba. El T
 
 <Excerpt region="split" />
 
-La carta de la página 1 cita la lista con `:ref{id="vegetables" text="the price list"}`, y `text` imprime esas palabras en lugar de un número. Una tabla citada flota al primer hueco libre después de la cita, que aquí es la cabeza de la página 2. La lista no cabe entera, así que el motor la corta entre filas después de Jimmy Nardello, nunca dentro de una clase combinada. En la página 3 se repiten la fila de cabecera y la banda del pie, ahora con el sufijo; el aviso va bajo la primera parte y la nota, bajo la última ([tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)). `parseTSV(tsv, { headerRows: 1 })` convierte la primera fila en la cabecera, que se pinta como tal y se repite en la página 3. El sufijo y el aviso van en cursiva con la letra del pie, y por eso la banda se compone en Gelasio y no en Cabin Condensed, que no tiene cursiva.
+La carta de la página 1 cita la lista con `:ref{id="vegetables" text="the price list"}`, y `text` imprime esas palabras en lugar de un número. Una tabla citada flota al primer hueco libre después de la cita, que aquí es la cabeza de la página 2. La lista no cabe entera, así que el motor la corta entre filas después de Jimmy Nardello, nunca dentro de una clase combinada. En la página 3 se repiten la fila de cabecera y la banda del pie, ahora con el sufijo; el aviso va bajo la primera parte y la nota, bajo la última ([tablas más altas que la página](/es/docs/configuration-resources#tablas-más-altas-que-la-página)). `parseTSV(tsv, { headerRows: 1 })` convierte la primera fila en la cabecera, que se pinta como tal y se repite en la página 3. El sufijo y el aviso van en cursiva con la letra del pie, y por eso la banda se compone en Gelasio y no en Cabin Condensed, que no tiene cursiva.
 
 ### 3 · Un recurso para cada sobre
 
@@ -34,7 +34,7 @@ La imagen de una celda remite a un recurso por su id, así que cada sobre es un 
 
 <Excerpt region="forms" />
 
-Las dos tablas de la hoja de pedido usan el estilo con nombre `form`, con filetes en cuadrícula, 2,5 mm de radio en las esquinas del marco exterior y un fondo crema sobre el que escribir. La lista de precios conserva el `tableStyle` del documento ([estilos de tabla con nombre](/es/docs/configuration#estilos-de-tabla-con-nombre)). Una celda vacía no necesita ningún texto, porque su fila ocupa igualmente una línea, aquí de 7,3 mm. Cada total combina cuatro columnas en un solo rótulo alineado a la derecha. El estilo de título de la hoja de pedido pasa la página 4 a una sola columna, así que las dos tablas ocupan toda la medida, 157 mm.
+Las dos tablas de la hoja de pedido usan el estilo con nombre `form`, con filetes en cuadrícula, 2,5 mm de radio en las esquinas del marco exterior y un fondo crema sobre el que escribir. La lista de precios conserva el `tableStyle` del documento ([estilos de tabla con nombre](/es/docs/configuration-resources#estilos-de-tabla-con-nombre)). Una celda vacía no necesita ningún texto, porque su fila ocupa igualmente una línea, aquí de 7,3 mm. Cada total combina cuatro columnas en un solo rótulo alineado a la derecha. El estilo de título de la hoja de pedido pasa la página 4 a una sola columna, así que las dos tablas ocupan toda la medida, 157 mm.
 
 ### 5 · Mantén la carta debajo de la pintura
 

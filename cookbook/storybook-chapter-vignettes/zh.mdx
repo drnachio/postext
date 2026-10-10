@@ -16,7 +16,7 @@ pageNotes: { "1": "书名页，位于左页：一幅水彩画，淡蓝天空下�
 
 ### 1 · 一个标题样式，每个标题指定一幅题头画
 
-这一步的代码见[简短回答](#简短回答)。图片元素的`resourceId`接受与设计文字相同的占位符，所以`'{attr.vignetta}'`绘制标题指定的资源，就像`{attr.summary}`印出它的提要一样。两章共用`capitolo`样式，并在标题行中指定各自的图：`# Capitolo II {style="capitolo" vignetta="polenta" summary="…"}`。再加一章只需多一个资源和一个标题，不用再建样式（[图片元素](/zh/docs/configuration#图像元素)）。章序行从容器顶部定位，位于题头画框下方6 mm处，提要挂在它下方5 mm处；章首预留的高度一直到提要的最后一行。用`minHeight`设一个14行的下限后，第一章正文与第二章正文从同一行开始，尽管第二章的提要多一行；没有它时，第一章正文会高出6.7 mm（[span与高级版面设计](/zh/docs/configuration#通栏与高级设计)）。
+这一步的代码见[简短回答](#简短回答)。图片元素的`resourceId`接受与设计文字相同的占位符，所以`'{attr.vignetta}'`绘制标题指定的资源，就像`{attr.summary}`印出它的提要一样。两章共用`capitolo`样式，并在标题行中指定各自的图：`# Capitolo II {style="capitolo" vignetta="polenta" summary="…"}`。再加一章只需多一个资源和一个标题，不用再建样式（[图片元素](/zh/docs/configuration-page-layout#图像元素)）。章序行从容器顶部定位，位于题头画框下方6 mm处，提要挂在它下方5 mm处；章首预留的高度一直到提要的最后一行。用`minHeight`设一个14行的下限后，第一章正文与第二章正文从同一行开始，尽管第二章的提要多一行；没有它时，第一章正文会高出6.7 mm（[span与高级版面设计](/zh/docs/configuration-text#通栏与高级设计)）。
 
 ### 2 · 把画作作为位图资源载入
 
@@ -28,19 +28,19 @@ pageNotes: { "1": "书名页，位于左页：一幅水彩画，淡蓝天空下�
 
 <Excerpt region="frontispiece" />
 
-书名页是Markdown的第一个标题`# Pinocchio {style="frontespizio" kicker="Le avventure di"}`，它的样式绘出页面上的一切：从上边缘起150 mm高的风景画，然后是属性中的眉题、书名，以及frontmatter中的副标题和作者。所有元素都从页面定位，而不是从版心定位，所以标题虽然留在全书唯一的一栏里，画作仍然铺到页面的上边缘和左右两边。空的`footer`去掉了章首页印的页码圆片，而`pages: 'body'`已经让书眉不出现在这一页（[标题样式](/zh/docs/configuration#标题样式)）。
+书名页是Markdown的第一个标题`# Pinocchio {style="frontespizio" kicker="Le avventure di"}`，它的样式绘出页面上的一切：从上边缘起150 mm高的风景画，然后是属性中的眉题、书名，以及frontmatter中的副标题和作者。所有元素都从页面定位，而不是从版心定位，所以标题虽然留在全书唯一的一栏里，画作仍然铺到页面的上边缘和左右两边。空的`footer`去掉了章首页印的页码圆片，而`pages: 'body'`已经让书眉不出现在这一页（[标题样式](/zh/docs/configuration-styles#标题样式)）。
 
 ### 4 · 正文页上的书眉，圆片中的页码
 
 <Excerpt region="folios" />
 
-`continuation`从书中第6页（一个左页）开始给节选编页码，所以书名页与第一章相对，印出的第一个页码是7。`pages: 'body'`让书眉不出现在书名页和两个章首页上，所以书眉只印在第8页和第9页，左页印书名，右页印章名（[文字元素](/zh/docs/configuration#文本元素)）。页码是一个放在7.4 mm固定方框里的设计文字，圆角半径为边长的一半，于是成了一个圆；`verticalAlign: 'middle'`加上注释中算出的行距，让数字在圆中居中。纸色数字与木色的对比度为4.98:1。加大字距的标签不用任何偏移：居中一行时，最后一个字母后的那份字距不计在内。
+`continuation`从书中第6页（一个左页）开始给节选编页码，所以书名页与第一章相对，印出的第一个页码是7。`pages: 'body'`让书眉不出现在书名页和两个章首页上，所以书眉只印在第8页和第9页，左页印书名，右页印章名（[文字元素](/zh/docs/configuration-page-layout#文本元素)）。页码是一个放在7.4 mm固定方框里的设计文字，圆角半径为边长的一半，于是成了一个圆；`verticalAlign: 'middle'`加上注释中算出的行距，让数字在圆中居中。纸色数字与木色的对比度为4.98:1。加大字距的标签不用任何偏移：居中一行时，最后一个字母后的那份字距不计在内。
 
 ### 5 · 用不编号的章尾饰图收束一章
 
 <Excerpt region="tailpiece" />
 
-资源类型会在题注前印出它的`captionPrefix`和编号。前缀为空、又没有题注时，樱桃下面什么也不印；设`captionPrefix: 'Fregio'`时，同一个资源会在图下印出*Fregio 1.*，高度增加10 mm（[资源类型](/zh/docs/configuration#资源类型)）。该类型的`defaultPlacement`把每个资源放在其`::resource`行所在的位置，宽为行长的六分之一并居中，所以Markdown只需在章的最后一段后写`::resource{id="ciliegie"}`。其他图片也属于这个类型，但没有任何`:ref`或`::resource`指向它们，所以它们既不会被放置，也不会被计数。
+资源类型会在题注前印出它的`captionPrefix`和编号。前缀为空、又没有题注时，樱桃下面什么也不印；设`captionPrefix: 'Fregio'`时，同一个资源会在图下印出*Fregio 1.*，高度增加10 mm（[资源类型](/zh/docs/configuration-resources#资源类型)）。该类型的`defaultPlacement`把每个资源放在其`::resource`行所在的位置，宽为行长的六分之一并居中，所以Markdown只需在章的最后一段后写`::resource{id="ciliegie"}`。其他图片也属于这个类型，但没有任何`:ref`或`::resource`指向它们，所以它们既不会被放置，也不会被计数。
 
 ## 变化
 

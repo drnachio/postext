@@ -16,7 +16,7 @@ Les set últimes pàgines d'una tesi doctoral sobre la lectura en pantalla i en 
 
 ### 1 · Un estil de títol per a cada part del final
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. `# Glossary {style="glossary" note="…"}` obre una secció que arriba fins al títol de nivell 1 següent, i les seves pàgines prenen la disposició, les capçaleres i l'obertura de l'estil ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)), de manera que el glossari i l'índex passen a dues columnes i la bibliografia, l'estil de la qual no fixa disposició, torna a la columna única del document. `numbered: false` deixa aquests títols fora del recompte de capítols (sense aquesta opció, a la banda del glossari sortiria un 2), i cada estil declara el seu salt de pàgina, perquè el que no el declara hereta el `'odd'` del capítol i deixa pàgines parelles en blanc. Les entrades del glossari i de la bibliografia són paràgrafs d'un bloc `:::paragraphs{style="…"}` en cos 9,3 sobre 12,4 pt, enfront de l'11 sobre 14,6 del text, amb les línies de continuació sagnades 1 em al glossari i 1,5 em a la bibliografia ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)).
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `# Glossary {style="glossary" note="…"}` obre una secció que arriba fins al títol de nivell 1 següent, i les seves pàgines prenen la disposició, les capçaleres i l'obertura de l'estil ([estils d'encapçalament](/ca/docs/configuration-styles#estils-dencapçalament)), de manera que el glossari i l'índex passen a dues columnes i la bibliografia, l'estil de la qual no fixa disposició, torna a la columna única del document. `numbered: false` deixa aquests títols fora del recompte de capítols (sense aquesta opció, a la banda del glossari sortiria un 2), i cada estil declara el seu salt de pàgina, perquè el que no el declara hereta el `'odd'` del capítol i deixa pàgines parelles en blanc. Les entrades del glossari i de la bibliografia són paràgrafs d'un bloc `:::paragraphs{style="…"}` en cos 9,3 sobre 12,4 pt, enfront de l'11 sobre 14,6 del text, amb les línies de continuació sagnades 1 em al glossari i 1,5 em a la bibliografia ([estils de paràgraf](/ca/docs/configuration-styles#estils-de-paràgraf)).
 
 ### 2 · Una sola banda per a totes les obertures
 
@@ -28,7 +28,7 @@ La marca és `{number}`: un 6 al capítol, una A a l'apèndix i res en un títol
 
 <Excerpt region="appendix" />
 
-L'estil de l'apèndix porta `numberingTemplate: '{1:A}'`, que imprimeix el comptador del nivell com a lletra, i `# Interview guide {style="appendix" startAt=1}` reinicia aquest comptador, així que el primer apèndix és l'A i no el G ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)). La banda llegeix la lletra amb `{number}` i la capçalera amb `{chapterNumber}`. El `{h1}` d'un tipus de recurs imprimeix el comptador com a número, i per això un tipus propi numera les taules de l'apèndix A.1, A.2, etc.; amb el tipus per defecte, la taula seria l'1.1. Els títols del capítol es numeren amb les plantilles de cada nivell: `'{1}.{2}'` imprimeix 6.1, i `continuation.headings.h1: 5` fa d'aquest el sisè capítol.
+L'estil de l'apèndix porta `numberingTemplate: '{1:A}'`, que imprimeix el comptador del nivell com a lletra, i `# Interview guide {style="appendix" startAt=1}` reinicia aquest comptador, així que el primer apèndix és l'A i no el G ([estils d'encapçalament](/ca/docs/configuration-styles#estils-dencapçalament)). La banda llegeix la lletra amb `{number}` i la capçalera amb `{chapterNumber}`. El `{h1}` d'un tipus de recurs imprimeix el comptador com a número, i per això un tipus propi numera les taules de l'apèndix A.1, A.2, etc.; amb el tipus per defecte, la taula seria l'1.1. Els títols del capítol es numeren amb les plantilles de cada nivell: `'{1}.{2}'` imprimeix 6.1, i `continuation.headings.h1: 5` fa d'aquest el sisè capítol.
 
 ### 4 · Les capçaleres, cap al marge exterior
 
@@ -46,7 +46,7 @@ Els quatre textos s'ancoren a la pàgina i es filtren per `parity`, cosa que man
 
 <Excerpt region="palette" />
 
-La negreta, la cursiva, les vinyetes i els números de les llistes i les referències segueixen per defecte l'entrada `main-color` de la paleta, així que, si li dones el color de la tinta, surten en negre i no en blau ([paleta de colors](/ca/docs/configuration#paleta-de-colors)). `referenceBold: false` posa *Table 6.1* en rodona, com les cites autor-any que l'envolten.
+La negreta, la cursiva, les vinyetes i els números de les llistes i les referències segueixen per defecte l'entrada `main-color` de la paleta, així que, si li dones el color de la tinta, surten en negre i no en blau ([paleta de colors](/ca/docs/configuration-fonts-colors-viewers#paleta-de-colors)). `referenceBold: false` posa *Table 6.1* en rodona, com les cites autor-any que l'envolten.
 
 <Note>La llista de taules encara es fa a mà. En una tesi sencera composta capítol a capítol amb `buildBundle`, el capítol que conté `:::index` rep les marques de tots els capítols.</Note>
 

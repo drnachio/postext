@@ -22,13 +22,13 @@ Una part redefineix entrades de la paleta pel seu id, així que tot el que ha de
 
 ### 2 · Una portadella, el seu dors i la seva llista
 
-El codi d'aquest pas és [la resposta curta](#la-resposta-curta), més amunt. Un `:::part` obre una [portadella](/ca/docs/configuration#parts) en pàgina senar, i `parts.design` la compon sobre tota la pàgina, a sang. El Markdown entre les seves tanques comença a 125 mm de la vora superior, sota el títol: unes línies sobre l'hàbitat amb l'estil de paràgraf `habitat` i després la llista de les seves espècies amb `bodyStyle`. `versoDesign` pinta el dors del full (el camp i la pestanya en negatiu) només si aquella pàgina queda en blanc, i `breakAfter: { parity: 'odd' }` la deixa en blanc en enviar la primera espècie a la pàgina senar següent. `{numberRoman}` imprimeix el `number="I"` de la part en xifres romanes (amb `"1"` sortiria la mateixa I), mentre que les espècies es numeren de l'1 al 4 en aràbigues. El `\\` del títol parteix la línia només a la portadella; l'índex i les capçaleres el componen en una sola línia.
+El codi d'aquest pas és [la resposta curta](#la-resposta-curta), més amunt. Un `:::part` obre una [portadella](/ca/docs/configuration-styles#parts) en pàgina senar, i `parts.design` la compon sobre tota la pàgina, a sang. El Markdown entre les seves tanques comença a 125 mm de la vora superior, sota el títol: unes línies sobre l'hàbitat amb l'estil de paràgraf `habitat` i després la llista de les seves espècies amb `bodyStyle`. `versoDesign` pinta el dors del full (el camp i la pestanya en negatiu) només si aquella pàgina queda en blanc, i `breakAfter: { parity: 'odd' }` la deixa en blanc en enviar la primera espècie a la pàgina senar següent. `{numberRoman}` imprimeix el `number="I"` de la part en xifres romanes (amb `"1"` sortiria la mateixa I), mentre que les espècies es numeren de l'1 al 4 en aràbigues. El `\\` del títol parteix la línia només a la portadella; l'índex i les capçaleres el componen en una sola línia.
 
 ### 3 · Els accents del text canvien amb la part
 
 <Excerpt region="flow" />
 
-Des d'un `:::part` fins al següent, tot color del text igual al valor propi de `band` pren el valor de la part ([el contenidor `:::part`](/ca/docs/configuration#el-contenidor-part)). Aquí són els trets en negreta, les vinyetes i les etiquetes de les làmines. El text corregut i les cursives es queden en el color `ink`. Les làmines són un tipus de recurs propi, amb l'etiqueta Làmina i una numeració que no es reinicia, així que van de l'1 al 4, com les espècies.
+Des d'un `:::part` fins al següent, tot color del text igual al valor propi de `band` pren el valor de la part ([el contenidor `:::part`](/ca/docs/configuration-styles#el-contenidor-part)). Aquí són els trets en negreta, les vinyetes i les etiquetes de les làmines. El text corregut i les cursives es queden en el color `ink`. Les làmines són un tipus de recurs propi, amb l'etiqueta Làmina i una numeració que no es reinicia, així que van de l'1 al 4, com les espècies.
 
 ### 4 · L'obertura de cada espècie
 
@@ -40,7 +40,7 @@ L'obertura de cada espècie imprimeix tres atributs del seu títol: `status` a l
 
 <Excerpt region="contents" />
 
-`:::toc` dona una fila a cada `:::part` i hi compon `toc.parts.design` amb el número, el títol, la pàgina de la portadella i la paleta d'aquella part ([índex de continguts](/ca/docs/configuration#índex-de-continguts)), així que la mateixa caixa surt bruna per als fangars i verda per als canyissars. Cada espècie sota la banda porta el seu número, una línia de punts i la seva pàgina, i a sota el nom científic que dona l'atribut `latin`.
+`:::toc` dona una fila a cada `:::part` i hi compon `toc.parts.design` amb el número, el títol, la pàgina de la portadella i la paleta d'aquella part ([índex de continguts](/ca/docs/configuration-notes-references#índex-de-continguts)), així que la mateixa caixa surt bruna per als fangars i verda per als canyissars. Cada espècie sota la banda porta el seu número, una línia de punts i la seva pàgina, i a sota el nom científic que dona l'atribut `latin`.
 
 ### 6 · La part a les capçaleres i a la pestanya
 

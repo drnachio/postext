@@ -22,13 +22,13 @@ Each season is its own document, so you can rewrite one chapter without opening 
 
 ### 2 · Rules that carry across documents
 
-This step’s code is [the short answer](#the-short-answer) above. [`buildBundle`](/en/docs/configuration#laying-out-and-rendering-a-bundle) lays the documents out in order with one shared config and passes each one a `continuation` from those before it: the number of physical pages already set, so parity, mirrored margins and odd and even running heads carry on; the next folio; and the chapter and figure counters. With `parity: 'odd'`, a chapter that follows one ending on a recto starts with a blank verso, and that blank belongs to its own document ([break before](/en/docs/configuration#break-before)). The cover and the contents are [heading styles](/en/docs/configuration#heading-styles) with `numbered: false`, so Autumn is still chapter 1. Both inherit `span: 'page'` from the chapter level, which puts each on a page of its own without a `:::pagebreak`. The contents style turns off the inherited parity, which would otherwise leave page 2 blank.
+This step’s code is [the short answer](#the-short-answer) above. [`buildBundle`](/en/docs/configuration-programmatic-usage#laying-out-and-rendering-a-bundle) lays the documents out in order with one shared config and passes each one a `continuation` from those before it: the number of physical pages already set, so parity, mirrored margins and odd and even running heads carry on; the next folio; and the chapter and figure counters. With `parity: 'odd'`, a chapter that follows one ending on a recto starts with a blank verso, and that blank belongs to its own document ([break before](/en/docs/configuration-text#break-before)). The cover and the contents are [heading styles](/en/docs/configuration-styles#heading-styles) with `numbered: false`, so Autumn is still chapter 1. Both inherit `span: 'page'` from the chapter level, which puts each on a page of its own without a `:::pagebreak`. The contents style turns off the inherited parity, which would otherwise leave page 2 blank.
 
 ### 3 · Contents for the whole book
 
 <Excerpt region="contents" />
 
-`:::toc` sits in the first document but lists the chapters and sections of the whole book. `buildBundle` lays the book out, collects every heading with the page label it got, and lays the book out again with that outline until the labels stop moving, three passes at most ([table of contents](/en/docs/configuration#table-of-contents)). The months under each title come from a heading attribute, `{months="…"}`, which the opener prints too.
+`:::toc` sits in the first document but lists the chapters and sections of the whole book. `buildBundle` lays the book out, collects every heading with the page label it got, and lays the book out again with that outline until the labels stop moving, three passes at most ([table of contents](/en/docs/configuration-notes-references#table-of-contents)). The months under each title come from a heading attribute, `{months="…"}`, which the opener prints too.
 
 ### 4 · One opener, mirrored for the contents
 

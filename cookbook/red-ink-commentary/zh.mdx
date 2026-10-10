@@ -16,7 +16,7 @@ pageNotes: {"1": "第1页是右翻书的右页，版心右缘先以小号红字�
 
 ### 1 · 把侧栏变成天头
 
-代码就是上面的[简短回答](#简短回答)。竖排页面是把横排页面旋转90度，所以[一栏半版式](/zh/docs/configuration#版式类型)的侧栏变成横贯页面的一栏，`sideColumnSide: 'left'`把这一栏放到天头（[竖排](/zh/docs/configuration#竖排)）。[字符网格](/zh/docs/configuration#字格)把`sideColumnPercent: 19`取整为正文的10个字，即120 pt，栏间距取整为两个字；栏线成为评语与正文之间的细线。评语样式不带框：7 pt楷体，每列17字，这个字号下十条评语没有一条以只有一个字的列结尾；`snapToGrid: false`让评语按自己10 pt的间距排列，而不是正文的21 pt。
+代码就是上面的[简短回答](#简短回答)。竖排页面是把横排页面旋转90度，所以[一栏半版式](/zh/docs/configuration-page-layout#版式类型)的侧栏变成横贯页面的一栏，`sideColumnSide: 'left'`把这一栏放到天头（[竖排](/zh/docs/configuration-page-layout#竖排)）。[字符网格](/zh/docs/configuration-east-asian#字格)把`sideColumnPercent: 19`取整为正文的10个字，即120 pt，栏间距取整为两个字；栏线成为评语与正文之间的细线。评语样式不带框：7 pt楷体，每列17字，这个字号下十条评语没有一条以只有一个字的列结尾；`snapToGrid: false`让评语按自己10 pt的间距排列，而不是正文的21 pt。
 
 两种评语都标在抄本原有的位置。侧批是[`:warichu[…]`](/zh/docs/document-format#中文标记注音和双行夹注)行内片段，由`cjk.warichu`着色；眉批是一个用`span="side"`围起的框，紧放在所评段落之前：
 
@@ -38,7 +38,7 @@ pageNotes: {"1": "第1页是右翻书的右页，版心右缘先以小号红字�
 
 <Excerpt region="fore-edge" />
 
-这些是[竖排文字元素](/zh/docs/configuration#竖排文本元素)中的书口书眉：`anchor.to: 'outer'`指远离书脊的页边距，在右翻书里是右页的左边、左页的右边；`writingMode: 'vertical-rl'`让文字竖排。这里的版心包括评语一栏，所以“天头下四格”是从红色评语的顶端量起。`trad-chinese-informal`把页码印成一到六。
+这些是[竖排文字元素](/zh/docs/configuration-page-layout#竖排文本元素)中的书口书眉：`anchor.to: 'outer'`指远离书脊的页边距，在右翻书里是右页的左边、左页的右边；`writingMode: 'vertical-rl'`让文字竖排。这里的版心包括评语一栏，所以“天头下四格”是从红色评语的顶端量起。`trad-chinese-informal`把页码印成一到六。
 
 ### 4 · 每种字体只加载它要排的文字
 

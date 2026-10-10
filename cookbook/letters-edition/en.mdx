@@ -16,25 +16,25 @@ Five pages of *Mon sort est changé*, a 14 × 21 cm edition of three letters in 
 
 ### 1 · Read the dateline from the heading
 
-The code is [the short answer](#the-short-answer) above. Each letter is a level-1 heading whose attributes hold its place and date, and the head prints them as `{attr.place}, le {attr.date}.` ([heading attributes](/en/docs/document-format#heading-attributes)). The dateline’s box reaches the right edge of the column (`width: 'fill'`), and `align: 'right'` sets the words against that edge; without it, design text is centred. The salutation, the signature and the postscript are [paragraph styles](/en/docs/configuration#paragraph-styles) applied with `:::paragraphs{style="…"}`. The signature takes IM Fell DW Pica SC, a family whose lower case is cut as small capitals. `inlineMarks: true` makes the dateline read the marks in its attribute, so `date="1^er^ avril 1778"` raises the ordinal.
+The code is [the short answer](#the-short-answer) above. Each letter is a level-1 heading whose attributes hold its place and date, and the head prints them as `{attr.place}, le {attr.date}.` ([heading attributes](/en/docs/document-format#heading-attributes)). The dateline’s box reaches the right edge of the column (`width: 'fill'`), and `align: 'right'` sets the words against that edge; without it, design text is centred. The salutation, the signature and the postscript are [paragraph styles](/en/docs/configuration-styles#paragraph-styles) applied with `:::paragraphs{style="…"}`. The signature takes IM Fell DW Pica SC, a family whose lower case is cut as small capitals. `inlineMarks: true` makes the dateline read the marks in its attribute, so `date="1^er^ avril 1778"` raises the ordinal.
 
 ### 2 · Run the letters on
 
 <Excerpt region="letters" />
 
-With `breakBefore` off, a letter starts two grid lines (`marginTop`) below the grid line where the one before ends. On <PageRef page={4}>page 4</PageRef> the postscript, set on 12.6 pt leading, ends between grid lines, so about three lines of white stand above Letter III. On page 2, Letter I runs to the foot of the page and Letter II opens page 3. Left at its default, level 1 would open every letter on a recto ([break before](/en/docs/configuration#break-before)). `numberingTemplate: '{1:I}'` numbers the letters I to III, and the head prints the numeral through `{number}`.
+With `breakBefore` off, a letter starts two grid lines (`marginTop`) below the grid line where the one before ends. On <PageRef page={4}>page 4</PageRef> the postscript, set on 12.6 pt leading, ends between grid lines, so about three lines of white stand above Letter III. On page 2, Letter I runs to the foot of the page and Letter II opens page 3. Left at its default, level 1 would open every letter on a recto ([break before](/en/docs/configuration-text#break-before)). `numberingTemplate: '{1:I}'` numbers the letters I to III, and the head prints the numeral through `{number}`.
 
 ### 3 · Date the recto with the letter
 
 <Excerpt region="running-heads" />
 
-In a page header, `{attr.date}` takes the attribute of the last level-1 heading that starts on or before the page. Page 3 prints 12 juin 1740, and page 5, where Voltaire’s letter continues from page 4, prints 1er avril 1778 with its ordinal raised ([text elements](/en/docs/configuration#text-elements)). The heads sit 12 mm below the top edge of the page, the folio on the outer margin and the words 8 mm further in. `pages: 'body'` keeps them off the cover, which counts as an opener because its heading spans the page. The date is set in the Crimson Pro italic of the dateline it repeats, and the names on the verso in the small capitals of the letter numbers.
+In a page header, `{attr.date}` takes the attribute of the last level-1 heading that starts on or before the page. Page 3 prints 12 juin 1740, and page 5, where Voltaire’s letter continues from page 4, prints 1er avril 1778 with its ordinal raised ([text elements](/en/docs/configuration-page-layout#text-elements)). The heads sit 12 mm below the top edge of the page, the folio on the outer margin and the words 8 mm further in. `pages: 'body'` keeps them off the cover, which counts as an opener because its heading spans the page. The date is set in the Crimson Pro italic of the dateline it repeats, and the names on the verso in the small capitals of the letter numbers.
 
 ### 4 · Make the cover a heading
 
 <Excerpt region="cover" />
 
-The cover is the first heading, in the `cover` [heading style](/en/docs/configuration#heading-styles): an image element anchored to the bleed carries the drawn binding, a second one places the photograph 72 mm down, and the title, the names and the subtitle come from the heading and the frontmatter. `numbered: false` leaves it out of the count, so Frederick’s first letter is I. The binding image fills the page, and an opener reserves room down to its lowest element, so the cover takes the whole of page 1 and the headnote starts on page 2 with no `:::pagebreak`.
+The cover is the first heading, in the `cover` [heading style](/en/docs/configuration-styles#heading-styles): an image element anchored to the bleed carries the drawn binding, a second one places the photograph 72 mm down, and the title, the names and the subtitle come from the heading and the frontmatter. `numbered: false` leaves it out of the count, so Frederick’s first letter is I. The binding image fills the page, and an opener reserves room down to its lowest element, so the cover takes the whole of page 1 and the headnote starts on page 2 with no `:::pagebreak`.
 
 ### 5 · Hyphenate the French, and keep the spaces open
 

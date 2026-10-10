@@ -16,7 +16,7 @@ Dos páginas de una nota de investigación, 号数活字の三つの系列 («La
 
 ### 1 · El estilo, la locale y las notas
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. `postext-citeproc` trae SIST 02 como `'sist02'` y la locale CSL `ja-JP`, que escribe en japonés los términos de la lista y une dos autores japoneses con と y más de dos con ほか en una cita narrativa ([Citas](/es/docs/configuration#citas)). En el texto, `[@kawada1949; @suzuki2015]` imprime (2, 3), y `高橋[@takahashi2012]が` pone el número tras el nombre, 高橋(8)が. El estilo se distingue del chino GB/T 7714 en la llamada: SIST 02 pone el número entre paréntesis en la línea; la GB/T 7714, entre corchetes y volado. Las notas no necesitan nada: `locale: 'ja'` da a un documento horizontal notas al pie de la columna, numeradas desde 1 en cada página, con la llamada volada y un filete de un tercio de la columna.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `postext-citeproc` trae SIST 02 como `'sist02'` y la locale CSL `ja-JP`, que escribe en japonés los términos de la lista y une dos autores japoneses con と y más de dos con ほか en una cita narrativa ([Citas](/es/docs/configuration-text#citas)). En el texto, `[@kawada1949; @suzuki2015]` imprime (2, 3), y `高橋[@takahashi2012]が` pone el número tras el nombre, 高橋(8)が. El estilo se distingue del chino GB/T 7714 en la llamada: SIST 02 pone el número entre paréntesis en la línea; la GB/T 7714, entre corchetes y volado. Las notas no necesitan nada: `locale: 'ja'` da a un documento horizontal notas al pie de la columna, numeradas desde 1 en cada página, con la llamada volada y un filete de un tercio de la columna.
 
 ### 2 · Las referencias en un bloque CSL-YAML
 

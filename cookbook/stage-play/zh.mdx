@@ -18,7 +18,7 @@ pageNotes: { "1": "书名页：一张梅紫色的底页，外有双重金色边�
 
 <Excerpt region="acts" />
 
-幕标题是一个一级标题，用24 pt的Abril Fatface，没有版面设计槽位。`textTransform`把它排成大写，13.6 pt的三条网格线让大写字母位于版心顶部以下5.5 mm处（[标题](/zh/docs/configuration#标题)）。`textAlign: 'center'`不能按级别设置，所以角色表的标题和*Scene*标签也会居中。parity为`'odd'`的`breakBefore`让这一幕从右页开始，与角色表相对。默认值`'always-odd'`会在两者之间留下两个空白页（[分页前置](/zh/docs/configuration#前置分页)）。
+幕标题是一个一级标题，用24 pt的Abril Fatface，没有版面设计槽位。`textTransform`把它排成大写，13.6 pt的三条网格线让大写字母位于版心顶部以下5.5 mm处（[标题](/zh/docs/configuration-text#标题)）。`textAlign: 'center'`不能按级别设置，所以角色表的标题和*Scene*标签也会居中。parity为`'odd'`的`breakBefore`让这一幕从右页开始，与角色表相对。默认值`'always-odd'`会在两者之间留下两个空白页（[分页前置](/zh/docs/configuration-text#前置分页)）。
 
 ### 2 · 角色表用一行点引到每位演员
 
@@ -30,13 +30,13 @@ pageNotes: { "1": "书名页：一张梅紫色的底页，外有双重金色边�
 
 <Excerpt region="ornament" />
 
-`captionPrefix`和`shortLabel`为空的资源类型只印图片本身（[资源类型](/zh/docs/configuration#资源类型)）。它的`defaultPlacement`把康乃馨放在`::resource{id="fleuron"}`所在的位置，居中，宽为107 mm行长的0.24，约26 mm。
+`captionPrefix`和`shortLabel`为空的资源类型只印图片本身（[资源类型](/zh/docs/configuration-resources#资源类型)）。它的`defaultPlacement`把康乃馨放在`::resource{id="fleuron"}`所在的位置，居中，宽为107 mm行长的0.24，约26 mm。
 
 ### 4 · 书名页是一个标题样式
 
 <Excerpt region="playbill" />
 
-`# The Importance of Being Earnest {style="playbill" …}`把标题分放在四个属性中，版面设计用两种字体排出：名词用40 pt和60 pt的Abril Fatface，*The*和*of Being*用17 pt的Libre Baskerville斜体（[标题属性](/zh/docs/document-format#标题属性)）。梅紫色底、边框和康乃馨是一张用代码画出的SVG，锚定在出血边上（[图片元素](/zh/docs/configuration#图像元素)）。这本书只有一栏，但样式仍设了`span: 'page'`。如果留在栏内，版面设计会在版心底部被裁掉，即纸张底边以上23.3 mm处。样式中空的`header`让书眉不出现在属于同一节的角色表上，空的`footer`让页脚页码不出现在书名页上，否则它会以梅紫色印在梅紫色底上（[标题样式](/zh/docs/configuration#标题样式)）。
+`# The Importance of Being Earnest {style="playbill" …}`把标题分放在四个属性中，版面设计用两种字体排出：名词用40 pt和60 pt的Abril Fatface，*The*和*of Being*用17 pt的Libre Baskerville斜体（[标题属性](/zh/docs/document-format#标题属性)）。梅紫色底、边框和康乃馨是一张用代码画出的SVG，锚定在出血边上（[图片元素](/zh/docs/configuration-page-layout#图像元素)）。这本书只有一栏，但样式仍设了`span: 'page'`。如果留在栏内，版面设计会在版心底部被裁掉，即纸张底边以上23.3 mm处。样式中空的`header`让书眉不出现在属于同一节的角色表上，空的`footer`让页脚页码不出现在书名页上，否则它会以梅紫色印在梅紫色底上（[标题样式](/zh/docs/configuration-styles#标题样式)）。
 
 底图是一个图片元素，而首页标题会把高度预留到图片底边，所以这个标题占满整张纸：无论书名页上各行放在哪里，标题后面不写`:::pagebreak`，*The Persons of the Play*也从第2页开始。设了`letterSpacing`的居中行也不用修正：居中时不计最后一个字母后面的字距，*OSCAR WILDE*正好落在页面中线上。
 
@@ -44,7 +44,7 @@ pageNotes: { "1": "书名页：一张梅紫色的底页，外有双重金色边�
 
 <Excerpt region="heads" />
 
-左页书眉印frontmatter中的剧名，右页印来自`{chapterTitle}`的幕名，都用Playfair Display SC大写，页码用梅紫色排在外侧（[文字元素](/zh/docs/configuration#文本元素)）。每幕的第一页算作首页，因为它的第一个块是一个分页的标题，所以`pages: 'body'`让书眉不出现在这一页，页脚则为它印一个页脚页码。
+左页书眉印frontmatter中的剧名，右页印来自`{chapterTitle}`的幕名，都用Playfair Display SC大写，页码用梅紫色排在外侧（[文字元素](/zh/docs/configuration-page-layout#文本元素)）。每幕的第一页算作首页，因为它的第一个块是一个分页的标题，所以`pages: 'body'`让书眉不出现在这一页，页脚则为它印一个页脚页码。
 
 <Note>
 电影剧本不是悬挂缩进台词，而是从两侧缩进：<RecipeLink slug="screenplay-format">电影剧本格式</RecipeLink>把每段台词排成一个无边框的框，用内边距把它收窄到对白区的宽度。

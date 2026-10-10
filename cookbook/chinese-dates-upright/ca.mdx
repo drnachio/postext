@@ -16,7 +16,7 @@ Set pàgines amb dos textos fundacionals de la República de la Xina: la proclam
 
 ### 1 · Deixa els nombres curts a la configuració
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. Amb `cjk.uprightDigits: 2`, qualsevol grup d'una o dues xifres d'un text vertical es posa dret en una casella d'un quadratí, amb les dues xifres l'una al costat de l'altra: 10月10日, 第35號 i 7章56條 no porten cap marca. Un nombre més llarg es compon sencer de costat, com una paraula llatina, que és com clreq compon els nombres de quatre xifres, així que 1912 i 1644 baixen per la línia girats un quart de volta. Si vols dret un nombre de tres xifres, marca'l: `民國:tcy[115]年` estreny el 115 fins que càpiga al quadratí. `:upright[ROC]` posa cada lletra dreta a la seva pròpia casella, l'una sota l'altra, i la línia mai no es talla a dins ([nombres en text vertical](/ca/docs/configuration#nombres-en-text-vertical)).
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Amb `cjk.uprightDigits: 2`, qualsevol grup d'una o dues xifres d'un text vertical es posa dret en una casella d'un quadratí, amb les dues xifres l'una al costat de l'altra: 10月10日, 第35號 i 7章56條 no porten cap marca. Un nombre més llarg es compon sencer de costat, com una paraula llatina, que és com clreq compon els nombres de quatre xifres, així que 1912 i 1644 baixen per la línia girats un quart de volta. Si vols dret un nombre de tres xifres, marca'l: `民國:tcy[115]年` estreny el 115 fins que càpiga al quadratí. `:upright[ROC]` posa cada lletra dreta a la seva pròpia casella, l'una sota l'altra, i la línia mai no es talla a dins ([nombres en text vertical](/ca/docs/configuration-east-asian#nombres-en-text-vertical)).
 
 <PageShot page={4} crop="0.43,0.145,0.45,0.74" caption="Pàgina 4, les notes: 10月10日 i 2月12日 drets, 1911 i Sun Yat-sen de costat, 268 i 115 estrenyits amb :tcy, ROC apilada amb :upright." />
 
@@ -36,7 +36,7 @@ Un disseny de títol no distingeix pàgines parelles i senars, així que la band
 
 <Excerpt region="heads" />
 
-`anchor.to: 'outer'` és el marge del costat oposat al llom, així que en un llibre enquadernat per la dreta les capçaleres baixen per la vora esquerra de la pàgina senar i per la dreta de la parella. El títol queda quatre caràcters per sota del cap de la taca i el foli acaba cinc per damunt del seu peu, tots dos en vertical, al 80 % del cos del text ([elements de text verticals](/ca/docs/configuration#elements-de-text-verticals)). `pageNumbering.format: 'trad-chinese-informal'` imprimeix els folis 三, 四, 六 i 七, i `pages: 'body'` els treu de les dues obertures.
+`anchor.to: 'outer'` és el marge del costat oposat al llom, així que en un llibre enquadernat per la dreta les capçaleres baixen per la vora esquerra de la pàgina senar i per la dreta de la parella. El títol queda quatre caràcters per sota del cap de la taca i el foli acaba cinc per damunt del seu peu, tots dos en vertical, al 80 % del cos del text ([elements de text verticals](/ca/docs/configuration-page-layout#elements-de-text-verticals)). `pageNumbering.format: 'trad-chinese-informal'` imprimeix els folis 三, 四, 六 i 七, i `pages: 'body'` els treu de les dues obertures.
 
 ### 4 · Porta la coberta a sang amb un disseny de pàgina
 

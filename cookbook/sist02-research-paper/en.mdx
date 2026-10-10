@@ -16,7 +16,7 @@ Two pages of a research note, 号数活字の三つの系列 (“Three series of
 
 ### 1 · The style, the locale and the notes
 
-The code is [the short answer](#the-short-answer) above. `postext-citeproc` ships SIST 02 as `'sist02'` and the CSL locale `ja-JP`, which writes the list’s terms in Japanese and joins two Japanese authors with と and more with ほか in a narrative citation ([Citations](/en/docs/configuration#citations)). In the text, `[@kawada1949; @suzuki2015]` prints (2, 3), and `高橋[@takahashi2012]が` puts the number after the name, 高橋(8)が. The style differs from the Chinese GB/T 7714 in the marker: SIST 02 sets the number in parentheses on the line, GB/T 7714 in square brackets raised. The notes need nothing: `locale: 'ja'` gives a horizontal document notes at the foot of the column, numbered from 1 on each page, with a superscript marker and a rule a third of the column long.
+The code is [the short answer](#the-short-answer) above. `postext-citeproc` ships SIST 02 as `'sist02'` and the CSL locale `ja-JP`, which writes the list’s terms in Japanese and joins two Japanese authors with と and more with ほか in a narrative citation ([Citations](/en/docs/configuration-notes-references#citations)). In the text, `[@kawada1949; @suzuki2015]` prints (2, 3), and `高橋[@takahashi2012]が` puts the number after the name, 高橋(8)が. The style differs from the Chinese GB/T 7714 in the marker: SIST 02 sets the number in parentheses on the line, GB/T 7714 in square brackets raised. The notes need nothing: `locale: 'ja'` gives a horizontal document notes at the foot of the column, numbered from 1 on each page, with a superscript marker and a rule a third of the column long.
 
 ### 2 · The references in a CSL-YAML block
 

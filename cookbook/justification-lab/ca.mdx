@@ -22,7 +22,7 @@ El codi d'aquest pas és [la resposta curta](#la-resposta-curta) de més amunt. 
 
 <Excerpt region="marks" />
 
-`findLooseLines` retorna les línies justificades els espais de les quals s'estiren per sobre d'un llindar, aquí el límit superior, cadascuna amb la franja que cobreix el ressaltat ([Línies fluixes al teu propi canvas](/ca/docs/configuration#línies-fluixes-al-teu-propi-canvas)). `marks()` hi afegeix el que aquesta llista deixa fora, llegit del [VDT](/ca/docs/justification#depuració-de-línies-fluixes): una línia de més de 3× no té proporció, perquè el motor [la compon en bandera](/ca/docs/justification#línies-que-lalgorisme-no-pot-omplir) i la marca amb `line.ragged`, i un paràgraf partit entre dues columnes torna com un bloc per fragment, que és com es troben les línies soles. Amb quaranta caràcters per línia, els límits no basten perquè totes quedin per sota d'1,6; mentre s'ajustava el text de l'assaig, les marques van assenyalar quines frases calia reescriure.
+`findLooseLines` retorna les línies justificades els espais de les quals s'estiren per sobre d'un llindar, aquí el límit superior, cadascuna amb la franja que cobreix el ressaltat ([Línies fluixes al teu propi canvas](/ca/docs/configuration-fonts-colors-viewers#línies-fluixes-al-teu-propi-canvas)). `marks()` hi afegeix el que aquesta llista deixa fora, llegit del [VDT](/ca/docs/justification#depuració-de-línies-fluixes): una línia de més de 3× no té proporció, perquè el motor [la compon en bandera](/ca/docs/justification#línies-que-lalgorisme-no-pot-omplir) i la marca amb `line.ragged`, i un paràgraf partit entre dues columnes torna com un bloc per fragment, que és com es troben les línies soles. Amb quaranta caràcters per línia, els límits no basten perquè totes quedin per sota d'1,6; mentre s'ajustava el text de l'assaig, les marques van assenyalar quines frases calia reescriure.
 
 ### 3 · Posa el control al costat de la pàgina publicada
 
@@ -40,7 +40,7 @@ Un requadre compon totes les columnes d'un grup [`:::columns`](/ca/docs/document
 
 <Excerpt region="opener" />
 
-El diagrama és un [element d'imatge](/ca/docs/configuration#elements-dimatge) del disseny de l'H1. Com a figura seria un flotant `top` a tota l'amplada, i un flotant `top` citat a la pàgina 1 obre la pàgina 2. La banda baixa més que el diagrama, i una obertura reserva alçada fins al seu element més baix, així que el text comença sota la banda sense `minHeight`, una línia més avall pel `marginBottom` que l'H1 porta per defecte. Els rètols són text de disseny col·locat sobre les coordenades del mateix dibuix, compost i espaiat com els altres rètols de l'obertura.
+El diagrama és un [element d'imatge](/ca/docs/configuration-page-layout#elements-dimatge) del disseny de l'H1. Com a figura seria un flotant `top` a tota l'amplada, i un flotant `top` citat a la pàgina 1 obre la pàgina 2. La banda baixa més que el diagrama, i una obertura reserva alçada fins al seu element més baix, així que el text comença sota la banda sense `minHeight`, una línia més avall pel `marginBottom` que l'H1 porta per defecte. Els rètols són text de disseny col·locat sobre les coordenades del mateix dibuix, compost i espaiat com els altres rètols de l'obertura.
 
 ## Variants
 

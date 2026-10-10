@@ -18,7 +18,7 @@ pageNotes: { "1": "DLリーフレットのおもて面。砂色の地にキッ�
 
 <Excerpt region="answer" highlight="14-17" />
 
-`createBundle`は章、設定、リソース、そしてそれらが参照するすべてのファイルをzipにまとめます。`openBundle`が受け取るのはそのバイト列だけです。書体は`loadBundleFonts`から、図は`registerBundleImages`から、デザインは`bundle.config`から取ります。`files`に入れ忘れた書体はブラウザーの代替フォントで印字され、入れ忘れた図は警告とともに省かれ、その参照は(?)と印字されます。zipの中では各`fileId`がパスになり（`mill.svg`は`resources/mill.svg`になります）、`openBundle`が返すリソースと`customFonts`はすでに新しい名前を使っています（[バンドルを開く](/ja/docs/configuration#バンドルを開く)）。
+`createBundle`は章、設定、リソース、そしてそれらが参照するすべてのファイルをzipにまとめます。`openBundle`が受け取るのはそのバイト列だけです。書体は`loadBundleFonts`から、図は`registerBundleImages`から、デザインは`bundle.config`から取ります。`files`に入れ忘れた書体はブラウザーの代替フォントで印字され、入れ忘れた図は警告とともに省かれ、その参照は(?)と印字されます。zipの中では各`fileId`がパスになり（`mill.svg`は`resources/mill.svg`になります）、`openBundle`が返すリソースと`customFonts`はすでに新しい名前を使っています（[バンドルを開く](/ja/docs/configuration-programmatic-usage#バンドルを開く)）。
 
 ### 2 · 書体をファイルに入れる
 
@@ -36,13 +36,13 @@ pageNotes: { "1": "DLリーフレットのおもて面。砂色の地にキッ�
 
 <Excerpt region="labels" />
 
-ファイルを開く側は、組み込みの種類をそのファイルの言語で組み立てます。設定に`resourceTypes`がなくても、スペイン語のリーフレットは、/en/sandboxのSandboxを含めてどこで開いてもFigura 1.1とTabla 1.1を印字します。このリーフレットが種類を書き込むのは番号のためだけです。`'{n}'`は章番号を落とします。2ページのリーフレットに章番号は不要です（[リソースの種類](/ja/docs/configuration#リソースの種類)）。同じ`config()`で`locale`も設定し、これでスペイン語のハイフネーションパターン（裏面のcompuer-tas）と、PDFが宣言する言語が決まります。
+ファイルを開く側は、組み込みの種類をそのファイルの言語で組み立てます。設定に`resourceTypes`がなくても、スペイン語のリーフレットは、/en/sandboxのSandboxを含めてどこで開いてもFigura 1.1とTabla 1.1を印字します。このリーフレットが種類を書き込むのは番号のためだけです。`'{n}'`は章番号を落とします。2ページのリーフレットに章番号は不要です（[リソースの種類](/ja/docs/configuration-resources#リソースの種類)）。同じ`config()`で`locale`も設定し、これでスペイン語のハイフネーションパターン（裏面のcompuer-tas）と、PDFが宣言する言語が決まります。
 
 ### 5 · 同じバイト列を渡す
 
 <Excerpt region="handoff" />
 
-リンクからは、ページを組んだのと同じ`bytes`、フォント込みで132 KBのファイルを取得できます。Sandboxで読み込むと（**本 → 新規 → .postextファイルを開く…**）、ファイルはスペイン語または英語の本になり、`thumbnail`から取った水車の絵がその本の画像になります。PDFは書体を`bundleFontProvider`から取ります。これはバンドル内でウェイトが最も近い書体を、同じスタイルがあればそのスタイルで返します。図は`bundleResourceBytes`から取るので、フォントも画像も2度ダウンロードされることはありません（[バンドルを組んで描画する](/ja/docs/configuration#バンドルを組んで描画する)）。
+リンクからは、ページを組んだのと同じ`bytes`、フォント込みで132 KBのファイルを取得できます。Sandboxで読み込むと（**本 → 新規 → .postextファイルを開く…**）、ファイルはスペイン語または英語の本になり、`thumbnail`から取った水車の絵がその本の画像になります。PDFは書体を`bundleFontProvider`から取ります。これはバンドル内でウェイトが最も近い書体を、同じスタイルがあればそのスタイルで返します。図は`bundleResourceBytes`から取るので、フォントも画像も2度ダウンロードされることはありません（[バンドルを組んで描画する](/ja/docs/configuration-programmatic-usage#バンドルを組んで描画する)）。
 
 ### 6 · おもて面を見出しひとつで描く
 
@@ -72,4 +72,4 @@ Postextガイドは、英語とスペイン語の章、設定、キャプショ�
 
 ## よくあるつまずき
 
-- ここでは版ごとに1つのファイルを書き出しています。2つの言語を1つのファイルに入れるには、`createBundle`に`localized`のマップを渡します（[多言語のバンドル](/ja/docs/configuration#多言語のバンドル)）。そうすれば`openBundle(bytes, { locale })`でどちらの版も読めます。
+- ここでは版ごとに1つのファイルを書き出しています。2つの言語を1つのファイルに入れるには、`createBundle`に`localized`のマップを渡します（[多言語のバンドル](/ja/docs/configuration-programmatic-usage#多言語のバンドル)）。そうすれば`openBundle(bytes, { locale })`でどちらの版も読めます。

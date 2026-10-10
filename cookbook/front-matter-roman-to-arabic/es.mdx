@@ -24,13 +24,13 @@ Un título abre página y sale como marcador en el PDF; el diseño de su estilo 
 
 <Excerpt region="contents" />
 
-`:::toc` recoge cada título que su estilo deja pasar, con la etiqueta de la página donde cae ([índice de contenidos](/es/docs/configuration#índice-de-contenidos)). El índice y el prólogo comparten el estilo `front`, que fija `toc: false`, y el prólogo lo anula con `{toc="true"}`. Ni el prólogo ni la Carta I van numerados, así que sus entradas no llevan número de capítulo. La segunda línea de la entrada de la carta es su atributo `to="…"`. Los números de página van en la letra de los folios. Las entradas arrancan a la altura de la primera línea del prólogo, de modo que las dos páginas del pliego casan.
+`:::toc` recoge cada título que su estilo deja pasar, con la etiqueta de la página donde cae ([índice de contenidos](/es/docs/configuration-notes-references#índice-de-contenidos)). El índice y el prólogo comparten el estilo `front`, que fija `toc: false`, y el prólogo lo anula con `{toc="true"}`. Ni el prólogo ni la Carta I van numerados, así que sus entradas no llevan número de capítulo. La segunda línea de la entrada de la carta es su atributo `to="…"`. Los números de página van en la letra de los folios. Las entradas arrancan a la altura de la primera línea del prólogo, de modo que las dos páginas del pliego casan.
 
 ### 3 · La novela abre en página impar, bajo la aurora boreal
 
 <Excerpt region="letter" />
 
-La pintura sale a sangre por la cabeza de la página y se funde con el papel al pie, donde empieza la carta. La apertura reserva la página hasta el pie de la pintura, a 104 mm del borde superior, y `minHeight` pone un suelo 2 mm más abajo, con lo que la carta empieza una línea de la rejilla después, libre del fundido ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El antetítulo y la fecha salen de los atributos `to` y `dateline` del título. La Carta I añade `{style="letter"}`, un estilo que se limita a fijar `numbered: false`, porque las cartas de Walton van antes del capítulo I y no se numeran.
+La pintura sale a sangre por la cabeza de la página y se funde con el papel al pie, donde empieza la carta. La apertura reserva la página hasta el pie de la pintura, a 104 mm del borde superior, y `minHeight` pone un suelo 2 mm más abajo, con lo que la carta empieza una línea de la rejilla después, libre del fundido ([span y diseño avanzado](/es/docs/configuration-text#span-y-diseño-avanzado)). El antetítulo y la fecha salen de los atributos `to` y `dateline` del título. La Carta I añade `{style="letter"}`, un estilo que se limita a fijar `numbered: false`, porque las cartas de Walton van antes del capítulo I y no se numeran.
 
 ### 4 · Las cabeceras vuelven con la novela
 
@@ -76,7 +76,7 @@ Borra el título `# Frontispiece` y manda la portada a página impar: la página
 
 ### Añade sangre y marcas de corte para imprenta
 
-Con `cutLines`, la cubierta y la apertura, ancladas a la sangre, rebasan el corte en 3 mm; los folios y el número de páginas no cambian ([marcas de corte](/es/docs/configuration#marcas-de-corte)).
+Con `cutLines`, la cubierta y la apertura, ancladas a la sangre, rebasan el corte en 3 mm; los folios y el número de páginas no cambian ([marcas de corte](/es/docs/configuration-page-layout#marcas-de-corte)).
 
 ```diff
      backgroundColor: col('paper'), pageNumbering,

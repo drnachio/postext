@@ -30,7 +30,7 @@
       "pt": "Corrija o nome da família (uma só família, sem pilha CSS) e carregue todas as fontes antes da primeira composição; num pen, inclua a família em FONTS."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Missing-font warnings",
         "es": "Avisos de fuentes faltantes",
@@ -72,7 +72,7 @@
       "pt": "Corrija a grafia ou declare a família em customFonts com os arquivos dela."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Missing-font warnings",
         "es": "Avisos de fuentes faltantes",
@@ -114,7 +114,7 @@
       "pt": "Envie ou declare a variante que falta, ou deixe de usar esse peso ou estilo."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Missing-font warnings",
         "es": "Avisos de fuentes faltantes",
@@ -156,7 +156,7 @@
       "pt": "Atribua a cada arquivo o peso e o estilo reais, ou remova o que sobra."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Missing-font warnings",
         "es": "Avisos de fuentes faltantes",
@@ -198,7 +198,7 @@
       "pt": "Carregue as fontes antes da primeira composição: `prepareFonts(content, config, { resolve })`, ou componha com `buildDocumentWithFonts`, que também carrega qualquer fonte que as páginas usaram e compõe de novo. Para `synthesized`, carregue esse peso ou essa inclinação, ou escolha um peso que a família tenha."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Warnings in the document",
         "es": "Avisos del documento",
@@ -408,7 +408,7 @@
       "pt": "Dê ao parágrafo um estilo de parágrafo com mais entrelinha ou aumente `bodyText.lineHeight`."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-east-asian",
       "heading": {
         "en": "Marks, ruby and warichu",
         "es": "Marcas, ruby y warichu",
@@ -450,7 +450,7 @@
       "pt": "Componha o parágrafo com mais entrelinha (pelo menos o corpo do texto mais `cjk.ruby.fontSize`) ou reduza as leituras."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-east-asian",
       "heading": {
         "en": "Marks, ruby and warichu",
         "es": "Marcas, ruby y warichu",
@@ -492,7 +492,7 @@
       "pt": "Componha o parágrafo com mais entrelinha (pelo menos o corpo do texto mais `cjk.kunten.fontSize`) ou reduza as marcas."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-east-asian",
       "heading": {
         "en": "Marks, ruby and warichu",
         "es": "Marcas, ruby y warichu",
@@ -534,7 +534,7 @@
       "pt": "Aumente `bodyText.lineHeight` (1,7–1,85 em para texto vocalizado em parte, 1,9–2,1 em para verso totalmente vocalizado), dê ao parágrafo um estilo de parágrafo com mais entrelinha ou defina `bodyText.tashkil: 'strip-vowels'` para uma edição sem vogais."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Arabic text",
         "es": "Texto árabe",
@@ -576,7 +576,7 @@
       "pt": "Use o nível imediatamente abaixo ou mude o estilo do nível que você queria, em vez de pular um."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Warnings",
         "es": "Avisos",
@@ -618,7 +618,7 @@
       "pt": "Acrescente um parágrafo introdutório ou desative a verificação onde os títulos empilhados forem intencionais."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Warnings",
         "es": "Avisos",
@@ -660,7 +660,7 @@
       "pt": "Apresente a lista com uma frase terminada em dois-pontos, que também fica presa à lista."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Warnings",
         "es": "Avisos",
@@ -870,7 +870,7 @@
       "pt": "Use um marcador aceito ({pageNumber}, {chapterTitle}, {title}, {attr.x}…) ou escreva {{ e }} para chaves literais."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Text elements",
         "es": "Elementos de texto",
@@ -912,7 +912,7 @@
       "pt": "Acrescente o valor ao frontmatter, entre aspas, ou remova o marcador."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Text elements",
         "es": "Elementos de texto",
@@ -1038,7 +1038,7 @@
       "pt": "Defina o estilo em paragraphStyles ou corrija o id na cerca."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "The `:::paragraphs` container",
         "es": "El contenedor `:::paragraphs`",
@@ -1080,7 +1080,7 @@
       "pt": "Defina o estilo ou corrija o atributo type."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "The `:::callout` container",
         "es": "El contenedor `:::callout`",
@@ -1122,7 +1122,7 @@
       "pt": "Defina o estilo em chipStyles ou corrija o atributo style."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Chip styles",
         "es": "Estilos de chip",
@@ -1332,7 +1332,7 @@
       "pt": "Acrescente um parágrafo [^id]: com a nota ou corrija o id da chamada."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-notes-references",
       "heading": {
         "en": "Footnotes",
         "es": "Notas al pie",
@@ -1374,7 +1374,7 @@
       "pt": "Cite a nota com [^id] onde ela deve ficar ou exclua a definição."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-notes-references",
       "heading": {
         "en": "Footnotes",
         "es": "Notas al pie",
@@ -1416,7 +1416,7 @@
       "pt": "Reduza o preenchimento vertical, o contorno ou o tamanho do chip, ou aumente a entrelinha."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Chip styles",
         "es": "Estilos de chip",
@@ -1626,7 +1626,7 @@
       "pt": "Use any, odd, even, always-odd ou always-even."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Break before",
         "es": "Saltar antes",
@@ -1668,7 +1668,7 @@
       "pt": "Revise as quebras always-odd e as paridades de breakBefore; em capítulos curtos, a paridade any costuma evitar essas páginas em branco."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Break before",
         "es": "Saltar antes",
@@ -1710,7 +1710,7 @@
       "pt": "Passe para numeração romana ou decimal nas sequências longas."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Numbering",
         "es": "Numeración",
@@ -1752,7 +1752,7 @@
       "pt": "Encurte a caixa, deixe que ela se divida com keepTogether: false, reduza splitMinLines ou dê a ela outro span."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "The `:::callout` container",
         "es": "El contenedor `:::callout`",
@@ -1794,7 +1794,7 @@
       "pt": "Encurte o design (um `minHeight` menor, um olho mais curto ou uma imagem menor) ou dê mais espaço à página com um formato maior ou margens menores."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Span and advanced design",
         "es": "Span y diseño avanzado",
@@ -1836,7 +1836,7 @@
       "pt": "Ancore um elemento da cadeia no contêiner, na página ou na sangria."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Element placement",
         "es": "Posicionamiento de elementos",
@@ -1878,7 +1878,7 @@
       "pt": "Corrija o id ou acrescente o elemento a que ele se refere."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Element placement",
         "es": "Posicionamiento de elementos",
@@ -1920,7 +1920,7 @@
       "pt": "Aumente a caixa ou use overflow wrap ou reticências."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Text elements",
         "es": "Elementos de texto",
@@ -1962,7 +1962,7 @@
       "pt": "Declare de novo breakBefore: { enabled: true, parity } nesse nível."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Span and advanced design",
         "es": "Span y diseño avanzado",
@@ -2004,7 +2004,7 @@
       "pt": "Acrescente um elemento de texto com {titleText}, a menos que o título deva ser invisível."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Span and advanced design",
         "es": "Span y diseño avanzado",
@@ -2130,7 +2130,7 @@
       "pt": "Defina o tipo ou aponte o recurso para um tipo existente."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Resource types",
         "es": "Tipos de recurso",
@@ -2298,7 +2298,7 @@
       "pt": "Deixe a inserção sozinha na linha, depois de uma linha em branco, com aspas duplas e sem outros atributos."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Warnings in the document",
         "es": "Avisos del documento",
@@ -2340,7 +2340,7 @@
       "pt": "Mude o método de entrada para meia largura (ou para inglês) na marcação e digite `:::`, `#`, `[^…]`, `{…}` ou `**…**`; o texto entre elas continua em chinês."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Warnings in the document",
         "es": "Avisos del documento",
@@ -2424,7 +2424,7 @@
       "pt": "Corrija o id ou acrescente o estilo a `headingStyles`."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Warnings in the document",
         "es": "Avisos del documento",
@@ -2466,7 +2466,7 @@
       "pt": "Escolha um `sideColumnPercent` dentro dos limites documentados ou aumente a página ou a medianiz."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Configuration warnings",
         "es": "Avisos de configuración",
@@ -2508,7 +2508,7 @@
       "pt": "Defina `columnCount` como um número inteiro de 3 a 8; para uma ou duas colunas, use `layoutType` `single` ou `double`."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Configuration warnings",
         "es": "Avisos de configuración",
@@ -2550,7 +2550,7 @@
       "pt": "Reduza `charsPerLine` ou `linesPerPage`, estreite as margens (elas são mínimas) ou use um `bodyText.fontSize` ou um `lineHeight` menor."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-east-asian",
       "heading": {
         "en": "Character grid",
         "es": "Retícula de caracteres",
@@ -2592,7 +2592,7 @@
       "pt": "Corrija o id ou adicione o estilo com esse nome a `tableStyles`."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Warnings in the document",
         "es": "Avisos del documento",
@@ -2634,7 +2634,7 @@
       "pt": "Mantenha todas as linhas com o mesmo comprimento e marque as células cobertas com `hiddenBy` (ou crie as mesclagens com `mergeCells`)."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Warnings in the document",
         "es": "Avisos del documento",
@@ -2676,7 +2676,7 @@
       "pt": "Registre cada `fileId` antes de renderizar (`registerResourceImage`, ou `imageUrl`/`resourceBytes` para HTML e PDF)."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Warnings in the document",
         "es": "Avisos del documento",
@@ -2718,7 +2718,7 @@
       "pt": "Registre a fonte (`registerFontBytes`, `loadBundleFonts`) ou passe um provedor de fontes que a tenha; confira se o nome da família está escrito como a fonte o traz."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Warnings in the document",
         "es": "Avisos del documento",
@@ -2760,7 +2760,7 @@
       "pt": "Sirva a família em fatias por unicode-range para incorporar só os arquivos de que os rótulos precisam, use menos fontes no desenho ou aumente `maxBytes`."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Warnings in the document",
         "es": "Avisos del documento",
@@ -2802,7 +2802,7 @@
       "pt": "Indique um único nome de família e carregue as fontes dela antes da primeira composição."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Configuration warnings",
         "es": "Avisos de configuración",
@@ -2844,7 +2844,7 @@
       "pt": "Use uma das grafias de formato documentadas (por exemplo `decimal`/`arabic`, `lower-roman`, `upper-alpha`)."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Configuration warnings",
         "es": "Avisos de configuración",
@@ -2886,7 +2886,7 @@
       "pt": "Troque a chave pela configuração que o aviso sugere ou remova-a."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Configuration warnings",
         "es": "Avisos de configuración",
@@ -2928,7 +2928,7 @@
       "pt": "Escreva um dos valores que a configuração aceita ou remova-a para manter o padrão."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Configuration warnings",
         "es": "Avisos de configuración",
@@ -2970,7 +2970,7 @@
       "pt": "Use um idioma incluído ou desative a hifenização para esse texto."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Configuration warnings",
         "es": "Avisos de configuración",
@@ -3180,7 +3180,7 @@
       "pt": "Forneça ao PDF os arquivos que contêm esses caracteres (as fatias numeradas por unicode-range de uma família CJK da Fontsource) ou escolha uma família que os inclua."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Chinese, Japanese and Korean fonts",
         "es": "Fuentes chinas, japonesas y coreanas",
@@ -3222,7 +3222,7 @@
       "pt": "Forneça um arquivo estático por peso (o varLib.instancer do fontTools gera esses arquivos) ou use a Fontsource, que serve pesos estáticos."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Chinese, Japanese and Korean fonts",
         "es": "Fuentes chinas, japonesas y coreanas",
@@ -3264,7 +3264,7 @@
       "pt": "Use a versão TrueType da fonte (Noto Serif CJK do Google Fonts ou da Fontsource), que é reduzida aos glifos usados."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Chinese, Japanese and Korean fonts",
         "es": "Fuentes chinas, japonesas y coreanas",
@@ -3306,7 +3306,7 @@
       "pt": "Remova placement.rotate ou componha esse trecho numa seção horizontal (um estilo de título cujo layout defina writingMode 'horizontal-tb'), onde a figura gira como pedido."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Vertical writing",
         "es": "Escritura vertical",
@@ -3390,7 +3390,7 @@
       "pt": "Escreva `latn` (0–9), `arab` (٠–٩) ou `arabext` (۰–۹), ou remova a configuração para seguir o idioma do documento."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Configuration warnings",
         "es": "Avisos de configuración",
@@ -3942,7 +3942,7 @@
       "pt": "Clique na entrada para abrir a página: troque ou amplie a imagem, engrosse o fio, componha o texto pequeno em preto ou numa só tinta, leve o texto para dentro da área de segurança, estenda as caixas até a sangria. Os limites estão em print.preflight."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Preflight",
         "es": "Preflight",
@@ -3984,7 +3984,7 @@
       "pt": "Remova `lineNumbers` da edição vertical, ou componha essa edição na horizontal."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Configuration warnings",
         "es": "Avisos de configuración",
@@ -4026,7 +4026,7 @@
       "pt": "Leve o boxe ou a figura para uma linha sem número, ponha os números na margem (`position: 'outer'`) ou mude o intervalo."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-notes-references",
       "heading": {
         "en": "Line numbers",
         "es": "Numeración de líneas",
@@ -4068,7 +4068,7 @@
       "pt": "Remova o `:tab` da edição vertical, ou componha ali as linhas alinhadas como um recurso de tabela."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Tab stops",
         "es": "Tabulaciones",
@@ -4110,7 +4110,7 @@
       "pt": "Escolha shortParagraph para os parágrafos curtos, deixe na coluna espaço para as linhas da inicial ou retire a capitular desse capítulo com {dropcap=false} no título."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Drop caps",
         "es": "Letras capitulares",
@@ -4152,7 +4152,7 @@
       "pt": "Encurte a linha (quebre uma chamada longa em duas linhas), componha o código menor ou a caixa mais larga (span=page), ou mantenha o modo que o aviso nomeia se ficar legível; 'clip' perde o texto que passa da borda."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Code listings",
         "es": "Listados de código",
@@ -4236,7 +4236,7 @@
       "pt": "Defina overflow: 'wrap' no elemento para dividir o texto em mais linhas, dê-lhe mais espaço (um size.width ou maxWidth maior, um fontSize menor, um letterSpacing mais apertado) ou encurte o texto. Mantenha as reticências onde o design é uma só linha, como num cabeçalho; o aviso então só confirma o que foi cortado."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Text elements",
         "es": "Elementos de texto",
@@ -4320,7 +4320,7 @@
       "pt": "Remova wrap dos tipos de recurso da edição vertical, ou componha essa edição na horizontal."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Configuration warnings",
         "es": "Avisos de configuración",

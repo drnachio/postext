@@ -18,7 +18,7 @@ Las dos caras de un folleto DL de visita, de 99 × 210 mm, para un molino de mar
 
 <Excerpt region="answer" highlight="14-17" />
 
-`createBundle` comprime en un zip el capítulo, la configuración, los recursos y todos los archivos que nombran, y `openBundle` no recibe más que esos bytes. Las fuentes salen de `loadBundleFonts`, los dibujos de `registerBundleImages` y el diseño de `bundle.config`. Una fuente que no esté en `files` sale con la fuente de reserva del navegador, y un dibujo que falte se descarta con un aviso y su remisión se imprime como (?). Dentro del zip, cada `fileId` pasa a ser una ruta (`mill.svg` es ahora `resources/mill.svg`), y los recursos y el `customFonts` que devuelve `openBundle` ya usan los nombres nuevos ([abrir un paquete](/es/docs/configuration#abrir-un-paquete)).
+`createBundle` comprime en un zip el capítulo, la configuración, los recursos y todos los archivos que nombran, y `openBundle` no recibe más que esos bytes. Las fuentes salen de `loadBundleFonts`, los dibujos de `registerBundleImages` y el diseño de `bundle.config`. Una fuente que no esté en `files` sale con la fuente de reserva del navegador, y un dibujo que falte se descarta con un aviso y su remisión se imprime como (?). Dentro del zip, cada `fileId` pasa a ser una ruta (`mill.svg` es ahora `resources/mill.svg`), y los recursos y el `customFonts` que devuelve `openBundle` ya usan los nombres nuevos ([abrir un paquete](/es/docs/configuration-programmatic-usage#abrir-un-paquete)).
 
 ### 2 · Mete las fuentes en el archivo
 
@@ -36,13 +36,13 @@ Los dos dibujos son SVG que genera el propio pen y que se entregan en `files` co
 
 <Excerpt region="labels" />
 
-Quien abre un archivo crea los tipos integrados en el idioma que ese archivo sirve: sin `resourceTypes` en la configuración, el folleto en español imprime Figura 1.1 y Tabla 1.1 lo abra quien lo abra, también el Sandbox desde /en/sandbox. El folleto escribe los tipos solo por sus números: `'{n}'` quita el número de capítulo, que un folleto de dos páginas no necesita ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)). La misma función `config()` fija `locale`, que elige los patrones de separación silábica del español (compuer-tas en el dorso) y el idioma que declara el PDF.
+Quien abre un archivo crea los tipos integrados en el idioma que ese archivo sirve: sin `resourceTypes` en la configuración, el folleto en español imprime Figura 1.1 y Tabla 1.1 lo abra quien lo abra, también el Sandbox desde /en/sandbox. El folleto escribe los tipos solo por sus números: `'{n}'` quita el número de capítulo, que un folleto de dos páginas no necesita ([tipos de recurso](/es/docs/configuration-resources#tipos-de-recurso)). La misma función `config()` fija `locale`, que elige los patrones de separación silábica del español (compuer-tas en el dorso) y el idioma que declara el PDF.
 
 ### 5 · Entrega los mismos bytes
 
 <Excerpt region="handoff" />
 
-El enlace ofrece los mismos `bytes` desde los que se compusieron las páginas: 132 KB con las fuentes. Al importarlo en el Sandbox (*Libros → Nuevo → Abrir un archivo .postext…*), el archivo se convierte en un libro en español o en inglés que lleva como imagen la rueda de `thumbnail`. El PDF toma sus fuentes de `bundleFontProvider`, que devuelve la del paquete más próxima en peso, con el mismo estilo si lo hay, y sus dibujos de `bundleResourceBytes`, así que no se descarga dos veces ninguna fuente ni imagen ([componer y renderizar un paquete](/es/docs/configuration#componer-y-renderizar-un-paquete)).
+El enlace ofrece los mismos `bytes` desde los que se compusieron las páginas: 132 KB con las fuentes. Al importarlo en el Sandbox (*Libros → Nuevo → Abrir un archivo .postext…*), el archivo se convierte en un libro en español o en inglés que lleva como imagen la rueda de `thumbnail`. El PDF toma sus fuentes de `bundleFontProvider`, que devuelve la del paquete más próxima en peso, con el mismo estilo si lo hay, y sus dibujos de `bundleResourceBytes`, así que no se descarga dos veces ninguna fuente ni imagen ([componer y renderizar un paquete](/es/docs/configuration-programmatic-usage#componer-y-renderizar-un-paquete)).
 
 ### 6 · Dibuja la portada con un solo título
 
@@ -72,4 +72,4 @@ Sin los tipos, quien abre el archivo los crea en su idioma con la numeración po
 
 ## Errores frecuentes
 
-- Aquí cada edición es un archivo propio. Para llevar los dos idiomas en uno, pasa a `createBundle` un mapa `localized` ([Paquetes bilingües](/es/docs/configuration#paquetes-bilingües)); `openBundle(bytes, { locale })` lee entonces cualquiera de las dos ediciones.
+- Aquí cada edición es un archivo propio. Para llevar los dos idiomas en uno, pasa a `createBundle` un mapa `localized` ([Paquetes bilingües](/es/docs/configuration-programmatic-usage#paquetes-bilingües)); `openBundle(bytes, { locale })` lee entonces cualquiera de las dos ediciones.

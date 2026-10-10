@@ -16,7 +16,7 @@ Tres fulls de paper de manuscrit japonès (原稿用紙, genkō yōshi), del mod
 
 ### 1 · Dibuixa les caselles i dona a cada signe una de sencera
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. La [retícula de caràcters](/ca/docs/configuration#retícula-de-caràcters) fa que la caixa de text mesuri 20 caràcters de 20 pt (7,1 mm) cap avall i 20 línies de 27 pt (9,5 mm) d'amplada, i `show: true` en dibuixa les caselles en un gris clar propi a la pantalla, i al PDF quan `renderToPdf` rep `characterGrid: true` (en un llibre la retícula és una ajuda per a les proves, així que el PDF l'omet per defecte); la franja de 2,5 mm entre dues línies és on qui escriu afegeix lectures i correccions. Un signe japonès és mig glif i mig quadratí de blanc, i un llibre recull blancs on es troben dos signes o on un claudàtor obre línia. Al paper de manuscrit cada signe conserva la seva casella, així que `compressAdjacent: false` posa 。」 en dues caselles i `trimLineStart: false` deixa a un claudàtor a l'inici de línia la seva casella sencera ([Tipografia de l'Àsia oriental](/ca/docs/configuration#tipografia-de-làsia-oriental)).
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. La [retícula de caràcters](/ca/docs/configuration-east-asian#retícula-de-caràcters) fa que la caixa de text mesuri 20 caràcters de 20 pt (7,1 mm) cap avall i 20 línies de 27 pt (9,5 mm) d'amplada, i `show: true` en dibuixa les caselles en un gris clar propi a la pantalla, i al PDF quan `renderToPdf` rep `characterGrid: true` (en un llibre la retícula és una ajuda per a les proves, així que el PDF l'omet per defecte); la franja de 2,5 mm entre dues línies és on qui escriu afegeix lectures i correccions. Un signe japonès és mig glif i mig quadratí de blanc, i un llibre recull blancs on es troben dos signes o on un claudàtor obre línia. Al paper de manuscrit cada signe conserva la seva casella, així que `compressAdjacent: false` posa 。」 en dues caselles i `trimLineStart: false` deixa a un claudàtor a l'inici de línia la seva casella sencera ([Tipografia de l'Àsia oriental](/ca/docs/configuration-east-asian#tipografia-de-làsia-oriental)).
 
 ### 2 · Segueix les normes de línia del manuscrit
 
@@ -26,7 +26,7 @@ El paper de manuscrit té el seu propi kinsoku. Un kana petit o una ー poden co
 
 <Excerpt region="heading" />
 
-El títol té el cos i la lletra del text, de manera que omple caselles com qualsevol altra línia: `lineSpan: 1` el manté en una línia de la retícula i `indent: em(2)` deixa dues caselles buides al damunt ([Configuració per nivell](/ca/docs/configuration#configuració-per-nivell)). El nom és un paràgraf amb `textAlign: 'end'` i `endIndent: em(1)`, que l'acaba una casella abans del peu, i el Markdown escriu la casella en blanc entre cognom i nom com un espai ideogràfic: `夏目　漱石`. El text comença a la tercera línia, i cada paràgraf després d'una casella buida, la de `firstLineIndent: em(1)`.
+El títol té el cos i la lletra del text, de manera que omple caselles com qualsevol altra línia: `lineSpan: 1` el manté en una línia de la retícula i `indent: em(2)` deixa dues caselles buides al damunt ([Configuració per nivell](/ca/docs/configuration-text#configuració-per-nivell)). El nom és un paràgraf amb `textAlign: 'end'` i `endIndent: em(1)`, que l'acaba una casella abans del peu, i el Markdown escriu la casella en blanc entre cognom i nom com un espai ideogràfic: `夏目　漱石`. El text comença a la tercera línia, i cada paràgraf després d'una casella buida, la de `firstLineIndent: em(1)`.
 
 ### 4 · Imprimeix el full al voltant de les caselles
 
@@ -38,7 +38,7 @@ Els elements de la capçalera es dibuixen sobre el mateix full: en una pàgina v
 
 <Excerpt region="pen" />
 
-Klee One està dibuixada amb ploma i conserva les formes japoneses dels kanji, així que els fulls es llegeixen com a manuscrits sense les irregularitats d'un escaneig. Les seves formes verticals posen 、。 a la cantonada superior dreta de la casella i giren ー i els claudàtors, que és on els posa qui escriu. Com totes les famílies japoneses de Fontsource, arriba en uns 120 fitxers, i `loadCjkFonts` baixa els que necessita el text ([Fonts xineses, japoneses i coreanes](/ca/docs/configuration#fonts-xineses-japoneses-i-coreanes)).
+Klee One està dibuixada amb ploma i conserva les formes japoneses dels kanji, així que els fulls es llegeixen com a manuscrits sense les irregularitats d'un escaneig. Les seves formes verticals posen 、。 a la cantonada superior dreta de la casella i giren ー i els claudàtors, que és on els posa qui escriu. Com totes les famílies japoneses de Fontsource, arriba en uns 120 fitxers, i `loadCjkFonts` baixa els que necessita el text ([Fonts xineses, japoneses i coreanes](/ca/docs/configuration-programmatic-usage#fonts-xineses-japoneses-i-coreanes)).
 
 ## Variants
 

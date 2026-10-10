@@ -22,13 +22,13 @@ El codi és [la resposta curta](#la-resposta-curta) de més amunt. Postext mesur
 
 <Excerpt region="build" />
 
-`registerFaces()` no es resol fins que s'han carregat totes les fonts de `FONTS`, així que la primera composició ja mesura amb les fonts que incrustarà el PDF. No cal una segona, perquè `FONTS` enumera totes les fonts amb què es componen les pàgines, i `buildDocumentWithFonts` ja troba declarades totes les fonts que busca ([Carregar les fonts abans de compondre](/ca/docs/configuration#carregar-les-fonts-abans-de-compondre)). Aquesta comprovació només serveix per a la pantalla. Si a `FONTS` li falta una font, el motor la demana al kit, carrega el fitxer de Fontsource i torna a compondre sense avisar a la consola, però el PDF rep igualment la font més propera de les que té el proveïdor.
+`registerFaces()` no es resol fins que s'han carregat totes les fonts de `FONTS`, així que la primera composició ja mesura amb les fonts que incrustarà el PDF. No cal una segona, perquè `FONTS` enumera totes les fonts amb què es componen les pàgines, i `buildDocumentWithFonts` ja troba declarades totes les fonts que busca ([Carregar les fonts abans de compondre](/ca/docs/configuration-programmatic-usage#carregar-les-fonts-abans-de-compondre)). Aquesta comprovació només serveix per a la pantalla. Si a `FONTS` li falta una font, el motor la demana al kit, carrega el fitxer de Fontsource i torna a compondre sense avisar a la consola, però el PDF rep igualment la font més propera de les que té el proveïdor.
 
 ### 3 · L'exportació i la llista del que ha incrustat
 
 <Excerpt region="pdf" />
 
-`renderToPdf` crida `onProgress` en tres fases: `prepare` quan ja ha incrustat les fonts i la coberta, `pages` després de cada pàgina i `save` abans d'escriure el fitxer. Només demana al proveïdor les fonts que pinten les pàgines, aquí cinc. La línia d'estat enumera els cinc fitxers que va servir el proveïdor, que són exactament els de `FONTS`, i cap substituta. Una substituta delata una font que falta a `FONTS`. Si treus Crimson Text 600, la línia mostra `Crimson Text 600 → 400` i la negreta de *The Harbour Consort*, a la pàgina 4, surt amb el pes normal. La previsualització de CodePen no pot mostrar un PDF, així que `offerPdf`, del kit, canvia el botó per dos enllaços: un obre el PDF en una altra pestanya i l'altre el baixa ([Generació de PDF](/ca/docs/configuration#generació-de-pdf)).
+`renderToPdf` crida `onProgress` en tres fases: `prepare` quan ja ha incrustat les fonts i la coberta, `pages` després de cada pàgina i `save` abans d'escriure el fitxer. Només demana al proveïdor les fonts que pinten les pàgines, aquí cinc. La línia d'estat enumera els cinc fitxers que va servir el proveïdor, que són exactament els de `FONTS`, i cap substituta. Una substituta delata una font que falta a `FONTS`. Si treus Crimson Text 600, la línia mostra `Crimson Text 600 → 400` i la negreta de *The Harbour Consort*, a la pàgina 4, surt amb el pes normal. La previsualització de CodePen no pot mostrar un PDF, així que `offerPdf`, del kit, canvia el botó per dos enllaços: un obre el PDF en una altra pestanya i l'altre el baixa ([Generació de PDF](/ca/docs/configuration-programmatic-usage#generació-de-pdf)).
 
 ### 4 · L'arbre de títols és l'arbre de marcadors
 
@@ -69,4 +69,4 @@ Canvia l'URL de Fontsource per la de les teves còpies dels mateixos fitxers WOF
 
 Enumera a `FONTS` totes les fonts amb què es componen les teves pàgines, també la negreta i la cursiva del text. Si n'oblides una, a la pantalla no ho notaràs, perquè el kit la carrega sense avisar; el PDF, en canvi, imprimeix la font més propera que tingui el proveïdor, i només ho delaten les substitutes de la línia d'estat.
 
-Fes servir fitxers estàtics, un per pes i estil. D'un WOFF2 variable només s'incrusta la instància per defecte, així que una negreta sortiria amb el pes normal ([Per què un proveïdor de fonts?](/ca/docs/configuration#per-què-un-proveïdor-de-fonts)).
+Fes servir fitxers estàtics, un per pes i estil. D'un WOFF2 variable només s'incrusta la instància per defecte, així que una negreta sortiria amb el pes normal ([Per què un proveïdor de fonts?](/ca/docs/configuration-programmatic-usage#per-què-un-proveïdor-de-fonts)).

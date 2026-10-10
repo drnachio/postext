@@ -16,7 +16,7 @@ Cinc pàgines del capítol 3 d'un llibre japonès de programació inventat, 実�
 
 ### 1 · Les regles japoneses arriben amb l'etiqueta
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. `locale: 'ja'` activa les regles de JLReq, els *Requirements for Japanese Text Layout* del W3C, i els valors escrits sota `cjk` són els que `'auto'` tria per al japonès ([Tipografia de l'Àsia oriental](/ca/docs/configuration#tipografia-de-làsia-oriental)). Amb `ja-very-strict`, cap línia no comença per ー, un kana petit, 々 o un signe de tancament, i cap no acaba en un signe d'obertura. La puntuació (約物, yakumono) conserva el seu quadratí dins la línia, i dos signes que es troben, com 」、, en comparteixen un. A la <PageRef page={1}>pàgina 41</PageRef>, la línia que acaba en 実際に変換し、 treu el 、 més enllà del marge dret: és la ぶら下げ (burasage), i el motor només la fa servir quan, sense ella, hauria de passar el signe a la línia següent. `latinSpacing` posa un quart de quadratí (四分アキ, shibun aki) entre Unicode i では, i entre U+304C i を, tot i que el Markdown no hi porta cap espai.
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `locale: 'ja'` activa les regles de JLReq, els *Requirements for Japanese Text Layout* del W3C, i els valors escrits sota `cjk` són els que `'auto'` tria per al japonès ([Tipografia de l'Àsia oriental](/ca/docs/configuration-east-asian#tipografia-de-làsia-oriental)). Amb `ja-very-strict`, cap línia no comença per ー, un kana petit, 々 o un signe de tancament, i cap no acaba en un signe d'obertura. La puntuació (約物, yakumono) conserva el seu quadratí dins la línia, i dos signes que es troben, com 」、, en comparteixen un. A la <PageRef page={1}>pàgina 41</PageRef>, la línia que acaba en 実際に変換し、 treu el 、 més enllà del marge dret: és la ぶら下げ (burasage), i el motor només la fa servir quan, sense ella, hauria de passar el signe a la línia següent. `latinSpacing` posa un quart de quadratí (四分アキ, shibun aki) entre Unicode i では, i entre U+304C i を, tot i que el Markdown no hi porta cap espai.
 
 <PageShot page={1} crop="0.08,0.27,0.84,0.09" caption="Pàgina 41: un quart de quadratí a banda i banda d'Unicode i Python, escrits sense espai; el 、 del final de la segona línia penja fora de la mida." />
 
@@ -26,7 +26,7 @@ La diferència amb el xinès és als signes. Un llibre xinès del continent posa
 
 <Excerpt region="listing" />
 
-La tanca és un [bloc de codi](/ca/docs/document-format#blocs-de-codi): Postext en compon les línies tal com estan escrites, en la lletra que indica `codeStyle`, dins d'un recuadre tenyit sota el títol `normalize.py` que porta la línia de la tanca ([llistats de codi](/ca/docs/configuration#llistats-de-codi)). `highlight: 'none'` deixa el llistat en una sola tinta, com la resta de la pàgina, i `codeStyle.inline` compon cada `` `nom` `` en la mateixa lletra, en verd blavós. La lletra hi compta: la cadena de l'exemple, ｶﾞｲﾄﾞ ＡＢＣ ①, necessita katakana de mitja amplada, lletres d'amplada completa i xifres encerclades, que una lletra de codi occidental no té. BIZ UDGothic compon el llatí de mitja amplada i el kana d'amplada completa amb pas fix, i un llistat compta cada caràcter d'amplada completa com dues cel·les, de manera que les columnes es mantenen.
+La tanca és un [bloc de codi](/ca/docs/document-format#blocs-de-codi): Postext en compon les línies tal com estan escrites, en la lletra que indica `codeStyle`, dins d'un recuadre tenyit sota el títol `normalize.py` que porta la línia de la tanca ([llistats de codi](/ca/docs/configuration-styles#llistats-de-codi)). `highlight: 'none'` deixa el llistat en una sola tinta, com la resta de la pàgina, i `codeStyle.inline` compon cada `` `nom` `` en la mateixa lletra, en verd blavós. La lletra hi compta: la cadena de l'exemple, ｶﾞｲﾄﾞ ＡＢＣ ①, necessita katakana de mitja amplada, lletres d'amplada completa i xifres encerclades, que una lletra de codi occidental no té. BIZ UDGothic compon el llatí de mitja amplada i el kana d'amplada completa amb pas fix, i un llistat compta cada caràcter d'amplada completa com dues cel·les, de manera que les columnes es mantenen.
 
 ### 3 · 図3-1 i 表3-1
 
@@ -38,7 +38,7 @@ La tanca és un [bloc de codi](/ca/docs/document-format#blocs-de-codi): Postext 
 
 <Excerpt region="notes" />
 
-Les notes no necessiten cap ajust a part del cos. En un document japonès horitzontal, els valors per defecte són els que JLReq descriu per als llibres horitzontals: la nota al peu de la columna on es cita, numerada des d'1 a cada pàgina, amb la crida volada i un filet d'un terç de la mida ([Notes a peu de pàgina](/ca/docs/configuration#notes-a-peu-de-pàgina)). La crida va abans del punt, `保存していた[^hfs]。`, i així el 。 no obre mai la línia següent separat d'ella.
+Les notes no necessiten cap ajust a part del cos. En un document japonès horitzontal, els valors per defecte són els que JLReq descriu per als llibres horitzontals: la nota al peu de la columna on es cita, numerada des d'1 a cada pàgina, amb la crida volada i un filet d'un terç de la mida ([Notes a peu de pàgina](/ca/docs/configuration-notes-references#notes-a-peu-de-pàgina)). La crida va abans del punt, `保存していた[^hfs]。`, i així el 。 no obre mai la línia següent separat d'ella.
 
 ### 5 · Un títol d'apartat de tres línies
 

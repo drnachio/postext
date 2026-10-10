@@ -18,7 +18,7 @@ pageNotes: { "1": "扉。四隅で罫が交差する金色の二重枠に囲ま�
 
 <Excerpt region="acts" />
 
-幕の題は、デザインのスロットを持たないレベル1の見出しで、Abril Fatfaceの24ptです。`textTransform`で大文字にし、13.6ptのグリッド行3行分を取ることで、大文字は版面の上端から5.5mm下に来ます（[見出し](/ja/docs/configuration#見出し)）。`textAlign: 'center'`はレベルごとには設定できないので、配役表の見出しと「Scene」のラベルも中央にそろいます。`breakBefore`をparity `'odd'`にすると、幕は奇数ページから、配役表の向かいで始まります。既定の`'always-odd'`では、両者のあいだに白ページが2ページ入ります（[前で改ページ](/ja/docs/configuration#前で改ページ)）。
+幕の題は、デザインのスロットを持たないレベル1の見出しで、Abril Fatfaceの24ptです。`textTransform`で大文字にし、13.6ptのグリッド行3行分を取ることで、大文字は版面の上端から5.5mm下に来ます（[見出し](/ja/docs/configuration-text#見出し)）。`textAlign: 'center'`はレベルごとには設定できないので、配役表の見出しと「Scene」のラベルも中央にそろいます。`breakBefore`をparity `'odd'`にすると、幕は奇数ページから、配役表の向かいで始まります。既定の`'always-odd'`では、両者のあいだに白ページが2ページ入ります（[前で改ページ](/ja/docs/configuration-text#前で改ページ)）。
 
 ### 2 · 配役表は点の列で俳優へつなぐ
 
@@ -30,13 +30,13 @@ pageNotes: { "1": "扉。四隅で罫が交差する金色の二重枠に囲ま�
 
 <Excerpt region="ornament" />
 
-`captionPrefix`と`shortLabel`を空にしたリソースの種類は、絵を何も添えずに刷ります（[リソースの種類](/ja/docs/configuration#リソースの種類)）。その`defaultPlacement`は、`::resource{id="fleuron"}`のある位置にカーネーションを中央そろえで置き、幅は107mmの行長の0.24、約26mmです。
+`captionPrefix`と`shortLabel`を空にしたリソースの種類は、絵を何も添えずに刷ります（[リソースの種類](/ja/docs/configuration-resources#リソースの種類)）。その`defaultPlacement`は、`::resource{id="fleuron"}`のある位置にカーネーションを中央そろえで置き、幅は107mmの行長の0.24、約26mmです。
 
 ### 4 · 扉は見出しスタイル
 
 <Excerpt region="playbill" />
 
-`# The Importance of Being Earnest {style="playbill" …}`は題を4つの属性に分けて持ち、デザインはそれを2つの書体で組みます。名詞はAbril Fatfaceの40ptと60pt、「The」と「of Being」はLibre Baskervilleのイタリック17ptです（[見出しの属性](/ja/docs/document-format#見出しの属性)）。プラム色の地、枠、カーネーションは、コードで描いた1つのSVGで、裁ち落としに固定します（[画像要素](/ja/docs/configuration#画像要素)）。本は1段組みですが、スタイルは`span: 'page'`を設定します。段の中に置くと、デザインは版面の下端、つまり用紙の下端から23.3mm上で切れてしまいます。スタイルの空の`header`は、同じ節に属する配役表から柱を外します。空の`footer`は扉から下ノンブルを外します。扉に置くと、プラム色の上にプラム色で刷られてしまいます（[見出しスタイル](/ja/docs/configuration#見出しスタイル)）。
+`# The Importance of Being Earnest {style="playbill" …}`は題を4つの属性に分けて持ち、デザインはそれを2つの書体で組みます。名詞はAbril Fatfaceの40ptと60pt、「The」と「of Being」はLibre Baskervilleのイタリック17ptです（[見出しの属性](/ja/docs/document-format#見出しの属性)）。プラム色の地、枠、カーネーションは、コードで描いた1つのSVGで、裁ち落としに固定します（[画像要素](/ja/docs/configuration-page-layout#画像要素)）。本は1段組みですが、スタイルは`span: 'page'`を設定します。段の中に置くと、デザインは版面の下端、つまり用紙の下端から23.3mm上で切れてしまいます。スタイルの空の`header`は、同じ節に属する配役表から柱を外します。空の`footer`は扉から下ノンブルを外します。扉に置くと、プラム色の上にプラム色で刷られてしまいます（[見出しスタイル](/ja/docs/configuration-styles#見出しスタイル)）。
 
 地は画像要素で、扉の見出しは画像の下端までの高さを確保します。そのため見出しは用紙全体を押さえ、扉の各行がどこにあっても、題のあとに`:::pagebreak`を書かなくても「The Persons of the Play」は2ページ目から始まります。`letterSpacing`を付けた中央そろえの行にも補正は要りません。最後の文字のあとの字間は中央そろえの計算に入らず、「OSCAR WILDE」はページの中央に来ます。
 
@@ -44,7 +44,7 @@ pageNotes: { "1": "扉。四隅で罫が交差する金色の二重枠に囲ま�
 
 <Excerpt region="heads" />
 
-偶数ページにはフロントマターから戯曲の題を、奇数ページには`{chapterTitle}`から幕名を入れます。どちらもPlayfair Display SCの大文字で、ノンブルは外側の端にプラム色で置きます（[テキスト要素](/ja/docs/configuration#テキスト要素)）。幕の最初のページは、最初のブロックが改ページする見出しなので扉として数えられ、`pages: 'body'`でそこから柱を外し、フッターが代わりに下ノンブルを付けます。
+偶数ページにはフロントマターから戯曲の題を、奇数ページには`{chapterTitle}`から幕名を入れます。どちらもPlayfair Display SCの大文字で、ノンブルは外側の端にプラム色で置きます（[テキスト要素](/ja/docs/configuration-page-layout#テキスト要素)）。幕の最初のページは、最初のブロックが改ページする見出しなので扉として数えられ、`pages: 'body'`でそこから柱を外し、フッターが代わりに下ノンブルを付けます。
 
 <Note>
 映画の脚本は台詞をぶら下げず、左右両側から字下げします。<RecipeLink slug="screenplay-format">映画脚本の書式</RecipeLink>では、各台詞を台詞ブロックの幅までパディングした枠なしの囲みとして組んでいます。

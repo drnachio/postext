@@ -16,19 +16,19 @@ pageNotes: { "1": "第4章的章首页：琥珀色小字眉题CHAPTER 4，粗无
 
 ### 1 · 给围栏代码配上框
 
-这一步的代码见上文的[简短回答](#简短回答)。Markdown里的每个```` ``` ````围栏都是一个[代码块](/zh/docs/document-format#代码块)：Postext按原样排它的各行，一行代码对应一行文字，缩进、脚本里的空行和`du`的两栏输出都保留下来。`codeStyle`一次设定所有清单的外观（[代码清单](/zh/docs/configuration#代码清单)）：字体和行距、近黑色的底色、内边距，以及框上方和下方的间距。围栏行上语言名之后的内容（`Terminal`、`backup.sh`）是清单的标题；因为设了`codeStyle.label`，标题印在框顶边的[标签页](/zh/docs/configuration#标注框样式)上，而不是单独的标题行里。`codeStyle.inline`让正文里的行内代码，如`ls`或`grep -c`，用同一种字体以0.88 em排出（[行内代码](/zh/docs/configuration#行内代码)）。清单之后的段落放在`:::paragraphs{style="resume"}`里，因此首行不缩进，就像跟在标题后面一样。
+这一步的代码见上文的[简短回答](#简短回答)。Markdown里的每个```` ``` ````围栏都是一个[代码块](/zh/docs/document-format#代码块)：Postext按原样排它的各行，一行代码对应一行文字，缩进、脚本里的空行和`du`的两栏输出都保留下来。`codeStyle`一次设定所有清单的外观（[代码清单](/zh/docs/configuration-styles#代码清单)）：字体和行距、近黑色的底色、内边距，以及框上方和下方的间距。围栏行上语言名之后的内容（`Terminal`、`backup.sh`）是清单的标题；因为设了`codeStyle.label`，标题印在框顶边的[标签页](/zh/docs/configuration-styles#标注框样式)上，而不是单独的标题行里。`codeStyle.inline`让正文里的行内代码，如`ls`或`grep -c`，用同一种字体以0.88 em排出（[行内代码](/zh/docs/configuration-styles#行内代码)）。清单之后的段落放在`:::paragraphs{style="resume"}`里，因此首行不缩进，就像跟在标题后面一样。
 
 ### 2 · 正文窄排，让代码跨进页边
 
 <Excerpt region="page" />
 
-10 pt的Charis SIL在100 mm的栏里每行约62个字符。这种[一栏半版面](/zh/docs/configuration#版式类型)的侧栏只放浮动体和注释，正文永远不会流进去。`codeStyle`里的`span: 'page'`让每段清单横跨两栏，宽143 mm。扣除内边距后，一个框能容纳73个8.6 pt的JetBrains Mono字符；这几页最长的一行，即`backup.sh`开头的那行注释，有71个。
+10 pt的Charis SIL在100 mm的栏里每行约62个字符。这种[一栏半版面](/zh/docs/configuration-page-layout#版式类型)的侧栏只放浮动体和注释，正文永远不会流进去。`codeStyle`里的`span: 'page'`让每段清单横跨两栏，宽143 mm。扣除内边距后，一个框能容纳73个8.6 pt的JetBrains Mono字符；这几页最长的一行，即`backup.sh`开头的那行注释，有71个。
 
 ### 3 · 按记号给代码着色
 
 <Excerpt region="paint" />
 
-围栏上的语言名（`console`、`bash`）选定内置分词器，`codeStyle.tokens`为每类记号设定颜色、字重和倾斜（[语法着色](/zh/docs/configuration#语法着色)）。在`backup.sh`里，`for`、`done`这样的关键字和`set`、`echo`这样的内建命令印成琥珀色粗体，字符串是绿色斜体，注释是灰色；`mkdir`、`rsync`这类程序保持原样。默认样式把注释排成斜体，所以用`italic: false`让它们保持直立。在`console`围栏里，以提示符开头的行是`prompt`记号，其他行都是`output`，所以输入的命令印成琥珀色粗体，Shell的回应保持清单的浅灰色。这个示例不想着色的类别，包括数字、变量和选项，也用这种灰色。
+围栏上的语言名（`console`、`bash`）选定内置分词器，`codeStyle.tokens`为每类记号设定颜色、字重和倾斜（[语法着色](/zh/docs/configuration-styles#语法着色)）。在`backup.sh`里，`for`、`done`这样的关键字和`set`、`echo`这样的内建命令印成琥珀色粗体，字符串是绿色斜体，注释是灰色；`mkdir`、`rsync`这类程序保持原样。默认样式把注释排成斜体，所以用`italic: false`让它们保持直立。在`console`围栏里，以提示符开头的行是`prompt`记号，其他行都是`output`，所以输入的命令印成琥珀色粗体，Shell的回应保持清单的浅灰色。这个示例不想着色的类别，包括数字、变量和选项，也用这种灰色。
 
 ### 4 · 把按键排成行内标签
 
@@ -40,13 +40,13 @@ pageNotes: { "1": "第4章的章首页：琥珀色小字眉题CHAPTER 4，粗无
 
 <Excerpt region="steps" />
 
-编号用强调色的Sora 800，分隔符是灰色的等宽`›`。分隔符有自己的字体和颜色，所以作为单独的片段绘制（[有序列表](/zh/docs/configuration#有序列表)）。列表外边距为零，所以步骤延续周围正文14.5 pt的网格。默认的1.5 em会在步骤上方空出5.3 mm，把速查表推到第51页。
+编号用强调色的Sora 800，分隔符是灰色的等宽`›`。分隔符有自己的字体和颜色，所以作为单独的片段绘制（[有序列表](/zh/docs/configuration-text#有序列表)）。列表外边距为零，所以步骤延续周围正文14.5 pt的网格。默认的1.5 em会在步骤上方空出5.3 mm，把速查表推到第51页。
 
 ### 6 · 让速查表浮动到页面下部
 
 <Excerpt region="sheet" />
 
-速查表是一个标注框样式，用清单的底色，操作说明用Sora，`placement: 'bottom'`让它浮动到第50页下部（[浮动框](/zh/docs/configuration#callout容器)）。留在文本流里的话，一个通栏的框需要容纳自身和下面两行文字的空间。这里框会移到第51页，步骤下面空出58 mm，这一章也会排成四页。在Markdown里，`:::columns{count=2 breaks="8"}`在第八个块，也就是其标题处开启右栏。只靠齐底会按高度切分，一旦某条操作折成两行，*Commands and history*就会落在左栏底部。每一条都以同样的两个标签开头，`Ctrl`和一个字母，都用等宽字体，所以每条操作都从距所在栏左边缘相同的位置开始。
+速查表是一个标注框样式，用清单的底色，操作说明用Sora，`placement: 'bottom'`让它浮动到第50页下部（[浮动框](/zh/docs/configuration-styles#callout容器)）。留在文本流里的话，一个通栏的框需要容纳自身和下面两行文字的空间。这里框会移到第51页，步骤下面空出58 mm，这一章也会排成四页。在Markdown里，`:::columns{count=2 breaks="8"}`在第八个块，也就是其标题处开启右栏。只靠齐底会按高度切分，一旦某条操作折成两行，*Commands and history*就会落在左栏底部。每一条都以同样的两个标签开头，`Ctrl`和一个字母，都用等宽字体，所以每条操作都从距所在栏左边缘相同的位置开始。
 
 ## 变化
 

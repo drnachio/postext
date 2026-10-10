@@ -18,7 +18,7 @@ Les pàgines 9 a 11 de *La página pautada*, un volum sobre l'ofici del llibre, 
 
 <Excerpt region="flow" />
 
-L'espai que un títol porta a sobre es respecta tal com és, així que amb línia i mitja el títol queda entre dues ratlles de la retícula, i el text que el segueix s'ajusta a la ratlla següent ([retícula de base](/ca/docs/configuration#retícula-de-base)). Abans del primer element d'una llista no hi ha aquest ajust, i per això la resposta curta posa a zero els marges de les llistes (valdria qualsevol nombre enter d'interlineats); amb l'1,5 em per defecte, els tres elements de la pàgina 10 quedarien 1,3 pt per sota de les línies de la columna del costat. Les dues línies del títol, de 46 pt, ocupen quatre interlineats cadascuna, i el seu marge inferior un més, així que l'assaig comença a la línia 10.
+L'espai que un títol porta a sobre es respecta tal com és, així que amb línia i mitja el títol queda entre dues ratlles de la retícula, i el text que el segueix s'ajusta a la ratlla següent ([retícula de base](/ca/docs/configuration-page-layout#retícula-de-base)). Abans del primer element d'una llista no hi ha aquest ajust, i per això la resposta curta posa a zero els marges de les llistes (valdria qualsevol nombre enter d'interlineats); amb l'1,5 em per defecte, els tres elements de la pàgina 10 quedarien 1,3 pt per sota de les línies de la columna del costat. Les dues línies del títol, de 46 pt, ocupen quatre interlineats cadascuna, i el seu marge inferior un més, així que l'assaig comença a la línia 10.
 
 <PageShot page={2} crop="0.14,0.1373,0.795,0.3207" caption="Pàgina 10: la llista de la segona columna segueix la retícula dels paràgrafs del costat; la nota de taller cau entre les ratlles, i el títol que la segueix queda mitja línia fora, amb el seu text de nou a la retícula." />
 
@@ -26,7 +26,7 @@ L'espai que un títol porta a sobre es respecta tal com és, així que amb líni
 
 <Excerpt region="note" />
 
-La nota és un contenidor `:::paragraphs` en 7,8 sobre 10 pt, fora de la retícula. Després de l'últim paràgraf, la posició s'arrodoneix fins a la ratlla següent, i el títol que ve després queda on quedaria després d'un paràgraf normal ([el contenidor `:::paragraphs`](/ca/docs/configuration#el-contenidor-paragraphs)). El colofó fa servir el mateix contenidor en 7,5 sobre 10 pt: les seves quatre línies sumen 40 pt, 0,2 pt menys que tres interlineats, així que l'última columna de l'assaig acaba a l'alçada de la del costat.
+La nota és un contenidor `:::paragraphs` en 7,8 sobre 10 pt, fora de la retícula. Després de l'últim paràgraf, la posició s'arrodoneix fins a la ratlla següent, i el títol que ve després queda on quedaria després d'un paràgraf normal ([el contenidor `:::paragraphs`](/ca/docs/configuration-styles#el-contenidor-paragraphs)). El colofó fa servir el mateix contenidor en 7,5 sobre 10 pt: les seves quatre línies sumen 40 pt, 0,2 pt menys que tres interlineats, així que l'última columna de l'assaig acaba a l'alçada de la del costat.
 
 ### 3 · Col·locar les figures on la retícula les pugui absorbir
 
@@ -40,13 +40,13 @@ Un flotant mai no cau per sobre del paràgraf que el cita ([col·locació](/ca/d
 
 <Excerpt region="balance" />
 
-Tota columna plena de les pàgines 9 i 10 acaba a la línia 44, perquè la caixa fa exactament 44 interlineats i el text s'hi va ajustar. Les regles que mantenen cada títol amb el seu text i eviten vídues, òrfenes i línies curtes vénen activades per defecte. Si una d'elles deixa una columna amb una línia de menys, l'equilibrat posa l'espai que falta sobre un títol anterior ([equilibrat de columnes](/ca/docs/configuration#equilibratge-de-columnes)), on es veu com un forat; retoca el text fins que l'equilibrat no tingui res a omplir. A l'última pàgina reparteix les línies que queden perquè les dues columnes acabin a la mateixa ratlla.
+Tota columna plena de les pàgines 9 i 10 acaba a la línia 44, perquè la caixa fa exactament 44 interlineats i el text s'hi va ajustar. Les regles que mantenen cada títol amb el seu text i eviten vídues, òrfenes i línies curtes vénen activades per defecte. Si una d'elles deixa una columna amb una línia de menys, l'equilibrat posa l'espai que falta sobre un títol anterior ([equilibrat de columnes](/ca/docs/configuration-text#equilibratge-de-columnes)), on es veu com un forat; retoca el text fins que l'equilibrat no tingui res a omplir. A l'última pàgina reparteix les línies que queden perquè les dues columnes acabin a la mateixa ratlla.
 
 ### 5 · Marges en mirall, i folis des de la pàgina 9
 
 <Excerpt region="heads" />
 
-La resposta curta calcula el marge de peu: als 280 mm del format els resta els 24 mm del marge de capçalera i una caixa d'exactament `LINES` interlineats (44 × 13,4 pt = 208 mm), i queden 48 mm, les sis unitats que demana la progressió 2:3:4:6. Amb `mirror: true`, els 16 mm de `left` són el marge interior, que cau a l'esquerra a les pàgines senars i a la dreta a les parelles ([marges simètrics](/ca/docs/configuration#marges-simètrics-mirall)), així que les capçaleres, ancorades a `OUTER` mil·límetres de la vora de la pàgina, acaben on ho fa la caixa, del costat del tall; `pages: 'body'` les treu de l'obertura. `startAt: 9` imprimeix els folis 9 a 11, i `pageIndexOffset: 8` compta les vuit pàgines anteriors, de manera que el mirall, la paritat de les capçaleres i `breakBefore: 'odd'` segueixen el llibre enquadernat. Amb un desplaçament de 7, la primera pàgina comptaria com a parella i el salt hi ficaria una pàgina en blanc abans de l'assaig.
+La resposta curta calcula el marge de peu: als 280 mm del format els resta els 24 mm del marge de capçalera i una caixa d'exactament `LINES` interlineats (44 × 13,4 pt = 208 mm), i queden 48 mm, les sis unitats que demana la progressió 2:3:4:6. Amb `mirror: true`, els 16 mm de `left` són el marge interior, que cau a l'esquerra a les pàgines senars i a la dreta a les parelles ([marges simètrics](/ca/docs/configuration-page-layout#marges-simètrics-mirall)), així que les capçaleres, ancorades a `OUTER` mil·límetres de la vora de la pàgina, acaben on ho fa la caixa, del costat del tall; `pages: 'body'` les treu de l'obertura. `startAt: 9` imprimeix els folis 9 a 11, i `pageIndexOffset: 8` compta les vuit pàgines anteriors, de manera que el mirall, la paritat de les capçaleres i `breakBefore: 'odd'` segueixen el llibre enquadernat. Amb un desplaçament de 7, la primera pàgina comptaria com a parella i el salt hi ficaria una pàgina en blanc abans de l'assaig.
 
 ## Variants
 

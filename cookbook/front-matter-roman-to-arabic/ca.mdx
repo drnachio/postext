@@ -24,13 +24,13 @@ Un títol obre pàgina i surt com a marcador al PDF; el disseny del seu estil co
 
 <Excerpt region="contents" />
 
-`:::toc` recull cada títol que el seu estil deixa passar, amb l'etiqueta de la pàgina on cau ([índex de continguts](/ca/docs/configuration#índex-de-continguts)). L'índex i el pròleg comparteixen l'estil `front`, que fixa `toc: false`, i el pròleg l'anul·la amb `{toc="true"}`. Ni el pròleg ni la Carta I van numerats, així que les seves entrades no porten número de capítol. La segona línia de l'entrada de la carta és el seu atribut `to="…"`. Els números de pàgina van en la lletra dels folis. Les entrades arrenquen a l'alçada de la primera línia del pròleg, de manera que les dues pàgines del plec casen.
+`:::toc` recull cada títol que el seu estil deixa passar, amb l'etiqueta de la pàgina on cau ([índex de continguts](/ca/docs/configuration-notes-references#índex-de-continguts)). L'índex i el pròleg comparteixen l'estil `front`, que fixa `toc: false`, i el pròleg l'anul·la amb `{toc="true"}`. Ni el pròleg ni la Carta I van numerats, així que les seves entrades no porten número de capítol. La segona línia de l'entrada de la carta és el seu atribut `to="…"`. Els números de pàgina van en la lletra dels folis. Les entrades arrenquen a l'alçada de la primera línia del pròleg, de manera que les dues pàgines del plec casen.
 
 ### 3 · La novel·la obre en pàgina senar, sota l'aurora boreal
 
 <Excerpt region="letter" />
 
-La pintura surt a sang pel cap de la pàgina i es fon amb el paper al peu, on comença la carta. L'obertura reserva la pàgina fins al peu de la pintura, a 104 mm de la vora superior, i `minHeight` hi posa un terra 2 mm més avall, de manera que la carta comença una línia de la retícula després, lliure de la fosa ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). L'avanttítol i la data surten dels atributs `to` i `dateline` del títol. La Carta I afegeix `{style="letter"}`, un estil que es limita a fixar `numbered: false`, perquè les cartes de Walton van abans del capítol I i no es numeren.
+La pintura surt a sang pel cap de la pàgina i es fon amb el paper al peu, on comença la carta. L'obertura reserva la pàgina fins al peu de la pintura, a 104 mm de la vora superior, i `minHeight` hi posa un terra 2 mm més avall, de manera que la carta comença una línia de la retícula després, lliure de la fosa ([span i disseny avançat](/ca/docs/configuration-text#span-i-disseny-avançat)). L'avanttítol i la data surten dels atributs `to` i `dateline` del títol. La Carta I afegeix `{style="letter"}`, un estil que es limita a fixar `numbered: false`, perquè les cartes de Walton van abans del capítol I i no es numeren.
 
 ### 4 · Les capçaleres tornen amb la novel·la
 
@@ -76,7 +76,7 @@ Esborra el títol `# Frontispiece` i envia la portada a pàgina senar: la pàgin
 
 ### Afegeix sang i marques de tall per a impremta
 
-Amb `cutLines`, la coberta i l'obertura, ancorades a la sang, sobrepassen el tall en 3 mm; els folis i el nombre de pàgines no canvien ([marques de tall](/ca/docs/configuration#marques-de-tall)).
+Amb `cutLines`, la coberta i l'obertura, ancorades a la sang, sobrepassen el tall en 3 mm; els folis i el nombre de pàgines no canvien ([marques de tall](/ca/docs/configuration-page-layout#marques-de-tall)).
 
 ```diff
      backgroundColor: col('paper'), pageNumbering,

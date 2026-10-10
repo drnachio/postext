@@ -18,7 +18,7 @@ El començament de *La importància de dir-se Ernest*, d'Oscar Wilde, en una edi
 
 <Excerpt region="acts" />
 
-L'acte s'obre amb un títol de primer nivell en Abril Fatface de 24 pt, sense ranura de disseny. `textTransform` el passa a versals, i les tres línies de 13,6 pt de la retícula que ocupa deixen aquestes versals 5,5 mm per sota de la vora superior de la caixa ([encapçalaments](/ca/docs/configuration#encapçalaments)). `textAlign: 'center'` no admet un valor per nivell, així que també centra els títols del repartiment i el rètol *Escena*. `breakBefore` amb paritat `'odd'` porta l'acte a una pàgina senar, davant del repartiment. El valor per defecte, `'always-odd'`, deixaria dues pàgines en blanc entre tots dos ([saltar abans](/ca/docs/configuration#saltar-abans)).
+L'acte s'obre amb un títol de primer nivell en Abril Fatface de 24 pt, sense ranura de disseny. `textTransform` el passa a versals, i les tres línies de 13,6 pt de la retícula que ocupa deixen aquestes versals 5,5 mm per sota de la vora superior de la caixa ([encapçalaments](/ca/docs/configuration-text#encapçalaments)). `textAlign: 'center'` no admet un valor per nivell, així que també centra els títols del repartiment i el rètol *Escena*. `breakBefore` amb paritat `'odd'` porta l'acte a una pàgina senar, davant del repartiment. El valor per defecte, `'always-odd'`, deixaria dues pàgines en blanc entre tots dos ([saltar abans](/ca/docs/configuration-text#saltar-abans)).
 
 ### 2 · El repartiment és una filera de punts fins a cada actor
 
@@ -30,13 +30,13 @@ Cada personatge és un paràgraf de l'estil `person`, amb l'actor després de `:
 
 <Excerpt region="ornament" />
 
-Un tipus de recurs amb `captionPrefix` i `shortLabel` buits imprimeix les il·lustracions soles, sense peu ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). El seu `defaultPlacement` col·loca el clavell on hi ha `::resource{id="fleuron"}`, centrat i amb una amplada de 0,24 de la mesura de 107 mm, uns 26 mm.
+Un tipus de recurs amb `captionPrefix` i `shortLabel` buits imprimeix les il·lustracions soles, sense peu ([tipus de recurs](/ca/docs/configuration-resources#tipus-de-recurs)). El seu `defaultPlacement` col·loca el clavell on hi ha `::resource{id="fleuron"}`, centrat i amb una amplada de 0,24 de la mesura de 107 mm, uns 26 mm.
 
 ### 4 · La portada és un estil de títol
 
 <Excerpt region="playbill" />
 
-`# La importancia de llamarse Ernesto {style="playbill" …}` porta el títol en quatre atributs que el disseny compon en dues famílies: Abril Fatface de 40 i 60 pt per als substantius i Libre Baskerville cursiva de 17 pt per a *La* i *de llamarse* ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)). El fons pruna, el marc i el clavell són un sol SVG dibuixat en codi i ancorat a la sang ([elements d'imatge](/ca/docs/configuration#elements-dimatge)). L'estil porta `span: 'page'` encara que el llibre tingui una sola columna. Si el disseny es quedés a la columna, es tallaria pel peu de la caixa de text, a 23,3 mm de la vora inferior del full. El `header` buit de l'estil treu les capçaleres del repartiment, que pertany a la mateixa secció, i el seu `footer` buit treu de la portada el foli al peu, que sortiria en pruna sobre pruna ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)).
+`# La importancia de llamarse Ernesto {style="playbill" …}` porta el títol en quatre atributs que el disseny compon en dues famílies: Abril Fatface de 40 i 60 pt per als substantius i Libre Baskerville cursiva de 17 pt per a *La* i *de llamarse* ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)). El fons pruna, el marc i el clavell són un sol SVG dibuixat en codi i ancorat a la sang ([elements d'imatge](/ca/docs/configuration-page-layout#elements-dimatge)). L'estil porta `span: 'page'` encara que el llibre tingui una sola columna. Si el disseny es quedés a la columna, es tallaria pel peu de la caixa de text, a 23,3 mm de la vora inferior del full. El `header` buit de l'estil treu les capçaleres del repartiment, que pertany a la mateixa secció, i el seu `footer` buit treu de la portada el foli al peu, que sortiria en pruna sobre pruna ([estils d'encapçalament](/ca/docs/configuration-styles#estils-dencapçalament)).
 
 El fons és un element d'imatge, i una obertura reserva alçada fins al peu de les seves imatges, així que el títol ocupa el full sencer: *Personajes de la obra* comença a la pàgina 2 sense cap `:::pagebreak` després de la portada, siguin on siguin les seves línies. Tampoc cal corregir les línies centrades amb `letterSpacing`. L'espaiat que segueix l'última lletra no compta a l'hora de centrar, i *OSCAR WILDE* queda al centre de la pàgina.
 
@@ -44,7 +44,7 @@ El fons és un element d'imatge, i una obertura reserva alçada fins al peu de l
 
 <Excerpt region="heads" />
 
-La pàgina parella porta el títol de l'obra, pres del frontmatter, i la senar el de l'acte, de `{chapterTitle}`; tots dos van en versals de Playfair Display SC, amb el foli en pruna a la vora exterior ([elements de text](/ca/docs/configuration#elements-de-text)). La primera pàgina de l'acte compta com a obertura perquè el seu primer bloc és un títol que salta de pàgina, així que `pages: 'body'` li treu les capçaleres, i el peu de pàgina hi posa en el seu lloc un foli centrat.
+La pàgina parella porta el títol de l'obra, pres del frontmatter, i la senar el de l'acte, de `{chapterTitle}`; tots dos van en versals de Playfair Display SC, amb el foli en pruna a la vora exterior ([elements de text](/ca/docs/configuration-page-layout#elements-de-text)). La primera pàgina de l'acte compta com a obertura perquè el seu primer bloc és un títol que salta de pàgina, així que `pages: 'body'` li treu les capçaleres, i el peu de pàgina hi posa en el seu lloc un foli centrat.
 
 <Note>
 Un guió de cinema sagna el diàleg pels dos costats en lloc de fer servir sagnat francès: <RecipeLink slug="screenplay-format">Format de guió cinematogràfic</RecipeLink> compon cada rèplica com un requadre sense marc de l'amplada del bloc de diàleg.

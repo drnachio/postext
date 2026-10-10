@@ -22,7 +22,7 @@ Um risógrafo imprime cada tinta com o seu próprio tambor, então uma terceira 
 
 ### 2 · Recolora cada desenho uma vez por saída
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. Com `diagramStyle.singleInk`, `renderToPdf` transforma cada cor de um SVG num tom de `inkColor` cuja intensidade é 1 menos a luminância relativa da cor ([estilo de diagramas](/pt/docs/configuration#estilo-de-diagramas)), então o N12 azul-marinho sai a 84% e o N50 amarelo a 24%. O canvas tinge do mesmo modo uma imagem registrada com `singleInk: true`, então `registerArt()` registra cada desenho como foi desenhado, com essa opção, e guarda o mesmo SVG para `resourceBytes`. Amostrada no canvas e no PDF rasterizado a 300 dpi, a linha do N12 é (242, 109, 171), o tom que a fórmula dá para uma intensidade de 0,836. Cada saída recolore o desenho uma única vez: se passasse duas vezes pela fórmula, a linha clarearia para 44%.
+O código é [a resposta curta](#a-resposta-curta) logo acima. Com `diagramStyle.singleInk`, `renderToPdf` transforma cada cor de um SVG num tom de `inkColor` cuja intensidade é 1 menos a luminância relativa da cor ([estilo de diagramas](/pt/docs/configuration-resources#estilo-de-diagramas)), então o N12 azul-marinho sai a 84% e o N50 amarelo a 24%. O canvas tinge do mesmo modo uma imagem registrada com `singleInk: true`, então `registerArt()` registra cada desenho como foi desenhado, com essa opção, e guarda o mesmo SVG para `resourceBytes`. Amostrada no canvas e no PDF rasterizado a 300 dpi, a linha do N12 é (242, 109, 171), o tom que a fórmula dá para uma intensidade de 0,836. Cada saída recolore o desenho uma única vez: se passasse duas vezes pela fórmula, a linha clarearia para 44%.
 
 ### 3 · Imprima o título duas vezes, fora de registro
 

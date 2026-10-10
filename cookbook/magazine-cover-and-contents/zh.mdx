@@ -16,13 +16,13 @@ pageNotes: { "1": "封面：浅色天空下的托斯卡纳山谷，顶部是黑�
 
 ### 1 · 让封面从刊名往下挂
 
-代码见上面的[简短回答](#简短回答)。只有照片、页头的两行文字和价格锚定在页面上。其余元素都锚定在另一个元素上（[元素定位](/zh/docs/configuration#元素定位)）：刊名在标语之下，第一条眉题在刊名下方8 mm，之后每条标题在其眉题之下、每条眉题在前一条标题之下。这样，封面标题变长或刊名变大时，会把下面的内容往下推，而不是压在上面。每条眉题和每条标题各有一个84 mm宽的纸色框，六个框叠在一起就是底板，随文字多少而伸缩。第一个框之后的每个框都与上一个重叠0.3 mm（`SEAM`），条形码与价格框也同样重叠，因为在Canvas上两块刚好相接的填充色之间会漏出一条细细的照片。杂志没有半书名页和书名页：封面承载刊名，目录页承载期号、季节和版权栏。图书的前置部分见<RecipeLink slug="front-matter-roman-to-arabic">前置部分用罗马数字页码，正文从第1页起</RecipeLink>。
+代码见上面的[简短回答](#简短回答)。只有照片、页头的两行文字和价格锚定在页面上。其余元素都锚定在另一个元素上（[元素定位](/zh/docs/configuration-page-layout#元素定位)）：刊名在标语之下，第一条眉题在刊名下方8 mm，之后每条标题在其眉题之下、每条眉题在前一条标题之下。这样，封面标题变长或刊名变大时，会把下面的内容往下推，而不是压在上面。每条眉题和每条标题各有一个84 mm宽的纸色框，六个框叠在一起就是底板，随文字多少而伸缩。第一个框之后的每个框都与上一个重叠0.3 mm（`SEAM`），条形码与价格框也同样重叠，因为在Canvas上两块刚好相接的填充色之间会漏出一条细细的照片。杂志没有半书名页和书名页：封面承载刊名，目录页承载期号、季节和版权栏。图书的前置部分见<RecipeLink slug="front-matter-roman-to-arabic">前置部分用罗马数字页码，正文从第1页起</RecipeLink>。
 
 ### 2 · 把每个栏目设为不开新页的篇
 
 <Excerpt region="sections" />
 
-设置`parts.page: false`后，`:::part{title="Features" palette="band=#5d6a2b"}`这样的围栏不开分隔页，只从下一个块起设定栏目的标题和调色板（[`:::part`容器](/zh/docs/configuration#part容器)）。每篇文章的H1使用带`numbered: false`的[标题样式](/zh/docs/configuration#标题样式)，所以目录列出它时不带编号。样式决定首页的图片，篇提供颜色。
+设置`parts.page: false`后，`:::part{title="Features" palette="band=#5d6a2b"}`这样的围栏不开分隔页，只从下一个块起设定栏目的标题和调色板（[`:::part`容器](/zh/docs/configuration-styles#part容器)）。每篇文章的H1使用带`numbered: false`的[标题样式](/zh/docs/configuration-styles#标题样式)，所以目录列出它时不带编号。样式决定首页的图片，篇提供颜色。
 
 ### 3 · 把所有栏目颜色链接到同一个条目
 
@@ -34,7 +34,7 @@ pageNotes: { "1": "封面：浅色天空下的托斯卡纳山谷，顶部是黑�
 
 <Excerpt region="contents" />
 
-`:::toc`列出各篇文章，并为每个`:::part`排一行，版式取自`toc.parts.design`，颜色用该篇的调色板（[目录](/zh/docs/configuration#目录)），所以一种行设计印出三种颜色的三个色标。细线和色标都挂在`mid`上，即这一行的中线再上移1 mm，使色标不碰到下方的标题。关闭前导符后，标题和页码（3、4、6）之间不连任何东西；`subtitle.attr`把首页标题的`standfirst`属性用斜体印在标题下方。右栏末尾的版权栏是一个段落样式，Jost 7 pt、颜色`muted`，Markdown用`:::paragraphs{style="colophon"}`套用它。
+`:::toc`列出各篇文章，并为每个`:::part`排一行，版式取自`toc.parts.design`，颜色用该篇的调色板（[目录](/zh/docs/configuration-notes-references#目录)），所以一种行设计印出三种颜色的三个色标。细线和色标都挂在`mid`上，即这一行的中线再上移1 mm，使色标不碰到下方的标题。关闭前导符后，标题和页码（3、4、6）之间不连任何东西；`subtitle.attr`把首页标题的`standfirst`属性用斜体印在标题下方。右栏末尾的版权栏是一个段落样式，Jost 7 pt、颜色`muted`，Markdown用`:::paragraphs{style="colophon"}`套用它。
 
 ### 5 · 给每篇文章同样的首页
 

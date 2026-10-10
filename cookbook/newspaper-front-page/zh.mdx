@@ -34,7 +34,7 @@ pageNotes: { "1": "《The Elverdale Courier》头版：哥特体报头夹在天�
 
 ### 4 · 四栏的简讯带是一个框
 
-这一步的代码见上面的[简短回答](#简短回答)。两页的正文都排两栏（[版式类型](/zh/docs/configuration#版式类型)）。简讯只在第1页底部需要四栏，还带标题和底色，所以放进一个框里，这里是一个通页宽的框，内含一组[`:::columns`](/zh/docs/document-format#columns)。`breaks`按组内的块计数，一条简讯一个块，所以第2、3、4条简讯分别开始第2、3、4栏。每栏宽49 mm，栏与栏之间是页面的6 mm栏间距。
+这一步的代码见上面的[简短回答](#简短回答)。两页的正文都排两栏（[版式类型](/zh/docs/configuration-page-layout#版式类型)）。简讯只在第1页底部需要四栏，还带标题和底色，所以放进一个框里，这里是一个通页宽的框，内含一组[`:::columns`](/zh/docs/document-format#columns)。`breaks`按组内的块计数，一条简讯一个块，所以第2、3、4条简讯分别开始第2、3、4栏。每栏宽49 mm，栏与栏之间是页面的6 mm栏间距。
 
 ```markdown
 :::callout{type="briefs" span="page" placement="bottom" title="In brief"}

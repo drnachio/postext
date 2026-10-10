@@ -24,13 +24,13 @@ pageNotes: { "3": "半书名页，第iii页。它的样式换到右页，所以�
 
 <Excerpt region="contents" />
 
-`:::toc`列出其样式允许的每个标题，并附上标题所在页的标签（[目录](/zh/docs/configuration#目录)）。Contents和Preface共用`front`样式，它设了`toc: false`，Preface用`{toc="true"}`覆盖它。Preface和Letter I都不编号，所以它们的条目不印章号。信的条目第二行是它的`to="…"`属性。页码用页码字体排。条目与Preface第一行从同一条基线开始，所以两个对页对齐。
+`:::toc`列出其样式允许的每个标题，并附上标题所在页的标签（[目录](/zh/docs/configuration-notes-references#目录)）。Contents和Preface共用`front`样式，它设了`toc: false`，Preface用`{toc="true"}`覆盖它。Preface和Letter I都不编号，所以它们的条目不印章号。信的条目第二行是它的`to="…"`属性。页码用页码字体排。条目与Preface第一行从同一条基线开始，所以两个对页对齐。
 
 ### 3 · 小说在右页开始，上方是北极光
 
 <Excerpt region="letter" />
 
-这幅画从页面顶端出血，底部渐隐到纸色里，信就从那里开始。章首页一直预留到画的底边，距页面顶端104 mm；`minHeight`把下限再压低2 mm，信于是晚一个网格行开始，避开渐隐的部分（[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）。眉题和日期行来自标题的`to`和`dateline`属性。Letter I还带着`{style="letter"}`，这个样式唯一的设置是`numbered: false`，因为Walton的信排在Chapter I之前，没有章号。
+这幅画从页面顶端出血，底部渐隐到纸色里，信就从那里开始。章首页一直预留到画的底边，距页面顶端104 mm；`minHeight`把下限再压低2 mm，信于是晚一个网格行开始，避开渐隐的部分（[通栏与高级设计](/zh/docs/configuration-text#通栏与高级设计)）。眉题和日期行来自标题的`to`和`dateline`属性。Letter I还带着`{style="letter"}`，这个样式唯一的设置是`numbered: false`，因为Walton的信排在Chapter I之前，没有章号。
 
 ### 4 · 书眉随小说回来
 
@@ -76,7 +76,7 @@ pageNotes: { "3": "半书名页，第iii页。它的样式换到右页，所以�
 
 ### 为印刷加上出血和裁切线
 
-用`cutLines`后，封面和章首页（两者都锚定在出血上）会延伸到成品线外3 mm；页码和页数不变（[裁切线](/zh/docs/configuration#裁切线)）。
+用`cutLines`后，封面和章首页（两者都锚定在出血上）会延伸到成品线外3 mm；页码和页数不变（[裁切线](/zh/docs/configuration-page-layout#裁切线)）。
 
 ```diff
      backgroundColor: col('paper'), pageNumbering,

@@ -18,7 +18,7 @@ The opening of Oscar Wilde’s *The Importance of Being Earnest*, set as a five-
 
 <Excerpt region="acts" />
 
-The act title is a first-level heading in Abril Fatface at 24 pt, with no design slot. `textTransform` sets it in capitals, and its three grid lines of 13.6 pt put the capitals 5.5 mm below the top of the text block ([headings](/en/docs/configuration#headings)). `textAlign: 'center'` cannot be set per level, so it also centres the cast list’s headings and the *Scene* label. `breakBefore` with parity `'odd'` starts the act on a recto, facing the cast list. The default, `'always-odd'`, would put two blank pages between them ([break before](/en/docs/configuration#break-before)).
+The act title is a first-level heading in Abril Fatface at 24 pt, with no design slot. `textTransform` sets it in capitals, and its three grid lines of 13.6 pt put the capitals 5.5 mm below the top of the text block ([headings](/en/docs/configuration-text#headings)). `textAlign: 'center'` cannot be set per level, so it also centres the cast list’s headings and the *Scene* label. `breakBefore` with parity `'odd'` starts the act on a recto, facing the cast list. The default, `'always-odd'`, would put two blank pages between them ([break before](/en/docs/configuration-text#break-before)).
 
 ### 2 · The cast list is a row of dots to each actor
 
@@ -30,13 +30,13 @@ Each person is a paragraph of the `person` style, the actor after `:tab` ([tabs 
 
 <Excerpt region="ornament" />
 
-A resource type with an empty `captionPrefix` and `shortLabel` prints its pictures bare ([resource types](/en/docs/configuration#resource-types)). Its `defaultPlacement` puts the carnation where `::resource{id="fleuron"}` stands, centred and 0.24 of the 107 mm measure wide, about 26 mm.
+A resource type with an empty `captionPrefix` and `shortLabel` prints its pictures bare ([resource types](/en/docs/configuration-resources#resource-types)). Its `defaultPlacement` puts the carnation where `::resource{id="fleuron"}` stands, centred and 0.24 of the 107 mm measure wide, about 26 mm.
 
 ### 4 · The title page is a heading style
 
 <Excerpt region="playbill" />
 
-`# The Importance of Being Earnest {style="playbill" …}` carries the title in four attributes, which the design sets in two faces: Abril Fatface at 40 and 60 pt for the nouns, Libre Baskerville italic at 17 pt for *The* and *of Being* ([heading attributes](/en/docs/document-format#heading-attributes)). The plum ground, the frame and the carnation are one SVG drawn in code and anchored to the bleed ([image elements](/en/docs/configuration#image-elements)). The style sets `span: 'page'` although the book has one column. Kept in the column, the design would be cut off at the foot of the text block, 23.3 mm above the foot of the sheet. The style’s empty `header` keeps the running heads off the cast list, which belongs to the same section, and its empty `footer` keeps the drop folio off the title page, where it would print plum on plum ([heading styles](/en/docs/configuration#heading-styles)).
+`# The Importance of Being Earnest {style="playbill" …}` carries the title in four attributes, which the design sets in two faces: Abril Fatface at 40 and 60 pt for the nouns, Libre Baskerville italic at 17 pt for *The* and *of Being* ([heading attributes](/en/docs/document-format#heading-attributes)). The plum ground, the frame and the carnation are one SVG drawn in code and anchored to the bleed ([image elements](/en/docs/configuration-page-layout#image-elements)). The style sets `span: 'page'` although the book has one column. Kept in the column, the design would be cut off at the foot of the text block, 23.3 mm above the foot of the sheet. The style’s empty `header` keeps the running heads off the cast list, which belongs to the same section, and its empty `footer` keeps the drop folio off the title page, where it would print plum on plum ([heading styles](/en/docs/configuration-styles#heading-styles)).
 
 The ground is an image element, and an opener reserves down to the foot of its images, so the heading holds the whole sheet: *The Persons of the Play* starts on page 2 with no `:::pagebreak` after the title, wherever the title page’s lines stand. A centred line with `letterSpacing` needs no correction either. The spacing after its last letter is left out of the centring, and *OSCAR WILDE* stands on the centre of the page.
 
@@ -44,7 +44,7 @@ The ground is an image element, and an opener reserves down to the foot of its i
 
 <Excerpt region="heads" />
 
-The verso carries the play’s title from the frontmatter and the recto the act, from `{chapterTitle}`, both in Playfair Display SC capitals with the folio in plum at the outer edge ([text elements](/en/docs/configuration#text-elements)). The act’s first page counts as an opener because its first block is a heading that breaks the page, so `pages: 'body'` keeps the heads off it, and the footer gives it a drop folio instead.
+The verso carries the play’s title from the frontmatter and the recto the act, from `{chapterTitle}`, both in Playfair Display SC capitals with the folio in plum at the outer edge ([text elements](/en/docs/configuration-page-layout#text-elements)). The act’s first page counts as an opener because its first block is a heading that breaks the page, so `pages: 'body'` keeps the heads off it, and the footer gives it a drop folio instead.
 
 <Note>
 A screenplay indents its dialogue from both sides instead of hanging it: <RecipeLink slug="screenplay-format">Screenplay format</RecipeLink> sets each speech as a frameless box padded to the width of the dialogue block.

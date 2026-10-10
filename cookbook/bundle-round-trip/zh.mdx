@@ -18,7 +18,7 @@ pageNotes: { "1": "DL折页的正面：沙色底上是眉题Arenal estuary · Vi
 
 <Excerpt region="answer" highlight="14-17" />
 
-`createBundle`把章节、配置、资源以及它们引用的每个文件压缩成zip；`openBundle`拿到的只有这些字节。字体来自`loadBundleFonts`，图来自`registerBundleImages`，版面设计来自`bundle.config`。`files`里漏掉的字体会用浏览器的后备字体印出；漏掉的图会被丢弃并给出警告，引用它的地方印成(?)。在zip内部，每个`fileId`都变成一个路径（`mill.svg`变成`resources/mill.svg`），`openBundle`返回的资源和`customFonts`已经用上了新名称（[打开文件包](/zh/docs/configuration#打开文件包)）。
+`createBundle`把章节、配置、资源以及它们引用的每个文件压缩成zip；`openBundle`拿到的只有这些字节。字体来自`loadBundleFonts`，图来自`registerBundleImages`，版面设计来自`bundle.config`。`files`里漏掉的字体会用浏览器的后备字体印出；漏掉的图会被丢弃并给出警告，引用它的地方印成(?)。在zip内部，每个`fileId`都变成一个路径（`mill.svg`变成`resources/mill.svg`），`openBundle`返回的资源和`customFonts`已经用上了新名称（[打开文件包](/zh/docs/configuration-programmatic-usage#打开文件包)）。
 
 ### 2 · 把字体放进文件
 
@@ -36,13 +36,13 @@ pageNotes: { "1": "DL折页的正面：沙色底上是眉题Arenal estuary · Vi
 
 <Excerpt region="labels" />
 
-读取文件的一方按文件自身的语言生成内置类型：配置里不写`resourceTypes`时，西班牙文折页不管在哪里打开，包括在/en/sandbox的沙盒里，都印成Figura 1.1和Tabla 1.1。折页写出类型只是为了编号：`'{n}'`去掉章号，两页的折页用不着它（[资源类型](/zh/docs/configuration#资源类型)）。同一个`config()`还设置了`locale`，它决定使用西班牙文断词模式（背面的compuer-tas）以及PDF声明的语言。
+读取文件的一方按文件自身的语言生成内置类型：配置里不写`resourceTypes`时，西班牙文折页不管在哪里打开，包括在/en/sandbox的沙盒里，都印成Figura 1.1和Tabla 1.1。折页写出类型只是为了编号：`'{n}'`去掉章号，两页的折页用不着它（[资源类型](/zh/docs/configuration-resources#资源类型)）。同一个`config()`还设置了`locale`，它决定使用西班牙文断词模式（背面的compuer-tas）以及PDF声明的语言。
 
 ### 5 · 把同样的字节交出去
 
 <Excerpt region="handoff" />
 
-链接提供的就是排版所用的`bytes`，连字体共132 KB。在沙盒里导入（*书库 → 新建 → 打开.postext文件…*）后，这个文件变成一本西班牙文或英文的书，封面图是取自`thumbnail`的水轮。PDF从`bundleFontProvider`取字体，它返回文件包里字重最接近的字体，如果有同样风格的就优先用同样风格；图则来自`bundleResourceBytes`，所以不会再下载一遍字体或图片（[排版和渲染文件包](/zh/docs/configuration#排版和渲染文件包)）。
+链接提供的就是排版所用的`bytes`，连字体共132 KB。在沙盒里导入（*书库 → 新建 → 打开.postext文件…*）后，这个文件变成一本西班牙文或英文的书，封面图是取自`thumbnail`的水轮。PDF从`bundleFontProvider`取字体，它返回文件包里字重最接近的字体，如果有同样风格的就优先用同样风格；图则来自`bundleResourceBytes`，所以不会再下载一遍字体或图片（[排版和渲染文件包](/zh/docs/configuration-programmatic-usage#排版和渲染文件包)）。
 
 ### 6 · 用一个标题画出正面
 
@@ -72,4 +72,4 @@ Postext指南把英文和西班牙文的章节、配置和题注放在一个文�
 
 ## 常见问题
 
-- 这里每个版本各写成一个文件。要把两种语言放进同一个文件，就给`createBundle`传一个`localized`映射（[双语文件包](/zh/docs/configuration#双语文件包)）；之后`openBundle(bytes, { locale })`可以读出其中任一版本。
+- 这里每个版本各写成一个文件。要把两种语言放进同一个文件，就给`createBundle`传一个`localized`映射（[双语文件包](/zh/docs/configuration-programmatic-usage#双语文件包)）；之后`openBundle(bytes, { locale })`可以读出其中任一版本。

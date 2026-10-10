@@ -16,7 +16,7 @@ A keepsake of four A5 pages, one A4 sheet folded once, holding two shaped poems 
 
 ### 1 · A line of verse is a centred paragraph
 
-The code is [the short answer](#the-short-answer) above. Postext joins the lines of a Markdown paragraph into one, so every line of verse is a paragraph, with a blank line after it. `textAlign: 'center'` sets each line at its natural width on the axis of the measure, and since only justified text is hyphenated unless `hyphenation.ragged` is on, no word is broken ([body text](/en/docs/configuration#body-text)). Each line is the first of its paragraph, so the default first-line indent of 1.5 em would push it 3.3 mm right of the titles’ axis; `firstLineIndent: pt(0)` keeps poems and titles on one axis.
+The code is [the short answer](#the-short-answer) above. Postext joins the lines of a Markdown paragraph into one, so every line of verse is a paragraph, with a blank line after it. `textAlign: 'center'` sets each line at its natural width on the axis of the measure, and since only justified text is hyphenated unless `hyphenation.ragged` is on, no word is broken ([body text](/en/docs/configuration-text#body-text)). Each line is the first of its paragraph, so the default first-line indent of 1.5 em would push it 3.3 mm right of the titles’ axis; `firstLineIndent: pt(0)` keeps poems and titles on one axis.
 
 ### 2 · The measure takes the longest line
 
@@ -28,7 +28,7 @@ A line that does not fit turns over, and both halves are centred, so the outline
 
 <Excerpt region="titles" />
 
-No level has a design, only type settings, and `headings.textAlign` centres all three ([headings](/en/docs/configuration#headings)). Parity `'any'` opens each poem on the next page, recto or verso, so the altar on page 2 faces the wings on page 3. A `marginTop` cannot lower those titles, because the space above a heading that opens a page is dropped. The line box of level 2, three lines deep, lowers each title about 5 mm instead, and both poems start on line 5 of the text block. Level 1 opens the document and needs no break here; it carries one all the same, so that a second `#` title would open on a recto. Level 3 sets the four labels of pages 1 and 4 in the small capitals of IM Fell English SC, at the body size.
+No level has a design, only type settings, and `headings.textAlign` centres all three ([headings](/en/docs/configuration-text#headings)). Parity `'any'` opens each poem on the next page, recto or verso, so the altar on page 2 faces the wings on page 3. A `marginTop` cannot lower those titles, because the space above a heading that opens a page is dropped. The line box of level 2, three lines deep, lowers each title about 5 mm instead, and both poems start on line 5 of the text block. Level 1 opens the document and needs no break here; it carries one all the same, so that a second `#` title would open on a recto. Level 3 sets the four labels of pages 1 and 4 in the small capitals of IM Fell English SC, at the body size.
 
 ### 4 · The Markdown spaces and breaks the pages
 

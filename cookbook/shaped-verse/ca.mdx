@@ -16,7 +16,7 @@ Un quadernet de quatre pàgines A5, un plec A4 doblegat per la meitat, que reune
 
 ### 1 · Cada vers és un paràgraf centrat
 
-El codi és a [la resposta curta](#la-resposta-curta), més amunt. Postext ajunta en un sol paràgraf les línies seguides del Markdown, així que cada vers va en un paràgraf propi, amb una línia en blanc al darrere. `textAlign: 'center'` centra cada vers, amb la seva amplada natural, sobre l'eix de la mesura, i com que la partició de mots només s'aplica al text justificat, tret que s'activi `hyphenation.ragged`, cap paraula no es parteix ([text de cos](/ca/docs/configuration#text-de-cos)). Cada vers obre el seu paràgraf, així que el sagnat de primera línia per defecte, d'1,5 em, el desplaçaria 3,3 mm a la dreta de l'eix dels títols; amb `firstLineIndent: pt(0)`, poemes i títols comparteixen eix.
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. Postext ajunta en un sol paràgraf les línies seguides del Markdown, així que cada vers va en un paràgraf propi, amb una línia en blanc al darrere. `textAlign: 'center'` centra cada vers, amb la seva amplada natural, sobre l'eix de la mesura, i com que la partició de mots només s'aplica al text justificat, tret que s'activi `hyphenation.ragged`, cap paraula no es parteix ([text de cos](/ca/docs/configuration-text#text-de-cos)). Cada vers obre el seu paràgraf, així que el sagnat de primera línia per defecte, d'1,5 em, el desplaçaria 3,3 mm a la dreta de l'eix dels títols; amb `firstLineIndent: pt(0)`, poemes i títols comparteixen eix.
 
 ### 2 · La mesura admet el vers més llarg
 
@@ -28,7 +28,7 @@ Un vers que no hi cap passa a una segona línia, i com que les dues meitats es c
 
 <Excerpt region="titles" />
 
-Cap nivell no porta disseny, només ajustos tipogràfics, i `headings.textAlign` centra els tres ([encapçalaments](/ca/docs/configuration#encapçalaments)). La paritat `'any'` obre cada poema a la pàgina següent, sigui parella o senar, de manera que l'altar de la pàgina 2 queda davant de les ales de la 3. Un `marginTop` no baixaria aquests títols, perquè l'espai sobre un títol que obre pàgina es descarta. En canvi, l'interlineat del nivell 2, de tres línies de la retícula, deixa cada títol uns 5 mm més avall, i els dos poemes comencen a la línia 5 de la caixa. El nivell 1 obre el document i aquí no necessita salt, però el porta igualment perquè un segon títol `#` obri en pàgina senar. El nivell 3 compon els quatre rètols de les pàgines 1 i 4 en les versaletes d'IM Fell English SC, al cos del text.
+Cap nivell no porta disseny, només ajustos tipogràfics, i `headings.textAlign` centra els tres ([encapçalaments](/ca/docs/configuration-text#encapçalaments)). La paritat `'any'` obre cada poema a la pàgina següent, sigui parella o senar, de manera que l'altar de la pàgina 2 queda davant de les ales de la 3. Un `marginTop` no baixaria aquests títols, perquè l'espai sobre un títol que obre pàgina es descarta. En canvi, l'interlineat del nivell 2, de tres línies de la retícula, deixa cada títol uns 5 mm més avall, i els dos poemes comencen a la línia 5 de la caixa. El nivell 1 obre el document i aquí no necessita salt, però el porta igualment perquè un segon títol `#` obri en pàgina senar. El nivell 3 compon els quatre rètols de les pàgines 1 i 4 en les versaletes d'IM Fell English SC, al cos del text.
 
 ### 4 · El Markdown espaia i talla les pàgines
 

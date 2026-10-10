@@ -16,7 +16,7 @@ pageNotes: { "1": "书名页：上部84 mm是一块牛血红色块，外围一�
 
 ### 1 · 一次调用启动工作线程
 
-这一步的代码见上文的[简短回答](#简短回答)。`createLayoutWorker()`不带选项。模块来自esm.sh时，worker文件位于esm.sh的源上，`Worker`构造函数不会接受它，所以引擎通过一个与页面同源的blob启动自己的worker入口，版本与页面导入的相同。在打包的应用里，同一个调用启动模块旁边的那个worker文件。句柄的`build()`接收与`buildDocument()`相同的内容和配置，返回的也是同一种文档（[在Web Worker中运行排版](/zh/docs/configuration#在web-worker中运行排版)）。
+这一步的代码见上文的[简短回答](#简短回答)。`createLayoutWorker()`不带选项。模块来自esm.sh时，worker文件位于esm.sh的源上，`Worker`构造函数不会接受它，所以引擎通过一个与页面同源的blob启动自己的worker入口，版本与页面导入的相同。在打包的应用里，同一个调用启动模块旁边的那个worker文件。句柄的`build()`接收与`buildDocument()`相同的内容和配置，返回的也是同一种文档（[在Web Worker中运行排版](/zh/docs/configuration-programmatic-usage#在web-worker中运行排版)）。
 
 <Note>postext包用Canvas测量文字，所以在浏览器或工作线程里排版。做批处理时，postext命令行（postext-cli）不用浏览器就能排好一本书并写出PDF；另一条路是用Puppeteer在无头Chrome里打开页面。对于磁盘上的`.postext`项目，postext-port技能的`render.mjs`在Node里运行引擎，用fontkit和项目自带的字体代替Canvas做测量（[脚本](/zh/docs/skill#脚本)）。</Note>
 

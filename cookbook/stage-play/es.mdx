@@ -18,7 +18,7 @@ El comienzo de *La importancia de llamarse Ernesto*, de Oscar Wilde, en una edic
 
 <Excerpt region="acts" />
 
-El acto se abre con un título de primer nivel en Abril Fatface de 24 pt, sin ranura de diseño. `textTransform` lo pasa a versales, y las tres líneas de 13,6 pt de la rejilla que ocupa dejan esas versales 5,5 mm por debajo del borde superior de la caja ([encabezados](/es/docs/configuration#encabezados)). `textAlign: 'center'` no admite un valor por nivel, así que centra también los títulos del reparto y el rótulo *Escena*. `breakBefore` con paridad `'odd'` lleva el acto a una página impar, frente al reparto. El valor por defecto, `'always-odd'`, dejaría dos páginas en blanco entre ambos ([saltar antes](/es/docs/configuration#saltar-antes)).
+El acto se abre con un título de primer nivel en Abril Fatface de 24 pt, sin ranura de diseño. `textTransform` lo pasa a versales, y las tres líneas de 13,6 pt de la rejilla que ocupa dejan esas versales 5,5 mm por debajo del borde superior de la caja ([encabezados](/es/docs/configuration-text#encabezados)). `textAlign: 'center'` no admite un valor por nivel, así que centra también los títulos del reparto y el rótulo *Escena*. `breakBefore` con paridad `'odd'` lleva el acto a una página impar, frente al reparto. El valor por defecto, `'always-odd'`, dejaría dos páginas en blanco entre ambos ([saltar antes](/es/docs/configuration-text#saltar-antes)).
 
 ### 2 · El reparto es una fila de puntos hasta cada actor
 
@@ -30,13 +30,13 @@ Cada personaje es un párrafo del estilo `person`, con el actor tras `:tab` ([ta
 
 <Excerpt region="ornament" />
 
-Un tipo de recurso con `captionPrefix` y `shortLabel` vacíos imprime sus ilustraciones solas, sin pie ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)). Su `defaultPlacement` coloca el clavel donde está `::resource{id="fleuron"}`, centrado y con un ancho de 0,24 de la medida de 107 mm, unos 26 mm.
+Un tipo de recurso con `captionPrefix` y `shortLabel` vacíos imprime sus ilustraciones solas, sin pie ([tipos de recurso](/es/docs/configuration-resources#tipos-de-recurso)). Su `defaultPlacement` coloca el clavel donde está `::resource{id="fleuron"}`, centrado y con un ancho de 0,24 de la medida de 107 mm, unos 26 mm.
 
 ### 4 · La portada es un estilo de título
 
 <Excerpt region="playbill" />
 
-`# La importancia de llamarse Ernesto {style="playbill" …}` lleva el título en cuatro atributos que el diseño compone en dos familias: Abril Fatface de 40 y 60 pt para los sustantivos y Libre Baskerville cursiva de 17 pt para *La* y *de llamarse* ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). El fondo ciruela, el marco y el clavel son un solo SVG dibujado en código y anclado al sangrado ([elementos de imagen](/es/docs/configuration#elementos-de-imagen)). El estilo lleva `span: 'page'` aunque el libro tenga una sola columna. Si el diseño se quedara en la columna, se cortaría por el pie de la caja de texto, a 23,3 mm del borde inferior de la hoja. El `header` vacío del estilo quita las cabeceras del reparto, que pertenece a la misma sección, y su `footer` vacío quita de la portada el folio al pie, que saldría en ciruela sobre ciruela ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)).
+`# La importancia de llamarse Ernesto {style="playbill" …}` lleva el título en cuatro atributos que el diseño compone en dos familias: Abril Fatface de 40 y 60 pt para los sustantivos y Libre Baskerville cursiva de 17 pt para *La* y *de llamarse* ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). El fondo ciruela, el marco y el clavel son un solo SVG dibujado en código y anclado al sangrado ([elementos de imagen](/es/docs/configuration-page-layout#elementos-de-imagen)). El estilo lleva `span: 'page'` aunque el libro tenga una sola columna. Si el diseño se quedara en la columna, se cortaría por el pie de la caja de texto, a 23,3 mm del borde inferior de la hoja. El `header` vacío del estilo quita las cabeceras del reparto, que pertenece a la misma sección, y su `footer` vacío quita de la portada el folio al pie, que saldría en ciruela sobre ciruela ([estilos de encabezado](/es/docs/configuration-styles#estilos-de-encabezado)).
 
 El fondo es un elemento de imagen, y una apertura reserva altura hasta el pie de sus imágenes, así que el título ocupa la hoja entera: *Personajes de la obra* empieza en la página 2 sin ningún `:::pagebreak` tras la portada, estén donde estén sus líneas. Tampoco hay que corregir las líneas centradas con `letterSpacing`. El espaciado que sigue a la última letra no cuenta al centrar, y *OSCAR WILDE* queda en el centro de la página.
 
@@ -44,7 +44,7 @@ El fondo es un elemento de imagen, y una apertura reserva altura hasta el pie de
 
 <Excerpt region="heads" />
 
-La página par lleva el título de la obra, tomado del frontmatter, y la impar el del acto, de `{chapterTitle}`; las dos van en versales de Playfair Display SC, con el folio en ciruela en el borde exterior ([elementos de texto](/es/docs/configuration#elementos-de-texto)). La primera página del acto cuenta como apertura porque su primer bloque es un título que salta de página, así que `pages: 'body'` le quita las cabeceras, y el pie de página le pone en su lugar un folio centrado.
+La página par lleva el título de la obra, tomado del frontmatter, y la impar el del acto, de `{chapterTitle}`; las dos van en versales de Playfair Display SC, con el folio en ciruela en el borde exterior ([elementos de texto](/es/docs/configuration-page-layout#elementos-de-texto)). La primera página del acto cuenta como apertura porque su primer bloque es un título que salta de página, así que `pages: 'body'` le quita las cabeceras, y el pie de página le pone en su lugar un folio centrado.
 
 <Note>
 Un guion de cine sangra el diálogo por los dos lados en lugar de usar sangría francesa: <RecipeLink slug="screenplay-format">Formato de guion cinematográfico</RecipeLink> compone cada réplica como un recuadro sin marco del ancho del bloque de diálogo.

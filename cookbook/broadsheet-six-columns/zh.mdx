@@ -16,7 +16,7 @@ pageNotes: { "1": "《The Corrington Despatch》头版：报头夹在天气报�
 
 ### 1 · 对开大报上的六栏
 
-这一步的代码就是上面的[简短回答](#简短回答)。`page.sizePreset: 'broadsheet'`设定375 × 597 mm的开本，`layoutType: 'multiple'`加`columnCount: 6`把351 mm宽的版心切成六个等宽的栏（[版式类型](/zh/docs/configuration#版式类型)）。每栏宽(351 − 5 × 4) / 6 = 55.2 mm，9 pt的Newsreader每行约38个字符，所以正文需要断词，用`minWordSpacing: 0.8`防止词距收得过紧，用`maxJustifyTracking: 15`把松散行的空隙分摊到字母之间。栏线在每条栏距里画一条0.4 pt的细线，遇到横跨的浮动体或框就断开。postext 1.17及以前，正文最多两栏，所以<RecipeLink slug="newspaper-front-page">第027号</RecipeLink>只能把四栏简讯放进一个框里。
+这一步的代码就是上面的[简短回答](#简短回答)。`page.sizePreset: 'broadsheet'`设定375 × 597 mm的开本，`layoutType: 'multiple'`加`columnCount: 6`把351 mm宽的版心切成六个等宽的栏（[版式类型](/zh/docs/configuration-page-layout#版式类型)）。每栏宽(351 − 5 × 4) / 6 = 55.2 mm，9 pt的Newsreader每行约38个字符，所以正文需要断词，用`minWordSpacing: 0.8`防止词距收得过紧，用`maxJustifyTracking: 15`把松散行的空隙分摊到字母之间。栏线在每条栏距里画一条0.4 pt的细线，遇到横跨的浮动体或框就断开。postext 1.17及以前，正文最多两栏，所以<RecipeLink slug="newspaper-front-page">第027号</RecipeLink>只能把四栏简讯放进一个框里。
 
 ### 2 · 跨k栏的浮动体占用第一组空栏
 

@@ -22,7 +22,7 @@ Rafailov、Sharma、Mitchell、Ermon、Manning和Finn的论文*Direct Preference
 
 <Excerpt region="theorems" />
 
-每种环境都是一个[标注框样式](/zh/docs/configuration#标注框样式)，只用一种手段：定义用灰色侧边条，引理用梅紫色侧边条，定理用浅梅紫色底。`box()`把这些外观加在简短回答的编号设置上。`body.italic`像amsthm的plain样式一样把陈述排成斜体，同行标签在其中保持粗正体。证明不加框：标签为斜体、不带编号（`counter: false`），`endMark: '□'`在最后一行右端排一个方块，因为数学引擎在运行，方块用TeX的`\square`绘制；`keepTogether: false`让较长的证明可以转到下一页。`snapToGrid: false`让每个命题上下的空白都相同：单栏没有相邻栏需要对齐，精确的间距比取整到基线网格的更好看。
+每种环境都是一个[标注框样式](/zh/docs/configuration-styles#标注框样式)，只用一种手段：定义用灰色侧边条，引理用梅紫色侧边条，定理用浅梅紫色底。`box()`把这些外观加在简短回答的编号设置上。`body.italic`像amsthm的plain样式一样把陈述排成斜体，同行标签在其中保持粗正体。证明不加框：标签为斜体、不带编号（`counter: false`），`endMark: '□'`在最后一行右端排一个方块，因为数学引擎在运行，方块用TeX的`\square`绘制；`keepTogether: false`让较长的证明可以转到下一页。`snapToGrid: false`让每个命题上下的空白都相同：单栏没有相邻栏需要对齐，精确的间距比取整到基线网格的更好看。
 
 ### 3 · 用论文自己的文献表做作者–年份引用
 

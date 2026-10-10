@@ -18,25 +18,25 @@ Nove páginas de *Afoot*, uma antologia de bolso com três ensaios sobre caminha
 
 <Excerpt region="opener" />
 
-O `numberingTemplate: '{1:I}'` do nível numera os ensaios I, II e III, e `{number}` imprime o numeral acima do título ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). `minHeight` reserva 12 linhas de 14 pt e o fio fino termina 7 mm acima disso, então, sob um título de uma linha, o texto começa a 79 mm da borda superior em todas as aberturas. Uma segunda linha de título em 26 pt acrescenta 9,9 mm e empurra o texto uma linha da grade para baixo; com `SINK = 14`, títulos de uma e de duas linhas começam o texto na mesma linha. `marginBottom: pt(0)` impede que a margem padrão do título se some à reserva.
+O `numberingTemplate: '{1:I}'` do nível numera os ensaios I, II e III, e `{number}` imprime o numeral acima do título ([span e design avançado](/pt/docs/configuration-text#largura-e-design-avançado)). `minHeight` reserva 12 linhas de 14 pt e o fio fino termina 7 mm acima disso, então, sob um título de uma linha, o texto começa a 79 mm da borda superior em todas as aberturas. Uma segunda linha de título em 26 pt acrescenta 9,9 mm e empurra o texto uma linha da grade para baixo; com `SINK = 14`, títulos de uma e de duas linhas começam o texto na mesma linha. `marginBottom: pt(0)` impede que a margem padrão do título se some à reserva.
 
 ### 2 · Deixe o sumário se preencher sozinho
 
 <Excerpt region="contents" />
 
-`:::toc` no Markdown imprime uma entrada por título listado: número, título, linha de pontos, rótulo da página e, por meio de `subtitle`, o autor. `buildDocument` diagrama o livro de novo até os rótulos de página pararem de mudar, então um ensaio renomeado ou mais longo atualiza o sumário ([sumário](/pt/docs/configuration#sumário)). O numeral de uma entrada usa a fonte e o corpo do título, a menos que `numberFontFamily` ou `numberFontSize` digam outra coisa, e fica apoiado na linha de base da primeira linha do título em qualquer corpo. Um livro com partes também ganha uma linha para cada `:::part`, desenhada por `toc.parts.design`, como em <RecipeLink slug="parts-in-colour">Partes em cores</RecipeLink>.
+`:::toc` no Markdown imprime uma entrada por título listado: número, título, linha de pontos, rótulo da página e, por meio de `subtitle`, o autor. `buildDocument` diagrama o livro de novo até os rótulos de página pararem de mudar, então um ensaio renomeado ou mais longo atualiza o sumário ([sumário](/pt/docs/configuration-notes-references#sumário)). O numeral de uma entrada usa a fonte e o corpo do título, a menos que `numberFontFamily` ou `numberFontSize` digam outra coisa, e fica apoiado na linha de base da primeira linha do título em qualquer corpo. Um livro com partes também ganha uma linha para cada `:::part`, desenhada por `toc.parts.design`, como em <RecipeLink slug="parts-in-colour">Partes em cores</RecipeLink>.
 
 ### 3 · Autor na página par, ensaio na ímpar
 
 <Excerpt region="running-heads" />
 
-Cada cabeço é ancorado à página, a 11 mm da borda superior, e `parity` escolhe o lado: o fólio se alinha com a borda externa do texto e o nome ou o título fica 7 mm mais para dentro. O `pages: 'body'` em `head()` mantém os cabeços fora das aberturas, onde a assinatura já nomeia o autor, e o `pages: 'opener'` do rodapé imprime ali um fólio no pé ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). `{chapterTitle}` imprime o título do ensaio sem o numeral.
+Cada cabeço é ancorado à página, a 11 mm da borda superior, e `parity` escolhe o lado: o fólio se alinha com a borda externa do texto e o nome ou o título fica 7 mm mais para dentro. O `pages: 'body'` em `head()` mantém os cabeços fora das aberturas, onde a assinatura já nomeia o autor, e o `pages: 'opener'` do rodapé imprime ali um fólio no pé ([elementos de texto](/pt/docs/configuration-page-layout#elementos-de-texto)). `{chapterTitle}` imprime o título do ensaio sem o numeral.
 
 ### 4 · Deixe a capa e o sumário fora da contagem
 
 <Excerpt region="front" />
 
-Com `numbered: false`, a capa e o sumário não avançam o contador, então Hazlitt é o I, e `toc: false` os mantém fora da lista ([estilos de título](/pt/docs/configuration#estilos-de-título)). Os dois estilos herdam o `breakBefore` do nível, com paridade `'any'`, e é por isso que o sumário vem logo depois da capa, na página 2, sem um `:::pagebreak`. O estilo da capa ocupa a página inteira num livro de uma coluna porque um design mantido na coluna é cortado no pé da coluna, o que deixaria 22 mm de papel abaixo da paisagem.
+Com `numbered: false`, a capa e o sumário não avançam o contador, então Hazlitt é o I, e `toc: false` os mantém fora da lista ([estilos de título](/pt/docs/configuration-styles#estilos-de-título)). Os dois estilos herdam o `breakBefore` do nível, com paridade `'any'`, e é por isso que o sumário vem logo depois da capa, na página 2, sem um `:::pagebreak`. O estilo da capa ocupa a página inteira num livro de uma coluna porque um design mantido na coluna é cortado no pé da coluna, o que deixaria 22 mm de papel abaixo da paisagem.
 
 ### 5 · Escreva cada cor por extenso com o seu vínculo à paleta
 

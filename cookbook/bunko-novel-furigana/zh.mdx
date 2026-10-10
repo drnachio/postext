@@ -16,25 +16,25 @@ pageNotes: { "1": "书名页，独自位于书脊左侧：夢十夜用大号粗�
 
 ### 1 · 转动页面，以字计数，标为`ja`
 
-代码见上文的[简短回答](#简短回答)。`layout.writingMode: 'vertical-rl'`把每一页当作顺时针转了四分之一圈的横排页面来排；`page.binding`保持`'auto'`，竖排书就在右侧装订：第1页仍是奇数页，但它位于书脊左侧，`mirror: true`把它的内页边距放到右边（[竖排](/zh/docs/configuration#竖排)、[装订](/zh/docs/configuration#装订)）。[字符网格](/zh/docs/configuration#字格)把版心设为竖向38个9 pt的字（120.7 mm）、横向15行、行距15.75 pt（83.3 mm）；`page`里的页边距是最小值，网格把每一对页边距放大同样的量，所以天头始终比地脚深4 mm。要的行数超出页边距所能容纳时，网格会不声不响地少排一行（`doc.configWarnings`里的`cjkGridClamped`）：正是9 mm的订口和12 mm的切口让15行排得下。
+代码见上文的[简短回答](#简短回答)。`layout.writingMode: 'vertical-rl'`把每一页当作顺时针转了四分之一圈的横排页面来排；`page.binding`保持`'auto'`，竖排书就在右侧装订：第1页仍是奇数页，但它位于书脊左侧，`mirror: true`把它的内页边距放到右边（[竖排](/zh/docs/configuration-page-layout#竖排)、[装订](/zh/docs/configuration-page-layout#装订)）。[字符网格](/zh/docs/configuration-east-asian#字格)把版心设为竖向38个9 pt的字（120.7 mm）、横向15行、行距15.75 pt（83.3 mm）；`page`里的页边距是最小值，网格把每一对页边距放大同样的量，所以天头始终比地脚深4 mm。要的行数超出页边距所能容纳时，网格会不声不响地少排一行（`doc.configWarnings`里的`cjkGridClamped`）：正是9 mm的订口和12 mm的切口让15行排得下。
 
-`locale: 'ja'`按日文书籍的做法设定其余各项，所以这里写出的四行`cjk`设置不改变任何结果，只是展示这个语言标记选了什么。`ja-very-strict`是JIS X 4051的行首禁则（行頭禁則）：行首不出现、。」、ー或っ这样的小写假名。`hangingPunctuation: 'allow'`让本该落在行首的、或。悬挂在最后一个字之下（ぶら下げ），文库本这样做，而不去挤压这一行。`paragraphStartBracket: 'half'`是JLReq的方式③：以「开头的段落把括号放在一字缩进的后半格，于是对白的第一个字与其他段落的第一个字对齐（[东亚排版](/zh/docs/configuration#东亚排版)）。中文书在这两点上都不同：默认不悬挂标点，段首缩进两字，有没有括号都一样。
+`locale: 'ja'`按日文书籍的做法设定其余各项，所以这里写出的四行`cjk`设置不改变任何结果，只是展示这个语言标记选了什么。`ja-very-strict`是JIS X 4051的行首禁则（行頭禁則）：行首不出现、。」、ー或っ这样的小写假名。`hangingPunctuation: 'allow'`让本该落在行首的、或。悬挂在最后一个字之下（ぶら下げ），文库本这样做，而不去挤压这一行。`paragraphStartBracket: 'half'`是JLReq的方式③：以「开头的段落把括号放在一字缩进的后半格，于是对白的第一个字与其他段落的第一个字对齐（[东亚排版](/zh/docs/configuration-east-asian#东亚排版)）。中文书在这两点上都不同：默认不悬挂标点，段首缩进两字，有没有括号都一样。
 
 ### 2 · 每一夜的标题占网格的三行
 
 <Excerpt region="nights" />
 
-日文标题占整数个正文行，称为行取り（gyōdori），这样标题后面的行与前面的行在同一套网格上。`lineSpan: 3`把第一夜排在三个15.75 pt行宽的带里，字居于其中；标题的12.5 pt不移动网格，第6页上第二夜落在页面中部，它后面的正文与前面的正文在同一组行上。`indent: em(5)`以正文字计（五字下げ），青空文库的文本就是这样标中見出し的，JLReq也这样计算标题的缩进（[按级别覆盖](/zh/docs/configuration#按级别覆盖)）。
+日文标题占整数个正文行，称为行取り（gyōdori），这样标题后面的行与前面的行在同一套网格上。`lineSpan: 3`把第一夜排在三个15.75 pt行宽的带里，字居于其中；标题的12.5 pt不移动网格，第6页上第二夜落在页面中部，它后面的正文与前面的正文在同一组行上。`indent: em(5)`以正文字计（五字下げ），青空文库的文本就是这样标中見出し的，JLReq也这样计算标题的缩进（[按级别覆盖](/zh/docs/configuration-text#按级别覆盖)）。
 
 ### 3 · 从青空文库取来正文和读音
 
-这两夜取自青空文库的第799号作品卡，用postext-port技能里的`aozora.py`转换。转换脚本以CP932读取文件，把写成`仰向《あおむき》`的读音变成整组读音`{仰向|あおむき}`，即一串假名覆盖整个词，并把`［＃５字下げ］…［＃「第一夜」は中見出し］`变成标题。在`ja`文档中，读音遵循JIS X 4051：比基字短的读音按1:2:1沿基字分布，比基字长的读音可以伸到相邻的假名旁，但不会伸到汉字旁（[着重号、注音与夹注](/zh/docs/configuration#着重号注音与夹注)）。1.75 em的行距在行与行之间留出6.75 pt，容得下4.5 pt的读音。
+这两夜取自青空文库的第799号作品卡，用postext-port技能里的`aozora.py`转换。转换脚本以CP932读取文件，把写成`仰向《あおむき》`的读音变成整组读音`{仰向|あおむき}`，即一串假名覆盖整个词，并把`［＃５字下げ］…［＃「第一夜」は中見出し］`变成标题。在`ja`文档中，读音遵循JIS X 4051：比基字短的读音按1:2:1沿基字分布，比基字长的读音可以伸到相邻的假名旁，但不会伸到汉字旁（[着重号、注音与夹注](/zh/docs/configuration-east-asian#着重号注音与夹注)）。1.75 em的行距在行与行之间留出6.75 pt，容得下4.5 pt的读音。
 
 ### 4 · 柱排在切口，页码用汉字
 
 <Excerpt region="hashira" />
 
-竖排文库本的书眉（柱，hashira）字小，放在外页边距里。`anchor.to: 'outer'`把元素放在那里，在右侧装订的书中，奇数页是左页边距，偶数页是右页边距；`writingMode: 'vertical-rl'`让它从上到下排（[竖排文本元素](/zh/docs/configuration#竖排文本元素)）。书名夢十夜只出现在左页（`parity: 'odd'`），`pages: 'body'`会让它避开任何开始一章的页面。`pageNumbering.format: 'japanese-informal'`把页码印成二、三……九（[页码编号](/zh/docs/configuration#页码编号)）。
+竖排文库本的书眉（柱，hashira）字小，放在外页边距里。`anchor.to: 'outer'`把元素放在那里，在右侧装订的书中，奇数页是左页边距，偶数页是右页边距；`writingMode: 'vertical-rl'`让它从上到下排（[竖排文本元素](/zh/docs/configuration-page-layout#竖排文本元素)）。书名夢十夜只出现在左页（`parity: 'odd'`），`pages: 'body'`会让它避开任何开始一章的页面。`pageNumbering.format: 'japanese-informal'`把页码印成二、三……九（[页码编号](/zh/docs/configuration-page-layout#页码编号)）。
 
 ### 5 · 书名页在成品页面上居中
 

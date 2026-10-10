@@ -16,7 +16,7 @@ Un libro ilustrado de diez páginas, かみの ふね (*El barco de papel*), esc
 
 ### 1 · Mantén entera cada frase
 
-El código está en [la respuesta corta](#la-respuesta-corta). El japonés puede cortarse entre dos kana cualesquiera, así que un espacio entre frases no hace más que añadir aire: no impide que la línea acabe dentro de あか|い. `cjk.wordBreak: 'keep-all'` conserva únicamente los cortes en un espacio y junto a la puntuación, tras 、。」 o delante de 「, como el `word-break: keep-all` de CSS, y el kinsoku sigue valiendo ([tipografía de Asia oriental](/es/docs/configuration#tipografía-de-asia-oriental)). El espacio es un U+0020 corriente, de 0,35 cuadratines en Klee One, y la línea lo suprime cuando cae al final. Un U+3000 también separa frases, pero es un carácter fijo de un cuadratín que se queda al final de la línea.
+El código está en [la respuesta corta](#la-respuesta-corta). El japonés puede cortarse entre dos kana cualesquiera, así que un espacio entre frases no hace más que añadir aire: no impide que la línea acabe dentro de あか|い. `cjk.wordBreak: 'keep-all'` conserva únicamente los cortes en un espacio y junto a la puntuación, tras 、。」 o delante de 「, como el `word-break: keep-all` de CSS, y el kinsoku sigue valiendo ([tipografía de Asia oriental](/es/docs/configuration-east-asian#tipografía-de-asia-oriental)). El espacio es un U+0020 corriente, de 0,35 cuadratines en Klee One, y la línea lo suprime cuando cae al final. Un U+3000 también separa frases, pero es un carácter fijo de un cuadratín que se queda al final de la línea.
 
 <PageShot page={3} crop="0.45,0.52,0.55,0.48" caption="Página 3: ocho líneas, cada una termina en un espacio o tras 」 y 、: 「いって / らっしゃい。」 / みいちゃんが / そっと てを…" />
 
@@ -26,7 +26,7 @@ El texto va en bandera. Justificada, una línea corta estiraría sus espacios y 
 
 <Excerpt region="layout" />
 
-En el texto vertical `'left'` es lo alto de la página, así que una maqueta de columna y media con la columna lateral a la izquierda son dos franjas: los dibujos flotan en la de arriba (14 caracteres de alto) y el texto corre por la de abajo (8 caracteres). Cada página cita su dibujo con `::resource{id="…"}` y acaba con `:::pagebreak`. El tipo de recurso de los dibujos no lleva prefijo en el pie, y los dibujos son 2,186 veces más anchos que altos, la forma de la franja, así que la llenan ([escritura vertical](/es/docs/configuration#escritura-vertical)).
+En el texto vertical `'left'` es lo alto de la página, así que una maqueta de columna y media con la columna lateral a la izquierda son dos franjas: los dibujos flotan en la de arriba (14 caracteres de alto) y el texto corre por la de abajo (8 caracteres). Cada página cita su dibujo con `::resource{id="…"}` y acaba con `:::pagebreak`. El tipo de recurso de los dibujos no lleva prefijo en el pie, y los dibujos son 2,186 veces más anchos que altos, la forma de la franja, así que la llenan ([escritura vertical](/es/docs/configuration-page-layout#escritura-vertical)).
 
 ### 3 · Haz de la portada un dibujo a toda página
 
@@ -38,7 +38,7 @@ La portada es un diseño de título a toda la página: el dibujo se ancla al san
 
 <Excerpt region="pictures" />
 
-Las diez ilustraciones son pinturas, archivos JPEG en `assets/` de la receta. Las nueve escenas están cortadas con la forma de la franja, 612 : 280, y la portada con la de la página, 260 : 200, así que cada una llena su marco y no se recorta nada. Cada una es un recurso `bitmap` declarado con su tamaño en píxeles, con texto alternativo en la lengua del libro, y su archivo se carga con el `fileId` del recurso antes de componer. Con 1.400 px de ancho, las escenas se imprimen a unos 165 ppp a lo largo de la franja ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)).
+Las diez ilustraciones son pinturas, archivos JPEG en `assets/` de la receta. Las nueve escenas están cortadas con la forma de la franja, 612 : 280, y la portada con la de la página, 260 : 200, así que cada una llena su marco y no se recorta nada. Cada una es un recurso `bitmap` declarado con su tamaño en píxeles, con texto alternativo en la lengua del libro, y su archivo se carga con el `fileId` del recurso antes de componer. Con 1.400 px de ancho, las escenas se imprimen a unos 165 ppp a lo largo de la franja ([tipos de recurso](/es/docs/configuration-resources#tipos-de-recurso)).
 
 ## Variantes
 
