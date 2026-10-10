@@ -21,7 +21,7 @@ const palette = {
   mist: '#9fb1bd', // small print on the ink cover
   paper: '#ffffff',
 };
-// Designs paint the hex (gotcha: palette-skips-designs); a :::part recolours by paletteId.
+// Every colour is linked to its palette entry, so a :::part recolours it by paletteId.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries(palette)
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -74,8 +74,7 @@ const cover = { enabled: true, slot: { elements: [
     overflow: 'wrap' }, { ...at('page', 'bottom-left', MARGIN.inner, -14), // the text block's
     size: { width: mm(TRIM.width - MARGIN.inner - MARGIN.outer) } }), // width: 'fill' hits the trim
 ] } };
-// A section opener: a strip in the part's colour, then title and standfirst. Design text's
-// lineHeight is a multiple of its size (gotcha: design-lineheight-multiple).
+// A section opener: a strip in the part's colour, then title and standfirst.
 const STRIP = 8; // mm
 const onStrip = { ...mono, fontSize: pt(8), letterSpacing: pt(1.4), color: col('paper') };
 const opener = { enabled: true, minHeight: mm(56), slot: { elements: [
@@ -143,7 +142,7 @@ const config = () => ({
   bodyText: { ...flowText, color: col('ink'), boldColor: col('ink'), italicColor: col('ink'),
     referenceColor: col('ink'), referenceBold: false },
   headings: { fontFamily: 'Epilogue', color: col('band'), balancing, levels: [
-    // Restated (gotcha: headings-drop-h1-break); 'any': a section opens on the next page.
+    // 'any': a section opens on the next page, recto or verso, with no blank before it.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: opener },
     { level: 2, fontSize: pt(11.5), fontWeight: 700, ...onGrid },
@@ -196,9 +195,9 @@ const siteTable = (rows) => ({ headerRowCount: 1, columnWidths: [3, 1, 1.3, 1.3]
     right(figure(mw, 1)), ...n.map((v) => right(figure(v)))]),
   [{ content: '**All sites**', ...fill }, ...[2, 3, 4].map((i, k) => right(`**${figure(rows
     .reduce((sum, row) => sum + row[i], 0), k ? 0 : 1)}**`, fill))]] }); // the totals, summed
-// Accounting style: losses in brackets, and gains followed by a no-break space as wide as a
-// bracket, so the digits line up. Cells are trimmed, so a word joiner (U+2060) keeps it.
-const pad = '\u00a0\u2060';
+// Accounting style: losses in brackets, and gains followed by a no-break space, as wide as a
+// bracket in a monospaced face, so the digits line up.
+const pad = '\u00a0';
 const money = (n) => (n < 0 ? `(${figure(-n)})` : `${figure(n)}${pad}`);
 function statement(rows) {
   const sum = [0, 0];
