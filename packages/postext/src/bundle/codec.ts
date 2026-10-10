@@ -561,7 +561,7 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
   for (const [locale, entry] of Object.entries(localized ?? {})) {
     const overrides: BundleLocaleOverrides = {};
     if (entry.config) {
-      const config = localizedConfig(entry.config, configWithoutFonts);
+      const config = localizedConfig(entry.config, configWithoutFonts, content.config);
       if (Object.keys(config).length > 0) overrides.config = config;
     }
     const wording: NonNullable<BundleLocaleOverrides['resources']> = [];
@@ -644,18 +644,46 @@ function sameJson(a: unknown, b: unknown): boolean {
 /** The top-level keys of a locale's configuration that differ from the
  *  shared (stripped) configuration, each stripped of its defaults. A key
  *  whose value is all defaults while the shared one is not is written as
- *  given (`layout: {}`), so that it still replaces the shared key. */
-function localizedConfig(own: PostextConfig, shared: Partial<PostextConfig>): Partial<PostextConfig> {
-  const stripped = stripConfigDefaults(own) as Record<string, unknown>;
+ *  given (`layout: {}`), so that it still replaces the shared key.
+ *
+ *  The locale is read as its keys over the shared ones, so the defaults
+ *  that depend on the rest of the configuration (the language, the writing
+ *  mode, a character grid) are those of that whole, `sharedSource` (the
+ *  shared configuration as given) under `own` (#651): a locale that only
+ *  sets `headings` on a shared character grid keeps `balancing.enabled:
+ *  true`. A shared key the locale leaves out is written for it too when
+ *  its own defaults keep a value the shared ones dropped (`index.see.italic:
+ *  true` under a Japanese locale). */
+function localizedConfig(own: PostextConfig, shared: Partial<PostextConfig>, sharedSource: PostextConfig): Partial<PostextConfig> {
   const raw = own as Record<string, unknown>;
   const base = shared as Record<string, unknown>;
+  const whole: Record<string, unknown> = { ...sharedSource };
+  for (const key of Object.keys(raw)) if (raw[key] !== undefined) whole[key] = raw[key];
+  const stripped = stripConfigDefaults(whole as PostextConfig) as Record<string, unknown>;
   const out: Record<string, unknown> = {};
   for (const key of Object.keys(raw)) {
     if (key === 'customFonts' || raw[key] === undefined) continue;
     if (sameJson(stripped[key], base[key])) continue;
     out[key] = stripped[key] ?? raw[key];
   }
+  const sharedStripped = stripConfigDefaults(sharedSource) as Record<string, unknown>;
+  for (const key of Object.keys(sharedSource)) {
+    if (key === 'customFonts' || raw[key] !== undefined) continue;
+    if (!heldBy(stripped[key], sharedStripped[key])) out[key] = stripped[key];
+  }
   return out as Partial<PostextConfig>;
+}
+
+/** Whether everything `value` sets is set the same in `holder` (which may
+ *  set more): objects field by field, anything else as a whole. */
+function heldBy(value: unknown, holder: unknown): boolean {
+  if (value === undefined) return true;
+  const fields = (v: unknown): Record<string, unknown> | undefined =>
+    typeof v === 'object' && v !== null && !Array.isArray(v) ? v as Record<string, unknown> : undefined;
+  const a = fields(value);
+  const b = fields(holder);
+  if (a && b) return Object.keys(a).every((key) => heldBy(a[key], b[key]));
+  return sameJson(value, holder);
 }
 
 export interface BundleByteSources {

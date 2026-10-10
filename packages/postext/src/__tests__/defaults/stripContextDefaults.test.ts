@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { balancingOnByDefault, stripConfigDefaults, stripHeadingsDefaults } from '../../defaults';
+import { balancingOnByDefault, stripConfigDefaults, stripHeadingsDefaults, stripIndexDefaults, stripPageDefaults } from '../../defaults';
 import * as configVersion from '../../bundle/configVersion';
 import { resolveAllConfig } from '../../pipeline/config';
+import { stableStringify } from '../../util/stableHash';
 import type { DesignElement, DesignSlot, PostextConfig } from '../../types';
 
 // #651: a default that depends on the rest of the configuration is the
@@ -21,6 +22,8 @@ const withBalancing = (context: PostextConfig, balancing: NonNullable<PostextCon
   ...context,
   headings: { balancing },
 });
+const roundTrips = (config: PostextConfig) =>
+  expect(resolveAllConfig(stripConfigDefaults(config))).toEqual(resolveAllConfig(config));
 
 describe('stripConfigDefaults and the balancing default of the document (#651)', () => {
   it('keeps balancing turned on where it is off by default', () => {
@@ -91,6 +94,127 @@ describe('stripConfigDefaults and the balancing default of the document (#651)',
     expect(stripHeadingsDefaults({ balancing: { enabled: false } }, false)).toBeUndefined();
     expect(stripHeadingsDefaults({ balancing: { enabled: true } }, true)).toBeUndefined();
   });
+});
+
+describe('the other defaults that follow the configuration (#651)', () => {
+  it('keeps the index separators and label italics that are no default in its language', () => {
+    const arabic: PostextConfig = { locale: 'ar', index: { separator: ', ', locatorSeparator: ', ', see: { italic: true } } };
+    expect(stripConfigDefaults(arabic)).toEqual(arabic);
+    roundTrips(arabic);
+    const japanese: PostextConfig = { locale: 'ja', index: { see: { italic: true } } };
+    expect(stripConfigDefaults(japanese)).toEqual(japanese);
+    roundTrips(japanese);
+    // The index's own language decides before the document's.
+    const arabicIndex: PostextConfig = { locale: 'en', index: { locale: 'ar', separator: ', ' } };
+    expect(stripConfigDefaults(arabicIndex)).toEqual(arabicIndex);
+    roundTrips(arabicIndex);
+    // In any other language they are the defaults, as before.
+    expect(stripConfigDefaults({ locale: 'es', index: { separator: ', ', see: { italic: true } } })).toEqual({ locale: 'es' });
+    expect(stripIndexDefaults({ separator: ', ', see: { italic: true } })).toBeUndefined();
+    expect(stripIndexDefaults({ separator: ', ', see: { italic: true } }, 'ar')).toEqual({ separator: ', ', see: { italic: true } });
+    // What was kept before is kept still.
+    expect(stripIndexDefaults({ separator: '، ', see: { italic: false } }, 'ar')).toEqual({ separator: '، ', see: { italic: false } });
+  });
+
+  it('reads the document language from the hyphenation locale when no locale is set', () => {
+    // The Sandbox fills `bodyText.hyphenation.locale` from the app language.
+    const japanese = (extra: PostextConfig): PostextConfig => ({ bodyText: { hyphenation: { locale: 'ja' } }, ...extra });
+    const notes = japanese({ footnotes: { numbering: 'chapter' } });
+    expect(resolveAllConfig(japanese({})).footnotes.numbering).toBe('page');
+    expect(stripConfigDefaults(notes).footnotes).toEqual({ numbering: 'chapter' });
+    roundTrips(notes);
+    const captions = japanese({ captionStyle: { labelNumberGap: ' ', labelSeparator: '. ' } });
+    expect(stripConfigDefaults(captions).captionStyle).toEqual({ labelNumberGap: ' ', labelSeparator: '. ' });
+    roundTrips(captions);
+    const index = japanese({ index: { see: { italic: true } } });
+    expect(stripConfigDefaults(index).index).toEqual({ see: { italic: true } });
+    roundTrips(index);
+  });
+
+  it('keeps hyphenation patterns named for another language than the document\'s', () => {
+    const config: PostextConfig = { locale: 'es', bodyText: { hyphenation: { locale: 'en-us' } } };
+    expect(resolveAllConfig({ locale: 'es' }).bodyText.hyphenation.locale).toBe('es');
+    expect(stripConfigDefaults(config)).toEqual(config);
+    roundTrips(config);
+    // The document's own patterns, and a document that names no language.
+    expect(stripConfigDefaults({ locale: 'en', bodyText: { hyphenation: { locale: 'en-us' } } })).toEqual({ locale: 'en' });
+    expect(stripConfigDefaults({ bodyText: { hyphenation: { locale: 'en-us' } } })).toEqual({});
+  });
+
+  it('keeps a comics section left at its defaults where it binds the book on the right', () => {
+    for (const locale of ['ja', 'zh-Hant']) {
+      const manga: PostextConfig = { locale, comics: {} };
+      expect(resolveAllConfig(manga).page.binding, locale).toBe('right');
+      expect(resolveAllConfig({ locale }).page.binding, locale).toBe('left');
+      expect(stripConfigDefaults(manga), locale).toEqual(manga);
+      expect(resolveAllConfig(stripConfigDefaults({ locale, comics: { readingDirection: 'auto' } })).page.binding, locale).toBe('right');
+    }
+    // A comic read left to right is bound on the left with or without it.
+    expect(stripConfigDefaults({ locale: 'en', comics: {} })).toEqual({ locale: 'en' });
+    expect(stripConfigDefaults({ comics: { artDirection: 'ltr' } })).toEqual({});
+  });
+
+  it('keeps a page size that differs from its named preset', () => {
+    const cm = (value: number) => ({ value, unit: 'cm' as const });
+    const config: PostextConfig = { page: { sizePreset: '21x28', width: cm(17), height: cm(24) } };
+    expect(resolveAllConfig(config).page.width).toEqual(cm(17));
+    expect(stripConfigDefaults(config)).toEqual(config);
+    roundTrips(config);
+    // The default size under the default preset, or under none.
+    expect(stripPageDefaults({ width: cm(17), height: cm(24) })).toBeUndefined();
+    expect(stripPageDefaults({ sizePreset: '17x24', width: cm(17), height: cm(24) })).toBeUndefined();
+    expect(stripPageDefaults({ sizePreset: 'custom', width: cm(17), height: cm(30) })).toEqual({ sizePreset: 'custom', height: cm(30) });
+    // A preset's own size written out is kept as it always was.
+    expect(stripPageDefaults({ sizePreset: '21x28', width: cm(21), height: cm(28) }))
+      .toEqual({ sizePreset: '21x28', width: cm(21), height: cm(28) });
+  });
+});
+
+// Every flag of the resolved configuration, set either way in each context,
+// reads back the same after the strip: a default that comes to depend on
+// the rest of the configuration shows up here.
+describe('every flag survives the strip in every context (#651)', () => {
+  const contexts: Record<string, PostextConfig> = {
+    ...CONTEXTS,
+    chinese: { locale: 'zh-Hans' },
+    japanese: { locale: 'ja' },
+    japaneseVertical: { locale: 'ja', layout: { writingMode: 'vertical-rl' } },
+    japaneseByHyphenation: { bodyText: { hyphenation: { locale: 'ja' } } },
+    arabic: { locale: 'ar' },
+    spanish: { locale: 'es' },
+    rightToLeft: { direction: 'rtl' },
+    twoColumns: { layout: { layoutType: 'double' } },
+    manga: { locale: 'ja', comics: { lettering: { fontSize: { value: 8, unit: 'pt' } } } },
+  };
+  const isFields = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+  const flags = (value: unknown, path: string[], out: string[][]): string[][] => {
+    if (typeof value === 'boolean') out.push(path);
+    else if (isFields(value)) for (const [k, v] of Object.entries(value)) flags(v, [...path, k], out);
+    return out;
+  };
+  const merge = (a: unknown, b: unknown): unknown => {
+    if (!isFields(a) || !isFields(b)) return b === undefined ? a : b;
+    const out: Record<string, unknown> = { ...a };
+    for (const [k, v] of Object.entries(b)) out[k] = merge(out[k], v);
+    return out;
+  };
+
+  for (const [name, context] of Object.entries(contexts)) {
+    it(name, () => {
+      const paths = flags(JSON.parse(JSON.stringify(resolveAllConfig(context))), [], []);
+      expect(paths.length).toBeGreaterThan(100);
+      const lost: string[] = [];
+      for (const path of paths) {
+        for (const value of [true, false]) {
+          const config = merge(context, path.reduceRight<unknown>((acc, key) => ({ [key]: acc }), value)) as PostextConfig;
+          const before = stableStringify(resolveAllConfig(config));
+          const after = stableStringify(resolveAllConfig(stripConfigDefaults(config)));
+          if (before !== after) lost.push(`${path.join('.')}: ${value}`);
+        }
+      }
+      expect(lost).toEqual([]);
+    });
+  }
 });
 
 // A pin writes the value an older version laid a document out with; the

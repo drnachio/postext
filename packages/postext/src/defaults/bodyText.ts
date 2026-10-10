@@ -333,9 +333,20 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
   };
 }
 
+/** Whether `hyphenation` names patterns other than the ones a document in
+ *  `documentLocale` takes when it names none (`resolveHyphenation`):
+ *  `locale: 'en-us'` in a Spanish document is no default there (#651). */
+function namesOtherPatterns(hyphenation: HyphenationConfig, documentLocale: LocaleTag | undefined): boolean {
+  const named = presentTag(hyphenation.locale);
+  const ofDocument = presentTag(documentLocale);
+  if (named === undefined || ofDocument === undefined) return false;
+  return hyphenationLocaleFor(named, false) !== hyphenationLocaleFor(ofDocument, false);
+}
+
 /** `bodyText` without the fields that hold their default. `documentLocale`
  *  (the config's `locale`) matters to hyphenation only: in a Chinese,
- *  Japanese or Korean document its default is off. */
+ *  Japanese or Korean document its default is off, and the patterns of a
+ *  document that names its language are that language's. */
 export function stripBodyTextDefaults(bodyText?: BodyTextConfig, documentLocale?: LocaleTag): BodyTextConfig | undefined {
   if (!bodyText) return undefined;
 
@@ -397,7 +408,7 @@ export function stripBodyTextDefaults(bodyText?: BodyTextConfig, documentLocale?
   // In a Chinese, Japanese, Korean or right-to-left document hyphenation
   // defaults to off, so settings equal to the Latin defaults
   // (`enabled: true`) are kept.
-  if (bodyText.hyphenation && (isUnhyphenatedLanguage(documentLocale) || !hyphenationEqual(bodyText.hyphenation, DEFAULT_BODY_TEXT_CONFIG.hyphenation))) {
+  if (bodyText.hyphenation && (isUnhyphenatedLanguage(documentLocale) || namesOtherPatterns(bodyText.hyphenation, documentLocale) || !hyphenationEqual(bodyText.hyphenation, DEFAULT_BODY_TEXT_CONFIG.hyphenation))) {
     result.hyphenation = bodyText.hyphenation;
     hasOverride = true;
   }

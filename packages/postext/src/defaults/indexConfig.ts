@@ -103,13 +103,18 @@ function definedFields<T extends object>(obj: T | undefined): T | undefined {
 
 /** Drop unset fields and the static defaults. Returns `undefined` when
  *  nothing remains. `ignoreArticle` is kept whenever it is set: its default
- *  depends on the language. */
-export function stripIndexDefaults(index: IndexConfig | undefined): IndexConfig | undefined {
+ *  depends on the language. `documentLocale` is the document language, as
+ *  for {@link resolveIndexConfig}: the separators and the italics of the
+ *  cross-reference labels are kept where the static default is not the
+ *  default of the index's language (`', '` in an Arabic index, `see.italic:
+ *  true` in an Arabic or Japanese one, #651). */
+export function stripIndexDefaults(index: IndexConfig | undefined, documentLocale?: string): IndexConfig | undefined {
   if (!index) return undefined;
   const d = DEFAULT_INDEX_CONFIG;
+  const byLanguage = languageDefaults(presentTag(index.locale) ?? presentTag(documentLocale));
   const r = definedFields({ ...index }) ?? {};
-  if (r.separator === d.separator) delete r.separator;
-  if (r.locatorSeparator === d.locatorSeparator) delete r.locatorSeparator;
+  if (r.separator === d.separator && r.separator === byLanguage.separator) delete r.separator;
+  if (r.locatorSeparator === d.locatorSeparator && r.locatorSeparator === byLanguage.separator) delete r.locatorSeparator;
   if (r.rangeSeparator === d.rangeSeparator) delete r.rangeSeparator;
   if (r.mergeRanges === d.mergeRanges) delete r.mergeRanges;
   if (r.rangeFormat === d.rangeFormat) delete r.rangeFormat;
@@ -123,7 +128,7 @@ export function stripIndexDefaults(index: IndexConfig | undefined): IndexConfig 
   }
   if (r.see) {
     const s = definedFields(r.see);
-    if (s?.italic === d.see.italic) delete s.italic;
+    if (s?.italic === d.see.italic && s.italic === byLanguage.italicSee) delete s.italic;
     if (s && Object.keys(s).length > 0) r.see = s;
     else delete r.see;
   }

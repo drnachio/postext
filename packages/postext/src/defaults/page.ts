@@ -147,11 +147,17 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
     result.sizePreset = page.sizePreset;
     hasOverride = true;
   }
-  if (page.width !== undefined && !dimensionsEqual(page.width, DEFAULT_PAGE_CONFIG.width)) {
+  // A named preset supplies the size a config leaves out, and an explicit
+  // one wins over it (`resolvePageConfig`): the default width is the
+  // default only where the preset does not name another (#651).
+  const sizePreset = page.sizePreset ?? DEFAULT_PAGE_CONFIG.sizePreset;
+  const presetSize = sizePreset === 'custom' ? undefined : PAGE_SIZE_PRESETS[sizePreset];
+  const restatesPreset = (given: Dimension, ofPreset: Dimension | undefined) => !ofPreset || dimensionsEqual(given, ofPreset);
+  if (page.width !== undefined && !(dimensionsEqual(page.width, DEFAULT_PAGE_CONFIG.width) && restatesPreset(page.width, presetSize?.width))) {
     result.width = page.width;
     hasOverride = true;
   }
-  if (page.height !== undefined && !dimensionsEqual(page.height, DEFAULT_PAGE_CONFIG.height)) {
+  if (page.height !== undefined && !(dimensionsEqual(page.height, DEFAULT_PAGE_CONFIG.height) && restatesPreset(page.height, presetSize?.height))) {
     result.height = page.height;
     hasOverride = true;
   }
