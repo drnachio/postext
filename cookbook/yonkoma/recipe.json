@@ -50,8 +50,8 @@
     "hiragana-picture-book"
   ],
   "engine": {
-    "postext": "1.25.0",
-    "postextPdf": "1.25.0"
+    "postext": "1.25.1",
+    "postextPdf": "1.25.1"
   },
   "kit": [
     "core",

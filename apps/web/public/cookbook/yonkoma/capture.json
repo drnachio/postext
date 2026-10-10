@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "yonkoma",
-  "sourceHash": "4865269db44f309fc315bccbb1c9444b62a249434220df175ce255c088e70944",
+  "sourceHash": "b646d2c05e52659f973306ab62dd126a8281cdb8392940422b599cd0cd650ff0",
   "engine": {
-    "postext": "1.25.0",
-    "postextPdf": "1.25.0",
+    "postext": "1.25.1",
+    "postextPdf": "1.25.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-10T13:42:27.895Z",
+  "capturedAt": "2026-10-10T15:15:02.272Z",
   "variants": {
     "en": {
-      "hash8": "caa3bb14",
+      "hash8": "d45c2199",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 208,
-        "fontsMs": 245,
-        "buildMs": 349,
-        "totalMs": 1568,
+        "importMs": 467,
+        "fontsMs": 333,
+        "buildMs": 353,
+        "totalMs": 1927,
         "builds": 2
       },
       "specimen": {
@@ -234,13 +234,13 @@
       }
     },
     "es": {
-      "hash8": "fabd6864",
+      "hash8": "3fca5777",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 173,
-        "fontsMs": 215,
-        "buildMs": 328,
-        "totalMs": 1498,
+        "importMs": 208,
+        "fontsMs": 216,
+        "buildMs": 339,
+        "totalMs": 1567,
         "builds": 2
       },
       "specimen": {
@@ -457,13 +457,13 @@
       }
     },
     "ca": {
-      "hash8": "a34e3987",
+      "hash8": "690fd737",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 168,
-        "fontsMs": 216,
-        "buildMs": 337,
-        "totalMs": 1513,
+        "importMs": 166,
+        "fontsMs": 209,
+        "buildMs": 331,
+        "totalMs": 1491,
         "builds": 2
       },
       "specimen": {
@@ -680,13 +680,13 @@
       }
     },
     "zh": {
-      "hash8": "353191f8",
+      "hash8": "1157552b",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 229,
-        "fontsMs": 262,
-        "buildMs": 340,
-        "totalMs": 1792,
+        "importMs": 210,
+        "fontsMs": 228,
+        "buildMs": 332,
+        "totalMs": 1781,
         "builds": 2
       },
       "specimen": {
@@ -727,7 +727,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 160422,
+          "bytes": 160454,
           "alt": "第 1 页。"
         }
       ],
@@ -752,12 +752,12 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1338576,
+        "bytes": 1338567,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1264325,
+        "bytes": 1264329,
         "folio": "80b0969c"
       },
       "detected": {
@@ -903,13 +903,13 @@
       }
     },
     "ar": {
-      "hash8": "c173815c",
+      "hash8": "1c1b60b3",
       "vdtHash": "d61540f9adce65e201a2f033d6b41fbdbc3c42aa",
       "timings": {
-        "importMs": 343,
-        "fontsMs": 503,
-        "buildMs": 351,
-        "totalMs": 2005,
+        "importMs": 173,
+        "fontsMs": 211,
+        "buildMs": 326,
+        "totalMs": 1475,
         "builds": 2
       },
       "specimen": {
@@ -1126,13 +1126,13 @@
       }
     },
     "ja": {
-      "hash8": "5af56b7a",
+      "hash8": "1158ff42",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 226,
-        "fontsMs": 251,
-        "buildMs": 339,
-        "totalMs": 1599,
+        "importMs": 249,
+        "fontsMs": 242,
+        "buildMs": 341,
+        "totalMs": 1609,
         "builds": 2
       },
       "specimen": {
@@ -1198,7 +1198,7 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1322846,
+        "bytes": 1322844,
         "pages": 2
       },
       "sandbox": {
@@ -1349,13 +1349,13 @@
       }
     },
     "pt": {
-      "hash8": "43d5cdea",
+      "hash8": "d84004d7",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 602,
-        "fontsMs": 416,
-        "buildMs": 349,
-        "totalMs": 2198,
+        "importMs": 199,
+        "fontsMs": 246,
+        "buildMs": 359,
+        "totalMs": 1591,
         "builds": 2
       },
       "specimen": {
@@ -1421,7 +1421,7 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1323934,
+        "bytes": 1323932,
         "pages": 2
       },
       "sandbox": {
