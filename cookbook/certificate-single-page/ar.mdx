@@ -52,7 +52,7 @@ pageNotes: { "1": "شهادة بمقاس US Letter على ورق كريمي، ي
 
 ### اطبع ملف PDF لكل طالب
 
-زرّ لكل طالب يبني شهادته مستندًا قائمًا بذاته، بـ`config()` جديد، ويسمّي الملف برقمه التسلسلي؛ ويزن كل ملف نحو 245 كيلوبايت.
+زرّ لكل طالب يبني شهادته مستندًا قائمًا بذاته، بـ`buildDocumentWithFonts` كما في بناء المثال نفسه، ويسمّي الملف برقمه التسلسلي؛ ويزن كل ملف نحو 245 كيلوبايت.
 
 ```diff
 -offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
@@ -60,9 +60,10 @@ pageNotes: { "1": "شهادة بمقاس US Letter على ورق كريمي، ي
 -document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',
 -  es: 'Toda la clase en un PDF' });
 +for (const [name, serial] of CLASS) {
-+  offerPdf(() => renderToPdf(buildDocument({ markdown:
-+    `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`, metadata, resources },
-+    config()), { fontProvider: fontsourceProvider, resourceBytes: imageBytes }), `${serial}.pdf`);
++  const one = `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`;
++  offerPdf(async () => renderToPdf(await buildDocumentWithFonts({ markdown: one, metadata,
++    resources }, config(), kitFonts(FONTS)), { fontProvider: fontsourceProvider,
++    resourceBytes: imageBytes }), `${serial}.pdf`);
 +  document.querySelector(`[data-postext-pdf="${serial}.pdf"]`).textContent = name;
 +}
 ```

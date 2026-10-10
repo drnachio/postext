@@ -52,7 +52,7 @@ La classe és un únic document, així que `renderToPdf` escriu un sol fitxer de
 
 ### Genera un PDF per alumne
 
-Un botó per alumne compon el seu diploma com a document a part, amb un `config()` nou, i fa servir el número de sèrie com a nom del fitxer; cadascun pesa uns 238 KB.
+Un botó per alumne compon el seu diploma com a document a part, amb `buildDocumentWithFonts` com la composició del mateix pen, i fa servir el número de sèrie com a nom del fitxer; cadascun pesa uns 236 KB.
 
 ```diff
 -offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
@@ -60,9 +60,10 @@ Un botó per alumne compon el seu diploma com a document a part, amb un `config(
 -document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',
 -  es: 'Toda la clase en un PDF' });
 +for (const [name, serial] of CLASS) {
-+  offerPdf(() => renderToPdf(buildDocument({ markdown:
-+    `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`, metadata, resources },
-+    config()), { fontProvider: fontsourceProvider, resourceBytes: imageBytes }), `${serial}.pdf`);
++  const one = `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`;
++  offerPdf(async () => renderToPdf(await buildDocumentWithFonts({ markdown: one, metadata,
++    resources }, config(), kitFonts(FONTS)), { fontProvider: fontsourceProvider,
++    resourceBytes: imageBytes }), `${serial}.pdf`);
 +  document.querySelector(`[data-postext-pdf="${serial}.pdf"]`).textContent = name;
 +}
 ```

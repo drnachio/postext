@@ -52,7 +52,7 @@ pageNotes: { "1": "クリーム色の用紙に組んだUSレターの修了証�
 
 ### 受講者ごとにPDFを分ける
 
-受講者ひとりにつきボタンをひとつ置き、新しい`config()`で、その修了証だけを独立した文書としてビルドし、ファイル名に通し番号をつけます。1ファイルは約245 KBです。
+受講者ひとりにつきボタンをひとつ置き、サンプル自身のビルドと同じ`buildDocumentWithFonts`で、その修了証だけを独立した文書としてビルドし、ファイル名に通し番号をつけます。1ファイルは約245 KBです。
 
 ```diff
 -offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
@@ -60,9 +60,10 @@ pageNotes: { "1": "クリーム色の用紙に組んだUSレターの修了証�
 -document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',
 -  es: 'Toda la clase en un PDF' });
 +for (const [name, serial] of CLASS) {
-+  offerPdf(() => renderToPdf(buildDocument({ markdown:
-+    `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`, metadata, resources },
-+    config()), { fontProvider: fontsourceProvider, resourceBytes: imageBytes }), `${serial}.pdf`);
++  const one = `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`;
++  offerPdf(async () => renderToPdf(await buildDocumentWithFonts({ markdown: one, metadata,
++    resources }, config(), kitFonts(FONTS)), { fontProvider: fontsourceProvider,
++    resourceBytes: imageBytes }), `${serial}.pdf`);
 +  document.querySelector(`[data-postext-pdf="${serial}.pdf"]`).textContent = name;
 +}
 ```

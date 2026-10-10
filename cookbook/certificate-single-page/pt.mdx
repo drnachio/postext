@@ -52,7 +52,7 @@ A turma é um único documento, então `renderToPdf` grava um só arquivo de tr�
 
 ### Gerar um PDF por aluno
 
-Um botão por aluno compõe aquele certificado como documento à parte, com um `config()` novo, e dá ao arquivo o nome do número de série; cada arquivo pesa cerca de 245 KB.
+Um botão por aluno compõe aquele certificado como documento à parte, com `buildDocumentWithFonts` como a composição do próprio pen, e dá ao arquivo o nome do número de série; cada arquivo pesa cerca de 245 KB.
 
 ```diff
 -offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
@@ -60,9 +60,10 @@ Um botão por aluno compõe aquele certificado como documento à parte, com um `
 -document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',
 -  es: 'Toda la clase en un PDF' });
 +for (const [name, serial] of CLASS) {
-+  offerPdf(() => renderToPdf(buildDocument({ markdown:
-+    `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`, metadata, resources },
-+    config()), { fontProvider: fontsourceProvider, resourceBytes: imageBytes }), `${serial}.pdf`);
++  const one = `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`;
++  offerPdf(async () => renderToPdf(await buildDocumentWithFonts({ markdown: one, metadata,
++    resources }, config(), kitFonts(FONTS)), { fontProvider: fontsourceProvider,
++    resourceBytes: imageBytes }), `${serial}.pdf`);
 +  document.querySelector(`[data-postext-pdf="${serial}.pdf"]`).textContent = name;
 +}
 ```

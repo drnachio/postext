@@ -52,7 +52,7 @@ The class is one document, so `renderToPdf` writes a single three-page file with
 
 ### Print a PDF per student
 
-One button per student builds that certificate as a document of its own, with a fresh `config()`, and names the file after the serial number; each file weighs about 245 KB.
+One button per student builds that certificate as a document of its own, with `buildDocumentWithFonts` as the pen's own build, and names the file after the serial number; each file weighs about 245 KB.
 
 ```diff
 -offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
@@ -60,9 +60,10 @@ One button per student builds that certificate as a document of its own, with a 
 -document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',
 -  es: 'Toda la clase en un PDF' });
 +for (const [name, serial] of CLASS) {
-+  offerPdf(() => renderToPdf(buildDocument({ markdown:
-+    `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`, metadata, resources },
-+    config()), { fontProvider: fontsourceProvider, resourceBytes: imageBytes }), `${serial}.pdf`);
++  const one = `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`;
++  offerPdf(async () => renderToPdf(await buildDocumentWithFonts({ markdown: one, metadata,
++    resources }, config(), kitFonts(FONTS)), { fontProvider: fontsourceProvider,
++    resourceBytes: imageBytes }), `${serial}.pdf`);
 +  document.querySelector(`[data-postext-pdf="${serial}.pdf"]`).textContent = name;
 +}
 ```

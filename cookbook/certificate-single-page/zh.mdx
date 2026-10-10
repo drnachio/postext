@@ -52,17 +52,18 @@ Quoin Room的结业证书。这是普罗维登斯一家虚构的凸版印刷工�
 
 ### 每位学员一个PDF
 
-每位学员一个按钮，用一个新的`config()`把那张证书作为独立文档生成，并以编号命名文件；每个文件约245 KB。
+每位学员一个按钮，和示例自己的构建一样用`buildDocumentWithFonts`把那张证书作为独立文档生成，并以编号命名文件；每个文件约245 KB。
 
 ```diff
 -offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
--  `${RECIPE}.pdf`); // 书签：每个标题一个，也就是每位学员一个
+-  `${RECIPE}.pdf`); // bookmarks: one per heading, so one per student
 -document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',
 -  es: 'Toda la clase en un PDF' });
 +for (const [name, serial] of CLASS) {
-+  offerPdf(() => renderToPdf(buildDocument({ markdown:
-+    `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`, metadata, resources },
-+    config()), { fontProvider: fontsourceProvider, resourceBytes: imageBytes }), `${serial}.pdf`);
++  const one = `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`;
++  offerPdf(async () => renderToPdf(await buildDocumentWithFonts({ markdown: one, metadata,
++    resources }, config(), kitFonts(FONTS)), { fontProvider: fontsourceProvider,
++    resourceBytes: imageBytes }), `${serial}.pdf`);
 +  document.querySelector(`[data-postext-pdf="${serial}.pdf"]`).textContent = name;
 +}
 ```
@@ -72,6 +73,6 @@ Quoin Room的结业证书。这是普罗维登斯一家虚构的凸版印刷工�
 SVG图稿和配置读取同一个`palette`对象，所以改一个条目，就能给边框、花饰图案和标题行换色。
 
 ```diff
--  teal: '#1f5f5b', // 边框、标题行
-+  teal: '#2b3a67', // 边框、标题行
+-  teal: '#1f5f5b', // the frame, the title lines
++  teal: '#2b3a67', // the frame, the title lines
 ```
