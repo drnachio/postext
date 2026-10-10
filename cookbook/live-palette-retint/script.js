@@ -18,25 +18,22 @@ const COLOURWAYS = { // band: colour fields · onBand: type on them · deep: acc
   violet: { band: '#6a4c93', onBand: '#ffffff', deep: '#5b3f86', tint: '#e7dff0' },
   sand: { band: '#f4a261', onBand: '#1d1d1f', deep: '#a14a16', tint: '#fde4cf' },
 }; // white on teal is 3.3:1 and on sand 2.1:1, so those two set their band type in ink
-const HOUSE = { ...NEUTRALS, ...COLOURWAYS.red }; // the hex config() writes beside each id
+const HOUSE = { ...NEUTRALS, ...COLOURWAYS.red }; // the house edition: red
+// #endregion
+
+// #region answer: every colour is a link to a palette entry; retint() swaps the palette
+// col(id) links a colour to a palette entry. The link decides what is printed, in text, lists,
+// boxes, chips, captions, table fills, swatches, design slots and references alike; the hex
+// beside it (the house red's) only fills the field a colour must have.
 const col = (id) => ({ hex: HOUSE[id], model: 'hex', paletteId: id });
 const entries = (hexes) => Object.entries(hexes).map(([id, hex]) => ({ id, name: id,
   value: { hex, model: 'hex' } })); // the shape of config.colorPalette
-// #endregion
-
-// #region answer: a colourway is a palette; retint() builds a fresh config linked to it
+// A colourway is a palette. retint() writes it into the one config; the next build sees the
+// change and sets the whole programme in the new colours.
 function retint(way) {
   const palette = { ...NEUTRALS, ...COLOURWAYS[way] };
-  // 1.4.1 applies colorPalette to text, lists, boxes, chips, captions and tables, and resolves
-  // swatches and cell fills against it; design elements and referenceColor print the hex
-  // written beside their id, so relink() rewrites that hex (gotcha: palette-skips-designs).
-  const relink = (v) => (Array.isArray(v) ? v.map(relink) : !v || typeof v !== 'object' ? v
-    : Object.hasOwn(palette, v.paletteId ?? '') ? { ...v, hex: palette[v.paletteId] }
-      : Object.fromEntries(Object.entries(v).map(([k, x]) => [k, relink(x)])));
-  return { // a new object on every call: resolved configs are cached per object
-    ...relink(config()),
-    colorPalette: entries({ ...palette, 'main-color': palette.band }), // the defaults take the band
-  };
+  config.colorPalette = entries({ ...palette, 'main-color': palette.band }); // defaults: band
+  return config;
 }
 // #endregion
 
@@ -57,12 +54,12 @@ const opener = { enabled: true,
     { kind: 'box', id: 'band', style: { backgroundColor: col('band') },
       placement: { anchor: { to: 'bleed', edge: 'top-left' },
         size: { width: 'fill', height: mm(BAND) } } },
-    ...waveform(), // boxes filled with col('tint'), which relink() rewrites like the rest
+    ...waveform(), // boxes filled with col('tint'): one more link the palette decides
     text('kicker', '{attr.kicker}', INNER, 14, 150, caps(8)),
     text('title', '{titleText}', INNER, 20, TRIM - INNER - OUTER, { fontFamily: DISPLAY,
-      fontSize: pt(46), fontWeight: 800, lineHeight: 0.92 }), // a multiple
+      fontSize: pt(46), fontWeight: 800, lineHeight: 0.92 }),
     text('standfirst', '{attr.standfirst}', INNER, 71, 92, { fontFamily: SANS, fontSize: pt(10),
-      lineHeight: 1.36 }), // (gotcha: design-lineheight-multiple)
+      lineHeight: 1.36 }),
   ] },
 };
 // #endregion
@@ -72,7 +69,7 @@ const bodyText = { fontFamily: SANS, fontSize: pt(BODY), lineHeight: pt(LEAD),
   color: col('ink'), italicColor: col('ink'), // bold: the times, key terms, boxes (inherited)
   boldColor: col('deep'), referenceColor: col('deep'), textAlign: 'left', firstLineIndent: pt(0) };
 const headings = { fontFamily: DISPLAY, color: col('deep'), levels: [
-  // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+  // The programme opens on a recto.
   { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
     marginTop: pt(0), marginBottom: pt(0), advancedDesign: opener },
   { level: 2, fontSize: pt(12.5), lineHeight: lines(1), marginTop: lines(1), marginBottom: pt(0) },
@@ -97,8 +94,8 @@ const footer = furniture('folio', '{pageNumber}', 'bottom-left', -12, { fontFami
       left: mm(2.4) } } });
 // #endregion
 
-const config = () => ({
-  // "Tabla" in Spanish (gotcha: resource-types-locale); one table: "Table 1", not "1.1"
+const config = { // one object for every edition: retint() changes its palette in place
+  // The built-in types in the edition's language, renumbered: "Table 1", not "1.1"
   resourceTypes: defaultResourceTypes(LANG).map((r) => ({ ...r, numberingTemplate: '{n}' })),
   colorPalette: entries(HOUSE), // the red edition; retint() replaces it
   page: { width: mm(TRIM), height: mm(TRIM), dpi: 150, margins: { top: mm(TOP),
@@ -117,7 +114,7 @@ const config = () => ({
     gap: mm(1.2), note: { fontSize: pt(7.5), color: col('muted') } },
   paragraphStyles: [{ id: 'colophon', fontSize: pt(7), lineHeight: pt(9.6), color: col('muted') }],
   header, footer,
-});
+};
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
@@ -133,7 +130,7 @@ const WEEK = [ // t: a ticketed concert, f: a free event, one mark a day from Sa
   [t({ en: 'Tannery Yard', es: 'Patio de la Curtiduría' }), '...t...'],
   [t({ en: 'Boathouse', es: 'Casa de las Barcas' }), '.ft..t.'],
 ];
-const fill = { t: col('band'), f: col('tint') }; // resources are not in the config: no relink
+const fill = { t: col('band'), f: col('tint') }; // cell fills are palette links too
 const resources = [{ id: 'week', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0,
   placement: { position: 'top', span: 'page' }, // cited on page 1, it heads page 2
   caption: t({ en: 'The week at a glance', es: 'La semana de un vistazo' }),
@@ -181,7 +178,7 @@ const build = (way) => buildDocumentWithFonts({ markdown, resources }, retint(wa
 const docs = {}; // red is built last: the capture shows the last build on its pages
 for (const way of ['sand', 'violet', 'teal', 'red']) docs[way] = await build(way);
 
-// #region live: four buttons, each a fresh build of the whole programme in one colourway
+// #region live: four buttons, each a build of the whole programme in one colourway
 const NAMES = t({ en: { red: 'Red', teal: 'Teal', violet: 'Violet', sand: 'Sand' },
   es: { red: 'Rojo', teal: 'Verde azulado', violet: 'Violeta', sand: 'Arena' } });
 document.getElementById('pages').insertAdjacentHTML('beforebegin', `<section id="editions">
@@ -196,7 +193,7 @@ const buttons = Object.keys(COLOURWAYS).map((way) => {
   button.innerHTML = `<canvas></canvas><span>${NAMES[way]}<i>${['band', 'deep', 'tint']
     .map((id) => `<b style="background:${COLOURWAYS[way][id]}"></b>`).join('')}</i></span>`;
   paint(button.firstChild, docs[way]);
-  // A fresh config on every click (retint() calls config()); the fonts are loaded by now.
+  // The same config with another palette on every click; the fonts are loaded by now.
   button.onclick = () => show(way, buildDocument({ markdown, resources }, retint(way)));
   return [way, button];
 });

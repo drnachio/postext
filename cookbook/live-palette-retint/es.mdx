@@ -4,7 +4,7 @@ summary: "Cada color de la configuración lleva un id de paleta, y una sola func
 plain: "Un folleto cuadrado para un festival de música, en cuatro combinaciones de color. Enseña a cambiar todos los colores del documento de una vez eligiendo otra gama."
 description: "El programa de un festival en dos páginas: títulos, negritas, viñetas, chips, muestras de color, celdas, cabecera y folio toman el color de una paleta."
 question: "¿Cómo cambio el azul por defecto de títulos, negritas y viñetas por los colores de mi paleta?"
-aliases: ["paleta de colores", "recolorear", "cambiar los colores", "combinación de colores", "colores de marca", "main-color", "paletteId", "azul por defecto", "vista previa en vivo", "caché de configuración", "structuredClone"]
+aliases: ["paleta de colores", "recolorear", "cambiar los colores", "combinación de colores", "colores de marca", "main-color", "paletteId", "azul por defecto", "vista previa en vivo", "caché de configuración", "colorPalette"]
 pageNotes: { "1": "La portada del programa: una banda roja ocupa la mitad superior, con el antetítulo Almarén · 12–18 de junio de 2027, el título Música en la Ribera en blanco y una onda de barras redondeadas de color claro; debajo, dos columnas en bandera empiezan con una introducción y siguen del sábado al lunes, cada acto con la hora en negrita roja y un chip: Gratis, con borde rojo, o el precio en blanco sobre rojo.", "2": "El dorso: el pie de tabla en una barra roja sobre una cuadrícula de seis escenarios por siete días, con los nombres alineados a la derecha junto a las casillas, rojas para los conciertos con entrada y rosa pálido para los actos gratuitos, y una leyenda con muestras de color; después, del martes al viernes a dos columnas, el recuadro de Entradas bajo una franja roja, el colofón y el folio 2 en una píldora roja." }
 ---
 
@@ -30,19 +30,19 @@ El azul del motor es una entrada de la paleta, `main-color` (#295AA3), y [por de
 
 <Excerpt region="opener" />
 
-La apertura es una [ranura de diseño](/es/docs/configuration#elementos-de-caja) con una caja a sangre por el borde superior, 29 barras redondeadas para la onda y tres textos: el propio título, más el antetítulo y la entradilla, que salen de sus atributos. Las barras son cajas y no un SVG, así que su relleno es otro enlace a `tint` que `relink()` reescribe; un SVG habría que redibujarlo y registrarlo de nuevo para cada combinación. Con la caja de la banda sola, el texto empezaría en la línea de la rejilla base que queda 2,4 mm por debajo; `minHeight`, 18 líneas u 85,1 mm bajo el margen superior, reserva más espacio y baja la primera línea a 7 mm de la banda.
+La apertura es una [ranura de diseño](/es/docs/configuration#elementos-de-caja) con una caja a sangre por el borde superior, 29 barras redondeadas para la onda y tres textos: el propio título, más el antetítulo y la entradilla, que salen de sus atributos. Las barras son cajas y no un SVG, así que su relleno es otro enlace a `tint` que sigue a la paleta; un SVG habría que redibujarlo y registrarlo de nuevo para cada combinación. Con la caja de la banda sola, el texto empezaría en la línea de la rejilla base que queda 2,4 mm por debajo; `minHeight`, 18 líneas u 85,1 mm bajo el margen superior, reserva más espacio y baja la primera línea a 7 mm de la banda.
 
 ### 4 · Deja que la paleta rellene la tabla
 
 <Excerpt region="grid" />
 
-La cuadrícula es un recurso de tabla y queda fuera de la configuración, así que `relink()` no la toca. Aun así, sus [rellenos de celda](/es/docs/document-format#inserción-en-bloque-opcional-colocación-en-línea-explícita) llevan ids de paleta, y el motor los resuelve con la paleta del documento al componer la tabla; los `:swatch{color="band"}` y `:swatch{color="tint"}` de la leyenda, en la nota de la tabla, se resuelven igual. Los chips de la programación usan los mismos dos ids, así que la casilla rellena, el chip junto a cada hora y la muestra de la leyenda coinciden en todas las combinaciones.
+La cuadrícula es un recurso de tabla y queda fuera de la configuración. Aun así, sus [rellenos de celda](/es/docs/document-format#inserción-en-bloque-opcional-colocación-en-línea-explícita) llevan ids de paleta, y el motor los resuelve con la paleta del documento al componer la tabla; los `:swatch{color="band"}` y `:swatch{color="tint"}` de la leyenda, en la nota de la tabla, se resuelven igual. Los chips de la programación usan los mismos dos ids, así que la casilla rellena, el chip junto a cada hora y la muestra de la leyenda coinciden en todas las combinaciones.
 
-### 5 · Crea una configuración nueva en cada clic
+### 5 · Cambia la paleta y vuelve a componer
 
 <Excerpt region="live" />
 
-Cada botón llama a `retint()`, que llama a `config()`, así que cada composición recibe un objeto nuevo, sin ninguna resolución guardada en la caché. El motor resuelve una configuración una sola vez y [guarda el resultado asociado a ese objeto](/es/docs/configuration#estado-global-compartido-en-una-página). Si conservas una configuración y cambias sus entradas de paleta en el propio objeto, la composición siguiente reutiliza la resolución anterior: en una prueba con la 1.4.1, los títulos, las viñetas, los chips y la barra del pie de tabla conservaron su primer color, mientras que las muestras y los rellenos de celda, que leen la paleta durante la composición, tomaron el nuevo. Asignar un array `colorPalette` nuevo al mismo objeto no cambió nada. Un `structuredClone()` de la configuración modificada sí recibe una resolución nueva, pero sus ranuras de diseño y el color de las remisiones siguen llevando el hex anterior, así que la banda, la onda, la cabecera, el folio y la «tabla 1» siguieron en rojo; `retint()` reescribe esos hex y devuelve un objeto nuevo.
+Cada botón llama a `retint()`, que asigna las entradas de la combinación a `colorPalette` en el único objeto de configuración, y vuelve a componer. El motor resuelve una configuración una sola vez y [guarda el resultado asociado a ese objeto](/es/docs/configuration#estado-global-compartido-en-una-página); desde postext 1.25, cada composición comprueba antes que el objeto sigue diciendo lo mismo que entonces, así que un cambio hecho en el propio objeto se resuelve de nuevo. Todos los enlaces lo siguen: el texto, las listas, los chips y la barra del pie de tabla, y con ellos la banda, la onda, la cabecera, la píldora del folio y la «tabla 1». Las cuatro pruebas conservan sus colores cuando la paleta vuelve a cambiar, porque cada documento guarda los colores con los que se compuso. El pen las compone con `buildDocumentWithFonts`; cuando se pulsa un botón las fuentes ya están cargadas, y basta `buildDocument`.
 
 ## Variantes
 
@@ -61,5 +61,5 @@ Si el color cambia de una parte a otra dentro del mismo documento, consulta <Rec
 
 ## Errores frecuentes
 
-- Borra `relink()` y compón la combinación verde azulada para ver qué deja postext 1.4.1 con los colores de la roja: la banda, la onda, el título blanco, la cabecera, la píldora del folio y la remisión «tabla 1». El texto, las listas, los chips, la barra del pie de tabla, la tabla y el recuadro de entradas sí cambian con la paleta.
-- Fija `bodyText.boldColor` siempre que un recuadro lleve negrita. El recuadro lo copia con su id de paleta; si no lo fijas, la 1.4.1 copia el valor por defecto, y en la combinación verde azulada la negrita de fuera del recuadro toma el color de la banda mientras que «abono de la semana», dentro, sale en #295AA3.
+- Una imagen conserva los colores con los que se dibujó. Un SVG o una fotografía no siguen a la paleta; por eso la onda está hecha de cajas de diseño.
+- Un id que la paleta no tiene recurre al hex escrito a su lado. Si te equivocas al escribir un `paletteId`, ese color se queda en el rojo de la casa en todas las combinaciones.
