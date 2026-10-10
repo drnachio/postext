@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 080 · A vertical reader with zhuyin to the right ═════════
 // https://postext.dev/en/cookbook/zhuyin-vertical-reader
 // Code: MIT · Text: Han Feizi, zh.wikisource (CC BY-SA 4.0) · Pictures: diffusion models
-// Fonts: Iansui, LXGW WenKai TC, Noto Serif TC, Noto Sans TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Fonts: Iansui, LXGW WenKai TC, Noto Serif TC, Noto Sans TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
   loadVerticalAlternates,
@@ -99,7 +99,7 @@ const footer = {
     foot('folio-even', 'even', 'bottom-right', -16, '{pageNumber}', folio),
     foot('book', 'even', 'bottom-right', -26, '國語　第九冊'),
     foot('folio-odd', 'odd', 'bottom-left', 16, '{pageNumber}', folio),
-    foot('lesson', 'odd', 'bottom-left', 26, '{chapterTitle}'),
+    foot('lesson', 'odd', 'bottom-left', 26, '{chapterNumber}　{chapterTitle}'),
   ],
 };
 // #endregion
@@ -118,19 +118,20 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: {
     fontFamily: KAI, color: col('ink'), fontWeight: 400, // Iansui has one weight
     levels: [
-      // The lesson and fable numbers are typed in the headings: a numberingTemplate would
-      // join the number to the title's first reading (see the recipe's workarounds).
+      // 第十二課 and 一, 二: the number stays outside the title's first reading.
       { level: 1, fontSize: pt(30), lineHeight: pt(2 * LINE), color: col('accent'),
+        numberingTemplate: '第{1:一}課', numberSeparator: '　',
         breakBefore: { enabled: true, parity: 'any' }, marginBottom: pt(0) },
       { level: 2, fontSize: pt(20), lineHeight: pt(2 * LINE), marginTop: pt(LINE),
-        marginBottom: pt(0) },
+        numberingTemplate: '{2:一}', numberSeparator: '　', marginBottom: pt(0) },
       { level: 3, fontFamily: HEI, fontWeight: 700, fontSize: pt(13), lineHeight: pt(LINE),
         color: col('accent'), marginTop: pt(LINE / 2), marginBottom: pt(0) },
     ],
   },
   // 想一想 and 語文天地: exercise heads in the label face, one line tall.
-  headingStyles: [{ id: 'drill', fontFamily: HEI, fontWeight: 700, fontSize: pt(13),
-    lineHeight: pt(LINE), color: col('accent'), marginTop: pt(LINE / 2), marginBottom: pt(0) }],
+  headingStyles: [{ id: 'drill', numbered: false, fontFamily: HEI, fontWeight: 700,
+    fontSize: pt(13), lineHeight: pt(LINE), color: col('accent'), marginTop: pt(LINE / 2),
+    marginBottom: pt(0) }],
   orderedLists: { numberFormat: 'trad-chinese-informal', separator: '、', color: col('accent'),
     fontFamily: HEI, fontWeight: 700, marginTop: pt(0), marginBottom: pt(0) },
   paragraphStyles: [
