@@ -13,7 +13,7 @@ const RECIPE = 'recipe-card';
 const palette = { ink: '#2b2118', muted: '#76634e', // text; folios and the colophon
   paper: '#f7eddb', card: '#fffdf8', // the cream page; the white recipe card on it
   tomato: '#bf3d29', olive: '#6b7a3a', tint: '#f6e3c1' }; // numbers and tab; dashes; tags
-// The hex rides along: design elements read it, not the palette (gotcha: palette-skips-designs).
+// Each colour names its palette entry and carries its hex.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // The engine's defaults link to 'main-color': point it at the tomato, so nothing prints blue.
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.tomato })
@@ -27,7 +27,7 @@ const [BODY, LEAD] = [9.4, 12.8]; // pt: the text of the cards and the notes und
 // of two nested boxes, :::callout{type="column" title="Ingredients"} and one for the method.
 // The group levels its columns by cutting between blocks or lines, so loose lists would run
 // the method on under the ingredients. A nested box is one block that never splits, so the
-// only cut left is between the two (gotcha: callout-columns).
+// only cut left is between the two.
 const TAB = 5.6; // mm: the tab's height, and how far it rises above the card
 const card = { id: 'card', background: col('card'),
   padding: { top: mm(4.5), right: mm(6), bottom: mm(5), left: mm(6) },
@@ -89,7 +89,7 @@ const at = (x, y, size) => ({ anchor: { to: 'container', edge: 'top-left' },
   offset: { x: mm(x), y: mm(y - PAGE.top) }, size }); // y in mm from the top of the page
 const text = (id, content, family, size, placement, extra) => ({ kind: 'text', id, content,
   fontFamily: family, fontSize: pt(size), color: col('ink'), align: 'left',
-  overflow: 'wrap', placement, ...extra }); // gotcha: overflow-ellipsis-default
+  overflow: 'wrap', placement, ...extra }); // a foot wraps too, where the default is '…'
 const tracked = { fontWeight: 700, textTransform: 'uppercase', letterSpacing: pt(1.6) };
 // Pills are text boxes chained right-of each other; each prints one heading attribute.
 const pill = (id, after) => text(id, `{attr.${id}}`, TEXT, 8.4, after ? { anchor:
@@ -110,11 +110,11 @@ const opener = { id: 'receta', advancedDesign: { enabled: true, slot: { elements
     pill('time'), pill('level', 'time'), pill('season', 'level'),
     text('title', '{titleText}', DISPLAY, 42, { anchor: { to: '#time', edge: 'above' },
       offset: { y: mm(-3.2) }, size: { width: mm(96) } }, // two lines: the \\ in the heading
-    { lineHeight: 1 }), // a multiple, never pt() (gotcha: design-lineheight-multiple)
+    { lineHeight: 1 }), // set solid: 42 pt from line to line
     text('kicker', '{attr.kicker}', TEXT, 8.2, { anchor: { to: '#title', edge: 'above' },
       offset: { y: mm(-2.4) }, size: { width: mm(96) } }, tracked),
-    // The photo reserves no height (gotcha: opener-image-no-reserve); the lead under it does,
-    // so the card starts below the lead without a minHeight.
+    // The lead is the design's lowest element: the opener reserves down to its last line, and
+    // the card starts under it without a minHeight.
     text('lead', '{attr.lead}', TEXT, 10.5, at(0, BAND + 6, { width: mm(122) }),
       { italic: true, lineHeight: 1.45 }),
   ] } } };
@@ -144,10 +144,8 @@ const config = () => ({
   // A designed heading's own text is hidden but still measured: in Young Serif 400, the only
   // weight it ships, not in the default Open Sans 700 that FONTS does not load.
   headings: { fontFamily: DISPLAY, fontWeight: 400, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
-    // 'any': each recipe opens the next page, whichever side it is on. span: 'page' paints the
-    // opener outside the column's clip: kept in the column, the drawing is cut at the top margin.
-    { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } },
+    // 'any': each recipe opens the next page, whichever side it is on.
+    { level: 1, breakBefore: { enabled: true, parity: 'any' } },
   ] },
   headingStyles: [opener],
   // Olive dashes for the whole document: an olive lists.color on the column style would turn

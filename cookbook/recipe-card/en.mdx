@@ -40,13 +40,13 @@ The `prep` box holds only its title and its icon, so it works as a header: an ic
 
 <Excerpt region="opener" />
 
-`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}` picks the heading style and fills its slots from the attributes, the italic headnote among them ([heading attributes](/en/docs/document-format#heading-attributes)). The image element's `resourceId` is `'{attr.art}'`, a placeholder like a text's, so both recipes share one style and each heading names its photograph ([image elements](/en/docs/configuration#image-elements)). Each pill is anchored `right-of` the one before it, the title `above` the first pill and the kicker above the title, so a longer title pushes the kicker up while the pills keep their line. The photograph reserves no height in 1.4.1, but the headnote under it does, so the card starts below the headnote without a `minHeight`. The note is anchored to the page, like the photograph and the arrow, a second image element drawn in code, and ends 2 mm short of the arrow on both pages, although the mirrored margins move the text block 2 mm to the right on the recto.
+`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}` picks the heading style and fills its slots from the attributes, the italic headnote among them ([heading attributes](/en/docs/document-format#heading-attributes)). The image element's `resourceId` is `'{attr.art}'`, a placeholder like a text's, so both recipes share one style and each heading names its photograph ([image elements](/en/docs/configuration#image-elements)). Each pill is anchored `right-of` the one before it, the title `above` the first pill and the kicker above the title, so a longer title pushes the kicker up while the pills keep their line. The headnote is the design's lowest element, so the opener reserves down to its last line and the card starts below it without a `minHeight`. The note is anchored to the page, like the photograph and the arrow, a second image element drawn in code, and ends 2 mm short of the arrow on both pages, although the mirrored margins move the text block 2 mm to the right on the recto.
 
 ### 6 · Register the pictures as resources
 
 <Excerpt region="pictures" />
 
-The opener's two image elements, the tab's icon and the checklist header's icon each name a resource, and the canvas paints the file `loadImage` or `loadSvg` registered for it. No `:ref` cites these resources, so none becomes a numbered figure. Neither a photograph nor an SVG drawn as an image can use the page's web fonts, so the pictures carry no words: the handwritten notes are design text set over them.
+The opener's two image elements, the tab's icon and the checklist header's icon each name a resource, and the canvas paints the file `loadImage` or `loadSvg` registered for it. No `:ref` cites these resources, so none becomes a numbered figure. The pictures carry no words: the handwritten notes are design text set over them.
 
 ## Variations
 
@@ -83,6 +83,5 @@ Without the column boxes, `breaks` names the child that opens the right column, 
 
 ## Pitfalls
 
-- A label has no `textTransform` or `letterSpacing` in 1.4.1, so SERVES 4 and PARA 4 are typed in capitals in the fences.
+- A label has no `textTransform` or `letterSpacing`, so SERVES 4 and PARA 4 are typed in capitals in the fences.
 - The task box ☐ is in none of the three faces, so the browser draws it from a system font and its shape changes from one system to another.
-- Keep a wide icon in the box's own column: at `position: 'corner'`, 1.4.1 offsets it by half its height, not half its width, so the 18.75 mm strip runs 16 mm past the box's right edge.

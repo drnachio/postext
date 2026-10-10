@@ -40,13 +40,13 @@ El requadre `prep` només porta el seu títol i la seva icona, i per això fa d'
 
 <Excerpt region="opener" />
 
-`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}` tria l'estil de títol i n'omple les ranures amb els atributs, també l'entradeta en cursiva ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)). El `resourceId` de l'element d'imatge és `'{attr.art}'`, un marcador com els d'un text, així que les dues receptes comparteixen un estil i cada títol anomena la seva fotografia ([elements d'imatge](/ca/docs/configuration#elements-dimatge)). Cada píndola s'ancora amb `right-of` a l'anterior, el títol amb `above` a la primera i l'avanttítol sobre el títol, així que un títol més llarg empeny cap amunt l'avanttítol i les píndoles no es mouen de la seva línia. A la 1.4.1 la fotografia no reserva alçada, però l'entradeta que va a sota sí, de manera que la fitxa comença sota seu sense `minHeight`. La nota s'ancora a la pàgina, com la fotografia i la fletxa, un segon element d'imatge dibuixat en codi, i acaba a 2 mm de la fletxa a les dues pàgines, tot i que amb els marges en mirall la caixa de la pàgina senar comenci 2 mm més a la dreta.
+`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}` tria l'estil de títol i n'omple les ranures amb els atributs, també l'entradeta en cursiva ([atributs d'encapçalament](/ca/docs/document-format#atributs-dencapçalament)). El `resourceId` de l'element d'imatge és `'{attr.art}'`, un marcador com els d'un text, així que les dues receptes comparteixen un estil i cada títol anomena la seva fotografia ([elements d'imatge](/ca/docs/configuration#elements-dimatge)). Cada píndola s'ancora amb `right-of` a l'anterior, el títol amb `above` a la primera i l'avanttítol sobre el títol, així que un títol més llarg empeny cap amunt l'avanttítol i les píndoles no es mouen de la seva línia. L'entradeta és l'element més baix del disseny, així que l'obertura reserva fins a la seva última línia i la fitxa comença a sota sense `minHeight`. La nota s'ancora a la pàgina, com la fotografia i la fletxa, un segon element d'imatge dibuixat en codi, i acaba a 2 mm de la fletxa a les dues pàgines, tot i que amb els marges en mirall la caixa de la pàgina senar comenci 2 mm més a la dreta.
 
 ### 6 · Registra les imatges com a recursos
 
 <Excerpt region="pictures" />
 
-Els dos elements d'imatge de l'obertura, la icona de la pestanya i la de l'encapçalament de la llista anomenen cadascun un recurs, i el llenç pinta el fitxer que `loadImage` o `loadSvg` hi va registrar. Cap `:ref` no cita aquests recursos, així que cap no es converteix en una figura numerada. Ni una fotografia ni un SVG pintat com a imatge no poden fer servir les fonts web de la pàgina, per això les imatges no porten paraules: les notes manuscrites són text de disseny compost a sobre.
+Els dos elements d'imatge de l'obertura, la icona de la pestanya i la de l'encapçalament de la llista anomenen cadascun un recurs, i el llenç pinta el fitxer que `loadImage` o `loadSvg` hi va registrar. Cap `:ref` no cita aquests recursos, així que cap no es converteix en una figura numerada. Les imatges no porten paraules: les notes manuscrites són text de disseny compost a sobre.
 
 ## Variants
 
@@ -83,6 +83,5 @@ Amb `'top-left'` la pestanya passa a la cantonada esquerra, la forquilla i el ga
 
 ## Errors freqüents
 
-- A la 1.4.1 el rètol de la pestanya (`label`) no té `textTransform` ni `letterSpacing`, així que PARA 4 i SERVES 4 ja van en majúscules a les tanques.
+- El rètol de la pestanya (`label`) no té `textTransform` ni `letterSpacing`, així que PARA 4 i SERVES 4 ja van en majúscules a les tanques.
 - La casella de tasca ☐ no és a cap de les tres fonts, així que el navegador la dibuixa amb una font del sistema i la seva forma canvia d'un sistema a un altre.
-- Deixa una icona ampla a la columna pròpia del requadre: amb `position: 'corner'`, la 1.4.1 la desplaça la meitat de la seva alçada, no de la seva amplada, i la tira de 18,75 mm sobresurt 16 mm per la vora dreta del requadre.
