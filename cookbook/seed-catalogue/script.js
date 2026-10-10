@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 036 · Mail-order catalogue with pictures in cells ═══════
 // https://postext.dev/en/cookbook/seed-catalogue
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: diffusion models
-// Fonts: Gelasio, Alfa Slab One, Cabin Condensed (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Gelasio, Alfa Slab One, Cabin Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A fictional seed farm's spring list: a table read from TSV, a packet pictured in each row.
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
   parseTSV, mergeCells, setAlignment, setCellBackground, setCellContent, setCellImage,
@@ -71,7 +71,7 @@ function priceList(tsv) { // Kind · Variety · Description · Packet · Ounce, 
 }
 // The letter on page 1 cites the list, so it floats to the first free slot after the
 // letter, page 2, and is cut between rows where the page ends; span 'page' gives it the
-// full 157 mm, not a 75 mm column. Only a float splits (gotcha: here-table-no-split).
+// full 157 mm, not a 75 mm column.
 const vegetableList = (tsv) => ({ id: 'vegetables', typeId: 'list', kind: 'table',
   caption: '**Vegetable Seeds**', placement: { span: 'page' },
   note: 'A packet holds about 30 tomato or pepper seeds, 40 beans or 12 squash seeds.',

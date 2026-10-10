@@ -40,7 +40,7 @@ pageNotes: { "1": "封面：淡黄色天空中，一轮橙色的大太阳正落�
 
 <Excerpt region="answers" />
 
-答案页用`solved`调用`crossword()`，用全部十个单词调用`wordSearch()`，所用的内容文件与谜题相同，所以改动一个网格，它的答案也随之改变。谜题和插图使用Plain类型，它的`captionPrefix`为空，对没有题注文字的资源不印题注。答案使用Solution类型，按阅读顺序编号为1到3，与眉题Puzzle 1到Puzzle 3对应。它们放在一个无填色、无边框的框里，框中是`:::columns{count=3 breaks="2,3"}`，其中`breaks`在第二个和第三个答案处另起一栏；每个答案宽54 mm，所在栏宽55.3 mm。Did you know?框也用同样的办法，以`breaks="2"`把巢穴剖面图排在它的段落旁边。
+答案页用`solved`调用`crossword()`，用全部十个单词调用`wordSearch()`，所用的内容文件与谜题相同，所以改动一个网格，它的答案也随之改变。谜题和插图使用Plain类型，它的`captionPrefix`为空，对没有题注文字的资源不印题注。答案使用Solution类型，按阅读顺序编号为1到3，与眉题Puzzle 1到Puzzle 3对应。它们放在正文中的`:::columns{count=3 breaks="2,3" gap=6mm}`组里，外面不套框（postext 1.25）：`breaks`在第二个和第三个答案处另起一栏，`gap`让各栏相隔6 mm；每个答案宽54 mm，所在栏宽55.3 mm。Did you know?框里也有一个这样的组，以`breaks="2"`把巢穴剖面图排在它的段落旁边。
 
 ## 变化
 

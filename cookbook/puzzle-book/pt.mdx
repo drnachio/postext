@@ -40,7 +40,7 @@ As páginas 2 a 5 dividem um mesmo design. Um campo de cor desce 40 mm a partir 
 
 <Excerpt region="answers" />
 
-A página de respostas chama `crossword()` com `solved` e `wordSearch()` com as dez palavras, sobre os mesmos arquivos de conteúdo dos passatempos, e assim uma alteração numa grade muda também a sua resposta. Os passatempos e os desenhos usam o tipo Plain, cujo `captionPrefix` vazio não imprime legenda para um recurso sem texto de legenda. As respostas usam o tipo Solution, numeradas de 1 a 3 em ordem de leitura para bater com os antetítulos, de Puzzle 1 a Puzzle 3. Elas ficam num box sem fundo nem borda que contém `:::columns{count=3 breaks="2,3"}`, em que `breaks` abre uma nova coluna na segunda e na terceira resposta; cada resposta tem 54 mm de largura numa coluna de 55,3 mm. O box Did you know? faz o mesmo com `breaks="2"` para pôr o desenho do ninho ao lado do seu parágrafo.
+A página de respostas chama `crossword()` com `solved` e `wordSearch()` com as dez palavras, sobre os mesmos arquivos de conteúdo dos passatempos, e assim uma alteração numa grade muda também a sua resposta. Os passatempos e os desenhos usam o tipo Plain, cujo `captionPrefix` vazio não imprime legenda para um recurso sem texto de legenda. As respostas usam o tipo Solution, numeradas de 1 a 3 em ordem de leitura para bater com os antetítulos, de Puzzle 1 a Puzzle 3. Elas ficam num grupo `:::columns{count=3 breaks="2,3" gap=6mm}` no texto, sem box em volta (postext 1.25): `breaks` abre uma nova coluna na segunda e na terceira resposta, e `gap` separa as colunas em 6 mm; cada resposta tem 54 mm de largura numa coluna de 55,3 mm. O box Did you know? contém um grupo próprio, com `breaks="2"`, para pôr o desenho do ninho ao lado do seu parágrafo.
 
 ## Variações
 

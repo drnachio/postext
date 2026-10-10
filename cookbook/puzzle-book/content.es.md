@@ -59,14 +59,12 @@ Esta tortuga acaba de salir del huevo, en un nido enterrado en la playa. Ayúdal
 
 # Soluciones {style="soluciones" kicker="Para mirar al terminar" theme="Pasatiempos 1 a 3" colophon="Pasatiempos, textos y dibujos originales (CC BY 4.0) · Compuesto en Lexend, Lilita One y Chivo Mono (SIL OFL)"}
 
-:::callout{type="soluciones"}
-:::columns{count=3 breaks="2,3"}
+:::columns{count=3 breaks="2,3" gap=6mm}
 ::resource{id="sol-crucigrama"}
 
 ::resource{id="sol-sopa"}
 
 ::resource{id="sol-laberinto"}
-:::
 :::
 
 :::callout{type="dato" title="¿Sabías que…?"}

@@ -19,8 +19,7 @@
   },
   "answers": ["Q67", "Q65", "Q68", "Q69", "Q52"],
   "gaps": [],
-  "gotchas": [
-    "here-table-no-split", "merged-cells-hiddenby", "resource-types-locale",
+  "gotchas": [ "merged-cells-hiddenby", "resource-types-locale",
     "opener-image-no-reserve", "headings-drop-h1-break", "palette-skips-designs",
     "design-lineheight-multiple", "overflow-ellipsis-default", "config-cache-identity",
     "fonts-first"
@@ -36,7 +35,7 @@
     { "followup": "EF-154", "package": "postext", "note": "a day without a note gets its second line from a word joiner (U+2060), not a no-break space: 1.4.1 sets no line for a table-cell paragraph that holds only U+00A0, so the weeks without notes came out a line shorter" }
   ],
   "related": ["atlas-map-sheet", "annual-report-flush-columns", "bistro-menu", "recipe-card"],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -69,5 +68,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

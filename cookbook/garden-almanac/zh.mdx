@@ -16,7 +16,7 @@ pageNotes: { "1": "三月的章首页：浅色天空下黑土里的幼苗，大�
 
 ### 1 · 把图表转过来，让它接排
 
-代码就是上面的[简短回答](#简短回答)。`rotate: 'ccw'`让表格成为独占页面的通栏浮动体（[位置](/zh/docs/document-format#位置)），表头朝向页面左边缘，在右页和左页上都紧靠书脊。它沿文字区的高度排，占237 mm中的227 mm：能放下的47条完整14 pt网格行，再减去一行作为浮动体间距。它的各行沿176 mm的宽度堆叠，超出时表格在两行之间切开，翻到下一页在两行表头和题注下继续，题注以`(segue)`结尾（[比页面高的表格](/zh/docs/configuration#比页面还高的表)）。只有浮动体能旋转和拆分：在`position: 'here'`下，旋转会被忽略，表格也从不拆分。表头有三种合并：`Coltura`纵跨两行表头，每个季节横跨它的几个月，每个月横跨它的两个半月。
+代码就是上面的[简短回答](#简短回答)。`rotate: 'ccw'`让表格成为独占页面的通栏浮动体（[位置](/zh/docs/document-format#位置)），表头朝向页面左边缘，在右页和左页上都紧靠书脊。它沿文字区的高度排，占237 mm中的227 mm：能放下的47条完整14 pt网格行，再减去一行作为浮动体间距。它的各行沿176 mm的宽度堆叠，超出时表格在两行之间切开，翻到下一页在两行表头和题注下继续，题注以`(segue)`结尾（[比页面高的表格](/zh/docs/configuration#比页面还高的表)）。只有浮动体能旋转：在`position: 'here'`下，旋转会被忽略，表格会不经旋转地在行与行之间拆分，断在所在栏的末尾。表头有三种合并：`Coltura`纵跨两行表头，每个季节横跨它的几个月，每个月横跨它的两个半月。
 
 ### 2 · 按日期计算的日历
 
@@ -55,8 +55,8 @@ pageNotes: { "1": "三月的章首页：浅色天空下黑土里的幼苗，大�
 这样表头朝向页面右边缘，读者要把书往另一个方向转。
 
 ```diff
--const chartPlacement = { rotate: 'ccw' }; // a float, never 'here' (gotcha: here-table-no-split)
-+const chartPlacement = { rotate: 'cw' }; // a float, never 'here' (gotcha: here-table-no-split)
+-const chartPlacement = { rotate: 'ccw' }; // a float: 'here' ignores the turn
++const chartPlacement = { rotate: 'cw' }; // a float: 'here' ignores the turn
 ```
 
 ## 常见问题

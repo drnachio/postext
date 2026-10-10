@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 052 · Bistro menu: prices on a tab stop ═══════════════════
 // https://postext.dev/en/cookbook/bistro-menu
 // Code: MIT · Text: original, in French (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Limelight, Noticia Text, Josefin Sans (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Limelight, Noticia Text, Josefin Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // The autumn menu of an imaginary Paris bistro: two sides of one card, each dish a paragraph
 // whose price a tab sends to the right margin, the wine list a table with no rules.
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
@@ -42,8 +42,8 @@ const tableStyle = { rules: 'none', cellPadding: pt(LEAD / 4), // a row: 1½ lin
 
 // #region type: one resource type for the whole card: set where it stands, never numbered
 // No caption prefix and no caption, so no 'Table 1' line prints under the wine list. Placement
-// 'here' sets each piece at its ::resource line; such a table never splits, so a list that
-// outgrows the page moves to the next one whole (gotcha: here-table-no-split).
+// 'here' sets each piece at its ::resource line; a list that outgrows the page is cut
+// between rows and goes on at the head of the next one.
 const resourceTypes = [{ id: 'menu', name: 'Menu', shortLabel: 'Menu', captionPrefix: '',
   numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal',
   defaultPlacement: { position: 'here' } }];

@@ -45,7 +45,6 @@
     "Q65"
   ],
   "gotchas": [
-    "here-table-no-split",
     "merged-cells-hiddenby",
     "opener-reserves-anchored",
     "opener-image-no-reserve",
@@ -105,7 +104,7 @@
     "worksheet-answer-boxes"
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -265,5 +264,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

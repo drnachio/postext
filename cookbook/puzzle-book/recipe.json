@@ -20,7 +20,7 @@
   "answers": ["Q68", "Q10", "Q49", "Q51", "Q60"],
   "gaps": [],
   "gotchas": [
-    "cell-blank-line", "here-table-no-split", "callout-columns", "opener-clipped-at-top",
+    "cell-blank-line", "opener-clipped-at-top",
     "section-palette-skips-chips", "palette-skips-designs", "headings-drop-h1-break",
     "design-lineheight-multiple", "svg-no-webfonts", "config-cache-identity", "fonts-first"
   ],
@@ -34,7 +34,7 @@
     { "followup": "EF-56", "package": "postext", "note": "design text lineHeight is given as a multiple (1 and 0.95), never as a dimension" }
   ],
   "related": ["worksheet-answer-boxes", "garden-almanac", "reading-primer-syllables", "exam-paper"],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["es", "en"] },
   "capture": {
@@ -61,5 +61,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

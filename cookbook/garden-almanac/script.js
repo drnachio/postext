@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 035 · Garden almanac: calendar grid and landscape chart ═════
 // https://postext.dev/en/cookbook/garden-almanac
 // Code: MIT · Text: original, Italian (CC BY 4.0) · Field: diffusion models · Icons: CC BY 4.0
-// Fonts: Piazzolla, Gilda Display, Commissioner (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Piazzolla, Gilda Display, Commissioner (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage, parseTSV,
   mergeCells, setCellContent, setCellBackground, setCellImage, setAlignment,
 } from 'https://esm.sh/postext';
@@ -29,7 +29,7 @@ const chip = (text, style) => `:chip[${text}]{style="${style}"}`;
 // #region answer: a crops × fortnights chart, turned to landscape on pages of its own
 // The chart's `placement` (#region resources): a quarter turn makes it a page-span float on
 // pages of its own, flush to the spine; rows past the page's width go on under a repeated head.
-const chartPlacement = { rotate: 'ccw' }; // a float, never 'here' (gotcha: here-table-no-split)
+const chartPlacement = { rotate: 'ccw' }; // a float: 'here' ignores the turn
 const MONTHS = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
 const SEASONS = [['INVERNO', 2], ['PRIMAVERA', 3], ['ESTATE', 3], ['AUTUNNO', 3], ['INVERNO', 1]];
 const STATES = { S: 'ochre', C: 'green', T: 'brown' }; // seedbed, sown outdoors, planted out

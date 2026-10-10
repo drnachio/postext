@@ -16,7 +16,7 @@ Les pàgines de març d'un almanac d'hort en italià. La pàgina 27 s'obre amb u
 
 ### 1 · Gira el gràfic i deixa que continuï
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. Amb `rotate: 'ccw'`, la taula passa a ser un flotant a l'amplada de la pàgina, en pàgines pròpies ([Col·locació](/ca/docs/document-format#collocació)), amb la capçalera cap a la vora esquerra, i s'enganxa al llom tant a la pàgina senar com a la parella. Girada, la taula es compon a l'alçada de la caixa de text i n'ocupa 227 dels 237 mm: les 47 línies senceres de 14 pt que caben a la retícula, menys una per a la separació del flotant. Les seves files s'apilen a l'amplada dels 176 mm de la caixa; quan ja no hi caben, la taula es talla entre dues files i continua a la pàgina següent, sota les seves dues files de capçalera i el seu peu, que acaba en `(segue)` ([Taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). Només un flotant pot girar o partir-se: amb `position: 'here'` el gir s'ignora i la taula no es parteix mai. La capçalera porta tres classes de cel·les combinades: `Coltura` ocupa les seves dues files, cada estació abasta els seus mesos i cada mes, les seves dues quinzenes.
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Amb `rotate: 'ccw'`, la taula passa a ser un flotant a l'amplada de la pàgina, en pàgines pròpies ([Col·locació](/ca/docs/document-format#collocació)), amb la capçalera cap a la vora esquerra, i s'enganxa al llom tant a la pàgina senar com a la parella. Girada, la taula es compon a l'alçada de la caixa de text i n'ocupa 227 dels 237 mm: les 47 línies senceres de 14 pt que caben a la retícula, menys una per a la separació del flotant. Les seves files s'apilen a l'amplada dels 176 mm de la caixa; quan ja no hi caben, la taula es talla entre dues files i continua a la pàgina següent, sota les seves dues files de capçalera i el seu peu, que acaba en `(segue)` ([Taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). Només un flotant pot girar: amb `position: 'here'` el gir s'ignora, i la taula es partiria sense girar, entre files, on s'acaba la seva columna. La capçalera porta tres classes de cel·les combinades: `Coltura` ocupa les seves dues files, cada estació abasta els seus mesos i cada mes, les seves dues quinzenes.
 
 ### 2 · Un calendari calculat amb dates
 
@@ -55,8 +55,8 @@ El títol de primer nivell es dibuixa amb una ranura d'elements. L'aquarel·la �
 La capçalera mira llavors a la vora dreta de la pàgina, i el lector gira el llibre cap a l'altre costat.
 
 ```diff
--const chartPlacement = { rotate: 'ccw' }; // a float, never 'here' (gotcha: here-table-no-split)
-+const chartPlacement = { rotate: 'cw' }; // a float, never 'here' (gotcha: here-table-no-split)
+-const chartPlacement = { rotate: 'ccw' }; // a float: 'here' ignores the turn
++const chartPlacement = { rotate: 'cw' }; // a float: 'here' ignores the turn
 ```
 
 ## Errors freqüents

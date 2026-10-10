@@ -20,7 +20,7 @@
   "answers": ["Q65", "Q66", "Q68", "Q70", "Q10"],
   "gaps": ["pipe-tables"],
   "gotchas": [
-    "merged-cells-hiddenby", "no-zebra", "here-table-no-split", "svg-no-webfonts", "latin-subset",
+    "merged-cells-hiddenby", "no-zebra", "svg-no-webfonts", "latin-subset",
     "headings-drop-h1-break", "fonts-first", "nbsp-breaks", "palette-skips-designs",
     "overflow-ellipsis-default", "config-cache-identity"
   ],
@@ -34,7 +34,7 @@
     { "followup": "EF-94", "package": "postext", "note": "on a closing page 1.4.1 lifts a page-wide position 'bottom' float to one float gap under the text (build.ts hugClosingText), so page 4 is worded to fill its columns and the outline is drawn 48.3 mm tall: the text above it then ends on a grid line, and the float has no space to move up into" }
   ],
   "related": ["seed-catalogue", "product-manual-warnings", "journal-article-with-maths", "figures-float-where-cited"],
-  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["en"] },
   "capture": {
@@ -62,5 +62,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

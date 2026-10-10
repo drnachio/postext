@@ -33,7 +33,6 @@
   "answers": ["Q60", "Q43", "Q23", "Q20"],
   "gaps": [],
   "gotchas": [
-    "callout-columns",
     "box-paragraph-margins",
     "opener-image-no-reserve",
     "hyphenation-locales",
@@ -96,7 +95,7 @@
       "note": "the note's heading places its title from the container's top-left corner, 36 mm down: anchored to the bottom edge of a 36 mm minHeight instead, 1.4.1 drops the whole reservation and the note starts under a one-line heading"
     }
   ],
-  "engine": { "postext": "1.23.0" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["es", "en"] },
   "capture": {
@@ -152,5 +151,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

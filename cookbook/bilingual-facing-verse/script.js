@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 043 · Facing translation, stanza by stanza ═══════════════════
 // https://postext.dev/en/cookbook/bilingual-facing-verse
 // Code: MIT · Text: original (CC BY 4.0) · Salt pans and flamingo: diffusion models
-// Fonts: Castoro, Castoro Titling, Tenor Sans (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Castoro, Castoro Titling, Tenor Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
 } from 'https://esm.sh/postext';
@@ -37,8 +37,8 @@ const GAP = 8; // mm between the original and the translation: each column is 55
 //   :::
 //   :::
 // Both columns open on the same line, so matching :::space gaps keep the stanzas level.
-// A box keeps together and a group never splits (gotcha: callout-columns): a poem that does
-// not fit moves whole to the next page.
+// keepTogether: false lets a poem that does not fit go on overleaf. A group with breaks is
+// cut stream by stream (flow="parallel"): each language goes on in its own column, level.
 const poem = {
   id: 'poem',
   backgroundEnabled: false, // no fill, border or stripe
@@ -50,6 +50,7 @@ const poem = {
   // 12.3 mm under a poem, whose box ends off the grid. The default marginBottom (0.75 em)
   // would add to marginTop and open 17.4 mm between poems.
   marginTop: pt(LEAD * 2), marginBottom: pt(0),
+  keepTogether: false, // a long poem goes on overleaf instead of moving whole
 };
 // #endregion
 

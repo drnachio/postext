@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 069 · Puzzle book: crossword, word search and maze ═══════
 // https://postext.dev/en/cookbook/puzzle-book
 // Code: MIT · Text and puzzles: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Lexend, Lilita One, Chivo Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Lexend, Lilita One, Chivo Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
   setCellBackground } from 'https://esm.sh/postext';
 
@@ -176,7 +176,7 @@ const chip = (id, fill) => ({ id, fontFamily: LABEL, fontSize: em(0.8), bold: tr
   background: col(fill), borderColor: col(fill === 'paper' ? 'ink' : fill),
   borderWidth: pt(0.75), borderRadius: em(1), paddingX: em(0.45) });
 
-// resourceTypes and ANSWER_GAP are declared with the answers below: config() runs later.
+// resourceTypes is declared with the answers below: config() runs later.
 const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
   colorPalette, resourceTypes, tableStyle, tableStyles, footer, header: { elements: [] },
   page: { width: mm(PAGE), height: mm(PAGE), dpi: 150, margins: { top: mm(MARGIN),
@@ -200,8 +200,6 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
       padding: { top: mm(4), right: mm(5), bottom: mm(4), left: mm(5) },
       marginTop: pt(0), // the grid above already leaves a line
       body: { fontSize: pt(10), lineHeight: pt(13), paragraphSpacing: false } },
-    { id: 'soluciones', backgroundEnabled: false, columnGap: mm(ANSWER_GAP), // columns only
-      padding: { top: mm(0), right: mm(0), bottom: mm(0), left: mm(0) } },
     { id: 'dato', background: col('tint'), borderRadius: mm(3), columnGap: mm(6),
       padding: { top: mm(4), right: mm(5), bottom: mm(4.5), left: mm(5) },
       titleStyle: { fontFamily: DISPLAY, fontSize: pt(15), fontWeight: 400 },
@@ -406,7 +404,7 @@ const resourceTypes = [ // a plain resource prints no caption; an answer is numb
     es: { name: 'Solución', captionPrefix: 'Solución' } }), shortLabel: 'Sol.' },
 ].map((type) => ({ numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal',
   ...type }));
-const ANSWER_GAP = 6; // mm between the three answers
+const ANSWER_GAP = 6; // mm between the three answers: gap=6mm on their :::columns fence
 const ANSWER_WIDTH = KEY / ((MEASURE - 2 * ANSWER_GAP) / 3); // 54 mm of a 55.3 mm column
 const answers = [
   grid('sol-crucigrama', 'solucion', crossword(crosswordText, true), 'solucion-9', ANSWER_WIDTH,

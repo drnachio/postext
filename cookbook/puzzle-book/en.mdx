@@ -40,7 +40,7 @@ Pages 2 to 5 share one design. A colour field runs 40 mm down from the top edge 
 
 <Excerpt region="answers" />
 
-The answer page calls `crossword()` with `solved` and `wordSearch()` with all ten words, on the same content files as the puzzles, so an edit to a grid changes its answer too. The puzzles and the drawings use the type Plain, whose empty `captionPrefix` prints no caption for a resource with no caption text. The answers use the type Solution, numbered 1 to 3 in reading order to match the kickers Puzzle 1 to Puzzle 3. They sit in a box with no fill or border that holds `:::columns{count=3 breaks="2,3"}`, where `breaks` opens a new column at the second and third answers; each answer is 54 mm wide in a 55.3 mm column. The Did you know? box does the same with `breaks="2"` to set the nest drawing beside its paragraph.
+The answer page calls `crossword()` with `solved` and `wordSearch()` with all ten words, on the same content files as the puzzles, so an edit to a grid changes its answer too. The puzzles and the drawings use the type Plain, whose empty `captionPrefix` prints no caption for a resource with no caption text. The answers use the type Solution, numbered 1 to 3 in reading order to match the kickers Puzzle 1 to Puzzle 3. They sit in a `:::columns{count=3 breaks="2,3" gap=6mm}` group in the text, with no box around it (postext 1.25): `breaks` opens a new column at the second and third answers, and `gap` sets the columns 6 mm apart; each answer is 54 mm wide in a 55.3 mm column. The Did you know? box holds a group of its own, with `breaks="2"`, to set the nest drawing beside its paragraph.
 
 ## Variations
 

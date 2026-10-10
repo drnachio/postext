@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 050 · Product manual with safety notices ════════════════
 // https://postext.dev/en/cookbook/product-manual-warnings
 // Code: MIT · Text: original, in German (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Red Hat Text, Red Hat Display, Red Hat Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Red Hat Text, Red Hat Display, Red Hat Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
   parseTSV, mergeCells } from 'https://esm.sh/postext';
 
@@ -174,7 +174,7 @@ const table = (id, caption, model, styleId = 'bare', where = HERE) => ({ id, typ
 const tables = [table('legende', 'Teile des Verra W1', legend),
   table('daten', 'Kenndaten des VW-170', fold(parseTSV(data).rows, [20, 30, 20, 30])),
   table('stoerungen', 'Störungen und ihre Behebung', faultTable(faults), null, // the house style,
-    { placement: { position: 'top' } })]; // a float, so it can split (gotcha: here-table-no-split)
+    { placement: { position: 'top' } })]; // a float: it heads the page after its citation
 // #endregion
 
 const svgFile = (id, width = 240, height = 240) => ({ id, typeId: 'figure', kind: 'svg',

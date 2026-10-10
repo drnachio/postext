@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 010 · Datasheet: tables from data, merged headers ════════
 // https://postext.dev/en/cookbook/technical-datasheet
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Fira Sans, Fira Sans Condensed, Fira Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Fira Sans, Fira Sans Condensed, Fira Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // The datasheet of a fictional sensor. Postext reads no pipe tables, so the tables are data:
 // TSV pasted from a spreadsheet, parsed into table models, then merged, aligned and filled.
 import {
@@ -345,7 +345,7 @@ const resources = [
     placement: { position: 'top', span: 'page' }, note: 'Typical values at 3.3 V and 25 °C. '
       + '^1^ Tested at 25 °C and 50 °C, the rest by characterization. ^2^ Characterized, not '
       + 'tested in production. ^3^ One conversion a second, bus idle.' }),
-  // No placement: these float, and only a floated table splits (gotcha: here-table-no-split).
+  // No placement: these float to the first free slot after their reference and split there.
   table('pins', 'Pin functions', groupedTable(pins, [9, 16, 10, 52]), { styleId: 'grouped',
     note: 'Types: P power, G ground, I input, O open-drain output, I/O open-drain input and '
       + 'output.' }),
