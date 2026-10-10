@@ -18,13 +18,13 @@ El capítol 2 de *Relleus de muntanya*, un manual de geomorfologia de 200 × 250
 
 <Excerpt region="palette" />
 
-Cada color de la configuració enllaça amb una d'aquestes entrades, i les pintures es van generar en els mateixos pissarra, blau glacera i molsa, de manera que les figures entren en els colors de la pàgina. Una pintura conserva els seus colors: si canvies el valor de `glacier`, canvien la cinta, la llosa i els rètols, no el gel de les figures. El blau d'accent és prou fosc per a la lletra petita: contrasta 5,2:1 amb el blanc a les etiquetes dels peus i a les cites, i 4,5:1 amb la llosa de gel a l'avantítol. Cada figura és un SVG que incrusta la seva pintura com un JPEG en data URL i hi posa al damunt els rètols com a text, amb un halo blanc fi, perquè es llegeixin nítids i segueixin la llengua de l'edició. Van en IBM Plex Sans Condensed, incrustada a cada SVG, perquè un SVG carregat com a imatge no té accés a les fonts web de la pàgina.
+Cada color de la configuració enllaça amb una d'aquestes entrades, i les pintures es van generar en els mateixos pissarra, blau glacera i molsa, de manera que les figures entren en els colors de la pàgina. Una pintura conserva els seus colors: si canvies el valor de `glacier`, canvien la cinta, la llosa i els rètols, no el gel de les figures. El blau d'accent és prou fosc per a la lletra petita: contrasta 5,2:1 amb el blanc a les etiquetes dels peus i a les cites, i 4,5:1 amb la llosa de gel a l'avantítol. Cada figura és un SVG que incrusta la seva pintura com un JPEG en data URL i hi posa al damunt els rètols com a text, amb un halo blanc fi, perquè es llegeixin nítids i segueixin la llengua de l'edició. Anomenen IBM Plex Sans Condensed al mateix SVG, i el `loadSvg` del kit hi incrusta els dos pesos que fan servir amb l'`inlineSvgFonts` del motor, perquè un SVG mostrat com a imatge no arriba tot sol a les fonts de la pàgina.
 
 ### 2 · Anomena les figures en la llengua del lector
 
 <Excerpt region="captions" />
 
-`defaultResourceTypes(LANG)` dona els noms dels tipus en la llengua de la mostra, i així els peus diuen *Figura 2.3* en aquesta edició i *Figure 2.3* en l'anglesa. Amb `locale: 'es'` i res més, el text tindria partició de mots espanyola, però tots els peus continuarien en anglès. Cada cita pren després la forma que demana la seva frase: `case="lower"` per al parèntesi *(fig. 2.1)* i, amb `style="full"`, per a *(figura 2.2)*; `style="number"` després d'un plural (*les figures 2.4 i 2.5*); i `text="…"` per a una perífrasi com *la primera figura del capítol*, que no imprimeix número. Aquí remet a una figura ja col·locada; com a primera menció, també la numeraria i la col·locaria.
+`locale` dona als tipus integrats els noms en la llengua del document, i així els peus diuen *Figura 2.3* en aquesta edició i *Figure 2.3* en l'anglesa. El mateix `'es'` tria els patrons de partició de mots de l'espanyol. Cada cita pren després la forma que demana la seva frase: `case="lower"` per al parèntesi *(fig. 2.1)* i, amb `style="full"`, per a *(figura 2.2)*; `style="number"` després d'un plural (*les figures 2.4 i 2.5*); i `text="…"` per a una perífrasi com *la primera figura del capítol*, que no imprimeix número. Aquí remet a una figura ja col·locada; com a primera menció, també la numeraria i la col·locaria.
 
 ### 3 · Una cinta i una llosa de gel per a l'obertura
 
@@ -32,11 +32,11 @@ Cada color de la configuració enllaça amb una d'aquestes entrades, i les pintu
 
 L'obertura es compon de dues caixes i quatre textos: una cinta que penja del capçal amb el número del capítol al peu, una llosa de gel que surt a sang pel tall exterior, l'avantítol pres de l'atribut `topic` del títol, i el títol i l'entradeta encadenats a sota. `minHeight` reserva la llosa i com a mínim 5 mm a sota, arrodonits cap amunt a línies senceres de la retícula de base (uns 7 mm aquí), de manera que la figura 2.1 encara cap a la banda del peu de la mateixa pàgina. Les capçaleres van a les cantonades exteriors sobre un filet del color `rule`, i `pages: 'body'` les treu de l'obertura, que porta en el seu lloc un foli al peu.
 
-### 4 · Rebutja els identificadors desconeguts abans de compondre
+### 4 · Atura't davant d'un identificador desconegut o d'una figura sense citar
 
 <Excerpt region="check" />
 
-Un `:ref` a un id que cap recurs no té imprimeix «?», i una figura que ningú no esmenta no es col·loca mai; el Sandbox avisa del primer cas, però en un pen postext 1.4.1 no avisa de cap dels dos. La comprovació llegeix el Markdown amb `parseMarkdown`, l'analitzador del mateix motor, de manera que troba els mateixos `:ref` i `::resource` que llegeixen la numeració i la col·locació. Converteix en un únic error, abans de compondre la primera pàgina, un id desconegut o repetit, una figura sense citar, una figura `here` sense la seva línia `::resource` o un tipus que no existeix.
+Un `:ref` o un `::resource` a un id que cap recurs no té imprimeix «?» i no col·loca res; la composició anota cadascun a `doc.contentWarnings` com a `unknownResourceId`, amb l'id i el seu lloc al text font. Una figura que ningú no esmenta no es col·loca mai i no produeix cap avís, de manera que la comprovació llegeix el Markdown amb `parseMarkdown`, l'analitzador del mateix motor, i compara les mencions amb les figures. Un id desconegut, una figura sense citar o una figura `here` sense la seva línia `::resource` es converteixen en un únic error abans de mostrar les pàgines.
 
 ### 5 · Comença a comptar per on va el llibre
 
@@ -51,7 +51,10 @@ Aquest és el capítol 2 d'un llibre més llarg, així que la continuació indic
 Treu el capítol dels números i les figures aniran de la 1 a la 7; per a una numeració seguida en tot el llibre, compon els capítols amb `buildBundle` o passa a cada capítol el `continuationAfter()` de l'anterior.
 
 ```diff
--  resourceTypes: defaultResourceTypes(LANG),
+-  inlineSvgFonts, parseMarkdown,
++  inlineSvgFonts, parseMarkdown, defaultResourceTypes,
+@@
+   locale: t({ en: 'en-us', es: 'es' }),
 +  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type,
 +    numberingTemplate: '{n}', resetOn: 'never' })),
 ```
@@ -73,7 +76,3 @@ Una pàgina a columna i mitja dona a les figures i als seus peus un canal exteri
 ### Fes surar les taules igual
 
 Les taules també són recursos, se citen i es col·loquen amb les mateixes regles, i una taula llarga es reparteix entre diverses pàgines: mira <RecipeLink slug="technical-datasheet">el full tècnic</RecipeLink>.
-
-## Errors freqüents
-
-- El paràgraf dels llacs de la <PageRef page={4}>pàgina 30</PageRef> cita la figura 2.7 a la primera frase perquè una figura entra a la cua on comença el paràgraf que la cita. Si aquesta frase tanqués un paràgraf començat a la pàgina anterior, la figura obriria la pàgina 30 per sobre de la línia que la cita.

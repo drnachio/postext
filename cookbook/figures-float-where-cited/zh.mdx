@@ -18,13 +18,13 @@ pageNotes: { "1": "章首页：一条蓝色飘带从页顶垂下，底端有一�
 
 <Excerpt region="palette" />
 
-配置中的每种颜色都链接到这里的某一项，而画作也是用同样的石板灰、冰川蓝和苔绿生成的，所以图与页面的颜色一致。画作保留自己的颜色：给`glacier`换一个值，会改变飘带、色块和标注，但不会改变图中冰的颜色。强调色足够深，可以用于小字：在白底上对比度为5.2:1，用于题注标签和引用；在冰蓝色块上为4.5:1，用于眉题。每幅图都是一个SVG，把画作以JPEG data URL嵌入，并在上面用文字排出标注，带一圈细细的白色描边，所以标注保持清晰，并随版本的语言变化。标注用IBM Plex Sans Condensed，嵌入在每个SVG里，因为作为图像加载的SVG无法使用页面的网络字体。
+配置中的每种颜色都链接到这里的某一项，而画作也是用同样的石板灰、冰川蓝和苔绿生成的，所以图与页面的颜色一致。画作保留自己的颜色：给`glacier`换一个值，会改变飘带、色块和标注，但不会改变图中冰的颜色。强调色足够深，可以用于小字：在白底上对比度为5.2:1，用于题注标签和引用；在冰蓝色块上为4.5:1，用于眉题。每幅图都是一个SVG，把画作以JPEG data URL嵌入，并在上面用文字排出标注，带一圈细细的白色描边，所以标注保持清晰，并随版本的语言变化。标注在SVG上直接写明IBM Plex Sans Condensed，kit的`loadSvg`再通过引擎的`inlineSvgFonts`把用到的两种字重嵌进去，因为作为图像显示的SVG自己取不到页面的字体。
 
 ### 2 · 用读者的语言给图命名
 
 <Excerpt region="captions" />
 
-`defaultResourceTypes(LANG)`用样例的语言给类型命名：这里的题注是*Figure 2.3*，西班牙文版是*Figura 2.3*；如果只设`locale: 'es'`，正文会按西班牙语断词，但所有题注仍是英文。每处引用再采用所在句子需要的形式：`case="lower"`得到*(fig. 2.1)*，再加上`style="full"`得到*(figure 2.2)*；复数之后用`style="number"`（*figures 2.4 and 2.5*）；`text="…"`用于*the chapter’s first figure*这样的短语，不印编号。这个短语指回一幅已经放好的图；如果作为首次提及，它仍然会给图编号并确定其位置。
+`locale`用文档的语言给内置类型命名：这里的题注是*Figure 2.3*，西班牙文版是*Figura 2.3*；同一个`'es'`还选定西班牙语的断词规则。每处引用再采用所在句子需要的形式：`case="lower"`得到*(fig. 2.1)*，再加上`style="full"`得到*(figure 2.2)*；复数之后用`style="number"`（*figures 2.4 and 2.5*）；`text="…"`用于*the chapter’s first figure*这样的短语，不印编号。这个短语指回一幅已经放好的图；如果作为首次提及，它仍然会给图编号并确定其位置。
 
 ### 3 · 章首页的飘带和冰色块
 
@@ -32,11 +32,11 @@ pageNotes: { "1": "章首页：一条蓝色飘带从页顶垂下，底端有一�
 
 章首页由两个框和四段文字组成：一条从页顶垂下、底端带章号的飘带，一块伸出书口的冰色块，取自标题`topic`属性的眉题，以及依次挂在它下方的标题和导语。`minHeight`预留出色块及其下方至少5 mm的空间，向上取整到整数个网格行（这里约7 mm），所以Figure 2.1仍能放进同一页的底部区域。书眉位于外侧角上，下面是一条`rule`颜色的细线，`pages: 'body'`让章首页不印书眉，章首页改用排在页脚的页码。
 
-### 4 · 排版前拒绝未知的id
+### 4 · 遇到未知的id或未被引用的图就停下
 
 <Excerpt region="check" />
 
-指向不存在的资源id的`:ref`会印出“?”，没人提及的图永远不会被放置；沙盒会对前一种情况发出警告，但postext 1.4.1对这两种情况都不会给pen任何警告。检查用引擎自己的解析器`parseMarkdown`读取Markdown，所以能找到编号和定位时会读取的每个`:ref`和`::resource`。未知或重复的id、未被引用的图、没有`::resource`行的`here`图，以及缺失的类型，都会在排第一页之前变成一个错误。
+指向不存在的资源id的`:ref`或`::resource`会印出“?”，也不放置任何内容；构建时每一处都会记入`doc.contentWarnings`，种类为`unknownResourceId`，带有id和它在源文本中的位置。没人提及的图永远不会被放置，也不产生警告，所以检查用引擎自己的解析器`parseMarkdown`读取Markdown，把提及与图逐一比对。未知的id、未被引用的图，以及没有`::resource`行的`here`图，都会在显示页面之前合成一个错误。
 
 ### 5 · 从全书的当前位置开始计数
 
@@ -51,7 +51,10 @@ pageNotes: { "1": "章首页：一条蓝色飘带从页顶垂下，底端有一�
 从编号中去掉章号，图就印成1到7；如果要全书统一计数，用`buildBundle`排各章，或者把前一章的`continuationAfter()`传给后一章。
 
 ```diff
--  resourceTypes: defaultResourceTypes(LANG),
+-  inlineSvgFonts, parseMarkdown,
++  inlineSvgFonts, parseMarkdown, defaultResourceTypes,
+@@
+   locale: t({ en: 'en-us', es: 'es' }),
 +  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type,
 +    numberingTemplate: '{n}', resetOn: 'never' })),
 ```
@@ -73,7 +76,3 @@ pageNotes: { "1": "章首页：一条蓝色飘带从页顶垂下，底端有一�
 ### 用同样的方式浮动表格
 
 表格也是资源，按同样的规则引用和定位，长表还会跨页拆分：参见<RecipeLink slug="technical-datasheet">技术数据表</RecipeLink>。
-
-## 常见问题
-
-- 在<PageRef page={4}>第30页</PageRef>上，关于湖泊的段落在第一句就引用了Figure 2.7，因为图会在引用它的段落开始处排队。如果那句话是上一段的末句，而上一段从第29页开始，这幅图就会排在第30页顶部，位于引用它的那一行之上。

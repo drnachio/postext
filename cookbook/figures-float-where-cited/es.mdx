@@ -18,13 +18,13 @@ El capítulo 2 de *Relieves de montaña*, un manual de geomorfología de 200 × 
 
 <Excerpt region="palette" />
 
-Cada color de la configuración enlaza con una de estas entradas, y las pinturas se generaron en los mismos pizarra, azul glaciar y musgo, así que las figuras entran en los colores de la página. Una pintura conserva sus colores: si cambias el valor de `glacier`, cambian la cinta, la losa y los rótulos, no el hielo de las figuras. El azul de acento es lo bastante oscuro para la letra pequeña: contrasta 5,2:1 con el blanco en las etiquetas de los pies y en las citas, y 4,5:1 con la losa de hielo en el antetítulo. Cada figura es un SVG que incrusta su pintura como un JPEG en data URL y pone encima los rótulos como texto, con un halo blanco fino, para que se lean nítidos y sigan el idioma de la edición. Van en IBM Plex Sans Condensed, incrustada en cada SVG, porque un SVG cargado como imagen no tiene acceso a las fuentes web de la página.
+Cada color de la configuración enlaza con una de estas entradas, y las pinturas se generaron en los mismos pizarra, azul glaciar y musgo, así que las figuras entran en los colores de la página. Una pintura conserva sus colores: si cambias el valor de `glacier`, cambian la cinta, la losa y los rótulos, no el hielo de las figuras. El azul de acento es lo bastante oscuro para la letra pequeña: contrasta 5,2:1 con el blanco en las etiquetas de los pies y en las citas, y 4,5:1 con la losa de hielo en el antetítulo. Cada figura es un SVG que incrusta su pintura como un JPEG en data URL y pone encima los rótulos como texto, con un halo blanco fino, para que se lean nítidos y sigan el idioma de la edición. Nombran IBM Plex Sans Condensed en el propio SVG, y el `loadSvg` del kit incrusta los dos pesos que usan con el `inlineSvgFonts` del motor, porque un SVG mostrado como imagen no alcanza por sí solo las fuentes de la página.
 
 ### 2 · Nombra las figuras en el idioma del lector
 
 <Excerpt region="captions" />
 
-`defaultResourceTypes(LANG)` da los nombres de los tipos en el idioma de la muestra, y así los pies dicen *Figura 2.3* en esta edición y *Figure 2.3* en la inglesa. Con `locale: 'es'` y nada más, el texto tendría separación silábica española, pero todos los pies seguirían en inglés. Cada cita toma luego la forma que pide su frase: `case="lower"` para el paréntesis *(fig. 2.1)* y, con `style="full"`, para *(figura 2.2)*; `style="number"` tras un plural (*las figuras 2.4 y 2.5*); y `text="…"` para una perífrasis como *la primera figura del capítulo*, que no imprime número. Aquí remite a una figura ya colocada; como primera mención, también la numeraría y la colocaría.
+`locale` da a los tipos integrados sus nombres en el idioma del documento, y así los pies dicen *Figura 2.3* en esta edición y *Figure 2.3* en la inglesa. El mismo `'es'` elige los patrones de separación silábica del español. Cada cita toma luego la forma que pide su frase: `case="lower"` para el paréntesis *(fig. 2.1)* y, con `style="full"`, para *(figura 2.2)*; `style="number"` tras un plural (*las figuras 2.4 y 2.5*); y `text="…"` para una perífrasis como *la primera figura del capítulo*, que no imprime número. Aquí remite a una figura ya colocada; como primera mención, también la numeraría y la colocaría.
 
 ### 3 · Una cinta y una losa de hielo para la apertura
 
@@ -32,11 +32,11 @@ Cada color de la configuración enlaza con una de estas entradas, y las pinturas
 
 La apertura se compone de dos cajas y cuatro textos: una cinta que cuelga de la cabeza con el número del capítulo al pie, una losa de hielo que sale a sangre por el corte exterior, el antetítulo tomado del atributo `topic` del título, y el título y la entradilla encadenados debajo. `minHeight` reserva la losa y al menos 5 mm bajo ella, redondeados hacia arriba a líneas enteras de la rejilla base (unos 7 mm aquí), de modo que la figura 2.1 aún cabe en la banda del pie de la misma página. Las cabeceras van en las esquinas exteriores sobre un filete del color `rule`, y `pages: 'body'` las saca de la apertura, que lleva en su lugar un folio al pie.
 
-### 4 · Rechaza los identificadores desconocidos antes de componer
+### 4 · Detente ante un identificador desconocido o una figura sin citar
 
 <Excerpt region="check" />
 
-Un `:ref` a un id que ningún recurso tiene imprime «?», y una figura que nadie menciona no se coloca nunca; el Sandbox avisa de lo primero, pero en un pen postext 1.4.1 no avisa de ninguno de los dos casos. La comprobación lee el Markdown con `parseMarkdown`, el analizador del propio motor, así que encuentra los mismos `:ref` y `::resource` que leen la numeración y la colocación. Convierte en un único error, antes de componer la primera página, un id desconocido o repetido, una figura sin citar, una figura `here` sin su línea `::resource` o un tipo que no existe.
+Un `:ref` o un `::resource` a un id que ningún recurso tiene imprime «?» y no coloca nada; la composición anota cada uno en `doc.contentWarnings` como `unknownResourceId`, con el id y su lugar en el texto fuente. Una figura que nadie menciona no se coloca nunca y no produce ningún aviso, así que la comprobación lee el Markdown con `parseMarkdown`, el analizador del propio motor, y compara las menciones con las figuras. Un id desconocido, una figura sin citar o una figura `here` sin su línea `::resource` se convierten en un único error antes de mostrar las páginas.
 
 ### 5 · Empieza a contar por donde va el libro
 
@@ -51,7 +51,10 @@ Este es el capítulo 2 de un libro más largo, así que la continuación indica 
 Quita el capítulo de los números y las figuras irán de la 1 a la 7; para una numeración corrida en todo el libro, compón los capítulos con `buildBundle` o pasa a cada capítulo el `continuationAfter()` del anterior.
 
 ```diff
--  resourceTypes: defaultResourceTypes(LANG),
+-  inlineSvgFonts, parseMarkdown,
++  inlineSvgFonts, parseMarkdown, defaultResourceTypes,
+@@
+   locale: t({ en: 'en-us', es: 'es' }),
 +  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type,
 +    numberingTemplate: '{n}', resetOn: 'never' })),
 ```
@@ -73,7 +76,3 @@ Una página a columna y media da a las figuras y a sus pies un canal exterior en
 ### Haz flotar las tablas igual
 
 Las tablas también son recursos, se citan y se colocan con las mismas reglas, y una tabla larga se reparte entre varias páginas: mira <RecipeLink slug="technical-datasheet">la hoja técnica</RecipeLink>.
-
-## Errores frecuentes
-
-- El párrafo de los lagos de la <PageRef page={4}>página 30</PageRef> cita la figura 2.7 en su primera frase porque una figura entra en la cola donde empieza el párrafo que la cita. Si esa frase cerrara un párrafo empezado en la página anterior, la figura abriría la página 30 por encima de la línea que la cita.
