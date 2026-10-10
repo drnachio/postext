@@ -46,17 +46,7 @@
     "Q59"
   ],
   "gotchas": [
-    "callout-columns",
     "top-float-next-page",
-    "float-stretch-closing-page",
-    "headings-drop-h1-break",
-    "resource-types-locale",
-    "ragged-no-hyphenation",
-    "ragged-run-punctuation",
-    "palette-skips-designs",
-    "design-lineheight-multiple",
-    "overflow-ellipsis-default",
-    "svg-no-webfonts",
     "parity-page1-recto"
   ],
   "explainsWarnings": [
@@ -68,53 +58,7 @@
     "figures-float-where-cited",
     "textbook-margin-column"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-70",
-      "package": "postext",
-      "note": "headings.balancing.stretchAfterFloats is off: with it on, the closing page (a top float, a page-wide summary, a closing band) never settles and the build reports converged: false"
-    },
-    {
-      "followup": "EF-115",
-      "package": "postext",
-      "note": "splitMinLines counts the lines of the whole box on each side of a cut, not those of the step it cuts, so a two-line step can split one line and one (the body's widow and orphan rules do not reach a box's children); the text before the procedure is fitted so the cut falls between steps 4 and 5, checked in the VDT"
-    },
-    {
-      "followup": "EF-114",
-      "package": "postext",
-      "note": "the procedure's compass is a corner icon (position 'corner'), which takes no room: a continuation gives back an inline icon's column, so a cut between steps moves the rest of the box left by the icon and its gap, and a cut inside a step keeps only the gap, rewraps the step wider and prints words twice"
-    },
-    {
-      "followup": "EF-62",
-      "package": "postext",
-      "note": "ragged text can strand '(' or ')' next to a :ref; the log table is cited as 'tabla 4.2' (style full, case lower) without brackets, and '(Fig. 4.1)' sits mid-line, checked by eye"
-    },
-    {
-      "followup": "EF-21",
-      "package": "postext",
-      "note": "the worksheet is set ragged, and ragged text is never hyphenated: locale 'es' names the language but hyphenates nothing, so the 78 mm columns carry the rag (gotcha ragged-no-hyphenation)"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore is restated because a headings object drops it"
-    },
-    {
-      "followup": "EF-33",
-      "package": "postext",
-      "note": "config.locale does not localise Figure and Table: resourceTypes: defaultResourceTypes(LANG) is passed by hand"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside every paletteId, because the palette does not reach the opener's and running heads' design elements"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the opener's design texts give lineHeight as a multiple (0.98, 1.4), never a Dimension, which would silently drop the opener"
-    }
-  ],
+  "workarounds": [],
   "engine": {
     "postext": "1.25.0"
   },

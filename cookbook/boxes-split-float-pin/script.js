@@ -5,7 +5,6 @@
 // Four pages of a school lab workbook in Spanish, and five ways a box can sit on them.
 import {
   buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
-  defaultResourceTypes,
 } from 'https://esm.sh/postext';
 
 const LANG = 'es'; // @lang: the language of the sample document (this recipe is Spanish only)
@@ -59,9 +58,9 @@ const calloutStyles = [
   box('seguridad', bar('charcoal', 'aviso')),
   // Split: the procedure fits a column, so it takes keepTogether: false to break where it
   // falls instead of moving on whole: between steps, or inside one (splitMinLines, default
-  // 2, counts the box's lines on each side of the cut, not the step's: see Pitfalls). The
-  // rest goes on in the next column or page without the title or the icon; a corner icon
-  // takes no room from the text, so both parts keep one measure.
+  // 2, keeps at least two lines of the step on each side of the cut). The rest goes on in
+  // the next column or page without the title or the icon; a corner icon takes no room
+  // from the text, where an inline one would keep its column in both parts.
   box('pasos', { keepTogether: false, background: col('light'),
     icon: icon('compas', 7, { position: 'corner', cornerSide: 'outer' }) }),
   // Floated: its fence adds placement="top", so the box leaves the flow where the fence
@@ -99,8 +98,7 @@ const BAND = 100; // mm from the trim to the foot of the band
 const ART_W = 80; // mm: the width of the band's drawing, at the fore-edge
 const AIR = 8; // mm between the band and the first line of text
 const [TITLE_W, LEAD_W] = [104, 88]; // mm: the title's and the lead's measure
-// Wrapped, not cut with the default ellipsis (gotcha: overflow-ellipsis-default).
-const onBand = { color: col('charcoal'), align: 'left', overflow: 'wrap' };
+const onBand = { color: col('charcoal'), align: 'left' }; // a long title or lead wraps
 const below = (id, y, width) => ({ anchor: { to: `#${id}`, edge: 'below' },
   offset: { y: mm(y) }, size: { width: mm(width) } });
 const opener = { enabled: true, minHeight: mm(BAND - TOP + AIR), slot: { elements: [
@@ -140,9 +138,9 @@ const footer = { elements: [{ ...head('drop', '{pageNumber}', 'all', 'bottom', 0
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { y: mm(-11) } } }] };
 
 const config = () => ({
-  // The document's language; ragged text is never hyphenated (gotcha: ragged-no-hyphenation).
+  // The document's language: captions say "Figura" and "Tabla". The text is ragged and keeps
+  // its words whole (bodyText.hyphenation.ragged is off by default).
   locale: 'es',
-  resourceTypes: defaultResourceTypes(LANG), // "Figura", "Tabla" (gotcha: resource-types-locale)
   colorPalette, header, footer,
   page: { width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150, margins: { top: mm(TOP),
     bottom: mm(TRIM_H - TOP - LINES * LEAD * PT), left: mm(INNER), right: mm(OUTER),
@@ -152,11 +150,8 @@ const config = () => ({
   bodyText: { fontFamily: TEXT, fontSize: pt(9.4), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), // references follow the bold colour
     textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true },
-  headings: { fontFamily: TEXT, fontWeight: 800, color: col('ink'),
-    // No extra line under a top float: on the closing page it keeps the layout from settling
-    // (gotcha: float-stretch-closing-page).
-    balancing: { stretchAfterFloats: false }, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+  headings: { fontFamily: TEXT, fontWeight: 800, color: col('ink'), levels: [
+    // A recto, so the band's drawing stands at the fore-edge.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
       marginTop: pt(0), marginBottom: pt(0), advancedDesign: opener },
     { level: 2, fontSize: pt(13), lineHeight: pt(LEAD), numberingTemplate: '{1}.{2}',
@@ -224,7 +219,6 @@ const resources = [
 ];
 
 // #region art: the band's shadow chart, the figure and three icons, in the palette (no words)
-// An SVG drawn as an image cannot use the page's fonts (gotcha: svg-no-webfonts).
 const n = (v) => +v.toFixed(2);
 const svg = (id, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${ART[id][0] * PX}" `
   + `height="${ART[id][1] * PX}" viewBox="0 0 ${ART[id].join(' ')}">${body}</svg>`;
