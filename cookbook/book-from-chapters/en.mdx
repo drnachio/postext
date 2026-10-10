@@ -18,7 +18,7 @@ pageNotes: { "6": "Page 6 is left blank: Winter fills one page, so Spring opens 
 
 <Excerpt region="chapters" />
 
-Each season is its own document, so you can rewrite one chapter without opening the others. The first document holds the frontmatter, the cover and the contents. In Postext 1.4.1 the later documents inherit none of its metadata, and the PDF reads its title and author from the first document only.
+Each season is its own document, so you can rewrite one chapter without opening the others. The first document holds the frontmatter, the cover and the contents. Its metadata is the book’s: `{title}` and `{author}` print it in every chapter, and the PDF takes its title and author from it.
 
 ### 2 · Rules that carry across documents
 
@@ -40,7 +40,7 @@ This step’s code is [the short answer](#the-short-answer) above. [`buildBundle
 
 <Excerpt region="running-heads" />
 
-Only the first document has frontmatter, so in Postext 1.4.1 `{title}` prints nothing in every later document, Autumn included. The verso head therefore has the book’s title typed in as plain text. `{chapterTitle}` and `{pageNumber}` are resolved page by page and print in every document; page 11, the one right-hand body page, carries SUMMER beside its folio. `pages: 'body'` keeps every head off the openers and the blank page.
+Only the first document has frontmatter, and `buildBundle` hands it to every chapter, so the verso head prints the book’s `{title}` in all five documents. `{chapterTitle}` and `{pageNumber}` are resolved page by page and print in every document; page 11, the one right-hand body page, carries SUMMER beside its folio. `pages: 'body'` keeps every head off the openers and the blank page.
 
 ### 6 · Spreads on screen, one PDF for the book
 
@@ -64,7 +64,10 @@ Pass a single document to `renderToPdf` to proof Spring on its own, still number
 A figure counter that never resets numbers the four frames 1 to 4 across the documents instead of 1.1 to 4.1.
 
 ```diff
--  resourceTypes: defaultResourceTypes(LANG),
+   buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerResourceImage,
++  defaultResourceTypes,
+@@
+   locale: t({ en: 'en-us', es: 'es' }),
 +  resourceTypes: defaultResourceTypes(LANG)
 +    .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' })),
 ```

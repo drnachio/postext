@@ -18,7 +18,7 @@ pageNotes: { "6": "La página 6 queda en blanco: Invierno ocupa una sola página
 
 <Excerpt region="chapters" />
 
-Cada estación es un documento propio, así que puedes reescribir un capítulo sin abrir los demás. El primer documento lleva el frontmatter, la cubierta y el índice. En Postext 1.4.1 los documentos siguientes no heredan de él ningún metadato, y el PDF toma el título y la autora solo del primero.
+Cada estación es un documento propio, así que puedes reescribir un capítulo sin abrir los demás. El primer documento lleva el frontmatter, la cubierta y el índice. Sus metadatos son los del libro: `{title}` y `{author}` los imprimen en todos los capítulos, y el PDF toma de él el título y la autora.
 
 ### 2 · Reglas que pasan de un documento a otro
 
@@ -40,7 +40,7 @@ El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. 
 
 <Excerpt region="running-heads" />
 
-Solo el primer documento tiene frontmatter, así que en Postext 1.4.1 `{title}` sale vacío en todos los documentos siguientes, Otoño incluido. Por eso la cabecera de las páginas pares lleva el título del libro escrito como texto fijo. `{chapterTitle}` y `{pageNumber}` se resuelven página a página y salen en todos los documentos; la página 11, la única impar de texto corrido, lleva VERANO junto al folio. `pages: 'body'` deja sin cabecera las aperturas y la página en blanco.
+Solo el primer documento tiene frontmatter, y `buildBundle` se lo pasa a todos los capítulos, así que la cabecera de las páginas pares imprime el `{title}` del libro en los cinco documentos. `{chapterTitle}` y `{pageNumber}` se resuelven página a página y salen en todos los documentos; la página 11, la única impar de texto corrido, lleva VERANO junto al folio. `pages: 'body'` deja sin cabecera las aperturas y la página en blanco.
 
 ### 6 · Pliegos en pantalla, un PDF para el libro
 
@@ -64,7 +64,10 @@ Pasa un solo documento a `renderToPdf` para sacar una prueba de Primavera, numer
 Un contador de figuras que no se reinicia numera los cuatro cuadros del 1 al 4 en todo el libro, en vez de 1.1 a 4.1.
 
 ```diff
--  resourceTypes: defaultResourceTypes(LANG),
+   buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerResourceImage,
++  defaultResourceTypes,
+@@
+   locale: t({ en: 'en-us', es: 'es' }),
 +  resourceTypes: defaultResourceTypes(LANG)
 +    .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' })),
 ```
