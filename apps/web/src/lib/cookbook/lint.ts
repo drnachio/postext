@@ -889,12 +889,8 @@ export interface LintRecipeOptions {
   released?: { postext?: string; postextPdf?: string };
   /** `--engine local`: a draft may pin the next release (validate.ts). */
   preview?: boolean;
-  /** `--strict-fixed`: fail the notes about pitfalls fixed at or before the
-   *  recipe's pin (`fixedNotes`). Off by default until the recipes written
-   *  for 1.4 are cleaned (#641). */
-  strictFixed?: boolean;
-  /** `--as-of x.y.z`, with `strictFixed`: read every recipe as if it pinned
-   *  at least that version. */
+  /** `--as-of x.y.z`: judge the notes about fixed pitfalls (`fixedNotes`)
+   *  as if every recipe pinned at least that version. */
   fixedAsOf?: string;
 }
 
@@ -930,7 +926,10 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
       (e) => `recipe.json › ${e}`,
     ),
   );
-  if (options.strictFixed) fails.push(...fixedNotes(meta, registry.gotchas, options.fixedAsOf).map((note) => `recipe.json › ${note.message}`));
+  // A note about a pitfall fixed at or before the recipe's pin fails (#641):
+  // the page no longer shows the pitfall, and a workaround that names its
+  // follow-up explains code by a bug the recipe's engine does not have.
+  fails.push(...fixedNotes(meta, registry.gotchas, options.fixedAsOf).map((note) => `recipe.json › ${note.message}`));
   if (!Array.isArray(meta.sample?.locales) || !Array.isArray(meta.kit)) return report();
 
   const sources = readRecipeSources(slug);

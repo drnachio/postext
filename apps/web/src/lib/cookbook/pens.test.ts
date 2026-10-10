@@ -18,8 +18,9 @@ import {
 } from "./detect.ts";
 import { KIT_IMPORTS, imageSize, isAllowedUrl, lintPen, lintRecipe, previewDraftsAllowed } from "./lint.ts";
 import { REPO_DIR } from "./paths.ts";
-import { listRecipeSlugs, readKit } from "./sources.ts";
-import type { KitBlock, RecipeMeta, RecipeSources, SampleLocale } from "./types.ts";
+import { loadRegistry } from "./registry.ts";
+import { listRecipeSlugs, readKit, readRecipeMeta } from "./sources.ts";
+import type { KitBlock, RecipeMeta, RecipeSources, Registry, SampleLocale } from "./types.ts";
 
 // ─── A pen that follows every convention ────────────────────────────────────
 
@@ -838,5 +839,28 @@ describe("recipe pens", () => {
     const preview = previewDraftsAllowed();
     const failures = listRecipeSlugs().flatMap((slug) => lintRecipe(slug, { preview }).fails.map((f) => `${slug}: ${f}`));
     expect(failures).toEqual([]);
+  }, 120_000);
+
+  it("fail a note about a pitfall fixed at or before the recipe's pin (#641)", () => {
+    const registry = loadRegistry();
+    // A recipe that lists a pitfall the engine still has, and that pitfall.
+    const found = listRecipeSlugs()
+      .map((slug) => ({ slug, meta: readRecipeMeta(slug) }))
+      .flatMap(({ slug, meta }) => (meta.gotchas ?? []).filter((id) => registry.gotchas[id] && !registry.gotchas[id].fixedIn).map((id) => ({ slug, meta, id })))[0];
+    expect(found).toBeDefined();
+    const { slug, meta, id } = found;
+    const fixedIn = (version: RecipeMeta["engine"]["postext"]): Registry => ({ ...registry, gotchas: { ...registry.gotchas, [id]: { ...registry.gotchas[id], fixedIn: version } } });
+    const notes = (options: Parameters<typeof lintRecipe>[1]) => lintRecipe(slug, options).fails.filter((f) => f.startsWith(`recipe.json › gotchas: "${id}" is fixed in postext`));
+    // Fixed in the version the recipe pins: the id goes, with no flag asked.
+    expect(notes({ registry: fixedIn(meta.engine.postext) })).toEqual([
+      `recipe.json › gotchas: "${id}" is fixed in postext ${meta.engine.postext} and this recipe pins ${meta.engine.postext}: take it out of the list`,
+    ]);
+    // Fixed in a later release: the recipe's engine still has the pitfall,
+    // until --as-of reads the recipe as of that release.
+    expect(notes({ registry: fixedIn("99.0.0") })).toEqual([]);
+    expect(notes({ registry: fixedIn("99.0.0"), fixedAsOf: "99.0.0" })).toEqual([
+      `recipe.json › gotchas: "${id}" is fixed in postext 99.0.0 and the recipe is read as of 99.0.0: take it out of the list`,
+    ]);
+    expect(notes({ registry })).toEqual([]);
   }, 120_000);
 });
