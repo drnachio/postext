@@ -36,13 +36,13 @@ The subsection title starts on the column's left edge. Its number is anchored `'
 
 <Excerpt region="resources" />
 
-The plot plan goes into the channel with `span: 'side'` and stacks under the side head of section 2 ([placement](/en/docs/document-format#placement)). `width: PLAN_W / SIDE` makes it 44 mm wide, which puts its 88 metres at exactly 1:2000. The facade elevation is a `'top'` float across the page. It is cited on page 2 and opens page 3, since a float is never placed above its reference. The programme table, also cited on page 2, floats to the head of the text column on page 3; set inline, it would have opened page 3 and sent the elevation on to page 4. `captionSide: true` stands its caption in the channel, level with the table's top. The calendar sits where `::resource` puts it, at the end of the brief.
+The plot plan goes into the channel with `span: 'side'` and stacks under the side head of section 2 ([placement](/en/docs/document-format#placement)). `width: PLAN_W / SIDE` makes it 44 mm wide, which puts its 88 metres at exactly 1:2000. The facade elevation is a `'top'` float across the page. It is cited on page 2 and opens page 3, since a float is never placed above its reference. The programme table, also cited on page 2, floats to the head of the text column on page 3, under the elevation. `captionSide: true` stands its caption in the channel, level with the table's top. The calendar sits where `::resource` puts it, at the end of the brief.
 
 ### 5 · Open the brief on the site plan
 
 <Excerpt region="opener" />
 
-With `span: 'page'` the opener's container is the whole text block, channel included ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The kicker and the title are placed 57 mm in, on the text column's left edge, and the plan runs across channel and column. Without it the container is the text column, every element moves 57 mm to the right, and the title, the lead and the plan run past the right edge of the page. An image element reserves no height, so `minHeight` sets the reserve down to the plan's foot. Rounded up to a whole grid line, it leaves the rule of section 1 as far from its text as the rule of every later section. The kicker, the lead and the map legend are attributes of the `# Bases del concurso` line.
+With `span: 'page'` the opener's container is the whole text block, channel included ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The kicker and the title are placed 57 mm in, on the text column's left edge, and the plan runs across channel and column. Without it the container is the text column, every element moves 57 mm to the right, and the title, the lead and the plan run past the right edge of the page. The design reserves room down to the plan's foot, which falls between two grid lines. A `minHeight` rounded up to the next grid line leaves the rule of section 1 as far from its text as the rule of every later section. The kicker, the lead and the map legend are attributes of the `# Bases del concurso` line.
 
 ## Variations
 
@@ -58,5 +58,3 @@ Anchor the rule to the heading's own box instead of the number, and it runs from
 ## Pitfalls
 
 - A side figure takes the head of the channel on the page that cites it, and a side head fenced after it stacks under the figure, below the start of its own section. Cite side figures after the section head of their page, as section 2 cites the plot plan.
-- In postext 1.4.1 a side box fenced between a heading and its first paragraph gives that paragraph a first-line indent, even with `indentAfterHeading: false`. This brief has no indents, so nothing shows. With an indented texture, wrap each section's first paragraph in a `:::paragraphs` container whose style sets `firstLineIndent: 0`.
-- In postext 1.4.1 a paragraph style's `spaceBetween` is also added after the container's last paragraph, where it does not merge into the next heading's `marginTop` as body paragraph spacing does. With the criteria in such a container and one line of `spaceBetween`, section 5 had three blank lines above it and every other section two, so this brief colours its run-in terms with `bodyText.boldColor`.

@@ -31,77 +31,13 @@
     ]
   },
   "answers": ["Q32", "Q18", "Q64", "Q50"],
-  "gotchas": [
-    "side-box-starts-at-fence",
-    "overflow-ellipsis-default",
-    "ragged-runts",
-    "opener-image-no-reserve",
-    "top-float-next-page",
-    "inline-table-skips-top-float",
-    "svg-no-webfonts",
-    "design-lineheight-multiple",
-    "palette-skips-designs",
-    "resource-types-locale",
-    "headings-drop-h1-break"
-  ],
+  "gotchas": ["side-box-starts-at-fence", "top-float-next-page"],
   "explainsWarnings": ["headingAdvancedWithoutTitleText"],
   "related": [
     "section-heads-field-manual",
     "annotated-classic-glosses",
     "textbook-margin-column",
     "figures-float-where-cited"
-  ],
-  "workarounds": [
-    {
-      "followup": "EF-159",
-      "package": "postext",
-      "note": "the run-in terms take their red from bodyText.boldColor instead of a :::paragraphs style: a style's spaceBetween is also added after the container's last paragraph and does not merge into the next heading's marginTop, which left three blank lines above section 5 against two above every other section"
-    },
-    {
-      "followup": "EF-67",
-      "package": "postext",
-      "note": "each side-head box sits between its heading and the section's first paragraph, which in 1.4.1 gives that paragraph a first-line indent whatever indentAfterHeading says; the report texture has no indent, so nothing shows, and Pitfalls gives the fix for an indented texture"
-    },
-    {
-      "followup": "EF-160",
-      "package": "postext",
-      "note": "the programme table floats to the head of the text column (position 'top', cited with :ref) instead of sitting where it is cited: as an inline 'here' table it moved to the head of page 3, and the page-wide elevation cited on page 2 then skipped page 3 and opened page 4"
-    },
-    {
-      "followup": "EF-147",
-      "package": "postext",
-      "note": "ragged text gets no runt control, so the paragraphs that ended on one short word ('Europea.', 'bóvedas.', 'conservarse.') were reworded by hand until no paragraph ends on a single word"
-    },
-    {
-      "followup": "EF-66",
-      "package": "postext",
-      "note": "a no-break space is not trusted to hold a figure to its unit: the sentences that split '10 / %', '12 / kN/m²' and '4.000 / €' were reworded until each pair sits mid-line"
-    },
-    {
-      "followup": "EF-90",
-      "package": "postext",
-      "note": "the site plan is an image element of the opener and reserves no height: minHeight carries the reserve to its foot, rounded up to a whole grid line so that section 1 keeps the same distance from rule to text as every other section"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes each colour's hex beside its paletteId, because 1.4.1 paints design elements (section numbers, rules, hanging numbers, the opener, the letterhead) from the hex, and bodyText.referenceColor is restated in ink"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "every design text lineHeight is a multiple of its size (LEAD / 10.5 for the subsection title, LEAD / 9 for its number), never a dimension"
-    },
-    {
-      "followup": "EF-33",
-      "package": "postext",
-      "note": "resourceTypes: defaultResourceTypes('es') prints Figura and Tabla; without it the captions and references would say Figure and Table"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore is restated (parity 'any') because a headings object drops it; in a brief with one H1 it changes nothing"
-    }
   ],
   "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],

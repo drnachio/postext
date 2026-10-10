@@ -20,7 +20,7 @@ const palette = { // a Swiss municipal report: black, white and one signal red
   muted: '#5e5e67', // running heads, legends, the colophon (6.4:1)
   paper: '#ffffff',
 };
-// The hex as well as the id: design slots read only the hex (gotcha: palette-skips-designs).
+// Every colour is linked to its palette entry by id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // Defaults this config does not restate link to 'main-color', so it points at the accent.
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.signal })
@@ -107,9 +107,9 @@ const MAP = { y: 68.5, w: CONTENT, h: 52 }; // mm: from the top of the text bloc
 const display = { fontFamily: DISPLAY, fontWeight: 300, color: col('ink'), align: 'left',
   overflow: 'wrap' };
 const opener = { enabled: true,
-  // The plan is an image element, which reserves no height (gotcha:
-  // opener-image-no-reserve): minHeight carries the reserve down to its foot.
-  minHeight: mm(GRID * Math.ceil((MAP.y + MAP.h) / GRID)), // on a grid line
+  // The plan's foot falls between two grid lines. A floor on the next one leaves the rule
+  // of section 1 as far from its text as the rule of every later section.
+  minHeight: mm(GRID * Math.ceil((MAP.y + MAP.h) / GRID)),
   slot: { elements: [
     { kind: 'text', id: 'kicker', content: '{attr.kicker}', ...label, color: col('signal'),
       placement: at('container', 'top-left', mm(HANG)) },
@@ -155,7 +155,7 @@ const footer = { elements: [
 // #endregion
 
 const config = () => ({
-  // Figura / Tabla, counted through the whole brief: 1, 2… (gotcha: resource-types-locale)
+  // Figura / Tabla, counted through the whole brief: 1, 2…
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
@@ -173,7 +173,7 @@ const config = () => ({
     // Balancing would add lines above heads to fill short pages: three blank lines over
     // some side heads instead of two. Off, the white above every head is the same.
     balancing: { enabled: false }, levels: [
-    // Any headings object drops the H1 page break: restated (gotcha: headings-drop-h1-break).
+    // parity 'any': a brief opens the next page, whichever side it falls on.
     // span: 'page' gives the opener the whole text block, channel included, as container.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: opener },
@@ -216,9 +216,7 @@ const calendar = { model: { headerRowCount: 1, columnWidths: [3, 2], rows: [
 // #region resources: four placements: the channel, across the page, a column top, here
 // The plot plan stands in the channel; the elevation crosses channel and column at the
 // head of the next page; the programme floats to the head of the text column, with its
-// caption beside it in the channel; the calendar sits where ::resource puts it. The
-// programme floats instead of sitting 'here' because an inline table that opens a page
-// keeps a pending top figure off that page (gotcha: inline-table-skips-top-float).
+// caption beside it in the channel; the calendar sits where ::resource puts it.
 const PLAN_W = 44; // mm: the plot plan, 88 m wide at 1:2000
 const resources = [
   { id: 'parcela', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
