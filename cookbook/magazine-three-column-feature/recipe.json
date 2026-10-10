@@ -45,15 +45,9 @@
   ],
   "gotchas": [
     "top-float-next-page",
-    "opener-image-no-reserve",
     "page-span-heading-new-page",
     "parity-page1-recto",
-    "bitmap-print-size",
-    "empty-chip",
-    "headings-drop-h1-break",
-    "design-lineheight-multiple",
-    "overflow-ellipsis-default",
-    "hyphenation-locales"
+    "bitmap-print-size"
   ],
   "explainsWarnings": [],
   "related": [
@@ -62,18 +56,7 @@
     "figures-float-where-cited",
     "magazine-cover-and-contents"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore is restated because any headings object drops it (gotcha headings-drop-h1-break)"
-    },
-    {
-      "followup": "EF-02",
-      "package": "postext",
-      "note": "the end mark is a chip holding a U+2060 word joiner, since a chip of spaces prints its markup (gotcha empty-chip)"
-    }
-  ],
+  "workarounds": [],
   "engine": {
     "postext": "1.25.0"
   },

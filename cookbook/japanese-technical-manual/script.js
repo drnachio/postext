@@ -116,7 +116,7 @@ const config = () => ({
   headings: { fontFamily: GOTHIC, fontWeight: 700, color: col('ink'),
     balancing: { enabled: false }, // no lines added above heads: the grid holds
     levels: [
-    // parity 'odd': the chapter opens on a recto, and no blank page is forced before it.
+    // parity 'odd': the chapter opens on a recto, after a blank verso only when one is needed.
     { level: 1, numberingTemplate: '第{1}章', breakBefore: { enabled: true, parity: 'odd' },
       advancedDesign: opener },
     // 3行取り: each section head takes three body lines, so the grid holds across it.

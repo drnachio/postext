@@ -121,7 +121,7 @@ const config = () => ({
     fontFamily: DISPLAY, fontWeight: 800, color: col('ink'),
     balancing,
     levels: [
-      // parity 'odd': the feature opens on a recto, and no blank page is forced before it.
+      // parity 'odd': the feature opens on a recto, after a blank verso only when needed.
       { level: 1, fontSize: pt(34), span: 'page', breakBefore: { enabled: true, parity: 'odd' },
         marginTop: pt(0), marginBottom: pt(0), advancedDesign: opener },
       { level: 2, fontSize: pt(12), lineHeight: pt(LEAD), marginTop: pt(LEAD),

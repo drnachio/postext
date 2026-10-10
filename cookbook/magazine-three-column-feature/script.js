@@ -87,7 +87,7 @@ const spread = { id: 'spread', span: 'page', advancedDesign: { enabled: true, sl
     placement: at('page', 'top-left', 20, 188) },
   { kind: 'text', id: 'headline', content: '{titleText}', fontFamily: 'Fraunces',
     fontWeight: 600, fontSize: pt(66), lineHeight: 0.96, // a multiple of the size
-    color: col('paper'), align: 'left', overflow: 'wrap', // gotcha: overflow-ellipsis-default
+    color: col('paper'), align: 'left', overflow: 'wrap',
     placement: at('#kicker', 'below', 0, 3, 150) },
 ] } } };
 // The recto: the right half of the picture, cut to PHOTO mm, then the lead with its drop cap
@@ -134,7 +134,7 @@ const footer = { elements: [{ kind: 'text', id: 'drop-folio', content: '{pageNum
 // #endregion
 
 const config = () => ({
-  locale: 'en-us', // an exact hyphenation code (gotcha: hyphenation-locales)
+  locale: 'en-us', // American English hyphenation
   colorPalette, resourceTypes: [photoType],
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
@@ -147,7 +147,7 @@ const config = () => ({
     // to 0.015 em of tracking for the rest instead of spreading its spaces wider still.
     minWordSpacing: 0.7, maxJustifyTracking: 15 },
   headings: { fontFamily: 'Fraunces', fontWeight: 600, color: col('sea'), levels: [
-    // Restated (gotcha: headings-drop-h1-break): the spread opens on the next page.
+    // parity 'any': the spread opens on the next page (the default waits for a recto).
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } },
     { level: 2, fontSize: pt(12.5), lineHeight: pt(LEAD),
       marginTop: pt(LEAD), marginBottom: pt(0) }, // crossheads, one grid line above
