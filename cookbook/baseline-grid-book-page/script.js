@@ -4,7 +4,7 @@
 // Fonts: Vollkorn, Playfair Display, Vollkorn SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // An essay on the canon of page proportions, on a page that shows its geometry and grid.
 import {
-  buildDocumentWithFonts, renderPageToCanvas, defaultResourceTypes, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es' | 'pt')
@@ -54,7 +54,6 @@ const onGrid = { marginTop: pt(0), marginBottom: pt(0) };
 // #endregion
 
 // #region heads: the book's title on versos, the essay's on rectos, folios from page 9
-// Design slots skip the palette: col() writes each hex too (gotcha: palette-skips-designs).
 const OUTER = 4 * UNIT; // mm: the heads end where the text block does
 const RISE = 1.5 * UNIT; // mm: heads 12 mm into the head margin; the drop folio 12 mm below
 const TAB = 7; // mm from a folio to the title beside it
@@ -85,14 +84,11 @@ const continuation = { pageIndexOffset: 8, pageNumbering: { startAt: 9 } };
 
 // #region balance: full columns end flush, and the last page ends level
 // On by default: it fills a column a keep rule leaves short, and cuts the last page level.
-// Off: the lever that starts a short closing column a line low under a page-wide figure;
-// this copy never trips it, other copy can (gotcha: float-stretch-closing-page).
-const balancing = { stretchAfterFloats: false };
+const balancing = { enabled: true };
 // #endregion
 
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es', pt: 'pt' }), // exact codes (gotcha: hyphenation-locales)
-  resourceTypes: defaultResourceTypes(LANG), // localized captions (gotcha: resource-types-locale)
+  locale: t({ en: 'en-us', es: 'es', pt: 'pt' }), // hyphenation, and Figure, Figura in captions
   colorPalette,
   page,
   layout,
@@ -102,7 +98,7 @@ const config = () => ({
   // #region flow: heads that leave the grid and come back to it; lists that never leave it
   headings: { fontFamily: 'Playfair Display', color: col('ink'), balancing,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'odd': the essay opens on a recto.
       // Two lines of 46 pt, each four leads tall, then one lead: the text starts on line 10.
       { level: 1, breakBefore: { enabled: true, parity: 'odd' },
         fontSize: pt(46), lineHeight: pt(4 * LEAD), italic: true, color: col('rubric'),

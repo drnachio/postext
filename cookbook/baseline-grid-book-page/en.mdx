@@ -64,13 +64,12 @@ The short answer computes the foot margin: the 280 mm trim less the 24 mm head m
 With balancing off, page 11 runs its last eight lines and the colophon down the first column and leaves the second empty.
 
 ```diff
--const balancing = { stretchAfterFloats: false };
+-const balancing = { enabled: true };
 +const balancing = { enabled: false };
 ```
 
 ## Pitfalls
 
-- A heading level with `span: 'page'` and no `advancedDesign` is meant to cross both columns, but postext 1.4.1 measures it at the width of one: “The Secret Canon” prints on one line across the page but reserves the height of two, with the column rule drawn through the band. Here the title stays in the first column.
 - The rule that a `top` float never lands on its citing page holds for page-wide floats. A column `top` float can land on its citing page, at the head of a later column, as Figure 1.1 does on page 9.
 - Page sizes, margins and the gutter take absolute units (mm, pt, cm, in). An `em` there has no type size to measure against, and the build stops with “dimensionToPx: baseFontSizePx is required for unit "em"”.
 - Vollkorn’s word space is narrow, 0.2 em, so in a column of about 50 characters some justified lines come out loose or tight. The sample was fitted line by line against the capture’s loose-line report; check it again after any change to the text or the measure.

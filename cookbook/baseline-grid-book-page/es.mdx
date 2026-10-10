@@ -64,13 +64,12 @@ La respuesta corta calcula el margen de pie: a los 280 mm del formato les resta 
 Sin equilibrado, las diez últimas líneas de la página 11 y el colofón van todos a la primera columna, y la segunda queda vacía.
 
 ```diff
--const balancing = { stretchAfterFloats: false };
+-const balancing = { enabled: true };
 +const balancing = { enabled: false };
 ```
 
 ## Errores frecuentes
 
-- Un nivel de título con `span: 'page'` y sin `advancedDesign` debería extender el título sobre las dos columnas, pero postext 1.4.1 lo mide con el ancho de una sola: «El canon secreto» se imprime en una línea a todo el ancho y reserva la altura de dos; el filete de columna atraviesa esa banda. Aquí el título se queda en la primera columna.
 - La regla de que un flotante `top` nunca cae en la página que lo cita vale para los flotantes a todo el ancho. Un flotante `top` de columna sí puede caer en la página que lo cita, en la cabeza de una columna posterior, como la figura 1.1 en la página 9.
 - El formato, los márgenes y el medianil van en unidades absolutas (mm, pt, cm, in). Un `em` no tiene ahí cuerpo con el que medirse, y la composición se detiene con «dimensionToPx: baseFontSizePx is required for unit "em"».
 - El espacio entre palabras de Vollkorn es estrecho, 0,2 em, así que en columnas de unos 50 caracteres algunas líneas justificadas quedan flojas o apretadas. El texto se ajustó línea a línea con el informe de líneas flojas de la captura; vuelve a comprobarlo si cambias el texto o la medida.

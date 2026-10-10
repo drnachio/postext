@@ -64,13 +64,12 @@ pageNotes: { "1": "章首页：红色斜体标题占满第一栏，第二栏栏�
 关闭各栏齐底后，第11页会把最后八行和版权说明都排进第一栏，第二栏留空。
 
 ```diff
--const balancing = { stretchAfterFloats: false };
+-const balancing = { enabled: true };
 +const balancing = { enabled: false };
 ```
 
 ## 常见问题
 
-- 设了`span: 'page'`而没有`advancedDesign`的标题级别本应横跨两栏，但postext 1.4.1按一栏的宽度来测量它：“The Secret Canon”在页面上印成一行，却预留了两行的高度，栏间线还穿过这条标题带。所以这里的标题留在第一栏。
 - `top`浮动体永远不会落在引用页的规则，适用于占满页宽的浮动体。栏内的`top`浮动体可以落在引用页上，位于后面一栏的栏首，就像第9页的图1.1那样。
 - 页面尺寸、页边距和栏间距使用绝对单位（mm、pt、cm、in）。在这些地方用`em`没有可参照的字号，构建会停止并报错“dimensionToPx: baseFontSizePx is required for unit "em"”。
 - Vollkorn的词间距很窄，只有0.2 em，所以在大约50个字符宽的栏里，有些两端对齐的行会显得松散或拥挤。示例文字是对照截图的松行报告逐行调整过的；正文或行长有任何改动后都要重新检查。
