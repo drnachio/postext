@@ -269,8 +269,7 @@ const FONTS = { // every face the pages use, loaded before the build
 const words = `${markdown}\n${plateTexts}\n${CREDIT}`; // their letters decide the font subsets
 const [, resources] = await Promise.all([
   prepareFonts(words, config(), kitFonts(FONTS)), loadPlates()]);
-const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
-  { ...kitFonts(FONTS), text: words });
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 // #region check: every page past an opener holds a plate, so each plate faces its entry
 const astray = doc.pages.find((pg) => pg.role !== 'opener' && !pg.floats?.length);
 if (astray) { // text run past its verso, or the blank page that follows it

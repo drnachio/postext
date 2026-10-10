@@ -174,9 +174,8 @@ const FONTS = { // every face the pages use, loaded before the build
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // #region voices: each Chinese face loads the files of the characters it sets
 const grab = (re) => (markdown.match(re) ?? []).join('');
-// A poem's fence closes on a bare `:::`; the `:::space` lines between its stanzas do not.
-const poems = grab(/:::paragraphs\{style="shi"\}[\s\S]*?\n:::(?=\n|$)/g)
-  + '①②③④⑤⑥⑦⑧⑨⑩'; // and note numbers
+// Each poem to its closing `:::` (not the `:::space` between stanzas), then the note numbers.
+const poems = grab(/:::paragraphs\{style="shi"\}[\s\S]*?\n:::(?=\n|$)/g) + '①②③④⑤⑥⑦⑧⑨⑩';
 await loadFonts(FONTS, markdown);
 await Promise.all([
   loadCjkFonts({ [SERIF]: ['400'] }, markdown + poems), // the notes and their ①, the heading blocks

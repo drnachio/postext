@@ -2,10 +2,9 @@
 // https://postext.dev/en/cookbook/bundle-round-trip
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
 // Fonts: DM Sans, DM Serif Display, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
-import {
-  createBundle, openBundle, loadBundleFonts, registerBundleImages, buildBundle, bundleFontProvider,
-  bundleResourceBytes, defaultResourceTypes, renderPageToCanvas,
-} from 'https://esm.sh/postext';
+import { createBundle, openBundle, loadBundleFonts, registerBundleImages, buildBundle,
+  bundleFontProvider, bundleResourceBytes, defaultResourceTypes, renderPageToCanvas }
+  from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')

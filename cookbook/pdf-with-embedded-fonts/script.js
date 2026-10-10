@@ -199,8 +199,7 @@ const FONTS = { 'Crimson Text': ['400', '400i', '600', '600i'], Fraunces: ['300'
 // #region build: the faces first, then the layout, then a check that nothing was missed
 await registerFaces(); // the answer: every face in FONTS, from its own bytes
 await loadSvg('cover.svg', coverArt(PAGE.width, PAGE.height, WAVES));
-// buildDocumentWithFonts finds these faces declared; one FONTS forgot would come from Fontsource
-// (kitFonts), for the screen only, and the document would be built again.
+// Every face is declared by now; one FONTS forgot would come from Fontsource, for the screen only.
 const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Home from Sea · a recital programme' });
 // #endregion
