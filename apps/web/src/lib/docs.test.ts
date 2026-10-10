@@ -1,3 +1,4 @@
+import GithubSlugger from "github-slugger";
 import { describe, expect, it } from "vitest";
 import { extractToc, getAllDocs, getDocSource } from "./docs";
 import { docPart } from "./docParts";
@@ -114,6 +115,40 @@ describe("docs table of contents", () => {
       }
     },
   );
+
+  it("links inside a page only to anchors that page has, and lists only headings the page renders (#654)", () => {
+    const broken: string[] = [];
+    for (const locale of ["en", "es", "ca", "zh", "ja", "ar", "pt"] as const) {
+      for (const { slug } of docs) {
+        const source = getDocSource(slug, locale)?.source;
+        if (!source) continue;
+        // Every heading level gets an id on the page, slugged in document order.
+        const slugger = new GithubSlugger();
+        const ids = new Set<string>();
+        let fence: string | null = null;
+        for (const line of source.split("\n")) {
+          const mark = line.match(/^(`{3,}|~{3,})/)?.[1][0];
+          if (mark) {
+            fence = fence === null ? mark : fence === mark ? null : fence;
+            continue;
+          }
+          if (fence !== null) continue;
+          const heading = line.match(/^#{1,6}\s+(.+)$/);
+          if (heading) ids.add(slugger.slug(heading[1].trim()));
+        }
+        for (const m of source.matchAll(/\sid="([^"]+)"/g)) ids.add(m[1]);
+        for (const item of extractToc(source)) {
+          if (!ids.has(item.id)) broken.push(`${slug}-${locale}: contents entry #${item.id}`);
+        }
+        const links = [...source.matchAll(/href="#([^"]+)"/g), ...source.matchAll(/\]\(#([^)\s]+)\)/g)];
+        for (const m of links) {
+          const id = decodeURIComponent(m[1]);
+          if (!ids.has(id)) broken.push(`${slug}-${locale}: #${id}`);
+        }
+      }
+    }
+    expect([...new Set(broken)]).toEqual([]);
+  });
 });
 
 /** Heading ids at every level, as rehype-slug gives them on the page. */

@@ -99,7 +99,7 @@ Postext识别七种正文块类型和代码清单，另外还有本页后文介�
     <tr>
       <td>行间公式</td>
       <td><code>$$ … $$</code></td>
-      <td>单独成块排版的LaTeX公式。在栏内居中渲染，像标题一样对齐基线网格，在PDF输出中保持矢量。单行形式和围栏多行形式见<a href="#mathematical-formulas">数学公式</a>。</td>
+      <td>单独成块排版的LaTeX公式。在栏内居中渲染，像标题一样对齐基线网格，在PDF输出中保持矢量。单行形式和围栏多行形式见<a href="#数学公式">数学公式</a>。</td>
     </tr>
     <tr>
       <td>代码块</td>
@@ -267,7 +267,7 @@ echo "done: $(date)"
     </tr>
     <tr>
       <td><code>:::index</code></td>
-      <td>在此输出索引：书中用<code>:index</code>标记的每个词条，排序并按字母分组，附上所在页码，按<code>index</code>配置排版。<code>:::index&#123;index="names"&#125;</code>输出一个命名索引。见<a href="#back-of-book-index">索引</a>。</td>
+      <td>在此输出索引：书中用<code>:index</code>标记的每个词条，排序并按字母分组，附上所在页码，按<code>index</code>配置排版。<code>:::index&#123;index="names"&#125;</code>输出一个命名索引。见<a href="#索引">索引</a>。</td>
     </tr>
     <tr>
       <td><code>:::page&#123;…&#125;</code> … <code>:::</code></td>
@@ -858,17 +858,17 @@ Two lines lower still.
     <tr>
       <td>小型大写字母</td>
       <td><code>:smallcaps[text]</code></td>
-      <td>小写字母排成正文字号70%的大写字母：剧本中的人物名、正文里的缩写词。内部和外围都可以带其他标记；见<a href="#small-capitals">小型大写字母</a>。</td>
+      <td>小写字母排成正文字号70%的大写字母：剧本中的人物名、正文里的缩写词。内部和外围都可以带其他标记；见<a href="#小型大写字母">小型大写字母</a>。</td>
     </tr>
     <tr>
       <td>竖排中的文字方向</td>
       <td><code>:tcy[12]</code>、<code>:upright[GDP]</code>、<code>:sideways[12]</code></td>
-      <td>用于竖排：一个直立的字格（纵中横）、每个字符各占一格直立，或整段横躺。在横排中不起作用；见<a href="#orientation-in-vertical-text">竖排中的文字方向</a>。</td>
+      <td>用于竖排：一个直立的字格（纵中横）、每个字符各占一格直立，或整段横躺。在横排中不起作用；见<a href="#竖排中的文字方向">竖排中的文字方向</a>。</td>
     </tr>
     <tr>
       <td>中文标记</td>
       <td><code>:dots[不可]</code>、<code>:name[賈寶玉]</code>、<code>:book[石頭記]</code></td>
-      <td>着重号、专名号和书名号（按<code>cjk.bookTitleMark</code>排成《》或波浪线）。文本保持原样；见<a href="#chinese-marks-ruby-and-warichu">中文标记、注音和双行夹注</a>。</td>
+      <td>着重号、专名号和书名号（按<code>cjk.bookTitleMark</code>排成《》或波浪线）。文本保持原样；见<a href="#中文标记注音和双行夹注">中文标记、注音和双行夹注</a>。</td>
     </tr>
     <tr>
       <td>注音</td>
@@ -898,7 +898,7 @@ Two lines lower still.
     <tr>
       <td>链接</td>
       <td><code>[text](https://…)</code></td>
-      <td>可见文本留在文字流中，排法与没有链接时完全相同。在HTML和PDF输出中，URL让这些词成为可点击的链接；见<a href="#links">链接</a>。</td>
+      <td>可见文本留在文字流中，排法与没有链接时完全相同。在HTML和PDF输出中，URL让这些词成为可点击的链接；见<a href="#链接">链接</a>。</td>
     </tr>
     <tr>
       <td>图片</td>
@@ -908,7 +908,7 @@ Two lines lower still.
     <tr>
       <td>行内标签</td>
       <td><code>:chip[text]</code></td>
-      <td>带框的一段文字，作为一个整体换行：词库、按键、标签。样式由<code>chipStyles</code>设定；见<a href="#inline-chips">行内标签</a>。</td>
+      <td>带框的一段文字，作为一个整体换行：词库、按键、标签。样式由<code>chipStyles</code>设定；见<a href="#行内标签">行内标签</a>。</td>
     </tr>
     <tr>
       <td>制表符</td>
@@ -918,7 +918,7 @@ Two lines lower still.
     <tr>
       <td>行内公式</td>
       <td><code>$…$</code></td>
-      <td>随周围文本排列的LaTeX公式，例如<code>$e^{'{i\\pi}'}+1=0$</code>。由MathJax排版，在所有后端都渲染为矢量路径。字面的美元符号写作<code>\\$</code>。缩放、独立公式（<code>$$ … $$</code>）形式和错误处理见<a href="#mathematical-formulas">数学公式</a>。</td>
+      <td>随周围文本排列的LaTeX公式，例如<code>$e^{'{i\\pi}'}+1=0$</code>。由MathJax排版，在所有后端都渲染为矢量路径。字面的美元符号写作<code>\\$</code>。缩放、独立公式（<code>$$ … $$</code>）形式和错误处理见<a href="#数学公式">数学公式</a>。</td>
     </tr>
   </tbody>
 </table>
