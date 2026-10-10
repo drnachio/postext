@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "novel-footnotes-column-foot",
-  "sourceHash": "cef6e6503afe94c7f357bc8038dab97ed3708f5e063dae7d8f60bf4cf6d4efb9",
+  "sourceHash": "a14c861225b1b8b687ff573f03cd0ba8c0e3ac6e9a71f64072784e1f36982887",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.215Z",
+  "capturedAt": "2026-10-10T13:36:24.490Z",
   "variants": {
     "en": {
-      "hash8": "a26587f2",
+      "hash8": "56b37e2d",
       "vdtHash": "5e2f78d12d75f69073655b3d404ccb6b754adca5",
       "timings": {
-        "importMs": 192,
-        "fontsMs": 65,
-        "buildMs": 115,
-        "totalMs": 1161,
-        "builds": 2
+        "importMs": 160,
+        "fontsMs": 27,
+        "buildMs": 87,
+        "totalMs": 1024,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -101,18 +101,18 @@
       },
       "pdf": {
         "file": "novel-footnotes-column-foot.pdf",
-        "bytes": 105457,
+        "bytes": 105459,
         "pages": 3
       },
       "sandbox": {
         "file": "novel-footnotes-column-foot.postext",
-        "bytes": 40182,
+        "bytes": 40181,
         "folio": "5dc5724f"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "renderPageToCanvas",
           "renderToPdf"
@@ -303,14 +303,14 @@
       }
     },
     "es": {
-      "hash8": "ff2ca730",
+      "hash8": "6a524e32",
       "vdtHash": "f6952fe633c94c97ded0382829ed146da818bac3",
       "timings": {
-        "importMs": 193,
-        "fontsMs": 63,
-        "buildMs": 456,
-        "totalMs": 3726,
-        "builds": 2
+        "importMs": 165,
+        "fontsMs": 26,
+        "buildMs": 671,
+        "totalMs": 2688,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -393,18 +393,18 @@
       },
       "pdf": {
         "file": "novel-footnotes-column-foot.pdf",
-        "bytes": 103585,
+        "bytes": 103586,
         "pages": 3
       },
       "sandbox": {
         "file": "novel-footnotes-column-foot.postext",
-        "bytes": 38340,
+        "bytes": 38339,
         "folio": "5dc5724f"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "renderPageToCanvas",
           "renderToPdf"

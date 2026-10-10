@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "reading-primer-syllables",
-  "sourceHash": "d4bd6bb3ced86cc1d4c25e411408c586a3af88b32a9b9423140715078d4dada8",
+  "sourceHash": "f577d38699441e742fc12f873fa529d4a7291f67a42ba3b4cf6b447bff37ae50",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.352Z",
+  "capturedAt": "2026-10-10T13:37:31.844Z",
   "variants": {
     "es": {
-      "hash8": "4a9afd62",
-      "vdtHash": "d877dbbfa2de48b77266bbc02d7611c16274a1ec",
+      "hash8": "fff1fa40",
+      "vdtHash": "71ff6a45cde360bb78bb139b6683d7c32e0461ae",
       "timings": {
-        "importMs": 146,
-        "fontsMs": 45,
-        "buildMs": 9,
-        "totalMs": 819,
-        "builds": 2
+        "importMs": 125,
+        "fontsMs": 38,
+        "buildMs": 25,
+        "totalMs": 766,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Playpen Sans"
         ],
         "pages": 3,
-        "ownLines": 180
+        "ownLines": 176
       },
       "pages": [
         {
@@ -99,13 +99,13 @@
       },
       "sandbox": {
         "file": "reading-primer-syllables.postext",
-        "bytes": 284639,
+        "bytes": 284595,
         "folio": "6010a127"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "setCellImage"
@@ -117,7 +117,6 @@
           "bodyText.fontFamily",
           "bodyText.fontSize",
           "bodyText.lineHeight",
-          "bodyText.referenceColor",
           "bodyText.textAlign",
           "calloutStyles",
           "calloutStyles[].background",
@@ -185,8 +184,6 @@
           "headingStyles[].advancedDesign.slot",
           "headingStyles[].id",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.fontFamily",
           "headings.levels",
           "headings.levels[].advancedDesign",
@@ -195,7 +192,6 @@
           "headings.levels[].lineHeight",
           "headings.levels[].marginBottom",
           "headings.levels[].marginTop",
-          "headings.levels[].span",
           "layout",
           "layout.layoutType",
           "page",
@@ -250,7 +246,7 @@
           "resourceTypes",
           "tableStyles"
         ],
-        "configLeaves": 627,
+        "configLeaves": 623,
         "designElements": 21,
         "directives": [
           ":::paragraphs",
@@ -308,11 +304,9 @@
           "callout-styles",
           "cell-images",
           "chips",
-          "column-balancing",
           "heading-attributes",
           "heading-styles",
           "inline-embeds",
-          "opener-band",
           "opener-design",
           "paragraph-styles",
           "resource-types",
@@ -331,6 +325,11 @@
           "worst": 0
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "red-ink-commentary",
-  "sourceHash": "f518fff7543737d41e1ea2662b52b3ce4e6366aa951f0ab0ca985f8c2a8c58c7",
+  "sourceHash": "4ba9384339fee275d61dbd51102ead27a11517597de61917fc2415d5c525b9d3",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.383Z",
+  "capturedAt": "2026-10-10T13:37:31.861Z",
   "variants": {
     "en": {
-      "hash8": "08ac8b52",
-      "vdtHash": "cb5419a1491f7c61c6e139e4041ee857e8876006",
+      "hash8": "27070d82",
+      "vdtHash": "6bcc10bf0972de587731689d1de8bfd218e14f53",
       "timings": {
-        "importMs": 198,
-        "fontsMs": 443,
-        "buildMs": 12,
-        "totalMs": 4198,
-        "builds": 2
+        "importMs": 161,
+        "fontsMs": 359,
+        "buildMs": 54,
+        "totalMs": 1144,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "Noto Serif TC"
         ],
         "pages": 6,
-        "ownLines": 159
+        "ownLines": 160
       },
       "pages": [
         {
@@ -95,7 +95,7 @@
           "h": 1413,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 128380,
+          "bytes": 128636,
           "alt": "Page 五."
         },
         {
@@ -143,22 +143,22 @@
       },
       "pdf": {
         "file": "red-ink-commentary.pdf",
-        "bytes": 513284,
+        "bytes": 513416,
         "pages": 6
       },
       "sandbox": {
         "file": "red-ink-commentary.postext",
-        "bytes": 38184,
+        "bytes": 38185,
         "folio": "941f3254"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -354,18 +354,24 @@
           "share": 0,
           "worst": 0.06
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "cd1c10b0",
-      "vdtHash": "edaa0e1f2d45fb28b7512b355be1a6fc17ad8df5",
+      "hash8": "18b5259b",
+      "vdtHash": "bbefe167e001047624420ad7be7dadd865d92a05",
       "timings": {
-        "importMs": 200,
-        "fontsMs": 416,
-        "buildMs": 12,
-        "totalMs": 1238,
-        "builds": 2
+        "importMs": 177,
+        "fontsMs": 345,
+        "buildMs": 54,
+        "totalMs": 1146,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -387,7 +393,7 @@
           "Noto Serif TC"
         ],
         "pages": 6,
-        "ownLines": 159
+        "ownLines": 160
       },
       "pages": [
         {
@@ -442,7 +448,7 @@
           "h": 1413,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 128380,
+          "bytes": 128636,
           "alt": "Página 五."
         },
         {
@@ -490,22 +496,22 @@
       },
       "pdf": {
         "file": "red-ink-commentary.pdf",
-        "bytes": 513362,
+        "bytes": 513497,
         "pages": 6
       },
       "sandbox": {
         "file": "red-ink-commentary.postext",
-        "bytes": 38213,
+        "bytes": 38214,
         "folio": "941f3254"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -701,7 +707,13 @@
           "share": 0,
           "worst": 0.06
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

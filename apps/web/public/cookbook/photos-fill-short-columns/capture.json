@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "photos-fill-short-columns",
-  "sourceHash": "724425f69952e88a6a664d67e904f9522803dde39d4bb8bcf8a6ef5f576413b3",
+  "sourceHash": "6fd3cececad1a98ef8dcd2fcd702f68a05592c63aeb7fcfdd4cd49ad1847ac22",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.269Z",
+  "capturedAt": "2026-10-10T13:37:01.648Z",
   "variants": {
     "en": {
-      "hash8": "94e02cba",
-      "vdtHash": "5e75f92e7e47ec5fa26e9b19e6348870285e0f64",
+      "hash8": "9591f66b",
+      "vdtHash": "c76e60b63a31d92a950c964512d59a1ebed46a09",
       "timings": {
-        "importMs": 198,
-        "fontsMs": 96,
-        "buildMs": 78,
-        "totalMs": 1031,
-        "builds": 3
+        "importMs": 191,
+        "fontsMs": 73,
+        "buildMs": 51,
+        "totalMs": 932,
+        "builds": 2
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "Newsreader"
         ],
         "pages": 6,
-        "ownLines": 180
+        "ownLines": 178
       },
       "pages": [
         {
@@ -51,7 +51,7 @@
           "h": 1320,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 217672,
+          "bytes": 217660,
           "alt": "Opening page 1: People of the low tide."
         },
         {
@@ -62,7 +62,7 @@
           "h": 1320,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 220078,
+          "bytes": 220086,
           "alt": "Page 2: The eleven o'clock auction. Figure 1. Carmen Lago sorts cockles on her plot of the estuary at low water. · Figure 2. Rosa Doval mends a purse-seine panel on the quay."
         },
         {
@@ -73,7 +73,7 @@
           "h": 1320,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 185556,
+          "bytes": 185296,
           "alt": "Page 3: The lighthouse and the path. Figure 5. Lucía Fraga lifts an octopus out of the copper cauldron. · Figure 3. Manuel Barreiro planes the planking of the gamela. · Figure 4. Arnela point: the lighthouse and the coastal path."
         },
         {
@@ -127,18 +127,17 @@
       },
       "pdf": {
         "file": "photos-fill-short-columns.pdf",
-        "bytes": 1972067,
+        "bytes": 1972066,
         "pages": 3
       },
       "sandbox": {
         "file": "photos-fill-short-columns.postext",
-        "bytes": 1919790,
+        "bytes": 1919798,
         "folio": "111a3296"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
           "registerResourceImage",
@@ -342,19 +341,24 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.17 MB (warning at 0.9 MB for 5 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "es": {
-      "hash8": "fc4b1da6",
-      "vdtHash": "580b010e1edd43f3e1c2beed3ec619e15d5650ee",
+      "hash8": "c4386935",
+      "vdtHash": "e8aa75614373eb12e9b977db79d9f32a95a757d7",
       "timings": {
-        "importMs": 184,
-        "fontsMs": 100,
-        "buildMs": 85,
-        "totalMs": 2883,
-        "builds": 3
+        "importMs": 167,
+        "fontsMs": 146,
+        "buildMs": 227,
+        "totalMs": 2169,
+        "builds": 2
       },
       "specimen": {
         "trimMm": [
@@ -376,7 +380,7 @@
           "Newsreader"
         ],
         "pages": 6,
-        "ownLines": 180
+        "ownLines": 178
       },
       "pages": [
         {
@@ -387,7 +391,7 @@
           "h": 1320,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 210662,
+          "bytes": 210660,
           "alt": "Página de apertura 1: Gente de la bajamar."
         },
         {
@@ -398,7 +402,7 @@
           "h": 1320,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 220048,
+          "bytes": 219974,
           "alt": "Página 2: La subasta de las once. Figura 1. Carmen Lago separa berberechos en su parcela de la ría, en bajamar. · Figura 2. Rosa Doval remienda un paño de cerco en el muelle."
         },
         {
@@ -409,7 +413,7 @@
           "h": 1320,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 195208,
+          "bytes": 195216,
           "alt": "Página 3: El faro y el camino. Figura 5. Lucía Fraga saca un pulpo del caldero de cobre. · Figura 3. Manuel Barreiro cepilla el forro de la gamela. · Figura 4. La punta de Arnela: el faro y el camino de la costa."
         },
         {
@@ -463,18 +467,17 @@
       },
       "pdf": {
         "file": "photos-fill-short-columns.pdf",
-        "bytes": 1981685,
+        "bytes": 1981687,
         "pages": 3
       },
       "sandbox": {
         "file": "photos-fill-short-columns.postext",
-        "bytes": 1919582,
+        "bytes": 1919576,
         "folio": "111a3296"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
           "registerResourceImage",
@@ -678,6 +681,11 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.18 MB (warning at 0.9 MB for 5 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

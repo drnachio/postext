@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "print-ready-pdf",
-  "sourceHash": "891300f6410b4ace07896b1d59ff6df832a1e717093360d5e44d4d7a0d11de1d",
+  "sourceHash": "d110acdc0b47a4cd31f2a002f0366e1fc447d0a28ef5c6cf29f427b8d8a2f3bc",
   "engine": {
-    "postext": "1.22.0",
-    "postextPdf": "1.22.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T18:07:55.628Z",
+  "capturedAt": "2026-10-10T13:37:31.784Z",
   "variants": {
     "es": {
-      "hash8": "b7ef9af6",
+      "hash8": "2ea4d766",
       "vdtHash": "d75476b65d721b2af71c3ac07956033c86c6b167",
       "timings": {
-        "importMs": 373,
-        "fontsMs": 118,
-        "buildMs": 11,
-        "totalMs": 1172,
-        "builds": 2
+        "importMs": 451,
+        "fontsMs": 227,
+        "buildMs": 179,
+        "totalMs": 4451,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Space Mono"
         ],
         "pages": 4,
-        "ownLines": 283
+        "ownLines": 274
       },
       "pages": [
         {
@@ -115,18 +115,17 @@
       },
       "pdf": {
         "file": "print-ready-pdf.pdf",
-        "bytes": 476982,
+        "bytes": 476984,
         "pages": 4
       },
       "sandbox": {
         "file": "print-ready-pdf.postext",
-        "bytes": 102428,
+        "bytes": 102418,
         "folio": "2465c19b"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
           "loadOutputProfile",
@@ -216,7 +215,6 @@
           "page.cutLines",
           "page.cutLines.bleed",
           "page.cutLines.enabled",
-          "page.cutLines.markOffset",
           "page.height",
           "page.margins",
           "page.margins.bottom",
@@ -260,10 +258,9 @@
           "print",
           "resourceTypes"
         ],
-        "configLeaves": 385,
+        "configLeaves": 382,
         "designElements": 23,
         "directives": [
-          ":::pagebreak",
           ":::paragraphs"
         ],
         "inline": [
@@ -325,7 +322,6 @@
           "heading-styles",
           "localised-labels",
           "opener-design",
-          "page-breaks",
           "page-role-filters",
           "paragraph-styles",
           "pdf-export",

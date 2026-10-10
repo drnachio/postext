@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "newspaper-daily-strip",
-  "sourceHash": "035b218e5b695c41e941548ada9e46c463b40ab7c0c54bd5ea64a70cb5678e02",
+  "sourceHash": "ab42f57dfc531fa7a6fe733c1baf22f44d81cd60c77af2b3bbc4a7867bd05c50",
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T15:03:05.329Z",
+  "capturedAt": "2026-10-10T13:36:24.433Z",
   "variants": {
     "en": {
-      "hash8": "cb2b42f9",
+      "hash8": "4b08e73e",
       "vdtHash": "31cb2f637107d214f712397966266cb8bed62763",
       "timings": {
-        "importMs": 3886,
-        "fontsMs": 27233,
-        "buildMs": 1898,
-        "totalMs": 35820,
-        "builds": 2
+        "importMs": 163,
+        "fontsMs": 128,
+        "buildMs": 360,
+        "totalMs": 1223,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Newsreader"
         ],
         "pages": 2,
-        "ownLines": 175
+        "ownLines": 176
       },
       "pages": [
         {
@@ -93,17 +93,17 @@
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 811765,
+        "bytes": 811767,
         "folio": "bebc74ee"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -325,37 +325,22 @@
         },
         "findings": [
           {
-            "check": "C21",
-            "severity": "warn",
-            "detail": "the build took 1898 ms (warning at 1.5 s)"
-          },
-          {
-            "check": "C21",
-            "severity": "warn",
-            "detail": "the pen took 35.8 s to finish (warning at 30 s)"
-          },
-          {
             "check": "C24",
             "severity": "warn",
             "detail": "3 of 62 justified lines (4.8 %) stretch past 2× (worst 2.64×); loosest: p. 2 2.64× “explains the croissants. The pen-”, p. 2 2.18× “Barlow grew up above her par-”, p. 2 2.17× “balloons are drawn around them.””"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "es": {
-      "hash8": "d16568f4",
+      "hash8": "e2ad02eb",
       "vdtHash": "380f1b656bfea56cea141d1803b083ed747eeafa",
       "timings": {
-        "importMs": 3882,
-        "fontsMs": 2041,
-        "buildMs": 2240,
-        "totalMs": 30520,
-        "builds": 2
+        "importMs": 164,
+        "fontsMs": 135,
+        "buildMs": 504,
+        "totalMs": 1373,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -375,7 +360,7 @@
           "Newsreader"
         ],
         "pages": 2,
-        "ownLines": 175
+        "ownLines": 176
       },
       "pages": [
         {
@@ -430,17 +415,17 @@
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 812404,
+        "bytes": 812405,
         "folio": "bebc74ee"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -660,34 +645,18 @@
           "share": 0.0139,
           "worst": 2.0100000000000002
         },
-        "findings": [
-          {
-            "check": "C21",
-            "severity": "warn",
-            "detail": "the build took 2240 ms (warning at 1.5 s)"
-          },
-          {
-            "check": "C21",
-            "severity": "warn",
-            "detail": "the pen took 30.5 s to finish (warning at 30 s)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "ca": {
-      "hash8": "9ba84cb1",
+      "hash8": "096d2cd9",
       "vdtHash": "25ff9a63866e2d66a07ae6710f834449062841f4",
       "timings": {
-        "importMs": 647,
-        "fontsMs": 353,
-        "buildMs": 1807,
-        "totalMs": 5554,
-        "builds": 2
+        "importMs": 423,
+        "fontsMs": 172,
+        "buildMs": 1240,
+        "totalMs": 4927,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -707,7 +676,7 @@
           "Newsreader"
         ],
         "pages": 2,
-        "ownLines": 175
+        "ownLines": 176
       },
       "pages": [
         {
@@ -757,22 +726,22 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 884097,
+        "bytes": 884098,
         "pages": 2
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 812391,
+        "bytes": 812394,
         "folio": "bebc74ee"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -992,28 +961,17 @@
           "share": 0.0145,
           "worst": 2.0300000000000002
         },
-        "findings": [
-          {
-            "check": "C21",
-            "severity": "warn",
-            "detail": "the build took 1807 ms (warning at 1.5 s)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "zh": {
-      "hash8": "0e99f103",
+      "hash8": "62af33f0",
       "vdtHash": "a03d146f7d3d5bb2631e05a37aa78a4a7aadca93",
       "timings": {
-        "importMs": 454,
-        "fontsMs": 931,
-        "buildMs": 1423,
-        "totalMs": 3349,
+        "importMs": 168,
+        "fontsMs": 659,
+        "buildMs": 342,
+        "totalMs": 1726,
         "builds": 1
       },
       "specimen": {
@@ -1034,7 +992,7 @@
           "Noto Serif SC"
         ],
         "pages": 2,
-        "ownLines": 175
+        "ownLines": 176
       },
       "pages": [
         {
@@ -1045,7 +1003,7 @@
           "h": 1348,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 110682,
+          "bytes": 110638,
           "alt": "第 1 页。"
         },
         {
@@ -1056,7 +1014,7 @@
           "h": 1348,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 149164,
+          "bytes": 149516,
           "alt": "章首页，第 2 页：浮冰上的十个冬天。"
         }
       ],
@@ -1084,22 +1042,22 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 1015695,
+        "bytes": 1016396,
         "pages": 2
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 812335,
+        "bytes": 812325,
         "folio": "bebc74ee"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1320,23 +1278,17 @@
           "share": 0,
           "worst": 0.13
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "ar": {
-      "hash8": "85c6dab3",
+      "hash8": "38da2a8a",
       "vdtHash": "16e5d19636e6ded15c13412a58aa4064ec9f9b54",
       "timings": {
-        "importMs": 359,
-        "fontsMs": 268,
-        "buildMs": 2134,
-        "totalMs": 3336,
+        "importMs": 177,
+        "fontsMs": 151,
+        "buildMs": 368,
+        "totalMs": 1240,
         "builds": 1
       },
       "specimen": {
@@ -1357,7 +1309,7 @@
           "Noto Naskh Arabic"
         ],
         "pages": 2,
-        "ownLines": 175
+        "ownLines": 176
       },
       "pages": [
         {
@@ -1408,22 +1360,22 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 896733,
+        "bytes": 896729,
         "pages": 2
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 813649,
+        "bytes": 813652,
         "folio": "bebc74ee"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1641,28 +1593,17 @@
           "share": 0,
           "worst": 1.8900000000000001
         },
-        "findings": [
-          {
-            "check": "C21",
-            "severity": "warn",
-            "detail": "the build took 2134 ms (warning at 1.5 s)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "ja": {
-      "hash8": "d5152ab6",
+      "hash8": "8d7356b9",
       "vdtHash": "0d9bbf42ed71bcb33fb8b6b3ce17eb179920f94f",
       "timings": {
-        "importMs": 357,
-        "fontsMs": 1370,
-        "buildMs": 2933,
-        "totalMs": 5232,
+        "importMs": 170,
+        "fontsMs": 736,
+        "buildMs": 364,
+        "totalMs": 1815,
         "builds": 1
       },
       "specimen": {
@@ -1683,7 +1624,7 @@
           "Noto Serif JP"
         ],
         "pages": 2,
-        "ownLines": 175
+        "ownLines": 176
       },
       "pages": [
         {
@@ -1694,7 +1635,7 @@
           "h": 1348,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 115880,
+          "bytes": 116144,
           "alt": "1ページ。"
         },
         {
@@ -1705,7 +1646,7 @@
           "h": 1348,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 171374,
+          "bytes": 171368,
           "alt": "章扉、2ページ：流氷の上の十の冬。"
         }
       ],
@@ -1734,22 +1675,22 @@
       },
       "pdf": {
         "file": "newspaper-daily-strip.pdf",
-        "bytes": 1007406,
+        "bytes": 1007863,
         "pages": 2
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 813817,
+        "bytes": 813846,
         "folio": "bebc74ee"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1971,29 +1912,18 @@
           "share": 0,
           "worst": 0.22
         },
-        "findings": [
-          {
-            "check": "C21",
-            "severity": "warn",
-            "detail": "the build took 2933 ms (warning at 1.5 s)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "pt": {
-      "hash8": "4699c7a5",
+      "hash8": "5886da7a",
       "vdtHash": "7d2a564803f9bbb2e13ddd69fc9c364047b27278",
       "timings": {
-        "importMs": 461,
-        "fontsMs": 184,
-        "buildMs": 1158,
-        "totalMs": 3702,
-        "builds": 2
+        "importMs": 179,
+        "fontsMs": 137,
+        "buildMs": 406,
+        "totalMs": 1289,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -2013,7 +1943,7 @@
           "Newsreader"
         ],
         "pages": 2,
-        "ownLines": 175
+        "ownLines": 176
       },
       "pages": [
         {
@@ -2068,17 +1998,17 @@
       },
       "sandbox": {
         "file": "newspaper-daily-strip.postext",
-        "bytes": 812362,
+        "bytes": 812364,
         "folio": "bebc74ee"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -2303,11 +2233,6 @@
             "check": "C24",
             "severity": "warn",
             "detail": "5 of 70 justified lines (7.1 %) stretch past 2× (worst 2.32×); loosest: p. 2 2.32× “O trabalho começa na segunda,”, p. 2 2.23× “jornais brasileiros recebem Acabou”, p. 2 2.07× “da época, Martin Fry, publicou as”"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           }
         ]
       }

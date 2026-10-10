@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "parts-in-colour",
-  "sourceHash": "0bcec9222fba7f1980486fdcc0236db86348b3b98aa0dd0eb7fd6e4251eb7cf7",
+  "sourceHash": "d405e490a74e6a702f0535d2dc695c1ba0d311cb584ab487efcacd972cd5d5cb",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.238Z",
+  "capturedAt": "2026-10-10T13:37:01.503Z",
   "variants": {
     "en": {
-      "hash8": "9b90d500",
+      "hash8": "ad0019e8",
       "vdtHash": "0e5889b3360077090ccfa5da2047c750f0b77848",
       "timings": {
-        "importMs": 155,
-        "fontsMs": 1752,
-        "buildMs": 72,
-        "totalMs": 4907,
-        "builds": 2
+        "importMs": 131,
+        "fontsMs": 31,
+        "buildMs": 80,
+        "totalMs": 843,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Zilla Slab"
         ],
         "pages": 10,
-        "ownLines": 250
+        "ownLines": 245
       },
       "pages": [
         {
@@ -192,13 +192,12 @@
       },
       "sandbox": {
         "file": "parts-in-colour.postext",
-        "bytes": 843881,
+        "bytes": 843871,
         "folio": "a033cff5"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -212,7 +211,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.referenceColor",
@@ -391,7 +389,7 @@
           "toc",
           "unorderedLists"
         ],
-        "configLeaves": 532,
+        "configLeaves": 531,
         "designElements": 28,
         "directives": [
           ":::pagebreak",
@@ -485,14 +483,14 @@
       }
     },
     "es": {
-      "hash8": "72259df1",
+      "hash8": "2fffe7c0",
       "vdtHash": "31d347092a81c1b9efa5c01bdc022c9921779bf7",
       "timings": {
-        "importMs": 151,
-        "fontsMs": 48,
-        "buildMs": 19,
-        "totalMs": 912,
-        "builds": 2
+        "importMs": 136,
+        "fontsMs": 32,
+        "buildMs": 62,
+        "totalMs": 820,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -513,7 +511,7 @@
           "Zilla Slab"
         ],
         "pages": 10,
-        "ownLines": 250
+        "ownLines": 245
       },
       "pages": [
         {
@@ -667,13 +665,12 @@
       },
       "sandbox": {
         "file": "parts-in-colour.postext",
-        "bytes": 843811,
+        "bytes": 843801,
         "folio": "a033cff5"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -687,7 +684,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.referenceColor",
@@ -866,7 +862,7 @@
           "toc",
           "unorderedLists"
         ],
-        "configLeaves": 532,
+        "configLeaves": 531,
         "designElements": 28,
         "directives": [
           ":::pagebreak",

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "puzzle-book",
-  "sourceHash": "b522dafbe732f67ba70dbabd59f29e75937f321e92d96c211fbdf3894d2c9750",
+  "sourceHash": "1401e476f0fc021b6f818157489acffb04c3e828d0d15205cab7d51182610e7f",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.336Z",
+  "capturedAt": "2026-10-10T13:37:31.831Z",
   "variants": {
     "en": {
-      "hash8": "d5442695",
-      "vdtHash": "360ddfa64775389f28df5511693914c6f437027e",
+      "hash8": "cf07df16",
+      "vdtHash": "7fc9d6b0d819dec89885d5ae89ec48f5a6537d79",
       "timings": {
-        "importMs": 148,
-        "fontsMs": 39,
-        "buildMs": 15,
-        "totalMs": 826,
-        "builds": 2
+        "importMs": 137,
+        "fontsMs": 31,
+        "buildMs": 31,
+        "totalMs": 786,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Lilita One"
         ],
         "pages": 5,
-        "ownLines": 250
+        "ownLines": 248
       },
       "pages": [
         {
@@ -93,7 +93,7 @@
           "h": 1000,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 72650,
+          "bytes": 72504,
           "alt": "Opening page 5: Answers. Solution 1. Crossword · Solution 2. Word search · Solution 3. Maze."
         }
       ],
@@ -125,20 +125,19 @@
       },
       "sandbox": {
         "file": "puzzle-book.postext",
-        "bytes": 23203,
+        "bytes": 23166,
         "folio": "c8e0f46e"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "setCellBackground"
         ],
         "configKeys": [
           "bodyText",
-          "bodyText.boldColor",
           "bodyText.color",
           "bodyText.firstLineIndent",
           "bodyText.fontFamily",
@@ -148,7 +147,6 @@
           "bodyText.textAlign",
           "calloutStyles",
           "calloutStyles[].background",
-          "calloutStyles[].backgroundEnabled",
           "calloutStyles[].body",
           "calloutStyles[].body.fontSize",
           "calloutStyles[].body.lineHeight",
@@ -281,7 +279,7 @@
           "tableStyle",
           "tableStyles"
         ],
-        "configLeaves": 467,
+        "configLeaves": 459,
         "designElements": 21,
         "directives": [
           "::resource",
@@ -361,18 +359,24 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "2ebfc266",
-      "vdtHash": "b3e5133b790dae57c42f4766e86aded1420114ee",
+      "hash8": "8f818b66",
+      "vdtHash": "a641d94188496fe2b5955581bc4ed838524e62c1",
       "timings": {
-        "importMs": 157,
-        "fontsMs": 40,
-        "buildMs": 30,
-        "totalMs": 3246,
-        "builds": 2
+        "importMs": 124,
+        "fontsMs": 34,
+        "buildMs": 32,
+        "totalMs": 775,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -393,7 +397,7 @@
           "Lilita One"
         ],
         "pages": 5,
-        "ownLines": 250
+        "ownLines": 248
       },
       "pages": [
         {
@@ -448,7 +452,7 @@
           "h": 1000,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 74350,
+          "bytes": 74342,
           "alt": "Página de apertura 5: Soluciones. Solución 1. Crucigrama · Solución 2. Sopa de letras · Solución 3. Laberinto."
         }
       ],
@@ -480,20 +484,19 @@
       },
       "sandbox": {
         "file": "puzzle-book.postext",
-        "bytes": 24011,
+        "bytes": 23975,
         "folio": "c8e0f46e"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "setCellBackground"
         ],
         "configKeys": [
           "bodyText",
-          "bodyText.boldColor",
           "bodyText.color",
           "bodyText.firstLineIndent",
           "bodyText.fontFamily",
@@ -503,7 +506,6 @@
           "bodyText.textAlign",
           "calloutStyles",
           "calloutStyles[].background",
-          "calloutStyles[].backgroundEnabled",
           "calloutStyles[].body",
           "calloutStyles[].body.fontSize",
           "calloutStyles[].body.lineHeight",
@@ -636,7 +638,7 @@
           "tableStyle",
           "tableStyles"
         ],
-        "configLeaves": 467,
+        "configLeaves": 459,
         "designElements": 21,
         "directives": [
           "::resource",
@@ -716,7 +718,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

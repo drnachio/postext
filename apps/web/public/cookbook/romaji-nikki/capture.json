@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "romaji-nikki",
-  "sourceHash": "676ecbba50cc4eb863d5eb281dc840037d1f4c7f2865a98e972b4278f7d82b6c",
+  "sourceHash": "53afc9adc57cba62119e4f80521aa1aec7d22c8610a179a603c4c34fee6ffc22",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.402Z",
+  "capturedAt": "2026-10-10T13:38:07.593Z",
   "variants": {
     "en": {
-      "hash8": "ed7a9d9a",
+      "hash8": "1ab96bee",
       "vdtHash": "7bb93b9bbaa0b252c27068235e4fd8aabff1c60d",
       "timings": {
-        "importMs": 199,
-        "fontsMs": 137,
-        "buildMs": 13,
-        "totalMs": 1006,
-        "builds": 2
+        "importMs": 509,
+        "fontsMs": 556,
+        "buildMs": 302,
+        "totalMs": 3418,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Source Serif 4"
         ],
         "pages": 4,
-        "ownLines": 130
+        "ownLines": 131
       },
       "pages": [
         {
@@ -126,10 +126,10 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -308,14 +308,14 @@
       }
     },
     "es": {
-      "hash8": "8da8081b",
+      "hash8": "6519e235",
       "vdtHash": "d9d129e2a3e148050f130784d6cda2b64ffb58bf",
       "timings": {
-        "importMs": 195,
-        "fontsMs": 127,
-        "buildMs": 13,
-        "totalMs": 986,
-        "builds": 2
+        "importMs": 186,
+        "fontsMs": 121,
+        "buildMs": 55,
+        "totalMs": 987,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -336,7 +336,7 @@
           "Source Serif 4"
         ],
         "pages": 4,
-        "ownLines": 130
+        "ownLines": 131
       },
       "pages": [
         {
@@ -423,10 +423,10 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

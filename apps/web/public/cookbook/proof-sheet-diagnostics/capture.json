@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "proof-sheet-diagnostics",
-  "sourceHash": "fcc8848286efaf772729f03b7a540febfc1baf9e158bf2cdedb614de40660a28",
+  "sourceHash": "781a0605ebe761998567fb447da84f5af4fbb510443b733fd54b850f9d0b8a54",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.312Z",
+  "capturedAt": "2026-10-10T13:37:31.804Z",
   "variants": {
     "en": {
-      "hash8": "55870391",
+      "hash8": "a36b9813",
       "vdtHash": "bbf2e803033cdc865c0c79a1eb80c5e70690e8c0",
       "timings": {
-        "importMs": 168,
-        "fontsMs": 37,
-        "buildMs": 14,
-        "totalMs": 947,
-        "builds": 3
+        "importMs": 134,
+        "fontsMs": 29,
+        "buildMs": 9,
+        "totalMs": 890,
+        "builds": 2
       },
       "specimen": {
         "trimMm": [
@@ -89,16 +89,16 @@
       },
       "sandbox": {
         "file": "proof-sheet-diagnostics.postext",
-        "bytes": 105997,
+        "bytes": 102742,
         "folio": "3db66766"
       },
       "detected": {
         "apis": [
           "KNOWN_CONTAINERS",
           "KNOWN_DIRECTIVES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "parseMarkdownWithIssues",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -342,14 +342,14 @@
       }
     },
     "es": {
-      "hash8": "200c4555",
+      "hash8": "2f771c49",
       "vdtHash": "7865a446137e4ba693e2346a1c2dd66092f97a16",
       "timings": {
-        "importMs": 149,
-        "fontsMs": 33,
-        "buildMs": 19,
-        "totalMs": 2762,
-        "builds": 3
+        "importMs": 133,
+        "fontsMs": 31,
+        "buildMs": 12,
+        "totalMs": 932,
+        "builds": 2
       },
       "specimen": {
         "trimMm": [
@@ -421,16 +421,16 @@
       },
       "sandbox": {
         "file": "proof-sheet-diagnostics.postext",
-        "bytes": 98797,
+        "bytes": 103917,
         "folio": "3db66766"
       },
       "detected": {
         "apis": [
           "KNOWN_CONTAINERS",
           "KNOWN_DIRECTIVES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "parseMarkdownWithIssues",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],

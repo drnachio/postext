@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "pinyin-primer",
-  "sourceHash": "ef6b28042cd783a38bec1f9cd57a4991082f9455f0448d6f6b3999d5cc4ff57f",
+  "sourceHash": "528743554c9a4265f4f1033c6b5aefc9e8922fa4ea1ee877795a2c0dd910e067",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.288Z",
+  "capturedAt": "2026-10-10T13:37:01.671Z",
   "variants": {
     "en": {
-      "hash8": "28f704eb",
+      "hash8": "3d3afa33",
       "vdtHash": "ee9ec130030daadd0fe4e88625c9cbd18e373e31",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 154,
-        "buildMs": 11,
-        "totalMs": 924,
-        "builds": 2
+        "importMs": 129,
+        "fontsMs": 137,
+        "buildMs": 50,
+        "totalMs": 893,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -110,15 +110,15 @@
       },
       "sandbox": {
         "file": "pinyin-primer.postext",
-        "bytes": 205865,
+        "bytes": 205866,
         "folio": "4f4bf2f0"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "registerResourceImage",
-          "renderPageToCanvas"
+          "renderPageToCanvas",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -310,14 +310,14 @@
       }
     },
     "es": {
-      "hash8": "9a0c947d",
+      "hash8": "c19c4706",
       "vdtHash": "16d5d6c68d0b5cfc6d7a35df17e43eb18eb2a117",
       "timings": {
-        "importMs": 153,
-        "fontsMs": 142,
-        "buildMs": 10,
-        "totalMs": 923,
-        "builds": 2
+        "importMs": 120,
+        "fontsMs": 129,
+        "buildMs": 51,
+        "totalMs": 874,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -410,15 +410,15 @@
       },
       "sandbox": {
         "file": "pinyin-primer.postext",
-        "bytes": 206327,
+        "bytes": 206328,
         "folio": "4f4bf2f0"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "registerResourceImage",
-          "renderPageToCanvas"
+          "renderPageToCanvas",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

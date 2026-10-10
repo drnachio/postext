@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "research-poster",
-  "sourceHash": "b446d839bb7daee81a72a4348038af7476dedba8d86f2bf88ae2c596c8c92880",
+  "sourceHash": "661b074ad9461f6b7b744c9909275e78b04b6cf78a52ee47a4449707628ae026",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.392Z",
+  "capturedAt": "2026-10-10T13:37:31.873Z",
   "variants": {
     "en": {
-      "hash8": "e5f465b6",
-      "vdtHash": "fb8032f8a2bc5b9c6a9ebb6d93afa45b4fc89a7f",
+      "hash8": "776b921d",
+      "vdtHash": "152bbae97cbf2ff3c7d0228699c51b639930e246",
       "timings": {
-        "importMs": 157,
-        "fontsMs": 40,
-        "buildMs": 19,
-        "totalMs": 848,
-        "builds": 2
+        "importMs": 125,
+        "fontsMs": 29,
+        "buildMs": 44,
+        "totalMs": 1718,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Saira Condensed"
         ],
         "pages": 1,
-        "ownLines": 207
+        "ownLines": 204
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 174194,
+          "bytes": 174932,
           "alt": "Opening page 1: Street trees and sidewalk heat. Figure 1. Ashby Road, schematic plan: crowns from the canopy survey and the 16 loggers (orange). Widths across the street are not to scale. · Figure 2. Canopy cover per block (bars, %) and the air at head height against the stree…"
         }
       ],
@@ -74,14 +74,14 @@
       },
       "sandbox": {
         "file": "research-poster.postext",
-        "bytes": 94047,
+        "bytes": 94065,
         "folio": "7c6d9248"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "registerResourceImage",
           "renderPage",
           "renderPageToCanvas"
@@ -292,18 +292,24 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "6249df7b",
-      "vdtHash": "3aca65b06b8b33f0d5c6636424051b2c8b3a1437",
+      "hash8": "d0f7cdb2",
+      "vdtHash": "565a8c265171499f754da27b53b2f58943f172da",
       "timings": {
-        "importMs": 231,
-        "fontsMs": 42,
-        "buildMs": 18,
-        "totalMs": 920,
-        "builds": 2
+        "importMs": 131,
+        "fontsMs": 29,
+        "buildMs": 43,
+        "totalMs": 789,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -325,7 +331,7 @@
           "Saira Condensed"
         ],
         "pages": 1,
-        "ownLines": 207
+        "ownLines": 204
       },
       "pages": [
         {
@@ -336,7 +342,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 181148,
+          "bytes": 181780,
           "alt": "Página de apertura 1: Arbolado viario y calor en la acera. Figura 1. La avenida en plano esquemático: las copas del inventario de arbolado y los 16 registradores (naranja). Los anchos transversales no están a escala. · Figura 2. Copa por manzana (barras, %) y aire a la altura…"
         }
       ],
@@ -360,14 +366,14 @@
       },
       "sandbox": {
         "file": "research-poster.postext",
-        "bytes": 94716,
+        "bytes": 94804,
         "folio": "7c6d9248"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "registerResourceImage",
           "renderPage",
           "renderPageToCanvas"
@@ -578,7 +584,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

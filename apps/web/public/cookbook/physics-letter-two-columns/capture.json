@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "physics-letter-two-columns",
-  "sourceHash": "ca3930e11c9c4c222aa391191e4d530d3fd9c3385ae307ec557b4f9db8fa6bc7",
+  "sourceHash": "cc6f7cbecfbc50a250c10a4972adecf8b750fd2c174268c744f27313049da377",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.285Z",
+  "capturedAt": "2026-10-10T13:37:01.664Z",
   "variants": {
     "en": {
-      "hash8": "a422ce53",
+      "hash8": "a88b5d15",
       "vdtHash": "eb636f554eb51213b17f991f8a0eff5c817b50bc",
       "timings": {
-        "importMs": 279,
-        "fontsMs": 145,
-        "buildMs": 47,
-        "totalMs": 1255,
-        "builds": 2
+        "importMs": 181,
+        "fontsMs": 137,
+        "buildMs": 154,
+        "totalMs": 1053,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Gelasio"
         ],
         "pages": 5,
-        "ownLines": 189
+        "ownLines": 188
       },
       "pages": [
         {
@@ -126,20 +126,19 @@
       },
       "pdf": {
         "file": "physics-letter-two-columns.pdf",
-        "bytes": 573203,
+        "bytes": 573206,
         "pages": 5
       },
       "sandbox": {
         "file": "physics-letter-two-columns.postext",
-        "bytes": 150997,
+        "bytes": 150998,
         "folio": "72637274"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
