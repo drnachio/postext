@@ -44,13 +44,13 @@ Si no se parten las palabras, unos pocos espacios cargan con todo lo que una med
 Si no se parten las palabras, unos pocos espacios cargan con todo lo que una medida estrecha no admite. Partirlas permite cortar también dentro de una palabra, y la holgura se reparte en ajustes tan pequeños que no se notan.
 :::
 
-Las mismas palabras, compuestas de tres maneras en una medida algo más estrecha que estas columnas. En bandera solo se cortan entre palabras, haya partición o no. Justificadas y sin partir, unos pocos espacios cargan con toda la holgura. Con partición, los espacios se igualan a cambio de unos cuantos guiones.
+Las mismas palabras, compuestas de tres maneras en una medida algo más estrecha que estas columnas. En bandera solo se cortan entre palabras, si no pides otra cosa. Justificadas y sin partir, unos pocos espacios cargan con toda la holgura. Con partición, los espacios se igualan a cambio de unos cuantos guiones.
 :::
 :::
 
 ## Partir palabras
 
-La separación silábica le da al algoritmo más puntos donde terminar una línea, y en una medida estrecha es imprescindible. Postext usa los patrones de TeX del idioma del documento, indicado con un código exacto: *es* en esta edición y *en-us* en la inglesa. Con un código sin patrones, como *es-ES*, recurre al inglés estadounidense sin avisar. Los patrones solo actúan en texto justificado: en bandera, las líneas se cortan entre palabras y una columna estrecha queda muy desigual.
+La separación silábica le da al algoritmo más puntos donde terminar una línea, y en una medida estrecha es imprescindible. Postext usa los patrones de TeX del idioma del documento, indicado con un código exacto: *es* en esta edición y *en-us* en la inglesa. Con un código sin patrones, como *eu-ES*, recurre al inglés estadounidense y da aviso. Los patrones solo actúan en texto justificado: en bandera, las líneas se cortan entre palabras y una columna estrecha queda muy desigual.
 
 ## Viudas y huérfanas
 

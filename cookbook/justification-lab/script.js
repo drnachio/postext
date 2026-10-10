@@ -6,13 +6,14 @@
 // side by side with their loose lines marked from the layout tree, then the published pages.
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, parseMarkdownWithIssues,
+  findLooseLines,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'justification-lab';
 
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
-// Graphite, paper, one highlighter yellow; col() writes hex too (gotcha: palette-skips-designs).
+// Graphite, paper and one highlighter yellow; col() links each colour to its palette entry.
 const palette = {
   ink: '#1f2124', // text: a graphite near-black
   graphite: '#2e3136', // the accent: the opener band, the bench box, folios
@@ -46,8 +47,8 @@ const bodyText = { // config().bodyText
   firstLineIndent: mm(4), indentAfterHeading: false, // justified and hyphenated by default
   ...FENCES,
 };
-// Hyphenation follows the document's locale, by exact code (gotcha: hyphenation-locales):
-const locale = t({ en: 'en-us', es: 'es' }); // config().locale; 'es-ES' would be English
+// Hyphenation follows the document's locale:
+const locale = t({ en: 'en-us', es: 'es' }); // config().locale: each edition's patterns
 // The control: first-fit breaking, which sets each line once and moves on, with the widow and
 // orphan guards off (runts are priced inside Knuth–Plass only). Same text, fonts and measure.
 const GREEDY = { optimalLineBreaking: false, avoidWidows: false, avoidOrphans: false };
@@ -65,21 +66,21 @@ const text = (id, content, family, size, color, x, y, extra) => ({ kind: 'text',
 const opener = () => ({ // a function: the diagram's constants are defined further down
   enabled: true,
   slot: { elements: [
-    // The band box reserves the opener's height, and the H1's default marginBottom adds a line
-    // of white: the body starts on the second grid line under the band. The diagram could not
-    // reserve it, as images never count (gotcha: opener-image-no-reserve).
+    // The band reaches below the diagram, so it sets the height the opener reserves; the H1's
+    // default marginBottom adds a line of white, and the body starts on the second grid line
+    // under the band.
     { kind: 'box', id: 'band', style: { backgroundColor: col('graphite') },
       placement: { anchor: { to: 'bleed', edge: 'top-left' },
         size: { width: 'fill', height: mm(BAND) } } },
     text('kicker', '{attr.kicker}', MONO, 7.5, 'marker', INNER, TOP, caps(7.5, 600)),
     text('title', '{titleText}', DISPLAY, 29, 'paper', INNER, TOP + 5, // one line in both
-      { fontWeight: 800, lineHeight: 1.02 }), // a multiple (gotcha: design-lineheight-multiple)
+      { fontWeight: 800, lineHeight: 1.02 }),
     text('standfirst', '{attr.standfirst}', TEXT, 10.5, 'haze', INNER, TOP + 19,
       { italic: true, lineHeight: 1.3 }),
     { kind: 'image', id: 'diagram', resourceId: 'diagram', placement: { anchor: { to: 'page',
       edge: 'top-left' }, offset: { x: mm(INNER), y: mm(DIAGRAM.y) },
     size: { width: mm(DIAGRAM.w), height: mm(DIAGRAM.h) } } },
-    // An SVG image cannot use web fonts (gotcha: svg-no-webfonts): its labels are design text.
+    // The diagram's labels are design text: set and tracked like the opener's other labels.
     ...diagramLabels().map(([id, words, x, y]) => text(id, words, MONO, LABEL, 'haze',
       INNER + x, DIAGRAM.y + y, { ...caps(LABEL), letterSpacing: pt(0.5) })),
   ] },
@@ -104,7 +105,7 @@ const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'bottom-ri
 
 // #region bench: three slips in a 2 × 2 grid, each a nested box with a body style of its own
 // A box sets all its :::columns in one body style, so each setting is a nested box; breaks="3"
-// counts a nested box as one block (gotcha: callout-columns). The bench floats to a page foot.
+// counts a nested box as one block. The bench floats to a page foot.
 const [SLIP_GAP, FRAME] = [3, 4]; // mm: between slips; the bench's frame round them
 const slip = (id, body) => ({ id, background: col('paper'), marginBottom: mm(SLIP_GAP),
   padding: { top: mm(2.2), right: mm(2.6), bottom: mm(2.4), left: mm(2.6) },
@@ -118,7 +119,7 @@ const calloutStyles = [
     titleStyle: { ...caps(7.5, 600), color: col('marker'), gap: mm(2.4) },
     body: { fontSize: pt(8.6), lineHeight: pt(11.6), color: col('paper'), textAlign: 'left',
       firstLineIndent: pt(0) } },
-  slip('ragged', { textAlign: 'left' }), // never hyphenated (gotcha: ragged-no-hyphenation)
+  slip('ragged', { textAlign: 'left' }), // ragged text keeps its words whole by default
   slip('unhyphenated', { hyphenation: false }), // justified, like the body text
   slip('justified', {}), // justified and hyphenated: the body text's own settings
   { id: 'settings', backgroundEnabled: false, marginTop: pt(3), marginBottom: pt(3), // config
@@ -136,7 +137,7 @@ const config = () => ({
   layout: { layoutType: 'double', gutterWidth: mm(GUTTER) },
   bodyText,
   headings: { fontFamily: DISPLAY, fontWeight: 800, color: col('ink'),
-    levels: [ // restated: a headings object drops the H1 break (gotcha: headings-drop-h1-break)
+    levels: [ // the essay opens on a recto
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
         advancedDesign: opener() },
       { level: 2, fontSize: pt(11.5), lineHeight: pt(LEAD), marginTop: pt(LEAD),
@@ -210,20 +211,20 @@ function diagramLabels() { // [id, text, x, y] in mm from the diagram's top-left
 // #endregion
 
 // #region marks: the highlighter: loose lines, lone lines and runts read from the layout tree
-// debug.looseLineHighlight is Sandbox-only (gotcha: sandbox-only-warnings), so the pen reads the
-// VDT: justified lines carry justifiedSpaceRatio; a paragraph cut by a column is two blocks.
+// findLooseLines gives the justified lines whose word spaces stretch past a threshold, here the
+// upper fence. The rest is read from the VDT: a line past 3× is set ragged (line.ragged), and a
+// paragraph cut by a column is two blocks.
 function marks(doc, page) {
   const body = doc.pages.flatMap((p) => p.columns.flatMap((c) => c.blocks)).filter((b) =>
     b.type === 'paragraph' && b.containerId === undefined && b.textAlign === 'justify');
-  const out = [];
+  const loose = findLooseLines(doc, { threshold: FENCES.maxWordSpacing, pageIndex: page.index });
+  const out = loose.map(({ x, y, width: w, height: h }) => ({ x, y, w, h, kind: 'loose' }));
   for (const column of page.columns) {
     for (const b of column.blocks.filter((x) => body.includes(x))) {
       const parts = body.filter((o) => o.contentIndex === b.contentIndex);
       b.lines.forEach((line) => {
         const at = { x: b.bbox.x, y: line.bbox.y, w: b.bbox.width, h: line.bbox.height, column };
-        if (line.justifiedSpaceRatio > FENCES.maxWordSpacing || line.ragged) {
-          out.push({ ...at, kind: 'loose' }); // ragged: past 3×, so the engine set it ragged
-        }
+        if (line.ragged) out.push({ ...at, kind: 'loose' }); // past 3×: no ratio, set ragged
         if (b.lines.length === 1 && parts.length > 1) { // Postext's names (see the essay):
           out.push({ ...at, kind: b === parts[0] ? 'widow' : 'orphan' }); // foot : head
         } else if (line.isLastLine && !/\s/.test(line.text.trim())) {
@@ -306,7 +307,7 @@ const doc = await build(config); // last: the published pages
 showPages(doc, { title: t({ en: 'Justification lab', es: 'Laboratorio de justificación' }) });
 compare([[t({ en: 'Greedy, no guards', es: 'Voraz, sin protecciones' }), greedy],
   ['Knuth–Plass', doc]]);
-// The engine's own report: parse issues (a ::: left open) and layout warnings, never loose lines.
+// The build's own report: parse issues (a ::: left open) and layout warnings.
 const { issues } = parseMarkdownWithIssues(markdown);
 kitStatus(t({ en: `${doc.pages.length} pages · parse issues ${issues.length} · layout warnings `,
   es: `${doc.pages.length} páginas · problemas de análisis ${issues.length} · avisos ` })

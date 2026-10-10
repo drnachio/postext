@@ -16,13 +16,13 @@ pageNotes: { "1": "一条石墨色色带上有荧光黄的眉题Galley · No. 12
 
 ### 1 · 收紧界限，保留保护
 
-这一步的代码就是上面的[简短回答](#简短回答)。[Knuth–Plass](/zh/docs/justification#knuth-plass通观整个段落)、断词、段末孤行、段首孤行和孤字罚分以及标题与下文不分离，默认都已开启，所以正式版只把[词间距界限](/zh/docs/justification#词间距上下限)收窄到正常空格的0.8和1.6倍（默认是0.6和2）。超出上限的行比任何连字符或孤字代价都高，所以断行器会先尝试别的断点；删掉这两个界限，这篇文章会有两行超过1.6。断词按`locale`的精确代码选择：`'es'`、`'fr'`和`'de'`有各自的TeX模式，而`'es-ES'`会被当作美式英语断词，没有任何警告。
+这一步的代码就是上面的[简短回答](#简短回答)。[Knuth–Plass](/zh/docs/justification#knuth-plass通观整个段落)、断词、段末孤行、段首孤行和孤字罚分以及标题与下文不分离，默认都已开启，所以正式版只把[词间距界限](/zh/docs/justification#词间距上下限)收窄到正常空格的0.8和1.6倍（默认是0.6和2）。超出上限的行比任何连字符或孤字代价都高，所以断行器会先尝试别的断点；删掉这两个界限，这篇文章会有两行超过1.6。断词按`locale`选择：`'es'`、`'fr'`和`'de'`有各自的TeX模式，`'es-ES'`这样带地区的标签用其语言的模式，没有模式的语言则按美式英语断词，并在控制台给出警告。
 
 ### 2 · 从版面树标出过松的行
 
 <Excerpt region="marks" />
 
-只有沙盒支持`debug.looseLineHighlight`，而`doc.warnings`从不列出过松的行，所以`marks()`自己读取[VDT](/zh/docs/justification#松散行调试)。每个两端对齐的行都带有`justifiedSpaceRatio`；被两栏拆开的段落，每个片段各返回一个块；超过3倍的行没有这个比值，因为引擎会[把它排成齐左](/zh/docs/justification#断行算法填不满的行)，并标记为`line.ragged`。在40个字符的行长下，光靠界限并不能让每一行都低于1.6；调整文章篇幅时，这些标记指出了需要改写哪些句子。
+`findLooseLines`返回词间距拉伸超过某个阈值（这里是上限）的两端对齐行，每行都带有高亮要覆盖的条带（[在你自己的Canvas中标出稀松行](/zh/docs/configuration#在你自己的canvas中标出稀松行)）。这份清单没有的，`marks()`从[VDT](/zh/docs/justification#松散行调试)里补上：超过3倍的行没有比值，因为引擎会[把它排成齐左](/zh/docs/justification#断行算法填不满的行)，并标记为`line.ragged`；被两栏拆开的段落，每个片段各返回一个块，孤行就是这样找出来的。在40个字符的行长下，光靠界限并不能让每一行都低于1.6；调整文章篇幅时，这些标记指出了需要改写哪些句子。
 
 ### 3 · 把对照版放在正式版旁边
 
@@ -34,23 +34,23 @@ pageNotes: { "1": "一条石墨色色带上有荧光黄的眉题Galley · No. 12
 
 <Excerpt region="bench" />
 
-一个框用同一种正文样式排[`:::columns`](/zh/docs/document-format#columns)组里的所有栏，所以每张样条都是一个带自己`body`的嵌套框，`breaks="3"`把齐左样条和不断词样条叠放在第一栏。齐左样条不需要`hyphenation: false`，因为齐左文字从不断词。对照测试用`placement: 'bottom'`浮动到第3页底部，它的下内边距重复了4 mm的边框，因为最后一张样条的`marginBottom`在框的末尾会被舍去。
+一个框用同一种正文样式排[`:::columns`](/zh/docs/document-format#columns)组里的所有栏，所以每张样条都是一个带自己`body`的嵌套框，`breaks="3"`把齐左样条和不断词样条叠放在第一栏。齐左样条不需要`hyphenation: false`：除非打开`bodyText.hyphenation.ragged`，齐左文字不断词。对照测试用`placement: 'bottom'`浮动到第3页底部，它的下内边距重复了4 mm的边框，因为最后一张样条的`marginBottom`在框的末尾会被舍去。
 
 ### 5 · 把模型画进章首页
 
 <Excerpt region="opener" />
 
-示意图是H1设计中的一个[图像元素](/zh/docs/configuration#图像元素)。如果作为图，它会是一个通栏的`top`浮动体，而在第1页引用的`top`浮动体会排到第2页的顶部。色带是一个框，框会计入章首页预留的高度，图像则不会，所以不需要`minHeight`，正文就从色带下方开始；由于H1默认的`marginBottom`，还要再往下一行。标签是按图本身坐标摆放的设计文字，因为作为图像绘制的SVG用不了页面的网络字体。
+示意图是H1设计中的一个[图像元素](/zh/docs/configuration#图像元素)。如果作为图，它会是一个通栏的`top`浮动体，而在第1页引用的`top`浮动体会排到第2页的顶部。色带比示意图伸得更低，而章首页预留的高度一直算到最低的元素，所以不需要`minHeight`，正文就从色带下方开始；由于H1默认的`marginBottom`，还要再往下一行。标签是按图本身坐标摆放的设计文字，字体和字距与章首页的其他标签一致。
 
 ## 变化
 
 ### 给德语文本断词
 
-断词模式按精确代码查找，所以德语文本需要`'de'`。
+断词模式由`locale`决定，所以德语文本写`'de'`，或者`'de-AT'`这样带地区的标签。
 
 ```diff
--const locale = t({ en: 'en-us', es: 'es' }); // config().locale；'es-ES'会按英语断词
-+const locale = 'de'; // 德语断词模式；'de-DE'会按英语断词
+-const locale = t({ en: 'en-us', es: 'es' }); // config().locale：各版本自己的断词模式
++const locale = 'de'; // 德语断词模式；'de-AT'也用它
 ```
 
 ### 只标出最差的行
@@ -58,11 +58,11 @@ pageNotes: { "1": "一条石墨色色带上有荧光黄的眉题Galley · No. 12
 把阈值从1.6提高到2，荧光笔就只标出空格已超过原来两倍的行。
 
 ```diff
--        if (line.justifiedSpaceRatio > FENCES.maxWordSpacing || line.ragged) {
-+        if (line.justifiedSpaceRatio > 2 || line.ragged) {
+-  const loose = findLooseLines(doc, { threshold: FENCES.maxWordSpacing, pageIndex: page.index });
++  const loose = findLooseLines(doc, { threshold: 2, pageIndex: page.index });
 ```
 
 ## 常见问题
 
-- 留在栏尾的框，在各栏齐底时会掉到栏底，离开它所属的段落。调整文字篇幅让这一栏排满，“Fences for the glue”下面的设置框就需要这样处理。
+- 留在栏尾的框，在各栏齐底时会掉到栏底，离开它所属的段落。调整文字篇幅让这一栏排满，“Fences for the glue”下面的设置框就需要这样处理。也可以把`headings.balancing.closingBox`设为`'off'`，这样框就不会被移动。
 - 不断词样条看不到它本来需要的最宽空隙。两端对齐的行若要把空格拉到正常宽度的三倍以上，就按自然间距排成齐左，框内和正文一样，所以这张样条的前两行没有排满行长。没到这个上限的行仍然两端对齐，样条上那些宽空隙就出自这些行。

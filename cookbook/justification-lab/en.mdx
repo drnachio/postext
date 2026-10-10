@@ -16,13 +16,13 @@ Issue 12 of *Galley*, a type lab's journal, set on A5 in two columns of about fo
 
 ### 1 · Tighten the fences, keep the guards
 
-The code for this step is [the short answer](#the-short-answer) above. [Knuth–Plass](/en/docs/justification#knuth-plass-seeing-the-whole-paragraph), hyphenation, the widow, orphan and runt penalties and keep-with-next headings are on by default, so the published edition only narrows the [word-spacing bounds](/en/docs/justification#word-spacing-bounds) to 0.8 and 1.6 times a normal space (the defaults are 0.6 and 2). A line past the upper bound costs more than any hyphen or runt, so the breaker tries other breaks first; delete the two bounds and this essay sets two lines past 1.6. Hyphenation follows `locale` by exact code: `'es'`, `'fr'` and `'de'` get their own TeX patterns, while `'es-ES'` is hyphenated as American English with no warning.
+The code for this step is [the short answer](#the-short-answer) above. [Knuth–Plass](/en/docs/justification#knuth-plass-seeing-the-whole-paragraph), hyphenation, the widow, orphan and runt penalties and keep-with-next headings are on by default, so the published edition only narrows the [word-spacing bounds](/en/docs/justification#word-spacing-bounds) to 0.8 and 1.6 times a normal space (the defaults are 0.6 and 2). A line past the upper bound costs more than any hyphen or runt, so the breaker tries other breaks first; delete the two bounds and this essay sets two lines past 1.6. Hyphenation follows `locale`: `'es'`, `'fr'` and `'de'` get their own TeX patterns, a regional tag such as `'es-ES'` takes its language's, and a language with no patterns is hyphenated as American English, with a warning on the console.
 
 ### 2 · Mark loose lines from the layout tree
 
 <Excerpt region="marks" />
 
-Only the Sandbox honours `debug.looseLineHighlight`, and `doc.warnings` never lists a loose line, so `marks()` reads the [VDT](/en/docs/justification#loose-line-debugging) itself. Every justified line carries `justifiedSpaceRatio`, a paragraph split between two columns comes back as one block per fragment, and a line past 3× has no ratio, because the engine [sets it ragged](/en/docs/justification#lines-the-breaker-cannot-fill) and flags it `line.ragged` instead. At forty characters the bounds alone do not keep every line under 1.6; while the essay was being copy-fitted, the marks showed which sentences to reword.
+`findLooseLines` returns the justified lines whose word spaces stretch past a threshold, here the upper bound, each with the band a highlight covers ([Loose lines in your own canvas](/en/docs/configuration#loose-lines-in-your-own-canvas)). `marks()` adds what that list leaves out, read from the [VDT](/en/docs/justification#loose-line-debugging): a line past 3× has no ratio, because the engine [sets it ragged](/en/docs/justification#lines-the-breaker-cannot-fill) and flags it `line.ragged` instead, and a paragraph split between two columns comes back as one block per fragment, which is how the lone lines are found. At forty characters the bounds alone do not keep every line under 1.6; while the essay was being copy-fitted, the marks showed which sentences to reword.
 
 ### 3 · Lay the control beside the published page
 
@@ -34,23 +34,23 @@ Both editions share one design, so every difference between the two page 2s come
 
 <Excerpt region="bench" />
 
-A box sets all the columns of a [`:::columns`](/en/docs/document-format#columns) group in one body style, so each slip is a nested box with a `body` of its own, and `breaks="3"` stacks the ragged and the unhyphenated slips in the first column. The ragged slip needs no `hyphenation: false`, because ragged text is never hyphenated. The bench floats to the foot of page 3 with `placement: 'bottom'`, and its bottom padding repeats the 4 mm frame because the last slip's `marginBottom` is dropped at the end of the box.
+A box sets all the columns of a [`:::columns`](/en/docs/document-format#columns) group in one body style, so each slip is a nested box with a `body` of its own, and `breaks="3"` stacks the ragged and the unhyphenated slips in the first column. The ragged slip needs no `hyphenation: false`: ragged text keeps its words whole unless `bodyText.hyphenation.ragged` is switched on. The bench floats to the foot of page 3 with `placement: 'bottom'`, and its bottom padding repeats the 4 mm frame because the last slip's `marginBottom` is dropped at the end of the box.
 
 ### 5 · Draw the model into the opener
 
 <Excerpt region="opener" />
 
-The diagram is an [image element](/en/docs/configuration#image-elements) of the H1's design. As a figure it would be a page-wide `top` float, and a `top` float cited on page 1 opens page 2. The band is a box, and boxes count towards the height an opener reserves while images do not, so the text starts under the band without a `minHeight`, a line further down because of the H1's default `marginBottom`. The labels are design text laid on the drawing's own coordinates, since an SVG drawn as an image cannot use the page's web fonts.
+The diagram is an [image element](/en/docs/configuration#image-elements) of the H1's design. As a figure it would be a page-wide `top` float, and a `top` float cited on page 1 opens page 2. The band reaches below the diagram, and an opener reserves height down to its lowest element, so the text starts under the band without a `minHeight`, a line further down because of the H1's default `marginBottom`. The labels are design text laid on the drawing's own coordinates, set and tracked like the opener's other labels.
 
 ## Variations
 
 ### Hyphenate a German text
 
-Patterns are looked up by exact code, so a German text needs `'de'`.
+The locale picks the patterns, so a German text takes `'de'`, or a regional tag such as `'de-AT'`.
 
 ```diff
--const locale = t({ en: 'en-us', es: 'es' }); // config().locale; 'es-ES' would be English
-+const locale = 'de'; // German patterns; 'de-DE' would hyphenate as English
+-const locale = t({ en: 'en-us', es: 'es' }); // config().locale: each edition's patterns
++const locale = 'de'; // German patterns; 'de-AT' picks them too
 ```
 
 ### Mark only the worst lines
@@ -58,11 +58,11 @@ Patterns are looked up by exact code, so a German text needs `'de'`.
 Raise the threshold from 1.6 to 2 and the highlighter marks only the lines whose spaces have more than doubled.
 
 ```diff
--        if (line.justifiedSpaceRatio > FENCES.maxWordSpacing || line.ragged) {
-+        if (line.justifiedSpaceRatio > 2 || line.ragged) {
+-  const loose = findLooseLines(doc, { threshold: FENCES.maxWordSpacing, pageIndex: page.index });
++  const loose = findLooseLines(doc, { threshold: 2, pageIndex: page.index });
 ```
 
 ## Pitfalls
 
-- A box left at the end of a column drops to the column's foot when the columns are balanced, away from the paragraph it belongs to. Fit the copy so the column is full, as the settings box under “Fences for the glue” needed.
+- A box left at the end of a column drops to the column's foot when the columns are balanced, away from the paragraph it belongs to. Fit the copy so the column is full, as the settings box under “Fences for the glue” needed, or set `headings.balancing.closingBox` to `'off'`, which never moves the box.
 - The unhyphenated slip does not show the widest gaps it would need. A justified line whose spaces would stretch past three times a normal space is set ragged at its natural spacing, in a box as in the body text, so the slip's first two lines end short of the measure. The lines under that cap stay justified, and theirs are the wide gaps the slip shows.
