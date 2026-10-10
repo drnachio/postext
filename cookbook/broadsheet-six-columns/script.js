@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 133 · A broadsheet on six columns ════════════════════
 // https://postext.dev/en/cookbook/broadsheet-six-columns
 // Code: MIT · Text: original (CC BY 4.0) · Photos: generated (CC BY 4.0)
-// Fonts: Newsreader, Playfair Display, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.18.0
+// Fonts: Newsreader, Playfair Display, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
 } from 'https://esm.sh/postext';

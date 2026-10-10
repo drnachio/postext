@@ -48,12 +48,7 @@
     "cjk-spread-order",
     "cjk-locale-tag"
   ],
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "each box and picture of the upper tier is fenced or cited where the channel of its page has room: a span 'side' box, or a side figure queued behind one, that finds no room before the text ends gets a page of its own with nothing under it, and the ones after it are dropped with no warning (in both writing modes; figures alone get pages of their own)"
-    }
-  ],
+  "workarounds": [],
   "engine": {
     "postext": "1.25.0",
     "postextPdf": "1.25.0"
@@ -177,5 +172,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-29",
-  "updated": "2026-10-09"
+  "updated": "2026-10-10"
 }

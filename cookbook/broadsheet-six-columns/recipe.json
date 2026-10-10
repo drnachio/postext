@@ -50,7 +50,7 @@
     "fonts-first"
   ],
   "engine": {
-    "postext": "1.18.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -155,7 +155,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-06",
-  "updated": "2026-10-06",
+  "updated": "2026-10-10",
   "folio": {
     "paper": {
       "type": "newsprint",
@@ -179,10 +179,5 @@
     "boxes-split-float-pin",
     "figures-float-where-cited"
   ],
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "a tinted page-span teaser strip (:::callout{type=\"sky\" span=\"page\"}) opens the front page under the nameplate. An opener (a span: 'page' H1) counts as a block of column 1 in 1.18.0, so a float across k columns fenced right after it cannot take the head of column 1 and lands from column 2; the strip opens a new band whose first column is empty, and the lead's headline box and photo take columns 1-4. Pages 2 and 4 open on page-span jump heads for the same reason"
-    }
-  ]
+  "workarounds": []
 }
