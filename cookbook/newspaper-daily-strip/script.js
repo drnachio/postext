@@ -111,7 +111,7 @@ const config = () => ({
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: TEXT, fontWeight: 700, color: col('ink'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': a headline that opens a page takes the next one, on either side.
       { level: 1, span: 'page', fontSize: pt(28), lineHeight: pt(32), marginTop: pt(0),
         marginBottom: pt(LEAD * 0.5), breakBefore: { enabled: true, parity: 'any' } },
       { level: 2, fontFamily: LABEL, fontSize: pt(12), lineHeight: pt(LEAD),

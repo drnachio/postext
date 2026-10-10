@@ -45,8 +45,7 @@
   "gotchas": [
     "ruby-not-in-designs",
     "cjk-fonts-slices",
-    "cjk-locale-tag",
-    "headings-drop-h1-break"
+    "cjk-locale-tag"
   ],
   "related": [
     "dictionary-thumb-index",

@@ -55,7 +55,7 @@ const cjk = {
 // square above the foot (地から一字上げ), a blank square between family and given names.
 // lineSpan: 1 keeps the title on one line of the grid, in the text's own size and face.
 const title = { level: 1, fontFamily: PEN, fontSize: pt(CELL), fontWeight: 400, lineSpan: 1,
-  indent: em(2), breakBefore: { enabled: true, parity: 'any' } }; // gotcha: headings-drop-h1-break
+  indent: em(2), breakBefore: { enabled: true, parity: 'any' } }; // the next sheet, either side
 const paragraphStyles = [
   { id: 'name', textAlign: 'end', endIndent: em(1), firstLineIndent: em(0) },
 ];

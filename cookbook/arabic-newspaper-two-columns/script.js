@@ -97,7 +97,7 @@ const config = () => ({
     textAlign: 'justify', firstLineIndent: em(1), indentAfterHeading: false },
   headings: { fontFamily: HEAD, fontWeight: 800, color: col('ink'), marginBottom: pt(0),
     levels: [
-      // Restated (gotcha: headings-drop-h1-break); 'any': a section opens the next page.
+      // parity 'any': a section opens the next page, with no blank page before it.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: flag },
       { level: 2, fontSize: pt(12.5), lineHeight: pt(20), marginTop: pt(LEAD / 2) },

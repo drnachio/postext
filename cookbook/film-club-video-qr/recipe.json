@@ -30,12 +30,8 @@
   },
   "answers": ["Q133"],
   "gotchas": [
-    "svg-no-webfonts",
     "bitmap-print-size",
-    "resource-types-locale",
-    "resource-double-quotes",
-    "headings-drop-h1-break",
-    "overflow-ellipsis-default"
+    "resource-double-quotes"
   ],
   "explainsWarnings": ["videoWithoutPoster"],
   "related": ["figures-float-where-cited", "photo-essay-full-bleed"],

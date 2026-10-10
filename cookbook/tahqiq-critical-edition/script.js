@@ -145,7 +145,7 @@ const config = () => ({
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(1.5), indentAfterHeading: false,
     optimalLineBreaking: true, avoidWidows: true, avoidOrphans: true },
-  // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+  // parity 'any': a level-one heading opens the next page, on either side.
   headings: { fontFamily: NASKH, fontWeight: 700, color: col('accent'),
     levels: [{ level: 1, fontSize: pt(24), breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: opener }] },

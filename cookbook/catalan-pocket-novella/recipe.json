@@ -47,14 +47,8 @@
   ],
   "gaps": [],
   "gotchas": [
-    "hyphenation-locales",
-    "opener-image-no-reserve",
     "style-inherits-break",
-    "headings-drop-h1-break",
-    "palette-skips-designs",
-    "overflow-ellipsis-default",
-    "attr-values",
-    "quote-frontmatter"
+    "attr-values"
   ],
   "explainsWarnings": [],
   "related": [

@@ -41,11 +41,7 @@
     "Q110"
   ],
   "gotchas": [
-    "resource-numbered-at-first-ref",
-    "headings-drop-h1-break",
-    "palette-skips-designs",
-    "hyphenation-locales",
-    "svg-no-webfonts"
+    "resource-numbered-at-first-ref"
   ],
   "engine": {
     "postext": "1.25.0",

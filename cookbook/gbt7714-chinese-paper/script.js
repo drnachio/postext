@@ -112,7 +112,7 @@ const config = () => ({
   },
   headings: { fontFamily: HEI, fontWeight: 700, color: col('ink'),
     levels: [
-      { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // headings-drop-h1-break
+      { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // the next page, either side
       { level: 2, numberingTemplate: '{2}', numberSeparator: '　', fontSize: pt(10.5),
         lineHeight: pt(2 * LEAD), marginTop: pt(0), marginBottom: pt(0) }, // 1　实验方法
       { level: 3, numberingTemplate: '{2}.{3}', numberSeparator: '　', fontSize: pt(BODY),

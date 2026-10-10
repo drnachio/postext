@@ -100,7 +100,7 @@ const config = () => ({
   },
   headings: { fontFamily: SONG, fontWeight: 700, color: col('ink'),
     levels: [{ level: 1, numberingTemplate: '第{1:一}章', numberSeparator: '　',
-      breakBefore: { enabled: true, parity: 'odd' }, // gotcha: headings-drop-h1-break
+      breakBefore: { enabled: true, parity: 'odd' }, // a chapter opens on an odd page
       marginBottom: pt(0), advancedDesign: opener }] },
   header,
   footer: { elements: [] },

@@ -7,7 +7,7 @@
 // the right number, title or page wherever in the book its target lies.
 import {
   buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerResourceImage,
-  defaultResourceTypes, parseTSV, setAlignment,
+  defaultResourceTypes, parseTSV, setAlignment, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -26,7 +26,7 @@ const palette = {
   muted: '#5e636a', // running heads, colophon, chart labels
   paper: '#ffffff',
 };
-// A design element paints the hex beside its paletteId (gotcha: palette-skips-designs).
+// Each colour names its palette entry and carries its hex.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.accent })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -141,7 +141,7 @@ const contents = { // what :::toc prints: chapters in the condensed face, sectio
 };
 
 const config = () => ({
-  locale: t({ en: 'en-gb', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-gb', es: 'es' }), // British patterns for the English edition
   crossRefs, resourceTypes, colorPalette, toc: contents, header, footer,
   page: { sizePreset: 'custom', width: mm(TRIM.w), height: mm(TRIM.h), dpi: 150,
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
@@ -154,7 +154,6 @@ const config = () => ({
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: COND, color: col('ink'), fontWeight: 600, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
     // 'any': short chapters start on the next page, recto or verso.
     { level: 1, fontSize: pt(30), numberingTemplate: '{1}',
       breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener,
@@ -239,19 +238,8 @@ const resources = [
 ];
 
 // #region art: the cover and three charts, drawn in code in the book's palette
-// An SVG loaded as an image has no access to the page's web fonts (gotcha:
-// svg-no-webfonts), so the charts embed the one IBM Plex Mono face their labels use.
-async function labelFace() {
-  const url = 'https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5/files/'
-    + 'ibm-plex-mono-latin-400-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 8192) {
-    bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
-  }
-  return `@font-face{font-family:L;src:url(data:font/woff2;base64,${btoa(bin)}) format('woff2')}`
-    + `text{font-family:L;font-size:2.5px;fill:${palette.muted}}`;
-}
+// The charts name their label face in a style rule, and loadSvg embeds its Fontsource file.
+const LABELS = `text{font-family:'IBM Plex Mono';font-size:2.5px;fill:${palette.muted}}`;
 const n2 = (v) => +v.toFixed(2);
 const sheet = (w, h, body, style = '') => `<svg xmlns="http://www.w3.org/2000/svg" `
   + `width="${w * 10}" height="${h * 10}" viewBox="0 0 ${w} ${h}"><style>${style}</style>`
@@ -364,11 +352,10 @@ const FONTS = {
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const text = chapters.map((chapter) => chapter.markdown).join('\n');
 await prepareFonts(text, config(), kitFonts(FONTS));
-const face = await labelFace();
 await loadSvg('cover.svg', sheet(TRIM.w, 110, coverArt(TRIM.w, 110)));
-await loadSvg('profile.svg', sheet(MEASURE, 50, profileArt(MEASURE, 50), face));
-await loadSvg('sun.svg', sheet(MEASURE, 46, sunArt(MEASURE, 46), face));
-await loadSvg('soc.svg', sheet(MEASURE, 50, socArt(MEASURE, 50), face));
+await loadSvg('profile.svg', sheet(MEASURE, 50, profileArt(MEASURE, 50), LABELS));
+await loadSvg('sun.svg', sheet(MEASURE, 46, sunArt(MEASURE, 46), LABELS));
+await loadSvg('soc.svg', sheet(MEASURE, 50, socArt(MEASURE, 50), LABELS));
 // One VDTDocument per Markdown document.
 const docs = await withLoadedFonts(book, { ...kitFonts(FONTS), text });
 showPages(docs, { title: t({ en: 'Power for a Cabin', es: 'Energía para una cabaña' }) });

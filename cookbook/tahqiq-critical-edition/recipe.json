@@ -45,8 +45,7 @@
   "gotchas": [
     "arabic-locale-tag",
     "arabic-fonts-subset",
-    "numbering-next-page",
-    "headings-drop-h1-break"
+    "numbering-next-page"
   ],
   "engine": {
     "postext": "1.25.0",

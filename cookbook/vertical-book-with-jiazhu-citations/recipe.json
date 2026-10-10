@@ -33,9 +33,7 @@
     "cjk-locale-tag",
     "cjk-fonts-slices",
     "cjk-face-region",
-    "cjk-spread-order",
-    "headings-drop-h1-break",
-    "quote-frontmatter"
+    "cjk-spread-order"
   ],
   "related": ["vertical-novel-right-bound", "gbt7714-chinese-paper", "novel-footnotes-column-foot"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },

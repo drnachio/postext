@@ -127,8 +127,7 @@ const config = () => ({
     // that cannot take the next headword and two lines of its text ends short instead.
     balancing: { enabled: false },
     levels: [
-      // No letter opens in these pages; restated all the same, since any headings object
-      // drops the H1 break (gotcha: headings-drop-h1-break).
+      // No letter opens in these pages; one that did would start the next page, on either side.
       { level: 1, breakBefore: { enabled: true, parity: 'any' } },
       headword,
     ] },

@@ -17,7 +17,7 @@ const palette = {
   muted: '#6e6359', // running heads, the edition's note, the colophon
   paper: '#f5efe1', // a cream book paper, the pictures' white
 };
-// Each colour names its palette entry and carries its hex (gotcha: palette-skips-designs).
+// Each colour names its palette entry and carries its hex.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -30,7 +30,7 @@ const at = (to, edge, x = 0, y = 0, size) => ({ anchor: { to, edge },
   offset: { x: mm(x), y: mm(y) }, ...(size && { size }) });
 const text = (id, content, fontFamily, size, placement, extra = {}) => ({ kind: 'text', id,
   content, fontFamily, fontSize: pt(size), color: col('ink'), align: 'center',
-  overflow: 'wrap', placement, ...extra }); // wrap, never '…' (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', placement, ...extra }); // a long title takes a second line
 const caps = (size, tracking, color = 'vermell') => ({ fontFamily: LABEL, fontSize: pt(size),
   fontWeight: 600, letterSpacing: pt(tracking), color: col(color) });
 
@@ -73,7 +73,7 @@ const chapter = { id: 'capitol',
     { kind: 'image', id: 'art', resourceId: '{attr.art}',
       placement: at('container', 'top', 0, 0,
         { width: mm(PICTURE.width), height: mm(PICTURE.height) }) },
-    // From the container, not the image: images reserve no height (opener-image-no-reserve).
+    // The numeral and its rule hang from the container's top, a fixed drop under the picture.
     text('numeral', '{titleText}', DISPLAY, 21, at('container', 'top', 0, PICTURE.height + 4),
       { fontWeight: 600, color: col('vermell'), lineHeight: 1 }),
     { kind: 'rule', id: 'rule', direction: 'horizontal', thickness: pt(0.5), color: col('vermell'),
@@ -169,7 +169,7 @@ const config = () => ({
   layout: { layoutType: 'single' },
   headings: { // the designs paint every title; this keeps Open Sans unloaded
     fontFamily: DISPLAY, fontWeight: 600,
-    // Any headings object drops the H1 break (gotcha: headings-drop-h1-break): restated.
+    // parity 'any': a level-one heading opens the next page, on either side.
     levels: [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }],
   },
 });

@@ -30,9 +30,7 @@
   "answers": ["Q109", "Q106"],
   "gotchas": [
     "cjk-locale-tag",
-    "cjk-fonts-slices",
-    "headings-drop-h1-break",
-    "quote-frontmatter"
+    "cjk-fonts-slices"
   ],
   "workarounds": [
     {

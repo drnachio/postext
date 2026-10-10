@@ -88,7 +88,7 @@ const FILMS = [
 // #region furniture: the cover band, the film openers and the folios
 const text = (id, content, fontFamily, size, color, placement, more = {}) => ({ kind: 'text',
   id, content, fontFamily, fontSize: pt(size), color: col(color), align: 'left',
-  overflow: 'wrap', placement, ...more }); // wrap, never '…' (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', placement, ...more }); // a foot wraps too, where the default is '…'
 const at = (to, edge, x, y, width) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) },
   ...(width && { size: { width: mm(width), height: 'auto' } }) });
 const caps = (s) => ({ fontWeight: 600, textTransform: 'uppercase', letterSpacing: pt(s * 0.2) });
@@ -150,7 +150,7 @@ const config = () => ({
     avoidWidows: true, avoidOrphans: true, avoidRunts: true,
   },
   headings: { fontFamily: DISPLAY, fontWeight: 700, color: col('ink'), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // parity 'any': each film opens the next page, with no blank page before it.
     { level: 1, fontSize: pt(34), breakBefore: { enabled: true, parity: 'any' },
       marginBottom: pt(0), advancedDesign: opener() }, // minHeight alone sets the gap
     { level: 2, fontSize: pt(13), lineHeight: pt(LEAD), textTransform: 'uppercase',
@@ -174,8 +174,8 @@ const config = () => ({
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // #region art: a title card per film, drawn on a canvas with the page's own fonts
-// A canvas, not an SVG: an SVG drawn as an image cannot reach the page's web fonts
-// (gotcha: svg-no-webfonts). Seeded, so every run draws the same cards.
+// The 2D canvas paints the motifs and sets the type in the faces the page has loaded.
+// Seeded, so every run draws the same cards.
 function mulberry32(seed) {
   return () => {
     seed = (seed + 0x6d2b79f5) | 0;
