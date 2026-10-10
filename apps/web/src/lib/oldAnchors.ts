@@ -29,3 +29,18 @@ export function fragmentId(hash: string): string {
     return raw;
   }
 }
+
+/** Where a visit to the old page goes: the address of the heading's new
+ *  page, or null when the fragment names something still on the page
+ *  (`onPage`) or nothing that moved. The query string travels along. */
+export function oldAnchorUrl(
+  table: OldAnchorTable,
+  locale: string,
+  location: { hash: string; search: string },
+  onPage: (id: string) => boolean
+): string | null {
+  const id = fragmentId(location.hash);
+  if (!id || onPage(id)) return null;
+  const target = resolveOldAnchor(table, id);
+  return target ? `/${locale}/docs/${target.slug}${location.search}#${encodeURIComponent(target.id)}` : null;
+}

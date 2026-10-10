@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { fragmentId, resolveOldAnchor, type OldAnchorTable } from "@/lib/oldAnchors";
+import { oldAnchorUrl, type OldAnchorTable } from "@/lib/oldAnchors";
 
 /** Sends an address of a page that was split (`/docs/configuration#table-style`)
  *  to the page that holds the heading now. A fragment never reaches the
@@ -11,11 +11,8 @@ import { fragmentId, resolveOldAnchor, type OldAnchorTable } from "@/lib/oldAnch
 export function OldAnchorRedirect({ locale, pages }: { locale: string; pages: OldAnchorTable }) {
   useEffect(() => {
     const follow = () => {
-      const id = fragmentId(window.location.hash);
-      if (!id || document.getElementById(id)) return;
-      const target = resolveOldAnchor(pages, id);
-      if (!target) return;
-      window.location.replace(`/${locale}/docs/${target.slug}${window.location.search}#${encodeURIComponent(target.id)}`);
+      const url = oldAnchorUrl(pages, locale, window.location, (id) => document.getElementById(id) !== null);
+      if (url) window.location.replace(url);
     };
     follow();
     window.addEventListener("hashchange", follow);

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { CONFIGURATION_SLUG, movedConfigurationAnchors, oldConfigurationAnchors } from "./configurationAnchors";
 import { extractToc, getAllDocs, getDocSource } from "./docs";
 import { docPart } from "./docParts";
-import { fragmentId, resolveOldAnchor } from "./oldAnchors";
+import { fragmentId, oldAnchorUrl, resolveOldAnchor } from "./oldAnchors";
 
 const LOCALES = ["en", "es", "ca", "zh", "ja", "ar", "pt"] as const;
 
@@ -188,6 +188,28 @@ describe("the Configuration reference, split into pages (#655)", () => {
     expect(fragmentId("#100%")).toBe("100%");
     expect(resolveOldAnchor(oldConfigurationAnchors("zh"), fragmentId(`#${encodeURIComponent("表格样式")}`))?.slug).toBe("configuration-resources");
     expect(resolveOldAnchor(oldConfigurationAnchors("ar"), fragmentId(`#${encodeURIComponent("نمط-الجداول")}`))?.slug).toBe("configuration-resources");
+  });
+
+  it("redirects a visit to an old anchor, and only that", () => {
+    const go = (locale: string, hash: string, search = "") => {
+      const own = ids(CONFIGURATION_SLUG, locale);
+      return oldAnchorUrl(movedConfigurationAnchors(locale), locale, { hash, search }, (id) => own.has(id));
+    };
+    expect(go("en", "#table-style")).toBe("/en/docs/configuration-resources#table-style");
+    expect(go("en", "#table-style", "?ref=x")).toBe("/en/docs/configuration-resources?ref=x#table-style");
+    // As typed, or as a browser encodes it: the same heading.
+    const zh = `/zh/docs/configuration-resources#${encodeURIComponent("表格样式")}`;
+    expect(go("zh", "#表格样式")).toBe(zh);
+    expect(go("zh", `#${encodeURIComponent("表格样式")}`)).toBe(zh);
+    expect(go("es", "#citas-1")).toBe("/es/docs/configuration-notes-references#citas");
+    // Each language has its own ids: an English one means nothing on the Spanish page, as before.
+    expect(go("es", "#table-style")).toBeNull();
+    // What is still on the entry page, no fragment and unknown fragments stay.
+    expect(go("en", "#index")).toBeNull();
+    expect(go("en", "#configuration")).toBeNull();
+    expect(go("en", "")).toBeNull();
+    expect(go("en", "#")).toBeNull();
+    expect(go("en", "#no-such-heading")).toBeNull();
   });
 
   it("sends every heading id the single page had, in every language, to a page that has it", () => {
