@@ -19,19 +19,12 @@
   },
   "answers": ["Q18", "Q46", "Q63", "Q64", "Q72", "Q32"],
   "gotchas": [
-    "side-box-no-float", "side-box-after-heading", "top-float-next-page", "opener-reserves-anchored",
-    "headings-drop-h1-break", "resource-types-locale", "hyphenation-locales", "nbsp-breaks",
-    "svg-no-webfonts", "svg-no-marker-filters", "palette-skips-designs"
+    "side-box-no-float",
+    "top-float-next-page",
+    "opener-reserves-anchored",
+    "svg-no-marker-filters"
   ],
-  "workarounds": [
-    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
-    { "followup": "EF-67", "package": "postext", "note": "a span: 'side' box between a heading and its first paragraph gives that paragraph a first-line indent despite indentAfterHeading: false (gotcha side-box-after-heading), so every side box follows a paragraph" },
-    { "followup": "EF-66", "package": "postext", "note": "a no-break space still breaks the line (gotcha nbsp-breaks: the rich measurer splits words at any whitespace, U+00A0 included, whichever line breaker runs), so the Spanish sample spells out the thousands it would join with one" },
-    { "followup": "EF-78", "package": "postext", "note": "a span: 'side' figure stacks from the head of the channel without making room for the opener's page-anchored kicker and numeral, and is painted over them, so the opener page cites no margin figure before the objectives box has filled the channel's head" },
-    { "followup": "EF-33", "package": "postext", "note": "config.locale does not localise Figure: resourceTypes: defaultResourceTypes(LANG) is passed by hand" },
-    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId, because 1.4.1 paints design elements (kicker, numeral, rule, standfirst, running heads, drop folio) and bodyText.referenceColor from the hex, never from the palette (gotcha palette-skips-designs)" },
-    { "followup": "EF-14", "package": "postext", "note": "hyphenation matches exact codes only, so the config sets locale: t({ en: 'en-us', es: 'es' }) (gotcha hyphenation-locales)" }
-  ],
+  "workarounds": [],
   "related": ["annotated-classic-glosses", "figures-float-where-cited", "chapter-opener-bleed-band", "textbook-box-family"],
   "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],

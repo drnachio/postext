@@ -28,7 +28,7 @@ The first `:ref` to a figure numbers it and places it where its [placement](/en/
 
 <Excerpt region="opener" />
 
-The level-1 heading stays in the text column, where a [design slot](/en/docs/configuration#span-and-advanced-design) stacks its text, the rule and the standfirst; the kicker hangs from the page's top-right corner and the numeral from the kicker, both as wide as the channel. `minHeight` fixes the opener at nine grid lines (42.9 mm), enough for a one-line title, the rule and a four-line standfirst, so a shorter standfirst does not pull the text up. The kicker and the 104 pt numeral end 40.6 mm below the top margin, inside those nine lines, so they do not push the text down either. The channel is on the right only on a recto, so the H1 breaks to an odd page. The objectives box comes after the first paragraph rather than straight after the heading, and no margin figure is cited before it (see Pitfalls).
+The level-1 heading stays in the text column, where a [design slot](/en/docs/configuration#span-and-advanced-design) stacks its text, the rule and the standfirst; the kicker hangs from the page's top-right corner and the numeral from the kicker, both as wide as the channel. `minHeight` fixes the opener at nine grid lines (42.9 mm), enough for a one-line title, the rule and a four-line standfirst, so a shorter standfirst does not pull the text up. The kicker and the 104 pt numeral end 40.6 mm below the top margin, inside those nine lines, so they do not push the text down either. The channel is on the right only on a recto, so the H1 breaks to an odd page. The objectives box is fenced after the first paragraph, and no margin figure is cited before it, so it stands under the numeral (see Pitfalls).
 
 ### 4 · Keep the folios on the channel's edge
 
@@ -46,7 +46,7 @@ These pages are chapter 4 of a longer book. The continuation sets the chapter co
 
 <Excerpt region="palette" />
 
-Every colour in the configuration links to a palette entry and also carries its hex, which `col()` copies from the same object. Postext 1.4.1 paints design elements and the reference colour with that hex, not with the palette entry (see Pitfalls). To retint the chapter, edit `palette`: the diagrams read the same object, so their glass, rays, dark panels and light plate change along with the numerals, labels and glosses. `main-color` points at the accent, so any default colour in the text styles that the configuration leaves unset prints green, not the engine's blue.
+Every colour in the configuration links to a palette entry and also carries its hex, which `col()` copies from the same object. To retint the chapter, edit `palette`: the diagrams read the same object, so their glass, rays, dark panels and light plate change along with the numerals, labels and glosses. `main-color` points at the accent, so any default colour in the text styles that the configuration leaves unset prints green, not the engine's blue.
 
 ## Variations
 
@@ -56,8 +56,8 @@ With the figure type's plain defaults, the captions of figures 4.1, 4.4 and 4.6 
 
 ```diff
 -const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id !== 'figure' ? type
--  : { ...type, defaultPlacement: { captionSide: true } })); // gotcha: resource-types-locale
-+const resourceTypes = defaultResourceTypes(LANG); // gotcha: resource-types-locale
+-  : { ...type, defaultPlacement: { captionSide: true } })); // the built-in types, in LANG
++const resourceTypes = defaultResourceTypes(LANG); // what the engine uses when none are set
 ```
 
 ### Put the channel on the right of every page
@@ -88,4 +88,4 @@ For a document read one page at a time on screen, stop mirroring the margins and
 ## Pitfalls
 
 - Figures and glosses stack in the channel in the order the text reaches them, never side by side. The critical-angle gloss is fenced after the Snell's-law paragraph and before the paragraph that cites figure 4.3, so on <PageRef page={2}>page 88</PageRef> it stacks between figures 4.2 and 4.3, beside the paragraph that introduces the term. Fenced after that citation, it would land under figure 4.3.
-- On a chapter's first page, cite margin figures only after the objectives box. Side figures stack from the head of the channel without making room for the kicker and the numeral anchored there, so a figure cited in the first paragraph is painted over them.
+- On a chapter's first page, side figures stack under the kicker and the numeral. A figure cited in the first paragraph takes that place and moves the objectives box down the channel, so this chapter cites its first margin figure after the box.

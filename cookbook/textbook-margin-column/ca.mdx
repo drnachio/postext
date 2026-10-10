@@ -28,7 +28,7 @@ El primer `:ref` a una figura la numera i la situa on indica la seva [col·locac
 
 <Excerpt region="opener" />
 
-El títol de primer nivell es queda a la columna de text, on una [ranura de disseny](/ca/docs/configuration#span-i-disseny-avançat) n'apila el text, el filet i l'entradeta; l'avanttítol penja de la cantonada superior dreta de la pàgina i el número, de l'avanttítol, tots dos amb l'amplada del canal. `minHeight` fixa l'alçada de l'obertura en nou línies de la retícula (42,9 mm), que donen cabuda a un títol d'una línia, el filet i una entradeta de quatre, així que amb una entradeta més curta el text no puja. L'avanttítol i el número de 104 pt acaben 40,6 mm per sota del marge superior, dins d'aquestes nou línies, així que tampoc no fan baixar el text. El canal només és a la dreta a les pàgines senars, i per això el títol de primer nivell salta a pàgina senar. El requadre d'objectius va després del primer paràgraf i no just després del títol, i cap figura del marge no es cita abans que ell (ho explica «Errors freqüents»).
+El títol de primer nivell es queda a la columna de text, on una [ranura de disseny](/ca/docs/configuration#span-i-disseny-avançat) n'apila el text, el filet i l'entradeta; l'avanttítol penja de la cantonada superior dreta de la pàgina i el número, de l'avanttítol, tots dos amb l'amplada del canal. `minHeight` fixa l'alçada de l'obertura en nou línies de la retícula (42,9 mm), que donen cabuda a un títol d'una línia, el filet i una entradeta de quatre, així que amb una entradeta més curta el text no puja. L'avanttítol i el número de 104 pt acaben 40,6 mm per sota del marge superior, dins d'aquestes nou línies, així que tampoc no fan baixar el text. El canal només és a la dreta a les pàgines senars, i per això el títol de primer nivell salta a pàgina senar. El requadre d'objectius va després del primer paràgraf, i cap figura del marge no es cita abans que ell, així que queda sota el número (ho explica «Errors freqüents»).
 
 ### 4 · Porta els folis al costat del canal
 
@@ -46,7 +46,7 @@ Aquestes pàgines són el capítol 4 d'un llibre més llarg. La continuació dei
 
 <Excerpt region="palette" />
 
-Cada color de la configuració enllaça amb una entrada de la paleta i porta a més el seu hex, que `col()` copia del mateix objecte. Postext 1.4.1 pinta els elements de disseny i el color de les remissions amb aquest hex, no amb l'entrada de la paleta (ho explica «Errors freqüents»). Per canviar els colors del capítol, edita `palette`: els diagrames llegeixen el mateix objecte, així que el vidre, els raigs, els panells foscos i el fons clar canvien alhora que números, avanttítols i glosses. `main-color` apunta al color d'accent, així que els colors per defecte dels estils de text que la configuració no fixa surten en verd i no en el blau del motor.
+Cada color de la configuració enllaça amb una entrada de la paleta i porta a més el seu hex, que `col()` copia del mateix objecte. Per canviar els colors del capítol, edita `palette`: els diagrames llegeixen el mateix objecte, així que el vidre, els raigs, els panells foscos i el fons clar canvien alhora que números, avanttítols i glosses. `main-color` apunta al color d'accent, així que els colors per defecte dels estils de text que la configuració no fixa surten en verd i no en el blau del motor.
 
 ## Variants
 
@@ -56,8 +56,8 @@ Amb els valors per defecte del tipus figura, els peus de les figures 4.1, 4.4 i 
 
 ```diff
 -const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id !== 'figure' ? type
--  : { ...type, defaultPlacement: { captionSide: true } })); // gotcha: resource-types-locale
-+const resourceTypes = defaultResourceTypes(LANG); // gotcha: resource-types-locale
+-  : { ...type, defaultPlacement: { captionSide: true } })); // the built-in types, in LANG
++const resourceTypes = defaultResourceTypes(LANG); // what the engine uses when none are set
 ```
 
 ### Posa el canal a la dreta a totes les pàgines
@@ -88,4 +88,4 @@ Per a un document que es llegeix pàgina a pàgina en pantalla, desactiva els ma
 ## Errors freqüents
 
 - Figures i glosses s'apilen al canal en l'ordre en què el text hi arriba, mai l'una al costat de l'altra. La glossa de l'angle límit va després del paràgraf de la llei de Snell i abans del que cita la figura 4.3, així que a la <PageRef page={2}>pàgina 88</PageRef> s'apila entre les figures 4.2 i 4.3, al costat del paràgraf que presenta el terme. Amb la tanca després d'aquesta cita, cauria sota la figura 4.3.
-- A la primera pàgina d'un capítol, cita les figures del marge només després del requadre d'objectius. Les figures laterals s'apilen des del capdamunt del canal sense deixar lloc a l'avanttítol ni al número ancorats allà, així que una figura citada al primer paràgraf es pinta a sobre d'ells.
+- A la primera pàgina d'un capítol, les figures laterals s'apilen sota l'avanttítol i el número. Una figura citada al primer paràgraf ocupa aquest lloc i fa baixar el requadre d'objectius pel canal, així que aquest capítol cita la seva primera figura del marge després del requadre.

@@ -28,7 +28,7 @@ O primeiro `:ref` a uma figura a numera e a coloca onde o seu [posicionamento](/
 
 <Excerpt region="opener" />
 
-O título de nível 1 fica na coluna de texto, onde um [slot de design](/pt/docs/configuration#largura-e-design-avançado) empilha o texto, o fio e a linha fina; o antetítulo pende do canto superior direito da página, e o numeral pende do antetítulo, os dois com a largura do canal. `minHeight` fixa a abertura em nove linhas da grade (42,9 mm), o bastante para um título de uma linha, o fio e uma linha fina de quatro linhas, então uma linha fina mais curta não puxa o texto para cima. O antetítulo e o numeral de 104 pt terminam 40,6 mm abaixo da margem superior, dentro dessas nove linhas, então também não empurram o texto para baixo. O canal só fica à direita numa página ímpar, por isso o H1 quebra para uma página ímpar. O boxe de objetivos vem depois do primeiro parágrafo, e não logo depois do título, e nenhuma figura de margem é citada antes dele (veja Erros comuns).
+O título de nível 1 fica na coluna de texto, onde um [slot de design](/pt/docs/configuration#largura-e-design-avançado) empilha o texto, o fio e a linha fina; o antetítulo pende do canto superior direito da página, e o numeral pende do antetítulo, os dois com a largura do canal. `minHeight` fixa a abertura em nove linhas da grade (42,9 mm), o bastante para um título de uma linha, o fio e uma linha fina de quatro linhas, então uma linha fina mais curta não puxa o texto para cima. O antetítulo e o numeral de 104 pt terminam 40,6 mm abaixo da margem superior, dentro dessas nove linhas, então também não empurram o texto para baixo. O canal só fica à direita numa página ímpar, por isso o H1 quebra para uma página ímpar. O boxe de objetivos vem depois do primeiro parágrafo, e nenhuma figura de margem é citada antes dele, então ele fica sob o numeral (veja Erros comuns).
 
 ### 4 · Manter os fólios na borda do canal
 
@@ -46,7 +46,7 @@ Estas páginas são o capítulo 4 de um livro mais longo. A continuação põe o
 
 <Excerpt region="palette" />
 
-Cada cor da configuração está ligada a uma entrada da paleta e também carrega o seu hex, que `col()` copia do mesmo objeto. O Postext 1.4.1 pinta os elementos de design e a cor das referências com esse hex, não com a entrada da paleta (veja Erros comuns). Para mudar as cores do capítulo, edite `palette`: os diagramas leem o mesmo objeto, então o vidro, os raios, os painéis escuros e a chapa clara mudam junto com os numerais, os rótulos e as glosas. `main-color` aponta para a cor de destaque, então qualquer cor padrão dos estilos de texto que a configuração deixa sem definir sai em verde, não no azul do motor.
+Cada cor da configuração está ligada a uma entrada da paleta e também carrega o seu hex, que `col()` copia do mesmo objeto. Para mudar as cores do capítulo, edite `palette`: os diagramas leem o mesmo objeto, então o vidro, os raios, os painéis escuros e a chapa clara mudam junto com os numerais, os rótulos e as glosas. `main-color` aponta para a cor de destaque, então qualquer cor padrão dos estilos de texto que a configuração deixa sem definir sai em verde, não no azul do motor.
 
 ## Variações
 
@@ -56,8 +56,8 @@ Com os padrões simples do tipo figura, as legendas das figuras 4.1, 4.4 e 4.6 t
 
 ```diff
 -const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id !== 'figure' ? type
--  : { ...type, defaultPlacement: { captionSide: true } })); // gotcha: resource-types-locale
-+const resourceTypes = defaultResourceTypes(LANG); // gotcha: resource-types-locale
+-  : { ...type, defaultPlacement: { captionSide: true } })); // the built-in types, in LANG
++const resourceTypes = defaultResourceTypes(LANG); // what the engine uses when none are set
 ```
 
 ### Pôr o canal à direita em todas as páginas
@@ -88,4 +88,4 @@ Para um documento lido uma página por vez na tela, pare de espelhar as margens 
 ## Erros comuns
 
 - Figuras e glosas se empilham no canal na ordem em que o texto chega a elas, nunca lado a lado. O bloco da glosa do ângulo crítico vem depois do parágrafo da lei de Snell e antes do parágrafo que cita a figura 4.3, então na <PageRef page={2}>página 88</PageRef> ela fica entre as figuras 4.2 e 4.3, ao lado do parágrafo que apresenta o termo. Com o bloco depois dessa citação, ela cairia sob a figura 4.3.
-- Na primeira página de um capítulo, cite figuras de margem só depois do boxe de objetivos. As figuras laterais se empilham a partir da cabeça do canal sem abrir espaço para o antetítulo e o numeral ancorados ali, então uma figura citada no primeiro parágrafo é pintada por cima deles.
+- Na primeira página de um capítulo, as figuras laterais se empilham sob o antetítulo e o numeral. Uma figura citada no primeiro parágrafo ocupa esse lugar e empurra o boxe de objetivos canal abaixo, então este capítulo cita a sua primeira figura de margem depois do boxe.
