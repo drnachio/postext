@@ -818,7 +818,7 @@
     "warningsMissingFontDetail": "No s'ha carregat — es fa servir una font del sistema com a alternativa.",
     "warningsFontFallbackTitle": "Font substituïda a la composició",
     "warningsFontFallbackMissingDetail": "__face__ no estava carregada quan es van compondre les pàgines: el seu text es va mesurar amb una font de substitució.",
-    "warningsFontFallbackSynthesizedDetail": "__face__ no té fitxer propi: el navegador la dibuixa més gruixuda o inclinada a partir d'una altra font de la família.",
+    "warningsFontFallbackSynthesizedDetail": "__face__ no té fitxer propi: el navegador la dibuixa amb un altre pes o una altra inclinació de la família.",
     "warningsLooseLineTitle": "Línia fluixa",
     "warningsCjkLooseLineTitle": "Línia CJK curta",
     "warningsCjkLooseLineDetail": "«__text__»: per arribar a la mesura caldria separar-ne els caràcters més del que es permet (mig quadratí, o el tracking màxim de justificació si està definit), així que la línia queda curta. Sol ser a causa d'una paraula llarga o una adreça web de la línia següent que no es pot tallar.",

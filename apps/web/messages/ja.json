@@ -818,7 +818,7 @@
     "warningsMissingFontDetail": "読み込まれていません。システムフォントで代用しています。",
     "warningsFontFallbackTitle": "レイアウトで代替フォントを使用",
     "warningsFontFallbackMissingDetail": "ページを組んだ時点で__face__が読み込まれておらず、その文字は代替フォントで計測されました。",
-    "warningsFontFallbackSynthesizedDetail": "__face__には専用のファイルがありません。ブラウザーが同じファミリーの別のフォントを太く、または斜めにして描いています。",
+    "warningsFontFallbackSynthesizedDetail": "__face__には専用のファイルがありません。ブラウザーが同じファミリーの別のウェイトまたは傾きのフォントで描いています。",
     "warningsLooseLineTitle": "ゆるい行",
     "warningsCjkLooseLineTitle": "行長に満たないCJKの行",
     "warningsCjkLooseLineDetail": "「__text__」：行長いっぱいまでそろえると字間が上限（二分、または両端そろえの最大トラッキングが設定されていればその値）を超えるため、行長に届かないまま行を終えています。多くの場合、次の行にある分割できない長い単語やWebアドレスが原因です。",
