@@ -16,25 +16,25 @@ Cinco páginas de *Mon sort est changé*, una edición de 14 × 21 cm con tres c
 
 ### 1 · La fecha sale del título
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada carta es un título de nivel 1 cuyos atributos guardan el lugar y la fecha, y el encabezamiento los imprime como `{attr.place}, le {attr.date}.` ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). La caja de la fecha llega hasta el borde derecho de la columna (`width: 'fill'`) y `align: 'right'` alinea el texto con ese borde; sin ese ajuste, el texto de un diseño sale centrado. El saludo, la firma y la posdata son [estilos de párrafo](/es/docs/configuration#estilos-de-párrafo) que se aplican con `:::paragraphs{style="…"}`. En 1.4.1 un estilo de párrafo no tiene opción de cursiva ni de caja, así que la firma usa IM Fell DW Pica SC, una familia cuyas minúsculas están dibujadas como versalitas.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada carta es un título de nivel 1 cuyos atributos guardan el lugar y la fecha, y el encabezamiento los imprime como `{attr.place}, le {attr.date}.` ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). La caja de la fecha llega hasta el borde derecho de la columna (`width: 'fill'`) y `align: 'right'` alinea el texto con ese borde; sin ese ajuste, el texto de un diseño sale centrado. El saludo, la firma y la posdata son [estilos de párrafo](/es/docs/configuration#estilos-de-párrafo) que se aplican con `:::paragraphs{style="…"}`. La firma usa IM Fell DW Pica SC, una familia cuyas minúsculas están dibujadas como versalitas. Con `inlineMarks: true`, la fecha lee las marcas de su atributo, así que `date="1^er^ avril 1778"` sube la terminación del ordinal.
 
 ### 2 · Cartas seguidas
 
 <Excerpt region="letters" />
 
-Con `breakBefore` desactivado, cada carta empieza dos líneas de la rejilla (`marginTop`) por debajo de aquella en la que termina la anterior. En la <PageRef page={4}>página 4</PageRef>, la posdata, con 12,6 pt de interlineado, acaba entre dos líneas de la rejilla, y sobre la carta III quedan unas tres líneas en blanco. En la página 2, la carta I llega hasta el pie y la II abre la página 3. El ajuste va escrito aunque 1.4.1 ya quite el salto del nivel 1 en cuanto la configuración tiene un objeto `headings`, porque con el motor corregido cada carta empezaría en página impar ([saltar antes](/es/docs/configuration#saltar-antes)). `numberingTemplate: '{1:I}'` numera las cartas de la I a la III, y el encabezamiento imprime el numeral con `{number}`.
+Con `breakBefore` desactivado, cada carta empieza dos líneas de la rejilla (`marginTop`) por debajo de aquella en la que termina la anterior. En la <PageRef page={4}>página 4</PageRef>, la posdata, con 12,6 pt de interlineado, acaba entre dos líneas de la rejilla, y sobre la carta III quedan unas tres líneas en blanco. En la página 2, la carta I llega hasta el pie y la II abre la página 3. Con el valor por defecto del nivel 1, cada carta empezaría en página impar ([saltar antes](/es/docs/configuration#saltar-antes)). `numberingTemplate: '{1:I}'` numera las cartas de la I a la III, y el encabezamiento imprime el numeral con `{number}`.
 
 ### 3 · La fecha de la carta en la cabecera impar
 
 <Excerpt region="running-heads" />
 
-En una cabecera, `{attr.date}` toma el atributo del último título de nivel 1 que empieza en esa página o antes. La página 3 lleva 12 juin 1740, y la 5, donde sigue la carta de Voltaire empezada en la 4, lleva 1er avril 1778 ([elementos de texto](/es/docs/configuration#elementos-de-texto)). Las cabeceras van 12 mm por debajo del borde superior de la página, con el folio en el margen exterior y el texto 8 mm más adentro. `pages: 'body'` las quita de la cubierta, que cuenta como página de apertura porque su título abarca el ancho de la página. La fecha va en la misma cursiva de Crimson Pro que la de la carta, y los nombres de la página par, en las versalitas de los números de carta.
+En una cabecera, `{attr.date}` toma el atributo del último título de nivel 1 que empieza en esa página o antes. La página 3 lleva 12 juin 1740, y la 5, donde sigue la carta de Voltaire empezada en la 4, lleva 1er avril 1778 con la terminación volada ([elementos de texto](/es/docs/configuration#elementos-de-texto)). Las cabeceras van 12 mm por debajo del borde superior de la página, con el folio en el margen exterior y el texto 8 mm más adentro. `pages: 'body'` las quita de la cubierta, que cuenta como página de apertura porque su título abarca el ancho de la página. La fecha va en la misma cursiva de Crimson Pro que la de la carta, y los nombres de la página par, en las versalitas de los números de carta.
 
-### 4 · La cubierta: un título y un salto de página
+### 4 · Haz de la cubierta un título
 
 <Excerpt region="cover" />
 
-La cubierta es el primer título, con el [estilo de encabezado](/es/docs/configuration#estilos-de-encabezado) `cover`: un elemento de imagen anclado al sangrado lleva la encuadernación dibujada, otro coloca la fotografía a 72 mm del borde superior, y el título, los nombres y el subtítulo salen del propio título y del frontmatter. `numbered: false` la deja fuera de la cuenta, de modo que la primera carta de Federico es la I. El diseño reserva sitio solo hasta su texto más bajo, el subtítulo, y nada para las imágenes. Sin el `:::pagebreak` que sigue al título, la nota inicial y la carta I empezarían en la página 1, encima de las cartas fotografiadas y del sello.
+La cubierta es el primer título, con el [estilo de encabezado](/es/docs/configuration#estilos-de-encabezado) `cover`: un elemento de imagen anclado al sangrado lleva la encuadernación dibujada, otro coloca la fotografía a 72 mm del borde superior, y el título, los nombres y el subtítulo salen del propio título y del frontmatter. `numbered: false` la deja fuera de la cuenta, de modo que la primera carta de Federico es la I. La imagen de la encuadernación llena la página, y una apertura reserva sitio hasta su elemento más bajo, así que la cubierta ocupa toda la página 1 y la nota inicial empieza en la 2 sin ningún `:::pagebreak`.
 
 ### 5 · Separación silábica en francés sin apretar los espacios
 
@@ -46,7 +46,7 @@ La cubierta es el primer título, con el [estilo de encabezado](/es/docs/configu
 
 <Excerpt region="palette" />
 
-`col()` escribe el hexadecimal de cada color junto a su id de paleta. En 1.4.1 la paleta llega a los estilos de texto pero no a los elementos de diseño, que pintan ese hexadecimal: los encabezamientos de las cartas, las cabeceras y la cubierta. La cursiva de la nota inicial y la del colofón usan el color de cursiva por defecto, enlazado a `main-color`; como esa entrada lleva el color de la tinta, se imprimen en tinta y no en el azul del motor, #295AA3.
+`col()` enlaza cada color con su entrada de la paleta, y el enlace vale tanto en los estilos de texto como en los elementos de diseño: los encabezamientos de las cartas, las cabeceras y la cubierta. La cursiva de la nota inicial y la del colofón usan el color de cursiva por defecto, enlazado a `main-color`; como esa entrada lleva el color de la tinta, se imprimen en tinta y no en el azul del motor, #295AA3.
 
 ## Variantes
 
@@ -64,5 +64,5 @@ Con los mismos atributos, la cabecera impar puede llevar el lugar y la fecha, *�
 
 - La página impar toma la fecha de la última carta que *empieza* en ella o antes. Una página que termina una carta y abre la siguiente lleva la fecha de la nueva, igual que la cabecera de un diccionario da la última entrada de la página.
 - Si a un título le falta un atributo, no se imprime nada y no hay aviso: una carta sin `place="…"` tiene una fecha que empieza por una coma. Revisa el título de cada carta.
-- Las cartas conservan los ; : ? y ! de la transcripción, sin espacio delante. La tipografía francesa pone ahí un espacio fino irrompible, pero 1.4.1 corta la línea en ese espacio como en cualquier otro, y el signo podría quedar a principio de línea.
-- Crimson Pro no trae las letras modificadoras ᵉ (U+1D49) y ʳ (U+02B3), así que 1ᵉʳ escrito en Unicode saldría en otra fuente. La nota inicial, que es texto de párrafo, compone `1^er^` en superíndice; la fecha y la cabecera impar son texto de diseño e imprimen 1er con la terminación del mismo cuerpo que la cifra.
+- Las cartas conservan los ; : ? y ! de la transcripción, sin espacio delante. La tipografía francesa pone ahí un espacio fino irrompible (U+202F); si lo escribes, el signo se queda en la línea de su palabra.
+- Crimson Pro no trae las letras modificadoras ᵉ (U+1D49) y ʳ (U+02B3), así que 1ᵉʳ escrito en Unicode saldría en otra fuente. Escribe `1^er^`: la nota inicial, que es texto de párrafo, lo compone en superíndice, y también la fecha y la cabecera impar, cuyos elementos de texto llevan `inlineMarks: true`.

@@ -6,8 +6,6 @@ author: "Frédéric II et Voltaire"
 
 # Mon sort \\ est changé {style="cover"}
 
-:::pagebreak
-
 :::paragraphs{style="headnote"}
 *Frédéric-Guillaume I^er^, roi de Prusse, meurt à Potsdam le 31 mai 1740. Six jours plus tard, son fils, qui règne désormais sous le nom de Frédéric II, écrit de Charlottembourg à Voltaire, son correspondant depuis août 1736. Les deux premières lettres de ce choix sont de ce mois de juin. La troisième, écrite de Paris le 1^er^ avril 1778, ferme le volume de 1889 d’où viennent ces textes. Voltaire meurt à Paris le 30 mai suivant. On garde l’orthographe de l’édition; la vedette et la signature sont détachées du texte.*
 :::
@@ -75,7 +73,7 @@ Fédéric.
 Mille compliments à la marquise. Je travaille des deux mains; d’un côté à l’armée, de l’autre au peuple et aux beaux-arts.
 :::
 
-# Voltaire à Frédéric {place="À Paris" date="1er avril 1778"}
+# Voltaire à Frédéric {place="À Paris" date="1^er^ avril 1778"}
 
 :::paragraphs{style="vedette"}
 Sire,

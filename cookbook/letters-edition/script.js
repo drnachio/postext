@@ -19,7 +19,7 @@ const palette = {
   gilt: '#d0b67c', // its tooled border and the names on it
   muted: '#75695d', // the running heads
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// col(id): a colour linked to its palette entry, in text styles and design elements alike.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -44,15 +44,16 @@ const at = (to, edge, x = 0, y = 0) => ({ anchor: { to, edge }, offset: { x: mm(
 //   # Frédéric à Voltaire {place="À Charlottembourg" date="6 juin 1740"}
 // (a value holds no { or }, and one with " goes in single quotes: gotcha attr-values)
 const letterHead = { enabled: true, slot: { elements: [
-  // {number} prints numberingTemplate '{1:I}' (gotcha: heading-number-placeholders).
+  // {number} prints the count as numberingTemplate '{1:I}' writes it.
   { kind: 'text', id: 'number', content: 'Lettre {number}', ...sc, fontSize: pt(9),
     letterSpacing: pt(1.8), color: col('seal'), placement: at('container', 'top-left') },
   { kind: 'text', id: 'title', content: '{titleText}', ...fell, fontSize: pt(15),
     color: col('ink'),
     placement: at('#number', 'below', 0, 1) },
-  // The dateline spans the measure under the title and sets its words flush right.
+  // The dateline spans the measure under the title and sets its words flush right;
+  // inlineMarks reads the attribute's marks, so date="1^er^ avril 1778" raises its ordinal.
   { kind: 'text', id: 'dateline', content: '{attr.place}, le {attr.date}.', ...crimson,
-    italic: true, fontSize: pt(10.4), color: col('ink'), align: 'right',
+    italic: true, fontSize: pt(10.4), color: col('ink'), align: 'right', inlineMarks: true,
     placement: { ...at('#title', 'below', 0, 1.5), size: { width: 'fill' } } },
 ] } };
 // The salutation, the signature and the postscript, each a :::paragraphs{style="…"} container:
@@ -69,8 +70,7 @@ const letterParts = [
 
 // #region letters: numbered I, II, III and run on, two grid lines apart
 const letters = { level: 1, numberingTemplate: '{1:I}', advancedDesign: letterHead,
-  // Written out: 1.4.1 drops the H1 page break for any headings object (gotcha:
-  // headings-drop-h1-break), and a fixed engine would put each letter on a recto.
+  // No break: left at the level's default, each letter would open on a recto.
   breakBefore: { enabled: false }, marginTop: pt(2 * LEAD),
   // The hidden heading line is measured in the heading face: italic keeps it the IM Fell cut
   // that FONTS loads. Upright, it would need the roman, which FONTS
@@ -89,22 +89,22 @@ const header = { elements: [
   head('verso-names', '{author}', 'even', at('page', 'top-left', MARGIN.outer + 8, HEAD_Y)),
   // {attr.date} reads the last letter that starts on or before the page.
   head('recto-date', '{attr.date}', 'odd', at('page', 'top-right', -(MARGIN.outer + 8), HEAD_Y),
-    { ...crimson, italic: true, fontSize: pt(9.5), letterSpacing: pt(0) }),
+    { ...crimson, italic: true, fontSize: pt(9.5), letterSpacing: pt(0), inlineMarks: true }),
   head('recto-folio', '{pageNumber}', 'odd', at('page', 'top-right', -MARGIN.outer, HEAD_Y),
     folio),
 ] };
 // #endregion
 
-// #region cover: page 1 is a heading style with the art and the title; :::pagebreak ends it
-// The Markdown: # Mon sort \\ est changé {style="cover"}, then :::pagebreak, or the headnote
-// and the first letter start on the cover (gotcha: cover-pagebreak).
+// #region cover: page 1 is a heading style with the art and the title
+// The Markdown: # Mon sort \\ est changé {style="cover"}. The binding fills the page, so the
+// design reserves all of it and the headnote starts on page 2.
 const onCover = (y) => at('page', 'top', 0, y); // centred, y mm below the top edge
 const LETTERS = { x: 12, y: 72, w: 116, h: 120 }; // mm: the photograph, inside the fillet
 // numbered: false keeps the cover out of the count, so the first letter is I.
 const cover = { id: 'cover', numbered: false,
-  // span: 'page' although the book has one column. Kept in the column, the design is clipped
-  // to the column's top and bottom (paper above and below the leather, no names) and its title
-  // loses the \\ break; page 1 would also count as a 'body' page and print the running heads.
+  // span: 'page' although the book has one column. Kept in the column, the design stops at
+  // the column's foot (a band of paper under the leather), and page 1 counts as a 'body' page
+  // and prints the running heads.
   span: 'page', advancedDesign: { enabled: true, slot: { elements: [
     { kind: 'image', id: 'binding', resourceId: 'binding',
       placement: { ...at('bleed', 'top-left'), size: { width: 'fill', height: 'fill' } } },
@@ -112,8 +112,7 @@ const cover = { id: 'cover', numbered: false,
       LETTERS.x, LETTERS.y), size: { width: mm(LETTERS.w), height: mm(LETTERS.h) } } },
     { kind: 'text', id: 'names', content: '{author}', ...sc, fontSize: pt(9.5),
       letterSpacing: pt(2), color: col('gilt'), placement: onCover(18) },
-    // \\ in the heading breaks the title here; lineHeight is a multiple (gotcha:
-    // design-lineheight-multiple), and 'wrap' keeps the ellipsis off (overflow-ellipsis-default).
+    // \\ in the heading breaks the title here.
     { kind: 'text', id: 'title', content: '{titleText}', ...fell, fontSize: pt(50),
       lineHeight: 1, color: col('paper'), align: 'center', overflow: 'wrap',
       placement: onCover(24) },
@@ -125,23 +124,19 @@ const cover = { id: 'cover', numbered: false,
 // #region text: Crimson Pro at 10/14.4 pt, set in French
 // Justification, hyphenation, whole-paragraph line breaking and the widow, orphan and runt
 // rules are defaults; locale 'fr' (in the config) picks the French patterns.
-// The letters keep the transcription's unspaced ; : ? and !, because a narrow no-break
-// space is a place to break the line in 1.4.1 (gotcha: nbsp-breaks).
+// The letters keep the transcription's unspaced ; : ? and !; a narrow no-break space
+// (U+202F) typed before each would give French spacing and never end a line.
 const bodyText = { fontFamily: 'Crimson Pro', fontSize: pt(10), lineHeight: pt(LEAD),
   color: col('ink'), firstLineIndent: mm(5),
-  // No :ref here, but 1.4.1 leaves this one blue whatever main-color says (gotcha:
-  // palette-skips-designs), and the default-skin check reads it.
+  // No :ref here: written out with the other colours, for the default-skin check.
   referenceColor: col('ink'),
   // A word space never shrinks below 75 % of the font's. At the default 60 %, the tightest
   // line on page 5 sets its spaces at 0.70 (each VDT line carries its justifiedSpaceRatio).
-  minWordSpacing: 0.75,
-  // A runt fix may add tracking 1.4.1 measures but never paints (gotcha:
-  // runt-tracking-unpainted); no paragraph here needs one, edited text might.
-  maxRuntTracking: 0 };
+  minWordSpacing: 0.75 };
 // #endregion
 
 const config = () => ({
-  locale: 'fr', // the exact code of the bundled patterns (gotcha: hyphenation-locales)
+  locale: 'fr', // French hyphenation patterns
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'), margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom),
@@ -156,8 +151,7 @@ const config = () => ({
     // octosyllables start two spaces (indentStep=3.5mm on the fence) further in, 14 mm, and the
     // two closing alexandrines at 7 mm.
     { id: 'verse', indent: mm(7), marginTop: pt(LEAD), marginBottom: pt(LEAD) },
-    // The editor's headnote at 9.6 on 13 pt, italic through *…* in the Markdown, since a
-    // paragraph style has no italic setting.
+    // The editor's headnote at 9.6 on 13 pt, italic through *…* in the Markdown.
     { id: 'headnote', fontSize: pt(9.6), lineHeight: pt(13), firstLineIndent: pt(0) },
     { id: 'colophon', fontSize: pt(7.8), lineHeight: pt(10.8), textAlign: 'left',
       firstLineIndent: pt(0), marginTop: pt(3 * LEAD) }],
