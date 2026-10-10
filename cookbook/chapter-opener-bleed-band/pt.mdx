@@ -22,7 +22,7 @@ O código é [a resposta curta](#a-resposta-curta) lá em cima. A faixa e o seu 
 
 <Excerpt region="levels" />
 
-`span: 'page'` abre cada capítulo numa página nova e estende o título de nível 1 sobre as duas colunas; `advancedDesign` desenha a abertura no lugar do texto do título, e o corpo começa abaixo da altura reservada. Sozinho, `span` toma a página seguinte, recto ou verso, e qualquer objeto `headings` desativa a quebra padrão para um recto. Por isso a quebra é declarada de novo com `parity: 'odd'`, que põe cada abertura num recto, onde a âncora à direita do número é a margem externa. No nível 2, `numberingTemplate: '{1}.{2}'` numera as seções 3.1, 3.2… na cor da faixa; um nível 3 com `'{1}.{2}.{3}'` seguiria com 3.1.1.
+`span: 'page'` abre cada capítulo numa página nova e estende o título de nível 1 sobre as duas colunas; `advancedDesign` desenha a abertura no lugar do texto do título, e o corpo começa abaixo da altura reservada. `breakBefore` com `parity: 'odd'` põe cada abertura num recto, onde a âncora à direita do número é a margem externa. No nível 2, `numberingTemplate: '{1}.{2}'` numera as seções 3.1, 3.2… na cor da faixa; um nível 3 com `'{1}.{2}.{3}'` seguiria com 3.1.1.
 
 ### 3 · Nomear a cor do capítulo uma vez só
 
@@ -40,7 +40,7 @@ Um `:ref` numera a sua figura e a coloca no primeiro espaço livre depois do par
 
 <Excerpt region="heads" />
 
-Cada elemento do cabeçalho pende de um canto superior da página e é filtrado por `parity`, então o fólio e o marcador ficam sempre na margem externa. A caixa do marcador pende do canto da sangria e se alarga com `BLEED`, para continuar sangrando depois do refile. `pages: 'body'` tira todos esses elementos das aberturas, que recebem um fólio no pé definido no rodapé. O verso nomeia o capítulo com `{chapterTitle}`, numa só linha, porque a `\\` só quebra o título na abertura. Livros didáticos costumam nomear a seção no recto. O Postext 1.4.1 não tem marcador de posição para a seção, então o cabeço do recto imprime o `{title}` do livro; nestas quatro páginas ele nunca aparece, porque os dois rectos são aberturas.
+Cada elemento do cabeçalho pende de um canto superior da página e é filtrado por `parity`, então o fólio e o marcador ficam sempre na margem externa. A caixa do marcador pende do canto da sangria e se alarga com `BLEED`, para continuar sangrando depois do refile. `pages: 'body'` tira todos esses elementos das aberturas, que recebem um fólio no pé definido no rodapé. O verso nomeia o capítulo com `{chapterTitle}`, numa só linha, porque a `\\` só quebra o título na abertura. Livros didáticos costumam nomear a seção no recto. O Postext não tem marcador de posição para a seção, então o cabeço do recto imprime o `{title}` do livro; nestas quatro páginas ele nunca aparece, porque os dois rectos são aberturas.
 
 ### 6 · Começar o livro no capítulo 3
 
@@ -95,4 +95,4 @@ Com `'any'`, um capítulo abre na página seguinte. Depois de um capítulo que t
 - A faixa tem altura fixa, enquanto o chapéu, o título e a linha fina pendem da margem superior e crescem para baixo, então uma linha fina mais longa ou um título de três linhas batem no fio. Limite as linhas finas a umas cinco linhas, como as duas edições fazem, ou calcule `BAND` a partir da abertura mais longa.
 - A fórmula do `y` do número supõe `lineHeight: 1`. A linha de base de um texto de design fica a 0,8 da altura da sua caixa de linha, e `0.8 * NUMERAL` só mede essa distância quando a caixa é tão alta quanto o corpo. Se você mudar a entrelinha ou a âncora, a fórmula tem que mudar junto. `BEARING` é ajustado a olho, porque cada algarismo tem o seu próprio espaço lateral (aqui o 3 e o 4 terminam a 0,8 mm um do outro).
 - A paleta de um estilo muda a cor dos elementos de design e do texto. Uma imagem mantém as cores com que foi desenhada: a figura 4.1 é verde-azulada porque o código a desenha a partir de `band2`, e uma figura terracota posta no capítulo 4 continuaria terracota.
-- Com `parity: 'odd'`, um capítulo que passa umas poucas linhas da sua última página deixa uma página quase vazia e um verso em branco antes da próxima abertura, e o postext 1.4.1 compõe essa página com uma coluna mais curta que o seu texto, então a última linha do capítulo se perde. Ajuste o texto, como as duas edições fazem aqui, e confira a última página de cada capítulo sempre que o texto ou `BAND` mudarem.
+- Com `parity: 'odd'`, um capítulo que passa umas poucas linhas da sua última página deixa uma página quase vazia e um verso em branco antes da próxima abertura. Ajuste o texto, como as duas edições fazem aqui, e confira a última página de cada capítulo sempre que o texto ou `BAND` mudarem.

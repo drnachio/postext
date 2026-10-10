@@ -19,24 +19,15 @@
   },
   "answers": ["Q26", "Q27", "Q28", "Q29", "Q32"],
   "gotchas": [
-    "opener-reserves-anchored", "design-lineheight-multiple",
-    "heading-number-placeholders", "attr-values", "palette-skips-designs", "top-float-next-page",
-    "svg-no-webfonts", "resource-types-locale", "hyphenation-locales"
+    "opener-reserves-anchored",
+    "attr-values",
+    "top-float-next-page"
   ],
   "related": [
     "five-chapter-openers", "textbook-margin-column", "book-from-chapters",
     "figures-float-where-cited"
   ],
-  "workarounds": [
-    { "followup": "EF-05", "package": "postext", "note": "any headings object drops the H1 break, so levels[0].breakBefore is restated to keep parity 'odd' (span: 'page' alone opens each chapter on the next page, whatever its side)" },
-    { "followup": "EF-09", "package": "postext", "note": "{numberDecimal} and the other numeric variants are empty on headings, so the numeral, the kicker and the thumb tab print {chapterNumber}" },
-    { "followup": "EF-33", "package": "postext", "note": "config.locale does not localise Figure: resourceTypes: defaultResourceTypes(LANG) is passed by hand" },
-    { "followup": "EF-55", "package": "postext", "note": "copy fitted so no chapter spills a few lines onto a page before the odd-parity opener, where 1.4.1 paints a column shorter than its block and drops its last line" },
-    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside the paletteId, because design elements and bodyText.referenceColor read the hex (gotcha palette-skips-designs)" },
-    { "followup": "EF-59", "package": "postext", "note": "{chapterNumber} is measured empty in an H1 opener without a numberingTemplate but painted as the chapter ordinal; harmless here, because an empty design text still takes one line box and minHeight sets the reservation" },
-    { "followup": "EF-56", "package": "postext", "note": "the numeral and the other design texts take lineHeight as a multiple of their size, never pt(): a Dimension would silently drop the opener's reservation (gotcha design-lineheight-multiple)" },
-    { "followup": "EF-14", "package": "postext", "note": "hyphenation matches exact codes only, so the config sets locale: t({ en: 'en-us', es: 'es' }) (gotcha hyphenation-locales)" }
-  ],
+  "workarounds": [],
   "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
