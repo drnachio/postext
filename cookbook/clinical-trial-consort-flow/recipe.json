@@ -46,7 +46,6 @@
     "Q154"
   ],
   "gotchas": [
-    "svg-no-webfonts",
     "svg-no-marker-filters",
     "math-bundle",
     "merged-cells-hiddenby",
@@ -57,8 +56,8 @@
     "config-cache-identity"
   ],
   "engine": {
-    "postext": "1.18.0",
-    "postextPdf": "1.18.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "math": true
   },
   "kit": [
@@ -155,7 +154,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-06",
-  "updated": "2026-10-06",
+  "updated": "2026-10-10",
   "related": [
     "medical-article-vancouver",
     "apa-thesis-with-bibtex",

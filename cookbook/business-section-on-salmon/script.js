@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 134 · A business section on salmon newsprint ═══════════════
 // https://postext.dev/en/cookbook/business-section-on-salmon
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated (CC BY 4.0)
-// Fonts: Source Serif 4, Playfair Display, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.18.0
+// Fonts: Source Serif 4, Playfair Display, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 //
 // An eight-page Berliner daily: four news pages on grey-white newsprint in five columns, then
 // the Business section on salmon paper in six, with its own flag and accent.
 // One heading style carries the change; a :::paper run gives Folio the salmon stock.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -357,11 +357,12 @@ const CAPTIONS = Object.fromEntries(Object.entries({
   loaves: ['**Halden’s Quayside plant** bakes 1.1 million loaves a week.', 'Bakery workers in '
     + 'white coats checking loaves on a conveyor leaving an oven.'],
 }).map(([id, [caption, altText, note = GENERATED]]) => [id, { caption, altText, note }]));
+// The labels are set in Archivo Narrow: loadSvg embeds the face the root names.
 const svg = (W, H, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${W * 10}" `
-  + `height="${H * 10}" viewBox="0 0 ${W} ${H}">${body}</svg>`;
+  + `height="${H * 10}" viewBox="0 0 ${W} ${H}" font-family="Archivo Narrow">${body}</svg>`;
 const label = (x, y, s, content, look = '', fill = palette.ink) => `<text x="${x.toFixed(2)}" `
   + `y="${y.toFixed(2)}" font-size="${s}" fill="${fill}" ${look}>${content}</text>`;
-function mx40Svg(face) { // the MX 40 over a year: a seeded walk, scaled to end on the close
+function mx40Svg() { // the MX 40 over a year: a seeded walk, scaled to end on the close
   const rand = mulberry32(40);
   const walk = [0];
   for (let i = 1; i < 253; i++) walk.push(walk[i - 1] + rand() - 0.46);
@@ -369,7 +370,7 @@ function mx40Svg(face) { // the MX 40 over a year: a seeded walk, scaled to end 
   const [W, H, L, R, B] = [291, 100, 14, 18, 8]; // mm: size, left and right gutters, axis
   const x = (i) => L + (i * (W - L - R)) / 252;
   const y = (v) => H - B - ((v - 7200) * (H - B - 4)) / 1400;
-  let out = face;
+  let out = '';
   for (const v of [7400, 7800, 8200, 8600]) {
     out += `<path d="M${L} ${y(v).toFixed(2)}H${W - R}" stroke="${palette.rule}" `
       + 'stroke-width="0.2"/>'
@@ -386,11 +387,11 @@ function mx40Svg(face) { // the MX 40 over a year: a seeded walk, scaled to end 
     + `stroke="${palette.ink}" stroke-width="0.35"/>`
     + label(x(252) + 1.5, y(level[252]) + 1, 3.4, '8,412.6', 'font-weight="700"'));
 }
-function throughputSvg(face) { // container traffic, thousands of TEU a year
+function throughputSvg() { // container traffic, thousands of TEU a year
   const DATA = [982, 1004, 1031, 1047, 918, 996, 1072, 1108, 1139, 1164, 1185]; // 2016–2026
   const [W, H, B] = [113, 70, 8];
   const y = (v) => H - B - (v * (H - B - 8)) / 1300;
-  let out = face;
+  let out = '';
   DATA.forEach((v, i) => {
     out += `<rect x="${3 + i * 10}" y="${y(v).toFixed(2)}" width="7" height="${(H - B - y(v))
       .toFixed(2)}" fill="${i === 10 ? palette.petrol : palette.rule}"/>`
@@ -402,7 +403,7 @@ function throughputSvg(face) { // container traffic, thousands of TEU a year
     + label(109.5, y(1185) + 4, 2.8, '1,185', 'text-anchor="end" font-weight="700"',
       palette.salmon));
 }
-function gateSvg(face) { // a gate in section, lying in its sill and turned up against the sea
+function gateSvg() { // a gate in section, lying in its sill and turned up against the sea
   const [r, bed] = [14, 38];
   const py = bed - r * Math.SQRT1_2; // the pivot: the arc's ends sit on the riverbed
   const p = (cx, a) => `${(cx + r * Math.cos((a * Math.PI) / 180)).toFixed(2)} `
@@ -413,7 +414,7 @@ function gateSvg(face) { // a gate in section, lying in its sill and turned up a
     + `cy="${py.toFixed(2)}" r="1.4" fill="${palette.ink}"/>`;
   const water = (x, w, top) => `<rect x="${x}" y="${top}" width="${w}" height="${bed - top}" `
     + `fill="${palette.rule}" fill-opacity="0.4"/>`;
-  return svg(113, 50, face + water(0, 54, 24) + water(59, 30, 30) + water(89, 24, 19)
+  return svg(113, 50, water(0, 54, 24) + water(59, 30, 30) + water(89, 24, 19)
     + `<rect x="0" y="${bed}" width="54" height="12" fill="${palette.muted}"/>`
     + `<rect x="59" y="${bed}" width="54" height="12" fill="${palette.muted}"/>`
     + gate(27, 225) + gate(80, -45)
@@ -426,9 +427,9 @@ function gateSvg(face) { // a gate in section, lying in its sill and turned up a
 const SECTOR_MOVES = [['Shipping', 3.4], ['Insurance', 1.6], ['Engineering', 1.1], ['Banks', 0.7],
   ['Energy', 0.5], ['Food and drink', 0.3], ['Property', -0.1], ['Technology', -0.2],
   ['Health', -0.4], ['Retail', -2.1]];
-function sectorsSvg(face) { // the day's move of each sector, in per cent
+function sectorsSvg() { // the day's move of each sector, in per cent
   const [W, H, Z, k] = [291, 82, 150, 30]; // mm; the zero line; mm per point
-  let out = face;
+  let out = '';
   SECTOR_MOVES.forEach(([name, move], i) => {
     const y = 2 + i * 8;
     const [x, w] = move >= 0 ? [Z, move * k] : [Z + move * k, -move * k];
@@ -440,20 +441,6 @@ function sectorsSvg(face) { // the day's move of each sector, in per cent
         `font-weight="700" text-anchor="${move >= 0 ? 'start' : 'end'}"`);
   });
   return svg(W, H, `${out}<path d="M${Z} 0V${H}" stroke="${palette.ink}" stroke-width="0.35"/>`);
-}
-// An SVG drawn as an image cannot see the page's fonts (gotcha: svg-no-webfonts): each
-// drawing carries Archivo Narrow inline, as data URLs of the Fontsource files.
-async function inlineFace() {
-  const src = async (weight) => {
-    const url = 'https://cdn.jsdelivr.net/npm/@fontsource/archivo-narrow@5/files/'
-      + `archivo-narrow-latin-${weight}-normal.woff2`;
-    const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-    let bin = '';
-    for (const b of bytes) bin += String.fromCharCode(b);
-    return `@font-face{font-family:F;font-weight:${weight};src:url(data:font/woff2;base64,`
-      + `${btoa(bin)}) format('woff2')}`;
-  };
-  return `<style>${await src(400)}${await src(700)}text{font-family:F}</style>`;
 }
 // #endregion
 
@@ -499,11 +486,10 @@ const FONTS = { // text, display and label faces, loaded before the build (gotch
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const all = `${markdown}\n\n${businessPages}`;
 await loadFonts(FONTS, all);
-const face = await inlineFace();
 await Promise.all([...resources.filter((r) => r.bitmap)
   .map((r) => loadImage(r.bitmap.fileId, asset(r.bitmap.fileId))),
-loadSvg('gate.svg', gateSvg(face)), loadSvg('throughput.svg', throughputSvg(face)),
-loadSvg('mx40.svg', mx40Svg(face)), loadSvg('sectors.svg', sectorsSvg(face))]);
+loadSvg('gate.svg', gateSvg()), loadSvg('throughput.svg', throughputSvg()),
+loadSvg('mx40.svg', mx40Svg()), loadSvg('sectors.svg', sectorsSvg())]);
 const doc = await buildWithFonts(() => buildDocument({ markdown: all, resources }, config()), all);
 showPages(doc, { title: 'The Marrowick Ledger · Business on salmon' });
 
