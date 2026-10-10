@@ -1,8 +1,8 @@
 ---
 title: "Zine riso em duas cores: a arte numa cor especial"
-summary: "Um zine de quatro páginas para risografia de dois tambores: os desenhos coloridos saem em tons de rosa, recoloridos pelo pen no canvas e por renderToPdf no PDF."
+summary: "Um zine de quatro páginas para risografia de dois tambores: os desenhos coloridos saem em tons de rosa, recoloridos pelo motor no canvas e no PDF."
 plain: "Uma pequena revista dobrada sobre os ônibus noturnos, feita para uma máquina de impressão que usa só duas tintas. Os desenhos coloridos viram tons de uma única tinta rosa."
-description: "Um zine riso em que diagramStyle.singleInk e applySingleInkToSvg imprimem desenhos SVG coloridos em tons de uma cor especial, na tela e no PDF."
+description: "Um zine riso em que diagramStyle.singleInk imprime desenhos SVG coloridos em tons de uma cor especial, na tela e no PDF, com uma opção no registro das imagens."
 question: "Como imprimo todos os desenhos SVG em tons de uma cor especial e todas as outras cores numa segunda tinta?"
 aliases: ["risografia", "riso", "risógrafo", "impressão em duas cores", "cor especial", "cor chapada", "duotone", "bicromia", "tinta única", "zine", "fanzine", "fora de registro", "prova em tons de cinza", "livro didático em duas cores", "retícula", "meio-tom"]
 pageNotes: { "1": "A capa: o número da edição e a linha Six routes after midnight, three ridden end to end; abaixo, uma lua cheia em retícula rosa atrás de dois fios elétricos azuis, um poste de ponto de ônibus azul cuja placa lista NIGHT, N12, N27 e N41, e NIGHT BUSES em maiúsculas altas e condensadas, em azul sobre uma cópia rosa um pouco fora de registro.", "2": "Página 2: o antetítulo Brackwater, 00:10 to 06:00 sobre AFTER THE LAST TRAIN, o parágrafo de abertura, a nota do N12 depois do seu chip de linha rosa, as palavras de um motorista em maiúsculas condensadas sob uma tarja rosa e o começo da nota do N27.", "3": "Página 3: a rede noturna em tons de rosa acima de uma barra de legenda rosa-clara, o fim da nota do N27, a nota do N41 e uma pequena miniatura do mesmo mapa em seis cores ao lado da nota As drawn.", "4": "A quarta capa: um letreiro de destino rosa que diz NOT IN SERVICE, o aviso da edição 5 com três lugares onde pegá-la, o colofão numa letra monoespaçada e uma lua em retícula rosa no canto inferior." }
@@ -18,17 +18,17 @@ pageNotes: { "1": "A capa: o número da edição e a linha Six routes after midn
 
 <Excerpt region="inks" />
 
-Um risógrafo imprime cada tinta com o seu próprio tambor, então uma terceira cor em qualquer lugar da configuração exigiria um terceiro tambor. `screen()` mistura uma parte de uma tinta com a cor do papel, do jeito que uma retícula imprime parte dos pontos e deixa papel entre eles. Uma retícula de 25% do rosa é `#f2c7d3`, o fundo dos chips e da legenda. `main-color` aponta para o rosa, e assim qualquer valor padrão que a configuração não mexe sai desse tambor, e não no azul do próprio motor, `#295AA3`. `col()` escreve cada hex ao lado do seu id porque a 1.4.1 aplica a paleta aos estilos de texto, mas não aos elementos de design.
+Um risógrafo imprime cada tinta com o seu próprio tambor, então uma terceira cor em qualquer lugar da configuração exigiria um terceiro tambor. `screen()` mistura uma parte de uma tinta com a cor do papel, do jeito que uma retícula imprime parte dos pontos e deixa papel entre eles. Uma retícula de 25% do rosa é `#f2c7d3`, o fundo dos chips e da legenda. `main-color` aponta para o rosa, e assim qualquer valor padrão que a configuração não mexe sai desse tambor, e não no azul do próprio motor, `#295AA3`.
 
 ### 2 · Recolora cada desenho uma vez por saída
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. Com `diagramStyle.singleInk`, `renderToPdf` transforma cada cor de um SVG num tom de `inkColor` cuja intensidade é 1 menos a luminância relativa da cor ([estilo de diagramas](/pt/docs/configuration#estilo-de-diagramas)), então o N12 azul-marinho sai a 84% e o N50 amarelo a 24%. Na 1.4.1 o canvas pinta um SVG registrado sem alteração, então `registerArt()` registra uma cópia recolorida por `applySingleInkToSvg` e guarda o desenho original para `resourceBytes`. Amostrada no canvas e no PDF rasterizado a 300 dpi, a linha do N12 é (242, 109, 171), o tom que a fórmula dá para uma intensidade de 0,836. Uma segunda passada a clarearia para 44%, e por isso o PDF nunca recebe a cópia recolorida.
+O código é [a resposta curta](#a-resposta-curta) logo acima. Com `diagramStyle.singleInk`, `renderToPdf` transforma cada cor de um SVG num tom de `inkColor` cuja intensidade é 1 menos a luminância relativa da cor ([estilo de diagramas](/pt/docs/configuration#estilo-de-diagramas)), então o N12 azul-marinho sai a 84% e o N50 amarelo a 24%. O canvas tinge do mesmo modo uma imagem registrada com `singleInk: true`, então `registerArt()` registra cada desenho como foi desenhado, com essa opção, e guarda o mesmo SVG para `resourceBytes`. Amostrada no canvas e no PDF rasterizado a 300 dpi, a linha do N12 é (242, 109, 171), o tom que a fórmula dá para uma intensidade de 0,836. Cada saída recolore o desenho uma única vez: se passasse duas vezes pela fórmula, a linha clarearia para 44%.
 
 ### 3 · Imprima o título duas vezes, fora de registro
 
 <Excerpt region="cover" />
 
-Um risógrafo imprime um tambor depois do outro, e a folha nunca cai duas vezes exatamente no mesmo lugar. `twice()` devolve duas cópias de um elemento de texto, a rosa primeiro, 0,8 mm para a direita e 0,5 mm para cima. A ordem do array é a ordem de pintura, então a cópia azul cobre a rosa, exceto por um filete ao longo das bordas superior e direita de cada letra. O canvas e o PDF pintam cor opaca, então a sobreposição fica azul onde uma riso imprimiria roxo. O design ocupa a página porque a linha da edição fica acima da mancha e o poste passa do pé dela; num design mantido na coluna, a 1.4.1 corta os dois nas bordas da coluna.
+Um risógrafo imprime um tambor depois do outro, e a folha nunca cai duas vezes exatamente no mesmo lugar. `twice()` devolve duas cópias de um elemento de texto, a rosa primeiro, 0,8 mm para a direita e 0,5 mm para cima. A ordem do array é a ordem de pintura, então a cópia azul cobre a rosa, exceto por um filete ao longo das bordas superior e direita de cada letra. O canvas e o PDF pintam cor opaca, então a sobreposição fica azul onde uma riso imprimiria roxo. O design ocupa a página porque o poste passa do pé da mancha, onde um design mantido na sua coluna é cortado.
 
 ### 4 · Deixe o texto pequeno na tinta escura
 
@@ -40,7 +40,7 @@ Sobre o papel creme, o azul dá um contraste de 6,4:1 e o rosa fluorescente de 2
 
 <Excerpt region="drawn" />
 
-Numa só coluna, uma flutuante ocupa toda a largura da sua faixa, então uma imagem pequena flutuando ali deixaria o resto da faixa vazio. A miniatura, então, é um design de título: `### As drawn {style="drawn" note="…"}` imprime a imagem e, à direita dela, o título como rótulo com a nota embaixo. As imagens de um design não reservam altura, então `minHeight` define um piso na altura da imagem. Hoje a nota tem mais ou menos essa altura; com uma nota mais curta, o bloco seguinte passaria por cima da imagem. `registerSnapshot()` desenha o mesmo mapa de `network()` num PNG, e como a tinta única só recolore SVG, a miniatura mantém as seis cores na tela e no PDF.
+Numa só coluna, uma flutuante ocupa toda a largura da sua faixa, então uma imagem pequena flutuando ali deixaria o resto da faixa vazio. A miniatura, então, é um design de título: `### As drawn {style="drawn" note="…"}` imprime a imagem e, à direita dela, o título como rótulo com a nota embaixo. A imagem conta na altura que o design reserva, então o bloco seguinte começa abaixo dela mesmo com uma nota mais curta. `registerSnapshot()` desenha o mesmo mapa de `network()` num PNG, e como a tinta única só recolore SVG, a miniatura mantém as seis cores na tela e no PDF.
 
 ## Variações
 
@@ -66,8 +66,7 @@ Com texto preto e uma cor especial azul sobre papel branco, os mesmos desenhos s
 
 ## Erros comuns
 
-- Entregue a `renderToPdf` o desenho original. Na 1.4.1 ele recolore qualquer SVG que recebe, então uma cópia já recolorida passa de novo pela fórmula e a linha do N12 cai de 84% para 44%.
-- Na 1.4.1, `applySingleInkToSvg` reescreve cores hex, `rgb()` e `rgba()` com canais inteiros, e as palavras-chave `white` e `black`. Uma forma que use `red`, use `hsl()` ou deixe o preenchimento no preto padrão mantém essa cor, que exigiria um terceiro tambor. Dê um valor hex a cada preenchimento e a cada contorno.
+- No PDF a recoloração reescreve o SVG: cores hex, `rgb()`, `rgba()`, `hsl()` e `hsla()`, e as palavras-chave `white` e `black`. Uma forma que use `red` ou deixe o preenchimento no preto padrão mantém essa cor ali, que exigiria um terceiro tambor. Dê um valor hex a cada preenchimento e a cada contorno.
 - `colorSpace: 'grayscale'` passa para cinza o que o postext pinta e incorpora os bitmaps como estão, então a miniatura PNG continua colorida na prova em tons de cinza. Só o segundo botão do pen gera a prova; as páginas acima são o canvas, e o PDF oferecido nesta página é o colorido.
-- Com o espaçamento entre parágrafos ligado, a 1.4.1 pode acrescentar uma linha de espaço antes do resto de um parágrafo que continua na página seguinte sob uma flutuante no topo. O texto daqui não provoca isso. Depois de editar o texto, confira a primeira linha sob o mapa, porque uma linha a mais pode empurrar a miniatura para uma quinta página.
+- O equilíbrio de colunas pode deixar uma linha de espaço sob uma flutuante no topo, antes do resto de um parágrafo que vem da página anterior; `headings.balancing.stretchAfterFloats: false` mantém o texto logo abaixo da flutuante. O texto daqui não provoca isso. Depois de editar o texto, confira a primeira linha sob o mapa, porque uma linha a mais pode empurrar a miniatura para uma quinta página.
 - No pen, os dois botões dizem “Build the PDF”. O primeiro gera o PDF em cores e o segundo a prova em tons de cinza; depois que um arquivo é gerado, o botão dá lugar a um link “Open the PDF ↗” e a um link de download com o nome do arquivo.
