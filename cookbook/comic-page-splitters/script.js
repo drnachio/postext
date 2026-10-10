@@ -85,7 +85,7 @@ const config = () => ({
     hyphenation: { enabled: false } },
   headings: { fontFamily: SFX, color: col('accent'), fontWeight: 400,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // The cover sheet's title opens a page, on either side.
       { level: 1, fontSize: pt(34), lineHeight: pt(38), breakBefore: { enabled: true,
         parity: 'any' }, marginTop: mm(30), marginBottom: pt(15) },
       { level: 2, fontFamily: LETTERING, fontSize: pt(10.5), fontWeight: 700,

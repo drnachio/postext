@@ -68,7 +68,7 @@ const opener = {
 };
 const chapter = {
   level: 1, fontFamily: DISPLAY, fontWeight: 600, marginTop: pt(0), marginBottom: pt(0),
-  // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+  // Each chapter opens a page, on either side of the spine.
   breakBefore: { enabled: true, parity: 'any' },
   // A masculine ordinal in words: {1:ordinal-feminine} would give الأولى, الثانية…
   numberingTemplate: 'الفصل {1:ordinal}', advancedDesign: opener,

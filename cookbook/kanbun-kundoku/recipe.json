@@ -13,7 +13,7 @@
     "also": ["right-binding", "ruby", "paragraph-styles", "gyodori-headings", "kana-scripts", "japanese-kinsoku", "japanese-numerals", "character-grid", "cjk-fonts", "heading-styles", "opener-design", "running-heads", "page-role-filters", "mirrored-margins", "color-palette", "pdf-export"]
   },
   "answers": ["Q143", "Q135"],
-  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order"],
+  "gotchas": ["ja-locale-tag", "cjk-fonts-slices", "cjk-spread-order"],
   "related": ["tang-poems-facing-english", "zhuyin-vertical-reader", "haiku-and-tanka", "red-ink-commentary"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],

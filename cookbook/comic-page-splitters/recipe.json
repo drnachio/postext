@@ -37,9 +37,7 @@
     "Q170",
     "Q164"
   ],
-  "gotchas": [
-    "headings-drop-h1-break"
-  ],
+  "gotchas": [],
   "engine": {
     "postext": "1.25.0",
     "postextPdf": "1.25.0"

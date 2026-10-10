@@ -119,7 +119,7 @@ const config = () => ({
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(1.5), indentAfterHeading: false,
     optimalLineBreaking: true, avoidWidows: true, avoidOrphans: true, ...bodyKashida },
-  // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+  // Each poem opens a page, on either side of the spine.
   headings: { fontFamily: RUQAA, fontWeight: 700, color: col('rubric'),
     levels: [{ level: 1, fontSize: pt(34), breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: opener }] },

@@ -37,7 +37,7 @@ const typed = (size, look = {}) => ({ fontFamily: 'Courier Prime', fontSize: pt(
   color: col('ink'), ...look }); // the dateline and the captions: a typewriter
 const at = (to, edge, x = 0, y = 0) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) } });
 const text = (id, content, look, placement) => ({ kind: 'text', id, content, align: 'left',
-  overflow: 'wrap', color: col('ink'), ...look, placement }); // never the ellipsis default
+  overflow: 'wrap', color: col('ink'), ...look, placement }); // wraps, in a running head too
 const rule = (id, under, weight, gap = 0) => ({ kind: 'rule', id, thickness: pt(weight),
   color: col('ink'), placement: { ...at(under, 'above', 0, -gap), size: { width: 'fill' } } });
 const depth = (lines) => ({ kind: 'box', id: 'depth', style: {}, placement: {
@@ -202,7 +202,7 @@ const config = () => ({
     minWordSpacing: 0.75, maxWordSpacing: 1.6, avoidWidows: true, avoidOrphans: true,
     maxJustifyTracking: 15 }, // ‰ of an em: narrow columns justify with a little tracking
   headings: { fontFamily: 'Oswald', fontWeight: 600, marginBottom: pt(0), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // Each section opens a page, on either side.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: section },
     { level: 2, fontSize: pt(20), lineHeight: pt(22), marginTop: pt(LEAD) },

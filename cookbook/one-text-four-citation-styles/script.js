@@ -85,7 +85,7 @@ const config = () => ({
     avoidWidows: true, avoidOrphans: true, avoidRunts: true,
   },
   headings: { fontFamily: SERIF, color: col('ink'), levels: [
-    { level: 1, breakBefore: { enabled: true, parity: 'any' }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: true, parity: 'any' }, // the essay opens a page
       advancedDesign: opener(SHOWN[at], at) },
   ] },
   header: { elements: [] },

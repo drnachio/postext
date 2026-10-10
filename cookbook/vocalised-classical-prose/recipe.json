@@ -38,8 +38,7 @@
   ],
   "gotchas": [
     "arabic-locale-tag",
-    "arabic-fonts-subset",
-    "headings-drop-h1-break"
+    "arabic-fonts-subset"
   ],
   "explainsWarnings": [
     "arabicMarksExceedLeading"

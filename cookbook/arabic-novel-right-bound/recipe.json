@@ -44,7 +44,6 @@
     "arabic-locale-tag",
     "arabic-fonts-subset",
     "cjk-spread-order",
-    "headings-drop-h1-break",
     "style-inherits-break"
   ],
   "engine": {

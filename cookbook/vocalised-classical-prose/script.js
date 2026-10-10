@@ -63,7 +63,7 @@ const page = {
 const headings = {
   fontFamily: NASKH, color: col('ink'), textAlign: 'center',
   levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // The maqāma opens on a recto.
     { level: 1, fontFamily: RUQAA, fontWeight: 700, fontSize: pt(32), lineHeight: pt(LEAD * 3),
       color: col('rubric'), marginTop: pt(0), marginBottom: pt(0),
       breakBefore: { enabled: true, parity: 'odd' } },

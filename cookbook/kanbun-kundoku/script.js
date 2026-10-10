@@ -56,7 +56,6 @@ const paragraphStyles = [
 const at = (down, across) => ({ anchor: { to: 'container', edge: 'top-left' },
   offset: { x: pt(down), y: pt(across) } });
 const TITLE = 26; // pt
-// gotcha: headings-drop-h1-break
 const part = { level: 1, breakBefore: { enabled: true, parity: 'any' },
   advancedDesign: { enabled: true, minHeight: pt(5 * LEAD), slot: { elements: [
     { kind: 'text', id: 'title', content: '{titleText}', fontFamily: MINCHO, fontWeight: 700,

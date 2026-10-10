@@ -59,7 +59,7 @@ const cjk = {
 const night = {
   level: 1, fontFamily: MINCHO, fontWeight: 600, fontSize: pt(12.5),
   lineSpan: 3, indent: em(5), // JLReq §4.1.3
-  breakBefore: { enabled: false }, // the nights run on (gotcha: headings-drop-h1-break)
+  breakBefore: { enabled: false }, // the nights run on
 };
 // #endregion
 

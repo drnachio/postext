@@ -42,11 +42,7 @@
     "Q152",
     "Q153"
   ],
-  "gotchas": [
-    "headings-drop-h1-break",
-    "overflow-ellipsis-default",
-    "callout-columns"
-  ],
+  "gotchas": [],
   "related": [
     "newspaper-front-page",
     "pendulum-lab-video-players",
