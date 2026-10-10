@@ -1,8 +1,8 @@
 ---
 title: "Live editor with layout in a Web Worker"
-summary: "Markdown beside a pocket page: a worker started from a blob sets the chapter with its own fonts, and each keystroke cancels the build in flight."
+summary: "Markdown beside a pocket page: a Web Worker sets the chapter with its own fonts, and each keystroke cancels the build in flight."
 plain: "A live editor for a small pocket edition of The Time Machine. Each time you type, the page is laid out again in the background, so the screen keeps responding."
-description: "Lay out Postext pages in a Web Worker started from a same-origin blob, send it the font files, cancel the build on each keystroke and paint on the main thread."
+description: "Lay out Postext pages in a Web Worker started with one call, send it the font files, cancel the build on each keystroke and paint on the main thread."
 question: "How do I keep an editor responsive while a long text lays out, with fonts and cancellation in a Web Worker?"
 aliases: ["Web Worker", "createLayoutWorker", "registerFonts", "AbortController", "cancel a build", "live preview", "off the main thread", "Markdown editor", "headless", "Node"]
 pageNotes: { "1": "The title page: across the top 84 mm, an oxblood field framed by a double gilt rule holds a brass dial with four small dials on its face; below it, on cream paper, The Time Machine in Cinzel on two lines, An Invention in oxblood italic, a short brass rule and H. G. Wells in small capitals.", "2": "The text of chapter I starts on the ninth line, under an oxblood roman numeral, a short brass rule and INTRODUCTION in tracked capitals; the first two paragraphs fill the rest of the page and the folio stands at its foot.", "3": "A recto of short speeches, with Introduction in oxblood small capitals over the text and the folio at the outer edge.", "4": "A verso headed The Time Machine, with the folio at the outer edge; one sentence of the Time Traveller's is set in italic.", "5": "A recto on the geometry of four dimensions, with the running head Introduction." }
@@ -14,17 +14,17 @@ You set chapter I of H. G. Wells's *The Time Machine* as a 110 × 147 mm pocket 
 
 ## Method
 
-### 1 · Start the worker from a blob
+### 1 · Start the worker with one call
 
-This step's code is [the short answer](#the-short-answer) above. In 1.4.1, `createLayoutWorker()` called with no options starts the worker file that sits beside the module. When the module comes from esm.sh, that file is on esm.sh's origin, and the `Worker` constructor throws a SecurityError. A blob URL made by the page has the page's origin, so the short answer starts a module worker from a one-line blob that imports `postext/worker/entry` from esm.sh, and passes that worker to `createLayoutWorker({ worker })`. The handle's `build()` takes the same content and config as `buildDocument()` and resolves to the same kind of document ([Running layout in a Web Worker](/en/docs/configuration#running-layout-in-a-web-worker)).
+This step's code is [the short answer](#the-short-answer) above. `createLayoutWorker()` takes no options. When the module comes from esm.sh, the worker file is on esm.sh's origin, where the `Worker` constructor refuses it, so the engine starts its worker entry through a same-origin blob, at the version the page imported. In a bundled app the same call starts the worker file next to the module. The handle's `build()` takes the same content and config as `buildDocument()` and resolves to the same kind of document ([Running layout in a Web Worker](/en/docs/configuration#running-layout-in-a-web-worker)).
 
-<Note>Postext has no server-side mode: it measures text with a canvas, so it lays out in a browser or a worker. For a batch job, open the page in headless Chrome with Puppeteer and take the pages or the PDF from there. For a `.postext` project on disk, the postext-port skill's `render.mjs` runs the engine in Node and measures with fontkit, from the project's own fonts, in place of a canvas ([Scripts](/en/docs/skill#scripts)).</Note>
+<Note>The postext package measures text with a canvas, so it lays out in a browser or a worker. For a batch job, the postext command line (postext-cli) lays a book out and writes its PDF with no browser; a page opened in headless Chrome with Puppeteer is the other way. For a `.postext` project on disk, the postext-port skill's `render.mjs` runs the engine in Node and measures with fontkit, from the project's own fonts, in place of a canvas ([Scripts](/en/docs/skill#scripts)).</Note>
 
 ### 2 · Load every face twice
 
 <Excerpt region="fonts" />
 
-The worker has a `FontFaceSet` of its own and cannot see the faces the page has loaded, so the short answer fetches the same Fontsource files and passes their bytes to `registerFonts()`, with each weight as a string (`'400'`). Leave that call out and the 1.4.1 worker measures in a fallback font without a warning: it sets this chapter in 175 lines instead of 190, and the first line ends on “him)” instead of “of”. A font file that fails to download is caught no better. If the worker receives a 404 page in place of the roman Baskervville, `registerFonts()` still resolves and the chapter comes out in 186 lines, with a warning only in the worker's console. The short answer therefore checks each response's status before it sends any bytes, and throws with the face and the HTTP status. The page loads the same faces with `loadFonts()` as well, because the canvas paints with the page's fonts.
+The worker has a `FontFaceSet` of its own and cannot see the faces the page has loaded, so the short answer fetches the same Fontsource files and passes their bytes to `registerFonts()`, with each weight as a string (`'400'`). Leave that call out and the worker measures in a fallback font: it sets this chapter in 175 lines instead of 190, the first line ends on “him)” instead of “of”, and the page's console names each missing family once. A font file that fails to download is harder to see. If the worker receives a 404 page in place of the roman Baskervville, `registerFonts()` still resolves and the chapter comes out in 186 lines, with a warning only in the worker's console. The short answer therefore checks each response's status before it sends any bytes, and throws with the face and the HTTP status. The page loads the same faces with `loadFonts()` as well, because the canvas paints with the page's fonts.
 
 ### 3 · Build on every keystroke, paint on the main thread
 
@@ -38,7 +38,7 @@ The worker has a `FontFaceSet` of its own and cannot see the faces the page has 
 
 <Excerpt region="title" />
 
-The line `# The Time Machine {style="title"}` sets page 1 in the `title` heading style, whose empty `header` and `footer` leave the page without running heads or folio. `numbered: false` keeps the title out of the chapter count, so Introduction is still chapter I. The plate is anchored to the top-left corner of the bleed and the author's name is set below the foot of the column; `span: 'page'` lets the design paint in both places. Without it, 1.4.1 clips the design to the column, so the plate loses its top 15 mm and the author's name is not painted.
+The line `# The Time Machine {style="title"}` sets page 1 in the `title` heading style, whose empty `header` and `footer` leave the page without running heads or folio. `numbered: false` keeps the title out of the chapter count, so Introduction is still chapter I. The plate is anchored to the top-left corner of the bleed, and the author's name is set below the foot of the column. A design kept in its column is cut at the column's foot, so the style sets `span: 'page'`; without it the author's name is not painted.
 
 ### 5 · Running heads by page role
 
@@ -50,9 +50,4 @@ The line `# The Time Machine {style="title"}` sets page 1 in the `title` heading
 
 <Excerpt region="opener" />
 
-The design's `{number}` prints the chapter number in the form `numberingTemplate: '{1:I}'` gives it, a roman I. `minHeight` reserves at least eight lines, so the text starts on the ninth while the title takes one or two lines, and further down when a longer title needs more room. `breakBefore` is restated because a `headings` object drops the default H1 break; `parity: 'any'` lets the chapter open on page 2, facing its second page.
-
-## Pitfalls
-
-- In postext 1.4.1 a build with a measurement cache can break lines differently from one without, and the worker always keeps one. At this recipe's 90 mm measure the chapter sets 190 lines either way, but with margins of 13 and 10 mm (an 87 mm measure) and the default word spacing it sets 196 lines without a cache and 199 with one. The pen gives the main thread a cache of its own (`createMeasurementCache()`), so the two threads keep setting the same pages when you change the measure.
-- An import map on the page does not reach the worker. If you pin `https://esm.sh/postext@1.4.1` for the page, pin the blob's `import` to the same version, or the two threads can run different releases.
+The design's `{number}` prints the chapter number in the form `numberingTemplate: '{1:I}'` gives it, a roman I. `minHeight` reserves at least eight lines, so the text starts on the ninth while the title takes one or two lines, and further down when a longer title needs more room. `breakBefore` with `parity: 'any'` lets the chapter open on page 2, facing its second page; the default would send it to page 3, a recto.

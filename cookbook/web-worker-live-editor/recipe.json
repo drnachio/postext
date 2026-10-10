@@ -47,13 +47,7 @@
     "server-side"
   ],
   "gotchas": [
-    "worker-cdn-origin",
-    "worker-own-fonts",
-    "headings-drop-h1-break",
-    "palette-skips-designs",
-    "design-lineheight-multiple",
-    "overflow-ellipsis-default",
-    "runt-tracking-unpainted"
+    "worker-own-fonts"
   ],
   "explainsWarnings": [],
   "related": [
@@ -61,43 +55,7 @@
     "fonts-before-layout",
     "trade-paperback-novel"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the chapter level restates breakBefore (parity 'any') because any headings object drops the H1 break (gotcha headings-drop-h1-break)"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes each colour's hex beside its paletteId, because 1.4.1 does not read the palette into the design slots of the title page, the opener and the running heads (gotcha palette-skips-designs)"
-    },
-    {
-      "followup": "EF-113",
-      "package": "postext",
-      "note": "the title page's heading style sets span: 'page' in a single-column book: kept in the column, the design is clipped to the column, so the bleed-anchored plate loses its top 15 mm and the author's name, set below the column's foot, disappears"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the title's design text sets lineHeight as a multiple (1.04): a pt dimension would drop the heading's reservation without a warning (gotcha design-lineheight-multiple)"
-    },
-    {
-      "followup": "EF-111",
-      "package": "postext",
-      "note": "bodyText.maxRuntTracking: 0, because the tracking a runt fix measures is not painted (gotcha runt-tracking-unpainted); the shipped chapter sets the same pages without it, but an edit in the editor can end a paragraph on a runt"
-    },
-    {
-      "followup": "EF-35",
-      "package": "postext",
-      "note": "the worker starts from a same-origin blob module that imports https://esm.sh/postext/worker/entry: in 1.4.1, createLayoutWorker() with no options starts the worker file beside the module, on esm.sh's origin, and the Worker constructor throws a SecurityError (gotcha worker-cdn-origin)"
-    },
-    {
-      "followup": "EF-168",
-      "package": "postext",
-      "note": "the main-thread comparison builds with a MeasurementCache of its own, as the worker always does: in 1.4.1 a build can break lines differently with and without one. At this recipe's 90 mm measure the chapter sets 190 lines either way, but with margins of 13 and 10 mm (an 87 mm measure) and the default word spacing it sets 196 lines without a cache and 199 with one, so without the cache the two threads' pages would part as soon as the measure changes"
-    }
-  ],
+  "workarounds": [],
   "engine": {
     "postext": "1.25.0",
     "worker": true

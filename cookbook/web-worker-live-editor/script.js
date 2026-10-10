@@ -19,7 +19,7 @@ const palette = { // every colour in the config links to one of these
   muted: '#6b5d4b', // the drop folio and the colophon (5.3:1 on the paper)
   paper: '#f2ead8', // a cream pocket-book paper
 };
-// Each colour names its palette entry and carries its hex (gotcha: palette-skips-designs).
+// Each colour names its palette entry and carries its hex.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -57,7 +57,7 @@ const PLATE = TRIM.width * (840 / 1100); // mm: the plate's depth at full width 
 const DIAL = { x: 20, y: 7, size: 70 }; // mm: the dial's photograph, centred on the plate
 const titlePage = {
   id: 'title', numbered: false,
-  span: 'page', // kept in the column, the design is clipped to it: the plate's top, the author
+  span: 'page', // the author's name stands below the column's foot, which would cut it
   header: { elements: [] }, footer: { elements: [] }, // no running head, no folio
   advancedDesign: { enabled: true, slot: { elements: [
     { kind: 'image', id: 'plate', resourceId: 'plate',
@@ -66,7 +66,7 @@ const titlePage = {
       edge: 'top-left' }, offset: { x: mm(DIAL.x), y: mm(DIAL.y) },
       size: { width: mm(DIAL.size), height: mm(DIAL.size) } } },
     text('title', '{titleText}', DISPLAY, 28, { fontWeight: 700, lineHeight: 1.04,
-      overflow: 'wrap' }, // two lines, not one and '…' (gotcha: overflow-ellipsis-default)
+      overflow: 'wrap' }, // the title takes two lines
     onPage(PLATE + 11)),
     text('subtitle', '{subtitle}', TEXT, 12, { italic: true, color: col('oxblood') },
       onPage(PLATE + 34.5)),
@@ -99,7 +99,7 @@ const footer = { elements: [{ ...text('drop-folio', '{pageNumber}', TEXT, 8,
 
 // #region opener: the chapter sinks eight lines under its roman numeral and a brass rule
 const chapter = { level: 1, numberingTemplate: '{1:I}', // {number} prints 'I'
-  breakBefore: { enabled: true, parity: 'any' }, // restated (gotcha: headings-drop-h1-break)
+  breakBefore: { enabled: true, parity: 'any' }, // the next page, on either side
   marginTop: pt(0), marginBottom: pt(0),
   advancedDesign: { enabled: true, minHeight: line(8), slot: { elements: [
     text('numeral', '{number}', DISPLAY, 24, { fontWeight: 700, color: col('oxblood') },
@@ -123,7 +123,6 @@ const config = () => ({
     // Copy-fitted: at these spacings chapter I sets 25 lines on every full page, with no
     // hyphen inside a hyphenated word ('af-/ter-dinner') on the pages the Cookbook shows.
     minWordSpacing: 0.66, maxWordSpacing: 1.9,
-    maxRuntTracking: 0, // gotcha: runt-tracking-unpainted
   },
   headings: { fontFamily: DISPLAY, fontWeight: 700, color: col('ink'), levels: [chapter] },
   headingStyles: [titlePage],
@@ -132,17 +131,13 @@ const config = () => ({
   footer,
 });
 
-// #region answer: layout in a module worker started from a blob, with its own fonts
+// #region answer: layout in a module worker, with its own fonts
 async function startLayoutWorker(faces) {
-  // In 1.4.1, createLayoutWorker() on its own starts esm.sh's worker file, which the browser
-  // refuses to run from another origin; a same-origin blob that imports it is allowed.
-  // An import map does not reach the worker: if the page pins postext@x.y.z, pin this URL too.
-  const entry = new Blob([`import 'https://esm.sh/postext/worker/entry';`],
-    { type: 'text/javascript' });
-  const layout = createLayoutWorker({
-    worker: new Worker(URL.createObjectURL(entry), { type: 'module' }) });
+  // No options: from a CDN the engine starts its worker entry, at the page's own version,
+  // through a same-origin blob; in a bundle it starts the worker file next to the module.
+  const layout = createLayoutWorker();
   // The worker measures with its own FontFaceSet, not the page's. Without the bytes of every
-  // face it measures in a fallback font, and 1.4.1 raises no error. Weights are strings.
+  // face it measures in a fallback font, and the console names each missing family once.
   const payloads = await Promise.all(faces.map(async ({ family, weight, style, url }) => {
     // Check the status: a 404 page sent as a font only logs a warning inside the worker.
     const response = await fetch(url);
@@ -228,8 +223,8 @@ $('source').value = markdown;
 
 // #region editor: each keystroke sets the chapter again; the main thread only paints
 let [doc, shown, builds, cancelled] = [null, 0, 0, 0];
-// For the comparison, the main thread keeps a measurement cache as the worker does, so its
-// pages match the worker's: in 1.4.1 a build with a cache can break lines differently.
+// For the comparison, the main thread keeps a measurement cache between keystrokes, as the
+// worker does: both threads then time a build that measures only what changed.
 const mainCache = createMeasurementCache();
 function paint(n = shown) { // the canvas is sized to its box, in device pixels
   shown = Math.max(0, Math.min(doc.pages.length - 1, n));
