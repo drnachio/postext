@@ -16,13 +16,13 @@ This is the four-page datasheet of the PX-7021, a temperature sensor from an ima
 
 ### 1 · Paste the data, then shape the table
 
-The code is [the short answer](#the-short-answer) above. In postext 1.4.1 `parseTSV` leaves `headerRowCount` unset, so the two head rows are declared by hand; if the table split, both would repeat on every part. The `columnWidths` weights add up to 180, the width of the text block in millimetres, so each weight is its column's width on the page. `mergeCells` keeps every covered cell in place and marks it `hiddenBy`, so no column shifts. `setAlignment` works cell by cell and clears the vertical alignment when you leave it out, so most calls pass `'middle'` again. The grey alternates from one parameter to the next, which keeps both Accuracy rows on one fill; alternating by row would leave the second one white.
+The code is [the short answer](#the-short-answer) above. `parseTSV(tsv, { headerRows: 2 })` marks the two head rows; if the table split, both would repeat on every part. The `columnWidths` weights add up to 180, the width of the text block in millimetres, so each weight is its column's width on the page. `mergeCells` keeps every covered cell in place and marks it `hiddenBy`, so no column shifts. `setAlignment` works cell by cell and clears the vertical alignment when you leave it out, so most calls pass `'middle'` again. The grey alternates from one parameter to the next, which keeps both Accuracy rows on one fill; alternating by row, as the table style's own `bodyAlternateBackground` does, would leave the second one white.
 
 ### 2 · Every model becomes a resource
 
 <Excerpt region="resources" />
 
-Each table and drawing is a resource with a caption, and the tables add a note and a named style. Captions and notes take italics, subscripts and superscripts: the electrical table gives its test conditions with `*V*~DD~` in the caption and numbers its footnotes with `^1^` in the note. A float takes the first free slot after its first `:ref`. Table 1 is cited on page 1 and placed across the head of a page, so it opens page 2. The outline is placed across the foot of a page, and the other tables keep the default placement, a float one column wide. A table placed `here` never splits.
+Each table and drawing is a resource with a caption, and the tables add a note and a named style. Captions and notes take italics, subscripts and superscripts: the electrical table gives its test conditions with `*V*~DD~` in the caption and numbers its footnotes with `^1^` in the note. A float takes the first free slot after its first `:ref`. Table 1 is cited on page 1 and placed across the head of a page, so it opens page 2. The outline is placed across the foot of a page, and the other tables keep the default placement, a float one column wide. A table placed `here` stays in the text; when it does not fit the rest of its column, it splits between rows as well.
 
 ### 3 · Let a long table split itself
 
@@ -40,7 +40,7 @@ The pin table and the register map both come out of `groupedTable`. A row with o
 
 <Excerpt region="drawing" />
 
-An SVG reaches the canvas as an image, and an image cannot use the page's web fonts, so the labels of the pinout, the circuit and the package outline would fall back to a system face. The PDF takes the plain markup and sets each `<text>` as selectable text in the faces it embeds. For the canvas, each drawing is registered a second time with the Fira Mono file inside it, fetched once through the font loader of the kit's pdf block.
+The labels of the pinout, the circuit and the package outline are `<text>` elements that ask for Fira Mono, the document's label face. An SVG reaches the canvas as an image, so the kit's `loadSvg` first runs the markup through `inlineSvgFonts`, which embeds in the SVG the faces its text names; the canvas then draws the labels in Fira Mono. The PDF sets each `<text>` as selectable text in the faces it embeds.
 
 ### 6 · Opener, running head and footer
 
@@ -73,4 +73,4 @@ The table type's caption style can paint a bar behind the caption, here in ink w
 
 - The first part of a split table leaves the foot of its column to text when three lines or more fit under it, and always does in a column that already holds a float. Start a long table where its column holds no other float, as the register map does, and fit its rows so the first part reaches the foot of the column.
 - Design text elements are centred by default. The lead has a fixed width, so it needs `align: 'left'` to line up under the part number.
-- On a chapter's closing page, postext 1.4.1 moves the page-wide floats set below the text up to one body line under it, so a `bottom` figure there sits under the last line of text instead of at the page foot. Page 4 is worded to fill its columns, and the outline is drawn 48.3 mm tall so that the text above it ends on a grid line. The outline then has no room to move up and ends level with the foot of the other pages.
+- On a chapter's closing page, Postext moves the page-wide floats set below the text up to one body line under it, so a `bottom` figure there sits under the last line of text instead of at the page foot. Page 4 is worded to fill its columns, and the outline is drawn 48.3 mm tall so that the text above it ends on a grid line. The outline then has no room to move up and ends level with the foot of the other pages. `layout.hugClosingFloats: false` switches the move off.

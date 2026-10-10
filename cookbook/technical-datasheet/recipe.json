@@ -20,18 +20,28 @@
   "answers": ["Q65", "Q66", "Q68", "Q70", "Q10"],
   "gaps": ["pipe-tables"],
   "gotchas": [
-    "merged-cells-hiddenby", "no-zebra", "svg-no-webfonts", "latin-subset",
-    "headings-drop-h1-break", "nbsp-breaks", "palette-skips-designs",
-    "overflow-ellipsis-default"
+    "merged-cells-hiddenby",
+    "latin-subset"
   ],
   "workarounds": [
-    { "followup": "EF-23", "package": "postext", "note": "zebra rows are filled cell by cell with setCellBackground" },
-    { "followup": "EF-34", "package": "postext", "note": "merges go through mergeCells, and headerRowCount is set by hand after parseTSV" },
-    { "followup": "EF-05", "package": "postext", "note": "the H1 page break is restated in headings.levels[0].breakBefore" },
-    { "followup": "EF-63", "package": "postext", "note": "the register map starts on a page without a page-wide float, and its rows are fitted so the first part runs to the foot of its column instead of keeping room for text" },
-    { "followup": "EF-66", "package": "postext", "note": "a no-break space still breaks the line, so the sample is worded to keep every value on the line of its unit" },
-    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId: 1.4.1 paints header, footer and opener element colours and bodyText.referenceColor from the hex (gotcha palette-skips-designs)" },
-    { "followup": "EF-94", "package": "postext", "note": "on a closing page 1.4.1 lifts a page-wide position 'bottom' float to one float gap under the text (build.ts hugClosingText), so page 4 is worded to fill its columns and the outline is drawn 48.3 mm tall: the text above it then ends on a grid line, and the float has no space to move up into" }
+    {
+      "package": "postext",
+      "note": "the electrical table's grey alternates from one parameter to the next, so a parameter keeps one fill over its condition rows: tableStyle.bodyAlternateBackground alternates row by row, and the rows are filled cell by cell with setCellBackground instead"
+    },
+    {
+      "followup": "EF-34",
+      "package": "postext",
+      "note": "merges go through mergeCells, which marks the covered cells hiddenBy (gotcha merged-cells-hiddenby); the head rows come from parseTSV's headerRows"
+    },
+    {
+      "followup": "EF-63",
+      "package": "postext",
+      "note": "the register map starts on a page without a page-wide float, and its rows are fitted so the first part runs to the foot of its column instead of keeping room for text"
+    },
+    {
+      "package": "postext",
+      "note": "on a closing page a page-wide position 'bottom' float moves up to one float gap under the text (layout.hugClosingFloats, on by default), so page 4 is worded to fill its columns and the outline is drawn 48.3 mm tall: the text above it then ends on a grid line, and the float has no space to move up into"
+    }
   ],
   "related": ["seed-catalogue", "product-manual-warnings", "journal-article-with-maths", "figures-float-where-cited"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
