@@ -30,7 +30,7 @@ La caixa de la pestanya penja del marc de la sang i mesura `BLEED` més que la p
 
 <Excerpt region="covers" />
 
-`cutLines` afegeix a cada costat de la pàgina la sang, la separació de la marca i la marca de 5 mm, que aquí sumen 11 mm, i com que la resposta curta iguala la separació a la sang, les marques comencen a la vora de la sang i van cap a fora, a la planxa del negre. Un element d'imatge ancorat a la sang amb `width: 'fill'` pren l'amplada d'aquest marc i conserva la seva proporció: el mapa de la coberta està dibuixat a 176 × 233 mm, el format més 3 mm per costat, així que arriba fins a la vora de la sang, on comencen les marques, mentre el text penja de la caixa de text, ben dins del tall. La contracoberta és un estil de títol el peu de pàgina del qual substitueix el del document, amb una banda del mateix generador ancorada al peu de la sang i un marge inferior que atura el text 8 mm més amunt.
+`cutLines` afegeix a cada costat de la pàgina la sang, la separació de la marca i la marca de 5 mm, que aquí sumen 11 mm. La separació és de 3 mm per defecte, igual que aquesta sang, així que les marques comencen a la vora de la sang i van cap a fora; amb una sang més gran continuarien començant a la seva vora, mai a dins. Un element d'imatge ancorat a la sang amb `width: 'fill'` pren l'amplada d'aquest marc i conserva la seva proporció: el mapa de la coberta està dibuixat a 176 × 233 mm, el format més 3 mm per costat, així que arriba fins a la vora de la sang, on comencen les marques, mentre el text penja de la caixa de text, ben dins del tall. La contracoberta és un estil de títol el peu de pàgina del qual substitueix el del document, amb una banda del mateix generador ancorada al peu de la sang i un marge inferior que atura el text 8 mm més amunt.
 
 ### 4 · Títols que es converteixen en marcadors
 
@@ -42,13 +42,13 @@ La caixa de la pestanya penja del marc de la sang i mesura `BLEED` més que la p
 
 <Excerpt region="master" />
 
-Cada dibuix es defineix una sola vegada, com a traçats. La regió de l'art els converteix en l'SVG que pinta el llenç, i aquesta regió escriu els mateixos traçats en un PDF CMYK d'una pàgina, amb barreges triades perquè la prova s'assembli a la pantalla; així el mar va en C100 M45 Y80 K55, el verd de la paleta. Cada recurs anomena el seu màster a `svg.pdfFileId`, `pressPdf()` (a la resposta curta) lliura els bytes del màster a `renderToPdf` amb l'identificador de l'SVG, i postext-pdf incrusta aquesta pàgina tal com és, en vectors i amb les tintes del màster. Ho fa amb el plànol, que és una figura, i amb el mapa de la coberta i la banda de la contracoberta, que són imatges de disseny. La prova en escala de grisos rep els SVG, perquè un màster incrustat no es converteix mai i continuaria en color.
+Cada dibuix es defineix una sola vegada, com a traçats. La regió de l'art els converteix en l'SVG que pinta el llenç, i aquesta regió escriu els mateixos traçats en un PDF CMYK d'una pàgina, amb barreges triades perquè la prova s'assembli a la pantalla; així el mar va en C100 M45 Y80 K55, el verd de la paleta. Cada recurs anomena el seu màster a `svg.pdfFileId`; `renderToPdf` demana aquest identificador, `pressPdf()` (a la resposta curta) respon amb els bytes del màster, i postext-pdf incrusta aquesta pàgina tal com és, en vectors i amb les tintes del màster. Ho fa amb el plànol, que és una figura, i amb el mapa de la coberta i la banda de la contracoberta, que són imatges de disseny. La prova en escala de grisos rep els SVG, perquè un màster incrustat no es converteix mai i continuaria en color.
 
 ## Variants
 
 ### Demana 5 mm de sang
 
-L'art, la pestanya i l'escala gràfica es mesuren des de `BLEED`, i les marques de tall el segueixen gràcies a `markOffset`, així que per a una impremta que demani 5 mm n'hi ha prou amb aquest canvi, i cada full passa a mesurar 200 × 257 mm.
+L'art, la pestanya i l'escala gràfica es mesuren des de `BLEED`, i les marques de tall comencen a la vora de la sang, així que per a una impremta que demani 5 mm n'hi ha prou amb aquest canvi, i cada full passa a mesurar 196 × 253 mm.
 
 ```diff
 -const BLEED = 3; // mm of artwork past the trim: the cover, the tab and the back band reach it
@@ -70,5 +70,4 @@ Sense `pdfFileId`, el fitxer d'impremta dibuixa cada imatge des del seu SVG, tam
 - Un PDF/X no es genera sense el seu perfil de sortida. `renderToPdf` baixa `fogra51.icc` de `profileBaseUrl` (aquí, la carpeta `/icc/` de postext.dev); per servir-lo tu, passa els bytes del fitxer com a `outputProfile`.
 - El preflight assenyala el text de menys de 9 pt que porta més d'una tinta. Les etiquetes de 7,5 pt en negreta i en verd aguanten bé quatre tintes sobre paper cuixé, així que `print.preflight.smallTextSize` és 7 pt; el colofó de 6,3 pt, que en verd sàlvia serien tres tintes sobre una banda de quatre, va calat en el color del paper.
 - Un fitxer PDF/X no porta anotacions d'enllaç, perquè un fitxer per a impremta no les pot tenir dins de la seva BleedBox; els marcadors es mantenen.
-- Una marca de tall comença a `markOffset` del tall, no de la sang, així que amb una sang més gran que la separació per defecte de 3 mm les marques s'imprimeixen damunt de la il·lustració. Mantén la separació igual a la sang, com fa aquí `cutLines`.
 - Un cop generat, cada botó es converteix en un enllaç «Open the PDF ↗» i un altre de baixada, i només els de baixada porten el nom del seu fitxer.

@@ -30,7 +30,7 @@ A caixa da aba pende do quadro da sangria e tem `BLEED` a mais que a aba já ref
 
 <Excerpt region="covers" />
 
-`cutLines` soma a cada lado da página a sangria, o afastamento da marca e a marca de 5 mm, 11 mm aqui, e como a resposta curta iguala o afastamento à sangria, as marcas começam na borda da sangria e vão para fora, na chapa do preto. Um elemento de imagem ancorado à sangria com `width: 'fill'` toma a largura desse quadro e mantém a própria proporção: o mapa da capa é desenhado com 176 × 233 mm, o formato refilado mais 3 mm de cada lado, e por isso chega à borda da sangria, onde começam as marcas, enquanto o texto pende da mancha, bem dentro do refile. A quarta capa é um estilo de título cujo rodapé substitui o do documento, com uma faixa do mesmo gerador ancorada ao pé da sangria e uma margem inferior que para o texto 8 mm acima dela.
+`cutLines` soma a cada lado da página a sangria, o afastamento da marca e a marca de 5 mm, 11 mm aqui. O afastamento é de 3 mm por padrão, igual a esta sangria, então as marcas começam na borda da sangria e vão para fora; com uma sangria maior, continuariam começando na borda dela, nunca dentro. Um elemento de imagem ancorado à sangria com `width: 'fill'` toma a largura desse quadro e mantém a própria proporção: o mapa da capa é desenhado com 176 × 233 mm, o formato refilado mais 3 mm de cada lado, e por isso chega à borda da sangria, onde começam as marcas, enquanto o texto pende da mancha, bem dentro do refile. A quarta capa é um estilo de título cujo rodapé substitui o do documento, com uma faixa do mesmo gerador ancorada ao pé da sangria e uma margem inferior que para o texto 8 mm acima dela.
 
 ### 4 · Títulos que viram marcadores
 
@@ -42,13 +42,13 @@ A caixa da aba pende do quadro da sangria e tem `BLEED` a mais que a aba já ref
 
 <Excerpt region="master" />
 
-Cada desenho é definido uma única vez, como traçados. A região da arte os transforma no SVG que o canvas pinta, e esta região escreve os mesmos traçados num PDF CMYK de uma página, com misturas escolhidas para que a prova se pareça com a tela; assim o mar fica em C100 M45 Y80 K55, o verde-escuro da paleta. Cada recurso indica sua matriz em `svg.pdfFileId`, `pressPdf()`, na resposta curta, entrega os bytes da matriz a `renderToPdf` com o id do SVG, e o postext-pdf incorpora essa página sem alteração, em vetores e com as tintas da matriz. Isso vale para a planta, que é uma figura, e para o mapa da capa e a faixa da quarta capa, que são imagens de design. A prova em tons de cinza recebe os SVGs, porque uma matriz incorporada nunca é convertida e continuaria em cores.
+Cada desenho é definido uma única vez, como traçados. A região da arte os transforma no SVG que o canvas pinta, e esta região escreve os mesmos traçados num PDF CMYK de uma página, com misturas escolhidas para que a prova se pareça com a tela; assim o mar fica em C100 M45 Y80 K55, o verde-escuro da paleta. Cada recurso indica sua matriz em `svg.pdfFileId`; `renderToPdf` pede esse id, `pressPdf()`, na resposta curta, responde com os bytes da matriz, e o postext-pdf incorpora essa página sem alteração, em vetores e com as tintas da matriz. Isso vale para a planta, que é uma figura, e para o mapa da capa e a faixa da quarta capa, que são imagens de design. A prova em tons de cinza recebe os SVGs, porque uma matriz incorporada nunca é convertida e continuaria em cores.
 
 ## Variações
 
 ### Peça 5 mm de sangria
 
-A arte, a aba e a escala gráfica são medidas a partir de `BLEED`, e as marcas de corte acompanham por meio de `markOffset`; para uma gráfica que peça 5 mm, basta esta mudança, e cada folha passa a medir 200 × 257 mm.
+A arte, a aba e a escala gráfica são medidas a partir de `BLEED`, e as marcas de corte começam na borda da sangria; para uma gráfica que peça 5 mm, basta esta mudança, e cada folha passa a medir 196 × 253 mm.
 
 ```diff
 -const BLEED = 3; // mm of artwork past the trim: the cover, the tab and the back band reach it
@@ -70,5 +70,4 @@ Sem `pdfFileId`, o arquivo de impressão desenha cada imagem a partir do seu SVG
 - Uma renderização PDF/X falha sem o perfil de saída. `renderToPdf` busca `fogra51.icc` em `profileBaseUrl` (aqui, o `/icc/` de postext.dev); para servir o perfil você mesmo, passe os bytes do arquivo em `outputProfile`.
 - O preflight acusa texto com menos de 9 pt composto em mais de uma tinta. Os rótulos em negrito de 7,5 pt no verde-escuro aguentam quatro tintas em papel couché, por isso `print.preflight.smallTextSize` fica em 7 pt; o colofão de 6,3 pt, que em verde-sálvia seria três tintas sobre uma faixa de quatro, sai vazado na cor do papel.
 - Um arquivo PDF/X não leva anotações de link, porque um arquivo para impressão não pode tê-las dentro da caixa de sangria; os marcadores continuam.
-- Uma marca de corte começa a `markOffset` do refile, não da sangria, então com uma sangria maior que o afastamento padrão de 3 mm as marcas saem impressas sobre a arte. Mantenha o afastamento igual à sangria, como `cutLines` faz aqui.
 - Depois de gerado, cada botão vira um link “Open the PDF ↗” e um link de download, e só os de download trazem o nome do arquivo.

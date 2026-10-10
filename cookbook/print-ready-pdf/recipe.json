@@ -20,23 +20,12 @@
   "answers": ["Q13", "Q02", "Q79"],
   "gaps": [],
   "gotchas": [
-    "pdf-master-resourcebytes", "pdf-provider-all-styles", "svg-no-marker-filters",
-    "svg-no-webfonts", "latin-subset", "opener-image-no-reserve", "ragged-no-hyphenation",
-    "resource-types-locale", "headings-drop-h1-break", "palette-skips-designs",
-    "overflow-ellipsis-default"
+    "svg-no-marker-filters",
+    "latin-subset"
   ],
   "explainsWarnings": [],
   "related": ["riso-zine-single-ink", "accessible-tagged-pdf", "chapter-opener-bleed-band", "book-from-chapters"],
-  "workarounds": [
-    { "followup": "EF-06", "package": "postext-pdf", "note": "renderToPdf asks resourceBytes for svg.fileId and never for svg.pdfFileId, so pressPdf() answers each drawing's SVG id with the bytes of its print master (what bundleResourceBytes does for a .postext bundle)" },
-    { "followup": "EF-20", "package": "postext-pdf", "note": "the PDF asks for the bold, italic and bold-italic faces of every family, Space Grotesk's missing italic included: the kit's provider snaps weights and falls back to upright" },
-    { "followup": "EF-21", "package": "postext", "note": "the room texts are ragged and so never hyphenated; the measure stays at 118 mm and nothing claims hyphenation" },
-    { "followup": "EF-33", "package": "postext", "note": "config.locale does not name the figures: resourceTypes: defaultResourceTypes(LANG) is passed by hand, with one running count" },
-    { "followup": "EF-05", "package": "postext", "note": "the rooms' level-1 headings state breakBefore: { enabled: false }, since any headings object drops the default break; the back cover breaks through its heading style" },
-    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside the paletteId, because design elements read the hex (gotcha palette-skips-designs)" },
-    { "followup": "EF-90", "package": "postext", "note": "the cover's map, a bleed-anchored image, reserves no height, so the text puts :::pagebreak after the cover heading; without it the lead and the first room print over the map" },
-    { "followup": "EF-120", "package": "postext", "note": "crop marks start markOffset outside the trim, not outside the bleed, so a bleed wider than the 3 mm default offset puts the marks on the artwork (canvas and PDF): cutLines sets markOffset: mm(BLEED) so one number keeps them clear" }
-  ],
+  "workarounds": [],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["es"] },

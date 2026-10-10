@@ -6,8 +6,6 @@ author: "Biblioteca del Faro"
 
 # Cartografías imaginarias {style="cover" kicker="Exposición temporal · Ala Norte" fechas="Del 14 de enero al 29 de abril de 2027" lugar="Biblioteca del Faro · Puerto Alba"}
 
-:::pagebreak
-
 :::paragraphs{style="lead"}
 La exposición reúne en facsímil cuatro mapas de lugares inventados, impresos entre 1516 y 1883. Tres dibujan las costas de tierras que nadie ha pisado: la isla de Utopía, el país de la Ternura y la isla del tesoro. El cuarto, la carta marina de un poema de Lewis Carroll, deja el mar en blanco. Las salas siguen el orden de las fechas y se recorren en el sentido de las agujas del reloj.
 :::
