@@ -33,47 +33,10 @@
   "answers": ["Q09", "Q02", "Q25", "Q52", "Q08"],
   "gotchas": [
     "custom-fonts-declarative",
-    "pdf-provider-all-styles",
     "faked-font-styles",
-    "latin-subset",
-    "pdf-font-copies",
-    "palette-skips-designs",
-    "design-lineheight-multiple",
-    "overflow-ellipsis-default",
-    "quote-frontmatter"
+    "latin-subset"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-20",
-      "package": "postext-pdf",
-      "note": "renderToPdf asks for ten faces, four of which no text uses (the italic of Big Shoulders Display; the italic, SemiBold and SemiBold italic of Spline Sans Mono): the provider answers each with the nearest brand file of the same family"
-    },
-    {
-      "followup": "EF-121",
-      "package": "postext-pdf",
-      "note": "not routed around: the PDF holds ten font programs for the six files, because renderToPdf writes one per requested face; the four stand-ins (one more Big Shoulders Display ExtraBold, three more Spline Sans Mono Regular) are unused copies of 215 to 255 bytes, and the write-up says so"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside each paletteId, because 1.4.1 paints the band, the openers and the cover from the hex; bodyText.referenceColor restates ink, since references skip the palette and would print the default blue"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "every design text gives lineHeight as a multiple (1, 1.36, 0.86), never a Dimension"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "every frontmatter value is quoted: the band prints {title} · {subtitle}, and the PDF takes its title and author from them"
-    },
-    {
-      "followup": "EF-149",
-      "package": "postext",
-      "note": "the Do and Don't types keep numberingTemplate '{n}', so the captions read 'Do 1.' and 'Don't 1.': with an empty template 1.4.1 prints 'Do .' before the caption text and 'Do' plus a no-break space for a :ref"
-    }
-  ],
+  "workarounds": [],
   "related": ["pdf-with-embedded-fonts", "fonts-before-layout", "parts-in-colour", "technical-datasheet"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],

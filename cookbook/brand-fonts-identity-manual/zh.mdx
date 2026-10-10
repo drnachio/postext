@@ -18,13 +18,13 @@ Metro de Alba视觉识别手册的四页。这是一个虚构的地铁系统，�
 
 <Excerpt region="build" />
 
-排版时用`document.fonts`里的字体测量每个词，所以[简短回答](#简短回答)里的`loadBrandFonts()`把每个文件下载一次，保留它的字节，并在`buildDocument`运行之前注册一个用这些字节创建的`FontFace`。套件里的`kitFonts`只从Fontsource下载，而品牌的字体文件放在自己的服务器上。在postext-pdf 1.4.1里，`renderToPdf`会请求十种字体，其中四种没有文字用到（标题字体的斜体，以及等宽字体的斜体、SemiBold和SemiBold斜体），`brandFontProvider`对每个请求都返回同一字族里最接近的文件（[为什么需要字体提供器？](/zh/docs/configuration#为什么需要字体提供函数)）。页面只用到Canvas测量过的六个文件，但1.4.1还会为这四个请求各写入一份未使用的替身文件副本。
+排版时用`document.fonts`里的字体测量每个词，所以[简短回答](#简短回答)里的`loadBrandFonts()`把每个文件下载一次，保留它的字节，并在`buildDocument`运行之前注册一个用这些字节创建的`FontFace`。套件里的`kitFonts`只从Fontsource下载，而品牌的字体文件放在自己的服务器上。`renderToPdf`只请求页面实际用到的字体，`brandFontProvider`用已经下载的字节回应每个请求；品牌没有的字重或斜体，则返回同一字族里最接近的文件（[为什么需要字体提供器？](/zh/docs/configuration#为什么需要字体提供函数)）。PDF嵌入Canvas测量过的六个文件，每个只嵌入一次。
 
 ### 2 · 颜色系统就是一个列表
 
 <Excerpt region="colours" />
 
-调色板和表1.1由同样的九行数据生成，所以表里不可能出现页面没用的值。`setCellBackground`把每行空着的第一格填上该行的颜色，并与调色板关联。正文里的`:swatch{color="line-2"}`接收一个调色板id，画一个用正文颜色描边的方块。`main-color`是Ink的十六进制值，所以默认关联它的标题、粗体和斜体都印成Ink，而不是引擎的蓝色。在1.4.1里，不管`main-color`设成什么，交叉引用都保持那种蓝色；`bodyText.referenceColor: col('ink')`把它们也设成Ink（[调色板](/zh/docs/configuration#调色板)）。
+调色板和表1.1由同样的九行数据生成，所以表里不可能出现页面没用的值。`setCellBackground`把每行空着的第一格填上该行的颜色，并与调色板关联。正文里的`:swatch{color="line-2"}`接收一个调色板id，画一个用正文颜色描边的方块。`main-color`是Ink的十六进制值，所以默认关联它的标题、粗体和斜体都印成Ink，而不是引擎的蓝色。`bodyText.referenceColor: col('ink')`把交叉引用也写明为Ink（[调色板](/zh/docs/configuration#调色板)）。
 
 ### 3 · 一个章首页设计，三种线路颜色
 
