@@ -89,7 +89,7 @@ const config = () => ({
     hyphenation: { enabled: false } },
   headings: { fontFamily: SFX, color: col('accent'), fontWeight: 400,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // The style sheet's title opens a page, on either side.
       { level: 1, fontSize: pt(34), lineHeight: pt(38), breakBefore: { enabled: true,
         parity: 'any' }, marginTop: mm(18), marginBottom: pt(13.5) },
       { level: 2, fontFamily: LETTERING, fontSize: pt(9.5), fontWeight: 700,
