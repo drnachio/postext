@@ -18,7 +18,7 @@ pageNotes: { "4": "A página 4 é o verso da página divisória da parte I. O te
 
 <Excerpt region="palette" />
 
-Uma parte redefine entradas da paleta pelo id, então tudo o que deve mudar com o hábitat fica vinculado a uma só entrada, `band`. O valor próprio dela, um cinza-ardósia, só aparece fora das partes (no antetítulo da capa e no título da nota sob o sumário), e nenhuma outra cor da configuração tem o mesmo hex. `col()` escreve o hex ao lado do id, porque no Postext 1.4.1 a paleta do documento nunca chega aos elementos de design; a redefinição de uma parte chega, por meio do id.
+Uma parte redefine entradas da paleta pelo id, então tudo o que deve mudar com o hábitat fica vinculado a uma só entrada, `band`. O valor próprio dela, um cinza-ardósia, só aparece fora das partes (no antetítulo da capa e no título da nota sob o sumário), e nenhuma outra cor da configuração tem o mesmo hex. `col()` dá a cada cor o seu `paletteId`, e é esse id que a redefinição de uma parte segue, tanto nos estilos de texto quanto nos elementos de design.
 
 ### 2 · Uma página divisória, o verso e a lista
 

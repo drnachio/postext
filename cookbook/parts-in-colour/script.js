@@ -20,8 +20,7 @@ const palette = {
   rule: '#d5d1c4', // hairlines
   muted: '#61675f', // running heads, Latin names, the colophon
 };
-// The paletteId is the link a part's palette="band=#…" follows; the hex is written out too,
-// as the palette alone would not reach design elements (gotcha: palette-skips-designs).
+// The paletteId is the link a part's palette="band=#…" follows, in text and designs alike.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -64,7 +63,7 @@ const parts = { // passed to the config as `parts`
       letterSpacing: pt(2.4), color: col('paper') },
     at('top-left', MARGIN.inner, MARGIN.top)), // a recto: the inner margin is on the left
     // Roman for the parts, Arabic for the species. {numberRoman} re-formats number="I" (or
-    // "1"), on part pages only (gotcha: heading-number-placeholders).
+    // "1"); the species design prints {number}, from numberingTemplate '{1}'.
     text('numeral', '{numberRoman}', { ...display, fontSize: pt(150), lineHeight: 0.9,
       color: col('paper') }, below('part', 0)),
     // The \\ in the title breaks the line here; the contents and the heads get one line.
@@ -96,9 +95,6 @@ const bodyText = {
   // Tighter than the 0.6–2 defaults. runtMinCharacters counts word spaces, not letters:
   // 45 are about 20 letters of Alegreya (the default 20, about 9); a shorter last line is a runt.
   minWordSpacing: 0.75, maxWordSpacing: 1.7, runtMinCharacters: 45,
-  // A runt is fixed with word spacing only: the default also tightens the tracking, which
-  // 1.4.1 measures but never paints (gotcha: runt-tracking-unpainted).
-  maxRuntTracking: 0,
 };
 const unorderedLists = { bulletChar: '▪', color: col('band'), // the field marks' bullets
   marginTop: pt(0), marginBottom: pt(0) };
@@ -186,7 +182,7 @@ const contentsOpener = { enabled: true, minHeight: mm(STRIP), slot: { elements: 
 ] } };
 
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es' }), // hyphenation, by exact code (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-us', es: 'es' }), // hyphenation patterns and the built-in labels
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'), margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom),
@@ -194,8 +190,8 @@ const config = () => ({
   layout: { layoutType: 'single' },
   bodyText, unorderedLists, resourceTypes, captionStyle,
   headings: { ...display, levels: [
-    // breakBefore stated: the documented H1 page break would make each species page an
-    // 'opener', with no running heads (gotcha: headings-drop-h1-break). :::pagebreak instead.
+    // No break of its own: an H1 that breaks the page makes each species page an 'opener',
+    // with no running heads. A :::pagebreak, or the part's break, starts each species.
     { level: 1, fontSize: pt(22), breakBefore: { enabled: false }, numberingTemplate: '{1}',
       marginBottom: pt(0), advancedDesign: species },
   ] },
@@ -209,7 +205,7 @@ const config = () => ({
     // The habitat's few lines on a divider: no indent, in the paper colour.
     { id: 'habitat', fontSize: pt(11), color: col('paper'), textAlign: 'left',
       firstLineIndent: pt(0), marginBottom: pt(LEAD / 2) },
-    // In the box its margins do not count; the leading adds air (gotcha: box-paragraph-margins).
+    // Set in the note under the contents: the 15 pt leading gives its lines their air.
     { id: 'colophon', fontFamily: 'Barlow Condensed', fontSize: pt(8), lineHeight: pt(15),
       color: col('muted'), textAlign: 'left', firstLineIndent: pt(0) },
   ],

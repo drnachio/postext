@@ -46,47 +46,10 @@
   ],
   "gotchas": [
     "verso-design-breakafter",
-    "heading-number-placeholders",
-    "parity-page1-recto",
-    "palette-skips-designs",
-    "headings-drop-h1-break",
-    "box-paragraph-margins",
-    "runt-tracking-unpainted",
-    "hyphenation-locales"
+    "parity-page1-recto"
   ],
   "explainsWarnings": [],
-  "workarounds": [
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes each colour's hex beside its paletteId: the document palette never reaches design elements in 1.4.1, while a part's palette=\"band=…\" does, through the id"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the species heading states breakBefore: { enabled: false }: the break is off today only because a headings object drops the documented H1 default, and a :::pagebreak, or the part's own break, starts each species on a body page"
-    },
-    {
-      "followup": "EF-09",
-      "package": "postext",
-      "note": "the species number is {number} from numberingTemplate '{1}'; {numberRoman} appears only in the part design, where it is filled"
-    },
-    {
-      "followup": "EF-77",
-      "package": "postext",
-      "note": "the colophon inside the contents note takes its air from a 15 pt leading: paragraph-style margins are ignored inside a box"
-    },
-    {
-      "followup": "EF-14",
-      "package": "postext",
-      "note": "locale: t({ en: 'en-us', es: 'es' }): hyphenation loads its patterns by exact code only"
-    },
-    {
-      "followup": "EF-111",
-      "package": "postext",
-      "note": "bodyText.maxRuntTracking is 0: in 1.4.1 a runt fix may set a paragraph one line shorter with negative tracking (a block letterSpacing of -10‰), which the layout measures but the canvas and postext-pdf renderers paint only above 0, so its justified lines crush their word spaces and its last line runs past the measure and is clipped (Spanish p. 9, 'con alas cortas y redondeadas.'); word spacing alone still shortens runts, and the Spanish species texts were copy-fitted to one page each (gotcha runt-tracking-unpainted; the same bug magazine-cover-and-contents routes around)"
-    }
-  ],
+  "workarounds": [],
   "related": [
     "walking-guide-thumb-tabs",
     "magazine-cover-and-contents",
