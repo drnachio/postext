@@ -514,6 +514,12 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td>框拆分时，在段落或列表项内部切开，切口两侧至少各留该段落或列表项的几行（<a href="#callout-styles">标注框样式</a>下的<code>splitMinLines</code>仍按切口两侧框内所有行来计数）。取整数，至少为1。按默认值，切口不会在栏底或下一栏顶端只留下段落或列表项的孤零零一行；如果框样式的<code>splitMinLines</code>更小，则以它为限。<code>1</code>允许切口在一侧只留段落或列表项的一行，与postext 1.4及以前相同。早期版本存储的配置，如果其中的章含有<code>:::callout</code>，读入时按<code>1</code>处理（见<a href="#bundles-written-by-postext-14-or-earlier">postext 1.4或更早版本写出的文件包</a>）；在代码中，<code>postext/bundle</code>的<code>pinLegacyBoxChildCut</code>起同样作用。</td>
     </tr>
     <tr>
+      <td><code>flowColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>框外的<code>:::columns</code>围栏把其中的块排进正文栏内的若干子栏（用<code>span="page"</code>则横跨整页）；一个分栏组，无论在框内还是正文中，放不下时都在子栏之间切开，接到下一栏或下一页（见<a href="/zh/docs/document-format#columns">文档格式 › <code>:::columns</code></a>）。<code>false</code>忽略框外的围栏，也从不在组内切开，与postext 1.24及以前相同；早期版本存储的配置，如果其中的章含有<code>:::columns</code>围栏，读入时按<code>false</code>处理；在代码中，<code>postext/bundle</code>的<code>pinLegacyFlowColumns</code>起同样作用。带样式的章节沿用文档的值。postext 1.25起。</td>
+    </tr>
+    <tr>
       <td><code>writingMode</code></td>
       <td><code>'horizontal-tb' | 'vertical-rl'</code></td>
       <td><code>'horizontal-tb'</code></td>
@@ -4778,7 +4784,13 @@ const config: PostextConfig = {
       <td><code>overflow</code></td>
       <td><code>'split' | 'clip' | 'hide'</code></td>
       <td><code>'split'</code></td>
-      <td>比页面还高的表如何处理：在后续页面上接续、只保留放得下的行，或者不排。见下文。</td>
+      <td>比页面还高的表如何处理：在后续页面上接续、只保留放得下的行，或者不排。开启<code>splitInline</code>时，排在正文中、放不进本栏剩余空间的表也按此处理。见下文。</td>
+    </tr>
+    <tr>
+      <td><code>splitInline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>对排在<code>here</code>的表也应用<code>overflow</code>：放不进本栏剩余空间的行内表在行与行之间切开，在下一栏顶部接续。<code>false</code>把这样的表整体移到下一栏，与postext 1.24及以前相同；早期版本存储的配置，如果其中的章嵌入了资源，读入时按<code>false</code>处理。见<a href="#比页面还高的表">比页面还高的表</a>。postext 1.25起。</td>
     </tr>
     <tr>
       <td><code>continuedSuffix</code></td>
@@ -4884,7 +4896,9 @@ const resource: Resource = {
 
 **第一部分在哪里结束**。如果在引用之后为表提供的是某个空栏的顶部，表就取那里放得下的行，余下的接到下一个空位。当它独占该栏时，会一直排到栏底：若某部分下方只剩不到三行正文的空间，它就把这些空间也占上，而不留下一小截文字。当该栏已有另一条浮动版带时（比如页顶横跨整页的通栏图），这一部分会在栏底之前至少留出三行正文的位置就停下，这是浮动体与其他浮动体共用一栏时都要留给文字的空间，于是该栏在表下仍有一些文字，而不是只有浮动体。要让长表一直排到栏底，应在起始页没有其他浮动体的地方引用它（例如在通栏图那一页之后），或者调整它的行使其适合栏高。
 
-`'clip'`保留放得下的开头几行，不声不响地丢掉其余部分（注释仍在该部分末尾）；`'hide'`则整张表都不排。二者只在表比一页还高时起作用：放得下的表在任何模式下都整体放置。行内（`placement.position: 'here'`）的表不拆分。
+`'clip'`保留放得下的开头几行，不声不响地丢掉其余部分（注释仍在该部分末尾）；`'hide'`则整张表都不排。二者只在表比一页还高时起作用：放得下的表在任何模式下都整体放置。
+
+**排在正文中的表**。自postext 1.25起，排在`here`（用`::resource`嵌入）的表也遵循同样的规则（`splitInline`，默认开启）。它放不进本栏剩余空间时，就在行与行之间切开：第一部分保留上方的浮动体间距，至少带表头行和两行表体（若不够，整张表照旧从下一栏开始）；之后每一部分都在下一栏顶部开头，上方不留间距，按该栏的宽度排（一栏半版式把某一部分排进窄栏时，按窄栏的宽度排）；`::resource`那一行之后的文字接在最后一部分后面。重复表头、带后缀的题注、续接标记、最后一部分下的注释、至少三行的尾部，以及避开合并单元格和分组标题行的切分，都与浮动表相同。表体不足五行的表从不切开。`'clip'`保留比一栏还高的行内表放得下的开头几行，排在某一栏的顶部；`'hide'`不排这样的表；较矮的表在这两种模式下都整体移到下一栏。行内表开启的页面，只为表的第一部分保留不被该页浮动体占用的空间，因此等待中的通栏图仍排在该页顶部，表接在图下继续。竖排页面上的行内表以及框内的表不切开。`splitInline: false`把行内表整体移到下一栏，与postext 1.24及以前相同。
 
 续表文字的默认值随文档语言而定（`locale`，否则取断词语言区域）：英语为`(cont.)` / `Continued`，西班牙语为`(cont.)` / `Continúa`，法语、德语、意大利语、葡萄牙语、加泰罗尼亚语和荷兰语也同样有对应文字（列在[文档语言](#文档语言)中）。
 
@@ -6455,7 +6469,7 @@ The glass stays hot for an hour after the flame is out.
 - `placement: 'top' | 'bottom'`让框像资源一样**浮动**：它在出现处离开文字流，占用该处之后第一个空闲区带，即当前页的页脚（`'bottom'`），或文字流打开的下一页的页首 / 页脚，宽度为一栏（`span: 'column'`）或整个版心（`span: 'page'`）；它之后的正文填满它离开的那一页。它的框形和子块进入`page.floats`，与固定框一样。位于新一页页首的浮动框排在等待该页的图之前；在较早一页引用、随后能放在它下方的图，即使剩下的正文不足三行，也会占满该页其余部分（图集页：框加图，中间没有正文）。`span: 'side'`框从不浮动：无论placement如何，它都叠放在正文旁边。`columns`大于1时（在样式中或作为围栏属性，postext 1.18起），`span: 'column'`框占用这么多相邻的栏：一组顶端平齐的空栏的栏首，或者当前栏及其后空栏的栏脚，例如`:::callout{placement="top" columns="2"}`。
 - `width: 'auto'`只按标题收缩宽度，子内容被忽略。
 - 嵌套在另一个标注框中的`:::callout`是一个独立的框：它按自己的样式（底色、边框、圆角、内边距、色条、标题、图标、标记、标签、排版）以父框的全部内宽排布，作为父框的一个子块叠放，其`marginTop` / `marginBottom`与相邻块合并。它的`span`和`placement`（围栏或样式中的）被忽略，嵌套框总是在父框内顺排；`floatBarrier`和`snapToGrid`同样被忽略。框可以任意层级嵌套，也可以放在`:::columns`组中（每个框完整地位于一栏中）。父框拆分时，切口落在嵌套框之前或之后，嵌套样式允许拆分时也可以落在它内部；每个片段都会重画它切过的框形，从上一个片段接续过来的嵌套框不带标题和图标，与顶层的接续部分一样。
-- 子块中的`:::columns{count=N}` … `:::`组在框内把这些子块排成`N`个等宽的栏，间距为`columnGap`：这一串内容在最能让各栏平齐的块边界或行边界处切开（在中途切开的段落或列表项在下一栏开头继续，不带项目符号），每一栏都从组的顶部开始，组的高度等于最高的一栏；组之后的子块恢复全宽。拆分框（`keepTogether: false`）绝不在组内部切开。可用来排两栏的要点小结，或让宽框中的几张表并排。
+- 子块中的`:::columns{count=N}` … `:::`组在框内把这些子块排成`N`个等宽的栏，间距为`columnGap`：这一串内容在最能让各栏平齐的块边界或行边界处切开（在中途切开的段落或列表项在下一栏开头继续，不带项目符号），每一栏都从组的顶部开始，组的高度等于最高的一栏；组之后的子块恢复全宽。拆分的框（`keepTogether: false`，或比一栏还高的框）也会在组内部、各栏之间切开：蛇形组依次填满各栏，接到下一个片段；平行组（`breaks`）则逐个流接续（postext 1.25起；见[文档格式 › `:::columns`](/zh/docs/document-format#columns)）。围栏上的`gap`为该组替代`columnGap`，`rule`在每条栏间空白中画一条竖线。可用来排两栏的要点小结，或让宽框中的几张表并排。
 - 围栏的第六个属性`label`印在样式的标签上（见上文`label`）：`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`；样式没有`label`时忽略该属性。
 
 在VDT中，框是一个`type: 'callout'`的框形块，其装饰（底色、色条、图标、标题）放在`designOverlay`上，后面在同一栏中跟着它的子块；框形和每个子块都带有围栏的`containerId`。嵌套框是子块中一个独立的`type: 'callout'`框形，后面跟着它自己的块；这些块保留顶层围栏的`containerId`（排布和各栏齐底仍把它们看作一个单元），并加上`calloutPath`，即包围它们的各层嵌套围栏的容器id，由外到内排列（嵌套框形自己的id是最后一项）。带标签的PDF为每个嵌套框在其父框的`Div`内生成一个`Div`。图标图片与资源图片的解析方式相同：canvas图片注册表、HTML的`resourceImageUrl`选项和PDF的`resourceBytes`提供器。
@@ -8941,6 +8955,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>该框采用第一个标注框样式。</td>
     </tr>
     <tr>
+      <td><code>columnsFlowUnknown</code></td>
+      <td><code>:::columns{'{'}flow{'}'}</code>既不是<code>snake</code>也不是<code>parallel</code>；<code>value</code>是它写的值。</td>
+      <td>该组采用默认值：有<code>breaks</code>时为<code>parallel</code>，没有时为<code>snake</code>。</td>
+    </tr>
+    <tr>
       <td><code>unknownChipStyle</code></td>
       <td><code>:chip[…]{'{'}style{'}'}</code>指定的行内标签样式不存在。</td>
       <td>该行内标签采用第一个行内标签样式。</td>
@@ -9009,6 +9028,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>textWrap</code></td>
       <td>设置了让正文绕排的资源或框（<code>placement.wrap</code>、框的<code>wrap</code>）未能按要求排版。<code>reason</code>：<code>'tooNarrow'</code>（旁边的正文会窄于<code>layout.wrap.minTextWidth</code>）、<code>'fewLines'</code>（矮于<code>layout.wrap.minLinesBeside</code>行）、<code>'moved'</code>（行内对象高于所在栏剩余空间，已随锚点移到下一栏）或<code>'verticalText'</code>。<code>resourceId</code>指资源，<code>box</code>指框的样式。指向嵌入处或框。</td>
       <td>按原因所述，对象占满整条，或放在下一栏。</td>
+    </tr>
+    <tr>
+      <td><code>columnsTooNarrow</code></td>
+      <td><code>:::columns</code>组的子栏窄于其文字的6 em：共<code>columns</code>栏，每栏<code>widthPx</code>。指向该组的围栏。</td>
+      <td>该组照要求排出，每行只有寥寥几个词。</td>
     </tr>
     <tr>
       <td><code>fontFallback</code></td>
@@ -10357,7 +10381,7 @@ bundle.files;      // Map<path, Uint8Array>：文件包中的所有文件
 - **代码围栏**（规则9）：1.22及以前，```` ``` ````或`~~~`围栏及其中的行按Markdown读取：各行合并成段落，以`#`开头的行变成标题，围栏照样印出（见[代码清单](#代码清单)下的`codeStyle.blocks`）。
 - **诗行转行**（规则10）：在1.23中，逐行排的诗里比版心宽的诗行一律以自然词距转行，哪怕只超出一点（见[诗歌](#诗歌)下的`bodyText.verse.tighten`）。
 
-`openBundle`和`readBundle`读取这类清单的`config`以及每种语言的`localized`配置时，会经过`migrateConfig`：它把1.4排出的分页明确写出来，并把公式缩放乘以1.131（其以`em`为单位的公式外边距则除以1.131）。标记为`3`到`7`的清单出自1.5的预发布版本，只会补上其标记之后那些规则的固定值。标记为`3`时，固定公式字号、行内间距、规则6的五项、规则7的两项和规则8的三项；为`4`时，固定行内间距以及规则6、7、8的各项；为`5`时，固定规则6、7、8的各项；为`6`时，固定规则7和8的各项；为`7`时，只固定规则8的各项。标题下方的切分（`pinLegacyHeadingSplit`）写成`headings.keepWithNextSplit: 'fill'`，加在各层叠加后生效的`headings`上，条件是：读取的某一章有标题，配置本身没有给出值，`headings.keepWithNext`保持开启，且没有关闭`bodyText.avoidOrphans`。复合词断行（`pinLegacyHyphenBreaks`）写成`bodyText.breakAfterHyphens: false`，加在生效的`bodyText`上，条件是：读取的某一章在两个字母之间用了连字符，且配置既没有设置该项，也没有关闭`optimalLineBreaking`。容器下方的间距（`pinLegacyParagraphContainerSpacing`）写成`bodyText.paragraphContainerSpacing: 'add'`，加在生效的`bodyText`上，条件是：配置声明了段落样式（在`paragraphStyles`或HTML查看器的覆盖项中），读取的某一章在单独一行打开了`:::paragraphs`容器，且配置没有设置该项。破折号断行（`pinLegacyDashBreaks`）写成`bodyText.breakAfterDashes: false`，加在生效的`bodyText`上，条件是：读取的某一章在两词之间不留空格地使用了长破折号或短破折号（前面是字母、数字或闭合标点，后面是字母、数字或开括号、开引号；前面是引号时，只要引号前是字母、数字、闭合标点或不间断空格也算，如`"no"—and`，而`said "—Hola`不算；紧贴破折号或引号的行内标记，如`**riddles.**—I`中的`**`，在哪一侧都算），且配置没有设置该项。齐左断行（`pinLegacyRaggedBreaking`）写成`bodyText.optimalRagged: false`，加在生效的`bodyText`上，条件是：配置把某些正文设为齐左（正文、段落样式、框体、篇的正文或章节样式的正文（`headingStyles[].bodyStyle`）的`textAlign`不是`'justify'`，或在HTML查看器的覆盖项中如此设置），没有设置该项，也没有关闭`optimalLineBreaking`。框内间距（`pinLegacyBoxResourceGap`）写成`layout.inlineResourceGapInBoxes: false`，加在生效的`layout`上，条件是：读取的章节中，某个`:::callout`内有单独一行嵌入的资源，且配置没有设置该项。框的切分（`pinLegacyBoxChildCut`）写成`layout.boxChildSplitMinLines: 1`，加在生效的`layout`上，条件是：读取的某一章在单独一行打开了`:::callout`，且配置没有设置该项。标题标记（`pinLegacyHeadingMarks`）写成`headings.inlineMarks: false`，加在各层叠加后生效的`headings`上，条件是：读取的章节中某个标题带有标记（标题中有`*`、`_`、`^`、`~`、`:smallcaps[`或链接），且配置本身没有给出值。首字下沉（`pinLegacyDropCapSize`）不论位于何处，都把1.4时的大小写成`dropCap.fontSize`：元素的行距是长度时用行距的单位，否则用其字号的单位。冒号行下方的空间（`pinLegacyColonListRoom`）写成`bodyText.colonListRoom: 'line'`，加在生效的`bodyText`上，条件是：读取的章节中有列表紧跟在以冒号结尾的行之后（中间允许有空行），且配置既没有指定空间，也没有关闭`keepColonWithList`。行内间距（`pinLegacyInlineGap`）写成`layout.inlineResourceGap: 'above'`，加在各层叠加后生效的`layout`上，条件是：读取的章节中有一行嵌入了资源（按解析器的读法，`::resource{id="…"}`单独占一行；正文或代码片段中提及不算），且配置本身没有给出间距。公式字号固定在各层叠加后生效的`math`上（某种语言自己的`math`会取代共享的那个），而且只在读取的章节中有`$`时才这样做：没有公式的文件包保持其`config`原样。若清单和语言都没有给出`math`，生效的就是`readBundle`的`baseConfig`（读取方自己的配置），它也会被固定，因为1.4就是按这个字号排文件包里的公式的：基础配置的`fontSizeScale: 1.5`读出来是1.5 × 1.1312。基础配置的标题分页保持原样。因此，旧文件包会保留这些规则排出的效果，`bundle.config`会显示排版时所用的分页、公式字号、各项间距、标题标记、首字下沉大小、冒号行下方空间、框的切分、破折号断行、复合词断行、齐左断行、标题下方的切分和容器下方的间距。1.5的版面修正没有对应的固定值，对它和对其他书一样生效，所以受影响的页面仍可能有变化（清单见[公式字号](#数学公式)）。为现行规则手写的`preset.json`应设置`"configVersion": 11`；给旧文件包的清单加上这个标记，也是用现行规则读取它的一行做法（此时没有版本号的文件包也会失去标题分页的固定值）。标为`8`的清单（由postext 1.5至1.22写出）只得到规则9的四项固定，更早的清单也会得到：诗的排法（`pinLegacyVerseLayout`）写成生效的`bodyText`上的`bodyText.verse.layout: 'bayt'`，条件是读取的章节中有开始标记未指定排法、各行不带半句分隔符的`:::verse`诗，且配置尚未设置该项；成对的缩进（`pinLegacyPairedIndents`）去掉同时设置了非零`hangingIndent`的每个段落样式（在`paragraphStyles`或HTML查看器的覆盖设置中）的`firstLineIndent`；强制换行（`pinLegacyHardBreaks`）写成生效的`bodyText`上的`bodyText.hardLineBreaks: false`，条件是读取的章节中有段落、引文或列表项的某行以反斜杠结尾且该块在下一行继续，或有后跟空格和其他文字的`\\`（行内代码和公式、独立公式、标题和`:::verse`诗除外），且配置尚未设置该项；代码围栏（`pinLegacyCodeBlocks`）写成`codeStyle.blocks: false`，条件是读取的章节中打开了```` ``` ````或`~~~`围栏（三个或更多字符，最多缩进三个空格），且配置尚未设置该项。标为`9`的清单（由postext 1.23写出）只得到规则10的固定值，更早的清单也都会得到：诗行转行（`pinLegacyVerseTightening`）写成生效的`bodyText`上的`bodyText.verse.tighten: false`，条件是读取的章节中有逐行排的诗（`:::verse`开始标记写明`layout=lines`，或未写排法且各行没有半句分隔符，而配置并未把这类诗排成双半句），且配置尚未设置该项。标为`10`的清单（由postext 1.24写出）只得到规则11的固定值，更早的清单也都会得到：字符网格的齐底（`pinLegacyGridBalancing`）写成生效的`headings`上的`headings.balancing.enabled: true`，条件是合并后的配置在横排中设置了`cjk.grid.enabled`，且本身没有设置`enabled`，因为1.24默认会对这样的页面做齐底。规则11还使书名不在第一个字之后断开、带圈数字按汉字排、CJK设计文字按正文规则排版（#637）：标为`10`或更早的清单，若读取的章节含有书名（《、〈或`:book[`），会在生效的`cjk`上得到`cjk.titleMinChars: 1`（`pinLegacyTitleBreaks`）；若含有带圈数字（U+2460—U+24FF、U+2776—U+2793），得到`cjk.circledNumbers: 'western'`（`pinLegacyCircledNumbers`）；若读取的章节或配置本身含有CJK文字，得到`cjk.composeDesignText: false`（`pinLegacyDesignText`）。以上各项都只在配置尚未设置该项时写入。
+`openBundle`和`readBundle`读取这类清单的`config`以及每种语言的`localized`配置时，会经过`migrateConfig`：它把1.4排出的分页明确写出来，并把公式缩放乘以1.131（其以`em`为单位的公式外边距则除以1.131）。标记为`3`到`7`的清单出自1.5的预发布版本，只会补上其标记之后那些规则的固定值。标记为`3`时，固定公式字号、行内间距、规则6的五项、规则7的两项和规则8的三项；为`4`时，固定行内间距以及规则6、7、8的各项；为`5`时，固定规则6、7、8的各项；为`6`时，固定规则7和8的各项；为`7`时，只固定规则8的各项。标题下方的切分（`pinLegacyHeadingSplit`）写成`headings.keepWithNextSplit: 'fill'`，加在各层叠加后生效的`headings`上，条件是：读取的某一章有标题，配置本身没有给出值，`headings.keepWithNext`保持开启，且没有关闭`bodyText.avoidOrphans`。复合词断行（`pinLegacyHyphenBreaks`）写成`bodyText.breakAfterHyphens: false`，加在生效的`bodyText`上，条件是：读取的某一章在两个字母之间用了连字符，且配置既没有设置该项，也没有关闭`optimalLineBreaking`。容器下方的间距（`pinLegacyParagraphContainerSpacing`）写成`bodyText.paragraphContainerSpacing: 'add'`，加在生效的`bodyText`上，条件是：配置声明了段落样式（在`paragraphStyles`或HTML查看器的覆盖项中），读取的某一章在单独一行打开了`:::paragraphs`容器，且配置没有设置该项。破折号断行（`pinLegacyDashBreaks`）写成`bodyText.breakAfterDashes: false`，加在生效的`bodyText`上，条件是：读取的某一章在两词之间不留空格地使用了长破折号或短破折号（前面是字母、数字或闭合标点，后面是字母、数字或开括号、开引号；前面是引号时，只要引号前是字母、数字、闭合标点或不间断空格也算，如`"no"—and`，而`said "—Hola`不算；紧贴破折号或引号的行内标记，如`**riddles.**—I`中的`**`，在哪一侧都算），且配置没有设置该项。齐左断行（`pinLegacyRaggedBreaking`）写成`bodyText.optimalRagged: false`，加在生效的`bodyText`上，条件是：配置把某些正文设为齐左（正文、段落样式、框体、篇的正文或章节样式的正文（`headingStyles[].bodyStyle`）的`textAlign`不是`'justify'`，或在HTML查看器的覆盖项中如此设置），没有设置该项，也没有关闭`optimalLineBreaking`。框内间距（`pinLegacyBoxResourceGap`）写成`layout.inlineResourceGapInBoxes: false`，加在生效的`layout`上，条件是：读取的章节中，某个`:::callout`内有单独一行嵌入的资源，且配置没有设置该项。框的切分（`pinLegacyBoxChildCut`）写成`layout.boxChildSplitMinLines: 1`，加在生效的`layout`上，条件是：读取的某一章在单独一行打开了`:::callout`，且配置没有设置该项。标题标记（`pinLegacyHeadingMarks`）写成`headings.inlineMarks: false`，加在各层叠加后生效的`headings`上，条件是：读取的章节中某个标题带有标记（标题中有`*`、`_`、`^`、`~`、`:smallcaps[`或链接），且配置本身没有给出值。首字下沉（`pinLegacyDropCapSize`）不论位于何处，都把1.4时的大小写成`dropCap.fontSize`：元素的行距是长度时用行距的单位，否则用其字号的单位。冒号行下方的空间（`pinLegacyColonListRoom`）写成`bodyText.colonListRoom: 'line'`，加在生效的`bodyText`上，条件是：读取的章节中有列表紧跟在以冒号结尾的行之后（中间允许有空行），且配置既没有指定空间，也没有关闭`keepColonWithList`。行内间距（`pinLegacyInlineGap`）写成`layout.inlineResourceGap: 'above'`，加在各层叠加后生效的`layout`上，条件是：读取的章节中有一行嵌入了资源（按解析器的读法，`::resource{id="…"}`单独占一行；正文或代码片段中提及不算），且配置本身没有给出间距。公式字号固定在各层叠加后生效的`math`上（某种语言自己的`math`会取代共享的那个），而且只在读取的章节中有`$`时才这样做：没有公式的文件包保持其`config`原样。若清单和语言都没有给出`math`，生效的就是`readBundle`的`baseConfig`（读取方自己的配置），它也会被固定，因为1.4就是按这个字号排文件包里的公式的：基础配置的`fontSizeScale: 1.5`读出来是1.5 × 1.1312。基础配置的标题分页保持原样。因此，旧文件包会保留这些规则排出的效果，`bundle.config`会显示排版时所用的分页、公式字号、各项间距、标题标记、首字下沉大小、冒号行下方空间、框的切分、破折号断行、复合词断行、齐左断行、标题下方的切分和容器下方的间距。1.5的版面修正没有对应的固定值，对它和对其他书一样生效，所以受影响的页面仍可能有变化（清单见[公式字号](#数学公式)）。为现行规则手写的`preset.json`应设置`"configVersion": 11`；给旧文件包的清单加上这个标记，也是用现行规则读取它的一行做法（此时没有版本号的文件包也会失去标题分页的固定值）。标为`8`的清单（由postext 1.5至1.22写出）只得到规则9的四项固定，更早的清单也会得到：诗的排法（`pinLegacyVerseLayout`）写成生效的`bodyText`上的`bodyText.verse.layout: 'bayt'`，条件是读取的章节中有开始标记未指定排法、各行不带半句分隔符的`:::verse`诗，且配置尚未设置该项；成对的缩进（`pinLegacyPairedIndents`）去掉同时设置了非零`hangingIndent`的每个段落样式（在`paragraphStyles`或HTML查看器的覆盖设置中）的`firstLineIndent`；强制换行（`pinLegacyHardBreaks`）写成生效的`bodyText`上的`bodyText.hardLineBreaks: false`，条件是读取的章节中有段落、引文或列表项的某行以反斜杠结尾且该块在下一行继续，或有后跟空格和其他文字的`\\`（行内代码和公式、独立公式、标题和`:::verse`诗除外），且配置尚未设置该项；代码围栏（`pinLegacyCodeBlocks`）写成`codeStyle.blocks: false`，条件是读取的章节中打开了```` ``` ````或`~~~`围栏（三个或更多字符，最多缩进三个空格），且配置尚未设置该项。标为`9`的清单（由postext 1.23写出）只得到规则10的固定值，更早的清单也都会得到：诗行转行（`pinLegacyVerseTightening`）写成生效的`bodyText`上的`bodyText.verse.tighten: false`，条件是读取的章节中有逐行排的诗（`:::verse`开始标记写明`layout=lines`，或未写排法且各行没有半句分隔符，而配置并未把这类诗排成双半句），且配置尚未设置该项。标为`10`的清单（由postext 1.24写出）只得到规则11的固定值，更早的清单也都会得到：字符网格的齐底（`pinLegacyGridBalancing`）写成生效的`headings`上的`headings.balancing.enabled: true`，条件是合并后的配置在横排中设置了`cjk.grid.enabled`，且本身没有设置`enabled`，因为1.24默认会对这样的页面做齐底。规则11还使书名不在第一个字之后断开、带圈数字按汉字排、CJK设计文字按正文规则排版（#637）：标为`10`或更早的清单，若读取的章节含有书名（《、〈或`:book[`），会在生效的`cjk`上得到`cjk.titleMinChars: 1`（`pinLegacyTitleBreaks`）；若含有带圈数字（U+2460—U+24FF、U+2776—U+2793），得到`cjk.circledNumbers: 'western'`（`pinLegacyCircledNumbers`）；若读取的章节或配置本身含有CJK文字，得到`cjk.composeDesignText: false`（`pinLegacyDesignText`）。以上各项都只在配置尚未设置该项时写入。规则11还会切开行内表，并在正文中排`:::columns`（#634）：标为`10`或更早的清单，若读取的章节嵌入了资源，会在生效的`tableStyle`上得到`tableStyle.splitInline: false`（`pinLegacyInlineTableSplit`）；若读取的章节在单独一行上开启`:::columns`围栏，会在生效的`layout`上得到`layout.flowColumns: false`（`pinLegacyFlowColumns`）。两项都只在配置尚未设置该项时写入。
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';

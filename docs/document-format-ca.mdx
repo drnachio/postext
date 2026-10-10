@@ -322,7 +322,7 @@ Mantén la llanterna encesa **totes** les nits.
 :::
 ```
 
-Es reconeixen quatre noms de contenidor al flux del text (un cinquè, `:::columns`, només funciona dins d'un requadre i es descriu més avall). El que renderitza cadascun es defineix a la seva pròpia secció de la configuració:
+Es reconeixen cinc noms de contenidor al flux del text. El que renderitza cadascun es defineix a la seva pròpia secció de la configuració:
 
 <table>
   <thead>
@@ -347,6 +347,10 @@ Es reconeixen quatre noms de contenidor al flux del text (un cinquè, `:::column
     <tr>
       <td><code>:::paper&#123;…&#125;</code> … <code>:::</code></td>
       <td>Una tanda de pàgines impreses en un altre paper, com un plec de làmines en estucat brillant dins d'un llibre en paper mat. Només ho mostra el visor Folio.</td>
+    </tr>
+    <tr>
+      <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Blocs compostos en diverses columnes pròpies: dins d'un requadre, a la columna de text o a tota l'amplada d'una pàgina de diverses columnes. Vegeu <a href="#columns"><code>:::columns</code></a> més avall.</td>
     </tr>
   </tbody>
 </table>
@@ -383,7 +387,44 @@ Una tanca no necessita una línia en blanc al davant: una tanca d'obertura o de 
 
 ### `:::columns`
 
-Dins d'un `:::callout`, un grup `:::columns{count=2}` … `:::` compon els blocs entre les seves tanques en `count` columnes d'igual amplada (separades pel `columnGap` de l'estil): la seqüència es talla on millor s'anivellen les columnes —entre blocs, o entre les línies d'un paràgraf o element de llista, la cua del qual continua al capdamunt de la columna següent sense la vinyeta— i la caixa creix fins a la columna més alta. Els blocs posteriors al grup recuperen l'amplada completa. Fora d'un avís les tanques s'ignoren i els blocs flueixen com sempre. L'atribut `breaks` fixa on comença cada columna en lloc d'anivellar-les: `:::columns{count=2 breaks="4"}` obre la segona columna al quart bloc del grup (una llista separada per comes per a més columnes), sense tallar dins d'un paràgraf —una columna de text al costat d'una columna amb una figura—.
+Un grup `:::columns{count=2}` … `:::` compon els blocs entre les seves tanques en `count` columnes d'igual amplada (de 2 a 6), i el text posterior recupera l'amplada completa. Dins d'un `:::callout` les columnes es reparteixen l'amplada interior de la caixa, separades pel `columnGap` de l'estil, amb la tipografia de cos i de llistes de la caixa, i la caixa creix fins a la columna més alta. Al text corregut (des de postext 1.25) es reparteixen la columna de text, separades per una línia del cos, i els blocs conserven la tipografia del mateix text; amb `span="page"`, en una pàgina de diverses columnes, el grup talla la pàgina en una banda com una caixa a amplada completa: les columnes de sobre tanquen anivellades, el grup es compon a tota l'amplada del contingut (separat per l'espai entre columnes) i el text continua a totes les columnes per sota. En una pàgina d'una sola columna, `span="page"` el compon a la columna. Els encapçalaments dins d'un grup conserven el seu estil, el seu número i la seva entrada a l'índex, una nota al peu citada al grup va al peu de la columna de text, i les figures que cita floten com sempre.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Atribut</th>
+      <th>Efecte</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>count</code></td>
+      <td>Quantes columnes, de 2 a 6. Per defecte, 2.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>L'espai entre les columnes, una longitud (<code>12pt</code>, <code>1em</code>, <code>4mm</code>). Per defecte: el <code>columnGap</code> de l'estil de requadre en un requadre, una línia del cos a la columna de text, <code>layout.gutterWidth</code> a tota l'amplada de la pàgina.</td>
+    </tr>
+    <tr>
+      <td><code>rule</code></td>
+      <td>Traça un filet al llarg de cada separació, amb el color i el gruix de <code>layout.columnRule</code>: <code>:::columns&#123;count=3 rule&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>breaks</code></td>
+      <td>Els blocs que obren cada columna a partir de la segona, en lloc d'anivellar-les: <code>breaks="4"</code> obre la segona columna al quart bloc del grup (una llista separada per comes per a més columnes). Més avall s'explica com compta.</td>
+    </tr>
+    <tr>
+      <td><code>flow</code></td>
+      <td>Com continua un grup que no hi cap: <code>snake</code> (el valor per defecte sense <code>breaks</code>) o <code>parallel</code> (el valor per defecte amb <code>breaks</code>). Vegeu <a href="#partir-un-grup">Partir un grup</a>.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td>Només al text corregut: <code>column</code> (el valor per defecte) o <code>page</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+Un grup compost sencer es talla on millor s'anivellen les seves columnes —entre blocs, o entre les línies d'un paràgraf o element de llista, la cua del qual continua al capdamunt de la columna següent sense la vinyeta—, llevat que `breaks` fixi on comença cada columna, sense tallar dins d'un paràgraf: una columna de text al costat d'una columna amb una figura.
 
 ```md
 :::callout{type="summary"}
@@ -420,6 +461,27 @@ The keeper sleeps by day.
 ```
 
 Aquí el quart bloc, «The lamp…», obre la segona columna; les dues línies `:::space` no compten i deixen el mateix buit a totes dues columnes.
+
+#### Partir un grup
+
+Des de postext 1.25, un grup que no cap en l'espai que té —el que queda de la seva columna al text corregut, o la part d'una caixa que es parteix (`keepTogether: false`, o una caixa més alta que una columna)— es talla entre les seves columnes i continua a la columna o la pàgina següent, en una caixa pròpia si el grup és en un requadre:
+
+- **`flow="snake"`**, el valor per defecte sense `breaks`: els blocs del grup corren com una sola galerada, com el text d'una notícia de diari. Una part que continua omple les columnes per torns, tan anivellades com permeten els talls, tallant entre blocs o entre les línies d'un paràgraf o element de llista (almenys `layout.boxChildSplitMinLines` línies seves a cada costat, dues per defecte); l'última part s'anivella com un grup sencer.
+- **`flow="parallel"`**, el valor per defecte amb `breaks`: cada tram que obren els talls és un corrent que conserva la seva pròpia columna. Una part omple cada corrent fins a l'espai que té, i cadascun continua a la mateixa columna de la part següent, de manera que un poema i la seva traducció compostos un al costat de l'altre queden anivellats estrofa a estrofa. Un grup paral·lel sense `breaks` continua com un grup en serpentina.
+
+Una caixa niada dins d'un grup queda sencera i passa a la part següent, i un grup dins d'una caixa niada no es talla mai. Un grup que hi cap es compon exactament com abans. `layout.flowColumns: false` conserva les regles de postext 1.24: una tanca fora d'un requadre s'ignora i un grup no es talla mai; els llibres desats abans de la 1.25 que tenen un grup `:::columns` es llegeixen així. El Sandbox avisa d'un `flow` que no coneix (**Flux de columnes desconegut**) i de columnes més estretes que sis emes del seu text (**Columnes massa estretes**).
+
+```md
+## Breus
+
+:::columns{count=3 span="page" rule}
+**Port.** El nou moll s'inaugura dilluns…
+
+**Mercat.** El lloguer de les parades no canvia…
+
+**Temps.** Pluja des de l'oest al vespre…
+:::
+```
 
 Una tanca `:::callout` també admet `label="…"`: el text que un estil amb pestanya `label` imprimeix a la cantonada superior de la caixa (`:::callout{type="recuadro" label="RECUADRO 1-1" title="La regla del octeto"}`).
 
@@ -1478,7 +1540,7 @@ Cada recurs té una **col·locació** que decideix on aterra el seu flotant, res
     <tr>
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (el valor per defecte) pren el primer buit lliure després de la referència, a dalt o a baix; <code>"top"</code> / <code>"bottom"</code> només accepten buits d'aquest tipus; <code>"here"</code> renuncia al flotament i insereix el recurs en línia a la directiva <code>::resource</code>.</td>
+      <td><code>"auto"</code> (el valor per defecte) pren el primer buit lliure després de la referència, a dalt o a baix; <code>"top"</code> / <code>"bottom"</code> només accepten buits d'aquest tipus; <code>"here"</code> renuncia al flotament i insereix el recurs en línia a la directiva <code>::resource</code> (una taula col·locada allà es talla entre files quan no cap en el que queda de la seva columna; vegeu <a href="/ca/docs/configuration#taules-més-altes-que-la-pàgina">Taules més altes que la pàgina</a>).</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>

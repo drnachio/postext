@@ -322,7 +322,7 @@ Keep the lantern lit **every** night.
 :::
 ```
 
-Quatro nomes de contêiner são reconhecidos no fluxo do texto (um quinto, `:::columns`, só funciona dentro de um boxe e é descrito abaixo). O que cada um produz é definido na sua própria seção da configuração:
+Cinco nomes de contêiner são reconhecidos no fluxo do texto. O que cada um produz é definido na sua própria seção da configuração:
 
 <table>
   <thead>
@@ -347,6 +347,10 @@ Quatro nomes de contêiner são reconhecidos no fluxo do texto (um quinto, `:::c
     <tr>
       <td><code>:::paper&#123;…&#125;</code> … <code>:::</code></td>
       <td>Uma sequência de páginas impressas em outro papel, como um caderno de pranchas em papel brilhante dentro de um livro em papel fosco. Só o visualizador Folio mostra isso.</td>
+    </tr>
+    <tr>
+      <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Blocos compostos em colunas próprias: dentro de um boxe, na coluna de texto ou ao longo de uma página de várias colunas. Veja <a href="#columns"><code>:::columns</code></a> abaixo.</td>
     </tr>
   </tbody>
 </table>
@@ -383,7 +387,44 @@ Uma cerca não precisa de uma linha em branco antes dela: uma cerca de abertura 
 
 ### `:::columns`
 
-Dentro de um `:::callout`, um grupo `:::columns{count=2}` … `:::` compõe os blocos entre as suas cercas em `count` colunas de mesma largura (separadas pelo `columnGap` do estilo): a sequência é cortada onde as colunas ficam mais niveladas (entre blocos, ou entre as linhas de um parágrafo ou item de lista, cujo final continua no topo da coluna seguinte sem o marcador), e o boxe cresce até a altura da coluna mais alta. Os blocos depois do grupo voltam a ocupar a largura inteira. Fora de um boxe, as cercas são ignoradas e os blocos fluem normalmente. Um atributo `breaks` fixa o início das colunas em vez de balanceá-las: `:::columns{count=2 breaks="4"}` abre a segunda coluna no quarto bloco do grupo (uma lista separada por vírgulas para mais colunas), sem corte dentro de um parágrafo: uma coluna de texto ao lado de uma coluna de figura.
+Um grupo `:::columns{count=2}` … `:::` compõe os blocos entre as suas cercas em `count` colunas de mesma largura (de 2 a 6), e o texto depois dele volta a ocupar a largura inteira. Dentro de um `:::callout`, as colunas dividem a largura interna do boxe, separadas pelo `columnGap` do estilo, com a tipografia de corpo e de listas do boxe, e o boxe cresce até a altura da coluna mais alta. No texto corrido (desde o postext 1.25), elas dividem a coluna de texto, separadas por uma linha do corpo, e os blocos mantêm a tipografia do próprio texto; com `span="page"`, numa página de várias colunas, o grupo corta a página em uma faixa, como um boxe de largura total: as colunas acima dele terminam niveladas, o grupo é composto na largura do conteúdo (separado pela medianiz) e o texto continua em todas as colunas embaixo dele. Numa página de uma coluna, `span="page"` o compõe na coluna. Os títulos dentro de um grupo mantêm o seu estilo, o seu número e a sua entrada no sumário, uma nota de rodapé citada nele vai para o pé da coluna de texto, e as figuras que ele cita flutuam normalmente.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Atributo</th>
+      <th>Efeito</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>count</code></td>
+      <td>Quantas colunas, de 2 a 6. Padrão: 2.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>O espaço entre as colunas, um comprimento (<code>12pt</code>, <code>1em</code>, <code>4mm</code>). Padrão: o <code>columnGap</code> do estilo do boxe num boxe, uma linha do corpo na coluna de texto, <code>layout.gutterWidth</code> ao longo da página.</td>
+    </tr>
+    <tr>
+      <td><code>rule</code></td>
+      <td>Traça um fio ao longo de cada espaço, na cor e na espessura de <code>layout.columnRule</code>: <code>:::columns&#123;count=3 rule&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>breaks</code></td>
+      <td>Os blocos que abrem cada coluna depois da primeira, em vez de balancear: <code>breaks="4"</code> abre a segunda coluna no quarto bloco do grupo (uma lista separada por vírgulas para mais colunas). Veja abaixo como ele conta.</td>
+    </tr>
+    <tr>
+      <td><code>flow</code></td>
+      <td>Como continua um grupo que não cabe: <code>snake</code> (o padrão sem <code>breaks</code>) ou <code>parallel</code> (o padrão com <code>breaks</code>). Veja <a href="#dividir-um-grupo">Dividir um grupo</a>.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td>Só no texto corrido: <code>column</code> (o padrão) ou <code>page</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+Um grupo composto inteiro é cortado onde as suas colunas ficam mais niveladas (entre blocos, ou entre as linhas de um parágrafo ou item de lista, cujo final continua no topo da coluna seguinte sem o marcador), a menos que `breaks` fixe o início das colunas, sem corte dentro de um parágrafo: uma coluna de texto ao lado de uma coluna de figura.
 
 ```md
 :::callout{type="summary"}
@@ -420,6 +461,27 @@ El farero duerme de día.
 ```
 
 Aqui o quarto bloco, “La lámpara…”, abre a segunda coluna; as duas linhas `:::space` não são contadas e deixam o mesmo espaço nas duas colunas.
+
+#### Dividir um grupo
+
+Desde o postext 1.25, um grupo que não cabe no espaço que tem (o resto da sua coluna no texto corrido, ou a parte de um boxe que se divide: `keepTogether: false`, ou um boxe mais alto que uma coluna) é cortado entre as suas colunas e continua na coluna ou página seguinte, num boxe próprio quando o grupo está num boxe:
+
+- **`flow="snake"`**, o padrão sem `breaks`: os blocos do grupo correm como um único granel, como o texto de uma matéria de jornal. Uma parte que continua preenche as suas colunas uma após a outra, tão niveladas quanto os cortes permitem, cortando entre blocos ou entre as linhas de um parágrafo ou item de lista (pelo menos `layout.boxChildSplitMinLines` linhas dele de cada lado, duas por padrão); a última parte é balanceada como um grupo inteiro.
+- **`flow="parallel"`**, o padrão com `breaks`: cada sequência que os `breaks` iniciam é um fluxo que mantém a sua própria coluna. Uma parte preenche todos os fluxos até o espaço que tem, e cada um continua na mesma coluna da parte seguinte, de modo que um poema e a sua tradução postos lado a lado ficam nivelados estrofe por estrofe. Um grupo paralelo sem `breaks` continua como um grupo `snake`.
+
+Um boxe aninhado num grupo fica inteiro e passa para a parte seguinte, e um grupo dentro de um boxe aninhado nunca é cortado. Um grupo que cabe é composto exatamente como antes. `layout.flowColumns: false` mantém as regras do postext 1.24: uma cerca fora de um boxe é ignorada e um grupo nunca é cortado; os livros salvos antes da 1.25 que têm um grupo `:::columns` são lidos assim. O Sandbox avisa de um `flow` que não conhece (**Fluxo de colunas desconhecido**) e de colunas mais estreitas que seis emes do seu texto (**Colunas estreitas demais**).
+
+```md
+## Notas breves
+
+:::columns{count=3 span="page" rule}
+**Porto.** O novo cais abre na segunda-feira…
+
+**Mercado.** O aluguel das bancas não muda…
+
+**Tempo.** Chuva vinda do oeste ao fim da tarde…
+:::
+```
 
 Uma cerca `:::callout` também aceita `label="…"`: o texto que um estilo com uma aba `label` imprime no canto superior do boxe (`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`).
 
@@ -1478,7 +1540,7 @@ Cada recurso tem um **posicionamento** que decide onde o flutuante fica, resolvi
     <tr>
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (o padrão) ocupa o primeiro espaço livre depois da referência, no topo ou no pé; <code>"top"</code> / <code>"bottom"</code> só aceitam espaços desse tipo; <code>"here"</code> desativa a flutuação e insere o recurso em linha na diretiva <code>::resource</code>.</td>
+      <td><code>"auto"</code> (o padrão) ocupa o primeiro espaço livre depois da referência, no topo ou no pé; <code>"top"</code> / <code>"bottom"</code> só aceitam espaços desse tipo; <code>"here"</code> desativa a flutuação e insere o recurso em linha na diretiva <code>::resource</code> (uma tabela posicionada aí é cortada entre linhas quando não cabe no resto da sua coluna; veja <a href="/pt/docs/configuration#tabelas-mais-altas-que-a-página">Tabelas mais altas que a página</a>).</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>

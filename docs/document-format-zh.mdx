@@ -322,7 +322,7 @@ Keep the lantern lit **every** night.
 :::
 ```
 
-正文流中可识别的容器名有四个（第五个`:::columns`只在标注框内起作用，见下文）。各自渲染成什么，由配置中对应的部分设置：
+正文流中可识别的容器名有五个。各自渲染成什么，由配置中对应的部分设置：
 
 <table>
   <thead>
@@ -347,6 +347,10 @@ Keep the lantern lit **every** night.
     <tr>
       <td><code>:::paper&#123;…&#125;</code> … <code>:::</code></td>
       <td>换用另一种纸张印刷的一组页面，例如哑粉纸书中的一组光面铜版插图。只有Folio视图显示它。</td>
+    </tr>
+    <tr>
+      <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
+      <td>排进若干栏的一组块：在框内、在正文栏中，或者横跨多栏页面的整页。见下文的<a href="#columns"><code>:::columns</code></a>。</td>
     </tr>
   </tbody>
 </table>
@@ -383,7 +387,44 @@ Keep the lantern lit **every** night.
 
 ### `:::columns`
 
-在`:::callout`内部，`:::columns{count=2}` … `:::`组把围栏之间的块排成`count`个等宽的栏（栏间距为样式的`columnGap`）：在各栏最齐平的地方切开这段内容，可以在块之间，也可以在段落或列表项的行之间，后者的剩余部分在下一栏顶部接着排，不带项目符号；框的高度随最高的一栏增长。组之后的块重新占满整个宽度。在标注框之外，这对围栏会被忽略，块照常排版。`breaks`属性直接固定各栏的起点，而不做平衡：`:::columns{count=2 breaks="4"}`让第二栏从组内第四个块开始（栏更多时用逗号分隔的列表），不会在段落内部切开，适合文字栏旁边配一栏图的情况。
+`:::columns{count=2}` … `:::`组把围栏之间的块排成`count`个等宽的栏（2到6栏），组之后的文字重新占满整个宽度。在`:::callout`内部，各栏分享框的内宽，栏间距为样式的`columnGap`，按框的正文和列表排版设置排，框的高度随最高的一栏增长。在正文中（postext 1.25起），各栏分享正文栏，栏间距为一行正文，块保留正文自身的排版设置；在多栏页面上加`span="page"`时，组像通栏框一样把页面切成栏带：它上方的各栏齐平收尾，组横跨整个版心宽度排出（栏间距为栏间空白），文字在它下方的每一栏中继续。在单栏页面上，`span="page"`把组排在栏内。组内的标题保留各自的样式、编号和目录条目，组内引用的脚注排到正文栏的底部，组内引用的图照常浮动。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>属性</th>
+      <th>作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>count</code></td>
+      <td>栏数，2到6。默认为2。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>栏与栏之间的距离，取长度（<code>12pt</code>、<code>1em</code>、<code>4mm</code>）。默认值：在框内为框样式的<code>columnGap</code>，在正文栏中为一行正文，横跨整页时为<code>layout.gutterWidth</code>。</td>
+    </tr>
+    <tr>
+      <td><code>rule</code></td>
+      <td>在每条栏间空白中画一条竖线，颜色和粗细取<code>layout.columnRule</code>：<code>:::columns&#123;count=3 rule&#125;</code>。</td>
+    </tr>
+    <tr>
+      <td><code>breaks</code></td>
+      <td>第一栏之后每一栏从哪个块开始，用来代替平衡：<code>breaks="4"</code>让第二栏从组内第四个块开始（栏更多时用逗号分隔的列表）。计数方法见下文。</td>
+    </tr>
+    <tr>
+      <td><code>flow</code></td>
+      <td>放不下的组如何接续：<code>snake</code>（没有<code>breaks</code>时的默认值）或<code>parallel</code>（有<code>breaks</code>时的默认值）。见<a href="#分栏组的拆分">分栏组的拆分</a>。</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td>只用于正文中：<code>column</code>（默认）或<code>page</code>。</td>
+    </tr>
+  </tbody>
+</table>
+
+整体排出的组在各栏最齐平的地方切开，可以在块之间，也可以在段落或列表项的行之间，后者的剩余部分在下一栏顶部接着排，不带项目符号；如果用`breaks`固定了各栏的起点，则不会在段落内部切开，适合文字栏旁边配一栏图的情况。
 
 ```md
 :::callout{type="summary"}
@@ -420,6 +461,27 @@ El farero duerme de día.
 ```
 
 这里第四个块“La lámpara…”开启第二栏；两行`:::space`不计数，在两栏中留出相同的间隙。
+
+#### 分栏组的拆分
+
+自postext 1.25起，组放不进它所有的空间时，就在各栏之间切开，接到下一栏或下一页。这个空间在正文中是本栏剩余的部分，在框内是拆分的框（`keepTogether: false`，或比一栏还高的框）的某一部分；框内的组接续在一个新的框片段中：
+
+- **`flow="snake"`**，没有`breaks`时的默认值：组内的块连成一条长条，就像报纸上一篇报道的正文。还要接续的部分依次填满各栏，在切口允许的范围内尽量齐平，可在块之间或段落、列表项的行之间切开（切口两侧至少各留该段落或列表项的`layout.boxChildSplitMinLines`行，默认两行）；最后一部分像整组一样做平衡。
+- **`flow="parallel"`**，有`breaks`时的默认值：由断点开启的每一段内容是一条流，始终留在自己的栏中。每一部分把每条流都排到可用空间的底部，各条流在下一部分的同一栏中接续，因此并排的一首诗和它的译文逐节保持平齐。没有`breaks`的平行组按蛇形组接续。
+
+组内的嵌套框保持完整，移到下一部分；嵌套框内的组从不切开。放得下的组与以前排得完全一样。`layout.flowColumns: false`保留postext 1.24的规则：框外的围栏被忽略，组从不切开；1.25之前保存、含有`:::columns`组的书按这种方式读取。沙盒会报告它不认识的`flow`（**未知的分栏走向**），以及窄于其文字6 em的栏（**分栏过窄**）。
+
+```md
+## 简讯
+
+:::columns{count=3 span="page" rule}
+**港口。** 新码头周一启用……
+
+**市场。** 摊位租金维持不变……
+
+**天气。** 傍晚起西部有雨……
+:::
+```
 
 `:::callout`起始行还接受`label="…"`：带`label`标签的样式在框的顶角输出的文字（`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`）。
 
@@ -1481,7 +1543,7 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
     <tr>
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code>（默认值）占用引用之后的第一个空位，顶部或底部均可；<code>"top"</code> / <code>"bottom"</code>只接受相应类型的空位；<code>"here"</code>取消浮动，在<code>::resource</code>指令处以行内方式嵌入。</td>
+      <td><code>"auto"</code>（默认值）占用引用之后的第一个空位，顶部或底部均可；<code>"top"</code> / <code>"bottom"</code>只接受相应类型的空位；<code>"here"</code>取消浮动，在<code>::resource</code>指令处以行内方式嵌入（排在那里的表放不进本栏剩余空间时，在行与行之间切开，见<a href="/zh/docs/configuration#比页面还高的表">比页面还高的表</a>）。</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
