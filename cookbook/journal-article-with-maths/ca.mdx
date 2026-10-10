@@ -1,6 +1,6 @@
 ---
 title: "Article a dues columnes amb equacions numerades"
-summary: "Article de física a dues columnes amb set equacions numerades, compostes amb el MathJax de la versió ?bundle. Al PDF continuen sent vectorials."
+summary: "Article de física a dues columnes amb set equacions numerades, compostes amb MathJax. Al PDF continuen sent vectorials."
 plain: "Un article de recerca de física a dues columnes, amb fórmules al text i set equacions numerades. Ensenya a compondre matemàtiques que es vegin nítides al PDF."
 description: "Article de física amb l'obertura dibuixada per un estil de títol, equacions MathJax numerades, una taula calculada i bibliografia amb sagnat francès."
 question: "Com componc un article amb fórmules i equacions numerades, i les mantinc vectorials al PDF?"
@@ -14,9 +14,9 @@ Un article de recerca del número de setembre de *Measure*, revista fictícia de
 
 ## Elaboració
 
-### 1 · Carrega el motor empaquetat i numera les equacions
+### 1 · Engega MathJax i numera les equacions
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. A la 1.4.1 les [matemàtiques](/ca/docs/configuration#matemàtiques) necessiten la versió `?bundle` del motor. Tots els símbols s'han d'importar d'aquesta versió, perquè amb l'URL normal `initMathEngine()` llança un error, i cal esperar `initMathEngine()` abans de la primera composició; si no, cada fórmula surt com una caixa grisa i no salta cap avís. A partir d'aquí, `$…$` compon matemàtiques en línia i `$$…$$` fórmules destacades, i `renderToPdf` escriu cada fórmula com a traçats vectorials. Aquesta mateixa versió dibuixa amb amplada 0 la fórmula que porta `\tag`, i no s'imprimeix res. `numbered()` reescriu cada equació etiquetada com tres caixes `\mathmakebox` (3 em buits, la fórmula centrada i el número enganxat a la dreta en uns altres 3 em) que entre totes fan 0,1 em menys que la columna. Les amplades van en l'em de MathJax, que `MATH_EM` mesura component una caixa buida de 10 em.
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Les [matemàtiques](/ca/docs/configuration#matemàtiques) les compon MathJax, que ve dins del paquet: `initMathEngine` s'importa de `https://esm.sh/postext` amb la resta de símbols, i cal esperar `initMathEngine()` abans de la primera composició; si no, cada fórmula surt com una caixa grisa. A partir d'aquí, `$…$` compon matemàtiques en línia i `$$…$$` fórmules destacades, i `renderToPdf` escriu cada fórmula com a traçats vectorials. Un `\tag{1}` al final d'una fórmula destacada la numera: la fórmula ocupa l'amplada de la seva columna, amb l'equació centrada i el número enganxat a la dreta a la mateixa línia. Aquí els números s'escriuen a mà, i el text els cita tal com són, «Eq. (6)».
 
 ### 2 · Dibuixa el bloc del títol amb un estil de títol
 
@@ -46,7 +46,7 @@ Un contenidor `:::paragraphs` aplica a cada referència l'[estil de paràgraf](/
 
 <Excerpt region="figures" />
 
-Una sola llista, `runs`, alimenta la taula 1 i els punts de la figura 2, i la columna de valors previstos de la taula és l'equació (6) calculada per a cada amplitud. La taula porta els [filets booktabs](/ca/docs/configuration#filets-booktabs) d'una revista, `rules: 'booktabs'` en tinta: un filet gruixut a sobre i sota l'última fila, un de prim sota la capçalera i cap línia vertical. El text cita cada recurs amb `:ref{id="…" style="full"}`, que imprimeix «Figure 2» en negreta, en el color del text, i fa flotar el recurs fins al primer forat lliure després de la citació. A la 1.4.1 els peus i les cel·les no admeten matemàtiques, així que fan servir el marcatge normal `~sub~` i `^sup^` (`*T*~0~`), i els símbols dins del text continuen sent `$T_0$`. Una figura SVG es dibuixa com a imatge i no pot fer servir les fonts web de la pàgina, així que `tex()` crida `renderMath` per a cada rètol i n'escriu els contorns a l'SVG com a traçats. La *θ*₀ de la figura 1 és el mateix glif de les fórmules i continua sent vectorial al PDF.
+Una sola llista, `runs`, alimenta la taula 1 i els punts de la figura 2, i la columna de valors previstos de la taula és l'equació (6) calculada per a cada amplitud. La taula porta els [filets booktabs](/ca/docs/configuration#filets-booktabs) d'una revista, `rules: 'booktabs'` en tinta: un filet gruixut a sobre i sota l'última fila, un de prim sota la capçalera i cap línia vertical. El text cita cada recurs amb `:ref{id="…" style="full"}`, que imprimeix «Figure 2» en negreta, en el color del text, i fa flotar el recurs fins al primer forat lliure després de la citació. Els peus i les cel·les fan servir el marcatge normal `~sub~` i `^sup^` (`*T*~0~`), que es queda en la seva pròpia lletra de pal sec, i els símbols dins del text són `$T_0$`. Els rètols de les figures també són matemàtiques: `tex()` crida `renderMath` per a cadascun i n'escriu els contorns a l'SVG com a traçats. La *θ*₀ de la figura 1 és el mateix glif de les fórmules i continua sent vectorial al PDF.
 
 ## Variants
 
@@ -59,22 +59,17 @@ Els articles llargs compten les figures per seccions; així s'imprimeix «Figure
 +  numberingTemplate: '{h2}.{n}', resetOn: 'h2',
 ```
 
-### Porta els números d'equació a l'esquerra
+### Deixa que el motor numeri les equacions
 
-Intercanvia les dues caixes exteriors i els números passen a la vora esquerra de la columna.
+Amb un `\label` en lloc de cada `\tag`, les equacions es numeren en ordre de lectura, de manera que una d'afegida al mig renumera la resta, i `\eqref{eq:small}` imprimeix (1) al text. Les pàgines surten iguals.
 
 ```diff
--  `$$\\mathmakebox[${NUMBER_EM}em]{}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
--  + `\\mathmakebox[${NUMBER_EM}em][r]{(${n})}$$`);
-+  `$$\\mathmakebox[${NUMBER_EM}em][l]{(${n})}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
-+  + `\\mathmakebox[${NUMBER_EM}em]{}$$`);
+-$$T_0 = 2\pi\sqrt{\frac{L}{g}} \, . \tag{1}$$
++$$T_0 = 2\pi\sqrt{\frac{L}{g}} \, . \label{eq:small}$$
 ```
 
 ## Errors freqüents
 
-- Una fórmula destacada no va unida a la línia que la introdueix. Una frase com «gives the period as» pot tancar una columna, o quedar damunt d'una figura, amb l'equació ja a la columna següent. Ajusta el text i envia les figures al capdamunt d'una columna (`position: 'top'`, com la figura 1) perquè mai no caiguin entre totes dues.
-- El paràgraf que segueix una fórmula destacada és un paràgraf nou i porta sagnat. Comença'l com una frase pròpia («Here *L* is…») en lloc de fer-ho amb un «where…» a la manera de LaTeX.
-- Un `~0~` normal baixa la xifra un terç d'em, per sota dels descendents, i un `^2^` darrere va a continuació del ₀ en lloc de quedar-hi a sobre. Al text corrent escriu `$T_0$` i `$T_0^2$`, i reserva el marcatge normal per als peus i les cel·les, que no admeten matemàtiques.
-- En una pàgina de tancament sota una figura a tota l'amplada, l'equilibrat pot afegir una línia damunt d'un títol que obre columna, i llavors les dues columnes comencen desfasades una línia; `stretchAfterFloats: false` no ho evita. Revisa l'última pàgina i ajusta el text en una línia.
-- A la 1.4.1 un títol dins de la columna no admet `letterSpacing`, i per això els títols de les seccions finals van en majúscules sense espaiar. Les majúscules espaiades funcionen al text de disseny i al títol d'un requadre, com a l'avanttítol i a l'etiqueta del resum.
+- El text escrit després d'una línia en blanc sota una fórmula destacada és un paràgraf nou i porta sagnat; per això aquí cadascun comença com una frase pròpia («Here *L* is…»). Per a un «where…» a la manera de LaTeX, escriu el text just a sota del `$$` de tancament: continua el paràgraf i va sense sagnat.
+- Un `~0~` normal baixa la xifra un terç d'em, per sota dels descendents, i un `^2^` darrere va a continuació del ₀ en lloc de quedar-hi a sobre. Al text corrent escriu `$T_0$` i `$T_0^2$`, i reserva el marcatge normal per als peus i les cel·les, on es queda en la lletra dels rètols.
 - Comprova que la font de rètols tingui ¹, ² i ±, i lletres gregues si algun peu les necessita. Instrument Sans, la primera que es va provar, no en porta cap de les tres als seus fitxers de Fontsource, i Schibsted Grotesk no té grec, així que el peu de la figura 1 anomena l'amplitud amb paraules en lloc de *θ*₀.

@@ -1,6 +1,6 @@
 ---
 title: "Artigo em duas colunas com equações numeradas"
-summary: "Um artigo de física em duas colunas com fórmulas no texto e sete equações numeradas, compostas pelo MathJax da versão ?bundle e vetoriais no PDF."
+summary: "Um artigo de física em duas colunas com fórmulas no texto e sete equações numeradas, compostas pelo MathJax e vetoriais no PDF."
 plain: "Um artigo de pesquisa em física, em duas colunas, com fórmulas no meio do texto e sete equações numeradas. Mostra como compor matemática que continua nítida no PDF."
 description: "Um artigo de física com o bloco de título desenhado por um estilo de título, equações MathJax numeradas, uma tabela calculada e referências com recuo deslocado."
 question: "Como faço para compor um artigo com fórmulas e equações numeradas e mantê-las vetoriais no PDF?"
@@ -14,9 +14,9 @@ Um artigo de pesquisa do número de setembro de *Measure*, uma revista fictícia
 
 ## Preparo
 
-### 1 · Carregue o motor empacotado e numere as equações
+### 1 · Inicie o MathJax e numere as equações
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. Na versão 1.4.1, a [matemática](/pt/docs/configuration#matemática) precisa da versão `?bundle`. Todos os símbolos têm de vir dela, porque `initMathEngine()` lança um erro quando é carregado pela URL comum, e `await initMathEngine()` tem de rodar antes da primeira composição; sem isso, cada fórmula sai como uma caixa cinza e nenhum aviso aparece. A partir daí, `$…$` compõe matemática no texto e `$$…$$` fórmulas em destaque, e `renderToPdf` escreve cada fórmula como traçados vetoriais. A mesma versão desenha com largura 0 a fórmula que leva `\tag`, e nada é impresso. `numbered()` reescreve cada equação marcada como três caixas `\mathmakebox` (3 em vazios, a fórmula centralizada e o número encostado à direita nos últimos 3 em) que, somadas, medem 0,1 em a menos que a coluna. As larguras estão no em do próprio MathJax, que `MATH_EM` mede compondo uma caixa vazia de 10 em.
+O código é [a resposta curta](#a-resposta-curta) logo acima. A [matemática](/pt/docs/configuration#matemática) é composta pelo MathJax, que vem dentro do pacote: `initMathEngine` é importado de `https://esm.sh/postext` com os outros símbolos, e `await initMathEngine()` tem de rodar antes da primeira composição; sem isso, cada fórmula sai como uma caixa cinza. A partir daí, `$…$` compõe matemática no texto e `$$…$$` fórmulas em destaque, e `renderToPdf` escreve cada fórmula como traçados vetoriais. Um `\tag{1}` no fim de uma fórmula em destaque a numera: a fórmula ocupa a largura da coluna, com a equação centralizada e o número encostado à direita na mesma linha. Aqui os números são escritos à mão, e o texto os cita como estão, “Eq. (6)”.
 
 ### 2 · Desenhe o bloco do título com um estilo de título
 
@@ -46,7 +46,7 @@ Um bloco `:::paragraphs` aplica a cada referência o [estilo de parágrafo](/pt/
 
 <Excerpt region="figures" />
 
-Uma só lista, `runs`, alimenta a tabela 1 e os pontos da figura 2, e a coluna de valores previstos da tabela é a equação (6) calculada para cada amplitude. A tabela leva os [fios booktabs](/pt/docs/configuration#fios-booktabs) de uma revista, `rules: 'booktabs'` em tinta: um fio grosso acima e abaixo da última linha, um fino sob o cabeçalho e nenhuma linha vertical. O texto cita cada recurso com `:ref{id="…" style="full"}`, que imprime “Figure 2” em negrito na cor do texto e faz o recurso flutuar até a primeira vaga livre depois da citação. Na versão 1.4.1, legendas e células de tabela não aceitam matemática, então usam a marcação simples `~sub~` e `^sup^` (`*T*~0~`), e os símbolos no texto corrido continuam como `$T_0$`. Uma figura SVG é desenhada como imagem e não pode usar as fontes web da página, então `tex()` chama `renderMath` para cada rótulo e escreve os contornos no SVG como traçados. O *θ*₀ da figura 1 é o mesmo glifo das fórmulas e continua vetorial no PDF.
+Uma só lista, `runs`, alimenta a tabela 1 e os pontos da figura 2, e a coluna de valores previstos da tabela é a equação (6) calculada para cada amplitude. A tabela leva os [fios booktabs](/pt/docs/configuration#fios-booktabs) de uma revista, `rules: 'booktabs'` em tinta: um fio grosso acima e abaixo da última linha, um fino sob o cabeçalho e nenhuma linha vertical. O texto cita cada recurso com `:ref{id="…" style="full"}`, que imprime “Figure 2” em negrito na cor do texto e faz o recurso flutuar até a primeira vaga livre depois da citação. As legendas e as células de tabela usam a marcação simples `~sub~` e `^sup^` (`*T*~0~`), que fica na sua própria fonte sem serifa, e os símbolos no texto corrido são `$T_0$`. Os rótulos das figuras também são matemática: `tex()` chama `renderMath` para cada um e escreve os contornos no SVG como traçados. O *θ*₀ da figura 1 é o mesmo glifo das fórmulas e continua vetorial no PDF.
 
 ## Variações
 
@@ -59,22 +59,17 @@ Artigos longos contam as figuras por seção; assim sai “Figure 1.1” na intr
 +  numberingTemplate: '{h2}.{n}', resetOn: 'h2',
 ```
 
-### Ponha os números das equações à esquerda
+### Deixe o motor numerar as equações
 
-Troque as duas caixas externas de lugar e os números passam para a borda esquerda da coluna.
+Com um `\label` no lugar de cada `\tag`, as equações são numeradas na ordem de leitura, de modo que uma acrescentada no meio renumera as demais, e `\eqref{eq:small}` imprime (1) no texto. As páginas saem iguais.
 
 ```diff
--  `$$\\mathmakebox[${NUMBER_EM}em]{}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
--  + `\\mathmakebox[${NUMBER_EM}em][r]{(${n})}$$`);
-+  `$$\\mathmakebox[${NUMBER_EM}em][l]{(${n})}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
-+  + `\\mathmakebox[${NUMBER_EM}em]{}$$`);
+-$$T_0 = 2\pi\sqrt{\frac{L}{g}} \, . \tag{1}$$
++$$T_0 = 2\pi\sqrt{\frac{L}{g}} \, . \label{eq:small}$$
 ```
 
 ## Erros comuns
 
-- Uma fórmula em destaque não fica presa à linha que a apresenta. Uma frase como “gives the period as” pode fechar uma coluna, ou ficar acima de uma figura, com a equação já na coluna seguinte. Ajuste o texto e mande as figuras para o alto de uma coluna (`position: 'top'`, como a figura 1) para que nunca caiam entre as duas.
-- O parágrafo que vem depois de uma fórmula em destaque é um parágrafo novo, e leva recuo. Comece-o como uma frase própria (“Here *L* is…”) em vez de um “where…” à maneira do LaTeX.
-- Um `~0~` simples desce o algarismo um terço de em, abaixo das descendentes, e um `^2^` logo depois vem em seguida ao ₀ em vez de ficar sobre ele. No texto corrido, escreva `$T_0$` e `$T_0^2$`, e guarde a marcação simples para legendas e células de tabela, que não aceitam matemática.
-- Numa página de fechamento sob uma figura que ocupa a largura da página, o balanceamento pode acrescentar uma linha acima de um título que abre uma coluna, e as duas colunas começam com uma linha de diferença; `stretchAfterFloats: false` não evita isso. Confira a última página e ajuste o texto em uma linha.
-- Na versão 1.4.1, um título dentro da coluna não aceita `letterSpacing`, por isso os títulos dos elementos finais são maiúsculas sem espaçamento. Maiúsculas espaçadas funcionam no texto de design e nos títulos de boxe, como no antetítulo e no rótulo do resumo.
+- O texto escrito depois de uma linha em branco sob uma fórmula em destaque é um parágrafo novo, e leva recuo; por isso cada um aqui começa como uma frase própria (“Here *L* is…”). Para um “where…” à maneira do LaTeX, escreva o texto logo abaixo do `$$` de fechamento: ele continua o parágrafo e sai sem recuo.
+- Um `~0~` simples desce o algarismo um terço de em, abaixo das descendentes, e um `^2^` logo depois vem em seguida ao ₀ em vez de ficar sobre ele. No texto corrido, escreva `$T_0$` e `$T_0^2$`, e guarde a marcação simples para legendas e células de tabela, onde ela fica na fonte dos rótulos.
 - Verifique se a fonte dos rótulos tem ¹, ² e ±, e letras gregas se alguma legenda precisar delas. A Instrument Sans, testada primeiro, não tem nenhum dos três nos arquivos do Fontsource, e a Schibsted Grotesk não tem grego, por isso a legenda da figura 1 nomeia a amplitude por extenso em vez de *θ*₀.

@@ -1,6 +1,6 @@
 ---
 title: "Artículo a dos columnas con ecuaciones numeradas"
-summary: "Artículo de física a dos columnas con siete ecuaciones numeradas, compuestas con el MathJax de la versión ?bundle. En el PDF siguen siendo vectoriales."
+summary: "Artículo de física a dos columnas con siete ecuaciones numeradas, compuestas con MathJax. En el PDF siguen siendo vectoriales."
 plain: "Un artículo de investigación de física a dos columnas, con fórmulas en el texto y siete ecuaciones numeradas. Enseña a componer matemáticas que se ven nítidas en el PDF."
 description: "Artículo de física con la apertura dibujada por un estilo de título, ecuaciones MathJax numeradas, una tabla calculada y bibliografía con sangría francesa."
 question: "¿Cómo compongo un artículo con fórmulas y ecuaciones numeradas, y las mantengo vectoriales en el PDF?"
@@ -14,9 +14,9 @@ Un artículo de investigación del número de septiembre de *Measure*, revista f
 
 ## Elaboración
 
-### 1 · Carga el motor empaquetado y numera las ecuaciones
+### 1 · Arranca MathJax y numera las ecuaciones
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. En 1.4.1 las [matemáticas](/es/docs/configuration#matemáticas) necesitan la versión `?bundle` del motor. Todos los símbolos tienen que importarse de ella, porque con la URL normal `initMathEngine()` lanza un error, y hay que esperar a `initMathEngine()` antes de la primera composición; si no, cada fórmula sale como una caja gris y no salta ningún aviso. A partir de ahí, `$…$` compone matemáticas en línea y `$$…$$` fórmulas destacadas, y `renderToPdf` escribe cada fórmula como trazados vectoriales. Esa misma versión dibuja con anchura 0 la fórmula que lleva `\tag`, y no se imprime nada. `numbered()` reescribe cada ecuación etiquetada como tres cajas `\mathmakebox` (3 em vacíos, la fórmula centrada y el número pegado a la derecha en otros 3 em) que entre todas miden 0,1 em menos que la columna. Las anchuras van en el em de MathJax, que `MATH_EM` mide componiendo una caja vacía de 10 em.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Las [matemáticas](/es/docs/configuration#matemáticas) las compone MathJax, que viene dentro del paquete: `initMathEngine` se importa de `https://esm.sh/postext` con los demás símbolos, y hay que esperar a `initMathEngine()` antes de la primera composición; si no, cada fórmula sale como una caja gris. A partir de ahí, `$…$` compone matemáticas en línea y `$$…$$` fórmulas destacadas, y `renderToPdf` escribe cada fórmula como trazados vectoriales. Un `\tag{1}` al final de una fórmula destacada la numera: la fórmula ocupa el ancho de su columna, con la ecuación centrada y el número pegado a la derecha en su misma línea. Aquí los números se escriben a mano, y el texto los cita tal cual, «Eq. (6)».
 
 ### 2 · Dibuja el bloque del título con un estilo de título
 
@@ -46,7 +46,7 @@ Un contenedor `:::paragraphs` aplica a cada referencia el [estilo de párrafo](/
 
 <Excerpt region="figures" />
 
-Una sola lista, `runs`, alimenta la tabla 1 y los puntos de la figura 2, y la columna de valores previstos de la tabla es la ecuación (6) calculada para cada amplitud. La tabla lleva los [filetes booktabs](/es/docs/configuration#filetes-booktabs) de una revista, `rules: 'booktabs'` en tinta: un filete grueso encima y bajo la última fila, uno fino bajo la cabecera y ninguna línea vertical. El texto cita cada recurso con `:ref{id="…" style="full"}`, que imprime «Figure 2» en negrita, en el color del texto, y hace flotar el recurso hasta el primer hueco libre tras la cita. En 1.4.1 los pies y las celdas no admiten matemáticas, así que usan el marcado normal `~sub~` y `^sup^` (`*T*~0~`), y los símbolos dentro del texto siguen siendo `$T_0$`. Una figura SVG se dibuja como imagen y no puede usar las fuentes web de la página, así que `tex()` llama a `renderMath` para cada rótulo y escribe sus contornos en el SVG como trazados. La *θ*₀ de la figura 1 es el mismo glifo de las fórmulas y sigue siendo vectorial en el PDF.
+Una sola lista, `runs`, alimenta la tabla 1 y los puntos de la figura 2, y la columna de valores previstos de la tabla es la ecuación (6) calculada para cada amplitud. La tabla lleva los [filetes booktabs](/es/docs/configuration#filetes-booktabs) de una revista, `rules: 'booktabs'` en tinta: un filete grueso encima y bajo la última fila, uno fino bajo la cabecera y ninguna línea vertical. El texto cita cada recurso con `:ref{id="…" style="full"}`, que imprime «Figure 2» en negrita, en el color del texto, y hace flotar el recurso hasta el primer hueco libre tras la cita. Los pies y las celdas usan el marcado normal `~sub~` y `^sup^` (`*T*~0~`), que se queda en su propia letra de palo seco, y los símbolos dentro del texto son `$T_0$`. Los rótulos de las figuras también son matemáticas: `tex()` llama a `renderMath` para cada uno y escribe sus contornos en el SVG como trazados. La *θ*₀ de la figura 1 es el mismo glifo de las fórmulas y sigue siendo vectorial en el PDF.
 
 ## Variantes
 
@@ -59,22 +59,17 @@ Los artículos largos cuentan las figuras por secciones; así se imprime «Figur
 +  numberingTemplate: '{h2}.{n}', resetOn: 'h2',
 ```
 
-### Lleva los números de ecuación a la izquierda
+### Deja que el motor numere las ecuaciones
 
-Intercambia las dos cajas exteriores y los números pasan al borde izquierdo de la columna.
+Con un `\label` en lugar de cada `\tag`, las ecuaciones se numeran en orden de lectura, de modo que una añadida en medio renumera las demás, y `\eqref{eq:small}` imprime (1) en el texto. Las páginas salen iguales.
 
 ```diff
--  `$$\\mathmakebox[${NUMBER_EM}em]{}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
--  + `\\mathmakebox[${NUMBER_EM}em][r]{(${n})}$$`);
-+  `$$\\mathmakebox[${NUMBER_EM}em][l]{(${n})}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
-+  + `\\mathmakebox[${NUMBER_EM}em]{}$$`);
+-$$T_0 = 2\pi\sqrt{\frac{L}{g}} \, . \tag{1}$$
++$$T_0 = 2\pi\sqrt{\frac{L}{g}} \, . \label{eq:small}$$
 ```
 
 ## Errores frecuentes
 
-- Una fórmula destacada no va unida a la línea que la introduce. Una frase como «gives the period as» puede cerrar una columna, o quedar encima de una figura, con la ecuación ya en la columna siguiente. Ajusta el texto y manda las figuras a la cabeza de una columna (`position: 'top'`, como la figura 1) para que nunca caigan entre las dos.
-- El párrafo que sigue a una fórmula destacada es un párrafo nuevo y lleva sangría. Empiézalo como una frase propia («Here *L* is…») en vez de con un «where…» a la manera de LaTeX.
-- Un `~0~` normal baja su cifra un tercio de em, por debajo de los descendentes, y un `^2^` detrás va a continuación del ₀ en lugar de quedar encima. En el texto corrido escribe `$T_0$` y `$T_0^2$`, y guarda el marcado normal para los pies y las celdas, que no admiten matemáticas.
-- En una página de cierre bajo una figura a todo el ancho, el equilibrado puede añadir una línea sobre un título que abre columna, y entonces las dos columnas empiezan desfasadas una línea; `stretchAfterFloats: false` no lo evita. Revisa la última página y ajusta el texto en una línea.
-- En 1.4.1 un título dentro de la columna no admite `letterSpacing`, y por eso los títulos de las secciones finales van en mayúsculas sin espaciar. Las mayúsculas espaciadas funcionan en el texto de diseño y en el título de un recuadro, como en el antetítulo y en la etiqueta del resumen.
+- El texto escrito tras una línea en blanco bajo una fórmula destacada es un párrafo nuevo y lleva sangría; por eso aquí cada uno empieza como una frase propia («Here *L* is…»). Para un «where…» a la manera de LaTeX, escribe el texto justo debajo del `$$` de cierre: continúa el párrafo y va sin sangría.
+- Un `~0~` normal baja su cifra un tercio de em, por debajo de los descendentes, y un `^2^` detrás va a continuación del ₀ en lugar de quedar encima. En el texto corrido escribe `$T_0$` y `$T_0^2$`, y guarda el marcado normal para los pies y las celdas, donde se queda en la letra de los rótulos.
 - Comprueba que la fuente de rótulos tenga ¹, ² y ±, y letras griegas si algún pie las necesita. Instrument Sans, la primera que se probó, no trae ninguno de los tres en sus archivos de Fontsource, y Schibsted Grotesk no tiene griego, así que el pie de la figura 1 nombra la amplitud con palabras en lugar de *θ*₀.

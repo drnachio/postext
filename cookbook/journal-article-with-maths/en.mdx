@@ -1,6 +1,6 @@
 ---
 title: "Two-column paper with numbered equations"
-summary: "A two-column physics paper whose inline formulas and seven numbered equations are set by MathJax from the ?bundle build, and stay vector in the PDF."
+summary: "A two-column physics paper whose inline formulas and seven numbered equations are set by MathJax and stay vector in the PDF."
 plain: "A physics research article in two columns, with formulas in the text and seven numbered equations. It shows how to set mathematics that stays sharp in the PDF."
 description: "A physics paper whose title block is drawn by a heading style, with numbered MathJax equations, a table computed from its data and hanging-indent references."
 question: "How do I typeset a paper with inline and numbered display equations, and keep the maths vector in the PDF?"
@@ -14,9 +14,9 @@ A research article from the September issue of *Measure*, a fictional open-acces
 
 ## Method
 
-### 1 · Load the bundled engine and number the equations
+### 1 · Start MathJax and number the equations
 
-The code is [the short answer](#the-short-answer) above. In 1.4.1 [maths](/en/docs/configuration#math) needs the `?bundle` build. Every symbol has to come from it, since `initMathEngine()` throws when it is loaded from the plain URL, and `await initMathEngine()` has to run before the first build, or every formula paints as a grey box with no warning. From then on `$…$` sets inline maths and `$$…$$` display maths, and `renderToPdf` writes each formula as vector paths. The same release draws a formula that carries a `\tag` 0 wide, so nothing prints. `numbered()` rewrites each tagged equation as three `\mathmakebox` boxes (3 em left empty, the formula centred, the number flush right in the last 3 em) that together come to 0.1 em less than the column. The widths are in MathJax's own em, which `MATH_EM` measures by rendering an empty 10 em box.
+The code is [the short answer](#the-short-answer) above. [Maths](/en/docs/configuration#math) is set by MathJax, which ships inside the package: `initMathEngine` is imported from `https://esm.sh/postext` with every other symbol, and `await initMathEngine()` has to run before the first build, or every formula paints as a grey box. From then on `$…$` sets inline maths and `$$…$$` display maths, and `renderToPdf` writes each formula as vector paths. A `\tag{1}` at the end of a display formula numbers it: the formula takes the width of its column, with the equation centred and the number flush right on its line. The numbers are typed by hand here, and the text cites them as written, “Eq. (6)”.
 
 ### 2 · Draw the title block from a heading style
 
@@ -46,7 +46,7 @@ A `:::paragraphs` fence applies the `references` [paragraph style](/en/docs/conf
 
 <Excerpt region="figures" />
 
-One array, `runs`, feeds Table 1 and the dots of Figure 2, and the table's predicted column is Eq. (6) evaluated at each amplitude. The table takes the [booktabs rules](/en/docs/configuration#booktabs-rules) of a journal, `rules: 'booktabs'` in ink: a heavy rule above it and under the last row, a light one under the header, no vertical lines. The text cites each resource with `:ref{id="…" style="full"}`, which prints “Figure 2” in bold ink and floats the resource into the first free slot after the citation. Captions and table cells take no maths in 1.4.1, so they use plain `~sub~` and `^sup^` markup (`*T*~0~`), and symbols in running text stay `$T_0$`. An SVG figure is drawn as an image and cannot use the page's web fonts, so `tex()` calls `renderMath` for each label and writes the outlines into the SVG as paths. The *θ*₀ of Figure 1 is the glyph the formulas use, and it stays vector in the PDF.
+One array, `runs`, feeds Table 1 and the dots of Figure 2, and the table's predicted column is Eq. (6) evaluated at each amplitude. The table takes the [booktabs rules](/en/docs/configuration#booktabs-rules) of a journal, `rules: 'booktabs'` in ink: a heavy rule above it and under the last row, a light one under the header, no vertical lines. The text cites each resource with `:ref{id="…" style="full"}`, which prints “Figure 2” in bold ink and floats the resource into the first free slot after the citation. The captions and the table cells use plain `~sub~` and `^sup^` markup (`*T*~0~`), which stays in their own sans, and symbols in running text are `$T_0$`. The labels inside the figures are maths too: `tex()` calls `renderMath` for each one and writes the outlines into the SVG as paths. The *θ*₀ of Figure 1 is the glyph the formulas use, and it stays vector in the PDF.
 
 ## Variations
 
@@ -59,22 +59,17 @@ Long papers count figures per section; this prints Figure 1.1 in the introductio
 +  numberingTemplate: '{h2}.{n}', resetOn: 'h2',
 ```
 
-### Put the equation numbers on the left
+### Let the engine number the equations
 
-Swap the two outer boxes and the numbers move to the left edge of the column.
+With a `\label` in place of each `\tag`, the equations are numbered in reading order, so one added in the middle renumbers the rest, and `\eqref{eq:small}` in the text prints (1). The pages come out the same.
 
 ```diff
--  `$$\\mathmakebox[${NUMBER_EM}em]{}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
--  + `\\mathmakebox[${NUMBER_EM}em][r]{(${n})}$$`);
-+  `$$\\mathmakebox[${NUMBER_EM}em][l]{(${n})}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
-+  + `\\mathmakebox[${NUMBER_EM}em]{}$$`);
+-$$T_0 = 2\pi\sqrt{\frac{L}{g}} \, . \tag{1}$$
++$$T_0 = 2\pi\sqrt{\frac{L}{g}} \, . \label{eq:small}$$
 ```
 
 ## Pitfalls
 
-- A display formula does not keep with the line that introduces it. A lead-in such as “gives the period as” can end a column, or stand above a figure, with its equation in the next column. Fit the copy, and send figures to the head of a column (`position: 'top'`, as Figure 1 does) so they never land between the two.
-- The paragraph after a display formula is a new paragraph, and it is indented. Start it as a sentence of its own (“Here *L* is…”) rather than a LaTeX-style “where…”.
-- Plain `~0~` drops its figure a third of an em, below the descenders, and `^2^` after it follows the ₀ instead of standing over it. In running text write `$T_0$` and `$T_0^2$`, and keep the plain markup for captions and table cells, which take no maths.
-- On a closing page under a page-wide figure, the balancer may add a line above a heading that opens a column, so the two columns start a line apart, and `stretchAfterFloats: false` does not prevent it. Check the last page and fit the copy by a line.
-- In 1.4.1 an in-column heading takes no `letterSpacing`, so the back-matter headings are untracked capitals. Tracked capitals work in design text and callout titles, as in the kicker and the abstract's label.
+- Text written after a blank line under a display formula is a new paragraph, and it is indented, so each one here starts as a sentence of its own (“Here *L* is…”). For a LaTeX-style “where…”, write the text right under the closing `$$`: it continues the paragraph and is set flush.
+- Plain `~0~` drops its figure a third of an em, below the descenders, and `^2^` after it follows the ₀ instead of standing over it. In running text write `$T_0$` and `$T_0^2$`, and keep the plain markup for captions and table cells, where it stays in the label face.
 - Check that the label face carries ¹, ² and ±, and Greek if a caption needs it. Instrument Sans, tried first, has none of the three in its Fontsource files, and Schibsted Grotesk has no Greek, so the Figure 1 caption names the amplitude in words rather than *θ*₀.
