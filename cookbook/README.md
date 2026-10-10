@@ -25,8 +25,8 @@ guide needs a fix.
   and correct.
 - **Runs on its own.** The composed `script.js` runs in CodePen, in a downloaded `.html`
   file or pasted into any `<script type="module">`, with no build step.
-- **Honest about gaps.** When Postext cannot do something (line numbers, pipe tables, text
-  wrapped around a picture), the recipe shows the workaround and says so; it never fakes the
+- **Honest about gaps.** When Postext cannot do something (pipe tables, Markdown `![]()`
+  images, raw HTML), the recipe shows the workaround and says so; it never fakes the
   feature.
 - **Permanent.** A recipe has a catalogue number (Nº) that is never reused and an English
   slug that never changes (renames go through `formerSlugs`).
@@ -201,7 +201,7 @@ Start from `_template/script.js`; it runs as it is. The fixed parts, in order:
 // ═══ Postext Cookbook · Nº 009 · Magazine opener on a full-bleed photo ═══════════   line 1
 // https://postext.dev/en/cookbook/magazine-photo-opener                              line 2
 // Code: MIT · Text: ESO eso2315 (CC BY 4.0) · Photo: ESO/VPHAS+ (CC BY 4.0)           line 3
-// Fonts: Newsreader, Archivo, Chivo (SIL OFL 1.1) · Needs postext ≥ 1.4.1            line 4
+// Fonts: Newsreader, Archivo, Chivo (SIL OFL 1.1) · Needs postext ≥ 1.25.0           line 4
 import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -243,7 +243,7 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
 
 ### 5.3 Variants
 
-- **PDF.** Add `"pdf"` to `outputs` and `kit`, `"postextPdf": "1.4.1"` to `engine`, and
+- **PDF.** Add `"pdf"` to `outputs` and `kit`, `"postextPdf": "1.25.0"` to `engine`, and
   `"downloads": { "pdf": true }` to serve the file:
   ```js
   import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
@@ -329,14 +329,31 @@ whole Cookbook is verified again.
 - ES2022, two-space indent, single quotes, semicolons, lines of 100 characters or fewer.
   No classes, no frameworks, no dependencies beyond `postext` and `postext-pdf`.
 - Comments in English (the Spanish explanation lives in `es.mdx`). They say *why*, and cite
-  shared pitfalls by id: `// gotcha: hyphenation-locales`.
+  shared pitfalls by id: `// gotcha: resource-double-quotes`. Cite a pitfall the recipe's
+  engine still has: one that `gotchas.json` marks `fixedIn` at or before the pin is history
+  (§10), and a comment or a line of code that routes around it goes.
 - `const config = { … }`, one object; a factory (`const config = () => ({ … })`) still lints.
   Since postext 1.25 the engine sees a config changed in place.
-- Any `headings` object drops the H1 page break: restate
-  `levels: [{ level: 1, breakBefore: { enabled: true, parity } }]`.
-- `fontFamily` holds one family, never a CSS stack.
-- Ordered lists use `numberFormat: 'arabic'` (`'decimal'` prints "undefined").
-- `::resource{id="…"}` takes double quotes; every frontmatter value is quoted.
+- A `headings` object is partial: it merges onto each level's defaults, so an H1 keeps its
+  break to a recto (`{ enabled: true, parity: 'always-odd' }`) whatever else the object sets.
+  Write `breakBefore` on a level only to change it: `{ parity: 'odd' }` for a recto with no
+  blank page forced before it, `{ enabled: false }` for chapters that run on. A pen may
+  still restate the default; the lint asks for it only in a recipe pinned below 1.5.0,
+  where any `headings` object dropped the break.
+- `fontFamily` names one family. The engine sets a CSS stack in its first family and ignores
+  the other names (there is no fallback chain), so the lint fails a stack.
+- Numbering formats are spelt alike everywhere: lists, resource counters, page labels and
+  `:::numbering` each take `'arabic'` or `'decimal'`, `'upper-roman'` or `'roman-upper'`, and
+  the template tokens (`'1'`, `'i'`, `'I'`, `'a'`, `'A'`). A name the engine does not know
+  numbers in decimal and comes back as an `unknownNumberFormat` config warning, which fails
+  the capture (C31).
+- `::resource{id="…"}` takes double quotes. Frontmatter values are quoted, in the sample as
+  in the write-ups: the engine prints an unquoted number, date or list (a date as its
+  calendar day in the document's language), but YAML reads an unquoted `: ` or `#` as
+  syntax, and a quoted value prints exactly as typed.
+- The faces load before the build: `kitFonts(FONTS)` handed to the engine, `loadFonts(FONTS, …)`
+  under the cjk, arabic and comics blocks, or `loadBundleFonts(bundle)` when the pen takes
+  them from a bundle's own files. The lint warns when it finds none of the three.
 - Bitmaps declare `width` and `height` in pixels at print size.
 - No `Math.random()` (use a seeded Mulberry32 for generated art), no clock, no dates from
   `new Date()`: captures must be deterministic.
@@ -571,9 +588,9 @@ them for print, and readers copy what a recipe shows. The default look is: a
 a grey `#f4f4f4` box for callouts and a spreadsheet grid for tables.
 
 **Every recipe sets at least:** page geometry (mirrored for books); body family, size and
-leading; bold, italic and reference colours back to ink; `headings`, with the H1
-`breakBefore` restated; `header` and `footer`; a semantic `colorPalette` with every colour
-linked; and callout, table and caption styles whenever the recipe uses them.
+leading; bold, italic and reference colours back to ink; `headings` (the H1 keeps its break
+to a recto unless the recipe changes it); `header` and `footer`; a semantic `colorPalette`
+with every colour linked; and callout, table and caption styles whenever the recipe uses them.
 
 The lint fails a config without `bodyText`, `header`, `footer` or `colorPalette`. The capture
 (check C17) fails on any of: body text in EB Garamond 8 pt; a heading level in Open Sans
