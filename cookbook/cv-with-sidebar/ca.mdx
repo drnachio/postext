@@ -60,4 +60,4 @@ El <RecipeLink slug="textbook-margin-column">llibre de text amb columna al marge
 ## Errors freqüents
 
 - Ajusta el `:::space` a la pàgina. A l'edició castellana, 1,76 línies acaben el requadre 0,8 mm per damunt del peu de la columna. Amb 1,96 línies passa del peu en 0,1 mm i tota la barra se'n va a la pàgina 2; amb 1,66 s'obre una franja de paper entre el requadre i la caixa del peu.
-- Una caixa del disseny del nom no serveix per pintar la banda. Si acaba just damunt del peu de la columna, el títol reserva 265 mm, més que els 260,8 mm de la columna, i el text passa a la pàgina 2; si arriba fins al peu del full, el títol perd l'alçada que reservava i el perfil puja a 30,3 mm i es munta sobre la professió.
+- Una caixa del disseny del nom no serveix per pintar la banda. El títol reserva l'alçada de la caixa, així que una de tan alta com la banda li fa reservar més que els 260,8 mm de la columna, i el text passa a la pàgina 2. Amb `reserve: false` la caixa no reserva res, però un disseny que es queda a la columna es talla al peu d'aquesta, i el marge inferior quedaria en blanc.

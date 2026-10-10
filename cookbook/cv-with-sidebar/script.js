@@ -20,7 +20,7 @@ const palette = {
   muted: '#6c5f69', // dates, employers, the colophon (6.0:1)
   paper: '#ffffff', // the page, and the text on the band (14.4:1)
 };
-// 1.4.1 design elements paint the hex and ignore the paletteId (gotcha: palette-skips-designs).
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.accent })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -112,9 +112,7 @@ const nameplate = { enabled: true, slot: { elements: [
 ] } };
 const nameLevel = { level: 1, // span stays 'column': the name heads the text column only
   // No break before the name: the sidebar box is already on the page, and a break would
-  // move the name and the whole text column to page 2. 1.4.1 drops the H1 break anyway once
-  // `headings` is set (gotcha: headings-drop-h1-break); the explicit value keeps the page
-  // whole once that default returns.
+  // move the name and the whole text column to page 2.
   breakBefore: { enabled: false },
   marginBottom: pt(LEAD), // one grid line of air under the role
   advancedDesign: nameplate };
@@ -131,7 +129,7 @@ const sectionHead = { enabled: true, slot: { elements: [
 // #region jobs: each job heading sets the title left and the dates flush right
 const JOB = 9.8; // pt: the job title, the dates and the employer share the size and leading
 const jobText = (id, content, look) => ({ kind: 'text', id, content, fontFamily: SANS,
-  fontSize: pt(JOB), lineHeight: LEAD / JOB, // a multiple (gotcha: design-lineheight-multiple)
+  fontSize: pt(JOB), lineHeight: LEAD / JOB, // the body's leading, as a multiple of the size
   align: 'left', ...look }); // without align, design text is centred in its box
 const job = { enabled: true, slot: { elements: [
   jobText('title', '{titleText}', { fontWeight: 700, color: col('ink'), overflow: 'wrap',
@@ -159,8 +157,8 @@ const config = () => ({
     italicColor: col('ink'), // the titles in Selected books
     referenceColor: col('ink'), // no :ref yet; one added later prints in ink, not default blue
     textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true },
-  // Each level draws its own design, but 1.4.1 still measures the hidden heading text in this
-  // face. Without it the default is Open Sans, and the page would have to load that face too.
+  // Each level draws its own design. The headings still name the text face, so the config
+  // asks for no face beyond FONTS: their default is Open Sans.
   headings: { fontFamily: SANS, levels: [nameLevel, sectionLevel, jobLevel] },
   unorderedLists: { bulletChar: '–', color: col('ink'), fontWeight: 400, itemSpacing: pt(0),
     marginTop: pt(0), marginBottom: pt(0) },
