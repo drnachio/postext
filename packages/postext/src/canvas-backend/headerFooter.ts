@@ -7,7 +7,7 @@ import type {
   VDTDesignBoxStyle,
 } from '../vdt';
 import { drawResourceImage, roundedOutlinePath } from './renderResourceBlock';
-import { fillFlowText, drawUprightInBox, setVerticalPaint } from './verticalText';
+import { fillFlowText, drawUprightInBox, setVerticalPaint, verticalPaintActive } from './verticalText';
 import { segmentOrientation, type ForcedOrientation } from '../writingMode';
 import { paintRunInDirection, runPaintOrder } from './runDirection';
 
@@ -153,7 +153,19 @@ export function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignT
       // A run whose width is its box (a CJK mark that gave up blank, #637)
       // paints its glyphs `inkOffset` into it.
       const runX = x + (run.inkOffset ?? 0);
-      paintRunInDirection(ctx, run.rtl, () => paint(run.text, runX, line.baselineY + (run.baselineShift ?? 0), segmentOrientation(run)));
+      const runY = line.baselineY + (run.baselineShift ?? 0);
+      if (run.inkScale === undefined) {
+        paintRunInDirection(ctx, run.rtl, () => paint(run.text, runX, runY, segmentOrientation(run)));
+      } else {
+        // A dash of a 破折号 (#652): stretched along the line from where
+        // its glyph starts, and turned with the column down a vertical
+        // line, as a body segment's is (`fillSegmentText`).
+        ctx.save();
+        ctx.translate(runX, runY);
+        ctx.scale(run.inkScale, 1);
+        paint(run.text, 0, 0, verticalPaintActive() ? 'sideways' : undefined);
+        ctx.restore();
+      }
       x += run.width;
     }
     ctx.font = block.fontString;

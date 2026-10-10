@@ -6,7 +6,9 @@
 // hanging punctuation and the book-title rule. Its lines come back as
 // design runs: a mark that gave up blank, or a space whose width is not
 // its glyph's, is a run of its own whose `width` is its box and whose
-// `inkOffset` places the glyph in it, as on a body segment.
+// `inkOffset` places the glyph in it, as on a body segment; a dash of a
+// 破折号 keeps the stretch that joins the pair into one rule (`inkScale`,
+// #652).
 
 import type { InlineSpan } from '../parse/types';
 import type { VDTLine } from '../vdt';
@@ -92,6 +94,9 @@ function designLineOf(line: VDTLine, fonts: CjkDesignFonts, measureIn: (text: st
     else if (seg.orientation) run.orientation = seg.orientation;
     if (seg.inkOffset !== undefined) run.inkOffset = seg.inkOffset;
     else if (!seg.stacked && Math.abs(measureIn(seg.text, font) - seg.width) > 0.01) run.inkOffset = 0;
+    // A dash of a 破折号: its offset is where the stretched glyph starts
+    // (`dashRule`), so the run keeps the stretch too (#652).
+    if (seg.inkScale !== undefined) run.inkScale = seg.inkScale;
     if (lead > 0) {
       run.width += lead;
       run.inkOffset = (run.inkOffset ?? 0) + lead;
@@ -101,7 +106,7 @@ function designLineOf(line: VDTLine, fonts: CjkDesignFonts, measureIn: (text: st
   }
   const text = runs.map((r) => r.text).join('');
   const width = line.bbox.width;
-  const plain = runs.length === 1 && runs[0]!.fontString === fonts.normal && runs[0]!.inkOffset === undefined && !runs[0]!.baselineShift
-    && !runs[0]!.tcy && !runs[0]!.orientation;
+  const plain = runs.length === 1 && runs[0]!.fontString === fonts.normal && runs[0]!.inkOffset === undefined && runs[0]!.inkScale === undefined
+    && !runs[0]!.baselineShift && !runs[0]!.tcy && !runs[0]!.orientation;
   return { text, width, ...(plain || runs.length === 0 ? {} : { runs }), xOffset: line.bbox.x };
 }

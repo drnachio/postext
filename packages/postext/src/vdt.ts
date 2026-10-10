@@ -1918,6 +1918,13 @@ export interface VDTDesignTextRun {
    *  paint the glyphs at `x + inkOffset` and advance by `width`; the HTML
    *  sets such a run in a box `width` wide. Absent on every other run. */
   inkOffset?: number;
+  /** Paint-only stretch of the run's glyph along the line, as on
+   *  {@link VDTLineSegment.inkScale}: a dash of a Chinese 破折号 (——) in a
+   *  design text set by the CJK composer (#652), stretched from where
+   *  `inkOffset` puts it so the pair prints as one rule over its two ems.
+   *  Down a vertical line it is set (even when 1) and the dash is painted
+   *  turned with the column. Absent on every other run. */
+  inkScale?: number;
 }
 
 /** Line of wrapped text inside a `VDTDesignTextBlock`. */

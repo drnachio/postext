@@ -42,6 +42,10 @@ export interface DesignTextRun {
    *  glyphs are painted from `x + inkOffset` (see
    *  `VDTDesignTextRun.inkOffset`). */
   inkOffset?: number;
+  /** A dash of a 破折号 stretched over its cell (#652): the scale its
+   *  glyph is painted at along the line (see
+   *  `VDTDesignTextRun.inkScale`). */
+  inkScale?: number;
 }
 
 interface RunStyle {
