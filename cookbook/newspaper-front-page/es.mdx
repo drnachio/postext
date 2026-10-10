@@ -18,13 +18,13 @@ Portada y página 2 de *The Elverdale Courier*, un semanario comarcal inventado,
 
 <Excerpt region="palette" />
 
-El papel es un blanco roto cálido (#f8f5ee) y la letra, un negro frío (#111315). El único rojo, #a6192e, va en los rótulos de sección, los antetítulos, los chips y las barras del sí. Cada color lleva su `paletteId` y su hexadecimal, porque la 1.4.1 pinta los elementos de diseño con el hexadecimal. `main-color` apunta a la tinta, de modo que las cursivas y todo lo que la configuración deja por defecto sale en negro. `bodyText.boldColor` también se fija en la tinta: de él toman su color las remisiones y la negrita de los recuadros, y la paleta no llega a ninguna de las dos. Sin él, las dos remisiones de la página 2 y las primeras palabras en negrita de los breves salen en el azul por defecto, #295AA3.
+El papel es un blanco roto cálido (#f8f5ee) y la letra, un negro frío (#111315). El único rojo, #a6192e, va en los rótulos de sección, los antetítulos, los chips y las barras del sí. Cada color va enlazado a su entrada de la paleta con `paletteId`. `main-color` apunta a la tinta, de modo que la negrita, las cursivas, las dos remisiones de la página 2 y todo lo que la configuración deja por defecto salen en negro; con su valor de origen saldrían en el azul por defecto, #295AA3.
 
 ### 2 · La mancheta es el H1 de la portada
 
 <Excerpt region="nameplate" />
 
-`# The Elverdale Courier` lleva el estilo de título `front`, que compone la mancheta con el texto del título y siete de sus atributos (`issue`, `area`, `outlook`, `temps`, `since`, `day` y `price`); la fecha sale del `publishDate` del frontmatter. Una caja vacía de siete líneas exactas de la rejilla (31,1 mm) fija la altura de la apertura. Los filetes, la línea de fecha y el nombre cuelgan de su pie, y así la apertura termina justo en una línea de la rejilla. Con una caja de 6,6 líneas, en la 1.4.1 el filete de columna atraviesa el nombre y la línea de fecha.
+`# The Elverdale Courier` lleva el estilo de título `front`, que compone la mancheta con el texto del título y siete de sus atributos (`issue`, `area`, `outlook`, `temps`, `since`, `day` y `price`); la fecha sale del `publishDate` del frontmatter. Una caja vacía de siete líneas exactas de la rejilla (31,1 mm) fija la altura de la apertura. Los filetes, la línea de fecha y el nombre cuelgan de su pie, y así la apertura termina justo en una línea de la rejilla.
 
 ### 3 · Un titular sobre las dos columnas es un recuadro
 
@@ -32,9 +32,9 @@ El papel es un blanco roto cálido (#f8f5ee) y la letra, un negro frío (#111315
 
 Un título solo ocupa las dos columnas como apertura, y una apertura empieza página. Si pones `span: 'page'` en el H2 de la noticia de los barrios en lugar de en su recuadro, esa noticia se va a una tercera página. Un recuadro sin marco con `span="page"`, en cambio, puede empezar a media página. En la <PageRef page={2}>página 2</PageRef>, las columnas quedan igualadas por encima de él y siguen debajo. Dentro van el H2, con uno de tres estilos de título (56, 30 o 22 pt), el subtítulo en cursiva y, en la portada, la foto. Su `marginBottom` de media línea hace que las columnas empiecen en la siguiente línea de la rejilla, 3,4 mm por debajo del subtítulo en la página 2. Con el margen por defecto quedan 7,8 mm y las cartas pasan a una tercera página.
 
-### 4 · Más de dos columnas caben en un recuadro
+### 4 · La franja de cuatro columnas es un recuadro
 
-El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. El texto de una página admite como mucho dos columnas ([Tipos de disposición](/es/docs/configuration#tipos-de-disposición)), por lo que las cuatro o cinco columnas de un periódico tienen que ir en un recuadro, aquí uno a todo el ancho con un grupo [`:::columns`](/es/docs/document-format#columns) dentro. `breaks` cuenta los bloques del grupo, uno por breve, así que los breves 2, 3 y 4 abren las columnas 2, 3 y 4. Cada columna mide 49 mm, con el medianil de 6 mm de la página entre una y otra.
+El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. El texto de las dos páginas va a dos columnas ([Tipos de disposición](/es/docs/configuration#tipos-de-disposición)). Los breves solo piden cuatro al pie de la página 1, con título y sobre un fondo, así que van en un recuadro, aquí uno a todo el ancho con un grupo [`:::columns`](/es/docs/document-format#columns) dentro. `breaks` cuenta los bloques del grupo, uno por breve, así que los breves 2, 3 y 4 abren las columnas 2, 3 y 4. Cada columna mide 49 mm, con el medianil de 6 mm de la página entre una y otra.
 
 ```markdown
 :::callout{type="briefs" span="page" placement="bottom" title="In brief"}
@@ -53,7 +53,7 @@ El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. 
 
 <Excerpt region="floats" />
 
-La foto va en línea dentro del recuadro del titular porque un flotante `top` a todo el ancho nunca cae por encima de la línea que lo cita; como flotante, abriría la página 2 (véase Errores frecuentes). El dibujo del puente también va en línea, tras el párrafo sobre la pila, y `wrap: 'right'` con `width: 0.47` lo coloca a la derecha de la columna 1, con el 47 % de su ancho, y los párrafos siguientes se componen a su lado y después debajo a la medida completa ([ajuste del texto](/es/docs/document-format#ajuste-del-texto)). Con ese ancho ninguna línea de al lado queda floja; el texto de la noticia se reajustó al dibujo más bajo. La previsión flota a la cabeza de una columna y cae en la de la derecha. La tabla de barrios flota bajo las dos columnas, donde se detiene el filete de columna. En la última página se coloca justo debajo de las columnas igualadas, y por eso el texto de encima está ajustado para que la tabla llegue al pie. Los dos tipos de recurso fijan `captionPrefix: ''`, y la 1.4.1 solo imprime la etiqueta del pie cuando el prefijo tiene texto, así que ningún pie empieza por «Figure 1».
+La foto va en línea dentro del recuadro del titular porque un flotante `top` a todo el ancho nunca cae por encima de la línea que lo cita; como flotante, abriría la página 2 (véase Errores frecuentes). El dibujo del puente también va en línea, tras el párrafo sobre la pila, y `wrap: 'right'` con `width: 0.47` lo coloca a la derecha de la columna 1, con el 47 % de su ancho, y los párrafos siguientes se componen a su lado y después debajo a la medida completa ([ajuste del texto](/es/docs/document-format#ajuste-del-texto)). Con ese ancho ninguna línea de al lado queda floja; el texto de la noticia se reajustó al dibujo más bajo. La previsión flota a la cabeza de una columna y cae en la de la derecha. La tabla de barrios flota bajo las dos columnas, donde se detiene el filete de columna. En la última página se coloca justo debajo de las columnas igualadas, y por eso el texto de encima está ajustado para que la tabla llegue al pie. Los dos tipos de recurso fijan `captionPrefix: ''`, y la etiqueta del pie solo se imprime cuando el prefijo tiene texto, así que ningún pie empieza por «Figure 1».
 
 ### 6 · Una página interior abre con un rótulo de sección
 

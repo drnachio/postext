@@ -19,7 +19,7 @@ const palette = {
   rule: '#9a978f', // hairlines: the column rule, table rules
   muted: '#5d5a55', // bylines, the folio line's title and date, credit notes, the imprint
 };
-// The hex rides along: 1.4.1 designs read it, not the link (gotcha: palette-skips-designs).
+// Every colour is linked to its palette entry by id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [ // defaults link to 'main-color': point it at the ink, never blue
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -36,14 +36,13 @@ const caps = (size, weight, colour = 'ink') => franklin(size, weight, { color: c
   textTransform: 'uppercase', letterSpacing: pt(size * 0.16) }); // capitals tracked 0.16 em
 const at = (to, edge, x = 0, y = 0) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) } });
 const text = (id, content, look, placement) => ({ kind: 'text', id, content, align: 'left',
-  overflow: 'wrap', color: col('ink'), ...look, placement }); // design text defaults to centred,
-// black and ellipsized (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', color: col('ink'), ...look, placement }); // design text defaults to centred
+// and black, and a header's text to an ellipsis
 // A rule across the slot whose bottom sits `gap` mm above the element it names.
 const rule = (id, under, weight, gap = 0) => ({ kind: 'rule', id, thickness: pt(weight),
   color: col('ink'), placement: { ...at(under, 'above', 0, -gap), size: { width: 'fill' } } });
 // An empty box exactly `lines` grid lines deep sets an opener's depth, and the rest hangs from
-// its foot. Ending on a grid line leaves no sliver of column beside the opener, which 1.4.1
-// would rule down through the title (gotcha: column-rule-through-opener).
+// its foot: the opener ends on a grid line, where the columns and their rule begin.
 const depth = (lines) => ({ kind: 'box', id: 'depth', style: {}, placement: {
   ...at('container', 'top-left'), size: { width: 'fill', height: pt(lines * LEAD) } } });
 
@@ -56,7 +55,7 @@ const ear = (side, lines) => lines.map(([id, content, look], i) => text(id, cont
   { ...look, align: side }, { ...(i === 0 ? at('container', `top-${side}`, 0, EAR_DROP)
     : at(`#${lines[i - 1][0]}`, 'below', 0, 1)), size: { width: mm(EAR) } }));
 const serif = { fontFamily: 'PT Serif', fontSize: pt(9), italic: true, color: col('ink'),
-  lineHeight: 1.25 }; // a multiple of the size (gotcha: design-lineheight-multiple)
+  lineHeight: 1.25 };
 const nameplate = { enabled: true, slot: { elements: [
   depth(7), // the masthead is seven grid lines deep; the rules and dateline hang from its foot
   { kind: 'rule', id: 'foot', thickness: pt(0.5), color: col('ink'),
@@ -79,16 +78,16 @@ const nameplate = { enabled: true, slot: { elements: [
 //   day="…" price="…"}
 // #endregion
 
-// #region answer: two body columns at most, so the four-up strip is a box with columns
-const layout = { layoutType: 'double', gutterWidth: mm(GUTTER), // the most a body can have
+// #region answer: a two-column body, and the four-up strip as a box with columns of its own
+const layout = { layoutType: 'double', gutterWidth: mm(GUTTER), // the body of every page
   columnRule: { enabled: true, color: col('rule'), lineWidth: pt(0.5) } };
-// Three or more columns live only inside a box: a :::columns group in a :::callout. Its fence
-// spans the page and floats the box to the foot, so the story fills the columns above it:
+// The strip is a tinted, titled box, so its four columns are a :::columns group in a :::callout.
+// The fence spans the page and floats the box to the foot, so the story fills the columns above:
 //   :::callout{type="briefs" span="page" placement="bottom" title="In brief"}
 //   :::columns{count=4 breaks="2,3,4"}   ← each brief opens a column (child 2, 3 and 4)
 //   …four paragraphs…
 //   :::
-//   :::                                  (gotcha: callout-columns)
+//   :::
 // The style could carry span and placement too; on the fence they stay in sight in the text.
 // hook-up: config() takes layout as it is and lists briefs in calloutStyles.
 const briefs = { id: 'briefs',
@@ -149,17 +148,13 @@ const config = () => ({
   // the caption's note sits on the text that follows, which keeps the copy fitted.
   layout: { ...layout, inlineResourceGap: 'above' },
   // Hyphenation stays at its defaults: on, in 'en-us'.
+  // Bold, italics and :ref labels print in ink through main-color.
   bodyText: { fontFamily: 'PT Serif', fontSize: pt(9.4), lineHeight: pt(LEAD), color: col('ink'),
-    // boldColor is restated: :ref labels take it, because 1.4.1 never points referenceColor
-    // at main-color (gotcha: palette-skips-designs), and bold in a box copies it before the
-    // palette applies. Italics do follow main-color.
-    boldColor: col('ink'),
     textAlign: 'justify', firstLineIndent: mm(3.5), indentAfterHeading: false,
-    minWordSpacing: 0.75, maxWordSpacing: 1.6, // tighter than the 0.6–2 defaults
-    maxRuntTracking: 0 }, // tracking 1.4.1 never paints (gotcha: runt-tracking-unpainted)
+    minWordSpacing: 0.75, maxWordSpacing: 1.6 }, // tighter than the 0.6–2 defaults
   headings: { fontFamily: 'Libre Franklin', fontWeight: 800, // in ink, through main-color
     marginBottom: pt(0), levels: [
-      // Restated (gotcha: headings-drop-h1-break); 'any': a section opens the next page.
+      // parity 'any': a section opens the next page, whichever side it falls on.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: section },
       { level: 2, fontSize: pt(17), lineHeight: pt(19) }, // Letters; banners restyle it

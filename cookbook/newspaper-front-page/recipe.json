@@ -48,15 +48,8 @@
     "three-columns"
   ],
   "gotchas": [
-    "callout-columns",
-    "column-rule-through-opener",
     "top-float-next-page",
-    "bitmap-print-size",
-    "headings-drop-h1-break",
-    "palette-skips-designs",
-    "design-lineheight-multiple",
-    "overflow-ellipsis-default",
-    "runt-tracking-unpainted"
+    "bitmap-print-size"
   ],
   "explainsWarnings": [],
   "related": [
@@ -64,38 +57,6 @@
     "magazine-cover-and-contents",
     "research-poster",
     "annual-report-flush-columns"
-  ],
-  "workarounds": [
-    {
-      "followup": "EF-101",
-      "package": "postext",
-      "note": "each opener design starts with an empty box a whole number of grid lines deep (7 for the nameplate, 2 for the section flag) and hangs its rules from the box's foot. The opener then ends on a grid line and leaves no sliver of column beside it for 1.4.1 to rule down through (gotcha column-rule-through-opener). With the nameplate box 6.6 lines deep, the rule crosses the nameplate and the dateline"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes each colour's hex beside its paletteId, because 1.4.1 does not apply colorPalette to design elements (gotcha palette-skips-designs). bodyText.boldColor is set to the ink too: referenceColor falls back to it and never gets the palette, and each callout body copies it before the palette is applied. Without it the two :ref labels on page 2 and the bold lead-ins of the four briefs print in #295AA3 blue"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore is restated because any headings object drops it (gotcha headings-drop-h1-break). The present text fills page 1, so Town & Valley opens page 2 without it (same layout); the restatement guards edited copy"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "design text lineHeight is a multiple of the size (1 for the nameplate, 1.25 for the ears): a pt() value silently drops an opener's reserved height in 1.4.1 (gotcha design-lineheight-multiple)"
-    },
-    {
-      "followup": "EF-111",
-      "package": "postext",
-      "note": "bodyText.maxRuntTracking is 0, so a runt fix never gives a paragraph the negative tracking 1.4.1 measures but does not paint (gotcha runt-tracking-unpainted). The present text triggers no runt fix; the setting guards edited copy"
-    },
-    {
-      "followup": "EF-130",
-      "package": "postext",
-      "note": "bodyText.boldColor is set to the ink, not left to main-color: each callout style copies bodyText.boldColor (or the default linked to main-color, #295AA3) into its body before the palette is applied, and the palette never recolours it, so the bold lead-ins of the four briefs would print blue"
-    }
   ],
   "engine": {
     "postext": "1.25.0"
