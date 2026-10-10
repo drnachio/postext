@@ -20,8 +20,11 @@
   "answers": ["Q98", "Q87"],
   "gaps": ["interlinear-notes"],
   "gotchas": [
-    "side-box-starts-at-fence", "vertical-side-column-top", "cjk-fonts-slices",
-    "cjk-spread-order", "cjk-locale-tag", "headings-drop-h1-break"
+    "side-box-starts-at-fence",
+    "vertical-side-column-top",
+    "cjk-fonts-slices",
+    "cjk-spread-order",
+    "cjk-locale-tag"
   ],
   "related": ["annotated-classic-glosses", "textbook-margin-column", "vertical-novel-right-bound"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },

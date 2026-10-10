@@ -17,7 +17,7 @@ const palette = {
   rule: '#c8bba9', // hairlines
   paper: '#fcfaf5',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// A colour is its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -97,7 +97,7 @@ const footer = { elements: [{ ...head('drop-folio', '{pageNumber}', 'all', 'bott
 // #endregion
 
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-us', es: 'es' }), // each edition's hyphenation patterns
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'),
@@ -110,8 +110,7 @@ const config = () => ({
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: 'Bodoni Moda', fontWeight: 400, color: col('ink'), levels: [
-    // Restated on purpose: any headings object drops the H1 break
-    // (gotcha: headings-drop-h1-break).
+    // A recto, with a blank verso only when the text before it ends on a recto.
     { level: 1, advancedDesign: opener(9, 26), marginBottom: pt(0),
       breakBefore: { enabled: true, parity: 'odd' } },
     { level: 2, fontSize: pt(12), lineHeight: pt(LEAD), italic: true, fontWeight: 400,

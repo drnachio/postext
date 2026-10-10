@@ -60,7 +60,7 @@ const cjk = { grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES } 
 // prints nothing and starts a right-hand page; the centre strip prints their count.
 const leaf = {
   level: 1, hidden: true, numberingTemplate: '{1:一}', // 一, 二, 三
-  breakBefore: { enabled: true, parity: 'even' }, // gotcha: headings-drop-h1-break
+  breakBefore: { enabled: true, parity: 'even' }, // even pages lie on the right in this binding
 };
 // #endregion
 

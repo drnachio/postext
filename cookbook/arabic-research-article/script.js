@@ -104,7 +104,7 @@ const config = () => ({
   headings: { fontFamily: LABEL, fontWeight: 700, color: col('ink'),
     balancing: { enabled: false }, // no space added over the heads to fill a page
     levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // The article starts on the page it reaches, left or right, with no blank page before it.
     { level: 1, breakBefore: { enabled: true, parity: 'any' }, marginTop: pt(0),
       marginBottom: pt(0), advancedDesign: masthead },
     // ١- المقدمة: the section number in the document digits, a hyphen after it.

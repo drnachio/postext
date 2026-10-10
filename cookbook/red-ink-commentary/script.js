@@ -119,7 +119,7 @@ const config = () => ({
   },
   headings: {
     fontFamily: SONG, color: col('ink'),
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // The chapter opens on the next page, whichever side it falls on.
     levels: [{ level: 1, fontSize: pt(30), breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: opener }],
   },

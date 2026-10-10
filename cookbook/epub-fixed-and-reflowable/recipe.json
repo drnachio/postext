@@ -26,7 +26,7 @@
     ]
   },
   "answers": ["Q131"],
-  "gotchas": ["epub-embeds-given-fonts", "headings-drop-h1-break"],
+  "gotchas": ["epub-embeds-given-fonts"],
   "related": ["catalan-pocket-novella", "folio-book-on-a-desk", "bundle-round-trip"],
   "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer"],

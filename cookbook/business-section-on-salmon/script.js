@@ -37,7 +37,7 @@ const WIDE = PAGE.width - 2 * M.side; // the text block's width
 const LEAD = 11.4; // pt: the body leading, the same in both sections so the grid holds
 const at = (to, edge, x = 0, y = 0) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) } });
 const text = (id, content, look, placement) => ({ kind: 'text', id, content, align: 'left',
-  overflow: 'wrap', color: col('ink'), ...look, placement }); // (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', color: col('ink'), ...look, placement }); // no text ends in an ellipsis
 const sans = (size, weight = 400, look = {}) => ({ fontFamily: 'Archivo Narrow',
   fontSize: pt(size), fontWeight: weight, ...look });
 const caps = (size, weight, colour = 'ink') => sans(size, weight, { color: col(colour),
@@ -167,7 +167,7 @@ const config = () => ({
     avoidWidows: true, avoidOrphans: true },
   headings: { fontFamily: 'Playfair Display', fontWeight: 700, color: col('ink'),
     marginBottom: pt(0), levels: [
-      // Restated (gotcha: headings-drop-h1-break): every page opens with its own flag.
+      // A break to the next page, left or right: every page opens with its own flag.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: { enabled: true, slot: { elements: flagParts } } },
       { level: 2, fontSize: pt(17), lineHeight: pt(19), marginTop: pt(LEAD) },

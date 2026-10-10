@@ -20,7 +20,9 @@
   "answers": ["Q139", "Q146"],
   "gaps": ["vertical-tables"],
   "gotchas": [
-    "ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices", "headings-drop-h1-break"
+    "ja-locale-tag",
+    "ja-fonts-kana",
+    "cjk-fonts-slices"
   ],
   "explainsWarnings": [],
   "related": ["chinese-dates-upright", "katakana-majiri-proclamation", "chinese-official-document"],

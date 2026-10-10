@@ -25,10 +25,7 @@
     ]
   },
   "answers": ["Q86", "Q85"],
-  "gotchas": [
-    "headings-drop-h1-break", "palette-skips-designs", "overflow-ellipsis-default",
-    "hyphenation-locales"
-  ],
+  "gotchas": [],
   "related": ["back-of-book-index", "thesis-back-matter", "book-from-chapters"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf"],

@@ -90,7 +90,7 @@ const config = () => ({
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: TEXT, color: col('ink'), fontWeight: 400, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // A book or chapter opens on the next page, left or right: no blank versos in an EPUB.
     { level: 1, fontFamily: DISPLAY, fontSize: pt(28),
       breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
     { level: 2, fontSize: pt(11.5), lineHeight: pt(LEAD), italic: true, color: col('accent'),

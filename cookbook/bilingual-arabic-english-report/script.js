@@ -107,7 +107,7 @@ const config = () => ({
     margins: { top: mm(22), bottom: mm(22), left: mm(SIDE), right: mm(SIDE), mirror: true } },
   layout: { layoutType: 'single' },
   headings: { fontFamily: ARABIC, fontWeight: 700, color: col('teal'), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // The report starts on the page it reaches, left or right, with no blank page before it.
     { level: 1, breakBefore: { enabled: true, parity: 'any' }, marginTop: pt(0),
       marginBottom: pt(0), advancedDesign: band },
     { level: 2, fontSize: pt(17), lineHeight: pt(26), marginTop: pt(LEAD), marginBottom: pt(0) },

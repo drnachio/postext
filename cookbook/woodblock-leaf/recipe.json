@@ -20,8 +20,10 @@
   "answers": ["Q104", "Q90", "Q87"],
   "gaps": ["leaf-folios", "line-rules"],
   "gotchas": [
-    "cjk-locale-tag", "cjk-fonts-slices", "cjk-spread-order",
-    "cjk-source-script-mix", "headings-drop-h1-break"
+    "cjk-locale-tag",
+    "cjk-fonts-slices",
+    "cjk-spread-order",
+    "cjk-source-script-mix"
   ],
   "related": ["red-ink-commentary", "vertical-novel-right-bound", "baseline-grid-book-page", "certificate-single-page"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },

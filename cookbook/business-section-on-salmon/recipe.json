@@ -45,11 +45,9 @@
     "Q38"
   ],
   "gotchas": [
-    "headings-drop-h1-break",
     "page-span-heading-new-page",
     "paper-run-whole-leaves",
-    "folio-cover-pages-even",
-    "overflow-ellipsis-default"
+    "folio-cover-pages-even"
   ],
   "related": [
     "newspaper-front-page",

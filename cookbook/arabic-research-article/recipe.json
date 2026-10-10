@@ -42,7 +42,6 @@
   "gotchas": [
     "arabic-locale-tag",
     "arabic-fonts-subset",
-    "headings-drop-h1-break",
     "style-inherits-break"
   ],
   "engine": {
