@@ -33,17 +33,9 @@
   "answers": ["Q20", "Q21", "Q54", "Q74", "Q28"],
   "gaps": ["markdown-extras"],
   "gotchas": [
-    "hyphenation-locales",
-    "resource-types-locale",
     "digit-period-list",
     "attr-values",
-    "headings-drop-h1-break",
-    "overflow-ellipsis-default",
-    "palette-skips-designs",
-    "style-italic-colour",
-    "style-inherits-break",
-    "svg-no-webfonts",
-    "quote-frontmatter"
+    "style-inherits-break"
   ],
   "explainsWarnings": [],
   "related": [
@@ -54,39 +46,9 @@
   ],
   "workarounds": [
     {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore is restated because a headings object drops it"
-    },
-    {
-      "followup": "EF-14",
-      "package": "postext",
-      "note": "locale is the exact bundled code 'es': 'es-ES' silently hyphenates with the American patterns (cabal-los, hi-erro, establec-imiento on these pages)"
-    },
-    {
-      "followup": "EF-33",
-      "package": "postext",
-      "note": "resourceTypes: defaultResourceTypes('es') by hand, because config.locale leaves the captions as 'Figure 1.1'"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "every frontmatter value is quoted (title and author feed the running heads)"
-    },
-    {
       "followup": "EF-60",
       "package": "postext",
       "note": "the plate's heading style restates breakBefore with parity 'any': it would inherit the chapter level's break, so with parity 'odd' the map would move to a recto behind a blank page and face another blank page"
-    },
-    {
-      "followup": "EF-68",
-      "package": "postext",
-      "note": "the nota style stays in ink: a paragraph style has no italicColor, so its italic Marianela would print darker than a muted note"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside the paletteId, because design slots (opener, heads, plate) do not read the palette"
     }
   ],
   "engine": { "postext": "1.25.0" },
