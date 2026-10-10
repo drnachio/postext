@@ -19,8 +19,7 @@ const palette = {
   tint: '#fff1cc', // boxes and word-search tiles
   muted: '#5b6477', // running titles and the colophon
 };
-// Design slots read the hex in 1.4.1 and a puzzle's palette reads the id: col() writes both
-// (gotcha: palette-skips-designs).
+// Every colour is linked to its palette entry by id: a puzzle's palette recolours 'band'.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.ink })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -73,7 +72,7 @@ function crossword(source, solved = false) {
     // A square is numbered when a word starts in it, across or down, in reading order.
     const starts = (!white(r, c - 1) && white(r, c + 1)) || (!white(r - 1, c) && white(r + 1, c));
     const number = starts ? `**^${++clue}^**` : JOINER; // a bold superscript, or nothing
-    return { content: `${number}\n${JOINER}` }; // gotcha: cell-blank-line
+    return { content: `${number}\n${JOINER}` }; // an empty second line would add no depth
   }));
   return { rows, columnWidths: rows[0].map(() => 1) };
 }
@@ -117,13 +116,13 @@ const opener = { enabled: true, slot: { elements: [
     placement: pin('page', 'top-left', 0, BAND - 3, { width: mm(PAGE), height: mm(3.2) }) },
   text('kicker', '{attr.kicker}', LABEL, 8.5, pin('page', 'top-left', MARGIN, 11), CAPS),
   text('title', '{titleText}', DISPLAY, 46, pin('#kicker', 'below', -0.6, 0.5),
-    { lineHeight: 1 }), // a multiple, never pt() (gotcha: design-lineheight-multiple)
+    { lineHeight: 1 }), // set solid
   text('theme', '{attr.theme}', TEXT, 10, pin('page', 'top-right', -MARGIN, 23.5), {
     fontWeight: 700, box: { backgroundColor: col('paper'), borderRadius: mm(3.5),
       padding: { top: mm(1.6), right: mm(3.2), bottom: mm(1.6), left: mm(3.2) } } }),
 ] } };
-// The H1 break is restated (gotcha: headings-drop-h1-break), parity 'any'. span 'page' even
-// in one column, or the field is cut at the top margin (gotcha: opener-clipped-at-top).
+// parity 'any': each puzzle opens the next page. span 'page' even in one column: a design kept
+// in its column is cut at the column's foot, which would trim the cover's picture.
 const puzzleLevel = { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
   advancedDesign: opener };
 // '# Sopa de letras {style="sopa"}': the style's palette turns 'band' mint on that page,
@@ -185,7 +184,6 @@ const config = () => ({
     bottom: mm(MARGIN), left: mm(MARGIN), right: mm(MARGIN) } },
   layout: { layoutType: 'single' },
   bodyText: { fontFamily: TEXT, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
-    boldColor: col('ink'), // in the boxes too: their bold ignores the palette in 1.4.1
     textAlign: 'left', firstLineIndent: mm(0), paragraphSpacing: true },
   // The H1 line under each design is still measured: in Lilita One, not in Open Sans 700.
   headings: { fontFamily: DISPLAY, fontWeight: 400, levels: [
@@ -194,8 +192,7 @@ const config = () => ({
       textTransform: 'uppercase', marginBottom: pt(3) },
   ] },
   headingStyles: [cover, ...puzzleStyles],
-  // The word bank: ink on paper and coral, colours no puzzle's palette changes
-  // (gotcha: section-palette-skips-chips).
+  // The word bank: ink on paper and coral, colours no puzzle's palette changes.
   chipStyles: [chip('palabra', 'paper'), chip('hallada', 'coral')],
   calloutStyles: [
     { id: 'pistas', background: col('tint'), borderRadius: mm(3), columnGap: mm(8),
@@ -226,8 +223,7 @@ function mulberry32(seed) { // a seeded PRNG: the same maze in every capture
     return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
   };
 }
-// No words in the drawings: an SVG drawn as an image cannot see the page's fonts
-// (gotcha: svg-no-webfonts). Start and finish are pictures instead.
+// No words in the drawings: the maze's start and finish are pictures.
 const svg = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w * 10}" `
   + `height="${h * 10}" viewBox="0 0 ${w} ${h}">${body}</svg>`;
 const P = palette;
