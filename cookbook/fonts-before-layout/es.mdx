@@ -1,16 +1,16 @@
 ---
 title: "Muestrario con todas sus fuentes cargadas antes de componer"
-summary: "Un muestrario de cuatro páginas cuya primera composición nombra las fuentes que usa; el pen las carga, vacía la caché de anchos y vuelve a componer."
+summary: "Un muestrario de cuatro páginas compuesto una vez antes de tiempo, como prueba, y luego con las fuentes que piden la configuración y el texto ya cargadas."
 plain: "Un folleto de cuatro páginas que muestra tres tipos de letra. Enseña por qué todas las fuentes deben terminar de cargarse antes de componer las páginas; si no, las líneas se cortan donde no deben."
-description: "Declara un FontFace por archivo, lee qué fuentes pide una primera composición de Postext, cárgalas y vacía la caché de medidas antes de volver a componer."
+description: "Declara un FontFace por archivo y deja que buildDocumentWithFonts cargue las fuentes que piden la configuración y el texto antes de medir la primera línea."
 question: "¿Por qué cambian mis cortes de línea o se solapan las palabras del PDF, y cómo cargo bien mis fuentes?"
-aliases: ["fuentes web", "fuentes alojadas", "FontFace", "document.fonts", "fuente de reserva", "unicode-range", "latin-ext", "clearMeasurementCache", "muestrario tipográfico", "auditoría de fuentes"]
-pageNotes: { "1": "La cubierta de House Specimen Nº 3: un campo azul ultramar ocupa la mitad superior de la página con una Ag blanca en Noto Serif Display cursiva de 240 pt y dos líneas en monoespaciada que la nombran a ella y a las fuentes de texto y de etiquetas; debajo, el título Three faces, proofed, una entradilla en cursiva y el primer párrafo.", "2": "Una cascada de Ysabeau Office de 7 a 14 pt, una línea por cuerpo, rotulada al lado en monoespaciada azul, y después pangramas en español, polaco y checo a 13 pt.", "3": "La auditoría: una tabla en IBM Plex Mono, con la fila de cabecera en azul ultramar, que enumera las diez fuentes que pidió la composición, con cada familia nombrada una sola vez, los cuerpos de cada fuente y una línea de estado leída de la segunda composición, entre párrafos que la explican.", "4": "El primer párrafo de la página 1, dos veces. Arriba, marcado «first», tal como lo dejó la primera composición: sus líneas se cortan en otros sitios y algunas rebasan un filete fino en el borde de la medida y entran en una veladura azul ultramar. Abajo, marcado «last», tal como lo dejó la última, con todas las líneas antes del filete. Un pie cuenta las líneas que la primera composición cortó en otro sitio; siguen el párrafo final y el colofón." }
+aliases: ["fuentes web", "fuentes alojadas", "FontFace", "document.fonts", "fuente de reserva", "unicode-range", "latin-ext", "prepareFonts", "buildDocumentWithFonts", "fontFallback", "muestrario tipográfico", "auditoría de fuentes"]
+pageNotes: { "1": "La cubierta de House Specimen Nº 3: un campo azul ultramar ocupa la mitad superior de la página con una Ag blanca en Noto Serif Display cursiva de 240 pt y dos líneas en monoespaciada que la nombran a ella y a las fuentes de texto y de etiquetas; debajo, el título Three faces, proofed, una entradilla en cursiva y el primer párrafo.", "2": "Una cascada de Ysabeau Office de 7 a 14 pt, una línea por cuerpo, rotulada al lado en monoespaciada azul, y después pangramas en español, polaco y checo a 13 pt.", "3": "La auditoría: una tabla en IBM Plex Mono, con la fila de cabecera en azul ultramar, que enumera las diez fuentes que declara el cuadernillo, con cada familia nombrada una sola vez, si las páginas componen algo con cada una y los archivos descargados para ella, y una línea de estado leída de la composición, entre párrafos que la explican.", "4": "El primer párrafo de la página 1, dos veces. Arriba, marcado «early», tal como lo dejó la composición temprana: sus líneas se cortan en otros sitios y algunas rebasan un filete fino en el borde de la medida y entran en una veladura azul ultramar. Abajo, marcado «last», tal como lo dejó la última, con todas las líneas antes del filete. Un pie cuenta las líneas que la composición temprana cortó en otro sitio y las fuentes que compuso con una de reserva; siguen el párrafo final y el colofón." }
 ---
 
 ## Lo que vas a componer
 
-*House Specimen Nº 3*, de la imprenta imaginaria Pellow Lane Press, es un muestrario de cuatro páginas, en inglés, para tres fuentes. En la cubierta, un campo azul ultramar lleva una *Ag* blanca en Noto Serif Display cursiva de 240 pt y dos líneas en monoespaciada con los nombres de las tres fuentes; debajo va el título. La página 2 recorre Ysabeau Office en cascada, de 7 a 14 pt, y compone pangramas en español, polaco y checo cuyas ż, ř y ů necesitan un segundo archivo. La página 3 es la auditoría: una tabla en IBM Plex Mono con las diez fuentes que pidió la composición y sus cuerpos. La página 4 repite el primer párrafo de la página 1 según la primera composición y la última. La primera, hecha antes de que llegaran las fuentes, corta las líneas en otros sitios, y algunas se salen de la medida.
+*House Specimen Nº 3*, de la imprenta imaginaria Pellow Lane Press, es un muestrario de cuatro páginas, en inglés, para tres fuentes. En la cubierta, un campo azul ultramar lleva una *Ag* blanca en Noto Serif Display cursiva de 240 pt y dos líneas en monoespaciada con los nombres de las tres fuentes; debajo va el título. La página 2 recorre Ysabeau Office en cascada, de 7 a 14 pt, y compone pangramas en español, polaco y checo cuyas ż, ř y ů necesitan un segundo archivo. La página 3 es la auditoría: una tabla en IBM Plex Mono con las diez fuentes que declara el cuadernillo, las seis con las que se componen sus páginas y los archivos que el navegador descargó para cada una. La página 4 repite el primer párrafo de la página 1 según una composición temprana y según la última. La temprana, hecha antes de que el navegador tuviera un solo archivo de fuente, corta las líneas en otros sitios, y algunas se salen de la medida.
 
 ## Elaboración
 
@@ -18,25 +18,23 @@ pageNotes: { "1": "La cubierta de House Specimen Nº 3: un campo azul ultramar o
 
 <Excerpt region="declare" />
 
-Un `FontFace` corresponde a un archivo, igual que una regla `@font-face`, así que una fuente con un archivo latin y otro latin-ext se declara con dos objetos `FontFace` que comparten familia, peso y estilo y solo se distinguen por el `unicodeRange`, copiado del CSS de la familia. Añadirlos a `document.fonts` no descarga nada: el navegador trae cada archivo cuando una llamada a `load()` o una línea de texto necesita sus caracteres. `buildDocument` no carga fuentes (solo lo hace `loadBundleFonts`, con los archivos que lleva dentro un paquete `.postext`), y `customFonts` en la configuración se limita a describir esos archivos, así que una página compuesta a partir de Markdown tiene que declarar los suyos.
+Un `FontFace` corresponde a un archivo, igual que una regla `@font-face`, así que una fuente con un archivo latin y otro latin-ext se declara con dos objetos `FontFace` que comparten familia, peso y estilo y solo se distinguen por el `unicodeRange`, copiado del CSS de la familia. Añadirlos a `document.fonts` no descarga nada: el navegador trae cada archivo cuando una llamada a `load()` o una línea de texto necesita sus caracteres. Postext carga a través de `document.fonts` las fuentes que la página declara; las que nadie declara se las pide a la opción `resolve`, que es como las demás recetas reciben del kit sus archivos de Fontsource. `customFonts` en la configuración se limita a describir los archivos de un paquete `.postext`, así que una página compuesta a partir de Markdown declara los suyos o entrega un `resolve`.
 
-### 2 · Compón, carga, vacía la caché y vuelve a componer
+### 2 · Carga las fuentes y luego compón
 
-<Excerpt region="build" />
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `buildDocumentWithFonts` empieza por `prepareFonts`, que lee en la configuración y en el texto todas las fuentes que piden, en cada peso y estilo, y las carga con los caracteres del propio documento como muestra, de modo que los archivos latin-ext llegan con los pangramas en polaco y en checo ([Cargar las fuentes antes de componer](/es/docs/configuration#cargar-las-fuentes-antes-de-componer)). Después compone, lee con qué fuentes han quedado compuestas las páginas, carga las que la configuración no nombraba y vuelve a componer. `onFonts` recibe el informe de esa última revisión: las fuentes cargadas (`loaded`), las que faltan (`missing`) y las que el navegador habría imitado a partir de otro peso o estilo (`synthesized`). El pen compone tres veces porque el cuadernillo imprime su propia prueba: una vez antes de tiempo, otra con las fuentes y una última con la tabla y la imagen ya rellenas.
 
-La primera composición mide con lo que tenga el navegador, que es una fuente de reserva, pero sus páginas ya nombran todas las fuentes que necesitan. `buildWithLoadedFonts`, la respuesta corta de arriba, recoge esos nombres en cada composición, carga las fuentes que aún faltan con el texto del cuadernillo como muestra y vuelve a componer, hasta que una composición ya no encuentra nada que cargar. Con esa muestra se descargan también los archivos latin-ext de la fuente de titulares y de la monoespaciada, que no componen ninguna de esas letras; si te importa lo que pesa la descarga, carga cada fuente solo con su propio texto. `clearMeasurementCache()` no lleva argumentos y vacía los anchos que guardó la primera composición; sin esa llamada, la segunda repite todos los cortes de línea de la primera (consulta «Variantes»).
-
-### 3 · Extrae la auditoría de la composición
+### 3 · Saca la auditoría del informe
 
 <Excerpt region="audit" />
 
-La tabla sale del mismo recorrido, agrupado por fuente, con cada cuerpo pasado de los píxeles de la composición a puntos. Su nota lee otros dos campos de la composición que describe: `converged`, que vale `true` cuando las pasadas de la composición se estabilizaron, y `warnings`, que en la 1.4.1 recoge cada recuadro que no cabe en ninguna columna. Compruébalos antes de mostrar o exportar una página. La tabla tiene más fuentes de las que se ven en las páginas, porque cada bloque de texto, tabla y pie nombra una negrita, una cursiva y una negrita cursiva junto a su propia fuente, y `renderToPdf` las pide todas. La respuesta corta exige un `FontFace` propio para cada fuente con la que se compone algo, porque `document.fonts.check()` da por buena una familia sin declarar y una negrita que el navegador puede imitar. Las fuentes que solo se nombran se cargan si están declaradas; una familia sin archivo de cursiva pasa la comprobación, y la tabla marcaría sus cursivas con «no file».
+La tabla parte de las fuentes que declara `FONTS` y añade lo que el informe dice de cada una: si las páginas componen algo con ella, si el navegador la imitó o si salió en una fuente de reserva. La última columna enumera los archivos cuyo `FontFace` llegó a `loaded`. Se descargaron dieciséis de los veinte: Postext carga las cuatro variantes de la familia del texto, porque `**` y `*` pueden pedirlas en cualquier párrafo, y las dos cursivas de la monoespaciada, que ningún ajuste nombra, no llegaron a descargarse. La nota lee tres cosas más del documento terminado: `contentWarnings`, donde una fuente medida con una de reserva aparece como `fontFallback`; `converged`, que vale `true` cuando las pasadas de la composición se estabilizaron, y `warnings`. Comprueba las tres antes de mostrar o exportar una página.
 
-### 4 · Guarda la primera composición como prueba
+### 4 · Guarda una composición temprana como prueba
 
 <Excerpt region="art-proof" />
 
-`buildWithLoadedFonts` devuelve todas las composiciones, así que el pen puede volver a pintar la primera cuando ya han llegado las fuentes reales y compararla línea a línea con la última; de esa comparación sale la cifra del pie. Una línea sin estilos, medida con una fuente de reserva más estrecha, se sale de la medida hasta que el recorte de la columna, 2 pt más allá de su borde, le corta las últimas letras; por eso el pen pinta la página 1 con la columna ensanchada, para que se vea todo lo que desborda. El canvas y `postext-pdf` dibujan cada tramo de una línea justificada o con estilos mezclados donde lo midió la composición, así que una fuente real más ancha que la de reserva se monta sobre la palabra siguiente, y en un PDF compuesto antes de que lleguen las fuentes las palabras acaban solapadas.
+El pen llama una vez a `buildDocument` antes de declarar ninguna fuente, así que esa composición mide todas las palabras con la fuente de reserva del navegador. Cuando ya han llegado las fuentes reales, el pen la vuelve a pintar y la compara línea a línea con la última; de esa comparación sale el número de líneas del pie, y el de fuentes, de los avisos `fontFallback` de la propia composición temprana. Una línea sin estilos, medida con una fuente de reserva más estrecha, se sale de la medida hasta que el recorte de la columna, 2 pt más allá de su borde, le corta las últimas letras; por eso el pen pinta la página 1 con la columna ensanchada, para que se vea todo lo que desborda. El canvas y `postext-pdf` dibujan cada tramo de una línea justificada o con estilos mezclados donde lo midió la composición, así que una fuente real más ancha que la de reserva se monta sobre la palabra siguiente, y en un PDF compuesto antes de que lleguen las fuentes las palabras acaban solapadas. Nada de la composición temprana pasa a la siguiente: `prepareFonts` encuentra las fuentes nuevas en `document.fonts` y descarta los anchos medidos en sus familias, así que no hace falta llamar a `clearMeasurementCache()`.
 
 ### 5 · Una cascada al ritmo del texto
 
@@ -48,22 +46,17 @@ Ysabeau Office compone el texto en cuerpo 11 sobre 15,5 pt, con una línea en bl
 
 <Excerpt region="opener" />
 
-La cubierta es el diseño del nivel H1: las letras del atributo `glyphs` del título, en la fuente de titulares a 240 pt, y debajo dos líneas en monoespaciada que nombran esa fuente y las de texto y etiquetas, como en el muestrario de una fundición tipográfica. `span: 'page'` deja que el campo, anclado al sangrado, salga por el borde superior; dentro de la columna, el diseño se recorta en el margen superior y pierde la parte alta del campo y el antetítulo. `minHeight` se cuenta desde el margen superior y reserva el espacio hasta `Y.end`, 42 mm por debajo del campo; sin él, el texto empieza una línea más arriba, pegado a la entradilla.
+La cubierta es el diseño del nivel H1: las letras del atributo `glyphs` del título, en la fuente de titulares a 240 pt, y debajo dos líneas en monoespaciada que nombran esa fuente y las de texto y etiquetas, como en el muestrario de una fundición tipográfica. `span: 'page'` extiende el título a toda la página, y el campo cuelga de la esquina superior izquierda del sangrado, así que sale por el borde superior. `minHeight` se cuenta desde el margen superior y reserva el espacio hasta `Y.end`, 42 mm por debajo del campo; sin él, el texto empieza una línea más arriba, pegado a la entradilla.
 
 ## Variantes
 
-### Deja la caché en paz
+### Entrega los archivos con `resolve`
 
-El pen sigue cargando todas las fuentes, pero la segunda composición conserva todos los cortes de línea de la primera: las dos tiras de la página 4 rebasan el filete, el pie cuenta 0 líneas cortadas en otro sitio y en los pies en monoespaciada las palabras se montan unas sobre otras, porque cada tramo se dibuja donde lo midió la fuente de reserva.
-
-```diff
--    clearMeasurementCache(); // the widths measured with a fallback stay cached until cleared
-+    // clearMeasurementCache();
-```
+`kitFonts(FONTS)`, en <RecipeLink slug="first-page-from-markdown">de una cadena Markdown a una página diseñada</RecipeLink>, no declara nada: Postext pide a su `resolve` los archivos de cada fuente y los añade él mismo a `document.fonts`.
 
 ### Olvida una fuente
 
-Quita la negrita de IBM Plex Mono, que compone el antetítulo y la fila de cabecera de la tabla, y el pen se detiene con `No FontFace for IBM Plex Mono 700 normal` antes de mostrar ninguna página; si solo se hubiera usado `document.fonts.check()`, el navegador habría engrosado la redonda.
+Quita la negrita de IBM Plex Mono, que compone el antetítulo, la fila de cabecera de la tabla y las etiquetas de los pies: el navegador engrosa la redonda, la tabla marca la fuente con «faked» y la nota cuenta un aviso `fontFallback`, que nombra IBM Plex Mono 700 como `synthesized`.
 
 ```diff
 -  'IBM Plex Mono': ['400', '400i', '700', '700i'], // labels, chips, the table, captions
@@ -76,5 +69,5 @@ Quita la negrita de IBM Plex Mono, que compone el antetítulo y la fila de cabec
 
 ## Errores frecuentes
 
-- `document.fonts.load(font)` sin texto de muestra solo carga el archivo que cubre el espacio, el latin; pásale el texto, o la ż y la ř saldrán sin aviso en una fuente del sistema.
-- `renderPageToCanvas` y `postext-pdf` recortan cada columna 2 pt más allá de su borde, así que una línea medida con una fuente de reserva más estrecha pierde sus últimas letras sin ningún aviso.
+- Si cargas una fuente por tu cuenta, `document.fonts.load(font)` sin texto de muestra solo carga el archivo que cubre el espacio, el latin, y la ż y la ř salen en una fuente del sistema. `prepareFonts` pasa los caracteres del propio documento.
+- `renderPageToCanvas` y `postext-pdf` recortan cada columna 2 pt más allá de su borde, así que una línea medida con una fuente de reserva más estrecha pierde sus últimas letras. La composición que la midió nombra la fuente en `doc.contentWarnings` como `fontFallback`: lee esa lista antes de mostrar o exportar una página.
