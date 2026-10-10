@@ -18,25 +18,25 @@ Nueve páginas de *Afoot*, una antología de bolsillo con tres ensayos sobre cam
 
 <Excerpt region="opener" />
 
-El `numberingTemplate: '{1:I}'` del nivel numera los ensayos I, II y III, y `{number}` imprime el numeral sobre el título ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). `minHeight` reserva 12 líneas de 14 pt y el filete fino acaba 7 mm por encima de ese límite, así que, con un título de una línea, el texto empieza a 79 mm del borde superior en todas las aperturas. Una segunda línea de título, a 26 pt, añade 9,9 mm y baja el texto una línea de la rejilla; con `SINK = 14`, el texto empieza a la misma altura bajo títulos de una y de dos líneas. El `marginBottom: pt(0)` del nivel impide que el margen por defecto del título se sume a esa reserva.
+El `numberingTemplate: '{1:I}'` del nivel numera los ensayos I, II y III, y `{number}` imprime el numeral sobre el título ([span y diseño avanzado](/es/docs/configuration-text#span-y-diseño-avanzado)). `minHeight` reserva 12 líneas de 14 pt y el filete fino acaba 7 mm por encima de ese límite, así que, con un título de una línea, el texto empieza a 79 mm del borde superior en todas las aperturas. Una segunda línea de título, a 26 pt, añade 9,9 mm y baja el texto una línea de la rejilla; con `SINK = 14`, el texto empieza a la misma altura bajo títulos de una y de dos líneas. El `marginBottom: pt(0)` del nivel impide que el margen por defecto del título se sume a esa reserva.
 
 ### 2 · Un índice que se rellena solo
 
 <Excerpt region="contents" />
 
-`:::toc` en el Markdown imprime una entrada por cada título incluido, con el número, el texto del título, la línea de puntos, la etiqueta de la página y, gracias a `subtitle`, el autor. `buildDocument` vuelve a componer el libro hasta que las etiquetas de página dejen de cambiar, así que, si un ensayo cambia de título o de extensión, el índice se actualiza ([índice de contenidos](/es/docs/configuration#índice-de-contenidos)). El numeral de cada entrada toma la fuente y el cuerpo del título, salvo que `numberFontFamily` o `numberFontSize` digan otra cosa, y se apoya en la línea base de la primera línea del título con cualquier cuerpo. Un libro con partes añade además una fila por cada `:::part`, con el diseño de `toc.parts.design`, como en <RecipeLink slug="parts-in-colour">Partes en color</RecipeLink>.
+`:::toc` en el Markdown imprime una entrada por cada título incluido, con el número, el texto del título, la línea de puntos, la etiqueta de la página y, gracias a `subtitle`, el autor. `buildDocument` vuelve a componer el libro hasta que las etiquetas de página dejen de cambiar, así que, si un ensayo cambia de título o de extensión, el índice se actualiza ([índice de contenidos](/es/docs/configuration-notes-references#índice-de-contenidos)). El numeral de cada entrada toma la fuente y el cuerpo del título, salvo que `numberFontFamily` o `numberFontSize` digan otra cosa, y se apoya en la línea base de la primera línea del título con cualquier cuerpo. Un libro con partes añade además una fila por cada `:::part`, con el diseño de `toc.parts.design`, como en <RecipeLink slug="parts-in-colour">Partes en color</RecipeLink>.
 
 ### 3 · El autor en la página par, el ensayo en la impar
 
 <Excerpt region="running-heads" />
 
-Cada cabecera se ancla a la página, a 11 mm del borde superior, y `parity` elige el lado: el folio se alinea con el borde exterior del texto, y el nombre o el título queda 7 mm más adentro. El `pages: 'body'` de `head()` deja las cabeceras fuera de las aperturas, donde la firma ya nombra al autor, y el elemento del pie con `pages: 'opener'` imprime allí el folio, centrado bajo el texto ([elementos de texto](/es/docs/configuration#elementos-de-texto)). `{chapterTitle}` imprime el título del ensayo sin su numeral.
+Cada cabecera se ancla a la página, a 11 mm del borde superior, y `parity` elige el lado: el folio se alinea con el borde exterior del texto, y el nombre o el título queda 7 mm más adentro. El `pages: 'body'` de `head()` deja las cabeceras fuera de las aperturas, donde la firma ya nombra al autor, y el elemento del pie con `pages: 'opener'` imprime allí el folio, centrado bajo el texto ([elementos de texto](/es/docs/configuration-page-layout#elementos-de-texto)). `{chapterTitle}` imprime el título del ensayo sin su numeral.
 
 ### 4 · La cubierta y el índice no cuentan
 
 <Excerpt region="front" />
 
-Con `numbered: false`, la cubierta y el índice no hacen avanzar el contador, así que Hazlitt es el I, y `toc: false` los deja fuera de la lista ([estilos de título](/es/docs/configuration#estilos-de-encabezado)). Los dos estilos heredan el `breakBefore` del nivel, con paridad `'any'`, y por eso el índice sigue a la cubierta en la página 2 sin ningún `:::pagebreak`. El estilo de la cubierta ocupa toda la página aunque el libro tenga una sola columna, porque un diseño que se queda en la columna se corta al pie de esta y dejaría 22 mm de papel por debajo del paisaje.
+Con `numbered: false`, la cubierta y el índice no hacen avanzar el contador, así que Hazlitt es el I, y `toc: false` los deja fuera de la lista ([estilos de título](/es/docs/configuration-styles#estilos-de-encabezado)). Los dos estilos heredan el `breakBefore` del nivel, con paridad `'any'`, y por eso el índice sigue a la cubierta en la página 2 sin ningún `:::pagebreak`. El estilo de la cubierta ocupa toda la página aunque el libro tenga una sola columna, porque un diseño que se queda en la columna se corta al pie de esta y dejaría 22 mm de papel por debajo del paisaje.
 
 ### 5 · Cada color escrito con su enlace a la paleta
 

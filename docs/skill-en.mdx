@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'en',
   lastUpdated: '2026-10-09',
   readingTime: '8 min',
-  order: 12,
+  order: 21,
   plainSummary: "This page is for people who already have a book or document in another format, such as PDF, Word or InDesign, and want to move it into Postext. An AI helper, called an agent, can do most of the work if you give it a small add-on called a skill. The skill teaches the agent how to copy the text and rebuild the design of the original. The page explains how to install it, what to ask for and how to check the result. A video of about five minutes shows every step.",
 };
 
@@ -241,7 +241,7 @@ on a folder of projects in a local copy of Postext, set
 
 ### Loading the result from code
 
-The delivered file is not tied to the Sandbox. The `postext` package opens it with `openBundle`, lays the book out with `buildBundle` and renders it to canvas, HTML or PDF (see [Bundles](/en/docs/configuration#bundles-postext-files)). A port can therefore feed a program directly. When that program's output needs adjusting, export it back to a `.postext` file with `createBundle`, fine-tune it in the Sandbox and load the corrected file again. The skill's headless `render.mjs` also accepts a packed `.postext` file as well as a project folder.
+The delivered file is not tied to the Sandbox. The `postext` package opens it with `openBundle`, lays the book out with `buildBundle` and renders it to canvas, HTML or PDF (see [Bundles](/en/docs/configuration-programmatic-usage#bundles-postext-files)). A port can therefore feed a program directly. When that program's output needs adjusting, export it back to a `.postext` file with `createBundle`, fine-tune it in the Sandbox and load the corrected file again. The skill's headless `render.mjs` also accepts a packed `.postext` file as well as a project folder.
 
 ## What to expect
 

@@ -151,7 +151,7 @@
       "pt": "Corrigido no postext 1.23: a linguagem de uma cerca (```js, ```python, ```bash, ```console…) colore a listagem com o analisador embutido, e codeStyle.tokens define a cor, o negrito e o itálico de cada tipo de token (keyword, string, comment, prompt, output…). registerCodeHighlighter conecta um realçador para outras linguagens; highlight: 'none' compõe todas as listagens sem cor. Até a 1.22 uma listagem só podia usar trechos em negrito e itálico, marcados à mão, com as cores que o estilo definia."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Syntax colouring",
         "es": "Coloreado de sintaxis",
@@ -385,7 +385,7 @@
       "pt": "Resolvido no postext 1.18: layoutType 'multiple' compõe de 3 a 8 colunas de texto iguais, e placement.columns posiciona uma figura ou um boxe flutuante sobre várias delas. Até a 1.17, três ou mais colunas só existiam dentro de um boxe: um grupo :::columns em um boxe da largura da página."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Layout types",
         "es": "Tipos de disposición",
@@ -541,7 +541,7 @@
       "pt": "Corrigido no postext 1.23: o dropCap de um nível ou de um estilo de título abre o primeiro parágrafo após o título com a primeira letra em tamanho grande, e o de um estilo de parágrafo abre o primeiro parágrafo de cada grupo :::paragraphs (cada um com each: true). As linhas ao lado da letra são encurtadas e compostas com o resto do texto: justificadas, hifenizadas, sem se dividir antes da última linha da letra. lines, sink (uma inicial elevada), punctuation, uma abertura em versaletes e {dropcap=false} ou {dropcap=2} em um título ou na abertura de um grupo; as alturas das maiúsculas são medidas nas fontes. Até a 1.22 as capitulares só existiam nos elementos de texto de design: o parágrafo de abertura ia num atributo do título e o design da abertura o desenhava com a inicial."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Drop caps",
         "es": "Letras capitulares",
@@ -648,7 +648,7 @@
       "pt": "Corrigido no postext 1.23: as paradas de tabulação alinham texto dentro de um parágrafo. Escreva :tab onde o texto salta para uma parada (Sopa :tab 8,50) e defina tabStops em um estilo de parágrafo, em bodyText ou no body de um boxe. Uma parada fica a uma distância, em 'end' (o fim da linha) ou em uma porcentagem, e alinha o texto seguinte pelo início, pelo fim, pelo centro ou pelo separador decimal. O pontilhado preenche o espaço anterior com pontos ('.', '. ', '·') ou com uma linha ('rule') para o espaço em branco de um formulário, e os pontilhados de várias linhas ficam alinhados. :tab{at=120mm align=end leader=\".\"} define uma parada só para aquela tabulação, sem estilo, e um caractere de tabulação é uma tabulação em qualquer parágrafo cujo estilo tenha paradas. Assim, cardápios, listas de preços, elencos, pontuações de prova e índices com o número da página na margem são compostos como texto. Um parágrafo com uma tabulação é quebrado linha a linha, e o texto vertical não tem paradas de tabulação. Até a 1.22 os caracteres de tabulação eram compostos como espaços entre palavras, valores alinhados exigiam um recurso de tabela de duas colunas e os pontilhados existiam apenas no sumário."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Tab stops",
         "es": "Tabulaciones",
@@ -1376,7 +1376,7 @@
       "pt": "Resolvido no postext 1.5: bodyText.hyphenation.ragged: true hifeniza também o texto em bandeira, dentro de uma zona de hifenização (3 em por padrão), de modo que uma palavra só é dividida quando mandá-la inteira para a linha de baixo deixaria vazio mais do que a zona. Vem desativado por padrão: o texto em bandeira mantém as palavras inteiras até você pedir. Até a 1.4, só o texto justificado era hifenizado, e as linhas que ficavam muito curtas eram justificadas ou reescritas à mão."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Hyphenation",
         "es": "Separación silábica",
@@ -1456,7 +1456,7 @@
       "pt": "Resolvido no postext 1.24: tableStyle.rules 'booktabs' traça um fio grosso acima da tabela e abaixo da última linha, um fino sob as linhas de cabeçalho e nenhum fio vertical, com fios curtos sob os cabeçalhos que abrangem várias colunas (encurtados nas duas pontas por padrão) e, com groupRules, um fio fino acima das linhas que abrem um grupo. heavyRuleWidth, lightRuleWidth e spanRuleWidth valem por padrão 0.08em, 0.05em e 0.03em do corpo das células; a parte de uma tabela dividida que continua fecha com continuedFootRule. Até a 1.23 o padrão mais próximo era 'horizontal' com fios finos de cor clara, que punha um fio entre todas as linhas."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Booktabs rules",
         "es": "Filetes booktabs",
@@ -1555,7 +1555,7 @@
       "pt": "O postext-pdf grava cada página como uma única MediaBox (a folha com a sangria e as marcas de corte), sem TrimBox, BleedBox nem output intent, e converte as cores para CMYK com uma fórmula simples, sem perfil ICC. As marcas de corte mostram onde cortar; um arquivo-mestre de impressão traz as tintas exatas de uma figura; uma ferramenta de pré-impressão acrescenta as caixas e o perfil quando a gráfica pede PDF/X."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Print-ready PDFs",
         "es": "PDFs listos para imprenta",
@@ -1758,7 +1758,7 @@
       "pt": "Corrigido no postext 1.23: a configuração lineNumbers imprime o número de cada quinta linha (ou de cada N) na margem, no intercolúnio ou na coluna lateral. Com count 'verse' ela conta os versos dos poemas :::verse, sem numerar as partes que passam para a linha seguinte; com 'all', todas as linhas do texto. A contagem recomeça a cada poema, página, capítulo ou seção, ou segue ao longo do livro; :::verse{lineStart=37} retoma um poema pela metade, numbered=false deixa um de fora e :::numbering{lines=1} reinicia a contagem em qualquer ponto. Os números nunca movem uma linha, ficam fora do texto copiado e são artefatos em um PDF etiquetado. O texto vertical não recebe números. Até a 1.22 cada verso precisava de um parágrafo próprio, e um pré-processador acrescentava depois de cada quinto verso um boxe lateral com o número, em uma coluna lateral reservada aos flutuantes."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-notes-references",
       "heading": {
         "en": "Line numbers",
         "es": "Numeración de líneas",
@@ -1847,7 +1847,7 @@
       "pt": "O texto coreano quebra entre sílabas e é justificado como o chinês, com os padrões da China continental: ainda não há regras coreanas (KLREQ), nem rótulos ou pontuação coreanos. Ajuste à mão cjk.lineBreak, punctuationWidth e latinSpacing para chegar perto, e use cjk.wordBreak 'keep-all' para quebrar só nos espaços entre palavras (어절). O japonês tem regras próprias desde a 1.16.0: marque o documento como 'ja'."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-east-asian",
       "heading": {
         "en": "East Asian typography",
         "es": "Tipografía de Asia oriental",
@@ -1932,7 +1932,7 @@
       "pt": "A direção de escrita pertence ao documento ou a uma seção (o layout de um estilo de título): um boxe, um quadro lateral ou uma célula de tabela não podem correr na vertical em uma página horizontal, nem na horizontal dentro de um texto vertical. Cabeços, fólios e legendas continuam horizontais em uma página vertical. Dê ao trecho uma seção própria ou desenhe-o como recurso SVG."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Vertical writing",
         "es": "Escritura vertical",
@@ -2010,7 +2010,7 @@
       "pt": "Em um livro vertical, figuras e tabelas ficam em pé e suas legendas e células são compostas na horizontal, como a maioria dos livros verticais modernos as imprime. Não existe tabela com células que correm de cima para baixo e cabeçalho à direita, nem legenda composta na vertical ao lado da figura: desenhe uma tabela assim como recurso SVG."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Vertical writing",
         "es": "Escritura vertical",
@@ -2103,7 +2103,7 @@
       "pt": "Os tamanhos são dados em pt, mm, px ou em: não há 五号 nem 小四, nem o Q japonês. Converta-os como fazem os processadores de texto chineses: 初号 42 pt, 二号 22 pt, 三号 16 pt, 四号 14 pt, 小四 12 pt, 五号 10,5 pt, 小五 9 pt; 1 Q equivale a 0,25 mm."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-east-asian",
       "heading": {
         "en": "Character grid",
         "es": "Retícula de caracteres",
@@ -2293,7 +2293,7 @@
       "pt": "Os números de página contam páginas: nenhum contador avança uma vez por página dupla ou por folha, como os números de folha (葉碼) de um livro xilográfico. Abra cada folha com um título de nível 1 oculto que salte para a página onde a folha começa (paridade 'even' em um livro encadernado pela direita) e imprima {chapterNumber} no design; o texto então precisa ser quebrado no Markdown onde cada folha termina."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Numbering",
         "es": "Numeración",
@@ -2390,7 +2390,7 @@
       "pt": "O fio de coluna corre entre colunas, e a sobreposição da grade de caracteres (cjk.grid.show) é um quadrado cinza-claro para cada caractere, uma ajuda de tela que o PDF omite, a menos que renderToPdf receba characterGrid: true. Os fios de uma página xilográfica ou de um papel pautado de manuscrito, um entre cada duas linhas, são desenhados como elementos de fio verticais no cabeçalho, posicionados pelo passo da grade."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Column rule",
         "es": "Filete de columna",
@@ -2497,7 +2497,7 @@
       "pt": "Um segundo texto não pode contornar o principal por três ou quatro lados, como a ḥāshiya de um impresso de Bulaq ou os comentários de uma página do Talmude: o texto corrido flui em uma coluna, em duas ou em coluna e meia. Coloque o comentário na coluna lateral de um layout oneAndHalf, como boxes com span=\"side\" ao lado dos trechos que explicam, e desenhe a moldura e a faixa com elementos de design de página."
     },
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Layout",
         "es": "Disposición",

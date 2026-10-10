@@ -18,13 +18,13 @@ Cuatro páginas, en inglés, del manual de identidad del Metro de Alba, una red 
 
 <Excerpt region="build" />
 
-La composición mide cada palabra con las fuentes de `document.fonts`, así que `loadBrandFonts()`, en [la respuesta corta](#la-respuesta-corta), descarga cada archivo una sola vez, guarda los bytes y registra con ellos un `FontFace` antes de llamar a `buildDocument`. El `kitFonts` del kit solo descarga de Fontsource, y una marca sirve sus archivos desde su propio servidor. `renderToPdf` pide las variantes que pintan las páginas, y `brandFontProvider` responde a cada petición con los bytes ya descargados; a un peso o una cursiva que la marca no tenga le daría el archivo más cercano de la misma familia ([¿Por qué un proveedor de fuentes?](/es/docs/configuration#por-qué-un-proveedor-de-fuentes)). El PDF incrusta los seis archivos que midió el canvas, una vez cada uno.
+La composición mide cada palabra con las fuentes de `document.fonts`, así que `loadBrandFonts()`, en [la respuesta corta](#la-respuesta-corta), descarga cada archivo una sola vez, guarda los bytes y registra con ellos un `FontFace` antes de llamar a `buildDocument`. El `kitFonts` del kit solo descarga de Fontsource, y una marca sirve sus archivos desde su propio servidor. `renderToPdf` pide las variantes que pintan las páginas, y `brandFontProvider` responde a cada petición con los bytes ya descargados; a un peso o una cursiva que la marca no tenga le daría el archivo más cercano de la misma familia ([¿Por qué un proveedor de fuentes?](/es/docs/configuration-programmatic-usage#por-qué-un-proveedor-de-fuentes)). El PDF incrusta los seis archivos que midió el canvas, una vez cada uno.
 
 ### 2 · El sistema de color es una sola lista
 
 <Excerpt region="colours" />
 
-Como la paleta y la tabla 1.1 se construyen con las mismas nueve filas, la tabla no puede dar un valor que las páginas no usen. `setCellBackground` rellena la primera celda de cada fila, que va vacía, con el color de esa fila enlazado a la paleta. En el texto, `:swatch{color="line-2"}` recibe el identificador de una entrada de la paleta y dibuja un cuadrado perfilado con el color del texto. `main-color` toma el hex de Ink, de modo que los títulos, las negritas y las cursivas, enlazados a él por defecto, salen en Ink y no en el azul del motor. `bodyText.referenceColor: col('ink')` nombra Ink también para las remisiones ([Paleta de colores](/es/docs/configuration#paleta-de-colores)).
+Como la paleta y la tabla 1.1 se construyen con las mismas nueve filas, la tabla no puede dar un valor que las páginas no usen. `setCellBackground` rellena la primera celda de cada fila, que va vacía, con el color de esa fila enlazado a la paleta. En el texto, `:swatch{color="line-2"}` recibe el identificador de una entrada de la paleta y dibuja un cuadrado perfilado con el color del texto. `main-color` toma el hex de Ink, de modo que los títulos, las negritas y las cursivas, enlazados a él por defecto, salen en Ink y no en el azul del motor. `bodyText.referenceColor: col('ink')` nombra Ink también para las remisiones ([Paleta de colores](/es/docs/configuration-fonts-colors-viewers#paleta-de-colores)).
 
 ### 3 · Una apertura, tres colores de línea
 
@@ -36,13 +36,13 @@ Como la paleta y la tabla 1.1 se construyen con las mismas nueve filas, la tabla
 
 <Excerpt region="do-dont" />
 
-Un tipo de recurso admite un `captionStyle` parcial, y estos dos solo cambian el color de la etiqueta: Signal green en Do y Signal red en Don't ([Tipos de recurso](/es/docs/configuration#tipos-de-recurso)). Los dos colores de señal llegan a 5,1:1 y 5,5:1 sobre blanco, mientras que las líneas 1, 2, 3 y 5 se quedan por debajo del 4,5:1 que pide el texto pequeño. Los dos dibujos flotan con `position: 'bottom'` y se citan en el mismo párrafo, el primero de Drawing the map, así que comparten el pie de la página 4, Do en la columna izquierda y Don't en la derecha.
+Un tipo de recurso admite un `captionStyle` parcial, y estos dos solo cambian el color de la etiqueta: Signal green en Do y Signal red en Don't ([Tipos de recurso](/es/docs/configuration-resources#tipos-de-recurso)). Los dos colores de señal llegan a 5,1:1 y 5,5:1 sobre blanco, mientras que las líneas 1, 2, 3 y 5 se quedan por debajo del 4,5:1 que pide el texto pequeño. Los dos dibujos flotan con `position: 'bottom'` y se citan en el mismo párrafo, el primero de Drawing the map, así que comparten el pie de la página 4, Do en la columna izquierda y Don't en la derecha.
 
 ### 5 · El paquete lleva las fuentes que puede compartir
 
 <Excerpt region="bundle" />
 
-`createBundle` lee `config.customFonts`, busca en `files` los bytes de cada variante por su `fileId` y los guarda en `fonts/`, con una entrada `fonts` en el manifiesto. La familia de rótulos lleva `redistributable: false`, que aquí simula una licencia que no deja repartir los archivos (la de Big Shoulders Display, la OFL, sí lo permite). Su archivo se queda fuera y `warnings` nombra la familia. El archivo de 81 KB contiene el capítulo, la configuración, los tres dibujos y cinco archivos de fuente. La composición nunca lee `customFonts`, y sin él las páginas salen iguales ([Crear un paquete](/es/docs/configuration#crear-un-paquete)).
+`createBundle` lee `config.customFonts`, busca en `files` los bytes de cada variante por su `fileId` y los guarda en `fonts/`, con una entrada `fonts` en el manifiesto. La familia de rótulos lleva `redistributable: false`, que aquí simula una licencia que no deja repartir los archivos (la de Big Shoulders Display, la OFL, sí lo permite). Su archivo se queda fuera y `warnings` nombra la familia. El archivo de 81 KB contiene el capítulo, la configuración, los tres dibujos y cinco archivos de fuente. La composición nunca lee `customFonts`, y sin él las páginas salen iguales ([Crear un paquete](/es/docs/configuration-programmatic-usage#crear-un-paquete)).
 
 ## Variantes
 

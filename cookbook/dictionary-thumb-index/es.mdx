@@ -16,19 +16,19 @@ Cuatro páginas de una nueva edición del *Sailor’s Word-Book* del almirante S
 
 ### 1 · Un estilo de título por letra, cada uno con su pestaña
 
-El código está en [la respuesta corta](#la-respuesta-corta), más arriba. `TABS` enumera 22 pestañas; las letras con pocas voces comparten una (QR, UV, XYZ). Cada pestaña mide dos líneas de texto (7,34 mm), así que entre todas cubren las 44 líneas de la caja. El bucle da a cada letra un estilo de título cuyo `header` suma a las cabeceras y al índice pálido la pestaña azul de esa letra, un paso más abajo que la anterior ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). Cada celda se escribe dos veces, una por `parity`, y se ancla al borde exterior de la página, no al contenedor propio de la cabecera. Ese contenedor es el margen de cabeza, del ancho de la caja y desde el borde superior de la página hasta el texto, y las pestañas tienen que llegar al corte delantero y bajar por las 44 líneas. Una página toma la cabecera de la última sección que empieza en ella, así que la <PageRef page={2}>página 2</PageRef> empieza en la A y lleva la pestaña de la B.
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. `TABS` enumera 22 pestañas; las letras con pocas voces comparten una (QR, UV, XYZ). Cada pestaña mide dos líneas de texto (7,34 mm), así que entre todas cubren las 44 líneas de la caja. El bucle da a cada letra un estilo de título cuyo `header` suma a las cabeceras y al índice pálido la pestaña azul de esa letra, un paso más abajo que la anterior ([estilos de encabezado](/es/docs/configuration-styles#estilos-de-encabezado)). Cada celda se escribe dos veces, una por `parity`, y se ancla al borde exterior de la página, no al contenedor propio de la cabecera. Ese contenedor es el margen de cabeza, del ancho de la caja y desde el borde superior de la página hasta el texto, y las pestañas tienen que llegar al corte delantero y bajar por las 44 líneas. Una página toma la cabecera de la última sección que empieza en ella, así que la <PageRef page={2}>página 2</PageRef> empieza en la A y lleva la pestaña de la B.
 
 ### 2 · Las cabeceras, fuera de la primera página
 
 <Excerpt region="running-heads" />
 
-Las cabeceras son elementos de texto anclados a la página y filtrados por `parity` y por `pages: 'body'` ([elementos de texto](/es/docs/configuration#elementos-de-texto)). El título de la página 1 abarca las dos columnas, y eso la convierte en página de apertura. Las cabeceras no salen en ella, y su folio lo pone el pie, un elemento con `pages: 'opener'` que se imprime 6 mm por debajo de la caja. En las impares, `{chapterTitle}` imprime la letra del último título de nivel 1 que hay en la página o antes de ella, *Letra C*. `{firstMark.<clave>}` y `{lastMark.<clave>}` imprimen en su lugar el primer y el último lema de la página, las palabras guía que llevan casi todos los diccionarios; esta receta conserva la letra, que es lo que indexan sus pestañas.
+Las cabeceras son elementos de texto anclados a la página y filtrados por `parity` y por `pages: 'body'` ([elementos de texto](/es/docs/configuration-page-layout#elementos-de-texto)). El título de la página 1 abarca las dos columnas, y eso la convierte en página de apertura. Las cabeceras no salen en ella, y su folio lo pone el pie, un elemento con `pages: 'opener'` que se imprime 6 mm por debajo de la caja. En las impares, `{chapterTitle}` imprime la letra del último título de nivel 1 que hay en la página o antes de ella, *Letra C*. `{firstMark.<clave>}` y `{lastMark.<clave>}` imprimen en su lugar el primer y el último lema de la página, las palabras guía que llevan casi todos los diccionarios; esta receta conserva la letra, que es lo que indexan sus pestañas.
 
 ### 3 · Color para los lemas y nada más
 
 <Excerpt region="entries" />
 
-Cada entrada es un párrafo de un bloque `:::paragraphs{style="entry"}`, con sangría francesa de 1 em ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). El `boldColor` del cuerpo deja el **Nota.** de la página 1 en el color del texto, y el del estilo de entrada pone los lemas en azul marino. Un estilo de párrafo no tiene `italicColor`, así que las cursivas de las entradas conservan el color del cuerpo.
+Cada entrada es un párrafo de un bloque `:::paragraphs{style="entry"}`, con sangría francesa de 1 em ([estilos de párrafo](/es/docs/configuration-styles#estilos-de-párrafo)). El `boldColor` del cuerpo deja el **Nota.** de la página 1 en el color del texto, y el del estilo de entrada pone los lemas en azul marino. Un estilo de párrafo no tiene `italicColor`, así que las cursivas de las entradas conservan el color del cuerpo.
 
 ### 4 · Una inicial de cuatro líneas dentro de la columna
 
@@ -40,7 +40,7 @@ Cada entrada es un párrafo de un bloque `:::paragraphs{style="entry"}`, con san
 
 <Excerpt region="title" />
 
-El estilo del título abarca la página con una banda que reúne el ancla, el nombre, un subtítulo y una firma tomados de atributos del título, y un filete doble ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El filete fino acaba 45,1 mm por debajo del borde superior de la caja, así que la banda se ajusta a 13 líneas de la rejilla, 47,7 mm. El filete de columna empieza debajo de la banda, en la línea donde empieza el texto de las dos columnas.
+El estilo del título abarca la página con una banda que reúne el ancla, el nombre, un subtítulo y una firma tomados de atributos del título, y un filete doble ([span y diseño avanzado](/es/docs/configuration-text#span-y-diseño-avanzado)). El filete fino acaba 45,1 mm por debajo del borde superior de la caja, así que la banda se ajusta a 13 líneas de la rejilla, 47,7 mm. El filete de columna empieza debajo de la banda, en la línea donde empieza el texto de las dos columnas.
 
 ## Variantes
 

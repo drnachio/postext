@@ -1,0 +1,1244 @@
+{/* docs/configuration-page-layout-en.mdx */}
+
+export const metadata = {
+  title: 'Configuration: page and layout',
+  sidebarTitle: 'Page and layout',
+  description: 'The page size, margins and baseline grid, the columns and their gutters, and the running headers and footers',
+  lang: 'en',
+  lastUpdated: '2026-10-10',
+  readingTime: '6 min',
+  order: 4,
+  parent: 'configuration',
+  plainSummary: "This page covers the settings for the sheet itself. You choose the page size, the margins, the side the book is bound on and the grid the lines of text sit on. You set how many columns a page has and how much space runs between them. You also decide what is printed at the top and the bottom of every page, such as the page number or the chapter title. It is one of the nine pages of the Configuration reference.",
+};
+
+# Configuration: page and layout
+
+
+## Page
+
+The `page` property controls the physical dimensions and appearance of the page.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '180px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>sizePreset</code></td>
+      <td><code>PageSizePreset</code></td>
+      <td><code>'17x24'</code></td>
+      <td>Predefined page size. Set to <code>'custom'</code> to use explicit width/height.</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>17 cm</code></td>
+      <td>Page width. Taken from <code>sizePreset</code> when omitted; an explicit value always wins (use <code>sizePreset: 'custom'</code> for fully custom sizes).</td>
+    </tr>
+    <tr>
+      <td><code>height</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>24 cm</code></td>
+      <td>Page height. Taken from <code>sizePreset</code> when omitted; an explicit value always wins.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td><code>2 cm</code> all sides</td>
+      <td>Space between the page edge and the content area. Each side (top, bottom, left, right) is set independently. With <code>mirror: true</code> the margins are <em>facing-page</em> margins: <code>left</code> is the inner (spine-side) margin and <code>right</code> the outer one; odd pages (page 1 is odd) keep them as written and even pages swap them, so the content area — and with it the columns, float bands, header/footer containers and opener bands — moves across the spread. Default <code>false</code>. See below.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>Page background color.</td>
+    </tr>
+    <tr>
+      <td><code>dpi</code></td>
+      <td><code>number</code></td>
+      <td><code>300</code></td>
+      <td>The pixels per inch the layout works in: how physical units (cm, mm, in, pt) become its pixels. A bitmap without a resolution of its own takes one layout pixel per image pixel, so it prints at this many ppi: keep 300 for print, or give the pictures a resolution (<code>Resource.bitmap.resolution</code>, <code>layout.bitmapResolution</code>; see [Document format › Bitmap size](/en/docs/document-format#bitmap-size)). The [preflight](/en/docs/configuration-fonts-colors-viewers#preflight) checks each picture's effective resolution.</td>
+    </tr>
+    <tr>
+      <td><code>cutLines</code></td>
+      <td><code>CutLinesConfig</code></td>
+      <td>disabled</td>
+      <td>Show trim marks at page corners for print cutting. When enabled, the canvas expands to include bleed area and crop marks. See below.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>BaselineGridConfig</code></td>
+      <td>disabled</td>
+      <td>Draw the baseline grid over the pages, to check the vertical rhythm. The layout snaps to the grid whether or not it is drawn. See below.</td>
+    </tr>
+    <tr>
+      <td><code>binding</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td>The edge the book is bound on. <code>'auto'</code> is <code>'right'</code> when <code>layout.writingMode</code> is <code>'vertical-rl'</code>, when the document runs right to left (<a href="/en/docs/configuration-text#text-direction"><code>direction</code></a>) or when its <a href="/en/docs/configuration-comics#comics"><code>comics</code></a> section reads right to left (a manga, a Japanese or Traditional Chinese edition), else <code>'left'</code>. A right-bound book opens on a left page and mirrors its margins the other way round. Book-level: a heading style's own <code>layout</code> never changes it. See <a href="#binding">Binding</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Mirrored margins
+
+Books are read as spreads, and the inner margin usually differs from the outer one. `margins.mirror` turns the four margins into facing-page margins:
+
+```json
+{
+  "page": {
+    "margins": {
+      "top": { "value": 2, "unit": "cm" },
+      "bottom": { "value": 2.5, "unit": "cm" },
+      "left": { "value": 2.2, "unit": "cm" },
+      "right": { "value": 1.4, "unit": "cm" },
+      "mirror": true
+    }
+  }
+}
+```
+
+With this configuration every odd page has a 2.2 cm margin on the left (the spine) and 1.4 cm on the right (the fore-edge); every even page has 1.4 cm on the left (the fore-edge) and 2.2 cm on the right (the spine). Each laid-out page carries its own `contentArea` on the `VDTPage`, so everything derived from it — columns, full-width float bands, header and footer containers, and `span: 'page'` opener bands — follows the mirrored geometry automatically. Page and bleed frames used by design elements anchored to `'page'` / `'bleed'` are not affected: they describe the physical sheet, not the margins.
+
+### Binding
+
+"Vertically set Chinese documents are bound on the right-hand side, and horizontally set documents are bound on the left-hand side" ([clreq §7.1.1.1](https://www.w3.org/TR/clreq/#x7-1-1-1-basic-elements-of-page-formatting)). `page.binding: 'right'` lays a book out for the right edge:
+
+- Page 1 is still odd and still the recto, so `breakBefore.parity`, `:::pagebreak{parity}`, design elements with a `parity` and every page count keep their meaning. What changes is the side the recto sits on: the left page of the spread. A chapter that opens on a new recto opens on a left page ([clreq §7.1.3.3](https://www.w3.org/TR/clreq/#x7-1-3-3-how-to-handle-headings-with-new-recto-and-page-break)).
+- With `margins.mirror`, `left` is still the inner margin, but it is the odd pages that swap: page 1 has its inner margin on its right, page 2 on its left. A `oneAndHalf` side column at `'outer'` / `'inner'`, a rotated float that sits against the spine, part-page margins and box corner icons at `'outer'` / `'inner'` follow the same rule.
+- The document says so (`VDTDocument.binding: 'right'`), so a host never has to read the config: the Sandbox shows its spreads as `[3 | 2]` with page 1 alone on the left of the spine, and its HTML viewer runs the pages right to left, opening at the right end, the left arrow going to the next page. `renderToHtml` in multi mode lays the row out right to left.
+- The PDF carries `/ViewerPreferences << /Direction /R2L >>` and `/PageLayout /TwoPageRight` (page 1 alone, then pairs), tagged or not. Acrobat and Foxit follow them; Chrome's built-in viewer ignores both.
+
+Folios and running heads do not move by themselves: a template that prints the page number at the outer corner needs its odd and even elements set for the right edge (elements take a `parity`).
+
+A book written right to left (Arabic, Persian, Hebrew…) is bound on the right as well: `'auto'` gives the right edge when the document's [`direction`](/en/docs/configuration-text#text-direction) resolves to `'rtl'`. Such a book also mirrors its whole flow, so its first column is the right one and its indents, list markers, floats and notes stand on the right; header and footer slots stay physical. See [Arabic layout](/en/docs/arabic-layout#page-order-and-right-binding).
+
+A comic book read right to left is bound on the right too: `'auto'` gives the right edge when the config has a `comics` section whose reading direction resolves to `'rtl'`. That is the case of a manga (`comics.artDirection: 'rtl'`) and of a Japanese or Traditional Chinese edition of a Western comic. The section decides for the whole book, not the `:::page` blocks of one chapter. See [Comics](/en/docs/comics#reading-direction).
+
+### Page size presets
+
+<table>
+  <thead>
+    <tr>
+      <th>Preset</th>
+      <th>Width</th>
+      <th>Height</th>
+      <th>Common use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'11x17'</code></td><td>11 cm</td><td>17 cm</td><td>Pocket books</td></tr>
+    <tr><td><code>'12x19'</code></td><td>12 cm</td><td>19 cm</td><td>Standard paperback</td></tr>
+    <tr><td><code>'17x24'</code></td><td>17 cm</td><td>24 cm</td><td>Technical books, textbooks</td></tr>
+    <tr><td><code>'21x28'</code></td><td>21 cm</td><td>28 cm</td><td>Magazines, reports (near A4)</td></tr>
+    <tr><td><code>'broadsheet'</code></td><td>375 mm</td><td>597 mm</td><td>Broadsheet newspapers</td></tr>
+    <tr><td><code>'berliner'</code></td><td>315 mm</td><td>470 mm</td><td>Berliner newspapers</td></tr>
+    <tr><td><code>'tabloid'</code></td><td>280 mm</td><td>430 mm</td><td>Tabloid newspapers</td></tr>
+    <tr><td><code>'compact'</code></td><td>297 mm</td><td>420 mm</td><td>Compact newspapers (a broadsheet folded in half)</td></tr>
+  </tbody>
+</table>
+
+<Illustration name="PageSizes" data='{"title": "Page size presets", "desc": "Four built-in page size presets drawn to proportional scale: pocket 11x17, paperback 12x19, technical 17x24, and near-A4 21x28 cm.", "caption": "Presets drawn to proportional scale.", "sizes": [{"name": "11×17", "dims": "Pocket", "wmm": 110, "hmm": 170}, {"name": "12×19", "dims": "Paperback", "wmm": 120, "hmm": 190}, {"name": "17×24", "dims": "Textbook", "wmm": 170, "hmm": 240}, {"name": "21×28", "dims": "~A4", "wmm": 210, "hmm": 280}]}' />
+
+The four newspaper formats are new in postext 1.18 and are left out of the drawing: a broadsheet page has almost four times the area of a 21 × 28 one. They are usually set with the [`'multiple'` layout](#layout-types); six columns are common on a broadsheet and five on a tabloid.
+
+### Baseline grid
+
+The baseline grid is the rhythm of the body text: lines one body line height apart, counted from the top of the content area. The layout uses it whether or not it is drawn: headings, list ends, boxes, figures and display formulas bring the text back onto it (unless their own `snapToGrid` is off), so the lines of adjacent columns stay aligned. `enabled` only draws the lines, in the canvas, the PDF and the Sandbox views, to check that rhythm; turning it on or off moves nothing. The lines span only the page's actual text — from the first text line to the last — so float bands, blank parity pages, and unused tail space show no grid.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>Property</th>
+      <th style={{ width: '150px' }}>Type</th>
+      <th style={{ width: '180px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether to draw the grid lines (canvas and PDF). Only the drawing: the layout is the same either way.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#cccccc</code></td>
+      <td>Color of the grid lines.</td>
+    </tr>
+    <tr>
+      <td><code>lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 pt</code></td>
+      <td>Thickness of the grid lines.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+page: {
+  baselineGrid: { enabled: true, color: { hex: '#e0e0e0', model: 'hex' } }
+}
+```
+
+### Cut lines
+
+When enabled, the canvas expands to include a bleed area and the engine draws crop marks at each corner for print production. The PDF gives every page a TrimBox and a BleedBox; a [PDF/X](/en/docs/configuration-fonts-colors-viewers#pdfx-1a-and-pdfx-4) file has them even without cut lines. In the Sandbox they are set in **Export › Print preparation**.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>Property</th>
+      <th style={{ width: '150px' }}>Type</th>
+      <th style={{ width: '180px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether to expand the canvas with bleed and draw crop marks.</td>
+    </tr>
+    <tr>
+      <td><code>bleed</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>3 mm</code></td>
+      <td>Extra area around the page used for print bleed.</td>
+    </tr>
+    <tr>
+      <td><code>markLength</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>5 mm</code></td>
+      <td>Length of each crop mark.</td>
+    </tr>
+    <tr>
+      <td><code>markOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>3 mm</code></td>
+      <td>Gap between the trim edge and the start of each crop mark. A mark never starts inside the bleed: when <code>bleed</code> is wider, the mark starts at the bleed edge.</td>
+    </tr>
+    <tr>
+      <td><code>markWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.25 pt</code></td>
+      <td>Thickness of the crop marks.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>Color of the crop marks on the canvas (the screen preview). The PDF always paints them in registration colour (see below).</td>
+    </tr>
+  </tbody>
+</table>
+
+The sheet grows by `bleed + markOffset + markLength` on every side, and the trimmed page sits in its middle. Each corner of the trim gets two marks, `markLength` long, each in line with one of the edges that meet there. A mark starts `markOffset` outside the trim, or at the bleed edge when `bleed` is the wider of the two, so no mark lies over art that runs into the bleed. With the defaults (3 mm of bleed, a 3 mm offset) the marks run from 3 to 8 mm outside the trim, and a blank band 3 mm wide runs round the sheet outside them. `cropMarkSegments(page, doc.config.page, doc.trimOffset)` returns the eight marks of a page in page pixels, the ones the canvas and PDF backends draw. The third argument is where the trim sits inside the sheet, the value the PDF's `TrimBox` is written from; left out, it is worked out from `cutLines` the same way.
+
+Nothing but the marks prints outside the bleed. Everything the page paints, the design elements anchored to `'page'` or `'bleed'` included, is clipped to the bleed box on the canvas, in the PDF and in the HTML output, as a DTP export clips it: a band or a picture set past the bleed on purpose is cut at the bleed edge, where the trimmer would lose it anyway. Up to postext 1.4 such an element ran on over the marks to the edge of the sheet.
+
+In the PDF (`postext-pdf`), the MediaBox of each page is the whole sheet. The page also carries a TrimBox, the trimmed page, and a BleedBox, the trim plus the bleed, which imposition and preflight tools read. The marks are painted in registration colour, the `/All` separation, so they print on every plate. This holds whatever colour space the PDF is written in (RGB, grayscale or CMYK): a plain black would reach the printer as rich black or as the black plate alone. `color` only applies to the canvas.
+
+### Numbering
+
+The `page.pageNumbering` block controls how page labels are formatted and where the counter starts. It only defines the document-wide default — to restart numbering mid-document (e.g. roman-numeral front matter switching to decimal chapters from 1), use the `:::numbering` directive (see **Document format → Directives**).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '260px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>'decimal' | 'lower-roman' | 'upper-roman' | 'lower-alpha' | 'upper-alpha'</code>, or an East Asian style</td>
+      <td><code>'decimal'</code></td>
+      <td>Numeric style used to render page labels. The East Asian styles (<code>'trad-chinese-informal'</code> numbers the pages 一, 二, 三) are listed under <a href="#numbering-format-spellings">Numbering format spellings</a>.</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Numeric value assigned to the first page regardless of format. <code>format: 'lower-roman', startAt: 1</code> yields <code>i, ii, iii, …</code>; <code>format: 'decimal', startAt: 17</code> yields <code>17, 18, 19, …</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+The computed label is stored on every `VDTPage` as `pageLabel` and is what the <code>\{pageNumber\}</code> header/footer placeholder resolves to. PDFs emit a <code>/PageLabels</code> number tree so Preview / Acrobat's page indicator and "Go to page" navigation match the printed labels exactly. A style PDF has no code for (Chinese numerals, circled and fullwidth digits) is written out page by page, so the reader shows 一, 二, 三 too.
+
+#### Numbering format spellings
+
+Three settings choose a numbering format, and each grew its own spelling: page labels (`page.pageNumbering.format` and `:::numbering{format=…}`) say `lower-roman`, ordered lists (`orderedLists.numberFormat`) say `arabic` for decimal, and resource types (`counterFormat`) say `roman-lower`. Every one of them accepts all the spellings below, so a format copied from one setting works in the others. Names are case-insensitive; the one-character forms are not (`i` and `I` differ).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>Format</th>
+      <th style={{ width: '140px' }}>Prints</th>
+      <th>Accepted spellings</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Decimal</td><td><code>1, 2, 3</code></td><td><code>decimal</code>, <code>arabic</code>, <code>1</code></td></tr>
+    <tr><td>Lower roman</td><td><code>i, ii, iii</code></td><td><code>lower-roman</code>, <code>roman-lower</code>, <code>i</code></td></tr>
+    <tr><td>Upper roman</td><td><code>I, II, III</code></td><td><code>upper-roman</code>, <code>roman-upper</code>, <code>I</code></td></tr>
+    <tr><td>Lower alpha</td><td><code>a, b, c</code></td><td><code>lower-alpha</code>, <code>alpha-lower</code>, <code>lower-latin</code>, <code>a</code></td></tr>
+    <tr><td>Upper alpha</td><td><code>A, B, C</code></td><td><code>upper-alpha</code>, <code>alpha-upper</code>, <code>upper-latin</code>, <code>A</code></td></tr>
+    <tr><td>Chinese numerals, Simplified</td><td>一, 十二, 一百零一</td><td><code>simp-chinese-informal</code>, <code>一</code> in a Simplified document</td></tr>
+    <tr><td>Chinese numerals, Traditional</td><td>一, 十二, 一萬</td><td><code>trad-chinese-informal</code>, <code>cjk-ideographic</code>, <code>一</code> in a Traditional document</td></tr>
+    <tr><td>Chinese financial numerals, Simplified</td><td>壹, 壹拾贰, 壹佰贰拾</td><td><code>simp-chinese-formal</code>, <code>壹</code> in a Simplified document</td></tr>
+    <tr><td>Chinese financial numerals, Traditional</td><td>壹, 壹拾貳, 壹佰貳拾</td><td><code>trad-chinese-formal</code>, <code>壹</code> in a Traditional document</td></tr>
+    <tr><td>Chinese digits</td><td>一二〇, 二〇二六</td><td><code>cjk-decimal</code>, <code>〇</code></td></tr>
+    <tr><td>Heavenly stems</td><td>甲, 乙, 丙 … 癸</td><td><code>cjk-heavenly-stem</code>, <code>甲</code></td></tr>
+    <tr><td>Earthly branches</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>, <code>子</code></td></tr>
+    <tr><td>Japanese numerals</td><td>一, 十二, 百一, 一万一</td><td><code>japanese-informal</code>, <code>一</code> in a Japanese document</td></tr>
+    <tr><td>Japanese formal numerals</td><td>壱, 壱拾弐, 壱百</td><td><code>japanese-formal</code>, <code>壱</code></td></tr>
+    <tr><td>Hiragana, gojūon order</td><td>あ, い, う … ん, ああ</td><td><code>hiragana</code>, <code>あ</code></td></tr>
+    <tr><td>Katakana, gojūon order</td><td>ア, イ, ウ … ン, アア</td><td><code>katakana</code>, <code>ア</code></td></tr>
+    <tr><td>Hiragana, iroha order</td><td>い, ろ, は … す, いい</td><td><code>hiragana-iroha</code>, <code>い</code></td></tr>
+    <tr><td>Katakana, iroha order</td><td>イ, ロ, ハ … ス, イイ</td><td><code>katakana-iroha</code>, <code>イ</code></td></tr>
+    <tr><td>Circled</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>, <code>①</code></td></tr>
+    <tr><td>Fullwidth digits</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>, <code>１</code></td></tr>
+    <tr><td>Arabic-Indic digits</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>, <code>١</code></td></tr>
+    <tr><td>Persian digits</td><td>۱, ۲, ۳ … ۱۰</td><td><code>persian</code>, <code>urdu</code>, <code>۱</code></td></tr>
+    <tr><td>Arabic letters, abjad order</td><td>أ, ب, ج, د, هـ … غ, أأ</td><td><code>abjad</code>, <code>أبجد</code></td></tr>
+    <tr><td>Arabic letters, alphabetical order</td><td>أ, ب, ت, ث … ي, أأ</td><td><code>hijai</code>, <code>arabic-alpha</code>, <code>arabic-alphabetic</code>, <code>أبتث</code></td></tr>
+    <tr><td>Abjad numerals</td><td>ا, ب … يا (11), غتمو (1446)</td><td><code>arabic-abjad</code></td></tr>
+    <tr><td>Abjad numerals, Maghrebi values</td><td>ص (60), ض (90), ش (1000)</td><td><code>arabic-abjad-maghrebi</code>, <code>maghrebi-abjad</code></td></tr>
+  </tbody>
+</table>
+
+The East Asian styles keep their [CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese) names in all three settings. The informal Chinese numerals write 十 for 10 to 19 without a leading 一 (十二, but 一百一十), one 零 for a run of zeros inside the number (一百零一, 一千零五十), and 万 or 萬 for ten thousand, 亿 or 億 for a hundred million (一万零一十). Only `cjk-decimal` uses 〇, digit by digit, the way years are written (二〇二六, GB/T 15835—2011). The stems stop at 10, the branches at 12 and the circled digits at 50; past them the number prints in digits. `一` and `壹` follow the script of the document's `locale`: Traditional for `zh-Hant`, `zh-TW` or `zh-HK`, Simplified otherwise. Some older editions write 101 as 一百一 with no 零; Postext does not print that form.
+
+The Japanese styles (since postext 1.16) follow CSS Counter Styles too. `japanese-informal` writes 十 without a leading 一 and no 零 for an empty place (百一, 千十), and `japanese-formal` the 大字 壱 弐 参 拾 百 阡 with 壱 kept before each unit (壱拾, 壱百). CSS stops both at 9 999; Postext goes on in groups of four digits with 万 億 兆 (formal 萬 億 兆), each group keeping its 一 before a unit: 一万一 is 10 001, 一億一万 100 010 000. In a Japanese document (`ja`, `ja-JP`…) `一` means `japanese-informal`, so `第{1:一}章` prints 第百一章 there and 第一百零一章 in a Chinese one; `壹` stays the Chinese formal numerals. The kana series are the CSS lists: 48 kana in gojūon order (ゐ and ゑ included) and 47 in the order of the iroha poem; past the last they go on with two kana (ああ, いい), and they have no zero, so an item numbered 0 prints `0`. Positional kanji digits (二〇二六), the form of years and folios, are `cjk-decimal`.
+
+The Arabic styles keep the CSS names where CSS has one (`arabic-indic`, `persian`; `urdu` and `maghrebi-abjad` from the W3C *Ready-made Counter Styles* are read as `persian` and `arabic-abjad-maghrebi`). `arabic` keeps its old meaning, the European digits. `arabic-abjad` writes the additive abjad numerals of Classical Arabic and manuscript foliation, highest value first: 11 is يا, 1446 غتمو, and the thousands count goes before غ (2000 بغ, 1002 غب); past 999 999 the number prints in digits. The W3C note uses the name for a 28-letter series where 11 is ك; Postext calls that series `abjad`, the lettering of list items in abjad order (أ، ب، ج، د، هـ), and `hijai` the alphabetical order (أ، ب، ت، ث). Both write the first letter with its hamza (أ), and a heh that would stand alone as هـ, with a tatweel, so neither is read as the digits ١ and ٥; past 28 they double, as `lower-alpha` does (أأ, أب). The Maghrebi values follow the mnemonic صعفض قرست ثخذ ظغش (ص 60, ض 90); the W3C list swaps ص and ض. A single أ cannot tell the two letter series apart, so their tokens are their first four letters: `{1:أبجد}`, `{1:أبتث}`. A document's own digits are set with [`numerals`](/en/docs/configuration-text#document-digits).
+
+The other spellings are for configurations that nothing type-checks: JSON presets and plain JavaScript. The TypeScript types still name only each setting's own spelling — the one the Sandbox writes and `resolveAllConfig` returns, the East Asian names included — so a typed `PostextConfig` keeps to it, and another spelling needs a cast.
+
+```js
+// JavaScript or a JSON preset (in TypeScript, each setting's own spelling)
+orderedLists: { numberFormat: 'decimal' },          // same as 'arabic'
+page: { pageNumbering: { format: 'roman-lower' } }, // same as 'lower-roman'
+resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 'roman-upper'
+```
+
+`resolveAllConfig` turns the list and page formats into their own setting's spelling — `'decimal'` resolves to `'arabic'` in `orderedLists`, `'roman-lower'` to `'lower-roman'` in `page.pageNumbering` — and `stripConfigDefaults` drops a spelling of the default. The Sandbox panels show each of the three settings in its own spelling, whichever one the configuration uses. Any other value — `roman`, `01`, a typo — numbers in decimal instead of printing `undefined`, and is reported as a [configuration warning](/en/docs/configuration-fonts-colors-viewers#configuration-warnings). The heading numbering templates take the same names after the colon (`{1:roman-upper}` is `{1:I}`), next to their own zero-padded `{1:01}`.
+
+
+## Layout
+
+The `layout` property controls how columns are arranged within the content area.
+
+<Illustration name="ColumnGutter" data='{"title": "Columns, gutter, and margin", "desc": "A page divided into three columns: each column is the content area for text, gutters are the vertical gaps between columns, and the margin is the blank edge between the page boundary and the first column.", "caption": "Columns hold text. Gutters separate them. Margins frame the content.", "pageLabel": "Page", "gutterLabel": "Gutter", "columnLabel": "Column", "marginLabel": "Margin"}' />
+
+<Illustration name="MarginSystem" data='{"title": "Margin system", "desc": "A page with independent top, right, bottom, and left margins surrounding the content area.", "caption": "Each side of the page can have its own margin.", "page": "Page", "content": "Content area", "top": "top", "right": "right", "bottom": "bottom", "left": "left"}' />
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layoutType</code></td>
+      <td><code>'single' | 'double' | 'oneAndHalf' | 'multiple'</code></td>
+      <td><code>'double'</code></td>
+      <td>Column arrangement. See below for details on each type.</td>
+    </tr>
+    <tr>
+      <td><code>columnCount</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>How many equal columns a <code>'multiple'</code> layout cuts the body into: a whole number from 3 to 8. A value outside that range, or not a whole number, is clamped and reported (see <a href="#layout-types">Layout types</a>). A heading style's own <code>'multiple'</code> layout takes the document's count unless it sets its own. Since postext 1.18.</td>
+    </tr>
+    <tr>
+      <td><code>gutterWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75 cm</code></td>
+      <td>Horizontal space between columns. Only applies to multi-column layouts.</td>
+    </tr>
+    <tr>
+      <td><code>sideColumnPercent</code></td>
+      <td><code>number</code></td>
+      <td><code>33</code></td>
+      <td>Width of the side column as a percentage of the content area. Any value that leaves both columns some width is used as written; one that would not is clamped, and the build reports it (see <a href="#layout-types">Layout types</a>). Only applies to <code>'oneAndHalf'</code> layout.</td>
+    </tr>
+    <tr>
+      <td><code>sideColumnRole</code></td>
+      <td><code>'text' | 'floats'</code></td>
+      <td><code>'text'</code></td>
+      <td>What the side column carries: body text (it flows there after the main column), or only the resources and callouts placed with <code>span: 'side'</code> — a float-only margin column. <code>'oneAndHalf'</code> only. With <code>'text'</code>, a paragraph that runs on from one column into the other is broken again for the width of the column it goes on in; up to postext 1.4 it kept the lines of the column it started in, and a line set for the main column ran past the side one, which clipped it.</td>
+    </tr>
+    <tr>
+      <td><code>sideColumnSide</code></td>
+      <td><code>'right' | 'left' | 'outer' | 'inner'</code></td>
+      <td><code>'right'</code></td>
+      <td>Edge of the content area the side column sits at. <code>'outer'</code> / <code>'inner'</code> follow the page parity when the margins are mirrored (a recto's outer edge is its right edge, a verso's its left). <code>'oneAndHalf'</code> only.</td>
+    </tr>
+    <tr>
+      <td><code>columnRule</code></td>
+      <td><code>ColumnRuleConfig</code></td>
+      <td>disabled</td>
+      <td>Optional visual rule drawn between columns. See below.</td>
+    </tr>
+    <tr>
+      <td><code>fitFiguresToPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Shrink a figure (bitmap or SVG) whose image, caption and note would stand taller than the content area until they fit it (a picture with a safe area, <code>Resource.safeArea</code>, is first cropped within it at its full width, and only shrunk if it still does not fit), and set an inline figure a little too tall for the room left in its column smaller (down to half its width, the caption keeping the column's measure) so it stays with its text. A shrunk image sits in its slot per <code>placement.align</code>. The HTML viewer turns it on, since its pages are only as tall as the screen; printed pages are sized for their figures.</td>
+    </tr>
+    <tr>
+      <td><code>bitmapResolution</code></td>
+      <td><code>'document' | 'file' | number</code></td>
+      <td><code>'document'</code></td>
+      <td>How a bitmap without its own <code>bitmap.resolution</code> takes its natural print size. <code>'document'</code> reads its pixels at <code>page.dpi</code>; a number is the ppi of every such bitmap (<code>300</code>: a 2400 px picture is 203.2 mm wide whatever the page's dpi); <code>'file'</code> uses the resolution its file states (<code>bitmap.fileResolution</code>), 72 and 96 counting as unset, else <code>page.dpi</code>. The column still caps the picture, and a smaller one is never enlarged. See <a href="/en/docs/document-format#bitmap-size">Document format › Bitmap size</a>. Since postext 1.24.</td>
+    </tr>
+    <tr>
+      <td><code>floatShrink</code></td>
+      <td><code>FloatShrinkConfig</code></td>
+      <td><code>mode: 'never'</code></td>
+      <td>The document default for a floated picture's <code>placement.shrink</code> (<code>mode</code>: <code>'never'</code>, <code>'page'</code> or <code>'slot'</code>) and <code>placement.minScale</code> (<code>minScale</code>, 0.7 when unset): scale the picture down, keeping its proportions, to the room of its slot instead of moving it on (see <a href="/en/docs/document-format#placement">Document format › Placement</a>). A resource's placement, then its type's <code>defaultPlacement</code>, override it. <code>fitFiguresToPage</code> caps every figure at the content area; <code>floatShrink</code> looks at the band a float would really take, under an opener, beside other floats or over footnotes. Since postext 1.24.</td>
+    </tr>
+    <tr>
+      <td><code>wrap</code></td>
+      <td><code>TextWrapConfig</code></td>
+      <td><code>minTextWidth: 12em</code>, <code>minLinesBeside: 2</code>, <code>defaultWidth: 0.45</code></td>
+      <td>Text running beside a picture or a box narrower than its column (<code>placement.wrap</code>, a box's <code>wrap</code>): <code>gap</code>, the space between the item and the text (one body line when unset); <code>minTextWidth</code>, the narrowest measure the text beside it may take, a length or a share of the column (narrower: the item takes its band whole, with a <code>textWrap</code> warning); <code>minLinesBeside</code>, the fewest lines worth setting beside it; <code>defaultWidth</code>, the share of the column a wrapped item takes when it sets no <code>width</code>. See <a href="/en/docs/document-format#text-wrap">Document format › Text wrap</a>. Since postext 1.24.</td>
+    </tr>
+    <tr>
+      <td><code>floatsAtCitingPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>The document default for <code>placement.citingPage</code>: a <code>'top'</code> or <code>'auto'</code> float may take the head of the page (a page-span float) or of the column (a column float) where the line that first cites it lands, instead of the first free slot after that line; the text above the reference moves down under it (see <a href="/en/docs/document-format#placement">Document format › Placement</a>). A resource's placement, then its type's <code>defaultPlacement</code>, override it. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>maxTopFraction</code></td>
+      <td><code>number</code></td>
+      <td><code>0.7</code></td>
+      <td>The largest share of a column's height, 0 to 1, that a float heading the page or column that cites it may take, with the floats already standing there, so the page keeps room for its text (LaTeX's <code>\topfraction</code>). A float that would take more goes to its usual slot. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>hugClosingFloats</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>On the closing page of a chapter (and of the document), the page-wide figures and tables set below the last band of text move up to sit one float gap under it, stacked in their order: nothing follows them there. <code>false</code> leaves them where their placement put them, so a <code>position: 'bottom'</code> float ends at the page foot on the closing page as on every other page — a datasheet whose outline ends at the same height on every page, say. Pages with a side column never move them.</td>
+    </tr>
+    <tr>
+      <td><code>inlineResourceGap</code></td>
+      <td><code>'around' | 'above'</code></td>
+      <td><code>'around'</code></td>
+      <td>Where an inline resource (<code>placement.position: 'here'</code>, embedded with <code>::resource</code>) keeps the float gap, a line. <code>'around'</code> keeps it above and below the resource, and the text after it goes back onto the baseline grid under that gap; a heading, a list, a box or another inline resource right after it shares the gap below with its own space above, the larger of the two applying. <code>'above'</code> keeps it above only: the text after the resource resumes at the next grid line, however close that is — anywhere from nothing to a line — as up to postext 1.4. Configurations stored by earlier versions whose chapters embed a resource are read with <code>'above'</code>, so their pages do not move (see <a href="/en/docs/configuration-programmatic-usage#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>). A configuration written in code for 1.4 keeps the old spacing by setting <code>'above'</code> itself, or through <code>pinLegacyInlineGap</code> from <code>postext/bundle</code>.</td>
+    </tr>
+    <tr>
+      <td><code>inlineResourceGapInBoxes</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether an inline resource inside a box (<code>:::callout</code>) keeps the gap <code>inlineResourceGap</code> sets, a line of the box's own text: above the resource, and below it too with <code>'around'</code>, the larger of it and the next block's own space applying. At the top or the foot of the box, or of a fragment of a split box, the padding sets the resource off instead and no gap is added. <code>false</code> sets the resource right under the text before it and the text after it right under the resource, as up to postext 1.4. Configurations stored by earlier versions whose chapters embed a resource inside a box are read with <code>false</code> (see <a href="/en/docs/configuration-programmatic-usage#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>); in code, <code>pinLegacyBoxResourceGap</code> from <code>postext/bundle</code> does the same.</td>
+    </tr>
+    <tr>
+      <td><code>boxChildSplitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>Fewest lines of a paragraph or list item that a cut inside it leaves on each side when a box splits (<code>splitMinLines</code>, under <a href="/en/docs/configuration-styles#callout-styles">Callout styles</a>, still counts every line of the box on each side of the cut). A whole number, at least 1. With the default a cut never leaves a lone line of a paragraph or item at the foot of a column or at the head of the next; a box style whose <code>splitMinLines</code> is lower sets the limit instead. <code>1</code> lets a cut leave one line of the paragraph or item on a side, as up to postext 1.4. Configurations stored by earlier versions whose chapters hold a <code>:::callout</code> are read with <code>1</code> (see <a href="/en/docs/configuration-programmatic-usage#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>); in code, <code>pinLegacyBoxChildCut</code> from <code>postext/bundle</code> does the same.</td>
+    </tr>
+    <tr>
+      <td><code>flowColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>A <code>:::columns</code> fence outside a box sets its blocks in sub-columns of the text column (or across the page with <code>span="page"</code>), and a group, in a box or in the text, is cut between its sub-columns when it does not fit, going on in the next column or page (see <a href="/en/docs/document-format#columns">Document format › <code>:::columns</code></a>). <code>false</code> ignores the fence outside a box and never cuts inside a group, as up to postext 1.24; configurations stored by earlier versions whose chapters hold a <code>:::columns</code> fence are read with <code>false</code>; in code, <code>pinLegacyFlowColumns</code> from <code>postext/bundle</code> does the same. A styled section keeps the document's value. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>floatsUnderOpener</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Under a page-wide opener (a heading level or style with <code>span: 'page'</code>) set over two or more text columns, the head of the opener's own column, right under its band, is a slot for a <code>'top'</code> or <code>'auto'</code> float, level with the heads of the other columns: a floated box fenced right after the opener, or a resource embedded there, sits under the opener in the first column (across several columns from it with <code>columns</code>), and the column's text starts under it. A float cited in running text still follows the line that cites it. <code>false</code> offers no slot there, so such a float lands from the second column on, as up to postext 1.24; configurations stored by earlier versions that set a page-wide heading are read with <code>false</code>; in code, <code>pinLegacyOpenerHeadFloats</code> from <code>postext/bundle</code> does the same. A styled section keeps the document's value. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'horizontal-tb' | 'vertical-rl'</code></td>
+      <td><code>'horizontal-tb'</code></td>
+      <td>How lines run. <code>'vertical-rl'</code> sets Chinese and Japanese text vertically: characters top to bottom, each line to the left of the one before. A heading style's <code>layout</code> inherits it unless it sets its own, so a horizontal appendix can follow a vertical book. See <a href="#vertical-writing">Vertical writing</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Vertical writing
+
+With `writingMode: 'vertical-rl'` a page is laid out as a horizontal page turned a quarter turn clockwise. The flow is set in a frame as wide as the sheet is tall; its lines are the columns of vertical text, read from the right, and everything the engine does with lines (breaking, justification, floats, footnotes, keep-together rules) works in that frame. So, on the sheet:
+
+- A column of the layout is a **tier** (栏): `layoutType: 'double'` gives two tiers stacked top to bottom, filled from the upper right; `gutterWidth` is the gap between them and the column rule a horizontal rule between them. Tiers are not balanced at the end of a chapter ([clreq §7.1.3.4](https://www.w3.org/TR/clreq/#x7-1-3-4-handling-of-spaces-just-before-the-new-recto-page-breaks-and-new-edges)): column balancing is off in a vertical document unless `headings.balancing.enabled` is set.
+- What the flow calls "top" is the sheet's **right** edge, where reading starts: a top float sits at the right of the page, a bottom float at the left, a page-span opener is a band down the right edge, footnotes land at the left end of each tier. A design element anchored to the top of the page (a heading design, a fixed box) is anchored to the right edge. `sideColumnSide` `'left'` is the top tier, `'right'` the bottom one; `'outer'` and `'inner'` read as `'right'` and `'left'`.
+- The flow's margins are the sheet's margins turned: the right margin is the top of the flow, the top margin its left. `page.margins` keep their names on the sheet.
+- Running heads, folios, crop marks and the page background stay on the sheet, set horizontally, as clreq describes for vertical books.
+- **Figures and tables stand upright.** A figure fills the height of its tier as far as its caption allows, at most as wide as the page; the width it takes is the room it uses in the flow. Its caption is set horizontally under it, and so are the cells of a table: both are measured as horizontal text. A table is set upright across the page, its rows cut to the tier when it is taller. `placement.align` sets a figure at the top (`'left'`), middle or foot of its tier. A `placement.rotate` is not applied where the figure is first referred to in vertical text: the build reports a `rotateIgnoredVertical` content warning. A horizontal section of the book (a heading style whose `layout` sets `'horizontal-tb'`) turns its figures as asked.
+- A picture of a design (an opener's illustration, a part page's) stands upright too. Its box in the flow is sized with the picture's width and height swapped, so `size.width` is how far the picture runs down the column and its width on the sheet follows from its proportions.
+- Characters: Han, kana and fullwidth forms stand upright, one em each; Latin words and numbers are turned sideways with their horizontal widths; punctuation takes the font's vertical form. Pause and stop marks are never turned: a mainland font sets 、。，． in the top-right corner of the cell and ！？：； in its right half, a Taiwan or Hong Kong font centres them (`cjk.region`). Brackets take their vertical forms, and “ ” ‘ ’ in mainland text read as 『』「」. Dashes, ellipses and the wave dash take the font's vertical form where it has one (Noto CJK keys that of — to `vert` together with `fwid`: a rule down the middle of the cell), else they are turned with their ink centred on the column's axis. A 破折号 (——) in Chinese text is one rule down the column: its vertical forms would leave blank at both ends of each cell, so each dash is turned with the line and stretched as in horizontal text (see [Punctuation widths](/en/docs/configuration-east-asian#punctuation-widths)). A number of at most two digits stands in one upright cell, unless it sits in a Latin sentence, whose words it follows (see [Numbers in vertical text](/en/docs/configuration-east-asian#numbers-in-vertical-text)). The interpunct (·) takes half a cell in mainland text and a whole cell in Taiwan and Hong Kong text. The signs Unicode sets upright (× © ± § ℃ ① and the like) stand in a cell of their own, inside a number too: `3×4` is 3 and 4 sideways with × upright between them. An apostrophe or an interpunct between two letters of a Latin word (`don’t`, `l·l`) stays in the word, sideways. A Latin paragraph in a vertical flow follows the same rules. Inline formulas, chips and swatches are turned sideways with the line.
+- Every character is measured as it is painted: a cell advances its cell down the line, a sideways run its horizontal width. Text that stays horizontal on the sheet (running heads, folios, captions, table cells) is measured horizontally.
+- The [punctuation widths](/en/docs/configuration-east-asian#punctuation-widths), [hanging punctuation](/en/docs/configuration-east-asian#hanging-punctuation) and the [space between Han and Latin](/en/docs/configuration-east-asian#space-between-han-and-latin) apply down the line as they apply across it. The blank before a glyph is above it and the blank after it below: a Kaiming 、 takes half a cell, `」「` compress to a cell and a half, an opening bracket trimmed at the head of a line starts half a cell higher, a hung 。 sits under the foot of its line, and the Han–Latin space is a quarter em of the column above and below a sideways word. `：；？！` keep a whole cell in vertical text in every region.
+- The [character grid](/en/docs/configuration-east-asian#character-grid) counts characters down the line and lines across the page: `charsPerLine` sets how long a tier is, `linesPerPage` how many lines a page holds, and `layoutType: 'double'` gives two tiers of whole characters with a gutter of whole ems between them.
+
+For hosts reading the layout: a vertical page carries `VDTPage.flow`. Its `contentArea`, columns, blocks, lines, floats, footnote areas, opener band and block design overlays are in flow coordinates; `width`, `height`, `header` and `footer` are on the sheet. `flowToPage`, `pageToFlow`, `flowRectToPage` and `pageRectToFlow` map between the two, and `verticalOrientation(char, region)` says how a character stands. `flow.centralBaselines` gives, per font family, the axis the layout centred upright characters on: the centre of the ink of 中, whose long stroke runs the height of the em box (0.38 em above the baseline in Noto Serif and Noto Sans, SC and TC alike), and which every Chinese, Japanese and Korean face has. Each line is centred on that axis: a vertical line's baseline sits half its line height plus the family's central baseline below the top of its line box (a horizontal line's sits 0.8 of its line height down), so a column of characters stands in the middle of its pitch and a rule drawn between two columns at a whole pitch falls halfway between them. A vertical design text is set the same way in its own lines. The canvas paints a vertical page itself; to paint punctuation with the font's own vertical forms a browser host loads, once per family, a twin face with them switched on: `loadVerticalAlternates(family, faces)`, where `faces` are the family's sources (URLs or bytes) and descriptors. The twin is kept only where the browser applies the feature to canvas text (Chrome 140 and later): it draws 「（《 with the twin and with a copy of the same faces loaded without the feature, at the weight and style of the faces given, and keeps the twin when their ink differs. A later call for other faces of a family whose twin is in use (the bold after the regular) adds them to it. The Sandbox does this for every family of a vertical document. Without a twin, brackets are turned about their em box and mainland pause and stop marks moved within their cell where the font's vertical forms put them: 、。，． to the top-right corner (within 0.07 em of Noto Serif SC's vertical forms), ！？：； half an em to the right and a little up (within 0.02 em). The PDF and the HTML set the same page: see [Vertical text in the PDF](/en/docs/configuration-programmatic-usage#vertical-text-in-the-pdf) and the table under [How the HTML output differs from canvas and PDF](/en/docs/configuration-programmatic-usage#how-the-html-output-differs-from-canvas-and-pdf). Checked cell by cell against HarfBuzz (vertical layout with `vert`) in Noto Serif TC and SC, every character of 「賈雨村」云云，宜乎？故曰！；：、。“引”‘單’…… stands within 0.02 em of it on the canvas and in the PDF, and within 0.05 em in the HTML (Chrome centres a turned glyph on the middle of the font's ascent and descent, which in Noto is 0.05 em above its em box's centre). `flow.dashAdvances` gives, per family, the horizontal advance in ems of each dash the page stretches to fill its cell (— – ― ⸺ ⸻ －), for a renderer with no font metrics of its own: the HTML stretches the dash by it, as the canvas and the PDF do from theirs. Running heads and folios can be set vertically too: see [Vertical text elements](#vertical-text-elements).
+
+### Column rule
+
+Draws a thin vertical line in the gutter to visually separate columns.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>Property</th>
+      <th style={{ width: '150px' }}>Type</th>
+      <th style={{ width: '180px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether to draw the column rule.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#cccccc</code></td>
+      <td>Color of the rule line.</td>
+    </tr>
+    <tr>
+      <td><code>lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 pt</code></td>
+      <td>Thickness of the rule line.</td>
+    </tr>
+  </tbody>
+</table>
+
+Under a page-span heading (`span: 'page'`) the rule starts where the text of the columns starts, under the heading's band, whether the default opener or a design of its own paints the band. Up to postext 1.4 it ran from the top of the text block, through the band.
+
+A heading style can set a rule of its own in its `layout` (see [Heading styles](/en/docs/configuration-styles#heading-styles)), and the pages of its section draw that one. A field the style leaves unset takes the document's value, so a section that only changes its columns keeps the document's rule. Up to postext 1.4 a style's rule was never drawn: every page drew the document's.
+
+### Layout types
+
+- **`'single'`** — One column spanning the full content width. Best for narrow pages or text-heavy content with long paragraphs.
+
+- **`'double'`** — Two equal-width columns. The classic editorial layout — keeps line measure within the optimal 40–50 character range for comfortable reading.
+
+- **`'oneAndHalf'`** — An asymmetric layout with a main column and a narrower side column. The side column (controlled by `sideColumnPercent`) is ideal for margin notes, small figures, or supporting content. Values between 25–40% work well, and a narrow channel for line numbers or marginal marks takes around 10–15%. The side column is `sideColumnPercent` % of the content width and the main column is what is left after the gutter — so at 50% the side column is one gutter wider than the main one. Any value is laid out as written while both columns keep at least 1% of the content width; one that would leave either narrower — 0 or below, or one so wide that the main column vanishes behind the gutter — is clamped to the nearest value that keeps both, and a value that is not a number takes the default, 33. The document's `configWarnings` then carry `{ kind: 'sideColumnPercentClamped', path: 'layout.sideColumnPercent', value, used }` — the path of a heading style's own `layout` names the style, as in `headingStyles[2].layout.sideColumnPercent`, and is measured on that style's margins — which the Sandbox lists in its **Checks** panel; `collectConfigWarnings(config)` returns the same list without laying anything out. A layout that is not `'oneAndHalf'` never reads the value, and never reports it. With `sideColumnRole: 'floats'` the body text never enters the side column: it becomes a channel for the figures, tables and callouts placed with `span: 'side'`. A side figure or table stacks from the head of the channel on the page that first cites it — the marginal figure of a textbook sits at the top of its page even when the text cites it further down; one that cannot fit the rest of the channel waits for the next page's. A side box stacks beside the text it interrupts, and when the rest of the channel cannot hold it there it slides up to the lowest position that still fits (its foot on the channel's foot), or waits for the next page. When the text after a box's fence continues on the next page (the column is full, or the break rules move that text on), the box stays at its fence, beside the text before it; a style with `sideAtColumnEnd: 'after'` sets it level with the first line of the text after the fence instead, in the next page's channel, as line numbers and marginal headings written before their line need. An element of a heading design that stands in the channel — a chapter numeral anchored in the outer margin — is kept clear of the stack too (see [Reserved height](/en/docs/configuration-text#reserved-height)). `span: 'page'` floats and boxes still cross both columns, and a column float with `placement.captionSide` puts its caption in the channel, level with the figure. Combined with mirrored margins and `sideColumnSide: 'outer'`, the channel sits at the outer edge of every page — the marginal column of a textbook.
+
+- **`'multiple'`** — Three to eight equal columns, as many as `columnCount` says (default 3): the grid of newspapers and of many magazines (since postext 1.18). Each column is `(content width − (n − 1) × gutterWidth) / n` wide. The text runs on from one column to the next as in a two-column layout; the column rule is drawn in every gutter, column balancing levels all the columns on a chapter's closing page and before a page-wide box, footnotes work in every column, and page-wide figures, boxes and headings cross the whole page. A figure or a floated box can take only some of the columns: `placement.columns` (see [Resource types](/en/docs/configuration-resources#resource-types)) and a callout style's `columns`. A `columnCount` outside 3–8, or not a whole number, is rounded and clamped to the nearest count that is (a value that is not a number takes 3), and the document's `configWarnings` carry `{ kind: 'columnCountClamped', path: 'layout.columnCount', value, used }` (the path of a heading style's own `layout` names the style, as in `headingStyles[1].layout.columnCount`). A layout of another type never reads the value. A heading style whose `layout` is `'multiple'` takes the document's `columnCount` unless it sets its own, so a newspaper set in five columns can run its opinion pages in four.
+
+
+## Headers & footers
+
+The `header` and `footer` properties control per-page header and footer slots. Headers and footers render **inside the existing page margins** — they do not reserve additional space and do not shrink the content area.
+
+**Container frame.** An element anchored to `'container'` is placed in the margin band between the body and the trim edge, spanning the content-area width. The header container runs from the **trim top** down to the top of the body; the footer container from the bottom of the body down to the **trim bottom**. So `top-*` header anchors and `bottom-*` footer anchors measure from the trim edge, while `bottom-*` header anchors and `top-*` footer anchors measure from the body edge. The container never includes the bleed or the crop-marks band, so a header or footer lands at the same position on the trimmed page whether `page.cutLines` is on or off. Anchor to `'page'` (the trim box) or `'bleed'` to reach beyond the content-area width or into the bleed.
+
+Slots use the unified **design slot** model: every element has a `placement` with an `anchor` (to the container or to another element by `#id`), an optional `offset`, and an optional `size`. The legacy flat fields `align`, `marginFromBody`, `marginFromEdge`, and `width: 'full'` are still accepted on input and are migrated to the new shape automatically; the equivalent new-shape description is documented below.
+
+Each slot holds a list of **text**, **rule**, and **box** elements. Array order is paint order (first element paints first, last element paints on top). This holds whatever the anchors say: an element may anchor to one listed after it (`anchor.to: '#ttl'`), so a background box can come first and still be positioned against the text it sits behind.
+
+**Built-in defaults.** When `header` or `footer` is `undefined`, postext applies a sensible built-in default rather than an empty slot:
+
+- **Default header:** `{title}` right-aligned on odd pages, `{chapterTitle}` left-aligned on even pages, and a full-width rule — all in the palette's main color, Open Sans 8pt/600, `marginFromBody` `16pt` (text) / `13pt` (rule).
+- **Default footer:** `{pageNumber}` centered on every page in the palette's main color, Open Sans 8pt/600, `marginFromBody` `16pt`.
+
+To opt out of the built-in defaults, set `header: { elements: [] }` (or `footer: { elements: [] }`). An explicit empty `elements` array is preserved as "no elements" — only `undefined` triggers the defaults.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>elements</code></td>
+      <td><code>HeaderFooterElement[]</code></td>
+      <td>built-in defaults when <code>undefined</code>; <code>[]</code> disables</td>
+      <td>Ordered list of text and rule elements.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Text elements
+
+Text elements render a template string with placeholder substitution. Placeholders use `{name}` syntax; `{{` and `}}` emit literal braces.
+
+The defaults in the table below are those of a text element you add yourself. The built-in header and footer described under **Built-in defaults** above are ready-made elements with their own values (Open Sans 8pt/600 in the palette's main colour), not the element defaults.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kind</code></td>
+      <td><code>'text'</code></td>
+      <td>—</td>
+      <td>Discriminator.</td>
+    </tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Stable id, unique within the slot. Other elements anchor to it with <code>anchor.to: '#id'</code>. The sandbox assigns one on creation.</td>
+    </tr>
+    <tr>
+      <td><code>content</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Template string. Supports placeholders listed below, plus <code>{'{attr.<key>}'}</code> — an attribute written on the current chapter's H1 line (<code># Title {'{author="I. Zango"}'}</code>). A missing attribute resolves to an empty string without a warning. A newline — or the two characters <code>\n</code>, written in the template or in an attribute value — always starts a new line, whatever the <code>overflow</code>. Text a placeholder copies from the document (a title, a frontmatter field) prints as written: there only a real line break, such as a title break, starts a new line.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
+      <td><code>'center'</code></td>
+      <td>Horizontal alignment of the lines inside the element's box. <code>'justify'</code> stretches the word spaces of every wrapped line but the last of each paragraph so the line fills the box; the lines beside a drop cap fill the room beside it. With <code>hyphenate</code>, a word that does not fit the rest of a justified line is also cut at a syllable to fill it. The last line of a paragraph, a line with no space to stretch and a text that does not wrap are set flush left. Justified text is laid out paragraph by paragraph, so blank lines between paragraphs count as one. The canvas and the PDF place every word where the layout put it; the HTML widens the spaces with <code>word-spacing</code>. <code>'start'</code> and <code>'end'</code> follow the text's <code>direction</code>: the right and the left of a right-to-left text. <code>'left'</code> and <code>'right'</code> are the box's own sides; in a design laid out in the flow of a right-to-left page (an opener band, a heading design) the flow is mirrored, so they are its start and end, as in the body text.</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'ltr' | 'rtl' | 'auto'</code></td>
+      <td>the document's</td>
+      <td>Base direction of the text: where its neutral characters go, the order of its runs on a line and the sides <code>'start'</code> and <code>'end'</code> mean. <code>'auto'</code> reads the first strong letter of the resolved text and falls back to the document's <a href="/en/docs/configuration-text#text-direction"><code>direction</code></a>. Arabic and Hebrew runs read right to left whatever the base. A text that holds an Arabic letter is never letter-spaced (<code>letterSpacing</code> is ignored for the whole text) and its words are never cut while wrapping or truncating; a word wider than the box overflows and is reported as <code>unbreakableWordOverflow</code>.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code></td>
+      <td><code>'all' | 'odd' | 'even'</code></td>
+      <td><code>'all'</code></td>
+      <td>Which pages the element appears on (page number parity: page 1 is odd).</td>
+    </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td>Which page <em>roles</em> the element appears on, combined with <code>parity</code>. After placement every page is classified as <code>'blank'</code> (parity / separator padding, or no content), <code>'part'</code> (a part-divider page), <code>'opener'</code> (its first block is a heading whose level spans the page or forces a page break before it — the first page of a chapter) or <code>'body'</code> (everything else). <code>pages: 'body'</code> hides a running head on chapter openers; <code>pages: 'opener'</code> shows a folio only there.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'EB Garamond'</code></td>
+      <td>Font family.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>8 pt</code></td>
+      <td>Font size.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code></td>
+      <td>Font weight (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Whether to render in italic.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>Text colour.</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'ellipsis-start' | 'ellipsis-middle' | 'ellipsis-end' | 'clip'</code></td>
+      <td><code>'wrap'</code> in heading and part designs, else <code>'ellipsis-end'</code></td>
+      <td>How the engine handles text that exceeds the element's available width. <code>'wrap'</code> breaks the line into multiple lines; the ellipsis variants keep each line on one line and truncate it with <code>…</code> at the start, middle, or end; <code>'clip'</code> hard-clips to the element's bounding box without inserting any character. Line breaks in the content apply in every mode: the ellipsis and clip modes truncate or clip each line on its own. An element that leaves <code>overflow</code> out takes its slot's default: in a heading design (<code>advancedDesign.slot</code>) or on a part page (<code>parts.design</code>, <code>parts.versoDesign</code>) it wraps, in a running head, a folio or a contents part row (<code>toc.parts.design</code>, a row of fixed height) it ends in <code>…</code>. Set <code>'wrap'</code> on a running head that may run to several lines (an address), or an ellipsis on a kicker that must stay on one line in an opener. A line cut by an ellipsis, or clipped with ink past the box, is reported as a <code>designTextTruncated</code> content warning, once per element and page (a running head or a folio once per element and chapter). A configuration stored before postext 1.24 (<code>configVersion</code> 9 or older) is read with <code>'ellipsis-end'</code> on every heading and part text that sets none, so its pages do not move. A text with a <code>dropCap</code> wraps whatever this says; with <code>'clip'</code> its lines are still cut at the edge of a box of fixed height. <code>'ellipsis-end'</code> and <code>'ellipsis-start'</code> cut at a word boundary — <em>The history of…</em>, not <em>The history of th…</em> — and no space or joining punctuation (comma, colon, dash, slash, opening bracket) touches the ellipsis. A word is cut where it must only when the boundary, that punctuation dropped, would keep less than half of what fits: one long word, or a URL (<em>http://exampl…</em>, not <em>http…</em>). A no-break space or a no-break hyphen (U+2011, as in <em>MS‑DOS</em>) is not a word boundary; <code>'ellipsis-middle'</code> cuts anywhere but drops the spaces beside it. Up to postext 1.4 every mode cut at the last character that fitted, spaces included.</td>
+    </tr>
+    <tr>
+      <td><code>verticalAlign</code></td>
+      <td><code>'top' | 'middle' | 'bottom'</code></td>
+      <td><code>'middle'</code></td>
+      <td>Where the text sits inside a box taller than its lines — a fixed <code>placement.size.height</code>, or a box stretched by an anchored neighbour. When the lines are taller than the box (a large numeral in a box of fixed height, a tight <code>lineHeight</code>), they run out on the side the alignment leaves free, as CSS flex alignment does: <code>'bottom'</code> keeps the foot of the last line box on the foot of the box and runs out at the top, <code>'middle'</code> runs out evenly at both ends, <code>'top'</code> at the foot. Up to postext 1.4 such lines always hung from the top, whatever the alignment. A <code>dropCap</code> moves with its lines (up to postext 1.4 it stayed at the top of a box that <code>'middle'</code> or <code>'bottom'</code> moved them down in).</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number | Dimension</code></td>
+      <td><code>1.2</code></td>
+      <td>Leading of the element's lines. A number is a multiple of <code>fontSize</code>. A <code>Dimension</code> is accepted too, the way every other leading of the configuration is written: <code>em</code> / <code>rem</code> is the same multiple, and an absolute length (<code>pt</code>, <code>mm</code>, <code>px</code>…) is the distance between baselines — <code>{"{ value: 15.5, unit: 'pt' }"}</code> sets 15.5 pt leading whatever the size. Anything else (zero, a negative number, a malformed dimension) takes the default. Up to postext 1.4 a <code>Dimension</code> here made the design's height unmeasurable: an opener then reserved no room at all, not even its <code>minHeight</code>, and the body ran under the title.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Tracking: extra space advanced after every character, spaces included, exactly as CSS <code>letter-spacing</code> does. Measured widths grow with it, so an auto-width box stays tight. The tracking after the last character of a line is left out of its alignment and of an auto-width box, so a centred tracked title is centred on its letters, a right-aligned one ends on the edge and the last letter of a justified line reaches the edge (up to postext 1.4 they sat half a tracking unit, or a whole one, to the left, and an element anchored to the right of a tracked one stood a tracking unit further off). A negative value tightens the letters — a display title at 36 pt often takes <code>&#123; value: -0.3, unit: 'pt' &#125;</code> — and the widths shrink the same way; canvas, HTML and PDF paint it alike (up to postext 1.4 a negative value was set as <code>0</code>, with no warning).</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Letter-case transform applied to the resolved text, placeholders included — a part title set in capitals in the contents.</td>
+    </tr>
+    <tr>
+      <td><code>box</code></td>
+      <td><code>ElementBoxStyle</code></td>
+      <td>—</td>
+      <td>Optional background and border drawn behind the text: <code>backgroundColor</code>, <code>borderColor</code>, <code>borderWidth</code>, <code>borderRadius</code> and a per-side <code>padding</code> that grows the box beyond the text (see <a href="#box-elements">Box elements</a> for the fields).</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>&#123; lines, fontFamily, fontWeight, fontSize, color, gap &#125;</code></td>
+      <td>—</td>
+      <td>Drop cap: the first letter set large beside the first <code>lines</code> lines (default 2), in its own face, weight and colour, <code>gap</code> from the text. The letter stands on the baseline of the last line it spans, and <code>fontSize</code> defaults to the size that brings its top level with the capitals of the first line: the text size plus <code>lines</code> − 1 line spacings, capitals taken as 0.72 of a letter's size (a face whose capitals are much taller or shorter than that wants a <code>fontSize</code> of its own). A text with a drop cap wraps whatever its <code>overflow</code>; with <code>'clip'</code> its lines are still cut at the edge of a box of fixed height. A palette-linked <code>color</code> follows the part and section palettes like the rest of the design. In a heading design the letter reserves no room below the text: the part of its line box under its baseline does not push the body down. A letter that descends below its baseline (a Q or a J in many faces) can then reach into the space under the design: give the heading a <code>marginBottom</code> for it. Up to postext 1.4 the default size made the letter as tall as all the line boxes it spans, so its top stood above the first line; an <code>overflow</code> other than <code>'wrap'</code> dropped the letter without a warning; a section or part palette left its colour as it was; and a letter as deep as the text beside it could push the body a grid line lower. Configurations stored earlier keep the 1.4 size, written out as <code>fontSize</code> (see <a href="/en/docs/configuration-programmatic-usage#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>). A drop cap in the running text is set from the paragraph and heading styles instead (see <a href="/en/docs/configuration-text#drop-caps">Drop caps</a>), its cap heights measured from the faces.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>First-line indent of every paragraph after the first. A newline in the content — or the two characters <code>\n</code>, for text that comes from an attribute value — separates paragraphs; consecutive newlines count as one.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenate</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>When <code>true</code> and the text wraps (<code>overflow: 'wrap'</code>, or a <code>dropCap</code>, which always wraps), long words that would still overflow after a regular line break are split at syllable boundaries (using the document's active hyphenation locale) with a soft-hyphen at the break. In a justified text (<code>align: 'justify'</code>) a word that does not fit the rest of a line is also cut at its last syllable break that fits, to fill the line.</td>
+    </tr>
+    <tr>
+      <td><code>inlineMarks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Read the resolved text — placeholder values included — as inline Markdown: <code>**bold**</code>, <code>*italic*</code>, <code>^superscript^</code>, <code>~subscript~</code>. Off, the markers print as written. In a heading design, <code>{'{titleText}'}</code> then keeps the heading's own bold, italic, superscript and subscript runs (<code>*Pneumocystis*</code>, <code>CO~2~</code>), its other characters escaped so they print as written (since postext 1.19). See <a href="#inline-marks-and-outlines">Inline marks and outlines</a>.</td>
+    </tr>
+    <tr>
+      <td><code>stroke</code></td>
+      <td><code>&#123; width, color?, hollow? &#125;</code></td>
+      <td>—</td>
+      <td>Outline drawn around the letters: <code>width</code> (a <code>Dimension</code>, centred on the glyph edges), <code>color</code> (default: the text colour; a drop cap takes its own colour) and <code>hollow</code> (<code>true</code> paints the outline only). See <a href="#inline-marks-and-outlines">Inline marks and outlines</a>.</td>
+    </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'horizontal-tb' | 'vertical-rl'</code></td>
+      <td><code>'horizontal-tb'</code></td>
+      <td><code>'vertical-rl'</code> sets the text top to bottom, lines right to left, the characters upright: a running head down the fore-edge, a vertical title beside a horizontal chapter. See <a href="#vertical-text-elements">Vertical text elements</a>.</td>
+    </tr>
+    <tr>
+      <td><code>reserve</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Heading designs only: whether the element counts toward the height the heading reserves in the text flow. <code>false</code> for decoration that may lie under the text (a seal at the page foot, a frame, a side band). See <a href="/en/docs/configuration-text#reserved-height">Reserved height</a>. Header, footer and part designs ignore it.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromBody</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6 pt</code></td>
+      <td>Absolute distance between the element's body-facing edge and the body edge. Independent of other elements. Migrated to <code>placement.offset.y</code>.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromEdge</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>Horizontal inset from the aligned content edge. Only applies when <code>align</code> is <code>'left'</code> or <code>'right'</code>. Migrated to <code>placement.offset.x</code>.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>derived from <code>align</code> + <code>marginFromBody</code> + <code>marginFromEdge</code></td>
+      <td>Advanced placement (see below). When set, takes precedence over the legacy flat fields.</td>
+    </tr>
+  </tbody>
+</table>
+
+Available placeholders:
+
+- `{pageNumber}` — 1-based page number of the current page.
+- `{totalPages}` — total page count for the document. In a book laid out chapter by chapter (the Sandbox, `buildBundle`) each chapter is a document, so this is the chapter's own count.
+- `{bookTotalPages}` — total page count for the whole book: every chapter, blank pages included. For a document laid out on its own it equals `{totalPages}`. See [Book page count](#book-page-count) below.
+- `{title}`, `{subtitle}`, `{author}`, `{publishDate}` — values read from `content.metadata`. Unknown or empty metadata renders as an empty string (and raises a warning in the sandbox).
+- `{chapterTitle}` — text of the most recent H1 on or before the current page. An H1 whose [heading style](/en/docs/configuration-styles#heading-styles) sets `runningChapter: false` (a plate, a map) is passed over.
+- `{chapterTitleAtTop}`, `{chapterNumberAtTop}` — title and number of the chapter in force at the top of the page, which differs from `{chapterTitle}` and `{chapterNumber}` on a page where a new chapter starts below other text. See [Chapter at the top of the page](#chapter-at-the-top-of-the-page) below.
+- `{partTitle}`, `{partNumber}` — title and number of the current part (the most recent `:::part` page on or before the current page; blank parity pages just before a part page already belong to it). Empty before the first part.
+- `{firstMark.<key>}`, `{lastMark.<key>}` — the first and last guide word of the page: a heading of a level (`h1`–`h6`) or an entry of a paragraph style. See [Guide words](#guide-words-first-and-last-mark) below.
+
+#### Book page count
+
+`{bookTotalPages}` prints the number of pages of the whole book, the count a reader sees in "page 12 of 348". It counts physical pages, blank ones included, like `{totalPages}`, but across every chapter:
+
+- **A document laid out on its own** (`buildDocument` without a `continuation`) is the whole book: `{bookTotalPages}` equals `{totalPages}`.
+- **`buildBundle`** lays the book out, adds up the pages of every chapter and lays it out once more with that total, so every chapter prints the same number. The count never moves a page break, so one more round settles it; a configuration that does not print `{bookTotalPages}` costs nothing.
+- **The Sandbox** hands every chapter the total once every chapter's pages are known. Until then, a chapter prints the pages up to its own end. The PDF tab's whole-book export counts the pages it lays out: when a chapter printed another count, because its pages were not known yet, it lays the book out once more with the count the chapters came to.
+- **A host laying chapters out itself** passes the total as `continuation.bookPageCount` (the first chapter too). Without it, `{bookTotalPages}` counts the pages up to the end of the document (`continuation.pageIndexOffset` plus its own pages), which is right for the last chapter only.
+
+```ts
+footer: {
+  elements: [{
+    kind: 'text', id: 'folio', content: '{pageNumber} / {bookTotalPages}',
+    fontSize: { value: 8, unit: 'pt' },
+    placement: { anchor: { to: 'container', edge: 'top' }, size: { width: 'auto', height: 'auto' } },
+  }],
+}
+```
+
+`configUsesPlaceholder(config, 'bookTotalPages')` tells a host whether the count is worth computing.
+
+#### Guide words: first and last mark
+
+A dictionary prints the first and last headword of each page in its running head ("Aback – Anchor"); a reference book prints the first and last section. `{firstMark.<key>}` and `{lastMark.<key>}` print them. The key names what marks a page:
+
+- **`h1` to `h6`**: a heading of that level. The mark is its text, without the number.
+- **A paragraph style id** (`entry`): a paragraph of a `:::paragraphs{style="entry"}` container. The mark is the paragraph's opening bold run, the headword, without its closing punctuation: `**Aback.** Said of…` marks `Aback`. A paragraph that does not open with bold text sets no mark.
+
+`{firstMark.<key>}` is the first mark that starts on the page and `{lastMark.<key>}` the last. A page on which no mark starts (a long entry running on) prints the mark in effect, the last one before it, for both. Pages before the first mark print nothing; in a book laid out chapter by chapter that is the chapter's first mark, since marks do not carry over from one chapter to the next. A heading or paragraph split across pages marks the page it starts on only. The key is written after the dot as letters, digits, `_` and `-`, starting with a letter or `_`; an unknown key prints nothing.
+
+```md
+:::paragraphs{style="entry"}
+**Aback.** Said of the sails when pressed back against the mast.
+
+**Abaft.** Towards the stern, or behind a given point.
+:::
+```
+
+```ts
+header: {
+  elements: [{
+    kind: 'text', id: 'guide', content: '{firstMark.entry} – {lastMark.entry}',
+    fontSize: { value: 8, unit: 'pt' },
+    placement: { anchor: { to: 'container', edge: 'bottom' }, size: { width: 'auto', height: 'auto' } },
+  }],
+}
+```
+
+Guide words are running heads: they resolve in header and footer slots (a heading style's `header` and `footer` included) and print nothing in heading, part and contents designs; in heading and part designs the Checks panel flags them as unknown placeholders. To show the first headword on versos and the last on rectos, give two elements `parity: 'even'` and `parity: 'odd'`. An H1 whose heading style sets `runningChapter: false` sets no `h1` mark.
+
+#### Chapter at the top of the page
+
+`{chapterTitle}` and `{chapterNumber}` name the last chapter begun on or before the page. In a book whose chapters run on, without a page break between them, a page that closes one chapter and starts the next near its foot then carries the new chapter's title over text that still belongs to the old one. `{chapterTitleAtTop}` and `{chapterNumberAtTop}` name the chapter in force at the top of the page instead, as novels with run-on chapters and many reference books do:
+
+- a page whose first block is a chapter's H1 names that chapter;
+- any other page names the chapter it runs on from, even when a new chapter starts lower down;
+- a blank page added for parity goes with the page after it, and the separator of the `always-*` modes with the page before it (see [Blank-page ownership](/en/docs/configuration-text#blank-page-ownership)); when the page after a parity blank opens with the end of a chapter, not with its H1, the blank keeps that chapter too;
+- an H1 with `runningChapter: false` is passed over.
+
+```ts
+header: {
+  elements: [{
+    kind: 'text', id: 'chapter', content: '{chapterTitleAtTop}', parity: 'odd', pages: 'body',
+    fontSize: { value: 8, unit: 'pt' },
+    placement: { anchor: { to: 'container', edge: 'bottom-right' }, size: { width: 'auto', height: 'auto' } },
+  }],
+}
+```
+
+Like guide words, both are running heads: they resolve in header and footer slots and print nothing in heading, part and contents designs. `{attr.<key>}` always reads the last chapter begun.
+
+#### Edge-implied alignment
+
+When a text element's `placement.anchor.to` references another element by `#id`, the anchor edge implies a default text alignment for wrapped lines:
+
+- `right-of` and `align-left` imply text `align: 'left'` — wrapped lines flow rightward from the anchor.
+- `left-of` and `align-right` imply `align: 'right'` — wrapped lines hug the side closest to the anchor target.
+
+The sandbox heading editor applies these implied alignments automatically when you change the anchor edge or target. They keep multi-line wrapped text visually anchored to the element it relates to (so e.g. the "P" of a wrapped "Postext" lines up vertically under the "I" of "Introduction").
+
+#### Inline marks and outlines
+
+A text element sets its text in one face by default: `**`, `^` and the other Markdown markers print as written. With `inlineMarks: true` the resolved text is read as inline Markdown, the same marks the body text takes (see **Document format → Inline formatting**):
+
+- `**bold**` sets weight 700 (or the element's own `fontWeight` when it is heavier); `*italic*` flips the element's slant, so emphasis inside an italic element comes out upright; `***both***` does both. The underscore forms (`__bold__`, `_italic_`) work too.
+- `^superscript^` and `~subscript~` are set at 58% of the size, a superscript raised a third of it and a subscript lowered 0.15 of it; a subscript and a superscript that touch (`T~0~^2^`) are stacked, as in the body.
+- A backslash sets a marker character itself (`\*`, `\_`, `\^`, `\~`). A link keeps its text; code backticks are dropped.
+
+Marks are read after the placeholders are filled in, so a value can carry them: an author line in a heading attribute gets its affiliation numbers as superscripts. Wrapping, justification, the ellipsis modes, `dropCap` and `paragraphIndent` all work on marked text; every run keeps the element's colour.
+
+```json
+{ "kind": "text", "id": "authors", "content": "{attr.authors}", "inlineMarks": true, "overflow": "wrap",
+  "fontSize": { "value": 11, "unit": "pt" },
+  "placement": { "anchor": { "to": "#title", "edge": "below" }, "offset": { "y": { "value": 6, "unit": "pt" } } } }
+```
+
+```md
+# Snow cover and river flow {authors="Ana Ruiz^1^, Luis Gil^2^ and Marta Sanz^1,3^"}
+```
+
+`stroke` draws an outline around the letters: `width` is the line width, centred on the glyph edges (half of it falls inside the letters, half outside; the measured text width does not change), `color` defaults to the text colour, and `hollow: true` leaves the letters unfilled so only the outline shows — an outlined display number, a title that stands off a photograph. The outline is painted over the fill, the same way on canvas, in HTML (`-webkit-text-stroke`) and in the PDF (text render mode 2, or 1 when hollow).
+
+```json
+{ "kind": "text", "id": "year", "content": "1863", "fontFamily": "Bitter", "fontSize": { "value": 120, "unit": "pt" }, "fontWeight": 700,
+  "color": { "hex": "#1d3557", "model": "hex" },
+  "stroke": { "width": { "value": 1.5, "unit": "pt" }, "hollow": true },
+  "placement": { "anchor": { "to": "page", "edge": "bottom-right" }, "offset": { "x": { "value": -15, "unit": "mm" }, "y": { "value": -20, "unit": "mm" } } } }
+```
+
+In the PDF, bold and italic runs embed the matching faces of the element's family, so the font provider must supply them.
+
+#### Text defaults and anchoring traps
+
+A text element you write yourself starts from these values, some of which surprise:
+
+- **`overflow` follows the slot.** In a heading design or on a part page a long title wraps onto more lines; in a running head, a folio or a contents part row a text too wide for its room is cut to one line with `…`. Set `overflow: 'wrap'` on a running head that may run long (an address, a byline), and look at the `designTextTruncated` warnings for the texts that were cut. A line break in the content (a newline, or `\n` in the template or in an attribute value) starts a new line in every mode; the ellipsis modes cut each line on its own.
+- **`align` is `'center'` and `verticalAlign` is `'middle'`.** An auto-width element shrink-wraps its longest line, so its lines are centred against one another; set `align: 'left'` for a flush-left block (an auto-width element anchored to another element aligns its lines on the side of its anchor by itself, see above).
+- **The face is EB Garamond 8 pt, black, `lineHeight` 1.2**, whatever the body text uses. Unlike the other leadings of the configuration, a design text's `lineHeight` is usually a plain multiple (`1.2`); a `Dimension` works too (see above).
+
+An element with no `placement.size.width` (or `'auto'`) sizes itself to its text, but only within the room between its anchor point and the edge of the container it grows toward — for a `top` or `bottom` anchor, twice the distance to the nearer edge. Its `offset` counts. An offset away from that edge costs nothing: a running head anchored `top-left` with a negative `x` (hanging into the left margin) loses no room, because it grows to the right. An offset toward that edge shrinks the room by as much (twice as much for a `top` or `bottom` anchor), and one that pushes the anchor past the edge leaves none: a `top-right` anchor whose `x` is below minus the container width, or a `top` anchor moved sideways by more than half that width. With no room left, an ellipsis mode prints nothing and `'wrap'` stacks one character per line. Three ways out:
+
+- give the element a fixed `size.width` — fixed widths are never clamped;
+- anchor it to `'page'` or `'bleed'`, which makes the page (or bleed) frame its room;
+- anchor it to the opposite edge of the container.
+
+The container of a header runs from the trim top down to the body, and that of a footer from the body down to the trim bottom: in a header, `top-*` anchors measure from the trim edge and `bottom-*` anchors from the body, and the other way round in a footer (see **Container frame** above). A header or footer never moves the body text, and it paints on top of it, so an element pushed into the body area covers the text. An opener band, by contrast, paints under the body text; how much room it takes in the flow is described under [Reserved height](/en/docs/configuration-text#reserved-height).
+
+### Vertical text elements
+
+A text element with `writingMode: 'vertical-rl'` is set vertically in a slot whose text is horizontal: the running heads and folios of any book, which stay on the sheet, and every design of a horizontal page. It is laid out as a horizontal text in its own frame turned a quarter turn clockwise, and turned back onto the page:
+
+- Its box stays where the placement puts it. Its height is the length of a line: `size.height` sets it (or `'auto'`, the text's length; `'fill'`, down to the container's edge), `size.width` sets how many lines fit across, and `size.maxWidth` caps a line's length.
+- `align` places the lines along the box (`'left'` at the top), `verticalAlign` across it (`'top'` at the right, where the first line stands), and a box's padding stays on the side it is written for.
+- The characters are measured and painted as in a vertical page: Han upright one em each, punctuation in its vertical form, Latin words sideways, short numbers in one cell (`cjk.uprightDigits`). The canvas, the PDF and the HTML place it at the same rectangle.
+- With `inlineMarks: true` the orientation marks set a run apart as in the body: `第:tcy[3.0]回` sets 3.0 in one cell, `:upright[GDP]` stands the letters upright one under the other, `:sideways[…]` turns a run; a line never breaks inside one. A horizontal element ignores them.
+- A drop cap is not set on a vertical element.
+- In the flow of a vertical page (an opener, a part page, a box title) text already runs down, and `writingMode` changes nothing there.
+
+Vertical Chinese books put their running heads and folios in one of three places ([clreq §7.2](https://www.w3.org/TR/clreq/#x7-2-page-headers-footers-etc); [JLREQ §2.6](https://www.w3.org/TR/jlreq/#running_heads_and_page_numbers) for Japanese):
+
+<table>
+  <thead>
+    <tr><th style={{ width: '170px' }}>Convention</th><th>Where</th><th>How to set it</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Horizontal head and foot</td><td>Above and under the type area, as in horizontal books; the most common.</td><td>The header and footer as they are.</td></tr>
+    <tr><td>Fore-edge (中缝 style, Taiwan 邊峰)</td><td>Down the outer margin: the chapter or book title from about four characters below the head of the type area, the folio ending about five above its foot, in Chinese numerals, at about 80 % of the body size.</td><td>Two vertical elements anchored to <code>'outer'</code>, below.</td></tr>
+    <tr><td>Outer foot corner</td><td>The folio at the foot of the page, in the outer corner (Taiwan's rules for 中式 books).</td><td>A horizontal element in the footer at <code>'bottom-left'</code> with <code>parity: 'odd'</code> and one at <code>'bottom-right'</code> with <code>parity: 'even'</code> in a right-bound book (the other way round in a left-bound one).</td></tr>
+  </tbody>
+</table>
+
+The fore-edge heads, as the Sandbox adds them (**Header › Fore-edge heads (vertical)**), here for a 10 pt body (the Sandbox sets them at 80 % of the body size):
+
+```json
+{
+  "page": { "pageNumbering": { "format": "trad-chinese-informal" } },
+  "header": { "elements": [
+    { "kind": "text", "id": "head", "content": "{chapterTitle}", "writingMode": "vertical-rl",
+      "fontSize": { "value": 8, "unit": "pt" }, "overflow": "clip", "align": "left",
+      "placement": { "anchor": { "to": "outer", "edge": "top" }, "offset": { "y": { "value": 4, "unit": "em" } } } },
+    { "kind": "text", "id": "folio", "content": "{pageNumber}", "writingMode": "vertical-rl",
+      "fontSize": { "value": 8, "unit": "pt" }, "overflow": "clip", "align": "left",
+      "placement": { "anchor": { "to": "outer", "edge": "bottom" }, "offset": { "y": { "value": -5, "unit": "em" } } } }
+  ] }
+}
+```
+
+`anchor.to: 'outer'` (see [Element placement](#element-placement)) is the outer margin of each page, so the two elements run down the left edge of a recto and the right edge of a verso in a right-bound book (`page.binding`). `{pageNumber}` prints in the page numbering format: `trad-chinese-informal` gives 一百零三 on page 103, `cjk-decimal` 一〇三. The per-slot rules still apply: `pages: 'body'` keeps a head off the chapter openers. A short ornament between head and folio (a fish-tail ︻, a rule) is an ordinary element anchored to the same frame.
+
+In the VDT a vertical block carries `vertical` (`VDTDesignTextBlock.vertical`: the region, the upright digits and the central axis of each family); its lines are in the block's own turned frame, `xOffset` down from the box's top, `baselineY` leftward from its right edge. A run of a marked line carries `tcy` or `orientation`, as a segment of the body does.
+
+### Rule elements
+
+Rule elements render a line: horizontal across the slot, or vertical down it.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kind</code></td>
+      <td><code>'rule'</code></td>
+      <td>—</td>
+      <td>Discriminator.</td>
+    </tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Stable id, unique within the slot, for <code>anchor.to: '#id'</code> references.</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'horizontal' | 'vertical'</code></td>
+      <td><code>'horizontal'</code></td>
+      <td>A horizontal rule runs along <code>placement.size.width</code> (<code>'fill'</code> = to the container edge) and is <code>thickness</code> tall. A vertical rule runs down <code>placement.size.height</code> (<code>'fill'</code> or unset = to the container edge) and is <code>thickness</code> wide — a divider between a running head and a folio.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>Stroke colour.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 pt</code></td>
+      <td>Line thickness. A rule that leaves it out is drawn at the default (up to postext 1.4 it painted nothing).</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>Dimension | 'full'</code></td>
+      <td><code>'full'</code></td>
+      <td><code>'full'</code> spans the content area; a Dimension constrains the line to a fixed length positioned by <code>align</code>.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'left' | 'center' | 'right'</code></td>
+      <td><code>'center'</code></td>
+      <td>Alignment when <code>width</code> is not <code>'full'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromBody</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6 pt</code></td>
+      <td>Absolute distance between the rule's body-facing edge and the body edge. Independent of other elements.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromEdge</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>Horizontal inset from the aligned content edge. Only applies when <code>width</code> is a fixed <code>Dimension</code> and <code>align</code> is <code>'left'</code> or <code>'right'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code></td>
+      <td><code>'all' | 'odd' | 'even'</code></td>
+      <td><code>'all'</code></td>
+      <td>Which pages the rule appears on.</td>
+    </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td>Page roles the rule appears on (see the text-element <code>pages</code> field).</td>
+    </tr>
+    <tr>
+      <td><code>reserve</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Heading designs only: whether the rule counts toward the height the heading reserves in the text flow (see <a href="/en/docs/configuration-text#reserved-height">Reserved height</a>).</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>derived from <code>align</code> + <code>marginFromBody</code> + <code>marginFromEdge</code></td>
+      <td>Advanced placement (see <a href="#element-placement">Element placement</a>). <code>size.width</code> / <code>size.height</code> set the rule length; <code>width: 'fill'</code> is the legacy <code>'full'</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Box elements
+
+Box elements paint a rounded rectangle inside the slot — useful as a backdrop behind text in chapter openers, sidebars or footers. Box elements are positioned exclusively through the `placement` field; they have no legacy flat shorthand. Fill, stroke and corner radius live in the nested `style` object (`ElementBoxStyle`), as in the JSON example under "Element placement".
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kind</code></td>
+      <td><code>'box'</code></td>
+      <td>—</td>
+      <td>Discriminator.</td>
+    </tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Stable id, unique within the slot. Sibling elements anchor to it with <code>anchor.to: '#id'</code>. The sandbox assigns one on creation.</td>
+    </tr>
+    <tr>
+      <td><code>style.backgroundColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>Fill colour. Set to <code>transparent</code> for an outline-only box.</td>
+    </tr>
+    <tr>
+      <td><code>style.borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>Stroke colour.</td>
+    </tr>
+    <tr>
+      <td><code>style.borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>Stroke width. Strokes are painted on the inside of the box's bounding rectangle so the outer dimensions stay constant: the outer edge of the stroke runs along the box edge, and a rounded box keeps its outer radius. A stroke as wide as the box fills it. Canvas, HTML and PDF draw it alike (up to postext 1.4 the canvas and the PDF centred the stroke on the edge, half of it outside the box).</td>
+    </tr>
+    <tr>
+      <td><code>style.borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>Corner radius. Clamped to half the smaller side at render time.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>—</td>
+      <td>Required. See "Element placement" below.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code></td>
+      <td><code>'all' | 'odd' | 'even'</code></td>
+      <td><code>'all'</code></td>
+      <td>Which pages the box appears on.</td>
+    </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td>Page roles the box appears on (see the text-element <code>pages</code> field).</td>
+    </tr>
+    <tr>
+      <td><code>reserve</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Heading designs only: whether the box counts toward the height the heading reserves in the text flow (see <a href="/en/docs/configuration-text#reserved-height">Reserved height</a>).</td>
+    </tr>
+  </tbody>
+</table>
+
+### Image elements
+
+An `image` element draws a bitmap or SVG resource of the document — a publisher's logo on a title page, a mark in a running head. It is sized by its `placement.size`: with one of `width` / `height` left `'auto'` (the default) the other side follows the image's aspect ratio; with both set the image is fitted inside the box and centred. A missing or non-image resource draws nothing.
+
+```ts
+{
+  kind: 'image', id: 'logo', resourceId: 'logo-publisher',
+  placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: { value: 64, unit: 'mm' }, y: { value: 233, unit: 'mm' } }, size: { width: { value: 83, unit: 'mm' }, height: 'auto' } },
+}
+```
+
+`resourceId` takes the placeholders a text element's `content` takes, so one design can draw a different picture for each heading. With `resourceId: '{attr.vignette}'` in a heading style, `# Chapter I {style="opener" vignette="log"}` draws the resource `log` and `# Chapter II {style="opener" vignette="wig"}` draws `wig`: the chapters share the style instead of one clone per picture. A header or footer reads the attributes of the page's chapter, as `{attr.<key>}` does in a running head, and other placeholders work too (`'map-{chapterNumber}'`). An id that comes out empty, such as a heading without the attribute, draws nothing. Since postext 1.8.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Stable identifier; other elements may anchor to it as <code>#id</code>.</td>
+    </tr>
+    <tr>
+      <td><code>resourceId</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Id of a bitmap or SVG <code>Resource</code> of the document. It may hold placeholders, <code>&#123;attr.&lt;key&gt;&#125;</code> among them, filled in per heading, part or page.</td>
+    </tr>
+    <tr>
+      <td><code>decorative</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>The picture is decoration only (an ornament, a band): it gives no alternative text to the output even when its resource has one (see below).</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>—</td>
+      <td>Anchor, offset and size (see <a href="#element-placement">Element placement</a>). A <code>'fill'</code> side runs to the container edge.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code>, <code>pages</code></td>
+      <td>as above</td>
+      <td><code>'all'</code></td>
+      <td>Which pages the image appears on.</td>
+    </tr>
+    <tr>
+      <td><code>reserve</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Heading designs only: whether the image counts toward the height the heading reserves in the text flow (see <a href="/en/docs/configuration-text#reserved-height">Reserved height</a>).</td>
+    </tr>
+  </tbody>
+</table>
+
+The PDF backend embeds the resource like a figure (an SVG with a print master uses it); the HTML viewer resolves it through <code>resourceImageUrl</code>.
+
+A picture a design draws is content when its resource describes it: the resource's `altText`, else its caption as plain text (a chip read by its label, a `:ref` by its `text` when it has one), goes into the VDT (`VDTDesignImageBlock.altText`), becomes the `alt` of its `<img>` in HTML and a `Figure` with `/Alt` in a tagged PDF, read right after the text of its design (a chapter's plate after the chapter's heading). A picture whose resource has neither, and one marked `decorative`, is decoration: `alt=""` with `role="presentation"`, and an artifact in the PDF. A running head's or footer's picture repeats on every page, so it is furniture whatever its resource says: no `altText` in the VDT, `alt=""` with `role="presentation"` in HTML, an artifact of the page in the PDF.
+
+### Element placement
+
+`ElementPlacement` is the unified positioning model used by every element type (text, rule, box) inside any design slot — page header, page footer, or heading-level advanced design slot. Three pieces of state describe a placement:
+
+```ts
+interface ElementPlacement {
+  /** What this element anchors to and which edge of that target. */
+  anchor: {
+    to: 'container' | 'page' | 'bleed' | 'outer' | `#${string}`; // container = the slot; page = trim box; bleed = trim box + bleed; outer = the outer margin (header, footer); #id = another element
+    edge: AnchorEdge;
+  };
+  /** Distance from the anchor point. */
+  offset?: { x?: Dimension; y?: Dimension };
+  /** Optional fixed width / height. Width also accepts 'fill' (span the slot).
+   *  `maxWidth` caps an 'auto' width (text): the element still shrink-wraps its
+   *  content, so elements anchored to it stay attached, but a long text wraps or
+   *  ellipsizes there — a running head can reserve room for the label hanging
+   *  off it instead of squeezing that label out. */
+  size?: { width?: Dimension | 'fill' | 'auto'; height?: Dimension | 'fill' | 'auto'; maxWidth?: Dimension };
+}
+```
+
+`AnchorEdge` accepts:
+
+- **Container edges** (when `anchor.to` is `'container'`, `'page'` or `'bleed'`): `top`, `top-left`, `top-right`, `bottom`, `bottom-left`, `bottom-right`, `left`, `right`.
+- **Element-relative edges** (when `anchor.to === '#someId'`): `right-of`, `left-of`, `below`, `above`, `align-top`, `align-bottom`, `align-left`, `align-right`.
+
+Each element-relative edge puts one corner of the element on a corner of the element it anchors to, and `offset` moves it from there:
+
+- `right-of`: its top-left corner on the target's top-right corner (beside it, tops level); `left-of`: its top-right corner on the target's top-left corner;
+- `below`: its top-left corner on the target's bottom-left corner (under it, left edges level); `above`: its bottom-left corner on the target's top-left corner;
+- `align-top` and `align-left`: its top-left corner on the target's top-left corner. The two names give the same placement: both the top and the left edges line up;
+- `align-bottom`: its bottom-left corner on the target's bottom-left corner;
+- `align-right`: its top-right corner on the target's top-right corner.
+
+An element-relative edge used with `'container'`, `'page'` or `'bleed'`, and a container edge used with `'#id'`, are read as the top-left corner.
+
+`anchor.to: 'page'` anchors the element to the **trim box** (the physical page after cutting) and `'bleed'` to the trim box grown by `cutLines.bleed` on every side (identical to the trim box while cut lines are disabled). Both frames also become the reference for `size: 'fill'` and for the automatic width clamp, so a coloured band can run edge to edge regardless of the page margins:
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "value": 6, "unit": "cm" } } }, "style": { "backgroundColor": { "hex": "#1d3557", "model": "hex" } } }
+```
+
+With cut lines on, whatever an element paints past the bleed box is clipped (see [Cut lines](#cut-lines)).
+
+`anchor.to: 'outer'` (header and footer slots) anchors the element to the page's **outer margin**: from the edge of the type area to the trim edge on the side away from the spine, and from the head of the type area to its foot. It is on the right of a recto and the left of a verso in a left-bound book and the other way round in a right-bound one (`page.binding`), so one element serves both pages of a spread: a running head down the fore-edge (see [Vertical text elements](#vertical-text-elements)). In any other slot it reads as `'container'`. A text element's `offset` may be written in `em`, ems of its own `fontSize`: four characters below the head of the type area is `{ "y": { "value": 4, "unit": "em" } }`.
+
+Inside a heading's advanced-design slot, page- and bleed-anchored elements do not grow the height reserved for the heading unless they extend below the heading's top edge (a band across the top of the page sits behind the opener; a band reaching below the heading pushes the body text down). Use `advancedDesign.minHeight` to reserve a fixed opener height regardless, and `reserve: false` on an element that should not push the text at all. The full rules are under [Reserved height](/en/docs/configuration-text#reserved-height).
+
+Each element has a stable `id` (auto-assigned by the sandbox; you can also set it by hand). Elements anchored to other elements form a small dependency graph that the engine resolves before measuring, so an element can chain off another without manual coordinates.
+
+The legacy `align` + `marginFromBody` + `marginFromEdge` shape is parsed on input and rewritten into a placement at config-resolution time, so existing configs keep working unchanged.

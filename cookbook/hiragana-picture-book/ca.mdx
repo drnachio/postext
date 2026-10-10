@@ -16,7 +16,7 @@ Un llibre il·lustrat de deu pàgines, かみの ふね (*El vaixell de paper*),
 
 ### 1 · Mantén sencera cada frase
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. El japonès es pot tallar entre dos kana qualssevol, així que un espai entre frases no fa més que afegir aire: no impedeix que la línia acabi dins de あか|い. `cjk.wordBreak: 'keep-all'` només conserva els talls en un espai i al costat de la puntuació, després de 、。」 o davant de 「, com el `word-break: keep-all` de CSS, i el kinsoku continua valent ([tipografia de l'Àsia oriental](/ca/docs/configuration#tipografia-de-làsia-oriental)). L'espai és un U+0020 corrent, de 0,35 quadratins en Klee One, i la línia el suprimeix quan cau al final. Un U+3000 també separa frases, però és un caràcter fix d'un quadratí que es queda al final de la línia.
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. El japonès es pot tallar entre dos kana qualssevol, així que un espai entre frases no fa més que afegir aire: no impedeix que la línia acabi dins de あか|い. `cjk.wordBreak: 'keep-all'` només conserva els talls en un espai i al costat de la puntuació, després de 、。」 o davant de 「, com el `word-break: keep-all` de CSS, i el kinsoku continua valent ([tipografia de l'Àsia oriental](/ca/docs/configuration-east-asian#tipografia-de-làsia-oriental)). L'espai és un U+0020 corrent, de 0,35 quadratins en Klee One, i la línia el suprimeix quan cau al final. Un U+3000 també separa frases, però és un caràcter fix d'un quadratí que es queda al final de la línia.
 
 <PageShot page={3} crop="0.45,0.52,0.55,0.48" caption="Pàgina 3: vuit línies, cadascuna acaba en un espai o després de 」 i 、: 「いって / らっしゃい。」 / みいちゃんが / そっと てを…" />
 
@@ -26,7 +26,7 @@ El text va en bandera. Justificada, una línia curta estiraria els espais i els 
 
 <Excerpt region="layout" />
 
-En el text vertical `'left'` és el capdamunt de la pàgina, així que una maqueta de columna i mitja amb la columna lateral a l'esquerra són dues franges: els dibuixos floten a la de dalt (14 caràcters d'alt) i el text corre per la de baix (8 caràcters). Cada pàgina cita el seu dibuix amb `::resource{id="…"}` i acaba amb `:::pagebreak`. El tipus de recurs dels dibuixos no porta prefix al peu, i els dibuixos són 2,186 vegades més amples que alts, la forma de la franja, així que l'omplen ([escriptura vertical](/ca/docs/configuration#escriptura-vertical)).
+En el text vertical `'left'` és el capdamunt de la pàgina, així que una maqueta de columna i mitja amb la columna lateral a l'esquerra són dues franges: els dibuixos floten a la de dalt (14 caràcters d'alt) i el text corre per la de baix (8 caràcters). Cada pàgina cita el seu dibuix amb `::resource{id="…"}` i acaba amb `:::pagebreak`. El tipus de recurs dels dibuixos no porta prefix al peu, i els dibuixos són 2,186 vegades més amples que alts, la forma de la franja, així que l'omplen ([escriptura vertical](/ca/docs/configuration-page-layout#escriptura-vertical)).
 
 ### 3 · Fes de la portada un dibuix a tota pàgina
 
@@ -38,7 +38,7 @@ La portada és un disseny de títol a tota la pàgina: el dibuix s'ancora al sag
 
 <Excerpt region="pictures" />
 
-Les deu il·lustracions són pintures, fitxers JPEG a `assets/` de la recepta. Les nou escenes estan tallades amb la forma de la franja, 612 : 280, i la portada amb la de la pàgina, 260 : 200, de manera que cadascuna omple el seu marc i no es retalla res. Cadascuna és un recurs `bitmap` declarat amb la seva mida en píxels, amb text alternatiu en la llengua del llibre, i el seu fitxer es carrega amb el `fileId` del recurs abans de compondre. Amb 1.400 px d'amplada, les escenes s'imprimeixen a uns 165 ppp al llarg de la franja ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)).
+Les deu il·lustracions són pintures, fitxers JPEG a `assets/` de la recepta. Les nou escenes estan tallades amb la forma de la franja, 612 : 280, i la portada amb la de la pàgina, 260 : 200, de manera que cadascuna omple el seu marc i no es retalla res. Cadascuna és un recurs `bitmap` declarat amb la seva mida en píxels, amb text alternatiu en la llengua del llibre, i el seu fitxer es carrega amb el `fileId` del recurs abans de compondre. Amb 1.400 px d'amplada, les escenes s'imprimeixen a uns 165 ppp al llarg de la franja ([tipus de recurs](/ca/docs/configuration-resources#tipus-de-recurs)).
 
 ## Variants
 

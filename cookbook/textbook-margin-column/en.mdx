@@ -16,7 +16,7 @@ Chapter 4 of *Lever and Lens*, an introductory physics textbook on a 210 × 275 
 
 ### 1 · Give the margin to the floats
 
-This step's code is [the short answer](#the-short-answer) above. In a [column-and-a-half layout](/en/docs/configuration#layout-types), `sideColumnPercent: 30` gives the side column 30 % of the 176 mm content width (52.8 mm), and the text column keeps what is left after the 7 mm gutter (116 mm, about 75 characters of 9.3 pt Merriweather). `sideColumnRole: 'floats'` keeps the body text out of the side column, and `sideColumnSide: 'outer'` puts it on the outer side, which the mirrored margins switch from page to page. Figures go there with `span: 'side'`. A box with `span="side"` on its fence leaves the flow and goes into the channel at the height the text has reached, so each gloss starts level with the block that follows its fence.
+This step's code is [the short answer](#the-short-answer) above. In a [column-and-a-half layout](/en/docs/configuration-page-layout#layout-types), `sideColumnPercent: 30` gives the side column 30 % of the 176 mm content width (52.8 mm), and the text column keeps what is left after the 7 mm gutter (116 mm, about 75 characters of 9.3 pt Merriweather). `sideColumnRole: 'floats'` keeps the body text out of the side column, and `sideColumnSide: 'outer'` puts it on the outer side, which the mirrored margins switch from page to page. Figures go there with `span: 'side'`. A box with `span="side"` on its fence leaves the flow and goes into the channel at the height the text has reached, so each gloss starts level with the block that follows its fence.
 
 ### 2 · Let the citation place each figure
 
@@ -28,7 +28,7 @@ The first `:ref` to a figure numbers it and places it where its [placement](/en/
 
 <Excerpt region="opener" />
 
-The level-1 heading stays in the text column, where a [design slot](/en/docs/configuration#span-and-advanced-design) stacks its text, the rule and the standfirst; the kicker hangs from the page's top-right corner and the numeral from the kicker, both as wide as the channel. `minHeight` fixes the opener at nine grid lines (42.9 mm), enough for a one-line title, the rule and a four-line standfirst, so a shorter standfirst does not pull the text up. The kicker and the 104 pt numeral end 40.6 mm below the top margin, inside those nine lines, so they do not push the text down either. The channel is on the right only on a recto, so the H1 breaks to an odd page. The objectives box is fenced after the first paragraph, and no margin figure is cited before it, so it stands under the numeral (see Pitfalls).
+The level-1 heading stays in the text column, where a [design slot](/en/docs/configuration-text#span-and-advanced-design) stacks its text, the rule and the standfirst; the kicker hangs from the page's top-right corner and the numeral from the kicker, both as wide as the channel. `minHeight` fixes the opener at nine grid lines (42.9 mm), enough for a one-line title, the rule and a four-line standfirst, so a shorter standfirst does not pull the text up. The kicker and the 104 pt numeral end 40.6 mm below the top margin, inside those nine lines, so they do not push the text down either. The channel is on the right only on a recto, so the H1 breaks to an odd page. The objectives box is fenced after the first paragraph, and no margin figure is cited before it, so it stands under the numeral (see Pitfalls).
 
 ### 4 · Keep the folios on the channel's edge
 

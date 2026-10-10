@@ -16,7 +16,7 @@ Three Year 12 students titrate a cider vinegar with sodium hydroxide to find how
 
 ### 1 · Write formulas as text, keep TeX for the equations
 
-The code is [the short answer](#the-short-answer) above. [`~…~` and `^…^`](/en/docs/document-format#inline-formatting) set a run at 58 % of the text size in the text's own face, so `CH~3~COOH`, `OH^−^` (its minus is U+2212) and `cm^3^` keep the weight and colour of the sentence around them. The marks also work in captions and table cells, in the caption's or the cell's own face; inline `$…$` is set there too, in the maths face. The reaction, written with mhchem's `\ce{…}`, and the equations are TeX between `$$`. `await initMathEngine()` starts the [maths engine](/en/docs/configuration#starting-the-math-engine) before the build; it comes from the same import as every other symbol. `math.fontSizeScale` is 0.495 / 0.442, about 1.12: a formula's x-height is TeX's, 0.442 em of the type size, and Inria Serif's is 0.495 em, so the scale brings the lowercase of formula and text to the same height.
+The code is [the short answer](#the-short-answer) above. [`~…~` and `^…^`](/en/docs/document-format#inline-formatting) set a run at 58 % of the text size in the text's own face, so `CH~3~COOH`, `OH^−^` (its minus is U+2212) and `cm^3^` keep the weight and colour of the sentence around them. The marks also work in captions and table cells, in the caption's or the cell's own face; inline `$…$` is set there too, in the maths face. The reaction, written with mhchem's `\ce{…}`, and the equations are TeX between `$$`. `await initMathEngine()` starts the [maths engine](/en/docs/configuration-text#starting-the-math-engine) before the build; it comes from the same import as every other symbol. `math.fontSizeScale` is 0.495 / 0.442, about 1.12: a formula's x-height is TeX's, 0.442 em of the type size, and Inria Serif's is 0.495 em, so the scale brings the lowercase of formula and text to the same height.
 
 ### 2 · Hang the section numbers in the margin
 
@@ -28,25 +28,25 @@ Each heading level's design is a slot with two elements: the title on the text e
 
 <Excerpt region="head" />
 
-The report's one H1 takes the `report` [heading style](/en/docs/configuration#span-and-advanced-design), which replaces it with a drawn head: a pink band across the top of the page, the burette, the course line, the title with the practical number hung like a section number, and the byline. The byline's values come from the [heading's attributes](/en/docs/document-format#heading-attributes) and the frontmatter's `publishDate`. The band is a box, and boxes count towards the height a head reserves, so even without `minHeight` the text would start under the band's foot, 104 mm from the top of the page. `minHeight` sets a floor 8 mm below the band; with the H1's bottom margin and the 15 pt grid, that leaves 15 mm of white above the abstract instead of 4.7 mm.
+The report's one H1 takes the `report` [heading style](/en/docs/configuration-text#span-and-advanced-design), which replaces it with a drawn head: a pink band across the top of the page, the burette, the course line, the title with the practical number hung like a section number, and the byline. The byline's values come from the [heading's attributes](/en/docs/document-format#heading-attributes) and the frontmatter's `publishDate`. The band is a box, and boxes count towards the height a head reserves, so even without `minHeight` the text would start under the band's foot, 104 mm from the top of the page. `minHeight` sets a floor 8 mm below the band; with the H1's bottom margin and the 15 pt grid, that leaves 15 mm of white above the abstract instead of 4.7 mm.
 
 ### 4 · Name the table and figure in the report's language
 
 <Excerpt region="labels" />
 
-The built-in types follow the document's `locale`, so the Spanish edition says Tabla and Figura with no setting. [`defaultResourceTypes(LANG)`](/en/docs/configuration#resource-types) hands those types over so the recipe can change one of them. Their `{h1}.{n}` template prints a plain 1 here, because the report's H1 is unnumbered and an empty `{h1}` drops out with its dot. The table's caption goes above the table, where reports put it. The text cites table and figure with `:ref{id="lecturas" style="full"}`, in the ink and weight of the words around it.
+The built-in types follow the document's `locale`, so the Spanish edition says Tabla and Figura with no setting. [`defaultResourceTypes(LANG)`](/en/docs/configuration-resources#resource-types) hands those types over so the recipe can change one of them. Their `{h1}.{n}` template prints a plain 1 here, because the report's H1 is unnumbered and an empty `{h1}` drops out with its dot. The table's caption goes above the table, where reports put it. The text cites table and figure with `:ref{id="lecturas" style="full"}`, in the ink and weight of the words around it.
 
 ### 5 · Compute the table and the curve from the same readings
 
 <Excerpt region="data" />
 
-The four pairs of burette readings give every cell of Table 1, the mean and the standard deviation, and the mean volume sets the equivalence point of the pH model that Figure 1 draws. The first row is the header (`headerRowCount: 1`), and `columnWidths` gives the label column 1.8 shares of the width. Each cell carries its own `align`, and [`mergeCells`](/en/docs/configuration#building-table-models) runs the mean and deviation labels across the first three columns, set right against their values. The figures are in Sometype Mono, so their decimal points line up. The column heads are quantities over units, such as `V~b~ used / cm^3^`, marked up like the text.
+The four pairs of burette readings give every cell of Table 1, the mean and the standard deviation, and the mean volume sets the equivalence point of the pH model that Figure 1 draws. The first row is the header (`headerRowCount: 1`), and `columnWidths` gives the label column 1.8 shares of the width. Each cell carries its own `align`, and [`mergeCells`](/en/docs/configuration-resources#building-table-models) runs the mean and deviation labels across the first three columns, set right against their values. The figures are in Sometype Mono, so their decimal points line up. The column heads are quantities over units, such as `V~b~ used / cm^3^`, marked up like the text.
 
 ### 6 · Close on references with hanging indents
 
 <Excerpt region="references" />
 
-A `:::paragraphs{style="references"}` fence applies the [paragraph style](/en/docs/configuration#paragraph-styles) to each reference: 9 on 12.5 pt, ragged, with a 6 mm hanging indent and 4 pt between entries. Ragged paragraphs are not hyphenated unless `bodyText.hyphenation.ragged` asks for it, so a long title such as *Fundamentals of Analytical Chemistry* breaks only between words. The colophon has a style of its own, Inria Sans at 7.4 pt, with one 15 pt line of space above it.
+A `:::paragraphs{style="references"}` fence applies the [paragraph style](/en/docs/configuration-styles#paragraph-styles) to each reference: 9 on 12.5 pt, ragged, with a 6 mm hanging indent and 4 pt between entries. Ragged paragraphs are not hyphenated unless `bodyText.hyphenation.ragged` asks for it, so a long title such as *Fundamentals of Analytical Chemistry* breaks only between words. The colophon has a style of its own, Inria Sans at 7.4 pt, with one 15 pt line of space above it.
 
 ## Variations
 

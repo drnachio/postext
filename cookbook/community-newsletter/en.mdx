@@ -16,19 +16,19 @@ The spring issue of *The Allotment Gazette*, the newsletter of an invented allot
 
 ### 1 · Let the Markdown fill each column
 
-The layout settings are in [the short answer](#the-short-answer) above. In a `oneAndHalf` layout the narrow column takes text by default, and the text runs down the wide column, then the narrow one, then the wide column of the next page ([layout types](/en/docs/configuration#layout-types)). A `:::columnbreak` ends a column where it stands ([directives](/en/docs/document-format#directives)): after the lead's “Continued on page 2” tag it opens the narrow column for the briefs, and after the last brief, in the last column of the page, it opens page 2. In this issue both columns of page 1 are fitted to end on the same grid line, 275 mm from the top edge, so deleting either break leaves the pages as they are. The breaks matter once the copy changes. Cut the lead's second paragraph and, without the first break, “In brief” starts 247 mm down the wide column, under the tag, and the first brief runs over into the narrow column, where its second half is broken again for the column's 57 mm measure.
+The layout settings are in [the short answer](#the-short-answer) above. In a `oneAndHalf` layout the narrow column takes text by default, and the text runs down the wide column, then the narrow one, then the wide column of the next page ([layout types](/en/docs/configuration-page-layout#layout-types)). A `:::columnbreak` ends a column where it stands ([directives](/en/docs/document-format#directives)): after the lead's “Continued on page 2” tag it opens the narrow column for the briefs, and after the last brief, in the last column of the page, it opens page 2. In this issue both columns of page 1 are fitted to end on the same grid line, 275 mm from the top edge, so deleting either break leaves the pages as they are. The breaks matter once the copy changes. Cut the lead's second paragraph and, without the first break, “In brief” starts 247 mm down the wide column, under the tag, and the first brief runs over into the narrow column, where its second half is broken again for the column's 57 mm measure.
 
 ### 2 · Build the nameplate from the frontmatter
 
 <Excerpt region="masthead" />
 
-The H1 takes a heading style whose design draws the nameplate, and `span: 'page'` sets that design above both columns. `{titleText}` at 60 pt breaks into two lines in its 178 mm box. The tab joins `{attr.issue}`, written on the H1 line, and `{publishDate}` from the frontmatter ([text elements](/en/docs/configuration#text-elements)). Without `minHeight` the masthead would reserve room down to the foot of the band, 62 mm from the top edge, and the text would start on the next grid line, at 62.5 mm, touching the band. A `minHeight` of ten grid lines starts it at 67 mm.
+The H1 takes a heading style whose design draws the nameplate, and `span: 'page'` sets that design above both columns. `{titleText}` at 60 pt breaks into two lines in its 178 mm box. The tab joins `{attr.issue}`, written on the H1 line, and `{publishDate}` from the frontmatter ([text elements](/en/docs/configuration-page-layout#text-elements)). Without `minHeight` the masthead would reserve room down to the foot of the band, 62 mm from the top edge, and the text would start on the next grid line, at 62.5 mm, touching the band. A `minHeight` of ten grid lines starts it at 67 mm.
 
 ### 3 · Tag the briefs with chips
 
 <Excerpt region="tags" />
 
-Declaring `chipStyles` replaces the built-in pale-blue chip, and a chip without a `style` takes the first one ([chip styles](/en/docs/configuration#chip-styles)). A radius larger than half the box's height draws a pill. A chip never breaks inside, so a line breaks only at the space before or after a chip, and a date like “Sat 11 April” stays on one line. The tags are typed in capitals in the Markdown because chip styles have no letter-case setting. The vertical padding is painted outside the line, so the 13.4 pt grid holds.
+Declaring `chipStyles` replaces the built-in pale-blue chip, and a chip without a `style` takes the first one ([chip styles](/en/docs/configuration-styles#chip-styles)). A radius larger than half the box's height draws a pill. A chip never breaks inside, so a line breaks only at the space before or after a chip, and a date like “Sat 11 April” stays on one line. The tags are typed in capitals in the Markdown because chip styles have no letter-case setting. The vertical padding is painted outside the line, so the 13.4 pt grid holds.
 
 ### 4 · Run the text beside the drawing
 

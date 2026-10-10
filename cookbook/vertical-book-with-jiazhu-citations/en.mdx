@@ -16,7 +16,7 @@ The end of a chapter from an invented book on Chinese printing, 版刻叢談 (�
 
 ### 1 · A note style, set inside the line
 
-The code is [the short answer](#the-short-answer) above. The GB/T 7714 note style (`china-national-standard-gb-t-7714-2015-note`) is a note style: each citation becomes a note that names the work in full ([Citations](/en/docs/configuration#citations)). By default a note style sends its notes to the foot of the page. `notes: 'warichu'` keeps each note in the column instead, set as a warichu: two rows at `cjk.warichu.fontSize`, half the text size, centred on the column, the right row read first ([Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu)). The Markdown is the same as for any style, `[@su1999]` after the words it supports, and the note takes the place of the citation, before the 。 that ends the sentence.
+The code is [the short answer](#the-short-answer) above. The GB/T 7714 note style (`china-national-standard-gb-t-7714-2015-note`) is a note style: each citation becomes a note that names the work in full ([Citations](/en/docs/configuration-notes-references#citations)). By default a note style sends its notes to the foot of the page. `notes: 'warichu'` keeps each note in the column instead, set as a warichu: two rows at `cjk.warichu.fontSize`, half the text size, centred on the column, the right row read first ([Marks, ruby and warichu](/en/docs/configuration-east-asian#marks-ruby-and-warichu)). The Markdown is the same as for any style, `[@su1999]` after the words it supports, and the note takes the place of the citation, before the 。 that ends the sentence.
 
 <PageShot page={1} crop="0.48,0.17,0.16,0.7" caption="Page 1: the note on 宿白’s book starts at the foot of the third column and goes on at the head of the fourth, the right row first each time." />
 
@@ -28,7 +28,7 @@ The rows are filled part by part. At the foot of the third column there is room 
 
 ### 3 · Traditional characters to mainland rules
 
-`locale: 'zh-Hant-CN'` asks for Traditional characters set to the mainland’s rules, as publishers in Beijing and Shanghai set classical scholarship: the comma and the full stop sit in the top right corner of their cell, and a vertical book is bound on the right. The citations follow the tag: Traditional script picks the zh-TW CSL locale, so the words the style adds are in Traditional characters too. Noto Serif SC draws Traditional characters in the mainland’s forms, which suits this edition; LXGW WenKai TC, a Taiwan face, sets only the chapter title, which has no punctuation ([Numbers in vertical text](/en/docs/configuration#numbers-in-vertical-text) explains what happens to the digits).
+`locale: 'zh-Hant-CN'` asks for Traditional characters set to the mainland’s rules, as publishers in Beijing and Shanghai set classical scholarship: the comma and the full stop sit in the top right corner of their cell, and a vertical book is bound on the right. The citations follow the tag: Traditional script picks the zh-TW CSL locale, so the words the style adds are in Traditional characters too. Noto Serif SC draws Traditional characters in the mainland’s forms, which suits this edition; LXGW WenKai TC, a Taiwan face, sets only the chapter title, which has no punctuation ([Numbers in vertical text](/en/docs/configuration-east-asian#numbers-in-vertical-text) explains what happens to the digits).
 
 In the notes and the list, a Latin title and a four-digit year turn sideways and run down the column. A short number next to Chinese text, such as the 1 of a label, stands upright in its cell.
 
@@ -36,7 +36,7 @@ In the notes and the list, a Latin title and a four-digit year turn sideways and
 
 <Excerpt region="opener" />
 
-On a vertical page a heading design is laid out in the flow frame: `x` runs down the column and `y` across the page from its right edge, so a `'horizontal'` rule is a vertical line on the sheet. Three rules frame two columns 30.4 pt apart. 第三章 stands in the first in bold Hei, and the title in the second in Kai ([Span and advanced design](/en/docs/configuration#span-and-advanced-design)). The chapter number comes from `startAt=3` on the heading and the template `第{1:一}章`, and the folios from `pageNumbering`: `trad-chinese-informal` from 45. The running heads and folios go down the fore-edge as in <RecipeLink slug="vertical-novel-right-bound">Nº 075</RecipeLink> ([Vertical text elements](/en/docs/configuration#vertical-text-elements)).
+On a vertical page a heading design is laid out in the flow frame: `x` runs down the column and `y` across the page from its right edge, so a `'horizontal'` rule is a vertical line on the sheet. Three rules frame two columns 30.4 pt apart. 第三章 stands in the first in bold Hei, and the title in the second in Kai ([Span and advanced design](/en/docs/configuration-text#span-and-advanced-design)). The chapter number comes from `startAt=3` on the heading and the template `第{1:一}章`, and the folios from `pageNumbering`: `trad-chinese-informal` from 45. The running heads and folios go down the fore-edge as in <RecipeLink slug="vertical-novel-right-bound">Nº 075</RecipeLink> ([Vertical text elements](/en/docs/configuration-page-layout#vertical-text-elements)).
 
 <Excerpt region="palette" />
 

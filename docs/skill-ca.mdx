@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ca',
   lastUpdated: '2026-10-09',
   readingTime: '8 min',
-  order: 12,
+  order: 21,
   plainSummary: "Aquesta pàgina és per a qui ja té un llibre o un document en un altre format, com ara PDF, Word o InDesign, i el vol passar a Postext. Un assistent d'intel·ligència artificial, que s'anomena agent, pot fer gairebé tota la feina si li dones un petit complement anomenat skill. La skill ensenya l'agent a copiar el text i a reconstruir el disseny de l'original. La pàgina explica com instal·lar-la, què demanar-li i com revisar el resultat. Un vídeo d'uns cinc minuts mostra cada pas.",
 };
 
@@ -253,7 +253,7 @@ Postext, defineix `POSTEXT_PRIVATE_PRESETS_DIR` (consulta
 
 ### Carregar el resultat des del codi
 
-El fitxer lliurat no depèn del Sandbox. El paquet `postext` l'obre amb `openBundle`, compon el llibre amb `buildBundle` i el renderitza en canvas, HTML o PDF (consulta [Paquets](/ca/docs/configuration#paquets-fitxers-postext)). Així, una adaptació pot alimentar directament un programa. Quan el que produeix aquest programa necessita ajustos, torna a exportar-lo a un `.postext` amb `createBundle`, retoca'l al Sandbox i torna a carregar el fitxer corregit. El `render.mjs` de la skill, que compon sense navegador, accepta tant un `.postext` empaquetat com una carpeta de projecte.
+El fitxer lliurat no depèn del Sandbox. El paquet `postext` l'obre amb `openBundle`, compon el llibre amb `buildBundle` i el renderitza en canvas, HTML o PDF (consulta [Paquets](/ca/docs/configuration-programmatic-usage#paquets-fitxers-postext)). Així, una adaptació pot alimentar directament un programa. Quan el que produeix aquest programa necessita ajustos, torna a exportar-lo a un `.postext` amb `createBundle`, retoca'l al Sandbox i torna a carregar el fitxer corregit. El `render.mjs` de la skill, que compon sense navegador, accepta tant un `.postext` empaquetat com una carpeta de projecte.
 
 ## Què cal esperar
 

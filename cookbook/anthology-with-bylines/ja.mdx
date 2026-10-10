@@ -18,25 +18,25 @@ pageNotes: { "2": "目次。錆色のローマ数字、Gloockで組んだ随筆�
 
 <Excerpt region="opener" />
 
-レベルの`numberingTemplate: '{1:I}'`で随筆にI、II、IIIと番号を振り、`{number}`がその数字を題の上に印字します（[幅と詳細デザイン](/ja/docs/configuration#幅と詳細デザイン)）。`minHeight`は14ptの行を12行分確保し、ヘアラインはその7mm上で終わります。そのため1行の題の下では、どの章扉でも本文が天の縁から79mmの位置で始まります。26ptの題が2行目に入ると9.9mm増え、本文がグリッド1行分下がりますが、`SINK = 14`にしておけば、1行の題でも2行の題でも本文は同じ行から始まります。`marginBottom: pt(0)`は、見出しの既定のマージンがこの確保分に加わるのを防ぎます。
+レベルの`numberingTemplate: '{1:I}'`で随筆にI、II、IIIと番号を振り、`{number}`がその数字を題の上に印字します（[幅と詳細デザイン](/ja/docs/configuration-text#幅と詳細デザイン)）。`minHeight`は14ptの行を12行分確保し、ヘアラインはその7mm上で終わります。そのため1行の題の下では、どの章扉でも本文が天の縁から79mmの位置で始まります。26ptの題が2行目に入ると9.9mm増え、本文がグリッド1行分下がりますが、`SINK = 14`にしておけば、1行の題でも2行の題でも本文は同じ行から始まります。`marginBottom: pt(0)`は、見出しの既定のマージンがこの確保分に加わるのを防ぎます。
 
 ### 2 · 目次を自動で埋める
 
 <Excerpt region="contents" />
 
-Markdownに書いた`:::toc`は、対象の見出しごとに1項目を印字します。番号、題、リーダー、ページラベル、そして`subtitle`を通じて著者名です。`buildDocument`はページラベルが変わらなくなるまで本を組み直すので、随筆の題を変えたり長くしたりすれば目次も更新されます（[目次](/ja/docs/configuration#目次)）。項目の番号は、`numberFontFamily`や`numberFontSize`で指定しないかぎり題と同じ書体とサイズになり、どのサイズでも題の1行目のベースラインに乗ります。部のある本では、`:::part`ごとに`toc.parts.design`で描く行も加わります。<RecipeLink slug="parts-in-colour">色で分ける部</RecipeLink>を参照してください。
+Markdownに書いた`:::toc`は、対象の見出しごとに1項目を印字します。番号、題、リーダー、ページラベル、そして`subtitle`を通じて著者名です。`buildDocument`はページラベルが変わらなくなるまで本を組み直すので、随筆の題を変えたり長くしたりすれば目次も更新されます（[目次](/ja/docs/configuration-notes-references#目次)）。項目の番号は、`numberFontFamily`や`numberFontSize`で指定しないかぎり題と同じ書体とサイズになり、どのサイズでも題の1行目のベースラインに乗ります。部のある本では、`:::part`ごとに`toc.parts.design`で描く行も加わります。<RecipeLink slug="parts-in-colour">色で分ける部</RecipeLink>を参照してください。
 
 ### 3 · 偶数ページに著者、奇数ページに随筆
 
 <Excerpt region="running-heads" />
 
-各柱はページに固定し、天の縁から11mmに置きます。どちら側に出すかは`parity`が決めます。ノンブルは本文の小口側の端にそろえ、著者名や題はそこから7mm内側に置きます。`head()`の中の`pages: 'body'`は、署名がすでに著者を示している章扉に柱を出さないためのもので、代わりにフッターの`pages: 'opener'`がそこに下がりノンブルを印字します（[テキスト要素](/ja/docs/configuration#テキスト要素)）。`{chapterTitle}`は随筆の題を番号なしで印字します。
+各柱はページに固定し、天の縁から11mmに置きます。どちら側に出すかは`parity`が決めます。ノンブルは本文の小口側の端にそろえ、著者名や題はそこから7mm内側に置きます。`head()`の中の`pages: 'body'`は、署名がすでに著者を示している章扉に柱を出さないためのもので、代わりにフッターの`pages: 'opener'`がそこに下がりノンブルを印字します（[テキスト要素](/ja/docs/configuration-page-layout#テキスト要素)）。`{chapterTitle}`は随筆の題を番号なしで印字します。
 
 ### 4 · 表紙と目次を数に入れない
 
 <Excerpt region="front" />
 
-`numbered: false`にすると表紙と目次はカウンターを進めないので、ハズリットがIになります。`toc: false`はこの2つを目次の一覧から外します（[見出しスタイル](/ja/docs/configuration#見出しスタイル)）。どちらのスタイルもレベルの`breakBefore`（parityは`'any'`）を受け継ぐので、`:::pagebreak`なしで目次が表紙に続いて2ページ目に来ます。1段組みの本で表紙スタイルがページ全体にまたがっているのは、段の中にとどめたデザインは段の下端で切り取られ、風景の下に22mmの紙が残ってしまうからです。
+`numbered: false`にすると表紙と目次はカウンターを進めないので、ハズリットがIになります。`toc: false`はこの2つを目次の一覧から外します（[見出しスタイル](/ja/docs/configuration-styles#見出しスタイル)）。どちらのスタイルもレベルの`breakBefore`（parityは`'any'`）を受け継ぐので、`:::pagebreak`なしで目次が表紙に続いて2ページ目に来ます。1段組みの本で表紙スタイルがページ全体にまたがっているのは、段の中にとどめたデザインは段の下端で切り取られ、風景の下に22mmの紙が残ってしまうからです。
 
 ### 5 · どの色もパレットへのリンクとともに書く
 

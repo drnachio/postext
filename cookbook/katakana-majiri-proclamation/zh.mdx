@@ -16,7 +16,7 @@ pageNotes: { "1": "扉页：粗体明朝的大日本帝國憲法沿一粗一细�
 
 ### 1 · 让列表计数器写出第十八條
 
-代码见上文的[简短回答](#简短回答)。每一条都是Markdown有序列表的一项，`orderedLists`把序号写成《官报》的样子：`numberFormat: 'japanese-informal'`写作十八而不是一十八，`prefix: '第'`和`separator: '條'`包在两边，`gap: em(1)`留出原文的全角空格。设置`hangingIndent: false`后，转行回到行首，而不是悬挂在正文下方，与《官报》一致。第二章的列表从`18.`开始，计数器因而跨章连续；各章本身由标题模板`第{2:一}章`编为第一章、第二章，用的是同一种计数风格（[有序列表](/zh/docs/configuration#有序列表)）。
+代码见上文的[简短回答](#简短回答)。每一条都是Markdown有序列表的一项，`orderedLists`把序号写成《官报》的样子：`numberFormat: 'japanese-informal'`写作十八而不是一十八，`prefix: '第'`和`separator: '條'`包在两边，`gap: em(1)`留出原文的全角空格。设置`hangingIndent: false`后，转行回到行首，而不是悬挂在正文下方，与《官报》一致。第二章的列表从`18.`开始，计数器因而跨章连续；各章本身由标题模板`第{2:一}章`编为第一章、第二章，用的是同一种计数风格（[有序列表](/zh/docs/configuration-text#有序列表)）。
 
 <PageShot page={5} crop="0.1,0.12,0.8,0.76" caption="第5页：第一章　天皇低两格，第一條至第八條加粗，第八条第二款低一格。" />
 

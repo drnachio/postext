@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'en',
   lastUpdated: '2026-10-05',
   readingTime: '30 min',
-  order: 8,
+  order: 17,
   plainSummary: "This page explains how Postext lays out Japanese text. Japanese books are set down the page in columns read from right to left, or across the page like this one. A document in Japanese follows the Japanese rules for line breaks, punctuation spacing, small reading guides over the characters and emphasis marks. The page also covers notes, numbers written in kanji, headings that take a set number of lines, a back-of-book index sorted by sound and how to bring in texts from the Aozora Bunko library. It ends with two complete examples and the limits that remain.",
 };
 
@@ -15,7 +15,7 @@ export const metadata = {
 
 **A Japanese page mixes four scripts on a grid of square cells, and the spacing of its punctuation is part of the text.**
 
-Postext sets Japanese down the page and across it, from one Markdown source and one configuration. A document whose language is Japanese breaks its lines under the kinsoku rules, gives each bracket and comma the space Japanese typesetting gives it and takes it back where two marks meet, sets the bracket that opens a paragraph the way most novels do, stands small kana and the marks of a vertical line in their vertical forms, spaces furigana 1:2:1 over their kanji, puts sesame dots over emphasised words, numbers chapters 第一章, and sorts an index by reading. Since postext 1.16 all of this follows from `locale: 'ja'`; earlier versions set Japanese with the mainland Chinese defaults. This page explains what the engine does and which settings control it. The [configuration reference](/en/docs/configuration#east-asian-typography) lists every key with its default, and the [document format](/en/docs/document-format#chinese-marks-ruby-and-warichu) describes the markup.
+Postext sets Japanese down the page and across it, from one Markdown source and one configuration. A document whose language is Japanese breaks its lines under the kinsoku rules, gives each bracket and comma the space Japanese typesetting gives it and takes it back where two marks meet, sets the bracket that opens a paragraph the way most novels do, stands small kana and the marks of a vertical line in their vertical forms, spaces furigana 1:2:1 over their kanji, puts sesame dots over emphasised words, numbers chapters 第一章, and sorts an index by reading. Since postext 1.16 all of this follows from `locale: 'ja'`; earlier versions set Japanese with the mainland Chinese defaults. This page explains what the engine does and which settings control it. The [configuration reference](/en/docs/configuration-east-asian#east-asian-typography) lists every key with its default, and the [document format](/en/docs/document-format#chinese-marks-ruby-and-warichu) describes the markup.
 
 The rules follow the W3C *Requirements for Japanese Text Layout* ([JLReq](https://www.w3.org/TR/jlreq/)), cited below by section, and JIS X 4051, the Japanese standard it reports. Much of the machinery is shared with Chinese, and [Chinese layout](/en/docs/chinese-layout) describes the parts this page only mentions: the character grid, the turned frame of a vertical page, right binding and the outputs. The sources are listed at the end.
 
@@ -160,7 +160,7 @@ Numbers of up to two digits stand upright in one cell (`cjk.uprightDigits`, 2 by
 
 ### Pages, tiers and folios
 
-A vertical Japanese book usually prints its folio in Arabic digits at the foot, and a vertical folio down the fore-edge in kanji when the design sets one: `page.pageNumbering.format: 'cjk-decimal'` writes 一〇五 for page 105, the positional form folios use (JLReq §2.6). Chapters open on a recto, which in a right-bound book is a left-hand page: `breakBefore: { enabled: true, parity: 'odd' }`. The fore-edge heads of [Vertical text elements](/en/docs/configuration#vertical-text-elements) work for Japanese books unchanged.
+A vertical Japanese book usually prints its folio in Arabic digits at the foot, and a vertical folio down the fore-edge in kanji when the design sets one: `page.pageNumbering.format: 'cjk-decimal'` writes 一〇五 for page 105, the positional form folios use (JLReq §2.6). Chapters open on a recto, which in a right-bound book is a left-hand page: `breakBefore: { enabled: true, parity: 'odd' }`. The fore-edge heads of [Vertical text elements](/en/docs/configuration-page-layout#vertical-text-elements) work for Japanese books unchanged.
 
 ## Furigana
 
@@ -342,7 +342,7 @@ Japanese books place notes in more ways than Western ones (JLReq §4.2), and Pos
 
 ### Defaults for Japanese books
 
-When the author leaves them unset, a Japanese document gets these values (the [configuration reference](/en/docs/configuration#footnotes) has every field):
+When the author leaves them unset, a Japanese document gets these values (the [configuration reference](/en/docs/configuration-notes-references#footnotes) has every field):
 
 <table>
   <thead>
@@ -398,7 +398,7 @@ Furigana, emphasis marks, side lines, book titles and warichu are drawn in table
 
 The HTML output writes each reading as semantic ruby: `<ruby>東<rt>とう</rt>京<rt>きょう</rt></ruby>`, one `<ruby>` per word, which screen readers read. Every page of a Japanese document carries `lang="ja"`, so a host that mounts pages one by one still gets the Japanese glyph forms. A fixed-layout EPUB is made of these pages.
 
-A reflowable EPUB carries the rules a reading system can apply itself: `line-break: strict`, `normal` or `loose` for the three kinsoku levels, `hanging-punctuation: allow-end` when the book hangs, `text-emphasis` for sesame marks over the text, upright cells for short numbers and `!?` pairs in vertical books, the em after ？！, side lines, kunten, note markers, heading line spans and indents, and the `primary-writing-mode` of a vertical book in its package. The navigation is named in Japanese. See [EPUB books](/en/docs/configuration#epub-books-postext-epub) for the rest of the export.
+A reflowable EPUB carries the rules a reading system can apply itself: `line-break: strict`, `normal` or `loose` for the three kinsoku levels, `hanging-punctuation: allow-end` when the book hangs, `text-emphasis` for sesame marks over the text, upright cells for short numbers and `!?` pairs in vertical books, the em after ？！, side lines, kunten, note markers, heading line spans and indents, and the `primary-writing-mode` of a vertical book in its package. The navigation is named in Japanese. See [EPUB books](/en/docs/configuration-programmatic-usage#epub-books-postext-epub) for the rest of the export.
 
 ## Fonts
 
@@ -410,7 +410,7 @@ Postext sets each style in one family, with no fallback to another for a missing
 - **In the browser**, Fontsource serves a Japanese family as about a hundred numbered files, each holding part of the characters; the Sandbox and its PDF tab load the ones the text uses. No Fontsource file holds hentaigana (𛀁) or other historic kana.
 - **No italics.** Japanese faces have none; emphasis is set with marks.
 
-[Chinese, Japanese and Korean fonts](/en/docs/configuration#chinese-japanese-and-korean-fonts) in the configuration reference has the font provider code.
+[Chinese, Japanese and Korean fonts](/en/docs/configuration-programmatic-usage#chinese-japanese-and-korean-fonts) in the configuration reference has the font provider code.
 
 ## Aozora Bunko sources
 
@@ -587,11 +587,11 @@ The showcase shelf has Natsume Sōseki's *Kokoro* (<span lang="ja" className="fo
 - **Index**: the separator stays `, `; Latin entries come before the kana, with no option to put them last; an invisible mark does not borrow a reading from ruby elsewhere on the line.
 - **Citations**: SIST 02 is the only Japanese style bundled; author-date citations keep ASCII punctuation; bibliographies are not sorted by reading.
 - **Tables**: cell and caption text is horizontal on every page.
-- **Line numbers** are not printed in vertical text: a vertical book that turns `lineNumbers` on gets none, with a `lineNumbersUnsupported` configuration warning. Horizontal books number their lines like any other ([Configuration › Line numbers](/en/docs/configuration#line-numbers)).
+- **Line numbers** are not printed in vertical text: a vertical book that turns `lineNumbers` on gets none, with a `lineNumbersUnsupported` configuration warning. Horizontal books number their lines like any other ([Configuration › Line numbers](/en/docs/configuration-notes-references#line-numbers)).
 - **Text wrap.** In horizontal text a picture or a box can stand at one side of its column with the text beside it (see [Text wrap](/en/docs/document-format#text-wrap)); under the character grid the room it takes is a whole number of characters, so the lines beside it keep to the grid. Vertical text sets no text beside a figure: a wrapped figure keeps its band, with a `textWrap` warning (`wrapUnsupported` for a resource type's default).
 - **Tabs.** A horizontal paragraph that holds a tab (`:tab`, or a tab character under a style with tab stops) is set line by line: broken between characters under kinsoku, but without yakumono compression or justification between characters. In vertical text there are no tab stops: a tab is a word space, and a `:tab` raises the `tabInVerticalText` content warning. A paragraph with ruby, warichu or kanbun marks also sets its tabs as word spaces. See [Tabs and tab stops](/en/docs/document-format#tabs-and-tab-stops).
-- **Drop caps.** A horizontal paragraph can open with a drop cap of one character, set from a paragraph style or a heading level (see [Drop caps](/en/docs/configuration#drop-caps)): its size takes the character's own height against the text's, and the composer sets the shortened lines under kinsoku as usual. Vertical text has no drop caps: a paragraph that would open with one is set without it and raises the `dropCap` content warning.
-- **Code listings.** A horizontal listing is set line by line in its code face; in a monospaced face with kanji (BIZ UDGothic), a full-width character takes two cells, so columns line up, and a tab counts it as two. In vertical text a listing follows the vertical flow, its Latin turned sideways as vertical text sets it, and takes no line numbers. See [Code listings](/en/docs/configuration#code-listings).
+- **Drop caps.** A horizontal paragraph can open with a drop cap of one character, set from a paragraph style or a heading level (see [Drop caps](/en/docs/configuration-text#drop-caps)): its size takes the character's own height against the text's, and the composer sets the shortened lines under kinsoku as usual. Vertical text has no drop caps: a paragraph that would open with one is set without it and raises the `dropCap` content warning.
+- **Code listings.** A horizontal listing is set line by line in its code face; in a monospaced face with kanji (BIZ UDGothic), a full-width character takes two cells, so columns line up, and a tab counts it as two. In vertical text a listing follows the vertical flow, its Latin turned sideways as vertical text sets it, and takes no line numbers. See [Code listings](/en/docs/configuration-styles#code-listings).
 - **Fonts**: one family per style with no fallback; CFF faces embedded whole; vertical proportional metrics (`vpal`) are not used.
 - **Design text** (running heads, openers, box titles) follows kinsoku, yakumono spacing and the space between Japanese and rōmaji, as the body does (`cjk.composeDesignText`, since postext 1.25), but is set ragged and prints readings and marks as plain text.
 

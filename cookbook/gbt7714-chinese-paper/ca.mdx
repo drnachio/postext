@@ -16,7 +16,7 @@ Dues pàgines d'un article de recerca en una revista inventada d'estudis editori
 
 ### 1 · L'estil, i la seva plantilla per a les obres occidentals
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. El motor de citacions es registra una vegada, abans de la primera composició, i `postext-citeproc` porta els tres estils de la GB/T 7714: numèric, autor-any i de notes ([Citacions](/ca/docs/configuration#cites)). Al text, una citació és una clau entre claudàtors. `[@tinker1963]` imprimeix un [1] volat, i `[@rayner2016; @dyson2001; @lin2023]` imprimeix [2–4]. Dos números seguits queden com a llista, [5,6]. Una obra citada de nou conserva el primer número: [4] al tercer paràgraf, i [1] i [2] més endavant.
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. El motor de citacions es registra una vegada, abans de la primera composició, i `postext-citeproc` porta els tres estils de la GB/T 7714: numèric, autor-any i de notes ([Citacions](/ca/docs/configuration-text#cites)). Al text, una citació és una clau entre claudàtors. `[@tinker1963]` imprimeix un [1] volat, i `[@rayner2016; @dyson2001; @lin2023]` imprimeix [2–4]. Dos números seguits queden com a llista, [5,6]. Una obra citada de nou conserva el primer número: [4] al tercer paràgraf, i [1] i [2] més endavant.
 
 La norma demana «et al.» després dels tres primers autors d'una obra occidental i 等 després dels d'una xinesa. El fitxer CSL inclòs porta dues plantilles per a això, una de les quals per a les obres en anglès, i cada entrada pren la seva segons el seu propi camp `language`: Rayner i quatre coautors queden en «RAYNER K, SCHOTTER E R, MASSON M E J, et al.», i 林岚 i tres coautors en «林岚, 周明远, 陈思齐, 等». `locale: 'zh-CN'` escriu en xinès la resta de paraules de la llista.
 
@@ -30,13 +30,13 @@ Les obres van en un bloc `:::references{format=csl-yaml}` al final del Markdown,
 
 <Excerpt region="masthead" />
 
-El bloc de títol és el disseny de l'H1, amb un estil de títol que ocupa les dues columnes. La banda és una caixa ancorada al tall, i el nom de la revista hi va a sobre en blanc. El títol, els autors i les filiacions surten del títol i els seus atributs, cadascun col·locat sota l'anterior (`#title`, `below`), de manera que un títol de tres línies empeny la resta cap avall ([Span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)).
+El bloc de títol és el disseny de l'H1, amb un estil de títol que ocupa les dues columnes. La banda és una caixa ancorada al tall, i el nom de la revista hi va a sobre en blanc. El títol, els autors i les filiacions surten del títol i els seus atributs, cadascun col·locat sota l'anterior (`#title`, `below`), de manera que un títol de tres línies empeny la resta cap avall ([Span i disseny avançat](/ca/docs/configuration-text#span-i-disseny-avançat)).
 
 ### 4 · El resum i les seves etiquetes
 
 <Excerpt region="abstract" />
 
-El resum és un requadre a tota l'amplada, sagnat dos caràcters per cada costat. Les etiquetes són chips: `:chip[摘　要：]{style="label"}` compon la paraula en Hei negreta, en l'anyil de la revista, sense caixa ([Estils de chip](/ca/docs/configuration#estils-de-xip)). Les revistes xineses solen compondre el resum en 楷体; aquesta el deixa en Song, pel motiu que s'explica a Errors freqüents.
+El resum és un requadre a tota l'amplada, sagnat dos caràcters per cada costat. Les etiquetes són chips: `:chip[摘　要：]{style="label"}` compon la paraula en Hei negreta, en l'anyil de la revista, sense caixa ([Estils de chip](/ca/docs/configuration-styles#estils-de-xip)). Les revistes xineses solen compondre el resum en 楷体; aquesta el deixa en Song, pel motiu que s'explica a Errors freqüents.
 
 <Excerpt region="palette" />
 

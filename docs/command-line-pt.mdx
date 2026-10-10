@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'pt',
   lastUpdated: '2026-10-09',
   readingTime: '10 min',
-  order: 13,
+  order: 22,
   plainSummary: "Esta página é para quem quer fazer livros com o Postext a partir de um terminal, sem usar o site. Você baixa um único arquivo para o seu computador e o executa, sem instalar mais nada. Você entrega a ele o seu livro, ou alguns arquivos de texto, e ele faz um PDF, uma página da web, um livro digital, imagens das páginas ou um documento do Word. Ele também verifica se o livro tem problemas e junta todos os arquivos do livro em um só. Programas e assistentes de inteligência artificial também podem usá-lo, porque ele responde em um formato que esses programas leem com facilidade.",
 };
 
@@ -113,7 +113,7 @@ postext image my-book.postext --page 1 -o cover.png
 Todo comando que lê um livro aceita qualquer uma destas formas:
 
 - **Um arquivo `.postext`**: o pacote que o Sandbox exporta e abre (veja
-  [Pacotes](/pt/docs/configuration#pacotes-arquivos-postext)).
+  [Pacotes](/pt/docs/configuration-programmatic-usage#pacotes-arquivos-postext)).
 - **Uma pasta de livro**: um pacote desempacotado, com o seu `preset.json`, os
   seus capítulos, recursos e fontes. É o que a skill para agentes entrega, e
   `postext unpack` grava uma.
@@ -170,8 +170,8 @@ postext pdf book/ --color-space grayscale --no-outlines
 ```
 
 O PDF segue as configurações do próprio livro (veja
-[Geração de PDF](/pt/docs/configuration#geração-de-pdf-configuração) e
-[Produção gráfica](/pt/docs/configuration#produção-gráfica-configuração)); estas opções
+[Geração de PDF](/pt/docs/configuration-fonts-colors-viewers#geração-de-pdf-configuração) e
+[Produção gráfica](/pt/docs/configuration-fonts-colors-viewers#produção-gráfica-configuração)); estas opções
 as mudam para uma execução:
 
 - `--pdfx none|x1a|x4`: o padrão PDF/X para uma gráfica.
@@ -208,7 +208,7 @@ postext epub book.postext --layout reflowable --cover cover.jpg
 
 `--layout fixed` (o padrão) mantém cada página como no impresso, com texto
 selecionável; `--layout reflowable` deixa o sistema de leitura recompor o
-texto para a sua tela (veja [Livros EPUB](/pt/docs/configuration#livros-epub-postext-epub)).
+texto para a sua tela (veja [Livros EPUB](/pt/docs/configuration-programmatic-usage#livros-epub-postext-epub)).
 A capa é a miniatura do livro, a menos que `--cover` indique uma imagem. Os
 metadados do pacote EPUB (título, autores, idioma, identificador) vêm do front
 matter do primeiro capítulo, como no Sandbox.

@@ -22,7 +22,7 @@ A risograph prints each ink from its own drum, so a third colour anywhere in the
 
 ### 2 · Recolour each drawing once per output
 
-The code is [the short answer](#the-short-answer) above. With `diagramStyle.singleInk`, `renderToPdf` turns every colour of an SVG into a tint of `inkColor` whose strength is 1 minus the colour's relative luminance ([diagram style](/en/docs/configuration#diagram-style)), so the navy N12 prints at 84% and the yellow N50 at 24%. The canvas tints a picture the same way when it is registered with `singleInk: true`, so `registerArt()` registers each drawing as drawn with that flag and keeps the same markup for `resourceBytes`. Sampled on the canvas and in the PDF rasterised at 300 dpi, the N12 line is (242, 109, 171), the tint the formula gives for a strength of 0.836. Each output recolours the drawing once: put through the formula twice, the line would lighten to 44%.
+The code is [the short answer](#the-short-answer) above. With `diagramStyle.singleInk`, `renderToPdf` turns every colour of an SVG into a tint of `inkColor` whose strength is 1 minus the colour's relative luminance ([diagram style](/en/docs/configuration-resources#diagram-style)), so the navy N12 prints at 84% and the yellow N50 at 24%. The canvas tints a picture the same way when it is registered with `singleInk: true`, so `registerArt()` registers each drawing as drawn with that flag and keeps the same markup for `resourceBytes`. Sampled on the canvas and in the PDF rasterised at 300 dpi, the N12 line is (242, 109, 171), the tint the formula gives for a strength of 0.836. Each output recolours the drawing once: put through the formula twice, the line would lighten to 44%.
 
 ### 3 · Print the title twice, off register
 

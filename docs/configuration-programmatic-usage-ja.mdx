@@ -1,0 +1,1715 @@
+{/* docs/configuration-programmatic-usage-ja.mdx */}
+
+export const metadata = {
+  title: '設定：プログラムからの利用',
+  sidebarTitle: 'プログラムからの利用',
+  description: 'コードからPostextを使う：buildDocument、Web Worker、HTMLビューアー、PDF、3Dの本、EPUB、.postextバンドル',
+  lang: 'ja',
+  lastUpdated: '2026-10-10',
+  readingTime: '8分',
+  order: 12,
+  parent: 'configuration',
+  plainSummary: "このページは、プログラムを書く人向けです。1回の関数呼び出しで本を組む方法と、返ってくる警告の読み方を示します。ページの動きを軽く保つために、処理を裏で動かす方法を説明します。Web表示、PDFファイル、3Dの本、EPUBの電子書籍を作る方法を示します。最後の節では、本をまるごとフォントや画像と一緒に運ぶファイルを説明します。",
+};
+
+# 設定：プログラムからの利用
+
+
+## プログラムからの利用
+
+> **推奨する方法：Web Workerを使う**。ブラウザーでの統合は、ほぼすべての場合、メインスレッドで`buildDocument`を直接呼ぶの**ではなく**、`postext/worker`の`createLayoutWorker()`を通して組版パイプラインを動かすべきです。ワーカーを使えば、ビルド中もUIが応答し続け、差分の再ビルドをまたいでテキストの計測結果がキャッシュされ、「最後の要求が勝つ」キャンセル（last-wins）が組み込まれるので、新しいキー入力が実行中の古いビルドを中止します。標準の手順は[Web Workerでレイアウトを実行する](#web-workerでレイアウトを実行する)にまとめてあります。この節の残りの内容（`buildDocument`の直接呼び出し、リゾルバー、既定値の除去関数、キャッシュ）も役に立ちます。ワーカーはまったく同じ入力と出力を公開しているからです。ただし、UIのコードではワーカーのラッパーから始めるのが正解です。メインスレッドで`buildDocument`を呼ぶのは、1回きりの書き出し、サーバーサイドでの描画（Node）、テストに限ってください。
+
+### 文書のビルド
+
+`buildDocument`関数は組版パイプライン全体を実行し、すべての要素の正確な座標を持つ仮想文書ツリー（Virtual Document Tree、VDT）を返します。これが最も低レベルの入口です。UIのコードでは[Web Workerのラッパー](#web-workerでレイアウトを実行する)を使ってください。ラッパーは専用のワーカースレッドの中で、同じ引数で`buildDocument`を呼びます。
+
+```ts
+import { buildDocument } from 'postext';
+
+const content = {
+  markdown: '# Chapter One\n\nThe story begins here...',
+};
+
+const config = {
+  page: { sizePreset: '17x24' },
+  layout: { layoutType: 'double' },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } }, // 9 pt overrides the 8 pt default
+};
+
+// Build the layout — produces a VDT with one entry per page in `vdt.pages`
+const vdt = buildDocument(content, config);
+console.log(`Document has ${vdt.pages.length} pages`);
+```
+
+### 文書の中の警告
+
+`buildDocument`は、誤った参照や未知のスタイルがあっても止まりません。代わりの値を当て、何をしたかを`doc.contentWarnings`に記録します。レイアウトがやむを得ず配置したボックスは`doc.warnings`に入ります。こちらはpostext 1.4のときの形を保っており、各項目は`pageIndex`、`columnIndex`、`overflowPx`を持つ`calloutOverflow`です。報告することがなければ、それぞれのフィールドは存在しません。どの項目にも`kind`があります。内容に関する種類は、その構文のソース範囲（渡したMarkdown内のオフセットである`sourceStart` / `sourceEnd`。フロントマターも含めて数えます）と、構文がページに配置された場合はその`pageIndex`を持ちます。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>種類</th>
+      <th>発生する条件</th>
+      <th>出力の扱い</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>calloutOverflow</code></td>
+      <td><code>:::callout</code>のボックスがどの段にも収まらず、どこで切っても分割できない。空のサイド段より高い<code>span: 'side'</code>のボックスも同じです（postext 1.25から）。</td>
+      <td>それでも配置され、段から<code>overflowPx</code>だけはみ出します（<code>pageIndex</code> / <code>columnIndex</code>の位置）。<code>doc.warnings</code>に入る唯一の種類で、以下の種類は<code>doc.contentWarnings</code>に入ります。</td>
+    </tr>
+    <tr>
+      <td><code>invalidFrontmatter</code></td>
+      <td>フロントマターが正しいYAMLではありません（閉じていない引用符、引用符で囲んだ値の後に続く文字など）。<code>message</code>はパーサーが示す理由と、その行と列です。</td>
+      <td>文書はメタデータなしで組版されます。閉じの<code>---</code>より後の本文は通常どおり組版されます。</td>
+    </tr>
+    <tr>
+      <td><code>unknownResourceId</code></td>
+      <td><code>::resource</code>の埋め込み（<code>usage: 'embed'</code>）、インラインの<code>:ref</code>（<code>'ref'</code>）、表のセルの画像（<code>'cellImage'</code>）が、どのリソースにもないidを指している。</td>
+      <td>埋め込みは省かれ、参照は番号もリンクもなしに<code>?</code>（または<code>text=</code>のラベル）を印字し、セルはテキストだけになります。<code>inResource</code>は、その参照をキャプション、注、セルに含むリソースを示します。</td>
+    </tr>
+    <tr>
+      <td><code>unknownDirective</code></td>
+      <td>名前がディレクティブでもコンテナーでもない<code>:::name</code>の行。</td>
+      <td>その行はテキストとして組まれます。</td>
+    </tr>
+    <tr>
+      <td><code>malformedEmbed</code></td>
+      <td>単独で立つ正しい形の埋め込みになっていない<code>::name</code>の行。idが引用符なしか一重引用符で書かれている、または別の属性を持つ<code>::resource</code>や、空行を挟まずに段落の下に続けて書かれた行です。</td>
+      <td>その行はテキストとして組まれます。</td>
+    </tr>
+    <tr>
+      <td><code>fullwidthMarkup</code></td>
+      <td>中国語や日本語の入力方式で入力されたマークアップを含む行。<code>：：：</code>のフェンス、<code>＃</code>の見出し、<code>［＾…］</code>の脚注記号、フェンスや見出しの後の<code>｛…｝</code>属性、<code>＊＊…＊＊</code>の太字が対象です。<code>typed</code>は書かれたままのマークアップ、<code>ascii</code>は入力すべき形です。1行につき1件。</td>
+      <td>その行はテキストとして組まれ、何も変換されません。</td>
+    </tr>
+    <tr>
+      <td><code>attributeKeyInvalid</code></td>
+      <td>属性のキーにASCII以外の文字が含まれている（<code>作者=曹雪芹</code>）。キーの位置を指します。</td>
+      <td>その属性は無視されます。</td>
+    </tr>
+    <tr>
+      <td><code>unknownParagraphStyle</code></td>
+      <td><code>:::paragraphs{'{'}style{'}'}</code>の名前に該当する段落スタイルがない。</td>
+      <td>段落は本文として組まれます。</td>
+    </tr>
+    <tr>
+      <td><code>unknownCalloutType</code></td>
+      <td><code>:::callout{'{'}type{'}'}</code>の名前が<code>calloutStyles</code>のどれにも該当しない。囲みスタイルが1つ以上設定されているときにだけ発生します。</td>
+      <td>ボックスには最初の囲みスタイルが使われます。</td>
+    </tr>
+    <tr>
+      <td><code>columnsFlowUnknown</code></td>
+      <td><code>:::columns{'{'}flow{'}'}</code>が<code>snake</code>でも<code>parallel</code>でもない。<code>value</code>は書かれている値です。</td>
+      <td>グループには既定値が使われます。<code>breaks</code>があれば<code>parallel</code>、なければ<code>snake</code>です。</td>
+    </tr>
+    <tr>
+      <td><code>unknownChipStyle</code></td>
+      <td><code>:chip[…]{'{'}style{'}'}</code>の名前に該当するチップスタイルがない。</td>
+      <td>チップには最初のチップスタイルが使われます。</td>
+    </tr>
+    <tr>
+      <td><code>undefinedFootnote</code></td>
+      <td>どの<code>[^id]:</code>段落でも定義されていない脚注記号<code>[^id]</code>（<code>id</code>はその注のid）。</td>
+      <td>番号は印字され、注は空になります。</td>
+    </tr>
+    <tr>
+      <td><code>unusedFootnote</code></td>
+      <td>どの記号からも参照されていない脚注定義<code>[^id]:</code>。</td>
+      <td>注は組まれません。</td>
+    </tr>
+    <tr>
+      <td><code>indexMarkInvalid</code></td>
+      <td>語のない索引マーク。<code>:index{'{}'}</code>、または角かっこのテキストを持たないマークに<code>term</code>のない属性を付けたものです。</td>
+      <td>そのマークは何も索引に載せません。</td>
+    </tr>
+    <tr>
+      <td><code>indexSeeUnknown</code></td>
+      <td><code>see</code>または<code>seealso</code>の参照先（<code>target</code>）が、その索引（<code>index</code>。主索引は<code>''</code>）の項目にない。<code>:::index</code>の行を指します。</td>
+      <td>相互参照はそのまま印字されます。</td>
+    </tr>
+    <tr>
+      <td><code>indexRangeUnclosed</code></td>
+      <td>対応する<code>range="end"</code>のない<code>range="start"</code>のマーク、またはその逆（<code>missing</code>は欠けている側、<code>term</code>は項目を示します）。<code>:::index</code>の行を指します。</td>
+      <td>範囲はその1ページだけを印字します。</td>
+    </tr>
+    <tr>
+      <td><code>unknownHeadingStyle</code></td>
+      <td>見出しの<code>{'{'}style="…"{'}'}</code>の名前に該当する見出しスタイルがない（<code>level</code>はその見出しのレベル）。</td>
+      <td>見出しとその節は、そのレベル自体の設定のままになります。</td>
+    </tr>
+    <tr>
+      <td><code>unknownTableStyle</code></td>
+      <td>表リソースの<code>table.styleId</code>が<code>tableStyles</code>のどの項目にも該当しない。</td>
+      <td>表は<code>tableStyle</code>で組まれます。</td>
+    </tr>
+    <tr>
+      <td><code>raggedTableGrid</code></td>
+      <td>結合を数に入れると、表のグリッドが長方形にならない（<a href="/ja/docs/configuration-resources#表モデルの構築">表モデルの構築</a>を参照）。</td>
+      <td>セルが結合部分にずれ込むか、穴が残ります。<code>reason</code>（<code>'spanOverlap'</code> / <code>'missingCells'</code>）、<code>row</code>、<code>col</code>が最初の問題の位置を示し、<code>count</code>が問題の数を示します。</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberOverlap</code></td>
+      <td><code>lineNumbers.position: 'side'</code>で、行番号がサイド段の囲み、キャプション、図に重なる。番号を付けた行を指し、<code>number</code>は印字される番号です。</td>
+      <td>番号はそのまま描かれ、どちらも動きません。</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><a href="/ja/docs/configuration-text#ドロップキャップ">ドロップキャップ</a>で始まる段落が、設定どおりにそれを組めない。<code>reason</code>は、<code>'shortParagraph'</code>（頭文字が沈む行数より段落の行が少ない。<code>handling</code>は<code>shortParagraph</code>が行った処理、<code>lines</code>は縮めた頭文字がまたがる行数）、<code>'split'</code>（短すぎる段に単独で置かれ、頭文字の最後の行より前で分割される）、<code>'joiningScript'</code>（最初の文字が次の文字と連結する）、<code>'verticalText'</code>、<code>'noLetter'</code>（参照、数式、注の印で始まる）のいずれかです。<code>text</code>はその1行目です。</td>
+      <td>警告が示すとおり、スペースが確保されるか、頭文字が縮むか、頭文字が省かれます。</td>
+    </tr>
+    <tr>
+      <td><code>codeOverflow</code></td>
+      <td><a href="/ja/docs/configuration-styles#コードリスト">コードリスト</a>に枠より長い行がある。<code>mode</code>は<code>codeStyle.overflow</code>が行った処理（<code>'wrap'</code>、<code>'shrink'</code>、<code>'clip'</code>）、<code>lines</code>は長すぎた元の行の数、<code>scale</code>は縮小したコードリストを組んだサイズ（<code>fontSize</code>に対する割合）、<code>lang</code>はフェンスの言語です。コードリストを指します。</td>
+      <td><code>mode</code>が示すとおり、行は折り返されるか、小さく組まれるか、切られます。</td>
+    </tr>
+    <tr>
+      <td><code>floatShrunk</code></td>
+      <td>フロートの図版を、置き場所の空きに収めるため元より小さく組みました（<code>placement.shrink</code>）。<code>resourceId</code>はその図版、<code>scale</code>は保った幅の比率です。<code>overflowPx</code>があれば、ほかに行き場のない新しいページで、最小倍率（<code>placement.minScale</code>）で組んでもなお版面の下端からはみ出す量です。最初に引用している段落を指します。</td>
+      <td>図版はその倍率で印刷されます。版面からはみ出すのは<code>overflowPx</code>があるときだけです。</td>
+    </tr>
+    <tr>
+      <td><code>textWrap</code></td>
+      <td>本文を回り込ませる設定のリソースまたはボックス（<code>placement.wrap</code>、ボックスの<code>wrap</code>）が指定どおりに組まれなかったこと。<code>reason</code>：<code>'tooNarrow'</code>（横の本文が<code>layout.wrap.minTextWidth</code>より狭くなる）、<code>'fewLines'</code>（<code>layout.wrap.minLinesBeside</code>行より低い）、<code>'moved'</code>（段の残りに収まらない本文中の対象がアンカーとともに次の段へ移った）、<code>'verticalText'</code>。<code>resourceId</code>はリソース、<code>box</code>はボックスのスタイル。埋め込みまたはボックスを指します。</td>
+      <td>理由に応じて、対象は全幅を占めるか、次の段に置かれます。</td>
+    </tr>
+    <tr>
+      <td><code>columnsTooNarrow</code></td>
+      <td><code>:::columns</code>グループの小段が、そのテキストの6 em より狭い。<code>columns</code>段で、それぞれ<code>widthPx</code>。グループのフェンスを指します。</td>
+      <td>グループは指定どおりに組まれ、1行に入る語はわずかになります。</td>
+    </tr>
+    <tr>
+      <td><code>afterText</code></td>
+      <td><code>span: 'side'</code>のボックス、またはサイド段の図・表（<code>resourceId</code>）が、本文のないページに置かれた。サイド段の空きを待っているうちに、章または文書の本文が終わった。ボックスまたはフロートごとに1件。ボックス（またはフロートを参照するブロック）を指し、ページが付きます。postext 1.25から。</td>
+      <td>本文の後に開いたページのサイド段に置かれます。ボックスはフェンスの順に並びます。</td>
+    </tr>
+    <tr>
+      <td><code>unplaced</code></td>
+      <td>組版が終わった時点でまだ空き位置を待っていたボックスまたはフロートのリソース（<code>resourceId</code>）。そのために開いたページには置けなかった（サイド段のないページでのサイド段のボックスなど）。ボックス、またはリソースを参照するブロックを指します。ページはありません。postext 1.25から。</td>
+      <td>どのページにもありません。postext 1.24までは、警告なしに消えていました。</td>
+    </tr>
+    <tr>
+      <td><code>fontFallback</code></td>
+      <td>テキストを組んだフェイス（<code>family</code>、<code>weight</code>、<code>style</code>）を、ビルドの時点でフォントセットが用意できなかったこと。<code>reason: 'missing'</code>は、そのファミリーのフェイスが1つも読み込まれておらず、インストールもされていない場合、またはそのウェイトと傾きに対応するフェイスがまだ読み込まれていなかった場合。<code>'synthesized'</code>は、ファミリーにそのウェイトや傾きのフェイスがなく、ブラウザーが別のフェイスをそのまま、あるいは太くしたり傾けたりして使っている場合です（600を700のフェイスで組んだとき、400のレギュラーしかないファミリーに700のイタリックを求めたときなど）。フォントセットがある環境（<code>document.fonts</code>、ワーカーの<code>self.fonts</code>、<code>BuildDocumentOptions.fontSet</code>）で検査し、<code>debug.warnings.missingFont</code>で切り替えます。ページもソースの範囲も持ちません。</td>
+      <td>テキストは代替フォントで、またはファミリーの別のフェイス（そのまま、あるいはブラウザーが太くしたり傾けたりしたもの）で計測・描画されます。そのフェイスが届くと改行が変わります。<a href="#レイアウトの前にフォントを読み込む">レイアウトの前にフォントを読み込む</a>を参照してください。</td>
+    </tr>
+  </tbody>
+</table>
+
+リソースに関する警告（表スタイル、グリッド、キャプションや注、セルの中の参照）は、本文の中でそのリソースが最初に埋め込まれた位置か参照された位置を指し、リソースごとに1回だけ挙がります。検査するのは文書が使うリソースだけです。本の1章は、本が持つすべての表ではなく、その章が参照する表について報告します。
+
+```ts
+import { buildDocument, formatWarning } from 'postext';
+
+const doc = buildDocument({ markdown: 'See :ref{id="fig-map"}.\n\n:::sidebar\nNotes.' }, config);
+for (const w of [...(doc.warnings ?? []), ...(doc.contentWarnings ?? []), ...(doc.configWarnings ?? [])]) console.warn(formatWarning(w));
+// Unknown resource id "fig-map" in :ref — it prints "?" (or its text= label), with no number or link (page 1, offset 4)
+// Unknown directive ":::sidebar" — the line is set as text (page 1, offset 25)
+
+// Narrow on `kind` to read the fields of a kind.
+const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownResourceId' ? [w.resourceId] : []));
+```
+
+`formatWarning(w)`は英語の説明を1行で返します。メッセージをローカライズするホストは、代わりに`kind`で分岐してください。マイナーリリースで種類が増えることがあるので、既定の分岐も残しておきます。`collectContentWarnings(markdown, config, resources)`は、何もレイアウトせずに内容の警告を返します（ビルドが加えるのと同じリストで、`pageIndex`はありません）。入力しながらテキストを検査するエディター向けです。`collectHeadingDesignCuts(doc)`は、組み上がったレイアウトを調べ、見出しデザインのテキストがページや段の下端を越えているものを探します（`kind: 'headingDesignCut'`。[確保する高さ](/ja/docs/configuration-text#確保する高さ)を参照）。これはレイアウト自体は報告しないもので、その結果も`formatWarning`で説明できます。Sandboxの**検査**パネルは、これらをすべて一覧にします。
+
+レンダラーは、指定どおりに描けなかったものを`onWarning`オプションで報告します。対象は`renderPageToCanvas`、`renderPage`、`renderToCanvas`（`RenderPageOptions`）、`renderToHtml`と`renderToHtmlIndexed`（`RenderHtmlOptions`）、`renderToPdf`（`RenderToPdfOptions`。PDFワーカー経由でも可）です。描画時の主な種類は`missingImage`です。描くものがない画像（図、表のセルの画像、囲みのアイコン、デザイン画像）は中立的なプレースホルダーとして描かれ、`fileId`と描画呼び出しごとに1回報告されます。報告には`pageIndex`、描画側がわかる場合は`resourceId`（図とセルの画像）、PDFでは複数文書の描画における`documentIndex`が含まれます。描くものがないとは、canvasではその`fileId`の`registerResourceImage`がないこと、HTMLでは`resourceImageUrl`からURLが得られないこと、PDFでは`resourceBytes`からバイト列が得られないか、得られたバイト列をデコードできないことを指します。`fileId`をまったく持たないビットマップやSVGのリソースは、要求するものがないので、報告なしにプレースホルダーとして描かれます。ほかに2つの種類が、SVGの画像にフォントを埋め込むホスト（`registerSvgImage`、`registerBundleImages`、`bundleImageUrl`、`inlineSvgFonts`を指定した`renderToHtml`、postext-epub。[SVGの文字のフォント](/ja/docs/configuration-resources#svgの文字のフォント)を参照）から、画像の`fileId`と`resourceId`とともに報告されます。`svgFontUnavailable`（`family`、`weight`、`style`）は、文字が指定するファミリーに埋め込めるフェイスがないことを示し、画像はその文字を代替のフェイスで組みます。`svgFontsTooLarge`（`bytes`、`maxBytes`）は、フェイスがサイズ上限を超え、1つも埋め込まれなかったことを示します。描画時の警告はVDTには保存されません。ホストが用意できるものはレイアウトの後で変わるからです。
+
+```ts
+import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
+
+const map: Resource = {
+  id: 'fig-map', typeId: 'figure', kind: 'bitmap', caption: 'The route.', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'map-file', format: 'png', width: 1200, height: 800 },
+};
+const doc = buildDocument({ markdown: 'See :ref{id="fig-map"}.', resources: [map] }, config);
+
+const warnings: RenderWarning[] = [];
+const canvas = renderPage(doc.pages[0], doc, { onWarning: (w) => warnings.push(w) });
+// Until 'map-file' is registered with registerResourceImage:
+// [{ kind: 'missingImage', fileId: 'map-file', resourceId: 'fig-map', pageIndex: 0 }]
+```
+
+### ページをビットマップに描画する
+
+各ページは個別にラスタライズできます。`renderPage(page, doc)`を使うと、指定したページの`HTMLCanvasElement`が得られます。このcanvasはページの寸法（設定したDPIでのピクセル数）ちょうどの大きさのビットマップなので、表示や書き出しに使ったり、任意の画像処理に渡したりできます。
+
+```ts
+import { buildDocument, renderPage } from 'postext';
+
+const vdt = buildDocument(content, config);
+
+// Render page 3 (zero-indexed) to a bitmap canvas
+const pageNumber = 2;
+const page = vdt.pages[pageNumber];
+if (!page) throw new Error(`Page ${pageNumber} does not exist`);
+
+const canvas = renderPage(page, vdt);
+// canvas.width / canvas.height are the page bitmap size in pixels
+
+// Show it in the DOM
+document.body.appendChild(canvas);
+
+// …or export it as a PNG data URL
+const pngDataUrl = canvas.toDataURL('image/png');
+
+// …or get a Blob for download / upload
+canvas.toBlob((blob) => {
+  if (blob) saveAs(blob, `page-${pageNumber + 1}.png`);
+}, 'image/png');
+
+// …or grab raw RGBA pixels
+const ctx = canvas.getContext('2d')!;
+const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+```
+
+すでに持っているcanvas（たとえば特定のレイアウトでDOMに配置したもの）に描きたい場合は、`renderPageToCanvas(page, doc, canvas)`を使います。新しいcanvasを作る代わりに、渡したcanvasの大きさを変えて描画します。
+
+全ページを描画するには`vdt.pages`を順に処理します。
+
+```ts
+const bitmaps = vdt.pages.map((page) => renderPage(page, vdt));
+```
+
+#### ライブサンプル：ページを画像にする
+
+ここまでの内容をブラウザーで動かしたものです。このCodePenのサンプルは、最新の`postext`リリースをCDNからインポートし、Webフォントを待ってから短い2段組みの文書をレイアウトし、最初のページをcanvasに描いて、そのビットマップをPNGとして提供します。**CodePenで実行**を押すとエディターが読み込まれ、Markdownや設定を変更できます。編集するたびにページが描き直されます。
+
+<CodePenExample name="render-page" title="Postext · ページを画像に描画する" description="postextでMarkdown文書をレイアウトし、最初のページをcanvas / PNGにラスタライズします。" height={600} />
+
+### React
+
+`postext/react`は`createLayout(content, config?)`を公開しています。これはマウント時に文書を1回だけレイアウトし、各ページを`<div>`の中の`<canvas>`として表示するコンポーネントです。
+
+```tsx
+import { createLayout } from 'postext/react';
+
+const Article = createLayout(
+  { markdown: '# Hello\n\nThe first paragraph of the article.' },
+  { page: { sizePreset: '17x24' } },
+);
+
+export function ArticlePage() {
+  return <Article className="pages" style={{ maxWidth: 480 }} />;
+}
+```
+
+- **メインスレッドで1回だけ**。ページは文書の解像度で描かれ、コンテナーの幅に合わせて拡大縮小されます。`content`と`config`は`createLayout`を呼んだ時点で固定されるので、別の内容を表示するには別のコンポーネントを作ります。ライブプレビューには、[Web Worker](#web-workerでレイアウトを実行する)でビルドし、そこにあるReactの例のように`renderPageToCanvas`で描画してください。
+- **フォントと画像を先に**。コンポーネントをマウントする前に文書のWebフォントを読み込み、画像を`registerResourceImage`で登録しておきます。Markdownに`$`が含まれていれば、コンポーネントが自分で[数式エンジン](/ja/docs/configuration-text#数式エンジンの起動)を起動します。
+- **Reactはメインのエントリーに含まれない**。`postext`はReactをインポートせず、インポートするのは`postext/react`だけです。既存のコードが動き続けるよう、`createLayout`は今も`postext`から公開されていますが、非推奨です。呼び出したときに`postext/react`を読み込み、それが届くまでコンポーネントはサスペンドします（届けばReactが自動で再描画します）。`postext/react`からインポートしてください。
+- **非推奨のコンポーネントはサスペンドする**。`postext/react`が届くまで、`postext`の`createLayout`には、コンカレントルート（`createRoot`）か、上位の`<Suspense>`境界が必要です。レガシーの`ReactDOM.render`ルートや`renderToString`で境界がなければ、Reactはエラーを報告します。バンドラーがこの遅延インポートを解決できるよう、`react`は引き続き必須のピア依存関係です。
+
+### 既定値の解決
+
+リゾルバー関数は、部分的な設定オブジェクトに既定値を補います。調べたり比べたりするために完全な設定が必要なときに便利です。
+
+```ts
+import { resolvePageConfig, resolveBodyTextConfig } from 'postext';
+
+const fullPage = resolvePageConfig({ sizePreset: '21x28' });
+// => { sizePreset: '21x28', width: { value: 21, unit: 'cm' }, height: { value: 28, unit: 'cm' },
+//      margins: { top: { value: 2, unit: 'cm' }, ... }, dpi: 300, cutLines: { enabled: false, ... }, ... }
+
+const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
+// => { fontFamily: 'Inter', fontSize: { value: 8, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
+```
+
+リゾルバーはトップレベルの節ごとに1つあります。`resolvePageConfig`、`resolveLayoutConfig`、`resolveBodyTextConfig`、`resolveHeadingsConfig`、`resolveHeadingStylesConfig`、`resolveTocConfig`、`resolvePartsConfig`、`resolveUnorderedListsConfig`、`resolveOrderedListsConfig`、`resolveMathConfig`、`resolveTableStyleConfig`、`resolveCaptionStyleConfig`、`resolveDiagramStyleConfig`、`resolveParagraphStylesConfig`、`resolveCalloutStylesConfig`、`resolveHeaderFooterConfig`、`resolveDebugConfig`、`resolveHtmlViewerConfig`、`resolvePdfGenerationConfig`。これに加えて、デザインスロット1つを解決する`resolveDesignSlot`があります。カラーパレットは、`applyPaletteToConfig(config)`、`applyPaletteToResolvedConfig(resolved, palette)`、`resolveColorValue(value, palette, fallback)`で別に適用します。[カラーパレット](/ja/docs/configuration-fonts-colors-viewers#カラーパレット)を参照してください。
+
+既定値が別の節から引き継がれるリゾルバーは、解決済みのその節を追加の引数に取ります。リストの`fontFamily`と`color`の既定値は本文から引き継がれるので、`resolveUnorderedListsConfig`と`resolveOrderedListsConfig`は解決済みの本文を取ります。`resolveCalloutStylesConfig`は解決済みの本文、見出し、箇条書きリストを取り（[囲みスタイル](/ja/docs/configuration-styles#囲みスタイル)の例を参照）、`resolveHeadingStylesConfig`は解決済みのページ、本文、2つのリストの節を取ります。それぞれの正確なシグネチャーは、パッケージの型宣言で確認してください。
+
+```ts
+import { resolveBodyTextConfig, resolveUnorderedListsConfig } from 'postext';
+
+const body = resolveBodyTextConfig({ fontFamily: 'Inter' });
+const lists = resolveUnorderedListsConfig({ bulletChar: '—' }, body);
+// => lists.fontFamily === 'Inter' (inherited)
+```
+
+静的な既定値（引き継ぎが関わらないときに使われる値）も公開されています。`DEFAULT_PAGE_CONFIG`、`DEFAULT_CUT_LINES`、`DEFAULT_PAGE_NUMBERING`、`PAGE_SIZE_PRESETS`、`DEFAULT_LAYOUT_CONFIG`、`DEFAULT_COLUMN_RULE`、`DEFAULT_COLUMN_BALANCING`、`DEFAULT_BODY_TEXT_CONFIG`、`DEFAULT_HYPHENATION_CONFIG`、`DEFAULT_HEADINGS_CONFIG`、`DEFAULT_UNORDERED_LISTS_STATIC`、`DEFAULT_ORDERED_LISTS_STATIC`、`DEFAULT_PARAGRAPH_STYLES`、`DEFAULT_CALLOUT_STYLES`、`DEFAULT_CALLOUT_STYLE_STATIC`、`DEFAULT_PARTS_CONFIG`、`DEFAULT_HEADING_STYLES`、`DEFAULT_TOC_CONFIG`、`DEFAULT_MATH_CONFIG`、`DEFAULT_DIAGRAM_STYLE_CONFIG`、`DEFAULT_DEBUG_CONFIG`、`DEFAULT_HTML_VIEWER_CONFIG`、`DEFAULT_PDF_GENERATION_CONFIG`、`DEFAULT_COLOR_PALETTE`、`DEFAULT_MAIN_COLOR`、`DEFAULT_MAIN_COLOR_ID`、`DEFAULT_MAIN_COLOR_NAME`、`DEFAULT_MAIN_COLOR_HEX`、柱とノンブルの要素の既定値（`DEFAULT_HEADER_FOOTER_SLOT`、`DEFAULT_HEADER_SLOT`、`DEFAULT_FOOTER_SLOT`、`DEFAULT_TEXT_ELEMENT`、`DEFAULT_RULE_ELEMENT`、`DEFAULT_BOX_ELEMENT`）、そしてロケールに応じた`defaultResourceTypes(locale)`です（[リソースの種類](/ja/docs/configuration-resources#リソースの種類)を参照）。
+
+### 既定値の除去
+
+設定を保存するとき（localStorageやファイルなど）は、`stripConfigDefaults`で既定値と一致する値を取り除きます。保存する設定が最小限になり、意図して変更した値だけが残ります。
+
+```ts
+import { stripConfigDefaults } from 'postext';
+
+const minimal = stripConfigDefaults(fullConfig);
+// Only properties that differ from defaults remain
+```
+
+リゾルバーごとに個別の除去関数もあります。`stripPageDefaults`、`stripLayoutDefaults`、`stripBodyTextDefaults`、`stripHeadingsDefaults`、`stripHeadingStylesDefaults`、`stripTocDefaults`、`stripPartsDefaults`、`stripUnorderedListsDefaults`、`stripOrderedListsDefaults`、`stripMathDefaults`、`stripTableStyleDefaults`、`stripCaptionStyleDefaults`、`stripDiagramStyleDefaults`、`stripParagraphStylesDefaults`、`stripCalloutStylesDefaults`、`stripHeaderFooterDefaults`、`stripDesignSlotDefaults`、`stripDebugDefaults`、`stripHtmlViewerDefaults`、`stripPdfGenerationDefaults`。
+
+既定値のなかには、設定のほかの部分で決まるものがあります。段末そろえは文字グリッドと縦組みでは既定でオフになり、脚注、キャプション、索引の既定値は文書の言語に従います。`stripConfigDefaults`は、渡された設定そのものの既定値とそれぞれの値を比べます。そのため、段末そろえが既定でオフになるところでは`headings.balancing.enabled: true`が残り、`false`は取り除かれます。除去関数を単独で呼ぶときは、その文脈を引数で渡します。`stripHeadingsDefaults(headings, balancingOnByDefault(config))`、`stripIndexDefaults(index, locale)`、`stripCaptionStyleDefaults(captionStyle, locale)`、`stripFootnotesDefaults(footnotes, locale, writingMode)`。
+
+### 解析
+
+エンジンは、Markdownのトークナイザーとフロントマターの読み取り関数を公開しています。ビルドの前に文書を調べたり、Postextが見るのと同じブロック構造をほかのツールに渡したりするのに使えます。
+
+```ts
+import { parseMarkdown, extractFrontmatter } from 'postext';
+
+const source = '---\ntitle: Chapter One\n---\n\n# Opening\n\nThe story begins here.';
+
+const { metadata, content } = extractFrontmatter(source);
+// metadata.title === 'Chapter One'
+
+const blocks = parseMarkdown(content);
+// => [ { type: 'heading', level: 1, text: 'Opening', … },
+//      { type: 'paragraph', text: 'The story begins here.', … } ]
+```
+
+Postextが認識するMarkdownの構文の全一覧は、[文書形式](/ja/docs/document-format)のページを参照してください。
+
+### レイアウトの前にフォントを読み込む
+
+レイアウトは、実行した時点でフォントセットにあるフェイスでテキストを計測します。`prepareFonts`は最初のビルドの前に、設定とそのテキストが求めるすべてのフェイスを読み込みます。対象は本文、見出し、リスト、囲みのタイトルと本文、表、デザインのテキスト、柱、目次、コード、漫画の写植で、設定が指定するウェイトと傾きのそれぞれを読み込みます（本文のファミリーは4つです。`**`と`*`がその中で太字とイタリックを組むためです）。各フェイスは文書が組む文字の分だけ読み込むので、`unicode-range`のスライスとして配信されるファミリー（Latin Extended、ギリシア文字、アラビア文字、Google FontsとFontsourceのCJKのスライス）からは、テキストに必要なファイルが届きます。
+
+```ts
+import { prepareFonts, buildDocument, buildDocumentWithFonts } from 'postext';
+
+// ホストのファイル。PDFのフォントプロバイダーと同じ取り決めなので、1つの関数を両方で使える。
+async function resolve(family: string, weight: number, style: 'normal' | 'italic') {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-${style}.woff2`;
+}
+
+const report = await prepareFonts(content, config, { resolve });
+// report.loaded、report.missing、report.synthesized：{ family, weight, style }[]
+const doc = buildDocument(content, config);
+
+// 1回の呼び出しでもよい：準備し、ビルドし、ページが使ったのに無かったフェイスを読み込んで、もう一度ビルドする。
+const same = await buildDocumentWithFonts(content, config, { resolve });
+```
+
+- **ページが宣言しているフェイス**（`@font-face`規則、追加済みの`FontFace`）は、フォントセットを通して読み込みます（`document.fonts.load`、ワーカーでは`self.fonts`）。**宣言していないフェイス**は`resolve(family, weight, style, { text, codePoints })`に問い合わせます。リゾルバーは、ファイル1つ（バイト列またはURL）、複数のファイル（1つのフェイスのスライス）、スライスや可変の範囲を表す`{ source, unicodeRange, weight, style }`、または`null`を返します。エンジンはすべての読み込みが終わってから、設定の順と各回答の順（リゾルバーがそう返せば、latin、latin-ext、greekの順）にそれらを`FontFace`として追加します。そのため、ファイルがどんな順で届いてもフォントセットは同じになります。さらに、[SVGの画像](/ja/docs/configuration-resources#svgの文字のフォント)とレイアウトのワーカーが読むフォントレジストリにも登録します。リゾルバーが自分でフェイスを宣言し（スタイルシートを追加して）、`null`を返してもかまいません。
+- **レポート**には、読み込んだフェイス（またはインストール済みのファミリー）で賄えるフェイス、まだ`missing`のフェイス、ブラウザーが別のウェイトや傾きから`synthesize`するフェイスが並びます。待ち時間の上限は`timeoutMs`（既定は10 000）で、その時点でまだ読み込み中のフェイスは欠落として数えます。フォントセットがない環境（Node）では、`prepareFonts`は何もせず、すべてのフェイスを読み込み済みとして報告します。
+- **`buildDocumentWithFonts(content, config, options)`**：フォントを準備し、`buildDocumentAsync`でビルドし、ページが実際にテキストを組んだフェイスを読み取り、フォントセットが用意できなかったものを読み込んで（ページを組んで初めてわかるウェイトは、ファミリーの別のウェイトで代用できる場合でも`resolve`に求めます）、もう一度ビルドします（追加のビルドは最大2回）。`withLoadedFonts(build, options)`は、任意のビルド関数のまわりで同じことを行います。章ごとにビルドする本や、複数の文書を返すバンドル（`buildBundle`）に使えます。`options.onFonts`は最終的なレポートを受け取ります。
+- **ビルドの後**、テキストを組んだフェイスのうちフォントセットが用意できなかったものは、すべて`doc.contentWarnings`に`fontFallback`として挙がります（[文書の中の警告](#文書の中の警告)を参照）。
+
+後から届いたフェイスは、エンジンが自分で拾います。エンジンはフォントセットごとに、前回確かめたときに各ファミリーのどのフェイスが読み込まれていたかを覚えています。ビルドは開始時にもう一度確かめ（フォントセットが増えたか減ったか、読み込み中か、フェイスの読み込みが終わったときだけ）、フェイスが変わったファミリーで計測した結果を捨てます。`watchFonts(fontSet)`はフェイスが読み込まれるたびに同じことを行い、一度に届くスライスがいくつあっても、アニメーションフレームあたり最大1回にとどめます。`onFontsChanged(listener)`は、どのファミリーが変わったかをホストに知らせるので、ホストはページをレイアウトし直せます。
+
+```ts
+import { watchFonts, onFontsChanged } from 'postext';
+
+const stop = watchFonts();                         // 既定はdocument.fonts
+const off = onFontsChanged((families) => relayout());
+```
+
+`prepareFonts`は、読み込み先のフォントセットの監視を始めます（`watch: false`で無効になります）。
+
+### 計測キャッシュ
+
+テキストの計測は、レイアウトの中で負荷の高い処理です。2種類のキャッシュがこれを軽くしています。
+
+- **自分で持つブロックキャッシュ**。`createMeasurementCache()`は`MeasurementCache`を返します。これは計測したすべての段落を、テキスト、フォント、幅、改行のオプション、有効なハイフネーション辞書をキーとして記憶します。`buildDocument`（または`buildDocumentAsync`）の3番目の引数に渡すと、収束パスの間やビルドの間で計測結果を再利用できます。キー入力のたびに文書をレイアウトするエディターなら、変更された段落だけを計測すれば済みます。キャッシュがなければ、パスのたびにすべてのブロックを計測し直します。キャッシュから読んだ段落は新たに計測した段落と同じなので、キャッシュを使ったビルドは、使わないビルドとすべての行を同じように組みます。postext 1.4.1では、キャッシュした段落から最終行がラントであるという印が失われ、ラントの詰めや段末そろえで違う改行になることがありました。キャッシュは、自分が埋められたときの計測の世代を持っています。あるファミリーのフェイスが届いたり消えたりすると、次の参照のときにそのファミリーで組んだブロックを捨てるので、フォントの読み込みをまたいで保持したキャッシュが、代替フォントで計測した行を返すことはありません。
+- **グローバルな幅のキャッシュ**。語の幅は、ページ内のすべてのビルドが共有するモジュールの状態に、フォント文字列ごとにキャッシュされます。pretextも独自のキャッシュを持っています。エンジンは、あるファミリーのフェイスが変わると（ビルドの開始時、`watchFonts`、`prepareFonts`、`loadBundleFonts`）、そのファミリーの幅を捨てます。pretextのキャッシュにはファミリーごとの索引がないので、丸ごと消去します。
+
+```ts
+import { buildDocument, createMeasurementCache, evictFontFamilies, clearMeasurementCache } from 'postext';
+
+const cache = createMeasurementCache();
+let doc = buildDocument(content, config, cache);
+
+// "EB Garamond"のフェイスがdocument.fontsに追加された：次のビルドはそれを見て、
+// 同じキャッシュのまま、そのファミリーを計測し直す。
+doc = buildDocument(content, config, cache);
+
+// エンジンから見えないフェイス（ホスト独自のフォントセット）を変えるホストは、そう伝える：
+evictFontFamilies(['EB Garamond']);   // そのファミリーの幅とキャッシュしたブロック
+clearMeasurementCache();              // すべてのファミリー
+```
+
+テキストを少しずつ計測するアプリケーション向けに、`cachedMeasureBlock(text, font, maxWidthPx, lineHeightPx, options, cache)`と`cachedMeasureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cache)`があります。`measureBlock`と`measureRichBlock`の引数に加えて、最後にキャッシュを取ります。
+
+### 1つのページで共有されるグローバルな状態
+
+Postextの状態の一部は、モジュールレベルの変数にあります。同じJavaScriptのレルム（realm）で`postext`をインポートするものは、すべてこれを共有します。ページとそのスクリプトは1つのコピーを共有し、iframeやワーカーはそれぞれ自分のコピーを持ちます。1ページに1文書なら問題は起きません。1ページに複数の文書がある場合（2つのライブプレビュー、サンプルのギャラリーなど）は影響が出ます。
+
+- **リソースの画像**。`registerResourceImage(fileId, image)`は、`fileId`をキーとする1つの登録簿に書き込み、`renderPage`と`renderPageToCanvas`がそこから読みます。2つの文書がどちらも`figure.svg`を登録すると、その項目を共有し、最後の登録が両方に適用されます。ファイルidには文書ごとの接頭辞を付け、文書が不要になったら`unregisterResourceImage(fileId)`か`clearResourceImages()`を呼んでください。canvasバックエンドがキャッシュするラスターも同じキーで管理され、画像と一緒に破棄されます。
+- **テキストの計測**。計測した幅は、フォント文字列とテキストごとにレルム全体でキャッシュされます。あるファミリーのフェイスが届いたり消えたりすると、エンジンはすべての文書についてそのファミリーの幅を捨てます（[レイアウトの前にフォントを読み込む](#レイアウトの前にフォントを読み込む)を参照）。`clearMeasurementCache()`はすべてを捨てます。
+- **解決済みの設定**。設定オブジェクトはそれぞれ1回だけ解決され、その結果がオブジェクトに結び付けてキャッシュされます。ビルドのたびに、まずオブジェクトを解決したときのテキストと比べるので（`JSON.stringify`を1回。55 KBの本の設定で約0.1 ms、240 KBの設定で約1.5 ms）、その場で書き換えた設定は、どの深さの変更でも（`config.bodyText.fontSize = …`、パレットの色）解決し直されます。`invalidateConfig(config)`を呼べば、解決結果を手動で捨てられます。`stableStringify`と`hashString`は、キーの順序に左右されない内容のキーを返します。設定ごとにレイアウトをキャッシュするホスト向けです。
+- **ハイフネーションの言語**。ビルドのたびに、プロセス全体のハイフネーション言語が、その文書の`bodyText.hyphenation.locale`に設定されます。公開されている`hyphenateText(text)`と`layoutDesignSlot`は、言語を渡さなければ最後のビルドの言語を使います。`hyphenateText(text, 'es')`のように呼んでください。
+- **数式エンジン**。MathJaxのエンジンと描画済み数式のキャッシュは、レルムに1つずつです。`initMathEngine()`は全員のためにそれを起動します。
+
+最も簡単な分離は、文書ごとにレルムを分けることです。ライブサンプルごとにiframeを使う（CodePenの埋め込みがこれにあたります）か、計測とハイフネーションのために文書ごとに[レイアウトのワーカー](#web-workerでレイアウトを実行する)を使います（画像は引き続きページに登録されます）。
+
+
+## Web Workerでレイアウトを実行する
+
+**ブラウザーでPostextを使うときは、この方法を推奨します**。ライブプレビュー、エディター、サイズ変更に追従するビューアー、Sandboxのような試用環境など、対話的なものを作るなら、`postext/worker`の`createLayoutWorker()`を通してパイプラインを動かしてください。UIのコードでは、メインスレッドで`buildDocument`を直接呼ばないでください。
+
+メインスレッドで`buildDocument`を呼ぶと、パイプライン全体（解析、計測、7つのパス、最大5回の収束の反復）が、呼び出したスレッドで実行されます。1回きりの書き出しならそれで問題ありません。対話的なUIにとっては不適切なスレッドです。150ミリ秒のレイアウトが入力イベントをふさぎ、キー入力が溜まり、スクロールが引っかかります。ワーカーは、その時間をすべてバックグラウンドのスレッドに移します。
+
+Postextには専用のWeb Workerのエントリーポイント`postext/worker`があり、パイプラインをメインスレッドから外します。大半の統合で使われることを想定している方法です。SandboxのCanvas、HTML、PDFのビューポートは、1つの`useLayoutWorker`フック（`packages/postext-sandbox/src/worker/useLayoutWorker.ts`）を通して同じ`createLayoutWorker()`のハンドルを共有し、「最後の要求が勝つ」キャンセルで動かしています。新しいキー入力は、実行中のビルドを終わる前に中止します。
+
+標準的な統合の概要は次のとおりです。
+
+1. **作成**：ビューポートごとに1回、`createLayoutWorker()`でワーカーを作ります。
+2. **フォントの登録**：ファミリーごとに1回、`registerFonts(payloads)`で転送可能な`ArrayBuffer`を送ります。
+3. **ビルド**：`build(content, config, { signal })`でビルドします。古いビルドをキャンセルできるよう、呼ぶたびに新しい`AbortSignal`を渡します。
+4. **置き換え**：次のビルドを始める*前に*、前のビルドのシグナルを中止します。これが「最後の要求が勝つ」パターンです。
+5. **破棄**：ワーカーを所有するコンポーネントがアンマウントされたら、ワーカーを破棄します。
+
+`build(...)`から返る同じ`VDTDocument`が、後段のすべてのレンダラーに渡ります。canvasには`renderPage`/`renderPageToCanvas`、HTMLには`renderToHtmlIndexed`、PDFには（`postext-pdf`の）`renderToPdf`です。ビルドはワーカーで1回行い、ラスタライズはメインスレッドでUIが必要とするだけ何度でも行えます。
+
+### ワーカーで得られるもの
+
+- **メインスレッドが空いたまま**。解析、計測、7パスの収束ループはすべてワーカーの中で動きます。メインスレッドに処理が戻るのは、完成した`VDTDocument`が送り返されるときだけです。
+- **「最後の要求が勝つ」キャンセル**。`build(content, config, { signal })`は`AbortSignal`をワーカーまで通します。完了前に中止すると、メイン側では`AbortError`が発生します。ワーカーの中では、パイプラインが次のブロックごとのキャンセル確認点で`BuildCancelledError`を投げ、すぐに止まります。
+- **ワーカーごとの計測キャッシュ**。ワーカーは、存続している間1つの`MeasurementCache`を持ちます。フォント、テキスト、幅が同じ後続のビルドは、キャッシュした行の計測を再利用します。長い文書に1文字入力しても、計測し直すのは入力が実際に変わったブロックだけです。
+- **メインスレッドと同一の計量値**。フォントは転送可能な`ArrayBuffer`としてワーカーに送られ、ワーカー自身の`FontFaceSet`に`new FontFace(...)`で登録されます。ワーカーはメインスレッドと同じcanvasのフォント計量値で計測するので、改行と段の高さはバイト単位で一致します。
+- **数式のラスターキャッシュがワーカーのビルドをまたいで残る**。数式レンダラーは、同一性をキーとするキャッシュに加えて、内容をキーとするラスターキャッシュを持っています。そうしなければ、`MathRender`をワーカーの境界を越えて構造化複製するたびに、再ビルドのたびに同一性のキャッシュが外れてしまいます。
+
+### 公開API
+
+ワーカーのクライアントは`postext/worker`サブパスにあり、名前はわずかです。
+
+- **`createLayoutWorker(opts?): LayoutWorkerHandle`**：専用のワーカーを起動し（`opts.worker`で渡したワーカーを包むか、`opts.url`のワーカーエントリーを起動することもできます）、型付きのハンドルを返します。[CDNからワーカーを読み込む](#cdnからワーカーを読み込む)を参照してください。
+- **`LayoutWorkerHandle.registerFonts(faces: FontPayload[]): Promise<void>`**：フォントのバイト列をワーカーに送ります。バッファーは転送されるので、後で送り直す必要があるなら、メインスレッドに新しいコピーを残しておいてください。
+- **`LayoutWorkerHandle.build(content, config?, { signal? }): Promise<VDTDocument>`**：パイプラインを実行します。シグナルを中止すると、実行中のビルドがキャンセルされます。
+- **`LayoutWorkerHandle.dispose(): void`**：ワーカーを終了し、保留中のビルドを`AbortError`で拒否します。
+- **`FontPayload`**：`{ family, weight, style, unicodeRange?, buffer: ArrayBuffer }`。`weight`はCSSのウェイトの文字列（`'700'`、`'bold'`）です。`registerFonts`は数値（`700`）も受け付けます。`buffer`は、`registerFonts`を呼んだときにワーカーへ転送されます。
+- **`BuildCancelledError`**（`postext`から再エクスポート）：`options.shouldCancel`が`true`を返したときに`buildDocument`が内部で投げるものです。メインスレッドでは通常目にしません。ワーカーのプロトコルが、コードに届く前に`AbortError`に変換するからです。
+
+パッケージは、コンパイル済みのワーカースクリプトを指す`postext/worker/entry`パスも公開しています。`createLayoutWorker()`はこのURLを自動で解決します。明示的に参照する必要があるのは、バンドラーが手で組み立てた`new Worker(new URL(...), { type: 'module' })`呼び出しを要求する場合か、エントリーを自分で配信する場合（`opts.url`）だけです。
+
+### 最小限の統合
+
+```ts
+import { createLayoutWorker } from 'postext/worker';
+import type { FontPayload, LayoutWorkerHandle } from 'postext/worker';
+import type { PostextConfig, VDTDocument } from 'postext';
+
+// 1. Create the worker once and keep the handle for the lifetime of your viewport.
+const layout: LayoutWorkerHandle = createLayoutWorker();
+
+// 2. Register fonts once per family (transferable ArrayBuffers).
+//    getConfigFontFamilies(config) is a helper that lists the families your config will render.
+const payloads: FontPayload[] = await collectFontPayloadsForFamilies([
+  'EB Garamond',
+  'Open Sans',
+]);
+await layout.registerFonts(payloads);
+
+// 3. Drive builds with last-wins cancellation: abort the previous signal
+//    before starting a new build. A stale build is thrown away inside the worker.
+let pending: AbortController | null = null;
+
+async function rebuild(
+  markdown: string,
+  config: PostextConfig,
+): Promise<VDTDocument | null> {
+  pending?.abort();
+  pending = new AbortController();
+  try {
+    return await layout.build({ markdown }, config, { signal: pending.signal });
+  } catch (err) {
+    if ((err as { name?: string } | null)?.name === 'AbortError') return null;
+    throw err;
+  }
+}
+
+// 4. Dispose when the component that owns the worker unmounts.
+//    Pending builds reject with AbortError.
+layout.dispose();
+```
+
+Reactのコンポーネントに包むと、次の形になります。
+
+```tsx
+import { useEffect, useRef } from 'react';
+import { createLayoutWorker } from 'postext/worker';
+import type { LayoutWorkerHandle } from 'postext/worker';
+import { renderPageToCanvas } from 'postext';
+import type { PostextConfig } from 'postext';
+
+export function CanvasPreview({
+  markdown,
+  config,
+}: {
+  markdown: string;
+  config: PostextConfig;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const workerRef = useRef<LayoutWorkerHandle | null>(null);
+  const pendingRef = useRef<AbortController | null>(null);
+
+  // Mount: spin up the worker and ship the fonts once.
+  useEffect(() => {
+    const handle = createLayoutWorker();
+    workerRef.current = handle;
+    (async () => {
+      const payloads = await collectFontPayloadsForFamilies(
+        getConfigFontFamilies(config),
+      );
+      await handle.registerFonts(payloads);
+    })();
+    return () => {
+      pendingRef.current?.abort();
+      handle.dispose();
+    };
+  }, []); // fonts registered once; re-register only when the family set changes
+
+  // Every keystroke or config change: supersede the in-flight build and kick a new one.
+  useEffect(() => {
+    const handle = workerRef.current;
+    if (!handle) return;
+    pendingRef.current?.abort();
+    const ac = new AbortController();
+    pendingRef.current = ac;
+    (async () => {
+      try {
+        const vdt = await handle.build({ markdown }, config, { signal: ac.signal });
+        const canvas = canvasRef.current;
+        if (!canvas || !vdt.pages[0]) return;
+        renderPageToCanvas(vdt.pages[0], vdt, canvas); // rasterise on the main thread
+      } catch (err) {
+        if ((err as { name?: string } | null)?.name !== 'AbortError') throw err;
+      }
+    })();
+  }, [markdown, config]);
+
+  return <canvas ref={canvasRef} />;
+}
+```
+
+パターンは常に同じです。**作成は1回、フォントの登録も1回、AbortSignal付きのビルドは何度でも、アンマウントで破棄**。
+
+### CDNからワーカーを読み込む
+
+ワーカーのスクリプトはページと同じオリジンから来なければなりません。そのため、CDNが配信する`postext/worker`のコピーは、隣にある`layout.worker.js`ファイルを起動できません。`createLayoutWorker()`がこれに対処します。
+
+- **esm.shならオプションなし**。`postext/worker`自体がesm.shから読み込まれている場合（モジュールのURLが`https://esm.sh/postext@1.5.0/es2022/worker.mjs`のような形）、クライアントは、対応する`https://esm.sh/postext@1.5.0/worker/entry`を、それをインポートするだけの1行の同一オリジンのblobモジュールを通して起動します。`?deps=`、`?external=`、`?alias=`を付けたインポートや、`https://esm.sh/*postext@1.5.0/worker`の形でも同じです。ワーカーには外部の依存関係を解決するインポートマップがないので、常にそのバージョンの素のビルドが使われます。
+- **ほかのサーバーなら`url`を指定**。jsDelivr（`/+esm`）やunpkgなど、ほかのCDNは検出されません。`createLayoutWorker({ url })`は`url`にあるワーカーエントリーのモジュールを起動します。同一オリジンのURLは直接、別オリジンのURLは同じblobのラッパーを通して起動します。そのサーバーはクロスオリジンのリクエスト（CORS）を許可している必要があります。
+- **バンドラーでは何も変わらない**。Vite、webpack、Next.jsでは、引き続きオプションなしで`createLayoutWorker()`を呼んでください。バンドラーがワーカーをアプリのチャンクとして出力します。
+
+```js
+import { createLayoutWorker } from 'https://esm.sh/postext/worker';
+
+const layout = createLayoutWorker();
+const face = async (weight, style) => ({
+  family: 'EB Garamond',
+  weight,
+  style,
+  buffer: await (await fetch(`https://cdn.jsdelivr.net/npm/@fontsource/eb-garamond@5/files/eb-garamond-latin-${weight}-${style}.woff2`)).arrayBuffer(),
+});
+await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'normal'), face(400, 'italic')]));
+const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
+```
+
+**ワーカーにはページのフォントが見えません**。ワーカーは独自のフォントセットを持ち、そこにあるのは`registerFonts`で送ったフェイスと、システムにインストールされたフォントだけです。ワーカーが見つけられないファミリーでテキストを組むビルドでは、そのテキストは代替フォントで計測されるため、改行がページと一致しません。このときクライアントは、ファミリーごとに1回コンソールに警告を出し（`"EB Garamond" is not available inside the layout worker…`）、そのファミリーを`BuildStats.missingFonts`に挙げます。これは`build`の`onStats`コールバックが受け取ります。文書自体も、同じフェイスを`fontFallback`のコンテンツ警告として持っています。
+
+`handle.prepareFonts(content, config, options)`は、ページで[`prepareFonts`](#レイアウトの前にフォントを読み込む)を実行し、見つかったフェイスのうちフォントレジストリがファイルを持っているもの（リゾルバーのファイル、バンドルのフェイス、ページの読み取り可能な`@font-face`規則）を、文書の文字を含むスライスに限ってワーカーに送ります。フェイスがワーカーに届くと、ワーカーはそのファミリーの計測結果と、仕上がった文書のキャッシュだけを捨てます。
+
+### フォントペイロードの収集（Fontsource / Google Fonts）
+
+`registerFonts`はフォントの生のバイト列を受け取ります。取得するのはメインスレッドが適しています。Google Fontsはブラウザーらしいユーザーエージェント文字列にしかWOFF2を返さないこと、また中央のキャッシュがあれば複数のワーカーインスタンスで同じバイト列を共有できることが理由です。
+
+Sandboxの`collectFontPayloadsForFamilies`（`packages/postext-sandbox/src/controls/fontLoader.ts`）は、そのまま使える参考実装です。次の処理を行います。
+
+1. `https://api.fontsource.org/v1/fonts/{family-id}`に問い合わせ、利用できるウェイトと、ファミリーが可変軸を持つかどうかを調べます。
+2. ファミリーが提供するすべてのウェイトとスタイルを含むGoogle FontsのCSS2のURLを組み立てます。
+3. 生成された`@font-face`のスタイルシートを取得し、各`src: url(...) format('woff2')`宣言を抜き出して、生のバイト列をダウンロードします。
+4. 呼び出しごとに`buffer`が新しい`ArrayBuffer`になっている`FontPayload[]`を返します。`registerFonts`はバッファーを転送し、送信側のコピーを切り離された（detached）状態にするので、これが重要です。
+
+`getConfigFontFamilies(config)`と組み合わせると、ある`PostextConfig`が実際に描画するファミリー（本文、見出し、リストの記号、番号付きリストの番号）の一覧が得られます。
+
+### エンジン内部の協調的キャンセル
+
+`buildDocument`を自分で動かす場合（たとえば独自のワーカーの中で）、パイプラインが公開している`shouldCancel`フックを直接使えます。
+
+```ts
+import { buildDocument, BuildCancelledError } from 'postext';
+
+let superseded = false;
+try {
+  const vdt = buildDocument(content, config, cache, {
+    shouldCancel: () => superseded,
+  });
+} catch (err) {
+  if (err instanceof BuildCancelledError) return; // a newer build took over
+  throw err;
+}
+```
+
+`shouldCancel`は、配置の間、トップレベルのブロックごとに1回呼ばれます。このフックは意図的に協調的な仕組みになっています。pretext自体のレイアウト呼び出しを行の途中で止めることはできませんが、キャンセルの粒度を十分小さく（ミリ秒単位に）保つので、速く入力するユーザーが古いビルドを待たされることはありません。
+
+### ワーカーからのPDF書き出し
+
+PDFバックエンドは、できあがった`VDTDocument`を受け取ってPDFのバイト列にします。レイアウトを再実行することは**ありません**。そのため、ブラウザーでの標準的なPDFの流れはワーカーときれいに組み合わさります。VDTをワーカーで（メインスレッドの外で、キャンセル可能に、キャッシュを再利用して）ビルドし、同じVDTに対してメインスレッドで`renderToPdf`を呼びます。
+
+```ts
+import type { LayoutWorkerHandle } from 'postext/worker';
+import { renderToPdf } from 'postext-pdf';
+import type { PostextConfig } from 'postext';
+import { createPdfFontProvider } from './pdfFontProvider';
+
+const fontProvider = createPdfFontProvider();
+
+export async function exportPdf(
+  layout: LayoutWorkerHandle,
+  markdown: string,
+  config: PostextConfig,
+): Promise<Uint8Array> {
+  // 1. Build the VDT in the worker — UI stays responsive during the layout passes.
+  const vdt = await layout.build({ markdown }, config);
+
+  // 2. Rasterise to PDF on the main thread. renderToPdf is fast once the VDT exists
+  //    because it is walking precomputed coordinates, not remeasuring text.
+  return renderToPdf(vdt, {
+    fontProvider,
+    // pdfGeneration config on `vdt.config` is honoured automatically.
+  });
+}
+```
+
+ライブプレビュー用のワーカーのハンドルをすでに持っているなら、2つ目のワーカーを起動せずに、書き出しにもそれを再利用してください。ワーカーの中の計測キャッシュのおかげで、画面のプレビューに続くPDFの書き出しには、ほとんど費用がかかりません。
+
+長い本では、PDFそのものの書き出しにも数秒かかります。`postext-pdf/worker`は、その段階を専用のワーカーで実行します（[ワーカーでPDFを描画する](#ワーカーでpdfを描画する)を参照）。
+
+### ワーカーを使う場面、使わない場面
+
+ワーカーを使うのは次の場合です。
+
+- **ライブプレビュー、エディター、試用環境**。ユーザーの入力に応じて文書をビルドし直すものすべて。
+- **サイズ変更に追従するHTMLビューアー**。`ResizeObserver`が通知するたびにレイアウトを再実行するもの。
+- **ブラウザー内でのPDF書き出し**。ライブプレビューをすでに持つUIから実行する場合。既存のワーカーのハンドルを再利用すれば、書き出しが計測キャッシュの恩恵を受けられます。
+- **複数の出力タブ**。すべてが同じVDTを必要とする場合（SandboxのCanvas / HTML / PDFのビューポートは、ビューポートのマウントごとに1つのワーカーのハンドルを共有します）。
+
+ワーカーを使わないのは次の場合です。
+
+- **サーバーサイドでの生成**。Nodeにはブラウザーの`FontFaceSet`がなく、スレッドはいずれにしても自分で制御できます。
+- **単発の書き出し**（CLI、ヘッドレスの書き出しスクリプト、Cloud Function）で、ふさいでしまう対話的なUIがない場合。`buildDocument`を直接呼ぶほうが簡単で、最初のフォント転送の費用もかかりません。
+
+
+## HTMLビューアーの統合
+
+HTMLビューアーは、Postextの画面向けのレンダラーです。ページをビットマップにラスタライズする代わりに、絶対配置のDOMノードを出力し、その位置と大きさは印刷用の出力を生むのと同じパイプラインで決まります。そのため、PDFビューアーを持ち込まずに、ブラウザーで読みやすく、選択でき、サイズ変更に追従する文字組みがほしい場合（読書アプリ、製品内のプレビュー、埋め込みのドキュメント画面など）に適しています。
+
+公開APIの主な要素は次のとおりです。
+
+- **`buildDocument(content, config, cache?)`**：組版パイプライン全体を実行し、`VDTDocument`を返します。
+- **`renderToHtmlIndexed(doc, options)`**：VDTを1つのHTML文字列と、ページごと・ブロックごとの内訳に変換します。内訳があれば、描画の間で少数のブロックだけが変わったときに、DOMを低コストで部分的に更新できます。
+- **`resolveHtmlViewerConfig(partial)`**：HTMLビューアーの既定値（`maxCharsPerLine`、`columnGap`、`optimalLineBreaking`）を補います。
+- **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`**：目標の文字数から実際の段幅をピクセルで求めるための計測の基本関数です。
+- **`createMeasurementCache` / `clearMeasurementCache`**：差し替え可能なキャッシュで、再レイアウトの間で計測結果を再利用できます。
+- **`prepareFonts` / `buildDocumentWithFonts` / `watchFonts` / `onFontsChanged`**：レイアウトの前に文書のフェイスを読み込み、フェイスが届いたらレイアウトし直します（[レイアウトの前にフォントを読み込む](#レイアウトの前にフォントを読み込む)を参照）。
+
+### ライブサンプル：HTML文字列
+
+下のReactでの統合に入る前に、素のJavaScriptで一連の流れを示します。文書をビルドし、`VDTDocument`を`renderToHtml`に渡し、得られた文字列をコンテナーに入れます。`mode: 'single'`はページを縦に積み重ねます。ページは既定では透明なので、`background`で色を付けます。このCodePenのサンプルは生成したマークアップも表示するので、レンダラーが出力する絶対配置の行を確認できます。ブラウザーはそれを描画しますが、リフローはしません。
+
+<CodePenExample name="render-html" title="Postext · 文書をHTMLに描画する" description="postextでMarkdown文書をレイアウトし、HTML文字列に描画します。" height={600} />
+
+### 最小限の統合
+
+次のコードは、役に立つ統合としては最も短いものです。現在のビューポートの大きさで文書をビルドし、コンテナーに描画し、サイズが変わったら再実行します。
+
+```tsx
+import { useEffect, useRef } from 'react';
+import {
+  buildDocument,
+  renderToHtmlIndexed,
+  resolveHtmlViewerConfig,
+  buildFontString,
+  measureGlyphWidth,
+  dimensionToPx,
+  createMeasurementCache,
+  watchFonts,
+  onFontsChanged,
+} from 'postext';
+import type { PostextConfig, MeasurementCache } from 'postext';
+
+// Screen-friendly DPI: at 144 DPI, an 8pt body size resolves to 16 px.
+const HTML_DPI = 144;
+const PADDING_PX = 24;
+
+// Prose sample used to measure the target column width. Proportional fonts
+// make "N × average width" unreliable, so we measure a representative string.
+const SAMPLE =
+  'The quick brown fox jumps over the lazy dog. Sphinx of black quartz, judge my vow.';
+
+function sampleForChars(n: number): string {
+  let s = SAMPLE;
+  while (s.length < n) s += ' ' + SAMPLE;
+  return s.slice(0, n);
+}
+
+export function PostextHtmlViewer({
+  markdown,
+  config,
+  mode = 'multi',
+}: {
+  markdown: string;
+  config: PostextConfig;
+  mode?: 'single' | 'multi';
+}) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const cacheRef = useRef<MeasurementCache>(createMeasurementCache());
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+
+    const relayout = () => {
+      const rect = host.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      const viewer = resolveHtmlViewerConfig(config.htmlViewer);
+      const fontFamily = config.bodyText?.fontFamily ?? 'EB Garamond';
+      const fontWeight = config.bodyText?.fontWeight ?? 400;
+      const fontSize = config.bodyText?.fontSize ?? { value: 8, unit: 'pt' as const };
+      const fontSizePx = dimensionToPx(fontSize, HTML_DPI);
+
+      // Measure the *actual* column width for N characters of body prose.
+      const targetColumnPx = measureGlyphWidth(
+        sampleForChars(viewer.maxCharsPerLine),
+        buildFontString(fontFamily, fontSizePx, String(fontWeight), 'normal'),
+      );
+
+      const inner = Math.max(rect.width - PADDING_PX * 2, 100);
+      let columnWidthPx: number;
+      if (mode === 'single') {
+        columnWidthPx = Math.min(targetColumnPx, inner);
+      } else {
+        // Fit as many columns as we can at the target width.
+        const count = Math.max(
+          1,
+          Math.floor((inner + viewer.columnGap) / (targetColumnPx + viewer.columnGap)),
+        );
+        columnWidthPx = (inner - viewer.columnGap * (count - 1)) / count;
+      }
+      columnWidthPx = Math.max(Math.floor(columnWidthPx), 80);
+
+      // Single mode uses one very tall page; multi mode uses the viewport
+      // height so each VDT "page" becomes one column.
+      const pageHeightPx =
+        mode === 'single' ? Math.max(rect.height * 20, 200_000) : Math.max(rect.height - PADDING_PX * 2, 400);
+
+      const override: PostextConfig = {
+        ...config,
+        page: {
+          ...config.page,
+          dpi: HTML_DPI,
+          width: { value: columnWidthPx, unit: 'px' },
+          height: { value: pageHeightPx, unit: 'px' },
+          margins: {
+            top: { value: 0, unit: 'px' },
+            bottom: { value: 0, unit: 'px' },
+            left: { value: 0, unit: 'px' },
+            right: { value: 0, unit: 'px' },
+          },
+        },
+        layout: { ...config.layout, layoutType: 'single' },
+        bodyText: {
+          ...config.bodyText,
+          optimalLineBreaking: viewer.optimalLineBreaking,
+        },
+      };
+
+      const doc = buildDocument({ markdown }, override, cacheRef.current);
+      const { html } = renderToHtmlIndexed(doc, {
+        mode,
+        columnGap: viewer.columnGap,
+        padding: PADDING_PX,
+        background: 'transparent',
+      });
+
+      host.innerHTML = html;
+    };
+
+    relayout();
+
+    const ro = new ResizeObserver(() => relayout());
+    ro.observe(host);
+
+    // Re-measure when web fonts land so glyph widths aren't taken from fallbacks.
+    const stopWatching = watchFonts();
+    const off = onFontsChanged(() => relayout());
+
+    return () => {
+      ro.disconnect();
+      off();
+      stopWatching();
+    };
+  }, [markdown, config, mode]);
+
+  return <div ref={hostRef} style={{ width: '100%', height: '100%', overflow: 'auto' }} />;
+}
+```
+
+この例で行っていることを補足します。
+
+- **段幅は概算せずに計測する**。`maxCharsPerLine`は文字数で表した*目標*なので、実際のピクセル幅は本文のフォントによって変わります。`measureGlyphWidth`は選んだフォントで実際に計測するので、フォントを差し替えても行の長さが一定に保たれます。
+- **ページの書き換え**。HTMLビューアーは、VDTの各「ページ」を画面上の1つの段として扱います。この例では`page.width`を計測した段幅で上書きし、余白をゼロにして（パディングはページの外側、包んでいる`.pt-doc`のdivにあります）、`HTML_DPI = 144`を使うことで`8pt`の本文が`16px`になるようにしています。
+- **フォントの読み込みへの対応**。`watchFonts`は`document.fonts`を監視し、フェイスが届いたファミリーで計測した結果を、1フレームに1回捨てます。続いて`onFontsChanged`が段をレイアウトし直します。再レイアウトしなければ、最初の描画は代替フォントの計量値を使い、本来のフォントが届いたときに表示が跳ねます。
+- **計測キャッシュの再利用**。コンポーネントごとに1回だけキャッシュを作ることで、サイズ変更やフォントの拡大縮小のときに、すべての段落を計測し直さず、前回の描画の計測結果を再利用できます。
+
+### さらに進んだ統合
+
+上の例は意図的に単純にしてあります。実運用の統合では、たいてい次のものを加えます。
+
+- **Shadow DOMによる分離**：`host.attachShadow({ mode: 'open' })`に描画すれば、外側のページのCSSがビューアーに漏れ込みません。
+- **差分の部分更新**：`renderToHtmlIndexed`は`pages[i].blocks`を返し、各ブロックは安定した`id`とブロックの外側のHTMLを持ちます。2回の描画の間で変わったブロックが少なければ、`innerHTML`を作り直さずに、そのブロックのラッパーだけをその場で置き換えられます。
+- **オーバーレイ**：各`.pt-page`の上に絶対配置のSVGを重ね、カーソル、選択範囲、ベースライングリッドを表示します。
+- **リンク**：Markdownのリンクの語は`<a href="…" rel="noopener noreferrer">`で包まれ、テキストの色を受け継ぎ、下線は付きません。[文書形式 › リンク](/ja/docs/document-format#リンク)を参照してください。エディターのようなビューアーでは、`#`で始まらない`a[href]`のクリックを横取りし、新しいタブで開いてください（`:ref`のアンカーは文書内にリンクします）。
+- **単色の図**：`diagramStyle.singleInk`を有効にすると、SVGの`<img>`にCSSフィルターが掛かります。すでに色を変えてあるURLには`singleInk: false`を渡してください。[キャンバスとHTMLでの単色刷り](/ja/docs/configuration-resources#キャンバスとhtmlでの単色刷り)を参照してください。
+
+Sandboxの`HtmlPreview`コンポーネント（`packages/postext-sandbox/src/viewport/HtmlPreview/index.tsx`）は、ここで示したのと同じAPIの上にこれらすべてを実装しており、参考にできます。また、すべてのビルドを共有のレイアウトワーカーに通しているので（[Web Workerでレイアウトを実行する](#web-workerでレイアウトを実行する)を参照）、ライブ編集やサイズ変更がメインスレッドをふさぐことはありません。レイアウトをメインスレッドから外す準備ができたら、上のコードの`buildDocument(...)`の直接呼び出しを`layoutWorker.build(...)`に置き換えてください。
+
+### HTML出力とcanvas、PDFとの違い
+
+`renderToHtml`は、すべての行、図、デザイン要素を、canvasやPDFとまったく同じ位置に置きますが、その周りに描くものは少なくなります。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>機能</th>
+      <th>Canvas (<code>renderPage</code>)</th>
+      <th>HTML (<code>renderToHtml</code>)</th>
+      <th>PDF (<code>renderToPdf</code>)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ページの背景</td>
+      <td>白。仕上がりと裁ち落としの範囲に<code>page.backgroundColor</code>を重ねます。</td>
+      <td><strong>透明</strong>。<code>background</code>を渡すか<code>page.backgroundColor</code>を設定した場合は色が付きます（このときはスラッグを含むページボックス全体を塗ります）。</td>
+      <td>白。仕上がりと裁ち落としの範囲に<code>page.backgroundColor</code>を重ねます。</td>
+    </tr>
+    <tr>
+      <td>ベースライングリッド（<code>page.baselineGrid</code>）</td>
+      <td>描画する</td>
+      <td>描画しない</td>
+      <td>描画する</td>
+    </tr>
+    <tr>
+      <td>段間罫（<code>layout.columnRule</code>）</td>
+      <td>描画する</td>
+      <td>描画しない</td>
+      <td>描画する</td>
+    </tr>
+    <tr>
+      <td>トンボ（<code>page.cutLines</code>）</td>
+      <td>描画する</td>
+      <td>描画しない。ページボックスには、仕上がりの周りのスラッグも含まれたままです。</td>
+      <td>描画する</td>
+    </tr>
+    <tr>
+      <td>ページの反転（ネガ）</td>
+      <td><code>pageNegative</code>オプション</td>
+      <td>利用できない</td>
+      <td><code>pageNegative</code>オプション</td>
+    </tr>
+    <tr>
+      <td>テキスト</td>
+      <td>ピクセル</td>
+      <td>絶対配置の要素に入った選択可能なテキスト。CSSのフォントファミリーで組まれるので、ページで同じフェイスを読み込む必要があります。</td>
+      <td><code>fontProvider</code>から得たフォントを埋め込みます。選択と検索ができ、タグ付きです。</td>
+    </tr>
+    <tr>
+      <td>縦組みのテキスト（<code>layout.writingMode: 'vertical-rl'</code>）</td>
+      <td>文字を1字分の枠ずつ描き、正立に戻します。縦組み用の字形は双子のフェイス（<code>loadVerticalAlternates</code>）から取ります。</td>
+      <td>1つのボックスの中の流れを90度回し、各行を正立に戻して<code>writing-mode: vertical-rl</code>で組みます。そのため、ブラウザーが縦組み用の字形を使い、文字を立てます。短い数字は<code>text-combine-upright: all</code>で組みます。ダッシュ、三点リーダー、中黒、波ダッシュは字枠のボックスに入れ（ブラウザーは横組みの幅で送ってしまうため）、ダッシュは<code>flow.dashAdvances</code>によって字枠いっぱいに伸ばします。</td>
+      <td>各フォントの<code>Identity-V</code>の双子で、正立の文字を組みます。<a href="#pdfの縦組み">PDFの縦組み</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td>画像</td>
+      <td><code>registerResourceImage</code></td>
+      <td><code>resourceImageUrl(fileId)</code>オプション。ない場合は灰色のプレースホルダーのボックス。</td>
+      <td><code>resourceBytes(fileId)</code>オプション。</td>
+    </tr>
+    <tr>
+      <td>数式</td>
+      <td>ベクターパス</td>
+      <td>インラインの<code>&lt;svg&gt;</code></td>
+      <td>ベクターパス</td>
+    </tr>
+    <tr>
+      <td>リンク</td>
+      <td>なし</td>
+      <td><code>:ref</code>の参照はそのリソースにリンクします。目次の行はリンクしません。</td>
+      <td><code>:ref</code>の参照と目次の行、さらにアウトライン（しおり）。</td>
+    </tr>
+  </tbody>
+</table>
+
+透明なページは、ダークな背景のサイトで問題になります。`background`のないプレビューは、サイトの暗い背景の上に黒いテキストを表示してしまいます。`renderToHtml(doc, { background: '#ffffff' })`を渡すか、文書に`page.backgroundColor`を設定してください。
+
+**ホストページのテキストスタイルは持ち込まれません**。各行はエンジンが計測した幅で組まれるので、周囲のページから出力が受け継いだ`letter-spacing`、`word-spacing`、`text-transform`、`font-variant`があると、グリフの並びが広がって行が重なって印字されてしまいます。そのため`.pt-doc`のルートは、自身のレイアウトの宣言より前に、受け継がれるテキストのプロパティをリセットします。対象は、字間と語間、大文字・小文字の変換、インデント、空白の扱い、フォントのスタイル・バリアント・ウェイト・幅・機能・カーニング、行の高さ、そろえ、テキストの影と強調、ハイフン、方向、書字方向、テキストの輪郭と塗り、モバイルでの文字の自動拡大です。これにより、シャドウルートの中でも、スタイルの付いた要素の下でも、出力は同じに見えます。この一覧は、CSSの宣言を並べた文字列`HTML_TEXT_RESET`として公開されています。ページの`innerHtml`（`renderToHtmlIndexed`から得たもの）を自前のコンテナーに入れるホストは、そのコンテナーのルートにこれを設定してください。postext 1.4までは、ルートは何もリセットしていませんでした。回避策は`all: initial`を指定したラッパーでした。
+
+
+## PDFの生成
+
+PDFの出力は別パッケージ（**`postext-pdf`**）が受け持ちます。Webだけで使う組み込みが`pdf-lib`と`@pdf-lib/fontkit`のコストを負わずに済むようにするためです。PDFバックエンドはテキストを計測し直しません。`renderToCanvas`や`renderToHtml`に渡すのとまったく同じ`VDTDocument`を受け取り、そのピクセル単位の座標をPDFのポイントに変換します。そのため3つの出力は、改行位置、段の高さ、リソースの配置が必ず一致します。
+
+> **ブラウザーでは、VDTを[Web Worker](#web-workerでレイアウトを実行する)で構築してください。**`renderToPdf`自体はVDTができていれば高速で、時間がかかるのはVDTを生成したレイアウトのパイプラインのほうです。このパイプラインをワーカーで動かせばUIの応答性が保たれ、PDFの書き出しで、ライブプレビューがすでに温めた計測キャッシュを再利用できます。推奨する流れは[ワーカーからのPDF書き出し](#ワーカーからのpdf書き出し)を参照してください。以下のメインスレッドの例は、各引数が何を意味するかを示すリファレンスです。UIのコードでは、まずワーカーでVDTを構築し、`renderToPdf`だけを直接呼び出してください。
+
+### インストール
+
+```bash
+npm install postext postext-pdf
+```
+
+`postext`は`postext-pdf`のピア依存関係（peer dependency）です。`postext-pdf`の各リリースには、同時にリリースされた`postext`か、同じメジャーバージョンのそれより新しいものが必要です（ピア依存の範囲はそのバージョンに`^`を付けたもので、1.5.0なら`^1.5.0`）。そのリリースで`postext`に追加されたヘルパーをインポートしているためです。2つは一緒にアップグレードし、CDNでは同じバージョンに固定してください。
+
+### 公開API
+
+このパッケージは、エントリーポイントを1つと、いくつかの型を公開しています。
+
+- **`renderToPdf(doc, options): Promise<Uint8Array>`** — `VDTDocument`（または本の章を並べたその配列）を受け取り、PDFの生のバイト列を返します。
+- **`PdfFontProvider`** — `renderToPdf`が新しいファミリー・ウェイト・スタイルの組み合わせを埋め込む必要があるときに、フォントのバイト列を要求するために使うコールバックのシグネチャ`(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>`です。`request.codePoints`には、ページがそのフェイスで組む文字が入ります。応答は1つのファイルか、合わせて1つのフェイスを構成する複数のファイルです（[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)を参照）。
+- **`RenderToPdfOptions`** — `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl? }`。`outlines`、`accessible`、`colorSpace`は、省略するとドキュメントの`pdfGeneration`の値になります（[PDF生成（設定）](/ja/docs/configuration-fonts-colors-viewers#pdf生成設定)を参照）。`resourceBytes`は[リソースのバイト列と印刷用マスター](#リソースのバイト列と印刷用マスター)で、`onWarning`は[プロバイダーに要求されるフェイス](#プロバイダーに要求されるフェイス)と[文書の中の警告](#文書の中の警告)で説明します。`characterGrid: true`は、`cjk.grid.show`が画面に描くグリッドを印刷します。指定しなければPDFには含まれません（[文字グリッド](/ja/docs/configuration-east-asian#文字グリッド)を参照）。`harfbuzzWasm`は、右から左に書く文字や連結する文字を含むドキュメントのために、HarfBuzzの`harfbuzz.wasm`をどこから読み込むかを指定します（ページからの相対URL、またはファイルのバイト列）。省略すると、postext-pdfのモジュールの隣にあるコピー、次にjsDelivrとesm.shにある同じharfbuzzjsのリリースを使います。`print`は印刷出力の設定（PDF/X規格、出力プロファイル、黒の扱い、プリフライト）を受け取り、省略時は文書の`print`を使います。PDF/X規格、または`colorSpace: 'cmyk'`を指定すると、すべての色がICC出力プロファイルで分版されます。プロファイルのバイト列は`outputProfile`で渡し、省略時は`profileBaseUrl`（既定はnpm CDN上のpostextの`icc/`フォルダー）から取得します。
+- **`PdfWarning`** — `onWarning`で報告される致命的でない問題です。`kind`で絞り込みます。`'fontFallback'`（`PdfFontFallbackWarning`）はフェイスがファミリーの別のカットで組まれたこと、`'missingGlyph'`（`PdfMissingGlyphWarning`）はフェイスのどのファイルにもグリフがない文字、`'variableFontDefaultInstance'`（`PdfVariableFontWarning`）は可変フォントが既定のインスタンス以外のウェイトで要求されたこと、`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`）は2 MBを超えるCFFフェイスが丸ごと埋め込まれたこと、`'complexShapingUnavailable'`（`PdfComplexShapingWarning`）はHarfBuzzを読み込めず（`reason`に探した場所が並びます）、右から左に書く文字や連結する文字がHarfBuzzなしで描かれたため、アラビア文字の符号の位置がずれることを示します。`'missingImage'`は、バイト列のない画像がプレースホルダーとして描かれたことを示します（これは渡した`onWarning`にだけ報告されます。それがないとき、フォントの警告は`console.warn`に出ます）。
+- **`decompressWoff2(bytes): Uint8Array`** — WOFF2ファイルを、`pdf-lib`がそのまま埋め込める形式であるTTFのバイト列に変換するヘルパーです。
+- **`createPdfWorker(options?)`**（`postext-pdf/worker`から） — 同じ描画をWeb Workerで行います。[ワーカーでPDFを描画する](#ワーカーでpdfを描画する)を参照してください。
+
+### 最小限の例
+
+```ts
+import { buildDocument } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+
+const vdt = buildDocument(
+  { markdown: '# Chapter One\n\nThe story begins here…' },
+  {
+    page: { sizePreset: '17x24' },
+    layout: { layoutType: 'double' },
+    bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } }, // 9 pt overrides the 8 pt default
+  },
+);
+
+const pdfBytes = await renderToPdf(vdt, {
+  fontProvider: async (family, weight, style) => {
+    // Return TTF bytes for this family/weight/style.
+    // See the "Font provider" section below for a real implementation.
+    const res = await fetch(`/fonts/${family}-${weight}${style === 'italic' ? 'i' : ''}.ttf`);
+    return new Uint8Array(await res.arrayBuffer());
+  },
+});
+
+// `pdfBytes` is a Uint8Array — save, download, or stream it.
+const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+const url = URL.createObjectURL(blob);
+window.open(url);
+```
+
+### なぜフォントプロバイダーが必要か
+
+`pdf-lib`はPDFに実際のフォントファイルを埋め込みます。描画時にはブラウザーにインストールされたフォントを使えず、画面上の計測のためだけに読み込んだフォントも、それだけでは自己完結したPDFを作るのに足りません。`renderToPdf`はページを走査して、ページが描くすべてのフェイス（`family|weight|style`の組み合わせごとに1つ。[プロバイダーに要求されるフェイス](#プロバイダーに要求されるフェイス)を参照）を集め、固有の組み合わせごとに1回プロバイダーを呼び出します。プロバイダーは**TTFまたはOTF**のバイト列を`Uint8Array`で返します。複数のファイルで提供されるフェイスなら、そのリストを返します（[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)を参照）。`pdf-lib`はTrueTypeのアウトラインをサブセット化し、CFF（`.otf`）ファイルは丸ごと埋め込みます。ファミリーにない太字の代わりにレギュラーのカットを返す場合のように、プロバイダーが同じファイルで応えたフェイスどうしは、埋め込みフォントを1つ共有します。SVGの図を画像として描くときのその図のテキストのフェイスのように、最終的にどのページの描画にも使われないフェイスはファイルに含まれません。
+
+**可変フォント1つではなく、ウェイトごとの静的フォントを使ってください**。Google Fontsは多くの場合、ファミリーごとにウェイト軸全体を覆う可変WOFF2を1つ配信しています。`pdf-lib`は可変フォントのファイルから既定のインスタンスしか埋め込めないため、太字の段落がレギュラーのウェイトで描かれてしまいます。Fontsourceはウェイトごとの静的WOFF2ファイルを公開しており、この問題をきれいに解決できます。Sandboxが使っているのもこの方法です。既定のインスタンス以外のウェイトで要求された可変フォントのファイルは、`variableFontDefaultInstance`警告として報告されます。
+
+**テキストのどの語も、レイアウトが置いた位置に描かれます**。段落、リスト項目、引用、囲みなど流し込まれるテキストでは、各語がVDTの計測した位置から始まるので、ブラウザーの幅と埋め込んだフェイスの幅の差が行に沿って積み重なることはありません。インライン書式のない行は、語と語の間でペンを動かす1つのテキストオブジェクトとして描かれます。両端そろえの行、中央そろえの行、書式を含む行は語ごとに描かれます。フェイスにグリフのない文字は、ブラウザーが別のフォントで計測し、PDFではフェイスの欠落グリフの箱として描かれますが、後に続く語を動かすことはなく、フェイスごとに1回`missingGlyph`警告として報告されます。狭いノーブレークスペースや数字幅スペースのようにフェイスにないスペースは、ブラウザーが与えた幅をとり、単語結合子（word joiner）やゼロ幅スペースのような不可視の文字は描かれません。フェイスにないノーブレークハイフン（U+2011）は、ブラウザーの表示と同じく、フェイスのハイフン（U+2010）で描かれ、それもなければハイフンマイナスで描かれます。Open SansやOutfitなどは、その両方を持っていません。どちらの場合も欠落グリフには数えません。例外が2つあります。右から左に書く文字を含む行は、従来どおり1つのランとして描かれます（[言語と文字体系](/ja/docs/configuration-text#言語と文字体系)を参照）。デザインが配置するテキスト（柱、フッター、章扉、囲みのタイトルなどのデザイン要素）は、埋め込んだフェイス自身の幅で組まれるため、そこでフェイスにないグリフがあると、行の残りが動きます。
+
+### プロバイダーに要求されるフェイス
+
+`renderToPdf`はページを描くときと同じ順にたどり、実際に描かれるフェイスだけをプロバイダーに要求します。
+
+- 1行でも組むブロックのレギュラーのフェイスと、実際に太字、イタリック、太字イタリックで組まれる各ランのフェイス
+- チップのラン、リストのマーカー、デザインのスロット（柱、ノンブル、章扉と部扉の帯）のテキスト
+- すべてのリソースのキャプション、注記、表のセルのテキスト
+- SVGの図を埋め込むときに、その`<text>`が指定するフェイス。プロバイダーがまったく提供できないファミリーは、SVGの`font-family`リストの次のファミリーに引き継がれます
+
+そのため、どこでもイタリックにしない見出しのファミリーのイタリックが要求されることはなく、注記のない図に注記のフェイスが必要になることもありません。
+
+プロバイダーがフェイスを拒否しても、描画は続きます。同じファミリーの別のフェイスが代わりに埋め込まれ、`PdfWarning`が報告されます。代わりになるのは最初に読み込めたフェイスで、9つの標準ウェイト（100〜900）をCSSのフォントマッチングと同じ順に試します。これはプレビューでブラウザーが表示するフェイスでもあります。
+
+1. まず同じスタイル。400〜500のウェイトでは、500までのウェイトを先に試し、次に軽いウェイトを近いものから順に、その後600以上の重いウェイトを試します。400未満のウェイトでは、軽いウェイトを近いものから先に試し、次に重いウェイトを試します。500を超えるウェイトでは、重いウェイトを先に試し、次に軽いウェイトを試します。
+2. 次にもう一方のスタイル（立体ならイタリック、イタリックなら立体）を、要求されたウェイトとほかのウェイトについて、同じ順で試します。
+
+したがって、イタリックのないファミリーはイタリックのランを立体で組み、400と700だけのファミリーは600を700で組み、カットが1つしかないファミリーはすべてをそのカットで組みます。プロバイダーへの要求はこの順に1フェイスずつ行い、同じフェイスを2度要求することはないので、何にも使われないフェイスが埋め込まれることはありません。プロバイダーがまったく提供できないファミリーについては、描画が失敗するまでにこの18のフェイスすべてが要求されます。
+
+```ts
+const bytes = await renderToPdf(doc, {
+  fontProvider,
+  onWarning: (w) => {
+    // { kind: 'fontFallback', family: 'Oswald', weight: 700, style: 'italic',
+    //   fallback: { weight: 700, style: 'normal' }, reason: '…', message: '…' }
+    console.info(w.message);
+  },
+});
+```
+
+`onWarning`がないと、メッセージは`console.warn`に出ます。テキストの位置はVDTから来ており、ブラウザーが持っていたフェイスで計測されたものなので、幅の異なる代替フェイスでは詰まって見えたり、ゆるく見えたりすることがあります。直すには本来のフェイスを提供してください。描画が失敗する（`postext-pdf: failed to load font(s): …`）のは、プロバイダーがあるファミリーのどのフェイスも、標準ウェイトで立体・イタリックのいずれでも提供できない場合だけです。
+
+### ブラウザー向けフォントプロバイダー（Fontsource + WOFF2）
+
+Sandboxには`createPdfFontProvider()`（`packages/postext-sandbox/src/viewport/pdfFontProvider.ts`）があり、どのブラウザーアプリにもコピーして使えます。要点は次のとおりです。
+
+```ts
+import type { PdfFontProvider } from 'postext-pdf';
+import { decompressWoff2 } from 'postext-pdf';
+
+const bytesCache = new Map<string, Promise<Uint8Array>>();
+
+function fontsourceId(family: string): string {
+  return family.toLowerCase().replace(/\s+/g, '-');
+}
+
+function fontsourceWoff2Url(
+  family: string,
+  weight: number,
+  style: 'normal' | 'italic',
+): string {
+  const id = fontsourceId(family);
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@latest/files/${id}-latin-${weight}-${style}.woff2`;
+}
+
+export function createPdfFontProvider(): PdfFontProvider {
+  return async (family, weight, style) => {
+    const key = `${family}|${weight}|${style}`;
+    const cached = bytesCache.get(key);
+    if (cached) return cached;
+
+    const promise = (async (): Promise<Uint8Array> => {
+      const url = fontsourceWoff2Url(family, weight, style);
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) throw new Error(`font fetch failed: ${res.status} ${url}`);
+      // pdf-lib needs TTF bytes, so decompress the WOFF2 wrapper client-side.
+      return decompressWoff2(new Uint8Array(await res.arrayBuffer()));
+    })();
+
+    bytesCache.set(key, promise);
+    return promise;
+  };
+}
+```
+
+本番用の実装では、さらに次のことも行ってください。
+
+- **利用できるウェイトを問い合わせ**（`https://api.fontsource.org/v1/fonts/{id}`を使用）、要求されたウェイトを、ファミリーが実際に提供する最も近いウェイトに合わせます。こうすれば、`{400, 700}`しかないファミリーに`weight: 600`を要求しても成功します。
+- **イタリックから立体にフォールバックします**。要求されたウェイトにイタリックのカットがないファミリーでも、描画全体を失敗させずに済みます。
+- **描画をまたいでキャッシュを再利用します**（`bytesCache`は呼び出しごとではなく、モジュールスコープに置きます）。こうすれば、設定を変えた後のPDFの再生成には実質的にコストがかかりません。
+
+### 中国語・日本語・韓国語のフォント
+
+CJKのフェイスは小さな1つのファイルでは提供されません。FontsourceはNoto Serif SCを1ウェイトあたり約100のファイルで配信しており、各ファイルは文字の一部を収め、ファミリーのスタイルシート（`@fontsource/noto-serif-sc/400.css`）でその`unicode-range`とともに宣言されています。ブラウザーは、ページのテキストが使うファイルをダウンロードします。上のプロバイダーが取得する`latin`ファイルには漢字がまったく含まれず、名前付きのサブセットも不完全です。Noto Serif SCの`chinese-simplified`には釵がなく、Noto Serif TCの`chinese-traditional`には全角の約物（），！？：；が1つもありません。
+
+そこで、プロバイダーは1つのフェイスに複数のファイルで応えることができます。`renderToPdf`は、ページがそのフェイスで組む文字（`request.codePoints`）をプロバイダーに渡します。これは描画を始める前にすべての章から集めたものです。プロバイダーは、それらの文字を収めるファイルを、ブラウザーが参照するのと同じ順で返します。各ファイルはそれぞれ独立したサブセットとして埋め込まれ、各文字は、その文字のグリフを持つ最初のファイルから描かれます。60のスライスを使う章には、60の小さなサブセットが埋め込まれます。SVGの図のテキストなどのために同じフェイスが再び要求されるときは、それまでのファイルにない文字だけが要求されます。`Uint8Array`を1つ返すプロバイダーは従来どおり動作します。Sandboxのプロバイダーは、そのウェイトとスタイルのFontsourceのスタイルシートを読み、範囲がテキストの文字を含むファイルを取得します。その中核部分は次のとおりです。
+
+```ts
+import type { PdfFontProvider } from 'postext-pdf';
+import { decompressWoff2 } from 'postext-pdf';
+
+type Slice = { url: string; ranges: Array<[number, number]> };
+
+async function fontsourceSlices(family: string, weight: number, style: 'normal' | 'italic'): Promise<Slice[]> {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  const cssUrl = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/${weight}${style === 'italic' ? '-italic' : ''}.css`;
+  const css = await (await fetch(cssUrl)).text();
+  return [...css.matchAll(/@font-face\s*{([^}]*)}/g)].map(([, rule]) => ({
+    url: new URL(/url\(\.?\/?([^)]+\.woff2)\)/.exec(rule)![1], cssUrl).href,
+    ranges: /unicode-range:\s*([^;]+);/.exec(rule)![1].split(',').map((part) => {
+      const [lo, hi = lo] = part.trim().slice(2).split('-');
+      return [parseInt(lo, 16), parseInt(hi, 16)] as [number, number];
+    }),
+  }));
+}
+
+export const sliceFontProvider: PdfFontProvider = async (family, weight, style, request) => {
+  // Where ranges overlap, the browser tries the last rule first.
+  const slices = (await fontsourceSlices(family, weight, style)).reverse();
+  const picked = new Set<Slice>();
+  for (const cp of request?.codePoints ?? []) {
+    const slice = slices.find((s) => s.ranges.some(([lo, hi]) => cp >= lo && cp <= hi));
+    if (slice) picked.add(slice);
+  }
+  if (picked.size === 0) picked.add(slices[0]!);
+  return Promise.all(slices.filter((s) => picked.has(s)).map(async (s) =>
+    decompressWoff2(new Uint8Array(await (await fetch(s.url)).arrayBuffer()))));
+};
+```
+
+ラテン文字のファミリーも同じコードで扱えます。英語のテキストには`latin`ファイルだけが、チェコ語には`latin`と`latin-ext`が使われます。
+
+フェイスのどのファイルにもグリフのない文字は、フォントの`.notdef`グリフ（多くのフォントでは空の四角）で描かれ、`renderToPdf`はページを描き終えた後に、フェイスごとに1回それを報告します。
+
+```ts
+// { kind: 'missingGlyph', family: 'Noto Serif TC', weight: 400, style: 'normal',
+//   characters: ['，', '！', '？'], message: '…' }
+```
+
+Sandboxは、これと以下の2つの警告を、PDFを生成するたびに**検査**パネルに一覧表示します。本、その設定、リソースが変わると、次のPDFで置き換わるまで、それらは以前のPDFによるものとして示されます。別の本を開くと消えます。
+
+- **太字にはウェイトごとの静的ファイルが必要です**。FontsourceはNoto Serif SCとTCの各ウェイトを別々の静的ファイルとして配信しているので、Sandboxでは太字が使えます。Google Fontsのファイル（`NotoSerifSC[wght].ttf`、25 MB）は可変フォントです。pdf-libはその既定のインスタンスを埋め込むため、700のフェイスは400で印刷され、`renderToPdf`はそれを`variableFontDefaultInstance`として報告します。バンドルでは、fontToolsでウェイトごとに静的インスタンスを1つ切り出し（`fonttools varLib.instancer NotoSerifSC[wght].ttf wght=700`）、`pyftsubset`で本の文字だけにサブセット化してください。
+- **TrueType版を使ってください**。Source Han SerifとNoto Serif CJKの`.otf`ファイルはCFFアウトラインで、postext-pdfはこれを丸ごと、1ウェイトあたり8〜25 MB埋め込みます。2 MBを超えるCFFフェイスは`cffEmbeddedWhole`として報告されます。TrueType版（Google Fonts、Fontsource）は、使われたグリフだけにサブセット化されます。日本語では、Noto Serif JPとNoto Sans JP（Google Fonts、またはFontsourceの番号付きスライス）、Shippori Mincho、Zen Old Mincho、BIZ UDMinchoはTrueTypeで提供されています。Source Han Serif JPと、Noto Serif CJKの`JP`の`.otf`ファイルはCFFです。
+- **汎CJKフェイスの日本語字形**。漢字、約物、引用符の同じコードポイントでも、日本と中国では字形が異なることがあり、汎CJKフェイス（Source Han、Noto CJK）は両方を持っています。PDFは、日本語のドキュメント（`locale: 'ja'`）と、どのドキュメントでも日本語のアイソレート（`:ltr[…]{lang=ja}`）を、OpenTypeの言語システム`JAN `でシェーピングします。そのため、フェイスの`locl`機能によって、CanvasとHTMLが`lang`を通じて表示するのと同じ日本語の字形が印刷されます。日本語の本の中にある別の言語のアイソレートは、その言語の字形（中国語ではフォントの既定の字形）でシェーピングされ、その`/Lang`を持つ`Span`としてタグ付けされます。中国語などのドキュメントは、従来どおりフォントの既定の字形でシェーピングされます。Noto Serif JPのように日本語用に作られたフェイスは既定の字形が日本語のものですが、それでも日本語のテキストの“ ”は`JAN `の字形で組まれます。
+
+あるファミリーに欠けている文字を、別のファミリーから借りることはありません。Noto Serif TCはNoto Serif SCから借りません。収録範囲はフォントファイルを作る段階で決着させてください。红楼梦のショーケースは、TCのサブセットに欠けているグリフをSCのフェイスからコピーしています。
+
+### サーバー側のフォントプロバイダー（Node、ローカルファイル）
+
+Nodeでは、WOFF2の手順を丸ごと省き、ディスクからTTF/OTFファイルを読み込めます。
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import type { PdfFontProvider } from 'postext-pdf';
+
+const FONT_DIR = '/path/to/fonts';
+
+function filename(family: string, weight: number, style: 'normal' | 'italic'): string {
+  const slug = family.replace(/\s+/g, '');
+  const styleSuffix = style === 'italic' ? 'Italic' : '';
+  const weightName =
+    weight >= 700 ? 'Bold'
+    : weight >= 600 ? 'SemiBold'
+    : weight >= 500 ? 'Medium'
+    : weight >= 300 ? 'Light'
+    : 'Regular';
+  return `${slug}-${weightName}${styleSuffix}.ttf`;
+}
+
+export const localFontProvider: PdfFontProvider = async (family, weight, style) => {
+  const buf = await readFile(join(FONT_DIR, filename(family, weight, style)));
+  return new Uint8Array(buf);
+};
+```
+
+### リソースのバイト列と印刷用マスター
+
+`resourceBytes(fileId)`は画像の生のバイト列を返し、バックエンドはその形式を判別します。
+
+- PNG、JPEG、GIF、WebPは画像として埋め込まれます
+- SVGのマークアップはベクターのパスとして描かれ、その`text`は文書に埋め込んだフォントで実際のテキストとして組まれます。ベクターのサブセットにない機能を使っている場合は、ブラウザーで600 dpiでラスタライズされます。`@font-face`規則だけを含む`<style>`（作者が埋め込んだフェイス）は読み飛ばされ、図はベクターのままです（postext-pdf 1.25以降）。それ以外のスタイルシートがあると図はラスターになり、そのラスターは、文字が指定するフェイスを`fontProvider`から得て埋め込んでから作られます（`diagramStyle.inlineFonts`またはリソースの`svg.inlineFonts`が`false`の場合を除きます）
+- PDFは最初のページがそのまま、フォームXObjectとして埋め込まれます
+
+各画像は、何回描かれてもファイルには1回だけ格納されます。ベクターのパスとして描かれるSVGは、すべてのページが描画するフォームXObjectになるので、30ページのドキュメントのページデザインにある枠やロゴは、30回ではなく1回だけ書き込まれます。ページが1つ増えるごとに増えるのは数百バイトです。postext-pdf 1.4までは、各ページがパスのコピーをそれぞれ持っていました。
+
+SVGの図は、`svg.pdfFileId`で**印刷用マスター**を指定できます。同じ図の1ページのPDFで、通常はSVGの書き出し元になった原本です。`renderToPdf`はまず`resourceBytes`にマスターのidを問い合わせます。そして、図として、表のセルの画像（`TableCell.image`）として、デザインの画像として、囲みのアイコン（その`marker`も）として、SVGが描かれるすべての場所で、フォント、グラデーション、色空間を保ったまま、そのページをSVGの代わりに埋め込みます。VDTはそれぞれの使用箇所にマスターのidを持っているので（図のリソースには`svg.pdfFileId`、セルの画像とデザインの画像ブロックには`pdfFileId`）、本ではどの章にもマスターが使われます。CanvasとHTMLのバックエンドは引き続きSVGを描きます。SVG自身のバイト列が代わりに使われるのは、マスターがない場合、マスターがPDFでない場合、単色インクが有効な場合（`diagramStyle.singleInk`はSVGのマークアップだけを色替えします）の3つです。
+
+```ts
+const resources: Resource[] = [{
+  id: 'map', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
+  svg: { fileId: 'map.svg', width: 800, height: 600, pdfFileId: 'map.pdf' },
+}];
+const files = new Map([['map.svg', svgBytes], ['map.pdf', masterPdfBytes]]);
+const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
+  fontProvider,
+  resourceBytes: (fileId) => files.get(fileId),
+});
+```
+
+ホストは、`bundleResourceBytes`のように、SVG自身のidに対してマスターのバイト列を返すこともできます。どちらの方法でも動作します。
+
+### PDFの縦組み
+
+縦組みのページ（`layout.writingMode: 'vertical-rl'`）は、Canvasが描くのと同じく90度回転した座標系を通して描かれ、テキストは縦方向に組まれます。
+
+- **正立する文字**は、同じ埋め込みファイルから作る2つ目のType0フォントで表示されます。CIDFont、幅、ToUnicodeマップは同じで、`Encoding /Identity-V`（縦書きモード）を使います。ひと続きの文字は1つのテキストオブジェクトになり、そのグリフは自ら1 emずつ下へ進むので（`DW2 [880 −1000]`）、PDFビューアーでは縦の1行を1行として選択・抽出できます。グリフはOpenTypeの`vert`と`fwid`でシェーピングされ、括弧、引用符、中国大陸式の読点、三点リーダー、ダッシュが縦組み用の字形になります。そのままで正立する文字は横組み用のグリフのままです。フォントのどの部分も2回埋め込まれることはありません。
+- **ラテン文字の単語と長い数字**は横組み用のフォントで横倒しに組まれ、**1マスに収める数字**は正立し、1字幅より広いときは横方向に詰めて1字幅に収めます。フォントに縦組み用の字形がない記号は、Canvasと同じく回転または移動されます。
+- **トラッキング**は文字間に`TJ`の数値として書き込まれ、縦書きモードではペンを下へ移動させます。
+- **縦組みの各行**には、そのテキストの`/ActualText`が付くので、コピーやテキスト抽出では書かれたとおりに読み取られます。`pdftotext`とpdf.jsは、行を上から下へ、右から左へと読みます。pdf.jsは1マスに収めた数字の位置で新しい行を始めます。
+- **リンク、しおり、移動先**は用紙上の座標に対応付けられます。縦組みの行の上にあるリンクは縦長の細い矩形になり、しおりは見出しの行の上端でページを開きます。
+- **タグ付きPDF**は、`Document`要素で組方向を宣言します（Layout属性の`WritingMode /TbRl`。すべての要素がこれを継承します）。縦組みの章はPDF/UA-1の検証（veraPDF）に合格します。
+- **ビューアー**：Acrobat、Preview、Chrome（PDFium）、pdf.js、Popplerは縦組み用のフォントを表示できます。右綴じの本（`page.binding`）は、見開きを右から左に並べるようビューアーにも求めます（`/Direction /R2L`、`/PageLayout /TwoPageRight`）。AcrobatとFoxitはこれに従いますが、Chromeは従いません。
+
+Noto Serif TC（本で使う文字だけ、TrueType）で組んだ43ページの章は約820 KBで、その大半を2つのフォントサブセットが占めます。
+
+### PDFのリンク
+
+Markdownのリンク（[文書形式 › リンク](/ja/docs/document-format#リンク)を参照）の語は、URIリンク注釈になります。行ごとに、リンクされた語のひと続きにつき1つです。各注釈は行のボックスを覆い、枠線はありません。アクセシブルな描画では、ひと続きごとに`Link`要素になり、その`/Contents`はそのテキストです。リンクになるのは、絶対URLの`http:`、`https:`、`mailto:`、`tel:`、`ftp:`のターゲットだけです。相対URLはPDFの中では基準となるURLを持たないためです。印字可能なASCII以外の文字はパーセントエンコードされます。`:ref`による参照と目次の行は、ドキュメント内へのリンクのままです。
+
+### 完全なブラウザーの例：構築、描画、ダウンロード
+
+すべてを組み合わせて、VDTを構築し、PDFに描画し、ブラウザーからダウンロードを開始します。
+
+```tsx
+import { buildDocument, createMeasurementCache } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+import { createPdfFontProvider } from './pdfFontProvider';
+
+const fontProvider = createPdfFontProvider();
+
+export async function downloadPdf(markdown: string, config: PostextConfig) {
+  const cache = createMeasurementCache();
+  const vdt = buildDocument({ markdown }, config, cache);
+
+  const bytes = await renderToPdf(vdt, { fontProvider });
+
+  const blob = new Blob([bytes.slice().buffer], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'document.pdf';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+```
+
+**重要**：Webフォントを参照する設定では、`buildDocument`の*前*に`ensureConfigFontsLoaded(config)`（または同等の処理）を呼び出してください。レイアウトは、そのファミリーについてブラウザーがその時点で持っているフォントメトリクスで計測されます。本来のフォントがまだ届いていなければ、VDTは代替フォントで計測され、PDFはCanvasやHTMLの出力と一致しません。Sandboxは描画のたびに、その前にこれを明示的に行っています（`packages/postext-sandbox/src/viewport/PdfViewport.tsx`を参照）。
+
+### ライブサンプル：ブラウザーでPDFを作る
+
+上の一連の流れをブラウザーで実行します。このCodePenのサンプルは、`postext`と`postext-pdf`をCDNからインポートし、Webフォントを読み込み、ドキュメントを構築し、フォントプロバイダーを通じてFontsourceのカットを埋め込み、そのバイト列を、ファイルを新しいタブで開くリンクとダウンロードリンクに渡します。得られるPDFは、CanvasやHTMLの出力と同じ改行位置を持ち、実際のフォントが埋め込まれ、アウトラインのしおりも付いています。
+
+<CodePenExample name="render-pdf" title="Postext · ブラウザーでPDFを生成" description="postextでMarkdownのドキュメントをレイアウトし、postext-pdfでPDFに描画します。" height={600} />
+
+### ワーカーでPDFを描画する
+
+`postext-pdf/worker`は、`renderToPdf`をメインスレッドの外に移します。ワーカーはテキスト、ベクターの図、構造ツリー、ファイルそのものを書き出します。Webページ側でしかできない処理が2つあり、ワーカーはそれらをメインスレッドに依頼します。フォントの取得と、`<img>`を通じたSVGのラスタライズです。数百ページの本では、描画にかかる数秒のあいだページが固まってしまうのを防げます。数ページなら、`renderToPdf`を直接呼び出すほうが簡単です。
+
+```ts
+import { createPdfWorker } from 'postext-pdf/worker';
+
+const pdfWorker = createPdfWorker();
+const bytes = await pdfWorker.render(docs, {
+  fontProvider,                                     // runs on this thread
+  resourceBytes: new Map([['map.svg', svgBytes]]),  // a Map; its buffers move to the worker
+  onProgress: ({ phase, pages, totalPages }) => showProgress(phase, pages, totalPages),
+  onWarning: (w) => console.info(w.message),
+});
+pdfWorker.dispose();
+```
+
+- `render(docs, options)`は、1つのドキュメント、または本の章のドキュメントの配列を受け取ります。オプションは`renderToPdf`のものですが、違いが2つあります。`resourceBytes`は`Map<string, Uint8Array>`で、そのバッファーは転送されるため、手元に残すバイト列はコピーを渡してください。`rasterizeSvg`は、指定した場合はメインスレッドで実行されます。指定しなければ、ページ自身の`Image`とcanvasが処理します。
+- 1つのハンドルが描画するドキュメントは一度に1つです。`dispose()`はワーカーを終了し、保留中の描画をすべて拒否（reject）します。
+- `createPdfWorker({ worker })`は、自分で作成した`Worker`を受け取ります。ワーカーのURLを制御するビルドツール向けです。そのワーカーでは`postext-pdf/worker/entry`を実行する必要があります。
+
+**CDNから使う場合**。既定では、ワーカーのスクリプトはパッケージ自身のURL（`new URL('./pdf.worker.js', import.meta.url)`）から読み込まれます。別のオリジンのページでは、これを起動できないことがあります。`esm.sh`からインポートすると、`createPdfWorker()`は`Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`を投げます。代わりに、エントリーをインポートする同一オリジンのモジュールワーカーを起動してください（バージョンを固定する場合は、両方のURLで同じバージョンに固定します）。
+
+```js
+import { createPdfWorker } from 'https://esm.sh/postext-pdf/worker';
+
+const entry = URL.createObjectURL(new Blob(
+  ["import 'https://esm.sh/postext-pdf/worker/entry';"],
+  { type: 'text/javascript' },
+));
+const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }) });
+```
+
+`postext/worker`のレイアウトワーカーにも、`postext/worker/entry`を包む同じラッパーが必要です（[Web Workerでレイアウトを実行する](#web-workerでレイアウトを実行する)を参照）。
+
+### 印刷入稿用のPDF
+
+本番の印刷ワークフローでは、描画の前に次の設定を調整してください。
+
+- **`page.cutLines.enabled: true`** — 仕上がり線の周りに裁ち落とし領域とトンボを加え、各ページにTrimBoxとBleedBoxを設定します。[トンボ](/ja/docs/configuration-page-layout#トンボ)を参照してください。
+- **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`**（または`'pdfx1a'`） — 印刷所が確認する出力インテント、識別情報、ボックスを備えたPDF/Xファイルを書き出します。すべての色とRGBの画像はICCプロファイルで分版され、K 100%はオーバープリントになり、大きな黒い面はリッチブラックで刷られます。[印刷出力（設定）](/ja/docs/configuration-fonts-colors-viewers#印刷出力設定)を参照してください。
+- **`colorSpace: 'cmyk'`**（または`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`） — PDF/Xの識別情報なしで、同じ分版を行います（トンボは常にレジストレーションカラーです）。PDFの印刷用マスターはそのまま埋め込まれます。
+- **`page.dpi: 300`** — レイアウトの1インチあたりのpx数です。自身の解像度を持たないビットマップは、原寸ではこの解像度で印刷されます。印刷サイズで300 ppiに満たない画像は、[プリフライト](/ja/docs/configuration-fonts-colors-viewers#プリフライト)が報告します。
+- **`ColorValue.cmyk`** — CMYKで指定した色は、その値のまま印刷されます。
+- **`{ pageNegative: true }`**（`RenderToPdfOptions`のオプション） — Differenceブレンドモードで仕上がり領域を反転します（トンボは反転しません）。明るい地に暗い文字の組版を、プリフライトで確認するのに便利です。
+
+### リファレンス実装
+
+Sandboxの`PdfViewport`コンポーネント（`packages/postext-sandbox/src/viewport/PdfViewport.tsx`）は、上の要素を組み合わせて、再計算、ダウンロード、印刷のボタンを備えたライブプレビューにしたもので、ブラウザー内でPDFを扱う組み込みの出発点に適しています。VDTは共有のレイアウトワーカーで構築するので（[Web Workerでレイアウトを実行する](#web-workerでレイアウトを実行する)を参照）、**再計算**をクリックしても、パイプラインの実行中にUIが固まりません。メインスレッドが受け持つのは`renderToPdf`だけです（VDTができていれば、これは高速です）。
+
+## 3Dの本（`postext-folio`）
+
+`postext-folio`は、レイアウト済みのドキュメントを、机の上に開いて置かれた印刷された本として画面に表示します。見開きは奇数ページの規則に従って組まれ、読者は‹ ›ボタン、矢印キー、スワイプ、ページのクリック、またはページの端をつかんで向こう側へドラッグすることで丁をめくります。各丁は紙に応じてthree.jsで湾曲し、下にあるページに本物の影を落とします。WebGLのキャンバスは静止した本もめくられる本も同じように描くので、ページが着地したときに見た目が変わることはありません。レシピ集のレシピと、Sandboxの**Folio**タブで使われているビューアーです。
+
+```bash
+npm install postext postext-folio three
+```
+
+```ts
+import { buildDocument } from 'postext';
+import { createFolioFromDocument } from 'postext-folio';
+
+const doc = buildDocument({ markdown }, config);
+const book = createFolioFromDocument(document.getElementById('book')!, doc, {
+  onChange: ({ pages }) => console.log('showing pages', pages),
+});
+
+// After an edit: the same viewer, on the same page.
+book.setDocument(buildDocument({ markdown: edited }, config));
+```
+
+- **ページは必要になったときに描かれます**。`createFolioFromDocument`は各ページを、ページ枠のデバイスピクセルちょうどの大きさで`renderPageToCanvas`により描きます（WebGLはそれをテクセル対ピクセルで表示するので、Canvasのプレビューと同じくらい鮮明です）。描くのは、開いている見開きの周りの見開きだけです（`window`、既定では前後に3つずつ）。その範囲から外れたページは解放されるので、1000ページの本でも数ページ分のメモリーしか使いません。遠いページに移動するときは、その見開きを最初に描きます。10ページ先まではページが1枚ずつめくられ、それより遠いと、間にあるページのかたまりが、それらのページを合わせた厚さ（紙厚の合計）を持つ1枚の板として持ち上がり、反対側に着地します。`setDocument`は、新しいレイアウトでも内容が同じページの描画を保持します（`{ repaint: true }`を指定すると、画像が届いた後などに、すべてを描き直します）。
+- **ドキュメントが本を決めます**。最初のページが奇数ページ（`pageIndexOffset`が偶数）なら、右側に単独で開きます。右綴じの本（`page.binding: 'right'`、または縦組みのドキュメント）は左右反転して置かれ、左向きにめくられます。空白ページはページの背景色になり、ページの仕上がり幅（`pageWidthMm`）に応じて紙厚と表紙の板の縮尺が決まります。`continuation`付きでレイアウトした章は、本のほかのページ（前は`pageIndexOffset`、後は`bookPageCount`まで）を、描かずに2つのページブロックの厚さに数えます（`extraPages`）。
+- **ドキュメントが見た目を決めます**。紙、綴じ、机、光は、ドキュメントの[`folio`設定](/ja/docs/configuration-fonts-colors-viewers#folioビューアー設定)（`doc.config.folio`）で決まります。`:::paper`の範囲内で組まれたページは独自の用紙（`VDTPage.paper`）を持ち、その丁は、その紙の色、表面、厚さ、こしで描かれます。`binding.cover: 'pages'`では、最初のページが表表紙の板になり、最後のページが偶数ページなら裏表紙の板になります（`covers`）。新聞の判型（`'broadsheet'`、`'berliner'`、`'tabloid'`、`'compact'`）で、設定が用紙も綴じも指定していなければ、折った新聞用紙として置かれます。ホストが独自の`folio`を渡した場合も同じです。
+- **コンテナーが大きさを決めます**。本はコンテナーいっぱいに広がり、ボタンとページ数は余白に置かれるので、コンテナーには高さを指定してください。リサイズすると、新しい大きさでページを描き直します。幅が560 px未満では1ページずつ表示します（`mode: 'auto'`。`'single'`と`'double'`はどちらかに固定します）。背はページの内側の端に沿い、丁はその上でめくられます。背の方向へのドラッグで先へめくり、背から離れる方向へのスワイプで前に戻り、タップでめくります。
+- **ポインターの動作**。`interaction`（後からは`setInteraction`）は、左ボタン、1本指、ペンが本に対して何をするかを決めます。`'hand'`（既定）はページをつかんでめくり、`'orbit'`は右ドラッグと同じように視点を回し（トラックパッドやタブレット向け）、`'select'`はポインターをホストに任せます（テキストの選択などのため）。`pageAt(event)`は、傾けたり回したりした見た目のままの本の上で、ポインターの下にあるページとその位置（`{ page, x, y }`。ページの左上隅からの割合）を返します。`pointOnScreen(point)`はその逆で、ページ上にキャレットや選択範囲を描くためのものです。`refreshPage(src)`は、ホストがその場で描き直したページのキャンバスを再表示します。Sandboxはこれらをすべて使って、3Dのページ上でテキストを選択し、エディターのキャレットを追います。
+- **小さな文字を読むルーペ**。`interaction: 'magnify'` は、ポインターのある位置で、黒い縁の丸いレンズを本の上にかざします（指で触れているあいだは、指の上にかざします）。読者の目に見えるとおりの本を、光と紙の反りもそのままに映し、中心をいちばん大きく、縁へ向かって湾曲させて見せます。ホイール、`+`、`−` で倍率を変え（`setMagnification(zoom)`、1.5〜10。既定ではページが 1 ミリあたり約 5.5 CSS px）、Esc でしまいます。`magnifier: { zoom, diameter }` で最初から両方を指定できます。`createFolioFromDocument` はレンズの下のページを中心に必要な精細さで描き直すので、新聞の本文も読めます。`createFolio` はその描画を `detail: { paint(index, deviceWidth), release() }` から受け取ります。Sandbox では**ルーペ**ボタン（M）です。ルーペでは文字の選択もできます。ページの上ではカーソルがテキストカーソルになり、`pageAt` はレンズ中心の下にある点（タッチ画面では指の上）を返します。Sandbox ではそこでクリックするとキャレットが置かれ、ドラッグすると選択されます。
+- **読者は本の周りを見回せます**。右ドラッグで本の周りを視点が回り（真上から70°まで）、丁がめくられている間も回せます。`resetView()`は設定の`tilt`と`yaw`へ滑らかに戻し、`getView()`は現在見えている視点（`{ tilt, yaw }`、度単位）を返すので、それを設定として保存できます。Sandboxはこれらを2つのボタン、**視点をリセット**と**既定の視点として保存**に割り当てています。
+- **動画はページの上で再生されます**。動画のポスター画像をクリックすると、`interaction`がどのモードでもページの上で再生が始まり、その丁をめくっている間も止まりません。もう一度クリックすると一時停止し、その動画が見えない見開きで本が静止すると停止します。`player.autoplay`を指定した動画は、その見開きが初めて表示されたときにひとりでに再生を始めます。ほかの動画と同時に再生する設定（`player.exclusive: false`）なら、表示されるたびに無音で始まり、めくられると止まり、何本でも同時に再生されます。オプションは`videos`、`videoUrl`、`onVideo`、ビューアーのメソッドは`stopVideo()`です。[文書形式 › Folioのページで再生する動画](/ja/docs/document-format#folioのページで再生する動画)を参照してください。
+- **フォントと画像を先に**。`renderPage`と同じく、ページを描く前に、ドキュメントが使うフェイスを`document.fonts`に読み込み、リソースの画像を`registerResourceImage`で登録しておく必要があります。
+- **アクセシブル**。ビューアーはフォーカス可能なグループで、←/→（右綴じの本では反転）、Page Up/Down、Home、Endを受け付けます。ボタンとページ数にはラベルが付き（`labels`で翻訳できます）、各ページのキャンバスには`alt`テキストが付きます（`alt: (index) => …`）。
+- **WebGL2がない場合**、または読者が動きを減らす設定にしている場合は、見開きが単に切り替わります。WebGLの本はスマートフォンには重いため（ページの面ごとにテクスチャーを1枚使います）、SandboxはWebGL2が使え、画面の短辺が600 px以上の場合にだけFolioタブを表示します。`canFlip()`は、その環境で丁が3Dでめくられるかどうか（WebGL2があり、動きを減らす設定でないこと）を返します。
+
+### 外観
+
+`appearance`オプション（後からは`setAppearance`）は、ドキュメントの指定を上書きします。省略したものは、ドキュメントの指定のままです。
+
+```ts
+const book = createFolioFromDocument(container, doc, {
+  appearance: {
+    folio: {
+      tilt: 22,
+      paper: { type: 'bookWove', texture: 'laid' },
+      binding: { type: 'hardcover', coverColor: { hex: '#5a1f1f', model: 'hex' } },
+      surface: { type: 'walnut' },
+      lighting: { environment: 'lamp' },
+    },
+    // Photographed desks: a folder laid out as postext.dev's /folio/textures/
+    // (manifest.json and one folder per desk). Without it, procedural maps.
+    textureBaseUrl: '/folio/textures',
+    // The picture for `folio.binding.spineImage`: the resource's URL,
+    // or a drawn canvas or image.
+    spineImage: spineUrl,
+  },
+});
+
+// A settings panel: the book redrawn in place, nothing painted again.
+book.setAppearance({ folio: { ...folio, lighting: { environment: 'daylight' } } });
+book.resetView();
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>フィールド</th>
+      <th>内容</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>folio</code></td><td><a href="/ja/docs/configuration-fonts-colors-viewers#folioビューアー設定"><code>folio</code>設定</a>：傾き、紙、綴じ、表面、照明。指定すると、ドキュメントの設定を置き換えます。</td></tr>
+    <tr><td><code>pageWidthMm</code></td><td>ページの仕上がり幅（mm）。紙厚と表紙の板は、これを基準に縮尺されます。ドキュメントからは、そのdpiでの仕上がりページの幅。<code>createFolio</code>では既定値150。</td></tr>
+    <tr><td><code>extraPages</code></td><td><code>{'{ before, after }'}</code>：渡したページ以外の本のページ。ページブロックの厚さに数えますが、描画はしません。</td></tr>
+    <tr><td><code>covers</code></td><td><code>{'{ front, back }'}</code>：渡した最初のページが表表紙、最後のページが（偶数ページに当たる場合）裏表紙になります。どちらも板としてめくられ、別の表紙（ケース）は描かれません。ドキュメントからは、最初のページで始まり最後のページで終わる本で<code>binding.cover: 'pages'</code>を指定した場合。</td></tr>
+    <tr><td><code>spineImage</code></td><td>背に印刷される画像。URL、キャンバス、画像のいずれか。<code>createFolioFromDocument</code>はリソースを参照しないので、<code>folio.binding.spineImage</code>が指定するリソースの画像を渡してください。中綴じでは無視されます。</td></tr>
+    <tr><td><code>textureBaseUrl</code></td><td>写真から作った机のテクスチャーの配信場所。読み込まれるまでの間、または指定しない場合、机はプロシージャルなマップで描かれます。</td></tr>
+  </tbody>
+</table>
+
+`createFolio(container, { pages })`は、任意のページを対象にした同じビューアーです。ページには画像のURL、`<img>`または`<canvas>`要素、空白ページを表す`""`を使えます。ページは`{ src, alt, paper }`にすることもでき、`paper`はその丁の`:::paper`形式の用紙です。`PageFlipper`はthree.jsのエンジン単体で、見開きのDOMを自分で組むホスト向けです。`FlatPageFlipper`は3Dの本より前からある平面のページめくりで、レシピ集のライトテーブルのために残されています。オプションの一覧は[パッケージのREADME](https://www.npmjs.com/package/postext-folio)にあります。
+
+### ライブサンプル：3Dの本
+
+このCodePenのサンプルは、`postext`と`postext-folio`をCDNからインポートし、短いドキュメントをレイアウトして本として開きます。右ページの端をつかんで、向こう側へドラッグしてみてください。
+
+<CodePenExample name="render-folio" title="Postext · ドキュメントを3Dの本に" description="postextでMarkdownのドキュメントをレイアウトし、postext-folioで3Dのページをめくります。" height={640} />
+
+### ライブサンプル：ページの画像
+
+キャンバスに描いたページ、空白の最終ページ、紙の色を使った`createFolio`の例です。
+
+<CodePenExample name="folio-images" title="Postext · 画像の3Dの本" description="postext-folioで任意のページを3Dでめくります。画像のURL、img要素、canvas要素を使えます。" height={600} />
+
+## EPUBの本（`postext-epub`）
+
+`postext-epub`は、レイアウトした本をEPUB 3.3ファイルとして、ブラウザーでもNodeでもサーバーなしで書き出します。本の場合に`renderToPdf`が受け取るのと同じ章のドキュメントを読むので、ページ番号、注、引用、相互参照、目次、索引が解決済みの状態で届きます。ファイルはバイト列として返されます。Sandboxの**EPUB 3**タブで使われている書き出し機能です。
+
+```bash
+npm install postext postext-epub
+```
+
+`postext`は、`postext-pdf`と同じくピア依存関係です。2つは一緒にアップグレードし、CDNでは同じバージョンに固定してください。
+
+### 固定レイアウトとリフロー型
+
+EPUB 3は2つのレンディションを定義しており、パッケージの`rendition:layout`プロパティで設定します。`layout`でどちらかを選びます。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}></th>
+      <th><code>layout: 'fixed'</code></th>
+      <th><code>layout: 'reflowable'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>EPUBでの名前</td><td><code>pre-paginated</code>（固定レイアウト、FXL）</td><td><code>reflowable</code>（EPUBの既定）</td></tr>
+    <tr><td>コンテンツ文書</td><td>印刷ページごとに1つのXHTML文書。仕上がりのページサイズ（CSS px）</td><td>章ごとに1つのXHTML文書（部はそれ自身の文書を開始します）</td></tr>
+    <tr><td>保持するもの</td><td>ページ：段、フロート、柱、章扉、改行位置と配置を、埋め込んだフォントで。テキストは本物のテキストのままで、選択、検索、読み上げができます</td><td>テキストとその構造：見出し、行から組み立て直した段落、リスト、asideとしての囲み、引用する本文の後に置く図と表、注、リンク、印刷ページの目印。設定から導いたスタイルシート</td></tr>
+    <tr><td>失うもの</td><td>読者による書体、サイズ、余白の選択。小さな画面ではページが縮小されます</td><td>段、柱、ページデザイン、正確な改行位置</td></tr>
+    <tr><td>見開きと方向</td><td>奇数・偶数と綴じから決まる<code>page-spread-left</code> / <code>page-spread-right</code>。右綴じの本は右から左に読みます</td><td>読む方向は綴じから決まります。縦組みの中国語は<code>vertical-rl</code>を保ち、アラビア語は<code>dir="rtl"</code>になります</td></tr>
+    <tr><td>向いているもの</td><td>デザインされたページ：図版の多い本、教科書、カタログ、雑誌。大きな画面</td><td>流れる本文：小説、エッセイ、レポート。スマートフォンや電子ペーパー端末</td></tr>
+  </tbody>
+</table>
+
+どちらのレンディションも同じナビゲーションを持ちます。見出しと部扉から作る目次、印刷ページのラベルによるページリスト、ランドマーク（表紙、印刷された目次、本文の開始）、古いリーディングシステム向けのNCXです。
+
+### 本を書き出す
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToEpub } from 'postext-epub';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle); // one VDTDocument per chapter, in book order
+
+const bytes = await renderToEpub(docs, {
+  layout: 'reflowable',
+  metadata: { title: 'Lantern', creators: ['Ada Lovelace'], language: 'en' },
+  fonts: bundle.fonts.map((f) => ({ family: f.family, weight: f.weight, style: f.style, bytes: new Uint8Array(f.bytes), format: f.format })),
+  resourceBytes: (fileId) => {
+    const data = bundle.files.get(fileId);
+    return data ? { bytes: data, mediaType: '' } : undefined;
+  },
+  onWarning: (w) => console.warn(w),
+});
+```
+
+単独のドキュメントは、1章だけの本として渡します（`renderToEpub([doc], options)`）。
+
+- **`renderToEpub(docs, options): Promise<Uint8Array>`**：ファイルを書き出します。`options`は`{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`です。
+- **`metadata`**：`title`と`language`（BCP 47タグ）は必須で、`subtitle`、`creators`、`identifier`、`date`、`publisher`、`rights`、`description`、`modified`は省略できます。ISBNだけを書くと`urn:isbn:…`になります。`identifier`がなければ、本にはタイトル、著者、言語から導いた`urn:uuid:`が付くので、同じ本の新しい版も読者のライブラリーで同じ位置を保ちます。バイト単位で同一の出力を得るには、`modified`も渡してください。
+- **`fonts`**：埋め込むフェイス。`{ family, weight, style, bytes, format, unicodeRange? }`の形で、`format`は`woff2`、`woff`、`ttf`、`otf`のいずれかです。各フェイスは1つのファイルと1つの`@font-face`規則になり、`unicodeRange`を持つ複数のファイルで1つのフェイスを構成することもできます（Google Fontsのスライス）。ページが使うファミリー、ウェイト、スタイルに埋め込みフェイスがない場合は`missingFont`として報告され、リーディングシステムが独自のフォントで代替します。ライセンスが許すフォントだけを埋め込んでください。`redistributable: false`のフェイスがファイルに書き込まれることはありません（本をそのフェイスで組むことはできますが、ファイル自体は入らず、SVGの画像にも入りません）。
+- **`resourceBytes(fileId)`**：ページが配置する画像を、同期または非同期で`{ bytes, mediaType }`として返します。`mediaType`が空ならバイト列から判別します。ビットマップは格納されたまま、SVGはソースのまま渡し、PDFの印刷用マスター（`svg.pdfFileId`）は渡さないでください。各画像は1回だけ格納されます。単色インクの本（`diagramStyle.singleInk`）では、ファイル内のSVGが色替えされます。リーディングシステムはSVGを本のフォントが見えない画像として表示するので、SVGには文字が指定するフェイスが埋め込まれます（[SVGの文字のフォント](/ja/docs/configuration-resources#svgの文字のフォント)を参照）。まず`fonts`から（その文字を収めるスライス）、本文で使われていないファミリーは次に<strong>`svgFonts.provider`</strong>から取ります。`redistributable: false`と指定されたフェイスのファミリーと、`svgFonts.withhold(family)`が指定するファミリーは入れず、それぞれ1回ずつ`fontWithheld`として報告します。フェイスのないファミリーは`svgFontUnavailable`、`svgFonts.maxBytes`（2 MiB）を超えるフェイスは`svgFontsTooLarge`として報告されます。`svgFonts.inline: false`、`diagramStyle.inlineFonts: false`、リソースの`svg.inlineFonts: false`のいずれかを指定すると、バイト列は渡されたままになります。バイト列のない画像は`missingImage`として報告され、空の枠として残ります。
+- **`cover`**：`{ bytes, mediaType, alt? }`。JPEG、PNG、WebP、SVGの画像です。指定すると、本はそれを収めた表紙の文書から始まり、その画像がパッケージの`cover-image`（ライブラリーのサムネイル）になります。指定しなければ、固定レイアウトでは最初のページが表紙として指定され、リフロー型の本には表紙画像がありません。
+- **`onProgress({ phase, done, total })`**：`resources`（フォントと画像）、`documents`（固定レイアウトではページ、リフロー型では章）、`package`の順に進みます。**`signal`**：ステップの合間で中止します。
+- **`readEpub(bytes)`**：ビューアーのためにファイルを読み戻します。`DOMParser`は使いません。レイアウト、メタデータ、読む方向、パスごとのすべてのファイル、マニフェスト、スパイン、目次、ページリスト、固定レイアウトのビューポート、表紙を返します。Sandboxのリーダーはこれをもとに作られています。
+
+どちらのレンディションも、EPUB Accessibility 1.1のメタデータ（アクセスモード、目次や印刷ページ番号などの機能、ハザード、概要）を持ち、既定ではWCAGへの準拠を主張しません。オプションの一覧と制限事項は[パッケージのREADME](https://www.npmjs.com/package/postext-epub)にあります。
+
+### EPUBCheckでファイルを検査する
+
+[W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/)はEPUBのリファレンスとなる検証ツールで、電子書籍ストアは受け取ったファイルをこれで検査します。インストールすると（`brew install epubcheck`、またはJava版のリリース）、`epubcheck book.epub`でエラー、警告、使用上の注意が一覧表示されます。Postextの出力に残る使用上の注意（`CSS-028`、`OBS-001`、`HTM_062`）は情報提供のためのものです。Postextのリポジトリーでは、`pnpm --filter postext-epub epubcheck`がテストスイートのサンプルの本を検査し、`node packages/postext-epub/scripts/epubcheck.mjs book.postext --layout both`は1つの`.postext`ファイルまたはプリセットのフォルダーをレイアウトして両方のレンディションを検査し、`pnpm --filter postext-epub validate`は本の組み合わせ全体（Postextガイド、ショーケースのプリセット、中国語、アラビア語、レシピ集の本）を検査します。どの本もエラーも警告もなく合格します。
+
+## バンドル（`.postext`ファイル）
+
+**`.postext`ファイル**は、1冊の本をまるごと収めた1つのファイルです。zipアーカイブで、`preset.json`マニフェスト、章ごとに1つのMarkdownファイル、リソースのデータ本体（ビットマップ、SVG、PDFの印刷用マスター）、設定が指定するフォントファイルを収めます。[Sandbox](/ja/docs/sandbox#書き出しと読み込み)がこれを書き出し・読み込みし、[エージェントスキル](/ja/docs/skill)がこれを出力します。`postext`パッケージでも作成し、開くことができるので、本はこれらのツールと自分のプログラムの間を何も失わずに行き来できます。
+
+```
+my-book.postext
+├── preset.json            manifest: name, locale, chapters, config, resources, fonts
+├── chapters/01-dusk.md
+├── chapters/02-night.md
+├── resources/lantern.svg
+└── fonts/ebgaramond-400-normal.woff2
+```
+
+マニフェストの各フィールドは、Sandboxの付録[プリセットバンドルの形式](/ja/docs/sandbox#プリセットバンドルの形式)で説明しています。ファイルには`layouts.json`を含めることもできます。これはSandboxのページ数の記録で、本がSandboxで最初からページ分けされた状態で開きます。多言語の本では版ごとに1つずつ持つこともできます（`layouts.zh-Hant.json`。こちらが先に読まれます）。`openBundle`はこれらを無視します。
+
+APIは`postext`本体と、低レベルのヘルパーを加えた`postext/bundle`サブパスから書き出されています。描画もする場合は`postext`からインポートしてください。そうすればバンドルのアダプターとレンダラーが1つのモジュールインスタンスを共有します。これは、エントリーポイントごとに別のビルドになるesm.shのようなCDNで重要です。
+
+### バンドルを開く
+
+`openBundle`はファイルのバイト列（`Uint8Array`、`ArrayBuffer`、または`<input type="file">`から得た`Blob` / `File`）を受け取り、エンジンとそのバックエンドが必要とするものをすべて返します。
+
+```ts
+import { openBundle } from 'postext';
+
+const bundle = await openBundle(await file.arrayBuffer(), { locale: 'es' });
+
+bundle.chapters;   // [{ title, file, markdown }, …] in book order
+bundle.config;     // PostextConfig, ready for buildDocument
+bundle.resources;  // Resource[]
+bundle.files;      // Map<path, Uint8Array>: every file of the bundle
+```
+
+<table>
+  <thead>
+    <tr><th>フィールド</th><th>内容</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>manifest</code></td><td>検証済みの<code>preset.json</code>。</td></tr>
+    <tr><td><code>id</code>, <code>name</code>, <code>description</code></td><td>マニフェストから取得した値。</td></tr>
+    <tr><td><code>locale</code>, <code>locales</code></td><td>内容を読んだロケールと、多言語のバンドルが持つすべてのロケール。<code>options.locale</code>でどれを読むかを選びます。まず完全に一致するタグ、次に基本言語、最後にバンドル自身のロケールの順に探します。</td></tr>
+    <tr><td><code>chapters</code></td><td>章ごとの<code>&#123; title, file, markdown &#125;</code>。マニフェストにタイトルがない章は、最初の<code>#</code>見出しのテキストをタイトルにします。</td></tr>
+    <tr><td><code>config</code></td><td>既定のカラーパレットとバンドルの言語でのリソースタイプの上に、マニフェストの<code>config</code>、さらにロケールの上書きを重ねたもの。バンドルの言語は上の<code>locale</code>なので、1言語のバンドルは<code>options.locale</code>が何を求めても、その言語のラベルになります。言語を指定していないマニフェストでは、その<code>config</code>が設定する言語（<code>locale</code>、次にハイフネーションのロケール）を使い、それもなければ<code>options.locale</code>を使います。<code>customFonts</code>にはバンドルのフォントファミリーが並びます。Sandboxがバンドルを開くときと同じ設定です。</td></tr>
+    <tr><td><code>resources</code></td><td>選んだロケールのキャプションを付けたリソース。マニフェストにないサイズはファイルから読み取ります。</td></tr>
+    <tr><td><code>fonts</code></td><td>フェイスごとに1項目：<code>&#123; family, weight, style, format, file, bytes &#125;</code>。</td></tr>
+    <tr><td><code>files</code></td><td>アーカイブ内のすべてのファイル。キーはそのパスです。</td></tr>
+    <tr><td><code>thumbnail</code>, <code>canvasScope</code></td><td>表紙画像のパスと、バンドルが求める表示方法。マニフェストの<code>view</code>の上に、読み込んだ言語の<code>localized[…].view</code>を重ねたものです。</td></tr>
+    <tr><td><code>warnings</code></td><td>致命的でない問題。対応していないフォントファイル、印刷用マスターの欠落など。</td></tr>
+  </tbody>
+</table>
+
+**データ本体の`fileId`は、バンドル内でのそのパスです**。`resource.svg.fileId`、`resource.bitmap.fileId`、`customFonts`の各バリアントの`fileId`は、そのまま`bundle.files`で引けます。`openBundle`は、バイト列がzipでない場合、有効な`preset.json`が（ルートにも、トップレベルの1つのフォルダーの下にも）ない場合、マニフェストが指定するファイルが欠けている場合に例外を投げます。
+
+#### postext 1.4以前で書き出したバンドル
+
+`createBundle`とSandboxが書き出すマニフェストには、必ず`configVersion: 11`が入っています。これは、その`config`がどの設定規則を前提に書かれたかを示します。これを持たないマニフェストはpostext 1.4以前で書き出されたもので、次の18点の扱いが現在と異なります。
+
+- **見出しの改ページ**（規則3）：1.4までは、H1の改ページを持たない`headings`オブジェクトでは改ページが入りませんでした（[レベルごとの上書き](/ja/docs/configuration-text#レベルごとの上書き)を参照）。
+- **数式のサイズ**（規則4）：1.4までは、数式が`fontSizeScale`の指定より1.131倍大きく組まれていました（[数式のサイズ](/ja/docs/configuration-text#数式)を参照）。
+- **インラインのリソースの下のアキ**（規則5）：1.4までは、`placement.position: 'here'`の図や表の後のテキストが、その下にフロートのアキを取らずに次のグリッド線から再開していました（[レイアウト](/ja/docs/configuration-page-layout#レイアウト)の`layout.inlineResourceGap`を参照）。
+- **ボックスの中のインラインのリソースの周りのアキ**（規則6）：1.4までは、そうしたリソースが周りのボックスのテキストに接して置かれていました（[レイアウト](/ja/docs/configuration-page-layout#レイアウト)の`layout.inlineResourceGapInBoxes`を参照）。
+- **見出し内の文字書式**（規則6）：1.4までは、見出しの中の`*italic*`、`**bold**`などのマークが付いた語を、見出し自身の素のスタイルで印字していました（[見出し](/ja/docs/configuration-text#見出し)の`headings.inlineMarks`を参照）。
+- **ドロップキャップのサイズ**（規則6）：1.4までは、`fontSize`のないデザインテキストの`dropCap`は、またがる行ボックス全体と同じ高さになり、上端が1行目より上に出ていました（[テキスト要素](/ja/docs/configuration-page-layout#テキスト要素)の`dropCap`を参照）。
+- **コロンで終わる行の下の余地**（規則6）：1.4までは、`keepColonWithList`はコロンで終わる行の下に1行分の余地があればリストには十分とみなしていました。そのため、オーファンとウィドウの規則が分割しない2行の最初の項目は、コロンの行を残して次の段に送られていました（`bodyText.colonListRoom`を参照）。
+- **ボックスの分割で残る行**（規則6）：1.4までは、段落やリスト項目の途中で分割したボックスは、ボックスの各側に合計で`splitMinLines`行あれば、その段落や項目の1行だけを片側に残すことがありました（[レイアウト](/ja/docs/configuration-page-layout#レイアウト)の`layout.boxChildSplitMinLines`を参照）。
+- **ダッシュでの改行**（規則7）：1.4までは、Knuth-Plassは語と語の間に前後を詰めて置いたemダッシュやenダッシュ（`say—that’s`）の後で行を終えることがなく、書式付きのテキストを1行ずつ組む改行処理は2文字の間でだけ改行していました（[本文](/ja/docs/configuration-text#本文)の`bodyText.breakAfterDashes`を参照）。
+- **行末不ぞろいのテキスト**（規則7）：1.4までは、`optimalLineBreaking`の値にかかわらず、行末不ぞろいの本文テキストを1行ずつ、各行を埋めてから次の行に進んで組んでいました（[本文](/ja/docs/configuration-text#本文)の`bodyText.optimalRagged`を参照）。
+- **見出しの下での分割**（規則8）：1.4までは、段の末尾にある見出しの下の段落は、次の段に送られる行がどれほど少なくても、そこに入るだけの行を残していました（[見出し](/ja/docs/configuration-text#見出し)の`headings.keepWithNextSplit`を参照）。
+- **`:::paragraphs`コンテナーの下のアキ**（規則8）：1.4までは、スタイルのアキをグリッドへのスナップの前に最後の段落の下に置き、その下に次のブロックの上のアキ（見出しの`marginTop`）を加え、テキストの段落間隔は含めていませんでした（[本文](/ja/docs/configuration-text#本文)の`bodyText.paragraphContainerSpacing`を参照）。
+- **複合語のハイフンでの改行**（規則8）：1.4までは、インライン書式のない段落では、Knuth-Plassは2文字の間のハイフン（`well-known`）の後で両端そろえの行を終えることがなく、書式のある段落では終えていました（[本文](/ja/docs/configuration-text#本文)の`bodyText.breakAfterHyphens`を参照）。
+- **区切りのない詩**（規則9）：1.22までは、行に`||`のない`:::verse`の詩は各行を1つの半句として中央に置いて組んでいました（[詩](/ja/docs/configuration-text#詩)の`bodyText.verse.layout`を参照）。
+- **1行目の字下げとぶら下げインデントの併用**（規則9）：1.22までは、段落スタイルの`hangingIndent`が`firstLineIndent`に取って代わり、1行目は`indent`から始まっていました（[段落スタイル](/ja/docs/configuration-styles#段落スタイル)を参照）。
+- **行末のバックスラッシュ**（規則9）：1.22までは、段落・引用・リスト項目の行末のバックスラッシュと、後ろにスペースのある`\\`はそのまま印字され、行はスペースを挟んでつながっていました（[本文](/ja/docs/configuration-text#本文)の`bodyText.hardLineBreaks`を参照）。
+- **コードフェンス**（規則9）：1.22までは、```` ``` ````や`~~~`のフェンスとその中の行をMarkdownとして読んでいました。行は段落に結合され、`#`の行は見出しになり、フェンスは印字されていました（[コードリスト](/ja/docs/configuration-styles#コードリスト)の`codeStyle.blocks`を参照）。
+- **詩行の折り返し**（規則10）：1.23では、一行ずつ組む詩で行長より長い行は、はみ出しがわずかでも自然な語間のまま折り返していました（[詩](/ja/docs/configuration-text#詩)の`bodyText.verse.tighten`を参照）。
+
+`openBundle`と`readBundle`は、そのようなマニフェストの`config`と、各ロケールの`localized`の設定を`migrateConfig`を通して読み込みます。この関数は1.4が組んだ改ページを明示的に書き出し、数式の倍率に1.131を掛けます（`em`で指定した別行立て数式のアキはこの値で割ります）。1.5のプレリリースが書いた`3`から`7`の値を持つマニフェストには、その値より後の規則の固定だけが入ります。`3`なら数式のサイズ、インラインのアキ、規則6の5つの固定、規則7の2つ、規則8の3つ。`4`ならインラインのアキと、規則6、7、8の固定。`5`なら規則6、7、8の固定。`6`なら規則7と8の固定。`7`なら規則8の固定だけです。見出しの下での分割（`pinLegacyHeadingSplit`）は、各層を重ねた結果有効になる`headings`に`headings.keepWithNextSplit: 'fill'`として書き込まれます。条件は、読み込んだ章に見出しがあり、設定が独自の値を指定しておらず、`headings.keepWithNext`を有効のままにし、`bodyText.avoidOrphans`を無効にしていないことです。複合語の改行（`pinLegacyHyphenBreaks`）は、有効な`bodyText`に`bodyText.breakAfterHyphens: false`として書き込まれます。条件は、読み込んだ章に2文字の間のハイフンがあり、設定がこの値をすでに設定しておらず、`optimalLineBreaking`も無効にしていないことです。コンテナーの下のアキ（`pinLegacyParagraphContainerSpacing`）は、有効な`bodyText`に`bodyText.paragraphContainerSpacing: 'add'`として書き込まれます。条件は、設定が段落スタイルを（`paragraphStyles`またはHTMLビューアーの上書きで）宣言し、読み込んだ章が単独の行で`:::paragraphs`コンテナーを開き、設定がこの値をすでに設定していないことです。ダッシュでの改行（`pinLegacyDashBreaks`）は、有効な`bodyText`に`bodyText.breakAfterDashes: false`として書き込まれます。条件は、読み込んだ章に語と語の間に前後を詰めて置いたemダッシュやenダッシュがあり（前に文字、数字、閉じる約物があり、後ろに文字、数字、開き括弧や開き引用符があるもの。ダッシュの前の引用符は、その引用符の前に文字、数字、閉じる約物、ノーブレークスペースがあれば数に入ります。`"no"—and`は該当し、`said "—Hola`は該当しません。ダッシュや引用符に接するインラインのマーク、たとえば`**riddles.**—I`の`**`は、どちら側にあっても数に入ります）、設定がこの値をすでに設定していないことです。行末不ぞろいの改行（`pinLegacyRaggedBreaking`）は、有効な`bodyText`に`bodyText.optimalRagged: false`として書き込まれます。条件は、設定が本文テキストのどこかを行末不ぞろいにし（本文テキスト、段落スタイル、囲みの本文、部の本文、節のスタイルの本文（`headingStyles[].bodyStyle`）、またはHTMLビューアーの上書きで、`'justify'`以外の`textAlign`を指定する）、この値をすでに設定しておらず、`optimalLineBreaking`も無効にしていないことです。ボックスの中のアキ（`pinLegacyBoxResourceGap`）は、有効な`layout`に`layout.inlineResourceGapInBoxes: false`として書き込まれます。条件は、読み込んだ章の`:::callout`の中にリソースが単独の行で埋め込まれ、設定がこの値をすでに設定していないことです。ボックスの分割（`pinLegacyBoxChildCut`）は、有効な`layout`に`layout.boxChildSplitMinLines: 1`として書き込まれます。条件は、読み込んだ章が単独の行で`:::callout`を開き、設定がこの値をすでに設定していないことです。見出しのマーク（`pinLegacyHeadingMarks`）は、各層を重ねた結果有効になる`headings`に`headings.inlineMarks: false`として書き込まれます。条件は、読み込んだ章の見出しがマーク（タイトル内の`*`、`_`、`^`、`~`、`:smallcaps[`、またはリンク）を含み、設定が独自の値を指定していないことです。ドロップキャップ（`pinLegacyDropCapSize`）は、どこにあっても1.4のサイズが`dropCap.fontSize`として書き出されます。単位は、要素の行送りが長さで指定されていればその単位、そうでなければフォントサイズの単位です。コロンで終わる行の下の余地（`pinLegacyColonListRoom`）は、有効な`bodyText`に`bodyText.colonListRoom: 'line'`として書き込まれます。条件は、読み込んだ章のリストがコロンで終わる行に続き（間に空行があってもかまいません）、設定が余地を指定しておらず、`keepColonWithList`も無効にしていないことです。インラインのアキ（`pinLegacyInlineGap`）は、各層を重ねた結果有効になる`layout`に`layout.inlineResourceGap: 'above'`として書き込まれます。条件は、読み込んだ章のある行がリソースを埋め込み（パーサーの解釈どおり、`::resource{id="…"}`が単独で行にあるもの。本文中やコードスパンでの言及は数に入りません）、設定が独自のアキを指定していないことです。サイズは、各層を重ねた結果有効になる`math`に固定されます（ロケール独自の`math`は共有のものを置き換えます）。これは読み込んだ章に`$`がある場合に限られ、数式のないバンドルの`config`は書かれたまま残ります。マニフェストもロケールも`math`を指定しない場合、有効なものは`readBundle`の`baseConfig`（読み込む側自身の設定）のもので、これも固定されます。1.4はバンドルの数式をそのサイズで組んでいたからです。基本設定の`fontSizeScale: 1.5`は1.5 × 1.1312として読まれます。基本設定の見出しの改ページはそのまま使われます。このように古いバンドルはこれらの規則で組まれた結果を保ち、`bundle.config`には、実際に組むときの改ページ、数式のサイズ、アキ、見出しのマーク、ドロップキャップのサイズ、コロンで終わる行の下の余地、ボックスの分割、ダッシュでの改行、複合語の改行、行末不ぞろいの改行、見出しの下での分割、コンテナーの下のアキが表示されます。1.5のレイアウトの修正には固定がなく、ほかの本と同じく古いバンドルにも適用されるため、それらが関わるページは動くことがあります（一覧は[数式のサイズ](/ja/docs/configuration-text#数式)を参照）。現在の規則に合わせて手で書く`preset.json`には`"configVersion": 11`を指定します。古いバンドルのマニフェストにこの値を書き込むのも、現在の規則で読み込むための1行で済む方法です（その場合、バージョンのないバンドルは見出しの改ページの固定も失います）。`8`と記されたマニフェスト（postext 1.5〜1.22が書いたもの）は規則9の4つの固定だけを受け、それより古いものも同様に受けます。詩の組み方（`pinLegacyVerseLayout`）は、読んだ章に開始行で組み方を指定せず行に半句の区切りもない`:::verse`の詩があり、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.verse.layout: 'bayt'`として書き込まれます。組になった字下げ（`pinLegacyPairedIndents`）は、0でない`hangingIndent`も決めている段落スタイル（`paragraphStyles`またはHTMLビューアーの上書き設定のもの）すべてから`firstLineIndent`を外します。強制改行（`pinLegacyHardBreaks`）は、読んだ章に、段落・引用・リスト項目の行末がバックスラッシュで終わって次の行に続く箇所か、後ろにスペースと文字が続く`\\`があり（インラインのコードと数式、別行立ての数式、見出し、`:::verse`の詩は除く）、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.hardLineBreaks: false`として書き込まれます。コードフェンス（`pinLegacyCodeBlocks`）は、読んだ章が```` ``` ````か`~~~`のフェンス（3文字以上、行頭からのインデントは3スペースまで）を開き、設定がまだ決めていなければ、`codeStyle.blocks: false`として書き込まれます。`9`が付いたマニフェスト（postext 1.23で書き出したもの）には規則10の固定だけが適用され、それより古いものにも適用されます。詩行の折り返し（`pinLegacyVerseTightening`）は、読んだ章が詩を一行ずつ組んでいて（`:::verse`のフェンスが`layout=lines`を指定しているか、組み方を指定せず各行に半句の区切りがなく、設定がそのような詩をバイトとして組んでいない場合）、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.verse.tighten: false`として書き込まれます。`10`が付いたマニフェスト（postext 1.24で書き出したもの）には規則11の固定だけが適用され、それより古いものにも適用されます。文字グリッドの段末そろえ（`pinLegacyGridBalancing`）は、統合後の設定が横組みで`cjk.grid.enabled`を指定し、`enabled`自体は指定していなければ、有効な`headings`に`headings.balancing.enabled: true`として書き込まれます。1.24はそのようなページを既定でそろえていたためです。規則11では、書名を1字目の後で分割しないこと、丸数字を漢字として組むこと、CJKのデザインテキストを本文の規則で組むことも加わった（#637）。`10`以前のマニフェストは、読み込んだ章に書名（《、〈、`:book[`）があれば`cjk.titleMinChars: 1`（`pinLegacyTitleBreaks`）、丸数字（U+2460〜U+24FF、U+2776〜U+2793）があれば`cjk.circledNumbers: 'western'`（`pinLegacyCircledNumbers`）、読み込んだ章か設定そのものにCJKのテキストがあれば`cjk.composeDesignText: false`（`pinLegacyDesignText`）を、それぞれ有効な`cjk`に受け取る。いずれも設定がその項目をまだ指定していない場合に限る。規則11では、インラインの表を切ることと、本文中で`:::columns`を組むことも加わりました（#634）。`10`以前のマニフェストは、読み込んだ章がリソースを埋め込んでいれば有効な`tableStyle`に`tableStyle.splitInline: false`（`pinLegacyInlineTableSplit`）を、読み込んだ章が単独の行で`:::columns`フェンスを開いていれば有効な`layout`に`layout.flowColumns: false`（`pinLegacyFlowColumns`）を受け取ります。どちらも、設定がその項目をまだ指定していない場合に限ります。規則11では、ページ幅の章扉のある段の先頭もフロートの空き位置になりました（#639）。`10`以前のマニフェストは、マージした設定が`span: 'page'`の見出しレベルまたは見出しスタイルを設定し、読み込んだ章に見出しがあれば、有効な`layout`に`layout.floatsUnderOpener: false`（`pinLegacyOpenerHeadFloats`）を受け取ります。これも、設定がその項目をまだ指定していない場合に限ります。
+
+```ts
+import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
+
+migrateConfig({ headings: { fontFamily: 'Georgia' } }, undefined, { content: 'A book with no maths.' });
+// => { headings: { fontFamily: 'Georgia', levels: [{ level: 1, breakBefore: { enabled: false } }] } }
+migrateConfig({ math: { fontSizeScale: 1.2 } }, 3);
+// => { math: { fontSizeScale: 1.35746…, marginTop: { value: 0.7072, unit: 'em' }, marginBottom: { value: 0.7072, unit: 'em' } },
+//      layout: { inlineResourceGap: 'above', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 },
+//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false } }
+migrateConfig({ layout: { layoutType: 'single' } }, 4, { content: 'Text.\n\n::resource{id="fig"}' });
+// => { layout: { layoutType: 'single', inlineResourceGap: 'above' } }
+migrateConfig({ layout: { layoutType: 'single' } }, 5, { content: ':::callout\nText.\n\n::resource{id="fig"}\n:::' });
+// => { layout: { layoutType: 'single', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 } }
+migrateConfig({ bodyText: { textAlign: 'left' } }, 6, { content: 'I say—that is all.' });
+// => { bodyText: { textAlign: 'left', breakAfterDashes: false, optimalRagged: false } }
+migrateConfig({ paragraphStyles: [{ id: 'verse' }] }, 7, { content: ':::paragraphs{style="verse"}\nA line.\n:::' });
+// => { paragraphStyles: [{ id: 'verse' }], bodyText: { paragraphContainerSpacing: 'add' } }
+migrateConfig({ bodyText: { fontFamily: 'Georgia' } }, 7, { content: 'A well-known tale.' });
+// => { bodyText: { fontFamily: 'Georgia', breakAfterHyphens: false } }
+migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
+```
+
+`content`は、その設定で組むMarkdownです（文字列または章のリスト）。これがない場合、数式のサイズは数式が有効なら常に、コンテナーの下のアキは設定が段落スタイルを宣言していれば常に固定されます。2つのアキ、見出しのマーク、コロンで終わる行の下の余地、ボックスの分割、ダッシュでの改行、見出しの下での分割、複合語の改行は無条件に固定されます。本に数式、`:::paragraphs`コンテナー、インラインの図、マークを含む見出し、コロンで導入するリスト、ボックス、詰めて置いたダッシュ、見出し、複合語があるかどうかを、エンジンが判断できないためです。行末不ぞろいの改行は、内容の有無にかかわらず設定だけで固定されます。保存した設定は一度だけ移行し、`CONFIG_VERSION`で保存し直してください。数式の固定は倍率に掛け算をするので、2回移行した設定は2回大きくなります。これがないときは詩の組み方とコードフェンスも固定されます。本に区切りのない`:::verse`の詩やフェンスがあるかもしれないからです。組になった字下げは設定だけを見て固定されます。1.23の詩行の折り返しも固定されます。本に一行ずつ組む詩があるかもしれないからです。
+
+### バンドルを組んで描画する
+
+開いたバンドルをエンジンとバックエンドにつなぐヘルパーは4つあります。
+
+- **`loadBundleFonts(bundle)`**：バンドルのフェイスを`document.fonts`に登録し、SVGの画像のために、そのバイト列をエンジンのフォントレジストリにも登録します（`registerFontBytes`）。レイアウトはブラウザーが持つフォントでテキストを計測するので、組む前にその完了を待ってください。バンドルが指定していても収めていないファミリー（Google Fonts）は、ほかの文書と同じく自分で読み込む必要があります。
+- **`registerBundleImages(bundle)`**：canvasバックエンド（`renderPage`、`renderToCanvas`）のために画像をデコードします。動画のポスターも含みます。`renderToHtml`のリゾルバーは2つあり、**`bundleImageUrl(bundle)`**（`resourceImageUrl`）は画像を、**`bundleVideoUrl(bundle)`**（`resourceVideoUrl`）はバンドルが収める動画ファイルを解決します。どちらも`diagramStyle.singleInk`が有効な場合はSVGの図を一度だけ色替えします。マークアップを色替えし、画像に印を付けて、どのバックエンドも重ねて色を付けないようにします（[キャンバスとHTMLでの単色刷り](/ja/docs/configuration-resources#キャンバスとhtmlでの単色刷り)を参照）。どちらも、各SVGに文字が指定するフェイスを、まずバンドル自身のフォントから、次にエンジンに登録されたフェイスから埋め込みます（[SVGの文字のフォント](/ja/docs/configuration-resources#svgの文字のフォント)を参照）。`registerBundleImages(bundle, { onWarning })`と`bundleImageUrl(bundle, { onWarning })`は、フェイスのないファミリーを報告します。
+- **`buildBundle(bundle)`**：章を順に組み、章ごとに1つの`VDTDocument`を返します。各章は前の章を引き継ぎます。見出しとリソースのカウンター、開いている部、ページの奇偶、ノンブルです。目次（`:::toc`）や索引（`:::index`）を印字する章は、本全体のアウトラインを受け取ります。`buildDocument`と同じオプションに加えて、バンドルの設定を上書きする`config`、計測キャッシュを共有する`cache`、`metadata`（後述）を受け付けます。
+- **`bundleResourceBytes(bundle)`**、**`bundleFontProvider(bundle, { decodeWoff2, fallback })`**：`postext-pdf`の`renderToPdf`の`resourceBytes`オプションと`fontProvider`オプションです。フォントプロバイダーは、求められたスタイルのうち最も近いウェイトをバンドルから選びます。`.woff2`のフェイスには`decompressWoff2`が必要です。バンドルが収めていないファミリーについては、`request`を含むレンダラーの引数で`fallback`を呼び、その戻り値をそのまま渡します。ファミリーの`latin`ファイルだけを取得するフォールバックでは、バンドルが埋め込んでいない中国語のファミリーが空の四角として印字されます。[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)の`sliceFontProvider`のようにスライスで応えるフォールバックなら、すべて印字されます。
+
+```ts
+import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,
+  bundleResourceBytes, bundleFontProvider } from 'postext';
+import { renderToPdf, decompressWoff2 } from 'postext-pdf';
+
+const bundle = await openBundle(bytes);
+await loadBundleFonts(bundle);
+await registerBundleImages(bundle);
+
+const docs = buildBundle(bundle);                        // one VDTDocument per chapter
+const firstPage = renderPage(docs[0].pages[0], docs[0]); // a <canvas>
+
+const pdf = await renderToPdf(docs, {                    // the whole book
+  fontProvider: bundleFontProvider(bundle, { decodeWoff2: decompressWoff2, fallback: fontsource }),
+  resourceBytes: bundleResourceBytes(bundle),
+});
+```
+
+1つの章だけを自分で組むには、ほかの文書と同じく、`bundle.chapters[i].markdown`、`bundle.resources`、`bundle.config`を`buildDocument`に渡します。
+
+**本のメタデータ**。Sandboxと同じく、最初の章のフロントマターが本のメタデータになります。`buildBundle`はその`title`、`author`などをすべての章に渡すので、`{title}`や`{author}`の柱はどのページにも入り、どの章の`doc.metadata`にもそれらが入ります。2章目以降の先頭にあるフロントマターのブロックは無視されます。`---`の行で見つけられ、解析されずに空白に置き換えられるので、パーサーが受け付けないYAMLでも害はありません。`options.metadata`は、フロントマターが設定しない値を補います（フロントマターが優先されます）。本のページ数もすべての章に届きます。`{bookTotalPages}`はそれを印字し、`{totalPages}`は章のページを数えます（[本全体のページ数](/ja/docs/configuration-page-layout#本全体のページ数)を参照）。
+
+```ts
+const docs = buildBundle(bundle, { metadata: { author: 'A. Author' } });
+docs[3].metadata.title;   // the first chapter's `title:`
+```
+
+### ライブサンプル：バンドルを開く
+
+このCodePenのサンプルは、リポジトリーから2章の見本の本（独自の書体、SVGの図、表を持つ`lantern.postext`）を読み込みます。バンドルのフォントと画像を登録し、`buildBundle`で本を組んで、全ページを描画します。「Make the PDF」ボタンは、同じ文書を`postext-pdf`で描画し、バンドルのフォントを埋め込みます。Sandboxから書き出したものなど、自分の`.postext`ファイルを選べば、同じように表示されます。
+
+<CodePenExample name="open-bundle" title="Postext · .postextバンドルを開く" description="postextで.postextファイルを開き、本を組んでcanvasとPDFに描画します。" height={640} />
+
+### バンドルを作成する
+
+`createBundle`は、文書（章、設定、リソース、それらが参照するデータ本体）から`.postext`ファイルを書き出します。
+
+```ts
+import { createBundle } from 'postext';
+
+const { bytes, manifest, warnings } = await createBundle({
+  name: 'The Lantern',
+  locale: 'en',
+  chapters: [
+    { markdown: '# Dusk\n\nIt is drawn in :ref{id="lantern"}.' },
+    { title: 'Night', markdown: '# Night\n\n…' },
+  ],
+  config,
+  resources: [{
+    id: 'lantern', typeId: 'figure', kind: 'svg', caption: 'The lantern.',
+    svg: { fileId: 'lantern.svg', width: 240, height: 150 },
+    createdAt: 0, updatedAt: 0,
+  }],
+  files: { 'lantern.svg': svgMarkup, 'garamond-regular': fontBytes },
+});
+```
+
+<table>
+  <thead>
+    <tr><th>入力</th><th>意味</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>name</code>, <code>id</code>, <code>description</code>, <code>locale</code></td><td>マニフェストのメタデータ。<code>id</code>の既定値は<code>name</code>のスラッグです。</td></tr>
+    <tr><td><code>chapters</code> or <code>markdown</code></td><td>本の内容。章ごとに1つの<code>&#123; title?, markdown &#125;</code>、または1つの文書です。</td></tr>
+    <tr><td><code>config</code></td><td><code>PostextConfig</code>。既定値と同じ値はマニフェストに書き出しません。</td></tr>
+    <tr><td><code>resources</code></td><td>リソース。画像は<code>bitmap.fileId</code> / <code>svg.fileId</code>（印刷用マスターは<code>svg.pdfFileId</code>）でデータ本体を指定します。</td></tr>
+    <tr><td><code>files</code></td><td><code>fileId</code>ごとのデータ本体（オブジェクトまたは<code>Map</code>）。リソースが参照する画像と、<code>config.customFonts</code>のバリアントが参照するフォントファイルです。値は<code>Uint8Array</code>、<code>ArrayBuffer</code>、<code>Blob</code>、文字列（SVGのマークアップ）のいずれかです。</td></tr>
+    <tr><td><code>thumbnail</code></td><td><code>&#123; data, mime &#125;</code>：表紙画像（PNG、JPEG、WebP、GIF、SVG）。</td></tr>
+    <tr><td><code>canvasScope</code></td><td><code>'book'</code>にすると、本全体を1つのキャンバスとして組むようビューアーに求めます。</td></tr>
+    <tr><td><code>mtime</code></td><td>アーカイブのすべてのファイルに書き込む更新日時（<code>Date</code>、タイムスタンプ、日付文字列のいずれか）。省略すると呼び出した時刻になるので、同じ入力でも2回の呼び出しで異なるバイト列になります。固定の日付を渡せば同じ入力から同じバイト列が得られ、ハッシュを取ったり比較したりできます。zipが保持する日時はタイムゾーンを持たず、2秒刻みで、1980年から2099年までです。日付はマシンのローカル時刻で書き込まれます。どのマシンでも一致するバイト列を得るには、<code>new Date(1980, 0, 1)</code>のようにローカル時刻の各フィールドから日付を作ります。タイムスタンプや<code>Z</code>で終わる文字列は特定の瞬間を指すので、タイムゾーンごとに異なるローカル時刻になります（<code>'1980-01-01T00:00:00Z'</code>はUTCより西では1979年のままです）。ローカル時刻でこの範囲の外にある日付は例外になります。</td></tr>
+    <tr><td><code>localized</code></td><td>同じ本の別の言語。ロケールタグごとに<code>&#123; es: &#123; chapters?, config?, resources? &#125; &#125;</code>の形で指定します。この場合、上の入力は、必須の<code>locale</code>の内容になります。<a href="#多言語のバンドル">多言語のバンドル</a>を参照してください。</td></tr>
+  </tbody>
+</table>
+
+戻り値は、アーカイブの`bytes`、`preset.json`として書き出した`manifest`、すべてのファイルを収めた`files`（パス → バイト列）、`warnings`のリストです。ファイル名はリソースのid（`resources/lantern.svg`）またはフォントのファイル名（`fonts/…`）から、章のファイル名は順番とタイトル（`chapters/01-dusk.md`）から付けます。フォントはマニフェストの`fonts`で宣言し、`config.customFonts`の中には決して書きません。次のものは、それぞれ警告を出して除外します。
+- データ本体が`files`にないリソースやフォントのフェイス
+- `.woff`のフェイス（PDFバックエンドが埋め込めないため）
+- `redistributable: false`が付いたファミリー
+
+ブラウザーでは、`bytes`をダウンロードリンクに渡します：`URL.createObjectURL(new Blob([bytes], { type: 'application/zip' }))`。Nodeでは`fs.writeFile`で書き込みます。`createBundle`と`openBundle`にDOMは不要です。配布物のモジュールパスには拡張子がないので、バンドラーを使わない素のNodeではresolveフックが必要です。リポジトリーの`docs/examples/open-bundle/build-sample.mjs`に、数行で書いた例があります。
+
+### 多言語のバンドル
+
+`.postext`ファイルは本を複数の言語で収めることができ、`openBundle(bytes, { locale })`はそのどの言語でも読み込めます。`createBundle`は`localized`からこれを書き出します。追加のロケールごとに1項目で、それぞれ主となる内容（`locale`の入力）と異なる部分を持ちます。
+
+```ts
+const { bytes, manifest } = await createBundle({
+  name: 'The Lantern',
+  locale: 'en',
+  chapters: [{ markdown: '# Dusk\n\n…' }, { markdown: '# Night\n\n…' }],
+  config,
+  resources: [lanternFigure, hoursTable],
+  files: { 'lantern.svg': svgEn, 'lantern-es.svg': svgEs },
+  localized: {
+    es: {
+      chapters: [{ markdown: '# Anochecer\n\n…' }, { markdown: '# Noche\n\n…' }],
+      config: { headings: { levels: [{ level: 1, numberingTemplate: 'Capítulo {1}' }] } },
+      resources: [
+        { id: 'lantern', caption: 'El farol.', svg: { fileId: 'lantern-es.svg', width: 240, height: 150 } },
+        { id: 'hours', caption: 'Horas de luz.' },
+      ],
+    },
+  },
+});
+
+const es = await openBundle(bytes, { locale: 'es' });   // Spanish chapters, config and captions
+```
+
+- **`chapters`**：その言語での本。章のファイルはロケールごとに1つのフォルダーに入り（`chapters/en/01-dusk.md`、`chapters/es/01-anochecer.md`）、マニフェストの`chapters`はロケール → 章のマップになります。`chapters`のないロケールは主言語の章を読みます。独自の章を持つロケールが1つもなければ、章は1つのリストのままです。
+- **`config`**：その言語の設定。そのロケールでバンドルを読むと、トップレベルの各キーが共有のキーを丸ごと置き換えます。上の例の`headings`は`headings`オブジェクト全体を置き換えます。省略したキーや共有のものと同じキーは共有され、書き出されません。そのため、ロケールの設定全体を渡しても、変わる数個のキーだけを渡しても同じように動きます。共有のキーが既定値でないのにロケール側を既定値にしたキー（`layout: {}`）は指定どおり書き出されるので、共有の値をリセットします。フォントは共有です。ロケールの`customFonts`のファミリーはバンドルの`fonts`に加わります。
+- **`resources`**：共有のリソースの文言で、`id`で対応づけます。`caption`、`note`、`altText`、表の`table`です。文字を含む画像は独自のアートワークを持てます。`bitmap.fileId`や`svg.fileId`（と`svg.pdfFileId`）で`files`内の別のデータ本体を指定すると、`resources/es/lantern.svg`として書き出されます。タイプや配置などほかのフィールドは共有です。`resources`にないidは警告を出して除外し、ロケールの画像が欠けている場合も、警告を出してそのロケールは共有の画像を使います。
+
+マニフェストは`locales`にすべての言語を並べ（`['en', 'es']`）、主言語を`locale`に残し、それ以外を`localized`に格納します。ロケールを指定しない`openBundle`は主言語を読みます。
+
+**読み手が得る言語**。`openBundle(bytes, { locale })`は、完全に一致するロケール、なければその基本言語（`es-MX`なら`es`）、それもなければ主言語を返し、どれを返したかを`bundle.locale`が示します。章と文言は常に同じ言語から取られます。`localized`が主言語の地域変種を持っていても、主言語は共有の文言を保ちます。`pt-BR`の項目を持つ`pt-PT`のバンドルは、`pt-BR`に対してだけブラジルのキャプションを読み、`pt-PT`と`pt`には共有のキャプションを読みます。
+
+### ライブサンプル：バンドルを作成する
+
+このCodePenのサンプルは、SVGの図を持つ2章の本を作り、`createBundle`が書き出したファイルとマニフェストを一覧表示します。アーカイブをダウンロードできるようにしてから、`openBundle`で開き直して最初のページを描画します。数行で往復のすべてを行うサンプルです。ダウンロードしたファイルをSandboxで読み込めば、そこで作業を続けられます。
+
+<CodePenExample name="create-bundle" title="Postext · .postextバンドルを作成する" description="postextのcreateBundleで.postextファイルを書き出し、ダウンロードして開き直します。" height={640} />
+
+### バンドルの活用
+
+Sandbox、エージェントスキル、`postext`パッケージはどれも同じファイルを読み書きするので、`.postext`ファイルは本をツールからツールへ渡す手軽な手段になります。
+
+- **バンドルから始める**。既存の出版物を[エージェントスキル](/ja/docs/skill)で移植するか、[Sandbox](/ja/sandbox)で本をデザインして書き出します（**本**パネルの、その本の行の⋯メニューにある**ダウンロード（.postext）**）。そのファイルをプログラムから`openBundle`で読み込み、canvas、HTML、PDFに描画します。ファイルを本のソースとして手元に置き、章、設定、リソースをコードで編集して`createBundle`で書き戻すか、変わるたびに読み込み直します。
+- **Sandboxでデバッグし、微調整する**。プログラムの出力に手直しが必要なとき（図が違うページに入る、見出しのスタイル、段末そろえなど）は、プログラムが組んだものを`createBundle`で書き出します。そのファイルをSandboxで読み込み（**本 → 新規 → .postextファイルを開く…**）、ライブプレビュー、**検査**パネル、PDFビューを見ながらテキスト、デザイン、図を直して、もう一度書き出します。プログラムは修正されたファイルを`openBundle`で読み込みます。あるいは、変わった部分をコードに書き戻します。マニフェストの`config`には既定値と異なる値だけが入っているので、短い差分として読めます。
+
+### 低レベルAPI
+
+`postext/bundle`は、`openBundle`と`createBundle`の土台になる部品も書き出しています。バンドルを独自の方法で保存したり配信したりするホスト（HTTPで配信する展開済みのディレクトリー、データベースのレコードなど）向けです。
+
+- **`openBundleZip(bytes)` / `zipBundle(files, { mtime })`**：アーカイブの層。開くときはトップレベルのフォルダーを許容し、`__MACOSX`の項目とドットファイルを無視します。バンドルの外に出るパスは拒否します。`mtime`は`createBundle`の入力と同じようにファイルの日時を決めます。
+- **`readBundle(manifest, readFile, options)`**：マニフェストと`readFile(path)`コールバックから、章、設定、リソース、画像、フォントを読み込みます。`options`では、ロケール、ファイルidの命名方法（`ids`）、基本設定（`baseConfig`。マニフェストの設定の下に置かれます。既定ではバンドルの言語での`bundleBaseConfig`のパレットとリソースタイプで、その言語は`resolveBundleConfigLocale(manifest, locale)`が返します。独自の`baseConfig`を渡すホストは、それをこの言語にローカライズしてください。`configVersion: 4`より古いマニフェストではその`math`がバンドルのものと一緒に固定され、5より古ければ`layout`のインラインのアキ、6より古ければ`layout`のボックスの中のアキ、`bodyText`のコロンで終わる行の下の余地、`headings`のインラインのマーク、ドロップキャップのサイズ、7より古ければ`bodyText`のダッシュでの改行と行末不ぞろいの改行、8より古ければ`headings`の見出しの下での分割と、`bodyText`の複合語の改行および`:::paragraphs`コンテナーの下のアキが固定されます。[postext 1.4以前で書き出したバンドル](#postext-14以前で書き出したバンドル)を参照）、固有のサイズの計測方法を指定します。`readResolution`は各ビットマップの解像度をファイルから読み取り、`bitmap.fileResolution`に入れます。バンドルが`layout.bitmapResolution: 'file'`を指定しているときは、既定でtrueです。
+- **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**：書き出し側。純粋な計画（ファイル名とマニフェスト）と、`readBlob` / `readFont`コールバックによるバイト列の解決に分かれています。
+- **`isBundleManifest(value)`**、ロケールの選択関数（`pickChapterSpecs`、`pickLocaleOverrides`、`pickBundleView`、`resolveBundleLocale`、`resolveBundleConfigLocale`）、`svgSize` / `bitmapSize` / `bitmapInfo`（ビットマップのピクセル数と、ファイルに記載された解像度）、形式の型（`BundleManifest`、`BundleResourceSpec`、`BundleFontFamilySpec`、…）。
+- **`CONFIG_VERSION`、`migrateConfig(config, configVersion, { content })`、`pinLegacyHeadingBreaks(config)`、`pinLegacyMathSize(config)`、`pinLegacyInlineGap(config)`、`pinLegacyBoxResourceGap(config)`、`pinLegacyHeadingMarks(config)`、`pinLegacyDropCapSize(config)`、`pinLegacyColonListRoom(config)`、`pinLegacyBoxChildCut(config)`、`pinLegacyDashBreaks(config)`、`pinLegacyRaggedBreaking(config)`、`pinLegacyHeadingSplit(config)`、`pinLegacyParagraphContainerSpacing(config)`、`pinLegacyHyphenBreaks(config)`、`LEGACY_MATH_SIZE`**（0.5 ÷ 0.442）：保存した設定を現在の規則で表したものにします（[postext 1.4以前で書き出したバンドル](#postext-14以前で書き出したバンドル)を参照）。`readBundle`はこれを適用します。設定を独自の方法で保存するホストも、保存したコピーごとに1回ずつ適用できます。
+
+Sandboxはこれらの上に作られています。Sandboxは独自の保存用idと`layouts.json`のページ記録を加えます。

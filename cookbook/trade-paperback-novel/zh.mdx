@@ -16,27 +16,27 @@ pageNotes: { "1": "封面：从水橡树的树干之间望见海湾，地平线�
 
 ### 1 · 章首页由标题及其属性生成
 
-代码见上文的[简短回答](#简短回答)。Chopin的各章没有章名，所以每个标题只写章序号（`# I`），由`{titleText}`印出。`{attr.lead}`印出标题的`lead`属性，其中存放本章的第一句；标题下的Markdown段落从第二句开始（[标题属性](/zh/docs/document-format#标题属性)）。首句居中，每个属性里的`\n`按意思断行，分别断在*cage*之后和*bright;*之后。首句的框从版心顶端往下第九条网格线开始，`minHeight`设为12行，在它下面留出一个空行；不设`minHeight`，正文会紧贴在首句下面（[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）。`marginBottom: pt(0)`替换了这一级标题默认的半个em的外边距，否则正文会再往下挪一行。
+代码见上文的[简短回答](#简短回答)。Chopin的各章没有章名，所以每个标题只写章序号（`# I`），由`{titleText}`印出。`{attr.lead}`印出标题的`lead`属性，其中存放本章的第一句；标题下的Markdown段落从第二句开始（[标题属性](/zh/docs/document-format#标题属性)）。首句居中，每个属性里的`\n`按意思断行，分别断在*cage*之后和*bright;*之后。首句的框从版心顶端往下第九条网格线开始，`minHeight`设为12行，在它下面留出一个空行；不设`minHeight`，正文会紧贴在首句下面（[通栏与高级设计](/zh/docs/configuration-text#通栏与高级设计)）。`marginBottom: pt(0)`替换了这一级标题默认的半个em的外边距，否则正文会再往下挪一行。
 
-`breakBefore`的parity设为`'odd'`，把每一章都送到右页，只有前一章结束在右页时才留一张空白左页（[前置分页](/zh/docs/configuration#前置分页)）。没有标题却需要强制换到右页时，在Markdown里写`:::pagebreak{parity="odd"}`；在两栏及以上的版面里，`:::columnbreak`则把正文移到下一栏（[`:::pagebreak`](/zh/docs/document-format#pagebreak)）。
+`breakBefore`的parity设为`'odd'`，把每一章都送到右页，只有前一章结束在右页时才留一张空白左页（[前置分页](/zh/docs/configuration-text#前置分页)）。没有标题却需要强制换到右页时，在Markdown里写`:::pagebreak{parity="odd"}`；在两栏及以上的版面里，`:::columnbreak`则把正文移到下一栏（[`:::pagebreak`](/zh/docs/document-format#pagebreak)）。
 
 ### 2 · 由整行构成的平装书页面
 
 <Excerpt region="page" />
 
-下页边距等于216 mm的成品高度减去上页边距和35行14 pt之后剩下的部分，所以每个排满的页面都结束在同一行上，第3页和第4页就是这样。设了`mirror: true`之后，20 mm的内页边距在右页和左页上都落在书脊一侧（[镜像页边距](/zh/docs/configuration#镜像页边距)）。104.5 mm的行长可以容纳约69个10.5 pt的Crimson Pro字符。正文把词间距限定在正常值的0.7到1.9倍之间；如果用默认的最小值0.6，这几页上有一行会收紧到0.62。
+下页边距等于216 mm的成品高度减去上页边距和35行14 pt之后剩下的部分，所以每个排满的页面都结束在同一行上，第3页和第4页就是这样。设了`mirror: true`之后，20 mm的内页边距在右页和左页上都落在书脊一侧（[镜像页边距](/zh/docs/configuration-page-layout#镜像页边距)）。104.5 mm的行长可以容纳约69个10.5 pt的Crimson Pro字符。正文把词间距限定在正常值的0.7到1.9倍之间；如果用默认的最小值0.6，这几页上有一行会收紧到0.62。
 
 ### 3 · 跳过章首页和空白页的书眉
 
 <Excerpt region="heads" />
 
-`parity: 'even'`在左页用Cormorant SC小型大写字母印作者名，`'odd'`在右页用斜体印书名；页码位于版心的外侧边缘。`pages: 'body'`让这四个元素都不出现在章首页上，也不出现在第6页，也就是奇偶分页补出的那页空白左页。如果用`pages: 'all'`，那一页会印出*6*和*Kate Chopin*。章首页改用页脚页码，这是一个页脚元素，由`pages: 'opener'`限定只出现在章首页（[文本元素](/zh/docs/configuration#文本元素)）。
+`parity: 'even'`在左页用Cormorant SC小型大写字母印作者名，`'odd'`在右页用斜体印书名；页码位于版心的外侧边缘。`pages: 'body'`让这四个元素都不出现在章首页上，也不出现在第6页，也就是奇偶分页补出的那页空白左页。如果用`pages: 'all'`，那一页会印出*6*和*Kate Chopin*。章首页改用页脚页码，这是一个页脚元素，由`pages: 'opener'`限定只出现在章首页（[文本元素](/zh/docs/configuration-page-layout#文本元素)）。
 
 ### 4 · 封面是一个不带书眉的分节
 
 <Excerpt region="cover" />
 
-封面是一个标题：`# The Awakening {style="cover"}`。它的样式在上部134 mm里放置这幅画，用50 pt排frontmatter里的书名，用小型大写字母排作者名。这个样式同样作用于该标题开启的分节，即第1页和第2页，直到第I章为止。样式里的`header`和`footer`都是空的，这样封面上不出现页脚页码，版权页上也不出现书眉。它的上页边距把版权页放在版心最后六条网格线上，使版权页的最后一行与第3页的最后一行平齐（[标题样式](/zh/docs/configuration#标题样式)）。这个分节的栏从165 mm处开始，而设计锚定在页面和出血边上，照样画在栏顶以上：留在栏内的设计只会在栏的底端被裁掉。
+封面是一个标题：`# The Awakening {style="cover"}`。它的样式在上部134 mm里放置这幅画，用50 pt排frontmatter里的书名，用小型大写字母排作者名。这个样式同样作用于该标题开启的分节，即第1页和第2页，直到第I章为止。样式里的`header`和`footer`都是空的，这样封面上不出现页脚页码，版权页上也不出现书眉。它的上页边距把版权页放在版心最后六条网格线上，使版权页的最后一行与第3页的最后一行平齐（[标题样式](/zh/docs/configuration-styles#标题样式)）。这个分节的栏从165 mm处开始，而设计锚定在页面和出血边上，照样画在栏顶以上：留在栏内的设计只会在栏的底端被裁掉。
 
 <PageShot page={2} crop="0,0.7,1,0.24" caption="第2页：封面背面底部的版权页，没有书眉和页码。" />
 
@@ -44,7 +44,7 @@ pageNotes: { "1": "封面：从水橡树的树干之间望见海湾，地平线�
 
 <Excerpt region="tailpiece" />
 
-ornament这种资源类型没有题注前缀，所以春黄菊花饰不带标签，在`::resource{id="tailpiece-1"}`所在的位置印出，宽度为行长的17%（[资源类型](/zh/docs/configuration#资源类型)）。行内嵌入的资源上方保留一条网格线，前面的`:::space`又在本章最后一行和花饰之间加了一条（[`:::space`](/zh/docs/document-format#space)）。两朵章尾花用两个id绘制同一个文件`fleuron.svg`，因为一个资源只能放置一次。
+ornament这种资源类型没有题注前缀，所以春黄菊花饰不带标签，在`::resource{id="tailpiece-1"}`所在的位置印出，宽度为行长的17%（[资源类型](/zh/docs/configuration-resources#资源类型)）。行内嵌入的资源上方保留一条网格线，前面的`:::space`又在本章最后一行和花饰之间加了一条（[`:::space`](/zh/docs/document-format#space)）。两朵章尾花用两个id绘制同一个文件`fleuron.svg`，因为一个资源只能放置一次。
 
 ## 变化
 

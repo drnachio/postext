@@ -11,6 +11,9 @@ export interface DocMeta {
   lastUpdated: string;
   readingTime: string;
   order: number;
+  /** Slug of the page this one is a part of (the pages of the Configuration
+   *  reference name "configuration"), or "". */
+  parent: string;
   /** "In short": the page in plain words (WCAG 3.1.5), or "". */
   plainSummary: string;
 }
@@ -28,11 +31,12 @@ export interface TocItem {
 
 const DOCS_DIR = path.join(process.cwd(), "../../docs");
 
-/** A double-quoted metadata string that may hold apostrophes and escaped
- *  quotes (the plain summaries are prose). */
+/** A metadata string in single or double quotes. One in double quotes may
+ *  hold apostrophes and escaped quotes (the plain summaries are prose, and a
+ *  Catalan title has its l'). */
 function getQuoted(block: string, key: string): string {
-  const m = block.match(new RegExp(`${key}:\\s*"((?:[^"\\\\]|\\\\.)*)"`));
-  return m ? m[1].replace(/\\(.)/g, "$1") : "";
+  const m = block.match(new RegExp(`\\b${key}:\\s*(?:"((?:[^"\\\\]|\\\\.)*)"|'((?:[^'\\\\]|\\\\.)*)')`));
+  return m ? (m[1] ?? m[2]).replace(/\\(.)/g, "$1") : "";
 }
 
 function extractMetadataFromSource(source: string): Omit<DocMeta, "slug"> {
@@ -48,14 +52,12 @@ function extractMetadataFromSource(source: string): Omit<DocMeta, "slug"> {
       lastUpdated: "",
       readingTime: "",
       order: 99,
+      parent: "",
       plainSummary: "",
     };
   }
   const block = metaMatch[1];
-  const get = (key: string) => {
-    const m = block.match(new RegExp(`${key}:\\s*['"]([^'"]+)['"]`));
-    return m ? m[1] : "";
-  };
+  const get = (key: string) => getQuoted(block, key);
   const getNum = (key: string) => {
     const m = block.match(new RegExp(`${key}:\\s*(\\d+)`));
     return m ? parseInt(m[1], 10) : 99;
@@ -69,6 +71,7 @@ function extractMetadataFromSource(source: string): Omit<DocMeta, "slug"> {
     lastUpdated: get("lastUpdated"),
     readingTime: get("readingTime"),
     order: getNum("order"),
+    parent: get("parent"),
     plainSummary: getQuoted(block, "plainSummary"),
   };
 }

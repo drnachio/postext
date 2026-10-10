@@ -1,0 +1,1244 @@
+{/* docs/configuration-page-layout-ar.mdx */}
+
+export const metadata = {
+  title: 'الإعدادات: الصفحة والتخطيط',
+  sidebarTitle: 'الصفحة والتخطيط',
+  description: 'مقاس الصفحة والهوامش وشبكة خطوط الأساس، والأعمدة والفواصل بينها، ورؤوس الصفحات وتذييلاتها',
+  lang: 'ar',
+  lastUpdated: '2026-10-10',
+  readingTime: '6 دقائق',
+  order: 4,
+  parent: 'configuration',
+  plainSummary: "تتناول هذه الصفحة إعدادات الورقة نفسها. تختار مقاس الصفحة والهوامش وجهة تجليد الكتاب والشبكة التي تستقر عليها أسطر النص. وتحدد عدد أعمدة الصفحة ومقدار الفراغ بينها. وتقرر أيضًا ما يُطبع أعلى كل صفحة وأسفلها، مثل رقم الصفحة أو عنوان الفصل. وهي إحدى الصفحات التسع في مرجع الإعدادات.",
+};
+
+# الإعدادات: الصفحة والتخطيط
+
+
+## الصفحة
+
+تتحكم الخاصية `page` في الأبعاد المادية للصفحة وفي مظهرها.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '180px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>sizePreset</code></td>
+      <td><code>PageSizePreset</code></td>
+      <td><code>'17x24'</code></td>
+      <td>مقاس صفحة معرّف مسبقًا. اضبطه على <code>'custom'</code> لاستخدام عرض وارتفاع صريحين.</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>17 cm</code></td>
+      <td>عرض الصفحة. يؤخذ من <code>sizePreset</code> عند إغفاله؛ والقيمة الصريحة تتقدّم دائمًا (استخدم <code>sizePreset: 'custom'</code> للمقاسات المخصّصة كليًا).</td>
+    </tr>
+    <tr>
+      <td><code>height</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>24 cm</code></td>
+      <td>ارتفاع الصفحة. يؤخذ من <code>sizePreset</code> عند إغفاله؛ والقيمة الصريحة تتقدّم دائمًا.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td><code>2 cm</code> لكل الجوانب</td>
+      <td>المسافة بين حافة الصفحة ومساحة المحتوى. يُضبط كل جانب (الأعلى والأسفل والأيسر والأيمن) على حدة. مع <code>mirror: true</code> تصبح الهوامش <em>هوامش صفحات متقابلة</em>: <code>left</code> هو الهامش الداخلي (جهة الكعب) و<code>right</code> هو الخارجي؛ تُبقي الصفحات الفردية (الصفحة 1 فردية) الهوامش كما كُتبت وتبدّلها الصفحات الزوجية، فتنتقل مساحة المحتوى، ومعها الأعمدة وأشرطة العناصر العائمة وحاويات الترويسة والتذييل وأشرطة صفحات الافتتاح، من جانب إلى آخر بين الصفحتين المتقابلتين. القيمة الافتراضية <code>false</code>. انظر أدناه.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>لون خلفية الصفحة.</td>
+    </tr>
+    <tr>
+      <td><code>dpi</code></td>
+      <td><code>number</code></td>
+      <td><code>300</code></td>
+      <td>عدد البكسلات في البوصة الذي يعمل به الإخراج: به تُحوَّل الوحدات المادية (cm وmm وin وpt) إلى بكسلاته. والصورة النقطية التي ليست لها دقة خاصة بها تأخذ بكسلًا واحدًا من الإخراج لكل بكسل فيها، فتُطبع بهذا العدد من البكسلات في البوصة (ppi): أبقِه 300 للطباعة، أو أعطِ الصور دقة (<code>Resource.bitmap.resolution</code>، <code>layout.bitmapResolution</code>؛ انظر [صيغة المستند › مقاس الصورة النقطية](/ar/docs/document-format#مقاس-الصورة-النقطية)). ويفحص [الفحص قبل الطباعة](/ar/docs/configuration-fonts-colors-viewers#الفحص-قبل-الطباعة) الدقة الفعلية لكل صورة.</td>
+    </tr>
+    <tr>
+      <td><code>cutLines</code></td>
+      <td><code>CutLinesConfig</code></td>
+      <td>معطّل</td>
+      <td>يُظهر علامات القص في زوايا الصفحة لقصّ المطبوع. عند تفعيله تتّسع اللوحة (Canvas) لتشمل مساحة النزف وعلامات القص. انظر أدناه.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>BaselineGridConfig</code></td>
+      <td>معطّل</td>
+      <td>يرسم شبكة خطوط الأساس فوق الصفحات لفحص الإيقاع العمودي. يلتزم الإخراج بالشبكة سواء رُسمت أم لم تُرسم. انظر أدناه.</td>
+    </tr>
+    <tr>
+      <td><code>binding</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td>الحافة التي يُجلَّد الكتاب عندها. <code>'auto'</code> تساوي <code>'right'</code> حين تكون <code>layout.writingMode</code> هي <code>'vertical-rl'</code>، أو حين يجري المستند من اليمين إلى اليسار (<a href="/ar/docs/configuration-text#اتجاه-النص"><code>direction</code></a>)، أو حين يُقرأ قسم <a href="/ar/docs/configuration-comics#القصص-المصورة"><code>comics</code></a> فيه من اليمين إلى اليسار (مانغا، أو طبعة يابانية أو بالصينية التقليدية)، وإلا فهي <code>'left'</code>. الكتاب المجلّد على اليمين يُفتتح بصفحة يسرى ويعكس هوامشه في الاتجاه المقابل. إعداد على مستوى الكتاب: لا يغيّره <code>layout</code> الخاص بنمط عنوان أبدًا. انظر <a href="#التجليد">التجليد</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### الهوامش المتناظرة
+
+تُقرأ الكتب صفحتين متقابلتين، وعادةً ما يختلف الهامش الداخلي عن الخارجي. يحوّل `margins.mirror` الهوامش الأربعة إلى هوامش صفحات متقابلة:
+
+```json
+{
+  "page": {
+    "margins": {
+      "top": { "value": 2, "unit": "cm" },
+      "bottom": { "value": 2.5, "unit": "cm" },
+      "left": { "value": 2.2, "unit": "cm" },
+      "right": { "value": 1.4, "unit": "cm" },
+      "mirror": true
+    }
+  }
+}
+```
+
+بهذه الإعدادات يكون لكل صفحة فردية هامش 2.2 cm على اليسار (الكعب) و1.4 cm على اليمين (الحافة الأمامية)؛ ولكل صفحة زوجية 1.4 cm على اليسار (الحافة الأمامية) و2.2 cm على اليمين (الكعب). تحمل كل صفحة مُخرَجة `contentArea` الخاصة بها في `VDTPage`، فكل ما يُشتق منها، أي الأعمدة وأشرطة العناصر العائمة بعرض الصفحة وحاويات الترويسة والتذييل وأشرطة صفحات الافتتاح ذات `span: 'page'`، يتبع الهندسة المتناظرة تلقائيًا. أما إطارا الصفحة والنزف اللذان تستخدمهما عناصر التصميم المثبّتة إلى `'page'` / `'bleed'` فلا يتأثران: إنهما يصفان الورقة المادية لا الهوامش.
+
+### التجليد
+
+«تُجلَّد المستندات الصينية المنضّدة عموديًا على الجانب الأيمن، وتُجلَّد المستندات المنضّدة أفقيًا على الجانب الأيسر» ([clreq §7.1.1.1](https://www.w3.org/TR/clreq/#x7-1-1-1-basic-elements-of-page-formatting)). يُخرج `page.binding: 'right'` الكتابَ للتجليد على الحافة اليمنى:
+
+- تظل الصفحة 1 فردية وتظل وجهَ الورقة (recto)، فتحتفظ `breakBefore.parity` و`:::pagebreak{parity}` وعناصر التصميم ذات `parity` وكل عدّ للصفحات بمعانيها. ما يتغيّر هو الجانب الذي يقع عليه وجه الورقة: الصفحة اليسرى من الصفحتين المتقابلتين. والفصل الذي يُفتتح على وجه ورقة جديد يُفتتح على صفحة يسرى ([clreq §7.1.3.3](https://www.w3.org/TR/clreq/#x7-1-3-3-how-to-handle-headings-with-new-recto-and-page-break)).
+- مع `margins.mirror` يبقى `left` هو الهامش الداخلي، لكن الصفحات الفردية هي التي تبدّل: الهامش الداخلي للصفحة 1 على يمينها، وللصفحة 2 على يسارها. ويتبع القاعدة نفسها كلٌّ من العمود الجانبي في `oneAndHalf` عند `'outer'` / `'inner'`، والعنصر العائم المُدار الملاصق للكعب، وهوامش صفحات الأجزاء، وأيقونات زوايا الإطارات عند `'outer'` / `'inner'`.
+- يصرّح المستند بذلك (`VDTDocument.binding: 'right'`)، فلا يحتاج المضيف أبدًا إلى قراءة الإعدادات: يعرض Sandbox، بيئة التجربة في المتصفح، صفحاته المتقابلة على هيئة `[3 | 2]` والصفحة 1 وحدها على يسار الكعب، ويعرض عارض HTML فيه الصفحاتِ من اليمين إلى اليسار، فيُفتح عند الطرف الأيمن ويقود السهم الأيسر إلى الصفحة التالية. وفي وضع multi يرتّب `renderToHtml` الصف من اليمين إلى اليسار.
+- يحمل ملف PDF `/ViewerPreferences << /Direction /R2L >>` و`/PageLayout /TwoPageRight` (الصفحة 1 وحدها ثم أزواج)، موسومًا كان أم غير موسوم. يتبعهما Acrobat وFoxit؛ ويتجاهلهما كليهما العارض المدمج في Chrome.
+
+لا تتحرك أرقام الصفحات والترويسات من تلقاء نفسها: القالب الذي يطبع رقم الصفحة في الزاوية الخارجية يحتاج إلى ضبط عناصره الفردية والزوجية للحافة اليمنى (تقبل العناصر `parity`).
+
+والكتاب المكتوب من اليمين إلى اليسار (العربية والفارسية والعبرية…) يُجلَّد على اليمين أيضًا: تعطي `'auto'` الحافة اليمنى حين يُحسم [`direction`](/ar/docs/configuration-text#اتجاه-النص) الخاص بالمستند إلى `'rtl'`. ويعكس مثل هذا الكتاب تدفقه كله كذلك، فيكون عموده الأول هو الأيمن، وتقع إزاحاته وعلامات قوائمه وعناصره العائمة وحواشيه على اليمين؛ أما خانات الترويسة والتذييل فتبقى في مواضعها المادية. انظر [الإخراج العربي](/ar/docs/arabic-layout#ترتيب-الصفحات-والتجليد-على-اليمين).
+
+والقصة المصورة التي تُقرأ من اليمين إلى اليسار تُجلَّد على اليمين أيضًا: تعطي `'auto'` الحافة اليمنى حين يكون في الإعدادات قسم `comics` يُحسم اتجاه قراءته إلى `'rtl'`. وهذه حال المانغا (`comics.artDirection: 'rtl'`) والطبعة اليابانية أو الصينية التقليدية لقصة مصورة غربية. ويحسم القسم الأمر للكتاب كله، لا كتل `:::page` في فصل واحد. انظر [القصص المصورة](/ar/docs/comics#اتجاه-القراءة).
+
+### مقاسات الصفحة المسبقة
+
+<table>
+  <thead>
+    <tr>
+      <th>المقاس المسبق</th>
+      <th>العرض</th>
+      <th>الارتفاع</th>
+      <th>الاستخدام الشائع</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>'11x17'</code></td><td>11 cm</td><td>17 cm</td><td>كتب الجيب</td></tr>
+    <tr><td><code>'12x19'</code></td><td>12 cm</td><td>19 cm</td><td>الكتب الورقية القياسية</td></tr>
+    <tr><td><code>'17x24'</code></td><td>17 cm</td><td>24 cm</td><td>الكتب التقنية والكتب المدرسية</td></tr>
+    <tr><td><code>'21x28'</code></td><td>21 cm</td><td>28 cm</td><td>المجلات والتقارير (قريب من A4)</td></tr>
+    <tr><td><code>'broadsheet'</code></td><td>375 mm</td><td>597 mm</td><td>صحف القطع الكبير</td></tr>
+    <tr><td><code>'berliner'</code></td><td>315 mm</td><td>470 mm</td><td>صحف قطع برلينر</td></tr>
+    <tr><td><code>'tabloid'</code></td><td>280 mm</td><td>430 mm</td><td>صحف التابلويد</td></tr>
+    <tr><td><code>'compact'</code></td><td>297 mm</td><td>420 mm</td><td>صحف القطع المدمج (صحيفة القطع الكبير مطويةً إلى نصفين)</td></tr>
+  </tbody>
+</table>
+
+<Illustration name="PageSizes" data='{"title": "مقاسات الصفحة المسبقة", "desc": "أربعة مقاسات صفحة مسبقة مدمجة مرسومة بمقياس متناسب: الجيب 11x17، والورقي 12x19، والتقني 17x24، و21x28 cm القريب من A4.", "caption": "المقاسات المسبقة مرسومة بمقياس متناسب.", "sizes": [{"name": "11×17", "dims": "جيب", "wmm": 110, "hmm": 170}, {"name": "12×19", "dims": "ورقي", "wmm": 120, "hmm": 190}, {"name": "17×24", "dims": "مدرسي", "wmm": 170, "hmm": 240}, {"name": "21×28", "dims": "~A4", "wmm": 210, "hmm": 280}]}' />
+
+صيغ الصحف الأربع جديدة في postext 1.18 ولا تظهر في الرسم: مساحة صفحة القطع الكبير تقارب أربعة أضعاف مساحة صفحة 21 × 28. وتُنضَّد عادةً بـ[تخطيط `'multiple'`](#أنواع-التخطيط)؛ والشائع ستة أعمدة في القطع الكبير وخمسة في التابلويد.
+
+### شبكة خطوط الأساس
+
+شبكة خطوط الأساس هي إيقاع نص المتن: أسطر تفصل بينها مسافة ارتفاع سطر واحد من المتن، تُعدّ من أعلى مساحة المحتوى. يستخدمها الإخراج سواء رُسمت أم لم تُرسم: تعيد العناوين ونهايات القوائم والإطارات والأشكال والمعادلات المعروضة النصَّ إليها (ما لم يكن `snapToGrid` الخاص بها معطّلًا)، فتبقى أسطر الأعمدة المتجاورة متحاذية. لا يفعل `enabled` إلا رسم الخطوط، في Canvas وفي PDF وفي عروض Sandbox، لفحص ذلك الإيقاع؛ وتشغيله أو إيقافه لا يحرّك شيئًا. لا تمتد الخطوط إلا على نص الصفحة الفعلي، من أول سطر نص إلى آخره، فلا تظهر شبكة في أشرطة العناصر العائمة ولا في الصفحات الفارغة المضافة لضبط الزوجية ولا في المساحة الفارغة الباقية في آخر الصفحة.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>الخاصية</th>
+      <th style={{ width: '150px' }}>النوع</th>
+      <th style={{ width: '180px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>هل تُرسم خطوط الشبكة (في Canvas وفي PDF). الرسم فقط: الإخراج هو نفسه في الحالتين.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#cccccc</code></td>
+      <td>لون خطوط الشبكة.</td>
+    </tr>
+    <tr>
+      <td><code>lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 pt</code></td>
+      <td>سماكة خطوط الشبكة.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+page: {
+  baselineGrid: { enabled: true, color: { hex: '#e0e0e0', model: 'hex' } }
+}
+```
+
+### خطوط القص
+
+عند التفعيل تتّسع اللوحة لتشمل مساحة نزف، ويرسم المحرّك علامات القص عند كل زاوية لأغراض الإنتاج الطباعي. ويعطي ملف PDF كل صفحة TrimBox وBleedBox؛ وملف [PDF/X](/ar/docs/configuration-fonts-colors-viewers#pdfx-1a-وpdfx-4) يحملهما حتى من غير علامات القص. وتُضبط في Sandbox من **التصدير › التجهيز للطباعة**.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>الخاصية</th>
+      <th style={{ width: '150px' }}>النوع</th>
+      <th style={{ width: '180px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>هل تُوسَّع اللوحة بمساحة النزف وتُرسم علامات القص.</td>
+    </tr>
+    <tr>
+      <td><code>bleed</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>3 mm</code></td>
+      <td>مساحة إضافية حول الصفحة تُستخدم للنزف الطباعي.</td>
+    </tr>
+    <tr>
+      <td><code>markLength</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>5 mm</code></td>
+      <td>طول كل علامة قص.</td>
+    </tr>
+    <tr>
+      <td><code>markOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>3 mm</code></td>
+      <td>الفجوة بين حدّ القص وبداية كل علامة قص. لا تبدأ العلامة أبدًا داخل النزف: حين يكون <code>bleed</code> أعرض، تبدأ العلامة عند حافة النزف.</td>
+    </tr>
+    <tr>
+      <td><code>markWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.25 pt</code></td>
+      <td>سماكة علامات القص.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>لون علامات القص في Canvas (المعاينة على الشاشة). أما ملف PDF فيطليها دائمًا بلون التسجيل (registration colour) (انظر أدناه).</td>
+    </tr>
+  </tbody>
+</table>
+
+تكبر الورقة بمقدار `bleed + markOffset + markLength` من كل جانب، وتقع الصفحة المقصوصة في وسطها. تحصل كل زاوية من زوايا حدّ القص على علامتين طول كل منهما `markLength`، كل منهما على امتداد إحدى الحافتين اللتين تلتقيان عندها. تبدأ العلامة على مسافة `markOffset` خارج حدّ القص، أو عند حافة النزف حين يكون `bleed` هو الأعرض بينهما، فلا تقع أي علامة فوق رسم يمتد إلى النزف. مع القيم الافتراضية (3 mm من النزف وإزاحة 3 mm) تمتد العلامات من 3 إلى 8 mm خارج حدّ القص، ويدور حول الورقة خارجها شريط فارغ عرضه 3 mm. تعيد `cropMarkSegments(page, doc.config.page, doc.trimOffset)` علامات الصفحة الثماني ببكسلات الصفحة، وهي التي يرسمها مُخرِجا Canvas وPDF. الوسيط الثالث هو موضع حدّ القص داخل الورقة، وهو القيمة التي يُكتب منها `TrimBox` في ملف PDF؛ وإن أُغفل، يُحسب من `cutLines` بالطريقة نفسها.
+
+لا يُطبع خارج النزف شيء سوى العلامات. كل ما ترسمه الصفحة، بما في ذلك عناصر التصميم المثبّتة إلى `'page'` أو `'bleed'`، يُقصّ عند صندوق النزف في Canvas وفي PDF وفي مخرجات HTML، كما يقصّه التصدير من برامج النشر المكتبي (DTP): الشريط أو الصورة الموضوعة عمدًا خارج النزف تُقطع عند حافة النزف، حيث كانت آلة القص ستزيلها على أي حال. وحتى الإصدار postext 1.4 كان مثل هذا العنصر يمتد فوق العلامات إلى حافة الورقة.
+
+في PDF (`postext-pdf`) يكون MediaBox لكل صفحة هو الورقة كلها. وتحمل الصفحة أيضًا TrimBox، أي الصفحة المقصوصة، وBleedBox، أي حدّ القص مضافًا إليه النزف، وهما ما تقرؤه أدوات الترتيب الطباعي (imposition) والفحص قبل الطباعة (preflight). وتُطلى العلامات بلون التسجيل، أي الفصل اللوني `/All`، فتُطبع على كل لوح. ويصحّ ذلك أيًّا كان نظام الألوان الذي يُكتب به ملف PDF (RGB أو التدرّج الرمادي أو CMYK): فالأسود العادي يصل إلى المطبعة أسود غنيًّا أو على لوح الأسود وحده. ولا يُطبَّق `color` إلا على Canvas.
+
+### ترقيم الصفحات
+
+يتحكم القسم `page.pageNumbering` في طريقة تنسيق تسميات الصفحات وفي القيمة التي يبدأ منها العدّاد. وهو لا يعرّف إلا القيمة الافتراضية على مستوى المستند كله؛ ولإعادة بدء الترقيم في منتصف المستند (مثل صفحات تمهيدية بأرقام رومانية تتحول إلى فصول بأرقام عشرية تبدأ من 1)، استخدم التوجيه `:::numbering` (انظر **صيغة المستند › التوجيهات**).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '260px' }}>النوع</th>
+      <th style={{ width: '120px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>'decimal' | 'lower-roman' | 'upper-roman' | 'lower-alpha' | 'upper-alpha'</code>، أو أحد أنماط شرق آسيا</td>
+      <td><code>'decimal'</code></td>
+      <td>النمط العددي المستخدم في رسم تسميات الصفحات. أنماط شرق آسيا (<code>'trad-chinese-informal'</code> يرقّم الصفحات 一، 二، 三) مذكورة في <a href="#صيغ-كتابة-أنماط-الترقيم">صيغ كتابة أنماط الترقيم</a>.</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>القيمة العددية المسندة إلى الصفحة الأولى أيًا كان التنسيق. <code>format: 'lower-roman', startAt: 1</code> تعطي <code>i, ii, iii, …</code>؛ و<code>format: 'decimal', startAt: 17</code> تعطي <code>17, 18, 19, …</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+تُخزَّن التسمية المحسوبة في كل `VDTPage` باسم `pageLabel`، وهي ما يُحسم إليه العنصر النائب <code>\{pageNumber\}</code> في الترويسة والتذييل. وتُصدر ملفات PDF شجرة أرقام <code>/PageLabels</code> فيطابق مؤشر الصفحة في Preview / Acrobat والتنقل عبر «الانتقال إلى الصفحة» التسمياتِ المطبوعة تمامًا. والنمط الذي لا يملك له PDF رمزًا (الأرقام الصينية والأرقام داخل دوائر والأرقام كاملة العرض) يُكتب صفحةً صفحة، فيعرض القارئ 一، 二، 三 أيضًا.
+
+#### صيغ كتابة أنماط الترقيم
+
+ثلاثة إعدادات تختار تنسيقًا للترقيم، ولكل منها صيغة كتابة نشأت معه: تسميات الصفحات (`page.pageNumbering.format` و`:::numbering{format=…}`) تقول `lower-roman`، والقوائم المرقّمة (`orderedLists.numberFormat`) تقول `arabic` للعشري، وأنواع الموارد (`counterFormat`) تقول `roman-lower`. يقبل كل منها جميع الصيغ أدناه، فالتنسيق المنسوخ من إعداد يعمل في الإعدادين الآخرين. لا تميّز الأسماء بين الأحرف الكبيرة والصغيرة؛ أما الصيغ ذات الحرف الواحد فتميّز (`i` و`I` مختلفان).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>التنسيق</th>
+      <th style={{ width: '140px' }}>يطبع</th>
+      <th>الصيغ المقبولة</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>عشري</td><td><code>1, 2, 3</code></td><td><code>decimal</code>، <code>arabic</code>، <code>1</code></td></tr>
+    <tr><td>روماني بأحرف صغيرة</td><td><code>i, ii, iii</code></td><td><code>lower-roman</code>، <code>roman-lower</code>، <code>i</code></td></tr>
+    <tr><td>روماني بأحرف كبيرة</td><td><code>I, II, III</code></td><td><code>upper-roman</code>، <code>roman-upper</code>، <code>I</code></td></tr>
+    <tr><td>حروف لاتينية صغيرة</td><td><code>a, b, c</code></td><td><code>lower-alpha</code>، <code>alpha-lower</code>، <code>lower-latin</code>، <code>a</code></td></tr>
+    <tr><td>حروف لاتينية كبيرة</td><td><code>A, B, C</code></td><td><code>upper-alpha</code>، <code>alpha-upper</code>، <code>upper-latin</code>، <code>A</code></td></tr>
+    <tr><td>الأعداد الصينية، المبسّطة</td><td>一, 十二, 一百零一</td><td><code>simp-chinese-informal</code>، <code>一</code> في مستند بالصينية المبسّطة</td></tr>
+    <tr><td>الأعداد الصينية، التقليدية</td><td>一, 十二, 一萬</td><td><code>trad-chinese-informal</code>، <code>cjk-ideographic</code>، <code>一</code> في مستند بالصينية التقليدية</td></tr>
+    <tr><td>الأعداد الصينية المالية، المبسّطة</td><td>壹, 壹拾贰, 壹佰贰拾</td><td><code>simp-chinese-formal</code>، <code>壹</code> في مستند بالصينية المبسّطة</td></tr>
+    <tr><td>الأعداد الصينية المالية، التقليدية</td><td>壹, 壹拾貳, 壹佰貳拾</td><td><code>trad-chinese-formal</code>، <code>壹</code> في مستند بالصينية التقليدية</td></tr>
+    <tr><td>الأرقام الصينية خانةً خانة</td><td>一二〇, 二〇二六</td><td><code>cjk-decimal</code>، <code>〇</code></td></tr>
+    <tr><td>السيقان السماوية</td><td>甲, 乙, 丙 … 癸</td><td><code>cjk-heavenly-stem</code>، <code>甲</code></td></tr>
+    <tr><td>الفروع الأرضية</td><td>子, 丑, 寅 … 亥</td><td><code>cjk-earthly-branch</code>، <code>子</code></td></tr>
+    <tr><td>الأعداد اليابانية</td><td>一, 十二, 百一, 一万一</td><td><code>japanese-informal</code>، <code>一</code> في مستند ياباني</td></tr>
+    <tr><td>الأعداد اليابانية الرسمية</td><td>壱, 壱拾弐, 壱百</td><td><code>japanese-formal</code>، <code>壱</code></td></tr>
+    <tr><td>الهيراغانا، بترتيب غوجوون</td><td>あ, い, う … ん, ああ</td><td><code>hiragana</code>، <code>あ</code></td></tr>
+    <tr><td>الكاتاكانا، بترتيب غوجوون</td><td>ア, イ, ウ … ン, アア</td><td><code>katakana</code>، <code>ア</code></td></tr>
+    <tr><td>الهيراغانا، بترتيب إيروها</td><td>い, ろ, は … す, いい</td><td><code>hiragana-iroha</code>، <code>い</code></td></tr>
+    <tr><td>الكاتاكانا، بترتيب إيروها</td><td>イ, ロ, ハ … ス, イイ</td><td><code>katakana-iroha</code>، <code>イ</code></td></tr>
+    <tr><td>أرقام داخل دوائر</td><td>①, ②, ③ … ㊿</td><td><code>circled-decimal</code>، <code>①</code></td></tr>
+    <tr><td>أرقام كاملة العرض</td><td>１, ２, ３</td><td><code>fullwidth-decimal</code>، <code>１</code></td></tr>
+    <tr><td>الأرقام الهندية العربية</td><td>١, ٢, ٣ … ١٠</td><td><code>arabic-indic</code>، <code>١</code></td></tr>
+    <tr><td>الأرقام الفارسية</td><td>۱, ۲, ۳ … ۱۰</td><td><code>persian</code>، <code>urdu</code>، <code>۱</code></td></tr>
+    <tr><td>الحروف العربية، بترتيب أبجد</td><td>أ, ب, ج, د, هـ … غ, أأ</td><td><code>abjad</code>، <code>أبجد</code></td></tr>
+    <tr><td>الحروف العربية، بالترتيب الهجائي</td><td>أ, ب, ت, ث … ي, أأ</td><td><code>hijai</code>، <code>arabic-alpha</code>، <code>arabic-alphabetic</code>، <code>أبتث</code></td></tr>
+    <tr><td>الأعداد الأبجدية (حساب الجُمَّل)</td><td>ا, ب … يا (11), غتمو (1446)</td><td><code>arabic-abjad</code></td></tr>
+    <tr><td>الأعداد الأبجدية، بالقيم المغربية</td><td>ص (60), ض (90), ش (1000)</td><td><code>arabic-abjad-maghrebi</code>، <code>maghrebi-abjad</code></td></tr>
+  </tbody>
+</table>
+
+تحتفظ أنماط شرق آسيا بأسمائها في [CSS Counter Styles](https://www.w3.org/TR/css-counter-styles-3/#limited-chinese) في الإعدادات الثلاثة كلها. تكتب الأعداد الصينية غير الرسمية 十 للأعداد من 10 إلى 19 دون 一 في أولها (十二، ولكن 一百一十)، و零 واحدة لكل سلسلة أصفار داخل العدد (一百零一، 一千零五十)، و万 أو 萬 للعشرة آلاف، و亿 أو 億 للمئة مليون (一万零一十). وحده `cjk-decimal` يستخدم 〇، خانةً خانة، على طريقة كتابة السنوات (二〇二六، GB/T 15835—2011). تتوقف السيقان عند 10، والفروع عند 12، والأرقام داخل الدوائر عند 50؛ وبعدها يُطبع العدد بالأرقام. ويتبع `一` و`壹` نظامَ كتابة `locale` الخاص بالمستند: التقليدي لـ `zh-Hant` أو `zh-TW` أو `zh-HK`، والمبسّط في غير ذلك. بعض الطبعات القديمة تكتب 101 على هيئة 一百一 دون 零؛ ولا يطبع Postext هذه الصيغة.
+
+وتتبع الأنماط اليابانية (منذ postext 1.16) CSS Counter Styles أيضًا. يكتب `japanese-informal` 十 دون 一 في أولها ودون 零 للخانة الفارغة (百一، 千十)، ويكتب `japanese-formal` الأعداد الكبيرة (大字) 壱 弐 参 拾 百 阡 مع إبقاء 壱 قبل كل وحدة (壱拾، 壱百). ويوقف CSS كليهما عند 9 999؛ أما Postext فيستمر بمجموعات من أربعة أرقام مع 万 億 兆 (وفي الرسمي 萬 億 兆)، وتحتفظ كل مجموعة بـ 一 قبل الوحدة: 一万一 هي 10 001، و一億一万 هي 100 010 000. وفي المستند الياباني (`ja`، `ja-JP`…) يعني `一` الأسلوب `japanese-informal`، فيطبع `第{1:一}章` 第百一章 هناك و第一百零一章 في المستند الصيني؛ ويبقى `壹` الأعداد الصينية الرسمية. وسلاسل الكانا هي قوائم CSS: 48 حرف كانا بترتيب غوجوون (منها ゐ وゑ) و47 بترتيب قصيدة إيروها؛ وبعد الحرف الأخير تستمر بحرفين (ああ، いい)، ولا صفر فيها، فالعنصر المرقّم 0 يطبع `0`. والأرقام الموضعية بالكانجي (二〇二六)، صيغة السنوات وأرقام الصفحات، هي `cjk-decimal`.
+
+تحتفظ الأنماط العربية بأسماء CSS حيث يوجد لها اسم في CSS (`arabic-indic` و`persian`؛ ويُقرأ `urdu` و`maghrebi-abjad` المأخوذان من مذكرة W3C *Ready-made Counter Styles* على أنهما `persian` و`arabic-abjad-maghrebi`). ويحتفظ `arabic` بمعناه القديم، أي الأرقام الأوروبية. يكتب `arabic-abjad` الأعداد الأبجدية الجمعية في العربية التراثية وفي ترقيم أوراق المخطوطات، بدءًا بالقيمة الأعلى: 11 هي يا، و1446 هي غتمو، وعدد الآلاف يأتي قبل غ (2000 بغ، 1002 غب)؛ وبعد 999 999 يُطبع العدد بالأرقام. تستخدم مذكرة W3C هذا الاسم لسلسلة من 28 حرفًا تكون فيها 11 هي ك؛ ويسمّي Postext تلك السلسلة `abjad`، أي ترقيم عناصر القوائم بالحروف بترتيب أبجد (أ، ب، ج، د، هـ)، ويسمّي `hijai` الترتيب الهجائي (أ، ب، ت، ث). كلاهما يكتب الحرف الأول بهمزته (أ)، والهاء التي تقف منفردة على هيئة هـ بالتطويل، فلا يُقرأ أي منهما على أنه الرقمان ١ و٥؛ وبعد 28 تتضاعف الحروف، كما في `lower-alpha` (أأ, أب). وتتبع القيم المغربية العبارة التذكيرية صعفض قرست ثخذ ظغش (ص 60، ض 90)؛ وتبدّل قائمة W3C بين ص وض. ولا يكفي حرف أ وحده للتمييز بين السلسلتين، فرمزاهما هما أحرفهما الأربعة الأولى: `{1:أبجد}` و`{1:أبتث}`. أما أرقام المستند نفسه فتُضبط بالإعداد [`numerals`](/ar/docs/configuration-text#أرقام-المستند).
+
+الصيغ الأخرى مخصّصة للإعدادات التي لا يتحقق أحد من أنواعها: الإعدادات المسبقة بصيغة JSON وJavaScript العادية. ما تزال أنواع TypeScript لا تسمّي إلا الصيغة الخاصة بكل إعداد، أي التي يكتبها Sandbox ويعيدها `resolveAllConfig`، بما فيها أسماء شرق آسيا، فيلتزم بها `PostextConfig` المحدّد النوع، وتحتاج أي صيغة أخرى إلى تحويل نوع (cast).
+
+```js
+// JavaScript or a JSON preset (in TypeScript, each setting's own spelling)
+orderedLists: { numberFormat: 'decimal' },          // same as 'arabic'
+page: { pageNumbering: { format: 'roman-lower' } }, // same as 'lower-roman'
+resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 'roman-upper'
+```
+
+يحوّل `resolveAllConfig` تنسيقات القوائم والصفحات إلى صيغة الإعداد الخاص بكل منها، فتُحسم `'decimal'` إلى `'arabic'` في `orderedLists`، و`'roman-lower'` إلى `'lower-roman'` في `page.pageNumbering`، ويُسقط `stripConfigDefaults` أي صيغة تساوي القيمة الافتراضية. تعرض لوحات Sandbox كل إعداد من الإعدادات الثلاثة بصيغته الخاصة، أيًا كانت الصيغة المستخدمة في الإعدادات. وأي قيمة أخرى، مثل `roman` أو `01` أو خطأ إملائي، ترقّم بالأرقام العشرية بدلًا من طباعة `undefined`، ويُبلَّغ عنها [تحذيرًا في الإعدادات](/ar/docs/configuration-fonts-colors-viewers#تحذيرات-الإعدادات). وتقبل قوالب ترقيم العناوين الأسماء نفسها بعد النقطتين (`{1:roman-upper}` هو `{1:I}`)، إلى جانب صيغتها الخاصة ذات الأصفار البادئة `{1:01}`.
+
+
+## التخطيط
+
+تتحكم الخاصية `layout` في ترتيب الأعمدة داخل مساحة المحتوى.
+
+<Illustration name="ColumnGutter" data='{"title": "الأعمدة والفاصل والهامش", "desc": "صفحة مقسّمة إلى ثلاثة أعمدة: كل عمود هو مساحة المحتوى المخصّصة للنص، والفواصل هي الفجوات العمودية بين الأعمدة، والهامش هو الحافة الفارغة بين حدّ الصفحة والعمود الأول.", "caption": "الأعمدة تحمل النص. الفواصل تفصل بينها. الهوامش تؤطّر المحتوى.", "pageLabel": "الصفحة", "gutterLabel": "الفاصل", "columnLabel": "العمود", "marginLabel": "الهامش"}' />
+
+<Illustration name="MarginSystem" data='{"title": "نظام الهوامش", "desc": "صفحة لها هوامش مستقلة في الأعلى واليمين والأسفل واليسار تحيط بمساحة المحتوى.", "caption": "يمكن أن يكون لكل جانب من الصفحة هامشه الخاص.", "page": "الصفحة", "content": "مساحة المحتوى", "top": "أعلى", "right": "يمين", "bottom": "أسفل", "left": "يسار"}' />
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layoutType</code></td>
+      <td><code>'single' | 'double' | 'oneAndHalf' | 'multiple'</code></td>
+      <td><code>'double'</code></td>
+      <td>ترتيب الأعمدة. انظر أدناه لتفاصيل كل نوع.</td>
+    </tr>
+    <tr>
+      <td><code>columnCount</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>عدد الأعمدة المتساوية التي يقسم إليها تخطيط <code>'multiple'</code> المتن: عدد صحيح من 3 إلى 8. القيمة الواقعة خارج هذا المدى، أو غير الصحيحة، تُقيَّد ويُبلَّغ عنها (انظر <a href="#أنواع-التخطيط">أنواع التخطيط</a>). وتخطيط <code>'multiple'</code> الخاص بنمط عنوان يأخذ عدد أعمدة المستند ما لم يضبط عدده. منذ postext 1.18.</td>
+    </tr>
+    <tr>
+      <td><code>gutterWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75 cm</code></td>
+      <td>المسافة الأفقية بين الأعمدة. لا تنطبق إلا على التخطيطات متعددة الأعمدة.</td>
+    </tr>
+    <tr>
+      <td><code>sideColumnPercent</code></td>
+      <td><code>number</code></td>
+      <td><code>33</code></td>
+      <td>عرض العمود الجانبي نسبةً مئوية من مساحة المحتوى. تُستخدم كما كُتبت أي قيمة تترك لكلا العمودين شيئًا من العرض؛ أما القيمة التي لا تفعل ذلك فتُقيَّد، ويبلّغ البناء عنها (انظر <a href="#أنواع-التخطيط">أنواع التخطيط</a>). لا تنطبق إلا على التخطيط <code>'oneAndHalf'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>sideColumnRole</code></td>
+      <td><code>'text' | 'floats'</code></td>
+      <td><code>'text'</code></td>
+      <td>ما يحمله العمود الجانبي: نص المتن (يتدفق إليه بعد العمود الرئيسي)، أو الموارد والإطارات الموضوعة بـ <code>span: 'side'</code> فقط، أي عمود هامشي للعناصر العائمة وحدها. لـ <code>'oneAndHalf'</code> فقط. مع <code>'text'</code>، تُعاد قسمة أسطر الفقرة التي تمتد من عمود إلى آخر على عرض العمود الذي تتابع فيه؛ وحتى postext 1.4 كانت تحتفظ بأسطر العمود الذي بدأت فيه، فكان السطر المنضّد لعرض العمود الرئيسي يتجاوز العمود الجانبي، فيُقصّ.</td>
+    </tr>
+    <tr>
+      <td><code>sideColumnSide</code></td>
+      <td><code>'right' | 'left' | 'outer' | 'inner'</code></td>
+      <td><code>'right'</code></td>
+      <td>حافة مساحة المحتوى التي يقع عندها العمود الجانبي. تتبع <code>'outer'</code> / <code>'inner'</code> زوجية الصفحة حين تكون الهوامش متناظرة (الحافة الخارجية لوجه الورقة هي حافته اليمنى، ولظهرها حافته اليسرى). لـ <code>'oneAndHalf'</code> فقط.</td>
+    </tr>
+    <tr>
+      <td><code>columnRule</code></td>
+      <td><code>ColumnRuleConfig</code></td>
+      <td>معطّل</td>
+      <td>خط مرئي اختياري يُرسم بين الأعمدة. انظر أدناه.</td>
+    </tr>
+    <tr>
+      <td><code>fitFiguresToPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يصغّر الشكل (صورة نقطية أو SVG) الذي تكون صورته وتعليقه وملاحظته معًا أطول من مساحة المحتوى حتى يتسع لها (والصورة ذات المنطقة الآمنة، <code>Resource.safeArea</code>، تُقصّ أولًا داخلها بكامل عرضها، ولا تُصغَّر إلا إذا بقيت لا تتسع)، ويصغّر الشكل المدرج في سياق النص الذي يزيد قليلًا على المساحة الباقية في عموده (حتى نصف عرضه، مع احتفاظ التعليق بعرض العمود) فيبقى مع نصه. وتقع الصورة المصغّرة في خانتها وفق <code>placement.align</code>. يفعّله عارض HTML، لأن صفحاته لا تزيد طولًا على الشاشة؛ أما الصفحات المطبوعة فمقاسها يناسب أشكالها.</td>
+    </tr>
+    <tr>
+      <td><code>bitmapResolution</code></td>
+      <td><code>'document' | 'file' | number</code></td>
+      <td><code>'document'</code></td>
+      <td>كيف تأخذ الصورة النقطية التي ليس لها <code>bitmap.resolution</code> خاص بها مقاسَ طباعتها الطبيعي. <code>'document'</code> تقرأ بكسلاتها بقيمة <code>page.dpi</code>؛ والرقم هو دقة كل صورة من هذا النوع بالـppi (<code>300</code>: الصورة ذات 2400 px عرضها 203.2 mm أيًّا كانت دقة الصفحة)؛ و<code>'file'</code> تستخدم الدقة التي يذكرها ملفها (<code>bitmap.fileResolution</code>)، وتُعدّ فيها 72 و96 غير محددتين، وإلا فـ<code>page.dpi</code>. يظل العمود يحدّ الصورة، ولا تُكبَّر الصورة الأصغر أبدًا. انظر <a href="/ar/docs/document-format#مقاس-الصورة-النقطية">صيغة المستند › مقاس الصورة النقطية</a>. منذ postext 1.24.</td>
+    </tr>
+    <tr>
+      <td><code>floatShrink</code></td>
+      <td><code>FloatShrinkConfig</code></td>
+      <td><code>mode: 'never'</code></td>
+      <td>القيمة الافتراضية للمستند لـ<code>placement.shrink</code> (<code>mode</code>: <code>'never'</code> أو <code>'page'</code> أو <code>'slot'</code>) و<code>placement.minScale</code> (<code>minScale</code>، 0.7 إن لم يُضبط) في الصور العائمة: تصغير الصورة، مع حفظ نِسَبها، إلى حيّز موضعها بدل نقلها إلى ما بعده (انظر <a href="/ar/docs/document-format#الموضع">تنسيق المستند › الموضع</a>). ويتقدّم عليها موضعُ المورد نفسه، ثم <code>defaultPlacement</code> لنوعه. <code>fitFiguresToPage</code> يحدّ كل شكل بمساحة المحتوى؛ أما <code>floatShrink</code> فينظر في الشريط الذي سيشغله العنصر العائم فعلًا: تحت افتتاحية، أو بجانب أشكال عائمة أخرى، أو فوق الحواشي. منذ postext 1.24.</td>
+    </tr>
+    <tr>
+      <td><code>wrap</code></td>
+      <td><code>TextWrapConfig</code></td>
+      <td><code>minTextWidth: 12em</code>, <code>minLinesBeside: 2</code>, <code>defaultWidth: 0.45</code></td>
+      <td>النص المصفوف بجانب صورة أو صندوق أضيق من عموده (<code>placement.wrap</code>، و<code>wrap</code> الصندوق): <code>gap</code> المسافة بين العنصر والنص (سطر واحد من المتن إن لم تُحدَّد)؛ <code>minTextWidth</code> أضيق عرض يأخذه النص المجاور، طولًا أو حصةً من العمود (إذا كان أضيق يأخذ العنصر الشريط كله مع تحذير <code>textWrap</code>)؛ <code>minLinesBeside</code> أقل عدد من الأسطر يستحق الصفّ بجانبه؛ <code>defaultWidth</code> حصة العمود التي يأخذها العنصر الملتف حين لا يحدد <code>width</code>. انظر <a href="/ar/docs/document-format#التفاف-النص">تنسيق المستند › التفاف النص</a>. منذ postext 1.24.</td>
+    </tr>
+    <tr>
+      <td><code>floatsAtCitingPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>القيمة الافتراضية للمستند لـ<code>placement.citingPage</code>: يمكن للشكل العائم <code>'top'</code> أو <code>'auto'</code> أن يحتل رأس الصفحة (شكل عائم بعرض الصفحة) أو رأس العمود (شكل عائم بعرض العمود) حيث يقع السطر الذي يشير إليه أول مرة، بدلًا من أول موضع شاغر بعد ذلك السطر، وينزل النص الذي فوق الإحالة تحته (انظر <a href="/ar/docs/document-format#الموضع">تنسيق المستند › الموضع</a>). يتقدم عليها موضع المورد نفسه، ثم <code>defaultPlacement</code> لنوعه. منذ postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>maxTopFraction</code></td>
+      <td><code>number</code></td>
+      <td><code>0.7</code></td>
+      <td>أكبر نسبة من ارتفاع العمود، من 0 إلى 1، يجوز أن يأخذها شكل عائم في رأس الصفحة أو العمود الذي يشير إليه، مع الأشكال العائمة الموجودة هناك، لتبقى في الصفحة مساحة لنصها (<code>\topfraction</code> في LaTeX). الشكل الذي يحتاج أكثر من ذلك يذهب إلى موضعه المعتاد. منذ postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>hugClosingFloats</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>في الصفحة الختامية من الفصل (ومن المستند)، ترتفع الأشكال والجداول الممتدة بعرض الصفحة الموضوعة تحت آخر شريط من النص لتستقر على مسافة فجوة واحدة من فجوات العناصر العائمة تحته، مكدّسة بترتيبها: لا شيء يليها هناك. تتركها <code>false</code> حيث وضعها موضعها المحدّد، فينتهي العنصر العائم ذو <code>position: 'bottom'</code> عند أسفل الصفحة في الصفحة الختامية كما في كل صفحة أخرى، كما في نشرة بيانات ينتهي مخططها عند الارتفاع نفسه في كل صفحة مثلًا. والصفحات التي فيها عمود جانبي لا تحرّكها أبدًا.</td>
+    </tr>
+    <tr>
+      <td><code>inlineResourceGap</code></td>
+      <td><code>'around' | 'above'</code></td>
+      <td><code>'around'</code></td>
+      <td>الموضع الذي يحتفظ فيه المورد المدرج في سياق النص (<code>placement.position: 'here'</code>، المضمَّن بـ <code>::resource</code>) بفجوة العناصر العائمة، وهي سطر واحد. تحتفظ <code>'around'</code> بها فوق المورد وتحته، ويعود النص الذي يليه إلى شبكة خطوط الأساس تحت تلك الفجوة؛ والعنوان أو القائمة أو الإطار أو المورد المدرج الآخر الذي يليه مباشرة يتقاسم الفجوة السفلية مع مسافته العلوية الخاصة، فتُطبَّق الكبرى بينهما. تحتفظ <code>'above'</code> بها فوقه فقط: يستأنف النص الذي يلي المورد عند خط الشبكة التالي مهما كان قريبًا، بين لا شيء وسطر كامل، كما كان حتى postext 1.4. والإعدادات التي خزّنتها إصدارات سابقة وتضمّن فصولُها موردًا تُقرأ بالقيمة <code>'above'</code>، فلا تتحرك صفحاتها (انظر <a href="/ar/docs/configuration-programmatic-usage#الحزم-التي-كتبها-postext-14-أو-ما-قبله">الحزم المكتوبة بالإصدار postext 1.4 أو أقدم</a>). والإعدادات المكتوبة في الشيفرة للإصدار 1.4 تحتفظ بالتباعد القديم بضبط <code>'above'</code> بنفسها، أو عبر <code>pinLegacyInlineGap</code> من <code>postext/bundle</code>.</td>
+    </tr>
+    <tr>
+      <td><code>inlineResourceGapInBoxes</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>هل يحتفظ المورد المدرج داخل إطار (<code>:::callout</code>) بالفجوة التي يضبطها <code>inlineResourceGap</code>، وهي سطر من نص الإطار نفسه: فوق المورد، وتحته أيضًا مع <code>'around'</code>، فتُطبَّق الكبرى بينها وبين المسافة الخاصة بالكتلة التالية. في أعلى الإطار أو أسفله، أو في أعلى جزء من إطار مقسوم أو أسفله، تتولى الحشوة فصل المورد ولا تُضاف فجوة. تضع <code>false</code> المورد مباشرة تحت النص الذي قبله، والنص الذي بعده مباشرة تحت المورد، كما كان حتى postext 1.4. والإعدادات التي خزّنتها إصدارات سابقة وتضمّن فصولها موردًا داخل إطار تُقرأ بالقيمة <code>false</code> (انظر <a href="/ar/docs/configuration-programmatic-usage#الحزم-التي-كتبها-postext-14-أو-ما-قبله">الحزم المكتوبة بالإصدار postext 1.4 أو أقدم</a>)؛ وفي الشيفرة، يفعل <code>pinLegacyBoxResourceGap</code> من <code>postext/bundle</code> الشيء نفسه.</td>
+    </tr>
+    <tr>
+      <td><code>boxChildSplitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>أقل عدد من أسطر الفقرة أو عنصر القائمة يتركه القطع داخلها على كل جانب حين ينقسم الإطار (أما <code>splitMinLines</code>، في <a href="/ar/docs/configuration-styles#أنماط-الإطارات">أنماط الإطارات</a>، فما يزال يعدّ كل أسطر الإطار على كل جانب من القطع). عدد صحيح، 1 على الأقل. مع القيمة الافتراضية لا يترك القطع أبدًا سطرًا منفردًا من فقرة أو عنصر في أسفل عمود أو في رأس العمود التالي؛ ونمط الإطار الذي تكون فيه <code>splitMinLines</code> أقل يحدّد الحدّ بدلًا من ذلك. تسمح <code>1</code> للقطع بأن يترك سطرًا واحدًا من الفقرة أو العنصر على أحد الجانبين، كما كان حتى postext 1.4. والإعدادات التي خزّنتها إصدارات سابقة وتحتوي فصولها على <code>:::callout</code> تُقرأ بالقيمة <code>1</code> (انظر <a href="/ar/docs/configuration-programmatic-usage#الحزم-التي-كتبها-postext-14-أو-ما-قبله">الحزم المكتوبة بالإصدار postext 1.4 أو أقدم</a>)؛ وفي الشيفرة، يفعل <code>pinLegacyBoxChildCut</code> من <code>postext/bundle</code> الشيء نفسه.</td>
+    </tr>
+    <tr>
+      <td><code>flowColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>سياج <code>:::columns</code> خارج الإطار يُخرج كتله في أعمدة فرعية داخل عمود النص (أو على عرض الصفحة مع <code>span="page"</code>)، والمجموعة، في إطار كانت أو في النص، تُقطع بين أعمدتها الفرعية حين لا تتسع، وتستمر في العمود أو الصفحة التالية (انظر <a href="/ar/docs/document-format#columns">صيغة المستند › <code>:::columns</code></a>). تتجاهل <code>false</code> السياج الواقع خارج الإطار ولا تقطع أبدًا داخل مجموعة، كما كان حتى postext 1.24؛ والإعدادات التي خزّنتها إصدارات سابقة وتحتوي فصولها على سياج <code>:::columns</code> تُقرأ بالقيمة <code>false</code>؛ وفي الشيفرة، يفعل <code>pinLegacyFlowColumns</code> من <code>postext/bundle</code> الشيء نفسه. والقسم ذو النمط يحتفظ بقيمة المستند. منذ postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>floatsUnderOpener</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>تحت افتتاح بعرض الصفحة (مستوى عنوان أو نمط عنوان فيه <code>span: 'page'</code>) مضبوط فوق عمودين من النص أو أكثر، يكون رأس عمود الافتتاح نفسه، تحت شريطه مباشرة، موضعًا لعنصر عائم <code>'top'</code> أو <code>'auto'</code>، على مستوى رؤوس الأعمدة الأخرى: الإطار العائم الموضوع بعد الافتتاح مباشرة، أو المورد المضمَّن هناك، يقف تحت الافتتاح في العمود الأول (وعلى عدة أعمدة ابتداءً منه مع <code>columns</code>)، ويبدأ نص العمود تحته. أما العنصر العائم المُحال إليه في النص فيبقى بعد السطر الذي يشير إليه. لا تتيح <code>false</code> هذا الموضع، فيقع العنصر العائم ابتداءً من العمود الثاني، كما كان حتى postext 1.24؛ والإعدادات التي خزّنتها إصدارات سابقة وتحدّد عنوانًا بعرض الصفحة تُقرأ بالقيمة <code>false</code>؛ وفي الشيفرة، يفعل <code>pinLegacyOpenerHeadFloats</code> من <code>postext/bundle</code> الشيء نفسه. والقسم ذو النمط يحتفظ بقيمة المستند. منذ postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'horizontal-tb' | 'vertical-rl'</code></td>
+      <td><code>'horizontal-tb'</code></td>
+      <td>اتجاه جريان الأسطر. تنضّد <code>'vertical-rl'</code> النص الصيني والياباني عموديًا: الحروف من الأعلى إلى الأسفل، وكل سطر على يسار السطر الذي قبله. يرثها <code>layout</code> الخاص بنمط العنوان ما لم يضبط قيمته الخاصة، فيمكن أن يلي ملحقٌ أفقي كتابًا عموديًا. انظر <a href="#الكتابة-العمودية">الكتابة العمودية</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### الكتابة العمودية
+
+مع `writingMode: 'vertical-rl'` تُخرَج الصفحة كأنها صفحة أفقية أُديرت ربع دورة باتجاه عقارب الساعة. يُنضَّد التدفق في إطار عرضه يساوي طول الورقة؛ وأسطره هي أعمدة النص العمودي، تُقرأ من اليمين، وكل ما يفعله المحرّك بالأسطر (الكسر وضبط الأسطر والعناصر العائمة والحواشي السفلية وقواعد إبقاء العناصر معًا) يعمل في ذلك الإطار. وعليه، على الورقة:
+
+- عمود التخطيط هو **طبقة** (tier، 栏): يعطي `layoutType: 'double'` طبقتين مكدّستين من الأعلى إلى الأسفل، تُملآن بدءًا من أعلى اليمين؛ و`gutterWidth` هو الفجوة بينهما، والخط الفاصل بين الأعمدة خطٌّ أفقي بينهما. لا تُوازَن الطبقات في نهاية الفصل ([clreq §7.1.3.4](https://www.w3.org/TR/clreq/#x7-1-3-4-handling-of-spaces-just-before-the-new-recto-page-breaks-and-new-edges)): موازنة الأعمدة معطّلة في المستند العمودي ما لم يُضبط `headings.balancing.enabled`.
+- ما يسمّيه التدفق «الأعلى» هو الحافة **اليمنى** للورقة، حيث تبدأ القراءة: العنصر العائم في الأعلى يقع على يمين الصفحة، والعائم في الأسفل على يسارها، وشريط صفحة الافتتاح الممتد على الصفحة شريطٌ ينزل على الحافة اليمنى، والحواشي السفلية تقع عند الطرف الأيسر لكل طبقة. وعنصر التصميم المثبّت إلى أعلى الصفحة (تصميم عنوان، إطار ثابت) مثبّت إلى الحافة اليمنى. القيمة `'left'` للإعداد `sideColumnSide` هي الطبقة العليا، و`'right'` الطبقة السفلى؛ وتُقرأ `'outer'` و`'inner'` على أنهما `'right'` و`'left'`.
+- هوامش التدفق هي هوامش الورقة مُدارة: الهامش الأيمن هو أعلى التدفق، والهامش العلوي يساره. وتحتفظ `page.margins` بأسمائها على الورقة.
+- تبقى الترويسات وأرقام الصفحات وعلامات القص وخلفية الصفحة على الورقة، منضّدة أفقيًا، كما تصف clreq للكتب العمودية.
+- **تقف الأشكال والجداول قائمة.** يملأ الشكل ارتفاع طبقته بقدر ما يسمح تعليقه، على ألا يزيد عرضه على عرض الصفحة؛ والعرض الذي يأخذه هو المساحة التي يشغلها في التدفق. يُنضَّد تعليقه أفقيًا تحته، وكذلك خلايا الجدول: كلاهما يُقاس نصًا أفقيًا. يُنضَّد الجدول قائمًا عبر الصفحة، وتُقطع صفوفه على قدر الطبقة حين يكون أطول منها. يضع `placement.align` الشكل في أعلى طبقته (`'left'`) أو وسطها أو أسفلها. لا يُطبَّق `placement.rotate` حيث يُشار إلى الشكل أول مرة في نص عمودي: يبلّغ البناء عن تحذير المحتوى `rotateIgnoredVertical`. أما القسم الأفقي من الكتاب (نمط عنوان يضبط `layout` فيه `'horizontal-tb'`) فيدير أشكاله كما طُلب.
+- صورة التصميم (رسم صفحة افتتاح، أو رسم صفحة جزء) تقف قائمة أيضًا. يُحسب مقاس صندوقها في التدفق بعد تبديل عرض الصورة وارتفاعها، فيكون `size.width` هو المسافة التي تمتد فيها الصورة نزولًا في العمود، ويُستنتج عرضها على الورقة من تناسب أبعادها.
+- الحروف: تقف حروف الهان والكانا والصيغ كاملة العرض قائمة، كلٌّ منها بعرض em واحد؛ وتُدار الكلمات اللاتينية والأرقام جانبيًا بعروضها الأفقية؛ وتأخذ علامات الترقيم الصيغةَ العمودية من الخط. لا تُدار علامات الوقف والتوقف أبدًا: يضع خط البر الرئيسي 、。，． في الزاوية العليا اليمنى من الخانة و！？：； في نصفها الأيمن، ويوسّطها خطُّ تايوان أو هونغ كونغ (`cjk.region`). تأخذ الأقواس صيغها العمودية، وتُقرأ “ ” ‘ ’ في نصوص البر الرئيسي على هيئة 『』「」. وتأخذ الشرطات وعلامات الحذف وشرطة الموجة الصيغةَ العمودية من الخط حيث يملكها (يربط Noto CJK صيغة — بـ `vert` مع `fwid`: خطٌّ ينزل في وسط الخانة)، وإلا فتُدار مع توسيط حبرها على محور العمود. والـ 破折号 (——) في النص الصيني خطٌّ واحد ينزل في العمود: صيغه العمودية تترك فراغًا عند طرفي كل خانة، فتُدار كل شرطة مع السطر وتُمدّ كما في النص الأفقي (انظر [عروض علامات الترقيم](/ar/docs/configuration-east-asian#عروض-علامات-الترقيم)). والعدد الذي لا يزيد على رقمين يقف في خانة قائمة واحدة، ما لم يقع في جملة لاتينية فيتبع كلماتها (انظر [الأرقام في النص العمودي](/ar/docs/configuration-east-asian#الأرقام-في-النص-العمودي)). وتأخذ النقطة الوسطى (·) نصف خانة في نصوص البر الرئيسي وخانة كاملة في نصوص تايوان وهونغ كونغ. والعلامات التي يجعلها Unicode قائمةً (× © ± § ℃ ① وما شابهها) تقف في خانة خاصة بها، حتى داخل عدد: `3×4` هو 3 و4 مُداران جانبيًا وبينهما × قائمة. والفاصلة العليا أو النقطة الوسطى بين حرفين من كلمة لاتينية (`don’t`، `l·l`) تبقى في الكلمة، مُدارة جانبيًا. وتتبع الفقرة اللاتينية في تدفق عمودي القواعد نفسها. أما الصيغ الرياضية المدرجة في السطر والشارات (chips) وعيّنات الألوان (swatches) فتُدار جانبيًا مع السطر.
+- يُقاس كل حرف كما يُرسم: الخانة تتقدّم بمقدار خانتها على امتداد السطر، والمقطع المُدار جانبيًا بعرضه الأفقي. والنص الذي يبقى أفقيًا على الورقة (الترويسات وأرقام الصفحات والتعليقات وخلايا الجداول) يُقاس أفقيًا.
+- تنطبق [عروض علامات الترقيم](/ar/docs/configuration-east-asian#عروض-علامات-الترقيم) و[تعليق علامات الترقيم](/ar/docs/configuration-east-asian#علامات-الترقيم-المتدلّية) و[المسافة بين حروف الهان والحروف اللاتينية](/ar/docs/configuration-east-asian#المسافة-بين-الهان-واللاتيني) على امتداد السطر نزولًا كما تنطبق عليه أفقيًا. الفراغ الذي يسبق الحرف يكون فوقه والفراغ الذي يليه تحته: تأخذ 、 بنمط Kaiming نصف خانة، وتنضغط `」「` إلى خانة ونصف، ويبدأ القوس الافتتاحي المقصوص في رأس السطر أعلى بنصف خانة، وتقع 。 المعلّقة تحت أسفل سطرها، والمسافة بين الهان واللاتينية ربع em من العمود فوق الكلمة المُدارة جانبيًا وتحتها. وتحتفظ `：；？！` بخانة كاملة في النص العمودي في كل المناطق.
+- تَعُدّ [شبكة الحروف](/ar/docs/configuration-east-asian#شبكة-الحروف) الحروفَ نزولًا على السطر والأسطرَ عبر الصفحة: يحدّد `charsPerLine` طول الطبقة، و`linesPerPage` عدد الأسطر التي تتسع لها الصفحة، ويعطي `layoutType: 'double'` طبقتين من حروف كاملة بينهما فاصل من وحدات em كاملة.
+
+وللمضيفين الذين يقرؤون الإخراج: تحمل الصفحة العمودية `VDTPage.flow`. تكون `contentArea` والأعمدة والكتل والأسطر والعناصر العائمة ومساحات الحواشي وشريط صفحة الافتتاح وطبقات تصميم الكتل بإحداثيات التدفق؛ أما `width` و`height` و`header` و`footer` فعلى الورقة. تحوّل `flowToPage` و`pageToFlow` و`flowRectToPage` و`pageRectToFlow` بين النظامين، وتخبر `verticalOrientation(char, region)` كيف يقف الحرف. يعطي `flow.centralBaselines`، لكل عائلة خط، المحور الذي وسّط عليه الإخراجُ الحروفَ القائمة: مركز حبر 中، الذي يمتد شُقّه الطويل على ارتفاع صندوق em كله (0.38 em فوق خط الأساس في Noto Serif وNoto Sans، بنسختيهما SC وTC على السواء)، والموجود في كل خط صيني وياباني وكوري. يُوسَّط كل سطر على ذلك المحور: يقع خط أساس السطر العمودي تحت أعلى صندوق سطره بمقدار نصف ارتفاع سطره مضافًا إليه خط الأساس المركزي للعائلة (أما خط أساس السطر الأفقي فيقع على 0.8 من ارتفاع سطره نزولًا)، فيقف عمود الحروف في منتصف خطوته (pitch)، ويقع الخط المرسوم بين عمودين على مسافة خطوة كاملة في منتصف المسافة بينهما. ويُنضَّد نص التصميم العمودي بالطريقة نفسها في أسطره الخاصة. يرسم Canvas الصفحة العمودية بنفسه؛ ولرسم علامات الترقيم بالصيغ العمودية للخط نفسه، يحمّل المضيف في المتصفح، مرة واحدة لكل عائلة، وجهًا توأمًا تكون فيه تلك الصيغ مفعّلة: `loadVerticalAlternates(family, faces)`، حيث `faces` هي مصادر العائلة (عناوين URL أو بايتات) وواصفاتها. ولا يُحتفظ بالتوأم إلا حيث يطبّق المتصفح الخاصية على نص Canvas (Chrome 140 وما بعده): يرسم 「（《 بالتوأم وبنسخة من الوجوه نفسها محمّلة دون الخاصية، بوزن الوجوه المعطاة وأسلوبها، ويحتفظ بالتوأم حين يختلف حبرهما. والاستدعاء اللاحق لوجوه أخرى من عائلة توأمها قيد الاستخدام (العريض بعد العادي) يضيفها إليه. يفعل Sandbox ذلك لكل عائلة في مستند عمودي. ودون توأم، تُدار الأقواس حول صندوق em الخاص بها، وتُنقل علامات الوقف والتوقف في نصوص البر الرئيسي داخل خانتها إلى حيث تضعها الصيغ العمودية للخط: 、。，． إلى الزاوية العليا اليمنى (في حدود 0.07 em من الصيغ العمودية في Noto Serif SC)، و！？：； نصف em إلى اليمين وقليلًا إلى الأعلى (في حدود 0.02 em). ويُنضّد PDF وHTML الصفحة نفسها: انظر [النص العمودي في PDF](/ar/docs/configuration-programmatic-usage#النص-العمودي-في-ملف-pdf) والجدول في [كيف يختلف إخراج HTML عن Canvas وPDF](/ar/docs/configuration-programmatic-usage#كيف-يختلف-إخراج-html-عن-canvas-وpdf). وبالمقارنة خانةً خانة مع HarfBuzz (تخطيط عمودي مع `vert`) في Noto Serif TC وSC، يقف كل حرف من 「賈雨村」云云，宜乎？故曰！；：、。“引”‘單’…… في حدود 0.02 em منه في Canvas وفي PDF، وفي حدود 0.05 em في HTML (يوسّط Chrome الحرف المُدار على منتصف الصعود والنزول في الخط، وهو في Noto أعلى من مركز صندوق em بمقدار 0.05 em). يعطي `flow.dashAdvances`، لكل عائلة، التقدّم الأفقي بوحدات em لكل شرطة تمدّها الصفحة لتملأ خانتها (— – ― ⸺ ⸻ －)، للمُخرِج الذي لا يملك مقاييس خطوط خاصة به: يمدّ HTML الشرطة بها، كما يفعل Canvas وPDF من مقاييسهما. ويمكن تنضيد الترويسات وأرقام الصفحات عموديًا أيضًا: انظر [عناصر النص العمودي](#عناصر-النص-العمودي).
+
+### الخط الفاصل بين الأعمدة
+
+يرسم خطًا عموديًا رفيعًا في الفاصل بين الأعمدة للفصل بينها بصريًا.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>الخاصية</th>
+      <th style={{ width: '150px' }}>النوع</th>
+      <th style={{ width: '180px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>هل يُرسم الخط الفاصل بين الأعمدة.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#cccccc</code></td>
+      <td>لون الخط.</td>
+    </tr>
+    <tr>
+      <td><code>lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 pt</code></td>
+      <td>سماكة الخط.</td>
+    </tr>
+  </tbody>
+</table>
+
+تحت عنوان ممتد على الصفحة (`span: 'page'`) يبدأ الخط حيث يبدأ نص الأعمدة، تحت شريط العنوان، سواء رسم الشريطَ تصميمُ الافتتاح الافتراضي أم تصميمٌ خاص بالعنوان. وحتى postext 1.4 كان يمتد من أعلى كتلة النص، عبر الشريط.
+
+يمكن لنمط العنوان أن يضبط خطًا فاصلًا خاصًا به في `layout` الخاص به (انظر [أنماط العناوين](/ar/docs/configuration-styles#أنماط-العناوين))، فترسمه صفحات قسمه. والحقل الذي يتركه النمط دون ضبط يأخذ قيمة المستند، فالقسم الذي لا يغيّر إلا أعمدته يحتفظ بالخط الفاصل الخاص بالمستند. وحتى postext 1.4 لم يكن خط النمط يُرسم أبدًا: كانت كل صفحة ترسم خط المستند.
+
+### أنواع التخطيط
+
+- **`'single'`** — عمود واحد يمتد على كامل عرض المحتوى. الأنسب للصفحات الضيقة أو للمحتوى الغالب عليه النص ذي الفقرات الطويلة.
+
+- **`'double'`** — عمودان متساويان في العرض. التخطيط التحريري الكلاسيكي، يُبقي طول السطر ضمن المدى الأمثل من 40 إلى 50 حرفًا لقراءة مريحة.
+
+- **`'oneAndHalf'`** — تخطيط غير متماثل فيه عمود رئيسي وعمود جانبي أضيق. العمود الجانبي (يتحكم فيه `sideColumnPercent`) مناسب لملاحظات الهامش والأشكال الصغيرة والمحتوى المساند. تعمل القيم بين 25 و40% جيدًا، ويأخذ مسارٌ ضيق لأرقام الأسطر أو العلامات الهامشية نحو 10–15%. يساوي العمود الجانبي `sideColumnPercent` % من عرض المحتوى، والعمود الرئيسي هو ما يتبقى بعد الفاصل، فعند 50% يكون العمود الجانبي أعرض من الرئيسي بمقدار فاصل واحد. تُخرَج أي قيمة كما كُتبت ما دام كل عمود يحتفظ بـ 1% على الأقل من عرض المحتوى؛ أما القيمة التي تترك أيًا منهما أضيق من ذلك، أي 0 أو أقل، أو قيمة كبيرة إلى حدّ أن يختفي العمود الرئيسي خلف الفاصل، فتُقيَّد إلى أقرب قيمة تحفظ العمودين، والقيمة التي ليست عددًا تأخذ القيمة الافتراضية، 33. وعندئذ تحمل `configWarnings` الخاصة بالمستند `{ kind: 'sideColumnPercentClamped', path: 'layout.sideColumnPercent', value, used }`، ويسمّي مسارُ `layout` الخاص بنمط عنوان ذلك النمطَ، كما في `headingStyles[2].layout.sideColumnPercent`، ويُقاس على هوامش ذلك النمط، ويعرض Sandbox هذه التحذيرات في لوحة **الفحوص** (Checks)؛ وتعيد `collectConfigWarnings(config)` القائمة نفسها دون إخراج أي شيء. والتخطيط الذي ليس `'oneAndHalf'` لا يقرأ القيمة أبدًا، ولا يبلّغ عنها أبدًا. مع `sideColumnRole: 'floats'` لا يدخل نص المتن العمود الجانبي أبدًا: يصبح مسارًا للأشكال والجداول والإطارات الموضوعة بـ `span: 'side'`. يتكدّس الشكل أو الجدول الجانبي بدءًا من رأس المسار في الصفحة التي تستشهد به أولًا، فالشكل الهامشي في الكتاب المدرسي يقع في أعلى صفحته حتى حين يستشهد به النص في موضع أدنى؛ والذي لا يتسع له باقي المسار ينتظر مسار الصفحة التالية. ويتكدّس الإطار الجانبي بجوار النص الذي يقطعه، وحين لا يتسع له باقي المسار هناك ينزلق إلى الأعلى إلى أدنى موضع ما يزال يتسع له (أسفله على أسفل المسار)، أو ينتظر الصفحة التالية. وحين يستمر النص الذي يلي علامة إغلاق الإطار (fence) في الصفحة التالية (العمود ممتلئ، أو قواعد الكسر تنقل ذلك النص)، يبقى الإطار عند علامة إغلاقه، بجوار النص الذي قبله؛ أما النمط الذي فيه `sideAtColumnEnd: 'after'` فيضعه بمحاذاة السطر الأول من النص الذي يلي علامة الإغلاق بدلًا من ذلك، في مسار الصفحة التالية، كما تحتاج أرقام الأسطر والعناوين الهامشية المكتوبة قبل سطرها. وعنصر تصميم العنوان الذي يقف في المسار، كرقم فصل مثبّت في الهامش الخارجي، يُبعَد عنه التكدّس أيضًا (انظر [الارتفاع المحجوز](/ar/docs/configuration-text#الارتفاع-المحجوز)). وما تزال العناصر العائمة والإطارات ذات `span: 'page'` تعبر العمودين، والعنصر العائم في العمود ذو `placement.captionSide` يضع تعليقه في المسار، بمحاذاة الشكل. ومع الهوامش المتناظرة و`sideColumnSide: 'outer'`، يقع المسار عند الحافة الخارجية لكل صفحة: العمود الهامشي في الكتاب المدرسي.
+
+- **`'multiple'`** — من ثلاثة إلى ثمانية أعمدة متساوية، بالعدد الذي يحدّده `columnCount` (3 افتراضيًا): شبكة الصحف وكثير من المجلات (منذ postext 1.18). عرض كل عمود `(عرض المحتوى − (n − 1) × gutterWidth) / n`. يجري النص من عمود إلى الذي يليه كما في تخطيط العمودين؛ ويُرسم الخط الفاصل في كل فاصل بين عمودين، وتسوّي موازنة الأعمدة بينها جميعًا في الصفحة الأخيرة من الفصل وقبل الإطار الممتد بعرض الصفحة، وتعمل الحواشي في كل عمود، وتعبر الأشكال والإطارات والعناوين الممتدة بعرض الصفحة الصفحةَ كلها. ويمكن لشكل أو لإطار عائم أن يشغل بعض الأعمدة فقط: `placement.columns` (انظر [أنواع الموارد](/ar/docs/configuration-resources#أنواع-الموارد)) و`columns` في نمط الإطار. وقيمة `columnCount` الواقعة خارج 3–8 أو غير الصحيحة تُقرَّب وتُقيَّد بأقرب عدد صالح (والقيمة التي ليست عددًا تأخذ 3)، وتحمل `configWarnings` في المستند `{ kind: 'columnCountClamped', path: 'layout.columnCount', value, used }` (ومسار `layout` الخاص بنمط عنوان يسمّي النمط، كما في `headingStyles[1].layout.columnCount`). ولا يقرأ تخطيطٌ من نوع آخر هذه القيمة أبدًا. ونمط العنوان الذي `layout` فيه `'multiple'` يأخذ `columnCount` المستند ما لم يضبط عدده، فتستطيع جريدة من خمسة أعمدة أن تنضّد صفحات الرأي في أربعة.
+
+
+## رؤوس الصفحات وتذييلاتها
+
+تتحكّم الخاصيتان `header` و`footer` في خانتَي رأس الصفحة وتذييلها في كل صفحة. يُرسم رأس الصفحة وتذييلها **داخل هوامش الصفحة القائمة**: فلا يحجزان مساحة إضافية ولا يُقلّصان مساحة المحتوى.
+
+**إطار الحاوية.** يوضع العنصر المثبّت إلى `'container'` في شريط الهامش الواقع بين المتن وحدّ القص، ممتدًا بعرض مساحة المحتوى. تمتد حاوية رأس الصفحة من **حدّ القص العلوي** نزولًا إلى أعلى المتن، وحاوية التذييل من أسفل المتن نزولًا إلى **حدّ القص السفلي**. لذلك تُقاس مراسي `top-*` في رأس الصفحة ومراسي `bottom-*` في التذييل من حدّ القص، بينما تُقاس مراسي `bottom-*` في رأس الصفحة ومراسي `top-*` في التذييل من حافة المتن. لا تشمل الحاوية النزف ولا شريط علامات القص أبدًا، فيقع رأس الصفحة أو التذييل في الموضع نفسه من الصفحة المقصوصة سواء كان `page.cutLines` مفعّلًا أم معطّلًا. ثبّت العنصر إلى `'page'` (صندوق القص) أو إلى `'bleed'` ليتجاوز عرض مساحة المحتوى أو يبلغ النزف.
+
+تستخدم الخانات نموذج **خانة التصميم** الموحّد: لكل عنصر `placement` فيه `anchor` (مرساة إلى الحاوية أو إلى عنصر آخر عبر `#id`)، و`offset` اختياري، و`size` اختياري. لا تزال الحقول المسطّحة القديمة `align` و`marginFromBody` و`marginFromEdge` و`width: 'full'` مقبولة في الإدخال، وتُرحَّل إلى الشكل الجديد تلقائيًا؛ والوصف المكافئ بالشكل الجديد موثّق أدناه.
+
+تحمل كل خانة قائمة من عناصر **النص** و**الخط الفاصل** و**الصندوق**. ترتيب المصفوفة هو ترتيب الرسم (يُرسم العنصر الأول أولًا، ويُرسم الأخير فوق الجميع). ويصحّ هذا أيًّا كانت المراسي: قد يُثبَّت عنصر إلى عنصر يرد بعده في القائمة (`anchor.to: '#ttl'`)، فيمكن أن يأتي صندوق الخلفية أولًا ويظل موضعه محسوبًا بالنسبة إلى النص الذي يقع خلفه.
+
+**القيم الافتراضية المدمجة.** حين يكون `header` أو `footer` بقيمة `undefined`، يطبّق postext قيمة افتراضية مدمجة معقولة بدلًا من خانة فارغة:
+
+- **رأس الصفحة الافتراضي:** `{title}` بمحاذاة اليمين في الصفحات الفردية، و`{chapterTitle}` بمحاذاة اليسار في الصفحات الزوجية، وخط فاصل بالعرض الكامل، وكلها باللون الرئيسي للوحة الألوان، بخط Open Sans 8pt/600، و`marginFromBody` بقيمة `16pt` (للنص) / `13pt` (للخط الفاصل).
+- **التذييل الافتراضي:** `{pageNumber}` في الوسط في كل صفحة باللون الرئيسي للوحة الألوان، بخط Open Sans 8pt/600، و`marginFromBody` بقيمة `16pt`.
+
+للاستغناء عن القيم الافتراضية المدمجة، اضبط `header: { elements: [] }` (أو `footer: { elements: [] }`). تُحفظ المصفوفة `elements` الفارغة الصريحة على أنها «بلا عناصر»؛ ووحدها القيمة `undefined` تستدعي القيم الافتراضية.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '220px' }}>النوع</th>
+      <th style={{ width: '160px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>elements</code></td>
+      <td><code>HeaderFooterElement[]</code></td>
+      <td>القيم الافتراضية المدمجة حين تكون <code>undefined</code>؛ و<code>[]</code> يعطّلها</td>
+      <td>قائمة مرتّبة من عناصر النص والخطوط الفاصلة.</td>
+    </tr>
+  </tbody>
+</table>
+
+### عناصر النص
+
+ترسم عناصر النص سلسلة قالب بعد استبدال العناصر النائبة (placeholders) فيها. تُكتب العناصر النائبة بالصيغة `{name}`؛ ويُخرج `{{` و`}}` قوسين معقوفين حرفيين.
+
+القيم الافتراضية في الجدول أدناه هي قيم عنصر نص تضيفه بنفسك. أما رأس الصفحة والتذييل المدمجان الموصوفان تحت **القيم الافتراضية المدمجة** أعلاه فهما عنصران جاهزان لهما قيمهما الخاصة (Open Sans 8pt/600 باللون الرئيسي للوحة الألوان)، وليسا القيم الافتراضية للعنصر.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '220px' }}>النوع</th>
+      <th style={{ width: '160px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kind</code></td>
+      <td><code>'text'</code></td>
+      <td>—</td>
+      <td>المميِّز (discriminator).</td>
+    </tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>معرّف ثابت، فريد داخل الخانة. تُثبَّت إليه العناصر الأخرى بـ<code>anchor.to: '#id'</code>. يعيّن Sandbox معرّفًا عند الإنشاء.</td>
+    </tr>
+    <tr>
+      <td><code>content</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>سلسلة القالب. تدعم العناصر النائبة المدرجة أدناه، إضافة إلى <code>{'{attr.<key>}'}</code>: سمة مكتوبة في سطر H1 للفصل الحالي (<code># Title {'{author="I. Zango"}'}</code>). تتحوّل السمة الغائبة إلى سلسلة فارغة دون تحذير. السطر الجديد، أو الحرفان <code>\n</code> مكتوبَين في القالب أو في قيمة سمة، يبدأ دائمًا سطرًا جديدًا أيًّا كانت قيمة <code>overflow</code>. أما النص الذي ينسخه عنصر نائب من المستند (عنوان، أو حقل من البيانات التمهيدية) فيُطبع كما كُتب: لا يبدأ فيه سطرًا جديدًا إلا فاصل أسطر حقيقي، مثل فاصل داخل عنوان.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
+      <td><code>'center'</code></td>
+      <td>المحاذاة الأفقية للأسطر داخل صندوق العنصر. تمدّ <code>'justify'</code> المسافات بين الكلمات في كل سطر ملفوف عدا الأخير من كل فقرة حتى يملأ السطر الصندوق؛ وتملأ الأسطر المجاورة لحرف استهلالي المساحة المجاورة له. ومع <code>hyphenate</code>، تُقطع أيضًا الكلمة التي لا تتسع لبقية سطر مضبوط عند حدّ مقطع لملئه. يُصفّ بمحاذاة اليسار السطرُ الأخير من الفقرة، والسطر الذي لا مسافة فيه تُمدّ، والنص الذي لا يلتف. يُخرَج النص المضبوط فقرةً فقرة، فتُعدّ الأسطر الفارغة بين الفقرات سطرًا واحدًا. تضع Canvas وPDF كل كلمة حيث وضعها الإخراج؛ أما HTML فيوسّع المسافات بـ<code>word-spacing</code>. تتبع <code>'start'</code> و<code>'end'</code> قيمة <code>direction</code> للنص: فهما يمين النص ويساره إذا كان من اليمين إلى اليسار. أما <code>'left'</code> و<code>'right'</code> فهما جانبا الصندوق نفسه؛ وفي تصميم مُخرَج ضمن تدفّق صفحة من اليمين إلى اليسار (شريط صفحة افتتاح، تصميم عنوان) يكون التدفق معكوسًا، فيصيران بدايته ونهايته، كما في نص المتن.</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'ltr' | 'rtl' | 'auto'</code></td>
+      <td>قيمة المستند</td>
+      <td>الاتجاه الأساسي للنص: أين تذهب محارفه المحايدة، وترتيب مقاطعه في السطر، وما يعنيه الجانبان <code>'start'</code> و<code>'end'</code>. تقرأ <code>'auto'</code> أول حرف قوي الاتجاه في النص المحسوم، وتعود عند غيابه إلى <a href="/ar/docs/configuration-text#اتجاه-النص"><code>direction</code></a> المستند. تُقرأ مقاطع العربية والعبرية من اليمين إلى اليسار أيًّا كان الاتجاه الأساسي. النص الذي يحوي حرفًا عربيًا لا يُطبَّق عليه تباعد الحروف أبدًا (يُتجاهل <code>letterSpacing</code> للنص كله)، ولا تُقطع كلماته أبدًا عند اللف أو الاقتطاع؛ والكلمة الأعرض من الصندوق تفيض ويُبلَّغ عنها بـ<code>unbreakableWordOverflow</code>.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code></td>
+      <td><code>'all' | 'odd' | 'even'</code></td>
+      <td><code>'all'</code></td>
+      <td>الصفحات التي يظهر فيها العنصر (بحسب زوجية رقم الصفحة أو فرديته: الصفحة 1 فردية).</td>
+    </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td><em>أدوار</em> الصفحات التي يظهر فيها العنصر، مقترنةً بـ<code>parity</code>. بعد التوزيع تُصنَّف كل صفحة على أنها <code>'blank'</code> (حشو للزوجية أو للفاصل، أو بلا محتوى)، أو <code>'part'</code> (صفحة فاصلة لجزء)، أو <code>'opener'</code> (أول كتلة فيها عنوان يمتد مستواه على الصفحة أو يفرض فاصل صفحة قبله: الصفحة الأولى من فصل)، أو <code>'body'</code> (كل ما عدا ذلك). يُخفي <code>pages: 'body'</code> الترويسة في صفحات افتتاح الفصول؛ ويُظهر <code>pages: 'opener'</code> رقم الصفحة هناك فقط.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'EB Garamond'</code></td>
+      <td>عائلة الخط.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>8 pt</code></td>
+      <td>حجم الخط.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code></td>
+      <td>وزن الخط (100–900).</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>هل يُرسم النص بخط مائل.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>لون النص.</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'ellipsis-start' | 'ellipsis-middle' | 'ellipsis-end' | 'clip'</code></td>
+      <td><code>'wrap'</code> في تصاميم العناوين والأجزاء، وإلا <code>'ellipsis-end'</code></td>
+      <td>كيف يعالج المحرّك النص الذي يتجاوز العرض المتاح للعنصر. تكسر <code>'wrap'</code> السطر إلى أسطر عدة؛ وتُبقي صيغ علامة الحذف كل سطر في سطر واحد وتقتطعه بـ<code>…</code> في بدايته أو وسطه أو نهايته؛ وتقصّ <code>'clip'</code> النص قصًّا حادًّا عند الصندوق المحيط بالعنصر دون إدراج أي محرف. تنطبق فواصل الأسطر الموجودة في المحتوى في كل الأنماط: تقتطع أنماط الحذف والقص كل سطر على حدة. العنصر الذي يُغفل <code>overflow</code> يأخذ القيمة الافتراضية لموضعه: يلتف في تصميم العنوان (<code>advancedDesign.slot</code>) وفي صفحة الجزء (<code>parts.design</code>، <code>parts.versoDesign</code>)، وينتهي بـ<code>…</code> في ترويسة الصفحة والترقيم وسطر الجزء في الفهرس (<code>toc.parts.design</code>، سطر ثابت الارتفاع). اضبط <code>'wrap'</code> على ترويسة قد تمتد إلى أسطر عدة (عنوان بريدي)، أو علامة حذف على عبارة تمهيدية يجب أن تبقى في سطر واحد في افتتاحية. والسطر الذي اقتطعته علامة الحذف، أو قُصّ حبره خارج الصندوق، يُبلَّغ عنه بتنبيه المحتوى <code>designTextTruncated</code>، مرة لكل عنصر وصفحة (ولترويسة الصفحة أو الترقيم مرة لكل عنصر وفصل). والإعداد المحفوظ قبل postext 1.24 (<code>configVersion</code> 9 أو أقدم) يُقرأ بقيمة <code>'ellipsis-end'</code> على كل نص عنوان أو جزء لا يضبطها، فلا تتحرك صفحاته. النص الذي له <code>dropCap</code> يلتف أيًّا كانت هذه القيمة؛ ومع <code>'clip'</code> تظل أسطره تُقص عند حافة الصندوق الثابت الارتفاع. تقطع <code>'ellipsis-end'</code> و<code>'ellipsis-start'</code> عند حدّ كلمة، <em>The history of…</em> لا <em>The history of th…</em>، ولا تلاصق علامةَ الحذف أيُّ مسافة أو علامة ترقيم رابطة (فاصلة، نقطتان، شرطة، شرطة مائلة، قوس افتتاحي). ولا تُقطع كلمة حيث يلزم إلا حين يُبقي حدّ الكلمة، بعد إسقاط تلك العلامة، أقل من نصف ما يتسع: كلمة واحدة طويلة، أو عنوان URL (<em>http://exampl…</em>، لا <em>http…</em>). المسافة غير القاطعة والواصلة غير القاطعة (U+2011، كما في <em>MS‑DOS</em>) ليستا حدّ كلمة؛ أما <code>'ellipsis-middle'</code> فتقطع في أي موضع لكنها تُسقط المسافات المجاورة لها. حتى postext 1.4 كانت كل الأنماط تقطع عند آخر محرف يتسع، بما في ذلك المسافات.</td>
+    </tr>
+    <tr>
+      <td><code>verticalAlign</code></td>
+      <td><code>'top' | 'middle' | 'bottom'</code></td>
+      <td><code>'middle'</code></td>
+      <td>موضع النص داخل صندوق أطول من أسطره: <code>placement.size.height</code> ثابت، أو صندوق مدّه عنصر مجاور مثبّت. حين تكون الأسطر أطول من الصندوق (رقم كبير في صندوق ثابت الارتفاع، أو <code>lineHeight</code> ضيّق)، تفيض من الجهة التي تتركها المحاذاة حرّة، كما تفعل محاذاة CSS flex: تُبقي <code>'bottom'</code> أسفل صندوق السطر الأخير على أسفل الصندوق وتفيض من الأعلى، وتفيض <code>'middle'</code> بالتساوي من الطرفين، و<code>'top'</code> من الأسفل. حتى postext 1.4 كانت هذه الأسطر تتدلى دائمًا من الأعلى أيًّا كانت المحاذاة. يتحرك <code>dropCap</code> مع أسطره (حتى postext 1.4 كان يبقى في أعلى صندوق أنزلت <code>'middle'</code> أو <code>'bottom'</code> أسطره فيه).</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number | Dimension</code></td>
+      <td><code>1.2</code></td>
+      <td>تباعد أسطر العنصر. العدد مضاعف لـ<code>fontSize</code>. ويُقبل <code>Dimension</code> أيضًا، على النحو الذي يُكتب به كل تباعد أسطر آخر في الإعدادات: <code>em</code> / <code>rem</code> هو المضاعف نفسه، والطول المطلق (<code>pt</code>، <code>mm</code>، <code>px</code>…) هو المسافة بين خطوط الأساس: <code>{"{ value: 15.5, unit: 'pt' }"}</code> يضبط تباعدًا قدره 15.5 pt أيًّا كان الحجم. وأي قيمة أخرى (صفر، أو عدد سالب، أو بُعد مشوّه) تأخذ القيمة الافتراضية. حتى postext 1.4 كان <code>Dimension</code> هنا يجعل ارتفاع التصميم غير قابل للقياس: فلم تكن صفحة الافتتاح تحجز أي مساحة، ولا حتى <code>minHeight</code>، وكان المتن يجري تحت العنوان.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>التتبّع (tracking): مسافة إضافية بعد كل محرف، بما في ذلك المسافات، تمامًا كما يفعل <code>letter-spacing</code> في CSS. تزداد العروض المقيسة معه، فيبقى الصندوق التلقائي العرض محكمًا. يُستبعد التتبّع الذي يلي آخر محرف في السطر من محاذاته ومن الصندوق التلقائي العرض، فيتوسّط العنوانُ المتتبَّع الموسَّط على حروفه، وينتهي العنوان المحاذى لليمين عند الحافة، ويبلغ آخر حرف في السطر المضبوط الحافة (حتى postext 1.4 كانت تقع على بعد نصف وحدة تتبّع، أو وحدة كاملة، إلى اليسار، وكان العنصر المثبّت إلى يمين عنصر متتبَّع يبتعد عنه وحدة تتبّع إضافية). القيمة السالبة تُقرّب الحروف، فعنوان العرض بحجم 36 pt يأخذ غالبًا <code>&#123; value: -0.3, unit: 'pt' &#125;</code>، وتنكمش العروض بالطريقة نفسها؛ وترسمه Canvas وHTML وPDF على النحو نفسه (حتى postext 1.4 كانت القيمة السالبة تُضبط على <code>0</code> دون تحذير).</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>تحويل حالة الحروف المطبّق على النص المحسوم، بما فيه العناصر النائبة: عنوان جزء مكتوب بالحروف الكبيرة في جدول المحتويات مثلًا.</td>
+    </tr>
+    <tr>
+      <td><code>box</code></td>
+      <td><code>ElementBoxStyle</code></td>
+      <td>—</td>
+      <td>خلفية وحدّ اختياريان يُرسمان خلف النص: <code>backgroundColor</code> و<code>borderColor</code> و<code>borderWidth</code> و<code>borderRadius</code>، و<code>padding</code> لكل جانب يوسّع الصندوق أبعد من النص (انظر <a href="#عناصر-الصندوق">عناصر الصندوق</a> للاطلاع على الحقول).</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>&#123; lines, fontFamily, fontWeight, fontSize, color, gap &#125;</code></td>
+      <td>—</td>
+      <td>الحرف الاستهلالي: الحرف الأول مكتوبًا بحجم كبير بجوار أول <code>lines</code> أسطر (الافتراضي 2)، بخطه ووزنه ولونه الخاصة به، وعلى مسافة <code>gap</code> من النص. يقف الحرف على خط أساس آخر سطر يمتد عليه، ويكون <code>fontSize</code> افتراضيًا الحجمَ الذي يجعل أعلاه في مستوى الحروف الكبيرة للسطر الأول: حجم النص مضافًا إليه <code>lines</code> − 1 من تباعدات الأسطر، مع اعتبار الحروف الكبيرة 0.72 من حجم الحرف (والخط الذي تكون حروفه الكبيرة أطول من ذلك أو أقصر كثيرًا يحتاج إلى <code>fontSize</code> خاص به). النص الذي له حرف استهلالي يلتف أيًّا كانت قيمة <code>overflow</code>؛ ومع <code>'clip'</code> تظل أسطره تُقص عند حافة الصندوق الثابت الارتفاع. يتبع <code>color</code> المرتبط بلوحة الألوان لوحاتِ ألوان الأجزاء والأقسام كبقية التصميم. وفي تصميم العنوان لا يحجز الحرف مساحة تحت النص: فالجزء من صندوق سطره الواقع تحت خط أساسه لا يدفع المتن إلى الأسفل. لذا قد يمتد الحرف الذي ينزل تحت خط أساسه (Q أو J في كثير من الخطوط) إلى المساحة الواقعة تحت التصميم: أعطِ العنوان <code>marginBottom</code> لذلك. حتى postext 1.4 كان الحجم الافتراضي يجعل الحرف بطول كل صناديق الأسطر التي يمتد عليها، فيعلو أعلاه فوق السطر الأول؛ وكانت أي قيمة لـ<code>overflow</code> غير <code>'wrap'</code> تُسقط الحرف دون تحذير؛ وكانت لوحة ألوان القسم أو الجزء تترك لونه كما هو؛ وكان الحرف الذي يبلغ عمقُه عمقَ النص المجاور له قد يدفع المتن خط شبكة إلى الأسفل. الإعدادات المحفوظة قبل ذلك تحتفظ بحجم الإصدار 1.4، مكتوبًا في <code>fontSize</code> (انظر <a href="/ar/docs/configuration-programmatic-usage#الحزم-التي-كتبها-postext-14-أو-ما-قبله">الحزم التي كتبها postext 1.4 أو أقدم</a>). أما الحرف الاستهلالي في النص الجاري فتضبطه أنماط الفقرات والعناوين (انظر <a href="/ar/docs/configuration-text#الحروف-الاستهلالية">الحروف الاستهلالية</a>)، وتُقاس ارتفاعات حروفه الكبيرة من الخطوط نفسها.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>إزاحة السطر الأول لكل فقرة بعد الأولى. يفصل بين الفقرات سطرٌ جديد في المحتوى، أو الحرفان <code>\n</code> في النص الآتي من قيمة سمة؛ وتُعدّ الأسطر الجديدة المتتالية سطرًا واحدًا.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenate</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>حين تكون <code>true</code> ويلتف النص (<code>overflow: 'wrap'</code>، أو <code>dropCap</code> الذي يلتف دائمًا)، تُقسَّم الكلمات الطويلة التي تظل تفيض بعد كسر السطر العادي عند حدود المقاطع (باستخدام لغة تقسيم الكلمات النشطة في المستند) مع واصلة مرنة عند موضع القطع. وفي النص المضبوط (<code>align: 'justify'</code>) تُقطع أيضًا الكلمة التي لا تتسع لبقية السطر عند آخر حدّ مقطع يتسع، لملء السطر.</td>
+    </tr>
+    <tr>
+      <td><code>inlineMarks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يقرأ النص المحسوم، بما فيه قيم العناصر النائبة، على أنه Markdown مضمّن: <code>**bold**</code> و<code>*italic*</code> و<code>^superscript^</code> و<code>~subscript~</code>. وحين يكون معطّلًا تُطبع العلامات كما كُتبت. وفي تصميم العنوان يحتفظ <code>{'{titleText}'}</code> عندئذ بمقاطع العنوان نفسه العريضة والمائلة والعلوية والسفلية (<code>*Pneumocystis*</code>، <code>CO~2~</code>)، وتُهرَّب بقية محارفه لتُطبع كما كُتبت (منذ postext 1.19). انظر <a href="#العلامات-المضمّنة-والخطوط-المحيطية">العلامات المضمّنة والخطوط المحيطية</a>.</td>
+    </tr>
+    <tr>
+      <td><code>stroke</code></td>
+      <td><code>&#123; width, color?, hollow? &#125;</code></td>
+      <td>—</td>
+      <td>خط محيطي يُرسم حول الحروف: <code>width</code> (قيمة <code>Dimension</code> متمركزة على حواف الحروف)، و<code>color</code> (الافتراضي: لون النص؛ والحرف الاستهلالي يأخذ لونه الخاص)، و<code>hollow</code> (<code>true</code> يرسم الخط المحيطي وحده). انظر <a href="#العلامات-المضمّنة-والخطوط-المحيطية">العلامات المضمّنة والخطوط المحيطية</a>.</td>
+    </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'horizontal-tb' | 'vertical-rl'</code></td>
+      <td><code>'horizontal-tb'</code></td>
+      <td>يكتب <code>'vertical-rl'</code> النص من الأعلى إلى الأسفل، والأسطر من اليمين إلى اليسار، والمحارف قائمة: ترويسة تنزل على الحافة الأمامية، أو عنوان عمودي بجوار فصل أفقي. انظر <a href="#عناصر-النص-العمودي">عناصر النص العمودي</a>.</td>
+    </tr>
+    <tr>
+      <td><code>reserve</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>لتصاميم العناوين فقط: هل يُحتسب العنصر ضمن الارتفاع الذي يحجزه العنوان في تدفق النص. <code>false</code> للزخرفة التي قد تقع تحت النص (ختم في أسفل الصفحة، أو إطار، أو شريط جانبي). انظر <a href="/ar/docs/configuration-text#الارتفاع-المحجوز">الارتفاع المحجوز</a>. تتجاهله تصاميم رأس الصفحة والتذييل والأجزاء.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromBody</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6 pt</code></td>
+      <td>المسافة المطلقة بين حافة العنصر المواجهة للمتن وحافة المتن. مستقلة عن العناصر الأخرى. تُرحَّل إلى <code>placement.offset.y</code>.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromEdge</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>إزاحة أفقية من حافة المحتوى التي يحاذى إليها العنصر. لا تنطبق إلا حين يكون <code>align</code> بقيمة <code>'left'</code> أو <code>'right'</code>. تُرحَّل إلى <code>placement.offset.x</code>.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>مشتقة من <code>align</code> + <code>marginFromBody</code> + <code>marginFromEdge</code></td>
+      <td>تموضع متقدم (انظر أدناه). حين يُضبط، تكون له الأولوية على الحقول المسطّحة القديمة.</td>
+    </tr>
+  </tbody>
+</table>
+
+العناصر النائبة المتاحة:
+
+- `{pageNumber}`: رقم الصفحة الحالية، بدءًا من 1.
+- `{totalPages}`: العدد الإجمالي لصفحات المستند. في كتاب مُخرَج فصلًا فصلًا (Sandbox، و`buildBundle`) يكون كل فصل مستندًا، فيكون هذا عدد صفحات الفصل نفسه.
+- `{bookTotalPages}`: العدد الإجمالي لصفحات الكتاب كله: كل الفصول، بما فيها الصفحات الفارغة. وفي مستند مُخرَج وحده يساوي `{totalPages}`. انظر [عدد صفحات الكتاب](#عدد-صفحات-الكتاب) أدناه.
+- `{title}`، `{subtitle}`، `{author}`، `{publishDate}`: قيم تُقرأ من `content.metadata`. البيانات الوصفية المجهولة أو الفارغة تُرسم سلسلةً فارغة (وتثير تحذيرًا في Sandbox).
+- `{chapterTitle}`: نص آخر H1 في الصفحة الحالية أو قبلها. يُتخطّى H1 الذي يضبط [نمط عنوانه](/ar/docs/configuration-styles#أنماط-العناوين) `runningChapter: false` (لوحة مصوّرة، أو خريطة).
+- `{chapterTitleAtTop}`، `{chapterNumberAtTop}`: عنوان الفصل الساري في أعلى الصفحة ورقمه، ويختلفان عن `{chapterTitle}` و`{chapterNumber}` في صفحة يبدأ فيها فصل جديد تحت نص آخر. انظر [الفصل في أعلى الصفحة](#الفصل-في-أعلى-الصفحة) أدناه.
+- `{partTitle}`، `{partNumber}`: عنوان الجزء الحالي ورقمه (آخر صفحة `:::part` في الصفحة الحالية أو قبلها؛ والصفحات الفارغة المضافة للزوجية قبل صفحة الجزء مباشرةً تنتمي إليه). فارغان قبل الجزء الأول.
+- `{firstMark.<key>}`، `{lastMark.<key>}`: الكلمة الدليلية الأولى والأخيرة في الصفحة: عنوان من مستوى ما (`h1`–`h6`) أو مدخل من نمط فقرة. انظر [الكلمات الدليلية](#الكلمات-الدليلية-العلامة-الأولى-والأخيرة) أدناه.
+
+#### عدد صفحات الكتاب
+
+يطبع `{bookTotalPages}` عدد صفحات الكتاب كله، وهو العدد الذي يراه القارئ في «الصفحة 12 من 348». يعدّ الصفحات المادية، بما فيها الفارغة، مثل `{totalPages}`، لكن عبر كل الفصول:
+
+- **المستند المُخرَج وحده** (`buildDocument` بلا `continuation`) هو الكتاب كله: `{bookTotalPages}` يساوي `{totalPages}`.
+- **`buildBundle`** يُخرج الكتاب، ويجمع صفحات كل الفصول، ثم يُخرجه مرة أخرى بذلك المجموع، فيطبع كل فصل العدد نفسه. لا يحرّك العدد أي فاصل صفحة أبدًا، فتكفي جولة إضافية واحدة لاستقراره؛ والإعدادات التي لا تطبع `{bookTotalPages}` لا تكلّف شيئًا.
+- **Sandbox** يسلّم كل فصل المجموعَ حالما تُعرف صفحات كل الفصول. وحتى ذلك الحين يطبع الفصل عدد الصفحات حتى نهايته هو. ويعدّ تصدير الكتاب كاملًا في تبويب PDF الصفحاتِ التي يُخرجها: فإذا طبع فصلٌ عددًا آخر، لأن صفحاته لم تكن معروفة بعد، أخرج الكتاب مرة أخرى بالعدد الذي بلغته الفصول.
+- **المضيف الذي يُخرج الفصول بنفسه** يمرّر المجموع في `continuation.bookPageCount` (للفصل الأول أيضًا). ومن دونه يعدّ `{bookTotalPages}` الصفحات حتى نهاية المستند (`continuation.pageIndexOffset` مضافًا إليه صفحاته)، وهذا صحيح للفصل الأخير فقط.
+
+```ts
+footer: {
+  elements: [{
+    kind: 'text', id: 'folio', content: '{pageNumber} / {bookTotalPages}',
+    fontSize: { value: 8, unit: 'pt' },
+    placement: { anchor: { to: 'container', edge: 'top' }, size: { width: 'auto', height: 'auto' } },
+  }],
+}
+```
+
+تخبر `configUsesPlaceholder(config, 'bookTotalPages')` المضيفَ هل يستحق العدد أن يُحسب.
+
+#### الكلمات الدليلية: العلامة الأولى والأخيرة
+
+يطبع القاموس في ترويسة كل صفحة أول مدخل فيها وآخر مدخل («Aback – Anchor»)؛ ويطبع الكتاب المرجعي أول قسم وآخره. يطبعهما `{firstMark.<key>}` و`{lastMark.<key>}`. ويحدّد المفتاح ما يُعلِّم الصفحة:
+
+- **من `h1` إلى `h6`**: عنوان من ذلك المستوى. العلامة نصّه، دون رقمه.
+- **معرّف نمط فقرة** (`entry`): فقرة في حاوية `:::paragraphs{style="entry"}`. العلامة هي المقطع الغامق الذي تبدأ به الفقرة، أي المدخل، دون علامة الترقيم الختامية: `**Aback.** Said of…` تُعلِّم `Aback`. والفقرة التي لا تبدأ بنص غامق لا تضع علامة.
+
+`{firstMark.<key>}` هي أول علامة تبدأ في الصفحة، و`{lastMark.<key>}` آخرها. الصفحة التي لا تبدأ فيها أي علامة (مدخل طويل مستمر) تطبع العلامة السارية، أي آخر علامة قبلها، في الحالتين. والصفحات التي تسبق أول علامة لا تطبع شيئًا؛ وفي كتاب مُخرَج فصلًا فصلًا يعني ذلك ما قبل أول علامة في الفصل، إذ لا تنتقل العلامات من فصل إلى الذي يليه. العنوان أو الفقرة المقسومة بين صفحات تُعلِّم الصفحة التي تبدأ فيها فقط. يُكتب المفتاح بعد النقطة من حروف وأرقام و`_` و`-`، ويبدأ بحرف أو بـ`_`؛ والمفتاح المجهول لا يطبع شيئًا.
+
+```md
+:::paragraphs{style="entry"}
+**Aback.** Said of the sails when pressed back against the mast.
+
+**Abaft.** Towards the stern, or behind a given point.
+:::
+```
+
+```ts
+header: {
+  elements: [{
+    kind: 'text', id: 'guide', content: '{firstMark.entry} – {lastMark.entry}',
+    fontSize: { value: 8, unit: 'pt' },
+    placement: { anchor: { to: 'container', edge: 'bottom' }, size: { width: 'auto', height: 'auto' } },
+  }],
+}
+```
+
+الكلمات الدليلية ترويسات: تُحسم في خانات رأس الصفحة والتذييل (بما فيها `header` و`footer` لنمط العنوان) ولا تطبع شيئًا في تصاميم العناوين والأجزاء وجدول المحتويات؛ وفي تصاميم العناوين والأجزاء تشير إليها لوحة الفحوص بوصفها عناصر نائبة مجهولة. لإظهار أول مدخل في الصفحات الزوجية وآخر مدخل في الفردية، أعطِ عنصرين `parity: 'even'` و`parity: 'odd'`. وعنوان H1 الذي يضبط نمطُ عنوانه `runningChapter: false` لا يضع علامة `h1`.
+
+#### الفصل في أعلى الصفحة
+
+يسمّي `{chapterTitle}` و`{chapterNumber}` آخر فصل بدأ في الصفحة أو قبلها. وفي كتاب تتوالى فصوله دون فاصل صفحة بينها، تحمل الصفحة التي تُنهي فصلًا وتبدأ التالي قرب أسفلها عنوانَ الفصل الجديد فوق نص لا يزال ينتمي إلى القديم. أما `{chapterTitleAtTop}` و`{chapterNumberAtTop}` فيسمّيان الفصل الساري في أعلى الصفحة، كما تفعل الروايات ذات الفصول المتوالية وكثير من الكتب المرجعية:
+
+- الصفحة التي أول كتلة فيها عنوان H1 لفصل تسمّي ذلك الفصل؛
+- أي صفحة أخرى تسمّي الفصل الذي تستمر منه، حتى حين يبدأ فصل جديد في أسفلها؛
+- الصفحة الفارغة المضافة للزوجية تتبع الصفحة التي بعدها، وفاصل أنماط `always-*` يتبع الصفحة التي قبله (انظر [ملكية الصفحات الفارغة](/ar/docs/configuration-text#تبعية-الصفحات-الفارغة))؛ وحين تبدأ الصفحة التي تلي صفحة فارغة للزوجية بنهاية فصل، لا بعنوان H1 له، تحتفظ الصفحة الفارغة بذلك الفصل أيضًا؛
+- يُتخطّى عنوان H1 الذي له `runningChapter: false`.
+
+```ts
+header: {
+  elements: [{
+    kind: 'text', id: 'chapter', content: '{chapterTitleAtTop}', parity: 'odd', pages: 'body',
+    fontSize: { value: 8, unit: 'pt' },
+    placement: { anchor: { to: 'container', edge: 'bottom-right' }, size: { width: 'auto', height: 'auto' } },
+  }],
+}
+```
+
+وكالكلمات الدليلية، كلاهما ترويسة: يُحسمان في خانات رأس الصفحة والتذييل ولا يطبعان شيئًا في تصاميم العناوين والأجزاء وجدول المحتويات. أما `{attr.<key>}` فيقرأ دائمًا آخر فصل بدأ.
+
+#### المحاذاة المستنتجة من الحافة
+
+حين يشير `placement.anchor.to` لعنصر نص إلى عنصر آخر عبر `#id`، تستتبع حافة المرساة محاذاةً افتراضية للنص في الأسطر الملفوفة:
+
+- `right-of` و`align-left` تستتبعان محاذاة النص `align: 'left'`: تتدفق الأسطر الملفوفة نحو اليمين بدءًا من المرساة.
+- `left-of` و`align-right` تستتبعان `align: 'right'`: تلتصق الأسطر الملفوفة بالجانب الأقرب إلى العنصر المستهدف.
+
+يطبّق محرّر العناوين في Sandbox هذه المحاذاة المستنتجة تلقائيًا حين تغيّر حافة المرساة أو هدفها. وهي تُبقي النص الملفوف على أسطر عدة مثبّتًا بصريًا إلى العنصر الذي يتصل به (فمثلًا يصطفّ حرف «P» من كلمة «Postext» الملفوفة عموديًا تحت حرف «I» من «Introduction»).
+
+#### العلامات المضمّنة والخطوط المحيطية
+
+يكتب عنصر النص نصّه بخط واحد افتراضيًا: تُطبع `**` و`^` وسائر علامات Markdown كما كُتبت. ومع `inlineMarks: true` يُقرأ النص المحسوم على أنه Markdown مضمّن، بالعلامات نفسها التي يقبلها نص المتن (انظر **صيغة المستند › التنسيق المضمّن**):
+
+- يضبط `**bold**` الوزن 700 (أو `fontWeight` الخاص بالعنصر إذا كان أثقل)؛ ويعكس `*italic*` ميل العنصر، فيخرج التوكيد داخل عنصر مائل قائمًا؛ ويفعل `***both***` الأمرين. وتعمل صيغ الشرطة السفلية (`__bold__`، `_italic_`) أيضًا.
+- يُكتب `^superscript^` و`~subscript~` بنسبة 58% من الحجم، مع رفع النص العلوي بمقدار ثلثه وخفض النص السفلي بمقدار 0.15 منه؛ والنص السفلي والعلوي المتلاصقان (`T~0~^2^`) يُرصّان أحدهما فوق الآخر، كما في المتن.
+- تكتب الشرطة المائلة العكسية محرف العلامة نفسه (`\*`، `\_`، `\^`، `\~`). يحتفظ الرابط بنصه؛ وتُحذف علامات الشيفرة (backticks).
+
+تُقرأ العلامات بعد ملء العناصر النائبة، فيمكن أن تحملها القيمة نفسها: سطر المؤلفين في سمة عنوان يحصل على أرقام الانتساب بوصفها نصوصًا علوية. يعمل اللف والضبط وأنماط الحذف و`dropCap` و`paragraphIndent` كلها على النص المعلَّم؛ ويحتفظ كل مقطع بلون العنصر.
+
+```json
+{ "kind": "text", "id": "authors", "content": "{attr.authors}", "inlineMarks": true, "overflow": "wrap",
+  "fontSize": { "value": 11, "unit": "pt" },
+  "placement": { "anchor": { "to": "#title", "edge": "below" }, "offset": { "y": { "value": 6, "unit": "pt" } } } }
+```
+
+```md
+# Snow cover and river flow {authors="Ana Ruiz^1^, Luis Gil^2^ and Marta Sanz^1,3^"}
+```
+
+يرسم `stroke` خطًا محيطيًا حول الحروف: `width` هو عرض الخط، متمركزًا على حواف الحروف (نصفه داخل الحروف ونصفه خارجها؛ ولا يتغير عرض النص المقيس)، و`color` قيمته الافتراضية لون النص، و`hollow: true` يترك الحروف بلا تعبئة فلا يظهر إلا الخط المحيطي: رقم عرض مفرّغ، أو عنوان يبرز فوق صورة فوتوغرافية. يُرسم الخط المحيطي فوق التعبئة، بالطريقة نفسها في Canvas، وفي HTML (`-webkit-text-stroke`)، وفي PDF (نمط رسم النص 2، أو 1 عند التفريغ).
+
+```json
+{ "kind": "text", "id": "year", "content": "1863", "fontFamily": "Bitter", "fontSize": { "value": 120, "unit": "pt" }, "fontWeight": 700,
+  "color": { "hex": "#1d3557", "model": "hex" },
+  "stroke": { "width": { "value": 1.5, "unit": "pt" }, "hollow": true },
+  "placement": { "anchor": { "to": "page", "edge": "bottom-right" }, "offset": { "x": { "value": -15, "unit": "mm" }, "y": { "value": -20, "unit": "mm" } } } }
+```
+
+في PDF، تُضمِّن مقاطعُ الغامق والمائل الخطوطَ المطابقة من عائلة خط العنصر، فيجب أن يوفّرها مزوّد الخطوط.
+
+#### القيم الافتراضية للنص ومزالق التثبيت
+
+يبدأ عنصر النص الذي تكتبه بنفسك من هذه القيم، وبعضها مفاجئ:
+
+- **`overflow` يتبع الموضع.** في تصميم العنوان وصفحة الجزء يلتف العنوان الطويل على أسطر أكثر؛ وفي ترويسة الصفحة والترقيم وسطر الجزء في الفهرس يُقتطع النص الأعرض من مساحته إلى سطر واحد بـ`…`. اضبط `overflow: 'wrap'` على ترويسة قد تطول (عنوان بريدي، سطر مؤلف)، وراجع تنبيهات `designTextTruncated` للنصوص المقتطعة. فاصل الأسطر في المحتوى (سطر جديد، أو `\n` في القالب أو في قيمة سمة) يبدأ سطرًا جديدًا في كل الأنماط؛ وتقتطع أنماط الحذف كل سطر على حدة.
+- **`align` قيمته `'center'` و`verticalAlign` قيمته `'middle'`.** العنصر التلقائي العرض يأخذ عرض أطول أسطره، فتتوسط أسطره بعضها بالنسبة إلى بعض؛ اضبط `align: 'left'` لكتلة بمحاذاة اليسار (العنصر التلقائي العرض المثبّت إلى عنصر آخر يحاذي أسطره من جهة مرساته من تلقاء نفسه، انظر أعلاه).
+- **الخط EB Garamond بحجم 8 pt، أسود، و`lineHeight` قيمته 1.2**، أيًّا كان ما يستخدمه نص المتن. وخلافًا لتباعدات الأسطر الأخرى في الإعدادات، يكون `lineHeight` لنص التصميم عادةً مضاعفًا بسيطًا (`1.2`)؛ ويعمل `Dimension` أيضًا (انظر أعلاه).
+
+العنصر الذي ليس له `placement.size.width` (أو قيمته `'auto'`) يحدّد حجمه وفق نصه، لكن فقط ضمن المساحة الواقعة بين نقطة مرساته وحافة الحاوية التي ينمو نحوها، وهي في مرساة `top` أو `bottom` ضعف المسافة إلى الحافة الأقرب. ويُحتسب `offset` الخاص به. الإزاحة بعيدًا عن تلك الحافة لا تكلّف شيئًا: ترويسة مثبّتة عند `top-left` مع `x` سالبة (متدلّية في الهامش الأيسر) لا تخسر أي مساحة، لأنها تنمو نحو اليمين. أما الإزاحة نحو تلك الحافة فتقلّص المساحة بالمقدار نفسه (وبضعفه في مرساة `top` أو `bottom`)، والإزاحة التي تدفع المرساة إلى ما بعد الحافة لا تُبقي شيئًا: مرساة `top-right` تقل قيمة `x` فيها عن سالب عرض الحاوية، أو مرساة `top` أُزيحت جانبيًا بأكثر من نصف ذلك العرض. وحين لا تبقى مساحة، لا يطبع نمط الحذف شيئًا ويرصّ `'wrap'` محرفًا واحدًا في كل سطر. ثلاثة مخارج:
+
+- أعطِ العنصر `size.width` ثابتًا، فالعروض الثابتة لا تُقيَّد أبدًا؛
+- ثبّته إلى `'page'` أو `'bleed'`، فتصير الصفحة (أو النزف) إطار مساحته؛
+- ثبّته إلى الحافة المقابلة من الحاوية.
+
+تمتد حاوية رأس الصفحة من حدّ القص العلوي نزولًا إلى المتن، وحاوية التذييل من المتن نزولًا إلى حدّ القص السفلي: في رأس الصفحة تُقاس مراسي `top-*` من حدّ القص ومراسي `bottom-*` من المتن، والعكس في التذييل (انظر **إطار الحاوية** أعلاه). لا يحرّك رأس الصفحة أو التذييل نص المتن أبدًا، ويُرسم فوقه، فالعنصر المدفوع إلى منطقة المتن يغطي النص. أما شريط صفحة الافتتاح فيُرسم على العكس تحت نص المتن؛ والمساحة التي يأخذها في التدفق موصوفة تحت [الارتفاع المحجوز](/ar/docs/configuration-text#الارتفاع-المحجوز).
+
+### عناصر النص العمودي
+
+عنصر النص الذي له `writingMode: 'vertical-rl'` يُكتب عموديًا في خانة نصها أفقي: ترويسات أي كتاب وأرقام صفحاته، وهي تبقى على الورقة، وكل تصميم في صفحة أفقية. ويُخرَج نصًّا أفقيًا في إطاره الخاص المُدار ربع دورة باتجاه عقارب الساعة، ثم يُعاد تدويره إلى الصفحة:
+
+- يبقى صندوقه حيث يضعه التموضع. ارتفاعه هو طول السطر: يضبطه `size.height` (أو `'auto'`، أي طول النص؛ أو `'fill'`، أي حتى حافة الحاوية)، ويضبط `size.width` عدد الأسطر التي تتسع عرضًا، ويحدّ `size.maxWidth` طول السطر.
+- يضع `align` الأسطر على امتداد الصندوق (`'left'` في الأعلى)، و`verticalAlign` عبره (`'top'` في اليمين، حيث يقف السطر الأول)، وتبقى حشوة الصندوق في الجانب الذي كُتبت له.
+- تُقاس المحارف وتُرسم كما في صفحة عمودية: محارف Han قائمة بعرض em واحد لكل منها، وعلامات الترقيم بصيغتها العمودية، والكلمات اللاتينية مُدارة جانبيًا، والأعداد القصيرة في خلية واحدة (`cjk.uprightDigits`). وتضعه Canvas وPDF وHTML في المستطيل نفسه.
+- مع `inlineMarks: true` تميّز علامات الاتجاه مقطعًا كما في المتن: `第:tcy[3.0]回` يضع 3.0 في خلية واحدة، و`:upright[GDP]` يُقيم الحروف واحدًا تحت الآخر، و`:sideways[…]` يُدير مقطعًا؛ ولا ينكسر السطر داخل أيٍّ منها أبدًا. والعنصر الأفقي يتجاهلها.
+- لا يُضبط حرف استهلالي في عنصر عمودي.
+- في تدفق صفحة عمودية (صفحة افتتاح، أو صفحة جزء، أو عنوان إطار) يجري النص نزولًا أصلًا، ولا يغيّر `writingMode` شيئًا هناك.
+
+تضع الكتب الصينية العمودية ترويساتها وأرقام صفحاتها في واحد من ثلاثة مواضع ([clreq §7.2](https://www.w3.org/TR/clreq/#x7-2-page-headers-footers-etc)؛ و[JLREQ §2.6](https://www.w3.org/TR/jlreq/#running_heads_and_page_numbers) لليابانية):
+
+<table>
+  <thead>
+    <tr><th style={{ width: '170px' }}>العُرف</th><th>الموضع</th><th>طريقة ضبطه</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>رأس وتذييل أفقيان</td><td>فوق منطقة النص وتحتها، كما في الكتب الأفقية؛ وهو الأكثر شيوعًا.</td><td>رأس الصفحة والتذييل كما هما.</td></tr>
+    <tr><td>الحافة الأمامية (أسلوب 中缝، وفي تايوان 邊峰)</td><td>نزولًا على الهامش الخارجي: عنوان الفصل أو الكتاب بدءًا من نحو أربعة محارف تحت رأس منطقة النص، ورقم الصفحة منتهيًا نحو خمسة محارف فوق أسفلها، بالأرقام الصينية، وبنحو 80 % من حجم المتن.</td><td>عنصران عموديان مثبّتان إلى <code>'outer'</code>، كما أدناه.</td></tr>
+    <tr><td>الزاوية الخارجية السفلى</td><td>رقم الصفحة في أسفل الصفحة، في الزاوية الخارجية (قواعد تايوان لكتب 中式).</td><td>عنصر أفقي في التذييل عند <code>'bottom-left'</code> مع <code>parity: 'odd'</code> وآخر عند <code>'bottom-right'</code> مع <code>parity: 'even'</code> في كتاب مجلّد من اليمين (والعكس في كتاب مجلّد من اليسار).</td></tr>
+  </tbody>
+</table>
+
+ترويسات الحافة الأمامية كما يضيفها Sandbox (**الترويسة › ترويسات الحافة الخارجية (عمودية)**)، هنا لمتن بحجم 10 pt (يضبطها Sandbox بنسبة 80 % من حجم المتن):
+
+```json
+{
+  "page": { "pageNumbering": { "format": "trad-chinese-informal" } },
+  "header": { "elements": [
+    { "kind": "text", "id": "head", "content": "{chapterTitle}", "writingMode": "vertical-rl",
+      "fontSize": { "value": 8, "unit": "pt" }, "overflow": "clip", "align": "left",
+      "placement": { "anchor": { "to": "outer", "edge": "top" }, "offset": { "y": { "value": 4, "unit": "em" } } } },
+    { "kind": "text", "id": "folio", "content": "{pageNumber}", "writingMode": "vertical-rl",
+      "fontSize": { "value": 8, "unit": "pt" }, "overflow": "clip", "align": "left",
+      "placement": { "anchor": { "to": "outer", "edge": "bottom" }, "offset": { "y": { "value": -5, "unit": "em" } } } }
+  ] }
+}
+```
+
+`anchor.to: 'outer'` (انظر [تموضع العناصر](#تموضع-العناصر)) هو الهامش الخارجي لكل صفحة، فيجري العنصران نزولًا على الحافة اليسرى للصفحة الفردية والحافة اليمنى للصفحة الزوجية في كتاب مجلّد من اليمين (`page.binding`). ويُطبع `{pageNumber}` بصيغة ترقيم الصفحات: `trad-chinese-informal` يعطي 一百零三 في الصفحة 103، و`cjk-decimal` يعطي 一〇三. وتظل قواعد كل خانة سارية: `pages: 'body'` يُبعد الترويسة عن صفحات افتتاح الفصول. والزخرفة القصيرة بين الترويسة ورقم الصفحة (ذيل سمكة ︻، أو خط فاصل) عنصر عادي مثبّت إلى الإطار نفسه.
+
+في VDT تحمل الكتلة العمودية `vertical` (`VDTDesignTextBlock.vertical`: المنطقة، والأرقام القائمة، والمحور المركزي لكل عائلة خط)؛ وأسطرها في إطار الكتلة المُدار الخاص بها، `xOffset` نزولًا من أعلى الصندوق، و`baselineY` نحو اليسار من حافته اليمنى. ويحمل مقطع السطر المعلَّم `tcy` أو `orientation`، كما يحملهما مقطع في المتن.
+
+### عناصر الخط الفاصل
+
+ترسم عناصر الخط الفاصل خطًا: أفقيًا عبر الخانة، أو عموديًا نزولًا فيها.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '220px' }}>النوع</th>
+      <th style={{ width: '160px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kind</code></td>
+      <td><code>'rule'</code></td>
+      <td>—</td>
+      <td>المميِّز.</td>
+    </tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>معرّف ثابت، فريد داخل الخانة، للإشارات <code>anchor.to: '#id'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>direction</code></td>
+      <td><code>'horizontal' | 'vertical'</code></td>
+      <td><code>'horizontal'</code></td>
+      <td>يمتد الخط الأفقي على طول <code>placement.size.width</code> (<code>'fill'</code> = حتى حافة الحاوية) ويكون ارتفاعه <code>thickness</code>. ويمتد الخط العمودي نزولًا على طول <code>placement.size.height</code> (<code>'fill'</code> أو بلا قيمة = حتى حافة الحاوية) ويكون عرضه <code>thickness</code>: فاصل بين ترويسة ورقم صفحة مثلًا.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>لون الخط.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 pt</code></td>
+      <td>سماكة الخط. الخط الفاصل الذي يُغفلها يُرسم بالقيمة الافتراضية (حتى postext 1.4 لم يكن يرسم شيئًا).</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>Dimension | 'full'</code></td>
+      <td><code>'full'</code></td>
+      <td><code>'full'</code> يمتد على مساحة المحتوى؛ وقيمة Dimension تقيّد الخط بطول ثابت يحدّد <code>align</code> موضعه.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'left' | 'center' | 'right'</code></td>
+      <td><code>'center'</code></td>
+      <td>المحاذاة حين لا يكون <code>width</code> بقيمة <code>'full'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromBody</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6 pt</code></td>
+      <td>المسافة المطلقة بين حافة الخط المواجهة للمتن وحافة المتن. مستقلة عن العناصر الأخرى.</td>
+    </tr>
+    <tr>
+      <td><code>marginFromEdge</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>إزاحة أفقية من حافة المحتوى التي يحاذى إليها الخط. لا تنطبق إلا حين يكون <code>width</code> قيمة <code>Dimension</code> ثابتة و<code>align</code> بقيمة <code>'left'</code> أو <code>'right'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code></td>
+      <td><code>'all' | 'odd' | 'even'</code></td>
+      <td><code>'all'</code></td>
+      <td>الصفحات التي يظهر فيها الخط.</td>
+    </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td>أدوار الصفحات التي يظهر فيها الخط (انظر الحقل <code>pages</code> لعنصر النص).</td>
+    </tr>
+    <tr>
+      <td><code>reserve</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>لتصاميم العناوين فقط: هل يُحتسب الخط ضمن الارتفاع الذي يحجزه العنوان في تدفق النص (انظر <a href="/ar/docs/configuration-text#الارتفاع-المحجوز">الارتفاع المحجوز</a>).</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>مشتقة من <code>align</code> + <code>marginFromBody</code> + <code>marginFromEdge</code></td>
+      <td>تموضع متقدم (انظر <a href="#تموضع-العناصر">تموضع العناصر</a>). يضبط <code>size.width</code> / <code>size.height</code> طول الخط؛ و<code>width: 'fill'</code> هو <code>'full'</code> القديم.</td>
+    </tr>
+  </tbody>
+</table>
+
+### عناصر الصندوق
+
+ترسم عناصر الصندوق مستطيلًا مستدير الزوايا داخل الخانة، وهو مفيد خلفيةً للنص في صفحات افتتاح الفصول أو الأشرطة الجانبية أو التذييلات. تُموضَع عناصر الصندوق حصرًا عبر الحقل `placement`؛ وليس لها اختصار مسطّح قديم. وتقع التعبئة والحدّ ونصف قطر الزوايا في الكائن المتداخل `style` (`ElementBoxStyle`)، كما في مثال JSON تحت «تموضع العناصر».
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '220px' }}>النوع</th>
+      <th style={{ width: '160px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kind</code></td>
+      <td><code>'box'</code></td>
+      <td>—</td>
+      <td>المميِّز.</td>
+    </tr>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>معرّف ثابت، فريد داخل الخانة. تُثبَّت إليه العناصر الشقيقة بـ<code>anchor.to: '#id'</code>. يعيّن Sandbox معرّفًا عند الإنشاء.</td>
+    </tr>
+    <tr>
+      <td><code>style.backgroundColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>لون التعبئة. اضبطه على <code>transparent</code> لصندوق بحدّ فقط.</td>
+    </tr>
+    <tr>
+      <td><code>style.borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>transparent</code></td>
+      <td>لون الحدّ.</td>
+    </tr>
+    <tr>
+      <td><code>style.borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>عرض الحدّ. يُرسم الحدّ داخل المستطيل المحيط بالصندوق فتبقى الأبعاد الخارجية ثابتة: تجري الحافة الخارجية للحدّ على حافة الصندوق، ويحتفظ الصندوق المستدير بنصف قطره الخارجي. والحدّ الذي يساوي عرض الصندوق يملؤه. ترسمه Canvas وHTML وPDF على النحو نفسه (حتى postext 1.4 كانت Canvas وPDF تُمركزان الحدّ على الحافة، فيقع نصفه خارج الصندوق).</td>
+    </tr>
+    <tr>
+      <td><code>style.borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 pt</code></td>
+      <td>نصف قطر الزاوية. يُقيَّد عند الرسم بنصف الضلع الأقصر.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>—</td>
+      <td>إلزامي. انظر «تموضع العناصر» أدناه.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code></td>
+      <td><code>'all' | 'odd' | 'even'</code></td>
+      <td><code>'all'</code></td>
+      <td>الصفحات التي يظهر فيها الصندوق.</td>
+    </tr>
+    <tr>
+      <td><code>pages</code></td>
+      <td><code>'all' | 'body' | 'opener' | 'part' | 'blank'</code></td>
+      <td><code>'all'</code></td>
+      <td>أدوار الصفحات التي يظهر فيها الصندوق (انظر الحقل <code>pages</code> لعنصر النص).</td>
+    </tr>
+    <tr>
+      <td><code>reserve</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>لتصاميم العناوين فقط: هل يُحتسب الصندوق ضمن الارتفاع الذي يحجزه العنوان في تدفق النص (انظر <a href="/ar/docs/configuration-text#الارتفاع-المحجوز">الارتفاع المحجوز</a>).</td>
+    </tr>
+  </tbody>
+</table>
+
+### عناصر الصورة
+
+يرسم عنصر `image` موردًا نقطيًا (bitmap) أو SVG من المستند: شعار ناشر في صفحة العنوان، أو علامة في ترويسة. يتحدد حجمه بـ`placement.size`: إذا تُرك أحد البعدين `width` / `height` بقيمة `'auto'` (الافتراضية) تبع البعد الآخر نسبة أبعاد الصورة؛ وإذا ضُبط الاثنان، تُلاءم الصورة داخل الصندوق وتُوسَّط. والمورد الغائب أو الذي ليس صورة لا يرسم شيئًا.
+
+```ts
+{
+  kind: 'image', id: 'logo', resourceId: 'logo-publisher',
+  placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: { value: 64, unit: 'mm' }, y: { value: 233, unit: 'mm' } }, size: { width: { value: 83, unit: 'mm' }, height: 'auto' } },
+}
+```
+
+يقبل `resourceId` العناصر النائبة التي يقبلها `content` لعنصر النص، فيرسم تصميم واحد صورة مختلفة لكل عنوان. مع `resourceId: '{attr.vignette}'` في نمط عنوان، يرسم `# Chapter I {style="opener" vignette="log"}` المورد `log` ويرسم `# Chapter II {style="opener" vignette="wig"}` المورد `wig`: فتتشارك الفصول النمط بدلًا من نسخة منه لكل صورة. يقرأ رأس الصفحة أو التذييل سمات فصل الصفحة، كما يفعل `{attr.<key>}` في الترويسة، وتعمل العناصر النائبة الأخرى أيضًا (`'map-{chapterNumber}'`). والمعرّف الذي يخرج فارغًا، كما في عنوان بلا السمة، لا يرسم شيئًا. متاح منذ postext 1.8.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>معرّف ثابت؛ يمكن أن تُثبَّت إليه العناصر الأخرى بـ<code>#id</code>.</td>
+    </tr>
+    <tr>
+      <td><code>resourceId</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>معرّف <code>Resource</code> نقطي أو SVG في المستند. قد يحوي عناصر نائبة، منها <code>&#123;attr.&lt;key&gt;&#125;</code>، تُملأ لكل عنوان أو جزء أو صفحة.</td>
+    </tr>
+    <tr>
+      <td><code>decorative</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>الصورة زخرفية فقط (حلية، أو شريط): لا تعطي المخرجاتِ نصًا بديلًا حتى حين يكون لموردها نص بديل (انظر أدناه).</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>ElementPlacement</code></td>
+      <td>—</td>
+      <td>المرساة والإزاحة والحجم (انظر <a href="#تموضع-العناصر">تموضع العناصر</a>). الجانب الذي قيمته <code>'fill'</code> يمتد حتى حافة الحاوية.</td>
+    </tr>
+    <tr>
+      <td><code>parity</code>, <code>pages</code></td>
+      <td>كما سبق</td>
+      <td><code>'all'</code></td>
+      <td>الصفحات التي تظهر فيها الصورة.</td>
+    </tr>
+    <tr>
+      <td><code>reserve</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>لتصاميم العناوين فقط: هل تُحتسب الصورة ضمن الارتفاع الذي يحجزه العنوان في تدفق النص (انظر <a href="/ar/docs/configuration-text#الارتفاع-المحجوز">الارتفاع المحجوز</a>).</td>
+    </tr>
+  </tbody>
+</table>
+
+يُضمّن مُخرِج PDF المورد كما يُضمّن الشكل (ويستخدم SVG الذي له نسخة طباعة رئيسية تلك النسخة)؛ ويحسمه عارض HTML عبر <code>resourceImageUrl</code>.
+
+الصورة التي يرسمها تصميم تُعدّ محتوى حين يصفها موردها: يدخل `altText` المورد، وإلا فتعليقه نصًّا عاديًا (الشارة تُقرأ بتسميتها، و`:ref` بنصه `text` إن كان له)، إلى VDT (`VDTDesignImageBlock.altText`)، ويصير `alt` لعنصر `<img>` الخاص بها في HTML، و`Figure` مع `/Alt` في PDF موسوم، ويُقرأ مباشرةً بعد نص تصميمها (لوحة الفصل بعد عنوان الفصل). أما الصورة التي ليس لموردها أيٌّ منهما، والصورة المعلَّمة `decorative`، فزخرفة: `alt=""` مع `role="presentation"`، وعنصر زخرفي (artifact) في PDF. وصورة الترويسة أو التذييل تتكرر في كل صفحة، فهي من أثاث الصفحة أيًّا كان ما يقوله موردها: لا `altText` في VDT، و`alt=""` مع `role="presentation"` في HTML، وعنصر زخرفي للصفحة في PDF.
+
+### تموضع العناصر
+
+`ElementPlacement` هو نموذج التموضع الموحّد الذي يستخدمه كل نوع من العناصر (نص، وخط فاصل، وصندوق) داخل أي خانة تصميم: رأس الصفحة، أو تذييلها، أو خانة التصميم المتقدم لمستوى عنوان. وتصف التموضعَ ثلاثُ قطع من الحالة:
+
+```ts
+interface ElementPlacement {
+  /** What this element anchors to and which edge of that target. */
+  anchor: {
+    to: 'container' | 'page' | 'bleed' | 'outer' | `#${string}`; // container = the slot; page = trim box; bleed = trim box + bleed; outer = the outer margin (header, footer); #id = another element
+    edge: AnchorEdge;
+  };
+  /** Distance from the anchor point. */
+  offset?: { x?: Dimension; y?: Dimension };
+  /** Optional fixed width / height. Width also accepts 'fill' (span the slot).
+   *  `maxWidth` caps an 'auto' width (text): the element still shrink-wraps its
+   *  content, so elements anchored to it stay attached, but a long text wraps or
+   *  ellipsizes there — a running head can reserve room for the label hanging
+   *  off it instead of squeezing that label out. */
+  size?: { width?: Dimension | 'fill' | 'auto'; height?: Dimension | 'fill' | 'auto'; maxWidth?: Dimension };
+}
+```
+
+يقبل `AnchorEdge`:
+
+- **حواف الحاوية** (حين يكون `anchor.to` بقيمة `'container'` أو `'page'` أو `'bleed'`): `top`، `top-left`، `top-right`، `bottom`، `bottom-left`، `bottom-right`، `left`، `right`.
+- **الحواف النسبية إلى عنصر** (حين يكون `anchor.to === '#someId'`): `right-of`، `left-of`، `below`، `above`، `align-top`، `align-bottom`، `align-left`، `align-right`.
+
+تضع كل حافة نسبية زاويةً من زوايا العنصر على زاوية من زوايا العنصر الذي يُثبَّت إليه، ثم يحرّكه `offset` من هناك:
+
+- `right-of`: زاويته العليا اليسرى على الزاوية العليا اليمنى للهدف (بجواره، وأعلاهما في مستوى واحد)؛ `left-of`: زاويته العليا اليمنى على الزاوية العليا اليسرى للهدف؛
+- `below`: زاويته العليا اليسرى على الزاوية السفلى اليسرى للهدف (تحته، وحافتاهما اليسريان في مستوى واحد)؛ `above`: زاويته السفلى اليسرى على الزاوية العليا اليسرى للهدف؛
+- `align-top` و`align-left`: زاويته العليا اليسرى على الزاوية العليا اليسرى للهدف. يعطي الاسمان التموضع نفسه: تصطف الحافتان العليا واليسرى كلتاهما؛
+- `align-bottom`: زاويته السفلى اليسرى على الزاوية السفلى اليسرى للهدف؛
+- `align-right`: زاويته العليا اليمنى على الزاوية العليا اليمنى للهدف.
+
+الحافة النسبية إلى عنصر المستخدمة مع `'container'` أو `'page'` أو `'bleed'`، وحافة الحاوية المستخدمة مع `'#id'`، تُقرآن على أنهما الزاوية العليا اليسرى.
+
+يثبّت `anchor.to: 'page'` العنصر إلى **صندوق القص** (الصفحة المادية بعد القص)، ويثبّته `'bleed'` إلى صندوق القص موسّعًا بمقدار `cutLines.bleed` من كل جانب (وهو مطابق لصندوق القص ما دامت خطوط القص معطّلة). ويصير الإطاران أيضًا المرجع لـ`size: 'fill'` وللتقييد التلقائي للعرض، فيمكن أن يمتد شريط ملوّن من حافة إلى حافة بصرف النظر عن هوامش الصفحة:
+
+```json
+{ "kind": "box", "id": "band", "placement": { "anchor": { "to": "bleed", "edge": "top-left" }, "size": { "width": "fill", "height": { "value": 6, "unit": "cm" } } }, "style": { "backgroundColor": { "hex": "#1d3557", "model": "hex" } } }
+```
+
+مع تفعيل خطوط القص، يُقص كل ما يرسمه عنصر خارج صندوق النزف (انظر [خطوط القص](#خطوط-القص)).
+
+يثبّت `anchor.to: 'outer'` (في خانتي رأس الصفحة والتذييل) العنصر إلى **الهامش الخارجي** للصفحة: من حافة منطقة النص إلى حدّ القص في الجهة البعيدة عن الكعب، ومن رأس منطقة النص إلى أسفلها. ويقع على يمين الصفحة الفردية ويسار الزوجية في كتاب مجلّد من اليسار، والعكس في كتاب مجلّد من اليمين (`page.binding`)، فيخدم عنصر واحد الصفحتين المتقابلتين كلتيهما: ترويسة تنزل على الحافة الأمامية (انظر [عناصر النص العمودي](#عناصر-النص-العمودي)). وفي أي خانة أخرى يُقرأ على أنه `'container'`. ويمكن أن يُكتب `offset` لعنصر نص بوحدة `em`، أي بوحدات em من `fontSize` الخاص به: أربعة محارف تحت رأس منطقة النص هي `{ "y": { "value": 4, "unit": "em" } }`.
+
+داخل خانة التصميم المتقدم لعنوان، لا تزيد العناصر المثبّتة إلى الصفحة أو النزف الارتفاعَ المحجوز للعنوان إلا إذا امتدت تحت الحافة العليا للعنوان (الشريط الممتد عبر أعلى الصفحة يقع خلف صفحة الافتتاح؛ والشريط الذي يبلغ ما تحت العنوان يدفع نص المتن إلى الأسفل). استخدم `advancedDesign.minHeight` لحجز ارتفاع ثابت لصفحة الافتتاح في كل الأحوال، و`reserve: false` في العنصر الذي لا ينبغي أن يدفع النص أبدًا. القواعد الكاملة تحت [الارتفاع المحجوز](/ar/docs/configuration-text#الارتفاع-المحجوز).
+
+لكل عنصر `id` ثابت (يعيّنه Sandbox تلقائيًا؛ ويمكنك أيضًا ضبطه يدويًا). وتشكّل العناصر المثبّتة إلى عناصر أخرى رسمًا بيانيًا صغيرًا للاعتماديات يحسمه المحرّك قبل القياس، فيمكن أن يتسلسل عنصر من آخر دون إحداثيات يدوية.
+
+يُحلَّل الشكل القديم `align` + `marginFromBody` + `marginFromEdge` عند الإدخال ويُعاد كتابته تموضعًا وقت حسم الإعدادات، فتظل الإعدادات القائمة تعمل دون تغيير.

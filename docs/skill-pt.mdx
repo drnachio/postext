@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'pt',
   lastUpdated: '2026-10-09',
   readingTime: '8 min',
-  order: 12,
+  order: 21,
   plainSummary: "Esta página é para quem já tem um livro ou um documento em outro formato, como PDF, Word ou InDesign, e quer passá-lo para o Postext. Um assistente de inteligência artificial, chamado agente, pode fazer quase todo o trabalho se você der a ele um pequeno complemento chamado skill. A skill ensina o agente a copiar o texto e a refazer o design do original. A página explica como instalá-la, o que pedir e como conferir o resultado. Um vídeo de uns cinco minutos mostra cada passo.",
 };
 
@@ -248,7 +248,7 @@ trabalhar com uma pasta de projetos em uma cópia local do Postext, defina
 
 ### Carregar o resultado a partir de código
 
-O arquivo entregue não está preso ao Sandbox. O pacote `postext` o abre com `openBundle`, diagrama o livro com `buildBundle` e o renderiza em canvas, HTML ou PDF (veja [Pacotes](/pt/docs/configuration#pacotes-arquivos-postext)). Uma conversão pode, portanto, alimentar um programa diretamente. Quando a saída desse programa precisar de ajustes, exporte-a de volta para um arquivo `.postext` com `createBundle`, faça o ajuste fino no Sandbox e carregue de novo o arquivo corrigido. O `render.mjs` sem interface da skill também aceita um arquivo `.postext` empacotado, além de uma pasta de projeto.
+O arquivo entregue não está preso ao Sandbox. O pacote `postext` o abre com `openBundle`, diagrama o livro com `buildBundle` e o renderiza em canvas, HTML ou PDF (veja [Pacotes](/pt/docs/configuration-programmatic-usage#pacotes-arquivos-postext)). Uma conversão pode, portanto, alimentar um programa diretamente. Quando a saída desse programa precisar de ajustes, exporte-a de volta para um arquivo `.postext` com `createBundle`, faça o ajuste fino no Sandbox e carregue de novo o arquivo corrigido. O `render.mjs` sem interface da skill também aceita um arquivo `.postext` empacotado, além de uma pasta de projeto.
 
 ## O que esperar
 

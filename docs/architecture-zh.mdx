@@ -158,7 +158,7 @@ interface Resource {
 ```
 
 **资源**承载视觉数据：题注、替代文本，以及与其类型对应的数据。二进制数据（位图、SVG）存放在*带外*：资源只保存一个`fileId`，渲染器在绘制时再去解析它（沙盒把这些字节保存在IndexedDB里）。表格资源是例外：它的`TableModel`（一个带合并和对齐信息的单元格网格）随资源一起内联传递，因为它是结构化数据，而不是字节。
-**注释**写在markdown里：引用脚注的地方写`[^id]`标记，定义`[^id]:`自成一段，可以放在本章的任何位置。引擎按首次引用的顺序给脚注编号，把每条脚注排在引用它的那一行所在栏的底部，上方有一条短线；设置`footnotes.placement: 'chapterEnd'`时，则排在该章最后一个块之后（见[脚注](/zh/docs/document-format#脚注)和[配置 → 脚注](/zh/docs/configuration#脚注)）。内容模型仍然接受`notes`数组，但流水线的任何阶段都不读取它。
+**注释**写在markdown里：引用脚注的地方写`[^id]`标记，定义`[^id]:`自成一段，可以放在本章的任何位置。引擎按首次引用的顺序给脚注编号，把每条脚注排在引用它的那一行所在栏的底部，上方有一条短线；设置`footnotes.placement: 'chapterEnd'`时，则排在该章最后一个块之后（见[脚注](/zh/docs/document-format#脚注)和[配置 → 脚注](/zh/docs/configuration-notes-references#脚注)）。内容模型仍然接受`notes`数组，但流水线的任何阶段都不读取它。
 
 这种分离是一个有明确取向的设计选择，其意义比看上去要大。markdown掌管*阅读顺序*和*语义结构*：什么在前，什么是标题，脚注在哪里被引用、写了什么。资源数组掌管*视觉数据*：图片尺寸、题注文字、表格单元格。两者分开后，同一份markdown只需改变配置，就能排成完全不同的样子。双栏的学术版式和单栏的博客文章可以共用同一份源内容。引擎也可以做出安放上的决定，比如因为这一栏放不下而把图片推迟到下一栏，却完全不必改动你的源内容。
 
@@ -209,27 +209,27 @@ Italy by 1465 and France by 1470.
   <tbody>
     <tr>
       <td><code>bodyText</code> / <code>headings</code></td>
-      <td>按字段设置的段末孤行/段首孤行/孤字罚分、保持不分离的规则、两端对齐的限度、断词，见<a href="/zh/docs/configuration#正文">配置 → 正文</a></td>
+      <td>按字段设置的段末孤行/段首孤行/孤字罚分、保持不分离的规则、两端对齐的限度、断词，见<a href="/zh/docs/configuration-text#正文">配置 → 正文</a></td>
       <td>第2遍、第5遍</td>
     </tr>
     <tr>
       <td><code>tableStyle</code></td>
-      <td><code>kind: 'table'</code>资源的单元格排版、边框、圆角、表头和表体的填充，以及表格用<code>table.styleId</code>选用的<code>tableStyles</code>命名变体，见<a href="/zh/docs/configuration#表格样式">配置 → 表格样式</a></td>
+      <td><code>kind: 'table'</code>资源的单元格排版、边框、圆角、表头和表体的填充，以及表格用<code>table.styleId</code>选用的<code>tableStyles</code>命名变体，见<a href="/zh/docs/configuration-resources#表格样式">配置 → 表格样式</a></td>
       <td>第4遍</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
-      <td>资源题注的排版：带编号的标签和说明文字，见<a href="/zh/docs/configuration#题注样式">配置 → 题注样式</a></td>
+      <td>资源题注的排版：带编号的标签和说明文字，见<a href="/zh/docs/configuration-resources#题注样式">配置 → 题注样式</a></td>
       <td>第4遍</td>
     </tr>
     <tr>
       <td><code>diagramStyle</code></td>
-      <td><code>singleInk</code> + <code>inkColor</code>：按亮度把SVG图表重新着色为同一种油墨的不同深浅，使图在单一专色印刷时也能忠实再现，见<a href="/zh/docs/configuration#图示样式">配置 → 图表样式</a></td>
+      <td><code>singleInk</code> + <code>inkColor</code>：按亮度把SVG图表重新着色为同一种油墨的不同深浅，使图在单一专色印刷时也能忠实再现，见<a href="/zh/docs/configuration-resources#图示样式">配置 → 图表样式</a></td>
       <td>后端</td>
     </tr>
     <tr>
       <td><code>resourceTypes</code></td>
-      <td>按类型的资源编号：模板、计数格式、重置范围、默认浮动位置，见<a href="/zh/docs/configuration#资源类型">配置 → 资源类型</a></td>
+      <td>按类型的资源编号：模板、计数格式、重置范围、默认浮动位置，见<a href="/zh/docs/configuration-resources#资源类型">配置 → 资源类型</a></td>
       <td>第1遍、第4遍</td>
     </tr>
     <tr>
@@ -512,7 +512,7 @@ const { height } = layout(prepared, columnWidth, 24); // 行距24px
 
 第四种软约束`slackWeight`为“栏内未用空间”的平方代价加权，使算法倾向于把各栏填得紧凑的断点组合。这些缺陷值合在一起，使第5遍成为一种*断行*层面的精修：大多数段末孤行、段首孤行和孤字问题都在Knuth-Plass求解器内部解决，而不是事后调整字距。
 
-所有这些都可以在`BodyTextConfig`中调整，参见[配置 → 段首孤行、段末孤行、孤字与保持同页规则](/zh/docs/configuration#段首孤行段末孤行孤字与不拆分规则)。把任何`*Penalty`设为`0`，实际上就关闭了对应的规则。
+所有这些都可以在`BodyTextConfig`中调整，参见[配置 → 段首孤行、段末孤行、孤字与保持同页规则](/zh/docs/configuration-text#段首孤行段末孤行孤字与不拆分规则)。把任何`*Penalty`设为`0`，实际上就关闭了对应的规则。
 
 #### 结构性保持同页规则
 
@@ -534,7 +534,7 @@ const { height } = layout(prepared, columnWidth, 24); // 行距24px
 ### 第6遍：各栏齐底
 
 - **输入**：已完成排版精修的VDT
-- **处理**：在栏之间移动块，使每页各栏高度相等，尽量减小高度差（默认开启；`headings.balancing.enabled: false`可将其关闭，见[配置 → 各栏齐底](/zh/docs/configuration#各栏齐底)）
+- **处理**：在栏之间移动块，使每页各栏高度相等，尽量减小高度差（默认开启；`headings.balancing.enabled: false`可将其关闭，见[配置 → 各栏齐底](/zh/docs/configuration-text#各栏齐底)）
 - **约束**：不得违反第5遍建立的段末孤行和段首孤行规则
 - **输出**：块可能在栏之间移动过，并被标记为`dirty`
 
@@ -693,7 +693,7 @@ renderToEpub(docs, options): Promise<Uint8Array>;
 
 四个已发布的后端都接收同一个`VDTDocument`。`postext`（导出Canvas和HTML后端）与`postext-pdf`（导出PDF后端）的拆分纯粹是出于依赖考虑：PDF路径会引入`pdf-lib`和`@pdf-lib/fontkit`，而大多数Web集成并不需要它们。只有在确实要输出PDF字节时才安装`postext-pdf`。`postext-epub`出于同样的原因单独成包，只在制作电子书时需要。命令行不是第五个后端：`postext-cli`在没有浏览器的地方运行同样这些写入器。
 
-**排版在哪里运行**：引擎在Canvas上测量文本，所以只要有Canvas就能运行。在浏览器中，流水线既可以在主线程上运行（`buildDocument`），也可以在专用的Web Worker中运行（`postext/worker`中的`createLayoutWorker`）。对于由UI驱动的应用，推荐使用工作线程方式：它让测量和收敛循环远离主线程，支持通过`AbortSignal`进行“后发者胜”的取消，并拥有自己的测量缓存和数学公式光栅缓存，使连续的重新构建保持低开销。完整的集成模式参见[配置 → 在Web Worker中运行排版](/zh/docs/configuration#在web-worker中运行排版)。在浏览器之外，[命令行](/zh/docs/command-line)用Skia代替浏览器的Canvas运行同一条流水线，所以同一本书在终端、脚本或构建服务器上分出的页面完全相同。
+**排版在哪里运行**：引擎在Canvas上测量文本，所以只要有Canvas就能运行。在浏览器中，流水线既可以在主线程上运行（`buildDocument`），也可以在专用的Web Worker中运行（`postext/worker`中的`createLayoutWorker`）。对于由UI驱动的应用，推荐使用工作线程方式：它让测量和收敛循环远离主线程，支持通过`AbortSignal`进行“后发者胜”的取消，并拥有自己的测量缓存和数学公式光栅缓存，使连续的重新构建保持低开销。完整的集成模式参见[配置 → 在Web Worker中运行排版](/zh/docs/configuration-programmatic-usage#在web-worker中运行排版)。在浏览器之外，[命令行](/zh/docs/command-line)用Skia代替浏览器的Canvas运行同一条流水线，所以同一本书在终端、脚本或构建服务器上分出的页面完全相同。
 
 
 ## 性能策略
@@ -781,7 +781,7 @@ bench('layout 50-page document', () => {
 - **CSS column-count的封装**。Postext取代CSS多栏布局，而不是在它外面包一层。它从零开始计算精确定位的几何信息，因为浏览器的分栏算法无法控制资源的摆放、段首孤行和段末孤行的避免，以及跨栏的排版规则。而这些恰恰是Postext存在的意义。
 - **响应式断点管理**。Postext按给定的页面尺寸计算版面。何时重新排版（视口尺寸变化、屏幕方向变化时）由调用方决定。Postext不管理断点、媒体查询，也不替你做响应式设计的决定。那是你的工作。
 - **实时协同编辑**。Postext是无状态的排版计算（输入内容，输出几何信息），不是带冲突解决、操作变换或多用户感知的协同文档系统。
-- **字体文件**。`postext`包负责加载字体，但不自带字体。`prepareFonts`在第一次构建之前加载配置及其文本要求的所有字体，字体集无法提供的字体会作为`fontFallback`列在文档的警告中。文件本身由宿主提供：页面上的一条`@font-face`规则，或者一个说明每个字体在哪里的`resolve`函数。见[配置 → 排版前加载字体](/zh/docs/configuration#排版前加载字体)。
+- **字体文件**。`postext`包负责加载字体，但不自带字体。`prepareFonts`在第一次构建之前加载配置及其文本要求的所有字体，字体集无法提供的字体会作为`fontFallback`列在文档的警告中。文件本身由宿主提供：页面上的一条`@font-face`规则，或者一个说明每个字体在哪里的`resolve`函数。见[配置 → 排版前加载字体](/zh/docs/configuration-programmatic-usage#排版前加载字体)。
 
 
 ## 附录：与现有类型的对应关系

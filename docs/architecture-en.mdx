@@ -159,7 +159,7 @@ interface Resource {
 ```
 
 **Resources** carry the visual data: captions, alt text, and a kind-specific payload. Binary payloads (bitmaps, SVGs) live *out-of-band* — the resource only stores a `fileId`, and the renderer resolves it at draw time (the sandbox keeps the bytes in IndexedDB). Table resources are the exception: their `TableModel` (a grid of cells with spans and alignment) travels inline, because it is structured data, not bytes.
-**Notes** are written in the markdown: a `[^id]` marker where the note is cited and a `[^id]:` definition, a paragraph of its own anywhere in the chapter. The engine numbers the notes in the order they are first cited and sets each one at the foot of the column that holds the line citing it, under a short rule, or after the chapter's last block with `footnotes.placement: 'chapterEnd'` (see [Footnotes](/en/docs/document-format#footnotes) and [Configuration → Footnotes](/en/docs/configuration#footnotes)). The content model still accepts a `notes` array, but no stage of the pipeline reads it.
+**Notes** are written in the markdown: a `[^id]` marker where the note is cited and a `[^id]:` definition, a paragraph of its own anywhere in the chapter. The engine numbers the notes in the order they are first cited and sets each one at the foot of the column that holds the line citing it, under a short rule, or after the chapter's last block with `footnotes.placement: 'chapterEnd'` (see [Footnotes](/en/docs/document-format#footnotes) and [Configuration → Footnotes](/en/docs/configuration-notes-references#footnotes)). The content model still accepts a `notes` array, but no stage of the pipeline reads it.
 
 This separation is an opinionated design choice, and it matters more than it looks. The markdown owns the *reading order* and *semantic structure* — what comes first, what is a heading, where a footnote is cited and what it says. The resources array owns the *visual data* — image dimensions, caption text, table cells. By keeping them apart, the same markdown can be laid out in completely different ways just by changing the configuration. A two-column academic layout and a single-column blog post can share the same source content. And the engine can make placement decisions — like deferring an image to the next column because it does not fit here — without ever touching your source content.
 
@@ -210,27 +210,27 @@ Every aspect of the layout pipeline is controlled by `PostextConfig`. The full s
   <tbody>
     <tr>
       <td><code>bodyText</code> / <code>headings</code></td>
-      <td>Per-field widow/orphan/runt penalties, keep-together rules, justification limits, hyphenation — see <a href="/en/docs/configuration#body-text">Configuration → Body Text</a></td>
+      <td>Per-field widow/orphan/runt penalties, keep-together rules, justification limits, hyphenation — see <a href="/en/docs/configuration-text#body-text">Configuration → Body Text</a></td>
       <td>Pass 2, Pass 5</td>
     </tr>
     <tr>
       <td><code>tableStyle</code></td>
-      <td>Cell typography, borders, corner radius, header/body fills for <code>kind: 'table'</code> resources, plus the named variants of <code>tableStyles</code> a table picks with <code>table.styleId</code> — see <a href="/en/docs/configuration#table-style">Configuration → Table style</a></td>
+      <td>Cell typography, borders, corner radius, header/body fills for <code>kind: 'table'</code> resources, plus the named variants of <code>tableStyles</code> a table picks with <code>table.styleId</code> — see <a href="/en/docs/configuration-resources#table-style">Configuration → Table style</a></td>
       <td>Pass 4</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
-      <td>Typography of resource captions: the numbered label and the description text — see <a href="/en/docs/configuration#caption-style">Configuration → Caption style</a></td>
+      <td>Typography of resource captions: the numbered label and the description text — see <a href="/en/docs/configuration-resources#caption-style">Configuration → Caption style</a></td>
       <td>Pass 4</td>
     </tr>
     <tr>
       <td><code>diagramStyle</code></td>
-      <td><code>singleInk</code> + <code>inkColor</code> — recolors SVG diagrams to luminance-mapped tints of one ink, so figures reproduce faithfully when printing with a single spot colour — see <a href="/en/docs/configuration#diagram-style">Configuration → Diagram style</a></td>
+      <td><code>singleInk</code> + <code>inkColor</code> — recolors SVG diagrams to luminance-mapped tints of one ink, so figures reproduce faithfully when printing with a single spot colour — see <a href="/en/docs/configuration-resources#diagram-style">Configuration → Diagram style</a></td>
       <td>Backends</td>
     </tr>
     <tr>
       <td><code>resourceTypes</code></td>
-      <td>Typed resource numbering: templates, counter formats, reset scopes, default float placement — see <a href="/en/docs/configuration#resource-types">Configuration → Resource types</a></td>
+      <td>Typed resource numbering: templates, counter formats, reset scopes, default float placement — see <a href="/en/docs/configuration-resources#resource-types">Configuration → Resource types</a></td>
       <td>Pass 1, Pass 4</td>
     </tr>
     <tr>
@@ -517,7 +517,7 @@ These penalties sit alongside the usual demerits — badness (squared adjustment
 
 A fourth soft pressure, `slackWeight`, weights a squared "unused column space" cost so the algorithm prefers break sets that fill columns tightly. Together these demerits make Pass 5 a *line-breaking* refinement: most widow/orphan/runt cases are resolved inside the Knuth-Plass solver, not by letter-spacing tweaks after the fact.
 
-All of this is tunable on `BodyTextConfig` — see [Configuration → Orphans, widows, runts, and keep-together rules](/en/docs/configuration#orphans-widows-runts-and-keep-together-rules). Setting any `*Penalty` to `0` effectively disables that rule.
+All of this is tunable on `BodyTextConfig` — see [Configuration → Orphans, widows, runts, and keep-together rules](/en/docs/configuration-text#orphans-widows-runts-and-keep-together-rules). Setting any `*Penalty` to `0` effectively disables that rule.
 
 #### Structural keep-together rules
 
@@ -539,7 +539,7 @@ These corrections are invisible when done well (a reader should never notice the
 ### Pass 6: Column Balancing
 
 - **Input:** VDT with refined typography
-- **Action:** Equalize column heights on each page by moving blocks between columns to minimize the height difference (on by default; `headings.balancing.enabled: false` turns it off, see [Configuration → Column balancing](/en/docs/configuration#column-balancing))
+- **Action:** Equalize column heights on each page by moving blocks between columns to minimize the height difference (on by default; `headings.balancing.enabled: false` turns it off, see [Configuration → Column balancing](/en/docs/configuration-text#column-balancing))
 - **Constraint:** Must not violate widow/orphan rules established in Pass 5
 - **Output:** Blocks may have moved between columns, marked `dirty`
 
@@ -700,7 +700,7 @@ Because binary resource payloads live out-of-band, each backend resolves `fileId
 
 All four shipping backends consume the same `VDTDocument`. The split between `postext` (which exports the canvas and HTML backends) and `postext-pdf` (which exports the PDF backend) is purely about dependencies: the PDF path pulls in `pdf-lib` and `@pdf-lib/fontkit`, and most web integrations do not need them. Install `postext-pdf` only when you actually want to emit PDF bytes. `postext-epub` is a package of its own for the same reason, and is needed only for e-books. The command line is not a fifth backend: `postext-cli` runs these same writers where there is no browser.
 
-**Where layout runs:** The engine measures text on a canvas, so it runs wherever it is given one. In a browser the pipeline runs either on the main thread (`buildDocument`) or inside a dedicated Web Worker (`createLayoutWorker` from `postext/worker`) — the worker path is the recommended integration for UI-driven apps because it keeps measurement and the convergence loop off the main thread, supports last-wins cancellation via `AbortSignal`, and owns its own measurement cache and math raster cache so successive rebuilds stay cheap. See [Configuration → Running layout in a Web Worker](/en/docs/configuration#running-layout-in-a-web-worker) for the full integration pattern. Outside a browser, the [command line](/en/docs/command-line) runs the same pipeline with Skia standing in for the browser's canvas, so a book breaks into the same pages in a terminal, a script or a build server.
+**Where layout runs:** The engine measures text on a canvas, so it runs wherever it is given one. In a browser the pipeline runs either on the main thread (`buildDocument`) or inside a dedicated Web Worker (`createLayoutWorker` from `postext/worker`) — the worker path is the recommended integration for UI-driven apps because it keeps measurement and the convergence loop off the main thread, supports last-wins cancellation via `AbortSignal`, and owns its own measurement cache and math raster cache so successive rebuilds stay cheap. See [Configuration → Running layout in a Web Worker](/en/docs/configuration-programmatic-usage#running-layout-in-a-web-worker) for the full integration pattern. Outside a browser, the [command line](/en/docs/command-line) runs the same pipeline with Skia standing in for the browser's canvas, so a book breaks into the same pages in a terminal, a script or a build server.
 
 
 ## Performance Strategy
@@ -792,7 +792,7 @@ taking on responsibilities that belong elsewhere would be the fastest way to nev
 - **CSS column-count wrapper.** Postext replaces CSS multi-column layout; it does not wrap it. It computes precise positioned geometry from scratch, because the browser's column layout algorithm lacks control over resource placement, widow/orphan prevention, and cross-column typographic rules. Those are the whole point.
 - **Responsive breakpoint management.** Postext computes layout at a given page size. The consumer decides when to re-layout (on viewport resize, on orientation change). Postext does not manage breakpoints, media queries, or responsive design decisions. That is your job.
 - **Real-time collaborative editing.** Postext is a stateless layout computation — content in, geometry out — not a collaborative document system with conflict resolution, operational transforms, or multi-user awareness.
-- **Font files.** The `postext` package loads fonts; it does not carry them. `prepareFonts` loads every face a configuration and its text ask for before the first build, and a face the font set could not give is listed in the document's warnings as `fontFallback`. The files themselves come from the host: an `@font-face` rule on the page, or a `resolve` function that says where each face lives. See [Configuration → Loading fonts before layout](/en/docs/configuration#loading-fonts-before-layout).
+- **Font files.** The `postext` package loads fonts; it does not carry them. `prepareFonts` loads every face a configuration and its text ask for before the first build, and a face the font set could not give is listed in the document's warnings as `fontFallback`. The files themselves come from the host: an `@font-face` rule on the page, or a `resolve` function that says where each face lives. See [Configuration → Loading fonts before layout](/en/docs/configuration-programmatic-usage#loading-fonts-before-layout).
 
 
 ## Appendix: Relationship to Existing Types

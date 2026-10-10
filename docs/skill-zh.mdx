@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'zh',
   lastUpdated: '2026-10-09',
   readingTime: '8分钟',
-  order: 12,
+  order: 21,
   plainSummary: "本页写给已经有一本书或一份文档的人，比如PDF、Word或InDesign文件，想把它转成Postext。AI助手（也叫AI代理）可以完成大部分工作，只要你给它装上一个叫skill的小插件。这个skill教代理怎样复制文字，并按原样重建原书的设计。本页说明怎样安装它、该怎样提要求，以及怎样检查结果。一段大约五分钟的视频演示了每一步。",
 };
 
@@ -170,7 +170,7 @@ Word、PowerPoint、EPUB和HTML源文件需要Pandoc，生成源文件的页面�
 
 ### 从代码加载结果
 
-交付的文件并不依赖沙盒。`postext`包用`openBundle`打开它，用`buildBundle`排版整本书，并渲染到Canvas、HTML或PDF（见[文件包](/zh/docs/configuration#文件包postext文件)）。因此，移植结果可以直接供程序使用。程序的输出需要调整时，用`createBundle`把它导出回`.postext`文件，在沙盒中微调，再加载修正后的文件。技能自带的无浏览器`render.mjs`既接受打包好的`.postext`文件，也接受项目文件夹。
+交付的文件并不依赖沙盒。`postext`包用`openBundle`打开它，用`buildBundle`排版整本书，并渲染到Canvas、HTML或PDF（见[文件包](/zh/docs/configuration-programmatic-usage#文件包postext文件)）。因此，移植结果可以直接供程序使用。程序的输出需要调整时，用`createBundle`把它导出回`.postext`文件，在沙盒中微调，再加载修正后的文件。技能自带的无浏览器`render.mjs`既接受打包好的`.postext`文件，也接受项目文件夹。
 
 ## 预期效果
 

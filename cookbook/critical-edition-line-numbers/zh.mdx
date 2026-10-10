@@ -16,13 +16,13 @@ pageNotes: { "1": "开篇页：一枝结着青果的月桂从右上角伸入；�
 
 ### 1 · 数诗行
 
-这一步的代码见上文的[简短回答](#简短回答)。`lineNumbers`给诗的诗行计数，把每第五行的行号印在该行旁边、该行的基线上，用7.5 pt、月桂绿的Libre Franklin（[行号](/zh/docs/configuration#行号)）。`count: 'verse'`只数`:::verse`诗的诗行，所以关于文本的说明和诗后的注释都不编号；一行诗即使长得超出行长，也仍然只算一行：它的转行部分不带行号。`restart: 'document'`让整首诗只用一套计数。行号画在排版已经排好的行旁边，所以从不移动任何一行。
+这一步的代码见上文的[简短回答](#简短回答)。`lineNumbers`给诗的诗行计数，把每第五行的行号印在该行旁边、该行的基线上，用7.5 pt、月桂绿的Libre Franklin（[行号](/zh/docs/configuration-notes-references#行号)）。`count: 'verse'`只数`:::verse`诗的诗行，所以关于文本的说明和诗后的注释都不编号；一行诗即使长得超出行长，也仍然只算一行：它的转行部分不带行号。`restart: 'document'`让整首诗只用一套计数。行号画在排版已经排好的行旁边，所以从不移动任何一行。
 
 ### 2 · 一条六毫米宽的窄栏
 
 <Excerpt region="page" />
 
-设置`sideColumnRole: 'floats'`后，`oneAndHalf`版面的窄栏永远不排正文（[版面类型](/zh/docs/configuration#版式类型)），`position: 'side'`把行号排进这一栏，贴齐它靠诗行的一边；4 mm的栏间距就是诗行与行号之间的距离。`sideColumnPercent`是版心宽度的一个比例，所以CodePen示例用毫米换算：90 mm中的6 mm，足够放下最宽的行号。Libre Franklin的数字是比例宽度的，7.5 pt时0最宽（1.8 mm，1是1.2 mm），所以100宽4.9 mm，是这首诗里最宽的行号；180和190是4.8 mm。`'outer'`随镜像页边距而变，所以行号在右页位于诗行右侧，左对齐；在左页位于左侧，右对齐：两种页面上，行号的起点或终点与诗行的距离都相同。诗行栏宽80 mm，比最长的第31行宽1.9 mm，所以没有哪一行会转行。
+设置`sideColumnRole: 'floats'`后，`oneAndHalf`版面的窄栏永远不排正文（[版面类型](/zh/docs/configuration-page-layout#版式类型)），`position: 'side'`把行号排进这一栏，贴齐它靠诗行的一边；4 mm的栏间距就是诗行与行号之间的距离。`sideColumnPercent`是版心宽度的一个比例，所以CodePen示例用毫米换算：90 mm中的6 mm，足够放下最宽的行号。Libre Franklin的数字是比例宽度的，7.5 pt时0最宽（1.8 mm，1是1.2 mm），所以100宽4.9 mm，是这首诗里最宽的行号；180和190是4.8 mm。`'outer'`随镜像页边距而变，所以行号在右页位于诗行右侧，左对齐；在左页位于左侧，右对齐：两种页面上，行号的起点或终点与诗行的距离都相同。诗行栏宽80 mm，比最长的第31行宽1.9 mm，所以没有哪一行会转行。
 
 ### 3 · 整首诗是一个`:::verse`块
 
@@ -34,13 +34,13 @@ pageNotes: { "1": "开篇页：一枝结着青果的月桂从右上角伸入；�
 
 <Excerpt region="opener" />
 
-一级标题印出的是版面设计，而不是标题本身的文字（[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）。`{author}`来自前置元数据，题记来自标题行上的一个属性，`# Lycidas {headnote="In this Monody …"}`（[标题属性](/zh/docs/document-format#标题属性)）。月桂的下缘在眉题之上，所以开篇的深度取决于其下的文字：眉题位于版心顶部以下50 mm，标题和四行题记一直延伸到本页34行中的第20行，第一个诗节14行，占满其余部分。`minHeight`是同一深度的下限：把题记删成三行，诗行仍从第21行开始，而没有这个下限，它会上移到第20行。`marginBottom: pt(0)`让标题的默认外边距不进入这段间距；若保留它，诗行会从第22行开始，把第14行推到第2页。设计留在栏内，而锚定在页面右上角的月桂照样从切边画起：留在栏内的设计只会在栏的底端被裁掉。
+一级标题印出的是版面设计，而不是标题本身的文字（[通栏与高级设计](/zh/docs/configuration-text#通栏与高级设计)）。`{author}`来自前置元数据，题记来自标题行上的一个属性，`# Lycidas {headnote="In this Monody …"}`（[标题属性](/zh/docs/document-format#标题属性)）。月桂的下缘在眉题之上，所以开篇的深度取决于其下的文字：眉题位于版心顶部以下50 mm，标题和四行题记一直延伸到本页34行中的第20行，第一个诗节14行，占满其余部分。`minHeight`是同一深度的下限：把题记删成三行，诗行仍从第21行开始，而没有这个下限，它会上移到第20行。`marginBottom: pt(0)`让标题的默认外边距不进入这段间距；若保留它，诗行会从第22行开始，把第14行推到第2页。设计留在栏内，而锚定在页面右上角的月桂照样从切边画起：留在栏内的设计只会在栏的底端被裁掉。
 
 ### 5 · 按行号编排的注释
 
 <Excerpt region="notes" />
 
-注释按行号编排，所以诗行里不带注释标记；注释作为评注排在诗后，不占诗页的行。每条注释以所在行的行号开头，写作`:chip[8]{style="line"}`，然后是斜体的被释词语和一个右方括号。这个行内标签没有填充、描边和左右内边距，所以只改变字体和颜色：7.7 pt、月桂绿的Libre Franklin（[标签样式](/zh/docs/configuration#行内标签样式)）。Linden Hill没有粗体，所以行号靠换一种字体来区分。注释样式让首行之后的每行缩进1.6 em，使左侧的行号清晰可辨；注释与诗行一样齐左排。`# Notes {style="notes"}`另起到第8页，标题用开篇页的大写字母，30 pt。
+注释按行号编排，所以诗行里不带注释标记；注释作为评注排在诗后，不占诗页的行。每条注释以所在行的行号开头，写作`:chip[8]{style="line"}`，然后是斜体的被释词语和一个右方括号。这个行内标签没有填充、描边和左右内边距，所以只改变字体和颜色：7.7 pt、月桂绿的Libre Franklin（[标签样式](/zh/docs/configuration-styles#行内标签样式)）。Linden Hill没有粗体，所以行号靠换一种字体来区分。注释样式让首行之后的每行缩进1.6 em，使左侧的行号清晰可辨；注释与诗行一样齐左排。`# Notes {style="notes"}`另起到第8页，标题用开篇页的大写字母，30 pt。
 
 <PageShot page={8} crop="0.24,0.318,0.66,0.249" caption="Page 8: each note opens on the green number of its line; the verse on pages 1 to 7 carries no markers." />
 
@@ -48,7 +48,7 @@ pageNotes: { "1": "开篇页：一枝结着青果的月桂从右上角伸入；�
 
 <Excerpt region="heads" />
 
-每个元素都锚定在页面上，并用`parity`和`pages: 'body'`过滤（[文本元素](/zh/docs/configuration#文本元素)）。左页印作者，右页印`{chapterTitle}`，诗页上是LYCIDAS，注释页上是NOTES，因为注释以一个独立的标题开头。页码位于版心的外侧边缘；两个开篇页，即第1页和第8页，页码改排在页脚。
+每个元素都锚定在页面上，并用`parity`和`pages: 'body'`过滤（[文本元素](/zh/docs/configuration-page-layout#文本元素)）。左页印作者，右页印`{chapterTitle}`，诗页上是LYCIDAS，注释页上是NOTES，因为注释以一个独立的标题开头。页码位于版心的外侧边缘；两个开篇页，即第1页和第8页，页码改排在页脚。
 
 ## 变化
 

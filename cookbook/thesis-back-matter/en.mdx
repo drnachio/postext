@@ -16,7 +16,7 @@ The last seven pages of a doctoral thesis on reading from screens and paper, set
 
 ### 1 · Give each part of the back matter a heading style
 
-The code is [the short answer](#the-short-answer) above. `# Glossary {style="glossary" note="…"}` opens a section that runs to the next level-1 heading, and its pages take the style's layout, running heads and opener ([heading styles](/en/docs/configuration#heading-styles)), so the glossary and the index switch to two columns while the references, whose style sets no layout, fall back to the document's single column. `numbered: false` keeps these headings out of the chapter count (delete it and the glossary's band prints 2), and each style names its page break, because one that names none inherits the chapter's `'odd'` and leaves blank versos. The glossary and reference entries are paragraphs of a `:::paragraphs{style="…"}` block at 9.3 pt on 12.4 pt, against the text's 11 on 14.6, with turnover lines that hang 1 em in the glossary and 1.5 em in the references ([paragraph styles](/en/docs/configuration#paragraph-styles)).
+The code is [the short answer](#the-short-answer) above. `# Glossary {style="glossary" note="…"}` opens a section that runs to the next level-1 heading, and its pages take the style's layout, running heads and opener ([heading styles](/en/docs/configuration-styles#heading-styles)), so the glossary and the index switch to two columns while the references, whose style sets no layout, fall back to the document's single column. `numbered: false` keeps these headings out of the chapter count (delete it and the glossary's band prints 2), and each style names its page break, because one that names none inherits the chapter's `'odd'` and leaves blank versos. The glossary and reference entries are paragraphs of a `:::paragraphs{style="…"}` block at 9.3 pt on 12.4 pt, against the text's 11 on 14.6, with turnover lines that hang 1 em in the glossary and 1.5 em in the references ([paragraph styles](/en/docs/configuration-styles#paragraph-styles)).
 
 ### 2 · Draw one band for every opener
 
@@ -28,7 +28,7 @@ The mark is `{number}`: 6 on the chapter, A on the appendix and nothing on an un
 
 <Excerpt region="appendix" />
 
-The appendix style sets `numberingTemplate: '{1:A}'`, which prints the level's counter as a letter, and `# Interview guide {style="appendix" startAt=1}` restarts that counter, so the first appendix is A and not G ([heading styles](/en/docs/configuration#heading-styles)). The band reads the letter through `{number}` and the running head through `{chapterNumber}`. A resource type's `{h1}` prints the counter as a number, so a type of its own numbers the appendix's tables A.1, A.2 and so on; with the default type the table would be Table 1.1. The chapter's own headings count from the level templates: `'{1}.{2}'` prints 6.1, and `continuation.headings.h1: 5` makes this the sixth chapter.
+The appendix style sets `numberingTemplate: '{1:A}'`, which prints the level's counter as a letter, and `# Interview guide {style="appendix" startAt=1}` restarts that counter, so the first appendix is A and not G ([heading styles](/en/docs/configuration-styles#heading-styles)). The band reads the letter through `{number}` and the running head through `{chapterNumber}`. A resource type's `{h1}` prints the counter as a number, so a type of its own numbers the appendix's tables A.1, A.2 and so on; with the default type the table would be Table 1.1. The chapter's own headings count from the level templates: `'{1}.{2}'` prints 6.1, and `continuation.headings.h1: 5` makes this the sixth chapter.
 
 ### 4 · Put the running heads on the outer edge
 
@@ -46,7 +46,7 @@ The four text elements are anchored to the page and filtered by `parity`, which 
 
 <Excerpt region="palette" />
 
-The engine's defaults for bold, italic, list markers and references follow the palette entry `main-color`, so pointing it at the ink prints them black instead of blue ([color palette](/en/docs/configuration#color-palette)). `referenceBold: false` sets *Table 6.1* in roman, like the author–year citations around it.
+The engine's defaults for bold, italic, list markers and references follow the palette entry `main-color`, so pointing it at the ink prints them black instead of blue ([color palette](/en/docs/configuration-fonts-colors-viewers#color-palette)). `referenceBold: false` sets *Table 6.1* in roman, like the author–year citations around it.
 
 <Note>A list of tables stays manual. In a whole thesis laid out chapter by chapter with `buildBundle`, the chapter that holds `:::index` receives the marks of every chapter.</Note>
 

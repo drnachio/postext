@@ -16,19 +16,19 @@ Quatre pàgines d'una nova edició del *Sailor’s Word-Book* de l'almirall Smyt
 
 ### 1 · Un estil de títol per lletra, cadascun amb la seva pestanya
 
-El codi és a [la resposta curta](#la-resposta-curta), més amunt. `TABS` enumera 22 pestanyes; les lletres amb poques entrades en comparteixen una (QR, UV, XYZ). Cada pestanya fa dues línies de text (7,34 mm), així que entre totes cobreixen les 44 línies de la caixa. El bucle dona a cada lletra un estil de títol el `header` del qual afegeix a les capçaleres i a l'índex pàl·lid la pestanya blava d'aquella lletra, un pas més avall que l'anterior ([estils d'encapçalament](/ca/docs/configuration#estils-dencapçalament)). Cada cel·la s'escriu dues vegades, una per `parity`, i s'ancora a la vora exterior de la pàgina, no al contenidor propi de la capçalera. Aquest contenidor és el marge superior, de l'amplada de la caixa i des de la vora superior de la pàgina fins al text, i les pestanyes han d'arribar al tall davanter i baixar per les 44 línies. Una pàgina pren la capçalera de l'última secció que hi comença, així que la <PageRef page={2}>pàgina 2</PageRef> comença a la A i porta la pestanya de la B.
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. `TABS` enumera 22 pestanyes; les lletres amb poques entrades en comparteixen una (QR, UV, XYZ). Cada pestanya fa dues línies de text (7,34 mm), així que entre totes cobreixen les 44 línies de la caixa. El bucle dona a cada lletra un estil de títol el `header` del qual afegeix a les capçaleres i a l'índex pàl·lid la pestanya blava d'aquella lletra, un pas més avall que l'anterior ([estils d'encapçalament](/ca/docs/configuration-styles#estils-dencapçalament)). Cada cel·la s'escriu dues vegades, una per `parity`, i s'ancora a la vora exterior de la pàgina, no al contenidor propi de la capçalera. Aquest contenidor és el marge superior, de l'amplada de la caixa i des de la vora superior de la pàgina fins al text, i les pestanyes han d'arribar al tall davanter i baixar per les 44 línies. Una pàgina pren la capçalera de l'última secció que hi comença, així que la <PageRef page={2}>pàgina 2</PageRef> comença a la A i porta la pestanya de la B.
 
 ### 2 · Les capçaleres, fora de la primera pàgina
 
 <Excerpt region="running-heads" />
 
-Les capçaleres són elements de text ancorats a la pàgina i filtrats per `parity` i per `pages: 'body'` ([elements de text](/ca/docs/configuration#elements-de-text)). El títol de la pàgina 1 abasta les dues columnes, i això la converteix en pàgina d'obertura. Les capçaleres no hi surten, i el foli el posa el peu, un element amb `pages: 'opener'` que s'imprimeix 6 mm per sota de la caixa. A les senars, `{chapterTitle}` imprimeix la lletra de l'últim títol de nivell 1 que hi ha a la pàgina o abans, *Letra C*. `{firstMark.<clave>}` i `{lastMark.<clave>}` imprimeixen en el seu lloc el primer i l'últim lema de la pàgina, les paraules guia que porten gairebé tots els diccionaris; aquesta recepta conserva la lletra, que és el que indexen les seves pestanyes.
+Les capçaleres són elements de text ancorats a la pàgina i filtrats per `parity` i per `pages: 'body'` ([elements de text](/ca/docs/configuration-page-layout#elements-de-text)). El títol de la pàgina 1 abasta les dues columnes, i això la converteix en pàgina d'obertura. Les capçaleres no hi surten, i el foli el posa el peu, un element amb `pages: 'opener'` que s'imprimeix 6 mm per sota de la caixa. A les senars, `{chapterTitle}` imprimeix la lletra de l'últim títol de nivell 1 que hi ha a la pàgina o abans, *Letra C*. `{firstMark.<clave>}` i `{lastMark.<clave>}` imprimeixen en el seu lloc el primer i l'últim lema de la pàgina, les paraules guia que porten gairebé tots els diccionaris; aquesta recepta conserva la lletra, que és el que indexen les seves pestanyes.
 
 ### 3 · Color per als lemes i res més
 
 <Excerpt region="entries" />
 
-Cada entrada és un paràgraf d'un bloc `:::paragraphs{style="entry"}`, amb sagnat francès d'1 em ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). El `boldColor` del cos deixa el **Nota.** de la pàgina 1 en el color del text, i el de l'estil d'entrada posa els lemes en blau marí. Un estil de paràgraf no té `italicColor`, així que les cursives de les entrades conserven el color del cos.
+Cada entrada és un paràgraf d'un bloc `:::paragraphs{style="entry"}`, amb sagnat francès d'1 em ([estils de paràgraf](/ca/docs/configuration-styles#estils-de-paràgraf)). El `boldColor` del cos deixa el **Nota.** de la pàgina 1 en el color del text, i el de l'estil d'entrada posa els lemes en blau marí. Un estil de paràgraf no té `italicColor`, així que les cursives de les entrades conserven el color del cos.
 
 ### 4 · Una inicial de quatre línies dins de la columna
 
@@ -40,7 +40,7 @@ Cada entrada és un paràgraf d'un bloc `:::paragraphs{style="entry"}`, amb sagn
 
 <Excerpt region="title" />
 
-L'estil del títol abasta la pàgina amb una banda que reuneix l'àncora, el nom, un subtítol i una signatura presos d'atributs del títol, i un filet doble ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). El filet fi acaba 45,1 mm per sota de la vora superior de la caixa, així que la banda s'ajusta a 13 línies de la retícula, 47,7 mm. El filet de columna comença sota la banda, a la línia on comença el text de les dues columnes.
+L'estil del títol abasta la pàgina amb una banda que reuneix l'àncora, el nom, un subtítol i una signatura presos d'atributs del títol, i un filet doble ([span i disseny avançat](/ca/docs/configuration-text#span-i-disseny-avançat)). El filet fi acaba 45,1 mm per sota de la vora superior de la caixa, així que la banda s'ajusta a 13 línies de la retícula, 47,7 mm. El filet de columna comença sota la banda, a la línia on comença el text de les dues columnes.
 
 ## Variants
 

@@ -30,25 +30,25 @@ A dedicatória acima de *The Windhover* e o local e a data embaixo de cada poema
 
 <Excerpt region="poem-head" />
 
-Em vez do seu texto, o título imprime um design na coluna. Nesse design, `{number}` é a contagem no formato de `numberingTemplate: '{1:I}'`, de I a IV, e `{titleText}` é o título ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). O nível não tem margem inferior, e `minHeight` faz cada cabeça de poema ocupar seis linhas da grade (31,75 mm). O numeral e um título de uma linha preenchem quatro, e um título que quebra preenche cinco, então todos os poemas começam na mesma linha da página. Na <PageRef page={6}>página 6</PageRef>, essa linha é a da dedicatória. A paridade `'any'` quebra para a página seguinte, par ou ímpar, então não há páginas em branco entre os poemas.
+Em vez do seu texto, o título imprime um design na coluna. Nesse design, `{number}` é a contagem no formato de `numberingTemplate: '{1:I}'`, de I a IV, e `{titleText}` é o título ([span e design avançado](/pt/docs/configuration-text#largura-e-design-avançado)). O nível não tem margem inferior, e `minHeight` faz cada cabeça de poema ocupar seis linhas da grade (31,75 mm). O numeral e um título de uma linha preenchem quatro, e um título que quebra preenche cinco, então todos os poemas começam na mesma linha da página. Na <PageRef page={6}>página 6</PageRef>, essa linha é a da dedicatória. A paridade `'any'` quebra para a página seguinte, par ou ímpar, então não há páginas em branco entre os poemas.
 
 ### 4 · Os elementos pré-textuais são feitos de títulos
 
 <Excerpt region="front" />
 
-Um estilo de título pode quebrar para uma página nova e desenhar um design nela, então a falsa folha de rosto, o frontispício e a folha de rosto são um título cada, com estilo próprio. `numbered: false` os deixa fora da contagem, e o primeiro poema continua sendo o I. `toc: false` os deixa fora do sumário, e um rodapé vazio deixa as páginas deles sem fólio ([estilos de título](/pt/docs/configuration#estilos-de-título)). Os estilos ocupam a página inteira porque o pé da mancha de texto corta um design preso à coluna, o que cortaria ali a prancha sangrada e deixaria de fora a legenda. A legenda vem do atributo `caption` do título; o autor, o título e o subtítulo da folha de rosto vêm do frontmatter.
+Um estilo de título pode quebrar para uma página nova e desenhar um design nela, então a falsa folha de rosto, o frontispício e a folha de rosto são um título cada, com estilo próprio. `numbered: false` os deixa fora da contagem, e o primeiro poema continua sendo o I. `toc: false` os deixa fora do sumário, e um rodapé vazio deixa as páginas deles sem fólio ([estilos de título](/pt/docs/configuration-styles#estilos-de-título)). Os estilos ocupam a página inteira porque o pé da mancha de texto corta um design preso à coluna, o que cortaria ali a prancha sangrada e deixaria de fora a legenda. A legenda vem do atributo `caption` do título; o autor, o título e o subtítulo da folha de rosto vêm do frontmatter.
 
 ### 5 · O sumário se preenche sozinho
 
 <Excerpt region="contents" />
 
-`:::toc` lista cada título cujo estilo permite a entrada, com o numeral do mesmo modelo e o rótulo da página em que o título cai. A composição diagrama o livro de novo até que esses rótulos de página parem de mudar ([sumário](/pt/docs/configuration#sumário)). O título da própria página, Contents, tem um estilo com `numbered: false`; sem ele, Contents seria o poema I. O preenchimento `'. '` põe um espaço depois de cada ponto. Os pontos ficam alinhados à direita, para coincidirem de uma entrada para a outra, e saem na fonte e na cor dos números de página, porque `toc.leader` não tem configuração de cor.
+`:::toc` lista cada título cujo estilo permite a entrada, com o numeral do mesmo modelo e o rótulo da página em que o título cai. A composição diagrama o livro de novo até que esses rótulos de página parem de mudar ([sumário](/pt/docs/configuration-notes-references#sumário)). O título da própria página, Contents, tem um estilo com `numbered: false`; sem ele, Contents seria o poema I. O preenchimento `'. '` põe um espaço depois de cada ponto. Os pontos ficam alinhados à direita, para coincidirem de uma entrada para a outra, e saem na fonte e na cor dos números de página, porque `toc.leader` não tem configuração de cor.
 
 ### 6 · Um ornamento é um tipo de recurso sem rótulo
 
 <Excerpt region="ornament" />
 
-Uma imagem no texto é um recurso, e todo recurso tem um tipo. O tipo do ornamento tem o prefixo de legenda vazio e o raminho não tem legenda, então nenhum rótulo como “Figure 1” sai embaixo dele ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)). O `defaultPlacement` do tipo põe o raminho onde está `::resource{id="sprig"}`, centralizado e com um quinto da medida, então o remate sob *Inversnaid* ocupa uma linha de Markdown. `resourceTypes` substitui a lista padrão, então este livro não tem os tipos Figura e Tabela. Para mantê-los, aplique o spread de `defaultResourceTypes()` na lista, antes do ornamento.
+Uma imagem no texto é um recurso, e todo recurso tem um tipo. O tipo do ornamento tem o prefixo de legenda vazio e o raminho não tem legenda, então nenhum rótulo como “Figure 1” sai embaixo dele ([tipos de recurso](/pt/docs/configuration-resources#tipos-de-recurso)). O `defaultPlacement` do tipo põe o raminho onde está `::resource{id="sprig"}`, centralizado e com um quinto da medida, então o remate sob *Inversnaid* ocupa uma linha de Markdown. `resourceTypes` substitui a lista padrão, então este livro não tem os tipos Figura e Tabela. Para mantê-los, aplique o spread de `defaultResourceTypes()` na lista, antes do ornamento.
 
 ## Variações
 

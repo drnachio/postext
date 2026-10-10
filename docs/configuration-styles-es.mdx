@@ -1,0 +1,1502 @@
+{/* docs/configuration-styles-es.mdx */}
+
+export const metadata = {
+  title: 'Configuración: estilos y partes',
+  sidebarTitle: 'Estilos y partes',
+  description: 'Los estilos con nombre de párrafos, chips, listados de código, avisos y encabezados, y las páginas que abren cada parte',
+  lang: 'es',
+  lastUpdated: '2026-10-10',
+  readingTime: '7 min',
+  order: 9,
+  parent: 'configuration',
+  plainSummary: "Esta página reúne los estilos con nombre, que defines una vez y usas muchas. Un estilo de párrafo fija una clase de texto, como una bibliografía o un glosario. Un estilo de chip dibuja una etiqueta pequeña dentro de la línea, y un estilo de aviso dibuja un recuadro alrededor de una nota o un consejo. Los listados de código tienen su propia tipografía, su caja y sus colores. La página también explica las páginas que abren cada parte del libro y los estilos de los títulos especiales.",
+};
+
+# Configuración: estilos y partes
+
+
+## Estilos de párrafo
+
+La propiedad `paragraphStyles` declara estilos con nombre que el documento aplica a una serie de párrafos mediante un contenedor `:::paragraphs{style="…"}` — bibliografías, glosarios, notas, cualquier bloque de entradas que quiera su propia tipografía, peso, cursiva, tamaño, interlineado, mayúsculas, versalitas o un sangrado francés. Todos los campos tipográficos son opcionales y heredan del texto de cuerpo cuando no se indican, de modo que un estilo solo describe lo que difiere del texto corrido.
+
+```ts
+const config: PostextConfig = {
+  paragraphStyles: [
+    {
+      id: 'bibliography',
+      name: 'Bibliografía',
+      fontSize: { value: 7, unit: 'pt' },
+      lineHeight: { value: 1.2, unit: 'em' },
+      hangingIndent: { value: 2, unit: 'em' },
+      spaceBetween: { value: 0.25, unit: 'em' },
+      marginTop: { value: 1, unit: 'em' },
+      marginBottom: { value: 1, unit: 'em' },
+    },
+  ],
+};
+```
+
+```md
+## Referencias
+
+:::paragraphs{style="bibliography"}
+Knuth, D. E. (1984). *The TeXbook*. Addison-Wesley.
+
+Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obligatorio</td>
+      <td>Identificador al que hace referencia <code>:::paragraphs&#123;style="…"&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nombre legible, solo para interfaces de edición.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>fuente del cuerpo</td>
+      <td>Familia tipográfica. Sus pesos son <code>fontWeight</code> / <code>boldFontWeight</code>, más abajo (los del texto de cuerpo si no se indican).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>tamaño del cuerpo</td>
+      <td>Tamaño de fuente.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>interlineado del cuerpo</td>
+      <td>Interlineado. <code>em</code>/<code>rem</code> son relativos al tamaño del propio estilo, así que un <code>1.5em</code> heredado se estrecha junto con un tamaño menor.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cuerpo</td>
+      <td>Color del texto. Las negritas y cursivas conservan los colores de énfasis del cuerpo, salvo que <code>boldColor</code> / <code>italicColor</code> fijen los del estilo.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
+      <td>alineación del cuerpo</td>
+      <td>Alineación horizontal. <code>'center'</code> y <code>'right'</code> dejan cada línea en bandera por el otro lado — una dedicatoria, una firma. En un párrafo de derecha a izquierda, <code>'left'</code> es su lado de principio, la derecha.</td>
+    </tr>
+    <tr>
+      <td><code>boldColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>bodyText.boldColor</code></td>
+      <td>Color de las negritas (una lista de autores con los nombres en el color de la casa).</td>
+    </tr>
+    <tr>
+      <td><code>italicColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>bodyText.italicColor</code></td>
+      <td>Color de las cursivas (<code>*…*</code>); en un estilo <code>italic</code>, de los tramos que vuelven a redonda. No sigue a <code>color</code>: un estilo de color cuyas cursivas deban conservarlo fija los dos.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>bodyText.fontWeight</code></td>
+      <td>Peso del texto normal (100–900): una pregunta en seminegrita en una ficha, un epígrafe ligero.</td>
+    </tr>
+    <tr>
+      <td><code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>bodyText.boldFontWeight</code></td>
+      <td>Peso de los tramos en negrita (<code>**…**</code>).</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compone los párrafos en cursiva: acotaciones, un epígrafe. Un tramo en cursiva <code>*…*</code> dentro de ellos vuelve a redonda, como en una cita.</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compone los párrafos en versalitas: las minúsculas como mayúsculas al 70 % del cuerpo y las mayúsculas a tamaño completo, dibujadas igual en todos los backends (ver <a href="/es/docs/document-format#versalitas">Versalitas</a>): un reparto, las entradas de un glosario.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td>separación del cuerpo</td>
+      <td>Separar sílabas al justificar (usa el idioma del documento).</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sangría de todas las líneas desde el borde izquierdo de la columna (o del recuadro en el que están los párrafos); <code>em</code> es el cuerpo del propio estilo. La sangría de primera línea y la francesa se miden desde ella, así que un verso sangrado puede llevar lo que no le cabe en la línea más adentro que su propio comienzo: <code>indent: 1.5em</code> con <code>hangingIndent: 2.5em</code> pone el verso a 1,5 em y su continuación a 4 em. Un valor negativo cuenta como <code>0</code>.</td>
+    </tr>
+    <tr>
+      <td><code>endIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sangría de todas las líneas desde el lado del final (la derecha de una línea horizontal, el pie de una vertical); <code>em</code> es el cuerpo del propio estilo. Con <code>textAlign: 'end'</code> compone una línea unos caracteres por encima del pie, el 地からN字上げ de la fecha o la firma de una carta japonesa. Desde postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td>sangría del cuerpo</td>
+      <td>Sangría de la primera línea, desde <code>indent</code>. Con una <code>hangingIndent</code> distinta de cero solo se aplica cuando el estilo la fija por sí mismo: la primera línea empieza en <code>indent + firstLineIndent</code> y las siguientes en <code>indent + hangingIndent</code>, así que un verso puede entrar 1 em y colgar su resto 3 em. Heredada del cuerpo, cede ante la sangría francesa y la primera línea empieza en <code>indent</code>, como hasta postext 1.22 (a una configuración guardada antes se le quita la explícita de un estilo así).</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sangría aplicada a todas las líneas salvo la primera, desde <code>indent</code> — la forma clásica de una bibliografía o un glosario, y el resto de un verso partido. La primera línea empieza en <code>indent</code>, o en la <code>firstLineIndent</code> propia del estilo cuando la fija.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Separación vertical entre párrafos consecutivos dentro del contenedor. Con <code>0</code> las entradas quedan pegadas.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Espacio sobre el primer párrafo del contenedor. Colapsa con el espaciado ya pendiente y desaparece al inicio de una columna, como cualquier otro margen.</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Espacio mínimo bajo el último párrafo del contenedor. Cómo se une con el espacio del bloque que sigue al contenedor lo decide <code>bodyText.paragraphContainerSpacing</code>.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Devuelve el flujo a la rejilla base bajo el contenedor, y el espacio de debajo es un mínimo. Con <code>false</code> se conserva el espacio exacto: el texto que sigue al contenedor queda fuera de la rejilla hasta el siguiente bloque que se ajusta a ella (un encabezado, el final de una lista, una fórmula en bloque), para un documento que va fuera de la rejilla o un grupo con un interlineado propio. Dentro de un recuadro, que no tiene rejilla, no cambia nada.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Caja de los párrafos: <code>'uppercase'</code> los compone en mayúsculas (un reparto, una acotación), también las palabras de un chip y la etiqueta de una <code>:ref</code>. Conserva la longitud letra a letra, para que el mapa de posiciones del editor siga siendo uno a uno: una letra cuya mayúscula es más larga (<code>ß</code>) se queda tal cual. Las fórmulas no cambian, y un titulillo que lee el párrafo como marca (<code>&#123;firstMark.<em>estilo</em>&#125;</code>) toma el texto tal como está escrito; el <code>textTransform</code> propio de un texto de diseño lo pasa a mayúsculas.</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>cjk.wordBreak</code></td>
+      <td>Dónde se cortan entre caracteres las líneas CJK de los párrafos (ver <code>cjk.wordBreak</code>): <code>'keep-all'</code> para una cartilla en kana con espacios entre frases citada en un libro de prosa corriente, <code>'normal'</code> para lo contrario. Desde postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td>sin fijar</td>
+      <td>Si la <a href="/es/docs/configuration-notes-references#numeración-de-líneas">numeración de líneas</a> cuenta las líneas de los párrafos. Sin fijar: se cuentan cuando <code>lineNumbers.count</code> es <code>'all'</code>, y en un poema compuesto con el estilo cuando se cuentan versos. <code>true</code>: se cuentan también con <code>'verse'</code>, y dentro de un recuadro, cuyo texto no se cuenta nunca si no. <code>false</code>: no se cuentan nunca. Desde postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td><code>bodyText.tabStops</code></td>
+      <td>Tabulaciones de los párrafos del estilo (ver <a href="/es/docs/configuration-text#tabulaciones">Tabulaciones</a>), medidas desde el <code>indent</code> del estilo. Un carácter de tabulación en su texto es un tabulador cuando el estilo tiene tabulaciones o un intervalo, propios o del cuerpo. Sin fijar: las del cuerpo; una lista vacía no fija ninguna. Desde postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>bodyText.tabInterval</code></td>
+      <td>Tabulaciones por defecto pasada la última de <code>tabStops</code>. Sin fijar: el del cuerpo. Desde postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap</code></td>
+      <td>ninguno</td>
+      <td>Una capitular que abre el primer párrafo de cada grupo <code>:::paragraphs</code> con este estilo, o todos los párrafos con <code>each: true</code> (ver <a href="/es/docs/configuration-text#letras-capitulares">Letras capitulares</a>). <code>&#123;dropcap=false&#125;</code> en la valla de un grupo la quita, y <code>&#123;dropcap=2&#125;</code> fija sus líneas. Desde postext 1.23.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una obra de teatro compone sus acotaciones en cursiva y su reparto en versalitas:
+
+```ts
+paragraphStyles: [
+  { id: 'acotacion', italic: true, fontSize: { value: 9, unit: 'pt' } },
+  { id: 'reparto', smallCaps: true, textAlign: 'center', fontWeight: 600 },
+],
+```
+
+```md
+:::paragraphs{style="acotacion"}
+Elsinor. Una explanada ante el castillo. *Francisco* en su puesto.
+:::
+```
+
+La acotación se imprime en cursiva y el nombre que contiene, en redonda; los pesos, `italic` y `smallCaps` de un estilo también se aplican dentro de las cajas de aviso.
+
+Un libro de poemas sangra algunos versos y, cuando un verso no cabe en la medida, lleva lo que sobra más adentro que el propio verso. `indent` desplaza hacia dentro todas las líneas del párrafo, y la sangría francesa se cuenta desde ahí:
+
+```ts
+paragraphStyles: [
+  { id: 'verso', textAlign: 'left', firstLineIndent: { value: 0, unit: 'em' }, hangingIndent: { value: 4, unit: 'em' } },
+  { id: 'verso-sangrado', textAlign: 'left', indent: { value: 1.5, unit: 'em' }, hangingIndent: { value: 2.5, unit: 'em' } },
+],
+```
+
+Un verso en `verso-sangrado` empieza a 1,5 em y su continuación a 4 em, a la altura de las continuaciones de los versos en `verso`. Sin `indent`, un estilo puede sangrar la primera línea o las demás, no las dos: `firstLineIndent` se ignora en cuanto hay `hangingIndent`.
+
+Una carta de restaurante compone cada precio a ras del final de la medida, tras una línea de puntos:
+
+```ts
+paragraphStyles: [
+  {
+    id: 'carta',
+    textAlign: 'left',
+    firstLineIndent: { value: 0, unit: 'em' },
+    tabStops: [{ position: 'end', align: 'end', leader: '. ' }],
+  },
+],
+```
+
+```md
+:::paragraphs{style="carta"}
+Sopa de cebolla :tab 8,50
+
+Dorada a la plancha con hinojo y limón :tab 21,00
+:::
+```
+
+Los puntos de todas las líneas terminan medio cuadratín antes del precio (`leaderGap`). Un plato demasiado largo para su línea pasa a la siguiente, y su última línea conserva el relleno y el precio; cuando el precio no cabe junto a la última palabra, esa palabra baja con él.
+
+### El contenedor `:::paragraphs`
+
+Una línea `:::paragraphs{style="<id>"}` abre el contenedor y una línea `:::` a solas lo cierra; todos los párrafos intermedios toman el estilo indicado, mientras que los encabezados, listas y otros bloques del interior conservan su estilo habitual. Los contenedores pueden anidarse dentro de otros contenedores. Un `style` desconocido no es un error: los párrafos se componen como texto de cuerpo normal.
+
+La valla admite también `align` (`start`, `end`, `left`, `right`, `center`, `justify`), `indent` y `endIndent` (los números sin unidad son em), con estilo o sin él: con estilo, mandan sobre él; sin estilo, se aplican sobre el estilo del contenedor que lo rodea, o sobre el estilo de texto del lugar donde está la valla (el cuerpo, una parte, una sección con estilo o un recuadro). `:::paragraphs{align=end}` compone un bloque a ras del final de la línea (地付き) y `:::paragraphs{align=end endIndent=1}`, a un carácter de él. Desde postext 1.16.
+
+Dentro del contenedor el flujo abandona la rejilla base — una entrada de 7pt con interlineado 1.2em no puede asentarse en una rejilla de 8pt/1.5em — y el último párrafo devuelve el flujo a la rejilla (la rejilla manda; el espacio de debajo es un mínimo, la misma convención que siguen los encabezados). Las entradas se parten entre columnas y páginas como los párrafos del cuerpo, con la misma protección de viudas y huérfanas; un encabezado inmediatamente anterior al contenedor se mantiene unido a su primer párrafo.
+
+El espacio bajo el contenedor es el mayor entre el `spaceBetween` y el `marginBottom` del estilo y la separación entre párrafos del texto que lo rodea (una línea cuando `bodyText.paragraphSpacing` está activado), y se funde con el espacio que el bloque siguiente deja sobre sí, como el espacio entre dos párrafos del cuerpo: un encabezado tras una bibliografía queda a su propio `marginTop` de la última entrada (o al espacio del estilo, si es mayor), y un párrafo tras un grupo de entradas más apretadas conserva la separación entre párrafos del texto. El flujo vuelve primero a la rejilla bajo el texto, y lo que el ajuste no cubrió se arrastra en líneas enteras de la rejilla, para que el texto que sigue al contenedor caiga en ella. Hasta postext 1.4, el espacio del estilo se ponía bajo la última línea antes del ajuste, el espacio del bloque siguiente se sumaba debajo y la separación entre párrafos no contaba; `bodyText.paragraphContainerSpacing: 'add'` mantiene esa regla, y las configuraciones guardadas antes se leen con ella. Un estilo con `snapToGrid: false` no se ajusta: el texto que sigue al contenedor queda al espacio exacto de él, fuera de la rejilla hasta el siguiente bloque que se ajuste. Un contenedor que se cierra con una lista se compone como en 1.4 con cualquiera de las dos reglas: la lista conserva su propio espacio debajo, y el `marginBottom` va a continuación de ese espacio y se funde con el del bloque siguiente.
+
+Dentro de un `:::callout` el contenedor aplica los márgenes de su estilo del mismo modo: `marginTop` y `marginBottom` se funden con el espaciado de los bloques que lo rodean (uno negativo los acerca), y un contenedor que abre el recuadro no lleva margen superior, igual que en lo alto de una columna. El recuadro no tiene rejilla base a la que volver, así que el espacio bajo el último párrafo es el mayor de `marginBottom`, `spaceBetween` y la separación entre párrafos del propio recuadro (su `body.paragraphSpacing`, una línea de su texto; no cuenta con `paragraphContainerSpacing: 'add'`), o el margen superior del bloque siguiente, si es mayor aún; un `marginBottom` negativo acerca en cambio el bloque siguiente. (Hasta postext 1.4, un contenedor dentro de un recuadro no aplicaba ninguno de los dos márgenes.)
+
+```ts
+const resolved = resolveParagraphStylesConfig(config.paragraphStyles, resolvedBodyText);
+// => cada campo no indicado se rellena desde el texto de cuerpo resuelto
+
+const minimal  = stripParagraphStylesDefaults(config.paragraphStyles);
+// => undefined cuando la lista está vacía; se eliminan los márgenes a cero y `name === id`
+```
+
+
+## Estilos de chip
+
+La propiedad `chipStyles` declara los estilos con nombre del `:chip[texto]{style="…"}` en línea: las cajas redondeadas y tintadas de un banco de palabras, una tecla, una etiqueta (la sintaxis y sus reglas de corte de línea están en la referencia del formato de documento). Viene un estilo por defecto, `chip` (relleno azul pálido con un filete del color principal, esquinas algo redondeadas y el texto como las palabras que lo rodean), así que `:chip[…]` funciona sin configurar nada; declarar `chipStyles` sustituye esa lista. Un chip sin `style`, o con un id que ningún estilo declara, toma el primer estilo.
+
+```ts
+const config: PostextConfig = {
+  chipStyles: [
+    { id: 'chip', name: 'Banco de palabras' },
+    {
+      id: 'key',
+      name: 'Tecla',
+      background: { hex: '#fff4d6', model: 'hex' },
+      borderColor: { hex: '#8a6d1f', model: 'hex' },
+      borderRadius: { value: 2, unit: 'pt' },
+      bold: true,
+    },
+  ],
+};
+```
+
+```md
+Clasifica: :chip[pila] :chip[cable] :chip[interruptor]
+
+Pulsa :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obligatorio</td>
+      <td>Identificador que se usa en <code>:chip[…]&#123;style="…"&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nombre legible, solo para interfaces de edición.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pinta el relleno de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#e8eef7</code></td>
+      <td>Relleno de la caja (vinculable a la paleta).</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color principal de la paleta</td>
+      <td>Color del contorno.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>Grosor del contorno; <code>0</code> no dibuja ninguno. Se traza por dentro del borde de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Radio de las esquinas, limitado a la mitad de la altura de la caja (un valor grande da una píldora).</td>
+    </tr>
+    <tr>
+      <td><code>paddingX</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Espacio entre el contorno y el texto, a izquierda y derecha. Forma parte del avance del chip.</td>
+    </tr>
+    <tr>
+      <td><code>paddingY</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.1em</code></td>
+      <td>Espacio por encima y por debajo de la banda del texto. Se pinta fuera de la caja de línea: nunca cambia el interlineado.</td>
+    </tr>
+    <tr>
+      <td><code>paddingTop</code>, <code>paddingBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>paddingY</code></td>
+      <td>Espacio por encima o por debajo de la banda del texto, cada uno en lugar de <code>paddingY</code>. La banda va 0,8 em por encima de la línea base y 0,25 em por debajo, así que su centro queda 0,275 em por encima de la línea base, más abajo que el centro de una mayúscula (unos 0,35 em en la mayoría de las fuentes): una mayúscula o una cifra en un chip redondo (<code>borderRadius: 1em</code>) se ve alta. Un relleno superior mayor que el inferior en el doble de la diferencia la centra: <code>paddingTop: 0.2em</code> con <code>paddingBottom: 0.05em</code> en una fuente cuyas mayúsculas miden 0,7 em.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>texto que lo rodea</td>
+      <td>Familia del texto del chip. Los pesos siguen al texto que lo rodea.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>texto que lo rodea</td>
+      <td>Cuerpo del texto del chip; <code>em</code> es relativo al texto que lo rodea.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>texto que lo rodea</td>
+      <td>Color del texto del chip. Sin fijar, las negritas y cursivas conservan sus colores de énfasis.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compone el texto del chip en negrita, además de sus propias marcas.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compone el texto del chip en cursiva, además de sus propias marcas.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.25em</code></td>
+      <td>Espacio mínimo entre la caja y la palabra o el chip vecino a través de un espacio; un espacio más estrecho se completa dentro del avance del chip, así que la justificación nunca lo come. No se añade nada en el borde de la línea ni junto a la puntuación pegada.</td>
+    </tr>
+  </tbody>
+</table>
+
+Las longitudes en em de la caja (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) son relativas al cuerpo del propio chip. La caja es una banda de 0,8 em por encima y 0,25 em por debajo de la línea base, que crece con `paddingY` y el contorno; se pinta fuera de la caja de línea y nunca cambia el interlineado, así que la retícula se mantiene. Cuando la caja resulta más alta que el interlineado, un chip puede invadir un chip de la línea de encima o de debajo: el sandbox muestra el aviso «Los chips tocan la línea siguiente» cuando dos chips de líneas distintas se solapan, con el solapamiento en puntos, para reducir `paddingY`, el contorno o `fontSize`. Un chip alto sin ningún chip encima ni debajo no se señala.
+
+En el VDT un chip es un segmento de línea de `kind: 'chip'` cuyo campo `chip` lleva los tramos de texto (cada uno con su cadena de fuente y su ancho), la geometría de la caja (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, los márgenes del `gap`) y sus colores; el `text` del segmento es un marcador de un carácter, de modo que los desplazamientos de texto plano y los mapas de fuente cuentan un chip como un carácter.
+
+```ts
+const resolved = resolveChipStylesConfig(config.chipStyles);
+// => el estilo `chip` integrado si no se declara; todos los campos rellenos
+
+const minimal  = stripChipStylesDefaults(config.chipStyles);
+// => undefined para el valor integrado; se eliminan los valores por defecto
+
+const style = pickChipStyle(resolved, 'key');
+// => el estilo `key`, o el primero
+```
+
+
+## Listados de código
+
+La propiedad `codeStyle` fija el aspecto de los listados de código: las vallas ```` ``` ```` y `~~~` del texto (ver [Formato del documento › Bloques de código](/es/docs/document-format#bloques-de-código)), y el código en línea cuando pide una letra de código. Un listado se compone línea a línea tal como está escrito, en una letra monoespaciada y dentro de una caja: ninguna línea se divide ni se justifica, cada espacio conserva su ancho y un tabulador avanza hasta la siguiente tabulación. La caja sale del mismo mecanismo que un `:::callout`, así que un listado se parte entre líneas a través de columnas y páginas, cada parte en su propia caja, y una valla dentro de un aviso es una caja anidada en él. Todas las propiedades son opcionales. Desde postext 1.23.
+
+```ts
+const config: PostextConfig = {
+  codeStyle: {
+    fontFamily: 'JetBrains Mono',
+    fontSize: { value: 0.8, unit: 'em' },
+    background: { hex: '#0e1116', model: 'hex' },
+    color: { hex: '#d3d9df', model: 'hex' },
+    padding: { top: { value: 4, unit: 'mm' }, right: { value: 5, unit: 'mm' }, bottom: { value: 4, unit: 'mm' }, left: { value: 5, unit: 'mm' } },
+    borderRadius: { value: 2, unit: 'pt' },
+    lineNumbers: true,
+    tokens: {
+      keyword: { color: { hex: '#f2b134', model: 'hex' }, bold: true },
+      string: { color: { hex: '#3ddc84', model: 'hex' } },
+      comment: { color: { hex: '#8a939d', model: 'hex' }, italic: true },
+    },
+    inline: { background: { hex: '#eef1f4', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '190px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '150px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>blocks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Lee las vallas como bloques de código. <code>false</code> lee una valla y sus líneas como Markdown, como hacía postext 1.22; lo recibe una configuración guardada antes de 1.23 cuyo texto tiene una valla (ver <a href="/es/docs/configuration-programmatic-usage#paquetes-escritos-por-postext-14-o-anterior">Paquetes escritos por postext 1.4 o anterior</a>).</td>
+    </tr>
+    <tr>
+      <td><code>indentedCode</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Lee también como listado una serie de líneas sangradas cuatro columnas (cuatro espacios o un tabulador) tras una línea en blanco; a cada línea se le quitan cuatro columnas. Desactivado por defecto: los textos de Postext sangran a menudo con espacios, y las listas anidadas leen los espacios del principio.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Source Code Pro'</code></td>
+      <td>La letra del código. Una monoespaciada mantiene alineadas las columnas; para comentarios en chino o japonés, una con kanji (BIZ UDGothic), cuyos caracteres de ancho completo ocupan dos celdas.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.85em</code></td>
+      <td><code>em</code> es el cuerpo del texto principal.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code> / <code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code> / <code>700</code></td>
+      <td>Los pesos del código y de los elementos en negrita.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>la línea de la rejilla del texto principal</td>
+      <td>El interlineado de las líneas de código; <code>em</code> es el cuerpo del código. Sin fijar, las líneas caen en la rejilla base.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>El texto que sigue a un listado vuelve a la rejilla base; <code>false</code> conserva el <code>marginBottom</code> exacto, como en un aviso.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el color del texto principal</td>
+      <td>El color del código, que conservan los elementos sin color propio.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>El fondo de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td>desactivado, <code>#cccccc</code>, <code>0.5pt</code></td>
+      <td>El contorno de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Esquinas redondeadas; cada parte de un listado partido las conserva, como una caja partida.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.6em</code> cada uno</td>
+      <td><code>em</code> es el cuerpo del código.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>El espacio sobre la caja y bajo ella.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>Un listado a ancho de página cruza todas las columnas de una página a varias columnas, como una caja <code>span: 'page'</code>. Una valla fija el suyo con <code>span=page</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tabSize</code></td>
+      <td><code>number</code></td>
+      <td><code>4</code></td>
+      <td>Un tabulador avanza hasta el siguiente múltiplo de este número de celdas de carácter (un carácter de ancho completo cuenta dos). Sigue siendo un tabulador: el texto copiado lo conserva.</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'shrink' | 'clip'</code></td>
+      <td><code>'wrap'</code></td>
+      <td>Una línea más ancha que la caja. <code>'wrap'</code>: se corta tras el último espacio o signo de puntuación que cabe (entre dos caracteres cuando no cabe ninguno) y el resto sigue debajo, sangrado <code>wrapIndent</code> celdas, tras <code>wrapMarker</code>; una parte de un listado partido nunca empieza con ese resto si cabe otro corte. <code>'shrink'</code>: todo el listado se compone más pequeño hasta que cabe su línea más ancha, como mucho hasta <code>minFontScale</code>, y lo que aun así no cabe se parte. <code>'clip'</code>: la línea se detiene en el borde interior de la caja; los caracteres que lo pasan no se imprimen. Cada caso da un aviso <code>codeOverflow</code>.</td>
+    </tr>
+    <tr>
+      <td><code>wrapIndent</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>La sangría del resto de una línea partida, en celdas de carácter.</td>
+    </tr>
+    <tr>
+      <td><code>wrapMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'»'</code></td>
+      <td>Va en esa sangría, en el color de los números de línea; no forma parte del texto (al copiar se omite, y un PDF etiquetado lo pinta como artefacto). <code>''</code> no pone ninguna. <code>↪</code> falta en la mayoría de las letras de código, que lo imprimen como un recuadro vacío.</td>
+    </tr>
+    <tr>
+      <td><code>minFontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>0.8</code></td>
+      <td>Con <code>'shrink'</code>, la menor fracción de <code>fontSize</code> a la que se compone un listado.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Numera las líneas de todos los listados, en un margen delante del código. Una valla fija lo suyo con <code>lineNumbers</code>, <code>lineNumbers=false</code> y <code>start=N</code>. El resto de una línea partida no lleva número. Los números se componen junto al texto, no dentro de él: el visor HTML los oculta a la selección y a las tecnologías de apoyo, y un PDF etiquetado los pinta como artefactos.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#8a8a8a</code></td>
+      <td>El color de los números (y el de la marca de continuación).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>El espacio entre el número más ancho y el código; <code>em</code> es el cuerpo del código.</td>
+    </tr>
+    <tr>
+      <td><code>highlightBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fff4c2</code></td>
+      <td>La banda, de lado a lado de la caja, detrás de las líneas que una valla indica con <code>highlight="3,5-7"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Como en un estilo de aviso: <code>false</code> parte entre líneas un listado más alto que el espacio que queda; <code>true</code> lo pasa entero, y solo lo parte si es más alto que una columna.</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>El mínimo de líneas a cada lado de un corte, para que ninguna parte se quede con una sola línea.</td>
+    </tr>
+    <tr>
+      <td><code>repeatTitle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Repite el título al principio de cada parte, con el sufijo «(cont.)» del idioma del documento.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code> / <code>continuesMarker</code></td>
+      <td><code>boolean</code> / <code>string</code></td>
+      <td><code>false</code> / «Continúa»</td>
+      <td>Un indicador bajo la última línea de una parte que continúa.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>CalloutTitleStyleConfig</code></td>
+      <td>la letra del código, en negrita, a 0,9 de su cuerpo</td>
+      <td>La fila de título que imprime el <code>title</code> de una valla (ver <a href="#estilos-de-aviso">Estilos de aviso</a> para los campos).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>CalloutLabelConfig</code></td>
+      <td>ninguna</td>
+      <td>Si se fija, el título se imprime en cambio en una pestaña de etiqueta sobre el borde superior de la caja (en la letra y el cuerpo del código, salvo que la etiqueta indique los suyos).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>'builtin' | 'none'</code></td>
+      <td><code>'builtin'</code></td>
+      <td>Colorea los elementos con el analizador integrado (y con cualquier resaltador registrado); <code>'none'</code> compone todos los listados en <code>color</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tokens</code></td>
+      <td><code>Partial&lt;Record&lt;CodeTokenKind, &#123; color?, bold?, italic? &#125;&gt;&gt;</code></td>
+      <td>una paleta discreta</td>
+      <td>El aspecto de cada clase de elemento, fusionado clase a clase sobre los valores por defecto (ver más abajo). Un color vinculado a la paleta sigue a <code>colorPalette</code> y a la paleta de una parte.</td>
+    </tr>
+    <tr>
+      <td><code>inline</code></td>
+      <td><code>InlineCodeStyleConfig</code></td>
+      <td>sin fijar</td>
+      <td>El código en línea en una letra de código (ver más abajo). Sin fijar, el código en línea se compone en la letra del texto, como antes de 1.23.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Coloreado de sintaxis
+
+Un pequeño analizador integrado en el motor reconoce los elementos de `js` y `ts` (`javascript`, `jsx`, `typescript`, `tsx`), `json`, `python`, `bash` (`sh`, `zsh`, `shell`), `console` (una sesión de terminal), `css`, `html` y `xml` (`svg`), `markdown` y `sql`; un listado en cualquier otro lenguaje, o sin lenguaje, se compone en `color`. Lee el listado entero, así que un comentario o una cadena que ocupa varias líneas sigue siendo un solo elemento. En un listado `console`, una línea que empieza por un indicador (`$ `, `% `, `# `, `> `, `>>> `, `PS …> `) es lo que escribió el usuario (`prompt`), y cualquier otra línea es lo que imprimieron los programas (`output`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>Clase</th>
+      <th style={{ width: '200px' }}>Por defecto</th>
+      <th>Qué nombra</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>keyword</code></td><td><code>#8b2c8f</code></td><td>Palabras reservadas: <code>const</code>, <code>def</code>, <code>if</code>, <code>SELECT</code>, el nombre de una etiqueta HTML, una regla arroba de CSS.</td></tr>
+    <tr><td><code>string</code></td><td><code>#3d7a2a</code></td><td>Cadenas, plantillas literales, valores de atributo.</td></tr>
+    <tr><td><code>number</code></td><td><code>#985f00</code></td><td>Números y constantes (<code>true</code>, <code>None</code>, <code>null</code>), colores, entidades.</td></tr>
+    <tr><td><code>comment</code></td><td><code>#7a7f87</code>, cursiva</td><td>Comentarios.</td></tr>
+    <tr><td><code>function</code></td><td><code>#2b5fb4</code></td><td>Un nombre seguido de un paréntesis; las órdenes internas de la shell.</td></tr>
+    <tr><td><code>type</code></td><td><code>#99540a</code></td><td>Tipos y nombres de clase con mayúscula inicial, selectores CSS.</td></tr>
+    <tr><td><code>operator</code></td><td>el color del código</td><td>Operadores, tuberías y redirecciones de la shell.</td></tr>
+    <tr><td><code>punctuation</code></td><td>el color del código</td><td>Paréntesis, corchetes y llaves, separadores.</td></tr>
+    <tr><td><code>variable</code></td><td><code>#b23b2e</code></td><td>Variables de la shell, claves JSON, propiedades CSS, atributos HTML, <code>self</code>.</td></tr>
+    <tr><td><code>meta</code></td><td><code>#985f00</code></td><td>Decoradores, opciones de la línea de órdenes (<code>-l</code>, <code>--all</code>), un doctype.</td></tr>
+    <tr><td><code>prompt</code></td><td>el color del código, en negrita</td><td>La línea escrita de una sesión de terminal.</td></tr>
+    <tr><td><code>output</code></td><td><code>#5c6168</code></td><td>Lo que imprimieron los programas.</td></tr>
+  </tbody>
+</table>
+
+Una aplicación conecta su propio resaltador (Shiki, Prism, highlight.js) con `registerCodeHighlighter`. Las configuraciones son datos serializables, así que la función se registra en el motor, no se escribe en `codeStyle`:
+
+```ts
+import { registerCodeHighlighter } from 'postext';
+
+// fn(code, lang) devuelve las líneas del listado, cada una como tramos cuyos textos, unidos, forman la línea.
+registerCodeHighlighter('rust', (code) => code.split('\n').map((line) => [
+  { text: line, token: line.trimStart().startsWith('//') ? 'comment' : undefined },
+]));
+registerCodeHighlighter('*', null); // quita el registrado para todos los lenguajes
+```
+
+Un resaltador registrado para un lenguaje tiene prioridad sobre uno registrado para `'*'`, que a su vez la tiene sobre el analizador integrado. Un tramo nombra una clase de elemento en `token` (coloreada por `tokens`) o un `color` propio (un hex de CSS). Un resaltador que devuelve `undefined`, lanza una excepción o devuelve líneas que, unidas, no forman las del listado se pasa por alto. La composición lee el registro al componer un listado: registra antes de construir, y en un web worker (el Sandbox compone en uno) registra dentro del worker.
+
+### Código en línea
+
+`codeStyle.inline` compone el texto entre comillas invertidas en una letra de código: como una unidad, igual que un chip, que una línea nunca parte. Sin fijar, el código en línea conserva la letra del texto.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Propiedad</th>
+      <th style={{ width: '120px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td><code>codeStyle.fontFamily</code></td><td>La letra.</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td><code>0.9em</code></td><td><code>em</code> es el cuerpo del texto que lo rodea.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>el del texto</td><td></td></tr>
+    <tr><td><code>bold</code> / <code>italic</code></td><td><code>boolean</code></td><td><code>false</code></td><td>Se suman a las marcas del propio texto (el código dentro de una negrita va en negrita).</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>ninguno</td><td>Un fondo detrás del tramo.</td></tr>
+    <tr><td><code>borderColor</code> / <code>borderWidth</code></td><td><code>ColorValue</code> / <code>Dimension</code></td><td>ninguno / <code>0.5pt</code></td><td>Un contorno.</td></tr>
+    <tr><td><code>borderRadius</code></td><td><code>Dimension</code></td><td><code>0.2em</code></td><td><code>em</code> es el cuerpo del tramo.</td></tr>
+    <tr><td><code>paddingX</code> / <code>paddingY</code></td><td><code>Dimension</code></td><td><code>0.2em</code> con fondo o contorno, si no <code>0</code> / <code>0.1em</code></td><td>El espacio dentro del fondo; el relleno vertical se pinta fuera de la caja de línea.</td></tr>
+  </tbody>
+</table>
+
+### Cómo se compone un listado
+
+- **Una línea por cada línea del fuente.** Las líneas se construyen con los avances de la propia letra del código, no con el algoritmo de corte de párrafos: los espacios conservan su ancho, una serie de ellos se mantiene y los espacios del principio sangran. Un listado en un libro de derecha a izquierda se lee de izquierda a derecha, con sus líneas compuestas desde el lado opuesto de la caja, como una cita de izquierda a derecha, y sus números en el margen, a su izquierda. En un libro vertical, un listado sigue el flujo vertical (con su texto latino tumbado, como lo compone el texto vertical) y no lleva números de línea.
+- **Partición.** Un listado más alto que el espacio que queda se parte entre líneas a través de columnas y páginas, cada parte enmarcada como una caja propia, sin dejar nunca menos de `splitMinLines` líneas a un lado; el resto de una línea partida se queda con ella si cabe otro corte.
+- **Salidas.** El canvas, el visor HTML y el PDF pintan las líneas y la caja tal como se compusieron. El visor HTML conserva los espacios (`white-space: pre`), así que una selección copia el listado con su sangría y un salto de línea tras cada línea del fuente, sin números ni marcas de continuación. Un PDF etiquetado compone cada listado como un párrafo que contiene un elemento `Code`, con glifos de espacio reales y sus números y marcas de continuación como artefactos. El EPUB de maquetación fluida escribe `<pre><code class="language-…">` con los colores de los elementos y una hoja de estilo sacada de `codeStyle`; el EPUB de maquetación fija es la versión impresa.
+- **Fuentes.** El Sandbox y `configFontFamilies` cargan la letra del código cuando el texto tiene una valla (o la configuración tiene una sección `codeStyle`), en sus pesos normal y negrita, redonda y cursiva; el PDF incrusta las letras que usan las líneas.
+
+## Estilos de aviso
+
+La propiedad `calloutStyles` declara los estilos de caja con nombre que el documento aplica mediante un contenedor `:::callout{type="…"}` — notas, consejos, advertencias, objetivos de aprendizaje, cualquier contenido separado del texto corrido en una caja tintada o con borde. Por defecto se incluye un estilo neutro, `note` (fondo gris claro, sin borde, sin franja, sin icono, sin título), de modo que `:::callout` funciona sin configuración alguna; declarar `calloutStyles` sustituye esa lista por defecto.
+
+```ts
+const config: PostextConfig = {
+  calloutStyles: [
+    { id: 'note', name: 'Nota' },
+    {
+      id: 'objectives',
+      name: 'Objetivos de aprendizaje',
+      title: 'Objetivos',
+      stripe: { enabled: true, side: 'left' },
+      icon: { kind: 'glyph', glyph: '✓' },
+      titleStyle: { textTransform: 'uppercase' },
+      lists: { bulletChar: '–' },
+    },
+    {
+      id: 'warning',
+      title: 'Advertencia',
+      backgroundEnabled: false,
+      border: { enabled: true, color: { hex: '#AA0000', model: 'hex' }, width: { value: 1, unit: 'pt' } },
+      borderRadius: { value: 1, unit: 'mm' },
+      titleStyle: { color: { hex: '#AA0000', model: 'hex' } },
+    },
+  ],
+};
+```
+
+```md
+:::callout{type="objectives"}
+- Describir las partes de la linterna.
+- Recortar la mecha al anochecer.
+:::
+
+:::callout{type="warning" title="No toques la lente"}
+El cristal sigue caliente una hora después de apagar la llama.
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '220px' }}>Tipo</th>
+      <th style={{ width: '150px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Identificador que selecciona <code>:::callout&#123;type="…"&#125;</code>. Una valla con un <code>type</code> desconocido o ausente usa el primer estilo configurado (el sandbox avisa de los tipos desconocidos).</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nombre legible (solo para la interfaz del editor).</td>
+    </tr>
+    <tr>
+      <td><code>title</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Texto de título por defecto; vacío significa sin título. El atributo <code>title</code> de la valla lo sobrescribe en cada instancia.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page' | 'side'</code></td>
+      <td><code>'column'</code></td>
+      <td>Extensión horizontal: la columna, el ancho completo del área de contenido o la columna lateral solo para flotantes de una disposición de columna y media (<code>layout.sideColumnRole: 'floats'</code>) — la caja sale entonces del flujo y se apila en esa columna junto al texto que interrumpe. Se puede sobrescribir por instancia con el atributo <code>span</code>. En disposiciones multicolumna una caja <code>'page'</code> se convierte en un <em>bloque a ancho de página</em>: divide la página en bandas de columnas y ocupa su propia columna a todo el ancho (ver la sección del contenedor más abajo). Una caja lateral que no cabe en la columna lateral de su página ocupa la de la página siguiente; si antes termina el capítulo (o el documento), cada caja que sigue esperando se compone en la columna lateral de una página posterior al texto, en el orden de sus vallas, y la composición lo avisa (<code>afterText</code>; hasta postext 1.24 las cajas posteriores a la primera de esas páginas se perdían).</td>
+    </tr>
+    <tr>
+      <td><code>columns</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Cuántas columnas contiguas ocupa una caja flotante (<code>placement</code> <code>'auto'</code>, <code>'top'</code> o <code>'bottom'</code>, con <code>span: 'column'</code>), como hace <code>placement.columns</code> con una figura: el recuadro de una noticia sobre tres de las cinco columnas de un periódico. Tantas columnas como tiene la página, o más, la convierten en una caja a todo el ancho. Una caja compuesta en el flujo (<code>'here'</code>) se queda en su columna. Se puede sobrescribir en cada instancia con el atributo <code>columns</code>. Desde postext 1.18.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'here' | 'auto' | 'top' | 'bottom' | 'fixed'</code></td>
+      <td><code>'here'</code></td>
+      <td>Dónde va la caja. <code>'here'</code> la deja en línea en el flujo; <code>'top'</code> / <code>'bottom'</code> la hacen <strong>flotar</strong> como un recurso (<code>'auto'</code> toma la primera banda que quede libre, la cabecera o el pie) — sale del flujo donde aparece y ocupa la primera banda libre en ese punto o después (el pie de la página actual, o la cabecera / el pie de la siguiente página que abre el flujo), y el texto que la sigue rellena la página a su alrededor; <code>'fixed'</code> la ancla a coordenadas de página mediante <code>fixed</code>, fuera del flujo de columnas. Ver la sección del contenedor para los detalles. Se puede sobrescribir por instancia con el atributo <code>placement</code>.</td>
+    </tr>
+    <tr>
+      <td><code>sideAtColumnEnd</code></td>
+      <td><code>'before' | 'after'</code></td>
+      <td><code>'before'</code></td>
+      <td>Dónde se coloca un recuadro lateral (<code>span: 'side'</code>) cuando el texto que sigue a su valla no continúa en la misma columna: la columna ya no tiene sitio para él, o las reglas de corte lo llevan más allá (un párrafo que las reglas de viudas y huérfanas mueven entero, un encabezado que va con su texto). <code>'before'</code> lo deja en su valla, en esa página, junto al texto anterior, subiendo desde el pie de la columna si no cabe debajo de la valla: el sitio de una glosa escrita después del pasaje que explica. <code>'after'</code> lo pone a la altura de la primera línea del texto que sigue a la valla, en la columna lateral de la página donde continúa ese texto: el sitio de un número de línea o de un ladillo escrito antes de su línea. Cuando el texto continúa en la misma columna, los dos valores ponen el recuadro en su valla. Un recuadro al que no sigue nada en su capítulo se queda con el texto anterior en los dos casos, y los recuadros laterales con valla uno tras otro conservan su orden. Hasta postext 1.4 todos los recuadros laterales se comportaban como <code>'before'</code>, que sigue siendo el valor por defecto: un estilo para glosas mantiene sus recuadros en la página del pasaje que explican.</td>
+    </tr>
+    <tr>
+      <td><code>fixed</code></td>
+      <td><code>{'{ anchor?, offset? }'}</code></td>
+      <td><code>{'{ anchor: { to: \'container\', edge: \'bottom-left\' } }'}</code></td>
+      <td>Posición de una caja <code>'fixed'</code>: un <code>ElementAnchor</code> (<code>to</code>: <code>'container'</code> = el área de contenido de la página, reflejada en las páginas pares; <code>'page'</code> = la caja de corte; <code>'bleed'</code> = la caja de sangre; <code>edge</code>: uno de los nueve bordes del contenedor) más un <code>offset</code> opcional (dimensiones <code>x</code> / <code>y</code>).</td>
+    </tr>
+    <tr>
+      <td><code>floatBarrier</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Convierte la caja en una barrera de flotantes: toda figura o tabla referenciada antes se coloca antes que ella — en los huecos libres de la página, o en páginas abiertas por delante de la caja —, de modo que ningún flotante escapa más allá de la caja que cierra el capítulo (normalmente un resumen de «puntos clave»). Las aperturas de capítulo, los <code>:::part</code> y el final del documento son siempre barreras.</td>
+    </tr>
+    <tr>
+      <td colSpan={4}>Una caja <code>span: 'page'</code> en una página a varias columnas corta la banda bajo el texto que la precede; una figura a todo el ancho referenciada antes toma ese corte primero: el texto se nivela, la figura queda justo donde terminó y la caja sigue debajo (o pasa a la página siguiente cuando ya no cabe). Una figura demasiado alta para seguir al texto nivelado abre la página siguiente, con la caja tras ella, y la banda que deja sigue terminando nivelada. Una caja divisible (<code>keepTogether: false</code>) se abre bajo el texto y la figura con los elementos que caben, y el resto continúa en la página siguiente.</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>'fill' | 'auto'</code></td>
+      <td><code>'fill'</code></td>
+      <td><code>'fill'</code> ocupa todo el ancho disponible; <code>'auto'</code> se ajusta al título (uso como etiqueta) e ignora los hijos.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>Relleno de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td><code>false</code>, <code>#cccccc</code>, <code>0.5pt</code></td>
+      <td>Contorno de la caja, trazado por dentro de su borde, como el de un elemento de caja (véase <a href="/es/docs/configuration-page-layout#elementos-de-caja">Elementos de caja</a>).</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Radio de las esquinas del fondo / borde (limitado a la mitad del ancho y del alto de la caja). La franja lo sigue: en una caja redondeada se recorta al marco redondeado, como CSS recorta un <code>border-left</code> a <code>border-radius</code>. La pestaña <code>label</code> conserva las esquinas rectas.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.75em</code> cada uno</td>
+      <td>Margen interior entre el borde de la caja y su contenido. Los valores en <code>em</code> son relativos al tamaño del cuerpo del aviso.</td>
+    </tr>
+    <tr>
+      <td><code>stripe</code></td>
+      <td><code>&#123; enabled, side, width, color &#125;</code></td>
+      <td><code>false</code>, <code>'left'</code>, <code>1.5em</code>, color principal</td>
+      <td>Franja sólida a lo largo de un lado. Una franja <code>'left'</code> / <code>'right'</code> estrecha el contenido; una franja <code>'top'</code> lo desplaza hacia abajo. <code>'left'</code> y <code>'right'</code> son lados del flujo del texto (en un libro de derecha a izquierda <code>'left'</code> es la derecha del pliego); <code>'start'</code> y <code>'end'</code> siguen la dirección de la propia caja, de modo que un <code>:::callout&#123;dir=ltr&#125;</code> en un libro árabe pone a su izquierda una franja <code>'start'</code>. En una caja con <code>borderRadius</code> sus esquinas exteriores se redondean con las del marco (hasta postext 1.4 quedaban rectas y asomaban por fuera del redondeo).</td>
+    </tr>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, width, color, align, position, cornerSide &#125;</code></td>
+      <td><code>'none'</code>, fuente de encabezados, <code>400</code>, <code>1.5em</code>, color principal, <code>'top'</code></td>
+      <td>Un glifo de texto (<code>kind: 'glyph'</code>) o un recurso bitmap / SVG (<code>kind: 'resource'</code> + <code>resourceId</code>) junto al contenido. Con franja lateral el icono se centra sobre la franja; si no, reserva su propia columna (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> lo centra verticalmente sobre el contenido. Una imagen de recurso se ajusta dentro del cuadrado conservando su proporción; un icono más alto que el contenido agranda la caja para contenerlo (y, con <code>align: 'center'</code>, centra el contenido sobre él). Con <code>width</code> la imagen se ajusta a una caja de <code>width</code> × <code>size</code> (una tira ancha de iconos). <code>position: 'corner'</code> cuelga el icono de una esquina superior como una insignia, medio fuera del borde y sin ocupar sitio en el contenido; un icono ancho (<code>width</code>) se centra en la esquina según el ancho con que se dibuja, y en la esquina izquierda el título empieza pasada su mitad interior (hasta postext 1.4 se colocaba según su alto, de modo que una tira ancha sobresalía de la caja y tapaba el título); <code>cornerSide</code> elige la esquina: <code>'right'</code> / <code>'left'</code>, o <code>'outer'</code> / <code>'inner'</code>, que siguen la paridad de la página con márgenes simétricos (exterior = derecha en una página impar, izquierda en una par).</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align, gap, rule &#125;</code></td>
+      <td><code>'none'</code>, fuente de títulos, <code>400</code>, <code>1.5em</code>, color principal, <code>'center'</code>, <code>0.5em</code>, filete desactivado (<code>0.5pt</code>, color principal, longitud <code>0</code>)</td>
+      <td>Un segundo icono dibujado <em>fuera</em> de la caja, en una columna a su izquierda, con un <code>rule</code> (filete vertical) opcional entre él y la caja: la mano de «toca aquí» junto a un distintivo de autoevaluación. El marco pasa a ser <code>[marker][rule][gap][box]</code> y mide lo que el más alto de los tres; <code>align</code> los centra entre sí o los alinea arriba. <code>rule.length</code> es un mínimo: el filete abarca siempre al menos la altura de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap, letterSpacing, indent, lineHeight &#125;</code></td>
+      <td>fuente de encabezados, tamaño del cuerpo, <code>700</code>, <code>false</code>, color principal, <code>'none'</code>, <code>0.5em</code>, <code>0</code>, <code>0</code>, <code>1.2em</code></td>
+      <td>Tipografía del título. <code>gap</code> es el espacio entre el título y el primer hijo (y el hueco de la columna del icono). <code>lineHeight</code> es el interlineado de las líneas del título, y <code>em</code> cuenta el tamaño del propio título; la línea base queda a 0,8 de él dentro de cada línea, como en el texto corrido, así que un título con el interlineado del texto (<code>lineHeight: 12pt</code> sobre una rejilla de 12 pt) deja el recuadro en un número entero de líneas y su título en la rejilla, mientras que el 1,2 em por defecto añade una fracción de línea a cada recuadro. <code>textTransform: 'uppercase'</code> conserva la longitud del texto. <code>letterSpacing</code> aplica un tracking al título (canvas <code>letterSpacing</code> / PDF <code>Tc</code>); <code>indent</code> lo desplaza a la derecha del borde interior de la caja. Una insignia de esquina que cuelga del lado del título (la esquina izquierda) reserva antes su propio sitio — su mitad interior más <code>gap</code> — de modo que el título la libra caiga en la página que caiga; <code>indent</code> solo añade a partir de ahí.</td>
+    </tr>
+    <tr>
+      <td><code>body</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td>hereda de <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
+      <td>Tipografía de los párrafos y elementos de lista dentro de la caja. Cada campo hereda del texto de cuerpo cuando no se indica; <code>italicColor</code> fija el color de las cursivas (una cita destacada en cursiva con el color de la caja). <code>fontWeight</code> / <code>boldFontWeight</code> fijan el peso de los tramos normales y en negrita; <code>italic</code> compone la caja en cursiva, con los tramos <code>*…*</code> en redonda; <code>smallCaps</code>, en versalitas; <code>tabStops</code> y <code>tabInterval</code> sustituyen a los del cuerpo dentro de la caja (ver <a href="/es/docs/configuration-text#tabulaciones">Tabulaciones</a>). Ver <a href="#tipografía-dentro-de-un-recuadro">Tipografía dentro de un recuadro</a> para lo demás que toma el texto de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>lists</code></td>
+      <td><code>&#123; bulletChar, color, indent, gap, itemSpacing, bulletFontSize, bulletFontWeight &#125;</code></td>
+      <td>hereda de <code>unorderedLists</code></td>
+      <td>Tipografía de las listas dentro de la caja (<code>color</code>, <code>indent</code>, <code>gap</code> e <code>itemSpacing</code> se aplican también a las listas ordenadas). <code>bulletFontSize</code> / <code>bulletFontWeight</code> componen la viñeta en la fuente del cuerpo de la caja a ese tamaño y peso (una viñeta gruesa de color).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, color, background, position, height, paddingX, offset, inset, icon, rule &#125;</code></td>
+      <td>sin definir (sin pestaña)</td>
+      <td>Una pestaña sobre el borde superior de la caja que imprime el atributo <code>label</code> de la valla —el número de un recuadro numerado («RECUADRO 1-1»)—. Se pega a la esquina <code>position</code> (<code>'top-right'</code> / <code>'top-left'</code>) con un retranqueo <code>inset</code>, sobresale <code>offset</code> por encima del borde (ese espacio forma parte del bloque, además de <code>marginTop</code>, y se conserva también en cabeza de columna), mide <code>height</code> de alto con <code>paddingX</code> a cada lado del texto, y puede llevar un recurso <code>icon</code> a su lado (<code>&#123; resourceId, width, gap &#125;</code>, hacia el interior) y un filete <code>rule</code> (<code>&#123; enabled, color, width &#125;</code>) a lo largo del borde superior desde la esquina opuesta hasta ella. Por defecto: fuente de encabezados, tamaño del cuerpo, <code>700</code>, blanco sobre el color principal, <code>1.4em</code> de alto, <code>0.6em</code> de relleno. La pestaña es una forma propia apoyada en el marco, así que conserva las esquinas rectas sea cual sea el <code>borderRadius</code> de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5em</code></td>
+      <td>Separación entre las columnas de un grupo <code>:::columns</code> dentro de la caja (véase la sección del contenedor).</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code> / <code>0.75em</code></td>
+      <td>Espacio sobre la caja (se funde con el margen del bloque anterior) y espacio mínimo bajo ella (el espacio exacto con <code>snapToGrid: false</code>). Una caja flotante (<code>placement: 'top'</code>, <code>'bottom'</code> o <code>'auto'</code>) deja entre su banda y el texto el hueco de los flotantes, una línea del cuerpo; un <code>marginBottom</code> mayor fija el espacio bajo una caja en una banda superior, y un <code>marginTop</code> mayor el espacio sobre una caja en una banda inferior, redondeados a la rejilla con la banda. Hasta postext 1.4 una caja flotante no hacía caso de sus márgenes.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Con <code>true</code> el flujo vuelve a la rejilla base tras la caja, de modo que el espacio bajo ella es <code>marginBottom</code> redondeado hacia arriba a líneas enteras de la rejilla. Con <code>false</code> la caja conserva su <code>marginBottom</code> exacto, que se funde con el margen superior del bloque siguiente — dos cajas consecutivas de ese estilo quedan exactamente a <code>max(marginBottom, marginTop)</code> — y el texto que la sigue puede quedar fuera de la rejilla hasta el siguiente punto de ajuste (un encabezado, el final de una lista), como tras un encabezado con <code>headings.snapToGrid: false</code>. Pensado para documentos hechos de cajas apiladas (fichas, formularios). Se aplica a las cajas del flujo; las cajas a ancho de página en una maquetación de varias columnas, las flotantes, las fijas y las laterales conservan la rejilla, porque las bandas de columnas y las zonas de flotantes se disponen sobre ella. Las palancas de equilibrado de columnas no cambian: una caja que cierra una columna sigue bajando hasta la última línea de la rejilla de esa columna.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Con <code>true</code> la caja se mantiene entera: un aviso que no cabe en el espacio restante pasa entero a la columna o página siguiente. Solo una caja más alta que una columna completa y vacía — una página entera en una caja <code>span: 'page'</code> — no puede mantenerse entera: se parte con las reglas de <code>false</code> que siguen en lugar de desbordar, empezando donde aparece, y una continuación que cabe en una columna pasa entonces entera; una caja flotante (<code>placement: 'top' | 'bottom' | 'auto'</code>) así de alta no flota, sino que sigue en el flujo donde aparece. Con <code>false</code> cualquier caja puede partirse entre sus bloques hijos o entre las líneas de un párrafo o de un elemento de lista: el corte más profundo que cabe cierra la columna actual (o, en una caja <code>span: 'page'</code>, la página, a ras del pie de las columnas) y el resto continúa al inicio de la siguiente en una caja propia — mismo marco y franja, sin icono, y sin título salvo que <code>repeatTitle</code> lo repita —, partiéndose de nuevo si sigue siendo demasiado alta. El texto de cada fragmento conserva, vacía, la columna que ocupa en la cabeza un icono en línea, así que la caja tiene la misma medida en todas las páginas. Un corte dentro de un elemento de lista deja la viñeta con la cabeza. El marco de cada fragmento comparte el <code>contentIndex</code> / <code>containerId</code> de la valla y registra <code>callout.part</code> / <code>callout.continued</code>. Úsalo en una caja de «puntos clave» larga de cierre junto con <code>headings.balancing.beforeSpan</code>, o en un estilo de nota cuyas cajas nunca deban expulsar una figura de la página. Una caja anidada (un <code>:::callout</code> dentro de otro) es un hijo más de su madre: un corte puede caer antes o después de ella, y dentro solo si su propio estilo permite partirla (<code>keepTogether: false</code>, o más alta que una columna completa), según su propio <code>splitMinLines</code>.</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>Mínimo de líneas de texto que un fragmento de una caja partida (<code>keepTogether: false</code>, o una caja unida más alta que una columna completa) conserva a cada lado del corte. Solo protege el texto: un lado con al menos una figura, tabla, fórmula en bloque o caja anidada es válido tenga las líneas que tenga, de modo que una caja de imágenes puede dejar una sola en una página. Un corte dentro de un párrafo o de un elemento de lista sigue contando todas las líneas de cada lado (una figura o fórmula, como una línea), y además deja al menos <code>layout.boxChildSplitMinLines</code> líneas de ese párrafo o elemento a cada lado (dos por defecto; este mínimo si es menor, así que con 1 basta una). Con los valores por defecto, un elemento de dos o tres líneas nunca se parte y uno de cuatro solo se parte en dos y dos. Con el valor por defecto ninguna caja se parte dejando una línea de texto sola al pie de una columna o al inicio de la siguiente; si ningún corte cumple el mínimo, la caja pasa entera. (Antes de postext 1.5, un corte dentro de un párrafo solo comprobaba las líneas de todo el lado, así que un elemento de dos líneas podía partirse en una y una si otras líneas de la caja completaban el mínimo).</td>
+    </tr>
+    <tr>
+      <td><code>repeatTitle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Repite el título al principio de cada continuación de una caja partida, seguido de <code>continuedSuffix</code> («Puntos clave (cont.)»). La repetición toma el estilo del título. Una caja sin título no repite nada. Ver <a href="#marcas-de-un-recuadro-partido">Marcas de un recuadro partido</a>.</td>
+    </tr>
+    <tr>
+      <td><code>continuedSuffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'(cont.)'</code></td>
+      <td>Texto tras el título repetido, en el idioma del documento (<code>locale</code> o, si no, el de la separación silábica), como el de una tabla partida, y unido al título igual que en ella.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pone <code>continuesMarker</code> bajo la última línea de cada parte de una caja partida que continúa, dentro de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'Continued'</code> / <code>'Continúa'</code></td>
+      <td>Texto de ese indicador (el «(SIGUE)» de un guion), en la fuente y el cuerpo del texto de la caja, según el idioma del documento.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerAlign</code></td>
+      <td><code>'left' | 'center' | 'right'</code></td>
+      <td><code>'right'</code></td>
+      <td>Posición del indicador en el ancho interior de la caja.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Compone el indicador en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>sin definir</td>
+      <td>Cuenta las cajas de este estilo como enunciados numerados: teoremas, lemas, definiciones. Ver <a href="#enunciados-numerados-y-demostraciones">Enunciados numerados y demostraciones</a>.</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Una marca alineada a la derecha al final de la última línea de la caja, como el <code>'∎'</code> o el <code>'□'</code> con que termina una demostración: en esa línea si cabe tras un espacio y, si no, en una línea propia. Una caja que termina en una fórmula en bloque sin número la pone como etiqueta de la fórmula. Con las matemáticas activas, los cuadrados (∎ □ ■ ▪ ◻ ▫) se dibujan con los glifos de TeX, así que salen aunque la fuente no los tenga (los archivos latin de Fontsource); con las matemáticas desactivadas se componen en la fuente del cuerpo del recuadro.</td>
+    </tr>
+  </tbody>
+</table>
+
+### El contenedor `:::callout`
+
+Una línea `:::callout{type="<id>"}` abre la caja y una línea `:::` a solas la cierra. La valla admite cinco atributos — `type` (el id del estilo), `title` (sobrescribe el título del estilo), `span`, `placement` y `columns` (sobrescriben los valores del estilo) — y el contenido intermedio se compone dentro de la caja: un título opcional y después los párrafos, listas, citas, fórmulas o recursos incrustados, cada uno con la tipografía `body` / `lists` del estilo (los encabezados conservan sus estilos habituales). Los márgenes entre hijos se funden como en el texto corrido; el interior abandona la rejilla base y el flujo vuelve a ella tras la caja garantizando al menos `marginBottom` por debajo (la rejilla manda; el margen es un mínimo — la misma convención que siguen los recursos). Un estilo con `snapToGrid: false` conserva en cambio el `marginBottom` exacto, y el texto tras la caja queda fuera de la rejilla hasta el siguiente encabezado o final de lista. Un encabezado inmediatamente anterior a un aviso se mantiene unido a él.
+
+Límites de esta versión:
+
+- Un aviso se mantiene entero salvo que su estilo indique `keepTogether: false`. Cuando no cabe en el espacio restante de la columna pasa entero a la columna o página siguiente — también desde una columna vacía que las bandas de flotantes o un tope de banda han acortado, siempre que una columna completa lo alojara. Una caja más alta que una columna completa se parte en su lugar, como una divisible; solo la que ningún corte puede partir (una figura, tabla o grupo `:::columns` más alto que la columna, o un `splitMinLines` que ningún corte cumple) se coloca de todos modos y desborda; la maquetación registra entonces un aviso `calloutOverflow` (`VDTDocument.warnings`), que el sandbox lista. Una caja divisible deja atrás la parte que cabe — hijos enteros, o las líneas de un párrafo hasta `splitMinLines` a cada lado (basta una figura, tabla o fórmula en bloque en un lado) — y continúa en una caja sin icono en la columna o página siguiente, sin título salvo que el estilo lo repita y, si se quiere, con un indicador bajo la parte que deja (ver [Marcas de un recuadro partido](#marcas-de-un-recuadro-partido)).
+- Los flotantes ceden ante una caja indivisible. Cuando el bloque que sigue a la referencia de una figura es un aviso `keepTogether`, no se toma un hueco que dejaría a la caja sin ninguna columna de la banda actual donde caer (la columna de la referencia o una vacía posterior, que antes del flotante la alojaba): la figura pasa a su siguiente hueco, normalmente la página siguiente, y la caja sigue en el flujo — como la compondría un cajista, en lugar de expulsar la caja de la página y dejar la columna con la figura sola.
+- `span: 'page'` en una disposición multicolumna convierte la caja en un **bloque a ancho de página**: se compone al ancho completo del área de contenido y divide la página en bandas de columnas — las columnas de texto que hay encima se cierran en la línea de corte, la caja ocupa su propia columna a todo el ancho y debajo se abre una banda nueva de columnas de texto, de modo que el flujo continúa bajo la caja en todas las columnas. Donde las columnas están *niveladas* — al inicio de una página, justo debajo de un encabezado de apertura con `span: 'page'`, justo debajo de otro bloque a ancho de página o justo debajo de una banda de flotantes superior — la caja simplemente corta ahí. Si llega a mitad de página, con las columnas desiguales, se compone como lo haría un cajista: el texto que hay encima se corta nivelado en todas las columnas (el motor repite la colocación con las columnas de la banda acortadas al mismo número de líneas de rejilla, de modo que el texto desborda de columna en columna de forma natural y siguen aplicándose todas las reglas de huérfanas, viudas y encabezados unidos a su texto), la caja ocupa el ancho de la página y las columnas continúan debajo. El corte cuesta un par de pasadas de colocación adicionales; cuando la línea de corte no dejaría sitio para la caja más el mínimo de líneas viudas de cuerpo por debajo, o ninguna disposición encaja tras unos pocos intentos, la caja pasa al inicio de la página siguiente. El texto de encima respeta el corte: un párrafo que no puede empezar en las pocas líneas que le quedan a una columna bajo una figura pasa a la columna siguiente (la figura queda sola en su columna), y cuando un bloque aún pasaría del corte, el corte se baja una línea en lugar de quedarse donde termina ese bloque. Una caja partida que abre la banda también se corta ahí, de modo que su resto nunca pasa del corte. Con `headings.balancing.beforeSpan` (el valor por defecto) la banda que deja se corta nivelada tras ella — como la banda de cierre de un capítulo — y, cuando el estilo permite partirla (`keepTogether: false`), la parte de la caja que cabe bajo las columnas niveladas cierra la página y el resto abre la siguiente; con `beforeSpan: false` la página que deja simplemente se equilibra como siempre, sin forzar un salto de página. Un encabezado justo antes de un bloque a ancho de página no viaja con él. En disposiciones de una columna `span: 'page'` es simplemente en línea.
+- `placement: 'fixed'` saca la caja del flujo: se compone (`width: 'auto'` se ajusta al título; `'fill'` toma el ancho de la columna de texto bajo el punto de anclaje) y se fija a la página en la que aparece en el flujo, en la posición que describen `fixed.anchor` / `fixed.offset` — por defecto la esquina inferior izquierda del área de contenido. Las columnas de texto que cubre ceden esa zona (recortada por abajo, o por arriba cuando la columna aún está vacía), exactamente como una banda de flotantes; cuando la zona ya contiene texto, un flotante o un bloque a ancho de página, la caja pasa a la página siguiente. Una caja fija que cierra el capítulo (el bloque siguiente es una apertura de capítulo, un `:::part`, una caja barrera de flotantes o el final del documento) nivela primero las columnas que quedan encima (`headings.balancing.trailing`), de modo que una página de cierre corta termina nivelada con el distintivo debajo. La caja y sus hijos viven en `page.floats` y se pintan fuera del recorte de columna en todos los backends.
+- `placement: 'top' | 'bottom'` hace **flotar** la caja como un recurso: sale del flujo donde aparece y toma la primera banda libre a partir de ese punto — el pie de la página actual (`'bottom'`), o la cabeza / el pie de la siguiente página que abre el flujo — al ancho de la columna (`span: 'column'`) o al ancho completo del área de contenido (`span: 'page'`); el texto que la sigue rellena la página que dejó. Su marco y sus hijos van a `page.floats`, como los de una caja fija. Una caja flotante que encabeza una página nueva se coloca antes que las figuras que esperan esa página, y una figura citada en una página anterior que entonces cabe bajo ella toma el resto de esa página aunque quedaran menos de tres líneas de texto (una página galería: caja más figura, sin texto entre ambas). Una caja `span: 'side'` nunca flota: se apila junto al texto sea cual sea su `placement`. Con `columns` mayor que 1 (en el estilo o como atributo de la valla, desde postext 1.18), una caja `span: 'column'` ocupa ese número de columnas contiguas: la cabeza de una serie de columnas vacías que empiezan a la misma altura, o el pie de la columna en curso y de las vacías que la siguen, como en `:::callout{placement="top" columns="2"}`.
+- `width: 'auto'` se ajusta solo al título; los hijos se ignoran.
+- Un `:::callout` anidado dentro de otro aviso es una caja propia: se compone con su propio estilo (fondo, borde, radio, relleno, franja, título, icono, marcador, pestaña, tipografía) al ancho interior completo de su caja madre y se apila como un hijo más, con su `marginTop` / `marginBottom` colapsando con los vecinos. Su `span` y su `placement` (de la valla o del estilo) se ignoran —una caja anidada siempre fluye dentro de su madre—, igual que `floatBarrier` y `snapToGrid`. Las cajas se anidan a cualquier profundidad y pueden ir dentro de un grupo `:::columns` (cada una entera, en una columna). Cuando la caja madre se parte, el corte cae antes o después de una caja anidada, o dentro de ella si su estilo permite partirla; cada fragmento vuelve a dibujar los marcos que atraviesa el corte, y una caja anidada que continúa del fragmento anterior pierde su título y su icono, como una continuación de primer nivel.
+- Un grupo `:::columns{count=N}` … `:::` entre los hijos compone esos hijos en `N` columnas de igual ancho, separadas por `columnGap`, dentro de la caja: la secuencia se corta por los límites de bloque o de línea que mejor nivelan las columnas (un párrafo o elemento de lista cortado a medias sigue en la cabeza de la columna siguiente sin su viñeta), cada columna empieza en la parte superior del grupo y el grupo mide lo que la columna más alta; los hijos posteriores recuperan el ancho completo. Una caja que se parte (`keepTogether: false`, o más alta que una columna) también corta dentro de un grupo, entre sus columnas: un grupo en serpentina llena sus columnas por turno y sigue en el fragmento siguiente, y uno paralelo (`breaks`) sigue corriente a corriente (desde postext 1.25; ver [Formato del documento › `:::columns`](/es/docs/document-format#columns)). Un `gap` en la valla sustituye a `columnGap` para ese grupo, y `rule` traza un filete a lo largo de cada medianil. Sirve para un resumen de puntos clave a dos columnas o para las tablas de un recuadro ancho puestas lado a lado.
+- El sexto atributo de la valla, `label`, se imprime en la pestaña `label` del estilo (véase arriba): `:::callout{type="recuadro" label="RECUADRO 1-1" title="La regla del octeto"}`; sin estilo de pestaña el atributo se ignora.
+
+En el VDT la caja es un bloque marco de `type: 'callout'` cuya decoración (fondo, franja, icono, título) vive en `designOverlay`, seguido de sus bloques hijos en la misma columna; el marco y cada hijo llevan el `containerId` de la valla. Una caja anidada es un marco `type: 'callout'` propio entre los hijos, seguido de sus bloques; conservan el `containerId` de la valla de primer nivel (la colocación y el equilibrado siguen viendo una sola unidad) y añaden `calloutPath`, los identificadores de contenedor de las vallas anidadas que los rodean, de la más externa a la más interna (el de un marco anidado es la última entrada). El PDF etiquetado da a cada caja anidada un `Div` dentro del de su madre. Las imágenes de icono se resuelven como las de los recursos: el registro de imágenes del canvas, la opción `resourceImageUrl` del HTML y el proveedor `resourceBytes` del PDF.
+
+```ts
+const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyText, resolvedHeadings, resolvedUnorderedLists, config.locale);
+// => cada campo heredado se rellena desde las secciones resueltas; el locale
+//    opcional elige el idioma de las cadenas de continuación
+
+const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
+// => undefined para el `note` por defecto; se eliminan los valores estáticos por defecto
+```
+
+### Enunciados numerados y demostraciones
+
+Un estilo con `numbering` cuenta sus cajas, como el paquete `amsthm` de LaTeX cuenta los entornos de teorema (desde postext 1.19). Cada caja imprime su rótulo y su número —«**Teorema 2.**» al principio de su primer párrafo—, y el `title` de la valla sigue al número entre paréntesis: `:::callout{type="theorem" title="Bradley–Terry"}` empieza con «**Teorema 2** (Bradley–Terry)**.**». Una caja abierta con un identificador (`{#thm:main}`) es destino de referencias cruzadas, que imprimen «Teorema 2» (`:ref{id="thm:main"}`), y `\ref{thm:main}` o `style=number` imprimen 2.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>La palabra que precede al número: <code>'Teorema'</code>, <code>'Lema'</code>, <code>'Definition'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td>el <code>id</code> del estilo</td>
+      <td>El contador que hacen avanzar las cajas. Los estilos que nombran un mismo contador lo comparten, como hace <code>\newtheorem&#123;lemma&#125;[theorem]</code>: Teorema 1, Lema 2, Teorema 3. <code>'equation'</code> cuenta junto con las ecuaciones etiquetadas. <code>false</code> imprime el rótulo sin número (el «<em>Demostración.</em>» de una demostración).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>Como los de un tipo de recurso: <code>'&#123;h1&#125;.&#123;n&#125;'</code> con <code>resetOn: 'h1'</code> numera Teorema 2.1, 2.2… por capítulo, y <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> con <code>'h2'</code>, por sección. Un contador que comparten varios estilos sigue la cuenta impriman lo que impriman sus plantillas.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code> abre el primer párrafo de la caja con el rótulo (una caja que empieza con una lista, una fórmula u otra caja recibe un párrafo para él); <code>'title'</code> hace del rótulo el título de la caja, con su <code>titleStyle</code>: «Teorema 2 (Bradley–Terry)».</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>La letra del rótulo en línea y de su sufijo, sea cual sea la del cuerpo de la caja: con un cuerpo en cursiva (<code>body.italic</code>), un rótulo en redonda sigue en redonda. El título entre paréntesis se compone en redonda y con el peso normal.</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>Se compone tras el rótulo en línea y su título.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una demostración es un estilo con un rótulo sin número y una marca final:
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: 'Teorema' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: 'Lema', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: 'Definición' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: 'Demostración', counter: false, bold: false, italic: true } },
+]
+```
+
+En un libro compuesto capítulo a capítulo, los contadores siguen desde el capítulo anterior (`LayoutContinuation.statementCounters`, que rellena `continuationAfter`), y el esquema del libro da al ancla de cada caja numerada su rótulo (`OutlineEntry.numberLabel`), de modo que una referencia desde otro capítulo lo imprime.
+
+### Tipografía dentro de un recuadro
+
+Una caja de aviso —un *recuadro*, como la llaman el panel Estilos de recuadro del sandbox y el [formato del documento](/es/docs/document-format)— compone su contenido con la tipografía `body` y `lists` de su estilo; todo lo demás conserva los estilos del documento:
+
+- **Los párrafos** toman el `body` de la caja: fuente, cuerpo, interlineado, color, colores de énfasis, pesos, `italic`, `smallCaps`, alineación, separación silábica, sangría y espaciado entre párrafos. Un campo sin definir hereda de `bodyText`. Un color de énfasis heredado conserva su vínculo con la paleta, así que las negritas, las cursivas y las etiquetas de `:ref` de una caja cambian con `colorPalette` igual que fuera de ella. (Hasta postext 1.4 la negrita de una caja se quedaba en `#295AA3` fuera cual fuera el color principal).
+- **Las listas de viñetas** toman el `lists` de la caja (carácter de viñeta, color, tamaño y peso del glifo, sangría, separación, espaciado entre elementos) sobre `unorderedLists`, y su texto es el del cuerpo de la caja. Un `lists.bulletChar` o un `lists.color` distinto del del documento (`unorderedLists`) sustituye la viñeta o el color de todos los niveles; uno que lo repite, o que no se define, deja a cada nivel los suyos (`unorderedLists.levels`), de modo que las rayas de los niveles anidados se conservan en la caja.
+- **Las listas ordenadas** toman `lists.indent`, `gap` e `itemSpacing`, y `lists.color` siempre que el estilo lo define, también cuando coincide con el color de viñeta del documento; un estilo que no lo define deja los números en `orderedLists.color`. (Hasta postext 1.4 el color solo llegaba a los números si era distinto de `unorderedLists.color`, así que darle justo ese color no tenía efecto). El número —su fuente, su cuerpo y su separador— viene de los `orderedLists` globales, porque `lists` solo tiene campos de viñeta: es ahí donde se da estilo a los números de una caja.
+- **Los `:::paragraphs` dentro de una caja** usan su estilo de párrafo, también en cajas anidadas. Los campos que el estilo no define heredan del `bodyText` del documento, no del `body` de la caja (ni de su cursiva ni de sus versalitas).
+- **Los grupos `:::columns`** no tienen estilo propio: todas las columnas comparten la tipografía de cuerpo y de listas de la caja, y `columnGap` fija la separación entre ellas.
+- **Las citas** toman la fuente, el cuerpo y los pesos del texto de la caja (en cursiva y en gris, como en el texto corrido) y sus versalitas. **Los encabezados** conservan sus estilos; **las fórmulas en bloque**, los ajustes de matemáticas.
+- **Las figuras y las tablas** conservan los estilos de pie y de tabla del documento, al ancho interior de la caja; sus pesos normal y negrita siguen los pesos del `body` de la caja.
+- **Los chips** conservan su estilo de chip; un tamaño en `em` se mide sobre el cuerpo del texto de la caja.
+- **`:::space`** se mide en líneas del texto de la caja (ver [`:::space`](/es/docs/document-format#space) para saber dónde se descarta).
+- **Una caja anidada** toma su propio estilo completo; su `span`, su `placement`, su `floatBarrier` y su `snapToGrid` se ignoran.
+
+### Marcas de un recuadro partido
+
+Cuando una caja se parte entre columnas o páginas (`keepTogether: false`, o una caja más alta que una columna), cada parte posterior a la primera empieza sin el título ni el icono y, por defecto, nada avisa al lector de que la caja continúa. Dos opciones añaden las marcas que usan un libro o un guion:
+
+- **`repeatTitle: true`** repite el título al principio de cada continuación, seguido de `continuedSuffix` — «Puntos clave (cont.)» por defecto. La repetición toma el estilo del título, así que con `textTransform: 'uppercase'` da el «HAMLET (CONT.)» de un guion. El icono y la pestaña de etiqueta se quedan en la primera parte.
+- **`continuesMarkerEnabled: true`** pone `continuesMarker` — «Continúa» en un documento en español, «Continued» en inglés — bajo la última línea de cada parte que continúa, dentro de la caja, en la fuente y el cuerpo del texto de la caja: en cursiva salvo que `continuesMarkerItalic` sea `false`, y alineado a la derecha salvo que `continuesMarkerAlign` diga `'left'` o `'center'`. El indicador ocupa sitio en la parte que cierra, y el corte se elige para que quepa.
+
+```ts
+calloutStyles: [{
+  id: 'parlamento',
+  keepTogether: false,
+  titleStyle: { textTransform: 'uppercase' },
+  repeatTitle: true,
+  continuedSuffix: '(CONT.)',
+  continuesMarkerEnabled: true,
+  continuesMarker: '(SIGUE)',
+  continuesMarkerAlign: 'center',
+  continuesMarkerItalic: false,
+}],
+```
+
+```md
+:::callout{type="parlamento" title="Hamlet"}
+Un parlamento lo bastante largo para pasar del pie de la página…
+:::
+```
+
+La parte que cierra la página termina con «(SIGUE)» y la página siguiente empieza con «HAMLET (CONT.)». Las dos son elementos de paginación: en un PDF accesible son artefactos y en el HTML se ocultan a las tecnologías de apoyo, de modo que el título se lee una sola vez. En el VDT son bloques de texto de `designOverlay` marcados con `artifact: true`.
+
+
+## Partes
+
+La propiedad `parts` configura las páginas separadoras de parte que un documento abre con un contenedor `:::part{number="…" title="…"}` — la página «Parte I — Fundamentos» que agrupa una serie de capítulos. Una parte ocupa siempre una página propia: el contenedor salta a una página nueva con la paridad configurada, la convierte en una página de una sola columna cuya área de cuerpo sale de `parts.margins`, compone el diseño de apertura sobre la página entera y vuelve a saltar tras la valla de cierre para que el siguiente capítulo (con su propio `breakBefore.parity`) empiece limpio — con los valores por defecto de H1 eso produce la secuencia clásica: página de parte en recto, verso en blanco, capítulo en el siguiente recto.
+
+```ts
+const config: PostextConfig = {
+  parts: {
+    breakBefore: { parity: 'odd' },
+    breakAfter: { enabled: true, parity: 'any' },
+    margins: { top: { value: 9, unit: 'cm' }, left: { value: 3, unit: 'cm' }, right: { value: 3, unit: 'cm' } },
+    design: {
+      elements: [
+        {
+          kind: 'text', id: 'number', content: 'Parte {numberRoman}',
+          fontSize: { value: 12, unit: 'pt' }, fontWeight: 600, align: 'left',
+          placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: { value: 3, unit: 'cm' }, y: { value: 5, unit: 'cm' } }, size: { width: 'auto', height: 'auto' } },
+        },
+        {
+          kind: 'text', id: 'title', content: '{titleText}',
+          fontSize: { value: 28, unit: 'pt' }, fontWeight: 700, align: 'left', overflow: 'wrap',
+          placement: { anchor: { to: '#number', edge: 'below' }, size: { width: { value: 15, unit: 'cm' }, height: 'auto' } },
+        },
+      ],
+    },
+    bodyStyle: { fontSize: { value: 11, unit: 'pt' }, numberColor: { hex: '#AA0000', model: 'hex' } },
+  },
+};
+```
+
+```md
+:::part{number="I" title="Fundamentos"}
+1. El farol y sus partes
+2. Recortar la mecha
+3. Leer el tiempo
+:::
+
+# El farol y sus partes
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si un <code>:::part</code> abre una portadilla. Con <code>false</code> no se abre ninguna página ni se compone el cuerpo de la valla: el número, el título y la paleta de la parte rigen a partir del contenido siguiente, sin salto propio. Uso típico: <code>htmlViewer.overrides.parts.page: false</code>, una edición en pantalla sin portadillas.</td>
+    </tr>
+    <tr>
+      <td><code>breakBefore.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'odd'</code></td>
+      <td>Paridad de la página en la que se abre la parte. Mismos valores y mismas reglas de pertenencia de las páginas en blanco que el <a href="/es/docs/configuration-text#saltar-antes">breakBefore</a> de los encabezados: un blanco insertado para alcanzar la paridad pertenece a la parte (su <code>{'{partTitle}'}</code> ya resuelve a la parte nueva); el separador obligatorio de <code>'always-*'</code> pertenece al contenido anterior.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pasa el contenido posterior a la valla de cierre a una página nueva. Con <code>false</code> continúa en la columna única de la página de parte.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'any'</code></td>
+      <td>Paridad de esa página nueva. Déjalo en <code>'any'</code> y deja que el propio <code>breakBefore.parity</code> del siguiente capítulo decida si sigue un verso en blanco. El salto se aplica al colocar el siguiente bloque, así que una parte que cierra el documento no deja una página vacía al final.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>márgenes de página</td>
+      <td>Área de cuerpo de la página de parte — la columna única en la que fluyen los bloques de dentro de la valla. Cada lado hereda el margen de página cuando no se define; <code>mirror</code> intercambia interior/exterior en las páginas pares exactamente como los márgenes de página.</td>
+    </tr>
+    <tr>
+      <td><code>design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>vacío</td>
+      <td>Diseño de apertura. Su contenedor es la <strong>caja de corte</strong> de la página, así que los anclajes al contenedor y a <code>'page'</code> coinciden, y <code>'bleed'</code> llega hasta el sangrado cuando las marcas de corte están activas. Puramente decorativo: nunca reserva espacio de cuerpo — sube <code>margins.top</code> para que el cuerpo no lo pise. Cuando está vacío se sintetiza un texto <code>{'{number} {titleText}'}</code> por defecto con la tipografía del H1 en la esquina superior izquierda del área de cuerpo, con el <code>numberSeparator</code> del H1 entre número y título.</td>
+    </tr>
+    <tr>
+      <td><code>versoDesign</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>vacío</td>
+      <td>Diseño del verso en blanco que sigue a la página de parte (el reverso de la hoja separadora): mismo contenedor y marcadores que <code>design</code>. Déjalo vacío para un verso liso. Solo se pinta cuando la página que sigue a la de parte queda en blanco, lo que requiere un salto con paridad: consulta <a href="#el-diseño-del-verso">El diseño del verso</a> más abajo.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>color</code>, <code>textAlign</code></td>
+      <td>como en <code>bodyText</code></td>
+      <td>heredan de <code>bodyText</code></td>
+      <td>Tipografía de los párrafos, citas y elementos de lista de dentro de la valla. Los pesos, los colores de énfasis y la separación silábica vienen del texto de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.bulletColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>unorderedLists.color</code></td>
+      <td>Color de las viñetas de las listas no ordenadas de dentro de la parte.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.numberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>orderedLists.color</code></td>
+      <td>Color de los números de las listas ordenadas de dentro de la parte. Los números van siempre en el peso de negrita del cuerpo, para que una lista de capítulos se lea como un índice.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.unorderedLists</code></td>
+      <td><code>UnorderedListsConfig</code></td>
+      <td>—</td>
+      <td>Sobrescrituras parciales aplicadas sobre las <code>unorderedLists</code> del documento dentro de la parte, tras <code>bulletColor</code>. Los valores generales se propagan a los niveles que los heredaban; las entradas de <code>levels</code> se aplican solo a su nivel.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.orderedLists</code></td>
+      <td><code>OrderedListsConfig</code></td>
+      <td>—</td>
+      <td>Sobrescrituras parciales aplicadas sobre las <code>orderedLists</code> del documento dentro de la parte, tras <code>numberColor</code> y el peso de negrita — p. ej. un <code>separator</code> <code>'•'</code> con su propia <code>separatorFontFamily</code> y <code>separatorColor</code> para la lista de capítulos de una apertura de parte.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Marcadores del diseño de parte
+
+El diseño resuelve el conjunto de marcadores de encabezado con los valores propios de la parte: `{titleText}` es el `title` de la valla; `{number}` el `number` tal como se escribió; `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` lo reformatean — el número se interpreta como decimal, como numeral romano o como numerales chinos, con o sin las palabras que los rodean (`"IV"`, `"iv"`, `"4"`, `"４"`, `"四"`, `"卷四"` y `"第四卷"` dan `{numberDecimal}` = `4`) y resuelven a `''` para cualquier otra cosa. También están disponibles `{partTitle}` / `{partNumber}`, `{chapterTitle}` / `{chapterNumber}` (el capítulo anterior a la parte), `{pageNumber}`, `{totalPages}`, `{bookTotalPages}` y los marcadores de metadatos. `{attr.<key>}` lee los atributos del H1 del capítulo actual.
+
+### El diseño del verso
+
+`versoDesign` decora la página que sigue a la de parte cuando esa página no tiene contenido: el reverso de la hoja separadora. La parte por sí sola nunca deja esa página en blanco. `breakAfter.parity` vale `'any'` por defecto, así que el contenido tras la valla empieza en la página siguiente salvo que algo pida una paridad:
+
+- **El título del capítulo siguiente.** El `breakBefore` por defecto del H1 es `'always-odd'`, y `'odd'` hace lo mismo tras una página de parte en recto: el capítulo pasa al recto siguiente y el verso queda en blanco. El diseño del verso se pinta.
+- **`parts.breakAfter: { enabled: true, parity: 'odd' }`.** La propia parte pide el recto siguiente, haga lo que haga el título siguiente. Úsalo cuando los capítulos puedan abrir en cualquier cara (`breakBefore.parity: 'any'`, o `breakBefore.enabled: false`).
+
+Sin ninguno de los dos, el capítulo abre en el verso y no se dibuja diseño de verso. Con `breakAfter.enabled: false` el contenido continúa en la propia página de parte. El verso toma la paleta de la parte, así que un `palette="band=#…"` en la valla también lo recolorea.
+
+```ts
+parts: {
+  breakBefore: { parity: 'odd' },
+  breakAfter: { enabled: true, parity: 'odd' },   // siempre queda un verso en blanco que pintar
+  versoDesign: {
+    elements: [{
+      kind: 'box', id: 'campo',
+      style: { backgroundColor: { hex: '#b07d2b', model: 'hex', paletteId: 'band' } },
+      placement: { anchor: { to: 'page', edge: 'top-left' }, size: { width: 'fill', height: 'fill' } },
+    }],
+  },
+}
+```
+
+**Una parte que cierra su capítulo.** En un libro maquetado capítulo a capítulo (el Sandbox, `buildBundle`), una valla `:::part` puede ser un capítulo por sí sola, o el final de uno. Su página de parte es entonces la última del capítulo, y el capítulo siguiente asume lo que la parte aún debe: aplica `breakAfter` antes de su primer bloque y pinta `versoDesign` en su primera página cuando esta queda en blanco. Las páginas salen como saldrían con el libro entero en un solo documento. Tras la valla solo pueden venir directivas que no colocan nada (`:::numbering`, `:::space`); cualquier otra cosa es contenido del capítulo, que entonces hace el salto por sí mismo. Un capítulo vacío justo después de la parte es una página propia: esa página es el verso. Un anfitrión que maqueta los capítulos por su cuenta lo obtiene de `continuationAfter()`, que devuelve `afterPartPage: true` para un capítulo que termina con una parte; pásalo en la `continuation` del capítulo siguiente.
+
+### El contenedor `:::part`
+
+Una línea `:::part{number="…" title="…"}` abre la parte y un `:::` a solas la cierra; los dos atributos son opcionales (por defecto `''`). Los bloques intermedios — normalmente la lista de capítulos — fluyen en la columna única de la página de parte con `bodyStyle`, empezando en `margins.top`; un cuerpo más largo que la página continúa en páginas normales. La página se clasifica como `role: 'part'` (`VDTPage.partInfo` lleva el número y el título), de modo que los elementos de encabezado y pie pueden dirigirse a ella o saltársela con `pages: 'part'` / `pages: 'body'`; el backend PDF añade la parte al esquema por encima de sus capítulos. Un cuerpo vacío (`:::part{…}` seguido directamente de `:::`) es el caso habitual y también produce la página — dos partes consecutivas nunca comparten una. Un `:::part` anidado dentro de otra parte se aplana en la exterior.
+
+Un tercer atributo, `palette="<id>=<hex>[, <id>=<hex>…]"`, da a la parte sus propios colores: en la página de parte y en todas las que la siguen — hasta la siguiente parte — cada color de diseño (cabecera, pie, banda de apertura, diseños de parte y de su verso) vinculado a uno de esos ids de paleta toma el valor de la parte en lugar del de la paleta del documento. Así recolorean las secciones de un libro la pestaña de la esquina, el punto de la cabecera y la banda de apertura de capítulo sin un segundo diseño: `:::part{number="II" title="…" palette="band=#f6c297"}`. El flujo de texto también lo sigue: en esas mismas páginas, todo color del flujo igual al valor base de una entrada de paleta sustituida —títulos, colores de negrita, cursiva y referencias, viñetas y números de lista, etiquetas y barras de pie, texto, filetes y rellenos de tablas (cabecera, cuerpo, filas alternas y el relleno propio de una celda), recuadros (fondo, borde, franja y título) y chips (relleno, contorno y texto)— toma el valor de la parte, de modo que un `headings.levels[1].color` vinculado a `band` compone los títulos de cada sección en su propio color. Las muestras de color en línea conservan el color escrito en ellas. Los pares se separan con comas, puntos y comas o espacios, `=` o `:` une id y color, y la `#` es opcional. Una parte sigue vigente después de cerrarse su valla: `{partTitle}`, `{partNumber}` y la paleta acompañan al flujo hasta los capítulos posteriores y — mediante `continuation.part`, que devuelve `continuationAfter()` — hasta los capítulos compuestos por separado, de modo que el segundo capítulo de una sección muestra la sección en sus cabeceras exactamente igual que el primero.
+
+Dos entradas de la paleta pueden compartir valor base y aun así tomar valores distintos en una parte, cuando la parte sustituye una y no la otra o les da colores distintos. El valor por sí solo no indica de qué entrada viene un color del flujo, así que cada color del flujo se empareja con los ajustes de los que puede venir y toma el valor al que enlazan esos ajustes. Se distinguen:
+
+- los colores del texto de un bloque: el color del texto, los de negrita, cursiva y referencias, la viñeta o el número de lista y el separador que sigue al número. Con `bodyText.color` vinculado a `ink` y `bodyText.boldColor` vinculado a `accent`, ambos `#1a1a1a`, una parte con `palette="accent=#b8413d"` recolorea las negritas y deja el texto; si lo que se vincula a `accent` es `unorderedLists.color`, recolorea las viñetas y deja el texto de los elementos;
+- cada nivel de encabezado, y cada estilo de encabezado que fija un color;
+- el texto de una fila del índice, su número, y su número de página y su subtítulo;
+- en cada estilo de recuadro, los rellenos (fondo, franja, pestaña de la etiqueta), el borde, los filetes (del marcador y de la etiqueta) y el texto (título, icono, glifo del marcador, etiqueta);
+- cada color de cada estilo de tabla, de chip y de pie. Un estilo de tabla con nombre se distingue de `tableStyle`, y el estilo de pie de un tipo de recurso de `captionStyle`. El relleno propio de una celda sigue su propio enlace.
+
+Queda un caso que se resuelve por valor: ajustes de sitios distintos que fijan el mismo color de un bloque. Por ejemplo, `bodyText.color`, `bodyText.blockquote.color`, el `color` de un estilo de párrafo y el `body.color` de un estilo de recuadro fijan todos el color del texto de un bloque. Cuando dos de ellos enlazan a entradas que comparten valor base y la parte las separa, el color toma la sustitución (la última escrita, si se sustituyen las dos). Da a esas entradas valores base propios.
+
+```ts
+const resolved = resolvePartsConfig(config.parts, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);
+// => márgenes rellenados desde la página, bodyStyle desde el cuerpo / las listas
+
+const minimal = stripPartsDefaults(config.parts);
+// => undefined cuando solo quedan valores estáticos por defecto
+```
+
+
+## Estilos de encabezado
+
+La propiedad `headingStyles` declara estilos con nombre que un documento aplica a un encabezado con `# Título {style="<id>"}`. Un estilo hace dos cosas. Sobrescribe la tipografía, el diseño y la numeración del nivel del encabezado — cualquier campo de una entrada de nivel salvo `level` (fuente, cuerpo, color, `breakBefore`, `span`, `advancedDesign`, `textTransform`, `hidden`, `numberingTemplate`…) — y gobierna la **sección** que el encabezado abre: sus páginas, hasta el siguiente encabezado del mismo nivel o superior, toman las cabeceras, la geometría de página, la tipografía de cuerpo y la paleta del estilo. Así los preliminares de un libro (un prólogo a una sola columna ancha, con folios en romanos y bandas azules) conviven en un manual a dos columnas y numeración decimal sin una segunda configuración.
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    {
+      id: 'preliminar',
+      numbered: false,
+      breakBefore: { enabled: true, parity: 'odd' },
+      span: 'page',
+      advancedDesign: { enabled: true, minHeight: { value: 52, unit: 'mm' }, slot: { elements: [/* bandas, `{titleText}` */] } },
+      header: { elements: [/* folio | filete | `{title}. {subtitle}` */] },
+      margins: { left: { value: 50, unit: 'mm' }, right: { value: 17, unit: 'mm' } },
+      layout: { layoutType: 'single' },
+      bodyStyle: { fontSize: { value: 10.5, unit: 'pt' }, textAlign: 'justify' },
+      palette: { band: '#547396' },
+    },
+  ],
+};
+```
+
+```md
+# Prólogo {style="preliminar"}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Identificador al que se refiere <code>{'{style="…"}'}</code> en una línea de encabezado. Un id desconocido deja el encabezado tal cual.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nombre legible (solo para la interfaz del editor).</td>
+    </tr>
+    <tr>
+      <td><code>numbered</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si el encabezado cuenta: avanza el contador de su nivel (los números de <code>numberingTemplate</code>, el <code>{'{h1}'}</code> de la numeración de recursos), el ordinal de capítulo que hay tras <code>{'{chapterNumber}'}</code> y el número que imprime el índice. <code>false</code> para un prólogo, una lista de autores, un índice: el primer capítulo numerado que los sigue sigue siendo el capítulo 1, y <code>{'{chapterNumber}'}</code> queda vacío en sus páginas.</td>
+    </tr>
+    <tr>
+      <td><code>toc</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si <code>:::toc</code> lista el encabezado. Un encabezado lo sobrescribe con <code>{'{toc="false"}'}</code> / <code>{'{toc="true"}'}</code>.</td>
+    </tr>
+    <tr>
+      <td><code>runningChapter</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si un encabezado de nivel 1 con este estilo pasa a ser el capítulo en curso: el que nombran <code>{'{chapterTitle}'}</code>, <code>{'{chapterNumber}'}</code>, <code>{'{attr.<key>}'}</code> y sus formas <code>…AtTop</code> en su página y en las siguientes. <code>false</code> para una lámina, un mapa o una portadilla que se compone como H1 dentro de un capítulo: las cabeceras se lo saltan, también en su propia página, y siguen nombrando el capítulo que interrumpe; tampoco pone palabra guía <code>h1</code>. El encabezado sigue contando si es <code>numbered</code> (su propio diseño lee su propio <code>{'{chapterNumber}'}</code>) y <code>:::toc</code> lo sigue listando si es <code>toc</code>. Si además lleva <code>toc: false</code>, no tiene marcador en el PDF: la lámina de un capítulo, en la página que precede a su apertura, deja los marcadores del PDF a los capítulos. Los encabezados de otros niveles no lo leen. Con el valor por defecto, las páginas que siguen a una lámina imprimen el título de la lámina. Un prefacio o un prólogo con <code>numbered: false</code> sigue siendo un capítulo por sí mismo y conserva el valor por defecto. La opción solo cambia el capítulo que nombran los marcadores: el estilo sigue abriendo una sección propia, como cualquier estilo de encabezado, así que hasta el siguiente encabezado de nivel 1 las páginas toman las ranuras de cabecera, los márgenes, las columnas, el estilo del cuerpo y la paleta del estilo de la lámina (los del documento donde el estilo no fija nada), no los de una sección con estilo que hubiera abierto el capítulo interrumpido. En un libro compuesto capítulo a capítulo, las cabeceras no pasan de un archivo de capítulo al siguiente, así que una lámina que abre un archivo deja vacíos los marcadores de capítulo hasta el primer encabezado de capítulo del archivo.</td>
+    </tr>
+    <tr>
+      <td>campos de nivel</td>
+      <td>como en <code>headings.levels[]</code></td>
+      <td>los valores del nivel</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada uno que se fije sustituye al valor del nivel para los encabezados de este estilo (<code>dropCap: false</code> quita la capitular del nivel). <code>breakBefore</code> se combina campo a campo con el del nivel: un estilo que solo fija <code>parity</code> conserva el <code>enabled</code> del nivel, y uno que solo fija <code>enabled: true</code> conserva su paridad (hasta postext 1.4, el campo que faltaba salía en cambio del valor sin salto).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td>la del nivel</td>
+      <td>Plantilla con la que se numeran los encabezados del estilo, en lugar de la de su nivel (los mismos tokens que <a href="/es/docs/configuration-text#configuración-por-nivel"><code>levels[].numberingTemplate</code></a>). El contador sigue siendo el del nivel: un estilo de apéndice con <code>'Apéndice {'{1:A}'}'</code> tras cinco capítulos imprimiría <em>Apéndice F</em>, así que reinicia la cuenta con <code>{'{startAt=1}'}</code> en el primer apéndice. <code>''</code> no imprime número, aunque el encabezado sigue contando: ni siquiera el ordinal de capítulo que el índice y <code>{'{chapterNumber}'}</code> muestran para un encabezado de nivel 1 sin plantilla. El número aparece en el flujo, en el <code>{'{number}'}</code> del diseño del estilo, en el índice y en <code>{'{chapterNumber}'}</code>.</td>
+    </tr>
+    <tr>
+      <td><code>header</code>, <code>footer</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>los del documento</td>
+      <td>Cabeceras y pies de las páginas de la sección, en lugar de <code>header</code> / <code>footer</code> (los filtros <code>parity</code> y <code>pages</code> de los elementos siguen aplicándose). Una ranura vacía los elimina.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>márgenes de página</td>
+      <td>Área de cuerpo de las páginas de la sección; cada lado hereda el margen de página si no se fija, <code>mirror</code> incluido. Surte efecto en las páginas que la sección abre — combínalo con <code>breakBefore</code>.</td>
+    </tr>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>LayoutConfig</code></td>
+      <td><code>layout</code></td>
+      <td>Disposición de columnas de las páginas de la sección (<code>layoutType</code>, <code>gutterWidth</code>…): una sola columna ancha para un prólogo en un libro a dos columnas. Su <code>columnRule</code> se dibuja en las páginas de la sección, y cada campo que deja sin fijar toma el valor de <code>layout.columnRule</code> del documento, así que una sección que solo cambia sus columnas conserva el filete del documento (ver <a href="/es/docs/configuration-page-layout#filete-de-columna">Filete de columna</a>).</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle</code></td>
+      <td><code>PartsBodyStyleConfig</code></td>
+      <td>hereda <code>bodyText</code></td>
+      <td>Tipografía de los párrafos, citas y listas de la sección — los mismos campos que <a href="#partes">parts.bodyStyle</a>.</td>
+    </tr>
+    <tr>
+      <td><code>palette</code></td>
+      <td><code>Record&lt;string, string&gt;</code></td>
+      <td><code>{'{}'}</code></td>
+      <td>Sustituciones de paleta (id → hex) para las páginas de la sección, sobre las de la parte en curso — el mismo mecanismo que el atributo <code>palette</code> de una parte, y con el mismo alcance: no solo las ranuras de diseño compuestas en esas páginas (cabeceras, la banda de apertura: todo color enlazado a un id sustituido), sino también el flujo de texto, por valor: todo color del flujo igual al valor base de una entrada sustituida — encabezados, colores de negrita, cursiva y referencias, viñetas y números de lista, etiquetas y barras de pie, texto, filetes y rellenos de tabla, recuadros (fondo, borde, franja y título) y chips (relleno, contorno y texto) — toma el valor de la sección, igual que bajo una parte, también cuando dos entradas comparten valor base (ver <a href="#el-contenedor-part">El contenedor <code>:::part</code></a>). Las muestras de color en línea conservan el color escrito en ellas. También el color de la página: si <code>page.backgroundColor</code> está enlazado a una entrada sustituida (o, sin enlace, tiene su valor base), las páginas de la sección se pintan con el valor de la sección, de modo que las páginas de economía de un periódico salen en salmón y las demás en blanco. Desde postext 1.18.</td>
+    </tr>
+  </tbody>
+</table>
+
+Una sección se cierra en el siguiente encabezado del mismo nivel o superior: un `#` sin estilo tras uno con estilo vuelve a las cabeceras y la geometría del documento; uno con estilo abre su propia sección. Las páginas que la sección deja en blanco por paridad le pertenecen, como ocurre con los títulos de capítulo.
+
+**Un salto de página no sustituye al salto del propio encabezado.** Un estilo hereda el `breakBefore` de su nivel (el del nivel 1 es, por defecto, `{ enabled: true, parity: 'always-odd' }`), y el encabezado lo aplica esté donde esté, también justo después de un `:::pagebreak`. El salto de página abre una página nueva, y el encabezado pide después, igualmente, su lado del pliego. Con `parity: 'odd'`, un salto que cae en una página par va seguido de una página en blanco, de modo que el encabezado abre en la siguiente impar. Con `'always-odd'` se añade además la página separadora, y el salto de página no cambia nada, porque el encabezado habría abierto esa página de todos modos. Un estilo que debe empezar en la página que abre un salto manual, como un índice detrás de la portada, desactiva su propio salto:
+
+```ts
+headingStyles: [
+  // Empieza donde lo deja el texto: en la página que abrió el `:::pagebreak` anterior.
+  { id: 'contents', numbered: false, toc: false, breakBefore: { enabled: false } },
+],
+```
+
+Para conservar una página propia sin elegir lado, usa en su lugar `breakBefore: { parity: 'any' }` y prescinde del `:::pagebreak`.
+
+**A qué sección pertenece una página.** Las cabeceras y la paleta se eligen por página, no por encabezado. Una página toma la sección vigente tras el último cambio de sección que hay en ella: cuando una sección termina y otra empieza en la misma página — dos letras cortas de un diccionario, por ejemplo —, la página lleva las cabeceras y la paleta de la segunda; cuando una sección con estilo termina a mitad de página en un encabezado sin estilo, la página vuelve a las del documento. `{chapterTitle}` sigue la misma regla: una página donde se encuentran dos capítulos muestra el título del segundo. Las páginas en blanco siguen la regla de los [títulos de capítulo](/es/docs/configuration-text#pertenencia-de-las-páginas-en-blanco): una página en blanco de paridad (`blankForParity`) pertenece a la sección que se abre tras ella, y la separadora que añade un salto `'always-odd'` / `'always-even'` (`blankForForce`), a la sección anterior. Una página divisoria de parte cierra la sección abierta.
+
+```md
+# A {style="letra"}
+
+Aardvark, ábaco.
+
+# B {style="letra"}
+
+Babel, babero… (sigue en la página siguiente)
+```
+
+Las dos letras empiezan en la página 1, así que la página 1 toma las cabeceras de la sección `B`: una pestaña de uñero puesta en la cabecera del estilo dice «B» ahí, y ninguna página lleva la pestaña de la «A». Da a cada sección una página propia (`breakBefore`) cuando todas necesitan su pestaña.
+Apéndices con letra tras capítulos numerados, y una página de dedicatoria que el índice y los marcadores del PDF incluyen pero que la página no titula:
+
+```ts
+headingStyles: [
+  { id: 'apendice', numberingTemplate: 'Apéndice {1:A}' },
+  { id: 'silencioso', hidden: true, numbered: false },
+],
+```
+
+```md
+# Dedicatoria {style="silencioso"}
+
+Para M., que leyó todos los borradores.
+
+# Método
+
+…
+
+# Cuestionario {style="apendice" startAt=1}
+
+# Datos en bruto {style="apendice"}
+```
+
+Con `numberingTemplate: '{1}.'` en el nivel 1, los capítulos imprimen *1.*, *2.*…, y los apéndices *Apéndice A* y *Apéndice B*. La dedicatoria abre su página (el `breakBefore` de su nivel), imprime solo su párrafo y sigue apareciendo como *Dedicatoria* en `:::toc`, en las cabeceras con `{chapterTitle}` y en los marcadores del PDF; añade `toc: false` al estilo para dejarla fuera del índice. Una lámina o un mapa que se compone como H1 en mitad de un capítulo pide lo contrario que la dedicatoria: un estilo con `runningChapter: false` (normalmente con `numbered: false` y `toc: false`) mantiene las cabeceras en el capítulo que interrumpe.
+
+```ts
+const resolved = resolveHeadingStylesConfig(config.headingStyles, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);
+// => sobrescrituras de nivel normalizadas, márgenes tomados de la página, bodyStyle del cuerpo
+
+const minimal = stripHeadingStylesDefaults(config.headingStyles);
+// => undefined cuando no queda ningún estilo
+```

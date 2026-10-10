@@ -1,7 +1,7 @@
 {
   "$comment": "Exported symbols recipes import (from postext, postext/worker, postext-pdf, postext-citeproc, postext-folio and postext-epub) → the docs section that explains them. The capture lists the symbols a pen imports (detected.apis) and the recipe page links each through this map; a symbol with no dedicated docs section points at the nearest one. Keys are case-sensitive export names.",
   "buildDocument": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Building a document",
       "es": "Construir un documento",
@@ -13,7 +13,7 @@
     }
   },
   "renderPage": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Rendering a page to a bitmap",
       "es": "Renderizar una página a un bitmap",
@@ -25,7 +25,7 @@
     }
   },
   "renderPageToCanvas": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Rendering a page to a bitmap",
       "es": "Renderizar una página a un bitmap",
@@ -37,7 +37,7 @@
     }
   },
   "renderToCanvas": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Rendering a page to a bitmap",
       "es": "Renderizar una página a un bitmap",
@@ -85,7 +85,7 @@
     }
   },
   "buildDocumentWithFonts": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Loading fonts before layout",
       "es": "Cargar las fuentes antes de componer",
@@ -97,7 +97,7 @@
     }
   },
   "prepareFonts": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Loading fonts before layout",
       "es": "Cargar las fuentes antes de componer",
@@ -109,7 +109,7 @@
     }
   },
   "withLoadedFonts": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Loading fonts before layout",
       "es": "Cargar las fuentes antes de componer",
@@ -121,7 +121,7 @@
     }
   },
   "inlineSvgFonts": {
-    "slug": "configuration",
+    "slug": "configuration-resources",
     "heading": {
       "en": "Fonts in SVG text",
       "es": "Fuentes en el texto de los SVG",
@@ -133,7 +133,7 @@
     }
   },
   "clearMeasurementCache": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Measurement cache",
       "es": "Caché de medidas",
@@ -145,7 +145,7 @@
     }
   },
   "createMeasurementCache": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Measurement cache",
       "es": "Caché de medidas",
@@ -157,7 +157,7 @@
     }
   },
   "measureGlyphWidth": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Integrating the HTML viewer",
       "es": "Integrar el visor HTML",
@@ -169,7 +169,7 @@
     }
   },
   "BuildCancelledError": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Cooperative cancellation inside the engine",
       "es": "Cancelación cooperativa dentro del motor",
@@ -181,7 +181,7 @@
     }
   },
   "defaultResourceTypes": {
-    "slug": "configuration",
+    "slug": "configuration-resources",
     "heading": {
       "en": "Resource types",
       "es": "Tipos de recurso",
@@ -193,7 +193,7 @@
     }
   },
   "applyHtmlViewerOverrides": {
-    "slug": "configuration",
+    "slug": "configuration-fonts-colors-viewers",
     "heading": {
       "en": "HTML Viewer",
       "es": "Visor HTML",
@@ -205,7 +205,7 @@
     }
   },
   "applySingleInkToSvg": {
-    "slug": "configuration",
+    "slug": "configuration-resources",
     "heading": {
       "en": "How single ink works",
       "es": "Cómo funciona la tinta única",
@@ -217,7 +217,7 @@
     }
   },
   "resolvePageConfig": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Resolving defaults",
       "es": "Resolver valores por defecto",
@@ -229,7 +229,7 @@
     }
   },
   "stripConfigDefaults": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Stripping defaults",
       "es": "Eliminar valores por defecto",
@@ -241,7 +241,7 @@
     }
   },
   "PAGE_SIZE_PRESETS": {
-    "slug": "configuration",
+    "slug": "configuration-page-layout",
     "heading": {
       "en": "Page size presets",
       "es": "Tamaños de página predefinidos",
@@ -253,7 +253,7 @@
     }
   },
   "parseMarkdown": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Parsing",
       "es": "Parseo",
@@ -265,7 +265,7 @@
     }
   },
   "parseMarkdownWithIssues": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Parsing",
       "es": "Parseo",
@@ -277,7 +277,7 @@
     }
   },
   "extractFrontmatter": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Parsing",
       "es": "Parseo",
@@ -385,7 +385,7 @@
     }
   },
   "continuationAfter": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Laying out and rendering a bundle",
       "es": "Componer y renderizar un paquete",
@@ -397,7 +397,7 @@
     }
   },
   "contentOutline": {
-    "slug": "configuration",
+    "slug": "configuration-notes-references",
     "heading": {
       "en": "Table of contents",
       "es": "Índice de contenidos",
@@ -409,7 +409,7 @@
     }
   },
   "outlineFromDoc": {
-    "slug": "configuration",
+    "slug": "configuration-notes-references",
     "heading": {
       "en": "Table of contents",
       "es": "Índice de contenidos",
@@ -421,7 +421,7 @@
     }
   },
   "computeOutline": {
-    "slug": "configuration",
+    "slug": "configuration-notes-references",
     "heading": {
       "en": "Table of contents",
       "es": "Índice de contenidos",
@@ -433,7 +433,7 @@
     }
   },
   "openBundle": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Opening a bundle",
       "es": "Abrir un paquete",
@@ -445,7 +445,7 @@
     }
   },
   "createBundle": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Creating a bundle",
       "es": "Crear un paquete",
@@ -457,7 +457,7 @@
     }
   },
   "buildBundle": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Laying out and rendering a bundle",
       "es": "Componer y renderizar un paquete",
@@ -469,7 +469,7 @@
     }
   },
   "loadBundleFonts": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Laying out and rendering a bundle",
       "es": "Componer y renderizar un paquete",
@@ -481,7 +481,7 @@
     }
   },
   "registerBundleImages": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Laying out and rendering a bundle",
       "es": "Componer y renderizar un paquete",
@@ -493,7 +493,7 @@
     }
   },
   "bundleImageUrl": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Laying out and rendering a bundle",
       "es": "Componer y renderizar un paquete",
@@ -505,7 +505,7 @@
     }
   },
   "bundleResourceBytes": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Laying out and rendering a bundle",
       "es": "Componer y renderizar un paquete",
@@ -517,7 +517,7 @@
     }
   },
   "bundleFontProvider": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Laying out and rendering a bundle",
       "es": "Componer y renderizar un paquete",
@@ -529,7 +529,7 @@
     }
   },
   "readBundle": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Low-level API",
       "es": "API de bajo nivel",
@@ -541,7 +541,7 @@
     }
   },
   "zipBundle": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Low-level API",
       "es": "API de bajo nivel",
@@ -553,7 +553,7 @@
     }
   },
   "renderToHtml": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Integrating the HTML viewer",
       "es": "Integrar el visor HTML",
@@ -565,7 +565,7 @@
     }
   },
   "renderToHtmlIndexed": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Going further",
       "es": "Siguiente paso",
@@ -577,7 +577,7 @@
     }
   },
   "createLayoutWorker": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Running layout in a Web Worker",
       "es": "Ejecutar la composición en un Web Worker",
@@ -589,7 +589,7 @@
     }
   },
   "renderToPdf": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Generating PDFs",
       "es": "Generación de PDF",
@@ -601,7 +601,7 @@
     }
   },
   "decompressWoff2": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Browser font provider (Fontsource + WOFF2)",
       "es": "Proveedor de fuentes en el navegador (Fontsource + WOFF2)",
@@ -613,7 +613,7 @@
     }
   },
   "createPdfWorker": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Driving PDF export from the worker",
       "es": "Exportar PDF desde el worker",
@@ -673,7 +673,7 @@
     }
   },
   "createFolioFromDocument": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "A 3D book (`postext-folio`)",
       "es": "Un libro en 3D (`postext-folio`)",
@@ -685,7 +685,7 @@
     }
   },
   "createFolio": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "A 3D book (`postext-folio`)",
       "es": "Un libro en 3D (`postext-folio`)",
@@ -697,7 +697,7 @@
     }
   },
   "renderToEpub": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Writing a book",
       "es": "Escribir un libro",
@@ -709,7 +709,7 @@
     }
   },
   "readEpub": {
-    "slug": "configuration",
+    "slug": "configuration-programmatic-usage",
     "heading": {
       "en": "Writing a book",
       "es": "Escribir un libro",
@@ -781,7 +781,7 @@
     }
   },
   "encodeQr": {
-    "slug": "configuration",
+    "slug": "configuration-resources",
     "heading": {
       "en": "QR code",
       "es": "Código QR",
@@ -793,7 +793,7 @@
     }
   },
   "resolveVideoStyleConfig": {
-    "slug": "configuration",
+    "slug": "configuration-resources",
     "heading": {
       "en": "Video style",
       "es": "Estilo de vídeo",

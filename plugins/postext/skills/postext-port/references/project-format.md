@@ -311,7 +311,7 @@ here, while the Sandbox falls back to the language of its interface: set
 
 The `postext` npm package reads and writes `.postext` files (exported from
 `postext` and from the `postext/bundle` subpath; docs:
-https://postext.dev/en/docs/configuration#bundles-postext-files).
+https://postext.dev/en/docs/configuration-programmatic-usage#bundles-postext-files).
 
 ```js
 import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,

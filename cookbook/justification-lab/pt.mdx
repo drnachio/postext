@@ -22,7 +22,7 @@ O código deste passo é [a resposta curta](#a-resposta-curta) logo acima. O [Kn
 
 <Excerpt region="marks" />
 
-`findLooseLines` devolve as linhas justificadas cujos espaços se esticam além de um limite, aqui o limite superior, cada uma com a faixa que o realce cobre ([Linhas frouxas no seu próprio canvas](/pt/docs/configuration#linhas-frouxas-no-seu-próprio-canvas)). `marks()` acrescenta o que essa lista deixa de fora, lido do [VDT](/pt/docs/justification#depuração-de-linhas-frouxas): uma linha acima de 3× não tem proporção, porque o motor [a compõe alinhada à esquerda](/pt/docs/justification#linhas-que-o-algoritmo-não-consegue-preencher) e a marca com `line.ragged`, e um parágrafo dividido entre duas colunas volta como um bloco por fragmento, que é como as linhas isoladas são encontradas. Com quarenta caracteres, os limites sozinhos não mantêm todas as linhas abaixo de 1,6; enquanto o texto do ensaio era ajustado, as marcas mostravam quais frases reescrever.
+`findLooseLines` devolve as linhas justificadas cujos espaços se esticam além de um limite, aqui o limite superior, cada uma com a faixa que o realce cobre ([Linhas frouxas no seu próprio canvas](/pt/docs/configuration-fonts-colors-viewers#linhas-frouxas-no-seu-próprio-canvas)). `marks()` acrescenta o que essa lista deixa de fora, lido do [VDT](/pt/docs/justification#depuração-de-linhas-frouxas): uma linha acima de 3× não tem proporção, porque o motor [a compõe alinhada à esquerda](/pt/docs/justification#linhas-que-o-algoritmo-não-consegue-preencher) e a marca com `line.ragged`, e um parágrafo dividido entre duas colunas volta como um bloco por fragmento, que é como as linhas isoladas são encontradas. Com quarenta caracteres, os limites sozinhos não mantêm todas as linhas abaixo de 1,6; enquanto o texto do ensaio era ajustado, as marcas mostravam quais frases reescrever.
 
 ### 3 · Ponha o controle ao lado da página publicada
 
@@ -40,7 +40,7 @@ Um boxe compõe todas as colunas de um grupo [`:::columns`](/pt/docs/document-fo
 
 <Excerpt region="opener" />
 
-O diagrama é um [elemento de imagem](/pt/docs/configuration#elementos-de-imagem) do design do H1. Como figura, seria um flutuante `top` na largura da página, e um flutuante `top` citado na página 1 abre a página 2. A faixa desce além do diagrama, e uma abertura reserva altura até o seu elemento mais baixo, então o texto começa sob a faixa sem `minHeight`, uma linha mais abaixo por causa do `marginBottom` padrão do H1. Os rótulos são texto de design posto sobre as coordenadas do próprio desenho, composto e espacejado como os outros rótulos da abertura.
+O diagrama é um [elemento de imagem](/pt/docs/configuration-page-layout#elementos-de-imagem) do design do H1. Como figura, seria um flutuante `top` na largura da página, e um flutuante `top` citado na página 1 abre a página 2. A faixa desce além do diagrama, e uma abertura reserva altura até o seu elemento mais baixo, então o texto começa sob a faixa sem `minHeight`, uma linha mais abaixo por causa do `marginBottom` padrão do H1. Os rótulos são texto de design posto sobre as coordenadas do próprio desenho, composto e espacejado como os outros rótulos da abertura.
 
 ## Variações
 

@@ -24,11 +24,11 @@ const FEATURE_DOCS: Record<FeatureKey, DocAnchor> = {
     heading: { en: "Resources", es: "Recursos", ca: "Recursos", zh: "资源", ar: "الموارد", ja: "リソース", pt: "Recursos" },
   },
   tables: {
-    slug: "configuration",
+    slug: "configuration-resources",
     heading: { en: "Table style", es: "Estilo de tablas", ca: "Estil de taules", zh: "表格样式", ar: "نمط الجداول", ja: "表スタイル", pt: "Estilo de tabela" },
   },
   singleInk: {
-    slug: "configuration",
+    slug: "configuration-resources",
     heading: { en: "Diagram style", es: "Estilo de diagramas", ca: "Estil dels diagrames", zh: "图示样式", ar: "نمط المخططات", ja: "ダイアグラムスタイル", pt: "Estilo de diagramas" },
   },
   math: {

@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ar',
   lastUpdated: '2026-10-09',
   readingTime: '10 دقائق',
-  order: 13,
+  order: 22,
   plainSummary: "هذه الصفحة لمن يريد أن يصنع كتبًا بـPostext من الطرفية بدلًا من الموقع. تنزّل ملفًا واحدًا يناسب حاسوبك وتشغّله، دون أن تثبّت أي شيء. تعطيه كتابك أو بضعة ملفات نصية، فيصنع منها ملف PDF أو صفحة ويب أو كتابًا إلكترونيًا أو صورًا للصفحات أو مستند Word. ويستطيع أيضًا أن يفحص الكتاب بحثًا عن المشكلات، وأن يجمع ملفاته في ملف واحد. وتستطيع البرامج والمساعدات الذكية استعماله أيضًا، لأنه يجيب بصيغة تقرؤها بسهولة.",
 };
 
@@ -108,7 +108,7 @@ postext image my-book.postext --page 1 -o cover.png
 كل أمر يقرأ كتابًا يقبل أيًّا مما يلي:
 
 - **ملف `.postext`**: الحزمة التي يصدّرها Sandbox ويفتحها (انظر
-  [الحزم](/ar/docs/configuration#الحزم-ملفات-postext)).
+  [الحزم](/ar/docs/configuration-programmatic-usage#الحزم-ملفات-postext)).
 - **مجلد كتاب**: حزمة مفكوكة، فيها `preset.json` وفصولها ومواردها وخطوطها. وهذا
   ما تسلّمه مهارة الوكيل، و`postext unpack` يكتب مجلدًا كهذا.
 - **ملفات Markdown منفردة**: ملف `.md` واحد أو أكثر، كل ملف فصل بالترتيب المعطى،
@@ -161,8 +161,8 @@ postext pdf book/ --color-space grayscale --no-outlines
 ```
 
 يتبع ملف PDF إعدادات الكتاب نفسه (انظر
-[إنتاج PDF](/ar/docs/configuration#إنتاج-pdf-الإعدادات) و
-[الإنتاج الطباعي](/ar/docs/configuration#الإنتاج-الطباعي-الإعدادات))؛ وهذه الخيارات
+[إنتاج PDF](/ar/docs/configuration-fonts-colors-viewers#إنتاج-pdf-الإعدادات) و
+[الإنتاج الطباعي](/ar/docs/configuration-fonts-colors-viewers#الإنتاج-الطباعي-الإعدادات))؛ وهذه الخيارات
 تغيّرها لتشغيل واحد:
 
 - `--pdfx none|x1a|x4`: معيار PDF/X الذي تطلبه المطبعة.
@@ -197,7 +197,7 @@ postext epub book.postext --layout reflowable --cover cover.jpg
 
 `--layout fixed` (الافتراضي) يبقي كل صفحة كما طُبعت، بنص قابل للتحديد؛
 و`--layout reflowable` يترك لنظام القراءة أن يصفّ النص من جديد لشاشته (انظر
-[كتب EPUB](/ar/docs/configuration#كتب-epub-postext-epub)). والغلاف هو الصورة
+[كتب EPUB](/ar/docs/configuration-programmatic-usage#كتب-epub-postext-epub)). والغلاف هو الصورة
 المصغّرة للكتاب ما لم يعطِ `--cover` صورة. وتأتي البيانات الوصفية للحزمة (العنوان،
 والمؤلفون، واللغة، والمعرّف) من البيانات التمهيدية للفصل الأول، كما في Sandbox.
 

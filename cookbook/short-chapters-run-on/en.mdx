@@ -18,7 +18,7 @@ Five pages of text from near the end of *Dom Casmurro*, Machado de Assis’s nov
 
 <Excerpt region="answer" highlight="17-24" />
 
-The chapter level has its break turned off, and `marginTop` sets each head two lines under the last line of the chapter before. Its design has no `span`, so the head is drawn in the column, in a block three lines deep, and the text under it stays on the grid ([break before](/en/docs/configuration#break-before), [span and advanced design](/en/docs/configuration#span-and-advanced-design)). The keep rules are left at their defaults. The four-line paragraphs under CXIX and CXXI each leave two lines at the foot of their page and carry two over; with `avoidOrphans: false` they would split three and one, and pages 214 and 215 would open on a single line ([orphans, widows, runts](/en/docs/configuration#orphans-widows-runts-and-keep-together-rules)). Column balancing adds a third line of space above CXIX, so that page 213 ends on line 33 ([column balancing](/en/docs/configuration#column-balancing)).
+The chapter level has its break turned off, and `marginTop` sets each head two lines under the last line of the chapter before. Its design has no `span`, so the head is drawn in the column, in a block three lines deep, and the text under it stays on the grid ([break before](/en/docs/configuration-text#break-before), [span and advanced design](/en/docs/configuration-text#span-and-advanced-design)). The keep rules are left at their defaults. The four-line paragraphs under CXIX and CXXI each leave two lines at the foot of their page and carry two over; with `avoidOrphans: false` they would split three and one, and pages 214 and 215 would open on a single line ([orphans, widows, runts](/en/docs/configuration-text#orphans-widows-runts-and-keep-together-rules)). Column balancing adds a third line of space above CXIX, so that page 213 ends on line 33 ([column balancing](/en/docs/configuration-text#column-balancing)).
 
 <PageShot page={3} crop="0,.683,1,.317" caption="Page 213: chapter CXIX starts three lines under the end of CXVIII and keeps two lines of its text at the foot." />
 
@@ -32,13 +32,13 @@ The bottom margin is 16.3 mm, what the 178 mm height leaves after the 15 mm top 
 
 <Excerpt region="heads" />
 
-`{title}` prints the title in the frontmatter, and `{chapterTitle}` the last chapter that starts on or before the page, so page 217 names CXXIII, which began on page 216 ([text elements](/en/docs/configuration#text-elements)). Page 213 names CXIX, which begins at its foot, though its first 25 lines close CXVIII. `{chapterTitleAtTop}` names the chapter a page opens in instead, but this excerpt holds no heading for CXVIII. `SHIFT` moves the heads onto the centre of the text block, 1 mm off the page’s centre because the inner margin is 2 mm wider than the outer one.
+`{title}` prints the title in the frontmatter, and `{chapterTitle}` the last chapter that starts on or before the page, so page 217 names CXXIII, which began on page 216 ([text elements](/en/docs/configuration-page-layout#text-elements)). Page 213 names CXIX, which begins at its foot, though its first 25 lines close CXVIII. `{chapterTitleAtTop}` names the chapter a page opens in instead, but this excerpt holds no heading for CXVIII. `SHIFT` moves the heads onto the centre of the text block, 1 mm off the page’s centre because the inner margin is 2 mm wider than the outer one.
 
 ### 4 · Draw the cover and the plate as headings
 
 <Excerpt region="cover" />
 
-Both are [heading styles](/en/docs/configuration#heading-styles) with `numbered: false`, so the first numbered chapter is still CXIX. `span: 'page'` makes each an opener page. Without it the cover’s foot band and the plate’s picture stop at the foot of the text block, and the running head and the folio print on both pages. The plate’s caption comes from its heading: CAPÍTULO CXXIII is the heading’s text, and the italic quotation is its `quote` attribute ([heading attributes](/en/docs/document-format#heading-attributes)). Each design reaches the foot of its page, so the heading reserves the whole page and the text starts on the next one with no `:::pagebreak`.
+Both are [heading styles](/en/docs/configuration-styles#heading-styles) with `numbered: false`, so the first numbered chapter is still CXIX. `span: 'page'` makes each an opener page. Without it the cover’s foot band and the plate’s picture stop at the foot of the text block, and the running head and the folio print on both pages. The plate’s caption comes from its heading: CAPÍTULO CXXIII is the heading’s text, and the italic quotation is its `quote` attribute ([heading attributes](/en/docs/document-format#heading-attributes)). Each design reaches the foot of its page, so the heading reserves the whole page and the text starts on the next one with no `:::pagebreak`.
 
 ### 5 · Tell the excerpt where it stands in the book
 

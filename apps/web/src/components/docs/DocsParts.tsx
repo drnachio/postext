@@ -52,13 +52,15 @@ export function DocsPartsNav({ docs, onNavigate }: { docs: DocEntry[]; onNavigat
                     onClick={onNavigate}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "group flex min-h-10 items-center gap-2.5 rounded-e-md border-s-[3px] py-1 pe-2 ps-3 font-sans text-[0.8rem] transition-colors 2xl:text-sm",
+                      "group flex min-h-10 items-center gap-2.5 rounded-e-md border-s-[3px] py-1 pe-2 font-sans text-[0.8rem] transition-colors 2xl:text-sm",
+                      // A page of a reference sits under the page that opens it.
+                      meta.parent ? "ps-6" : "ps-3",
                       isActive
                         ? "border-(--part) bg-surface font-semibold text-foreground"
                         : "border-transparent text-slate hover:border-rule-strong hover:text-foreground",
                     )}
                   >
-                    <span className="w-3 shrink-0 text-end font-bold text-(--part-ink) tabular-nums">{n}</span>
+                    <span className="w-4 shrink-0 text-end font-bold text-(--part-ink) tabular-nums">{n}</span>
                     <span>{meta.sidebarTitle}</span>
                   </Link>
                 </li>

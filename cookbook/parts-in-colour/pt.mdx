@@ -22,13 +22,13 @@ Uma parte redefine entradas da paleta pelo id, então tudo o que deve mudar com 
 
 ### 2 · Uma página divisória, o verso e a lista
 
-O código deste passo é [a resposta curta](#a-resposta-curta) logo acima. Um `:::part` abre uma [página divisória](/pt/docs/configuration#partes) numa página ímpar, e `parts.design` a diagrama sobre todo o refile. O Markdown entre as marcas do bloco começa a 125 mm da borda superior, abaixo do título: algumas linhas sobre o hábitat no estilo de parágrafo `habitat` e, depois, a lista das espécies em `bodyStyle`. `versoDesign` pinta o verso da folha (o campo e a aba em negativo) só quando essa página fica em branco, e `breakAfter: { parity: 'odd' }` a mantém em branco ao mandar a primeira espécie para a próxima página ímpar. `{numberRoman}` imprime o `number="I"` da parte em algarismo romano (`"1"` daria o mesmo I), enquanto as espécies são numeradas de 1 a 4 em algarismos arábicos. O `\\` do título quebra a linha só na página divisória; o sumário e os cabeços compõem o título numa linha só.
+O código deste passo é [a resposta curta](#a-resposta-curta) logo acima. Um `:::part` abre uma [página divisória](/pt/docs/configuration-styles#partes) numa página ímpar, e `parts.design` a diagrama sobre todo o refile. O Markdown entre as marcas do bloco começa a 125 mm da borda superior, abaixo do título: algumas linhas sobre o hábitat no estilo de parágrafo `habitat` e, depois, a lista das espécies em `bodyStyle`. `versoDesign` pinta o verso da folha (o campo e a aba em negativo) só quando essa página fica em branco, e `breakAfter: { parity: 'odd' }` a mantém em branco ao mandar a primeira espécie para a próxima página ímpar. `{numberRoman}` imprime o `number="I"` da parte em algarismo romano (`"1"` daria o mesmo I), enquanto as espécies são numeradas de 1 a 4 em algarismos arábicos. O `\\` do título quebra a linha só na página divisória; o sumário e os cabeços compõem o título numa linha só.
 
 ### 3 · Os destaques do texto acompanham a parte
 
 <Excerpt region="flow" />
 
-De um `:::part` até o seguinte, toda cor de texto igual ao valor próprio de `band` assume o valor da parte ([o contêiner `:::part`](/pt/docs/configuration#o-contêiner-part)). Aqui são as marcas de campo em negrito, os marcadores e os rótulos das pranchas. O texto corrido e os itálicos ficam na cor da tinta. As pranchas são um tipo de recurso próprio, com o rótulo Plate e uma numeração que nunca reinicia, então contam de 1 a 4 junto com as espécies.
+De um `:::part` até o seguinte, toda cor de texto igual ao valor próprio de `band` assume o valor da parte ([o contêiner `:::part`](/pt/docs/configuration-styles#o-contêiner-part)). Aqui são as marcas de campo em negrito, os marcadores e os rótulos das pranchas. O texto corrido e os itálicos ficam na cor da tinta. As pranchas são um tipo de recurso próprio, com o rótulo Plate e uma numeração que nunca reinicia, então contam de 1 a 4 junto com as espécies.
 
 ### 4 · A abertura de cada espécie
 
@@ -40,7 +40,7 @@ A abertura de cada espécie imprime três atributos do título: `status` no ante
 
 <Excerpt region="contents" />
 
-`:::toc` dá uma linha a cada `:::part` e diagrama nela `toc.parts.design` com o número, o título, a página divisória e a paleta dessa parte ([sumário](/pt/docs/configuration#sumário)), então a mesma caixa sai marrom para os lodaçais e verde para os juncais. Cada espécie sob a tarja mostra o número, uma linha pontilhada e a página, com o nome científico do atributo `latin` na linha de baixo.
+`:::toc` dá uma linha a cada `:::part` e diagrama nela `toc.parts.design` com o número, o título, a página divisória e a paleta dessa parte ([sumário](/pt/docs/configuration-notes-references#sumário)), então a mesma caixa sai marrom para os lodaçais e verde para os juncais. Cada espécie sob a tarja mostra o número, uma linha pontilhada e a página, com o nome científico do atributo `latin` na linha de baixo.
 
 ### 6 · A parte nos cabeços e na aba
 

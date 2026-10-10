@@ -30,25 +30,25 @@ pageNotes: { "2": "卷首插图：一张蕨叶和一枝结果花楸的物影照�
 
 <Excerpt region="poem-head" />
 
-这个标题不印它的文字，而是在栏里印一个版面设计。在这个设计里，`{number}`是按`numberingTemplate: '{1:I}'`格式化的计数，从I到IV，`{titleText}`是诗题（[通栏与高级版面设计](/zh/docs/configuration#通栏与高级设计)）。这一级标题没有下外边距，`minHeight`让每个标题都占六行网格（31.75 mm）。罗马数字和一行诗题占其中四行，诗题折行时占五行，所以每首诗都从页面上的同一行开始。在<PageRef page={6}>第6页</PageRef>上，这一行放的是献词。奇偶设为`'any'`时分页到下一页，不论左右页，所以诗与诗之间没有空白页。
+这个标题不印它的文字，而是在栏里印一个版面设计。在这个设计里，`{number}`是按`numberingTemplate: '{1:I}'`格式化的计数，从I到IV，`{titleText}`是诗题（[通栏与高级版面设计](/zh/docs/configuration-text#通栏与高级设计)）。这一级标题没有下外边距，`minHeight`让每个标题都占六行网格（31.75 mm）。罗马数字和一行诗题占其中四行，诗题折行时占五行，所以每首诗都从页面上的同一行开始。在<PageRef page={6}>第6页</PageRef>上，这一行放的是献词。奇偶设为`'any'`时分页到下一页，不论左右页，所以诗与诗之间没有空白页。
 
 ### 4 · 前置部分由标题组成
 
 <Excerpt region="front" />
 
-标题样式可以分页到新的一页并在那里画出版面设计，所以简扉页、卷首插图和书名页各是一个标题，各有自己的样式。`numbered: false`让它们不参与计数，第一首诗仍是I。`toc: false`让它们不进目录，空的页脚让它们的页面不带页码（[标题样式](/zh/docs/configuration#标题样式)）。这些样式设为通栏，因为留在栏内的版面设计会在版心底部被裁掉，那样满版出血的插图下面一截会被裁去，题注也印不出来。题注来自标题的`caption`属性；书名页上的作者、书名和副书名来自frontmatter。
+标题样式可以分页到新的一页并在那里画出版面设计，所以简扉页、卷首插图和书名页各是一个标题，各有自己的样式。`numbered: false`让它们不参与计数，第一首诗仍是I。`toc: false`让它们不进目录，空的页脚让它们的页面不带页码（[标题样式](/zh/docs/configuration-styles#标题样式)）。这些样式设为通栏，因为留在栏内的版面设计会在版心底部被裁掉，那样满版出血的插图下面一截会被裁去，题注也印不出来。题注来自标题的`caption`属性；书名页上的作者、书名和副书名来自frontmatter。
 
 ### 5 · 目录自动填写
 
 <Excerpt region="contents" />
 
-`:::toc`列出样式允许进入目录的每个标题，罗马数字出自同一个模板，页码取标题所在页的页码标签。构建会反复排版，直到这些页码标签不再变化（[目录](/zh/docs/configuration#目录)）。目录页本身的标题Contents使用带`numbered: false`的样式；没有它，Contents就会成为第I首诗。前导符`'. '`在每个点后加一个空格。点是右对齐的，所以各条目之间的点上下对齐；它们用页码的字体和颜色印出，因为`toc.leader`没有颜色设置。
+`:::toc`列出样式允许进入目录的每个标题，罗马数字出自同一个模板，页码取标题所在页的页码标签。构建会反复排版，直到这些页码标签不再变化（[目录](/zh/docs/configuration-notes-references#目录)）。目录页本身的标题Contents使用带`numbered: false`的样式；没有它，Contents就会成为第I首诗。前导符`'. '`在每个点后加一个空格。点是右对齐的，所以各条目之间的点上下对齐；它们用页码的字体和颜色印出，因为`toc.leader`没有颜色设置。
 
 ### 6 · 装饰图案是一种不带标签的资源类型
 
 <Excerpt region="ornament" />
 
-正文中的图片是资源，每个资源都有一个类型。装饰图案类型的题注前缀为空，花楸枝也没有题注，所以下面不会印出“Figure 1”之类的标签（[资源类型](/zh/docs/configuration#资源类型)）。这个类型的`defaultPlacement`把花楸枝放在`::resource{id="sprig"}`所在的位置，居中，宽度为行长的五分之一，所以*Inversnaid*下面的尾花只占一行Markdown。`resourceTypes`会替换默认列表，所以这本书没有Figure或Table类型。要保留它们，就把`defaultResourceTypes()`展开放在装饰图案之前。
+正文中的图片是资源，每个资源都有一个类型。装饰图案类型的题注前缀为空，花楸枝也没有题注，所以下面不会印出“Figure 1”之类的标签（[资源类型](/zh/docs/configuration-resources#资源类型)）。这个类型的`defaultPlacement`把花楸枝放在`::resource{id="sprig"}`所在的位置，居中，宽度为行长的五分之一，所以*Inversnaid*下面的尾花只占一行Markdown。`resourceTypes`会替换默认列表，所以这本书没有Figure或Table类型。要保留它们，就把`defaultResourceTypes()`展开放在装饰图案之前。
 
 ## 变化
 

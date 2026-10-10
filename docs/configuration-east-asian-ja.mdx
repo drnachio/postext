@@ -1,0 +1,377 @@
+{/* docs/configuration-east-asian-ja.mdx */}
+
+export const metadata = {
+  title: '設定：東アジアの組版',
+  sidebarTitle: '東アジアの組版',
+  description: 'cjkの設定：中国語、日本語、韓国語の行分割、約物の幅、アキ、文字グリッド、ルビ、各種の記号',
+  lang: 'ja',
+  lastUpdated: '2026-10-10',
+  readingTime: '2分',
+  order: 7,
+  parent: 'configuration',
+  plainSummary: "このページでは、中国語、日本語、韓国語の文字の設定を説明します。行をどこで分けられるか、句読点などの記号がどれだけの幅をとるかを決めます。これらの文字とラテン文字や数字とのあいだの空きを決めます。文字の横に小さく入れる読みがなや、名前や題名のそばに引く記号も扱います。中国語の組版と日本語の組版のガイドで、これらの設定の使い方を見られます。",
+};
+
+# 設定：東アジアの組版
+
+
+## 東アジアの組版
+
+`cjk`プロパティは、中国語・日本語・韓国語のテキストの組み方を設定します。どの地域の慣習に従うか、行をどこで分割できるか、約物をどの幅で組み、ぶら下げるかどうか、漢字と欧文の間のアキ、版面の文字グリッド、そして圏点、傍線、ルビ、割注、漢文の訓点をどう印字するかを決めます。どのフィールドも省略でき、`'auto'`は文書の言語（`locale`）の地域に従います。そのため`locale: 'zh-Hant'`の本は台湾式に行を分割して約物を組み、`locale: 'ja'`の本は日本式に組みます。ほかに設定するものはありません。[中国語の組版](/ja/docs/chinese-layout)と[日本語の組版](/ja/docs/japanese-layout)では、これらの設定の背後にある規則を、それぞれ2つの完全な設定例とともに説明しています。日本語向けのフィールドと値はpostext 1.16から使えます。
+
+```ts
+interface CjkConfig {
+  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'; // Regional conventions.
+  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'
+    | 'ja-very-strict' | 'ja-strict' | 'ja-loose';      // Which marks may not open or close a line.
+  punctuationWidth?: 'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
+  compressAdjacent?: 'auto' | boolean;      // Two marks that meet take 1.5 em.
+  trimLineStart?: 'auto' | boolean;         // Brackets at a line edge lose their outer half.
+  hangingPunctuation?: 'auto' | 'none' | 'allow' | 'force';
+  spaceAfterQuestion?: 'auto' | boolean;    // One em after ？！ inside a paragraph (Japan).
+  paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // A bracket opening an indented paragraph.
+  wordBreak?: 'normal' | 'keep-all';        // keep-all: break only at spaces (分かち書き, Korean).
+  titleMinChars?: number;                   // Characters of a book title on either side of a break; default 2.
+  circledNumbers?: 'cjk' | 'western';       // ① ② as Chinese characters (default) or Latin letters.
+  composeDesignText?: boolean;              // CJK rules in design text; default true.
+  latinSpacing?: Dimension;                 // Between Han and Latin; default 0.25 em.
+  uprightDigits?: 0 | 2 | 3 | 4;            // Vertical text: numbers in one upright cell; default 2.
+  grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
+  emphasis?: 'auto' | 'italic' | 'dots';    // What *…* does to CJK characters.
+  emphasisMark?: {                          // The mark *…* and :dots[…] draw when they do not say.
+    style?: 'auto' | 'dot' | 'circle' | 'sesame';
+    fill?: 'auto' | 'filled' | 'open';
+    position?: 'auto' | 'over' | 'under';
+  };
+  bookTitleMark?: 'auto' | 'brackets' | 'wavy' | 'none'; // What :book[…] prints.
+  bookTitleBrackets?: 'auto' | { open: string; close: string }[]; // The brackets, outermost first.
+  annotationColor?: ColorValue;             // Dots and name/title lines; default the text colour.
+  ruby?: {
+    fontFamily?: string; fontSize?: Dimension; color?: ColorValue;
+    position?: 'auto' | 'over' | 'under' | 'right';
+    overhang?: 'auto' | 'none' | 'kana' | 'any'; // How far a reading may run onto its neighbours.
+    align?: 'auto' | 'center' | 'jis' | 'start'; // How a reading shorter than its base is spaced.
+    smallKana?: 'keep' | 'full';                 // Small kana in readings as written, or full size.
+  };
+  warichu?: { fontSize?: Dimension; color?: ColorValue; open?: string; close?: string };
+  kunten?: { fontSize?: Dimension; color?: ColorValue; placement?: 'inline' | 'interlinear' }; // Kanbun marks.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>region</code></td>
+      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'</code></td>
+      <td><code>'auto'</code></td>
+      <td>テキストが従う慣習です。地域の区分はW3Cの<a href="https://www.w3.org/TR/clreq/">中国語組版の要件（Requirements for Chinese Text Layout）</a>（clreq）に準じます。<code>'auto'</code>は地域を<code>locale</code>から読み取り、<code>locale</code>が未設定のときは<code>bodyText.hyphenation.locale</code>から読み取ります。<code>zh</code>、<code>zh-Hans</code>、<code>zh-CN</code>、<code>zh-SG</code>は<code>'mainland'</code>、<code>zh-Hant</code>と<code>zh-TW</code>は<code>'taiwan'</code>、<code>zh-HK</code>と<code>zh-MO</code>は<code>'hongkong'</code>、<code>ja</code>とすべての<code>ja-*</code>タグは<code>'japan'</code>になります。この地域の慣習はW3Cの<a href="https://www.w3.org/TR/jlreq/">日本語組版処理の要件</a>（JLReq）に従います。その他の言語は<code>'mainland'</code>になります。地域は、以下のすべての<code>'auto'</code>フィールドの既定値を決めます。<code>'japan'</code>を手動で設定すると、どの文書も日本式に組まれます。ただし組み込みの文字列と、注および索引の既定値は引き続き文書の言語に従います。</td>
+    </tr>
+    <tr>
+      <td><code>lineBreak</code></td>
+      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict' | 'ja-very-strict' | 'ja-strict' | 'ja-loose'</code></td>
+      <td><code>'auto'</code></td>
+      <td>行頭・行末に置けない記号を決めます（clreq §6.1.1とJLReq付録C.3。下の表を参照）。<code>'auto'</code>は中国大陸では<code>'gb'</code>、台湾と香港では<code>'basic'</code>、日本では<code>'ja-very-strict'</code>です。どのレベルもあらゆる文書で選べます。</td>
+    </tr>
+    <tr>
+      <td><code>punctuationWidth</code></td>
+      <td><code>'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth'</code></td>
+      <td><code>'auto'</code></td>
+      <td>全角の約物をどの幅で組むかを決めます（<a href="#約物の幅">約物の幅</a>を参照）。<code>'auto'</code>は中国大陸では<code>'kaiming'</code>、台湾・香港・日本では<code>'fullwidth'</code>です（日本では、約物の連続、行末、中点についてJLReqの規則を適用します）。</td>
+    </tr>
+    <tr>
+      <td><code>compressAdjacent</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>連続する2つの約物（<code>。」</code>、<code>》（</code>、<code>：“</code>）の間の二分のアキを詰め、2つで全角2つ分ではなく1.5em分にします。<code>'auto'</code>は中国大陸・香港・日本ではオン、台湾ではオフです。</td>
+    </tr>
+    <tr>
+      <td><code>trimLineStart</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>行頭に来た始め括弧・始めの引用符は前側の二分のアキを、行末に来た終わり括弧・終わりの引用符は後ろ側の二分のアキを取り除きます。<code>'auto'</code>は中国大陸・香港・日本ではオン、台湾ではオフです。日本では、行末の終わりの約物は行がそのアキを必要とするまで二分のアキを保ちます（<a href="#約物の幅">約物の幅</a>を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>hangingPunctuation</code></td>
+      <td><code>'auto' | 'none' | 'allow' | 'force'</code></td>
+      <td><code>'auto'</code></td>
+      <td>読点類・句点類を行末より外にぶら下げてよいかを決めます（<a href="#ぶら下げ">ぶら下げ</a>を参照）。<code>'auto'</code>は日本では<code>'allow'</code>（、。，．のみ）、それ以外では<code>'none'</code>です。postext 1.15までは既定値が<code>'none'</code>で、日本以外での<code>'auto'</code>は現在もその値です。</td>
+    </tr>
+    <tr>
+      <td><code>spaceAfterQuestion</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>段落の中で、全角の？や！（‼⁇⁈⁉も含み、それらに続く注の合印の後も含む）の後に全角のアキを入れます。日本語の組み方です（JLReq §3.1.6）。終わり括弧や同種の記号の前、段落の末尾では入れず、行末に来たときは取り除きます。著者がそこに入力したU+3000やスペースは、このアキに置き換わります。このアキは伸び縮みしません。<code>'auto'</code>は日本ではオン、それ以外ではオフです。</td>
+    </tr>
+    <tr>
+      <td><code>paragraphStartBracket</code></td>
+      <td><code>'auto' | 'indent' | 'half' | 'flush'</code></td>
+      <td><code>'auto'</code></td>
+      <td>1行目を字下げした段落が始め括弧で始まるときの組み方です（JLReq §3.1.5）。<code>'indent'</code>は字下げを保ち、括弧の後ろに全角のアキを与えます（パターン①）。<code>'half'</code>は括弧のグリフの前のアキを取り除き、グリフは全角の字下げの後半に収まって、本文はほかの段落の本文と同じ位置から始まります（パターン③）。<code>'flush'</code>は字下げせずに括弧を行頭にそろえます（天付き）。字下げのない段落やぶら下げインデントの段落はそのままです。<code>'auto'</code>は日本では<code>'half'</code>です。それ以外では、従来どおりほかの行頭と同じように括弧を組みます。</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>'normal'</code></td>
+      <td>2つの文字の間のどこで改行するかを決めます。<code>'keep-all'</code>はスペース（U+0020、U+3000）と、<code>lineBreak</code>が許す約物の隣（、。」の後、「の前）でだけ改行し、2つの文字（かな、漢字、ハングル、ラテン文字）の間では改行しません。絵本や初等教科書のように文節の間にスペースを入れて書くかな（分かち書き）や、韓国語に向いています。行より長い文節は、<code>'normal'</code>と同じ位置で文節の中で分割します。段落スタイルでも個別に設定できます（<code>wordBreak</code>）。postext 1.16以降。</td>
+    </tr>
+    <tr>
+      <td><code>titleMinChars</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>書名の途中で改行するとき、改行位置の前後にそれぞれ最低何字残すか。対象は<code>《…》</code>と<code>〈…〉</code>の中（直接入力したものも<code>bookTitleMark</code>が付けたものも）、および波線付きまたは記号なしで組む<code>:book[…]</code>の書名。2のとき、行末が<code>《說</code>で次の行が<code>文》</code>で始まることはなく、3字以下の書名は分割しない。一般に、この値の2倍から1を引いた字数以下の書名は分割しない。ほかに改行できる位置がない行ではこの規則を譲る（行より長い書名は、<code>lineBreak</code>が許す位置で途中から分割する）。<code>1</code>にすると、レベルが許す位置ならどこでも改行する。postext 1.25より前に保存した設定（<code>configVersion</code>が10以下）で、本に書名があるものは<code>1</code>として読み込む。postext 1.25以降。</td>
+    </tr>
+    <tr>
+      <td><code>circledNumbers</code></td>
+      <td><code>'cjk' | 'western'</code></td>
+      <td><code>'cjk'</code></td>
+      <td>CJKの段落での丸数字・括弧付き数字・ピリオド付き数字と文字の組み方：①〜⑳、⑴〜⒇、⒈〜⒛、ⓐ〜ⓩなどU+2460〜U+24FFの文字と、装飾記号の❶〜❿、➀〜➓。<code>'cjk'</code>：漢字として組む。1字分の枠に収め、前後に和欧間のアキを入れず、後に続く文に番号を振るものなので行末に置かない。通貨記号を行末に置かない<code>lineBreak</code>のレベル（<code>none</code>と<code>ja-loose</code>以外のすべて）で有効。<code>'western'</code>：欧文字として組み、前後に和欧間のアキを入れ、行末にも置ける。縦組ではどちらでも正立させる。postext 1.25より前に保存した設定で、本にこれらの文字があるものは<code>'western'</code>として読み込む。postext 1.25以降。</td>
+    </tr>
+    <tr>
+      <td><code>composeDesignText</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>中国語・日本語のデザインテキスト（見出しデザインと扉、柱とノンブル、ページデザイン、部扉）を本文と同じ規則で組むかどうか：<code>lineBreak</code>の禁則、<code>punctuationWidth</code>と<code>compressAdjacent</code>の約物の幅、<code>latinSpacing</code>、<code>hangingPunctuation</code>、<code>titleMinChars</code>。テキストの1行（2つの<code>\n</code>の間）は、段落と同じく、CJKの文字が語間スペースより多いときにこの規則で組む。それ以外の行は従来どおりスペースで折り返す。明示的な改行、<code>paragraphIndent</code>、ドロップキャップ、インラインの書式はそのまま働く。行は不揃いのまま（字間に配分しない）で、ルビ、割注、圏点はプレーンテキストとして印字する。<code>false</code>にすると、このテキストはスペースで折り返し、約物はフォント本来の幅のまま組む。postext 1.25より前に保存した設定で、テキストにCJKを含むものは<code>false</code>として読み込む。postext 1.25以降。</td>
+    </tr>
+    <tr>
+      <td><code>latinSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>&#123; value: 0.25, unit: 'em' &#125;</code></td>
+      <td>漢字とその隣のラテン文字または数字の間のアキです。CJKテキストの文字サイズを基準とするemか、任意の長さで指定します。<code>0</code>でオフになります（<a href="#和欧間のアキ">和欧間のアキ</a>を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>uprightDigits</code></td>
+      <td><code>0 | 2 | 3 | 4</code></td>
+      <td><code>2</code></td>
+      <td>縦組みで、この桁数以下の数字を1つの正立したマスに収めます（縦中横）。ただし欧文の文中にある数字は、その文の語に合わせて横倒しになります。<code>0</code>でオフになります（<a href="#縦組みの数字">縦組みの数字</a>を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>grid</code></td>
+      <td><code>&#123; enabled?, charsPerLine?, linesPerPage?, show? &#125;</code></td>
+      <td>オフ</td>
+      <td>版面を1行の字数と1ページの行数で指定します（<a href="#文字グリッド">文字グリッド</a>を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'dots'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Markdownの強調（<code>*…*</code>）が中国語・日本語の文字をどう扱うかを決めます。<code>'dots'</code>は<code>:dots[…]</code>と同じように各文字の脇に圏点を付け（形と位置は<code>emphasisMark</code>に従います）、同じ強調の中のラテン文字はイタリックのままです。<code>'italic'</code>は文字をイタリックにしますが、CJKの書体では疑似的な斜体にしかなりません。<code>'auto'</code>は文書の言語が中国語か日本語なら<code>'dots'</code>、それ以外では<code>'italic'</code>です（<a href="#圏点と傍線ルビ割注">圏点と傍線、ルビ、割注</a>を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>emphasisMark</code></td>
+      <td><code>&#123; style?, fill?, position? &#125;</code></td>
+      <td>いずれも<code>'auto'</code></td>
+      <td><code>*…*</code>と属性のない<code>:dots[…]</code>が付ける圏点です。<code>style</code>は<code>'dot'</code>、<code>'circle'</code>、<code>'sesame'</code>（﹅）、<code>fill</code>は<code>'filled'</code>または<code>'open'</code>（autoでは丸は白抜き）、<code>position</code>は<code>'over'</code>（縦組みでは右）または<code>'under'</code>（縦組みでは左）です。autoの場合、日本では黒ゴマ点を文字の上（縦組みでは右）に付けます（JLReq §3.3.9）。それ以外では従来どおり点を文字の下（縦組みでは右）に付けます。圏点自身の属性が優先されます。</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleMark</code></td>
+      <td><code>'auto' | 'brackets' | 'wavy' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>:book[…]</code>が印字するものです。書名を囲む括弧（<code>bookTitleBrackets</code>）、書名の下の波線の書名号、または書名だけのいずれかです。<code>'auto'</code>は中国大陸と日本では括弧、台湾と香港では波線です。</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleBrackets</code></td>
+      <td><code>'auto' | &#123; open, close &#125;[]</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'brackets'</code>のときに<code>:book[…]</code>が使う括弧で、外側から順に並べます。リストより深く入れ子になった書名には最後の組を使います。<code>'auto'</code>（または空のリスト）は、日本では『』、次に「」、それ以外では《》、次に〈〉です。</td>
+    </tr>
+    <tr>
+      <td><code>annotationColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>本文の色</td>
+      <td>圏点、専名号、書名号の色です。ルビと割注の色の既定値にもなります。</td>
+    </tr>
+    <tr>
+      <td><code>ruby</code></td>
+      <td><code>&#123; fontFamily?, fontSize?, color?, position?, overhang?, align?, smallKana? &#125;</code></td>
+      <td>半分のサイズ、<code>'auto'</code></td>
+      <td><code>:ruby[…]</code>と<code>&#123;紅樓|hóng|lóu&#125;</code>のルビです。書体（既定値は本文の書体）、サイズ（既定値は本文の<code>&#123; value: 0.5, unit: 'em' &#125;</code>、注音符号はその60%）、色、そしてルビ自身が指定しないときの位置（<code>'auto'</code>：注音符号は各文字の右、ピンインとかなは横組みでは文字の上、縦組みでは右）を決めます。<code>overhang</code>は、親文字より長いルビが隣の文字にどこまで掛かってよいかです。<code>'kana'</code>はかな、ー、約物のアキ側にルビ1字分、始め括弧にルビ半字分掛かり、漢字には掛かりません（JLReq §3.3.8）。<code>'any'</code>はルビのない隣の文字ならどれにでもルビ半字分掛かります。<code>'none'</code>は掛かりません。autoは日本では<code>'kana'</code>、それ以外では従来どおりルビのない隣の文字にルビサイズの4分の1まで掛かります。<code>align</code>は、親文字より短いルビの配置です。<code>'jis'</code>は1:2:1（両端に二分、間に全角）、<code>'center'</code>はベタ組みで中央、<code>'start'</code>は親文字の先頭から配置します。autoは日本では<code>'jis'</code>、それ以外では<code>'center'</code>です。<code>smallKana: 'full'</code>はルビの小書きのかなを並字にします（既定値の<code>'keep'</code>は書かれたとおり）。ルビ自身の<code>mode</code>と<code>align</code>が優先されます。</td>
+    </tr>
+    <tr>
+      <td><code>warichu</code></td>
+      <td><code>&#123; fontSize?, color?, open?, close? &#125;</code></td>
+      <td>半分のサイズ。括弧は日本では（）、それ以外ではなし</td>
+      <td><code>:warichu[…]</code>の2行の注です。注のサイズ（既定値は二分で、2行で行の全角を埋めます）、色、そして1行目の前と最終行の後に本文サイズで組む括弧を決めます（注自身の<code>open</code>／<code>close</code>が優先されます）。日本では、空の<code>open</code>や<code>close</code>（<code>''</code>）を指定すると、その括弧なしで注を組みます。</td>
+    </tr>
+    <tr>
+      <td><code>kunten</code></td>
+      <td><code>&#123; fontSize?, color?, placement? &#125;</code></td>
+      <td>半分のサイズ、<code>'inline'</code></td>
+      <td><code>:kunten[…]</code>の漢文の訓点（返り点、送り仮名、竪点）です。サイズ（既定値は<code>&#123; value: 0.5, unit: 'em' &#125;</code>、JIS X 4051 §5.5）、色（既定値は<code>annotationColor</code>、未設定なら本文の色）、そして<code>placement</code>を決めます。<code>'inline'</code>はJISと同じく返り点を親字の後に二分の幅で組みます。<code>'interlinear'</code>はすべての訓点を行間に置き、送り幅を取りません。どの地域でも同じです（<a href="#圏点と傍線ルビ割注">圏点と傍線、ルビ、割注</a>を参照）。</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '90px' }}>レベル</th>
+      <th>行頭に置かない</th>
+      <th>行末に置かない</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>none</code></td><td>なし。台湾や香港の新聞のように、どの2文字の間でも改行できます。</td><td>なし。</td></tr>
+    <tr><td><code>basic</code></td><td>読点類・句点類 、，；：。！？．‼⁇⁈⁉、終わりの引用符 ” ’ 」 』と終わり括弧 ）〕］｝】〗》〉、連接記号 – ～ ~ と2語の間の単独の —、中点 · ‧ ・、繰返し記号 々〻ゝゞヽヾとー、数字の単位 % ‰ ° ℃ ％と単位記号 ㎡ ㎏ ㏄。</td><td>始めの引用符 “ ‘ 「 『と始め括弧 （〔［｛【〖《〈、通貨記号 ¥ $ € £。</td></tr>
+    <tr><td><code>gb</code></td><td><code>basic</code>に加え、斜線 / ／（GB/T 15834—2011 §5.1.9）。</td><td><code>basic</code>に加え、斜線。</td></tr>
+    <tr><td><code>strict</code></td><td><code>gb</code>に加え、2倍ダッシュ —— ⸺と省略記号 …… ⋯⋯。</td><td><code>gb</code>と同じ。</td></tr>
+  </tbody>
+</table>
+
+日本語のレベルは、JLReq付録C.3の3つの慣習に従います。どのレベルでも、始め括弧・始めの引用符で終わる行はなく、通貨記号は数字から離れず（<code>ja-loose</code>を除く）、斜線には規則がなく、——、――、……は行頭に来てもよいものの分割されません（〳〵も同じです）。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>レベル</th>
+      <th>行頭に置かない</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ja-very-strict</code></td><td>終わり括弧類と終わりの引用符、、，。．、ハイフン類 ‐ – ゠ 〜 ～、？！‼⁇⁈⁉、・：；、繰返し記号 ゝゞヽヾ〻と々、ー、小書きのかな ぁぃぅぇぉっゃゅょゎゕゖ ァィゥェォッャュョヮヵヶ ㇰ–ㇿ（とその半角形）、単位 ％ ℃。JIS X 4051の既定です。</td></tr>
+    <tr><td><code>ja-strict</code></td><td><code>ja-very-strict</code>から小書きのかな、ー、々を除いたもの（JLReqの一般書籍）。</td></tr>
+    <tr><td><code>ja-loose</code></td><td>終わり括弧類と終わりの引用符、、，と。．のみ（新聞）。</td></tr>
+  </tbody>
+</table>
+
+すべてのレベルに共通する規則です。
+
+- ——と……は全角2つ分の幅の1単位として扱い、分割しません。この単位が2つ続くときは、その間で分かれてもかまいません。
+- 数字は符号や単位と離れず（¥5,999、50%、50％、120㎡）、間にスペースがあっても同じです（−3 ℃、50 %）。ラテン文字の語も分割されません。CJK文字に挟まれた欧文は、行の途中で改行しないひと続きとして組みます。ただし、その欧文だけで行より長い場合は、音節でハイフンを付けて分割するか、収まる最後の文字で分割します（ウェブアドレスは区切りの位置で分割します）。単位記号 ㎡ ㎏ ㎞ ㏄（U+3371〜337A、U+3380〜33DF、U+33FF）は数字のひと続きに含まれ、欧文の段落をCJKの段落にすることはありません。
+- 全角の数字やラテン文字で書いた数や語（１２３４５６、５０％、￥５９９、３．１４、１２：３０、ＡＢＣ）も分割しません。両端そろえの行では、漢字と同じようにそれらの字間も広げます。
+- 単語間のスペースは、規則が許す場所でだけ改行位置になります。次の文字が行頭に置けない場合（`参见图表 （ 第三章 ）`は）で始まる行を作りません）や、スペース直前の文字が行末に置けない場合は、そこで改行しません。
+- 脚注の合印、`:ref`、上付き文字・下付き文字は、直前の文字から離れません。
+- 和字間隔U+3000は全角幅の1文字です。その後では改行できますが、その前では改行しません。伸ばされることはなく、行頭でも取り除かれません。中国語の段落の2字下げには、U+3000を2つ入力するのではなく`bodyText.firstLineIndent: { value: 2, unit: 'em' }`を設定してください（段落の先頭にあるU+3000はパーサーが取り除きます）。
+
+行に収まらない文字が次の行の行頭に置ける場合は、その文字を次の行へ送り、両端そろえの行は残りの字間を広げます。次の行の行頭に置けない場合（読点、終わり括弧、始め括弧の次の文字）は、まず行を詰めてその文字を収めようとします（追い込み、clreq §6.2.2.3）。詰められるアキ（[約物の幅](#約物の幅)を参照）であふれた分をまかなえれば、その文字は（句点の後の終わりの引用符のように、一緒にとどまるべき記号とともに）その行に入り、行は行長ちょうどに組まれます。まかなえなければ、行はその文字のために文字を手放します（追い出し）。改行位置は規則が許す直前の位置まで戻り、両端そろえの行は残りの字間を広げます。数字と句点を合わせた幅より狭い行では行末に置けるものがないため、結局は句点の前で改行します。
+
+対象となる段落は、単語間のスペースよりCJK文字（漢字、かな、注音符号、ハングル）を多く含む段落です。CJK文字が2つ続いていなくてもかまいません（`第1条、第2条`、`价¥5,999。好`）。CJK文字や約物の隣のスペースは単語間のスペースとは数えません。`2026 年 9 月 28 日`は`2026年9月28日`と同じように組まれます。これらの段落は、装飾のない経路でも書式付きの経路でも1行ずつ組まれるため、太字の語を含む段落も、太字を除いた同じテキストとまったく同じ位置で改行します。中国語の書名や人名を引用する欧文の段落は文字よりスペースが多いので、最適改行を保ちます。その段落でも、CJK文字の隣では同じ規則で改行できます。キャプション、表のセル、注、囲みも文書のレベルで改行します。辞書によるハイフネーションは、CJKの段落内の欧文の語には及びません。
+
+両端そろえのCJKの行のうち、段落の最終行でないものは、次の順で行長まで広げます（clreq §6.2.2.4）。欧文の語間のスペースを1つあたり二分まで、次に漢字と欧文の間のアキを1つあたり二分まで、最後にすべての字間とそれらのスペースを均等に広げます。ラテン文字の語、数字、全角2つ分の記号の内側にはアキを入れず、連接記号や斜線の隣にも入れません。アキは行のセグメントごとに設定され（`VDTLineSegment.tracking`。各文字の後のpx数で、セグメントの`width`に含まれます）、Canvas、HTML、PDFの出力は字間として描画します。後ろにアキのあるラテン文字の語は、最後の文字が独立したセグメントになります。セグメントには欧文のひと続き1つか、同じスタイル・リンク・字間で同じように送られる文字が入ります。そのためSandboxはカーソルを置くときにセグメントの幅を文字に均等に割り振り、リンクは自分の文字だけを覆います。字間を二分より（`bodyText.maxJustifyTracking`を設定している場合はその値より）広げる必要のある行は、その上限まで広げて行長に満たないまま組みます。その行には`cjkLoose`と`ragged`のフラグが付き、ビルドは行のテキストを含む`cjkLooseLine`コンテンツ警告を報告します。前の行に上げられない長いラテン文字の語やウェブアドレスがよくある原因です。CJK文字を含まない行（長いウェブアドレスの先頭部分など）は、欧文の1語だけの行と同じく、警告なしで行末不ぞろいに組みます。[ハイフネーションと両端そろえ](/ja/docs/justification#中国語日本語韓国語)を参照してください。
+
+### 約物の幅
+
+中国語の全角の約物は、二分のグリフと二分のアキでできています。設定で調整するのはアキで、グリフは変わりません（clreq §6.3.2）。アキは、始め括弧・始めの引用符ではグリフの前、終わり括弧・終わりの引用符ではグリフの後ろ、そして中国大陸の読点類・句点類 、，。．；：？！ではグリフの後ろにあります（これらはボックスの隅に置かれます）。台湾と香港で中央に置く約物（、，。．；：）と中点は、両側に四分ずつのアキを持ちます。`？！`は台湾と香港の横組みでは全角のままで、縦組みではどの地域でも`：；？！`が全角のままです。中国大陸の中点は、どのスタイルでも、どちらの書字方向でも二分幅で中央に置きます（GB/T 15834、clreq §5.1）。全角のグリフは両側のアキを取り除き、縦組みでは最初からマスが二分です。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>スタイル</th>
+      <th>行中</th>
+      <th>行末</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fullwidth</code>（全角式）</td><td>すべての約物を全角。</td><td>全角。<code>trimLineStart</code>があれば終わり括弧は二分。</td></tr>
+    <tr><td><code>kaiming</code>（开明式）</td><td>。．？！は全角、，、；：、括弧、引用符、中点は二分。中国大陸の本の大半。</td><td>すべての約物を二分。</td></tr>
+    <tr><td><code>lineEndHalf</code>（行末半角）</td><td>すべての約物を全角。</td><td>すべての約物を二分（GB/T 15834—2011 §5.1.10を文字どおりに読んだもの）。</td></tr>
+    <tr><td><code>halfwidth</code>（半角式）</td><td>辞書のように、すべての約物を二分。</td><td>二分。</td></tr>
+  </tbody>
+</table>
+
+日本（`punctuationWidth: 'fullwidth'`、autoの値）では、約物は代わりにJLReq §3.1に従います。、，。．はグリフの後ろにアキを持ち、：；と・は両側に四分ずつ、？！は全角を埋めます。行末の終わりの約物は二分のアキを保ち、行にもう1文字収める必要があるときは、まず最初にそのアキを丸ごと取り除きます。。の後ろのアキは行中では詰めません。行が詰めるアキの順序はJLReq §3.8.3に従います。単語間のスペース、行末の約物のアキ、中点、括弧と、，、そして和欧間のアキの順です。行を広げるときは、始め括弧の後、終わり括弧の前、、。・：；？！とU+3000の隣にはアキを加えません（§3.1.11）。2つの漢数字に挟まれた、と・はベタ組みにし、そこでは改行しません（二、三日、三・一四）。別の`punctuationWidth`（`kaiming`、`halfwidth`など）を指定した日本語の文書は、この節のclreqの規則に従います。
+
+`compressAdjacent`を設定すると、連続する2つの約物の間のアキを詰めます（clreqの以前の草案にある8つの規則）。対象は、終わり括弧に続く終わり括弧、中国大陸の読点類・句点類に続く終わり括弧（`。」`。台湾と香港の中央に置く約物の後は対象外）、終わり括弧に続く読点類・句点類（`」，`）、これらのいずれかまたは別の始め括弧に続く始め括弧（`，「`、`》（`、`「『`）です。また、中点とその前の終わり括弧、またはその後の始め括弧の間は四分詰めます。詰めるのは、2つで1.5em分になるまでです。開明式では`。”`はもともと1.5em分なのでそのまま、`》（`は全角1つ分になります。開明式では`compressAdjacent`の有無にかかわらず、句点の後に終わりの約物が続くと、句点のアキをその約物の後ろに置きます。2つのグリフは隣り合い、二分のアキは引用符の後ろに来ます（`。␣”母`ではなく`。”␣母`）。行末では句点のアキと同じ扱いになります。`trimLineStart`を設定すると、行頭の始め括弧は前側のアキを取り除き、インクが本文の端にそろいます（段落の1行目では字下げの中に二分入ります）。行末の終わり括弧は後ろ側のアキを取り除きます。中央に置く約物は、片側で二分ではなく両側で四分ずつ取り除きます。2つの約物の間で改行するときは、どちらも詰めを保たず、それぞれ行の端の約物として組みます（全角の`，`の後の`「`が次の行頭に来る場合、読点の行は全角で終わります）。
+
+行頭に置けない文字を行に収める（追い込む）のは、まだ詰められるアキであふれた分をまかなえるときです。詰める順序はclreqに従います。単語間のスペースを四分まで、次に中点、括弧、読点類、漢字と欧文の間のアキを八分まで、最後に句点類で、各段階で均等に詰めます。`kaiming`が句点類を二分まで詰めるのはこの場合だけです。もう1文字分足りないだけの行は広げて組むので、。？！は行中で全角を保ちます。`lineEndHalf`はすべての約物を二分まで詰められます。`fullwidth`の約物は何も詰めず（全角式の本は字詰めの格子を保ちます）、`halfwidth`の約物にはもう詰めるアキがありません。
+
+欧文と中国語で共通の約物（“ ” ‘ ’ … — ·）は、中国語のテキストの中では、フォント自体の送り幅にかかわらず中国語の約物のボックスを取ります。LXGW WenKaiは“ ”を0.35em幅で描き、Noto Serif SCはemダッシュを0.89em、·を3分の1emで描きます。これらの記号は、両側のどちらかで最も近い文字（同種の記号は飛ばします）が中国語であるか、隣に欧文が何もないときに中国語として扱います。始めの引用符のグリフは全角のボックスの末尾に、終わりの引用符のグリフは先頭に置きます。中点、省略記号、単独のダッシュは中央に置きます。2つ続く省略記号（……）は、フォントが2つを並べて組んだ形で、全角2つ分の中央に置きます。破折号（——）は途切れない1本の線です。各ダッシュを書体自体のサイドベアリングから全角いっぱいに伸ばし、2本の線を継ぎ目で重ね、文字の中央の高さまで上げます（`VDTLineSegment.inkScale`。描画時だけの拡大率です）。そのうえで、ほかの約物と同じようにスタイルがボックスを調整します。両側が欧文の場合（`他说：He said “yes” and left.`）はフォントの送り幅を保ち、もともと全角幅のグリフは何も変わりません。
+
+レンダラーは、ブラウザー独自の約物のアキをテキストに持ち込みません。Chromeは、連続する2つの約物を1つのランとして計測・描画すると、最初の約物を半角にします（Noto Serif SCの`本）》录`はそのように組むと3.5em）。そのため連続する2つの約物は別々に計測・描画し、CJKテキストのHTMLの行には`text-spacing-trim: space-all`と`text-autospace: no-autospace`を付け、`chws`、`halt`、`vchw`の機能をオフにします。
+
+VDTでは、アキを詰めた約物はそれだけで1つのセグメントになり、`width`は残った送り幅で、`inkOffset`（px）が設定されます。レンダラーはそのグリフを`x + inkOffset`に描画するので、グリフの前のアキを詰めた約物（行頭の始め括弧）はボックスよりその分だけ前に描かれます（負のオフセット）。中国語のボックスで組んだ共通の約物は、ボックス内のグリフの位置から前側で詰めたアキを差し引いた値を持ち、正の値になることもあります。PDFでは、そのようなグリフに文字間隔を付けて送り幅がボックスの終わりで終わるようにするため、読者には次の文字に重なって見えません。またその行を`/ActualText`のスパンに入れます（[和欧間のアキ](#和欧間のアキ)を参照）。約物のアキがどちら側にあるかを決めるのはフォントではなく地域です。本はその地域の書体で組んでください（中国大陸にはNoto Serif SC、台湾にはTC、香港にはHK）。中国大陸のタグで繁体字のフォントを使うと、中央に置く約物の誤った側を詰めてしまいます。
+
+### ぶら下げ
+
+日本でのautoの値である`hangingPunctuation: 'allow'`は、、，。．のいずれか（約物がボックスの先頭側に置かれる中国大陸では；：？！も）が次の行の行頭に来てしまい、行を詰めても収められないときに、行末より外へぶら下げます。台湾と香港の横組みでは、中央に置いた約物が切れて見えるためぶら下げません（縦組みでは可能です）。縦組みでは、ぶら下げた約物は行の下端の外に置かれます。`'force'`は、そうした約物が行末に来たときは（段落の最終行を除き）常にぶら下げ、収まらないときはただちにぶら下げます。ほかの約物と接している約物（`。」`、`，「`）はぶら下げません。ぶら下げたセグメントには`hangs`のフラグが付きます。行の`bbox.width`、両端そろえ、行のそろえ位置はこのセグメントを除いて計算し、CanvasとPDFは段のクリップ領域を最も広いぶら下げ約物の幅（`hangingPunctuationOverhang`）だけ広げるので、切れることはありません。中国語の本の多くは約物をぶら下げず、clreqがぶら下げを勧めるのは文字グリッドを使う場合だけです。日本語の本は、どちらの書字方向でも、、。，．をぶら下げ（ぶら下げ組み）、；：？！や括弧はぶら下げません。ぶら下げるのは、行を詰めてもその約物を収められないときだけです。
+
+### 和欧間のアキ
+
+`latinSpacing`（既定値は四分）は、漢字（またはかな）とその隣のラテン文字・アラビア数字の間にアキを入れます。`用iPhone拍照`と`1999年`は`用 iPhone 拍照`と`1999 年`のように組まれます。行頭と行末、ラテン文字と中国語の約物の間（`用iPhone，`ではコンマの前に何も入れません）、中国語の括弧の内側（`（iPhone）`）、文字でも数字でもない記号の隣（`为¥5,999`）にはアキを入れません。著者がこうした境界に入力したスペース（多くのウェブのテキストにある`用 iPhone 拍照`のような書き方）は、和欧間のアキに置き換え、加算はしません。そのため2通りの書き方は同じように組まれます。ノーブレークスペースと和字間隔はそのまま残します。両端そろえの行では、文字の字間を広げる前にこのアキを二分まで広げます。行頭に置けない文字を追い込む行では八分まで詰めます。em以外の単位で指定した長さは、ページのdpiで換算します。`0`でオフになり、そこに入力したスペースは単語間のスペースのままです。
+
+このアキは、`autospace`のフラグが付いた`kind: 'space'`のセグメントで、`text`は空（または著者が入力したスペース）です。`width`は確定値で、レンダラー独自のスペースによる両端そろえはこれを変えません。プレーンテキストには含まれないため、検索、コピー&ペースト、ソース範囲は書かれたとおりのテキストを読み取ります。PDFでは、分割して組んだ行（字間を広げた文字、和欧間のアキ、アキを詰めた約物、ぶら下げた約物を含む行）をすべて`/Span`に入れ、その`/ActualText`を行のテキストにします。そのためテキスト抽出では`用 iPhone 拍 照`ではなく`用iPhone拍照`と読み取られ、半角の約物を含む行も1行として読み取られます。
+
+### 縦組みの数字
+
+縦組みでは、ラテン文字の語や長い数字は横倒しにし、短い数字は正立させて、その桁を全角1マスに横に並べます。これが縦中横です（縱中橫、[clreq §2.1.3](https://www.w3.org/TR/clreq/#x2-1-3-mixed-text-composition-in-vertical-writing-mode)、[CSS `text-combine-upright`](https://www.w3.org/TR/css-writing-modes-4/#text-combine-upright)）。`uprightDigits`は、そうした数字の最大桁数を`2`（既定値）、`3`、`4`、またはなしを意味する`0`で設定します。`2`のとき、`2026年9月28日`の2026は横倒し、9は正立、28は1マスに正立します。
+
+- 数字全体を縦中横にするか、まったくしないかのどちらかです。`2`のとき、3桁の数字は分割されず横倒しのままです。
+- ラテン文字と接する数字（`A4`、`mp3`、`3D`）は語の中にとどまり、横倒しになります。小数点や桁区切りを含む数字（`3.14`、`10,000`）も同じです。
+- 欧文の文中にある数字はその文に従います。両側にラテン文字の語があれば、語と一緒に横倒しになります（`printed in 49 and 32 copies`、`chapters 49, 32 and (7) of`）。左右それぞれ、スペース、ほかの数字、注の合印、横倒しのランの約物（`, . : ; ( ) ' " - /`）、enダッシュとemダッシュ、カーリークォート（`pages 3–5 of`、`the “49” copies`）を飛ばし、最初のラテン文字か中国語の文字まで見ます。約物の先が中国語のテキストに続く数字は正立します（`上午12:30:45开会`、`比分为3:2:1`、`见图(3)所示`、`他住在"12"号楼`）。中国語の文字や約物の隣にある数字（スペースの有無を問いません。`第 3 回`、`用iPhone 15拍攝`、`第3 copies`）、正立する記号の隣の数字（`a 30×40 print`）、片側にしか語のない段落の先頭や末尾の数字（`49 copies were printed`、`on page 7.`。横倒しにするには`:sideways[…]`と書きます）も正立します。段落は改行、強調、リンクをまたいで全体として読み取ります。
+- Unicodeが正立とする記号の隣では、数字はそれぞれ独自のマスを取ります。`30×40`は30、×、40がすべて正立します。
+- 全角1つ分に収まらない文字数のマスは、全角幅に押し縮めます。トラッキングや両端そろえはマスの内側には入らず、後ろにだけ入ります。
+- 改行と両端そろえの際、マスは中国語の1文字として数え、その前後に和欧間のアキは入れません。
+- 日本では、半角または全角の`!!`、`!?`、`?!`、`??`の組も1つの正立したマスに収めます（`すごい！？`）。ただし、ラテン文字、数字、3つ目の約物と接している場合を除きます。全角の組は半角の約物で描画します。小書きのかな、：；、“ ”（〝〟で描画）、・は日本語の縦組み用字形を使います（[日本語の組版 › 縦組み用の字形](/ja/docs/japanese-layout#縦組み用の字形)を参照）。
+- 計測器とすべてのレンダラーは同じマスを見つけます。Canvasは数字を正立に戻して押し縮めて描画し、PDFも横組み用のフォントで同じように描画し、HTMLは`text-combine-upright: all`で囲みます。
+
+手動で指定する場合は、3つのインラインマークが縦組みでこの設定を上書きします。横組みでは何も変わりません（[文書形式 › 縦組みでの文字の向き](/ja/docs/document-format#縦組みでの文字の向き)を参照）。
+
+```markdown
+第:tcy[120]回、:upright[GDP]與:sideways[12]
+```
+
+`:tcy[…]`はテキストを1つの正立したマスに収め、`:upright[…]`は各文字をそれぞれのマスに正立させ（ラテン文字はマスの中央）、`:sideways[…]`は中国語の文字も含めてラン全体を横倒しにします。VDTでは、`:tcy`のランは`tcy: true`を持つ全角幅のセグメントになり、`:upright`や`:sideways`のランは`orientation`を持ちます。`uprightDigits`で1マスにした数字にはフラグがありません。`verticalRuns(graphemes, region, uprightDigits)`で見つけられます。段落内でラテン文字の語と一緒に横倒しになる短い数字は、`:sideways[…]`と書いた場合と同じく`orientation: 'sideways'`を持ちます。そのセグメントに、一緒に並ぶ語が含まれるとは限りません。
+
+### 文字グリッド
+
+中国語の版面は文字数で指定します（clreq §7.1.1）。本文の文字サイズ×1行の字数×1ページの行数に、行間と、2段組みなら段間を加えたものです。`grid`は版面をこの方法で設定します。
+
+```ts
+cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
+```
+
+`enabled`のとき、設定は何かが読み取る前に書き換えられます。各段の幅は`bodyText.fontSize`の`charsPerLine`字分、版面の高さは`bodyText.lineHeight`の`linesPerPage`行分になります。`layoutType: 'double'`では、段間は`layout.gutterWidth`を全角の整数倍（最低1字）に丸めた値です。`page.margins`の余白は最小値として扱われます。版面はそれらの余白が残す領域の中央に置かれ、各余白は、その軸方向に残った余裕の半分ずつ広がります（見開きを対称にした本では、のどと小口の余白は別々の値のまま、同じ量だけ広がります）。`charsPerLine`と`linesPerPage`を設定しない場合は、収まるだけの数になります。収まる数より大きい値は収まる数まで減らし、`cjkGridClamped`設定警告として報告します。フォントサイズと行の高さは書かれたとおりのままです。`oneAndHalf`レイアウトでは、`charsPerLine`は主段の字数です。サイド段は、設定した余白の内側で`sideColumnPercent`が与える幅に最も近い全角の整数倍（最低1字）を取り、段間は2段組みと同じように丸められ、両方の段が全角の整数倍で区切られるように`sideColumnPercent`が書き換えられます。縦組み（`layout.writingMode: 'vertical-rl'`）では、行の文字はページを上から下へ、行はページを横切って並ぶので、`charsPerLine`はページの高さ方向で測ります。`double`レイアウトは上下に重なった2段になり、オーバーレイのマスは文字の中心が並ぶ軸の上に置かれます。
+
+中国の慣行から2つのレイアウトを挙げます。どちらも五号（10.5 pt）、行間6 pt（`lineHeight: 16.5pt`）です。
+
+- 大32开、140×203 mm、28字×28行：行長294 pt（103.7 mm）、版面の高さ462 pt（163 mm）。`page.margins`をのど・小口16/20 mm、天・地18/20 mmにすれば収まります。
+- 16开、184×260 mm、小五（9 pt、行送り13.5 pt）で23字の2段組み、段間2字：2×207 pt＋18 pt。
+
+`show`は版面にグリッド（稿纸、原稿用紙）を重ねて描きます。各行の文字位置ごとに薄い灰色の正方形を1つ描き（ベースラインを基準にした文字の全角ボックス）、ページの各段に描きます（`oneAndHalf`のサイド段は、ページの奇数・偶数で決まる側に描きます）。CanvasとHTMLに描画されます。PDFに描くのは`renderToPdf`に`characterGrid: true`を渡したときだけです。画面上の補助として使うものです。`cjkGridGeometry(config)`は設定が決めるグリッド（使われる数値、余白、版面）を返し、`applyCjkGrid(config)`は書き換えた設定を返します。
+
+### 圏点と傍線、ルビ、割注
+
+[中国語の記号、ルビ、割注](/ja/docs/document-format#中国語の記号ルビ割注)のマークアップは、テキストを段落の中に残します。検索、目次、索引のアンカー、コピーしたテキストは書かれたとおりの文字を読み取り、これらの設定で変わるのは文字の周りに描くものだけです。
+
+- **圏点**（着重号、傍点。`:dots[…]`と、`emphasis: 'dots'`のときのCJK文字に付けた`*…*`）は、文字1つにつき1つ、文字の中央に付きます（両端そろえで広げたアキは含みません）。約物やスペースには付きません。横組みでは文字の下、縦組みでは右に付きます（clreq §5.3.1）。`style`で黒点、白丸、ゴマ点を選び、`fill="open"`で白抜きにし、`pos="over|under"`で側を決めます。圏点自身が指定しない項目は`emphasisMark`が決めます（日本では、ゴマ点を文字の上、縦組みでは右に付けます）。ゴマ点はどちらの書字方向でも紙面上で同じ向きに立ち、ルビと同じ側の圏点はルビの外側に付きます。
+- **傍線**（`:sideline[…]{style pos}`）は約物やスペースも含めてテキストの脇に引きます。`solid`、`double`、`wavy`、`dotted`があり、既定では横組みで文字の下、縦組みで文字の右に引きます。2本の線が接するときは、それぞれ八分ずつ縮めます。どの文字体系でも使えます。
+- **専名号と書名号**（专名号`:name[…]`、`bookTitleMark: 'wavy'`のときの书名号`:book[…]`）は、文字の全角ボックスの下（縦組みでは左）に、ラン内のスペースもまたいで引きます。2つのランが接するところでは、それぞれの端を八分ずつ縮めるので、`:name[賈寶玉]:name[林黛玉]`は2つの名前として読めます。同じテキストの同じ側に圏点と線がある場合は、線のほうがテキストに近くなります。`'brackets'`のときの《》は、行を分割するときにも扱われるテキストで、ほかの文字と同じように描画・コピーされます。ただしプレーンテキストやソースマップの文字は占めません（セグメントには`inserted`のフラグが付きます）。
+- **ルビ**は、親文字の全角ボックスに接して行間に置かれ、親文字に対して中央にそろいます。ラテン文字を含むルビ（ピンイン）が親文字の上に立つ場合は、書体のディセンダー（g、j、p、q、y）の深さに本文の0.04emを加えた分だけ持ち上げて親文字に重ならないようにし、行のすべてのルビは1本のベースラインを共有します。親文字より広いルビは、ルビのない隣の文字に掛けてよいルビ全角の4分の1を差し引いた分だけ親文字のボックスを広げます。2つのルビの間はルビ全角の4分の1空けます（注音符号2つの間は記号の全角の4分の1で、2つの文字の脇にそれぞれ3つの記号を並べてもマスに収まります）。モノルビ（1文字に1つのルビ）は文字の間で改行でき、グループルビは改行しません。日本では、ルビは代わりに`ruby.align`と`ruby.overhang`に従います。親文字より短いときは1:2:1で配置し、長いときはかなには掛かっても漢字には掛からず、残りは親文字の字間を広げてまかないます。2文字以上のモノルビは熟語ルビで、各文字はそれぞれのルビを保ちます。ルビは語の次の文字に掛かってもよいものの、別のルビとは重ならず、行はその間で改行できます（JLReq §3.3）。行頭・行末では、親文字とルビを行の端にそろえます（clreq §5.5.4）。横組みの注音符号は各文字の右に縦1列で並び、文字のボックスはその列の分だけ広がります。縦組みでは同じ列が文字の右側を上から下へ並びます。声調記号は列の右に、インクの半分が最後の記号の上端より上に出るように置きます（clreq §5.5.3.3）。フォントはこうした記号を全角ボックスの高い位置に置くので、位置はインクを基準に決めます。縦組みでは、最初の記号の上に付く軽声の点と同じく、正立します。
+- **割注**（双行夹注）は注のサイズで2行に折り返し、行の中央に行間なしで置きます。上の行は、少なくともその部分の半分を収めるまで文字を取るので、下の行のほうが長くなることはありません。下の行が行頭に置けない約物で始まってしまう間は、さらに1文字取ります。行の残りの領域より長い注は、その行を埋めて次の行・段・ページに続きます。括弧は最初の行の前と最後の行の後にだけ付きます。縦組みでは、右の行が上の行で、先に読みます。
+- **訓点**（`:kunten[字]{kaeri okuri tate}`）は、最後の文字の返り点をその次の文字の行の下端側（縦組みでは左下）に、送り仮名を文字の中ほどから行の上端側に置きます。長い送り仮名は次の文字を押し下げます。竪点は次の文字までの短い線として引きます（JIS X 4051 §5）。コピーしたテキストとPDFの`/ActualText`では、送り仮名は文字の後に続けて読み取られ、返り点は除かれます。訓点を置くには狭すぎる行間は`kuntenExceedsLeading`として報告します。
+
+行送りは変わりません。圏点やルビは行間に収まります。行間（行の高さから文字サイズを引いたもの）が、片側にだけ記号が付く場合は二分、両側に付く場合は8分の5em（clreq §5.6.1）を下回る段落は、`cjkMarksExceedLeading`コンテンツ警告として報告します。ルビが行間より高い段落（ピンインのルビは持ち上げた分を含めて数えます）は`rubyExceedsLeading`として報告します。そうした段落には、行送りを広げた段落スタイルを指定してください。振り仮名を付ける日本語の本は、本文の行の高さを1.75em程度にするのが一般的です（JLReq §2.4.2）。
+
+VDTでは、記号付きのセグメントは`cjkMarks`を持ち、レイアウトは点や線を`VDTLine.marks`（点、丸、ゴマ点、直線、二重線、点線、波線。行の流れの座標系で表します）としてその行に置きます。Canvas、HTML、PDFはこれをそのまま描画します（PDFでは`Artifact /Layout`、HTMLでは`aria-hidden`のボックスと、圏点付きテキストの`<em>`）。ルビの親文字のセグメントは`ruby`（ルビとそのラン。日本語のルビでは、熟語のほかの文字と共有する注釈の`id`と`jukugo`も）を持ち、ルビによって字間が広がった場合は`tracking`付きで親文字を`inkOffset`の位置に描画します。訓点の付いた文字は`kunten`（そのランと竪点）を持ちます。行上にある割注の部分は1つのセグメントで、その`text`は上の行、次に下の行で、`warichu`にはレンダラーが代わりに描画する2行が入ります。タグ付きPDFは、ルビを親文字の`Ruby`の`RT`に、注を`Warichu`に入れ、行の`/ActualText`は親文字と注を1回ずつ読み取ります。圏点、ルビ、注は、本文、見出し、リスト、囲み、そしてリソースのキャプション、表のセル、注に描画され、それらの行は本文の行と同じく`marks`と`ruby`を持ちます。デザインのテキストは、これらを付けずにテキストだけを保ちます。
+
+設定の解決と既定値の除去は、ほかの節と同じ仕組みです。`spaceAfterQuestion`、`paragraphStartBracket`、`wordBreak`と、ルビの`overhang`、`align`、`smallKana`は、何かを変える場合（日本の場合、または設定した場合）にだけ解決済みの設定に含まれます。`setCjkLineBreak`と`setCjkComposition`は、`buildDocument`の外で行う計測のために、レベルと組み方（約物の幅、ぶら下げ、和欧間のアキ。`cjkCompositionOf(resolved.cjk, dpi)`）を設定します。ビルドの中では、設定からこれらが自動で設定されます。ビルドの外では、約物は送り幅をすべて保ち、和欧間のアキは入りません。
+
+```ts
+import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
+
+resolveCjkConfig(undefined, 'zh-HK');
+// { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' }, uprightDigits: 2,
+//   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false },
+//   emphasis: 'dots', emphasisMark: { style: 'dot', fill: 'auto', position: 'auto' },
+//   bookTitleMark: 'wavy', bookTitleBrackets: [{ open: '《', close: '》' }, { open: '〈', close: '〉' }],
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' }, kunten: { … } }
+
+resolveCjkConfig(undefined, 'ja');
+// { region: 'japan', lineBreak: 'ja-very-strict', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'allow', spaceAfterQuestion: true, paragraphStartBracket: 'half', …,
+//   emphasisMark: { style: 'sesame', fill: 'auto', position: 'over' }, bookTitleMark: 'brackets',
+//   bookTitleBrackets: [{ open: '『', close: '』' }, { open: '「', close: '」' }],
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto', overhang: 'kana', align: 'jis' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '（', close: '）' }, kunten: { … } }
+```
+
+Sandboxでは、これらの設定は**デザイン › 表記体系 › 東アジアの組版**にあります。

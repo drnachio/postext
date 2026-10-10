@@ -18,7 +18,7 @@ pageNotes: { "1": "La portadilla de Apuntes del tiempo: un fondo azul lluvia con
 
 <Excerpt region="palette" />
 
-Cada color de la configuración remite a un identificador de la paleta; el hex que lleva al lado es solo el valor de día, de reserva. Por eso a la edición de pantalla le basta cambiar un array para pasar a los colores de noche. Los [ajustes de pantalla](/es/docs/configuration#visor-html) de [la respuesta corta](#la-respuesta-corta) se fusionan clave a clave, y los niveles de título por `level`; cualquier otro array, `colorPalette` incluido, se sustituye entero. `main-color` forma parte de la paleta, de modo que también cambian los valores por defecto del motor que dependen de él. La paleta nueva llega a todos los colores enlazados con ella: el texto, los pies de figura, los elementos de diseño de las aperturas y el color de las remisiones.
+Cada color de la configuración remite a un identificador de la paleta; el hex que lleva al lado es solo el valor de día, de reserva. Por eso a la edición de pantalla le basta cambiar un array para pasar a los colores de noche. Los [ajustes de pantalla](/es/docs/configuration-fonts-colors-viewers#visor-html) de [la respuesta corta](#la-respuesta-corta) se fusionan clave a clave, y los niveles de título por `level`; cualquier otro array, `colorPalette` incluido, se sustituye entero. `main-color` forma parte de la paleta, de modo que también cambian los valores por defecto del motor que dependen de él. La paleta nueva llega a todos los colores enlazados con ella: el texto, los pies de figura, los elementos de diseño de las aperturas y el color de las remisiones.
 
 ### 2 · Aperturas: banda en papel, solo palabras en pantalla
 
@@ -30,7 +30,7 @@ Los elementos de antetítulo, título y entradilla se definen una vez y se copia
 
 <Excerpt region="part" />
 
-En la edición impresa, `:::part` abre <PageRef page={1}>la portadilla azul lluvia</PageRef>: una caja a sangre por los cuatro lados, un elemento de imagen con trazos de lluvia que dejan libre el texto, el número y el título que da la valla, y la lista de apuntes en blanco. Los ajustes de pantalla ponen `parts.page: false`, así que no se abre ninguna página ni se compone la lista. La [parte](/es/docs/configuration#partes) sigue aplicando su número y su título a los apuntes que vienen detrás, y el antetítulo de pantalla dice «Otoño · Apunte 1», igual que el impreso.
+En la edición impresa, `:::part` abre <PageRef page={1}>la portadilla azul lluvia</PageRef>: una caja a sangre por los cuatro lados, un elemento de imagen con trazos de lluvia que dejan libre el texto, el número y el título que da la valla, y la lista de apuntes en blanco. Los ajustes de pantalla ponen `parts.page: false`, así que no se abre ninguna página ni se compone la lista. La [parte](/es/docs/configuration-styles#partes) sigue aplicando su número y su título a los apuntes que vienen detrás, y el antetítulo de pantalla dice «Otoño · Apunte 1», igual que el impreso.
 
 ### 4 · Dibuja cada figura dos veces
 
@@ -42,7 +42,7 @@ Cambiar la paleta no recolorea un SVG, así que cada dibujo se hace una vez por 
 
 <Excerpt region="screen" />
 
-Cada página de pantalla es tan alta como el panel, así que `fitFiguresToPage` reduce el pluviómetro hasta que quepa en una página con su pie ([disposición](/es/docs/configuration#disposición)). A 96 ppp, la resolución de referencia de CSS, los milímetros y puntos heredados de la edición impresa se ven a su tamaño nominal ([integrar el visor HTML](/es/docs/configuration#integrar-el-visor-html)). La receta escribe las líneas con posición absoluta de `renderToHtml` dentro de un Shadow DOM, adonde no llegan los selectores de la página. Las propiedades heredadas, como `letter-spacing`, sí cruzan esa frontera, y la raíz de la edición las restablece por su cuenta, porque el motor midió las líneas sin ellas. Las páginas HTML son transparentes si nada las pinta, así que `page.backgroundColor` toma de la paleta el papel nocturno. El ResizeObserver espera 150 ms y solo recompone, con una `config()` nueva, cuando cambia el ancho o el alto del panel; después vuelve a desplazar el panel a la misma proporción de su altura, para que el lector siga por donde iba.
+Cada página de pantalla es tan alta como el panel, así que `fitFiguresToPage` reduce el pluviómetro hasta que quepa en una página con su pie ([disposición](/es/docs/configuration-page-layout#disposición)). A 96 ppp, la resolución de referencia de CSS, los milímetros y puntos heredados de la edición impresa se ven a su tamaño nominal ([integrar el visor HTML](/es/docs/configuration-programmatic-usage#integrar-el-visor-html)). La receta escribe las líneas con posición absoluta de `renderToHtml` dentro de un Shadow DOM, adonde no llegan los selectores de la página. Las propiedades heredadas, como `letter-spacing`, sí cruzan esa frontera, y la raíz de la edición las restablece por su cuenta, porque el motor midió las líneas sin ellas. Las páginas HTML son transparentes si nada las pinta, así que `page.backgroundColor` toma de la paleta el papel nocturno. El ResizeObserver espera 150 ms y solo recompone, con una `config()` nueva, cuando cambia el ancho o el alto del panel; después vuelve a desplazar el panel a la misma proporción de su altura, para que el lector siga por donde iba.
 
 ## Variantes
 

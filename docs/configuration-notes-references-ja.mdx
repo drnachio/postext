@@ -1,0 +1,827 @@
+{/* docs/configuration-notes-references-ja.mdx */}
+
+export const metadata = {
+  title: '設定：注と参照',
+  sidebarTitle: '注と参照',
+  description: '脚注、行番号、相互参照と引用、目次、巻末の索引',
+  lang: 'ja',
+  lastUpdated: '2026-10-10',
+  readingTime: '4分',
+  order: 6,
+  parent: 'configuration',
+  plainSummary: "このページでは、本の中でほかの場所を指し示す部分の設定を説明します。脚注はページの下に、行番号は余白に入ります。相互参照は図や節やページを指し、引用はあなたが挙げる文献を指します。目次は章を並べ、巻末の索引は用語とそのページを並べます。各節で、これらの見た目と番号の付け方を説明します。",
+};
+
+# 設定：注と参照
+
+
+## 脚注
+
+`footnotes`プロパティは、`[^id]`で引用した注をどこに置き、どのように番号を付け、どのような見た目にするかを設定します。記法は[文書形式](/ja/docs/document-format#脚注)で説明しています。
+
+```ts
+interface FootnotesConfig {
+  placement?: 'column' | 'chapterEnd' | 'spread'; // Foot of the citing column, after the chapter, or beside the text of a spread.
+  numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Start again at each chapter, run on, or start again on each page / column / spread.
+  numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  symbols?: string[];         // numberFormat: 'symbols' で使う参照記号。
+  markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Raised, on the baseline, beside the word, or right of a vertical line.
+  markerSize?: Dimension;     // Inline, side or right marker size; em is the text around it.
+  numberGap?: 'en' | 'em';    // Space after the note's own number.
+  chapterEndAlign?: 'foot' | 'text';   // chapterEnd: notes at the column foot, or under the text.
+  fontSize?: Dimension;       // Note size; em is the body size.
+  lineHeight?: Dimension;     // Note leading; em is the note size.
+  color?: ColorValue;         // Note colour; the body colour when unset.
+  textAlign?: TextAlign;      // The body alignment when unset.
+  hangingIndent?: Dimension;  // Indent of a note's turnover lines.
+  spaceBetween?: Dimension;   // Space between two notes.
+  spaceAbove?: Dimension;     // Space between the text and the rule; em is the body size.
+  spaceBelowRule?: Dimension; // Space between the rule and the first note.
+  separator?: {
+    enabled?: boolean;        // Draw the rule.
+    width?: number;           // Rule length, a fraction of the column width.
+    lineWidth?: Dimension;    // Rule thickness.
+    color?: ColorValue;       // The note colour when unset.
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '160px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'column' | 'chapterEnd' | 'spread'</code></td>
+      <td><code>'column'</code>（日本語の縦組みの本：<code>'chapterEnd'</code>）</td>
+      <td><code>'column'</code>は、各注を、それを引用する行がある段の下端に、短い罫線の下に組みます。1段組みのレイアウトではページの下端になります。<code>'chapterEnd'</code>は、章のすべての注を、その章の最後のブロックの後に引用順に組みます。<code>'spread'</code>（傍注、縦組みのみ）は、見開きの両ページで引用された注を、奇数ページ（右綴じの本では左ページ）の末尾に罫線の下に組みます。偶数ページで引用された注は奇数ページまで待ちます。奇数ページに残る本文が1行未満になってしまう注は、それ以降の注とともに偶数ページの下端にとどまり、偶数ページで終わる章は、待っている注をそこに組みます。横組みでは<code>unknownConfigValue</code>の警告を出して<code>'column'</code>にフォールバックします。postext 1.16以降。</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
+      <td><code>'chapter'</code>（日本語の横組みの本：<code>'page'</code>、<code>placement: 'spread'</code>の場合：<code>'spread'</code>、段の下端の注で<code>numberFormat: 'symbols'</code>の場合：<code>'page'</code>）</td>
+      <td><code>'chapter'</code>は、レベル1の見出しのたびと文書の始まりで、1から番号を振り直します。<code>'document'</code>は文書全体を通して番号を続け、章ごとにレイアウトする本では章から章へと続けます（<code>continuationAfter</code>が最後の番号を<code>continuation.footnoteNumber</code>として引き継ぎます）。<code>'page'</code>はページごとに、<code>'column'</code>は段ごとに1から振り直し、レイアウトが注を組んだ位置で（ページ内の段は読む順に）注を数えます。中国語の本で一般的な页下注です。文書はいったんレイアウトされ、注が置かれた位置で番号が付けられ、番号が安定するまで再びレイアウトされます（追加のビルドは最大3回）。どちらも段の下端の注に適用され、<code>placement: 'chapterEnd'</code>では注は章ごとに番号が付きます。<code>'spread'</code>は、<code>placement: 'spread'</code>用に、見開き（2–3ページ、4–5ページ…）ごとに引用順で振り直します。</td>
+    </tr>
+    <tr>
+      <td><code>numberFormat</code></td>
+      <td><code>string</code></td>
+      <td><code>'decimal'</code></td>
+      <td>番号の書き方です。番号付けの設定が受け付けるどの表記でも指定できます（<code>'decimal'</code>、<code>'lower-roman'</code>、<code>'lower-alpha'</code>、<code>'circled-decimal'</code>（または<code>'①'</code>）、<code>'cjk-decimal'</code>、<code>'一'</code>…）。本文中の合印と、注の冒頭の番号の両方に使われます。<code>circled-decimal</code>は50を超える番号を10進数で書きます。未知の名前は、<code>unknownNumberFormat</code>の警告とともに10進数で番号を付けます。<code>'symbols'</code>（または<code>'&#42;'</code>）は、<code>symbols</code>の参照記号を順に使って注を示します（&#42; † ‡ § ‖ ¶、使い切ると二つ重ね（&#42;&#42; †† ‡‡…）、さらに三つ重ね）。このとき注は、<code>numbering</code>を指定しない限りページごとに数え直されます。postext 1.19から。</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td><code>numberFormat: 'symbols'</code>が書く記号の並びです。使い切ると二つ重ね、さらに三つ重ねになります。Google FontsとFontsourceのラテン文字ファイルには &#42; † § ¶ があります（ダガーは<code>latin-ext</code>）が、‡ と ‖ はなく、PDFではフォントの<code>.notdef</code>グリフで描かれ、<code>missingGlyph</code>の警告が出ます。そのようなフォントでは、この二つを外す（<code>['&#42;', '†', '§', '¶']</code>）か、それらを持つフォントで注を組んでください。空の文字列は無視され、空のリストは既定の並びのままです。postext 1.19から。</td>
+    </tr>
+    <tr>
+      <td><code>markerPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline' | 'side' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'superscript'</code>は、本文中の合印と注の冒頭の番号を、縮小したサイズで上付きにします。<code>'inline'</code>はそれらをベースライン上に組みます。合印は<code>markerSize</code>、注の番号は注のサイズです。縦組みでは、行内の丸数字の合印は専用のセルの中で正立します。<code>'right'</code>は、日本語の縦組みの本が（1）を組むように、縮小した合印を縦の行の右側にそろえて組みます。横組みでは上付きになります。<code>'side'</code>（合印）は、印を付けた語の脇、ルビの側に小さな合印を組み、語の最後の文字が終わる位置で終わらせます。行の中で場所を取らないため、行はそれがないものとして改行・両端そろえされます。それを収めるには狭すぎる行間は<code>rubyExceedsLeading</code>として報告されます。<code>'auto'</code>は、<code>circled-decimal</code>ではinline、日本語の縦組みの本では<code>'right'</code>、それ以外では上付きになります。どの場合も、合印は直前の文字から離れず、行頭に来ることはありません。</td>
+    </tr>
+    <tr>
+      <td><code>markerSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code>。<code>'side'</code>では<code>0.6em</code>、<code>'right'</code>では<code>0.7em</code></td>
+      <td>インライン、脇、右の合印のサイズです。<code>em</code>は周囲のテキストのサイズです（<code>0.75em</code>がよく使われる縮小率です）。上付きの合印には影響しません。</td>
+    </tr>
+    <tr>
+      <td><code>numberGap</code></td>
+      <td><code>'en' | 'em'</code></td>
+      <td><code>'en'</code>（日本語の後注：<code>'em'</code>）</td>
+      <td>注の冒頭の番号の後のアキです。二分アキ、または注の全角アキ（番号か注にCJKのテキストが含まれる場合は和文の全角スペース）で、伸縮も改行もしません。postext 1.16以降。</td>
+    </tr>
+    <tr>
+      <td><code>markerTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>'&#123;n&#125;'</code>（日本語の縦組みの本：<code>'（&#123;n&#125;）'</code>）</td>
+      <td>注の番号の書き方です。<code>&#123;n&#125;</code>が、番号の書式と文書の数字で書いた番号を表します。<code>'(&#123;n&#125;)'</code>とすると、アラビア語の本の括弧付きの合印«(١)»になります。本文中の合印と注の冒頭の番号の両方を、この形で書きます。<code>&#123;n&#125;</code>を含まないテンプレートは既定値として扱われます。</td>
+    </tr>
+    <tr>
+      <td><code>noteNumberPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>注の冒頭の番号の位置で、上付きにするか、注のサイズでベースライン上に置くかを決めます。<code>'auto'</code>は<code>markerPosition</code>に従います。アラビア語の本では、本文中の合印を上付きにし、注自身の番号はベースライン上に組みます。</td>
+    </tr>
+    <tr>
+      <td><code>chapterEndAlign</code></td>
+      <td><code>'foot' | 'text'</code></td>
+      <td><code>'foot'</code></td>
+      <td><code>placement: 'chapterEnd'</code>の場合の配置です。<code>'foot'</code>は、段を閉じる注を段の下端に組み、余った行は本文と注のあいだに残ります。段の下端の注と同じ配置です。<code>'text'</code>は本文の直下に組みます。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>注の文字のサイズです。<code>em</code>と<code>rem</code>は本文のサイズです。注には本文のファミリーとウェイトが使われます。</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.25em</code></td>
+      <td>注の文字の行送りです。<code>em</code>は注のサイズです。注はベースライングリッドから外れます。段の下端から積み上がり、その上の本文はグリッドに乗ったままです。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>本文の色</td>
+      <td>注の文字の色です。</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>TextAlign</code></td>
+      <td>本文の行そろえ</td>
+      <td>注の文字の行そろえです。</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>注の2行目以降のインデントで、番号より後ろにそろえるためのものです。</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>2つの注のあいだのアキです。</td>
+    </tr>
+    <tr>
+      <td><code>spaceAbove</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>本文の最終行と罫線のあいだのアキです。<code>em</code>は本文のサイズです。<code>'chapterEnd'</code>と<code>chapterEndAlign: 'text'</code>の場合は、<code>spaceAbove</code>＋<code>spaceBelowRule</code>が本文と最初の注のあいだのアキになります。</td>
+    </tr>
+    <tr>
+      <td><code>spaceBelowRule</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.4em</code></td>
+      <td>罫線と最初の注のあいだのアキです。</td>
+    </tr>
+    <tr>
+      <td><code>separator.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>各段の注の上に罫線を引きます。<code>false</code>の場合も、上のアキは残ります。</td>
+    </tr>
+    <tr>
+      <td><code>separator.width</code></td>
+      <td><code>number</code></td>
+      <td><code>0.3</code></td>
+      <td>段の幅に対する比率（0–1）で表した罫線の長さで、段の左端から引きます。</td>
+    </tr>
+    <tr>
+      <td><code>separator.lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>罫線の太さです。</td>
+    </tr>
+    <tr>
+      <td><code>separator.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>注の色</td>
+      <td>罫線の色です。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+footnotes: {
+  fontSize: { value: 7.5, unit: 'pt' },
+  lineHeight: { value: 9.5, unit: 'pt' },
+  hangingIndent: { value: 0.8, unit: 'em' },
+  separator: { width: 0.25, lineWidth: { value: 0.4, unit: 'pt' } },
+}
+```
+
+**日本語の本**。日本語の文書（`locale: 'ja'`、postext 1.16以降）では、未設定のフィールドにJLReq §4.2の値が使われます。縦組みの本は注を章の後に組み（`placement: 'chapterEnd'`、後注）、章ごとに番号を付け、合印`（{n}）`を行の右に置きます（`markerPosition: 'right'`、数字は`cjk.uprightDigits`により正立）。横組みの本は注をページの下端に組み、ページごとに番号を付け、合印を上付きにします。どちらも罫線を組幅の3分の1の長さで引き（`separator.width: 1/3`）、章の後に置く注には`numberGap: 'em'`と2字分のぶら下げインデントを使います。明示した値が優先され、保存時にも保持されます（`stripFootnotesDefaults`は文書自身の既定値と比較します）。中国語、アラビア語、ラテン文字の文書の解決結果は従来どおりです。`footnoteDocumentDefaults(locale, writingMode, placement?)`はこれらの値を返します。合印は文末の。の前に書いてください（`先生[^1]。`）。合印は直前の文字から離れず、。が行頭に来ることはありません。[日本語の組版 › 注](/ja/docs/japanese-layout#注)を参照してください。
+
+段の下端での注の組み方は次のとおりです。
+
+- **注と引用箇所は同じ段に置かれます**。行を置く前に、レイアウトはその行が初めて引用する注の高さ（その段の最初の注の場合は罫線も）を加えます。その下に注が収まらない行は、オーファンとウィドウの規則に従い、段落の残りとともに次の段へ移ります。段の本文領域は注の高さの分だけ縮むため、段末そろえと章の最後の帯では本文だけが数えられます。
+- **複数の注**が1つの段にある場合は、1本の罫線の下に引用順に積み重なります。あとで再び引用された注は番号を保ち、二度は組まれません。
+- **下側のフロート**。注を組んだ後に段の下端を占める図は、注の上に入ります。図の後に組まれた注は図の上に入ります。
+- **囲み**。囲み（インライン、フロート、固定）の中で引用された注は、囲みの後の本文が続く段の下端に置かれます。通常は同じ段です。文書を閉じる囲みは、本文が終わった段の下端に注を残します。
+- **制限**。注は分割されません。段より高い注は段からはみ出します。キャプション、表のセル、見出しの中の合印は読み取られません（書いたとおりに印字されます）。
+- **出力**。Canvas、HTML、PDFは注、合印（上付きの番号）、罫線を描画します。PDFでは各合印がその注にリンクし、タグ付きPDFでは各注を一意の`/ID`を持つ`Note`要素とし、構造ツリーの`/IDTree`に列挙します（PDF/UA-1）。注は`footnoteNote`が設定された`VDTBlock`として`page.floats`に、罫線は`page.footnoteAreas`に入ります。
+- **警告**。`undefinedFootnote`（定義のない合印。番号は空の注の上に印字されます）と`unusedFootnote`（どの合印からも引用されない定義。組まれません）があります。
+
+解決関数と除去関数は、ほかのセクションと同じ形です。
+
+```ts
+import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, footnoteDocumentDefaults } from 'postext';
+
+resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // unset fields take the Japanese vertical defaults
+```
+
+
+## 行番号
+
+`lineNumbers`プロパティは、5行ごと（またはN行ごと）の行の番号を、その行の横の余白に印字します。校訂版、詩のアンソロジー、法令の本文、学校向けの版がこうして行番号を付けます。数えるのは`:::verse`の詩の行か、本文のすべての行です。既定では無効です。各番号は自分の行のベースライン上に独自のサイズで描かれ、行を動かすことはありません。ページは番号がない場合とまったく同じにレイアウトされます。postext 1.23から使えます。
+
+```ts
+interface LineNumbersConfig {
+  enabled?: boolean;        // 既定では無効。
+  count?: 'verse' | 'all';  // 詩の行か、本文のすべての行。
+  interval?: number;        // Nの倍数を印字する。
+  numberFirst?: boolean;    // 数え直しの後の最初の行も印字する。
+  restart?: 'document' | 'chapter' | 'section' | 'page' | 'poem'; // 数え直す位置。
+  startAt?: number;         // 数え直しの後の最初の行の番号。
+  position?: 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+  multiColumn?: 'each' | 'gutter' | 'outer-edges'; // 2段以上のページ。
+  gap?: Dimension;          // 本文から番号までの距離。emは番号のサイズ。
+  align?: 'auto' | 'left' | 'right';
+  fontFamily?: string;      // 未設定なら本文のファミリー。
+  fontSize?: Dimension;     // emは本文のサイズ。
+  fontWeight?: number;      // 未設定なら本文のウェイト。
+  italic?: boolean;
+  color?: ColorValue;       // 未設定なら本文の色。
+  format?: string;          // decimal、lower-roman、arabic-indic、一…
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '160px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>行番号を印字します。縦組みの文書（<code>layout.writingMode: 'vertical-rl'</code>）には付かず、そこで<code>true</code>にすると<code>lineNumbersUnsupported</code>として報告されます。</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>'verse' | 'all'</code></td>
+      <td><code>'verse'</code></td>
+      <td><code>'verse'</code>は<code>:::verse</code>の詩の行を、1行につき1回数えます。行長に収まらない詩の行が次の行に折り返した部分には番号が付かず、連と連のあきも数えません。古典アラビア語の配置で組んだ詩は、1ベイトを1行と数えます。段違いに組んだベイトの2行目は数えません。<code>'all'</code>は本文の段落、リストの項目、引用、詩のすべての行を、読む順に数えます。ページごと、段ごと、上から下へです。</td>
+    </tr>
+    <tr>
+      <td><code>interval</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>この数の倍数にあたる行（5、10、15…）の番号を印字します。最初の行が37の詩では40、45…が印字されます。詩の開始行で独自の値を指定できます（<code>interval=N</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>numberFirst</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>数え直しのたびに、最初に数える行の番号も印字します。</td>
+    </tr>
+    <tr>
+      <td><code>restart</code></td>
+      <td><code>'document' | 'chapter' | 'section' | 'page' | 'poem'</code></td>
+      <td><code>count: 'verse'</code>では<code>'poem'</code>、<code>count: 'all'</code>では<code>'page'</code></td>
+      <td>数え直す位置です。数え直さない（<code>'document'</code>。本の章をまたいで続きます）、レベル1の見出しごと（<code>'chapter'</code>）、レベル1か2の見出しごと（<code>'section'</code>）、ページごと（<code>'page'</code>）、<code>:::verse</code>の詩ごと（<code>'poem'</code>）のいずれかです。詩の<code>lineStart=N</code>と、<code>:::numbering</code>ディレクティブの<code>lines=N</code>は、どのモードでも任意の位置で数え直します。</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>数え直しの後の最初の行の番号です。</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side'</code></td>
+      <td><code>'outer'</code></td>
+      <td>番号を置く側です。<code>'outer'</code>は小口側で、奇数ページでは右、偶数ページでは左、右綴じの本では逆になります。<code>'inner'</code>はのど側です。<code>'left'</code>と<code>'right'</code>はどのページでも同じ側です。<code>'start'</code>と<code>'end'</code>は文書の方向に従い、右から左へ書く本では<code>'start'</code>が右になります。<code>'side'</code>は、<code>layout.sideColumnRole: 'floats'</code>の<code>'oneAndHalf'</code>レイアウトのサイド段に、本文側の辺にそろえて置きます（<code>gap</code>は使いません）。サイド段のないページでは<code>'outer'</code>になります。</td>
+    </tr>
+    <tr>
+      <td><code>multiColumn</code></td>
+      <td><code>'each' | 'gutter' | 'outer-edges'</code></td>
+      <td><code>'outer-edges'</code></td>
+      <td>本文の段が2つ以上並ぶページの場合です。<code>'outer-edges'</code>は最初の段の番号をその左に、最後の段の番号をその右に置き、間の段は<code>'each'</code>に従います。<code>'gutter'</code>は段間に置きます。最初の段の番号はその右、ほかの段の番号はその左です。<code>'each'</code>は各段の番号を<code>position</code>の側に置きます。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>段の端から番号までの距離です。<code>em</code>は番号自身のサイズです。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code>は各番号を本文側にそろえます。左の余白では右そろえ、右の余白では左そろえです。<code>'left'</code>と<code>'right'</code>は、そのページでいちばん幅の広い番号の幅の中でそろえます。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>本文のファミリー</td>
+      <td>番号の書体です。ほかのファミリーと同じく読み込まれ、埋め込まれます。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>番号のサイズです。<code>em</code>は本文のサイズです。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>本文のウェイト</td>
+      <td>番号のウェイトです。</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>番号をイタリックで組みます。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>本文の色</td>
+      <td>番号の色です。パレットにリンクした色は、部やセクションのパレットに従います。</td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>string</code></td>
+      <td>十進数</td>
+      <td>番号の書き方で、<a href="/ja/docs/configuration-page-layout#番号書式の表記">番号書式の表記</a>のどれでも使えます（<code>'lower-roman'</code>、<code>'arabic-indic'</code>、<code>'一'</code>…）。十進数の番号は文書の数字（<code>numerals</code>）で書かれます。不明な名前では十進数になり、<code>unknownNumberFormat</code>の警告が出ます。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+lineNumbers: {
+  enabled: true,
+  count: 'verse',
+  interval: 5,
+  restart: 'document',          // 本全体で1つの通し番号
+  position: 'outer',
+  fontSize: { value: 0.75, unit: 'em' },
+  italic: true,
+}
+```
+
+数える行と数えない行：
+
+- **数えないもの**：見出し、キャプション、表と画像、別行立て数式、デザインのテキスト（扉、柱）、脚注と章末の注、目次、索引と参考文献の項目、白ページ。
+- **囲みと散文。** 囲みの中のテキストは数えません。`count: 'verse'`では散文も数えません。ただし、そのテキストを組む段落スタイルが`lineNumbers: true`を指定していれば数えます。`lineNumbers: false`のスタイルは決して数えません（[段落スタイル](/ja/docs/configuration-styles#段落スタイル)を参照）。
+- **1つの詩。** 詩の開始行には`numbered=false`（その詩の行を数えない）、`lineStart=N`（最初の行をNとし、そこから数え直す）、`interval=N`を書けます。`:::numbering{lines=N}`は、どこにあっても、次に数える行をNにします。[文書の書式 › `:::verse`](/ja/docs/document-format#verse)と[`:::numbering`](/ja/docs/document-format#numbering)を参照してください。
+
+章ごとにレイアウトする本では、`restart: 'document'`は`continuation.lineNumber`で章から次の章へ数を引き継ぎます。`continuationAfter`は詩の行をテキストから数えます。`count: 'all'`では数がレイアウトによって決まるので、ホストは前の章の文書の`lastLineNumber`を渡します。Sandboxはそうしています。
+
+`position: 'side'`では、番号はサイドの囲み、キャプション、図とサイド段を共有します。そのどれかに重なる番号もそのまま描かれ、どちらも動きません。レイアウトは、番号を付けた行を指す内容の警告`lineNumberOverlap`を出します。
+
+**出力。** Canvas、PDF、HTMLビューアー、固定レイアウトのEPUBが番号を描画します。タグ付きPDFでは番号はレイアウトのアーティファクトで、それぞれに空の`/ActualText`が付くので、コピーや抽出したテキストは番号を含まずに行から行へ続きます。HTML出力は番号を支援技術（`aria-hidden`）、選択、コピーするテキストから隠します。行を閲覧システムが組むリフロー型のEPUBでは、詩の行の番号だけが残ります。印刷版で番号の付く行の横、連の行頭側の余白に置く`pt-line-number`のspan（これも`aria-hidden`）です。VDTでは、番号は各ページのデザインスロット（`page.lineNumbers`。そのテキストブロックには`artifact`の印が付きます）と、マークのリスト（`page.lineNumberMarks`：`number`、`label`、`columnIndex`、`blockId`、`lineIndex`）です。文書は`lastLineNumber`を記録します。
+
+**対応していないもの**：縦組みの行番号、行の番号を印字する相互参照、行番号に結び付けた注、表のセル、キャプション、コードリストの行の番号。
+
+Sandboxでは、これらの設定はデザインパネルの**行番号**セクションです。解決関数と除去関数は、ほかのセクションと同じ形です。書体、ウェイト、色は本文から取ります。
+
+```ts
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from 'postext';
+
+resolveLineNumbersConfig(config.lineNumbers, resolvedBodyText); // 未設定の書体、ウェイト、色は本文に従う
+```
+
+
+## 相互参照
+
+`crossRefs`プロパティは、[相互参照](/ja/docs/document-format#相互参照とアンカー)が番号やページの前後に印字する語と、スタイルを指定しない`:ref`に使うスタイルを設定します。各テンプレートには、番号が入る位置に`{n}`を書きます。これを含まないテンプレートでは、ノーブレークスペースの後に番号が入ります（`"§"`は「*§ 3.2*」と印字されます）。未設定のテンプレートは文書の言語に従い、英語では*chapter / section / p.*、スペイン語では*capítulo / sección / pág.*、中国語では`第{n}章` / `第{n}节` / `第{n}页`となります。フランス語、ドイツ語、イタリア語、ポルトガル語、カタルーニャ語、オランダ語も同様です。
+
+```ts
+interface CrossRefsConfig {
+  chapter?: string;  // Words around a level-1 heading's number: "chapter {n}".
+  section?: string;  // Around any other heading's number: "section {n}".
+  page?: string;     // Around a page number: "p. {n}".
+  defaultStyle?: 'default' | 'number' | 'title' | 'page'; // A :ref without style=.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '160px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>chapter</code></td>
+      <td><code>string</code></td>
+      <td>言語による</td>
+      <td>レベル1の見出しへの参照に使います（<code>"chapter &#123;n&#125;"</code>）。テンプレートがすでにその語を含む見出し番号（<code>Chapter &#123;1&#125;</code>、<code>第&#123;1:一&#125;章</code>）は、そのまま印字されます。</td>
+    </tr>
+    <tr>
+      <td><code>section</code></td>
+      <td><code>string</code></td>
+      <td>言語による</td>
+      <td>レベル2–6の見出しへの参照に使います（<code>"section &#123;n&#125;"</code>、<code>"§ &#123;n&#125;"</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>string</code></td>
+      <td>言語による</td>
+      <td>ページ参照（<code>style=page</code>）に使います（<code>"p. &#123;n&#125;"</code>、<code>"page &#123;n&#125;"</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>defaultStyle</code></td>
+      <td><code>'default' | 'number' | 'title' | 'page'</code></td>
+      <td><code>'default'</code></td>
+      <td><code>style=</code>を指定しない、見出しまたはアンカーへの<code>:ref</code>が印字する内容です。<code>'default'</code>：番号付きの見出しはその語と番号、番号のない見出しはタイトル、アンカーはそのテキストを印字します。<code>style</code>を指定した参照はその指定を保ち、図と表への参照には影響しません。</td>
+    </tr>
+  </tbody>
+</table>
+
+参照には、すべての参照に共通する色、ウェイト、傾き（`bodyText.referenceColor`、`referenceBold`、`referenceItalic`）が使われます。
+
+## 引用
+
+`citations`プロパティでは、引用スタイルと、引用と参考文献の見た目を選びます。記法は[引用と参考文献](/ja/docs/document-format#引用と参考文献)で説明しています。スタイルは`postext-citeproc`パッケージが適用します。
+
+```ts
+interface CitationsConfig {
+  style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
+  customStyle?: string;    // a whole CSL style (.csl XML), used with style: 'custom'
+  locale?: string;         // CSL locale; the document language when unset
+  link?: boolean;          // citations link to their entries
+  marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
+  collapseRanges?: boolean;
+  notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
+  bibliography?: {
+    title?: string;        // unset: the document language's word; '' or ' ': none
+    scope?: 'book' | 'chapter';
+    auto?: boolean;
+    fontSize?: Dimension;
+    lineHeight?: Dimension;
+    hangingIndent?: Dimension;
+    entrySpacing?: Dimension;
+    labelWidth?: Dimension;
+    labelAlign?: 'left' | 'right';
+    doi?: 'link' | 'text' | 'hide';
+    includeUncited?: boolean;
+    groupByLanguage?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>string</code></td>
+      <td><code>'apa'</code></td>
+      <td>同梱のスタイルのID（<a href="/ja/docs/document-format#スタイル">スタイル</a>を参照）または<code>'custom'</code>です。スタイルは、引用と文献項目の内容（名前、日付、順序、句読点、引用を注にするかどうか）を決めます。</td>
+    </tr>
+    <tr>
+      <td><code>customStyle</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td><code>style</code>が<code>'custom'</code>のときに使う、CSLスタイル全体（<code>.csl</code>ファイルのXML）です。Sandboxではファイルから読み込みます。</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>文書の言語</td>
+      <td>スタイルが語句を書くときのCSLロケールです（<code>en-US</code>、<code>es-ES</code>、<code>zh-CN</code>、<code>zh-TW</code>、<code>ja-JP</code>…）。日本語の文書は<code>ja-JP</code>として扱われ、叙述的な引用では2人の著者を「と」でつなぎ、それより多い場合は「ほか」で省略します。</td>
+    </tr>
+    <tr>
+      <td><code>link</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>引用を参考文献の項目にリンクします（PDFのリンク、HTMLのアンカー、Sandboxでのクリック）。</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'</code></td>
+      <td><code>'style'</code></td>
+      <td>番号方式のスタイルで、引用をどう示すかです。スタイルの表記どおり、<code>[1]</code>、<code>(1)</code>、上付き、<code>〔1〕</code>（縦組みでは正立）から選びます。番号の後にロケーターが続きます。</td>
+    </tr>
+    <tr>
+      <td><code>collapseRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>連続する番号を範囲にまとめます。独立した1つの合印の場合は<code>1–3</code>、IEEEの場合は<code>[2]–[4]</code>です。<code>false</code>では別々のままにします。</td>
+    </tr>
+    <tr>
+      <td><code>notes</code></td>
+      <td><code>'footnote' | 'warichu'</code></td>
+      <td><code>'footnote'</code></td>
+      <td>注方式のスタイルで引用を組む場所です。脚注（<code>footnotes</code>の設定どおりに配置・番号付け）か、行の中に2行で組む割注（夹注）かを選びます。</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>引用を本全体で通して扱うか、章ごとに扱うか（各文書、および引用のあとの各レベル1見出し）。章ごとでは、番号方式のスタイルは各章を 1 から数え、二つの章で引用された文献はそれぞれの章の番号を取ります。注のスタイルは各章の最初の引用で文献を完全な形で書きます。<code>bibliography.scope: 'chapter'</code>と組み合わせて使い、章の一覧はその章の番号になります。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.title</code></td>
+      <td><code>string</code></td>
+      <td>言語による</td>
+      <td>一覧の上に置くタイトルで、太字の段落になります。空白にするとタイトルは付きません。独自の見出しは<code>:::bibliography</code>の上に置きます。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.scope</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>本が引用するすべての文献を1つの一覧にするか、章ごとにその章が引用する文献の一覧を作るかです。複数の章からなる文書では、各H1が新しい章の一覧を始めます。<code>auto</code>では、<code>:::bibliography</code>を置かない章の末尾に一覧が入ります。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.auto</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>:::bibliography</code>で位置を指定しない場合、一覧を本文の後（本全体の一覧なら最終章の後）に組みます。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>項目のサイズです。emは本文のサイズです。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>本文の行送り</td>
+      <td>項目の行送りです。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>番号のない項目の2行目以降のインデントです。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>2つの項目のあいだのアキです。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td>もっとも長いラベル</td>
+      <td>番号付きの一覧で番号を置く欄の幅です。どの項目の文字も、1行目も2行目以降も、この幅だけ内側から始まるため、<code>9.</code>と<code>10.</code>が同じ欄に収まります。ラベルは引き続き項目のテキストの一部です。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelAlign</code></td>
+      <td><code>'left' | 'right'</code></td>
+      <td><code>'left'</code></td>
+      <td>ラベルを欄のどこに置くかです。欄の左端に寄せるか、文字の側に寄せるか（<code>9.</code>と<code>10.</code>の末尾がそろいます）を選びます。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.doi</code></td>
+      <td><code>'link' | 'text' | 'hide'</code></td>
+      <td><code>'link'</code></td>
+      <td>DOIとURLを、リンクにするか、プレーンテキストにするか、省略するかです。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.includeUncited</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>引用の有無にかかわらず、すべての文献を一覧にします（<code>nocite: "@*"</code>と同様）。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.groupByLanguage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>中国語、日本語、韓国語の文献を先に、その他を後に並べます。著者・年方式と著者・ページ方式のスタイルのみが対象で、番号付きの一覧は番号の順序を保ちます。</td>
+    </tr>
+  </tbody>
+</table>
+
+## 目次
+
+`toc`プロパティは、`:::toc`ディレクティブが印刷する内容を設定します（[文書形式](/ja/docs/document-format#toc)を参照）。目次は文書の**アウトライン**、つまり番号とページラベルの付いたすべての見出しと、すべての`:::part`から組み立てられるため、章に追従します。章の名前を変える、別の部へ移す、著者を変えると、項目もそれに合わせて変わります。項目は、独立した欄に置く見出しの番号、タイトル、リーダー、右端のページラベル、そして任意のサブタイトル行からなります。部は`parts.design`でデザインする行になります。
+
+```ts
+const config: PostextConfig = {
+  toc: {
+    levels: [{ level: 1, fontWeight: 700, color: { hex: '#00507b', model: 'hex' }, numberWidth: { value: 7.4, unit: 'mm' } }],
+    unnumbered: { color: { hex: '#000000', model: 'hex' } },
+    pageNumber: { fontWeight: 400, width: { value: 8, unit: 'mm' } },
+    leader: { char: '.', gap: { value: 1, unit: 'mm' } },
+    subtitle: { enabled: true, attr: 'author', italic: true, fontSize: { value: 8.5, unit: 'pt' } },
+    parts: {
+      height: { value: 23, unit: 'pt' },
+      marginTop: { value: 11.5, unit: 'pt' },
+      design: { elements: [/* a band box, 'SECTION {number}', '{titleText}', '{pageNumber}' */] },
+    },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>TocLevelConfig[]</code></td>
+      <td>レベル1</td>
+      <td>目次に載せる見出しレベルと、レベルごとの項目の文字組みです。<code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>（既定値は本文の行送りで、目次がグリッドに乗ります）、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>indent</code>（項目全体のインデント）、<code>numberWidth</code> / <code>numberGap</code>（タイトルの前に置く番号欄。番号は欄の中で右そろえになり、<code>الفصل الحادي عشر</code>や<code>Chapter 12</code>のように<code>numberWidth</code>より幅の広い番号があると、そのレベルの欄は最も広い番号に合わせて広がります）、<code>numberFontFamily</code>、<code>numberFontSize</code>、<code>numberFontWeight</code>、<code>numberColor</code>、<code>marginTop</code>、<code>marginBottom</code>を指定できます。未設定のフィールドは本文の値を引き継ぎます。番号は書体やサイズにかかわらずタイトルの1行目のベースラインに乗り、canvas、HTML、PDFのいずれでも同じです（postext 1.4までは箇条書きの記号と同じくxハイトの中央にそろえていたため、ディスプレイ書体や大きなサイズの番号はタイトルより上に浮いていました）。独自のレンダラーは、このベースラインを項目ブロックの<code>bulletBaselineY</code>から得られます。<code>bulletY</code>は1.4と同じく番号のem枠の中点のままなので、この新しいフィールドより前に書かれたレンダラーは、これまでどおりの位置に番号を描きます。</td>
+    </tr>
+    <tr>
+      <td><code>unnumbered</code></td>
+      <td><code>TocEntryStyleConfig</code></td>
+      <td>—</td>
+      <td>スタイルが<code>numbered: false</code>の見出し（序文など）に対する上書きです。番号を印刷せず、レベルの<code>indent</code>の位置から字下げなしで始まります。</td>
+    </tr>
+    <tr>
+      <td><code>pageNumber</code></td>
+      <td>object</td>
+      <td>レベル1の書体、本文のウェイト</td>
+      <td>ページラベルの<code>fontFamily</code>、<code>fontSize</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>と、<code>width</code>（既定値<code>2em</code>）です。後者は右端にページラベル用に確保する欄の幅で、ラベルはその中で右そろえになります。</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>object</td>
+      <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
+      <td><code>char</code>をタイトルとページ番号のあいだに繰り返して並べます。続く項目の点が縦にそろうよう右そろえで並べます（<code>'. '</code>とすると点の間隔が空きます）。<code>gap</code>はタイトルとリーダーのあいだに最低限残す間隔です。リーダーの文字数は、その書体でひと続きの文字列として測り、入るだけの数になります。そのため、連続するピリオドをカーニングで離す書体では、点がページ番号まで届くことはなく、点の数が少なくなります（postext 1.4までは点1つの幅から数を求めていたため、そうした書体ではリーダーがタイトルから番号に食い込んでいました）。ラベルの入る余地がなくなるタイトルは、少し手前で折り返します。タグ付きPDFでは点はアーティファクトになり、抽出したテキストには含まれません。本文も<a href="/ja/docs/configuration-text#タブ位置">タブ位置</a>で同じリーダーを組みます。</td>
+    </tr>
+    <tr>
+      <td><code>subtitle</code></td>
+      <td>object</td>
+      <td><code>{"{ enabled: false, attr: 'author' }"}</code></td>
+      <td>見出しの属性（<code>attr</code>）から取る、項目の下の2行目です（章の著者など）。独自の<code>fontFamily</code>、<code>fontSize</code>、<code>fontWeight</code>、<code>italic</code>（既定値<code>true</code>）、<code>color</code>と、追加の<code>indent</code>を持ちます。この行は項目と同じ行送りで組まれ、タイトルから離れることはありません。</td>
+    </tr>
+    <tr>
+      <td><code>parts.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>部の区切りに行を設けるかどうかです。</td>
+    </tr>
+    <tr>
+      <td><code>parts.breakBefore</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>最初の部を除くすべての部の行の前で新しいページを始めます。各部の章がそれぞれ独立したページに並びます。</td>
+    </tr>
+    <tr>
+      <td><code>parts.design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>空</td>
+      <td>行のデザインです。コンテナーは行そのもの（段の幅 × <code>height</code>）です。プレースホルダーは<code>{'{number}'}</code>、<code>{'{numberDecimal}'}</code>、<code>{'{numberRoman}'}</code>…、<code>{'{titleText}'}</code>、<code>{'{pageNumber}'}</code>です（最後のものは部扉のページラベルです。部扉を作らない<code>parts.page: false</code>のときは、部の内容が始まるページ、つまり柱がその部に切り替わるページのラベルになります。章ごとにレイアウトする本では、章を閉じるフェンスは次の章の最初の内容ページを指します）。パレットに連動した色は部自身の<code>palette</code>を使うため、各部の行はその部の色で表示されます。空のときは、<code>{'{number} {titleText}'}</code>（あいだにH1の<code>numberSeparator</code>）とページ番号を、レベル1の項目の文字組みで組みます。</td>
+    </tr>
+    <tr>
+      <td><code>parts.height</code>, <code>marginTop</code>, <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code>, <code>0</code>, <code>0</code></td>
+      <td>行の高さと、その上下のアキです。<code>em</code>は本文の文字サイズなので、既定の行の高さは本文2行分ではなく、本文サイズの2倍です。本文が9.5/13.5 ptなら19 ptになります。本文2行分の行にするには、高さを<code>pt</code>で指定します（この例では<code>27pt</code>）。</td>
+    </tr>
+  </tbody>
+</table>
+
+ページラベルは文書が印刷するものと同じです。`buildDocument()`は、`:::toc`を含む文書を前のパスのラベルで組み直し、ラベルが確定するまで繰り返します（追加のパスは最大3回）。本を章ごとにレイアウトするホストは、代わりに本全体のアウトラインを`PostextContent.outline`として渡します。このアウトラインは`contentOutline()`（テキストだけから得る見出しと部）と`outlineFromDoc()`（同じ項目に、あるレイアウトのページラベルを付けたもの）から組み立て、そのアウトラインの`outlineKey()`が変わるたびに目次の章を組み直します。各見出しの項目は目次が印刷する`number`を持ち、番号付きの見出しであれば`counter`も持ちます。これは、テンプレートが何を印刷するかにかかわらず、`startAt`を適用したあとのそのレベルの通し番号です。ホストが自分の一覧で章の横に表示するのに使えます。
+
+## 索引
+
+`index`プロパティは、`:::index`ディレクティブが印刷する内容を設定します（[文書形式](/ja/docs/document-format#索引)を参照）。索引は、本文中で`:index[…]`と`:index{term="…"}`で印を付けた語を並べ替え、先頭の文字でグループにまとめ（中国語ではピンインの頭文字または画数、日本語では五十音の行。`groupBy`を参照）、それぞれに出現するページを添えたものです。項目は見出し語、区切り、ページ番号からなります。副項目はそのあとに続き、レベルごとに1段階ずつ字下げされます。折り返した行は`turnoverIndent`の分だけ下げるため、副項目と位置がそろうことはありません。
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    // The index in two columns, under its own heading.
+    { id: 'index', numbered: false, layout: { layoutType: 'double', gutterWidth: { value: 6, unit: 'mm' } } },
+  ],
+  index: {
+    fontSize: { value: 8.5, unit: 'pt' },
+    lineHeight: { value: 11, unit: 'pt' },
+    rangeFormat: 'chicago',
+    groups: { fontFamily: 'Source Sans 3', fontWeight: 700, color: { hex: '#8a1c1c', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>color</code></td>
+      <td>—</td>
+      <td>本文</td>
+      <td>項目の文字組みです。グループ見出しを含め、索引のすべての行は<code>lineHeight</code>で組まれます。索引は独自のリズムを保ち、ベースライングリッドには吸着しません。</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>副項目のレベルごとのインデントです。</td>
+    </tr>
+    <tr>
+      <td><code>turnoverIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>項目の折り返し行に、そのレベルのインデントに加えて付ける追加のインデントです。</td>
+    </tr>
+    <tr>
+      <td><code>entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>各主項目の上のアキです。</td>
+    </tr>
+    <tr>
+      <td><code>separator</code>, <code>locatorSeparator</code>, <code>rangeSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>', '</code>、<code>', '</code>、<code>'–'</code>。アラビア文字では最初の2つが<code>'، '</code></td>
+      <td>見出し語と最初のページのあいだ、2つのページのあいだ、範囲の両端のあいだに印刷する文字列です。</td>
+    </tr>
+    <tr>
+      <td><code>mergeRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>同じ番号書式の連続するページを範囲にまとめます。<code>12, 13, 14</code>は<code>12–14</code>と印刷されます。主要ページはまとめません。</td>
+    </tr>
+    <tr>
+      <td><code>rangeFormat</code></td>
+      <td><code>'full' | 'chicago'</code></td>
+      <td><code>'full'</code></td>
+      <td>範囲の2つ目の数の書き方です。省略せずに書く（<code>234–237</code>）か、<em>The Chicago Manual of Style</em>（9.64）の求めるとおり1つ目と共通する桁を省いて書きます（<code>71–72</code>、<code>100–104</code>、<code>101–8</code>、<code>321–28</code>、<code>1496–500</code>）。ローマ数字のラベルは常に省略せずに書きます。</td>
+    </tr>
+    <tr>
+      <td><code>main</code></td>
+      <td><code>{'{ bold?, italic? }'}</code></td>
+      <td>太字</td>
+      <td>主要ページ（印に<code>main</code>を付けたページ）の組み方です。</td>
+    </tr>
+    <tr>
+      <td><code>see</code></td>
+      <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
+      <td>言語による。イタリック（アラビア文字では正体）</td>
+      <td>相互参照の前に置く語です。未設定のときは文書の言語に従います。<em>See</em> / <em>See also</em>、<em>Véase</em> / <em>Véase también</em>、<em>Voir</em> / <em>Voir aussi</em>、见 / 另见（繁体字中国語では見 / 另見）…。中国語の索引では、参照を句点のあとに空白なしで置きます：<code>贾琏 12。见贾政</code>。</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>文書の言語</td>
+      <td>項目の並べ替えに使うアルファベット順の言語です（BCP 47タグで、<code>Intl.Collator</code>が読み取ります）。スペイン語では<em>ñ</em>は<em>n</em>のあとに並び、独立したグループの見出しになります。アクセント記号で順序が変わることはありません。</td>
+    </tr>
+    <tr>
+      <td><code>groupBy</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>グループ見出しの種類です。<code>'letter'</code>：並べ替えキーの最初の文字。<code>'pinyin'</code>：漢字で始まる項目はピンイン読みのラテン文字の頭文字の下に入り（贾宝玉は<code>J</code>の下）、ラテン文字の並べ替えキーはその文字の下で、その文字の中国語の項目のあとに入ります（照合器はラテン文字を漢字のあとに並べます）。<code>sort="jia mu"</code>は<code>J</code>の末尾に来ます。<code>'stroke'</code>：最初の文字の画数の下に入ります（<code>一畫</code>、<code>二畫</code>…。簡体字中国語では<code>一画</code>…）。<code>'gojuon'</code>：かなの項目は五十音の行（あ行、か行 … わ行）の下に入ります。<code>'kana'</code>では最初のかなの下に入ります（カタカナとひらがなは見出しを共有します）。並びは日本語の索引のJIS X 4061の順です。読み（印の<code>yomi</code>、なければルビのかな読み、なければ<code>sort</code>、なければテキスト）で並べ、カタカナはひらがなとして、小書きのかなは大きいかなとして、ーは直前の母音として扱い、清音、濁音、半濁音の順に並べます。全体は記号、値の順の数字、文字ごとのラテン文字の語、かなの順になります。漢字の見出しのままの項目は<code>indexReadingMissing</code>として報告され、かなのあとに見出しなしで置かれます。<code>'none'</code>：見出しを付けません。記号、数字、語は<code>groups.marginTop</code>のアキだけで区切ります。<code>'auto'</code>は、日本語の索引（<code>ja</code>、<code>ja-*</code>）を五十音の行で、簡体字中国語の索引（<code>zh</code>、<code>zh-Hans</code>、<code>zh-CN</code>）をピンインで、繁体字中国語の索引（<code>zh-Hant</code>、<code>zh-TW</code>、<code>zh-HK</code>）を画数で、それ以外の言語を文字でグループにまとめます。項目は見出しの元になる照合で並べます。ピンインでグループにまとめた<code>zh-Hant</code>の索引は、ピンインで並びます。読みと画数は照合器（CLDR）のものです。照合器が文字を誤って読む場合（重阳の重を<em>zhòng</em>、行业の行を<em>xíng</em>と読むなど）は、望む読みしか持たない文字で書いた<code>sort</code>キーを印に与えると、正しい位置に並びます。重阳には<code>sort="崇阳"</code>、行业には<code>sort="航业"</code>とします。中国語の照合データを持たないブラウザーでは、ピンインと画数の索引は見出しなしで印刷されます。</td>
+    </tr>
+    <tr>
+      <td><code>ignoreArticle</code></td>
+      <td><code>boolean</code></td>
+      <td>アラビア語では<code>true</code></td>
+      <td>アラビア語の項目を、先頭の冠詞<code>ال</code>（<code>ٱل</code>）がないものとして並べ替え、グループにまとめます。البصرةはبの下、بدرとبغدادのあいだに入り、表記は書かれたままです。<code>الله</code>は冠詞を保ち、独自の<code>sort</code>キーを持つ項目はそのキーのとおりに並びます。この設定にかかわらず、アラビア語の索引は母音記号とタトウィールを無視し、أ إ آ ٱをاの下に入れ、ؤをو、ئとىをي、ةをهとして並べます。</td>
+    </tr>
+    <tr>
+      <td><code>groups.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>各グループの上に見出しを印刷します（<code>A</code>、<code>B</code>…または画数。数字には<code>0–9</code>、それ以外には<code>Symbols</code>。中国語では<code>数字</code> / <code>數字</code>と<code>符号</code> / <code>符號</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>groups.fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code></td>
+      <td>—</td>
+      <td>項目と同じ、ウェイト<code>700</code></td>
+      <td>グループ見出しの書体です。項目と同じ行送りで組まれます。</td>
+    </tr>
+    <tr>
+      <td><code>groups.marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td>索引の1行分</td>
+      <td>各グループの上のアキです。見出しの有無にかかわらず適用します。最初のグループの上には付かず（見出しからの距離は見出し側のアキで決まります）、段の先頭にも付きません。</td>
+    </tr>
+    <tr>
+      <td><code>groups.symbolsLabel</code>, <code>numbersLabel</code></td>
+      <td><code>string</code></td>
+      <td>言語による。<code>'0–9'</code>、中国語では<code>'数字'</code> / <code>'數字'</code></td>
+      <td>記号で始まる項目と、数字で始まる項目の見出しです。</td>
+    </tr>
+  </tbody>
+</table>
+
+ページ番号は、目次と同じく本のアウトラインから得ます。`computeOutline()`と`contentOutline()`は、テキストの索引の印を種類`'indexMark'`の項目として一覧にし（`indexMark.path`、`sort`、`see`、`seeAlso`、`main`、`range`、`index`を持ちます）、`outlineFromDoc()`がそれぞれに配置されたページを与えます。このページは、ビルドが`doc.indexMarks`（印ごとに`{ sourceStart, pageIndex }`）に記録します。`buildDocument()`は、自身の索引を印刷する文書を、番号が確定するまで組み直します。本を章ごとにレイアウトするホストは、`:::index`を含む章に、本全体のアウトラインを`PostextContent.outline`として渡します。`tocOutline()`と`indexOutline()`はアウトラインを目次が読む部分と索引が読む部分に分けるため、ホストは各章を、その章が印刷する部分だけに結び付けられます。Sandboxは、索引の章を印が動いたときだけ、目次の章を見出しが動いたときだけ組み直します。`contentOutline()`は、テキストが索引を印刷するかどうか（`hasIndex`）も示します。

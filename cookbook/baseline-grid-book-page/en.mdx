@@ -18,7 +18,7 @@ Pages 9 to 11 of *The Ruled Page*, a collection on bookmaking, hold “The Secre
 
 <Excerpt region="flow" />
 
-The space above a heading is kept exactly as set, so 1.5 leads put the heading between two grid lines, and the text under it is snapped to the next line ([baseline grid](/en/docs/configuration#baseline-grid)). A list is not snapped before its first item, so the short answer sets list margins to zero (any whole number of leads would also work); with the default 1.5 em, the three items on page 10 would sit 1.3 pt below the lines of the column beside them. The title’s two lines of 46 pt take four leads each and its bottom margin one more, so the essay starts on line 10.
+The space above a heading is kept exactly as set, so 1.5 leads put the heading between two grid lines, and the text under it is snapped to the next line ([baseline grid](/en/docs/configuration-page-layout#baseline-grid)). A list is not snapped before its first item, so the short answer sets list margins to zero (any whole number of leads would also work); with the default 1.5 em, the three items on page 10 would sit 1.3 pt below the lines of the column beside them. The title’s two lines of 46 pt take four leads each and its bottom margin one more, so the essay starts on line 10.
 
 <PageShot page={2} crop="0.14,0.1373,0.795,0.3207" caption="Page 10: the list in the second column keeps to the grid of the paragraphs beside it; the workshop note falls between the grid lines, and the heading under it sits half a line off them, with its text back on the grid." />
 
@@ -26,7 +26,7 @@ The space above a heading is kept exactly as set, so 1.5 leads put the heading b
 
 <Excerpt region="note" />
 
-The note is a `:::paragraphs` container set 7.8 on 10 pt, off the grid. After its last paragraph the position is rounded up to the next grid line, so the heading that follows sits where it would after body text ([the `:::paragraphs` container](/en/docs/configuration#the-paragraphs-container)). The colophon uses the same container at 7.5 on 10 pt: its four lines take 40 pt, 0.2 pt short of three leads, so the essay’s last column ends level with the one beside it.
+The note is a `:::paragraphs` container set 7.8 on 10 pt, off the grid. After its last paragraph the position is rounded up to the next grid line, so the heading that follows sits where it would after body text ([the `:::paragraphs` container](/en/docs/configuration-styles#the-paragraphs-container)). The colophon uses the same container at 7.5 on 10 pt: its four lines take 40 pt, 0.2 pt short of three leads, so the essay’s last column ends level with the one beside it.
 
 ### 3 · Place the figures where the grid can absorb them
 
@@ -40,13 +40,13 @@ A float never lands above the paragraph that cites it ([placement](/en/docs/docu
 
 <Excerpt region="balance" />
 
-Every full column on pages 9 and 10 ends on line 44, because the text block is exactly 44 leads and the copy was fitted to it. Keep-with-next and the widow, orphan and runt rules are on by default. When one of them ends a column a line short, balancing puts the missing space above an earlier heading ([column balancing](/en/docs/configuration#column-balancing)), where it shows as a gap, so fit the copy until balancing has nothing to fill. On the last page it divides the remaining lines so that both columns end on the same line.
+Every full column on pages 9 and 10 ends on line 44, because the text block is exactly 44 leads and the copy was fitted to it. Keep-with-next and the widow, orphan and runt rules are on by default. When one of them ends a column a line short, balancing puts the missing space above an earlier heading ([column balancing](/en/docs/configuration-text#column-balancing)), where it shows as a gap, so fit the copy until balancing has nothing to fill. On the last page it divides the remaining lines so that both columns end on the same line.
 
 ### 5 · Mirror the margins, and number from page 9
 
 <Excerpt region="heads" />
 
-The short answer computes the foot margin: the 280 mm trim less the 24 mm head margin and a text block of exactly `LINES` leads (44 × 13.4 pt = 208 mm) leaves 48 mm, six units, as the 2:3:4:6 progression requires. With `mirror: true` the 16 mm set as `left` is the inner margin, on the left of a recto and on the right of a verso ([mirrored margins](/en/docs/configuration#mirrored-margins)), so heads anchored `OUTER` millimetres from the page edge end where the text block does, on the fore-edge side; `pages: 'body'` keeps them off the opener. `startAt: 9` prints folios 9 to 11, and `pageIndexOffset: 8` counts the eight pages before them, so mirroring, the heads’ parity and `breakBefore: 'odd'` follow the bound book. With an offset of 7 the first page would count as a verso, and the odd-page break would put a blank page before the essay.
+The short answer computes the foot margin: the 280 mm trim less the 24 mm head margin and a text block of exactly `LINES` leads (44 × 13.4 pt = 208 mm) leaves 48 mm, six units, as the 2:3:4:6 progression requires. With `mirror: true` the 16 mm set as `left` is the inner margin, on the left of a recto and on the right of a verso ([mirrored margins](/en/docs/configuration-page-layout#mirrored-margins)), so heads anchored `OUTER` millimetres from the page edge end where the text block does, on the fore-edge side; `pages: 'body'` keeps them off the opener. `startAt: 9` prints folios 9 to 11, and `pageIndexOffset: 8` counts the eight pages before them, so mirroring, the heads’ parity and `breakBefore: 'odd'` follow the bound book. With an offset of 7 the first page would count as a verso, and the odd-page break would put a blank page before the essay.
 
 ## Variations
 

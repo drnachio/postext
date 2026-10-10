@@ -22,7 +22,7 @@ pageNotes: { "1": "封面：期号和一行Six routes after midnight, three ridd
 
 ### 2 · 每种输出各重新着色一次
 
-代码就是上面的[简短回答](#简短回答)。开启`diagramStyle.singleInk`后，`renderToPdf`把SVG的每种颜色变成`inkColor`的一个网调，浓度为1减去该颜色的相对亮度（[图示样式](/zh/docs/configuration#图示样式)），于是深蓝的N12印成84%，黄色的N50印成24%。用`singleInk: true`注册的图片，Canvas也按同样的方式着色，所以`registerArt()`带着这个开关注册每幅原图，并把同一份SVG留给`resourceBytes`。在Canvas上和按300 dpi栅格化的PDF里取样，N12线路都是(242, 109, 171)，正是公式在浓度0.836时给出的网调。每种输出只给插图着色一次：若把它过两遍公式，这条线会减淡到44%。
+代码就是上面的[简短回答](#简短回答)。开启`diagramStyle.singleInk`后，`renderToPdf`把SVG的每种颜色变成`inkColor`的一个网调，浓度为1减去该颜色的相对亮度（[图示样式](/zh/docs/configuration-resources#图示样式)），于是深蓝的N12印成84%，黄色的N50印成24%。用`singleInk: true`注册的图片，Canvas也按同样的方式着色，所以`registerArt()`带着这个开关注册每幅原图，并把同一份SVG留给`resourceBytes`。在Canvas上和按300 dpi栅格化的PDF里取样，N12线路都是(242, 109, 171)，正是公式在浓度0.836时给出的网调。每种输出只给插图着色一次：若把它过两遍公式，这条线会减淡到44%。
 
 ### 3 · 标题印两次，故意套印不准
 

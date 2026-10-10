@@ -18,25 +18,25 @@ Nine pages of *Afoot*, a pocket anthology of three essays on walking, by Hazlitt
 
 <Excerpt region="opener" />
 
-The level’s `numberingTemplate: '{1:I}'` numbers the essays I, II and III, and `{number}` prints the numeral above the title ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). `minHeight` reserves 12 lines of 14 pt and the hairline ends 7 mm above that, so under a one-line title the text starts 79 mm from the top edge on every opener. A second line of 26 pt title adds 9.9 mm and pushes the text one grid line down; with `SINK = 14`, one-line and two-line titles start their text on the same line. `marginBottom: pt(0)` keeps the heading’s default margin from adding to the reserve.
+The level’s `numberingTemplate: '{1:I}'` numbers the essays I, II and III, and `{number}` prints the numeral above the title ([span and advanced design](/en/docs/configuration-text#span-and-advanced-design)). `minHeight` reserves 12 lines of 14 pt and the hairline ends 7 mm above that, so under a one-line title the text starts 79 mm from the top edge on every opener. A second line of 26 pt title adds 9.9 mm and pushes the text one grid line down; with `SINK = 14`, one-line and two-line titles start their text on the same line. `marginBottom: pt(0)` keeps the heading’s default margin from adding to the reserve.
 
 ### 2 · Let the contents fill themselves in
 
 <Excerpt region="contents" />
 
-`:::toc` in the Markdown prints one entry per listed heading: number, title, leaders, page label and, through `subtitle`, the author. `buildDocument` lays the book out again until the page labels stop changing, so a renamed or lengthened essay updates the contents ([table of contents](/en/docs/configuration#table-of-contents)). An entry’s numeral takes the title’s face and size unless `numberFontFamily` or `numberFontSize` say otherwise, and it stands on the baseline of the title’s first line at any size. A book with parts also gets a row for each `:::part`, drawn by `toc.parts.design`, as in <RecipeLink slug="parts-in-colour">Parts in colour</RecipeLink>.
+`:::toc` in the Markdown prints one entry per listed heading: number, title, leaders, page label and, through `subtitle`, the author. `buildDocument` lays the book out again until the page labels stop changing, so a renamed or lengthened essay updates the contents ([table of contents](/en/docs/configuration-notes-references#table-of-contents)). An entry’s numeral takes the title’s face and size unless `numberFontFamily` or `numberFontSize` say otherwise, and it stands on the baseline of the title’s first line at any size. A book with parts also gets a row for each `:::part`, drawn by `toc.parts.design`, as in <RecipeLink slug="parts-in-colour">Parts in colour</RecipeLink>.
 
 ### 3 · Author on the verso, essay on the recto
 
 <Excerpt region="running-heads" />
 
-Each head is anchored to the page, 11 mm from the top edge, and `parity` picks the side: the folio lines up with the outer edge of the text and the name or title sits 7 mm further in. The `pages: 'body'` in `head()` keeps the heads off the openers, where the byline already names the author, and the footer’s `pages: 'opener'` prints a drop folio there instead ([text elements](/en/docs/configuration#text-elements)). `{chapterTitle}` prints the essay’s title without its numeral.
+Each head is anchored to the page, 11 mm from the top edge, and `parity` picks the side: the folio lines up with the outer edge of the text and the name or title sits 7 mm further in. The `pages: 'body'` in `head()` keeps the heads off the openers, where the byline already names the author, and the footer’s `pages: 'opener'` prints a drop folio there instead ([text elements](/en/docs/configuration-page-layout#text-elements)). `{chapterTitle}` prints the essay’s title without its numeral.
 
 ### 4 · Keep the cover and the contents out of the count
 
 <Excerpt region="front" />
 
-With `numbered: false` the cover and the contents do not advance the counter, so Hazlitt is I, and `toc: false` keeps them off the list ([heading styles](/en/docs/configuration#heading-styles)). Both styles inherit the level’s `breakBefore`, parity `'any'`, which is why the contents follows the cover on page 2 without a `:::pagebreak`. The cover style spans the page in a one-column book because a design kept in its column is cut at the column’s foot, which would leave 22 mm of paper under the landscape.
+With `numbered: false` the cover and the contents do not advance the counter, so Hazlitt is I, and `toc: false` keeps them off the list ([heading styles](/en/docs/configuration-styles#heading-styles)). Both styles inherit the level’s `breakBefore`, parity `'any'`, which is why the contents follows the cover on page 2 without a `:::pagebreak`. The cover style spans the page in a one-column book because a design kept in its column is cut at the column’s foot, which would leave 22 mm of paper under the landscape.
 
 ### 5 · Write every colour out with its palette link
 

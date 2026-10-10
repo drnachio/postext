@@ -24,13 +24,13 @@ A heading opens a page of its own and becomes a PDF bookmark; the design in its 
 
 <Excerpt region="contents" />
 
-`:::toc` lists every heading its style lets in, with the label of the page it lands on ([table of contents](/en/docs/configuration#table-of-contents)). The Contents and the Preface share the `front` style, which sets `toc: false`, and the Preface overrides it with `{toc="true"}`. Neither the Preface nor Letter I is numbered, so their entries print no chapter number. The second line of the letter’s entry is its `to="…"` attribute. The page numbers are set in the folio face. The entries start on the same baseline as the Preface’s first line, so the two facing pages line up.
+`:::toc` lists every heading its style lets in, with the label of the page it lands on ([table of contents](/en/docs/configuration-notes-references#table-of-contents)). The Contents and the Preface share the `front` style, which sets `toc: false`, and the Preface overrides it with `{toc="true"}`. Neither the Preface nor Letter I is numbered, so their entries print no chapter number. The second line of the letter’s entry is its `to="…"` attribute. The page numbers are set in the folio face. The entries start on the same baseline as the Preface’s first line, so the two facing pages line up.
 
 ### 3 · The novel opens on a recto, under the northern lights
 
 <Excerpt region="letter" />
 
-The painting bleeds off the head of the page and fades into the paper at its foot, where the letter begins. The opener reserves the page down to the painting's foot, 104 mm from the top of the page, and `minHeight` sets a floor 2 mm lower, which starts the letter one grid line further down, clear of the fade ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The kicker and the dateline come from the heading’s `to` and `dateline` attributes. Letter I also carries `{style="letter"}`, a style whose only setting is `numbered: false`, because Walton’s letters come before Chapter I and have no chapter number.
+The painting bleeds off the head of the page and fades into the paper at its foot, where the letter begins. The opener reserves the page down to the painting's foot, 104 mm from the top of the page, and `minHeight` sets a floor 2 mm lower, which starts the letter one grid line further down, clear of the fade ([span and advanced design](/en/docs/configuration-text#span-and-advanced-design)). The kicker and the dateline come from the heading’s `to` and `dateline` attributes. Letter I also carries `{style="letter"}`, a style whose only setting is `numbered: false`, because Walton’s letters come before Chapter I and have no chapter number.
 
 ### 4 · The running heads come back with the novel
 
@@ -76,7 +76,7 @@ Delete the `# Frontispiece` heading and send the title page to a recto: page iv 
 
 ### Add a bleed and crop marks for press
 
-With `cutLines` the cover and the opener, both anchored to the bleed, run 3 mm past the trim; the folios and the page count do not change ([cut lines](/en/docs/configuration#cut-lines)).
+With `cutLines` the cover and the opener, both anchored to the bleed, run 3 mm past the trim; the folios and the page count do not change ([cut lines](/en/docs/configuration-page-layout#cut-lines)).
 
 ```diff
      backgroundColor: col('paper'), pageNumbering,

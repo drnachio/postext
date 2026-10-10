@@ -16,7 +16,7 @@ pageNotes: { "1": "第171页是第6章Conclusion的开篇，位于一条62 mm高
 
 ### 1 · 给后置部分的每一部分一种标题样式
 
-代码见上文的[简短回答](#简短回答)。`# Glossary {style="glossary" note="…"}`开启一节，一直延续到下一个一级标题；这一节的页面使用该样式的版式、书眉和章首设计（[标题样式](/zh/docs/configuration#标题样式)）。所以术语表和索引改为两栏，而参考文献的样式没有设置版式，就退回到文档的单栏。`numbered: false`让这些标题不计入章数（删掉它，术语表的色带会印出2）。每种样式都指定了自己的分页方式，因为没有指定的样式会继承章的`'odd'`，留下空白左页。术语表和参考文献的条目是`:::paragraphs{style="…"}`块中的段落，字号9.3 pt、行距12.4 pt，正文则是11 pt、行距14.6 pt；转行在术语表中悬挂1 em，在参考文献中悬挂1.5 em（[段落样式](/zh/docs/configuration#段落样式)）。
+代码见上文的[简短回答](#简短回答)。`# Glossary {style="glossary" note="…"}`开启一节，一直延续到下一个一级标题；这一节的页面使用该样式的版式、书眉和章首设计（[标题样式](/zh/docs/configuration-styles#标题样式)）。所以术语表和索引改为两栏，而参考文献的样式没有设置版式，就退回到文档的单栏。`numbered: false`让这些标题不计入章数（删掉它，术语表的色带会印出2）。每种样式都指定了自己的分页方式，因为没有指定的样式会继承章的`'odd'`，留下空白左页。术语表和参考文献的条目是`:::paragraphs{style="…"}`块中的段落，字号9.3 pt、行距12.4 pt，正文则是11 pt、行距14.6 pt；转行在术语表中悬挂1 em，在参考文献中悬挂1.5 em（[段落样式](/zh/docs/configuration-styles#段落样式)）。
 
 ### 2 · 所有章首页共用一条色带
 
@@ -28,7 +28,7 @@ pageNotes: { "1": "第171页是第6章Conclusion的开篇，位于一条62 mm高
 
 <Excerpt region="appendix" />
 
-附录的样式设了`numberingTemplate: '{1:A}'`，把所在级别的计数器印成字母；`# Interview guide {style="appendix" startAt=1}`让计数器重新开始，所以第一个附录是A而不是G（[标题样式](/zh/docs/configuration#标题样式)）。色带通过`{number}`读到这个字母，书眉通过`{chapterNumber}`读到。资源类型的`{h1}`把计数器印成数字，所以附录自己的资源类型把其中的表编为A.1、A.2，依此类推；如果用默认类型，这张表会成为表1.1。本章自己的标题按各级模板计数：`'{1}.{2}'`印出6.1，`continuation.headings.h1: 5`让这一章成为第六章。
+附录的样式设了`numberingTemplate: '{1:A}'`，把所在级别的计数器印成字母；`# Interview guide {style="appendix" startAt=1}`让计数器重新开始，所以第一个附录是A而不是G（[标题样式](/zh/docs/configuration-styles#标题样式)）。色带通过`{number}`读到这个字母，书眉通过`{chapterNumber}`读到。资源类型的`{h1}`把计数器印成数字，所以附录自己的资源类型把其中的表编为A.1、A.2，依此类推；如果用默认类型，这张表会成为表1.1。本章自己的标题按各级模板计数：`'{1}.{2}'`印出6.1，`continuation.headings.h1: 5`让这一章成为第六章。
 
 ### 4 · 把书眉放在外侧
 
@@ -46,7 +46,7 @@ pageNotes: { "1": "第171页是第6章Conclusion的开篇，位于一条62 mm高
 
 <Excerpt region="palette" />
 
-引擎对粗体、斜体、列表标记和引用的默认颜色取自调色板条目`main-color`，所以把它指向墨色，这些就会印成黑色而不是蓝色（[调色板](/zh/docs/configuration#调色板)）。`referenceBold: false`把*Table 6.1*排为正体，与周围的作者–年份引文一致。
+引擎对粗体、斜体、列表标记和引用的默认颜色取自调色板条目`main-color`，所以把它指向墨色，这些就会印成黑色而不是蓝色（[调色板](/zh/docs/configuration-fonts-colors-viewers#调色板)）。`referenceBold: false`把*Table 6.1*排为正体，与周围的作者–年份引文一致。
 
 <Note>表格目录仍需手动完成。如果整篇论文用`buildBundle`逐章排版，包含`:::index`的那一章会收到所有章的标记。</Note>
 

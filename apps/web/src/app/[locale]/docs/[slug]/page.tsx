@@ -17,6 +17,9 @@ import { docPart, partClass } from "@/lib/docParts";
 import { DocOpener } from "@/components/docs/DocOpener";
 import { htmlLang } from "@/i18n/locales";
 import { PlainSummary } from "@/components/brand/PlainSummary";
+import { DocsPager, type PagerLink } from "@/components/docs/DocsPager";
+import { OldAnchorRedirect } from "@/components/docs/OldAnchorRedirect";
+import { CONFIGURATION_SLUG, movedConfigurationAnchors } from "@/lib/configurationAnchors";
 
 const PART_LABEL_KEY = {
   foundations: "partFoundations",
@@ -82,7 +85,15 @@ export default async function DocPage({
   const tIndex = await getTranslations("DocsIndex");
   const tPlain = await getTranslations("PlainLanguage");
   const part = docPart(doc.meta.order);
-  const chapter = docs.filter((d) => d.locales[locale]).findIndex((d) => d.slug === slug) + 1;
+  const chapters = docs.filter((d) => d.locales[locale]);
+  const chapter = chapters.findIndex((d) => d.slug === slug) + 1;
+  // `chapter` is 1-based, so it is also the index of the next chapter.
+  const pagerLink = (index: number): PagerLink | null => {
+    const other = chapters[index];
+    return other
+      ? { href: `/${locale}/docs/${other.slug}`, number: index + 1, title: other.locales[locale]!.sidebarTitle }
+      : null;
+  };
 
   const url = localizedUrl(locale, `/docs/${slug}`);
   const jsonLd = [
@@ -129,6 +140,10 @@ export default async function DocPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
+      {slug === CONFIGURATION_SLUG && (
+        // The reference was one page: its old `#anchors` go to their pages.
+        <OldAnchorRedirect locale={locale} pages={movedConfigurationAnchors(locale)} />
+      )}
       <main
         id="main-content"
         tabIndex={-1}
@@ -192,6 +207,14 @@ export default async function DocPage({
         )}
 
         <MdxContent source={doc.source} skipTitle />
+
+        <DocsPager
+          label={t("neighbours")}
+          previousLabel={t("previousChapter")}
+          nextLabel={t("nextChapter")}
+          prev={pagerLink(chapter - 2)}
+          next={pagerLink(chapter)}
+        />
       </main>
 
       <div className={`contents ${partClass(part.color)}`}>

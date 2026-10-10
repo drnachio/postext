@@ -21,19 +21,19 @@ The code is [the short answer](#the-short-answer) above. `:name[項梁]` and `:b
 
 <Excerpt region="type" />
 
-The marks live in the gap between lines and never change the line pitch ([Marks, ruby and warichu](/en/docs/configuration#marks-ruby-and-warichu)). At 10.5 pt on 18 pt the gap is 0.71 em, which holds the name lines of one column and the dots of the next, as on the fifth convention of page 1. The grid counts the page in characters: 42 down each line and 17 lines across, and it moves the margins so the type area is exactly that: 25.7 mm of margin at the head, 21.7 mm at the foot ([Character grid](/en/docs/configuration#character-grid)).
+The marks live in the gap between lines and never change the line pitch ([Marks, ruby and warichu](/en/docs/configuration-east-asian#marks-ruby-and-warichu)). At 10.5 pt on 18 pt the gap is 0.71 em, which holds the name lines of one column and the dots of the next, as on the fifth convention of page 1. The grid counts the page in characters: 42 down each line and 17 lines across, and it moves the margins so the type area is exactly that: 25.7 mm of margin at the head, 21.7 mm at the foot ([Character grid](/en/docs/configuration-east-asian#character-grid)).
 
 ### 3 · One opener, turned with the page
 
 <Excerpt region="opener" />
 
-A heading design is laid out in the flow of its page, so one set of elements serves both directions ([Vertical writing](/en/docs/configuration#vertical-writing)). Anchored to the top-left of the bleed, the band lies across the head of the horizontal page and down the right edge of the vertical ones, where reading starts. The kicker, the title and the byline stack in the flow too: one under another across the page, one left of another down it. The band's length is measured along the flow: 181.3 mm stops it at the foot of the vertical text, clear of the folio, and runs past the trim of the horizontal page.
+A heading design is laid out in the flow of its page, so one set of elements serves both directions ([Vertical writing](/en/docs/configuration-page-layout#vertical-writing)). Anchored to the top-left of the bleed, the band lies across the head of the horizontal page and down the right edge of the vertical ones, where reading starts. The kicker, the title and the byline stack in the flow too: one under another across the page, one left of another down it. The band's length is measured along the flow: 181.3 mm stops it at the foot of the vertical text, clear of the folio, and runs past the trim of the horizontal page.
 
 ### 4 · Folios for a book bound on the right
 
 <Excerpt region="folios" />
 
-Vertical text binds the book on the right ([Binding](/en/docs/configuration#binding)): page 1 lies left of the spine, and a recto's outer edge is its left one. The odd folio goes bottom-left and the even one bottom-right, the reverse of a Western book, and `pageNumbering.format: 'trad-chinese-informal'` prints them 一, 二, 三. The slug line between them comes from an attribute of each heading, `slug="…"`; with the colophon, it is all that changes between the English and the Spanish editions.
+Vertical text binds the book on the right ([Binding](/en/docs/configuration-page-layout#binding)): page 1 lies left of the spine, and a recto's outer edge is its left one. The odd folio goes bottom-left and the even one bottom-right, the reverse of a Western book, and `pageNumbering.format: 'trad-chinese-informal'` prints them 一, 二, 三. The slug line between them comes from an attribute of each heading, `slug="…"`; with the colophon, it is all that changes between the English and the Spanish editions.
 
 ### 5 · A second ink
 

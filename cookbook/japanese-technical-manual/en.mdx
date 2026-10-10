@@ -16,7 +16,7 @@ Five pages from chapter 3 of an invented Japanese programming book, 実践 日�
 
 ### 1 · The Japanese rules come with the tag
 
-The code is [the short answer](#the-short-answer) above. `locale: 'ja'` switches on the rules of JLReq, the W3C’s *Requirements for Japanese Text Layout*, and the values written out under `cjk` are the ones `'auto'` picks for Japanese ([East Asian typography](/en/docs/configuration#east-asian-typography)). At `ja-very-strict`, no line starts with ー, a small kana, 々 or a closing mark, and no line ends with an opening bracket. The punctuation (約物, yakumono) keeps its full em inside the line, and two marks that meet, such as 」、, share one em. On <PageRef page={1}>page 41</PageRef> the line that ends 実際に変換し、 sets its 、 past the right edge of the measure: that is ぶら下げ (burasage), and the engine uses it only when the line would otherwise have to push the mark to the next line. `latinSpacing` puts a quarter em (四分アキ, shibun aki) between Unicode and では, and between U+304C and を, though the Markdown has no space there.
+The code is [the short answer](#the-short-answer) above. `locale: 'ja'` switches on the rules of JLReq, the W3C’s *Requirements for Japanese Text Layout*, and the values written out under `cjk` are the ones `'auto'` picks for Japanese ([East Asian typography](/en/docs/configuration-east-asian#east-asian-typography)). At `ja-very-strict`, no line starts with ー, a small kana, 々 or a closing mark, and no line ends with an opening bracket. The punctuation (約物, yakumono) keeps its full em inside the line, and two marks that meet, such as 」、, share one em. On <PageRef page={1}>page 41</PageRef> the line that ends 実際に変換し、 sets its 、 past the right edge of the measure: that is ぶら下げ (burasage), and the engine uses it only when the line would otherwise have to push the mark to the next line. `latinSpacing` puts a quarter em (四分アキ, shibun aki) between Unicode and では, and between U+304C and を, though the Markdown has no space there.
 
 <PageShot page={1} crop="0.08,0.27,0.84,0.09" caption="Page 41: a quarter em around Unicode and Python, typed with no space; the 、 at the end of the second line hangs past the measure." />
 
@@ -26,7 +26,7 @@ The difference from Chinese is in the marks. A mainland Chinese book sets 、 an
 
 <Excerpt region="listing" />
 
-The fence is a [code block](/en/docs/document-format#code-blocks): Postext sets its lines as typed, in the face `codeStyle` names, in a tinted box under the title `normalize.py` from the fence line ([code listings](/en/docs/configuration#code-listings)). `highlight: 'none'` keeps the listing in one ink, as the rest of the page, and `codeStyle.inline` sets each `` `name` `` in the same face, in teal. The face matters: the example’s string ｶﾞｲﾄﾞ ＡＢＣ ① needs half-width katakana, full-width letters and circled digits, which a Western code face lacks. BIZ UDGothic sets half-width Latin and full-width kana at fixed pitch, and a listing counts a full-width character as two cells, so the columns hold.
+The fence is a [code block](/en/docs/document-format#code-blocks): Postext sets its lines as typed, in the face `codeStyle` names, in a tinted box under the title `normalize.py` from the fence line ([code listings](/en/docs/configuration-styles#code-listings)). `highlight: 'none'` keeps the listing in one ink, as the rest of the page, and `codeStyle.inline` sets each `` `name` `` in the same face, in teal. The face matters: the example’s string ｶﾞｲﾄﾞ ＡＢＣ ① needs half-width katakana, full-width letters and circled digits, which a Western code face lacks. BIZ UDGothic sets half-width Latin and full-width kana at fixed pitch, and a listing counts a full-width character as two cells, so the columns hold.
 
 ### 3 · 図3-1 and 表3-1
 
@@ -38,7 +38,7 @@ The fence is a [code block](/en/docs/document-format#code-blocks): Postext sets 
 
 <Excerpt region="notes" />
 
-The notes need no setting beyond their size: in a horizontal Japanese document the defaults are the ones JLReq describes for horizontal books, a note at the foot of the column where it is cited, numbered from 1 on each page, a superscript marker and a rule a third of the measure long ([Footnotes](/en/docs/configuration#footnotes)). The marker goes before the full stop, `保存していた[^hfs]。`, so the 。 never starts the next line apart from it.
+The notes need no setting beyond their size: in a horizontal Japanese document the defaults are the ones JLReq describes for horizontal books, a note at the foot of the column where it is cited, numbered from 1 on each page, a superscript marker and a rule a third of the measure long ([Footnotes](/en/docs/configuration-notes-references#footnotes)). The marker goes before the full stop, `保存していた[^hfs]。`, so the 。 never starts the next line apart from it.
 
 ### 5 · A three-line section head
 

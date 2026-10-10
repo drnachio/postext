@@ -16,7 +16,7 @@ Tres hojas de papel de manuscrito japonés (原稿用紙, genkō yōshi), del mo
 
 ### 1 · Dibuja las casillas y da a cada signo una entera
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. La [retícula de caracteres](/es/docs/configuration#retícula-de-caracteres) hace que la caja mida 20 caracteres de 20 pt (7,1 mm) hacia abajo y 20 líneas de 27 pt (9,5 mm) a lo ancho, y `show: true` dibuja sus casillas en un gris claro propio, en pantalla, y en el PDF cuando `renderToPdf` recibe `characterGrid: true` (en un libro la retícula es una ayuda de prueba, así que el PDF la omite por defecto); la franja de 2,5 mm entre dos líneas es donde quien escribe añade lecturas y correcciones. Un signo japonés es medio glifo y media eme de blanco, y un libro recoge blancos donde se juntan dos signos o donde un corchete abre línea. En el papel de manuscrito cada signo conserva su casilla, así que `compressAdjacent: false` pone 。」 en dos casillas y `trimLineStart: false` deja a un corchete al principio de línea su casilla entera ([Tipografía de Asia oriental](/es/docs/configuration#tipografía-de-asia-oriental)).
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. La [retícula de caracteres](/es/docs/configuration-east-asian#retícula-de-caracteres) hace que la caja mida 20 caracteres de 20 pt (7,1 mm) hacia abajo y 20 líneas de 27 pt (9,5 mm) a lo ancho, y `show: true` dibuja sus casillas en un gris claro propio, en pantalla, y en el PDF cuando `renderToPdf` recibe `characterGrid: true` (en un libro la retícula es una ayuda de prueba, así que el PDF la omite por defecto); la franja de 2,5 mm entre dos líneas es donde quien escribe añade lecturas y correcciones. Un signo japonés es medio glifo y media eme de blanco, y un libro recoge blancos donde se juntan dos signos o donde un corchete abre línea. En el papel de manuscrito cada signo conserva su casilla, así que `compressAdjacent: false` pone 。」 en dos casillas y `trimLineStart: false` deja a un corchete al principio de línea su casilla entera ([Tipografía de Asia oriental](/es/docs/configuration-east-asian#tipografía-de-asia-oriental)).
 
 ### 2 · Sigue las normas de línea del manuscrito
 
@@ -26,7 +26,7 @@ El papel de manuscrito tiene su propio kinsoku. Un kana pequeño o una ー puede
 
 <Excerpt region="heading" />
 
-El título es un título del cuerpo y la letra del texto, de modo que llena casillas como cualquier otra línea: `lineSpan: 1` lo mantiene en una línea de la retícula e `indent: em(2)` deja dos casillas vacías encima ([Configuración por nivel](/es/docs/configuration#configuración-por-nivel)). El nombre es un párrafo con `textAlign: 'end'` y `endIndent: em(1)`, que lo acaba una casilla antes del pie, y el Markdown escribe la casilla en blanco entre apellido y nombre como un espacio ideográfico: `夏目　漱石`. El texto empieza en la tercera línea, y cada párrafo tras una casilla vacía, la de `firstLineIndent: em(1)`.
+El título es un título del cuerpo y la letra del texto, de modo que llena casillas como cualquier otra línea: `lineSpan: 1` lo mantiene en una línea de la retícula e `indent: em(2)` deja dos casillas vacías encima ([Configuración por nivel](/es/docs/configuration-text#configuración-por-nivel)). El nombre es un párrafo con `textAlign: 'end'` y `endIndent: em(1)`, que lo acaba una casilla antes del pie, y el Markdown escribe la casilla en blanco entre apellido y nombre como un espacio ideográfico: `夏目　漱石`. El texto empieza en la tercera línea, y cada párrafo tras una casilla vacía, la de `firstLineIndent: em(1)`.
 
 ### 4 · Imprime la hoja alrededor de las casillas
 
@@ -38,7 +38,7 @@ Los elementos de la cabecera se dibujan sobre la propia hoja: en una página ver
 
 <Excerpt region="pen" />
 
-Klee One está dibujada con pluma y conserva las formas japonesas de los kanji, así que las hojas se leen como manuscritas sin las irregularidades de un escaneado. Sus formas verticales ponen 、。 en la esquina superior derecha de su casilla y giran ー y los corchetes, que es donde los pone quien escribe. Como todas las familias japonesas de Fontsource, viene en unos 120 archivos, y `loadCjkFonts` descarga los que necesita el texto ([Fuentes chinas, japonesas y coreanas](/es/docs/configuration#fuentes-chinas-japonesas-y-coreanas)).
+Klee One está dibujada con pluma y conserva las formas japonesas de los kanji, así que las hojas se leen como manuscritas sin las irregularidades de un escaneado. Sus formas verticales ponen 、。 en la esquina superior derecha de su casilla y giran ー y los corchetes, que es donde los pone quien escribe. Como todas las familias japonesas de Fontsource, viene en unos 120 archivos, y `loadCjkFonts` descarga los que necesita el texto ([Fuentes chinas, japonesas y coreanas](/es/docs/configuration-programmatic-usage#fuentes-chinas-japonesas-y-coreanas)).
 
 ## Variantes
 

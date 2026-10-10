@@ -22,13 +22,13 @@ pageNotes: { "6": "第6页留空：Winter只占一页，所以Spring从下一个
 
 ### 2 · 跨文档接续的规则
 
-这一步的代码见上文的[简短回答](#简短回答)。[`buildBundle`](/zh/docs/configuration#排版和渲染文件包)用同一份共享配置依次排各个文档，并把前面文档的结果作为`continuation`传给每一个文档：已经排出的物理页数，使奇偶、对称页边距和奇偶页书眉得以接续；下一个页码；以及章和图的计数器。设了`parity: 'odd'`后，如果前一章结束在右页，下一章会以一个空白左页开始，这个空白页属于下一章自己的文档（[前置分页](/zh/docs/configuration#前置分页)）。封面和目录是设了`numbered: false`的[标题样式](/zh/docs/configuration#标题样式)，所以Autumn仍是第1章。两者都从章一级继承了`span: 'page'`，不需要`:::pagebreak`就各占一页。目录样式关闭了继承来的奇偶设置，否则第2页会留空。
+这一步的代码见上文的[简短回答](#简短回答)。[`buildBundle`](/zh/docs/configuration-programmatic-usage#排版和渲染文件包)用同一份共享配置依次排各个文档，并把前面文档的结果作为`continuation`传给每一个文档：已经排出的物理页数，使奇偶、对称页边距和奇偶页书眉得以接续；下一个页码；以及章和图的计数器。设了`parity: 'odd'`后，如果前一章结束在右页，下一章会以一个空白左页开始，这个空白页属于下一章自己的文档（[前置分页](/zh/docs/configuration-text#前置分页)）。封面和目录是设了`numbered: false`的[标题样式](/zh/docs/configuration-styles#标题样式)，所以Autumn仍是第1章。两者都从章一级继承了`span: 'page'`，不需要`:::pagebreak`就各占一页。目录样式关闭了继承来的奇偶设置，否则第2页会留空。
 
 ### 3 · 全书目录
 
 <Excerpt region="contents" />
 
-`:::toc`放在第一个文档里，但列出的是全书的章和节。`buildBundle`先排一遍全书，收集每个标题及其得到的页码标签，再用这份大纲重新排版，直到标签不再变动，最多三遍（[目录](/zh/docs/configuration#目录)）。每个标题下的月份来自标题属性`{months="…"}`，章首页也会印出它。
+`:::toc`放在第一个文档里，但列出的是全书的章和节。`buildBundle`先排一遍全书，收集每个标题及其得到的页码标签，再用这份大纲重新排版，直到标签不再变动，最多三遍（[目录](/zh/docs/configuration-notes-references#目录)）。每个标题下的月份来自标题属性`{months="…"}`，章首页也会印出它。
 
 ### 4 · 一种章首页，目录页取其镜像
 

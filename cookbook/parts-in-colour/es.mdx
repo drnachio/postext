@@ -22,13 +22,13 @@ Una parte redefine entradas de la paleta por su id, así que todo lo que debe ca
 
 ### 2 · Una portadilla, su dorso y su lista
 
-El código de este paso es [la respuesta corta](#la-respuesta-corta), más arriba. Un `:::part` abre una [portadilla](/es/docs/configuration#partes) en página impar, y `parts.design` la compone sobre toda la página, a sangre. El Markdown entre sus vallas empieza a 125 mm del borde superior, bajo el título: unas líneas sobre el hábitat con el estilo de párrafo `habitat` y después la lista de sus especies con `bodyStyle`. `versoDesign` pinta el dorso de la hoja (el campo y la pestaña en negativo) solo si esa página queda en blanco, y `breakAfter: { parity: 'odd' }` la deja en blanco al mandar la primera especie a la siguiente página impar. `{numberRoman}` imprime el `number="I"` de la parte en números romanos (con `"1"` saldría la misma I), mientras que las especies se numeran del 1 al 4 en arábigos. El `\\` del título parte la línea solo en la portadilla; el índice y las cabeceras lo componen en una sola línea.
+El código de este paso es [la respuesta corta](#la-respuesta-corta), más arriba. Un `:::part` abre una [portadilla](/es/docs/configuration-styles#partes) en página impar, y `parts.design` la compone sobre toda la página, a sangre. El Markdown entre sus vallas empieza a 125 mm del borde superior, bajo el título: unas líneas sobre el hábitat con el estilo de párrafo `habitat` y después la lista de sus especies con `bodyStyle`. `versoDesign` pinta el dorso de la hoja (el campo y la pestaña en negativo) solo si esa página queda en blanco, y `breakAfter: { parity: 'odd' }` la deja en blanco al mandar la primera especie a la siguiente página impar. `{numberRoman}` imprime el `number="I"` de la parte en números romanos (con `"1"` saldría la misma I), mientras que las especies se numeran del 1 al 4 en arábigos. El `\\` del título parte la línea solo en la portadilla; el índice y las cabeceras lo componen en una sola línea.
 
 ### 3 · Los acentos del texto cambian con la parte
 
 <Excerpt region="flow" />
 
-Desde un `:::part` hasta el siguiente, todo color del texto igual al valor propio de `band` toma el valor de la parte ([el contenedor `:::part`](/es/docs/configuration#el-contenedor-part)). Aquí son los rasgos en negrita, las viñetas y las etiquetas de las láminas. El texto corrido y las cursivas se quedan en el color `ink`. Las láminas son un tipo de recurso propio, con la etiqueta Lámina y una numeración que no se reinicia, así que van del 1 al 4, como las especies.
+Desde un `:::part` hasta el siguiente, todo color del texto igual al valor propio de `band` toma el valor de la parte ([el contenedor `:::part`](/es/docs/configuration-styles#el-contenedor-part)). Aquí son los rasgos en negrita, las viñetas y las etiquetas de las láminas. El texto corrido y las cursivas se quedan en el color `ink`. Las láminas son un tipo de recurso propio, con la etiqueta Lámina y una numeración que no se reinicia, así que van del 1 al 4, como las especies.
 
 ### 4 · La apertura de cada especie
 
@@ -40,7 +40,7 @@ La apertura de cada especie imprime tres atributos de su título: `status` en el
 
 <Excerpt region="contents" />
 
-`:::toc` da una fila a cada `:::part` y compone en ella `toc.parts.design` con el número, el título, la página de la portadilla y la paleta de esa parte ([índice de contenidos](/es/docs/configuration#índice-de-contenidos)), así que la misma caja sale parda para los fangales y verde para los carrizales. Cada especie bajo la banda lleva su número, una línea de puntos y su página, y debajo el nombre científico que da el atributo `latin`.
+`:::toc` da una fila a cada `:::part` y compone en ella `toc.parts.design` con el número, el título, la página de la portadilla y la paleta de esa parte ([índice de contenidos](/es/docs/configuration-notes-references#índice-de-contenidos)), así que la misma caja sale parda para los fangales y verde para los carrizales. Cada especie bajo la banda lleva su número, una línea de puntos y su página, y debajo el nombre científico que da el atributo `latin`.
 
 ### 6 · La parte en las cabeceras y en la pestaña
 

@@ -18,13 +18,13 @@ Quatre pàgines, en anglès, del manual d'identitat del Metro de Alba, una xarxa
 
 <Excerpt region="build" />
 
-La composició mesura cada paraula amb les fonts de `document.fonts`, així que `loadBrandFonts()`, a [la resposta curta](#la-resposta-curta), baixa cada fitxer una sola vegada, en desa els bytes i hi registra un `FontFace` abans de cridar `buildDocument`. El `kitFonts` del kit només baixa de Fontsource, i una marca serveix els seus fitxers des del seu propi servidor. `renderToPdf` demana les variants que pinten les pàgines, i `brandFontProvider` respon cada petició amb els bytes ja baixats; a un pes o una cursiva que la marca no tingui li donaria el fitxer més proper de la mateixa família ([Per què un proveïdor de fonts?](/ca/docs/configuration#per-què-un-proveïdor-de-fonts)). El PDF incrusta els sis fitxers que va mesurar el canvas, una vegada cadascun.
+La composició mesura cada paraula amb les fonts de `document.fonts`, així que `loadBrandFonts()`, a [la resposta curta](#la-resposta-curta), baixa cada fitxer una sola vegada, en desa els bytes i hi registra un `FontFace` abans de cridar `buildDocument`. El `kitFonts` del kit només baixa de Fontsource, i una marca serveix els seus fitxers des del seu propi servidor. `renderToPdf` demana les variants que pinten les pàgines, i `brandFontProvider` respon cada petició amb els bytes ja baixats; a un pes o una cursiva que la marca no tingui li donaria el fitxer més proper de la mateixa família ([Per què un proveïdor de fonts?](/ca/docs/configuration-programmatic-usage#per-què-un-proveïdor-de-fonts)). El PDF incrusta els sis fitxers que va mesurar el canvas, una vegada cadascun.
 
 ### 2 · El sistema de color és una sola llista
 
 <Excerpt region="colours" />
 
-Com que la paleta i la taula 1.1 es construeixen amb les mateixes nou files, la taula no pot donar un valor que les pàgines no facin servir. `setCellBackground` omple la primera cel·la de cada fila, que va buida, amb el color d'aquella fila enllaçat a la paleta. Dins el text, `:swatch{color="line-2"}` rep l'identificador d'una entrada de la paleta i dibuixa un quadrat perfilat amb el color del text. `main-color` pren l'hex d'Ink, de manera que els títols, les negretes i les cursives, que hi estan enllaçats per defecte, surten en Ink i no en el blau del motor. `bodyText.referenceColor: col('ink')` anomena Ink també per a les remissions ([Paleta de colors](/ca/docs/configuration#paleta-de-colors)).
+Com que la paleta i la taula 1.1 es construeixen amb les mateixes nou files, la taula no pot donar un valor que les pàgines no facin servir. `setCellBackground` omple la primera cel·la de cada fila, que va buida, amb el color d'aquella fila enllaçat a la paleta. Dins el text, `:swatch{color="line-2"}` rep l'identificador d'una entrada de la paleta i dibuixa un quadrat perfilat amb el color del text. `main-color` pren l'hex d'Ink, de manera que els títols, les negretes i les cursives, que hi estan enllaçats per defecte, surten en Ink i no en el blau del motor. `bodyText.referenceColor: col('ink')` anomena Ink també per a les remissions ([Paleta de colors](/ca/docs/configuration-fonts-colors-viewers#paleta-de-colors)).
 
 ### 3 · Una obertura, tres colors de línia
 
@@ -36,13 +36,13 @@ Com que la paleta i la taula 1.1 es construeixen amb les mateixes nou files, la 
 
 <Excerpt region="do-dont" />
 
-Un tipus de recurs admet un `captionStyle` parcial, i aquests dos només canvien el color de l'etiqueta: Signal green a Do i Signal red a Don't ([Tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). Els dos colors de senyal arriben a 5,1:1 i 5,5:1 sobre blanc, mentre que les línies 1, 2, 3 i 5 es queden per sota del 4,5:1 que demana el text petit. Els dos dibuixos floten amb `position: 'bottom'` i se citen al mateix paràgraf, el primer de Drawing the map, així que comparteixen el peu de la pàgina 4, Do a la columna esquerra i Don't a la dreta.
+Un tipus de recurs admet un `captionStyle` parcial, i aquests dos només canvien el color de l'etiqueta: Signal green a Do i Signal red a Don't ([Tipus de recurs](/ca/docs/configuration-resources#tipus-de-recurs)). Els dos colors de senyal arriben a 5,1:1 i 5,5:1 sobre blanc, mentre que les línies 1, 2, 3 i 5 es queden per sota del 4,5:1 que demana el text petit. Els dos dibuixos floten amb `position: 'bottom'` i se citen al mateix paràgraf, el primer de Drawing the map, així que comparteixen el peu de la pàgina 4, Do a la columna esquerra i Don't a la dreta.
 
 ### 5 · El paquet porta les fonts que pot compartir
 
 <Excerpt region="bundle" />
 
-`createBundle` llegeix `config.customFonts`, busca a `files` els bytes de cada variant pel seu `fileId` i els desa a `fonts/`, amb una entrada `fonts` al manifest. La família de rètols porta `redistributable: false`, que aquí simula una llicència que no deixa repartir els fitxers (la de Big Shoulders Display, l'OFL, sí que ho permet). El seu fitxer es queda fora i `warnings` anomena la família. El fitxer de 81 KB conté el capítol, la configuració, els tres dibuixos i cinc fitxers de font. La composició no llegeix mai `customFonts`, i sense ell les pàgines surten iguals ([Crear un paquet](/ca/docs/configuration#crear-un-paquet)).
+`createBundle` llegeix `config.customFonts`, busca a `files` els bytes de cada variant pel seu `fileId` i els desa a `fonts/`, amb una entrada `fonts` al manifest. La família de rètols porta `redistributable: false`, que aquí simula una llicència que no deixa repartir els fitxers (la de Big Shoulders Display, l'OFL, sí que ho permet). El seu fitxer es queda fora i `warnings` anomena la família. El fitxer de 81 KB conté el capítol, la configuració, els tres dibuixos i cinc fitxers de font. La composició no llegeix mai `customFonts`, i sense ell les pàgines surten iguals ([Crear un paquet](/ca/docs/configuration-programmatic-usage#crear-un-paquet)).
 
 ## Variants
 

@@ -1,0 +1,542 @@
+{/* docs/configuration-comics-pt.mdx */}
+
+export const metadata = {
+  title: 'Configuração: quadrinhos',
+  sidebarTitle: 'Ajustes de quadrinhos',
+  description: 'Os ajustes de comics: o quadro e as sarjetas das páginas de quadrinhos, os estilos de requadro, o letreiramento, os estilos de balão e o elenco',
+  lang: 'pt',
+  lastUpdated: '2026-10-10',
+  readingTime: '3 min',
+  order: 10,
+  parent: 'configuration',
+  plainSummary: "Esta página reúne os ajustes das páginas de quadrinhos. Você define a moldura da página e o espaço entre os quadros. Escolhe a fonte e o tamanho do letreiramento. Define como são desenhados os balões, os recordatórios e as onomatopeias. Também pode listar os personagens, para que cada um fale com seu próprio estilo. O guia de quadrinhos explica como escrever as páginas.",
+};
+
+# Configuração: quadrinhos
+
+
+## Quadrinhos
+
+A propriedade `comics` configura as páginas de quadrinhos (`:::page`), as tiras (`:::strip`) e as páginas duplas: a moldura e as sarjetas de onde os quadros são recortados, os estilos de quadro, o letreiramento, os estilos de balão e o elenco. Só os documentos com quadrinhos a leem; um documento sem eles é diagramado exatamente como antes, e um documento com quadrinhos e sem a seção `comics` usa os padrões do seu idioma. A marcação e a forma como as páginas são letreiradas estão explicadas em [Quadrinhos](/pt/docs/comics).
+
+```ts
+const config: PostextConfig = {
+  comics: {
+    readingDirection: 'auto',
+    gutter: { horizontal: { value: 5, unit: 'mm' }, vertical: { value: 2.5, unit: 'mm' } },
+    panel: { borderWidth: { value: 0.8, unit: 'pt' }, borderStyle: 'rough' },
+    panelStyles: [{ id: 'night', background: { hex: '#14142b', model: 'hex' }, borderColor: { hex: '#ffffff', model: 'hex' } }],
+    lettering: { fontSize: { value: 8.5, unit: 'pt' }, textTransform: 'uppercase' },
+    balloonStyles: [{ id: 'eerie', shape: 'wavy', italic: true }],
+    cast: [{ id: 'maya', name: 'Maya' }, { id: 'tomas', name: 'Grandpa Tomás' }],
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>readingDirection</code></td>
+      <td><code>'auto' | 'ltr' | 'rtl'</code></td>
+      <td><code>'auto'</code></td>
+      <td>A ordem dos quadros numa fileira. <code>'auto'</code> lê da direita para a esquerda num documento da direita para a esquerda, num documento vertical e em japonês e chinês tradicional e, nos demais casos, no sentido de <code>artDirection</code> (incluídos o chinês simplificado e o coreano). O atributo <code>direction</code> de uma página tem prioridade. Com <code>page.binding: 'auto'</code>, um livro cujos quadrinhos são lidos da direita para a esquerda é encadernado à direita.</td>
+    </tr>
+    <tr>
+      <td><code>artDirection</code></td>
+      <td><code>'ltr' | 'rtl'</code></td>
+      <td><code>'ltr'</code></td>
+      <td>O sentido de leitura para o qual a arte foi desenhada: <code>'rtl'</code> para mangá.</td>
+    </tr>
+    <tr>
+      <td><code>mirrorArt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Espelha os desenhos de uma página lida no sentido contrário ao de <code>artDirection</code>. Um quadro mantém o desenho como foi feito com <code>mirror=false</code>.</td>
+    </tr>
+    <tr>
+      <td><code>frame.margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>as margens da página</td>
+      <td>Margens próprias para as páginas de quadrinhos (<code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>, <code>mirror</code>). Os quadros são recortados da caixa que elas deixam; sem valor, da área de texto da página.</td>
+    </tr>
+    <tr>
+      <td><code>gutter.horizontal</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>4mm</code></td>
+      <td>O espaço entre fileiras. O atributo <code>gutter</code> de uma página tem prioridade.</td>
+    </tr>
+    <tr>
+      <td><code>gutter.vertical</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2mm</code></td>
+      <td>O espaço entre quadros lado a lado numa fileira.</td>
+    </tr>
+    <tr>
+      <td><code>panel</code></td>
+      <td><code>PanelStyleConfig</code></td>
+      <td>veja abaixo</td>
+      <td>O estilo de quadro padrão.</td>
+    </tr>
+    <tr>
+      <td><code>panelStyles</code></td>
+      <td><code>NamedPanelStyleConfig[]</code></td>
+      <td><code>[]</code></td>
+      <td>Estilos de quadro nomeados, escolhidos com <code>:::page&#123;style=…&#125;</code> ou <code>::panel&#123;style=…&#125;</code>. Cada um tem um <code>id</code>, um <code>name</code> opcional (só nas interfaces de editor) e os campos de um estilo de quadro; os campos sem valor seguem <code>panel</code>.</td>
+    </tr>
+    <tr>
+      <td><code>lettering</code></td>
+      <td><code>LetteringConfig</code></td>
+      <td>veja abaixo</td>
+      <td>A fonte, o corpo e as regras da casa de todos os balões do livro.</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyles</code></td>
+      <td><code>BalloonStyleConfig[]</code></td>
+      <td>os nove estilos integrados</td>
+      <td>Estilos de balão por tipo. Os integrados estão sempre presentes; uma entrada com o id de um deles o altera, e uma entrada com um id novo acrescenta um estilo aplicado sobre <code>speech</code>.</td>
+    </tr>
+    <tr>
+      <td><code>cast</code></td>
+      <td><code>ComicCastMember[]</code></td>
+      <td><code>[]</code></td>
+      <td>Os personagens (veja <a href="#elenco">Elenco</a>).</td>
+    </tr>
+    <tr>
+      <td><code>runningHeads</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Imprime os cabeços e os fólios nas páginas de quadrinhos. Desligado, uma página de quadrinhos é só quadros, e o seu número continua contando.</td>
+    </tr>
+    <tr>
+      <td><code>viewerLeaf</code></td>
+      <td><code>ComicViewerLeafConfig</code></td>
+      <td>sem valor</td>
+      <td>Para hosts cujas páginas não são folhas: diagrama as páginas de quadrinhos numa folha impressa (<code>width</code>, <code>height</code>, <code>margins</code>) escalada para <code>fitWidth</code> px (e no máximo <code>fitHeight</code> px de altura) no topo da página. O visualizador HTML do Sandbox a define; ela nunca é salva com um documento.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Estilos de quadro
+
+`comics.panel` e cada entrada de `comics.panelStyles`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1pt</code></td>
+      <td>Espessura da borda; <code>0</code> não desenha nenhuma. A borda é traçada sobre o contorno do quadro.</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>preto</td>
+      <td>Cor da borda (pode ser vinculada à paleta).</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Raio dos cantos de um quadro retangular, limitado à metade do seu lado menor. Um quadro cortado por uma linha inclinada mantém os cantos vivos.</td>
+    </tr>
+    <tr>
+      <td><code>borderStyle</code></td>
+      <td><code>'solid' | 'rough' | 'none'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Uma linha limpa, uma linha à mão que treme um pouco (com semente tirada do quadro, então sai igual em toda construção) ou nenhuma.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>branco</td>
+      <td>O preenchimento sob o desenho: a cor de um quadro vazio e das faixas em volta de um desenho mostrado inteiro.</td>
+    </tr>
+    <tr>
+      <td><code>fit</code></td>
+      <td><code>'cover' | 'contain'</code></td>
+      <td><code>'cover'</code></td>
+      <td><code>cover</code> recorta o desenho para preencher o quadro, nunca dentro da área segura; <code>contain</code> o mostra inteiro.</td>
+    </tr>
+    <tr>
+      <td><code>bleed</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Os quadros deste estilo passam da moldura até o refile e a sangria em todos os lados que tocam a moldura.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Letreiramento
+
+`comics.lettering` define todos os balões do livro. Há um único corpo: um estilo de balão pode escalá-lo (`fontScale`), e o texto nunca é reduzido para caber num balão.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>conforme o idioma</td>
+      <td>A fonte do letreiramento. Sem valor: <code>Comic Neue</code>; <code>Zen Antique</code> em japonês, <code>Noto Sans SC</code> em chinês simplificado, <code>LXGW WenKai TC</code> em chinês tradicional, <code>Playpen Sans Arabic</code> em árabe, persa e urdu (<code>defaultComicFont(locale)</code>).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>7.5pt</code></td>
+      <td>O corpo do texto dos balões. Os quadrinhos costumam ser letreirados em 7 a 9 pt na página impressa.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number</code></td>
+      <td><code>1.15</code></td>
+      <td>Distância entre as linhas, um múltiplo do corpo. Deixado no padrão, os balões verticais, chineses e japoneses usam 1,5 e os árabes 1,45.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>preto</td>
+      <td>Cor do texto.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>, <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compõe todo o letreiramento em negrito ou em itálico. O letreiramento em chinês, japonês e árabe nunca é inclinado.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Espaço extra entre as letras; <code>em</code> é relativo ao corpo do texto. Nunca se aplica ao árabe.</td>
+    </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'auto' | 'horizontal' | 'vertical'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> letreira o japonês e o chinês tradicional, e qualquer documento composto em escrita vertical, em colunas verticais, e todo o resto na horizontal. A marca <code>vertical</code> ou <code>horizontal</code> de uma linha do roteiro compõe essa linha de outro modo (veja <a href="/pt/docs/comics#letreiramento">Quadrinhos › Letreiramento</a>).</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Tudo em maiúsculas, o visual clássico do letreiramento americano e europeu. As escritas sem caixa ficam como estão.</td>
+    </tr>
+    <tr>
+      <td><code>dropFinalStop</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Omite o ponto final que fecha um balão (<code>。</code> no mangá). <code>'auto'</code>: só em japonês e chinês.</td>
+    </tr>
+    <tr>
+      <td><code>doubleDash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Letreira um travessão como <code>--</code>, um costume do letreiramento americano.</td>
+    </tr>
+    <tr>
+      <td><code>inset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5mm</code></td>
+      <td>Espaço mantido entre um balão e a borda do seu quadro. Um recordatório encostado na borda o ignora.</td>
+    </tr>
+    <tr>
+      <td><code>joinSameSpeaker</code></td>
+      <td><code>'butt' | 'connector' | 'none'</code></td>
+      <td><code>'butt'</code></td>
+      <td>Dois balões seguidos do mesmo personagem: corpos fundidos num só contorno, ligados por um gargalo estreito, ou mantidos separados. Uma linha do roteiro pede o seu próprio comportamento com <code>join</code> ou <code>join=false</code>.</td>
+    </tr>
+    <tr>
+      <td><code>maxColumnChars</code></td>
+      <td><code>number</code></td>
+      <td><code>8</code></td>
+      <td>Letreiramento vertical: o máximo de caracteres numa coluna de um balão. As onomatopeias quebram depois de cinco.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Estilos de balão
+
+Cada entrada de `comics.balloonStyles` se sobrepõe ao estilo embutido de mesmo id (`speech`, `thought`, `whisper`, `shout`, `radio`, `caption`, `inner`, `note`, `sfx`), ou a `speech` quando o id é novo. Os valores padrão abaixo são os de `speech`; a [página de Quadrinhos](/pt/docs/comics#estilos-de-balão) lista o que cada estilo embutido muda. Os comprimentos em `em` são relativos ao tamanho do texto do balão.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obrigatório</td>
+      <td>A palavra com que uma linha do roteiro nomeia o estilo: <code>ben&#123;whisper&#125;: …</code> ou <code>style=whisper</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nome legível, só para as interfaces de edição.</td>
+    </tr>
+    <tr>
+      <td><code>shape</code></td>
+      <td><code>'oval' | 'rounded' | 'rectangle' | 'cloud' | 'burst' | 'wavy' | 'electric' | 'none'</code></td>
+      <td><code>'oval'</code></td>
+      <td>O contorno em volta do texto. <code>'none'</code> põe o texto direto sobre o desenho.</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>branco</td>
+      <td>Preenchimento do balão.</td>
+    </tr>
+    <tr>
+      <td><code>stroke</code></td>
+      <td><code>ColorValue</code></td>
+      <td>preto</td>
+      <td>Cor do contorno.</td>
+    </tr>
+    <tr>
+      <td><code>strokeWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.6pt</code></td>
+      <td>Espessura do contorno.</td>
+    </tr>
+    <tr>
+      <td><code>dash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Um contorno tracejado (um sussurro).</td>
+    </tr>
+    <tr>
+      <td><code>double</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Um contorno duplo.</td>
+    </tr>
+    <tr>
+      <td><code>wobble</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Tremor de traço feito à mão no contorno, de 0 a 1, com uma semente tirada do balão para que nunca mude de uma composição para outra.</td>
+    </tr>
+    <tr>
+      <td><code>roundness</code></td>
+      <td><code>number</code></td>
+      <td><code>2.2</code></td>
+      <td>O expoente de superelipse de um oval: 2 é uma elipse, e valores maiores o deixam mais quadrado.</td>
+    </tr>
+    <tr>
+      <td><code>burstPoints</code></td>
+      <td><code>number</code></td>
+      <td><code>14</code></td>
+      <td>As pontas de uma explosão; <code>0</code> as conta a partir do perímetro.</td>
+    </tr>
+    <tr>
+      <td><code>burstDepth</code></td>
+      <td><code>number</code></td>
+      <td><code>0.22</code></td>
+      <td>A profundidade das pontas de uma explosão, como fração do raio do corpo.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.55em</code></td>
+      <td>O respiro entre o texto e o contorno.</td>
+    </tr>
+    <tr>
+      <td><code>aspect</code></td>
+      <td><code>number</code></td>
+      <td><code>1.6</code></td>
+      <td>A razão entre largura e altura que a quebra de linhas busca para o bloco de texto (letreiramento horizontal).</td>
+    </tr>
+    <tr>
+      <td><code>tail</code></td>
+      <td><code>'curved' | 'wedge' | 'bubbles' | 'zigzag' | 'none'</code></td>
+      <td><code>'curved'</code></td>
+      <td>O rabicho.</td>
+    </tr>
+    <tr>
+      <td><code>tailWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>A largura do rabicho no ponto em que sai do contorno.</td>
+    </tr>
+    <tr>
+      <td><code>tailReach</code></td>
+      <td><code>number</code></td>
+      <td><code>0.55</code></td>
+      <td>Até onde o rabicho avança em direção a quem fala, como fração da distância entre o contorno e a boca.</td>
+    </tr>
+    <tr>
+      <td><code>target</code></td>
+      <td><code>'mouth' | 'head'</code></td>
+      <td><code>'mouth'</code></td>
+      <td>Para onde o rabicho aponta: a boca da âncora ou a cabeça (balões de pensamento).</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'auto' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'top' | 'bottom'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Onde fica o balão quando a linha não fixa nenhuma posição: onde o letreiramento o colocar, ou num canto ou numa borda do quadro.</td>
+    </tr>
+    <tr>
+      <td><code>butt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Encosta na borda do quadro um balão de canto ou de borda (recordatórios).</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>a fonte do letreiramento</td>
+      <td>A fonte deste estilo. <code>sfx</code> usa por padrão a fonte de onomatopeias do idioma: <code>Bangers</code>, <code>Dela Gothic One</code> em japonês, <code>ZCOOL KuaiLe</code> em chinês simplificado, <code>LXGW WenKai TC</code> em chinês tradicional, <code>Lalezar</code> em árabe (<code>defaultComicSfxFont(locale)</code>).</td>
+    </tr>
+    <tr>
+      <td><code>fontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>O tamanho do texto, como múltiplo do tamanho do letreiramento.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>, <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td>os do letreiramento</td>
+      <td>Texto em negrito ou em itálico.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>a do letreiramento</td>
+      <td>Cor do texto.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td>o do letreiramento</td>
+      <td>Tudo em maiúsculas neste estilo.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>o do letreiramento</td>
+      <td>Espaço extra entre as letras.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'center' | 'start'</code></td>
+      <td><code>'center'</code></td>
+      <td>Alinhamento das linhas dentro do balão.</td>
+    </tr>
+    <tr>
+      <td><code>halo</code></td>
+      <td><code>Dimension</code></td>
+      <td>nenhum</td>
+      <td>Um contorno traçado em volta das letras, com essa espessura, para que o texto se leia sobre o desenho (onomatopeias).</td>
+    </tr>
+    <tr>
+      <td><code>haloColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>branco</td>
+      <td>A cor do halo.</td>
+    </tr>
+    <tr>
+      <td><code>rotate</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Rotação em graus, no sentido horário. O atributo <code>rotate</code> da linha tem prioridade.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Elenco
+
+Cada entrada de `comics.cast` descreve um personagem:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obrigatório</td>
+      <td>A chave de quem fala no roteiro e nas âncoras dos desenhos.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>O nome que a saída HTML e o EPUB refluível imprimem antes das falas do personagem, e que os editores mostram.</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyle</code></td>
+      <td><code>string</code></td>
+      <td><code>speech</code></td>
+      <td>O estilo das falas do personagem que não nomeiam nenhum.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>a do estilo</td>
+      <td>Cor do texto dos balões do personagem.</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>o do estilo</td>
+      <td>Preenchimento dos balões do personagem.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>a do estilo</td>
+      <td>A fonte dos balões do personagem.</td>
+    </tr>
+  </tbody>
+</table>
+
+A `color` e a `font` próprias de uma linha têm prioridade sobre o elenco, e o elenco sobre o estilo de balão. Qualquer cor dos quadrinhos pode ser uma entrada da paleta, que acompanha a paleta como qualquer cor vinculada.
+
+```ts
+const resolved = resolveComicsConfig(config.comics, 'ja');
+// => todos os campos preenchidos; Zen Antique e Dela Gothic One como fontes
+
+const minimal = stripComicsDefaults(config.comics, 'ja');
+// => undefined quando tudo está no valor padrão
+
+const shout = pickBalloonStyle(resolved, 'shout'); // o grito embutido com as mudanças do livro
+const night = pickPanelStyle(resolved, 'night');   // um estilo de quadro com nome ou, se não houver, o quadro padrão
+```

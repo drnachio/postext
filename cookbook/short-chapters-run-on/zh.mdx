@@ -18,7 +18,7 @@ pageNotes: { "1": "封面：梅紫色色带上印着奶油色大写的MACHADO DE
 
 <Excerpt region="answer" highlight="17-24" />
 
-章这一级关闭了分页，`marginTop`让每个章标题落在上一章最后一行下方两行处。它的版面设计没有`span`，所以章标题在栏内绘制，占一个三行高的块，下面的正文仍在基线网格上（[分页前置](/zh/docs/configuration#前置分页)、[span与高级版面设计](/zh/docs/configuration#通栏与高级设计)）。保持规则都用默认值。CXIX和CXXI下的四行段落各在页脚留两行、转两行到下一页；若设`avoidOrphans: false`，它们会拆成三行和一行，第214页和第215页就会以单独一行开头（[段首孤行、段末孤行、孤字](/zh/docs/configuration#段首孤行段末孤行孤字与不拆分规则)）。各栏齐底在CXIX上方加了第三行空白，使第213页止于第33行（[各栏齐底](/zh/docs/configuration#各栏齐底)）。
+章这一级关闭了分页，`marginTop`让每个章标题落在上一章最后一行下方两行处。它的版面设计没有`span`，所以章标题在栏内绘制，占一个三行高的块，下面的正文仍在基线网格上（[分页前置](/zh/docs/configuration-text#前置分页)、[span与高级版面设计](/zh/docs/configuration-text#通栏与高级设计)）。保持规则都用默认值。CXIX和CXXI下的四行段落各在页脚留两行、转两行到下一页；若设`avoidOrphans: false`，它们会拆成三行和一行，第214页和第215页就会以单独一行开头（[段首孤行、段末孤行、孤字](/zh/docs/configuration-text#段首孤行段末孤行孤字与不拆分规则)）。各栏齐底在CXIX上方加了第三行空白，使第213页止于第33行（[各栏齐底](/zh/docs/configuration-text#各栏齐底)）。
 
 <PageShot page={3} crop="0,.683,1,.317" caption="Page 213: chapter CXIX starts three lines under the end of CXVIII and keeps two lines of its text at the foot." />
 
@@ -32,13 +32,13 @@ pageNotes: { "1": "封面：梅紫色色带上印着奶油色大写的MACHADO DE
 
 <Excerpt region="heads" />
 
-`{title}`印出frontmatter中的标题，`{chapterTitle}`印出在本页或本页之前开始的最后一章，所以第217页印的是从第216页开始的CXXIII（[文字元素](/zh/docs/configuration#文本元素)）。第213页印的是在其页脚才开始的CXIX，尽管这一页的前25行还属于CXVIII。`{chapterTitleAtTop}`印的是页面开头所在的章，但这段节选里没有CXVIII的标题。`SHIFT`把书眉移到版心的中线上，与页面中线相差1 mm，因为内侧页边距比外侧宽2 mm。
+`{title}`印出frontmatter中的标题，`{chapterTitle}`印出在本页或本页之前开始的最后一章，所以第217页印的是从第216页开始的CXXIII（[文字元素](/zh/docs/configuration-page-layout#文本元素)）。第213页印的是在其页脚才开始的CXIX，尽管这一页的前25行还属于CXVIII。`{chapterTitleAtTop}`印的是页面开头所在的章，但这段节选里没有CXVIII的标题。`SHIFT`把书眉移到版心的中线上，与页面中线相差1 mm，因为内侧页边距比外侧宽2 mm。
 
 ### 4 · 用标题画出封面和插页
 
 <Excerpt region="cover" />
 
-两者都是`numbered: false`的[标题样式](/zh/docs/configuration#标题样式)，所以第一个编号的章仍是CXIX。`span: 'page'`让每个都成为独占一页的首页。没有它，封面底部的色带和插页的图画只画到版心的底边，书眉和页码也会印在这两页上。插页的题注来自它的标题：CAPÍTULO CXXIII是标题文字，斜体引文是它的`quote`属性（[标题属性](/zh/docs/document-format#标题属性)）。两个设计都一直画到页面底边，所以标题预留整页，正文从下一页开始，不需要`:::pagebreak`。
+两者都是`numbered: false`的[标题样式](/zh/docs/configuration-styles#标题样式)，所以第一个编号的章仍是CXIX。`span: 'page'`让每个都成为独占一页的首页。没有它，封面底部的色带和插页的图画只画到版心的底边，书眉和页码也会印在这两页上。插页的题注来自它的标题：CAPÍTULO CXXIII是标题文字，斜体引文是它的`quote`属性（[标题属性](/zh/docs/document-format#标题属性)）。两个设计都一直画到页面底边，所以标题预留整页，正文从下一页开始，不需要`:::pagebreak`。
 
 ### 5 · 告诉节选它在书中的位置
 

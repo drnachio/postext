@@ -21,19 +21,19 @@ O código é [a resposta curta](#a-resposta-curta) logo acima. `:name[項梁]` e
 
 <Excerpt region="type" />
 
-As marcas ficam no vão entre as linhas e nunca mudam o passo da linha ([Marcas, rubi e warichu](/pt/docs/configuration#marcas-rubi-e-warichu)). Com 10,5 pt sobre 18 pt, o vão é de 0,71 eme, e nele cabem as linhas de nome de uma coluna e os pontos da seguinte, como na quinta convenção da página 1. A grade conta a página em caracteres, 42 ao longo de cada linha e 17 linhas no sentido transversal, e desloca as margens para que a mancha meça exatamente isso: 25,7 mm de margem no alto e 21,7 mm no pé ([Grade de caracteres](/pt/docs/configuration#grade-de-caracteres)).
+As marcas ficam no vão entre as linhas e nunca mudam o passo da linha ([Marcas, rubi e warichu](/pt/docs/configuration-east-asian#marcas-rubi-e-warichu)). Com 10,5 pt sobre 18 pt, o vão é de 0,71 eme, e nele cabem as linhas de nome de uma coluna e os pontos da seguinte, como na quinta convenção da página 1. A grade conta a página em caracteres, 42 ao longo de cada linha e 17 linhas no sentido transversal, e desloca as margens para que a mancha meça exatamente isso: 25,7 mm de margem no alto e 21,7 mm no pé ([Grade de caracteres](/pt/docs/configuration-east-asian#grade-de-caracteres)).
 
 ### 3 · Uma abertura que gira com a página
 
 <Excerpt region="opener" />
 
-O design de um título é diagramado no fluxo da sua página, então um mesmo conjunto de elementos serve às duas direções ([Escrita vertical](/pt/docs/configuration#escrita-vertical)). Ancorada ao canto superior esquerdo da sangria, a faixa atravessa o alto da página horizontal e desce pela borda direita das verticais, onde a leitura começa. O antetítulo, o título e o autor também se empilham no fluxo: um embaixo do outro na horizontal, um à esquerda do outro na vertical. O comprimento da faixa é medido ao longo do fluxo: 181,3 mm a fazem parar no pé do texto vertical, longe do fólio, e na página horizontal passam do refile.
+O design de um título é diagramado no fluxo da sua página, então um mesmo conjunto de elementos serve às duas direções ([Escrita vertical](/pt/docs/configuration-page-layout#escrita-vertical)). Ancorada ao canto superior esquerdo da sangria, a faixa atravessa o alto da página horizontal e desce pela borda direita das verticais, onde a leitura começa. O antetítulo, o título e o autor também se empilham no fluxo: um embaixo do outro na horizontal, um à esquerda do outro na vertical. O comprimento da faixa é medido ao longo do fluxo: 181,3 mm a fazem parar no pé do texto vertical, longe do fólio, e na página horizontal passam do refile.
 
 ### 4 · Fólios para um livro encadernado pela direita
 
 <Excerpt region="folios" />
 
-O texto vertical encaderna o livro pela direita ([Encadernação](/pt/docs/configuration#encadernação)): a página 1 fica à esquerda da lombada, e a borda externa de uma página ímpar é a esquerda. O fólio ímpar vai embaixo à esquerda e o par embaixo à direita, ao contrário de um livro ocidental, e `pageNumbering.format: 'trad-chinese-informal'` os imprime como 一, 二, 三. A linha de identificação entre os dois vem de um atributo de cada título, `slug="…"`; junto com o colofão, é tudo o que muda entre a edição inglesa e a espanhola.
+O texto vertical encaderna o livro pela direita ([Encadernação](/pt/docs/configuration-page-layout#encadernação)): a página 1 fica à esquerda da lombada, e a borda externa de uma página ímpar é a esquerda. O fólio ímpar vai embaixo à esquerda e o par embaixo à direita, ao contrário de um livro ocidental, e `pageNumbering.format: 'trad-chinese-informal'` os imprime como 一, 二, 三. A linha de identificação entre os dois vem de um atributo de cada título, `slug="…"`; junto com o colofão, é tudo o que muda entre a edição inglesa e a espanhola.
 
 ### 5 · Uma segunda tinta
 

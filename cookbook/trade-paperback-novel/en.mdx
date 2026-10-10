@@ -16,27 +16,27 @@ Eight pages of a 140 × 216 mm trade paperback hold the first two chapters of Ka
 
 ### 1 · The opener comes from the heading and its attribute
 
-The code is [the short answer](#the-short-answer) above. Chopin’s chapters have no titles, so each heading holds only its numeral (`# I`), which `{titleText}` prints. `{attr.lead}` prints the heading’s `lead` attribute, which holds the chapter’s first sentence; the Markdown paragraph under the heading starts with the sentence after it ([heading attributes](/en/docs/document-format#heading-attributes)). The lead is a centred display, and the `\n` in each attribute breaks it by sense, after *cage* and after *bright;*. The lead’s box starts nine grid lines below the top of the text block, and a `minHeight` of 12 lines leaves one blank line under it; without `minHeight` the text starts right under the lead ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). `marginBottom: pt(0)` replaces the level’s default half-em margin, which would push the text a line lower.
+The code is [the short answer](#the-short-answer) above. Chopin’s chapters have no titles, so each heading holds only its numeral (`# I`), which `{titleText}` prints. `{attr.lead}` prints the heading’s `lead` attribute, which holds the chapter’s first sentence; the Markdown paragraph under the heading starts with the sentence after it ([heading attributes](/en/docs/document-format#heading-attributes)). The lead is a centred display, and the `\n` in each attribute breaks it by sense, after *cage* and after *bright;*. The lead’s box starts nine grid lines below the top of the text block, and a `minHeight` of 12 lines leaves one blank line under it; without `minHeight` the text starts right under the lead ([span and advanced design](/en/docs/configuration-text#span-and-advanced-design)). `marginBottom: pt(0)` replaces the level’s default half-em margin, which would push the text a line lower.
 
-`breakBefore` with parity `'odd'` sends every chapter to a recto, with a blank verso only after a chapter that ends on a recto ([break before](/en/docs/configuration#break-before)). To force a recto where there is no heading, write `:::pagebreak{parity="odd"}` in the Markdown; in a layout of two or more columns, `:::columnbreak` moves the text to the next column instead ([`:::pagebreak`](/en/docs/document-format#pagebreak)).
+`breakBefore` with parity `'odd'` sends every chapter to a recto, with a blank verso only after a chapter that ends on a recto ([break before](/en/docs/configuration-text#break-before)). To force a recto where there is no heading, write `:::pagebreak{parity="odd"}` in the Markdown; in a layout of two or more columns, `:::columnbreak` moves the text to the next column instead ([`:::pagebreak`](/en/docs/document-format#pagebreak)).
 
 ### 2 · A trade page of whole lines
 
 <Excerpt region="page" />
 
-The bottom margin is what the 216 mm trim leaves after the top margin and 35 lines of 14 pt, so every full page ends on the same line, as pages 3 and 4 do. With `mirror: true` the 20 mm inner margin falls on the spine side of rectos and versos alike ([mirrored margins](/en/docs/configuration#mirrored-margins)). The 104.5 mm measure holds about 69 characters of Crimson Pro at 10.5 pt. The body text keeps word spaces between 0.7 and 1.9 of normal; at the default minimum of 0.6, one line on these pages closes to 0.62.
+The bottom margin is what the 216 mm trim leaves after the top margin and 35 lines of 14 pt, so every full page ends on the same line, as pages 3 and 4 do. With `mirror: true` the 20 mm inner margin falls on the spine side of rectos and versos alike ([mirrored margins](/en/docs/configuration-page-layout#mirrored-margins)). The 104.5 mm measure holds about 69 characters of Crimson Pro at 10.5 pt. The body text keeps word spaces between 0.7 and 1.9 of normal; at the default minimum of 0.6, one line on these pages closes to 0.62.
 
 ### 3 · Running heads that skip openers and blank pages
 
 <Excerpt region="heads" />
 
-`parity: 'even'` puts the author in Cormorant SC small capitals on versos, and `'odd'` puts the title in italic on rectos; the folios stand at the outer edge of the text block. `pages: 'body'` keeps all four elements off the openers and off page 6, the blank verso the parity break adds. With `pages: 'all'` that page would print *6* and *Kate Chopin*. The openers get a drop folio instead, a footer element that `pages: 'opener'` limits to them ([text elements](/en/docs/configuration#text-elements)).
+`parity: 'even'` puts the author in Cormorant SC small capitals on versos, and `'odd'` puts the title in italic on rectos; the folios stand at the outer edge of the text block. `pages: 'body'` keeps all four elements off the openers and off page 6, the blank verso the parity break adds. With `pages: 'all'` that page would print *6* and *Kate Chopin*. The openers get a drop folio instead, a footer element that `pages: 'opener'` limits to them ([text elements](/en/docs/configuration-page-layout#text-elements)).
 
 ### 4 · The cover is a section with no running heads
 
 <Excerpt region="cover" />
 
-The cover is a heading, `# The Awakening {style="cover"}`. Its style places the painting over the top 134 mm, the frontmatter’s title at 50 pt and the author in small capitals. The style also applies to the section the heading opens, pages 1 and 2, until chapter I. Its empty `header` and `footer` keep the drop folio off the cover and the running heads off the colophon. Its top margin puts the colophon on the last six grid lines of the text block, so the colophon’s last line is level with the last line of page 3 ([heading styles](/en/docs/configuration#heading-styles)). The section’s column starts 165 mm down, and the design, anchored to the page and the bleed, still paints above it: only the foot of a column cuts a design kept in it.
+The cover is a heading, `# The Awakening {style="cover"}`. Its style places the painting over the top 134 mm, the frontmatter’s title at 50 pt and the author in small capitals. The style also applies to the section the heading opens, pages 1 and 2, until chapter I. Its empty `header` and `footer` keep the drop folio off the cover and the running heads off the colophon. Its top margin puts the colophon on the last six grid lines of the text block, so the colophon’s last line is level with the last line of page 3 ([heading styles](/en/docs/configuration-styles#heading-styles)). The section’s column starts 165 mm down, and the design, anchored to the page and the bleed, still paints above it: only the foot of a column cuts a design kept in it.
 
 <PageShot page={2} crop="0,0.7,1,0.24" caption="Page 2: the colophon at the foot of the cover’s verso, with no running head or folio." />
 
@@ -44,7 +44,7 @@ The cover is a heading, `# The Awakening {style="cover"}`. Its style places the 
 
 <Excerpt region="tailpiece" />
 
-The ornament type has no caption prefix, so the camomile flower prints without a label, 17% of the measure wide, where `::resource{id="tailpiece-1"}` stands ([resource types](/en/docs/configuration#resource-types)). An inline embed keeps one grid line above it, and the `:::space` before it adds a second between the chapter’s last line and the flower ([`:::space`](/en/docs/document-format#space)). Both tailpieces draw the same file, `fleuron.svg`, under two ids, because a resource is placed only once.
+The ornament type has no caption prefix, so the camomile flower prints without a label, 17% of the measure wide, where `::resource{id="tailpiece-1"}` stands ([resource types](/en/docs/configuration-resources#resource-types)). An inline embed keeps one grid line above it, and the `:::space` before it adds a second between the chapter’s last line and the flower ([`:::space`](/en/docs/document-format#space)). Both tailpieces draw the same file, `fleuron.svg`, under two ids, because a resource is placed only once.
 
 ## Variations
 

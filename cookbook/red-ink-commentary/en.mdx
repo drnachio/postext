@@ -16,7 +16,7 @@ The opening of chapter 1 of the Jiaxu manuscript of *The Story of the Stone*, th
 
 ### 1 · Turn the side column into the head margin
 
-The code is [the short answer](#the-short-answer) above. A vertical page is a horizontal page turned a quarter turn, so the side column of a [column-and-a-half layout](/en/docs/configuration#layout-types) becomes a tier across the page, and `sideColumnSide: 'left'` puts that tier at the head ([Vertical writing](/en/docs/configuration#vertical-writing)). The [character grid](/en/docs/configuration#character-grid) rounds `sideColumnPercent: 19` to 10 characters of the body, 120 pt, and the gutter to two; the column rule becomes the hairline between the comments and the text. The comment style has no box: 7 pt Kai, 17 characters to a column, a size at which none of the ten comments ends on a column of one character, and `snapToGrid: false` so the comments stack at their own 10 pt pitch instead of the body's 21 pt.
+The code is [the short answer](#the-short-answer) above. A vertical page is a horizontal page turned a quarter turn, so the side column of a [column-and-a-half layout](/en/docs/configuration-page-layout#layout-types) becomes a tier across the page, and `sideColumnSide: 'left'` puts that tier at the head ([Vertical writing](/en/docs/configuration-page-layout#vertical-writing)). The [character grid](/en/docs/configuration-east-asian#character-grid) rounds `sideColumnPercent: 19` to 10 characters of the body, 120 pt, and the gutter to two; the column rule becomes the hairline between the comments and the text. The comment style has no box: 7 pt Kai, 17 characters to a column, a size at which none of the ten comments ends on a column of one character, and `snapToGrid: false` so the comments stack at their own 10 pt pitch instead of the body's 21 pt.
 
 Both kinds of comment are marked where the manuscript has them. A side comment is a [`:warichu[…]`](/en/docs/document-format#chinese-marks-ruby-and-warichu) span, which `cjk.warichu` colours; a head-margin comment is a box fenced with `span="side"` just before the passage it discusses:
 
@@ -38,7 +38,7 @@ On a vertical page an opener is laid out in the flow's frame, so its text runs d
 
 <Excerpt region="fore-edge" />
 
-These are the fore-edge heads of [Vertical text elements](/en/docs/configuration#vertical-text-elements): `anchor.to: 'outer'` is the margin away from the spine, the left of a recto and the right of a verso in a right-bound book, and `writingMode: 'vertical-rl'` sets the text down the page. The type area here includes the comment tier, so "four characters below the head" is measured from the top of the red comments. `trad-chinese-informal` prints the folios 一 to 六.
+These are the fore-edge heads of [Vertical text elements](/en/docs/configuration-page-layout#vertical-text-elements): `anchor.to: 'outer'` is the margin away from the spine, the left of a recto and the right of a verso in a right-bound book, and `writingMode: 'vertical-rl'` sets the text down the page. The type area here includes the comment tier, so "four characters below the head" is measured from the top of the red comments. `trad-chinese-informal` prints the folios 一 to 六.
 
 ### 4 · Load each voice with the text it sets
 

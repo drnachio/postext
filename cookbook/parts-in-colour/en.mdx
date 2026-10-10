@@ -22,13 +22,13 @@ A part overrides palette entries by id, so everything that should change with th
 
 ### 2 · A divider, its verso and its list
 
-The code for this step is [the short answer](#the-short-answer) above. A `:::part` opens a [divider page](/en/docs/configuration#parts) on a recto, and `parts.design` lays it out over the whole trim. The Markdown between its fences starts 125 mm from the top edge, under the title: a few lines on the habitat in the `habitat` paragraph style, then its list of species in `bodyStyle`. `versoDesign` paints the back of the leaf (the field, and the tab in reverse) only when that page is blank, and `breakAfter: { parity: 'odd' }` keeps it blank by sending the first species on to the next recto. `{numberRoman}` prints the part's `number="I"` as a Roman numeral (`"1"` would print the same I), while the species are numbered 1 to 4 in Arabic figures. The `\\` in the title breaks the line on the divider only; the contents and the running heads set the title on one line.
+The code for this step is [the short answer](#the-short-answer) above. A `:::part` opens a [divider page](/en/docs/configuration-styles#parts) on a recto, and `parts.design` lays it out over the whole trim. The Markdown between its fences starts 125 mm from the top edge, under the title: a few lines on the habitat in the `habitat` paragraph style, then its list of species in `bodyStyle`. `versoDesign` paints the back of the leaf (the field, and the tab in reverse) only when that page is blank, and `breakAfter: { parity: 'odd' }` keeps it blank by sending the first species on to the next recto. `{numberRoman}` prints the part's `number="I"` as a Roman numeral (`"1"` would print the same I), while the species are numbered 1 to 4 in Arabic figures. The `\\` in the title breaks the line on the divider only; the contents and the running heads set the title on one line.
 
 ### 3 · The text's accents follow the part
 
 <Excerpt region="flow" />
 
-From one `:::part` to the next, every text colour equal to `band`'s own value takes the part's value ([the `:::part` container](/en/docs/configuration#the-part-container)). Here those are the bold field marks, the bullets and the plate labels. Body text and italics stay in ink. The plates are a resource type of their own, labelled Plate and never reset, so they count 1 to 4 in step with the species.
+From one `:::part` to the next, every text colour equal to `band`'s own value takes the part's value ([the `:::part` container](/en/docs/configuration-styles#the-part-container)). Here those are the bold field marks, the bullets and the plate labels. Body text and italics stay in ink. The plates are a resource type of their own, labelled Plate and never reset, so they count 1 to 4 in step with the species.
 
 ### 4 · The species opener
 
@@ -40,7 +40,7 @@ The species opener prints three of the heading's attributes: `status` in the kic
 
 <Excerpt region="contents" />
 
-`:::toc` gives every `:::part` a row and lays `toc.parts.design` out in it with that part's number, title, divider page and palette ([table of contents](/en/docs/configuration#table-of-contents)), so the same box prints brown for the mudflats and green for the reedbeds. Each species row under a band shows its number, a dotted leader and its page, with the Latin name from the `latin` attribute on the line below.
+`:::toc` gives every `:::part` a row and lays `toc.parts.design` out in it with that part's number, title, divider page and palette ([table of contents](/en/docs/configuration-notes-references#table-of-contents)), so the same box prints brown for the mudflats and green for the reedbeds. Each species row under a band shows its number, a dotted leader and its page, with the Latin name from the `latin` attribute on the line below.
 
 ### 6 · The part in the running heads and the tab
 

@@ -18,25 +18,25 @@ pageNotes: { "2": "目录：铁锈色罗马数字，用Gloock排的随笔标题�
 
 <Excerpt region="opener" />
 
-该层级的`numberingTemplate: '{1:I}'`把随笔编为I、II、III，`{number}`把编号印在标题上方（[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）。`minHeight`预留12行14 pt，细线止于其上7 mm处，所以标题只有一行时，每个章首页的正文都从距上边缘79 mm处开始。26 pt的标题多一行会增加9.9 mm，把正文推下一条网格线；设`SINK = 14`后，一行和两行标题的正文从同一行开始。`marginBottom: pt(0)`防止标题默认的外边距叠加到预留高度上。
+该层级的`numberingTemplate: '{1:I}'`把随笔编为I、II、III，`{number}`把编号印在标题上方（[通栏与高级设计](/zh/docs/configuration-text#通栏与高级设计)）。`minHeight`预留12行14 pt，细线止于其上7 mm处，所以标题只有一行时，每个章首页的正文都从距上边缘79 mm处开始。26 pt的标题多一行会增加9.9 mm，把正文推下一条网格线；设`SINK = 14`后，一行和两行标题的正文从同一行开始。`marginBottom: pt(0)`防止标题默认的外边距叠加到预留高度上。
 
 ### 2 · 让目录自己填好
 
 <Excerpt region="contents" />
 
-Markdown中的`:::toc`为每个列入的标题印一条目录项：编号、标题、前导符、页码标签，以及通过`subtitle`印出的作者。`buildDocument`反复排版整本书，直到页码标签不再变化，所以随笔改了名或变长，目录都会更新（[目录](/zh/docs/configuration#目录)）。目录项的编号沿用标题的字体和字号，除非`numberFontFamily`或`numberFontSize`另有指定；不论字号多大，它都立在标题首行的基线上。带篇的书还会为每个`:::part`加一行，由`toc.parts.design`绘制，见<RecipeLink slug="parts-in-colour">用一个属性给各篇配色</RecipeLink>。
+Markdown中的`:::toc`为每个列入的标题印一条目录项：编号、标题、前导符、页码标签，以及通过`subtitle`印出的作者。`buildDocument`反复排版整本书，直到页码标签不再变化，所以随笔改了名或变长，目录都会更新（[目录](/zh/docs/configuration-notes-references#目录)）。目录项的编号沿用标题的字体和字号，除非`numberFontFamily`或`numberFontSize`另有指定；不论字号多大，它都立在标题首行的基线上。带篇的书还会为每个`:::part`加一行，由`toc.parts.design`绘制，见<RecipeLink slug="parts-in-colour">用一个属性给各篇配色</RecipeLink>。
 
 ### 3 · 左页印作者，右页印随笔标题
 
 <Excerpt region="running-heads" />
 
-每个书眉都锚定在页面上，距上边缘11 mm，由`parity`决定左右：页码与正文外侧边缘对齐，作者名或标题再往里7 mm。`head()`中的`pages: 'body'`让书眉不出现在章首页，因为那里的署名行已经写明作者；页脚的`pages: 'opener'`则在章首页改印页脚页码（[文本元素](/zh/docs/configuration#文本元素)）。`{chapterTitle}`印出不带编号的随笔标题。
+每个书眉都锚定在页面上，距上边缘11 mm，由`parity`决定左右：页码与正文外侧边缘对齐，作者名或标题再往里7 mm。`head()`中的`pages: 'body'`让书眉不出现在章首页，因为那里的署名行已经写明作者；页脚的`pages: 'opener'`则在章首页改印页脚页码（[文本元素](/zh/docs/configuration-page-layout#文本元素)）。`{chapterTitle}`印出不带编号的随笔标题。
 
 ### 4 · 封面和目录不计入编号
 
 <Excerpt region="front" />
 
-设了`numbered: false`，封面和目录不会推进计数器，所以Hazlitt是I；`toc: false`让它们不进入目录（[标题样式](/zh/docs/configuration#标题样式)）。两种样式都继承该层级的`breakBefore`，奇偶性为`'any'`，所以目录不用`:::pagebreak`就紧接封面排在第2页。在单栏书中，封面样式跨越整页，因为留在栏内的设计会在栏的下边缘被裁掉，风景下方会空出22 mm白纸。
+设了`numbered: false`，封面和目录不会推进计数器，所以Hazlitt是I；`toc: false`让它们不进入目录（[标题样式](/zh/docs/configuration-styles#标题样式)）。两种样式都继承该层级的`breakBefore`，奇偶性为`'any'`，所以目录不用`:::pagebreak`就紧接封面排在第2页。在单栏书中，封面样式跨越整页，因为留在栏内的设计会在栏的下边缘被裁掉，风景下方会空出22 mm白纸。
 
 ### 5 · 每个颜色都连同调色板关联一起写出
 

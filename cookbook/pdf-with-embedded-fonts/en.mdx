@@ -22,13 +22,13 @@ The code is [the short answer](#the-short-answer) above. Postext measures every 
 
 <Excerpt region="build" />
 
-`registerFaces()` resolves only when every face in `FONTS` has loaded, so the first build measures with the faces the PDF will embed. It is also the only build, because `FONTS` lists every face the pages set, and `buildDocumentWithFonts` finds every face it looks for already declared ([Loading fonts before layout](/en/docs/configuration#loading-fonts-before-layout)). That check only helps the screen. If `FONTS` misses a face, the engine asks the kit for it, loads the Fontsource file and runs the layout again with no console warning, but the PDF still gets the closest face the provider has.
+`registerFaces()` resolves only when every face in `FONTS` has loaded, so the first build measures with the faces the PDF will embed. It is also the only build, because `FONTS` lists every face the pages set, and `buildDocumentWithFonts` finds every face it looks for already declared ([Loading fonts before layout](/en/docs/configuration-programmatic-usage#loading-fonts-before-layout)). That check only helps the screen. If `FONTS` misses a face, the engine asks the kit for it, loads the Fontsource file and runs the layout again with no console warning, but the PDF still gets the closest face the provider has.
 
 ### 3 · The export, and a list of what it embedded
 
 <Excerpt region="pdf" />
 
-`renderToPdf` calls `onProgress` in three phases: `prepare` once the fonts and the cover are embedded, `pages` after each page, and `save` before it writes the file. It asks the provider only for the faces the pages paint, here five. The status line lists the five files the provider served, exactly the ones in `FONTS`, and no stand-in. A stand-in points to a face missing from `FONTS`. If you remove Crimson Text 600, the line reports `Crimson Text 600 → 400` and the bold *The Harbour Consort* on page 4 prints at regular weight. CodePen's preview cannot show a PDF, so the kit's `offerPdf` replaces the button with two links, one that opens the PDF in a new tab and one that downloads it ([Generating PDFs](/en/docs/configuration#generating-pdfs)).
+`renderToPdf` calls `onProgress` in three phases: `prepare` once the fonts and the cover are embedded, `pages` after each page, and `save` before it writes the file. It asks the provider only for the faces the pages paint, here five. The status line lists the five files the provider served, exactly the ones in `FONTS`, and no stand-in. A stand-in points to a face missing from `FONTS`. If you remove Crimson Text 600, the line reports `Crimson Text 600 → 400` and the bold *The Harbour Consort* on page 4 prints at regular weight. CodePen's preview cannot show a PDF, so the kit's `offerPdf` replaces the button with two links, one that opens the PDF in a new tab and one that downloads it ([Generating PDFs](/en/docs/configuration-programmatic-usage#generating-pdfs)).
 
 ### 4 · The heading tree is the bookmark tree
 
@@ -69,4 +69,4 @@ Point the fetch at your own copies of the same static WOFF2 files, one per weigh
 
 List in `FONTS` every face your pages set, the bold and the italic of the text among them. If one is missing, the screen still looks right, because the kit loads the face without a warning, but the PDF prints the provider's nearest face, and only the stand-ins on the status line reveal the swap.
 
-Use static files, one per weight and style. From a variable WOFF2 the PDF embeds only the default instance, so a bold run would print at regular weight ([Why a font provider?](/en/docs/configuration#why-a-font-provider)).
+Use static files, one per weight and style. From a variable WOFF2 the PDF embeds only the default instance, so a bold run would print at regular weight ([Why a font provider?](/en/docs/configuration-programmatic-usage#why-a-font-provider)).

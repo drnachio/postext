@@ -1,0 +1,377 @@
+{/* docs/configuration-east-asian-en.mdx */}
+
+export const metadata = {
+  title: 'Configuration: East Asian typography',
+  sidebarTitle: 'East Asian typography',
+  description: 'The cjk settings: line breaking, punctuation widths, spacing, the character grid, ruby and the marks of Chinese, Japanese and Korean text',
+  lang: 'en',
+  lastUpdated: '2026-10-10',
+  readingTime: '2 min',
+  order: 7,
+  parent: 'configuration',
+  plainSummary: "This page covers the settings for Chinese, Japanese and Korean text. They decide where a line may break and how wide the punctuation marks are. They set the space between these characters and Latin letters or numbers. They also control the small reading guides printed beside characters, and the marks drawn next to names and titles. The Chinese layout and Japanese layout guides show these settings at work.",
+};
+
+# Configuration: East Asian typography
+
+
+## East Asian typography
+
+The `cjk` property sets how Chinese, Japanese and Korean text is composed: which regional conventions it follows, where its lines may break, how wide its punctuation is set and whether it hangs, the space between Han and Latin, the character grid of the type area, and how the emphasis marks, side lines, ruby readings, warichu notes and kanbun marks of the text print. Every field is optional, and `'auto'` follows the region of the document language (`locale`), so a book with `locale: 'zh-Hant'` breaks its lines and sets its punctuation the Taiwan way, and one with `locale: 'ja'` the Japanese way, without setting anything else. [Chinese layout](/en/docs/chinese-layout) and [Japanese layout](/en/docs/japanese-layout) explain the rules behind these settings, with two complete configurations each. The Japanese fields and values are there since postext 1.16.
+
+```ts
+interface CjkConfig {
+  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'; // Regional conventions.
+  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'
+    | 'ja-very-strict' | 'ja-strict' | 'ja-loose';      // Which marks may not open or close a line.
+  punctuationWidth?: 'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
+  compressAdjacent?: 'auto' | boolean;      // Two marks that meet take 1.5 em.
+  trimLineStart?: 'auto' | boolean;         // Brackets at a line edge lose their outer half.
+  hangingPunctuation?: 'auto' | 'none' | 'allow' | 'force';
+  spaceAfterQuestion?: 'auto' | boolean;    // One em after ？！ inside a paragraph (Japan).
+  paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // A bracket opening an indented paragraph.
+  wordBreak?: 'normal' | 'keep-all';        // keep-all: break only at spaces (分かち書き, Korean).
+  titleMinChars?: number;                   // Characters of a book title on either side of a break; default 2.
+  circledNumbers?: 'cjk' | 'western';       // ① ② as Chinese characters (default) or Latin letters.
+  composeDesignText?: boolean;              // CJK rules in design text; default true.
+  latinSpacing?: Dimension;                 // Between Han and Latin; default 0.25 em.
+  uprightDigits?: 0 | 2 | 3 | 4;            // Vertical text: numbers in one upright cell; default 2.
+  grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
+  emphasis?: 'auto' | 'italic' | 'dots';    // What *…* does to CJK characters.
+  emphasisMark?: {                          // The mark *…* and :dots[…] draw when they do not say.
+    style?: 'auto' | 'dot' | 'circle' | 'sesame';
+    fill?: 'auto' | 'filled' | 'open';
+    position?: 'auto' | 'over' | 'under';
+  };
+  bookTitleMark?: 'auto' | 'brackets' | 'wavy' | 'none'; // What :book[…] prints.
+  bookTitleBrackets?: 'auto' | { open: string; close: string }[]; // The brackets, outermost first.
+  annotationColor?: ColorValue;             // Dots and name/title lines; default the text colour.
+  ruby?: {
+    fontFamily?: string; fontSize?: Dimension; color?: ColorValue;
+    position?: 'auto' | 'over' | 'under' | 'right';
+    overhang?: 'auto' | 'none' | 'kana' | 'any'; // How far a reading may run onto its neighbours.
+    align?: 'auto' | 'center' | 'jis' | 'start'; // How a reading shorter than its base is spaced.
+    smallKana?: 'keep' | 'full';                 // Small kana in readings as written, or full size.
+  };
+  warichu?: { fontSize?: Dimension; color?: ColorValue; open?: string; close?: string };
+  kunten?: { fontSize?: Dimension; color?: ColorValue; placement?: 'inline' | 'interlinear' }; // Kanbun marks.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>region</code></td>
+      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'</code></td>
+      <td><code>'auto'</code></td>
+      <td>The conventions the text follows, after the regions the W3C <a href="https://www.w3.org/TR/clreq/">Requirements for Chinese Text Layout</a> (clreq) describes. <code>'auto'</code> reads the region from <code>locale</code>, or from <code>bodyText.hyphenation.locale</code> when <code>locale</code> is unset: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> and <code>zh-SG</code> give <code>'mainland'</code>; <code>zh-Hant</code> and <code>zh-TW</code> give <code>'taiwan'</code>; <code>zh-HK</code> and <code>zh-MO</code> give <code>'hongkong'</code>; <code>ja</code> and every <code>ja-*</code> tag give <code>'japan'</code>, whose conventions follow the W3C <a href="https://www.w3.org/TR/jlreq/">Requirements for Japanese Text Layout</a> (JLReq); any other language gives <code>'mainland'</code>. The region picks the defaults of every <code>'auto'</code> field below. <code>'japan'</code> set by hand composes any document the Japanese way; the built-in strings and the defaults of the notes and the index still follow the language.</td>
+    </tr>
+    <tr>
+      <td><code>lineBreak</code></td>
+      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict' | 'ja-very-strict' | 'ja-strict' | 'ja-loose'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Which marks may not open or close a line (clreq §6.1.1 and JLReq Appendix C.3; see the tables below). <code>'auto'</code>: <code>'gb'</code> for the mainland, <code>'basic'</code> for Taiwan and Hong Kong, <code>'ja-very-strict'</code> for Japan. Every level can be chosen in any document.</td>
+    </tr>
+    <tr>
+      <td><code>punctuationWidth</code></td>
+      <td><code>'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth'</code></td>
+      <td><code>'auto'</code></td>
+      <td>How wide the full-width marks are set (see <a href="#punctuation-widths">Punctuation widths</a>). <code>'auto'</code>: <code>'kaiming'</code> for the mainland, <code>'fullwidth'</code> for Taiwan, Hong Kong and Japan (in Japan with the JLReq rules for pairs, line ends and middle dots).</td>
+    </tr>
+    <tr>
+      <td><code>compressAdjacent</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Two marks that meet (<code>。」</code>, <code>》（</code>, <code>：“</code>) give up the half em of blank between them, so the pair takes 1.5 em instead of 2. <code>'auto'</code>: on for the mainland, Hong Kong and Japan, off for Taiwan.</td>
+    </tr>
+    <tr>
+      <td><code>trimLineStart</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>An opening bracket or quote that starts a line gives up its leading half em, and a closing one that ends a line its trailing half. <code>'auto'</code>: on for the mainland, Hong Kong and Japan, off for Taiwan. In Japan a closing mark keeps its half em at the line end until the line needs it (see <a href="#punctuation-widths">Punctuation widths</a>).</td>
+    </tr>
+    <tr>
+      <td><code>hangingPunctuation</code></td>
+      <td><code>'auto' | 'none' | 'allow' | 'force'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Whether a pause or stop mark may hang past the end of the line (see <a href="#hanging-punctuation">Hanging punctuation</a>). <code>'auto'</code>: <code>'allow'</code> in Japan (、。，． only), <code>'none'</code> elsewhere. Up to postext 1.15 the default was <code>'none'</code>, which <code>'auto'</code> still is outside Japan.</td>
+    </tr>
+    <tr>
+      <td><code>spaceAfterQuestion</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>One em of space after a full-width ？ or ！ (‼⁇⁈⁉ too, and after a note marker glued to them) inside a paragraph, as Japanese sets it (JLReq §3.1.6): not before a closing bracket or another such mark, not at the end of a paragraph, and dropped at the end of a line. A U+3000 or a space the author typed there becomes that space. It never stretches or shrinks. <code>'auto'</code>: on in Japan, off elsewhere.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphStartBracket</code></td>
+      <td><code>'auto' | 'indent' | 'half' | 'flush'</code></td>
+      <td><code>'auto'</code></td>
+      <td>How an opening bracket that starts a paragraph with a first-line indent is set (JLReq §3.1.5): <code>'indent'</code> keeps the indent and gives the bracket its em after it (pattern ①); <code>'half'</code> lets the bracket give up the blank before its glyph, which then fills the second half of a one-em indent, the text starting where the other paragraphs' text starts (pattern ③); <code>'flush'</code> sets the bracket at the edge with no indent (天付き). A paragraph with no indent or a hanging indent is left alone. <code>'auto'</code>: <code>'half'</code> in Japan; elsewhere the bracket is set as at any line start, as before.</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>'normal'</code></td>
+      <td>Where a line breaks between two characters. <code>'keep-all'</code> breaks only at a space (U+0020, U+3000) and next to punctuation where <code>lineBreak</code> allows it (after 、。」, before 「), never between two letters (kana, kanji, hangul, Latin): for kana written with a space between phrases (分かち書き), as in picture books and first readers, and for Korean. A phrase longer than the line is broken inside it as <code>'normal'</code> would break it. A paragraph style may set its own (<code>wordBreak</code>). Since postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>titleMinChars</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>How many characters of a book title a line break leaves on either side of it at least: inside <code>《…》</code> or <code>〈…〉</code>, typed or added by <code>bookTitleMark</code>, and inside a <code>:book[…]</code> title set with the wavy line or bare. At 2 no line ends on <code>《說</code> with <code>文》</code> opening the next, and a title of three characters or fewer is never broken; a title of up to twice this less one never is. The rule gives way when a line has no other break (a title longer than the line still breaks inside, where <code>lineBreak</code> allows). <code>1</code> lets a line break anywhere the level allows. A configuration stored before postext 1.25 (<code>configVersion</code> 10 or older) in a book that sets a title is read with <code>1</code>. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>circledNumbers</code></td>
+      <td><code>'cjk' | 'western'</code></td>
+      <td><code>'cjk'</code></td>
+      <td>How the circled, parenthesized and full-stop numbers and letters are set in a CJK paragraph: ①–⑳, ⑴–⒇, ⒈–⒛, ⓐ–ⓩ and the rest of U+2460–U+24FF, and the dingbat numbers ❶–❿, ➀–➓. <code>'cjk'</code>: as Chinese characters, one cell with no Han–Latin space around them, and no line ends on one, since it numbers the text after it: at every <code>lineBreak</code> level that keeps a currency sign off a line end (all but <code>none</code> and <code>ja-loose</code>). <code>'western'</code>: as Latin letters, with the Han–Latin space on both sides, and a line may end on one. Vertical text stands them upright either way. A configuration stored before postext 1.25 in a book that sets one is read with <code>'western'</code>. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>composeDesignText</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether design text in Chinese or Japanese (heading designs and openers, running heads and folios, page designs, part pages) is set with the rules of the body: the line-start and line-end rules of <code>lineBreak</code>, the mark widths of <code>punctuationWidth</code> and <code>compressAdjacent</code>, <code>latinSpacing</code>, <code>hangingPunctuation</code> and <code>titleMinChars</code>. A row of the text (the lines between two <code>\n</code>) is set this way when it holds more CJK letters than word spaces, as a paragraph would be; other rows are wrapped at spaces as before. Explicit line breaks, <code>paragraphIndent</code>, drop caps and inline marks keep working; the lines stay ragged (not spread between characters) and readings, warichu and emphasis marks print as plain text. <code>false</code> wraps such text at spaces with every mark at the font's own width. A configuration stored before postext 1.25 whose text holds CJK is read with <code>false</code>. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>latinSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>&#123; value: 0.25, unit: 'em' &#125;</code></td>
+      <td>The space between a Han character and a Latin letter or digit next to it, in em of the CJK text's size or any length; <code>0</code> turns it off (see <a href="#space-between-han-and-latin">Space between Han and Latin</a>).</td>
+    </tr>
+    <tr>
+      <td><code>uprightDigits</code></td>
+      <td><code>0 | 2 | 3 | 4</code></td>
+      <td><code>2</code></td>
+      <td>Vertical text: a number of at most this many digits stands in one upright cell (tate-chu-yoko), unless it sits in a Latin sentence, whose words it then follows sideways; <code>0</code> turns it off (see <a href="#numbers-in-vertical-text">Numbers in vertical text</a>).</td>
+    </tr>
+    <tr>
+      <td><code>grid</code></td>
+      <td><code>&#123; enabled?, charsPerLine?, linesPerPage?, show? &#125;</code></td>
+      <td>off</td>
+      <td>The type area in characters per line and lines per page (see <a href="#character-grid">Character grid</a>).</td>
+    </tr>
+    <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'dots'</code></td>
+      <td><code>'auto'</code></td>
+      <td>What Markdown emphasis (<code>*…*</code>) does to Chinese and Japanese characters: <code>'dots'</code> sets an emphasis mark beside each, as <code>:dots[…]</code> does (the shape and side of <code>emphasisMark</code>), and Latin letters in the same emphasis keep their italics; <code>'italic'</code> slants them, which a CJK face can only fake. <code>'auto'</code>: <code>'dots'</code> when the document language is Chinese or Japanese, <code>'italic'</code> otherwise (see <a href="#marks-ruby-and-warichu">Marks, ruby and warichu</a>).</td>
+    </tr>
+    <tr>
+      <td><code>emphasisMark</code></td>
+      <td><code>&#123; style?, fill?, position? &#125;</code></td>
+      <td><code>'auto'</code> each</td>
+      <td>The mark that <code>*…*</code> and a <code>:dots[…]</code> without attributes draw: <code>style</code> <code>'dot'</code>, <code>'circle'</code> or <code>'sesame'</code> (﹅); <code>fill</code> <code>'filled'</code> or <code>'open'</code> (auto: open for a circle); <code>position</code> <code>'over'</code> (right of vertical text) or <code>'under'</code> (left of it). Auto: in Japan a filled sesame over the text and right of it in vertical text (JLReq §3.3.9); elsewhere a dot under the text and right of it in vertical text, as before. A mark's own attributes win.</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleMark</code></td>
+      <td><code>'auto' | 'brackets' | 'wavy' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>What <code>:book[…]</code> prints: brackets around the title (<code>bookTitleBrackets</code>), the wavy book-title line under it, or the bare title. <code>'auto'</code>: brackets for the mainland and Japan, the wavy line for Taiwan and Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleBrackets</code></td>
+      <td><code>'auto' | &#123; open, close &#125;[]</code></td>
+      <td><code>'auto'</code></td>
+      <td>The brackets of <code>:book[…]</code> under <code>'brackets'</code>, outermost first; a title nested deeper than the list takes the last pair. <code>'auto'</code> (or an empty list): 『』 then 「」 in Japan, 《》 then 〈〉 elsewhere.</td>
+    </tr>
+    <tr>
+      <td><code>annotationColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the text colour</td>
+      <td>Colour of the emphasis dots and the proper-name and book-title lines; the default of the ruby and warichu colours.</td>
+    </tr>
+    <tr>
+      <td><code>ruby</code></td>
+      <td><code>&#123; fontFamily?, fontSize?, color?, position?, overhang?, align?, smallKana? &#125;</code></td>
+      <td>half-size, <code>'auto'</code></td>
+      <td>The readings of <code>:ruby[…]</code> and <code>&#123;紅樓|hóng|lóu&#125;</code>: face (default the text's), size (default <code>&#123; value: 0.5, unit: 'em' &#125;</code> of the text; zhuyin at 60 % of it), colour, and where they go when a ruby does not say (<code>'auto'</code>: zhuyin right of each character, pinyin and kana over the text in horizontal text and right of it in vertical text). <code>overhang</code>: how far a reading longer than its base may run onto its neighbours: <code>'kana'</code> one ruby character onto kana, ー and the blank side of a mark, half of one onto an opening bracket, nothing onto kanji (JLReq §3.3.8); <code>'any'</code> half a ruby character onto any neighbour without a reading; <code>'none'</code> nothing; auto <code>'kana'</code> in Japan, elsewhere a quarter of the ruby size onto any neighbour without a reading, as before. <code>align</code>: how a reading shorter than its base is spaced: <code>'jis'</code> 1:2:1 (half a unit at the ends, one between), <code>'center'</code> solid and centred, <code>'start'</code> from the base's start; auto <code>'jis'</code> in Japan, <code>'center'</code> elsewhere. <code>smallKana: 'full'</code> sets the small kana of readings full size (<code>'keep'</code>, default, as written). A ruby's own <code>mode</code> and <code>align</code> win.</td>
+    </tr>
+    <tr>
+      <td><code>warichu</code></td>
+      <td><code>&#123; fontSize?, color?, open?, close? &#125;</code></td>
+      <td>half-size; brackets （） in Japan, none elsewhere</td>
+      <td>The two-row notes of <code>:warichu[…]</code>: the note's size (default half an em, so the two rows fill the line's em), its colour, and the brackets set at the text size before its first row and after its last (a note's own <code>open</code> / <code>close</code> win). In Japan an empty <code>open</code> or <code>close</code> (<code>''</code>) sets the note without that bracket.</td>
+    </tr>
+    <tr>
+      <td><code>kunten</code></td>
+      <td><code>&#123; fontSize?, color?, placement? &#125;</code></td>
+      <td>half-size, <code>'inline'</code></td>
+      <td>The kanbun marks of <code>:kunten[…]</code> (返り点, 送り仮名, 竪点): their size (default <code>&#123; value: 0.5, unit: 'em' &#125;</code>, JIS X 4051 §5.5), their colour (default <code>annotationColor</code>, else the text's), and <code>placement</code>: <code>'inline'</code> sets the return marks after their character, taking half an em, as JIS sets them; <code>'interlinear'</code> puts every mark in the line gap, taking no advance. The same in every region (see <a href="#marks-ruby-and-warichu">Marks, ruby and warichu</a>).</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '90px' }}>Level</th>
+      <th>Never at the start of a line</th>
+      <th>Never at the end of a line</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>none</code></td><td>Nothing: a line may break between any two characters, as newspapers in Taiwan and Hong Kong do.</td><td>Nothing.</td></tr>
+    <tr><td><code>basic</code></td><td>Pause and stop marks 、，；：。！？．‼⁇⁈⁉; closing quotes ” ’ 」 』 and brackets ）〕］｝】〗》〉; connectors – ～ ~ and a single — between two words; interpuncts · ‧ ・; iteration marks 々〻ゝゞヽヾ and ー; number units % ‰ ° ℃ ％ and the unit squares ㎡ ㎏ ㏄.</td><td>Opening quotes “ ‘ 「 『 and brackets （〔［｛【〖《〈; currency signs ¥ $ € £.</td></tr>
+    <tr><td><code>gb</code></td><td><code>basic</code>, and the solidus / ／ (GB/T 15834—2011 §5.1.9).</td><td><code>basic</code>, and the solidus.</td></tr>
+    <tr><td><code>strict</code></td><td><code>gb</code>, and the two-em dash —— ⸺ and the ellipsis …… ⋯⋯.</td><td><code>gb</code>.</td></tr>
+  </tbody>
+</table>
+
+The Japanese levels follow the three conventions of JLReq Appendix C.3. At each of them no line ends with an opening bracket or quote, a currency sign stays with its number (except at <code>ja-loose</code>), the solidus has no rule, and ——, ―― and …… may open a line but never split (nor do 〳〵):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>Level</th>
+      <th>Never at the start of a line</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ja-very-strict</code></td><td>Closing brackets and quotes; 、，。．; the hyphens ‐ – ゠ 〜 ～; ？！‼⁇⁈⁉; ・：；; the iteration marks ゝゞヽヾ〻 and 々; ー; the small kana ぁぃぅぇぉっゃゅょゎゕゖ ァィゥェォッャュョヮヵヶ ㇰ–ㇿ (and their half-width forms); units ％ ℃. JIS X 4051's default.</td></tr>
+    <tr><td><code>ja-strict</code></td><td><code>ja-very-strict</code>, less the small kana, ー and 々 (JLReq's general books).</td></tr>
+    <tr><td><code>ja-loose</code></td><td>Closing brackets and quotes, 、， and 。． only (newspapers).</td></tr>
+  </tbody>
+</table>
+
+At every level:
+
+- —— and …… are one unit two ems wide and never split; two such units in a row may part between them.
+- A number keeps its signs and its unit (¥5,999, 50%, 50％, 120㎡), also across a space (−3 ℃, 50 %), and a Latin word stays whole: Western text between CJK characters is set as a run a line never breaks inside, unless the run alone is wider than the line (it is then divided at a syllable with a hyphen, or at the last character that fits; a web address at its joints). The unit squares ㎡ ㎏ ㎞ ㏄ (U+3371–337A, U+3380–33DF, U+33FF) belong to the run of their number and do not make a Latin paragraph CJK.
+- A number or a word in fullwidth digits and letters (１２３４５６, ５０％, ￥５９９, ３．１４, １２：３０, ＡＢＣ) never splits either; a justified line still spreads its characters as it spreads Han.
+- A word space is a break only where the rules allow one: the line does not break there when the next character may not open a line (`参见图表 （ 第三章 ）` never opens a line with ）) or the last one before it may not close one.
+- A footnote marker, a `:ref` and a superscript or subscript stay with the character before them.
+- The ideographic space U+3000 is a character one em wide: a line may break after it, never before; it is never stretched and never dropped at the start of a line. For the two-character indent of Chinese paragraphs set `bodyText.firstLineIndent: { value: 2, unit: 'em' }` rather than typing two U+3000 (the parser drops the ones a paragraph opens with).
+
+When a character does not fit the line and may open the next one, it goes down and a justified line spreads what is left. When it may not open the next line (a comma, a closing bracket, the character after an opening one), the line first tries to take it by compressing (push-in, clreq §6.2.2.3): if the blank it may give up — see [Punctuation widths](#punctuation-widths) — covers the overflow, the character (with the marks that must stay with it, a closing quote after a full stop) goes on the line and the line is set to the measure. Otherwise the line gives up characters to it (push-out): the break moves back to the last place the rules allow, and a justified line spreads what is left. In a line narrower than a number with its full stop, nothing may end the line, and it breaks before the full stop after all.
+
+Which paragraphs this applies to: those that hold more CJK characters (Han, kana, bopomofo, hangul) than word spaces, even with no two of them in a row (`第1条、第2条`, `价¥5,999。好`). A space next to a CJK character or mark is not a word space: `2026 年 9 月 28 日` is composed as `2026年9月28日` is. They are set line by line, on the plain and the formatted path alike, so a paragraph with a bold word breaks exactly as the same text without it. A Latin paragraph that quotes a Chinese title or name has more spaces than characters: it keeps optimal line breaking, and a line may break next to its CJK characters under the same rules. Captions, table cells, notes and boxes break at the document's level too. Dictionary hyphenation does not reach the Latin words of a CJK paragraph.
+
+A justified CJK line that is not the last of its paragraph is spread to the measure, in this order (clreq §6.2.2.4): the spaces between Western words, up to half an em each; the spaces between Han and Latin, up to half an em each; then every gap between characters, and those spaces, equally. No space goes inside a Latin word, a number or a two-em mark, nor next to a connector or a solidus. The spacing is set per segment of the line (`VDTLineSegment.tracking`, px after each character, part of the segment's `width`), which the canvas, HTML and PDF output paint as letter spacing; a Latin word followed by a gap gives its last letter a segment of its own. A segment holds one Western run, or characters of one style, link and spacing that advance alike, so the Sandbox spreads its width evenly over them when it places the cursor, and a link covers only its own characters. When a line would need more than half an em between its characters (or more than `bodyText.maxJustifyTracking`, when that is set), it is set with that much and ends short of the measure: the line is flagged `cjkLoose` and `ragged`, and the build reports a `cjkLooseLine` content warning with the line's text. A long Latin word or web address that cannot come up is the usual cause. A line with no CJK character on it (the head of a long web address) is set ragged without the warning, as a Latin line of one word is. See [Hyphenation &amp; Justification](/en/docs/justification#chinese-japanese-and-korean).
+
+### Punctuation widths
+
+A full-width Chinese mark is half an em of glyph and half an em of blank, and what the settings adjust is the blank, never the glyph (clreq §6.3.2). The blank sits before the glyph of an opening bracket or quote, after the glyph of a closing one, and after the glyph of the mainland's pause and stop marks 、，。．；：？！, which sit in the corner of their box; the marks Taiwan and Hong Kong centre (、，。．；：) and interpuncts keep a quarter em on each side. `？！` stay one em in horizontal Taiwan and Hong Kong text, and `：；？！` in vertical text everywhere. The mainland interpunct is half an em under every style, centred, in both writing modes (GB/T 15834, clreq §5.1): a full-width glyph gives up its blank on both sides, and in vertical text its cell is half an em to begin with.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>Style</th>
+      <th>Inside the line</th>
+      <th>At the end of the line</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fullwidth</code> (全角式)</td><td>Every mark one em.</td><td>One em; a closing bracket half, with <code>trimLineStart</code>.</td></tr>
+    <tr><td><code>kaiming</code> (开明式)</td><td>。．？！ one em; ，、；：, brackets, quotes and interpuncts half an em. Most mainland books.</td><td>Every mark half an em.</td></tr>
+    <tr><td><code>lineEndHalf</code> (行末半角)</td><td>Every mark one em.</td><td>Every mark half an em (GB/T 15834—2011 §5.1.10 read literally).</td></tr>
+    <tr><td><code>halfwidth</code> (半角式)</td><td>Every mark half an em, as in dictionaries.</td><td>Half an em.</td></tr>
+  </tbody>
+</table>
+
+In Japan (`punctuationWidth: 'fullwidth'`, the auto value) the marks follow JLReq §3.1 instead: 、，。． keep their blank after the glyph, ：； and ・ a quarter em on each side, and ？！ fill their em. A closing mark at the end of a line keeps its half em, and gives it up whole, first of all, when the line must take in one more character; the blank after 。 is never reduced inside the line. A line gives space back in the order of JLReq §3.8.3: word spaces, the blank of the mark ending the line, middle dots, brackets and 、，, then the space between Japanese and Latin; and it is spread without adding space after an opening bracket, before a closing one or next to 、。・：；？！ and U+3000 (§3.1.11). 、 and ・ between two kanji numerals are set solid and never break (二、三日, 三・一四). A Japanese document given another `punctuationWidth` (`kaiming`, `halfwidth`…) follows the clreq rules of this section instead.
+
+With `compressAdjacent`, two marks that meet give up the blank between them (the eight rules of the earlier clreq drafts): a closing bracket after another closing one or after a mainland pause or stop mark (`。」`, not after the centred marks of Taiwan and Hong Kong), a pause or stop mark after a closing bracket (`」，`), an opening bracket after any of them or after another opening one (`，「`, `》（`, `「『`), and a quarter em between an interpunct and a closing bracket before it or an opening one after it. Never more than takes the pair to 1.5 em: under Kaiming `。”` already takes 1.5 em and keeps it, `》（` takes one em. Kaiming sets a stop's blank after a closing mark that follows it, with `compressAdjacent` or without: the two glyphs sit together and the half em comes after the quote (`。”␣母`, not `。␣”母`), and it goes at the end of a line as a stop's does. With `trimLineStart`, an opening bracket that starts a line gives up its leading blank, so its ink lines up with the text edge (on the first line of a paragraph it sits half an em into the indent), and a closing one that ends a line its trailing blank. A centred mark gives up a quarter em on each side, never half on one. When a line breaks between two marks, neither keeps the compression: each is set as a mark at a line edge (a full-width `，` whose `「` opens the next line ends its own line a full em).
+
+A line takes in a character that may not open the next line (push-in) when the blank it may still give up covers the overflow, in clreq's order: word spaces down to a quarter em, then interpuncts, brackets, pause marks, the spaces between Han and Latin down to an eighth of an em, and stop marks last, each step shared equally. `kaiming` lets only its stop marks go down to half an em, and only in this case: a line that is merely short of one more character is spread, so 。？！ keep their em inside the line. `lineEndHalf` lets every mark go down to half an em; `fullwidth` marks give up nothing (a full-width book keeps its grid), and `halfwidth` marks have nothing left.
+
+The marks Latin text shares with Chinese (“ ” ‘ ’ … — ·) take the box of a Chinese mark in Chinese text, whatever the font's own advance: LXGW WenKai draws “ ” 0.35 em wide, Noto Serif SC the em dash at 0.89 em and · at a third of an em. They count as Chinese when the nearest character on either side (past other such marks) is Chinese, or when nothing next to them is Western. An opening quote's glyph sits at the end of its one-em box, a closing one's at its start; an interpunct, an ellipsis and a single dash sit in the middle; an ellipsis pair (……) is set as the font sets the two together and centred in its two ems. A 破折号 (——) is one unbroken rule: each dash is stretched over its em from the face's own side bearing, the two strokes overlapping at the join, and raised to the centre of the characters (`VDTLineSegment.inkScale`, a paint-only scale). The style then adjusts the box like any other mark's. With Western text on both sides (`他说：He said “yes” and left.`) they keep the font's advance, and a glyph that is already one em wide changes nothing.
+
+The renderers keep the browser's own punctuation spacing out of the text. Chrome sets the first of two marks that meet half width when it measures or paints them in one run (`本）》录` in Noto Serif SC is 3.5 em that way), so two marks that meet are measured and painted apart, and HTML lines of CJK text carry `text-spacing-trim: space-all` and `text-autospace: no-autospace` with the `chws`, `halt` and `vchw` features off.
+
+In the VDT a mark that gave up blank is a segment of its own, its `width` the advance it keeps, with `inkOffset` (px) set: the renderers paint its glyph at `x + inkOffset`, so a mark that gave up the blank before its glyph (an opening bracket at a line start) is drawn that far before its box (a negative offset). A shared mark set in a Chinese box carries the place of its glyph in the box, less any blank given up before it, which may be positive. The PDF shows such a glyph with a character spacing that ends its advance where its box ends, so a reader never sees it run over the next character, and puts its line in an `/ActualText` span (see [Space between Han and Latin](#space-between-han-and-latin)). The region decides which side a mark's blank is on, not the font: set a book in a face of its region (Noto Serif SC for the mainland, TC for Taiwan, HK for Hong Kong); a Traditional font under a mainland tag compresses the wrong side of its centred marks.
+
+### Hanging punctuation
+
+`hangingPunctuation: 'allow'`, the auto value in Japan, lets one of 、，。． (on the mainland, whose marks sit at the start of their box, also ；：？！) hang past the end of the line when it would otherwise open the next one and compressing the line cannot take it in; never in horizontal Taiwan and Hong Kong text, whose centred marks would look cut off (in vertical text they may). In vertical text the hung mark sits under the foot of the line. `'force'` hangs such a mark whenever it ends a line (but the last line of a paragraph), and at once when it does not fit. A mark never hangs when another mark touches it (`。」`, `，「`). The hung segment is flagged `hangs`; the line's `bbox.width`, its justification and its alignment leave it out, and the canvas and PDF widen the column clip by the widest hung mark (`hangingPunctuationOverhang`), so it is never cut. Most Chinese books do not hang punctuation; clreq recommends it only with a character grid. Japanese books hang 、。，． (burasagari), never ；：？！ or brackets, in both writing modes, and only when compressing the line cannot take the mark in.
+
+### Space between Han and Latin
+
+`latinSpacing` (default a quarter em) sets a space between a Han character (or kana) and a Latin letter or European digit next to it: `用iPhone拍照` and `1999年` are set `用 iPhone 拍照` and `1999 年`. There is none at the start or end of a line, none between a Latin character and a Chinese mark (`用iPhone，` sets nothing before the comma), none inside Chinese brackets (`（iPhone）`), and none next to a sign that is no letter or digit (`为¥5,999`). A space the author typed at such a boundary (`用 iPhone 拍照`, as many web texts carry it) is replaced by the Han–Latin space, not added to, so the two spellings set alike; a no-break space or an ideographic space is left as it is. On a justified line it grows up to half an em before the characters are spread; on a line taking in a character that may not open the next line it shrinks down to an eighth of an em. A length in any unit other than em is converted at the page's dpi. `0` turns it off, and a space typed there stays a word space.
+
+The space is a segment of `kind: 'space'` flagged `autospace`, with empty `text` (or the space the author typed); its `width` is final, and the renderers' own space justification leaves it as it is. It is never in the plain text, so search, copy and paste and source ranges read the text as written. The PDF puts every line set in pieces (spread characters, Han–Latin spaces, marks that gave up blank or hang) in a `/Span` whose `/ActualText` is the line's text, so text extraction reads `用iPhone拍照`, not `用 iPhone 拍 照`, and reads a line with half-width marks as one line.
+
+### Numbers in vertical text
+
+In vertical text a Latin word or a long number is turned sideways, and a short number stands upright, its digits side by side in one cell of one em: tate-chu-yoko (縱中橫, [clreq §2.1.3](https://www.w3.org/TR/clreq/#x2-1-3-mixed-text-composition-in-vertical-writing-mode), [CSS `text-combine-upright`](https://www.w3.org/TR/css-writing-modes-4/#text-combine-upright)). `uprightDigits` sets how many digits such a number may have: `2` (the default), `3`, `4`, or `0` for none. `2026年9月28日` under `2` is 2026 sideways, 9 upright, and 28 upright in one cell.
+
+- The whole number or none of it: under `2` a three-digit number stays sideways, never split.
+- A number that touches a Latin letter (`A4`, `mp3`, `3D`) stays in its word, sideways; so does a number written with a decimal point or digit grouping (`3.14`, `10,000`).
+- A number inside a Latin sentence follows the sentence: when a Latin word lies on both sides of it, it runs sideways with the words (`printed in 49 and 32 copies`, `chapters 49, 32 and (7) of`). On each side the look goes past spaces, other numbers, note markers, the punctuation of a sideways run (`, . : ; ( ) ' " - /`), the en and em dashes and the curly quotes (`pages 3–5 of`, `the “49” copies`) to the first letter or Chinese character. A number whose marks lead to Chinese text stands (`上午12:30:45开会`, `比分为3:2:1`, `见图(3)所示`, `他住在"12"号楼`), and so does one next to a Chinese character or mark, spaced or not (`第 3 回`, `用iPhone 15拍攝`, `第3 copies`), one beside a sign that stands upright (`a 30×40 print`), and one at the start or the end of a paragraph, which has a word on one side only (`49 copies were printed`, `on page 7.`: write `:sideways[…]` to turn it). The paragraph is read whole, across line breaks, emphasis and links.
+- Next to a sign Unicode sets upright each number takes its own cell: `30×40` is 30, ×, 40, all upright.
+- A cell of more characters than fit an em is squeezed across to the em; tracking and justification never go inside it, only after it.
+- For breaking and justifying, the cell counts as one Chinese character, and no Han–Latin space is set around it.
+- In Japan the pairs `!!`, `!?`, `?!` and `??`, half-width or full-width, stand in one upright cell too (`すごい！？`), unless a Latin letter, a digit or a third mark touches them; a full-width pair is painted with the half-width marks. Small kana, ：；, “ ” (painted 〝〟) and ・ take the Japanese vertical forms (see [Japanese layout › Vertical forms](/en/docs/japanese-layout#vertical-forms)).
+- The measurer and every renderer find the same cells: the canvas paints the digits turned back upright and squeezed, the PDF likewise with the horizontal font, and the HTML wraps them in `text-combine-upright: all`.
+
+By hand, three inline marks override the setting in vertical text and change nothing in horizontal text (see [Document format › Orientation in vertical text](/en/docs/document-format#orientation-in-vertical-text)):
+
+```markdown
+第:tcy[120]回、:upright[GDP]與:sideways[12]
+```
+
+`:tcy[…]` sets its text in one upright cell, `:upright[…]` stands each character upright in a cell of its own (Latin letters centred in it), `:sideways[…]` turns the whole run, Chinese characters too. In the VDT a `:tcy` run is a segment with `tcy: true`, one em wide; an `:upright` or `:sideways` run carries `orientation`. The numbers set in one cell by `uprightDigits` carry no flag: `verticalRuns(graphemes, region, uprightDigits)` finds them. In a paragraph, a short number that runs with Latin words carries `orientation: 'sideways'`, as if written `:sideways[…]`: its segment does not always hold the words it runs with.
+
+### Character grid
+
+A Chinese type area is specified in characters (clreq §7.1.1): the body size × characters per line × lines per page, plus the line gap and, with two columns, the gutter. `grid` sets it that way:
+
+```ts
+cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
+```
+
+When `enabled`, the configuration is rewritten before anything reads it: each column is `charsPerLine` ems of `bodyText.fontSize` wide, and the type area `linesPerPage` lines of `bodyText.lineHeight` tall; with `layoutType: 'double'` the gutter is `layout.gutterWidth` rounded to a whole number of ems, at least one. The margins in `page.margins` act as minimums: the type area is placed in the middle of the area they leave, each margin grown by half the room left over along its axis (a mirrored book keeps its inner and outer margins apart, both grown by the same amount). Left unset, `charsPerLine` and `linesPerPage` take as many as fit. A number larger than fits is reduced to what fits and reported as a `cjkGridClamped` config warning. The font size and line height stay as written. In a `oneAndHalf` layout `charsPerLine` is the main column's; the side column takes the whole number of ems nearest the width `sideColumnPercent` gives it inside the configured margins (at least one), the gutter is rounded like a two-column one, and `sideColumnPercent` is rewritten so both columns are cut in whole ems. In vertical text (`layout.writingMode: 'vertical-rl'`) the characters of a line run down the page and the lines across it, so `charsPerLine` measures the page's height, a `double` layout gives two tiers stacked top to bottom, and the overlay's cells stand on the axis the characters are centred on.
+
+Two layouts from Chinese practice, at 五号 (10.5 pt) with a 6 pt line gap (`lineHeight: 16.5pt`):
+
+- 大32开, 140 × 203 mm, 28 × 28: a 294 pt measure (103.7 mm) and a 462 pt type area (163 mm); `page.margins` of 16/20 mm inside and outside and 18/20 mm top and bottom leave room for it.
+- 16开, 184 × 260 mm, two columns of 23 characters at 小五 (9 pt, 13.5 pt lines) with a two-character gutter: 2 × 207 pt + 18 pt.
+
+`show` draws the grid (稿纸) over the type area, one light grey square per character position on each line (the character's em box around its baseline), on each column of the page (a `oneAndHalf` side column on the side the page's parity puts it), on the canvas and in the HTML. The PDF draws it only when `renderToPdf` is given `characterGrid: true`: it is a screen aid. `cjkGridGeometry(config)` returns the grid a config sets (numbers in use, margins, type area) and `applyCjkGrid(config)` the rewritten config.
+
+### Marks, ruby and warichu
+
+The markup of [Chinese marks, ruby and warichu](/en/docs/document-format#chinese-marks-ruby-and-warichu) keeps its text in the paragraph: search, the contents, index anchors and copied text read the characters as written, and only what is drawn around them depends on these settings.
+
+- **Emphasis dots** (着重号, 傍点; `:dots[…]`, and `*…*` on CJK characters under `emphasis: 'dots'`) take one mark per character, centred on it (the spacing of a justified line left out), never on punctuation or spaces: under the character in horizontal text, right of it in vertical text (clreq §5.3.1). `style` picks a filled dot, an open circle or a sesame dot, `fill="open"` draws the outline, `pos="over|under"` the side; `emphasisMark` sets what a mark leaves unset (in Japan a sesame over the text, right of it in vertical text). A sesame stands the same way on the sheet in both writing modes, and marks on the side of a ruby reading go outside it.
+- **Side lines** (傍線, `:sideline[…]{style pos}`) run beside the text, punctuation and spaces included: `solid`, `double`, `wavy` or `dotted`, under the text across the page and right of it down the page by default; two lines that meet each give up an eighth of an em. They work in any script.
+- **Proper-name and book-title lines** (专名号 `:name[…]`, 书名号 `:book[…]` under `bookTitleMark: 'wavy'`) run under the characters' em box (left of it in vertical text), across the spaces inside the run. Where two runs meet, each end gives up an eighth of an em, so `:name[賈寶玉]:name[林黛玉]` reads as two names. When dots and a line mark the same text on one side, the line is nearer the text. Under `'brackets'` the 《》 are text the lines are broken with, painted and copied like any other character; they take no character of the plain text or the source map (the segments are flagged `inserted`).
+- **Ruby** readings sit in the line gap against the base's em box, centred on it; a reading that holds a Latin letter (pinyin) and stands over its base is raised by the depth of its face's descenders (g, j, p, q, y) and 0.04 em of the text more, so that they clear the base, and every reading of the line keeps one baseline; a reading wider than its base widens the base's box less a quarter of the ruby em it may pass onto a neighbour without a reading, and two readings keep a quarter of the ruby em apart (two zhuyin readings a quarter of the symbols' em, so three symbols beside each of two characters stay in their cells). A mono ruby (one reading per character) may break between its characters; a group ruby never breaks. In Japan a reading follows `ruby.align` and `ruby.overhang` instead: spaced 1:2:1 when it is shorter than its base, running onto kana but not onto kanji when it is longer, the rest of the room coming from spacing the base out; a per-character ruby of two or more characters is jukugo ruby, each character keeping its reading, which may run onto the next character of the word but never overlaps another reading, the line still breaking between them (JLReq §3.3). At a line start or end, base and reading align to the edge (clreq §5.5.4). Zhuyin in horizontal text stands in a column right of each character, and the character's box grows by the column; in vertical text the same column runs down the right of the characters. The tone mark goes right of the column with half of its ink above the top of the last symbol (clreq §5.5.3.3), placed by its ink because fonts set these marks high in their em box, and in vertical text it stands upright, like the neutral-tone dot above the first symbol.
+- **Warichu** notes (双行夹注) fold into two rows at the note size, centred on the line with no gap between them. The upper row takes characters until it holds at least half of the part, so the second row is never the longer, and one more while the lower row would open with a mark that may not start a line. A note longer than the room left on a line fills it and goes on with the next line, column or page; its brackets go only before its first row and after its last. In vertical text the upper row is the right one, read first.
+- **Kanbun marks** (`:kunten[字]{kaeri okuri tate}`) set the return marks of the last character at the foot side of the line after it (lower left in vertical text), its okurigana on the head side from its middle, longer ones pushing the next character on, and the tatesen as a short rule to the next character (JIS X 4051 §5). Copied text and the PDF's `/ActualText` read the okurigana after their characters and leave the return marks out; a line gap too narrow for them is reported as `kuntenExceedsLeading`.
+
+The line pitch never changes: marks and readings live in the leading. A paragraph whose line gap (line height less the text size) is under half an em with marks on one side, or five eighths with marks on both sides (clreq §5.6.1), is reported as a `cjkMarksExceedLeading` content warning; one whose readings are taller than its gap (a pinyin reading counted with its lift), as `rubyExceedsLeading`. Give such paragraphs a paragraph style with more leading. Japanese books with furigana usually set a body line height of about 1.75 em (JLReq §2.4.2).
+
+In the VDT a marked segment carries `cjkMarks`, and the layout places the dots and lines on its lines as `VDTLine.marks` (dots, circles, sesames, straight, double, dotted and wavy lines, in the line's flow frame), which the canvas, HTML and PDF draw as they are (PDF: `Artifact /Layout`; HTML: `aria-hidden` boxes, dotted text in `<em>`). A ruby base's segment carries `ruby` (the reading and its runs; for a Japanese reading also the `id` its annotation shares with the other characters of a jukugo word, and `jukugo`) and paints its base at `inkOffset`, with `tracking`, when the reading spread it; a character with kanbun marks carries `kunten` (its runs and its tatesen); a warichu note's part on a line is one segment whose `text` is its upper row then its lower one and whose `warichu` holds the rows the renderers paint instead. Tagged PDF puts a reading in the `RT` of its base's `Ruby` and a note in a `Warichu`, and the line's `/ActualText` reads the base text and the note once. Marks, readings and notes are drawn in body text, headings, lists and boxes, and in the captions, table cells and notes of resources, whose lines carry `marks` and `ruby` as body lines do; design text keeps the text without them.
+
+Resolver and stripper match the other sections. `spaceAfterQuestion`, `paragraphStartBracket` and `wordBreak`, and the ruby's `overhang`, `align` and `smallKana`, are in the resolved config only when they change something (in Japan, or when set). `setCjkLineBreak` and `setCjkComposition` set the level and the composition (punctuation widths, hanging, the Han–Latin space; `cjkCompositionOf(resolved.cjk, dpi)`) for measurements made outside `buildDocument`, which sets them from the config. Outside a build, marks keep their full advance and no Han–Latin space is set:
+
+```ts
+import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
+
+resolveCjkConfig(undefined, 'zh-HK');
+// { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' }, uprightDigits: 2,
+//   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false },
+//   emphasis: 'dots', emphasisMark: { style: 'dot', fill: 'auto', position: 'auto' },
+//   bookTitleMark: 'wavy', bookTitleBrackets: [{ open: '《', close: '》' }, { open: '〈', close: '〉' }],
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' }, kunten: { … } }
+
+resolveCjkConfig(undefined, 'ja');
+// { region: 'japan', lineBreak: 'ja-very-strict', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'allow', spaceAfterQuestion: true, paragraphStartBracket: 'half', …,
+//   emphasisMark: { style: 'sesame', fill: 'auto', position: 'over' }, bookTitleMark: 'brackets',
+//   bookTitleBrackets: [{ open: '『', close: '』' }, { open: '「', close: '」' }],
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto', overhang: 'kana', align: 'jis' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '（', close: '）' }, kunten: { … } }
+```
+
+In the Sandbox these settings are in **Design › Writing system › East Asian typography**.

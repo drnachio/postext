@@ -16,19 +16,19 @@ Quatro páginas de uma nova edição do *Sailor’s Word-Book* do almirante Smyt
 
 ### 1 · Dê a cada letra um estilo de título com a sua aba
 
-O código é [a resposta curta](#a-resposta-curta) lá em cima. `TABS` lista 22 abas, e as letras raras dividem uma (QR, UV, XYZ). Cada aba tem a altura de duas linhas do texto (7,34 mm), de modo que juntas preenchem as 44 linhas da mancha. O laço dá a cada letra um estilo de título cujo `header` acrescenta aos cabeços e ao índice claro a aba azul-marinho daquela letra, um degrau abaixo da anterior ([estilos de título](/pt/docs/configuration#estilos-de-título)). Cada célula é escrita duas vezes, uma por `parity`, e ancorada à borda externa da página, não ao contêiner do próprio cabeçalho. Esse contêiner é a margem superior, da largura da mancha e indo do refile até o texto, enquanto as abas precisam chegar ao corte da frente e descer pelas 44 linhas. Uma página recebe o cabeçalho da última seção que começa nela, por isso a <PageRef page={2}>página 2</PageRef> começa no A e mostra a aba do B.
+O código é [a resposta curta](#a-resposta-curta) lá em cima. `TABS` lista 22 abas, e as letras raras dividem uma (QR, UV, XYZ). Cada aba tem a altura de duas linhas do texto (7,34 mm), de modo que juntas preenchem as 44 linhas da mancha. O laço dá a cada letra um estilo de título cujo `header` acrescenta aos cabeços e ao índice claro a aba azul-marinho daquela letra, um degrau abaixo da anterior ([estilos de título](/pt/docs/configuration-styles#estilos-de-título)). Cada célula é escrita duas vezes, uma por `parity`, e ancorada à borda externa da página, não ao contêiner do próprio cabeçalho. Esse contêiner é a margem superior, da largura da mancha e indo do refile até o texto, enquanto as abas precisam chegar ao corte da frente e descer pelas 44 linhas. Uma página recebe o cabeçalho da última seção que começa nela, por isso a <PageRef page={2}>página 2</PageRef> começa no A e mostra a aba do B.
 
 ### 2 · Tire os cabeços da primeira página
 
 <Excerpt region="running-heads" />
 
-Os cabeços são elementos de texto ancorados à página e filtrados por `parity` e `pages: 'body'` ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). O título da página 1 ocupa as duas colunas, o que faz dela uma página de abertura. Os cabeços pulam essa página, e o fólio dela vem do rodapé, um elemento com `pages: 'opener'` que imprime 6 mm abaixo da mancha. Numa página ímpar, `{chapterTitle}` imprime a letra do último título de nível 1 que está na página ou antes dela, *Letter C*. `{firstMark.<key>}` e `{lastMark.<key>}` imprimem no lugar dela o primeiro e o último lema da página, as palavras-guia que a maioria dos dicionários traz; esta receita mantém a letra, que é o que as suas abas indexam.
+Os cabeços são elementos de texto ancorados à página e filtrados por `parity` e `pages: 'body'` ([elementos de texto](/pt/docs/configuration-page-layout#elementos-de-texto)). O título da página 1 ocupa as duas colunas, o que faz dela uma página de abertura. Os cabeços pulam essa página, e o fólio dela vem do rodapé, um elemento com `pages: 'opener'` que imprime 6 mm abaixo da mancha. Numa página ímpar, `{chapterTitle}` imprime a letra do último título de nível 1 que está na página ou antes dela, *Letter C*. `{firstMark.<key>}` e `{lastMark.<key>}` imprimem no lugar dela o primeiro e o último lema da página, as palavras-guia que a maioria dos dicionários traz; esta receita mantém a letra, que é o que as suas abas indexam.
 
 ### 3 · Dê cor aos lemas e a nada mais
 
 <Excerpt region="entries" />
 
-Cada verbete é um parágrafo de um bloco `:::paragraphs{style="entry"}`, com as linhas de continuação em recuo deslocado de 1 em ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). O `boldColor` do texto corrido deixa o **Note.** da página 1 na cor da tinta, e o `boldColor` do estilo de verbete imprime os lemas em azul-marinho. Um estilo de parágrafo não tem `italicColor`, então os subverbetes em itálico ficam na cor do texto corrido.
+Cada verbete é um parágrafo de um bloco `:::paragraphs{style="entry"}`, com as linhas de continuação em recuo deslocado de 1 em ([estilos de parágrafo](/pt/docs/configuration-styles#estilos-de-parágrafo)). O `boldColor` do texto corrido deixa o **Note.** da página 1 na cor da tinta, e o `boldColor` do estilo de verbete imprime os lemas em azul-marinho. Um estilo de parágrafo não tem `italicColor`, então os subverbetes em itálico ficam na cor do texto corrido.
 
 ### 4 · Ponha uma inicial de quatro linhas na coluna
 
@@ -40,7 +40,7 @@ Cada verbete é um parágrafo de um bloco `:::paragraphs{style="entry"}`, com as
 
 <Excerpt region="title" />
 
-O estilo do título ocupa a largura da página com uma faixa que reúne a âncora, o nome, um subtítulo e uma linha de autoria lidos de atributos do título, e um fio duplo ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). O fio fino termina 45,1 mm abaixo do alto da mancha, então a faixa se ajusta a 13 linhas da grade, ou 47,7 mm. O fio entre colunas começa abaixo da faixa, na linha em que começa o texto das duas colunas.
+O estilo do título ocupa a largura da página com uma faixa que reúne a âncora, o nome, um subtítulo e uma linha de autoria lidos de atributos do título, e um fio duplo ([span e design avançado](/pt/docs/configuration-text#largura-e-design-avançado)). O fio fino termina 45,1 mm abaixo do alto da mancha, então a faixa se ajusta a 13 linhas da grade, ou 47,7 mm. O fio entre colunas começa abaixo da faixa, na linha em que começa o texto das duas colunas.
 
 ## Variações
 

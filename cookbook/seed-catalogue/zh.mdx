@@ -22,7 +22,7 @@ Brindlewood Seed Co.（一家虚构的种子农场）的春季价目表，排成
 
 <Excerpt region="split" />
 
-第1页的信用`:ref{id="vegetables" text="the price list"}`引用价目表，`text`用这几个词代替编号印出来。被引用的表会浮动到引用之后的第一个空位，这里是第2页顶部。表在那里放不下，所以引擎在Jimmy Nardello之后的行间把它断开，绝不在合并的类别中间断开。第3页重复表头行和带后缀的题注色带；标记放在第一部分下面，注释放在最后一部分下面（[超过页面高度的表](/zh/docs/configuration#比页面还高的表)）。`parseTSV(tsv, { headerRows: 1 })`把第一行设为表头行，按表头绘制，并在第3页重复。后缀和标记都是斜体，沿用题注的字体，所以色带保持Gelasio；Cabin Condensed没有斜体。
+第1页的信用`:ref{id="vegetables" text="the price list"}`引用价目表，`text`用这几个词代替编号印出来。被引用的表会浮动到引用之后的第一个空位，这里是第2页顶部。表在那里放不下，所以引擎在Jimmy Nardello之后的行间把它断开，绝不在合并的类别中间断开。第3页重复表头行和带后缀的题注色带；标记放在第一部分下面，注释放在最后一部分下面（[超过页面高度的表](/zh/docs/configuration-resources#比页面还高的表)）。`parseTSV(tsv, { headerRows: 1 })`把第一行设为表头行，按表头绘制，并在第3页重复。后缀和标记都是斜体，沿用题注的字体，所以色带保持Gelasio；Cabin Condensed没有斜体。
 
 ### 3 · 每个种子袋一个资源
 
@@ -34,7 +34,7 @@ Brindlewood Seed Co.（一家虚构的种子农场）的春季价目表，排成
 
 <Excerpt region="forms" />
 
-两个表格用具名样式`form`：网格线、外框2.5 mm的圆角，以及供填写的米色底。价目表保留文档的`tableStyle`（[具名表格样式](/zh/docs/configuration#命名表格样式)）。空单元格不需要占位内容，因为它所在的行仍占一行高度，这里是7.3 mm。每个总计行把四栏合并成一个齐右的标签。订货单的标题样式把第4页切换为单栏，所以两个表格都占满157 mm的整个行长。
+两个表格用具名样式`form`：网格线、外框2.5 mm的圆角，以及供填写的米色底。价目表保留文档的`tableStyle`（[具名表格样式](/zh/docs/configuration-resources#命名表格样式)）。空单元格不需要占位内容，因为它所在的行仍占一行高度，这里是7.3 mm。每个总计行把四栏合并成一个齐右的标签。订货单的标题样式把第4页切换为单栏，所以两个表格都占满157 mm的整个行长。
 
 ### 5 · 让信排在画的下方
 

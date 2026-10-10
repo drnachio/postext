@@ -16,7 +16,7 @@ pageNotes: { "1": "第一张稿纸，独自位于左侧：红褐色双线框围�
 
 ### 1 · 画出方格，每个符号占一整格
 
-代码见上文的[简短回答](#简短回答)。[字符网格](/zh/docs/configuration#字格)把版心设为竖向20个20 pt（7.1 mm）的字、横向20行、行距27 pt（9.5 mm），`show: true`用它自己的浅灰色把方格画出来：屏幕上总会画，PDF里只有在`renderToPdf`收到`characterGrid: true`时才画（在书里网格是校样用的辅助线，所以PDF默认不画）；两行之间2.5 mm的窄条，是写作者添读音、改字的地方。日文的标点一半是字形，一半是半个em的空白；印刷的书在两个标点相遇或括号位于行首时会吃掉这些空白。稿纸上每个符号保住自己的格子，所以`compressAdjacent: false`把。」排在两格里，`trimLineStart: false`让行首的括号占一整格（[东亚排版](/zh/docs/configuration#东亚排版)）。
+代码见上文的[简短回答](#简短回答)。[字符网格](/zh/docs/configuration-east-asian#字格)把版心设为竖向20个20 pt（7.1 mm）的字、横向20行、行距27 pt（9.5 mm），`show: true`用它自己的浅灰色把方格画出来：屏幕上总会画，PDF里只有在`renderToPdf`收到`characterGrid: true`时才画（在书里网格是校样用的辅助线，所以PDF默认不画）；两行之间2.5 mm的窄条，是写作者添读音、改字的地方。日文的标点一半是字形，一半是半个em的空白；印刷的书在两个标点相遇或括号位于行首时会吃掉这些空白。稿纸上每个符号保住自己的格子，所以`compressAdjacent: false`把。」排在两格里，`trimLineStart: false`让行首的括号占一整格（[东亚排版](/zh/docs/configuration-east-asian#东亚排版)）。
 
 ### 2 · 遵守稿纸的行规
 
@@ -26,7 +26,7 @@ pageNotes: { "1": "第一张稿纸，独自位于左侧：红褐色双线框围�
 
 <Excerpt region="heading" />
 
-标题是一个与正文字号、字体相同的标题，所以它像其他行一样填格子：`lineSpan: 1`让它保持在网格的一行里，`indent: em(2)`在它上方留两个空格（[按级别覆盖](/zh/docs/configuration#按级别覆盖)）。姓名是一个段落，设`textAlign: 'end'`和`endIndent: em(1)`，让它在底端上方一格结束；姓与名之间的空格在Markdown里写作全角空格：`夏目　漱石`。正文从第三行开始，`firstLineIndent: em(1)`让每段空一格开始。
+标题是一个与正文字号、字体相同的标题，所以它像其他行一样填格子：`lineSpan: 1`让它保持在网格的一行里，`indent: em(2)`在它上方留两个空格（[按级别覆盖](/zh/docs/configuration-text#按级别覆盖)）。姓名是一个段落，设`textAlign: 'end'`和`endIndent: em(1)`，让它在底端上方一格结束；姓与名之间的空格在Markdown里写作全角空格：`夏目　漱石`。正文从第三行开始，`firstLineIndent: em(1)`让每段空一格开始。
 
 ### 4 · 在方格周围印出稿纸
 
@@ -38,7 +38,7 @@ pageNotes: { "1": "第一张稿纸，独自位于左侧：红褐色双线框围�
 
 <Excerpt region="pen" />
 
-Klee One以钢笔书写为基础，汉字保留日本的字形，所以稿纸读起来像手写的，又没有扫描件的那种参差。它的竖排字形把、。放在格子的右上方，并把ー和括号转过来，写作者也正是把它们写在那里。和Fontsource上的所有日文字体一样，它拆成大约120个文件，`loadCjkFonts`只取文本用到的那些（[中文、日文和韩文字体](/zh/docs/configuration#中文日文和韩文字体)）。
+Klee One以钢笔书写为基础，汉字保留日本的字形，所以稿纸读起来像手写的，又没有扫描件的那种参差。它的竖排字形把、。放在格子的右上方，并把ー和括号转过来，写作者也正是把它们写在那里。和Fontsource上的所有日文字体一样，它拆成大约120个文件，`loadCjkFonts`只取文本用到的那些（[中文、日文和韩文字体](/zh/docs/configuration-programmatic-usage#中文日文和韩文字体)）。
 
 ## 变化
 

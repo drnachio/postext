@@ -18,25 +18,25 @@ Nou pàgines d'*Afoot*, una antologia de butxaca amb tres assaigs sobre caminar,
 
 <Excerpt region="opener" />
 
-El `numberingTemplate: '{1:I}'` del nivell numera els assaigs I, II i III, i `{number}` imprimeix el numeral damunt del títol ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). `minHeight` reserva 12 línies de 14 pt i el filet fi acaba 7 mm per sobre d'aquest límit, així que, amb un títol d'una línia, el text comença a 79 mm de la vora superior en totes les obertures. Una segona línia de títol, a 26 pt, hi afegeix 9,9 mm i baixa el text una línia de la retícula; amb `SINK = 14`, el text comença a la mateixa alçada sota títols d'una i de dues línies. El `marginBottom: pt(0)` del nivell impedeix que el marge per defecte del títol se sumi a aquesta reserva.
+El `numberingTemplate: '{1:I}'` del nivell numera els assaigs I, II i III, i `{number}` imprimeix el numeral damunt del títol ([span i disseny avançat](/ca/docs/configuration-text#span-i-disseny-avançat)). `minHeight` reserva 12 línies de 14 pt i el filet fi acaba 7 mm per sobre d'aquest límit, així que, amb un títol d'una línia, el text comença a 79 mm de la vora superior en totes les obertures. Una segona línia de títol, a 26 pt, hi afegeix 9,9 mm i baixa el text una línia de la retícula; amb `SINK = 14`, el text comença a la mateixa alçada sota títols d'una i de dues línies. El `marginBottom: pt(0)` del nivell impedeix que el marge per defecte del títol se sumi a aquesta reserva.
 
 ### 2 · Un índex que s'omple sol
 
 <Excerpt region="contents" />
 
-`:::toc` al Markdown imprimeix una entrada per cada títol inclòs, amb el número, el text del títol, la línia de punts, l'etiqueta de la pàgina i, gràcies a `subtitle`, l'autor. `buildDocument` torna a compondre el llibre fins que les etiquetes de pàgina deixen de canviar, de manera que, si un assaig canvia de títol o d'extensió, l'índex s'actualitza ([índex de continguts](/ca/docs/configuration#índex-de-continguts)). El numeral de cada entrada pren la font i el cos del títol, tret que `numberFontFamily` o `numberFontSize` diguin una altra cosa, i s'assenta a la línia de base de la primera línia del títol amb qualsevol cos. Un llibre amb parts hi afegeix, a més, una fila per cada `:::part`, amb el disseny de `toc.parts.design`, com a <RecipeLink slug="parts-in-colour">Parts en color</RecipeLink>.
+`:::toc` al Markdown imprimeix una entrada per cada títol inclòs, amb el número, el text del títol, la línia de punts, l'etiqueta de la pàgina i, gràcies a `subtitle`, l'autor. `buildDocument` torna a compondre el llibre fins que les etiquetes de pàgina deixen de canviar, de manera que, si un assaig canvia de títol o d'extensió, l'índex s'actualitza ([índex de continguts](/ca/docs/configuration-notes-references#índex-de-continguts)). El numeral de cada entrada pren la font i el cos del títol, tret que `numberFontFamily` o `numberFontSize` diguin una altra cosa, i s'assenta a la línia de base de la primera línia del títol amb qualsevol cos. Un llibre amb parts hi afegeix, a més, una fila per cada `:::part`, amb el disseny de `toc.parts.design`, com a <RecipeLink slug="parts-in-colour">Parts en color</RecipeLink>.
 
 ### 3 · L'autor a la pàgina parella, l'assaig a la senar
 
 <Excerpt region="running-heads" />
 
-Cada capçalera s'ancora a la pàgina, a 11 mm de la vora superior, i `parity` tria el costat: el foli s'alinea amb la vora exterior del text, i el nom o el títol queda 7 mm més endins. El `pages: 'body'` de `head()` deixa les capçaleres fora de les obertures, on la signatura ja anomena l'autor, i l'element del peu amb `pages: 'opener'` hi imprimeix el foli, centrat sota el text ([elements de text](/ca/docs/configuration#elements-de-text)). `{chapterTitle}` imprimeix el títol de l'assaig sense el numeral.
+Cada capçalera s'ancora a la pàgina, a 11 mm de la vora superior, i `parity` tria el costat: el foli s'alinea amb la vora exterior del text, i el nom o el títol queda 7 mm més endins. El `pages: 'body'` de `head()` deixa les capçaleres fora de les obertures, on la signatura ja anomena l'autor, i l'element del peu amb `pages: 'opener'` hi imprimeix el foli, centrat sota el text ([elements de text](/ca/docs/configuration-page-layout#elements-de-text)). `{chapterTitle}` imprimeix el títol de l'assaig sense el numeral.
 
 ### 4 · La coberta i l'índex no compten
 
 <Excerpt region="front" />
 
-Amb `numbered: false`, la coberta i l'índex no fan avançar el comptador, així que Hazlitt és el I, i `toc: false` els deixa fora de la llista ([estils de títol](/ca/docs/configuration#estils-dencapçalament)). Els dos estils hereten el `breakBefore` del nivell, amb paritat `'any'`, i per això l'índex segueix la coberta a la pàgina 2 sense cap `:::pagebreak`. L'estil de la coberta ocupa tota la pàgina encara que el llibre tingui una sola columna, perquè un disseny que es queda a la columna es talla al peu d'aquesta i deixaria 22 mm de paper per sota del paisatge.
+Amb `numbered: false`, la coberta i l'índex no fan avançar el comptador, així que Hazlitt és el I, i `toc: false` els deixa fora de la llista ([estils de títol](/ca/docs/configuration-styles#estils-dencapçalament)). Els dos estils hereten el `breakBefore` del nivell, amb paritat `'any'`, i per això l'índex segueix la coberta a la pàgina 2 sense cap `:::pagebreak`. L'estil de la coberta ocupa tota la pàgina encara que el llibre tingui una sola columna, perquè un disseny que es queda a la columna es talla al peu d'aquesta i deixaria 22 mm de paper per sota del paisatge.
 
 ### 5 · Cada color escrit amb el seu enllaç a la paleta
 

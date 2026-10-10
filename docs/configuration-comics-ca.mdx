@@ -1,0 +1,542 @@
+{/* docs/configuration-comics-ca.mdx */}
+
+export const metadata = {
+  title: 'Configuració: còmics',
+  sidebarTitle: 'Paràmetres de còmics',
+  description: 'Els paràmetres de comics: el marc i els carrers de les pàgines de còmic, els estils de vinyeta, la retolació, els estils de bafarada i el repartiment',
+  lang: 'ca',
+  lastUpdated: '2026-10-10',
+  readingTime: '3 min',
+  order: 10,
+  parent: 'configuration',
+  plainSummary: "Aquesta pàgina reuneix els paràmetres de les pàgines de còmic. Fixes el marc de la pàgina i l'espai entre vinyetes. Tries la tipografia i la mida de la retolació. Defineixes com es dibuixen les bafarades, les cartel·les i les onomatopeies. També pots donar la llista de personatges, perquè cadascun parli amb el seu propi estil. La guia de còmics explica com escriure les pàgines.",
+};
+
+# Configuració: còmics
+
+
+## Còmics
+
+La propietat `comics` configura les pàgines de còmic (`:::page`), les tires (`:::strip`) i les dobles pàgines: el marc i els carrers de què es tallen les vinyetes, els estils de vinyeta, la retolació, els estils de bafarada i el repartiment. Només la llegeixen els documents amb còmics; un document sense còmics es compon exactament igual que abans, i un document amb còmics i sense secció `comics` pren els valors per defecte de la seva llengua. El marcatge i la manera com es retolen les pàgines s'expliquen a [Còmics](/ca/docs/comics).
+
+```ts
+const config: PostextConfig = {
+  comics: {
+    readingDirection: 'auto',
+    gutter: { horizontal: { value: 5, unit: 'mm' }, vertical: { value: 2.5, unit: 'mm' } },
+    panel: { borderWidth: { value: 0.8, unit: 'pt' }, borderStyle: 'rough' },
+    panelStyles: [{ id: 'night', background: { hex: '#14142b', model: 'hex' }, borderColor: { hex: '#ffffff', model: 'hex' } }],
+    lettering: { fontSize: { value: 8.5, unit: 'pt' }, textTransform: 'uppercase' },
+    balloonStyles: [{ id: 'eerie', shape: 'wavy', italic: true }],
+    cast: [{ id: 'maya', name: 'Maya' }, { id: 'tomas', name: 'Avi Tomàs' }],
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>readingDirection</code></td>
+      <td><code>'auto' | 'ltr' | 'rtl'</code></td>
+      <td><code>'auto'</code></td>
+      <td>L'ordre de les vinyetes dins d'una filera. <code>'auto'</code> llegeix de dreta a esquerra en un document de dreta a esquerra, en un de vertical i en japonès i xinès tradicional i, si no, en el sentit d'<code>artDirection</code> (també en xinès simplificat i coreà). L'atribut <code>direction</code> d'una pàgina el substitueix. Amb <code>page.binding: 'auto'</code>, un llibre els còmics del qual es llegeixen de dreta a esquerra s'enquaderna per la dreta.</td>
+    </tr>
+    <tr>
+      <td><code>artDirection</code></td>
+      <td><code>'ltr' | 'rtl'</code></td>
+      <td><code>'ltr'</code></td>
+      <td>El sentit de lectura per al qual es va dibuixar l'art: <code>'rtl'</code> per al manga.</td>
+    </tr>
+    <tr>
+      <td><code>mirrorArt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Reflecteix els dibuixos d'una pàgina que es llegeix en el sentit contrari a <code>artDirection</code>. Una vinyeta conserva el dibuix tal com és amb <code>mirror=false</code>.</td>
+    </tr>
+    <tr>
+      <td><code>frame.margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>els marges de la pàgina</td>
+      <td>Marges propis per a les pàgines de còmic (<code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>, <code>mirror</code>). Les vinyetes es tallen de la caixa que deixen; sense definir, de la caixa de text de la pàgina.</td>
+    </tr>
+    <tr>
+      <td><code>gutter.horizontal</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>4mm</code></td>
+      <td>L'espai entre fileres. L'atribut <code>gutter</code> d'una pàgina el substitueix.</td>
+    </tr>
+    <tr>
+      <td><code>gutter.vertical</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2mm</code></td>
+      <td>L'espai entre vinyetes contigües d'una filera.</td>
+    </tr>
+    <tr>
+      <td><code>panel</code></td>
+      <td><code>PanelStyleConfig</code></td>
+      <td>vegeu més avall</td>
+      <td>L'estil de vinyeta per defecte.</td>
+    </tr>
+    <tr>
+      <td><code>panelStyles</code></td>
+      <td><code>NamedPanelStyleConfig[]</code></td>
+      <td><code>[]</code></td>
+      <td>Estils de vinyeta amb nom, que es trien amb <code>:::page&#123;style=…&#125;</code> o <code>::panel&#123;style=…&#125;</code>. Cadascun té un <code>id</code>, un <code>name</code> opcional (només per a les interfícies d'edició) i els camps d'un estil de vinyeta; els camps sense definir segueixen <code>panel</code>.</td>
+    </tr>
+    <tr>
+      <td><code>lettering</code></td>
+      <td><code>LetteringConfig</code></td>
+      <td>vegeu més avall</td>
+      <td>La lletra, el cos i les normes de la casa de totes les bafarades del llibre.</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyles</code></td>
+      <td><code>BalloonStyleConfig[]</code></td>
+      <td>els nou estils integrats</td>
+      <td>Estils de bafarada per tipus. Els integrats hi són sempre; una entrada amb l'id d'un d'ells el modifica, i una entrada amb un id nou afegeix un estil que es posa per sobre de <code>speech</code>.</td>
+    </tr>
+    <tr>
+      <td><code>cast</code></td>
+      <td><code>ComicCastMember[]</code></td>
+      <td><code>[]</code></td>
+      <td>Els personatges (vegeu <a href="#repartiment">Repartiment</a>).</td>
+    </tr>
+    <tr>
+      <td><code>runningHeads</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Imprimeix les capçaleres i els folis a les pàgines de còmic. Desactivat, una pàgina de còmic és tota vinyetes i el seu número continua comptant.</td>
+    </tr>
+    <tr>
+      <td><code>viewerLeaf</code></td>
+      <td><code>ComicViewerLeafConfig</code></td>
+      <td>sense definir</td>
+      <td>Per als amfitrions les pàgines dels quals no són fulls: compon les pàgines de còmic en un full imprès (<code>width</code>, <code>height</code>, <code>margins</code>) escalat a <code>fitWidth</code> px (i com a màxim a <code>fitHeight</code> px d'alçada) a dalt de la pàgina. El visor HTML del Sandbox el fixa; no es desa mai amb un document.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Estils de vinyeta
+
+`comics.panel` i cada entrada de `comics.panelStyles`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1pt</code></td>
+      <td>Gruix de la vora; <code>0</code> no en dibuixa cap. La vora es traça sobre el contorn de la vinyeta.</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>negre</td>
+      <td>Color de la vora (es pot vincular a la paleta).</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Radi de les cantonades d'una vinyeta rectangular, limitat a la meitat del seu costat més curt. Una vinyeta tallada per una línia inclinada conserva les cantonades vives.</td>
+    </tr>
+    <tr>
+      <td><code>borderStyle</code></td>
+      <td><code>'solid' | 'rough' | 'none'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Una línia neta, una línia feta a mà que tremola una mica (amb una llavor presa de la vinyeta, així que és igual a cada composició) o cap vora.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>blanc</td>
+      <td>El farciment de sota el dibuix: el color d'una vinyeta buida i de les bandes que envolten un dibuix mostrat sencer.</td>
+    </tr>
+    <tr>
+      <td><code>fit</code></td>
+      <td><code>'cover' | 'contain'</code></td>
+      <td><code>'cover'</code></td>
+      <td><code>cover</code> retalla el dibuix per omplir la vinyeta, mai dins de la seva zona segura; <code>contain</code> el mostra sencer.</td>
+    </tr>
+    <tr>
+      <td><code>bleed</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Les vinyetes d'aquest estil sobrepassen el marc fins al tall i la sang per cada costat que toca el marc.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Retolació
+
+`comics.lettering` defineix totes les bafarades del llibre. Hi ha un sol cos: un estil de bafarada el pot escalar (`fontScale`), i el text no es redueix mai perquè càpiga en una bafarada.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>segons la llengua</td>
+      <td>La lletra de la retolació. Sense definir: <code>Comic Neue</code>; <code>Zen Antique</code> en japonès, <code>Noto Sans SC</code> en xinès simplificat, <code>LXGW WenKai TC</code> en xinès tradicional, <code>Playpen Sans Arabic</code> en àrab, persa i urdú (<code>defaultComicFont(locale)</code>).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>7.5pt</code></td>
+      <td>El cos del text de les bafarades. Els còmics se solen retolar a entre 7 i 9 pt a la pàgina impresa.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number</code></td>
+      <td><code>1.15</code></td>
+      <td>Distància entre línies, com a múltiple del cos. Si es deixa el valor per defecte, les bafarades verticals, xineses i japoneses prenen 1,5 i les àrabs 1,45.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>negre</td>
+      <td>Color del text.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>, <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Posa tota la retolació en negreta o en cursiva. La retolació xinesa, japonesa i àrab no s'inclina mai.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Espai extra entre lletres; <code>em</code> és relatiu al cos del text. No s'aplica mai a l'àrab.</td>
+    </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'auto' | 'horizontal' | 'vertical'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> retola en columnes verticals el japonès, el xinès tradicional i qualsevol document compost en escriptura vertical, i tota la resta en horitzontal. Les marques <code>vertical</code> o <code>horizontal</code> d'una línia de guió componen aquella línia d'una altra manera (vegeu <a href="/ca/docs/comics#retolació">Còmics › Retolació</a>).</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Tot en majúscules, l'aspecte clàssic de la retolació nord-americana i europea. Les escriptures sense majúscules queden com estan.</td>
+    </tr>
+    <tr>
+      <td><code>dropFinalStop</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Omet el punt que tanca una bafarada (<code>。</code> en el manga). <code>'auto'</code>: només en japonès i en xinès.</td>
+    </tr>
+    <tr>
+      <td><code>doubleDash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Retola el guió llarg com a <code>--</code>, un costum de la retolació nord-americana.</td>
+    </tr>
+    <tr>
+      <td><code>inset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5mm</code></td>
+      <td>Espai que es deixa entre una bafarada i la vora de la seva vinyeta. Una cartel·la enganxada a la vora no el respecta.</td>
+    </tr>
+    <tr>
+      <td><code>joinSameSpeaker</code></td>
+      <td><code>'butt' | 'connector' | 'none'</code></td>
+      <td><code>'butt'</code></td>
+      <td>Dues bafarades seguides del mateix personatge: cossos fusionats en un sol contorn, units per un coll estret o separades. Una línia del guió pot demanar el seu comportament amb <code>join</code> o <code>join=false</code>.</td>
+    </tr>
+    <tr>
+      <td><code>maxColumnChars</code></td>
+      <td><code>number</code></td>
+      <td><code>8</code></td>
+      <td>Retolació vertical: el màxim de caràcters en una columna d'una bafarada. Les onomatopeies es parteixen després de cinc.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Estils de bafarada
+
+Cada entrada de `comics.balloonStyles` es posa per sobre de l'estil integrat del mateix id (`speech`, `thought`, `whisper`, `shout`, `radio`, `caption`, `inner`, `note`, `sfx`), o per sobre de `speech` si l'id és nou. Els valors per defecte de sota són els de `speech`; la [pàgina Còmics](/ca/docs/comics#estils-de-bafarada) explica què canvia cada estil integrat. Les longituds en `em` són relatives al cos del text de la bafarada.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obligatori</td>
+      <td>La paraula amb què una línia del guió anomena l'estil: <code>ben&#123;whisper&#125;: …</code> o <code>style=whisper</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nom llegible, només per a les interfícies d'edició.</td>
+    </tr>
+    <tr>
+      <td><code>shape</code></td>
+      <td><code>'oval' | 'rounded' | 'rectangle' | 'cloud' | 'burst' | 'wavy' | 'electric' | 'none'</code></td>
+      <td><code>'oval'</code></td>
+      <td>El contorn que envolta el text. <code>'none'</code> posa el text directament sobre el dibuix.</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>blanc</td>
+      <td>Farciment de la bafarada.</td>
+    </tr>
+    <tr>
+      <td><code>stroke</code></td>
+      <td><code>ColorValue</code></td>
+      <td>negre</td>
+      <td>Color del contorn.</td>
+    </tr>
+    <tr>
+      <td><code>strokeWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.6pt</code></td>
+      <td>Gruix del contorn.</td>
+    </tr>
+    <tr>
+      <td><code>dash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Un contorn discontinu (un xiuxiueig).</td>
+    </tr>
+    <tr>
+      <td><code>double</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Un contorn doble.</td>
+    </tr>
+    <tr>
+      <td><code>wobble</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Tremolor de mà del contorn, de 0 a 1, amb una llavor presa de la bafarada, de manera que no canvia mai d'una composició a una altra.</td>
+    </tr>
+    <tr>
+      <td><code>roundness</code></td>
+      <td><code>number</code></td>
+      <td><code>2.2</code></td>
+      <td>L'exponent de la superel·lipse d'un oval: 2 és una el·lipse, i els valors més alts són més quadrats.</td>
+    </tr>
+    <tr>
+      <td><code>burstPoints</code></td>
+      <td><code>number</code></td>
+      <td><code>14</code></td>
+      <td>Les punxes d'una explosió; <code>0</code> les compta a partir del perímetre.</td>
+    </tr>
+    <tr>
+      <td><code>burstDepth</code></td>
+      <td><code>number</code></td>
+      <td><code>0.22</code></td>
+      <td>La fondària de les punxes d'una explosió, com a fracció del radi del cos.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.55em</code></td>
+      <td>L'aire entre el text i el contorn.</td>
+    </tr>
+    <tr>
+      <td><code>aspect</code></td>
+      <td><code>number</code></td>
+      <td><code>1.6</code></td>
+      <td>L'amplada dividida per l'alçada que busca el tall de línies per al bloc de text (retolació horitzontal).</td>
+    </tr>
+    <tr>
+      <td><code>tail</code></td>
+      <td><code>'curved' | 'wedge' | 'bubbles' | 'zigzag' | 'none'</code></td>
+      <td><code>'curved'</code></td>
+      <td>La cua.</td>
+    </tr>
+    <tr>
+      <td><code>tailWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>L'amplada de la cua on surt del contorn.</td>
+    </tr>
+    <tr>
+      <td><code>tailReach</code></td>
+      <td><code>number</code></td>
+      <td><code>0.55</code></td>
+      <td>Fins on arriba la cua cap al seu personatge, com a fracció de la distància del contorn a la boca.</td>
+    </tr>
+    <tr>
+      <td><code>target</code></td>
+      <td><code>'mouth' | 'head'</code></td>
+      <td><code>'mouth'</code></td>
+      <td>On apunta la cua: a la boca de l'àncora o al seu cap (bafarades de pensament).</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'auto' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'top' | 'bottom'</code></td>
+      <td><code>'auto'</code></td>
+      <td>On va la bafarada quan la línia no en fixa cap posició: la col·loca la retolació, o va a una cantonada o una vora de la vinyeta.</td>
+    </tr>
+    <tr>
+      <td><code>butt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Enganxa a la vora de la vinyeta una bafarada de cantonada o de vora (cartel·les).</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>la lletra de la retolació</td>
+      <td>La lletra d'aquest estil. <code>sfx</code> pren per defecte la lletra d'onomatopeies de la llengua: <code>Bangers</code>, <code>Dela Gothic One</code> en japonès, <code>ZCOOL KuaiLe</code> en xinès simplificat, <code>LXGW WenKai TC</code> en xinès tradicional, <code>Lalezar</code> en àrab (<code>defaultComicSfxFont(locale)</code>).</td>
+    </tr>
+    <tr>
+      <td><code>fontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>El cos del text, com a múltiple del cos de la retolació.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>, <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td>el de la retolació</td>
+      <td>Text en negreta o en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el de la retolació</td>
+      <td>Color del text.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td>el de la retolació</td>
+      <td>Tot en majúscules en aquest estil.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>el de la retolació</td>
+      <td>Espai extra entre lletres.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'center' | 'start'</code></td>
+      <td><code>'center'</code></td>
+      <td>Alineació de les línies dins de la bafarada.</td>
+    </tr>
+    <tr>
+      <td><code>halo</code></td>
+      <td><code>Dimension</code></td>
+      <td>cap</td>
+      <td>Un contorn al voltant de les lletres, i el seu gruix, perquè el text es llegeixi sobre el dibuix (onomatopeies).</td>
+    </tr>
+    <tr>
+      <td><code>haloColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>blanc</td>
+      <td>El color de l'halo.</td>
+    </tr>
+    <tr>
+      <td><code>rotate</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Gir en graus, en el sentit de les agulles del rellotge. L'atribut <code>rotate</code> d'una línia té prioritat.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Repartiment
+
+Cada entrada de `comics.cast` descriu un personatge:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obligatori</td>
+      <td>La clau del personatge al guió i a les àncores dels dibuixos.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>El nom que la sortida HTML i l'EPUB adaptable imprimeixen davant de les línies del personatge, i que mostren els editors.</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyle</code></td>
+      <td><code>string</code></td>
+      <td><code>speech</code></td>
+      <td>L'estil de les línies del personatge que no n'anomenen cap.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el de l'estil</td>
+      <td>Color del text de les bafarades del personatge.</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el de l'estil</td>
+      <td>Farciment de les bafarades del personatge.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>la de l'estil</td>
+      <td>La lletra de les bafarades del personatge.</td>
+    </tr>
+  </tbody>
+</table>
+
+El `color` i el `font` propis d'una línia tenen prioritat sobre el repartiment, i el repartiment sobre l'estil de bafarada. Qualsevol color d'un còmic pot ser una entrada de la paleta, que segueix la paleta com qualsevol color vinculat.
+
+```ts
+const resolved = resolveComicsConfig(config.comics, 'ja');
+// => tots els camps plens; Zen Antique i Dela Gothic One com a lletres
+
+const minimal = stripComicsDefaults(config.comics, 'ja');
+// => undefined quan tot són valors per defecte
+
+const shout = pickBalloonStyle(resolved, 'shout'); // el crit integrat amb els canvis del llibre
+const night = pickPanelStyle(resolved, 'night');   // un estil de vinyeta amb nom o, si no, la vinyeta per defecte
+```

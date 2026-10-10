@@ -1,0 +1,1195 @@
+{/* docs/configuration-fonts-colors-viewers-ar.mdx */}
+
+export const metadata = {
+  title: 'الإعدادات: الخطوط والألوان والمُخرجات',
+  sidebarTitle: 'الخطوط والألوان والمُخرجات',
+  description: 'الوحدات والألوان ولوحة الألوان، والخطوط المخصّصة، وعارض HTML، وإنتاج PDF والإنتاج الطباعي، وعارض Folio، والتصحيح',
+  lang: 'ar',
+  lastUpdated: '2026-10-10',
+  readingTime: '6 دقائق',
+  order: 11,
+  parent: 'configuration',
+  plainSummary: "تتناول هذه الصفحة الإعدادات المشتركة في الكتاب كله وإعدادات كل نوع من المُخرجات. تشرح طريقة كتابة القياس واللون، وطريقة تسمية ألوان اللوحة. وتبيّن كيف تضيف خطوطك الخاصة. ثم تتناول عرض الويب وملف PDF والملفات التي تطلبها المطبعة والكتاب ثلاثي الأبعاد. ويفعّل القسم الأخير الأدلة والتحذيرات التي تساعدك أثناء العمل.",
+};
+
+# الإعدادات: الخطوط والألوان والمُخرجات
+
+
+## الوحدات والألوان
+
+### الأبعاد
+
+كل القياسات الفيزيائية في Postext تستعمل النوع `Dimension`، وهو قيمة مقرونة بوحدة:
+
+```ts
+interface Dimension {
+  value: number;
+  unit: DimensionUnit; // 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem'
+}
+```
+
+**الوحدات المطلقة**، أي `cm` و`mm` و`in` و`pt` و`px`، تُحوَّل إلى بكسلات باستعمال قيمة DPI المضبوطة. عند 300 DPI يساوي `1 cm` نحو 118 px.
+
+**الوحدات النسبية**، أي `em` و`rem`، تتغيّر مع حجم الخط الحالي. وحدة `em` نسبية إلى حجم خط العنصر نفسه؛ و`rem` نسبية إلى حجم خط نص المتن.
+
+### الألوان
+
+تُخزَّن الألوان بتمثيل ست عشري وبنموذج لوني مستهدف معًا:
+
+```ts
+interface ColorValue {
+  hex: string;         // '#ff0000', 'transparent', etc.
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
+}
+```
+
+يدلّ الحقل `model` على الفضاء اللوني المقصود. للعرض على الويب، القيمة المعتادة `'hex'` أو `'rgb'`. ولمسارات الطباعة، تقول `'cmyk'` إن اللون حُدِّد بقيم CMYK، ويحفظ `cmyk` تلك القيم: يكتبها الإخراج الطباعي بنظام CMYK كما هي، ويكون `hex` صورتها على الشاشة (انظر [الألوان المعرّفة بقيم CMYK](#الألوان-المعرّفة-بقيم-cmyk)).
+
+لأن Postext يستهدف مخرجات بجودة النشر، يأتي لون نص المتن الافتراضي بـ `model: 'cmyk'` (`#000000`). أما ألوان العناوين والنص العريض والمائل والقوائم فقيمتها الافتراضية مرتبطة بلوحة الألوان: **اللون الرئيسي** (Main Color) (`#295AA3`، `model: 'hex'`). وخلفية الصفحة وطبقات الواجهة (شبكة خطوط الأساس، علامات القص، مؤشرات التصحيح) قيمتها الافتراضية `model: 'hex'`. غيّر `color.model` في أي حقل إن احتجت دلالة تصدير مختلفة.
+
+### الشفافية
+
+يمكن أن يكون اللون شفافًا جزئيًا. يقبل `hex` قناة ألفا، بصيغة `#rgba` أو `#rrggbbaa`. ويقبل كذلك لون `rgb()` / `rgba()`، بصيغة الفواصل أو صيغة المسافات، مع ألفا رقمًا أو نسبة مئوية. أما `transparent` فشفاف تمامًا:
+
+```ts
+const config: PostextConfig = {
+  header: {
+    elements: [{
+      kind: 'box',
+      id: 'veil',
+      placement: {
+        anchor: { to: 'bleed', edge: 'top-left' },
+        size: { width: 'fill', height: { value: 40, unit: 'mm' } },
+      },
+      style: { backgroundColor: { hex: '#ffffffb3', model: 'hex' } }, // white at 70 %
+    }],
+  },
+  bodyText: { color: { hex: 'rgba(0, 0, 0, 0.85)', model: 'rgb' } },
+};
+```
+
+ترسمه المُخرِجات الثلاثة بالطريقة نفسها. تأخذ Canvas وعارض HTML القيمة لونًا من ألوان CSS. ويضبط مُخرِج PDF عتامة اللون ألفا ثابتة، أي `ExtGState` فيه `ca` للتعبئة و`CA` للخطوط. ويشمل ذلك النص، والخطوط الفاصلة، والصناديق، وتعبئات الجداول وحدودها، والشارات، وعيّنات الألوان، والصيغ الرياضية. يتراكب اللون الشفاف جزئيًا فوق كل ما رُسم قبله. الصندوق في الترويسة أو التذييل يُرسم أخيرًا، فيحجب النص تحته؛ أما الصندوق في شريط صفحة الافتتاح فيُرسم أولًا، فيصبغ الصفحة تحت النص. وحين يُفرَض على PDF فضاء لوني آخر (`pdfGeneration.forceColorSpace` مع `colorSpace: 'cmyk'` أو `'grayscale'`)، يُحوَّل اللون وتُحفظ قناة ألفا. وفي Sandbox، يكتب منزلق العتامة في منتقي الألوان هذه القيم بصيغة `#rrggbbaa`، ويقرأ المنتقي الصيغ الأخرى أيضًا.
+
+
+## الخطوط المخصّصة
+
+يبحث Postext عن كل سلسلة `fontFamily` في فهرس Google Fonts **وفي** قائمة `customFonts` الخاصة بالمستند **معًا**. وعند تطابق الأسماء تتقدّم الخطوط المخصّصة: إن صرّحت بـ `customFonts: [{ name: 'Roboto', … }]`، يستعمل Postext الملف الذي رفعته بدل خط "Roboto" من Google Fonts.
+
+استعمل الخطوط المخصّصة حين:
+
+- يحتاج المستند محرفًا خاصًا بعلامة تجارية أو محرفًا مرخّصًا غير موجود في Google Fonts.
+- لا تستطيع البيئة الوصول إلى شبكة توزيع Google Fonts (دون اتصال، أو شبكة داخلية، أو بيئة حساسة للخصوصية).
+- يلزمك إبقاء ملف الخط خاصًا وعدم رفعه إلى طرف ثالث.
+
+### مخطط الإعدادات
+
+```ts
+type CustomFontFormat = 'woff2' | 'woff' | 'ttf' | 'otf';
+type CustomFontStyle = 'normal' | 'italic';
+
+interface CustomFontVariant {
+  weight: number;           // CSS font-weight, 100..900
+  style: CustomFontStyle;
+  fileId: string;           // opaque id of the binary in out-of-band storage
+  format: CustomFontFormat;
+  fileName?: string;        // original upload filename (optional, shown in UI)
+}
+
+interface CustomFontFamily {
+  name: string;             // used anywhere a Google Font family name fits
+  variants: CustomFontVariant[];
+}
+
+interface PostextConfig {
+  // ...
+  customFonts?: CustomFontFamily[];
+}
+```
+
+ملف كل شكل من أشكال الخط **لا** يُضمَّن في الإعدادات نفسها. لا تحمل الإعدادات إلا مؤشرات `fileId`؛ أما البايتات فتعيش خارجها. في Sandbox يعني ذلك IndexedDB (مخزن مفاتيح وقيم، في المتصفح وحده، خاص بالمستند). ومن يدمج Postext في مضيف آخر حرّ في تحديد مصدر `fileId` كما يشاء: نقطة نهاية على خادم، أو ذاكرة تخزين لعامل خدمة (service worker)، أو أي شيء آخر، ما دامت البايتات تصل إلى الخيط الرئيسي قبل تشغيل `buildDocument`.
+
+### إدارة الخطوط المخصّصة في Sandbox
+
+افتح لوحة **الخطوط** من شريط النشاط الأيسر (بين الموارد والتصميم). تعرض قائمتها **المحارف في هذا الكتاب** كل عائلة يستعملها التصميم، مع دورها، وهل تأتي من Google Fonts أم من ملفك. وتحت **ملفات خطوطك**، لكل عائلة:
+
+1. **أضف عائلة خط**: تُنشئ عائلة فارغة؛ غيّر اسمها في مكانه.
+2. **ارفع ملفًا**: اختر وزنًا (100–900) وأسلوبًا (عادي / مائل)، ثم اختر ملفًا واحدًا *أو عدة ملفات* بصيغة `.woff2` أو `.woff` أو `.ttf` أو `.otf`. يصبح كل ملف شكلًا مستقلًا مربوطًا بالزوج (الوزن، الأسلوب) المختار حاليًا؛ ويُحفظ اسم الملف المرفوع ويظهر في الصف لتميّز بين الأشكال. ويمكنك تعديل وزن الشكل أو أسلوبه من قوائمه المنسدلة في أي وقت.
+3. **الأشكال المكرّرة مسموح بها.** إن وقع ملفان على الخانة نفسها (الوزن، الأسلوب)، يُحتفظ بالاثنين ويظهر تحذير **شكل خط مكرّر** لتعرف أن عليك التمييز بين إعدادات الملفات الزائدة.
+4. **احذف الشكل** أو **احذف العائلة**: يزيل المدخل من الإعدادات *والبايتات المخزّنة* من IndexedDB.
+
+بعد التصريح بعائلة، يجمعها كل منتقي خطوط تحت **مخصّصة**، فوق قائمة Google Fonts. واختيارها يربط العائلة بكل حقل عائلة خط تطبّقها عليه.
+
+### سلوك العرض
+
+في الداخل:
+
+- حين يتغيّر `customFonts`، تُسجَّل كل عائلة مصرَّح بها تلقائيًا مداخلَ `FontFace` في `document.fonts`، فيلتقط عارض HTML، وإطار عرض Canvas (الذي يقيس عبر `document.fonts`)، وأي إشارة CSS مباشرة، الخطَّ المخصّص دون أن يحتاج المستخدم إلى فتح منتقي الخطوط أولًا.
+- يتسلّم عامل الإخراج (layout worker) كائنات ArrayBuffer نفسها عبر مسار نقل حمولة الخطوط القائم، فيُنتج القياس (`buildFontString`، pretext) مقاييس مطابقة لما يُنتجه مع Google Fonts.
+- تغيير شكل أو إزالته يُسقط الخط المخزَّن مؤقتًا لتلك العائلة في العامل ويعيد تسجيله في البناء التالي، فتبقى المعاينات متوافقة مع مجموعة الأشكال الحالية.
+- **تصدير PDF**: تمرّ الملفات المرفوعة عبر مسار `PdfFontProvider` نفسه. تُفكّ ضغط ملفات `.woff2`؛ وتمرّ `.ttf` و`.otf` كما هي. أما `.woff` فيُرفض برسالة خطأ واضحة (لا تستطيع pdf-lib تضمين WOFF الخام؛ أعد رفعه بصيغة `.woff2`/`.ttf`/`.otf`). ويُضمَّن OpenType بنكهة CFF (ملف `.otf` بالتوقيع `OTTO`) **دون اقتطاع مجموعة فرعية**، لأن مقتطِع CFF في pdf-lib يمرّ على كل محرف عند `save()` وقد يتوقّف دقائق مع خطوط حقيقية؛ وتخطّي الاقتطاع يقايض ملف PDF أكبر قليلًا بأوقات إخراج ثابتة.
+
+### تحذيرات الخطوط المفقودة
+
+تُدرج لوحة **الفحوص** في Sandbox ثلاث حالات إخفاق خاصة بالخطوط المخصّصة ضمن مجموعتها *الخطوط* (وكلها يفعّلها المفتاح نفسه `debug.warnings.missingFont` الذي يتحكّم أصلًا في التحذير العام "لم يُحمَّل"):
+
+- **عائلة خط غير معروفة**: يشير `fontFamily` إلى اسم ليس خطًا معروفًا من Google Fonts ولا عائلة مخصّصة مصرَّحًا بها حاليًا. ويظهر هذا التحذير فورًا كذلك حين تحذف عائلة مخصّصة ما زال حقل `fontFamily` ما يشير إليها، بدل انتظار أن يلاحظ DOM ذلك.
+- **شكل خط مفقود**: العائلة موجودة، لكن خانة واحدة على الأقل من خانات الوزن/الأسلوب القياسية (400 / 700، عادي / مائل) لا ملف مرفوعًا لها. ويُدرج التحذير التركيبات المفقودة بعينها.
+- **شكل خط مكرّر**: ملفان مرفوعان أو أكثر يتشاركان الخانة نفسها (الوزن، الأسلوب) داخل عائلة واحدة. لا يُستعمل عند العرض إلا ملف واحد؛ ويدفعك التحذير إلى إعادة ضبط المداخل الباقية.
+
+النقر على أي من هذه التحذيرات يفتح لوحة الخطوط لترفع الشكل المفقود، أو تعيد إضافة العائلة، أو تميّز بين المكرّرات.
+
+وحين يوجد إخراج، تُدرج اللوحة أيضًا تحذير المحرّك **خط بديل في الإخراج** (`fontFallback`): وجهٌ قيست الصفحات من دونه، إما لأنه مفقود وإما لأن المتصفح يرسمه من وزن أو ميل آخر. ولا تُدرج مرتين عائلةٌ ذُكرت من قبل بأنها غير معروفة أو ينقصها شكل. وقبل الإخراج الأول، يقوم مقامه فحصٌ يُجرى على `document.fonts`.
+
+## لوحة الألوان
+
+تتيح لك الخاصية `colorPalette` في `PostextConfig` تعريف مجموعة قابلة لإعادة الاستعمال من الألوان المسمّاة والإشارة إليها من أي `ColorValue` في الإعدادات. هي مقابل خصائص CSS المخصّصة أو لوحة العيّنات (swatches) في InDesign في Postext: غيّر مدخل اللوحة مرة واحدة، فيتحدّث كل لون يشير إليه في المستند كله.
+
+```ts
+interface ColorPaletteEntry {
+  id: string;       // stable identifier — referenced by ColorValue.paletteId
+  name: string;     // human label shown in sandbox UIs
+  value: ColorValue;
+}
+```
+
+### لوحة الألوان الافتراضية
+
+يأتي Postext بلوحة ألوان افتراضية من مدخل واحد اسمه **اللون الرئيسي** (Main Color) (`id: 'main-color'`، القيمة الست عشرية `#295AA3`). عدة قيم افتراضية، منها لون العناوين، ولون النص العريض/المائل في المتن، ولون `:ref`، وألوان النقاط وعلامات الترقيم، تشير إلى هذا المدخل عبر `paletteId: 'main-color'`، فتغيير هذه العيّنة الواحدة يعيد تلوين كل جزء من المستند يستعملها.
+
+يمكنك فحص لوحة الألوان الافتراضية أو استنساخها أو المقارنة بها عبر ثلاثة تصديرات:
+
+```ts
+import {
+  DEFAULT_COLOR_PALETTE,
+  cloneDefaultColorPalette,
+  isDefaultColorPalette,
+} from 'postext';
+
+// Read-only snapshot of the shipped palette.
+DEFAULT_COLOR_PALETTE;
+// => [{ id: 'main-color', name: 'Main Color', value: { hex: '#295AA3', model: 'hex' } }]
+
+// Independent copy — mutate this, not DEFAULT_COLOR_PALETTE.
+const palette = cloneDefaultColorPalette();
+
+// Detect whether a user has customised the palette at all.
+isDefaultColorPalette(palette); // true
+```
+
+تقع لوحة الألوان في المستوى الأعلى من الإعدادات:
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'ink',    name: 'Ink',    value: { hex: '#0a0a0a', model: 'cmyk' } },
+    { id: 'accent', name: 'Accent', value: { hex: '#b8860b', model: 'hex' } },
+  ],
+  bodyText: { color: { hex: '#000000', model: 'cmyk', paletteId: 'ink' } },
+  headings: { color: { hex: '#000000', model: 'hex', paletteId: 'accent' } },
+};
+```
+
+### الإحالة إلى مدخل في لوحة الألوان
+
+يمكن لأي `ColorValue` في الإعدادات أن يحمل حقلًا اختياريًا `paletteId` يشير إلى مدخل في `colorPalette`: خلفية الصفحة، وألوان نص المتن (ومنها لون `:ref`)، وألوان العناوين، والخطوط الفاصلة بين الأعمدة، وألوان القوائم، وألوان الجداول والتعليقات والشارات والأطر (الصندوق، والشريط، والأيقونة، والعلامة، والتسمية، والعنوان، والمتن)، وألوان علامات القص وشبكة خطوط الأساس، ومؤشرات التصحيح، وكل لون في أي تصميم: الترويسات، وصفحات افتتاح العناوين والتصاميم داخل العمود، وتصاميم أنماط العناوين وترويساتها، وصفحات الأجزاء وصفوف الأجزاء في المحتويات (النص، والخط الفاصل، وتعبئة الصندوق وحدّه، والمحيط، والحرف الاستهلالي). وحين يوجد هذا الحقل، تتقدّم قيمتا `hex` / `model` من مدخل اللوحة على القيمتين البديلتين `hex` / `model` المخزّنتين بجانبه. ولا تُستعمل القيمة البديلة المضمّنة إلا إذا كانت اللوحة مفقودة أو فارغة أو لا تحوي ذلك المعرّف، وهذا مفيد حين تشحن إعدادات ستقرؤها أداة لا تفهم لوحات الألوان.
+
+**تغيّر في postext 1.5.** حتى postext 1.4 كانت لوحة الألوان لا تبلغ إلا قائمة ثابتة من الإعدادات: ألوان التصاميم (الترويسات، وصفحات الافتتاح، وأنماط العناوين، والأجزاء، وصفوف المحتويات)، و`bodyText.referenceColor`، وألوان تسميات الأطر، وألوان النص العريض / المائل في متون الأطر كانت تحتفظ بقيمة `hex` المخزّنة بجانب `paletteId` الخاص بها. والمستند الذي تختلف قيمته المخزّنة عن مدخل اللوحة (كل مستند عُدِّل في Sandbox بعد تغيّر المدخل، وكل `:ref` حين لا يكون اللون الرئيسي `#295AA3`) يطبع الآن لون اللوحة، كما يقتضي الربط. ولتُبقي لونًا كما كان، احذف `paletteId` الخاص به.
+
+### كيف تُطبَّق لوحات الألوان
+
+يشغّل `buildDocument` لوحة الألوان في موضعين، لتعمل الألوان المُحال إليها في القيم التي كتبتها صراحة وفي القيم الافتراضية التي تُملأ لاحقًا:
+
+1. `applyPaletteToConfig(config)`: يحلّ كل `ColorValue` في إعدادات المستخدم الخام يحمل `paletteId`. مفيد حين تريد فحص ما سيراه المحرّك فعلًا.
+2. `applyPaletteToResolvedConfig(resolved, palette)`: يعمل *بعد* حلّ القيم الافتراضية ويعيد كتابة القيم الافتراضية المرتبطة باللوحة (لون العناوين، ولون النص العريض/المائل في المتن، ولون `:ref`، وألوان القوائم، وألوان التصاميم الافتراضية) لتطابق لوحة الألوان النشطة.
+
+كلاهما يمرّ على الإعدادات كلها، فلا يبقى لون مرتبط باللوحة دون معالجة. معظم ألوان تدفّق النص (نص المتن، والعناوين، والقوائم، والجداول، والتعليقات، والشارات، وصندوق الإطار وعنوانه ومتنه) تخرج قيمًا عادية. وكل لون آخر (ألوان التصاميم، ولون `:ref`، وتسميات الأطر) يأخذ `hex` / `model` من اللوحة **ويحتفظ بـ `paletteId` الخاص به**. فهذا الربط هو ما تتجاوزه سمة `palette` في الجزء، وتجاوز `palette` في نمط العنوان، على صفحاتهما (انظر [الأجزاء](/ar/docs/configuration-styles#الأجزاء))، ولذلك يجب أن يبقى. أما `htmlViewer.overrides` فيُترك كما كُتب: يدمجه عارض HTML أولًا، ولوحة الألوان التي يحملها تنطبق حينئذ على كل شيء، ومنه التصاميم.
+
+نادرًا ما تحتاج إلى استدعاء هاتين الدالتين بنفسك، لكن كلتيهما مُصدَّرة لتتمكّن من فحصهما أو إعادة استعمالهما:
+
+```ts
+import {
+  applyPaletteToConfig,
+  applyPaletteToResolvedConfig,
+  resolveColorValue,
+} from 'postext';
+
+const flat = applyPaletteToConfig(config);
+// Every ColorValue with a paletteId in the raw config now carries the
+// palette entry's hex/model (a design colour keeps its paletteId).
+
+// `applyPaletteToResolvedConfig` is typically handled by buildDocument; use it
+// directly if you build a ResolvedConfig yourself and want the palette applied.
+```
+
+الدالة `resolveColorValue(value, palette, fallback)` هي النسخة الخاصة بقيمة واحدة، وهي مفيدة حين تركّب الإعدادات برمجيًا وتحتاج إلى حلّ لون واحد في كل مرة.
+
+### تعديل لوحة الألوان
+
+اللون الذي لا يسمّي `paletteId` الخاص به أي مدخل يطبع قيمتي `hex` / `model` المخزّنتين، وقد تكونان أقدم من اللون الذي أعطاه إياه المدخل. لذلك، قبل حذف مدخل، أعد كتابة كل `ColorValue` مرتبط به لونًا عاديًا يحمل القيمة الحالية للمدخل. يفعل قسم *لوحة الألوان* في Sandbox (**التصميم › الألوان**) ذلك حين تحذف مدخلًا، أينما كان اللون (ومنه التصاميم وتسميات الأطر)، ويُدرج مربع التأكيد فيه كل إعداد يستعمل المدخل: باسمه، أو بمساره في الإعدادات (`header.elements[2].color`).
+
+
+## عارض HTML
+
+تتحكّم الخاصية `htmlViewer` في الطريقة التي يرتّب بها مُخرِج HTML الصفحات على الشاشة. لا تنطبق إلا حين تعرض بـ `renderToHtml` / `renderToHtmlIndexed`؛ أما مسارا Canvas وPDF فيتجاهلانها تمامًا، إذ يستعملان `page.width` و`page.height` و`page.dpi` المضبوطة مباشرة.
+
+```ts
+interface HtmlViewerConfig {
+  maxCharsPerLine?: number;     // Target column width, in characters of the body font.
+  columnGap?: number;            // Horizontal gap between columns in multi-column mode (px).
+  optimalLineBreaking?: boolean; // Use Knuth–Plass inside the HTML viewer instead of greedy.
+  overrides?: HtmlViewerOverrides; // Screen-only partial config merged over the document config.
+}
+
+type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxCharsPerLine</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>طول السطر المستهدف لكل عمود معروض، معبَّرًا عنه بعدد محارف خط المتن. يأخذ إطار العرض عيّنة نثرية تمثيلية بذلك الطول ليستخرج العرض الفعلي بالبكسل، فتتكيّف النتيجة مع أي تركيبة من خط متناسب وحجم خط.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>number</code></td>
+      <td><code>50</code></td>
+      <td>الفاصل الأفقي، ببكسلات CSS، بين الأعمدة حين يكون العارض في وضع الأعمدة المتعددة. يُتجاهل في وضع العمود الواحد.</td>
+    </tr>
+    <tr>
+      <td><code>optimalLineBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>فعّل تقسيم الأسطر بخوارزمية Knuth–Plass في عارض HTML. معطّل افتراضيًا لأن العارض يعيد الإخراج عند كل تغيير في الحجم أو في حجم الخط، وخوارزمية الملاءمة الأولى الجشعة سريعة بما يكفي لتبدو فورية. فعّله حين تريد التقسيمات المثلى نفسها التي يستعملها مُخرِج Canvas.</td>
+    </tr>
+    <tr>
+      <td><code>overrides</code></td>
+      <td><code>HtmlViewerOverrides</code></td>
+      <td>—</td>
+      <td>إعدادات مستند جزئية لا تنطبق إلا على الشاشة. يدمجها عارض HTML فوق إعدادات المستند قبل الإخراج (<code>applyHtmlViewerOverrides</code>)؛ ويتجاهلها Canvas وPDF. تُدمج الكائنات تكراريًا؛ والمصفوفة <code>levels</code> (العناوين، القوائم، المحتويات) تُدمج مدخلًا مدخلًا حسب <code>level</code>؛ وكل مصفوفة أخرى، مثل <code>elements</code> في خانة تصميم، و<code>calloutStyles</code>، و<code>colorPalette</code>…، تحلّ محلّ المصفوفة الأصلية كاملة. الاستعمال المعتاد: صفحة افتتاح فصل بلا أشرطة الطباعة، أو صفحة جزء يلتفّ عنوانها بمحاذاة الرقم بدل عرض ثابت لصندوق القص. يحرّرها Sandbox بصيغة JSON.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const config: PostextConfig = {
+  headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: true } }] },
+  htmlViewer: {
+    // On screen, chapters flow on without the page-span opener.
+    overrides: { headings: { levels: [{ level: 1, span: 'column', breakBefore: { enabled: false } }] } },
+  },
+};
+```
+
+يتبع المُحلِّل والمُجرِّد النمط نفسه المتّبع في الأقسام الأخرى:
+
+```ts
+import {
+  DEFAULT_HTML_VIEWER_CONFIG,
+  resolveHtmlViewerConfig,
+  stripHtmlViewerDefaults,
+} from 'postext';
+
+const resolved = resolveHtmlViewerConfig(config.htmlViewer);
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+
+const minimal = stripHtmlViewerDefaults(config.htmlViewer);
+// => undefined when everything matches the defaults
+```
+
+انظر [دمج عارض HTML](/ar/docs/configuration-programmatic-usage#دمج-عارض-html) أدناه لمثال كامل من البداية إلى النهاية.
+
+
+## إنتاج PDF (الإعدادات)
+
+تتحكّم الخاصية `pdfGeneration` في الطريقة التي يُصدر بها مُخرِج PDF المستند النهائي. تستهلك الحزمة `postext-pdf` هذه الإعدادات عند التصدير؛ ويتجاهلها عارضا Canvas وHTML.
+
+يحملها `buildDocument` في VDT، باسم `doc.config.pdfGeneration`، ويأخذ `renderToPdf` كل إعداد من أول موضع يعطيه:
+
+1. خياراته الخاصة (`outlines`، `accessible`، `colorSpace`)؛
+2. إعدادات `pdfGeneration` في أول مستند يعرضه (في الكتاب، تنطبق إعدادات الفصل الأول على الملف كله)؛
+3. القيم الافتراضية: الإشارات المرجعية والوسوم مفعّلة، والألوان بنموذج RGB.
+
+لذلك يتبع `renderToPdf(doc, { fontProvider })` الإعدادات، والخيار المُمرَّر إلى `renderToPdf` يتقدّم في ذلك الإعداد وحده. يمثّل `forceColorSpace` و`colorSpace` معًا الخيار `colorSpace`: ينطبق `colorSpace` من الإعدادات ما دام `forceColorSpace` مفعّلًا، ويكون PDF بنموذج RGB حين يكون معطّلًا. كانت الإصدارات السابقة من `postext-pdf` لا تقرأ إلا الخيارات؛ أما الآن فالإعدادات التي تضبط `pdfGeneration` تغيّر PDF الذي ينتجه المستدعي الذي لا يمرّر أي خيارات.
+
+```ts
+type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
+
+interface PdfGenerationConfig {
+  outlines?: boolean;          // Emit PDF bookmarks from the heading tree.
+  forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
+  colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
+  accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '180px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>outlines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>أصدِر مخطّطات PDF (الإشارات المرجعية) من تسلسل العناوين، ليقفز القرّاء مباشرة إلى أي عنوان من الشريط الجانبي في عارض PDF. عطّله في المستندات التي لا معنى لشجرة عناوينها (مثل الملصقات ذات الصفحة الواحدة).</td>
+    </tr>
+    <tr>
+      <td><code>forceColorSpace</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>حين تكون قيمته true، يُحوَّل كل لون في PDF المُنتَج إلى `colorSpace` عند التصدير. اتركه معطّلًا لملفات PDF الموجّهة إلى الشاشة أولًا حين تكون ألوان المدخلات في الفضاء المطلوب أصلًا؛ وفعّله لتضمن فضاءً لونيًا واحدًا مع مصادر مختلطة.</td>
+    </tr>
+    <tr>
+      <td><code>colorSpace</code></td>
+      <td><code>'rgb' | 'cmyk' | 'grayscale'</code></td>
+      <td><code>'cmyk'</code></td>
+      <td>الفضاء اللوني المستهدف حين يكون `forceColorSpace` مفعّلًا. استعمل `'cmyk'` للطباعة الأوفست، و`'rgb'` لملفات PDF المخصّصة للشاشة وحدها، و`'grayscale'` لبروفات الطباعة بالأبيض والأسود. لا أثر له حين تكون قيمة `forceColorSpace` هي false. يُفصَل CMYK بملف تعريف الإخراج المضبوط في [`print`](#الإنتاج-الطباعي-الإعدادات) (FOGRA39 افتراضيًا) مع معالجته للأسود، وتُحوَّل صور RGB كذلك؛ والمعيار PDF/X المضبوط هناك يكتب CMYK أيًّا كانت هذه القيمة.</td>
+    </tr>
+    <tr>
+      <td><code>accessible</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>أصدِر ملف PDF موسومًا وميسَّر الوصول موجّهًا إلى PDF/UA-1: شجرة بنية منطقية بترتيب القراءة (عناوين لا تتخطّى مستوى أبدًا، وفقرات، وقوائم، واقتباسات كتلية، وأطر، وجداول بخلايا رأس، وأشكال بنصها البديل وتعليقاتها، وصيغ رياضية، وإحالات قابلة للنقر بوصفها روابط، ومحتويات `:::toc` بوصفها `TOC` واحدًا فيه `TOCI` لكل صف: رقم الصف `Lbl`، وعنوانه وصفحته `Reference` يحمل الرابط)، وعنوان المستند ولغته (`locale` في المستوى الأعلى)، وتعريف PDF/UA في بيانات XMP الوصفية، وكل علامة زخرفية (خلفية الصفحة، والخطوط الفاصلة، وشبكة خطوط الأساس، والترويسات والتذييلات، وعلامات القص، ورؤوس الجداول المكرّرة، والعنوان المكرّر وعلامة الاستمرار في الإطار المقسوم) موسومة بوصفها عنصرًا زخرفيًا (artifact) لتتخطّاها قارئات الشاشة. والشكل الذي لا يملك `altText` يرجع إلى تعليقه، ثم إلى تسميته. ويُقرأ الشكل أو الجدول العائم مباشرة بعد النص الذي يستشهد به أولًا، أو النص الذي يسبق سطر `::resource` الخاص به، ويُقرأ الصندوق العائم بعد النص الذي يسبق سياجه، حتى حين يوضع العنصر العائم في صفحة لاحقة؛ والقائمة أو المحتويات التي تستمر بعد عنصر عائم تبقى عنصرًا واحدًا. لا تعطّله إلا في النسخ الأصلية للطباعة حيث لا تُرغب البنية الإضافية.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+pdfGeneration: {
+  outlines: true,
+  accessible: true,
+  forceColorSpace: true,
+  colorSpace: 'cmyk',
+}
+```
+
+يطابق المُحلِّل والمُجرِّد ما في الأقسام الأخرى:
+
+```ts
+import {
+  DEFAULT_PDF_GENERATION_CONFIG,
+  resolvePdfGenerationConfig,
+  stripPdfGenerationDefaults,
+} from 'postext';
+
+const resolved = resolvePdfGenerationConfig(config.pdfGeneration);
+// => { outlines: true, forceColorSpace: false, colorSpace: 'cmyk', accessible: true }
+
+const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
+// => undefined when everything matches the defaults
+```
+
+انظر [إنتاج ملفات PDF](/ar/docs/configuration-programmatic-usage#توليد-ملفات-pdf) أدناه لوصفة التصدير الكاملة.
+
+
+## الإنتاج الطباعي (الإعدادات)
+
+تحدّد الخاصية `print` طريقة ذهاب الكتاب إلى المطبعة: معيار PDF/X الذي يُكتب به الملف، وملف تعريف الإخراج الذي يُفصَل به CMYK، وطريقة طباعة الأسود، وعتبات الفحص قبل الطباعة. يتجاهلها الإخراج، فلا يحرّك تغييرها أي سطر. ويقرؤها ثلاثة: `postext-pdf` حين يكتب الملف، و`preflightDocument` حين يفحص مستندًا مُخرَجًا، ومعاينة الطباعة في عارضي Canvas وFolio.
+
+```ts
+type PdfXStandard = 'none' | 'pdfx1a' | 'pdfx4';
+
+interface PrintConfig {
+  standard?: PdfXStandard;                 // 'none': an ordinary PDF.
+  outputProfile?: string;                  // A catalogue id ('fogra39', 'fogra51'…) or 'custom'.
+  customProfile?: CustomOutputProfile;     // An uploaded .icc file.
+  renderingIntent?: 'relative' | 'perceptual';
+  blackPointCompensation?: boolean;
+  convertImages?: boolean;                 // Separate RGB pictures (PDF/X-1a always does).
+  inkLimit?: number;                       // Total area coverage, percent.
+  black?: PrintBlackConfig;
+  preflight?: PrintPreflightConfig;
+}
+
+interface CustomOutputProfile {
+  name: string;           // Its description, or the file name.
+  fileId: string;         // The stored .icc file.
+  registryName?: string;  // The condition's ICC registry name (FOGRA51…), else 'Custom'.
+  inkLimit?: number;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>الخاصية</th>
+      <th style={{ width: '170px' }}>النوع</th>
+      <th style={{ width: '120px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>standard</code></td>
+      <td><code>'none' | 'pdfx1a' | 'pdfx4'</code></td>
+      <td><code>'none'</code></td>
+      <td>صيغة PDF/X التي يُكتب بها الملف. القيمة `'pdfx1a'` تكتب PDF/X-1a:2003: ألوان CMYK والرمادي وحدها، بلا شفافية، وتقبله كل المطابع. والقيمة `'pdfx4'` تكتب PDF/X-4: يحتفظ بالشفافية وإدارة الألوان، لسير العمل الحديث. وأيٌّ منهما يفصل كل لون بملف تعريف الإخراج، أيًّا كانت قيمة `pdfGeneration.colorSpace`.</td>
+    </tr>
+    <tr>
+      <td><code>outputProfile</code></td>
+      <td><code>string</code></td>
+      <td><code>'fogra39'</code></td>
+      <td>ظروف الطباعة التي يُفصَل لها CMYK: معرّف من [فهرس ملفات التعريف](#ملفات-تعريف-الإخراج)، أو `'custom'` لاستعمال `customProfile`. والمعرّف الذي ليس في الفهرس، أو `'custom'` من غير ملف، يرجع إلى القيمة الافتراضية ويُصدر تحذير إعدادات.</td>
+    </tr>
+    <tr>
+      <td><code>customProfile</code></td>
+      <td><code>CustomOutputProfile</code></td>
+      <td>لا شيء</td>
+      <td>ملف تعريف إخراج CMYK تقدّمه أنت، وهو الذي تعطيك إياه مطبعتك (مثل `PSOcoated_v3.icc` من ECI). تُخزَّن بايتاته خارج الإعدادات كما يُخزَّن الخط؛ ويأخذها `renderToPdf` في خياره `outputProfile`. ويُكتب `registryName` معرّفًا لظروف الطباعة في نية الإخراج.</td>
+    </tr>
+    <tr>
+      <td><code>renderingIntent</code></td>
+      <td><code>'relative' | 'perceptual'</code></td>
+      <td><code>'relative'</code></td>
+      <td>اللوني النسبي يحفظ الألوان التي تطبعها الآلة كما هي، ويقصّ الباقي إلى أقرب لون قابل للطباعة؛ والإدراكي يضغط النطاق كله، فتحتفظ الألوان الخارجة عن النطاق بعلاقاتها فيما بينها.</td>
+    </tr>
+    <tr>
+      <td><code>blackPointCompensation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>مع النية النسبية، يحوّل أسود الشاشة إلى أغمق أسود تطبعه الآلة، فتحتفظ أغمق الدرجات بتفاصيلها بدل أن تنطمس.</td>
+    </tr>
+    <tr>
+      <td><code>convertImages</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يفصل صور RGB إلى CMYK بملف التعريف. يفعل PDF/X-1a ذلك دائمًا. وفي PDF/X-4 تُبقي القيمة `false` الصور بنظام RGB، موسومة بـ sRGB عبر `/DefaultRGB` في الصفحات، ليحوّلها معالج RIP في المطبعة. أما صور JPEG بنظامي CMYK والرمادي فتُضمَّن دائمًا كما هي.</td>
+    </tr>
+    <tr>
+      <td><code>inkLimit</code></td>
+      <td><code>number</code></td>
+      <td>قيمة ملف التعريف</td>
+      <td>أعلى مجموع لـ C+M+Y+K، بالنسبة المئوية، يقبله الفحص قبل الطباعة. قيمته الافتراضية الحد الذي يفصل له ملف التعريف (300% في معظم ظروف الأوفست، و230% لورق الصحف IFRA26).</td>
+    </tr>
+    <tr>
+      <td><code>black</code></td>
+      <td><code>PrintBlackConfig</code></td>
+      <td>انظر <a href="#الأسود">الأسود</a></td>
+      <td>الرماديات بالأسود K وحده، والطباعة فوق الألوان، والأسود الغني.</td>
+    </tr>
+    <tr>
+      <td><code>preflight</code></td>
+      <td><code>PrintPreflightConfig</code></td>
+      <td>انظر <a href="#الفحص-قبل-الطباعة">الفحص قبل الطباعة</a></td>
+      <td>ما يتحقق منه الفحص قبل الطباعة، وعتباته.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+print: {
+  standard: 'pdfx4',
+  outputProfile: 'fogra51',
+  black: { richBlackColor: { c: 60, m: 40, y: 40, k: 100 } },
+  preflight: { minImageResolution: 300, safeZone: { value: 5, unit: 'mm' } },
+}
+```
+
+### ملفات تعريف الإخراج
+
+تأتي `postext` بملفات تعريف إخراج CMYK هذه في مجلدها `icc/` (`postext/icc/<id>.icc` على أي شبكة CDN لحزم npm، و`/icc/<id>.icc` على postext.dev). وكلها خالية من قيود حقوق النشر المعروفة (CC0): ملفات تعريف FOGRA وGRACoL وSWOP وورق الصحف من colord، المولَّدة من بيانات توصيف كل ظرف طباعة، وFOGRA51 وFOGRA52 اللذان بناهما postext بأداة ArgyllCMS من بيانات Fogra نفسها. أما ملفات تعريف ECI، أي ISO Coated v2 وPSO Coated v3 وPSO Uncoated v3، فتصف الظروف نفسها لكن لا يجوز إعادة توزيعها؛ ارفعها ملفَّ تعريف مخصّصًا إن طلبتها مطبعتك.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>المعرّف</th>
+      <th>ظروف الطباعة</th>
+      <th style={{ width: '150px' }}>الاسم في السجل</th>
+      <th style={{ width: '90px' }}>حد الحبر</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fogra39</code></td><td>أوفست، ورق مطلي (ظروف ISO Coated v2)</td><td>FOGRA39</td><td>300%</td></tr>
+    <tr><td><code>fogra51</code></td><td>أوفست، ورق مطلي ممتاز (ظروف PSO Coated v3)</td><td>FOGRA51</td><td>300%</td></tr>
+    <tr><td><code>fogra52</code></td><td>أوفست، ورق غير مطلي خالٍ من لبّ الخشب (ظروف PSO Uncoated v3)</td><td>FOGRA52</td><td>300%</td></tr>
+    <tr><td><code>fogra47</code></td><td>أوفست، ورق أبيض غير مطلي (ظروف PSO Uncoated ISO 12647)</td><td>FOGRA47</td><td>300%</td></tr>
+    <tr><td><code>fogra29</code></td><td>أوفست، ورق أبيض غير مطلي</td><td>FOGRA29</td><td>300%</td></tr>
+    <tr><td><code>fogra30</code></td><td>أوفست، ورق مصفرّ غير مطلي</td><td>FOGRA30</td><td>340%</td></tr>
+    <tr><td><code>fogra27</code></td><td>أوفست، ورق مطلي (معيار ISO 12647-2:1996)</td><td>FOGRA27</td><td>300%</td></tr>
+    <tr><td><code>fogra28</code></td><td>أوفست بالبكرات مع تجفيف حراري، ورق LWC لامع</td><td>FOGRA28</td><td>300%</td></tr>
+    <tr><td><code>fogra45</code></td><td>أوفست بالبكرات مع تجفيف حراري، ورق LWC محسّن</td><td>FOGRA45</td><td>300%</td></tr>
+    <tr><td><code>fogra40</code></td><td>أوفست بالبكرات مع تجفيف حراري، ورق SC</td><td>FOGRA40</td><td>340%</td></tr>
+    <tr><td><code>gracol2006</code></td><td>GRACoL 2006، ورق مطلي من الدرجة 1</td><td>CGATS TR 006</td><td>300%</td></tr>
+    <tr><td><code>swop3</code></td><td>SWOP 2006، ورق مطلي من الدرجة 3</td><td>CGATS TR 003</td><td>300%</td></tr>
+    <tr><td><code>swop5</code></td><td>SWOP 2006، ورق مطلي من الدرجة 5</td><td>CGATS TR 005</td><td>300%</td></tr>
+    <tr><td><code>ifra26</code></td><td>ورق صحف، أوفست بلا تجفيف حراري (معيار ISO 12647-3)</td><td>IFRA26</td><td>230%</td></tr>
+    <tr><td><code>snap2007</code></td><td>ورق صحف وفق SNAP 2007</td><td>CGATS TR 002</td><td>320%</td></tr>
+  </tbody>
+</table>
+
+يقرأ `renderToPdf` بايتات ملف التعريف من خياره `outputProfile`؛ ومن دونها يجلب ملف الفهرس من `profileBaseUrl` (افتراضيًا `https://cdn.jsdelivr.net/npm/postext/icc/`). ويفشل إخراج PDF/X إن تعذّر تحميل ملف تعريفه؛ أما إخراج CMYK العادي فيرجع إلى المعادلة المدرسية مع تحذير `outputProfileUnavailable`.
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { renderToPdf } from 'postext-pdf';
+
+const pdf = await renderToPdf(doc, {
+  fontProvider,
+  print: { standard: 'pdfx1a', outputProfile: 'fogra39' },
+  outputProfile: await readFile('node_modules/postext/icc/fogra39.icc'),
+});
+```
+
+### PDF/X-1a وPDF/X-4
+
+يكتب المعياران كلاهما:
+
+- نية الإخراج (`GTS_PDFX`) التي تسمّي ظروف الطباعة وتضمّن ملف التعريف الهدف؛
+- التعريف في قاموس Info (`GTS_PDFXVersion`، و`/Trapped /False`، والعنوان والتواريخ) وفي بيانات XMP الوصفية (`pdfxid:GTSPDFXVersion`، ومعرّفا المستند والإصدار)، مدموجًا مع تعريف PDF/UA حين يكون الملف موسومًا؛
+- مربعَي TrimBox وBleedBox في كل صفحة (الصفحة كلها حين لا تكون هناك علامات قص)؛
+- المعرّف `/ID` في المقطع الختامي (trailer)؛
+- كل لون في DeviceCMYK (أو الرمادي) عبر ملف التعريف، وعلامات القص بلون التسجيل؛
+- لا تعليقات روابط: ملف المطبعة لا يحمل أيًّا منها داخل مربع النزف، فتُحذف روابط ملف PDF الموجّه إلى الشاشة (وتبقى الإشارات المرجعية).
+
+PDF/X-1a:2003 هو PDF 1.4 بلا تدفقات كائنات (object streams) وبلا شفافية: يُكتب اللون نصف الشفاف كما سيُطبع فوق الورق، وتُسطَّح قناة ألفا في الصورة فوق الأبيض، ويُحذف عكس الصفحة (`pageNegative`) المخصّص للتصحيح (مع تحذير `pageNegativeIgnored`). أما PDF/X-4 فهو PDF 1.6: تبقى الشفافية، وتأخذ كل صفحة مجموعة شفافية تمزج بنظام CMYK، وتُوسم صور RGB التي يبقيها `convertImages: false` بـ sRGB عبر `/DefaultRGB`.
+
+تُضمَّن نسخة PDF الأصلية للطباعة (`svg.pdfFileId`) كما هي، فألوانها وخطوطها وشفافيتها ملكها؛ ويبلّغ الفحص قبل الطباعة عمّا تُدخله.
+
+### الأسود
+
+```ts
+interface PrintBlackConfig {
+  kOnlyNeutrals?: boolean;      // Greys and black in black ink only.
+  overprint?: boolean;          // 100 % K overprints.
+  richBlack?: boolean;          // Large black areas in rich black.
+  richBlackColor?: CmykPercent; // { c, m, y, k } in percent.
+  richBlackMinSize?: Dimension; // The smaller side an area needs.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '140px' }}>النوع</th>
+      <th style={{ width: '170px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kOnlyNeutrals</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يُطبع اللون المحايد (`#000000`، `#808080`…) بالحبر الأسود وحده، وتُختار قيمة K فيه لتطابق درجة إضاءته، ولا يُطبع أبدًا رماديًا رباعي الألوان يتغيّر مع التسجيل. وتحتفظ الصور بتوليد الأسود الخاص بملف التعريف.</td>
+    </tr>
+    <tr>
+      <td><code>overprint</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>كل ما يُرسم بـ 100% K وحده (النص الأسود، والخطوط الفاصلة، والحدود، والأشكال السوداء الصغيرة) يُطبع فوق ما تحته (`op`/`OP` مع `OPM 1`)، فلا يكشف انزياح لوح في الآلة حافة بيضاء حوله. وكل ما عدا ذلك يُفرِّغ ما تحته؛ ولا تُطبع الصور والتدرجات فوق غيرها أبدًا.</td>
+    </tr>
+    <tr>
+      <td><code>richBlack</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>التعبئة السوداء التي يبلغ ضلعها الأصغر `richBlackMinSize` (خلفية، أو شريط، أو صندوق) تُطبع بـ `richBlackColor` وتُفرِّغ ما تحتها، فتبدو عميقة لا رمادية داكنة. ولا يتحوّل النص إلى أسود غني أبدًا.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackColor</code></td>
+      <td><code>CmykPercent</code></td>
+      <td><code>{`{ c: 60, m: 40, y: 40, k: 100 }`}</code></td>
+      <td>وصفة الأسود الغني، بالنسبة المئوية. أبقِ مجموعها دون حد الحبر؛ ويتحقق منه الفحص قبل الطباعة.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackMinSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6mm</code></td>
+      <td>الضلع الأصغر الذي تحتاجه المساحة السوداء لتُطبع بالأسود الغني.</td>
+    </tr>
+  </tbody>
+</table>
+
+### الألوان المعرّفة بقيم CMYK
+
+اللون المكتوب بقيم CMYK يحتفظ بقيمه الدقيقة: يُكتب `ColorValue.cmyk` (بالنسبة المئوية) كما هو في الإخراج الطباعي، ويكون `hex` صورته على الشاشة. ومدخل لوحة الألوان المعرّف بقيم CMYK يشمل كل لون مرتبط به.
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### الفحص قبل الطباعة
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // ppi at the printed size.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>الخاصية</th>
+      <th style={{ width: '110px' }}>النوع</th>
+      <th style={{ width: '100px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>يشغّل الفحوص.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>الصورة النقطية الموضوعة التي تقل عن هذا العدد من البكسلات في البوصة بحجمها المطبوع، مع القص، تتلقى تحذيرًا: الأشكال، وصور خلايا الجداول، وصور التصميم، وإطارات القصص المصورة. والصورة النقطية التي ليست لها دقة خاصة بها تُطبع بمقاسها الطبيعي بقيمة `page.dpi`، فالصفحة المُخرَجة بدقة 150 dpi تطبع كل صورة من هذا النوع بدقة 150 ppi؛ أما التي لها دقة (`bitmap.resolution`، `layout.bitmapResolution`) فتُطبع بمقاسها الطبيعي بتلك الدقة.</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>دونها يصبح التحذير حرجًا. ولا تتجاوز `minImageResolution` أبدًا.</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>الخطوط الفاصلة، والحدود، وفواصل الأعمدة، وخطوط الجداول، وحدود إطارات القصص المصورة الأرفع من هذا.</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>النص الأصغر من هذا الحجم المكتوب بأكثر من حبر (لون رباعي، أسود غني): يصبح ضبابيًا إذا انزاحت الألواح. ولا يُحسب النص الأسود بالأسود K وحده أبدًا.</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>النص الأقرب من هذا إلى خط القص، حيث قد تقطعه المقصلة.</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>الصندوق أو الصورة الذي يتوقف على هذا القرب من خط القص من غير أن يبلغ النزف: مدّه إلى النزف أو اسحبه للداخل.</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>ينبّه إلى الخطوط التي لا يضمّنها ملف PDF مدرج (يفحص Sandbox كل نسخة أصلية للطباعة بـ `inspectPrintMaster`). ويضمّن Postext كل خط يصفّ به.</td></tr>
+  </tbody>
+</table>
+
+تشغّل `preflightDocument(doc, options)` الفحوص على مستند مُخرَج وتعيد قائمة بالمشكلات، لكل منها `kind`، و`severity` (`'critical'` أو `'warning'` أو `'info'`)، و`pageIndex` المطلق في الكتاب، و`rect` العنصر المخالف (ببكسلات الصفحة)، ونطاقه في المصدر حين يكون له نطاق. والأنواع هي `lowImageResolution` و`declaredPixelsMismatch` و`rgbImage` و`thinRule` و`smallProcessText` و`inkLimit` و`safeZone` و`nearTrim`. ومن غير `transform` يُحسب اللون المحايد حبرًا واحدًا وأي لون آخر ثلاثة أحبار، ولا تُفحص التغطية؛ ومعه تكون الأعداد والتغطية دقيقة. وتُحسب دقة الصورة من البكسلات التي يصرّح بها موردها، أو من بكسلات الملف نفسه حين يقدّمها `imageSize(fileId)` (`bitmapInfo` على البايتات، أو الصورة بعد فك ترميزها): والتصريح الذي يبتعد عن الملف بأكثر من بكسل واحد يُبلَّغ عنه مرة واحدة بالنوع `declaredPixelsMismatch`، وهو تحذير حين يدّعي بكسلات أكثر مما في الملف. وتسرد `placedImageResolutions(doc, { resources, imageSize })` كل صورة نقطية موضوعة مع دقتها الفعلية بالـppi، سواء كان الفحص قبل الطباعة مفعّلًا أم لا.
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
+
+### معاينة الطباعة
+
+يمكن رسم صفحة Canvas كما ستُطبع. تبني `createPrintPreview(transform, print, { paper, dpi })` البروفة الشاشية (soft proof) لإعداد ما: يُفصَل كل بكسل عبر ملف التعريف (والمحايدات بالأسود K وحده، كما في PDF) ثم يُعرض على الشاشة، على بياض الورق نفسه حين تكون قيمة `paper` هي true؛ وتظهر بالأسود الغني المساحاتُ السوداء الكبيرة بما يكفي له. مرّرها إلى `renderPageToCanvas` باسم `printPreview`؛ ويضيف `guides` خطوط القص والنزف والمنطقة الآمنة، ويحدّد `marksFor` مناطق من الصفحة (مستطيلات `rect` التي يعيدها الفحص قبل الطباعة). ويأخذ `postext-folio` الكائن نفسه في `printPreview` (مع `paper: false`، لأن لون ورق الكتاب يصبغ صفحاته).
+
+```ts
+import { createPrintPreview, renderPageToCanvas } from 'postext';
+
+const preview = createPrintPreview(transform, print, { paper: true, dpi: doc.config.page.dpi });
+renderPageToCanvas(page, doc, canvas, {
+  printPreview: { ...preview, guides: { safeZonePx: 59 }, marksFor: () => issues.map((i) => i.rect!).filter(Boolean) },
+});
+```
+
+### محرّك الألوان
+
+إدارة الألوان التي يستعملها postext مُصدَّرة لأدواتك الخاصة. تقرأ ملفات تعريف ICC من الإصدارين v2 وv4 (المصفوفة/TRC وجداول البحث `mft1` و`mft2` و`mAB` و`mBA`) بلغة TypeScript خالصة، بلا WebAssembly.
+
+- تقرأ `parseIccProfile(bytes)` ملف تعريف؛ وتعطي `deviceChannels(profile)` عدد قنواته.
+- تعيد `outputTransform(profile, { intent, blackPointCompensation, preserveNeutrals })` الدوال `fromRgb(r, g, b)` (sRGB 0..1 → CMYK 0..1)، و`toLab(cmyk, paper?)`، و`proof(cmyk, paper?)` (من CMYK إلى sRGB الشاشة).
+- `cmykToLab` و`labToCmyk` و`srgbToLab` و`labToSrgb` و`deltaE` و`totalAreaCoverage` هي التحويلات المفردة؛ و`buildRgbLut` / `sampleRgbLut` تبنيان جداول بحث كثيفة للعمل على البكسلات وتقرآنها.
+- تعطي `OUTPUT_PROFILES` و`outputProfileInfo(id)` و`loadOutputProfile(id, baseUrl?)` الفهرس؛ وتكتب `srgbProfileBytes()` ملف تعريف sRGB الذي يسم به PDF/X-4 ألوان RGB؛ وتسرد `authoredCmykColors(config)` الألوان التي عرّفتها الإعدادات بقيم CMYK.
+
+يطابق المُحلِّل والمُجرِّد ما في الأقسام الأخرى: `resolvePrintConfig` و`stripPrintDefaults` و`profileInkLimit(config)` (حد ملف التعريف الذي تسمّيه الإعدادات، قبل أي تجاوز بـ `inkLimit`)، مع `DEFAULT_PRINT_CONFIG` و`DEFAULT_PRINT_BLACK_CONFIG` و`DEFAULT_PRINT_PREFLIGHT_CONFIG` و`DEFAULT_RICH_BLACK`.
+
+
+## عارض Folio (الإعدادات)
+
+تضبط الخاصية `folio` طريقة عرض عارض Folio (`postext-folio`) للكتاب المطبوع بالأبعاد الثلاثة: زاوية النظر، والورق، والتجليد، والسطح الذي يستقر عليه الكتاب، والإضاءة. يتجاهلها الإخراج، وكذلك مخرجات Canvas وHTML وPDF. يحمل `buildDocument` الإعدادات المحلولة في VDT باسم `doc.config.folio` حين تضبط الإعدادات أيًّا منها، فيحتفظ المستند الذي لا يضبطها ببصمة إخراجه.
+
+```ts
+interface FolioConfig {
+  tilt?: number;                  // Degrees from straight above, 0–70.
+  yaw?: number;                   // Degrees round the book, −180–180.
+  paper?: {
+    type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
+         | 'bible' | 'newsprint' | 'cardStock' | 'board';
+    grammage?: number;            // g/m²
+    bulk?: number;                // cm³/g; caliper µm = grammage × bulk
+    finish?: 'auto' | 'uncoated' | 'matte' | 'silk' | 'gloss';
+    texture?: 'auto' | 'smooth' | 'vellum' | 'wove' | 'laid' | 'linen' | 'felt';
+    textureStrength?: number;     // 0–2
+    shade?: ColorValue;
+    showThrough?: boolean;
+  };
+  binding?: {
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch' | 'folded';
+    cover?: 'case' | 'pages';
+    coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
+    coverColor?: ColorValue;
+    spineImage?: string;          // resource id
+  };
+  surface?: {
+    type?: 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' | 'marble' | 'plain' | 'none';
+    color?: ColorValue;
+  };
+  lighting?: {
+    environment?: 'studio' | 'daylight' | 'lamp' | 'overcast' | 'night';
+    intensity?: number;           // 0.25–2
+    shadows?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '180px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>tilt</code></td>
+      <td><code>number</code></td>
+      <td><code>22</code></td>
+      <td>زاوية ميل النظر عن الاتجاه العمودي من الأعلى، بالدرجات، محصورة في 0–70. عند 0 يُرى الكتاب المفتوح مسطّحًا من فوق؛ والزاوية الأكبر تقرّب ذيل الصفحات وتُظهر سُمك كتلة الكتاب.</td>
+    </tr>
+    <tr>
+      <td><code>yaw</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>مقدار دوران النظر حول الكتاب، بالدرجات، مردودًا إلى المدى −180–180. عند 0 يُرى الكتاب من جهة ذيل صفحاته؛ والزاوية الموجبة تدير العين إلى يمينه، والسالبة إلى يساره. وهو مع <code>tilt</code> المنظر الذي يُفتح عليه العارض، والذي يعود إليه <code>resetView()</code> بتدرّج.</td>
+    </tr>
+    <tr>
+      <td><code>paper.type</code></td>
+      <td><code>FolioPaperType</code></td>
+      <td><code>'uncoated'</code>؛ و<code>'newsprint'</code> في مقاسات الصحف</td>
+      <td>نوع الورق. يزوّد الحقول الخمسة التالية بقيمها الافتراضية (انظر جدول أنواع الورق). <code>cardStock</code> ورق مقوّى للأغلفة؛ و<code>board</code> لوح صلب، كما في كتب الأطفال الكرتونية، وتنقلب أوراقه دون أن تنثني.</td>
+    </tr>
+    <tr>
+      <td><code>paper.grammage</code></td>
+      <td><code>number</code></td>
+      <td>قيمة نوع الورق</td>
+      <td>الوزن بالغرام في المتر المربع، 20–2500. الورق الأثقل أسمك وأصلب وأكثر عتامة: تنثني الورقة في منحنى أوسع ويظهر منها قدر أقل من وجهها الخلفي.</td>
+    </tr>
+    <tr>
+      <td><code>paper.bulk</code></td>
+      <td><code>number</code></td>
+      <td>قيمة نوع الورق</td>
+      <td>السُّمك لكل وحدة وزن، بوحدة cm³/g، 0.5–3. سُمك الورقة بالميكرومتر يساوي الوزن × معامل السُّمك، ومنه ومن عدد الصفحات ينتج سُمك كتلة الكتاب.</td>
+    </tr>
+    <tr>
+      <td><code>paper.finish</code></td>
+      <td><code>FolioPaperFinish</code></td>
+      <td><code>'auto'</code></td>
+      <td>غير مطلي (ألياف، بلا لمعان)، أو مطلي ومصقول بالأسطوانات ليكون مطفأً، أو حريريًا (لمعان خفيف)، أو لامعًا. في Folio تعكس الصفحةُ اللامعة الورقةَ التي تُقلَب فوقها. <code>'auto'</code> يأخذ قيمة نوع الورق.</td>
+    </tr>
+    <tr>
+      <td><code>paper.texture</code></td>
+      <td><code>FolioPaperTexture</code></td>
+      <td><code>'auto'</code></td>
+      <td>بروز السطح: <code>smooth</code> (مصقول بالأسطوانات)، <code>vellum</code> (خشونة دقيقة)، <code>wove</code> (النسيج المنتظم لمعظم ورق الكتب، المتشكّل على شبكة سلكية منسوجة)، <code>laid</code> (خطوط متقاربة تقطعها خطوط سلسلة أعرض، تتركها أسطوانة التعليم)، <code>linen</code> (نسيج متقاطع بارز)، <code>felt</code> (آثار لبّاد غير منتظمة). <code>'auto'</code> يأخذ قيمة نوع الورق.</td>
+    </tr>
+    <tr>
+      <td><code>paper.textureStrength</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>مقدار ظهور النسيج في الضوء، 0–2.</td>
+    </tr>
+    <tr>
+      <td><code>paper.shade</code></td>
+      <td><code>ColorValue</code></td>
+      <td>قيمة نوع الورق</td>
+      <td>لون الورق قبل الطباعة (أبيض، طبيعي، كريمي). تُطبع الصفحات عليه.</td>
+    </tr>
+    <tr>
+      <td><code>paper.showThrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يظهر الوجه الخلفي للصفحة باهتًا عبر الورق الرقيق. وورق الصحف أكثر ما يُظهره بعد <code>bible</code>، لأن حبره يتشرّب في الورقة.</td>
+    </tr>
+    <tr>
+      <td><code>binding.type</code></td>
+      <td><code>FolioBindingType</code></td>
+      <td><code>'hardcover'</code>؛ و<code>'folded'</code> في مقاسات الصحف</td>
+      <td><code>hardcover</code>: تجليد بغلاف صلب، ألواحه أكبر قليلًا من الصفحات. <code>paperback</code>: تجليد بالغراء (تُفرز الكعوب وتُلصق)، ينفتح أقل استواءً. <code>sewn</code>: غلاف ليّن بملازم مخيطة. <code>layflat</code>: ينفتح مستويًا، بلا انخفاض عند الفاصل الداخلي. <code>saddleStitch</code>: أوراق مطوية مدبّسة عبر الطيّة، كالمجلة أو الكتيّب؛ بلا كعب مسطّح. <code>folded</code> (منذ postext 1.18): جريدة، أفرخ مطوية مرة واحدة يوضع بعضها داخل بعض بلا شيء يمسكها؛ بلا دبابيس ولا كعب ولا غلاف مقوّى، والصفحة الأولى هي الواجهة. ومقطع <a href="/ar/docs/document-format#paper"><code>:::paper</code></a> ذو <code>shade</code> يطبع قسمًا، كصفحات الاقتصاد، على ورق صحف بلون السلمون.</td>
+    </tr>
+    <tr>
+      <td><code>binding.cover</code></td>
+      <td><code>FolioCoverSource</code></td>
+      <td><code>'case'</code></td>
+      <td>الغلافان. <code>'case'</code> يرسم غلافًا حول الصفحات. <code>'pages'</code> يأخذ الصفحة الأولى من الكتاب لوحًا أماميًا، وصفحته الأخيرة، حين تكون صفحة زوجية، لوحًا خلفيًا: يبقى الكتاب مغلقًا حتى يُقلَب الغلاف، وتنقلب الألواح صلبة (في التدبيس عبر الطيّة يكون الغلاف ورقة أثقل قليلًا من الصفحات وينقلب كما تنقلب)، ولا يُرسم غلاف خارجي.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverMaterial</code></td>
+      <td><code>FolioCoverMaterial</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> قماش في الغلاف الصلب، وورق مقوّى (<code>'paper'</code>) في أنواع التجليد الأخرى.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>أزرق داكن (<code>#2c3e57</code>)</td>
+      <td>لون مادة الغلاف.</td>
+    </tr>
+    <tr>
+      <td><code>binding.spineImage</code></td>
+      <td><code>string</code></td>
+      <td>لا شيء</td>
+      <td>معرّف مورد نقطي أو SVG يُطبع على الكعب: الكعب كما يُرى والكتاب قائم، رأسه إلى الأعلى والغلاف الأمامي إلى اليمين. يُوائَم ليغطي الكعب، في الوسط. يُتجاهل في التدبيس عبر الطيّة وفي التجليد المطوي.</td>
+    </tr>
+    <tr>
+      <td><code>surface.type</code></td>
+      <td><code>FolioSurfaceType</code></td>
+      <td><code>'oak'</code></td>
+      <td>ما يستقر عليه الكتاب. <code>'none'</code> يترك خلفية المضيف.</td>
+    </tr>
+    <tr>
+      <td><code>surface.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لا شيء</td>
+      <td>يصبغ السطح؛ وفي <code>'plain'</code> هو لون السطح.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.environment</code></td>
+      <td><code>FolioEnvironment</code></td>
+      <td><code>'studio'</code></td>
+      <td>المحيط الذي ينعكس على الورق المطلي واللامع، مقرونًا بالضوء الرئيسي الذي يُلقي الظلال.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.intensity</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>شدة الإضاءة (التعريض)، 0.25–2.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.shadows</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>الظلال التي يُلقيها الضوء الرئيسي.</td>
+    </tr>
+  </tbody>
+</table>
+
+أنواع الورق والقيم التي يزوّدها كل منها (`FOLIO_PAPER_STOCKS`)، وهي قيم نموذجية من نشرات بيانات المصانع:
+
+<table>
+  <thead>
+    <tr>
+      <th>نوع الورق</th>
+      <th>الوزن</th>
+      <th>معامل السُّمك</th>
+      <th>السُّمك</th>
+      <th>التشطيب</th>
+      <th>النسيج</th>
+      <th>اللون</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>uncoated</code> (أوفست خالٍ من لبّ الخشب)</td><td>90 g/m²</td><td>1.25</td><td>113 µm</td><td>غير مطلي</td><td>wove</td><td><code>#fcfbf8</code></td></tr>
+    <tr><td><code>bookWove</code> (كريمي، عالي السُّمك)</td><td>80 g/m²</td><td>1.6</td><td>128 µm</td><td>غير مطلي</td><td>wove</td><td><code>#f6efdc</code></td></tr>
+    <tr><td><code>coatedMatte</code></td><td>115 g/m²</td><td>1.0</td><td>115 µm</td><td>مطفأ</td><td>smooth</td><td><code>#fdfdfc</code></td></tr>
+    <tr><td><code>coatedSilk</code></td><td>115 g/m²</td><td>0.9</td><td>104 µm</td><td>حريري</td><td>smooth</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>coatedGloss</code></td><td>115 g/m²</td><td>0.8</td><td>92 µm</td><td>لامع</td><td>smooth</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>bible</code></td><td>40 g/m²</td><td>1.1</td><td>44 µm</td><td>غير مطلي</td><td>vellum</td><td><code>#f9f6ee</code></td></tr>
+    <tr><td><code>newsprint</code></td><td>48 g/m²</td><td>1.5</td><td>72 µm</td><td>غير مطلي</td><td>wove</td><td><code>#ebe7dc</code></td></tr>
+    <tr><td><code>cardStock</code></td><td>250 g/m²</td><td>1.2</td><td>300 µm</td><td>غير مطلي</td><td>vellum</td><td><code>#fbfaf6</code></td></tr>
+    <tr><td><code>board</code></td><td>1250 g/m²</td><td>1.6</td><td>2000 µm</td><td>حريري</td><td>smooth</td><td><code>#ffffff</code></td></tr>
+  </tbody>
+</table>
+
+رواية على ورق كتب كريمي، مجلّدة بغلاف ليّن، على مكتب من خشب الجوز تحت مصباح قراءة:
+
+```ts
+folio: {
+  paper: { type: 'bookWove' },
+  binding: { type: 'paperback', coverColor: { hex: '#8a2b1f', model: 'hex' } },
+  surface: { type: 'walnut' },
+  lighting: { environment: 'lamp' },
+}
+```
+
+الصفحة المضبوطة على مقاس صحيفة (`page.sizePreset` بقيمة `'broadsheet'` أو `'berliner'` أو `'tabloid'` أو `'compact'`) تُعرض صحيفةً إذا لم تحدّد الإعدادات نوع الورق ولا التجليد: ورق `newsprint` وتجليد `folded` (منذ postext 1.18). ويبقى نوع الورق أو التجليد الذي تحدّده الإعدادات كما هو، فـ`paper: { type: 'uncoated' }` يطبع التابلويد على ورق أوفست. وحقول الورق التي تُضبط دون تحديد نوعه (مثل `grammage` أو `shade`) تنطبق على ورق الصحف. ويأخذ المُحلِّل والمُجرِّد المقاس وسيطًا ثانيًا، وتكتب `folioForTrim(folio, sizePreset)` هاتين القيمتين الافتراضيتين في الإعدادات:
+
+```ts
+resolveFolioConfig({ tilt: 30 }, 'tabloid');
+// => { tilt: 30, paper: { type: 'newsprint', grammage: 48, bulk: 1.5, … }, binding: { type: 'folded', coverMaterial: 'paper', … }, … }
+
+stripFolioDefaults({ paper: { type: 'newsprint' }, binding: { type: 'folded' } }, 'tabloid');
+// => undefined
+```
+
+تتبع الألوان روابط لوحة الألوان (`paletteId`) مثل أي لون آخر في الإعدادات. ويطابق المُحلِّل والمُجرِّد ما في الأقسام الأخرى؛ ويحذف المُجرِّد قيم الورق المساوية لقيم نوع الورق المختار:
+
+```ts
+import { FOLIO_PAPER_STOCKS, DEFAULT_FOLIO_CONFIG, resolveFolioConfig, stripFolioDefaults } from 'postext';
+
+resolveFolioConfig({ paper: { type: 'bible' } }).paper;
+// => { type: 'bible', grammage: 40, bulk: 1.1, finish: 'uncoated', texture: 'vellum', textureStrength: 1, shade: { hex: '#f9f6ee', … }, showThrough: true }
+
+stripFolioDefaults({ paper: { type: 'bible', grammage: 40 } });
+// => { paper: { type: 'bible' } }
+```
+
+في Sandbox، هذه الإعدادات هي مجموعة **Folio** في لوحة التصميم (**التصميم › Folio › عارض Folio (ثلاثي الأبعاد)**)، ويعرضها تبويب Folio وأنت تغيّرها، دون إعادة إخراج الكتاب. انظر [كتاب ثلاثي الأبعاد](/ar/docs/configuration-programmatic-usage#كتاب-ثلاثي-الأبعاد-postext-folio) للعارض نفسه، و[صيغة المستند › `:::paper`](/ar/docs/document-format#paper) لسلسلة صفحات على نوع ورق آخر.
+
+
+## التصحيح
+
+تجمع الخاصية `debug` نوعين من أدوات المساعدة في التأليف: طبقات مرئية تُبقي النص المصدري والإخراج المعروض متوافقين، ومجموعة تحذيرات تكشف المشكلات الطباعية أو البنيوية في لوحة الفحوص في Sandbox. ولا يؤثر أيّ منهما في المخرجات المصدَّرة.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>مؤشر كتابة منعكس في الإخراج المعروض؛ انظر <a href="#الطبقات-المرئية">الطبقات المرئية</a>.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>التحديد في المصدر مُبرَزًا على الصفحة؛ انظر <a href="#الطبقات-المرئية">الطبقات المرئية</a>.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight</code></td>
+      <td><code>LooseLineHighlightConfig</code></td>
+      <td>طبقة فوق الأسطر المضبوطة المتخلخلة؛ انظر <a href="#الطبقات-المرئية">الطبقات المرئية</a>.</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative</code></td>
+      <td><code>{'{ enabled: boolean }'}</code></td>
+      <td>صورة سالبة عالية التباين للصفحة؛ انظر <a href="#الطبقات-المرئية">الطبقات المرئية</a>.</td>
+    </tr>
+    <tr>
+      <td><code>warnings</code></td>
+      <td><code>WarningsToggleConfig</code></td>
+      <td>قيمة منطقية لكل نوع من تحذيرات التأليف المعروضة في المحرّر؛ انظر <a href="#التحذيرات">التحذيرات</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### الطبقات المرئية
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>الخاصية</th>
+      <th style={{ width: '120px' }}>النوع</th>
+      <th style={{ width: '120px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يُظهر مؤشر كتابة في الإخراج المعروض يعكس موضع المؤشر في المصدر.</td>
+    </tr>
+    <tr>
+      <td><code>cursorSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#2563eb</code></td>
+      <td>لون ذلك المؤشر.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يُبرز المدى المعروض المطابق للتحديد في المصدر.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fde04780</code></td>
+      <td>لون الإبراز، وهو أصفر شفاف جزئيًا افتراضيًا.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يرسم طبقة فوق الأسطر المضبوطة التي يتجاوز تباعد كلماتها <code>threshold</code> ضعفًا من عرض المسافة العادية.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ff000040</code></td>
+      <td>لون تلك الطبقة.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.threshold</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>مضاعف عرض المسافة العادية الذي يُعدّ السطر المضبوط فوقه متخلخلًا. ويستعمل التحذير <code>looseLines</code> العتبة نفسها. السطر المضبوط الذي تتمدّد مسافاته إلى أكثر من 3× يُنضَّد غير مضبوط، فلا تكاد الطبقة والتحذير يجدان شيئًا في النص الجاري عند القيمة الافتراضية؛ اخفضها (1.5 أو 2) لترى الأسطر المتخلخلة التي ما زالت مضبوطة.</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يرسم طبقة سالبة عالية التباين فوق الصفحة، وهي مفيدة لتدقيق الشكل العام للصفحتين المتقابلتين بصريًا (كثافة النص، وتوازن الأعمدة، والبياض) بنظرة واحدة، دون أن تشتّتك تفاصيل الحروف.</td>
+    </tr>
+  </tbody>
+</table>
+
+كل `SyncIndicatorConfig` هو `{ enabled: boolean; color?: ColorValue }`. و`LooseLineHighlightConfig` هو `{ enabled: boolean; color?: ColorValue; threshold?: number }`. أما `pageNegative` فمفتاح تبديل بسيط `{ enabled: boolean }`.
+
+```ts
+debug: {
+  cursorSync: { enabled: true, color: { hex: '#ff0066', model: 'hex' } },
+  selectionSync: { enabled: false, color: { hex: '#fde04780', model: 'hex' } },
+  looseLineHighlight: { enabled: true, color: { hex: '#ff000040', model: 'hex' }, threshold: 3 },
+  pageNegative: { enabled: true },
+}
+```
+
+يرسم Sandbox هذه الطبقات فوق معاينة Canvas الخاصة به. وهي ليست جزءًا من الصفحة: لا يرسمها `renderPage` ولا مخرجات HTML ولا PDF أبدًا.
+
+### الأسطر المتخلخلة في Canvas خاص بك
+
+يصدّر المحرّك إبراز الأسطر المتخلخلة (loose lines) في دالتين مساعدتين، للصفحة التي ترسمها بنفسك:
+
+```ts
+import { buildDocument, renderPageToCanvas, drawLooseLines, findLooseLines } from 'postext';
+
+const doc = buildDocument(content, config);
+const canvas = document.querySelector('canvas')!;
+renderPageToCanvas(doc.pages[0], doc, canvas, { scale: 0.5 });
+drawLooseLines(canvas.getContext('2d')!, doc.pages[0], doc, { threshold: 2.5 });
+
+// The same lines as data: a report, an SVG overlay, a count per page.
+for (const { ratio, line, block } of findLooseLines(doc, { threshold: 2.5 })) {
+  console.log(`page ${block.pageIndex + 1}: ${ratio.toFixed(2)}× — ${line.text}`);
+}
+```
+
+- **`findLooseLines(doc, { threshold?, pageIndex? })`** يعيد كل سطر مضبوط تتجاوز قيمة `justifiedSpaceRatio` فيه `threshold`، بترتيب القراءة: `{ block, line, ratio, x, y, width, height }`. المستطيل، ببكسلات الصفحة، هو الشريط الذي يغطيه الإبراز: عرض الكتلة كاملًا على امتداد السطر. وهذه هي الأسطر التي يُبرزها Sandbox ويُبلغ عنها بوصفها `looseLine` في لوحة الفحوص.
+- **`drawLooseLines(ctx, page, doc, { threshold?, color? })`** يملأ تلك الأشرطة في صفحة واحدة ويعيد الأسطر التي رسمها. يرسم ببكسلات الصفحة تحت التحويل الحالي للسياق، فاستدعه مباشرة بعد `renderPage` أو `renderPageToCanvas` على اللوحة نفسها: كلاهما يترك السياق مُحجَّمًا على مقاس الصفحة. و`color` أي نمط تعبئة يقبله canvas.
+- **القيم الافتراضية.** تستعمل الدالتان العتبة الافتراضية (3) واللون الافتراضي (`#ff000040`)، لا `debug.looseLineHighlight` الخاص بالمستند: فذلك الإعداد يخص Sandbox. ولتتبع الإعدادات، مرّر `resolveDebugConfig(config.debug).looseLineHighlight.threshold` و`.color.hex`.
+
+### التحذيرات
+
+يتحكّم `debug.warnings` في مشكلات التأليف التي تظهر في لوحة **الفحوص** في Sandbox (وتُحرَّر في **التصميم › متقدّم › التحذيرات**). كل مفتاح مفتاح تبديل منطقي مستقل؛ اضبط أحدها على `false` لإسكات ذلك التحذير بعينه دون تعطيل البقية.
+
+هذه المفاتيح لا تصفّي إلا لوحة Sandbox. أما التحذيرات التي يسجّلها المحرّك نفسه، أي الصناديق التي تفيض عن عمودها في `doc.warnings`، ومعرّفات الموارد والتوجيهات والمضمَّنات ومعرّفات الأنماط غير المعروفة وشبكات الجداول غير المنتظمة في `doc.contentWarnings`، فموجودة أيًّا كانت قيم المفاتيح، وتُبلغ المُخرِجات عن الصور التي ترسمها عناصرَ نائبة؛ انظر [التحذيرات في المستند](/ar/docs/configuration-programmatic-usage#التحذيرات-في-المستند).
+
+```ts
+interface WarningsToggleConfig {
+  missingFont?: boolean;
+  looseLines?: boolean;
+  headingHierarchy?: boolean;
+  consecutiveHeadings?: boolean;
+  listAfterHeading?: boolean;
+  designIssues?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '120px' }}>النوع</th>
+      <th style={{ width: '120px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>missingFont</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>أبلغ حين يفشل تحميل خط تشير إليه الإعدادات في المتصفح. يكشف الأخطاء الإملائية في `fontFamily` وحزم `@fontsource/...` المفقودة مبكرًا، قبل أن تظهر في المخرجات بديلًا صامتًا بخط احتياطي.</td>
+    </tr>
+    <tr>
+      <td><code>looseLines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>أبلغ عن الأسطر المضبوطة التي يتجاوز تباعد كلماتها `debug.looseLineHighlight.threshold`. يعمل مع الطبقة: يعدّدها التحذير في اللوحة، وتُظهرها الطبقة في مكانها.</td>
+    </tr>
+    <tr>
+      <td><code>headingHierarchy</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>أبلغ عن مستويات العناوين التي تتخطّى رتبة، مثل H1 يليه H3 مباشرة. تدلّ الفجوات البنيوية في العناوين عادة على خطأ في عمق العنوان أو على سوء فهم لمخطّط المستند.</td>
+    </tr>
+    <tr>
+      <td><code>consecutiveHeadings</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>أبلغ حين يلي عنوانًا عنوانٌ آخر مباشرة دون فقرة أو قائمة بينهما. معطّل افتراضيًا لأن العناوين المتراصّة مشروعة في كثير من القوالب (عنوان + عنوان فرعي، فصل + تصدير)؛ فعّله في المخطوطات التي يُفترض أن يقدّم فيها كل عنوان نثرًا.</td>
+    </tr>
+    <tr>
+      <td><code>listAfterHeading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>أبلغ حين تبدأ قائمة مباشرة بعد عنوان دون فقرة تمهيدية. معطّل افتراضيًا لأن المواد المرجعية تفعل ذلك كثيرًا؛ فعّله في الكتابة السردية حيث ينبغي أن يؤطّر النثر كل قائمة.</td>
+    </tr>
+    <tr>
+      <td><code>designIssues</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>أبلغ عن مشكلات السلامة في خانات التصميم: ترويسات الصفحات، والتذييلات، وصفحة افتتاح الجزء والصفحة الزوجية الفارغة بعدها، وصفوف الأجزاء في المحتويات، وخانات التصميم المتقدّم للعناوين، وتصميم كل نمط عنوان وترويسات قسمه. يشمل سلاسل الإرساء الدائرية والإحالات إلى نقاط إرساء غير موجودة (عنصر مُرسى إلى <code>#id</code> لم يعد موجودًا)، والعنوان الممتد على الصفحة الذي عُطّل فيه <code>breakBefore</code>، والتصميم المتقدّم المفعّل الذي لا ترسم عناصره <code>{'{titleText}'}</code> أبدًا.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+debug: {
+  warnings: {
+    missingFont: true,
+    looseLines: true,
+    headingHierarchy: true,
+    consecutiveHeadings: true,
+    listAfterHeading: false,
+    designIssues: true,
+  },
+}
+```
+
+إلى جانب هذه، تُدرج اللوحة دائمًا التحذيرات التي يُطلقها الإخراج نفسه (`VDTDocument.warnings`)، مثل الإطار الذي يفيض عن عموده (`calloutOverflow`)، وقيم الإعدادات التي استبدلها المحرّك (`VDTDocument.configWarnings`، أو `collectConfigWarnings(config)`؛ انظر [تحذيرات الإعدادات](#تحذيرات-الإعدادات) أدناه).
+
+### تحذيرات الإعدادات
+
+ثمانية أخطاء في الإعدادات نفسها لا تمرّ أبدًا بصمت، ولا يخفيها أي مفتاح تبديل. لا يتعطّل المحرّك عند أيّ منها؛ بل يستبدل قيمة، أو يُسقط الإعداد، ويُعلن ذلك:
+
+- **صيغة ترقيم غير معروفة**: قيمة `numberFormat` لقائمة مرقّمة، أو `page.pageNumbering.format`، أو `counterFormat` لنوع مورد، ليست أيًّا من [تهجئات صيغ الترقيم](/ar/docs/configuration-page-layout#صيغ-كتابة-أنماط-الترقيم). يُرقَّم بالأرقام العشرية.
+- **قائمة خطوط في عائلة خط**: قيمة `fontFamily` (أو أي `…FontFamily`) تحوي مكدّس خطوط CSS. يُنضَّد النص بالعائلة الأولى في المكدّس (انظر [عائلة واحدة لكل `fontFamily`](/ar/docs/configuration-text#عائلة-واحدة-لكل-fontfamily)).
+- **عمود جانبي بلا مساحة**: قيمة `sideColumnPercent` لتخطيط `'oneAndHalf'` (للمستند، أو لـ `layout` خاص بنمط عنوان) تترك أحد العمودين دون 1% من عرض المحتوى، أو ليست رقمًا. يُقطَع العمودان عند أقرب قيمة يحتملها كلاهما، ويسمّيها `used` (`sideColumnPercentClamped`؛ انظر [تخطيط `'oneAndHalf'`](/ar/docs/configuration-page-layout#أنواع-التخطيط)).
+- **عدد الأعمدة خارج النطاق**: قيمة `columnCount` لتخطيط `'multiple'` (للمستند، أو لـ `layout` خاص بنمط عنوان) ليست عددًا صحيحًا من 3 إلى 8. تُقسَم الصفحة إلى أقرب عدد صالح (3 إن لم تكن القيمة عددًا)، ويذكره `used` (`columnCountClamped`؛ انظر [تخطيط `'multiple'`](/ar/docs/configuration-page-layout#أنواع-التخطيط)).
+- **شبكة الحروف أكبر من اللازم**: `cjk.grid` بعدد محارف في السطر أو أسطر في الصفحة أكبر مما تتّسع له الهوامش. تُضبط الشبكة بأكبر عدد يتّسع، ويسمّي `used` ذلك العدد (`cjkGridClamped`؛ انظر [شبكة الحروف](/ar/docs/configuration-east-asian#شبكة-الحروف)).
+- **إعداد عنوان غير معروف**: مفتاح لا يوجد في `headings`، أو `headings.balancing`، أو مستوى عنوان، أو نمط عنوان، أو نمط فقرة: مثل `letterSpacng` مكتوبًا خطأً، أو `tracking` مستعارًا من أداة أخرى، أو `level` في نمط عنوان، أو `fontStyle: 'italic'` في نمط فقرة (الذي يأخذ `italic: true`). ويُفحص موضع الجدولة بالطريقة نفسها (`leaders` بدل `leader`). يتجاهله المحرّك (وحتى postext 1.4 كان يفعل ذلك دون أي إشعار). `value` هو المفتاح، و`used` فارغ، و`suggestion` يسمّي الإعداد الأقرب إليه، حين يبعد عنه حرفًا أو حرفين أو لا يختلف عنه إلا في حالة الأحرف (`unknownConfigKey`).
+- **قيمة إعداد غير معروفة**: إعداد يأخذ كلمة من بضع كلمات يحمل كلمة أخرى، مثل `direction: 'right'` (الذي يأخذ `auto` أو `ltr` أو `rtl`). يقرأ المحرّك القيمة الافتراضية بدلًا منها، ويسمّي `used` ما آلت إليه: في `direction`، اتجاه لغة المستند (`unknownConfigValue`). ويُقرأ `align` في موضع الجدولة الذي ليس إحدى كلماته الأربع `'start'`، و`position` الذي ليس طولًا ولا `'end'` ولا نسبة مئوية يستبعد الموضع (`used` هو `'none'`). وتُفحص كلمات إعدادات القصص المصورة أيضًا ([القصص المصورة › تحذيرات القصص المصورة](/ar/docs/comics#تحذيرات-القصص-المصورة)): `used` هي القيمة التي آل إليها الإعداد (القيمة الافتراضية لنمط الفقاعة نفسه، في النمط المدمج)، و`suggestion` تسمّي الكلمة الأقرب إلى القيمة، حين تكون إحداها قريبة.
+- **أرقام الأسطر في النص العمودي**: `lineNumbers.enabled: true` في مستند منضّد عموديًا (`layout.writingMode: 'vertical-rl'`). الصفحات العمودية لا تأخذ أرقام أسطر، و`used` هو `false` (`lineNumbersUnsupported`؛ انظر [ترقيم الأسطر](/ar/docs/configuration-notes-references#ترقيم-الأسطر)).
+- **التفاف النص في الكتابة العمودية** — `defaultPlacement.wrap` لنوع مورد في مستند مكتوب عموديًا. الصفحات العمودية لا تصفّ نصًا بجانب الشكل، و`used` هي `none` (`wrapUnsupported`؛ انظر [تنسيق المستند › التفاف النص](/ar/docs/document-format#التفاف-النص)). و`wrap` لا يسمّي جانبًا قيمةُ إعداد غير معروفة.
+
+يُدرجها Sandbox في لوحة **الفحوص** مع مسار الإعداد. وفي الشيفرة، يضعها `buildDocument` على المستند باسم `configWarnings` (وتغيب حين تكون الإعدادات سليمة)، ويعيدها `collectConfigWarnings(config)` دون إخراج أي شيء:
+
+```js
+import { buildDocument, collectConfigWarnings } from 'postext';
+
+// Plain JavaScript: in TypeScript, 'roman' does not type-check to begin with.
+const config = { bodyText: { fontFamily: 'EB Garamond, serif' }, orderedLists: { numberFormat: 'roman' } };
+const doc = buildDocument({ markdown }, config);
+doc.configWarnings;
+// [{ kind: 'fontFamilyStack', path: 'bodyText.fontFamily', value: 'EB Garamond, serif', used: 'EB Garamond' },
+//  { kind: 'unknownNumberFormat', path: 'orderedLists.numberFormat', value: 'roman', used: 'arabic' }]
+collectConfigWarnings(config); // the same list
+```
+
+وتُفحَص كذلك كل إعدادات جزئية متداخلة: أنماط العناوين، والقوائم داخل الأجزاء، و`htmlViewer.overrides`، وعناصر التصميم.
+
+يصفها `formatWarning` (انظر [التحذيرات في المستند](/ar/docs/configuration-programmatic-usage#التحذيرات-في-المستند)) كذلك، مع مسار الإعداد أولًا: `bodyText.fontFamily: font stack "EB Garamond, serif" — set in "EB Garamond"`، `headingStyles[0].letterSpacng: unknown setting "letterSpacng" — ignored (did you mean "letterSpacing"?)`، ليتمكّن المضيف من تسجيل القوائم الثلاث التي يعيدها البناء في حلقة واحدة.

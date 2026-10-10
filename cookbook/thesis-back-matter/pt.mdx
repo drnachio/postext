@@ -16,7 +16,7 @@ As sete últimas páginas de uma tese de doutorado sobre a leitura em tela e em 
 
 ### 1 · Dar a cada parte dos pós-textuais um estilo de título
 
-O código é a [resposta curta](#a-resposta-curta) acima. `# Glossary {style="glossary" note="…"}` abre uma seção que vai até o próximo título de nível 1, e as páginas dela assumem a diagramação, os cabeços e a abertura do estilo ([estilos de título](/pt/docs/configuration#estilos-de-título)); assim o glossário e o índice passam para duas colunas, enquanto as referências, cujo estilo não define diagramação, voltam à coluna única do documento. `numbered: false` deixa esses títulos fora da contagem de capítulos (sem ele, a faixa do glossário imprime 2), e cada estilo declara a sua quebra de página, porque um estilo que não declara nenhuma herda o `'odd'` do capítulo e deixa páginas pares em branco. As entradas do glossário e das referências são parágrafos de um bloco `:::paragraphs{style="…"}` em 9,3 pt sobre 12,4 pt, contra os 11 sobre 14,6 do texto, com as linhas seguintes recuadas 1 em no glossário e 1,5 em nas referências ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)).
+O código é a [resposta curta](#a-resposta-curta) acima. `# Glossary {style="glossary" note="…"}` abre uma seção que vai até o próximo título de nível 1, e as páginas dela assumem a diagramação, os cabeços e a abertura do estilo ([estilos de título](/pt/docs/configuration-styles#estilos-de-título)); assim o glossário e o índice passam para duas colunas, enquanto as referências, cujo estilo não define diagramação, voltam à coluna única do documento. `numbered: false` deixa esses títulos fora da contagem de capítulos (sem ele, a faixa do glossário imprime 2), e cada estilo declara a sua quebra de página, porque um estilo que não declara nenhuma herda o `'odd'` do capítulo e deixa páginas pares em branco. As entradas do glossário e das referências são parágrafos de um bloco `:::paragraphs{style="…"}` em 9,3 pt sobre 12,4 pt, contra os 11 sobre 14,6 do texto, com as linhas seguintes recuadas 1 em no glossário e 1,5 em nas referências ([estilos de parágrafo](/pt/docs/configuration-styles#estilos-de-parágrafo)).
 
 ### 2 · Desenhar uma faixa para todas as aberturas
 
@@ -28,7 +28,7 @@ A marca é `{number}`: 6 no capítulo, A no apêndice e nada num título sem nú
 
 <Excerpt region="appendix" />
 
-O estilo do apêndice define `numberingTemplate: '{1:A}'`, que imprime o contador do nível como letra, e `# Interview guide {style="appendix" startAt=1}` reinicia esse contador, então o primeiro apêndice é o A e não o G ([estilos de título](/pt/docs/configuration#estilos-de-título)). A faixa lê a letra com `{number}` e o cabeço com `{chapterNumber}`. O `{h1}` de um tipo de recurso imprime o contador como número, por isso um tipo próprio numera as tabelas do apêndice como A.1, A.2 e assim por diante; com o tipo padrão, a tabela seria a Tabela 1.1. Os títulos do próprio capítulo contam a partir dos modelos de cada nível: `'{1}.{2}'` imprime 6.1, e `continuation.headings.h1: 5` faz deste o sexto capítulo.
+O estilo do apêndice define `numberingTemplate: '{1:A}'`, que imprime o contador do nível como letra, e `# Interview guide {style="appendix" startAt=1}` reinicia esse contador, então o primeiro apêndice é o A e não o G ([estilos de título](/pt/docs/configuration-styles#estilos-de-título)). A faixa lê a letra com `{number}` e o cabeço com `{chapterNumber}`. O `{h1}` de um tipo de recurso imprime o contador como número, por isso um tipo próprio numera as tabelas do apêndice como A.1, A.2 e assim por diante; com o tipo padrão, a tabela seria a Tabela 1.1. Os títulos do próprio capítulo contam a partir dos modelos de cada nível: `'{1}.{2}'` imprime 6.1, e `continuation.headings.h1: 5` faz deste o sexto capítulo.
 
 ### 4 · Pôr os cabeços na borda externa
 
@@ -46,7 +46,7 @@ Os quatro elementos de texto são ancorados na página e filtrados por `parity`,
 
 <Excerpt region="palette" />
 
-Os padrões do motor para negrito, itálico, marcadores de lista e referências seguem a entrada `main-color` da paleta, então apontá-la para a tinta os imprime em preto em vez de azul ([paleta de cores](/pt/docs/configuration#paleta-de-cores)). `referenceBold: false` compõe *Table 6.1* em redondo, como as citações autor-data em volta dela.
+Os padrões do motor para negrito, itálico, marcadores de lista e referências seguem a entrada `main-color` da paleta, então apontá-la para a tinta os imprime em preto em vez de azul ([paleta de cores](/pt/docs/configuration-fonts-colors-viewers#paleta-de-cores)). `referenceBold: false` compõe *Table 6.1* em redondo, como as citações autor-data em volta dela.
 
 <Note>A lista de tabelas continua manual. Numa tese inteira diagramada capítulo por capítulo com `buildBundle`, o capítulo que contém `:::index` recebe as marcas de todos os capítulos.</Note>
 

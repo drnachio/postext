@@ -16,31 +16,31 @@ pageNotes: { "1": "Tortilla de patatas：顶部是一张照片，金黄的土豆
 
 ### 1 · 每栏一个自己的框
 
-用松散列表时，[框内的分栏组](/zh/docs/document-format#columns)会在各栏最齐的地方切开，可能在块之间，也可能在一个块的行之间，于是冷汤的第一步被栏间距劈成两半：第一行排在用料栏末尾，其余部分排在做法栏开头。像上面[简短回答](#简短回答)那样嵌套一个框，它就成为一个整块，分栏组永远不会从中切开。放在其中的图片需要一个placement为`'here'`的`::resource`，因为任何其他placement都会让它成为浮动体，离开框，像任何被引用的图一样另行放置。卡片样式的`label`把围栏上的`label="SERVES 4"`变成页签：`offset`等于它的`height`，就让它立在卡片上边缘，`rule`从远端的角一直画到刀叉图标（[标注框样式](/zh/docs/configuration#标注框样式)）。
+用松散列表时，[框内的分栏组](/zh/docs/document-format#columns)会在各栏最齐的地方切开，可能在块之间，也可能在一个块的行之间，于是冷汤的第一步被栏间距劈成两半：第一行排在用料栏末尾，其余部分排在做法栏开头。像上面[简短回答](#简短回答)那样嵌套一个框，它就成为一个整块，分栏组永远不会从中切开。放在其中的图片需要一个placement为`'here'`的`::resource`，因为任何其他placement都会让它成为浮动体，离开框，像任何被引用的图一样另行放置。卡片样式的`label`把围栏上的`label="SERVES 4"`变成页签：`offset`等于它的`height`，就让它立在卡片上边缘，`rule`从远端的角一直画到刀叉图标（[标注框样式](/zh/docs/configuration-styles#标注框样式)）。
 
 ### 2 · 让步骤序号在两行之间居中
 
 <Excerpt region="steps" />
 
-列表序号画在条目第一条基线稍上方并居中，所以只设`numberFontSize`会让26 pt的数字与第一行齐平；`numberVerticalOffset`把它们下移2.5 mm，移到从第一行大写字母顶部到第二行基线这一区间的中部。Young Serif用的是旧式数字：3、4、5会伸到1和2所在的基线以下。设了`separatorColor`后，分隔符作为单独的一段文字绘制，默认的句点就以橄榄绿印在红色数字旁（[有序列表](/zh/docs/configuration#有序列表)）。
+列表序号画在条目第一条基线稍上方并居中，所以只设`numberFontSize`会让26 pt的数字与第一行齐平；`numberVerticalOffset`把它们下移2.5 mm，移到从第一行大写字母顶部到第二行基线这一区间的中部。Young Serif用的是旧式数字：3、4、5会伸到1和2所在的基线以下。设了`separatorColor`后，分隔符作为单独的一段文字绘制，默认的句点就以橄榄绿印在红色数字旁（[有序列表](/zh/docs/configuration-text#有序列表)）。
 
 ### 3 · 用一排线描领起清单
 
 <Excerpt region="prep" />
 
-`prep`框里只有标题和图标，所以它起标题栏的作用：图标`width`是`size`的3.75倍，把图标的正方形拉成18.75 × 5 mm的长条，三幅线描排满标题左侧（[标注框样式](/zh/docs/configuration#标注框样式)）。图标在框内独占一栏，与框内其他内容并排，所以任务项放在框之后，这样它们与用料的短横对齐，而不是从21 mm处开始。`- [ ]`条目印出默认的任务框，`unorderedLists.marginTop: 0`让它们以标题栏的`marginBottom`紧随其后，即各栏标题保留的2.4 mm间距（[无序列表](/zh/docs/configuration#无序列表)）。
+`prep`框里只有标题和图标，所以它起标题栏的作用：图标`width`是`size`的3.75倍，把图标的正方形拉成18.75 × 5 mm的长条，三幅线描排满标题左侧（[标注框样式](/zh/docs/configuration-styles#标注框样式)）。图标在框内独占一栏，与框内其他内容并排，所以任务项放在框之后，这样它们与用料的短横对齐，而不是从21 mm处开始。`- [ ]`条目印出默认的任务框，`unorderedLists.marginTop: 0`让它们以标题栏的`marginBottom`紧随其后，即各栏标题保留的2.4 mm间距（[无序列表](/zh/docs/configuration-text#无序列表)）。
 
 ### 4 · 把标签做成行内标签
 
 <Excerpt region="chips" />
 
-`:chip[Vegetarian]{style="tag"}`把一个词放进一个永不跨行断开的框。大于框高一半的`borderRadius`会被限制为一半，两端就成了半圆；`borderWidth: 0`时，胶囊只用底色绘制。框高11.4 pt，小于卡片12.8 pt的行距，所以第二行标签不会碰到第一行（[行内标签样式](/zh/docs/configuration#行内标签样式)）。
+`:chip[Vegetarian]{style="tag"}`把一个词放进一个永不跨行断开的框。大于框高一半的`borderRadius`会被限制为一半，两端就成了半圆；`borderWidth: 0`时，胶囊只用底色绘制。框高11.4 pt，小于卡片12.8 pt的行距，所以第二行标签不会碰到第一行（[行内标签样式](/zh/docs/configuration-styles#行内标签样式)）。
 
 ### 5 · 一套版面设计，每道菜一张照片
 
 <Excerpt region="opener" />
 
-`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}`选定标题样式，并用属性填入各个位置，斜体引言也在其中（[标题属性](/zh/docs/document-format#标题属性)）。图片元素的`resourceId`是`'{attr.art}'`，和文字里的占位符一样，所以两道菜共用一个样式，由各自的标题指明照片（[图片元素](/zh/docs/configuration#图像元素)）。每个胶囊标签锚定在前一个的`right-of`，标题锚定在第一个胶囊的`above`，眉题在标题上方，所以标题变长时眉题上移，胶囊标签留在原来那一行。引言是设计里位置最低的元素，章首区一直预留到它的最后一行，所以不设`minHeight`卡片也从引言下方开始。批注和照片以及箭头一样锚定在页面上，箭头是用代码绘制的第二个图片元素；两页上批注都在箭头前2 mm处结束，尽管对称的页边距让右页的版心向右移了2 mm。
+`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}`选定标题样式，并用属性填入各个位置，斜体引言也在其中（[标题属性](/zh/docs/document-format#标题属性)）。图片元素的`resourceId`是`'{attr.art}'`，和文字里的占位符一样，所以两道菜共用一个样式，由各自的标题指明照片（[图片元素](/zh/docs/configuration-page-layout#图像元素)）。每个胶囊标签锚定在前一个的`right-of`，标题锚定在第一个胶囊的`above`，眉题在标题上方，所以标题变长时眉题上移，胶囊标签留在原来那一行。引言是设计里位置最低的元素，章首区一直预留到它的最后一行，所以不设`minHeight`卡片也从引言下方开始。批注和照片以及箭头一样锚定在页面上，箭头是用代码绘制的第二个图片元素；两页上批注都在箭头前2 mm处结束，尽管对称的页边距让右页的版心向右移了2 mm。
 
 ### 6 · 把图片注册为资源
 

@@ -16,7 +16,7 @@ Uma plaquete de quatro páginas A5, uma folha A4 dobrada uma vez, com dois poema
 
 ### 1 · Um verso é um parágrafo centralizado
 
-O código é [a resposta curta](#a-resposta-curta) lá em cima. O Postext junta as linhas de um parágrafo do Markdown numa só, então cada verso é um parágrafo, com uma linha em branco depois. `textAlign: 'center'` compõe cada verso na sua largura natural, sobre o eixo da medida, e como só o texto justificado é hifenizado, a não ser que `hyphenation.ragged` esteja ligado, nenhuma palavra é dividida ([texto do corpo](/pt/docs/configuration#texto-do-corpo)). Cada verso é a primeira linha do seu parágrafo, então o recuo de primeira linha padrão, de 1,5 em, o empurraria 3,3 mm para a direita do eixo dos títulos; `firstLineIndent: pt(0)` mantém poemas e títulos no mesmo eixo.
+O código é [a resposta curta](#a-resposta-curta) lá em cima. O Postext junta as linhas de um parágrafo do Markdown numa só, então cada verso é um parágrafo, com uma linha em branco depois. `textAlign: 'center'` compõe cada verso na sua largura natural, sobre o eixo da medida, e como só o texto justificado é hifenizado, a não ser que `hyphenation.ragged` esteja ligado, nenhuma palavra é dividida ([texto do corpo](/pt/docs/configuration-text#texto-do-corpo)). Cada verso é a primeira linha do seu parágrafo, então o recuo de primeira linha padrão, de 1,5 em, o empurraria 3,3 mm para a direita do eixo dos títulos; `firstLineIndent: pt(0)` mantém poemas e títulos no mesmo eixo.
 
 ### 2 · A medida comporta o verso mais longo
 
@@ -28,7 +28,7 @@ Um verso que não cabe passa para a linha seguinte, e as duas metades são centr
 
 <Excerpt region="titles" />
 
-Nenhum nível tem design, só ajustes tipográficos, e `headings.textAlign` centraliza os três ([títulos](/pt/docs/configuration#títulos)). A paridade `'any'` abre cada poema na página seguinte, par ou ímpar, de modo que o altar da página 2 fica de frente para as asas da página 3. Um `marginTop` não consegue baixar esses títulos, porque o espaço acima de um título que abre página é descartado. Em vez disso, a caixa de linha do nível 2, com três linhas de altura, baixa cada título cerca de 5 mm, e os dois poemas começam na linha 5 da mancha. O nível 1 abre o documento e aqui não precisa de quebra; ele a leva mesmo assim, para que um segundo título `#` abra numa página ímpar. O nível 3 compõe os quatro rótulos das páginas 1 e 4 nos versaletes da IM Fell English SC, no corpo do texto.
+Nenhum nível tem design, só ajustes tipográficos, e `headings.textAlign` centraliza os três ([títulos](/pt/docs/configuration-text#títulos)). A paridade `'any'` abre cada poema na página seguinte, par ou ímpar, de modo que o altar da página 2 fica de frente para as asas da página 3. Um `marginTop` não consegue baixar esses títulos, porque o espaço acima de um título que abre página é descartado. Em vez disso, a caixa de linha do nível 2, com três linhas de altura, baixa cada título cerca de 5 mm, e os dois poemas começam na linha 5 da mancha. O nível 1 abre o documento e aqui não precisa de quebra; ele a leva mesmo assim, para que um segundo título `#` abra numa página ímpar. O nível 3 compõe os quatro rótulos das páginas 1 e 4 nos versaletes da IM Fell English SC, no corpo do texto.
 
 ### 4 · O Markdown espaça e quebra as páginas
 

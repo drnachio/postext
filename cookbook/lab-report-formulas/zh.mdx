@@ -16,7 +16,7 @@ pageNotes: { "1": "一条浅粉色色带上印着课程名、标题（实验编�
 
 ### 1 · 化学式写成文字，方程交给TeX
 
-代码就是上面的[简短回答](#简短回答)。[`~…~`和`^…^`](/zh/docs/document-format#行内格式)用正文自己的字体，把一段文字排成正文字号的58%，所以`CH~3~COOH`、`OH^−^`（其中的负号是U+2212）和`cm^3^`保持与所在句子相同的字重和颜色。这些标记在题注和表格单元格里也有效，用的是题注或单元格自己的字体；行内的`$…$`在那里也能排，用的是公式的字体。用mhchem的`\ce{…}`写的反应式和各个方程是放在`$$`之间的TeX。`await initMathEngine()`在排版前启动[数学引擎](/zh/docs/configuration#启动公式引擎)，它和其他符号从同一处导入。`math.fontSizeScale`设为0.495 / 0.442，约1.12：公式的x高度取TeX的0.442 em，而Inria Serif的x高度是0.495 em，这个比例让公式和正文的小写字母高度一致。
+代码就是上面的[简短回答](#简短回答)。[`~…~`和`^…^`](/zh/docs/document-format#行内格式)用正文自己的字体，把一段文字排成正文字号的58%，所以`CH~3~COOH`、`OH^−^`（其中的负号是U+2212）和`cm^3^`保持与所在句子相同的字重和颜色。这些标记在题注和表格单元格里也有效，用的是题注或单元格自己的字体；行内的`$…$`在那里也能排，用的是公式的字体。用mhchem的`\ce{…}`写的反应式和各个方程是放在`$$`之间的TeX。`await initMathEngine()`在排版前启动[数学引擎](/zh/docs/configuration-text#启动公式引擎)，它和其他符号从同一处导入。`math.fontSizeScale`设为0.495 / 0.442，约1.12：公式的x高度取TeX的0.442 em，而Inria Serif的x高度是0.495 em，这个比例让公式和正文的小写字母高度一致。
 
 ### 2 · 把章节编号悬挂在页边
 
@@ -28,25 +28,25 @@ pageNotes: { "1": "一条浅粉色色带上印着课程名、标题（实验编�
 
 <Excerpt region="head" />
 
-报告唯一的H1使用`report`[标题样式](/zh/docs/configuration#通栏与高级设计)，它把标题替换成一个绘制的报告头：横跨页面顶部的粉色色带、滴定管、课程名、像章节编号那样悬挂实验编号的标题，以及署名。署名的值来自[标题的属性](/zh/docs/document-format#标题属性)和前置元数据的`publishDate`。色带是一个框，框会计入标题预留的高度，所以即使没有`minHeight`，正文也会从色带底部下方、距页面顶端104 mm处开始。`minHeight`在色带下方8 mm处设了一个下限；加上H1的下外边距和15 pt网格，摘要上方留出15 mm空白，而不是4.7 mm。
+报告唯一的H1使用`report`[标题样式](/zh/docs/configuration-text#通栏与高级设计)，它把标题替换成一个绘制的报告头：横跨页面顶部的粉色色带、滴定管、课程名、像章节编号那样悬挂实验编号的标题，以及署名。署名的值来自[标题的属性](/zh/docs/document-format#标题属性)和前置元数据的`publishDate`。色带是一个框，框会计入标题预留的高度，所以即使没有`minHeight`，正文也会从色带底部下方、距页面顶端104 mm处开始。`minHeight`在色带下方8 mm处设了一个下限；加上H1的下外边距和15 pt网格，摘要上方留出15 mm空白，而不是4.7 mm。
 
 ### 4 · 用报告的语言命名表和图
 
 <Excerpt region="labels" />
 
-内置类型跟随文档的`locale`，所以西班牙语版不用任何设置就印Tabla和Figura。[`defaultResourceTypes(LANG)`](/zh/docs/configuration#资源类型)把这些类型取出来，好让本食谱改动其中一个。它们的`{h1}.{n}`模板在这里只印出1，因为报告的H1不编号，空的`{h1}`会连同它的点一起省略。表的题注放在表格上方，这是报告的惯例。正文用`:ref{id="lecturas" style="full"}`引用表和图，颜色和字重与周围文字相同。
+内置类型跟随文档的`locale`，所以西班牙语版不用任何设置就印Tabla和Figura。[`defaultResourceTypes(LANG)`](/zh/docs/configuration-resources#资源类型)把这些类型取出来，好让本食谱改动其中一个。它们的`{h1}.{n}`模板在这里只印出1，因为报告的H1不编号，空的`{h1}`会连同它的点一起省略。表的题注放在表格上方，这是报告的惯例。正文用`:ref{id="lecturas" style="full"}`引用表和图，颜色和字重与周围文字相同。
 
 ### 5 · 用同一组读数计算表格和曲线
 
 <Excerpt region="data" />
 
-四对滴定管读数给出表1的每个单元格以及平均值和标准差，平均体积又决定了图1所画pH模型的等当点。第一行是表头（`headerRowCount: 1`），`columnWidths`给标签栏分配1.8份宽度。每个单元格带有自己的`align`，[`mergeCells`](/zh/docs/configuration#构建表格模型)让平均值和标准差的标签横跨前三栏，右对齐靠向各自的数值。数字用Sometype Mono排，小数点因此对齐。栏头写成“量/单位”的形式，例如`V~b~ used / cm^3^`，标记方式与正文相同。
+四对滴定管读数给出表1的每个单元格以及平均值和标准差，平均体积又决定了图1所画pH模型的等当点。第一行是表头（`headerRowCount: 1`），`columnWidths`给标签栏分配1.8份宽度。每个单元格带有自己的`align`，[`mergeCells`](/zh/docs/configuration-resources#构建表格模型)让平均值和标准差的标签横跨前三栏，右对齐靠向各自的数值。数字用Sometype Mono排，小数点因此对齐。栏头写成“量/单位”的形式，例如`V~b~ used / cm^3^`，标记方式与正文相同。
 
 ### 6 · 以悬挂缩进的参考文献收尾
 
 <Excerpt region="references" />
 
-一个`:::paragraphs{style="references"}`围栏把[段落样式](/zh/docs/configuration#段落样式)应用到每条参考文献：9/12.5 pt，齐左，6 mm悬挂缩进，条目间距4 pt。齐左段落默认不断词，除非用`bodyText.hyphenation.ragged`打开，所以像*Fundamentals of Analytical Chemistry*这样的长书名只在词与词之间断开。版权页信息有自己的样式：Inria Sans，7.4 pt，上方空一行15 pt。
+一个`:::paragraphs{style="references"}`围栏把[段落样式](/zh/docs/configuration-styles#段落样式)应用到每条参考文献：9/12.5 pt，齐左，6 mm悬挂缩进，条目间距4 pt。齐左段落默认不断词，除非用`bodyText.hyphenation.ragged`打开，所以像*Fundamentals of Analytical Chemistry*这样的长书名只在词与词之间断开。版权页信息有自己的样式：Inria Sans，7.4 pt，上方空一行15 pt。
 
 ## 变化
 

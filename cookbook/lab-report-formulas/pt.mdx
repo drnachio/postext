@@ -16,7 +16,7 @@ Três alunos do terceiro ano do ensino médio titulam um vinagre de maçã com h
 
 ### 1 · Escreva as fórmulas como texto e deixe o TeX para as equações
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. [`~…~` e `^…^`](/pt/docs/document-format#formatação-em-linha) compõem um trecho a 58 % do corpo na própria fonte do texto, então `CH~3~COOH`, `OH^−^` (o sinal de menos é U+2212) e `cm^3^` mantêm o peso e a cor da frase em volta. As marcas também funcionam em legendas e células de tabela, na fonte da legenda ou da célula; `$…$` em linha também é composto ali, na fonte das fórmulas. A reação, escrita com o `\ce{…}` do mhchem, e as equações são TeX entre `$$`. `await initMathEngine()` inicia o [motor de matemática](/pt/docs/configuration#inicializar-o-motor-de-fórmulas) antes da composição; ele vem do mesmo import que os outros símbolos. `math.fontSizeScale` vale 0,495 / 0,442, cerca de 1,12: a altura de x de uma fórmula é a do TeX, 0,442 em do corpo, e a da Inria Serif é 0,495 em, então a escala deixa as minúsculas da fórmula e do texto na mesma altura.
+O código é [a resposta curta](#a-resposta-curta) logo acima. [`~…~` e `^…^`](/pt/docs/document-format#formatação-em-linha) compõem um trecho a 58 % do corpo na própria fonte do texto, então `CH~3~COOH`, `OH^−^` (o sinal de menos é U+2212) e `cm^3^` mantêm o peso e a cor da frase em volta. As marcas também funcionam em legendas e células de tabela, na fonte da legenda ou da célula; `$…$` em linha também é composto ali, na fonte das fórmulas. A reação, escrita com o `\ce{…}` do mhchem, e as equações são TeX entre `$$`. `await initMathEngine()` inicia o [motor de matemática](/pt/docs/configuration-text#inicializar-o-motor-de-fórmulas) antes da composição; ele vem do mesmo import que os outros símbolos. `math.fontSizeScale` vale 0,495 / 0,442, cerca de 1,12: a altura de x de uma fórmula é a do TeX, 0,442 em do corpo, e a da Inria Serif é 0,495 em, então a escala deixa as minúsculas da fórmula e do texto na mesma altura.
 
 ### 2 · Pendure os números das seções na margem
 
@@ -28,25 +28,25 @@ O design de cada nível de título é um encaixe com dois elementos: o título, 
 
 <Excerpt region="head" />
 
-O único H1 do relatório usa o [estilo de título](/pt/docs/configuration#largura-e-design-avançado) `report`, que o troca por um cabeçalho desenhado: uma faixa rosa no alto da página, a bureta, a linha da disciplina, o título com o número da prática pendurado como um número de seção e os dados de autoria. Os valores da autoria vêm dos [atributos do título](/pt/docs/document-format#atributos-de-título) e do `publishDate` do frontmatter. A faixa é uma caixa, e as caixas contam para a altura que um título reserva, então mesmo sem `minHeight` o texto começaria sob o pé da faixa, a 104 mm do alto da página. `minHeight` fixa um piso 8 mm abaixo da faixa; com a margem inferior do H1 e a grade de 15 pt, isso deixa 15 mm de branco acima do resumo, em vez de 4,7 mm.
+O único H1 do relatório usa o [estilo de título](/pt/docs/configuration-text#largura-e-design-avançado) `report`, que o troca por um cabeçalho desenhado: uma faixa rosa no alto da página, a bureta, a linha da disciplina, o título com o número da prática pendurado como um número de seção e os dados de autoria. Os valores da autoria vêm dos [atributos do título](/pt/docs/document-format#atributos-de-título) e do `publishDate` do frontmatter. A faixa é uma caixa, e as caixas contam para a altura que um título reserva, então mesmo sem `minHeight` o texto começaria sob o pé da faixa, a 104 mm do alto da página. `minHeight` fixa um piso 8 mm abaixo da faixa; com a margem inferior do H1 e a grade de 15 pt, isso deixa 15 mm de branco acima do resumo, em vez de 4,7 mm.
 
 ### 4 · Dê nome à tabela e à figura no idioma do relatório
 
 <Excerpt region="labels" />
 
-Os tipos embutidos seguem o `locale` do documento, então a edição em espanhol diz Tabla e Figura sem nenhum ajuste. [`defaultResourceTypes(LANG)`](/pt/docs/configuration#tipos-de-recurso) devolve esses tipos para que a receita mude um deles. O modelo `{h1}.{n}` deles imprime aqui só um 1, porque o H1 do relatório não tem número e um `{h1}` vazio cai junto com o seu ponto. A legenda da tabela vai acima dela, onde os relatórios a põem. O texto cita a tabela e a figura com `:ref{id="lecturas" style="full"}`, na tinta e no peso das palavras em volta.
+Os tipos embutidos seguem o `locale` do documento, então a edição em espanhol diz Tabla e Figura sem nenhum ajuste. [`defaultResourceTypes(LANG)`](/pt/docs/configuration-resources#tipos-de-recurso) devolve esses tipos para que a receita mude um deles. O modelo `{h1}.{n}` deles imprime aqui só um 1, porque o H1 do relatório não tem número e um `{h1}` vazio cai junto com o seu ponto. A legenda da tabela vai acima dela, onde os relatórios a põem. O texto cita a tabela e a figura com `:ref{id="lecturas" style="full"}`, na tinta e no peso das palavras em volta.
 
 ### 5 · Calcule a tabela e a curva a partir das mesmas leituras
 
 <Excerpt region="data" />
 
-Os quatro pares de leituras da bureta dão todas as células da tabela 1, a média e o desvio padrão, e o volume médio define o ponto de equivalência do modelo de pH que a figura 1 desenha. A primeira linha é o cabeçalho (`headerRowCount: 1`), e `columnWidths` dá à coluna de rótulos 1,8 partes da largura. Cada célula traz o seu próprio `align`, e [`mergeCells`](/pt/docs/configuration#construção-de-modelos-de-tabela) estende os rótulos da média e do desvio pelas três primeiras colunas, alinhados à direita junto aos seus valores. Os números estão em Sometype Mono, e por isso os separadores decimais ficam alinhados. Os cabeçalhos das colunas são grandezas sobre unidades, como `V~b~ used / cm^3^`, marcados como o texto.
+Os quatro pares de leituras da bureta dão todas as células da tabela 1, a média e o desvio padrão, e o volume médio define o ponto de equivalência do modelo de pH que a figura 1 desenha. A primeira linha é o cabeçalho (`headerRowCount: 1`), e `columnWidths` dá à coluna de rótulos 1,8 partes da largura. Cada célula traz o seu próprio `align`, e [`mergeCells`](/pt/docs/configuration-resources#construção-de-modelos-de-tabela) estende os rótulos da média e do desvio pelas três primeiras colunas, alinhados à direita junto aos seus valores. Os números estão em Sometype Mono, e por isso os separadores decimais ficam alinhados. Os cabeçalhos das colunas são grandezas sobre unidades, como `V~b~ used / cm^3^`, marcados como o texto.
 
 ### 6 · Feche com referências com recuo deslocado
 
 <Excerpt region="references" />
 
-Um bloco `:::paragraphs{style="references"}` aplica o [estilo de parágrafo](/pt/docs/configuration#estilos-de-parágrafo) a cada referência: 9 pt sobre 12,5 pt, alinhado à esquerda, com recuo deslocado de 6 mm e 4 pt entre as entradas. Parágrafos alinhados à esquerda não são hifenizados, a menos que `bodyText.hyphenation.ragged` peça, então um título longo como *Fundamentals of Analytical Chemistry* só quebra entre palavras. O colofão tem um estilo próprio, Inria Sans em 7,4 pt, com uma linha de 15 pt de espaço acima.
+Um bloco `:::paragraphs{style="references"}` aplica o [estilo de parágrafo](/pt/docs/configuration-styles#estilos-de-parágrafo) a cada referência: 9 pt sobre 12,5 pt, alinhado à esquerda, com recuo deslocado de 6 mm e 4 pt entre as entradas. Parágrafos alinhados à esquerda não são hifenizados, a menos que `bodyText.hyphenation.ragged` peça, então um título longo como *Fundamentals of Analytical Chemistry* só quebra entre palavras. O colofão tem um estilo próprio, Inria Sans em 7,4 pt, com uma linha de 15 pt de espaço acima.
 
 ## Variações
 

@@ -1,0 +1,539 @@
+{
+  "$comment": "Prose of the pages split-configuration.mjs writes: the entry page's description, summary and index lead, the title, sidebar title, description and In short summary of each new page, and the index line of the sections the old index did not list. Seven languages.",
+  "entry": {
+    "en": {
+      "description": "What a Postext configuration is, and where each group of settings is explained in the nine pages of the reference",
+      "plainSummary": "This page opens the reference for every setting that controls how your pages look. One group of settings holds all the choices: page size, number of columns, fonts, text size, headings, boxes, colours and more. You only write the settings you want to change, because each one starts with a sensible value. The reference is split into nine pages. The list on this page links every section, so jump to the part you need.",
+      "indexLead": "The reference is split into nine pages. Each group below is one page, followed by the sections it holds."
+    },
+    "es": {
+      "description": "Qué es una configuración de Postext y en cuál de las nueve páginas de la referencia se explica cada grupo de ajustes",
+      "plainSummary": "Esta página abre la referencia de todos los ajustes que deciden el aspecto de tus páginas. Un solo grupo de ajustes guarda todas las decisiones: tamaño de página, número de columnas, tipografías, cuerpo del texto, títulos, recuadros, colores y mucho más. Solo escribes los ajustes que quieres cambiar, porque cada uno parte de un valor razonable. La referencia está repartida en nueve páginas. La lista de esta página enlaza todas las secciones, así que puedes ir directamente a la parte que necesitas.",
+      "indexLead": "La referencia está repartida en nueve páginas. Cada grupo de esta lista es una página, seguida de las secciones que contiene."
+    },
+    "ca": {
+      "description": "Què és una configuració de Postext i en quina de les nou pàgines de la referència s'explica cada grup de paràmetres",
+      "plainSummary": "Aquesta pàgina obre la referència de tots els paràmetres que decideixen l'aspecte de les teves pàgines. Un sol grup de paràmetres desa totes les decisions: mida de pàgina, nombre de columnes, tipografies, cos del text, títols, requadres, colors i molt més. Només escrius els paràmetres que vols canviar, perquè cadascun parteix d'un valor raonable. La referència està repartida en nou pàgines. La llista d'aquesta pàgina enllaça totes les seccions, així que pots anar directament a la part que necessites.",
+      "indexLead": "La referència està repartida en nou pàgines. Cada grup d'aquesta llista és una pàgina, seguida de les seccions que conté."
+    },
+    "zh": {
+      "description": "什么是Postext配置，以及参考的九个页面各讲哪一组设置",
+      "plainSummary": "本页是参考的入口，这份参考列出控制页面外观的所有设置。所有选择都放在一组设置里：页面大小、栏数、字体、字号、标题、框、颜色等等。每项设置都有合理的默认值，你只需写出想改的那几项。整份参考分为九个页面。本页的列表链接到每一节，可以直接跳到需要的部分。",
+      "indexLead": "这份参考分为九个页面。下面每一组是一个页面，后面列出它包含的各节。"
+    },
+    "ar": {
+      "description": "ما هي إعدادات Postext، وفي أي صفحة من صفحات المرجع التسع تُشرح كل مجموعة منها",
+      "plainSummary": "تفتح هذه الصفحة مرجع كل إعداد يتحكم في مظهر صفحاتك. تجمع مجموعة واحدة من الإعدادات كل الخيارات: مقاس الصفحة وعدد الأعمدة والخطوط وحجم النص والعناوين والإطارات والألوان وغير ذلك. لا تكتب إلا الإعدادات التي تريد تغييرها، لأن لكل إعداد قيمة أولى معقولة. المرجع موزّع على تسع صفحات. وتربط القائمة في هذه الصفحة بكل قسم، فانتقل مباشرة إلى الجزء الذي تحتاجه.",
+      "indexLead": "المرجع موزّع على تسع صفحات. كل مجموعة في هذه القائمة صفحة، تليها الأقسام التي تضمّها."
+    },
+    "ja": {
+      "description": "Postextの設定とは何か、そして9ページに分かれたリファレンスのどこに各設定の説明があるか",
+      "plainSummary": "このページは、ページの見た目を決めるすべての設定を載せたリファレンスの入口です。ページの大きさ、段の数、フォント、文字の大きさ、見出し、囲み、色など、すべての選択は1つの設定のまとまりに入っています。どの設定にも最初から無理のない値が入っているので、書くのは変えたいものだけです。リファレンスは9つのページに分かれています。このページの一覧からすべての節へ進めるので、必要なところへ直接進んでください。",
+      "indexLead": "このリファレンスは9つのページに分かれています。以下の各グループが1つのページで、その下にそのページの節を挙げます。"
+    },
+    "pt": {
+      "description": "O que é uma configuração do Postext e em qual das nove páginas da referência cada grupo de ajustes é explicado",
+      "plainSummary": "Esta página abre a referência de todos os ajustes que definem a aparência das suas páginas. Um só grupo de ajustes reúne todas as escolhas: tamanho da página, número de colunas, fontes, tamanho do texto, títulos, boxes, cores e muito mais. Você só escreve os ajustes que quer mudar, porque cada um já começa com um valor sensato. A referência está dividida em nove páginas. A lista desta página tem um link para cada seção, então vá direto à parte de que precisa.",
+      "indexLead": "A referência está dividida em nove páginas. Cada grupo desta lista é uma página, seguida das seções que ela contém."
+    }
+  },
+  "pages": [
+    {
+      "slug": "configuration-page-layout",
+      "sections": ["Page", "Layout", "Headers & footers"],
+      "locales": {
+        "en": {
+          "title": "Configuration: page and layout",
+          "sidebarTitle": "Page and layout",
+          "description": "The page size, margins and baseline grid, the columns and their gutters, and the running headers and footers",
+          "plainSummary": "This page covers the settings for the sheet itself. You choose the page size, the margins, the side the book is bound on and the grid the lines of text sit on. You set how many columns a page has and how much space runs between them. You also decide what is printed at the top and the bottom of every page, such as the page number or the chapter title. It is one of the nine pages of the Configuration reference."
+        },
+        "es": {
+          "title": "Configuración: página y disposición",
+          "sidebarTitle": "Página y disposición",
+          "description": "El tamaño de página, los márgenes y la rejilla base, las columnas y su medianil, y los encabezados y pies de página",
+          "plainSummary": "Esta página reúne los ajustes de la hoja. Eliges el tamaño de página, los márgenes, el lado por el que se encuaderna el libro y la rejilla sobre la que se apoyan las líneas de texto. Decides cuántas columnas tiene la página y cuánto espacio las separa. También decides qué se imprime arriba y abajo en cada página, como el número de página o el título del capítulo. Es una de las nueve páginas de la referencia de configuración."
+        },
+        "ca": {
+          "title": "Configuració: pàgina i disposició",
+          "sidebarTitle": "Pàgina i disposició",
+          "description": "La mida de pàgina, els marges i la retícula de base, les columnes i l'espai que les separa, i les capçaleres i els peus de pàgina",
+          "plainSummary": "Aquesta pàgina reuneix els paràmetres del full. Tries la mida de pàgina, els marges, el costat per on s'enquaderna el llibre i la retícula sobre la qual reposen les línies de text. Decideixes quantes columnes té la pàgina i quant d'espai les separa. També decideixes què s'imprimeix a dalt i a baix de cada pàgina, com ara el número de pàgina o el títol del capítol. És una de les nou pàgines de la referència de configuració."
+        },
+        "zh": {
+          "title": "配置：页面与版式",
+          "sidebarTitle": "页面与版式",
+          "description": "页面尺寸、页边距与基线网格，分栏与栏间距，以及页眉和页脚",
+          "plainSummary": "本页讲纸面本身的设置。你可以选择页面大小、页边距、书的装订边，以及文字行所对齐的网格。你可以设定一页分几栏，栏与栏之间留多少空。你还可以决定每页顶部和底部印什么，比如页码或章名。本页是配置参考九个页面中的一页。"
+        },
+        "ar": {
+          "title": "الإعدادات: الصفحة والتخطيط",
+          "sidebarTitle": "الصفحة والتخطيط",
+          "description": "مقاس الصفحة والهوامش وشبكة خطوط الأساس، والأعمدة والفواصل بينها، ورؤوس الصفحات وتذييلاتها",
+          "plainSummary": "تتناول هذه الصفحة إعدادات الورقة نفسها. تختار مقاس الصفحة والهوامش وجهة تجليد الكتاب والشبكة التي تستقر عليها أسطر النص. وتحدد عدد أعمدة الصفحة ومقدار الفراغ بينها. وتقرر أيضًا ما يُطبع أعلى كل صفحة وأسفلها، مثل رقم الصفحة أو عنوان الفصل. وهي إحدى الصفحات التسع في مرجع الإعدادات."
+        },
+        "ja": {
+          "title": "設定：ページとレイアウト",
+          "sidebarTitle": "ページとレイアウト",
+          "description": "ページサイズ、余白、ベースライングリッド、段組みと段間、柱とノンブル",
+          "plainSummary": "このページでは、紙面そのものの設定を説明します。ページの大きさ、余白、本をとじる側、文字の行をそろえるグリッドを選びます。1ページを何段に分けるか、段と段のあいだをどれだけ空けるかを決めます。ページ番号や章の題名など、各ページの上と下に印刷するものも決めます。これは設定リファレンスの9ページのうちの1つです。"
+        },
+        "pt": {
+          "title": "Configuração: página e diagramação",
+          "sidebarTitle": "Página e diagramação",
+          "description": "O tamanho da página, as margens e a grade de linhas de base, as colunas e seus medianizes, e os cabeços e rodapés",
+          "plainSummary": "Esta página reúne os ajustes da folha. Você escolhe o tamanho da página, as margens, o lado da encadernação e a grade em que as linhas de texto se apoiam. Define quantas colunas a página tem e quanto espaço fica entre elas. Também decide o que é impresso no alto e no pé de cada página, como o número da página ou o título do capítulo. É uma das nove páginas da referência de configuração."
+        }
+      }
+    },
+    {
+      "slug": "configuration-text",
+      "sections": ["Body text", "Headings", "Unordered Lists", "Ordered Lists", "Math"],
+      "locales": {
+        "en": {
+          "title": "Configuration: text and headings",
+          "sidebarTitle": "Text and headings",
+          "description": "Body text typography, hyphenation and the document language; headings, bulleted and numbered lists, and maths",
+          "plainSummary": "This page covers the settings for the words on the page. You choose the font, the size and the line spacing of the main text, and how words are split at the end of a line. You tell Postext which language the book is written in. You set how each level of heading looks, and how bulleted and numbered lists are drawn. The last section sets the size and the colour of mathematical formulas."
+        },
+        "es": {
+          "title": "Configuración: texto y encabezados",
+          "sidebarTitle": "Texto y encabezados",
+          "description": "La tipografía del texto de cuerpo, la separación silábica y el idioma del documento; los encabezados, las listas y las matemáticas",
+          "plainSummary": "Esta página reúne los ajustes de las palabras de la página. Eliges la tipografía, el cuerpo y el interlineado del texto principal, y cómo se parten las palabras al final de la línea. Le dices a Postext en qué idioma está escrito el libro. Decides el aspecto de cada nivel de título y cómo se dibujan las listas con viñetas y las numeradas. La última sección fija el tamaño y el color de las fórmulas matemáticas."
+        },
+        "ca": {
+          "title": "Configuració: text i encapçalaments",
+          "sidebarTitle": "Text i encapçalaments",
+          "description": "La tipografia del text de cos, la partició de mots i l'idioma del document; els encapçalaments, les llistes i les matemàtiques",
+          "plainSummary": "Aquesta pàgina reuneix els paràmetres de les paraules de la pàgina. Tries la tipografia, el cos i l'interlineat del text principal, i com es parteixen els mots al final de la línia. Li dius a Postext en quin idioma està escrit el llibre. Decideixes l'aspecte de cada nivell de títol i com es dibuixen les llistes amb pics i les numerades. L'última secció fixa la mida i el color de les fórmules matemàtiques."
+        },
+        "zh": {
+          "title": "配置：正文与标题",
+          "sidebarTitle": "正文与标题",
+          "description": "正文的排印、断词与文档语言，标题、无序和有序列表，以及数学公式",
+          "plainSummary": "本页讲页面上文字的设置。你可以选择正文的字体、字号和行距，以及行末怎样断词。你要告诉Postext这本书用哪种语言写成。你可以设定每一级标题的样子，以及无序列表和有序列表怎样画。最后一节设定数学公式的大小和颜色。"
+        },
+        "ar": {
+          "title": "الإعدادات: النص والعناوين",
+          "sidebarTitle": "النص والعناوين",
+          "description": "تنضيد نص المتن وتقسيم الكلمات بالواصلة ولغة المستند، ثم العناوين والقوائم المرقّمة وغير المرقّمة والصيغ الرياضية",
+          "plainSummary": "تتناول هذه الصفحة إعدادات الكلمات في الصفحة. تختار خط النص الأساسي وحجمه والمسافة بين أسطره، وطريقة تقسيم الكلمات في آخر السطر. وتخبر Postext باللغة التي كُتب بها الكتاب. وتحدد مظهر كل مستوى من العناوين، وطريقة رسم القوائم المرقّمة وغير المرقّمة. ويضبط القسم الأخير حجم الصيغ الرياضية ولونها."
+        },
+        "ja": {
+          "title": "設定：本文と見出し",
+          "sidebarTitle": "本文と見出し",
+          "description": "本文の文字組み、ハイフネーション、文書の言語、見出し、箇条書きと番号付きのリスト、数式",
+          "plainSummary": "このページでは、ページに並ぶ文字の設定を説明します。本文のフォント、文字の大きさ、行の間隔と、行の終わりで単語をどう分けるかを選びます。本がどの言語で書かれているかをPostextに伝えます。見出しのレベルごとの見た目と、箇条書きや番号付きのリストの描き方を決めます。最後の節では、数式の大きさと色を決めます。"
+        },
+        "pt": {
+          "title": "Configuração: texto e títulos",
+          "sidebarTitle": "Texto e títulos",
+          "description": "A tipografia do texto do corpo, a hifenização e o idioma do documento; os títulos, as listas e a matemática",
+          "plainSummary": "Esta página reúne os ajustes das palavras da página. Você escolhe a fonte, o tamanho e a entrelinha do texto principal, e como as palavras são divididas no fim da linha. Informa ao Postext em que idioma o livro está escrito. Define a aparência de cada nível de título e o desenho das listas com marcadores e das numeradas. A última seção define o tamanho e a cor das fórmulas matemáticas."
+        }
+      }
+    },
+    {
+      "slug": "configuration-notes-references",
+      "sections": ["Footnotes", "Line numbers", "Cross-references", "Citations", "Table of contents", "Back-of-book index"],
+      "locales": {
+        "en": {
+          "title": "Configuration: notes and references",
+          "sidebarTitle": "Notes and references",
+          "description": "Footnotes, line numbers, cross-references and citations, the table of contents and the back-of-book index",
+          "plainSummary": "This page covers the settings for the parts of a book that point somewhere else. Footnotes sit at the bottom of the page, and line numbers stand in the margin. Cross-references name a figure, a section or a page, and citations name the works you quote. The table of contents lists the chapters, and the index at the back lists terms with their pages. Each section says how these pieces look and how they are numbered."
+        },
+        "es": {
+          "title": "Configuración: notas y referencias",
+          "sidebarTitle": "Notas y referencias",
+          "description": "Las notas al pie, la numeración de líneas, las referencias cruzadas y las citas, el índice de contenidos y el índice analítico",
+          "plainSummary": "Esta página reúne los ajustes de las partes del libro que remiten a otro lugar. Las notas van al pie de la página y los números de línea van en el margen. Las referencias cruzadas nombran una figura, una sección o una página, y las citas nombran las obras que mencionas. El índice de contenidos enumera los capítulos y el índice analítico, al final, enumera términos con sus páginas. Cada sección explica el aspecto de estas piezas y cómo se numeran."
+        },
+        "ca": {
+          "title": "Configuració: notes i referències",
+          "sidebarTitle": "Notes i referències",
+          "description": "Les notes a peu de pàgina, la numeració de línies, les referències creuades i les cites, l'índex de continguts i l'índex analític",
+          "plainSummary": "Aquesta pàgina reuneix els paràmetres de les parts del llibre que remeten a un altre lloc. Les notes van a peu de pàgina i els números de línia van al marge. Les referències creuades anomenen una figura, una secció o una pàgina, i les cites anomenen les obres que esmentes. L'índex de continguts enumera els capítols i l'índex analític, al final, enumera termes amb les seves pàgines. Cada secció explica l'aspecte d'aquestes peces i com es numeren."
+        },
+        "zh": {
+          "title": "配置：注释与引用",
+          "sidebarTitle": "注释与引用",
+          "description": "脚注、行号、交叉引用与引用，目录和书末索引",
+          "plainSummary": "本页讲书中指向别处的那些部分的设置。脚注排在页面底部，行号排在页边。交叉引用指向某张图、某一节或某一页，引用指向你提到的文献。目录列出各章，书末的索引列出词条和它们所在的页码。每一节说明这些部分的样子和编号方式。"
+        },
+        "ar": {
+          "title": "الإعدادات: الحواشي والإحالات",
+          "sidebarTitle": "الحواشي والإحالات",
+          "description": "الحواشي السفلية وترقيم الأسطر والإحالات المرجعية والاستشهادات، وجدول المحتويات والفهرس الأبجدي",
+          "plainSummary": "تتناول هذه الصفحة إعدادات أجزاء الكتاب التي تحيل إلى موضع آخر. تقع الحواشي أسفل الصفحة، وتقع أرقام الأسطر في الهامش. تشير الإحالات المرجعية إلى شكل أو قسم أو صفحة، وتشير الاستشهادات إلى المؤلفات التي تذكرها. يسرد جدول المحتويات الفصول، ويسرد الفهرس الأبجدي في آخر الكتاب المصطلحات مع صفحاتها. ويشرح كل قسم مظهر هذه الأجزاء وطريقة ترقيمها."
+        },
+        "ja": {
+          "title": "設定：注と参照",
+          "sidebarTitle": "注と参照",
+          "description": "脚注、行番号、相互参照と引用、目次、巻末の索引",
+          "plainSummary": "このページでは、本の中でほかの場所を指し示す部分の設定を説明します。脚注はページの下に、行番号は余白に入ります。相互参照は図や節やページを指し、引用はあなたが挙げる文献を指します。目次は章を並べ、巻末の索引は用語とそのページを並べます。各節で、これらの見た目と番号の付け方を説明します。"
+        },
+        "pt": {
+          "title": "Configuração: notas e referências",
+          "sidebarTitle": "Notas e referências",
+          "description": "As notas de rodapé, a numeração de linhas, as referências cruzadas e as citações, o sumário e o índice remissivo",
+          "plainSummary": "Esta página reúne os ajustes das partes do livro que remetem a outro lugar. As notas ficam no pé da página e os números de linha ficam na margem. As referências cruzadas indicam uma figura, uma seção ou uma página, e as citações indicam as obras que você menciona. O sumário lista os capítulos e o índice remissivo, no fim, lista termos com suas páginas. Cada seção explica a aparência dessas peças e como elas são numeradas."
+        }
+      }
+    },
+    {
+      "slug": "configuration-east-asian",
+      "sections": ["East Asian typography"],
+      "locales": {
+        "en": {
+          "title": "Configuration: East Asian typography",
+          "sidebarTitle": "East Asian typography",
+          "description": "The cjk settings: line breaking, punctuation widths, spacing, the character grid, ruby and the marks of Chinese, Japanese and Korean text",
+          "plainSummary": "This page covers the settings for Chinese, Japanese and Korean text. They decide where a line may break and how wide the punctuation marks are. They set the space between these characters and Latin letters or numbers. They also control the small reading guides printed beside characters, and the marks drawn next to names and titles. The Chinese layout and Japanese layout guides show these settings at work."
+        },
+        "es": {
+          "title": "Configuración: tipografía de Asia oriental",
+          "sidebarTitle": "Tipografía de Asia oriental",
+          "description": "Los ajustes de cjk: corte de línea, anchura de la puntuación, espaciado, la cuadrícula de caracteres, el ruby y las marcas del texto chino, japonés y coreano",
+          "plainSummary": "Esta página reúne los ajustes del texto chino, japonés y coreano. Deciden dónde puede cortarse una línea y cuánto ocupan los signos de puntuación. Fijan el espacio entre estos caracteres y las letras latinas o los números. También controlan las pequeñas guías de lectura que se imprimen junto a los caracteres y las marcas que acompañan a nombres y títulos. Las guías de composición china y de composición japonesa muestran estos ajustes en uso."
+        },
+        "ca": {
+          "title": "Configuració: tipografia de l'Àsia oriental",
+          "sidebarTitle": "Tipografia de l'Àsia oriental",
+          "description": "Els paràmetres de cjk: tall de línia, amplada de la puntuació, espaiat, la quadrícula de caràcters, el ruby i les marques del text xinès, japonès i coreà",
+          "plainSummary": "Aquesta pàgina reuneix els paràmetres del text xinès, japonès i coreà. Decideixen on es pot tallar una línia i quant ocupen els signes de puntuació. Fixen l'espai entre aquests caràcters i les lletres llatines o els números. També controlen les petites guies de lectura que s'imprimeixen al costat dels caràcters i les marques que acompanyen noms i títols. Les guies de composició xinesa i de composició japonesa mostren aquests paràmetres en ús."
+        },
+        "zh": {
+          "title": "配置：东亚排版",
+          "sidebarTitle": "东亚排版",
+          "description": "cjk设置：中文、日文和韩文的断行、标点宽度、间距、字符网格、注音与各种标记",
+          "plainSummary": "本页讲中文、日文和韩文文字的设置。这些设置决定一行可以在哪里断开，标点符号占多宽。它们设定这些文字与拉丁字母或数字之间的间距。它们还控制印在字旁的小注音，以及画在人名和书名旁边的标记。中文排版和日文排版两篇指南展示了这些设置的实际用法。"
+        },
+        "ar": {
+          "title": "الإعدادات: تنضيد نصوص شرق آسيا",
+          "sidebarTitle": "تنضيد نصوص شرق آسيا",
+          "description": "إعدادات cjk: كسر الأسطر وعرض علامات الترقيم والمسافات وشبكة المحارف وروبي وعلامات النصوص الصينية واليابانية والكورية",
+          "plainSummary": "تتناول هذه الصفحة إعدادات النصوص الصينية واليابانية والكورية. تحدد هذه الإعدادات أين يجوز كسر السطر وكم تشغل علامات الترقيم من العرض. وتضبط المسافة بين هذه المحارف والحروف اللاتينية أو الأرقام. وتتحكم أيضًا في إرشادات القراءة الصغيرة المطبوعة بجانب المحارف، وفي العلامات المرسومة بجانب الأسماء والعناوين. ويعرض دليلا الإخراج الصيني والإخراج الياباني هذه الإعدادات في التطبيق."
+        },
+        "ja": {
+          "title": "設定：東アジアの組版",
+          "sidebarTitle": "東アジアの組版",
+          "description": "cjkの設定：中国語、日本語、韓国語の行分割、約物の幅、アキ、文字グリッド、ルビ、各種の記号",
+          "plainSummary": "このページでは、中国語、日本語、韓国語の文字の設定を説明します。行をどこで分けられるか、句読点などの記号がどれだけの幅をとるかを決めます。これらの文字とラテン文字や数字とのあいだの空きを決めます。文字の横に小さく入れる読みがなや、名前や題名のそばに引く記号も扱います。中国語の組版と日本語の組版のガイドで、これらの設定の使い方を見られます。"
+        },
+        "pt": {
+          "title": "Configuração: tipografia do Leste Asiático",
+          "sidebarTitle": "Tipografia do Leste Asiático",
+          "description": "Os ajustes de cjk: quebra de linha, largura da pontuação, espaçamento, a grade de caracteres, o ruby e as marcas do texto chinês, japonês e coreano",
+          "plainSummary": "Esta página reúne os ajustes do texto chinês, japonês e coreano. Eles decidem onde uma linha pode quebrar e quanto espaço os sinais de pontuação ocupam. Definem o espaço entre esses caracteres e as letras latinas ou os números. Também controlam os pequenos guias de leitura impressos ao lado dos caracteres e as marcas que acompanham nomes e títulos. Os guias de composição chinesa e de composição japonesa mostram esses ajustes em uso."
+        }
+      }
+    },
+    {
+      "slug": "configuration-resources",
+      "sections": ["Resource types", "Table style", "Caption style", "Diagram style", "Video style"],
+      "locales": {
+        "en": {
+          "title": "Configuration: resources and tables",
+          "sidebarTitle": "Resources and tables",
+          "description": "Resource types and their numbering, table and caption styles, single-ink diagrams and printed videos",
+          "plainSummary": "This page covers the settings for figures, tables, diagrams and videos. Postext calls them resources and numbers each kind on its own. You set how tables look: their rules, their fills, their type and how they split across pages. You set how the caption of a figure or a table is written. You can also print diagrams in one ink colour and choose how a video appears on paper."
+        },
+        "es": {
+          "title": "Configuración: recursos y tablas",
+          "sidebarTitle": "Recursos y tablas",
+          "description": "Los tipos de recurso y su numeración, los estilos de tablas y de pies de recurso, los diagramas a una tinta y los vídeos impresos",
+          "plainSummary": "Esta página reúne los ajustes de figuras, tablas, diagramas y vídeos. Postext los llama recursos y numera cada tipo por separado. Decides el aspecto de las tablas: sus filetes, sus fondos, su tipografía y cómo se parten entre páginas. Decides cómo se escribe el pie de una figura o de una tabla. También puedes imprimir los diagramas a una sola tinta y elegir cómo aparece un vídeo en el papel."
+        },
+        "ca": {
+          "title": "Configuració: recursos i taules",
+          "sidebarTitle": "Recursos i taules",
+          "description": "Els tipus de recurs i la seva numeració, els estils de taules i de peus de recurs, els diagrames a una tinta i els vídeos impresos",
+          "plainSummary": "Aquesta pàgina reuneix els paràmetres de figures, taules, diagrames i vídeos. Postext els anomena recursos i numera cada tipus per separat. Decideixes l'aspecte de les taules: els filets, els fons, la tipografia i com es parteixen entre pàgines. Decideixes com s'escriu el peu d'una figura o d'una taula. També pots imprimir els diagrames a una sola tinta i triar com apareix un vídeo sobre el paper."
+        },
+        "zh": {
+          "title": "配置：资源与表格",
+          "sidebarTitle": "资源与表格",
+          "description": "资源类型及其编号，表格样式与题注样式，单色图示和印在纸上的视频",
+          "plainSummary": "本页讲图、表格、图示和视频的设置。Postext把它们称为资源，每一类各自编号。你可以设定表格的样子：线条、底色、字体，以及跨页时怎样拆分。你可以设定图和表格的题注怎样写。你还可以用一种油墨颜色印图示，并选择视频在纸上的呈现方式。"
+        },
+        "ar": {
+          "title": "الإعدادات: الموارد والجداول",
+          "sidebarTitle": "الموارد والجداول",
+          "description": "أنواع الموارد وترقيمها، وأنماط الجداول والتعليقات، والمخططات بحبر واحد، والفيديو المطبوع",
+          "plainSummary": "تتناول هذه الصفحة إعدادات الأشكال والجداول والمخططات ومقاطع الفيديو. يسميها Postext موارد ويرقّم كل نوع منها على حدة. تحدد مظهر الجداول: خطوطها وتعبئتها وحروفها وطريقة تقسيمها بين الصفحات. وتحدد طريقة كتابة التعليق المرافق للشكل أو الجدول. ويمكنك أيضًا طباعة المخططات بحبر واحد واختيار طريقة ظهور الفيديو على الورق."
+        },
+        "ja": {
+          "title": "設定：リソースと表",
+          "sidebarTitle": "リソースと表",
+          "description": "リソースの種類とその番号付け、表とキャプションのスタイル、単色のダイアグラム、紙面上の動画",
+          "plainSummary": "このページでは、図、表、ダイアグラム、動画の設定を説明します。Postextはこれらをリソースと呼び、種類ごとに番号を付けます。罫線、塗り、文字、ページをまたぐときの分け方など、表の見た目を決めます。図や表に付けるキャプションの書き方を決めます。ダイアグラムを1色のインキで刷ることや、動画を紙の上でどう見せるかも選べます。"
+        },
+        "pt": {
+          "title": "Configuração: recursos e tabelas",
+          "sidebarTitle": "Recursos e tabelas",
+          "description": "Os tipos de recurso e sua numeração, os estilos de tabela e de legenda, os diagramas em uma só tinta e os vídeos impressos",
+          "plainSummary": "Esta página reúne os ajustes de figuras, tabelas, diagramas e vídeos. O Postext os chama de recursos e numera cada tipo separadamente. Você define a aparência das tabelas: fios, fundos, tipografia e como elas se dividem entre páginas. Define como se escreve a legenda de uma figura ou de uma tabela. Também pode imprimir os diagramas em uma só tinta e escolher como um vídeo aparece no papel."
+        }
+      }
+    },
+    {
+      "slug": "configuration-styles",
+      "sections": ["Paragraph styles", "Chip styles", "Code listings", "Callout styles", "Parts", "Heading styles"],
+      "locales": {
+        "en": {
+          "title": "Configuration: styles and parts",
+          "sidebarTitle": "Styles and parts",
+          "description": "Named styles for paragraphs, chips, code listings, callout boxes and headings, and the pages that open each part",
+          "plainSummary": "This page covers the named styles you define once and use many times. A paragraph style sets a kind of text, such as a bibliography or a glossary. A chip style draws a small label inside a line, and a callout style draws a box around a note or a tip. Code listings have their own font, box and colours. The page also covers the pages that open each part of a book, and the styles for special headings."
+        },
+        "es": {
+          "title": "Configuración: estilos y partes",
+          "sidebarTitle": "Estilos y partes",
+          "description": "Los estilos con nombre de párrafos, chips, listados de código, avisos y encabezados, y las páginas que abren cada parte",
+          "plainSummary": "Esta página reúne los estilos con nombre, que defines una vez y usas muchas. Un estilo de párrafo fija una clase de texto, como una bibliografía o un glosario. Un estilo de chip dibuja una etiqueta pequeña dentro de la línea, y un estilo de aviso dibuja un recuadro alrededor de una nota o un consejo. Los listados de código tienen su propia tipografía, su caja y sus colores. La página también explica las páginas que abren cada parte del libro y los estilos de los títulos especiales."
+        },
+        "ca": {
+          "title": "Configuració: estils i parts",
+          "sidebarTitle": "Estils i parts",
+          "description": "Els estils amb nom de paràgrafs, xips, llistats de codi, avisos i encapçalaments, i les pàgines que obren cada part",
+          "plainSummary": "Aquesta pàgina reuneix els estils amb nom, que defineixes un cop i fas servir molts. Un estil de paràgraf fixa una classe de text, com ara una bibliografia o un glossari. Un estil de xip dibuixa una etiqueta petita dins la línia, i un estil d'avís dibuixa un requadre al voltant d'una nota o un consell. Els llistats de codi tenen la seva pròpia tipografia, la seva caixa i els seus colors. La pàgina també explica les pàgines que obren cada part del llibre i els estils dels títols especials."
+        },
+        "zh": {
+          "title": "配置：样式与篇",
+          "sidebarTitle": "样式与篇",
+          "description": "段落、行内标签、代码清单、标注框和标题的命名样式，以及每一篇的篇首页",
+          "plainSummary": "本页讲命名样式，定义一次就可以反复使用。段落样式设定一类文字，比如参考文献或术语表。行内标签样式在行内画出一个小标签，标注框样式在提示或说明外面画一个框。代码清单有自己的字体、边框和颜色。本页还讲书中每一篇开头的那一页，以及特殊标题的样式。"
+        },
+        "ar": {
+          "title": "الإعدادات: الأنماط والأجزاء",
+          "sidebarTitle": "الأنماط والأجزاء",
+          "description": "الأنماط المسمّاة للفقرات والشارات وقوائم الشيفرة والإطارات والعناوين، والصفحات التي تفتتح كل جزء",
+          "plainSummary": "تتناول هذه الصفحة الأنماط المسمّاة التي تعرّفها مرة واحدة وتستعملها مرات كثيرة. يضبط نمط الفقرة نوعًا من النص، مثل قائمة المراجع أو المسرد. يرسم نمط الشارة ملصقًا صغيرًا داخل السطر، ويرسم نمط الإطار صندوقًا حول ملاحظة أو نصيحة. ولقوائم الشيفرة خطها وإطارها وألوانها. وتتناول الصفحة أيضًا الصفحات التي تفتتح كل جزء من الكتاب، وأنماط العناوين الخاصة."
+        },
+        "ja": {
+          "title": "設定：スタイルと部",
+          "sidebarTitle": "スタイルと部",
+          "description": "段落、チップ、コードリスト、囲み、見出しの名前付きスタイルと、各部の扉ページ",
+          "plainSummary": "このページでは、一度決めれば何度でも使える名前付きスタイルを説明します。段落スタイルは、参考文献や用語集のような種類の文章の組み方を決めます。チップスタイルは行の中に小さなラベルを描き、囲みスタイルは注記やヒントのまわりに枠を描きます。コードリストには専用のフォント、枠、色があります。本の各部の最初に置くページと、特別な見出しのスタイルも扱います。"
+        },
+        "pt": {
+          "title": "Configuração: estilos e partes",
+          "sidebarTitle": "Estilos e partes",
+          "description": "Os estilos nomeados de parágrafos, chips, listagens de código, boxes e títulos, e as páginas que abrem cada parte",
+          "plainSummary": "Esta página reúne os estilos nomeados, que você define uma vez e usa muitas. Um estilo de parágrafo define um tipo de texto, como uma bibliografia ou um glossário. Um estilo de chip desenha uma pequena etiqueta dentro da linha, e um estilo de boxe desenha uma caixa em volta de uma nota ou de uma dica. As listagens de código têm fonte, caixa e cores próprias. A página também explica as páginas que abrem cada parte do livro e os estilos dos títulos especiais."
+        }
+      }
+    },
+    {
+      "slug": "configuration-comics",
+      "sections": ["Comics"],
+      "locales": {
+        "en": {
+          "title": "Configuration: comics",
+          "sidebarTitle": "Comics settings",
+          "description": "The comics settings: the frame and gutters of comic pages, panel styles, lettering, balloon styles and the cast",
+          "plainSummary": "This page covers the settings for comic pages. You set the frame of the page and the space between panels. You choose the font and the size of the lettering. You define how speech balloons, captions and sound effects are drawn. You can also list the characters, so each one speaks in its own style. The Comics guide explains how to write the pages themselves."
+        },
+        "es": {
+          "title": "Configuración: cómics",
+          "sidebarTitle": "Ajustes de cómics",
+          "description": "Los ajustes de comics: el marco y las calles de las páginas de cómic, los estilos de viñeta, la rotulación, los estilos de bocadillo y el reparto",
+          "plainSummary": "Esta página reúne los ajustes de las páginas de cómic. Fijas el marco de la página y el espacio entre viñetas. Eliges la tipografía y el tamaño de la rotulación. Defines cómo se dibujan los bocadillos, las cartelas y las onomatopeyas. También puedes dar la lista de personajes, para que cada uno hable con su propio estilo. La guía de cómics explica cómo escribir las páginas."
+        },
+        "ca": {
+          "title": "Configuració: còmics",
+          "sidebarTitle": "Paràmetres de còmics",
+          "description": "Els paràmetres de comics: el marc i els carrers de les pàgines de còmic, els estils de vinyeta, la retolació, els estils de bafarada i el repartiment",
+          "plainSummary": "Aquesta pàgina reuneix els paràmetres de les pàgines de còmic. Fixes el marc de la pàgina i l'espai entre vinyetes. Tries la tipografia i la mida de la retolació. Defineixes com es dibuixen les bafarades, les cartel·les i les onomatopeies. També pots donar la llista de personatges, perquè cadascun parli amb el seu propi estil. La guia de còmics explica com escriure les pàgines."
+        },
+        "zh": {
+          "title": "配置：漫画",
+          "sidebarTitle": "漫画设置",
+          "description": "comics设置：漫画页的画框和格间距、分格样式、嵌字、对白框样式和角色表",
+          "plainSummary": "本页讲漫画页面的设置。你可以设定页面的画框和分格之间的间距。你可以选择嵌字的字体和字号。你可以定义对白框、旁白框和拟声词怎样画。你还可以列出角色，让每个角色用自己的样式说话。漫画指南讲解怎样写这些页面。"
+        },
+        "ar": {
+          "title": "الإعدادات: القصص المصورة",
+          "sidebarTitle": "إعدادات القصص المصورة",
+          "description": "إعدادات comics: الإطار العام لصفحات القصص المصورة وفواصلها، وأنماط الإطارات، وكتابة الحوار، وأنماط الفقاعات، وقائمة الشخصيات",
+          "plainSummary": "تتناول هذه الصفحة إعدادات صفحات القصص المصورة. تضبط الإطار العام للصفحة والفواصل بين الإطارات. وتختار خط كتابة الحوار وحجمه. وتعرّف طريقة رسم فقاعات الحوار ومربعات السرد والمؤثرات الصوتية. ويمكنك أيضًا سرد الشخصيات، ليتكلم كل منها بنمطه الخاص. ويشرح دليل القصص المصورة طريقة كتابة الصفحات نفسها."
+        },
+        "ja": {
+          "title": "設定：漫画",
+          "sidebarTitle": "漫画の設定",
+          "description": "comicsの設定：漫画のページの枠と間白、コマのスタイル、写植、吹き出しのスタイル、登場人物",
+          "plainSummary": "このページでは、漫画のページの設定を説明します。ページの枠と、コマとコマのあいだの空きを決めます。せりふの文字のフォントと大きさを選びます。吹き出し、ナレーション、描き文字の描き方を決めます。登場人物を並べておくと、人物ごとに決まったスタイルで話させることもできます。ページそのものの書き方は、漫画のガイドで説明しています。"
+        },
+        "pt": {
+          "title": "Configuração: quadrinhos",
+          "sidebarTitle": "Ajustes de quadrinhos",
+          "description": "Os ajustes de comics: o quadro e as sarjetas das páginas de quadrinhos, os estilos de requadro, o letreiramento, os estilos de balão e o elenco",
+          "plainSummary": "Esta página reúne os ajustes das páginas de quadrinhos. Você define a moldura da página e o espaço entre os quadros. Escolhe a fonte e o tamanho do letreiramento. Define como são desenhados os balões, os recordatórios e as onomatopeias. Também pode listar os personagens, para que cada um fale com seu próprio estilo. O guia de quadrinhos explica como escrever as páginas."
+        }
+      }
+    },
+    {
+      "slug": "configuration-fonts-colors-viewers",
+      "sections": ["Units and colors", "Custom fonts", "Color Palette", "HTML Viewer", "PDF generation (config)", "Print production (config)", "Folio viewer (config)", "Debug"],
+      "locales": {
+        "en": {
+          "title": "Configuration: fonts, colours and output",
+          "sidebarTitle": "Fonts, colours and output",
+          "description": "Units, colours and the palette, custom fonts, the HTML viewer, PDF and print production, the Folio viewer and the debug overlays",
+          "plainSummary": "This page covers the settings shared by the whole book and the settings for each kind of output. It explains how to write a measure and a colour, and how to name the colours of a palette. It shows how to add your own fonts. Then it covers the web view, the PDF file, the files a printing company asks for and the 3D book. The last section turns on the guides and warnings that help while you work."
+        },
+        "es": {
+          "title": "Configuración: fuentes, colores y salida",
+          "sidebarTitle": "Fuentes, colores y salida",
+          "description": "Las unidades, los colores y la paleta, las fuentes personalizadas, el visor HTML, el PDF y la producción para imprenta, el visor Folio y la depuración",
+          "plainSummary": "Esta página reúne los ajustes que comparte todo el libro y los de cada tipo de salida. Explica cómo se escribe una medida y un color, y cómo se da nombre a los colores de una paleta. Enseña a añadir tus propias fuentes. Después trata la vista web, el archivo PDF, los archivos que pide una imprenta y el libro en 3D. La última sección activa las guías y las advertencias que ayudan mientras trabajas."
+        },
+        "ca": {
+          "title": "Configuració: fonts, colors i sortida",
+          "sidebarTitle": "Fonts, colors i sortida",
+          "description": "Les unitats, els colors i la paleta, les fonts personalitzades, el visor HTML, el PDF i la producció per a impremta, el visor Folio i la depuració",
+          "plainSummary": "Aquesta pàgina reuneix els paràmetres que comparteix tot el llibre i els de cada tipus de sortida. Explica com s'escriu una mida i un color, i com es dona nom als colors d'una paleta. Ensenya a afegir les teves pròpies fonts. Després tracta la vista web, el fitxer PDF, els fitxers que demana una impremta i el llibre en 3D. L'última secció activa les guies i els advertiments que ajuden mentre treballes."
+        },
+        "zh": {
+          "title": "配置：字体、颜色与输出",
+          "sidebarTitle": "字体、颜色与输出",
+          "description": "单位、颜色与调色板，自定义字体，HTML查看器，PDF与印刷输出，书页视图和调试",
+          "plainSummary": "本页讲整本书共用的设置，以及每种输出各自的设置。它说明尺寸和颜色怎样写，调色板里的颜色怎样命名。它说明怎样加入你自己的字体。接着讲网页视图、PDF文件、印刷厂要的文件和3D书本。最后一节用来打开工作时帮得上忙的参考线和警告。"
+        },
+        "ar": {
+          "title": "الإعدادات: الخطوط والألوان والمُخرجات",
+          "sidebarTitle": "الخطوط والألوان والمُخرجات",
+          "description": "الوحدات والألوان ولوحة الألوان، والخطوط المخصّصة، وعارض HTML، وإنتاج PDF والإنتاج الطباعي، وعارض Folio، والتصحيح",
+          "plainSummary": "تتناول هذه الصفحة الإعدادات المشتركة في الكتاب كله وإعدادات كل نوع من المُخرجات. تشرح طريقة كتابة القياس واللون، وطريقة تسمية ألوان اللوحة. وتبيّن كيف تضيف خطوطك الخاصة. ثم تتناول عرض الويب وملف PDF والملفات التي تطلبها المطبعة والكتاب ثلاثي الأبعاد. ويفعّل القسم الأخير الأدلة والتحذيرات التي تساعدك أثناء العمل."
+        },
+        "ja": {
+          "title": "設定：フォント、色、出力",
+          "sidebarTitle": "フォント、色、出力",
+          "description": "単位、色とカラーパレット、カスタムフォント、HTMLビューアー、PDFと印刷出力、Folioビューアー、デバッグ",
+          "plainSummary": "このページでは、本全体で共有する設定と、出力の種類ごとの設定を説明します。寸法と色の書き方と、パレットの色に名前を付ける方法を説明します。自分のフォントを追加する方法を示します。続いて、Web表示、PDFファイル、印刷会社に渡すファイル、3Dの本を扱います。最後の節では、作業を助けるガイド線と警告を表示できます。"
+        },
+        "pt": {
+          "title": "Configuração: fontes, cores e saída",
+          "sidebarTitle": "Fontes, cores e saída",
+          "description": "As unidades, as cores e a paleta, as fontes personalizadas, o visualizador HTML, o PDF e a produção gráfica, o visualizador Folio e a depuração",
+          "plainSummary": "Esta página reúne os ajustes compartilhados por todo o livro e os de cada tipo de saída. Explica como escrever uma medida e uma cor, e como dar nome às cores de uma paleta. Mostra como adicionar suas próprias fontes. Depois trata da visualização web, do arquivo PDF, dos arquivos que uma gráfica pede e do livro em 3D. A última seção ativa as guias e os avisos que ajudam enquanto você trabalha."
+        }
+      }
+    },
+    {
+      "slug": "configuration-programmatic-usage",
+      "sections": ["Programmatic Usage", "Running layout in a Web Worker", "Integrating the HTML viewer", "Generating PDFs", "A 3D book (`postext-folio`)", "EPUB books (`postext-epub`)", "Bundles (`.postext` files)"],
+      "locales": {
+        "en": {
+          "title": "Configuration: programmatic usage",
+          "sidebarTitle": "Programmatic usage",
+          "description": "Calling Postext from code: buildDocument, Web Workers, the HTML viewer, PDF files, the 3D book, EPUB and .postext bundles",
+          "plainSummary": "This page is for people who write code. It shows how to build a book with one function call and how to read the warnings it reports. It explains how to run the work in the background, so the page stays quick. It shows how to make a web view, a PDF file, a 3D book and an EPUB e-book. The last section explains the file that carries a whole book with its fonts and pictures."
+        },
+        "es": {
+          "title": "Configuración: uso programático",
+          "sidebarTitle": "Uso programático",
+          "description": "Postext desde el código: buildDocument, los Web Workers, el visor HTML, los PDF, el libro en 3D, los EPUB y los paquetes .postext",
+          "plainSummary": "Esta página es para quienes escriben código. Enseña a componer un libro con una sola llamada a una función y a leer los avisos que devuelve. Explica cómo hacer el trabajo en segundo plano, para que la página siga respondiendo rápido. Enseña a crear una vista web, un archivo PDF, un libro en 3D y un libro electrónico EPUB. La última sección explica el archivo que lleva un libro entero con sus fuentes y sus imágenes."
+        },
+        "ca": {
+          "title": "Configuració: ús programàtic",
+          "sidebarTitle": "Ús programàtic",
+          "description": "Postext des del codi: buildDocument, els Web Workers, el visor HTML, els PDF, el llibre en 3D, els EPUB i els paquets .postext",
+          "plainSummary": "Aquesta pàgina és per a qui escriu codi. Ensenya a compondre un llibre amb una sola crida a una funció i a llegir els avisos que retorna. Explica com fer la feina en segon pla, perquè la pàgina continuï responent de pressa. Ensenya a crear una vista web, un fitxer PDF, un llibre en 3D i un llibre electrònic EPUB. L'última secció explica el fitxer que porta un llibre sencer amb les seves fonts i les seves imatges."
+        },
+        "zh": {
+          "title": "配置：以编程方式使用",
+          "sidebarTitle": "以编程方式使用",
+          "description": "用代码调用Postext：buildDocument、Web Worker、HTML查看器、PDF、3D书本、EPUB和.postext文件包",
+          "plainSummary": "本页写给写代码的人。它说明怎样用一次函数调用排出一本书，以及怎样读它报告的警告。它说明怎样把这项工作放到后台运行，让页面保持流畅。它说明怎样生成网页视图、PDF文件、3D书本和EPUB电子书。最后一节讲一种文件，它把整本书连同字体和图片装在一起。"
+        },
+        "ar": {
+          "title": "الإعدادات: الاستخدام البرمجي",
+          "sidebarTitle": "الاستخدام البرمجي",
+          "description": "استعمال Postext من الشيفرة: buildDocument و Web Worker وعارض HTML وملفات PDF والكتاب ثلاثي الأبعاد وكتب EPUB والحزم",
+          "plainSummary": "هذه الصفحة لمن يكتبون الشيفرة. تبيّن كيف تُخرج كتابًا باستدعاء دالة واحدة، وكيف تقرأ التحذيرات التي تعيدها. وتشرح كيف تشغّل العمل في الخلفية، لتبقى الصفحة سريعة. وتبيّن كيف تصنع عرض ويب وملف PDF وكتابًا ثلاثي الأبعاد وكتابًا إلكترونيًا بصيغة EPUB. ويشرح القسم الأخير الملف الذي يحمل كتابًا كاملًا مع خطوطه وصوره."
+        },
+        "ja": {
+          "title": "設定：プログラムからの利用",
+          "sidebarTitle": "プログラムからの利用",
+          "description": "コードからPostextを使う：buildDocument、Web Worker、HTMLビューアー、PDF、3Dの本、EPUB、.postextバンドル",
+          "plainSummary": "このページは、プログラムを書く人向けです。1回の関数呼び出しで本を組む方法と、返ってくる警告の読み方を示します。ページの動きを軽く保つために、処理を裏で動かす方法を説明します。Web表示、PDFファイル、3Dの本、EPUBの電子書籍を作る方法を示します。最後の節では、本をまるごとフォントや画像と一緒に運ぶファイルを説明します。"
+        },
+        "pt": {
+          "title": "Configuração: uso programático",
+          "sidebarTitle": "Uso programático",
+          "description": "O Postext a partir do código: buildDocument, Web Workers, o visualizador HTML, os PDFs, o livro em 3D, os EPUBs e os pacotes .postext",
+          "plainSummary": "Esta página é para quem escreve código. Mostra como compor um livro com uma só chamada de função e como ler os avisos que ela devolve. Explica como fazer o trabalho em segundo plano, para a página continuar rápida. Mostra como gerar uma visualização web, um arquivo PDF, um livro em 3D e um livro digital EPUB. A última seção explica o arquivo que leva um livro inteiro com suas fontes e imagens."
+        }
+      }
+    }
+  ],
+  "indexLines": {
+    "Footnotes": {
+      "en": " — `footnotes`: where the notes cited with `[^id]` go, how they are numbered and how they look.",
+      "es": " — `footnotes`: adónde van las notas citadas con `[^id]`, cómo se numeran y qué aspecto tienen.",
+      "ca": " — `footnotes`: on van les notes citades amb `[^id]`, com es numeren i quin aspecte tenen.",
+      "zh": "：`footnotes`，用`[^id]`引用的注放在哪里、怎样编号、是什么样子。",
+      "ar": " — `footnotes`: موضع الحواشي المستشهد بها بـ `[^id]`، وطريقة ترقيمها ومظهرها.",
+      "ja": "：`footnotes`。`[^id]`で引いた注を置く場所、番号の付け方、見た目。",
+      "pt": " — `footnotes`: para onde vão as notas citadas com `[^id]`, como são numeradas e que aparência têm."
+    },
+    "Cross-references": {
+      "en": " — `crossRefs`: the words printed around the number or the page of a `:ref`, and its default style.",
+      "es": " — `crossRefs`: las palabras que se imprimen junto al número o la página de un `:ref`, y su estilo por defecto.",
+      "ca": " — `crossRefs`: les paraules que s'imprimeixen al costat del número o la pàgina d'un `:ref`, i el seu estil per defecte.",
+      "zh": "：`crossRefs`，`:ref`的编号或页码前后印出的文字，以及它的默认样式。",
+      "ar": " — `crossRefs`: الكلمات المطبوعة حول رقم `:ref` أو صفحته، ونمطه الافتراضي.",
+      "ja": "：`crossRefs`。`:ref`の番号やページの前後に印字する語と、その既定のスタイル。",
+      "pt": " — `crossRefs`: as palavras impressas junto ao número ou à página de um `:ref`, e seu estilo padrão."
+    },
+    "Citations": {
+      "en": " — `citations`: the citation style, and the look of citations and of the bibliography.",
+      "es": " — `citations`: el estilo de cita y el aspecto de las citas y de la bibliografía.",
+      "ca": " — `citations`: l'estil de citació i l'aspecte de les cites i de la bibliografia.",
+      "zh": "：`citations`，引用格式，以及引用和参考文献的样子。",
+      "ar": " — `citations`: نمط الاستشهاد ومظهر الاستشهادات وقائمة المراجع.",
+      "ja": "：`citations`。引用スタイルと、引用および参考文献の見た目。",
+      "pt": " — `citations`: o estilo de citação e a aparência das citações e da bibliografia."
+    },
+    "Video style": {
+      "en": " — `videoStyle`: the play mark and the QR code printed over a video's poster, and what its players offer in the HTML viewer and in EPUB.",
+      "es": " — `videoStyle`: la marca de reproducción y el código QR sobre el póster de un vídeo, y lo que ofrecen sus reproductores en el visor HTML y en EPUB.",
+      "ca": " — `videoStyle`: la marca de reproducció i el codi QR sobre el pòster d'un vídeo, i el que ofereixen els seus reproductors al visor HTML i en EPUB.",
+      "zh": "：`videoStyle`，印在视频封面上的播放标记和二维码，以及HTML查看器和EPUB中播放器提供的功能。",
+      "ar": " — `videoStyle`: علامة التشغيل ورمز QR فوق ملصق الفيديو، وما تتيحه مشغّلاته في عارض HTML وفي EPUB.",
+      "ja": "：`videoStyle`。動画のポスターに重ねる再生マークとQRコード、HTMLビューアーとEPUBでプレーヤーが備える機能。",
+      "pt": " — `videoStyle`: a marca de reprodução e o código QR sobre o pôster de um vídeo, e o que seus players oferecem no visualizador HTML e no EPUB."
+    },
+    "Chip styles": {
+      "en": " — `chipStyles`: named styles for the inline `:chip[…]`: the box of a word bank, a keyboard key, a tag.",
+      "es": " — `chipStyles`: estilos con nombre para el `:chip[…]` en línea: la caja de un banco de palabras, una tecla, una etiqueta.",
+      "ca": " — `chipStyles`: estils amb nom per al `:chip[…]` en línia: la caixa d'un banc de paraules, una tecla, una etiqueta.",
+      "zh": "：`chipStyles`，行内`:chip[…]`的命名样式，如词库里的词框、键帽、标签。",
+      "ar": " — `chipStyles`: أنماط مسمّاة للشارة السطرية `:chip[…]`: صندوق بنك الكلمات، مفتاح لوحة المفاتيح، وسم.",
+      "ja": "：`chipStyles`。行内の`:chip[…]`用の名前付きスタイル。語群の枠、キーボードのキー、タグなどに使います。",
+      "pt": " — `chipStyles`: estilos nomeados para o `:chip[…]` em linha: a caixa de um banco de palavras, uma tecla, uma etiqueta."
+    },
+    "A 3D book (`postext-folio`)": {
+      "en": " — the laid-out document as a printed book lying open on a desk, with leaves the reader turns.",
+      "es": " — el documento compuesto como un libro impreso abierto sobre una mesa, con hojas que el lector pasa.",
+      "ca": " — el document compost com un llibre imprès obert sobre una taula, amb fulls que el lector passa.",
+      "zh": "：把排好的文档显示成一本摊开在桌上的印刷书，读者可以翻页。",
+      "ar": " — المستند المُخرَج في هيئة كتاب مطبوع مفتوح على مكتب، يقلّب القارئ أوراقه.",
+      "ja": "：組み上がった文書を、机の上に開いて置いた印刷本として表示します。読者はページをめくれます。",
+      "pt": " — o documento diagramado como um livro impresso aberto sobre uma mesa, com folhas que o leitor vira."
+    },
+    "Bundles (`.postext` files)": {
+      "en": " — a whole book in one file: creating, opening and building `.postext` archives from code.",
+      "es": " — un libro entero en un solo archivo: crear, abrir y construir archivos `.postext` desde el código.",
+      "ca": " — un llibre sencer en un sol fitxer: crear, obrir i construir fitxers `.postext` des del codi.",
+      "zh": "：整本书装在一个文件里，用代码创建、打开和构建`.postext`文件包。",
+      "ar": " — كتاب كامل في ملف واحد: إنشاء أرشيفات `.postext` وفتحها وبناؤها من الشيفرة.",
+      "ja": "：本をまるごと1つのファイルに収めます。コードから`.postext`アーカイブを作成し、開き、ビルドします。",
+      "pt": " — um livro inteiro em um só arquivo: criar, abrir e montar arquivos `.postext` a partir do código."
+    }
+  }
+}

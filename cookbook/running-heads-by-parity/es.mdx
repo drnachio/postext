@@ -18,13 +18,13 @@ Las páginas 29 a 33 de los *Ensayos* de Montaigne en edición de bolsillo y tra
 
 <Excerpt region="palette" />
 
-Cada color de la configuración enlaza con una de estas entradas. Si dejas `header` sin definir, el motor dibuja su cabecera de serie: `{title}` en las impares y `{chapterTitle}` en las pares sobre un filete de 1 pt, en Open Sans 600 de 8 pt y en azul `#295AA3` ([encabezados y pies](/es/docs/configuration#encabezados-y-pies)). Si `main-color` toma el valor del sepia, cambian los colores por defecto del texto y también el de esa cabecera, pero su letra, su filete y el lado en que va cada título siguen siendo los del motor. Por eso aquí cada cabecera se escribe entera, con cada color enlazado a una entrada de la paleta. La negrita, la cursiva y las referencias también toman `main-color` por defecto, y `bodyText` les devuelve el color de la tinta.
+Cada color de la configuración enlaza con una de estas entradas. Si dejas `header` sin definir, el motor dibuja su cabecera de serie: `{title}` en las impares y `{chapterTitle}` en las pares sobre un filete de 1 pt, en Open Sans 600 de 8 pt y en azul `#295AA3` ([encabezados y pies](/es/docs/configuration-page-layout#encabezados-y-pies)). Si `main-color` toma el valor del sepia, cambian los colores por defecto del texto y también el de esa cabecera, pero su letra, su filete y el lado en que va cada título siguen siendo los del motor. Por eso aquí cada cabecera se escribe entera, con cada color enlazado a una entrada de la paleta. La negrita, la cursiva y las referencias también toman `main-color` por defecto, y `bodyText` les devuelve el color de la tinta.
 
 ### 2 · Todas las cabeceras salen de una pestaña
 
 <Excerpt region="tab" />
 
-La respuesta corta ancla a `'page'` la pestaña de cada cabecera, así que sus desplazamientos se miden desde el corte. Desde la esquina `top-right`, una `x` positiva saca la pestaña de la página; por eso la de la impar la lleva negativa. De la pestaña cuelga el filete, y del filete, el título ([posicionamiento de elementos](/es/docs/configuration#posicionamiento-de-elementos)). Las medidas de la pestaña van en constantes porque las demás piezas se miden a partir de ellas. El filete mide `TAB_H` de alto. El folio y los dos títulos comparten una caja de línea de 9 pt, y la línea de base de un texto de diseño cae al 80 % de la altura de esa caja, así que los tres quedan sobre la misma línea de base con cualquier cuerpo.
+La respuesta corta ancla a `'page'` la pestaña de cada cabecera, así que sus desplazamientos se miden desde el corte. Desde la esquina `top-right`, una `x` positiva saca la pestaña de la página; por eso la de la impar la lleva negativa. De la pestaña cuelga el filete, y del filete, el título ([posicionamiento de elementos](/es/docs/configuration-page-layout#posicionamiento-de-elementos)). Las medidas de la pestaña van en constantes porque las demás piezas se miden a partir de ellas. El filete mide `TAB_H` de alto. El folio y los dos títulos comparten una caja de línea de 9 pt, y la línea de base de un texto de diseño cae al 80 % de la altura de esa caja, así que los tres quedan sobre la misma línea de base con cualquier cuerpo.
 
 <PageShot page={2} crop="0.04,0.045,0.6,0.05" caption="Página 30, par: pestaña, filete y título del libro, hacia dentro desde el margen exterior." />
 
@@ -46,7 +46,7 @@ La apertura compone el título completo con `overflow: 'wrap'`, partido en cada 
 
 <Excerpt region="levels" />
 
-Con `'odd'`, a un ensayo que termina en impar le sigue una página par en blanco. Aquí el capítulo IV acaba en <PageRef page={3}>una impar</PageRef>, de modo que la 32 queda en blanco y el V abre en la 33. El `pages: 'body'` de las cabeceras las deja fuera de las páginas en blanco y de las aperturas (las páginas cuyo primer bloque es este título). El `pages: 'opener'` del pie imprime el folio solo en las aperturas ([elementos de texto](/es/docs/configuration#elementos-de-texto)).
+Con `'odd'`, a un ensayo que termina en impar le sigue una página par en blanco. Aquí el capítulo IV acaba en <PageRef page={3}>una impar</PageRef>, de modo que la 32 queda en blanco y el V abre en la 33. El `pages: 'body'` de las cabeceras las deja fuera de las páginas en blanco y de las aperturas (las páginas cuyo primer bloque es este título). El `pages: 'opener'` del pie imprime el folio solo en las aperturas ([elementos de texto](/es/docs/configuration-page-layout#elementos-de-texto)).
 
 ### 6 · Los folios empiezan en 29
 

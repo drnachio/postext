@@ -18,7 +18,7 @@ pageNotes: { "1": "叶绿色色带上有一个写着UNIT 3的黄色胶囊标签�
 
 <Excerpt region="grid" />
 
-在简短回答中，每个框的外边距与相邻框的外边距折叠，取较大的一个。词库的5 mm压过了下方列表上面的2 mm，最后一个答题框的5 mm落在卡片5 mm的底部内边距之内，而不是叠加上去。如果留在网格上，二级标题会占用10.8到14.1 mm，而不是其圆盘的8.6 mm，因为标题后面的内容会回到下一条17 pt的行上；`headings.snapToGrid: false`让它保持8.6 mm。在嵌套样式上设置`snapToGrid`没有作用，因为只有外层卡片可以脱离网格（[嵌套框](/zh/docs/configuration#callout容器)）。各栏齐底已关闭，因为它会在标题上方加空来填满页面；在第2页，它会在活动3上方留出33 mm而不是9 mm。
+在简短回答中，每个框的外边距与相邻框的外边距折叠，取较大的一个。词库的5 mm压过了下方列表上面的2 mm，最后一个答题框的5 mm落在卡片5 mm的底部内边距之内，而不是叠加上去。如果留在网格上，二级标题会占用10.8到14.1 mm，而不是其圆盘的8.6 mm，因为标题后面的内容会回到下一条17 pt的行上；`headings.snapToGrid: false`让它保持8.6 mm。在嵌套样式上设置`snapToGrid`没有作用，因为只有外层卡片可以脱离网格（[嵌套框](/zh/docs/configuration-styles#callout容器)）。各栏齐底已关闭，因为它会在标题上方加空来填满页面；在第2页，它会在活动3上方留出33 mm而不是9 mm。
 
 ### 2 · 每个空都用行内标签
 
@@ -30,13 +30,13 @@ pageNotes: { "1": "叶绿色色带上有一个写着UNIT 3的黄色胶囊标签�
 
 <Excerpt region="activity" />
 
-带`advancedDesign`的二级标题在栏中保留自己的位置，画出来的是版面设计而不是标题文字：一个圆盘装着`{number}`（印出该级的`numberingTemplate`），右边是`{titleText}`（[通栏与高级版面设计](/zh/docs/configuration#通栏与高级设计)）。圆盘和标题都是8.6 mm高，脱离网格后标题正好占这么多，所以版面设计不需要`minHeight`。编号来自二级标题的计数器，所以在Markdown中插入一个活动，后面的活动会自动重新编号。自我检查的标题使用`numbered: false`的样式，不参与计数，圆盘的位置放一颗SVG星星。
+带`advancedDesign`的二级标题在栏中保留自己的位置，画出来的是版面设计而不是标题文字：一个圆盘装着`{number}`（印出该级的`numberingTemplate`），右边是`{titleText}`（[通栏与高级版面设计](/zh/docs/configuration-text#通栏与高级设计)）。圆盘和标题都是8.6 mm高，脱离网格后标题正好占这么多，所以版面设计不需要`minHeight`。编号来自二级标题的计数器，所以在Markdown中插入一个活动，后面的活动会自动重新编号。自我检查的标题使用`numbered: false`的样式，不参与计数，圆盘的位置放一颗SVG星星。
 
 ### 4 · 把图片放进表格单元格
 
 <Excerpt region="tables" />
 
-`TableCell.image`在单元格内画出一个资源，这里占单元格宽度的76 %，行高会随之增加。`verticalAlign: 'middle'`让食物名称、圆点和标签与图片垂直居中。最宽的一栏占表格的31 %，留空给学生画线。命名样式把表格的边框做成圆角，并把白色的表体填充裁到边框内。它不画任何线，面板就只是白色的填充（[命名表格样式](/zh/docs/configuration#命名表格样式)）。它的资源类型`captionPrefix`为空，表格也没有题注文字，所以下方不印题注。`placement: { position: 'here' }`把表格排在其`::resource`行所在的位置，也就是卡片里面。框会在这样的表格上方留出一行自己的正文，这里是6 mm；`layout.inlineResourceGapInBoxes: false`把它关掉，`::resource`行之前的`:::space{lines=0.33}`留出2 mm，与答题框和题目之间的距离相同。
+`TableCell.image`在单元格内画出一个资源，这里占单元格宽度的76 %，行高会随之增加。`verticalAlign: 'middle'`让食物名称、圆点和标签与图片垂直居中。最宽的一栏占表格的31 %，留空给学生画线。命名样式把表格的边框做成圆角，并把白色的表体填充裁到边框内。它不画任何线，面板就只是白色的填充（[命名表格样式](/zh/docs/configuration-resources#命名表格样式)）。它的资源类型`captionPrefix`为空，表格也没有题注文字，所以下方不印题注。`placement: { position: 'here' }`把表格排在其`::resource`行所在的位置，也就是卡片里面。框会在这样的表格上方留出一行自己的正文，这里是6 mm；`layout.inlineResourceGapInBoxes: false`把它关掉，`::resource`行之前的`:::space{lines=0.33}`留出2 mm，与答题框和题目之间的距离相同。
 
 ## 变化
 

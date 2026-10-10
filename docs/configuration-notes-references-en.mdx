@@ -1,0 +1,827 @@
+{/* docs/configuration-notes-references-en.mdx */}
+
+export const metadata = {
+  title: 'Configuration: notes and references',
+  sidebarTitle: 'Notes and references',
+  description: 'Footnotes, line numbers, cross-references and citations, the table of contents and the back-of-book index',
+  lang: 'en',
+  lastUpdated: '2026-10-10',
+  readingTime: '4 min',
+  order: 6,
+  parent: 'configuration',
+  plainSummary: "This page covers the settings for the parts of a book that point somewhere else. Footnotes sit at the bottom of the page, and line numbers stand in the margin. Cross-references name a figure, a section or a page, and citations name the works you quote. The table of contents lists the chapters, and the index at the back lists terms with their pages. Each section says how these pieces look and how they are numbered.",
+};
+
+# Configuration: notes and references
+
+
+## Footnotes
+
+The `footnotes` property sets where the notes cited with `[^id]` go, how they are numbered and how they look. The markup is described in [Document format](/en/docs/document-format#footnotes).
+
+```ts
+interface FootnotesConfig {
+  placement?: 'column' | 'chapterEnd' | 'spread'; // Foot of the citing column, after the chapter, or beside the text of a spread.
+  numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Start again at each chapter, run on, or start again on each page / column / spread.
+  numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  symbols?: string[];         // The note symbols of numberFormat: 'symbols'.
+  markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Raised, on the baseline, beside the word, or right of a vertical line.
+  markerSize?: Dimension;     // Inline, side or right marker size; em is the text around it.
+  numberGap?: 'en' | 'em';    // Space after the note's own number.
+  chapterEndAlign?: 'foot' | 'text';   // chapterEnd: notes at the column foot, or under the text.
+  fontSize?: Dimension;       // Note size; em is the body size.
+  lineHeight?: Dimension;     // Note leading; em is the note size.
+  color?: ColorValue;         // Note colour; the body colour when unset.
+  textAlign?: TextAlign;      // The body alignment when unset.
+  hangingIndent?: Dimension;  // Indent of a note's turnover lines.
+  spaceBetween?: Dimension;   // Space between two notes.
+  spaceAbove?: Dimension;     // Space between the text and the rule; em is the body size.
+  spaceBelowRule?: Dimension; // Space between the rule and the first note.
+  separator?: {
+    enabled?: boolean;        // Draw the rule.
+    width?: number;           // Rule length, a fraction of the column width.
+    lineWidth?: Dimension;    // Rule thickness.
+    color?: ColorValue;       // The note colour when unset.
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'column' | 'chapterEnd' | 'spread'</code></td>
+      <td><code>'column'</code> (Japanese vertical books: <code>'chapterEnd'</code>)</td>
+      <td><code>'column'</code> sets each note at the foot of the column that holds the line citing it, under a short rule; in a one-column layout that is the foot of the page. <code>'chapterEnd'</code> sets every note of a chapter after its last block, in citation order. <code>'spread'</code> (傍注, vertical text only) sets the notes cited on both pages of a spread at the end of its odd page, the left page of a right-bound book, under the rule: notes cited on the even page wait for it, a note that would leave the odd page less than one line of text stays at the foot of the even page with the ones after it, and a chapter that ends on an even page keeps its waiting notes there. In horizontal text it falls back to <code>'column'</code> with an <code>unknownConfigValue</code> warning. Since postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
+      <td><code>'chapter'</code> (Japanese horizontal books: <code>'page'</code>; with <code>placement: 'spread'</code>: <code>'spread'</code>; with <code>numberFormat: 'symbols'</code> at the column foot: <code>'page'</code>)</td>
+      <td><code>'chapter'</code> starts again at 1 under each level-1 heading and at the start of each document. <code>'document'</code> runs on through the document and, in a book laid out chapter by chapter, from one chapter to the next (<code>continuationAfter</code> carries the last number as <code>continuation.footnoteNumber</code>). <code>'page'</code> starts again at 1 on every page and <code>'column'</code> in every column, counting the notes where the layout sets them (the columns of a page in reading order): the usual 页下注 of a Chinese book. The document is laid out, numbered where its notes landed and laid out again until the numbers hold (at most three more builds). Both apply to notes at the column foot: with <code>placement: 'chapterEnd'</code> the notes are numbered by chapter. <code>'spread'</code> starts again on every spread (pages 2–3, 4–5…), in citation order, for <code>placement: 'spread'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>numberFormat</code></td>
+      <td><code>string</code></td>
+      <td><code>'decimal'</code></td>
+      <td>How the numbers are written, in any spelling the numbering settings take: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (or <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… The marker and the number that opens the note both use it. <code>circled-decimal</code> writes numbers past 50 in decimal. An unknown name numbers in decimal, with an <code>unknownNumberFormat</code> warning. <code>'symbols'</code> (or <code>'&#42;'</code>) marks the notes with reference symbols, <code>symbols</code> in turn: &#42; † ‡ § ‖ ¶, then doubled (&#42;&#42; †† ‡‡…) and tripled; the notes are then counted again on every page unless <code>numbering</code> is set. Since postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>The sequence <code>numberFormat: 'symbols'</code> writes, doubled and then tripled once it runs out. The Latin files of Google Fonts and Fontsource carry &#42; † § ¶ (the dagger in <code>latin-ext</code>) but neither ‡ nor ‖, which the PDF then draws as the face's <code>.notdef</code> glyph with a <code>missingGlyph</code> warning: with such a face, leave them out (<code>['&#42;', '†', '§', '¶']</code>) or set the notes in a face that has them. Empty strings are dropped and an empty list keeps the default. Since postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>markerPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline' | 'side' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'superscript'</code> raises the marker in the text and the number that opens the note, at a reduced size. <code>'inline'</code> sets them on the baseline: the marker at <code>markerSize</code>, the note's number at the note size; in vertical text an inline circled marker stands upright in a cell of its own. <code>'right'</code> sets a reduced marker flush with the right side of a vertical line, as Japanese vertical books set （1）; in horizontal text it is a superscript. <code>'side'</code> (合印) sets a small marker beside the marked word, on the side of its ruby, ending where the word's last character ends; it takes no room in the line, which breaks and justifies as if it were not there, and a line gap too narrow for it is reported as <code>rubyExceedsLeading</code>. <code>'auto'</code> is inline for <code>circled-decimal</code>, <code>'right'</code> in a Japanese vertical book, and superscript otherwise. Either way the marker stays with the character before it and never opens a line.</td>
+    </tr>
+    <tr>
+      <td><code>markerSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code>; <code>0.6em</code> for <code>'side'</code>, <code>0.7em</code> for <code>'right'</code></td>
+      <td>Size of an inline, side or right marker; <code>em</code> is the size of the text around it (<code>0.75em</code> is a common reduction). No effect on a superscript marker.</td>
+    </tr>
+    <tr>
+      <td><code>numberGap</code></td>
+      <td><code>'en' | 'em'</code></td>
+      <td><code>'en'</code> (Japanese notes after the chapter: <code>'em'</code>)</td>
+      <td>The space after the number that opens a note: an en space, or a full note em (an ideographic space when the number or the note holds CJK text), never stretched or broken. Since postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>markerTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>'&#123;n&#125;'</code> (Japanese vertical books: <code>'（&#123;n&#125;）'</code>)</td>
+      <td>How a note's number is written, <code>&#123;n&#125;</code> standing for it in the number format and the document's digits: <code>'(&#123;n&#125;)'</code> gives the parenthesised markers of Arabic books, «(١)». It writes the marker in the text and the number that opens the note alike. A template without <code>&#123;n&#125;</code> is read as the default.</td>
+    </tr>
+    <tr>
+      <td><code>noteNumberPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Where the number that opens the note stands, raised or on the line at the note size. <code>'auto'</code> follows <code>markerPosition</code>. Arabic books raise the marker in the text and set the note's own number on the line.</td>
+    </tr>
+    <tr>
+      <td><code>chapterEndAlign</code></td>
+      <td><code>'foot' | 'text'</code></td>
+      <td><code>'foot'</code></td>
+      <td>With <code>placement: 'chapterEnd'</code>: <code>'foot'</code> sets the notes that close a column at its foot, the lines left over staying between the text and the notes, as notes at the column foot stand. <code>'text'</code> sets them right under the text.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Size of the note text. <code>em</code> and <code>rem</code> are the body size. The notes use the body family and weights.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.25em</code></td>
+      <td>Leading of the note text; <code>em</code> is the note size. The notes are off the baseline grid: they stack up from the foot of the column, and the text above them stays on the grid.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>body colour</td>
+      <td>Colour of the note text.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>TextAlign</code></td>
+      <td>body alignment</td>
+      <td>Alignment of the note text.</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Indent of a note's second and later lines, so they align past its number.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Space between two notes.</td>
+    </tr>
+    <tr>
+      <td><code>spaceAbove</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Space between the last line of text and the rule; <code>em</code> is the body size. With <code>'chapterEnd'</code> and <code>chapterEndAlign: 'text'</code>, <code>spaceAbove</code> + <code>spaceBelowRule</code> is the space between the text and the first note.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBelowRule</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.4em</code></td>
+      <td>Space between the rule and the first note.</td>
+    </tr>
+    <tr>
+      <td><code>separator.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Draw the rule above the notes of each column. With <code>false</code> the spaces above stay.</td>
+    </tr>
+    <tr>
+      <td><code>separator.width</code></td>
+      <td><code>number</code></td>
+      <td><code>0.3</code></td>
+      <td>Length of the rule as a fraction of the column width (0–1), from the column's left edge.</td>
+    </tr>
+    <tr>
+      <td><code>separator.lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>Thickness of the rule.</td>
+    </tr>
+    <tr>
+      <td><code>separator.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>note colour</td>
+      <td>Colour of the rule.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+footnotes: {
+  fontSize: { value: 7.5, unit: 'pt' },
+  lineHeight: { value: 9.5, unit: 'pt' },
+  hangingIndent: { value: 0.8, unit: 'em' },
+  separator: { width: 0.25, lineWidth: { value: 0.4, unit: 'pt' } },
+}
+```
+
+**Japanese books.** A Japanese document (`locale: 'ja'`, since postext 1.16) gives the fields it leaves unset the values of JLReq §4.2. A vertical book sets its notes after the chapter (`placement: 'chapterEnd'`, 後注), numbered by chapter, with markers `（{n}）` right of the line (`markerPosition: 'right'`, digits upright by `cjk.uprightDigits`); a horizontal one sets them at the foot of the page, numbered per page, with superscript markers. Both draw the rule a third of the measure long (`separator.width: 1/3`), and notes after the chapter take `numberGap: 'em'` and a two-em hanging indent. An explicit value wins and is kept on save (`stripFootnotesDefaults` compares with the document's own defaults); Chinese, Arabic and Latin documents resolve as before. `footnoteDocumentDefaults(locale, writingMode, placement?)` returns these values. Write a marker before a sentence-final 。 (`先生[^1]。`): it stays with the character before it, and 。 never opens a line. See [Japanese layout › Notes](/en/docs/japanese-layout#notes).
+
+How the notes are laid out at the column foot:
+
+- **Note and citation share a column.** Before it places a line, the layout adds the height of the notes that line cites for the first time (and the rule, for the first note of the column). A line whose notes do not fit under it goes to the next column with the rest of its paragraph, under the orphan and widow rules. The column's text area shrinks by the notes' height, so the column balancing and the closing band of a chapter count only the text.
+- **Several notes** in one column stack in citation order under one rule. A note cited again later keeps its number and is not set again.
+- **Bottom floats.** A figure that takes the foot of a column after its notes were set goes above them; notes set after the figure go above it.
+- **Boxes.** A note cited inside a callout (inline, floated or fixed) goes to the foot of the column where the text after the box goes on, usually the same column. A box that closes the document leaves its notes at the foot of the column the text ended in.
+- **Limits.** A note is never split: one taller than a column overflows it. Markers in captions, table cells and headings are not read (they print as written).
+- **Output.** Canvas, HTML and PDF paint the notes, the markers (a superscript number) and the rule. In the PDF each marker links to its note, and a tagged PDF sets each note as a `Note` element with a unique `/ID` listed in the structure tree's `/IDTree` (PDF/UA-1). The notes are `VDTBlock`s with `footnoteNote` set, in `page.floats`; the rules are in `page.footnoteAreas`.
+- **Warnings.** `undefinedFootnote` (a marker with no definition: the number prints over an empty note) and `unusedFootnote` (a definition no marker cites: it is not set).
+
+Resolver and stripper match the other sections:
+
+```ts
+import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, footnoteDocumentDefaults } from 'postext';
+
+resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // unset fields take the Japanese vertical defaults
+```
+
+
+## Line numbers
+
+The `lineNumbers` property prints the number of every fifth line (or every Nth) in the margin beside it, as critical editions, anthologies of poetry, legal texts and school editions do. It counts the lines of `:::verse` poems, or every line of the text. It is off by default. Each number is painted on the baseline of its line, in a size of its own, and never moves a line: the page is laid out exactly as it would be without numbers. Since postext 1.23.
+
+```ts
+interface LineNumbersConfig {
+  enabled?: boolean;        // Off by default.
+  count?: 'verse' | 'all';  // The lines of poems, or every line of the text.
+  interval?: number;        // Print the multiples of N.
+  numberFirst?: boolean;    // Also print the first line after each restart.
+  restart?: 'document' | 'chapter' | 'section' | 'page' | 'poem'; // Where the count starts again.
+  startAt?: number;         // The number of the first line after a restart.
+  position?: 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+  multiColumn?: 'each' | 'gutter' | 'outer-edges'; // Pages of two or more columns.
+  gap?: Dimension;          // From the text to the number; em is the number's size.
+  align?: 'auto' | 'left' | 'right';
+  fontFamily?: string;      // The body family when unset.
+  fontSize?: Dimension;     // em is the body size.
+  fontWeight?: number;      // The body weight when unset.
+  italic?: boolean;
+  color?: ColorValue;       // The body colour when unset.
+  format?: string;          // decimal, lower-roman, arabic-indic, 一…
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Print line numbers. A vertical document (<code>layout.writingMode: 'vertical-rl'</code>) gets none, and <code>true</code> there is reported as <code>lineNumbersUnsupported</code>.</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>'verse' | 'all'</code></td>
+      <td><code>'verse'</code></td>
+      <td><code>'verse'</code> counts the lines of <code>:::verse</code> poems, each line of verse once: a turnover (the rest of a line too long for the measure, set on the next line) takes no number, and the space between stanzas is not counted. A poem in the classical Arabic layout counts one line per bayt; the second line of a staggered bayt is not counted. <code>'all'</code> counts every line of body paragraphs, list items, blockquotes and verse, in reading order: page by page, column by column, top to bottom.</td>
+    </tr>
+    <tr>
+      <td><code>interval</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>Print the number of every line that is a multiple of this one (5, 10, 15…). A poem whose first line is 37 prints 40, 45… A poem's fence may set its own (<code>interval=N</code>).</td>
+    </tr>
+    <tr>
+      <td><code>numberFirst</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Also print the number of the first counted line after each restart.</td>
+    </tr>
+    <tr>
+      <td><code>restart</code></td>
+      <td><code>'document' | 'chapter' | 'section' | 'page' | 'poem'</code></td>
+      <td><code>'poem'</code> with <code>count: 'verse'</code>, <code>'page'</code> with <code>count: 'all'</code></td>
+      <td>Where the count starts again: never (<code>'document'</code>, which runs on through the chapters of a book), at every level-1 heading (<code>'chapter'</code>), at every level-1 or level-2 heading (<code>'section'</code>), on every page (<code>'page'</code>) or at every <code>:::verse</code> poem (<code>'poem'</code>). A poem's <code>lineStart=N</code> and the <code>:::numbering</code> directive's <code>lines=N</code> restart it anywhere, in any mode.</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>The number of the first line after a restart.</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side'</code></td>
+      <td><code>'outer'</code></td>
+      <td>The side the numbers stand on. <code>'outer'</code> is away from the spine: the right of an odd page and the left of an even one, the other way round in a book bound on the right. <code>'inner'</code> is the spine side. <code>'left'</code> and <code>'right'</code> are the same on every page. <code>'start'</code> and <code>'end'</code> follow the document's direction: <code>'start'</code> is the right in a right-to-left book. <code>'side'</code> sets them in the side column of a <code>'oneAndHalf'</code> layout with <code>layout.sideColumnRole: 'floats'</code>, flush with the side column's edge next to the text (<code>gap</code> is not used); on a page with no side column it falls back to <code>'outer'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>multiColumn</code></td>
+      <td><code>'each' | 'gutter' | 'outer-edges'</code></td>
+      <td><code>'outer-edges'</code></td>
+      <td>Pages with two or more text columns side by side. <code>'outer-edges'</code> puts the first column's numbers on its left and the last column's on its right; the columns between them follow <code>'each'</code>. <code>'gutter'</code> puts them in the gutters: the first column's on its right, the others' on their left. <code>'each'</code> puts every column's numbers on the <code>position</code> side.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>The distance from the edge of the column to the number; <code>em</code> is the number's own size.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> sets each number flush toward the text: right-aligned in a left margin, left-aligned in a right one. <code>'left'</code> and <code>'right'</code> align the numbers within the width of the widest number on the page.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>body family</td>
+      <td>Typeface of the numbers. It is loaded and embedded like any other family.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Size of the numbers; <code>em</code> is the body size.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>body weight</td>
+      <td>Weight of the numbers.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the numbers in italics.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>body colour</td>
+      <td>Colour of the numbers. A colour linked to the palette follows the palettes of parts and sections.</td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>string</code></td>
+      <td>decimal</td>
+      <td>How the numbers are written, in any of the <a href="/en/docs/configuration-page-layout#numbering-format-spellings">numbering format spellings</a> (<code>'lower-roman'</code>, <code>'arabic-indic'</code>, <code>'一'</code>…). Decimal numbers are written in the document's digits (<code>numerals</code>). An unknown name numbers in decimal, with an <code>unknownNumberFormat</code> warning.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+lineNumbers: {
+  enabled: true,
+  count: 'verse',
+  interval: 5,
+  restart: 'document',          // one count through the whole book
+  position: 'outer',
+  fontSize: { value: 0.75, unit: 'em' },
+  italic: true,
+}
+```
+
+What is counted, and what is not:
+
+- **Never counted**: headings, captions, tables and pictures, display formulas, design text (openers, running heads), footnotes and chapter-end notes, the contents, the entries of the index and of the bibliography, and blank pages.
+- **Boxes and prose.** The text of a callout is not counted, and under `count: 'verse'` neither is prose, unless the paragraph style it is set in says `lineNumbers: true`; a style with `lineNumbers: false` is never counted (see [Paragraph styles](/en/docs/configuration-styles#paragraph-styles)).
+- **One poem.** A poem's fence takes `numbered=false` (its lines are not counted), `lineStart=N` (its first line is N, and the count starts again there) and `interval=N`. `:::numbering{lines=N}` numbers the next counted line N, wherever it stands. See [Document format › `:::verse`](/en/docs/document-format#verse) and [`:::numbering`](/en/docs/document-format#numbering).
+
+In a book laid out chapter by chapter, `restart: 'document'` carries the count from one chapter to the next through `continuation.lineNumber`. `continuationAfter` counts the lines of verse from the text; with `count: 'all'` the count depends on the layout, so the host passes on the `lastLineNumber` of the previous chapter's document, as the Sandbox does.
+
+With `position: 'side'` the numbers share the side column with side boxes, side captions and side figures. A number that overlaps one of them is painted anyway, neither of them moves, and the build reports a `lineNumberOverlap` content warning that points at the numbered line.
+
+**Output.** The canvas, the PDF, the HTML viewer and the fixed-layout EPUB paint the numbers. In a tagged PDF they are layout artifacts and each one carries an empty `/ActualText`, so copied or extracted text runs from line to line without them. The HTML output hides them from assistive technology (`aria-hidden`), from selection and from copied text. The reflowable EPUB, whose lines are set by the reading system, keeps the numbers of verse only: a `pt-line-number` span (also `aria-hidden`) in the start margin of the stanza, beside each line that carries a number in print. In the VDT the numbers are a design slot of each page (`page.lineNumbers`, its text blocks flagged `artifact`) and a list of marks (`page.lineNumberMarks`: `number`, `label`, `columnIndex`, `blockId`, `lineIndex`); the document records `lastLineNumber`.
+
+**Not supported**: line numbers in vertical text, a cross-reference that prints the number of a line, notes keyed to line numbers, and numbers for the lines of table cells, captions or code listings.
+
+In the Sandbox these settings are the **Line numbers** section of the Design panel. Resolver and stripper match the other sections; the font, the weight and the colour come from the body text:
+
+```ts
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from 'postext';
+
+resolveLineNumbersConfig(config.lineNumbers, resolvedBodyText); // unset font, weight and colour follow the body
+```
+
+
+## Cross-references
+
+The `crossRefs` property sets the words a [cross-reference](/en/docs/document-format#cross-references-and-anchors) prints around a number or a page, and the style a `:ref` takes when it sets none. Each template holds `{n}` where the number goes; one without it gets the number after a no-break space (`"§"` prints *§ 3.2*). An unset template follows the document language: *chapter / section / p.* in English, *capítulo / sección / pág.* in Spanish, `第{n}章` / `第{n}节` / `第{n}页` in Chinese, and so on for French, German, Italian, Portuguese, Catalan and Dutch.
+
+```ts
+interface CrossRefsConfig {
+  chapter?: string;  // Words around a level-1 heading's number: "chapter {n}".
+  section?: string;  // Around any other heading's number: "section {n}".
+  page?: string;     // Around a page number: "p. {n}".
+  defaultStyle?: 'default' | 'number' | 'title' | 'page'; // A :ref without style=.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>chapter</code></td>
+      <td><code>string</code></td>
+      <td>by language</td>
+      <td>A reference to a level-1 heading: <code>"chapter &#123;n&#125;"</code>. A heading number whose template already spells the word (<code>Chapter &#123;1&#125;</code>, <code>第&#123;1:一&#125;章</code>) prints as it is.</td>
+    </tr>
+    <tr>
+      <td><code>section</code></td>
+      <td><code>string</code></td>
+      <td>by language</td>
+      <td>A reference to a heading of level 2 to 6: <code>"section &#123;n&#125;"</code>, <code>"§ &#123;n&#125;"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>string</code></td>
+      <td>by language</td>
+      <td>A page reference (<code>style=page</code>): <code>"p. &#123;n&#125;"</code>, <code>"page &#123;n&#125;"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>defaultStyle</code></td>
+      <td><code>'default' | 'number' | 'title' | 'page'</code></td>
+      <td><code>'default'</code></td>
+      <td>What a <code>:ref</code> to a heading or an anchor prints without <code>style=</code>. <code>'default'</code>: a numbered heading by its word and number, an unnumbered one by its title, an anchor by its text. A reference that sets <code>style</code> keeps it, and references to figures and tables are not affected.</td>
+    </tr>
+  </tbody>
+</table>
+
+References take the colour, weight and slant of every reference (`bodyText.referenceColor`, `referenceBold`, `referenceItalic`).
+
+## Citations
+
+The `citations` property chooses the citation style and how citations and the bibliography look. The markup is described in [Citations and bibliography](/en/docs/document-format#citations-and-bibliography); the style is applied by the `postext-citeproc` package.
+
+```ts
+interface CitationsConfig {
+  style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
+  customStyle?: string;    // a whole CSL style (.csl XML), used with style: 'custom'
+  locale?: string;         // CSL locale; the document language when unset
+  link?: boolean;          // citations link to their entries
+  marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
+  collapseRanges?: boolean;
+  notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
+  bibliography?: {
+    title?: string;        // unset: the document language's word; '' or ' ': none
+    scope?: 'book' | 'chapter';
+    auto?: boolean;
+    fontSize?: Dimension;
+    lineHeight?: Dimension;
+    hangingIndent?: Dimension;
+    entrySpacing?: Dimension;
+    labelWidth?: Dimension;
+    labelAlign?: 'left' | 'right';
+    doi?: 'link' | 'text' | 'hide';
+    includeUncited?: boolean;
+    groupByLanguage?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>string</code></td>
+      <td><code>'apa'</code></td>
+      <td>A bundled style id (see <a href="/en/docs/document-format#styles">Styles</a>) or <code>'custom'</code>. The style decides what citations and entries say: names, dates, order, punctuation, and whether citations are notes.</td>
+    </tr>
+    <tr>
+      <td><code>customStyle</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>A whole CSL style, the XML of a <code>.csl</code> file, used when <code>style</code> is <code>'custom'</code>. The Sandbox loads it from a file.</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>document language</td>
+      <td>The CSL locale the style writes its words in (<code>en-US</code>, <code>es-ES</code>, <code>zh-CN</code>, <code>zh-TW</code>, <code>ja-JP</code>…). A Japanese document reads as <code>ja-JP</code>: narrative citations join two authors with と and shorten more with ほか.</td>
+    </tr>
+    <tr>
+      <td><code>link</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>A citation links to its entry in the bibliography (PDF link, HTML anchor, Sandbox click).</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'</code></td>
+      <td><code>'style'</code></td>
+      <td>How a numbered style marks a citation: as the style writes it, <code>[1]</code>, <code>(1)</code>, a superscript, or <code>〔1〕</code> (upright in vertical text). A locator follows the number.</td>
+    </tr>
+    <tr>
+      <td><code>collapseRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Consecutive numbers as a range: <code>1–3</code> in a marker of its own, <code>[2]–[4]</code> in IEEE's. <code>false</code> keeps them apart.</td>
+    </tr>
+    <tr>
+      <td><code>notes</code></td>
+      <td><code>'footnote' | 'warichu'</code></td>
+      <td><code>'footnote'</code></td>
+      <td>Where a note style sets its citations: footnotes (placed and numbered as <code>footnotes</code> says), or two-row notes inside the line (夹注).</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>Citations through the book, or each chapter on its own (each document, and each level-1 heading after a citation): a numbered style numbers each chapter from 1 and a work cited in two chapters takes each chapter's number; a note style writes a work in full at its first citation in each chapter. Meant with <code>bibliography.scope: 'chapter'</code>, whose lists then take the chapter's numbers.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.title</code></td>
+      <td><code>string</code></td>
+      <td>by language</td>
+      <td>Title above the list, a bold paragraph. Blank: none. A heading of your own goes above <code>:::bibliography</code>.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.scope</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>One list of every work the book cites, or one per chapter with the works it cites. In a document of several chapters each H1 starts a new chapter list; with <code>auto</code> a chapter that places no <code>:::bibliography</code> gets its list at its end.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.auto</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Set the list after the text (the last chapter, for a book-wide list) when no <code>:::bibliography</code> places it.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>Size of the entries; em is the body size.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>body leading</td>
+      <td>Leading of the entries.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>Indent of the turnover lines of an unnumbered entry.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Space between two entries.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td>longest label</td>
+      <td>Width of the column the numbers of a numbered list stand in: every entry’s text starts this far in, on its first line as on its turnover lines, so <code>9.</code> and <code>10.</code> share the column. The label stays part of the entry’s text.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelAlign</code></td>
+      <td><code>'left' | 'right'</code></td>
+      <td><code>'left'</code></td>
+      <td>Where a label sits in its column: against its left edge, or against the text (<code>9.</code> and <code>10.</code> end together).</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.doi</code></td>
+      <td><code>'link' | 'text' | 'hide'</code></td>
+      <td><code>'link'</code></td>
+      <td>DOIs and URLs as links, as plain text, or left out.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.includeUncited</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>List every reference, cited or not (like <code>nocite: "@*"</code>).</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.groupByLanguage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Works in Chinese, Japanese and Korean first, then the others. Author-date and author-page styles only: a numbered list keeps the order of its numbers.</td>
+    </tr>
+  </tbody>
+</table>
+
+## Table of contents
+
+The `toc` property configures what a `:::toc` directive prints (see [Document format](/en/docs/document-format#toc)). The contents are assembled from the document's **outline** — every heading with its number and page label, every `:::part` — so they follow the chapters: rename one, move it to another part, change its authors, and the entries change with it. An entry is the heading's number in a column of its own, the title, a leader and the page label at the right edge, then an optional subtitle line; a part is a row designed by `parts.design`.
+
+```ts
+const config: PostextConfig = {
+  toc: {
+    levels: [{ level: 1, fontWeight: 700, color: { hex: '#00507b', model: 'hex' }, numberWidth: { value: 7.4, unit: 'mm' } }],
+    unnumbered: { color: { hex: '#000000', model: 'hex' } },
+    pageNumber: { fontWeight: 400, width: { value: 8, unit: 'mm' } },
+    leader: { char: '.', gap: { value: 1, unit: 'mm' } },
+    subtitle: { enabled: true, attr: 'author', italic: true, fontSize: { value: 8.5, unit: 'pt' } },
+    parts: {
+      height: { value: 23, unit: 'pt' },
+      marginTop: { value: 11.5, unit: 'pt' },
+      design: { elements: [/* a band box, 'SECTION {number}', '{titleText}', '{pageNumber}' */] },
+    },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>TocLevelConfig[]</code></td>
+      <td>level 1</td>
+      <td>Heading levels listed, each with its entry typography: <code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code> (defaults to the body leading, so the contents sit on the grid), <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>indent</code> (of the whole entry), <code>numberWidth</code> / <code>numberGap</code> (the number column the title starts after; numbers are right-aligned in it, and a number wider than <code>numberWidth</code>, such as <code>الفصل الحادي عشر</code> or <code>Chapter 12</code>, widens the column of its level to the widest one), <code>numberFontFamily</code>, <code>numberFontSize</code>, <code>numberFontWeight</code>, <code>numberColor</code>, <code>marginTop</code>, <code>marginBottom</code>. Unset fields inherit the body text. The number sits on the baseline of the title's first line, whatever its face and size, on canvas, in HTML and in the PDF (up to postext 1.4 it was centred on the x-height like a list bullet, so a display face or a larger size rode above the title). A renderer of your own finds that baseline in the entry block's <code>bulletBaselineY</code>; <code>bulletY</code> is still the number's em-box midpoint, as in 1.4, so a renderer that predates the new field draws the numbers where it always did.</td>
+    </tr>
+    <tr>
+      <td><code>unnumbered</code></td>
+      <td><code>TocEntryStyleConfig</code></td>
+      <td>—</td>
+      <td>Overrides for headings whose style has <code>numbered: false</code> (a preface): they print no number and start flush at the level's <code>indent</code>.</td>
+    </tr>
+    <tr>
+      <td><code>pageNumber</code></td>
+      <td>object</td>
+      <td>level-1 face, body weight</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code> of the page label, and <code>width</code> (default <code>2em</code>): the column reserved for it at the right edge, where it is right-aligned.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>object</td>
+      <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
+      <td><code>char</code> is repeated across the gap between the title and the page number, right-aligned so the dots of consecutive entries line up (<code>'. '</code> spaces them out); <code>gap</code> is the least room kept between the title and the leader. The leader takes as many characters as fit, measured as a whole run in its face, so a face that kerns consecutive full stops apart gets fewer dots rather than dots that reach the page number. (Up to postext 1.4 the count was taken from one dot, and in such a face the leader ran from the title into the number.) A title that would leave the label no room wraps a little earlier. In a tagged PDF the dots are artifacts, left out of the extracted text. Body text sets the same leaders at its <a href="/en/docs/configuration-text#tab-stops">tab stops</a>.</td>
+    </tr>
+    <tr>
+      <td><code>subtitle</code></td>
+      <td>object</td>
+      <td><code>{"{ enabled: false, attr: 'author' }"}</code></td>
+      <td>A second line under the entry taken from a heading attribute (<code>attr</code>) — the chapter authors — with its own <code>fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code> (default <code>true</code>), <code>color</code> and extra <code>indent</code>. The line shares the entry's leading and never separates from its title.</td>
+    </tr>
+    <tr>
+      <td><code>parts.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether part dividers get a row.</td>
+    </tr>
+    <tr>
+      <td><code>parts.breakBefore</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Open a fresh page before every part row but the first, so each part's chapters are listed on a page of their own.</td>
+    </tr>
+    <tr>
+      <td><code>parts.design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>empty</td>
+      <td>Row design; its container is the row (column width × <code>height</code>). Placeholders: <code>{'{number}'}</code>, <code>{'{numberDecimal}'}</code>, <code>{'{numberRoman}'}</code>…, <code>{'{titleText}'}</code> and <code>{'{pageNumber}'}</code> (the part page's label; with <code>parts.page: false</code>, which opens no part page, the label of the page the part's content starts on, where its running heads switch to it; in a book laid out chapter by chapter, a fence that closes its chapter points at the first content page of the next chapter). Palette-linked colours take the part's own <code>palette</code>, so each section's row comes in its colour. When empty, <code>{'{number} {titleText}'}</code> (the H1's <code>numberSeparator</code> between them) and the page number are set in the level-1 entry typography.</td>
+    </tr>
+    <tr>
+      <td><code>parts.height</code>, <code>marginTop</code>, <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code>, <code>0</code>, <code>0</code></td>
+      <td>Row height and the space around it. <code>em</code> is the body text size, so the default row is twice the body size tall, not two body lines: with a 9.5/13.5 pt body it is 19 pt. For a row of two body lines, give the height in <code>pt</code> (<code>27pt</code> there).</td>
+    </tr>
+  </tbody>
+</table>
+
+The page labels are the ones the document prints. `buildDocument()` lays a document with a `:::toc` out again with the labels of the previous pass until they settle (at most three extra passes); a host laying a book out chapter by chapter supplies the whole book's outline as `PostextContent.outline` instead, assembled from `contentOutline()` (headings and parts from the text alone) and `outlineFromDoc()` (the same entries with the page labels of a layout), and lays the contents chapter out again whenever `outlineKey()` of that outline changes. Each heading entry carries the `number` the contents print and, for a numbered heading, its `counter`: the level's running count after any `startAt`, whatever the template prints — what a host shows beside a chapter in its own lists.
+
+## Back-of-book index
+
+The `index` property configures what a `:::index` directive prints (see [Document format](/en/docs/document-format#back-of-book-index)): the terms marked with `:index[…]` and `:index{term="…"}` in the text, sorted, grouped by first letter (by pinyin initial or stroke count in Chinese, by gojūon row in Japanese, see `groupBy`), each with the pages it falls on. An entry is its term, a separator and its page numbers; its sub-entries follow, one indent step per level, and wrapped lines hang by `turnoverIndent` so they never line up with a sub-entry.
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    // The index in two columns, under its own heading.
+    { id: 'index', numbered: false, layout: { layoutType: 'double', gutterWidth: { value: 6, unit: 'mm' } } },
+  ],
+  index: {
+    fontSize: { value: 8.5, unit: 'pt' },
+    lineHeight: { value: 11, unit: 'pt' },
+    rangeFormat: 'chicago',
+    groups: { fontFamily: 'Source Sans 3', fontWeight: 700, color: { hex: '#8a1c1c', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>color</code></td>
+      <td>—</td>
+      <td>the body text</td>
+      <td>Entry typography. Every line of the index, letter heads included, is set on <code>lineHeight</code>; the index keeps its own rhythm and does not snap to the baseline grid.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>Indent of each sub-entry level.</td>
+    </tr>
+    <tr>
+      <td><code>turnoverIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>Extra indent of an entry's wrapped lines, beyond its own level.</td>
+    </tr>
+    <tr>
+      <td><code>entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Space above each main entry.</td>
+    </tr>
+    <tr>
+      <td><code>separator</code>, <code>locatorSeparator</code>, <code>rangeSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>', '</code>, <code>', '</code>, <code>'–'</code>; the first two <code>'، '</code> in Arabic script</td>
+      <td>What is printed between the term and its first page, between two pages, and between the ends of a range.</td>
+    </tr>
+    <tr>
+      <td><code>mergeRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Join consecutive pages of one numbering format into a range: <code>12, 13, 14</code> prints <code>12–14</code>. Main pages are never joined.</td>
+    </tr>
+    <tr>
+      <td><code>rangeFormat</code></td>
+      <td><code>'full' | 'chicago'</code></td>
+      <td><code>'full'</code></td>
+      <td>How the second number of a range is written: in full (<code>234–237</code>) or with the digits it shares with the first dropped, as <em>The Chicago Manual of Style</em> (9.64) asks: <code>71–72</code>, <code>100–104</code>, <code>101–8</code>, <code>321–28</code>, <code>1496–500</code>. Roman labels are always written in full.</td>
+    </tr>
+    <tr>
+      <td><code>main</code></td>
+      <td><code>{'{ bold?, italic? }'}</code></td>
+      <td>bold</td>
+      <td>How a principal page (<code>main</code> on the mark) is set.</td>
+    </tr>
+    <tr>
+      <td><code>see</code></td>
+      <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
+      <td>by language, italic (upright in Arabic script)</td>
+      <td>The words before a cross-reference. Unset, they follow the document language: <em>See</em> / <em>See also</em>, <em>Véase</em> / <em>Véase también</em>, <em>Voir</em> / <em>Voir aussi</em>, 见 / 另见 (見 / 另見 in Traditional Chinese)… A Chinese index sets the reference after a full stop, with no space: <code>贾琏 12。见贾政</code>.</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>the document's</td>
+      <td>The language whose alphabetical order sorts the entries (a BCP 47 tag, read by <code>Intl.Collator</code>). In Spanish <em>ñ</em> sorts after <em>n</em> and heads a group of its own; accents never change the order.</td>
+    </tr>
+    <tr>
+      <td><code>groupBy</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>What the group heads are. <code>'letter'</code>: the first letter of the sort key. <code>'pinyin'</code>: an entry that starts with a Han character files under the Latin initial of its pinyin reading (贾宝玉 under <code>J</code>), and a Latin sort key under its letter, after that letter's Chinese entries (the collator sets Latin letters after Chinese characters): <code>sort="jia mu"</code> ends the <code>J</code>. <code>'stroke'</code>: under the stroke count of the first character, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… in Simplified Chinese). <code>'gojuon'</code>: a kana entry files under its gojūon row, あ行, か行 … わ行, and <code>'kana'</code> under its first kana (katakana and hiragana sharing heads), in the JIS X 4061 order of a Japanese index: by the reading (<code>yomi</code> of the mark, else the kana reading of its ruby, else <code>sort</code>, else the text), katakana as hiragana, small kana as large ones, ー as the vowel before it, 清 before 濁 before 半濁; symbols, then numbers by value, then Latin words under their letters, then kana; an entry still headed by a kanji is reported as <code>indexReadingMissing</code> and set after the kana under no head. <code>'none'</code>: no heads; symbols, numbers and words are set apart by <code>groups.marginTop</code> only. <code>'auto'</code> groups a Japanese index (<code>ja</code>, <code>ja-*</code>) by gojūon row, a Simplified Chinese index (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) by pinyin, a Traditional one (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) by strokes, and every other language by letter. The entries sort in the collation the heads come from: a <code>zh-Hant</code> index grouped by pinyin sorts by pinyin. The readings and stroke counts are the collator's (CLDR); where it reads a character wrongly (重 as <em>zhòng</em> in 重阳, 行 as <em>xíng</em> in 行业), give the mark a <code>sort</code> key in characters that have only the reading you want, which sorts in place: <code>sort="崇阳"</code> for 重阳, <code>sort="航业"</code> for 行业. A browser without Chinese collation data prints a pinyin or stroke index with no heads.</td>
+    </tr>
+    <tr>
+      <td><code>ignoreArticle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> in Arabic</td>
+      <td>Sort and group Arabic entries as if a leading article <code>ال</code> (<code>ٱل</code>) were not there: البصرة files under ب, between بدر and بغداد, and prints as written. <code>الله</code> keeps its article, and an entry with its own <code>sort</code> key sorts by that key as given. Whatever this says, an Arabic index ignores the vowel signs and the tatweel, files أ إ آ ٱ under ا, and sorts ؤ as و, ئ and ى as ي, ة as ه.</td>
+    </tr>
+    <tr>
+      <td><code>groups.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Print a head above each group of entries (<code>A</code>, <code>B</code>…, or the stroke count, <code>0–9</code> for numbers, <code>Symbols</code> for the rest; <code>数字</code> / <code>數字</code> and <code>符号</code> / <code>符號</code> in Chinese).</td>
+    </tr>
+    <tr>
+      <td><code>groups.fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code></td>
+      <td>—</td>
+      <td>the entries', weight <code>700</code></td>
+      <td>The letter head's face. It is set on the entries' line pitch.</td>
+    </tr>
+    <tr>
+      <td><code>groups.marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td>one line of the index</td>
+      <td>Space above each group, with or without a head; none above the first group, whose distance from the heading is the heading's, and none at the top of a column.</td>
+    </tr>
+    <tr>
+      <td><code>groups.symbolsLabel</code>, <code>numbersLabel</code></td>
+      <td><code>string</code></td>
+      <td>by language; <code>'0–9'</code>, <code>'数字'</code> / <code>'數字'</code> in Chinese</td>
+      <td>The heads of the entries that start with a symbol and with a digit.</td>
+    </tr>
+  </tbody>
+</table>
+
+The page numbers come from the book's outline, as the contents' do: `computeOutline()` and `contentOutline()` list the index marks of a text as entries of kind `'indexMark'` (with `indexMark.path`, `sort`, `see`, `seeAlso`, `main`, `range` and `index`), and `outlineFromDoc()` gives each the page it landed on, which the build records in `doc.indexMarks` (`{ sourceStart, pageIndex }` per mark). `buildDocument()` lays a document that prints its own index out again until the numbers settle; a host laying out a book chapter by chapter hands the chapter holding `:::index` the whole book's outline as `PostextContent.outline`. `tocOutline()` and `indexOutline()` split an outline into what the contents and the index read, so a host can key each chapter to the part it prints: the Sandbox lays the index chapter out again only when a mark moves, and the contents chapter only when a heading does. `contentOutline()` also says whether a text prints an index (`hasIndex`).

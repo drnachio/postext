@@ -16,7 +16,7 @@ Las siete últimas páginas de una tesis doctoral sobre la lectura en pantalla y
 
 ### 1 · Un estilo de título para cada parte del final
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. `# Glossary {style="glossary" note="…"}` abre una sección que llega hasta el siguiente título de nivel 1, y sus páginas toman la disposición, las cabeceras y la apertura del estilo ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)), de modo que el glosario y el índice pasan a dos columnas y la bibliografía, cuyo estilo no fija disposición, vuelve a la columna única del documento. `numbered: false` deja estos títulos fuera de la cuenta de capítulos (sin él, en la banda del glosario saldría un 2), y cada estilo declara su salto de página, porque el que no lo declara hereda el `'odd'` del capítulo y deja páginas pares en blanco. Las entradas del glosario y de la bibliografía son párrafos de un bloque `:::paragraphs{style="…"}` en cuerpo 9,3 sobre 12,4 pt, frente al 11 sobre 14,6 del texto, con las líneas de continuación sangradas 1 em en el glosario y 1,5 em en la bibliografía ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)).
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `# Glossary {style="glossary" note="…"}` abre una sección que llega hasta el siguiente título de nivel 1, y sus páginas toman la disposición, las cabeceras y la apertura del estilo ([estilos de encabezado](/es/docs/configuration-styles#estilos-de-encabezado)), de modo que el glosario y el índice pasan a dos columnas y la bibliografía, cuyo estilo no fija disposición, vuelve a la columna única del documento. `numbered: false` deja estos títulos fuera de la cuenta de capítulos (sin él, en la banda del glosario saldría un 2), y cada estilo declara su salto de página, porque el que no lo declara hereda el `'odd'` del capítulo y deja páginas pares en blanco. Las entradas del glosario y de la bibliografía son párrafos de un bloque `:::paragraphs{style="…"}` en cuerpo 9,3 sobre 12,4 pt, frente al 11 sobre 14,6 del texto, con las líneas de continuación sangradas 1 em en el glosario y 1,5 em en la bibliografía ([estilos de párrafo](/es/docs/configuration-styles#estilos-de-párrafo)).
 
 ### 2 · Una sola banda para todas las aperturas
 
@@ -28,7 +28,7 @@ La marca es `{number}`: un 6 en el capítulo, una A en el apéndice y nada en un
 
 <Excerpt region="appendix" />
 
-El estilo del apéndice lleva `numberingTemplate: '{1:A}'`, que imprime el contador del nivel como letra, y `# Interview guide {style="appendix" startAt=1}` reinicia ese contador, así que el primer apéndice es el A y no el G ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). La banda lee la letra con `{number}` y la cabecera con `{chapterNumber}`. El `{h1}` de un tipo de recurso imprime el contador como número, y por eso un tipo propio numera las tablas del apéndice A.1, A.2, etc.; con el tipo por defecto, la tabla sería la 1.1. Los títulos del capítulo se numeran con las plantillas de cada nivel: `'{1}.{2}'` imprime 6.1, y `continuation.headings.h1: 5` hace de este el sexto capítulo.
+El estilo del apéndice lleva `numberingTemplate: '{1:A}'`, que imprime el contador del nivel como letra, y `# Interview guide {style="appendix" startAt=1}` reinicia ese contador, así que el primer apéndice es el A y no el G ([estilos de encabezado](/es/docs/configuration-styles#estilos-de-encabezado)). La banda lee la letra con `{number}` y la cabecera con `{chapterNumber}`. El `{h1}` de un tipo de recurso imprime el contador como número, y por eso un tipo propio numera las tablas del apéndice A.1, A.2, etc.; con el tipo por defecto, la tabla sería la 1.1. Los títulos del capítulo se numeran con las plantillas de cada nivel: `'{1}.{2}'` imprime 6.1, y `continuation.headings.h1: 5` hace de este el sexto capítulo.
 
 ### 4 · Las cabeceras, hacia el margen exterior
 
@@ -46,7 +46,7 @@ Los cuatro textos se anclan a la página y se filtran por `parity`, lo que manti
 
 <Excerpt region="palette" />
 
-La negrita, la cursiva, las viñetas y números de las listas y las referencias siguen por defecto la entrada `main-color` de la paleta, así que, si le das el color de la tinta, salen en negro y no en azul ([paleta de colores](/es/docs/configuration#paleta-de-colores)). `referenceBold: false` pone *Table 6.1* en redonda, como las citas autor-año que la rodean.
+La negrita, la cursiva, las viñetas y números de las listas y las referencias siguen por defecto la entrada `main-color` de la paleta, así que, si le das el color de la tinta, salen en negro y no en azul ([paleta de colores](/es/docs/configuration-fonts-colors-viewers#paleta-de-colores)). `referenceBold: false` pone *Table 6.1* en redonda, como las citas autor-año que la rodean.
 
 <Note>La lista de tablas sigue haciéndose a mano. En una tesis entera compuesta capítulo a capítulo con `buildBundle`, el capítulo que contiene `:::index` recibe las marcas de todos los capítulos.</Note>
 

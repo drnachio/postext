@@ -120,7 +120,7 @@ const canvas = renderPage(docs[0].pages[0], docs[0]);
 const { bytes } = await createBundle({ name: 'My Book', chapters: [{ markdown: '# One\n\n…' }], config });
 ```
 
-See [Bundles](https://postext.dev/en/docs/configuration#bundles-postext-files) for the full API, the PDF adapters and live examples.
+See [Bundles](https://postext.dev/en/docs/configuration-programmatic-usage#bundles-postext-files) for the full API, the PDF adapters and live examples.
 
 ## With pretext
 

@@ -22,7 +22,7 @@ The code for this step is [the short answer](#the-short-answer) above. [Knuth–
 
 <Excerpt region="marks" />
 
-`findLooseLines` returns the justified lines whose word spaces stretch past a threshold, here the upper bound, each with the band a highlight covers ([Loose lines in your own canvas](/en/docs/configuration#loose-lines-in-your-own-canvas)). `marks()` adds what that list leaves out, read from the [VDT](/en/docs/justification#loose-line-debugging): a line past 3× has no ratio, because the engine [sets it ragged](/en/docs/justification#lines-the-breaker-cannot-fill) and flags it `line.ragged` instead, and a paragraph split between two columns comes back as one block per fragment, which is how the lone lines are found. At forty characters the bounds alone do not keep every line under 1.6; while the essay was being copy-fitted, the marks showed which sentences to reword.
+`findLooseLines` returns the justified lines whose word spaces stretch past a threshold, here the upper bound, each with the band a highlight covers ([Loose lines in your own canvas](/en/docs/configuration-fonts-colors-viewers#loose-lines-in-your-own-canvas)). `marks()` adds what that list leaves out, read from the [VDT](/en/docs/justification#loose-line-debugging): a line past 3× has no ratio, because the engine [sets it ragged](/en/docs/justification#lines-the-breaker-cannot-fill) and flags it `line.ragged` instead, and a paragraph split between two columns comes back as one block per fragment, which is how the lone lines are found. At forty characters the bounds alone do not keep every line under 1.6; while the essay was being copy-fitted, the marks showed which sentences to reword.
 
 ### 3 · Lay the control beside the published page
 
@@ -40,7 +40,7 @@ A box sets all the columns of a [`:::columns`](/en/docs/document-format#columns)
 
 <Excerpt region="opener" />
 
-The diagram is an [image element](/en/docs/configuration#image-elements) of the H1's design. As a figure it would be a page-wide `top` float, and a `top` float cited on page 1 opens page 2. The band reaches below the diagram, and an opener reserves height down to its lowest element, so the text starts under the band without a `minHeight`, a line further down because of the H1's default `marginBottom`. The labels are design text laid on the drawing's own coordinates, set and tracked like the opener's other labels.
+The diagram is an [image element](/en/docs/configuration-page-layout#image-elements) of the H1's design. As a figure it would be a page-wide `top` float, and a `top` float cited on page 1 opens page 2. The band reaches below the diagram, and an opener reserves height down to its lowest element, so the text starts under the band without a `minHeight`, a line further down because of the H1's default `marginBottom`. The labels are design text laid on the drawing's own coordinates, set and tracked like the opener's other labels.
 
 ## Variations
 

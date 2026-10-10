@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'zh',
   lastUpdated: '2026-10-07',
   readingTime: '25分钟',
-  order: 9,
+  order: 18,
   plainSummary: "本页说明怎样用Postext做漫画。画就是分格，人物说的、想的和听到的一切都作为文字写在Markdown文件里。Postext把分格排到页面上，并自动围着文字画出对白框、旁白框和拟声词。翻译漫画时只需改写文字，Postext会用新的语言重新嵌字：日文竖排成列，阿拉伯文从右往左。本页还介绍书中的漫画条、横跨两个对页的跨页、各种输出以及尚存的限制。",
 };
 
@@ -17,7 +17,7 @@ export const metadata = {
 
 在Postext中，一部漫画由一组画和一份脚本组成。画是普通的位图或SVG资源，画面上不带任何文字。脚本写在章的Markdown里：一个`:::page`块把一页切成若干分格，给每一格指定画面，并逐行列出这一格里的对白框、旁白框和拟声词。Postext排出分格，把每幅画裁进它的格子而不切掉要紧的部分，用全书统一的嵌字字体和字号排出文字，围着文字画出对白框，让尾巴指向说话人，再按阅读顺序把对白框放在不挡脸的地方。译本是另一个Markdown文件，分格相同，文字不同；Postext从头为它重新嵌字，日文竖排成列，阿拉伯文从右往左。
 
-漫画是可选功能：没有`:::page`或`:::strip`的文档，排版结果与以前完全相同。相关设置在[配置中的`comics`一节](/zh/docs/configuration#漫画)，标记的摘要见[文档格式 › 漫画](/zh/docs/document-format#漫画)。
+漫画是可选功能：没有`:::page`或`:::strip`的文档，排版结果与以前完全相同。相关设置在[配置中的`comics`一节](/zh/docs/configuration-comics#漫画)，标记的摘要见[文档格式 › 漫画](/zh/docs/document-format#漫画)。
 
 ## 漫画页
 
@@ -169,7 +169,7 @@ maya{whisper}: 爷爷？
 
 ### 分格样式
 
-分格的外观来自`comics.panel`（1 pt黑色边框、白色底、`cover`），来自页面或分格用`style=`选取的`comics.panelStyles`中的命名样式，以及分格自己的`border`和`bg`。边框可以是`solid`、`none`或`rough`：`rough`是略带抖动的手绘线，每次排版都一样，因为抖动以分格为种子生成。每个字段见[配置 › 漫画](/zh/docs/configuration#漫画)。
+分格的外观来自`comics.panel`（1 pt黑色边框、白色底、`cover`），来自页面或分格用`style=`选取的`comics.panelStyles`中的命名样式，以及分格自己的`border`和`bg`。边框可以是`solid`、`none`或`rough`：`rough`是略带抖动的手绘线，每次排版都一样，因为抖动以分格为种子生成。每个字段见[配置 › 漫画](/zh/docs/configuration-comics#漫画)。
 
 ### 出格画面
 
@@ -335,7 +335,7 @@ ghost{eerie}: 离开这座房子……
 caption{at=bottom-end}: 三条街以外。
 ```
 
-轮廓有`oval`（贴合文字行的超椭圆，`roundness`为2.2）、`rounded`、`rectangle`、`cloud`（扇贝边的个数按周长计算）、`burst`（`burstPoints`个尖刺，深度为`burstDepth`）、`wavy`、`electric`和`none`。`dash`画虚线轮廓，`double`画双线轮廓，`wobble`（0–1）让轮廓像手绘一样抖动，同一个对白框每次都抖得一样。尾巴有`curved`、`wedge`、`bubbles`、`zigzag`和`none`。每个字段及其默认值见[配置 › 漫画](/zh/docs/configuration#漫画)。
+轮廓有`oval`（贴合文字行的超椭圆，`roundness`为2.2）、`rounded`、`rectangle`、`cloud`（扇贝边的个数按周长计算）、`burst`（`burstPoints`个尖刺，深度为`burstDepth`）、`wavy`、`electric`和`none`。`dash`画虚线轮廓，`double`画双线轮廓，`wobble`（0–1）让轮廓像手绘一样抖动，同一个对白框每次都抖得一样。尾巴有`curved`、`wedge`、`bubbles`、`zigzag`和`none`。每个字段及其默认值见[配置 › 漫画](/zh/docs/configuration-comics#漫画)。
 
 渲染器按嵌字师上墨的方式画对白框：一组中的所有轮廓先以两倍粗细描边，再填充，最后排字。因此两个相连的框体和它们的尾巴画出来是一个整体，中间没有线。
 
@@ -443,7 +443,7 @@ caption: 从钟楼上望去的星期六集市。
 - `'auto'`（默认）：按版本所用语言的方向。在从右到左的文档中从右往左读，所以阿拉伯文版会把页面左右翻排；竖排文档也从右往左；日文和繁体中文（`ja`、`zh-Hant`、`zh-TW`、`zh-HK`、`zh-MO`）同样从右往左，所以西方漫画的日文版和日本漫画一样从右往左读。其他语言，包括简体中文和韩文（如今的国漫和韩漫都从左往右读），按画稿绘制时设想的方向，即`comics.artDirection`（默认`'ltr'`）：设了`artDirection: 'rtl'`的日本漫画在任何语言中都从右往左。
 - `'ltr'`或`'rtl'`为全书强制一个方向，页面的`direction`属性为该页强制方向。
 
-装订随漫画而定。`page.binding: 'auto'`时，`comics`部分从右往左读的书在右侧装订：第1页单独位于书脊左侧，跨页读作`[3 | 2]`，阅读器向左翻页，PDF要求从右到左的页序，EPUB声明从右到左的翻页方向。由`comics`部分为全书决定，所以没有漫画页的章节与其他章节的装订相同；页面自己的`direction`不会移动书脊。漫画页沿用默认设置、没有`comics`部分的文档保持其文本的装订（写上`comics: {}`即可按漫画的阅读方向装订）。明确写出的`page.binding: 'left'`或`'right'`仍然优先。见[装订](/zh/docs/configuration#装订)。
+装订随漫画而定。`page.binding: 'auto'`时，`comics`部分从右往左读的书在右侧装订：第1页单独位于书脊左侧，跨页读作`[3 | 2]`，阅读器向左翻页，PDF要求从右到左的页序，EPUB声明从右到左的翻页方向。由`comics`部分为全书决定，所以没有漫画页的章节与其他章节的装订相同；页面自己的`direction`不会移动书脊。漫画页沿用默认设置、没有`comics`部分的文档保持其文本的装订（写上`comics: {}`即可按漫画的阅读方向装订）。明确写出的`page.binding: 'left'`或`'right'`仍然优先。见[装订](/zh/docs/configuration-page-layout#装订)。
 
 同一份源文件给出两种页面版式。从右到左的页面把每一行的分格从右边排起，所以第1格在右上角；斜线随之镜像，`bleed`和`pad`的逻辑方向以及角位置关键词也一样（`top-start`的旁白框在右上角）。各行仍然自上而下，脚本的阅读顺序不变。嵌字规则也随之镜像：一格中的第一个对白框靠右，下一个只有在更靠左时才可以更高。
 
@@ -520,7 +520,7 @@ tomas: and there's a storm on the way.
   </tbody>
 </table>
 
-这些警告返回在文档的`contentWarnings`中，带有所涉及的行或属性的源码范围（见[配置 › 文档中的警告](/zh/docs/configuration#文档中的警告)）。
+这些警告返回在文档的`contentWarnings`中，带有所涉及的行或属性的源码范围（见[配置 › 文档中的警告](/zh/docs/configuration-programmatic-usage#文档中的警告)）。
 
 只能取几个固定词的漫画设置写了别的值时，例如对白框样式中的`shape: 'ovl'`或`readingDirection: 'rlt'`，按默认值读取，并在检查面板中列为**未知的设置值**（`unknownConfigValue`），附上引擎实际使用的值和最接近的词。检查的设置有：`readingDirection`、`artDirection`，分格样式的`borderStyle`和`fit`，嵌字的`writingMode`、`textTransform`、`dropFinalStop`和`joinSameSpeaker`，以及对白框样式的`shape`、`tail`、`target`、`position`、`align`和`textTransform`。
 

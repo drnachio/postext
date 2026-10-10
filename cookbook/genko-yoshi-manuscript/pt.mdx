@@ -16,7 +16,7 @@ Três folhas de papel de manuscrito japonês (原稿用紙, genkō yōshi), do m
 
 ### 1 · Desenhe os quadrados e dê a cada sinal um quadrado inteiro
 
-O código está na [resposta curta](#a-resposta-curta), mais acima. A [grade de caracteres](/pt/docs/configuration#grade-de-caracteres) faz a mancha medir 20 caracteres de 20 pt (7,1 mm) para baixo e 20 linhas de 27 pt (9,5 mm) na largura, e `show: true` desenha os quadrados num cinza-claro próprio, na tela, e no PDF quando `renderToPdf` recebe `characterGrid: true` (num livro a grade é um recurso de revisão, então o PDF a deixa de fora por padrão); a faixa de 2,5 mm entre duas linhas é onde quem escreve acrescenta leituras e correções. Um sinal japonês é meio glifo e meio eme de branco, e um livro recolhe brancos onde dois sinais se encontram ou onde um colchete abre a linha. No papel de manuscrito cada sinal mantém o seu quadrado, então `compressAdjacent: false` põe 。」 em dois quadrados e `trimLineStart: false` deixa a um colchete no início da linha o quadrado inteiro ([Tipografia do Leste Asiático](/pt/docs/configuration#tipografia-do-leste-asiático)).
+O código está na [resposta curta](#a-resposta-curta), mais acima. A [grade de caracteres](/pt/docs/configuration-east-asian#grade-de-caracteres) faz a mancha medir 20 caracteres de 20 pt (7,1 mm) para baixo e 20 linhas de 27 pt (9,5 mm) na largura, e `show: true` desenha os quadrados num cinza-claro próprio, na tela, e no PDF quando `renderToPdf` recebe `characterGrid: true` (num livro a grade é um recurso de revisão, então o PDF a deixa de fora por padrão); a faixa de 2,5 mm entre duas linhas é onde quem escreve acrescenta leituras e correções. Um sinal japonês é meio glifo e meio eme de branco, e um livro recolhe brancos onde dois sinais se encontram ou onde um colchete abre a linha. No papel de manuscrito cada sinal mantém o seu quadrado, então `compressAdjacent: false` põe 。」 em dois quadrados e `trimLineStart: false` deixa a um colchete no início da linha o quadrado inteiro ([Tipografia do Leste Asiático](/pt/docs/configuration-east-asian#tipografia-do-leste-asiático)).
 
 ### 2 · Siga as regras de linha do manuscrito
 
@@ -26,7 +26,7 @@ O papel de manuscrito tem o seu próprio kinsoku. Um kana pequeno ou um ー pode
 
 <Excerpt region="heading" />
 
-O título é um título com o tamanho e a fonte do texto, então ele preenche quadrados como qualquer outra linha: `lineSpan: 1` o mantém numa linha da grade e `indent: em(2)` deixa dois quadrados vazios acima dele ([Ajustes por nível](/pt/docs/configuration#sobrescritas-por-nível)). O nome é um parágrafo com `textAlign: 'end'` e `endIndent: em(1)`, que o faz terminar um quadrado antes do pé, e o Markdown escreve o quadrado em branco entre sobrenome e nome como um espaço ideográfico: `夏目　漱石`. O texto começa na terceira linha, e cada parágrafo depois de um quadrado vazio, o de `firstLineIndent: em(1)`.
+O título é um título com o tamanho e a fonte do texto, então ele preenche quadrados como qualquer outra linha: `lineSpan: 1` o mantém numa linha da grade e `indent: em(2)` deixa dois quadrados vazios acima dele ([Ajustes por nível](/pt/docs/configuration-text#sobrescritas-por-nível)). O nome é um parágrafo com `textAlign: 'end'` e `endIndent: em(1)`, que o faz terminar um quadrado antes do pé, e o Markdown escreve o quadrado em branco entre sobrenome e nome como um espaço ideográfico: `夏目　漱石`. O texto começa na terceira linha, e cada parágrafo depois de um quadrado vazio, o de `firstLineIndent: em(1)`.
 
 ### 4 · Imprima a folha em volta dos quadrados
 
@@ -38,7 +38,7 @@ Os elementos do cabeçalho são desenhados na própria folha: numa página verti
 
 <Excerpt region="pen" />
 
-A Klee One é desenhada com caneta e mantém as formas japonesas dos kanji, então as folhas parecem escritas à mão sem a irregularidade de uma digitalização. As formas verticais dela põem 、。 no canto superior direito do quadrado e giram ー e os colchetes, que é onde quem escreve os põe. Como toda família japonesa do Fontsource, ela vem em cerca de 120 arquivos, e `loadCjkFonts` baixa os que o texto precisa ([Fontes chinesas, japonesas e coreanas](/pt/docs/configuration#fontes-chinesas-japonesas-e-coreanas)).
+A Klee One é desenhada com caneta e mantém as formas japonesas dos kanji, então as folhas parecem escritas à mão sem a irregularidade de uma digitalização. As formas verticais dela põem 、。 no canto superior direito do quadrado e giram ー e os colchetes, que é onde quem escreve os põe. Como toda família japonesa do Fontsource, ela vem em cerca de 120 arquivos, e `loadCjkFonts` baixa os que o texto precisa ([Fontes chinesas, japonesas e coreanas](/pt/docs/configuration-programmatic-usage#fontes-chinesas-japonesas-e-coreanas)).
 
 ## Variações
 

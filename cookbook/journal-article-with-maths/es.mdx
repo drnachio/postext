@@ -16,13 +16,13 @@ Un artículo de investigación del número de septiembre de *Measure*, revista f
 
 ### 1 · Arranca MathJax y numera las ecuaciones
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. Las [matemáticas](/es/docs/configuration#matemáticas) las compone MathJax, que viene dentro del paquete: `initMathEngine` se importa de `https://esm.sh/postext` con los demás símbolos, y hay que esperar a `initMathEngine()` antes de la primera composición; si no, cada fórmula sale como una caja gris. A partir de ahí, `$…$` compone matemáticas en línea y `$$…$$` fórmulas destacadas, y `renderToPdf` escribe cada fórmula como trazados vectoriales. Un `\tag{1}` al final de una fórmula destacada la numera: la fórmula ocupa el ancho de su columna, con la ecuación centrada y el número pegado a la derecha en su misma línea. Aquí los números se escriben a mano, y el texto los cita tal cual, «Eq. (6)».
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Las [matemáticas](/es/docs/configuration-text#matemáticas) las compone MathJax, que viene dentro del paquete: `initMathEngine` se importa de `https://esm.sh/postext` con los demás símbolos, y hay que esperar a `initMathEngine()` antes de la primera composición; si no, cada fórmula sale como una caja gris. A partir de ahí, `$…$` compone matemáticas en línea y `$$…$$` fórmulas destacadas, y `renderToPdf` escribe cada fórmula como trazados vectoriales. Un `\tag{1}` al final de una fórmula destacada la numera: la fórmula ocupa el ancho de su columna, con la ecuación centrada y el número pegado a la derecha en su misma línea. Aquí los números se escriben a mano, y el texto los cita tal cual, «Eq. (6)».
 
 ### 2 · Dibuja el bloque del título con un estilo de título
 
 <Excerpt region="title" />
 
-El título del artículo lleva `#` (nivel 1), así que encabeza los marcadores del PDF, con las secciones numeradas debajo. Su [estilo de título](/es/docs/configuration#estilos-de-encabezado) `article` lo sustituye por una ranura de elementos de diseño: una banda a sangre por arriba, el nombre de la revista, la imagen estroboscópica y el título, partido en dos donde el Markdown lleva `\\`. Los autores y dos de las fechas salen de los atributos del título, y la de publicación, del `publishDate` del frontmatter. `minHeight` reserva 130 mm desde el margen superior hasta el pie de los autores, y el resumen empieza debajo.
+El título del artículo lleva `#` (nivel 1), así que encabeza los marcadores del PDF, con las secciones numeradas debajo. Su [estilo de título](/es/docs/configuration-styles#estilos-de-encabezado) `article` lo sustituye por una ranura de elementos de diseño: una banda a sangre por arriba, el nombre de la revista, la imagen estroboscópica y el título, partido en dos donde el Markdown lleva `\\`. Los autores y dos de las fechas salen de los atributos del título, y la de publicación, del `publishDate` del frontmatter. `minHeight` reserva 130 mm desde el margen superior hasta el pie de los autores, y el resumen empieza debajo.
 
 ### 3 · Numera las secciones, no el título
 
@@ -34,19 +34,19 @@ Cada nivel tiene su plantilla y su tipografía: `{2}` numera las seis secciones,
 
 <Excerpt region="abstract" />
 
-Un recuadro `span: 'page'` bajo el bloque del título compone el resumen a todo el ancho de la caja, y las dos columnas empiezan debajo. Un relleno de 22 mm a cada lado deja sus líneas en torno a los 90 caracteres. Las palabras clave son [chips](/es/docs/configuration#estilos-de-chip), que nunca se parten entre dos líneas, y cada una lleva `{style="keyword"}`. Su estilo de párrafo, `keywords`, va en bandera, porque al justificar una línea de chips los espacios entre ellos se abren hasta dejar huecos.
+Un recuadro `span: 'page'` bajo el bloque del título compone el resumen a todo el ancho de la caja, y las dos columnas empiezan debajo. Un relleno de 22 mm a cada lado deja sus líneas en torno a los 90 caracteres. Las palabras clave son [chips](/es/docs/configuration-styles#estilos-de-chip), que nunca se parten entre dos líneas, y cada una lleva `{style="keyword"}`. Su estilo de párrafo, `keywords`, va en bandera, porque al justificar una línea de chips los espacios entre ellos se abren hasta dejar huecos.
 
 ### 5 · Cierra con una bibliografía con sangría francesa
 
 <Excerpt region="references" />
 
-Un contenedor `:::paragraphs` aplica a cada referencia el [estilo de párrafo](/es/docs/configuration#estilos-de-párrafo) `references`, cuyo `hangingIndent` de 5 mm deja el número en el margen y sangra 5 mm las líneas siguientes. El equilibrado de columnas iguala la última banda del artículo. En la <PageRef page={4}>página 216</PageRef>, el final de las conclusiones, las secciones finales y la bibliografía se reparten las dos columnas bajo la figura 3. El equilibrado solo puede añadir espacio y una referencia de dos líneas no se puede partir, así que las secciones finales se reescribieron con dos líneas menos hasta que las dos columnas terminaron a la misma altura.
+Un contenedor `:::paragraphs` aplica a cada referencia el [estilo de párrafo](/es/docs/configuration-styles#estilos-de-párrafo) `references`, cuyo `hangingIndent` de 5 mm deja el número en el margen y sangra 5 mm las líneas siguientes. El equilibrado de columnas iguala la última banda del artículo. En la <PageRef page={4}>página 216</PageRef>, el final de las conclusiones, las secciones finales y la bibliografía se reparten las dos columnas bajo la figura 3. El equilibrado solo puede añadir espacio y una referencia de dos líneas no se puede partir, así que las secciones finales se reescribieron con dos líneas menos hasta que las dos columnas terminaron a la misma altura.
 
 ### 6 · Calcula la tabla y rotula las figuras con MathJax
 
 <Excerpt region="figures" />
 
-Una sola lista, `runs`, alimenta la tabla 1 y los puntos de la figura 2, y la columna de valores previstos de la tabla es la ecuación (6) calculada para cada amplitud. La tabla lleva los [filetes booktabs](/es/docs/configuration#filetes-booktabs) de una revista, `rules: 'booktabs'` en tinta: un filete grueso encima y bajo la última fila, uno fino bajo la cabecera y ninguna línea vertical. El texto cita cada recurso con `:ref{id="…" style="full"}`, que imprime «Figure 2» en negrita, en el color del texto, y hace flotar el recurso hasta el primer hueco libre tras la cita. Los pies y las celdas usan el marcado normal `~sub~` y `^sup^` (`*T*~0~`), que se queda en su propia letra de palo seco, y los símbolos dentro del texto son `$T_0$`. Los rótulos de las figuras también son matemáticas: `tex()` llama a `renderMath` para cada uno y escribe sus contornos en el SVG como trazados. La *θ*₀ de la figura 1 es el mismo glifo de las fórmulas y sigue siendo vectorial en el PDF.
+Una sola lista, `runs`, alimenta la tabla 1 y los puntos de la figura 2, y la columna de valores previstos de la tabla es la ecuación (6) calculada para cada amplitud. La tabla lleva los [filetes booktabs](/es/docs/configuration-resources#filetes-booktabs) de una revista, `rules: 'booktabs'` en tinta: un filete grueso encima y bajo la última fila, uno fino bajo la cabecera y ninguna línea vertical. El texto cita cada recurso con `:ref{id="…" style="full"}`, que imprime «Figure 2» en negrita, en el color del texto, y hace flotar el recurso hasta el primer hueco libre tras la cita. Los pies y las celdas usan el marcado normal `~sub~` y `^sup^` (`*T*~0~`), que se queda en su propia letra de palo seco, y los símbolos dentro del texto son `$T_0$`. Los rótulos de las figuras también son matemáticas: `tex()` llama a `renderMath` para cada uno y escribe sus contornos en el SVG como trazados. La *θ*₀ de la figura 1 es el mismo glifo de las fórmulas y sigue siendo vectorial en el PDF.
 
 ## Variantes
 

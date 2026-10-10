@@ -18,7 +18,7 @@ As páginas 9 a 11 de *A página pautada*, uma coletânea sobre o ofício do liv
 
 <Excerpt region="flow" />
 
-O espaço acima de um título é mantido exatamente como foi definido, então 1,5 entrelinha põe o título entre duas linhas da grade, e o texto sob ele é ajustado à linha seguinte ([grade de linhas de base](/pt/docs/configuration#grade-de-linhas-de-base)). Uma lista não é ajustada antes do primeiro item, por isso a resposta curta zera as margens das listas (qualquer número inteiro de entrelinhas também serviria); com o 1,5 em padrão, os três itens da página 10 ficariam 1,3 pt abaixo das linhas da coluna ao lado. As duas linhas do título, em 46 pt, ocupam quatro entrelinhas cada uma, e a margem inferior dele mais uma, de modo que o ensaio começa na linha 10.
+O espaço acima de um título é mantido exatamente como foi definido, então 1,5 entrelinha põe o título entre duas linhas da grade, e o texto sob ele é ajustado à linha seguinte ([grade de linhas de base](/pt/docs/configuration-page-layout#grade-de-linhas-de-base)). Uma lista não é ajustada antes do primeiro item, por isso a resposta curta zera as margens das listas (qualquer número inteiro de entrelinhas também serviria); com o 1,5 em padrão, os três itens da página 10 ficariam 1,3 pt abaixo das linhas da coluna ao lado. As duas linhas do título, em 46 pt, ocupam quatro entrelinhas cada uma, e a margem inferior dele mais uma, de modo que o ensaio começa na linha 10.
 
 <PageShot page={2} crop="0.14,0.1373,0.795,0.373" caption="Página 10: a lista da segunda coluna segue a grade dos parágrafos ao lado; a nota de oficina cai entre as linhas da grade, e o título sob ela fica meia linha fora, com o texto de volta à grade." />
 
@@ -26,7 +26,7 @@ O espaço acima de um título é mantido exatamente como foi definido, então 1,
 
 <Excerpt region="note" />
 
-A nota é um contêiner `:::paragraphs` em 7,8 sobre 10 pt, fora da grade. Depois do último parágrafo, a posição é arredondada para a linha seguinte da grade, e o título que vem a seguir fica onde ficaria depois do texto corrido ([o contêiner `:::paragraphs`](/pt/docs/configuration#o-contêiner-paragraphs)). O colofão usa o mesmo contêiner em 7,5 sobre 10 pt: as quatro linhas somam 40 pt, 0,2 pt a menos que três entrelinhas, e assim a última coluna do ensaio termina na mesma altura da vizinha.
+A nota é um contêiner `:::paragraphs` em 7,8 sobre 10 pt, fora da grade. Depois do último parágrafo, a posição é arredondada para a linha seguinte da grade, e o título que vem a seguir fica onde ficaria depois do texto corrido ([o contêiner `:::paragraphs`](/pt/docs/configuration-styles#o-contêiner-paragraphs)). O colofão usa o mesmo contêiner em 7,5 sobre 10 pt: as quatro linhas somam 40 pt, 0,2 pt a menos que três entrelinhas, e assim a última coluna do ensaio termina na mesma altura da vizinha.
 
 ### 3 · Pôr as figuras onde a grade consiga absorvê-las
 
@@ -40,13 +40,13 @@ Um flutuante nunca cai acima do parágrafo que o cita ([posicionamento](/pt/docs
 
 <Excerpt region="balance" />
 
-Toda coluna cheia das páginas 9 e 10 termina na linha 44, porque a mancha tem exatamente 44 entrelinhas e o texto foi ajustado a ela. Manter o título com o texto seguinte e as regras de viúvas, órfãs e linhas curtas vêm ativados por padrão. Quando uma dessas regras faz uma coluna terminar com uma linha a menos, o balanceamento põe o espaço que falta acima de um título anterior ([balanceamento de colunas](/pt/docs/configuration#equilíbrio-de-colunas)), onde ele aparece como um vão; ajuste o texto até o balanceamento não ter nada para preencher. Na última página, ele divide as linhas restantes para que as duas colunas terminem na mesma linha.
+Toda coluna cheia das páginas 9 e 10 termina na linha 44, porque a mancha tem exatamente 44 entrelinhas e o texto foi ajustado a ela. Manter o título com o texto seguinte e as regras de viúvas, órfãs e linhas curtas vêm ativados por padrão. Quando uma dessas regras faz uma coluna terminar com uma linha a menos, o balanceamento põe o espaço que falta acima de um título anterior ([balanceamento de colunas](/pt/docs/configuration-text#equilíbrio-de-colunas)), onde ele aparece como um vão; ajuste o texto até o balanceamento não ter nada para preencher. Na última página, ele divide as linhas restantes para que as duas colunas terminem na mesma linha.
 
 ### 5 · Espelhar as margens e numerar a partir da página 9
 
 <Excerpt region="heads" />
 
-A resposta curta calcula a margem inferior: os 280 mm do formato, menos os 24 mm da margem superior e uma mancha de exatamente `LINES` entrelinhas (44 × 13,4 pt = 208 mm), deixam 48 mm, seis unidades, como pede a progressão 2:3:4:6. Com `mirror: true`, os 16 mm definidos em `left` são a margem interna, à esquerda numa página ímpar e à direita numa par ([margens espelhadas](/pt/docs/configuration#margens-espelhadas)); assim os cabeços, ancorados a `OUTER` milímetros da borda da página, terminam onde termina a mancha, do lado do corte. `pages: 'body'` tira os cabeços da abertura. `startAt: 9` imprime os fólios 9 a 11, e `pageIndexOffset: 8` conta as oito páginas anteriores, de modo que o espelhamento, a paridade dos cabeços e `breakBefore: 'odd'` acompanham o livro encadernado. Com um deslocamento de 7, a primeira página contaria como par, e a quebra para página ímpar poria uma página em branco antes do ensaio.
+A resposta curta calcula a margem inferior: os 280 mm do formato, menos os 24 mm da margem superior e uma mancha de exatamente `LINES` entrelinhas (44 × 13,4 pt = 208 mm), deixam 48 mm, seis unidades, como pede a progressão 2:3:4:6. Com `mirror: true`, os 16 mm definidos em `left` são a margem interna, à esquerda numa página ímpar e à direita numa par ([margens espelhadas](/pt/docs/configuration-page-layout#margens-espelhadas)); assim os cabeços, ancorados a `OUTER` milímetros da borda da página, terminam onde termina a mancha, do lado do corte. `pages: 'body'` tira os cabeços da abertura. `startAt: 9` imprime os fólios 9 a 11, e `pageIndexOffset: 8` conta as oito páginas anteriores, de modo que o espelhamento, a paridade dos cabeços e `breakBefore: 'odd'` acompanham o livro encadernado. Com um deslocamento de 7, a primeira página contaria como par, e a quebra para página ímpar poria uma página em branco antes do ensaio.
 
 ## Variações
 

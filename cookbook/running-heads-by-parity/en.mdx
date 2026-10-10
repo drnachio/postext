@@ -18,13 +18,13 @@ Pages 29 to 33 of a pocket edition of Montaigne’s *Essays* in Charles Cotton�
 
 <Excerpt region="palette" />
 
-Every colour in the configuration links to one of these entries. If you leave `header` undefined, the engine draws its built-in head: `{title}` on rectos and `{chapterTitle}` on versos over a 1 pt rule, in Open Sans 600 at 8 pt and `#295AA3` blue ([headers and footers](/en/docs/configuration#headers--footers)). Pointing `main-color` at the sepia recolours the text defaults and that head with them, but its face, its rule and the side each title prints on stay the engine’s. So each head here is written out in full, with every colour linked to a palette entry. Bold, italic and references also default to `main-color`, and `bodyText` sets them back to the ink.
+Every colour in the configuration links to one of these entries. If you leave `header` undefined, the engine draws its built-in head: `{title}` on rectos and `{chapterTitle}` on versos over a 1 pt rule, in Open Sans 600 at 8 pt and `#295AA3` blue ([headers and footers](/en/docs/configuration-page-layout#headers--footers)). Pointing `main-color` at the sepia recolours the text defaults and that head with them, but its face, its rule and the side each title prints on stay the engine’s. So each head here is written out in full, with every colour linked to a palette entry. Bold, italic and references also default to `main-color`, and `bodyText` sets them back to the ink.
 
 ### 2 · Build every head from one tab
 
 <Excerpt region="tab" />
 
-The short answer anchors each head’s tab to `'page'`, so its offsets are measured from the trim. From the `top-right` corner a positive `x` runs off the page, which is why the recto tab takes a negative one. The divider hangs from the tab and the title from the divider ([element placement](/en/docs/configuration#element-placement)). The tab’s sizes are named constants because the other pieces are measured from them. The divider is `TAB_H` tall. The folio and both titles share one 9 pt line box, and a design text’s baseline sits 80% of the way down its line box, so all three stand on one baseline at any type size.
+The short answer anchors each head’s tab to `'page'`, so its offsets are measured from the trim. From the `top-right` corner a positive `x` runs off the page, which is why the recto tab takes a negative one. The divider hangs from the tab and the title from the divider ([element placement](/en/docs/configuration-page-layout#element-placement)). The tab’s sizes are named constants because the other pieces are measured from them. The divider is `TAB_H` tall. The folio and both titles share one 9 pt line box, and a design text’s baseline sits 80% of the way down its line box, so all three stand on one baseline at any type size.
 
 <PageShot page={2} crop="0.04,0.045,0.6,0.05" caption="Page 30, a verso: tab, divider and the book’s title, reading inwards from the outer margin." />
 
@@ -46,7 +46,7 @@ The opener sets the title in full with `overflow: 'wrap'` and breaks it at each 
 
 <Excerpt region="levels" />
 
-With `'odd'`, an essay that ends on a recto is followed by a blank verso. The Spanish edition has one, because its chapter IV ends on page 31; here chapter IV ends on page 32, a verso, and chapter V opens on page 33. The heads’ `pages: 'body'` keeps them off blank pages and off openers (the pages whose first block is this heading). The footer’s `pages: 'opener'` prints the drop folio on openers only ([text elements](/en/docs/configuration#text-elements)).
+With `'odd'`, an essay that ends on a recto is followed by a blank verso. The Spanish edition has one, because its chapter IV ends on page 31; here chapter IV ends on page 32, a verso, and chapter V opens on page 33. The heads’ `pages: 'body'` keeps them off blank pages and off openers (the pages whose first block is this heading). The footer’s `pages: 'opener'` prints the drop folio on openers only ([text elements](/en/docs/configuration-page-layout#text-elements)).
 
 ### 6 · Start the folios at 29
 

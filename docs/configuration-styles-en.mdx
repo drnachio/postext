@@ -1,0 +1,1502 @@
+{/* docs/configuration-styles-en.mdx */}
+
+export const metadata = {
+  title: 'Configuration: styles and parts',
+  sidebarTitle: 'Styles and parts',
+  description: 'Named styles for paragraphs, chips, code listings, callout boxes and headings, and the pages that open each part',
+  lang: 'en',
+  lastUpdated: '2026-10-10',
+  readingTime: '7 min',
+  order: 9,
+  parent: 'configuration',
+  plainSummary: "This page covers the named styles you define once and use many times. A paragraph style sets a kind of text, such as a bibliography or a glossary. A chip style draws a small label inside a line, and a callout style draws a box around a note or a tip. Code listings have their own font, box and colours. The page also covers the pages that open each part of a book, and the styles for special headings.",
+};
+
+# Configuration: styles and parts
+
+
+## Paragraph styles
+
+The `paragraphStyles` property declares named styles that a document applies to a run of paragraphs with a `:::paragraphs{style="…"}` container — bibliographies, glossaries, notes, any block of entries that wants its own face, weight, slant, size, leading, capitals, small capitals or a hanging indent. Every typographic field is optional and inherits the body text when unset, so a style only spells out what differs from running text.
+
+```ts
+const config: PostextConfig = {
+  paragraphStyles: [
+    {
+      id: 'bibliography',
+      name: 'Bibliography',
+      fontSize: { value: 7, unit: 'pt' },
+      lineHeight: { value: 1.2, unit: 'em' },
+      hangingIndent: { value: 2, unit: 'em' },
+      spaceBetween: { value: 0.25, unit: 'em' },
+      marginTop: { value: 1, unit: 'em' },
+      marginBottom: { value: 1, unit: 'em' },
+    },
+  ],
+};
+```
+
+```md
+## References
+
+:::paragraphs{style="bibliography"}
+Knuth, D. E. (1984). *The TeXbook*. Addison-Wesley.
+
+Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Identifier referenced from <code>:::paragraphs&#123;style="…"&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name, for editor UIs only.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>body text font</td>
+      <td>Font family. Its weights are <code>fontWeight</code> / <code>boldFontWeight</code> below (the body text's when unset).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>body text size</td>
+      <td>Font size.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>body line height</td>
+      <td>Leading. <code>em</code>/<code>rem</code> are relative to the style's own font size, so an inherited <code>1.5em</code> tightens along with a smaller size.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>body text color</td>
+      <td>Text color. Bold and italic runs keep the body emphasis colors unless <code>boldColor</code> / <code>italicColor</code> set the style's own.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
+      <td>body alignment</td>
+      <td>Horizontal alignment. <code>'center'</code> and <code>'right'</code> set every line ragged from the other side — a dedication, a signature block. In a right-to-left paragraph <code>'left'</code> is its start side, the right.</td>
+    </tr>
+    <tr>
+      <td><code>boldColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>bodyText.boldColor</code></td>
+      <td>Colour of bold runs (an authors list with the names in the house colour).</td>
+    </tr>
+    <tr>
+      <td><code>italicColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>bodyText.italicColor</code></td>
+      <td>Colour of italic (<code>*…*</code>) runs — in an <code>italic</code> style, of the runs that turn upright. It does not follow <code>color</code>: a coloured style whose italics should stay in its colour sets both.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>bodyText.fontWeight</code></td>
+      <td>Weight of the regular text (100–900) — a semibold question in a worksheet, a light epigraph.</td>
+    </tr>
+    <tr>
+      <td><code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>bodyText.boldFontWeight</code></td>
+      <td>Weight of the bold (<code>**…**</code>) runs.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the paragraphs in italics — stage directions, an epigraph. An italic <code>*…*</code> run inside them turns upright, as in a blockquote.</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the paragraphs in small capitals: lowercase letters as capitals at 70% of the size, capitals at full size, drawn the same way on every backend (see <a href="/en/docs/document-format#small-capitals">Small capitals</a>) — a cast list, the headwords of a glossary.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td>body hyphenation</td>
+      <td>Hyphenate when justified (uses the document locale).</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Indent of every line from the left edge of the column (or of the box the paragraphs sit in); <code>em</code> is the style's own size. The first-line and hanging indents are measured from it, so an indented line of verse can hang its turnover deeper than its own start: <code>indent: 1.5em</code> with <code>hangingIndent: 2.5em</code> sets the line at 1.5 em and its turnover at 4 em. A negative value counts as <code>0</code>.</td>
+    </tr>
+    <tr>
+      <td><code>endIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Indent of every line from the end side (the right of a horizontal line, the foot of a vertical one); <code>em</code> is the style's own size. With <code>textAlign: 'end'</code> it sets a line some characters up from the foot, the 地からN字上げ of a Japanese letter's date or signature. Since postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td>body first-line indent</td>
+      <td>Indent of the first line, from <code>indent</code>. With a non-zero <code>hangingIndent</code> it applies only when the style sets it itself: the first line starts at <code>indent + firstLineIndent</code> and the turnovers at <code>indent + hangingIndent</code>, so a line of verse can start 1 em in and hang its turnover 3 em. Inherited from the body, it gives way to the hanging indent and the first line starts at <code>indent</code>, as up to postext 1.22 (a configuration stored before has an explicit one dropped from such a style).</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Indent applied to every line except the first, from <code>indent</code> — the classic bibliography or glossary shape, and the turnover of a line of verse. The first line starts at <code>indent</code>, or at the style's own <code>firstLineIndent</code> when it sets one.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Vertical gap between consecutive paragraphs inside the container. <code>0</code> makes entries abut.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Space above the container's first paragraph. Collapses with the spacing already pending and vanishes at the top of a column, like any other margin.</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Minimum space below the container's last paragraph. How it meets the space of the block after the container is <code>bodyText.paragraphContainerSpacing</code>.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Snap the flow back onto the baseline grid under the container, the space below being a minimum. <code>false</code> keeps the exact space: the text after the container stays off the grid until the next block that snaps (a heading, the end of a list, display maths), for a document that runs off the grid or a group whose leading is its own. Inside a callout, which has no grid, it changes nothing.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Letter case of the paragraphs: <code>'uppercase'</code> sets them in capitals (a cast list, a line of stage business), the words of a chip and the label of a <code>:ref</code> included. Length for length, so the editor's source map stays one to one: a letter whose capital is longer (<code>ß</code>) is left as written. Maths is left alone, and a running head that reads the paragraph as a mark (<code>&#123;firstMark.<em>style</em>&#125;</code>) takes the text as written; a design text's own <code>textTransform</code> sets it in capitals.</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>cjk.wordBreak</code></td>
+      <td>Where the paragraphs' CJK lines break between characters (see <code>cjk.wordBreak</code>): <code>'keep-all'</code> for a primer in phrase-spaced kana quoted in a book of ordinary prose, <code>'normal'</code> for the reverse. Since postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td>unset</td>
+      <td>Whether <a href="/en/docs/configuration-notes-references#line-numbers">line numbers</a> count the paragraphs' lines. Unset: counted when <code>lineNumbers.count</code> is <code>'all'</code>, and in a poem set in the style when it counts verse. <code>true</code>: counted under <code>'verse'</code> too, and inside a callout, whose text is otherwise never counted. <code>false</code>: never counted. Since postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td><code>bodyText.tabStops</code></td>
+      <td>Tab stops of the style's paragraphs (see <a href="/en/docs/configuration-text#tab-stops">Tab stops</a>), measured from the style's <code>indent</code>. A tab character in their text is a tab when the style has stops or an interval, its own or the body's. Unset: the body's; an empty list sets none. Since postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>bodyText.tabInterval</code></td>
+      <td>Default stops past the last of <code>tabStops</code>. Unset: the body's. Since postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap</code></td>
+      <td>none</td>
+      <td>A drop cap opening the first paragraph of each <code>:::paragraphs</code> group in the style, or every paragraph with <code>each: true</code> (see <a href="/en/docs/configuration-text#drop-caps">Drop caps</a>). <code>&#123;dropcap=false&#125;</code> on a group's fence turns it off, <code>&#123;dropcap=2&#125;</code> sets its lines. Since postext 1.23.</td>
+    </tr>
+  </tbody>
+</table>
+
+A play sets its stage directions in italics and its cast list in small capitals:
+
+```ts
+paragraphStyles: [
+  { id: 'direction', italic: true, fontSize: { value: 9, unit: 'pt' } },
+  { id: 'cast', smallCaps: true, textAlign: 'center', fontWeight: 600 },
+],
+```
+
+```md
+:::paragraphs{style="direction"}
+Elsinore. A platform before the castle. *Francisco* at his post.
+:::
+```
+
+The direction prints in italics and the name inside it upright; the weights, `italic` and `smallCaps` of a style also apply inside callouts.
+
+A book of verse indents some lines and hangs the turnover of a line too long for the measure deeper than the line itself. `indent` moves every line of the paragraph in, and the hanging indent counts from there:
+
+```ts
+paragraphStyles: [
+  { id: 'verse', textAlign: 'left', firstLineIndent: { value: 0, unit: 'em' }, hangingIndent: { value: 4, unit: 'em' } },
+  { id: 'verse-indented', textAlign: 'left', indent: { value: 1.5, unit: 'em' }, hangingIndent: { value: 2.5, unit: 'em' } },
+],
+```
+
+A line in `verse-indented` starts at 1.5 em and its turnover at 4 em, level with the turnovers of the lines in `verse`. Without `indent` a style can indent the first line or hang the others, not both: `firstLineIndent` is ignored once `hangingIndent` is set.
+
+A menu sets each price flush with the end of the measure, behind a dot leader:
+
+```ts
+paragraphStyles: [
+  {
+    id: 'menu',
+    textAlign: 'left',
+    firstLineIndent: { value: 0, unit: 'em' },
+    tabStops: [{ position: 'end', align: 'end', leader: '. ' }],
+  },
+],
+```
+
+```md
+:::paragraphs{style="menu"}
+Onion soup :tab 8.50
+
+Grilled sea bream with fennel and lemon :tab 21.00
+:::
+```
+
+The dots of every line end half an em before the price (`leaderGap`). A dish too long for its line wraps, and its last line keeps the leader and the price; when the price does not fit beside the last word, that word goes down with it.
+
+### The `:::paragraphs` container
+
+A `:::paragraphs{style="<id>"}` line opens the container and a bare `:::` line closes it; every paragraph in between takes the named style, while headings, lists, and other blocks inside keep their usual styling. Containers may be nested inside other fenced containers. An unknown `style` id is not an error: the paragraphs render as plain body text.
+
+The fence also takes `align` (`start`, `end`, `left`, `right`, `center`, `justify`), `indent` and `endIndent` (bare numbers are ems), with or without a style: with one, they override it; without, they apply over the enclosing container's style, or over the text style where the fence stands (the body, a part, a styled section or a box). `:::paragraphs{align=end}` sets a block flush with the end of the line (地付き) and `:::paragraphs{align=end endIndent=1}` one character up from it. Since postext 1.16.
+
+Inside the container the flow leaves the baseline grid — a 7pt entry with 1.2em leading cannot sit on an 8pt/1.5em grid — and the last paragraph snaps the flow back onto it (the grid wins; the space below is a minimum, the same convention headings follow). Entries split across columns and pages like body paragraphs, with the same orphan and widow protection; a heading immediately before the container keeps with its first paragraph.
+
+The space under the container is the larger of the style's `spaceBetween` and `marginBottom` and the paragraph spacing of the text around it (a line when `bodyText.paragraphSpacing` is on), and it merges with the space the next block keeps above itself, as the space between two body paragraphs does: a heading after a bibliography sits its own `marginTop` below the last entry (or the style's space, when that is larger), and a paragraph after a group of tighter entries keeps the text's paragraph spacing. The flow snaps back to the grid under the text first, and what the snap did not cover is carried on in whole grid lines, so the text after the container lands on the grid. Up to postext 1.4 the style's space was set under the last line before the snap and the next block's space above was added under it, and the paragraph spacing was left out; `bodyText.paragraphContainerSpacing: 'add'` keeps that rule, and configurations stored before it read with it. A style with `snapToGrid: false` does not snap: the text after the container sits the exact space below it, off the grid until the next block that snaps. A container that closes on a list is set as in 1.4 under either rule: the list keeps its own space below it, and `marginBottom` follows that space, merging with the next block's.
+
+Inside a `:::callout` the container takes its style's margins the same way: `marginTop` and `marginBottom` collapse with the spacing of the blocks around it (a negative one pulls them closer), and a container that opens the box takes no top margin, as at the top of a column. A box has no baseline grid to snap back to, so the space below the last paragraph is the larger of `marginBottom`, `spaceBetween` and the box's own paragraph spacing (its `body.paragraphSpacing`, a line of its text; left out with `paragraphContainerSpacing: 'add'`), or the next block's own top margin, when that is larger still; a negative `marginBottom` pulls the next block up instead. (Up to postext 1.4 a container inside a callout ignored both margins.)
+
+```ts
+const resolved = resolveParagraphStylesConfig(config.paragraphStyles, resolvedBodyText);
+// => every unset field filled from the resolved body text
+
+const minimal  = stripParagraphStylesDefaults(config.paragraphStyles);
+// => undefined when the list is empty; zero margins and `name === id` dropped
+```
+
+
+## Chip styles
+
+The `chipStyles` property declares the named styles of the inline `:chip[text]{style="…"}` — the rounded, tinted boxes of a word bank, a keyboard key, a tag (the syntax and its line-breaking rules are in the document format reference). One style, `chip`, ships by default (a pale blue fill with a hairline in the main colour, slightly rounded, the text as the words around it), so `:chip[…]` works without any configuration; declaring `chipStyles` replaces that default list. A chip without `style`, or with an id no style declares, takes the first style.
+
+```ts
+const config: PostextConfig = {
+  chipStyles: [
+    { id: 'chip', name: 'Word bank' },
+    {
+      id: 'key',
+      name: 'Keyboard key',
+      background: { hex: '#fff4d6', model: 'hex' },
+      borderColor: { hex: '#8a6d1f', model: 'hex' },
+      borderRadius: { value: 2, unit: 'pt' },
+      bold: true,
+    },
+  ],
+};
+```
+
+```md
+Classify: :chip[battery] :chip[cable] :chip[switch]
+
+Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>required</td>
+      <td>Identifier referenced from <code>:chip[…]&#123;style="…"&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name, for editor UIs only.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Paint the box fill.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#e8eef7</code></td>
+      <td>Box fill (palette-linkable).</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>main palette colour</td>
+      <td>Outline colour.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>Outline width; <code>0</code> draws none. The outline is stroked inside the box edge.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Corner radius, clamped to half the box height (a large value gives a pill).</td>
+    </tr>
+    <tr>
+      <td><code>paddingX</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Room between the outline and the text, left and right. Part of the chip's advance.</td>
+    </tr>
+    <tr>
+      <td><code>paddingY</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.1em</code></td>
+      <td>Room above and below the text band. Paints outside the line box: it never changes the line height.</td>
+    </tr>
+    <tr>
+      <td><code>paddingTop</code>, <code>paddingBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>paddingY</code></td>
+      <td>Room above or below the text band, each in place of <code>paddingY</code>. The band runs 0.8 em above the baseline and 0.25 em below it, so its middle sits 0.275 em above the baseline, lower than the middle of a capital (about 0.35 em in most faces): a capital or a figure in a round chip (<code>borderRadius: 1em</code>) looks high. A top padding larger than the bottom one by twice the difference centres it: <code>paddingTop: 0.2em</code> with <code>paddingBottom: 0.05em</code> for a face whose capitals are 0.7 em tall.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>surrounding text</td>
+      <td>Family of the chip text. Weights follow the text around it.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>surrounding text</td>
+      <td>Size of the chip text; <code>em</code> is relative to the surrounding text.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>surrounding text</td>
+      <td>Colour of the chip text. Unset, bold and italic runs keep the emphasis colours.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the chip text bold, on top of its own markup.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the chip text italic, on top of its own markup.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.25em</code></td>
+      <td>Least room kept between the box and a neighbouring word or chip across a word space; a narrower space is topped up inside the chip's advance, so justification never eats it. Nothing is added at a line edge or against glued punctuation.</td>
+    </tr>
+  </tbody>
+</table>
+
+Em lengths of the box (`paddingX`, `paddingY`, `borderRadius`, `borderWidth`, `gap`) are relative to the chip's own font size. The box is a band 0.8 em above and 0.25 em below the baseline, grown by `paddingY` and the outline; it paints outside the line box and never changes the leading, so the baseline grid holds. When the box ends up taller than the line pitch, a chip can run into a chip on the line above or below — the sandbox lists a "Chips touch the next line" warning when two chips on different lines overlap, with the overlap in points, so `paddingY`, the outline or `fontSize` can be reduced. A tall chip with no chip above or below it is not flagged.
+
+In the VDT a chip is a line segment of `kind: 'chip'` whose `chip` field carries the text runs (each with its font string and width), the box geometry (`boxWidth`, `ascent`, `descent`, `paddingX`, `borderWidth`, `borderRadius`, the gap margins) and its colours; the segment's `text` is a one-character placeholder, so plain-text offsets and source maps count a chip as one character.
+
+```ts
+const resolved = resolveChipStylesConfig(config.chipStyles);
+// => the built-in `chip` style when unset; every field filled
+
+const minimal  = stripChipStylesDefaults(config.chipStyles);
+// => undefined for the built-in default; static defaults dropped
+
+const style = pickChipStyle(resolved, 'key');
+// => the `key` style, else the first one
+```
+
+
+## Code listings
+
+The `codeStyle` property sets how code listings look: the ```` ``` ```` and `~~~` fences of the text (see [Document format › Code blocks](/en/docs/document-format#code-blocks)), and inline code when it asks for a code face. A listing is set line by line as written, in a monospaced face, in a box: no line is hyphenated or justified, every space keeps its width, and a tab goes on to the next tab stop. The box comes from the same machinery as a `:::callout`, so a listing splits between lines across columns and pages, each part in a box of its own, and a fence inside a callout is a box nested in it. Every property is optional. Since postext 1.23.
+
+```ts
+const config: PostextConfig = {
+  codeStyle: {
+    fontFamily: 'JetBrains Mono',
+    fontSize: { value: 0.8, unit: 'em' },
+    background: { hex: '#0e1116', model: 'hex' },
+    color: { hex: '#d3d9df', model: 'hex' },
+    padding: { top: { value: 4, unit: 'mm' }, right: { value: 5, unit: 'mm' }, bottom: { value: 4, unit: 'mm' }, left: { value: 5, unit: 'mm' } },
+    borderRadius: { value: 2, unit: 'pt' },
+    lineNumbers: true,
+    tokens: {
+      keyword: { color: { hex: '#f2b134', model: 'hex' }, bold: true },
+      string: { color: { hex: '#3ddc84', model: 'hex' } },
+      comment: { color: { hex: '#8a939d', model: 'hex' }, italic: true },
+    },
+    inline: { background: { hex: '#eef1f4', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '190px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '150px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>blocks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Read fences as code blocks. <code>false</code> reads a fence and its lines as Markdown, as postext 1.22 did; a configuration stored before 1.23 whose text has a fence gets it (see <a href="/en/docs/configuration-programmatic-usage#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>).</td>
+    </tr>
+    <tr>
+      <td><code>indentedCode</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Also read a run of lines indented four columns (four spaces, or a tab), after a blank line, as a listing; four columns come off each line. Off by default: Postext text often indents with spaces, and nested list items read leading spaces.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Source Code Pro'</code></td>
+      <td>The code face. A monospaced face keeps columns aligned; for Chinese or Japanese comments, one with kanji (BIZ UDGothic), whose full-width characters take two cells.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.85em</code></td>
+      <td><code>em</code> is the body size.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code> / <code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code> / <code>700</code></td>
+      <td>The weights of the code and of bold tokens.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>the body's grid line</td>
+      <td>The leading of the code lines; <code>em</code> is the code size. Unset, the lines sit on the baseline grid.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>The text after a listing goes back to the baseline grid; <code>false</code> keeps the exact <code>marginBottom</code>, as a callout's.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the body colour</td>
+      <td>The code's colour, which tokens without a colour of their own keep.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>The box's fill.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td>off, <code>#cccccc</code>, <code>0.5pt</code></td>
+      <td>The box's outline.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Rounded corners; a part of a split listing keeps them, as a split box does.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.6em</code> each</td>
+      <td><code>em</code> is the code size.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>The space above and below the box.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>A page-span listing crosses every column of a multi-column page, as a <code>span: 'page'</code> box does. A fence sets its own with <code>span=page</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tabSize</code></td>
+      <td><code>number</code></td>
+      <td><code>4</code></td>
+      <td>A tab goes on to the next multiple of this many character cells (a full-width character counts two). It stays a tab: copied text keeps it.</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'shrink' | 'clip'</code></td>
+      <td><code>'wrap'</code></td>
+      <td>A line wider than the box. <code>'wrap'</code>: it breaks after the last space or punctuation that fits (between two characters when none does), and the rest goes on below, <code>wrapIndent</code> cells in, behind <code>wrapMarker</code>; a part of a split listing never starts with such a rest when another cut fits. <code>'shrink'</code>: the whole listing is set smaller until its widest line fits, down to <code>minFontScale</code>, and what still does not fit wraps. <code>'clip'</code>: the line stops at the box's inner edge; the characters past it are not printed. Each one raises a <code>codeOverflow</code> warning.</td>
+    </tr>
+    <tr>
+      <td><code>wrapIndent</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>The indent of a wrapped line's rest, in character cells.</td>
+    </tr>
+    <tr>
+      <td><code>wrapMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'»'</code></td>
+      <td>Set in that indent, in the line numbers' colour; not part of the text (copies leave it out, a tagged PDF paints it as an artifact). <code>''</code> sets none. <code>↪</code> is missing from most code faces, where it prints as an empty box.</td>
+    </tr>
+    <tr>
+      <td><code>minFontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>0.8</code></td>
+      <td>With <code>'shrink'</code>, the smallest share of <code>fontSize</code> a listing is set at.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Number the lines of every listing, in a gutter before the code. A fence sets its own with <code>lineNumbers</code>, <code>lineNumbers=false</code> and <code>start=N</code>. The rest of a wrapped line has no number. The numbers are set beside the text, not in it: the HTML viewer hides them from a selection and from assistive technology, a tagged PDF paints them as artifacts.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#8a8a8a</code></td>
+      <td>The numbers' colour (and the wrap marker's).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>The room between the widest number and the code; <code>em</code> is the code size.</td>
+    </tr>
+    <tr>
+      <td><code>highlightBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fff4c2</code></td>
+      <td>The band behind the lines a fence names with <code>highlight="3,5-7"</code>, across the box.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>As a callout style's: <code>false</code> splits a listing taller than the room left between lines; <code>true</code> moves it whole, and splits it only when it is taller than a column.</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>The fewest lines on each side of a split, so no part holds a single line.</td>
+    </tr>
+    <tr>
+      <td><code>repeatTitle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Repeat the title at the head of each part, with the "(cont.)" suffix of the document language.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code> / <code>continuesMarker</code></td>
+      <td><code>boolean</code> / <code>string</code></td>
+      <td><code>false</code> / "Continued"</td>
+      <td>A mark under the last line of a part that goes on.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>CalloutTitleStyleConfig</code></td>
+      <td>the code face, bold, 0.9 of its size</td>
+      <td>The title row a fence's <code>title</code> prints (see <a href="#callout-styles">Callout styles</a> for the fields).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>CalloutLabelConfig</code></td>
+      <td>none</td>
+      <td>When set, the title prints in a label tab on the box's top edge instead (the code face and size unless the label names its own).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>'builtin' | 'none'</code></td>
+      <td><code>'builtin'</code></td>
+      <td>Colour the tokens with the built-in tokenizer (and any registered highlighter); <code>'none'</code> sets every listing in <code>color</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tokens</code></td>
+      <td><code>Partial&lt;Record&lt;CodeTokenKind, &#123; color?, bold?, italic? &#125;&gt;&gt;</code></td>
+      <td>a quiet palette</td>
+      <td>The look of each kind of token, merged kind by kind onto the defaults (see below). A palette-linked colour follows <code>colorPalette</code> and a part's palette.</td>
+    </tr>
+    <tr>
+      <td><code>inline</code></td>
+      <td><code>InlineCodeStyleConfig</code></td>
+      <td>unset</td>
+      <td>Inline code in a code face (see below). Unset, inline code is set in the text's face, as before 1.23.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Syntax colouring
+
+A small tokenizer built into the engine names the tokens of `js` and `ts` (`javascript`, `jsx`, `typescript`, `tsx`), `json`, `python`, `bash` (`sh`, `zsh`, `shell`), `console` (a shell session), `css`, `html` and `xml` (`svg`), `markdown` and `sql`; a listing in any other language, or with none, is set in `color`. It reads the whole listing, so a comment or a string that runs over lines stays one token. In a `console` listing, a line that opens with a prompt (`$ `, `% `, `# `, `> `, `>>> `, `PS …> `) is what the user typed (`prompt`) and every other line is what the programs printed (`output`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>Kind</th>
+      <th style={{ width: '200px' }}>Default</th>
+      <th>What it names</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>keyword</code></td><td><code>#8b2c8f</code></td><td>Reserved words: <code>const</code>, <code>def</code>, <code>if</code>, <code>SELECT</code>, an HTML tag name, a CSS at-rule.</td></tr>
+    <tr><td><code>string</code></td><td><code>#3d7a2a</code></td><td>Strings, template literals, attribute values.</td></tr>
+    <tr><td><code>number</code></td><td><code>#985f00</code></td><td>Numbers and constants (<code>true</code>, <code>None</code>, <code>null</code>), colours, entities.</td></tr>
+    <tr><td><code>comment</code></td><td><code>#7a7f87</code>, italic</td><td>Comments.</td></tr>
+    <tr><td><code>function</code></td><td><code>#2b5fb4</code></td><td>A name followed by a parenthesis; shell builtins.</td></tr>
+    <tr><td><code>type</code></td><td><code>#99540a</code></td><td>Types and capitalised class names, CSS selectors.</td></tr>
+    <tr><td><code>operator</code></td><td>the code's colour</td><td>Operators, shell pipes and redirections.</td></tr>
+    <tr><td><code>punctuation</code></td><td>the code's colour</td><td>Brackets, separators.</td></tr>
+    <tr><td><code>variable</code></td><td><code>#b23b2e</code></td><td>Shell variables, JSON keys, CSS properties, HTML attributes, <code>self</code>.</td></tr>
+    <tr><td><code>meta</code></td><td><code>#985f00</code></td><td>Decorators, command-line options (<code>-l</code>, <code>--all</code>), a doctype.</td></tr>
+    <tr><td><code>prompt</code></td><td>the code's colour, bold</td><td>The typed line of a shell session.</td></tr>
+    <tr><td><code>output</code></td><td><code>#5c6168</code></td><td>What the programs printed.</td></tr>
+  </tbody>
+</table>
+
+A host plugs its own highlighter in (Shiki, Prism, highlight.js) with `registerCodeHighlighter`. Configurations are serialisable data, so the function is registered with the engine, not written in `codeStyle`:
+
+```ts
+import { registerCodeHighlighter } from 'postext';
+
+// fn(code, lang) returns the listing's lines, each as runs whose texts join into the line.
+registerCodeHighlighter('rust', (code) => code.split('\n').map((line) => [
+  { text: line, token: line.trimStart().startsWith('//') ? 'comment' : undefined },
+]));
+registerCodeHighlighter('*', null); // remove the one registered for every language
+```
+
+A highlighter registered for a language takes precedence over one registered for `'*'`, which takes precedence over the built-in tokenizer. A run names a `token` kind (coloured by `tokens`) or a `color` of its own (a CSS hex). A highlighter that returns `undefined`, throws, or returns lines that do not join into the listing's own is passed over. Layout reads the registry when it sets a listing: register before building, and in a web worker (the Sandbox lays out in one) register inside the worker.
+
+### Inline code
+
+`codeStyle.inline` sets text between backticks in a code face: as one unit, as a chip is, which a line never breaks inside. Unset, inline code keeps the text's face.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Property</th>
+      <th style={{ width: '120px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td><code>codeStyle.fontFamily</code></td><td>The face.</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td><code>0.9em</code></td><td><code>em</code> is the size of the text around it.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>the text's</td><td></td></tr>
+    <tr><td><code>bold</code> / <code>italic</code></td><td><code>boolean</code></td><td><code>false</code></td><td>On top of the text's own marks (code inside bold is bold).</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>none</td><td>A fill behind the span.</td></tr>
+    <tr><td><code>borderColor</code> / <code>borderWidth</code></td><td><code>ColorValue</code> / <code>Dimension</code></td><td>none / <code>0.5pt</code></td><td>An outline.</td></tr>
+    <tr><td><code>borderRadius</code></td><td><code>Dimension</code></td><td><code>0.2em</code></td><td><code>em</code> is the span's size.</td></tr>
+    <tr><td><code>paddingX</code> / <code>paddingY</code></td><td><code>Dimension</code></td><td><code>0.2em</code> with a fill or outline, else <code>0</code> / <code>0.1em</code></td><td>Room inside the fill; the vertical padding paints outside the line box.</td></tr>
+  </tbody>
+</table>
+
+### How a listing is set
+
+- **One line per source line.** The lines are built from the code face's own advances, not by the paragraph breaker: spaces keep their width, a run of them is kept, leading spaces indent. A listing in a right-to-left book reads left to right, its lines set from the far side of the box as a left-to-right quotation is, its numbers in the gutter on their left. In a vertical book a listing follows the vertical flow (its Latin turned sideways, as vertical text sets it) and takes no line numbers.
+- **Splitting.** A listing taller than the room left splits between lines across columns and pages, each part framed as a box of its own, never leaving fewer than `splitMinLines` lines on a side; the rest of a wrapped line stays with it when another cut fits.
+- **Outputs.** The canvas, the HTML viewer and the PDF paint the lines and the box as laid out. The HTML viewer keeps the spaces (`white-space: pre`), so a selection copies the listing with its indentation and a line feed after each source line, without numbers or wrap markers. A tagged PDF sets each listing as a paragraph holding a `Code` element, with real space glyphs, its numbers and wrap markers as artifacts. The reflowable EPUB writes `<pre><code class="language-…">` with the tokens' colours and a stylesheet from `codeStyle`; the fixed-layout EPUB is the print.
+- **Fonts.** The Sandbox and `configFontFamilies` load the code face when the text holds a fence (or the configuration has a `codeStyle` section), in its regular and bold weights, upright and italic; the PDF embeds the faces the lines use.
+
+## Callout styles
+
+The `calloutStyles` property declares the named box styles a document applies with a `:::callout{type="…"}` container — notes, tips, warnings, learning objectives, any content set apart from the running text in a tinted or bordered box. One neutral style, `note`, ships by default (light grey background, no border, no stripe, no icon, no title), so `:::callout` works without any configuration; declaring `calloutStyles` replaces that default list.
+
+```ts
+const config: PostextConfig = {
+  calloutStyles: [
+    { id: 'note', name: 'Note' },
+    {
+      id: 'objectives',
+      name: 'Learning objectives',
+      title: 'Objectives',
+      stripe: { enabled: true, side: 'left' },
+      icon: { kind: 'glyph', glyph: '✓' },
+      titleStyle: { textTransform: 'uppercase' },
+      lists: { bulletChar: '–' },
+    },
+    {
+      id: 'warning',
+      title: 'Warning',
+      backgroundEnabled: false,
+      border: { enabled: true, color: { hex: '#AA0000', model: 'hex' }, width: { value: 1, unit: 'pt' } },
+      borderRadius: { value: 1, unit: 'mm' },
+      titleStyle: { color: { hex: '#AA0000', model: 'hex' } },
+    },
+  ],
+};
+```
+
+```md
+:::callout{type="objectives"}
+- Describe the parts of the lantern.
+- Trim the wick at dusk.
+:::
+
+:::callout{type="warning" title="Do not touch the lens"}
+The glass stays hot for an hour after the flame is out.
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '220px' }}>Type</th>
+      <th style={{ width: '150px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Identifier selected by <code>:::callout&#123;type="…"&#125;</code>. A fence with an unknown or missing <code>type</code> uses the first configured style (the sandbox flags unknown types).</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name (editor UI only).</td>
+    </tr>
+    <tr>
+      <td><code>title</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>Default title text; empty means no title. The fence <code>title</code> attribute overrides it per instance.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page' | 'side'</code></td>
+      <td><code>'column'</code></td>
+      <td>Horizontal extent: the column, the full content width, or the float-only side column of a one-and-a-half layout (<code>layout.sideColumnRole: 'floats'</code>) — the box then leaves the flow and stacks in that column beside the text it interrupts. Overridable per instance with the <code>span</code> attribute. In multi-column layouts a <code>'page'</code> box becomes a <em>span block</em>: it splits the page into column bands and sits in its own full-width column (see the container section below). A side box its page's side column cannot hold takes the side column of the next page; where the chapter (or the document) ends first, each box still waiting is set in the side column of a page after the text, in the order of their fences, and the build reports it (<code>afterText</code>; up to postext 1.24 the boxes after the first such page were dropped).</td>
+    </tr>
+    <tr>
+      <td><code>columns</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>How many adjacent columns a floated box (<code>placement</code> <code>'auto'</code>, <code>'top'</code> or <code>'bottom'</code>, with <code>span: 'column'</code>) takes, as <code>placement.columns</code> does for a figure: a story's box across three of a newspaper's five columns. As many columns as the page has, or more, make it a page-wide box. A box set in the flow (<code>'here'</code>) keeps to its column. Overridable per instance with the <code>columns</code> attribute. Since postext 1.18.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'here' | 'auto' | 'top' | 'bottom' | 'fixed'</code></td>
+      <td><code>'here'</code></td>
+      <td>Where the box goes. <code>'here'</code> sets it inline in the flow; <code>'top'</code> / <code>'bottom'</code> <strong>float</strong> it like a resource (<code>'auto'</code> takes whichever band is free first, head or foot) — it leaves the flow where it occurs and takes the first free band at or after that point (the foot of the current page, or the head / foot of the next page the flow opens), and the text after it fills the page around it; <code>'fixed'</code> anchors it at page coordinates through <code>fixed</code> below, out of the column flow. See the container section for the details. Overridable per instance with the <code>placement</code> attribute.</td>
+    </tr>
+    <tr>
+      <td><code>sideAtColumnEnd</code></td>
+      <td><code>'before' | 'after'</code></td>
+      <td><code>'before'</code></td>
+      <td>Where a side box (<code>span: 'side'</code>) stands when the text after its fence does not go on in the same column: the column has no room left for it, or the break rules send it on (a paragraph the widow and orphan rules move whole, a heading kept with its text). <code>'before'</code> keeps it at its fence, on that page, beside the text before it, sliding up from the column's foot when it does not fit below the fence: the place for a gloss written after the passage it explains. <code>'after'</code> sets it level with the first line of the text after the fence, in the side column of the page where that text goes on: the place for a line number or a marginal heading written before its line. When the text goes on in the same column, both set the box at its fence. A box nothing follows in its chapter stays with the text before it either way, and side boxes fenced one after another keep their order. Up to postext 1.4 every side box behaved as <code>'before'</code>, which stays the default: a style for glosses keeps its boxes on the page of the passage they explain.</td>
+    </tr>
+    <tr>
+      <td><code>fixed</code></td>
+      <td><code>{'{ anchor?, offset? }'}</code></td>
+      <td><code>{'{ anchor: { to: \'container\', edge: \'bottom-left\' } }'}</code></td>
+      <td>Position of a <code>'fixed'</code> box: an <code>ElementAnchor</code> (<code>to</code>: <code>'container'</code> = the page content area, mirrored on even pages; <code>'page'</code> = the trim box; <code>'bleed'</code> = the bleed box; <code>edge</code>: one of the nine container edges) plus an optional <code>offset</code> (<code>x</code> / <code>y</code> dimensions).</td>
+    </tr>
+    <tr>
+      <td><code>floatBarrier</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Make the box a float barrier: every figure or table referenced before it is placed before it — in the page's free slots, else on pages opened ahead of the box — so no float escapes past a chapter's closing box (a "key points" summary, typically). Chapter openers, <code>:::part</code> and the end of the document are always barriers.</td>
+    </tr>
+    <tr>
+      <td colSpan={4}>A <code>span: 'page'</code> box on a multi-column page cuts the band under the text it follows; a full-width figure referenced before it takes that cut first — the text is levelled, the figure sits right where it ended, and the box goes on below it (or to the next page when it no longer fits). A figure too tall to follow the levelled text opens the next page instead, the box after it, and the band it left still ends level. A splittable box (<code>keepTogether: false</code>) opens under the text and figure with as many items as fit, the rest continuing on the next page.</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>'fill' | 'auto'</code></td>
+      <td><code>'fill'</code></td>
+      <td><code>'fill'</code> spans the available width; <code>'auto'</code> shrink-wraps the title (badge use) and ignores the children.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>Box fill.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td><code>false</code>, <code>#cccccc</code>, <code>0.5pt</code></td>
+      <td>Box outline, stroked inside the box edge as a box element's border is (see <a href="/en/docs/configuration-page-layout#box-elements">Box elements</a>).</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Corner radius of the background / border (clamped to half the box's width and height). The stripe follows it: on a rounded box the stripe is clipped to the rounded frame, as CSS clips a <code>border-left</code> to <code>border-radius</code>. The <code>label</code> tab keeps square corners.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.75em</code> each</td>
+      <td>Inset between the box edge and its content. <code>em</code> values are relative to the callout body size.</td>
+    </tr>
+    <tr>
+      <td><code>stripe</code></td>
+      <td><code>&#123; enabled, side, width, color &#125;</code></td>
+      <td><code>false</code>, <code>'left'</code>, <code>1.5em</code>, main colour</td>
+      <td>Solid band along one edge. A <code>'left'</code> / <code>'right'</code> stripe narrows the content; a <code>'top'</code> stripe pushes it down. <code>'left'</code> and <code>'right'</code> are sides of the body flow (in a right-to-left book <code>'left'</code> is the sheet's right); <code>'start'</code> and <code>'end'</code> follow the box's own direction, so a <code>:::callout&#123;dir=ltr&#125;</code> in an Arabic book puts a <code>'start'</code> stripe on its left. On a box with a <code>borderRadius</code> its outer corners are rounded with the frame's (up to postext 1.4 they stayed square and stuck out past the rounding).</td>
+    </tr>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, width, color, align, position, cornerSide &#125;</code></td>
+      <td><code>'none'</code>, headings font, <code>400</code>, <code>1.5em</code>, main colour, <code>'top'</code>, <code>'inline'</code>, <code>'right'</code></td>
+      <td>A text glyph (<code>kind: 'glyph'</code>) or a bitmap / SVG resource (<code>kind: 'resource'</code> + <code>resourceId</code>) beside the content. With a side stripe the icon is centred over the stripe; otherwise it reserves its own column (<code>size</code> + <code>titleStyle.gap</code>). <code>align: 'center'</code> centres it vertically on the content. A resource image is fitted inside the square keeping its aspect ratio — or inside a <code>width</code> × <code>size</code> box when <code>width</code> is set (a wide strip of icons); an icon taller than the content grows the box to fit it (and, with <code>align: 'center'</code>, centres the content on it). <code>position: 'corner'</code> hangs the icon on a top corner as a badge, half of it past the border, taking no room from the content; a wide icon (<code>width</code>) is centred on the corner by the width it is drawn at, and on the left corner the title starts past its inner half (up to postext 1.4 it was placed by its height, so a wide strip hung past the box and over the title); <code>cornerSide</code> picks the corner — <code>'right'</code> / <code>'left'</code>, or <code>'outer'</code> / <code>'inner'</code>, which follow the page parity of mirrored margins (outer = right on a recto, left on a verso).</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align, gap, rule &#125;</code></td>
+      <td><code>'none'</code>, headings font, <code>400</code>, <code>1.5em</code>, main colour, <code>'center'</code>, <code>0.5em</code>, rule off (<code>0.5pt</code>, main colour, length <code>0</code>)</td>
+      <td>A second icon drawn <em>outside</em> the box, in a column on its left, with an optional vertical <code>rule</code> between it and the box — the "tap here" hand beside a self-assessment badge. The frame becomes <code>[marker][rule][gap][box]</code> and as tall as the tallest of the three; <code>align</code> centres them on each other or top-aligns them. <code>rule.length</code> is a minimum: the rule always spans at least the box height.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap, letterSpacing, indent, lineHeight &#125;</code></td>
+      <td>headings font, body size, <code>700</code>, <code>false</code>, main colour, <code>'none'</code>, <code>0.5em</code>, <code>0</code>, <code>0</code>, <code>1.2em</code></td>
+      <td>Title typography. <code>gap</code> is the space between the title and the first child (and the icon column gap). <code>lineHeight</code> is the leading of the title's lines, <code>em</code> counting the title's own size; the baseline sits 0.8 of it down each line, as in running text, so a title on the body leading (<code>lineHeight: 12pt</code> over a 12 pt grid) keeps a box a whole number of lines and its title on the grid, where the default 1.2 em adds a fraction of a line to every box. <code>textTransform: 'uppercase'</code> is length-preserving. <code>letterSpacing</code> tracks the title (canvas <code>letterSpacing</code> / PDF <code>Tc</code>); <code>indent</code> pushes it right of the box's inner edge. A corner badge hanging on the title's side (the left corner) reserves its own room first — the badge's inner half plus <code>gap</code> — so the title clears it whichever page it lands on; <code>indent</code> only adds beyond that.</td>
+    </tr>
+    <tr>
+      <td><code>body</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td>inherits <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
+      <td>Typography of the paragraphs and list items inside the box. Every field inherits the body text when unset; <code>italicColor</code> sets the colour of italic runs (a pull quote in italics in the box's colour). <code>fontWeight</code> / <code>boldFontWeight</code> set the weights of the regular and bold runs; <code>italic</code> sets the box in italics, with <code>*…*</code> runs turning upright; <code>smallCaps</code> sets it in small capitals; <code>tabStops</code> and <code>tabInterval</code> replace the body's inside the box (see <a href="/en/docs/configuration-text#tab-stops">Tab stops</a>). See <a href="#typography-inside-a-box">Typography inside a box</a> for what else the box's text takes.</td>
+    </tr>
+    <tr>
+      <td><code>lists</code></td>
+      <td><code>&#123; bulletChar, color, indent, gap, itemSpacing, bulletFontSize, bulletFontWeight &#125;</code></td>
+      <td>inherits <code>unorderedLists</code></td>
+      <td>List typography inside the box (<code>color</code>, <code>indent</code>, <code>gap</code> and <code>itemSpacing</code> also apply to ordered lists). <code>bulletFontSize</code> / <code>bulletFontWeight</code> set the bullet glyph in the box's body face at that size and weight (a heavy coloured bullet).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, color, background, position, height, paddingX, offset, inset, icon, rule &#125;</code></td>
+      <td>unset (no tab)</td>
+      <td>A tab on the box's top edge that prints the fence's <code>label</code> attribute — the number of a numbered box ("BOX 1-1"). It hugs the <code>position</code> corner (<code>'top-right'</code> / <code>'top-left'</code>), inset by <code>inset</code>, rises <code>offset</code> above the box top (that room is part of the block, on top of <code>marginTop</code>, so the tab keeps it at a column head too), is <code>height</code> tall with <code>paddingX</code> on each side of the text, and may carry an <code>icon</code> resource beside it (<code>&#123; resourceId, width, gap &#125;</code>, on the side away from the corner) and a <code>rule</code> (<code>&#123; enabled, color, width &#125;</code>) along the top edge from the far corner up to it. Defaults: headings font, body size, <code>700</code>, white on the main colour, <code>1.4em</code> tall, <code>0.6em</code> padding. The tab is its own shape standing on the frame, so it keeps square corners whatever the box's <code>borderRadius</code>.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5em</code></td>
+      <td>Gap between the columns of a <code>:::columns</code> group inside the box (see the container section below).</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code> / <code>0.75em</code></td>
+      <td>Space above the box (collapses with the previous block's margin) and minimum space below it (the exact space with <code>snapToGrid: false</code>). A floated box (<code>placement: 'top'</code>, <code>'bottom'</code> or <code>'auto'</code>) keeps the float gap, one body line, between its band and the text; a <code>marginBottom</code> wider than that sets the space under a box in a top band, and a wider <code>marginTop</code> the space over a box in a bottom band, rounded up to the grid with the band. Up to postext 1.4 a floated box ignored its margins.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When <code>true</code> the flow after the box snaps back to the baseline grid, so the space under it is <code>marginBottom</code> rounded up to whole grid lines. When <code>false</code> the box keeps its exact <code>marginBottom</code>, which collapses with the next block's top margin — two consecutive boxes of such a style sit exactly <code>max(marginBottom, marginTop)</code> apart — and the text after it may sit off the grid until the next snap point (a heading, the end of a list), as after a heading with <code>headings.snapToGrid: false</code>. Meant for documents made of stacked boxes (worksheets, forms). It applies to boxes in the flow; page-span boxes in a multi-column layout, floated, fixed and side boxes keep the grid, since column bands and float zones are laid out on it. The column-balancing levers are unchanged: a box closing a column is still pushed down to the column's last grid slot.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>When <code>true</code> the box is kept whole: a callout that does not fit the remaining space moves whole to the next column or page. Only a box taller than an empty, full column — a whole page for a <code>span: 'page'</code> box — cannot be kept whole: it splits by the <code>false</code> rules below instead of overflowing, starting where it occurs, and a continuation that fits a column then moves on whole; a floated box (<code>placement: 'top' | 'bottom' | 'auto'</code>) that tall does not float but stays in the flow where it occurs. When <code>false</code> any box may break between its child blocks or between the lines of a paragraph or list item: the deepest cut that fits closes the current column (or, for a <code>span: 'page'</code> box, the page, flush with the bottom of the columns) and the rest continues at the top of the next one in a box of its own — same frame and stripe, no icon, and no title unless <code>repeatTitle</code> repeats it — splitting again if it is still too tall. The text of every fragment keeps the column an inline icon takes on the head, empty, so the box has one measure on every page. A cut inside a list item leaves its bullet with the head. Every fragment's frame shares the fence's <code>contentIndex</code> / <code>containerId</code> and records <code>callout.part</code> / <code>callout.continued</code>. Use it on a long closing "key points" box together with <code>headings.balancing.beforeSpan</code>, or on a note style whose boxes must never push a figure off the page. A nested box (a <code>:::callout</code> inside another) is one child of its parent: a cut may fall before or after it, and inside it only when its own style allows splitting (<code>keepTogether: false</code>, or taller than a full column), by its own <code>splitMinLines</code>.</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>Fewest text lines a fragment of a split box (<code>keepTogether: false</code>, or a keep-together box taller than a full column) keeps on either side of the cut. It guards text only: a side holding at least one figure, table, display formula or nested box is acceptable whatever its line count, so a box of pictures may leave a single one on a page. A cut inside a paragraph or list item still counts every line on each side (a figure or formula there as one line), and it also leaves at least <code>layout.boxChildSplitMinLines</code> lines of that paragraph or item on each side (two by default; this minimum when it is lower, so 1 allows one). With the defaults a two- or three-line item is never split and a four-line one splits only two and two. With the default no box breaks leaving a lone text line at the foot of a column or at the head of the next; when no cut satisfies the minimum the box moves whole. (Before postext 1.5 a cut inside a paragraph checked only the lines of the whole side, so a two-line item could split one and one when other lines of the box made up the minimum.)</td>
+    </tr>
+    <tr>
+      <td><code>repeatTitle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Repeat the title at the head of every continuation of a split box, followed by <code>continuedSuffix</code> ("Key points (cont.)"). The repeat takes the title style. A box without a title repeats nothing. See <a href="#marks-on-a-split-box">Marks on a split box</a>.</td>
+    </tr>
+    <tr>
+      <td><code>continuedSuffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'(cont.)'</code></td>
+      <td>Text after the repeated title, in the document language (<code>locale</code>, else the hyphenation locale), like a split table's, and joined to the title as a table's is.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set <code>continuesMarker</code> under the last line of every part of a split box that goes on, inside the box.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'Continued'</code> / <code>'Continúa'</code></td>
+      <td>Text of that marker (a screenplay's "(MORE)"), in the box's body face and size, per document language.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerAlign</code></td>
+      <td><code>'left' | 'center' | 'right'</code></td>
+      <td><code>'right'</code></td>
+      <td>Where the marker sits in the box's inner width.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Set the marker in italics.</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>unset</td>
+      <td>Count the boxes of this style as numbered statements: theorems, lemmas, definitions. See <a href="#numbered-statements-and-proofs">Numbered statements and proofs</a>.</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>A mark set flush right at the end of the box's last line, as a proof ends with <code>'∎'</code> or <code>'□'</code>: on the last line when it fits after a space, else on a line of its own. A box that ends in a display formula with no number takes it as the formula's tag. With maths on, the squares (∎ □ ■ ▪ ◻ ▫) are drawn from TeX's own glyphs, so a face without them (Fontsource's latin files) still prints them; with maths off they are set in the box's body face.</td>
+    </tr>
+  </tbody>
+</table>
+
+### The `:::callout` container
+
+A `:::callout{type="<id>"}` line opens the box and a bare `:::` line closes it. The fence accepts five attributes — `type` (the style id), `title` (overrides the style's title), `span`, `placement` and `columns` (override the style's values) — and the content in between is laid out inside the box: an optional title, then the paragraphs, lists, blockquotes, formulas or resource embeds, each typeset with the style's `body` / `lists` typography (headings keep their usual styles). Margins between children collapse as in the running text; the interior leaves the baseline grid, and the flow snaps back onto it after the box with at least `marginBottom` below (the grid wins; the margin is a minimum — the same convention resources follow). A style with `snapToGrid: false` keeps the exact `marginBottom` instead, and the text after the box stays off the grid until the next heading or list end. A heading immediately before a callout keeps with it.
+
+Limits in this version:
+
+- A callout is kept whole unless its style sets `keepTogether: false`. When it does not fit the remaining column space it moves whole to the next column or page — also out of an empty column that float bands or a band cap have cut short, as long as a full column would hold it. A box taller than a full column splits instead, like a splittable one; only one that no cut can split (a figure, table or `:::columns` group taller than the column, or a `splitMinLines` no cut satisfies) is placed anyway and overflows; the layout then records a `calloutOverflow` warning (`VDTDocument.warnings`), which the sandbox lists. A splittable box leaves the part that fits behind — whole children, or the lines of a paragraph down to `splitMinLines` on each side (a figure, table or display formula alone is enough for a side) — and continues in a box without icon on the next column or page, without the title unless the style repeats it, and optionally with a marker under the part it leaves (see [Marks on a split box](#marks-on-a-split-box)).
+- Floats yield to an unbreakable box. When the block right after a figure's reference is a `keepTogether` callout, a slot that would leave the box no column of the current band to land in (the referencing column or an empty one after it, which held it before the float) is not taken: the figure moves on to its next slot, usually the next page, and the box stays in flow — as a compositor would set it, rather than pushing the box off the page and leaving the column with the figure alone.
+- `span: 'page'` in a multi-column layout makes the box a **span block**: it is laid out at the full content width and splits the page into column bands — the text columns above it are closed at the cut line, the box takes its own full-width column, and a fresh band of text columns opens below it, so the flow continues under the box in every column. Where the columns are *level* — at the top of a page, right below a `span: 'page'` opener heading, right below another span block, or right below a top float band — the box simply cuts there. Arriving mid-page, with the columns uneven, it is set the way a compositor would: the text above it is cut level across all columns (the engine re-runs placement with the band's columns shortened to the same number of grid lines, so the text overflows from column to column naturally and every orphan, widow and keep-with-next rule still applies), the box spans the page, and the columns resume below it. The cut takes a couple of extra placement passes; when the cut line would leave no room for the box plus the widow minimum of body lines below it, or no arrangement fits after a few attempts, the box moves to the top of the next page. The text above keeps to the cut: a paragraph that cannot start in the few lines a column under a figure keeps above it goes on to the next column (the figure then stands alone in its column), and when a block would still run past the cut, the cut is taken a line lower rather than where that block ends. A split box that opens the band is cut there too, so its rest never runs past the cut. With `headings.balancing.beforeSpan` (the default) the band it leaves is cut level behind it — like a chapter's closing band — and, when the style allows splitting (`keepTogether: false`), the part of the box that fits under the levelled columns closes the page and the rest opens the next one; with `beforeSpan: false` the page it leaves is simply balanced as usual, without forcing a page break. A heading right before a span block does not travel with it. In single-column layouts `span: 'page'` is simply inline.
+- `placement: 'fixed'` takes the box out of the flow: it is laid out (`width: 'auto'` shrink-wraps the title; `'fill'` takes the width of the text column under the anchor point) and pinned to the page where it occurs in the flow at the position `fixed.anchor` / `fixed.offset` describe — the bottom-left corner of the content area by default. The text columns it covers give up that zone (cut from the bottom, or from the top when the column is still empty), exactly like a float band; when the zone already holds text, a float or a span block, the box moves to the next page. A fixed box that closes the chapter (the next block is a chapter opener, a `:::part`, a float-barrier box or the end of the document) first levels the columns above it (`headings.balancing.trailing`), so a short closing page ends level with the badge beneath. Frame and children live in `page.floats` and render outside the column clip in every backend.
+- `placement: 'top' | 'bottom'` **floats** the box like a resource: it leaves the flow where it occurs and takes the first free band after that point — the foot of the current page (`'bottom'`), or the head / foot of the next page the flow opens — at the column width (`span: 'column'`) or the full content width (`span: 'page'`); the text after it fills the page it left. Its frame and children go to `page.floats`, as a fixed box does. A floated box heading a fresh page is set before the figures waiting for that page, and a figure cited on an earlier page that then fits under it takes the rest of that page even when fewer than three text lines would remain (a gallery page: box plus figure, no text between them). A `span: 'side'` box never floats: it stacks beside the text whatever its placement. With `columns` above 1 (in the style or as the fence's attribute, since postext 1.18) a `span: 'column'` box takes that many adjacent columns: the head of a run of empty columns that start level, or the foot of the current column and of the empty ones after it, as in `:::callout{placement="top" columns="2"}`.
+- `width: 'auto'` shrink-wraps the title only; children are ignored.
+- A `:::callout` nested inside another callout is a box of its own: it is laid out with its own style (background, border, radius, padding, stripe, title, icon, marker, label, typography) at the full inner width of its parent and stacks as one child of it, its `marginTop` / `marginBottom` collapsing with its neighbours. Its `span` and `placement` (fence or style) are ignored — a nested box always flows inside its parent — and so are `floatBarrier` and `snapToGrid`. Boxes nest to any depth and may sit inside a `:::columns` group (each one whole, in one column). When the parent splits, the cut falls before or after a nested box, or inside it when the nested style allows splitting; every fragment redraws the frames it cuts through, and a nested box continued from the previous fragment drops its title and icon, like a top-level continuation.
+- A `:::columns{count=N}` … `:::` group among the children lays those children out in `N` columns of equal width, `columnGap` apart, inside the box: the run is cut at the block or line boundaries that level the columns best (a paragraph or list item cut mid-way continues at the head of the next column without its bullet), every column starts at the group's top and the group is as tall as its tallest column; the children after it return to the full width. A box that splits (`keepTogether: false`, or taller than a column) cuts inside a group too, between its columns: a snake group fills its columns in turn and goes on in the next fragment, a parallel one (`breaks`) goes on stream by stream (since postext 1.25; see [Document format › `:::columns`](/en/docs/document-format#columns)). A `gap` on the fence replaces `columnGap` for that group, and `rule` draws a rule down each gutter. Use it for a two-column summary of key points, or the tables of a wide box set side by side.
+- The fence's sixth attribute, `label`, prints on the style's label tab (see `label` above) — `:::callout{type="box" label="BOX 1-1" title="The octet rule"}`; without a `label` style the attribute is ignored.
+
+In the VDT the box is a `type: 'callout'` frame block whose decoration (background, stripe, icon, title) lives on `designOverlay`, followed by its child blocks in the same column; the frame and every child carry the fence's `containerId`. A nested box is a `type: 'callout'` frame of its own among the children, followed by its blocks; they keep the top-level fence's `containerId` (placement and balancing still see one unit) and add `calloutPath`, the container ids of the nested fences around them, outermost first (a nested frame's own id is the last entry). The tagged PDF gives each nested box a `Div` inside its parent's. Icon images resolve like resource images: the canvas image registry, the HTML `resourceImageUrl` option and the PDF `resourceBytes` provider.
+
+```ts
+const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyText, resolvedHeadings, resolvedUnorderedLists, config.locale);
+// => every inherited field filled from the resolved sections; the optional
+//    locale picks the language of the continuation strings
+
+const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
+// => undefined for the built-in `note` default; static defaults dropped
+```
+
+### Numbered statements and proofs
+
+A style with `numbering` counts its boxes, as LaTeX's `amsthm` counts theorem environments (since postext 1.19). Each box prints its label and number — "**Theorem 2.**" opening its first paragraph — and the fence's `title` follows the number in parentheses: `:::callout{type="theorem" title="Bradley–Terry"}` opens with "**Theorem 2** (Bradley–Terry)**.**". A box opened with an identifier (`{#thm:main}`) is a target of cross-references, which print "Theorem 2" (`:ref{id="thm:main"}`), and `\ref{thm:main}` or `style=number` prints 2.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Field</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '160px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>The word before the number: <code>'Theorem'</code>, <code>'Lemma'</code>, <code>'Definición'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td>the style's <code>id</code></td>
+      <td>The counter the boxes advance. Styles that name one counter share it, as <code>\newtheorem&#123;lemma&#125;[theorem]</code> does: Theorem 1, Lemma 2, Theorem 3. <code>'equation'</code> counts with the labelled equations. <code>false</code> prints the label with no number (a proof's "<em>Proof.</em>").</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>As a resource type's: <code>'&#123;h1&#125;.&#123;n&#125;'</code> with <code>resetOn: 'h1'</code> numbers Theorem 2.1, 2.2… by chapter; <code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> with <code>'h2'</code> by section. A counter shared by several styles counts on whatever their templates print.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code> opens the box's first paragraph with the label (a box that opens with a list, a formula or another box gets a paragraph for it); <code>'title'</code> makes the label the box's title, in its <code>titleStyle</code>: "Theorem 2 (Bradley–Terry)".</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>The face of the run-in label and its suffix, whatever the box's body: an italic body (<code>body.italic</code>) keeps an upright label upright. The title in parentheses is set upright in the regular weight.</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>Set after the run-in label and its title.</td>
+    </tr>
+  </tbody>
+</table>
+
+A proof is a style with an unnumbered label and an end mark:
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: 'Theorem' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: 'Lemma', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: 'Definition' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: 'Proof', counter: false, bold: false, italic: true } },
+]
+```
+
+In a book laid out chapter by chapter the counters go on from the previous chapter (`LayoutContinuation.statementCounters`, which `continuationAfter` fills), and the book outline gives each numbered box's anchor its label (`OutlineEntry.numberLabel`), so a reference from another chapter prints it.
+
+### Typography inside a box
+
+A box sets its content with its own `body` and `lists` typography; everything else keeps the document's styles:
+
+- **Paragraphs** take the box's `body`: face, size, leading, colour, emphasis colours, weights, `italic`, `smallCaps`, alignment, hyphenation, indent and paragraph spacing. A field left unset inherits `bodyText`. An inherited emphasis colour keeps its palette link, so bold, italics and `:ref` labels in a box change with `colorPalette` as they do outside it. (Up to postext 1.4 bold in a box stayed `#295AA3` whatever the Main Color was.)
+- **Bullet lists** take the box's `lists` (bullet character, colour, glyph size and weight, indent, gap, item spacing) over `unorderedLists`, and their text is the box's body text. A `lists.bulletChar` or `lists.color` that differs from the document's (`unorderedLists`) replaces the bullet or colour of every level; one that repeats it, or is left unset, leaves each level its own (`unorderedLists.levels`), so nested dashes survive in the box.
+- **Ordered lists** take `lists.indent`, `gap` and `itemSpacing`, and `lists.color` whenever the style sets it — also when it is the document's bullet colour; a style that leaves it unset keeps the numbers in `orderedLists.color`. (Up to postext 1.4 the colour reached the numbers only when it differed from `unorderedLists.color`, so setting it to that very colour did nothing.) The number itself — its face, size and separator — comes from the global `orderedLists`, since `lists` has bullet fields only: style a box's numbers there.
+- **`:::paragraphs` inside a box** use their paragraph style, in nested boxes too. The fields the style leaves unset inherit the document's `bodyText`, not the box's `body` (nor its italics or small capitals).
+- **`:::columns` groups** have no style of their own: every column shares the box's body and list typography, and `columnGap` sets the gap between them.
+- **Blockquotes** take the box's body face, size and weights (italic and grey, as in the running text), and its small capitals. **Headings** keep the heading styles; **display formulas** the math settings.
+- **Figures and tables** keep the document's caption and table styles, at the box's inner width; their regular and bold weights follow the box's `body` weights.
+- **Chips** keep their chip style; an `em` size is read against the box's body size.
+- **`:::space`** is measured in the box's body lines (see [`:::space`](/en/docs/document-format#space) for where it is dropped).
+- **A nested box** takes its own style in full; its `span`, `placement`, `floatBarrier` and `snapToGrid` are ignored.
+
+### Marks on a split box
+
+When a box splits across columns or pages (`keepTogether: false`, or a box taller than a column), each part after the first opens without the title and the icon, and by default nothing tells the reader that the box goes on. Two options add the marks a book or a script uses:
+
+- **`repeatTitle: true`** repeats the title at the head of every continuation, followed by `continuedSuffix` — "Key points (cont.)" by default. The repeat takes the title style, so with `textTransform: 'uppercase'` it gives a screenplay's "HAMLET (CONT'D)". The icon and the label tab stay on the first part.
+- **`continuesMarkerEnabled: true`** sets `continuesMarker` — "Continued", or "Continúa" in a Spanish document — under the last line of every part that goes on, inside the box, in the box's body face and size: italic unless `continuesMarkerItalic` is `false`, flush right unless `continuesMarkerAlign` says `'left'` or `'center'`. The marker takes room in the part it closes, and the cut is chosen so that it fits.
+
+```ts
+calloutStyles: [{
+  id: 'speech',
+  keepTogether: false,
+  titleStyle: { textTransform: 'uppercase' },
+  repeatTitle: true,
+  continuedSuffix: "(CONT'D)",
+  continuesMarkerEnabled: true,
+  continuesMarker: '(MORE)',
+  continuesMarkerAlign: 'center',
+  continuesMarkerItalic: false,
+}],
+```
+
+```md
+:::callout{type="speech" title="Hamlet"}
+A speech long enough to run over the foot of the page…
+:::
+```
+
+The part that closes the page ends with "(MORE)", and the next page opens with "HAMLET (CONT'D)". Both are pagination furniture: in an accessible PDF they are artifacts and in the HTML they are hidden from assistive technology, so the title is read once. In the VDT they are `designOverlay` text blocks flagged `artifact: true`.
+
+
+## Parts
+
+The `parts` property configures the part-divider pages a document opens with a `:::part{number="…" title="…"}` container — the “Part I — Foundations” page that groups a run of chapters. A part always occupies a page of its own: the container breaks to a fresh page of the configured parity, converts it into a single-column page whose body area comes from `parts.margins`, lays the opener design over the whole page, and breaks again after the closing fence so the next chapter (with its own `breakBefore.parity`) starts clean — with the default H1 settings that yields the classic recto part page, blank verso, chapter on the next recto.
+
+```ts
+const config: PostextConfig = {
+  parts: {
+    breakBefore: { parity: 'odd' },
+    breakAfter: { enabled: true, parity: 'any' },
+    margins: { top: { value: 9, unit: 'cm' }, left: { value: 3, unit: 'cm' }, right: { value: 3, unit: 'cm' } },
+    design: {
+      elements: [
+        {
+          kind: 'text', id: 'number', content: 'Part {numberRoman}',
+          fontSize: { value: 12, unit: 'pt' }, fontWeight: 600, align: 'left',
+          placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: { value: 3, unit: 'cm' }, y: { value: 5, unit: 'cm' } }, size: { width: 'auto', height: 'auto' } },
+        },
+        {
+          kind: 'text', id: 'title', content: '{titleText}',
+          fontSize: { value: 28, unit: 'pt' }, fontWeight: 700, align: 'left', overflow: 'wrap',
+          placement: { anchor: { to: '#number', edge: 'below' }, size: { width: { value: 15, unit: 'cm' }, height: 'auto' } },
+        },
+      ],
+    },
+    bodyStyle: { fontSize: { value: 11, unit: 'pt' }, numberColor: { hex: '#AA0000', model: 'hex' } },
+  },
+};
+```
+
+```md
+:::part{number="I" title="Foundations"}
+1. The lantern and its parts
+2. Trimming the wick
+3. Reading the weather
+:::
+
+# The lantern and its parts
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether a <code>:::part</code> opens a divider page. With <code>false</code> no page is opened and the fence's body is not set: the part's number, title and palette take effect from the next content on, with no break of their own. Typical use: <code>htmlViewer.overrides.parts.page: false</code>, a screen edition without section dividers.</td>
+    </tr>
+    <tr>
+      <td><code>breakBefore.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'odd'</code></td>
+      <td>Parity of the page the part opens on. Same values and blank-page ownership rules as the heading <a href="/en/docs/configuration-text#break-before">breakBefore</a>: a blank inserted to reach the parity belongs to the part (its <code>{'{partTitle}'}</code> already resolves to the new part); the mandatory separator of <code>'always-*'</code> belongs to the previous content.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Move the content after the closing fence to a fresh page. When <code>false</code> it continues in the part page's single column.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'any'</code></td>
+      <td>Parity of that fresh page. Leave it at <code>'any'</code> and let the next chapter's own <code>breakBefore.parity</code> decide whether a blank verso follows. The break is applied when the next block is placed, so a part that closes the document leaves no trailing empty page.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>page margins</td>
+      <td>Body area of the part page — the single column the blocks inside the fence flow in. Each side inherits the page margin when unset; <code>mirror</code> swaps inner/outer on even pages exactly like the page margins.</td>
+    </tr>
+    <tr>
+      <td><code>design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>empty</td>
+      <td>Opener design. Its container is the page <strong>trim box</strong>, so container anchors and <code>'page'</code> anchors coincide and <code>'bleed'</code> runs to the bleed when cut lines are on. Purely decorative: it never reserves body space — raise <code>margins.top</code> to keep the body clear of it. When empty, a default <code>{'{number} {titleText}'}</code> text in the H1 typography is synthesised at the top-left of the body area, with the H1's <code>numberSeparator</code> between number and title.</td>
+    </tr>
+    <tr>
+      <td><code>versoDesign</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>empty</td>
+      <td>Design of the blank verso that follows a part page (the back of the divider leaf): same container and placeholders as <code>design</code>. Leave empty for a plain verso. It paints only when the page after the part page is left blank, which takes a break with a parity: see <a href="#the-verso-design">The verso design</a> below.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>color</code>, <code>textAlign</code></td>
+      <td>as in <code>bodyText</code></td>
+      <td>inherit <code>bodyText</code></td>
+      <td>Typography of the paragraphs, blockquotes and list items inside the fence. Weights, emphasis colours and hyphenation come from the body text.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.bulletColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>unorderedLists.color</code></td>
+      <td>Bullet colour of unordered lists inside the part.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.numberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>orderedLists.color</code></td>
+      <td>Number colour of ordered lists inside the part. Numbers are always set in the body's bold weight, so a chapter list reads as a table of contents.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.unorderedLists</code></td>
+      <td><code>UnorderedListsConfig</code></td>
+      <td>—</td>
+      <td>Partial overrides applied on top of the document's <code>unorderedLists</code> inside the part, after <code>bulletColor</code>. List-wide values propagate to the levels that inherited them; <code>levels</code> entries apply to their level only.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.orderedLists</code></td>
+      <td><code>OrderedListsConfig</code></td>
+      <td>—</td>
+      <td>Partial overrides applied on top of the document's <code>orderedLists</code> inside the part, after <code>numberColor</code> and the bold weight — e.g. a <code>separator</code> of <code>'•'</code> with its own <code>separatorFontFamily</code> and <code>separatorColor</code> for a part opener's chapter list.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Part design placeholders
+
+The design slot resolves the heading placeholder set with the part's own values: `{titleText}` is the fence's `title`; `{number}` the `number` exactly as written; `{numberDecimal}`, `{numberRoman}`, `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}` re-format it — the number is parsed as a decimal, a roman numeral or Chinese numerals, with or without the words that frame them (`"IV"`, `"iv"`, `"4"`, `"４"`, `"四"`, `"卷四"` and `"第四卷"` all give `{numberDecimal}` = `4`), and resolve to `''` for anything else. `{partTitle}` / `{partNumber}`, `{chapterTitle}` / `{chapterNumber}` (the chapter before the part), `{pageNumber}`, `{totalPages}`, `{bookTotalPages}` and the metadata placeholders are available too. `{attr.<key>}` reads the current chapter's H1 attributes.
+
+### The verso design
+
+`versoDesign` decorates the page right after a part page when that page holds no content: the back of the divider leaf. The part itself never leaves that page blank. `breakAfter.parity` defaults to `'any'`, so the content after the fence starts on the very next page unless something asks for a parity:
+
+- **The next chapter's heading.** The default H1 `breakBefore` is `'always-odd'`, and `'odd'` does the same after a recto part page: the chapter moves to the next recto and the verso stays blank. The verso design paints.
+- **`parts.breakAfter: { enabled: true, parity: 'odd' }`.** The part asks for the next recto itself, whatever the next heading does. Use it when chapters may open on either side (`breakBefore.parity: 'any'`, or `breakBefore.enabled: false`).
+
+With neither, the chapter opens on the verso and no verso design is drawn. With `breakAfter.enabled: false` the content continues on the part page itself. The verso takes the part's palette, so a `palette="band=#…"` on the fence recolours it too.
+
+```ts
+parts: {
+  breakBefore: { parity: 'odd' },
+  breakAfter: { enabled: true, parity: 'odd' },   // always a blank verso to paint
+  versoDesign: {
+    elements: [{
+      kind: 'box', id: 'field',
+      style: { backgroundColor: { hex: '#b07d2b', model: 'hex', paletteId: 'band' } },
+      placement: { anchor: { to: 'page', edge: 'top-left' }, size: { width: 'fill', height: 'fill' } },
+    }],
+  },
+}
+```
+
+**A part that closes its chapter.** In a book laid out chapter by chapter (the Sandbox, `buildBundle`), a `:::part` fence can be a chapter of its own, or the end of one. Its part page is then the chapter's last page, and the next chapter takes over what the part still owes: it applies `breakAfter` before its first block and paints `versoDesign` on its first page when that page is left blank. The pages come out as they would with the whole book in one document. Only directives that place nothing (`:::numbering`, `:::space`) may follow the fence; anything else is content of the chapter, which then takes the break itself. An empty chapter right after the part is a page of its own: that page is the verso. A host that lays chapters out itself gets this from `continuationAfter()`, which reports `afterPartPage: true` for a chapter that ends with a part; pass it on in the next chapter's `continuation`.
+
+### The `:::part` container
+
+A `:::part{number="…" title="…"}` line opens the part and a bare `:::` closes it; both attributes are optional (they default to `''`). The blocks in between — typically the chapter list — flow in the part page's single column with `bodyStyle`, starting at `margins.top`; a body longer than the page continues on ordinary pages. The page is classified `role: 'part'` (`VDTPage.partInfo` carries the number and title), so header and footer elements can target or skip it with `pages: 'part'` / `pages: 'body'`; the PDF backend adds the part to the outline above its chapters. An empty body (`:::part{…}` directly followed by `:::`) is the common case and still produces the page — consecutive parts never share one. A `:::part` nested in another part is flattened into the outer one.
+
+A third attribute, `palette="<id>=<hex>[, <id>=<hex>…]"`, gives the part its own colours: on the part page and on every page that follows it — until the next part — each design colour (header, footer, opener band, part and verso designs) linked to one of those palette ids takes the part's value instead of the document palette's. That is how a book's sections recolour the corner tab, the running-head dot and the chapter-opener band without a second design: `:::part{number="II" title="…" palette="band=#f6c297"}`. The text flow follows too: on the same pages, every flow colour equal to the base value of an overridden palette entry — headings, bold, italic and reference colours, bullets and list numbers, caption labels and caption bars, table text, rules and fills (header, body, zebra rows and a cell's own fill), callout boxes (background, border, stripe, title) and chips (fill, outline and text) — takes the part's value, so `headings.levels[1].color` linked to `band` sets each section's headings in its own colour. Inline swatches keep the colour written in them. Pairs are separated by commas, semicolons or spaces, `=` or `:` joins id and colour, the `#` is optional. A part stays in effect after its fence closes: `{partTitle}`, `{partNumber}` and the palette follow the flow into the chapters after it and — through `continuation.part`, which `continuationAfter()` reports — into chapters laid out on their own, so the second chapter of a section shows the section in its running heads exactly as the first does.
+
+Two palette entries may share a base value and still take different values in a part, when the part overrides one and not the other or gives them different colours. The value alone does not say which entry a flow colour came from, so each colour of the flow is matched with the settings it can come from, and takes the value those settings link to. These are told apart:
+
+- the colours of a block's text: the text colour, the bold, italic and reference colours, the list marker (a bullet or a number) and the separator after a number. With `bodyText.color` linked to `ink` and `bodyText.boldColor` linked to `accent`, both `#1a1a1a`, a part with `palette="accent=#b8413d"` recolours the bold runs and leaves the text; with `unorderedLists.color` linked to `accent` instead, it recolours the bullets and leaves the item text;
+- each heading level, and each heading style that sets a colour;
+- a contents row's text, its number, and its page number and subtitle;
+- in each callout style, the fills (background, stripe, label tab), the border, the rules (marker and label) and the text (title, icon, marker glyph, label);
+- each colour of each table, chip and caption style. A named table style is apart from `tableStyle`, and a resource type's caption style from `captionStyle`. A cell's own fill follows its own link.
+
+One case is still decided by value: settings in different places that set the same colour of a block. `bodyText.color`, `bodyText.blockquote.color`, a paragraph style's `color` and a callout style's `body.color` all set a block's text colour, for example. When two of them link to entries that share a base value and the part sets them apart, the colour takes the override (the last one written, when both are overridden). Give such entries base values of their own.
+
+```ts
+const resolved = resolvePartsConfig(config.parts, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);
+// => margins filled from the page, bodyStyle from the body / list configs
+
+const minimal = stripPartsDefaults(config.parts);
+// => undefined when only static defaults remain
+```
+
+
+## Heading styles
+
+The `headingStyles` property declares named styles a document applies to a heading with `# Title {style="<id>"}`. A style does two things. It overrides the heading's level typography, design and numbering — every field of a level entry except `level` (font, size, colour, `breakBefore`, `span`, `advancedDesign`, `textTransform`, `hidden`, `numberingTemplate`…) — and it governs the **section** the heading opens: its pages, up to the next heading of the same or a higher level, take the style's running heads, page geometry, body typography and palette. That is how a book's front matter (a preface in a single wide column with roman folios and blue bands) sits in a two-column, decimal-numbered manual without a second configuration.
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    {
+      id: 'front-matter',
+      numbered: false,
+      breakBefore: { enabled: true, parity: 'odd' },
+      span: 'page',
+      advancedDesign: { enabled: true, minHeight: { value: 52, unit: 'mm' }, slot: { elements: [/* bands, `{titleText}` */] } },
+      header: { elements: [/* folio | rule | `{title}. {subtitle}` */] },
+      margins: { left: { value: 50, unit: 'mm' }, right: { value: 17, unit: 'mm' } },
+      layout: { layoutType: 'single' },
+      bodyStyle: { fontSize: { value: 10.5, unit: 'pt' }, textAlign: 'justify' },
+      palette: { band: '#547396' },
+    },
+  ],
+};
+```
+
+```md
+# Preface {style="front-matter"}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Identifier referenced from <code>{'{style="…"}'}</code> on a heading line. An unknown id leaves the heading as it is.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Human-readable name (editor UI only).</td>
+    </tr>
+    <tr>
+      <td><code>numbered</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether the heading counts: advances its level's counter (the <code>numberingTemplate</code> numbers, the <code>{'{h1}'}</code> of resource numbers), the chapter ordinal behind <code>{'{chapterNumber}'}</code> and the number printed in the contents. <code>false</code> for a preface, an authors list, an index: the first numbered chapter after them is still chapter 1, and <code>{'{chapterNumber}'}</code> is empty on their pages.</td>
+    </tr>
+    <tr>
+      <td><code>toc</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether <code>:::toc</code> lists the heading. A heading overrides it with <code>{'{toc="false"}'}</code> / <code>{'{toc="true"}'}</code>.</td>
+    </tr>
+    <tr>
+      <td><code>runningChapter</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether a level-1 heading of this style becomes the running chapter: the chapter that <code>{'{chapterTitle}'}</code>, <code>{'{chapterNumber}'}</code>, <code>{'{attr.<key>}'}</code> and their <code>…AtTop</code> forms name on its page and the pages after it. <code>false</code> for a plate, a map or a cover set as an H1 inside a chapter: the running heads pass over it, on its own page too, and keep naming the chapter it interrupts; it sets no <code>h1</code> guide word either. The heading still counts when <code>numbered</code> (its own design reads its own <code>{'{chapterNumber}'}</code>) and is still listed by <code>:::toc</code> when <code>toc</code>. With <code>toc: false</code> as well it gets no PDF bookmark: a chapter's plate on the page before its opener leaves the bookmarks to the chapters. Headings of other levels ignore it. With the default, the pages after a plate print the plate's title. A preface or a prologue with <code>numbered: false</code> is still a chapter of its own and keeps the default. The option changes only which chapter the placeholders name: the style still opens a section of its own, as every heading style does, so up to the next level-1 heading the pages take the plate style's running-head slots, margins, columns, body style and palette (the document's where the style sets none), not those of a styled section the interrupted chapter opened. In a book laid out chapter by chapter, the running heads do not carry over from one chapter file to the next, so a plate that opens a file shows empty chapter placeholders until the file's first chapter heading.</td>
+    </tr>
+    <tr>
+      <td>level fields</td>
+      <td>as in <code>headings.levels[]</code></td>
+      <td>the level's values</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>breakBefore</code>, <code>span</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: each one set replaces the heading level's value for headings of this style (<code>dropCap: false</code> takes the level's drop cap off). <code>breakBefore</code> merges field by field over the level's: a style that only sets <code>parity</code> keeps the level's <code>enabled</code>, and one that only sets <code>enabled: true</code> keeps its parity (up to postext 1.4, the missing field came from the no-break default instead).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td>the level's</td>
+      <td>Template the style's headings are numbered with, in place of their level's (same tokens as <a href="/en/docs/configuration-text#per-level-overrides"><code>levels[].numberingTemplate</code></a>). The counter stays the level's: an appendix style with <code>'Appendix {'{1:A}'}'</code> after five chapters would print <em>Appendix F</em>, so restart the count with <code>{'{startAt=1}'}</code> on the first appendix. <code>''</code> prints no number while the heading still counts: not even the chapter ordinal the contents and <code>{'{chapterNumber}'}</code> show for a level-1 heading without a template. The number shows in the flow, the <code>{'{number}'}</code> of the style's design, the contents and <code>{'{chapterNumber}'}</code>.</td>
+    </tr>
+    <tr>
+      <td><code>header</code>, <code>footer</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>the document's</td>
+      <td>Running heads of the section's pages, replacing <code>header</code> / <code>footer</code> there (element <code>parity</code> and <code>pages</code> filters still apply). An empty slot removes them.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>page margins</td>
+      <td>Body area of the section's pages; each side inherits the page margin when unset, <code>mirror</code> included. Takes effect on the pages the section opens — pair it with <code>breakBefore</code>.</td>
+    </tr>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>LayoutConfig</code></td>
+      <td><code>layout</code></td>
+      <td>Column layout of the section's pages (<code>layoutType</code>, <code>gutterWidth</code>…): a single wide column for a preface set in a two-column book. Its <code>columnRule</code> is drawn on the section's pages, and each field it leaves unset takes the document's <code>layout.columnRule</code> value, so a section that only changes its columns keeps the document's rule (see <a href="/en/docs/configuration-page-layout#column-rule">Column rule</a>).</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle</code></td>
+      <td><code>PartsBodyStyleConfig</code></td>
+      <td>inherit <code>bodyText</code></td>
+      <td>Typography of the paragraphs, blockquotes and lists in the section — the same fields as <a href="#parts">parts.bodyStyle</a>.</td>
+    </tr>
+    <tr>
+      <td><code>palette</code></td>
+      <td><code>Record&lt;string, string&gt;</code></td>
+      <td><code>{'{}'}</code></td>
+      <td>Palette overrides (id → hex) for the section's pages, on top of the current part's — the same mechanism as a part's <code>palette</code> attribute, and with the same reach: not only the design slots laid out on those pages (running heads, the opener band — every colour linked to an overridden id) but the text flow too, by value: every flow colour equal to the base value of an overridden entry — headings, bold, italic and reference colours, bullets and list numbers, caption labels and caption bars, table text, rules and fills, callout boxes (background, border, stripe, title) and chips (fill, outline and text) — takes the section's value, as it does under a part, including the rule for two entries that share a base value (see <a href="#the-part-container">The <code>:::part</code> container</a>). Inline swatches keep the colour written in them. The page colour follows as well: when <code>page.backgroundColor</code> links to an overridden entry (or, unlinked, has its base value), the section's pages are painted in the section's value, so a newspaper's business pages print on salmon while the rest stay white. Since postext 1.18.</td>
+    </tr>
+  </tbody>
+</table>
+
+A section closes at the next heading of the same or a higher level: an unstyled `#` after a styled one returns to the document's running heads and geometry; a styled one opens its own section. Pages the section left blank for parity belong to it, like chapter titles do.
+
+**A page break does not stand in for the heading's own break.** A style inherits its level's `breakBefore` (the level-1 default is `{ enabled: true, parity: 'always-odd' }`), and a heading applies it wherever it stands, right after a `:::pagebreak` too. The page break opens a new page, and the heading then still asks for its side of the spread. With `parity: 'odd'`, a break that lands on a verso is followed by a blank page, so the heading opens on the next recto. With `'always-odd'` the separator blank comes too, and the page break changes nothing, since the heading would have opened that page anyway. A style meant to start on the page a manual break opens, such as a contents page after the title page, turns its own break off:
+
+```ts
+headingStyles: [
+  // Starts where the text puts it: on the page the `:::pagebreak` before it opened.
+  { id: 'contents', numbered: false, toc: false, breakBefore: { enabled: false } },
+],
+```
+
+To keep a page of its own without choosing a side, set `breakBefore: { parity: 'any' }` instead and leave the `:::pagebreak` out.
+
+**Which section a page belongs to.** Running heads and palette are chosen per page, not per heading. A page takes the section in effect after the last section change on it: where one section ends and another starts on the same page — two short letters of a dictionary, say — the page carries the second one's running heads and palette; where a styled section ends mid-page at an unstyled heading, the page returns to the document's. `{chapterTitle}` follows the same rule: a page where two chapters meet shows the later one's title. Blank pages follow the rule of [chapter titles](/en/docs/configuration-text#blank-page-ownership): a parity blank (`blankForParity`) belongs to the section that opens after it, and the separator an `'always-odd'` / `'always-even'` break adds (`blankForForce`) to the section before it. A part divider closes the open section.
+
+```md
+# A {style="letter"}
+
+Aardvark, abacus.
+
+# B {style="letter"}
+
+Babble, badger… (runs on to the next page)
+```
+
+Both letters start on page 1, so page 1 takes the running heads of the `B` section: a thumb tab set in the style's header reads "B" there, and no page carries the tab for "A". Give each section a page of its own (`breakBefore`) when every one needs its tab.
+Lettered appendices after numbered chapters, and a dedication page that the contents and the PDF bookmarks list but the page does not title:
+
+```ts
+headingStyles: [
+  { id: 'appendix', numberingTemplate: 'Appendix {1:A}' },
+  { id: 'silent', hidden: true, numbered: false },
+],
+```
+
+```md
+# Dedication {style="silent"}
+
+For M., who read every draft.
+
+# Method
+
+…
+
+# Survey instrument {style="appendix" startAt=1}
+
+# Raw data {style="appendix"}
+```
+
+With `numberingTemplate: '{1}.'` on level 1, the chapters print *1.*, *2.*…, the appendices *Appendix A* and *Appendix B*. The dedication opens its page (its level's `breakBefore`), prints only its paragraph, and still shows as *Dedication* in `:::toc`, in `{chapterTitle}` running heads and in the PDF outline — add `toc: false` to the style to leave it out of the contents. A plate or a map set as an H1 in the middle of a chapter wants the opposite of the dedication: a style with `runningChapter: false` (usually with `numbered: false` and `toc: false`) keeps the running heads on the chapter it interrupts.
+
+```ts
+const resolved = resolveHeadingStylesConfig(config.headingStyles, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);
+// => level overrides normalised, margins filled from the page, bodyStyle from the body
+
+const minimal = stripHeadingStylesDefaults(config.headingStyles);
+// => undefined when no style remains
+```

@@ -18,7 +18,7 @@ pageNotes: { "1": "The part divider of Notes on Weather: a rain-blue field with 
 
 <Excerpt region="palette" />
 
-Every colour in the config names a palette id, and the hex written beside it is only the day fallback. So the screen edition switches to the night colours by replacing one array. The [overrides](/en/docs/configuration#html-viewer) in [the short answer](#the-short-answer) merge objects key by key and heading levels on `level`, and replace any other array whole, `colorPalette` included. `main-color` is part of the palette, so the engine defaults that use it change as well. The new palette reaches every colour linked to it: the text, the captions, the openers' design elements and the reference colour.
+Every colour in the config names a palette id, and the hex written beside it is only the day fallback. So the screen edition switches to the night colours by replacing one array. The [overrides](/en/docs/configuration-fonts-colors-viewers#html-viewer) in [the short answer](#the-short-answer) merge objects key by key and heading levels on `level`, and replace any other array whole, `colorPalette` included. `main-color` is part of the palette, so the engine defaults that use it change as well. The new palette reaches every colour linked to it: the text, the captions, the openers' design elements and the reference colour.
 
 ### 2 · Openers: a band on paper, the words on screen
 
@@ -30,7 +30,7 @@ The kicker, title and lead elements are defined once and spread into both design
 
 <Excerpt region="part" />
 
-In print, `:::part` opens <PageRef page={1}>the rain-blue divider</PageRef>: a box bled off every edge, an image element of rain strokes that leave the type clear, the numeral and title from the fence, and the list of notes in white. The screen overrides set `parts.page: false`, so no page opens and the list is not set. The [part](/en/docs/configuration#parts) still applies its number and title to the notes after it, and the screen kicker reads “Autumn · Note 1” as the printed one does.
+In print, `:::part` opens <PageRef page={1}>the rain-blue divider</PageRef>: a box bled off every edge, an image element of rain strokes that leave the type clear, the numeral and title from the fence, and the list of notes in white. The screen overrides set `parts.page: false`, so no page opens and the list is not set. The [part](/en/docs/configuration-styles#parts) still applies its number and title to the notes after it, and the screen kicker reads “Autumn · Note 1” as the printed one does.
 
 ### 4 · Draw every figure twice
 
@@ -42,7 +42,7 @@ Swapping the palette does not recolour an SVG, so each drawing is made once per 
 
 <Excerpt region="screen" />
 
-Each screen page is as tall as the pane, so `fitFiguresToPage` shrinks the gauge until it fits on one page with its caption ([layout](/en/docs/configuration#layout)). At 96 dpi, the resolution CSS assumes, the millimetres and points inherited from print render at their nominal size ([integrating the HTML viewer](/en/docs/configuration#integrating-the-html-viewer)). The pen writes `renderToHtml`'s absolutely positioned lines into a Shadow DOM, where the page's selectors cannot reach them. Inherited properties such as `letter-spacing` do cross that boundary, and the edition's root resets them itself, because the engine measured the lines without them. HTML pages are transparent unless painted, so `page.backgroundColor` takes the night paper from the palette. The ResizeObserver waits 150 ms and rebuilds from a fresh `config()` only when the pane's width or height has changed; after the rebuild the pane scrolls back to the same fraction of its height.
+Each screen page is as tall as the pane, so `fitFiguresToPage` shrinks the gauge until it fits on one page with its caption ([layout](/en/docs/configuration-page-layout#layout)). At 96 dpi, the resolution CSS assumes, the millimetres and points inherited from print render at their nominal size ([integrating the HTML viewer](/en/docs/configuration-programmatic-usage#integrating-the-html-viewer)). The pen writes `renderToHtml`'s absolutely positioned lines into a Shadow DOM, where the page's selectors cannot reach them. Inherited properties such as `letter-spacing` do cross that boundary, and the edition's root resets them itself, because the engine measured the lines without them. HTML pages are transparent unless painted, so `page.backgroundColor` takes the night paper from the palette. The ResizeObserver waits 150 ms and rebuilds from a fresh `config()` only when the pane's width or height has changed; after the rebuild the pane scrolls back to the same fraction of its height.
 
 ## Variations
 

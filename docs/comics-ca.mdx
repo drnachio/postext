@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ca',
   lastUpdated: '2026-10-07',
   readingTime: '25 min',
-  order: 9,
+  order: 18,
   plainSummary: "Aquesta pàgina explica com es fa un còmic amb Postext. Els dibuixos són les vinyetes, i tot el que els personatges diuen, pensen o senten s'escriu com a text al fitxer Markdown. Postext col·loca les vinyetes a la pàgina i dibuixa tot sol les bafarades, les cartel·les i les onomatopeies al voltant de les paraules. Per traduir el còmic només cal reescriure les paraules, i Postext torna a retolar la llengua nova: el japonès en columnes, l'àrab de dreta a esquerra. La pàgina també tracta les tires dins d'un llibre, les pàgines que ocupen dues cares enfrontades, les sortides i els límits que queden.",
 };
 
@@ -17,7 +17,7 @@ export const metadata = {
 
 Un còmic a Postext és un conjunt de dibuixos i un guió. Els dibuixos són recursos corrents, de mapa de bits o SVG, dibuixats sense cap retolació. El guió viu al Markdown del capítol: un bloc `:::page` talla una pàgina en vinyetes, dona a cada vinyeta el seu dibuix i hi enumera, línia per línia, les bafarades, les cartel·les i les onomatopeies. Postext disposa les vinyetes, retalla cada dibuix a la seva cel·la sense tocar el que importa, compon el text amb la lletra de retolació del llibre en un sol cos, hi dibuixa una bafarada al voltant, n'adreça la cua al personatge que parla i col·loca les bafarades en ordre de lectura allà on no tapen cap cara. Una traducció és un altre fitxer Markdown amb les mateixes vinyetes i altres paraules; Postext la torna a retolar de cap i de nou, en columnes per al japonès i de dreta a esquerra per a l'àrab.
 
-Els còmics són opcionals: un document sense `:::page` ni `:::strip` es compon exactament igual que abans. Els ajustos són a la [secció `comics` de la configuració](/ca/docs/configuration#còmics), i el marcatge es resumeix a [Format del document › Còmics](/ca/docs/document-format#còmics).
+Els còmics són opcionals: un document sense `:::page` ni `:::strip` es compon exactament igual que abans. Els ajustos són a la [secció `comics` de la configuració](/ca/docs/configuration-comics#còmics), i el marcatge es resumeix a [Format del document › Còmics](/ca/docs/document-format#còmics).
 
 ## Pàgines de còmic
 
@@ -169,7 +169,7 @@ Un dibuix sense zona segura es retalla al voltant del seu centre, o al voltant d
 
 ### Estils de vinyeta
 
-L'aspecte d'una vinyeta surt de `comics.panel` (una vora negra d'1 pt, fons blanc, `cover`), d'un estil amb nom de `comics.panelStyles` que una pàgina o una vinyeta tria amb `style=`, i dels `border` i `bg` de la mateixa vinyeta. Una vora pot ser `solid`, `none` o `rough`: una línia feta a mà que tremola una mica, igual a cada composició, perquè el tremolor surt d'una llavor presa de la vinyeta. Tots els camps són a [Configuració › Còmics](/ca/docs/configuration#còmics).
+L'aspecte d'una vinyeta surt de `comics.panel` (una vora negra d'1 pt, fons blanc, `cover`), d'un estil amb nom de `comics.panelStyles` que una pàgina o una vinyeta tria amb `style=`, i dels `border` i `bg` de la mateixa vinyeta. Una vora pot ser `solid`, `none` o `rough`: una línia feta a mà que tremola una mica, igual a cada composició, perquè el tremolor surt d'una llavor presa de la vinyeta. Tots els camps són a [Configuració › Còmics](/ca/docs/configuration-comics#còmics).
 
 ### Dibuix que trenca la vora
 
@@ -335,7 +335,7 @@ ghost{eerie}: Ves-te'n d'aquesta casa…
 caption{at=bottom-end}: A tres carrers d'aquí.
 ```
 
-Els contorns són `oval` (una superel·lipse ajustada a les línies, `roundness` 2,2), `rounded`, `rectangle`, `cloud` (festons comptats a partir del perímetre), `burst` (`burstPoints` punxes, de profunditat `burstDepth`), `wavy`, `electric` i `none`. `dash` dibuixa un contorn discontinu, `double` un de doble, i `wobble` (0–1) el fa tremolar com si fos fet a mà, sempre de la mateixa manera per a la mateixa bafarada. Les cues són `curved`, `wedge`, `bubbles`, `zigzag` i `none`. Tots els camps, amb els seus valors per defecte, són a [Configuració › Còmics](/ca/docs/configuration#còmics).
+Els contorns són `oval` (una superel·lipse ajustada a les línies, `roundness` 2,2), `rounded`, `rectangle`, `cloud` (festons comptats a partir del perímetre), `burst` (`burstPoints` punxes, de profunditat `burstDepth`), `wavy`, `electric` i `none`. `dash` dibuixa un contorn discontinu, `double` un de doble, i `wobble` (0–1) el fa tremolar com si fos fet a mà, sempre de la mateixa manera per a la mateixa bafarada. Les cues són `curved`, `wedge`, `bubbles`, `zigzag` i `none`. Tots els camps, amb els seus valors per defecte, són a [Configuració › Còmics](/ca/docs/configuration-comics#còmics).
 
 Els renderitzadors dibuixen una bafarada com la tinta un retolista: primer es tracen tots els contorns d'un grup al doble del seu gruix, després s'omplen i al final es compon el text. Per això dos cossos units i la seva cua surten com una sola forma, sense cap línia entre ells.
 
@@ -443,7 +443,7 @@ Un còmic occidental es llegeix d'esquerra a dreta: la primera vinyeta d'una fil
 - `'auto'` (el valor per defecte): el sentit de la llengua de l'edició. De dreta a esquerra en un document de dreta a esquerra, de manera que una edició àrab posa les pàgines en mirall; en un document vertical; i en japonès i xinès tradicional (`ja`, `zh-Hant`, `zh-TW`, `zh-HK`, `zh-MO`), de manera que una edició japonesa d'un còmic occidental es llegeix de dreta a esquerra, com el manga. En qualsevol altra llengua, xinès simplificat i coreà inclosos (el manhua i el manhwa es llegeixen avui d'esquerra a dreta), és el sentit per al qual es va dibuixar l'art, `comics.artDirection` (`'ltr'` per defecte): un manga, amb `artDirection: 'rtl'`, es llegeix de dreta a esquerra en qualsevol llengua.
 - `'ltr'` o `'rtl'` imposa un sentit a tot el llibre, i l'atribut `direction` d'una pàgina l'imposa a aquella pàgina.
 
-L'enquadernació segueix els còmics. Amb `page.binding: 'auto'`, un llibre la secció `comics` del qual es llegeix de dreta a esquerra s'enquaderna per la dreta: la pàgina 1 queda sola a l'esquerra del llom, els plecs es llegeixen `[3 | 2]`, els visors passen les pàgines cap a l'esquerra, el PDF demana l'ordre de pàgines de dreta a esquerra i l'EPUB declara una progressió de pàgines de dreta a esquerra. La secció `comics` decideix per tot el llibre, de manera que un capítol sense pàgines de còmic s'enquaderna igual que els altres; el `direction` propi d'una pàgina no mou el llom. Un document les pàgines de còmic del qual llegeixen els valors per defecte, sense secció `comics`, conserva l'enquadernació del seu text (n'hi ha prou amb `comics: {}` per enquadernar-lo tal com es llegeixen els seus còmics). `page.binding: 'left'` o `'right'` continua manant. Vegeu [Enquadernació](/ca/docs/configuration#enquadernació).
+L'enquadernació segueix els còmics. Amb `page.binding: 'auto'`, un llibre la secció `comics` del qual es llegeix de dreta a esquerra s'enquaderna per la dreta: la pàgina 1 queda sola a l'esquerra del llom, els plecs es llegeixen `[3 | 2]`, els visors passen les pàgines cap a l'esquerra, el PDF demana l'ordre de pàgines de dreta a esquerra i l'EPUB declara una progressió de pàgines de dreta a esquerra. La secció `comics` decideix per tot el llibre, de manera que un capítol sense pàgines de còmic s'enquaderna igual que els altres; el `direction` propi d'una pàgina no mou el llom. Un document les pàgines de còmic del qual llegeixen els valors per defecte, sense secció `comics`, conserva l'enquadernació del seu text (n'hi ha prou amb `comics: {}` per enquadernar-lo tal com es llegeixen els seus còmics). `page.binding: 'left'` o `'right'` continua manant. Vegeu [Enquadernació](/ca/docs/configuration-page-layout#enquadernació).
 
 La mateixa font dona les dues composicions de pàgina. Una pàgina de dreta a esquerra disposa les vinyetes de cada filera des de la dreta, de manera que la vinyeta 1 queda a dalt a la dreta; les inclinacions s'hi reflecteixen, i també els costats lògics de `bleed`, `pad` i les paraules clau de cantonada (una cartel·la a `top-start` va a dalt a la dreta). Les fileres mantenen el seu ordre de dalt a baix, i l'ordre de lectura del guió no canvia. La retolació també reflecteix les seves regles: la primera bafarada d'una vinyeta tira cap a la dreta, i la següent només pot anar més amunt si és més a l'esquerra.
 
@@ -520,7 +520,7 @@ Cada avís indica la línia o l'atribut a què es refereix, i el tauler Revisió
   </tbody>
 </table>
 
-Els avisos tornen als `contentWarnings` del document amb l'interval de la font de la línia o l'atribut a què es refereixen (vegeu [Configuració › Avisos del document](/ca/docs/configuration#avisos-del-document)).
+Els avisos tornen als `contentWarnings` del document amb l'interval de la font de la línia o l'atribut a què es refereixen (vegeu [Configuració › Avisos del document](/ca/docs/configuration-programmatic-usage#avisos-del-document)).
 
 Un ajust de còmic que admet unes quantes paraules i en conté una altra, com ara `shape: 'ovl'` en un estil de bafarada o `readingDirection: 'rlt'`, es llegeix com el seu valor per defecte i el tauler Revisió l'enumera com a **Valor de configuració desconegut** (`unknownConfigValue`), amb el valor que ha fet servir el motor i la paraula a què més s'assembla. Els ajustos que es comproven són `readingDirection`, `artDirection`, `borderStyle` i `fit` d'un estil de vinyeta, `writingMode`, `textTransform`, `dropFinalStop` i `joinSameSpeaker` de la retolació, i `shape`, `tail`, `target`, `position`, `align` i `textTransform` d'un estil de bafarada.
 

@@ -18,7 +18,7 @@ pageNotes: { "1": "A página divisória de Notes on Weather: um campo azul-chuva
 
 <Excerpt region="palette" />
 
-Toda cor da configuração aponta para um id da paleta, e o hex escrito ao lado é só o valor de reserva diurno. Assim, a edição de tela passa para as cores noturnas trocando um único array. Os [overrides](/pt/docs/configuration#visualizador-html) da [resposta curta](#a-resposta-curta) mesclam objetos chave a chave e os níveis de título por `level`, e substituem inteiro qualquer outro array, inclusive `colorPalette`. `main-color` faz parte da paleta, então os valores padrão do motor que o usam também mudam. A paleta nova chega a todas as cores vinculadas a ela: o texto, as legendas, os elementos de design das aberturas e a cor das referências.
+Toda cor da configuração aponta para um id da paleta, e o hex escrito ao lado é só o valor de reserva diurno. Assim, a edição de tela passa para as cores noturnas trocando um único array. Os [overrides](/pt/docs/configuration-fonts-colors-viewers#visualizador-html) da [resposta curta](#a-resposta-curta) mesclam objetos chave a chave e os níveis de título por `level`, e substituem inteiro qualquer outro array, inclusive `colorPalette`. `main-color` faz parte da paleta, então os valores padrão do motor que o usam também mudam. A paleta nova chega a todas as cores vinculadas a ela: o texto, as legendas, os elementos de design das aberturas e a cor das referências.
 
 ### 2 · Aberturas: uma faixa no papel, as palavras na tela
 
@@ -30,7 +30,7 @@ Os elementos de antetítulo, título e olho são definidos uma vez e espalhados 
 
 <Excerpt region="part" />
 
-Na edição impressa, `:::part` abre <PageRef page={1}>a página divisória azul-chuva</PageRef>: uma caixa sangrada em todas as bordas, um elemento de imagem com traços de chuva que deixam o texto livre, o numeral e o título vindos do bloco e a lista de notas em branco. Os overrides de tela definem `parts.page: false`, então nenhuma página é aberta e a lista não é composta. A [parte](/pt/docs/configuration#partes) continua aplicando o seu número e o seu título às notas seguintes, e o antetítulo de tela diz “Autumn · Note 1”, como o impresso.
+Na edição impressa, `:::part` abre <PageRef page={1}>a página divisória azul-chuva</PageRef>: uma caixa sangrada em todas as bordas, um elemento de imagem com traços de chuva que deixam o texto livre, o numeral e o título vindos do bloco e a lista de notas em branco. Os overrides de tela definem `parts.page: false`, então nenhuma página é aberta e a lista não é composta. A [parte](/pt/docs/configuration-styles#partes) continua aplicando o seu número e o seu título às notas seguintes, e o antetítulo de tela diz “Autumn · Note 1”, como o impresso.
 
 ### 4 · Desenhe cada figura duas vezes
 
@@ -42,7 +42,7 @@ Trocar a paleta não recolore um SVG, então cada desenho é feito uma vez por p
 
 <Excerpt region="screen" />
 
-Cada página de tela tem a altura do painel, então `fitFiguresToPage` reduz o pluviômetro até ele caber numa página com a legenda ([layout](/pt/docs/configuration#diagramação)). A 96 dpi, a resolução que o CSS pressupõe, os milímetros e pontos herdados do impresso aparecem no tamanho nominal ([integrar o visualizador HTML](/pt/docs/configuration#integração-do-visualizador-html)). O pen escreve as linhas com posição absoluta de `renderToHtml` dentro de um Shadow DOM, onde os seletores da página não as alcançam. Propriedades herdadas como `letter-spacing` atravessam essa fronteira, e a raiz da edição as redefine por conta própria, porque o motor mediu as linhas sem elas. As páginas HTML são transparentes, a menos que alguém as pinte, então `page.backgroundColor` tira da paleta o papel noturno. O ResizeObserver espera 150 ms e só recompõe, a partir de uma `config()` nova, quando a largura ou a altura do painel mudou; depois da recomposição, o painel volta a rolar até a mesma fração da sua altura.
+Cada página de tela tem a altura do painel, então `fitFiguresToPage` reduz o pluviômetro até ele caber numa página com a legenda ([layout](/pt/docs/configuration-page-layout#diagramação)). A 96 dpi, a resolução que o CSS pressupõe, os milímetros e pontos herdados do impresso aparecem no tamanho nominal ([integrar o visualizador HTML](/pt/docs/configuration-programmatic-usage#integração-do-visualizador-html)). O pen escreve as linhas com posição absoluta de `renderToHtml` dentro de um Shadow DOM, onde os seletores da página não as alcançam. Propriedades herdadas como `letter-spacing` atravessam essa fronteira, e a raiz da edição as redefine por conta própria, porque o motor mediu as linhas sem elas. As páginas HTML são transparentes, a menos que alguém as pinte, então `page.backgroundColor` tira da paleta o papel noturno. O ResizeObserver espera 150 ms e só recompõe, a partir de uma `config()` nova, quando a largura ou a altura do painel mudou; depois da recomposição, o painel volta a rolar até a mesma fração da sua altura.
 
 ## Variações
 

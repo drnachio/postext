@@ -16,7 +16,7 @@ pageNotes: { "1": "第七章开头，上方是一幅俯视树下茶桌的水彩�
 
 ### 1 · 把切口一侧留给边注
 
-代码见上面的[简短回答](#简短回答)。在[一栏半版式](/zh/docs/configuration#版式类型)中，`sideColumnPercent: 26`从页边距之间的127 mm里分给侧栏33 mm，扣除4.5 mm栏间距后正文还有89.5 mm。`sideColumnRole: 'floats'`让卡罗尔的正文不进入侧栏，侧栏只放用`span: 'side'`指定的内容。[脚注](/zh/docs/document-format#脚注)要等到栏底、排在一条线下；而在页边，每条边注与它所解释的那一行齐平，也不占用正文栏的行。两种边注样式只在细线和标题的颜色上不同，读者不用读内容，就能分辨是词语注还是历史注。
+代码见上面的[简短回答](#简短回答)。在[一栏半版式](/zh/docs/configuration-page-layout#版式类型)中，`sideColumnPercent: 26`从页边距之间的127 mm里分给侧栏33 mm，扣除4.5 mm栏间距后正文还有89.5 mm。`sideColumnRole: 'floats'`让卡罗尔的正文不进入侧栏，侧栏只放用`span: 'side'`指定的内容。[脚注](/zh/docs/document-format#脚注)要等到栏底、排在一条线下；而在页边，每条边注与它所解释的那一行齐平，也不占用正文栏的行。两种边注样式只在细线和标题的颜色上不同，读者不用读内容，就能分辨是词语注还是历史注。
 
 ### 2 · 镜像页面，让边注栏跟着切口走
 
@@ -28,7 +28,7 @@ pageNotes: { "1": "第七章开头，上方是一幅俯视树下茶桌的水彩�
 
 <Excerpt region="text" />
 
-在[`:::callout`围栏](/zh/docs/configuration#callout容器)上加`span="side"`的框会离开文本流，与围栏之后的块齐平，排在边注栏里；所以每条边注的围栏都紧写在带有其字母的段落之前，如下所示。边注a和b应位于第一段旁，所以它们的围栏写在标题和该段之间。离开文本流的框不算标题之后的块，所以`indentAfterHeading: false`照样让该段顶格。正文按栏宽调整了字号：9.5 pt时，以“Have some wine,”开头的那段正好排成一行89.5 mm；而10.4 pt时，行长从77 mm到93 mm都会留下“ing tone.”或“tone.”这样的短末行。Unna的词间空格很窄，只有0.22 em；`minWordSpacing`取默认值0.6时，第83页有一行的空格被压到这个宽度的0.69；`minWordSpacing: 0.75`排除了这一行。
+在[`:::callout`围栏](/zh/docs/configuration-styles#callout容器)上加`span="side"`的框会离开文本流，与围栏之后的块齐平，排在边注栏里；所以每条边注的围栏都紧写在带有其字母的段落之前，如下所示。边注a和b应位于第一段旁，所以它们的围栏写在标题和该段之间。离开文本流的框不算标题之后的块，所以`indentAfterHeading: false`照样让该段顶格。正文按栏宽调整了字号：9.5 pt时，以“Have some wine,”开头的那段正好排成一行89.5 mm；而10.4 pt时，行长从77 mm到93 mm都会留下“ing tone.”或“tone.”这样的短末行。Unna的词间空格很窄，只有0.22 em；`minWordSpacing`取默认值0.6时，第83页有一行的空格被压到这个宽度的0.69；`minWordSpacing: 0.75`排除了这一行。
 
 ```markdown
 :::callout{type="context" span="side" title="c · Hair"}
@@ -48,7 +48,7 @@ Markdown没有给文字上色的标记，但[行内标签](/zh/docs/document-for
 
 <Excerpt region="opener" />
 
-标题的[设计槽](/zh/docs/configuration#通栏与高级设计)跨越整页，水彩画才能伸到裁切线。眉题、标题和题记挂在水彩画下方，章首的预留高度到其中最低者为止，向上取整到网格；标题默认的下外边距再加一个空行。题记四行时，正文从第23行开始，多一行就会移到第24行。章节编号、题记和本版本说明来自[标题属性](/zh/docs/document-format#标题属性)`{num="VII" headnote="…" source="…"}`。编号从这里取，是因为节选本身是一个独立文档，`{chapterNumber}`会印出1。首字下沉用在编者的题记上，题记用斜体齐左排；卡罗尔的正文在下方文本流中两端对齐开始。`dropSize()`计算首字大小，使其顶端与题记第一行大写字母的顶端对齐。
+标题的[设计槽](/zh/docs/configuration-text#通栏与高级设计)跨越整页，水彩画才能伸到裁切线。眉题、标题和题记挂在水彩画下方，章首的预留高度到其中最低者为止，向上取整到网格；标题默认的下外边距再加一个空行。题记四行时，正文从第23行开始，多一行就会移到第24行。章节编号、题记和本版本说明来自[标题属性](/zh/docs/document-format#标题属性)`{num="VII" headnote="…" source="…"}`。编号从这里取，是因为节选本身是一个独立文档，`{chapterNumber}`会印出1。首字下沉用在编者的题记上，题记用斜体齐左排；卡罗尔的正文在下方文本流中两端对齐开始。`dropSize()`计算首字大小，使其顶端与题记第一行大写字母的顶端对齐。
 
 ### 6 · 按解释对象给边注上色
 

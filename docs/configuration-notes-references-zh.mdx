@@ -1,0 +1,827 @@
+{/* docs/configuration-notes-references-zh.mdx */}
+
+export const metadata = {
+  title: '配置：注释与引用',
+  sidebarTitle: '注释与引用',
+  description: '脚注、行号、交叉引用与引用，目录和书末索引',
+  lang: 'zh',
+  lastUpdated: '2026-10-10',
+  readingTime: '4分钟',
+  order: 6,
+  parent: 'configuration',
+  plainSummary: "本页讲书中指向别处的那些部分的设置。脚注排在页面底部，行号排在页边。交叉引用指向某张图、某一节或某一页，引用指向你提到的文献。目录列出各章，书末的索引列出词条和它们所在的页码。每一节说明这些部分的样子和编号方式。",
+};
+
+# 配置：注释与引用
+
+
+## 脚注
+
+`footnotes`属性设置以`[^id]`引用的注释放在哪里、如何编号、外观如何。标记写法见[文档格式](/zh/docs/document-format#脚注)。
+
+```ts
+interface FootnotesConfig {
+  placement?: 'column' | 'chapterEnd' | 'spread'; // 引用所在栏的栏底、章末，或跨页正文旁。
+  numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // 每章重新开始、连续编号，或每页／每栏／每个跨页重新开始。
+  numberFormat?: string;      // decimal、lower-roman、circled-decimal（①）……
+  symbols?: string[];         // numberFormat: 'symbols' 所用的注释符号。
+  markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // 上标、排在基线上、排在词旁，或排在竖排行的右侧。
+  markerSize?: Dimension;     // 行内、词旁或右侧注码的字号；em指所在正文。
+  numberGap?: 'en' | 'em';    // 注文编号之后的空白。
+  chapterEndAlign?: 'foot' | 'text';   // chapterEnd：注释排在栏底，或紧接正文之下。
+  fontSize?: Dimension;       // 注释字号；em为正文字号。
+  lineHeight?: Dimension;     // 注释行距；em为注释字号。
+  color?: ColorValue;         // 注释颜色；未设置时为正文颜色。
+  textAlign?: TextAlign;      // 未设置时为正文的对齐方式。
+  hangingIndent?: Dimension;  // 注释转行的缩进。
+  spaceBetween?: Dimension;   // 两条注释之间的间距。
+  spaceAbove?: Dimension;     // 正文与分隔线之间的间距；em为正文字号。
+  spaceBelowRule?: Dimension; // 分隔线与第一条注释之间的间距。
+  separator?: {
+    enabled?: boolean;        // 画出分隔线。
+    width?: number;           // 分隔线长度，占栏宽的比例。
+    lineWidth?: Dimension;    // 分隔线粗细。
+    color?: ColorValue;       // 未设置时为注释颜色。
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'column' | 'chapterEnd' | 'spread'</code></td>
+      <td><code>'column'</code>（日文竖排书：<code>'chapterEnd'</code>）</td>
+      <td><code>'column'</code>把每条注释排在引用它的那一行所在栏的栏底，上面有一条短分隔线；单栏版面中就是页面底部。<code>'chapterEnd'</code>把一章的所有注释按引用顺序排在该章最后一个块之后。<code>'spread'</code>（傍注，仅用于竖排）把一个跨页两页上引用的注释排在其奇数页（右侧装订的书中的左页）的末尾、分隔线之下：偶数页上引用的注释等待奇数页；某条注释会让奇数页剩下不足一行正文时，它连同其后的注释留在偶数页的下端；在偶数页结束的章把等待中的注释留在那一页。横排时它退回为<code>'column'</code>，并给出<code>unknownConfigValue</code>警告。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
+      <td><code>'chapter'</code>（日文横排书：<code>'page'</code>；使用<code>placement: 'spread'</code>时：<code>'spread'</code>；栏脚注使用<code>numberFormat: 'symbols'</code>时：<code>'page'</code>）</td>
+      <td><code>'chapter'</code>在每个一级标题下和每个文档开头从1重新编号。<code>'document'</code>在整个文档中连续编号；逐章排版的书中，也从一章延续到下一章（<code>continuationAfter</code>把最后一个编号记为<code>continuation.footnoteNumber</code>带过去）。<code>'page'</code>每页从1重新编号，<code>'column'</code>每栏重新编号，按版面中注文实际所在的位置计数（同一页的各栏按阅读顺序）：这就是中文书常见的页下注。文档先排版，再按注文落在的位置编号，然后重新排版，直到编号不再变化（最多再排三次）。二者只适用于栏脚注：<code>placement: 'chapterEnd'</code>时按章编号。<code>'spread'</code>在每个跨页（第2–3页、4–5页……）按引用顺序重新编号，用于<code>placement: 'spread'</code>。</td>
+    </tr>
+    <tr>
+      <td><code>numberFormat</code></td>
+      <td><code>string</code></td>
+      <td><code>'decimal'</code></td>
+      <td>编号的写法，可用编号设置接受的任何写法：<code>'decimal'</code>、<code>'lower-roman'</code>、<code>'lower-alpha'</code>、<code>'circled-decimal'</code>（或<code>'①'</code>）、<code>'cjk-decimal'</code>、<code>'一'</code>……正文注码和注文开头的编号都用它。<code>circled-decimal</code>超过50的编号写成阿拉伯数字。名称无法识别时按阿拉伯数字编号，并给出<code>unknownNumberFormat</code>警告。<code>'symbols'</code>（或<code>'&#42;'</code>）用参见符号标注，依次取<code>symbols</code>中的符号：&#42; † ‡ § ‖ ¶，用完后成对（&#42;&#42; †† ‡‡……）、再三个重复；此时除非设置了<code>numbering</code>，注释每页重新计数。postext 1.19 起。</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td><code>numberFormat: 'symbols'</code>所用的符号序列，用完后成对、再三个重复。Google Fonts 与 Fontsource 的拉丁文件含有 &#42; † § ¶（剑号在<code>latin-ext</code>中），但没有 ‡ 和 ‖，PDF 会以该字体的<code>.notdef</code>字形绘制，并给出<code>missingGlyph</code>警告：使用这类字体时，请去掉这两个符号（<code>['&#42;', '†', '§', '¶']</code>），或用含有它们的字体排注文。空字符串会被忽略，空列表保留默认序列。postext 1.19 起。</td>
+    </tr>
+    <tr>
+      <td><code>markerPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline' | 'side' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'superscript'</code>把正文注码和注文开头的编号缩小并升高，排成上标。<code>'inline'</code>把它们排在基线上：注码用<code>markerSize</code>，注文编号与注文同大；竖排时，行内带圈注码在自己的格子里直立。<code>'right'</code>把缩小的注码排在竖排行的右侧并与之对齐，日文竖排书的（1）就是这样排的；横排时为上标。<code>'side'</code>（合印）把小号注码排在被注词旁边、其注音一侧，结束于该词最后一个字结束的地方；它不占行内空间，行的断行和两端对齐都当它不存在；行间空隙容不下它时报为<code>rubyExceedsLeading</code>。<code>'auto'</code>在<code>circled-decimal</code>时为行内，日文竖排书中为<code>'right'</code>，其他情况为上标。无论哪种，注码都随前一个字符，不会出现在行首。</td>
+    </tr>
+    <tr>
+      <td><code>markerSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code>；<code>'side'</code>为<code>0.6em</code>，<code>'right'</code>为<code>0.7em</code></td>
+      <td>行内、词旁或右侧注码的字号；<code>em</code>指所在正文的字号（常见的缩小值为<code>0.75em</code>）。对上标注码无效。</td>
+    </tr>
+    <tr>
+      <td><code>numberGap</code></td>
+      <td><code>'en' | 'em'</code></td>
+      <td><code>'en'</code>（日文章末注：<code>'em'</code>）</td>
+      <td>注文开头的编号之后的空白：半个字宽的空格，或一个注文字号的整字宽（编号或注文含CJK文字时为全角空格），从不伸缩，也不在此断行。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
+      <td><code>markerTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>'&#123;n&#125;'</code>（日文竖排书：<code>'（&#123;n&#125;）'</code>）</td>
+      <td>注释编号的写法，<code>&#123;n&#125;</code>代表按编号格式和文档数字写出的编号：<code>'(&#123;n&#125;)'</code>得到阿拉伯文书籍的带括号注码「(١)」。正文注码和注文开头的编号都按它写。不含<code>&#123;n&#125;</code>的模板按默认值处理。</td>
+    </tr>
+    <tr>
+      <td><code>noteNumberPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>注文开头编号的位置：上标，或以注文字号排在行内。<code>'auto'</code>跟随<code>markerPosition</code>。阿拉伯文书籍把正文注码排成上标，注文自己的编号排在行内。</td>
+    </tr>
+    <tr>
+      <td><code>chapterEndAlign</code></td>
+      <td><code>'foot' | 'text'</code></td>
+      <td><code>'foot'</code></td>
+      <td>与<code>placement: 'chapterEnd'</code>配合使用：<code>'foot'</code>把收尾一栏的注释排在栏底，剩余的空行留在正文和注释之间，与栏底注释的位置一样。<code>'text'</code>把它们紧接正文排。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>注释文字的字号。<code>em</code>和<code>rem</code>指正文字号。注释使用正文的字体和字重。</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.25em</code></td>
+      <td>注释文字的行距；<code>em</code>指注释字号。注释不在基线网格上：它们从栏底向上堆叠，上面的正文保持在网格上。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>正文颜色</td>
+      <td>注释文字的颜色。</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>TextAlign</code></td>
+      <td>正文的对齐方式</td>
+      <td>注释文字的对齐方式。</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>注释第二行及以后各行的缩进，使它们对齐到编号之后。</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>两条注释之间的间距。</td>
+    </tr>
+    <tr>
+      <td><code>spaceAbove</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>最后一行正文与分隔线之间的间距；<code>em</code>指正文字号。使用<code>'chapterEnd'</code>和<code>chapterEndAlign: 'text'</code>时，<code>spaceAbove</code> + <code>spaceBelowRule</code>就是正文与第一条注释之间的间距。</td>
+    </tr>
+    <tr>
+      <td><code>spaceBelowRule</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.4em</code></td>
+      <td>分隔线与第一条注释之间的间距。</td>
+    </tr>
+    <tr>
+      <td><code>separator.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>在每栏的注释上方画分隔线。设为<code>false</code>时，上方的间距保留。</td>
+    </tr>
+    <tr>
+      <td><code>separator.width</code></td>
+      <td><code>number</code></td>
+      <td><code>0.3</code></td>
+      <td>分隔线长度，占栏宽的比例（0–1），从栏的左边缘起算。</td>
+    </tr>
+    <tr>
+      <td><code>separator.lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>分隔线的粗细。</td>
+    </tr>
+    <tr>
+      <td><code>separator.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>注释颜色</td>
+      <td>分隔线的颜色。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+footnotes: {
+  fontSize: { value: 7.5, unit: 'pt' },
+  lineHeight: { value: 9.5, unit: 'pt' },
+  hangingIndent: { value: 0.8, unit: 'em' },
+  separator: { width: 0.25, lineWidth: { value: 0.4, unit: 'pt' } },
+}
+```
+
+**日文书。** 日文文档（`locale: 'ja'`，从postext 1.16起）为未设置的字段取JLReq §4.2的值。竖排书把注释排在章末（`placement: 'chapterEnd'`，後注），按章编号，注码`（{n}）`排在行的右侧（`markerPosition: 'right'`，数字按`cjk.uprightDigits`直立）；横排书把注释排在页面下端，按页编号，注码为上标。两者的分隔线都是行长的三分之一（`separator.width: 1/3`），章末注取`numberGap: 'em'`和两个字的悬挂缩进。明确设置的值优先，并在保存时保留（`stripFootnotesDefaults`与文档自己的默认值比较）；中文、阿拉伯文和拉丁文文档的解析结果与过去相同。`footnoteDocumentDefaults(locale, writingMode, placement?)`返回这些值。把注码写在句末的。之前（`先生[^1]。`）：它跟随前一个字符，而。从不出现在行首。见[日文排版 › 注释](/zh/docs/japanese-layout#注释)。
+
+栏底注释的排版方式：
+
+- **注释与引用同栏**。放置一行之前，版面会加上这一行首次引用的注释的高度（如果是该栏的第一条注释，还要加上分隔线）。一行的注释在它下面排不下时，这一行连同段落的其余部分移到下一栏，并遵守段首孤行和段末孤行规则。栏的文字区域缩小注释所占的高度，所以各栏齐底和章末收尾区域只计算正文。
+- **多条注释**在同一栏中按引用顺序堆叠在一条分隔线下。后面再次引用的注释保持原编号，不再重复排出。
+- **底部浮动体**。注释排好之后才占据栏底的图，放在注释上方；图之后排的注释放在图的上方。
+- **框**。在标注框（行内、浮动或固定）中引用的注释，放在框后正文继续的那一栏的栏底，通常就是同一栏。收尾整个文档的框，把它的注释留在正文结束那一栏的栏底。
+- **限制**。注释从不拆分：比一栏还高的注释会溢出。题注、表格单元格和标题中的标记不会被识别（按原样打印）。
+- **输出**。Canvas、HTML和PDF都会绘制注释、标记（上标数字）和分隔线。在PDF中，每个标记链接到对应的注释；带标签的PDF把每条注释设为`Note`元素，带有唯一的`/ID`，列在结构树的`/IDTree`中（PDF/UA-1）。注释是设置了`footnoteNote`的`VDTBlock`，位于`page.floats`中；分隔线位于`page.footnoteAreas`中。
+- **警告。**`undefinedFootnote`（标记没有定义：编号印在一条空注释上）和`unusedFootnote`（没有标记引用的定义：不会排出）。
+
+解析函数和精简函数与其他部分一致：
+
+```ts
+import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, footnoteDocumentDefaults } from 'postext';
+
+resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // 未设置的字段取日文竖排的默认值
+```
+
+
+## 行号
+
+`lineNumbers`属性在页边、紧挨着行的位置印出每第五行（或每第N行）的行号，校勘本、诗选、法律文本和教学版本都这样做。它数`:::verse`诗的诗行，或正文的所有行。默认关闭。每个行号都画在所属行的基线上，用自己的字号，从不移动任何一行：页面的排版与没有行号时完全相同。自postext 1.23起。
+
+```ts
+interface LineNumbersConfig {
+  enabled?: boolean;        // 默认关闭。
+  count?: 'verse' | 'all';  // 诗的诗行，或正文的所有行。
+  interval?: number;        // 印出N的倍数。
+  numberFirst?: boolean;    // 每次重新计数后的第一行也印出行号。
+  restart?: 'document' | 'chapter' | 'section' | 'page' | 'poem'; // 在哪里重新计数。
+  startAt?: number;         // 重新计数后第一行的行号。
+  position?: 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+  multiColumn?: 'each' | 'gutter' | 'outer-edges'; // 两栏或多栏的页面。
+  gap?: Dimension;          // 从正文到行号的距离；em为行号的字号。
+  align?: 'auto' | 'left' | 'right';
+  fontFamily?: string;      // 未设置时用正文字体家族。
+  fontSize?: Dimension;     // em为正文字号。
+  fontWeight?: number;      // 未设置时用正文字重。
+  italic?: boolean;
+  color?: ColorValue;       // 未设置时用正文颜色。
+  format?: string;          // decimal、lower-roman、arabic-indic、一…
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>印出行号。竖排文档（<code>layout.writingMode: 'vertical-rl'</code>）不标行号，在其中设为<code>true</code>会报告<code>lineNumbersUnsupported</code>。</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>'verse' | 'all'</code></td>
+      <td><code>'verse'</code></td>
+      <td><code>'verse'</code>数<code>:::verse</code>诗的诗行，每个诗行数一次：比版心宽的诗行转到下一行的部分不编号，诗节之间的空白也不计数。按古典阿拉伯排法排的诗每联数一行；错开排的联，其第二行不计数。<code>'all'</code>按阅读顺序数正文段落、列表项、引文和诗的每一行：逐页、逐栏、从上到下。</td>
+    </tr>
+    <tr>
+      <td><code>interval</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>印出行号为该数倍数的行（5、10、15…）。第一行为37的诗印出40、45…。诗的开始标记可以设定自己的间隔（<code>interval=N</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>numberFirst</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>每次重新计数后，第一个计入的行也印出行号。</td>
+    </tr>
+    <tr>
+      <td><code>restart</code></td>
+      <td><code>'document' | 'chapter' | 'section' | 'page' | 'poem'</code></td>
+      <td><code>count: 'verse'</code>时为<code>'poem'</code>，<code>count: 'all'</code>时为<code>'page'</code></td>
+      <td>在哪里重新计数：从不（<code>'document'</code>，贯穿一本书的各章），每个一级标题处（<code>'chapter'</code>），每个一级或二级标题处（<code>'section'</code>），每一页（<code>'page'</code>），或每首<code>:::verse</code>诗（<code>'poem'</code>）。诗的<code>lineStart=N</code>和<code>:::numbering</code>指令的<code>lines=N</code>可以在任何位置重新计数，不论哪种模式。</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>重新计数后第一行的行号。</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side'</code></td>
+      <td><code>'outer'</code></td>
+      <td>行号所在的一侧。<code>'outer'</code>是远离书脊的一侧：奇数页的右边、偶数页的左边，右侧装订的书则相反。<code>'inner'</code>是书脊一侧。<code>'left'</code>和<code>'right'</code>在每一页都一样。<code>'start'</code>和<code>'end'</code>跟随文档的方向：在从右到左的书中，<code>'start'</code>是右边。<code>'side'</code>把行号放进<code>'oneAndHalf'</code>版式（<code>layout.sideColumnRole: 'floats'</code>）的侧栏，贴齐侧栏靠正文的一边（不使用<code>gap</code>）；没有侧栏的页面上退回<code>'outer'</code>。</td>
+    </tr>
+    <tr>
+      <td><code>multiColumn</code></td>
+      <td><code>'each' | 'gutter' | 'outer-edges'</code></td>
+      <td><code>'outer-edges'</code></td>
+      <td>并排有两栏或更多正文栏的页面。<code>'outer-edges'</code>把第一栏的行号放在其左边，最后一栏的放在其右边；中间各栏按<code>'each'</code>处理。<code>'gutter'</code>把行号放在栏间：第一栏的在其右边，其余各栏的在其左边。<code>'each'</code>把每一栏的行号都放在<code>position</code>指定的一侧。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>从栏边到行号的距离；<code>em</code>为行号自身的字号。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code>让每个行号靠向正文：在左边页边中右对齐，在右边页边中左对齐。<code>'left'</code>和<code>'right'</code>在本页最宽行号的宽度内对齐。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>正文字体家族</td>
+      <td>行号的字体。与其他字体家族一样加载和嵌入。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>行号的字号；<code>em</code>为正文字号。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>正文字重</td>
+      <td>行号的字重。</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>用斜体排行号。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>正文颜色</td>
+      <td>行号的颜色。链接到调色板的颜色会跟随篇和章节的调色板。</td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>string</code></td>
+      <td>十进制</td>
+      <td>行号的写法，可用任何一种<a href="/zh/docs/configuration-page-layout#编号格式的写法">编号格式写法</a>（<code>'lower-roman'</code>、<code>'arabic-indic'</code>、<code>'一'</code>…）。十进制行号用文档的数字（<code>numerals</code>）书写。未知的名称按十进制编号，并给出<code>unknownNumberFormat</code>警告。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+lineNumbers: {
+  enabled: true,
+  count: 'verse',
+  interval: 5,
+  restart: 'document',          // 整本书连续计数
+  position: 'outer',
+  fontSize: { value: 0.75, unit: 'em' },
+  italic: true,
+}
+```
+
+哪些行计数，哪些不计：
+
+- **从不计数**：标题、题注、表格和图片、独立公式、版面设计文字（章首、页眉）、脚注和章末注、目录、索引和参考文献的条目，以及空白页。
+- **标注框和散文。** 标注框中的文字不计数；`count: 'verse'`时散文也不计数，除非排它所用的段落样式写了`lineNumbers: true`；设了`lineNumbers: false`的样式从不计数（见[段落样式](/zh/docs/configuration-styles#段落样式)）。
+- **单首诗。** 诗的开始标记可以写`numbered=false`（它的诗行不计数）、`lineStart=N`（它的第一行为N，并从这里重新计数）和`interval=N`。`:::numbering{lines=N}`让下一个计入的行编为N，不论它在哪里。见[文档格式 › `:::verse`](/zh/docs/document-format#verse)和[`:::numbering`](/zh/docs/document-format#numbering)。
+
+逐章排版的书中，`restart: 'document'`通过`continuation.lineNumber`把计数从一章带到下一章。`continuationAfter`根据文本数诗行；`count: 'all'`时计数取决于排版结果，所以宿主程序要传入上一章文档的`lastLineNumber`，沙盒就是这样做的。
+
+`position: 'side'`时，行号与侧栏中的框、题注和图共用侧栏。与其中之一重叠的行号照样画出，两者都不移动，排版会给出指向该编号行的内容警告`lineNumberOverlap`。
+
+**输出。** Canvas、PDF、HTML查看器和固定版式EPUB都会画出行号。在带标签的PDF中，行号是版面artifact，每个都带一个空的`/ActualText`，所以复制或提取出的文字从一行接到下一行，不含行号。HTML输出对辅助技术（`aria-hidden`）、选择和复制的文字都隐藏行号。流式EPUB的行由阅读系统排，只保留诗行的行号：在诗节起始一侧的页边放一个`pt-line-number` span（同样`aria-hidden`），紧挨着印刷版中带行号的每个诗行。在VDT中，行号是每页的一个设计槽位（`page.lineNumbers`，其中的文字块标记为`artifact`）和一张标记列表（`page.lineNumberMarks`：`number`、`label`、`columnIndex`、`blockId`、`lineIndex`）；文档记录`lastLineNumber`。
+
+**不支持**：竖排文字中的行号、印出某一行行号的交叉引用、按行号自动对应的注释，以及表格单元格、题注或代码清单各行的行号。
+
+在沙盒中，这些设置是版面设计面板中的**行号**一节。解析函数和精简函数与其他部分一致；字体、字重和颜色取自正文：
+
+```ts
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from 'postext';
+
+resolveLineNumbersConfig(config.lineNumbers, resolvedBodyText); // 未设置的字体、字重和颜色跟随正文
+```
+
+
+## 交叉引用
+
+`crossRefs`属性设定[交叉引用](/zh/docs/document-format#交叉引用与锚点)在编号或页码前后印出的文字，以及未设`style`的`:ref`采用的样式。每个模板用`{n}`表示编号的位置；没有`{n}`的模板，编号放在文字之后，中间用不换行空格（`"§"`印为*§ 3.2*）。未设定的模板随文档语言：中文为`第{n}章` / `第{n}节` / `第{n}页`，英文为*chapter / section / p.*，西班牙文为*capítulo / sección / pág.*，法文、德文、意大利文、葡萄牙文、加泰罗尼亚文和荷兰文亦各有默认文字。
+
+```ts
+interface CrossRefsConfig {
+  chapter?: string;  // Words around a level-1 heading's number: "chapter {n}".
+  section?: string;  // Around any other heading's number: "section {n}".
+  page?: string;     // Around a page number: "p. {n}".
+  defaultStyle?: 'default' | 'number' | 'title' | 'page'; // A :ref without style=.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>chapter</code></td>
+      <td><code>string</code></td>
+      <td>随语言</td>
+      <td>指向一级标题的引用：<code>"第&#123;n&#125;章"</code>。编号模板已含文字的标题（<code>第&#123;1:一&#125;章</code>、<code>Chapter &#123;1&#125;</code>）照原样印出。</td>
+    </tr>
+    <tr>
+      <td><code>section</code></td>
+      <td><code>string</code></td>
+      <td>随语言</td>
+      <td>指向二至六级标题的引用：<code>"第&#123;n&#125;节"</code>、<code>"§ &#123;n&#125;"</code>。</td>
+    </tr>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>string</code></td>
+      <td>随语言</td>
+      <td>页码引用（<code>style=page</code>）：<code>"第&#123;n&#125;页"</code>、<code>"p. &#123;n&#125;"</code>。</td>
+    </tr>
+    <tr>
+      <td><code>defaultStyle</code></td>
+      <td><code>'default' | 'number' | 'title' | 'page'</code></td>
+      <td><code>'default'</code></td>
+      <td>指向标题或锚点、未设<code>style=</code>的<code>:ref</code>印出的内容。<code>'default'</code>：有编号的标题印名称和编号，无编号的印标题，锚点印其文字。已设<code>style</code>的引用保持不变，指向图表的引用不受影响。</td>
+    </tr>
+  </tbody>
+</table>
+
+引用的颜色、粗细和斜体与所有引用相同（`bodyText.referenceColor`、`referenceBold`、`referenceItalic`）。
+
+## 引用
+
+`citations`属性选择引用样式，并决定引用和参考文献表的外观。标记语法见[引用与参考文献](/zh/docs/document-format#引用与参考文献)；样式由`postext-citeproc`包执行。
+
+```ts
+interface CitationsConfig {
+  style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
+  customStyle?: string;    // a whole CSL style (.csl XML), used with style: 'custom'
+  locale?: string;         // CSL locale; the document language when unset
+  link?: boolean;          // citations link to their entries
+  marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
+  collapseRanges?: boolean;
+  notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
+  bibliography?: {
+    title?: string;        // unset: the document language's word; '' or ' ': none
+    scope?: 'book' | 'chapter';
+    auto?: boolean;
+    fontSize?: Dimension;
+    lineHeight?: Dimension;
+    hangingIndent?: Dimension;
+    entrySpacing?: Dimension;
+    labelWidth?: Dimension;
+    labelAlign?: 'left' | 'right';
+    doi?: 'link' | 'text' | 'hide';
+    includeUncited?: boolean;
+    groupByLanguage?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '120px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>string</code></td>
+      <td><code>'apa'</code></td>
+      <td>内置样式的id（见<a href="/zh/docs/document-format#样式">样式</a>）或<code>'custom'</code>。样式决定引用和条目的内容：姓名、日期、顺序、标点，以及引用是否为注释。</td>
+    </tr>
+    <tr>
+      <td><code>customStyle</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>完整的CSL样式（<code>.csl</code>文件的XML），在<code>style</code>为<code>'custom'</code>时使用。Sandbox可从文件加载。</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>文档语言</td>
+      <td>样式用词的CSL语言环境（<code>zh-CN</code>、<code>zh-TW</code>、<code>ja-JP</code>、<code>en-US</code>等）。日文文档按<code>ja-JP</code>处理：叙述式引用用と连接两位作者，更多作者缩写为ほか。</td>
+    </tr>
+    <tr>
+      <td><code>link</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>引用链接到参考文献表中的条目（PDF链接、HTML锚点、Sandbox点击）。</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'</code></td>
+      <td><code>'style'</code></td>
+      <td>顺序编码样式的引用标记：按样式、<code>[1]</code>、<code>(1)</code>、上标，或<code>〔1〕</code>（竖排中直立）。位置写在编号之后。</td>
+    </tr>
+    <tr>
+      <td><code>collapseRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>连续编号合并为范围：自定标记写作<code>1–3</code>，IEEE自身的标记写作<code>[2]–[4]</code>。设为<code>false</code>则逐个列出。</td>
+    </tr>
+    <tr>
+      <td><code>notes</code></td>
+      <td><code>'footnote' | 'warichu'</code></td>
+      <td><code>'footnote'</code></td>
+      <td>注释体样式放置引用的方式：脚注（按<code>footnotes</code>设置）或行内双行夹注。</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>引用在全书连续处理，或每章单独处理（每个文档，以及引用之后的每个一级标题）：顺序编码制每章从 1 编号，两章都引用的文献在各章取各自的编号；注释样式在每章第一次引用时写出完整著录。与<code>bibliography.scope: 'chapter'</code>配合使用，章内列表随之采用本章的编号。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.title</code></td>
+      <td><code>string</code></td>
+      <td>随语言</td>
+      <td>列表上方的标题（粗体段落）。留空则不印。自定义的标题写在<code>:::bibliography</code>之上。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.scope</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>全书一份列表，或每章一份，只列该章引用的文献。一个文档含多章时，每个H1开始新的一章列表；开启<code>auto</code>时，没有放<code>:::bibliography</code>的章在章末得到自己的列表。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.auto</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>没有<code>:::bibliography</code>时，把列表放在正文之后（全书列表放在最后一章之后）。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>条目字号；em为正文字号。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>正文行距</td>
+      <td>条目行距。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>无编号条目续行的缩进。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>条目之间的间距。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td>最长编号</td>
+      <td>编号列表中编号栏的宽度：每条文献的正文首行与转行都从这里开始，<code>9.</code> 与 <code>10.</code> 共用同一栏。编号仍是条目文本的一部分。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelAlign</code></td>
+      <td><code>'left' | 'right'</code></td>
+      <td><code>'left'</code></td>
+      <td>编号在栏内的位置：靠栏的左边，或靠正文（<code>9.</code> 与 <code>10.</code> 末端对齐）。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.doi</code></td>
+      <td><code>'link' | 'text' | 'hide'</code></td>
+      <td><code>'link'</code></td>
+      <td>DOI和网址作为链接、作为文字或不显示。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.includeUncited</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>列出全部参考文献，无论是否被引用（相当于<code>nocite: "@*"</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.groupByLanguage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>中、日、韩文文献在前，其他在后。仅用于著者-出版年和著者-页码体系：顺序编码的列表保持编号顺序。</td>
+    </tr>
+  </tbody>
+</table>
+
+## 目录
+
+`toc`属性配置`:::toc`指令印出的内容（参见[文档格式](/zh/docs/document-format#toc)）。目录由文档的**大纲**汇编而成，大纲包含每个标题及其编号和页码标签，以及每个`:::part`，所以目录会跟着各章变化：给某章改名、把它移到另一篇、修改它的作者，条目都会随之改变。一个条目依次是：单独一栏的标题编号、标题、前导符、右边缘的页码标签，然后是可选的副标题行；篇则是由`parts.design`设计的一行。
+
+```ts
+const config: PostextConfig = {
+  toc: {
+    levels: [{ level: 1, fontWeight: 700, color: { hex: '#00507b', model: 'hex' }, numberWidth: { value: 7.4, unit: 'mm' } }],
+    unnumbered: { color: { hex: '#000000', model: 'hex' } },
+    pageNumber: { fontWeight: 400, width: { value: 8, unit: 'mm' } },
+    leader: { char: '.', gap: { value: 1, unit: 'mm' } },
+    subtitle: { enabled: true, attr: 'author', italic: true, fontSize: { value: 8.5, unit: 'pt' } },
+    parts: {
+      height: { value: 23, unit: 'pt' },
+      marginTop: { value: 11.5, unit: 'pt' },
+      design: { elements: [/* 一个色带框、'SECTION {number}'、'{titleText}'、'{pageNumber}' */] },
+    },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>TocLevelConfig[]</code></td>
+      <td>一级</td>
+      <td>列出的标题级别，每级带有条目的字体样式：<code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>（默认为正文行距，使目录落在网格上）、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>indent</code>（整个条目的缩进）、<code>numberWidth</code> / <code>numberGap</code>（编号栏的宽度和间隔，标题从编号栏之后开始；编号在栏内右对齐；某个编号比<code>numberWidth</code>宽时，如<code>الفصل الحادي عشر</code>或<code>第十二章</code>，该级的编号栏加宽到最宽的编号）、<code>numberFontFamily</code>、<code>numberFontSize</code>、<code>numberFontWeight</code>、<code>numberColor</code>、<code>marginTop</code>、<code>marginBottom</code>。未设置的字段继承正文。无论编号用什么字体和字号，它都落在标题第一行的基线上，Canvas、HTML和PDF中都是如此（postext 1.4及以前，编号像列表项目符号那样以x字高居中，所以展示字体或较大的字号会浮在标题上方）。自己编写的渲染器可以从条目块的<code>bulletBaselineY</code>取得这条基线；<code>bulletY</code>仍是编号em框的中点，与1.4相同，所以早于这个新字段的渲染器会把编号画在一直以来的位置。</td>
+    </tr>
+    <tr>
+      <td><code>unnumbered</code></td>
+      <td><code>TocEntryStyleConfig</code></td>
+      <td>—</td>
+      <td>针对样式为<code>numbered: false</code>的标题（如序言）的覆盖：它们不印编号，从该级别的<code>indent</code>处齐头开始。</td>
+    </tr>
+    <tr>
+      <td><code>pageNumber</code></td>
+      <td>object</td>
+      <td>一级条目的字体，正文字重</td>
+      <td>页码标签的<code>fontFamily</code>、<code>fontSize</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>，以及<code>width</code>（默认<code>2em</code>）：右边缘为它预留的栏宽，页码在栏内右对齐。</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>object</td>
+      <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
+      <td><code>char</code>在标题和页码之间的空当里重复排出，并且右对齐，使相邻条目的点对齐（<code>'. '</code>会把点拉开）；<code>gap</code>是标题和前导符之间至少保留的距离。前导符排入能放下的全部字符，按它所用字体把整串字符作为一个整体来测量，所以如果某种字体会把相邻句点的字偶距拉开，得到的是更少的点，而不是一直顶到页码的点。（postext 1.4及以前按单个点计数，在这类字体中前导符会从标题一直延伸进页码。）标题长到不给页码标签留位置时，会稍早一点换行。在带标签的PDF中，这些点是版式工件，不出现在提取的文字中。正文在其<a href="/zh/docs/configuration-text#制表位">制表位</a>处排出同样的前导符。</td>
+    </tr>
+    <tr>
+      <td><code>subtitle</code></td>
+      <td>object</td>
+      <td><code>{"{ enabled: false, attr: 'author' }"}</code></td>
+      <td>条目下的第二行，取自标题属性（<code>attr</code>），比如章的作者，有自己的<code>fontFamily</code>、<code>fontSize</code>、<code>fontWeight</code>、<code>italic</code>（默认<code>true</code>）、<code>color</code>和额外的<code>indent</code>。这一行使用条目的行距，从不与标题分开。</td>
+    </tr>
+    <tr>
+      <td><code>parts.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>篇隔页是否在目录中占一行。</td>
+    </tr>
+    <tr>
+      <td><code>parts.breakBefore</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>除第一篇外，每个篇行之前另起新页，使每一篇的各章单独列在一页上。</td>
+    </tr>
+    <tr>
+      <td><code>parts.design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>空</td>
+      <td>篇行的设计；它的容器就是这一行（栏宽 × <code>height</code>）。占位符有<code>{'{number}'}</code>、<code>{'{numberDecimal}'}</code>、<code>{'{numberRoman}'}</code>…、<code>{'{titleText}'}</code>和<code>{'{pageNumber}'}</code>（篇隔页的页码标签；使用<code>parts.page: false</code>时不开篇隔页，取篇的内容开始的那一页，即书眉切换到这一篇的那一页；在逐章排版的书中，结束一章的篇容器指向下一章的第一张内容页）。链接到调色板的颜色采用篇自己的<code>palette</code>，所以每个部分的行都用各自的颜色。为空时，以一级条目的字体样式排出<code>{'{number} {titleText}'}</code>（中间是一级标题的<code>numberSeparator</code>）和页码。</td>
+    </tr>
+    <tr>
+      <td><code>parts.height</code>、<code>marginTop</code>、<code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code>、<code>0</code>、<code>0</code></td>
+      <td>行高及其上下的空白。<code>em</code>是正文字号，所以默认行高是正文字号的两倍，而不是两行正文：正文为9.5/13.5 pt时它是19 pt。要让一行占两行正文，就用<code>pt</code>给出高度（这里是<code>27pt</code>）。</td>
+    </tr>
+  </tbody>
+</table>
+
+页码标签就是文档实际印出的那些。`buildDocument()`会用上一遍的标签重新排版带`:::toc`的文档，直到标签稳定（最多额外三遍）；逐章排版整本书的宿主程序则改为以`PostextContent.outline`提供全书大纲，大纲由`contentOutline()`（只从文字得出的标题和篇）和`outlineFromDoc()`（同样的条目，带上某次排版的页码标签）汇编而成，每当该大纲的`outlineKey()`变化时就重新排版目录所在的章。每个标题条目都带有目录印出的`number`；编号标题还带有`counter`，即该级别在任何`startAt`之后的累计数，与模板印出什么无关，宿主程序在自己的列表中标在章旁的就是它。
+
+## 索引
+
+`index`属性配置`:::index`指令印出的内容（参见[文档格式](/zh/docs/document-format#索引)）：正文中用`:index[…]`和`:index{term="…"}`标记的词条，经过排序，按首字母分组（中文按拼音首字母或笔画数分组，日文按五十音行分组，参见`groupBy`），每条附上它所在的页码。一个条目由词条、分隔符和页码组成；其下的子条目逐级缩进一步，折行按`turnoverIndent`悬挂缩进，因此不会与子条目对齐。
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    // 索引排成两栏，放在它自己的标题下。
+    { id: 'index', numbered: false, layout: { layoutType: 'double', gutterWidth: { value: 6, unit: 'mm' } } },
+  ],
+  index: {
+    fontSize: { value: 8.5, unit: 'pt' },
+    lineHeight: { value: 11, unit: 'pt' },
+    rangeFormat: 'chicago',
+    groups: { fontFamily: 'Source Sans 3', fontWeight: 700, color: { hex: '#8a1c1c', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>color</code></td>
+      <td>—</td>
+      <td>正文的设置</td>
+      <td>条目的字体样式。索引的每一行（包括字母标题）都按<code>lineHeight</code>排；索引保持自己的节奏，不对齐基线网格。</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>每一级子条目的缩进。</td>
+    </tr>
+    <tr>
+      <td><code>turnoverIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>条目折行在其所在级别之外的额外缩进。</td>
+    </tr>
+    <tr>
+      <td><code>entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>每个主条目上方的空白。</td>
+    </tr>
+    <tr>
+      <td><code>separator</code>、<code>locatorSeparator</code>、<code>rangeSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>', '</code>、<code>', '</code>、<code>'–'</code>；阿拉伯文字中前两项为<code>'، '</code></td>
+      <td>分别印在词条与第一个页码之间、两个页码之间，以及页码范围两端之间的内容。</td>
+    </tr>
+    <tr>
+      <td><code>mergeRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>把同一编号格式的连续页码合并成范围：<code>12, 13, 14</code>印作<code>12–14</code>。主要页码从不合并。</td>
+    </tr>
+    <tr>
+      <td><code>rangeFormat</code></td>
+      <td><code>'full' | 'chicago'</code></td>
+      <td><code>'full'</code></td>
+      <td>页码范围中第二个数字的写法：写全（<code>234–237</code>），或按<em>The Chicago Manual of Style</em>（9.64）的要求省去与第一个数字相同的位：<code>71–72</code>、<code>100–104</code>、<code>101–8</code>、<code>321–28</code>、<code>1496–500</code>。罗马数字标签总是写全。</td>
+    </tr>
+    <tr>
+      <td><code>main</code></td>
+      <td><code>{'{ bold?, italic? }'}</code></td>
+      <td>粗体</td>
+      <td>主要页码（标记上带<code>main</code>）的排法。</td>
+    </tr>
+    <tr>
+      <td><code>see</code></td>
+      <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
+      <td>按语言，斜体（阿拉伯文字为正体）</td>
+      <td>参见项前面的引导词。未设置时随文档语言而定：<em>See</em> / <em>See also</em>、<em>Véase</em> / <em>Véase también</em>、<em>Voir</em> / <em>Voir aussi</em>、见 / 另见（繁体中文为見 / 另見）等。中文索引把参见项放在句号之后，不加空格：<code>贾琏 12。见贾政</code>。</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>文档的语言</td>
+      <td>按哪种语言的字母顺序给条目排序（BCP 47标签，由<code>Intl.Collator</code>读取）。在西班牙语中，<em>ñ</em>排在<em>n</em>之后，并单独成组；重音符号从不影响顺序。</td>
+    </tr>
+    <tr>
+      <td><code>groupBy</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>组标题是什么。<code>'letter'</code>：排序键的首字母。<code>'pinyin'</code>：以汉字开头的条目归入其拼音读音的拉丁首字母之下（贾宝玉归入<code>J</code>），拉丁字母的排序键归入其字母，排在该字母的中文条目之后（排序器把拉丁字母排在汉字之后）：<code>sort="jia mu"</code>排在<code>J</code>组末尾。<code>'stroke'</code>：按第一个字的笔画数分组，<code>一畫</code>、<code>二畫</code>…（简体中文为<code>一画</code>…）。<code>'gojuon'</code>：假名条目归入其五十音行，あ行、か行 … わ行；<code>'kana'</code>则归入其首个假名（片假名与平假名共用组标题）；两者都按日文索引的JIS X 4061顺序排序：依据读音（标记的<code>yomi</code>，否则用其注音的假名读音，否则用<code>sort</code>，否则用文字本身），片假名按平假名排，小假名按大假名排，ー按它前面的元音排，清音在浊音前，浊音在半浊音前；符号在最前，然后是按数值排序的数字，然后是按字母分组的拉丁词，最后是假名；仍以汉字开头的条目报为<code>indexReadingMissing</code>，排在假名之后，不归入任何组。<code>'none'</code>：不设组标题；符号、数字和词语之间只用<code>groups.marginTop</code>隔开。<code>'auto'</code>让日文索引（<code>ja</code>、<code>ja-*</code>）按五十音行分组，简体中文索引（<code>zh</code>、<code>zh-Hans</code>、<code>zh-CN</code>）按拼音分组，繁体中文索引（<code>zh-Hant</code>、<code>zh-TW</code>、<code>zh-HK</code>）按笔画分组，其他语言按字母分组。条目按组标题所依据的排序规则排序：按拼音分组的<code>zh-Hant</code>索引按拼音排序。读音和笔画数来自排序器（CLDR）；遇到它读错的字（把重阳的重读作<em>zhòng</em>，把行业的行读作<em>xíng</em>），就给标记一个<code>sort</code>键，用只有你想要的读音的字来写，它会排在正确的位置：重阳用<code>sort="崇阳"</code>，行业用<code>sort="航业"</code>。没有中文排序数据的浏览器排出的拼音或笔画索引不带组标题。</td>
+    </tr>
+    <tr>
+      <td><code>ignoreArticle</code></td>
+      <td><code>boolean</code></td>
+      <td>阿拉伯文为<code>true</code></td>
+      <td>阿拉伯文词条排序和分组时视同没有开头的冠词<code>ال</code>（<code>ٱل</code>）：البصرة归入ب，排在بدر和بغداد之间，印出时保持原样。<code>الله</code>保留冠词；自带<code>sort</code>键的词条按该键原样排序。无论此项如何，阿拉伯文索引都忽略元音符号和延长符（tatweel），把أ إ آ ٱ归入ا，并把ؤ按و、ئ和ى按ي、ة按ه排序。</td>
+    </tr>
+    <tr>
+      <td><code>groups.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>在每组条目上方印一个组标题（<code>A</code>、<code>B</code>…或笔画数，数字为<code>0–9</code>，其余为<code>Symbols</code>；中文为<code>数字</code> / <code>數字</code>和<code>符号</code> / <code>符號</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>groups.fontFamily</code>、<code>fontSize</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code></td>
+      <td>—</td>
+      <td>条目的设置，字重<code>700</code></td>
+      <td>字母标题的字体。它按条目的行距排。</td>
+    </tr>
+    <tr>
+      <td><code>groups.marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td>索引的一行</td>
+      <td>每组上方的空白，不论有没有组标题；第一组上方没有（它与标题的距离由标题决定），栏顶也没有。</td>
+    </tr>
+    <tr>
+      <td><code>groups.symbolsLabel</code>、<code>numbersLabel</code></td>
+      <td><code>string</code></td>
+      <td>按语言；<code>'0–9'</code>，中文为<code>'数字'</code> / <code>'數字'</code></td>
+      <td>以符号开头和以数字开头的条目的组标题。</td>
+    </tr>
+  </tbody>
+</table>
+
+页码与目录一样来自全书大纲：`computeOutline()`和`contentOutline()`把一段文字中的索引标记列为`'indexMark'`类型的条目（带有`indexMark.path`、`sort`、`see`、`seeAlso`、`main`、`range`和`index`），`outlineFromDoc()`给每个条目加上它落在的页，这些页由排版过程记录在`doc.indexMarks`中（每个标记一个`{ sourceStart, pageIndex }`）。`buildDocument()`会重新排版印出自身索引的文档，直到页码稳定；逐章排版整本书的宿主程序把全书大纲作为`PostextContent.outline`交给包含`:::index`的章。`tocOutline()`和`indexOutline()`把大纲拆成目录和索引各自读取的部分，宿主程序可以据此给每一章设定与其印出内容相应的键：沙盒只在某个标记移动时重新排版索引章，只在某个标题移动时重新排版目录章。`contentOutline()`还会说明一段文字是否印出索引（`hasIndex`）。

@@ -1,0 +1,1083 @@
+{/* docs/configuration-resources-ca.mdx */}
+
+export const metadata = {
+  title: 'Configuració: recursos i taules',
+  sidebarTitle: 'Recursos i taules',
+  description: 'Els tipus de recurs i la seva numeració, els estils de taules i de peus de recurs, els diagrames a una tinta i els vídeos impresos',
+  lang: 'ca',
+  lastUpdated: '2026-10-10',
+  readingTime: '5 min',
+  order: 8,
+  parent: 'configuration',
+  plainSummary: "Aquesta pàgina reuneix els paràmetres de figures, taules, diagrames i vídeos. Postext els anomena recursos i numera cada tipus per separat. Decideixes l'aspecte de les taules: els filets, els fons, la tipografia i com es parteixen entre pàgines. Decideixes com s'escriu el peu d'una figura o d'una taula. També pots imprimir els diagrames a una sola tinta i triar com apareix un vídeo sobre el paper.",
+};
+
+# Configuració: recursos i taules
+
+
+## Tipus de recurs
+
+Un **tipus de recurs** és una categoria definible per l'usuari — *Figura*, *Taula*, *Diagrama*, *Llistat*… — que determina com es numeren, com es retola el peu i com es referencien els recursos d'aquella classe. La llista viu a `config.resourceTypes`; el Sandbox l'edita a **Disseny → Figures i taules → Numeració i col·locació**.
+
+Quan `config.resourceTypes` no està definit, Postext inclou tres valors per defecte integrats: **Figura**, **Taula** i **Vídeo**, cadascun numerat per separat com `{h1}.{n}` (es reinicien a cada encapçalament de nivell 1) amb comptadors decimals. Una llista sense cap tipus `video`, la d'un llibre desat abans que existissin els vídeos, continua numerant els recursos de vídeo de tipus `video`: s'hi afegeix per a ells el tipus Vídeo integrat (`effectiveResourceTypes(config, resources)`), i `defaultVideoResourceType(locale)` el retorna tot sol. S'anomenen en la llengua del document: `config.locale` o, si no, `bodyText.hyphenation.locale` o, si no, l'anglès (vegeu [Llengua del document](/ca/docs/configuration-text#llengua-del-document)).
+
+Els valors per defecte integrats s'adapten a la llengua. La funció exportada `defaultResourceTypes(locale = 'en')` localitza els noms de tipus, les etiquetes curtes i els prefixos de peu a la llengua del document — l'anglès produeix *Figure*/*Fig.* i *Table*/*Tab.*; el castellà produeix *Figura*/*Fig.* i *Tabla*/*Tabla*; el francès, l'alemany, l'italià, el portuguès, el català i el neerlandès tenen els seus (la taula de [Llengua del document](/ca/docs/configuration-text#llengua-del-document) els recull). Les etiquetes regionals com `es-ES` es resolen per llengua, i qualsevol llengua sense traducció passa a l'anglès. El comportament de numeració (`numberingTemplate: '{h1}.{n}'`, `resetOn: 'h1'`, comptadors decimals) és independent de la llengua. Cada crida retorna objectes nous, de manera que pots mutar el resultat lliurement:
+
+```ts
+import { defaultResourceTypes } from 'postext';
+
+const types = defaultResourceTypes('es');
+// => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
+//       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … },
+//     { id: 'video',  name: 'Vídeo',  shortLabel: 'Vídeo', captionPrefix: 'Vídeo', … }]
+```
+
+```ts
+type ResourceCounterFormat =
+  | 'decimal'
+  | 'roman-lower'
+  | 'roman-upper'
+  | 'alpha-lower'
+  | 'alpha-upper';
+
+type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
+interface ResourcePlacement {
+  position?: 'auto' | 'top' | 'bottom' | 'here'; // quin espai lliure pot ocupar el flotant; 'here' = incrustat en línia a la directiva ::resource
+  span?: 'column' | 'page' | 'side';             // una columna, tota l'amplada de contingut o la columna lateral només per a flotants
+  rotate?: 'ccw' | 'cw';                         // un quart de volta: una taula apaïsada en una pàgina pròpia
+  width?: number;                                // fracció (0 < width < 1) de l'amplada de la columna o de la pàgina; per defecte, tota l'amplada
+  align?: 'left' | 'center' | 'right';           // on se situa un flotant més estret que la seva columna; per defecte 'left'
+  captionSide?: boolean;                         // peu al costat de la figura, a la columna lateral d'una disposició oneAndHalf (només flotants de columna)
+  columns?: number;                              // un flotant 'column' sobre tantes columnes contigües (des de 1.18)
+  wrap?: 'none' | 'left' | 'right' | 'start' | 'end'; // text al costat del recurs, en aquest costat de la columna (des de 1.24)
+  wrapGap?: Dimension;                           // espai entre el recurs ajustat i el text (des de 1.24)
+}
+
+interface ResourceType {
+  id: string;                          // id estable, referenciat per Resource.typeId
+  name: string;                        // nom singular, p. ex. "Figura"
+  namePlural?: string;                 // plural opcional, p. ex. "Figures"
+  shortLabel: string;                  // etiqueta curta per a refs en línia, p. ex. "Fig."
+  numberingTemplate: string;           // "{h1}.{n}" o "{n}"
+  resetOn: ResourceCounterReset;       // quan es reinicia el comptador {n}
+  counterFormat: ResourceCounterFormat;// com es formata {n}
+  captionPrefix: string;               // prefix del peu, p. ex. "Figura"
+  defaultPlacement?: ResourcePlacement;// col·locació de reserva per als recursos d'aquest tipus
+}
+```
+
+`ResourcePlacement` té la mateixa forma que el `placement` que un recurs defineix pel seu compte. `position` tria la classe d'espai lliure que pot ocupar el flotant — `auto` (el valor per defecte) pren el primer després de la primera referència, `top` / `bottom` el limiten a aquella classe de banda, `here` incrusta el recurs en línia. `span` fixa l'extensió del flotant: una columna, tota l'amplada de contingut o la columna lateral només per a flotants d'una disposició de columna i mitja. `rotate` gira el recurs un quart de volta i el converteix en un flotant d'amplada de pàgina en una pàgina pròpia. `width` estreny el flotant a una fracció de la seva columna (o de la pàgina, en un flotant d'amplada de pàgina) — una taula petita en una columna ampla, per exemple. `align` indica on se situa aquest flotant més estret — a l'esquerra per defecte, centrat o a la dreta — i on se situa dins el seu espai una imatge més estreta que ell: un mapa de bits més petit que la columna, o una imatge que `layout.fitFiguresToPage` ha reduït. El peu i la nota conserven la mesura de l'espai. (Fins a postext 1.4 aquesta imatge es componia sempre alineada a l'esquerra). `captionSide` posa el peu al costat de la figura a la columna lateral només per a flotants d'una disposició de columna i mitja (`layout.sideColumnRole: 'floats'`), a l'alçada de la vora superior de la figura (de la inferior en un flotant de peu); només s'aplica als flotants de columna, i una pàgina sense aquella columna manté el peu sota la figura. Quan ni el recurs ni el seu tipus defineixen una col·locació, el valor integrat és `auto` / `column`. `shrink` (`'never'`, `'page'`, `'slot'`) i `minScale` (0.7 si no s'indica) redueixen una imatge flotant a l'espai del seu buit en lloc de portar-la més endavant, i `captionMeasure: 'body'` compon el peu i la nota d'una imatge més estreta que el seu buit a l'amplada de la imatge (vegeu [Format del document › Col·locació](/ca/docs/document-format#collocació)); `layout.floatShrink` dona el valor del document per als dos primers. `wrap` col·loca una inserció en línia o un flotant d'una columna a un costat de la columna amb el text compost al costat, a `wrapGap` de distància; `layout.wrap` desa els valors per defecte (vegeu [Format del document › Ajust del text](/ca/docs/document-format#ajust-del-text)). `citingPage` deixa que un flotant `top` o `auto` encapçali la pàgina o la columna on cau la línia que el cita en lloc de prendre el primer espai lliure després d'ella; `layout.floatsAtCitingPage` dona el valor per defecte del document i `layout.maxTopFraction` la fracció de la columna que pot ocupar (vegeu [Format del document › Col·locació](/ca/docs/document-format#collocació)).
+
+`columns` (des de postext 1.18) col·loca un flotant `span: 'column'` sobre aquest nombre de columnes contigües en una pàgina de diverses: una foto sobre dues de les cinc columnes d'un diari. La seva mesura és la d'aquestes columnes i els espais que les separen. Ocupa el cap d'una sèrie de columnes buides que comencen a la mateixa altura, o el peu de la columna que el cita i de les columnes buides que la segueixen; tantes columnes com té la pàgina, o més, el converteixen en un flotant a tota l'amplada. No s'aplica als `span` `'page'` i `'side'`, a un recurs girat (`rotate`) ni a una inserció en línia (`here`), i `captionSide` només val per a un flotant d'una columna.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '180px' }}>Tipus</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>Identificador estable referenciat pel <code>typeId</code> de cada recurs. Es fixa en crear el tipus; esborrar un tipus al qual encara apunten recursos genera un avís de <strong>tipus penjant</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td>Nom singular. El fa servir la referència en línia amb <code>style="full"</code> (p. ex. <code>Figura 1.7</code>).</td>
+    </tr>
+    <tr>
+      <td><code>namePlural</code></td>
+      <td><code>string</code> (opcional)</td>
+      <td>Nom plural, per a etiquetes de la interfície i llistes de recursos.</td>
+    </tr>
+    <tr>
+      <td><code>shortLabel</code></td>
+      <td><code>string</code></td>
+      <td>Abreviatura compacta que fa servir l'estil de referència en línia per defecte (p. ex. <code>Fig. 1.7</code>).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td>Plantilla del número calculat. Vegeu <strong>Tokens de plantilla</strong> més avall. Les formes habituals són <code>{'{h1}.{n}'}</code> (àmbit de capítol, p. ex. <code>2.3</code>) i <code>{'{n}'}</code> (un únic recompte continu).</td>
+    </tr>
+    <tr>
+      <td><code>resetOn</code></td>
+      <td><code>ResourceCounterReset</code></td>
+      <td><code>'never'</code> dona un recompte continu per a tot el document; <code>'h1'</code>..<code>'h6'</code> reinicien el comptador <code>{'{n}'}</code> cada vegada que es troba un encapçalament d'aquell nivell (o de qualsevol avantpassat). Ajusta'l perquè coincideixi amb el nivell d'encapçalament que apareix a la plantilla — p. ex. <code>{'{h1}.{n}'}</code> amb <code>resetOn: 'h1'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counterFormat</code></td>
+      <td><code>ResourceCounterFormat</code></td>
+      <td>Com es renderitza el comptador <code>{'{n}'}</code>: decimal (<code>1, 2, 3</code>), romà minúscul/majúscul (<code>i, ii</code> / <code>I, II</code>) o alfabètic minúscul/majúscul (<code>a, b</code> / <code>A, B</code>). També s'accepten les grafies de pàgines i llistes (<code>'lower-roman'</code>, <code>'arabic'</code>…; vegeu <a href="/ca/docs/configuration-page-layout#grafies-dels-formats-de-numeració">Grafies dels formats de numeració</a>); un valor desconegut compta en decimal i es notifica. Els tokens d'encapçalament (<code>{'{h1}'}</code>…) es renderitzen sempre com a decimals.</td>
+    </tr>
+    <tr>
+      <td><code>captionPrefix</code></td>
+      <td><code>string</code></td>
+      <td>Text que s'anteposa al peu de figura/taula. El número calculat segueix el prefix — un peu es renderitza com <code>{'{captionPrefix}'} {'{número}'}. {'{text del peu}'}</code>, p. ex. <strong>Figura 1.7. El plànol original.</strong> Un tipus amb <code>numberingTemplate</code> buit no porta número, i el seu peu es llegeix <code>{'{captionPrefix}'}. {'{text del peu}'}</code>. Els espais al final del prefix es treuen, i un prefix que ja acaba en <code>.</code>, <code>:</code>, <code>!</code>, <code>?</code> o <code>…</code> (o en la seva forma d'amplada completa) no porta un segon punt: <strong>Làm. Línies a 0°</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>defaultPlacement</code></td>
+      <td><code>ResourcePlacement</code> (opcional)</td>
+      <td>Col·locació que fan servir els recursos d'aquest tipus que no defineixen el seu propi <code>placement</code>: <code>position</code>, <code>span</code>, <code>rotate</code>, <code>width</code>, <code>align</code>, <code>captionSide</code> i <code>columns</code>, cadascun resolt per separat. Quan ni el recurs ni el tipus defineixen un camp, s'aplica el valor integrat: <code>auto</code> / <code>column</code>, sense girar, tota l'amplada, alineat a l'esquerra, peu sota la figura. Vegeu <a href="#numeració-i-referències">Numeració i referències</a> més avall per a la cadena de resolució i <a href="/ca/docs/document-format#recursos">Format del document › Recursos</a> per al que fa cada valor, inclosos els recursos girats.</td>
+    </tr>
+    <tr>
+      <td><code>captionStyle</code></td>
+      <td><code>CaptionStyleConfig</code> (opcional)</td>
+      <td>Sobreescriptura parcial de l'<a href="#estil-dels-peus-de-recurs">estil de peus</a> per als recursos d'aquest tipus. Només les claus que indiquis substitueixen el <code>captionStyle</code> global; la resta s'hereta (un <code>color</code> sobreescrit arrossega també el color de l'etiqueta i de la nota llevat que es fixin explícitament). Ús típic: taules amb el peu <em>a sobre</em> damunt una barra de color mentre les figures conserven el peu a sota. Les referències a la paleta es resolen com qualsevol altre color.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Tokens de plantilla
+
+`numberingTemplate` es renderitza amb el mateix motor que la numeració d'encapçalaments (vegeu [Encapçalaments](/ca/docs/configuration-text#encapçalaments)). Reconeix dues classes de token:
+
+- `{n}` — el comptador per tipus, formatat segons `counterFormat`. És el valor que s'incrementa per recurs i es reinicia segons `resetOn`.
+- `{h1}` … `{h6}` — els números d'encapçalament vigents al punt de la primera referència, renderitzats sempre com a decimals. `{h1}` és el número de l'encapçalament de nivell 1 actual, `{h2}` el de nivell 2, i així successivament.
+
+Qualsevol altre text és literal. Una barra inversa escapa un `{`, `}` o `\` literal. Quan un token d'encapçalament no té valor en el seu àmbit (p. ex. `{h1}` abans de qualsevol encapçalament de nivell 1), col·lapsa juntament amb el separador adjacent — així `{h1}.{n}` es redueix sense problemes al comptador sol.
+
+Una plantilla buida (`''`) no imprimeix número, encara que el tipus continuï comptant els seus recursos: el peu es llegeix *Detall. Línies a 0°* i un `:ref` imprimeix només l'etiqueta (*Detall*). Fins a postext 1.4 aquest peu es llegia *Detall .Línies a 0°* i la referència acabava en un espai de no separació.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Plantilla</th>
+      <th style={{ width: '180px' }}>Amb <code>h1 = 2</code>, comptador = 3</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>{'{n}'}</code></td>
+      <td><code>3</code></td>
+      <td>Un únic recompte continu. Combina'l amb <code>resetOn: 'never'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>{'{h1}.{n}'}</code></td>
+      <td><code>2.3</code></td>
+      <td>Àmbit de capítol. Combina'l amb <code>resetOn: 'h1'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>{'{h1}.{h2}.{n}'}</code></td>
+      <td><code>2.0.3</code></td>
+      <td>Àmbit de secció. Combina'l amb <code>resetOn: 'h2'</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Numeració i referències
+
+El número que produeix un tipus de recurs és el que imprimeix `:ref` i el que segueix el prefix del peu. `:ref{id}` és la forma principal: la primera referència en ordre de lectura **incorpora** el recurs, que flota al primer espai lliure després d'aquella referència — el final de la columna de la referència, el principi o el final de la columna buida següent, o una banda de la pàgina següent (segons la seva col·locació resolta — `position: 'auto' | 'top' | 'bottom' | 'here'` i `span: 'column' | 'page' | 'side'`, més `rotate`, `width`, `align` i `captionSide`, resolta per recurs, després pel `defaultPlacement` del seu tipus, i finalment pel valor integrat `auto` / `column`; `'top'` / `'bottom'` limiten la cerca a espais d'aquell tipus). La inserció en bloc `::resource{id}` és opcional i només cal per a `placement.position: 'here'` — una inserció en línia, sense flotar, en un punt exacte del flux. La gramàtica completa del costat del document — totes dues formes més les opcions `style` i `text` de `:ref` — es documenta a [Format del document › Recursos](/ca/docs/document-format#recursos), inclòs com l'ordre de primera referència determina el recompte.
+
+Això reflecteix la numeració d'encapçalaments: igual que un nivell d'encapçalament porta un `numberingTemplate`, un tipus de recurs també en porta — però el comptador del recurs (`{n}`) avança per primera referència en lloc de per encapçalament, i `resetOn` el lliga de nou a la jerarquia d'encapçalaments.
+
+### Què es numera
+
+Un recurs es numera quan el text el referencia — amb `:ref` o amb una inserció `::resource` —, en l'ordre d'aquestes primeres referències i sigui quina sigui la seva col·locació: flotant, en línia (`here`), a la columna lateral o girat. Un recurs que només dibuixa un disseny — un element `image` d'una obertura de capítol, d'una capçalera o d'una pàgina de part — o que res no referencia no porta número ni fa avançar el comptador del seu tipus. Així, en un assaig fotogràfic les làmines a sang del qual són imatges de les obertures i l'única làmina menor del qual és un flotant citat, aquest flotant és la làmina **I**, per moltes làmines que hagin mostrat abans les obertures; numera les làmines de les obertures en el seu disseny (amb un atribut com `{attr.plate}`) i deixa el comptador per a les làmines que cita el text.
+
+En un llibre que es maqueta capítol a capítol (el Sandbox, `buildBundle`, o `buildDocument` amb els comptadors que lliura `continuationAfter()`), compta la primera referència de tot el llibre: un recurs conserva el número que va rebre al capítol que el cita per primera vegada, i només aquell capítol el col·loca. El `:ref` d'un capítol posterior imprimeix aquell número i no col·loca res, i una inserció `::resource` d'un recurs flotant hi és una referència més (una inserció `here` en línia es continua component on està escrita). Aquesta referència enllaça amb la figura quan la figura és a la mateixa sortida: un PDF del llibre sencer l'enllaça amb la pàgina del capítol anterior. Un capítol que es renderitza sol, en HTML o en PDF, la compon com a text sense enllaç, en el color dels enllaços, perquè la seva figura no és en aquell document. Un amfitrió que uneix en una sola pàgina l'HTML dels capítols passa a `renderToHtml` els recursos que ancoren els capítols, com a `refTargets`, i aquesta referència torna a enllaçar amb la figura del capítol anterior:
+
+```ts
+import { anchoredResourceIds, buildBundle, renderToHtml } from 'postext';
+
+const docs = buildBundle(bundle);
+const refTargets = new Set(docs.flatMap((d) => [...anchoredResourceIds(d)]));
+const html = docs.map((d) => renderToHtml(d, { refTargets })).join('');
+```
+
+**Canvia a postext 1.5:** fins a la 1.4, cada capítol que citava una figura la tornava a col·locar com a flotant, i l'HTML de tot `:ref` era un enllaç, tant si la seva figura era a la pàgina com si no.
+
+`{h1}` és el recompte dels encapçalaments de nivell 1: tot H1 el fa avançar llevat que el seu estil d'encapçalament fixi `numbered: false` — un `numberingTemplate` buit amaga el número de l'encapçalament, no atura el recompte. Per això un article l'únic H1 del qual és el seu títol numera les figures `1.1`, `1.2`… amb els tipus integrats `{h1}.{n}`. Hi ha dues maneres d'imprimir Figura 1, 2…:
+
+- un tipus numerat `{n}` amb `resetOn: 'never'` (amb `resetOn: 'h1'` el recompte tornaria a començar a cada H1);
+- un [estil d'encapçalament](/ca/docs/configuration-styles#estils-dencapçalament) amb `numbered: false` al títol, i a qualsevol altre H1 que no hagi de comptar: un encapçalament així no fa avançar `{h1}`, sinó que el deixa com estava — buit abans del primer H1 que compta, on `{h1}.{n}` es redueix al comptador sol — i mai no dispara `resetOn: 'h1'`, de manera que el recompte continua a través seu. Després de `# Introducción` i la seva figura 1.1, la primera figura sota un `# Apéndice` sense número és la 1.2, no la 2.1.
+
+```ts
+// Figura 1, 2, 3… en un document d'un sol article
+resourceTypes: defaultResourceTypes('es').map((t) => ({ ...t, numberingTemplate: '{n}', resetOn: 'never' })),
+```
+
+
+## Estil de taules
+
+La propietat `tableStyle` controla la tipografia i la decoració de les taules-recurs —de totes, llevat de les que trien un [estil de taula amb nom](#estils-de-taula-amb-nom)—. Les cel·les de cos i de capçalera s'estilitzen de manera independent. La família tipogràfica, la mida i els colors hereten del text de cos resolt quan no s'indiquen, de manera que un document sense `tableStyle` renderitza les taules amb la tipografia del cos.
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    headerBold: true,
+    headerBackground: { hex: '#f0f0f0', model: 'hex' },
+    borders: true,
+    borderWidth: { value: 0.75, unit: 'pt' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Propietat</th>
+      <th style={{ width: '140px' }}>Tipus</th>
+      <th style={{ width: '160px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bodyFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>font del cos</td>
+      <td>Família tipogràfica de les cel·les de cos.</td>
+    </tr>
+    <tr>
+      <td><code>bodyFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>mida del cos</td>
+      <td>Mida de font de les cel·les de cos.</td>
+    </tr>
+    <tr>
+      <td><code>bodyColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cos</td>
+      <td>Color del text de les cel·les de cos.</td>
+    </tr>
+    <tr>
+      <td><code>headerFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>font del cos</td>
+      <td>Família tipogràfica de les cel·les de capçalera.</td>
+    </tr>
+    <tr>
+      <td><code>headerFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>mida del cos</td>
+      <td>Mida de font de les cel·les de capçalera.</td>
+    </tr>
+    <tr>
+      <td><code>headerColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cos</td>
+      <td>Color del text de les cel·les de capçalera.</td>
+    </tr>
+    <tr>
+      <td><code>headerBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Renderitzar les cel·les de capçalera en negreta.</td>
+    </tr>
+    <tr>
+      <td><code>headerItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderitzar les cel·les de capçalera en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>headerLetterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0pt</code></td>
+      <td>Espaiat després de cada caràcter d'una cel·la de capçalera, espais inclosos, com el <code>letter-spacing</code> de CSS. Un valor positiu obre les lletres (una capçalera en majúscules sol demanar entre <code>0.05em</code> i <code>0.1em</code>) i un de negatiu les estreny. Un <code>em</code> és el cos de la capçalera. Les línies de capçalera es mesuren amb ell, de manera que tallen, es centren i s'alineen amb l'espaiat, i canvas, HTML i PDF el pinten igual. S'aplica a totes les cel·les de capçalera: les files de capçalera i qualsevol cel·la marcada amb <code>isHeader</code>.</td>
+    </tr>
+    <tr>
+      <td><code>headerTextTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Compon les cel·les de capçalera en majúscules. El text conserva la seva longitud, de manera que el Sandbox continua associant cada lletra a la font: una lletra la majúscula de la qual és més llarga (<code>ß</code>) es queda com està. Les referències a recursos conserven la seva etiqueta.</td>
+    </tr>
+    <tr>
+      <td><code>headerBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pintar un emplenament darrere la fila de capçalera.</td>
+    </tr>
+    <tr>
+      <td><code>headerBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#f0f0f0</code></td>
+      <td>Color d'emplenament de la fila de capçalera.</td>
+    </tr>
+    <tr>
+      <td><code>bodyBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pintar un emplenament darrere les files de cos.</td>
+    </tr>
+    <tr>
+      <td><code>bodyBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffffff</code></td>
+      <td>Color d'emplenament de les files de cos (només es pinta quan està activat).</td>
+    </tr>
+    <tr>
+      <td><code>bodyAlternateBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Files alternes: omplir una de cada dues files de cos amb <code>bodyAlternateBackground</code>. Vegeu <a href="#files-alternes">files alternes</a>.</td>
+    </tr>
+    <tr>
+      <td><code>bodyAlternateBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#f2f2f2</code></td>
+      <td>Color d'emplenament de les files alternes (només es pinta quan està activat).</td>
+    </tr>
+    <tr>
+      <td><code>borders</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dibuixar les vores de les cel·les.</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cos</td>
+      <td>Color del traç de les vores.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75pt</code></td>
+      <td>Gruix del traç de les vores (≈1px a 96 DPI; escala amb els DPI de la pàgina). <code>'booktabs'</code> no el fa servir: té els seus propis gruixos.</td>
+    </tr>
+    <tr>
+      <td><code>cellPadding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.375em</code></td>
+      <td>Farciment interior de cada cel·la.</td>
+    </tr>
+    <tr>
+      <td><code>rules</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'</code></td>
+      <td><code>'grid'</code></td>
+      <td>Quins filets traçar quan <code>borders</code> està actiu: la retícula completa de cel·les, només filets horitzontals (vora superior i inferior de cada fila, sense verticals), només el marc exterior, cap, o els tres filets d’una taula de revista (vegeu <a href="#filets-booktabs">filets booktabs</a>).</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Radi de les cantonades del marc exterior de la taula. El marc es traça arrodonit (amb els filets <code>grid</code> o <code>outer</code>), els fons de les cel·les i de la capçalera s'hi retallen —també amb <code>rules: 'none'</code> o sense vores— i els filets horitzontals es retallen al seu contorn exterior; els filets interiors continuen rectes. Una taula partida entre pàgines arrodoneix les cantonades superiors de la primera part i les inferiors de l'última. Es limita a la meitat de l'amplada i de l'alçada de la taula. Els filets <code>'booktabs'</code> continuen rectes (els fons sí que es retallen).</td>
+    </tr>
+    <tr>
+      <td><code>heavyRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Booktabs: els filets de sobre la taula i de sota la seva última fila. Un <code>em</code> és el cos de les cel·les.</td>
+    </tr>
+    <tr>
+      <td><code>lightRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Booktabs: el filet sota les files de capçalera i els filets de grup.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.03em</code></td>
+      <td>Booktabs: els filets sota les cel·les de capçalera que abasten diverses columnes.</td>
+    </tr>
+    <tr>
+      <td><code>spanRules</code></td>
+      <td><code>'trimmed' | 'full' | 'none'</code></td>
+      <td><code>'trimmed'</code></td>
+      <td>Booktabs: els filets sota les cel·les de capçalera que abasten diverses columnes, per sobre de l’última fila de capçalera: escurçats pels dos extrems en <code>spanRuleTrim</code>, d’una banda a l’altra de la cel·la, o cap.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleTrim</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Booktabs: quant s’escurça per cada extrem un filet d’agrupació retallat.</td>
+    </tr>
+    <tr>
+      <td><code>groupRules</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Booktabs: un filet prim a sobre de cada fila del cos que encapçala un grup.</td>
+    </tr>
+    <tr>
+      <td><code>continuedFootRule</code></td>
+      <td><code>'bottom' | 'light' | 'none'</code></td>
+      <td><code>'light'</code></td>
+      <td>Booktabs: què tanca la part d’una taula dividida que continua a la pàgina següent.</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'split' | 'clip' | 'hide'</code></td>
+      <td><code>'split'</code></td>
+      <td>Què passa amb una taula més alta que la pàgina: continuar-la a les pàgines següents, conservar només les files que hi caben, o no col·locar-la. Amb <code>splitInline</code>, també amb una taula col·locada al text que no cap en el que queda de la seva columna. Vegeu més avall.</td>
+    </tr>
+    <tr>
+      <td><code>splitInline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Aplicar <code>overflow</code> també a les taules col·locades <code>here</code>: una taula en línia que no cap en l'espai que queda a la seva columna es talla entre files i continua al principi de la columna següent. Amb <code>false</code> una taula així passa sencera a la columna següent, com fins a postext 1.24; les configuracions desades per versions anteriors els capítols de les quals insereixen un recurs es llegeixen amb <code>false</code>. Vegeu <a href="#taules-més-altes-que-la-pàgina">Taules més altes que la pàgina</a>. Des de postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>continuedSuffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'(cont.)'</code></td>
+      <td>S'afegeix, en cursiva, al peu de cada part continuada d'una taula dividida, després d'un espai; un sufix que comença per un caràcter xinès o d'amplada completa (<code>'（续）'</code>) va enganxat al peu.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Col·loca un indicador sota cada part que continua a la pàgina següent.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'Continúa'</code> / <code>'Continued'</code></td>
+      <td>Text d'aquest indicador, alineat a la dreta sota la part amb la tipografia de la nota (vegeu <a href="#estil-dels-peus-de-recurs">estil de peus</a>). El valor per defecte segueix la llengua del document (vegeu <a href="/ca/docs/configuration-text#llengua-del-document">Llengua del document</a> per a les vuit llengües).</td>
+    </tr>
+  </tbody>
+</table>
+
+Els gruixos de vora es conserven fraccionaris: un filet de `0.5pt` es traça com a línia fina al PDF i a la pantalla en lloc d'arrodonir-se a un píxel complet (el mínim és 0.25px).
+
+### Files alternes
+
+Una taula de dades llarga se segueix millor d'un costat a l'altre quan una de cada dues files va ombrejada. `bodyAlternateBackgroundEnabled` activa les franges i `bodyAlternateBackground` en fixa el color:
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    bodyBackgroundEnabled: true,
+    bodyBackground: { hex: '#ffffff', model: 'hex' },
+    bodyAlternateBackgroundEnabled: true,
+    bodyAlternateBackground: { hex: '#eef3fa', model: 'hex' },
+  },
+};
+```
+
+Les files es compten des de la primera després de les files de capçalera (`TableModel.headerRowCount`, o les files inicials formades per cel·les de capçalera): aquesta fila conserva `bodyBackground` —o cap emplenament mentre `bodyBackgroundEnabled` està desactivat—, la següent pren l'emplenament alternat, i així successivament. El recompte segueix el model de la taula, no la pàgina, de manera que una taula partida entre pàgines conserva la franja de cada fila en totes, i una cel·la combinada al llarg de diverses files pren la franja de la primera. Les cel·les de capçalera conserven l'emplenament de capçalera, el `background` propi d'una cel·la preval sobre tots dos i un color vinculat a la paleta segueix la paleta. Un [estil de taula amb nom](#estils-de-taula-amb-nom) defineix els dos camps com qualsevol altre, de manera que un estil pot portar franges mentre les altres taules del document no; al Sandbox són l'interruptor *Files alternes* i el seu color, a **Cel·les del cos**.
+
+Al VDT, les cel·les de les files alternes porten `alternate: true` i la maquetació de la taula porta `bodyAlternateBackground`. `tableCellFill(table, cell)` retorna l'emplenament amb què es pinta una cel·la —el seu, el de capçalera, l'alternat o el de cos—, que és el que pinten els backends de canvas, HTML i PDF. Els emplenaments veïns s'ajunten sense costura: un navegador amb una densitat de píxels fraccionària o un visor de PDF suavitzen cada emplenament per separat i deixarien veure el paper en un filet finíssim entre dues cel·les, així que els backends d'HTML i PDF pinten `tableCellFillRects(table)` —l'emplenament de cada cel·la amb una franja sobre cada vora que comparteix amb una cel·la pintada després, que aquesta cel·la després cobreix— i el canvas ajusta els seus emplenaments als píxels del dispositiu.
+
+### Filets booktabs
+
+Les taules de revistes i de llibres de text se solen compondre amb tres filets i cap línia vertical: un de gruixut a sobre de la taula, un de prim sota la capçalera i un altre de gruixut sota l’última fila, amb filets curts sota les capçaleres que agrupen diverses columnes (el paquet `booktabs` de LaTeX: `\toprule`, `\midrule`, `\cmidrule`, `\bottomrule`). `rules: 'booktabs'` traça aquest patró:
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    rules: 'booktabs',
+    borderColor: { hex: '#000000', model: 'hex' },
+    headerBackgroundEnabled: false,
+  },
+};
+```
+
+- El filet de sobre la taula i el de sota la seva última fila tenen el gruix `heavyRuleWidth` (`0.08em`); el de sota les files de capçalera, `lightRuleWidth` (`0.05em`). Una taula sense files de capçalera no porta filet de capçalera.
+- Una cel·la de capçalera que abasta diverses columnes per sobre de l’última fila de capçalera porta a sota un filet de gruix `spanRuleWidth` (`0.03em`). Amb `spanRules: 'trimmed'` (el valor per defecte) el filet s’escurça en `spanRuleTrim` (`0.5em`) pels dos extrems, perquè els filets de dues capçaleres veïnes no es toquin; `'full'` l’estén d’una banda a l’altra de la cel·la i `'none'` el suprimeix.
+- `groupRules: true` afegeix un filet prim a sobre de cada fila del cos que encapçala un grup (una sola cel·la d’una banda a l’altra de la taula, o una fila de cel·les de capçalera), llevat que la fila obri la taula o una pàgina, on ja hi ha el filet de capçalera.
+- Els gruixos es resolen respecte al cos de les cel·les (`bodyFontSize`), de manera que una capçalera de cos més gran no engruixeix el seu filet. Un gruix de `0` suprimeix aquest filet.
+- Els filets prenen `borderColor` (un color enllaçat a la paleta segueix la paleta i `:::part palette`), i `borders: false` els apaga. `borderWidth` no s’hi aplica, ni tampoc `borderRadius`: els filets continuen rectes, tot i que els fons de les cel·les sí que es retallen al marc arrodonit. Els fons de capçalera, les files alternes i el `background` propi d’una cel·la funcionen com amb els altres patrons, sota els filets.
+- Una taula dividida entre pàgines repeteix les files de capçalera a cada part, així que cada part comença amb el filet gruixut i el de capçalera. El filet gruixut sota l’última fila tanca només l’última part; una part que continua a la pàgina següent acaba amb `continuedFootRule`: un filet prim (`'light'`, el valor per defecte), el gruixut (`'bottom'`) o cap (`'none'`).
+
+La maquetació calcula els filets una sola vegada. La taula del VDT els porta com a `strokes` (`{ x1, y1, x2, y2, widthPx }`, relatius a la cantonada superior esquerra del cos de la taula), i el llenç, el visor HTML, el PDF i l’EPUB de maquetació fixa tracen exactament aquests; en un PDF etiquetat són artefactes de maquetació. L’EPUB adaptable els escriu com a vores CSS de la taula i la seva capçalera, amb els filets retallats dibuixats com a línies de fons. Al Sandbox, **Booktabs** al selector *Filets* mostra aquests camps i amaga *Gruix de la vora* i *Radi de les cantonades*.
+
+### Estils de taula amb nom
+
+Un document poques vegades compon totes les seves taules igual: una llista de comprovació en una quadrícula blau marí amb el marc arrodonit, una fila d'opcions tancada només pel seu marc exterior, una taula de dades amb filets horitzontals. `tableStyles` declara variants amb nom, i un recurs de taula en tria una amb `table.styleId`. Cada camp que un estil deixa sense definir es llegeix primer de `tableStyle` i després del text de cos, de manera que un estil només indica el que distingeix les seves taules. Una taula sense `styleId`, o amb un id que cap estil no declara, conserva `tableStyle`: un document sense `tableStyles` es compon exactament igual que abans.
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    borderColor: { hex: '#163a76', model: 'hex' },
+    borderWidth: { value: 1.3, unit: 'pt' },
+    borderRadius: { value: 10, unit: 'pt' },
+  },
+  tableStyles: [
+    {
+      id: 'option',
+      name: "Fila d'opcions",
+      rules: 'outer',
+      borderColor: { hex: '#7a9cc6', model: 'hex' },
+      borderWidth: { value: 1, unit: 'pt' },
+      borderRadius: { value: 8, unit: 'pt' },
+      headerBackgroundEnabled: false,
+    },
+  ],
+};
+
+// Als recursos: aquesta taula es compon amb l'estil "option".
+const resource: Resource = {
+  id: 'choices', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0,
+  table: { model: { rows: [/* … */] }, styleId: 'option' },
+};
+```
+
+Cada entrada admet tots els camps de `tableStyle` més `id` (el que referencia `table.styleId`) i un `name` opcional per a l'editor (per defecte, l'id). Tot el que un estil pot definir s'aplica per taula: tipografia, fons, vores, filets, radi de les cantonades, farciment i el comportament de desbordament amb les seves cadenes de continuació. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` retorna la llista resolta, `pickTableStyle(resolved, styleId)` l'estil amb què es compon una taula, i `stripTableStylesDefaults` elimina els camps sense definir (conserva un camp igual al seu valor per defecte, que continua substituint un valor diferent de `tableStyle`). En un EPUB adaptable, un estil amb nom és una classe de la taula (`pt-table-<id>`) a la qual dona estil el full d’estils del llibre.
+### Taules més altes que la pàgina
+
+Una taula flotant que no cap a la pàgina nova que se li ofereix no es comprimeix ni es desborda: amb `overflow: 'split'` (el valor per defecte) el motor la talla entre files a l'última vora que cap a la pàgina i la continua a les pàgines següents, tantes com calgui. Cada part continuada repeteix les files de capçalera de la taula (`TableModel.headerRowCount`, o les files inicials formades per cel·les de capçalera quan no està definit) i torna a portar el peu amb `continuedSuffix` després de la descripció: «Taula 6-4. Títol *(cont.)*». Cada part que en segueix una altra porta `continuesMarker` a sota, alineat a la dreta, amb la tipografia de la nota; la nota de la taula es reserva per a l'última part. Un tall no travessa mai una cel·la combinada (una cel·la amb `rowSpan` passa sencera a la part següent), i una fila que encapçala les que la segueixen —una sola cel·la a l'amplada de tota la taula— passa a la part següent en lloc de quedar solta al peu de la pàgina. Una taula booktabs tanca cada part que continua amb `continuedFootRule` (vegeu [filets booktabs](#filets-booktabs)).
+
+**On acaba la primera part.** Una taula a la qual s'ofereix el cap d'una columna buida després de la seva referència pren les files que hi caben i continua en el buit següent. Omple la columna fins al peu quan la té per a ella sola: una part que deixaria menys de tres línies de text a sota també les ocupa, en lloc de deixar un residu de text solt. Quan la columna ja té una altra banda de flotants —una figura a l'amplada de pàgina al cap, per exemple—, la part s'atura almenys tres línies de text abans del peu, l'espai per a text que deixa qualsevol flotant que comparteix columna amb un altre, de manera que la columna acaba amb una mica de text sota la taula i no només amb flotants. Perquè una taula llarga arribi al peu de la seva columna, cita-la on la pàgina en què comença no porti cap altre flotant (després de la pàgina d'una figura a l'amplada de pàgina, per exemple), o ajusta'n les files a la columna.
+
+`'clip'` conserva les files inicials que caben a la pàgina i descarta la resta en silenci (la nota continua tancant la part); `'hide'` no col·loca la taula. Tots dos només actuen quan la taula és més alta que una pàgina: una taula que hi cap es col·loca sencera en qualsevol mode.
+
+**Taules col·locades al text.** Una taula col·locada `here` (inserida amb `::resource`) segueix les mateixes regles des de postext 1.25 (`splitInline`, activat per defecte). Quan no cap en l'espai que queda a la seva columna, es talla entre files: la primera part conserva a sobre l'espai dels flotants i almenys les files de capçalera i dues files del cos (si n'hi caben menys, la taula sencera comença a la columna següent, com abans); cada part posterior obre la columna següent sense espai a sobre, composta a l'amplada d'aquella columna (en una maqueta de columna i mitja, una part que cau a la columna estreta es compon a la seva amplada), i el text que segueix la línia `::resource` va després de l'última part. La repetició de la capçalera, el peu amb el sufix, la marca, la nota a l'última part, la cua de tres files i els talls que respecten les cel·les combinades i les files que encapçalen un grup són els d'una taula flotant. Una taula de menys de cinc files de cos no es talla mai. `'clip'` conserva les files inicials d'una taula en línia més alta que una columna, composta al principi d'una columna; `'hide'` no col·loca aquesta taula; una de més baixa passa sencera a la columna següent en tots dos modes. Una pàgina que obre una taula en línia només reserva davant dels flotants que acull l'espai de la seva primera part, de manera que una figura a l'amplada de la pàgina que espera encapçala aquella pàgina i la taula continua a sota. Les taules en línia d'una pàgina vertical i les taules dins d'un requadre no es tallen. Amb `splitInline: false` una taula en línia passa sencera a la columna següent, com fins a postext 1.24.
+
+Les cadenes de continuació prenen el valor per defecte de la llengua del document (`locale`, o si no n'hi ha, la llengua de la partició de mots): anglès `(cont.)` / `Continued`, castellà `(cont.)` / `Continúa`, i el mateix en francès, alemany, italià, portuguès, català i neerlandès (recollides a [Llengua del document](/ca/docs/configuration-text#llengua-del-document)).
+
+El contingut d'una cel·la és markdown en línia, i un salt de línia dins de la cel·la —un caràcter de línia nova, o `\\` com en peus i notes— obre un paràgraf nou. Un paràgraf que comença per una vinyeta o un guionet (`•`, `-`, `*`, `–`) o per un número (`1.`, `1)`) seguit d'un espai es compon com a element de llista: la marca es pinta tal com es va escriure, el text en penja a la distància `unorderedLists.gap` del document, les línies partides s'alineen amb el text i dos espais inicials nien un nivell. Així, una cel·la escrita com `• Ofrece elección\n• Acomoda a personas diestras y zurdas` surt com una llista de dos elements. Una línia amb només espais corrents no afegeix res; una línia amb un espai de no separació (U+00A0) és una línia de la cel·la, com a CommonMark, així que `1\n` seguit d'un espai de no separació dona una fila de dues línies. Un espai de no separació al final del text d'una cel·la conserva la seva amplada: `760` i un espai de no separació, alineats a la dreta sobre `(231)`, acaben un espai abans de la vora, cosa que acosta el 0 a l'1. Les xifres només queden exactament en columna si l'espai és tan ample com el parèntesi, i en la majoria de les fonts és més estret. (Fins a postext 1.4 es perdien tots dos).
+
+Les amplades de columna pertanyen al model de la taula, no a l'estil: `TableModel.columnWidths` és un array opcional de pesos relatius, un per columna, normalitzats en el moment de maquetar —`[2, 1, 1]` dona a la primera columna la meitat de l'amplada. Un array absent, de longitud incorrecta o amb algun pes no positiu torna al repartiment igualitari. L'editor de taules manté l'array alineat en afegir o treure columnes.
+
+### Construir models de taula
+
+Un `TableModel` és una quadrícula per files, i cada cel·la es maqueta segons la seva posició en aquesta quadrícula: `rows[r][c]` ocupa la columna `c`. Per això una cel·la combinada conserva a la quadrícula les cel·les que cobreix, cadascuna marcada amb `hiddenBy` apuntant a la seva cel·la principal, a diferència d'una taula HTML, que les omet. Les funcions de model que exporta `postext` mantenen aquesta forma; són funcions pures que retornen un model nou: `mergeCells(model, { start, end })` i `unmergeCell(model, at)`, `addRow`, `addColumn`, `removeRow`, `removeColumn`, `setCellContent`, `setCellImage`, `setCellBackground` i `setAlignment`. Les quatre funcions de files i columnes mantenen senceres les combinacions: una fila o columna afegida dins d'un bloc combinat l'eixampla, una afegida abans el desplaça i una que se n'elimina el redueix —un bloc que perd la primera fila o columna conserva el contingut a la nova cel·la superior esquerra—, i cada `hiddenBy` continua apuntant a la seva cel·la principal.
+
+`parseTSV(text, options?)` construeix un model a partir de text separat per tabuladors —un rang enganxat des d'un full de càlcul—: les files se separen per salts de línia, les cel·les per tabuladors, i les files curtes s'omplen perquè la quadrícula sigui rectangular. `headerRows` converteix les files inicials en files de capçalera: les seves cel·les reben `isHeader` i el model `headerRowCount`, de manera que una taula partida entre pàgines les repeteix.
+
+```ts
+import { parseTSV, mergeCells } from 'postext';
+
+let model = parseTSV('Peça\tQuant.\tNota\nCargol\t4\tM6\nFemella\t8\t', { headerRows: 1 });
+// model.headerRowCount === 1; model.rows[0][0] és { content: 'Peça', isHeader: true }
+model = mergeCells(model, { start: { row: 2, col: 1 }, end: { row: 2, col: 2 } });
+// rows[2][1] rep colSpan: 2; rows[2][2] continua a la quadrícula amb hiddenBy: { row: 2, col: 1 }
+```
+
+`tableGridIssues(model)` comprova la quadrícula. Retorna una llista buida per a un model correcte i, si no, cada punt en què la quadrícula es trenca, per ordre de files: `spanOverlap`, una cel·la visible sota el `colSpan` / `rowSpan` d'una altra (`coveredBy` anomena aquesta cel·la) —cosa que passa en ometre una cel·la coberta a l'estil HTML, perquè totes les cel·les que la segueixen es desplacen sobre la combinació— i `missingCells`, una fila que acaba abans de l'última columna sense que cap combinació en cobreixi la resta, cosa que deixa un buit.
+
+```ts
+import { tableGridIssues } from 'postext';
+
+tableGridIssues({
+  rows: [
+    [{ content: 'A', colSpan: 2 }, { content: 'C' }],
+    [{ content: '1' }, { content: '2' }, { content: '3' }],
+  ],
+});
+// => [{ kind: 'spanOverlap', row: 0, col: 1, coveredBy: { row: 0, col: 0 } },
+//     { kind: 'missingCells', row: 0, col: 2 }]
+```
+
+Una taula que el document fa servir i la quadrícula de la qual té aquests problemes es notifica a `doc.contentWarnings` com a `raggedTableGrid` (vegeu [Avisos del document](/ca/docs/configuration-programmatic-usage#avisos-del-document)).
+
+
+## Estil dels peus de recurs
+
+La propietat `captionStyle` controla els peus de recurs (la línia `Figura 1 — …` sota —o sobre— imatges, SVG i taules). L'etiqueta numerada i la descripció comparteixen tipografia i mida —una limitació del motor—, però l'etiqueta pot portar el seu propi pes, cursiva i color. La família tipogràfica, la mida i el color hereten del text del cos quan no s'indiquen. El peu es pot situar **damunt** del recurs (la convenció habitual per a taules) i compondre's sobre una **barra** de color que ocupa tota l'amplada del bloc; una **nota** opcional més petita (font, crèdits — `Resource.note`) s'estilitza mitjançant el subobjecte `note`. Un tipus de recurs pot sobreescriure qualsevol d'aquests camps per als seus propis recursos mitjançant `ResourceType.captionStyle` (vegeu [Tipus de recurs](#tipus-de-recurs)).
+
+```ts
+const config: PostextConfig = {
+  captionStyle: {
+    align: 'center',
+    labelBold: true,
+    labelColor: { hex: '#295AA3', model: 'hex' },
+    descriptionItalic: true,
+    position: 'above',
+    backgroundEnabled: true,
+    padding: { value: 0.35, unit: 'em' },
+    note: { italic: true, align: 'left' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '180px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>font del cos</td>
+      <td>Família tipogràfica del peu (etiqueta i descripció).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>mida del cos</td>
+      <td>Mida de font del peu (etiqueta i descripció).</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cos</td>
+      <td>Color del text de la descripció.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
+      <td><code>'left'</code></td>
+      <td>Alineació horitzontal de les línies del peu. <code>'justify'</code> porta totes les línies llevat de l'última a l'amplada completa. Sobre una barra de peu les línies s'alineen dins del seu farciment; un peu lateral s'alinea dins de la seva pròpia amplada.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>Separació vertical entre el recurs i el seu peu.</td>
+    </tr>
+    <tr>
+      <td><code>labelBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Renderitzar l'etiqueta numerada (p. ex. <code>Figura 1</code>) en negreta.</td>
+    </tr>
+    <tr>
+      <td><code>labelItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderitzar l'etiqueta numerada en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>labelColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>color</code> del peu</td>
+      <td>Color de l'etiqueta numerada.</td>
+    </tr>
+    <tr>
+      <td><code>descriptionItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderitzar el text de la descripció en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'above' | 'below'</code></td>
+      <td><code>'below'</code></td>
+      <td>On se situa el peu. Amb <code>'above'</code> el peu (i la seva barra) va primer i el cos del recurs baixa l'alçada del peu més <code>gap</code>; la nota passa llavors sota el cos.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pintar una barra darrere del peu. La barra ocupa tota l'amplada del bloc i embolcalla les línies del peu més <code>padding</code> per cada costat.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color principal de la paleta</td>
+      <td>Color d'emplenament de la barra (només es pinta quan està activada).</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.35em</code></td>
+      <td>Farciment interior entre la vora de la barra i el text del peu. S'ignora si la barra està desactivada.</td>
+    </tr>
+    <tr>
+      <td><code>note</code></td>
+      <td><code>object</code></td>
+      <td>—</td>
+      <td>Estil de la nota del recurs — vegeu la subtaula següent.</td>
+    </tr>
+    <tr>
+      <td><code>labelNumberGap</code></td>
+      <td><code>string</code></td>
+      <td>espai de no separació; <code>''</code> en un document japonès</td>
+      <td>El que separa l'etiqueta del número, al peu i en una <code>:ref</code> en línia: <em>Figura 1.7</em>, <em>Fig. 1.7</em>. El xinès i el japonès els componen junts: <code>''</code> dona 图1-1, i és el valor per defecte en un document japonès (図1-1).</td>
+    </tr>
+    <tr>
+      <td><code>labelSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>'. '</code>; <code>'　'</code> en un document japonès</td>
+      <td>El que segueix el número, abans de la descripció: <em>Figura 1.7. Un peu</em>. Els peus xinesos porten un espai ideogràfic, <code>'　'</code> (图1-1　标题), i els japonesos també, per defecte (図1-1　東京の地図, JLReq §4.3). Una etiqueta sense número conserva la seva pròpia regla: un punt, llevat que el prefix ja acabi en punt.</td>
+    </tr>
+  </tbody>
+</table>
+
+El subobjecte `note` estilitza `Resource.note`, una línia breu (font, crèdits, una observació) composta sota el recurs en una mida menor. Admet el mateix format en línia i les mateixes marques `:ref` que el peu, i hereta la tipografia del peu. Es col·loca sota el peu quan aquest va a sota, i sota el cos del recurs quan el peu va a sobre; la seva alçada compta en el bloc, de manera que un recurs amb nota flota com una sola unitat.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '180px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>note.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>0.85 × mida del peu</td>
+      <td>Mida de font de la nota.</td>
+    </tr>
+    <tr>
+      <td><code>note.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>color</code> del peu</td>
+      <td>Color del text de la nota.</td>
+    </tr>
+    <tr>
+      <td><code>note.italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderitzar la nota en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>note.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.35em</code></td>
+      <td>Separació entre la nota i el que la precedeix (peu o cos).</td>
+    </tr>
+    <tr>
+      <td><code>note.align</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
+      <td><code>'left'</code></td>
+      <td>Alineació horitzontal de les línies de la nota, com <code>align</code> per al peu.</td>
+    </tr>
+  </tbody>
+</table>
+
+Les sobreescriptures per tipus es combinen amb `mergeCaptionStyle(resolvedCaptionStyle, override, palette?)`, exportada per als amfitrions que necessitin la mateixa resolució fora del pipeline.
+
+
+## Estil dels diagrames
+
+La propietat `diagramStyle` controla com s'acoloreixen els diagrames SVG incrustats (recursos amb `kind: 'svg'`) i amb quines fonts es compon el seu text. El **mode d'una sola tinta** és una passada de recoloració que converteix cada color del diagrama en un matís d'una única tinta, de manera que les figures es reprodueixin fidelment quan el document s'imprimeix amb una sola tinta plana. Les **fonts incrustades** posen dins de cada SVG les variants que anomena el seu text, perquè els seus rètols es componguin amb les fonts del document al canvas, en HTML i en EPUB (consulta [Fonts al text dels SVG](#fonts-al-text-dels-svg)).
+
+```ts
+const config: PostextConfig = {
+  diagramStyle: {
+    singleInk: true,
+    inkColor: { hex: '#295AA3', model: 'hex' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '200px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>singleInk</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Recolorir tots els diagrames SVG incrustats amb matisos d'una única tinta.</td>
+    </tr>
+    <tr>
+      <td><code>inkColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>Color principal (<code>#295AA3</code>)</td>
+      <td>La tinta. Per defecte és el color principal de la paleta del document (enllaçat mitjançant <code>paletteId: 'main-color'</code>), de manera que canviar la mostra de la paleta torna a tenyir els diagrames juntament amb els encapçalaments i les negretes.</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Incrustar a cada SVG les variants que anomena el seu text (<code>font-family</code>) com a data URI de <code>@font-face</code> abans de mostrar-lo com a imatge: al canvas, en HTML, en EPUB i al ràster de reserva del PDF. No s'escriu mai al fitxer desat. Un recurs en queda exclòs amb <code>svg.inlineFonts: false</code> (des de postext 1.25).</td>
+    </tr>
+  </tbody>
+</table>
+
+### Com funciona la tinta única
+
+Quan `singleInk` està activat, cada color del marcatge SVG es reescriu com un matís de `inkColor` la intensitat del qual és **1 − luminància relativa** (coeficients Rec. 709 aplicats als canals amb codificació gamma — una aproximació perceptual més que suficient per al mapatge de matisos). El mapatge preserva el valor percebut: el blanc es converteix en el blanc del paper, el negre en la tinta plena, i els emplenaments clars continuen sent clars amb independència del to original. Un fons groc pàl·lid passa a ser un matís pàl·lid de la tinta; un traç fosc s'acosta a la tinta plena.
+
+La recoloració la fa la funció exportada `applySingleInkToSvg(svgText, inkHex)`, que opera sense DOM, directament sobre el marcatge SVG com a text:
+
+- Els literals hexadecimals `#rgb` / `#rgba` / `#rrggbb` / `#rrggbbaa`, les funcions `rgb()` / `rgba()` i les funcions `hsl()` / `hsla()` es reescriuen siguin on siguin — atributs de presentació, `style` en línia, degradats, `<defs>`. Les funcions poden fer servir canals enters, decimals o en percentatge i la sintaxi amb comes o amb espais, així que també es recoloreixen `rgb(11.37%, 20%, 50.59%)` (com ho escriu Cairo) i `rgb(51 102 153 / 50%)`. Una funció tenyida es torna a escriure com a `rgb(…)` o `rgba(…)`.
+- Les paraules clau `white` i `black` només se substitueixen quan apareixen com a valors de pintura (`fill`, `stroke`, `stop-color`, `flood-color`, `color` — com a atributs o propietats d'estil en línia), mai dins del contingut de text ni de les etiquetes.
+- `none`, `transparent` i `currentColor` es deixen intactes, igual que la resta de colors amb nom (`red`, `steelblue`…) i el negre per defecte d'una forma o un text que no fixa emplenament. Dona a aquests elements un color explícit perquè es recoloreixin.
+- Els canals alfa es preserven (els dígits de `#rgba` / `#rrggbbaa` i el component alfa de `rgba(…)` viatgen sense canvis; un alfa en percentatge s'escriu com a número).
+- Quan `inkHex` no es pot interpretar, l'entrada es retorna sense canvis.
+- El resultat porta `data-postext-single-ink="#…"` (la tinta) al `<svg>` arrel, i un marcatge que ja el porta es retorna tal qual, sigui quina sigui la tinta que anomeni. El mapatge no és idempotent —una segona passada aclareix tots els colors, i el negre surt a uns dos terços de la tinta—, així que una imatge es recoloreix una sola vegada, tant si hi arriba abans el teu codi com el backend. (La marca és nova a postext 1.5; el marcatge recolorit per la 1.4 no la porta).
+
+```ts
+import { applySingleInkToSvg } from 'postext';
+
+const recoloreado = applySingleInkToSvg(svgText, '#295AA3');
+applySingleInkToSvg(recoloreado, '#295AA3') === recoloreado; // true: mai dues vegades
+```
+
+La tinta única s'aplica als tres backends: el backend PDF recoloreix els bytes SVG que li lliura `resourceBytes` abans de dibuixar-los com a vectors, i els backends canvas i HTML tenyeixen les imatges SVG que pinten quan els ho demanes (consulta [Tinta única en canvas i en HTML](#tinta-única-en-canvas-i-en-html)), de manera que el PDF exportat coincideix amb la previsualització en pantalla.
+
+El resolver i l'stripper segueixen el mateix patró que les altres seccions, juntament amb els tipus `DiagramStyleConfig` / `ResolvedDiagramStyleConfig`:
+
+```ts
+import {
+  DEFAULT_DIAGRAM_STYLE_CONFIG,
+  resolveDiagramStyleConfig,
+  stripDiagramStyleDefaults,
+  applySingleInkToSvg,
+} from 'postext';
+import type { DiagramStyleConfig, ResolvedDiagramStyleConfig } from 'postext';
+
+const resolved = resolveDiagramStyleConfig(config.diagramStyle);
+// => { singleInk: false, inkColor: { hex: '#295AA3', model: 'hex', paletteId: 'main-color' } }
+
+const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
+// => undefined quan tot coincideix amb els valors per defecte
+```
+
+### Tinta única en canvas i en HTML
+
+Els backends canvas i HTML reben les imatges ja descodificades (`registerResourceImage`) o com a URL (`resourceImageUrl`), no el marcatge SVG. Si els ho demanes, apliquen el mateix mapatge al que dibuixen:
+
+- **Canvas** (`renderPage`, `renderPageToCanvas`, `renderToCanvas`). Tota imatge SVG a la qual s'aplica el tint —una figura, la imatge d'una cel·la de taula, una imatge de disseny, una icona o `marker` de caixa— es rasteritza a la mida amb què es col·loca, i els seus píxels es tenyeixen amb la tinta, tant si es va registrar com a `<img>` com si es va registrar com a `ImageBitmap`. El mapa de bits tenyit es desa a la memòria cau com qualsevol ràster vectorial. Una imatge de mapa de bits no es tenyeix mai.
+- **HTML** (`renderToHtml`, `renderToHtmlIndexed`). Cada `<img>` SVG rep `filter: url(#pt-ink-…)`, que apunta a un `feColorMatrix` que porta la seva pàgina: un `<svg>` de mida zero amb el `<filter>`, col·locat el primer a la pàgina i part del `decorationHtml` de la pàgina a la sortida indexada. Totes les pàgines el porten mentre s'aplica la tinta única, tinguin o no alguna imatge, de manera que un amfitrió que actualitza els blocs un a un no introdueix mai una imatge a la qual falti el filtre.
+
+**No es tenyeix mai dues vegades.** Fins a postext 1.4 els backends canvas i HTML pintaven les imatges tal qual, així que els amfitrions recolorien el marcatge pel seu compte amb `applySingleInkToSvg` abans de lliurar-lo. Els adaptadors de paquets i el Sandbox ho continuen fent, perquè la passada sobre el marcatge dona exactament els colors del PDF (consulta l'últim paràgraf d'aquest apartat). Així, una imatge es tenyeix una sola vegada, per tres regles que es compleixen als tres backends:
+
+- **El que ja porta la marca es deixa com està.** El backend PDF recoloreix `resourceBytes` amb `applySingleInkToSvg`, de manera que uns bytes SVG ja recolorits es dibuixen tal qual. En canvas i en HTML, tampoc no es tenyeix mai una imatge carregada des d'un data URI SVG el marcatge del qual porta la marca.
+- **Desactivat llevat que ho demanis, a postext 1.x.** El canvas tenyeix una imatge SVG registrada sense indicació pròpia només quan el renderitzat passa `singleInk: true` (`RenderPageOptions`), i una de registrada amb `registerResourceImage(id, img, { singleInk: true })` en qualsevol renderitzat. El backend HTML tenyeix quan `renderToHtml` rep `singleInk: true`, o quan el seu resolutor `resourceImageUrl` porta `singleInk: true`. Un amfitrió escrit per a la 1.4, que recoloreix el marcatge i registra la imatge descodificada sense indicació, conserva la seva sortida. La pròxima versió major tenyirà per defecte.
+- **`singleInk: false` no es tenyeix mai.** Darrere d'una URL blob o de xarxa no es pot llegir el marcatge, així que una imatge que vas recolorir tu i que descodifiques així es registra amb `singleInk: false`, com fan `registerBundleImages` i el Sandbox. `bundleImageUrl(bundle)` retorna un resolutor que porta `singleInk: false`, i `bundleResourceBytes` lliura al PDF els bytes del mateix paquet, que el backend PDF recoloreix una vegada.
+
+Els dos backends saben de quin tipus és cada imatge gràcies al VDT: una figura i una imatge de cel·la porten el tipus del seu recurs, i un bloc d'imatge de disseny porta `imageKind` (`'svg'` o `'bitmap'`), pres del seu recurs durant la composició. En un VDT construït abans que existís `imageKind`, el canvas tracta com a SVG una imatge de disseny registrada com a font vectorial, i el backend HTML, una amb una URL que és un data URI SVG o que acaba en `.svg`.
+
+O recoloreixes tu el marcatge o deixes que els backends tenyeixin la imatge original, però no totes dues coses:
+
+```ts
+import { applySingleInkToSvg, registerResourceImage, renderPage, renderToHtml } from 'postext';
+
+// SVG sense recolorir: es tenyeix mentre diagramStyle.singleInk és actiu…
+registerResourceImage('diagrama.svg', imgOriginal, { singleInk: true });
+// …o registra'l sense més i demana-ho a cada renderitzat.
+registerResourceImage('diagrama.svg', imgOriginal);
+const canvas = renderPage(doc.pages[0], doc, { singleInk: true });
+
+// Recolorit abans de descodificar-lo (com fan els amfitrions de la 1.4): es pinta tal qual.
+const entintado = applySingleInkToSvg(svgText, tinta);
+registerResourceImage('diagrama.svg', await decodificar(entintado), { singleInk: false });
+
+// El backend HTML amb URL al marcatge sense recolorir.
+const html = renderToHtml(doc, { resourceImageUrl: urlDe, singleInk: true });
+```
+
+`renderToHtml` pren el valor per defecte del seu `singleInk` de la indicació del mateix resolutor, així que `bundleImageUrl(bundle)` no necessita l'opció.
+
+Per a cada color que reescriu la passada sobre el marcatge (valors hexadecimals, `rgb()` i `hsl()`, `white` i `black`; consulta [Com funciona la tinta única](#com-funciona-la-tinta-única)), el mapatge per píxels dona el mateix resultat, inclosos les vores suavitzades i els degradats. Tots dos difereixen on la passada sobre el marcatge deixa un color com està: els colors amb nom diferents de `white` i `black`, `currentColor`, les formes i els textos sense emplenament (dibuixats en el negre per defecte) i els mapes de bits incrustats a l'SVG es tenyeixen en pantalla però conserven el seu color al PDF. Dona a cada element del diagrama un color explícit en hexadecimal, `rgb()` o `hsl()` per obtenir la mateixa sortida. Quan el canvas no pot tornar a llegir els píxels (un `<img>` d'un altre origen, carregat sense CORS), la imatge es pinta sense tenyir.
+
+### Fonts al text dels SVG
+
+Un dibuix SVG es mostra a través d'una imatge: un `<img>` al canvas, en HTML i en EPUB. Un document d'imatge no veu les fonts web de la pàgina, així que `<text font-family="IBM Plex Sans">` cauria en una font del sistema. Des de postext 1.25 el motor incrusta al marcatge les variants que anomena el text abans de descodificar la imatge o de lliurar-la com a URL: una regla `@font-face` per fitxer de font, amb els seus bytes com a data URI, en un `<style>` just després de l'etiqueta `<svg>` arrel. El PDF no necessita res d'això: compon el text SVG com a text real amb les seves fonts incrustades (consulta [Bytes de recursos i màsters d'impressió](/ca/docs/configuration-programmatic-usage#bytes-de-recursos-i-màsters-dimpressió)).
+
+El que demana el text es llegeix de `font-family`, `font-weight`, `font-style` i `font`, com a atributs, dins d'atributs `style` i heretat dels grups que el contenen; també compta una regla de `<style>` que anomeni una família. En queden fora les famílies genèriques (`serif`, `sans-serif`…) i el text de `<title>` o `<desc>`, i una família que el mateix SVG declara amb `@font-face` no es toca. Un tram recorre la seva llista de `font-family` fins a la primera família que tingui variant. Primer es recoloreix per a la tinta única i després s'incrusten les fonts.
+
+Les variants les dona un **proveïdor** amb el contracte del `PdfFontProvider` de postext-pdf, de manera que un mateix proveïdor serveix per a tots dos: se'l crida amb la família, el pes i l'estil, i els caràcters que l'SVG compon en aquesta variant, i respon amb un fitxer o amb diversos. A una família servida en trams d'`unicode-range` (Fontsource, Google Fonts) se li respon amb els trams que necessiten aquests caràcters, de manera que un SVG amb rètols llatins porta només el fitxer `latin`. El proveïdor per defecte llegeix el registre de fonts del motor: `loadBundleFonts` hi registra les variants d'un paquet, i un amfitrió hi registra les seves amb `registerFontBytes(family, weight, style, bytes, { unicodeRange })`, o amb `registerFontUrl(…)` per a un fitxer que es descarrega la primera vegada que un SVG el necessita. Una família que ningú no ha registrat es busca a les regles `@font-face` dels fulls d'estil llegibles de la pàgina. Un `FontFace` afegit a `document.fonts` a partir de bytes no en conserva els bytes, així que el motor no el pot tornar a llegir: registra també aquestes variants.
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // recolorit, fonts incrustades, descodificat, registrat
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+On passa:
+
+- **Canvas.** `registerSvgImage(fileId, svgText, options)` recoloreix (`inkHex`), incrusta les fonts (`fonts`, un proveïdor; `inlineFonts: false` ho omet), descodifica i registra la imatge com a font vectorial, i es resol amb el que ha passat amb cada variant. `registerBundleImages(bundle)` fa el mateix amb els SVG d'un paquet, primer amb les variants del mateix paquet. `prepareSvgMarkup(svgText, options)` retorna el marcatge preparat per a un amfitrió que descodifica pel seu compte.
+- **HTML.** `bundleImageUrl(bundle)` serveix el marcatge SVG amb les variants del paquet incrustades. `renderToHtml(doc, { inlineSvgFonts: true })` incrusta als data URI SVG que retorna `resourceImageUrl` les variants que el registre té a la memòria (o `inlineSvgFonts: { fonts, maxBytes, withhold }`). Una URL d'objecte no es pot llegir de manera síncrona, així que un amfitrió que serveix URL blob incrusta abans de crear-les.
+- **EPUB.** `postext-epub` incrusta des de les `fonts` del llibre, i després des de `svgFonts.provider`, abans d'escriure un SVG (consulta [Llibres EPUB](/ca/docs/configuration-programmatic-usage#llibres-epub-postext-epub)).
+- **PDF.** El text SVG es compon com a text real amb les fonts incrustades. Un `<style>` que només conté regles `@font-face` (variants que va incrustar l'autor) ja no fa que la figura passi a ràster. Quan una figura sí que passa a ràster (un filtre, un degradat), el seu ràster es fa amb les variants incrustades des del `fontProvider` del PDF.
+
+També s'exporten les funcions de nivell més baix: `svgFontRequests(svgText)` enumera les famílies, el pes, l'estil i els caràcters de cada tram; `inlineSvgFonts(svgText, provider, options)` i `inlineSvgFontsSync(svgText, syncProvider, options)` retornen el marcatge; `inlineSvgFontsDetailed` hi afegeix un informe de cada variant (`inlined`, `declared`, `unavailable`, `withheld`, `tooLarge`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Opció</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>Màxim de bytes de font incrustats en un SVG (abans del base64, que n'hi afegeix un terç). Si les variants juntes el superen, no se n'incrusta cap i s'avisa amb <code>svgFontsTooLarge</code>.</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>tots quatre</td>
+      <td>Els formats de fitxer que s'incrusten; els fitxers d'altres formats s'ometen.</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>cap</td>
+      <td>Famílies que es deixen fora d'un fitxer que surt de l'aplicació (no redistribuïbles). La seva referència es manté i el lector fa servir una font de reserva; <code>onWithheld(family)</code> rep avís de cadascuna.</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>cap</td>
+      <td>Rep avís d'una família sense variant (<code>svgFontUnavailable</code>) i del límit de mida (<code>svgFontsTooLarge</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+**Desactivar-ho.** `diagramStyle.inlineFonts: false` deixa tots els SVG tal com estan desats; `svg.inlineFonts: false` en un recurs deixa aquell SVG byte a byte com és, per a un SVG que porta les seves pròpies variants o que no ha de canviar. Un paquet escriu l'exclusió del recurs com a `"inlineFonts": false` al seu `preset.json`.
+
+**Llicències.** Incrustar posa fitxers de font dins d'imatges que poden sortir de l'aplicació (una exportació HTML, un EPUB). Passa quan una imatge es mostra o s'exporta, mai als bytes desats del recurs, i `withhold` deixa fora les famílies que una llicència no et permet cedir: l'escriptor d'EPUB reté les variants marcades amb `redistributable: false`, i el Sandbox, les famílies personalitzades marcades així.
+
+
+## Estil de vídeo
+
+La propietat `videoStyle` defineix com s'imprimeixen els [recursos de vídeo](/ca/docs/document-format#vídeos) (la marca de reproducció i el codi QR sobre la portada, i si la portada enllaça amb el vídeo) i què ofereixen els seus reproductors al visor HTML i a l'EPUB.
+
+```ts
+const config: PostextConfig = {
+  videoStyle: {
+    playMark: { shape: 'rounded', position: 'top-left', size: { value: 10, unit: 'mm' } },
+    qr: { position: 'bottom-right', size: { value: 20, unit: 'mm' }, errorCorrection: 'Q' },
+    player: { download: false, privacy: true },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>playMark</code></td>
+      <td><code>VideoPlayMarkConfig</code></td>
+      <td>vegeu més avall</td>
+      <td>La marca impresa sobre la portada que indica que es reprodueix.</td>
+    </tr>
+    <tr>
+      <td><code>qr</code></td>
+      <td><code>VideoQrConfig</code></td>
+      <td>vegeu més avall</td>
+      <td>El codi QR imprès sobre la portada: obre la pàgina del vídeo a YouTube o a Vimeo, o l'adreça de producció d'un fitxer.</td>
+    </tr>
+    <tr>
+      <td><code>linkPoster</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Fa de la portada un enllaç al vídeo: una anotació d'enllaç a sobre al PDF, i un <code>&lt;a&gt;</code> que l'envolta a HTML i a EPUB allà on es mostri la portada.</td>
+    </tr>
+    <tr>
+      <td><code>html</code></td>
+      <td><code>'player'</code> · <code>'poster'</code></td>
+      <td><code>'player'</code></td>
+      <td>Què posa la sortida HTML per a un vídeo: el seu reproductor, o la portada impresa amb les marques que porta a sobre.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>vegeu més avall</td>
+      <td>Les opcions de reproductor de tots els vídeos; el <code>video.player</code> de cada vídeo s'hi aplica per sobre.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Marca de reproducció
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprimeix la marca.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'circle'</code> · <code>'rounded'</code> · <code>'triangle'</code></td><td><code>'circle'</code></td><td>Un disc amb un triangle, un rectangle arrodonit amb un triangle (1,45 vegades més ample que alt) o només el triangle, perfilat amb el color de fons.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'center'</code></td><td><code>'center'</code>, un cantó (<code>'top-left'</code>, <code>'top-right'</code>, <code>'bottom-left'</code>, <code>'bottom-right'</code>) o el mig d'un costat (<code>'top'</code>, <code>'bottom'</code>, <code>'left'</code>, <code>'right'</code>). Les posicions són físiques: el cantó de dalt a la dreta també ho és en un llibre de dreta a esquerra.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>12mm</code></td><td>Alçada de la marca; mai més del 40 % del costat menor de la portada.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>4mm</code></td><td>Distància a les vores de la portada quan la marca és en un cantó o en un costat.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>blanc</td><td>El triangle.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>Color principal</td><td>El disc o el rectangle de darrere; el perfil del triangle quan va sol. Per defecte està enllaçat a la paleta.</td></tr>
+    <tr><td><code>backgroundOpacity</code></td><td><code>number</code></td><td><code>0.9</code></td><td>Opacitat del fons, de 0 a 1.</td></tr>
+  </tbody>
+</table>
+
+### Codi QR
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprimeix el codi. Un fitxer sense adreça de producció no en porta.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'bottom-right'</code></td><td>Com a la marca de reproducció. Dona'ls posicions diferents.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>18mm</code></td><td>Costat del codi amb el seu marge; mai més del 45 % del costat menor de la portada. Les càmeres dels mòbils llegeixen mòduls a partir d'un terç de mil·límetre: una adreça de 30 caràcters dona un codi de 29 mòduls, de manera que 18 mm amb un marge de 2 fan mòduls de 0,55 mm.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Distància a les vores de la portada.</td></tr>
+    <tr><td><code>errorCorrection</code></td><td><code>'L'</code> · <code>'M'</code> · <code>'Q'</code> · <code>'H'</code></td><td><code>'M'</code></td><td>Quina part del codi es pot malmetre o tapar sense que deixi de llegir-se: un 7 %, un 15 %, un 25 % o un 30 %, aproximadament. Puja tota sola mentre el codi conservi el mateix nombre de mòduls.</td></tr>
+    <tr><td><code>quietZone</code></td><td><code>number</code></td><td><code>2</code></td><td>Mòduls clars al voltant del codi, sobre la seva placa (0–8). La placa ja es destaca de la portada, així que no calen els quatre mòduls que demana la norma sobre paper lliure.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>negre</td><td>Els mòduls foscos. Mantén-los foscos sobre una placa clara: la majoria de lectors no llegeixen codis invertits.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>blanc</td><td>La placa.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td><code>1mm</code></td><td>Radi dels cantons de la placa.</td></tr>
+  </tbody>
+</table>
+
+El codi el codifica el mateix motor (`encodeQr(text, level)`: mode byte, UTF-8, versions de l'1 al 40, la màscara amb menys penalització) i es dibuixa com a vectors: el canvas omple un sol camí de tirades de mòduls, el PDF fa un sol `drawSvgPath` i l'HTML un sol `<path>` amb `shape-rendering="crispEdges"`, de manera que es manté nítid a qualsevol mida d'impressió.
+
+### Opcions del reproductor
+
+`VideoPlayerOptions`, a `videoStyle.player` i al `video.player` de cada vídeo. El reproductor HTML5 d'un fitxer les respecta totes; els reproductors de YouTube i de Vimeo, les que permeten els seus paràmetres d'inserció.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th style={{ width: '170px' }}>La respecten</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>controls</code></td><td><code>true</code></td><td>YouTube, Vimeo, fitxers</td><td>Mostra els controls del reproductor.</td></tr>
+    <tr><td><code>download</code></td><td><code>true</code></td><td>fitxers</td><td>Ofereix el botó de baixada del navegador (<code>controlslist="nodownload"</code> quan és desactivat). Amaga el botó, no protegeix el fitxer. YouTube i Vimeo no ofereixen mai la baixada.</td></tr>
+    <tr><td><code>fullscreen</code></td><td><code>true</code></td><td>YouTube, Vimeo, fitxers</td><td>Ofereix la pantalla completa (<code>fs=0</code>, l'<code>allowfullscreen</code> de l'iframe, <code>nofullscreen</code>).</td></tr>
+    <tr><td><code>playbackRate</code></td><td><code>true</code></td><td>Vimeo, fitxers</td><td>Ofereix el menú de velocitat (<code>speed=0</code>, <code>noplaybackrate</code>).</td></tr>
+    <tr><td><code>pictureInPicture</code></td><td><code>true</code></td><td>Vimeo, fitxers</td><td>Ofereix la imatge en imatge (<code>pip=0</code>, <code>disablepictureinpicture</code>).</td></tr>
+    <tr><td><code>remotePlayback</code></td><td><code>true</code></td><td>fitxers</td><td>Ofereix enviar el vídeo a una altra pantalla (<code>disableremoteplayback</code>).</td></tr>
+    <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube, Vimeo, fitxers</td><td>Comença a reproduir-se sol, sempre sense so, com exigeixen els navegadors.</td></tr>
+    <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube, Vimeo, fitxers</td><td>Comença amb el so apagat.</td></tr>
+    <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube, Vimeo, fitxers</td><td>Torna a començar en acabar.</td></tr>
+    <tr><td><code>exclusive</code></td><td><code>true</code></td><td>Folio, visor HTML, EPUB (si executa scripts); fitxers</td><td>En començar aquest vídeo es posen en pausa els altres que són a la vista, de manera que només se'n reprodueix un alhora. Amb <code>false</code> es reprodueix amb els altres: els clips sense so i en bucle d'una pàgina, diversos alhora. Des de postext 1.18.</td></tr>
+    <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>fitxers</td><td>Quant carrega el navegador abans de reproduir: <code>'none'</code>, <code>'metadata'</code> o <code>'auto'</code>.</td></tr>
+    <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube, Vimeo</td><td>Insercions amb més privadesa: YouTube des de <code>youtube-nocookie.com</code>, Vimeo amb <code>dnt=1</code>.</td></tr>
+  </tbody>
+</table>
+
+Un EPUB només conserva els atributs que coneix el seu esquema: un fitxer es reprodueix amb <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> i <code>preload</code>, a més de la marca <code>data-pt-alongside</code>, i la resta la decideix el lector.
+
+Un vídeo que no és exclusiu porta `data-pt-alongside` a la sortida HTML. `coordinateVideoPlayback(root)` aplica la regla als reproductors que hi ha sota `root` (l'element que conté la sortida de `renderToHtml`): començar un vídeo exclusiu posa en pausa tots els altres que es reprodueixen, i començar-ne un que es reprodueix amb d'altres posa en pausa només els exclusius. Retorna una funció que deixa d'escoltar. `playsAlongside(el)` i `videosToPause(started, videos, alongside)` donen la mateixa regla a un amfitrió amb reproductors propis. A [Folio](/ca/docs/document-format#vídeos-a-les-pàgines-de-folio), un vídeo que arrenca sol i es reprodueix amb d'altres (`autoplay` amb `exclusive: false`) comença, sense so, cada cop que la seva pàgina apareix i s'atura quan es passa la pàgina, diversos alhora, i `loop` el torna a començar en acabar. En un EPUB, la pàgina o el capítol amb vídeos per coordinar (dos o més, un d'ells exclusiu) enllaça la mateixa regla com un petit script, `scripts/videos.js` (l'exportació `VIDEO_PLAYBACK_SCRIPT`), i el paquet declara aquest document `scripted`. Un lector que executa scripts aplica la regla als vídeos d'aquest document, però no als de la pàgina del davant, que és un altre document; un que no els executa reprodueix cada vídeo segons les seves pròpies regles, com fan sempre els reproductors de YouTube i Vimeo.
+
+El resolutor i el depurador segueixen el patró de les altres seccions, juntament amb els tipus `VideoStyleConfig` / `ResolvedVideoStyleConfig`:
+
+```ts
+import {
+  DEFAULT_VIDEO_STYLE_CONFIG,
+  DEFAULT_VIDEO_PLAYER_OPTIONS,
+  resolveVideoStyleConfig,
+  resolveVideoPlayerOptions,
+  stripVideoStyleDefaults,
+} from 'postext';
+
+const resolved = resolveVideoStyleConfig(config.videoStyle);
+const player = resolveVideoPlayerOptions(resource.video?.player, resolved.player);
+const minimal = stripVideoStyleDefaults(config.videoStyle); // undefined quan tot és per defecte
+```

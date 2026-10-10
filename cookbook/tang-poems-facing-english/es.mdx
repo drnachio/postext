@@ -16,7 +16,7 @@ Un pequeño libro bilingüe de poemas Tang, compuesto como las ediciones biling�
 
 ### 1 · Un estilo de título para cada lado del pliego
 
-El código está en [la respuesta corta](#la-respuesta-corta), más arriba. Cada poema son dos títulos de nivel 1: `# Night Thoughts {style="en" …}` con los versos de Giles y después `# 靜夜思 {style="zh" …}` con el poema. El estilo `en` salta a la siguiente página par; el `zh`, a la siguiente impar, la que queda enfrente. Mientras cada poema quepa en su página no entra ninguna página en blanco; una versión inglesa que se pasara de página empujaría su original a la impar siguiente, detrás de una par en blanco ([Saltar antes](/es/docs/configuration#saltar-antes)). Los dos diseños reservan seis líneas de la retícula, así que el inglés y el chino empiezan en la misma línea. El estilo chino lleva `span: 'page'` porque su primer elemento, una caja del tamaño de la página, es la hoja teñida, y un diseño que se queda en la columna se corta al pie de la columna ([Span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)).
+El código está en [la respuesta corta](#la-respuesta-corta), más arriba. Cada poema son dos títulos de nivel 1: `# Night Thoughts {style="en" …}` con los versos de Giles y después `# 靜夜思 {style="zh" …}` con el poema. El estilo `en` salta a la siguiente página par; el `zh`, a la siguiente impar, la que queda enfrente. Mientras cada poema quepa en su página no entra ninguna página en blanco; una versión inglesa que se pasara de página empujaría su original a la impar siguiente, detrás de una par en blanco ([Saltar antes](/es/docs/configuration-text#saltar-antes)). Los dos diseños reservan seis líneas de la retícula, así que el inglés y el chino empiezan en la misma línea. El estilo chino lleva `span: 'page'` porque su primer elemento, una caja del tamaño de la página, es la hoja teñida, y un diseño que se queda en la columna se corta al pie de la columna ([Span y diseño avanzado](/es/docs/configuration-text#span-y-diseño-avanzado)).
 
 <PageShot page={2} crop="0,0.05,1,0.28" caption="Página 2: el inglés empieza en la página par seis líneas más abajo, en la misma línea de la retícula en que empieza el chino en la página 3." />
 
@@ -30,13 +30,13 @@ Los renglones chinos tienen el doble de interlineado que los versos ingleses, 32
 
 <Excerpt region="notes" />
 
-Las notas son notas al pie, una por renglón: `疑是地上霜。[^bed]` cierra el primer renglón del poema y `[^bed]: …` va tras él, con las palabras que glosa en negrita, porque la llamada ya no está a su lado. Se numeran como numera sus notas un libro chino (页下注): números en círculo sobre la línea de base, contados de nuevo desde ① en cada página (`numberFormat: 'circled-decimal'`, `numbering: 'page'`). En el verso la llamada se compone a seis décimas del tamaño del poema, `markerSize: em(0.6)`, cerca del tamaño de las notas; al pie de la página cada nota empieza con su ① al tamaño del texto de la nota ([Notas al pie](/es/docs/configuration#notas-al-pie)). Las notas se componen con la fuente del cuerpo, y la de este libro es Noto Serif TC porque una nota mezcla caracteres y pinyin; las letras latinas de Noto Serif TC son las de Source Serif, y por eso las páginas inglesas van en Source Serif 4. Las notas se escriben en la lengua de la edición: con la cabecera de la página par y la nota sobre el texto, son lo que cambia en la edición española.
+Las notas son notas al pie, una por renglón: `疑是地上霜。[^bed]` cierra el primer renglón del poema y `[^bed]: …` va tras él, con las palabras que glosa en negrita, porque la llamada ya no está a su lado. Se numeran como numera sus notas un libro chino (页下注): números en círculo sobre la línea de base, contados de nuevo desde ① en cada página (`numberFormat: 'circled-decimal'`, `numbering: 'page'`). En el verso la llamada se compone a seis décimas del tamaño del poema, `markerSize: em(0.6)`, cerca del tamaño de las notas; al pie de la página cada nota empieza con su ① al tamaño del texto de la nota ([Notas al pie](/es/docs/configuration-notes-references#notas-al-pie)). Las notas se componen con la fuente del cuerpo, y la de este libro es Noto Serif TC porque una nota mezcla caracteres y pinyin; las letras latinas de Noto Serif TC son las de Source Serif, y por eso las páginas inglesas van en Source Serif 4. Las notas se escriben en la lengua de la edición: con la cabecera de la página par y la nota sobre el texto, son lo que cambia en la edición española.
 
 ### 4 · Cabeceras en la lengua de cada página
 
 <Excerpt region="heads" />
 
-Todas las páginas de este libro empiezan con un título, así que todas son aperturas, y las cabeceras llevan `pages: 'opener'`. Una página en blanco que añadiera un salto quedaría limpia, y la portada las quita con una cabecera vacía propia. La página par toma el título del libro del `subtitle` del frontmatter, que cada edición escribe en su lengua; la impar toma el nombre del poeta del atributo `name` del título chino ([Encabezados y pies](/es/docs/configuration#encabezados-y-pies)).
+Todas las páginas de este libro empiezan con un título, así que todas son aperturas, y las cabeceras llevan `pages: 'opener'`. Una página en blanco que añadiera un salto quedaría limpia, y la portada las quita con una cabecera vacía propia. La página par toma el título del libro del `subtitle` del frontmatter, que cada edición escribe en su lengua; la impar toma el nombre del poeta del atributo `name` del título chino ([Encabezados y pies](/es/docs/configuration-page-layout#encabezados-y-pies)).
 
 ### 5 · Una portada sobre una luna
 
@@ -48,7 +48,7 @@ La portada también es un estilo de título, con `runningChapter: false` para qu
 
 <Excerpt region="voices" />
 
-Fontsource parte cada fuente china en unos cien archivos por rangos de caracteres, y `loadCjkFonts` descarga solo los que necesita su texto ([Fuentes chinas, japonesas y coreanas](/es/docs/configuration#fuentes-chinas-japonesas-y-coreanas)). La Kai recibe los poemas y el sello; la Hei, los nombres de los poetas; la Song en negrita, los cuatro títulos y las palabras glosadas de las notas, y su peso más negro, los dos caracteres de la portada.
+Fontsource parte cada fuente china en unos cien archivos por rangos de caracteres, y `loadCjkFonts` descarga solo los que necesita su texto ([Fuentes chinas, japonesas y coreanas](/es/docs/configuration-programmatic-usage#fuentes-chinas-japonesas-y-coreanas)). La Kai recibe los poemas y el sello; la Hei, los nombres de los poetas; la Song en negrita, los cuatro títulos y las palabras glosadas de las notas, y su peso más negro, los dos caracteres de la portada.
 
 ## Variantes
 

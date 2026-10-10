@@ -22,7 +22,7 @@ O código é [a resposta curta](#a-resposta-curta) lá em cima. O TSV guarda só
 
 <Excerpt region="split" />
 
-A carta da página 1 cita a lista com `:ref{id="vegetables" text="the price list"}`, e `text` imprime essas palavras no lugar de um número. Uma tabela citada flutua para o primeiro espaço livre depois da citação, aqui o alto da página 2. A lista não cabe ali, então o motor a corta entre linhas depois de Jimmy Nardello, nunca dentro de um tipo mesclado. A página 3 repete a linha de cabeçalho e a faixa da legenda com o sufixo; o aviso de continuação vai sob a primeira parte, e a nota, sob a última ([tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)). `parseTSV(tsv, { headerRows: 1 })` faz da primeira linha o cabeçalho, que é pintado como tal e repetido na página 3. O sufixo e o aviso vão em itálico e usam a fonte da legenda, por isso a faixa fica em Gelasio; a Cabin Condensed não tem itálico.
+A carta da página 1 cita a lista com `:ref{id="vegetables" text="the price list"}`, e `text` imprime essas palavras no lugar de um número. Uma tabela citada flutua para o primeiro espaço livre depois da citação, aqui o alto da página 2. A lista não cabe ali, então o motor a corta entre linhas depois de Jimmy Nardello, nunca dentro de um tipo mesclado. A página 3 repete a linha de cabeçalho e a faixa da legenda com o sufixo; o aviso de continuação vai sob a primeira parte, e a nota, sob a última ([tabelas mais altas que a página](/pt/docs/configuration-resources#tabelas-mais-altas-que-a-página)). `parseTSV(tsv, { headerRows: 1 })` faz da primeira linha o cabeçalho, que é pintado como tal e repetido na página 3. O sufixo e o aviso vão em itálico e usam a fonte da legenda, por isso a faixa fica em Gelasio; a Cabin Condensed não tem itálico.
 
 ### 3 · Um recurso para cada envelope
 
@@ -34,7 +34,7 @@ A imagem de uma célula indica um recurso pelo id, então cada envelope é um re
 
 <Excerpt region="forms" />
 
-As duas grades usam o estilo nomeado `form`, com fios em grade, raio de 2,5 mm na moldura externa e um preenchimento creme para escrever em cima. A lista de preços mantém o `tableStyle` do documento ([estilos de tabela nomeados](/pt/docs/configuration#estilos-de-tabela-nomeados)). Uma célula vazia não precisa de texto provisório, porque a sua linha ocupa uma linha mesmo assim, aqui de 7,3 mm. Cada total mescla quatro colunas num único rótulo alinhado à direita. O estilo de título da folha de pedido passa a página 4 para uma só coluna, de modo que as duas grades ocupam a medida inteira de 157 mm.
+As duas grades usam o estilo nomeado `form`, com fios em grade, raio de 2,5 mm na moldura externa e um preenchimento creme para escrever em cima. A lista de preços mantém o `tableStyle` do documento ([estilos de tabela nomeados](/pt/docs/configuration-resources#estilos-de-tabela-nomeados)). Uma célula vazia não precisa de texto provisório, porque a sua linha ocupa uma linha mesmo assim, aqui de 7,3 mm. Cada total mescla quatro colunas num único rótulo alinhado à direita. O estilo de título da folha de pedido passa a página 4 para uma só coluna, de modo que as duas grades ocupam a medida inteira de 157 mm.
 
 ### 5 · Mantenha a carta embaixo da pintura
 

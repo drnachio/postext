@@ -18,7 +18,7 @@ Both sides of a DL visitor leaflet, 99 × 210 mm, for a tide mill on an invented
 
 <Excerpt region="answer" highlight="14-17" />
 
-`createBundle` zips the chapter, the config, the resources and every file they name; `openBundle` gets nothing but those bytes. The faces come from `loadBundleFonts`, the drawings from `registerBundleImages` and the design from `bundle.config`. A face left out of `files` prints in the browser's fallback font, and a drawing left out is dropped with a warning and its reference prints (?). Inside the zip each `fileId` becomes a path (`mill.svg` is now `resources/mill.svg`), and the resources and `customFonts` that `openBundle` returns already use the new names ([opening a bundle](/en/docs/configuration#opening-a-bundle)).
+`createBundle` zips the chapter, the config, the resources and every file they name; `openBundle` gets nothing but those bytes. The faces come from `loadBundleFonts`, the drawings from `registerBundleImages` and the design from `bundle.config`. A face left out of `files` prints in the browser's fallback font, and a drawing left out is dropped with a warning and its reference prints (?). Inside the zip each `fileId` becomes a path (`mill.svg` is now `resources/mill.svg`), and the resources and `customFonts` that `openBundle` returns already use the new names ([opening a bundle](/en/docs/configuration-programmatic-usage#opening-a-bundle)).
 
 ### 2 · Put the faces in the file
 
@@ -36,13 +36,13 @@ The two drawings are SVG markup made by the pen, handed to `files` under the `sv
 
 <Excerpt region="labels" />
 
-A reader builds the built-in types in the language the file serves: with no `resourceTypes` in its config, the Spanish leaflet prints Figura 1.1 and Tabla 1.1 wherever it is opened, the Sandbox at /en/sandbox included. The leaflet writes the types for their numbers alone: `'{n}'` drops the chapter number, which a two-page leaflet does not need ([resource types](/en/docs/configuration#resource-types)). The same `config()` sets `locale`, which picks the Spanish hyphenation patterns (compuer-tas on the back) and the language the PDF declares.
+A reader builds the built-in types in the language the file serves: with no `resourceTypes` in its config, the Spanish leaflet prints Figura 1.1 and Tabla 1.1 wherever it is opened, the Sandbox at /en/sandbox included. The leaflet writes the types for their numbers alone: `'{n}'` drops the chapter number, which a two-page leaflet does not need ([resource types](/en/docs/configuration-resources#resource-types)). The same `config()` sets `locale`, which picks the Spanish hyphenation patterns (compuer-tas on the back) and the language the PDF declares.
 
 ### 5 · Hand the same bytes on
 
 <Excerpt region="handoff" />
 
-The link offers the `bytes` the pages were laid out from, 132 KB with the fonts. Imported in the Sandbox (*Books → New → Open a .postext file…*) the file becomes a Spanish or English book with the wheel as its picture, taken from `thumbnail`. The PDF takes its faces from `bundleFontProvider`, which returns the bundle's face nearest in weight, in the same style when there is one, and its drawings from `bundleResourceBytes`, so no font or picture is downloaded a second time ([laying out and rendering a bundle](/en/docs/configuration#laying-out-and-rendering-a-bundle)).
+The link offers the `bytes` the pages were laid out from, 132 KB with the fonts. Imported in the Sandbox (*Books → New → Open a .postext file…*) the file becomes a Spanish or English book with the wheel as its picture, taken from `thumbnail`. The PDF takes its faces from `bundleFontProvider`, which returns the bundle's face nearest in weight, in the same style when there is one, and its drawings from `bundleResourceBytes`, so no font or picture is downloaded a second time ([laying out and rendering a bundle](/en/docs/configuration-programmatic-usage#laying-out-and-rendering-a-bundle)).
 
 ### 6 · Draw the front with one heading
 
@@ -72,4 +72,4 @@ Without the types the reader builds them in the file's language with the default
 
 ## Pitfalls
 
-- Each edition here is a file of its own. To carry both languages in one file, give `createBundle` a `localized` map ([Bilingual bundles](/en/docs/configuration#bilingual-bundles)); `openBundle(bytes, { locale })` then reads either edition.
+- Each edition here is a file of its own. To carry both languages in one file, give `createBundle` a `localized` map ([Bilingual bundles](/en/docs/configuration-programmatic-usage#bilingual-bundles)); `openBundle(bytes, { locale })` then reads either edition.

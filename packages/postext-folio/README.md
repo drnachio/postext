@@ -4,7 +4,7 @@
 
 `postext-folio` sets a book out on the screen in spreads and lets the reader turn its pages: with the ‹ › buttons, the arrow keys, a swipe, a click on a page, or by taking a page by its edge and dragging it over. Each leaf curls in [three.js](https://threejs.org/) and casts a real shadow on the pages under it. The WebGL canvas draws the book still and turning alike, so a page never changes look when it lands; the DOM pages under it (images or canvases) are the textures' sources and the pages' text alternatives. A right-bound book (Chinese, Japanese, Arabic) lies mirrored and turns leftward. Without WebGL2, or when the reader asks for reduced motion, the spreads simply change.
 
-**Website:** [postext.dev](https://postext.dev/) · **Docs:** [A 3D book](https://postext.dev/en/docs/configuration#a-3d-book-postext-folio)
+**Website:** [postext.dev](https://postext.dev/) · **Docs:** [A 3D book](https://postext.dev/en/docs/configuration-programmatic-usage#a-3d-book-postext-folio)
 
 ## Install
 

@@ -1,0 +1,542 @@
+{/* docs/configuration-comics-es.mdx */}
+
+export const metadata = {
+  title: 'Configuración: cómics',
+  sidebarTitle: 'Ajustes de cómics',
+  description: 'Los ajustes de comics: el marco y las calles de las páginas de cómic, los estilos de viñeta, la rotulación, los estilos de bocadillo y el reparto',
+  lang: 'es',
+  lastUpdated: '2026-10-10',
+  readingTime: '3 min',
+  order: 10,
+  parent: 'configuration',
+  plainSummary: "Esta página reúne los ajustes de las páginas de cómic. Fijas el marco de la página y el espacio entre viñetas. Eliges la tipografía y el tamaño de la rotulación. Defines cómo se dibujan los bocadillos, las cartelas y las onomatopeyas. También puedes dar la lista de personajes, para que cada uno hable con su propio estilo. La guía de cómics explica cómo escribir las páginas.",
+};
+
+# Configuración: cómics
+
+
+## Cómics
+
+La propiedad `comics` configura las páginas de cómic (`:::page`), las tiras (`:::strip`) y las dobles páginas: el marco y las calles de los que se cortan las viñetas, los estilos de viñeta, la rotulación, los estilos de bocadillo y el reparto. Solo la leen los documentos que tienen cómics; un documento sin ellos se compone exactamente igual que antes, y un documento con cómics y sin sección `comics` toma los valores por defecto de su idioma. El marcado y la manera de rotular las páginas se explican en [Cómics](/es/docs/comics).
+
+```ts
+const config: PostextConfig = {
+  comics: {
+    readingDirection: 'auto',
+    gutter: { horizontal: { value: 5, unit: 'mm' }, vertical: { value: 2.5, unit: 'mm' } },
+    panel: { borderWidth: { value: 0.8, unit: 'pt' }, borderStyle: 'rough' },
+    panelStyles: [{ id: 'night', background: { hex: '#14142b', model: 'hex' }, borderColor: { hex: '#ffffff', model: 'hex' } }],
+    lettering: { fontSize: { value: 8.5, unit: 'pt' }, textTransform: 'uppercase' },
+    balloonStyles: [{ id: 'eerie', shape: 'wavy', italic: true }],
+    cast: [{ id: 'maya', name: 'Maya' }, { id: 'tomas', name: 'El abuelo Tomás' }],
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>readingDirection</code></td>
+      <td><code>'auto' | 'ltr' | 'rtl'</code></td>
+      <td><code>'auto'</code></td>
+      <td>El orden de las viñetas en una tira. <code>'auto'</code> lee de derecha a izquierda en un documento de derecha a izquierda, en uno vertical y en japonés y chino tradicional y, si no, en el sentido de <code>artDirection</code> (también en chino simplificado y coreano). El atributo <code>direction</code> de una página lo sustituye. Con <code>page.binding: 'auto'</code>, un libro cuyos cómics se leen de derecha a izquierda se encuaderna por la derecha.</td>
+    </tr>
+    <tr>
+      <td><code>artDirection</code></td>
+      <td><code>'ltr' | 'rtl'</code></td>
+      <td><code>'ltr'</code></td>
+      <td>El sentido de lectura para el que se dibujó el arte: <code>'rtl'</code> para el manga.</td>
+    </tr>
+    <tr>
+      <td><code>mirrorArt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Voltea los dibujos de una página que se lee en el sentido contrario a <code>artDirection</code>. Una viñeta conserva su dibujo tal como se hizo con <code>mirror=false</code>.</td>
+    </tr>
+    <tr>
+      <td><code>frame.margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>los márgenes de la página</td>
+      <td>Márgenes propios para las páginas de cómic (<code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>, <code>mirror</code>). Las viñetas se cortan de la caja que dejan; sin ellos, de la caja de texto de la página.</td>
+    </tr>
+    <tr>
+      <td><code>gutter.horizontal</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>4mm</code></td>
+      <td>El espacio entre tiras. El atributo <code>gutter</code> de una página lo sustituye.</td>
+    </tr>
+    <tr>
+      <td><code>gutter.vertical</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2mm</code></td>
+      <td>El espacio entre viñetas contiguas de una tira.</td>
+    </tr>
+    <tr>
+      <td><code>panel</code></td>
+      <td><code>PanelStyleConfig</code></td>
+      <td>véase más abajo</td>
+      <td>El estilo de viñeta por defecto.</td>
+    </tr>
+    <tr>
+      <td><code>panelStyles</code></td>
+      <td><code>NamedPanelStyleConfig[]</code></td>
+      <td><code>[]</code></td>
+      <td>Estilos de viñeta con nombre, que se eligen con <code>:::page&#123;style=…&#125;</code> o <code>::panel&#123;style=…&#125;</code>. Cada uno tiene un <code>id</code>, un <code>name</code> opcional (solo para las interfaces de edición) y los campos de un estilo de viñeta; los campos sin fijar siguen a <code>panel</code>.</td>
+    </tr>
+    <tr>
+      <td><code>lettering</code></td>
+      <td><code>LetteringConfig</code></td>
+      <td>véase más abajo</td>
+      <td>La letra, el tamaño y las normas de la casa de todos los bocadillos del libro.</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyles</code></td>
+      <td><code>BalloonStyleConfig[]</code></td>
+      <td>los nueve estilos integrados</td>
+      <td>Estilos de bocadillo por clase. Los integrados están siempre; una entrada con uno de sus ids lo modifica, y una entrada con un id nuevo añade un estilo superpuesto a <code>speech</code>.</td>
+    </tr>
+    <tr>
+      <td><code>cast</code></td>
+      <td><code>ComicCastMember[]</code></td>
+      <td><code>[]</code></td>
+      <td>Los personajes (véase <a href="#reparto">Reparto</a>).</td>
+    </tr>
+    <tr>
+      <td><code>runningHeads</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Imprime las cornisas y los folios en las páginas de cómic. Desactivado, una página de cómic es toda viñetas y su número sigue contando.</td>
+    </tr>
+    <tr>
+      <td><code>viewerLeaf</code></td>
+      <td><code>ComicViewerLeafConfig</code></td>
+      <td>sin fijar</td>
+      <td>Para los anfitriones cuyas páginas no son hojas: compone las páginas de cómic sobre una hoja impresa (<code>width</code>, <code>height</code>, <code>margins</code>) escalada a <code>fitWidth</code> px (y de <code>fitHeight</code> px de alto como mucho) en lo alto de la página. Lo fija el visor HTML del Sandbox; nunca se guarda con un documento.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Estilos de viñeta
+
+`comics.panel` y cada entrada de `comics.panelStyles`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1pt</code></td>
+      <td>Grosor del borde; <code>0</code> no dibuja ninguno. El borde se traza sobre el contorno de la viñeta.</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>negro</td>
+      <td>Color del borde (puede enlazarse a la paleta).</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Radio de las esquinas de una viñeta rectangular, limitado a la mitad de su lado más corto. Una viñeta cortada por una línea inclinada conserva las esquinas vivas.</td>
+    </tr>
+    <tr>
+      <td><code>borderStyle</code></td>
+      <td><code>'solid' | 'rough' | 'none'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Una línea limpia, una línea hecha a mano que tiembla un poco (con una semilla tomada de la viñeta, así que es igual en cada composición) o ninguna.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>blanco</td>
+      <td>El relleno bajo el dibujo: el color de una viñeta vacía y de las bandas que rodean un dibujo mostrado entero.</td>
+    </tr>
+    <tr>
+      <td><code>fit</code></td>
+      <td><code>'cover' | 'contain'</code></td>
+      <td><code>'cover'</code></td>
+      <td><code>cover</code> recorta el dibujo para llenar la viñeta, nunca dentro de su zona segura; <code>contain</code> lo muestra entero.</td>
+    </tr>
+    <tr>
+      <td><code>bleed</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Las viñetas de este estilo rebasan el marco hasta el corte y el sangrado por todos los lados que tocan el marco.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Rotulación
+
+`comics.lettering` rige todos los bocadillos del libro. Hay un solo tamaño: un estilo de bocadillo puede escalarlo (`fontScale`), y el texto nunca se reduce para caber en un bocadillo.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>según el idioma</td>
+      <td>La letra de rotulación. Sin fijar: <code>Comic Neue</code>; <code>Zen Antique</code> en japonés, <code>Noto Sans SC</code> en chino simplificado, <code>LXGW WenKai TC</code> en chino tradicional, <code>Playpen Sans Arabic</code> en árabe, persa y urdu (<code>defaultComicFont(locale)</code>).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>7.5pt</code></td>
+      <td>El tamaño del texto de los bocadillos. Los cómics suelen rotularse a entre 7 y 9 pt en la página impresa.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number</code></td>
+      <td><code>1.15</code></td>
+      <td>Distancia entre líneas, como múltiplo del tamaño. Con el valor por defecto, los bocadillos verticales, chinos y japoneses toman 1,5 y los árabes 1,45.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>negro</td>
+      <td>Color del texto.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>, <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compone toda la rotulación en negrita o en cursiva. La rotulación en chino, en japonés y en árabe nunca se inclina.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Espacio extra entre letras; <code>em</code> es relativo al tamaño del texto. Nunca se aplica al árabe.</td>
+    </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'auto' | 'horizontal' | 'vertical'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> rotula en columnas verticales el japonés y el chino tradicional, y cualquier documento compuesto en escritura vertical, y todo lo demás en horizontal. Las marcas <code>vertical</code> u <code>horizontal</code> de una línea de guion componen esa línea de otro modo (véase <a href="/es/docs/comics#rotulación">Cómics › Rotulación</a>).</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Todo en mayúsculas, el aspecto clásico de la rotulación estadounidense y europea. Las escrituras sin mayúsculas quedan como están.</td>
+    </tr>
+    <tr>
+      <td><code>dropFinalStop</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Quita el punto que cierra un bocadillo (<code>。</code> en el manga). <code>'auto'</code>: solo en japonés y en chino.</td>
+    </tr>
+    <tr>
+      <td><code>doubleDash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Rotula la raya como <code>--</code>, una costumbre de la rotulación estadounidense.</td>
+    </tr>
+    <tr>
+      <td><code>inset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5mm</code></td>
+      <td>Espacio que se deja entre un bocadillo y el borde de su viñeta. Una cartela pegada al borde no lo respeta.</td>
+    </tr>
+    <tr>
+      <td><code>joinSameSpeaker</code></td>
+      <td><code>'butt' | 'connector' | 'none'</code></td>
+      <td><code>'butt'</code></td>
+      <td>Dos bocadillos seguidos del mismo personaje: cuerpos fundidos en un solo contorno, enlazados por un cuello estrecho, o separados. Una línea de guion pide lo suyo con <code>join</code> o <code>join=false</code>.</td>
+    </tr>
+    <tr>
+      <td><code>maxColumnChars</code></td>
+      <td><code>number</code></td>
+      <td><code>8</code></td>
+      <td>Rotulación vertical: el máximo de caracteres en una columna de un bocadillo. Las onomatopeyas se cortan tras cinco.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Estilos de bocadillo
+
+Cada entrada de `comics.balloonStyles` se superpone al estilo integrado del mismo id (`speech`, `thought`, `whisper`, `shout`, `radio`, `caption`, `inner`, `note`, `sfx`), o a `speech` si el id es nuevo. Los valores por defecto de abajo son los de `speech`; la [página de Cómics](/es/docs/comics#estilos-de-bocadillo) enumera lo que cambia cada estilo integrado. Las longitudes en `em` son relativas al tamaño del texto del bocadillo.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obligatorio</td>
+      <td>La palabra con la que una línea de guion nombra el estilo: <code>ben&#123;whisper&#125;: …</code> o <code>style=whisper</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nombre legible, solo para las interfaces de edición.</td>
+    </tr>
+    <tr>
+      <td><code>shape</code></td>
+      <td><code>'oval' | 'rounded' | 'rectangle' | 'cloud' | 'burst' | 'wavy' | 'electric' | 'none'</code></td>
+      <td><code>'oval'</code></td>
+      <td>El contorno que rodea el texto. <code>'none'</code> pone el texto directamente sobre el dibujo.</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>blanco</td>
+      <td>Relleno del bocadillo.</td>
+    </tr>
+    <tr>
+      <td><code>stroke</code></td>
+      <td><code>ColorValue</code></td>
+      <td>negro</td>
+      <td>Color del contorno.</td>
+    </tr>
+    <tr>
+      <td><code>strokeWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.6pt</code></td>
+      <td>Grosor del contorno.</td>
+    </tr>
+    <tr>
+      <td><code>dash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Un contorno discontinuo (un susurro).</td>
+    </tr>
+    <tr>
+      <td><code>double</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Un contorno doble.</td>
+    </tr>
+    <tr>
+      <td><code>wobble</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Temblor de mano del contorno, de 0 a 1, con una semilla tomada del bocadillo para que nunca cambie de una composición a otra.</td>
+    </tr>
+    <tr>
+      <td><code>roundness</code></td>
+      <td><code>number</code></td>
+      <td><code>2.2</code></td>
+      <td>El exponente de superelipse de un óvalo: 2 es una elipse, y los valores mayores lo hacen más cuadrado.</td>
+    </tr>
+    <tr>
+      <td><code>burstPoints</code></td>
+      <td><code>number</code></td>
+      <td><code>14</code></td>
+      <td>Los picos de una explosión; <code>0</code> los cuenta a partir del perímetro.</td>
+    </tr>
+    <tr>
+      <td><code>burstDepth</code></td>
+      <td><code>number</code></td>
+      <td><code>0.22</code></td>
+      <td>La profundidad de los picos de una explosión, como fracción del radio del cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.55em</code></td>
+      <td>El aire entre el texto y el contorno.</td>
+    </tr>
+    <tr>
+      <td><code>aspect</code></td>
+      <td><code>number</code></td>
+      <td><code>1.6</code></td>
+      <td>La anchura dividida por la altura a la que el corte de líneas lleva el bloque de texto (rotulación horizontal).</td>
+    </tr>
+    <tr>
+      <td><code>tail</code></td>
+      <td><code>'curved' | 'wedge' | 'bubbles' | 'zigzag' | 'none'</code></td>
+      <td><code>'curved'</code></td>
+      <td>El rabillo.</td>
+    </tr>
+    <tr>
+      <td><code>tailWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>El ancho del rabillo donde sale del contorno.</td>
+    </tr>
+    <tr>
+      <td><code>tailReach</code></td>
+      <td><code>number</code></td>
+      <td><code>0.55</code></td>
+      <td>Hasta dónde llega el rabillo hacia su personaje, como fracción de la distancia entre el contorno y la boca.</td>
+    </tr>
+    <tr>
+      <td><code>target</code></td>
+      <td><code>'mouth' | 'head'</code></td>
+      <td><code>'mouth'</code></td>
+      <td>Adónde apunta el rabillo: a la boca del ancla o a su cabeza (bocadillos de pensamiento).</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'auto' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'top' | 'bottom'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Dónde va el bocadillo cuando la línea no lo fija: donde lo coloque la rotulación, o en una esquina o un borde de la viñeta.</td>
+    </tr>
+    <tr>
+      <td><code>butt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pega al borde de la viñeta un bocadillo de esquina o de borde (cartelas).</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>la letra de rotulación</td>
+      <td>La letra de este estilo. <code>sfx</code> toma por defecto la letra de onomatopeyas del idioma: <code>Bangers</code>, <code>Dela Gothic One</code> en japonés, <code>ZCOOL KuaiLe</code> en chino simplificado, <code>LXGW WenKai TC</code> en chino tradicional, <code>Lalezar</code> en árabe (<code>defaultComicSfxFont(locale)</code>).</td>
+    </tr>
+    <tr>
+      <td><code>fontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>El tamaño del texto, como múltiplo del tamaño de la rotulación.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>, <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td>los de la rotulación</td>
+      <td>Texto en negrita o en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el de la rotulación</td>
+      <td>Color del texto.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td>el de la rotulación</td>
+      <td>Todo en mayúsculas para este estilo.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>el de la rotulación</td>
+      <td>Espacio extra entre letras.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'center' | 'start'</code></td>
+      <td><code>'center'</code></td>
+      <td>Alineación de las líneas dentro del bocadillo.</td>
+    </tr>
+    <tr>
+      <td><code>halo</code></td>
+      <td><code>Dimension</code></td>
+      <td>ninguno</td>
+      <td>Un contorno alrededor de las letras, de ese grosor, para que el texto se lea sobre el dibujo (onomatopeyas).</td>
+    </tr>
+    <tr>
+      <td><code>haloColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>blanco</td>
+      <td>El color del halo.</td>
+    </tr>
+    <tr>
+      <td><code>rotate</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Giro en grados, en el sentido de las agujas del reloj. Manda el atributo <code>rotate</code> de la línea.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Reparto
+
+Cada entrada de `comics.cast` describe un personaje:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obligatorio</td>
+      <td>La clave de personaje del guion y de las anclas de los dibujos.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>El nombre que la salida HTML y el EPUB adaptable imprimen delante de las líneas del personaje, y que muestran los editores.</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyle</code></td>
+      <td><code>string</code></td>
+      <td><code>speech</code></td>
+      <td>El estilo de las líneas del personaje que no nombran ninguno.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el del estilo</td>
+      <td>Color del texto de los bocadillos del personaje.</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el del estilo</td>
+      <td>Relleno de los bocadillos del personaje.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>la del estilo</td>
+      <td>La letra de los bocadillos del personaje.</td>
+    </tr>
+  </tbody>
+</table>
+
+El `color` y el `font` propios de una línea mandan sobre el reparto, y el reparto sobre el estilo de bocadillo. Cualquier color de los cómics puede ser una entrada de la paleta, que sigue a la paleta como cualquier color enlazado.
+
+```ts
+const resolved = resolveComicsConfig(config.comics, 'ja');
+// => todos los campos rellenos; Zen Antique y Dela Gothic One como letras
+
+const minimal = stripComicsDefaults(config.comics, 'ja');
+// => undefined cuando todo tiene el valor por defecto
+
+const shout = pickBalloonStyle(resolved, 'shout'); // el grito integrado con los cambios del libro
+const night = pickPanelStyle(resolved, 'night');   // un estilo de viñeta con nombre o, si no, la viñeta por defecto
+```

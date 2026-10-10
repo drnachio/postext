@@ -24,13 +24,13 @@ The programme of *Riverside Music Week*, a fictional festival in a river town, p
 
 <Excerpt region="links" />
 
-The engine's blue is a palette entry, `main-color` (#295AA3), and [its defaults](/en/docs/configuration#the-default-palette) point headings, bold, italic, references, bullets and the running head at it. Here each of those carries a palette id: times and key terms in bold `deep`, italics in ink, bullets in `band`, and on page 2 a running head in `deep` and the folio in `onBand` on a `band` pill. `retint()` also points `main-color` at the band; since this config sets every colour, that changes nothing on these pages, but a style added later without a colour takes the band instead of blue. The tickets box sets no bold colour of its own, so it inherits `bodyText.boldColor` with its palette id, and its bold changes with the colourway.
+The engine's blue is a palette entry, `main-color` (#295AA3), and [its defaults](/en/docs/configuration-fonts-colors-viewers#the-default-palette) point headings, bold, italic, references, bullets and the running head at it. Here each of those carries a palette id: times and key terms in bold `deep`, italics in ink, bullets in `band`, and on page 2 a running head in `deep` and the folio in `onBand` on a `band` pill. `retint()` also points `main-color` at the band; since this config sets every colour, that changes nothing on these pages, but a style added later without a colour takes the band instead of blue. The tickets box sets no bold colour of its own, so it inherits `bodyText.boldColor` with its palette id, and its bold changes with the colourway.
 
 ### 3 · Draw the artwork with design boxes
 
 <Excerpt region="opener" />
 
-The opener is a [design slot](/en/docs/configuration#box-elements) holding a box bled off the top edge, 29 rounded bars for the waveform and three text elements: the heading's own text as the title, and the kicker and standfirst from its attributes. The bars are boxes rather than an SVG, so their fill is one more `tint` link that follows the palette; an SVG would have to be redrawn and registered again for every colourway. On its own, the band box would start the text on the grid line 2.4 mm under the band; `minHeight`, 18 lines or 85.1 mm below the top margin, reserves more and moves the first line to 7 mm under it.
+The opener is a [design slot](/en/docs/configuration-page-layout#box-elements) holding a box bled off the top edge, 29 rounded bars for the waveform and three text elements: the heading's own text as the title, and the kicker and standfirst from its attributes. The bars are boxes rather than an SVG, so their fill is one more `tint` link that follows the palette; an SVG would have to be redrawn and registered again for every colourway. On its own, the band box would start the text on the grid line 2.4 mm under the band; `minHeight`, 18 lines or 85.1 mm below the top margin, reserves more and moves the first line to 7 mm under it.
 
 ### 4 · Let the palette fill the table
 
@@ -42,7 +42,7 @@ The grid is a table resource, outside the config. Its [cell fills](/en/docs/docu
 
 <Excerpt region="live" />
 
-Each button calls `retint()`, which assigns the colourway's entries to `colorPalette` on the one config object, and builds again. The engine resolves a config once and [caches the result against that object](/en/docs/configuration#global-state-shared-in-one-page); since postext 1.25 every build first checks that the object still reads as it did then, so a change made in place is resolved again. Every link follows: the text, the lists, the chips and the caption bar, and with them the band, the waveform, the running head, the folio pill and “Table 1”. The four proofs keep their colours when the palette changes again, because each document holds the colours it was laid out with. The pen builds them with `buildDocumentWithFonts`; by the time a button is clicked the faces are loaded, and `buildDocument` is enough.
+Each button calls `retint()`, which assigns the colourway's entries to `colorPalette` on the one config object, and builds again. The engine resolves a config once and [caches the result against that object](/en/docs/configuration-programmatic-usage#global-state-shared-in-one-page); since postext 1.25 every build first checks that the object still reads as it did then, so a change made in place is resolved again. Every link follows: the text, the lists, the chips and the caption bar, and with them the band, the waveform, the running head, the folio pill and “Table 1”. The four proofs keep their colours when the palette changes again, because each document holds the colours it was laid out with. The pen builds them with `buildDocumentWithFonts`; by the time a button is clicked the faces are loaded, and `buildDocument` is enough.
 
 ## Variations
 

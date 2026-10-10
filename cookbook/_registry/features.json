@@ -94,7 +94,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Page size presets",
         "es": "Tamaños de página predefinidos",
@@ -187,7 +187,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Page size presets",
         "es": "Tamaños de página predefinidos",
@@ -287,7 +287,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Mirrored margins",
         "es": "Márgenes simétricos (espejo)",
@@ -386,7 +386,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Dimensions",
         "es": "Dimensiones",
@@ -478,7 +478,7 @@
     },
     "group": "colour",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Page",
         "es": "Página",
@@ -574,7 +574,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Baseline grid",
         "es": "Rejilla base",
@@ -765,7 +765,7 @@
     },
     "group": "pdf",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Cut lines",
         "es": "Marcas de corte",
@@ -864,7 +864,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Layout types",
         "es": "Tipos de disposición",
@@ -961,7 +961,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Layout types",
         "es": "Tipos de disposición",
@@ -1047,7 +1047,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Column rule",
         "es": "Filete de columna",
@@ -1146,7 +1146,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Layout types",
         "es": "Tipos de disposición",
@@ -1250,7 +1250,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Layout",
         "es": "Disposición",
@@ -1548,7 +1548,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Column balancing",
         "es": "Equilibrado de columnas",
@@ -1651,7 +1651,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Body text",
         "es": "Texto de cuerpo",
@@ -1748,7 +1748,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Body text",
         "es": "Texto de cuerpo",
@@ -1840,7 +1840,7 @@
     },
     "group": "colour",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Body text",
         "es": "Texto de cuerpo",
@@ -2045,7 +2045,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Orphans, widows, runts, and keep-together rules",
         "es": "Huérfanas, viudas, *runts* y reglas de cohesión",
@@ -2150,7 +2150,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Paragraph styles",
         "es": "Estilos de párrafo",
@@ -2375,7 +2375,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-notes-references",
       "heading": {
         "en": "Line numbers",
         "es": "Numeración de líneas",
@@ -2482,7 +2482,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Tab stops",
         "es": "Tabulaciones",
@@ -2589,7 +2589,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Code listings",
         "es": "Listados de código",
@@ -2684,7 +2684,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Drop caps",
         "es": "Letras capitulares",
@@ -2782,7 +2782,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Paragraph styles",
         "es": "Estilos de párrafo",
@@ -2895,7 +2895,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Unordered Lists",
         "es": "Listas no ordenadas",
@@ -2995,7 +2995,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Ordered Lists",
         "es": "Listas ordenadas",
@@ -3098,7 +3098,7 @@
     },
     "group": "text",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Chip styles",
         "es": "Estilos de chip",
@@ -3700,7 +3700,7 @@
     },
     "group": "fonts",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Loading fonts before layout",
         "es": "Cargar las fuentes antes de componer",
@@ -3798,7 +3798,7 @@
     },
     "group": "fonts",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Custom fonts",
         "es": "Fuentes personalizadas",
@@ -3894,7 +3894,7 @@
     },
     "group": "fonts",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Why a font provider?",
         "es": "¿Por qué un proveedor de fuentes?",
@@ -4093,7 +4093,7 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Resource types",
         "es": "Tipos de recurso",
@@ -4188,7 +4188,7 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Opening a bundle",
         "es": "Abrir un paquete",
@@ -4280,7 +4280,7 @@
     },
     "group": "headings",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Per-level overrides",
         "es": "Configuración por nivel",
@@ -4374,7 +4374,7 @@
     },
     "group": "headings",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Per-level overrides",
         "es": "Configuración por nivel",
@@ -4468,7 +4468,7 @@
     },
     "group": "headings",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Break before",
         "es": "Saltar antes",
@@ -4551,7 +4551,7 @@
     },
     "group": "headings",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Span and advanced design",
         "es": "Span y diseño avanzado",
@@ -4650,7 +4650,7 @@
     },
     "group": "headings",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Span and advanced design",
         "es": "Span y diseño avanzado",
@@ -4847,7 +4847,7 @@
     },
     "group": "headings",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Heading styles",
         "es": "Estilos de encabezado",
@@ -4933,7 +4933,7 @@
     },
     "group": "headings",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Heading styles",
         "es": "Estilos de encabezado",
@@ -5024,7 +5024,7 @@
     },
     "group": "headings",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Heading styles",
         "es": "Estilos de encabezado",
@@ -5199,7 +5199,7 @@
     },
     "group": "headings",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Text elements",
         "es": "Elementos de texto",
@@ -5308,7 +5308,7 @@
     },
     "group": "furniture",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Headers & footers",
         "es": "Encabezados y pies",
@@ -5403,7 +5403,7 @@
     },
     "group": "furniture",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Text elements",
         "es": "Elementos de texto",
@@ -5511,7 +5511,7 @@
     },
     "group": "furniture",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Headers & footers",
         "es": "Encabezados y pies",
@@ -5607,7 +5607,7 @@
     },
     "group": "furniture",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Image elements",
         "es": "Elementos de imagen",
@@ -5698,7 +5698,7 @@
     },
     "group": "furniture",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Element placement",
         "es": "Posicionamiento de elementos",
@@ -5795,7 +5795,7 @@
     },
     "group": "furniture",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Element placement",
         "es": "Posicionamiento de elementos",
@@ -5872,7 +5872,7 @@
     },
     "group": "furniture",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Heading styles",
         "es": "Estilos de encabezado",
@@ -5993,7 +5993,7 @@
     },
     "group": "furniture",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Text elements",
         "es": "Elementos de texto",
@@ -6098,7 +6098,7 @@
     },
     "group": "boxes",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Callout styles",
         "es": "Estilos de aviso",
@@ -6192,7 +6192,7 @@
     },
     "group": "boxes",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Callout styles",
         "es": "Estilos de aviso",
@@ -6275,7 +6275,7 @@
     },
     "group": "boxes",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Callout styles",
         "es": "Estilos de aviso",
@@ -6357,7 +6357,7 @@
     },
     "group": "boxes",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Callout styles",
         "es": "Estilos de aviso",
@@ -6521,7 +6521,7 @@
     },
     "group": "boxes",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "The `:::callout` container",
         "es": "El contenedor `:::callout`",
@@ -6603,7 +6603,7 @@
     },
     "group": "boxes",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "The `:::callout` container",
         "es": "El contenedor `:::callout`",
@@ -6699,7 +6699,7 @@
     },
     "group": "boxes",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Callout styles",
         "es": "Estilos de aviso",
@@ -6789,7 +6789,7 @@
     },
     "group": "boxes",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "The `:::callout` container",
         "es": "El contenedor `:::callout`",
@@ -6884,7 +6884,7 @@
     },
     "group": "boxes",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "The `:::callout` container",
         "es": "El contenedor `:::callout`",
@@ -6983,7 +6983,7 @@
     },
     "group": "boxes",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "The `:::callout` container",
         "es": "El contenedor `:::callout`",
@@ -7376,7 +7376,7 @@
     },
     "group": "figures",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Resource types",
         "es": "Tipos de recurso",
@@ -7926,7 +7926,7 @@
     },
     "group": "figures",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Layout",
         "es": "Disposición",
@@ -8195,7 +8195,7 @@
     },
     "group": "figures",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Caption style",
         "es": "Estilo de pies de recurso",
@@ -8286,7 +8286,7 @@
     },
     "group": "figures",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Caption style",
         "es": "Estilo de pies de recurso",
@@ -8465,7 +8465,7 @@
     },
     "group": "colour",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Diagram style",
         "es": "Estilo de diagramas",
@@ -8691,7 +8691,7 @@
     },
     "group": "tables",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Table style",
         "es": "Estilo de tablas",
@@ -8770,7 +8770,7 @@
     },
     "group": "tables",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Named table styles",
         "es": "Estilos de tabla con nombre",
@@ -8866,7 +8866,7 @@
     },
     "group": "tables",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Tables taller than the page",
         "es": "Tablas más altas que la página",
@@ -9438,7 +9438,7 @@
     },
     "group": "structure",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "Heading styles",
         "es": "Estilos de encabezado",
@@ -9634,7 +9634,7 @@
     },
     "group": "structure",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-notes-references",
       "heading": {
         "en": "Table of contents",
         "es": "Índice de contenidos",
@@ -9738,7 +9738,7 @@
     },
     "group": "structure",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "The `:::part` container",
         "es": "El contenedor `:::part`",
@@ -9834,7 +9834,7 @@
     },
     "group": "colour",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-styles",
       "heading": {
         "en": "The `:::part` container",
         "es": "El contenedor `:::part`",
@@ -9933,7 +9933,7 @@
     },
     "group": "structure",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Laying out and rendering a bundle",
         "es": "Componer y renderizar un paquete",
@@ -10037,7 +10037,7 @@
     },
     "group": "colour",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Color Palette",
         "es": "Paleta de colores",
@@ -10129,7 +10129,7 @@
     },
     "group": "pdf",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Generating PDFs",
         "es": "Generación de PDF",
@@ -10212,7 +10212,7 @@
     },
     "group": "pdf",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "PDF generation (config)",
         "es": "Generación de PDF (configuración)",
@@ -10303,7 +10303,7 @@
     },
     "group": "pdf",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "PDF generation (config)",
         "es": "Generación de PDF (configuración)",
@@ -10408,7 +10408,7 @@
     },
     "group": "pdf",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "PDF generation (config)",
         "es": "Generación de PDF (configuración)",
@@ -10498,7 +10498,7 @@
     },
     "group": "html",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Integrating the HTML viewer",
         "es": "Integrar el visor HTML",
@@ -10587,7 +10587,7 @@
     },
     "group": "html",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "HTML Viewer",
         "es": "Visor HTML",
@@ -10691,7 +10691,7 @@
     },
     "group": "integration",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Rendering a page to a bitmap",
         "es": "Renderizar una página a un bitmap",
@@ -10786,7 +10786,7 @@
     },
     "group": "integration",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Bundles (`.postext` files)",
         "es": "Paquetes (archivos `.postext`)",
@@ -10879,7 +10879,7 @@
     },
     "group": "integration",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Running layout in a Web Worker",
         "es": "Ejecutar la composición en un Web Worker",
@@ -10982,7 +10982,7 @@
     },
     "group": "integration",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Debug",
         "es": "Depuración",
@@ -11193,7 +11193,7 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-east-asian",
       "heading": {
         "en": "East Asian typography",
         "es": "Tipografía de Asia oriental",
@@ -11384,7 +11384,7 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-east-asian",
       "heading": {
         "en": "Punctuation widths",
         "es": "Anchos de la puntuación",
@@ -11476,7 +11476,7 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-east-asian",
       "heading": {
         "en": "Space between Han and Latin",
         "es": "Espacio entre chino y latín",
@@ -11578,7 +11578,7 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-east-asian",
       "heading": {
         "en": "Character grid",
         "es": "Retícula de caracteres",
@@ -11678,7 +11678,7 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Vertical writing",
         "es": "Escritura vertical",
@@ -11779,7 +11779,7 @@
     },
     "group": "page",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Binding",
         "es": "Encuadernación",
@@ -11874,7 +11874,7 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-page-layout",
       "heading": {
         "en": "Numbering",
         "es": "Numeración",
@@ -11991,7 +11991,7 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-east-asian",
       "heading": {
         "en": "Numbers in vertical text",
         "es": "Números en texto vertical",
@@ -12475,7 +12475,7 @@
     },
     "group": "fonts",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "Chinese, Japanese and Korean fonts",
         "es": "Fuentes chinas, japonesas y coreanas",
@@ -14213,7 +14213,7 @@
     },
     "group": "languages",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-text",
       "heading": {
         "en": "Document language",
         "es": "Idioma del documento",
@@ -14501,7 +14501,7 @@
     },
     "group": "structure",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-notes-references",
       "heading": {
         "en": "Back-of-book index",
         "es": "Índice analítico",
@@ -15449,7 +15449,7 @@
     },
     "group": "integration",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "A 3D book (`postext-folio`)",
         "es": "Un libro en 3D (`postext-folio`)",
@@ -15567,7 +15567,7 @@
     },
     "group": "integration",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Folio viewer (config)",
         "es": "Visor Folio (configuración)",
@@ -15657,7 +15657,7 @@
     },
     "group": "integration",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-fonts-colors-viewers",
       "heading": {
         "en": "Folio viewer (config)",
         "es": "Visor Folio (configuración)",
@@ -15872,7 +15872,7 @@
     },
     "group": "integration",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-programmatic-usage",
       "heading": {
         "en": "EPUB books (`postext-epub`)",
         "es": "Libros EPUB (`postext-epub`)",
@@ -16060,7 +16060,7 @@
     },
     "group": "figures",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Video style",
         "es": "Estilo de vídeo",
@@ -16150,7 +16150,7 @@
     },
     "group": "figures",
     "docs": {
-      "slug": "configuration",
+      "slug": "configuration-resources",
       "heading": {
         "en": "Player options",
         "es": "Opciones del reproductor",

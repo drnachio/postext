@@ -1,0 +1,1193 @@
+{/* docs/configuration-fonts-colors-viewers-ca.mdx */}
+
+export const metadata = {
+  title: 'Configuració: fonts, colors i sortida',
+  sidebarTitle: 'Fonts, colors i sortida',
+  description: 'Les unitats, els colors i la paleta, les fonts personalitzades, el visor HTML, el PDF i la producció per a impremta, el visor Folio i la depuració',
+  lang: 'ca',
+  lastUpdated: '2026-10-10',
+  readingTime: '6 min',
+  order: 11,
+  parent: 'configuration',
+  plainSummary: "Aquesta pàgina reuneix els paràmetres que comparteix tot el llibre i els de cada tipus de sortida. Explica com s'escriu una mida i un color, i com es dona nom als colors d'una paleta. Ensenya a afegir les teves pròpies fonts. Després tracta la vista web, el fitxer PDF, els fitxers que demana una impremta i el llibre en 3D. L'última secció activa les guies i els advertiments que ajuden mentre treballes.",
+};
+
+# Configuració: fonts, colors i sortida
+
+
+## Unitats i colors
+
+### Dimensions
+
+Totes les mesures físiques a Postext fan servir el tipus `Dimension` — un valor aparellat amb una unitat:
+
+```ts
+interface Dimension {
+  value: number;
+  unit: DimensionUnit; // 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem'
+}
+```
+
+**Unitats absolutes** — `cm`, `mm`, `in`, `pt`, `px` — es converteixen a píxels amb els DPI configurats. A 300 DPI, `1 cm` equival aproximadament a 118 px.
+
+**Unitats relatives** — `em`, `rem` — s'escalen amb la mida de font actual. Un `em` és relatiu a la mida de font del mateix element; `rem` és relatiu a la mida de font del text de cos.
+
+### Colors
+
+Els colors s'emmagatzemen amb una representació hexadecimal i un model de color objectiu:
+
+```ts
+interface ColorValue {
+  hex: string;         // '#ff0000', 'transparent', etc.
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  cmyk?: CmykPercent;  // Els valors de quatricromia exactes d'un color definit en CMYK.
+}
+```
+
+El camp `model` indica l'espai de color previst. Per a la renderització web, `'hex'` o `'rgb'` són els habituals. Per a fluxos de treball d'impressió, `'cmyk'` indica que el color es va especificar en CMYK, i `cmyk` en guarda els valors: una sortida d'impremta en CMYK els aplica tal com són, i `hex` n'és la representació en pantalla (vegeu [Colors definits en CMYK](#colors-definits-en-cmyk)).
+
+Com que Postext apunta a una sortida de qualitat editorial, el color per defecte del text de cos es publica amb `model: 'cmyk'` (`#000000`). Els colors d'encapçalaments, negretes, cursives i llistes prenen per defecte el **Color principal** enllaçat a la paleta (`#295AA3`, `model: 'hex'`). El fons de pàgina i els indicadors d'interfície (retícula de base, marques de tall, indicadors de depuració) fan servir `model: 'hex'` per defecte. Sobreescriu `color.model` en qualsevol camp si necessites una altra semàntica d'exportació.
+
+### Transparència
+
+Un color pot ser translúcid. `hex` admet un canal alfa, com `#rgba` o `#rrggbbaa`. També admet un color `rgb()` / `rgba()`, amb la sintaxi de comes o la d'espais, i l'alfa com a nombre o com a percentatge. `transparent` és del tot transparent:
+
+```ts
+const config: PostextConfig = {
+  header: {
+    elements: [{
+      kind: 'box',
+      id: 'velo',
+      placement: {
+        anchor: { to: 'bleed', edge: 'top-left' },
+        size: { width: 'fill', height: { value: 40, unit: 'mm' } },
+      },
+      style: { backgroundColor: { hex: '#ffffffb3', model: 'hex' } }, // blanc al 70 %
+    }],
+  },
+  bodyText: { color: { hex: 'rgba(0, 0, 0, 0.85)', model: 'rgb' } },
+};
+```
+
+Els tres backends el pinten igual. El canvas i el visor HTML prenen el valor com un color CSS. El backend PDF fixa l'opacitat del color com un alfa constant, un `ExtGState` amb `ca` per als emplenaments i `CA` per als traços. Això abasta el text, els filets, les caixes, els emplenaments i vores de les taules, els xips, les mostres de color i les fórmules. Un color translúcid es compon sobre el que s'ha pintat abans. Una caixa de la capçalera o del peu es pinta l'última, així que vela el text que té a sota; una caixa d'una banda d'obertura es pinta la primera, així que tenyeix la pàgina sota el text. Quan el PDF es força a un altre espai de color (`pdfGeneration.forceColorSpace` amb `colorSpace: 'cmyk'` o `'grayscale'`), el color es converteix i conserva el seu alfa. Al Sandbox, el lliscador d'opacitat del selector de color escriu aquests valors com a `#rrggbbaa`, i el selector també llegeix les altres formes.
+
+
+## Fonts personalitzades
+
+Postext resol cada `fontFamily` contra **tots dos**: el catàleg de Google Fonts i la llista `customFonts` del document. Les fonts personalitzades tenen prioritat en cas de coincidència de nom: si declares `customFonts: [{ name: 'Roboto', … }]`, Postext farà servir el teu fitxer en lloc de la "Roboto" de Google Fonts.
+
+Fes servir fonts personalitzades quan:
+
+- El document requereix una tipografia de marca o amb llicència que no és a Google Fonts.
+- L'entorn no pot arribar a la CDN de Google Fonts (sense connexió, intranet, sensibilitat de privadesa).
+- Necessites mantenir el fitxer de font privat i evitar pujar-lo a un tercer.
+### Esquema de configuració
+
+```ts
+type CustomFontFormat = 'woff2' | 'woff' | 'ttf' | 'otf';
+type CustomFontStyle = 'normal' | 'italic';
+
+interface CustomFontVariant {
+  weight: number;           // CSS font-weight, 100..900
+  style: CustomFontStyle;
+  fileId: string;           // id opac del binari en un emmagatzematge extern
+  format: CustomFontFormat;
+  fileName?: string;        // nom original del fitxer (es mostra a la UI)
+}
+
+interface CustomFontFamily {
+  name: string;             // s'usa on encaixaria un nom de Google Font
+  variants: CustomFontVariant[];
+}
+
+interface PostextConfig {
+  // ...
+  customFonts?: CustomFontFamily[];
+}
+```
+
+El binari de cada variant **no** s'incrusta a la configuració mateixa. La configuració només desa punters `fileId`; els bytes viuen fora d'ella. Al sandbox això vol dir IndexedDB (magatzem clau-valor, exclusiu del navegador, privat del document). Un integrador que incrusti Postext en un altre entorn és lliure de resoldre `fileId` com prefereixi —un endpoint de servidor, un service worker, el que sigui— sempre que els bytes arribin al fil principal abans de `buildDocument`.
+
+### Gestionar fonts personalitzades al sandbox
+
+Obre el tauler **Fonts** des de la barra d'activitat de l'esquerra (entre Recursos i Disseny). La seva llista **Tipus de lletra d'aquest llibre** mostra cada família que fa servir el disseny, amb la seva funció i si ve de Google Fonts o d'un fitxer propi. A **Els teus fitxers de font**, per a cada família:
+
+1. **Afegir família** — crea una família buida; canvia-li el nom en línia.
+2. **Pujar variant(s)** — tria un pes (100–900) i un estil (normal / italic), i selecciona un *o diversos* fitxers `.woff2`, `.woff`, `.ttf` o `.otf`. Cada fitxer es converteix en una variant pròpia associada a la combinació (pes, estil) seleccionada; el nom del fitxer queda desat i es mostra a la fila per diferenciar les variants. Pots retocar el pes o l'estil d'una variant des dels seus desplegables en qualsevol moment.
+3. **Es permeten variants duplicades.** Si dos fitxers cauen a la mateixa ranura (pes, estil), es desen tots dos i apareix un avís **Duplicate font variant** perquè ajustis els que sobren.
+4. **Suprimir variant** o **Suprimir família** — suprimeix l'entrada de la configuració *i* els bytes desats a IndexedDB.
+
+Un cop declarada la família, cada selector de font l'agrupa sota **Custom**, per damunt de la llista de Google Fonts. Quan la tries, queda connectada a tots els camps `fontFamily` on l'apliquis.
+
+### Comportament de renderització
+
+Per dins:
+
+- Quan `customFonts` canvia, cada família declarada es registra automàticament com a `FontFace` a `document.fonts` — de manera que el visor HTML, el visor Canvas (que mesura a través de `document.fonts`) i qualsevol referència CSS directa agafen la cara personalitzada sense haver d'obrir abans el Font Picker.
+- El worker de composició rep els mateixos `ArrayBuffer` pel mateix canal de transferència de *font payloads*, així el mesurament (`buildFontString`, pretext) produeix mètriques idèntiques a les de Google Fonts.
+- Canviar o suprimir una variant descarta la cara desada a la memòria cau del worker per a aquella família, i es torna a registrar en el build següent, de manera que les previsualitzacions es mantenen sincronitzades amb el conjunt actual de variants.
+- **Exportació a PDF**: els binaris pujats passen per la mateixa canalització `PdfFontProvider`. Els `.woff2` es descomprimeixen; els `.ttf` i `.otf` es passen tal qual. `.woff` es rebutja amb un missatge clar (pdf-lib no pot incrustar WOFF cru — torna a pujar-lo com a `.woff2`/`.ttf`/`.otf`). L'OpenType amb taules CFF (`.otf` amb la signatura `OTTO`) s'incrusta **sense subsetting**, perquè el subsetter CFF de pdf-lib recorre cada glif en fer `save()` i es pot bloquejar durant minuts amb fonts reals; saltar-se el subset canvia una mica més de mida del PDF per temps de render constants.
+
+### Avisos de fonts que falten
+
+El tauler **Revisió** del Sandbox mostra al seu grup *Fonts* tres modes de fallada específics de les fonts personalitzades (tots governats pel mateix interruptor `debug.warnings.missingFont` que ja controla l'avís genèric "no carregada"):
+
+- **Família desconeguda** — un `fontFamily` fa referència a un nom que no és ni una Google Font coneguda ni una família personalitzada declarada en aquest moment. També salta a l'instant quan suprimeixes una família personalitzada a la qual algun `fontFamily` encara fa referència, sense esperar que el DOM se n'adoni.
+- **Variant que falta** — la família existeix però almenys una de les ranures estàndard (400 / 700, normal / italic) no té cap fitxer pujat. L'avís enumera les combinacions concretes que falten.
+- **Variant duplicada** — dos o més fitxers comparteixen la mateixa ranura (pes, estil) dins d'una mateixa família. Només se n'usa un en renderitzar; l'avís et recorda que retoquis les entrades sobrants.
+
+Si prems qualsevol dels avisos, s'obre el tauler **Fonts** perquè hi pugis la variant necessària, tornis a afegir la família o desfacis l'ambigüitat dels duplicats.
+
+Quan ja hi ha una composició, el tauler també mostra l'avís del motor **Font substituïda a la composició** (`fontFallback`): una cara sense la qual es van mesurar les pàgines, perquè falta o perquè el navegador la dibuixa a partir d'un altre pes o d'una altra inclinació. Una família que ja surt com a desconeguda o amb una variant que falta no hi apareix dues vegades. Abans de la primera composició, n'ocupa el lloc una comprovació contra `document.fonts`.
+
+## Paleta de colors
+
+La propietat `colorPalette` de `PostextConfig` permet definir un conjunt reutilitzable de colors amb nom i fer-hi referència des de qualsevol `ColorValue` de la configuració. És l'equivalent a Postext de les custom properties de CSS o del tauler de mostres d'InDesign: canvia l'entrada una sola vegada i tots els colors que hi apuntin s'actualitzen al document.
+
+```ts
+interface ColorPaletteEntry {
+  id: string;       // identificador estable — referenciat per ColorValue.paletteId
+  name: string;     // etiqueta llegible que es mostra a les UI del sandbox
+  value: ColorValue;
+}
+```
+
+### La paleta per defecte
+
+Postext inclou una paleta per defecte amb una única entrada anomenada **Color principal** (`id: 'main-color'`, hex `#295AA3`). Diversos valors per defecte — color dels encapçalaments, color de les negretes/cursives del cos, color dels `:ref`, color de les vinyetes i dels marcadors numèrics de les llistes — fan referència a aquesta entrada via `paletteId: 'main-color'`, de manera que, en canviar aquesta única mostra, es retenyeix cada element del document que la utilitzi.
+
+Pots inspeccionar, clonar o comparar la paleta per defecte amb tres exportacions:
+
+```ts
+import {
+  DEFAULT_COLOR_PALETTE,
+  cloneDefaultColorPalette,
+  isDefaultColorPalette,
+} from 'postext';
+
+// Instantània de només lectura de la paleta publicada.
+DEFAULT_COLOR_PALETTE;
+// => [{ id: 'main-color', name: 'Main Color', value: { hex: '#295AA3', model: 'hex' } }]
+
+// Còpia independent — muta aquesta, no DEFAULT_COLOR_PALETTE.
+const palette = cloneDefaultColorPalette();
+
+// Comprova si l'usuari ha personalitzat la paleta.
+isDefaultColorPalette(palette); // true
+```
+
+La paleta viu al nivell superior de la configuració:
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'tinta',  name: 'Tinta',  value: { hex: '#0a0a0a', model: 'cmyk' } },
+    { id: 'acento', name: 'Acento', value: { hex: '#b8860b', model: 'hex' } },
+  ],
+  bodyText: { color: { hex: '#000000', model: 'cmyk', paletteId: 'tinta' } },
+  headings: { color: { hex: '#000000', model: 'hex', paletteId: 'acento' } },
+};
+```
+
+### Fer referència a una entrada de la paleta
+
+Qualsevol `ColorValue` de la configuració pot portar un camp opcional `paletteId` que apunta a una entrada de `colorPalette`: fons de pàgina, colors del cos de text (inclòs el dels `:ref`), colors dels encapçalaments, filets de columna, colors de les llistes, colors de les taules, peus, chips i requadres (caixa, franja, icona, marcador, etiqueta, títol i cos), color de les marques de tall i de la retícula de base, indicadors de depuració, i tots els colors d'un disseny: les capçaleres i els peus, les obertures i els dissenys en columna dels encapçalaments, els dissenys i les capçaleres dels estils d'encapçalament, les pàgines de part i les files de part de l'índex (text, filet, farciment i vora de caixa, contorn, caplletra). Quan hi és, el `hex` / `model` de l'entrada de la paleta guanyen al `hex` / `model` emmagatzemats com a reserva. La reserva en línia només s'usa si la paleta falta, és buida o no conté aquell id — útil en exportar una configuració que llegirà una eina que no entengui paletes.
+
+**Canvi a postext 1.5.** Fins a postext 1.4 la paleta només arribava a una llista fixa d'ajustos: els colors dels dissenys (capçaleres, obertures, estils d'encapçalament, parts, files de l'índex), `bodyText.referenceColor`, els colors de les etiquetes dels requadres i els de negreta i cursiva del seu cos conservaven el `hex` desat al costat del seu `paletteId`. Un document el valor desat del qual no coincideix amb l'entrada de la paleta —tots els editats al Sandbox després de canviar l'entrada, i tots els `:ref` quan el color principal no és `#295AA3`— ara imprimeix el color de la paleta, tal com indica l'enllaç. Per conservar un color tal com era, treu-ne el `paletteId`.
+
+### Com s'apliquen les paletes
+
+`buildDocument` executa la paleta en dos punts perquè els colors referenciats funcionin tant per a les sobreescriptures que hagis indicat com per als valors per defecte que es completen després:
+
+1. `applyPaletteToConfig(config)` — resol cada `ColorValue` del config original que porti `paletteId`. Útil per inspeccionar què veurà realment el motor.
+2. `applyPaletteToResolvedConfig(resolved, palette)` — s'executa *després* de resoldre els valors per defecte i reescriu els defaults enllaçats a la paleta (color dels encapçalaments, de la negreta/cursiva del cos, dels `:ref`, de les llistes, els colors dels dissenys per defecte) perquè coincideixin amb la paleta activa.
+
+Totes dues recorren la configuració sencera, així que cap color enllaçat a la paleta no es queda enrere. La majoria dels colors del flux de text (cos, encapçalaments, llistes, taules, peus, chips, la caixa, el títol i el cos dels requadres) surten com a valors sense enllaç. Tots els altres —els colors dels dissenys, el dels `:ref`, les etiquetes dels requadres— agafen el `hex` / `model` de la paleta i **conserven el seu `paletteId`**. Aquest enllaç és el que l'atribut `palette` d'una part i el `palette` d'un estil d'encapçalament substitueixen a les seves pàgines (vegeu [Parts](/ca/docs/configuration-styles#parts)), així que ha de sobreviure. `htmlViewer.overrides` es deixa tal qual: el visor HTML el fusiona primer, i la paleta que porti s'aplica llavors a tot, dissenys inclosos.
+
+Rarament cal invocar-les, però totes dues estan exportades per a inspecció i reutilització:
+
+```ts
+import {
+  applyPaletteToConfig,
+  applyPaletteToResolvedConfig,
+  resolveColorValue,
+} from 'postext';
+
+const flat = applyPaletteToConfig(config);
+// Cada ColorValue amb paletteId al config original porta ara el
+// hex/model de l'entrada de la paleta (un color de disseny conserva el seu paletteId).
+
+// `applyPaletteToResolvedConfig` normalment el gestiona buildDocument; fes-lo servir
+// directament si construeixes un ResolvedConfig a mà i vols aplicar-hi la paleta.
+```
+
+`resolveColorValue(value, palette, fallback)` és la variant per a un únic valor, útil quan compons configuracions de manera imperativa i has de resoldre un color solt.
+
+### Editar la paleta
+
+Un color el `paletteId` del qual no anomena cap entrada imprimeix el seu `hex` / `model` desat, que pot ser anterior al color que li donava l'entrada. Per això, abans de suprimir una entrada, convé reescriure cada `ColorValue` enllaçat a ella com un color sense enllaç amb el valor actual de l'entrada. La secció *Paleta* del Sandbox (**Disseny → Colors**) ho fa quan esborres una entrada, sigui on sigui el color (dissenys i etiquetes de requadre inclosos), i la seva confirmació enumera tots els ajustos que la fan servir: pel seu nom o per la seva ruta a la configuració (`header.elements[2].color`).
+
+
+## Visor HTML
+
+La propietat `htmlViewer` controla com el backend HTML disposa les pàgines a la pantalla. Només s'aplica quan renderitzes amb `renderToHtml` / `renderToHtmlIndexed`; els camins de canvas i PDF la ignoren completament — consumeixen directament els `page.width`, `page.height` i `page.dpi` configurats.
+
+```ts
+interface HtmlViewerConfig {
+  maxCharsPerLine?: number;     // Amplada objectiu de columna, en caràcters de la font del cos.
+  columnGap?: number;            // Espai horitzontal entre columnes en mode multicolumna (px).
+  optimalLineBreaking?: boolean; // Usar Knuth–Plass dins del visor HTML en lloc de greedy.
+  overrides?: HtmlViewerOverrides; // Configuració parcial només per a pantalla, fusionada sobre la del document.
+}
+
+type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxCharsPerLine</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>Mesura objectiu de cada columna renderitzada, expressada en caràcters de la font del cos. El viewport mesura una cadena representativa de prosa d'aquesta longitud per obtenir l'amplada real en píxels — així el resultat s'adapta a qualsevol combinació de font proporcional i mida.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>number</code></td>
+      <td><code>50</code></td>
+      <td>Espai horitzontal, en píxels CSS, entre columnes quan el visor és en mode multicolumna. S'ignora en mode d'una sola columna.</td>
+    </tr>
+    <tr>
+      <td><code>optimalLineBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Activa la divisió de línies Knuth–Plass dins del visor HTML. Està desactivat per defecte perquè el visor recompon la maquetació a cada resize o canvi de mida — l'algorisme greedy first-fit és prou ràpid perquè sembli instantani. Activa'l quan vulguis els mateixos talls òptims que fa servir el backend canvas.</td>
+    </tr>
+    <tr>
+      <td><code>overrides</code></td>
+      <td><code>HtmlViewerOverrides</code></td>
+      <td>—</td>
+      <td>Una configuració parcial del document que només s'aplica a la pantalla. El visor HTML la fusiona sobre la configuració del document abans de compondre (<code>applyHtmlViewerOverrides</code>); canvas i PDF la ignoren. Els objectes es fusionen recursivament; una llista <code>levels</code> (encapçalaments, llistes, índex) es fusiona entrada a entrada per <code>level</code>; qualsevol altra llista — els <code>elements</code> d'un bloc de disseny, <code>calloutStyles</code>, <code>colorPalette</code>… — substitueix completament la llista base. Ús típic: un inici de capítol sense les bandes d'impremta, o una pàgina de part el títol de la qual s'ajusta contra el número en lloc d'una amplada fixa de caixa de tall. El sandbox l'edita com a JSON.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const config: PostextConfig = {
+  headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: true } }] },
+  htmlViewer: {
+    // A la pantalla, els capítols van seguits, sense l'inici a pàgina sencera.
+    overrides: { headings: { levels: [{ level: 1, span: 'column', breakBefore: { enabled: false } }] } },
+  },
+};
+```
+
+El resolver i l'stripper segueixen el mateix patró que les altres seccions:
+
+```ts
+import {
+  DEFAULT_HTML_VIEWER_CONFIG,
+  resolveHtmlViewerConfig,
+  stripHtmlViewerDefaults,
+} from 'postext';
+
+const resolved = resolveHtmlViewerConfig(config.htmlViewer);
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+
+const minimal = stripHtmlViewerDefaults(config.htmlViewer);
+// => undefined quan tot coincideix amb els valors per defecte
+```
+
+Consulta [Integrar el visor HTML](/ca/docs/configuration-programmatic-usage#integrar-el-visor-html) més avall per veure'n un exemple complet.
+
+
+## Generació de PDF (configuració)
+
+La propietat `pdfGeneration` controla com el backend PDF emet el document final. Aquests ajustos els consumeix el paquet `postext-pdf` en el moment d'exportar; els visors canvas i HTML els ignoren.
+
+`buildDocument` els porta al VDT, com a `doc.config.pdfGeneration`, i `renderToPdf` agafa cada ajust del primer lloc que el dona:
+
+1. les seves pròpies opcions (`outlines`, `accessible`, `colorSpace`);
+2. el `pdfGeneration` del primer document que rep (en un llibre, els ajustos del primer capítol valen per a tot el fitxer);
+3. els valors per defecte: marcadors i etiquetatge activats, color RGB.
+
+Així, `renderToPdf(doc, { fontProvider })` segueix la configuració, i una opció que es passa a `renderToPdf` mana només en aquell ajust. `forceColorSpace` i `colorSpace` equivalen junts a l'opció `colorSpace`: el `colorSpace` de la configuració s'aplica mentre `forceColorSpace` està activat, i amb aquest desactivat el PDF surt en RGB. Les versions anteriors de `postext-pdf` només llegien les opcions; una configuració amb `pdfGeneration` ara canvia el PDF de qui crida sense opcions.
+
+```ts
+type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
+
+interface PdfGenerationConfig {
+  outlines?: boolean;          // Emetre marcadors PDF a partir de l'arbre d'encapçalaments.
+  forceColorSpace?: boolean;   // Convertir tots els colors a `colorSpace`.
+  colorSpace?: PdfColorSpace;  // Espai de destinació quan `forceColorSpace` és true.
+  accessible?: boolean;        // Sortida etiquetada orientada a PDF/UA (arbre d'estructura, text alternatiu, llengua).
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '180px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>outlines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Emet outlines (marcadors) PDF a partir de la jerarquia d'encapçalaments, de manera que els lectors puguin saltar directament a qualsevol encapçalament des de la barra lateral del visor PDF. Desactiva'l per a documents en què l'arbre d'encapçalaments no aporta res (per exemple, pòsters d'una sola pàgina).</td>
+    </tr>
+    <tr>
+      <td><code>forceColorSpace</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Quan és `true`, tots els colors del PDF renderitzat es converteixen a `colorSpace` en exportar. Deixa'l desactivat en PDF pensats per a pantalla si els colors d'entrada ja són a l'espai desitjat; activa'l per garantir un únic espai de color partint de fonts heterogènies.</td>
+    </tr>
+    <tr>
+      <td><code>colorSpace</code></td>
+      <td><code>'rgb' | 'cmyk' | 'grayscale'</code></td>
+      <td><code>'cmyk'</code></td>
+      <td>Espai de color de destinació que s'usa quan `forceColorSpace` està activat. Fes servir `'cmyk'` per a impremta òfset, `'rgb'` per a PDF només de pantalla i `'grayscale'` per a proves en blanc i negre. No té cap efecte si `forceColorSpace` és `false`. El CMYK se separa amb el perfil de sortida de [`print`](#producció-per-a-impremta-configuració) (FOGRA39 per defecte) i el seu tractament del negre, i també es converteixen les imatges RGB; una norma PDF/X definida allà escriu CMYK digui el que digui aquest ajust.</td>
+    </tr>
+    <tr>
+      <td><code>accessible</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Genera un PDF accessible i etiquetat, orientat a PDF/UA-1: un arbre d'estructura lògica en ordre de lectura (títols que mai no salten de nivell, paràgrafs, llistes, cites, callouts, taules amb cel·les de capçalera, figures amb el seu text alternatiu i el seu peu, fórmules, referències com a enllaços, l'índex d'un `:::toc` com un sol `TOC` amb un `TOCI` per fila: el número de la fila com a `Lbl`, el seu títol i la seva pàgina com un `Reference` que conté l'enllaç), el títol i la llengua del document (el `locale` de primer nivell), la identificació PDF/UA a les metadades XMP, i tota marca decorativa (fons de pàgina, filets, retícula de base, capçaleres i peus corrents, marques de tall, capçaleres de taula repetides, el títol repetit i l'indicador de continuació d'un avís partit) assenyalada com a artefacte perquè els lectors de pantalla l'ometin. Una figura sense `altText` fa servir el seu peu i, si no en té, la seva etiqueta. Una figura o una taula flotant es llegeix just després del text que la cita per primera vegada, o del text anterior a la seva línia `::resource`, i un requadre flotant després del text anterior a la seva obertura, encara que el flotant quedi en una pàgina posterior; una llista o un índex que continuen després d'un flotant queden en un sol element. Desactiva'l només per a màsters d'impremta on l'estructura addicional sobri.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+pdfGeneration: {
+  outlines: true,
+  accessible: true,
+  forceColorSpace: true,
+  colorSpace: 'cmyk',
+}
+```
+
+El resolver i l'stripper segueixen el mateix patró que les altres seccions:
+
+```ts
+import {
+  DEFAULT_PDF_GENERATION_CONFIG,
+  resolvePdfGenerationConfig,
+  stripPdfGenerationDefaults,
+} from 'postext';
+
+const resolved = resolvePdfGenerationConfig(config.pdfGeneration);
+// => { outlines: true, forceColorSpace: false, colorSpace: 'cmyk', accessible: true }
+
+const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
+// => undefined quan tot coincideix amb els valors per defecte
+```
+
+Consulta [Generació de PDF](/ca/docs/configuration-programmatic-usage#generació-de-pdf) més avall per a la recepta completa d'exportació.
+
+
+## Producció per a impremta (configuració)
+
+La propietat `print` diu com va un llibre a impremta: la norma PDF/X del fitxer, el perfil de sortida amb què se separa el CMYK, com s'imprimeix el negre i els llindars del preflight. La composició la ignora, així que canviar-la no mou mai cap línia. La llegeixen tres llocs: `postext-pdf` quan escriu el fitxer, `preflightDocument` quan revisa un document compost, i la simulació de la impressió dels visors canvas i Folio.
+
+```ts
+type PdfXStandard = 'none' | 'pdfx1a' | 'pdfx4';
+
+interface PrintConfig {
+  standard?: PdfXStandard;                 // 'none': un PDF normal.
+  outputProfile?: string;                  // Un id del catàleg ('fogra39', 'fogra51'…) o 'custom'.
+  customProfile?: CustomOutputProfile;     // Un fitxer .icc pujat.
+  renderingIntent?: 'relative' | 'perceptual';
+  blackPointCompensation?: boolean;
+  convertImages?: boolean;                 // Separar les imatges RGB (PDF/X-1a sempre ho fa).
+  inkLimit?: number;                       // Cobertura total d'àrea, en percentatge.
+  black?: PrintBlackConfig;
+  preflight?: PrintPreflightConfig;
+}
+
+interface CustomOutputProfile {
+  name: string;           // La seva descripció, o el nom del fitxer.
+  fileId: string;         // El fitxer .icc desat.
+  registryName?: string;  // El nom de la condició al registre ICC (FOGRA51…); si no, 'Custom'.
+  inkLimit?: number;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>Propietat</th>
+      <th style={{ width: '170px' }}>Tipus</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>standard</code></td>
+      <td><code>'none' | 'pdfx1a' | 'pdfx4'</code></td>
+      <td><code>'none'</code></td>
+      <td>La variant PDF/X del fitxer. `'pdfx1a'` escriu PDF/X-1a:2003: només CMYK i gris, sense transparències, i l'accepta qualsevol impremta. `'pdfx4'` escriu PDF/X-4: conserva les transparències i la gestió de color, per als fluxos actuals. Totes dues separen cada color amb el perfil de sortida, digui el que digui `pdfGeneration.colorSpace`.</td>
+    </tr>
+    <tr>
+      <td><code>outputProfile</code></td>
+      <td><code>string</code></td>
+      <td><code>'fogra39'</code></td>
+      <td>La condició d'impressió per a la qual se separa el CMYK: un id del [catàleg de perfils](#perfils-de-sortida), o `'custom'` per a `customProfile`. Un id que no és al catàleg, o `'custom'` sense fitxer, torna al valor per defecte i rep un avís de configuració.</td>
+    </tr>
+    <tr>
+      <td><code>customProfile</code></td>
+      <td><code>CustomOutputProfile</code></td>
+      <td>cap</td>
+      <td>Un perfil de sortida CMYK que hi poses tu, el que et doni la teva impremta (el `PSOcoated_v3.icc` de l'ECI, per exemple). Els seus bytes es desen a part, com els d'una font; `renderToPdf` els rep a l'opció `outputProfile`. `registryName` s'escriu a la condició de sortida (output intent) com a identificador de la condició d'impressió.</td>
+    </tr>
+    <tr>
+      <td><code>renderingIntent</code></td>
+      <td><code>'relative' | 'perceptual'</code></td>
+      <td><code>'relative'</code></td>
+      <td>El colorimètric relatiu manté exactes els colors que la màquina pot imprimir i porta la resta al color imprimible més proper; el perceptual comprimeix tota la gamma perquè els colors fora de gamma conservin les relacions entre ells.</td>
+    </tr>
+    <tr>
+      <td><code>blackPointCompensation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Amb el propòsit relatiu, porta el negre de la pantalla al negre més fosc que imprimeix la màquina, perquè els tons més foscos conservin el detall en lloc d'empastar-se.</td>
+    </tr>
+    <tr>
+      <td><code>convertImages</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Separa en CMYK les imatges RGB amb el perfil. PDF/X-1a ho fa sempre. En PDF/X-4, `false` les deixa en RGB, etiquetades com a sRGB amb el `/DefaultRGB` de les pàgines, perquè les converteixi el RIP de la impremta. Els JPEG en CMYK i en gris s'insereixen sempre tal com són.</td>
+    </tr>
+    <tr>
+      <td><code>inkLimit</code></td>
+      <td><code>number</code></td>
+      <td>el del perfil</td>
+      <td>El total més alt de C+M+Y+K, en percentatge, que accepta el preflight. Per defecte és el límit amb què separa el perfil (300 % a la majoria de condicions d'òfset, 230 % al paper de diari IFRA26).</td>
+    </tr>
+    <tr>
+      <td><code>black</code></td>
+      <td><code>PrintBlackConfig</code></td>
+      <td>vegeu <a href="#negre">Negre</a></td>
+      <td>Grisos només en K, sobreimpressió i negre enriquit.</td>
+    </tr>
+    <tr>
+      <td><code>preflight</code></td>
+      <td><code>PrintPreflightConfig</code></td>
+      <td>vegeu <a href="#preflight">Preflight</a></td>
+      <td>Què revisa el preflight i amb quins llindars.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+print: {
+  standard: 'pdfx4',
+  outputProfile: 'fogra51',
+  black: { richBlackColor: { c: 60, m: 40, y: 40, k: 100 } },
+  preflight: { minImageResolution: 300, safeZone: { value: 5, unit: 'mm' } },
+}
+```
+
+### Perfils de sortida
+
+`postext` inclou aquests perfils de sortida CMYK a la carpeta `icc/` (`postext/icc/<id>.icc` a qualsevol CDN de npm, i `/icc/<id>.icc` a postext.dev). Cap d'ells no té restriccions de drets d'autor conegudes (CC0): els perfils FOGRA, GRACoL, SWOP i de diari de colord, generats a partir de les dades de caracterització de cada condició, i FOGRA51 i FOGRA52, que postext ha construït amb ArgyllCMS a partir de les dades de la mateixa Fogra. Els perfils de l'ECI (ISO Coated v2, PSO Coated v3, PSO Uncoated v3) descriuen les mateixes condicions però no es poden redistribuir; puja'ls com a perfil personalitzat si la teva impremta te'ls demana.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Id</th>
+      <th>Condició</th>
+      <th style={{ width: '150px' }}>Nom al registre</th>
+      <th style={{ width: '90px' }}>Límit de tinta</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fogra39</code></td><td>Òfset, paper estucat (condició ISO Coated v2)</td><td>FOGRA39</td><td>300 %</td></tr>
+    <tr><td><code>fogra51</code></td><td>Òfset, estucat prèmium (condició PSO Coated v3)</td><td>FOGRA51</td><td>300 %</td></tr>
+    <tr><td><code>fogra52</code></td><td>Òfset, sense estucar i sense fusta (condició PSO Uncoated v3)</td><td>FOGRA52</td><td>300 %</td></tr>
+    <tr><td><code>fogra47</code></td><td>Òfset, sense estucar blanc (PSO Uncoated ISO 12647)</td><td>FOGRA47</td><td>300 %</td></tr>
+    <tr><td><code>fogra29</code></td><td>Òfset, sense estucar blanc</td><td>FOGRA29</td><td>300 %</td></tr>
+    <tr><td><code>fogra30</code></td><td>Òfset, sense estucar groguenc</td><td>FOGRA30</td><td>340 %</td></tr>
+    <tr><td><code>fogra27</code></td><td>Òfset, estucat (ISO 12647-2:1996)</td><td>FOGRA27</td><td>300 %</td></tr>
+    <tr><td><code>fogra28</code></td><td>Òfset de bobina heatset, LWC brillant</td><td>FOGRA28</td><td>300 %</td></tr>
+    <tr><td><code>fogra45</code></td><td>Òfset de bobina heatset, LWC millorat</td><td>FOGRA45</td><td>300 %</td></tr>
+    <tr><td><code>fogra40</code></td><td>Òfset de bobina heatset, paper SC</td><td>FOGRA40</td><td>340 %</td></tr>
+    <tr><td><code>gracol2006</code></td><td>GRACoL 2006, estucat de grau 1</td><td>CGATS TR 006</td><td>300 %</td></tr>
+    <tr><td><code>swop3</code></td><td>SWOP 2006, estucat de grau 3</td><td>CGATS TR 003</td><td>300 %</td></tr>
+    <tr><td><code>swop5</code></td><td>SWOP 2006, estucat de grau 5</td><td>CGATS TR 005</td><td>300 %</td></tr>
+    <tr><td><code>ifra26</code></td><td>Paper de diari coldset (ISO 12647-3)</td><td>IFRA26</td><td>230 %</td></tr>
+    <tr><td><code>snap2007</code></td><td>Paper de diari SNAP 2007</td><td>CGATS TR 002</td><td>320 %</td></tr>
+  </tbody>
+</table>
+
+`renderToPdf` llegeix els bytes del perfil de la seva opció `outputProfile`; si no els té, baixa el fitxer del catàleg de `profileBaseUrl` (per defecte `https://cdn.jsdelivr.net/npm/postext/icc/`). Una sortida PDF/X el perfil de la qual no es pot carregar falla; una sortida CMYK normal torna a la fórmula de manual amb un avís `outputProfileUnavailable`.
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { renderToPdf } from 'postext-pdf';
+
+const pdf = await renderToPdf(doc, {
+  fontProvider,
+  print: { standard: 'pdfx1a', outputProfile: 'fogra39' },
+  outputProfile: await readFile('node_modules/postext/icc/fogra39.icc'),
+});
+```
+
+### PDF/X-1a i PDF/X-4
+
+Totes dues normes escriuen:
+
+- la condició de sortida (`GTS_PDFX`), que anomena la condició d'impressió i incrusta el perfil de destinació;
+- la identificació al diccionari Info (`GTS_PDFXVersion`, `/Trapped /False`, el títol i les dates) i a les metadades XMP (`pdfxid:GTSPDFXVersion`, els identificadors del document i de la versió), fusionada amb la identificació PDF/UA quan el fitxer és etiquetat;
+- una TrimBox i una BleedBox a cada pàgina (la pàgina sencera quan no hi ha marques de tall);
+- l'`/ID` del tràiler;
+- cada color en DeviceCMYK (o en gris) a través del perfil, i les marques de tall en color de registre;
+- cap anotació d'enllaç: un fitxer per a impremta no en porta cap dins de la seva caixa de sang, així que els enllaços del PDF de pantalla queden fora (els marcadors es mantenen).
+
+PDF/X-1a:2003 és PDF 1.4 sense fluxos d'objectes i no admet transparències: un color translúcid es compon tal com s'imprimiria sobre el paper, l'alfa d'una imatge s'aplana sobre blanc i el negatiu de pàgina de depuració queda fora (amb un avís `pageNegativeIgnored`). PDF/X-4 és PDF 1.6: les transparències es mantenen, cada pàgina rep un grup de transparència que es fusiona en CMYK, i les imatges RGB que conserva `convertImages: false` s'etiqueten com a sRGB amb `/DefaultRGB`.
+
+Un màster d'impressió en PDF (`svg.pdfFileId`) s'insereix tal com és, així que els colors, les fonts i les transparències són els seus; el preflight informa del que hi aporta.
+
+### Negre
+
+```ts
+interface PrintBlackConfig {
+  kOnlyNeutrals?: boolean;      // Grisos i negre només amb tinta negra.
+  overprint?: boolean;          // El 100 % K sobreimprimeix.
+  richBlack?: boolean;          // Masses negres grans en negre enriquit.
+  richBlackColor?: CmykPercent; // { c, m, y, k } en percentatge.
+  richBlackMinSize?: Dimension; // El costat menor que necessita una massa.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '140px' }}>Tipus</th>
+      <th style={{ width: '170px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kOnlyNeutrals</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Un color neutre (`#000000`, `#808080`…) s'imprimeix només amb tinta negra, amb la K triada perquè la lluminositat coincideixi, mai com un gris de quatricromia que canvia amb el registre. Les imatges conserven la generació de negre del perfil.</td>
+    </tr>
+    <tr>
+      <td><code>overprint</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>El que es pinta només amb 100 % K (text negre, filets, traços, formes negres petites) sobreimprimeix (`op`/`OP` amb `OPM 1`), així un desregistre de les planxes no obre mai una vora blanca al seu voltant. Tota la resta reserva; les imatges i els degradats no sobreimprimeixen mai.</td>
+    </tr>
+    <tr>
+      <td><code>richBlack</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Un emplenament negre el costat menor del qual arriba a `richBlackMinSize` (un fons, una banda, una caixa) s'imprimeix en `richBlackColor` i reserva, perquè es vegi profund i no gris fosc. El text no passa mai a negre enriquit.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackColor</code></td>
+      <td><code>CmykPercent</code></td>
+      <td><code>{`{ c: 60, m: 40, y: 40, k: 100 }`}</code></td>
+      <td>La recepta del negre enriquit, en percentatge. Mantén-ne el total per sota del límit de tinta; el preflight ho comprova.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackMinSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6mm</code></td>
+      <td>El costat menor que necessita una massa negra per imprimir-se en negre enriquit.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Colors definits en CMYK
+
+Un color escrit en CMYK conserva els seus valors exactes: `ColorValue.cmyk` (en percentatge) s'aplica tal com és en una sortida d'impremta, i `hex` n'és la representació en pantalla. Una entrada de la paleta definida en CMYK val per a tots els colors enllaçats a ella.
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### Preflight
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // Píxels per polzada a la mida impresa.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>Propietat</th>
+      <th style={{ width: '110px' }}>Tipus</th>
+      <th style={{ width: '100px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Executa les revisions.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Un mapa de bits col·locat per sota d'aquests píxels per polzada a la seva mida impresa, retall inclòs, rep un avís: figures, imatges de cel·les de taula, imatges de disseny, vinyetes de còmic. Un mapa de bits sense resolució pròpia s'imprimeix a `page.dpi` a la seva mida natural, així que una pàgina composta a 150 dpi imprimeix cadascuna d'aquestes imatges a 150 ppp; un amb resolució (`bitmap.resolution`, `layout.bitmapResolution`) s'imprimeix a aquesta resolució a la seva mida natural.</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Per sota d'aquest valor l'avís és crític. Mai per sobre de `minImageResolution`.</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Filets, vores, filets de columna, filets de taula i vores de vinyeta de còmic més fins que això.</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Text per sota d'aquesta mida compost en més d'una tinta (un color de quatricromia, negre enriquit): s'emborrona quan les planxes es desplacen. El text negre, només K, no compta mai.</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Text més a prop del tall que aquesta distància, on la guillotina el pot tallar.</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Una caixa o una imatge que s'atura així de prop del tall sense arribar a la sang: porta-la a sang o retira-la.</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Informa de les fonts que no incrusta un PDF col·locat (el Sandbox revisa cada màster d'impressió amb `inspectPrintMaster`). Postext incrusta totes les fonts que compon.</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)` executa les revisions sobre un document compost i retorna una llista d'incidències, cadascuna amb un `kind`, una `severity` (`'critical'`, `'warning'` o `'info'`), el `pageIndex` absolut dins del llibre, el `rect` afectat (px de pàgina) i, quan l'element en té, el seu interval al text font. Els tipus són `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` i `nearTrim`. Sense `transform`, un neutre compta com una tinta i qualsevol altre color com tres, i la cobertura no es revisa; amb un `transform`, els recomptes i la cobertura són exactes. La resolució d'una imatge es calcula amb els píxels que declara el seu recurs, o amb els del fitxer mateix quan `imageSize(fileId)` els dona (`bitmapInfo` sobre els bytes, o la imatge descodificada): una declaració que s'allunya més d'un píxel del fitxer s'assenyala un cop com a `declaredPixelsMismatch`, un avís quan declara més píxels dels que té el fitxer. `placedImageResolutions(doc, { resources, imageSize })` enumera cada mapa de bits col·locat amb els seus ppp efectius, tant si el preflight està activat com si no.
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // mides en píxels dels mapes de bits
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // els píxels reals dels fitxers
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', segons el fitxer
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
+
+### Simulació de la impressió
+
+Una pàgina del canvas es pot pintar tal com s'imprimirà. `createPrintPreview(transform, print, { paper, dpi })` construeix la prova en pantalla d'una configuració: cada píxel se separa amb el perfil (neutres només en K, com al PDF) i es torna a mostrar en pantalla, sobre el blanc del paper quan `paper` és true; les masses negres prou grans per al negre enriquit es veuen en negre enriquit. Passa-la a `renderPageToCanvas` com a `printPreview`; `guides` hi afegeix les línies del tall, de la sang i de la zona de seguretat, i `marksFor` encercla zones d'una pàgina (els `rect` del preflight). `postext-folio` rep el mateix objecte com a `printPreview` (amb `paper: false`, perquè el to del paper del llibre ja tenyeix les pàgines).
+
+```ts
+import { createPrintPreview, renderPageToCanvas } from 'postext';
+
+const preview = createPrintPreview(transform, print, { paper: true, dpi: doc.config.page.dpi });
+renderPageToCanvas(page, doc, canvas, {
+  printPreview: { ...preview, guides: { safeZonePx: 59 }, marksFor: () => issues.map((i) => i.rect!).filter(Boolean) },
+});
+```
+
+### Motor de color
+
+La gestió de color que fa servir postext s'exporta per a les teves pròpies eines. Llegeix perfils ICC v2 i v4 (matriu/TRC i les taules de consulta `mft1`, `mft2`, `mAB`, `mBA`) en TypeScript pur, sense WebAssembly.
+
+- `parseIccProfile(bytes)` llegeix un perfil; `deviceChannels(profile)` en dona el nombre de canals.
+- `outputTransform(profile, { intent, blackPointCompensation, preserveNeutrals })` retorna `fromRgb(r, g, b)` (sRGB 0..1 → CMYK 0..1), `toLab(cmyk, paper?)` i `proof(cmyk, paper?)` (CMYK → sRGB de pantalla).
+- `cmykToLab`, `labToCmyk`, `srgbToLab`, `labToSrgb`, `deltaE` i `totalAreaCoverage` són les conversions soltes; `buildRgbLut` / `sampleRgbLut` creen i llegeixen taules denses per treballar amb píxels.
+- `OUTPUT_PROFILES`, `outputProfileInfo(id)` i `loadOutputProfile(id, baseUrl?)` donen el catàleg; `srgbProfileBytes()` escriu el perfil sRGB amb què PDF/X-4 etiqueta l'RGB; `authoredCmykColors(config)` llista els colors que una configuració defineix en CMYK.
+
+El resolver i l'stripper segueixen el patró de les altres seccions: `resolvePrintConfig`, `stripPrintDefaults` i `profileInkLimit(config)` (el límit del perfil que anomena una configuració, abans que cap `inkLimit` el substitueixi), amb `DEFAULT_PRINT_CONFIG`, `DEFAULT_PRINT_BLACK_CONFIG`, `DEFAULT_PRINT_PREFLIGHT_CONFIG` i `DEFAULT_RICH_BLACK`.
+
+
+## Visor Folio (configuració)
+
+La propietat `folio` decideix com presenta el visor Folio (`postext-folio`) el llibre imprès en 3D: l'angle de la vista, el paper, l'enquadernació, la superfície sobre la qual reposa el llibre i la llum. La composició la ignora, igual que la sortida canvas, HTML i PDF. `buildDocument` porta els ajustos resolts al VDT, com a `doc.config.folio`, quan la configuració en fixa algun, així que un document sense ajustos conserva el hash de la seva composició.
+
+```ts
+interface FolioConfig {
+  tilt?: number;                  // Graus des de la vertical, 0–70.
+  yaw?: number;                   // Graus al voltant del llibre, −180–180.
+  paper?: {
+    type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
+         | 'bible' | 'newsprint' | 'cardStock' | 'board';
+    grammage?: number;            // g/m²
+    bulk?: number;                // cm³/g; gruix µm = grammage × bulk
+    finish?: 'auto' | 'uncoated' | 'matte' | 'silk' | 'gloss';
+    texture?: 'auto' | 'smooth' | 'vellum' | 'wove' | 'laid' | 'linen' | 'felt';
+    textureStrength?: number;     // 0–2
+    shade?: ColorValue;
+    showThrough?: boolean;
+  };
+  binding?: {
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch' | 'folded';
+    cover?: 'case' | 'pages';
+    coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
+    coverColor?: ColorValue;
+    spineImage?: string;          // id de recurs
+  };
+  surface?: {
+    type?: 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' | 'marble' | 'plain' | 'none';
+    color?: ColorValue;
+  };
+  lighting?: {
+    environment?: 'studio' | 'daylight' | 'lamp' | 'overcast' | 'night';
+    intensity?: number;           // 0.25–2
+    shadows?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '180px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>tilt</code></td>
+      <td><code>number</code></td>
+      <td><code>22</code></td>
+      <td>Angle de la vista respecte a la vertical, en graus, limitat a 0–70. Amb 0 el llibre obert es veu pla des de dalt; amb un angle més gran el peu de les pàgines s'acosta i s'aprecia el gruix del bloc de pàgines.</td>
+    </tr>
+    <tr>
+      <td><code>yaw</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Quant gira la vista al voltant del llibre, en graus, portat a −180–180. Amb 0 el llibre es veu des del peu de les seves pàgines; un angle positiu porta la mirada cap a la seva dreta i un de negatiu cap a la seva esquerra. Juntament amb <code>tilt</code> és la vista amb què s'obre el visor i a la qual torna <code>resetView()</code>.</td>
+    </tr>
+    <tr>
+      <td><code>paper.type</code></td>
+      <td><code>FolioPaperType</code></td>
+      <td><code>'uncoated'</code>; <code>'newsprint'</code> en un format de diari</td>
+      <td>El tipus de paper. Dona els valors per defecte dels cinc camps següents (vegeu la taula de papers). <code>cardStock</code> és cartolina de coberta; <code>board</code> és cartró rígid, com el d'un llibre de cartró, i els seus fulls passen sense doblegar-se.</td>
+    </tr>
+    <tr>
+      <td><code>paper.grammage</code></td>
+      <td><code>number</code></td>
+      <td>el del paper</td>
+      <td>Gramatge en grams per metre quadrat, 20–2500. Un paper de més gramatge és més gruixut, més rígid i més opac: el full es corba més obert i transparenta menys el revers.</td>
+    </tr>
+    <tr>
+      <td><code>paper.bulk</code></td>
+      <td><code>number</code></td>
+      <td>el del paper</td>
+      <td>Mà: gruix per unitat de pes, en cm³/g, 0,5–3. El gruix d'un full en micres és gramatge × mà, i d'aquest valor i del nombre de pàgines en surt el llom del bloc.</td>
+    </tr>
+    <tr>
+      <td><code>paper.finish</code></td>
+      <td><code>FolioPaperFinish</code></td>
+      <td><code>'auto'</code></td>
+      <td>Sense estucar (fibra, sense brillantor) o estucat i calandrat fins a mat, semimat (<code>silk</code>, una brillantor suau) o brillant. A Folio, una pàgina brillant reflecteix el full que hi passa per sobre. <code>'auto'</code> agafa el del paper.</td>
+    </tr>
+    <tr>
+      <td><code>paper.texture</code></td>
+      <td><code>FolioPaperTexture</code></td>
+      <td><code>'auto'</code></td>
+      <td>El relleu de la superfície: <code>smooth</code> (llisa, calandrada), <code>vellum</code> (vitel·la, un gra fi), <code>wove</code> (la textura uniforme de gairebé tots els papers de llibre, formada sobre una tela metàl·lica teixida), <code>laid</code> (verjurat: verjures juntes creuades per corondells més separats), <code>linen</code> (tela, un gofrat de fils creuats), <code>felt</code> (les marques irregulars d'un feltre). <code>'auto'</code> agafa la del paper.</td>
+    </tr>
+    <tr>
+      <td><code>paper.textureStrength</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Quant es marca la textura amb la llum, 0–2.</td>
+    </tr>
+    <tr>
+      <td><code>paper.shade</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el del paper</td>
+      <td>El color del paper abans d'imprimir (blanc, natural, color d'os). Les pàgines s'imprimeixen damunt d'aquest color.</td>
+    </tr>
+    <tr>
+      <td><code>paper.showThrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>El revers de la pàgina es veu tènuement a través del paper fi. Després del paper bíblia, el paper de diari és el que més el deixa veure: la tinta penetra en el full.</td>
+    </tr>
+    <tr>
+      <td><code>binding.type</code></td>
+      <td><code>FolioBindingType</code></td>
+      <td><code>'hardcover'</code>; <code>'folded'</code> en un format de diari</td>
+      <td><code>hardcover</code>: tapa dura (cartoné), tapes una mica més grans que les pàgines. <code>paperback</code>: rústica fresada (llom fresat i encolat), s'obre menys. <code>sewn</code>: rústica cosida. <code>layflat</code>: enquadernació plana, s'obre sense enfonsar-se al llom. <code>saddleStitch</code>: grapat a cavallet, plecs doblegats i grapats pel plec, com una revista o un fullet; sense llom pla. <code>folded</code> (des de postext 1.18): un diari, plecs doblegats un cop i posats l'un dins de l'altre sense res que els subjecti; sense grapes, sense llom i sense tapes, i la primera pàgina és la portada. Un tram <a href="/ca/docs/document-format#paper"><code>:::paper</code></a> amb <code>shade</code> imprimeix una secció, per exemple les pàgines d'economia, en paper de diari salmó.</td>
+    </tr>
+    <tr>
+      <td><code>binding.cover</code></td>
+      <td><code>FolioCoverSource</code></td>
+      <td><code>'case'</code></td>
+      <td>Les cobertes. <code>'case'</code> dibuixa una tapa al voltant de les pàgines. <code>'pages'</code> agafa la primera pàgina del llibre com a cartró davanter i l'última, si és parella, com a cartró posterior: el llibre està tancat fins que es passa la coberta, els cartrons giren rígids i no es dibuixa cap tapa.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverMaterial</code></td>
+      <td><code>FolioCoverMaterial</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> és tela en la tapa dura i cartolina (<code>'paper'</code>) en les altres enquadernacions.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>blau fosc (<code>#2c3e57</code>)</td>
+      <td>El color del material de la coberta.</td>
+    </tr>
+    <tr>
+      <td><code>binding.spineImage</code></td>
+      <td><code>string</code></td>
+      <td>cap</td>
+      <td>L'id d'un recurs de mapa de bits o SVG imprès al llom: el llom tal com es veu amb el llibre dret, el cap a dalt i la coberta a la dreta. S'ajusta fins a cobrir el llom, centrat. El grapat a cavallet i l'enquadernació plegada no el fan servir.</td>
+    </tr>
+    <tr>
+      <td><code>surface.type</code></td>
+      <td><code>FolioSurfaceType</code></td>
+      <td><code>'oak'</code></td>
+      <td>Sobre què reposa el llibre. <code>'none'</code> deixa el fons de l'amfitrió.</td>
+    </tr>
+    <tr>
+      <td><code>surface.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>cap</td>
+      <td>Tenyeix la superfície; amb <code>'plain'</code> és el seu color.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.environment</code></td>
+      <td><code>FolioEnvironment</code></td>
+      <td><code>'studio'</code></td>
+      <td>L'entorn que reflecteixen els papers estucats i brillants, juntament amb la llum principal que projecta les ombres.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.intensity</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Exposició, 0,25–2.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.shadows</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Ombres de la llum principal.</td>
+    </tr>
+  </tbody>
+</table>
+
+Els papers i els valors que aporten (`FOLIO_PAPER_STOCKS`), habituals a les fitxes tècniques dels fabricants:
+
+<table>
+  <thead>
+    <tr>
+      <th>Paper</th>
+      <th>Gramatge</th>
+      <th>Mà</th>
+      <th>Gruix</th>
+      <th>Acabat</th>
+      <th>Textura</th>
+      <th>To</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>uncoated</code> (òfset sense estucar)</td><td>90 g/m²</td><td>1.25</td><td>113 µm</td><td>sense estucar</td><td>uniforme</td><td><code>#fcfbf8</code></td></tr>
+    <tr><td><code>bookWove</code> (paper de llibre color d'os, mà alta)</td><td>80 g/m²</td><td>1.6</td><td>128 µm</td><td>sense estucar</td><td>uniforme</td><td><code>#f6efdc</code></td></tr>
+    <tr><td><code>coatedMatte</code> (estucat mat)</td><td>115 g/m²</td><td>1.0</td><td>115 µm</td><td>mat</td><td>llisa</td><td><code>#fdfdfc</code></td></tr>
+    <tr><td><code>coatedSilk</code> (estucat semimat)</td><td>115 g/m²</td><td>0.9</td><td>104 µm</td><td>semimat</td><td>llisa</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>coatedGloss</code> (estucat brillant)</td><td>115 g/m²</td><td>0.8</td><td>92 µm</td><td>brillant</td><td>llisa</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>bible</code> (paper bíblia)</td><td>40 g/m²</td><td>1.1</td><td>44 µm</td><td>sense estucar</td><td>vitel·la</td><td><code>#f9f6ee</code></td></tr>
+    <tr><td><code>newsprint</code> (paper de diari)</td><td>48 g/m²</td><td>1.5</td><td>72 µm</td><td>sense estucar</td><td>uniforme</td><td><code>#ebe7dc</code></td></tr>
+    <tr><td><code>cardStock</code> (cartolina)</td><td>250 g/m²</td><td>1.2</td><td>300 µm</td><td>sense estucar</td><td>vitel·la</td><td><code>#fbfaf6</code></td></tr>
+    <tr><td><code>board</code> (cartró)</td><td>1250 g/m²</td><td>1.6</td><td>2000 µm</td><td>semimat</td><td>llisa</td><td><code>#ffffff</code></td></tr>
+  </tbody>
+</table>
+
+Una novel·la en paper color d'os, en rústica fresada, damunt d'una taula de noguera sota un llum de lectura:
+
+```ts
+folio: {
+  paper: { type: 'bookWove' },
+  binding: { type: 'paperback', coverColor: { hex: '#8a2b1f', model: 'hex' } },
+  surface: { type: 'walnut' },
+  lighting: { environment: 'lamp' },
+}
+```
+
+Una pàgina amb format de diari (`page.sizePreset` `'broadsheet'`, `'berliner'`, `'tabloid'` o `'compact'`) es mostra com un diari quan la configuració no anomena paper ni enquadernació: paper `newsprint` i enquadernació `folded` (des de postext 1.18). El paper o l'enquadernació que anomeni la configuració es respecten, de manera que `paper: { type: 'uncoated' }` imprimeix un tabloide en paper òfset. Els camps del paper que es fixen sense anomenar el tipus (un `grammage`, un `shade`) s'apliquen al paper de diari. El resolvedor i el netejador reben el format com a segon argument, i `folioForTrim(folio, sizePreset)` escriu aquests dos valors a la configuració:
+
+```ts
+resolveFolioConfig({ tilt: 30 }, 'tabloid');
+// => { tilt: 30, paper: { type: 'newsprint', grammage: 48, bulk: 1.5, … }, binding: { type: 'folded', coverMaterial: 'paper', … }, … }
+
+stripFolioDefaults({ paper: { type: 'newsprint' }, binding: { type: 'folded' } }, 'tabloid');
+// => undefined
+```
+
+Els colors segueixen els enllaços a la paleta com qualsevol altre color de la configuració (`paletteId`). El resolvedor i el netejador funcionen com a les altres seccions; el netejador treu els valors del paper que coincideixen amb els del tipus triat:
+
+```ts
+import { FOLIO_PAPER_STOCKS, DEFAULT_FOLIO_CONFIG, resolveFolioConfig, stripFolioDefaults } from 'postext';
+
+resolveFolioConfig({ paper: { type: 'bible' } }).paper;
+// => { type: 'bible', grammage: 40, bulk: 1.1, finish: 'uncoated', texture: 'vellum', textureStrength: 1, shade: { hex: '#f9f6ee', … }, showThrough: true }
+
+stripFolioDefaults({ paper: { type: 'bible', grammage: 40 } });
+// => { paper: { type: 'bible' } }
+```
+
+Al Sandbox aquests ajustos formen el grup **Folio** del tauler Disseny (**Disseny → Folio → Visor Folio (3D)**), i la pestanya Folio els mostra a mesura que els canvies, sense tornar a compondre el llibre. El visor en si es descriu a [Un llibre en 3D](/ca/docs/configuration-programmatic-usage#un-llibre-en-3d-postext-folio), i una tanda de pàgines en un altre paper, a [Format del document › `:::paper`](/ca/docs/document-format#paper).
+
+
+## Depuració
+
+La propietat `debug` agrupa dos tipus d'ajudes d'autoria: superposicions visuals que mantenen sincronitzats el text font i la composició renderitzada, i un conjunt d'avisos que mostren al tauler Revisió del Sandbox els problemes tipogràfics o estructurals del document. Cap dels dos no afecta la sortida exportada.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>Cursor reflectit a la composició renderitzada — vegeu <a href="#superposicions-visuals">Superposicions visuals</a>.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>Selecció de la font ressaltada a la pàgina — vegeu <a href="#superposicions-visuals">Superposicions visuals</a>.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight</code></td>
+      <td><code>LooseLineHighlightConfig</code></td>
+      <td>Superposició sobre les línies justificades fluixes — vegeu <a href="#superposicions-visuals">Superposicions visuals</a>.</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative</code></td>
+      <td><code>{'{ enabled: boolean }'}</code></td>
+      <td>Negatiu d'alt contrast de la pàgina — vegeu <a href="#superposicions-visuals">Superposicions visuals</a>.</td>
+    </tr>
+    <tr>
+      <td><code>warnings</code></td>
+      <td><code>WarningsToggleConfig</code></td>
+      <td>Un booleà per cada classe d'avís d'autoria que mostra l'editor — vegeu <a href="#avisos">Avisos</a>.</td>
+    </tr>
+  </tbody>
+</table>
+### Superposicions visuals
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Propietat</th>
+      <th style={{ width: '120px' }}>Tipus</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Mostra un cursor en la composició renderitzada que reflecteix la posició del cursor a la font.</td>
+    </tr>
+    <tr>
+      <td><code>cursorSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#2563eb</code></td>
+      <td>Color d'aquest cursor.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Ressalta l'interval renderitzat que coincideix amb la selecció a la font.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fde04780</code></td>
+      <td>Color del ressaltat — un groc translúcid per defecte.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pinta una superposició sobre les línies justificades amb un espaiat entre paraules que supera <code>threshold</code> vegades l'amplada de l'espai normal.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ff000040</code></td>
+      <td>Color d'aquesta superposició.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.threshold</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Multiplicador de l'amplada de l'espai normal a partir del qual una línia justificada compta com a fluixa. L'avís <code>looseLines</code> fa servir el mateix llindar. Una línia justificada amb espais que passarien de 3 vegades la seva amplada es compon en bandera, de manera que amb el valor per defecte la capa i l'avís gairebé no troben res en el text corregut; abaixa'l (1.5 o 2) per veure les línies fluixes que continuen justificades.</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderitza una superposició en negatiu d'alt contrast sobre la pàgina — útil per auditar visualment la forma general d'una doble pàgina (densitat de text, equilibri de columnes, espai en blanc) d'un cop d'ull, sense distreure't amb el detall dels glifs.</td>
+    </tr>
+  </tbody>
+</table>
+
+Cada `SyncIndicatorConfig` és `{ enabled: boolean; color?: ColorValue }`. `LooseLineHighlightConfig` és `{ enabled: boolean; color?: ColorValue; threshold?: number }`. `pageNegative` és un simple interruptor `{ enabled: boolean }`.
+
+```ts
+debug: {
+  cursorSync: { enabled: true, color: { hex: '#ff0066', model: 'hex' } },
+  selectionSync: { enabled: false, color: { hex: '#fde04780', model: 'hex' } },
+  looseLineHighlight: { enabled: true, color: { hex: '#ff000040', model: 'hex' }, threshold: 3 },
+  pageNegative: { enabled: true },
+}
+```
+
+Aquestes superposicions les dibuixa el Sandbox sobre la seva vista Canvas. No formen part de la pàgina: ni `renderPage`, ni la sortida HTML, ni el PDF no les pinten mai.
+
+### Línies fluixes al teu propi canvas
+
+El motor exporta el ressaltat de línies fluixes com a dues funcions auxiliars, per a una pàgina que pintes tu:
+
+```ts
+import { buildDocument, renderPageToCanvas, drawLooseLines, findLooseLines } from 'postext';
+
+const doc = buildDocument(content, config);
+const canvas = document.querySelector('canvas')!;
+renderPageToCanvas(doc.pages[0], doc, canvas, { scale: 0.5 });
+drawLooseLines(canvas.getContext('2d')!, doc.pages[0], doc, { threshold: 2.5 });
+
+// Les mateixes línies com a dades: un informe, una capa SVG, un recompte per pàgina.
+for (const { ratio, line, block } of findLooseLines(doc, { threshold: 2.5 })) {
+  console.log(`pàgina ${block.pageIndex + 1}: ${ratio.toFixed(2)}× — ${line.text}`);
+}
+```
+
+- **`findLooseLines(doc, { threshold?, pageIndex? })`** retorna, en ordre de lectura, cada línia justificada amb un `justifiedSpaceRatio` que supera `threshold`: `{ block, line, ratio, x, y, width, height }`. El rectangle, en píxels de pàgina, és la franja que cobreix el ressaltat: tota l'amplada del bloc a l'alçada de la línia. Són les línies que el Sandbox ressalta i que el seu tauler Revisió assenyala com a `looseLine`.
+- **`drawLooseLines(ctx, page, doc, { threshold?, color? })`** omple aquestes franges en una pàgina i retorna les línies que ha pintat. Dibuixa en píxels de pàgina amb la transformació actual del context, així que crida-la just després de `renderPage` o `renderPageToCanvas` sobre el mateix canvas: totes dues deixen el context escalat a la pàgina. `color` és qualsevol estil d'emplenament del canvas.
+- **Valors per defecte.** Les dues funcions fan servir el llindar (3) i el color (`#ff000040`) per defecte, no el `debug.looseLineHighlight` del document: aquest ajust és del Sandbox. Per seguir una configuració, passa `resolveDebugConfig(config.debug).looseLineHighlight.threshold` i `.color.hex`.
+
+### Avisos
+
+`debug.warnings` controla quins problemes d'autoria apareixen al tauler **Revisió** del Sandbox (s'edita a **Disseny → Avançat → Avisos**). Cada clau és un interruptor booleà independent; posa'n una a `false` per silenciar aquell avís concret sense desactivar els altres.
+
+Aquests interruptors només filtren el tauler del Sandbox. Els avisos que registra el mateix motor —les caixes que desborden la seva columna a `doc.warnings`; els ids de recurs, directives, insercions i ids d'estil desconeguts i les quadrícules de taula irregulars a `doc.contentWarnings`— hi són diguin el que diguin els interruptors, i els renderitzadors notifiquen les imatges que pinten com a marcador de posició; vegeu [Avisos del document](/ca/docs/configuration-programmatic-usage#avisos-del-document).
+
+```ts
+interface WarningsToggleConfig {
+  missingFont?: boolean;
+  looseLines?: boolean;
+  headingHierarchy?: boolean;
+  consecutiveHeadings?: boolean;
+  listAfterHeading?: boolean;
+  designIssues?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '120px' }}>Tipus</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>missingFont</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa quan una font referenciada per la configuració no s'ha pogut carregar al navegador. Detecta errates a `fontFamily` i paquets `@fontsource/...` absents abans que es converteixin en substitucions silencioses per una font de reserva a la sortida renderitzada.</td>
+    </tr>
+    <tr>
+      <td><code>looseLines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa de les línies justificades amb un espaiat entre paraules que supera `debug.looseLineHighlight.threshold`. Complementa la superposició: l'avís les enumera al tauler, la superposició les mostra a la seva posició.</td>
+    </tr>
+    <tr>
+      <td><code>headingHierarchy</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa de nivells d'encapçalament que salten un rang — per exemple, un H1 seguit directament d'un H3. Els salts en la jerarquia solen indicar o bé una errata en la profunditat de l'encapçalament o bé un malentès sobre l'esquema del document.</td>
+    </tr>
+    <tr>
+      <td><code>consecutiveHeadings</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Avisa quan un encapçalament va seguit immediatament d'un altre encapçalament, sense cap paràgraf ni llista entremig. Desactivat per defecte perquè els encapçalaments encadenats són legítims en moltes plantilles (títol + subtítol, capítol + epígraf); activa'l en manuscrits on cada encapçalament ha d'introduir prosa.</td>
+    </tr>
+    <tr>
+      <td><code>listAfterHeading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Avisa quan una llista comença immediatament després d'un encapçalament, sense paràgraf introductori. Desactivat per defecte perquè el material de referència sol fer-ho; activa'l en escriptura narrativa on cada llista hauria d'estar emmarcada per prosa.</td>
+    </tr>
+    <tr>
+      <td><code>designIssues</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa de problemes d'integritat a les ranures de disseny — capçaleres de pàgina, peus de pàgina, l'obertura de part i el verso en blanc que la segueix, les files de part de l'índex, ranures de disseny avançat dels encapçalaments, i el disseny i les capçaleres i peus de secció de cada estil de títol. Cobreix cadenes d'ancoratge cícliques i referències d'ancoratge penjants (un element ancorat a un <code>#id</code> que ja no existeix), un encapçalament amb span de pàgina amb el <code>breakBefore</code> desactivat, i un disseny avançat habilitat amb elements que no renderitzen mai <code>{'{titleText}'}</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+debug: {
+  warnings: {
+    missingFont: true,
+    looseLines: true,
+    headingHierarchy: true,
+    consecutiveHeadings: true,
+    listAfterHeading: false,
+    designIssues: true,
+  },
+}
+```
+
+A més d'aquests, el tauler mostra sempre els avisos que emet la mateixa maquetació (`VDTDocument.warnings`), com ara una caixa d'avís que desborda la seva columna (`calloutOverflow`), i els valors de configuració que el motor va substituir (`VDTDocument.configWarnings`, o `collectConfigWarnings(config)`; vegeu [Avisos de configuració](#avisos-de-configuració) més avall).
+
+### Avisos de configuració
+
+Vuit errors de la configuració mateixa no passen mai en silenci, i cap interruptor no els amaga. El motor no falla per cap d'ells: substitueix el valor, o prescindeix de l'ajust, i ho diu.
+
+- **Format de numeració desconegut**: un `numberFormat` de llista numerada, un `page.pageNumbering.format` o el `counterFormat` d'un tipus de recurs que no és cap de les [grafies dels formats de numeració](/ca/docs/configuration-page-layout#grafies-dels-formats-de-numeració). Numera en decimal.
+- **Llista de fonts en una família**: un `fontFamily` (o qualsevol `…FontFamily`) que conté una llista de fonts CSS. El text es compon en la primera família de la llista (vegeu [Una sola família per `fontFamily`](/ca/docs/configuration-text#una-sola-família-per-fontfamily)).
+- **Columna lateral sense lloc**: un `sideColumnPercent` d'una disposició `'oneAndHalf'` (la del document, o el `layout` propi d'un estil d'encapçalament) que deixaria alguna de les columnes per sota de l'1% de l'amplada de l'àrea de contingut, o que no és un nombre. Les columnes es tallen al valor més proper que admeten totes dues, i `used` ho indica (`sideColumnPercentClamped`; vegeu la [disposició `'oneAndHalf'`](/ca/docs/configuration-page-layout#tipus-de-disposició)).
+- **Nombre de columnes fora de rang**: un `columnCount` d'una disposició `'multiple'` (la del document, o el `layout` propi d'un estil d'encapçalament) que no és un nombre enter de 3 a 8. La pàgina es divideix en el nombre vàlid més proper (3 si el valor no és un nombre), i `used` l'indica (`columnCountClamped`; vegeu la [disposició `'multiple'`](/ca/docs/configuration-page-layout#tipus-de-disposició)).
+- **Retícula de caràcters massa gran**: un `cjk.grid` amb més caràcters per línia o més línies per pàgina dels que caben entre els marges. La retícula es compon amb els que hi caben, i `used` n'indica el nombre (`cjkGridClamped`; vegeu [Retícula de caràcters](/ca/docs/configuration-east-asian#retícula-de-caràcters)).
+- **Ajust d'encapçalament desconegut**: una clau que no existeix a `headings`, `headings.balancing`, un nivell d'encapçalament, un estil d'encapçalament o un estil de paràgraf: un `letterSpacng` mal escrit, un `tracking` pres d'una altra eina, un `level` en un estil d'encapçalament, un `fontStyle: 'italic'` en un estil de paràgraf (que porta `italic: true`). Una tabulació es comprova igual (un `leaders` per `leader`). El motor la ignora (fins a postext 1.4 ho feia sense dir res). `value` és la clau, `used` va buit i `suggestion` anomena l'ajust al qual s'assembla més, quan en dista una o dues lletres o només canvia en majúscules (`unknownConfigKey`).
+- **Valor d'ajust desconegut**: un ajust que admet unes poques paraules en porta una altra, com ara `direction: 'right'` (admet `auto`, `ltr` o `rtl`). El motor llegeix en el seu lloc el valor per defecte, i `used` diu en què ha quedat: per a `direction`, la direcció de la llengua del document (`unknownConfigValue`). L'`align` d'una tabulació que no és cap de les seves quatre paraules es llegeix com a `'start'`, i una `position` que no és una longitud, `'end'` ni un percentatge deixa fora la tabulació (`used` és `'none'`). També es comproven les paraules dels ajustos de còmic ([Còmics › Avisos de còmic](/ca/docs/comics#avisos-de-còmic)): `used` és el valor en què s'ha resolt l'ajust (el valor per defecte propi d'un estil de bafarada, si és un estil integrat), i `suggestion` anomena la paraula a què més s'assembla el valor, quan n'hi ha una de propera.
+- **Números de línia en text vertical**: `lineNumbers.enabled: true` en un document compost en vertical (`layout.writingMode: 'vertical-rl'`). Les pàgines verticals no porten números de línia, i `used` és `false` (`lineNumbersUnsupported`; vegeu [Numeració de línies](/ca/docs/configuration-notes-references#numeració-de-línies)).
+- **Ajust del text en escriptura vertical** — el `defaultPlacement.wrap` d'un tipus de recurs en un document compost en vertical. Les pàgines verticals no componen text al costat d'una figura, i `used` és `none` (`wrapUnsupported`; vegeu [Format del document › Ajust del text](/ca/docs/document-format#ajust-del-text)). Un `wrap` que no anomena cap costat és un valor d'ajust desconegut.
+
+El Sandbox els mostra al tauler **Revisió** amb la ruta de l'ajust. En codi, `buildDocument` els deixa al document com a `configWarnings` (absent quan la configuració està neta), i `collectConfigWarnings(config)` els retorna sense compondre res:
+
+```js
+import { buildDocument, collectConfigWarnings } from 'postext';
+
+// JavaScript sense tipus: en TypeScript, 'roman' ni tan sols passa la comprovació de tipus.
+const config = { bodyText: { fontFamily: 'EB Garamond, serif' }, orderedLists: { numberFormat: 'roman' } };
+const doc = buildDocument({ markdown }, config);
+doc.configWarnings;
+// [{ kind: 'fontFamilyStack', path: 'bodyText.fontFamily', value: 'EB Garamond, serif', used: 'EB Garamond' },
+//  { kind: 'unknownNumberFormat', path: 'orderedLists.numberFormat', value: 'roman', used: 'arabic' }]
+collectConfigWarnings(config); // la mateixa llista
+```
+
+També es revisa cada configuració parcial niada: estils d'encapçalament, les llistes dins de les parts, `htmlViewer.overrides`, elements de disseny.
+
+`formatWarning` (vegeu [Avisos del document](/ca/docs/configuration-programmatic-usage#avisos-del-document)) també els descriu, amb la ruta de l'ajust al davant —`bodyText.fontFamily: font stack "EB Garamond, serif" — set in "EB Garamond"`, `headingStyles[0].letterSpacng: unknown setting "letterSpacng" — ignored (did you mean "letterSpacing"?)`—, de manera que un amfitrió pot registrar en un sol bucle les tres llistes que retorna la composició.

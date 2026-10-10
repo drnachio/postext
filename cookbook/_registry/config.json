@@ -1,7 +1,7 @@
 {
-  "$comment": "Every top-level PostextConfig key (packages/postext/src/types.ts) → its section in docs/configuration. Used for the 'Config at a glance' links and to index detected.configKeys for search. `locale` points at Hyphenation, whose 'Document language' subsection (an h4) explains it.",
+  "$comment": "Every top-level PostextConfig key (packages/postext/src/types.ts) → its section in the Configuration reference (the docs/configuration-* pages). Used for the 'Config at a glance' links and to index detected.configKeys for search. `locale` points at Hyphenation, whose 'Document language' subsection (an h4) explains it.",
   "page": {
-    "slug": "configuration",
+    "slug": "configuration-page-layout",
     "heading": {
       "en": "Page",
       "es": "Página",
@@ -13,7 +13,7 @@
     }
   },
   "layout": {
-    "slug": "configuration",
+    "slug": "configuration-page-layout",
     "heading": {
       "en": "Layout",
       "es": "Disposición",
@@ -25,7 +25,7 @@
     }
   },
   "bodyText": {
-    "slug": "configuration",
+    "slug": "configuration-text",
     "heading": {
       "en": "Body text",
       "es": "Texto de cuerpo",
@@ -37,7 +37,7 @@
     }
   },
   "headings": {
-    "slug": "configuration",
+    "slug": "configuration-text",
     "heading": {
       "en": "Headings",
       "es": "Encabezados",
@@ -49,7 +49,7 @@
     }
   },
   "tableStyle": {
-    "slug": "configuration",
+    "slug": "configuration-resources",
     "heading": {
       "en": "Table style",
       "es": "Estilo de tablas",
@@ -61,7 +61,7 @@
     }
   },
   "tableStyles": {
-    "slug": "configuration",
+    "slug": "configuration-resources",
     "heading": {
       "en": "Named table styles",
       "es": "Estilos de tabla con nombre",
@@ -73,7 +73,7 @@
     }
   },
   "captionStyle": {
-    "slug": "configuration",
+    "slug": "configuration-resources",
     "heading": {
       "en": "Caption style",
       "es": "Estilo de pies de recurso",
@@ -85,7 +85,7 @@
     }
   },
   "diagramStyle": {
-    "slug": "configuration",
+    "slug": "configuration-resources",
     "heading": {
       "en": "Diagram style",
       "es": "Estilo de diagramas",
@@ -97,7 +97,7 @@
     }
   },
   "paragraphStyles": {
-    "slug": "configuration",
+    "slug": "configuration-styles",
     "heading": {
       "en": "Paragraph styles",
       "es": "Estilos de párrafo",
@@ -109,7 +109,7 @@
     }
   },
   "calloutStyles": {
-    "slug": "configuration",
+    "slug": "configuration-styles",
     "heading": {
       "en": "Callout styles",
       "es": "Estilos de aviso",
@@ -121,7 +121,7 @@
     }
   },
   "chipStyles": {
-    "slug": "configuration",
+    "slug": "configuration-styles",
     "heading": {
       "en": "Chip styles",
       "es": "Estilos de chip",
@@ -133,7 +133,7 @@
     }
   },
   "parts": {
-    "slug": "configuration",
+    "slug": "configuration-styles",
     "heading": {
       "en": "Parts",
       "es": "Partes",
@@ -145,7 +145,7 @@
     }
   },
   "headingStyles": {
-    "slug": "configuration",
+    "slug": "configuration-styles",
     "heading": {
       "en": "Heading styles",
       "es": "Estilos de encabezado",
@@ -157,7 +157,7 @@
     }
   },
   "toc": {
-    "slug": "configuration",
+    "slug": "configuration-notes-references",
     "heading": {
       "en": "Table of contents",
       "es": "Índice de contenidos",
@@ -169,7 +169,7 @@
     }
   },
   "unorderedLists": {
-    "slug": "configuration",
+    "slug": "configuration-text",
     "heading": {
       "en": "Unordered Lists",
       "es": "Listas no ordenadas",
@@ -181,7 +181,7 @@
     }
   },
   "orderedLists": {
-    "slug": "configuration",
+    "slug": "configuration-text",
     "heading": {
       "en": "Ordered Lists",
       "es": "Listas ordenadas",
@@ -193,7 +193,7 @@
     }
   },
   "math": {
-    "slug": "configuration",
+    "slug": "configuration-text",
     "heading": {
       "en": "Math",
       "es": "Matemáticas",
@@ -205,7 +205,7 @@
     }
   },
   "cjk": {
-    "slug": "configuration",
+    "slug": "configuration-east-asian",
     "heading": {
       "en": "East Asian typography",
       "es": "Tipografía de Asia oriental",
@@ -217,7 +217,7 @@
     }
   },
   "header": {
-    "slug": "configuration",
+    "slug": "configuration-page-layout",
     "heading": {
       "en": "Headers & footers",
       "es": "Encabezados y pies",
@@ -229,7 +229,7 @@
     }
   },
   "footer": {
-    "slug": "configuration",
+    "slug": "configuration-page-layout",
     "heading": {
       "en": "Headers & footers",
       "es": "Encabezados y pies",
@@ -241,7 +241,7 @@
     }
   },
   "locale": {
-    "slug": "configuration",
+    "slug": "configuration-text",
     "heading": {
       "en": "Hyphenation",
       "es": "Separación silábica",
@@ -253,7 +253,7 @@
     }
   },
   "direction": {
-    "slug": "configuration",
+    "slug": "configuration-text",
     "heading": {
       "en": "Languages and scripts",
       "es": "Idiomas y escrituras",
@@ -265,7 +265,7 @@
     }
   },
   "numerals": {
-    "slug": "configuration",
+    "slug": "configuration-text",
     "heading": {
       "en": "Document language",
       "es": "Idioma del documento",
@@ -277,7 +277,7 @@
     }
   },
   "debug": {
-    "slug": "configuration",
+    "slug": "configuration-fonts-colors-viewers",
     "heading": {
       "en": "Debug",
       "es": "Depuración",
@@ -289,7 +289,7 @@
     }
   },
   "htmlViewer": {
-    "slug": "configuration",
+    "slug": "configuration-fonts-colors-viewers",
     "heading": {
       "en": "HTML Viewer",
       "es": "Visor HTML",
@@ -301,7 +301,7 @@
     }
   },
   "pdfGeneration": {
-    "slug": "configuration",
+    "slug": "configuration-fonts-colors-viewers",
     "heading": {
       "en": "PDF generation (config)",
       "es": "Generación de PDF (configuración)",
@@ -313,7 +313,7 @@
     }
   },
   "print": {
-    "slug": "configuration",
+    "slug": "configuration-fonts-colors-viewers",
     "heading": {
       "en": "Print production (config)",
       "es": "Producción para imprenta (configuración)",
@@ -325,7 +325,7 @@
     }
   },
   "colorPalette": {
-    "slug": "configuration",
+    "slug": "configuration-fonts-colors-viewers",
     "heading": {
       "en": "Color Palette",
       "es": "Paleta de colores",
@@ -337,7 +337,7 @@
     }
   },
   "customFonts": {
-    "slug": "configuration",
+    "slug": "configuration-fonts-colors-viewers",
     "heading": {
       "en": "Custom fonts",
       "es": "Fuentes personalizadas",
@@ -349,7 +349,7 @@
     }
   },
   "resourceTypes": {
-    "slug": "configuration",
+    "slug": "configuration-resources",
     "heading": {
       "en": "Resource types",
       "es": "Tipos de recurso",
@@ -361,7 +361,7 @@
     }
   },
   "index": {
-    "slug": "configuration",
+    "slug": "configuration-notes-references",
     "heading": {
       "en": "Back-of-book index",
       "es": "Índice analítico",
@@ -373,7 +373,7 @@
     }
   },
   "crossRefs": {
-    "slug": "configuration",
+    "slug": "configuration-notes-references",
     "heading": {
       "en": "Cross-references",
       "es": "Referencias cruzadas",
@@ -385,7 +385,7 @@
     }
   },
   "citations": {
-    "slug": "configuration",
+    "slug": "configuration-notes-references",
     "heading": {
       "en": "Citations",
       "es": "Citas",
@@ -397,7 +397,7 @@
     }
   },
   "videoStyle": {
-    "slug": "configuration",
+    "slug": "configuration-resources",
     "heading": {
       "en": "Video style",
       "es": "Estilo de vídeo",

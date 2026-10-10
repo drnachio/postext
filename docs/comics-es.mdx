@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'es',
   lastUpdated: '2026-10-07',
   readingTime: '25 min',
-  order: 9,
+  order: 18,
   plainSummary: "Esta página explica cómo hacer un cómic con Postext. Los dibujos son las viñetas, y todo lo que los personajes dicen, piensan u oyen se escribe como texto en el archivo Markdown. Postext coloca las viñetas en la página y dibuja por su cuenta los bocadillos, las cartelas y las onomatopeyas alrededor de las palabras. Para traducir el cómic solo se reescriben las palabras, y Postext rotula de nuevo el otro idioma: el japonés en columnas, el árabe de derecha a izquierda. La página trata también las tiras cómicas dentro de un libro, las páginas que ocupan dos caras enfrentadas, las salidas y los límites que quedan.",
 };
 
@@ -17,7 +17,7 @@ export const metadata = {
 
 Un cómic en Postext es un conjunto de imágenes y un guion. Las imágenes son recursos bitmap o SVG corrientes, dibujados sin ningún rótulo encima. El guion está en el Markdown del capítulo: un bloque `:::page` corta una página en viñetas, da a cada viñeta su imagen y enumera, línea a línea, los bocadillos, las cartelas y las onomatopeyas de esa viñeta. Postext dispone las viñetas, recorta cada imagen a su celda sin cortar lo que importa, compone el texto en la letra de rotulación del libro a un solo cuerpo, dibuja un bocadillo a su alrededor, dirige el rabillo hacia quien habla y coloca los bocadillos en orden de lectura donde no tapan ninguna cara. Una traducción es otro archivo Markdown con las mismas viñetas y otras palabras; Postext la rotula de nuevo desde cero, en columnas para el japonés y de derecha a izquierda para el árabe.
 
-Los cómics solo actúan cuando se usan: un documento sin `:::page` ni `:::strip` se compone exactamente igual que antes. Los ajustes están en la [sección `comics` de la configuración](/es/docs/configuration#cómics), y el marcado se resume en [Formato del documento › Cómics](/es/docs/document-format#cómics).
+Los cómics solo actúan cuando se usan: un documento sin `:::page` ni `:::strip` se compone exactamente igual que antes. Los ajustes están en la [sección `comics` de la configuración](/es/docs/configuration-comics#cómics), y el marcado se resume en [Formato del documento › Cómics](/es/docs/document-format#cómics).
 
 ## Páginas de cómic
 
@@ -169,7 +169,7 @@ Una imagen sin zona segura se recorta alrededor de su centro, o de `focus`. Un S
 
 ### Estilos de viñeta
 
-El aspecto de una viñeta sale de `comics.panel` (un borde negro de 1 pt, fondo blanco, `cover`), de un estilo con nombre de `comics.panelStyles` que una página o una viñeta elige con `style=`, y del `border` y el `bg` de la propia viñeta. Un borde puede ser `solid`, `none` o `rough`: una línea a mano que tiembla un poco, igual en cada composición, porque su temblor se siembra a partir de la viñeta. Todos los campos están en [Configuración › Cómics](/es/docs/configuration#cómics).
+El aspecto de una viñeta sale de `comics.panel` (un borde negro de 1 pt, fondo blanco, `cover`), de un estilo con nombre de `comics.panelStyles` que una página o una viñeta elige con `style=`, y del `border` y el `bg` de la propia viñeta. Un borde puede ser `solid`, `none` o `rough`: una línea a mano que tiembla un poco, igual en cada composición, porque su temblor se siembra a partir de la viñeta. Todos los campos están en [Configuración › Cómics](/es/docs/configuration-comics#cómics).
 
 ### Imágenes que rompen la viñeta
 
@@ -335,7 +335,7 @@ ghost{eerie}: Marchaos de esta casa…
 caption{at=bottom-end}: A tres calles de allí.
 ```
 
-Los contornos son `oval` (una superelipse ajustada a las líneas, `roundness` 2,2), `rounded`, `rectangle`, `cloud` (festones contados a partir del perímetro), `burst` (`burstPoints` picos de profundidad `burstDepth`), `wavy`, `electric` y `none`. `dash` dibuja un contorno discontinuo, `double` uno doble, y `wobble` (0–1) lo hace temblar como a mano, siempre igual para el mismo bocadillo. Los rabillos son `curved`, `wedge`, `bubbles`, `zigzag` y `none`. Todos los campos, con su valor por defecto, están en [Configuración › Cómics](/es/docs/configuration#cómics).
+Los contornos son `oval` (una superelipse ajustada a las líneas, `roundness` 2,2), `rounded`, `rectangle`, `cloud` (festones contados a partir del perímetro), `burst` (`burstPoints` picos de profundidad `burstDepth`), `wavy`, `electric` y `none`. `dash` dibuja un contorno discontinuo, `double` uno doble, y `wobble` (0–1) lo hace temblar como a mano, siempre igual para el mismo bocadillo. Los rabillos son `curved`, `wedge`, `bubbles`, `zigzag` y `none`. Todos los campos, con su valor por defecto, están en [Configuración › Cómics](/es/docs/configuration-comics#cómics).
 
 Los renderizadores dibujan un bocadillo como lo entinta un rotulista: primero se trazan todos los contornos de un grupo al doble de su grosor, después se rellenan y después se compone el texto. Por eso dos cuerpos unidos y su rabillo salen como una sola forma, sin ninguna línea entre ellos.
 
@@ -443,7 +443,7 @@ Un cómic occidental se lee de izquierda a derecha: la primera viñeta de una ti
 - `'auto'` (el valor por defecto): el sentido del idioma de la edición. De derecha a izquierda en un documento de derecha a izquierda, así que una edición árabe refleja sus páginas; en un documento vertical; y en japonés y chino tradicional (`ja`, `zh-Hant`, `zh-TW`, `zh-HK`, `zh-MO`), así que una edición japonesa de un cómic occidental se lee de derecha a izquierda, como el manga. En cualquier otro idioma, chino simplificado y coreano incluidos (el manhua y el manhwa se leen hoy de izquierda a derecha), es el sentido para el que se dibujaron las imágenes, `comics.artDirection` (`'ltr'` por defecto): un manga, con `artDirection: 'rtl'`, se lee de derecha a izquierda en cualquier idioma.
 - `'ltr'` o `'rtl'` impone un sentido a todo el libro, y el atributo `direction` de una página lo impone a esa página.
 
-La encuadernación sigue a los cómics. Con `page.binding: 'auto'`, un libro cuya sección `comics` se lee de derecha a izquierda se encuaderna por la derecha: la página 1 queda sola a la izquierda del lomo, los pliegos se leen `[3 | 2]`, los visores pasan las páginas hacia la izquierda, el PDF pide el orden de páginas de derecha a izquierda y el EPUB declara una progresión de páginas de derecha a izquierda. La sección `comics` decide por todo el libro, así que un capítulo sin páginas de cómic se encuaderna igual que los demás; el `direction` propio de una página no mueve el lomo. Un documento cuyas páginas de cómic leen los valores por defecto, sin sección `comics`, conserva la encuadernación de su texto (basta `comics: {}` para encuadernarlo según se leen sus cómics). `page.binding: 'left'` o `'right'` sigue mandando. Véase [Encuadernación](/es/docs/configuration#encuadernación).
+La encuadernación sigue a los cómics. Con `page.binding: 'auto'`, un libro cuya sección `comics` se lee de derecha a izquierda se encuaderna por la derecha: la página 1 queda sola a la izquierda del lomo, los pliegos se leen `[3 | 2]`, los visores pasan las páginas hacia la izquierda, el PDF pide el orden de páginas de derecha a izquierda y el EPUB declara una progresión de páginas de derecha a izquierda. La sección `comics` decide por todo el libro, así que un capítulo sin páginas de cómic se encuaderna igual que los demás; el `direction` propio de una página no mueve el lomo. Un documento cuyas páginas de cómic leen los valores por defecto, sin sección `comics`, conserva la encuadernación de su texto (basta `comics: {}` para encuadernarlo según se leen sus cómics). `page.binding: 'left'` o `'right'` sigue mandando. Véase [Encuadernación](/es/docs/configuration-page-layout#encuadernación).
 
 Las dos disposiciones de página salen de la misma fuente. Una página de derecha a izquierda dispone las viñetas de cada tira desde la derecha, de modo que la viñeta 1 queda arriba a la derecha; los cortes inclinados se reflejan con ellas, y también los lados lógicos de `bleed`, `pad` y las palabras de esquina (una cartela en `top-start` va arriba a la derecha). Las tiras conservan su orden de arriba abajo, y el orden de lectura del guion no cambia. La rotulación también refleja sus reglas: el primer bocadillo de una viñeta se inclina hacia la derecha, y el siguiente solo puede quedar más arriba si está más a la izquierda.
 
@@ -520,7 +520,7 @@ Cada aviso nombra la línea o el atributo al que se refiere, y el panel de revis
   </tbody>
 </table>
 
-Los avisos vuelven en los `contentWarnings` del documento con el intervalo de la fuente de la línea o del atributo al que se refieren (véase [Configuración › Avisos del documento](/es/docs/configuration#avisos-del-documento)).
+Los avisos vuelven en los `contentWarnings` del documento con el intervalo de la fuente de la línea o del atributo al que se refieren (véase [Configuración › Avisos del documento](/es/docs/configuration-programmatic-usage#avisos-del-documento)).
 
 Un ajuste de cómic que admite unas pocas palabras y lleva otra, como `shape: 'ovl'` en un estilo de bocadillo o `readingDirection: 'rlt'`, se lee como su valor por defecto y el panel de revisión lo enumera como **Valor de ajuste desconocido** (`unknownConfigValue`), con el valor que usó el motor y la palabra a la que más se parece. Los ajustes comprobados son `readingDirection`, `artDirection`, el `borderStyle` y el `fit` de un estilo de viñeta, el `writingMode`, el `textTransform`, el `dropFinalStop` y el `joinSameSpeaker` de la rotulación, y el `shape`, el `tail`, el `target`, el `position`, el `align` y el `textTransform` de un estilo de bocadillo.
 

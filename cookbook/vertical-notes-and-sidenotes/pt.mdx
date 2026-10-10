@@ -16,7 +16,7 @@ Quatro páginas de uma edição 四六判 de *Brincadeiras de criança* (たけ�
 
 ### 1 · Juntar as notas da página dupla no corte da página esquerda
 
-O código é [a resposta curta](#a-resposta-curta) acima. `footnotes.placement: 'spread'` compõe as notas citadas nas páginas 2 e 3 no fim do texto da página 3, que num livro encadernado pela direita é o seu corte da frente, e `numbering: 'spread'` recomeça em （1） as notas de cada página dupla ([Notas de rodapé](/pt/docs/configuration#notas-de-rodapé)). Uma nota citada na página direita espera pela esquerda; se as notas deixarem à página esquerda menos de uma linha de texto, as que sobram ficam no pé da página direita, como o JLReq permite. Um documento com a etiqueta `ja` já compõe as chamadas de um livro vertical como `（{n}）` à direita da linha, em 0,7 em, com os algarismos em pé: as duas linhas escritas aqui deixam isso à vista. `numberGap: 'em'` põe um caractere de nota inteiro depois do número, e `hangingIndent: em(2)` alinha as linhas seguintes depois dele.
+O código é [a resposta curta](#a-resposta-curta) acima. `footnotes.placement: 'spread'` compõe as notas citadas nas páginas 2 e 3 no fim do texto da página 3, que num livro encadernado pela direita é o seu corte da frente, e `numbering: 'spread'` recomeça em （1） as notas de cada página dupla ([Notas de rodapé](/pt/docs/configuration-notes-references#notas-de-rodapé)). Uma nota citada na página direita espera pela esquerda; se as notas deixarem à página esquerda menos de uma linha de texto, as que sobram ficam no pé da página direita, como o JLReq permite. Um documento com a etiqueta `ja` já compõe as chamadas de um livro vertical como `（{n}）` à direita da linha, em 0,7 em, com os algarismos em pé: as duas linhas escritas aqui deixam isso à vista. `numberGap: 'em'` põe um caractere de nota inteiro depois do número, e `hangingIndent: em(2)` alinha as linhas seguintes depois dele.
 
 ### 2 · Escrever as chamadas onde o japonês as põe
 
@@ -24,7 +24,7 @@ O Markdown escreve `見返り柳[^1]` depois da palavra que a nota explica, e as
 
 ### 3 · Manter as marcas de gergelim do original
 
-`cjk.emphasisMark` decide o que `*…*` e `:dots[…]` imprimem neste livro: pontos de gergelim, à direita de uma linha vertical. Um documento `ja` já os usa; escritas por extenso, as marcas acionam o kenten na lista de recursos da receita. O texto do Aozora marca ぎつちよんちよん com 傍点, e `aozora.py` o escreveu como `:dots[ぎつちよんちよん]{style=sesame}`; os livros chineses põem os pontos embaixo da linha ([Marcas, rubi e warichu](/pt/docs/configuration#marcas-rubi-e-warichu)).
+`cjk.emphasisMark` decide o que `*…*` e `:dots[…]` imprimem neste livro: pontos de gergelim, à direita de uma linha vertical. Um documento `ja` já os usa; escritas por extenso, as marcas acionam o kenten na lista de recursos da receita. O texto do Aozora marca ぎつちよんちよん com 傍点, e `aozora.py` o escreveu como `:dots[ぎつちよんちよん]{style=sesame}`; os livros chineses põem os pontos embaixo da linha ([Marcas, rubi e warichu](/pt/docs/configuration-east-asian#marcas-rubi-e-warichu)).
 
 ### 4 · Abrir numa página dupla
 

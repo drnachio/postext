@@ -16,7 +16,7 @@ A seven-page reader of two founding texts of the Republic of China: Sun Wen's pr
 
 ### 1 · Let the setting take the short numbers
 
-The code is [the short answer](#the-short-answer) above. With `cjk.uprightDigits: 2` every run of one or two digits in vertical text stands upright in a cell of one em, the two digits side by side: 10月10日, 第35號 and 7章56條 need no markup. A longer number is set whole on its side, like a Latin word, which is how clreq sets numbers of four digits, so 1912 and 1644 read down the line turned a quarter. A three-digit number that should stand upright takes a mark: `民國:tcy[115]年` squeezes 115 into the em. `:upright[ROC]` stands each letter in a cell of its own, one under the other, and the line never breaks inside it ([numbers in vertical text](/en/docs/configuration#numbers-in-vertical-text)).
+The code is [the short answer](#the-short-answer) above. With `cjk.uprightDigits: 2` every run of one or two digits in vertical text stands upright in a cell of one em, the two digits side by side: 10月10日, 第35號 and 7章56條 need no markup. A longer number is set whole on its side, like a Latin word, which is how clreq sets numbers of four digits, so 1912 and 1644 read down the line turned a quarter. A three-digit number that should stand upright takes a mark: `民國:tcy[115]年` squeezes 115 into the em. `:upright[ROC]` stands each letter in a cell of its own, one under the other, and the line never breaks inside it ([numbers in vertical text](/en/docs/configuration-east-asian#numbers-in-vertical-text)).
 
 <PageShot page={4} crop="0.43,0.145,0.45,0.74" caption="Page 4, the notes: 10月10日 and 2月12日 upright, 1911 and Sun Yat-sen on their side, 268 and 115 squeezed by :tcy, ROC stacked by :upright." />
 
@@ -36,7 +36,7 @@ A heading design has no parity, so the band always runs down the sheet's right e
 
 <Excerpt region="heads" />
 
-`anchor.to: 'outer'` is the margin away from the spine, so in a book bound on the right the heads run down the left edge of a recto and the right edge of a verso. The title stands four characters below the head of the type area and the folio ends five above its foot, both set vertically at 80 % of the body size ([vertical text elements](/en/docs/configuration#vertical-text-elements)). `pageNumbering.format: 'trad-chinese-informal'` prints the folios 三, 四, 六 and 七, and `pages: 'body'` keeps them off the two openers.
+`anchor.to: 'outer'` is the margin away from the spine, so in a book bound on the right the heads run down the left edge of a recto and the right edge of a verso. The title stands four characters below the head of the type area and the folio ends five above its foot, both set vertically at 80 % of the body size ([vertical text elements](/en/docs/configuration-page-layout#vertical-text-elements)). `pageNumbering.format: 'trad-chinese-informal'` prints the folios 三, 四, 六 and 七, and `pages: 'body'` keeps them off the two openers.
 
 ### 4 · Bleed the cover from a page-wide design
 

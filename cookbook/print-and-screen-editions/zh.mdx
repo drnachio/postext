@@ -18,7 +18,7 @@ pageNotes: { "1": "Notes on Weather的篇页：雨蓝色底上是白色斜向雨
 
 <Excerpt region="palette" />
 
-配置中的每种颜色都指向一个调色板id，旁边写的十六进制值只是日间的后备值。所以屏幕版只需替换一个数组，就能换成夜间配色。[简短回答](#简短回答)中的[覆盖项](/zh/docs/configuration#html查看器)按键合并对象，按`level`合并标题层级，其他数组则整体替换，`colorPalette`也在其中。`main-color`属于调色板，所以使用它的引擎默认值也随之改变。新的调色板会传到每一个与它关联的颜色：正文、题注、开篇的设计元素和参照颜色。
+配置中的每种颜色都指向一个调色板id，旁边写的十六进制值只是日间的后备值。所以屏幕版只需替换一个数组，就能换成夜间配色。[简短回答](#简短回答)中的[覆盖项](/zh/docs/configuration-fonts-colors-viewers#html查看器)按键合并对象，按`level`合并标题层级，其他数组则整体替换，`colorPalette`也在其中。`main-color`属于调色板，所以使用它的引擎默认值也随之改变。新的调色板会传到每一个与它关联的颜色：正文、题注、开篇的设计元素和参照颜色。
 
 ### 2 · 开篇：纸上是色带，屏幕上只有文字
 
@@ -30,7 +30,7 @@ pageNotes: { "1": "Notes on Weather的篇页：雨蓝色底上是白色斜向雨
 
 <Excerpt region="part" />
 
-在印刷版中，`:::part`打开<PageRef page={1}>雨蓝色的篇页</PageRef>：一个四边出血的框，一个避开文字的雨丝图像元素，取自围栏的罗马数字和篇名，以及白色的随笔列表。屏幕覆盖项设`parts.page: false`，于是不开新页，也不排列表。[篇](/zh/docs/configuration#篇)仍然把它的编号和标题用到其后的随笔上，屏幕版的眉题和印刷版一样读作“Autumn · Note 1”。
+在印刷版中，`:::part`打开<PageRef page={1}>雨蓝色的篇页</PageRef>：一个四边出血的框，一个避开文字的雨丝图像元素，取自围栏的罗马数字和篇名，以及白色的随笔列表。屏幕覆盖项设`parts.page: false`，于是不开新页，也不排列表。[篇](/zh/docs/configuration-styles#篇)仍然把它的编号和标题用到其后的随笔上，屏幕版的眉题和印刷版一样读作“Autumn · Note 1”。
 
 ### 4 · 每幅图画两次
 
@@ -42,7 +42,7 @@ pageNotes: { "1": "Notes on Weather的篇页：雨蓝色底上是白色斜向雨
 
 <Excerpt region="screen" />
 
-每个屏幕页都与窗格一样高，所以`fitFiguresToPage`把雨量计缩小到连同题注能放进一页为止（[版面](/zh/docs/configuration#版式)）。在CSS假定的96 dpi下，从印刷版继承来的毫米和点按标称尺寸渲染（[集成HTML查看器](/zh/docs/configuration#集成html查看器)）。示例把`renderToHtml`输出的绝对定位行写进一个Shadow DOM，页面的选择器够不到它们。`letter-spacing`之类的继承属性能越过这道边界，版面的根元素会自己把它们重置，因为引擎测量这些行时没有考虑它们。HTML页面除非上色，否则是透明的，所以`page.backgroundColor`从调色板取夜间的纸色。ResizeObserver等待150 ms，只在窗格的宽度或高度变化时才用新的`config()`重新构建；重建之后，窗格滚回到原来高度比例的位置。
+每个屏幕页都与窗格一样高，所以`fitFiguresToPage`把雨量计缩小到连同题注能放进一页为止（[版面](/zh/docs/configuration-page-layout#版式)）。在CSS假定的96 dpi下，从印刷版继承来的毫米和点按标称尺寸渲染（[集成HTML查看器](/zh/docs/configuration-programmatic-usage#集成html查看器)）。示例把`renderToHtml`输出的绝对定位行写进一个Shadow DOM，页面的选择器够不到它们。`letter-spacing`之类的继承属性能越过这道边界，版面的根元素会自己把它们重置，因为引擎测量这些行时没有考虑它们。HTML页面除非上色，否则是透明的，所以`page.backgroundColor`从调色板取夜间的纸色。ResizeObserver等待150 ms，只在窗格的宽度或高度变化时才用新的`config()`重新构建；重建之后，窗格滚回到原来高度比例的位置。
 
 ## 变化
 
