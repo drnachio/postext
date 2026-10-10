@@ -4,7 +4,7 @@
 // Fonts: Rethink Sans, Bitter, Saira Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocumentWithFonts, renderPage, renderPageToCanvas, registerResourceImage,
-  defaultResourceTypes,
+  defaultResourceTypes, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -26,7 +26,7 @@ const palette = {
   blush: '#f2b492', // 0 to +1.5 °C
   heat: '#d9572b', // +1.5 °C or more; also −4.2 °C, the Results panel, the loggers, the sun
 };
-// 1.4.1 designs paint the hex and ignore the paletteId (gotcha: palette-skips-designs).
+// Every colour is linked to its palette entry by id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [ // defaults link to 'main-color': point it at the canopy green
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -53,8 +53,7 @@ const at = (to, edge, x = 0, y = 0) => ({ anchor: { to, edge }, offset: { x: mm(
 const BAND = 158; // mm from the top edge to the foot of the green field
 const type = (id, content, family, size, look, placement) => ({ kind: 'text', id, content,
   fontFamily: family, fontSize: pt(size), color: col('paper'), align: 'left',
-  overflow: 'wrap', // not an ellipsis (gotcha: overflow-ellipsis-default)
-  lineHeight: 1.2, // a multiple of the size (gotcha: design-lineheight-multiple)
+  overflow: 'wrap', lineHeight: 1.2,
   ...look, placement });
 const band = { enabled: true,
   // The field ends 133 mm under the top margin; eleven grid lines (147 mm) start the summary
@@ -70,8 +69,7 @@ const band = { enabled: true,
       { ...at('#meeting', 'below', 0, 7), size: { width: mm(380) } }),
     type('authors', '{attr.authors}', 'Rethink Sans', 30, { fontWeight: 700 },
       { ...at('#title', 'below', 0, 7), size: { width: 'fill' } }),
-    // Design text prints plain text, so the affiliation marks are the characters ¹ ² ³
-    // (gotcha: design-text-no-inline-marks).
+    // The affiliation marks are the characters ¹ ² ³, typed in the heading's attributes.
     type('affiliations', '{attr.affiliations}', 'Rethink Sans', 21, { color: col('tint') },
       { ...at('#authors', 'below', 0, 2), size: { width: 'fill' } }),
     type('number', '{attr.poster}', 'Saira Condensed', 30, { fontWeight: 700,
@@ -85,15 +83,15 @@ const band = { enabled: true,
 // #endregion
 
 // #region answer: three columns of panels inside one box across the page
-// The body text runs in two columns. Three columns exist only inside a box: a :::columns
-// group in a callout, and span="page" lays that callout across both body columns.
+// The body text runs in two columns and the panels in three: a :::columns group in a
+// frameless callout, and span="page" lays that callout across both body columns.
 //   :::callout{type="grid" span="page"}       ← one frameless box across the page
 //   :::columns{count=3 breaks="3,4"}          ← panel 3 opens column 2, panel 4 column 3
 //   :::callout{type="panel" title="Introduction"}   ← each panel is a box nested in it
 //   …
 //   :::                                       ← closes the panel; then the other panels
 //   :::                                       ← closes the columns group
-//   :::                                       ← closes the grid (gotcha: callout-columns)
+//   :::                                       ← closes the grid
 const grid = { id: 'grid', backgroundEnabled: false, // no fill or frame; each panel has a stripe
   padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) },
   columnGap: mm(GAP) };
@@ -113,8 +111,8 @@ const results = { ...panel, id: 'results', // the finding: the same panel, strip
 
 // #region type: paragraph styles for the figure, the references and the key; the foot strip
 const paragraphStyles = [
-  // Paragraph styles apply inside boxes, nested ones included. They have no weight in
-  // 1.4.1, so the figure is written **bold**: that sets it in Bitter 700 and in boldColor.
+  // Paragraph styles apply inside boxes, nested ones included. The figure is written
+  // **bold**: that sets it in Bitter 700 and in the style's boldColor.
   { id: 'stat', fontFamily: 'Bitter', fontSize: pt(150), lineHeight: pt(130),
     boldColor: col('heat') },
   { id: 'refs', fontSize: pt(19), lineHeight: pt(26), hangingIndent: mm(9), spaceBetween: pt(8) },
@@ -134,16 +132,17 @@ const config = () => ({
   // The summary's type; the boxes take the family, the rag and the paragraph spacing from it.
   bodyText: { fontFamily: 'Rethink Sans', fontSize: pt(28), lineHeight: pt(LEAD),
     color: col('ink'), textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true,
-    // The space under a :::paragraphs group as in 1.4.1: the style's own, with no line added
-    // under −4.2 °C and the references (the :::space under them sets the gap).
+    // 'add': a :::paragraphs group ends on its style's own space, with no line of paragraph
+    // spacing under it. −4.2 °C sits on the line that explains it, and a :::space sets the gap
+    // under the references.
     paragraphContainerSpacing: 'add',
-    // Bold in the boxes and the :ref labels copy boldColor, and the italics of the references'
-    // paragraph style take italicColor (gotcha: style-italic-colour); both are green otherwise.
+    // Bold, the :ref labels and the italics of the references in ink: left to their defaults
+    // they follow main-color, the canopy green.
     boldColor: col('ink'), italicColor: col('ink') },
-  // The band draws the title, but 1.4.1 still measures the H1's own text: in Bitter, a face
+  // The band draws the title, but the H1's own text is still measured: in Bitter, a face
   // already loaded, instead of the default Open Sans 700.
   headings: { fontFamily: 'Bitter', levels: [
-    // Restated (gotcha: headings-drop-h1-break): a second poster in the file starts a page.
+    // parity 'any': a second poster in the file would start the next page, either side.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
       marginBottom: pt(0), advancedDesign: band }] },
   calloutStyles: [grid, panel, results, strip],
@@ -202,20 +201,11 @@ const cx = (i) => f(X0 + (i + 0.5) * CELL);
 const label = (x, y, text, size, fill = palette.ink, anchor = 'middle', extra = '') =>
   `<text x="${f(x)}" y="${f(y)}" font-size="${size}" text-anchor="${anchor}" fill="${fill}"`
   + `${extra}>${text}</text>`;
-const svg = (w, h, body, face) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w * 10}" `
-  + `height="${h * 10}" viewBox="0 0 ${w} ${h}">${face}${body}</svg>`;
-// An SVG drawn as an image cannot use the page's web fonts (gotcha: svg-no-webfonts), so
-// each drawing carries its label face inline, as a data URL of the Fontsource file.
-async function inlineFace(family, weight) {
-  const id = family.toLowerCase().replace(/\s+/g, '-');
-  const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}`
-    + '-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return `<style>@font-face{font-family:F;src:url(data:font/woff2;base64,${btoa(bin)}) `
-    + `format('woff2')}text{font-family:F}</style>`;
-}
+// A drawing with labels names their face on its root element: loadSvg embeds it for the
+// canvas (inlineSvgFonts).
+const LABELS = 'font-family="Saira Condensed" font-weight="600"';
+const svg = (w, h, body, face = '') => `<svg xmlns="http://www.w3.org/2000/svg" `
+  + `width="${w * 10}" height="${h * 10}" viewBox="0 0 ${w} ${h}" ${face}>${body}</svg>`;
 const channel = (hex, i) => parseInt(hex.slice(i, i + 2), 16);
 const mix = (a, b, k) => `#${[1, 3, 5].map((i) => Math.round(channel(a, i) * (1 - k)
   + channel(b, i) * k).toString(16).padStart(2, '0')).join('')}`; // a towards b by k
@@ -223,7 +213,7 @@ const mix = (a, b, k) => `#${[1, 3, 5].map((i) => Math.round(channel(a, i) * (1 
 const FIG = { plan: [175, 62], heat: [175, 126], bars: [175, 75] }; // mm, at column width
 const LABEL = 5.4; // mm: figure labels, about 15 pt
 
-function planSvg(face) { // Figure 1: a schematic plan, west on the left
+function planSvg() { // Figure 1: a schematic plan, west on the left
   const rand = mulberry32(1908); // seeded with the year the planes were planted
   const [W, H] = FIG.plan;
   const [NB, NS, ROAD, SS, SB] = [[11, 22], [22, 25], [25, 34], [34, 37], [37, 48]]; // y bands
@@ -287,10 +277,10 @@ function planSvg(face) { // Figure 1: a schematic plan, west on the left
   const bar = 2 * CELL; // 100 m: two blocks
   out += `<path d="M${X0} 60.6h${f(bar)}" stroke="${palette.ink}" stroke-width="0.9"/>`
     + label(X0 + bar + 2, 61.8, '100 m', LABEL - 0.6, palette.ink, 'start');
-  return svg(W, H, out, face);
+  return svg(W, H, out, LABELS);
 }
 
-function heatSvg(face) { // Figure 2: canopy bars over an hour × block heat map
+function heatSvg() { // Figure 2: canopy bars over an hour × block heat map
   const [W, H] = FIG.heat;
   const [BASE, TOP, ROW] = [27, 30, 6.2]; // mm: foot of the bars, top of the grid, row height
   let out = '';
@@ -320,10 +310,10 @@ function heatSvg(face) { // Figure 2: canopy bars over an hour × block heat map
     + label(W, H - 0.5, east, LABEL - 1, palette.muted, 'end', track)
     + label(0, 0, hour, LABEL - 1, palette.muted, 'middle',
       `${track} transform="translate(3.4 ${mid}) rotate(-90)"`);
-  return svg(W, H, out, face);
+  return svg(W, H, out, LABELS);
 }
 
-function barsSvg(face) { // Figure 3: how much cooler the paving was, by canopy class
+function barsSvg() { // Figure 3: how much cooler the paving was, by canopy class
   const [W, H] = FIG.bars;
   const [LEFT, ROW, SCALE] = [40, 13, 7.6]; // SCALE: mm per °C
   const names = t({ en: ['under 10 %', '10–30 %', '30–50 %', '50–70 %', '70 % or more'],
@@ -353,7 +343,7 @@ function barsSvg(face) { // Figure 3: how much cooler the paving was, by canopy 
   out += `<path d="M${LEFT} 0V${foot + 1}" stroke="${palette.ink}" stroke-width="0.6"/>`
     + label(LEFT, foot + 6.5, '0', LABEL)
     + label(LEFT + 7.5 * SCALE, foot + 14, axis, LABEL, palette.muted, 'middle');
-  return svg(W, H, out, face);
+  return svg(W, H, out, LABELS);
 }
 
 function markSvg() { // the School of Geography's mark: a crown shading a street, in a ring
@@ -410,9 +400,8 @@ const FONTS = { // text, display and label faces, loaded before the build
   'Saira Condensed': ['600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-const face = await inlineFace('Saira Condensed', 600);
-await Promise.all([loadSvg('plan.svg', planSvg(face)), loadSvg('heat.svg', heatSvg(face)),
-  loadSvg('bars.svg', barsSvg(face)), loadSvg('mark.svg', markSvg())]);
+await Promise.all([loadSvg('plan.svg', planSvg()), loadSvg('heat.svg', heatSvg()),
+  loadSvg('bars.svg', barsSvg()), loadSvg('mark.svg', markSvg())]);
 const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Research poster', es: 'Póster científico' }) });
 // The e-poster: renderPage paints the page at its own size, 1,701 × 2,268 px at 72 dpi.

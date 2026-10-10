@@ -24,13 +24,13 @@ pageNotes: { "1": "顶部一条绿色色带，上面是会议名称、粗白字�
 
 <Excerpt region="band" />
 
-H1把会议名称、海报编号、作者和单位写成属性，它的版面设计把这些内容排在一个锚定在页面上、158 mm深的绿色框上（[通栏与高级版面设计](/zh/docs/configuration#通栏与高级设计)）。这个框在上页边距下方133 mm处结束。不设`minHeight`时，摘要会从绿色下方0.9 mm处开始；`minHeight`设为十一个网格行，留出14 mm。设计文字只印纯文本，所以单位标记用的是字符¹ ² ³，它们是Latin-1范围内仅有的上标数字。
+H1把会议名称、海报编号、作者和单位写成属性，它的版面设计把这些内容排在一个锚定在页面上、158 mm深的绿色框上（[通栏与高级版面设计](/zh/docs/configuration#通栏与高级设计)）。这个框在上页边距下方133 mm处结束。不设`minHeight`时，摘要会从绿色下方0.9 mm处开始；`minHeight`设为十一个网格行，留出14 mm。单位标记用的是字符¹ ² ³，它们是Latin-1范围内仅有的上标数字。
 
 ### 3 · 把面板嵌套在一个通栏框里
 
 <Excerpt region="answer" highlight="3-9,21" />
 
-正文最多两栏，所以网格是标注框里的一个`:::columns{count=3}`分栏组，`span="page"`让这个标注框在摘要下方横跨两个正文栏（[`:::columns`](/zh/docs/document-format#columns)）。每块面板是嵌套在分栏组里的标注框：它有自己的样式，宽度取栏宽175 mm，与上方面板之间有18 mm的`marginTop`（[`:::callout`容器](/zh/docs/configuration#callout容器)）。`breaks="3,4"`把第三块面板Results送到中间一栏顶部，把第四块Conclusions送到最后一栏顶部。不设它时，分栏组会自行齐底，在最接近总高三分之一处的面板切开。按现在的文字，切点正好落在这两块面板上；文字改动后，这个属性让切点保持不变。
+正文排两栏，面板排三栏，所以网格是无边框标注框里的一个`:::columns{count=3}`分栏组，`span="page"`让这个标注框在摘要下方横跨两个正文栏（[`:::columns`](/zh/docs/document-format#columns)）。直接写在正文里的分栏组也能通栏，但它下方会留一行段间距，这里是38 pt，关键词长条就会移到第二页。每块面板是嵌套在分栏组里的标注框：它有自己的样式，宽度取栏宽175 mm，与上方面板之间有18 mm的`marginTop`（[`:::callout`容器](/zh/docs/configuration#callout容器)）。`breaks="3,4"`把第三块面板Results送到中间一栏顶部，把第四块Conclusions送到最后一栏顶部。不设它时，分栏组会自行齐底，在最接近总高三分之一处的面板切开。按现在的文字，切点正好落在这两块面板上；文字改动后，这个属性让切点保持不变。
 
 ### 4 · 让每幅图留在自己的面板里
 
@@ -42,13 +42,13 @@ placement为`'here'`的图留在`::resource`所在的面板里；用默认placem
 
 <Excerpt region="palette" />
 
-热力图的格子和图例的四个`:swatch{color="…"}`片段引用相同的调色板条目，所以给`cool`换一个值，热力图和图例会一起重新着色（[行内格式](/zh/docs/document-format#行内格式)）。图例是Results面板里的第二个`:::columns`分栏组，每栏两个条目。每种颜色同时写出十六进制值，1.4.1在色带的版面设计里绘制的就是这个值。
+热力图的格子和图例的四个`:swatch{color="…"}`片段引用相同的调色板条目，所以给`cool`换一个值，热力图和图例会一起重新着色（[行内格式](/zh/docs/document-format#行内格式)）。图例是Results面板里的第二个`:::columns`分栏组，每栏两个条目。
 
 ### 6 · 用段落样式排核心数字
 
 <Excerpt region="type" />
 
-段落样式在框内同样生效，嵌套框也不例外，所以−4.2 °C是Results面板里的一个`:::paragraphs{style="stat"}`块，用150 pt的Bitter（[段落样式](/zh/docs/configuration#段落样式)）。1.4.1中段落样式不能设字重，所以数字写成粗体，以Bitter 700印出。另一个样式给参考文献设9 mm的悬挂缩进。关键词长条是一个带底色的框，`placement="bottom"`，浮动到网格下方的页脚。
+段落样式在框内同样生效，嵌套框也不例外，所以−4.2 °C是Results面板里的一个`:::paragraphs{style="stat"}`块，用150 pt的Bitter（[段落样式](/zh/docs/configuration#段落样式)）。数字写成粗体，所以以Bitter 700印出，并取样式的`boldColor`，也就是面板的橙色。另一个样式给参考文献设9 mm的悬挂缩进。关键词长条是一个带底色的框，`placement="bottom"`，浮动到网格下方的页脚。
 
 ## 变化
 
@@ -64,5 +64,5 @@ placement为`'here'`的图留在`::resource`所在的面板里；用默认placem
 ## 常见问题
 
 - Rethink Sans在Canvas上会把括号里的单个数字画成带圈数字，例如11(3)里的期号，所以参考文献只给出卷号和页码。
-- 1.4.1中，位于文档末尾的通栏框下方若留不出两行正文的空间，就会移到新的一页。所以关键词长条用`placement="bottom"`浮动，排在下页边距上，位于网格下方剩下的50 mm里。
-- 1.4.1中，紧跟`:::paragraphs`组的段落与它之间只隔样式的`spaceBetween`，这里是最后一条参考文献下方2.8 mm。在致谢之前加一个`:::space{lines=0.75}`，空出10.8 mm，接近面板里其他段落之间的10.6 mm。
+- 位于文档末尾的通栏框下方若留不出两行正文的空间，就会移到新的一页。所以关键词长条用`placement="bottom"`浮动，排在下页边距上，位于网格下方剩下的50 mm里。
+- `bodyText.paragraphContainerSpacing: 'add'`让`:::paragraphs`组以样式自身的间距收尾，这样−4.2 °C就紧贴着解释它的那一行。在最后一条参考文献下方，这个间距是样式的`spaceBetween`，即2.8 mm，所以在致谢之前加一个`:::space{lines=0.75}`，空出10.8 mm，接近面板里其他段落之间的10.6 mm。用默认值`'collapse'`时，组后面会跟一行面板的段间距：致谢不再需要`:::space`，但−4.2 °C下方多出的一行会把关键词长条挤到第二页。

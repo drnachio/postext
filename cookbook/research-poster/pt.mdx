@@ -24,13 +24,13 @@ Nos 300 dpi padrão, o pôster quebra cada linha no mesmo lugar que a 72 dpi, ma
 
 <Excerpt region="band" />
 
-O H1 leva como atributos o encontro, o número do pôster, os autores e as afiliações, e o seu design os compõe sobre uma caixa verde ancorada à página, com 158 mm de altura ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). A caixa termina 133 mm abaixo da margem superior. Sem `minHeight`, o resumo começaria 0,9 mm abaixo do verde; um `minHeight` de onze linhas da grade deixa 14 mm. O texto de design imprime texto simples, então as marcas de afiliação são os caracteres ¹ ² ³, os únicos algarismos sobrescritos da faixa Latin-1.
+O H1 leva como atributos o encontro, o número do pôster, os autores e as afiliações, e o seu design os compõe sobre uma caixa verde ancorada à página, com 158 mm de altura ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). A caixa termina 133 mm abaixo da margem superior. Sem `minHeight`, o resumo começaria 0,9 mm abaixo do verde; um `minHeight` de onze linhas da grade deixa 14 mm. As marcas de afiliação são os caracteres ¹ ² ³, os únicos algarismos sobrescritos da faixa Latin-1.
 
 ### 3 · Aninhe os painéis num box na largura da página
 
 <Excerpt region="answer" highlight="3-9,21" />
 
-O corpo tem no máximo duas colunas, então a grade é um grupo `:::columns{count=3}` dentro de um callout, e `span="page"` estende esse callout sobre as duas colunas do corpo, sob o resumo ([`:::columns`](/pt/docs/document-format#columns)). Cada painel é um callout aninhado no grupo: recebe o seu próprio estilo, os 175 mm de largura da coluna e 18 mm de `marginTop` sob o painel de cima ([o contêiner `:::callout`](/pt/docs/configuration#o-contêiner-callout)). `breaks="3,4"` manda o terceiro painel, Results, para o alto da coluna do meio e o quarto, Conclusions, para o alto da última. Sem ele, o grupo se equilibra e corta no painel mais próximo de cada terço da pilha. Com este texto, os cortes caem nos mesmos dois painéis; o atributo os mantém ali quando o texto mudar.
+O corpo corre em duas colunas e os painéis em três, então a grade é um grupo `:::columns{count=3}` dentro de um callout sem moldura, e `span="page"` estende esse callout sobre as duas colunas do corpo, sob o resumo ([`:::columns`](/pt/docs/document-format#columns)). Um grupo escrito direto no texto também pode ocupar a largura da página, mas deixa abaixo de si uma linha de espaço entre parágrafos, aqui 38 pt, e a faixa de palavras-chave passaria para uma segunda página. Cada painel é um callout aninhado no grupo: recebe o seu próprio estilo, os 175 mm de largura da coluna e 18 mm de `marginTop` sob o painel de cima ([o contêiner `:::callout`](/pt/docs/configuration#o-contêiner-callout)). `breaks="3,4"` manda o terceiro painel, Results, para o alto da coluna do meio e o quarto, Conclusions, para o alto da última. Sem ele, o grupo se equilibra e corta no painel mais próximo de cada terço da pilha. Com este texto, os cortes caem nos mesmos dois painéis; o atributo os mantém ali quando o texto mudar.
 
 ### 4 · Mantenha cada figura no seu painel
 
@@ -42,13 +42,13 @@ Uma figura com posicionamento `'here'` fica no painel em que `::resource` a põe
 
 <Excerpt region="palette" />
 
-As células do mapa de calor e os quatro trechos `:swatch{color="…"}` da legenda apontam para as mesmas entradas da paleta, então um novo valor para `cool` repinta o mapa e a legenda juntos ([formatação inline](/pt/docs/document-format#formatação-em-linha)). A legenda é um segundo grupo `:::columns`, com duas entradas por coluna, dentro do painel Results. Cada cor também leva o seu hexadecimal, que é o que a 1.4.1 pinta no design da faixa.
+As células do mapa de calor e os quatro trechos `:swatch{color="…"}` da legenda apontam para as mesmas entradas da paleta, então um novo valor para `cool` repinta o mapa e a legenda juntos ([formatação inline](/pt/docs/document-format#formatação-em-linha)). A legenda é um segundo grupo `:::columns`, com duas entradas por coluna, dentro do painel Results.
 
 ### 6 · Componha o número de destaque com um estilo de parágrafo
 
 <Excerpt region="type" />
 
-Os estilos de parágrafo valem dentro dos boxes, inclusive dos aninhados, então −4,2 °C é um bloco `:::paragraphs{style="stat"}` em Bitter de 150 pt dentro do painel Results ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). Na 1.4.1 um estilo de parágrafo não define peso, então o número é escrito em negrito e sai em Bitter 700. Um segundo estilo dá às referências um recuo deslocado de 9 mm. A faixa de palavras-chave é um box tingido com `placement="bottom"`, flutuando no pé da página sob a grade.
+Os estilos de parágrafo valem dentro dos boxes, inclusive dos aninhados, então −4,2 °C é um bloco `:::paragraphs{style="stat"}` em Bitter de 150 pt dentro do painel Results ([estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). O número é escrito em negrito, então sai em Bitter 700 e no `boldColor` do estilo, o laranja do painel. Um segundo estilo dá às referências um recuo deslocado de 9 mm. A faixa de palavras-chave é um box tingido com `placement="bottom"`, flutuando no pé da página sob a grade.
 
 ## Variações
 
@@ -64,5 +64,5 @@ Um congresso que peça um arquivo maior recebe um PNG de 3.543 × 4.724 px com a
 ## Erros comuns
 
 - No canvas, a Rethink Sans desenha um único algarismo entre parênteses, como o número do fascículo em 11(3), como um algarismo dentro de um círculo; por isso as referências trazem só o volume e as páginas.
-- Na 1.4.1, um box na largura da página que fecha o documento passa para uma nova página a menos que sobrem abaixo dele duas linhas do corpo. Por isso a faixa de palavras-chave flutua com `placement="bottom"`, que a põe na margem inferior, nos 50 mm que sobram sob a grade.
-- Na 1.4.1, um parágrafo que vem depois de um grupo `:::paragraphs` fica apenas o `spaceBetween` do estilo abaixo dele, aqui 2,8 mm sob a última referência. Um `:::space{lines=0.75}` antes do agradecimento abre 10,8 mm, perto dos 10,6 mm entre os outros parágrafos de um painel.
+- Um box na largura da página que fecha o documento passa para uma nova página a menos que sobrem abaixo dele duas linhas do corpo. Por isso a faixa de palavras-chave flutua com `placement="bottom"`, que a põe na margem inferior, nos 50 mm que sobram sob a grade.
+- `bodyText.paragraphContainerSpacing: 'add'` fecha um grupo `:::paragraphs` com o espaço próprio do estilo, o que mantém −4,2 °C junto da linha que o explica. Sob a última referência esse espaço é o `spaceBetween` do estilo, 2,8 mm, então um `:::space{lines=0.75}` antes do agradecimento abre 10,8 mm, perto dos 10,6 mm entre os outros parágrafos de um painel. Com o padrão, `'collapse'`, um grupo é seguido por uma linha do espaço entre parágrafos do painel: o agradecimento dispensa o `:::space`, mas a linha acrescentada sob −4,2 °C empurra a faixa de palavras-chave para uma segunda página.

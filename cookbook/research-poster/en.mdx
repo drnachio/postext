@@ -24,13 +24,13 @@ At the default 300 dpi the poster breaks every line where it does at 72 dpi, but
 
 <Excerpt region="band" />
 
-The H1 carries the meeting, the poster number, the authors and the affiliations as attributes, and its design sets them over a page-anchored green box 158 mm deep ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The box ends 133 mm under the top margin. Without a `minHeight` the summary would start 0.9 mm under the green; a `minHeight` of eleven grid lines leaves 14 mm. Design text prints plain text, so the affiliation marks are the characters ¹ ² ³, the only superscript figures in the Latin-1 range.
+The H1 carries the meeting, the poster number, the authors and the affiliations as attributes, and its design sets them over a page-anchored green box 158 mm deep ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The box ends 133 mm under the top margin. Without a `minHeight` the summary would start 0.9 mm under the green; a `minHeight` of eleven grid lines leaves 14 mm. The affiliation marks are the characters ¹ ² ³, the only superscript figures in the Latin-1 range.
 
 ### 3 · Nest the panels in one box across the page
 
 <Excerpt region="answer" highlight="3-9,21" />
 
-A body runs in two columns at most, so the grid is a `:::columns{count=3}` group inside a callout, and `span="page"` sets that callout across both body columns, under the summary ([`:::columns`](/en/docs/document-format#columns)). Each panel is a callout nested in the group: it takes its own style, the column's 175 mm width and 18 mm of `marginTop` under the panel above it ([the `:::callout` container](/en/docs/configuration#the-callout-container)). `breaks="3,4"` sends the third panel, Results, to the head of the middle column and the fourth, Conclusions, to the head of the last. Without it the group balances and cuts at the panel nearest each third of the stack. With this copy the cuts fall at the same two panels; the attribute keeps them there when the copy changes.
+The body runs in two columns and the panels in three, so the grid is a `:::columns{count=3}` group inside a frameless callout, and `span="page"` sets that callout across both body columns, under the summary ([`:::columns`](/en/docs/document-format#columns)). A group fenced straight into the text can span the page too, but it leaves a line of paragraph spacing under itself, 38 pt here, and the keyword strip would move to a second page. Each panel is a callout nested in the group: it takes its own style, the column's 175 mm width and 18 mm of `marginTop` under the panel above it ([the `:::callout` container](/en/docs/configuration#the-callout-container)). `breaks="3,4"` sends the third panel, Results, to the head of the middle column and the fourth, Conclusions, to the head of the last. Without it the group balances and cuts at the panel nearest each third of the stack. With this copy the cuts fall at the same two panels; the attribute keeps them there when the copy changes.
 
 ### 4 · Keep each figure in its panel
 
@@ -42,13 +42,13 @@ A figure placed `'here'` stays in the panel where `::resource` sets it; with the
 
 <Excerpt region="palette" />
 
-The heat map's cells and the four `:swatch{color="…"}` runs of its key name the same palette entries, so a new value for `cool` repaints the map and the key together ([inline formatting](/en/docs/document-format#inline-formatting)). The key is a second `:::columns` group, two entries a column, inside the Results panel. Every colour also carries its hex, which is what 1.4.1 paints in the band's design.
+The heat map's cells and the four `:swatch{color="…"}` runs of its key name the same palette entries, so a new value for `cool` repaints the map and the key together ([inline formatting](/en/docs/document-format#inline-formatting)). The key is a second `:::columns` group, two entries a column, inside the Results panel.
 
 ### 6 · Set the headline figure in a paragraph style
 
 <Excerpt region="type" />
 
-Paragraph styles apply inside boxes, nested ones included, so −4.2 °C is a `:::paragraphs{style="stat"}` block in Bitter at 150 pt inside the Results panel ([paragraph styles](/en/docs/configuration#paragraph-styles)). In 1.4.1 a paragraph style cannot set a weight, so the figure is written in bold and prints in Bitter 700. A second style gives the references a 9 mm hanging indent. The keyword strip is a tinted box with `placement="bottom"`, floated to the foot of the page under the grid.
+Paragraph styles apply inside boxes, nested ones included, so −4.2 °C is a `:::paragraphs{style="stat"}` block in Bitter at 150 pt inside the Results panel ([paragraph styles](/en/docs/configuration#paragraph-styles)). The figure is written in bold, so it prints in Bitter 700 and in the style's `boldColor`, the orange of the panel. A second style gives the references a 9 mm hanging indent. The keyword strip is a tinted box with `placement="bottom"`, floated to the foot of the page under the grid.
 
 ## Variations
 
@@ -64,5 +64,5 @@ A meeting that asks for a larger file gets a 3,543 × 4,724 px PNG with the same
 ## Pitfalls
 
 - Rethink Sans draws a single figure in parentheses, such as the issue number in 11(3), as a circled figure on the canvas, so the references give the volume and the pages only.
-- In 1.4.1 a page-span box that ends the document moves to a new page unless two body lines of room are left under it. So the keyword strip is floated with `placement="bottom"`, which sets it on the bottom margin, in the 50 mm left under the grid.
-- In 1.4.1 a paragraph that follows a `:::paragraphs` group sits only the style's `spaceBetween` below it, 2.8 mm under the last reference here. A `:::space{lines=0.75}` before the acknowledgement opens 10.8 mm, near the 10.6 mm between the other paragraphs of a panel.
+- A page-span box that ends the document moves to a new page unless two body lines of room are left under it. So the keyword strip is floated with `placement="bottom"`, which sets it on the bottom margin, in the 50 mm left under the grid.
+- `bodyText.paragraphContainerSpacing: 'add'` ends a `:::paragraphs` group on its style's own space, which keeps −4.2 °C on the line that explains it. Under the last reference that space is the style's `spaceBetween`, 2.8 mm, so a `:::space{lines=0.75}` before the acknowledgement opens 10.8 mm, near the 10.6 mm between the other paragraphs of a panel. With the default, `'collapse'`, a group is followed by a line of the panel's paragraph spacing: the acknowledgement needs no `:::space`, but the line it adds under −4.2 °C pushes the keyword strip to a second page.

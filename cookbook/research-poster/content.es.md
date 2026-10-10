@@ -48,8 +48,6 @@ Plátanos y tilos refrescan sus manzanas toda la tarde; el tramo comercial sigue
 :::
 :::
 
-:::space{lines=0.33}
-
 ::resource{id="heat"}
 
 A las 15:00 el pavimento (:ref{id="bars"}) daba 48,4 °C en el tramo comercial y 33,4 °C bajo copa densa.
