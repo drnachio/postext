@@ -9205,6 +9205,8 @@ const minimal = stripConfigDefaults(fullConfig);
 
 リゾルバーごとに個別の除去関数もあります。`stripPageDefaults`、`stripLayoutDefaults`、`stripBodyTextDefaults`、`stripHeadingsDefaults`、`stripHeadingStylesDefaults`、`stripTocDefaults`、`stripPartsDefaults`、`stripUnorderedListsDefaults`、`stripOrderedListsDefaults`、`stripMathDefaults`、`stripTableStyleDefaults`、`stripCaptionStyleDefaults`、`stripDiagramStyleDefaults`、`stripParagraphStylesDefaults`、`stripCalloutStylesDefaults`、`stripHeaderFooterDefaults`、`stripDesignSlotDefaults`、`stripDebugDefaults`、`stripHtmlViewerDefaults`、`stripPdfGenerationDefaults`。
 
+既定値のなかには、設定のほかの部分で決まるものがあります。段末そろえは文字グリッドと縦組みでは既定でオフになり、脚注、キャプション、索引の既定値は文書の言語に従います。`stripConfigDefaults`は、渡された設定そのものの既定値とそれぞれの値を比べます。そのため、段末そろえが既定でオフになるところでは`headings.balancing.enabled: true`が残り、`false`は取り除かれます。除去関数を単独で呼ぶときは、その文脈を引数で渡します。`stripHeadingsDefaults(headings, balancingOnByDefault(config))`、`stripIndexDefaults(index, locale)`、`stripCaptionStyleDefaults(captionStyle, locale)`、`stripFootnotesDefaults(footnotes, locale, writingMode)`。
+
 ### 解析
 
 エンジンは、Markdownのトークナイザーとフロントマターの読み取り関数を公開しています。ビルドの前に文書を調べたり、Postextが見るのと同じブロック構造をほかのツールに渡したりするのに使えます。

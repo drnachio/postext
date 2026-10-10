@@ -9187,6 +9187,8 @@ const minimal = stripConfigDefaults(fullConfig);
 
 També hi ha disponibles funcions individuals, una per resolver: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripHeadingStylesDefaults`, `stripTocDefaults`, `stripPartsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripMathDefaults`, `stripTableStyleDefaults`, `stripCaptionStyleDefaults`, `stripDiagramStyleDefaults`, `stripParagraphStylesDefaults`, `stripCalloutStylesDefaults`, `stripHeaderFooterDefaults`, `stripDesignSlotDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`, `stripPdfGenerationDefaults`.
 
+Alguns valors per defecte depenen de la resta de la configuració: l'equilibratge de columnes està desactivat en una retícula de caràcters i en el text vertical, i les notes a peu de pàgina, els peus de recurs i l'índex analític segueixen la llengua del document. `stripConfigDefaults` compara cada valor amb el valor per defecte de la configuració que rep, de manera que `headings.balancing.enabled: true` es conserva on l'equilibratge està desactivat per defecte, i `false` s'hi elimina. Una funció cridada per separat rep aquest context com a arguments: `stripHeadingsDefaults(headings, balancingOnByDefault(config))`, `stripIndexDefaults(index, locale)`, `stripCaptionStyleDefaults(captionStyle, locale)`, `stripFootnotesDefaults(footnotes, locale, writingMode)`.
+
 ### Anàlisi
 
 El motor exposa el seu tokenitzador de markdown i el seu lector de frontmatter. Fes-los servir per inspeccionar un document abans de construir-lo, o per alimentar altres eines amb la mateixa estructura de blocs que veu Postext:

@@ -9202,6 +9202,8 @@ const minimal = stripConfigDefaults(fullConfig);
 
 也提供单独的剥离函数，与解析函数一一对应：`stripPageDefaults`、`stripLayoutDefaults`、`stripBodyTextDefaults`、`stripHeadingsDefaults`、`stripHeadingStylesDefaults`、`stripTocDefaults`、`stripPartsDefaults`、`stripUnorderedListsDefaults`、`stripOrderedListsDefaults`、`stripMathDefaults`、`stripTableStyleDefaults`、`stripCaptionStyleDefaults`、`stripDiagramStyleDefaults`、`stripParagraphStylesDefaults`、`stripCalloutStylesDefaults`、`stripHeaderFooterDefaults`、`stripDesignSlotDefaults`、`stripDebugDefaults`、`stripHtmlViewerDefaults`、`stripPdfGenerationDefaults`。
 
+有些默认值取决于配置的其余部分：在字符网格上和竖排时默认不做齐底，脚注、题注和索引的默认值随文档语言而定。`stripConfigDefaults`把每个值与所给配置自身的默认值比较，所以在默认不做齐底的地方，`headings.balancing.enabled: true`会保留，`false`则被去掉。单独调用某个剥离函数时，要把这些上下文作为参数传入：`stripHeadingsDefaults(headings, balancingOnByDefault(config))`、`stripIndexDefaults(index, locale)`、`stripCaptionStyleDefaults(captionStyle, locale)`、`stripFootnotesDefaults(footnotes, locale, writingMode)`。
+
 ### 解析markdown
 
 引擎公开了它的markdown分词器和frontmatter读取器。可以用它们在构建之前检查文档，或者把与Postext所见相同的块结构提供给其他工具：

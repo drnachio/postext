@@ -9206,6 +9206,8 @@ const minimal = stripConfigDefaults(fullConfig);
 
 تتوفر أيضًا دوال حذف (strippers) منفردة، واحدة لكل دالة استكمال: `stripPageDefaults`، `stripLayoutDefaults`، `stripBodyTextDefaults`، `stripHeadingsDefaults`، `stripHeadingStylesDefaults`، `stripTocDefaults`، `stripPartsDefaults`، `stripUnorderedListsDefaults`، `stripOrderedListsDefaults`، `stripMathDefaults`، `stripTableStyleDefaults`، `stripCaptionStyleDefaults`، `stripDiagramStyleDefaults`، `stripParagraphStylesDefaults`، `stripCalloutStylesDefaults`، `stripHeaderFooterDefaults`، `stripDesignSlotDefaults`، `stripDebugDefaults`، `stripHtmlViewerDefaults`، `stripPdfGenerationDefaults`.
 
+بعض القيم الافتراضية تتوقف على بقية الإعدادات: موازنة الأعمدة معطّلة في شبكة المحارف وفي النص العمودي، والحواشي السفلية والتعليقات والفهرس الأبجدي تتبع لغة المستند. تقارن `stripConfigDefaults` كل قيمة بالقيمة الافتراضية للإعدادات التي تتلقاها، فتبقى `headings.balancing.enabled: true` حيث الموازنة معطّلة افتراضيًا، وتُحذف `false` هناك. ودالة الحذف المنفردة تأخذ هذا السياق في وسائطها: `stripHeadingsDefaults(headings, balancingOnByDefault(config))`، `stripIndexDefaults(index, locale)`، `stripCaptionStyleDefaults(captionStyle, locale)`، `stripFootnotesDefaults(footnotes, locale, writingMode)`.
+
 ### التحليل
 
 يتيح المحرّك مُقطِّع markdown الخاص به وقارئ البيانات التمهيدية. استخدمهما لفحص مستند قبل بنائه، أو لتغذية أدوات أخرى ببنية الكتل نفسها التي يراها Postext:

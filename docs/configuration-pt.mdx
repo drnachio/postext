@@ -9208,6 +9208,8 @@ const minimal = stripConfigDefaults(fullConfig);
 
 Também há removedores individuais, um por resolvedor: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripHeadingStylesDefaults`, `stripTocDefaults`, `stripPartsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripMathDefaults`, `stripTableStyleDefaults`, `stripCaptionStyleDefaults`, `stripDiagramStyleDefaults`, `stripParagraphStylesDefaults`, `stripCalloutStylesDefaults`, `stripHeaderFooterDefaults`, `stripDesignSlotDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`, `stripPdfGenerationDefaults`.
 
+Alguns padrões dependem do restante da configuração: o equilíbrio de colunas fica desativado numa grade de caracteres e no texto vertical, e as notas de rodapé, as legendas e o índice remissivo seguem o idioma do documento. `stripConfigDefaults` compara cada valor com o padrão da configuração que recebe, de modo que `headings.balancing.enabled: true` permanece onde o equilíbrio fica desativado por padrão, e `false` é removido ali. Um removedor chamado isoladamente recebe esse contexto como argumentos: `stripHeadingsDefaults(headings, balancingOnByDefault(config))`, `stripIndexDefaults(index, locale)`, `stripCaptionStyleDefaults(captionStyle, locale)`, `stripFootnotesDefaults(footnotes, locale, writingMode)`.
+
 ### Análise do markdown
 
 O motor expõe seu tokenizador de markdown e seu leitor de frontmatter. Use-os para inspecionar um documento antes de compilá-lo, ou para alimentar outras ferramentas com a mesma estrutura de blocos que o Postext enxerga:

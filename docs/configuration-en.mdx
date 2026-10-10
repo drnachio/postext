@@ -9206,6 +9206,8 @@ const minimal = stripConfigDefaults(fullConfig);
 
 Individual strippers are also available, one per resolver: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripHeadingStylesDefaults`, `stripTocDefaults`, `stripPartsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripMathDefaults`, `stripTableStyleDefaults`, `stripCaptionStyleDefaults`, `stripDiagramStyleDefaults`, `stripParagraphStylesDefaults`, `stripCalloutStylesDefaults`, `stripHeaderFooterDefaults`, `stripDesignSlotDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`, `stripPdfGenerationDefaults`.
 
+Some defaults depend on the rest of the configuration: column balancing is off on a character grid and in vertical text, and the footnotes, the captions and the index follow the document language. `stripConfigDefaults` compares each value with the default of the configuration it is given, so `headings.balancing.enabled: true` stays where balancing is off by default, and `false` is dropped there. A stripper called on its own takes that context as arguments: `stripHeadingsDefaults(headings, balancingOnByDefault(config))`, `stripIndexDefaults(index, locale)`, `stripCaptionStyleDefaults(captionStyle, locale)`, `stripFootnotesDefaults(footnotes, locale, writingMode)`.
+
 ### Parsing
 
 The engine exposes its markdown tokenizer and frontmatter reader. Use them to inspect a document before building it, or to feed other tooling with the same block structure Postext sees:

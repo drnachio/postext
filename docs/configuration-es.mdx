@@ -9206,6 +9206,8 @@ const minimal = stripConfigDefaults(fullConfig);
 
 También están disponibles funciones individuales, una por resolver: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripHeadingStylesDefaults`, `stripTocDefaults`, `stripPartsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripMathDefaults`, `stripTableStyleDefaults`, `stripCaptionStyleDefaults`, `stripDiagramStyleDefaults`, `stripParagraphStylesDefaults`, `stripCalloutStylesDefaults`, `stripHeaderFooterDefaults`, `stripDesignSlotDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`, `stripPdfGenerationDefaults`.
 
+Algunos valores por defecto dependen del resto de la configuración: el equilibrado de columnas está desactivado en una retícula de caracteres y en el texto vertical, y las notas al pie, los pies de recurso y el índice analítico siguen el idioma del documento. `stripConfigDefaults` compara cada valor con el valor por defecto de la configuración que recibe, de modo que `headings.balancing.enabled: true` se conserva donde el equilibrado está desactivado por defecto, y `false` se elimina ahí. Una función llamada por separado recibe ese contexto como argumentos: `stripHeadingsDefaults(headings, balancingOnByDefault(config))`, `stripIndexDefaults(index, locale)`, `stripCaptionStyleDefaults(captionStyle, locale)`, `stripFootnotesDefaults(footnotes, locale, writingMode)`.
+
 ### Parseo
 
 El motor expone su tokenizador de markdown y su lector de frontmatter. Úsalos para inspeccionar un documento antes de construirlo, o para alimentar a otras herramientas con la misma estructura de bloques que ve Postext:
