@@ -22,14 +22,17 @@ export interface ColumnRuleSegment {
  *  page-span heading holds at its head. That heading stays in the first
  *  column as a hidden block as tall as its band (the opener band paints
  *  it), while the other columns start under the band (EF-101). A
- *  structural heading is hidden too, but takes no room. */
+ *  structural heading is hidden too, but takes no room. A float set under
+ *  the opener at the head of that column (`VDTColumn.headFloatFoot`,
+ *  #639) puts the start under its band, as a float at the head of any
+ *  other column puts that column's top. */
 function ruleTop(col: VDTColumn): number {
   let top = col.bbox.y;
   for (const block of col.blocks) {
     if (block.type !== 'heading' || !block.hidden) break;
     top = Math.max(top, block.bbox.y + block.bbox.height);
   }
-  return top;
+  return col.headFloatFoot !== undefined ? Math.max(top, col.headFloatFoot) : top;
 }
 
 /**

@@ -196,13 +196,13 @@ describe('floats under a page-span opener (#639)', () => {
     expect(textTop(doc, 0)).toBeCloseTo(frame.bbox.y + band(frame.bbox.height), 3);
     expect(textTop(doc, 1)).toBeCloseTo(textTop(doc, 0), 3);
     expect(textTop(doc, 2)).toBeCloseTo(head, 3);
-    // The box of column 1 starts under the float, like column 2's; the
-    // opener stays above it.
+    // The opener's column keeps its box (the opener stands in it) and
+    // records where the float's band ends; column 2 starts there.
     const cols = textColumns(doc.pages[0]!);
-    expect(cols[0]!.bbox.y).toBeCloseTo(cols[1]!.bbox.y, 3);
-    expect(cols[0]!.bbox.y).toBeCloseTo(textTop(doc, 0), 3);
-    expect(cols[0]!.blocks[0]).toBe(opener(doc));
-    expect(cols[0]!.bbox.y + cols[0]!.bbox.height).toBeCloseTo(cols[3]!.bbox.y + cols[3]!.bbox.height, 3);
+    expect(cols[0]!.bbox.y).toBeCloseTo(opener(doc).bbox.y, 3);
+    expect(cols[0]!.headFloatFoot).toBeCloseTo(textTop(doc, 0), 3);
+    expect(cols[1]!.bbox.y).toBeCloseTo(cols[0]!.headFloatFoot!, 3);
+    expect(cols[1]!.headFloatFoot).toBeUndefined();
   });
 
   it('the column rule never runs through a float under the opener', () => {
@@ -259,6 +259,44 @@ describe('floats under a page-span opener (#639)', () => {
     const doc = build(`# Opener\n\n${box()}\n\n## Sub\n\n${BODY}\n\n${BODY}`, cfg);
     const frame = frameOf(doc);
     expect(textTop(doc, 0)).toBeCloseTo(frame.bbox.y + band(frame.bbox.height), 3);
+  });
+
+  it('a heading with no room left under the float moves on alone: the opener stays', () => {
+    // The box takes all but a line or two of column 1: the heading and
+    // the lines kept with it open column 2, and the opener is not taken
+    // along as a heading stranded at a column's foot would be.
+    const tall = Array.from({ length: 78 }, (_, i) => `Line ${i + 1}.`).join('\n\n');
+    const cfg = config(4, { headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: false } }] }, calloutStyles: [{ id: 'note', padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) } }] });
+    const doc = build(`# Opener\n\n${box('', tall)}\n\n## Sub\n\n${BODY}\n\n${BODY}`, cfg);
+    const cols = textColumns(doc.pages[0]!);
+    const frame = frameOf(doc);
+    expect(doc.pages[0]!.columns[0]!.blocks[0]).toBe(opener(doc));
+    expect(opener(doc).headingLevel).toBe(1);
+    expect(frame.bbox.x).toBeCloseTo(X(0), 3);
+    expect(cols[0]!.bbox.y + cols[0]!.bbox.height - (frame.bbox.y + frame.bbox.height)).toBeLessThan(5 * LINE);
+    // Nothing fits under the box; `## Sub` heads column 2.
+    expect(cols[0]!.blocks).toHaveLength(1);
+    expect(cols[1]!.blocks[0]!.type).toBe('heading');
+    expect(cols[1]!.blocks[0]!.headingLevel).toBe(2);
+    expect(doc.blocks.filter((b) => b.type === 'heading' && b.headingLevel === 1)).toHaveLength(1);
+  });
+
+  it('a closing page cut level keeps the float under its opener', () => {
+    // The level cut of the closing band goes no higher than the float's
+    // band, as for a float heading an empty column: cut higher, the capped
+    // pass would send the box to a page of its own.
+    const tall = Array.from({ length: 40 }, (_, i) => `Line ${i + 1}.`).join('\n\n');
+    const cfg = config(4, { headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: false } }] }, calloutStyles: [{ id: 'note', padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) } }] });
+    const doc = build(`# Opener\n\n${box('', tall)}\n\n${BODY}`, cfg);
+    expect(doc.pages).toHaveLength(1);
+    const frame = frameOf(doc);
+    expect(frame.bbox.x).toBeCloseTo(X(0), 3);
+    const cols = textColumns(doc.pages[0]!);
+    // The band is cut level at or under the float's band.
+    expect(cols.every((c) => c.trailingCap)).toBe(true);
+    const cut = cols[1]!.bbox.y + cols[1]!.bbox.height;
+    expect(cut).toBeGreaterThanOrEqual(cols[0]!.headFloatFoot! - 0.01);
+    for (const c of cols.slice(1)) expect(c.bbox.y + c.bbox.height).toBeCloseTo(cut, 3);
   });
 
   it('an opener set mid-page offers the head of its own column too', () => {

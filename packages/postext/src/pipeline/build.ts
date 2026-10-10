@@ -2177,22 +2177,14 @@ function placeDocumentPass(
 
     for (const col of targetCols) {
       if (openerHeads.has(col)) {
-        const lead = leadOf(col);
-        const from = columnCursorY(col);
-        col.availableHeight = Math.max(0, col.availableHeight - lead - need);
-        // The column's box starts under the band, as an empty column's
-        // does, so the column rule beside it never runs through the float;
-        // the opener stays above it, where the opener band paints it. A
-        // float text wraps round keeps its band in the flow instead: the
-        // text placed next takes it back (see below).
-        if (!(wraps && !wrapRefused)) {
-          const down = from - col.bbox.y + lead + need;
-          col.bbox.y += down;
-          col.bbox.height = Math.max(0, col.bbox.height - down);
-          const r = { ...reservedOf(col) };
-          r.top += lead + need;
-          floatReserved.set(col, r);
-        }
+        // The band is taken from the flow under the opener: the column
+        // keeps its box (a trailing cap measures the band from the opener's
+        // top in every column) and records where the band ends, which is
+        // where its rule starts (`columnRuleSegments`). A float text wraps
+        // round records nothing: the text placed next takes its band back
+        // (see below) and the rule runs beside both.
+        col.availableHeight = Math.max(0, col.availableHeight - leadOf(col) - need);
+        if (!(wraps && !wrapRefused)) col.headFloatFoot = columnCursorY(col);
         openerHeadFloats.set(col, columnCursorY(col));
         // What the opener left under it went into the band's gap.
         pendingSpacing = 0;
@@ -3552,7 +3544,7 @@ function placeDocumentPass(
   /** `rollbackTrailingBlocks` that also drops a rolled-back heading's
    *  side-column obstacles: the heading is set again further on. */
   const rollbackHeadings = (col: VDTColumn): VDTBlock[] => {
-    const popped = rollbackTrailingBlocks(col, doc.blocks, isFreeHeading);
+    const popped = rollbackTrailingBlocks(col, doc.blocks, (b) => isFreeHeading(b) && !holdsHeadFloat(col, b));
     for (const p of popped) {
       const side = sideObstacleColumn.get(p);
       if (!side) continue;
@@ -3673,6 +3665,11 @@ function placeDocumentPass(
     const floatHeads = cols
       .filter((c) => c.blocks.length === 0 && reservedOf(c).top > 0)
       .map((c) => Math.ceil((c.bbox.y - top - 0.01) / baselineGrid));
+    // So does one set under a page-span opener at the head of the opener's
+    // own column (#639).
+    for (const c of cols) {
+      if (c.headFloatFoot !== undefined) floatHeads.push(Math.ceil((c.headFloatFoot - top - 0.01) / baselineGrid));
+    }
     bandCapProposals.set(boundaryIndex, {
       kind: 'trailing',
       startContentIndex: bandStart.contentIndex,
@@ -3859,12 +3856,18 @@ function placeDocumentPass(
    *  keep-with-next rollbacks may pull along (a callout is one unbreakable
    *  unit; its children never leave it). */
   const isFreeHeading = (b: VDTBlock): boolean => b.type === 'heading' && b.containerId === undefined;
+  /** Whether `b` is the page-span opener of `col` with a float set under it
+   *  at the column's head (#639): the float follows it there, so it closes
+   *  no run of headings a block moving on could strand, and is never taken
+   *  on to the next column with one. */
+  const holdsHeadFloat = (col: VDTColumn, b: VDTBlock): boolean =>
+    openerHeadFloats.has(col) && openerOwnColumn.get(col) === b;
   /** Free headings closing `col` (its trailing run), 0 unless keep-with-next
    *  is on: the headings a block moving on would strand. */
   const trailingHeadingRun = (col: VDTColumn): number => {
     if (!resolved.headings.keepWithNext || headingMayCloseColumn(col)) return 0;
     let n = 0;
-    for (let j = col.blocks.length - 1; j >= 0 && isFreeHeading(col.blocks[j]!); j--) n++;
+    for (let j = col.blocks.length - 1; j >= 0 && isFreeHeading(col.blocks[j]!) && !holdsHeadFloat(col, col.blocks[j]!); j--) n++;
     return n;
   };
 

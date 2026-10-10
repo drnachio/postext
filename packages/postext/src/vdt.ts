@@ -1834,6 +1834,13 @@ export interface VDTColumn {
    *  height in whole grid lines from its top. Absent when nothing in the
    *  column wraps. */
   exclusions?: VDTExclusion[];
+  /** In the column a page-span opener was set in, the foot (page y of the
+   *  flow frame, as `bbox`) of the float band set under the opener at the
+   *  column's head (#639, `layout.floatsUnderOpener`): the float is in
+   *  `VDTPage.floats`, the column's text starts here, and the rule of the
+   *  column's gutter starts no higher (`columnRuleSegments`). Absent when
+   *  no float stands there. */
+  headFloatFoot?: number;
   /** On a character grid (#632), the levers balancing would have used on
    *  this short column and the grid kept out: `'looseParagraph'` when a
    *  paragraph could gain its line only by spreading its characters off
