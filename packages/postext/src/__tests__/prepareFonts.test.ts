@@ -44,8 +44,17 @@ class FakeFontSet implements FontFaceSetLike {
   faces: FakeFace[] = [];
   listeners = new Set<Listener>();
   loads: string[] = [];
+  /** As a browser does (#649): `load` resolves a task before the set
+   *  fires `loadingdone`. The event then waits for `flush()`; meanwhile the
+   *  set reads `'loading'` (Chrome) or `'loaded'` already (the order the
+   *  specification gives). */
+  deferred: false | 'loading' | 'loaded' = false;
+  unfired: FakeFace[] = [];
   get size(): number {
     return this.faces.length;
+  }
+  get status(): string {
+    return this.deferred === 'loading' && this.unfired.length > 0 ? 'loading' : 'loaded';
   }
   [Symbol.iterator](): Iterator<FontFaceLike> {
     return this.faces[Symbol.iterator]();
@@ -59,9 +68,17 @@ class FakeFontSet implements FontFaceSetLike {
     const want = parseFontString(font);
     if (!want) return [];
     const mine = this.faces.filter((f) => f.family.toLowerCase() === want.family.toLowerCase());
+    const fresh = mine.filter((f) => f.status !== 'loaded');
     for (const f of mine) await f.load();
-    if (mine.length > 0) this.fire(mine);
+    if (this.deferred) this.unfired.push(...fresh);
+    else if (mine.length > 0) this.fire(mine);
     return mine;
+  }
+  /** The `loadingdone` of the loads so far. */
+  flush(): void {
+    const faces = this.unfired;
+    this.unfired = [];
+    if (faces.length > 0) this.fire(faces);
   }
   addEventListener(_type: 'loadingdone', listener: Listener): void {
     this.listeners.add(listener);
@@ -299,6 +316,89 @@ describe('measurement caches follow the faces', () => {
     expect(measureTextWidth('ab', '16px Watched')).toBe(20);
     stop();
     off();
+  });
+});
+
+describe('faces the set declared before an earlier build (#649)', () => {
+  const text = { markdown: 'A paragraph of text that wraps over several lines in a narrow page, with **bold** and *italic* words. '.repeat(8) };
+  const lineCount = (d: { blocks: { lines: unknown[] }[] }) => d.blocks.reduce((n, b) => n + b.lines.length, 0);
+  const declare = (family: string) => {
+    for (const [weight, style] of [['400', 'normal'], ['700', 'normal'], ['400', 'italic'], ['700', 'italic']]) {
+      fonts.add(new FakeFace(family, `url(${family}-${weight}-${style}.woff2)`, { weight, style }));
+    }
+  };
+  /** The lines of a layout measured afresh with the faces now there
+   *  (it clears every width: call it once the test has made its builds). */
+  const referenceLines = (config: PostextConfig) => {
+    clearMeasurementCache();
+    return lineCount(buildDocument(text, { ...config }, createMeasurementCache(), { fontSet: fonts }));
+  };
+
+  for (const order of ['loading', 'loaded'] as const) {
+    it(`prepareFonts drops the fallback widths before loadingdone (set reading '${order}')`, async () => {
+      fonts.deferred = order;
+      declare('Declared Serif');
+      const cache = createMeasurementCache();
+      const config: PostextConfig = { bodyText: { fontFamily: 'Declared Serif' } };
+      // The early build measures with the fallback and makes the set known.
+      const early = buildDocument(text, config, cache, { fontSet: fonts });
+      const report = await prepareFonts(text, config, { fontSet: fonts, watch: false, measureWidth: null });
+      expect(report.missing.filter((f) => f.family === 'Declared Serif')).toEqual([]);
+      expect(fonts.faces.every((f) => f.status === 'loaded')).toBe(true);
+      // No wait, no clearMeasurementCache: the event has not fired yet.
+      expect(fonts.unfired.length).toBeGreaterThan(0);
+      const second = buildDocument(text, config, cache, { fontSet: fonts });
+      expect(lineCount(second)).toBeGreaterThan(lineCount(early));
+      // The event that follows finds the set as recorded: nothing more to drop.
+      const generation = measurementGeneration();
+      fonts.flush();
+      expect(syncFontSet(fonts)).toEqual([]);
+      const third = buildDocument(text, config, cache, { fontSet: fonts });
+      expect(measurementGeneration()).toBe(generation);
+      expect(lineCount(third)).toBe(lineCount(second));
+      expect(lineCount(second)).toBe(referenceLines(config));
+    });
+  }
+
+  it('buildDocumentWithFonts lays out with the faces it loaded, after an earlier build', async () => {
+    fonts.deferred = 'loaded';
+    declare('Declared Serif');
+    const cache = createMeasurementCache();
+    const config: PostextConfig = { bodyText: { fontFamily: 'Declared Serif' } };
+    const early = buildDocument(text, config, cache, { fontSet: fonts });
+    const doc = await buildDocumentWithFonts(text, config, { fontSet: fonts, cache, watch: false, measureWidth: null, yieldBetweenPasses: async () => {} });
+    expect(lineCount(doc)).toBeGreaterThan(lineCount(early));
+    expect(doc.contentWarnings?.filter((w) => w.kind === 'fontFallback' && w.family === 'Declared Serif') ?? []).toEqual([]);
+    expect(lineCount(doc)).toBe(referenceLines(config));
+  });
+
+  it('withLoadedFonts builds again with a declared face only the pages reveal', async () => {
+    fonts.deferred = 'loaded';
+    declare('Declared Serif');
+    const cache = createMeasurementCache();
+    const config: PostextConfig = { bodyText: { fontFamily: 'Declared Serif' } };
+    let builds = 0;
+    // No prepareFonts: the first round's build is the one that makes the
+    // set known, and its pages say which faces to load.
+    const doc = await withLoadedFonts(() => {
+      builds++;
+      return buildDocument(text, config, cache, { fontSet: fonts });
+    }, { fontSet: fonts, watch: false, measureWidth: null });
+    expect(builds).toBe(2);
+    expect(lineCount(doc)).toBe(referenceLines(config));
+  });
+
+  it('a build right after the host loaded declared faces measures with them', async () => {
+    fonts.deferred = 'loading';
+    declare('Host Serif');
+    const cache = createMeasurementCache();
+    const config: PostextConfig = { bodyText: { fontFamily: 'Host Serif' } };
+    const early = buildDocument(text, config, cache, { fontSet: fonts });
+    await fonts.load('16px "Host Serif"');
+    // The set still reads 'loading': its loadingdone comes a task later.
+    const second = buildDocument(text, config, cache, { fontSet: fonts });
+    expect(lineCount(second)).toBeGreaterThan(lineCount(early));
+    expect(lineCount(second)).toBe(referenceLines(config));
   });
 });
 

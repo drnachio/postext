@@ -26,6 +26,8 @@ export interface FontFaceLike {
  *  the engine uses. Tests pass a fake. */
 export interface FontFaceSetLike extends Iterable<FontFaceLike> {
   readonly size?: number;
+  /** `'loading'` while faces of the set load, up to its `loadingdone`. */
+  readonly status?: string;
   load(font: string, text?: string): Promise<FontFaceLike[]>;
   add(face: FontFaceLike): unknown;
   addEventListener?(type: 'loadingdone', listener: (event: { fontfaces?: readonly FontFaceLike[] }) => void): void;

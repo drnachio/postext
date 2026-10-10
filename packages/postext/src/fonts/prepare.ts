@@ -370,14 +370,18 @@ export async function prepareFonts(
 }
 
 async function prepareFaces(wanted: readonly FontFaceRequest[], fontSet: FontFaceSetLike, sample: string, options: PrepareFontsOptions): Promise<FontReport> {
-  const known = isFontSetTracked(fontSet);
-  if (!known) syncFontSet(fontSet);
+  if (!isFontSetTracked(fontSet)) syncFontSet(fontSet);
   const { added, touched } = await loadFaces(wanted, fontSet, sample, options);
-  // Drop what was measured in the families whose faces changed: the set's
-  // own record says which when the engine knew it before; on first sight,
-  // every family this call loaded faces for.
-  const changed = new Set(syncFontSet(fontSet, { evict: false }));
-  if (!known) for (const family of touched) changed.add(family.toLowerCase());
+  // Drop what was measured in the families whose faces changed: those
+  // the set's record shows, and every family this call loaded faces for.
+  // The set is read whatever it reports (#649): `fontSet.load` resolves a
+  // task before the set's `loadingdone`, and a declared face that loads
+  // leaves the size as it was, so a set known from an earlier build would
+  // pass for unchanged and the builds that follow would keep the widths
+  // of the fallback face. Recording it here also leaves that
+  // `loadingdone` nothing to drop a second time.
+  const changed = new Set(syncFontSet(fontSet, { evict: false, force: true }));
+  for (const family of touched) changed.add(family.toLowerCase());
   if (changed.size > 0) evictFontFamilies(changed);
   if (options.watch !== false) watchFonts(fontSet);
   return classify(wanted, fontSet, options, added);
