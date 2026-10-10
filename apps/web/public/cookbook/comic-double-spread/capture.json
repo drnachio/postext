@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "comic-double-spread",
-  "sourceHash": "d6c85c0e0753d8352ac0826ab7c5e317582894bd20b10267e0d025375aa78037",
+  "sourceHash": "d22487afd10c5ccb362483d3a967bb4d14cacc6f3235801091d1c589e14d48d5",
   "engine": {
-    "postext": "1.25.0",
-    "postextPdf": "1.25.0",
+    "postext": "1.25.1",
+    "postextPdf": "1.25.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-10T13:33:15.111Z",
+  "capturedAt": "2026-10-10T15:12:52.285Z",
   "variants": {
     "en": {
-      "hash8": "1c31a3ad",
+      "hash8": "e6da283c",
       "vdtHash": "6d1ab509a3fcd3d3cd62c9cb4ec3083deec81511",
       "timings": {
-        "importMs": 175,
-        "fontsMs": 94,
-        "buildMs": 293,
-        "totalMs": 1122,
+        "importMs": 716,
+        "fontsMs": 282,
+        "buildMs": 1088,
+        "totalMs": 4090,
         "builds": 1
       },
       "specimen": {
@@ -255,13 +255,13 @@
       }
     },
     "es": {
-      "hash8": "cebbcbe6",
+      "hash8": "34f39ae5",
       "vdtHash": "28c0aa1dddebc1a19af91ea4e5df75e8b5dd8a8e",
       "timings": {
-        "importMs": 186,
-        "fontsMs": 97,
-        "buildMs": 287,
-        "totalMs": 1129,
+        "importMs": 751,
+        "fontsMs": 268,
+        "buildMs": 1087,
+        "totalMs": 10144,
         "builds": 1
       },
       "specimen": {
@@ -499,13 +499,13 @@
       }
     },
     "ca": {
-      "hash8": "a2e69453",
+      "hash8": "38b67ad4",
       "vdtHash": "e051cb0bfac9ed7bda549de1dc7a909fb242d473",
       "timings": {
-        "importMs": 174,
-        "fontsMs": 95,
-        "buildMs": 300,
-        "totalMs": 1128,
+        "importMs": 223,
+        "fontsMs": 164,
+        "buildMs": 334,
+        "totalMs": 1364,
         "builds": 1
       },
       "specimen": {
@@ -743,13 +743,13 @@
       }
     },
     "zh": {
-      "hash8": "30f3c9d6",
+      "hash8": "6988afa9",
       "vdtHash": "a95d6688e5763446c909ea3f306a081d82b8d8fa",
       "timings": {
-        "importMs": 190,
-        "fontsMs": 238,
-        "buildMs": 307,
-        "totalMs": 1302,
+        "importMs": 194,
+        "fontsMs": 246,
+        "buildMs": 348,
+        "totalMs": 1358,
         "builds": 1
       },
       "specimen": {
@@ -780,7 +780,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 228914,
+          "bytes": 229014,
           "alt": "第 2 页。"
         },
         {
@@ -791,7 +791,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 215766,
+          "bytes": 215690,
           "alt": "第 3 页。"
         }
       ],
@@ -815,12 +815,12 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 895734,
+        "bytes": 895780,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893753
+        "bytes": 893749
       },
       "detected": {
         "apis": [
@@ -980,11 +980,6 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
           },
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -993,13 +988,13 @@
       }
     },
     "ar": {
-      "hash8": "c6f02245",
+      "hash8": "e5a84b36",
       "vdtHash": "62186dc3c174a7a0486ed05494d986ce8953dc58",
       "timings": {
-        "importMs": 166,
-        "fontsMs": 107,
-        "buildMs": 300,
-        "totalMs": 1118,
+        "importMs": 257,
+        "fontsMs": 146,
+        "buildMs": 346,
+        "totalMs": 1296,
         "builds": 1
       },
       "specimen": {
@@ -1241,13 +1236,13 @@
       }
     },
     "ja": {
-      "hash8": "8520dc40",
+      "hash8": "1f4c604b",
       "vdtHash": "e0fea0a1e39d501e8c605675983a84d3865583a3",
       "timings": {
-        "importMs": 183,
-        "fontsMs": 188,
-        "buildMs": 1055,
-        "totalMs": 9458,
+        "importMs": 265,
+        "fontsMs": 273,
+        "buildMs": 322,
+        "totalMs": 1441,
         "builds": 1
       },
       "specimen": {
@@ -1480,11 +1475,6 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
           },
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -1493,13 +1483,13 @@
       }
     },
     "pt": {
-      "hash8": "49853c71",
+      "hash8": "719c4c9a",
       "vdtHash": "c4dea0ea56e8899c4f01360bf573ad13b84489c7",
       "timings": {
-        "importMs": 170,
-        "fontsMs": 94,
-        "buildMs": 339,
-        "totalMs": 1166,
+        "importMs": 460,
+        "fontsMs": 149,
+        "buildMs": 395,
+        "totalMs": 1597,
         "builds": 1
       },
       "specimen": {
