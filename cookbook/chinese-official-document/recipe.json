@@ -34,7 +34,6 @@
   "gaps": ["chinese-point-sizes"],
   "gotchas": [
     "cjk-no-fangsong",
-    "cjk-grid-balancing",
     "cjk-fonts-slices",
     "cjk-locale-tag",
     "headings-drop-h1-break",
@@ -46,10 +45,6 @@
     {
       "package": "postext",
       "note": "page.dpi 144, not 150: at 150 dpi a 29 pt grid line is 60.41666… px, and the heading keep-with-next check in pipeline/build.ts (remainAfterHeading < minSpaceAfter, compared without FIT_EPS) found a head with a two-line paragraph on the last three lines of the page 1e-13 px short and pushed it to the next page, leaving three blank lines; at 2 px to the point the sums are exact"
-    },
-    {
-      "package": "postext",
-      "note": "headings.balancing.enabled: false: on a character grid the loose-paragraph lever re-broke a Chinese paragraph a line longer by spreading its characters 0.13 em (balancing.maxTracking allows 0.01 em), and the heading lever adds grid lines above heads; both move text off the grid"
     }
   ],
   "explainsWarnings": ["cjkGridClamped"],
@@ -59,7 +54,7 @@
     "running-heads-by-parity",
     "certificate-single-page"
   ],
-  "engine": { "postext": "1.24.0", "postextPdf": "1.24.0" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": {

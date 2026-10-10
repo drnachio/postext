@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 090 · A Chinese paper cited to GB/T 7714 ═════════════════
 // https://postext.dev/en/cookbook/gbt7714-chinese-paper
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.12.0
+// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
 } from 'https://esm.sh/postext';
@@ -111,7 +111,6 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     textAlign: 'justify', firstLineIndent: em(2), indentAfterHeading: true,
   },
   headings: { fontFamily: HEI, fontWeight: 700, color: col('ink'),
-    balancing: { enabled: false }, // heads stay on the grid
     levels: [
       { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // headings-drop-h1-break
       { level: 2, numberingTemplate: '{2}', numberSeparator: '　', fontSize: pt(10.5),

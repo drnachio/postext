@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 125 · A Japanese research paper cited to SIST 02 ═══════════
 // https://postext.dev/en/cookbook/sist02-research-paper
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code
-// Fonts: Noto Serif JP, Noto Sans JP, Shippori Mincho B1 (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Noto Serif JP, Noto Sans JP, Shippori Mincho B1 (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
   defaultResourceTypes, parseTSV, registerResourceImage,
@@ -111,7 +111,6 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     referenceBold: false, textAlign: 'justify', firstLineIndent: em(1), indentAfterHeading: true },
   headings: { fontFamily: GOTHIC, fontWeight: 700, color: col('ink'),
-    balancing: { enabled: false }, // heads stay on the grid
     levels: [
       { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // headings-drop-h1-break
       { level: 2, numberingTemplate: '{2}.', numberSeparator: '　', fontSize: pt(10),

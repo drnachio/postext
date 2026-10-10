@@ -18,7 +18,7 @@ Set pàgines d'un volum d'obres completes (全集) en una pàgina A5 enquadernad
 
 El codi és [la resposta curta](#la-resposta-curta) de més amunt. En una pàgina amb `writingMode: 'vertical-rl'`, `layoutType: 'double'` apila les dues columnes: la primera omple el pis de dalt des de la dreta, després el de baix, i el canal és la franja que queda entre tots dos ([Escriptura vertical](/ca/docs/configuration#escriptura-vertical)). La [retícula de caràcters](/ca/docs/configuration#retícula-de-caràcters) compta els caràcters d'un pis, així que cada pis fa 25 caràcters de 9 pt i el canal s'arrodoneix a dos caràcters justos; les 21 línies de 15,75 pt ocupen 116,7 mm dels 148 de la pàgina. El filet entre els pisos travessa la pàgina, de 0,4 pt i d'un gris càlid.
 
-L'equilibratge de Postext acabaria els dos pisos de l'última pàgina d'un conte a la mateixa alçada, que és com tanquen un capítol els diaris xinesos i la majoria dels llibres europeus a dues columnes. Un llibre japonès en pisos deixa caure el text: el pis de dalt recorre tota la pàgina abans que comenci el de baix. `balancing.trailing: false` és aquesta decisió, i `enabled: false`, que la inclou, impedeix a més que l'equilibratge afegeixi línies sobre els títols en una retícula de caràcters ([Equilibratge de columnes](/ca/docs/configuration#equilibratge-de-columnes)).
+L'equilibratge de Postext acabaria els dos pisos de l'última pàgina d'un conte a la mateixa alçada, que és com tanquen un capítol els diaris xinesos i la majoria dels llibres europeus a dues columnes. Un llibre japonès en pisos deixa caure el text: el pis de dalt recorre tota la pàgina abans que comenci el de baix. `balancing.trailing: false` és aquesta decisió, i els pisos verticals no s'equilibren gens llevat que `enabled: true` activi l'equilibratge ([Equilibratge de columnes](/ca/docs/configuration#equilibratge-de-columnes)).
 
 ### 2 · Baixa el títol de l'obra pels dos pisos
 
@@ -40,11 +40,11 @@ El segon nivell, `lineSpan: 3` amb `indent: em(8)`, compon 一 二 三 vuit car�
 
 ### Iguala l'última pàgina
 
-Si treus `balancing`, l'última pàgina de cada obra es talla a la mateixa alçada: la pàgina 214 acaba amb 10 línies al pis de dalt i 11 al de baix, el tancament d'un llibre xinès o europeu en columnes.
+Si actives l'equilibratge, l'última pàgina de cada obra es talla a la mateixa alçada: la pàgina 214 acaba amb 10 línies al pis de dalt i 11 al de baix, el tancament d'un llibre xinès o europeu en columnes. A la retícula de caràcters l'equilibratge només afegeix línies senceres, així que cada caràcter conserva la seva casella.
 
 ```diff
--const balancing = { enabled: false, trailing: false };
-+const balancing = {}; // the defaults: the closing band is cut level
+-const balancing = { trailing: false };
++const balancing = { enabled: true }; // the closing band is cut level
 ```
 
 ### Comença cada obra a la pàgina següent

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 120 · A story on genkō yōshi, one character to a square ═══
 // https://postext.dev/en/cookbook/genko-yoshi-manuscript
 // Code: MIT · Text: 夏目漱石『坊っちゃん』, Aozora Bunko 752 (public domain) · Pictures: none
-// Fonts: Klee One, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Klee One, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
@@ -105,8 +105,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'left', firstLineIndent: em(1), indentAfterHeading: true, // a blank square
   },
-  headings: { fontFamily: PEN, color: col('ink'), levels: [title],
-    balancing: { enabled: false } }, // gotcha: cjk-grid-balancing
+  headings: { fontFamily: PEN, color: col('ink'), levels: [title] },
   paragraphStyles,
   header,
   footer,

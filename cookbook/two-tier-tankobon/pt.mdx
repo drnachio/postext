@@ -18,7 +18,7 @@ Sete páginas de um volume de obras completas (全集) numa página A5 encaderna
 
 O código é a [resposta curta](#a-resposta-curta) acima. Numa página com `writingMode: 'vertical-rl'`, `layoutType: 'double'` empilha as duas colunas: a primeira enche o andar de cima a partir da direita, depois o de baixo, e a medianiz é a faixa entre eles ([Escrita vertical](/pt/docs/configuration#escrita-vertical)). A [grade de caracteres](/pt/docs/configuration#grade-de-caracteres) conta os caracteres de cima para baixo num andar, então cada andar tem 25 caracteres de 9 pt e a medianiz é arredondada para dois caracteres inteiros; as 21 linhas de 15,75 pt na largura ocupam 116,7 mm dos 148 mm da página. O fio entre os andares atravessa a página, com 0,4 pt num cinza quente.
 
-O balanceamento do Postext terminaria os dois andares da última página de um conto na mesma linha, que é como os jornais chineses e a maioria dos livros europeus em duas colunas fecham um capítulo. Um livro japonês em andares deixa o texto cair: o andar de cima percorre a página toda antes de o de baixo começar. `balancing.trailing: false` é essa escolha, e `enabled: false`, que a inclui, também impede o balanceamento de acrescentar linhas acima dos títulos numa grade de caracteres ([Balanceamento de colunas](/pt/docs/configuration#equilíbrio-de-colunas)).
+O balanceamento do Postext terminaria os dois andares da última página de um conto na mesma linha, que é como os jornais chineses e a maioria dos livros europeus em duas colunas fecham um capítulo. Um livro japonês em andares deixa o texto cair: o andar de cima percorre a página toda antes de o de baixo começar. `balancing.trailing: false` é essa escolha, e os andares verticais nem chegam a ser balanceados, a menos que `enabled: true` ligue o balanceamento ([Balanceamento de colunas](/pt/docs/configuration#equilíbrio-de-colunas)).
 
 ### 2 · Descer o título da obra pelos dois andares
 
@@ -40,11 +40,11 @@ O segundo nível, `lineSpan: 3` com `indent: em(8)`, compõe 一 二 三 oito ca
 
 ### Nivelar a última página
 
-Sem `balancing`, a última página de cada obra é cortada nivelada: a página 214 termina com 10 linhas no andar de cima e 11 no de baixo, o fechamento que um livro chinês ou europeu em colunas usa.
+Ligue o balanceamento e a última página de cada obra é cortada nivelada: a página 214 termina com 10 linhas no andar de cima e 11 no de baixo, o fechamento que um livro chinês ou europeu em colunas usa. Na grade de caracteres o balanceamento só acrescenta linhas inteiras, então cada caractere fica na sua casa.
 
 ```diff
--const balancing = { enabled: false, trailing: false };
-+const balancing = {}; // the defaults: the closing band is cut level
+-const balancing = { trailing: false };
++const balancing = { enabled: true }; // the closing band is cut level
 ```
 
 ### Abrir cada obra na página seguinte

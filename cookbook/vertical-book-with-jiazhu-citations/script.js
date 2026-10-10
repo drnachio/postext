@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 091 · Vertical Chinese with citations in inline notes ══════
 // https://postext.dev/en/cookbook/vertical-book-with-jiazhu-citations
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.12.0
+// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
   loadVerticalAlternates,
@@ -99,7 +99,6 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     textAlign: 'justify', firstLineIndent: em(2), indentAfterHeading: true,
   },
   headings: { fontFamily: SONG, fontWeight: 700, color: col('ink'),
-    balancing: { enabled: false }, // the columns stay on the grid
     levels: [{ level: 1, numberingTemplate: '第{1:一}章', numberSeparator: '　',
       breakBefore: { enabled: true, parity: 'odd' }, // gotcha: headings-drop-h1-break
       marginBottom: pt(0), advancedDesign: opener }] },

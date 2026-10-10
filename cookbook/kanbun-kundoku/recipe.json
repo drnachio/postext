@@ -13,9 +13,9 @@
     "also": ["right-binding", "ruby", "paragraph-styles", "gyodori-headings", "kana-scripts", "japanese-kinsoku", "japanese-numerals", "character-grid", "cjk-fonts", "heading-styles", "opener-design", "running-heads", "page-role-filters", "mirrored-margins", "color-palette", "pdf-export"]
   },
   "answers": ["Q143", "Q135"],
-  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order", "cjk-grid-balancing"],
+  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order"],
   "related": ["tang-poems-facing-english", "zhuyin-vertical-reader", "haiku-and-tanka", "red-ink-commentary"],
-  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": 1, "card": "loupe", "focus": { "page": 1, "x": 0.36, "y": 0.19, "w": 0.52, "h": 0.45 }, "pages": "all" },
@@ -47,5 +47,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-10-05",
-  "updated": "2026-10-05"
+  "updated": "2026-10-09"
 }

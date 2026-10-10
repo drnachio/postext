@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 082 · A Chinese official document to GB/T 9704 ═════════
 // https://postext.dev/en/cookbook/chinese-official-document
 // Code: MIT · Text: a fictitious notice written for the recipe (CC BY 4.0) · Pictures: none
-// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, parseTSV, mergeCells,
 } from 'https://esm.sh/postext';
@@ -158,8 +158,7 @@ const resourceTypes = [{ id: 'schedule', name: '日程', shortLabel: '', numberi
 const config = () => ({ // a factory: the engine caches resolved configs per object
   locale: 'zh-Hans', // written out, never LANG (gotcha: cjk-locale-tag)
   colorPalette, page, layout: { layoutType: 'single' }, cjk, bodyText, resourceTypes,
-  headings: { fontFamily: SONG, fontWeight: 400, color: col('ink'), levels: [notice, ...levels],
-    balancing: { enabled: false } }, // no lines added over heads, no paragraph set loose
+  headings: { fontFamily: SONG, fontWeight: 400, color: col('ink'), levels: [notice, ...levels] },
   headingStyles: [annex], paragraphStyles, header, footer,
   tableStyle: { borderColor: col('ink'), borderWidth: pt(0.75), cellPadding: mm(2),
     headerBackgroundEnabled: false, headerBold: false, headerFontFamily: HEI, bodyFontFamily: SONG,

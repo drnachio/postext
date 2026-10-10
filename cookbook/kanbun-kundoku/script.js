@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 122 · Kanbun with its reading marks, and the Japanese reading ═══
 // https://postext.dev/en/cookbook/kanbun-kundoku
 // Code: MIT · Text: 論語, 孟浩然「春暁」 (public domain); kunten and readings CC BY 4.0
-// Fonts: Zen Old Mincho, Klee One, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Zen Old Mincho, Klee One, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
@@ -101,8 +101,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(1), indentAfterHeading: true,
   },
-  headings: { fontFamily: MINCHO, color: col('ink'), levels: [part, passage],
-    balancing: { enabled: false } }, // gotcha: cjk-grid-balancing
+  headings: { fontFamily: MINCHO, color: col('ink'), levels: [part, passage] },
   headingStyles: [first],
   paragraphStyles,
   header,

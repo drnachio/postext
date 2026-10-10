@@ -18,7 +18,7 @@ pageNotes: { "1": "全集某卷的第211页，独自位于书脊左侧：蜘蛛�
 
 代码见上文的[简短回答](#简短回答)。在设了`writingMode: 'vertical-rl'`的页面上，`layoutType: 'double'`把两栏叠放：先从右往左排满上栏，再排下栏，栏间距就是两栏之间的那条带（[竖排](/zh/docs/configuration#竖排)）。[字符网格](/zh/docs/configuration#字格)按一栏竖向的字数计数，所以每栏是25个9 pt的字，栏间距取整为两个字；21行、行距15.75 pt，横向占148 mm宽页面中的116.7 mm。两栏之间的线横贯页面，0.4 pt，暖灰色。
 
-Postext的齐底功能会让一篇最后一页的两栏在同一行结束，中文报纸和大多数欧洲双栏书就是这样收章的。分栏的日文书让文字自然落下：上栏排满全页之后才开始下栏。`balancing.trailing: false`就是这个选择；`enabled: false`包含了它，还会阻止齐底功能在字符网格上往标题上方加行（[各栏齐底](/zh/docs/configuration#各栏齐底)）。
+Postext的齐底功能会让一篇最后一页的两栏在同一行结束，中文报纸和大多数欧洲双栏书就是这样收章的。分栏的日文书让文字自然落下：上栏排满全页之后才开始下栏。`balancing.trailing: false`就是这个选择；竖排的分栏默认完全不齐底，除非用`enabled: true`打开齐底功能（[各栏齐底](/zh/docs/configuration#各栏齐底)）。
 
 ### 2 · 让篇名贯穿两栏
 
@@ -40,11 +40,11 @@ Postext的齐底功能会让一篇最后一页的两栏在同一行结束，中�
 
 ### 让末页齐底
 
-去掉`balancing`，每篇的最后一页就会切平：第214页上栏10行、下栏11行结束，这是分栏的中文书或欧洲书收尾的方式。
+打开齐底功能，每篇的最后一页就会切平：第214页上栏10行、下栏11行结束，这是分栏的中文书或欧洲书收尾的方式。在字符网格上，齐底功能只增加整行，每个字都留在自己的格子里。
 
 ```diff
--const balancing = { enabled: false, trailing: false };
-+const balancing = {}; // the defaults: the closing band is cut level
+-const balancing = { trailing: false };
++const balancing = { enabled: true }; // the closing band is cut level
 ```
 
 ### 每篇从下一页开始
