@@ -19,7 +19,7 @@ const palette = { // black type on white bond, and a card cover in goldenrod
   brassLight: '#e9cf82', // the glint on each brad
   stamp: '#8f231c', // the draft stamp (4.7:1 on the card)
 };
-// The hex as well as the id: design slots read only the hex (gotcha: palette-skips-designs).
+// Every colour is linked to its palette entry by id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // The engine's defaults link to main-color: pointed at the ink, anything left unset prints black.
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.ink })
@@ -36,10 +36,7 @@ const page = { sizePreset: 'custom', width: mm(8.5 * IN), height: mm(11 * IN), d
     left: mm(MARGIN.left * IN), right: mm(MARGIN.right * IN) } };
 const bodyText = { fontFamily: TEXT, fontSize: pt(12), lineHeight: pt(LEAD), color: col('ink'),
   textAlign: 'left', firstLineIndent: pt(0), // action: flush left, never justified
-  paragraphSpacing: true, // a blank line between paragraphs
-  // No :ref in this script, but one added later prints in ink, not the default link blue:
-  // main-color does not reach this key (gotcha: palette-skips-designs).
-  referenceColor: col('ink') };
+  paragraphSpacing: true }; // a blank line between paragraphs
 // #endregion
 
 // #region answer: a speech is a callout with no frame, padded to the 3.5-inch dialogue block
@@ -47,18 +44,17 @@ const bodyText = { fontFamily: TEXT, fontSize: pt(12), lineHeight: pt(LEAD), col
 const DIALOGUE = { left: 2.5, right: 6 }; // the block of speech, 3.5 inches wide
 const CUE = 3.7; // the character's name
 const TEXT_RIGHT = 8.5 - MARGIN.right; // 7.5: where action lines end
-const CUE_LINE = 1.2 * 12; // pt: a callout title sits on a line 1.2 times its size
 const dialogue = {
   id: 'dialogue',
   backgroundEnabled: false, // no fill and no border: the box is only a measure
-  padding: { top: pt(LEAD - CUE_LINE), bottom: pt(0), // −2.4 pt: see the title below
+  padding: { top: pt(0), bottom: pt(0),
     left: mm((DIALOGUE.left - MARGIN.left) * IN), // 1 inch in from the action
     right: mm((TEXT_RIGHT - DIALOGUE.right) * IN) }, // 1.5 inches short of it
   // The fence's title is the cue: title="Dora (cont’d)" prints DORA (CONT’D) at 3.7 inches,
-  // in the headings' Courier, with no gap under it (the default is half a line). Its 14.4-pt
-  // line starts 2.4 pt above the box, so a speech is a whole number of 12-pt lines and the
-  // name sits 0.48 pt above its grid line.
-  titleStyle: { fontWeight: 400, textTransform: 'uppercase',
+  // in the headings' Courier, with no gap under it (the default is half a line). On the
+  // body's 12-pt leading (the default is 1.2 times its size, 14.4 pt), the name sits on a
+  // grid line and a speech is a whole number of lines.
+  titleStyle: { fontWeight: 400, textTransform: 'uppercase', lineHeight: pt(LEAD),
     indent: mm((CUE - DIALOGUE.left) * IN), gap: pt(0) },
   body: { paragraphSpacing: false }, // no blank line before a parenthetical mid-speech
   marginTop: pt(LEAD), marginBottom: pt(LEAD), // one blank line above and below
@@ -100,11 +96,10 @@ const headings = {
   // in (left unset, a sixth face, Open Sans Bold, would be loaded for nothing).
   fontFamily: TEXT,
   // Script pages end where the last whole speech or paragraph ends. Balancing would add
-  // blank lines above sluglines to fill them, and push a closing speech to the foot
-  // (gotcha: balancing-drops-last-box).
+  // blank lines above the sluglines to fill them.
   balancing: { enabled: false },
   levels: [
-    // Any headings object drops the H1 page break (gotcha: headings-drop-h1-break).
+    // 'any': the cover, its inside and the title each open the next page, with no blank.
     { level: 1, breakBefore: { enabled: true, parity: 'any' } },
     slugline,
   ] };
@@ -136,7 +131,6 @@ const title = { id: 'script', header: { elements: [...punched, folio] },
 
 // #region art: the card covers: a three-hole punch, brass brads, a typed label, two stamps
 const [W, H] = [8.5 * IN, 11 * IN]; // mm: the sheet
-const PT = 25.4 / 72; // mm in a point
 const box = (id, x, y, w, h, style) => ({ kind: 'box', id, style,
   placement: { ...at('page', 'top-left', x, y), size: { width: mm(w), height: mm(h) } } });
 const circle = (id, cx, cy, d, style) => box(id, cx - d / 2, cy - d / 2, d, d,
@@ -165,18 +159,17 @@ const stamp = (id, x, y, w, h) => [
     { borderColor: col('stamp'), borderWidth: pt(0.6), borderRadius: mm(1) }),
 ];
 const typed = (size) => ({ fontFamily: TEXT, fontSize: pt(size), color: col('ink') });
-// Tracked capitals, centred. 1.4.1 centres a tracked line with the tracking after its last
-// letter, half a unit left of the middle: the box moves right by that half.
-const caps = (id, content, x, y, w, size, track, color) => line(id, content,
-  x + (track * PT) / 2, y, w, { align: 'center', fontFamily: 'Oswald', fontWeight: 500,
-    fontSize: pt(size), letterSpacing: pt(track), textTransform: 'uppercase', color: col(color) });
+// Tracked capitals, centred on a box of width w.
+const caps = (id, content, x, y, w, size, track, color) => line(id, content, x, y, w,
+  { align: 'center', fontFamily: 'Oswald', fontWeight: 500, fontSize: pt(size),
+    letterSpacing: pt(track), textTransform: 'uppercase', color: col(color) });
 const small = { fontFamily: TEXT, fontSize: pt(7.5), color: col('cardInk'), align: 'left' };
 const LABEL = { w: 120, h: 64, y: 78 }; // mm: a white label, centred across the sheet
 const LABEL_X = (W - LABEL.w) / 2;
 const DRAFT = { w: 56, h: 20 }; // mm: under the label, flush with its right edge
 [DRAFT.x, DRAFT.y] = [LABEL_X + LABEL.w - DRAFT.w, LABEL.y + LABEL.h + 9];
 const center = { align: 'center' };
-// span: 'page' on both: kept in the column, the card is clipped an inch from the top and foot.
+// span: 'page' on both: kept in the column, the card would end at the foot of the text block.
 const cover = { id: 'cover', span: 'page',
   advancedDesign: { enabled: true, slot: { elements: [
     card, ...heads,
