@@ -439,6 +439,105 @@ describe('fontFallback warnings', () => {
   });
 });
 
+describe('a weight or slant the family has no face for (#650)', () => {
+  const kinds = (ws: readonly ContentWarning[] | undefined) => (ws ?? []).filter((w) => w.kind === 'fontFallback');
+  const key = (f: { family: string; weight: number; style: string }) => `${f.family} ${f.weight} ${f.style}`;
+  const loadedFace = (family: string, weight: string, style = 'normal', unicodeRange?: string) =>
+    Object.assign(new FakeFace(family, file(), { weight, style, unicodeRange }), { status: 'loaded' });
+  const four = (family: string) => {
+    for (const [weight, style] of [['400', 'normal'], ['700', 'normal'], ['400', 'italic'], ['700', 'italic']]) fonts.add(loadedFace(family, weight!, style));
+  };
+  // The 600 of the head is a level's weight under the headings' family:
+  // no node names both, so only the pages say it is set; its `*…*` sets
+  // a 600 italic.
+  const config: PostextConfig = { bodyText: { fontFamily: 'Near Serif' }, headings: { fontFamily: 'Near Serif', levels: [{ level: 1, fontWeight: 600 }] } };
+  const content = { markdown: '# A head with *slant* in it\n\nBody text with **bold** and *italic*.' };
+
+  it('asks the resolver for a face a neighbour of the family would answer for', async () => {
+    four('Near Serif');
+    expect(configFontFaces(config, content.markdown).map(key)).not.toContain('Near Serif 600 normal');
+    const asked: string[] = [];
+    const doc = await buildDocumentWithFonts(content, config, {
+      fontSet: fonts,
+      FontFace: FakeFace as never,
+      watch: false,
+      measureWidth: null,
+      yieldBetweenPasses: async () => {},
+      resolve: async (family, weight, style) => {
+        asked.push(`${family} ${weight} ${style}`);
+        return file();
+      },
+    });
+    expect(asked).toContain('Near Serif 600 normal');
+    expect(asked).toContain('Near Serif 600 italic');
+    expect(documentFontFaces(doc).map(key)).toEqual(expect.arrayContaining(['Near Serif 600 normal', 'Near Serif 600 italic']));
+    expect(kinds(doc.contentWarnings).filter((w) => w.kind === 'fontFallback' && w.family === 'Near Serif')).toEqual([]);
+    expect(fonts.faces.filter((f) => f.family === 'Near Serif' && f.weight === '600').map((f) => f.style).sort()).toEqual(['italic', 'normal']);
+  });
+
+  it('reports it when nobody has the file, and builds once', async () => {
+    four('Near Serif');
+    let builds = 0;
+    let report: { synthesized: { family: string; weight: number; style: string }[] } | undefined;
+    const doc = await withLoadedFonts(() => {
+      builds++;
+      return buildDocument(content, config, undefined, { fontSet: fonts });
+    }, { fontSet: fonts, FontFace: FakeFace as never, watch: false, measureWidth: null, resolve: async () => null, onFonts: (r) => { report = r; } });
+    expect(builds).toBe(1);
+    const found = kinds(doc.contentWarnings).filter((w) => w.kind === 'fontFallback' && w.family === 'Near Serif');
+    expect(found).toEqual(expect.arrayContaining([
+      { kind: 'fontFallback', family: 'Near Serif', weight: 600, style: 'normal', reason: 'synthesized' },
+      { kind: 'fontFallback', family: 'Near Serif', weight: 600, style: 'italic', reason: 'synthesized' },
+    ]));
+    // The faces the family has are not reported.
+    expect(found.length).toBe(2);
+    expect(report!.synthesized.map(key)).toEqual(expect.arrayContaining(['Near Serif 600 normal', 'Near Serif 600 italic']));
+  });
+
+  it('tells a face drawn from a neighbour from one whose own file has not loaded', () => {
+    const want = (weight: number, style: 'normal' | 'italic' = 'normal') => [{ family: 'Cut Sans', weight, style }];
+    const reasons = (weight: number, style: 'normal' | 'italic' = 'normal') => fontFallbacks(want(weight, style), fonts, { measureWidth: null }).map((f) => f.reason);
+    fonts.add(loadedFace('Cut Sans', '400'));
+    fonts.add(loadedFace('Cut Sans', '600'));
+    // The nearest weight as it is: a 700 from the 600, a 500 from the 400.
+    expect(reasons(700)).toEqual(['synthesized']);
+    expect(reasons(500)).toEqual(['synthesized']);
+    expect(reasons(600)).toEqual([]);
+    // A face of its own, declared and not loaded: the browser sets the
+    // text in the fallback font meanwhile, not in the 600.
+    const bold = new FakeFace('Cut Sans', 'url(bold.woff2)', { weight: '700' });
+    fonts.add(bold);
+    expect(reasons(700)).toEqual(['missing']);
+    bold.status = 'loaded';
+    expect(reasons(700)).toEqual([]);
+    // Upright text asked of a family with only an italic face.
+    fonts.add(loadedFace('Slant Only', '400', 'italic'));
+    expect(fontFallbacks([{ family: 'Slant Only', weight: 400, style: 'normal' }], fonts, { measureWidth: null }).map((f) => f.reason)).toEqual(['synthesized']);
+  });
+
+  it('takes a variable range and a cut served in slices as the face itself', () => {
+    fonts.add(loadedFace('Var Sans', '100 900'));
+    fonts.add(loadedFace('Sliced Serif', '400', 'normal', 'U+0000-00FF'));
+    fonts.add(new FakeFace('Sliced Serif', 'url(greek.woff2)', { weight: '400', unicodeRange: 'U+0370-03FF' }));
+    const faces = [
+      { family: 'Var Sans', weight: 600, style: 'normal' as const },
+      { family: 'Var Sans', weight: 350, style: 'normal' as const },
+      { family: 'Sliced Serif', weight: 400, style: 'normal' as const },
+    ];
+    expect(fontFallbacks(faces, fonts, { measureWidth: null })).toEqual([]);
+  });
+
+  it('prepareFonts reports a declared face that did not load as missing', async () => {
+    fonts.add(loadedFace('Body Serif', '400'));
+    // Its file fails: the face stays out whatever is asked of the set.
+    fonts.add(Object.assign(new FakeFace('Body Serif', 'url(gone.woff2)', { weight: '700' }), { load: async function (this: FakeFace) { this.status = 'error'; return this; } }));
+    const report = await prepareFonts('Text **b**', { bodyText: { fontFamily: 'Body Serif' }, cjk: { emphasis: 'dots' } }, { fontSet: fonts, watch: false, measureWidth: null });
+    expect(report.missing.map(key)).toContain('Body Serif 700 normal');
+    expect(report.synthesized.map(key)).not.toContain('Body Serif 700 normal');
+    expect(report.loaded.map(key)).toContain('Body Serif 400 normal');
+  });
+});
+
 describe('a config changed in place', () => {
   it('lays the second build out at the new size', () => {
     const c: PostextConfig = { bodyText: { fontFamily: 'Body Serif', fontSize: pt(9) } };

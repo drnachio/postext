@@ -2802,9 +2802,11 @@ export type ContentWarning = ContentWarningBase & (
   | { kind: 'designTextTruncated'; slot: VDTDesignSlotKind; elementId: string; text: string; mode: 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip' }
   /** A face the document's text was set in that the font set could not
    *  give when the build ran (#629): no face of the family was loaded nor
-   *  installed (`missing`: the text was measured and drawn with a fallback
-   *  face), or the weight or slant came from another face of the family,
-   *  which the browser draws bolder or slanted (`synthesized`). Checked
+   *  installed, or the one that answers for the weight and slant had not
+   *  loaded (`missing`: the text was measured and drawn with a fallback
+   *  face), or the family has no face of that weight or slant and the
+   *  browser took it from another one, as it is (the 700 for a 600) or
+   *  drawn bolder or slanted (`synthesized`, #650). Checked
    *  where there is a font set (`document.fonts`, a worker's `self.fonts`,
    *  `BuildDocumentOptions.fontSet`), behind
    *  `debug.warnings.missingFont`. No page and no source range. */

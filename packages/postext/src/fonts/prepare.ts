@@ -89,13 +89,16 @@ export interface PrepareFontsOptions {
 
 /** What a preparation found. */
 export interface FontReport {
-  /** Faces a loaded face answers for (or an installed family). */
+  /** Faces a loaded face of their weight and slant answers for (or an
+   *  installed family). */
   loaded: FontFaceRequest[];
-  /** Faces no face of the family answers for: their text is measured
-   *  with a fallback face. */
+  /** Faces no loaded face answers for (none of the family, or the one
+   *  that would is still loading): their text is measured with a fallback
+   *  face. */
   missing: FontFaceRequest[];
-  /** Faces the browser draws from another weight or slant of the family
-   *  (bold made heavier, italic slanted). */
+  /** Faces the family has no face for, which the browser draws from
+   *  another weight or slant of it (the nearest weight as it is, bold
+   *  made heavier, italic slanted). */
   synthesized: FontFaceRequest[];
   /** `FontFace`s added from the resolver's files. */
   added: number;
@@ -414,8 +417,10 @@ function documentText(docs: readonly VDTDocument[]): string {
 /**
  * Run `build`, then load the faces its pages set text in that the font set
  * could not give (a weight the configuration did not name, a face
- * resolved only now), drop their measurements and build again — at most
- * `maxRounds` extra builds (2). `build` returns a document or several.
+ * resolved only now; one a neighbour of the family answered for is asked
+ * of the resolver like any other, #650), drop their measurements and
+ * build again — at most `maxRounds` extra builds (2). `build` returns a
+ * document or several.
  * Faces that stay missing are reported (`onFonts`) and listed by each
  * document's `fontFallback` warnings.
  */
