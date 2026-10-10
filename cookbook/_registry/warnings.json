@@ -4461,13 +4461,13 @@
   "afterText": {
     "source": "engine",
     "label": {
-      "en": "Side box after the end of the text",
-      "es": "Recuadro lateral tras el final del texto",
-      "ca": "Requadre lateral després del final del text",
-      "zh": "侧栏框排在正文结束之后",
-      "ar": "إطار جانبي بعد نهاية النص",
-      "ja": "本文の終わりより後に置かれたサイド段の囲み",
-      "pt": "Boxe lateral depois do fim do texto"
+      "en": "Side box or figure after the end of the text",
+      "es": "Recuadro o figura lateral tras el final del texto",
+      "ca": "Requadre o figura lateral després del final del text",
+      "zh": "侧栏框或侧栏图排在正文结束之后",
+      "ar": "إطار أو شكل جانبي بعد نهاية النص",
+      "ja": "本文の終わりより後に置かれたサイド段の囲みや図",
+      "pt": "Boxe ou figura lateral depois do fim do texto"
     },
     "cause": {
       "en": "A span: 'side' box (or a figure or table of the side column) was still waiting for room in the side column when the text of its chapter, or of the document, ended. It was set in the side column of a page opened after the text, which holds no text. The boxes take such pages in the order of their fences, and a side figure cited after them stands behind them. The engine lists it in doc.contentWarnings with its page.",

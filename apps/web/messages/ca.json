@@ -2282,7 +2282,7 @@
     "warningsTextWrapTitle": "Imatge o caixa amb text al voltant",
     "warningsColumnsTooNarrowTitle": "Columnes massa estretes",
     "warningsColumnsTooNarrowDetail": "Les __columns__ columnes d'aquest grup :::columns són més estretes que sis emes del seu text: hi caben poques paraules per línia. Posa-hi menys columnes o un espai menor entre elles.",
-    "warningsAfterTextTitle": "Requadre lateral després del final del text",
+    "warningsAfterTextTitle": "Requadre o figura lateral després del final del text",
     "warningsAfterTextDetail": "pàgina __page__ · queda en una pàgina sense text: el text del seu capítol es va acabar mentre esperava lloc a la columna lateral. Posa'l abans al text o escurça'l.",
     "warningsUnplacedTitle": "No és a cap pàgina",
     "warningsUnplacedDetail": "Encara esperava un espai quan es va acabar la composició, de manera que no és a cap pàgina: les pàgines obertes per a ell no el poden acollir (un requadre lateral on les pàgines no tenen columna lateral, per exemple). Canvia'n l'amplada (span) o la col·locació.",
