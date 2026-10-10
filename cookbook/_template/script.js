@@ -106,16 +106,16 @@ const config = {
   headings: {
     fontFamily: 'Source Serif 4', color: col('ink'), fontWeight: 700,
     levels: [
-      // A chapter opens on a recto, with no blank verso forced before it.
-      { level: 1, fontSize: pt(27), breakBefore: { enabled: true, parity: 'odd' },
-        advancedDesign: opener },
+      // An H1 opens on a recto by default, after a blank verso when it must ('always-odd');
+      // 'odd' keeps the recto and forces no blank page before it.
+      { level: 1, fontSize: pt(27), breakBefore: { parity: 'odd' }, advancedDesign: opener },
       { level: 2, fontSize: pt(12.5), lineHeight: pt(LEAD), fontWeight: 400, italic: true,
         color: col('accent'), marginTop: pt(LEAD), marginBottom: pt(0) },
       { level: 3, fontFamily: 'Source Sans 3', fontSize: pt(8.5), lineHeight: pt(LEAD),
         textTransform: 'uppercase', marginTop: pt(LEAD), marginBottom: pt(0) },
     ],
   },
-  // Lists sit on the grid with no extra space; numbers are 'arabic', never 'decimal'.
+  // Lists sit on the grid with no extra space.
   unorderedLists: { bulletChar: '–', color: col('accent'), fontWeight: 400,
     marginTop: pt(0), marginBottom: pt(0) },
   orderedLists: { numberFormat: 'arabic', color: col('accent'), fontWeight: 700,

@@ -264,17 +264,50 @@ describe("lintPen (fixture)", () => {
     expect(lint((s) => s.replace("const config = () => ({", "const config = build({")).fails).toContain(
       "script.js: declare the config as `const config = { … }` (or a factory, `const config = () => ({ … })`)",
     );
-    const noBreak = lint((s) => s.replace("      breakBefore: { enabled: true, parity: 'odd' },\n", "")).fails;
-    expect(noBreak.some((f) => f.includes("any `headings` object drops the default H1 page break"))).toBe(true);
     const stack = lint((s) => s.replace("fontFamily: 'Archivo'", "fontFamily: 'Archivo, sans-serif'")).fails;
-    expect(stack.some((f) => /^script\.js line \d+: fontFamily holds one family, not a stack \("Archivo, sans-serif"\)$/.test(f))).toBe(true);
-    expect(lint((s) => s.replace("  header:", "  orderedLists: { numberFormat: 'decimal' },\n  header:")).fails.some((f) => f.includes("numberFormat: 'arabic'"))).toBe(true);
+    expect(stack.some((f) => /^script\.js line \d+: fontFamily names one family, not a stack \("Archivo, sans-serif"\): the engine sets the first name and ignores the rest$/.test(f))).toBe(true);
     expect(lint((s) => s.replace("  header:", "  headingStyle: [],\n  header:")).fails.some((f) => f.includes("`headingStyle` is not a config key"))).toBe(true);
     expect(lint((s) => s.replace("  footer: { elements: [] },\n", "")).fails).toContain("script.js: the config must set `footer` (never the default skin)");
     const bitmap = lint((s) => s.replace(", width: 1200, height: 800", "")).fails;
     expect(bitmap.some((f) => f.endsWith(": bitmaps declare width and height at print size"))).toBe(true);
     const clock = lint((s) => s.replace("const palette", "const seed = Math.random() + Date.now() + new Date().getTime();\nconst palette")).fails;
     expect(clock.filter((f) => f.includes("captures must be deterministic"))).toHaveLength(3);
+  });
+
+  it("asks for the H1 break and 'arabic' only below postext 1.5, which fixed both (#641)", () => {
+    const noBreak = (s: string) => s.replace("      breakBefore: { enabled: true, parity: 'odd' },\n", "");
+    const decimal = (s: string) => s.replace("  header:", "  orderedLists: { numberFormat: 'decimal' },\n  header:");
+    // The fixture pins 1.4.1, where any headings object dropped the break
+    // and a list numbered in 'decimal' printed "undefined".
+    expect(lint(noBreak).fails).toEqual([
+      "script.js: up to postext 1.4 any `headings` object drops the default H1 page break; restate it: " +
+        "`levels: [{ level: 1, breakBefore: { … } }]`, or pin postext ≥ 1.5.0, which keeps it (gotcha headings-drop-h1-break)",
+    ]);
+    expect(lint(decimal).fails.some((f) => f.includes("up to postext 1.4 ordered lists use numberFormat: 'arabic'"))).toBe(true);
+    // From 1.5.0 a partial headings object merges onto the level's default:
+    // a pen may restate the break, and none has to.
+    for (const version of ["1.5.0", "1.25.0"] as const) {
+      const meta: RecipeMeta = { ...fixtureMeta(), engine: { postext: version, postextPdf: "1.4.1" } };
+      const pin = (s: string) => s.replace("Needs postext ≥ 1.4.1", `Needs postext ≥ ${version}`);
+      expect(lint(pin, { meta }).fails).toEqual([]);
+      expect(lint((s) => noBreak(pin(s)), { meta }).fails).toEqual([]);
+      expect(lint((s) => decimal(pin(s)), { meta }).fails).toEqual([]);
+    }
+    const older: RecipeMeta = { ...fixtureMeta(), engine: { postext: "1.4.9", postextPdf: "1.4.1" } };
+    expect(lint((s) => noBreak(s.replace("≥ 1.4.1", "≥ 1.4.9")), { meta: older }).fails).toHaveLength(1);
+  });
+
+  it("takes loadBundleFonts as loading the faces (#641)", () => {
+    const warning = (fails: string[]) => fails.filter((f) => f.includes("load the faces before the build"));
+    expect(warning(lint().warns)).toEqual([]);
+    const none = (s: string) => s.replace("await loadFonts(FONTS, markdown);\n", "");
+    expect(warning(lint(none).warns)).toEqual([
+      "script.js: load the faces before the build: `buildDocumentWithFonts(content, config, kitFonts(FONTS))`, or `loadBundleFonts(bundle)` for a bundle's own files",
+    ]);
+    const fromBundle = (s: string) => s.replace("await loadFonts(FONTS, markdown);\n", "await loadBundleFonts(bundle); // the faces the bundle carries\n");
+    expect(warning(lint(fromBundle).warns)).toEqual([]);
+    // A mention in a comment is not a call.
+    expect(warning(lint((s) => none(s).replace("// ─── 4", "// loadBundleFonts(bundle) would load them\n// ─── 4")).warns)).toHaveLength(1);
   });
 
   it("checks the content files", () => {
