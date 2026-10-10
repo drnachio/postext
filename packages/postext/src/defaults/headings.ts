@@ -1,4 +1,4 @@
-import type { HeadingsConfig, HeadingLevelConfig, HeadingBreakBeforeConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ResolvedHeadingBreakBeforeConfig, HeadingAdvancedDesignConfig, ResolvedHeadingAdvancedDesignConfig, ColumnBalancingConfig, ClosingBoxLever, KeepWithNextSplit, ColorValue, Dimension } from '../types';
+import type { PostextConfig, HeadingsConfig, HeadingLevelConfig, HeadingBreakBeforeConfig, ResolvedHeadingsConfig, ResolvedHeadingLevelConfig, ResolvedHeadingBreakBeforeConfig, HeadingAdvancedDesignConfig, ResolvedHeadingAdvancedDesignConfig, ColumnBalancingConfig, ClosingBoxLever, KeepWithNextSplit, ColorValue, Dimension } from '../types';
 import { dimensionsEqual, colorsEqual, DEFAULT_MAIN_COLOR, startEndAsLeftRight } from './shared';
 import { resolveDesignSlot } from './headerFooter';
 import { isDropCap } from './dropCap';
@@ -56,6 +56,24 @@ export const DEFAULT_COLUMN_BALANCING = {
   beforeSpan: true,
   closingBox: 'first' as ClosingBoxLever,
 };
+
+/**
+ * Whether column balancing is on when `config` does not set
+ * `headings.balancing.enabled` itself. Off in two cases:
+ * - tiers of vertical text are not balanced: the flow fills the upper
+ *   tier, then the next, and a chapter's last tiers end where their text
+ *   ends (clreq §7.1.3.4);
+ * - a page on a character grid (`cjk.grid`, #632) is filled cell by cell
+ *   and line by line, the way the standards that count its lines set it
+ *   (GB/T 9704: 22 lines of 28 characters): a column that ends short is
+ *   left short, and no row is added above a heading. A config that turns
+ *   balancing on there gets the levers that keep every character in its
+ *   cell (see `pipeline/columnBalancing.ts`).
+ */
+export function balancingOnByDefault(config: PostextConfig | undefined): boolean {
+  if (config?.cjk?.grid?.enabled === true) return false;
+  return config?.layout?.writingMode !== 'vertical-rl';
+}
 
 const DEFAULT_HEADING_MARGIN_TOP: Dimension = { value: 1.5, unit: 'em' };
 const DEFAULT_HEADING_MARGIN_BOTTOM: Dimension = { value: 0.5, unit: 'em' };
@@ -240,7 +258,16 @@ export function resolveHeadingLevelOverrides(
   return out;
 }
 
-export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig | undefined {
+/** `headings` without the fields at their default. `balancingOn` is
+ *  whether the document balances its columns when it does not say
+ *  (`balancingOnByDefault(config)`, #651): `balancing.enabled` is dropped
+ *  when it restates that, so `true` is kept on a character grid and in
+ *  vertical text, where balancing is off by default, and `false` is
+ *  dropped there. */
+export function stripHeadingsDefaults(
+  headings?: HeadingsConfig,
+  balancingOn: boolean = DEFAULT_COLUMN_BALANCING.enabled,
+): HeadingsConfig | undefined {
   if (!headings) return undefined;
 
   const result: HeadingsConfig = {};
@@ -297,7 +324,7 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
   if (headings.balancing) {
     const b: ColumnBalancingConfig = {};
     let hasBOverride = false;
-    if (headings.balancing.enabled !== undefined && headings.balancing.enabled !== DEFAULT_COLUMN_BALANCING.enabled) {
+    if (headings.balancing.enabled !== undefined && headings.balancing.enabled !== balancingOn) {
       b.enabled = headings.balancing.enabled;
       hasBOverride = true;
     }
@@ -383,6 +410,11 @@ export function stripHeadingsDefaults(headings?: HeadingsConfig): HeadingsConfig
       && headings.balancing.closingBox !== DEFAULT_COLUMN_BALANCING.closingBox
     ) {
       b.closingBox = headings.balancing.closingBox;
+      hasBOverride = true;
+    }
+    // `'allow'` is the default; any other value resolves like it.
+    if (headings.balancing.gridLines === 'off') {
+      b.gridLines = 'off';
       hasBOverride = true;
     }
     if (hasBOverride) {

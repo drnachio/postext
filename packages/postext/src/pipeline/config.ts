@@ -2,6 +2,7 @@ import type { DigitSystem, PostextConfig, ResolvedHeadingLevelConfig } from '../
 import { columnCountUsed, layoutColumnCount, MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN } from '../defaults/layout';
 
 export { columnCountUsed, layoutColumnCount, MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN };
+export { balancingOnByDefault };
 import {
   resolvePageConfig,
   resolveLayoutConfig,
@@ -37,6 +38,7 @@ import {
   applyPaletteToConfig,
   applyPaletteToResolvedConfig,
   DEFAULT_LAYOUT_CONFIG,
+  balancingOnByDefault,
 } from '../defaults';
 import { dimensionToPx } from '../units';
 import { applyCjkGrid } from './cjkGrid';
@@ -186,24 +188,6 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     ...(config?.comics ? { comics: resolveComicsConfig(config.comics, documentLocale) } : {}),
   };
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
-}
-
-/**
- * Whether column balancing is on when `config` does not set
- * `headings.balancing.enabled` itself. Off in two cases:
- * - tiers of vertical text are not balanced: the flow fills the upper
- *   tier, then the next, and a chapter's last tiers end where their text
- *   ends (clreq §7.1.3.4);
- * - a page on a character grid (`cjk.grid`, #632) is filled cell by cell
- *   and line by line, the way the standards that count its lines set it
- *   (GB/T 9704: 22 lines of 28 characters): a column that ends short is
- *   left short, and no row is added above a heading. A config that turns
- *   balancing on there gets the levers that keep every character in its
- *   cell (see `pipeline/columnBalancing.ts`).
- */
-export function balancingOnByDefault(config: PostextConfig | undefined): boolean {
-  if (config?.cjk?.grid?.enabled === true) return false;
-  return config?.layout?.writingMode !== 'vertical-rl';
 }
 
 /** The headings with column balancing off when the document's default

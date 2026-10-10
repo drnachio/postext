@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { migrateBundleConfig, migrateConfig, pinLegacyGridBalancing } from '../../bundle/configVersion';
+import { stripConfigDefaults } from '../../defaults';
 import { resolveAllConfig } from '../../pipeline/config';
 import type { PostextConfig } from '../../types';
 
@@ -46,6 +47,25 @@ describe('pinLegacyGridBalancing (#632)', () => {
     }
     const current = grid();
     expect(migrateConfig(current, 11)).toBe(current);
+  });
+
+  // #651: the first save stores the migrated configuration stripped of
+  // defaults under the current stamp. The strip took `true` for the
+  // default it is on a plain page and dropped the pin, and the next load,
+  // stamped 11, did not pin again.
+  it('survives a save: the stripped configuration still turns balancing on', () => {
+    for (const config of [grid(), grid({ headings: { fontFamily: 'Noto Serif SC', balancing: { maxTracking: 20 } } })]) {
+      const migrated = migrateConfig(config, 10);
+      const saved = stripConfigDefaults(migrated);
+      expect(saved.headings?.balancing?.enabled).toBe(true);
+      const reloaded = migrateConfig(saved, 11);
+      expect(reloaded).toBe(saved);
+      expect(resolveAllConfig(reloaded).headings.balancing).toEqual(resolveAllConfig(migrated).headings.balancing);
+      expect(resolveAllConfig(reloaded).headings.balancing.enabled).toBe(true);
+    }
+    // Saved again and again, it stays.
+    const twice = stripConfigDefaults(stripConfigDefaults(migrateConfig(grid(), 10)));
+    expect(twice.headings).toEqual({ balancing: { enabled: true } });
   });
 
   it('pins a bundle on its merged layers', () => {
