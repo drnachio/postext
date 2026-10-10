@@ -95,7 +95,7 @@ const config = () => ({
   headings: {
     fontFamily: TEXT, color: col('ink'), fontWeight: 600,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': the H1 opens on the next page, either side (the default waits for a recto).
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         marginBottom: pt(0), advancedDesign: opener },
       { level: 2, fontFamily: LABEL, fontSize: pt(10), lineHeight: pt(LEAD), fontWeight: 600,

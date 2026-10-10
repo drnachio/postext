@@ -100,7 +100,7 @@ const config = () => ({
   headings: { fontFamily: ROUND, fontWeight: 700, color: col('red'),
     balancing: { enabled: false }, // nothing added above heads: the grid holds
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': the H1 opens on the next page, either side (the default waits for a recto).
       { level: 1, breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
       { level: 2, fontSize: pt(16), lineSpan: 2 }, // 一, 二…: two lines of the grid
     ] },

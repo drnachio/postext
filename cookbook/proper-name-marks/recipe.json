@@ -35,8 +35,7 @@
     "cjk-locale-tag",
     "cjk-fonts-slices",
     "cjk-spread-order",
-    "cjk-no-italic",
-    "headings-drop-h1-break"
+    "cjk-no-italic"
   ],
   "explainsWarnings": ["cjkMarksExceedLeading"],
   "related": ["critical-edition-line-numbers"],

@@ -43,13 +43,7 @@
     "Q19",
     "Q64"
   ],
-  "gotchas": [
-    "headings-drop-h1-break",
-    "opener-image-no-reserve",
-    "overflow-ellipsis-default",
-    "resource-types-locale",
-    "hyphenation-locales"
-  ],
+  "gotchas": [],
   "related": [
     "figures-float-where-cited",
     "photo-essay-full-bleed"

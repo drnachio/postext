@@ -125,7 +125,7 @@ const config = () => ({
   headings: {
     fontFamily: HEI, fontWeight: 700, color: col('band'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': the H1 opens on the next page, either side (the default waits for a recto).
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: opener, marginBottom: pt(0) },
       // No space above: 題解 sits on the fifth line, where the other pages' text starts;

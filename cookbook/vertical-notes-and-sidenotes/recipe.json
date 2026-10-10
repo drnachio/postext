@@ -13,7 +13,7 @@
     "also": ["vertical-writing", "right-binding", "furigana", "tate-chu-yoko", "japanese-numerals", "gyodori-headings", "character-grid", "japanese-kinsoku", "aozora-import", "cjk-fonts", "running-heads", "page-role-filters", "heading-styles", "opener-design", "mirrored-margins", "color-palette", "pdf-export"]
   },
   "answers": ["Q142", "Q45", "Q138"],
-  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order"],
+  "gotchas": ["ja-locale-tag", "cjk-fonts-slices", "cjk-spread-order"],
   "related": ["novel-footnotes-column-foot", "vertical-book-with-jiazhu-citations", "endnotes-instead-of-footnotes", "bunko-novel-furigana"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],

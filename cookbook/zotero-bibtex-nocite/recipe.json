@@ -32,9 +32,7 @@
     "Q106"
   ],
   "gotchas": [
-    "nocite-unknown-silent",
-    "headings-drop-h1-break",
-    "quote-frontmatter"
+    "nocite-unknown-silent"
   ],
   "related": [
     "apa-thesis-with-bibtex",

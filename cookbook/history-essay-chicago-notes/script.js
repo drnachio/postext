@@ -17,7 +17,7 @@ const palette = {
   ink: '#211d1a', green: '#24493d', tint: '#dfe8e2', rule: '#b7b0a4', muted: '#6a645b',
   paper: '#fbf9f4',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// col() links a colour to its palette entry; the hex is the value the entry holds today.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.green })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -81,7 +81,7 @@ const head = (id, content, parity, edge, x, align) => ({
 });
 
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-us', es: 'es' }), // the hyphenation patterns of each edition
   colorPalette,
   citations,
   footnotes,
@@ -102,7 +102,7 @@ const config = () => ({
   headings: {
     fontFamily: TEXT, fontWeight: 600, color: col('ink'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': the H1 opens on the next page, either side (the default waits for a recto).
       { level: 1, fontSize: pt(25), breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: opener },
       { level: 2, fontFamily: LABEL, fontWeight: 600, fontSize: pt(8.5), letterSpacing: pt(1.3),

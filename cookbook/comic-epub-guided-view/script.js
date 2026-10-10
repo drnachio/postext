@@ -68,7 +68,7 @@ const config = () => ({
     firstLineIndent: pt(0), paragraphSpacing: true, hyphenation: { enabled: false } },
   headings: { fontFamily: SFX, color: col('accent'), fontWeight: 400,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': the H1 opens on the next page, either side (the default waits for a recto).
       { level: 1, fontSize: pt(44), lineHeight: pt(48), breakBefore: { enabled: true,
         parity: 'any' }, marginTop: mm(60), marginBottom: pt(15) },
       { level: 2, fontFamily: LETTERING, fontSize: pt(14), fontWeight: 700, color: col('ink'),

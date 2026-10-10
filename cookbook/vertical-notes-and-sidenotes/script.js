@@ -55,7 +55,7 @@ const PT = 25.4 / 72; // mm in a point
 const page = (down, across) => ({ anchor: { to: 'page', edge: 'top-left' },
   offset: { x: mm(down), y: mm(across) } });
 const TITLE = 26; // pt
-// gotcha: headings-drop-h1-break
+// parity 'any': the story opens on the next page, either side (the default waits for a recto).
 const story = { level: 1, breakBefore: { enabled: true, parity: 'any' },
   advancedDesign: { enabled: true, minHeight: lines(LINES), slot: { elements: [
     { kind: 'text', id: 'title', content: '{titleText}', fontFamily: MINCHO, fontWeight: 700,
