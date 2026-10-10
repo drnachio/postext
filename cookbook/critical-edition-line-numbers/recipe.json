@@ -43,15 +43,8 @@
   ],
   "gaps": [],
   "gotchas": [
-    "ragged-no-hyphenation",
-    "ragged-runts",
     "attr-values",
-    "design-text-no-inline-marks",
-    "opener-image-no-reserve",
-    "style-inherits-break",
-    "headings-drop-h1-break",
-    "palette-skips-designs",
-    "design-lineheight-multiple"
+    "style-inherits-break"
   ],
   "explainsWarnings": [],
   "related": [
@@ -62,49 +55,9 @@
   ],
   "workarounds": [
     {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "level 1 restates breakBefore with parity 'odd', because a headings object drops it (gotcha headings-drop-h1-break)"
-    },
-    {
       "followup": "EF-60",
       "package": "postext",
       "note": "the notes' heading style sets its own breakBefore with parity 'any': inheriting level 1's 'odd', the notes waited for page 9 behind a blank page 8 (gotcha style-inherits-break)"
-    },
-    {
-      "followup": "EF-113",
-      "package": "postext",
-      "note": "level 1 spans the page so that the laurel, anchored to the page's top-right corner, is painted above the text block; kept in the column, the design is clipped at the column's top edge, 21 mm below the trim"
-    },
-    {
-      "followup": "EF-90",
-      "package": "postext",
-      "note": "the laurel is an image element and reserves no height (gotcha opener-image-no-reserve): the kicker, title and headnote below it reach down the 20 lines the opener takes, and minHeight, a floor at the same depth, keeps the verse on line 21 when the headnote is shorter"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside each paletteId, because 1.4.1 paints design slots (the kicker, both titles, the headnote, the running heads and the folios) from the hex (gotcha palette-skips-designs)"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the titles and the headnote take lineHeight as a multiple of their size (1, 13 / 9.5), never a dimension (gotcha design-lineheight-multiple)"
-    },
-    {
-      "followup": "EF-25",
-      "package": "postext",
-      "note": "the headnote is design text, which has no inline italics (gotcha design-text-no-inline-marks), so it cannot set Chester and Irish apart as 1645 does; the whole headnote is italic and the note on the text claims the 1645 italic of names for the poem only"
-    },
-    {
-      "followup": "EF-21",
-      "package": "postext",
-      "note": "the notes are ragged, and 1.4.1 never hyphenates ragged text (gotcha ragged-no-hyphenation): their rag was read on the capture. The verse is a :::verse poem, which is never hyphenated unless its style asks"
-    },
-    {
-      "followup": "EF-147",
-      "package": "postext",
-      "note": "the notes are ragged, and 1.4.1 runs no runt check on ragged text: their last lines were read on the capture and reworded where one word stood alone"
     }
   ],
   "engine": {
