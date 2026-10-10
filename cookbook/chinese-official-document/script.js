@@ -33,8 +33,7 @@ const cjk = {
   latinSpacing: em(0), // 〔2026〕7号 and 2026年9月28日 set solid, as the standard prints them
 };
 const page = {
-  // 144 dpi is 2 px to the point: the 29 pt lines add up with no rounding (see Pitfalls).
-  width: mm(210), height: mm(297), dpi: 144, backgroundColor: col('paper'),
+  width: mm(210), height: mm(297), dpi: 150, backgroundColor: col('paper'),
   // With the grid on, margins are minimums. These leave 28 × 22 cells and 0.02 mm to share,
   // so the type area sits 37 mm under the head and 28 mm from the binding edge.
   margins: { top: mm(TOP), bottom: mm(297 - TOP - AREA.h - 0.02), left: mm(INNER),
