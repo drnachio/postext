@@ -84,7 +84,7 @@ const calloutStyles = [{ id: 'abstract', span: 'page', backgroundEnabled: false,
 
 // #region sections: I. INTRODUCTION, centred capitals; references print "Section II"
 const levels = [
-  { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
+  { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // any page: no forced recto
   { level: 2, numberingTemplate: '{2:I}.', numberSeparator: ' ', fontSize: pt(9),
     lineHeight: pt(LEAD), fontWeight: 400, letterSpacing: em(0.06), textTransform: 'uppercase',
     marginTop: pt(LEAD), marginBottom: pt(0) }, // a line above, none below: at a column's head

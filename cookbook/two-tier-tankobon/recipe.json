@@ -13,7 +13,7 @@
     "also": ["right-binding", "chapter-breaks", "gyodori-headings", "character-grid", "column-rule", "japanese-kinsoku", "yakumono", "furigana", "aozora-import", "cjk-fonts", "running-heads", "page-role-filters", "heading-styles", "opener-design", "paragraph-styles", "color-palette", "pdf-export"]
   },
   "answers": ["Q27", "Q24", "Q90"],
-  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "page-span-heading-new-page", "cjk-fonts-slices", "cjk-spread-order"],
+  "gotchas": ["ja-locale-tag", "page-span-heading-new-page", "cjk-fonts-slices", "cjk-spread-order"],
   "related": ["vertical-newspaper-tiers", "bunko-novel-furigana", "five-chapter-openers", "vertical-novel-right-bound"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],

@@ -5,7 +5,7 @@
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, registerCitationEngine,
   defaultResourceTypes, initMathEngine, renderMath,
-} from 'https://esm.sh/postext?bundle';
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
 
@@ -136,7 +136,7 @@ const config = () => ({
   footnotes: { numberFormat: 'lower-alpha', fontSize: pt(7.8), lineHeight: pt(10),
     separator: { color: col('rule') } },
   headings: { fontFamily: SANS, color: col('accent'), fontWeight: 700, levels: [
-    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // any page: no forced recto
     { level: 2, numberingTemplate: '{2:I}.', ...sans(11.5, 700), lineHeight: pt(LEAD * 1.5),
       marginTop: pt(LEAD / 2), marginBottom: pt(0) },
     { level: 3, numberingTemplate: '{3:A}.', ...sans(10, 600), color: col('ink'),
@@ -229,8 +229,8 @@ const line = (x1, y1, x2, y2, color, width, extra = '') => `<path d="M${R(x1)} $
 const poly = (pts, color, width, extra = '') => `<path d="${pts.map(([x, y], i) =>
   `${i ? 'L' : 'M'}${R(x)} ${R(y)}`).join('')}" fill="none" `
   + `stroke="${color}" stroke-width="${width}" stroke-linejoin="round" ${extra}/>`;
-// Labels are MathJax paths, \textsf for words: an SVG drawn as an image cannot use the
-// page's web fonts (gotcha: svg-no-webfonts), and paths stay vector in the PDF.
+// Labels are MathJax paths, \textsf for words: the axes carry formulas, set like the
+// maths of the text, and paths stay vector in the PDF.
 function tex(markup, x, y, size, anchor = 0, color = palette.ink, rotate = false) {
   const r = renderMath(markup, false, 100);
   const k = size / 1000;

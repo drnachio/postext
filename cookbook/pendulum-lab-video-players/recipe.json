@@ -46,12 +46,7 @@
   ],
   "gotchas": [
     "epub-embeds-given-fonts",
-    "latin-subset",
-    "pdf-provider-all-styles",
-    "headings-drop-h1-break",
-    "resource-types-locale",
-    "hyphenation-locales",
-    "overflow-ellipsis-default"
+    "latin-subset"
   ],
   "related": [
     "epub-fixed-and-reflowable",

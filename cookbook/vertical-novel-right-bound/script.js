@@ -46,7 +46,7 @@ const layout = { layoutType: 'single', writingMode: 'vertical-rl' };
 const cjk = { grid: { enabled: true, charsPerLine: 40, linesPerPage: 16 } };
 const chapter = {
   level: 1, numberingTemplate: '第{1:一}回', numberSeparator: '　', // 第一回　宴桃園…
-  breakBefore: { enabled: true, parity: 'odd' }, // gotcha: headings-drop-h1-break
+  breakBefore: { enabled: true, parity: 'odd' }, // a recto, with no blank page forced
   marginBottom: pt(0),
 };
 // #endregion

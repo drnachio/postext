@@ -42,11 +42,8 @@
   ],
   "gotchas": [
     "citation-key-first-wins",
-    "headings-drop-h1-break",
-    "bundle-metadata",
     "attr-values",
-    "style-inherits-break",
-    "quote-frontmatter"
+    "style-inherits-break"
   ],
   "related": [
     "apa-thesis-with-bibtex",

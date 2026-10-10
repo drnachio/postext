@@ -146,7 +146,6 @@ const config = () => ({
   headings: { fontFamily: DISPLAY, fontWeight: 400, color: col('ink'),
     // A page that ends short may open at most one extra line above a subhead.
     balancing: { maxLinesPerHeading: 1 }, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
     // 'any': an essay opens on the next page, recto or verso, as in most edited volumes.
     { level: 1, numberingTemplate: '{1}', marginBottom: pt(0),
       breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },

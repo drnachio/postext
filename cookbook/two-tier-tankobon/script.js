@@ -113,7 +113,7 @@ const config = () => ({
     textAlign: 'justify', firstLineIndent: em(1), indentAfterHeading: true,
   },
   headings: { fontFamily: MINCHO, fontWeight: 600, color: col('ink'), balancing,
-    levels: [{ ...work, advancedDesign: opener }, section] }, // gotcha: headings-drop-h1-break
+    levels: [{ ...work, advancedDesign: opener }, section] },
   headingStyles: [first],
   header,
   footer: none,

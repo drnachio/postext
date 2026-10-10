@@ -5,7 +5,7 @@
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
   defaultResourceTypes, mergeCells, initMathEngine, inlineSvgFonts,
-} from 'https://esm.sh/postext?bundle'; // with MathJax (gotcha: math-bundle)
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
 
@@ -141,7 +141,7 @@ const config = () => ({
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: SANS, color: col('accent'), fontWeight: 800, levels: [
-    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // any page: no forced recto
     { level: 2, ...sans(11.5, 800), lineHeight: pt(LEAD), marginTop: pt(LEAD),
       marginBottom: pt(0) },
     { level: 3, ...sans(9.4, 700), color: col('ink'), lineHeight: pt(LEAD),

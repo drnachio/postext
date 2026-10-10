@@ -97,7 +97,7 @@ const config = () => ({
     firstLineIndent: pt(0), paragraphSpacing: true, hyphenation: { enabled: false } },
   headings: { fontFamily: LETTERING, color: col('ink'), fontWeight: 700,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // 'any': each title opens the next page, recto or verso.
       { level: 1, fontSize: pt(30), lineHeight: pt(36), color: col('accent'), marginTop: mm(70),
         marginBottom: pt(15), breakBefore: { enabled: true, parity: 'any' } },
       { level: 2, fontSize: pt(10), lineHeight: pt(15), marginTop: mm(20), marginBottom: pt(4) },

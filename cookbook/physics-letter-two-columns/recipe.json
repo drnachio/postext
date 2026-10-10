@@ -47,10 +47,7 @@
   ],
   "gaps": [],
   "gotchas": [
-    "math-bundle",
-    "svg-no-webfonts",
-    "headings-drop-h1-break",
-    "quote-frontmatter"
+    "math-bundle"
   ],
   "related": [
     "journal-article-with-maths",
@@ -85,13 +82,7 @@
       "w": 0.98,
       "h": 0.5
     },
-    "pages": "all",
-    "expect": {
-      "console": [
-        "module \"buffer\" not found",
-        "module \"esprima\" not found"
-      ]
-    }
+    "pages": "all"
   },
   "downloads": {
     "pdf": true

@@ -44,12 +44,10 @@
     "Q92"
   ],
   "gotchas": [
-    "headings-drop-h1-break",
     "cjk-locale-tag",
     "cjk-fonts-slices",
     "cjk-spread-order",
-    "cjk-source-script-mix",
-    "quote-frontmatter"
+    "cjk-source-script-mix"
   ],
   "related": [
     "trade-paperback-novel",

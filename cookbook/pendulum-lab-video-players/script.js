@@ -89,7 +89,7 @@ const data = table('data', { en: 'Your measurements.', es: 'Tus medidas.' },
 // #region opener: a rust band with the sheet's number, its title and the fields to fill in
 const words = (id, content, family, size, placement, extra) => ({ kind: 'text', id, content,
   fontFamily: family, fontSize: pt(size), color: col('paper'), align: 'left',
-  overflow: 'wrap', placement, ...extra }); // titles wrap (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', placement, ...extra }); // a long title takes a second line
 const names = t({ en: ['Name', 'Group', 'Date'], es: ['Nombre', 'Grupo', 'Fecha'] });
 const fields = [[0, 86], [90, 30], [124, 49]].flatMap(([x, width], i) => [ // mm, from the margin
   words(`label-${i}`, names[i], MONO, 7, at('page', 'top-left', mm(INNER + x), mm(BAND - 16)),
@@ -123,8 +123,8 @@ const box = (id, extra) => ({ id, background: col('cream'), borderRadius: mm(1.5
     textAlign: 'left', firstLineIndent: pt(0) }, ...extra });
 
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
-  // Figure, Table, Video in the sheet's language, counted 1, 2… (gotcha: resource-types-locale)
+  locale: t({ en: 'en-us', es: 'es' }),
+  // The built-in types, already in the sheet's language, counted 1, 2… through the sheet.
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}',
     resetOn: 'never', shortLabel: t({ en: type.name, es: type.name.toLowerCase() }) })),
   colorPalette, videoStyle,
@@ -137,7 +137,7 @@ const config = () => ({
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: DISPLAY, color: col('ink'), fontWeight: 700, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // 'odd': a sheet opens on a recto, with no blank page forced before the first.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
       marginTop: pt(0), marginBottom: pt(0), advancedDesign: opener },
     { level: 2, fontSize: pt(12.5), lineHeight: pt(LEAD), marginTop: pt(LEAD),
