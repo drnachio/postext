@@ -884,7 +884,10 @@ function placeDocumentPass(
   /** `span: 'side'` boxes that found no room in the side column of their
    *  page: they take the side column of the next page the flow opens, in
    *  order (see `placeCalloutSide`). */
-  const pendingSideBoxes: { startIdx: number; plan: PlannedCallout; style: ResolvedCalloutStyleConfig }[] = [];
+  const pendingSideBoxes: { startIdx: number; plan: PlannedCallout; style: ResolvedCalloutStyleConfig; pageIndex: number }[] = [];
+  /** The flow segment has ended and its floats and side boxes are taking
+   *  pages after the text (see `drainPendingFloats`, #639). */
+  let drainingAfterText = false;
   /** `span: 'side'` boxes of a style with `sideAtColumnEnd: 'after'`
    *  (EF-161), and the side boxes fenced behind them, waiting for the text
    *  after their fence to land (see `settleAwaitingSideBoxes`). Each keeps
@@ -1980,6 +1983,13 @@ function placeDocumentPass(
       if (!built) return 'skip';
       first.availableHeight = Math.max(0, first.availableHeight - need);
       commitFloatBlock(page, first, built, xLeft, y, width, f.firstBlockIdx);
+      if (drainingAfterText && !calloutFloatOf(f.resourceId)) {
+        const citing = contentBlocks[f.firstBlockIdx];
+        setAfterText.set(built.block, {
+          resourceId: f.resourceId,
+          ...(citing ? { sourceStart: citing.sourceStart + bodyOffset, sourceEnd: citing.sourceEnd + bodyOffset } : {}),
+        });
+      }
       floatsPlaced++;
       return 'placed';
     }
@@ -2313,6 +2323,9 @@ function placeDocumentPass(
           const isSide = !isPageSpan && f.span === 'side' && sideCols.length > 0;
           const kind = isPageSpan ? 'page' : isSide ? 'side' : f.captionSide && sideCols.length > 0 ? 'aside' : 'column';
           if (kind !== pass || heldBack(i)) { i++; continue; }
+          // After the text a side float keeps behind the side boxes fenced
+          // before its citation that still wait (#639).
+          if (isSide && drainingAfterText && pendingSideBoxes.some((b) => b.startIdx < f.firstBlockIdx)) { i++; continue; }
           // A page-span rest never shares the page of its previous slice.
           if (isPageSpan && f.notBefore?.pageIndex === page.index) { i++; continue; }
           let r: PlaceResult = 'defer';
@@ -2699,14 +2712,26 @@ function placeDocumentPass(
     // its closing columns — whatever position it asked for: a chapter's
     // last page with room under its text beats a page holding one table.
     tryPlacePendingFloatsOnCurrentPage(false, undefined, true);
+    // So does a waiting side box, for room in a side column of the pages
+    // the flow opened after its fence.
+    settlePendingSideBoxes();
     let guard = 0;
-    while ((pendingFloats.length > 0 || pendingSideBoxes.length > 0) && guard++ < 1000) {
-      const before = floatsPlaced;
-      const startPageIndex = cursor.pageIndex;
-      do {
-        advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
-      } while (cursor.pageIndex === startPageIndex);
-      if (floatsPlaced === before) break; // safety: no progress
+    drainingAfterText = true;
+    try {
+      // A page that sets a side box counts as progress like one that sets
+      // a float (#639): up to postext 1.24 the loop stopped after the first
+      // page of boxes and the rest of the queue was never set.
+      while ((pendingFloats.length > 0 || pendingSideBoxes.length > 0) && guard++ < 1000) {
+        const before = floatsPlaced;
+        const boxesBefore = pendingSideBoxes.length;
+        const startPageIndex = cursor.pageIndex;
+        do {
+          advanceToNextColumn(doc, cursor, geomResolved, contentArea, pageWidthPx, pageHeightPx, onNewPage);
+        } while (cursor.pageIndex === startPageIndex);
+        if (floatsPlaced === before && pendingSideBoxes.length === boxesBefore) break; // safety: no progress
+      }
+    } finally {
+      drainingAfterText = false;
     }
   };
 
@@ -4884,9 +4909,27 @@ function placeDocumentPass(
       // column asks for that caption to go under its figure.
       const cutBy = asideCutBy.get(side);
       if (cutBy !== undefined) captionUnderProposals.add(cutBy);
+      // Taller than an empty side column: set anyway, and reported (#639).
+      const overflowPx = y - used + result.totalHeight - side.availableHeight;
+      if (overflowPx > 0.5) {
+        (doc.warnings ??= []).push({
+          kind: 'calloutOverflow',
+          pageIndex: page.index,
+          columnIndex: side.index,
+          sourceStart: contentBlocks[startIdx]!.sourceStart + bodyOffset,
+          sourceEnd: contentBlocks[plan.endIdx]!.sourceEnd + bodyOffset,
+          overflowPx,
+        });
+      }
     }
     const frame = result.frame;
     stampCalloutSource(frame, startIdx, plan);
+    if (drainingAfterText) {
+      setAfterText.set(frame, {
+        ...(frame.sourceStart !== undefined ? { sourceStart: frame.sourceStart } : {}),
+        ...(frame.sourceEnd !== undefined ? { sourceEnd: frame.sourceEnd } : {}),
+      });
+    }
     frame.pageIndex = page.index;
     frame.columnIndex = side.index;
     offsetCalloutToAbsolute(result, side.bbox.x, y);
@@ -4923,7 +4966,7 @@ function placeDocumentPass(
       return true;
     }
     if (!trySideBox(page, side, { startIdx, plan, style }, refY, 'strict')) {
-      pendingSideBoxes.push({ startIdx, plan, style });
+      pendingSideBoxes.push({ startIdx, plan, style, pageIndex: page.index });
     }
     return true;
   };
@@ -4985,7 +5028,7 @@ function placeDocumentPass(
         const laterSide = sideColumnOf(later, 0);
         placed = laterSide !== undefined && trySideBox(later, laterSide, w.box, undefined, 'fresh');
       }
-      if (!placed) pendingSideBoxes.push(w.box);
+      if (!placed) pendingSideBoxes.push({ ...w.box, pageIndex: cursor.pageIndex });
     }
   };
   /** Set the waiting side boxes in the side column of a freshly opened
@@ -4996,6 +5039,27 @@ function placeDocumentPass(
     if (!side) return;
     while (pendingSideBoxes.length > 0) {
       if (!trySideBox(page, side, pendingSideBoxes[0]!, undefined, 'fresh')) break;
+      pendingSideBoxes.shift();
+    }
+  };
+  /** Where the text ends (#639): before a waiting side box takes a page
+   *  after it, the side columns of the pages the flow opened after its
+   *  fence that still hold it whole, in order (the page of the fence had no
+   *  room at or under it). A try that sets nothing gives its block id back,
+   *  so the ids after it stay what they were. */
+  const settlePendingSideBoxes = (): void => {
+    while (pendingSideBoxes.length > 0) {
+      const box = pendingSideBoxes[0]!;
+      let placed = false;
+      for (let p = box.pageIndex + 1; p <= cursor.pageIndex && !placed; p++) {
+        const page = doc.pages[p]!;
+        for (const side of sideColumns(page)) {
+          const idBefore = blockIdCounter;
+          if (trySideBox(page, side, box, undefined, 'strict')) { placed = true; break; }
+          blockIdCounter = idBefore;
+        }
+      }
+      if (!placed) return;
       pendingSideBoxes.shift();
     }
   };
@@ -7481,6 +7545,24 @@ function placeDocumentPass(
   // End of the document: level the closing band and place any floats still
   // pending (referenced on the last page) on pages appended after it.
   closeFlowSegment(contentBlocks.length);
+  // Nothing leaves the layout unseen (#639): a box or a float still in a
+  // queue here is on no page, and the build says so.
+  const unplaced: ContentWarning[] = [];
+  const sourceOf = (from: number, to: number): { sourceStart?: number; sourceEnd?: number } => {
+    const first = contentBlocks[from];
+    const last = contentBlocks[to];
+    return first && last ? { sourceStart: first.sourceStart + bodyOffset, sourceEnd: last.sourceEnd + bodyOffset } : {};
+  };
+  for (const box of [...awaitingSideBoxes.map((w) => w.box), ...pendingSideBoxes]) {
+    unplaced.push({ kind: 'unplaced', ...sourceOf(box.startIdx, box.plan.endIdx) });
+  }
+  for (const f of pendingFloats) {
+    const box = f.callout ? calloutFloats.get(f.callout.startIdx) : undefined;
+    unplaced.push(box
+      ? { kind: 'unplaced', ...sourceOf(f.callout!.startIdx, box.plan.endIdx) }
+      : { kind: 'unplaced', resourceId: f.resourceId, ...sourceOf(f.firstBlockIdx, f.firstBlockIdx) });
+  }
+  if (unplaced.length > 0) unplacedByDoc.set(doc, unplaced);
   // The notes, in the room the flow reserved for them.
   reserveLeftoverNotes();
   setColumnNotes();
@@ -7692,6 +7774,9 @@ export function* buildDocumentGen(
   // whose letter-spacing such words do not take.
   // Line numbers set over a float of the side column (#621).
   const loose = [...cjkLooseLineWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc), ...codeOverflowWarnings(doc), ...(floatShrinkWarningsByDoc.get(doc) ?? []), ...(textWrapWarningsByDoc.get(doc) ?? [])];
+  // Side boxes and side floats set on pages after the text, and what the
+  // layout could place nowhere (#639).
+  loose.push(...afterTextWarnings(doc), ...(unplacedByDoc.get(doc) ?? []));
   // Design texts cut to fit their width (#628).
   loose.push(...designTruncationWarnings(doc));
   // Comic panels whose cell cannot hold their picture's safe area (#556).
@@ -7740,6 +7825,29 @@ const floatShrinkWarningsByDoc = new WeakMap<VDTDocument, ContentWarning[]>();
 /** The `textWrap` warnings of a build (#627) and its `columnsTooNarrow`
  *  ones (#634), found by its last pass. */
 const textWrapWarningsByDoc = new WeakMap<VDTDocument, ContentWarning[]>();
+/** What a pass set in the side column of a page opened after the text of
+ *  its chapter (#639): a side box's frame, a side float's block, with the
+ *  source range an `afterText` warning points at. Read from the finished
+ *  layout, so the blocks a splice keeps bring their note along. */
+const setAfterText = new WeakMap<VDTBlock, { resourceId?: string; sourceStart?: number; sourceEnd?: number }>();
+/** The `unplaced` warnings of a build (#639): what its last pass left in
+ *  its queues. */
+const unplacedByDoc = new WeakMap<VDTDocument, ContentWarning[]>();
+
+/** An `afterText` warning for each side box and side float set after the
+ *  text (`setAfterText`) on a page whose text columns hold nothing: one a
+ *  barrier box then shared with them holds text again. */
+function afterTextWarnings(doc: VDTDocument): ContentWarning[] {
+  const out: ContentWarning[] = [];
+  for (const page of doc.pages) {
+    if (!page.floats || page.columns.some((c) => c.kind !== 'side' && c.blocks.length > 0)) continue;
+    for (const block of page.floats) {
+      const note = setAfterText.get(block);
+      if (note) out.push({ kind: 'afterText', ...note, pageIndex: page.index });
+    }
+  }
+  return out;
+}
 
 /** `doc` with the page of each of its index marks (`doc.indexMarks`). */
 function withIndexMarks(doc: VDTDocument, content: PostextContent): VDTDocument {
@@ -8124,6 +8232,10 @@ function* buildDocumentBalanced(
     // Such a splice is not taken.
     if (!sameContent(blocks, next.doc.blocks)) return best;
     const doc: VDTDocument = { ...best.doc, pages, blocks, ...(warnings.length > 0 ? { warnings } : { warnings: undefined }) };
+    // It holds what `next` holds: what `next` placed nowhere is still
+    // missing from it (#639).
+    const unplaced = unplacedByDoc.get(next.doc);
+    if (unplaced) unplacedByDoc.set(doc, unplaced);
     const pageBest = pageOfContent(best.doc);
     const pageNext = pageOfContent(next.doc);
     const mergeMap = <V,>(a: ReadonlyMap<number, V>, b: ReadonlyMap<number, V>): Map<number, V> => {

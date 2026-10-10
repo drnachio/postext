@@ -2424,7 +2424,9 @@ export interface VDTLineNumberMark {
  *  the geometry still describes what was painted. */
 export interface CalloutOverflowWarning {
   /** `calloutOverflow`: a `:::callout` box that fits no column was placed
-   *  overflowing its column (by `overflowPx`). */
+   *  overflowing its column (by `overflowPx`). A `span: 'side'` box taller
+   *  than an empty side column is one too (#639), `columnIndex` then
+   *  naming the side column. */
   kind: 'calloutOverflow';
   pageIndex: number;
   columnIndex: number;
@@ -2766,6 +2768,20 @@ export type ContentWarning = ContentWarningBase & (
    *  are narrower than six ems of its text, `widthPx` each, `columns` of
    *  them: few words fit a line. Found by the layout. */
   | { kind: 'columnsTooNarrow'; columns: number; widthPx: number }
+  /** `afterText` (#639): a `span: 'side'` box, or a figure or table of
+   *  the side column (`resourceId`), set on a page that holds no text: the
+   *  text of its chapter (or of the document) ended while it still waited
+   *  for room in the side column, so it took the side column of a page
+   *  opened after the text. One per box or float, with the range of the
+   *  box (of the block citing the float) and its page. Found by the
+   *  layout. */
+  | { kind: 'afterText'; resourceId?: string }
+  /** `unplaced` (#639): a `span: 'side'` box, a floated box or a floated
+   *  resource (`resourceId`) still waiting for a slot when the layout
+   *  ended: it is on no page (the pages opened for it had no side column,
+   *  say). The build reports it instead of dropping it silently. It has a
+   *  source range and no page. Found by the layout. */
+  | { kind: 'unplaced'; resourceId?: string }
   /** `designTextTruncated` (#628): a design text element did not fit its
    *  width and lost part of a line: cut by an ellipsis (`mode`
    *  `'ellipsis-*'`, its `overflow`) or clipped with ink past its box

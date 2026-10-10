@@ -867,6 +867,12 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'columnsTooNarrow':
       text = `The ${w.columns} columns of a :::columns group are ${Math.round(w.widthPx)} px wide, narrower than six ems of their text — few words fit a line; set fewer columns or a smaller gap`;
       break;
+    case 'afterText':
+      text = `${w.resourceId !== undefined ? `The resource "${w.resourceId}"` : 'A side box'} stands in the side column of a page with no text — the text ended before the side column had room for it; fence it earlier or make it shorter`;
+      break;
+    case 'unplaced':
+      text = `${w.resourceId !== undefined ? `The resource "${w.resourceId}"` : 'A box'} found no slot before the layout ended — it is on no page`;
+      break;
     case 'textWrap': {
       const what = w.resourceId !== undefined ? `The resource "${w.resourceId}"` : `A "${w.box ?? 'callout'}" box`;
       text = w.reason === 'moved'
