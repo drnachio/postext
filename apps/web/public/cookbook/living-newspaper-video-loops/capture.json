@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "living-newspaper-video-loops",
-  "sourceHash": "1449608fcf4151dbde911adfed7709d920413b5e536f684df4b99c60bda50693",
+  "sourceHash": "f689f68a1185af8eb614dc73d497d694263d24c8b9b4cc242f78f6f86afc927c",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.140Z",
+  "capturedAt": "2026-10-10T13:35:13.475Z",
   "variants": {
     "en": {
-      "hash8": "08e47f2b",
+      "hash8": "7b01f90e",
       "vdtHash": "7809539a24b7c8335b2d4fd79847d0a4220ccff3",
       "timings": {
-        "importMs": 165,
-        "fontsMs": 41,
-        "buildMs": 1169,
-        "totalMs": 8584,
-        "builds": 2
+        "importMs": 145,
+        "fontsMs": 24,
+        "buildMs": 1181,
+        "totalMs": 5099,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -116,13 +116,12 @@
       },
       "sandbox": {
         "file": "living-newspaper-video-loops.postext",
-        "bytes": 294969,
+        "bytes": 294971,
         "folio": "0b15553b"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createFolioFromDocument",
           "registerResourceImage",
           "renderPageToCanvas"

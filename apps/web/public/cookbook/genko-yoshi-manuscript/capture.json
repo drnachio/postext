@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "genko-yoshi-manuscript",
-  "sourceHash": "a689c92acb386ad226fcd6e9ba4aad58d7d33f2d4f74f2908f5b5aeb0205a4a7",
+  "sourceHash": "27578505565c9ee593147090cc8745675926d7a923062169315210d623c9c75f",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.984Z",
+  "capturedAt": "2026-10-10T13:34:26.151Z",
   "variants": {
     "en": {
-      "hash8": "5cf434da",
+      "hash8": "9d52ccc8",
       "vdtHash": "44dd11cb28f9b492aa1dad48f8afec383a5e7361",
       "timings": {
-        "importMs": 216,
-        "fontsMs": 197,
-        "buildMs": 44,
-        "totalMs": 1005,
+        "importMs": 167,
+        "fontsMs": 164,
+        "buildMs": 38,
+        "totalMs": 913,
         "builds": 1
       },
       "specimen": {
@@ -105,16 +105,16 @@
       },
       "sandbox": {
         "file": "genko-yoshi-manuscript.postext",
-        "bytes": 28489
+        "bytes": 28480
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -168,8 +168,6 @@
           "header.elements[].placement",
           "header.elements[].style",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.levels",
@@ -213,7 +211,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 119,
+        "configLeaves": 118,
         "designElements": 5,
         "directives": [
           ":::paragraphs"
@@ -242,7 +240,6 @@
           "character-grid",
           "cjk-line-breaking",
           "cjk-punctuation",
-          "column-balancing",
           "gyodori-headings",
           "heading-attributes",
           "page-background",
@@ -267,13 +264,13 @@
       }
     },
     "es": {
-      "hash8": "2e8e8e1a",
+      "hash8": "132f42ff",
       "vdtHash": "c15ee38025d9a9478cfe194b1993a3483a7a29c6",
       "timings": {
-        "importMs": 212,
-        "fontsMs": 173,
-        "buildMs": 41,
-        "totalMs": 982,
+        "importMs": 164,
+        "fontsMs": 152,
+        "buildMs": 45,
+        "totalMs": 906,
         "builds": 1
       },
       "specimen": {
@@ -361,16 +358,16 @@
       },
       "sandbox": {
         "file": "genko-yoshi-manuscript.postext",
-        "bytes": 28523
+        "bytes": 28514
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -424,8 +421,6 @@
           "header.elements[].placement",
           "header.elements[].style",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.levels",
@@ -469,7 +464,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 119,
+        "configLeaves": 118,
         "designElements": 5,
         "directives": [
           ":::paragraphs"
@@ -498,7 +493,6 @@
           "character-grid",
           "cjk-line-breaking",
           "cjk-punctuation",
-          "column-balancing",
           "gyodori-headings",
           "heading-attributes",
           "page-background",

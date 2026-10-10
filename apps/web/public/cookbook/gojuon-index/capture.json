@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "gojuon-index",
-  "sourceHash": "0d545b0d7fcad7be8d6365a269f49d500524b726863f2816239278acabbb7a23",
+  "sourceHash": "c863e5d95ad746d701c8a5dad8cb41d69810b0d4c2d32dd6e87b5700468160cc",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.988Z",
+  "capturedAt": "2026-10-10T13:34:26.158Z",
   "variants": {
     "en": {
-      "hash8": "74693f85",
-      "vdtHash": "18dce1d881f62362350eea00b62c2c3a43f7b67d",
+      "hash8": "68c3a3c3",
+      "vdtHash": "eb2b64521167f50315cf593d726c23a0c81ed164",
       "timings": {
-        "importMs": 212,
-        "fontsMs": 300,
-        "buildMs": 77,
-        "totalMs": 1136,
+        "importMs": 182,
+        "fontsMs": 278,
+        "buildMs": 67,
+        "totalMs": 1105,
         "builds": 1
       },
       "specimen": {
@@ -49,7 +49,7 @@
           "h": 1419,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 78820,
+          "bytes": 78826,
           "alt": "Opening page 9: 紙面を呼ぶ言葉."
         },
         {
@@ -99,21 +99,21 @@
       },
       "pdf": {
         "file": "gojuon-index.pdf",
-        "bytes": 136974,
+        "bytes": 137025,
         "pages": 3
       },
       "sandbox": {
         "file": "gojuon-index.postext",
-        "bytes": 15347,
+        "bytes": 15343,
         "folio": "3266640a"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -318,6 +318,11 @@
         },
         "findings": [
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 8 dropped (even: same page sides)"
@@ -326,13 +331,13 @@
       }
     },
     "es": {
-      "hash8": "11da7e6c",
-      "vdtHash": "9e2635e46d6bd57c2923e851e08a119457806369",
+      "hash8": "6d246cf3",
+      "vdtHash": "a49f02abb3e8fe18ccafa2fcf863e4235bcb9071",
       "timings": {
-        "importMs": 206,
-        "fontsMs": 270,
-        "buildMs": 77,
-        "totalMs": 1099,
+        "importMs": 166,
+        "fontsMs": 234,
+        "buildMs": 66,
+        "totalMs": 1037,
         "builds": 1
       },
       "specimen": {
@@ -364,7 +369,7 @@
           "h": 1419,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 78820,
+          "bytes": 78826,
           "alt": "Página de apertura 9: 紙面を呼ぶ言葉."
         },
         {
@@ -414,7 +419,7 @@
       },
       "pdf": {
         "file": "gojuon-index.pdf",
-        "bytes": 136936,
+        "bytes": 136986,
         "pages": 3
       },
       "sandbox": {
@@ -425,10 +430,10 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -632,6 +637,11 @@
           "worst": 0.03
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

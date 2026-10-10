@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "gbt7714-chinese-paper",
-  "sourceHash": "cfc6cf81eca78049632eb6fde0e411608abe71b68518f060b0db883ed6a965e1",
+  "sourceHash": "665224f19583cbfcddbd43bae49c9109086af2107894dd6dbffb62e0371be92f",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.979Z",
+  "capturedAt": "2026-10-10T13:34:26.146Z",
   "variants": {
     "en": {
-      "hash8": "850cb9e8",
-      "vdtHash": "fc3a1dd3675e72a0ad7c17019265ae23296c87f4",
+      "hash8": "11faa2dc",
+      "vdtHash": "5eccb97216841cb50e36367ff89089a4c33cf978",
       "timings": {
-        "importMs": 373,
-        "fontsMs": 339,
-        "buildMs": 20,
-        "totalMs": 1442,
-        "builds": 2
+        "importMs": 515,
+        "fontsMs": 836,
+        "buildMs": 435,
+        "totalMs": 3886,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "Noto Serif SC"
         ],
         "pages": 2,
-        "ownLines": 146
+        "ownLines": 144
       },
       "pages": [
         {
@@ -51,7 +51,7 @@
           "h": 1413,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 147842,
+          "bytes": 147920,
           "alt": "Opening page 41: 横排中文正文的行长与行 距： 一项纸本与屏幕的对 照阅读实验."
         },
         {
@@ -62,7 +62,7 @@
           "h": 1413,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 122370,
+          "bytes": 122526,
           "alt": "Page 42: 2 结果."
         }
       ],
@@ -90,12 +90,12 @@
       },
       "pdf": {
         "file": "gbt7714-chinese-paper.pdf",
-        "bytes": 165099,
+        "bytes": 165464,
         "pages": 2
       },
       "sandbox": {
         "file": "gbt7714-chinese-paper.postext",
-        "bytes": 25077,
+        "bytes": 21299,
         "folio": "1668ad62"
       },
       "detected": {
@@ -103,12 +103,12 @@
           "LOCALES",
           "STYLES",
           "buildDocument",
-          "clearMeasurementCache",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -154,7 +154,6 @@
           "citations.bibliography.fontSize",
           "citations.bibliography.labelWidth",
           "citations.bibliography.lineHeight",
-          "citations.customStyle",
           "citations.locale",
           "citations.style",
           "cjk",
@@ -192,8 +191,6 @@
           "headingStyles[].numbered",
           "headingStyles[].span",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -248,7 +245,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 255,
+        "configLeaves": 253,
         "designElements": 11,
         "directives": [
           ":::callout",
@@ -294,7 +291,6 @@
           "chips",
           "citation-styles",
           "cjk-line-breaking",
-          "column-balancing",
           "generated-bibliography",
           "heading-attributes",
           "heading-numbering",
@@ -328,19 +324,24 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 19.1 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "es": {
-      "hash8": "3013d0cb",
-      "vdtHash": "0cba51f594f0c080e436a0b79c3bffa53179267e",
+      "hash8": "bff28e0f",
+      "vdtHash": "59f4a11075cbc37ac9cbced6295976d3606ae3a5",
       "timings": {
-        "importMs": 254,
-        "fontsMs": 296,
-        "buildMs": 18,
-        "totalMs": 1241,
-        "builds": 2
+        "importMs": 200,
+        "fontsMs": 259,
+        "buildMs": 94,
+        "totalMs": 1144,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -362,7 +363,7 @@
           "Noto Serif SC"
         ],
         "pages": 2,
-        "ownLines": 146
+        "ownLines": 144
       },
       "pages": [
         {
@@ -373,7 +374,7 @@
           "h": 1413,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 147842,
+          "bytes": 147920,
           "alt": "Página de apertura 41: 横排中文正文的行长与行 距： 一项纸本与屏幕的对 照阅读实验."
         },
         {
@@ -384,7 +385,7 @@
           "h": 1413,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 122586,
+          "bytes": 122594,
           "alt": "Página 42: 2 结果."
         }
       ],
@@ -412,12 +413,12 @@
       },
       "pdf": {
         "file": "gbt7714-chinese-paper.pdf",
-        "bytes": 165172,
+        "bytes": 165536,
         "pages": 2
       },
       "sandbox": {
         "file": "gbt7714-chinese-paper.postext",
-        "bytes": 25135,
+        "bytes": 21348,
         "folio": "1668ad62"
       },
       "detected": {
@@ -425,12 +426,12 @@
           "LOCALES",
           "STYLES",
           "buildDocument",
-          "clearMeasurementCache",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -476,7 +477,6 @@
           "citations.bibliography.fontSize",
           "citations.bibliography.labelWidth",
           "citations.bibliography.lineHeight",
-          "citations.customStyle",
           "citations.locale",
           "citations.style",
           "cjk",
@@ -514,8 +514,6 @@
           "headingStyles[].numbered",
           "headingStyles[].span",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -570,7 +568,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 255,
+        "configLeaves": 253,
         "designElements": 11,
         "directives": [
           ":::callout",
@@ -616,7 +614,6 @@
           "chips",
           "citation-styles",
           "cjk-line-breaking",
-          "column-balancing",
           "generated-bibliography",
           "heading-attributes",
           "heading-numbering",
@@ -650,6 +647,11 @@
             "check": "C26",
             "severity": "warn",
             "detail": "the hero is 19.1 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

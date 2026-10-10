@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "journal-article-with-maths",
-  "sourceHash": "e84dcc597560f69c05aaa0e38700b5382f5420e3e3355b2436a1d1fcbff55348",
+  "sourceHash": "8f2684c4d9e02c552b9aee803528a78a99b6458b24aac3f705d875ca2fd08e3b",
   "engine": {
-    "postext": "1.24.0",
-    "postextPdf": "1.24.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T21:08:28.777Z",
+  "capturedAt": "2026-10-10T13:34:26.260Z",
   "variants": {
     "en": {
-      "hash8": "4d52cfcd",
-      "vdtHash": "3c2875ea9a7bbcc435c26811a2f5bed589308737",
+      "hash8": "ee937c2f",
+      "vdtHash": "5983265a2aefc88ff1af9b6a409f96fc03e06dce",
       "timings": {
-        "importMs": 28355,
-        "fontsMs": 10390,
-        "buildMs": 44,
-        "totalMs": 39627,
-        "builds": 2
+        "importMs": 172,
+        "fontsMs": 110,
+        "buildMs": 129,
+        "totalMs": 1025,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "Schibsted Grotesk"
         ],
         "pages": 4,
-        "ownLines": 247
+        "ownLines": 230
       },
       "pages": [
         {
@@ -51,7 +51,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 109082,
+          "bytes": 109078,
           "alt": "Opening page 213: The period of a pendulum at large amplitudes."
         },
         {
@@ -62,7 +62,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 155608,
+          "bytes": 155532,
           "alt": "Page 214: 2 Theory. Figure 1. The pendulum and its symbols: the length L from the pivot to the centre of the bob, the mass m and the amplitude, the angle between the vertical and either turning point of the swing."
         },
         {
@@ -84,7 +84,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 105130,
+          "bytes": 105848,
           "alt": "Page 216: AUTHOR CONTRIBUTIONS. Figure 3. The phase plane of the pendulum: one orbit for each amplitude from 30° to 150° in steps of 30°, the 90° orbit of our widest runs in red, and the separatrix of a swing to 180° dashed."
         }
       ],
@@ -116,18 +116,17 @@
       },
       "pdf": {
         "file": "journal-article-with-maths.pdf",
-        "bytes": 280511,
+        "bytes": 286379,
         "pages": 4
       },
       "sandbox": {
         "file": "journal-article-with-maths.postext",
-        "bytes": 45081,
+        "bytes": 44997,
         "folio": "ba291173"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
           "initMathEngine",
@@ -231,7 +230,9 @@
           "headingStyles[].advancedDesign.minHeight",
           "headingStyles[].advancedDesign.slot",
           "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
           "headingStyles[].id",
+          "headingStyles[].letterSpacing",
           "headingStyles[].lineHeight",
           "headingStyles[].marginBottom",
           "headingStyles[].marginTop",
@@ -239,8 +240,6 @@
           "headingStyles[].span",
           "headingStyles[].textTransform",
           "headings",
-          "headings.balancing",
-          "headings.balancing.stretchAfterFloats",
           "headings.color",
           "headings.fontFamily",
           "headings.levels",
@@ -322,7 +321,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 454,
+        "configLeaves": 455,
         "designElements": 21,
         "directives": [
           ":::callout",
@@ -403,7 +402,6 @@
           "bibliography",
           "callout-styles",
           "chips",
-          "column-balancing",
           "figure-citations",
           "heading-attributes",
           "heading-numbering",
@@ -434,9 +432,9 @@
         },
         "findings": [
           {
-            "check": "C21",
-            "severity": "warn",
-            "detail": "the pen took 39.6 s to finish (warning at 30 s)"
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

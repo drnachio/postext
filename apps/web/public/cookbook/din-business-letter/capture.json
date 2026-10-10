@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "din-business-letter",
-  "sourceHash": "31939e02cfa86e5b2085614e373291ecc3dfe188476e7bebbb8d4a82b33b4803",
+  "sourceHash": "029f201bd78ce8e3754ca9bcc0361f3ec395576a6255ee9c918547275bc19acb",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:41.272Z",
+  "capturedAt": "2026-10-10T13:33:15.420Z",
   "variants": {
     "en": {
-      "hash8": "d78ac161",
-      "vdtHash": "2868fac92bfb197f431966eaea63875960d41f5a",
+      "hash8": "8b361dd8",
+      "vdtHash": "1843330dc1b83fc595899999ece815ea9c29bda1",
       "timings": {
-        "importMs": 230,
-        "fontsMs": 65,
-        "buildMs": 103,
-        "totalMs": 1152,
-        "builds": 2
+        "importMs": 172,
+        "fontsMs": 28,
+        "buildMs": 128,
+        "totalMs": 940,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Reddit Mono"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 177
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 115004,
+          "bytes": 114946,
           "alt": "Opening page 1: Angebot 2026-117: Instandsetzung der 24 Kastenfenster im Vorderhaus Christburger Straße 17."
         },
         {
@@ -89,18 +89,17 @@
       },
       "pdf": {
         "file": "din-business-letter.pdf",
-        "bytes": 40894,
+        "bytes": 40906,
         "pages": 2
       },
       "sandbox": {
         "file": "din-business-letter.postext",
-        "bytes": 23172,
+        "bytes": 23158,
         "folio": "2ea14ffd"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
@@ -158,7 +157,6 @@
           "headings.levels[].breakBefore",
           "headings.levels[].level",
           "headings.levels[].marginBottom",
-          "headings.levels[].span",
           "layout",
           "layout.layoutType",
           "locale",
@@ -203,7 +201,7 @@
           "resourceTypes",
           "unorderedLists"
         ],
-        "configLeaves": 576,
+        "configLeaves": 574,
         "designElements": 41,
         "directives": [
           "::resource",
@@ -247,7 +245,6 @@
         "features": [
           "heading-attributes",
           "inline-embeds",
-          "opener-band",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
@@ -270,20 +267,25 @@
           {
             "check": "C26",
             "severity": "warn",
-            "detail": "the hero is 11.7 % colour, pictures or display type (aim for 25 %+)"
+            "detail": "the hero is 14.9 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "es": {
-      "hash8": "11983496",
-      "vdtHash": "2868fac92bfb197f431966eaea63875960d41f5a",
+      "hash8": "e2d1a7ec",
+      "vdtHash": "1843330dc1b83fc595899999ece815ea9c29bda1",
       "timings": {
-        "importMs": 222,
-        "fontsMs": 59,
-        "buildMs": 102,
-        "totalMs": 1127,
-        "builds": 2
+        "importMs": 172,
+        "fontsMs": 28,
+        "buildMs": 129,
+        "totalMs": 927,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -304,7 +306,7 @@
           "Reddit Mono"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 177
       },
       "pages": [
         {
@@ -315,7 +317,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 115004,
+          "bytes": 114946,
           "alt": "Página de apertura 1: Angebot 2026-117: Instandsetzung der 24 Kastenfenster im Vorderhaus Christburger Straße 17."
         },
         {
@@ -354,18 +356,17 @@
       },
       "pdf": {
         "file": "din-business-letter.pdf",
-        "bytes": 40894,
+        "bytes": 40906,
         "pages": 2
       },
       "sandbox": {
         "file": "din-business-letter.postext",
-        "bytes": 23195,
+        "bytes": 23182,
         "folio": "2ea14ffd"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
@@ -423,7 +424,6 @@
           "headings.levels[].breakBefore",
           "headings.levels[].level",
           "headings.levels[].marginBottom",
-          "headings.levels[].span",
           "layout",
           "layout.layoutType",
           "locale",
@@ -468,7 +468,7 @@
           "resourceTypes",
           "unorderedLists"
         ],
-        "configLeaves": 576,
+        "configLeaves": 574,
         "designElements": 41,
         "directives": [
           "::resource",
@@ -512,7 +512,6 @@
         "features": [
           "heading-attributes",
           "inline-embeds",
-          "opener-band",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
@@ -535,7 +534,12 @@
           {
             "check": "C26",
             "severity": "warn",
-            "detail": "the hero is 11.7 % colour, pictures or display type (aim for 25 %+)"
+            "detail": "the hero is 14.9 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

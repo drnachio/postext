@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "five-chapter-openers",
-  "sourceHash": "4af25014203f3c2eb8ba97ba98b6b0c1184174073f77a5be6334a18953aaee90",
+  "sourceHash": "3d4620ebb4bb2ced5b74d7e28eceecc00e49dbef2f4bf8fb95a13e91bd9c3dcb",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:24:37.967Z",
+  "capturedAt": "2026-10-10T13:33:44.477Z",
   "variants": {
     "en": {
-      "hash8": "2526933a",
+      "hash8": "e9aac972",
       "vdtHash": "45587f7495f542a963e19fb3590dbea4a204e252",
       "timings": {
-        "importMs": 112,
-        "fontsMs": 42,
-        "buildMs": 49,
-        "totalMs": 900,
-        "builds": 2
+        "importMs": 326,
+        "fontsMs": 5,
+        "buildMs": 413,
+        "totalMs": 6119,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Lora"
         ],
         "pages": 7,
-        "ownLines": 250
+        "ownLines": 249
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 100996,
+          "bytes": 100990,
           "alt": "Opening page 1: The Voice."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 66788,
+          "bytes": 66800,
           "alt": "Opening page 5: Say it out loud."
         },
         {
@@ -152,13 +152,12 @@
       },
       "sandbox": {
         "file": "five-chapter-openers.postext",
-        "bytes": 28451,
+        "bytes": 28450,
         "folio": "8cdc51df"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -400,24 +399,18 @@
           "share": 0.0143,
           "worst": 1.62
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "8de20fbc",
+      "hash8": "6e3b7737",
       "vdtHash": "12a9a52a7154dc26eeb05039fb7610dfba8e4749",
       "timings": {
-        "importMs": 115,
-        "fontsMs": 31,
-        "buildMs": 150,
-        "totalMs": 1095,
-        "builds": 2
+        "importMs": 133,
+        "fontsMs": 2,
+        "buildMs": 185,
+        "totalMs": 962,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -439,7 +432,7 @@
           "Lora"
         ],
         "pages": 7,
-        "ownLines": 250
+        "ownLines": 249
       },
       "pages": [
         {
@@ -494,7 +487,7 @@
           "h": 1333,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 71564,
+          "bytes": 71570,
           "alt": "Página de apertura 5: Salta a la vista."
         },
         {
@@ -552,13 +545,12 @@
       },
       "sandbox": {
         "file": "five-chapter-openers.postext",
-        "bytes": 28169,
+        "bytes": 28168,
         "folio": "8cdc51df"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -800,13 +792,7 @@
           "share": 0.0139,
           "worst": 1.61
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

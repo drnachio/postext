@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "justification-lab",
-  "sourceHash": "889f791bd4a3d8e1f82a03727ceaaed6e64c24f4be6a9d6bba9bda17b5b9c7ce",
+  "sourceHash": "08e857a1341a8cb96f07fbf47be9c726f1e57c18fb17f43ab6ea9343aaa65c57",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.057Z",
+  "capturedAt": "2026-10-10T13:34:26.282Z",
   "variants": {
     "en": {
-      "hash8": "b01e321e",
-      "vdtHash": "71c70dafc59edad6f35d0a9d52eaee6bb513cd7a",
+      "hash8": "16c3aa40",
+      "vdtHash": "86805b7936d8e4593fcec8f689a39b305278b982",
       "timings": {
-        "importMs": 149,
-        "fontsMs": 39,
-        "buildMs": 89,
-        "totalMs": 930,
-        "builds": 3
+        "importMs": 128,
+        "fontsMs": 1,
+        "buildMs": 262,
+        "totalMs": 1686,
+        "builds": 2
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Source Code Pro"
         ],
         "pages": 3,
-        "ownLines": 249
+        "ownLines": 245
       },
       "pages": [
         {
@@ -61,7 +61,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 167290,
+          "bytes": 167300,
           "alt": "Page 2: Greedy and total fit."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1419,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 134208,
+          "bytes": 133748,
           "alt": "Page 3: What the eye forgives."
         }
       ],
@@ -100,13 +100,13 @@
       },
       "sandbox": {
         "file": "justification-lab.postext",
-        "bytes": 34609,
+        "bytes": 11699,
         "folio": "aab16fb5"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "findLooseLines",
           "parseMarkdownWithIssues",
           "registerResourceImage",
           "renderPageToCanvas"
@@ -318,19 +318,24 @@
             "check": "C24",
             "severity": "warn",
             "detail": "3 of 115 justified lines (2.6 %) stretch past 1.6× (worst 2.02×); loosest: p. 3 2.02× “too, and the slack is shared out in”, p. 3 1.8× “shortfall to the few word spaces on”, p. 3 1.71× “the line. With hyphenation the line”"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "es": {
-      "hash8": "704d4190",
-      "vdtHash": "1056c8cbbfab21c70b66bdfac4618c4a82fd4a7a",
+      "hash8": "47b2c6e7",
+      "vdtHash": "5269268c9402e7b68269500bb12156183c3d3d99",
       "timings": {
-        "importMs": 148,
-        "fontsMs": 24,
-        "buildMs": 146,
-        "totalMs": 972,
-        "builds": 3
+        "importMs": 124,
+        "fontsMs": 1,
+        "buildMs": 124,
+        "totalMs": 915,
+        "builds": 2
       },
       "specimen": {
         "trimMm": [
@@ -352,7 +357,7 @@
           "Source Code Pro"
         ],
         "pages": 3,
-        "ownLines": 249
+        "ownLines": 245
       },
       "pages": [
         {
@@ -374,7 +379,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 168104,
+          "bytes": 168138,
           "alt": "Página 2: Línea a línea o en bloque."
         },
         {
@@ -385,7 +390,7 @@
           "h": 1419,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 133066,
+          "bytes": 133124,
           "alt": "Página 3: Lo que el ojo perdona."
         }
       ],
@@ -413,13 +418,13 @@
       },
       "sandbox": {
         "file": "justification-lab.postext",
-        "bytes": 35260,
+        "bytes": 35288,
         "folio": "aab16fb5"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "findLooseLines",
           "parseMarkdownWithIssues",
           "registerResourceImage",
           "renderPageToCanvas"
@@ -626,7 +631,13 @@
           "share": 0.0172,
           "worst": 2.3000000000000003
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

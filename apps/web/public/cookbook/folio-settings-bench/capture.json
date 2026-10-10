@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "folio-settings-bench",
-  "sourceHash": "3b9bb6bb941a3e5929421f31da3a9d2dd3ea65ae97c140e6c620d33dd8a92492",
+  "sourceHash": "2f520da7cd1821e0e7cde7af78150d46cfd09809e4b0b3d01a86928b502cba4d",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:41.275Z",
+  "capturedAt": "2026-10-10T13:33:44.492Z",
   "variants": {
     "en": {
-      "hash8": "3b77451b",
+      "hash8": "319872df",
       "vdtHash": "e0d0995acaf71a69c392e90d62454fe6f558d7e3",
       "timings": {
-        "importMs": 189,
-        "fontsMs": 27,
-        "buildMs": 22,
-        "totalMs": 900,
-        "builds": 2
+        "importMs": 151,
+        "fontsMs": 4,
+        "buildMs": 53,
+        "totalMs": 781,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -37,7 +37,7 @@
           "Source Serif 4"
         ],
         "pages": 10,
-        "ownLines": 144
+        "ownLines": 143
       },
       "pages": [
         {
@@ -191,13 +191,12 @@
       },
       "sandbox": {
         "file": "folio-settings-bench.postext",
-        "bytes": 17868,
+        "bytes": 17867,
         "folio": "1756b569"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createFolioFromDocument",
           "renderPageToCanvas"
         ],

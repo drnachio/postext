@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "katakana-majiri-proclamation",
-  "sourceHash": "4b932b53f5ec3def71039e3263d10ad879c4eef8a9eb9ec73cb35bbee59cc6b0",
+  "sourceHash": "95fa058fdb5c285ff6794e3dc3839693e00cd7b9bd561f1119f07f6d95f441e7",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.086Z",
+  "capturedAt": "2026-10-10T13:35:13.417Z",
   "variants": {
     "en": {
-      "hash8": "92a539b7",
-      "vdtHash": "a17da693e39e181b4c7841ba7c618b8d40db2109",
+      "hash8": "c56bbc7e",
+      "vdtHash": "fbedc6e1ff7d668a1ac2a61b9b8ca3a2e70faecb",
       "timings": {
-        "importMs": 198,
-        "fontsMs": 508,
-        "buildMs": 11,
-        "totalMs": 1309,
-        "builds": 2
+        "importMs": 170,
+        "fontsMs": 406,
+        "buildMs": 51,
+        "totalMs": 1201,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -167,7 +167,7 @@
       },
       "pdf": {
         "file": "katakana-majiri-proclamation.pdf",
-        "bytes": 340691,
+        "bytes": 340925,
         "pages": 8
       },
       "sandbox": {
@@ -178,11 +178,11 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -384,18 +384,24 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "f89aa46f",
-      "vdtHash": "97f190eae280c1879948e9bb3b51c2c32f1bbcc4",
+      "hash8": "dde9ad0c",
+      "vdtHash": "1d7187ca807561c20bcda7dd4fdfa3456547ee78",
       "timings": {
-        "importMs": 202,
-        "fontsMs": 466,
-        "buildMs": 12,
-        "totalMs": 1278,
-        "builds": 2
+        "importMs": 171,
+        "fontsMs": 374,
+        "buildMs": 51,
+        "totalMs": 1169,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -544,22 +550,22 @@
       },
       "pdf": {
         "file": "katakana-majiri-proclamation.pdf",
-        "bytes": 341137,
+        "bytes": 341373,
         "pages": 8
       },
       "sandbox": {
         "file": "katakana-majiri-proclamation.postext",
-        "bytes": 9996,
+        "bytes": 9995,
         "folio": "d5f2cfd5"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -761,7 +767,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

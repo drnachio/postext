@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "japanese-technical-manual",
-  "sourceHash": "ceb436bdba98608d46f53d19d017f12bc8c7c74955e192618d21cb82b45d4a47",
+  "sourceHash": "eb2ee96ae69f2cf6813a2a65846106928c06662e6fcef669037c705d0807d617",
   "engine": {
-    "postext": "1.23.0",
-    "postextPdf": "1.23.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:24:38.006Z",
+  "capturedAt": "2026-10-10T13:34:26.250Z",
   "variants": {
     "en": {
-      "hash8": "021d5685",
-      "vdtHash": "166148fc47f465d4f1bb13ed6d27e2111a0f5bb0",
+      "hash8": "38327484",
+      "vdtHash": "96319cb546c661598196c2f4bafaa9cacd12d22f",
       "timings": {
-        "importMs": 164,
-        "fontsMs": 230,
-        "buildMs": 17,
-        "totalMs": 1065,
-        "builds": 2
+        "importMs": 166,
+        "fontsMs": 225,
+        "buildMs": 85,
+        "totalMs": 1011,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Noto Serif JP"
         ],
         "pages": 5,
-        "ownLines": 196
+        "ownLines": 197
       },
       "pages": [
         {
@@ -72,7 +72,7 @@
           "h": 1419,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 63290,
+          "bytes": 63306,
           "alt": "Page 43: 3.3 Pythonで正規化する. 表3-1 日本語の文字と四つの正規化形式（NFKDは、NFKCで合成された文字を分解した 形になる）."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1419,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 32580,
+          "bytes": 32564,
           "alt": "Page 45."
         }
       ],
@@ -126,24 +126,25 @@
       },
       "pdf": {
         "file": "japanese-technical-manual.pdf",
-        "bytes": 284104,
+        "bytes": 284314,
         "pages": 5
       },
       "sandbox": {
         "file": "japanese-technical-manual.postext",
-        "bytes": 40867,
+        "bytes": 40935,
         "folio": "90d2b4f0"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "parseTSV",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -432,14 +433,14 @@
       }
     },
     "es": {
-      "hash8": "bf6b24ac",
-      "vdtHash": "0ca554649f2a76d0d54a81a7403aeef16283f216",
+      "hash8": "ccc36b2b",
+      "vdtHash": "46cbfdc01c7deea5d91314ffe670a3a34d0af9d5",
       "timings": {
-        "importMs": 172,
-        "fontsMs": 214,
-        "buildMs": 17,
-        "totalMs": 1032,
-        "builds": 2
+        "importMs": 167,
+        "fontsMs": 215,
+        "buildMs": 83,
+        "totalMs": 1001,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -460,7 +461,7 @@
           "Noto Serif JP"
         ],
         "pages": 5,
-        "ownLines": 196
+        "ownLines": 197
       },
       "pages": [
         {
@@ -493,7 +494,7 @@
           "h": 1419,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 63290,
+          "bytes": 63306,
           "alt": "Página 43: 3.3 Pythonで正規化する. 表3-1 日本語の文字と四つの正規化形式（NFKDは、NFKCで合成された文字を分解した 形になる）."
         },
         {
@@ -515,7 +516,7 @@
           "h": 1419,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 32840,
+          "bytes": 32846,
           "alt": "Página 45."
         }
       ],
@@ -547,24 +548,25 @@
       },
       "pdf": {
         "file": "japanese-technical-manual.pdf",
-        "bytes": 284167,
+        "bytes": 284393,
         "pages": 5
       },
       "sandbox": {
         "file": "japanese-technical-manual.postext",
-        "bytes": 40924,
+        "bytes": 40991,
         "folio": "90d2b4f0"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "parseTSV",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

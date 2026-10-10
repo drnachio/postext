@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "live-palette-retint",
-  "sourceHash": "44abee636d5134f8203cd008fc13d19f403e95824d39827b00fb14330f221825",
+  "sourceHash": "ac61a6f7a00a3001cfd737ee1fbe46faaf7c3a134e9ff59b90f9e2cdf192d901",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.130Z",
+  "capturedAt": "2026-10-10T13:35:13.465Z",
   "variants": {
     "en": {
-      "hash8": "fba47188",
+      "hash8": "5eef65cb",
       "vdtHash": "ce42663071ecbbb873b40a3533ad122a520ac726",
       "timings": {
-        "importMs": 170,
-        "fontsMs": 46,
-        "buildMs": 8,
-        "totalMs": 877,
-        "builds": 5
+        "importMs": 128,
+        "fontsMs": 0,
+        "buildMs": 4,
+        "totalMs": 801,
+        "builds": 4
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Syne"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 177
       },
       "pages": [
         {
@@ -88,13 +88,13 @@
       },
       "sandbox": {
         "file": "live-palette-retint.postext",
-        "bytes": 31255,
+        "bytes": 31244,
         "folio": "de4718c0"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
           "renderPageToCanvas"
         ],
@@ -326,14 +326,14 @@
       }
     },
     "es": {
-      "hash8": "14b8ccfc",
+      "hash8": "4d1a6e73",
       "vdtHash": "fe8350d344a9788a6012a65a4fa241d4b88953dc",
       "timings": {
-        "importMs": 169,
-        "fontsMs": 27,
-        "buildMs": 6,
-        "totalMs": 828,
-        "builds": 5
+        "importMs": 130,
+        "fontsMs": 1,
+        "buildMs": 4,
+        "totalMs": 796,
+        "builds": 4
       },
       "specimen": {
         "trimMm": [
@@ -354,7 +354,7 @@
           "Syne"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 177
       },
       "pages": [
         {
@@ -404,13 +404,13 @@
       },
       "sandbox": {
         "file": "live-palette-retint.postext",
-        "bytes": 31824,
+        "bytes": 31823,
         "folio": "de4718c0"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
           "renderPageToCanvas"
         ],

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "maghreb-edition-european-digits",
-  "sourceHash": "a7d0b1072c491973dc9b49c6df8e53091616c4b7519954ccad314e786a274cab",
+  "sourceHash": "1aa30cb0f86e7dd27c1daad47d7a30c7b48c1b3636b5c82a1769457c4d67f86c",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.169Z",
+  "capturedAt": "2026-10-10T13:35:13.551Z",
   "variants": {
     "en": {
-      "hash8": "f90ddbe2",
+      "hash8": "31f25a80",
       "vdtHash": "d116e84a017621b857a279bc9c5b1e9214c526f1",
       "timings": {
-        "importMs": 767,
-        "fontsMs": 71,
-        "buildMs": 85,
-        "totalMs": 1501,
+        "importMs": 165,
+        "fontsMs": 64,
+        "buildMs": 74,
+        "totalMs": 2159,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Noto Naskh Arabic"
         ],
         "pages": 4,
-        "ownLines": 87
+        "ownLines": 88
       },
       "pages": [
         {
@@ -126,11 +126,11 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -304,13 +304,13 @@
       }
     },
     "es": {
-      "hash8": "6799984a",
+      "hash8": "a5f8f56f",
       "vdtHash": "dd8a6a9b678ff7206181b1aa8411eb32d7a4079d",
       "timings": {
-        "importMs": 189,
-        "fontsMs": 67,
-        "buildMs": 83,
-        "totalMs": 925,
+        "importMs": 168,
+        "fontsMs": 60,
+        "buildMs": 74,
+        "totalMs": 869,
         "builds": 1
       },
       "specimen": {
@@ -331,7 +331,7 @@
           "Noto Naskh Arabic"
         ],
         "pages": 4,
-        "ownLines": 87
+        "ownLines": 88
       },
       "pages": [
         {
@@ -413,17 +413,17 @@
       },
       "sandbox": {
         "file": "maghreb-edition-european-digits.postext",
-        "bytes": 25889,
+        "bytes": 25890,
         "folio": "5362c1cb"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "hiragana-picture-book",
-  "sourceHash": "60082523294560bb8ee99f816b4be9bad8e55d5ea0b92a592ac4390a4a7c662c",
+  "sourceHash": "ea2e3c991a042e131e6b37f32d16e8cb4dd5b540f93ee4ce41a83a97057b0f4f",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.002Z",
+  "capturedAt": "2026-10-10T13:34:26.211Z",
   "variants": {
     "en": {
-      "hash8": "be57bf60",
+      "hash8": "e273fd3d",
       "vdtHash": "fab1c640acf944c90bc939ff1c1d2a32f6913c3f",
       "timings": {
-        "importMs": 192,
-        "fontsMs": 199,
-        "buildMs": 57,
-        "totalMs": 1026,
+        "importMs": 157,
+        "fontsMs": 169,
+        "buildMs": 51,
+        "totalMs": 963,
         "builds": 1
       },
       "specimen": {
@@ -194,23 +194,23 @@
       },
       "pdf": {
         "file": "hiragana-picture-book.pdf",
-        "bytes": 1737333,
+        "bytes": 1737334,
         "pages": 10
       },
       "sandbox": {
         "file": "hiragana-picture-book.postext",
-        "bytes": 1737446,
+        "bytes": 1737447,
         "folio": "ada4348a"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -370,13 +370,13 @@
       }
     },
     "es": {
-      "hash8": "42a89ae7",
+      "hash8": "ebd163ec",
       "vdtHash": "91d2d29c617f08ba4a220dce5adf8c0e49fd91f3",
       "timings": {
-        "importMs": 197,
-        "fontsMs": 188,
-        "buildMs": 55,
-        "totalMs": 975,
+        "importMs": 163,
+        "fontsMs": 155,
+        "buildMs": 51,
+        "totalMs": 916,
         "builds": 1
       },
       "specimen": {
@@ -553,7 +553,7 @@
       },
       "pdf": {
         "file": "hiragana-picture-book.pdf",
-        "bytes": 1736828,
+        "bytes": 1736831,
         "pages": 10
       },
       "sandbox": {
@@ -564,12 +564,12 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

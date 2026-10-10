@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "magazine-three-column-feature",
-  "sourceHash": "253fbbde54727efeae2d8780e7cd6ad18d4013360e5f20a44cd212956e2a25f4",
+  "sourceHash": "222180575bcd2229e7b65684e4f66579929983e185868c6ce309d879516913d4",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.164Z",
+  "capturedAt": "2026-10-10T13:35:13.543Z",
   "variants": {
     "en": {
-      "hash8": "015ee4ae",
+      "hash8": "462c711b",
       "vdtHash": "a33c4aed1e14d88f2591d7721cdd5fcfad712fa9",
       "timings": {
-        "importMs": 160,
-        "fontsMs": 73,
-        "buildMs": 40,
-        "totalMs": 962,
-        "builds": 2
+        "importMs": 131,
+        "fontsMs": 45,
+        "buildMs": 77,
+        "totalMs": 824,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "Source Serif 4"
         ],
         "pages": 6,
-        "ownLines": 209
+        "ownLines": 208
       },
       "pages": [
         {
@@ -138,13 +138,12 @@
       },
       "sandbox": {
         "file": "magazine-three-column-feature.postext",
-        "bytes": 1847591,
+        "bytes": 1847587,
         "folio": "579e6f1a"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],

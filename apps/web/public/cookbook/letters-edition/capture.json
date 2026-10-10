@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "letters-edition",
-  "sourceHash": "619432ec8bdc9ccc267998797913f7c3b09e26bff41be942e96aba95757e53e4",
+  "sourceHash": "705ea482810917128238e06b865e03691dc16e37d28180f49c5976d3c05e14c5",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:24:37.896Z",
+  "capturedAt": "2026-10-10T13:35:13.457Z",
   "variants": {
     "en": {
-      "hash8": "7da1f370",
-      "vdtHash": "e27c3dec29bb6b01261122cb9444978832ead1ac",
+      "hash8": "53ad51ef",
+      "vdtHash": "cd3757a1960ba4fe8b139544dda3df9fb9421819",
       "timings": {
-        "importMs": 113,
-        "fontsMs": 51,
-        "buildMs": 13,
-        "totalMs": 812,
-        "builds": 2
+        "importMs": 126,
+        "fontsMs": 28,
+        "buildMs": 37,
+        "totalMs": 793,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "IM Fell French Canon"
         ],
         "pages": 5,
-        "ownLines": 167
+        "ownLines": 161
       },
       "pages": [
         {
@@ -82,7 +82,7 @@
           "h": 1500,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 112648,
+          "bytes": 112584,
           "alt": "Page 4: III Voltaire à Frédéric."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1500,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 85758,
+          "bytes": 85752,
           "alt": "Page 5."
         }
       ],
@@ -125,13 +125,12 @@
       },
       "sandbox": {
         "file": "letters-edition.postext",
-        "bytes": 212156,
+        "bytes": 212145,
         "folio": "a3ceaa8c"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -142,7 +141,6 @@
           "bodyText.fontFamily",
           "bodyText.fontSize",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.minWordSpacing",
           "bodyText.referenceColor",
           "colorPalette",
@@ -158,6 +156,7 @@
           "header.elements[].fontFamily",
           "header.elements[].fontSize",
           "header.elements[].id",
+          "header.elements[].inlineMarks",
           "header.elements[].italic",
           "header.elements[].kind",
           "header.elements[].letterSpacing",
@@ -219,10 +218,9 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 221,
+        "configLeaves": 222,
         "designElements": 12,
         "directives": [
-          ":::pagebreak",
           ":::paragraphs",
           ":::verse"
         ],
@@ -264,7 +262,6 @@
           "heading-styles",
           "opener-design",
           "page-background",
-          "page-breaks",
           "page-role-filters",
           "paragraph-styles",
           "resources",
@@ -293,14 +290,14 @@
       }
     },
     "es": {
-      "hash8": "f2436521",
-      "vdtHash": "e27c3dec29bb6b01261122cb9444978832ead1ac",
+      "hash8": "e70792f9",
+      "vdtHash": "cd3757a1960ba4fe8b139544dda3df9fb9421819",
       "timings": {
-        "importMs": 120,
-        "fontsMs": 37,
-        "buildMs": 13,
-        "totalMs": 822,
-        "builds": 2
+        "importMs": 128,
+        "fontsMs": 26,
+        "buildMs": 37,
+        "totalMs": 786,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -321,7 +318,7 @@
           "IM Fell French Canon"
         ],
         "pages": 5,
-        "ownLines": 167
+        "ownLines": 161
       },
       "pages": [
         {
@@ -365,7 +362,7 @@
           "h": 1500,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 112648,
+          "bytes": 112584,
           "alt": "Página 4: III Voltaire à Frédéric."
         },
         {
@@ -376,7 +373,7 @@
           "h": 1500,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 85758,
+          "bytes": 85752,
           "alt": "Página 5."
         }
       ],
@@ -408,13 +405,12 @@
       },
       "sandbox": {
         "file": "letters-edition.postext",
-        "bytes": 212189,
+        "bytes": 212180,
         "folio": "a3ceaa8c"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -425,7 +421,6 @@
           "bodyText.fontFamily",
           "bodyText.fontSize",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.minWordSpacing",
           "bodyText.referenceColor",
           "colorPalette",
@@ -441,6 +436,7 @@
           "header.elements[].fontFamily",
           "header.elements[].fontSize",
           "header.elements[].id",
+          "header.elements[].inlineMarks",
           "header.elements[].italic",
           "header.elements[].kind",
           "header.elements[].letterSpacing",
@@ -502,10 +498,9 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 221,
+        "configLeaves": 222,
         "designElements": 12,
         "directives": [
-          ":::pagebreak",
           ":::paragraphs",
           ":::verse"
         ],
@@ -547,7 +542,6 @@
           "heading-styles",
           "opener-design",
           "page-background",
-          "page-breaks",
           "page-role-filters",
           "paragraph-styles",
           "resources",

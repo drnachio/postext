@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "ieee-conference-paper",
-  "sourceHash": "e8df4a3d15793a6689217e9babd06e1be3363c63c16582dda16b0e645d98d8c1",
+  "sourceHash": "124db60bb34be3fe50d044a8af44956d6ecba3f446717d00f1e04cf28585ccee",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.022Z",
+  "capturedAt": "2026-10-10T13:34:26.241Z",
   "variants": {
     "en": {
-      "hash8": "9929aca0",
+      "hash8": "2985c529",
       "vdtHash": "a7deaa0f1a97485124d6bd47275305a161055c6b",
       "timings": {
-        "importMs": 219,
-        "fontsMs": 69,
-        "buildMs": 381,
-        "totalMs": 1242,
+        "importMs": 200,
+        "fontsMs": 33,
+        "buildMs": 301,
+        "totalMs": 1163,
         "builds": 1
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Schibsted Grotesk"
         ],
         "pages": 2,
-        "ownLines": 128
+        "ownLines": 127
       },
       "pages": [
         {
@@ -89,7 +89,7 @@
       },
       "pdf": {
         "file": "ieee-conference-paper.pdf",
-        "bytes": 82276,
+        "bytes": 82277,
         "pages": 2
       },
       "sandbox": {
@@ -101,8 +101,7 @@
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",
@@ -312,13 +311,13 @@
       }
     },
     "es": {
-      "hash8": "7a79669c",
+      "hash8": "b212999a",
       "vdtHash": "d4da76d880d1b66ac924fa5412e02479ed910d3d",
       "timings": {
-        "importMs": 225,
-        "fontsMs": 63,
-        "buildMs": 194,
-        "totalMs": 1069,
+        "importMs": 183,
+        "fontsMs": 31,
+        "buildMs": 140,
+        "totalMs": 972,
         "builds": 1
       },
       "specimen": {
@@ -340,7 +339,7 @@
           "Schibsted Grotesk"
         ],
         "pages": 2,
-        "ownLines": 128
+        "ownLines": 127
       },
       "pages": [
         {
@@ -402,8 +401,7 @@
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",

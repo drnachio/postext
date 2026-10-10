@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "mla-humanities-essay",
-  "sourceHash": "5cb97c45371a301c65a92e80c1ffd0da4f8b2219ca3ff4b5b41746cef0851e20",
+  "sourceHash": "9c0cf138dd756048ca94f944310c2fa1e3f79c59b8070ee241041d1ccb3777da",
   "engine": {
-    "postext": "1.23.0",
-    "postextPdf": "1.23.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T20:44:19.131Z",
+  "capturedAt": "2026-10-10T13:36:24.378Z",
   "variants": {
     "en": {
-      "hash8": "c436d685",
+      "hash8": "134f529a",
       "vdtHash": "aeeb7aaff771f2fadcc155673cfa79108d5db99d",
       "timings": {
-        "importMs": 188,
-        "fontsMs": 87,
-        "buildMs": 12,
-        "totalMs": 1031,
-        "builds": 2
+        "importMs": 181,
+        "fontsMs": 31,
+        "buildMs": 83,
+        "totalMs": 911,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Spectral SC"
         ],
         "pages": 4,
-        "ownLines": 142
+        "ownLines": 141
       },
       "pages": [
         {
@@ -114,20 +114,19 @@
       },
       "pdf": {
         "file": "mla-humanities-essay.pdf",
-        "bytes": 86122,
+        "bytes": 86123,
         "pages": 4
       },
       "sandbox": {
         "file": "mla-humanities-essay.postext",
-        "bytes": 16907,
+        "bytes": 16908,
         "folio": "070584e0"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",
@@ -331,24 +330,18 @@
           "share": 0,
           "worst": 1.77
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "42dd12b7",
+      "hash8": "da4baeab",
       "vdtHash": "7e9d0444b1b469b4a6b5ab616769497245a62456",
       "timings": {
-        "importMs": 178,
-        "fontsMs": 67,
-        "buildMs": 16,
-        "totalMs": 909,
-        "builds": 2
+        "importMs": 176,
+        "fontsMs": 32,
+        "buildMs": 86,
+        "totalMs": 4436,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -368,7 +361,7 @@
           "Spectral SC"
         ],
         "pages": 4,
-        "ownLines": 142
+        "ownLines": 141
       },
       "pages": [
         {
@@ -449,15 +442,14 @@
       },
       "sandbox": {
         "file": "mla-humanities-essay.postext",
-        "bytes": 17039,
+        "bytes": 17041,
         "folio": "070584e0"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",
@@ -661,13 +653,7 @@
           "share": 0,
           "worst": 1.78
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

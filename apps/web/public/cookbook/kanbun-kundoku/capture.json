@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "kanbun-kundoku",
-  "sourceHash": "8309492b53dd784f13561a54e4a9baee451ef63e8b8b1cf6f4f7e57e2e5139e2",
+  "sourceHash": "7a883281e71b2ef32b5851a0d605b731a1024edef76787b4ee3965be185211df",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.066Z",
+  "capturedAt": "2026-10-10T13:34:26.289Z",
   "variants": {
     "en": {
-      "hash8": "596c5a2a",
+      "hash8": "342d87e6",
       "vdtHash": "cea294344d4ba3029b117bd33687c965b41d48c7",
       "timings": {
-        "importMs": 191,
-        "fontsMs": 336,
-        "buildMs": 50,
-        "totalMs": 1143,
+        "importMs": 178,
+        "fontsMs": 252,
+        "buildMs": 46,
+        "totalMs": 1020,
         "builds": 1
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Zen Old Mincho"
         ],
         "pages": 3,
-        "ownLines": 132
+        "ownLines": 131
       },
       "pages": [
         {
@@ -61,7 +61,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 22964,
+          "bytes": 22962,
           "alt": "Page 二: 学而第三."
         },
         {
@@ -101,22 +101,22 @@
       },
       "pdf": {
         "file": "kanbun-kundoku.pdf",
-        "bytes": 138098,
+        "bytes": 138188,
         "pages": 3
       },
       "sandbox": {
         "file": "kanbun-kundoku.postext",
-        "bytes": 15723,
+        "bytes": 15709,
         "folio": "bdf12d3d"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -162,8 +162,6 @@
           "headingStyles[].footer.elements",
           "headingStyles[].id",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.levels",
@@ -218,7 +216,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 147,
+        "configLeaves": 146,
         "designElements": 5,
         "directives": [
           ":::paragraphs"
@@ -261,7 +259,6 @@
         "features": [
           "character-grid",
           "cjk-line-breaking",
-          "column-balancing",
           "furigana",
           "gyodori-headings",
           "heading-attributes",
@@ -298,13 +295,13 @@
       }
     },
     "es": {
-      "hash8": "4d47d427",
+      "hash8": "143c4139",
       "vdtHash": "eeffa96ae9ff865139c37006dc7fc4599bc7e1e1",
       "timings": {
-        "importMs": 199,
-        "fontsMs": 313,
-        "buildMs": 50,
-        "totalMs": 1129,
+        "importMs": 165,
+        "fontsMs": 237,
+        "buildMs": 48,
+        "totalMs": 997,
         "builds": 1
       },
       "specimen": {
@@ -326,7 +323,7 @@
           "Zen Old Mincho"
         ],
         "pages": 3,
-        "ownLines": 132
+        "ownLines": 131
       },
       "pages": [
         {
@@ -348,7 +345,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 22964,
+          "bytes": 22962,
           "alt": "Página 二: 学而第三."
         },
         {
@@ -388,22 +385,22 @@
       },
       "pdf": {
         "file": "kanbun-kundoku.pdf",
-        "bytes": 138022,
+        "bytes": 138114,
         "pages": 3
       },
       "sandbox": {
         "file": "kanbun-kundoku.postext",
-        "bytes": 15770,
+        "bytes": 15756,
         "folio": "bdf12d3d"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -449,8 +446,6 @@
           "headingStyles[].footer.elements",
           "headingStyles[].id",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.levels",
@@ -505,7 +500,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 147,
+        "configLeaves": 146,
         "designElements": 5,
         "directives": [
           ":::paragraphs"
@@ -548,7 +543,6 @@
         "features": [
           "character-grid",
           "cjk-line-breaking",
-          "column-balancing",
           "furigana",
           "gyodori-headings",
           "heading-attributes",

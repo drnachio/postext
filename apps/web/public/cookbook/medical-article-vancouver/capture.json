@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "medical-article-vancouver",
-  "sourceHash": "7bc5e7537f793c4621f5711350ad17b1d179e3bc1cf4fd9fbf973f85f1be46c9",
+  "sourceHash": "0eddb22eabffbbd1a5ab8cb45f96723182e270b67e6d5fb4cdba5a33575acae8",
   "engine": {
-    "postext": "1.23.0",
-    "postextPdf": "1.23.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T20:44:19.124Z",
+  "capturedAt": "2026-10-10T13:36:24.358Z",
   "variants": {
     "en": {
-      "hash8": "ce6b2671",
+      "hash8": "8732c4ae",
       "vdtHash": "664c1cc1968e625f35b19432dc038ec6947580c8",
       "timings": {
-        "importMs": 588,
-        "fontsMs": 4001,
-        "buildMs": 41,
-        "totalMs": 5365,
-        "builds": 2
+        "importMs": 175,
+        "fontsMs": 56,
+        "buildMs": 113,
+        "totalMs": 2155,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "PT Serif"
         ],
         "pages": 3,
-        "ownLines": 180
+        "ownLines": 179
       },
       "pages": [
         {
@@ -101,23 +101,23 @@
       },
       "pdf": {
         "file": "medical-article-vancouver.pdf",
-        "bytes": 180491,
+        "bytes": 123076,
         "pages": 3
       },
       "sandbox": {
         "file": "medical-article-vancouver.postext",
-        "bytes": 53224,
+        "bytes": 53286,
         "folio": "b245c39c"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "parseTSV",
           "registerCitationEngine",
           "registerResourceImage",
@@ -400,24 +400,18 @@
           "share": 0.0108,
           "worst": 2.21
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "ef791bd5",
+      "hash8": "8cb43c22",
       "vdtHash": "de7caee6ad82d8f4d42b3b7a0a1717e8c8df7fb4",
       "timings": {
-        "importMs": 568,
-        "fontsMs": 1002,
-        "buildMs": 41,
-        "totalMs": 3783,
-        "builds": 2
+        "importMs": 187,
+        "fontsMs": 55,
+        "buildMs": 104,
+        "totalMs": 955,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -439,7 +433,7 @@
           "PT Serif"
         ],
         "pages": 3,
-        "ownLines": 180
+        "ownLines": 179
       },
       "pages": [
         {
@@ -500,23 +494,23 @@
       },
       "pdf": {
         "file": "medical-article-vancouver.pdf",
-        "bytes": 189707,
+        "bytes": 132602,
         "pages": 3
       },
       "sandbox": {
         "file": "medical-article-vancouver.postext",
-        "bytes": 54456,
+        "bytes": 54517,
         "folio": "b245c39c"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "parseTSV",
           "registerCitationEngine",
           "registerResourceImage",
@@ -799,13 +793,7 @@
           "share": 0,
           "worst": 1.97
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

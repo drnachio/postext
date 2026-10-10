@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "manual-see-page-references",
-  "sourceHash": "264edd83ec65253bba9dc44b0fbd5e71dbdfc38f310de50056dbee49d8b33ea6",
+  "sourceHash": "9df899a15dc12975e647bb116264f56e1a113ed207c0454fdec3031909705d4d",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.175Z",
+  "capturedAt": "2026-10-10T13:36:24.348Z",
   "variants": {
     "en": {
-      "hash8": "d98ca060",
+      "hash8": "eda585aa",
       "vdtHash": "3ba854082e4fdcb3e7d5c0d43282cdfbf5948622",
       "timings": {
-        "importMs": 197,
-        "fontsMs": 58,
-        "buildMs": 25,
-        "totalMs": 931,
-        "builds": 2
+        "importMs": 164,
+        "fontsMs": 27,
+        "buildMs": 49,
+        "totalMs": 812,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Archivo Narrow"
         ],
         "pages": 4,
-        "ownLines": 132
+        "ownLines": 131
       },
       "pages": [
         {
@@ -124,8 +124,7 @@
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "renderPageToCanvas",
           "renderToPdf"
@@ -323,14 +322,14 @@
       }
     },
     "es": {
-      "hash8": "089fb0d9",
+      "hash8": "6d0f94d4",
       "vdtHash": "db847e4158e9c364fdb1c2fbd1427e13f081f2a7",
       "timings": {
-        "importMs": 205,
-        "fontsMs": 44,
-        "buildMs": 49,
-        "totalMs": 2321,
-        "builds": 2
+        "importMs": 167,
+        "fontsMs": 27,
+        "buildMs": 45,
+        "totalMs": 817,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -350,7 +349,7 @@
           "Archivo Narrow"
         ],
         "pages": 4,
-        "ownLines": 132
+        "ownLines": 131
       },
       "pages": [
         {
@@ -426,18 +425,17 @@
       },
       "pdf": {
         "file": "manual-see-page-references.pdf",
-        "bytes": 36757,
+        "bytes": 36758,
         "pages": 4
       },
       "sandbox": {
         "file": "manual-see-page-references.postext",
-        "bytes": 12984,
+        "bytes": 12983,
         "folio": "4335096f"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "renderPageToCanvas",
           "renderToPdf"
