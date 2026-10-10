@@ -2163,9 +2163,36 @@ function placeDocumentPass(
       }
     }
 
+    // Text wrap (#627): a one-column float at the head or foot of its
+    // column, which running text may take back to run beside it — unless
+    // the text left beside it would be too narrow, or the float too short
+    // for lines beside it.
+    const wrapGap = wrapGapPx(f.wrapGap, dpi, bodyStyle.fontSizePx, floatGapPx);
+    const wraps = f.wrap !== undefined && !pageSpan && !side && targetCols.length === 1 && !rotated && !aside && !cut && !galleryFill
+      && !(position === 'bottom' && uncappedBottoms.has(first));
+    const wrapRefused = !wraps ? undefined
+      : first.bbox.width - width - wrapGap + 0.01 < minTextWidthPx(resolved.layout.wrap.minTextWidth, first.bbox.width, dpi, bodyStyle.fontSizePx)
+        ? 'tooNarrow' as const
+        : Math.round(need / bodyStyle.lineHeightPx) < resolved.layout.wrap.minLinesBeside ? 'fewLines' as const : undefined;
+
     for (const col of targetCols) {
       if (openerHeads.has(col)) {
-        col.availableHeight = Math.max(0, col.availableHeight - leadOf(col) - need);
+        const lead = leadOf(col);
+        const from = columnCursorY(col);
+        col.availableHeight = Math.max(0, col.availableHeight - lead - need);
+        // The column's box starts under the band, as an empty column's
+        // does, so the column rule beside it never runs through the float;
+        // the opener stays above it, where the opener band paints it. A
+        // float text wraps round keeps its band in the flow instead: the
+        // text placed next takes it back (see below).
+        if (!(wraps && !wrapRefused)) {
+          const down = from - col.bbox.y + lead + need;
+          col.bbox.y += down;
+          col.bbox.height = Math.max(0, col.bbox.height - down);
+          const r = { ...reservedOf(col) };
+          r.top += lead + need;
+          floatReserved.set(col, r);
+        }
         openerHeadFloats.set(col, columnCursorY(col));
         // What the opener left under it went into the band's gap.
         pendingSpacing = 0;
@@ -2201,21 +2228,11 @@ function placeDocumentPass(
     // A gallery page keeps no text room between its bands.
     if (galleryFill) for (const col of targetCols) col.availableHeight = 0;
 
-    // Text wrap (#627): a one-column float at the head or foot of its
-    // column, which running text may take back to run beside it — unless
-    // the text left beside it would be too narrow, or the float too short
-    // for lines beside it.
-    if (f.wrap && !pageSpan && !side && targetCols.length === 1 && !rotated && !aside && !cut && !galleryFill
-      && !(position === 'bottom' && uncappedBottoms.has(first))) {
-      const gap = wrapGapPx(f.wrapGap, dpi, bodyStyle.fontSizePx, floatGapPx);
-      const settings = resolved.layout.wrap;
-      const reason = first.bbox.width - width - gap + 0.01 < minTextWidthPx(settings.minTextWidth, first.bbox.width, dpi, bodyStyle.fontSizePx)
-        ? 'tooNarrow' as const
-        : Math.round(need / bodyStyle.lineHeightPx) < settings.minLinesBeside ? 'fewLines' as const : undefined;
-      if (reason) {
-        textWrapNotes.push({ kind: 'textWrap', reason, resourceId: f.resourceId, pageIndex: page.index });
+    if (wraps && f.wrap) {
+      if (wrapRefused) {
+        textWrapNotes.push({ kind: 'textWrap', reason: wrapRefused, resourceId: f.resourceId, pageIndex: page.index });
       } else {
-        const exWidth = wrapExclusionWidth(first.bbox.width, width, gap);
+        const exWidth = wrapExclusionWidth(first.bbox.width, width, wrapGap);
         const underOpener = openerHeads.has(first);
         const exY = underOpener ? y : position === 'top' ? first.bbox.y - need : first.bbox.y + first.bbox.height;
         const ex: VDTExclusion = {

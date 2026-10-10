@@ -196,8 +196,34 @@ describe('floats under a page-span opener (#639)', () => {
     expect(textTop(doc, 0)).toBeCloseTo(frame.bbox.y + band(frame.bbox.height), 3);
     expect(textTop(doc, 1)).toBeCloseTo(textTop(doc, 0), 3);
     expect(textTop(doc, 2)).toBeCloseTo(head, 3);
-    // The opener's column keeps its box: the opener stands in it.
-    expect(textColumns(doc.pages[0]!)[0]!.bbox.y).toBeCloseTo(opener(doc).bbox.y, 3);
+    // The box of column 1 starts under the float, like column 2's; the
+    // opener stays above it.
+    const cols = textColumns(doc.pages[0]!);
+    expect(cols[0]!.bbox.y).toBeCloseTo(cols[1]!.bbox.y, 3);
+    expect(cols[0]!.bbox.y).toBeCloseTo(textTop(doc, 0), 3);
+    expect(cols[0]!.blocks[0]).toBe(opener(doc));
+    expect(cols[0]!.bbox.y + cols[0]!.bbox.height).toBeCloseTo(cols[3]!.bbox.y + cols[3]!.bbox.height, 3);
+  });
+
+  it('the column rule never runs through a float under the opener', () => {
+    const box2 = build(`# Opener\n\n${box(' columns="2"')}\n\n${BODY}\n\n${BODY}`, config(4, headings('page')));
+    const frame = frameOf(box2);
+    const rules = columnRuleSegments(box2.pages[0]!.columns);
+    // Gutter 1|2 starts under the box; gutter 2|3 runs beside it from the
+    // band's head, where column 3 starts; gutter 3|4 too.
+    expect(rules).toHaveLength(3);
+    expect(rules[0]!.top).toBeCloseTo(frame.bbox.y + band(frame.bbox.height), 3);
+    expect(rules[1]!.top).toBeCloseTo(frame.bbox.y, 3);
+    expect(rules[1]!.x).toBeGreaterThan(frame.bbox.x + frame.bbox.width);
+    expect(rules[2]!.top).toBeCloseTo(frame.bbox.y, 3);
+
+    // A one-column box: the rule beside it runs the length of column 2,
+    // right of the box.
+    const box1 = build(`# Opener\n\n${box()}\n\n${BODY}\n\n${BODY}`, config(4, headings('page')));
+    const one = frameOf(box1);
+    const beside = columnRuleSegments(box1.pages[0]!.columns)[0]!;
+    expect(beside.top).toBeCloseTo(one.bbox.y, 3);
+    expect(beside.x).toBeGreaterThan(one.bbox.x + one.bbox.width);
   });
 
   it('a figure across two columns embedded after the opener does too', () => {
