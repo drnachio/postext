@@ -17,8 +17,8 @@
 .screen { flex: 0 1 580px; min-width: 0; }
 /* The pane the edition fills: its size is the page size, so resizing it re-lays the text.
    Drag its corner to try. Its background is the night paper, set by the script. At least
-   400 px tall: in a shorter pane postext 1.4.1 sets the text over the opener
-   (gotcha: opener-taller-than-column). */
+   400 px tall: in a shorter pane an opener can take a whole page and push its text to
+   the next. */
 #screen {
   height: min(580px, calc(100vh - 188px)); overflow-y: auto; scrollbar-gutter: stable;
   resize: both; min-width: 240px; min-height: 400px; max-width: 100%;

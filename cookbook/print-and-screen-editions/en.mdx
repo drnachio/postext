@@ -18,7 +18,7 @@ pageNotes: { "1": "The part divider of Notes on Weather: a rain-blue field with 
 
 <Excerpt region="palette" />
 
-Every colour in the config names a palette id, and the hex written beside it is only the day fallback. So the screen edition switches to the night colours by replacing one array. The [overrides](/en/docs/configuration#html-viewer) in [the short answer](#the-short-answer) merge objects key by key and heading levels on `level`, and replace any other array whole, `colorPalette` included. `main-color` is part of the palette, so the engine defaults that use it change as well. In postext 1.4.1 the new palette does not reach the design elements or the reference colour, so `relink()` rewrites every linked colour from the palette of the merged config.
+Every colour in the config names a palette id, and the hex written beside it is only the day fallback. So the screen edition switches to the night colours by replacing one array. The [overrides](/en/docs/configuration#html-viewer) in [the short answer](#the-short-answer) merge objects key by key and heading levels on `level`, and replace any other array whole, `colorPalette` included. `main-color` is part of the palette, so the engine defaults that use it change as well. The new palette reaches every colour linked to it: the text, the captions, the openers' design elements and the reference colour.
 
 ### 2 · Openers: a band on paper, the words on screen
 
@@ -42,7 +42,7 @@ Swapping the palette does not recolour an SVG, so each drawing is made once per 
 
 <Excerpt region="screen" />
 
-Each screen page is as tall as the pane, so `fitFiguresToPage` shrinks the gauge until it fits on one page with its caption ([layout](/en/docs/configuration#layout)). At 96 dpi, the resolution CSS assumes, the millimetres and points inherited from print render at their nominal size ([integrating the HTML viewer](/en/docs/configuration#integrating-the-html-viewer)). The pen writes `renderToHtml`'s absolutely positioned lines into a Shadow DOM, where the page's selectors cannot reach them. The wrapper's `all: initial` also blocks inherited properties such as `letter-spacing`: the engine measured the lines without them, and an inherited value would make the text overprint. HTML pages are transparent unless painted, so `page.backgroundColor` takes the night paper from the palette. The ResizeObserver waits 150 ms and rebuilds from a fresh `config()` only when the pane's width or height has changed; after the rebuild the pane scrolls back to the same fraction of its height.
+Each screen page is as tall as the pane, so `fitFiguresToPage` shrinks the gauge until it fits on one page with its caption ([layout](/en/docs/configuration#layout)). At 96 dpi, the resolution CSS assumes, the millimetres and points inherited from print render at their nominal size ([integrating the HTML viewer](/en/docs/configuration#integrating-the-html-viewer)). The pen writes `renderToHtml`'s absolutely positioned lines into a Shadow DOM, where the page's selectors cannot reach them. Inherited properties such as `letter-spacing` do cross that boundary, and the edition's root resets them itself, because the engine measured the lines without them. HTML pages are transparent unless painted, so `page.backgroundColor` takes the night paper from the palette. The ResizeObserver waits 150 ms and rebuilds from a fresh `config()` only when the pane's width or height has changed; after the rebuild the pane scrolls back to the same fraction of its height.
 
 ## Variations
 
@@ -67,8 +67,5 @@ For a heavier print opener, with a saturated band and a big chapter number, see 
 
 ## Pitfalls
 
-- Check the end of every note after an edit. If a note's last paragraph pushes a two-line tail onto a new page (widow control keeps the two lines together), postext 1.4.1 gives that page's column the height of one line and the canvas clips the second. Both samples are copy-fitted so that no note ends that way.
-- In ragged text, 1.4.1 can end a line on the “(” before a reference, and in a pane the reader can resize, some width will produce that break. These notes write “as Fig. 2 shows”, never “(Fig. 2)”.
-- Let a screen paragraph start on a page's last line (`avoidWidows: false`). With that rule on, 1.4.1 can force a paragraph taller than the page, whole, into the gap under a figure, where it runs off the foot of the page; a pane of 240 × 460 or 260 × 500 px shows it.
-- Keep the pane at least 400 px tall (the pen's `min-height`). In a narrow pane less than about 350 px tall, the screen opener is taller than the page's content area; postext 1.4.1 then drops its whole reservation and sets the first paragraph over the title.
+- Keep the pane at least 400 px tall (the pen's `min-height`). In a narrow pane less than about 350 px tall, the screen opener is taller than the page's content area; it then takes the whole page, and the note's first paragraph starts on the next one.
 - Give the pane a size before you lay it out. A pane with no width, hidden or squeezed out of a flex row, would give a zero-width page, which is why `showScreen()` skips a pane narrower or shorter than `FOLDED`, 200 px.
