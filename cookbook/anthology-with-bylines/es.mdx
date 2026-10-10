@@ -24,7 +24,7 @@ El `numberingTemplate: '{1:I}'` del nivel numera los ensayos I, II y III, y `{nu
 
 <Excerpt region="contents" />
 
-`:::toc` en el Markdown imprime una entrada por cada título incluido, con el número, el texto del título, la línea de puntos, la etiqueta de la página y, gracias a `subtitle`, el autor. `buildDocument` vuelve a componer el libro hasta que las etiquetas de página dejen de cambiar, así que, si un ensayo cambia de título o de extensión, el índice se actualiza ([índice de contenidos](/es/docs/configuration#índice-de-contenidos)). Postext 1.4.1 coloca el centro del número de cada entrada 0,3 veces el cuerpo de la entrada por encima de la línea base, y Chrome sitúa el centro de Gloock 0,3125 em por encima de la suya, así que un numeral de 0,3 × 15 ÷ 0,3125 = 14,4 pt se apoya en la línea base del título de 15 pt; uno de 12 pt queda 0,3 mm más alto. Un libro con partes añade además una fila por cada `:::part`, con el diseño de `toc.parts.design`, como en <RecipeLink slug="parts-in-colour">Partes en color</RecipeLink>.
+`:::toc` en el Markdown imprime una entrada por cada título incluido, con el número, el texto del título, la línea de puntos, la etiqueta de la página y, gracias a `subtitle`, el autor. `buildDocument` vuelve a componer el libro hasta que las etiquetas de página dejen de cambiar, así que, si un ensayo cambia de título o de extensión, el índice se actualiza ([índice de contenidos](/es/docs/configuration#índice-de-contenidos)). El numeral de cada entrada toma la fuente y el cuerpo del título, salvo que `numberFontFamily` o `numberFontSize` digan otra cosa, y se apoya en la línea base de la primera línea del título con cualquier cuerpo. Un libro con partes añade además una fila por cada `:::part`, con el diseño de `toc.parts.design`, como en <RecipeLink slug="parts-in-colour">Partes en color</RecipeLink>.
 
 ### 3 · El autor en la página par, el ensayo en la impar
 
@@ -36,13 +36,13 @@ Cada cabecera se ancla a la página, a 11 mm del borde superior, y `parity` elig
 
 <Excerpt region="front" />
 
-Con `numbered: false`, la cubierta y el índice no hacen avanzar el contador, así que Hazlitt es el I, y `toc: false` los deja fuera de la lista ([estilos de título](/es/docs/configuration#estilos-de-encabezado)). Los dos estilos heredan el `breakBefore` del nivel, con paridad `'any'`, y por eso el índice sigue a la cubierta en la página 2 sin ningún `:::pagebreak`. El estilo de la cubierta ocupa toda la página aunque el libro tenga una sola columna, porque un diseño que se queda en la columna se recorta en sus bordes superior e inferior y dejaría 20 mm de papel por encima del paisaje.
+Con `numbered: false`, la cubierta y el índice no hacen avanzar el contador, así que Hazlitt es el I, y `toc: false` los deja fuera de la lista ([estilos de título](/es/docs/configuration#estilos-de-encabezado)). Los dos estilos heredan el `breakBefore` del nivel, con paridad `'any'`, y por eso el índice sigue a la cubierta en la página 2 sin ningún `:::pagebreak`. El estilo de la cubierta ocupa toda la página aunque el libro tenga una sola columna, porque un diseño que se queda en la columna se corta al pie de esta y dejaría 22 mm de papel por debajo del paisaje.
 
 ### 5 · Cada color escrito con su enlace a la paleta
 
 <Excerpt region="palette" />
 
-En 1.4.1 `colorPalette` llega a los estilos de texto pero no a los elementos de diseño, así que `col()` escribe el valor hexadecimal de cada color junto a su `paletteId`, y ese valor es el que pintan las firmas, las cabeceras y la cubierta. Con `main-color` en el color de la tinta, los valores por defecto que la configuración no redefine salen en ese color y no en el azul del motor, `#295AA3`.
+`col()` escribe el valor hexadecimal de cada color junto a su `paletteId`, y el motor sigue ese enlace: las firmas, las cabeceras y la cubierta toman lo que `colorPalette` guarde bajo ese identificador, así que otra paleta con los mismos identificadores cambia el color de todo el libro. Con `main-color` en el color de la tinta, los valores por defecto que la configuración no redefine salen en ese color y no en el azul del motor, `#295AA3`.
 
 ## Variantes
 
@@ -78,6 +78,5 @@ Con la paridad `'odd'`, Stevenson pasa a la página 9, tras una página 8 en bla
 
 ## Errores frecuentes
 
-- Hazlitt cita versos en mitad de sus frases. Los versos van en un bloque `:::verse{style="verse" align=start}`, una línea de Markdown por verso, entrados 8 mm, y la frase que continúa después va en un estilo `runon`, sin sangría. Una cita en bloque de Markdown saldría en cursiva de un gris fijo, `#666666`, con la sangría de primera línea del cuerpo y sin sangría lateral, y ningún ajuste lo cambia en 1.4.1.
+- Hazlitt cita versos en mitad de sus frases. Los versos van en un bloque `:::verse{style="verse" align=start}`, una línea de Markdown por verso, entrados 8 mm, y la frase que continúa después va en un estilo `runon`, sin sangría. Una cita en bloque de Markdown no sirve aquí: sus líneas se unen como las de un párrafo y los versos saldrían seguidos, como prosa.
 - Un atributo que falta en un título no imprime nada ni da aviso. Sin `author="…"`, la firma y la cabecera par de ese ensayo salen vacías y su línea bajo el título desaparece del índice.
-- Los 14,4 pt del paso 2 valen solo para Gloock. Con otra fuente, averigua a qué altura sobre la línea base pone Chrome su centro: `measureText('I').alphabeticBaseline` con `textBaseline = 'middle'` la devuelve en píxeles, con el signo cambiado. Después da a `numberFontSize` el valor de 0,3 veces el cuerpo de la entrada dividido por esa distancia en em (la de Hanken Grotesk es 0,2675 em).

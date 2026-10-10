@@ -19,7 +19,7 @@ const palette = {
   rule: '#d5cabd', // hairlines
   muted: '#6d6570', // running heads, datelines, page numbers in the contents
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// col() links a colour to its palette entry; the hex is the value the entry holds.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -34,7 +34,7 @@ const SINK = 12; // grid lines an essay opener reserves above its first line of 
 const HEAD = { y: 11, gap: 7 }; // running heads: mm from the top edge, folio to words
 const label = { fontFamily: 'Hanken Grotesk', fontWeight: 600, textTransform: 'uppercase',
   align: 'left' }; // design text is centred by default
-// One weight, no italic; 'wrap' breaks a long title (gotcha: overflow-ellipsis-default).
+// One weight, no italic; 'wrap' breaks a long title onto a second line.
 const gloock = { fontFamily: 'Gloock', overflow: 'wrap', align: 'left' };
 const at = (to, edge, x = 0, y = 0) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) } });
 const below = (id, y, size) => ({ ...at(`#${id}`, 'below', 0, y), ...(size && { size }) });
@@ -70,8 +70,7 @@ const opener = { enabled: true,
   // line under every opener whose title fits on one line (SINK = 14 holds a two-line title).
   minHeight: pt(SINK * LEAD),
   slot: { elements: [
-    // {number} prints numberingTemplate '{1:I}': I, II, III. {numberRoman} would print
-    // nothing here: it is filled on part pages only (gotcha: heading-number-placeholders).
+    // {number} prints the essay's number as numberingTemplate '{1:I}' writes it: I, II, III.
     text('number', '{number}', { ...gloock, fontSize: pt(34), lineHeight: 1, color: col('rust') },
       at('container', 'top-left', 0, 8)),
     text('title', '{titleText}', { ...gloock, fontSize: pt(26), lineHeight: 1.08,
@@ -82,18 +81,16 @@ const opener = { enabled: true,
   ] } };
 const essays = { level: 1, numberingTemplate: '{1:I}', advancedDesign: opener,
   marginBottom: pt(0), // the heading's default margin would add to minHeight
-  // Restated (gotcha: headings-drop-h1-break); the cover and contents styles inherit it too.
+  // The cover and contents styles inherit this break (gotcha: style-inherits-break).
   breakBefore: { enabled: true, parity: 'any' } }; // 'any': each piece opens on the next page
 // #endregion
 
 // #region contents: the essays' numbers, titles, leaders and page labels, from the headings
 const ENTRY = 15; // pt: the essay titles in the contents
-const MIDDLE = 0.3125; // em: how far Chrome's textBaseline 'middle' sits above Gloock's baseline
 const contents = { // passed to the config as `toc`
-  // 1.4.1 centres an entry's number 0.3 × the entry size above its baseline (gotcha:
-  // toc-number-baseline): at 0.3 × 15 ÷ 0.3125 = 14.4 pt a Gloock numeral stands on it.
+  // An entry's numeral takes the title's face and size and stands on its baseline.
   levels: [{ level: 1, fontFamily: 'Gloock', fontSize: pt(ENTRY), color: col('ink'),
-    numberFontSize: pt((0.3 * ENTRY) / MIDDLE), numberFontWeight: 400, // Gloock has one weight
+    numberFontWeight: 400, // Gloock has one weight
     numberColor: col('rust'), numberWidth: mm(8), numberGap: mm(3), marginBottom: pt(LEAD) }],
   pageNumber: { fontFamily: 'Hanken Grotesk', fontSize: pt(8.5), fontWeight: 600,
     color: col('muted'), width: mm(6) }, // the leader dots take this face and colour too
@@ -138,8 +135,8 @@ const cover = { enabled: true, slot: { elements: [
   text('imprint', '{attr.imprint}', { ...label, fontSize: pt(7.5), letterSpacing: pt(1.8),
     color: col('paper') }, at('page', 'bottom-left', MARGIN.inner, -12)),
 ] } };
-// span: 'page' in a one-column book: a design kept in the column is clipped at the column's top
-// and bottom edges, which would leave bands of paper above and below the dusk.
+// span: 'page' in a one-column book: a design kept in its column is cut at the column's foot,
+// which would leave a band of paper under the dusk.
 const coverStyle = { id: 'cover', ...bare, span: 'page', advancedDesign: cover };
 const contentsOpener = { enabled: true, slot: { elements: [ // {title}, {subtitle}: frontmatter
   text('kicker', '{title} · {subtitle}', { ...label, fontSize: pt(8), letterSpacing: pt(1.6),
@@ -158,18 +155,16 @@ const config = () => ({
   bodyText: { fontFamily: 'Spectral', fontSize: pt(10), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     firstLineIndent: mm(4), indentAfterHeading: false,
-    minWordSpacing: 0.7, maxWordSpacing: 1.6, // tighter than the 0.6–2 defaults
-    maxRuntTracking: 0 }, // tracking 1.4.1 never paints (gotcha: runt-tracking-unpainted)
+    minWordSpacing: 0.7, maxWordSpacing: 1.6 }, // tighter than the 0.6–2 defaults
   // The hidden heading line is still measured, in this face; otherwise the build needs Open Sans.
   headings: { fontFamily: 'Gloock', fontWeight: 400, levels: [essays] },
   headingStyles: [coverStyle, { id: 'contents', ...bare, advancedDesign: contentsOpener }],
   toc: contents,
-  // Quoted verse is a :::verse block, a line of verse a line (1.4.1 prints a Markdown
-  // blockquote in a fixed #666666 grey), 8 mm in; 'runon' resumes the sentence after it.
+  // Quoted verse is a :::verse block, a line of verse a line, 8 mm in; 'runon' resumes the
+  // sentence after it.
   paragraphStyles: [{ id: 'verse', indent: mm(8) },
     { id: 'runon', firstLineIndent: pt(0) },
-    // In the note, under a :::space: a style's margins do not count inside a box (gotcha:
-    // box-paragraph-margins). It takes the note body's indent, 0.
+    // In the note, under a :::space of one line. It takes the note body's indent, 0.
     { id: 'colophon', fontSize: pt(7.5), lineHeight: pt(10.5), color: col('muted') }],
   calloutStyles: [{ id: 'note', placement: 'fixed', backgroundEnabled: false, // the page foot
     stripe: { enabled: true, side: 'top', width: pt(0.5), color: col('rule') },

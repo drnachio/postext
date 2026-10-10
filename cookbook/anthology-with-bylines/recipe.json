@@ -19,22 +19,12 @@
   },
   "answers": ["Q37", "Q28", "Q30"],
   "gotchas": [
-    "attr-values", "headings-drop-h1-break", "style-inherits-break", "toc-number-baseline",
-    "heading-number-placeholders", "palette-skips-designs", "box-paragraph-margins",
-    "runt-tracking-unpainted", "overflow-ellipsis-default"
+    "attr-values", "style-inherits-break"
   ],
   "gaps": [],
   "explainsWarnings": [],
   "workarounds": [
-    {"followup": "EF-05", "package": "postext", "note": "headings.levels[0] restates breakBefore: { enabled: true, parity: 'any' }: in 1.4.1 any headings object drops the documented H1 page break, and the cover and contents styles inherit this one"},
-    {"followup": "EF-71", "package": "postext", "note": "col() writes each colour's hex beside its paletteId: the document palette does not reach design elements (openers, running heads, the cover) or bodyText.referenceColor in 1.4.1"},
-    {"followup": "EF-58", "package": "postext", "note": "the contents numerals are Gloock at 0.3 × 15 ÷ 0.3125 = 14.4 pt beside 15 pt Gloock titles: 1.4.1 centres an entry's number (textBaseline 'middle') 0.3 × the entry size above the baseline, and Chrome puts Gloock's middle 0.3125 em above its baseline, so the 14.4 pt numeral stands on the title's baseline (measured 0.04 mm off); a 12 pt numeral rode 0.32 mm high, and a Hanken Grotesk 8.5 pt one (middle 0.2675 em) about 0.8 mm"},
-    {"followup": "EF-60", "package": "postext", "note": "the cover and contents styles inherit the level's breakBefore, parity 'any', which is what puts the contents on page 2 without a :::pagebreak; the 'Open every essay on a recto' Variation has to restate 'any' on both styles, or the contents inherit 'odd' and open on page 3 behind a blank verso"},
-    {"followup": "EF-113", "package": "postext", "note": "the cover style sets span: 'page' in this single-column book only so that its bleed-anchored dusk paints to the page edges: a heading design kept in the column is clipped at the column's top and bottom edges, which leaves 20 mm of paper above the art and 22 mm below it"},
-    {"followup": "EF-09", "package": "postext", "note": "the essay numeral is {number} from numberingTemplate '{1:I}'; {numberRoman} prints nothing in a chapter opener in 1.4.1"},
-    {"followup": "EF-77", "package": "postext", "note": "a :::space{lines=1} (one 12.5 pt line of the note's leading) separates the colophon from the note on the contents page: the colophon style's marginTop is ignored inside a box"},
-    {"followup": "EF-111", "package": "postext", "note": "bodyText.maxRuntTracking is 0: a runt fix's negative tracking is measured but not painted in 1.4.1, so word spacing alone shortens runts"},
-    { "followup": "EF-135","package": "postext", "note": "the lines of verse Hazlitt quotes are a :::verse{style=\"verse\"} block in *italics*, not a Markdown blockquote: 1.4.1 paints a blockquote in a hard-coded #666666 italic, with the body's first-line indent and no side indent, and no colour or indent setting reaches it"}
+    {"followup": "EF-60", "package": "postext", "note": "the cover and contents styles inherit the level's breakBefore, parity 'any', which is what puts the contents on page 2 without a :::pagebreak; the 'Open every essay on a recto' Variation has to restate 'any' on both styles, or the contents inherit 'odd' and open on page 3 behind a blank verso"}
   ],
   "related": ["front-matter-roman-to-arabic", "letters-edition", "running-heads-by-parity", "magazine-cover-and-contents"],
   "engine": {"postext": "1.25.0"},

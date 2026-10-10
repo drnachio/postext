@@ -24,7 +24,7 @@ The level’s `numberingTemplate: '{1:I}'` numbers the essays I, II and III, and
 
 <Excerpt region="contents" />
 
-`:::toc` in the Markdown prints one entry per listed heading: number, title, leaders, page label and, through `subtitle`, the author. `buildDocument` lays the book out again until the page labels stop changing, so a renamed or lengthened essay updates the contents ([table of contents](/en/docs/configuration#table-of-contents)). Postext 1.4.1 puts the middle of an entry’s number 0.3 × the entry size above the baseline, and Chrome puts Gloock’s middle 0.3125 em above its baseline, so a numeral of 0.3 × 15 ÷ 0.3125 = 14.4 pt stands on the 15 pt title’s baseline; a 12 pt one rides 0.3 mm high. A book with parts also gets a row for each `:::part`, drawn by `toc.parts.design`, as in <RecipeLink slug="parts-in-colour">Parts in colour</RecipeLink>.
+`:::toc` in the Markdown prints one entry per listed heading: number, title, leaders, page label and, through `subtitle`, the author. `buildDocument` lays the book out again until the page labels stop changing, so a renamed or lengthened essay updates the contents ([table of contents](/en/docs/configuration#table-of-contents)). An entry’s numeral takes the title’s face and size unless `numberFontFamily` or `numberFontSize` say otherwise, and it stands on the baseline of the title’s first line at any size. A book with parts also gets a row for each `:::part`, drawn by `toc.parts.design`, as in <RecipeLink slug="parts-in-colour">Parts in colour</RecipeLink>.
 
 ### 3 · Author on the verso, essay on the recto
 
@@ -36,13 +36,13 @@ Each head is anchored to the page, 11 mm from the top edge, and `parity` picks t
 
 <Excerpt region="front" />
 
-With `numbered: false` the cover and the contents do not advance the counter, so Hazlitt is I, and `toc: false` keeps them off the list ([heading styles](/en/docs/configuration#heading-styles)). Both styles inherit the level’s `breakBefore`, parity `'any'`, which is why the contents follows the cover on page 2 without a `:::pagebreak`. The cover style spans the page in a one-column book because a design kept in the column is clipped at the column’s top and bottom edges, which would leave 20 mm of paper above the landscape.
+With `numbered: false` the cover and the contents do not advance the counter, so Hazlitt is I, and `toc: false` keeps them off the list ([heading styles](/en/docs/configuration#heading-styles)). Both styles inherit the level’s `breakBefore`, parity `'any'`, which is why the contents follows the cover on page 2 without a `:::pagebreak`. The cover style spans the page in a one-column book because a design kept in its column is cut at the column’s foot, which would leave 22 mm of paper under the landscape.
 
 ### 5 · Write every colour out with its palette link
 
 <Excerpt region="palette" />
 
-In 1.4.1 `colorPalette` reaches the text styles but not the design elements, so `col()` writes each colour’s hex beside its `paletteId`: the bylines, the running heads and the cover paint that hex. Pointing `main-color` at the ink covers every default the configuration does not restate, which would otherwise print in the engine’s blue, `#295AA3`.
+`col()` writes each colour’s hex beside its `paletteId`, and the engine follows that link: the bylines, the running heads and the cover take what `colorPalette` holds under the id, so a second palette with the same ids recolours the whole book. Pointing `main-color` at the ink covers every default the configuration does not restate, which would otherwise print in the engine’s blue, `#295AA3`.
 
 ## Variations
 
@@ -78,6 +78,5 @@ With parity `'odd'`, Stevenson moves to page 9 behind a blank page 8. The two fr
 
 ## Pitfalls
 
-- Hazlitt quotes verse in the middle of his sentences. The lines of verse go in a `:::verse{style="verse" align=start}` block, a line of Markdown a line of verse set 8 mm in, and the sentence that resumes after it goes in a `runon` style with no indent. A Markdown blockquote would print in a fixed `#666666` grey italic, with the body’s first-line indent and no side indent, and no setting changes that in 1.4.1.
+- Hazlitt quotes verse in the middle of his sentences. The lines of verse go in a `:::verse{style="verse" align=start}` block, a line of Markdown a line of verse set 8 mm in, and the sentence that resumes after it goes in a `runon` style with no indent. A Markdown blockquote would not do: its lines are joined like a paragraph’s, so the verse would run on as prose.
 - An attribute that a heading lacks prints nothing and raises no warning. Without `author="…"`, an essay’s byline and verso head come out empty and its line under the title disappears from the contents.
-- The 14.4 pt of step 2 holds for Gloock only. For another face, find how far above the baseline Chrome puts its middle: `measureText('I').alphabeticBaseline` with `textBaseline = 'middle'` returns it, negated, in pixels. Then set `numberFontSize` to 0.3 × the entry size divided by that distance in em (Hanken Grotesk’s is 0.2675 em).
