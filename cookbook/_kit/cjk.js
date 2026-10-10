@@ -52,8 +52,8 @@ async function isCjkFamily(family) {
  *  it once per voice (loadCjkFonts({ 'LXGW WenKai TC': ['400'] }, quotes)),
  *  so the heading and quotation faces fetch and check only their own
  *  characters. Fails when a character of `text` is in no file of a face.
- *  List every weight the pages use: a weight left to buildWithFonts gets
- *  the latin file only. With { vertical: true } it also loads each
+ *  List every weight the pages use: a weight left to the engine's later round
+ *  gets the latin file only. With { vertical: true } it also loads each
  *  family's vertical forms (brackets, quotes, pause marks) for the canvas,
  *  which needs loadVerticalAlternates imported from postext. Resolves to
  *  the number of files loaded. */

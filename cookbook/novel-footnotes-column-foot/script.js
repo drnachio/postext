@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 071 · Footnotes at the foot of the column ══════════════
 // https://postext.dev/en/cookbook/novel-footnotes-column-foot
 // Code: MIT · Text: Lazarillo de Tormes (1554) and Markham's 1908 translation (PD)
-// Fonts: EB Garamond, Bodoni Moda, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.6.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: EB Garamond, Bodoni Moda, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocument, buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -35,6 +35,8 @@ const label = { fontFamily: 'IBM Plex Sans Condensed', fontWeight: 600,
 
 // The switches under the title change these and build again (#region live).
 const options = { columns: 2, placement: 'column', numbering: 'chapter' };
+const layoutFor = (columns) => (columns === 2
+  ? { layoutType: 'double', gutterWidth: mm(7) } : { layoutType: 'single' });
 
 // #region answer: the notes at the foot of the column that cites them
 // In the Markdown: `Tejares,[^9]` cites a note (the id may be a word: `[^tejares]`), and
@@ -95,16 +97,14 @@ const footer = { elements: [{ ...head('drop-folio', '{pageNumber}', 'all', 'bott
   { ...folio, align: 'center', placement: at('page', 'bottom', 0, -11) }), pages: 'opener' }] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = { // one object: the switches below change it in place
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'),
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
       right: mm(MARGIN.outer), mirror: true } }, // left = inner
-  layout: options.columns === 2
-    ? { layoutType: 'double', gutterWidth: mm(7) }
-    : { layoutType: 'single' },
+  layout: layoutFor(options.columns),
   bodyText: { fontFamily: 'EB Garamond', fontSize: pt(10.5), lineHeight: pt(LEAD),
     color: col('ink'), boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: mm(4.5), indentAfterHeading: false,
@@ -125,13 +125,13 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   footnotes: footnotes(),
   header,
   footer,
-});
+};
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first).
+// Every face the design uses, loaded before the first build with the ones the config names.
 const FONTS = {
   'EB Garamond': ['400', '400i', '600', '600i', '700'],
   'Bodoni Moda': ['400i'],
@@ -139,9 +139,8 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 const TITLE = t({ en: 'Footnotes at the foot of the column', es: 'Notas al pie de columna' });
-let doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+let doc = await buildDocumentWithFonts({ markdown }, config, kitFonts(FONTS));
 showPages(doc, { title: TITLE });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider }), `${RECIPE}.pdf`);
 
@@ -169,7 +168,9 @@ for (const [key, choices] of Object.entries(CHOICES)) {
 bar.addEventListener('change', (event) => {
   const { name, value } = event.target;
   options[name] = name === 'columns' ? Number(value) : value;
-  doc = buildDocument({ markdown }, config()); // the fonts are loaded by now
+  config.layout = layoutFor(options.columns); // changed in place: the build sees it
+  config.footnotes = footnotes();
+  doc = buildDocument({ markdown }, config); // the fonts are loaded by now
   showPages(doc, { title: TITLE });
 });
 document.getElementById('pages').before(bar);

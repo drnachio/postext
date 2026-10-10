@@ -1,14 +1,14 @@
 // ═══ Postext Cookbook · Nº 001 · Your recipe title ═══════════════════════════════
 // https://postext.dev/en/cookbook/new-recipe
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Source Serif 4, Source Sans 3 (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Source Serif 4, Source Sans 3 (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 //
 // The template for a new recipe (`pnpm cookbook new <slug>` copies it and fills in the
 // slug and the Nº). It already runs, and it already clears the design bar: a trade-book
 // page with mirrored margins, a three-voice palette, a quiet chapter opener and running
 // heads. Keep what serves your recipe, replace the rest, and read cookbook/README.md.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -87,7 +87,7 @@ const footer = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = {
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   resourceTypes: defaultResourceTypes(LANG), // "Figura" in Spanish (gotcha: resource-types-locale)
   colorPalette,
@@ -144,22 +144,21 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     note: { color: col('muted') } },
   header,
   footer,
-});
+};
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses. Layout measures with the browser's fonts, so the
-// kit loads them from Fontsource before the first build (gotcha: fonts-first).
+// Every face the design uses. The engine loads them, and any face the config
+// names, from Fontsource before the first build (kitFonts, buildDocumentWithFonts).
 const FONTS = {
   'Source Serif 4': ['400', '400i', '700', '700i'],
   'Source Sans 3': ['400', '600', '700'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config, kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Your recipe title', es: 'El título de tu receta' }) });
 // Pictures (README §5.3): add "images" to recipe.json kit and registerResourceImage to the
 // import, then `await loadImage('photo.jpg', asset('photo-2400.jpg'))` before the build.

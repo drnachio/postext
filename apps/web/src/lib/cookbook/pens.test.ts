@@ -259,8 +259,10 @@ describe("lintPen (fixture)", () => {
   });
 
   it("catches the engine traps", () => {
-    expect(lint((s) => s.replace("const config = () => ({", "const config = {").replace("\n});\n\n// ─── 2", "\n};\n\n// ─── 2")).fails).toContain(
-      "script.js: the config is a factory, `const config = () => ({ … })` (the engine caches resolved configs per object)",
+    // One object is fine since postext 1.25 checks a config changed in place (#629).
+    expect(lint((s) => s.replace("const config = () => ({", "const config = {").replace("\n});\n\n// ─── 2", "\n};\n\n// ─── 2")).fails).toEqual([]);
+    expect(lint((s) => s.replace("const config = () => ({", "const config = build({")).fails).toContain(
+      "script.js: declare the config as `const config = { … }` (or a factory, `const config = () => ({ … })`)",
     );
     const noBreak = lint((s) => s.replace("      breakBefore: { enabled: true, parity: 'odd' },\n", "")).fails;
     expect(noBreak.some((f) => f.includes("any `headings` object drops the default H1 page break"))).toBe(true);
@@ -710,7 +712,7 @@ describe("detect", () => {
     const imports = parseImports(pen.js);
     expect(imports.map((i) => i.url)).toEqual(["https://esm.sh/postext", "https://esm.sh/postext-pdf"]);
     expect(usedApis(pen.js)).toEqual([
-      "buildDocument", "clearMeasurementCache", "decompressWoff2", "defaultResourceTypes", "registerResourceImage",
+      "buildDocument", "decompressWoff2", "defaultResourceTypes", "registerResourceImage",
       "renderPageToCanvas", "renderToPdf",
     ]);
     // A spread is a use; a property of the same name is not.

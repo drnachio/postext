@@ -202,7 +202,7 @@ Start from `_template/script.js`; it runs as it is. The fixed parts, in order:
 // https://postext.dev/en/cookbook/magazine-photo-opener                              line 2
 // Code: MIT · Text: ESO eso2315 (CC BY 4.0) · Photo: ESO/VPHAS+ (CC BY 4.0)           line 3
 // Fonts: Newsreader, Archivo, Chivo (SIL OFL 1.1) · Needs postext ≥ 1.4.1            line 4
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'magazine-photo-opener';
@@ -210,7 +210,7 @@ const RECIPE = 'magazine-photo-opener';
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
 // #region answer: <what it shows>      exactly one; 10–40 lines; the technique itself
 // #endregion
-const config = () => ({ /* … */ });     // a factory, never a shared object
+const config = { /* … */ };            // one object; a change made in place is seen by the next build
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ '';     // content.<lang>.md, inlined by composition
@@ -219,8 +219,7 @@ const markdown = /* @content */ '';     // content.<lang>.md, inlined by composi
 const FONTS = { Newsreader: ['400', '400i', '700', '700i'], Archivo: ['700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config, kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Magazine opener', es: 'Apertura de revista' }) });
 
 // @kit                                  the last line
@@ -256,7 +255,8 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
   at print size: `await loadImage('lagoon.jpg', asset('lagoon-2400.jpg'))`, then a resource
   `{ id, typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0, bitmap: { fileId: 'lagoon.jpg', format: 'jpeg', width: 2400, height: 1520 }, caption, note, altText }`.
   Draw generated SVG with `loadSvg(fileId, markup)`.
-- **Books.** `buildWithFonts(() => buildBundle({ chapters: [{ markdown }, { markdown: chapter2 }], config: config(), resources }))`
+- **Books.** `await prepareFonts(text, config, kitFonts(FONTS))`, then
+  `await withLoadedFonts(() => buildBundle({ chapters: [{ markdown }, { markdown: chapter2 }], config, resources }), { ...kitFonts(FONTS), text })`
   with `const chapter2 = /* @content:chapter-2 */ '';` and `content.chapter-2.en.md`.
   `showPages` pairs pages across chapters and `renderToPdf` accepts the array of documents.
 - **HTML.** `document.getElementById('pages').innerHTML = renderToHtml(doc, { mode: 'single', background: '#fff', resourceImageUrl: imageUrl })`.
@@ -269,8 +269,8 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
   recipe; move it to the plain import when its script next changes. Until then that build
   prints two lines the recipe has to expect:
   `"expect": { "console": ["module \"buffer\" not found", "module \"esprima\" not found"] }`.
-- **Live controls.** `index.html` holds `<form id="controls">…</form>`; a `render()` rebuilds
-  with `config()` and calls `showPages`. Add `"live"` to `outputs`.
+- **Live controls.** `index.html` holds `<form id="controls">…</form>`; a `render()` changes
+  `config` in place (the next build sees it), rebuilds with `buildDocument` and calls `showPages`. Add `"live"` to `outputs`.
 - **Workers.** Follow the docs' "Running layout in a Web Worker" and set `engine.worker: true`.
 - **Folio (3D book).** Import `createFolioFromDocument` from `https://esm.sh/postext-folio` (the
   capture pins `packages/postext-folio`'s version) and mount it in a container with a height:
@@ -304,8 +304,9 @@ Its functions are hoisted declarations you can call from anywhere in the script:
 | `mm(n)`, `pt(n)`, `em(n)` | core | Dimensions: `mm(18)` is `{ value: 18, unit: 'mm' }`. |
 | `t({ en, es })` | core | The string for the sample's language. |
 | `asset(file)` | core | The jsDelivr URL of `cookbook/<slug>/assets/<file>`. |
-| `loadFonts(FONTS, text)` | fonts | Loads every face from Fontsource before the first build: the latin file, plus latin-ext when the text has letters such as č ł †, and greek when it has Greek letters, for the families that ship those files (`kitSubsetsFor`; Lora and Gelasio have no greek file: set Greek in them as maths, `$\chi^2$`). Pass every slot whose text the pages set. |
-| `buildWithFonts(build, text)` | fonts | Runs the build, loads any face the pages use that `FONTS` forgot (with a warning the capture fails on), and rebuilds. |
+| `kitFonts(FONTS)` | fonts | The options of the engine's `buildDocumentWithFonts`, `prepareFonts` and `withLoadedFonts` (import them from postext): the Fontsource resolver and the faces of `FONTS`. The engine loads every face the config and `FONTS` ask for before the first build, then any face the pages used that was missing, and builds again; a face it could not load is a `fontFallback` content warning. |
+| `fontsourceResolver` | fonts | The resolver itself: a face's latin file, plus latin-ext when the text has letters such as č ł †, and greek when it has Greek letters, for the families that ship those files (`kitSubsetsFor`; Lora and Gelasio have no greek file: set Greek in them as maths, `$\chi^2$`), always in that order; null for a weight or slant Fontsource does not ship. |
+| `loadFonts(FONTS, text)` | fonts | For the cjk, arabic and comics blocks, which add files of their own after it: the latin (and latin-ext, greek) files of `FONTS` added to `document.fonts` by hand. |
 | `showPages(doc \| docs, { title })` | viewer | The dark desk with facing spreads; sets `data-postext="ready"`. |
 | `offerPdf(makePdf, filename)` | pdf | A "Build the PDF" button, then open and download links. |
 | `fontsourceProvider` | pdf | The PDF font provider: snaps to shipped weights, falls back from missing italics, and embeds the latin file, then the latin-ext and greek files a face's letters need, as `loadFonts` loads them on screen. |

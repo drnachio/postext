@@ -90,7 +90,9 @@ export const NETWORK_ALLOWLIST: readonly { host: string; path?: string }[] = [
 /** The engine symbol each kit block calls (spec §7.3). */
 export const KIT_IMPORTS: Record<KitBlock, { module: "postext" | "postext-pdf"; name: string } | null> = {
   core: null,
-  fonts: { module: "postext", name: "clearMeasurementCache" },
+  // kitFonts and fontsourceResolver feed the engine's buildDocumentWithFonts
+  // (fonts v3, #629), which the recipe imports itself.
+  fonts: null,
   viewer: { module: "postext", name: "renderPageToCanvas" },
   pdf: { module: "postext-pdf", name: "decompressWoff2" },
   images: { module: "postext", name: "registerResourceImage" },
@@ -402,7 +404,7 @@ export function lintPen(
   // Config.
   const range = configObjectRange(scan);
   const keys = configKeys(js, scan);
-  if (!range) fails.push("script.js: the config is a factory, `const config = () => ({ … })` (the engine caches resolved configs per object)");
+  if (!range) fails.push("script.js: declare the config as `const config = { … }` (or a factory, `const config = () => ({ … })`)");
   else {
     for (const key of keys) {
       if (!CONFIG_KEYS.includes(key)) fails.push(`${at(range[0])}: \`${key}\` is not a config key (typo? the engine ignores it)`);
@@ -526,7 +528,7 @@ export function lintPen(
     fails.push("script.js: downloads.pdf needs offerPdf(…) (the capture clicks its button)");
   }
   if (!/^const FONTS = \{/m.test(ownCode)) fails.push("script.js: declare every face in `const FONTS = { Family: ['400', '400i'] }`");
-  else if (!/\bloadFonts\s*\(\s*FONTS\b/.test(ownBare)) warns.push("script.js: load the faces with `await loadFonts(FONTS, markdown)` before the build");
+  else if (!/\b(?:loadFonts|kitFonts)\s*\(\s*FONTS\b/.test(ownBare)) warns.push("script.js: load the faces before the build: `buildDocumentWithFonts(content, config, kitFonts(FONTS))`");
 
   // Content files.
   const cjkKit = meta.kit?.includes("cjk") ?? false;
