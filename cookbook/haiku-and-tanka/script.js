@@ -77,7 +77,7 @@ const at = (down, across) => ({ anchor: { to: 'container', edge: 'top-left' },
   offset: { x: pt(down), y: pt(across) } });
 const TITLE = 18; // pt
 const part = {
-  level: 1, breakBefore: { enabled: true, parity: 'any' }, // gotcha: headings-drop-h1-break
+  level: 1, breakBefore: { enabled: true, parity: 'any' }, // the next page, either side
   advancedDesign: { enabled: true, minHeight: lines(5), slot: { elements: [
     { kind: 'text', id: 'title', content: '{titleText}', fontFamily: MINCHO, fontWeight: 700,
       fontSize: pt(TITLE), lineHeight: 1, letterSpacing: pt(4), color: col('ink'),

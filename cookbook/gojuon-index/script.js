@@ -82,7 +82,7 @@ const config = () => ({
   headings: { fontFamily: GOTHIC, fontWeight: 700, color: col('ink'),
     balancing: { enabled: false }, // heads stay on the grid
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'odd': the next recto; the default 'always-odd' also leaves a blank page before it.
       { level: 1, breakBefore: { enabled: true, parity: 'odd' }, advancedDesign: opener(6) },
       { level: 2, numberingTemplate: '{1}.{2}', numberSeparator: '　', fontSize: pt(10.5),
         lineSpan: 3 }, // 3行取り

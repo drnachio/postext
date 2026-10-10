@@ -49,12 +49,7 @@
     "math-bundle",
     "latin-subset",
     "merged-cells-hiddenby",
-    "hyphenation-locales",
-    "resource-types-locale",
-    "svg-no-webfonts",
-    "dollar-math",
-    "headings-drop-h1-break",
-    "quote-frontmatter"
+    "dollar-math"
   ],
   "related": [
     "journal-article-with-maths",

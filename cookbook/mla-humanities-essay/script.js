@@ -17,7 +17,7 @@ const palette = {
   ink: '#1f1a17', glaze: '#231c19', clay: '#9a3d22', slip: '#e3a27e', rule: '#c9bdb0',
   muted: '#6b6159', paper: '#fffdf9',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// Every colour is linked to its palette entry by id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.clay })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -88,7 +88,7 @@ const head = (id, content, parity, edge, x, align) => ({
 });
 
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-us', es: 'es' }), // hyphenation patterns and the engine's own words
   colorPalette,
   citations,
   page: {
@@ -108,7 +108,7 @@ const config = () => ({
   headings: {
     fontFamily: LABEL, fontWeight: 600, color: col('clay'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': an essay starts on the next page, left or right.
       { level: 1, fontFamily: TEXT, fontSize: pt(56), marginBottom: pt(0),
         breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
       { level: 2, fontSize: pt(11.5), letterSpacing: pt(0.9), lineHeight: pt(LEAD),

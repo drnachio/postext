@@ -24,7 +24,7 @@
     ]
   },
   "answers": ["Q85"],
-  "gotchas": ["headings-drop-h1-break", "resource-types-locale", "svg-no-webfonts", "merged-cells-hiddenby"],
+  "gotchas": ["merged-cells-hiddenby"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["en", "es"] },

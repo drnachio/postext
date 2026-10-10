@@ -37,8 +37,7 @@
     "parity-page1-recto",
     "cjk-fonts-slices",
     "cjk-locale-tag",
-    "cjk-face-latin-quotes",
-    "headings-drop-h1-break"
+    "cjk-face-latin-quotes"
   ],
   "related": ["bilingual-facing-verse", "catalogue-facing-plates", "poetry-collection", "chinese-novel-horizontal"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },

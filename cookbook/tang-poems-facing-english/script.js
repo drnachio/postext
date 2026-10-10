@@ -152,7 +152,7 @@ const config = () => ({
     hyphenation: { enabled: true, locale: LANG }, // no Chinese patterns: the Latin's language
     verse: { indentStep: em(1) } }, // Giles's two-space indents: two ems
   // The designs paint the titles; weight 400 keeps the heading blocks in a loaded face.
-  // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+  // parity 'any': a level-1 heading takes the next page; the styles below choose the side.
   headings: { fontFamily: SERIF, fontWeight: 400, levels: [{ level: 1, marginTop: pt(0),
     marginBottom: pt(0), breakBefore: { enabled: true, parity: 'any' } }] },
   headingStyles: [titlePage, english, chinese],

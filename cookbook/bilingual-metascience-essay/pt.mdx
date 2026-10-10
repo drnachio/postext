@@ -34,7 +34,7 @@ As tabelas, legendas, notas e textos alternativos ficam em `content.resources.<l
 
 <Excerpt region="art" />
 
-Cada painel é um laço sobre *R* de 0 a 1 que passa pela mesma `ppv()` que preenche a Tabela 4. Traçar as curvas pela fórmula revela algo que a figura de 2005 esconde: as curvas dela correspondem a *u* = 0; 0,05; 0,20 e 0,80, enquanto a legenda diz 0,05; 0,20; 0,50 e 0,80. Esta versão desenha os valores da legenda, acrescenta a curva sem viés em tracejado, e a nota da legenda explica isso. Os rótulos são texto na fonte dos rótulos: o SVG leva a fonte como `@font-face` embutido para o canvas, e o PDF os compõe na fonte que o provedor fornece.
+Cada painel é um laço sobre *R* de 0 a 1 que passa pela mesma `ppv()` que preenche a Tabela 4. Traçar as curvas pela fórmula revela algo que a figura de 2005 esconde: as curvas dela correspondem a *u* = 0; 0,05; 0,20 e 0,80, enquanto a legenda diz 0,05; 0,20; 0,50 e 0,80. Esta versão desenha os valores da legenda, acrescenta a curva sem viés em tracejado, e a nota da legenda explica isso. Os rótulos são texto que nomeia a fonte dos rótulos: `loadSvg` passa o desenho por `inlineSvgFonts`, que embute essa fonte para o canvas, e o PDF os compõe na fonte que o provedor fornece.
 
 ### 5 · Uma primeira página e um boxe para um ensaio
 

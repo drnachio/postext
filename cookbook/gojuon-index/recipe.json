@@ -46,8 +46,7 @@
     "ja-locale-tag",
     "ja-fonts-kana",
     "cjk-fonts-slices",
-    "cjk-no-italic",
-    "headings-drop-h1-break"
+    "cjk-no-italic"
   ],
   "explainsWarnings": [
     "indexReadingMissing"

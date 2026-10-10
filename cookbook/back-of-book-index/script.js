@@ -117,7 +117,7 @@ const note = { fontFamily: SANS, fontSize: pt(8), lineHeight: pt(11.3), color: c
   boldColor: col('ink'), italicColor: col('ink'), textAlign: 'left', firstLineIndent: pt(0) };
 const config = {
   locale: t({ en: 'en-gb', es: 'es' }), // hyphenation and the index's sort order
-  // Figura and Tabla in Spanish (gotcha: resource-types-locale); captions stand in the channel.
+  // The built-in types in the edition's language; their captions stand in the channel.
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type,
     defaultPlacement: { captionSide: true } })),
   colorPalette,
@@ -131,7 +131,7 @@ const config = {
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: mm(4), indentAfterHeading: false },
   headings: { fontFamily: SANS, color: col('ink'), fontWeight: 700, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // parity 'odd': the next recto; the default 'always-odd' also leaves a blank page before it.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' }, marginBottom: pt(0),
       numberingTemplate: '{1}', advancedDesign: opener(BAND,
         t({ en: 'Chapter {chapterNumber}', es: 'Capítulo {chapterNumber}' })) },
@@ -167,7 +167,7 @@ const indexChapter = /* @content:index */ ''; // # Index and :::index (content.i
 const chapters = [heart, vessels, indexChapter].map((markdown) => ({ markdown }));
 
 // #region art: the pressure–volume loop of Figure 14.1, drawn in code
-// No text in the drawing: an SVG image cannot use the page's web fonts (gotcha: svg-no-webfonts).
+// Paths only: the drawing carries no lettering, and the caption reads it.
 const PX = 10; // SVG pixels per unit
 const [W, H] = [100, 52];
 const vx = (volume) => 12 + volume * 0.56; // 0–150 mL across

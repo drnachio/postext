@@ -33,7 +33,6 @@
     "cjk-locale-tag",
     "cjk-face-region",
     "cjk-no-italic",
-    "headings-drop-h1-break",
     "style-inherits-break"
   ],
   "explainsWarnings": ["cjkGridClamped"],

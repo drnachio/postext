@@ -79,7 +79,7 @@ const opener = {
       letterSpacing: pt(5), color: col('ink'), align: 'center', placement: centred(34) },
   ] },
 };
-// Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+// parity 'any': a story opens on the next page, left or right.
 const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
   marginTop: pt(0), marginBottom: pt(0), advancedDesign: opener };
 // #endregion

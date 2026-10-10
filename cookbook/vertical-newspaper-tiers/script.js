@@ -47,7 +47,7 @@ const layout = {
 // The grid counts characters down a tier and lines across the page: 25 × 29.
 const cjk = { grid: { enabled: true, charsPerLine: CHARS, linesPerPage: 29 } };
 // The body has two tiers at most. The telegrams take three inside a page-span box floated to
-// the foot of the flow, the left of the sheet (gotcha: callout-columns), with the fences
+// the foot of the flow, the left of the sheet, with the fences
 //   :::callout{type="wires" span="page" placement="bottom" title="電報"} and :::columns{count=3}
 const wires = { id: 'wires', backgroundEnabled: false,
   stripe: { enabled: true, side: 'top', width: pt(1.5), color: col('ink') }, // on its right
@@ -143,7 +143,7 @@ const config = () => ({
   headings: {
     fontFamily: SONG, fontWeight: 900, color: col('ink'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': a level-1 heading opens the next page, whichever side it falls on.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         marginBottom: pt(0) },
       { level: 2, fontSize: pt(20), lineHeight: pt(2 * LEAD), marginTop: pt(LEAD / 2),

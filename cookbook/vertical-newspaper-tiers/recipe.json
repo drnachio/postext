@@ -19,10 +19,7 @@
   },
   "answers": ["Q102", "Q27", "Q78", "Q90"],
   "gaps": ["three-columns"],
-  "gotchas": [
-    "page-span-heading-new-page", "callout-columns", "cjk-fonts-slices", "cjk-locale-tag",
-    "cjk-spread-order", "headings-drop-h1-break"
-  ],
+  "gotchas": ["page-span-heading-new-page", "cjk-fonts-slices", "cjk-locale-tag", "cjk-spread-order"],
   "explainsWarnings": [],
   "related": ["newspaper-front-page", "chinese-dates-upright", "vertical-novel-right-bound", "red-ink-commentary"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
