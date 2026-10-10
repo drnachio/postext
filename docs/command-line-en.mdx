@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'en',
   lastUpdated: '2026-10-09',
   readingTime: '10 min',
-  order: 13,
+  order: 22,
   plainSummary: "This page is for people who want to make books with Postext from a terminal instead of the website. You download one file for your computer and run it, with nothing to install. You give it your book, or a few text files, and it makes a PDF, a web page, an e-book, pictures of the pages or a Word document. It can also check a book for problems and pack its files into one. Programs and AI helpers can use it too, because it can answer in a format they read easily.",
 };
 
@@ -111,7 +111,7 @@ postext image my-book.postext --page 1 -o cover.png
 Every command that reads a book takes any of these:
 
 - **A `.postext` file**: the bundle the Sandbox exports and opens (see
-  [Bundles](/en/docs/configuration#bundles-postext-files)).
+  [Bundles](/en/docs/configuration-programmatic-usage#bundles-postext-files)).
 - **A book folder**: an unpacked bundle, with its `preset.json`, its chapters,
   resources and fonts. The agent skill delivers this, and `postext unpack`
   writes one.
@@ -167,8 +167,8 @@ postext pdf book/ --color-space grayscale --no-outlines
 ```
 
 The PDF follows the book's own settings (see
-[PDF generation](/en/docs/configuration#pdf-generation-config) and
-[Print production](/en/docs/configuration#print-production-config)); these options
+[PDF generation](/en/docs/configuration-fonts-colors-viewers#pdf-generation-config) and
+[Print production](/en/docs/configuration-fonts-colors-viewers#print-production-config)); these options
 change them for one run:
 
 - `--pdfx none|x1a|x4`: the PDF/X standard for a printer.
@@ -204,7 +204,7 @@ postext epub book.postext --layout reflowable --cover cover.jpg
 
 `--layout fixed` (the default) keeps every page as printed, with selectable
 text; `--layout reflowable` lets the reading system set the text again for its
-screen (see [EPUB books](/en/docs/configuration#epub-books-postext-epub)). The
+screen (see [EPUB books](/en/docs/configuration-programmatic-usage#epub-books-postext-epub)). The
 cover is the book's thumbnail unless `--cover` gives a picture. The package
 metadata (title, authors, language, identifier) comes from the first chapter's
 front matter, as in the Sandbox.

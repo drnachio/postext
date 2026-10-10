@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'en',
   lastUpdated: '2026-10-07',
   readingTime: '25 min',
-  order: 9,
+  order: 18,
   plainSummary: "This page explains how to make a comic with Postext. The pictures are the panels, and everything the characters say, think or hear is written as text in the Markdown file. Postext places the panels on the page and draws the speech balloons, captions and sound effects around the words by itself. To translate the comic you rewrite only the words, and Postext letters the new language again: Japanese in columns, Arabic from right to left. The page also covers comic strips inside a book, pages across two facing pages, the outputs and the limits that remain.",
 };
 
@@ -17,7 +17,7 @@ export const metadata = {
 
 A comic in Postext is a set of pictures and a script. The pictures are ordinary bitmap or SVG resources, drawn with no lettering on them. The script lives in the chapter's Markdown: a `:::page` block cuts a page into panels, gives each panel its picture and lists, line by line, the balloons, captions and sound effects of that panel. Postext lays out the panels, crops each picture to its cell without cutting into what matters, sets the text in the book's lettering face at one size, draws a balloon around it, points the tail at the speaker and places the balloons in reading order where they cover no face. A translation is another Markdown file with the same panels and other words; Postext letters it again from scratch, in columns for Japanese and from right to left for Arabic.
 
-Comics are opt-in: a document without `:::page` or `:::strip` lays out exactly as before. The settings live in the [`comics` section of the configuration](/en/docs/configuration#comics), and the markup is summed up in [Document format › Comics](/en/docs/document-format#comics).
+Comics are opt-in: a document without `:::page` or `:::strip` lays out exactly as before. The settings live in the [`comics` section of the configuration](/en/docs/configuration-comics#comics), and the markup is summed up in [Document format › Comics](/en/docs/document-format#comics).
 
 ## Comic pages
 
@@ -169,7 +169,7 @@ A picture without a safe area is cropped around its centre, or around `focus`. A
 
 ### Panel styles
 
-The look of a panel comes from `comics.panel` (a 1 pt black border, a white ground, `cover`), from a named style in `comics.panelStyles` that a page or panel picks with `style=`, and from the panel's own `border` and `bg`. A border can be `solid`, `none`, or `rough`: a hand-drawn line that wobbles a little, the same on every build, since its wobble is seeded from the panel. See [Configuration › Comics](/en/docs/configuration#comics) for every field.
+The look of a panel comes from `comics.panel` (a 1 pt black border, a white ground, `cover`), from a named style in `comics.panelStyles` that a page or panel picks with `style=`, and from the panel's own `border` and `bg`. A border can be `solid`, `none`, or `rough`: a hand-drawn line that wobbles a little, the same on every build, since its wobble is seeded from the panel. See [Configuration › Comics](/en/docs/configuration-comics#comics) for every field.
 
 ### Pop-out art
 
@@ -335,7 +335,7 @@ ghost{eerie}: Leave this house…
 caption{at=bottom-end}: Three streets away.
 ```
 
-The outlines are `oval` (a superellipse fitted to the lines, `roundness` 2.2), `rounded`, `rectangle`, `cloud` (scallops counted from the perimeter), `burst` (`burstPoints` spikes, `burstDepth` deep), `wavy`, `electric` and `none`. `dash` draws a dashed outline, `double` a double one, and `wobble` (0–1) shakes it by hand, always the same way for the same balloon. The tails are `curved`, `wedge`, `bubbles`, `zigzag` and `none`. Every field, with its default, is in [Configuration › Comics](/en/docs/configuration#comics).
+The outlines are `oval` (a superellipse fitted to the lines, `roundness` 2.2), `rounded`, `rectangle`, `cloud` (scallops counted from the perimeter), `burst` (`burstPoints` spikes, `burstDepth` deep), `wavy`, `electric` and `none`. `dash` draws a dashed outline, `double` a double one, and `wobble` (0–1) shakes it by hand, always the same way for the same balloon. The tails are `curved`, `wedge`, `bubbles`, `zigzag` and `none`. Every field, with its default, is in [Configuration › Comics](/en/docs/configuration-comics#comics).
 
 The renderers draw a balloon the way letterers ink one: all the outlines of a group are stroked first at twice their width, then filled, then the text is set. Two joined bodies and their tail therefore come out as one shape with no line between them.
 
@@ -443,7 +443,7 @@ A Western comic is read from left to right: the first panel of a tier is at the 
 - `'auto'` (the default): the direction of the edition's language. Right to left in a right-to-left document, so an Arabic edition mirrors its pages; in a vertical document; and in Japanese and Traditional Chinese (`ja`, `zh-Hant`, `zh-TW`, `zh-HK`, `zh-MO`), so a Japanese edition of a Western comic reads right to left, as manga do. In any other language, Simplified Chinese and Korean included (manhua and manhwa are read left to right today), it is the direction the art was drawn for, `comics.artDirection` (`'ltr'` by default): a manga, with `artDirection: 'rtl'`, reads right to left in any language.
 - `'ltr'` or `'rtl'` forces one direction for the whole book, and a page's `direction` attribute forces it for that page.
 
-The binding follows the comics. With `page.binding: 'auto'`, a book whose `comics` section reads right to left is bound on the right: page 1 stands alone on the left of the spine, spreads read `[3 | 2]`, viewers turn the pages leftward, the PDF asks for right-to-left page order and the EPUB declares a right-to-left page progression. The `comics` section decides for the whole book, so a chapter without comic pages is bound like the others; a page's own `direction` does not move the spine. A document whose comic pages read the defaults, with no `comics` section, keeps the binding of its text (`comics: {}` is enough to bind it as its comics read). `page.binding: 'left'` or `'right'` still wins. See [Binding](/en/docs/configuration#binding).
+The binding follows the comics. With `page.binding: 'auto'`, a book whose `comics` section reads right to left is bound on the right: page 1 stands alone on the left of the spine, spreads read `[3 | 2]`, viewers turn the pages leftward, the PDF asks for right-to-left page order and the EPUB declares a right-to-left page progression. The `comics` section decides for the whole book, so a chapter without comic pages is bound like the others; a page's own `direction` does not move the spine. A document whose comic pages read the defaults, with no `comics` section, keeps the binding of its text (`comics: {}` is enough to bind it as its comics read). `page.binding: 'left'` or `'right'` still wins. See [Binding](/en/docs/configuration-page-layout#binding).
 
 The same source gives both page layouts. A right-to-left page lays out the panels of each tier from the right, so panel 1 sits at the top right; slants mirror with them, and so do the logical sides of `bleed`, `pad` and the corner keywords (a caption at `top-start` sits at the top right). Tiers stay in their order from top to bottom, and the reading order of the script does not change. The lettering mirrors its rules too: the first balloon of a panel leans to the right, and the next one may sit higher only further to the left.
 
@@ -520,7 +520,7 @@ Every warning names the line or attribute it concerns, and the Sandbox's Checks 
   </tbody>
 </table>
 
-The warnings come back in the document's `contentWarnings` with the source range of the line or attribute they concern (see [Configuration › Warnings in the document](/en/docs/configuration#warnings-in-the-document)).
+The warnings come back in the document's `contentWarnings` with the source range of the line or attribute they concern (see [Configuration › Warnings in the document](/en/docs/configuration-programmatic-usage#warnings-in-the-document)).
 
 A comics setting that takes one of a few words and holds another, such as `shape: 'ovl'` in a balloon style or `readingDirection: 'rlt'`, is read as its default and listed in the Checks panel as **Unknown setting value** (`unknownConfigValue`), with the value the engine used and the word it is closest to. The settings checked are `readingDirection`, `artDirection`, a panel style's `borderStyle` and `fit`, the lettering's `writingMode`, `textTransform`, `dropFinalStop` and `joinSameSpeaker`, and a balloon style's `shape`, `tail`, `target`, `position`, `align` and `textTransform`.
 

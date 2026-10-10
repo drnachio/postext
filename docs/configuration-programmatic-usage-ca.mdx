@@ -1,0 +1,1713 @@
+{/* docs/configuration-programmatic-usage-ca.mdx */}
+
+export const metadata = {
+  title: 'Configuració: ús programàtic',
+  sidebarTitle: 'Ús programàtic',
+  description: 'Postext des del codi: buildDocument, els Web Workers, el visor HTML, els PDF, el llibre en 3D, els EPUB i els paquets .postext',
+  lang: 'ca',
+  lastUpdated: '2026-10-10',
+  readingTime: '8 min',
+  order: 12,
+  parent: 'configuration',
+  plainSummary: "Aquesta pàgina és per a qui escriu codi. Ensenya a compondre un llibre amb una sola crida a una funció i a llegir els avisos que retorna. Explica com fer la feina en segon pla, perquè la pàgina continuï responent de pressa. Ensenya a crear una vista web, un fitxer PDF, un llibre en 3D i un llibre electrònic EPUB. L'última secció explica el fitxer que porta un llibre sencer amb les seves fonts i les seves imatges.",
+};
+
+# Configuració: ús programàtic
+
+
+## Ús programàtic
+
+> **Camí recomanat: fes servir el Web Worker.** Al navegador, la immensa majoria de les integracions han d'executar el pipeline a través de `createLayoutWorker()` de `postext/worker`, **no** cridant `buildDocument` directament al fil principal. El worker manté la UI fluida durant els builds, desa a la memòria cau els mesuraments de text entre reconstruccions incrementals i connecta la cancel·lació *last-wins* perquè una nova pulsació avorti qualsevol build obsolet en curs. Salta directament a [Executar la composició en un Web Worker](#executar-la-composició-en-un-web-worker) per a la recepta canònica. Tot el que hi ha a la resta d'aquesta secció (cridar `buildDocument` directament, resolvers, strippers, memòries cau) continua sent útil — el worker exposa exactament les mateixes entrades i sortides — però per a codi d'UI l'embolcall del worker és el punt de partida correcte. Recorre a `buildDocument` al fil principal només per a exportacions puntuals, renderitzat al servidor (Node) o tests.
+
+### Construir un document
+
+La funció `buildDocument` executa el pipeline de composició complet i retorna un Arbre Virtual del Document (VDT) amb coordenades precises per a cada element. És el punt d'entrada de més baix nivell; el codi d'UI hauria de preferir l'[embolcall Web Worker](#executar-la-composició-en-un-web-worker), que crida `buildDocument` dins d'un fil worker dedicat amb els mateixos arguments.
+
+```ts
+import { buildDocument } from 'postext';
+
+const content = {
+  markdown: '# Capítol u\n\nLa història comença aquí...',
+};
+
+const config = {
+  page: { sizePreset: '17x24' },
+  layout: { layoutType: 'double' },
+  bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } }, // 9 pt sobreescriu el valor per defecte de 8 pt
+};
+
+// Construir la composició — produeix un VDT amb una entrada per pàgina a `vdt.pages`
+const vdt = buildDocument(content, config);
+console.log(`El document té ${vdt.pages.length} pàgines`);
+```
+
+### Avisos del document
+
+`buildDocument` no s'atura davant d'una referència errònia o un estil desconegut: aplica una alternativa i registra el que ha fet a `doc.contentWarnings`. Les caixes que la maquetació va haver de forçar són a `doc.warnings`, que conserva la forma que tenia a postext 1.4: cada entrada és un `calloutOverflow` amb el seu `pageIndex`, el seu `columnIndex` i el seu `overflowPx`. Cada camp falta quan no hi ha res a notificar. Cada entrada té un `kind`. Els tipus de contingut porten l'interval d'origen de la construcció —`sourceStart` / `sourceEnd`, desplaçaments en el markdown que has passat, frontmatter inclòs— i, quan la construcció ha caigut en una pàgina, el seu `pageIndex`.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th>Es registra quan</th>
+      <th>Què fa la sortida</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>calloutOverflow</code></td>
+      <td>Una caixa <code>:::callout</code> no cap en cap columna i cap tall no la pot partir. Una caixa amb <code>span: 'side'</code> més alta que una columna lateral buida també ho és (des de postext 1.25).</td>
+      <td>Es col·loca igualment, desbordant la seva columna en <code>overflowPx</code> (a <code>pageIndex</code> / <code>columnIndex</code>). És l'únic tipus que apareix a <code>doc.warnings</code>; els de sota són a <code>doc.contentWarnings</code>.</td>
+    </tr>
+    <tr>
+      <td><code>invalidFrontmatter</code></td>
+      <td>El front matter no és YAML vàlid (unes cometes sense tancar, text després d'un valor entre cometes). <code>message</code> és el motiu de l'analitzador, amb la seva línia i columna.</td>
+      <td>El document es compon sense les seves metadades; el cos que segueix el <code>---</code> de tancament es compon com sempre.</td>
+    </tr>
+    <tr>
+      <td><code>unknownResourceId</code></td>
+      <td>Una inserció <code>::resource</code> (<code>usage: 'embed'</code>), una referència en línia <code>:ref</code> (<code>'ref'</code>) o la imatge d'una cel·la de taula (<code>'cellImage'</code>) anomena un id que no té cap recurs.</td>
+      <td>La inserció s'omet, la referència imprimeix <code>?</code> (o la seva etiqueta <code>text=</code>) sense número ni enllaç, la cel·la queda només amb text. <code>inResource</code> anomena el recurs en el peu, la nota o la cel·la del qual hi ha la referència.</td>
+    </tr>
+    <tr>
+      <td><code>unknownDirective</code></td>
+      <td>Una línia <code>:::nom</code> el nom de la qual no és ni una directiva ni un contenidor.</td>
+      <td>La línia es compon com a text.</td>
+    </tr>
+    <tr>
+      <td><code>malformedEmbed</code></td>
+      <td>Una línia <code>::nom</code> que no és una inserció ben formada i aïllada: <code>::resource</code> amb un id sense cometes o entre cometes simples o amb un altre atribut, o una línia enganxada sota un paràgraf sense línia en blanc.</td>
+      <td>La línia es compon com a text.</td>
+    </tr>
+    <tr>
+      <td><code>fullwidthMarkup</code></td>
+      <td>Una línia porta marques escrites amb un mètode d'entrada xinès o japonès: una tanca <code>：：：</code>, un encapçalament <code>＃</code>, una crida de nota <code>［＾…］</code>, atributs <code>｛…｝</code> després d'una tanca o un encapçalament, o negreta <code>＊＊…＊＊</code>. <code>typed</code> és la marca tal com es va escriure i <code>ascii</code>, la forma que cal escriure. Un per línia.</td>
+      <td>La línia es compon com a text; no es converteix res.</td>
+    </tr>
+    <tr>
+      <td><code>attributeKeyInvalid</code></td>
+      <td>Una clau d'atribut porta lletres fora de l'ASCII (<code>作者=曹雪芹</code>); assenyala la clau.</td>
+      <td>L'atribut s'ignora.</td>
+    </tr>
+    <tr>
+      <td><code>unknownParagraphStyle</code></td>
+      <td><code>:::paragraphs{'{'}style{'}'}</code> no anomena cap estil de paràgraf.</td>
+      <td>Els paràgrafs es componen com a text de cos.</td>
+    </tr>
+    <tr>
+      <td><code>unknownCalloutType</code></td>
+      <td><code>:::callout{'{'}type{'}'}</code> no anomena cap dels <code>calloutStyles</code>; només es registra quan n'hi ha algun de configurat.</td>
+      <td>La caixa pren el primer estil d'avís.</td>
+    </tr>
+    <tr>
+      <td><code>columnsFlowUnknown</code></td>
+      <td><code>:::columns{'{'}flow{'}'}</code> no és ni <code>snake</code> ni <code>parallel</code>; <code>value</code> és el que hi diu.</td>
+      <td>El grup pren el valor per defecte: <code>parallel</code> amb <code>breaks</code>, <code>snake</code> sense.</td>
+    </tr>
+    <tr>
+      <td><code>unknownChipStyle</code></td>
+      <td><code>:chip[…]{'{'}style{'}'}</code> no anomena cap estil de xip.</td>
+      <td>El xip pren el primer estil de xip.</td>
+    </tr>
+    <tr>
+      <td><code>undefinedFootnote</code></td>
+      <td>Una crida de nota <code>[^id]</code> que cap paràgraf <code>[^id]:</code> no defineix (<code>id</code> és el de la nota).</td>
+      <td>S'imprimeix el número; la nota queda buida.</td>
+    </tr>
+    <tr>
+      <td><code>unusedFootnote</code></td>
+      <td>Una definició de nota <code>[^id]:</code> que cap crida no cita.</td>
+      <td>La nota no es compon.</td>
+    </tr>
+    <tr>
+      <td><code>indexMarkInvalid</code></td>
+      <td>Una marca d'índex sense terme: <code>:index{'{}'}</code>, o atributs sense <code>term</code> en una marca sense text entre claudàtors.</td>
+      <td>La marca no indexa res.</td>
+    </tr>
+    <tr>
+      <td><code>indexSeeUnknown</code></td>
+      <td>La destinació d'un <code>see</code> o un <code>seealso</code> (<code>target</code>) no és una entrada del seu índex (<code>index</code>, <code>''</code> per al principal). Assenyala la línia <code>:::index</code>.</td>
+      <td>La remissió s'imprimeix igualment.</td>
+    </tr>
+    <tr>
+      <td><code>indexRangeUnclosed</code></td>
+      <td>Una marca <code>range="start"</code> sense el seu <code>range="end"</code>, o a l'inrevés (<code>missing</code> indica quin extrem falta; <code>term</code>, l'entrada). Assenyala la línia <code>:::index</code>.</td>
+      <td>L'interval imprimeix la seva única pàgina.</td>
+    </tr>
+    <tr>
+      <td><code>unknownHeadingStyle</code></td>
+      <td>El <code>{'{'}style="…"{'}'}</code> d'un encapçalament no anomena cap estil d'encapçalament (<code>level</code> és el de l'encapçalament).</td>
+      <td>L'encapçalament i la seva secció conserven els ajustos propis del nivell.</td>
+    </tr>
+    <tr>
+      <td><code>unknownTableStyle</code></td>
+      <td>El <code>table.styleId</code> d'un recurs de taula no anomena cap entrada de <code>tableStyles</code>.</td>
+      <td>La taula es compon amb <code>tableStyle</code>.</td>
+    </tr>
+    <tr>
+      <td><code>raggedTableGrid</code></td>
+      <td>La quadrícula d'una taula no és rectangular un cop comptades les seves combinacions (vegeu <a href="/ca/docs/configuration-resources#construir-models-de-taula">Construir models de taula</a>).</td>
+      <td>Les cel·les es desplacen sobre una combinació o deixen un buit. <code>reason</code> (<code>'spanOverlap'</code> / <code>'missingCells'</code>), <code>row</code> i <code>col</code> situen el primer problema; <code>count</code> indica quants n'hi ha.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberOverlap</code></td>
+      <td>Amb <code>lineNumbers.position: 'side'</code>, un número de línia se superposa a un requadre, un peu o una figura de la columna lateral. Assenyala la línia numerada; <code>number</code> és el número tal com s'imprimeix.</td>
+      <td>El número es pinta igualment, i cap dels dos no es mou.</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td>Un paràgraf que comença amb una <a href="/ca/docs/configuration-text#caplletres">caplletra</a> i que no la pot portar tal com està configurada. <code>reason</code>: <code>'shortParagraph'</code> (té menys línies de les que baixa la inicial; <code>handling</code> és el que ha fet <code>shortParagraph</code>, <code>lines</code> les línies que abasta una inicial reduïda), <code>'split'</code> (es talla abans de l'última línia de la inicial, sol en una columna massa curta), <code>'joiningScript'</code> (la seva primera lletra s'enllaça amb la següent), <code>'verticalText'</code> o <code>'noLetter'</code> (comença amb una referència, una fórmula o una marca de nota). <code>text</code> és la seva primera línia.</td>
+      <td>Es reserva l'espai, la inicial es redueix o es deixa fora, segons digui l'avís.</td>
+    </tr>
+    <tr>
+      <td><code>codeOverflow</code></td>
+      <td>Un <a href="/ca/docs/configuration-styles#llistats-de-codi">llistat de codi</a> té línies més amples que la seva caixa. <code>mode</code> és el que ha fet <code>codeStyle.overflow</code> (<code>'wrap'</code>, <code>'shrink'</code>, <code>'clip'</code>), <code>lines</code> quantes línies de la font eren massa amples, <code>scale</code> la mida a què s'ha compost un llistat reduït (una fracció de <code>fontSize</code>), <code>lang</code> el llenguatge de la tanca. Assenyala el llistat.</td>
+      <td>Les línies es parteixen, es componen més petites o es tallen, segons diu <code>mode</code>.</td>
+    </tr>
+    <tr>
+      <td><code>floatShrunk</code></td>
+      <td>Una imatge flotant es va compondre més petita que la seva mida per cabre a l'espai del seu buit (<code>placement.shrink</code>). <code>resourceId</code> l'anomena, <code>scale</code> és la fracció de la seva amplada que conserva i <code>overflowPx</code>, si hi és, quant sobresurt encara del peu de la caixa de text a la seva escala mínima (<code>placement.minScale</code>), en una pàgina nova on no tenia cap altre lloc on anar. Assenyala el paràgraf que la cita per primer cop.</td>
+      <td>La imatge s'imprimeix a aquesta escala; fora de la caixa de text només quan ho diu <code>overflowPx</code>.</td>
+    </tr>
+    <tr>
+      <td><code>textWrap</code></td>
+      <td>Un recurs o una caixa amb el text ajustat al voltant (<code>placement.wrap</code>, el <code>wrap</code> d'una caixa) que no es compon com es va demanar. <code>reason</code>: <code>'tooNarrow'</code> (el text del costat quedaria més estret que <code>layout.wrap.minTextWidth</code>), <code>'fewLines'</code> (és més baix que <code>layout.wrap.minLinesBeside</code> línies), <code>'moved'</code> (un en línia massa alt per a l'espai que queda a la columna ha passat a la següent, amb la seva àncora) o <code>'verticalText'</code>. <code>resourceId</code> anomena un recurs, <code>box</code> l'estil d'una caixa. Assenyala la inserció o la caixa.</td>
+      <td>L'element ocupa la banda sencera, o es col·loca a la columna següent, segons la raó.</td>
+    </tr>
+    <tr>
+      <td><code>columnsTooNarrow</code></td>
+      <td>Les subcolumnes d'un grup <code>:::columns</code> són més estretes que sis emes del seu text: <code>columns</code> subcolumnes de <code>widthPx</code> cadascuna. Assenyala la tanca del grup.</td>
+      <td>El grup es compon com s'ha demanat, amb poques paraules per línia.</td>
+    </tr>
+    <tr>
+      <td><code>afterText</code></td>
+      <td>Una caixa amb <code>span: 'side'</code>, o una figura o taula de la columna lateral (<code>resourceId</code>), composta en una pàgina sense text: el text del seu capítol, o del document, es va acabar mentre esperava lloc a la columna lateral. Un per caixa o flotant; assenyala la caixa (o el bloc que cita el flotant), amb la seva pàgina. Des de postext 1.25.</td>
+      <td>Queda a la columna lateral d'una pàgina oberta després del text, les caixes en l'ordre de les seves tanques.</td>
+    </tr>
+    <tr>
+      <td><code>unplaced</code></td>
+      <td>Una caixa o un recurs flotant (<code>resourceId</code>) que encara esperava un buit quan es va acabar la composició: les pàgines obertes per a ell no el van poder acollir (una caixa lateral on aquestes pàgines no tenen columna lateral, per exemple). Assenyala la caixa o el bloc que cita el recurs; sense pàgina. Des de postext 1.25.</td>
+      <td>No és a cap pàgina. Fins a postext 1.24 desapareixia sense avís.</td>
+    </tr>
+    <tr>
+      <td><code>fontFallback</code></td>
+      <td>Una cara amb què es va compondre el text (<code>family</code>, <code>weight</code>, <code>style</code>) que el conjunt de fonts no podia donar quan es va executar el build: <code>reason: 'missing'</code>, no hi havia carregada ni instal·lada cap cara de la família, o la que respon a aquest pes i aquesta inclinació encara no s'havia carregat; <code>'synthesized'</code>, la família no té cara d'aquest pes o d'aquesta inclinació i el navegador la treu d'una altra, tal com és o feta més gruixuda o inclinada (una 600 composta amb la 700, una cursiva 700 demanada a una família que només té una rodona 400). Es comprova on hi ha un conjunt de fonts (<code>document.fonts</code>, el <code>self.fonts</code> d'un worker o <code>BuildDocumentOptions.fontSet</code>), sota <code>debug.warnings.missingFont</code>. No porta pàgina ni interval d'origen.</td>
+      <td>El text es mesura i es dibuixa amb la font de reserva, o amb una altra cara de la família, tal com és o feta més gruixuda o inclinada; els seus talls de línia canvien quan arriba la cara. Vegeu <a href="#carregar-les-fonts-abans-de-compondre">Carregar les fonts abans de compondre</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+Els avisos sobre un recurs —el seu estil de taula, la seva quadrícula, una referència dins del seu peu, la seva nota o les seves cel·les— apunten a la primera inserció o referència del recurs al text, i cadascun es registra una sola vegada per recurs. Només es comproven els recursos que fa servir el document: un capítol d'un llibre notifica les taules que cita, no totes les taules del llibre.
+
+```ts
+import { buildDocument, formatWarning } from 'postext';
+
+const doc = buildDocument({ markdown: 'Vegeu :ref{id="fig-map"}.\n\n:::sidebar\nNotes.' }, config);
+for (const w of [...(doc.warnings ?? []), ...(doc.contentWarnings ?? []), ...(doc.configWarnings ?? [])]) console.warn(formatWarning(w));
+// Unknown resource id "fig-map" in :ref — it prints "?" (or its text= label), with no number or link (page 1, offset 6)
+// Unknown directive ":::sidebar" — the line is set as text (page 1, offset 27)
+
+// Estreny per `kind` per llegir els camps d'un tipus.
+const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownResourceId' ? [w.resourceId] : []));
+```
+
+`formatWarning(w)` retorna una descripció en anglès d'una línia. Un amfitrió que localitza els seus missatges distingeix per `kind` —i conserva una branca per defecte, perquè les versions menors poden afegir tipus—. `collectContentWarnings(markdown, config, resources)` retorna els avisos de contingut sense maquetar res (la llista que afegeix la composició, sense `pageIndex`), per a un editor que revisa el text mentre s'escriu. `collectHeadingDesignCuts(doc)` revisa una maquetació acabada a la recerca de dissenys d'encapçalament amb un text que passa del peu de la seva pàgina o de la seva columna (`kind: 'headingDesignCut'`; vegeu [Alçada reservada](/ca/docs/configuration-text#alçada-reservada)), que la maquetació mateixa no avisa, i `formatWarning` també en descriu els resultats. El tauler **Revisió** del Sandbox els mostra tots.
+
+Els renderitzadors notifiquen el que no poden pintar com es demana mitjançant una opció `onWarning`: `renderPageToCanvas`, `renderPage` i `renderToCanvas` (`RenderPageOptions`), `renderToHtml` i `renderToHtmlIndexed` (`RenderHtmlOptions`), i `renderToPdf` (`RenderToPdfOptions`, també a través del worker de PDF). El principal tipus d'avís de renderitzat és `missingImage`: una imatge —una figura, la imatge d'una cel·la de taula, la icona d'un avís, una imatge de disseny— sense res a dibuixar es pinta com un marcador de posició neutre i es notifica, una vegada per `fileId` i crida de renderitzat, amb el seu `pageIndex`, el `resourceId` quan el renderitzador el coneix (figures i imatges de cel·la) i, al PDF, el `documentIndex` d'un renderitzat de diversos documents. Res a dibuixar vol dir: cap `registerResourceImage` per al `fileId` al canvas, cap URL de `resourceImageUrl` en HTML, i cap byte de `resourceBytes` —o bytes que no es descodifiquen— al PDF. Un recurs de mapa de bits o SVG que no anomena cap `fileId` no té res a demanar: es dibuixa com a marcador de posició sense avís. Dos tipus més vénen dels amfitrions que incrusten fonts a les imatges SVG (`registerSvgImage`, `registerBundleImages`, `bundleImageUrl`, `renderToHtml` amb `inlineSvgFonts`, postext-epub; consulta [Fonts al text dels SVG](/ca/docs/configuration-resources#fonts-al-text-dels-svg)), amb el `fileId` i el `resourceId` de la imatge: `svgFontUnavailable` (`family`, `weight`, `style`), una família que anomena el seu text sense variant per incrustar, de manera que la imatge compon aquest text amb una font de reserva; i `svgFontsTooLarge` (`bytes`, `maxBytes`), variants per sobre del límit de mida, de les quals no se n'incrusta cap. Els avisos de renderitzat no es desen al VDT: el que un amfitrió pot aportar canvia després de la maquetació.
+
+```ts
+import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
+
+const map: Resource = {
+  id: 'fig-map', typeId: 'figure', kind: 'bitmap', caption: 'La ruta.', createdAt: 0, updatedAt: 0,
+  bitmap: { fileId: 'map-file', format: 'png', width: 1200, height: 800 },
+};
+const doc = buildDocument({ markdown: 'Vegeu :ref{id="fig-map"}.', resources: [map] }, config);
+
+const warnings: RenderWarning[] = [];
+const canvas = renderPage(doc.pages[0], doc, { onWarning: (w) => warnings.push(w) });
+// Fins que 'map-file' es registri amb registerResourceImage:
+// [{ kind: 'missingImage', fileId: 'map-file', resourceId: 'fig-map', pageIndex: 0 }]
+```
+
+### Renderitzar una pàgina a un bitmap
+
+Cada pàgina es pot rasteritzar de manera independent. Fes servir `renderPage(page, doc)` per obtenir un `HTMLCanvasElement` a partir del número de pàgina — el canvas és un bitmap dimensionat exactament a la mida de la pàgina en píxels (al DPI configurat), de manera que el pots mostrar, exportar o passar a qualsevol pipeline d'imatge:
+
+```ts
+import { buildDocument, renderPage } from 'postext';
+
+const vdt = buildDocument(content, config);
+
+// Renderitzar la pàgina 3 (índex de base 0) com a bitmap
+const pageNumber = 2;
+const page = vdt.pages[pageNumber];
+if (!page) throw new Error(`La pàgina ${pageNumber} no existeix`);
+
+const canvas = renderPage(page, vdt);
+// canvas.width / canvas.height són la mida del bitmap de la pàgina en píxels
+
+// Mostrar-lo al DOM
+document.body.appendChild(canvas);
+
+// …o exportar-lo com a PNG data URL
+const pngDataUrl = canvas.toDataURL('image/png');
+
+// …o obtenir un Blob per baixar o pujar
+canvas.toBlob((blob) => {
+  if (blob) saveAs(blob, `pagina-${pageNumber + 1}.png`);
+}, 'image/png');
+
+// …o accedir als píxels RGBA en brut
+const ctx = canvas.getContext('2d')!;
+const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+```
+
+Si prefereixes pintar sobre un canvas que ja tens (per exemple un de muntat al DOM amb una disposició concreta), fes servir `renderPageToCanvas(page, doc, canvas)` — redimensiona i dibuixa al canvas que li passis en lloc de crear-ne un de nou.
+
+Per renderitzar totes les pàgines, itera sobre `vdt.pages`:
+
+```ts
+const bitmaps = vdt.pages.map((page) => renderPage(page, vdt));
+```
+
+#### Exemple en viu: una pàgina com a imatge
+
+Tot l'anterior, executant-se al navegador. El pen importa l'última versió publicada de `postext` des d'un CDN, espera les fonts web, compon un document curt a dues columnes, pinta la primera pàgina en un canvas i ofereix aquest bitmap com a PNG. Prem *Executar a CodePen* per carregar l'editor i canviar el markdown o la configuració; la pàgina es torna a pintar amb cada edició.
+
+<CodePenExample name="render-page" title="Postext · renderitzar una pàgina com a imatge" description="Compon un document markdown amb postext i rasteritza la primera pàgina a un canvas / PNG." height={600} />
+
+### React
+
+`postext/react` exporta `createLayout(content, config?)`: un component que compon el document una sola vegada, en muntar-se, i mostra cada pàgina com un `<canvas>` dins d'un `<div>`.
+
+```tsx
+import { createLayout } from 'postext/react';
+
+const Article = createLayout(
+  { markdown: '# Hola\n\nEl primer paràgraf de l\'article.' },
+  { page: { sizePreset: '17x24' } },
+);
+
+export function ArticlePage() {
+  return <Article className="pages" style={{ maxWidth: 480 }} />;
+}
+```
+
+- **Al fil principal, una vegada.** Les pàgines es pinten a la resolució del document i s'escalen a l'amplada del contenidor. `content` i `config` queden fixats en cridar `createLayout`; crea un altre component per mostrar una altra cosa. Per a una previsualització en viu, compon al [Web Worker](#executar-la-composició-en-un-web-worker) i pinta amb `renderPageToCanvas`, com a l'exemple de React d'aquella secció.
+- **Primer, fonts i imatges.** Carrega les fonts web del document abans que el component es munti i registra'n les imatges amb `registerResourceImage`. Si el markdown conté un `$`, el component arrenca el [motor de fórmules](/ca/docs/configuration-text#arrencar-el-motor-de-fórmules) pel seu compte.
+- **React es queda fora de l'entrada principal.** `postext` no importa mai React; només ho fa `postext/react`. `createLayout` continua exportant-se des de `postext` perquè el codi existent continuï funcionant, però està obsolet: carrega `postext/react` quan el crides, i el component queda suspès fins que arriba (React el torna a renderitzar tot sol). Importa'l des de `postext/react`.
+- **El component obsolet se suspèn.** Fins que arriba `postext/react`, el `createLayout` de `postext` necessita una arrel concurrent (`createRoot`) o un límit `<Suspense>` per sobre. En una arrel heretada de `ReactDOM.render`, o a `renderToString`, sense aquest límit, React informa d'un error. `react` continua sent una *peer dependency* obligatòria, perquè els bundlers puguin resoldre aquesta importació diferida.
+
+### Resoldre valors per defecte
+
+Les funcions de resolució omplen els valors per defecte per a objectes de configuració parcials. Això és útil quan necessites una configuració completa per a inspecció o comparació:
+
+```ts
+import { resolvePageConfig, resolveBodyTextConfig } from 'postext';
+
+const fullPage = resolvePageConfig({ sizePreset: '21x28' });
+// => { sizePreset: '21x28', width: { value: 21, unit: 'cm' }, height: { value: 28, unit: 'cm' },
+//      margins: { top: { value: 2, unit: 'cm' }, ... }, dpi: 300, cutLines: { enabled: false, ... }, ... }
+
+const fullBody = resolveBodyTextConfig({ fontFamily: 'Inter' });
+// => { fontFamily: 'Inter', fontSize: { value: 8, unit: 'pt' }, lineHeight: { value: 1.5, unit: 'em' }, ... }
+```
+
+Resolvers disponibles, un per secció de primer nivell: `resolvePageConfig`, `resolveLayoutConfig`, `resolveBodyTextConfig`, `resolveHeadingsConfig`, `resolveHeadingStylesConfig`, `resolveTocConfig`, `resolvePartsConfig`, `resolveUnorderedListsConfig`, `resolveOrderedListsConfig`, `resolveMathConfig`, `resolveTableStyleConfig`, `resolveCaptionStyleConfig`, `resolveDiagramStyleConfig`, `resolveParagraphStylesConfig`, `resolveCalloutStylesConfig`, `resolveHeaderFooterConfig`, `resolveDebugConfig`, `resolveHtmlViewerConfig`, `resolvePdfGenerationConfig` — més `resolveDesignSlot` per a una sola ranura de disseny. Les paletes de color s'apliquen per separat amb `applyPaletteToConfig(config)`, `applyPaletteToResolvedConfig(resolved, palette)` i `resolveColorValue(value, palette, fallback)` — vegeu [Paleta de colors](/ca/docs/configuration-fonts-colors-viewers#paleta-de-colors).
+
+Els resolvers amb valors per defecte que hereten d'una altra secció reben aquesta secció, ja resolta, com a argument addicional. `resolveUnorderedListsConfig` i `resolveOrderedListsConfig` reben el cos de text resolt, perquè les llistes n'hereten `fontFamily` i `color`; `resolveCalloutStylesConfig` rep el cos de text, els encapçalaments i les llistes no ordenades resolts (vegeu l'exemple a [Estils d'avís](/ca/docs/configuration-styles#estils-davís)), i `resolveHeadingStylesConfig` la pàgina, el cos de text i les dues seccions de llistes resoltes. Consulta les declaracions de tipus del paquet per a la signatura exacta de cadascun:
+
+```ts
+import { resolveBodyTextConfig, resolveUnorderedListsConfig } from 'postext';
+
+const body = resolveBodyTextConfig({ fontFamily: 'Inter' });
+const lists = resolveUnorderedListsConfig({ bulletChar: '—' }, body);
+// => lists.fontFamily === 'Inter' (heretat)
+```
+
+També s'exporten els paquets de valors per defecte estàtics — els que es fan servir quan no hi ha herència: `DEFAULT_PAGE_CONFIG`, `DEFAULT_CUT_LINES`, `DEFAULT_PAGE_NUMBERING`, `PAGE_SIZE_PRESETS`, `DEFAULT_LAYOUT_CONFIG`, `DEFAULT_COLUMN_RULE`, `DEFAULT_COLUMN_BALANCING`, `DEFAULT_BODY_TEXT_CONFIG`, `DEFAULT_HYPHENATION_CONFIG`, `DEFAULT_HEADINGS_CONFIG`, `DEFAULT_UNORDERED_LISTS_STATIC`, `DEFAULT_ORDERED_LISTS_STATIC`, `DEFAULT_PARAGRAPH_STYLES`, `DEFAULT_CALLOUT_STYLES`, `DEFAULT_CALLOUT_STYLE_STATIC`, `DEFAULT_PARTS_CONFIG`, `DEFAULT_HEADING_STYLES`, `DEFAULT_TOC_CONFIG`, `DEFAULT_MATH_CONFIG`, `DEFAULT_DIAGRAM_STYLE_CONFIG`, `DEFAULT_DEBUG_CONFIG`, `DEFAULT_HTML_VIEWER_CONFIG`, `DEFAULT_PDF_GENERATION_CONFIG`, `DEFAULT_COLOR_PALETTE`, `DEFAULT_MAIN_COLOR`, `DEFAULT_MAIN_COLOR_ID`, `DEFAULT_MAIN_COLOR_NAME`, `DEFAULT_MAIN_COLOR_HEX`, a més dels valors per defecte dels elements de capçalera/peu (`DEFAULT_HEADER_FOOTER_SLOT`, `DEFAULT_HEADER_SLOT`, `DEFAULT_FOOTER_SLOT`, `DEFAULT_TEXT_ELEMENT`, `DEFAULT_RULE_ELEMENT`, `DEFAULT_BOX_ELEMENT`) i la funció sensible a la llengua `defaultResourceTypes(locale)` (vegeu [Tipus de recurs](/ca/docs/configuration-resources#tipus-de-recurs)).
+
+### Eliminar valors per defecte
+
+En persistir la configuració (per exemple, a localStorage o un fitxer), fes servir `stripConfigDefaults` per eliminar els valors que coincideixen amb els valors per defecte. Així les configuracions emmagatzemades es mantenen mínimes — només es desen les modificacions intencionades:
+
+```ts
+import { stripConfigDefaults } from 'postext';
+
+const minimal = stripConfigDefaults(fullConfig);
+// Només hi romanen les propietats que difereixen dels valors per defecte
+```
+
+També hi ha disponibles funcions individuals, una per resolver: `stripPageDefaults`, `stripLayoutDefaults`, `stripBodyTextDefaults`, `stripHeadingsDefaults`, `stripHeadingStylesDefaults`, `stripTocDefaults`, `stripPartsDefaults`, `stripUnorderedListsDefaults`, `stripOrderedListsDefaults`, `stripMathDefaults`, `stripTableStyleDefaults`, `stripCaptionStyleDefaults`, `stripDiagramStyleDefaults`, `stripParagraphStylesDefaults`, `stripCalloutStylesDefaults`, `stripHeaderFooterDefaults`, `stripDesignSlotDefaults`, `stripDebugDefaults`, `stripHtmlViewerDefaults`, `stripPdfGenerationDefaults`.
+
+Alguns valors per defecte depenen de la resta de la configuració: l'equilibratge de columnes està desactivat en una retícula de caràcters i en el text vertical, i les notes a peu de pàgina, els peus de recurs i l'índex analític segueixen la llengua del document. `stripConfigDefaults` compara cada valor amb el valor per defecte de la configuració que rep, de manera que `headings.balancing.enabled: true` es conserva on l'equilibratge està desactivat per defecte, i `false` s'hi elimina. Una funció cridada per separat rep aquest context com a arguments: `stripHeadingsDefaults(headings, balancingOnByDefault(config))`, `stripIndexDefaults(index, locale)`, `stripCaptionStyleDefaults(captionStyle, locale)`, `stripFootnotesDefaults(footnotes, locale, writingMode)`.
+
+### Anàlisi
+
+El motor exposa el seu tokenitzador de markdown i el seu lector de frontmatter. Fes-los servir per inspeccionar un document abans de construir-lo, o per alimentar altres eines amb la mateixa estructura de blocs que veu Postext:
+
+```ts
+import { parseMarkdown, extractFrontmatter } from 'postext';
+
+const source = '---\ntitle: Capítol u\n---\n\n# Obertura\n\nLa història comença aquí.';
+
+const { metadata, content } = extractFrontmatter(source);
+// metadata.title === 'Capítol u'
+
+const blocks = parseMarkdown(content);
+// => [ { type: 'heading', level: 1, text: 'Obertura', … },
+//      { type: 'paragraph', text: 'La història comença aquí.', … } ]
+```
+
+Consulta la pàgina de [Format del document](/ca/docs/document-format) per veure la llista completa de construccions markdown que reconeix Postext.
+### Carregar les fonts abans de compondre
+
+La composició mesura el text amb les cares que té el conjunt de fonts en el moment en què s'executa. `prepareFonts` carrega abans del primer build totes les cares que demanen una configuració i el seu text: el cos, els encapçalaments, les llistes, els títols i els cossos dels requadres, les taules, els textos dels elements de disseny, els titolets, l'índex de continguts, el codi i la retolació dels còmics, en cada pes i inclinació que fixa la configuració (les quatre de la família del cos, perquè `**` i `*` hi componen la negreta i la cursiva). Cada cara es carrega per als caràcters que compon el document, de manera que una família servida en trams de `unicode-range` (llatí estès, grec, àrab, els trams CJK de Google Fonts i Fontsource) porta els fitxers que el text necessita.
+
+```ts
+import { prepareFonts, buildDocument, buildDocumentWithFonts } from 'postext';
+
+// Els fitxers de l'amfitrió: el contracte del proveïdor de fonts del PDF, així que una mateixa funció serveix per a tots dos.
+async function resolve(family: string, weight: number, style: 'normal' | 'italic') {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-${style}.woff2`;
+}
+
+const report = await prepareFonts(content, config, { resolve });
+// report.loaded, report.missing, report.synthesized: { family, weight, style }[]
+const doc = buildDocument(content, config);
+
+// O en una sola crida: preparar, compondre, carregar les cares que han fet servir les pàgines i no hi eren, i tornar a compondre.
+const same = await buildDocumentWithFonts(content, config, { resolve });
+```
+
+- **Les cares que declara la pàgina** (una regla `@font-face`, un `FontFace` ja afegit) es carreguen a través del conjunt de fonts (`document.fonts.load`, o `self.fonts` en un worker). **Les que no declara** es demanen a `resolve(family, weight, style, { text, codePoints })`, que respon amb un fitxer (bytes o una URL), amb diversos (els trams d'una cara), amb `{ source, unicodeRange, weight, style }` per a un tram o un rang variable, o amb `null`. El motor les afegeix com a `FontFace` quan s'han carregat totes, en l'ordre de la configuració i de cada resposta (latin, després latin-ext, després greek si el resolutor respon així), de manera que el conjunt de fonts queda igual sigui quin sigui l'ordre en què arribin els fitxers. També les inscriu al registre de fonts que llegeixen les [imatges SVG](/ca/docs/configuration-resources#fonts-al-text-dels-svg) i els workers de composició. Un resolutor pot declarar la cara pel seu compte (afegir un full d'estils) i respondre `null`.
+- **L'informe** enumera a `loaded` les cares que cobreix una cara carregada (o una família instal·lada), a `missing` les que encara falten i a `synthesized` les que el navegador sintetitzaria a partir d'un altre pes o d'una altra inclinació. `timeoutMs` (10 000 per defecte) limita l'espera; una cara que llavors encara s'estigui carregant compta com a absent. On no hi ha conjunt de fonts (Node), `prepareFonts` no fa res i dona totes les cares per carregades.
+- **`buildDocumentWithFonts(content, config, options)`** prepara, compon amb `buildDocumentAsync`, llegeix les cares en què les pàgines han compost text de debò, carrega les que el conjunt de fonts no podia donar (un pes que només revelen les pàgines es demana a `resolve` encara que un altre pes de la família pogués respondre per ell) i torna a compondre (dues composicions més com a màxim). `withLoadedFonts(build, options)` fa el mateix al voltant de qualsevol funció de composició, per a un llibre que es compon capítol a capítol o per a un paquet (`buildBundle`) que retorna diversos documents. `options.onFonts` rep l'informe final.
+- **Després del build**, cada cara amb què es va compondre el text i que el conjunt de fonts no va poder donar apareix a `doc.contentWarnings` com a `fontFallback` (vegeu [Avisos del document](#avisos-del-document)).
+
+Les cares que arriben més tard es recullen soles. El motor anota, per a cada conjunt de fonts, quines cares de cada família hi havia carregades l'última vegada que s'hi va fixar; un build hi torna a mirar en començar (només si el conjunt ha crescut o s'ha encongit, està carregant o ha acabat de carregar una cara) i descarta el que s'havia mesurat en les famílies amb cares canviades. `watchFonts(fontSet)` fa el mateix a mesura que es carreguen les cares, com a molt una vegada per fotograma d'animació per molts trams que porti una ràfega, i `onFontsChanged(listener)` diu a l'amfitrió quines famílies han canviat, perquè torni a compondre les pàgines:
+
+```ts
+import { watchFonts, onFontsChanged } from 'postext';
+
+const stop = watchFonts();                         // document.fonts per defecte
+const off = onFontsChanged((families) => relayout());
+```
+
+`prepareFonts` engega la vigilància sobre el conjunt on carrega (`watch: false` la deixa apagada).
+
+### Memòria cau de mesures
+
+La mesura del text és el pas costós del procés de composició. Dues menes de memòria cau l'abarateixen:
+
+- **Una memòria cau de blocs que és teva.** `createMeasurementCache()` retorna una `MeasurementCache` que recorda cada paràgraf mesurat, amb el seu text, les seves fonts, la seva amplada, les seves opcions de tall de línia i el diccionari de partició de mots actiu com a clau. Passa-la com a tercer argument de `buildDocument` (o de `buildDocumentAsync`) per reutilitzar les mesures entre les passades de convergència i entre composicions: un editor que recompon el document a cada pulsació mesura llavors només els paràgrafs que han canviat. Sense ella, cada passada torna a mesurar tots els blocs. Un paràgraf llegit de la memòria cau és igual que un de mesurat de nou, de manera que una composició amb memòria cau talla cada línia com una sense; a postext 1.4.1 un paràgraf desat a la memòria cau perdia la marca d'una última línia massa curta, i l'ajust d'aquestes línies i l'equilibrat de columnes podien tallar-lo d'una altra manera. La memòria cau porta la generació de mesures amb què es va omplir: quan arriben o se'n van cares d'una família, la seva consulta següent descarta els blocs compostos en aquella família, de manera que una memòria cau que es conserva mentre es carreguen les fonts mai no serveix línies mesurades amb la de reserva.
+- **Memòries cau globals d'amplades.** Les amplades de paraula es desen per cadena de font en un estat de mòdul que comparteixen totes les composicions de la pàgina, i pretext té la seva pròpia memòria cau. El motor descarta les amplades d'una família quan en canvien les cares (en començar un build, des de `watchFonts`, des de `prepareFonts` i des de `loadBundleFonts`); la memòria cau de pretext no té índex per família i es buida sencera.
+
+```ts
+import { buildDocument, createMeasurementCache, evictFontFamilies, clearMeasurementCache } from 'postext';
+
+const cache = createMeasurementCache();
+let doc = buildDocument(content, config, cache);
+
+// S'ha afegit a document.fonts una cara d'"EB Garamond": el build següent la veu,
+// amb la mateixa memòria cau, i torna a mesurar aquella família.
+doc = buildDocument(content, config, cache);
+
+// Un amfitrió que canvia cares que el motor no pot veure (un conjunt de fonts propi) ho avisa:
+evictFontFamilies(['EB Garamond']);   // les amplades i els blocs desats d'aquella família
+clearMeasurementCache();              // totes les famílies
+```
+
+Per a aplicacions que mesuren el text peça a peça, `cachedMeasureBlock(text, font, maxWidthPx, lineHeightPx, options, cache)` i `cachedMeasureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cache)` reben els arguments de `measureBlock` i `measureRichBlock` més la memòria cau, al final.
+
+### Estat global compartit en una pàgina
+
+Part de l'estat de Postext viu en variables de mòdul. Tot el que importa `postext` en el mateix context de JavaScript (*realm*) el comparteix: una pàgina i els seus scripts comparteixen una còpia, mentre que cada iframe i cada worker tenen la seva. Amb un document per pàgina no es nota. Amb diversos documents a la mateixa pàgina —dues previsualitzacions en directe, una galeria d'exemples— sí:
+
+- **Imatges dels recursos.** `registerResourceImage(fileId, image)` omple un únic registre indexat per `fileId`, que llegeixen `renderPage` i `renderPageToCanvas`. Dos documents que registren `figure.svg` comparteixen aquesta entrada: guanya l'últim registre, per a tots dos. Posa als identificadors de fitxer un prefix per document, i crida `unregisterResourceImage(fileId)` o `clearResourceImages()` quan un document desapareix. Els ràsters que desa a la memòria cau el backend de canvas fan servir la mateixa clau i es descarten amb la imatge.
+- **Mesures del text.** Les amplades mesurades es desen a la memòria cau per cadena de font i text per a tot el context. Quan arriben o se'n van cares d'una família, el motor descarta les amplades d'aquella família per a tots els documents (vegeu [Carregar les fonts abans de compondre](#carregar-les-fonts-abans-de-compondre)); `clearMeasurementCache()` les descarta totes.
+- **Configuracions resoltes.** Cada objecte de configuració es resol una vegada i el resultat queda a la memòria cau associat a aquest objecte. Abans de res, cada build compara l'objecte amb el text que tenia quan es va resoldre (un `JSON.stringify`, uns 0,1 ms per a una configuració de llibre de 55 KB i 1,5 ms per a una de 240 KB), de manera que una configuració modificada al lloc, a qualsevol profunditat (`config.bodyText.fontSize = …`, un color de la paleta), es torna a resoldre. `invalidateConfig(config)` descarta la resolució a mà. `stableStringify` i `hashString` donen una clau de contingut que no depèn de l'ordre de les claus, per als amfitrions que desen composicions a la memòria cau per configuració.
+- **Llengua de la partició de mots.** Cada build fixa la llengua de partició de mots de tot el procés al `bodyText.hyphenation.locale` del seu document. Les funcions exportades `hyphenateText(text)` i `layoutDesignSlot` fan servir la llengua de l'últim build tret que els en passis una: crida `hyphenateText(text, 'es')`.
+- **Motor de fórmules.** Hi ha un únic motor MathJax i una única memòria cau de fórmules renderitzades per context; `initMathEngine()` l'engega per a tots.
+
+L'aïllament més senzill és un context per document: un iframe per exemple en directe (una inserció de CodePen ho és), o un [worker de composició](#executar-la-composició-en-un-web-worker) per document per a les mesures i la partició de mots (les imatges es continuen registrant a la pàgina).
+
+
+## Executar la composició en un Web Worker
+
+**Aquesta és la manera recomanada de fer servir Postext al navegador.** Si construeixes alguna cosa interactiva — una previsualització en directe, un editor, un visor sensible al resize o un playground a l'estil del sandbox — dirigeix el pipeline a través de `createLayoutWorker()` de `postext/worker`. No cridis `buildDocument` directament al fil principal per a codi d'UI.
+
+Cridar `buildDocument` al fil principal executa el pipeline complet — anàlisi, mesura, set passades, fins a cinc iteracions de convergència — al fil que invoca la funció. Per a una exportació puntual està bé. Per a una interfície interactiva és el fil equivocat: una composició de 150 ms bloqueja els esdeveniments d'entrada, les pulsacions de teclat s'encuen i el desplaçament va a batzegades. El worker trasllada cadascun d'aquests mil·lisegons a un fil secundari.
+
+Postext inclou un punt d'entrada dedicat a Web Worker — `postext/worker` — que treu el pipeline del fil principal. És el camí que esperem que segueixin la majoria de les integracions: les tres vistes del sandbox (Canvas, HTML i PDF) comparteixen el mateix handle `createLayoutWorker()` a través d'un únic hook `useLayoutWorker` (`packages/postext-sandbox/src/worker/useLayoutWorker.ts`) i el dirigeixen amb cancel·lació *last-wins* — una nova pulsació avorta el build en curs fins i tot abans que acabi.
+
+D'un cop d'ull, la integració canònica és:
+
+1. **Crea** un worker una vegada per vista amb `createLayoutWorker()`.
+2. **Registra les fonts** una vegada per família enviant `ArrayBuffer`s transferibles via `registerFonts(payloads)`.
+3. **Compon** amb `build(content, config, { signal })`, passant un `AbortSignal` nou a cada crida per poder cancel·lar builds obsolets.
+4. **Substitueix** qualsevol build anterior avortant-ne el signal *abans* d'iniciar el següent — aquest és el patró *last-wins*.
+5. **Allibera (dispose)** el worker quan el component propietari es desmunta.
+
+El mateix `VDTDocument` que retorna `build(...)` alimenta cada renderitzador posterior: `renderPage`/`renderPageToCanvas` per a canvas, `renderToHtmlIndexed` per a HTML i `renderToPdf` (de `postext-pdf`) per a PDF. Construeixes una vegada al worker i rasteritzes tantes vegades com necessiti la UI al fil principal.
+
+### Què t'aporta el worker
+
+- **El fil principal queda lliure.** L'anàlisi, la mesura i el bucle de convergència de set passades s'executen tots dins del worker. El fil principal només es toca quan es publica de tornada el `VDTDocument` acabat.
+- **Cancel·lació last-wins.** `build(content, config, { signal })` injecta un `AbortSignal` al worker. Avortar abans que acabi produeix un `AbortError` al costat principal; dins del worker el pipeline llança un `BuildCancelledError` al següent punt de comprovació per bloc i s'atura immediatament.
+- **Memòria cau de mesura per worker.** El worker manté una única `MeasurementCache` durant tota la seva vida. Els builds posteriors que comparteixen font, text i amplada reutilitzen les mesures desades — escriure un sol caràcter en un document llarg només torna a mesurar els blocs l'entrada dels quals ha canviat realment.
+- **Mètriques idèntiques al fil principal.** Les fonts s'envien al worker com a `ArrayBuffer`s transferibles i es registren mitjançant `new FontFace(...)` al `FontFaceSet` propi del worker. Les mesures fan servir les mateixes mètriques de font del canvas que faria servir el fil principal, de manera que els talls de línia i les alçades de columna són idèntics byte a byte.
+- **La memòria cau de rasterització matemàtica sobreviu als builds.** El renderitzador matemàtic inclou una memòria cau de ràsters amb clau per contingut al costat de la d'identitat — clonar estructuralment un `MathRender` a través de la frontera del worker fallaria si només tinguéssim la memòria cau per identitat.
+
+### API pública
+
+El client del worker viu al subpath `postext/worker` i és un petit grapat de noms:
+
+- **`createLayoutWorker(opts?): LayoutWorkerHandle`** — instancia un worker dedicat (o n'embolcalla un que passis mitjançant `opts.worker`, o engega l'entrada del worker que hi ha a `opts.url`) i retorna un handle tipat. Consulta [Carregar el worker des d'una CDN](#carregar-el-worker-des-duna-cdn).
+- **`LayoutWorkerHandle.registerFonts(faces: FontPayload[]): Promise<void>`** — envia bytes de font al worker. Els buffers es transfereixen, així que desa'n una còpia nova al fil principal si després els necessites.
+- **`LayoutWorkerHandle.build(content, config?, { signal? }): Promise<VDTDocument>`** — executa el pipeline. Avortar el senyal cancel·la el build en curs.
+- **`LayoutWorkerHandle.dispose(): void`** — acaba el worker i rebutja qualsevol build pendent amb `AbortError`.
+- **`FontPayload`** — `{ family, weight, style, unicodeRange?, buffer: ArrayBuffer }`. `weight` és un pes CSS en forma de cadena (`'700'`, `'bold'`); `registerFonts` també l'accepta com a nombre (`700`). El `buffer` es transfereix al worker quan crides `registerFonts`.
+- **`BuildCancelledError`** (reexportat des de `postext`) — el que llança `buildDocument` internament quan `options.shouldCancel` retorna `true`. Normalment no el veus al fil principal: el protocol del worker el converteix en un `AbortError` abans d'arribar al teu codi.
+
+El paquet també publica el path `postext/worker/entry`, que apunta a l'script compilat del worker. `createLayoutWorker()` resol aquesta URL automàticament; només cal que la referenciïs explícitament quan el teu bundler exigeix una crida manual a `new Worker(new URL(...), { type: 'module' })`, o quan serveixes l'entrada tu mateix (`opts.url`).
+
+### Integració mínima
+
+```ts
+import { createLayoutWorker } from 'postext/worker';
+import type { FontPayload, LayoutWorkerHandle } from 'postext/worker';
+import type { PostextConfig, VDTDocument } from 'postext';
+
+// 1. Crea el worker una sola vegada i conserva el handle durant tota la vida de la teva vista.
+const layout: LayoutWorkerHandle = createLayoutWorker();
+
+// 2. Registra les fonts una vegada per família (ArrayBuffers transferibles).
+//    getConfigFontFamilies(config) és un helper que llista les famílies que la teva config renderitzarà.
+const payloads: FontPayload[] = await collectFontPayloadsForFamilies([
+  'EB Garamond',
+  'Open Sans',
+]);
+await layout.registerFonts(payloads);
+
+// 3. Dirigeix els builds amb cancel·lació last-wins: avorta el signal anterior
+//    abans d'iniciar-ne un de nou. Un build obsolet es descarta dins del worker.
+let pending: AbortController | null = null;
+
+async function rebuild(
+  markdown: string,
+  config: PostextConfig,
+): Promise<VDTDocument | null> {
+  pending?.abort();
+  pending = new AbortController();
+  try {
+    return await layout.build({ markdown }, config, { signal: pending.signal });
+  } catch (err) {
+    if ((err as { name?: string } | null)?.name === 'AbortError') return null;
+    throw err;
+  }
+}
+
+// 4. Allibera (dispose) quan el component propietari del worker es desmunta.
+//    Els builds pendents es rebutgen amb AbortError.
+layout.dispose();
+```
+
+Embolcallat en un component React, la forma és:
+
+```tsx
+import { useEffect, useRef } from 'react';
+import { createLayoutWorker } from 'postext/worker';
+import type { LayoutWorkerHandle } from 'postext/worker';
+import { renderPageToCanvas } from 'postext';
+import type { PostextConfig } from 'postext';
+
+export function CanvasPreview({
+  markdown,
+  config,
+}: {
+  markdown: string;
+  config: PostextConfig;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const workerRef = useRef<LayoutWorkerHandle | null>(null);
+  const pendingRef = useRef<AbortController | null>(null);
+
+  // Muntatge: engega el worker i envia les fonts una sola vegada.
+  useEffect(() => {
+    const handle = createLayoutWorker();
+    workerRef.current = handle;
+    (async () => {
+      const payloads = await collectFontPayloadsForFamilies(
+        getConfigFontFamilies(config),
+      );
+      await handle.registerFonts(payloads);
+    })();
+    return () => {
+      pendingRef.current?.abort();
+      handle.dispose();
+    };
+  }, []); // les fonts es registren una vegada; torna-les a registrar només quan canviï el conjunt de famílies
+
+  // A cada tecla o canvi de config: substitueix el build en curs i llança'n un de nou.
+  useEffect(() => {
+    const handle = workerRef.current;
+    if (!handle) return;
+    pendingRef.current?.abort();
+    const ac = new AbortController();
+    pendingRef.current = ac;
+    (async () => {
+      try {
+        const vdt = await handle.build({ markdown }, config, { signal: ac.signal });
+        const canvas = canvasRef.current;
+        if (!canvas || !vdt.pages[0]) return;
+        renderPageToCanvas(vdt.pages[0], vdt, canvas); // rasteritza al fil principal
+      } catch (err) {
+        if ((err as { name?: string } | null)?.name !== 'AbortError') throw err;
+      }
+    })();
+  }, [markdown, config]);
+
+  return <canvas ref={canvasRef} />;
+}
+```
+
+El patró sempre és el mateix: **crea una vegada, registra les fonts una vegada, construeix-amb-AbortSignal moltes vegades, allibera en desmuntar.**
+
+### Carregar el worker des d'una CDN
+
+L'script d'un worker ha de venir del mateix origen que la pàgina, així que una còpia de `postext/worker` servida per una CDN no pot engegar el fitxer `layout.worker.js` que té al costat. `createLayoutWorker()` ho resol:
+
+- **esm.sh, sense opcions.** Quan `postext/worker` mateix s'ha carregat des d'esm.sh (la URL del seu mòdul té la forma `https://esm.sh/postext@1.5.0/es2022/worker.mjs`), el client engega l'entrada corresponent, `https://esm.sh/postext@1.5.0/worker/entry`, a través d'un mòdul blob d'una línia, del mateix origen, que la importa. El mateix val per a les importacions que afegeixen `?deps=`, `?external=` o `?alias=`, i per a la forma `https://esm.sh/*postext@1.5.0/worker`. El worker rep sempre la compilació normal d'aquesta versió, perquè un worker no té *import map* amb què resoldre dependències externes.
+- **Qualsevol altre servidor, amb `url`.** Les altres CDN, com jsDelivr (`/+esm`) o unpkg, no es detecten. `createLayoutWorker({ url })` engega el mòdul d'entrada del worker que hi ha a `url`: directament si és del mateix origen, i a través del mateix embolcall blob si és d'un altre. Aquest servidor ha de permetre peticions d'altres orígens (CORS).
+- **Amb un bundler no canvia res.** Amb Vite, webpack o Next.js, continua cridant `createLayoutWorker()` sense opcions: ells emeten el worker com un fragment més de la teva aplicació.
+
+```js
+import { createLayoutWorker } from 'https://esm.sh/postext/worker';
+
+const layout = createLayoutWorker();
+const face = async (weight, style) => ({
+  family: 'EB Garamond',
+  weight,
+  style,
+  buffer: await (await fetch(`https://cdn.jsdelivr.net/npm/@fontsource/eb-garamond@5/files/eb-garamond-latin-${weight}-${style}.woff2`)).arrayBuffer(),
+});
+await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'normal'), face(400, 'italic')]));
+const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
+```
+
+**Un worker no veu les fonts de la pàgina.** Té el seu propi conjunt de fonts, que només conté les cares enviades amb `registerFonts` i les fonts instal·lades al sistema. Quan un build compon text en una família que el worker no troba, aquest text es mesura amb una font de reserva, així que els seus talls de línia no coincidiran amb els de la pàgina. El client imprimeix llavors un avís a la consola per família (`"EB Garamond" is not available inside the layout worker…`) i enumera les famílies a `BuildStats.missingFonts`, que rep el callback `onStats` de `build`. El document mateix porta aquestes cares com a avisos de contingut `fontFallback`.
+
+`handle.prepareFonts(content, config, options)` executa [`prepareFonts`](#carregar-les-fonts-abans-de-compondre) a la pàgina i després envia al worker els fitxers de cada cara trobada que guarda el registre de fonts (els fitxers del resolutor, les cares d'un paquet, les regles `@font-face` llegibles de la pàgina), i d'aquests només els trams que contenen caràcters del document. Quan arriben cares al worker, aquest descarta només les mesures d'aquelles famílies, a més de la seva memòria cau de documents acabats.
+
+### Recol·lecció de payloads de font (Fontsource / Google Fonts)
+
+`registerFonts` pren bytes de font en brut. El fil principal és el lloc adequat per obtenir-los, perquè Google Fonts només retorna WOFF2 a User-Agents amb aspecte de navegador, i perquè una memòria cau centralitzada permet que diverses instàncies del worker comparteixin els mateixos bytes.
+
+`collectFontPayloadsForFamilies` del sandbox (`packages/postext-sandbox/src/controls/fontLoader.ts`) és una implementació de referència directa. El que fa:
+
+1. Consulta `https://api.fontsource.org/v1/fonts/{id-de-familia}` per descobrir els pesos disponibles i si la família inclou un eix variable.
+2. Construeix una URL CSS2 de Google Fonts que cobreix tots els pesos i estils que declara la família.
+3. Baixa el full d'estils `@font-face` generat, n'extreu cada declaració `src: url(...) format('woff2')` i baixa els bytes en brut.
+4. Retorna un `FontPayload[]` on `buffer` és un `ArrayBuffer` nou per crida — important, perquè `registerFonts` transfereix el buffer i deixa la còpia del remitent desvinculada.
+
+Combina-ho amb `getConfigFontFamilies(config)` per obtenir la llista de famílies que una `PostextConfig` concreta renderitzarà (cos, encapçalaments, pics de llistes, números de llistes ordenades).
+
+### Cancel·lació cooperativa dins del motor
+
+Si orquestres `buildDocument` tu mateix — per exemple, dins d'un worker personalitzat — el pipeline exposa un hook `shouldCancel` que pots fer servir directament:
+
+```ts
+import { buildDocument, BuildCancelledError } from 'postext';
+
+let superseded = false;
+try {
+  const vdt = buildDocument(content, config, cache, {
+    shouldCancel: () => superseded,
+  });
+} catch (err) {
+  if (err instanceof BuildCancelledError) return; // un build més nou ha pres el relleu
+  throw err;
+}
+```
+
+`shouldCancel` s'invoca una vegada per cada bloc de nivell superior durant la col·locació. El hook és intencionadament cooperatiu — no pot aturar la crida de layout de Pretext mateixa a mitja línia, però manté la granularitat de cancel·lació prou fina (mil·lisegons) perquè un usuari que tecleja de pressa no hagi d'esperar mai un build obsolet.
+
+### Exportar PDF des del worker
+
+El backend PDF pren un `VDTDocument` ja enllestit i el converteix en bytes PDF. **No** torna a executar la composició. Això vol dir que el flux canònic de PDF al navegador encaixa netament amb el worker: construeix el VDT al worker (fora del fil principal, cancel·lable, reutilitzant la memòria cau), i després crida `renderToPdf` al fil principal sobre aquest mateix VDT.
+
+```ts
+import type { LayoutWorkerHandle } from 'postext/worker';
+import { renderToPdf } from 'postext-pdf';
+import type { PostextConfig } from 'postext';
+import { createPdfFontProvider } from './pdfFontProvider';
+
+const fontProvider = createPdfFontProvider();
+
+export async function exportPdf(
+  layout: LayoutWorkerHandle,
+  markdown: string,
+  config: PostextConfig,
+): Promise<Uint8Array> {
+  // 1. Construeix el VDT al worker — la UI continua responent durant les passades de composició.
+  const vdt = await layout.build({ markdown }, config);
+
+  // 2. Rasteritza a PDF al fil principal. renderToPdf és ràpid un cop existeix el VDT
+  //    perquè recorre coordenades precalculades, no torna a mesurar text.
+  return renderToPdf(vdt, {
+    fontProvider,
+    // La config `pdfGeneration` de `vdt.config` es respecta automàticament.
+  });
+}
+```
+
+Si ja mantens un handle de worker per a la previsualització en directe, reutilitza'l per a l'exportació en comptes d'engegar un segon worker — la memòria cau de mesura dins del worker fa que una exportació PDF posterior a una previsualització en pantalla sigui pràcticament gratuïta.
+
+En un llibre llarg, escriure el PDF mateix també porta segons; `postext-pdf/worker` executa aquest pas en un worker propi (consulta [Renderitzar el PDF en un worker](#renderitzar-el-pdf-en-un-worker)).
+
+### Quan fer servir el worker i quan no
+
+Fes servir el worker per a:
+
+- **Previsualitzacions en directe, editors i playgrounds.** Qualsevol escenari on el document es reconstrueix en resposta a l'entrada de l'usuari.
+- **Visors HTML sensibles al resize** que tornen a executar la composició a cada tic del `ResizeObserver`.
+- **Exportació PDF des del navegador** llançada des d'una UI que ja té previsualització en directe — reutilitza el handle de worker existent per aprofitar la memòria cau de mesura.
+- **Múltiples pestanyes de sortida** que necessiten el mateix VDT (les vistes Canvas / HTML / PDF del sandbox comparteixen un handle de worker per muntatge de vista).
+
+Salta-te'l per a:
+
+- **Generació al servidor** — Node no té un `FontFaceSet` del navegador, i de tota manera controles el fil.
+- **Exportacions puntuals aïllades** (una CLI, un script d'exportació headless, una Cloud Function) en què no existeix cap UI interactiva que es pugui bloquejar. Cridar `buildDocument` directament és més simple i evita el cost de la transferència inicial de fonts.
+
+
+## Integrar el visor HTML
+
+El visor HTML és el renderitzador de Postext orientat a pantalla. En lloc de rasteritzar pàgines a un mapa de bits emet nodes DOM posicionats absolutament la geometria dels quals genera el mateix pipeline que produeix la sortida impresa. És l'opció adequada quan vols tipografia llegible, seleccionable i conscient del resize al navegador — una app de lectura, una previsualització dins d'un producte o una superfície de documentació incrustada — sense haver d'arrossegar un visor PDF.
+
+Les peces clau de l'API pública:
+
+- **`buildDocument(content, config, cache?)`** — executa el pipeline complet de composició i retorna un `VDTDocument`.
+- **`renderToHtmlIndexed(doc, options)`** — converteix el VDT en una única cadena HTML més un desglossament per pàgina i per bloc. El desglossament permet apedaçar el DOM de manera barata quan només han canviat alguns blocs entre renders.
+- **`resolveHtmlViewerConfig(partial)`** — completa els valors per defecte del visor HTML (`maxCharsPerLine`, `columnGap`, `optimalLineBreaking`).
+- **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`** — primitives de mesura que serveixen per derivar una amplada de columna real en píxels a partir d'un objectiu en caràcters.
+- **`createMeasurementCache` / `clearMeasurementCache`** — memòries cau endollables per reutilitzar mesures entre recomposicions.
+- **`prepareFonts` / `buildDocumentWithFonts` / `watchFonts` / `onFontsChanged`** — carreguen les cares del document abans de compondre i tornen a compondre quan n'arriben de noves (vegeu [Carregar les fonts abans de compondre](#carregar-les-fonts-abans-de-compondre)).
+
+### Exemple en directe: una cadena HTML
+
+El recorregut complet en JavaScript pla, abans de la integració amb React de més avall: construir el document, passar el `VDTDocument` a `renderToHtml` i bolcar la cadena en un contenidor. `mode: 'single'` apila les pàgines en vertical; `background` els dona color, perquè per defecte les pàgines són transparents. El pen també imprimeix el marcatge generat, perquè vegis les línies posicionades de manera absoluta que emet el renderitzador: el navegador les pinta, però no les recompon mai.
+
+<CodePenExample name="render-html" title="Postext · renderitzar un document a HTML" description="Compon un document markdown amb postext i renderitza'l a una cadena HTML." height={600} />
+
+### Integració mínima
+
+El fragment següent és la integració útil més curta: construeix el document a la mida actual de la vista, el renderitza en un contenidor i recompon en redimensionar.
+
+```tsx
+import { useEffect, useRef } from 'react';
+import {
+  buildDocument,
+  renderToHtmlIndexed,
+  resolveHtmlViewerConfig,
+  buildFontString,
+  measureGlyphWidth,
+  dimensionToPx,
+  createMeasurementCache,
+  watchFonts,
+  onFontsChanged,
+} from 'postext';
+import type { PostextConfig, MeasurementCache } from 'postext';
+
+// DPI adequat per a pantalla: a 144 DPI una mida de cos de 8pt resol a 16 px.
+const HTML_DPI = 144;
+const PADDING_PX = 24;
+
+// Mostra de prosa que serveix per mesurar l'amplada objectiu de columna. Les fonts
+// proporcionals fan poc fiable "N × amplada mitjana", així que mesurem una
+// cadena representativa.
+const SAMPLE =
+  'The quick brown fox jumps over the lazy dog. Sphinx of black quartz, judge my vow.';
+
+function sampleForChars(n: number): string {
+  let s = SAMPLE;
+  while (s.length < n) s += ' ' + SAMPLE;
+  return s.slice(0, n);
+}
+
+export function PostextHtmlViewer({
+  markdown,
+  config,
+  mode = 'multi',
+}: {
+  markdown: string;
+  config: PostextConfig;
+  mode?: 'single' | 'multi';
+}) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const cacheRef = useRef<MeasurementCache>(createMeasurementCache());
+
+  useEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+
+    const relayout = () => {
+      const rect = host.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      const viewer = resolveHtmlViewerConfig(config.htmlViewer);
+      const fontFamily = config.bodyText?.fontFamily ?? 'EB Garamond';
+      const fontWeight = config.bodyText?.fontWeight ?? 400;
+      const fontSize = config.bodyText?.fontSize ?? { value: 8, unit: 'pt' as const };
+      const fontSizePx = dimensionToPx(fontSize, HTML_DPI);
+
+      // Mesura l'amplada *real* de columna per a N caràcters de prosa del cos.
+      const targetColumnPx = measureGlyphWidth(
+        sampleForChars(viewer.maxCharsPerLine),
+        buildFontString(fontFamily, fontSizePx, String(fontWeight), 'normal'),
+      );
+
+      const inner = Math.max(rect.width - PADDING_PX * 2, 100);
+      let columnWidthPx: number;
+      if (mode === 'single') {
+        columnWidthPx = Math.min(targetColumnPx, inner);
+      } else {
+        // Hi encabeix tantes columnes com es pugui a l'amplada objectiu.
+        const count = Math.max(
+          1,
+          Math.floor((inner + viewer.columnGap) / (targetColumnPx + viewer.columnGap)),
+        );
+        columnWidthPx = (inner - viewer.columnGap * (count - 1)) / count;
+      }
+      columnWidthPx = Math.max(Math.floor(columnWidthPx), 80);
+
+      // El mode single fa servir una pàgina molt alta; el mode multi fa servir l'alçada
+      // de la vista, de manera que cada "pàgina" VDT es converteix en una columna.
+      const pageHeightPx =
+        mode === 'single' ? Math.max(rect.height * 20, 200_000) : Math.max(rect.height - PADDING_PX * 2, 400);
+
+      const override: PostextConfig = {
+        ...config,
+        page: {
+          ...config.page,
+          dpi: HTML_DPI,
+          width: { value: columnWidthPx, unit: 'px' },
+          height: { value: pageHeightPx, unit: 'px' },
+          margins: {
+            top: { value: 0, unit: 'px' },
+            bottom: { value: 0, unit: 'px' },
+            left: { value: 0, unit: 'px' },
+            right: { value: 0, unit: 'px' },
+          },
+        },
+        layout: { ...config.layout, layoutType: 'single' },
+        bodyText: {
+          ...config.bodyText,
+          optimalLineBreaking: viewer.optimalLineBreaking,
+        },
+      };
+
+      const doc = buildDocument({ markdown }, override, cacheRef.current);
+      const { html } = renderToHtmlIndexed(doc, {
+        mode,
+        columnGap: viewer.columnGap,
+        padding: PADDING_PX,
+        background: 'transparent',
+      });
+
+      host.innerHTML = html;
+    };
+
+    relayout();
+
+    const ro = new ResizeObserver(() => relayout());
+    ro.observe(host);
+
+    // Torna a mesurar quan es carreguen les web fonts perquè les amplades de glif no
+    // quedin preses a partir de les fonts de reserva.
+    const stopWatching = watchFonts();
+    const off = onFontsChanged(() => relayout());
+
+    return () => {
+      ro.disconnect();
+      off();
+      stopWatching();
+    };
+  }, [markdown, config, mode]);
+
+  return <div ref={hostRef} style={{ width: '100%', height: '100%', overflow: 'auto' }} />;
+}
+```
+
+Algunes notes sobre el que fa l'exemple:
+
+- **Es mesura la columna, no s'aproxima.** Com que `maxCharsPerLine` és un *objectiu* expressat en caràcters, l'amplada real en píxels depèn de la font del cos. `measureGlyphWidth` dona una mesura real sobre la font triada, i manté la mesura coherent quan es canvia de font.
+- **Es reescriu la pàgina.** El visor HTML tracta cada "pàgina" del VDT com una columna en pantalla. L'exemple sobreescriu `page.width` amb l'amplada mesurada de columna, posa els marges a zero (el padding viu fora de la pàgina, al `.pt-doc` que l'embolcalla) i fa servir `HTML_DPI = 144` perquè `8pt` de cos resolgui a `16px`.
+- **Atent a la càrrega de fonts.** `watchFonts` escolta `document.fonts` i, una vegada per fotograma, descarta el que s'havia mesurat en les famílies amb cares acabades d'arribar; `onFontsChanged` torna a compondre llavors la columna. Si no es recompon, el primer render fa servir mètriques de la font de reserva i es produeix un salt quan arriba la real.
+- **Es reutilitza la memòria cau de mesures.** Crear la memòria cau una sola vegada per component fa que els redimensionaments i els canvis d'escala de font reutilitzin mesures del render anterior en lloc de tornar a mesurar cada paràgraf.
+
+### Pas següent
+
+L'exemple de més amunt és deliberadament pla. Les integracions en producció hi solen afegir:
+
+- **Aïllament amb Shadow DOM** — renderitza a `host.attachShadow({ mode: 'open' })` perquè res del document extern filtri CSS al visor.
+- **Apedaçament incremental** — `renderToHtmlIndexed` retorna `pages[i].blocks`, cadascun amb un `id` estable i l'HTML extern del bloc. Quan només uns quants blocs difereixen entre dos renders pots substituir aquests embolcalls al lloc en lloc de reconstruir `innerHTML`.
+- **Superposicions** — apila un SVG absolut sobre cada `.pt-page` per a cursors, seleccions o la retícula de base.
+- **Enllaços** — les paraules d'un enllaç Markdown s'embolcallen en `<a href="…" rel="noopener noreferrer">`, que pren el color del text i no se subratlla; consulta [Format del document › Enllaços](/ca/docs/document-format#enllaços). En un visor que funcioni com a editor, intercepta els clics als `a[href]` que no comencin per `#` i obre'ls en una pestanya nova (les àncores de `:ref` enllacen dins del document).
+- **Imatges a una sola tinta** — amb `diagramStyle.singleInk` actiu, els `<img>` SVG porten un filtre CSS, tret que passis `singleInk: false` perquè les URL ja estan recolorides; consulta [Tinta única en canvas i en HTML](/ca/docs/configuration-resources#tinta-única-en-canvas-i-en-html).
+
+El component `HtmlPreview` del sandbox (`packages/postext-sandbox/src/viewport/HtmlPreview/index.tsx`) implementa tot això sobre la mateixa API que es mostra aquí i et pot servir de referència. A més, encamina cada build a través d'un worker de layout compartit (consulta [Executar la composició en un Web Worker](#executar-la-composició-en-un-web-worker)) perquè les edicions en directe i els redimensionaments no bloquegin mai el fil principal — substitueix la crida directa `buildDocument(...)` del fragment anterior per `layoutWorker.build(...)` quan vulguis treure la composició del fil principal.
+### En què es diferencia la sortida HTML del canvas i del PDF
+
+`renderToHtml` col·loca cada línia, figura i element de disseny exactament on ho fan el canvas i el PDF, però pinta menys coses al voltant:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>Element</th>
+      <th>Canvas (<code>renderPage</code>)</th>
+      <th>HTML (<code>renderToHtml</code>)</th>
+      <th>PDF (<code>renderToPdf</code>)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Fons de pàgina</td>
+      <td>Blanc, amb <code>page.backgroundColor</code> sobre la caixa de tall i la sang.</td>
+      <td><strong>Transparent</strong>, tret que passis <code>background</code> o fixis <code>page.backgroundColor</code> (que llavors omple tota la caixa de la pàgina, inclosa la zona de les marques de tall).</td>
+      <td>Blanc, amb <code>page.backgroundColor</code> sobre la caixa de tall i la sang.</td>
+    </tr>
+    <tr>
+      <td>Retícula de base (<code>page.baselineGrid</code>)</td>
+      <td>Es dibuixa</td>
+      <td>No es dibuixa</td>
+      <td>Es dibuixa</td>
+    </tr>
+    <tr>
+      <td>Filet entre columnes (<code>layout.columnRule</code>)</td>
+      <td>Es dibuixa</td>
+      <td>No es dibuixa</td>
+      <td>Es dibuixa</td>
+    </tr>
+    <tr>
+      <td>Marques de tall (<code>page.cutLines</code>)</td>
+      <td>Es dibuixen</td>
+      <td>No es dibuixen; la caixa de la pàgina continua incloent el marge exterior de les marques.</td>
+      <td>Es dibuixen</td>
+    </tr>
+    <tr>
+      <td>Negatiu de pàgina</td>
+      <td>Opció <code>pageNegative</code></td>
+      <td>No disponible</td>
+      <td>Opció <code>pageNegative</code></td>
+    </tr>
+    <tr>
+      <td>Text</td>
+      <td>Píxels</td>
+      <td>Text seleccionable en elements amb posició absoluta, compost en les famílies CSS: la pàgina ha de carregar les mateixes cares.</td>
+      <td>Fonts incrustades des del teu <code>fontProvider</code>; seleccionable, cercable i etiquetat.</td>
+    </tr>
+    <tr>
+      <td>Text vertical (<code>layout.writingMode: 'vertical-rl'</code>)</td>
+      <td>Caràcters pintats casella a casella i adreçats; formes verticals mitjançant una font bessona (<code>loadVerticalAlternates</code>).</td>
+      <td>El flux en una caixa girada un quart de volta; cada línia adreçada i composta amb <code>writing-mode: vertical-rl</code>, de manera que el navegador agafa les formes verticals i posa els caràcters drets; els números curts, en <code>text-combine-upright: all</code>; un guió llarg, uns punts suspensius, un punt volat o una titlla d'ona, en una caixa de la llargada de la seva cel·la (el navegador els faria avançar la seva amplada horitzontal), i el guió llarg estirat fins a omplir-la segons <code>flow.dashAdvances</code>.</td>
+      <td>Caràcters drets mitjançant una bessona <code>Identity-V</code> de cada font; vegeu <a href="#text-vertical-en-el-pdf">Text vertical en el PDF</a>.</td>
+    </tr>
+    <tr>
+      <td>Imatges</td>
+      <td><code>registerResourceImage</code></td>
+      <td>L'opció <code>resourceImageUrl(fileId)</code>; sense ella, una caixa grisa provisional.</td>
+      <td>L'opció <code>resourceBytes(fileId)</code>.</td>
+    </tr>
+    <tr>
+      <td>Fórmules</td>
+      <td>Traços vectorials</td>
+      <td><code>&lt;svg&gt;</code> en línia</td>
+      <td>Traços vectorials</td>
+    </tr>
+    <tr>
+      <td>Enllaços</td>
+      <td>Cap</td>
+      <td>Les cites <code>:ref</code> enllacen amb el seu recurs; les entrades de l'índex, no.</td>
+      <td>Les cites <code>:ref</code> i les entrades de l'índex, a més dels marcadors.</td>
+    </tr>
+  </tbody>
+</table>
+
+La pàgina transparent és important en un lloc amb tema fosc: una previsualització sense `background` mostra text negre sobre el fons fosc del lloc. Passa `renderToHtml(doc, { background: '#ffffff' })`, o dona al document un `page.backgroundColor`.
+
+**Els estils de text de la pàgina amfitriona queden fora.** Cada línia es compon amb les amplades que va mesurar el motor, de manera que un `letter-spacing`, un `word-spacing`, un `text-transform` o un `font-variant` que la sortida heretés de la pàgina que la conté eixamplaria els trams de glifs i les línies es muntarien les unes sobre les altres. Per això l'arrel `.pt-doc` restableix les propietats de text heretables —espaiat entre lletres i entre paraules, caixa, sagnat, espais en blanc, estil, variant, pes, amplada, trets i kerning de la font, interlineat, alineació, ombra i èmfasi del text, guionets, direcció, mode d'escriptura, traç i farciment del text i l'engrandiment del text en mòbils— abans de les seves pròpies declaracions de maquetació, de manera que la sortida es veu igual dins d'una *shadow root* o sota un element amb estils. La llista s'exporta com a `HTML_TEXT_RESET`, una cadena de declaracions CSS: un amfitrió que munta l'`innerHtml` de les pàgines (de `renderToHtmlIndexed`) en contenidors propis l'aplica a la seva arrel. Fins a postext 1.4 l'arrel no restablia res; el remei era un embolcall amb `all: initial`.
+
+
+## Generació de PDF
+
+La sortida PDF viu en un paquet separat, **`postext-pdf`**, perquè les integracions purament web no paguin el cost de `pdf-lib` ni de `@pdf-lib/fontkit`. El backend de PDF no torna a mesurar el text: consumeix exactament el mateix `VDTDocument` que passaries a `renderToCanvas` o `renderToHtml` i tradueix les seves coordenades en píxels a punts PDF. Per tant, les tres sortides tenen garantit que coincideixen en salts de línia, alçades de columna i col·locació de recursos.
+
+> **Al navegador, construeix el VDT a través del [Web Worker](#executar-la-composició-en-un-web-worker).** `renderToPdf` en si és ràpid un cop existeix el VDT — la part costosa és el pipeline de composició que el va produir. Executar aquest pipeline al worker manté la UI fluida i permet que una exportació PDF reutilitzi la mateixa memòria cau de mesura que ja va escalfar la previsualització en directe. Consulta [Exportar PDF des del worker](#exportar-pdf-des-del-worker) per al flux recomanat. Els exemples al fil principal que segueixen són la referència de *què signifiquen els arguments* — per a codi d'UI, construeix primer el VDT al worker i crida `renderToPdf` directament.
+
+### Instal·lació
+
+```bash
+npm install postext postext-pdf
+```
+
+`postext` és una *peer dependency* de `postext-pdf`. Cada versió de `postext-pdf` necessita el `postext` amb què es va publicar, o un de posterior de la mateixa versió major (el seu rang és `^` aquesta versió, `^1.5.0` per a la 1.5.0), perquè importa funcions que `postext` va afegir en aquesta versió. Actualitza'ls tots dos alhora i, en un CDN, fixa'ls a la mateixa versió.
+
+### API pública
+
+El paquet exposa un únic punt d'entrada i un grapat de tipus:
+
+- **`renderToPdf(doc, options): Promise<Uint8Array>`** — pren un `VDTDocument` (o els capítols d'un llibre, com una llista d'aquests) i retorna els bytes en brut del PDF.
+- **`PdfFontProvider`** — la signatura de callback `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>` que `renderToPdf` fa servir per demanar els bytes d'una font quan necessita incrustar una combinació family/weight/style nova. `request.codePoints` conté els caràcters que les pàgines componen en aquesta variant; la resposta és un fitxer, o diversos que junts formen la variant (consulta [Fonts xineses, japoneses i coreanes](#fonts-xineses-japoneses-i-coreanes)).
+- **`RenderToPdfOptions`** — `{ fontProvider, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl? }`. `outlines`, `accessible` i `colorSpace` prenen el valor del `pdfGeneration` del document quan no es passen (vegeu [Generació de PDF (configuració)](/ca/docs/configuration-fonts-colors-viewers#generació-de-pdf-configuració)). `resourceBytes` es descriu a [Bytes de recursos i màsters d'impressió](#bytes-de-recursos-i-màsters-dimpressió); `onWarning`, a [Quines variants es demanen al proveïdor](#quines-variants-es-demanen-al-proveïdor) i a [Avisos del document](#avisos-del-document). Amb `characterGrid: true` el PDF imprimeix la retícula que `cjk.grid.show` dibuixa en pantalla i que altrament deixa fora (vegeu [Retícula de caràcters](/ca/docs/configuration-east-asian#retícula-de-caràcters)). `harfbuzzWasm` indica d'on carregar el `harfbuzz.wasm` de HarfBuzz (una URL, relativa a la pàgina, o els bytes del fitxer) per a un document amb text de dreta a esquerra o de lletres enllaçades; si no es passa, la còpia al costat del mòdul de postext-pdf i, després, la mateixa versió de harfbuzzjs a jsDelivr i a esm.sh. `print` rep els ajustos de sortida a impremta (norma PDF/X, perfil de sortida, negre, preflight) i, si no es passa, pren el `print` del document; amb una norma PDF/X, o amb `colorSpace: 'cmyk'`, cada color se separa amb el perfil ICC de sortida, els bytes del qual dona `outputProfile` (si no, es baixa de `profileBaseUrl`, per defecte la còpia de la carpeta `icc/` de postext a la CDN de npm).
+- **`PdfWarning`** — un problema no fatal que es notifica per `onWarning`; es distingeix per `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), una variant composta amb un altre tall de la seva família; `'missingGlyph'` (`PdfMissingGlyphWarning`), caràcters per als quals cap fitxer d'una variant té glif; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), una font variable demanada amb un pes diferent del de la seva instància per defecte; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), una font CFF de més de 2 MB incrustada sencera; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), text de dreta a esquerra o de lletres enllaçades dibuixat sense HarfBuzz, que no s'ha pogut carregar (`reason` diu on s'ha buscat), de manera que les marques de l'àrab queden mal col·locades; `'outputProfileUnavailable'` (`PdfPrintWarning`), un render CMYK el perfil de sortida del qual no s'ha pogut carregar i que s'ha convertit amb la fórmula simple; `'pageNegativeIgnored'` (`PdfPrintWarning`), el negatiu de pàgina que s'omet en un PDF/X-1a; o `'missingImage'`, una imatge sense bytes dibuixada com a marcador de posició (aquesta només es notifica a un `onWarning` propi; sense ell, els avisos de fonts van a `console.warn`).
+- **`decompressWoff2(bytes): Uint8Array`** — helper que converteix un fitxer WOFF2 en bytes TTF, que és el format que `pdf-lib` pot incrustar directament.
+- **`createPdfWorker(options?)`**, de `postext-pdf/worker` — el mateix render en un Web Worker; consulta [Renderitzar el PDF en un worker](#renderitzar-el-pdf-en-un-worker).
+
+### Exemple mínim
+
+```ts
+import { buildDocument } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+
+const vdt = buildDocument(
+  { markdown: '# Capítol u\n\nLa història comença aquí…' },
+  {
+    page: { sizePreset: '17x24' },
+    layout: { layoutType: 'double' },
+    bodyText: { fontFamily: 'EB Garamond', fontSize: { value: 9, unit: 'pt' } }, // 9 pt sobreescriu el valor per defecte de 8 pt
+  },
+);
+
+const pdfBytes = await renderToPdf(vdt, {
+  fontProvider: async (family, weight, style) => {
+    // Retorna els bytes TTF per a aquesta family/weight/style.
+    // Consulta la secció "Proveïdor de fonts" més avall per a una implementació real.
+    const res = await fetch(`/fonts/${family}-${weight}${style === 'italic' ? 'i' : ''}.ttf`);
+    return new Uint8Array(await res.arrayBuffer());
+  },
+});
+
+// `pdfBytes` és un Uint8Array — desa'l, baixa'l o envia'l per streaming.
+const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+const url = URL.createObjectURL(blob);
+window.open(url);
+```
+
+### Per què un proveïdor de fonts?
+
+`pdf-lib` incrusta fitxers de font reals dins del PDF — les fonts instal·lades al navegador no estan disponibles en el moment del render, i una font que només vas carregar per a la mesura en pantalla no basta, per si sola, per produir un PDF autocontingut. `renderToPdf` recorre les pàgines buscant cada variant que pinten (una per cada combinació `family|weight|style`; consulta [Quines variants es demanen al proveïdor](#quines-variants-es-demanen-al-proveïdor)) i invoca el teu proveïdor una sola vegada per combinació única. El proveïdor retorna un `Uint8Array` amb bytes **TTF o OTF**, o una llista d'aquests per a una variant servida en diversos fitxers (consulta [Fonts xineses, japoneses i coreanes](#fonts-xineses-japoneses-i-coreanes)); `pdf-lib` redueix els contorns TrueType als glifs usats i incrusta sencers els fitxers CFF (`.otf`). Les variants a les quals el proveïdor respon amb el mateix fitxer, com una rodona que substitueix la negreta que falta en una família, comparteixen una sola font incrustada. Una variant amb què cap pàgina arriba a dibuixar, com la del text d'una figura SVG que acaba dibuixada com a imatge, no s'escriu al fitxer.
+
+**Fes servir fonts estàtiques per pes, no una única font variable.** Google Fonts sovint serveix un únic WOFF2 variable per família que cobreix tot l'eix de pesos. `pdf-lib` només pot incrustar la instància per defecte d'un fitxer variable, de manera que un paràgraf en negreta es renderitzaria amb pes regular. Fontsource publica fitxers WOFF2 estàtics per pes que resolen això netament — és el patró que fa servir el sandbox. Un fitxer variable demanat amb un pes diferent del de la seva instància per defecte es notifica amb un avís `variableFontDefaultInstance`.
+
+**Cada paraula del text cau on la va posar la maquetació.** En els paràgrafs, els elements de llista, les cites, els requadres i la resta del text corregut, cada paraula comença a la posició que va mesurar el VDT, de manera que una diferència entre les amplades del navegador i les de la font incrustada mai no s'acumula al llarg d'una línia. Una línia sense format en línia es pinta com un sol objecte de text que mou el punt d'escriptura entre paraula i paraula; les línies justificades, les centrades i les que porten format es pinten paraula a paraula. Un caràcter per al qual la font no té glif, que el navegador va mesurar amb una altra font i que el PDF pinta com la caixa de glif absent de la font, no mou cap de les paraules que el segueixen, i es notifica una vegada per variant amb un avís `missingGlyph`. Un espai que la font no té, com l'espai fi de no separació o l'espai de xifra, pren l'amplada que li va donar el navegador, i els caràcters invisibles, com la unió de paraules i l'espai d'amplada zero, no es dibuixen. Un guionet de no separació (U+2011) que la font no té es dibuixa amb el guionet de la font (U+2010), o amb el seu guionet-menys si tampoc no té guionet, tal com el mostra el navegador; Open Sans i Outfit, entre d'altres, no tenen cap dels dos. Cap d'aquests casos no compta com a glif absent. Hi ha dues excepcions. Una línia amb lletres de dreta a esquerra es continua pintant com un sol tram (consulta [Llengües i escriptures](/ca/docs/configuration-text#llengües-i-escriptures)). El text que col·loca un disseny (capçaleres i peus correguts, obertures, títols de requadre i altres elements de disseny) es compon amb les amplades pròpies de la font incrustada, de manera que allà un glif que falta a la font continua movent la resta de la seva línia.
+
+### Quines variants es demanen al proveïdor
+
+`renderToPdf` recorre les pàgines en el mateix ordre en què les pinta i només demana al proveïdor les variants que dibuixen:
+
+- la variant regular d'un bloc que compon alguna línia, i la negreta, cursiva o negreta cursiva de cada tram que de debò porta aquest estil;
+- els trams dels xips, les marques de llista i el text dels dissenys (titolets, folis, bandes d'obertura i de part);
+- el text del peu, de la nota i de les cel·les de taula de cada recurs;
+- les variants que anomena el `<text>` d'una figura SVG, en incrustar-la. Si el proveïdor no pot servir cap variant d'una família, es passa a la família següent de la llista `font-family` de l'SVG.
+
+Així, mai no es demana la cursiva d'una família d'encapçalaments que ningú no inclina, i una figura sense nota no necessita les variants de la nota.
+
+Quan el proveïdor rebutja una variant, el render continua endavant. S'incrusta al seu lloc una altra variant de la mateixa família i s'emet un `PdfWarning`. La substituta és la primera variant que carrega, provant els nou pesos estàndard (de 100 a 900) en l'ordre que fa servir la selecció de fonts de CSS, que és també la variant que el navegador mostra a la previsualització:
+
+1. primer el mateix estil. Per a un pes entre 400 i 500, van primer els pesos fins a 500, després els més lleugers, del més proper cap avall, i després els més gruixuts, de 600 cap amunt. Per a un pes per sota de 400, van primer els més lleugers, del més proper cap avall, i després els més gruixuts. Per a un pes per sobre de 500, van primer els més gruixuts i després els més lleugers;
+2. després l'altre estil, cursiva per a la rodona i rodona per a la cursiva, en el pes demanat i en els altres pesos amb el mateix ordre.
+
+Per això una família sense cursives compon els seus trams en cursiva en rodona, una família que només publica 400 i 700 pren un 600 com a 700, i una família que publica un únic tall ho compon tot amb ell. Al proveïdor se li demana una variant cada vegada, en aquest ordre, i mai dues vegades la mateixa, de manera que mai no s'incrusta una variant que res no fa servir. A una família que el proveïdor no pot servir en absolut se li demanen aquestes 18 variants abans que el render falli.
+
+```ts
+const bytes = await renderToPdf(doc, {
+  fontProvider,
+  onWarning: (w) => {
+    // { kind: 'fontFallback', family: 'Oswald', weight: 700, style: 'italic',
+    //   fallback: { weight: 700, style: 'normal' }, reason: '…', message: '…' }
+    console.info(w.message);
+  },
+});
+```
+
+Sense `onWarning`, el missatge va a `console.warn`. El text conserva les seves posicions, que vénen del VDT i es van mesurar amb les variants que tenia el navegador, de manera que una substituta amb altres amplades es pot veure atapeïda o fluixa. Per corregir-ho, serveix la variant real. Un render només falla (`postext-pdf: failed to load font(s): …`) quan el proveïdor no pot servir cap variant d'una família en un pes estàndard, ni rodona ni cursiva.
+
+### Proveïdor de fonts al navegador (Fontsource + WOFF2)
+
+El sandbox distribueix `createPdfFontProvider()` (`packages/postext-sandbox/src/viewport/pdfFontProvider.ts`), que pots copiar a qualsevol app de navegador. L'essencial:
+
+```ts
+import type { PdfFontProvider } from 'postext-pdf';
+import { decompressWoff2 } from 'postext-pdf';
+
+const bytesCache = new Map<string, Promise<Uint8Array>>();
+
+function fontsourceId(family: string): string {
+  return family.toLowerCase().replace(/\s+/g, '-');
+}
+
+function fontsourceWoff2Url(
+  family: string,
+  weight: number,
+  style: 'normal' | 'italic',
+): string {
+  const id = fontsourceId(family);
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@latest/files/${id}-latin-${weight}-${style}.woff2`;
+}
+
+export function createPdfFontProvider(): PdfFontProvider {
+  return async (family, weight, style) => {
+    const key = `${family}|${weight}|${style}`;
+    const cached = bytesCache.get(key);
+    if (cached) return cached;
+
+    const promise = (async (): Promise<Uint8Array> => {
+      const url = fontsourceWoff2Url(family, weight, style);
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) throw new Error(`font fetch failed: ${res.status} ${url}`);
+      // pdf-lib necessita bytes TTF, així que descomprimim l'embolcall WOFF2 al client.
+      return decompressWoff2(new Uint8Array(await res.arrayBuffer()));
+    })();
+
+    bytesCache.set(key, promise);
+    return promise;
+  };
+}
+```
+
+Una versió de producció hauria de, a més:
+
+- **Consultar els pesos disponibles** (via `https://api.fontsource.org/v1/fonts/{id}`) i ajustar el pes demanat al més proper que la família distribueix realment, perquè una petició de `weight: 600` sobre una família que només té `{400, 700}` continuï funcionant.
+- **Passar d'italic a normal** quan una família no tingui tallada la itàlica per al pes sol·licitat, en lloc de fer fallar tot el render.
+- **Reutilitzar la memòria cau entre renders** (mantén `bytesCache` a nivell de mòdul, no per crida) perquè regenerar el PDF després d'un canvi de configuració sigui pràcticament gratuït.
+
+### Fonts xineses, japoneses i coreanes
+
+Una font CJK no ve en un sol fitxer petit. Fontsource distribueix Noto Serif SC en un centenar de fitxers per pes, cadascun amb una part dels caràcters i declarat al full d'estils de la família amb el seu `unicode-range` (`@fontsource/noto-serif-sc/400.css`); el navegador baixa els fitxers que toca el text de la pàgina. El fitxer `latin` que demana el proveïdor de dalt no té ni un sol caràcter han, i els subconjunts amb nom estan incomplets: al `chinese-simplified` de Noto Serif SC li falta 釵, i el `chinese-traditional` de Noto Serif TC no té cap dels signes d'amplada completa （），！？：；.
+
+Per això un proveïdor pot respondre a una variant amb diversos fitxers. `renderToPdf` li passa els caràcters que les pàgines componen en aquesta variant (`request.codePoints`), reunits de tots els capítols abans de dibuixar res, i el proveïdor retorna els fitxers que els contenen, en l'ordre en què el navegador els consulta. Cada fitxer s'incrusta com un subconjunt propi i cada caràcter es dibuixa amb el primer fitxer que té glif per a ell: un capítol que toca 60 fragments incrusta 60 subconjunts petits. Si es torna a demanar la variant, per exemple per al text d'una figura SVG, només es demanen els caràcters que falten als seus fitxers. Un proveïdor que retorna un sol `Uint8Array` funciona com abans. El proveïdor del sandbox llegeix el full d'estils de Fontsource del pes i l'estil i baixa els fitxers els intervals dels quals contenen el text; el seu nucli:
+
+```ts
+import type { PdfFontProvider } from 'postext-pdf';
+import { decompressWoff2 } from 'postext-pdf';
+
+type Slice = { url: string; ranges: Array<[number, number]> };
+
+async function fontsourceSlices(family: string, weight: number, style: 'normal' | 'italic'): Promise<Slice[]> {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  const cssUrl = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/${weight}${style === 'italic' ? '-italic' : ''}.css`;
+  const css = await (await fetch(cssUrl)).text();
+  return [...css.matchAll(/@font-face\s*{([^}]*)}/g)].map(([, rule]) => ({
+    url: new URL(/url\(\.?\/?([^)]+\.woff2)\)/.exec(rule)![1], cssUrl).href,
+    ranges: /unicode-range:\s*([^;]+);/.exec(rule)![1].split(',').map((part) => {
+      const [lo, hi = lo] = part.trim().slice(2).split('-');
+      return [parseInt(lo, 16), parseInt(hi, 16)] as [number, number];
+    }),
+  }));
+}
+
+export const sliceFontProvider: PdfFontProvider = async (family, weight, style, request) => {
+  // Where ranges overlap, the browser tries the last rule first.
+  const slices = (await fontsourceSlices(family, weight, style)).reverse();
+  const picked = new Set<Slice>();
+  for (const cp of request?.codePoints ?? []) {
+    const slice = slices.find((s) => s.ranges.some(([lo, hi]) => cp >= lo && cp <= hi));
+    if (slice) picked.add(slice);
+  }
+  if (picked.size === 0) picked.add(slices[0]!);
+  return Promise.all(slices.filter((s) => picked.has(s)).map(async (s) =>
+    decompressWoff2(new Uint8Array(await (await fetch(s.url)).arrayBuffer()))));
+};
+```
+
+Una família llatina passa pel mateix codi: un text en anglès rep només el seu fitxer `latin`, un en txec rep `latin` i `latin-ext`.
+
+Els caràcters per als quals cap fitxer de la variant té glif es dibuixen amb el glif `.notdef` de la font (una caixa buida en la majoria), i `renderToPdf` els notifica una vegada per variant quan acaba de dibuixar les pàgines:
+
+```ts
+// { kind: 'missingGlyph', family: 'Noto Serif TC', weight: 400, style: 'normal',
+//   characters: ['，', '！', '？'], message: '…' }
+```
+
+El Sandbox mostra aquests avisos, i els dos següents, al seu tauler Revisió després de cada PDF que genera. Si canvien el llibre, la seva configuració o els seus recursos, es marquen com d'un PDF anterior fins que el següent els substitueix; obrir un altre llibre els retira.
+
+- **La negreta necessita un fitxer estàtic per pes.** Fontsource serveix cada pes de Noto Serif SC i TC en fitxers estàtics propis, de manera que la negreta funciona al Sandbox. Els fitxers de Google Fonts (`NotoSerifSC[wght].ttf`, 25 MB) són fonts variables: pdf-lib incrusta la seva instància per defecte, de manera que una variant 700 s'imprimeix amb pes 400, i `renderToPdf` ho notifica com a `variableFontDefaultInstance`. Per a un paquet, treu una instància estàtica per pes amb fontTools (`fonttools varLib.instancer NotoSerifSC[wght].ttf wght=700`) i redueix-la als caràcters del llibre amb `pyftsubset`.
+- **Fes servir les versions TrueType.** Source Han Serif i els fitxers `.otf` de Noto Serif CJK tenen contorns CFF, que postext-pdf incrusta sencers, de 8 a 25 MB per pes; una font CFF de més de 2 MB es notifica com a `cffEmbeddedWhole`. Les versions TrueType (Google Fonts, Fontsource) es redueixen als glifs usats. Per al japonès, Noto Serif JP i Noto Sans JP (Google Fonts, o els fragments numerats de Fontsource), Shippori Mincho, Zen Old Mincho i BIZ UDMincho són TrueType; Source Han Serif JP i els fitxers `.otf` `JP` de Noto Serif CJK són CFF.
+- **Formes japoneses d'una font panCJK.** Un mateix punt de codi d'un caràcter han, de la puntuació o de les cometes es pot dibuixar d'una manera al Japó i d'una altra a la Xina, i una font panCJK (Source Han, Noto CJK) té totes dues. El PDF compon un document japonès (`locale: 'ja'`), i un aïllat en japonès (`:ltr[…]{lang=ja}`) en qualsevol document, amb el sistema d'idioma OpenType `JAN `, de manera que la funció `locl` de la font imprimeix les formes japoneses que el llenç i l'HTML imprimeixen gràcies a `lang`. Un aïllat en un altre idioma dins d'un llibre japonès es compon amb les formes d'aquest idioma (les de la font per defecte, per al xinès) i s'etiqueta com un `Span` amb el seu `/Lang`. Els documents xinesos i els altres es componen amb les formes per defecte de la font, com fins ara. Una font feta per al japonès, com Noto Serif JP, ja té formes japoneses per defecte; tot i així posa les “ ” del text japonès en la seva forma `JAN `.
+
+Un caràcter que falta en una família no es pren d'una altra: Noto Serif TC no manlleva res de Noto Serif SC. Resol la cobertura en preparar els fitxers de font; l'exemple de 红楼梦 copia als seus subconjunts TC els glifs que els falten des de la font SC.
+
+### Proveïdor de fonts al servidor (Node, fitxers locals)
+
+A Node pots saltar-te completament el pas WOFF2 i llegir fitxers TTF/OTF des del disc:
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import type { PdfFontProvider } from 'postext-pdf';
+
+const FONT_DIR = '/ruta/a/fuentes';
+
+function filename(family: string, weight: number, style: 'normal' | 'italic'): string {
+  const slug = family.replace(/\s+/g, '');
+  const styleSuffix = style === 'italic' ? 'Italic' : '';
+  const weightName =
+    weight >= 700 ? 'Bold'
+    : weight >= 600 ? 'SemiBold'
+    : weight >= 500 ? 'Medium'
+    : weight >= 300 ? 'Light'
+    : 'Regular';
+  return `${slug}-${weightName}${styleSuffix}.ttf`;
+}
+
+export const localFontProvider: PdfFontProvider = async (family, weight, style) => {
+  const buf = await readFile(join(FONT_DIR, filename(family, weight, style)));
+  return new Uint8Array(buf);
+};
+```
+
+### Bytes de recursos i màsters d'impressió
+
+`resourceBytes(fileId)` retorna els bytes en brut d'una imatge, i el backend els identifica pel seu contingut:
+
+- PNG, JPEG, GIF i WebP s'incrusten com a imatges;
+- el marcatge SVG es dibuixa com a traçats vectorials, amb el seu `text` compost com a text real amb les fonts incrustades del document, o es rasteritza a 600 ppp al navegador quan fa servir funcions que queden fora del subconjunt vectorial. Un `<style>` que només conté regles `@font-face` (variants que va incrustar l'autor) s'omet i la figura continua sent vectorial (des de postext-pdf 1.25); qualsevol altre full d'estil la converteix en ràster, fet amb les variants que anomena el seu text incrustades des de `fontProvider` (llevat que `diagramStyle.inlineFonts` o el `svg.inlineFonts` del recurs sigui `false`);
+- d'un PDF s'incrusta tal qual la primera pàgina, com un XObject de formulari.
+
+Cada imatge es desa una sola vegada al fitxer, encara que es dibuixi moltes vegades. Un SVG dibuixat amb traçats vectorials es converteix en un XObject de formulari que pinta cada pàgina, de manera que un marc o un logotip en el disseny de pàgina d'un document de trenta pàgines s'escriu una vegada i no trenta; cada pàgina més afegeix uns centenars de bytes. Fins a postext-pdf 1.4 cada pàgina portava la seva pròpia còpia dels traçats.
+
+Una figura SVG pot anomenar un **màster d'impressió** a `svg.pdfFileId`: un PDF d'una sola pàgina amb la mateixa figura, normalment l'original del qual es va exportar l'SVG. `renderToPdf` demana primer a `resourceBytes` l'identificador del màster. Incrusta aquesta pàgina en lloc de l'SVG, amb les seves fonts, degradats i espais de color intactes, allà on es dibuixi l'SVG: com a figura, com a imatge d'una cel·la de taula (`TableCell.image`), com a imatge de disseny o com a icona d'una caixa (també el seu `marker`). El VDT porta l'identificador del màster en cadascun d'aquests usos (`svg.pdfFileId` al recurs de la figura, `pdfFileId` a la imatge d'una cel·la i en un bloc d'imatge de disseny), de manera que en un llibre tots els capítols reben el màster. Els backends canvas i HTML continuen dibuixant l'SVG. En canvi, es fan servir els bytes del mateix SVG en tres casos: falta el màster, no és un PDF, o la tinta única està activa (`diagramStyle.singleInk` només recoloreja marcatge SVG).
+
+```ts
+const resources: Resource[] = [{
+  id: 'mapa', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
+  svg: { fileId: 'mapa.svg', width: 800, height: 600, pdfFileId: 'mapa.pdf' },
+}];
+const archivos = new Map([['mapa.svg', bytesSvg], ['mapa.pdf', bytesMasterPdf]]);
+const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
+  fontProvider,
+  resourceBytes: (fileId) => archivos.get(fileId),
+});
+```
+
+Un amfitrió també pot retornar els bytes del màster per a l'identificador del mateix SVG, com fa `bundleResourceBytes`; les dues formes funcionen.
+
+### Text vertical en el PDF
+
+Una pàgina vertical (`layout.writingMode: 'vertical-rl'`) es dibuixa a través d'un marc girat un quart de volta, tal com la pinta el canvas, i el seu text es compon columna avall:
+
+- **Els caràcters drets** es mostren amb una segona font Type0 del mateix fitxer incrustat: la mateixa CIDFont, les mateixes amplades i el mateix mapa ToUnicode, amb `Encoding /Identity-V` (mode vertical). Un tram de caràcters és un sol objecte de text els glifs del qual baixen un quadratí per la columna per si mateixos (`DW2 [880 −1000]`), de manera que els lectors seleccionen i extreuen una columna com una línia. Els glifs es conformen amb `vert` i `fwid` d'OpenType, que donen la seva forma vertical als parèntesis, les cometes, els signes de pausa de la Xina continental, els punts suspensius i els guions llargs; un caràcter que queda dret tal qual conserva el seu glif horitzontal. No s'incrusta res de la font dues vegades.
+- **Les paraules llatines i els números llargs** van ajaguts amb la font horitzontal; **un número en una casella** queda dret, estrenyit fins al quadratí si és més ample; un signe sense forma vertical a la font es gira o es desplaça, com al canvas.
+- **L'espaiat** entre caràcters s'escriu com a números de `TJ`, que en mode vertical baixen el punt d'escriptura per la columna.
+- **Cada línia vertical** porta un `/ActualText` amb el seu text, de manera que copiar i extreure el text la llegeixen tal com es va escriure. `pdftotext` i pdf.js llegeixen les columnes de dalt a baix i de dreta a esquerra; pdf.js comença una línia nova en un número compost en una casella.
+- **Els enllaços, els marcadors i les destinacions** es porten al plec: un enllaç sobre una línia vertical és un rectangle alt i estret, i un marcador obre la pàgina a dalt de la columna del seu encapçalament.
+- **Un PDF etiquetat** declara el sentit d'escriptura al seu element `Document` (l'atribut de maquetació `WritingMode /TbRl`, que hereten tots els elements); la validació PDF/UA-1 (veraPDF) passa en un capítol vertical.
+- **Visors:** Acrobat, Previsualització, Chrome (PDFium), pdf.js i Poppler pinten les fonts verticals. Un llibre enquadernat per la dreta (`page.binding`) demana a més als visors que mostrin els plecs de dreta a esquerra (`/Direction /R2L`, `/PageLayout /TwoPageRight`); Acrobat i Foxit ho segueixen, Chrome no.
+
+Un capítol de 43 pàgines compost en Noto Serif TC (els caràcters del llibre, TrueType) ocupa uns 820 KB, gairebé tot dels dos subconjunts de la font.
+
+### Enllaços en el PDF
+
+Les paraules d'un enllaç Markdown (consulta [Format del document › Enllaços](/ca/docs/document-format#enllaços)) es converteixen en anotacions d'enllaç URI, una per cada tram de paraules enllaçades d'una línia. Cada anotació cobreix la caixa de la línia i no porta vora. En un render accessible, cada tram és un element `Link` el `/Contents` del qual és el seu text. Només s'enllacen destinacions absolutes `http:`, `https:`, `mailto:`, `tel:` i `ftp:`, perquè una URL relativa no té base dins d'un PDF. Els caràcters que queden fora de l'ASCII imprimible es codifiquen amb percentatges. Les cites `:ref` i les files de l'índex conserven els seus enllaços interns al document.
+
+### Exemple complet al navegador: compondre, renderitzar, baixar
+
+Ajuntant-ho tot — construir el VDT, renderitzar a PDF i disparar la baixada des del navegador:
+
+```tsx
+import { buildDocument, createMeasurementCache } from 'postext';
+import { renderToPdf } from 'postext-pdf';
+import { createPdfFontProvider } from './pdfFontProvider';
+
+const fontProvider = createPdfFontProvider();
+
+export async function downloadPdf(markdown: string, config: PostextConfig) {
+  const cache = createMeasurementCache();
+  const vdt = buildDocument({ markdown }, config, cache);
+
+  const bytes = await renderToPdf(vdt, { fontProvider });
+
+  const blob = new Blob([bytes.slice().buffer], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'document.pdf';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+```
+
+**Important:** crida `ensureConfigFontsLoaded(config)` (o equivalent) *abans* de `buildDocument` quan la teva configuració faci referència a web fonts. La maquetació es mesura amb les mètriques de font que el navegador tingui en aquell moment per a aquella família — si la font real encara no ha arribat, el VDT es mesura amb una de reserva i el PDF no coincidirà amb la sortida de canvas o HTML. El sandbox ho fa explícitament abans de cada render (vegeu `packages/postext-sandbox/src/viewport/PdfViewport.tsx`).
+
+### Exemple en directe: un PDF al navegador
+
+El flux complet de dalt, executant-se al navegador: el pen importa `postext` i `postext-pdf` des d'un CDN, carrega les fonts web, construeix el document, incrusta els talls de Fontsource a través del proveïdor de fonts i lliura els bytes a un enllaç que obre el fitxer en una pestanya nova i a un altre de baixada. El PDF resultant té els mateixos salts de línia que la sortida en canvas i HTML, fonts incrustades reals i marcadors d'esquema.
+
+<CodePenExample name="render-pdf" title="Postext · generar un PDF al navegador" description="Compon un document markdown amb postext i renderitza'l a PDF amb postext-pdf." height={600} />
+
+### Renderitzar el PDF en un worker
+
+`postext-pdf/worker` treu `renderToPdf` del fil principal. El worker escriu el text, les figures vectorials, l'arbre d'estructura i el mateix fitxer. Hi ha dues tasques que necessiten la pàgina, així que el worker les demana al fil principal: baixar les fonts i rasteritzar un SVG a través d'un `<img>`. En un llibre de centenars de pàgines el render triga segons que, altrament, congelarien la pàgina; per a unes poques pàgines, cridar directament `renderToPdf` és més senzill.
+
+```ts
+import { createPdfWorker } from 'postext-pdf/worker';
+
+const pdfWorker = createPdfWorker();
+const bytes = await pdfWorker.render(docs, {
+  fontProvider,                                     // s'executa en aquest fil
+  resourceBytes: new Map([['mapa.svg', bytesSvg]]), // un Map; els seus buffers passen al worker
+  onProgress: ({ phase, pages, totalPages }) => mostrarProgreso(phase, pages, totalPages),
+  onWarning: (w) => console.info(w.message),
+});
+pdfWorker.dispose();
+```
+
+- `render(docs, options)` accepta un document o la llista de documents dels capítols d'un llibre. Accepta les opcions de `renderToPdf`, amb dues diferències. `resourceBytes` és un `Map<string, Uint8Array>` els buffers del qual es transfereixen, així que passa còpies dels bytes que vulguis conservar. `rasterizeSvg`, si s'indica, s'executa al fil principal; per defecte ho fan l'`Image` i el canvas de la mateixa pàgina.
+- Un handle renderitza un document cada vegada. `dispose()` acaba el worker i rebutja qualsevol render que continuï pendent.
+- `createPdfWorker({ worker })` accepta un `Worker` que creïs tu, per a les eines de build que controlen les URL dels workers. Aquest worker ha d'executar `postext-pdf/worker/entry`.
+
+**Des d'un CDN.** Per defecte, l'script del worker es carrega des de la URL del mateix paquet (`new URL('./pdf.worker.js', import.meta.url)`). Una pàgina d'un altre origen pot no poder arrencar-lo: importat des d'`esm.sh`, `createPdfWorker()` llança `Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`. Arrenca en el seu lloc un worker de mòdul del mateix origen que importi l'entrada (si fixes una versió, fixa la mateixa a les dues URL):
+
+```js
+import { createPdfWorker } from 'https://esm.sh/postext-pdf/worker';
+
+const entrada = URL.createObjectURL(new Blob(
+  ["import 'https://esm.sh/postext-pdf/worker/entry';"],
+  { type: 'text/javascript' },
+));
+const pdfWorker = createPdfWorker({ worker: new Worker(entrada, { type: 'module' }) });
+```
+
+El worker de composició de `postext/worker` necessita el mateix embolcall al voltant de `postext/worker/entry` (consulta [Executar la composició en un Web Worker](#executar-la-composició-en-un-web-worker)).
+### PDF a punt per a impremta
+
+Per a fluxos de treball d'impressió en producció, ajusta aquestes opcions de configuració abans de renderitzar:
+
+- **`page.cutLines.enabled: true`** — afegeix àrea de sang i marques de tall al voltant del trim, i dona a cada pàgina una TrimBox i una BleedBox. Vegeu [Marques de tall](/ca/docs/configuration-page-layout#marques-de-tall).
+- **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`** (o `'pdfx1a'`) — un fitxer PDF/X amb la condició de sortida, la identificació i les caixes que revisa una impremta; cada color i cada imatge RGB separats amb el perfil ICC, el 100 % K sobreimprès i les masses negres grans en negre enriquit. Vegeu [Producció per a impremta (configuració)](/ca/docs/configuration-fonts-colors-viewers#producció-per-a-impremta-configuració).
+- **`colorSpace: 'cmyk'`** (o `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — la mateixa separació sense la identificació PDF/X (les marques de tall van sempre en color de registre). Els màsters d'impressió en PDF s'insereixen tal com són.
+- **`page.dpi: 300`** — els px per polzada de la maquetació: un mapa de bits sense resolució pròpia s'imprimeix a aquesta resolució a la seva mida natural. El [preflight](/ca/docs/configuration-fonts-colors-viewers#preflight) avisa de les imatges per sota de 300 ppp a la seva mida impresa.
+- **`ColorValue.cmyk`** — un color definit en CMYK s'imprimeix amb els seus valors exactes.
+- **`{ pageNegative: true }`** a `RenderToPdfOptions` — inverteix l'àrea de trim amb un blend mode de tipus Difference (les marques de tall queden sense invertir). Útil per a comprovacions de preflight sobre tipografia fosca sobre clar.
+
+### Implementació de referència
+
+El component `PdfViewport` del sandbox (`packages/postext-sandbox/src/viewport/PdfViewport.tsx`) connecta les peces anteriors en una previsualització en directe amb botons de regenerar, baixar i imprimir, i és un bon punt de partida per a qualsevol integració PDF al navegador. Construeix el VDT a través del worker de layout compartit (consulta [Executar la composició en un Web Worker](#executar-la-composició-en-un-web-worker)) perquè prémer *Regenerar* no congeli la UI mentre s'executa el pipeline — el fil principal només s'encarrega de `renderToPdf` (que ja és ràpid un cop existeix el VDT).
+
+## Un llibre en 3D (`postext-folio`)
+
+`postext-folio` presenta en pantalla un document compost com un llibre imprès obert sobre una taula: plecs segons la regla del recto i fulls que el lector passa amb els botons ‹ ›, les fletxes del teclat, lliscant el dit, amb un clic en una pàgina o agafant la pàgina per la vora i arrossegant-la. Cada full es corba en three.js segons el seu paper i projecta una ombra real sobre les pàgines que té a sota. El llenç WebGL dibuixa el llibre tant quiet com en passar la pàgina, així que una pàgina mai no canvia d'aspecte en posar-se. És el visor de les receptes del Receptari i de la pestanya **Folio** del sandbox.
+
+```bash
+npm install postext postext-folio three
+```
+
+```ts
+import { buildDocument } from 'postext';
+import { createFolioFromDocument } from 'postext-folio';
+
+const doc = buildDocument({ markdown }, config);
+const book = createFolioFromDocument(document.getElementById('book')!, doc, {
+  onChange: ({ pages }) => console.log('pàgines a la vista', pages),
+});
+
+// Després d'una edició: el mateix visor, a la mateixa pàgina.
+book.setDocument(buildDocument({ markdown: edited }, config));
+```
+
+- **Les pàgines es pinten a mesura que calen.** `createFolioFromDocument` pinta cada pàgina amb `renderPageToCanvas` exactament als píxels de dispositiu del seu espai (WebGL la mostra llavors tèxel a píxel, tan nítida com a la vista de llenç), i només els plecs propers a l'obert (`window`, tres a cada costat per defecte). Les pàgines que surten d'aquesta finestra s'alliberen, així que un llibre de mil pàgines ocupa la memòria d'unes poques. Un salt a una pàgina llunyana pinta primer aquell plec. Fins a deu pàgines, els fulls passen un a un; més enllà, el bloc de pàgines intermedi s'aixeca com una sola peça, tan gruixuda com aquestes pàgines (la suma dels seus calibres), i es posa a l'altre costat. `setDocument` conserva el que s'ha pintat de cada pàgina que queda igual en la nova composició (`{ repaint: true }` les torna a pintar totes, per exemple quan acaba d'arribar una imatge).
+- **El document defineix el llibre.** La primera pàgina s'obre sola a la dreta quan és un recto (`pageIndexOffset` parell), un llibre enquadernat per la dreta (`page.binding: 'right'`, o un document vertical) apareix en mirall i passa les pàgines cap a l'esquerra, les pàgines en blanc prenen el color de fons de la pàgina, i l'amplada de tall de la pàgina (`pageWidthMm`) escala el gruix del paper i les tapes. Un capítol compost amb una `continuation` suma les altres pàgines del llibre (`pageIndexOffset` abans, `bookPageCount` després) al gruix dels dos blocs de pàgines sense dibuixar-les (`extraPages`).
+- **El document defineix l'aspecte.** El paper, l'enquadernació, la taula i la llum són la [configuració `folio`](/ca/docs/configuration-fonts-colors-viewers#visor-folio-configuració) del document (`doc.config.folio`). Una pàgina composta dins d'una tanda `:::paper` porta el seu propi paper (`VDTPage.paper`), i el seu full es dibuixa amb el color, la superfície, el gruix i la rigidesa d'aquell paper. Amb `binding.cover: 'pages'`, la primera pàgina és la tapa davantera i l'última, si és un verso, la del darrere (`covers`). Un format de diari (`'broadsheet'`, `'berliner'`, `'tabloid'`, `'compact'`) els ajustos del qual no anomenen paper ni enquadernació apareix com a paper de diari doblegat, també quan l'amfitrió passa el seu propi `folio`.
+- **El contenidor defineix la mida.** El llibre l'ocupa sencer, amb els botons i el comptador de pàgines als marges, així que dona-li una alçada; quan canvia de mida, les pàgines es tornen a pintar a la nova. Per sota de 560 px d'amplada mostra una pàgina cada vegada (`mode: 'auto'`; `'single'` i `'double'` forcen una o l'altra): el llom va per la vora interior de la pàgina i el full gira sobre ell; arrossegar cap al llom avança, lliscar en sentit contrari retrocedeix, i un toc passa la pàgina.
+- **Què fa el punter.** `interaction` (i després `setInteraction`) fixa què fa el botó esquerre, un dit o un llapis sobre el llibre: `'hand'` (per defecte) agafa les pàgines i les passa, `'orbit'` gira la vista com en arrossegar amb el botó dret (per a trackpads i tauletes), `'select'` deixa el punter a l'amfitrió, per exemple per seleccionar text. `pageAt(event)` dona la pàgina sota un punter i el punt d'aquesta (`{ page, x, y }`, fraccions de la pàgina des de la cantonada superior esquerra), sobre el llibre tal com es veu, inclinat o girat; `pointOnScreen(point)` fa el camí invers, per dibuixar un cursor o una selecció sobre la pàgina. `refreshPage(src)` torna a mostrar el llenç d'una pàgina que l'amfitrió ha repintat al seu lloc. El Sandbox els fa servir tots per seleccionar text i seguir el cursor de l'editor sobre les pàgines en 3D.
+- **Una lupa per a la lletra petita.** `interaction: 'magnify'` sosté damunt el llibre, on és el punter, un vidre rodó amb anell negre (un dit la sosté per sobre seu mentre toca la pantalla). Mostra el llibre com el veu l'ull del lector, il·luminat i corbat com és, amb més augment al centre i corbant-se cap a l'anell. La roda, `+` i `−` canvien l'augment (`setMagnification(zoom)`, d'1,5 a 10; per defecte, la pàgina a uns 5,5 px CSS per mil·límetre) i Esc la retira; `magnifier: { zoom, diameter }` fixa tots dos des del principi. `createFolioFromDocument` torna a pintar les pàgines sota el vidre amb prou nitidesa per al seu centre, de manera que el cos de text d'un diari es llegeix; `createFolio` pren aquestes pintures de `detail: { paint(index, deviceWidth), release() }`. El Sandbox la posa al botó **Lupa** (M). La lupa també selecciona text: sobre les pàgines el cursor és el de text, `pageAt` retorna el punt sota el centre de la lupa (damunt del dit en una pantalla tàctil) i al Sandbox un clic hi col·loca el cursor d'edició i un arrossegament selecciona.
+- **El lector pot fer la volta al llibre.** Arrossegar amb el botó dret gira la vista al voltant del llibre (fins a 70° des de la vertical), també mentre passen fulls; `resetView()` la retorna suaument a la `tilt` i el `yaw` de la configuració, i `getView()` dona la vista tal com es veu ara (`{ tilt, yaw }`, en graus) per desar-la en aquesta configuració. El Sandbox els ofereix en dos botons, **Restableix la vista** i **Desa com a vista per defecte**.
+- **Els vídeos es reprodueixen a les pàgines.** Un clic a la portada d'un vídeo el reprodueix a la mateixa pàgina, en qualsevol mode d'`interaction`, i el vídeo continua mentre el seu full passa; un altre clic el posa en pausa, i s'atura quan el llibre queda quiet en un plec on ja no apareix. Un vídeo amb `player.autoplay` s'engega sol la primera vegada que es mostra el seu plec; si a més es reprodueix amb d'altres (`player.exclusive: false`), s'engega sense so cada vegada i s'atura quan es passa el plec, diversos alhora. Opcions `videos`, `videoUrl` i `onVideo`, i `stopVideo()` al visor; vegeu [Format del document › Vídeos a les pàgines de Folio](/ca/docs/document-format#vídeos-a-les-pàgines-de-folio).
+- **Abans, fonts i imatges.** Com amb `renderPage`, les fonts del document han d'estar carregades a `document.fonts` i les seves imatges registrades amb `registerResourceImage` abans de pintar les pàgines.
+- **Accessible.** El visor és un grup enfocable que respon a ←/→ (en mirall per a un llibre enquadernat per la dreta), Re Pàg/Av Pàg, Inici i Fi; els seus botons i el comptador de pàgines porten etiqueta (`labels` les tradueix), i cada llenç de pàgina porta text alternatiu (`alt: (index) => …`).
+- **Sense WebGL2**, o quan el lector demana menys moviment, els plecs simplement canvien. Un llibre en WebGL pesa massa per a un mòbil (una textura per cada cara de pàgina): el Sandbox ofereix la pestanya Folio només on hi ha WebGL2 i el costat curt de la pantalla mesura almenys 600 px. `canFlip()` diu si els fulls passaran en 3D en aquell entorn: amb WebGL2 i sense preferència de menys moviment.
+
+### Aspecte
+
+L'opció `appearance`, i després `setAppearance`, substitueixen el que diu el document. El que no s'indiqui conserva el valor del document:
+
+```ts
+const book = createFolioFromDocument(container, doc, {
+  appearance: {
+    folio: {
+      tilt: 22,
+      paper: { type: 'bookWove', texture: 'laid' },
+      binding: { type: 'hardcover', coverColor: { hex: '#5a1f1f', model: 'hex' } },
+      surface: { type: 'walnut' },
+      lighting: { environment: 'lamp' },
+    },
+    // Taules fotografiades: una carpeta organitzada com /folio/textures/ de postext.dev
+    // (manifest.json i una carpeta per taula). Sense aquesta, mapes procedurals.
+    textureBaseUrl: '/folio/textures',
+    // La imatge de `folio.binding.spineImage`: la URL del recurs,
+    // o un llenç o una imatge ja dibuixats.
+    spineImage: spineUrl,
+  },
+});
+
+// Un tauler de configuració: el llibre es redibuixa al seu lloc, sense tornar a pintar res.
+book.setAppearance({ folio: { ...folio, lighting: { environment: 'daylight' } } });
+book.resetView();
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Camp</th>
+      <th>Què fa</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>folio</code></td><td>La <a href="/ca/docs/configuration-fonts-colors-viewers#visor-folio-configuració">configuració <code>folio</code></a>: inclinació, paper, enquadernació, superfície i llum. Si s'indica, substitueix la del document.</td></tr>
+    <tr><td><code>pageWidthMm</code></td><td>L'amplada de tall d'una pàgina en mm, amb la qual s'escalen el gruix del paper i les tapes. Des del document: la pàgina tallada al seu dpi. Per defecte, 150 a <code>createFolio</code>.</td></tr>
+    <tr><td><code>extraPages</code></td><td><code>{'{ before, after }'}</code>: pàgines del llibre fora de les que es passen, que compten per al gruix dels blocs de pàgines i mai no es dibuixen.</td></tr>
+    <tr><td><code>covers</code></td><td><code>{'{ front, back }'}</code>: la primera pàgina que es passa és la coberta i l'última, la contracoberta (si cau en un verso). Passen com a tapes rígides i no es dibuixa cap tapa al voltant. Des del document: <code>binding.cover: 'pages'</code> en un llibre que comença a la primera pàgina i acaba a l'última.</td></tr>
+    <tr><td><code>spineImage</code></td><td>La imatge impresa al llom, com a URL, llenç o imatge. <code>createFolioFromDocument</code> no cerca recursos: passa-li la imatge del recurs que anomena <code>folio.binding.spineImage</code>. No s'utilitza en el grapat a cavall.</td></tr>
+    <tr><td><code>textureBaseUrl</code></td><td>On se serveixen les textures fotografiades de la taula. Mentre no es carreguen, o sense aquesta opció, la taula es dibuixa amb mapes procedurals.</td></tr>
+  </tbody>
+</table>
+
+`createFolio(container, { pages })` és el mateix visor amb qualsevol pàgina: URL d'imatges, elements `<img>` o `<canvas>`, i `""` per a una pàgina en blanc; una pàgina pot ser `{ src, alt, paper }`, amb `paper` un paper a la manera de `:::paper` per a aquell full. `PageFlipper` és el motor de three.js per separat, per a qui maqueta el seu propi DOM del plec; `FlatPageFlipper` és el pas de pàgina pla anterior al llibre en 3D, que es manté per a la taula de llum del Receptari. La llista completa d'opcions és al [README del paquet](https://www.npmjs.com/package/postext-folio).
+
+### Exemple en directe: un llibre en 3D
+
+El pen importa `postext` i `postext-folio` des d'un CDN, compon un document breu i l'obre com un llibre. Agafa la pàgina dreta per la vora i arrossega-la.
+
+<CodePenExample name="render-folio" title="Postext · un document com a llibre en 3D" description="Compon un document markdown amb postext i passa'n les pàgines en 3D amb postext-folio." height={640} />
+
+### Exemple en directe: imatges de pàgina
+
+`createFolio` amb pàgines dibuixades en llenços, una última pàgina en blanc i el color del paper.
+
+<CodePenExample name="folio-images" title="Postext · un llibre d'imatges en 3D" description="Passa en 3D qualsevol pàgina amb postext-folio: URL d'imatges, elements img o canvas." height={600} />
+
+## Llibres EPUB (`postext-epub`)
+
+`postext-epub` escriu un llibre maquetat com un fitxer EPUB 3.3, al navegador o a Node, sense servidor. Llegeix els mateixos documents per capítol que `renderToPdf` rep per a un llibre, de manera que els números de pàgina, les notes, les citacions, les referències creuades, el sumari i l'índex alfabètic arriben resolts, i retorna el fitxer com a bytes. És l'escriptor que fa servir la pestanya **EPUB 3** del Sandbox.
+
+```bash
+npm install postext postext-epub
+```
+
+`postext` és una dependència *peer*, com a `postext-pdf`: actualitza tots dos alhora i, des d'un CDN, fixa'ls a la mateixa versió.
+
+### Maquetació fixa i maquetació fluida
+
+EPUB 3 defineix dues maquetacions, que el paquet declara amb la propietat `rendition:layout`; `layout` en tria una:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}></th>
+      <th><code>layout: 'fixed'</code></th>
+      <th><code>layout: 'reflowable'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Nom a EPUB</td><td><code>pre-paginated</code> (maquetació fixa, en anglès <em>fixed layout</em> o FXL)</td><td><code>reflowable</code> (maquetació fluida), la de l'EPUB per defecte</td></tr>
+    <tr><td>Documents de contingut</td><td>Un document XHTML per pàgina impresa, amb la mida de la pàgina refilada en px CSS</td><td>Un document XHTML per capítol (una part n'obre un de propi)</td></tr>
+    <tr><td>Què conserva</td><td>La pàgina: columnes, flotants, capçaleres, obertures, talls de línia i posicions, amb les lletres incrustades. El text continua sent text: se selecciona, es cerca i es llegeix en veu alta</td><td>El text i la seva estructura: títols, paràgrafs reconstruïts a partir de les línies, llistes, requadres com a apartats, figures i taules després del text que les cita, notes, enllaços i marques de les pàgines impreses. Un full d'estil derivat de la configuració</td></tr>
+    <tr><td>Què perd</td><td>L'elecció de lletra, mida i marges de qui llegeix; en una pantalla petita la pàgina es veu reduïda</td><td>Les columnes, les capçaleres, el disseny de pàgina i els talls de línia exactes</td></tr>
+    <tr><td>Plec i sentit</td><td><code>page-spread-left</code> / <code>page-spread-right</code> segons la paritat i l'enquadernació; un llibre enquadernat per la dreta es llegeix de dreta a esquerra</td><td>El sentit de lectura surt de l'enquadernació; el xinès vertical conserva <code>vertical-rl</code> i l'àrab porta <code>dir="rtl"</code></td></tr>
+    <tr><td>Indicada per a</td><td>Pàgines dissenyades: llibres il·lustrats, llibres de text, catàlegs, revistes; pantalles grans</td><td>Text seguit: novel·les, assajos, informes; mòbils i lectors de tinta electrònica</td></tr>
+  </tbody>
+</table>
+
+Les dues maquetacions porten la mateixa navegació: un sumari a partir dels títols i les pàgines de part, una llista de pàgines amb els números impresos, punts de referència (coberta, sumari imprès, començament del cos) i un NCX per a lectors antics.
+
+### Escriure un llibre
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToEpub } from 'postext-epub';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle); // un VDTDocument per capítol, en l'ordre del llibre
+
+const bytes = await renderToEpub(docs, {
+  layout: 'reflowable',
+  metadata: { title: 'Llanterna', creators: ['Ada Lovelace'], language: 'ca' },
+  fonts: bundle.fonts.map((f) => ({ family: f.family, weight: f.weight, style: f.style, bytes: new Uint8Array(f.bytes), format: f.format })),
+  resourceBytes: (fileId) => {
+    const data = bundle.files.get(fileId);
+    return data ? { bytes: data, mediaType: '' } : undefined;
+  },
+  onWarning: (w) => console.warn(w),
+});
+```
+
+Un document sol és un llibre d'un capítol: `renderToEpub([doc], options)`.
+
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** escriu el fitxer. `options` és `{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`metadata`**: `title` i `language` (una etiqueta BCP 47) són obligatoris; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` i `modified` són opcionals. Un ISBN sense prefix passa a `urn:isbn:…`. Sense `identifier`, el llibre rep un `urn:uuid:` derivat del títol, els autors i l'idioma, de manera que una versió nova del mateix llibre conserva el seu lloc a la biblioteca del lector. Passa també `modified` per obtenir un fitxer idèntic byte a byte.
+- **`fonts`**: les variants que s'incrusten, `{ family, weight, style, bytes, format, unicodeRange? }`, amb `format` un de `woff2`, `woff`, `ttf`, `otf`. Cada variant passa a ser un fitxer i una regla `@font-face`; diversos fitxers amb el seu `unicodeRange` formen una sola variant (els trams de Google Fonts). Una família, un pes o un estil que les pàgines fan servir sense variant incrustada s'avisa com a `missingFont`, i els lectors en posen una de seva. Incrusta només les lletres la llicència de les quals ho permeti: una variant amb `redistributable: false` no s'escriu mai al fitxer (el llibre es pot compondre amb ella, però el seu fitxer en queda fora, també de les imatges SVG).
+- **`resourceBytes(fileId)`**: les imatges que col·loquen les pàgines, de manera síncrona o asíncrona, com a `{ bytes, mediaType }`; un `mediaType` buit es llegeix dels bytes. Dona els mapes de bits tal com estan desats i els SVG com el seu codi font, no el màster PDF d'impremta (`svg.pdfFileId`). Cada imatge es desa una vegada. En un llibre a una tinta (`diagramStyle.singleInk`) els SVG es recoloren al fitxer. Cada SVG porta incrustades les variants que anomena el seu text, perquè un lector el mostra com una imatge que no veu les fonts del llibre (consulta [Fonts al text dels SVG](/ca/docs/configuration-resources#fonts-al-text-dels-svg)): des de `fonts` (els trams que contenen els seus caràcters) i després des de **`svgFonts.provider`** per a una família que el text del llibre no fa servir. Les famílies de variants marcades amb `redistributable: false`, i les que anomeni `svgFonts.withhold(family)`, en queden fora i s'avisen una vegada cadascuna com a `fontWithheld`; una família sense variant s'avisa com a `svgFontUnavailable`, i les variants que superen `svgFonts.maxBytes` (2 MiB), com a `svgFontsTooLarge`. `svgFonts.inline: false`, `diagramStyle.inlineFonts: false` i el `svg.inlineFonts: false` d'un recurs conserven els bytes tal com es donen. Una imatge sense bytes s'avisa com a `missingImage` i queda com un marc buit.
+- **`cover`**: `{ bytes, mediaType, alt? }`, una imatge JPEG, PNG, WebP o SVG. Aleshores el llibre s'obre amb un document de coberta que la conté, i és la `cover-image` del paquet (la miniatura en una biblioteca). Sense coberta, la maquetació fixa anomena coberta la seva primera pàgina i el llibre fluid no té imatge de coberta.
+- **`onProgress({ phase, done, total })`**: `resources` (lletres i imatges), `documents` (pàgines en la maquetació fixa, capítols en la fluida) i després `package`. **`signal`** interromp entre passos.
+- **`readEpub(bytes)`** llegeix un fitxer per a un visor, sense `DOMParser`: maquetació, metadades, sentit de lectura, cada fitxer pel seu camí, el manifest, l'spine, el sumari, la llista de pàgines, el viewport de la maquetació fixa i la coberta. El lector del Sandbox s'hi basa.
+
+Les dues maquetacions porten les metadades d'EPUB Accessibility 1.1 (modes d'accés, prestacions com el sumari i els números de pàgina impresos, riscos i un resum) i no declaren conformitat amb WCAG per defecte. La llista completa d'opcions i les limitacions són al [README del paquet](https://www.npmjs.com/package/postext-epub).
+
+### Comprovar un fitxer amb EPUBCheck
+
+[W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) és el validador de referència d'EPUB; les botigues de llibres electrònics hi comproven els fitxers que reben. Amb l'eina instal·lada (`brew install epubcheck`, o la versió Java), `epubcheck llibre.epub` enumera errors, avisos i notes d'ús; les notes d'ús que deixa la sortida de Postext (`CSS-028`, `OBS-001`, `HTM_062`) són informatives. Al repositori de Postext, `pnpm --filter postext-epub epubcheck` comprova els llibres de mostra de les proves, `node packages/postext-epub/scripts/epubcheck.mjs llibre.postext --layout both` maqueta un fitxer `.postext` o una carpeta de preset i comprova les dues maquetacions, i `pnpm --filter postext-epub validate` recorre tota la matriu de llibres (la guia, els presets de mostra i llibres en xinès, en àrab i del Receptari), que passen tots sense errors ni avisos.
+
+## Paquets (fitxers `.postext`)
+
+Un **fitxer `.postext`** és un llibre sencer en un sol fitxer: un zip amb un manifest `preset.json`, un fitxer markdown per capítol, les dades dels recursos (mapes de bits, SVG, màsters PDF d'impressió) i els fitxers de les fonts que anomena la configuració. El [Sandbox](/ca/docs/sandbox#ús-standalone) l'exporta i l'importa i l'[skill per a agents](/ca/docs/skill) el lliura. El paquet `postext` també el sap crear i obrir, així que un llibre pot passar d'aquestes eines al teu propi programa, i a l'inrevés, sense perdre res.
+
+```
+mi-libro.postext
+├── preset.json            manifest: nom, llengua, capítols, configuració, recursos, fonts
+├── chapters/01-anochecer.md
+├── chapters/02-noche.md
+├── resources/farol.svg
+└── fonts/ebgaramond-400-normal.woff2
+```
+
+El manifest es descriu camp per camp a l'apèndix [Format de paquet de preset](/ca/docs/sandbox#indexjson) del Sandbox. Un fitxer pot portar a més `layouts.json`, el recompte de pàgines del Sandbox, perquè el llibre s'hi obri ja paginat, o un per edició d'un llibre en diverses llengües (`layouts.zh-Hant.json`, que es llegeix primer). `openBundle` els ignora.
+
+L'API s'exporta des de `postext` i des del subpath `postext/bundle`, que afegeix les utilitats de baix nivell. Importa des de `postext` quan a més hagis de renderitzar. Així els adaptadors de paquets i els renderitzadors comparteixen una sola instància del mòdul, cosa que importa en un CDN com esm.sh, on cada punt d'entrada és un build diferent.
+
+### Obrir un paquet
+
+`openBundle` rep els bytes del fitxer (un `Uint8Array`, un `ArrayBuffer`, o un `Blob` / `File` d'un `<input type="file">`) i retorna tot el que necessiten el motor i els seus backends:
+
+```ts
+import { openBundle } from 'postext';
+
+const bundle = await openBundle(await file.arrayBuffer(), { locale: 'es' });
+
+bundle.chapters;   // [{ title, file, markdown }, …] en l'ordre del llibre
+bundle.config;     // PostextConfig, a punt per a buildDocument
+bundle.resources;  // Resource[]
+bundle.files;      // Map<ruta, Uint8Array>: tots els fitxers del paquet
+```
+
+<table>
+  <thead>
+    <tr><th>Camp</th><th>Què conté</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>manifest</code></td><td>El <code>preset.json</code> ja validat.</td></tr>
+    <tr><td><code>id</code>, <code>name</code>, <code>description</code></td><td>Presos del manifest.</td></tr>
+    <tr><td><code>locale</code>, <code>locales</code></td><td>La llengua en què s'ha llegit el contingut, i totes les llengües que porta un paquet bilingüe. <code>options.locale</code> en tria una: primer l'etiqueta exacta, després la llengua base, després la llengua pròpia del paquet.</td></tr>
+    <tr><td><code>chapters</code></td><td><code>&#123; title, file, markdown &#125;</code> per capítol. Un capítol sense títol al manifest pren el text del seu primer encapçalament <code>#</code>.</td></tr>
+    <tr><td><code>config</code></td><td>La paleta de colors per defecte i els tipus de recurs en la llengua del paquet, després la <code>config</code> del manifest i després la configuració pròpia de la llengua. La llengua del paquet és el <code>locale</code> de dalt, així que un paquet en una sola llengua rep els seus propis rètols, demani el que demani <code>options.locale</code>. Un manifest que no anomena cap llengua pren la que fixa la seva <code>config</code> (<code>locale</code> i, si falta, la de la partició de mots) i, si tampoc no n'hi ha, <code>options.locale</code>. <code>customFonts</code> llista les famílies tipogràfiques del paquet. És la mateixa configuració amb què el Sandbox obre el paquet.</td></tr>
+    <tr><td><code>resources</code></td><td>Els recursos, amb els peus de la llengua triada. Una mida que falti al manifest es llegeix del fitxer.</td></tr>
+    <tr><td><code>fonts</code></td><td>Una entrada per variant: <code>&#123; family, weight, style, format, file, bytes &#125;</code>.</td></tr>
+    <tr><td><code>files</code></td><td>Tots els fitxers del zip, per la seva ruta.</td></tr>
+    <tr><td><code>thumbnail</code>, <code>canvasScope</code></td><td>La ruta de la portada, i com demana el paquet que es mostri: la <code>view</code> del manifest, amb la <code>localized[…].view</code> de la llengua servida per sobre.</td></tr>
+    <tr><td><code>warnings</code></td><td>Problemes que no impedeixen obrir-lo: un fitxer de font no admès, un màster d'impressió que falta.</td></tr>
+  </tbody>
+</table>
+
+El **`fileId` de cada fitxer és la seva ruta dins del paquet**. `resource.svg.fileId`, `resource.bitmap.fileId` i el `fileId` de cada variant de `customFonts` es cerquen directament a `bundle.files`. `openBundle` llança un error si els bytes no són un zip, si no hi ha un `preset.json` vàlid (a l'arrel o sota una única carpeta) o si falta un fitxer que el manifest anomena.
+
+#### Paquets escrits per postext 1.4 o anterior
+
+Tot manifest que escriuen `createBundle` i el Sandbox porta `configVersion: 11`: les regles de configuració per a les quals es va escriure la seva `config`. Un manifest sense aquest camp el va escriure postext 1.4 o anterior, que resolia divuit coses d'una altra manera:
+
+- **Els salts d'encapçalament** (regles 3): fins a la 1.4, un objecte `headings` sense salt d'H1 no en tenia cap (vegeu [Configuració per nivell](/ca/docs/configuration-text#configuració-per-nivell)).
+- **La mida de les fórmules** (regles 4): fins a la 1.4, les fórmules sortien 1,131 vegades més grans del que diu `fontSizeScale` (vegeu [Mida de les fórmules](/ca/docs/configuration-text#matemàtiques)).
+- **L'espai sota un recurs en línia** (regles 5): fins a la 1.4, el text que segueix una figura o taula amb `placement.position: 'here'` continuava a la línia següent de la retícula, sense l'espai dels flotants a sota (vegeu `layout.inlineResourceGap` a [Disposició](/ca/docs/configuration-page-layout#disposició)).
+- **L'espai al voltant d'un recurs en línia dins d'un requadre** (regles 6): fins a la 1.4, aquest recurs quedava enganxat al text del requadre que l'envolta (vegeu `layout.inlineResourceGapInBoxes` a [Disposició](/ca/docs/configuration-page-layout#disposició)).
+- **Les marques en línia dels encapçalaments** (regles 6): fins a la 1.4, un encapçalament imprimia les paraules de la seva `*cursiva*`, la seva `**negrita**` i les seves altres marques amb el seu propi estil, sense marques (vegeu `headings.inlineMarks` a [Encapçalaments](/ca/docs/configuration-text#encapçalaments)).
+- **La mida d'una caplletra** (regles 6): fins a la 1.4, el `dropCap` d'un text de disseny sense `fontSize` era tan alt com totes les caixes de línia que abasta, amb la part alta per damunt de la primera línia (vegeu `dropCap` a [Elements de text](/ca/docs/configuration-page-layout#elements-de-text)).
+- **El lloc sota una línia de dos punts** (regles 6): fins a la 1.4, `keepColonWithList` donava per bona per a la llista una línia de lloc sota la línia que acaba en dos punts, i un primer element de dues línies que les regles d'òrfenes i vídues mantenen sencer passava a la columna següent sense aquesta línia (vegeu `bodyText.colonListRoom`).
+- **Les línies que deixa el tall d'una caixa** (regles 6): fins a la 1.4, una caixa que es partia dins d'un paràgraf o d'un element de llista podia deixar-ne una sola línia a un costat, sempre que cada costat de la caixa sumés les seves `splitMinLines` línies (vegeu `layout.boxChildSplitMinLines` a [Disposició](/ca/docs/configuration-page-layout#disposició)).
+- **Els salts de línia després d'un guió llarg** (regles 7): fins a la 1.4, Knuth-Plass mai no acabava una línia després d'un guió llarg o un guió mitjà posat entre dues paraules sense espais (`Madrid–Barcelona`, `I.—Que trata`), i el divisor línia a línia del text amb format només entre dues lletres (vegeu `bodyText.breakAfterDashes` a [Text de cos](/ca/docs/configuration-text#text-de-cos)).
+- **El text en bandera** (regles 7): fins a la 1.4, el text corregut en bandera es componia línia a línia, omplint cada línia abans de passar a la següent, digués el que digués `optimalLineBreaking` (vegeu `bodyText.optimalRagged` a [Text de cos](/ca/docs/configuration-text#text-de-cos)).
+- **La divisió sota un encapçalament** (regles 8): fins a la 1.4, el paràgraf que segueix un encapçalament al peu d'una columna hi conservava totes les línies que hi cabien, encara que en passessin molt poques a la columna següent (vegeu `headings.keepWithNextSplit` a [Encapçalaments](/ca/docs/configuration-text#encapçalaments)).
+- **L'espai sota un contenidor `:::paragraphs`** (regles 8): fins a la 1.4, l'espai de l'estil es posava sota l'últim paràgraf abans de l'ajust a la retícula, l'espai del bloc següent (el `marginTop` d'un encapçalament) se sumava a sota i la separació entre paràgrafs del text no comptava (vegeu `bodyText.paragraphContainerSpacing` a [Text de cos](/ca/docs/configuration-text#text-de-cos)).
+- **Els salts de línia després del guionet d'un compost** (regles 8): fins a la 1.4, Knuth-Plass mai no acabava una línia justificada després d'un guionet entre dues lletres (`físico-química`) en un paràgraf sense format en línia, i sí que ho feia en un amb format (vegeu `bodyText.breakAfterHyphens` a [Text de cos](/ca/docs/configuration-text#text-de-cos)).
+- **Els poemes sense separador** (regles 9): fins a la 1.22, un poema `:::verse` les línies del qual no portaven `||` es componia en hemistiquis solts, cada línia centrada (vegeu `bodyText.verse.layout` a [Vers](/ca/docs/configuration-text#vers)).
+- **Un sagnat de primera línia al costat d'un de francès** (regles 9): fins a la 1.22, la `hangingIndent` d'un estil de paràgraf substituïa la seva `firstLineIndent`, i la primera línia començava a `indent` (vegeu [Estils de paràgraf](/ca/docs/configuration-styles#estils-de-paràgraf)).
+- **Una barra inversa al final d'una línia** (regles 9): fins a la 1.22, una barra inversa al final d'una línia d'un paràgraf, una cita o un element de llista, i `\\` davant d'un espai, s'imprimien, i les línies s'unien amb un espai (vegeu `bodyText.hardLineBreaks` a [Text de cos](/ca/docs/configuration-text#text-de-cos)).
+- **Les tanques de codi** (regles 9): fins a la 1.22, una tanca ```` ``` ```` o `~~~` i les línies de dins es llegien com a Markdown: les línies s'unien en paràgrafs, una línia amb `#` es convertia en un encapçalament i les tanques s'imprimien (vegeu `codeStyle.blocks` a [Llistats de codi](/ca/docs/configuration-styles#llistats-de-codi)).
+- **Els versos partits** (regles 10): a la 1.23, un vers d'un poema compost vers a vers més ample que la caixa es partia amb el seu espaiat natural, per poc que sobrés (vegeu `bodyText.verse.tighten` a [Vers](/ca/docs/configuration-text#vers)).
+
+`openBundle` i `readBundle` llegeixen la `config` d'un manifest així, i la configuració de cada llengua a `localized`, a través de `migrateConfig`, que escriu els salts tal com els componia la 1.4 i multiplica l'escala de les fórmules per 1,131 (i divideix per aquest factor els marges de les fórmules en bloc donats en `em`). A un manifest marcat de `3` a `7`, que va escriure una versió preliminar de la 1.5, només se li apliquen les fixacions de les regles posteriors a la seva marca: amb `3`, la mida de les fórmules, l'espai en línia, les cinc fixacions de les regles 6, les dues de les regles 7 i les tres de les regles 8; amb `4`, l'espai en línia i les de les regles 6, 7 i 8; amb `5`, les de les regles 6, 7 i 8; amb `6`, les de les regles 7 i 8; amb `7`, només les de les regles 8. La divisió sota un encapçalament (`pinLegacyHeadingSplit`) s'escriu com a `headings.keepWithNextSplit: 'fill'` sobre el `headings` que deixen en vigor les capes, quan algun capítol llegit té un encapçalament i la configuració no anomena un valor propi, manté activat `headings.keepWithNext` i no desactiva `bodyText.avoidOrphans`. Els salts després del guionet d'un compost (`pinLegacyHyphenBreaks`) s'escriuen com a `bodyText.breakAfterHyphens: false` sobre el `bodyText` en vigor quan un capítol llegit té un guionet entre dues lletres i la configuració ni el fixa ja ni desactiva `optimalLineBreaking`. L'espai sota els contenidors (`pinLegacyParagraphContainerSpacing`) s'escriu com a `bodyText.paragraphContainerSpacing: 'add'` sobre el `bodyText` en vigor quan la configuració declara algun estil de paràgraf (a `paragraphStyles` o a la configuració pròpia del visor HTML), un capítol llegit obre un contenidor `:::paragraphs` en una línia pròpia i la configuració no el fixa ja. Els salts després d'un guió llarg (`pinLegacyDashBreaks`) s'escriuen com a `bodyText.breakAfterDashes: false` sobre el `bodyText` en vigor quan un capítol llegit té un guió llarg o un guió mitjà entre paraules sense espais (una lletra, una xifra o un signe de tancament davant, i una lletra, una xifra o un signe d'obertura darrere; unes cometes davant del guió compten quan les precedeix una lletra, una xifra, un signe de tancament o un espai de no separació, com a `«no»—y`, no a `dijo "—Hola`; una marca en línia enganxada al guió o a les cometes, com els `**` de `**I.**—Que`, compta a qualsevol dels dos costats) i la configuració no el fixa ja. La composició del text en bandera (`pinLegacyRaggedBreaking`) s'escriu com a `bodyText.optimalRagged: false` sobre el `bodyText` en vigor quan la configuració posa en bandera algun text corregut (un `textAlign` diferent de `'justify'` al text de cos, un estil de paràgraf, el cos d'un requadre, el d'una part o el d'un estil de secció (`headingStyles[].bodyStyle`), o a la configuració pròpia del visor HTML), no el fixa ja i no desactiva `optimalLineBreaking`. L'espai als requadres (`pinLegacyBoxResourceGap`) s'escriu com a `layout.inlineResourceGapInBoxes: false` sobre el `layout` en vigor quan un recurs s'insereix en una línia pròpia dins d'un `:::callout` dels capítols llegits i la configuració no el fixa ja. El tall de les caixes (`pinLegacyBoxChildCut`) s'escriu com a `layout.boxChildSplitMinLines: 1` sobre el `layout` en vigor quan un capítol llegit obre un `:::callout` en una línia pròpia i la configuració no el fixa ja. Les marques dels encapçalaments (`pinLegacyHeadingMarks`) s'escriuen com a `headings.inlineMarks: false` sobre el `headings` que deixen en vigor les capes, quan algun encapçalament dels capítols llegits porta una marca (`*`, `_`, `^`, `~`, `:smallcaps[` o un enllaç al títol) i la configuració no anomena un valor propi. A les caplletres (`pinLegacyDropCapSize`) se'ls escriu la mida de la 1.4 com a `dropCap.fontSize`, siguin on siguin: en la unitat de l'interlineat de l'element quan és una longitud, i si no, en la unitat del seu cos. El lloc sota els dos punts (`pinLegacyColonListRoom`) s'escriu com a `bodyText.colonListRoom: 'line'` sobre el `bodyText` en vigor quan una llista dels capítols llegits segueix una línia que acaba en dos punts (encara que hi hagi línies en blanc entre elles) i la configuració ni anomena un lloc ni desactiva `keepColonWithList`. L'espai en línia (`pinLegacyInlineGap`) s'escriu com a `layout.inlineResourceGap: 'above'` sobre el `layout` que deixen en vigor les capes, quan una línia dels capítols llegits insereix un recurs (`::resource{id="…"}` sola a la seva línia, tal com la llegeix l'analitzador: una menció al text o en un fragment de codi no compta) i la configuració no anomena un espai propi. La mida es fixa sobre el `math` que deixen en vigor les capes (el `math` propi d'una llengua substitueix el compartit), i només quan els capítols llegits tenen algun `$`: un paquet sense fórmules conserva la seva `config` tal com es va escriure. Si ni el manifest ni la llengua donen un `math`, el que queda en vigor és el de la `baseConfig` de `readBundle` (la del lector), i també es fixa, perquè la 1.4 componia les fórmules del paquet a aquesta mida: una base amb `fontSizeScale: 1.5` es llegeix com a 1,5 × 1,1312. Els salts d'encapçalament de la base es prenen tal com vénen. Així un paquet antic conserva el que componien aquestes regles, i `bundle.config` mostra els salts, la mida de les fórmules, els espais, les marques dels encapçalaments, la mida de les caplletres, el lloc sota els dos punts, el tall de les caixes, els salts després d'un guió llarg, els salts després del guionet d'un compost, la composició del text en bandera, la divisió sota un encapçalament i l'espai sota els contenidors amb què es compon. Les correccions de composició de la 1.5 no tenen fixació i se li apliquen com a qualsevol llibre, així que una pàgina a la qual afectin encara es pot moure (la llista és a [Mida de les fórmules](/ca/docs/configuration-text#matemàtiques)). Un `preset.json` escrit a mà per a les regles actuals posa `"configVersion": 11`; marcar així el manifest d'un paquet antic és també la manera de llegir-lo, amb una línia, amb les regles actuals (un paquet sense versió perd llavors també la fixació dels seus salts d'encapçalament). Un manifest marcat `8`, escrit per postext 1.5 a 1.22, rep només les quatre fixacions de les regles 9, com també tots els anteriors: la composició del vers (`pinLegacyVerseLayout`) s'escriu com a `bodyText.verse.layout: 'bayt'` al `bodyText` vigent, quan un capítol llegit compon un poema `:::verse` l'obertura del qual no anomena composició i les línies del qual no porten separador d'hemistiquis, i la configuració no el fixa ja; els sagnats aparellats (`pinLegacyPairedIndents`) treuen la `firstLineIndent` de tot estil de paràgraf (a `paragraphStyles` o als ajustos del visor HTML) que fixa també una `hangingIndent` diferent de zero; els salts de línia forçats (`pinLegacyHardBreaks`) s'escriuen com a `bodyText.hardLineBreaks: false` al `bodyText` vigent, quan un capítol llegit acaba una línia d'un paràgraf, una cita o un element de llista amb una barra inversa i el bloc continua a sota, o posa `\\` davant d'un espai i més text (llevat del codi en línia i les fórmules, les fórmules destacades, els títols i els poemes `:::verse`), i la configuració no el fixa ja; i les tanques de codi (`pinLegacyCodeBlocks`) s'escriuen com a `codeStyle.blocks: false` quan un capítol llegit obre una tanca ```` ``` ```` o `~~~` (de tres caràcters o més, amb tres espais de sagnat com a màxim) i la configuració no el fixa ja. Un manifest marcat `9`, escrit per postext 1.23, rep només la fixació de les regles 10, com també tots els anteriors: els versos partits (`pinLegacyVerseTightening`) s'escriuen com a `bodyText.verse.tighten: false` al `bodyText` vigent, quan un capítol llegit compon un poema vers a vers (una obertura `:::verse` que anomena `layout=lines`, o que no anomena composició sobre versos sense separador d'hemistiquis mentre la configuració no compongui aquests poemes com a bayts) i la configuració no el fixa ja. Un manifest marcat `10`, escrit per postext 1.24, rep només la fixació de les regles 11, com també tots els anteriors: l'equilibratge d'una retícula de caràcters (`pinLegacyGridBalancing`) s'escriu com a `headings.balancing.enabled: true` al `headings` vigent, quan la configuració combinada fixa `cjk.grid.enabled` en text horitzontal i no fixa ella mateixa `enabled`, perquè la 1.24 equilibrava aquestes pàgines per defecte. Les regles 11 també impedeixen que un títol d'obra es parteixi després d'un sol caràcter, componen els números en cercle com a caràcters xinesos i el text de disseny CJK amb les regles del cos (#637): un manifest marcat `10` o anterior rep `cjk.titleMinChars: 1` (`pinLegacyTitleBreaks`) quan un capítol llegit té un títol (《, 〈 o `:book[`), `cjk.circledNumbers: 'western'` (`pinLegacyCircledNumbers`) quan un en té un número en cercle (U+2460–U+24FF, U+2776–U+2793) i `cjk.composeDesignText: false` (`pinLegacyDesignText`) quan un capítol llegit o la mateixa configuració tenen text CJK; cadascun a la `cjk` vigent i només si la configuració no el fixa ja. També tallen les taules en línia i componen `:::columns` al text corregut (#634): un manifest marcat `10` o anterior rep `tableStyle.splitInline: false` (`pinLegacyInlineTableSplit`) al `tableStyle` vigent quan un capítol llegit insereix un recurs, i `layout.flowColumns: false` (`pinLegacyFlowColumns`) al `layout` vigent quan un capítol llegit obre una tanca `:::columns` en una línia pròpia, cadascun només si la configuració no el fixa ja. També ofereixen a un flotant el capdamunt de la columna d'una obertura a amplada de pàgina (#639): un manifest marcat `10` o anterior rep `layout.floatsUnderOpener: false` (`pinLegacyOpenerHeadFloats`) al `layout` vigent quan la configuració combinada defineix un nivell o un estil d'encapçalament amb `span: 'page'` i un capítol llegit té un encapçalament, només si la configuració no el fixa ja.
+
+```ts
+import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
+
+migrateConfig({ headings: { fontFamily: 'Georgia' } }, undefined, { content: 'Un llibre sense fórmules.' });
+// => { headings: { fontFamily: 'Georgia', levels: [{ level: 1, breakBefore: { enabled: false } }] } }
+migrateConfig({ math: { fontSizeScale: 1.2 } }, 3);
+// => { math: { fontSizeScale: 1.35746…, marginTop: { value: 0.7072, unit: 'em' }, marginBottom: { value: 0.7072, unit: 'em' } },
+//      layout: { inlineResourceGap: 'above', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 },
+//      headings: { inlineMarks: false, keepWithNextSplit: 'fill' }, bodyText: { colonListRoom: 'line', breakAfterDashes: false, breakAfterHyphens: false, verse: { layout: 'bayt', tighten: false }, hardLineBreaks: false }, codeStyle: { blocks: false } }
+migrateConfig({ layout: { layoutType: 'single' } }, 4, { content: 'Text.\n\n::resource{id="fig"}' });
+// => { layout: { layoutType: 'single', inlineResourceGap: 'above' } }
+migrateConfig({ layout: { layoutType: 'single' } }, 5, { content: ':::callout\nText.\n\n::resource{id="fig"}\n:::' });
+// => { layout: { layoutType: 'single', inlineResourceGapInBoxes: false, boxChildSplitMinLines: 1 } }
+migrateConfig({ bodyText: { textAlign: 'left' } }, 6, { content: 'Et dic—i això és tot.' });
+// => { bodyText: { textAlign: 'left', breakAfterDashes: false, optimalRagged: false } }
+migrateConfig({ paragraphStyles: [{ id: 'verso' }] }, 7, { content: ':::paragraphs{style="verso"}\nUn vers.\n:::' });
+// => { paragraphStyles: [{ id: 'verso' }], bodyText: { paragraphContainerSpacing: 'add' } }
+migrateConfig({ bodyText: { fontFamily: 'Georgia' } }, 7, { content: 'Un exercici teòric-pràctic.' });
+// => { bodyText: { fontFamily: 'Georgia', breakAfterHyphens: false } }
+migrateConfig(config, CONFIG_VERSION); // regles actuals: la mateixa `config`
+```
+
+`content` és el markdown que compon la configuració (una cadena o una llista de capítols). Sense aquest camp, els dos espais, les marques dels encapçalaments, el lloc sota els dos punts, el tall de les caixes, els salts després d'un guió llarg, la divisió sota un encapçalament i els salts després del guionet d'un compost es fixen sempre, la mida de les fórmules sempre que les matemàtiques estiguin activades i l'espai sota els contenidors sempre que la configuració declari algun estil de paràgraf, perquè el motor no pot saber si el llibre té cap fórmula, cap contenidor `:::paragraphs`, cap figura en línia, cap encapçalament amb marques, cap llista introduïda amb dos punts, cap caixa, cap guió llarg entre paraules, cap encapçalament o cap compost. La composició del text en bandera es fixa només segons la configuració, hi hagi contingut o no. Migra una configuració desada una sola vegada i torna-la a desar amb `CONFIG_VERSION`: la fixació de la mida multiplica l'escala, així que una configuració migrada dues vegades creixeria dues vegades. Sense ell també es fixen la composició del vers i les tanques de codi, perquè el llibre pot tenir un poema `:::verse` sense separador o una tanca, i els sagnats aparellats es fixen només per la configuració. També es fixen els versos partits de la 1.23, perquè el llibre pot compondre un poema vers a vers.
+
+### Compondre i renderitzar un paquet
+
+Quatre utilitats connecten un paquet obert amb el motor i els backends:
+
+- **`loadBundleFonts(bundle)`** registra les fonts del paquet a `document.fonts`, i els seus bytes al registre de fonts del motor per a les imatges SVG (`registerFontBytes`). Espera-la abans de compondre, perquè la composició mesura el text amb les fonts que té el navegador. Les famílies que el paquet anomena però no inclou (Google Fonts) les has de carregar tu, com en qualsevol altre document.
+- **`registerBundleImages(bundle)`** descodifica les imatges per al backend canvas (`renderPage`, `renderToCanvas`), incloses les portades dels vídeos. **`bundleImageUrl(bundle)`** és el resolvedor `resourceImageUrl` de `renderToHtml`, i **`bundleVideoUrl(bundle)`** el seu resolvedor `resourceVideoUrl` per als fitxers de vídeo que porta un paquet. Totes dues recoloren les figures SVG quan `diagramStyle.singleInk` és actiu, una sola vegada: recoloren el marcatge i marquen les imatges perquè cap backend no les torni a tenyir (consulta [Tinta única en canvas i en HTML](/ca/docs/configuration-resources#tinta-única-en-canvas-i-en-html)). Totes dues incrusten, a més, a cada SVG les variants que anomena el seu text, primer des de les fonts del mateix paquet i després des de les variants registrades al motor (consulta [Fonts al text dels SVG](/ca/docs/configuration-resources#fonts-al-text-dels-svg)); `registerBundleImages(bundle, { onWarning })` i `bundleImageUrl(bundle, { onWarning })` avisen d'una família sense variant.
+- **`buildBundle(bundle)`** compon els capítols en ordre i retorna un `VDTDocument` per capítol. Cada capítol continua l'anterior: comptadors d'encapçalaments i de recursos, la part oberta, la paritat de pàgina i la numeració. Un capítol que imprimeix l'índex de continguts (`:::toc`) o l'analític (`:::index`) rep l'esquema del llibre sencer. Admet les mateixes opcions que `buildDocument`, més `config` per substituir la configuració del paquet, `cache` per compartir una memòria cau de mesures i `metadata` (vegeu més avall).
+- **`bundleResourceBytes(bundle)`** i **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** són les opcions `resourceBytes` i `fontProvider` de `renderToPdf` de `postext-pdf`. El proveïdor de fonts tria del paquet el pes més proper de l'estil demanat. Per a una variant `.woff2` necessita `decompressWoff2`, i per a una família que el paquet no inclou crida `fallback` amb els arguments del renderitzador, `request` inclòs, i lliura el que retorni. Un `fallback` que només baixa el fitxer `latin` de la família imprimeix com a caixes buides una família xinesa que el paquet no incrusta; un que respon amb els fragments, com `sliceFontProvider` a [Fonts xineses, japoneses i coreanes](#fonts-xineses-japoneses-i-coreanes), la imprimeix completa.
+
+```ts
+import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,
+  bundleResourceBytes, bundleFontProvider } from 'postext';
+import { renderToPdf, decompressWoff2 } from 'postext-pdf';
+
+const bundle = await openBundle(bytes);
+await loadBundleFonts(bundle);
+await registerBundleImages(bundle);
+
+const docs = buildBundle(bundle);                        // un VDTDocument per capítol
+const primeraPagina = renderPage(docs[0].pages[0], docs[0]); // un <canvas>
+
+const pdf = await renderToPdf(docs, {                    // el llibre sencer
+  fontProvider: bundleFontProvider(bundle, { decodeWoff2: decompressWoff2, fallback: fontsource }),
+  resourceBytes: bundleResourceBytes(bundle),
+});
+```
+
+Per compondre un sol capítol pel teu compte, passa `bundle.chapters[i].markdown`, `bundle.resources` i `bundle.config` a `buildDocument`, com amb qualsevol document.
+
+**Les metadades del llibre.** Com al Sandbox, el frontmatter del primer capítol és el del llibre: `buildBundle` lliura el seu `title`, el seu `author` i els altres a tots els capítols, de manera que les capçaleres amb `{title}` i `{author}` es mantenen a totes les pàgines i el `doc.metadata` de cada capítol els porta. Un bloc de frontmatter al principi d'un capítol posterior s'ignora: es localitza per les seves línies `---` i es deixa en blanc sense analitzar-lo, així que un YAML que l'analitzador rebutjaria no causa cap problema. `options.metadata` aporta valors que el frontmatter no fixa (el frontmatter preval). El recompte de pàgines del llibre també arriba a tots els capítols: `{bookTotalPages}` l'imprimeix, mentre que `{totalPages}` compta el capítol (consulta [Recompte de pàgines del llibre](/ca/docs/configuration-page-layout#recompte-de-pàgines-del-llibre)).
+
+```ts
+const docs = buildBundle(bundle, { metadata: { author: 'A. Autora' } });
+docs[3].metadata.title;   // el `title:` del primer capítol
+```
+
+### Exemple en directe: obrir un paquet
+
+El pen carrega un llibre d'exemple de dos capítols (`lantern.postext`, amb la seva pròpia tipografia, una figura SVG i una taula) des del repositori. Registra les fonts i imatges del paquet, compon el llibre amb `buildBundle` i pinta totes les pàgines. *Make the PDF* renderitza els mateixos documents amb `postext-pdf`, incrustant les fonts del paquet. Tria un `.postext` teu, per exemple un d'exportat del Sandbox, per veure'l igual.
+
+<CodePenExample name="open-bundle" title="Postext · obrir un paquet .postext" description="Obrir un fitxer .postext amb postext, compondre el llibre i renderitzar-lo en canvas i PDF." height={640} />
+### Crear un paquet
+
+`createBundle` escriu un fitxer `.postext` a partir d'un document: els seus capítols, la seva configuració, els seus recursos i les dades a què aquests fan referència.
+
+```ts
+import { createBundle } from 'postext';
+
+const { bytes, manifest, warnings } = await createBundle({
+  name: 'El farol',
+  locale: 'es',
+  chapters: [
+    { markdown: '# Anochecer\n\nSe dibuja en :ref{id="farol"}.' },
+    { title: 'Noche', markdown: '# Noche\n\n…' },
+  ],
+  config,
+  resources: [{
+    id: 'farol', typeId: 'figure', kind: 'svg', caption: 'El farol.',
+    svg: { fileId: 'farol.svg', width: 240, height: 150 },
+    createdAt: 0, updatedAt: 0,
+  }],
+  files: { 'farol.svg': svgMarkup, 'garamond-regular': fontBytes },
+});
+```
+
+<table>
+  <thead>
+    <tr><th>Entrada</th><th>Significat</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>name</code>, <code>id</code>, <code>description</code>, <code>locale</code></td><td>Les metadades del manifest. Per defecte <code>id</code> és un slug de <code>name</code>.</td></tr>
+    <tr><td><code>chapters</code> o <code>markdown</code></td><td>El llibre, un <code>&#123; title?, markdown &#125;</code> per capítol, o un document únic.</td></tr>
+    <tr><td><code>config</code></td><td>La <code>PostextConfig</code>. Els valors iguals als predeterminats no s'escriuen al manifest.</td></tr>
+    <tr><td><code>resources</code></td><td>Els recursos. Una imatge anomena les seves dades amb <code>bitmap.fileId</code> / <code>svg.fileId</code> (i <code>svg.pdfFileId</code> per a un màster d'impressió).</td></tr>
+    <tr><td><code>files</code></td><td>Les dades per <code>fileId</code> (un objecte o un <code>Map</code>): les imatges que citen els recursos i els fitxers de font que citen les variants de <code>config.customFonts</code>. Cada valor pot ser un <code>Uint8Array</code>, un <code>ArrayBuffer</code>, un <code>Blob</code> o un text (el codi d'un SVG).</td></tr>
+    <tr><td><code>thumbnail</code></td><td><code>&#123; data, mime &#125;</code>: una portada (PNG, JPEG, WebP, GIF o SVG).</td></tr>
+    <tr><td><code>canvasScope</code></td><td><code>'book'</code> demana als visors que componguin el llibre sencer com un sol llenç.</td></tr>
+    <tr><td><code>mtime</code></td><td>La data de modificació que s'escriu a cada fitxer del zip (un <code>Date</code>, una marca de temps o una data en text). Si falta, és l'hora de la crida, de manera que dues crides amb les mateixes dades donen bytes diferents. Amb una data fixa, les mateixes dades donen sempre els mateixos bytes, que es poden comparar o resumir amb un hash. Un zip desa una data i una hora sense zona horària, en passos de dos segons, de 1980 a 2099, i la data s'escriu en l'hora local de la màquina. Perquè els bytes coincideixin en qualsevol màquina, construeix la data amb camps locals, com <code>new Date(1980, 0, 1)</code>: una marca de temps o un text que acaba en <code>Z</code> anomenen un instant, que cau en una hora local diferent a cada zona horària (<code>'1980-01-01T00:00:00Z'</code> encara és 1979 a l'oest d'UTC). Una data fora d'aquests anys, en hora local, llança un error.</td></tr>
+    <tr><td><code>localized</code></td><td>Altres llengües del mateix llibre, per etiqueta de llengua: <code>&#123; en: &#123; chapters?, config?, resources? &#125; &#125;</code>. Les entrades anteriors passen a ser el contingut de <code>locale</code>, que llavors és obligatori. Consulta <a href="#paquets-bilingües">Paquets bilingües</a>.</td></tr>
+  </tbody>
+</table>
+
+Retorna els `bytes` del fitxer, el `manifest` escrit com a `preset.json`, tots els fitxers a `files` (ruta → bytes) i una llista de `warnings`. Els fitxers s'anomenen per l'id del seu recurs (`resources/farol.svg`) o pel nom del fitxer de font (`fonts/…`), i els capítols pel seu ordre i títol (`chapters/01-anochecer.md`). Les fonts es declaren al camp `fonts` del manifest, mai dins de `config.customFonts`. Algunes coses es deixen fora, cadascuna amb un avís:
+- un recurs o una variant tipogràfica les dades de la qual no són a `files`
+- una variant `.woff` (el backend PDF no la pot incrustar)
+- una família marcada `redistributable: false`
+
+Al navegador, passa `bytes` a un enllaç de baixada: `URL.createObjectURL(new Blob([bytes], { type: 'application/zip' }))`. A Node, escriu-los amb `fs.writeFile`. `createBundle` i `openBundle` no necessiten DOM. Els dists fan servir rutes de mòdul sense extensió, de manera que amb Node a seques, sense bundler, necessiten un hook de resolució. El fitxer `docs/examples/open-bundle/build-sample.mjs` del repositori en mostra un en poques línies.
+
+### Paquets bilingües
+
+Un fitxer `.postext` pot portar un llibre en diverses llengües, i `openBundle(bytes, { locale })` el llegeix en qualsevol d'elles. `createBundle` n'escriu un a partir de `localized`: una entrada per cada llengua addicional, amb allò que difereix del contingut principal (el de `locale`):
+
+```ts
+const { bytes, manifest } = await createBundle({
+  name: 'El farol',
+  locale: 'es',
+  chapters: [{ markdown: '# Anochecer\n\n…' }, { markdown: '# Noche\n\n…' }],
+  config,
+  resources: [figuraFarol, tablaHoras],
+  files: { 'farol.svg': svgEs, 'lantern.svg': svgEn },
+  localized: {
+    en: {
+      chapters: [{ markdown: '# Dusk\n\n…' }, { markdown: '# Night\n\n…' }],
+      config: { headings: { levels: [{ level: 1, numberingTemplate: 'Chapter {1}' }] } },
+      resources: [
+        { id: 'farol', caption: 'The lantern.', svg: { fileId: 'lantern.svg', width: 240, height: 150 } },
+        { id: 'horas', caption: 'Hours of light.' },
+      ],
+    },
+  },
+});
+
+const en = await openBundle(bytes, { locale: 'en' });   // capítols, configuració i peus en anglès
+```
+
+- **`chapters`**: el llibre en aquesta llengua. Els fitxers de capítol van a una carpeta per llengua (`chapters/es/01-anochecer.md`, `chapters/en/01-dusk.md`) i el camp `chapters` del manifest passa a ser un mapa llengua → capítols. Una llengua sense `chapters` llegeix els principals; quan cap llengua no té capítols propis, continuen sent una sola llista.
+- **`config`**: la configuració d'aquesta llengua. Cada clau de primer nivell substitueix completament la compartida quan el paquet es llegeix en aquesta llengua, de manera que aquí `headings` substitueix l'objecte `headings` sencer. Les claus que falten, o que són iguals a les compartides, es comparteixen i no s'escriuen, de manera que passar la configuració completa de la llengua funciona igual que passar les poques claus que canvien. Una clau amb els seus valors per defecte quan la compartida no els té (`layout: {}`) s'escriu tal qual, així que restableix el valor compartit. Les fonts es comparteixen: les famílies del `customFonts` d'una llengua se sumen al `fonts` del paquet.
+- **`resources`**: el text dels recursos compartits, aparellats per `id`: `caption`, `note`, `altText` i el `table` d'una taula. Una imatge amb paraules pot tenir el seu propi dibuix: `bitmap.fileId` o `svg.fileId` (i `svg.pdfFileId`) anomenen altres dades de `files`, que s'escriuen com a `resources/en/farol.svg`. La resta de camps, com el tipus o la col·locació, es comparteixen. Un id que no és entre els `resources` es deixa fora amb un avís, i si falta la imatge d'una llengua, aquesta llengua es queda amb la compartida, també amb un avís.
+
+El manifest enumera totes les llengües a `locales` (`['es', 'en']`), conserva la principal com a `locale` i desa la resta a `localized`. `openBundle` sense llengua llegeix la principal.
+
+**Quina llengua rep el lector.** `openBundle(bytes, { locale })` serveix la llengua exacta, si no la seva llengua base (`es-MX` llegeix `es`), i si no la principal; `bundle.locale` diu quina ha servit. Capítols i textos vénen sempre de la mateixa llengua. La llengua principal conserva els textos compartits encara que `localized` porti una variant regional seva: un paquet `pt-PT` amb una entrada `pt-BR` llegeix els peus brasilers només per a `pt-BR`, i els compartits per a `pt-PT` i `pt`.
+
+### Exemple en viu: crear un paquet
+
+El pen compon un llibre de dos capítols amb una figura SVG i llista els fitxers que ha escrit `createBundle` juntament amb el manifest. Ofereix el fitxer per baixar-lo, el torna a obrir amb `openBundle` i en pinta la primera pàgina: l'anada i tornada completa en poques línies. Importa el fitxer baixat al Sandbox per continuar-hi treballant.
+
+<CodePenExample name="create-bundle" title="Postext · crear un paquet .postext" description="Escriure un fitxer .postext amb createBundle de postext, baixar-lo i tornar-lo a obrir." height={640} />
+
+### Treballar amb paquets
+
+Com que el Sandbox, l'skill per a agents i el paquet `postext` llegeixen i escriuen el mateix fitxer, un `.postext` és una manera còmoda de passar un llibre d'una eina a una altra:
+
+- **Partir d'un paquet.** Porta una publicació existent amb l'[skill per a agents](/ca/docs/skill), o dissenya un llibre al [Sandbox](/ca/sandbox) i exporta'l (**Baixar (.postext)** al menú ⋯ de la seva fila del tauler Llibres). Carrega el fitxer des del teu programa amb `openBundle` per renderitzar-lo en canvas, HTML o PDF. Conserva el fitxer com a font del llibre: edita en codi els capítols, la configuració o els recursos i torna'l a escriure amb `createBundle`, o simplement torna'l a carregar cada vegada que canviï.
+- **Depurar i ajustar al Sandbox.** Quan alguna cosa del que produeix el teu programa necessita retocs (una figura que cau a la pàgina equivocada, un estil d'encapçalament, l'equilibri de columnes), exporta el que compon el teu programa amb `createBundle`. Importa aquest fitxer al Sandbox (*Llibres → Nou → Obrir un fitxer .postext…*), corregeix el text, el disseny o les figures amb la previsualització en viu, el tauler Revisió i la vista PDF, i torna'l a exportar. Després el teu programa carrega el fitxer corregit amb `openBundle`. O trasllada al teu codi el que ha canviat: la `config` del manifest només desa els valors diferents dels predeterminats, així que es llegeix com una diferència curta.
+
+### API de baix nivell
+
+`postext/bundle` exporta també les peces sobre les quals es construeixen `openBundle` i `createBundle`, per a aplicacions que desen o serveixen paquets a la seva manera (un directori descomprimit per HTTP, registres en una base de dades):
+
+- **`openBundleZip(bytes)` / `zipBundle(files, { mtime })`**: la capa del zip. En obrir tolera una carpeta arrel i ignora les entrades `__MACOSX` i els fitxers ocults. Es rebutgen les rutes que surten del paquet. `mtime` data els fitxers com la dada del mateix nom de `createBundle`.
+- **`readBundle(manifest, readFile, options)`** llegeix un manifest més una funció `readFile(ruta)` i retorna capítols, configuració, recursos, imatges i fonts. `options` fixa la llengua, com s'anomenen els identificadors de fitxer (`ids`), la configuració base (`baseConfig`, sota la del manifest; per defecte la paleta i els tipus de recurs de `bundleBaseConfig` en la llengua del paquet, que retorna `resolveBundleConfigLocale(manifest, locale)`, i qui passi la seva pròpia `baseConfig` l'ha de traduir a aquesta llengua; amb un manifest anterior a `configVersion: 4`, el seu `math` es fixa amb el del paquet; amb un d'anterior a 5, l'espai en línia del seu `layout`; amb un d'anterior a 6, l'espai als requadres del seu `layout`, el lloc sota els dos punts del seu `bodyText`, les marques en línia dels seus `headings` i la mida de les seves caplletres; amb un d'anterior a 7, els talls després d'un guió llarg i la composició del text en bandera del seu `bodyText`; i amb un d'anterior a 8, la divisió sota un encapçalament dels seus `headings` i els talls després del guionet d'un compost i l'espai sota els contenidors `:::paragraphs` del seu `bodyText`; vegeu [Paquets escrits per postext 1.4 o anterior](#paquets-escrits-per-postext-14-o-anterior)) i com es mesuren les mides intrínseques. `readResolution` llegeix la resolució de cada mapa de bits del seu fitxer i la desa a `bitmap.fileResolution`; per defecte és true quan el paquet fixa `layout.bitmapResolution: 'file'`.
+- **`planBundle(meta, content)` / `resolveBundleFiles(plan, sources)`**: el costat d'escriptura, separat en un pla pur (noms de fitxer i manifest) i la resolució dels bytes mitjançant les funcions `readBlob` / `readFont`.
+- **`isBundleManifest(value)`**, les funcions que trien llengua (`pickChapterSpecs`, `pickLocaleOverrides`, `pickBundleView`, `resolveBundleLocale`, `resolveBundleConfigLocale`), `svgSize` / `bitmapSize` / `bitmapInfo` (els píxels d'un mapa de bits i la resolució que indica el seu fitxer) i els tipus del format (`BundleManifest`, `BundleResourceSpec`, `BundleFontFamilySpec`, …).
+- **`CONFIG_VERSION`, `migrateConfig(config, configVersion, { content })`, `pinLegacyHeadingBreaks(config)`, `pinLegacyMathSize(config)`, `pinLegacyInlineGap(config)`, `pinLegacyBoxResourceGap(config)`, `pinLegacyHeadingMarks(config)`, `pinLegacyDropCapSize(config)`, `pinLegacyColonListRoom(config)`, `pinLegacyBoxChildCut(config)`, `pinLegacyDashBreaks(config)`, `pinLegacyRaggedBreaking(config)`, `pinLegacyHeadingSplit(config)`, `pinLegacyParagraphContainerSpacing(config)`, `pinLegacyHyphenBreaks(config)` i `LEGACY_MATH_SIZE`** (0,5 ÷ 0,442): una configuració desada, en els termes actuals (vegeu [Paquets escrits per postext 1.4 o anterior](#paquets-escrits-per-postext-14-o-anterior)). `readBundle` l'aplica; una aplicació que desa configuracions a la seva manera també ho pot fer, una vegada per còpia desada.
+
+El Sandbox està construït sobre aquestes peces. Hi afegeix els seus propis identificadors d'emmagatzematge i els registres de pàgines de `layouts.json`.

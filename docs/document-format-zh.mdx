@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'zh',
   lastUpdated: '2026-10-07',
   readingTime: '10分钟',
-  order: 5,
+  order: 14,
   plainSummary: "本页说明怎样写出Postext能排版的文字。文字用Markdown写成，这是一种简单的写法，用几个符号标出标题、列表、粗体和链接。Postext还能识别一些额外的标记，用于框、脚注、图片、表格和公式。本页列出它接受的所有标记，以及它会忽略的写法。最后给出一些让文字更好读的建议。",
 };
 
@@ -17,7 +17,7 @@ export const metadata = {
 
 解析器是一个手写的分词器，而不是完整的CommonMark实现，因此源格式范围窄、行为可预测。这样做有两个目的：让引擎保持小而快；让文档可以毫不费力地在Postext与其他CommonMark阅读器（Obsidian、Pandoc、VS Code……）之间通用。本页没有列出的写法，要么按纯文本处理，要么从行内文本流中移除。
 
-如果你用程序构建文档，`parseMarkdown`函数（见[配置 › 解析](/zh/docs/configuration#解析markdown)）会给出排版引擎实际使用的块结构。
+如果你用程序构建文档，`parseMarkdown`函数（见[配置 › 解析](/zh/docs/configuration-programmatic-usage#解析markdown)）会给出排版引擎实际使用的块结构。
 
 
 ## 前置元数据
@@ -79,7 +79,7 @@ Postext识别七种正文块类型和代码清单，另外还有本页后文介�
     <tr>
       <td>引用块</td>
       <td><code>&gt; quoted text</code></td>
-      <td>引文的每一行都必须以<code>&gt;</code>开头（后面可有一个空格）。连续的引文行合并为一个引用块，连接方式与段落行相同。它按<code>bodyText.blockquote</code>的设置排版：除非你修改，否则为灰色斜体，并带有正文的首行缩进（见<a href="/zh/docs/configuration#引用块">配置 › 引用块</a>）。</td>
+      <td>引文的每一行都必须以<code>&gt;</code>开头（后面可有一个空格）。连续的引文行合并为一个引用块，连接方式与段落行相同。它按<code>bodyText.blockquote</code>的设置排版：除非你修改，否则为灰色斜体，并带有正文的首行缩进（见<a href="/zh/docs/configuration-text#引用块">配置 › 引用块</a>）。</td>
     </tr>
     <tr>
       <td>无序列表</td>
@@ -127,7 +127,7 @@ Postext识别七种正文块类型和代码清单，另外还有本页后文介�
 
 设计文本输出的值可以占多行：两个字符`\n`在该处换行，与元素的`overflow`无关（`to="Firma X\nStrasse 1\n10115 Berlin"`输出三行地址）。元素设置了`inlineMarks`时，值中的行内标记也会生效：`authors="Ana Ruiz^1^, Luis Gil^2^"`会把单位编号排成上标。这种转义只适用于属性值（以及设计本身的模板）：标题文本中的`\n`字符，比如在代码片段里，会原样输出。
 
-有两个属性有专门的含义。`style="<id>"`给标题应用一个命名的[标题样式](/zh/docs/configuration#标题样式)，例如前言或作者名单，它有自己的章首页设计、书眉、页面几何和正文排版；样式设为`numbered: false`时不带章号。`toc="false"`（或`"true"`）决定该标题是否被`:::toc`列出：
+有两个属性有专门的含义。`style="<id>"`给标题应用一个命名的[标题样式](/zh/docs/configuration-styles#标题样式)，例如前言或作者名单，它有自己的章首页设计、书眉、页面几何和正文排版；样式设为`numbered: false`时不带章号。`toc="false"`（或`"true"`）决定该标题是否被`:::toc`列出：
 
 ```markdown
 # Preface {style="front-matter"}
@@ -135,7 +135,7 @@ Postext识别七种正文块类型和代码清单，另外还有本页后文介�
 # Contents {style="front-matter" toc="false"}
 ```
 
-另有两个属性改变标题输出的内容和计数方式。`hidden="true"`（或`"false"`）覆盖标题所在级别或样式的`hidden`：隐藏的标题不输出任何内容，也不占空间（在正文流中和`:::callout`框内都是如此），但仍会开启它所在的页、参与计数，并列入目录、`{chapterTitle}`书眉和PDF书签。`jidori=N`把单行标题均匀拉开到标题自身的`N`个字宽（字取り：`# 序章 {jidori=3}`印作序　章），`jidori=0`关闭其级别或样式设定的均排（见[配置 › 按级别覆盖](/zh/docs/configuration#按级别覆盖)）。`indent=N`让单个标题从行首缩进正文的`N`个字（字下げ：`## 一 {indent=5}`），覆盖其级别或样式的`indent`；不带单位的数字按正文字宽计，`0`让标题回到行首，竖排和横排都适用。`firstLineIndent=N`只缩进单个标题的第一行，覆盖其级别或样式的`firstLineIndent`，其余各行从`indent`定下的位置起排（GB/T 9704 的标题：`## 关于加强管理的通知 {firstLineIndent=2}`）；长度的读法与`indent`相同，`0`取消级别的设定。`startAt=N`（正整数）把该标题所在级别的计数器设为`N`，而不是递增；其后的标题从这里继续计数，后面的章也一样，下级标题照常在它之下重新计数。如果某个标题样式用字母为附录编号（`numberingTemplate: 'Appendix {1:A}'`），第一个附录重新开始计数，读作*Appendix A*，而不是接着各章往下数：
+另有两个属性改变标题输出的内容和计数方式。`hidden="true"`（或`"false"`）覆盖标题所在级别或样式的`hidden`：隐藏的标题不输出任何内容，也不占空间（在正文流中和`:::callout`框内都是如此），但仍会开启它所在的页、参与计数，并列入目录、`{chapterTitle}`书眉和PDF书签。`jidori=N`把单行标题均匀拉开到标题自身的`N`个字宽（字取り：`# 序章 {jidori=3}`印作序　章），`jidori=0`关闭其级别或样式设定的均排（见[配置 › 按级别覆盖](/zh/docs/configuration-text#按级别覆盖)）。`indent=N`让单个标题从行首缩进正文的`N`个字（字下げ：`## 一 {indent=5}`），覆盖其级别或样式的`indent`；不带单位的数字按正文字宽计，`0`让标题回到行首，竖排和横排都适用。`firstLineIndent=N`只缩进单个标题的第一行，覆盖其级别或样式的`firstLineIndent`，其余各行从`indent`定下的位置起排（GB/T 9704 的标题：`## 关于加强管理的通知 {firstLineIndent=2}`）；长度的读法与`indent`相同，`0`取消级别的设定。`startAt=N`（正整数）把该标题所在级别的计数器设为`N`，而不是递增；其后的标题从这里继续计数，后面的章也一样，下级标题照常在它之下重新计数。如果某个标题样式用字母为附录编号（`numberingTemplate: 'Appendix {1:A}'`），第一个附录重新开始计数，读作*Appendix A*，而不是接着各章往下数：
 
 ```markdown
 # To my mother {hidden="true" toc="false"}
@@ -147,7 +147,7 @@ Postext识别七种正文块类型和代码清单，另外还有本页后文介�
 
 ### 首字下沉
 
-当段落所在的标题级别或标题样式，或其`:::paragraphs`组的段落样式设了首字下沉时，段落以首字下沉开头（见[配置 › 首字下沉](/zh/docs/configuration#首字下沉)）：第一个字母放大，排在前几行旁边，这几行围绕它缩短。段落本身不需要任何标记，文字照常书写，这个字母在复制、搜索和源映射中仍属于它所在的词。`dropcap`属性为某一章或某一组切换首字下沉：
+当段落所在的标题级别或标题样式，或其`:::paragraphs`组的段落样式设了首字下沉时，段落以首字下沉开头（见[配置 › 首字下沉](/zh/docs/configuration-text#首字下沉)）：第一个字母放大，排在前几行旁边，这几行围绕它缩短。段落本身不需要任何标记，文字照常书写，这个字母在复制、搜索和源映射中仍属于它所在的词。`dropcap`属性为某一章或某一组切换首字下沉：
 
 ```markdown
 # Lost {dropcap=false}
@@ -215,7 +215,7 @@ echo "done: $(date)"
 
 缩进代码（空行之后以四个空格或一个制表符缩进）只有在打开`codeStyle.indentedCode`时才读作代码清单：Postext的正文常用空格缩进，嵌套列表项也要读行首空格。
 
-清单的外观（字体、框、制表符宽度、比框更宽的行如何处理、行号、各类记号的颜色）由`codeStyle`设定，见[配置 › 代码清单](/zh/docs/configuration#代码清单)。行内代码（`` `x` ``）用正文字体，除非`codeStyle.inline`给它指定一种字体。postext 1.23之前保存、正文含围栏的书仍按当时的方式读取这些围栏，即按Markdown读取（`codeStyle.blocks: false`）。自postext 1.23起。
+清单的外观（字体、框、制表符宽度、比框更宽的行如何处理、行号、各类记号的颜色）由`codeStyle`设定，见[配置 › 代码清单](/zh/docs/configuration-styles#代码清单)。行内代码（`` `x` ``）用正文字体，除非`codeStyle.inline`给它指定一种字体。postext 1.23之前保存、正文含围栏的书仍按当时的方式读取这些围栏，即按Markdown读取（`codeStyle.blocks: false`）。自postext 1.23起。
 
 ## 指令
 
@@ -286,7 +286,7 @@ echo "done: $(date)"
 
 属性值可以用双引号（<code>"…"</code>）、单引号（<code>'…'</code>）或不加引号（<code>startAt=17</code>）。没有`=`的单独键被视为存在但为空的标志。
 
-目前只有`pagebreak`、`numbering`、`columnbreak`、`space`、`toc`和`index`被识别为单行指令（`references`、`verse`、`page`和`strip`则是带围栏的块）；其他任何不是容器（见下文）的`:::name`行都按段落解析，并在沙盒中显示**未知指令**警告。引擎也会记录它，作为文档`contentWarnings`中的一条`unknownDirective`（见[配置 › 文档中的警告](/zh/docs/configuration#文档中的警告)）。
+目前只有`pagebreak`、`numbering`、`columnbreak`、`space`、`toc`和`index`被识别为单行指令（`references`、`verse`、`page`和`strip`则是带围栏的块）；其他任何不是容器（见下文）的`:::name`行都按段落解析，并在沙盒中显示**未知指令**警告。引擎也会记录它，作为文档`contentWarnings`中的一条`unknownDirective`（见[配置 › 文档中的警告](/zh/docs/configuration-programmatic-usage#文档中的警告)）。
 
 ### 属性值
 
@@ -368,9 +368,9 @@ Keep the lantern lit **every** night.
 
 框也可以让后面的正文排在它旁边：`wrap`（`left`、`right`、`start`或`end`）、`width`（占栏宽的比例，0 到 1；未设置时取`layout.wrap.defaultWidth`）和`wrapGap`（长度，如`6pt`），例如`:::callout{wrap="right" width=0.4}`（见[文字绕排](#文字绕排)；postext 1.24起）。
 
-标注框按框来排版：可选的标题，接着是用样式自身的正文和列表排版设置排出的内容。默认情况下它保持完整，放不下时整体移到下一栏或下一页（比整栏还高的框同样会拆分，而不是溢出）；样式设为`keepTogether: false`时，框可以在块之间或行之间拆分，切口两侧至少各留`splitMinLines`行文本，或者一个图、表、行间公式或嵌套框（在段落或列表项内部切开时，切口两侧还至少各留该段落或列表项的`layout.boxChildSplitMinLines`行：默认两行，`splitMinLines`更小时取`splitMinLines`；1.5之前保存、章中含框的书按1读取，即1.4的切法）。第一部分之后的各部分开头不带图标，但文字仍保留图标所占的栏位；也不带标题，除非样式要求重复标题（`repeatTitle`：“Key points (cont.)”）；样式还可以在每个有后续的部分下方加一个“续”标记（`continuesMarkerEnabled`），见[拆分框上的标记](/zh/docs/configuration#拆分框的标记)。通栏框（`span="page"`）把页面切成若干栏带；`span="side"`框离开正文流，进入一栏半版式中只放浮动体的侧栏（`layout.sideColumnRole: 'floats'`），叠放在它所打断的文字旁边，在没有这种侧栏的地方按栏内框排版；`placement="fixed"`框离开正文流，固定在页面坐标上（比如章末页左下角的自我评估徽标），它所覆盖的栏让出这块区域；浮动框（`placement="top"` / `"bottom"`）在出现处离开正文流，占据该位置之后第一个空闲的栏带，即本页底部，或下一页的顶部或底部，而它后面的文字填满它离开的那一页。设为`floatBarrier: true`的样式（通常是章末的“要点”框）使该框成为**浮动体屏障**：在它之前引用的每个图或表都放在它之前，放在页面的空闲位置，或放在框之前新开的页上，因此不会有浮动体越过本章结尾。未知的`:::name`起始行不是容器，该行按文本处理，与未知指令完全相同。
+标注框按框来排版：可选的标题，接着是用样式自身的正文和列表排版设置排出的内容。默认情况下它保持完整，放不下时整体移到下一栏或下一页（比整栏还高的框同样会拆分，而不是溢出）；样式设为`keepTogether: false`时，框可以在块之间或行之间拆分，切口两侧至少各留`splitMinLines`行文本，或者一个图、表、行间公式或嵌套框（在段落或列表项内部切开时，切口两侧还至少各留该段落或列表项的`layout.boxChildSplitMinLines`行：默认两行，`splitMinLines`更小时取`splitMinLines`；1.5之前保存、章中含框的书按1读取，即1.4的切法）。第一部分之后的各部分开头不带图标，但文字仍保留图标所占的栏位；也不带标题，除非样式要求重复标题（`repeatTitle`：“Key points (cont.)”）；样式还可以在每个有后续的部分下方加一个“续”标记（`continuesMarkerEnabled`），见[拆分框上的标记](/zh/docs/configuration-styles#拆分框的标记)。通栏框（`span="page"`）把页面切成若干栏带；`span="side"`框离开正文流，进入一栏半版式中只放浮动体的侧栏（`layout.sideColumnRole: 'floats'`），叠放在它所打断的文字旁边，在没有这种侧栏的地方按栏内框排版；`placement="fixed"`框离开正文流，固定在页面坐标上（比如章末页左下角的自我评估徽标），它所覆盖的栏让出这块区域；浮动框（`placement="top"` / `"bottom"`）在出现处离开正文流，占据该位置之后第一个空闲的栏带，即本页底部，或下一页的顶部或底部，而它后面的文字填满它离开的那一页。设为`floatBarrier: true`的样式（通常是章末的“要点”框）使该框成为**浮动体屏障**：在它之前引用的每个图或表都放在它之前，放在页面的空闲位置，或放在框之前新开的页上，因此不会有浮动体越过本章结尾。未知的`:::name`起始行不是容器，该行按文本处理，与未知指令完全相同。
 
-`:::part`起始行接受`number`（按你希望输出的样子写，如`"I"`、`"IV"`、`"3"`；它也会被解析，以便设计重新格式化）和`title`，两者都是可选的。第三个属性`palette="band=#hex"`（多个`id=#hex`对，用逗号分隔）为该篇及其后的各章（直到下一篇）重新着色：所有链接到这些调色板id的设计颜色（书眉、开篇页色带、篇的设计），以及与它们共享基础值的文本流颜色（标题、粗体、引用、项目符号、题注、表格、框、行内标签）；见[配置 › 篇](/zh/docs/configuration#篇)。这个容器总是独占一页：前面有一个按配置奇偶性的分页，使用`parts.margins`页边距的单栏正文，整页铺满开篇页设计，结束围栏之后再分一次页。正文通常是该篇所含各章的列表，也可以什么都没有，按`parts.bodyStyle`排版：
+`:::part`起始行接受`number`（按你希望输出的样子写，如`"I"`、`"IV"`、`"3"`；它也会被解析，以便设计重新格式化）和`title`，两者都是可选的。第三个属性`palette="band=#hex"`（多个`id=#hex`对，用逗号分隔）为该篇及其后的各章（直到下一篇）重新着色：所有链接到这些调色板id的设计颜色（书眉、开篇页色带、篇的设计），以及与它们共享基础值的文本流颜色（标题、粗体、引用、项目符号、题注、表格、框、行内标签）；见[配置 › 篇](/zh/docs/configuration-styles#篇)。这个容器总是独占一页：前面有一个按配置奇偶性的分页，使用`parts.margins`页边距的单栏正文，整页铺满开篇页设计，结束围栏之后再分一次页。正文通常是该篇所含各章的列表，也可以什么都没有，按`parts.bodyStyle`排版：
 
 ```
 :::part{number="I" title="Foundations"}
@@ -381,7 +381,7 @@ Keep the lantern lit **every** night.
 # The lantern and its parts
 ```
 
-在默认的标题设置下，这会得到经典的顺序：篇页在右页，接着是一个空白左页，章从下一个右页开始。该页报告为`role: 'part'`，所以页眉和页脚可以跳过它；`{partTitle}` / `{partNumber}`在其后的每一页都解析为当前的篇。见配置参考中的[篇](/zh/docs/configuration#篇)。
+在默认的标题设置下，这会得到经典的顺序：篇页在右页，接着是一个空白左页，章从下一个右页开始。该页报告为`role: 'part'`，所以页眉和页脚可以跳过它；`{partTitle}` / `{partNumber}`在其后的每一页都解析为当前的篇。见配置参考中的[篇](/zh/docs/configuration-styles#篇)。
 
 围栏前面不需要空行：起始或结束围栏紧贴在段落、列表或引用块下方时，会结束那个块。文档结尾仍未关闭的容器会在那里自动关闭，沙盒会给出指向起始行的**容器未关闭**警告。没有打开的容器时出现的多余`:::`会作为可见的段落留在文本中，而不会被悄悄丢弃。
 
@@ -603,7 +603,7 @@ The old chapter ends here.
 - `blankForParity: true`：为满足奇偶约束而插入。在`{chapterTitle}`页眉中，这一页显示**即将开始**的那一章的标题，因为这个空白页只是为了把那一章推到正确的奇偶页上。
 - `blankForForce: true`：`'always-*'`模式中必需的前导分隔页。它属于**前一**章，是有意在章末留出的停顿，而不是为下一章补的奇偶页。
 
-同样这两条规则也让空白页获得带样式部分的书眉和调色板，见[配置 › 标题样式](/zh/docs/configuration#标题样式)。
+同样这两条规则也让空白页获得带样式部分的书眉和调色板，见[配置 › 标题样式](/zh/docs/configuration-styles#标题样式)。
 
 #### 文档开头的例外
 
@@ -632,9 +632,9 @@ title: "A Book With Front Matter"
 
 只改格式（不带`startAt`）时计数器继续累加，这在从`lower-alpha`切换到`upper-alpha`而不重置时很有用。
 
-`format`接受编号格式的任何写法：`roman-lower`和`i`与`lower-roman`等效，`arabic`与`decimal`等效，`一`和`あ`与`japanese-informal`和`hiragana`等效（见[配置 › 编号格式的写法](/zh/docs/configuration#编号格式的写法)）。不属于其中任何一种的值会保留原有格式，沙盒会标出它。
+`format`接受编号格式的任何写法：`roman-lower`和`i`与`lower-roman`等效，`arabic`与`decimal`等效，`一`和`あ`与`japanese-informal`和`hiragana`等效（见[配置 › 编号格式的写法](/zh/docs/configuration-page-layout#编号格式的写法)）。不属于其中任何一种的值会保留原有格式，沙盒会标出它。
 
-`lines`重新开始的是[行号](/zh/docs/configuration#行号)的计数，而不是页码：下一个计入的行编为给定的号，不论`lineNumbers.restart`怎样设置。不是0或更大整数的值会被忽略。
+`lines`重新开始的是[行号](/zh/docs/configuration-notes-references#行号)的计数，而不是页码：下一个计入的行编为给定的号，不论`lineNumbers.restart`怎样设置。不是0或更大整数的值会被忽略。
 
 ```md
 ## 第二幕
@@ -731,9 +731,9 @@ Two lines lower still.
   </tbody>
 </table>
 
-`bodyText.verse`设置所有诗的默认值（见[配置 › 诗歌](/zh/docs/configuration#诗歌)）。纯文本按原样保留诗：行与行之间一个换行，诗节之间一个空行，所以复制的段落和搜索都逐行读取；流式EPUB把每个诗节排成一个元素，其中各行悬挂转行，带标签的PDF把每个诗节标为一个段落。
+`bodyText.verse`设置所有诗的默认值（见[配置 › 诗歌](/zh/docs/configuration-text#诗歌)）。纯文本按原样保留诗：行与行之间一个换行，诗节之间一个空行，所以复制的段落和搜索都逐行读取；流式EPUB把每个诗节排成一个元素，其中各行悬挂转行，带标签的PDF把每个诗节标为一个段落。
 
-**行号。** 打开`lineNumbers`时，诗的诗行会被计数（见[配置 › 行号](/zh/docs/configuration#行号)）。每个诗行只数一次：转行的部分不编号，诗节之间的空白也不计数。默认每第五行在外侧页边印出行号，每首诗重新计数。按古典阿拉伯排法排的诗每联数一行。开始标记可以调整单首诗：`lineStart=N`给它的第一行编号，`interval=N`设定它自己的间隔，`numbered=false`让它不参加计数。
+**行号。** 打开`lineNumbers`时，诗的诗行会被计数（见[配置 › 行号](/zh/docs/configuration-notes-references#行号)）。每个诗行只数一次：转行的部分不编号，诗节之间的空白也不计数。默认每第五行在外侧页边印出行号，每首诗重新计数。按古典阿拉伯排法排的诗每联数一行。开始标记可以调整单首诗：`lineStart=N`给它的第一行编号，`interval=N`设定它自己的间隔，`numbered=false`让它不参加计数。
 
 ```md
 :::verse{lineStart=37}
@@ -774,7 +774,7 @@ Two lines lower still.
 :::toc
 ```
 
-页码就是文档实际输出的页码。单独排版的文档会用上一遍的页码标签重新排版，直到页码不再变化；如果编号在前置部分之后重新开始（即上面的`:::numbering`做法），多排一遍就能稳定下来。单独排版的一章（沙盒预览）则从其宿主处接收全书的大纲。见配置参考中的[目录](/zh/docs/configuration#目录)。
+页码就是文档实际输出的页码。单独排版的文档会用上一遍的页码标签重新排版，直到页码不再变化；如果编号在前置部分之后重新开始（即上面的`:::numbering`做法），多排一遍就能稳定下来。单独排版的一章（沙盒预览）则从其宿主处接收全书的大纲。见配置参考中的[目录](/zh/docs/configuration-notes-references#目录)。
 
 ### `:::index`
 
@@ -805,7 +805,7 @@ Two lines lower still.
 - 从HTML查看器复制的文字在换行处有换行符，流式EPUB写成`<br/>`，PDF提取的文字在此处断行，导出到Word时写成手动换行符（Shift+Enter），从Word导入时又读回为换行。
 - 诗歌请放进[`:::verse`](#verse)块，各行、缩进和诗节都会保留，不必每行写反斜杠。
 
-在postext 1.22及以前，反斜杠会照样印出，各行用空格连接。当时保存、文字中有行以反斜杠结尾或有后跟空格的`\\`的书，仍按原来的方式读取（`bodyText.hardLineBreaks: false`，见[配置 › postext 1.4及更早版本写出的文件包](/zh/docs/configuration#postext-14及更早版本写出的文件包)）。
+在postext 1.22及以前，反斜杠会照样印出，各行用空格连接。当时保存、文字中有行以反斜杠结尾或有后跟空格的`\\`的书，仍按原来的方式读取（`bodyText.hardLineBreaks: false`，见[配置 › postext 1.4及更早版本写出的文件包](/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包)）。
 
 ### 标题中的换行
 
@@ -817,7 +817,7 @@ Two lines lower still.
 
 ## 行内格式
 
-行内标记在任何文本块（标题、段落、引用块、列表项）中都能识别。在标题中，它遵循`headings.inlineMarks`，默认开启：标题里的斜体、粗体、上下标、小型大写字母和链接都按段落中的样子印出，斜体标题中的斜体片段则排成正体。关闭后，标记符号被去掉，标题按标题自身的样式印出；postext 1.4及更早版本保存、标题中带有标记的配置也按这种方式读取（见[配置 › 标题](/zh/docs/configuration#标题)）。无论开关如何，标题的版面设计都把`{titleText}`作为纯文本印出。
+行内标记在任何文本块（标题、段落、引用块、列表项）中都能识别。在标题中，它遵循`headings.inlineMarks`，默认开启：标题里的斜体、粗体、上下标、小型大写字母和链接都按段落中的样子印出，斜体标题中的斜体片段则排成正体。关闭后，标记符号被去掉，标题按标题自身的样式印出；postext 1.4及更早版本保存、标题中带有标记的配置也按这种方式读取（见[配置 › 标题](/zh/docs/configuration-text#标题)）。无论开关如何，标题的版面设计都把`{titleText}`作为纯文本印出。
 
 <Illustration name="InlineFormatting" data='{"title": "行内格式一览", "desc": "粗体、斜体、粗斜体、行内代码和链接的Markdown与渲染结果对照。", "caption": "左侧为Markdown，右侧为渲染结果。", "rows": [{"markdown": "**粗体**", "rendered": "粗体", "style": "bold"}, {"markdown": "*斜体*", "rendered": "斜体", "style": "italic"}, {"markdown": "***两者***", "rendered": "两者", "style": "bold-italic"}, {"markdown": "`代码`", "rendered": "代码", "style": "code"}, {"markdown": "[链接](https://…)", "rendered": "链接", "style": "link"}]}' />
 
@@ -883,7 +883,7 @@ Two lines lower still.
     <tr>
       <td>行内代码</td>
       <td><code>`code`</code></td>
-      <td>去掉反引号，片段按原样以纯文本渲染：其中的<code>{':ref{…}'}</code>、行内标签、公式、链接或强调符号都照字面印出，正文要展示语法时就这样写。它用正文字体排，设了<code>codeStyle.inline</code>时则用代码字体，作为一个整体排出（见<a href="/zh/docs/configuration#代码清单">配置 › 代码清单</a>）。代码清单写在<a href="#代码块">代码块</a>中。</td>
+      <td>去掉反引号，片段按原样以纯文本渲染：其中的<code>{':ref{…}'}</code>、行内标签、公式、链接或强调符号都照字面印出，正文要展示语法时就这样写。它用正文字体排，设了<code>codeStyle.inline</code>时则用代码字体，作为一个整体排出（见<a href="/zh/docs/configuration-styles#代码清单">配置 › 代码清单</a>）。代码清单写在<a href="#代码块">代码块</a>中。</td>
     </tr>
     <tr>
       <td>转义</td>
@@ -978,12 +978,12 @@ The :smallcaps[unesco] report and the :smallcaps[who] guidelines.
 - **标记**。文本可带自身的行内标记（`:smallcaps[**Ophelia**]`），也可处于外围的强调中（`*:smallcaps[Act I]*`）；内部的字面方括号写作`\]`。其中的引用或行内标签也排成小型大写字母，引用在HTML和PDF中仍是一个链接；公式则不受影响。
 - **断行**。词照常换行和断词；断词时按每个词原本的大小写读取。
 - **适用位置**。段落、列表项、引用块、标注框、表格单元格、题注和注释，以及`headings.inlineMarks`开启（默认）时的标题；关闭时，标题中的标记被移除，文本按原样印出。
-- **整段。**`smallCaps: true`的段落样式或标注框正文会把全部文本这样排（见[段落样式](/zh/docs/configuration#段落样式)）。
+- **整段。**`smallCaps: true`的段落样式或标注框正文会把全部文本这样排（见[段落样式](/zh/docs/configuration-styles#段落样式)）。
 - **文本**。Canvas、HTML和PDF承载的是画出的字母：复制`:smallcaps[Hamlet]`得到“HAMLET”。
 
 ### 制表符与制表位
 
-制表符把其后的文字送到行上的一个制表位：菜单里菜品的价格排在一行点之后，与版心末端对齐；演员表里角色之后的演员名；试题的分值排在页边。在制表符的位置写`:tab`，它两侧的空格并入制表符。制表位在配置中设置：`bodyText.tabStops`用于每个段落、列表项和引文，段落样式的`tabStops`用于`:::paragraphs`组中的段落，标注框样式的`body.tabStops`用于它的框内（见[配置 › 制表位](/zh/docs/configuration#制表位)）。下面的菜单让价格止于版心末端，前面是一行点：
+制表符把其后的文字送到行上的一个制表位：菜单里菜品的价格排在一行点之后，与版心末端对齐；演员表里角色之后的演员名；试题的分值排在页边。在制表符的位置写`:tab`，它两侧的空格并入制表符。制表位在配置中设置：`bodyText.tabStops`用于每个段落、列表项和引文，段落样式的`tabStops`用于`:::paragraphs`组中的段落，标注框样式的`body.tabStops`用于它的框内（见[配置 › 制表位](/zh/docs/configuration-text#制表位)）。下面的菜单让价格止于版心末端，前面是一行点：
 
 ```ts
 paragraphStyles: [
@@ -1049,7 +1049,7 @@ paragraphStyles: [
 
 ### 竖排中的文字方向
 
-在竖排（`layout.writingMode: 'vertical-rl'`）中，汉字直立，拉丁词和较长的数字横躺，最多两位的数字在一个字格中直立，除非它位于拉丁语句子中，那时随句中的词排列（见[配置 › 竖排中的数字](/zh/docs/configuration#竖排中的数字)）。有三种标记可手动指定一段文字的方向：
+在竖排（`layout.writingMode: 'vertical-rl'`）中，汉字直立，拉丁词和较长的数字横躺，最多两位的数字在一个字格中直立，除非它位于拉丁语句子中，那时随句中的词排列（见[配置 › 竖排中的数字](/zh/docs/configuration-east-asian#竖排中的数字)）。有三种标记可手动指定一段文字的方向：
 
 ```markdown
 第:tcy[120]回，:upright[GDP]增長:sideways[12]倍。
@@ -1060,7 +1060,7 @@ paragraphStyles: [
 - `:sideways[…]`让整段随行横躺，汉字也一样：适合作者希望横躺的两位数。
 - 文本保留在纯文本中；这些标记内部可带其他行内标记（`:tcy[**12**]`）、链接（`:sideways[[iPhone](https://…)]`）以及彼此嵌套，以最内层为准（`:tcy[:upright[AB]]`让A和B直立）；字面方括号写作`\]`。在横排中它们不起任何作用。
 - 标记内的引用、注释标号、公式、行内标签或色块保持各自的排法：`:sideways[iPhone[^1]]`让iPhone横躺，注释编号则像所有注释编号一样排；引用的编号像其他短数字一样，按`cjk.uprightDigits`在一个字格中直立。
-- `inlineMarks: true`的设计文本元素竖排时也接受这些标记（见[配置 › 竖排文本元素](/zh/docs/configuration#竖排文本元素)）。
+- `inlineMarks: true`的设计文本元素竖排时也接受这些标记（见[配置 › 竖排文本元素](/zh/docs/configuration-page-layout#竖排文本元素)）。
 - 在断行和两端对齐时，`:tcy`字格和`:upright`的每个字符都按汉字计算，它们旁边不加汉字与拉丁文字之间的间距。
 
 
@@ -1087,7 +1087,7 @@ paragraphStyles: [
 - <strong>`:warichu[note]`</strong>在行内以正文一半的字号分两行排注文（双行夹注），先读上行（竖排时为右行）。长注文填满本行剩余部分，再接到下一行、下一栏或下一页。`open`和`close`在注文两侧加正文字号的括号；`cjk.warichu`设定字号、颜色和默认括号（日文文档中默认为一对全角圆括号）。拉丁文字的注文在词间断开。
 - <strong>`:kunten[字]{kaeri="…" okuri="…" tate}`</strong>为方括号中的最后一个字标注汉文训读记号：`kaeri`是返点（レ，一 二 三，上 中 下，甲 乙 丙，天 地 人，以及一レ 上レ 甲レ 天レ；码位㆑ ㆒ …读法相同），`okuri`是送假名（青空文库的括号`（ヲ）`会被去掉），开关`tate`是把它和下一个字连起来的竖点。文字不重新排序：记号以一半字号排在字旁（`cjk.kunten`），复制的文字读作學ビテ而時ニ習フ之ヲ，带送假名，不带返点。里面可以嵌套注音，用于读两次的字：`:kunten[:ruby[未]{rt="ザル" pos=under}]{kaeri="レ" okuri="ダ"}`。
 
-行距始终不变：标记和读音都放在行间空白中；当段落的行间空白不足以容纳它们时（`cjkMarksExceedLeading`、`rubyExceedsLeading`、`kuntenExceedsLeading`），以及当一行下方的标记与下一行上方的读音放不进共用的空白时（无论在同一段内还是跨两段），构建都会发出警告。请为带注的段落设置行距更大的段落样式。标记、读音和注文在段落、标题、列表项、引用块和框中绘制，在题注、表格单元格和注释中也同样绘制，其行间空白按同样方式检查；在书眉和版面设计中，文本印出但不带它们。在`cjk.bookTitleMark: 'brackets'`下，书名的《》属于文本中的标点：题注、单元格、注释、目录条目、书签和索引条目都保留它们。见[配置 › 标记、注音和双行夹注](/zh/docs/configuration#着重号注音与夹注)。
+行距始终不变：标记和读音都放在行间空白中；当段落的行间空白不足以容纳它们时（`cjkMarksExceedLeading`、`rubyExceedsLeading`、`kuntenExceedsLeading`），以及当一行下方的标记与下一行上方的读音放不进共用的空白时（无论在同一段内还是跨两段），构建都会发出警告。请为带注的段落设置行距更大的段落样式。标记、读音和注文在段落、标题、列表项、引用块和框中绘制，在题注、表格单元格和注释中也同样绘制，其行间空白按同样方式检查；在书眉和版面设计中，文本印出但不带它们。在`cjk.bookTitleMark: 'brackets'`下，书名的《》属于文本中的标点：题注、单元格、注释、目录条目、书签和索引条目都保留它们。见[配置 › 标记、注音和双行夹注](/zh/docs/configuration-east-asian#着重号注音与夹注)。
 
 
 ### 标记中的文本方向
@@ -1121,8 +1121,8 @@ so he learned to count the steps in the dark.
 - **标号。**`[^id]`把脚注编号印成上标，紧贴前面的词（写在标点之后，如上例）。id可包含字母、数字、`-`、`_`、`.`和`:`。标号可用于段落、列表项、引用块和标注框；在标题、题注和表格单元格中照原样印出。
 - **定义**。以`[^id]:`开头的段落；其文本一直延续到下一个空行，可带常见的行内标记（粗体、斜体、链接、`:ref`、公式、行内标签）。定义无论写在哪里都会离开文字流，因此可以放在引用它的段落下方，也可以全部集中在章末。同一id以第一个定义为准。
 - **编号**。脚注按首次引用的顺序编号，每章（一级标题，以及书中的每个文档）重新开始；被引用两次的脚注保留第一次的编号，只排一次。`footnotes.numbering: 'document'`让编号贯穿全书，`'page'`像中文书那样每页重新编号；`footnotes.numberFormat: 'circled-decimal'`在基线上排出① ② ③。`footnotes.numberFormat: 'symbols'`像期刊那样用`*`、`†`、`‡`、`§`、`‖`、`¶`标注，用完后成对重复，每页重新开始。
-- **日文文本**。把标号写在句末的。之前（`先生[^1]。`）：它跟随前一个字符，而。从不出现在行首。日文竖排书默认把标号（1）排在行的右侧，把注文排在章末；`footnotes.markerPosition: 'side'`在词旁排一个小标号，不占行内空间；`footnotes.placement: 'spread'`把注文排在每个跨页的正文旁边（见[配置 › 脚注](/zh/docs/configuration#脚注)）。
-- **脚注的位置**。默认排在引用它的那一行所在栏的底部，上方有一条短线：该行与其脚注总在同一栏，脚注放不下时，该行会随脚注一起移走。单栏版面中就是页面底部。`footnotes.placement: 'chapterEnd'`则把一章的所有脚注排在该章最后一个块之后，默认位于它们结束的那一栏的底部。字号、分隔线和间距见配置参考中的[脚注](/zh/docs/configuration#脚注)。
+- **日文文本**。把标号写在句末的。之前（`先生[^1]。`）：它跟随前一个字符，而。从不出现在行首。日文竖排书默认把标号（1）排在行的右侧，把注文排在章末；`footnotes.markerPosition: 'side'`在词旁排一个小标号，不占行内空间；`footnotes.placement: 'spread'`把注文排在每个跨页的正文旁边（见[配置 › 脚注](/zh/docs/configuration-notes-references#脚注)）。
+- **脚注的位置**。默认排在引用它的那一行所在栏的底部，上方有一条短线：该行与其脚注总在同一栏，脚注放不下时，该行会随脚注一起移走。单栏版面中就是页面底部。`footnotes.placement: 'chapterEnd'`则把一章的所有脚注排在该章最后一个块之后，默认位于它们结束的那一栏的底部。字号、分隔线和间距见配置参考中的[脚注](/zh/docs/configuration-notes-references#脚注)。
 - **检查**。没有定义的标号（`undefinedFootnote`）在空脚注上印出编号；没有标号引用的定义（`unusedFootnote`）不排。沙盒在检查面板中列出这两种情况。
 
 
@@ -1160,7 +1160,7 @@ so he learned to count the steps in the dark.
 
 正文中也可以写LaTeX的`\eqref{x}`和`\ref{x}`：`\eqref`相当于不设`style`的引用，`\ref`相当于`style=number`，所以`\ref{thm:main}`印出*2*，`\ref{fig:map}`印出图的编号。紧挨在它们前面的`~`是不断行空格（`Theorem~\ref{thm:main}`）。写在`$…$`之内时，它们属于公式。
 
-`text="…"`印出自定的文字，仍然是链接；`case=capitalize`使西文名称首字母大写。文字随文档语言变化（*section 3.2*、*sección 3.2*、*第3.2节*），可在配置的[交叉引用](/zh/docs/configuration#交叉引用)中修改；编号模板已含文字的标题（*第四章*、*Chapter 4*）照原样印出。在竖排中，引用里的数字按`cjk.uprightDigits`的规则排列。
+`text="…"`印出自定的文字，仍然是链接；`case=capitalize`使西文名称首字母大写。文字随文档语言变化（*section 3.2*、*sección 3.2*、*第3.2节*），可在配置的[交叉引用](/zh/docs/configuration-notes-references#交叉引用)中修改；编号模板已含文字的标题（*第四章*、*Chapter 4*）照原样印出。在竖排中，引用里的数字按`cjk.uprightDigits`的规则排列。
 
 **页码引用**要在全书排好后才知道。引擎会用上一遍的页码重新排版，直到页码不再变化，与目录的做法相同；在此之前页码印为*?*。
 
@@ -1306,7 +1306,7 @@ The pulse is taken at the wrist.:index{term="Pulse!radial" main}
     </tr>
     <tr>
       <td><code>sort</code></td>
-      <td>最后一级的排序键，用于该级应按其他字母排序的情况：<code>:index[St Kilda]&#123;sort="Saint Kilda"&#125;</code>、<code>term="20th century" sort="twentieth century"</code>。中文索引按排序器给出的汉字读音排序和分组。多音字若要按另一读音排序，就用只有所需读音的汉字写排序键：<code>:index[重阳]&#123;sort="崇阳"&#125;</code>把重阳归在C下，位于程与崔之间，而不是归在Z下。拼音排序键（<code>sort="chong yang"</code>）也能归到C，但会排在C下所有中文条目之后，因为排序器把拉丁字母排在汉字之后（见<a href="/zh/docs/configuration#索引">配置 › 索引</a>中的<code>groupBy</code>）。</td>
+      <td>最后一级的排序键，用于该级应按其他字母排序的情况：<code>:index[St Kilda]&#123;sort="Saint Kilda"&#125;</code>、<code>term="20th century" sort="twentieth century"</code>。中文索引按排序器给出的汉字读音排序和分组。多音字若要按另一读音排序，就用只有所需读音的汉字写排序键：<code>:index[重阳]&#123;sort="崇阳"&#125;</code>把重阳归在C下，位于程与崔之间，而不是归在Z下。拼音排序键（<code>sort="chong yang"</code>）也能归到C，但会排在C下所有中文条目之后，因为排序器把拉丁字母排在汉字之后（见<a href="/zh/docs/configuration-notes-references#索引">配置 › 索引</a>中的<code>groupBy</code>）。</td>
     </tr>
     <tr>
       <td><code>yomi</code>、<code>reading</code></td>
@@ -1339,7 +1339,7 @@ The pulse is taken at the wrist.:index{term="Pulse!radial" main}
 
 ### 印出索引
 
-`:::index`在所在位置印出主索引，`:::index{index="names"}`印出具名索引。该指令展开为普通的块，每个条目一块，像正文一样流过各栏和各页：放在[标题样式](/zh/docs/configuration#标题样式)设定了两栏`layout`的标题之下，就得到常见的两栏索引。点击某个条目会跳到该指令所在的行。
+`:::index`在所在位置印出主索引，`:::index{index="names"}`印出具名索引。该指令展开为普通的块，每个条目一块，像正文一样流过各栏和各页：放在[标题样式](/zh/docs/configuration-styles#标题样式)设定了两栏`layout`的标题之下，就得到常见的两栏索引。点击某个条目会跳到该指令所在的行。
 
 ```md
 # Index of names {style="index"}
@@ -1357,7 +1357,7 @@ The pulse is taken at the wrist.:index{term="Pulse!radial" main}
 - **参见**位于条目末尾：条目没有页码时为*Term. See Target*，有页码时为*Term, 12. See also Target*。这些标签随文档语言变化（*See*、*Véase*……），可在`index.see`中设定。
 - **图书**。在逐章排版的书中（沙盒、`buildBundle`），印出索引的那一章会收到所有章节的标记及其页码，只有当其中某个标记移动时才重新排版。同时包含标记和索引的文档会反复排版，直到页码稳定，与`:::toc`相同。
 
-排版样式、缩进和分隔符见配置参考中的[索引](/zh/docs/configuration#索引)。
+排版样式、缩进和分隔符见配置参考中的[索引](/zh/docs/configuration-notes-references#索引)。
 
 
 ## 数学公式
@@ -1367,13 +1367,13 @@ The pulse is taken at the wrist.:index{term="Pulse!radial" main}
 - **行内：**`$…$`。在任何文本块（段落、标题、引用块、列表项）中都能识别。它在行中占一个不可分割、不可断开的框；Knuth-Plass把它当作不能拆分的词。若公式的自然高度会撑破行框，就等比缩小，以保持基线网格；很高的表达式应使用独立公式。
 - **独立公式：**`$$…$$`。可以单独占一行（`$$\int_0^1 x^2\,dx$$`），也可以用各自独占一行的`$$`标记围住多行。公式在栏内居中渲染，并对齐到基线网格，上下外边距可配置（`math.marginTop`、`math.marginBottom`），这与标题使用的校正机制完全相同，因此公式后的段落会回到网格上。
 - **独立公式周围的文本**：单独占一行的独立公式即使上方没有空行，也会打断段落。公式前的文本是引出它的段落；紧接在结束的`$$`下方、中间没有空行的文本，是被打断段落的延续，排版时首行不缩进，就像TeX排独立公式之后的“where …”那样。与上方文本以空行隔开（或位于列表、引文或标题之后）的公式不打断任何段落：其后的文本是新段落，无论有无空行都照常缩进（`math.indentAfterDisplay: false`让它也顶格）。只有完整的独立公式才会打断段落，即一行只有一个公式，或在下一个空行之前闭合的`$$`围栏；像`$$a$$ and $$b$$`这样的行仍是文本。`math.keepWithLeadIn`让公式与引出它的那一行留在同一栏。（postext 1.4及以前，上方没有空行的`$$…$$`行被当作段落的一部分，照写法印出。）
-- **公式编号**：独立公式中的`\label{eq:x}`为它编号，按阅读顺序排为(1)、(2)……带编号的公式占满栏宽（或标注框的内宽），公式居中，编号在所在行右对齐。在`align`、`gather`、`alignat`、`flalign`或`eqnarray`中，每个带`\label`的行各有自己的编号，除非该行写了`\nonumber`或`\notag`。没有`\label`的公式不编号，`$$…$$`向来如此。`\tag{…}`仍用你给出的文字为公式编号（`\tag*{…}`不加括号），且不参与计数；与它并列的`\label`为这段文字命名。格式、按章或按节的编号（2.3）以及重新计数在[`math.equationNumbering`](/zh/docs/configuration#数学公式)中设置。`\label`要写在公式或其所在行的顶层，不能写在`aligned`、`split`或`cases`内部。
+- **公式编号**：独立公式中的`\label{eq:x}`为它编号，按阅读顺序排为(1)、(2)……带编号的公式占满栏宽（或标注框的内宽），公式居中，编号在所在行右对齐。在`align`、`gather`、`alignat`、`flalign`或`eqnarray`中，每个带`\label`的行各有自己的编号，除非该行写了`\nonumber`或`\notag`。没有`\label`的公式不编号，`$$…$$`向来如此。`\tag{…}`仍用你给出的文字为公式编号（`\tag*{…}`不加括号），且不参与计数；与它并列的`\label`为这段文字命名。格式、按章或按节的编号（2.3）以及重新计数在[`math.equationNumbering`](/zh/docs/configuration-text#数学公式)中设置。`\label`要写在公式或其所在行的顶层，不能写在`aligned`、`split`或`cases`内部。
 - **公式的引用**：正文中的`\eqref{eq:x}`印出与公式相同的编号(3)，`\ref{eq:x}`印出不带括号的编号3；两者都是链接，与所有[交叉引用](#交叉引用与锚点)一样。`Eq.~\eqref{eq:x}`中的`~`与LaTeX中一样，是不断行空格。`:ref{id="eq:x"}`和`@eq:x`同样印出(3)。在公式内部，`\eqref`和`\ref`印出编号（不是链接）。没有任何公式设置的标签印为“?”，并在检查面板中列出。
 - **转义：**`\$`是字面的美元符号。未配对的`$`或`$$`定界符会在沙盒的检查面板中产生一条`unclosedMath`记录，并带有可点击定位的源文本锚点。
 - **题注、注释和表格单元格**也排行内公式（postext 1.19起），公式与文字同在一行，遵循单元格的对齐方式，字号与所在片段相同。在这些地方，`$`只按Pandoc的规则打开公式：开头的`$`之后没有空格，结尾的`$`之前没有空格，且其后不紧跟数字，所以“$5 to $10”这样的价格仍是文本；`\$`印出美元符号，因此同一个转义字符串在正文和表格中读法相同。行内标签（chip）的文字不排公式。postext 1.18及以前，这些地方的`$`总是照原样印出。
 - **错误**：MathJax拒绝的TeX源码（未定义的宏、语法错误）会以`invalidMath`警告的形式报出。该公式被替换为一个红色小占位框，版面几何仍然有效。
-- **配置**：配置中的`math`部分提供`enabled`、`fontSizeScale`（相对于周围文本的字号：为1.0时，公式的一个em等于该字号，对独立公式和正文中的行内公式而言就是正文字号；自postext 1.5起，公式比1.4时约小13%，而1.4保存的文件包和沙盒图书保持原有大小，见[公式字号](/zh/docs/configuration#数学公式)）、`color`（未设置时沿用正文颜色）以及独立公式的外边距。
-- **引擎**：MathJax按需加载。沙盒和排版工作线程会自行启动它；在你自己的代码中，要在`buildDocument`之前`await initMathEngine()`，否则每个公式都会排成一个灰色占位框（见[启动数学引擎](/zh/docs/configuration#启动公式引擎)）。
+- **配置**：配置中的`math`部分提供`enabled`、`fontSizeScale`（相对于周围文本的字号：为1.0时，公式的一个em等于该字号，对独立公式和正文中的行内公式而言就是正文字号；自postext 1.5起，公式比1.4时约小13%，而1.4保存的文件包和沙盒图书保持原有大小，见[公式字号](/zh/docs/configuration-text#数学公式)）、`color`（未设置时沿用正文颜色）以及独立公式的外边距。
+- **引擎**：MathJax按需加载。沙盒和排版工作线程会自行启动它；在你自己的代码中，要在`buildDocument`之前`await initMathEngine()`，否则每个公式都会排成一个灰色占位框（见[启动数学引擎](/zh/docs/configuration-text#启动公式引擎)）。
 
 ```md
 The Euler identity $e^{i\pi}+1=0$ links the five fundamental constants.
@@ -1404,7 +1404,7 @@ $$
 and Eq.~\eqref{eq:energy} holds at every instant.
 ```
 
-**定理、引理与证明**。带`numbering`的标注框样式会为它的框计数，就像LaTeX的`amsthm`为定理环境计数：每个框以粗体的标签和编号开头，即“**定理2.**”，围栏的`title`以括号跟在编号之后，即“**定理2**（Bradley–Terry）**.**”；对它的`{#id}`的引用印出“定理2”（`\ref{thm:x}`或`style=number`只印2）。指定同一个计数器的样式共用这个计数器，所以定理之后的引理是引理3。证明样式的`endMark`在框的最后一行右对齐排出∎或□，结束这个框。样式的设置见[编号的命题与证明](/zh/docs/configuration#编号的命题与证明)。
+**定理、引理与证明**。带`numbering`的标注框样式会为它的框计数，就像LaTeX的`amsthm`为定理环境计数：每个框以粗体的标签和编号开头，即“**定理2.**”，围栏的`title`以括号跟在编号之后，即“**定理2**（Bradley–Terry）**.**”；对它的`{#id}`的引用印出“定理2”（`\ref{thm:x}`或`style=number`只印2）。指定同一个计数器的样式共用这个计数器，所以定理之后的引理是引理3。证明样式的`endMark`在框的最后一行右对齐排出∎或□，结束这个框。样式的设置见[编号的命题与证明](/zh/docs/configuration-styles#编号的命题与证明)。
 
 ```md
 :::callout{type="theorem" #thm:main title="Bradley–Terry"}
@@ -1453,19 +1453,19 @@ The keeper's quarters occupy the eastern wing.
 
 在多栏版式中，若行内资源的位置还设置了`span: 'page'`（`placement: { position: 'here', span: 'page' }`），它会像跨页框一样在指令所在处横跨整页：上方各栏齐平收束（经过平衡；无法齐平时资源移到下一页顶部），资源按版心全宽排出，上下保留同样的空白，正文在其下方的各栏中继续。在单栏页面上仍像以前一样按全栏宽排。设置了`columns`的`span: 'column'`资源以行内方式嵌入时仍留在本栏：栏数只对浮动体生效。postext 1.19 起。
 
-`id`必须与“资源”面板中定义的某个资源对应。引擎渲染资源（位图、SVG或表格），并在下方画出题注，作为图脚或表脚。题注文字由资源类型的`captionPrefix`、计算出的编号和资源本身的题注组成，例如**Figure 1.7. The original lighthouse plan.**。题注的排印由[配置 › 题注样式](/zh/docs/configuration#题注样式)控制：标签和说明共用同一种字体和字号，标签单独保留粗体、斜体和颜色设置；题注上方的间距默认为`0.75em`，对齐方式默认为左对齐。题注也可以放在资源上方（`captionStyle.position: 'above'`，可全局设置，也可按资源类型设置），还可以衬一条色带。资源还可以带一个`note`：一行简短的来源说明或出处，支持与题注相同的行内格式和`:ref`标记，以较小的字号排在资源下方（题注在下时排在题注下方，题注在上时排在资源主体下方），样式通过`captionStyle.note`设置。
+`id`必须与“资源”面板中定义的某个资源对应。引擎渲染资源（位图、SVG或表格），并在下方画出题注，作为图脚或表脚。题注文字由资源类型的`captionPrefix`、计算出的编号和资源本身的题注组成，例如**Figure 1.7. The original lighthouse plan.**。题注的排印由[配置 › 题注样式](/zh/docs/configuration-resources#题注样式)控制：标签和说明共用同一种字体和字号，标签单独保留粗体、斜体和颜色设置；题注上方的间距默认为`0.75em`，对齐方式默认为左对齐。题注也可以放在资源上方（`captionStyle.position: 'above'`，可全局设置，也可按资源类型设置），还可以衬一条色带。资源还可以带一个`note`：一行简短的来源说明或出处，支持与题注相同的行内格式和`:ref`标记，以较小的字号排在资源下方（题注在下时排在题注下方，题注在上时排在资源主体下方），样式通过`captionStyle.note`设置。
 
 **题注和附注中的换行**。题注或附注是按其所在位置的行长排出的一个段落，在其中键入的换行符相当于一个空格。要另起一行，写`\\`（标题中使用的强制换行），或者在行尾加一个反斜杠，即Markdown的硬换行：`¹ Measured at 20 °C. \\ ² Mean of three runs.`会把一张宽表的每条脚注各排一行。换行前的那一行保持自然宽度，不会被拉伸到行长；连续两个换行不会产生空行（两者之间加一个不换行空格才会）。在表格单元格中，`\\`的作用与换行符相同：开始一个新段落；它后面那一行的缩进会保留，所以行首两个空格仍然会把列表项嵌套一级。在正文中，两个反斜杠总是表示换行，没有转义方式：要把它们印出来，就放在行内代码里，那里的反斜杠照原样印出。在链接的目标地址中，它们仍是URL的一部分；在指令的属性中（例如`:ref`的`text`），它们是属性值的一部分；在只排一行的行内标签中，换行相当于一个空格。（在postext 1.4及以前，这些反斜杠会被印出来，题注或附注只在行长用尽时才换行。）
 
-表格资源自己画出表格线，样式由[配置 › 表格样式](/zh/docs/configuration#表格样式)控制：表体单元格和表头单元格的排印完全独立；表头背景默认为`#f0f0f0`，边框默认为`0.75pt`，`cellPadding`默认为`0.375em`；未设置的字段都继承正文的设置。列宽属于表格本身：`TableModel.columnWidths`为每一列保存一个相对权重（`[2, 1, 1]`让第一列占一半宽度）；未设置时各列平分宽度。表格也可以使用某个命名变体：`table.styleId`从文档的`tableStyles`中选一个（见[配置 › 命名表格样式](/zh/docs/configuration#命名表格样式)），其中未设置的字段继承`tableStyle`；id未知或缺失时沿用`tableStyle`。
+表格资源自己画出表格线，样式由[配置 › 表格样式](/zh/docs/configuration-resources#表格样式)控制：表体单元格和表头单元格的排印完全独立；表头背景默认为`#f0f0f0`，边框默认为`0.75pt`，`cellPadding`默认为`0.375em`；未设置的字段都继承正文的设置。列宽属于表格本身：`TableModel.columnWidths`为每一列保存一个相对权重（`[2, 1, 1]`让第一列占一半宽度）；未设置时各列平分宽度。表格也可以使用某个命名变体：`table.styleId`从文档的`tableStyles`中选一个（见[配置 › 命名表格样式](/zh/docs/configuration-resources#命名表格样式)），其中未设置的字段继承`tableStyle`；id未知或缺失时沿用`tableStyle`。
 
 单元格用`TableCell.align`（`left`、`center`、`right`；列表项始终齐左）和`TableCell.verticalAlign`（`top`为默认值，另有`middle`或`bottom`）来摆放内容。垂直对齐会在比内容高的单元格里移动整个单元格内容（图片及其下方的文字作为一个整体），比如被更高的相邻单元格撑高的行，或者`rowSpan`覆盖的多行。它在所有输出中都生效（Canvas、HTML、PDF），也适用于旋转的表格，以及跨页拆分的表格的每一段。两者都可以在沙盒表格编辑器工具栏的对齐按钮中逐个单元格设置。
 
 表格单元格还可以容纳图片。`TableCell.image`按id指定一个位图或SVG资源（`{ "resourceId": "fig-arm", "width": 0.7 }`）：图片画在单元格内，不编号、不浮动、不带题注，按单元格的内宽（或由`width`给出的比例，默认为`1`）缩放并保持宽高比，对齐方式与单元格文字相同，单元格中的文字排在它下方。行高会随之增加以容纳图片。在沙盒的表格编辑器中，工具栏的图片按钮为当前单元格选择资源，宽度字段设置比例。id与任何图片资源都不对应时，单元格只显示文字。
 
-单元格可以有自己的填充色。`TableCell.background`是一个颜色值（`{ "hex": "#c1dfd6", "model": "hex" }`，可以用`paletteId`关联到文档调色板中的某一项），用它代替样式中的表头或表体背景色；兼容性矩阵就是这样把单元格涂成绿、红、黄三色的。沙盒的表格编辑器通过工具栏的填充控件设置它。为了给这些填充色加图例，题注、附注和任何文本块都接受行内**色块**：`:swatch{color="#c1dfd6"}`（一个十六进制值，或调色板某一项的id，如`:swatch{color="table-compatible"}`）会在基线上排一个小方块，边长为字号的四分之三，用该颜色填充，并以文字颜色描边，所以附注可以写成`:swatch{color="ok"}: compatible; :swatch{color="no"}: incompatible`。颜色解析不出任何值时，只画一个空的边框。十六进制值可以带alpha通道（`#rrggbbaa`、`#rgba`），`rgb()` / `rgba()`颜色也可以用，所以半透明的单元格填充色可以有同样半透明的图例（见[配置 › 透明度](/zh/docs/configuration#透明度)）。
+单元格可以有自己的填充色。`TableCell.background`是一个颜色值（`{ "hex": "#c1dfd6", "model": "hex" }`，可以用`paletteId`关联到文档调色板中的某一项），用它代替样式中的表头或表体背景色；兼容性矩阵就是这样把单元格涂成绿、红、黄三色的。沙盒的表格编辑器通过工具栏的填充控件设置它。为了给这些填充色加图例，题注、附注和任何文本块都接受行内**色块**：`:swatch{color="#c1dfd6"}`（一个十六进制值，或调色板某一项的id，如`:swatch{color="table-compatible"}`）会在基线上排一个小方块，边长为字号的四分之三，用该颜色填充，并以文字颜色描边，所以附注可以写成`:swatch{color="ok"}: compatible; :swatch{color="no"}: incompatible`。颜色解析不出任何值时，只画一个空的边框。十六进制值可以带alpha通道（`#rrggbbaa`、`#rgba`），`rgb()` / `rgba()`颜色也可以用，所以半透明的单元格填充色可以有同样半透明的图例（见[配置 › 透明度](/zh/docs/configuration-fonts-colors-viewers#透明度)）。
 
-SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着色，以便用单一专色印刷。启用后，SVG示意图中的每一种颜色都会按亮度映射为`diagramStyle.inkColor`（默认为主调色板颜色`#295AA3`）的某个色调：白色对应纸色，黑色对应满版油墨。这样文档用单一专色印刷时，图仍能如实再现。见[配置 › 示意图样式](/zh/docs/configuration#图示样式)。
+SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着色，以便用单一专色印刷。启用后，SVG示意图中的每一种颜色都会按亮度映射为`diagramStyle.inkColor`（默认为主调色板颜色`#295AA3`）的某个色调：白色对应纸色，黑色对应满版油墨。这样文档用单一专色印刷时，图仍能如实再现。见[配置 › 示意图样式](/zh/docs/configuration-resources#图示样式)。
 
 格式错误的嵌入（缺少`id`或`id`为空、`id`没有加引号或用了单引号、带有多余的属性）不会被提升为资源块；它会退回到普通的段落解析，在输出中仍然可见。格式正确、但紧贴在某个段落行下方、中间没有空行的嵌入行也是如此：它会被当作那个段落的一部分。两种情况都会发出`malformedEmbed`警告，即沙盒“检查”面板中的一条**嵌入被排成文字**。
 
@@ -1523,9 +1523,9 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
 - 如果你在引言中`:ref`了一幅图，两页之后才嵌入它（`::resource`），它仍然采用引言处的编号，因为引用在先。
 - 在文档*较前*的位置插入一个新引用，其后的所有编号都会自动重排。没有需要手动保持同步的编号。
 
-编号按资源类型分别计数，并遵守每种类型的重置范围和计数格式。模板标记（`{h1}`、`{n}`）、`resetOn`和`counterFormat`见[配置 › 资源类型](/zh/docs/configuration#资源类型)。
+编号按资源类型分别计数，并遵守每种类型的重置范围和计数格式。模板标记（`{h1}`、`{n}`）、`resetOn`和`counterFormat`见[配置 › 资源类型](/zh/docs/configuration-resources#资源类型)。
 
-只有正文引用的资源才会计数：只由版面设计画出的资源（比如章首页的一个图片元素）不编号，计数器保持原样。`{h1}`会计入每一个样式不是`numbered: false`的一级标题，即使它的`numberingTemplate`为空，所以一篇只有标题是H1的文章，默认会把图编为1.1、1.2……。[配置 › 哪些内容编号](/zh/docs/configuration#哪些资源会编号)列出了这两条规则，以及把图编为Figure 1、2……的设置。
+只有正文引用的资源才会计数：只由版面设计画出的资源（比如章首页的一个图片元素）不编号，计数器保持原样。`{h1}`会计入每一个样式不是`numbered: false`的一级标题，即使它的`numberingTemplate`为空，所以一篇只有标题是H1的文章，默认会把图编为1.1、1.2……。[配置 › 哪些内容编号](/zh/docs/configuration-resources#哪些资源会编号)列出了这两条规则，以及把图编为Figure 1、2……的设置。
 
 ### 位置
 
@@ -1543,7 +1543,7 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
     <tr>
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code>（默认值）占用引用之后的第一个空位，顶部或底部均可；<code>"top"</code> / <code>"bottom"</code>只接受相应类型的空位；<code>"here"</code>取消浮动，在<code>::resource</code>指令处以行内方式嵌入（排在那里的表放不进本栏剩余空间时，在行与行之间切开，见<a href="/zh/docs/configuration#比页面还高的表">比页面还高的表</a>）。</td>
+      <td><code>"auto"</code>（默认值）占用引用之后的第一个空位，顶部或底部均可；<code>"top"</code> / <code>"bottom"</code>只接受相应类型的空位；<code>"here"</code>取消浮动，在<code>::resource</code>指令处以行内方式嵌入（排在那里的表放不进本栏剩余空间时，在行与行之间切开，见<a href="/zh/docs/configuration-resources#比页面还高的表">比页面还高的表</a>）。</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
@@ -1597,13 +1597,13 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
 
 浮动体永远不会越出所在的章：在章首页（带`breakBefore`或`span: 'page'`的标题级别）、`:::part`、带`floatBarrier: true`的标注框样式（一章末尾的“要点”框）以及文档末尾，所有仍在等待的浮动体都会先被放置，放在该页的空位里，或者放在边界之前新开的页面上。由章首页本身（标题中提到了自己的图的章标题）或`:::part`之后第一个块首次引用的浮动体，属于新的一章：它和其他浮动体一样，落在那一行之后。要求放在页首的图或表，这时可以占用本章最后一页的底部，位于已齐底的各栏下方，而不必独占一页。`:::pagebreak`只是把等待中的浮动体送到它后面的那一页。
 
-通栏的章首标题排在两栏或更多正文栏之上时，只要标题所在的那一栏在标题之后还没有别的内容，它的栏首就算空着：紧跟在标题后面的浮动框，或在那里用`::resource`嵌入的资源，占据第一栏的栏首，位于标题下方，与其他各栏的栏首齐平（带`columns`时从第一栏起跨多栏），该栏的正文从它下面开始。在正文中被引用的浮动体仍排在引用它的那一行之后。在postext 1.24及以前，第一栏在此处不提供空位，这类浮动体从第二栏起排；`layout.floatsUnderOpener: false`保留这一做法（见[配置 › 版面](/zh/docs/configuration#版式)）。
+通栏的章首标题排在两栏或更多正文栏之上时，只要标题所在的那一栏在标题之后还没有别的内容，它的栏首就算空着：紧跟在标题后面的浮动框，或在那里用`::resource`嵌入的资源，占据第一栏的栏首，位于标题下方，与其他各栏的栏首齐平（带`columns`时从第一栏起跨多栏），该栏的正文从它下面开始。在正文中被引用的浮动体仍排在引用它的那一行之后。在postext 1.24及以前，第一栏在此处不提供空位，这类浮动体从第二栏起排；`layout.floatsUnderOpener: false`保留这一做法（见[配置 › 版面](/zh/docs/configuration-page-layout#版式)）。
 
 侧栏框（`span="side"`）同样不会越出所在的章。本页侧栏放不下的框排进下一页的侧栏；如果所在章或文档先结束，每个仍在等待的框按围栏的先后排进正文之后新开页面的侧栏，在它们之后才被引用的侧栏图排在它们后面。这样的页面没有正文，所以排版会报告其上的每个框和图（`afterText`）。比空侧栏还高的框照样排出并报告（`calloutOverflow`），仍然找不到页面的内容也会报告（`unplaced`），而不是丢掉。在postext 1.24及以前，只会开出第一个这样的页面，其余的框无声无息地丢失。
 
 浮动横带会根据基线网格调整，使周围的文字保持全页统一的垂直节奏。**顶部**横带把下外边距增加到下一条网格线，让浮动体下方的文字与相邻各栏和对页保持对齐。**底部**浮动体的定位方式是让其题注的最后一行与其他各栏最后一行文字共用一条基线（没有题注的内容则让底边对齐最后一个网格位置），因此排满的页面在各栏之间、对页之间都结束在同一高度。
 
-在一章（以及整个文档）的最后一页，排在最后一段文字下方的通栏图和表后面再没有内容，所以它们会上移，依次叠放在文字下方一个浮动间距处，而不是在文字与页面底部的图之间留出空白。`position: 'bottom'`的浮动体也是如此。要让它们像其他页面一样留在页面底部，设置`layout.hugClosingFloats: false`（见[配置 › 版面](/zh/docs/configuration#版式)）。有侧栏的页面从不移动它们。
+在一章（以及整个文档）的最后一页，排在最后一段文字下方的通栏图和表后面再没有内容，所以它们会上移，依次叠放在文字下方一个浮动间距处，而不是在文字与页面底部的图之间留出空白。`position: 'bottom'`的浮动体也是如此。要让它们像其他页面一样留在页面底部，设置`layout.hugClosingFloats: false`（见[配置 › 版面](/zh/docs/configuration-page-layout#版式)）。有侧栏的页面从不移动它们。
 
 三个后端，即Canvas预览、HTML查看器和PDF输出，都会渲染资源。在HTML后端中，图片数据不随版面一起传递，所以由宿主通过`resourceImageUrl(fileId)`解析器选项提供；缺少解析器（或它对某个文件没有返回内容）时，资源会渲染成一个中性的占位框，使版面保持稳定。视频自身的文件同样通过`resourceVideoUrl(fileId)`提供（见[视频](#视频)）。
 
@@ -1675,7 +1675,7 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
 - **分辨率**。`bitmap.resolution`是图片在自然印刷尺寸下的ppi，所以无论页面是多少dpi，它的自然宽度都是`width × page.dpi / resolution`：`resolution: 300`的2400 px宽203.2 mm，页面按150 dpi还是300 dpi排版都一样。`layout.bitmapResolution`给所有没有自身分辨率的位图一个分辨率：一个数字（`300`），或者`'file'`，即文件标明的分辨率（`bitmap.fileResolution`：PNG的`pHYs`，JPEG的JFIF或EXIF密度，WebP的EXIF；从Word导入的图片则是它在Word中的打印尺寸）。相机、截图和网页导出的文件对印刷尺寸一无所知时，常常标为72或96 ppi，所以在`'file'`下这两个值算作未标明，图片仍按页面的dpi取像素；直接写在资源上的72则照写的用。默认的`'document'`就是第一种方式。
 - **占栏宽的比例**。`placement.width`把浮动体或行内嵌入收窄到所在栏（或页面）的一个比例，比这个宽度大的图片会缩小到这个宽度，与它有多少像素无关（见[位置](#位置)）。
 
-无论哪种方式，图片都受所在位置限制，保持宽高比，较小的图片从不放大。表格单元格中的图片和版面设计中尺寸为`'auto'`的`image`元素，也采用同样的自然尺寸。PDF原样嵌入文件，按放置的尺寸显示。[印前检查](/zh/docs/configuration#印前检查)检查每张图片印刷时的分辨率，Sandbox的[资源面板](/zh/docs/sandbox#资源面板)为每张图片显示这个值。postext 1.24起。
+无论哪种方式，图片都受所在位置限制，保持宽高比，较小的图片从不放大。表格单元格中的图片和版面设计中尺寸为`'auto'`的`image`元素，也采用同样的自然尺寸。PDF原样嵌入文件，按放置的尺寸显示。[印前检查](/zh/docs/configuration-fonts-colors-viewers#印前检查)检查每张图片印刷时的分辨率，Sandbox的[资源面板](/zh/docs/sandbox#资源面板)为每张图片显示这个值。postext 1.24起。
 
 ```json
 { "id": "harbour", "typeId": "figure", "kind": "bitmap", "caption": "清晨的港口。",
@@ -1703,9 +1703,9 @@ const harbour: Resource = {
 引擎在四种情况下利用这段余地：
 
 - **栏中剩下的空间**。行内图片（`position: 'here'`）比所在栏剩下的空间稍高一点时（包括题注会超出页面底部的情况），会在安全区以内裁切，留在这一栏，而不是移到下一栏或下一页、让这一栏留空。
-- **比图还矮的页面**。开启`layout.fitFiguresToPage`时，对页面来说太高的图片先在安全区以内裁切，保持宽度不变，仍然太高时才缩小（见[配置 › 版式](/zh/docs/configuration#版式)）。
+- **比图还矮的页面**。开启`layout.fitFiguresToPage`时，对页面来说太高的图片先在安全区以内裁切，保持宽度不变，仍然太高时才缩小（见[配置 › 版式](/zh/docs/configuration-page-layout#版式)）。
 - **比图还矮的横带**。`placement.shrink`把浮动体缩小到所在位置的空间时，先在安全区内裁切（宽度不变），然后才缩小；下面的`flexFigure`杠杆不会让它长过这个空间。
-- **各栏齐底**。设了安全区的图片，如果以行内方式排在一个短栏里，或者作为只占这一栏的浮动体排在这一栏的栏顶或栏底，就会按整条基线网格行增高，填满这一栏空着的行。图片变高不会在页面上留下看得见的空洞，所以这个手段（`flexFigure`）紧接在收尾的框之后、在标题上方或列表之后加空之前尝试。章末页或收尾区段中位于栏顶的浮动体不会增高，因为那里各栏的栏顶要保持齐平（见[配置 › 各栏齐底](/zh/docs/configuration#各栏齐底)）。
+- **各栏齐底**。设了安全区的图片，如果以行内方式排在一个短栏里，或者作为只占这一栏的浮动体排在这一栏的栏顶或栏底，就会按整条基线网格行增高，填满这一栏空着的行。图片变高不会在页面上留下看得见的空洞，所以这个手段（`flexFigure`）紧接在收尾的框之后、在标题上方或列表之后加空之前尝试。章末页或收尾区段中位于栏顶的浮动体不会增高，因为那里各栏的栏顶要保持齐平（见[配置 › 各栏齐底](/zh/docs/configuration-text#各栏齐底)）。
 
 VDT把裁切记录在资源块上：`bodySource`是图片在`bodyRect`中显示出来的部分，用同样的比例表示（完整显示时不出现）；`bodyFlex`给出图片主体还能缩短和增高的px数，以及各个手段已经改变的px数（`{ shrink, grow, delta }`）。Canvas预览和PDF把绘制范围限定在图片主体内，按未裁切的尺寸画出整幅图片；HTML查看器和固定版式EPUB用`object-fit: cover`加上相应的`object-position`显示图片；流式EPUB没有要填满的页面，显示整幅图片。自己绘制图片的宿主可以使用`postext`导出的函数：`resourceSafeArea`和`normalizeSafeArea`（引擎读到的安全区，或`undefined`）、`safeAreaHeightRange`（某一宽度下主体的最小和最大高度）、`safeAreaSource`（某一高度下显示的部分）和`uncroppedPictureBox`（裁切前整幅图片应画在哪里），以及类型`ResourceSafeArea`。在Sandbox中，这个字段是[资源面板](/zh/docs/sandbox#资源面板)里图片的**安全区**。
 
@@ -1734,7 +1734,7 @@ const radio: Resource = {
 
 ### 视频
 
-**视频**资源（`kind: 'video'`）是一段YouTube或Vimeo视频，或者你自己的视频：保存在书中的文件（MP4、WebM），或者位于某个网址的视频，即服务器上的文件或**HLS流**（`.m3u8`播放列表）。它像图片一样放置、加题注、浮动和引用，并单独编号：内置的`video`类型印出*Video 1.1*、*Video 1.2*……，与*Figure 1.1*和*Table 1.1*并列（中文文档中为视频1-1，见[配置 › 资源类型](/zh/docs/configuration#资源类型)）。各种输出按各自的能力显示它：
+**视频**资源（`kind: 'video'`）是一段YouTube或Vimeo视频，或者你自己的视频：保存在书中的文件（MP4、WebM），或者位于某个网址的视频，即服务器上的文件或**HLS流**（`.m3u8`播放列表）。它像图片一样放置、加题注、浮动和引用，并单独编号：内置的`video`类型印出*Video 1.1*、*Video 1.2*……，与*Figure 1.1*和*Table 1.1*并列（中文文档中为视频1-1，见[配置 › 资源类型](/zh/docs/configuration-resources#资源类型)）。各种输出按各自的能力显示它：
 
 <table>
   <thead>
@@ -1746,7 +1746,7 @@ const radio: Resource = {
   <tbody>
     <tr>
       <td>Canvas、PDF</td>
-      <td><strong>封面</strong>，即视频中的一帧，上面有播放标记和一个打开视频的二维码（<a href="/zh/docs/configuration#视频样式">配置 › 视频样式</a>）。在PDF中，封面同时是指向视频的链接。</td>
+      <td><strong>封面</strong>，即视频中的一帧，上面有播放标记和一个打开视频的二维码（<a href="/zh/docs/configuration-resources#视频样式">配置 › 视频样式</a>）。在PDF中，封面同时是指向视频的链接。</td>
     </tr>
     <tr>
       <td>Folio</td>
@@ -1836,7 +1836,7 @@ const talk: Resource = {
 
 **地址**。二维码和PDF链接打开视频的页面，即`https://youtu.be/<id>`或`https://vimeo.com/<id>`，从`start`开始。文件没有页面，所以打开它的正式发布地址；没有自带文件的视频（服务器上的MP4、HLS流）也从这个地址播放。没有这个地址时，印刷版既没有二维码也没有链接（`videoWithoutUrl`），不携带文件的HTML或EPUB输出则显示封面。YouTube或Vimeo地址不指向该平台的任何视频时，发出`videoUrlInvalid`，并以封面代替播放器。
 
-**播放器**。播放器选项（控件、下载按钮、全屏、倍速菜单、画中画、投屏、自动播放、静音开始、循环、预加载、增强隐私的嵌入）在`videoStyle.player`中为全书设定，在`video.player`中为单个视频设定；每种播放器支持它能支持的那些（见[配置 › 视频样式](/zh/docs/configuration#视频样式)）。HTML后端通过`resourceVideoUrl(fileId)`选项取得文件可播放的URL，就像通过`resourceImageUrl`取得图片一样，没有时退回正式发布地址。它的`videos: { files, streams, hls }`选项按来源在播放器和封面之间选择，优先于`videoStyle.html`（`hls`指从HLS地址播放的视频，不设置时随`files`）；EPUB写入器就使用这个选项。播放HLS地址的`<video>`带有`data-pt-hls`，宿主可以据此在不能原生播放HLS的浏览器中为它接上播放器（Safari和较新的Chrome直接就能播放）。在从右到左的书中，播放器和封面上的叠加元素像图片一样转回来，使二维码能被读出。
+**播放器**。播放器选项（控件、下载按钮、全屏、倍速菜单、画中画、投屏、自动播放、静音开始、循环、预加载、增强隐私的嵌入）在`videoStyle.player`中为全书设定，在`video.player`中为单个视频设定；每种播放器支持它能支持的那些（见[配置 › 视频样式](/zh/docs/configuration-resources#视频样式)）。HTML后端通过`resourceVideoUrl(fileId)`选项取得文件可播放的URL，就像通过`resourceImageUrl`取得图片一样，没有时退回正式发布地址。它的`videos: { files, streams, hls }`选项按来源在播放器和封面之间选择，优先于`videoStyle.html`（`hls`指从HLS地址播放的视频，不设置时随`files`）；EPUB写入器就使用这个选项。播放HLS地址的`<video>`带有`data-pt-hls`，宿主可以据此在不能原生播放HLS的浏览器中为它接上播放器（Safari和较新的Chrome直接就能播放）。在从右到左的书中，播放器和封面上的叠加元素像图片一样转回来，使二维码能被读出。
 
 **在VDT中**。视频的资源块带有`kind: 'video'`，以`fileId` / `format`表示它的封面（像位图一样绘制），还有`video`（`VDTResourceVideo`）：读者被引向的`link`、应用了播放器选项的YouTube或Vimeo `embedUrl`、文件的`fileId`、自己的视频的`mimeType`（取自它的文件，或仅取自它的地址；HLS为`application/vnd.apple.mpegurl`）、`start` / `end`范围、解析后的`player`、`linkPoster`、`html`，以及叠加元素`playMark`和`qr`（二维码模块表示为由`'0'` / `'1'`组成的行），各矩形相对于主体的左上角。自己绘制视频的宿主可以使用`postext`导出的函数：`parseVideoUrl`、`videoWatchUrl`、`resourceVideoLink`、`videoEmbedUrl`、`videoEmbedAllow`、`videoElementAttributes`、`mediaFragment`、`videoMimeType`、`videoFormatOfUrl`、`resourceVideoFormat`、`isHlsMimeType`、`HLS_MIME_TYPE`、`youtubePosterUrls`、`encodeQr`、`layoutVideo`、`playMarkTriangle`和`qrModuleRuns`。
 
@@ -1844,7 +1844,7 @@ const talk: Resource = {
 
 #### Folio视图中的视频
 
-在[3D书本](/zh/docs/configuration#3d书本postext-folio)中，你自己的视频就在印着它的那一页上播放。无论指针在书上做什么（翻页、转动视角还是选择文字），点击封面，视频就在那里开始播放：页面的着色器把视频画面画在封面之上，所以翻动这一叶时，画面随纸张一起弯曲卷起，翻页过程中也照常播放。点击正在播放的视频会暂停，再点击则继续；空格键或回车键对打开的跨页上的第一个视频起同样的作用。开始播放另一个视频时，正在播放的那个会停止，回到封面；书停在不再显示某个视频的跨页上，或播到它的`end`时，这个视频也会停止。指针移到可以播放的视频上时变成手形；从视频上开始的拖动仍然翻页或转动视角。设为自动播放的视频（`video.player.autoplay`）在书第一次停在它的跨页上、且书已经稳定下来之后（包括宿主分几步排版的情况）自动开始播放，在这个查看器中不会再自动播放第二次。
+在[3D书本](/zh/docs/configuration-programmatic-usage#3d书本postext-folio)中，你自己的视频就在印着它的那一页上播放。无论指针在书上做什么（翻页、转动视角还是选择文字），点击封面，视频就在那里开始播放：页面的着色器把视频画面画在封面之上，所以翻动这一叶时，画面随纸张一起弯曲卷起，翻页过程中也照常播放。点击正在播放的视频会暂停，再点击则继续；空格键或回车键对打开的跨页上的第一个视频起同样的作用。开始播放另一个视频时，正在播放的那个会停止，回到封面；书停在不再显示某个视频的跨页上，或播到它的`end`时，这个视频也会停止。指针移到可以播放的视频上时变成手形；从视频上开始的拖动仍然翻页或转动视角。设为自动播放的视频（`video.player.autoplay`）在书第一次停在它的跨页上、且书已经稳定下来之后（包括宿主分几步排版的情况）自动开始播放，在这个查看器中不会再自动播放第二次。
 
 与其他视频同时播放的视频（`video.player.exclusive: false`，postext 1.18起）改变了这两条规则。开始播放它只会停止独占的视频，因此几段这样的视频可以同时播放；开始播放独占的视频也会让它停止。设了`autoplay`时，书每次停在它所在的跨页上，它都静音开始，翻走时停止：一页上无声的循环片段（`loop`）在读者每次翻到这一页时一起播放。
 
@@ -1869,7 +1869,7 @@ book.stopVideo();
 
 ## 漫画
 
-漫画页、漫画条和跨页写在两种带围栏的块中，块的内容由引擎自己逐行读取：`:::page`和`:::strip`。块内由`::panel`行开始各个分格，由台词行为分格嵌字。包括版面规则、嵌字和输出在内的完整指南见[漫画](/zh/docs/comics)；设置见[配置 › 漫画](/zh/docs/configuration#漫画)。
+漫画页、漫画条和跨页写在两种带围栏的块中，块的内容由引擎自己逐行读取：`:::page`和`:::strip`。块内由`::panel`行开始各个分格，由台词行为分格嵌字。包括版面规则、嵌字和输出在内的完整指南见[漫画](/zh/docs/comics)；设置见[配置 › 漫画](/zh/docs/configuration-comics#漫画)。
 
 ### `:::page`
 
@@ -1971,7 +1971,7 @@ Postext不识别以下CommonMark功能。它们要么被当作普通文本（因
 
 这份清单会随时间缩短。在此之前，凡是上文支持部分没有明确列出的内容，都应当视为原样输出的文本。
 
-除语法之外，阿拉伯文和其他从右向左书写的文字按从右到左排版，使用双向算法并在右侧装订（见[阿拉伯文排版](/zh/docs/arabic-layout)）。中文可以横排，也可以竖排，并按其所在地区的要求处理断行、标点宽度、字间两端对齐、着重号、注音和割注（见[中文排版](/zh/docs/chinese-layout)）。日文按自己的规则排版，包括禁则、约物间距、振假名、傍点、汉文训读记号和注释（见[日文排版](/zh/docs/japanese-layout)）；韩文使用同一个排版器，按中国大陆的中文规则处理。内置八种语言的断词模式，并为这八种语言、中文、日文和阿拉伯文提供内置标签。见[语言与文字](/zh/docs/configuration#语言与文字)。
+除语法之外，阿拉伯文和其他从右向左书写的文字按从右到左排版，使用双向算法并在右侧装订（见[阿拉伯文排版](/zh/docs/arabic-layout)）。中文可以横排，也可以竖排，并按其所在地区的要求处理断行、标点宽度、字间两端对齐、着重号、注音和割注（见[中文排版](/zh/docs/chinese-layout)）。日文按自己的规则排版，包括禁则、约物间距、振假名、傍点、汉文训读记号和注释（见[日文排版](/zh/docs/japanese-layout)）；韩文使用同一个排版器，按中国大陆的中文规则处理。内置八种语言的断词模式，并为这八种语言、中文、日文和阿拉伯文提供内置标签。见[语言与文字](/zh/docs/configuration-text#语言与文字)。
 
 
 ## 书写约定

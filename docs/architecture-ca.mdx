@@ -159,7 +159,7 @@ interface Resource {
 ```
 
 Els **recursos** porten les dades visuals: peus, text alternatiu i un payload específic del seu `kind`. Els payloads binaris (bitmaps, SVG) viuen *fora de banda* — el recurs només desa un `fileId`, i el renderitzador el resol en el moment de dibuixar (el sandbox desa els bytes a IndexedDB). Les taules són l'excepció: el seu `TableModel` (una quadrícula de cel·les amb fusions i alineació) viatja en línia, perquè són dades estructurades, no bytes.
-Les **notes** s'escriuen al markdown: una crida `[^id]` on se cita la nota i una definició `[^id]:`, un paràgraf propi en qualsevol lloc del capítol. El motor les numera en l'ordre en què se citen per primera vegada i compon cadascuna al peu de la columna que conté la línia que la cita, sota un filet curt, o després del darrer bloc del capítol amb `footnotes.placement: 'chapterEnd'` (vegeu [Notes a peu de pàgina](/ca/docs/document-format#notes-a-peu-de-pàgina) i [Configuració → Notes a peu de pàgina](/ca/docs/configuration#notes-a-peu-de-pàgina)). El model de contingut continua acceptant un array `notes`, però cap etapa del pipeline no el llegeix.
+Les **notes** s'escriuen al markdown: una crida `[^id]` on se cita la nota i una definició `[^id]:`, un paràgraf propi en qualsevol lloc del capítol. El motor les numera en l'ordre en què se citen per primera vegada i compon cadascuna al peu de la columna que conté la línia que la cita, sota un filet curt, o després del darrer bloc del capítol amb `footnotes.placement: 'chapterEnd'` (vegeu [Notes a peu de pàgina](/ca/docs/document-format#notes-a-peu-de-pàgina) i [Configuració → Notes a peu de pàgina](/ca/docs/configuration-notes-references#notes-a-peu-de-pàgina)). El model de contingut continua acceptant un array `notes`, però cap etapa del pipeline no el llegeix.
 
 Aquesta separació és una decisió de disseny deliberada, i té més importància del que sembla. El markdown és l'amo de l'*ordre de lectura* i de l'*estructura semàntica* — què va primer, què és un encapçalament, on se cita una nota a peu de pàgina i què diu. L'array de recursos és l'amo de les *dades visuals* — dimensions d'imatge, text dels peus de foto, cel·les de taula. Mantenint-los separats, el mateix markdown es pot compondre de maneres completament diferents només canviant la configuració. Una maquetació acadèmica a dues columnes i un article de blog a una sola columna poden compartir el mateix contingut font. I el motor pot prendre decisions de col·locació — com ara ajornar una imatge a la columna següent perquè aquí no hi cap — sense tocar mai el teu contingut original.
 
@@ -210,27 +210,27 @@ Cada aspecte del pipeline de composició el controla `PostextConfig`. El repàs 
   <tbody>
     <tr>
       <td><code>bodyText</code> / <code>headings</code></td>
-      <td>Penalitzacions per camp de vídues/òrfenes/línies curtes, regles de cohesió, límits de justificació, partició de mots — vegeu <a href="/ca/docs/configuration#text-de-cos">Configuració → Text del cos</a></td>
+      <td>Penalitzacions per camp de vídues/òrfenes/línies curtes, regles de cohesió, límits de justificació, partició de mots — vegeu <a href="/ca/docs/configuration-text#text-de-cos">Configuració → Text del cos</a></td>
       <td>Passada 2, Passada 5</td>
     </tr>
     <tr>
       <td><code>tableStyle</code></td>
-      <td>Tipografia de cel·les, vores, radi de les cantonades i emplenaments de capçalera/cos per a recursos <code>kind: 'table'</code>, més les variants amb nom de <code>tableStyles</code> que una taula tria amb <code>table.styleId</code> — vegeu <a href="/ca/docs/configuration#estil-de-taules">Configuració → Estil de taules</a></td>
+      <td>Tipografia de cel·les, vores, radi de les cantonades i emplenaments de capçalera/cos per a recursos <code>kind: 'table'</code>, més les variants amb nom de <code>tableStyles</code> que una taula tria amb <code>table.styleId</code> — vegeu <a href="/ca/docs/configuration-resources#estil-de-taules">Configuració → Estil de taules</a></td>
       <td>Passada 4</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
-      <td>Tipografia dels peus de recurs: l'etiqueta numerada i el text descriptiu — vegeu <a href="/ca/docs/configuration#estil-dels-peus-de-recurs">Configuració → Estil de peus de recurs</a></td>
+      <td>Tipografia dels peus de recurs: l'etiqueta numerada i el text descriptiu — vegeu <a href="/ca/docs/configuration-resources#estil-dels-peus-de-recurs">Configuració → Estil de peus de recurs</a></td>
       <td>Passada 4</td>
     </tr>
     <tr>
       <td><code>diagramStyle</code></td>
-      <td><code>singleInk</code> + <code>inkColor</code> — torna a acolorir els diagrames SVG amb matisos d'una sola tinta assignats per luminància, perquè les figures es reprodueixin fidelment en imprimir amb un sol color directe — vegeu <a href="/ca/docs/configuration#estil-dels-diagrames">Configuració → Estil de diagrames</a></td>
+      <td><code>singleInk</code> + <code>inkColor</code> — torna a acolorir els diagrames SVG amb matisos d'una sola tinta assignats per luminància, perquè les figures es reprodueixin fidelment en imprimir amb un sol color directe — vegeu <a href="/ca/docs/configuration-resources#estil-dels-diagrames">Configuració → Estil de diagrames</a></td>
       <td>Backends</td>
     </tr>
     <tr>
       <td><code>resourceTypes</code></td>
-      <td>Numeració tipada de recursos: plantilles, formats de comptador, àmbits de reinici, flotament per defecte — vegeu <a href="/ca/docs/configuration#tipus-de-recurs">Configuració → Tipus de recurs</a></td>
+      <td>Numeració tipada de recursos: plantilles, formats de comptador, àmbits de reinici, flotament per defecte — vegeu <a href="/ca/docs/configuration-resources#tipus-de-recurs">Configuració → Tipus de recurs</a></td>
       <td>Passada 1, Passada 4</td>
     </tr>
     <tr>
@@ -516,7 +516,7 @@ Aquestes penalitzacions conviuen amb els demerits habituals — *badness* (raó 
 
 Una quarta pressió tova, `slackWeight`, pondera un cost quadràtic d'"espai de columna no utilitzat", de manera que l'algorisme prefereix conjunts de talls que omplin les columnes de manera ajustada. Junts, aquests demerits converteixen la Passada 5 en un refinament *de divisió de línies*: la majoria de casos de vídues, òrfenes i línies curtes es resolen dins del solver de Knuth-Plass, no mitjançant ajustos de tracking *a posteriori*.
 
-Tot això es pot afinar a `BodyTextConfig` — vegeu [Configuració → Òrfenes, vídues, *runts* i cohesió](/ca/docs/configuration#òrfenes-vídues-runts-i-regles-de-cohesió). Posar qualsevol `*Penalty` a `0` desactiva efectivament aquella regla.
+Tot això es pot afinar a `BodyTextConfig` — vegeu [Configuració → Òrfenes, vídues, *runts* i cohesió](/ca/docs/configuration-text#òrfenes-vídues-runts-i-regles-de-cohesió). Posar qualsevol `*Penalty` a `0` desactiva efectivament aquella regla.
 
 #### Regles estructurals de cohesió (keep-together)
 
@@ -538,7 +538,7 @@ Aquestes correccions són invisibles quan es fan bé (un lector no les hauria de
 ### Passada 6: Equilibrat de columnes
 
 - **Entrada:** VDT amb la tipografia refinada
-- **Acció:** Igualar les alçades de les columnes a cada pàgina movent blocs entre columnes per minimitzar la diferència d'alçada (activat per defecte; `headings.balancing.enabled: false` el desactiva, vegeu [Configuració → Equilibratge de columnes](/ca/docs/configuration#equilibratge-de-columnes))
+- **Acció:** Igualar les alçades de les columnes a cada pàgina movent blocs entre columnes per minimitzar la diferència d'alçada (activat per defecte; `headings.balancing.enabled: false` el desactiva, vegeu [Configuració → Equilibratge de columnes](/ca/docs/configuration-text#equilibratge-de-columnes))
 - **Restricció:** No ha de violar les regles de vídues/òrfenes establertes a la Passada 5
 - **Sortida:** Els blocs poden haver-se mogut entre columnes, marcats com a `dirty`
 
@@ -698,7 +698,7 @@ Com que els payloads binaris dels recursos viuen fora de banda, cada backend res
 
 Els quatre backends disponibles consumeixen el mateix `VDTDocument`. La divisió entre `postext` (que exporta els backends de canvas i HTML) i `postext-pdf` (que exporta el backend de PDF) és purament una qüestió de dependències: el camí PDF arrossega `pdf-lib` i `@pdf-lib/fontkit`, i la majoria d'integracions web no els necessiten. Instal·la `postext-pdf` només quan de debò vulguis emetre bytes PDF. `postext-epub` és un paquet a part per la mateixa raó, i només cal per a llibres electrònics. La línia d'ordres no és un cinquè backend: `postext-cli` executa aquests mateixos generadors on no hi ha navegador.
 
-**On s'executa la composició:** El motor mesura el text en un canvas, de manera que funciona allà on se li'n dona un. En un navegador, el pipeline es pot executar tant al fil principal (`buildDocument`) com dins d'un Web Worker dedicat (`createLayoutWorker` des de `postext/worker`) — la ruta del worker és la integració recomanada per a aplicacions orientades a UI perquè manté la mesura i el bucle de convergència fora del fil principal, admet cancel·lació *last-wins* mitjançant `AbortSignal`, i té la seva pròpia memòria cau de mesura i memòria cau de rasterització de matemàtiques perquè les reconstruccions successives continuïn sent barates. Consulta [Configuració → Executar la composició en un Web Worker](/ca/docs/configuration#executar-la-composició-en-un-web-worker) per al patró d'integració complet. Fora del navegador, la [línia d'ordres](/ca/docs/command-line) executa el mateix pipeline amb Skia fent de canvas del navegador, de manera que un llibre es parteix en les mateixes pàgines en un terminal, en un script o en un servidor de compilació.
+**On s'executa la composició:** El motor mesura el text en un canvas, de manera que funciona allà on se li'n dona un. En un navegador, el pipeline es pot executar tant al fil principal (`buildDocument`) com dins d'un Web Worker dedicat (`createLayoutWorker` des de `postext/worker`) — la ruta del worker és la integració recomanada per a aplicacions orientades a UI perquè manté la mesura i el bucle de convergència fora del fil principal, admet cancel·lació *last-wins* mitjançant `AbortSignal`, i té la seva pròpia memòria cau de mesura i memòria cau de rasterització de matemàtiques perquè les reconstruccions successives continuïn sent barates. Consulta [Configuració → Executar la composició en un Web Worker](/ca/docs/configuration-programmatic-usage#executar-la-composició-en-un-web-worker) per al patró d'integració complet. Fora del navegador, la [línia d'ordres](/ca/docs/command-line) executa el mateix pipeline amb Skia fent de canvas del navegador, de manera que un llibre es parteix en les mateixes pàgines en un terminal, en un script o en un servidor de compilació.
 
 
 ## Estratègia de rendiment
@@ -795,7 +795,7 @@ acabar mai.
 - **Wrapper de CSS column-count.** Postext substitueix la composició multicolumna de CSS; no l'embolcalla. Calcula geometria posicionada precisa des de zero, perquè l'algorisme de columnes del navegador no té control sobre la col·locació de recursos, la prevenció de vídues/òrfenes i les regles tipogràfiques entre columnes. Aquestes són precisament la raó de ser de Postext.
 - **Gestió de breakpoints responsius.** Postext calcula la composició a una mida de pàgina donada. El consumidor decideix quan tornar a compondre (en redimensionar la finestra, en canviar l'orientació). Postext no gestiona breakpoints, media queries ni decisions de disseny responsiu. Això és cosa teva.
 - **Edició col·laborativa en temps real.** Postext és un càlcul de composició sense estat — entra contingut, surt geometria — no un sistema de documents col·laboratiu amb resolució de conflictes, transformacions operacionals ni consciència multiusuari.
-- **Fitxers de font.** El paquet `postext` carrega les fonts, però no les porta a dins. `prepareFonts` carrega abans de la primera composició totes les cares que demanen una configuració i el seu text, i una cara que el conjunt de fonts no ha pogut donar surt entre els avisos del document com a `fontFallback`. Els fitxers els posa qui integra el motor: una regla `@font-face` a la pàgina, o una funció `resolve` que diu on és cada cara. Vegeu [Configuració → Carregar les fonts abans de compondre](/ca/docs/configuration#carregar-les-fonts-abans-de-compondre).
+- **Fitxers de font.** El paquet `postext` carrega les fonts, però no les porta a dins. `prepareFonts` carrega abans de la primera composició totes les cares que demanen una configuració i el seu text, i una cara que el conjunt de fonts no ha pogut donar surt entre els avisos del document com a `fontFallback`. Els fitxers els posa qui integra el motor: una regla `@font-face` a la pàgina, o una funció `resolve` que diu on és cada cara. Vegeu [Configuració → Carregar les fonts abans de compondre](/ca/docs/configuration-programmatic-usage#carregar-les-fonts-abans-de-compondre).
 
 
 ## Apèndix: relació amb els tipus existents

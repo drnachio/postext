@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ja',
   lastUpdated: '2026-10-09',
   readingTime: '10分',
-  order: 13,
+  order: 22,
   plainSummary: "このページは、Webサイトではなくターミナルを使ってPostextで本を作りたい人のためのものです。自分のコンピューター用のファイルを1つダウンロードして実行するだけで、ほかに何もインストールする必要はありません。本や何本かのテキストファイルを渡すと、PDF、Webページ、電子書籍、ページの画像、Wordの文書を作ります。本に問題がないかを調べたり、本のファイルを1つにまとめたりすることもできます。プログラムが読みやすい形で答えを返せるので、ほかのプログラムやAIの助手からも使えます。",
 };
 
@@ -89,7 +89,7 @@ postext image my-book.postext --page 1 -o cover.png
 
 本を読むコマンドは、どれも次のいずれかを受け付けます。
 
-- **`.postext`ファイル**：Sandboxが書き出し、開くバンドルです（[バンドル](/ja/docs/configuration#バンドルpostextファイル)を参照）。
+- **`.postext`ファイル**：Sandboxが書き出し、開くバンドルです（[バンドル](/ja/docs/configuration-programmatic-usage#バンドルpostextファイル)を参照）。
 - **本のフォルダー**：展開したバンドルで、`preset.json`、章、リソース、フォントを持ちます。エージェントスキルが納品するのはこの形で、`postext unpack`もこれを書き出します。
 - **ばらのMarkdown**：1つ以上の`.md`ファイルで、指定した順に1ファイル1章になります。フォルダーを渡すと、その中の`.md`ファイルを名前の順に読みます（`01-intro.md`、`02-method.md`…）。あわせて次のものを指定できます。
   - `--config design.json`：設定です。設定のオブジェクトだけでも、`preset.json`全体でもかまいません。
@@ -131,7 +131,7 @@ postext pdf book/ --pdfx x4 --profile fogra51 -o book-print.pdf
 postext pdf book/ --color-space grayscale --no-outlines
 ```
 
-PDFは本自身の設定に従います（[PDF生成](/ja/docs/configuration#pdf生成設定)と[印刷出力](/ja/docs/configuration#印刷出力設定)を参照）。次のオプションは、1回の実行に限ってそれを変えます。
+PDFは本自身の設定に従います（[PDF生成](/ja/docs/configuration-fonts-colors-viewers#pdf生成設定)と[印刷出力](/ja/docs/configuration-fonts-colors-viewers#印刷出力設定)を参照）。次のオプションは、1回の実行に限ってそれを変えます。
 
 - `--pdfx none|x1a|x4`：印刷所向けのPDF/X規格。
 - `--profile NAME|FILE`：出力ICCプロファイル。名前（`fogra39`、`fogra51`、`fogra52`、`swop5`、`gracol2006`、`snap2007`、`ifra26`など、印刷設定のプロファイル）か、`.icc`ファイルで指定します。
@@ -156,7 +156,7 @@ postext epub book.postext -o book.epub
 postext epub book.postext --layout reflowable --cover cover.jpg
 ```
 
-`--layout fixed`（既定）は、すべてのページを印刷したとおりに保ち、テキストは選択できます。`--layout reflowable`は、読書システムがその画面に合わせてテキストを組み直せるようにします（[EPUBの本](/ja/docs/configuration#epubの本postext-epub)を参照）。表紙は、`--cover`で画像を指定しない限り本のサムネイルです。パッケージのメタデータ（タイトル、著者、言語、識別子）は、Sandboxと同じく最初の章のフロントマターから取ります。
+`--layout fixed`（既定）は、すべてのページを印刷したとおりに保ち、テキストは選択できます。`--layout reflowable`は、読書システムがその画面に合わせてテキストを組み直せるようにします（[EPUBの本](/ja/docs/configuration-programmatic-usage#epubの本postext-epub)を参照）。表紙は、`--cover`で画像を指定しない限り本のサムネイルです。パッケージのメタデータ（タイトル、著者、言語、識別子）は、Sandboxと同じく最初の章のフロントマターから取ります。
 
 ### imageとimages
 

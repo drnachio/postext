@@ -1,0 +1,2165 @@
+{/* docs/configuration-text-ja.mdx */}
+
+export const metadata = {
+  title: '設定：本文と見出し',
+  sidebarTitle: '本文と見出し',
+  description: '本文の文字組み、ハイフネーション、文書の言語、見出し、箇条書きと番号付きのリスト、数式',
+  lang: 'ja',
+  lastUpdated: '2026-10-10',
+  readingTime: '11分',
+  order: 5,
+  parent: 'configuration',
+  plainSummary: "このページでは、ページに並ぶ文字の設定を説明します。本文のフォント、文字の大きさ、行の間隔と、行の終わりで単語をどう分けるかを選びます。本がどの言語で書かれているかをPostextに伝えます。見出しのレベルごとの見た目と、箇条書きや番号付きのリストの描き方を決めます。最後の節では、数式の大きさと色を決めます。",
+};
+
+# 設定：本文と見出し
+
+
+## 本文
+
+`bodyText`プロパティは、すべての段落テキストの文字組みを制御します。
+
+<Illustration name="TypographyScale" data='{"title": "文字サイズの階層", "desc": "H1から小さな本文まで、見出し・本文・キャプションの相対的なサイズを示す文字組みの階層。", "caption": "一貫したサイズの階層があれば、構造がひと目で読み取れます。", "rows": [{"role": "H1", "sample": "見出し1", "size": "32px"}, {"role": "H2", "sample": "見出し2", "size": "24px"}, {"role": "H3", "sample": "見出し3", "size": "20px"}, {"role": "本文", "sample": "本文テキスト", "size": "16px"}, {"role": "小", "sample": "キャプション／注", "size": "13px"}]}' />
+
+<Illustration name="SpacingScale" data='{"title": "間隔の段階", "desc": "余白、パディング、間隔に使う値が段階的に大きくなる間隔のスケール。", "caption": "間隔を段階で積み上げると、レイアウト全体に予測できるリズムが生まれます。", "steps": [{"name": "xs", "value": "4 px", "px": 4}, {"name": "sm", "value": "8 px", "px": 8}, {"name": "md", "value": "16 px", "px": 16}, {"name": "lg", "value": "24 px", "px": 24}, {"name": "xl", "value": "40 px", "px": 40}, {"name": "2xl", "value": "64 px", "px": 64}]}' />
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '160px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'EB Garamond'</code></td>
+      <td>本文のフォントファミリー。Google Fontsのフォント、システムフォント、[`customFonts`](/ja/docs/configuration-fonts-colors-viewers#カスタムフォント)で宣言した独自のファミリーのいずれでも指定できます。指定するのは1つのファミリーで、CSSのフォントスタックではありません（後述）。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>8 pt</code></td>
+      <td>本文の基本の文字サイズ。</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>行と行の縦方向の間隔。相対単位（em、rem）は文字サイズに合わせて伸縮します。</td>
+    </tr>
+    <tr>
+      <td><code>paragraphSpacing</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>有効にすると、続く段落の間に空行（<code>lineHeight</code>と同じ高さ）を挟み、出版物で見られるように段落を区切ります。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>文字の色。</td>
+    </tr>
+    <tr>
+      <td><code>boldColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>メインカラー（<code>#295AA3</code>）</td>
+      <td>太字（strong）の範囲に適用する色。既定のパレットの<code>main-color</code>エントリーから解決されるため、パレットの色を変えると文書中のすべての太字の色が変わります。</td>
+    </tr>
+    <tr>
+      <td><code>italicColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>メインカラー（<code>#295AA3</code>）</td>
+      <td>イタリック（強調）の範囲に適用する色。既定値は<code>boldColor</code>と同じくパレットに連動します。</td>
+    </tr>
+    <tr>
+      <td><code>referenceColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>メインカラー（<code>#295AA3</code>）</td>
+      <td>インラインの<code>:ref</code>ラベル（リソースへの参照）に適用する色。既定値は<code>boldColor</code>と同じくパレットに連動します。パレットに従うのはpostext 1.5からで、1.4まではメインカラーにかかわらず<code>#295AA3</code>のままでした。</td>
+    </tr>
+    <tr>
+      <td><code>referenceBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>インラインの<code>:ref</code>ラベルを太字のフォントで描画します。参照は周囲のテキストの強調を引き継ぎます（<code>***…***</code>の中ではどちらの値でも太字イタリックのまま）。このオプションは太字を上乗せするだけです。</td>
+    </tr>
+    <tr>
+      <td><code>referenceItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>インラインの<code>:ref</code>ラベルをイタリックで描画します。イタリックのテキスト中の参照は、どちらの値でもイタリックのままです。</td>
+    </tr>
+    <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'bold' | 'color' | 'overline'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>*…*</code>の組み方。イタリック、太字の書体と<code>boldColor</code>、<code>italicColor</code>で色を付けた正体、語の上に線を引いた正体のいずれかです。<code>'auto'</code>は、アラビア文字で書かれた文書では<code>'bold'</code>、それ以外では<code>'italic'</code>になります。<a href="#アラビア文字のテキスト">アラビア文字のテキスト</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>tashkil</code></td>
+      <td><code>'keep' | 'strip' | 'strip-vowels'</code></td>
+      <td><code>'keep'</code></td>
+      <td>アラビア語の母音記号。書かれたとおりに組むか、すべて取り除くか、シャッダ以外を取り除くかを選びます。<a href="#アラビア文字のテキスト">アラビア文字のテキスト</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify' | 'start' | 'end'</code></td>
+      <td><code>'justify'</code></td>
+      <td>行そろえ。<code>'left'</code>（または<code>'start'</code>）は行が始まる側を指し、右から左に組む段落では右になります（<a href="#テキストの方向">テキストの方向</a>を参照）。両端そろえでは、各行の間隔を配分して両端をそろえます。両端そろえの段落の最終行は自然な幅のまま行末不ぞろいで描画します。ただし、Knuth-Plassがグルーの縮みを前提に詰まりすぎの最終行を採用した場合は例外で、語間を詰めて行長にちょうど収めます（TeXのグルー設定の意味論で、Canvas、HTML、PDFの各バックエンドで同じように適用します）。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code></td>
+      <td>通常のテキストのウェイト（100–900）。</td>
+    </tr>
+    <tr>
+      <td><code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>太字（strong）のテキストのウェイト（100–900）。</td>
+    </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>HyphenationConfig</code></td>
+      <td>有効、<code>'en-us'</code></td>
+      <td>自動ハイフネーションの設定。後述します。</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5em</code></td>
+      <td>各段落の1行目に適用する字下げ（ぶら下げインデントが有効なときは1行目以外のすべての行に適用）。</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>有効にすると、字下げを1行目以外のすべての行に適用します（ぶら下げインデント）。</td>
+    </tr>
+    <tr>
+      <td><code>indentAfterHeading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>false</code>にすると、見出しの直後の段落を1行目の字下げなしで描画します。科学系の出版物や多くの書籍のスタイルでよく使われる組版の慣習です。<a href="/ja/docs/document-format#space"><code>:::space</code></a>の行の直後の段落にも同じ扱いを適用します。その間にあっても本文の外に置かれる囲み（サイド段<code>span: 'side'</code>に置いたもの、ページの天や地にフロートとして配置したもの、固定したもの）とフロートの図は飛ばして判定します。その段の中では段落は見出しに続いているものとみなされ、字下げなしで組まれます。本文中に置いた囲み（<code>placement: 'here'</code>）は数に入り、その後の段落は字下げされます。<code>hangingIndent</code>が有効なときは効果がありません。</td>
+    </tr>
+    <tr>
+      <td><code>maxWordSpacing</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>両端そろえのテキストの語間の上限。通常のスペース幅に対する倍率で表します。Knuth-Plassは、段落が許す限りすべての行をこの範囲に収め、そのためにまず語をハイフネーションするか、余りを隣の行に振り分けます。どの改行位置の組み合わせでも収まらない行は上限を超えて伸び、通常のスペースの3倍を超える行は行末不ぞろいで組みます。この比率を超えた行は「ゆるい行」とみなします。<a href="/ja/docs/justification#行分割で埋めきれない行">改行処理で埋められない行</a>を参照してください。代わりに少しトラッキングを加えたい場合は<code>maxJustifyTracking</code>を使います。</td>
+    </tr>
+    <tr>
+      <td><code>minWordSpacing</code></td>
+      <td><code>number</code></td>
+      <td><code>0.6</code></td>
+      <td>両端そろえのテキストの語間の下限。通常のスペース幅に対する倍率で表します。</td>
+    </tr>
+    <tr>
+      <td><code>maxJustifyTracking</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>語間だけでは<code>maxWordSpacing</code>を超えて伸びるか<code>minWordSpacing</code>を超えて縮む両端そろえの行が取れるトラッキングの最大量。1/1000em単位で、伸ばす方向にも詰める方向にも働きます（InDesignの単位で、10は1文字あたり0.01em）。上限を超えた分の調整を文字間に回すので、ゆるい行の語間は<code>maxWordSpacing</code>まで戻り、詰まった行は<code>minWordSpacing</code>で収まります。Knuth-Plassは改行位置を選ぶときにこれを考慮しますが、対象は語間だけでは上限・下限を超えてしまう行に限られます。それ以外の行、段落の最終行（はみ出す場合を除く）、1語だけの行、チップを含む行にはトラッキングを加えません。行はこれを<code>letterSpacing</code>として記録し、Canvas、HTML、PDFが描画します。<code>optimalLineBreaking</code>が必要です。<code>0</code>で無効になります。<a href="/ja/docs/justification#最後の手段としてのトラッキング">最後の手段としてのトラッキング</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>kashida</code></td>
+      <td><code>'auto' | 'none'</code></td>
+      <td>アラビア文字の文書では<code>'auto'</code>、それ以外は<code>'none'</code></td>
+      <td>カシーダ（kashida）による両端そろえ。アラビア文字のテキストの両端そろえの行は、余りをまず語間（その幅の4分の1まで）で吸収し、次にカシーダで吸収します。カシーダは、つながった2文字の間に挿入するタトウィール（U+0640）1文字単位の伸長で、字間を広げることはありません。Knuth-Plassは各語の伸長を伸びとして数えます。ラテン文字の語、数字、見出し、行末不ぞろいの行、段落の最終行には使いません。タトウィールは描画されますが、プレーンテキストやコピーしたテキストには含まれません。<a href="/ja/docs/justification#アラビア文字のカシーダ">アラビア文字のテキストのカシーダ</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPatterns</code></td>
+      <td><code>'auto' | 'naskh' | 'simple' | 'nastaliq'</code></td>
+      <td><code>'auto'</code></td>
+      <td>どの連結部にどの順でカシーダを入れるか。古典的なナスフ体（Naskh）の規則、Microsoftの優先順位、ナスタアリーク体（Nastaʿlīq）向けに調整したナスフ体の規則（raqim-kashidaに倣ったもの）から選びます。<code>'auto'</code>は本文のフォントから判断します。ルクア体（Ruqʿa）やディーワーニー体（Dīwānī）の書体（Aref Ruqaa）ではなし、ナスタアリーク体の書体ではナスタアリーク体の規則、それ以外ではナスフ体の規則です。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPerWord</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>1語あたりの伸長の最大数。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaMaxLength</code></td>
+      <td><code>number</code></td>
+      <td><code>0.6</code></td>
+      <td>1か所の連結部での伸長の最大長（em単位）。収まるだけのタトウィールを1文字単位で入れます。</td>
+    </tr>
+    <tr>
+      <td><code>optimalLineBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>先頭から順に詰める貪欲法ではなく、Knuth-Plassの最適改行を使います。段落全体で語間がより均一になります。中国語・日本語・韓国語の段落（<a href="/ja/docs/configuration-east-asian#東アジアの組版">東アジアの文字組み</a>を参照）や、段幅より広い語を含む段落は、引き続き1行ずつ組みます。いくつかのCJKの語を引用するラテン文字の段落では最適改行を使い続けます。<code>optimalRagged</code>を使うと、行末不ぞろいのテキストにも適用されます。<a href="/ja/docs/justification">ハイフネーションと両端そろえ</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>optimalRagged</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>行末不ぞろいの本文テキストもKnuth-Plassで改行します。対象は、左そろえ・右そろえ・中央そろえの本文、引用ブロック、リスト項目と、行末不ぞろいの段落スタイル、囲みの本文、部や節のスタイルの本文です。語間の幅は変えません。改行処理は各行が行長にどれだけ足りないかを評価し（3em足りない行は、<code>maxWordSpacing</code>の語間の両端そろえの行と同じコスト）、各行を埋めてから次の行に進む代わりに行末の不ぞろいをならします。ラントの規則（<code>avoidRunts</code>、<code>tightenRunts</code>）と<code>hyphenateAcrossColumns</code>も、両端そろえのテキストと同様に行末不ぞろいのテキストに働きます。<code>hyphenation.ragged</code>を使う場合も、どの音節で行を終えてよいかはゾーンが決めます（<a href="#行末不ぞろいのテキスト">行末不ぞろいのテキスト</a>を参照）。行末不ぞろいの見出し、キャプション、注、表のセル、目次は引き続き1行ずつ組みます。<code>optimalLineBreaking</code>が必要です。<code>false</code>にすると、postext 1.4までと同様に行末不ぞろいのテキストを1行ずつ組みます。それ以前に保存した設定のうち、本文テキストの一部を行末不ぞろいにしているものは、この値で読み込まれます（<a href="/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>breakAfterDashes</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>語と語の間に前後を詰めて置いたemダッシュやenダッシュの後で改行できるようにします。<code>say—that’s</code>、<code>riddles.—I</code>、<code>Hamburg–Berlin</code>のほか、ダッシュの後の語が別のスタイルで組まれている場合（<code>see—*and*</code>）も対象です。Knuth-Plassはこれを語間と同じように扱い、行はダッシュで終わって何も追加されません。次の場合はダッシュの後で改行しません。挿入句や台詞の行を始めるダッシュ（<code>—dijo</code>、<code>said "—Hola</code>、<code>sagte »—Ich</code>のように、ダッシュの前にスペースか、スペースと引用符があるもの。ただし<code>"no"—and</code>、ドイツ語の<code>„nein“—und</code>、フランス語の<code>« non »—et</code>のように語を閉じる引用符の後なら改行できます）、約物の前（<code>él—,</code>）、引用符や括弧の前（<code>thinking—" and</code>、<code>says—“no”</code>、<code>says—(no)</code>。ダッシュの後の引用符は、ダッシュで中断した発話を閉じることが多いため）、ダッシュの連続の中、enダッシュで示した数の範囲の中（<code>1914–1918</code>）。<code>false</code>にすると1.4の改行に戻ります。Knuth-Plassはダッシュの後では決して改行せず、書式付きのテキストやハイフネーションする行末不ぞろいのテキストを1行ずつ組む改行処理は2文字の間でだけ改行します。それ以前に保存した設定のうち、テキストにそうしたダッシュを含むものは、この値で読み込まれます（<a href="/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。本文テキスト、見出し、リスト、引用ブロック、囲みに適用されます。キャプション、注、表のセル、目次は1.4の改行のままで、1行ずつ組む書式なしの行末不ぞろいの段落は、いずれの場合もpretext自身の規則に従います。</td>
+    </tr>
+    <tr>
+      <td><code>breakAfterHyphens</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Knuth-Plassで改行するすべての段落で、複合語のハイフン、つまり2文字の間のハイフンの後で改行できるようにします（<code>well-</code> · <code>known</code>、<code>vencer-</code> · <code>se</code>）。行はハイフンで終わり、何も追加されません。この改行は音節での分割と同じコストで評価します。数字や記号に隣接するハイフンの後では改行しません（<code>COVID-19</code>、<code>-5 °C</code>）。インライン書式のない両端そろえの段落では、ハイフンの前後にそれぞれ2文字以上ある場合にだけ改行するので、<code>e-mail</code>の<code>e-</code>で終わる行はできません。<code>false</code>にすると1.4の改行に戻ります。インライン書式のない両端そろえの段落ではそこで改行しませんが、同じ段落でもどこかに1語でもイタリックがある場合や、行末不ぞろいの段落、1行ずつ組む段落では改行します。それ以前に保存した設定のうち、テキストに複合語を含むものは、この値で読み込まれます（<a href="/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。本文テキスト、見出し、リスト、引用ブロック、囲みに適用されます。<a href="/ja/docs/justification#複合語">複合語</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>repeatHyphen</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>複合語のハイフンで改行したとき、次の行の頭にもハイフンを置きます。ポルトガル語の正書法が求める<code>vencer-</code> · <code>-se</code>や、2010年以降のスペイン王立アカデミーの規則が求める<code>léxico-</code> · <code>-semántico</code>の形です。繰り返したハイフンはその行の一部として計測・描画され、行はそれを<code>repeatedHyphen</code>として記録します。行の<code>plainStart</code>と<code>sourceStart</code>はハイフンの後を指すので、リンク、柱、Sandboxは語を書かれたとおりに読みます。PDFはこのハイフンを、それを除いた<code>/ActualText</code>の下で描画するので、PDFからコピーまたは抽出したテキストでは語は1回だけ現れます。Webアドレスには付けません。本文テキスト、見出し、リスト、引用ブロック、囲みに適用されます。複合語を含む書式なしの段落は、このとき書式付きのテキストを組む改行処理で改行されます。</td>
+    </tr>
+    <tr>
+      <td><code>hardLineBreaks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>原稿の行末のバックスラッシュと、後ろにスペースのある<code>{'\\\\'}</code>を、段落・引用・リスト項目の中の強制改行（CommonMarkのハードブレーク）として読みます。続く語は同じ段落の新しい行から始まり、改行の前の行は最終行と同じく自然な幅で組みます。段落の末尾のバックスラッシュはそのまま印字され、行末の2つのスペースは改行になりません（<a href="/ja/docs/document-format#段落内の改行">文書形式 › 段落内の改行</a>を参照）。<code>false</code>にすると1.22の読み方になり、バックスラッシュはそのまま印字され、行はスペースを挟んでつながります。それより前に保存され、文章にこのようなバックスラッシュを含む設定はこの値で読まれます（<a href="/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。見出し、キャプション、注、表のセルは、どちらの場合も<code>{'\\\\'}</code>で改行します。</td>
+    </tr>
+    <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td>未設定</td>
+      <td>すべての段落、リスト項目、引用のタブ位置です。タブ（<code>:tab</code>、または本文中のタブ文字）が、その後の語を送る先です。独自のタブ位置を設定した段落スタイルや囲みの本文では、そちらに置き換わります。未設定なら、タブ文字は従来どおり語間スペースで、行き先のタブ位置がない<code>:tab</code>も語間スペースになります。<a href="#タブ位置">タブ位置</a>を参照してください。postext 1.23から使えます。</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td>未設定</td>
+      <td><code>tabStops</code>の最後のタブ位置より先に、行長の始端から一定の間隔で置く既定のタブ位置です。未設定なら、最後のタブ位置より先のタブは語間スペースになります。postext 1.23から使えます。</td>
+    </tr>
+    <tr>
+      <td><code>blockquote</code></td>
+      <td><code>BlockquoteConfig</code></td>
+      <td>後述</td>
+      <td>Markdownの引用ブロック（<code>&gt; …</code>）の組み方。色、イタリック、インデントを指定します。<a href="#引用ブロック">引用ブロック</a>を参照してください。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 引用ブロック
+
+引用ブロック（`>`で始まる行）は、本文のフォントファミリー、サイズ、行送り、ウェイト、行そろえ、ハイフネーションを引き継ぎます。それ以外は`bodyText.blockquote`で設定します。設定しない場合、引用ブロックはpostext 1.4までと同じ見た目になります。灰色のイタリックで、本文の1行目の字下げを使い、左右のインデントはありません。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '140px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#666666</code></td>
+      <td>文字の色。パレットのエントリーに連動させた色（<code>paletteId</code>）は、ほかの場所と同様にそのエントリーに従います。本文の太字・イタリック・参照の色は引用ブロックの中には適用されません。</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>テキストをイタリックで組みます。中にある<code>*…*</code>の範囲は正体に戻ります。<code>false</code>の場合は、段落と同じようにイタリックになります。</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>段または囲みの左端からの、すべての行のインデント。行長はその分だけ狭くなるので、両端そろえの行は右端で終わります。<code>em</code>は本文のサイズです。</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td>本文の値</td>
+      <td>引用した各段落の1行目の字下げで、<code>indent</code>から数えます（本文の<code>hangingIndent</code>が有効なら、1行目以外のすべての行のインデント）。未設定の場合は<code>bodyText.firstLineIndent</code>です。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+bodyText: {
+  firstLineIndent: { value: 1.5, unit: 'em' },
+  // Upright verse in the body colour, set in by 2 em, no first-line indent.
+  blockquote: { color: { hex: '#241f26', model: 'hex' }, italic: false, indent: { value: 2, unit: 'em' }, firstLineIndent: { value: 0, unit: 'em' } },
+}
+```
+
+Sandboxでは、これらは**本文**セクションの**引用ブロック**グループにあります。
+
+### 詩
+
+行に半句の区切りがない`:::verse`の詩は行ごとに組みます（[文書の書式 › `:::verse`](/ja/docs/document-format#verse)を参照）。`bodyText.verse`はそうした詩の既定値を決め、詩の開始行に同じ名前の属性を書くと、その詩だけの値になります。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '140px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>'auto' | 'bayt'</code></td>
+      <td><code>'auto'</code></td>
+      <td>開始行で組み方を指定していない詩の組み方。<code>'auto'</code>：区切り（<code>||</code>）のある行があれば対句として、なければ行ごとに組みます。<code>'bayt'</code>：常に対句として組み、区切りのない詩は各行を1つの半句として中央に置きます（postext 1.22までの組み方）。</td>
+    </tr>
+    <tr>
+      <td><code>indentStep</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>詩の行頭の空白1つの幅（タブは4つ、全角スペースは2つと数えます）。<code>em</code>は詩のサイズです。</td>
+    </tr>
+    <tr>
+      <td><code>turnover</code></td>
+      <td><code>'hang' | 'right'</code></td>
+      <td><code>'hang'</code></td>
+      <td>行長より長い詩の行の折り返し方。次の行にぶら下げるか、<code>turnoverMark</code>の後ろに置いて行末側に寄せます。</td>
+    </tr>
+    <tr>
+      <td><code>hang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>詩の段落スタイルが<code>hangingIndent</code>を決めていないとき、ぶら下げた折り返しを行頭から下げる量。</td>
+    </tr>
+    <tr>
+      <td><code>turnoverMark</code></td>
+      <td><code>string</code></td>
+      <td><code>'['</code></td>
+      <td>行末側に寄せた折り返しの前の記号。</td>
+    </tr>
+    <tr>
+      <td><code>stanzaSpace</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>連と連のあきで、詩の行送りを単位にします。ベースライングリッド上では整数行になり、<code>snapToGrid: false</code>の段落スタイルでは正確な量を保ちます。</td>
+    </tr>
+    <tr>
+      <td><code>keepStanzas</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>この行数以下の連は1つの段に収めます。<code>0</code>はオフです。</td>
+    </tr>
+    <tr>
+      <td><code>tighten</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>行長よりわずかに長い詩行の語間を、自然な幅の<code>bodyText.minWordSpacing</code>まで詰めて一行に収めます。詰めても収まらない行だけを折り返します。このために字間は変えません。<code>false</code>では行長より長い行をすべて折り返します（postext 1.23と同じ）。リフロー型EPUBは行分割を閲覧システムに任せるので詰めません。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+bodyText: {
+  // 折り返しは角括弧付きで行末側へ。短歌は分けない。
+  verse: { turnover: 'right', keepStanzas: 5 },
+}
+```
+
+これらの設定より前に保存された設定（`configVersion`が8以前）で、区切りのない詩を組んでいるものは`layout: 'bayt'`として読まれ、詩はpostext 1.22で組まれたとおり中央に置かれます。postext 1.23で保存された設定（`configVersion`が9）で、一行ずつ組む詩を含むものは`tighten: false`として読まれ、詩行は1.23で折り返した位置で折り返します。
+
+Sandboxでは、これらは**本文**セクションの**詩**グループにあります。
+
+
+### タブ位置
+
+`bodyText.tabStops`は、タブ（`:tab`、またはタブ位置のある段落の中のタブ文字）の行き先となるタブ位置を並べます（記法と行の組み方は[文書形式 › タブとタブ位置](/ja/docs/document-format#タブとタブ位置)を参照）。段落スタイルの`tabStops`はそのスタイルの段落について、囲みスタイルの`body.tabStops`は囲みの中で、これを置き換えます。空のリストはタブ位置を1つも設定しません。各タブ位置は`TabStop`です。
+
+```ts
+bodyText: {
+  tabStops: [
+    { position: { value: 30, unit: 'mm' } },
+    { position: 'end', align: 'end', leader: '.', leaderGap: { value: 2, unit: 'pt' } },
+  ],
+  tabInterval: { value: 10, unit: 'mm' },
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>{"Dimension | 'end' | `${number}%`"}</code></td>
+      <td>必須</td>
+      <td>タブ位置の場所で、段落の行長の始端から測ります（段落スタイルの<code>indent</code>の後から。<code>em</code>は段落自身の文字サイズです）。長さ、行長の終端を表す<code>'end'</code>、または行長に対する割合（<code>'50%'</code>）です。右から左のテキストでは、始端は右端です。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'start' | 'end' | 'center' | 'decimal'</code></td>
+      <td><code>'start'</code></td>
+      <td>タブの後のテキストをタブ位置にどう置くかです。そこから始めるか、そこで終えるか（次のタブまたは段落の終わりまでのテキスト）、そこを中心に置くか、小数点をそこに合わせるか（小数点のないテキストはそこで終わります）です。</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td><code>string</code></td>
+      <td>なし</td>
+      <td>タブ位置の手前の空きに繰り返す文字列です。<code>'.'</code>、<code>'. '</code>、<code>'·'</code>、<code>'_'</code>、<code>'-'</code>、または任意の短い文字列で、段落の書体と色で組みます。<code>'rule'</code>はベースラインの少し下に線を引きます。リーダーは空きの終わりにそろえて終わるので、複数の行のリーダーは縦にそろいます。目次の行のリーダーと同じく、ひと続きの文字列として計測します。</td>
+    </tr>
+    <tr>
+      <td><code>leaderGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>リーダーと両側のテキストとのあいだに確保するアキで、目次の<code>leader.gap</code>にあたります。タブが行頭にあるときはリーダーの前に、後に何も続かないときはリーダーの後にアキを入れません。</td>
+    </tr>
+    <tr>
+      <td><code>decimalChar</code></td>
+      <td><code>string</code></td>
+      <td>文書の言語のもの</td>
+      <td><code>'decimal'</code>のタブ位置がそろえる小数点の文字です。英語、中国語、日本語、アラビア語では<code>.</code>、スペイン語、カタルーニャ語、ポルトガル語、フランス語、ドイツ語などでは<code>,</code>です。</td>
+    </tr>
+  </tbody>
+</table>
+
+`tabInterval`は、リストの最後のタブ位置より先に、行長の始端から一定の間隔でタブ位置を加えます。これがなければ、最後のタブ位置より先のタブは語間スペースになります。本文に入力したタブ文字は、スタイル（そのスタイル自身または本文）にタブ位置か間隔がある段落でだけタブになります。それ以外の場所では従来どおり語間スペースなので、保存済みの文書はこれまでと同じに組まれ、固定の必要はありません。
+
+タブ位置は設定のほかの部分と一緒に検査されます（[設定の警告](/ja/docs/configuration-fonts-colors-viewers#設定の警告)を参照）。タブ位置の不明なキー（`leaders`）は`unknownConfigKey`として、最も近いキーとともに報告されます。4つのどれでもない`align`は`unknownConfigValue`として報告され、タブ位置は`'start'`として組まれます。長さでも`'end'`でも割合でもない`position`は`used: 'none'`の`unknownConfigValue`として報告され、そのタブ位置は除外されます。
+
+リーダーの色と書体は段落のものです。リーダー専用の設定はまだありません。
+
+### ドロップキャップ
+
+本文の段落は、ドロップキャップで始めることができます。最初の文字を最初の数行の横に大きく組み、それらの行は文字の幅とアキの分だけ短くなって、ほかの行と同じく組まれます（Knuth-Plassで改行し、両端そろえとハイフネーションを行います）。段落スタイルは、そのスタイルの各`:::paragraphs`グループの最初の段落にドロップキャップを付けます（`each: true`ならすべての段落に付けるので、項目の並ぶカタログに使えます）。見出しのレベルや見出しスタイルは、見出しの後の最初の本文の段落に付けます（[レベルごとの上書き](#レベルごとの上書き)、[段落スタイル](/ja/docs/configuration-styles#段落スタイル)、[見出しスタイル](/ja/docs/configuration-styles#見出しスタイル)の`dropCap`フィールドを参照）。見出しの後の段落は、`indentAfterHeading`と同じく、コンテナーのフェンス、ディレクティブ、本文の外に置かれた囲み、フロートの図を飛ばして探します。囲み、リスト項目、引用、詩、注の中の段落には付きません。テキストでは、見出しの行や`:::paragraphs`のフェンスに`{dropcap}`、`{dropcap=false}`、`{dropcap=N}`と書くと、その章やグループについてドロップキャップを有効にし、解除し、またはその行数を指定できます（[文書形式 › ドロップキャップ](/ja/docs/document-format#ドロップキャップ)を参照）。postext 1.23以降。
+
+```ts
+headings: {
+  levels: [
+    { level: 1, dropCap: { lines: 3, fontFamily: 'Libre Bodoni', fontWeight: 700, color: { hex: '#8b2e2a', model: 'hex', paletteId: 'accent' }, leadIn: { words: 3 } } },
+  ],
+},
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>lines</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>頭文字がまたがる行数で、大文字の上端からベースラインまでを数えます。<code>1</code>にして<code>fontSize</code>を大きくすると、1行目のベースラインに立つ突き出した頭文字（レイズドキャップ）になります。</td>
+    </tr>
+    <tr>
+      <td><code>sink</code></td>
+      <td><code>number</code></td>
+      <td><code>lines</code></td>
+      <td>頭文字がテキストの中へ沈む行数です。頭文字は<code>sink</code>行目のベースラインに立ち、それらの行が短くなります。<code>lines</code>より少なくすると、頭文字は1行目より上に突き出します。</td>
+    </tr>
+    <tr>
+      <td><code>characters</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>大きく組む書記素クラスターの数です。<em>É</em>、結合記号の付いた文字、基本多言語面の外の文字は1つと数えます。最初の語を越えることはありません。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code>, <code>fontWeight</code>, <code>italic</code></td>
+      <td><code>string</code>, <code>number</code>, <code>boolean</code></td>
+      <td>段落のもの、<code>false</code></td>
+      <td>頭文字の書体です。文書のほかの書体と一緒に読み込まれ、埋め込まれます。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>下記を参照</td>
+      <td>頭文字のサイズです。未設定なら、<code>lines</code>行下がった位置に立つときに、大文字の上端が1行目の大文字の高さとそろうサイズになります。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>段落のもの</td>
+      <td>パレットにリンクした色は、部と節のパレットに従います。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.15em</code></td>
+      <td>頭文字と短くした行とのあいだのアキで、<code>em</code>はテキストのサイズです。</td>
+    </tr>
+    <tr>
+      <td><code>punctuation</code></td>
+      <td><code>'with-cap' | 'hang' | 'text'</code></td>
+      <td><code>'with-cap'</code></td>
+      <td>文字の前にある始め引用符、<code>¿</code>、<code>¡</code>、始め括弧の扱いです。頭文字の一部として大きく組むか、テキストのサイズで頭文字の前の行長の外にぶら下げるか、テキストのサイズで1行目の先頭、頭文字の後に組むかのいずれかです。</td>
+    </tr>
+    <tr>
+      <td><code>leadIn</code></td>
+      <td><code>&#123; words, smallCaps, uppercase &#125;</code></td>
+      <td>なし</td>
+      <td>頭文字の後の最初の<code>words</code>語を、スモールキャピタル（既定）または大文字（<code>uppercase: true</code>）で組みます。<code>words: 'line'</code>は1行目の語を対象にします。1行目のリードインは、1回目の組版で語を数え、2回目で組みます。スモールキャピタルではその行にもう1語入ることがあり、その語は書かれたとおりに組まれます。</td>
+    </tr>
+    <tr>
+      <td><code>shortParagraph</code></td>
+      <td><code>'reserve' | 'shrink' | 'skip'</code></td>
+      <td><code>'reserve'</code></td>
+      <td><code>sink</code>より行数の少ない段落の扱いです。次のブロックが頭文字にかからないようにブロックを<code>sink</code>行の高さに保つか、段落自身の行数に合わせて頭文字を組むか、ドロップキャップなしで段落を組むかのいずれかです。どの場合もコンテンツ警告<code>dropCap</code>が出ます。</td>
+    </tr>
+    <tr>
+      <td><code>each</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>段落スタイルのみ。最初の段落だけでなく、グループのすべての段落をドロップキャップで始めます。</td>
+    </tr>
+  </tbody>
+</table>
+
+文字は次のように組まれます。
+
+- **サイズ**：テキストと頭文字の2つの大文字の高さは、どちらも書体から計測します（`H`のインクの高さ。中国語や日本語のテキストでは頭文字そのもののインクの高さ）。インクの計量値を持たない書体では、大文字をサイズの0.72とみなします。既定のサイズはどの書体の組み合わせにも合うので、書体ごとの補正は要りません。デザインテキストの`dropCap`は固定の0.72のままです（[テキスト要素](/ja/docs/configuration-page-layout#テキスト要素)を参照）。
+- **文字とその語**：頭文字は書記素クラスターを丸ごと取ります。最初の語の残りはスペースなしでその後に続きます。1文字の語（*A*、*Y*）は、1行目の先頭に語間スペースを保ちます。段落自身の1行目の字下げは取り除かれます。コピー、検索、ソースマップ、Sandboxのキャレットは、段落を書かれたとおりに読みます。ブロックのプレーンテキストは頭文字を含み、1行目の`plainStart`は頭文字の後から数え、`VDTBlock.dropCap`は1行目を含む断片に頭文字の範囲と配置を持ちます。
+- **突き出した頭文字**（`lines: 1`で`fontSize`を大きくしたもの、または`sink`を`lines`より小さくしたもの）は1行目より上に出ます。段落はその分の空きをグリッドの行単位で上に確保するので、上のテキストに重なりません。
+- **分割**：段落は`sink`行目より前では分割されません。代わりに全体が次の段やページへ移ります。ただし、その行数を収められない空の段に単独で置かれた場合は、そのまま分割して`dropCap`の警告を出します。本文とともに保たれる見出しは、それらの行を自分の下に保ちます。次の段へ続く部分には頭文字がなく、行は全幅になります。幅の異なる段のために再び分割された場合も、最初の数行は字下げを保ちます。段の高さそろえは、ほかの段落と同じくこの段落をゆるく、またはきつく組むことがありますが、短くした行のあいだにアキを加えることはありません。
+- **用字**：行は始端側で短くなります。ラテン文字のテキストでは左、アラビア文字とヘブライ文字では右です。次の文字と連結する文字（アラビア文字、シリア文字、ンコ文字）は切り離さず、段落は`dropCap`の警告を出します。横組みの中国語と日本語は1文字の頭文字（首字下沉）を取ります。縦組みのテキストには付きません（警告）。文字や数字で始まらない段落（参照、数式、注の印）にも付きません（警告）。
+- **出力**：Canvas、HTMLビューアー、固定レイアウトのEPUBは、頭文字を行の横に描きます。HTMLは頭文字を1行目のテキストの直前に、あいだに何も入れずに書くので、スクリーンリーダーは語をひと続きに読みます。タグ付きPDFでは、頭文字は段落の`P`の一部になり、語の残りとともに、その語を`/ActualText`に持つ`Span`になります。テキストを抽出すると*L ong before*ではなく*Long before*と読めます。リフロー型のEPUBではCSSの`initial-letter`（行数、沈む行数）で組み、リーディングシステムがこれに対応していない場合はフロートにします。
+
+設定は設定のほかの部分と一緒に検査されます（[設定の警告](/ja/docs/configuration-fonts-colors-viewers#設定の警告)を参照）。ドロップキャップやそのリードインの不明なキーは`unknownConfigKey`として報告されます。どの語にも当たらない`punctuation`や`shortParagraph`、1以上の整数でない`lines`、`sink`、`characters`は`unknownConfigValue`として報告され、既定値が使われます。ドロップキャップは既定で無効なので、保存済みの文書は変わりません。
+
+### `fontFamily`には1つのファミリー
+
+`fontFamily`は、ここでもほかのフォントファミリーの項目（`headings.fontFamily`、`tableStyle.bodyFontFamily`、`separatorFontFamily`、チップスタイルやデザイン要素の`fontFamily`など）でも、**1つの**ファミリーを指定します。Canvas、HTML出力、PDFは同じ書体で組む必要があり、PDFはフォールバックの連鎖なしにファミリーごとに1つのフォントを埋め込むため、CSSのフォントスタックが代替として使えるものはありません。スタックを指定すると最初のファミリーで組まれ、[設定の警告](/ja/docs/configuration-fonts-colors-viewers#設定の警告)として報告されます。
+
+```ts
+bodyText: { fontFamily: "'EB Garamond', Georgia, serif" } // set in EB Garamond
+```
+
+レイアウトの前にそのファミリーを読み込んでください（[カスタムフォント](/ja/docs/configuration-fonts-colors-viewers#カスタムフォント)と、[PDFの生成](/ja/docs/configuration-programmatic-usage#pdfの生成)のフォントプロバイダーを参照）。読み込まれていないと、スタックのほかの指定にかかわらず、ブラウザーは既定のフォントで計測します。引用符の中のカンマは名前の一部です（`'"Foo, Bar"'`は1つのファミリーです）。
+
+### ハイフネーション
+
+行そろえを`'justify'`にしたとき、ハイフネーションは長い語を音節の境界で分割して、語間が広がりすぎるのを防ぎます。エンジンはTeX/Liangのパターンを使って、音節の境界にある自然な分割位置を見つけます。詳しくは[ハイフネーションと両端そろえ](/ja/docs/justification)を参照してください。行末不ぞろいのテキストは、指定した場合にだけハイフネーションします。後述の[行末不ぞろいのテキスト](#行末不ぞろいのテキスト)を参照してください。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>ハイフネーションを許可するかどうか。</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>LocaleTag</code></td>
+      <td>トップレベルの<code>locale</code>、なければ<code>'en-us'</code></td>
+      <td>音節の境界を決める言語の規則。後述の対応ロケールのいずれか、または任意のBCP 47タグ（<code>'es-ES'</code>、<code>'pt-BR'</code>）を指定します。</td>
+    </tr>
+    <tr>
+      <td><code>ragged</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>行末不ぞろいのテキスト（左そろえ・右そろえ・中央そろえ）も、<code>zone</code>の範囲でハイフネーションします。<a href="#行末不ぞろいのテキスト">行末不ぞろいのテキスト</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>zone</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>3em</code></td>
+      <td>行末不ぞろいのテキストのハイフネーションゾーン。収まらない語は、丸ごと次の行に送るとこれより広いアキが残る場合にだけ分割します。<code>em</code>はそのテキスト自身の文字サイズが基準です。両端そろえのテキストでは無視されます。</td>
+    </tr>
+    <tr>
+      <td><code>compounds</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>複合語、つまり2文字の間にハイフンを含む語（<code>af-ter-dinner</code>）を辞書で分割できるようにします。<code>false</code>にすると、TeXと同様に、そうした語は自身のハイフン以外では分割しません。ハイフンの位置では引き続き行を終えられます（<code>after-</code> · <code>dinner</code>）。語の中に入力したソフトハイフンでは引き続き改行し、行全体より広い複合語は引き続き分割します。本文テキスト、見出し、リスト、引用ブロック、囲みに適用されます。キャプション、注、表のセル、目次では複合語を引き続き分割します。<a href="/ja/docs/justification#複合語">複合語</a>を参照してください。</td>
+    </tr>
+  </tbody>
+</table>
+
+**対応ロケール：**`'en-us'`（英語）、`'es'`（スペイン語）、`'fr'`（フランス語）、`'de'`（ドイツ語）、`'it'`（イタリア語）、`'pt'`（ポルトガル語）、`'ca'`（カタルーニャ語）、`'nl'`（オランダ語）。
+
+パターンを選ぶとき、地域・用字・バリアントのサブタグは無視され、大文字・小文字の違いと`_`の区切りも無視されます。`'es-ES'`、`'es-MX'`、`'es_419'`は`'es'`で、`'pt-BR'`は`'pt'`で、英語のタグはすべて（`'en'`、`'en-GB'`）`'en-us'`でハイフネーションします。同梱している英語のパターンはこれだけなので、イギリス英語のテキストもアメリカ式で分割されます。パターンを同梱していない言語（`'sv'`、`'pl'`、`'fi'`など）は`'en-us'`のパターンでハイフネーションするため、分割されないのではなく誤った位置で分割されます。エンジンはこれをタグごとに1回`console.warn`で報告し、Sandboxは**検査**パネルに表示します。そうした文書では`enabled: false`を設定してください。警告も出なくなります。中国語・日本語・韓国語（`zh`、`ja`、`ko`。地域や用字は問いません）はパターンを必要とせず、警告も出ません。これらの言語の文書はハイフネーションなしで組まれます。文中に引用したラテン文字の語を分割するには、`enabled: true`を設定し、`locale`にその言語を指定します（英語なら`'en-us'`）。`locale`なしで`enabled: true`にした場合や、中国語・日本語・韓国語のロケールを指定した場合は、ハイフネーションはオフのままで、その旨をコンソールに1回表示します。`matchHyphenationLocale(tag)`はタグに対応する同梱ロケールを返し（ない場合は`undefined`）、`HYPHENATION_LOCALES`は同梱ロケールの一覧です。解決済みの設定（`doc.config.bodyText.hyphenation`）は、実際に使ったパターンを`locale`に、指定したタグがそれと異なる場合はそのタグを`tag`に保持します。PDFバックエンドは文書の言語をトップレベルの`locale`から宣言し、`locale`が未設定の場合にだけこのタグから宣言します（[文書の言語](#文書の言語)を参照）。
+
+```ts
+import { matchHyphenationLocale } from 'postext';
+
+matchHyphenationLocale('es-MX'); // 'es'
+matchHyphenationLocale('en-GB'); // 'en-us'
+matchHyphenationLocale('sv');    // undefined: hyphenated with 'en-us', with a console warning
+```
+
+5文字未満の語はハイフネーションしません。分割位置の前に2文字以上、後に3文字以上が必要です。
+
+#### 行末不ぞろいのテキスト
+
+既定では、ハイフネーションするのは両端そろえのテキストだけです。`textAlign: 'left'`の場合や、左そろえ・中央そろえ・右そろえの段落スタイルでは、行末がどれほど不ぞろいになっても語は丸ごと保たれます。例外はテキストに入力したソフトハイフン（U+00AD）です。行末不ぞろいのテキストもハイフネーションするには、`hyphenation.ragged: true`を設定します。
+
+行末不ぞろいの行は伸ばさないので、収まらない語をすべて分割すると行末がハイフンだらけになります。これを抑えるのが**ハイフネーションゾーン**で、DTPソフトの単一行コンポーザーと同じ方法です。行末に語が収まらないとき、エンジンは、その語を丸ごと次の行に送った場合に残るアキを調べます。アキが`zone`より広ければ、収まる最後の音節で語を分割し、そうでなければ語を丸ごと次の行に送ります。`em`で指定したゾーンは、そのテキスト自身の文字サイズが基準です。既定値の`3em`では、目立って短い行を残す語だけを分割します。ゾーンを広くするとハイフンが減り、行末の不ぞろいが大きくなります。`0`にすると、収まらない語はすべて分割します。1行ずつ組む場合、音節で終わる行は3行以上続きません。ハードハイフン（`enseñanza-aprendizaje`）、URLの区切り、テキストに入力したソフトハイフン、行全体より広い語は、これまでどおりに改行します。ゾーンと2行の制限が制御するのは辞書による音節だけです。
+
+この設定は文書全体に効きます。本文テキストと引用ブロックが行末不ぞろいのときに適用され、行末不ぞろいの段落スタイルや囲みの本文のうち、自身の`hyphenation`がオンのもの（既定値は本文の`hyphenation.enabled`）にも適用されます。したがって、`hyphenation: false`にすると、そのスタイルの語は丸ごと保たれます。見出し、キャプション、注、表のセル、目次はハイフネーションしません。そこでは、ほかと同様に、行長全体より広い語だけを分割します。デザインのテキスト（柱、章扉、部扉）は、各テキスト要素の`hyphenate`フラグに従います。組み込みの全ページの章扉と部扉はこれを設定しており、文書の辞書も使います。両端そろえのテキストでは`ragged`と`zone`は無視されます。
+
+```ts
+const config: PostextConfig = {
+  locale: 'es',
+  bodyText: {
+    textAlign: 'left',
+    // A little more hyphenation than the 3 em default.
+    hyphenation: { ragged: true, zone: { value: 2, unit: 'em' } },
+  },
+};
+```
+
+`optimalRagged`（既定）を使うと、行末不ぞろいの本文テキストはKnuth-Plassで改行され、ゾーンはそこでも同じ意味を持ちます。語を分割するのは、行の残りに収まらず、丸ごと送るとゾーンを超えるアキが残る場合だけです。音節で終わる行が2行続くことは禁止されませんが、両端そろえのテキストでハイフンが2行続くのと同じコストがかかるため、3行続くことはまれです。`optimalRagged: false`または`optimalLineBreaking: false`では、postext 1.4までと同様に、各行を埋めてから次の行に進みます。
+
+行末不ぞろいのハイフネーションでは、インライン書式（太字、イタリック、リンク、数式）を含む段落が常に使う改行処理で段落を組みます。そのため、オンにするとハイフン以外の改行位置もいくつか変わることがあります。行末不ぞろいの行では、この改行処理はスペースと辞書の音節のほかに、2語の間のハードハイフンやダッシュの後（`largas—separadas`。`breakAfterDashes`を使うと、語の間に前後を詰めて置いたあらゆるダッシュ、つまり`riddles.—I`や`riddles—*and*`も）、URLの区切り、表意文字の間で改行し、複数の範囲にまたがって組まれた語は分割しません（`**Nota**:`、`(*véase*`）。行末不ぞろいのハイフネーションを使わない場合、書式のない行末不ぞろいの段落は、`optimalRagged`がオン（既定）ならKnuth-Plassで改行されます。改行位置は、語間、2文字の間のハードハイフンの後（`meta-` · `analyses`。もう一方の改行処理と同じ）、`breakAfterDashes`を使う場合は前後を詰めたダッシュの後です。1行ずつ組む場合はpretextの改行処理を通り、3つの点で異なります。挿入句を閉じるダッシュの前や開くダッシュの後でも改行することがあり（`él` · `— y`）、ハイフネーションするときはスラッシュの後でも改行し（`km/` · `h`）、行より広い語を任意の文字の位置でハイフンなしに切ります。もう一方の改行処理は、まず音節で分割します。
+
+Sandboxでは、このスイッチは**本文**セクションの段落の行そろえの下にある**行末不ぞろいのテキストもハイフネーション**で、その下にゾーンがあります。本文が両端そろえの場合、同じスイッチは両端そろえの設定と並んでおり、行末不ぞろいの段落スタイルと囲みに適用されます。
+
+### 文書の言語
+
+トップレベルの`locale`は文書全体の言語です。`hyphenation.locale`と同じ値を取り、そのフィールドが未設定のときの代わりになります。スペイン語の本なら、`locale: 'es'`だけでスペイン語のハイフネーションになります。表と分割された囲みの、組み込みの継続表示の文字列（`(cont.)`／*Continued*か*Continúa*か。[ページより高い表](/ja/docs/configuration-resources#ページより高い表)と[分割された囲みの目印](/ja/docs/configuration-styles#分割された囲みの目印)を参照）や、言葉で書く見出し番号（*Chapter One*か*Capítulo uno*か。[語で綴る番号](#語で綴る番号)を参照）の言語もこれで決まり、アクセシブルなPDFにタグ付けする言語にもなります。未設定の場合、エンジンは`'en-us'`とみなします。Sandboxはインターフェースの言語を使い、このフィールドを**デザイン › 表記体系**で設定します。
+
+組み込みのリソースタイプもこれで決まります。`resourceTypes`が未設定の場合、`buildDocument`は`defaultResourceTypes(locale)`で番号とキャプションを付けるので、`locale: 'de'`だけで*Abbildung 1.1*や*Tabelle 1.1*になります。`locale`が未設定の場合は、リソースタイプでも表の文字列でも、ハイフネーションのロケールが代わりに使われます。明示的に指定した`resourceTypes`のリストが常に優先されます。以前のバージョンでは、`defaultResourceTypes(locale)`を自分で渡さない限り、`locale`にかかわらず英語のタイプを使っていました。`locale`を設定しつつ英語のラベルを残したい文書は、`resourceTypes: defaultResourceTypes('en')`を渡します。Sandboxの本とバンドルは自身のリストを持っているので、影響を受けません。
+
+ここでも`hyphenation.locale`と同様に任意のBCP 47タグが使えます。`'de-AT'`ならドイツ語の文字列になります。組み込みの文字列があるのは、ハイフネーションが対応する8言語、中国語（簡体字と繁体字）、日本語、アラビア語です。それ以外の言語には英語の文字列が使われます。
+
+中国語では、`zh`、`zh-Hans`、`zh-Hant`、`zh-CN`、`zh-SG`、`zh-TW`、`zh-HK`、`zh-MO`と長い形（`zh-Hant-TW`）を、大文字・小文字を問わず、`-`でも`_`でも受け付けます。文字列は`Intl.Locale(tag).maximize()`で読み取った用字に従います。`zh`、`zh-CN`、`zh-SG`は簡体字、`zh-TW`、`zh-HK`、`zh-MO`は繁体字です。一方、言語に依存する組版の既定値は、[clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script)の推奨どおり地域に従います。CN、SG、MYは中国大陸、TWは台湾、HKとMOは香港とみなし、地域のないタグは用字で判断します（`zh-Hant`は台湾、`zh`と`zh-Hans`は中国大陸）。日本語では、`ja`、`ja-JP`、`ja-Jpan`、そのほかの`ja`タグを受け付けます（`isJapaneseLanguage(tag)`）。postext 1.16からは日本語独自の文字列と独自の地域`japan`を持ち、その組版の既定値はJLReqに従います（[日本語の組版](/ja/docs/japanese-layout)を参照）。日本語の項目がない文字列の表では、中国語ではなく英語が使われます。`localeScript(tag)`、`cjkRegionOf(tag)`、`stringsKeyOf(tag)`、`sameContentLocale(a, b)`はこれらの判定結果を返します。`DOCUMENT_LANGUAGES`は組み込みの文字列がある言語の一覧で、各言語はその言語自身の名前で表記されています（日本語は中国語の項目とالعربيةの間）。Sandboxの**文書の言語**の選択肢にはこの一覧が表示されます。
+
+<table>
+  <thead>
+    <tr>
+      <th>言語</th>
+      <th>図：名前、複数形、短いラベル</th>
+      <th>表：名前、複数形、短いラベル</th>
+      <th>表の継続表示：<code>continuedSuffix</code>、<code>continuesMarker</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>英語（<code>en</code>）</td><td>Figure, Figures, Fig.</td><td>Table, Tables, Tab.</td><td>(cont.), Continued</td></tr>
+    <tr><td>スペイン語（<code>es</code>）</td><td>Figura, Figuras, Fig.</td><td>Tabla, Tablas, Tabla</td><td>(cont.), Continúa</td></tr>
+    <tr><td>フランス語（<code>fr</code>）</td><td>Figure, Figures, Fig.</td><td>Tableau, Tableaux, Tabl.</td><td>(suite), À suivre</td></tr>
+    <tr><td>ドイツ語（<code>de</code>）</td><td>Abbildung, Abbildungen, Abb.</td><td>Tabelle, Tabellen, Tab.</td><td>(Forts.), Wird fortgesetzt</td></tr>
+    <tr><td>イタリア語（<code>it</code>）</td><td>Figura, Figure, Fig.</td><td>Tabella, Tabelle, Tab.</td><td>(segue), Continua</td></tr>
+    <tr><td>ポルトガル語（<code>pt</code>）</td><td>Figura, Figuras, Fig.</td><td>Tabela, Tabelas, Tab.</td><td>(cont.), Continua</td></tr>
+    <tr><td>カタルーニャ語（<code>ca</code>）</td><td>Figura, Figures, Fig.</td><td>Taula, Taules, Taula</td><td>(cont.), Continua</td></tr>
+    <tr><td>オランダ語（<code>nl</code>）</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
+    <tr><td>簡体字中国語（<code>zh-Hans</code>、<code>zh</code>、<code>zh-CN</code>）</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
+    <tr><td>繁体字中国語（<code>zh-Hant</code>、<code>zh-TW</code>、<code>zh-HK</code>）</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
+    <tr><td>日本語（<code>ja</code>、<code>ja-JP</code>）</td><td>図, 図, 図</td><td>表, 表, 表</td><td>（続き）, 次ページへ続く</td></tr>
+    <tr><td>アラビア語（<code>ar</code>、<code>ar-EG</code>、<code>ar-MA</code>…）</td><td>شكل, أشكال, شكل</td><td>جدول, جداول, جدول</td><td>(تابع), يتبع</td></tr>
+  </tbody>
+</table>
+
+キャプションの接頭辞はタイプの名前です（*Figure 1.1.*）。中国語のタイプは章ごとにハイフンで番号を付け（`{h1}-{n}`、图 1-1）、キャプションの設定で`labelNumberGap: ''`と`labelSeparator: '　'`を指定すると、キャプションは图1-1　标题になります（[キャプションスタイル](/ja/docs/configuration-resources#キャプションスタイル)を参照）。索引も言語に従います。簡体字では、相互参照の前に见と另见を置き、記号と数字の項目の上に符号と数字の見出しを置きます。繁体字では見、另見、符號、數字を使います。日本語も同じ方法でタイプに番号を付け、この2つの設定なしでキャプションを図1-1　題と組みます。相互参照は第3章、2.3節、12ページと書き、参考文献の見出しを「参考文献」とします。索引は記号と数字の項目の上にそれぞれ「記号」「数字」の見出しを置き、相互参照を矢印で示します。*see*は`→夏目漱石`、*see also*はページ番号の後に`→夏目漱石、森鷗外も見よ`と書き、ラベルは正体です。アラビア語も同じ方法でタイプに番号を付け（`{h1}-{n}`、شكل 2-3）、相互参照はالفصل 3、القسم 2-1、ص 12と書き、参考文献の見出しをالمراجعとします。索引はانظر／انظر أيضًا、رموز、أرقامを使い、アラビア語のカンマとセミコロン（، ؛）を使います。
+
+中国語・日本語・韓国語の文書は、HTML出力（`.pt-doc`のルートの`lang`。`zh-Hant-TW`はそのまま保持）と、描画するCanvas（`ctx.lang`。Chrome 136以降）で言語を宣言します。これにより、ブラウザーは地域に合った字形で描画します。Unicodeは漢字を統合しているため、同じコードポイントでも台湾のフォントと日本のフォントでは見た目が異なるからです。ほかの文書には、これまでどおり`lang`を付けません。PDFは、タグ付きかどうかにかかわらず、すべての文書で`locale`から用字と地域を含めて`/Lang`を宣言します。右から左に書く言語（アラビア語、ペルシア語、ウルドゥー語、ヘブライ語など）の文書も言語を宣言し、フォントの言語別字形（`locl`）とフォールバックフォントはそれに従います。
+
+```ts
+const config: PostextConfig = {
+  locale: 'es',
+  bodyText: { textAlign: 'justify', hyphenation: { enabled: true } }, // hyphenates in Spanish
+};
+```
+
+#### 文書の数字
+
+トップレベルの`numerals`は、エンジンが書くすべての数の数字を設定します。対象は、ノンブルと、目次・索引・ページ参照のページ表記、番号付きリストと脚注の番号、見出しと章のカウンター、`{chapterNumber}`、図番号とその参照の`{h1}`と`{n}`、`{totalPages}`、`{bookTotalPages}`、`{numberDecimal}`です。`'latn'`は0–9、`'arab'`はアラビア・インド数字٠–٩、`'arabext'`はペルシア数字۰–۹で書きます。変わるのは10進の形式（`decimal`、リストの`arabic`、または既定値のままの設定）だけなので、著者が名前で指定した形式はそのとおりに出力されます。`lower-roman`はi、ii、iiiのままで、ラテン文字の文書で`arabic-indic`を指定すれば١، ٢، ٣と書きます。文書のテキストが書き換えられることはありません。
+
+既定値の`'auto'`は、`locale`の数字を使います（`defaultNumeralsFor(tag)`）。地域なしのアラビア語とマグリブ以外の地域のアラビア語（`ar`、`ar-EG`、`ar-SA`、`ar-AE`など）は`'arab'`、`ar-MA`、`ar-DZ`、`ar-TN`、`ar-LY`、`ar-MR`、`ar-EH`は`'latn'`、ペルシア語（`fa`）、パシュトー語（`ps`）、インドのウルドゥー語（`ur-IN`）は`'arabext'`、パキスタンのウルドゥー語を含むそれ以外はすべて`'latn'`です。CLDRは地域なしの`ar`と`ar-AE`に`latn`を割り当てていますが、マシュリクと湾岸地域のアラビア語の本は٠–٩で印刷され、Postextはそれに従います。数字を指定したタグはその数字を保ちます（`ar-MA-u-nu-arab`）。文書の数字でノンブルを付けたページは、`pageNumberFormat`として`arabic-indic`または`persian`を記録するので、PDFのページラベルにも同じ数字が表示されます。不明な値は言語に従い、`unknownNumerals`として報告されます。
+
+著者が入力した数は、3つの方式のいずれでも読み取ります。リスト項目`٣.`は3から始まり、`{startAt=٥}`、`:::numbering{startAt=٥}`、`:::space{lines=٢}`、`:::part{number="٣"}`（`{numberDecimal}`用）もその値を読み取ります。
+
+```ts
+const config: PostextConfig = { locale: 'ar' };                     // ١، ٢، ٣
+const maghreb: PostextConfig = { locale: 'ar-MA' };                 // 1, 2, 3
+const forced: PostextConfig = { locale: 'ar', numerals: 'latn' };   // 1, 2, 3
+```
+
+#### テキストの方向
+
+トップレベルの`direction`は文書の基本方向を設定します。`'ltr'`、`'rtl'`、`'auto'`（既定）のいずれかです。既定値は、`locale`の用字が右から左に書かれる場合（アラビア文字、ペルシア語、ウルドゥー語、ヘブライ文字、シリア文字、ターナ文字、ンコ文字、アドラム文字など。`directionOf(tag)`で判定）に`'rtl'`、それ以外では`'ltr'`になります。右から左の文書は鏡像の座標系でレイアウトされます。行は右から始まり、第1段は右の段になり、インデント、リストのマーカー、フロート、脚注、囲みは右側に置かれ、[`page.binding: 'auto'`](/ja/docs/configuration-page-layout#綴じ)は右綴じになります。解決済みの設定が`direction: 'rtl'`を持つのはそうした文書だけなので、左から右の文書はこれまでどおりに解決されます。不明な値は`'auto'`として読み取られ、`unknownConfigValue`として報告されます。Unicodeの双方向アルゴリズム（UAX #9）は、どちらの方向でも各行のランを並べます。英語の本の中のアラビア語の引用は、その場で右から左に読めます。
+
+文書の中では、見出しや`:::`コンテナーに`{dir=ltr}`や`{dir=rtl}`を付けられ、インラインの`:ltr[…]`と`:rtl[…]`はテキストの範囲を分離します（[マークアップでの文字方向](/ja/docs/document-format#マークアップでの文字方向)を参照）。表のリソースには`table.direction`を指定します。文書と逆の方向に組んだブロックは、自身の開始側を保ちます。そのインデント、リストのマーカー、最終行の寄せる側は、テキストが始まる側に移ります。
+
+側を指定する設定は、用紙の側ではなく、テキストまたは本文の流れの側を意味します。そのため、英語の本のために作ったデザインは、本をアラビア語に切り替えてもそのまま機能します。`'start'`と`'end'`も明示的な名前として受け付けます。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>設定</th>
+      <th><code>'left'</code>／<code>'right'</code></th>
+      <th><code>'start'</code>／<code>'end'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>本文、見出し、段落スタイル、部、脚注、囲みの本文の<code>textAlign</code>。キャプションとキャプションの注記の<code>align</code></td><td>テキストの側。<code>'left'</code>は行が始まる側で、アラビア語の段落では右になり、両端そろえの段落の最終行もそちらに寄ります。</td><td><code>'left'</code>と<code>'right'</code>の同義語。解決済みの設定は<code>'left'</code>／<code>'right'</code>を持ち、保存した設定は書かれたとおりの値を保ちます。</td></tr>
+    <tr><td>表のセルの<code>align</code></td><td>セルのテキストの側。表の方向（<code>table.direction</code>）で読み取ります。</td><td>同義語。表の方向で読み取ります。</td></tr>
+    <tr><td><code>placement.align</code>（フロート、幅の狭い図）</td><td>本文の流れの側。右から左の本では、<code>'left'</code>は用紙の右です。</td><td>同義語。</td></tr>
+    <tr><td>囲みの<code>stripe.side</code>、<code>icon.cornerSide</code>、<code>labelTab.position</code>（<code>'top-start'</code>、<code>'top-end'</code>）</td><td>本文の流れの側。ページ上のすべての囲みで同じです。</td><td>囲み自身の方向（アラビア語の本の中の<code>:::callout&#123;dir=ltr&#125;</code>は用紙の左から始まります）。</td></tr>
+    <tr><td>ヘッダーとフッターのスロット。用紙に固定したデザイン要素</td><td>用紙の側。</td><td>テキスト要素のみ。要素自身の<code>direction</code>の始まりと終わり。</td></tr>
+  </tbody>
+</table>
+
+`placement.rotate`は鏡像のページでも物理的な意味を保ちます。時計回りに回転した図は、用紙の上でも時計回りに回転します。レイアウトを読み取るホストは、各ページの鏡像の座標系（`direction: 'rtl'`を持つ`VDTPage.flow`、`pageIsMirrored(page)`）と、各行のセグメントの表示順（`VDTLine.order`）を参照できます。`flowToPage`と`pageToFlow`は、流れと用紙の間で座標を変換します。[アラビア語の組版](/ja/docs/arabic-layout#書字方向と双方向アルゴリズム)を参照してください。
+
+```ts
+const arabic: PostextConfig = { locale: 'ar' };                        // right to left, bound on the right
+const english: PostextConfig = { locale: 'en', direction: 'rtl' };     // forced; rarely what you want
+```
+
+### 言語と文字体系
+
+Postextは、左から右に書くアルファベット系の文字体系と、横組み・縦組みの中国語と日本語を組めます。[中国語の組版](/ja/docs/chinese-layout)と[日本語の組版](/ja/docs/japanese-layout)では、それらの組み方と、それを制御する設定を説明しています。設定キーは[東アジアの組版](/ja/docs/configuration-east-asian#東アジアの組版)、[縦組み](/ja/docs/configuration-page-layout#縦組み)、[綴じ](/ja/docs/configuration-page-layout#綴じ)にあります。文字体系ごとの扱いは次のとおりです。
+
+- **中国語**は、段落のCJK文字が語間より多いときにCJKコンポーザーで組まれます。行は`cjk.lineBreak`の行頭・行末の規則のもとで文字の間で改行し（。、」やーで始まる行、「や（で終わる行は作りません）、——と……、記号付きの数、ラテン文字の語は分割しません。両端そろえの行は、文字の間を広げて行長にそろえます。約物の幅、ぶら下げ、漢字とラテン文字の間のアキ、文字グリッド、圏点、固有名詞と書名の符号、ルビ、割注は、横組みでも縦組み（`layout.writingMode: 'vertical-rl'`）でも、`locale`の地域に従います。いくつかのCJKの語を引用するラテン文字の段落は最適改行を保ち、それらの語の隣で改行することがあります。ラテン文字のテキストに引用したCJKの括弧、中黒、全角の記号（〈h〉、％）は何も変えません。
+- **日本語**は同じコンポーザーを通りますが、postext 1.16からは独自の規則、つまりW3Cの『日本語組版処理の要件』（JLReq）とJIS X 4051の規則に従います。`ja`ロケールは`japan`地域になり、その自動の値によって、JLReqの禁則のレベル（小書きの仮名とーは行頭に置かない）、約物の連続の詰めを伴う全角の約物、？！の後の全角アキ、段落冒頭の始め括弧を字下げの後半に置く処理、本文の上に付けるゴマ圏点、『』による書名、1:2:1の割付けによるルビ、日本語の番号表記、注、読みで並べる索引が設定されます。以前のバージョンでは、日本語を中国大陸の既定値で組んでいました。
+- **韓国語**も同じコンポーザーを通り、ハイフネーションなしで組まれますが、既定値は中国大陸のものです。韓国語独自の規則（KLREQ）は実装されていません。韓国語のテキストは、スペースのほかに音節の間でも改行します。
+- **アラビア語とそのほかの右から左の文字体系**（ペルシア語、ウルドゥー語、ヘブライ語など）は右から左に組まれます。詳しくは[アラビア語の組版](/ja/docs/arabic-layout)で説明しています。文書の[`direction`](#テキストの方向)は`locale`の用字から決まり、Unicodeの双方向アルゴリズムが各行の中のラテン文字の語と数を並べ、本は右綴じで第1段が右になり、エンジンが書くすべての数は地域の[数字](#文書の数字)を使います。アラビア文字を含む語は、ハイフネーション、字間の調整、分割の対象にならず、アラビア語の両端そろえの行は語間とカシーダで伸ばします。母音記号、強調、脚注、アラビア語の文字列は[アラビア文字のテキスト](#アラビア文字のテキスト)にあります。ペルシア語、ウルドゥー語、ヘブライ語には方向、数字、語を分割しない規則が適用されますが、独自の組み込みの文字列はありません。
+
+ハイフネーションのパターンは8言語分を同梱しています（`en-us`、`es`、`fr`、`de`、`it`、`pt`、`ca`、`nl`）。組み込みのリソースタイプと継続表示の文字列は、この8言語と、中国語、日本語、アラビア語にあります。中国語、日本語、韓国語と、右から左に書く言語は、ハイフネーションなしで組まれます。それ以外の言語は、コンソールに警告を出したうえでアメリカ英語のパターンでハイフネーションし、英語の文字列を使います。そうした文書では、`hyphenation.enabled: false`を設定し、`resourceTypes`と`tableStyle`の継続表示の文字列をその言語で渡してください。
+
+### アラビア文字のテキスト
+
+ここの設定はアラビア文字のテキストのためのもので、ほかの文字体系で書かれた文書には何の影響もありません。[アラビア語の組版](/ja/docs/arabic-layout)では、方向、綴じ、数字、韻文、目次、索引といったアラビア語の本のほかの要素とあわせて説明しています。
+
+- **母音記号と行送り**。母音記号付きのテキストの母音記号（ファトハ、カスラ、シャッダ、タンウィーン、短剣アリフ、クルアーンの記号）は、文字の上下の行間に積み重なり、行送りはそのために広がることはありません。記号を含む各行は、記号のインクがどこまで届くか（`VDTLine.markInk`）を記録し、レンダラーの段のクリップは段の最初と最後の行の記号を含めます。語の上の記号が、上の行の語の下にぶら下がる文字や記号とぶつかると、ビルドはその段落を報告します（`arabicMarksExceedLeading`。Sandboxの**検査**パネル）。比較するのは上下に重なる語だけです。部分的に母音記号を付けたテキストには約1.7–1.85 emの`lineHeight`、完全に母音記号を付けた韻文には1.9–2.1 emが適しています。
+- **強調**。アラビア文字の活字にはイタリックがないため、`locale`がアラビア文字で書かれる文書では、`*…*`は既定で太字になります（`bodyText.emphasis: 'auto'`）。`'color'`は`italicColor`の正体で組み、`'overline'`は語の上に線を引きます。アラビア語の本で使われるkhaṭṭ fawqīです。この設定は、本文の書体で組むすべてのテキスト、つまり段落、リスト、引用ブロック、段落スタイル、囲みの本文、注、見出しに及びます。キャプション、表のセル、目次、索引は、自身のイタリックの設定を保ちます。どれを選んでも、エンジンがアラビア文字をイタリックにすることはありません。イタリックで組んだ範囲のうち、アラビア語の語は正体のままで、ラテン文字の語はイタリックを保ちます。そうした文書では、引用ブロックは既定で正体です。
+- **タシュキール（tashkīl）**。`bodyText.tashkil: 'strip'`は、レイアウトで組むテキストから母音記号とクルアーンの記号を取り除きます。母音記号付きの原稿から母音記号なしの版を作るためのものです。対象は、ファトハ、ダンマ、カスラとそのタンウィーン、スクーン、シャッダ、短剣アリフ（هٰذاはهذاになります）、U+0656–U+065FとU+06D6–U+06EDの記号です。`'strip-vowels'`は、現代の多くの本と同じようにシャッダを残します。ハムザとマッダは残ります（أ إ آは文字であり、結合記号で入力した場合も同じです）。原稿は記号を保ち、行、見出し、目次は記号なしで組まれますが、組まれた文字はすべて原稿の中の位置に対応づけられたままです。
+- **脚注**。`footnotes.markerTemplate: '({n})'`は合印を文書の数字で«(١)»と書き、`numbering: 'page'`はページごとに番号を振り直し、`noteNumberPosition: 'inline'`は注自身の番号を行の中に組みます。区切り線と注の番号は段の始まり側に置かれ、右から左の本では右側になります。
+- **語を分割しない**。アラビア文字を含む語は、アラビア語の本の中でも、ほかの言語の本に引用した場合でも、ハイフネーション、分割、字間の調整の対象になりません。アラビア文字のテキストに`letterSpacing`を設定したスタイルは報告され（`joiningScriptLetterSpacing`）、行より広い語は行からはみ出して報告されます（`unbreakableWordOverflow`）。[アラビア語の組版](/ja/docs/arabic-layout#字形処理と分けない語)を参照してください。
+- **カシーダと韻文**。アラビア語の両端そろえの行は、語間に加えてカシーダでも伸ばします（`bodyText.kashida`。[アラビア文字のカシーダ](/ja/docs/justification#アラビア文字のカシーダ)を参照）。古典詩は、`:::verse`を使うと、同じ幅の2つの半句からなるベイト（bayt）を1行に1つずつ組みます（[`:::verse`](/ja/docs/document-format#verse)を参照）。
+- **索引**。アラビア語の索引はアルファベット順に並べ、冠詞ال（`index.ignoreArticle`）、母音記号、ハムザの座を無視します。[索引](/ja/docs/configuration-notes-references#索引)を参照してください。
+
+### オーファン、ウィドウ、ラント、分割禁止の規則
+
+これらのデメリットの仕組みは[ハイフネーションと両端そろえ](/ja/docs/justification)を参照してください。この節は、それらを制御する`bodyText`のキーのリファレンスです。
+
+本文の設定には、ハイフネーションと語間の上限・下限のほかに、構造的に不格好な段落の分割を防ぐ緩やかな規則があります。これらはすべてデメリットとしてKnuth-Plassの改行アルゴリズムに渡されます。厳格な規則を強制することはなく、レイアウトをすっきりした分割の方向に寄せるだけです。どれかを実質的に無効にするには、その`*Penalty`の値を`0`にします。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '140px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>avoidOrphans</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>段落が、次の段の頭で<code>orphanMinLines</code>行未満で終わるのを避けます。</td>
+    </tr>
+    <tr>
+      <td><code>orphanMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>段落を分割するとき、次の段の頭に必要な最小の行数。<code>avoidOrphans</code>が<code>true</code>のときだけ有効です。</td>
+    </tr>
+    <tr>
+      <td><code>orphanPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>1000</code></td>
+      <td>オーファンの制約に反したときに加えるデメリット。値を大きくするほど、アルゴリズムはオーファンを強く避けます。<code>0</code>でペナルティーを無効にします。</td>
+    </tr>
+    <tr>
+      <td><code>avoidOrphansInLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>true</code>にすると、段落だけでなくリスト項目もオーファンから保護します。<code>avoidOrphans</code>が<code>true</code>のときだけ効果があります。</td>
+    </tr>
+    <tr>
+      <td><code>avoidWidows</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>段落が、現在の段の末尾で<code>widowMinLines</code>行未満で始まるのを避けます。</td>
+    </tr>
+    <tr>
+      <td><code>widowMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>段落を分割するとき、現在の段の末尾に必要な最小の行数。<code>avoidWidows</code>が<code>true</code>のときだけ有効です。</td>
+    </tr>
+    <tr>
+      <td><code>widowPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>1000</code></td>
+      <td>ウィドウの制約に反したときに加えるデメリット。<code>0</code>でペナルティーを無効にします。</td>
+    </tr>
+    <tr>
+      <td><code>avoidWidowsInLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>true</code>にすると、リスト項目もウィドウから保護します。<code>avoidWidows</code>が<code>true</code>のときだけ効果があります。</td>
+    </tr>
+    <tr>
+      <td><code>avoidRunts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>段落が非常に短い最終行、つまり<em>ラント</em>（たとえば短い1語だけの行）で終わるのを避けます。<code>optimalRagged</code>を使うと、行末不ぞろいのテキストにも適用されます。中国語・日本語・韓国語の段落は、1文字だけ（単独または閉じ記号を伴うもの）の行（孤字）で終わりません。上の行が字間の上限内で引き続き両端そろえにできる場合、その行から最後の1文字を送ります。</td>
+    </tr>
+    <tr>
+      <td><code>runtMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>20</code></td>
+      <td>段落の最終行のしきい値。文字数ではなく語間の数で数えます。行の幅が<code>runtMinCharacters × normalSpaceWidth</code>ピクセルより狭いと、その行はラントです。語間は多くの本文用書体で1/4–1/3 em、つまり小文字の約半分の幅なので、既定値の20は4–7 em未満、およそ8–12文字未満の最終行を捉えます。約N文字未満の最終行を捉えるには、2 × N程度に設定します。</td>
+    </tr>
+    <tr>
+      <td><code>runtPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>1000</code></td>
+      <td>Knuth–Plassの二乗デメリットの式に加える、バッドネス換算の値（行の<em>バッドネス</em>と同じ尺度で、バッドネスは10000で飽和します）。<code>0</code>でペナルティーを無効にします。</td>
+    </tr>
+    <tr>
+      <td><code>gradedRuntPenalty</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>ラントのペナルティーを、最終行がどれだけ短いかに応じて段階的にします。しきい値<em>t</em>未満の幅<em>w</em>の最終行は、ペナルティー全体ではなく<code>runtPenalty × (1 − w / t)</code>のコストになります。2語で終わる場合は1語で終わる場合よりコストが小さくなり、上の行に余裕があれば改行処理は語を1つ下の行に送ります（'…sallies of our' / 'minds.'ではなく'…sallies of' / 'our minds.'）。既定ではオフで、どのラントも同じコストになり、改行処理は上の行を詰めた状態に保ちます。</td>
+    </tr>
+    <tr>
+      <td><code>avoidRuntsInLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>true</code>にすると、リスト項目にもラントのペナルティーを適用します。<code>avoidRunts</code>が<code>true</code>のときだけ効果があります。</td>
+    </tr>
+    <tr>
+      <td><code>tightenRunts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>ペナルティーでラントを避けられなかったとき、代わりに段落を1行短く組みます。語間を詰め（<code>minWordSpacing</code>を超えない範囲）、それだけで行が収まらなければ、わずかなマイナスのトラッキングを加えます。短く組むことで、両端そろえの行が<code>maxWordSpacing</code>を超えて伸びる場合、段落にすでにそれよりゆるい両端そろえの行があるときはその行を超えて伸びる場合、または行末不ぞろいで組む行（通常のスペースの3倍を超える行）が元の段落より増える場合は、短く組むのをやめ、ラントはそのまま残ります。行末不ぞろいのテキストの語間は幅を変えないので、そこではトラッキングだけが働きます。<code>optimalLineBreaking</code>と<code>avoidRunts</code>（行末不ぞろいのテキストではさらに<code>optimalRagged</code>）が必要です。</td>
+    </tr>
+    <tr>
+      <td><code>maxRuntTracking</code></td>
+      <td><code>number</code></td>
+      <td><code>10</code></td>
+      <td>ラントの解消に使えるトラッキングの最大量。1/1000em単位で（InDesignの単位で、10は1文字あたり0.01em）、詰める方向に適用します。<code>0</code>にすると、解消を語間だけに任せます。</td>
+    </tr>
+    <tr>
+      <td><code>slackWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>10</code></td>
+      <td>「段の使われない空間」の二乗コストに掛ける重み。値を大きくするほど、レイアウトは段を隙間なく埋める方向を選びます。<code>0</code>にすると、余りに対する圧力を完全に無効にします。</td>
+    </tr>
+    <tr>
+      <td><code>keepColonWithList</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>段落がコロンで終わり、そのまま直後のリストを導入するとき、コロンを含む最終行をリストから離しません。段落を置くと最初のリスト項目を同じ段・ページで始める余地がなくなる場合、最終行（段落が1行だけなら段落全体）をリストと一緒に次の段に送ります。どれだけの余地があれば十分かは<code>colonListRoom</code>で決まります。この規則で段落全体を送ることになり、その段で段落の直前に見出しが続いている場合は、<code>headings.keepWithNext</code>が保たれるよう、その見出しも一緒に送ります。</td>
+    </tr>
+    <tr>
+      <td><code>colonListRoom</code></td>
+      <td><code>'item' | 'line'</code></td>
+      <td><code>'item'</code></td>
+      <td><code>keepColonWithList</code>がコロンの行の下に求める余地。<code>'item'</code>：リストのオーファンとウィドウの規則が段の末尾に残す最初の項目の分。そこで分割できるなら1行、規則が項目を分割しない場合（たとえば2行の項目）はその全体です。<code>'line'</code>：postext 1.4までと同じく1行。この場合、規則が分割しない最初の項目は単独で次の段に送られ、コロンの行が段の末尾に残ります。<code>configVersion</code> 6より前に保存した設定で、本の中にコロンでリストを導入する箇所があるものは<code>'line'</code>で読み込まれます（<a href="/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。ほかの値は<code>'item'</code>として読み込まれます。</td>
+    </tr>
+    <tr>
+      <td><code>hyphenateAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>段やページがハイフネーションした語で終わることを許します（InDesignの<em>Hyphenate Across Column</em>）。<code>false</code>にすると、段の切れ目をまたぐ段落を改行し直し、その段での最終行が語の途中で終わらないようにします。差分は上の行の語間が<code>maxWordSpacing</code>と<code>minWordSpacing</code>の範囲で吸収します。これは優先度の指定で、その範囲内の改行位置で避けられない場合はハイフンが残ります。段落のすべての段の切れ目を試します。最初の切れ目と、段がいっぱいになる位置にあるそれ以降の切れ目は1回の改行し直しでまとめて扱い、それ以外の位置にある切れ目（ウィドウを避けたもの、帯の高さをそろえるために切ったもの）はその段から別に改行し直します。このとき、前の段ですでに組んだ行は改行位置を保ち、残りだけを改行します。囲みの本文には影響しません。<code>optimalRagged</code>を使うと、行末不ぞろいの段落も同じように改行し直します。語間の幅は変わらないので、行末の位置だけが動きます。改行し直すたびに段落をもう一度計測するので、段末のハイフンが多い本ではレイアウトが少し遅くなります。<code>optimalLineBreaking</code>が必要で、行末不ぞろいのテキストではさらに<code>optimalRagged</code>が必要です。</td>
+    </tr>
+    <tr>
+      <td><code>paragraphContainerSpacing</code></td>
+      <td><code>'collapse' | 'add'</code></td>
+      <td><code>'collapse'</code></td>
+      <td>段落で終わる<code>:::paragraphs</code>コンテナーの下、つまりその段落と次のブロックの間のアキ（<a href="/ja/docs/configuration-styles#paragraphsコンテナー"><code>:::paragraphs</code>コンテナー</a>を参照）。<code>'collapse'</code>：スタイルの<code>spaceBetween</code>と<code>marginBottom</code>、およびコンテナーの周りのテキストの段落間隔（<code>paragraphSpacing</code>を使う場合は1行。囲みの中なら囲みの値）のうち大きいほうを取り、本文テキストの2つの段落の間と同様に、次のブロックが自身の上に取るアキと統合します。参考文献の下の見出しは、そのマージンに項目の間隔を足した位置ではなく、自身の<code>marginTop</code>だけ下に置かれます。<code>'add'</code>：postext 1.4までと同じく、グリッドへのスナップの前に最終行の下にスタイルのアキだけを置き、その下に次のブロック自身の上のアキを加え、段落間隔は含めません。そのため、コンテナーの後の段落がほかのどこよりもコンテナーに近づくことがありました。<code>configVersion</code> 8より前に保存した設定で、段落スタイルを宣言し、本の中にそうしたコンテナーがあるものは<code>'add'</code>で読み込まれます（<a href="/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。マイナスの<code>marginBottom</code>は、どちらの場合も次のブロックを引き上げます。</td>
+    </tr>
+  </tbody>
+</table>
+
+**ラントについて**。ラントとは、最終行が短すぎてまともな1行に見えない段落のことで、典型的には段落の末尾に短い語が1つか2つ取り残されたものです。判定は通常のスペース幅に対する行のピクセル長に基づくため、`runtMinCharacters`は現在の文字サイズに自動的に適応します。`runtMinCharacters × spaceWidth`より見た目が広い短い語は問題なく、それより狭い語（または本当に1語だけの行）にはラントのペナルティーがかかります。しきい値は語間で数え、語間の幅は文字の約半分なので、既定値の20はおよそ8–12文字の最終行にあたります。どのラントもペナルティー全体のコストになるので、しきい値未満の2つの終わり方のうち、改行処理は上の行を詰めたほうを選びます。`gradedRuntPenalty`を使うと、それぞれを不足分に応じて評価し、長いほうの終わり方が選ばれます。数学的な補足として、既定の`runtPenalty`である1000では、ラントの回避は、語間の伸びがおよそr≈2.15までの改行位置の組み合わせのどれよりも優先されます。
+
+**厳格ではなく緩やかな規則**。これらの規則はどれも分割を*禁止*できません。エンジンは常にレイアウトを生成します。これらはデメリットであり、アルゴリズムはバッドネス、ハイフネーションのコスト、適合クラス（fitness class）の滑らかさ、これらの構造上のペナルティーを1つの大域的な最適化の中で比較し、総コストが最も小さい改行位置の組み合わせを選びます。より強い保証が必要ならペナルティーを上げ、ペナルティーを緩めたほうが読みやすい文書なら下げてください。
+
+
+## 見出し
+
+`headings`プロパティは、すべての見出しレベル（H1〜H6）の文字組みを制御します。全レベルに適用される共通の既定値を設定し、そのうえで特定のプロパティをレベルごとに上書きできます。
+
+### 共通の既定値
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Open Sans'</code></td>
+      <td>すべての見出しのフォントファミリー。</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.2 em</code></td>
+      <td>見出しの行の高さ。本文より詰めた値です。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>Main Color (<code>#295AA3</code>)</td>
+      <td>見出しの文字色。既定のパレットの<code>main-color</code>項目に結び付いているため、パレットの色を差し替えるとすべての見出しの色が変わります。</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
+      <td><code>'left'</code></td>
+      <td>すべての見出しレベルに共通のそろえ方です（レベルごとの値はありません）。左そろえ（行末不ぞろい）、両端そろえ、中央そろえ、右そろえ（行頭不ぞろい）から選びます。両端そろえの見出しは段落と同じく最終行を左端にそろえるので、1行の見出しは<code>'left'</code>と同じに見えます。Canvas、HTML、PDFは、番号の接頭辞も含めて同じ位置に行を置きます。詳細デザインのない<code>span: 'page'</code>見出しの既定の章扉もこの値に従います（両端そろえは左端にそろえます）。詳細デザインでは、各テキスト要素が自身の<code>align</code>でそろえられます。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>見出しのフォントウェイト（100〜900）。</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>見出しの上の空き。</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>見出しの下の空き。</td>
+    </tr>
+    <tr>
+      <td><code>keepWithNext</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>true</code>のとき、見出しが段やページの最後の要素として置かれることはありません。続くブロックが見出しの後に少なくとも<code>bodyText.widowMinLines</code>行（<code>bodyText.avoidWidows</code>が<code>false</code>のときは1行）の余地を得られない場合、見出しは本文から離れないよう先へ送られます。<code>bodyText.keepColonWithList</code>と連動し、この規則がコロンで終わる段落をまるごと送る場合、段の末尾にある見出しも取り残されずに一緒に移ります。</td>
+    </tr>
+    <tr>
+      <td><code>keepWithNextSpread</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td><code>keepWithNext</code>が有効でも、偶数ページの最後の本文の段を見出しで終えることは許します。その本文は同じ見開きの向かいの奇数ページで始まるからです（JLReq §4.1.7）。見開きは1ページ目が単独、続いて2〜3ページ、4〜5ページ…と、<code>pageIndexOffset</code>を加味して数えます。左綴じ・右綴じのどちらの本でも同じです。postext 1.16以降。</td>
+    </tr>
+    <tr>
+      <td><code>keepWithNextSplit</code></td>
+      <td><code>'rules' | 'fill'</code></td>
+      <td><code>'rules'</code></td>
+      <td>見出しが段の末尾に来て、段落をまるごと送ると見出しが取り残される場合に、見出しの下の段落をどう分割するか。<code>'rules'</code>：収まるだけの行を置きます。ただし、見出しの下に少なくとも<code>bodyText.widowMinLines</code>行、次の段に少なくとも<code>bodyText.orphanMinLines</code>行が残ることが条件です。両方を満たす分割がなければ見出しは段落とともに先へ移り、空いた余地は段末そろえが埋めます。<code>'fill'</code>：次へ送る行がどれほど少なくても、収まるだけの行を置きます。3行分の余地がある4行の段落は3 + 1に分かれます。postext 1.4まではすべての見出しがこの方法で分割していました。<code>configVersion</code> 8より前に保存された設定はこの動作を保ちます（<a href="/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。<code>avoidWidows</code>または<code>avoidOrphans</code>がオフのときは、規則のその側を外します。</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>見出しの下で流れをベースライングリッドに戻すかどうか。<code>true</code>では見出しの<code>marginBottom</code>をグリッドの行単位に切り上げます。<code>false</code>では指定どおりの空きを保ち、見出しの下の本文は次の吸着点（リストの終わり、<code>:::paragraphs</code>の末尾、別行立て数式）までグリッドから外れることがあります。見出しの下に1行半を空ける、多くの本に見られる組み方です。レベル（<code>levels[].snapToGrid</code>）や見出しスタイルは独自の値を持てます。ここでの値は、それらが継承する値です。</td>
+    </tr>
+    <tr>
+      <td><code>inlineMarks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>見出しが段落と同じように文字書式の記号を読むかどうか。対象は<code>*italic*</code>、<code>**bold**</code>、<code>^superscript^</code>、<code>~subscript~</code>、<code>:smallcaps[…]</code>、リンクです。イタリックの範囲は見出しの傾きを反転させるため、イタリックの見出しの中では立体（ローマン）になります。太字の範囲は<code>bodyText.boldFontWeight</code>を使い、見出し自身のウェイトのほうが重ければそちらを使います。目次にも太字とイタリックの範囲が反映されます。柱とPDFのしおりには文字だけが出ます。<code>false</code>では記号を取り除き、postext 1.4までと同様に、語を見出し自身のスタイルで組みます。デザインのない<code>span: 'page'</code>見出しの既定の章扉も、太字・イタリック・上付き・下付きの範囲を組みます。見出しのデザイン（デザインした章扉の帯、または段内の<code>advancedDesign</code>）は、どちらの場合も<code>{'{titleText}'}</code>をプレーンテキストとして出力します。ただし、そのテキスト要素がインラインの書式記号を読む場合（<code>inlineMarks: true</code>）は、<code>{'{titleText}'}</code>が見出しの太字・イタリック・上付き・下付きの範囲を保ちます（postext 1.19から）。それ以前に保存された設定のうち見出しに記号を含むものは、<code>false</code>として読み込みます（<a href="/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル">postext 1.4以前で書き出したバンドル</a>を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>balancing</code></td>
+      <td><code>ColumnBalancingConfig</code></td>
+      <td>有効</td>
+      <td>縦方向の段末そろえ。段がページの下端にそろって終わるよう、見出しの上に空きを足します。後述します。</td>
+    </tr>
+  </tbody>
+</table>
+
+デザインスロットを使わずに、詩や戯曲の各幕の見出しを中央にそろえる例です：
+
+```ts
+headings: {
+  textAlign: 'center',
+  levels: [{ level: 2, textTransform: 'uppercase' }],
+}
+```
+
+`headings`オブジェクトを渡しても、改めて指定しなかったレベルの既定値はすべて保たれます。H1の改ページも同じです（[レベルごとの上書き](#レベルごとの上書き)を参照）。
+
+### 段末そろえ
+
+出版社は、どの段もページの上端から始まり、下端にそろって終わることを求めます。改行・改段の規則（オーファンとウィドウの防止、見出しと本文の結び付き、分割できない図）は、どうしても短い段を生みます。段の下にベースライングリッドの空き行が1行以上残るのです。段末そろえを有効にすると、エンジンは組版者と同じことを行い、編集上の優先順位に従って調整手段を適用します。
+
+1. **段を閉じる囲み**：短い段の末尾にある囲みを、その下の空きちょうどの分だけ下げ、下端をページの最後のグリッド位置、つまり隣の段の最終行と同じ高さにそろえます。その空きが1行に満たなくても、何も別の段へ移らない限りはすべて使います。既定ではほかのどの調整手段よりも先に働いて空きをすべて使うため、直前の段落に注釈を付ける囲みがその段落から数行離れることがあります。`closingBox: 'last'`にすると、見出し、リストの終わり、そのほかの空きの調整手段が先に行単位で空きを取り、囲みはその残りだけを取ります。`closingBox: 'off'`では囲みを動かしません。
+2. **セーフエリアのある画像**：セーフエリア（`Resource.safeArea`、[文書形式 › セーフエリア](/ja/docs/document-format#セーフエリア)を参照）を持つ画像が、短い段にインラインで置かれているか、その段だけにかかるフロートとして段の頭または末尾にある場合、段が埋まるか切り抜きがセーフエリアに達するまで、セーフエリアの範囲内で切り抜きながらグリッドの行単位で大きくなります。画像が高くなってもページに穴は開かないので、空きを足すどの手段よりも先に働きます。段の頭がそろったままになるページや帯（後述）で段の頭に置かれたフロートは大きくなりません。`flexFigure`として記録されます。専用の設定はなく、リソースにセーフエリアが指定された画像だけが大きくなれます。
+3. **見出し**：短い段の中にある見出しの上の空きに、グリッドの行単位で行を足します。複数行が必要で、段に見出しが複数ある場合は行を分配し、常に最も重要な見出しに最も多く割り当てます（`h2`は`h3`より多く受け取ります）。段の一番上にある見出しは空きを受け取らないので、段はページの上端から始まったままです。例外は、続きのあるページで段の頭に置かれた図や表の直下にある見出しで、その見出しの上、つまり図の下に空きが入ります。
+4. **リストの終わり**：見出しだけで空きを吸収しきれないとき、リストや番号付きリストの終わりにグリッドの行を足します（リストの後の空きは自然に読めます）。リストの終わりごとに上限があります。
+5. **ゆるい段落**：最後の手段として、段の中の段落1つを1行長く組み直します（TeXの`\looseness=+1`）。語間の広がりが目立たないよう、最も長い段落を選びます。ゆるくした組み方は、すべての行が**上限の`bodyText.maxWordSpacing`未満**にとどまる場合にだけ採用します。すでに設定した上限を文字の濃度（タイプカラー）が超えることはありません。`bodyText.optimalLineBreaking`が必要です。
+
+文字グリッド（`cjk.grid`、[中国語の組版 › 文字グリッド](/ja/docs/chinese-layout#文字グリッド)を参照）では、どの文字も幅1 emのマスに収まり、どの行もグリッドの行送りに乗ります。この行送りはベースライングリッドでもあります。縦組みと同じく、そこでは段末そろえは既定でオフです。GB/T 9704が28字22行と数えるように、グリッドに沿って1行ずつ組んだページでは、短い段は短いまま残ります。`enabled: true`を指定した設定では、グリッドを崩さない調整手段が使われます。見出し、リストの終わり、別行立て、図はグリッド行単位で空きを取るので、その下の本文は行単位で下がります。差し出せる空き行のない規格には、`gridLines: 'off'`でこれらを除外します。中国語や日本語の段落を1行長く組むのは、どの2文字の間も`maxTracking`を超えて広がらない場合だけで、文字にトラッキングを別に加えることもありません。1字分短い行は字間全体で1 emを広げることになり、既定の0.01 emをはるかに超えるので、マス単位のグリッドでは、ゆるい段落の調整手段はたいてい使える段落を見つけられません。段を閉じる囲みとセーフエリアのある画像は、もともとグリッドに縛られず、ほかの場所と同じように働きます。
+
+ページの最後の段をそろえるのは、そのページが自然に次のページへ続く場合だけです。章の最後のページは短く終わってよいからです。そのようなページと、`trailing`で高さをそろえて切った最後の帯では、段の頭もそろったままです。段の頭に置かれた図や表の下に行を足すこと（フロート後の調整手段）はせず、そのような図の下で段を始める見出しや囲みも、`stretchAfterFloats`の値にかかわらず段の頭にとどまります。末尾をそろえるためだけに、隣の段より低い位置から段を始めることはありません。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>プロパティ</th>
+      <th style={{ width: '150px' }}>型</th>
+      <th style={{ width: '180px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>段の下端をそろえるかどうか。縦組み（<code>layout.writingMode: 'vertical-rl'</code>）と文字グリッド（<code>cjk.grid.enabled</code>、postext 1.25から）では既定でオフです。<code>true</code>にすれば、そこでも有効になります。</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesPerHeading</code></td>
+      <td><code>number</code></td>
+      <td><code>4</code></td>
+      <td>1つの見出しの上に足せるグリッド行数の上限。</td>
+    </tr>
+    <tr>
+      <td><code>stretchAfterLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>見出しだけで空きを吸収しきれないとき、リストの終わりにグリッド行を足すことを許します。</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesAfterList</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>リストの終わり1か所あたりに足せるグリッド行数の上限。</td>
+    </tr>
+    <tr>
+      <td><code>stretchAfterFloats</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>短い段の頭にある図や表（上端のフロート）の下に、リストの終わりの調整手段の次の段階でグリッド行を足すことを許します。段を短く終える代わりに、その下の本文を下げます。続きのないページ（章の最後のページ）や、<code>trailing</code>で高さをそろえて切った最後の帯では行いません。そこでは段の頭がそろったままで、最後の段は1行短く終わることがあります。図の下の最初のブロックが前のページで始まった段落の続きでも、同じように下がります。その量は、改行・改段の規則が段の末尾に空けた行（ウィドウの規則で空のまま残った行や、後に本文を置く余地のない段落間の空き）の分です。図のすぐ下に本文を置きたい場合は<code>false</code>にします。</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesAfterFloat</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>上端のフロート1つの下に足せるグリッド行数の上限。</td>
+    </tr>
+    <tr>
+      <td><code>looseParagraphs</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>最後の手段として、短い段の段落を<code>bodyText.maxWordSpacing</code>の範囲内で1行ゆるく（それぞれ1行多く）組み直します。</td>
+    </tr>
+    <tr>
+      <td><code>maxLooseParagraphs</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>1つの短い段で1行長くしてよい段落の数。長いものから選びます。</td>
+    </tr>
+    <tr>
+      <td><code>trackParagraphs</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>語間だけでは1行を稼げないとき、ゆるくする段落に、それを稼げる最小の正のトラッキング（字間）を加えることも許します。</td>
+    </tr>
+    <tr>
+      <td><code>maxTracking</code></td>
+      <td><code>number</code></td>
+      <td><code>10</code></td>
+      <td>そのトラッキングの上限。1文字あたり、emの1000分の1を単位とします（10 = 0.01 em）。</td>
+    </tr>
+    <tr>
+      <td><code>trailing</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>章と文書の最後の帯をそろえます。ページが埋まる前に流れが終わり（章扉、<code>:::part</code>、章を閉じる<code>placement: 'fixed'</code>の囲み、または文書の終わりで）、段の高さがそろっていない場合、段を同じ高さで切ります。帯の上限は<code>ceil(Σ used / N / grid)</code>行で、上記の調整手段が前のページを確定させた後に求めます。これにより、短い参考文献が最初の段を埋めて最後の段が半分空くことはなく、どの段でも同じ高さで終わります。この切断は、切らない帯が守る規則を守ります。切断位置をまたいで分割できないブロック（オーファンとウィドウの最小行数でひとまとまりに保たれる段落の末尾、分割しない囲み）がそこを越えてしまう場合（レンダラーは段をその枠で切り抜くので、最後の行が失われます）や、見出しが段を閉じてその本文が次の段で始まってしまう場合（既定の<code>headings.keepWithNext</code>のとき）は、切断位置を1行下げます。これを3回まで試し、それでもだめなら切断をやめます。段の頭にある図の下で、切断が残す行の中で始められないブロック（段落にはそこにオーファンの最小行数が必要です）は、切らない段の場合と同じように帯の次の段へ進み、図はその段に単独で立ちます。末尾の差が1グリッド行以下の段はそのままにします。最後の段が1行短く終わるのは最後の帯のよくある終わり方で、切っても1行が移るだけだからです。切断は測った帯に適用されます。ページ幅の囲みがページの途中で求める切断も同じです。postext 1.4までは、最後のページの最初の本文が先に余地のない帯（フロートがまるごと占めるページや、前のページの末尾にページ幅の囲みが残す細い帯）に回された場合、切断がその帯で使われてしまい、最後のページではすべての行が最初の段に入っていました。幅の異なる段（両方に本文がある1段半レイアウト）は面積で切ります。狭い段の1行に入る本文は少ないので、各段の高さをその幅で重み付けします。<code>enabled</code>がtrueのときだけ働きます。</td>
+    </tr>
+    <tr>
+      <td><code>beforeSpan</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>ページ幅のブロックが後に残す帯をそろえます。<code>span: 'page'</code>の囲みが、高さをそろえて切った後でも現在の段の下に収まらず、次のページへ移るか分割（<code>calloutStyles[].keepTogether: false</code>）しなければならない場合、それが中断する段を同じ高さで切ります。最後の帯と同じ末尾の上限を使うので、最初の段がページを埋めて最後の段が短く終わることはありません。そのページは明示的な改ページとして扱い、上記の調整手段が最後の段をページ下端まで引き伸ばし直さないようにします。囲み、またはそのうち収まる部分は、そろえた段の下に置かれます。<code>enabled</code>がtrueのときだけ働きます。</td>
+    </tr>
+    <tr>
+      <td><code>closingBox</code></td>
+      <td><code>'first' | 'last' | 'off'</code></td>
+      <td><code>'first'</code></td>
+      <td>短い段を閉じる囲みが、いつその下の空きを取るか（調整手段1、<code>trailingCallout</code>として記録）。<code>'first'</code>：postext 1.4までと同様、ほかのどの調整手段よりも先に取ります。囲みは数行あっても空きをすべて取り、その上の見出しには何も残りません。<code>'last'</code>：見出し、リストの終わり、別行立て、フロートの各調整手段が先に行単位で空きを取った後に取ります。囲みはその上の本文とともに下がり、残った分（たいていは1行未満）だけを取るので、下端は最後のグリッド位置にそろったまま、注釈を付ける本文の近くにとどまります。<code>'off'</code>：取りません。囲みはその下の空きを残します。ただし、ほかの調整手段が囲みの上に空きを足せば行単位で下がることはあり、その下に残る1行未満の空きはそのままです。最後のページでは、隣の段と下端をそろえる調整手段が囲みしかないため、<code>'off'</code>では流れが置いた位置のままです。それ以外の値は<code>'first'</code>として扱います。帯の中で唯一の本文段を閉じる囲み（途中で終わる1段のページで、次のブロックが次ページから始まる場合）は動かしません。そろえる隣の段がないためです（postext 1.19から）。</td>
+    </tr>
+    <tr>
+      <td><code>gridLines</code></td>
+      <td><code>'allow' | 'off'</code></td>
+      <td><code>'allow'</code></td>
+      <td>文字グリッド上で、グリッド行単位で行を足す調整手段（見出しの上、リストの終わり、別行立てや囲みの下、段の頭にある図の下）を働かせるかどうか。これらの手段はどの文字もマスに収めたままにします。<code>'off'</code>はページの行数を数える規格に向き、段を短いまま残します。グリッドの外では効果がありません。それ以外の値は<code>'allow'</code>として扱います。postext 1.25から。</td>
+    </tr>
+  </tbody>
+</table>
+
+#### どの調整手段が働いたか
+
+レイアウトは、適用した調整手段をすべて、適用先のブロックに記録します。`buildDocument`が返すVDTの`block.balancing`です。これを使えば、校正刷り、テスト、レポートで、段がなぜ下端にそろっているか、またどの段はどの調整手段でも閉じられなかったかを示せます。段末そろえが手を付けなかったブロックには`balancing`がなく、`enabled: false`で組んだ文書には一切ありません。
+
+文字グリッドでは、段が短く終わりうる理由を文書が示します。ページがグリッド上にあり、設定が段末そろえを有効にしていないためにオフになっているときは`doc.gridBalancing`が`{ off: true }`、行単位の調整手段なしで働いているときは`{ gridLines: 'off' }`になります。それでも短い段には`column.gridRefused`が付き、グリッドのために使えなかった調整手段を示します（文字をマスからずらして広げなければ段落が1行を稼げなかった場合は`'looseParagraph'`、`gridLines: 'off'`のもとでは行単位の調整手段）。グリッドの外ではどちらもありません。
+
+```ts
+interface VDTBalancing {
+  levers: BalanceLever[]; // usually one: a paragraph after a list can take the list-end line and run a line long too
+  spaceAbove: number;     // px the spacing levers added above the block (0 when only looseParagraph or flexFigure fired)
+  bodyGrowth?: number;    // flexFigure: px the picture grew, cropped within its safe area
+  extraLines?: number;    // looseParagraph: lines the paragraph gained
+  tracking?: number;      // looseParagraph: the tracking that gained them, in thousandths of an em (0 = word spacing alone)
+}
+type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>調整手段</th>
+      <th style={{ width: '220px' }}>記録先</th>
+      <th>行ったこと</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>trailingCallout</code></td>
+      <td>囲みの枠のブロック</td>
+      <td>段を閉じる囲みを、その下の空きちょうどの分だけ下げました（<code>spaceAbove</code>。1行未満でもかまいません）。</td>
+    </tr>
+    <tr>
+      <td><code>flexFigure</code></td>
+      <td>画像のブロック（インライン）またはフロート</td>
+      <td>セーフエリアのある画像を、セーフエリア内で切り抜きながら、グリッドの行単位で<code>bodyGrowth</code> px高くしました。リソースブロックの<code>bodySource</code>は表示される部分、<code>bodyFlex.delta</code>は同じ増分です。</td>
+    </tr>
+    <tr>
+      <td><code>heading</code></td>
+      <td>見出し</td>
+      <td>見出しの上にグリッドの行を、<code>maxLinesPerHeading</code>まで足しました。</td>
+    </tr>
+    <tr>
+      <td><code>listEnd</code></td>
+      <td>リストの後の最初のブロック</td>
+      <td>リストの終わりにグリッド行を、<code>maxLinesAfterList</code>まで足しました。</td>
+    </tr>
+    <tr>
+      <td><code>afterDisplay</code></td>
+      <td>数式または囲みの後のブロック</td>
+      <td>別行立て数式や囲みの下にグリッド行を1行足しました。</td>
+    </tr>
+    <tr>
+      <td><code>afterFloat</code></td>
+      <td>段の最初のブロック</td>
+      <td>段の頭にあるフロートの帯とその本文の間にグリッド行を、<code>maxLinesAfterFloat</code>まで足しました。</td>
+    </tr>
+    <tr>
+      <td><code>looseParagraph</code></td>
+      <td>段落</td>
+      <td>段落を<code>extraLines</code>行長く組み直しました。そのために使った最小のトラッキングが<code>tracking</code>です（<code>block.letterSpacing</code>は同じ値をpxで表したもの）。</td>
+    </tr>
+  </tbody>
+</table>
+
+高さをそろえる切断は、切った段に記録します。`column.bandCapped`は高さをそろえて切ったすべての段（ページ幅の囲みが残す帯、最後の帯）でtrueになり、`column.trailingCap`はさらに章や文書の最後の帯（`trailing`）であることを示します。
+
+```ts
+import { buildDocument } from 'postext';
+
+const doc = buildDocument(content, config);
+for (const page of doc.pages) {
+  page.columns.forEach((column, i) => {
+    const levers: string[] = column.blocks.flatMap((block) => block.balancing?.levers ?? []);
+    if (column.trailingCap) levers.push('closing band cut level');
+    else if (column.bandCapped) levers.push('band cut level');
+    if (levers.length > 0) console.log(`page ${page.index + 1}, column ${i + 1}: ${levers.join(', ')}`);
+  });
+}
+// page 3, column 1: heading, heading
+// page 3, column 2: listEnd, looseParagraph
+```
+
+### レベルごとの上書き
+
+各見出しレベルは、`levels`配列で共通の既定値を上書きできます。既定で異なるのは`fontSize`（と、後述するH1の`breakBefore`）だけで、ほかのプロパティはすべて見出しの共通設定を継承します。
+
+<table>
+  <thead>
+    <tr>
+      <th>レベル</th>
+      <th>既定のフォントサイズ</th>
+      <th>既定の<code>breakBefore</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>H1</td><td><code>18 pt</code></td><td><code>&#123; enabled: true, parity: 'always-odd' &#125;</code></td></tr>
+    <tr><td>H2</td><td><code>15 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H3</td><td><code>12 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H4</td><td><code>10 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H5</td><td><code>9 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H6</td><td><code>8 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+  </tbody>
+</table>
+
+H1の既定値は書籍の章立てを模したものです。最上位の見出しはすべて新しい右ページ（奇数ページ）から始まり、前の章との間に必ず白ページを1ページはさみます。書籍ほど階層のない文書では、`levels[0].breakBefore`で上書きしてください。
+
+レベルの`breakBefore`はこの既定値にフィールド単位でマージされ、それに触れない`headings`オブジェクトは既定値を保ちます。H1に`{ parity: 'odd' }`を指定すると改ページを保ったまま奇偶だけが変わり、`{ enabled: false }`にすると章が続けて組まれます：
+
+```ts
+headings: {
+  fontFamily: 'Merriweather',                               // H1 still breaks to a fresh recto (always-odd)
+  levels: [{ level: 1, breakBefore: { parity: 'odd' } }],    // …or: a recto, with no mandatory blank
+}
+
+headings: { levels: [{ level: 1, breakBefore: { enabled: false } }] } // chapters run on
+```
+
+**postext 1.5での変更**。postext 1.4までは、`headings`オブジェクトを渡すと`levels[0].breakBefore`を改めて指定しない限りH1の改ページが無効になり、一部だけ指定した`breakBefore`は欠けたフィールドを改ページなしの既定値で補っていました。そのため、`headings`オブジェクトを持ちH1の改ページを指定していない、1.4向けにコードで書いた設定では、いまはどの章も新しい奇数ページから始まり、必要に応じて白の偶数ページが入ります。章を続けて組むには、`levels`のH1の項目にフィールドを1つ与えます：
+
+```ts
+headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enabled: false } }] } // as 1.4 laid it out
+```
+
+設定が保存されたものであれば、エンジンがそれを見分けて代わりに処理します。Sandboxは当時保存した本と設定について（**Sandbox → 作業内容の保存**を参照）、`openBundle` / `readBundle`はpostext 1.4以前で書き出された`.postext`バンドルについて（[postext 1.4以前で書き出したバンドル](/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル)を参照）処理します。自分で保存した設定は、`postext/bundle`の`migrateConfig(config)`に通せます。これは1.4が組んだ改ページを明示的に書き出します（`pinLegacyHeadingBreaks`）。改ページのなかったH1には`enabled: false`を、H1と見出しスタイルで奇偶を指定していない`enabled: true`には`parity: 'any'`を添えます。さらに次の項目も1.4の設定どおりに固定します：数式のサイズ、インライン図の周りの空き（囲みの中も）、見出しの文字書式、ドロップキャップのサイズ、リストを導くコロンの行の下の余地、囲みの切断が段落やリスト項目に残す行数、ダッシュでの改行、不ぞろい組みの本文の1行ずつの改行、見出しの下の段落の分割、複合語のハイフンでの改行、`:::paragraphs`コンテナーの下の空き。第3引数として本のMarkdownを`{ content }`で渡すと、不要な固定を省きます。本文に`$`がなければ数式の固定を、リソースを埋め込む行がなければ空きの固定を（囲みの中になければ囲み内の空きの固定を）、記号を含む見出しがなければ見出しの文字書式の固定を、コロンで終わる行の後にリストが続かなければコロン行の固定を、本文が`:::callout`を開かなければ囲みの切断の固定を、語の間に詰めて置かれたダッシュがなければダッシュの固定を、本文に見出しがなければ見出し下の分割の固定を、本文が`:::paragraphs`コンテナーを開かなければコンテナーの固定を、2つの文字の間にハイフンがなければ複合語の固定を省きます。不ぞろい組みの改行の固定は本文の一部を不ぞろいに組む設定にだけ、コンテナーの固定は段落スタイルを宣言する設定にだけ加えます（[postext 1.4以前で書き出したバンドル](/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル)を参照）。改ページだけを固定するには`pinLegacyHeadingBreaks(config)`を呼び出します。
+
+レベルごとの上書きには、共通の既定値と同じプロパティ（`fontSize`、`lineHeight`、`fontFamily`、`color`、`fontWeight`、`marginTop`、`marginBottom`、`snapToGrid`）に加え、次のレベル専用のフィールドを使えます（[見出しスタイル](/ja/docs/configuration-styles#見出しスタイル)でも使えます）：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>見出しをイタリックで描画します。<code>fontWeight</code>に重ねて適用します。</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>見出しのタイトルを大文字にします（番号の接頭辞は書いたとおりに残り、タイトル中のチップや<code>:ref</code>のラベルも同様です）。エディターのソースマップを1対1に保つため文字数を変えないので、大文字にすると長くなる文字（<code>ß</code> → <code>SS</code>）はそのままです。変換後のタイトルは、詳細デザインと章扉の<code>&#123;titleText&#125;</code>プレースホルダーにも渡ります。PDFのしおりはタイトルを書いたとおりに保ちます（<em>AUTHOR CONTRIBUTIONS</em>ではなく<em>Author contributions</em>）。CSSの<code>text-transform</code>が文字列そのものを変えないのと同じです（postext 1.4までは大文字になっていました）。</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>見出しのすべてのグリフの後に入るトラッキングで、スペースと番号の接頭辞も含みます。CSSの<code>letter-spacing</code>と同じです。正の値は字間を広げ（<code>textTransform: 'uppercase'</code>で組んだ大文字には少し広げるのが普通です：<code>&#123; value: 0.12, unit: 'em' &#125;</code>）、負の値は大きな表示サイズを詰めます。<code>em</code>の値はそのレベルの<code>fontSize</code>に対する相対値です。見出しの行はこの値込みで測るので、字間を付けた文字列の終わりで折り返し、Canvas、HTML、PDFは同じように描画します。中央そろえや右そろえの行は文字の範囲で配置します。デザインのテキストと同様に最後のグリフの後のトラッキングは除くので、中央そろえの見出しは<code>span: 'page'</code>見出しの既定の章扉とそろいます。<code>advancedDesign</code>から描画するレベルは、ここにあるほかの文字組みのフィールドと同様にこの値を無視します。デザインの各テキスト要素がそれぞれ<code>letterSpacing</code>を持っているからです。<a href="/ja/docs/configuration-styles#見出しスタイル">見出しスタイル</a>でも、そのスタイルを使う見出しに対して設定できます。postext 1.4までは見出しにトラッキングがなく、このキーは何の通知もなく無視されていました。</td>
+    </tr>
+    <tr>
+      <td><code>lineSpan</code></td>
+      <td><code>number</code></td>
+      <td>未設定</td>
+      <td>行取り（JLReq §4.1.6）。見出しを本文のこの行数分の帯に組み、文字をその中央に置きます。<code>marginTop</code>と<code>marginBottom</code>の代わりに使います。<code>3</code>なら3行取りの見出しです。見出しがグリッドに吸着するとき帯は本文の行の位置から始まり、その後の本文もグリッドに乗ったままです。縦組み・横組みのどちらでも、<code>cjk.grid</code>を使っていても同じです。行数が足りない見出しは、次の整数の行数を取ります。中央とは文字の中央（ベースラインから書体の仮想ボディの中心までを引いた位置）で、JLReqの測り方に従います。行のボックスの中央ではありません。章扉（<code>span: 'page'</code>）、<code>advancedDesign</code>から描画する見出し、非表示の見出し、囲みの中の見出しには適用しません。見出しスタイルで<code>0</code>を指定すると、そのレベルの行取りを解除できます。postext 1.16以降。</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>見出しの行頭からの字下げ。<code>em</code>は<strong>本文</strong>のサイズで、日本の書籍が見出しの字下げを本文の字数で数えるのに合わせています（JLReq §4.1.3）。<code>&#123; value: 6, unit: 'em' &#125;</code>は、見出しのサイズにかかわらず6字下げです。行長はその分狭くなり、中央そろえの見出しは残りの幅の中央に置かれます。postext 1.16以降。</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>見出しの1行目だけの字下げ。<code>indent</code>の位置から測り、<code>indent</code>と同じく<strong>本文</strong>のemで数えます。長い見出しの2行目以降は<code>indent</code>の位置（未設定なら行頭）から始まります。GB/T 9704は各レベルの見出しを2字下げ、折り返した行を行頭に戻して組みます：<code>&#123; value: 2, unit: 'em' &#125;</code>。<code>cjk.grid</code>が有効なら、本文の2 emはグリッドの2マスです。番号付きの見出しは字下げのあとに番号を置くので、番号テンプレートに全角スペースを入れる必要はありません（入れると目次とPDFのしおりにも出力されます）。縦組み（行頭から）、CJKコンポーザー（見出しの先頭の始め括弧は段落と同じく行頭の規則に従います）、Knuth–Plassで働きます。中央そろえの見出しは中央そろえの段落と同じ扱いで、1行目を字下げのあとに残る幅の中央に置きます。見出しのタイトルのあとに<code>&#123;firstLineIndent=N&#125;</code>と書くとその見出しだけに指定でき、<code>&#123;firstLineIndent=0&#125;</code>はレベルの指定を外します。postext 1.24以降。</td>
+    </tr>
+    <tr>
+      <td><code>jidori</code></td>
+      <td><code>number</code></td>
+      <td>未設定</td>
+      <td>字取り。見出し<strong>自身の</strong>emでこの数より狭い1行の見出しを、ちょうどその幅になるよう均等に割り付けます。<code>3</code>なら序章を序　章と組みます。それより広いタイトルや複数行の見出しはそのままです。見出しのタイトルの後に<code>&#123;jidori=N&#125;</code>と書くとその見出しだけに指定でき、<code>&#123;jidori=0&#125;</code>でそのレベルの字取りを解除します。postext 1.16以降。</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap | false</code></td>
+      <td>なし</td>
+      <td>このレベルの見出しの後の最初の本文の段落を始めるドロップキャップです（<a href="#ドロップキャップ">ドロップキャップ</a>を参照）。1つの設定で、すべての章に頭文字が付きます。見出しに<code>&#123;dropcap=false&#125;</code>と書くと解除し、<code>&#123;dropcap=2&#125;</code>と書くと行数を指定します。postext 1.23以降。</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>そのレベルの自動番号のテンプレート。<code>{'{1}'}</code>〜<code>{'{6}'}</code>のトークンはその見出しレベルの通し番号を出力し、接尾辞で書式を指定できます。<code>{'{1:I}'}</code>は大文字のローマ数字、<code>{'{1:i}'}</code>は小文字のローマ数字、<code>{'{1:A}'}</code> / <code>{'{1:a}'}</code>はアルファベット、<code>{'{1:01}'}</code>はゼロ埋め、<code>{'{1:words}'}</code>は語で綴る数（<em>twenty-one</em>）、<code>{'{1:ordinal}'}</code>は序数（<em>twenty-first</em>）、<code>{'{1:一}'}</code>は漢数字（日本語の文書では日本式：第百一章）、<code>{'{1:〇}'}</code>は1桁ずつの漢数字、<code>{'{1:壹}'}</code>は大字、<code>{'{1:①}'}</code>は丸数字です。<a href="/ja/docs/configuration-page-layout#番号書式の表記">番号書式の表記</a>にある名前も使えます。それ以外の文字はそのまま出力します（<code>'Chapter {'{1}'}. '</code>、<code>'{'{1}'}.{'{2}'}'</code>、第一百二十回なら<code>'第{'{1:一}'}回'</code>。バックスラッシュで波かっこそのものを書けます）。カウンターがまだ空のトークンは、隣接する区切りとともに消えます。空（既定）なら自動番号は付きません。生成された番号は流れの中でタイトルの前に付き、詳細デザインのスロットでは<code>{'{number}'}</code>プレースホルダーに渡り（そこでは接頭辞自体は付きません）、目次にも出力されます。語での綴り方は<a href="#語で綴る番号">語で綴る番号</a>を、レベルの一部の見出しに独自のテンプレートを与えるには<a href="/ja/docs/configuration-styles#見出しスタイル">見出しスタイル</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>numberSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>' '</code></td>
+      <td>番号とタイトルの間に入るもの。段の中、<code>span: 'page'</code>レベルの既定の章扉、見出しの行を出力する柱、PDFのしおりで使われます。レベル1の区切りは、既定の部扉と、目次の既定の部の行で、部の番号とタイトルをつなぐのにも使います。中国語の章見出しには全角スペースを入れるか、何も入れません（<code>'　'</code>：第一回　甄士隱夢幻識通靈）。目次は独自の番号の列を持ちます（<code>toc.levels[].numberGap</code>）。<a href="/ja/docs/configuration-styles#見出しスタイル">見出しスタイル</a>は独自の値を設定できます。中国の小説の対句の回目のようにタイトルを<code>{'\\\\'}</code>で2つに分けた場合、1行で示す形（段の中、目次、柱）では、両側が中国語または日本語の文字なら全角スペースで、そうでなければ半角スペースで、2つの半分をつなぎます。</td>
+    </tr>
+    <tr>
+      <td><code>numberPosition</code></td>
+      <td><code>'before' | 'replace'</code></td>
+      <td><code>'before'</code></td>
+      <td>生成された番号を置く位置。<code>'before'</code>：タイトルの前に置き、<code>numberSeparator</code>でつなぎます。<code>'replace'</code>：番号がタイトル全体になり、ソースに書いたタイトルは出力しません。たとえば<code>numberingTemplate: 'الليلة &#123;1:ordinal-feminine&#125;'</code>のもとで<code># Night</code>はالليلة الثانيةと出力されます。目次は番号を項目のタイトルとして示し（番号の列はなし）、柱（<code>{chapterTitle}</code>、<code>{titleText}</code>）とPDFのしおりもそれを読みます。このような見出しでは<code>{number}</code>は空です。テンプレート（レベルのもの、またはスタイルのもの）を持つ番号付きの見出しにだけ適用し、それ以外はタイトルを保ちます。<a href="/ja/docs/configuration-styles#見出しスタイル">見出しスタイル</a>は独自の値を設定でき、<code>'before'</code>にすると、レベルが置き換えるはずのタイトルを残せます。</td>
+    </tr>
+    <tr>
+      <td><code>breakBefore</code></td>
+      <td><code>HeadingBreakBeforeConfig</code></td>
+      <td>H1: <code>&#123; enabled: true, parity: 'always-odd' &#125;</code><br/>H2–H6: <code>&#123; enabled: false, parity: 'any' &#125;</code></td>
+      <td>このレベルのすべての見出しの前で改ページします。<code>parity: 'odd'</code> / <code>'even'</code>は、見出しが見開きのどちら側から始まるかをさらに制約します。必要に応じて埋め合わせの白ページを挿入します（ページ番号には数えます）。<code>'always-odd'</code> / <code>'always-even'</code>は、さらに前の内容と新しい見出しの間に、少なくとも1ページの必須の区切りの白ページを保証します（区切りのページは前の章に属し、奇偶合わせのための追加のページは新しい章に属します）。見出しが文書の最初のブロックで、1ページ目がまだ空のときは奇偶の強制を行わず、見出しは書いたとおり1ページ目に置かれます。指定しないフィールドはレベルの既定値を保つので、H1に<code>&#123; parity: 'odd' &#125;</code>だけを指定しても改ページは行われます。</td>
+    </tr>
+    <tr>
+      <td><code>hidden</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>構造上の見出し。何も出力せず、段の中でも囲みの中でも場所を取りません（本文も空きも章扉の帯もありません）が、見出しとしてのほかの働きはすべて行います。<code>breakBefore</code>はページを始め、スタイルのセクションを開き、番号に数えられ（スタイルが<code>numbered: false</code>の場合を除く）、<code>:::toc</code>の一覧に載り、<code>{'{chapterTitle}'}</code>の柱に名前が出て、PDFのしおりにも入ります。目次や読者のしおりには必要でも、ページには表示しない献辞、エピグラフのページ、奥付に使います。レベル全体ではなく<a href="/ja/docs/configuration-styles#見出しスタイル">見出しスタイル</a>に設定してください。個々の見出しでは<code>{'{hidden="true"}'}</code> / <code>{'{hidden="false"}'}</code>で上書きできます。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+headings: {
+  fontFamily: 'Merriweather',
+  levels: [
+    // Canonical book preset: chapters on a right-hand (odd) page.
+    { level: 1, fontSize: { value: 24, unit: 'pt' }, breakBefore: { enabled: true, parity: 'odd' } },
+    { level: 2, fontSize: { value: 18, unit: 'pt' }, italic: true },
+  ]
+}
+```
+
+`snapToGrid`はレベルごとにも働きます。指定しなければレベルは`headings.snapToGrid`に従い、指定すればそれを上書きします。そのため1つの文書の中で、H2では本文との間に1行半を空けて次の吸着点までグリッドから外し、H3では下の空きをグリッドの行単位に切り上げる、といった組み方ができます。見出しスタイルでも、そのスタイルを使う見出しに対して設定できます。
+
+```ts
+headings: {
+  marginBottom: { value: 1.5, unit: 'em' },
+  levels: [
+    { level: 2, snapToGrid: false }, // exactly 1.5 em under every H2
+    { level: 3 },                    // inherits headings.snapToGrid: true
+  ],
+}
+```
+
+### 前で改ページ
+
+`breakBefore`は番号付けの制御とは独立しています。有効にすると改ページを強制しますが、番号のカウンターがリセットされるのは`:::numbering`ディレクティブを明示的に挿入したときだけです。奇偶合わせの白ページも実際のページとして数え、通常の奇数・偶数の規則に従ってヘッダーとフッターが付きます。
+
+このような見出しの直前に`:::pagebreak`を置いても、見出しの改ページの代わりにはなりません。見出しはディレクティブが始めたページの後でも奇偶を適用するため、白ページが加わることがあります。手動の改ページの直後から始めたい見出しについては、[見出しスタイル](/ja/docs/configuration-styles#見出しスタイル)を参照してください。
+
+#### 奇偶の値
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>値</th>
+      <th>動作</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>'any'</code>（既定）</td>
+      <td>奇偶の制約はありません。見出しは単に次のページから始まります。</td>
+    </tr>
+    <tr>
+      <td><code>'odd'</code></td>
+      <td>見出しが奇数（右）ページから始まるようにします。白ページを1ページ挿入するのは、自然な次のページが偶数ページのときだけです。</td>
+    </tr>
+    <tr>
+      <td><code>'even'</code></td>
+      <td>同様に、偶数（左）ページから始めます。</td>
+    </tr>
+    <tr>
+      <td><code>'always-odd'</code></td>
+      <td>前の内容と新しい見出しの間に<strong>少なくとも1ページの必須の区切りの白ページ</strong>を保証し、そのうえで奇数ページにそろえます。どの章も新しい見開きから始めたいときに使います。</td>
+    </tr>
+    <tr>
+      <td><code>'always-even'</code></td>
+      <td>同様に、偶数ページにそろえます。</td>
+    </tr>
+  </tbody>
+</table>
+
+#### 白ページの帰属
+
+`breakBefore`が挿入した白ページには、挿入された*理由*に応じて、章タイトルの柱が付きます：
+
+- 奇偶の制約（`'odd'`、`'even'`、または`'always-*'`の奇偶合わせの部分）を満たすために挿入したページは、**これから始まる**章に属します。柱の`{chapterTitle}`プレースホルダーは新しい章のタイトルになります。その白ページは、新しい章を正しい奇偶のページへ送るためだけにあるからです。
+- `'always-odd'` / `'always-even'`が先頭に挿入する必須の区切りは、**前の**章に属します。章の終わりに意図して置く間なので、柱の`{chapterTitle}`プレースホルダーには前の章のタイトルが出たままです。
+
+スタイルを持つセクション（[見出しスタイル](/ja/docs/configuration-styles#見出しスタイル)を参照）の柱とパレットも、白ページでは同じ2つの規則に従います。
+
+#### 文書冒頭の例外
+
+文書の最初のブロックが`breakBefore`を有効にした見出しである場合、またはソースが`:::pagebreak`で始まる場合、1ページ目がまだ空のあいだは奇偶の強制を行いません。設定した奇偶にかかわらず見出しは書いたとおり1ページ目に置かれるので、`parity: 'odd'`を設定した`# Chapter 1`で始まる文書の先頭に、余計な白ページが入ることはありません。何か内容が置かれた後は、奇偶の強制は通常どおり働きます。
+
+### 幅と詳細デザイン
+
+各見出しレベルには、見出しをページ幅いっぱいの章扉として描画する方法を制御するフィールドが、さらに2つあります。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '220px' }}>型</th>
+      <th style={{ width: '160px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td><code>'page'</code>のとき、見出しは章扉として扱われ、その詳細デザイン（有効な場合）は本文の上の章扉の帯としてページに付きます。章扉が確実に新しいページから始まるよう、<code>breakBefore.enabled: true</code>と組み合わせてください。独自のデザインがない場合、タイトルは既定の章扉が版面の全幅にわたって描きます。レベルの文字組みと行送りを使い、太字・イタリック・上付き下付きの範囲（<code>headings.inlineMarks</code>）も反映し、帯はその幅で測ります。帯は章扉が描くすべての行を収めます。章扉が見出し自身の行長より多くの行を使う場合（語間を詰めれば1行に収まってしまう両端そろえのタイトル、強制改行<code>{'\\\\'}</code>）も、帯はその行数を取ります。postext 1.4までは帯を段の幅で折り返したタイトルで測っていたため、版面の幅なら1行に収まるタイトルが2行分の高さの帯を取り、その中央に1行が置かれていました。ほかの段も、見出し自身の段と同じく帯の下から始まります。それらの段の冒頭の本文は、章扉自身の段で何が続くかにかかわらず、章扉の直下の本文が始まる位置から始まります。つまり、タイトルまたはデザインの下に章扉の<code>marginBottom</code>を取り、レベルが吸着するときは次のグリッド行まで進めた位置です。それらの段を見出し、別行立て数式、目次の行で始める場合は、章扉の下にある最初の見出しや別行立て数式と同じ高さに、そこでの空きも含めて置きます。章扉の段がそれ以外の内容で続く場合は、その本文が始まる位置から始まります。章扉の下の非表示の見出しは数に入らず、<a href="#段末そろえ">段末そろえ</a>が章扉の下の見出しの上に足した空きは、ほかの段では繰り返しません。これらの段がグリッドに吸着させるものは、ページのグリッドに乗ります。postext 1.4までは、それらの段の最初のブロックは帯の下端に置かれていました。帯が2行の間で終わればグリッドから外れ、章扉の後に見出しが続くと空きなしで帯に接していました（帯がグリッド上で終わる場合は現在より1行上）。また、そこにある見出しは、最初の段の見出しが保っていた上の空きも失っていました。</td>
+    </tr>
+    <tr>
+      <td><code>spanBreak</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>span: 'page'</code>の見出しが新しいページから始まるかどうかです。<code>true</code>は次のページを開きます（左右は<code>breakBefore</code>で決まります）。<code>false</code>で<code>breakBefore.enabled: false</code>のときは、ページ幅の囲みと同じく、本文が届いた位置で見出しを開きます。上の段は高さをそろえて終わり（<code>headings.balancing.trailing</code>が有効なら帯を均等化します）、見出しのデザインまたは既定の章扉がその下に版面の幅いっぱいに組まれ、本文はその下のすべての段で続きます。会報で2本目の記事を1本目の終わりの下から始める場合などです。残りの余白に見出しとその下の最小行数（ウィドウ）が収まらないときは、<code>true</code>と同じく次のページを開きます。ページの役割は最初のブロックで決まるままです。<code>span: 'column'</code>の見出しには効きません。見出しスタイルでも指定できます。postext 1.19から。</td>
+    </tr>
+    <tr>
+      <td><code>advancedDesign</code></td>
+      <td><code>HeadingAdvancedDesignConfig</code></td>
+      <td><code>{'{ enabled: false, slot: { elements: [] } }'}</code></td>
+      <td>このレベルの自由配置のデザインスロット。<code>enabled</code>のとき、スロットの要素が章扉を構成します。テキスト要素の中で<code>{'{titleText}'}</code>を使うと見出しのタイトル文字列を描画し、<code>{'{number}'}</code>、<code>{'{numberRoman}'}</code>などで書式付きの見出し番号を挿入します。</td>
+    </tr>
+    <tr>
+      <td><code>advancedDesign.minHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>—</td>
+      <td>段の流れの中で見出しに確保する最小の高さ。見出しは<code>max(design content bottom, minHeight)</code>を取り、その下に見出しの<code>marginBottom</code>（見出しスタイル、レベル、または<code>headings.marginBottom</code>から。既定では見出しのサイズの0.5 em）を加え、見出しが吸着する場合はその合計をベースライングリッドに切り上げます。そのため章扉は、要素が短い場合や、見出しより上でページ枠・裁ち落とし枠に固定されている場合でも、本文を押し下げる（あるいはページ全体を占める）ことができます。帯をちょうど<code>minHeight</code>の高さにするには、その<code>marginBottom</code>を0にし、<code>minHeight</code>をグリッドの行の整数倍にします。スロットが空でも、<code>enabled</code>がtrueなら常に適用します。デザインの内容の下端に何が含まれるかは、<a href="#確保する高さ">確保する高さ</a>を参照してください。</td>
+    </tr>
+  </tbody>
+</table>
+
+**ページと同じ高さの章扉**。確保する高さが段の末尾を越える場合（`minHeight`がページの高さに等しい表紙や、ページまたは裁ち落としに固定されて仕上がり線まで伸びる画像や囲み）、章扉はページの残りを占めます。その後の本文は、2段組みでも1段半レイアウトでも、どの段でも次のページから始まります。したがって表紙の後に`:::pagebreak`は不要です（置いても害はなく、白ページは加わりません）。段内の見出し（`span: 'column'`）のデザインが段より高い場合はその段を占め、本文は次の段の頭から始まります。見出しのブロックは占めた段の末尾まで伸び、デザインはその帯に対してレイアウトされます。上端に固定した要素は固定位置にとどまり、帯に従う要素（帯の中央や下端に固定したもの、または高さが`'fill'`のもの）は、高さが収まるときに確保した高さに収まるのと同じように、見出しが占める範囲に収まります（postext 1.4までは、ブロックは本文の高さのままだったので、それらの要素はタイトル1つ分の高さの帯に対してレイアウトされ、その後の本文はデザインの下へ続いていました）。ページを占めるべきでないページの装飾（ページ全体にわたる小口側の帯、ページ下端の飾り）は、ヘッダーかフッターのデザインに入れてください。`'page'`または`'bleed'`に固定し、`pages: 'opener'`で表示すれば、章扉のページに描かれ、本文の場所は確保しません。
+
+例：タイトルの上に「Chapter N」を表示する簡素な章扉です。
+
+```json
+{
+  "headings": {
+    "levels": [
+      {
+        "level": 1,
+        "span": "page",
+        "breakBefore": { "enabled": true, "parity": "always-odd" },
+        "advancedDesign": {
+          "enabled": true,
+          "slot": {
+            "elements": [
+              {
+                "kind": "text",
+                "id": "chapterLabel",
+                "placement": {
+                  "anchor": { "to": "container", "edge": "top" },
+                  "offset": { "y": { "value": 48, "unit": "pt" } },
+                  "size": { "width": "fill" }
+                },
+                "content": "Chapter {numberRoman}",
+                "fontSize": { "value": 10, "unit": "pt" },
+                "align": "center",
+                "overflow": "ellipsis-end"
+              },
+              {
+                "kind": "text",
+                "id": "chapterTitle",
+                "placement": {
+                  "anchor": { "to": "#chapterLabel", "edge": "below" },
+                  "offset": { "y": { "value": 12, "unit": "pt" } },
+                  "size": { "width": "fill" }
+                },
+                "content": "{titleText}",
+                "fontSize": { "value": 24, "unit": "pt" },
+                "fontWeight": 700,
+                "align": "center",
+                "overflow": "wrap",
+                "hyphenate": true
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+レベルのデザインスロットで使える見出しのプレースホルダー：
+
+- `{titleText}`：見出しのプレーンテキスト（番号の接頭辞を除く）。タイトル中の強制改行（`\\`）は、章扉の帯でも段内のデザインでも、ここでは改行になります（postext 1.4までは、段内のデザインではスペースを出力し、高さは改行込みで測っていました）。非表示の見出しが段の中で折り返した行は、書いたとおりのタイトルに戻してつなぎます。語自身のハイフンの後で折り返した語はハイフンを残して後にスペースを入れず、段が分割した語は改行で加わったハイフンを除いて元の1語に戻します。段より広く、ノーブレークスペースの位置で分けられたまとまりはノーブレークスペースを取り戻し（`CapítuloXVIII`ではなく`Capítulo XVIII`）、それ以外の改行はスペース1つに戻します。postext 1.4までは改行がすべてスペースになったので、ハイフンで折り返したタイトルは`Word- Book`と出力され、そのようなタイトルの強制改行は失われていました。
+- `{number}`：レベルの`numberingTemplate`に従って書式化した番号。
+- `{numberDecimal}`、`{numberRoman}`、`{numberRomanLower}`、`{numberAlpha}`、`{numberAlphaLower}`：見出しのカウンター（テンプレートが何を出力するかにかかわらず、そのレベルの通し番号）を、ほかの数字の書式で表したもの。3番目の章なら`3`、`III`、`iii`、`C`、`c`となり、`numberingTemplate`の有無は問いません。番号を付けない見出し（`numbered: false`のスタイル）では空になります。
+- `{numberWords}`、`{numberWordsLower}`、`{numberOrdinalWords}`、`{numberOrdinalWordsLower}`：同じカウンターを語で綴ったもの。先頭を大文字にするか、すべて小文字にするかを選べます：*Three* / *three*、*Third* / *third*（[語で綴る番号](#語で綴る番号)を参照）。
+- `{numberHan}`：同じカウンターを、文書の`locale`の字体の漢数字で表したもの。`第{numberHan}回`と設定した章扉は12番目の章で第十二回と出力し、目次には`12`と載ります。
+- `{chapterNumber}`、`{chapterTitle}`、`{pageNumber}`、`{totalPages}`、`{bookTotalPages}`、`{title}`、`{subtitle}`、`{author}`、`{publishDate}`：共通のメタデータのプレースホルダー。
+- `{attr.<key>}`：見出しの行そのものに書いた属性（`# Title {author="I. Zango Martín"}`）。なければ現在の章のH1の属性を使います。存在しない属性は、警告なしで空文字列になります。
+
+`{chapterNumber}`は、柱がその章について出力するものと同じ値を出力します。H1のレベル（またはスタイル）に`numberingTemplate`があればH1の番号、なければ章の序数（`1`、`2`…で、この章より前に組んだ章から続きます）で、番号を付けない章や、テンプレートが`''`のスタイルでは何も出力しません。見出しのデザインは、その見出しが属する章を読みます。レベル1の見出しは自身の章を、下位の見出しはその前にある最後のレベル1見出しの章を読みます。2つの章が1ページで接する場合も同じで、そのページの柱は後の章を出力します。章扉が確保する高さも、同じ値で測ります。postext 1.4までは見出しの番号の接頭辞（テンプレートがなければ空）で測っていたため、高さが`{chapterNumber}`に依存するデザインは確保した場所より高く描かれることがありました。また、デザインはページの章を出力していたので、1ページを共有する2つの章のうち最初の章に、2番目の章の番号が出ていました。
+
+カウンターのプレースホルダーは、1章ずつ組んだ章をまたいで本全体に従います（`continuationAfter()`が引き継ぐカウンター）。見出しの`startAt`属性でリセットされます（**文書形式 → 見出しの属性**を参照）。流れと目次では`3.`と番号が付いたタイトルの上に、*Chapter III*と表示する章扉の例です：
+
+```ts
+{
+  level: 1,
+  span: 'page',
+  numberingTemplate: '{1}.',
+  advancedDesign: {
+    enabled: true,
+    slot: { elements: [
+      { kind: 'text', id: 'label', content: 'Chapter {numberRoman}', fontSize: { value: 10, unit: 'pt' }, overflow: 'ellipsis-end',
+        placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: 'fill', height: 'auto' } } },
+      { kind: 'text', id: 'title', content: '{titleText}', fontSize: { value: 24, unit: 'pt' }, overflow: 'wrap',
+        placement: { anchor: { to: '#label', edge: 'below' }, size: { width: 'fill', height: 'auto' } } },
+    ] },
+  },
+}
+```
+
+#### 確保する高さ
+
+詳細デザインを持つ見出しは、ほかのブロックと同じように段の中で場所を取り、その後の本文はその下から始まります。その場所は次の3つの高さのうち最も高いもので、いずれも見出しの上端（ページの最初に来る章扉では版面の上端）から下へ測ります：
+
+1. レベルの文字組みで組んだ見出し自身の本文（デザインの下に隠れますが、行は保ちます）。
+2. デザインの内容の下端：数に入る要素（後述）のうち、最も低い下辺。
+3. `advancedDesign.minHeight`。
+
+その後に見出しの`marginBottom`（見出しスタイル、レベル、または`headings.marginBottom`から。既定は0.5 em）を加え、見出しが吸着する場合はベースライングリッドに切り上げます。章扉（`span: 'page'`）では、同じ帯をページのすべての段で空けておきます。段に収まる段内の見出しでは、デザインはちょうどその高さの見出しのボックスの中にレイアウトされます。
+
+**数に入る要素**。デザインの要素は、テキスト、罫線、ボックス、画像のいずれもすべて数に入ります（postext 1.4までは`image`要素は数に入らなかったので、`minHeight`で押さえない限り、本文が帯の画像に重なって始まることがありました）。ただし、次のものは除きます：
+
+- **`reserve: false`の要素**：本文の下に敷いてよい装飾。
+- **帯そのものに従う要素**：コンテナーの中段（`left`、`center`、`right`）または下段（`bottom-left`、`bottom`、`bottom-right`）に固定した要素、高さをコンテナーに対する`'fill'`とした要素（高さのないボックスや縦罫線は既定でコンテナーを満たします）、およびそれらに固定した要素。コンテナーは確保した帯なので、これらは帯の下端に置かれるか、帯全体にわたります。帯の下の罫線や、タイトルの背後の色付きのパネルなどです。高さに従うだけで、高さを決めることはありません。ただし、そのうち自身の高さを保つテキストには、それでも場所が必要です。帯の下端に固定したタイトルは帯を少なくともタイトルの高さにするので、タイトルが見出しの上端より上から始まることはありません。`minHeight: 36mm`でタイトルを`bottom-left`に固定すると、見出しのボックスは36 mmに`marginBottom`を加え、グリッドに切り上げた高さになり、タイトルはそのボックスの下端、つまり続く本文のすぐ上に置かれます。`minHeight`がなければ、見出し自身の本文より多くの行を使うタイトルは、帯をタイトルの深さまで広げます。postext 1.4までは、このようなタイトルは見出しの上にある本文に重ねて上方向に描かれていました。帯に従うボックス、罫線、画像にはこのような下限はないので、下端に固定したパネルが見出しより上まで届くことがあります。
+
+ページと裁ち落としに固定した要素は、見出しの上端より下へどれだけ届くかで数えます。見出しより上で終わるページ上部の帯は何も数えず、見出しを越えて伸びる裁ち落としいっぱいの画像は、本文をその下辺まで押し下げます。ページの低い位置にあるものも同じです。ページの下端から25 mm上にある印章、ページ全高にわたる側面の帯、枠などはページをその下辺まで確保するので、本文はたいてい次のページから始まります。このような装飾には`reserve: false`を付け（描画はされ、ほかの要素はそれに固定できます）、見出しに必要な場所はテキスト要素か`minHeight`で与えてください：
+
+```json
+{
+  "kind": "image", "id": "seal", "resourceId": "seal", "reserve": false,
+  "placement": {
+    "anchor": { "to": "page", "edge": "bottom-right" },
+    "offset": { "x": { "value": -25, "unit": "mm" }, "y": { "value": -25, "unit": "mm" } },
+    "size": { "width": { "value": 30, "unit": "mm" } }
+  }
+}
+```
+
+確保しない要素に固定した要素は、それ自身にも印を付けない限り数に入ります（印章に付けたキャプションには、それ自身の`reserve: false`が必要です）。
+
+**描画される位置**。章扉のデザイン（`span: 'page'`）は本文より先に描画されるので、何も確保しない装飾は本文の下に敷かれます。段内の見出しのデザインは見出しのブロックとともに描画され、段の中で先行するブロックより手前、後続のブロックより奥に描かれます。段の末尾より上であれば、左右の余白、天の余白、裁ち落とし、隣の段のどこに置いてもかまいません。流れはそこで終わるので、CanvasでもPDFでも段の末尾で切れます（後述の**段より高い場合**を参照）。postext 1.4までは、CanvasとPDFは段の上端でも切っていたため、ページや裁ち落としの上端に固定した帯は左右の余白には伸びても、天の余白で止まっていました。ページの下端に固定する装飾は、章扉か、`pages: 'opener'`を指定したフッターのデザインに入れてください。
+
+**段より高い場合**。確保する高さが段の末尾を越える場合（ページと同じ高さの`minHeight`、仕上がり線まで伸びる画像や枠）、見出しはページ（章扉ではすべての段）または段（段内の見出し）の残りを占め、その後の本文は次のページまたは段から始まります。見出しのブロックは段の末尾まで伸び、本文の高さに切り詰められることはないので、デザインがレイアウトされる帯は占めた範囲そのものです（`minHeight`も含め、末尾まで）。ページそのものより高いデザイン（小さな画面用ページの長いリードなど）は、それでもページの末尾で切れます（段内のデザインは段の末尾で切れます）。Sandboxはこれを**検査**パネルで**見出しのデザインの欠け**として示します。レイアウト自体は警告を出しません。ページを占める表紙はよくある使い方で、失うものもないからです。ただし、どのホストでも組み上がったレイアウトに同じ検査を行えます。`collectHeadingDesignCuts(doc)`は、デザインのテキストがページの仕上がりの末尾（`where: 'page'`、章扉）または段の末尾（`where: 'column'`）を越えている見出しごとに`{ kind: 'headingDesignCut', pageIndex, level, where, overflowPx, sourceStart, sourceEnd }`を1つ返し、`formatWarning`がそれぞれを説明します。[幅と詳細デザイン](#幅と詳細デザイン)の**ページと同じ高さの章扉**を参照してください。
+
+**サイド段**。サイド段がフロートを受け持つ（`sideColumnRole: 'floats'`）1段半レイアウトでは、段内の見出しのデザインのうちサイド段に立つ要素（教科書の章扉で、小口側の余白の段にページ基準で固定した章番号など）が、サイド段に積まれるフロートを遠ざけます。見出しの後にそのページが置く`span: 'side'`の図、表、囲みは、そのような要素からフロートの間隔1つ分を空けます。積み重ねで決まる位置で要素より上に収まればそこにとどまり、収まらなければ要素の下へ回り、サイド段の残りにそこで収まらなければ次のページを待ちます。そのため、サイド段の頭にある章番号は積み重ね全体をその下に置き、ページの下のほうにある見出しの脇の余白に掛けた節番号は、サイド段の頭をそのページが引用する図に譲ります（余白の図は引き続きページの上端に置かれます）。見出しを置く時点でサイド段がすでに持っているものは動かしません。ページの前のほうで積まれ、見出しの要素まで届く図はそのまま要素の下に残るので、ページの途中でサイド段に要素が立つデザインでは、図を見出しの後で引用してください。`reserve: false`の要素は、本文に対してと同じくサイド段も空けたままにします。章扉（`span: 'page'`）ではこのような配慮は不要です。その帯はサイド段を含むすべての段で確保されるからです。postext 1.4までは、このような章扉で引用したサイドの図は、サイド段の頭、章番号の上に置かれていました。
+
+**表紙**。ページを埋める表紙の見出し（ページと同じ高さの`minHeight`、またはデザイン内のページ全面の画像）は、こうして1段組みでも多段組みでも、それだけで後の本文を次のページへ送ります。直後の`:::pagebreak`は任意で、害もありません。まだ空のページでの改ページは何もしないので、白ページが加わることはありません。必要になるのは、表紙のデザインがページの末尾まで届かず、それでも本文を新しいページから始めたい場合だけです。
+
+```md
+# Annual report 2026 {style="cover"}
+
+:::pagebreak
+
+# Letter from the chair
+```
+
+### 語で綴る番号
+
+番号付けテンプレートの2つの接尾辞は、カウンターを文書の言語（最上位の`locale`、なければハイフネーションのロケール。[文書の言語](#文書の言語)を参照）の語で書きます。基数には`words`、序数には`ordinal`を使います。文字の`A` / `a`と同じく、接尾辞の大文字・小文字が語の大文字・小文字を決めます：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>トークン</th>
+      <th>英語（21）</th>
+      <th>スペイン語（21）</th>
+      <th>中国語（21）</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>{'{1:words}'}</code></td><td>twenty-one</td><td>veintiuno</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:Words}'}</code></td><td>Twenty-one</td><td>Veintiuno</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:WORDS}'}</code></td><td>TWENTY-ONE</td><td>VEINTIUNO</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:ordinal}'}</code></td><td>twenty-first</td><td>vigesimoprimero</td><td>第二十一</td></tr>
+    <tr><td><code>{'{1:Ordinal}'}</code></td><td>Twenty-first</td><td>Vigesimoprimero</td><td>第二十一</td></tr>
+    <tr><td><code>{'{1:ORDINAL}'}</code></td><td>TWENTY-FIRST</td><td>VIGESIMOPRIMERO</td><td>第二十一</td></tr>
+  </tbody>
+</table>
+
+英語、スペイン語、中国語、アラビア語は語で綴ります。ほかの言語は、組み込みの表の続き文字列と同じく英語の語を使います。中国語は`locale`の字体に従い、`simp-chinese-informal`または`trad-chinese-informal`の通常の漢数字（一万 / 一萬）で書き、序数の前に第を付けます。漢字には大文字・小文字がないので、接尾辞の3つの書き方は同じ結果になります。英語はアメリカ式です（*one hundred five*、*and*なし）。スペイン語は、*capítulo*や*libro*に番号を付けるときと同じく男性形を使い（*capítulo primero*、*tercero*、*veintiuno*）、13から29の序数はRAEが推奨するとおり1語で書きます（*decimotercero*、*vigesimoprimero*）。基数は999 999まで、スペイン語の序数は999まで語で綴り、それより大きい数は数字で出力します。
+
+アラビア語の数は数える名詞と性が一致するので、接尾辞に修飾子を付けます。女性名詞には`-feminine`（または`-f`）、男性名詞には`-masculine`（`-m`、既定）を使います。`-classical`は、ブーラーク版や多くのエジプトの刊本と同じく、百を現代のمئةではなくمائةと綴ります。`{1:ordinal}`は、見出しで使う限定・主格の序数を書きます。`الفصل {1:ordinal}`は*الفصل الأول*、*الفصل الحادي عشر*、*الفصل الحادي والعشرون*となり、`الليلة {1:ordinal-feminine}`は*الليلة الأولى*、*الليلة الحادية عشرة*、*الليلة الحادية والعشرون*、*الليلة المئتان*となります。100を超えると、古典的な「〜の後の」の定型になります：*الليلة الخامسة والأربعون بعد الثلاثمئة*、*الليلة الحادية بعد الألف*。`{1:words}`は基数を書きます（واحد وعشرون。女性形はإحدى عشرة、واحدة وعشرون）。序数は9 999まで、基数は99 999まで語で綴ります。修飾子は組み合わせられ（`{1:ordinal-f-classical}`）、ほかの言語では無視されます。アラビア語には大文字がないので、接尾辞の大文字・小文字は何も変えません。デザインのプレースホルダー`{numberWords}`と`{numberOrdinalWords}`は男性形を書きます。女性形の章扉では、レベルのテンプレートに序数を入れて`{number}`で出力してください。
+
+見出しのデザインでは、`{numberWords}` / `{numberWordsLower}`と`{numberOrdinalWords}` / `{numberOrdinalWordsLower}`が見出しのカウンターを同じように綴るので、目次には`1`と載せたまま、章扉には*Chapter One*と表示できます。大文字にするには、テキスト要素の`textTransform: 'uppercase'`を使います：
+
+```ts
+// Spanish novel: "CAPÍTULO PRIMERO" above the title, "1." in the contents.
+{ level: 1, numberingTemplate: '{1}.', span: 'page',
+  advancedDesign: { enabled: true, slot: { elements: [
+    { kind: 'text', id: 'n', content: 'Capítulo {numberOrdinalWordsLower}', textTransform: 'uppercase', /* … */ },
+    { kind: 'text', id: 't', content: '{titleText}', /* … */ },
+  ] } } }
+```
+
+
+## 箇条書きリスト
+
+`unorderedLists`プロパティは、箇条書きリスト（`-`、`*`、`+`）とGFMのタスクリスト（`- [ ]`、`- [x]`）の描画方法を制御します。入れ子は5階層までサポートしています。
+
+### 箇条書きリストの既定値
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '160px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>bodyText.fontFamily</code>を継承</td>
+      <td>項目の文字に使うフォントです。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>メインカラー（<code>#295AA3</code>）</td>
+      <td>項目の文字と行頭記号の色です。既定のパレットの<code>main-color</code>エントリーに結び付けられています。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>項目の文字のウェイトです（100–900）。レベルごとに上書きしない限り、行頭記号もこのウェイトを継承します。</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>項目の文字をイタリックで描画します。</td>
+    </tr>
+    <tr>
+      <td><code>bulletChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'•'</code></td>
+      <td>行頭記号として使うグリフです。</td>
+    </tr>
+    <tr>
+      <td><code>bulletFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1 em</code></td>
+      <td>行頭記号のグリフのサイズです。相対単位は本文のフォントサイズに応じて拡大縮小します。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>行頭記号と項目の文字のあいだの水平方向のアキです。</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>レベル1の基本インデントです。それより深いレベルは、上書きしない限り、親の文字の開始位置から連鎖して決まります（後述）。</td>
+    </tr>
+    <tr>
+      <td><code>bulletVerticalOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>行頭記号の垂直位置を微調整します。負の値で上へ、正の値で下へ移動します。</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>リスト全体の前後のアキです。</td>
+    </tr>
+    <tr>
+      <td><code>itemSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>行の高さに加えて項目間に挿入する、垂直方向の追加のアキです。別のリストの項目の中に入れ子にしたリストの周囲では、外側のリストのアキが両側、つまり入れ子のリストの最初の項目の前と最後の項目の後に適用されます（postext 1.4までは、入れ子のリストの後の項目には入れ子のリストのアキが使われていました）。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>見出しの下の本文と同じように、リストの上のアキを切り上げて、最初の行頭記号がベースライングリッドに乗るようにします。このとき<code>marginTop</code>は最小値になります。リストの終わりではどちらの設定でも流れがグリッドに戻るため、<code>itemSpacing</code>が0なら、すべての項目が隣の段の本文と行がそろいます。postext 1.4までと同じく、既定ではオフです。この場合、行の整数倍でない<code>marginTop</code>を指定すると、リストが終わるまで項目はグリッドから外れます。内部がグリッドから外れている囲みの中のリストは影響を受けません。</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>有効にすると、折り返した行を行頭記号の下ではなく、文字の最初の字にそろえます。</td>
+    </tr>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>UnorderedListLevelConfig[]</code></td>
+      <td>—</td>
+      <td>レベル1–5の深さごとの上書きです。後述します。</td>
+    </tr>
+  </tbody>
+</table>
+
+### タスクリストの拡張
+
+GFMのタスク項目（`- [ ] …`、`- [x] …`）は、行頭記号の代わりにチェックボックスのグリフを置いた箇条書きの項目として描画されます。次のフィールドはタスク項目にだけ適用されます。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>プロパティ</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '180px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>taskCheckboxChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'☐'</code></td>
+      <td>未完了のタスクに使うグリフです。</td>
+    </tr>
+    <tr>
+      <td><code>taskCheckedChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'☑'</code></td>
+      <td>完了したタスクに使うグリフです。</td>
+    </tr>
+    <tr>
+      <td><code>taskCompletedStrikethrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>完了したタスクの文字に取り消し線を引きます。</td>
+    </tr>
+    <tr>
+      <td><code>taskCompletedColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>項目の色を継承</td>
+      <td>完了したタスクの文字に適用する色です（省略可）。省略すると通常の項目の色を使います。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 箇条書きリストのレベル別上書き
+
+`levels`の各エントリーは1つの深さ（1–5）を対象とし、次のどの項目でも上書きできます。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>bulletChar</code></td><td><code>string</code></td><td>この深さの行頭記号のグリフです。</td></tr>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td>この深さの項目のフォントファミリーです。</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td>この深さの行頭記号のグリフのサイズです。</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>項目の色です。</td></tr>
+    <tr><td><code>fontWeight</code></td><td><code>number</code></td><td>項目のウェイトです。</td></tr>
+    <tr><td><code>italic</code></td><td><code>boolean</code></td><td>イタリックの切り替えです。</td></tr>
+    <tr><td><code>indent</code></td><td><code>Dimension</code></td><td>この深さの行頭記号の明示的なインデントです。下記の連鎖の規則を参照してください。</td></tr>
+    <tr><td><code>verticalOffset</code></td><td><code>Dimension</code></td><td>この深さの行頭記号の垂直方向の微調整です。</td></tr>
+  </tbody>
+</table>
+
+**インデントの連鎖**。レベル1は常に全体の`indent`の値から始まります（既定は`0 em`で、行頭記号は段の端に固定されます）。レベル2–5では、`indent`を未定義のままにすると、エンジンは行頭記号を*1つ上の*レベルの文字の開始位置（親のインデント＋行頭記号の幅＋`gap`）に置きます。あるレベルに`indent`を明示すると連鎖が切れ、その深さを好きな位置に固定できます。
+
+```ts
+unorderedLists: {
+  bulletChar: '—',
+  gap: { value: 0.4, unit: 'em' },
+  hangingIndent: true,
+  levels: [
+    { level: 2, bulletChar: '·' },
+    { level: 3, bulletChar: '◦', color: { hex: '#666666', model: 'hex' } },
+  ],
+}
+```
+
+
+## 番号付きリスト
+
+`orderedLists`プロパティは番号付きリスト（`1.`、`2)`など）を制御します。入れ子は5階層までサポートしており、深さごとに異なる番号の書式を使えます。
+
+### 番号付きリストの既定値
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '220px' }}>型</th>
+      <th style={{ width: '160px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>bodyText.fontFamily</code>を継承</td>
+      <td>項目の文字と番号に使うフォントです。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>メインカラー（<code>#295AA3</code>）</td>
+      <td>項目の文字と番号の色です。既定のパレットの<code>main-color</code>エントリーに結び付けられています。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>項目の文字と番号のウェイトです（100–900）。</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>項目の文字をイタリックで描画します。</td>
+    </tr>
+    <tr>
+      <td><code>numberFormat</code></td>
+      <td><code>OrderedListNumberFormat</code></td>
+      <td><code>'arabic'</code></td>
+      <td>番号のスタイルで、<code>'arabic'</code>、<code>'lower-alpha'</code>、<code>'upper-alpha'</code>、<code>'lower-roman'</code>、<code>'upper-roman'</code>のいずれかです。ほかの設定での表記も使えます（<code>'decimal'</code>、<code>'roman-lower'</code>、<code>'i'</code>…。<a href="/ja/docs/configuration-page-layout#番号書式の表記">番号書式の表記</a>を参照）。未知の値はアラビア数字で番号を付け、報告されます。</td>
+    </tr>
+    <tr>
+      <td><code>prefix</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>番号の前に置く文字列で、区切りと同じスタイルで組みます。ここに<code>'（'</code>、区切りに<code>'）'</code>を指定すると、中国語のリストは（一）、（二）となります。区切りが独立したランとして描画される場合は、接頭辞も番号の直前で独立したランになります。</td>
+    </tr>
+    <tr>
+      <td><code>separator</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>番号と文字のあいだに置く文字です。通常は<code>'.'</code>または<code>')'</code>です。</td>
+    </tr>
+    <tr>
+      <td><code>separatorFontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>fontFamily</code>を継承</td>
+      <td>区切りのフォントです。区切りのスタイルのどれかが番号と異なる場合、区切りは（右そろえの）番号の後に独立したランとして描画されます。たとえば、Optima Boldの黒の<code>1</code>の後に、DIN Pro Boldの青の<code>•</code>が続きます。</td>
+    </tr>
+    <tr>
+      <td><code>separatorFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>fontWeight</code>を継承</td>
+      <td>区切りのウェイトです（100–900）。</td>
+    </tr>
+    <tr>
+      <td><code>separatorItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>italic</code>を継承</td>
+      <td>区切りをイタリックで描画します。</td>
+    </tr>
+    <tr>
+      <td><code>separatorColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>color</code>を継承</td>
+      <td>区切りの色です。パレットの参照も反映されます。</td>
+    </tr>
+    <tr>
+      <td><code>separatorGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>番号と区切りのあいだのアキです。項目の文字は、これまでどおり区切りから<code>gap</code>離れた位置から始まります。</td>
+    </tr>
+    <tr>
+      <td><code>numberFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1 em</code></td>
+      <td>番号のサイズです。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>番号と項目の文字のあいだの水平方向のアキです。</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>レベル1の基本インデントです。それより深いレベルは、上書きしない限り、親の文字の開始位置から連鎖して決まります。</td>
+    </tr>
+    <tr>
+      <td><code>numberVerticalOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>番号の垂直位置を微調整します。</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>リスト全体の前後のアキです。</td>
+    </tr>
+    <tr>
+      <td><code>itemSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>項目間の垂直方向の追加のアキです。別のリストの項目の中に入れ子にしたリストの周囲では、外側のリストのアキが両側、つまり入れ子のリストの最初の項目の前と最後の項目の後に適用されます（postext 1.4までは、入れ子のリストの後の項目には入れ子のリストのアキが使われていました）。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>見出しの下の本文と同じように、リストの上のアキを切り上げて、最初の番号がベースライングリッドに乗るようにします。このとき<code>marginTop</code>は最小値になります。リストの終わりではどちらの設定でも流れがグリッドに戻るため、<code>itemSpacing</code>が0なら、すべての項目が隣の段の本文と行がそろいます。postext 1.4までと同じく、既定ではオフです。この場合、行の整数倍でない<code>marginTop</code>を指定すると、リストが終わるまで項目はグリッドから外れます。内部がグリッドから外れている囲みの中のリストは影響を受けません。</td>
+    </tr>
+    <tr>
+      <td><code>numberWidth</code></td>
+      <td><code>'run' | 'level'</code></td>
+      <td><code>'run'</code></td>
+      <td>項目の番号欄の幅で、これによって文字の開始位置が決まります。番号は欄の中で右そろえになります。<code>'run'</code>：その項目が属する連続部分（run）の中でもっとも幅の広い番号に合わせます。連続部分とは、同じ深さの項目が、より深い項目だけを挟んで続くまとまりです。2つの項目のあいだに図、段落、囲みがあると新しい連続部分が始まるため、表の後の<code>ii)</code>は、その前の<code>i)</code>より少し右から文字が始まることがあり、9項目のリストは12項目のリストより左から文字が始まります。<code>'level'</code>：文書全体（本では章）で、その項目の深さにあるもっとも幅の広い番号に合わせます。そのため、すべてのリストと、途中で中断されたリストの各部分が同じ位置から文字を始めます。より深いレベルのインデントがすでにそうなっているのと同じです。</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>折り返した行を、番号の下ではなく文字の最初の字にそろえます。</td>
+    </tr>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>OrderedListLevelConfig[]</code></td>
+      <td>—</td>
+      <td>レベル1–5の深さごとの上書きです。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 番号付きリストのレベル別上書き
+
+`levels`の各エントリーでは、`numberFormat`、`prefix`、`separator`、`fontFamily`、`fontSize`、`color`、`fontWeight`、`italic`、`indent`、`verticalOffset`と区切りのスタイル（`separatorFontFamily`、`separatorFontWeight`、`separatorItalic`、`separatorColor`、`separatorGap`）を上書きできます。箇条書きリストと同じインデントの連鎖が適用されます。あるレベルの区切りのスタイルは、リスト全体の区切りの設定が指定されていない限り、そのレベル自身の番号のスタイルを継承します。
+
+**右そろえ**。パイプラインは連続部分の中でもっとも幅の広い書式付きの番号を測り、その連続部分のすべての項目をインデントして、番号の右端をそろえます。`1.`–`10.`と描画される10項目のリストでは、1桁の番号に余白を補い、区切りが同じ位置にそろうようにします。
+
+```ts
+orderedLists: {
+  numberFormat: 'arabic',
+  separator: '.',
+  levels: [
+    { level: 2, numberFormat: 'lower-alpha' },
+    { level: 3, numberFormat: 'lower-roman', separator: ')' },
+  ],
+}
+```
+
+これで、定番の入れ子の組み合わせになります。
+
+```
+1. First item
+   a. Sub-item
+      i) Deep note
+   b. Sub-item
+2. Second item
+```
+
+中国語の公文書の階層（GB/T 15834—2011、付録B.3）は5レベルで、一、→（一）→1.→（1）→①の順になります。
+
+```ts
+orderedLists: {
+  levels: [
+    { level: 1, numberFormat: 'simp-chinese-informal', separator: '、' },
+    { level: 2, numberFormat: 'simp-chinese-informal', prefix: '（', separator: '）' },
+    { level: 3, numberFormat: 'arabic', separator: '.' },
+    { level: 4, numberFormat: 'arabic', prefix: '（', separator: '）' },
+    { level: 5, numberFormat: 'circled-decimal', separator: '' },
+  ],
+}
+```
+
+
+## 数式
+
+`math`プロパティは、`$...$`（インライン）と`$$...$$`（別行立て）で囲んだLaTeXの数式の解析と描画の方法を制御します。基盤のエンジンはSVG出力モードのMathJax（`mathjax-full`パッケージ）で、キャンバスにはラスタライズして描画し、PDFには拡大縮小可能なグリフとして埋め込みます。
+
+```ts
+interface MathConfig {
+  enabled?: boolean;        // Render LaTeX. When false, spans pass through as literal TeX.
+  fontSizeScale?: number;   // × the surrounding text's size (the body size for display maths).
+  color?: ColorValue;       // Formula colour; inherits body colour if omitted.
+  marginTop?: Dimension;    // Space above display math blocks.
+  marginBottom?: Dimension; // Minimum space below; baseline grid snap may enlarge it.
+  indentAfterDisplay?: boolean; // Indent a paragraph that follows a display formula.
+  keepWithLeadIn?: boolean; // Keep a display formula with the line that leads into it.
+  equationNumbering?: {      // Number the display formulas that carry a \label.
+    enabled?: boolean;           // default true
+    numberingTemplate?: string;  // '{n}'; '{h1}.{n}' numbers by chapter
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})': what the formula and \eqref print
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '160px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>falseの場合も`$...$`と`$$...$$`のスパンは解析されますが（そのため、閉じていない区切り記号の警告は出ます）、TeXのソースがそのまま描画されます。内容に意図的にドル記号が含まれる場合や、数式の描画を完全に無効にしたい場合に使います。</td>
+    </tr>
+    <tr>
+      <td><code>fontSizeScale</code></td>
+      <td><code>number</code></td>
+      <td><code>1.0</code></td>
+      <td>描画の前に周囲のテキストのサイズに掛ける倍率です。数式のTeXフォントの1emは、そのサイズ×`fontSizeScale`になります。そのサイズとは、別行立て数式と本文中のインライン数式では`bodyText.fontSize`、見出し、段落スタイル、キャプション、囲みの本文の中のインライン数式では、それを含むブロックのサイズです。1.0で周囲のテキストと一致します。数式のフォントが本文のフォントよりわずかに大きく、または小さく見える場合は、0.9–1.1の範囲の値が一般的です。**postext 1.5で変更**：1.4までは、数式がこれより約13%大きく組まれていました（後述）。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>本文の色を継承</td>
+      <td>描画される数式の色です。省略すると`bodyText.color`を継承します。数式を本文と異なる色にしたい場合、たとえば見出しのアクセントカラーに合わせたい場合に明示的に設定します。</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>別行立て数式の上のアキです。インライン数式では無視されます。</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>別行立て数式の下のアキです。これは**最小値**で、次のベースラインがグリッド線に乗るように、グリッドへのスナップで広がることがあります（<code>page.baselineGrid</code>でグリッドを表示するかどうかにかかわらず）。</td>
+    </tr>
+    <tr>
+      <td><code>indentAfterDisplay</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>別行立て数式に続く段落の1行目を、ほかの段落と同じく字下げします。<code>false</code>にすると、別行立て数式の直後の段落はすべて字下げせずに組まれ、数式が中断した文の続き（「ここで<em>L</em>は…」）として扱われます。段落の中に書いた数式（上にも下にも空行がないもの）の後は、常に字下げしません。閉じる<code>$$</code>の下の文はその段落の続きであり、字下げされることはありません（<a href="/ja/docs/document-format#数式">数式</a>を参照）。</td>
+    </tr>
+    <tr>
+      <td><code>keepWithLeadIn</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>別行立て数式を、それを導入する行と同じ段に置きます。TeXのpredisplay penaltyに相当します。数式がその前の段落の最終行の下に収まらない場合、その行は数式と一緒に次の段またはページへ移ります。後に残る行が<code>bodyText.widowMinLines</code>未満になる場合（<code>bodyText.avoidWidows</code>がオフなら1行未満）は、その段で始まる段落が丸ごと次へ移ります（<code>headings.keepWithNext</code>により、その上で段を閉じている見出しも一緒に移ります）。持ち越された行は、オーファンの規則が何を求めていても、次の段の先頭に単独で置かれます。<code>false</code>の場合は数式だけが次へ移り、それを導入する行が上の段を閉じたり、次の段の先頭にある図の上に置かれたりすることがあります。</td>
+    </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>、<code>'&#123;n&#125;'</code>、<code>'never'</code>、<code>'decimal'</code>、<code>'(&#123;n&#125;)'</code></td>
+      <td><code>\label</code>を持つ別行立て数式の番号の付け方です（後述の<em>番号付きの数式</em>を参照）。<code>numberingTemplate</code>、<code>resetOn</code>、<code>counterFormat</code>はリソースの種類のものと同じ働きをします。<code>'&#123;h1&#125;.&#123;n&#125;'</code>と<code>resetOn: 'h1'</code>で章ごとに(2.1)、(2.2)…と、<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code>と<code>'h2'</code>で節ごとに番号を付けます。<code>format</code>は数式と<code>\eqref</code>が印字する番号の形で、<code>&#123;n&#125;</code>が番号を表します。<code>'[&#123;n&#125;]'</code>なら[3]と組まれます。<code>enabled: false</code>ではどの数式にも番号を付けません。<code>\label</code>は捨てられ、それへの参照はページを印字します。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+math: {
+  enabled: true,
+  fontSizeScale: 1.0,
+  color: { hex: '#295AA3', model: 'hex' },
+  marginTop: { value: 1, unit: 'em' },
+  marginBottom: { value: 1, unit: 'em' },
+}
+```
+
+**数式のサイズ（postext 1.5で変更）**。MathJaxは数式のボックスを`ex`で返し、TeXフォントの1`ex`は0.442emです。postext 1.4まではエンジンがこれを0.5emとして扱っていたため、どの数式も`bodyText.fontSize × fontSizeScale`より約13%大きく組まれていました。現在は数式がドキュメントに記載したとおりのサイズで組まれ、数式を含む行とページは組み直されます。1.4向けにコードで書いた設定は、書いたままの状態で`postext/bundle`の`pinLegacyMathSize`に1回通すと、1.4の数式サイズを保てます。
+
+```ts
+import { pinLegacyMathSize } from 'postext/bundle';
+
+config = pinLegacyMathSize(config); // formulas, and the space around display formulas, as 1.4 set them
+```
+
+1.5でのほかの規則の変更でも、ページが動くことがあります。対象は、見出しの改行位置、インラインの図の周囲のアキ（本文中と囲みの中）、見出しのインラインのマーク、ドロップキャップのサイズ、コロンで終わる行の下に、それが導入するリストのために確保する余地、囲みの分割で段落やリスト項目に残る行、ダッシュの後の改行、行末不ぞろいのテキストの改行、見出しの下での段落の分割、複合語のハイフンの後の改行、`:::paragraphs`コンテナーの下のアキです。その設定で組むMarkdownを渡して`migrateConfig`を1回実行すると、そのテキストに必要なものを、数式のサイズも含めて固定します（[postext 1.4以前で書き出したバンドル](/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル)を参照）。
+
+```ts
+import { migrateConfig } from 'postext/bundle';
+
+config = migrateConfig(config, undefined, { content: markdown }); // heading breaks, formulas, inline gaps, heading marks, drop caps, colon lines, box cuts, dash breaks, compound breaks, ragged breaking, splits under a heading and container space as 1.4 set them
+```
+
+これで、こうした規則の変更によって動くものは抑えられますが、1.4のページがすべて保たれるわけではありません。バージョン1.5ではレイアウトのバグも修正しており、修正は固定できません。古い設定にも新しい設定と同じく修正が適用されるため、修正の影響を受けるページは動くことがあります。主なものは次のとおりです。独自のデザインを持たないページ幅の見出しは、ページ全体の幅で測られ、そのレベルの行送りで組まれます。見出しデザインの中のドロップキャップのベースラインの下には、何も確保されません。ドロップキャップはセクションのパレットの色を取り、`overflow`が`'wrap'`でないデザインテキストにも組まれ、そのテキストは回り込むようになります。囲みの中の段落は、測ったときのトラッキングで描画されます。分割された囲みは、すべての断片でアイコンの列を保ちます。語間を3倍を超えて広げることになる囲みの行は、本文と同じく行末不ぞろいで組まれます。ゆるい段落を調整する仕組みは、両端そろえの行を`maxWordSpacing`が許す以上に広げません。フロートとして配置した囲みは、フロートのアキより広い`marginBottom`（上の帯の場合）または`marginTop`（下の帯の場合）を保ちます。トラッキングを指定した中央そろえまたは右そろえのデザインテキスト（柱、章扉のタイトル）は、最後の文字の後のトラッキングを含めず、文字そのもので位置が決まります。ページ幅の章扉の下では、2段目を始めるテキストが、章扉の直下のテキストと同じ位置から始まります。章扉の後に見出しが続く場合も同様です。連続するドットをカーニングで離す書体でも、目次のリーダーはページ番号の手前で止まります。柱は見出しを書かれたとおりに読み、ハイフンやダッシュの後、または幅のために分割された語の途中で行が終わる箇所に空白を入れません（`MEDIOAMBIENTALE S`ではなく`MEDIOAMBIENTALES`）。見出しデザインの`{titleText}`も同じように読みます（`thousand- colour`ではなく`thousand-colour`）。見出しデザインの帯の下端または中央に固定したテキストは、それが収まる高さに帯を保つため、見出しの上のテキストに重なることがなくなりました。行より幅の広い語が、その語に含まれるハイフンの隣で分割される場合は、そのハイフンの後で分割され、2つ目のハイフンは付きません。別のリストに入れ子にしたリストの後の項目は、入れ子のリストではなく自分のリストの`itemSpacing`を使います。最後に、行より幅が広いために分割された語の残りは、その語自身の分割位置を保ちます。そのため、Webアドレスは区切りの位置で、複合語はハイフンの位置で改行され続け、辞書の音節で改行されることはありません。
+
+`pinLegacyMathSize`は倍率に1.1312（0.5 ÷ 0.442）を掛け、`em`で指定した別行立て数式のアキを同じ係数で割ります。別行立て数式を含む本では、倍率だけでは足りません。そのアキは数式自身のサイズに対する長さなので、同じく13%大きくなり、下のテキストを押し下げてしまいます。既定のアキについて書き出すと、3つの値は次のとおりです。
+
+```ts
+math: {
+  fontSizeScale: 1.131,
+  marginTop: { value: 0.7072, unit: 'em' },
+  marginBottom: { value: 0.7072, unit: 'em' },
+} // formulas as large as 1.4 set them, with the space 1.4 left around them
+```
+
+設定が保存されていた場合は、エンジンがそれを判別して自動的に処理します。1.5より前に書かれた`.postext`バンドルでは`openBundle` / `readBundle`が（[postext 1.4以前で書き出したバンドル](/ja/docs/configuration-programmatic-usage#postext-14以前で書き出したバンドル)を参照）、その時期に保存された本、作業コピー、`postext-config.json`ファイルではSandboxが処理します（**Sandbox → 作業内容の保存**を参照）。これらは`migrateConfig`を通して読み込まれ、サイズが固定されます（`pinLegacyMathSize`）。`fontSizeScale`は保存されていた倍率（未設定なら1）×1.1312になり、`em`または`rem`で指定した別行立て数式のアキ（数式自身のサイズに対する長さ）は同じ係数で割られるため、別行立て数式の周囲のアキは1.4のときのまま保たれます（既定の0.8emは0.7072emになります）。ページの単位（`pt`、`mm`…）で指定したアキはそのままで、`enabled: false`の設定や、本に`$`がない設定も変更されません。こうして古い本は1.4と同じように組まれ、その`math`セクションには実際に組まれるサイズが表示されます。そのような本を現在のサイズで組みたい場合は、これらの値をリセットします。Sandboxでは**数式 → サイズの倍率**、**別行立て数式の上のアキ**、**別行立て数式の下のアキ**で、コードでは次のようにします。
+
+```ts
+math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // today's size and margins
+```
+
+**番号付きの数式**。番号の付いた別行立て数式は、その組幅（段、または囲みの内側の幅）いっぱいに広がります。数式は中央に置かれ、その番号は数式の行の右端にそろえて組まれます。`align`では、番号の付いたすべての行でそうなります。番号は`\label{eq:x}`から付きます（postext 1.19以降）。ラベルを付けた数式と、`align`、`gather`、`alignat`、`flalign`、`eqnarray`のラベルを付けた行には、`\nonumber`や`\notag`を書いた行を除き、`equationNumbering`に従って読む順に番号が振られます。`equation`などの環境はそれだけでは番号が付かず、ラベルのない数式には番号がありません。`\tag{…}`は指定したラベルを括弧に入れて、`\tag*{…}`は書かれたとおりに印字します。どちらも数えられず、その横の`\label`はそれに名前を付けます。組幅より広い番号付きの数式は、ほかの別行立て数式と同じく右へはみ出します。（postext 1.4までは、`\tag`を含む数式はまったく描画されず、1.18までは`\tag`だけが番号を付けていました。）
+
+本文の`\eqref{eq:x}`は番号をその`format`で（(3)）、`\ref{eq:x}`は番号だけを印字します。`:ref{id="eq:x"}`と`@eq:x`も同じです（[相互参照](/ja/docs/document-format#相互参照とアンカー)を参照）。数式の中では、`\eqref`は番号をテキストとして印字します。章ごとに組む本では、カウンターは前の章から続きます。`continuationAfter`がそれを`LayoutContinuation.statementCounters`（`equation`）で引き継ぎ、本のアウトラインがすべてのラベルに番号を与える（`OutlineEntry.numberLabel`）ので、別の章の数式への参照もその番号を印字します。
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1), (1.2)… (2.1)
+}
+```
+
+解決関数（resolver）と既定値の除去関数（stripper）は、ほかのセクションと同じ形です。
+
+```ts
+import {
+  DEFAULT_MATH_CONFIG,
+  resolveMathConfig,
+  stripMathDefaults,
+} from 'postext';
+
+const resolved = resolveMathConfig(config.math);
+const minimal  = stripMathDefaults(config.math);
+```
+
+### 数式エンジンの起動
+
+MathJaxはエンジンのほかの部分と一緒には読み込まれず、必要になったときに読み込まれます。メインスレッドでレイアウトする場合は、数式を含む文書を構築する前に起動してください。
+
+```ts
+import { buildDocument, initMathEngine, renderPage } from 'postext';
+
+await initMathEngine(); // loads MathJax once; later calls resolve at once
+const doc = buildDocument({ markdown: 'Euler: $e^{i\\pi}+1=0$.' }, config);
+document.body.append(renderPage(doc.pages[0], doc));
+```
+
+- **エンジンが動くまで、数式はプレースホルダーです**。各数式は推定サイズの灰色のボックスとして配置されます。`initMathEngine()`を一度も呼ばずに数式を含む文書をレイアウトすると、コンソールにその旨の警告が1回表示されます。
+- **レイアウトワーカーは自動で起動します**。`postext/worker`でのビルドは、Markdownに`$`が含まれていれば自ら`initMathEngine()`を呼びます。
+- **すぐにレイアウトし、準備ができたらもう一度**。`isMathReady()`はエンジンが動いているかどうかを返します。`onMathReady(fn)`はエンジンが動き出したときに（すでに動いていればすぐに）`fn`を1回呼び、その呼び出しを取り消す関数を返します。エディターはすぐにプレースホルダーを表示し、MathJaxが届いたらもう一度レイアウトできます。`initMathEngine()`の実行中は警告は出ません。
+- **失敗**。MathJaxを読み込めない場合、`initMathEngine()`はrejectされます。次の呼び出しで再び読み込みを試みます。
+- **どのバンドラーでも、Nodeでも、CDNでも**。MathJaxは、事前にバンドルした1つのモジュールとしてパッケージに同梱されています（圧縮前で約1.8MB、`initMathEngine`が呼ばれたときにだけ取得されます）。単純な`import { initMathEngine } from 'https://esm.sh/postext'`で動作し、`?bundle`は不要です。`mathjax-full`パッケージはpostextのビルドにだけ必要なため、postextをインストールしてもインストールされません。MathJaxと、それに同梱されたmhchemパーサーはApache-2.0ライセンスです。それらの告知とライセンス文は、モジュールの隣に`dist/math/THIRD_PARTY_LICENSES.txt`として同梱されています。
+- **1ページにエンジンは1つ**。エンジンと、描画済みの数式のキャッシュは、同じJavaScriptレルムで`postext`をインポートするすべてのコードで共有されます（[1つのページで共有されるグローバルな状態](/ja/docs/configuration-programmatic-usage#1つのページで共有されるグローバルな状態)を参照）。
+
+文書側の文法（`$...$`、`$$...$$`、ドル記号そのもののエスケープ）については、[文書形式](/ja/docs/document-format#数式)を参照してください。

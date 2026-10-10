@@ -1,0 +1,2165 @@
+{/* docs/configuration-text-zh.mdx */}
+
+export const metadata = {
+  title: '配置：正文与标题',
+  sidebarTitle: '正文与标题',
+  description: '正文的排印、断词与文档语言，标题、无序和有序列表，以及数学公式',
+  lang: 'zh',
+  lastUpdated: '2026-10-10',
+  readingTime: '11分钟',
+  order: 5,
+  parent: 'configuration',
+  plainSummary: "本页讲页面上文字的设置。你可以选择正文的字体、字号和行距，以及行末怎样断词。你要告诉Postext这本书用哪种语言写成。你可以设定每一级标题的样子，以及无序列表和有序列表怎样画。最后一节设定数学公式的大小和颜色。",
+};
+
+# 配置：正文与标题
+
+
+## 正文
+
+`bodyText`属性控制所有段落文字的排版。
+
+<Illustration name="TypographyScale" data='{"title": "字号层级", "desc": "从H1到小号正文的字号层级，显示标题、正文和题注的相对大小。", "caption": "统一的字号层级让层次一眼可辨。", "rows": [{"role": "H1", "sample": "一级标题", "size": "32px"}, {"role": "H2", "sample": "二级标题", "size": "24px"}, {"role": "H3", "sample": "三级标题", "size": "20px"}, {"role": "正文", "sample": "正文文字", "size": "16px"}, {"role": "小号", "sample": "题注 / 注释", "size": "13px"}]}' />
+
+<Illustration name="SpacingScale" data='{"title": "间距层级", "desc": "按级递增的间距值，用于外边距、内边距和间隙。", "caption": "逐级的间距在版面中形成可预期的节奏。", "steps": [{"name": "xs", "value": "4 px", "px": 4}, {"name": "sm", "value": "8 px", "px": 8}, {"name": "md", "value": "16 px", "px": 16}, {"name": "lg", "value": "24 px", "px": 24}, {"name": "xl", "value": "40 px", "px": 40}, {"name": "2xl", "value": "64 px", "px": 64}]}' />
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'EB Garamond'</code></td>
+      <td>正文字体。可以是任何Google字体、系统字体，或在[`customFonts`](/zh/docs/configuration-fonts-colors-viewers#自定义字体)中声明的自定义字体。只能写一个字体族，不能写CSS字体栈（见下文）。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>8 pt</code></td>
+      <td>正文的基准字号。</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>行与行之间的垂直间距。相对单位（em、rem）随字号缩放。</td>
+    </tr>
+    <tr>
+      <td><code>paragraphSpacing</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>开启后，在相邻段落之间插入一个空行（高度等于<code>lineHeight</code>），即出版物常用的段间分隔方式。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#000000</code></td>
+      <td>文字颜色。</td>
+    </tr>
+    <tr>
+      <td><code>boldColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>主色（<code>#295AA3</code>）</td>
+      <td>粗体（strong）片段的颜色。按默认调色板中的<code>main-color</code>条目解析，所以修改调色板颜色会重新着色整篇文档里的所有粗体文字。</td>
+    </tr>
+    <tr>
+      <td><code>italicColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>主色（<code>#295AA3</code>）</td>
+      <td>斜体（emphasis）片段的颜色。默认值与<code>boldColor</code>一样链接到调色板。</td>
+    </tr>
+    <tr>
+      <td><code>referenceColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>主色（<code>#295AA3</code>）</td>
+      <td>行内<code>:ref</code>标签（资源引用）的颜色。默认值与<code>boldColor</code>一样链接到调色板。从postext 1.5起它跟随调色板；1.4及更早的版本中，无论主色是什么，它都固定为<code>#295AA3</code>。</td>
+    </tr>
+    <tr>
+      <td><code>referenceBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>用粗体字体渲染行内<code>:ref</code>标签。引用会保留周围文字的强调（在<code>***…***</code>中无论取何值都保持粗斜体）；此选项只在其上加粗。</td>
+    </tr>
+    <tr>
+      <td><code>referenceItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>用斜体渲染行内<code>:ref</code>标签。位于斜体文字中的引用无论取何值都保持斜体。</td>
+    </tr>
+    <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'bold' | 'color' | 'overline'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>*…*</code>的排法：斜体；粗体并用<code>boldColor</code>；正体并用<code>italicColor</code>；或正体并在词上加线。<code>'auto'</code>在用阿拉伯字母书写的文档中为<code>'bold'</code>，其他文档中为<code>'italic'</code>。见<a href="#阿拉伯文">阿拉伯文</a>。</td>
+    </tr>
+    <tr>
+      <td><code>tashkil</code></td>
+      <td><code>'keep' | 'strip' | 'strip-vowels'</code></td>
+      <td><code>'keep'</code></td>
+      <td>阿拉伯文元音符号：照原样排；全部去掉；或去掉但保留shadda。见<a href="#阿拉伯文">阿拉伯文</a>。</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify' | 'start' | 'end'</code></td>
+      <td><code>'justify'</code></td>
+      <td>文字对齐方式。<code>'left'</code>（或<code>'start'</code>）是一行开始的一侧：从右到左的段落即右侧（见<a href="#文本方向">文本方向</a>）。两端对齐会把间距分配到每一行，使左右边缘整齐。两端对齐段落的末行按自然宽度齐左排出；例外是Knuth-Plass接受了一个依靠胶料收缩的超长末行，这时词间距会压缩，使这一行正好填满行长（TeX的胶料设定语义，Canvas、HTML和PDF三种后端的处理完全一致）。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code></td>
+      <td>常规文字的字重（100–900）。</td>
+    </tr>
+    <tr>
+      <td><code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>粗体文字的字重（100–900）。</td>
+    </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>HyphenationConfig</code></td>
+      <td>开启，<code>'en-us'</code></td>
+      <td>自动断词设置。见下文。</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5em</code></td>
+      <td>每段首行的缩进（开启悬挂缩进时，则是除首行外所有行的缩进）。</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>开启后，缩进作用于除首行外的所有行（悬挂缩进，又称法式缩进）。</td>
+    </tr>
+    <tr>
+      <td><code>indentAfterHeading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>设为<code>false</code>时，紧跟在标题后面的第一段不做首行缩进，这是科技出版物和许多图书样式常用的排版惯例。紧跟在<a href="/zh/docs/document-format#space"><code>:::space</code></a>行后面的段落同样如此。夹在两者之间、排在正文之外的框（位于侧栏<code>span: 'side'</code>、浮动到页首或页脚，或固定位置）以及浮动的图都会被跳过：在它所在的栏里，这个段落仍然算作紧跟标题，照样顶格排。排在正文中的框（<code>placement: 'here'</code>）则算数，它后面的段落会缩进。开启<code>hangingIndent</code>时此项不起作用。</td>
+    </tr>
+    <tr>
+      <td><code>maxWordSpacing</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>两端对齐文字中词间距的上限，以正常空格宽度的倍数表示。只要段落允许，Knuth-Plass就让每一行都保持在这个上限之内，先尝试给一个词断词，或把多余的空白分摊到相邻各行；任何断点组合都无法控制在上限内的行会超出上限，超过正常空格3倍的行则改为齐左排出。超过这个比例的行视为“松散”行：见<a href="/zh/docs/justification#断行算法填不满的行">断行器填不满的行</a>；如果想让这些行改用少量字距补足，见<code>maxJustifyTracking</code>。</td>
+    </tr>
+    <tr>
+      <td><code>minWordSpacing</code></td>
+      <td><code>number</code></td>
+      <td><code>0.6</code></td>
+      <td>两端对齐文字中词间距的下限，以正常空格宽度的倍数表示。</td>
+    </tr>
+    <tr>
+      <td><code>maxJustifyTracking</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>当一行两端对齐的文字只靠词间距会拉伸到超过<code>maxWordSpacing</code>，或压缩到低于<code>minWordSpacing</code>时，这一行最多可以使用的字距，单位为千分之一em，可正可负（InDesign的单位：10 = 每个字符0.01 em）。超出上下限的那部分调整量分配到字母之间，于是松散行的词间距回到<code>maxWordSpacing</code>，过紧的行则以<code>minWordSpacing</code>排进行长。Knuth-Plass在选择断点时会把它计入，但只用于单靠词间距会超出上下限的那些行：其他行、段落末行（除非它超长）、只有一个词的行以及含有行内标签的行都不加字距。该值作为<code>letterSpacing</code>记录在行上，Canvas、HTML和PDF都会按它绘制。需要开启<code>optimalLineBreaking</code>。设为<code>0</code>即关闭。见<a href="/zh/docs/justification#最后手段字距">字距作为最后手段</a>。</td>
+    </tr>
+    <tr>
+      <td><code>kashida</code></td>
+      <td><code>'auto' | 'none'</code></td>
+      <td>用阿拉伯字母书写的文档中为<code>'auto'</code>，否则为<code>'none'</code></td>
+      <td>卡希达两端对齐：两端对齐的阿拉伯字母文字行先把空白分给词间空格（最多其宽度的四分之一），再分给卡希达，即插入两个相连字母之间的整个延长符（U+0640），绝不用字距。Knuth-Plass把每个词可拉长的量算作伸展量。拉丁词、数字、标题、不对齐的行和段落最后一行一律不加。延长符会被绘制，但不进入纯文本和复制的文字。见<a href="/zh/docs/justification#阿拉伯文的卡希达">阿拉伯文的卡希达</a>。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPatterns</code></td>
+      <td><code>'auto' | 'naskh' | 'simple' | 'nastaliq'</code></td>
+      <td><code>'auto'</code></td>
+      <td>哪些连笔可加卡希达、按什么顺序：古典纳斯赫体规则、微软的优先级，或为波斯体调整过的纳斯赫规则（依据raqim-kashida）。<code>'auto'</code>看正文字体：鲁格阿体或迪瓦尼体（Aref Ruqaa）不加，波斯体字体用nastaliq规则，其他用naskh。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaPerWord</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>一个词最多拉长几处。</td>
+    </tr>
+    <tr>
+      <td><code>kashidaMaxLength</code></td>
+      <td><code>number</code></td>
+      <td><code>0.6</code></td>
+      <td>一处连笔最长拉多少em；按能放下的整个延长符计。</td>
+    </tr>
+    <tr>
+      <td><code>optimalLineBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>使用Knuth-Plass最优断行，而不是贪心的逐行填充。整个段落的词间距会更均匀。中文、日文或韩文段落（见<a href="/zh/docs/configuration-east-asian#东亚排版">东亚排版</a>），以及含有比栏还宽的词的段落，仍然逐行排；只引用了少量CJK词语的拉丁文段落则照常使用最优断行。配合<code>optimalRagged</code>，不齐行文字也使用它。见<a href="/zh/docs/justification">断词与两端对齐</a>。</td>
+    </tr>
+    <tr>
+      <td><code>optimalRagged</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>齐左、齐右或居中的连续正文也用Knuth-Plass断行：包括正文、引用块和列表项，以及不齐行的段落样式、框的正文和篇、节样式的正文。词间距保持原宽。断行器衡量每一行比行长短多少（短3 em的行，代价与一行词间距达到<code>maxWordSpacing</code>的两端对齐行相同），因此它会让边缘更均匀，而不是先填满一行再排下一行；孤字规则（<code>avoidRunts</code>、<code>tightenRunts</code>）和<code>hyphenateAcrossColumns</code>对不齐行文字的作用也与两端对齐文字相同。开启<code>hyphenation.ragged</code>时，仍由断词区决定哪些音节可以出现在行尾（见<a href="#不齐行文字">不齐行文字</a>）。不齐行的标题、题注、注释、表格单元格和目录仍然逐行排。需要开启<code>optimalLineBreaking</code>。设为<code>false</code>时，不齐行文字逐行排，与postext 1.4及更早版本相同；早先保存、把部分连续正文设为不齐行的配置读取时采用这个值（见<a href="/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。</td>
+    </tr>
+    <tr>
+      <td><code>breakAfterDashes</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>允许在两个词之间紧排（前后无空格）的长破折号或短破折号之后断行：<code>say—that’s</code>、<code>riddles.—I</code>、<code>Hamburg–Berlin</code>，破折号后面的词换了样式时也一样（<code>see—*and*</code>）。Knuth-Plass把它当作一个词间空格处理，行在破折号处结束，不添加任何字符。以下情况从不在破折号后断行：破折号引出插入语或一句对话时（<code>—dijo</code>、<code>said "—Hola</code>、<code>sagte »—Ich</code>：破折号前有空格，或有空格加引号；如果前面的引号是收在一个词上的，比如<code>"no"—and</code>、德文<code>„nein“—und</code>或法文<code>« non »—et</code>，则可以断行）；破折号后面是标点（<code>él—,</code>）；破折号后面是引号或括号（<code>thinking—" and</code>、<code>says—“no”</code>、<code>says—(no)</code>：破折号后面的引号往往是在结束被破折号打断的话语）；在一串破折号内部；在用短破折号连接的数字范围内（<code>1914–1918</code>）。设为<code>false</code>时保留1.4的断行方式：Knuth-Plass从不在破折号后断行，而带格式或断词的不齐行文字所用的逐行断行器只在两个字母之间断行；早先保存、正文中含有这类破折号的配置读取时采用这个值（见<a href="/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。它作用于连续正文、标题、列表、引用块和框。题注、注释、表格单元格和目录保留1.4的断行方式，而逐行排的普通不齐行段落无论如何都遵循pretext自己的规则。</td>
+    </tr>
+    <tr>
+      <td><code>breakAfterHyphens</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>在Knuth-Plass断行的每个段落里，允许在复合词的连字符（夹在两个字母之间的连字符）之后断行（<code>well-</code> · <code>known</code>、<code>vencer-</code> · <code>se</code>）。行在连字符处结束，不添加任何字符；这个断点的代价与音节断点相同。与数字或符号相邻的连字符之后从不断行（<code>COVID-19</code>、<code>-5 °C</code>）。没有行内格式的两端对齐段落，只有连字符两侧各有两个字母时才在此断行，所以不会有一行结束在<code>e-mail</code>的<code>e-</code>上。设为<code>false</code>时保留1.4的断行方式：没有行内格式的两端对齐段落从不在此断行，而同一个段落只要任意位置有一个斜体词，以及不齐行段落和逐行排的段落，都会在此断行；早先保存、正文中含有复合词的配置读取时采用这个值（见<a href="/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。它作用于连续正文、标题、列表、引用块和框。见<a href="/zh/docs/justification#复合词">复合词</a>。</td>
+    </tr>
+    <tr>
+      <td><code>repeatHyphen</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>在复合词的连字符处断行后，下一行也以连字符开头：<code>vencer-</code> · <code>-se</code>，这是葡萄牙语拼写的要求；<code>léxico-</code> · <code>-semántico</code>，这是西班牙皇家学院自2010年起的规则。重复的连字符随所在的行一起测量和绘制，行把它记录为<code>repeatedHyphen</code>；行的<code>plainStart</code>和<code>sourceStart</code>指向它之后的位置，因此链接、书眉和沙盒读到的是原样的词。PDF在一个不包含它的<code>/ActualText</code>下绘制它，所以从PDF复制或提取的文字里这个词只出现一次。网址从不添加重复连字符。它作用于连续正文、标题、列表、引用块和框；含有复合词的无格式段落，这时改由处理带格式文字的断行器来断行。</td>
+    </tr>
+    <tr>
+      <td><code>hardLineBreaks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>把源文本行末的反斜杠，以及后跟空格的<code>{'\\\\'}</code>，读作段落、引文或列表项内部的强制换行（CommonMark的硬换行）：后面的文字在同一段落中另起一行，换行前的一行按自然宽度排，与末行相同。段落末尾的反斜杠照样印出，行末两个空格不算换行（见<a href="/zh/docs/document-format#段落内的换行">文档格式 › 段落内的换行</a>）。<code>false</code>保留1.22的读法：反斜杠照样印出，各行用空格连接；更早保存、文字中有这种反斜杠的配置按此读取（见<a href="/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。标题、图注、注释和表格单元格在两种设置下都在<code>{'\\\\'}</code>处换行。</td>
+    </tr>
+    <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td>未设置</td>
+      <td>每个段落、列表项和引文的制表位：制表符（<code>:tab</code>，或文字中的制表符字符）把其后的文字送到哪里。段落样式或标注框正文设了自己的制表位时，替换这里的设置。未设置时，制表符字符与以前一样是词间空格，没有制表位可去的<code>:tab</code>也是。见<a href="#制表位">制表位</a>。自postext 1.23起。</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td>未设置</td>
+      <td>在<code>tabStops</code>的最后一个制表位之后，从版心起始边起每隔这个距离设一个默认制表位。未设置时，越过最后一个制表位的制表符是词间空格。自postext 1.23起。</td>
+    </tr>
+    <tr>
+      <td><code>blockquote</code></td>
+      <td><code>BlockquoteConfig</code></td>
+      <td>见下文</td>
+      <td>Markdown引用块（<code>&gt; …</code>）的排法：颜色、斜体和缩进。见<a href="#引用块">引用块</a>。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 引用块
+
+引用块（以`>`开头的行）沿用正文的字体族、字号、行距、字重、对齐方式和断词设置。其余由`bodyText.blockquote`设置；不设置时，引用块的样子与postext 1.4及更早版本相同：灰色、斜体，使用正文的首行缩进，没有侧缩进。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '140px' }}>类型</th>
+      <th style={{ width: '120px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#666666</code></td>
+      <td>文字颜色。链接到调色板条目（<code>paletteId</code>）的颜色跟随该条目，与其他地方一样；正文的粗体、斜体和引用颜色在引用块内不起作用。</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>用斜体排文字。其中的<code>*…*</code>片段会变回正体；设为<code>false</code>时，它与普通段落中一样是斜体。</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>每一行距栏或框左边缘的缩进。行长相应缩短，所以两端对齐的行仍然止于右边缘。<code>em</code>以正文字号为准。</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td>正文的值</td>
+      <td>每个被引用段落首行的缩进，从<code>indent</code>算起（正文开启<code>hangingIndent</code>时，则是除首行外每一行的缩进）。不设置时取<code>bodyText.firstLineIndent</code>。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+bodyText: {
+  firstLineIndent: { value: 1.5, unit: 'em' },
+  // 正体诗行，使用正文颜色，缩进2 em，无首行缩进。
+  blockquote: { color: { hex: '#241f26', model: 'hex' }, italic: false, indent: { value: 2, unit: 'em' }, firstLineIndent: { value: 0, unit: 'em' } },
+}
+```
+
+在沙盒中，这些设置位于“正文”部分的**引用块**分组。
+
+### 诗歌
+
+各行不带半行分隔符的`:::verse`诗逐行排（见[文档格式 › `:::verse`](/zh/docs/document-format#verse)）。`bodyText.verse`给出这类诗的默认值；诗的开始标记上同名的属性只对该诗生效。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '140px' }}>类型</th>
+      <th style={{ width: '120px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>'auto' | 'bayt'</code></td>
+      <td><code>'auto'</code></td>
+      <td>开始标记未指定排法的诗如何排。<code>'auto'</code>：某行带分隔符（<code>||</code>）时按对句排，否则逐行排。<code>'bayt'</code>：总是按对句排，没有分隔符的诗每行作为单独的半行居中，与postext 1.22及以前相同。</td>
+    </tr>
+    <tr>
+      <td><code>indentStep</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>诗行行首一个空格的宽度（制表符算四个，全角空格算两个）；<code>em</code>为诗的字号。</td>
+    </tr>
+    <tr>
+      <td><code>turnover</code></td>
+      <td><code>'hang' | 'right'</code></td>
+      <td><code>'hang'</code></td>
+      <td>比版心宽的诗行如何转行：悬挂在下一行，或贴齐版心末端、前加<code>turnoverMark</code>。</td>
+    </tr>
+    <tr>
+      <td><code>hang</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>诗的段落样式未设<code>hangingIndent</code>时，悬挂转行从该行起点缩进的量。</td>
+    </tr>
+    <tr>
+      <td><code>turnoverMark</code></td>
+      <td><code>string</code></td>
+      <td><code>'['</code></td>
+      <td>靠右转行前的标记。</td>
+    </tr>
+    <tr>
+      <td><code>stanzaSpace</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>诗节间距，以诗的行距为单位。在基线网格上取整到网格行；段落样式设<code>snapToGrid: false</code>时保持精确值。</td>
+    </tr>
+    <tr>
+      <td><code>keepStanzas</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>不超过此行数的诗节整个留在一栏中。<code>0</code>为关闭。</td>
+    </tr>
+    <tr>
+      <td><code>tighten</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>比版心稍宽的诗行收紧词间空格，最多收到其自然宽度的<code>bodyText.minWordSpacing</code>，保持一行；收紧后仍放不下的才转行。不为此调整字距。<code>false</code>：凡比版心宽的诗行都转行，与postext 1.23相同。流式EPUB的行由阅读系统断开，不收紧。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+bodyText: {
+  // 转行靠右并加方括号；短歌不拆分。
+  verse: { turnover: 'right', keepStanzas: 5 },
+}
+```
+
+在这些设置出现之前保存的配置（`configVersion`为8或更早），如果其中有不带分隔符的诗，读取时使用`layout: 'bayt'`，诗保持postext 1.22给出的居中排法。用postext 1.23保存的配置（`configVersion`为9），如果其中有逐行排的诗，读取时使用`tighten: false`，诗行仍在1.23转行的地方转行。
+
+在沙盒中，这些设置位于“正文”部分的**诗歌**分组。
+
+
+### 制表位
+
+`bodyText.tabStops`列出制表符可去的制表位：`:tab`，或设有制表位的段落中的制表符字符（标记写法和一行如何排，见[文档格式 › 制表符与制表位](/zh/docs/document-format#制表符与制表位)）。段落样式的`tabStops`在它的段落中替换这些制表位，标注框样式的`body.tabStops`在它的框内替换；空列表表示不设制表位。每个制表位是一个`TabStop`：
+
+```ts
+bodyText: {
+  tabStops: [
+    { position: { value: 30, unit: 'mm' } },
+    { position: 'end', align: 'end', leader: '.', leaderGap: { value: 2, unit: 'pt' } },
+  ],
+  tabInterval: { value: 10, unit: 'mm' },
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>{"Dimension | 'end' | `${number}%`"}</code></td>
+      <td>必填</td>
+      <td>制表位所在的位置，从段落版心的起始边量起（在段落样式的<code>indent</code>之后；<code>em</code>以段落自身的字号为准）：一个长度，表示版心末端的<code>'end'</code>，或版心宽度的一个比例（<code>'50%'</code>）。在从右到左的文字中，起始边是右边。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'start' | 'end' | 'center' | 'decimal'</code></td>
+      <td><code>'start'</code></td>
+      <td>制表符后的文字如何对齐制表位：从这里开始，在这里结束（到下一个制表符或段落末尾为止的文字），以它为中心，或把小数点对齐到这里（没有小数点的文字在这里结束）。</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td><code>string</code></td>
+      <td>无</td>
+      <td>在制表位前的空白中重复排出：<code>'.'</code>、<code>'. '</code>、<code>'·'</code>、<code>'_'</code>、<code>'-'</code>或任意一小段文字，使用段落的字体和颜色；<code>'rule'</code>在基线稍下方画一条线。前导符的末端与这段空白的末端齐平，所以各行的前导符上下对齐。它与目录行的前导符一样，作为一整串字符来测量。</td>
+    </tr>
+    <tr>
+      <td><code>leaderGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>前导符与两侧文字之间保留的空白，与目录的<code>leader.gap</code>相同。制表符位于行首时前导符前面没有间隙，后面没有文字时后面也没有间隙。</td>
+    </tr>
+    <tr>
+      <td><code>decimalChar</code></td>
+      <td><code>string</code></td>
+      <td>文档语言的小数点</td>
+      <td><code>'decimal'</code>制表位所对齐的小数点字符：英语、中文、日语和阿拉伯语为<code>.</code>，西班牙语、加泰罗尼亚语、葡萄牙语、法语、德语等为<code>,</code>。</td>
+    </tr>
+  </tbody>
+</table>
+
+`tabInterval`在列表的最后一个制表位之后，从版心起始边起每隔一个间隔再加一个制表位；没有它时，越过最后一个制表位的制表符是词间空格。文字中输入的制表符字符只在样式（它自己的或正文的）设了制表位或间隔的段落中才是制表符；在其他地方，它仍是原来的词间空格，所以保存过的文档版面不变，不需要锁定版本。
+
+制表位与配置的其余部分一起检查（见[配置警告](/zh/docs/configuration-fonts-colors-viewers#配置警告)）：制表位中的未知键（`leaders`）报告为`unknownConfigKey`，并给出最接近的键；不属于四个取值的`align`报告为`unknownConfigValue`，该制表位按`'start'`排；既不是长度、`'end'`也不是百分比的`position`报告为`unknownConfigValue`，`used: 'none'`，该制表位被略去。
+
+前导符的颜色和字体取段落的，目前还没有单独的设置。
+
+### 首字下沉
+
+正文段落可以以首字下沉开头：第一个字母放大，排在段落的前几行旁边，这几行让出字母的宽度和一段间隙，其余照常排（用Knuth-Plass断行、两端对齐、断词）。段落样式给样式中每个`:::paragraphs`组的第一段加上首字下沉（设`each: true`时每一段都加，适合条目式的目录）；标题级别或标题样式给标题后的第一个正文段落加上首字下沉（见[按级别覆盖](#按级别覆盖)、[段落样式](/zh/docs/configuration-styles#段落样式)和[标题样式](/zh/docs/configuration-styles#标题样式)中的`dropCap`字段）。标题后的这一段与`indentAfterHeading`的找法相同，会越过容器围栏、指令、离开文字流的框和浮动图；框、列表项、引文、诗或注释中的段落从不带首字下沉。在文字中，写在标题行或`:::paragraphs`围栏上的`{dropcap}`、`{dropcap=false}`和`{dropcap=N}`为该章或该组开启、关闭首字下沉，或设定它的行数（见[文档格式 › 首字下沉](/zh/docs/document-format#首字下沉)）。自postext 1.23起。
+
+```ts
+headings: {
+  levels: [
+    { level: 1, dropCap: { lines: 3, fontFamily: 'Libre Bodoni', fontWeight: 700, color: { hex: '#8b2e2a', model: 'hex', paletteId: 'accent' }, leadIn: { words: 3 } } },
+  ],
+},
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>lines</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>首字跨越的行数，从它的大写字母顶端量到它的基线。<code>1</code>配上更大的<code>fontSize</code>，就是立在第一条基线上的升起首字。</td>
+    </tr>
+    <tr>
+      <td><code>sink</code></td>
+      <td><code>number</code></td>
+      <td><code>lines</code></td>
+      <td>首字沉入文字的行数：它立在第<code>sink</code>行的基线上，这几行都缩短。小于<code>lines</code>时，首字高出第一行。</td>
+    </tr>
+    <tr>
+      <td><code>characters</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>放大的字素簇个数：<em>É</em>、带组合符号的字母或基本多文种平面以外的字符都算一个。不超出第一个词。</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code>、<code>fontWeight</code>、<code>italic</code></td>
+      <td><code>string</code>、<code>number</code>、<code>boolean</code></td>
+      <td>段落的；<code>false</code></td>
+      <td>首字的字体。它与文档的其他字体一起加载和嵌入。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>见说明</td>
+      <td>首字的字号。未设置：首字下沉<code>lines</code>行时，使其大写字母顶端与第一行大写字母顶端齐平的字号。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>段落的</td>
+      <td>与调色板关联的颜色随篇和节的调色板变化。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.15em</code></td>
+      <td>首字与缩短的行之间的空白，<code>em</code>指文字的字号。</td>
+    </tr>
+    <tr>
+      <td><code>punctuation</code></td>
+      <td><code>'with-cap' | 'hang' | 'text'</code></td>
+      <td><code>'with-cap'</code></td>
+      <td>字母前的开引号、<code>¿</code>、<code>¡</code>或括号：作为首字的一部分放大；按文字字号悬挂在首字前面的版心之外；或按文字字号排在第一行开头、首字之后。</td>
+    </tr>
+    <tr>
+      <td><code>leadIn</code></td>
+      <td><code>&#123; words, smallCaps, uppercase &#125;</code></td>
+      <td>无</td>
+      <td>首字之后的前<code>words</code>个词排成小型大写字母（默认）或大写字母（<code>uppercase: true</code>）；<code>words: 'line'</code>取第一行的词。取第一行的引导词在第一遍排版时计数，第二遍时排出：排成小型大写字母后，这一行可能多容纳一个词，这个词按原样排。</td>
+    </tr>
+    <tr>
+      <td><code>shortParagraph</code></td>
+      <td><code>'reserve' | 'shrink' | 'skip'</code></td>
+      <td><code>'reserve'</code></td>
+      <td>行数少于<code>sink</code>的段落：保持块有<code>sink</code>行高，使下一块避开首字；把首字缩小到段落自身的行数；或不带首字排这一段。每种情况都会引发内容警告<code>dropCap</code>。</td>
+    </tr>
+    <tr>
+      <td><code>each</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>仅用于段落样式：组中每一段都以首字下沉开头，而不只是第一段。</td>
+    </tr>
+  </tbody>
+</table>
+
+首字的排法：
+
+- **字号**：文字和首字的大写字母高度都从各自的字体中测量（取`H`的墨迹；在中文或日文文字中取首字本身的墨迹），不提供墨迹度量的字体按字号的0.72计算大写字母高度。默认字号适合任意一对字体，所以不需要逐个字体修正。设计文本的`dropCap`仍按固定的0.72计算（见[文本元素](/zh/docs/configuration-page-layout#文本元素)）。
+- **首字与它所在的词**：首字取完整的字素簇。第一个词的其余部分紧接在它之后，不加空格；单字母词（*A*、*Y*）在第一行开头保留它的词间空格。段落自身的首行缩进取消。复制、搜索、源映射和沙盒的光标都按原文读这一段：块的纯文本包含这个字母，第一行的`plainStart`从它之后计数，`VDTBlock.dropCap`在含第一行的片段上记录它的范围和几何信息。
+- **升起首字**（`lines: 1`配上更大的`fontSize`，或`sink`小于`lines`）高出第一行，段落在上方为高出的部分留出整条网格线的空间，所以不会压到上方的文字。
+- **断开**：段落从不在第`sink`行之前断开，而是整段移到下一栏或下一页；只有当它单独位于一个放不下这几行的空栏中时，才照样断开，并引发`dropCap`警告。与正文保持在一起的标题会把这几行留在自己下面。在下一栏接排的部分不带首字，各行排满全宽；如果为另一宽度的栏再次断开，前几行保留缩进。各栏齐底可以像对待其他段落一样把这一段排松或排紧，但从不在缩短的行之间加空白。
+- **文字**：各行在起始一侧缩短：拉丁文字在左边，阿拉伯文和希伯来文在右边。与下一个字母相连的字母（阿拉伯文、叙利亚文、N'Ko）不单独排出，段落引发`dropCap`警告；横排的中文和日文取一个字的首字（首字下沉）。竖排文字不带首字下沉（给出警告）。不以字母或数字开头的段落（引用、公式、注释标记）也不带（给出警告）。
+- **输出**：Canvas、HTML查看器和固定版式EPUB把首字画在各行旁边；HTML把它写在第一行文字的紧前面，中间不隔任何东西，所以屏幕阅读器把这个词作为一个整体读出。在带标签的PDF中，首字属于段落的`P`，并与它所在词的其余部分组成一个`Span`，其`/ActualText`就是这个词：提取文字时读出*Long before*，而不是*L ong before*。流式EPUB把它排成CSS的`initial-letter`（行数、下沉），阅读系统不支持时改为浮动。
+
+这些设置与配置的其余部分一起检查（见[配置警告](/zh/docs/configuration-fonts-colors-viewers#配置警告)）：首字下沉或其引导词中的未知键报告为`unknownConfigKey`；不属于其取值的`punctuation`或`shortParagraph`，以及不是从1起的整数的`lines`、`sink`或`characters`，报告为`unknownConfigValue`，并使用默认值。首字下沉默认关闭，所以已保存的文档都不会改变。
+
+### 每个`fontFamily`只写一个字体族
+
+`fontFamily`，无论是这里还是其他任何字体族字段（`headings.fontFamily`、`tableStyle.bodyFontFamily`、`separatorFontFamily`、行内标签样式或设计元素的`fontFamily`……），都只指定**一个**字体族。Canvas、HTML输出和PDF必须使用同一款字体，而PDF对每个字体族只嵌入一款字体，没有回退链，所以CSS字体栈没有可以回退的对象。写成字体栈时，按其中第一个字体族排版，并报告一条[配置警告](/zh/docs/configuration-fonts-colors-viewers#配置警告)：
+
+```ts
+bodyText: { fontFamily: "'EB Garamond', Georgia, serif" } // 用EB Garamond排版
+```
+
+排版前要先加载这个字体族（见[自定义字体](/zh/docs/configuration-fonts-colors-viewers#自定义字体)，以及[生成PDF](/zh/docs/configuration-programmatic-usage#生成pdf)中的字体提供器）；如果缺少它，浏览器会用默认字体测量，不管字体栈其余部分写了什么。引号内的逗号是名称的一部分（`'"Foo, Bar"'`是一个字体族）。
+
+### 断词
+
+文字对齐设为`'justify'`时，断词在音节边界处拆分长词，避免词间距过大。引擎使用TeX/Liang断词模式在音节边界找到自然的断点。详细说明见[断词与两端对齐](/zh/docs/justification)。不齐行文字只有在你要求时才断词：见下文[不齐行文字](#不齐行文字)。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '120px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>是否允许断词。</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>LocaleTag</code></td>
+      <td>顶层<code>locale</code>，否则为<code>'en-us'</code></td>
+      <td>划分音节边界所依据的语言规则：下面列出的受支持语言之一，或任意BCP 47标签（<code>'es-ES'</code>、<code>'pt-BR'</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>ragged</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>在<code>zone</code>范围内，也对不齐行文字（左对齐、右对齐或居中）断词。见<a href="#不齐行文字">不齐行文字</a>。</td>
+    </tr>
+    <tr>
+      <td><code>zone</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>3em</code></td>
+      <td>不齐行文字的断词区：一个放不下的词，只有在整词移到下一行会留下比这更宽的空白时才拆分。<code>em</code>相对于该文字自身的字号。两端对齐文字忽略此项。</td>
+    </tr>
+    <tr>
+      <td><code>compounds</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>允许词典拆分复合词（两个字母之间带连字符的词，如<code>af-ter-dinner</code>）中的各个词。设为<code>false</code>时，这样的词除了自带的连字符外保持完整，行仍然可以在那个连字符处结束（<code>after-</code> · <code>dinner</code>），与TeX的做法相同。词中手动输入的软连字符照样断开，比整行还宽的复合词也照样拆分。它作用于连续正文、标题、列表、引用块和框；题注、注释、表格单元格和目录继续拆分复合词。见<a href="/zh/docs/justification#复合词">复合词</a>。</td>
+    </tr>
+  </tbody>
+</table>
+
+**受支持的语言：**`'en-us'`（英语）、`'es'`（西班牙语）、`'fr'`（法语）、`'de'`（德语）、`'it'`（意大利语）、`'pt'`（葡萄牙语）、`'ca'`（加泰罗尼亚语）、`'nl'`（荷兰语）。
+
+选择断词模式时，地区、文字和变体子标签都被忽略，大小写和`_`分隔符也一样：`'es-ES'`、`'es-MX'`和`'es_419'`都用`'es'`断词，`'pt-BR'`用`'pt'`，所有英语标签（`'en'`、`'en-GB'`）都用`'en-us'`。`'en-us'`是唯一内置的英语模式，所以英式英语文字得到的是美式断点。没有内置模式的语言（`'sv'`、`'pl'`、`'fi'`……）用`'en-us'`模式断词，结果是错误的断点，而不是不断词；引擎对每个标签用`console.warn`报告一次，沙盒则在“检查”面板中列出。这样的文档请设置`enabled: false`，警告也随之消失。中文、日文和韩文（`zh`、`ja`、`ko`，不论地区或文字）不需要断词模式，也不打印警告：用这些语言写的文档不断词。如果要拆分其中引用的拉丁文词语，设置`enabled: true`，并在`locale`中写明它们的语言（英语写`'en-us'`）。设置`enabled: true`但没有`locale`，或`locale`是中文、日文或韩文时，断词保持关闭，并在控制台提示一次。`matchHyphenationLocale(tag)`返回一个标签对应的内置语言（没有时返回`undefined`），`HYPHENATION_LOCALES`列出所有内置语言。解析后的配置（`doc.config.bodyText.hyphenation`）在`locale`中写明实际使用的模式，如果你给的标签与之不同，则保留在`tag`中。PDF后端根据顶层`locale`声明文档语言，只有在`locale`未设置时才采用这个标签（见[文档语言](#文档语言)）。
+
+```ts
+import { matchHyphenationLocale } from 'postext';
+
+matchHyphenationLocale('es-MX'); // 'es'
+matchHyphenationLocale('en-GB'); // 'en-us'
+matchHyphenationLocale('sv');    // undefined：用'en-us'断词，并在控制台警告
+```
+
+少于5个字符的词从不断词。引擎要求断点前至少有2个字符，断点后至少有3个字符。
+
+#### 不齐行文字
+
+默认只对两端对齐的文字断词：设置`textAlign: 'left'`时，以及在左对齐、居中或右对齐的段落样式中，无论边缘多么参差，每个词都保持完整，只有文中手动输入的软连字符（U+00AD）处例外。设置`hyphenation.ragged: true`即可对不齐行文字也断词。
+
+不齐行的行从不拉伸，所以如果把每个放不下的词都拆开，边缘会挂满连字符。**断词区**对此加以限制，做法与桌面出版软件的单行排版器相同。一个词在行尾放不下时，引擎看的是把它整个移到下一行会留下多大的空白。如果空白比`zone`宽，就在能放下的最后一个音节处拆分；否则整词移到下一行。以`em`表示的断词区相对于该文字自身的字号。默认值`3em`只拆分那些会留下明显短行的词。断词区越宽，连字符越少，边缘越参差；设为`0`则拆分每个放不下的词。逐行排时，连续以音节结尾的行不超过两行。硬连字符（`enseñanza-aprendizaje`）、URL的连接处、文中手动输入的软连字符，以及比整行还宽的词，都照常断开：断词区和两行限制只管词典给出的音节。
+
+这项设置作用于整篇文档。正文和引用块不齐行时适用；每个不齐行的段落样式和标注框正文，只要它自己的`hyphenation`是开启的（默认取正文的`hyphenation.enabled`），也都适用，所以设置`hyphenation: false`可以让某个样式的词保持完整。标题、题注、注释、表格单元格和目录不断词；在这些地方，和其他地方一样，只有比整个行长还宽的词才会拆分。设计文字（书眉、章首页、篇页）遵循各个文字元素自己的`hyphenate`标志，内置的整页章首页和篇页都设置了它，同样使用文档的词典。两端对齐文字忽略`ragged`和`zone`。
+
+```ts
+const config: PostextConfig = {
+  locale: 'es',
+  bodyText: {
+    textAlign: 'left',
+    // 比默认的3 em多断一点词。
+    hyphenation: { ragged: true, zone: { value: 2, unit: 'em' } },
+  },
+};
+```
+
+开启`optimalRagged`（默认）时，不齐行的连续正文用Knuth-Plass断行，断词区的含义不变：只有当一个词放不进本行余下的空间，而且整词移下去会留下超过断词区的空白时，才拆分它。连续两行以音节结尾并不被禁止，但代价与两端对齐文字中连续两个连字符相同，所以很少会连续出现第三行。设置`optimalRagged: false`或`optimalLineBreaking: false`时，先填满一行再排下一行，与postext 1.4及更早版本相同。
+
+不齐行断词用的是带行内格式（粗体、斜体、链接、数学公式）的段落一直使用的那个断行器，所以开启它可能会让连字符以外的少数断点也发生变化。在不齐行的行上，除了空格和词典给出的音节，这个断行器还会在两个词之间的硬连字符或破折号之后断行（`largas—separadas`；开启`breakAfterDashes`时，任何在词间紧排的破折号都算，`riddles.—I`和`riddles—*and*`也包括在内），在URL的连接处和表意文字之间断行，并把分成几个片段排的一个词保持在一起（`**Nota**:`、`(*véase*`）。不开启不齐行断词时，没有格式的不齐行段落在`optimalRagged`开启（默认）时由Knuth-Plass断行：在词间空格处、在两个字母之间的硬连字符之后（`meta-` · `analyses`），这一点与另一个断行器相同；开启`breakAfterDashes`时，还在紧排的破折号之后。逐行排时，它交给pretext的断行器处理，区别有三点：它还可能在结束插入语的破折号之前或开启插入语的破折号之后断行（`él` · `— y`），断词时可能在斜杠之后断行（`km/` · `h`），而对于比整行还宽的词，它会在任意字符处截断且不加连字符，另一个断行器则先尝试在音节处拆分。
+
+在沙盒中，这个开关是**不齐行文字断词**，位于“正文”部分的段落对齐方式下面，断词区在它下方。正文两端对齐时，同一个开关与两端对齐设置放在一起，供不齐行的段落样式和框使用。
+
+### 文档语言
+
+顶层`locale`是整篇文档的语言。它的取值与`hyphenation.locale`相同，并在后者未设置时作为回退值，所以一本西班牙语书只需写`locale: 'es'`就能按西班牙语断词。它还决定表格和拆分标注框内置续接文字的语言（`(cont.)` / *Continued*与*Continúa*，见[高于页面的表格](/zh/docs/configuration-resources#比页面还高的表)和[拆分框上的标记](/zh/docs/configuration-styles#拆分框的标记)），决定用文字拼写的标题编号的语言（*Chapter One*与*Capítulo uno*，见[用文字拼写的编号](#以文字书写的编号)），也是写入无障碍PDF的语言。未设置时，引擎假定为`'en-us'`；沙盒则回退到界面语言，并在**设计 › 书写系统**下设置此字段。
+
+它也决定内置的资源类型。未设置`resourceTypes`时，`buildDocument`用`defaultResourceTypes(locale)`编号和生成题注，所以只写`locale: 'de'`就会得到*Abbildung 1.1*和*Tabelle 1.1*。未设置`locale`时，由断词语言代替它，资源类型和表格文字都是如此。显式给出的`resourceTypes`列表始终优先。早先的版本中，除非你自己传入`defaultResourceTypes(locale)`，否则无论`locale`是什么都使用英文类型；设置了`locale`又想保留英文标签的文档，可以传入`resourceTypes: defaultResourceTypes('en')`。沙盒中的书和文件包自带类型列表，所以不受影响。
+
+这里与`hyphenation.locale`一样接受任意BCP 47标签：`'de-AT'`得到德文文字。内置文字提供断词所支持的八种语言、中文（简体和繁体）、日文和阿拉伯文；其他语言一律使用英文文字。
+
+中文接受`zh`、`zh-Hans`、`zh-Hant`、`zh-CN`、`zh-SG`、`zh-TW`、`zh-HK`、`zh-MO`以及长形式（`zh-Hant-TW`），不区分大小写，分隔符用`-`或`_`均可。文字按书写系统选择，由`Intl.Locale(tag).maximize()`判断：`zh`、`zh-CN`和`zh-SG`是简体，`zh-TW`、`zh-HK`和`zh-MO`是繁体。依语言而定的排版默认值则按地区选择，这是[clreq §1.2](https://www.w3.org/TR/clreq/#x1-2-basic-features-of-chinese-script)的建议：CN、SG和MY算作中国大陆，TW算作台湾，HK和MO算作香港；没有地区的标签按书写系统判断（`zh-Hant`为台湾，`zh`和`zh-Hans`为中国大陆）。日文接受`ja`、`ja-JP`、`ja-Jpan`以及其他任何`ja`标签（`isJapaneseLanguage(tag)`）；从postext 1.16起，它有自己的内置文字和自己的地区`japan`，其排版默认值遵循JLReq（见[日文排版](/zh/docs/japanese-layout)）。字符串表中没有日文条目时，给出的是英文，而不是中文。`localeScript(tag)`、`cjkRegionOf(tag)`、`stringsKeyOf(tag)`和`sameContentLocale(a, b)`给出这些判断结果，`DOCUMENT_LANGUAGES`列出带内置文字的语言，每种语言都用它自己的语言命名（日本語排在各个中文条目和العربية之间），与沙盒“文档语言”下拉框中的显示一致。
+
+<table>
+  <thead>
+    <tr>
+      <th>语言</th>
+      <th>图：名称、复数、简称</th>
+      <th>表：名称、复数、简称</th>
+      <th>表格续接：<code>continuedSuffix</code>、<code>continuesMarker</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>英语（<code>en</code>）</td><td>Figure, Figures, Fig.</td><td>Table, Tables, Tab.</td><td>(cont.), Continued</td></tr>
+    <tr><td>西班牙语（<code>es</code>）</td><td>Figura, Figuras, Fig.</td><td>Tabla, Tablas, Tabla</td><td>(cont.), Continúa</td></tr>
+    <tr><td>法语（<code>fr</code>）</td><td>Figure, Figures, Fig.</td><td>Tableau, Tableaux, Tabl.</td><td>(suite), À suivre</td></tr>
+    <tr><td>德语（<code>de</code>）</td><td>Abbildung, Abbildungen, Abb.</td><td>Tabelle, Tabellen, Tab.</td><td>(Forts.), Wird fortgesetzt</td></tr>
+    <tr><td>意大利语（<code>it</code>）</td><td>Figura, Figure, Fig.</td><td>Tabella, Tabelle, Tab.</td><td>(segue), Continua</td></tr>
+    <tr><td>葡萄牙语（<code>pt</code>）</td><td>Figura, Figuras, Fig.</td><td>Tabela, Tabelas, Tab.</td><td>(cont.), Continua</td></tr>
+    <tr><td>加泰罗尼亚语（<code>ca</code>）</td><td>Figura, Figures, Fig.</td><td>Taula, Taules, Taula</td><td>(cont.), Continua</td></tr>
+    <tr><td>荷兰语（<code>nl</code>）</td><td>Figuur, Figuren, Fig.</td><td>Tabel, Tabellen, Tab.</td><td>(vervolg), Wordt vervolgd</td></tr>
+    <tr><td>简体中文（<code>zh-Hans</code>、<code>zh</code>、<code>zh-CN</code>）</td><td>图, 图, 图</td><td>表, 表, 表</td><td>（续）, 接下页</td></tr>
+    <tr><td>繁体中文（<code>zh-Hant</code>、<code>zh-TW</code>、<code>zh-HK</code>）</td><td>圖, 圖, 圖</td><td>表, 表, 表</td><td>（續）, 接下頁</td></tr>
+    <tr><td>日文（<code>ja</code>、<code>ja-JP</code>）</td><td>図, 図, 図</td><td>表, 表, 表</td><td>（続き）, 次ページへ続く</td></tr>
+    <tr><td>阿拉伯文（<code>ar</code>、<code>ar-EG</code>、<code>ar-MA</code>等）</td><td>شكل, أشكال, شكل</td><td>جدول, جداول, جدول</td><td>(تابع), يتبع</td></tr>
+  </tbody>
+</table>
+
+题注前缀是类型的名称（*Figure 1.1.*）。中文类型在章内编号，用连字符连接，即`{h1}-{n}`（图 1-1）；配合题注设置`labelNumberGap: ''`和`labelSeparator: '　'`，题注显示为“图1-1　标题”（见[题注样式](/zh/docs/configuration-resources#题注样式)）。索引同样跟随语言：简体中，交叉引用前用“见”和“另见”，符号和数字条目上方的标题为“符号”和“数字”；繁体中则为“見”“另見”“符號”和“數字”。日文类型同样这样编号，不必设置这两项，题注就排成図1-1　題，交叉引用写作第3章、2.3節和12ページ，参考文献标题为参考文献；索引在符号和数字条目上方用“記号”和“数字”作标题，交叉引用用箭头写出：*见*写作`→夏目漱石`，*另见*在页码之后写作`→夏目漱石、森鷗外も見よ`，竖排时这些标签直立。阿拉伯文类型同样按`{h1}-{n}`编号（شكل 2-3），交叉引用写作الفصل 3、القسم 2-1和ص 12，参考文献标题为المراجع，索引使用انظر / انظر أيضًا、رموز和أرقام，并用阿拉伯文逗号和分号（، ؛）。
+
+中文、日文或韩文文档会在HTML输出中（`.pt-doc`根元素上的`lang`，`zh-Hant-TW`完整保留）以及它绘制的Canvas上（`ctx.lang`，Chrome 136及以上版本）声明语言，使浏览器绘制该地区的字形：Unicode统一了汉字编码，同一个码位在台湾字体和日文字体中的样子并不相同。其他文档照旧不带`lang`。PDF则对每个文档（无论是否带标签）根据`locale`声明`/Lang`，包括其书写系统和地区。从右向左书写的语言（阿拉伯文、波斯文、乌尔都文、希伯来文等）的文档同样声明语言：字体的语言字形（`locl`）和后备字体随之选择。
+
+```ts
+const config: PostextConfig = {
+  locale: 'es',
+  bodyText: { textAlign: 'justify', hyphenation: { enabled: true } }, // 按西班牙语断词
+};
+```
+
+#### 文档数字
+
+顶层的`numerals`决定引擎输出的所有数字所用的数字系统：页码，以及目录、索引和页码引用中的页码标签；有序列表和脚注的编号；标题和章的计数，`{chapterNumber}`；图号及其引用中的`{h1}`与`{n}`；`{totalPages}`、`{bookTotalPages}`和`{numberDecimal}`。`'latn'`输出0–9，`'arab'`输出阿拉伯-印度数字٠–٩，`'arabext'`输出波斯数字۰–۹。只有十进制格式受影响——`decimal`、列表的`arabic`或保持默认的设置——作者指定的格式照原样输出：`lower-roman`仍是i、ii、iii，拉丁文文档中的`arabic-indic`仍输出١、٢、٣。文档正文从不改写。
+
+默认值`'auto'`取`locale`的数字（`defaultNumeralsFor(tag)`）：不带地区或地区不在马格里布的阿拉伯语（`ar`、`ar-EG`、`ar-SA`、`ar-AE`……）为`'arab'`；`ar-MA`、`ar-DZ`、`ar-TN`、`ar-LY`、`ar-MR`和`ar-EH`为`'latn'`；波斯语（`fa`）、普什图语（`ps`）和印度乌尔都语（`ur-IN`）为`'arabext'`；其他语言，包括巴基斯坦乌尔都语，均为`'latn'`。CLDR对不带地区的`ar`和`ar-AE`给出`latn`；马什里克和海湾地区的阿拉伯文图书印的是٠–٩，Postext以图书为准。标签中注明数字系统的（`ar-MA-u-nu-arab`）照其所注。以文档数字编号的页面把`arabic-indic`或`persian`记为`pageNumberFormat`，PDF页码标签因此显示相同的数字。未知的值按语言处理，并报告为`unknownNumerals`。
+
+作者输入的数字三种数字系统都能读取：列表项`٣.`从3开始，`{startAt=٥}`、`:::numbering{startAt=٥}`、`:::space{lines=٢}`和`:::part{number="٣"}`（用于`{numberDecimal}`）都能读出其值。
+
+```ts
+const config: PostextConfig = { locale: 'ar' };                     // ١، ٢، ٣
+const maghreb: PostextConfig = { locale: 'ar-MA' };                 // 1, 2, 3
+const forced: PostextConfig = { locale: 'ar', numerals: 'latn' };   // 1, 2, 3
+```
+
+#### 文本方向
+
+顶层的`direction`设定文档的基本方向：`'ltr'`、`'rtl'`或`'auto'`（默认值）。`'auto'`在`locale`的文字从右到左书写时（阿拉伯文、波斯文、乌尔都文、希伯来文、叙利亚文、塔纳文、恩科文、阿德拉姆文等，由`directionOf(tag)`判断）为`'rtl'`，否则为`'ltr'`。从右到左的文档在镜像的版框中排版：各行从右边开始，第一栏在右边，缩进、列表标记、浮动体、脚注和框都位于右侧，[`page.binding: 'auto'`](/zh/docs/configuration-page-layout#装订)让它在右侧装订。只有这样的文档，解析后的配置才带有`direction: 'rtl'`，所以从左到右的文档解析结果与以前相同。未知的值按`'auto'`读取，并报告为`unknownConfigValue`。Unicode双向算法（UAX #9）在两种方向中都安排每行各段的顺序：英文书中的阿拉伯文引文在原位从右到左读。
+
+在文档内部，标题或`:::`容器可以带`{dir=ltr}`或`{dir=rtl}`，行内的`:ltr[…]`和`:rtl[…]`把一段文字隔离开（见[标记中的文本方向](/zh/docs/document-format#标记中的文本方向)）；表格资源可以设`table.direction`。与文档方向相反的块保留自己的起始侧：它的缩进、列表标记和末行的齐边都移到其文字开始的一侧。
+
+凡是指明某一侧的设置，指的都是文字或文字流的一侧，而不是纸面的一侧，所以为英文书做的设计在书改为阿拉伯文后照样可用。`'start'`和`'end'`可以作为明确的名称使用：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '260px' }}>设置</th>
+      <th><code>'left'</code> / <code>'right'</code></th>
+      <th><code>'start'</code> / <code>'end'</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>正文、标题、段落样式、部分、脚注和标注框正文的<code>textAlign</code>；题注及题注注释的<code>align</code></td><td>文字的两侧：<code>'left'</code>是一行开始的一侧，阿拉伯文段落即右侧，两端对齐段落的末行也排向这一侧。</td><td><code>'left'</code>和<code>'right'</code>的同义词。解析后的配置只带<code>'left'</code> / <code>'right'</code>；保存的配置保留原来写的值。</td></tr>
+    <tr><td>表格单元格的<code>align</code></td><td>单元格文字的两侧，按表格的方向（<code>table.direction</code>）读取。</td><td>同义词，按表格的方向读取。</td></tr>
+    <tr><td><code>placement.align</code>（浮动体、窄图）</td><td>文字流的两侧：在从右到左的书中<code>'left'</code>是纸面的右侧。</td><td>同义词。</td></tr>
+    <tr><td>标注框的<code>stripe.side</code>、<code>icon.cornerSide</code>、<code>labelTab.position</code>（<code>'top-start'</code>、<code>'top-end'</code>）</td><td>文字流的两侧，对页面上所有框都相同。</td><td>框自身的方向（阿拉伯文书中的<code>:::callout&#123;dir=ltr&#125;</code>从纸面左侧开始）。</td></tr>
+    <tr><td>页眉和页脚的槽位；锚定在纸面上的设计元素</td><td>纸面的两侧。</td><td>仅限文本元素：元素自身<code>direction</code>的起始和结束。</td></tr>
+  </tbody>
+</table>
+
+`placement.rotate`在镜像页面上保持物理含义：顺时针旋转的图在纸面上也是顺时针旋转。读取版面的宿主程序可以在每页找到镜像版框（带`direction: 'rtl'`的`VDTPage.flow`，`pageIsMirrored(page)`），在`VDTLine.order`中找到每行各段的视觉顺序；`flowToPage`和`pageToFlow`在文字流与纸面之间换算。见[阿拉伯文排版](/zh/docs/arabic-layout#文字方向与双向算法)。
+
+```ts
+const arabic: PostextConfig = { locale: 'ar' };                        // 从右到左，右侧装订
+const english: PostextConfig = { locale: 'en', direction: 'rtl' };     // 强制设定；很少需要
+```
+
+### 语言与文字
+
+Postext能排从左到右书写的拼音文字，以及横排和竖排的中文和日文。[中文排版](/zh/docs/chinese-layout)和[日文排版](/zh/docs/japanese-layout)介绍它们的排法和相关设置；对应的配置键位于[东亚排版](/zh/docs/configuration-east-asian#东亚排版)、[竖排](/zh/docs/configuration-page-layout#竖排)和[装订](/zh/docs/configuration-page-layout#装订)。各种文字的支持情况如下：
+
+- **中文**：段落中的CJK字符多于词间空格时，由CJK排版器处理：行在字符之间断开，遵守`cjk.lineBreak`的避头尾规则（行首不出现。、」或ー，行尾不出现「或（），——和……不拆开，数字连同其符号、拉丁文单词都保持完整；两端对齐的行在字符之间均匀分配空白以填满行长。标点宽度、标点悬挂、汉字与拉丁文之间的间距、字符网格、着重号、专名号和书名号、注音以及割注，都按`locale`的地区处理，横排（沿行）和竖排（`layout.writingMode: 'vertical-rl'`）都一样。只引用少量CJK词语的拉丁文段落保持最优断行，并可以在这些词语旁边断行；拉丁文中引用的CJK括号、间隔号或全角符号（〈h〉、％）不影响任何处理。
+- **日文**：使用同一个排版器，从postext 1.16起有自己的规则，即W3C《日文排版需求》（JLReq）和JIS X 4051的规则：`ja`语言区域得到`japan`地区，其auto值设定JLReq的禁则级别（小假名和ー从不出现在行首）、带相邻标点挤压的全角标点、？！之后的一个字宽、占缩进后半个字宽的段首括号、文字上方的芝麻点、『』书名号、按1:2:1排开的振假名、日文编号、注释以及按读音排序的索引。更早的版本按中国大陆中文的默认值排日文。
+- **韩文**：使用同一个排版器，不断词，但采用中国大陆中文的默认值：它自己的规范（KLREQ）尚未实现。韩文除了在空格处断行，也在音节之间断行。
+- **阿拉伯文及其他从右到左的文字**（波斯文、乌尔都文、希伯来文等）从右到左排，具体做法见[阿拉伯文排版](/zh/docs/arabic-layout)。文档的[`direction`](#文本方向)由`locale`的文字决定，Unicode双向算法安排每行中拉丁词和数字的顺序，书在右侧装订、第一栏在右边，引擎生成的每个数字都采用该地区的[数字](#文档数字)。含阿拉伯字母的词从不断词、加字距或切开，两端对齐的阿拉伯文行在空格处和用卡希达（kashida）拉伸。元音符号、强调、脚注和阿拉伯文的内置文字见[阿拉伯文](#阿拉伯文)。波斯文、乌尔都文和希伯来文有方向、数字和整词规则，但没有自己的内置文字。
+
+断词模式内置八种语言（`en-us`、`es`、`fr`、`de`、`it`、`pt`、`ca`、`nl`）；内置的资源类型和续接文字提供这八种语言以及中文、日文和阿拉伯文。中文、日文、韩文和从右到左书写的语言不断词。其他语言用美式英语模式断词并在控制台警告，使用英文文字。这类文档请设置`hyphenation.enabled: false`，并用该语言传入`resourceTypes`和`tableStyle`的续接文字。
+
+### 阿拉伯文
+
+以下设置服务于阿拉伯字母文本；对用其他文字书写的文档，它们都不起作用。[阿拉伯文排版](/zh/docs/arabic-layout)把它们与阿拉伯文书籍的其余部分（方向、装订、数字、诗体、目录和索引）放在一起说明。
+
+- **元音符号与行距。** 标注元音的文本中，元音符号（fatḥa、kasra、shadda、tanwīn、短竖alif、《古兰经》符号）叠在字母上下，位于行距之中，而行距不会为它们增高。每个带元音符号的行都会记下笔画伸到多远（`VDTLine.markInk`），渲染器的栏裁剪会把每栏首行和末行的符号包含在内。某个词上方的符号碰到上一行正上方那个词下垂的字母或符号时，构建会报告该段落（`arabicMarksExceedLeading`，显示在沙盒的检查面板中）。只比较上下相叠的词。部分标注元音的文本宜用约1.7–1.85 em的`lineHeight`，全部标注元音的诗句宜用1.9–2.1 em。
+- **强调。** 阿拉伯文字体没有斜体，所以在`locale`用阿拉伯字母书写的文档中，`*…*`默认排成粗体（`bodyText.emphasis: 'auto'`）。`'color'`把它排成正体并用`italicColor`，`'overline'`在词上加一条线，即阿拉伯文书籍中的khaṭṭ fawqī。该设置作用于所有用正文字体排的文本：段落、列表、引用块、段落样式、提示框正文、注释和标题。图注、表格单元格、目录和索引保留各自的斜体设置。无论选哪种，引擎都不会把阿拉伯字母排斜：斜体片段中的阿拉伯文词排成正体，其中的拉丁文词保持斜体。在这类文档中，引用块默认为正体。
+- **Tashkīl。** `bodyText.tashkil: 'strip'`从排版文本中去掉元音符号和《古兰经》符号，用于由标注元音的底本制作不标元音的版本：fatḥa、ḍamma、kasra及其tanwīn、sukūn、shadda、短竖alif（هٰذا变成هذا），以及U+0656–U+065F和U+06D6–U+06ED的符号。`'strip-vowels'`保留shadda，大多数现代书籍就是这样印的。hamza和madda保留（أ إ آ是字母，用组合符号输入时也一样）。源文本保留其符号；行、标题和目录不带符号排出，每个排出的字符仍对应它在源文本中的位置。
+- **脚注。** `footnotes.markerTemplate: '({n})'`用文档数字写出注码「(١)」，`numbering: 'page'`让编号每页重新开始，`noteNumberPosition: 'inline'`把注文自己的编号排在行内。分隔线和注文编号位于栏的起始一侧，在从右到左的书中即右侧。
+- **整词。** 含阿拉伯字母的词从不断词、切开或加字距，无论是在阿拉伯文书中还是被其他语言的书引用。为阿拉伯文文本设置`letterSpacing`的样式会被报告（`joiningScriptLetterSpacing`），比所在行还宽的词会溢出该行并被报告（`unbreakableWordOverflow`）。见[阿拉伯文排版](/zh/docs/arabic-layout#连写成形与整词)。
+- **卡希达与诗体。** 两端对齐的阿拉伯文行除了在空格处，还用卡希达拉伸（`bodyText.kashida`，见[阿拉伯文的卡希达](/zh/docs/justification#阿拉伯文的卡希达)）；古典诗用`:::verse`排成每行一联、两个等宽的半行（见[`:::verse`](/zh/docs/document-format#verse)）。
+- **索引。** 阿拉伯文索引按字母顺序排序，并忽略冠词ال（`index.ignoreArticle`）、元音符号和hamza的承载字母；见[索引](/zh/docs/configuration-notes-references#索引)。
+
+### 段首孤行、段末孤行、孤字与不拆分规则
+
+这些缺陷值背后的机制见[断词与两端对齐](/zh/docs/justification)。本节是驱动它们的`bodyText`配置键的参考。
+
+除了断词和间距上下限，正文配置还提供一组软规则，用来防止在结构上别扭的地方拆开段落。它们全部作为缺陷值（demerits）输入Knuth-Plass断行算法：让版面倾向于干净的断点，但从不强制执行硬性规则。把某个`*Penalty`值设为`0`，就相当于关闭对应的规则。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '140px' }}>类型</th>
+      <th style={{ width: '120px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>avoidOrphans</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>避免段落在下一栏顶部只剩不足<code>orphanMinLines</code>行就结束。</td>
+    </tr>
+    <tr>
+      <td><code>orphanMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>段落被拆开时，下一栏顶部至少要有的行数。仅在<code>avoidOrphans</code>为<code>true</code>时起作用。</td>
+    </tr>
+    <tr>
+      <td><code>orphanPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>1000</code></td>
+      <td>违反段末孤行（orphan）约束时加上的缺陷值。值越高，算法越强烈地避免段末孤行；<code>0</code>关闭该惩罚。</td>
+    </tr>
+    <tr>
+      <td><code>avoidOrphansInLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>为<code>true</code>时，列表项也受段末孤行保护（不只是段落）。仅在<code>avoidOrphans</code>为<code>true</code>时有效。</td>
+    </tr>
+    <tr>
+      <td><code>avoidWidows</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>避免段落在当前栏底部只有不足<code>widowMinLines</code>行就开始。</td>
+    </tr>
+    <tr>
+      <td><code>widowMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>段落被拆开时，当前栏底部至少要有的行数。仅在<code>avoidWidows</code>为<code>true</code>时起作用。</td>
+    </tr>
+    <tr>
+      <td><code>widowPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>1000</code></td>
+      <td>违反段首孤行（widow）约束时加上的缺陷值。<code>0</code>关闭该惩罚。</td>
+    </tr>
+    <tr>
+      <td><code>avoidWidowsInLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>为<code>true</code>时，列表项也受段首孤行保护。仅在<code>avoidWidows</code>为<code>true</code>时有效。</td>
+    </tr>
+    <tr>
+      <td><code>avoidRunts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>避免段落以很短的末行结束，即<em>孤字</em>，例如单独一个短词。配合<code>optimalRagged</code>，不齐行文字也适用。中文、日文或韩文段落不会以只有一个字符（单独或连同其后的收尾标点）的行结束（孤字）：只要上一行在字距上限之内仍能两端对齐，就把最后一个字符让给这一行。</td>
+    </tr>
+    <tr>
+      <td><code>runtMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>20</code></td>
+      <td>段落末行的阈值，以词间空格而不是字母计数：末行宽度小于<code>runtMinCharacters × normalSpaceWidth</code>像素时即为孤字。在大多数正文字体中，一个词间空格是四分之一到三分之一em，约为半个小写字母宽，所以默认值20捕捉的是短于4到7 em的末行，大约8到12个字母。如果想捕捉短于约N个字母的末行，把它设为2 × N左右。</td>
+    </tr>
+    <tr>
+      <td><code>runtPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>1000</code></td>
+      <td>注入Knuth–Plass平方缺陷值公式中的等效劣度（与行的<em>劣度</em>同一尺度，劣度在10000处饱和）。<code>0</code>关闭该惩罚。</td>
+    </tr>
+    <tr>
+      <td><code>gradedRuntPenalty</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>按末行短了多少来缩放孤字惩罚：宽度为<em>w</em>、低于阈值<em>t</em>的末行，代价是<code>runtPenalty × (1 − w / t)</code>，而不是整个惩罚值。这样两个词的结尾比一个词的代价低，当上面某一行能匀出一个词时，断行器会把它拉下来（'…sallies of' / 'our minds.'，而不是'…sallies of our' / 'minds.'）。默认关闭：每个孤字代价相同，断行器保留上面较紧的行。</td>
+    </tr>
+    <tr>
+      <td><code>avoidRuntsInLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>为<code>true</code>时，列表项也计入孤字惩罚。仅在<code>avoidRunts</code>为<code>true</code>时有效。</td>
+    </tr>
+    <tr>
+      <td><code>tightenRunts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>惩罚无法避免孤字时，改为把段落排短一行：词间距收紧（不低于<code>minWordSpacing</code>），如果单靠这一点还挤不下，再加上少量负字距。以下情况拒绝排短，孤字保留：会把一行两端对齐的文字拉伸到超过<code>maxWordSpacing</code>，或段落中已有更松的两端对齐行时超过那一行；或者会让齐左排出的行（超过正常空格3倍）比原来更多。不齐行文字的词间距保持原宽，所以那里只有字距参与调整。需要开启<code>optimalLineBreaking</code>和<code>avoidRunts</code>（不齐行文字还需要<code>optimalRagged</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>maxRuntTracking</code></td>
+      <td><code>number</code></td>
+      <td><code>10</code></td>
+      <td>修正孤字时最多可以使用的字距，单位为千分之一em（InDesign的单位：10 = 每个字符0.01 em），以收紧的方式施加。<code>0</code>表示只靠词间距来修正。</td>
+    </tr>
+    <tr>
+      <td><code>slackWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>10</code></td>
+      <td>施加在“未用栏空间”平方代价上的权重。值越高，版面越倾向于把栏填满；<code>0</code>完全取消空白压力。</td>
+    </tr>
+    <tr>
+      <td><code>keepColonWithList</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>段落以直接引出列表的冒号结尾时，让带冒号的末行与列表保持在一起：如果放下这个段落后，第一个列表项没有空间在同一栏或同一页开始，就把末行（段落只有一行时则是整个段落）连同列表移到下一栏。多少空间才算够由<code>colonListRoom</code>决定。当这条规则要把整个段落推走，而栏中紧挨在它前面的是一串标题时，这些标题也会一起移走，以便<code>headings.keepWithNext</code>继续成立。</td>
+    </tr>
+    <tr>
+      <td><code>colonListRoom</code></td>
+      <td><code>'item' | 'line'</code></td>
+      <td><code>'item'</code></td>
+      <td><code>keepColonWithList</code>要求在冒号行下面留出的空间。<code>'item'</code>：列表的段首孤行和段末孤行规则会在栏底留下的第一个列表项的部分，允许在那里拆开时为一行，规则要求保持完整时为整个列表项（比如一个两行的列表项）。<code>'line'</code>：一行，与postext 1.4及更早版本相同；这时被那些规则保持完整的第一个列表项会单独移到下一栏，把冒号行留在栏底。在<code>configVersion</code> 6之前保存、且书中有以冒号引出的列表的配置，读取时采用<code>'line'</code>（见<a href="/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。其他任何值都按<code>'item'</code>读取。</td>
+    </tr>
+    <tr>
+      <td><code>hyphenateAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>允许一栏或一页以断词结束（InDesign的<em>Hyphenate Across Column</em>）。设为<code>false</code>时，跨越分栏处的段落会重新断行，使它在本栏的最后一行以完整的词结束；差额由上面各行的词间距在<code>maxWordSpacing</code>和<code>minWordSpacing</code>范围内吸收。这是一种偏好：如果在这些范围内找不到能避免断词的断点，连字符就保留。它会尝试段落的每一个分栏点：第一个分栏点，以及之后落在整栏结束处的分栏点，在一次重新断行中处理；之后落在其他位置的分栏点（遵守段首孤行规则、在截齐的分栏带处）则从那一栏开始另做一次重新断行，前面各栏已排好的行保持原有断点，只重排其余部分。框的正文不受影响。开启<code>optimalRagged</code>时，不齐行段落也同样重新断行：它的词间距保持原宽，所以只有行尾移动。每次重新断行都要再测量一遍段落，因此栏尾断词很多的书排版会稍慢一些。需要开启<code>optimalLineBreaking</code>，不齐行文字还需要<code>optimalRagged</code>。</td>
+    </tr>
+    <tr>
+      <td><code>paragraphContainerSpacing</code></td>
+      <td><code>'collapse' | 'add'</code></td>
+      <td><code>'collapse'</code></td>
+      <td>以段落收尾的<code>:::paragraphs</code>容器下方、即该段落与其后块之间的间距（见<a href="/zh/docs/configuration-styles#paragraphs容器"><code>:::paragraphs</code>容器</a>）。<code>'collapse'</code>：取样式的<code>spaceBetween</code>和<code>marginBottom</code>以及容器周围文字的段间距（开启<code>paragraphSpacing</code>时为一行；在框内则取框的段间距）中的较大者，再与下一个块自己在上方保留的间距合并，与连续正文中两个段落之间的处理相同：参考文献下面的标题与它相距自己的<code>marginTop</code>，而不是这个外边距再加上条目的间距。<code>'add'</code>：与postext 1.4及更早版本相同，在网格对齐前只在最后一行下面放样式自身的间距，再加上下一个块自己的上方间距，不计段间距，所以容器之后的段落可能比其他任何段落都更贴近它。在<code>configVersion</code> 8之前保存、声明了段落样式、且书中含有这种容器的配置，读取时采用<code>'add'</code>（见<a href="/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。无论哪种方式，负的<code>marginBottom</code>都会把下一个块往上拉。</td>
+    </tr>
+  </tbody>
+</table>
+
+**关于孤字**。孤字是指段落的末行太短，不像一行正常的文字，通常是一两个短词孤零零地落在段落末尾。由于判断依据是这一行的像素长度与正常空格宽度之比，`runtMinCharacters`会自动适应当前字号。视觉宽度超过`runtMinCharacters × spaceWidth`的短词没有问题；比这窄（或真正单独一个）的词会招来孤字惩罚。阈值以词间空格计数，而词间空格约为字母宽度的一半：默认值20相当于大约8到12个字母的末行。每个孤字都承担完整的惩罚值，所以在两个都低于阈值的结尾之间，断行器会保留上面较紧的行；`gradedRuntPenalty`则按短缺程度给每个结尾定价，较长的结尾胜出。给对数学感兴趣的读者：在默认的`runtPenalty`为1000时，避免孤字的优先级高于任何需要大约r≈2.15以内词间距拉伸的其他断点组合。
+
+<strong>软规则，不是硬规则。</strong>这些规则都不能*阻止*某个断点，引擎总会给出一个版面。它们是缺陷值：算法在一次全局优化中权衡劣度、断词代价、适配等级的平滑度和这些结构性惩罚，选出总代价最低的断点组合。如果需要更硬的保证，就提高惩罚值；如果某篇文档放宽惩罚后读起来更好，就降低它。
+
+
+## 标题
+
+`headings`属性控制所有标题级别（H1–H6）的排版。你可以先设定适用于所有级别的通用默认值，再按级别覆盖其中的个别属性。
+
+### 通用默认值
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Open Sans'</code></td>
+      <td>所有标题的字体。</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.2 em</code></td>
+      <td>标题的行距，比正文更紧。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>主色（<code>#295AA3</code>）</td>
+      <td>标题文字颜色。它绑定到默认调色板的<code>main-color</code>条目，换掉调色板里的这个颜色，所有标题都随之改色。</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
+      <td><code>'left'</code></td>
+      <td>所有标题级别的对齐方式（没有按级别设置的值）：齐左、两端对齐、居中或齐右。两端对齐的标题像段落一样把最后一行排成齐左，所以单行标题看起来与<code>'left'</code>相同。Canvas、HTML和PDF以同样方式放置各行，编号前缀也包括在内。没有高级设计的<code>span: 'page'</code>标题，其默认章首区段也遵循这一设置（两端对齐时排成齐左）；高级设计则用各文本元素自己的<code>align</code>对齐。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>标题的字重（100–900）。</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>标题上方的间距。</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>标题下方的间距。</td>
+    </tr>
+    <tr>
+      <td><code>keepWithNext</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>为<code>true</code>时，标题绝不会成为一栏或一页的最后一个元素。如果标题之后的空间放不下后续块的至少<code>bodyText.widowMinLines</code>行（<code>bodyText.avoidWidows</code>为<code>false</code>时为一行），标题就被推到后面，与正文保持在一起。它与<code>bodyText.keepColonWithList</code>相互配合：如果那条规则必须把以冒号结尾的段落整段推走，栏末的标题会随它一起移动，不会被孤零零地留下。</td>
+    </tr>
+    <tr>
+      <td><code>keepWithNextSpread</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>与<code>keepWithNext</code>同时使用时，仍允许标题位于偶数页最后一栏正文的末尾，因为它的正文从同一跨页对面的奇数页开始（JLReq §4.1.7）。跨页的划分是：第1页单独一页，然后是2–3、4–5……，按<code>pageIndexOffset</code>计数，左侧装订和右侧装订的书都一样。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
+      <td><code>keepWithNextSplit</code></td>
+      <td><code>'rules' | 'fill'</code></td>
+      <td><code>'rules'</code></td>
+      <td>当标题落在栏底、而把其下段落整段推走会把标题留在原处时，该段落如何拆分。<code>'rules'</code>：放得下多少行就放多少行，前提是标题下至少留<code>bodyText.widowMinLines</code>行，且至少有<code>bodyText.orphanMinLines</code>行转入下一栏；没有同时满足两者的拆法时，标题随段落一起移走，空出的位置由各栏齐底来填补。<code>'fill'</code>：放得下多少行就放多少行，不管转入下一栏的有多少，所以一个四行段落在有三行空间时拆成3 + 1。postext 1.4及以前，所有标题都这样拆分，<code>configVersion</code> 8之前保存的配置也保持这种方式（见<a href="/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。关闭<code>avoidWidows</code>或<code>avoidOrphans</code>时，规则中相应的一侧就不再适用。</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>标题之下的文字流是否重新对齐基线网格。为<code>true</code>时，标题的<code>marginBottom</code>向上取整为整数个网格行；为<code>false</code>时保留精确的间距，标题下的文字可能偏离网格，直到下一个对齐点（列表结束处、<code>:::paragraphs</code>的末尾、行间公式）。许多书在标题下留一行半，就是这种排法。级别（<code>levels[].snapToGrid</code>）或标题样式可以设置自己的值，这里的值是它们继承的默认值。</td>
+    </tr>
+    <tr>
+      <td><code>inlineMarks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>标题是否像段落一样识别行内标记：<code>*italic*</code>、<code>**bold**</code>、<code>^superscript^</code>、<code>~subscript~</code>、<code>:smallcaps[…]</code>和链接。斜体片段会翻转标题的倾斜，所以在斜体标题中它显示为正体；粗体片段采用<code>bodyText.boldFontWeight</code>，若标题自身的字重更重则采用标题字重。目录也会列出粗体和斜体片段；书眉和PDF书签只输出文字。为<code>false</code>时去掉标记，文字按标题自身的样式输出，与postext 1.4及以前一样。没有设计的<code>span: 'page'</code>标题，其默认章首区段也会排出粗体、斜体、上标和下标片段；标题设计（带设计的章首区段或栏内<code>advancedDesign</code>）都把<code>{'{titleText}'}</code>作为纯文本输出，除非其文本元素读取行内标记（<code>inlineMarks: true</code>）：此时<code>{'{titleText}'}</code>保留标题的粗体、斜体与上下标片段（postext 1.19 起）。更早保存、且标题中带有标记的配置按<code>false</code>读取（见<a href="/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。</td>
+    </tr>
+    <tr>
+      <td><code>balancing</code></td>
+      <td><code>ColumnBalancingConfig</code></td>
+      <td>启用</td>
+      <td>纵向的各栏齐底：在标题上方加空，使各栏底端与页面底部平齐。见下文。</td>
+    </tr>
+  </tbody>
+</table>
+
+诗歌或剧本各幕用的居中标题，不需要设计槽位：
+
+```ts
+headings: {
+  textAlign: 'center',
+  levels: [{ level: 2, textTransform: 'uppercase' }],
+}
+```
+
+传入`headings`对象时，你没有重新声明的级别默认值都会保留，包括H1的分页（见[按级别覆盖](#按级别覆盖)）。
+
+### 各栏齐底
+
+出版方要求每一栏都从页面顶部开始、在页面底部平齐结束。分页规则（段首孤行和段末孤行保护、标题与正文不分离、不可拆分的图）自然会留下短栏，即栏底空着一个或多个基线网格行。启用齐底后，引擎会像排版工人那样处理，按编辑上的优先顺序使用以下手段：
+
+1. **收尾的框**：结束一个短栏的标注框整体下移，下移量正好等于其底部下方的空余，使它的下边缘落在页面最后一个网格位置上，与相邻栏的最后一行平齐。即使空余不足一行，只要没有内容移入另一栏，它也会占满这段空余。默认情况下这一手段先于其他所有手段执行，并占用整段空余，所以一个注释上方段落的框可能最后落在该段落下方好几行处；`closingBox: 'last'`让标题、列表结尾和其他间距手段先占用整行，框只占它们剩下的部分；`closingBox: 'off'`则从不移动它。
+2. **有安全区的图片**：设了安全区（`Resource.safeArea`，见[文档格式 › 安全区](/zh/docs/document-format#安全区)）的图片，如果以行内方式排在短栏里，或者作为只占这一栏的浮动体排在栏顶或栏底，就按整数个网格行增高，在安全区以内裁切，直到这一栏排满，或者裁切到了安全区为止。图片变高不会在页面上留下空洞，所以这一手段在增加任何空白之前执行；在栏首要保持平齐的页面或区段上（见下文），位于栏顶的浮动体不会增高。记录为`flexFigure`。这一手段没有单独的设置：只有资源标出了安全区的图片才会增高。
+3. **标题**：在短栏内各标题的上外边距中增加整数个网格行。需要多行且栏内有多个标题时，这些行分配给各个标题，最重要的标题总是分得最多（`h2`比`h3`多）。位于栏顶的标题从不加空，因此各栏始终从页面顶部开始。唯一的例外是：在文字流继续到下一页的页面上，紧接在栏首图或表下方的标题，空间会加在这个标题上方、图的下方。
+4. **列表结尾**：标题无法吸收全部空余时，在列表或编号列表结束处增加一个网格行（列表后的空白读起来很自然），每个列表结尾有上限。
+5. **放松段落**：作为最后手段，把栏内某一段重新断行，使其多出一行（即TeX的`\looseness=+1`），并选最长的段落，让增加的词间距分散得看不出来。只有每一行都保持在<strong>`bodyText.maxWordSpacing`以下</strong>时，放松后的方案才会被采用，文字灰度绝不超出你已配置的限度。需要启用`bodyText.optimalLineBreaking`。
+
+在字符网格上（`cjk.grid`，见[中文排版 › 字符网格](/zh/docs/chinese-layout#字符网格)），每个字占一个一em宽的格子，每一行都落在网格的行距上，这个行距同时也是基线网格。和竖排一样，网格上默认不做齐底：在网格上逐行排的页面，就像GB/T 9704按每页22行、每行28字计数那样，短栏就保持短栏。配置中设了`enabled: true`时，使用的是保持网格的手段：标题、列表结尾、行间公式和图都按整数个网格行加空，其下的文字整行下移；对于没有空行可让的标准，`gridLines: 'off'`把这些手段排除在外。中文或日文段落只有在任意两个字之间的间距都不超过`maxTracking`时才多排一行，也不对其中的字符另加字距：少一个字的行要把一个em分摊到各个字间，远超默认的0.01 em，所以在由整格组成的网格上，放松段落的手段通常找不到可用的段落。结束一栏的框和有安全区的图片本来就不受网格约束，在这里与在别处一样起作用。
+
+只有当页面自然延续到下一页时，才会对该页最后一栏做齐底；一章的末页本来就可以短一截。这样的页面，以及由`trailing`截平的收尾区段，还会让各栏的栏首保持平齐：栏首为图或表时，不会在其下方加行（浮动体后手段）；在这样的图下方开栏的标题或框，无论`stretchAfterFloats`如何设置，都留在栏首。这样就不会为了让栏底对齐而让某一栏比旁边一栏起得更低。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '150px' }}>属性</th>
+      <th style={{ width: '150px' }}>类型</th>
+      <th style={{ width: '180px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>是否让各栏底部平齐。在竖排（<code>layout.writingMode: 'vertical-rl'</code>）和字符网格（<code>cjk.grid.enabled</code>，postext 1.25 起）上默认关闭；设为<code>true</code>时在那里也会开启。</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesPerHeading</code></td>
+      <td><code>number</code></td>
+      <td><code>4</code></td>
+      <td>单个标题上方最多可增加的网格行数。</td>
+    </tr>
+    <tr>
+      <td><code>stretchAfterLists</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>标题无法吸收全部空余时，允许在列表结束处增加网格行。</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesAfterList</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>单个列表结尾之后最多增加的网格行数。</td>
+    </tr>
+    <tr>
+      <td><code>stretchAfterFloats</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>在列表结尾手段之后，允许在短栏栏首的图或表（顶部浮动体）下方增加网格行，让其下的文字下移，而不是让该栏短一截结束。在不延续到下一页的页面（一章的末页）上，以及由<code>trailing</code>截平的收尾区段中，从不这样做：那里各栏栏首保持平齐，最后一栏可以短一行结束。图下方的第一个块可能是前一页开始的段落的余下部分：它同样会下移，下移量是分页规则在栏底留出的那一行（段首孤行（widow）规则留空的一行，或者一个段落间距，其后已放不下文字）。设为<code>false</code>可让文字紧贴在图下方。</td>
+    </tr>
+    <tr>
+      <td><code>maxLinesAfterFloat</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>单个顶部浮动体下方最多增加的网格行数。</td>
+    </tr>
+    <tr>
+      <td><code>looseParagraphs</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>最后手段：在<code>bodyText.maxWordSpacing</code>范围内，把短栏中的段落重新断行，放松一行（每段多一行）。</td>
+    </tr>
+    <tr>
+      <td><code>maxLooseParagraphs</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>同一短栏中最多可以有几个段落多排一行，从最长的段落开始。</td>
+    </tr>
+    <tr>
+      <td><code>trackParagraphs</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>单靠词间距无法多出一行时，放松的段落还可以采用恰好能多出这一行的最小正字距。</td>
+    </tr>
+    <tr>
+      <td><code>maxTracking</code></td>
+      <td><code>number</code></td>
+      <td><code>10</code></td>
+      <td>该字距的上限，单位是每个字符千分之一em（10 = 0.01 em）。</td>
+    </tr>
+    <tr>
+      <td><code>trailing</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>截平一章和整个文档的收尾区段：当文字流在页面排满之前结束（遇到章首页、<code>:::part</code>、结束一章的<code>placement: 'fixed'</code>框或文档结尾），且各栏长短不齐时，把它们截成一样高。区段上限为<code>ceil(Σ used / N / grid)</code>行，在上述手段处理完前面各页之后才计算。这样，一份较短的参考文献在每一栏都结束于同一高度，而不是排满第一栏、让最后一栏空一半。截平时遵守未截平区段所遵守的规则：如果一个不能跨越截线拆分的块（段首孤行和段末孤行最小行数要求保持完整的段落尾部、不可拆分的框）会越过截线（而渲染器会按栏框裁切，于是丢掉最后几行），或者某个标题会落在栏末而其正文却在下一栏开头（启用<code>headings.keepWithNext</code>时，即默认情况），截线就下移一行，最多三次，否则放弃截平。如果某个块无法在栏首图下方截线留出的行中开始（段落在那里需要满足段末孤行（orphan）最小行数），它会转入该区段的下一栏，与未截平的栏一样，图则单独占一栏。栏底相差不超过一个网格行的各栏保持原样：最后一栏短一行结束是常见的收尾，截平只会挪动一行。截平作用于测量时所在的区段，页中由通栏框要求的截平也一样。postext 1.4及以前，如果末页的第一段文字曾先被分配给一个放不下它的区段（被浮动体整页占据的页面，或通栏框在前一页底部留下的窄区段），截平就耗在那个区段上，末页的所有行都留在第一栏。宽度不同的栏（两栏都有文字的一栏半版式）按面积截平，每栏的高度按其宽度加权，因为窄栏的一行容纳的文字更少。仅在<code>enabled</code>为true时生效。</td>
+    </tr>
+    <tr>
+      <td><code>beforeSpan</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>截平通栏块留在身后的区段：当<code>span: 'page'</code>标注框即使经过截平仍放不进当前各栏下方，必须移到下一页或拆分（<code>calloutStyles[].keepTogether: false</code>）时，被它打断的各栏会被截成一样高（与收尾区段采用相同的截平上限），而不是第一栏排满页面、最后一栏短一截。该页作为显式分页处理，以免上述手段把最后一栏重新拉伸到页面底部；框或其放得下的部分随后位于截平后的各栏下方。仅在<code>enabled</code>为true时生效。</td>
+    </tr>
+    <tr>
+      <td><code>closingBox</code></td>
+      <td><code>'first' | 'last' | 'off'</code></td>
+      <td><code>'first'</code></td>
+      <td>结束短栏的框何时占用其底部下方的空余（手段1，记录为<code>trailingCallout</code>）。<code>'first'</code>：先于其他所有手段，与postext 1.4及以前相同。框占用整段空余，即使有好几行，其上方的标题一行也分不到。<code>'last'</code>：在标题、列表结尾、行间公式和浮动体手段之后执行，它们先占用整行；框随上方的文字一起下移，然后只占用它们剩下的部分，通常不足一行，这样框底仍对齐最后一个网格位置，框也仍靠近它所注释的文字。<code>'off'</code>：从不执行；框保留其底部下方的空余，但其他手段在框上方加空时，仍可以把它整行下移，框下剩余的不足一行的空间保持不变。在末页上，框是唯一能让其底部与相邻栏对齐的手段，<code>'off'</code>让它留在文字流放置的位置。其他任何值都按<code>'first'</code>处理。区段中唯一一栏文字以框结尾时（单栏页面提前结束、下一个块另起下一页），该框不会移动：旁边没有可对齐的栏（postext 1.19 起）。</td>
+    </tr>
+    <tr>
+      <td><code>gridLines</code></td>
+      <td><code>'allow' | 'off'</code></td>
+      <td><code>'allow'</code></td>
+      <td>用于字符网格：是否允许按整数个网格行加空的手段（标题上方、列表结束处、行间公式或框下方、栏首图下方）运行。这些手段让每个字都留在自己的格子里；<code>'off'</code>适合按页计算行数的标准，让该栏短一截结束。不在网格上时不起作用。其他任何值都按<code>'allow'</code>处理。postext 1.25 起。</td>
+    </tr>
+  </tbody>
+</table>
+
+#### 哪个手段起了作用
+
+排版会把它使用的每个手段记录在所作用的块上，即`buildDocument`返回的VDT中的`block.balancing`。校样、测试或报告可以据此说明某一栏为何平齐，以及哪些栏没有任何手段能补齐。齐底没有处理的块不带`balancing`，用`enabled: false`构建的文档则完全没有。
+
+在字符网格上，文档会说明某一栏为何可能短一截：页面在网格上、配置又没有开启齐底，因而齐底关闭时，`doc.gridBalancing`为`{ off: true }`；齐底运行但不带整行手段时，它为`{ gridLines: 'off' }`。仍然偏短的栏带有`column.gridRefused`，即网格不允许它使用的手段（段落只有把字匀开到格子之外才能多排一行时为`'looseParagraph'`，在`gridLines: 'off'`下则是各个整行手段）。不在网格上时两者都不存在。
+
+```ts
+interface VDTBalancing {
+  levers: BalanceLever[]; // 通常只有一个：列表后的段落可能既占用列表结尾那一行，又多排一行
+  spaceAbove: number;     // 间距手段在块上方增加的px（只有looseParagraph或flexFigure起作用时为0）
+  bodyGrowth?: number;    // flexFigure：图片增高的px，在安全区以内裁切
+  extraLines?: number;    // looseParagraph：段落多出的行数
+  tracking?: number;      // looseParagraph：多出这些行所用的字距，单位为千分之一em（0 = 仅靠词间距）
+}
+type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>手段</th>
+      <th style={{ width: '220px' }}>记录位置</th>
+      <th>作用</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>trailingCallout</code></td>
+      <td>标注框的外框块</td>
+      <td>结束该栏的框下移，下移量正好等于其底部下方的空余（<code>spaceAbove</code>；不足一行也可以）。</td>
+    </tr>
+    <tr>
+      <td><code>flexFigure</code></td>
+      <td>图片的块（行内）或浮动体</td>
+      <td>设了安全区的图片按整数个网格行增高了<code>bodyGrowth</code> px，在安全区以内裁切。资源块的<code>bodySource</code>是显示出来的部分，<code>bodyFlex.delta</code>是同一增量。</td>
+    </tr>
+    <tr>
+      <td><code>heading</code></td>
+      <td>标题</td>
+      <td>在标题上方增加整数个网格行，最多<code>maxLinesPerHeading</code>行。</td>
+    </tr>
+    <tr>
+      <td><code>listEnd</code></td>
+      <td>列表之后的第一个块</td>
+      <td>在列表结束处增加一个网格行，最多<code>maxLinesAfterList</code>行。</td>
+    </tr>
+    <tr>
+      <td><code>afterDisplay</code></td>
+      <td>公式或框之后的块</td>
+      <td>在行间公式或标注框下方增加一个网格行。</td>
+    </tr>
+    <tr>
+      <td><code>afterFloat</code></td>
+      <td>该栏的第一个块</td>
+      <td>在栏首的浮动体区段与其下文字之间增加一个网格行，最多<code>maxLinesAfterFloat</code>行。</td>
+    </tr>
+    <tr>
+      <td><code>looseParagraph</code></td>
+      <td>段落</td>
+      <td>段落重新断行后多出<code>extraLines</code>行，所用的是能做到这一点的最小字距（<code>tracking</code>；<code>block.letterSpacing</code>是以px表示的同一数值）。</td>
+    </tr>
+  </tbody>
+</table>
+
+截平记录在被截的栏上：每个被截平的栏（通栏框留下的区段、收尾区段）上`column.bandCapped`都为true，`column.trailingCap`还额外标出一章或整个文档的收尾区段（`trailing`）。
+
+```ts
+import { buildDocument } from 'postext';
+
+const doc = buildDocument(content, config);
+for (const page of doc.pages) {
+  page.columns.forEach((column, i) => {
+    const levers: string[] = column.blocks.flatMap((block) => block.balancing?.levers ?? []);
+    if (column.trailingCap) levers.push('closing band cut level');
+    else if (column.bandCapped) levers.push('band cut level');
+    if (levers.length > 0) console.log(`page ${page.index + 1}, column ${i + 1}: ${levers.join(', ')}`);
+  });
+}
+// page 3, column 1: heading, heading
+// page 3, column 2: listEnd, looseParagraph
+```
+
+### 按级别覆盖
+
+每个标题级别都可以通过`levels`数组覆盖通用默认值。默认情况下，各级别只有`fontSize`不同（另外还有下文说明的H1的`breakBefore`），其他属性都继承通用标题设置。
+
+<table>
+  <thead>
+    <tr>
+      <th>级别</th>
+      <th>默认字号</th>
+      <th>默认<code>breakBefore</code></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>H1</td><td><code>18 pt</code></td><td><code>&#123; enabled: true, parity: 'always-odd' &#125;</code></td></tr>
+    <tr><td>H2</td><td><code>15 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H3</td><td><code>12 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H4</td><td><code>10 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H5</td><td><code>9 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+    <tr><td>H6</td><td><code>8 pt</code></td><td><code>&#123; enabled: false, parity: 'any' &#125;</code></td></tr>
+  </tbody>
+</table>
+
+H1的默认值模拟图书的分章版面：每个一级标题都在新的右页（奇数页）开始，与前一章之间必有一个空白分隔页。如果你的文档层次比图书简单，可在`levels[0].breakBefore`上覆盖它。
+
+级别的`breakBefore`按字段逐个合并到这个默认值之上，没有提到它的`headings`对象会保留默认值。H1上的`{ parity: 'odd' }`保留分页，只改变奇偶；`{ enabled: false }`让各章接排：
+
+```ts
+headings: {
+  fontFamily: 'Merriweather',                               // H1仍然分页到新的右页（always-odd）
+  levels: [{ level: 1, breakBefore: { parity: 'odd' } }],    // ……或者：右页开始，不强制空白页
+}
+
+headings: { levels: [{ level: 1, breakBefore: { enabled: false } }] } // 各章接排
+```
+
+**postext 1.5起的变化。** postext 1.4及以前，任何`headings`对象都会关闭H1的分页，除非重新声明`levels[0].breakBefore`；不完整的`breakBefore`会用不分页的默认值补齐缺少的字段。因此，一份为1.4用代码写成、带有`headings`对象但没有H1分页的配置，现在会让每一章都从新的右页开始，必要时加入空白左页。要让各章继续接排，在`levels`的H1条目中加一个字段：
+
+```ts
+headings: { fontFamily: 'Merriweather', levels: [{ level: 1, breakBefore: { enabled: false } }] } // 与1.4的排法相同
+```
+
+如果配置是存储下来的，引擎能识别出来并替你处理：沙盒处理它当时保存的书和配置（见**沙盒 → 持久化**），`openBundle` / `readBundle`处理postext 1.4或更早版本写出的`.postext`文件包（见[postext 1.4及更早版本写出的文件包](/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包)）。你自己存储的配置可以交给`postext/bundle`中的`migrateConfig(config)`处理，它会写出1.4当时的分页方式（`pinLegacyHeadingBreaks`）：在没有分页的H1上写`enabled: false`，在H1和标题样式中未指定奇偶的`enabled: true`旁写`parity: 'any'`。它还会按1.4的设定固定以下各项：数学公式的字号、行内图周围的间距（框内也一样）、标题的行内标记、首字下沉的尺寸、引出列表的冒号行下方的空间、框截断后段落或列表项留下的行数、破折号处的断行、齐左文字的逐行断行、标题下段落的拆分、复合词连字符处的断行，以及`:::paragraphs`容器下方的间距。把书的Markdown作为第三个参数`{ content }`传入时，它会省去用不到的固定项：文本中没有`$`时省去数学固定项；没有一行嵌入资源时省去间距固定项（框内没有时省去框内间距固定项）；没有标题带标记时省去标题标记固定项；没有列表跟在以冒号结尾的行之后时省去冒号行固定项；文本中没有`:::callout`时省去框截断固定项；词与词之间没有紧排的破折号时省去破折号固定项；文本中没有标题时省去标题拆分固定项；文本中没有`:::paragraphs`容器时省去容器固定项；两个字母之间没有连字符时省去复合词固定项。齐左断行固定项只加给将某些正文设为齐左的配置，容器固定项只加给声明了段落样式的配置（见[postext 1.4及更早版本写出的文件包](/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包)）。如果只处理分页，调用`pinLegacyHeadingBreaks(config)`即可。
+
+按级别覆盖支持与通用默认值相同的属性，即`fontSize`、`lineHeight`、`fontFamily`、`color`、`fontWeight`、`marginTop`、`marginBottom`、`snapToGrid`，另外还有以下仅限级别的字段（[标题样式](/zh/docs/configuration-styles#标题样式)也可以使用它们）：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '140px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>以斜体渲染标题，在<code>fontWeight</code>之上叠加。</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>把标题文字转为大写（编号前缀保持原样，其中的行内标签和<code>:ref</code>的标签也一样）。转换不改变长度，使编辑器的源码映射保持一一对应：大写形式会变长的字符（<code>ß</code> → <code>SS</code>）保持不变。转换后的标题也用于高级设计和章首页的<code>&#123;titleText&#125;</code>占位符。PDF书签保留原写法的标题，即<em>Author contributions</em>而不是<em>AUTHOR CONTRIBUTIONS</em>，就像CSS的<code>text-transform</code>不改变文字本身一样（postext 1.4及以前书签用的是大写）。</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>标题每个字形之后的字距，包括空格和编号前缀，等同于CSS的<code>letter-spacing</code>。正值拉开字母（用<code>textTransform: 'uppercase'</code>排的大写字母通常需要一点：<code>&#123; value: 0.12, unit: 'em' &#125;</code>），负值收紧大字号标题。<code>em</code>值相对于该级别的<code>fontSize</code>。标题各行按加了字距的文字测量，所以在加字距后的文字结束处换行，Canvas、HTML和PDF的绘制结果相同。居中或齐右的行按字母定位：像设计文本一样不计最后一个字形后的字距，因此居中标题与<code>span: 'page'</code>标题的默认章首区段对齐。由<code>advancedDesign</code>绘制的级别会忽略它，与此处其他排版字段一样：每个设计文本元素有自己的<code>letterSpacing</code>。<a href="/zh/docs/configuration-styles#标题样式">标题样式</a>也可以设置它，作用于使用该样式的标题。postext 1.4及以前标题没有字距设置，这个键会被悄悄丢弃。</td>
+    </tr>
+    <tr>
+      <td><code>lineSpan</code></td>
+      <td><code>number</code></td>
+      <td>未设置</td>
+      <td>占行（行取り，JLReq §4.1.6）：标题排在由这么多正文行组成的带中，文字在带中居中，取代<code>marginTop</code>和<code>marginBottom</code>；<code>3</code>就是3行取り的标题。标题对齐网格时，带从一条正文行开始，其后的文字仍留在网格上，两种书写方向都是如此，使用<code>cjk.grid</code>时也一样；标题本身需要更多行时，取下一个整数行。居中的是字符的中心（基线减去字体的表意字中心），这是JLReq的量法，而不是行框的中心。不用于章首页标题（<code>span: 'page'</code>）、由<code>advancedDesign</code>绘制的标题、隐藏的标题和标注框内的标题。标题样式可以设为<code>0</code>来取消其级别的设置。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>标题从行首缩进的距离（字下げ），<code>em</code>指<strong>正文</strong>字号，因为日文书按正文字数计算标题缩进（JLReq §4.1.3）：<code>&#123; value: 6, unit: 'em' &#125;</code>就是6字下げ，与标题的字号无关。行长相应变窄，居中的标题在剩余部分中居中。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>只缩进标题的第一行，从<code>indent</code>处算起，与它一样以<strong>正文</strong>字号的 em 计：长标题转行后的各行从<code>indent</code>处起排（未设时从行首起排），正如 GB/T 9704 让各级标题空两字、回行顶格：<code>&#123; value: 2, unit: 'em' &#125;</code>。开启<code>cjk.grid</code>时，两个正文 em 就是网格的两格。带编号的标题在缩进之后印出编号，所以编号模板不必写全角空格，否则这些空格也会印进目录和 PDF 书签。竖排（从行首即行的上端算起）、CJK 排版器（标题开头的前括号与段落一样遵守行首规则）和 Knuth–Plass 断行都适用。居中的标题像居中的段落一样处理：第一行在缩进之后余下的宽度里居中。在标题文字后写<code>&#123;firstLineIndent=N&#125;</code>只设定这一个标题，<code>&#123;firstLineIndent=0&#125;</code>取消其级别的设定。从postext 1.24起提供。</td>
+    </tr>
+    <tr>
+      <td><code>jidori</code></td>
+      <td><code>number</code></td>
+      <td>未设置</td>
+      <td>均排（字取り）：比标题<strong>自身</strong>字宽的这么多倍窄的单行标题，均匀拉开到恰好这个宽度，所以<code>3</code>把序章排作序　章。更宽的标题和多行标题保持原样。在标题文字后写<code>&#123;jidori=N&#125;</code>只设置这一个标题，<code>&#123;jidori=0&#125;</code>关闭其级别的均排。从postext 1.16起提供。</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap | false</code></td>
+      <td>无</td>
+      <td>该级别标题之后第一个正文段落开头的首字下沉（见<a href="#首字下沉">首字下沉</a>）：设一次，每一章都有首字。标题用<code>&#123;dropcap=false&#125;</code>关闭它，或用<code>&#123;dropcap=2&#125;</code>设定它的行数。自postext 1.23起。</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>该级别自动编号的模板。标记<code>{'{1}'}</code> … <code>{'{6}'}</code>输出对应标题级别的当前计数，可以加后缀指定格式：<code>{'{1:I}'}</code>大写罗马数字，<code>{'{1:i}'}</code>小写罗马数字，<code>{'{1:A}'}</code> / <code>{'{1:a}'}</code>字母，<code>{'{1:01}'}</code>补零，<code>{'{1:words}'}</code>用文字拼写（<em>twenty-one</em>），<code>{'{1:ordinal}'}</code>序数词（<em>twenty-first</em>），<code>{'{1:一}'}</code>中文数字（日文文档中为日文数字：第百一章），<code>{'{1:〇}'}</code>逐位书写，<code>{'{1:壹}'}</code>大写数字，<code>{'{1:①}'}</code>带圈数字，或者<a href="/zh/docs/configuration-page-layout#编号格式的写法">编号格式写法</a>中的任一名称。其他文字按字面输出（<code>'Chapter {'{1}'}. '</code>、<code>'{'{1}'}.{'{2}'}'</code>、<code>'第{'{1:一}'}回'</code>输出第一百二十回；反斜杠转义字面的花括号）。计数仍为空的标记会连同相邻的分隔符一起省略。为空（默认）表示没有自动编号。生成的编号在文字流中加在标题前，用于高级设计槽位的<code>{'{number}'}</code>占位符（那里不再在前面加前缀），并显示在目录中。文字写法见<a href="#以文字书写的编号">以文字书写的编号</a>；若某一级别中部分标题要用自己的模板，见<a href="/zh/docs/configuration-styles#标题样式">标题样式</a>。</td>
+    </tr>
+    <tr>
+      <td><code>numberSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>' '</code></td>
+      <td>编号与标题之间的内容，用于栏内、<code>span: 'page'</code>级别的默认章首区段、输出标题行的书眉，以及PDF书签。一级标题的分隔符还用于在默认的篇页和目录默认的篇条目中连接篇的编号和标题。中文章回标题用全角空格或不用分隔符（<code>'　'</code>：第一回　甄士隱夢幻識通靈）。目录保留自己的编号列（<code>toc.levels[].numberGap</code>）。<a href="/zh/docs/configuration-styles#标题样式">标题样式</a>可以设置自己的分隔符。像中文小说的对句回目那样用<code>{'\\\\'}</code>把标题分成两半时，单行形式（栏内、目录、书眉）在两侧都是中文或日文字符时用全角空格连接两半，否则用空格。</td>
+    </tr>
+    <tr>
+      <td><code>numberPosition</code></td>
+      <td><code>'before' | 'replace'</code></td>
+      <td><code>'before'</code></td>
+      <td>生成的编号放在哪里。<code>'before'</code>：放在标题前，用<code>numberSeparator</code>连接。<code>'replace'</code>：编号就是整个标题，源文本里写的标题不印出，所以在<code>numberingTemplate: 'الليلة &#123;1:ordinal-feminine&#125;'</code>下，<code># Night</code>印成الليلة الثانية。目录把编号列为该条目的标题（没有编号栏），页眉（<code>{chapterTitle}</code>、<code>{titleText}</code>）和PDF书签也读作编号；这样的标题<code>{number}</code>为空。只对有模板（级别的或其样式的）的编号标题生效，其他标题保留原标题。<a href="/zh/docs/configuration-styles#标题样式">标题样式</a>可以设置自己的值，设为<code>'before'</code>可保留其级别会替换掉的标题。</td>
+    </tr>
+    <tr>
+      <td><code>breakBefore</code></td>
+      <td><code>HeadingBreakBeforeConfig</code></td>
+      <td>H1：<code>&#123; enabled: true, parity: 'always-odd' &#125;</code><br/>H2–H6：<code>&#123; enabled: false, parity: 'any' &#125;</code></td>
+      <td>在该级别每个标题前强制分页。<code>parity: 'odd'</code> / <code>'even'</code>进一步限定标题在跨页的哪一侧开始，必要时插入一个空白填充页（仍计入页码）。<code>'always-odd'</code> / <code>'always-even'</code>还保证在前面的内容与新标题之间至少有一个强制的空白分隔页（分隔页属于前一章；此外为满足奇偶而加的填充页属于新的一章）。当标题是文档的第一个块、且第一页仍为空时，不执行奇偶约束，标题照原样落在第1页。未设置的字段保留该级别的默认值：H1的<code>&#123; parity: 'odd' &#125;</code>仍然分页。</td>
+    </tr>
+    <tr>
+      <td><code>hidden</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>结构性标题：它不输出任何内容，在栏内或标注框中不占空间（没有文字、没有外边距、没有章首区段），但其他作用与标题完全相同。它的<code>breakBefore</code>仍会开新页，它开启其样式的章节，它参与计数（除非其样式设为<code>numbered: false</code>），并会被<code>:::toc</code>列出、被<code>{'{chapterTitle}'}</code>书眉引用、在PDF中生成书签。适用于献词、题词页或版权页这类需要出现在目录和读者书签中、但页面上不显示标题的内容。应在<a href="/zh/docs/configuration-styles#标题样式">标题样式</a>上设置，而不是作用于整个级别；单个标题可以用<code>{'{hidden="true"}'}</code> / <code>{'{hidden="false"}'}</code>覆盖。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+headings: {
+  fontFamily: 'Merriweather',
+  levels: [
+    // 标准图书预设：各章从右页（奇数页）开始。
+    { level: 1, fontSize: { value: 24, unit: 'pt' }, breakBefore: { enabled: true, parity: 'odd' } },
+    { level: 2, fontSize: { value: 18, unit: 'pt' }, italic: true },
+  ]
+}
+```
+
+`snapToGrid`也可以按级别设置。未设置时，级别沿用`headings.snapToGrid`；设置后则覆盖它。这样同一份文档可以让H2与其正文之间隔一行半、在下一个对齐点之前偏离网格，同时让H3下方的空间向上取整为整数个网格行。标题样式也可以设置它，作用于使用该样式的标题。
+
+```ts
+headings: {
+  marginBottom: { value: 1.5, unit: 'em' },
+  levels: [
+    { level: 2, snapToGrid: false }, // 每个H2下方正好1.5 em
+    { level: 3 },                    // 继承headings.snapToGrid: true
+  ],
+}
+```
+
+### 前置分页
+
+`breakBefore`与编号控制相互独立：开启它会强制分页，但数字计数只在你明确插入`:::numbering`指令时才重置。为满足奇偶而加的空白页在页序中算作真实的页，并按正常的奇偶页规则显示页眉和页脚。
+
+紧挨在这种标题前的`:::pagebreak`不会取代标题自己的分页：标题仍会在该指令所开的页之后执行奇偶约束，可能因此多出一个空白页。标题需要紧接在手动分页之后开始时，见[标题样式](/zh/docs/configuration-styles#标题样式)。
+
+#### 奇偶取值
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>取值</th>
+      <th>行为</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>'any'</code>（默认）</td>
+      <td>没有奇偶约束，标题直接从下一页开始。</td>
+    </tr>
+    <tr>
+      <td><code>'odd'</code></td>
+      <td>确保标题从奇数页（右页）开始。只有当自然的下一页为偶数页时，才插入一个空白页。</td>
+    </tr>
+    <tr>
+      <td><code>'even'</code></td>
+      <td>同上，但针对偶数页（左页）。</td>
+    </tr>
+    <tr>
+      <td><code>'always-odd'</code></td>
+      <td>保证前面的内容与新标题之间<strong>至少有一个强制的空白分隔页</strong>，然后确保从奇数页开始。适用于每一章都必须从新的跨页开始的情况。</td>
+    </tr>
+    <tr>
+      <td><code>'always-even'</code></td>
+      <td>同上，但针对偶数页。</td>
+    </tr>
+  </tbody>
+</table>
+
+#### 空白页的归属
+
+`breakBefore`插入的空白页所带的章标题书眉，取决于它们*为什么*被插入：
+
+- 为满足奇偶约束而插入的页（`'odd'`、`'even'`，或`'always-*'`中的奇偶部分）属于**后面**的一章。它们书眉中的`{chapterTitle}`占位符解析为新一章的标题，因为这个空白页只是为了把新的一章推到正确的奇偶页上。
+- `'always-odd'` / `'always-even'`插入的强制前导分隔页属于**前面**的一章。它是章末有意留出的停顿，所以`{chapterTitle}`书眉仍显示上一章的标题。
+
+带样式章节的书眉和调色板（见[标题样式](/zh/docs/configuration-styles#标题样式)）在空白页上也遵循这两条规则。
+
+#### 文档开头的例外
+
+当文档的第一个块是启用了`breakBefore`的标题，或源文件以`:::pagebreak`开头时，只要第一页仍为空，就不执行奇偶约束。标题照原样落在第1页，与所配置的奇偶无关，因此以`# Chapter 1`开头、配置为`parity: 'odd'`的文档不会多出一个多余的前导空白页。一旦放入了任何内容，奇偶约束就照常执行。
+
+### 通栏与高级设计
+
+每个标题级别还接受两个字段，用于控制标题作为横跨整页的章首页时如何渲染。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '220px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>为<code>'page'</code>时，标题被视为章首，其高级设计（如果启用）作为正文上方的章首区段附加到页面上。请与<code>breakBefore.enabled: true</code>搭配使用，确保章首总是开新页。没有自己的设计时，标题由默认章首绘制，横跨整个内容区，使用该级别的字体和行距，并带有粗体、斜体和上下标片段（<code>headings.inlineMarks</code>），区段也按这个宽度测量。区段容纳章首绘制的每一行：章首占用的行数多于标题本身按栏宽测得的行数时（两端对齐的标题本可压缩空格排成一行，或有强制换行<code>{'\\\\'}</code>），区段也把这些行包括在内。postext 1.4及以前，区段按栏宽折行的标题来测量，所以在内容区一行就放得下的标题会占两行高的区段，那一行居中其中。其他各栏与标题所在栏一样从区段下方开始。在这些栏开头的正文，与紧接在章首下方的正文起点相同，不论章首所在栏接下来是什么内容：即章首标题或设计下方的<code>marginBottom</code>，该级别对齐网格时取到下一个网格行。在这些栏开头的标题、行间公式或目录行，与章首下方第一个标题或行间公式平齐，外边距也按那里的计算；章首所在栏接下来是其他内容时，它们与那段文字的起点平齐。章首下方的隐藏标题不计入，<a href="#各栏齐底">各栏齐底</a>在章首下方标题上方加的空间也不会在其他栏中重复。这些栏中对齐网格的内容落在页面的网格上。postext 1.4及以前，它们的第一个块紧贴区段底部：区段在两行之间结束时偏离网格；章首后面跟着标题时，则紧挨区段、没有外边距（区段结束在网格上时比现在高一行），那里的标题还丢掉了第一栏的标题所保留的上外边距。</td>
+    </tr>
+    <tr>
+      <td><code>spanBreak</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>span: 'page'</code>标题是否另起一页。<code>true</code>另起下一页（左右页由<code>breakBefore</code>决定）。<code>false</code>且<code>breakBefore.enabled: false</code>时，标题在正文排到之处展开，如同跨页框：上方各栏齐平收束（启用<code>headings.balancing.trailing</code>时对该区段做平衡），标题的设计或默认章首区段在其下方按版心全宽排出，正文在下方各栏继续：例如简报中的第二篇文章紧接在第一篇结尾之下。若剩余空间放不下标题及其下方的寡行最少行数，则与<code>true</code>一样另起下一页。页面角色仍由其第一个块决定。对<code>span: 'column'</code>标题无效。标题样式中也可设置。postext 1.19 起。</td>
+    </tr>
+    <tr>
+      <td><code>advancedDesign</code></td>
+      <td><code>HeadingAdvancedDesignConfig</code></td>
+      <td><code>{'{ enabled: false, slot: { elements: [] } }'}</code></td>
+      <td>该级别的自由组合设计槽位。<code>enabled</code>时，由槽位中的元素组成章首。在文本元素中用<code>{'{titleText}'}</code>输出标题文字；用<code>{'{number}'}</code>、<code>{'{numberRoman}'}</code>等插入格式化后的标题编号。</td>
+    </tr>
+    <tr>
+      <td><code>advancedDesign.minHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>—</td>
+      <td>在栏内文字流中为标题保留的最小高度。标题占用<code>max(design content bottom, minHeight)</code>，其下再加标题的<code>marginBottom</code>（取自其标题样式、其级别或<code>headings.marginBottom</code>；默认为标题字号的0.5 em），标题对齐网格时，总和向上取整到基线网格。因此，即使章首的元素很矮，或锚定在标题上方的页面或出血框上，章首也能把正文往下推（或占满整页）。要让区段正好高<code>minHeight</code>，把那个<code>marginBottom</code>设为0，并让<code>minHeight</code>为整数个网格行。只要<code>enabled</code>为true就生效，槽位为空也一样。设计内容底部如何计算，见<a href="#保留高度">保留高度</a>。</td>
+    </tr>
+  </tbody>
+</table>
+
+**与页面一样高的章首。** 当保留高度超出栏底时（如`minHeight`等于页高的封面，或锚定在页面或出血框、一直延伸到裁切边的图片或框），章首占据本页余下部分：其后的文字从下一页开始，双栏和一栏半版式的每一栏都一样。所以封面之后不需要`:::pagebreak`（加了也无妨，不会多出空白页）。设计高于所在栏的栏内标题（`span: 'column'`）占据该栏，文字从下一栏栏首开始。标题的块随后一直延伸到它所占栏的栏底，设计按这个区段排布：锚定在顶部的元素留在锚定处，跟随区段的元素（锚定在区段中部或底部，或高度为`'fill'`）限制在标题占据的空间内，就像保留高度放得下时它们限制在保留高度内一样（postext 1.4及以前，块保持其文字的高度，所以这些元素是按只有一个标题高的区段排布的，其后的文字会接在设计下面继续排）。不应占据整页的版面装饰（贯穿整页的切口色条、页脚处的装饰）应放到页眉或页脚设计中：锚定到`'page'`或`'bleed'`，并以`pages: 'opener'`显示，它就只绘制在章首页上，不占用正文空间。
+
+示例：一个简约的章首，在标题上方显示“Chapter N”：
+
+```json
+{
+  "headings": {
+    "levels": [
+      {
+        "level": 1,
+        "span": "page",
+        "breakBefore": { "enabled": true, "parity": "always-odd" },
+        "advancedDesign": {
+          "enabled": true,
+          "slot": {
+            "elements": [
+              {
+                "kind": "text",
+                "id": "chapterLabel",
+                "placement": {
+                  "anchor": { "to": "container", "edge": "top" },
+                  "offset": { "y": { "value": 48, "unit": "pt" } },
+                  "size": { "width": "fill" }
+                },
+                "content": "Chapter {numberRoman}",
+                "fontSize": { "value": 10, "unit": "pt" },
+                "align": "center",
+                "overflow": "ellipsis-end"
+              },
+              {
+                "kind": "text",
+                "id": "chapterTitle",
+                "placement": {
+                  "anchor": { "to": "#chapterLabel", "edge": "below" },
+                  "offset": { "y": { "value": 12, "unit": "pt" } },
+                  "size": { "width": "fill" }
+                },
+                "content": "{titleText}",
+                "fontSize": { "value": 24, "unit": "pt" },
+                "fontWeight": 700,
+                "align": "center",
+                "overflow": "wrap",
+                "hyphenate": true
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+级别设计槽位中可用的标题占位符：
+
+- `{titleText}`：标题的纯文本（不含编号前缀）。标题中的强制换行（`\\`）在这里是换行，章首区段和栏内设计都一样（postext 1.4及以前，栏内设计在那里输出一个空格，而高度却是按换行测量的）。隐藏标题在栏内折成的各行会按原写法重新连成标题：在自身连字符后断开的词保留连字符，后面不加空格；被栏宽断开的词重新连成整词，去掉断行时加上的连字符；由不换行空格连在一起、比栏还宽而在该空格处断开的词组，恢复其不换行空格（`Capítulo XVIII`，而不是`CapítuloXVIII`）；其他每个断行处都还原为一个空格。postext 1.4及以前，每个换行都变成空格，所以在连字符处折行的标题会输出`Word- Book`，这类标题中的强制换行也会被丢掉。
+- `{number}`：按该级别`numberingTemplate`格式化的编号。
+- `{numberDecimal}`、`{numberRoman}`、`{numberRomanLower}`、`{numberAlpha}`、`{numberAlphaLower}`：以其他数字格式表示的标题计数（该级别的当前计数，不管模板输出什么）：第三章给出`3`、`III`、`iii`、`C`、`c`，有没有`numberingTemplate`都一样。不编号的标题（样式设为`numbered: false`）让它们为空。
+- `{numberWords}`、`{numberWordsLower}`、`{numberOrdinalWords}`、`{numberOrdinalWordsLower}`：用文字拼写的同一计数，首字母大写或全小写：*Three* / *three*、*Third* / *third*（见[以文字书写的编号](#以文字书写的编号)）。
+- `{numberHan}`：用中文数字书写的同一计数，字形按文档`locale`的书写系统：用`第{numberHan}回`设置的章首，在第十二章输出第十二回，而目录列出的是`12`。
+- `{chapterNumber}`、`{chapterTitle}`、`{pageNumber}`、`{totalPages}`、`{bookTotalPages}`、`{title}`、`{subtitle}`、`{author}`、`{publishDate}`：通用的元数据占位符。
+- `{attr.<key>}`：写在标题行上的属性（`# Title {author="I. Zango Martín"}`），缺省时取当前章H1的同名属性。缺少的属性解析为空字符串，不给出警告。
+
+`{chapterNumber}`输出的是书眉为该章输出的内容：H1的级别（或样式）有`numberingTemplate`时输出H1的编号，否则输出章的序号（`1`、`2`……接着本章之前已排的各章继续计数）；不编号的章或模板为`''`的样式则什么也不输出。标题设计读取其标题所属的章：一级标题读取自己，更低级别的标题读取它之前的最后一个一级标题。两章在同一页相遇时也是如此，而该页的书眉输出的是后一章。章首保留的高度也按同一个值测量。postext 1.4及以前，高度按标题的编号前缀测量（没有模板时为空），所以高度取决于`{chapterNumber}`的设计可能绘制得比所占空间更高；而且设计输出的是该页的章，所以共用一页的两章中，前一章显示的是后一章的编号。
+
+计数占位符在逐章排版时跟随全书（即`continuationAfter()`传递下去的计数），标题的`startAt`属性会让它们重新开始（见**文档格式 → 标题属性**）。一个章首显示*Chapter III*，而文字流和目录中的标题编号为`3.`：
+
+```ts
+{
+  level: 1,
+  span: 'page',
+  numberingTemplate: '{1}.',
+  advancedDesign: {
+    enabled: true,
+    slot: { elements: [
+      { kind: 'text', id: 'label', content: 'Chapter {numberRoman}', fontSize: { value: 10, unit: 'pt' }, overflow: 'ellipsis-end',
+        placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: 'fill', height: 'auto' } } },
+      { kind: 'text', id: 'title', content: '{titleText}', fontSize: { value: 24, unit: 'pt' }, overflow: 'wrap',
+        placement: { anchor: { to: '#label', edge: 'below' }, size: { width: 'fill', height: 'auto' } } },
+    ] },
+  },
+}
+```
+
+#### 保留高度
+
+带高级设计的标题像其他块一样在栏内占用空间：其后的正文从这段空间下方开始。这段空间取以下三个高度中最大的一个，都从标题顶部往下量（对于开新页的章首，从内容区顶部往下量）：
+
+1. 标题本身的文字，按该级别的字体排版（它被设计遮住，但仍保留自己的行）；
+2. 设计内容底部，即计入的元素（见下文）中最低的下边缘；
+3. `advancedDesign.minHeight`。
+
+其后加上标题的`marginBottom`（取自其标题样式、其级别或`headings.marginBottom`；默认0.5 em），标题对齐网格时，结果向上对齐到基线网格。对于章首（`span: 'page'`），页面每一栏都空出同样的区段。对于放得进所在栏的栏内标题，设计在标题的框内排布，框正好这么高。
+
+**哪些元素计入。** 设计中的每个元素都计入，文字、线条、框和图片都一样（postext 1.4及以前，`image`元素从不计入，所以除非用`minHeight`挡住，文字可能从区段图片上面开始），以下情况除外：
+
+- **设有`reserve: false`的元素**：可以位于文字下方的装饰；
+- **跟随区段本身的元素**：锚定在容器中间一排（`left`、`center`、`right`）或底部一排（`bottom-left`、`bottom`、`bottom-right`）、高度为相对容器的`'fill'`的元素（没有设高度的框或竖线默认填满），以及锚定在这些元素上的任何元素。容器就是保留的区段，所以这些元素落在区段底部或纵贯区段：区段下方的一条线、标题后面的一块色底。它们跟随高度，从不决定高度。其中保持自身高度的文字仍需要空间：锚定在区段底部的标题会使区段至少与标题一样高，所以标题绝不会从标题块顶部之上开始。设`minHeight: 36mm`且标题锚定在`bottom-left`时，标题的框为36 mm加上其`marginBottom`，再向上对齐网格，标题位于该框底部，紧挨在后续文字上方；没有`minHeight`时，行数多于标题本身文字的标题会使区段与标题一样深。postext 1.4及以前，这样的标题会向上画到标题块上方的文字上。跟随区段的框、线条和图片不设这样的下限，所以锚定在底部的色底可以伸到标题上方。
+
+锚定在页面和出血框上的元素，按它们伸到标题顶部以下多远来计入。横贯页面顶部、在标题上方就结束的色带不计入；越过标题的满版出血图片会把文字推到其下边缘之下。页面偏下的任何东西也是如此：距页脚25 mm的印章、整页高的侧边色带或边框，会把页面一直保留到其下边缘，文字通常就从下一页开始。把这类装饰标记为`reserve: false`（它仍会绘制，其他元素仍可锚定在它上面），再用文本元素或`minHeight`给标题留出所需的空间：
+
+```json
+{
+  "kind": "image", "id": "seal", "resourceId": "seal", "reserve": false,
+  "placement": {
+    "anchor": { "to": "page", "edge": "bottom-right" },
+    "offset": { "x": { "value": -25, "unit": "mm" }, "y": { "value": -25, "unit": "mm" } },
+    "size": { "width": { "value": 30, "unit": "mm" } }
+  }
+}
+```
+
+锚定在不保留空间的元素上的元素，除非也做了标记，仍会计入（放在印章上的说明文字需要自己的`reserve: false`）。
+
+**绘制位置。** 章首的设计（`span: 'page'`）在正文之前绘制，所以不保留空间的装饰位于文字下层。栏内标题的设计与标题块一起绘制，压在栏内它上方的块之上、它之后的块之下，只要位于所在栏栏底以上，放在哪里都可以：两侧页边距、上页边距、出血区和相邻各栏都行。在Canvas和PDF中，栏底会把它裁掉，因为文字流在那里结束（见下文**高于所在栏**）。postext 1.4及以前，Canvas和PDF还会在栏顶裁切它，所以锚定在页面顶部或出血框顶部的色带能伸进两侧页边距，却在上页边距处截止。锚定在页面底部的装饰应放在章首中，或放在以`pages: 'opener'`显示的页脚设计中。
+
+**高于所在栏。** 当所需空间超出栏底时（与页面一样高的`minHeight`、一直延伸到裁切边的图片或边框），标题占据本页余下部分（章首，在每一栏）或本栏余下部分（栏内标题），其后的文字从下一页或下一栏开始。标题的块随后延伸到栏底，绝不会缩回到其文字的高度，所以设计所依据的区段就是它占据的空间（包括`minHeight`，直到栏底）。比页面本身还高的设计（小屏页面上很长的导语）仍会在页面底部被裁掉（栏内设计则在其所在栏的栏底）：沙盒会在**检查**面板中列出它，标为*Heading design cut off*。排版本身不对此发出警告，因为占满整页的封面是常见情况，并不丢失任何内容；但任何宿主都可以对排好的版面做同样的检查：`collectHeadingDesignCuts(doc)`为每个设计文字超出页面裁切边底部（`where: 'page'`，章首）或所在栏栏底（`where: 'column'`）的标题返回一个`{ kind: 'headingDesignCut', pageIndex, level, where, overflowPx, sourceStart, sourceEnd }`，`formatWarning`可以描述每一项。另见[通栏与高级设计](#通栏与高级设计)下的**与页面一样高的章首**。
+
+**侧栏。** 在侧栏放置浮动体的一栏半版式中（`sideColumnRole: 'floats'`），栏内标题的设计中位于侧栏里的元素（如教科书章首中锚定在页面外侧边栏里的章号数字）会让侧栏的浮动体堆叠避开它。该页在标题之后放置的每个`span: 'side'`图、表或框，都与每个这样的元素保持一个浮动体间距：放得进元素上方时就留在堆叠所放的位置，否则放到元素下方；侧栏余下部分放不下时，则等到下一页。所以，位于侧栏顶端的章号数字会让整个堆叠都在它下方；而挂在页面偏下的标题旁边、页边距中的节号，则把侧栏顶端留给该页引用的图（边栏图仍位于其所在页的顶部）。标题放置时侧栏中已有的内容不会被移动：本页较早堆叠、向下伸到标题元素处的图留在原处，位于该元素下面，所以元素在页中间位于侧栏的设计，最好在标题之后才引用它的图。设有`reserve: false`的元素不占用侧栏，就像它们不占用文字空间一样。章首（`span: 'page'`）不需要这种处理：它的区段在每一栏都保留，侧栏也包括在内。postext 1.4及以前，在这种章首上引用的侧栏图会放在侧栏顶端，压在章号数字上。
+
+**封面。** 占满整页的封面标题（`minHeight`与页面一样高，或设计中有整页图片）因此会自行把其后的文字送到下一页，单栏和多栏版式都一样。紧接其后的`:::pagebreak`可有可无：在仍为空的页面上分页不起作用，所以绝不会多出空白页。只有当封面设计没有延伸到页面底部、而文字仍应从新页开始时，才需要它。
+
+```md
+# Annual report 2026 {style="cover"}
+
+:::pagebreak
+
+# Letter from the chair
+```
+
+### 以文字书写的编号
+
+有两个编号模板后缀用文字书写计数，语言为文档语言（顶层的`locale`，否则用断词语言，见[文档语言](#文档语言)）：`words`表示基数，`ordinal`表示序数。后缀的大小写决定文字的大小写，就像字母编号的`A` / `a`一样：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>标记</th>
+      <th>英文（21）</th>
+      <th>西班牙文（21）</th>
+      <th>中文（21）</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>{'{1:words}'}</code></td><td>twenty-one</td><td>veintiuno</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:Words}'}</code></td><td>Twenty-one</td><td>Veintiuno</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:WORDS}'}</code></td><td>TWENTY-ONE</td><td>VEINTIUNO</td><td>二十一</td></tr>
+    <tr><td><code>{'{1:ordinal}'}</code></td><td>twenty-first</td><td>vigesimoprimero</td><td>第二十一</td></tr>
+    <tr><td><code>{'{1:Ordinal}'}</code></td><td>Twenty-first</td><td>Vigesimoprimero</td><td>第二十一</td></tr>
+    <tr><td><code>{'{1:ORDINAL}'}</code></td><td>TWENTY-FIRST</td><td>VIGESIMOPRIMERO</td><td>第二十一</td></tr>
+  </tbody>
+</table>
+
+英文、西班牙文、中文和阿拉伯文会用文字书写；其他语言采用英文词，与内置的表格续表字符串相同。中文按`locale`的书写系统采用`simp-chinese-informal`或`trad-chinese-informal`的小写数字（一万 / 一萬），序数前加“第”；汉字没有大小写，所以同一后缀的三种写法输出相同。英文遵循美式用法（*one hundred five*，不加*and*）。西班牙文用阳性形式，与*capítulo*或*libro*的编号方式一致（*capítulo primero*、*tercero*、*veintiuno*），13到29的序数按RAE推荐的写法连写为一个词（*decimotercero*、*vigesimoprimero*）。基数最多拼写到999 999，西班牙文序数最多到999；更大的数字以阿拉伯数字输出。
+
+阿拉伯文数词与所计名词的性一致，因此后缀可加修饰：阴性名词用`-feminine`（或`-f`），阳性名词用`-masculine`（`-m`，默认）；`-classical`把百写作مائة（布拉格版和多数埃及版的写法），而不是现代的مئة。`{1:ordinal}`输出标题所用的带冠词主格序数词：`الفصل {1:ordinal}`输出*الفصل الأول*、*الفصل الحادي عشر*、*الفصل الحادي والعشرون*；`الليلة {1:ordinal-feminine}`输出*الليلة الأولى*、*الليلة الحادية عشرة*、*الليلة الحادية والعشرون*、*الليلة المئتان*，超过一百时采用古典的“在……之后”格式：*الليلة الخامسة والأربعون بعد الثلاثمئة*、*الليلة الحادية بعد الألف*。`{1:words}`输出基数词（واحد وعشرون；阴性为إحدى عشرة、واحدة وعشرون）。序数词拼写到9 999，基数词到99 999；修饰可以组合（`{1:ordinal-f-classical}`），其他语言忽略修饰。阿拉伯文没有大小写，因此后缀的大小写不起作用。设计占位符`{numberWords}`和`{numberOrdinalWords}`输出阳性形式；阴性的章首请把序数词放在该级的模板中，再用`{number}`输出。
+
+在标题设计中，`{numberWords}` / `{numberWordsLower}`和`{numberOrdinalWords}` / `{numberOrdinalWordsLower}`以同样方式拼写标题的计数，所以章首可以写*Chapter One*，而目录列出`1`。文本元素的`textTransform: 'uppercase'`可给出大写：
+
+```ts
+// 西班牙文小说：标题上方为“CAPÍTULO PRIMERO”，目录中为“1.”。
+{ level: 1, numberingTemplate: '{1}.', span: 'page',
+  advancedDesign: { enabled: true, slot: { elements: [
+    { kind: 'text', id: 'n', content: 'Capítulo {numberOrdinalWordsLower}', textTransform: 'uppercase', /* … */ },
+    { kind: 'text', id: 't', content: '{titleText}', /* … */ },
+  ] } } }
+```
+
+
+## 无序列表
+
+`unorderedLists`属性控制项目符号列表（`-`、`*`、`+`）和GFM任务列表（`- [ ]`、`- [x]`）的渲染方式。最多支持五层嵌套。
+
+### 无序列表默认值
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>沿用<code>bodyText.fontFamily</code></td>
+      <td>列表项文字所用的字体。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>主色（<code>#295AA3</code>）</td>
+      <td>列表项文字和项目符号的颜色。绑定到默认调色板的<code>main-color</code>条目。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>列表项文字的字重（100–900）。项目符号沿用这一字重，除非在某一层单独覆盖。</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>用斜体排列表项文字。</td>
+    </tr>
+    <tr>
+      <td><code>bulletChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'•'</code></td>
+      <td>用作项目符号的字形。</td>
+    </tr>
+    <tr>
+      <td><code>bulletFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1 em</code></td>
+      <td>项目符号字形的大小。相对单位随正文字号缩放。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>项目符号与列表项文字之间的水平间距。</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>第1层的基础缩进。更深的层级从上一层文字的起点开始级联，除非单独覆盖（见下文）。</td>
+    </tr>
+    <tr>
+      <td><code>bulletVerticalOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>微调项目符号的垂直位置。负值把符号上移，正值下移。</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>整个列表前后的间距。</td>
+    </tr>
+    <tr>
+      <td><code>itemSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>在行距之外、插在列表项之间的额外垂直间距。一个列表嵌套在另一个列表的某一项中时，嵌套列表两侧都用外层列表的间距：嵌套列表第一项之前和最后一项之后（postext 1.4及以前，嵌套列表之后的那一项用的是嵌套列表的间距）。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>把列表上方的间距向上取整，使第一个项目符号落在基线网格上，和标题下的正文一样；此时<code>marginTop</code>是最小值。无论是否开启，列表结束时版面流都会重新回到网格上，所以<code>itemSpacing</code>为0时，每一项都与旁边一栏的文字对齐。默认关闭，与postext 1.4及以前一致：<code>marginTop</code>不是整数行时，列表项会偏离网格，直到列表结束。标注框内部不在网格上，框内的列表不受影响。</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>开启时，折行与第一个文字字符对齐，而不是排到项目符号下面。</td>
+    </tr>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>UnorderedListLevelConfig[]</code></td>
+      <td>—</td>
+      <td>第1–5层的逐层覆盖。见下文。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 任务列表扩展
+
+GFM任务项（`- [ ] …`、`- [x] …`）按无序列表项渲染，用复选框字形代替项目符号。以下字段只作用于任务项：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>属性</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '180px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>taskCheckboxChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'☐'</code></td>
+      <td>未完成任务所用的字形。</td>
+    </tr>
+    <tr>
+      <td><code>taskCheckedChar</code></td>
+      <td><code>string</code></td>
+      <td><code>'☑'</code></td>
+      <td>已完成任务所用的字形。</td>
+    </tr>
+    <tr>
+      <td><code>taskCompletedStrikethrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>在已完成任务的文字上画删除线。</td>
+    </tr>
+    <tr>
+      <td><code>taskCompletedColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>沿用列表项颜色</td>
+      <td>可选，用于已完成任务文字的颜色。省略时使用普通列表项的颜色。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 无序列表的逐层覆盖
+
+`levels`中的每一项针对一个层级（1–5），可以覆盖以下任意字段：
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '200px' }}>类型</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>bulletChar</code></td><td><code>string</code></td><td>该层的项目符号字形。</td></tr>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td>该层列表项的字体。</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td>该层项目符号字形的大小。</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>列表项颜色。</td></tr>
+    <tr><td><code>fontWeight</code></td><td><code>number</code></td><td>列表项字重。</td></tr>
+    <tr><td><code>italic</code></td><td><code>boolean</code></td><td>斜体开关。</td></tr>
+    <tr><td><code>indent</code></td><td><code>Dimension</code></td><td>该层项目符号的显式缩进。见下文的级联规则。</td></tr>
+    <tr><td><code>verticalOffset</code></td><td><code>Dimension</code></td><td>该层项目符号的垂直微调。</td></tr>
+  </tbody>
+</table>
+
+**缩进级联**。第1层总是从通用的`indent`值开始（默认`0 em`，项目符号贴住栏的边缘）。对第2–5层，如果不设`indent`，引擎把项目符号放在*上一层*文字的起点（上一层缩进 + 项目符号宽度 + `gap`）。在某一层显式设置`indent`，就会打断级联，把这一层固定在你想要的任何位置。
+
+```ts
+unorderedLists: {
+  bulletChar: '—',
+  gap: { value: 0.4, unit: 'em' },
+  hangingIndent: true,
+  levels: [
+    { level: 2, bulletChar: '·' },
+    { level: 3, bulletChar: '◦', color: { hex: '#666666', model: 'hex' } },
+  ],
+}
+```
+
+
+## 有序列表
+
+`orderedLists`属性控制编号列表（`1.`、`2)`等）。最多支持五层嵌套，每一层可以使用不同的编号格式。
+
+### 有序列表默认值
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>属性</th>
+      <th style={{ width: '220px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>沿用<code>bodyText.fontFamily</code></td>
+      <td>列表项文字和编号所用的字体。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>主色（<code>#295AA3</code>）</td>
+      <td>列表项文字和编号的颜色。绑定到默认调色板的<code>main-color</code>条目。</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>700</code></td>
+      <td>列表项文字和编号的字重（100–900）。</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>用斜体排列表项文字。</td>
+    </tr>
+    <tr>
+      <td><code>numberFormat</code></td>
+      <td><code>OrderedListNumberFormat</code></td>
+      <td><code>'arabic'</code></td>
+      <td>编号样式：<code>'arabic'</code>、<code>'lower-alpha'</code>、<code>'upper-alpha'</code>、<code>'lower-roman'</code>、<code>'upper-roman'</code>。其他设置里的写法也能用（<code>'decimal'</code>、<code>'roman-lower'</code>、<code>'i'</code>……；见<a href="/zh/docs/configuration-page-layout#编号格式的写法">编号格式的写法</a>）；无法识别的值按阿拉伯数字编号，并报告出来。</td>
+    </tr>
+    <tr>
+      <td><code>prefix</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>排在编号前面的文字，样式与分隔符相同：这里设<code>'（'</code>、分隔符设<code>'）'</code>，中文列表就排成（一）、（二）。分隔符单独绘制时，前缀也单独绘制，紧挨在编号之前。</td>
+    </tr>
+    <tr>
+      <td><code>separator</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>放在编号和文字之间的字符，通常是<code>'.'</code>或<code>')'</code>。</td>
+    </tr>
+    <tr>
+      <td><code>separatorFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>沿用<code>fontFamily</code></td>
+      <td>分隔符的字体。分隔符的任一样式与编号不同时，分隔符单独绘制在（右对齐的）编号之后，例如黑色Optima Bold的<code>1</code>后面跟一个蓝色DIN Pro Bold的<code>•</code>。</td>
+    </tr>
+    <tr>
+      <td><code>separatorFontWeight</code></td>
+      <td><code>number</code></td>
+      <td>沿用<code>fontWeight</code></td>
+      <td>分隔符的字重（100–900）。</td>
+    </tr>
+    <tr>
+      <td><code>separatorItalic</code></td>
+      <td><code>boolean</code></td>
+      <td>沿用<code>italic</code></td>
+      <td>用斜体排分隔符。</td>
+    </tr>
+    <tr>
+      <td><code>separatorColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>沿用<code>color</code></td>
+      <td>分隔符的颜色。支持调色板引用。</td>
+    </tr>
+    <tr>
+      <td><code>separatorGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>编号与分隔符之间的间距。列表项文字仍在分隔符之后隔<code>gap</code>开始。</td>
+    </tr>
+    <tr>
+      <td><code>numberFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1 em</code></td>
+      <td>编号的大小。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5 em</code></td>
+      <td>编号与列表项文字之间的水平间距。</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>第1层的基础缩进；更深的层级从上一层文字的起点开始级联，除非单独覆盖。</td>
+    </tr>
+    <tr>
+      <td><code>numberVerticalOffset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>微调编号的垂直位置。</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5 em</code></td>
+      <td>整个列表前后的间距。</td>
+    </tr>
+    <tr>
+      <td><code>itemSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0 em</code></td>
+      <td>列表项之间的额外垂直间距。一个列表嵌套在另一个列表的某一项中时，嵌套列表两侧都用外层列表的间距：嵌套列表第一项之前和最后一项之后（postext 1.4及以前，嵌套列表之后的那一项用的是嵌套列表的间距）。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>把列表上方的间距向上取整，使第一个编号落在基线网格上，和标题下的正文一样；此时<code>marginTop</code>是最小值。无论是否开启，列表结束时版面流都会重新回到网格上，所以<code>itemSpacing</code>为0时，每一项都与旁边一栏的文字对齐。默认关闭，与postext 1.4及以前一致：<code>marginTop</code>不是整数行时，列表项会偏离网格，直到列表结束。标注框内部不在网格上，框内的列表不受影响。</td>
+    </tr>
+    <tr>
+      <td><code>numberWidth</code></td>
+      <td><code>'run' | 'level'</code></td>
+      <td><code>'run'</code></td>
+      <td>列表项编号栏的宽度，它决定文字从哪里开始；编号在这一栏里右对齐。<code>'run'</code>：取该项所在连续段中最宽的编号。连续段指同一层级的若干项，它们之间只隔着更深层级的项。两项之间出现图、段落或框，就开始一个新的连续段，所以表后面的<code>ii)</code>的文字可能比表前面的<code>i)</code>稍微靠右，九项的列表的文字也比十二项的列表靠左。<code>'level'</code>：取整个文档（在书中是整章）里该层级最宽的编号，这样每个列表，以及被打断的列表的每一部分，文字都从同一位置开始，与更深层级的缩进已有的做法一致。</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>折行与第一个文字字符对齐，而不是排到编号下面。</td>
+    </tr>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>OrderedListLevelConfig[]</code></td>
+      <td>—</td>
+      <td>第1–5层的逐层覆盖。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 有序列表的逐层覆盖
+
+`levels`中的每一项可以覆盖`numberFormat`、`prefix`、`separator`、`fontFamily`、`fontSize`、`color`、`fontWeight`、`italic`、`indent`、`verticalOffset`以及分隔符样式（`separatorFontFamily`、`separatorFontWeight`、`separatorItalic`、`separatorColor`、`separatorGap`），缩进级联规则与无序列表相同。某一层的分隔符样式沿用该层自己的编号样式，除非给出了整个列表的分隔符设置。
+
+**右对齐**。排版流程会测量一个连续段中格式化后最宽的编号，并据此缩进该段的所有列表项，使编号的右边缘对齐。十项的列表渲染为`1.`–`10.`时，一位数编号的右侧会补齐，使分隔符保持在同一列。
+
+```ts
+orderedLists: {
+  numberFormat: 'arabic',
+  separator: '.',
+  levels: [
+    { level: 2, numberFormat: 'lower-alpha' },
+    { level: 3, numberFormat: 'lower-roman', separator: ')' },
+  ],
+}
+```
+
+得到的是经典的混合嵌套：
+
+```
+1. First item
+   a. Sub-item
+      i) Deep note
+   b. Sub-item
+2. Second item
+```
+
+中文公文的层次序数（GB/T 15834—2011，附录B.3）共五层，依次为“一、”“（一）”“1.”“（1）”“①”：
+
+```ts
+orderedLists: {
+  levels: [
+    { level: 1, numberFormat: 'simp-chinese-informal', separator: '、' },
+    { level: 2, numberFormat: 'simp-chinese-informal', prefix: '（', separator: '）' },
+    { level: 3, numberFormat: 'arabic', separator: '.' },
+    { level: 4, numberFormat: 'arabic', prefix: '（', separator: '）' },
+    { level: 5, numberFormat: 'circled-decimal', separator: '' },
+  ],
+}
+```
+
+
+## 数学公式
+
+`math`属性控制如何解析和渲染写在`$...$`（行内）和`$$...$$`（独立）定界符之间的LaTeX公式。底层引擎是MathJax（`mathjax-full`包），以SVG模式输出，在Canvas上栅格化，在PDF中以可缩放的字形嵌入。
+
+```ts
+interface MathConfig {
+  enabled?: boolean;        // 渲染LaTeX。为false时，公式片段按原样输出TeX源码。
+  fontSizeScale?: number;   // × 周围文字的字号（独立公式以正文字号为准）。
+  color?: ColorValue;       // 公式颜色；省略时沿用正文颜色。
+  marginTop?: Dimension;    // 独立公式块上方的间距。
+  marginBottom?: Dimension; // 下方的最小间距；对齐基线网格时可能变大。
+  indentAfterDisplay?: boolean; // 独立公式之后的段落首行缩进。
+  keepWithLeadIn?: boolean; // 让独立公式与引出它的那一行在一起。
+  equationNumbering?: {      // 为带\label的独立公式编号。
+    enabled?: boolean;           // 默认true
+    numberingTemplate?: string;  // '{n}'；'{h1}.{n}'按章编号
+    resetOn?: ResourceCounterReset; // 'never' | 'h1' … 'h6'
+    counterFormat?: ResourceCounterFormat; // 'decimal'
+    format?: string;             // '({n})'：公式和\eqref印出的形式
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>属性</th>
+      <th style={{ width: '160px' }}>类型</th>
+      <th style={{ width: '160px' }}>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>为false时，`$...$`和`$$...$$`片段仍会解析（所以定界符未闭合的警告照样触发），但按TeX源码原样渲染。内容里本来就有美元符号，或者想完全关闭公式渲染时，这个选项很有用。</td>
+    </tr>
+    <tr>
+      <td><code>fontSizeScale</code></td>
+      <td><code>number</code></td>
+      <td><code>1.0</code></td>
+      <td>渲染前作用于周围文字字号的倍数：公式TeX字体的1 em等于该字号 × `fontSizeScale`。对独立公式和正文中的行内公式，该字号是`bodyText.fontSize`；对标题、段落样式、题注或标注框正文中的行内公式，是所在块的字号。1.0与周围文字一致；数学字体看上去比正文字体略大或略小时，常用0.9–1.1之间的值。**postext 1.5起有变化**：1.4及以前，公式比这个大小约大13%（见下文）。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>沿用正文颜色</td>
+      <td>渲染出的公式的颜色。省略则沿用`bodyText.color`。想让公式的颜色与正文不同时显式设置，例如与标题的强调色一致。</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>独立公式块上方的间距。对行内公式无效。</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>独立公式块下方的间距。这是**最小值**：对齐网格时可能把它加大，使下一条基线落在网格线上（无论<code>page.baselineGrid</code>是否画出网格）。</td>
+    </tr>
+    <tr>
+      <td><code>indentAfterDisplay</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>独立公式之后的段落像其他段落一样首行缩进。设为<code>false</code>时，紧跟在独立公式后面的每个段落都顶格排，作为被公式打断的那句话的延续（“其中<em>L</em>是……”）。写在段落内部的公式（上下都没有空行）后面总是顶格排：它的闭合<code>$$</code>下面的文字延续这个段落，从不缩进（见<a href="/zh/docs/document-format#数学公式">数学公式</a>）。</td>
+    </tr>
+    <tr>
+      <td><code>keepWithLeadIn</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>让独立公式与引出它的那一行留在同一栏，相当于TeX的predisplay penalty。公式在前一段最后一行下面排不下时，这一行和公式一起移到下一栏或下一页；如果留下的行少于<code>bodyText.widowMinLines</code>（<code>bodyText.avoidWidows</code>关闭时为少于一行），就把在该栏开始的段落整段移走（按<code>headings.keepWithNext</code>，连同该段上方收尾这一栏的标题）。带过去的那一行单独位于下一栏的栏顶，不论段末孤行（orphan）规则如何要求。设为<code>false</code>时只移走公式，引出它的那一行可能收尾上一栏，或者位于下一栏栏首的图的上方。</td>
+    </tr>
+    <tr>
+      <td><code>equationNumbering</code></td>
+      <td><code>&#123; enabled, numberingTemplate, resetOn, counterFormat, format &#125;</code></td>
+      <td><code>true</code>、<code>'&#123;n&#125;'</code>、<code>'never'</code>、<code>'decimal'</code>、<code>'(&#123;n&#125;)'</code></td>
+      <td>带<code>\label</code>的独立公式如何编号（见下文的<em>带编号的公式</em>）。<code>numberingTemplate</code>、<code>resetOn</code>和<code>counterFormat</code>与资源类型中的同名字段作用相同：<code>'&#123;h1&#125;.&#123;n&#125;'</code>配合<code>resetOn: 'h1'</code>按章编号为(2.1)、(2.2)……，<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code>配合<code>'h2'</code>按节编号。<code>format</code>是公式和<code>\eqref</code>印出编号的形式，其中<code>&#123;n&#125;</code>代表编号：<code>'[&#123;n&#125;]'</code>排出[3]。<code>enabled: false</code>时不为任何公式编号：<code>\label</code>被舍弃，对它的引用印出它所在的页码。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+math: {
+  enabled: true,
+  fontSizeScale: 1.0,
+  color: { hex: '#295AA3', model: 'hex' },
+  marginTop: { value: 1, unit: 'em' },
+  marginBottom: { value: 1, unit: 'em' },
+}
+```
+
+<strong>公式大小，postext 1.5起有变化。</strong>MathJax以`ex`给出公式的框，而它的TeX字体的1 `ex`等于0.442 em。postext 1.4及以前，引擎把它当作半个em，所以每个公式都比`bodyText.fontSize × fontSizeScale`大约13%。现在公式按文档说明的大小排出，含公式的行和页面会重新排版。为1.4用代码写的配置，可以把它原样传给`postext/bundle`中的`pinLegacyMathSize`一次，保留1.4的公式大小：
+
+```ts
+import { pinLegacyMathSize } from 'postext/bundle';
+
+config = pinLegacyMathSize(config); // 公式及独立公式周围的间距，按1.4的排法
+```
+
+1.5的其他规则变化也可能让页面移动：标题的断行、行内图周围的间距（正文中和框内）、标题的行内标记、首字下沉的大小、冒号行之下为它引出的列表保留的空间、框的切口在段落或列表项中留下的行数、破折号之后的断行、齐左文字的断行、标题下段落的拆分、复合词连字符之后的断行，以及`:::paragraphs`容器下方的间距。`migrateConfig`与配置所排的markdown一起运行一次，就会固定这段文字需要的那些规则，公式大小也包括在内（见[postext 1.4及以前写出的文件包](/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包)）：
+
+```ts
+import { migrateConfig } from 'postext/bundle';
+
+config = migrateConfig(config, undefined, { content: markdown }); // 标题断行、公式、行内间距、标题标记、首字下沉、冒号行、框的切口、破折号断行、复合词断行、齐左断行、标题下的拆分和容器间距，按1.4的排法
+```
+
+这样能挡住这些规则变化会造成的移动，但不能保住1.4的每一页。1.5还修正了排版错误，而修正没有固定开关：旧配置和新配置一样会得到修正，所以受影响的页面仍可能移动。其中包括：没有自己版面设计的通栏标题按整页宽度测量，并用所在层级的行距排；标题版面设计中，首字下沉的基线下面不再预留空间；首字下沉采用该部分的调色板颜色，即使设计文字的`overflow`不是`'wrap'`也会排出，此时文字折行；框内的段落按测量时的字距绘制；拆分的框在每个片段上都保留图标栏；框内某一行如果要把空格拉宽到3倍以上，就改为齐左，与正文一样；松散段落的调节手段不会让两端对齐的行宽于`maxWordSpacing`所允许的宽度；浮动的框保留比浮动体间距更大的`marginBottom`（在顶部区域）或`marginTop`（在底部区域）；带字距的居中或右对齐设计文字（书眉、章首页标题）按字母定位，不计最后一个字母之后的字距；在通栏章首页之下，第二栏开头的文字从紧接章首页下方的文字所在位置开始，章首页后面跟着标题时也是如此；在会把连续圆点的字偶间距拉开的字体中，目录的引导点也停在页码之前；书眉按标题的原文读取，标题某一行在连字符或破折号之后结束、或结束在因宽度而切开的单词内部时，不留空格（`MEDIOAMBIENTALES`，而不是`MEDIOAMBIENTALE S`），标题版面设计的`{titleText}`也同样读取（`thousand-colour`，而不是`thousand- colour`）；锚定在标题版面设计色带底部或中部的文字，会让色带保持足够的高度来容纳它，不再压到标题上方的文字上；比所在行更宽、在自带的连字符旁被切开的单词，从这个连字符之后切开，不再加第二个连字符；嵌套在另一列表中的列表之后的那一项，用它自己所在列表的`itemSpacing`，而不是嵌套列表的；因比所在行更宽而被切开的单词，其余部分保留自己的断点，所以网址继续在连接处断开，复合词继续在连字符处断开，而不是按词典的音节断开。
+
+`pinLegacyMathSize`把缩放比例乘以1.1312（0.5 ÷ 0.442），并把以`em`计的独立公式外边距除以同一系数。对含独立公式的书，只改缩放比例不够：它们的外边距是以公式自身大小计的长度，会同样增大13%，把下面的文字往下推。按默认外边距写出来，这三个值是：
+
+```ts
+math: {
+  fontSizeScale: 1.131,
+  marginTop: { value: 0.7072, unit: 'em' },
+  marginBottom: { value: 0.7072, unit: 'em' },
+} // 公式与1.4排出的一样大，周围留出1.4留的间距
+```
+
+对于已保存的配置，引擎能识别出来并替你完成这一步：`openBundle` / `readBundle`处理1.5之前写出的`.postext`文件包（见[postext 1.4及以前写出的文件包](/zh/docs/configuration-programmatic-usage#postext-14及更早版本写出的文件包)），沙盒处理当时保存的书、工作副本和`postext-config.json`文件（见**沙盒 → 持久化**）。它们都经过`migrateConfig`读取，由它固定公式大小（`pinLegacyMathSize`）：`fontSizeScale`变为保存的缩放比例（未设置时为1）× 1.1312，以`em`或`rem`计的独立公式外边距（以公式自身大小计的长度）除以同一系数，所以独立公式周围的间距保持1.4的样子（默认的0.8 em变为0.7072 em）。以页面单位（`pt`、`mm`……）计的外边距保持不变，`enabled: false`的配置或书中没有`$`的配置也保持不变。这样旧书就按1.4的方式排版，它的`math`部分显示实际使用的大小。要按现在的大小排这样的书，就把这些值重置：在沙盒中是**公式 → 缩放比例**、*独立公式上边距*和*独立公式下边距*，在代码中是：
+
+```ts
+math: { ...config.math, fontSizeScale: 1, marginTop: undefined, marginBottom: undefined } // 现在的大小和外边距
+```
+
+**带编号的公式**。带编号的独立公式占满它的行长（所在的栏，或所在标注框的内宽）：公式居中，编号右对齐排在公式所在的行上，`align`中每个带编号的行都是如此。编号来自`\label{eq:x}`（postext 1.19起）：带标签的公式，以及`align`、`gather`、`alignat`、`flalign`或`eqnarray`中带标签的行，按阅读顺序依`equationNumbering`编号，除非该行写了`\nonumber`或`\notag`。`equation`之类的环境本身不编号：没有标签的公式就没有编号。`\tag{…}`把你给的标签加上括号打印出来，`\tag*{…}`按原样打印；两者都不参与计数，与它并列的`\label`为它命名。比行长更宽的带编号公式向右溢出，与其他独立公式一样。（postext 1.4及以前，带`\tag`的公式根本不会绘制；1.18及以前，只有`\tag`能为公式编号。）
+
+正文中的`\eqref{eq:x}`按`format`印出编号(3)，`\ref{eq:x}`印出不带括号的编号；`:ref{id="eq:x"}`和`@eq:x`也是如此（见[交叉引用](/zh/docs/document-format#交叉引用与锚点)）。在公式内部，`\eqref`把编号作为文字印出。逐章排版的书中，计数器接着上一章继续：`continuationAfter`通过`LayoutContinuation.statementCounters`（`equation`）把它带过去，全书大纲为每个标签给出编号（`OutlineEntry.numberLabel`），所以对另一章中公式的引用也能印出编号。
+
+```ts
+math: {
+  equationNumbering: { numberingTemplate: '{h1}.{n}', resetOn: 'h1' }, // (1.1)、(1.2)……(2.1)
+}
+```
+
+解析函数和精简函数与其他部分一致：
+
+```ts
+import {
+  DEFAULT_MATH_CONFIG,
+  resolveMathConfig,
+  stripMathDefaults,
+} from 'postext';
+
+const resolved = resolveMathConfig(config.math);
+const minimal  = stripMathDefaults(config.math);
+```
+
+### 启动公式引擎
+
+MathJax按需加载，不随引擎的其他部分一起加载。在主线程上排版时，要在构建含公式的文档之前启动它：
+
+```ts
+import { buildDocument, initMathEngine, renderPage } from 'postext';
+
+await initMathEngine(); // 只加载一次MathJax；之后的调用立即完成
+const doc = buildDocument({ markdown: 'Euler: $e^{i\\pi}+1=0$.' }, config);
+document.body.append(renderPage(doc.pages[0], doc));
+```
+
+- <strong>引擎运行之前，公式是占位符。</strong>每个公式排成一个估计大小的灰色框。如果在从未调用`initMathEngine()`的情况下排版含公式的文档，控制台会显示一条警告说明这一点。
+- **排版工作线程会替你启动它。**`postext/worker`中的构建在markdown包含`$`时会自行调用`initMathEngine()`。
+- **先排版，就绪后再排一次。**`isMathReady()`告诉你引擎是否在运行。`onMathReady(fn)`在引擎就绪后调用`fn`一次（已经就绪则立即调用），并返回一个取消这次调用的函数。编辑器可以先显示占位符，等MathJax加载完再重新排版；`initMathEngine()`加载期间不会打印警告。
+- **失败**。MathJax无法加载时，`initMathEngine()`返回的Promise会被拒绝，之后再次调用会重试。
+- <strong>任何打包工具、Node或CDN。</strong>MathJax作为一个预先打包的模块随包发布（压缩前约1.8 MB，只由`initMathEngine`获取）。直接写`import { initMathEngine } from 'https://esm.sh/postext'`就能用，不需要`?bundle`。`mathjax-full`包只在构建postext时需要，所以安装postext不会安装它。MathJax及其打包的mhchem解析器采用Apache-2.0许可证：它们的声明和许可证文本随模块一起发布，位于`dist/math/THIRD_PARTY_LICENSES.txt`。
+- **一个页面一个引擎**。同一JavaScript realm中所有导入`postext`的代码共享引擎及其已渲染公式的缓存（见[同一页面共享的全局状态](/zh/docs/configuration-programmatic-usage#同一页面中共享的全局状态)）。
+
+文档一侧的语法（`$...$`、`$$...$$`、转义美元符号本身）见[文档格式](/zh/docs/document-format#数学公式)。

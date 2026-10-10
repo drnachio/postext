@@ -1,0 +1,377 @@
+{/* docs/configuration-east-asian-es.mdx */}
+
+export const metadata = {
+  title: 'Configuración: tipografía de Asia oriental',
+  sidebarTitle: 'Tipografía de Asia oriental',
+  description: 'Los ajustes de cjk: corte de línea, anchura de la puntuación, espaciado, la cuadrícula de caracteres, el ruby y las marcas del texto chino, japonés y coreano',
+  lang: 'es',
+  lastUpdated: '2026-10-10',
+  readingTime: '2 min',
+  order: 7,
+  parent: 'configuration',
+  plainSummary: "Esta página reúne los ajustes del texto chino, japonés y coreano. Deciden dónde puede cortarse una línea y cuánto ocupan los signos de puntuación. Fijan el espacio entre estos caracteres y las letras latinas o los números. También controlan las pequeñas guías de lectura que se imprimen junto a los caracteres y las marcas que acompañan a nombres y títulos. Las guías de composición china y de composición japonesa muestran estos ajustes en uso.",
+};
+
+# Configuración: tipografía de Asia oriental
+
+
+## Tipografía de Asia oriental
+
+La propiedad `cjk` fija cómo se compone el texto en chino, japonés y coreano: qué convenciones regionales sigue, dónde pueden cortarse sus líneas, qué ancho ocupa su puntuación y si cuelga, el espacio entre chino y latín, la retícula de caracteres de la caja de texto, y cómo se imprimen las marcas de énfasis, las líneas laterales, las lecturas ruby, las notas warichu y las marcas de kanbun del texto. Todos los campos son opcionales, y `'auto'` sigue la región del idioma del documento (`locale`), de modo que un libro con `locale: 'zh-Hant'` corta sus líneas y compone su puntuación a la manera de Taiwán, y uno con `locale: 'ja'` a la japonesa, sin fijar nada más. [Composición china](/es/docs/chinese-layout) y [Composición japonesa](/es/docs/japanese-layout) explican las reglas que hay detrás de estos ajustes, con dos configuraciones completas cada una. Los campos y valores japoneses existen desde postext 1.16.
+
+```ts
+interface CjkConfig {
+  region?: 'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'; // Convenciones regionales.
+  lineBreak?: 'auto' | 'none' | 'basic' | 'gb' | 'strict'
+    | 'ja-very-strict' | 'ja-strict' | 'ja-loose';      // Qué signos no pueden abrir ni cerrar una línea.
+  punctuationWidth?: 'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth';
+  compressAdjacent?: 'auto' | boolean;      // Dos signos seguidos ocupan 1,5 cuadratines.
+  trimLineStart?: 'auto' | boolean;         // Los paréntesis en el borde de una línea pierden su mitad exterior.
+  hangingPunctuation?: 'auto' | 'none' | 'allow' | 'force';
+  spaceAfterQuestion?: 'auto' | boolean;    // Un cuadratín tras ？！ dentro de un párrafo (Japón).
+  paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // Un paréntesis que abre un párrafo sangrado.
+  wordBreak?: 'normal' | 'keep-all';        // keep-all: cortar solo en los espacios (分かち書き, coreano).
+  titleMinChars?: number;                   // Caracteres de un título de obra a cada lado de un corte; por defecto 2.
+  circledNumbers?: 'cjk' | 'western';       // ① ② como caracteres chinos (por defecto) o como letras latinas.
+  composeDesignText?: boolean;              // Reglas CJK en el texto de diseño; por defecto true.
+  latinSpacing?: Dimension;                 // Entre chino y latín; por defecto 0,25 em.
+  uprightDigits?: 0 | 2 | 3 | 4;            // Texto vertical: números en una casilla; por defecto 2.
+  grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
+  emphasis?: 'auto' | 'italic' | 'dots';    // Qué hace *…* con los caracteres CJK.
+  emphasisMark?: {                          // La marca que dibujan *…* y :dots[…] cuando no la indican.
+    style?: 'auto' | 'dot' | 'circle' | 'sesame';
+    fill?: 'auto' | 'filled' | 'open';
+    position?: 'auto' | 'over' | 'under';
+  };
+  bookTitleMark?: 'auto' | 'brackets' | 'wavy' | 'none'; // Qué imprime :book[…].
+  bookTitleBrackets?: 'auto' | { open: string; close: string }[]; // Los signos, del exterior al interior.
+  annotationColor?: ColorValue;             // Puntos y líneas de nombre y título; por defecto, el color del texto.
+  ruby?: {
+    fontFamily?: string; fontSize?: Dimension; color?: ColorValue;
+    position?: 'auto' | 'over' | 'under' | 'right';
+    overhang?: 'auto' | 'none' | 'kana' | 'any'; // Cuánto puede invadir una lectura a sus vecinos.
+    align?: 'auto' | 'center' | 'jis' | 'start'; // Cómo se espacia una lectura más corta que su base.
+    smallKana?: 'keep' | 'full';                 // Kana pequeños de las lecturas tal como se escriben, o a tamaño normal.
+  };
+  warichu?: { fontSize?: Dimension; color?: ColorValue; open?: string; close?: string };
+  kunten?: { fontSize?: Dimension; color?: ColorValue; placement?: 'inline' | 'interlinear' }; // Marcas de kanbun.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>region</code></td>
+      <td><code>'auto' | 'mainland' | 'taiwan' | 'hongkong' | 'japan'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Las convenciones que sigue el texto, según las regiones que describen los <a href="https://www.w3.org/TR/clreq/">Requisitos de composición del texto chino</a> del W3C (clreq). <code>'auto'</code> toma la región de <code>locale</code>, o de <code>bodyText.hyphenation.locale</code> si <code>locale</code> no está definido: <code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code> y <code>zh-SG</code> dan <code>'mainland'</code> (China continental); <code>zh-Hant</code> y <code>zh-TW</code> dan <code>'taiwan'</code>; <code>zh-HK</code> y <code>zh-MO</code> dan <code>'hongkong'</code>; <code>ja</code> y cualquier etiqueta <code>ja-*</code> dan <code>'japan'</code>, cuyas convenciones siguen los <a href="https://www.w3.org/TR/jlreq/">Requisitos de composición del texto japonés</a> del W3C (JLReq); cualquier otro idioma da <code>'mainland'</code>. La región elige los valores por defecto de todos los campos <code>'auto'</code> de abajo. <code>'japan'</code> fijado a mano compone cualquier documento a la japonesa; las cadenas integradas y los valores por defecto de las notas y del índice siguen al idioma.</td>
+    </tr>
+    <tr>
+      <td><code>lineBreak</code></td>
+      <td><code>'auto' | 'none' | 'basic' | 'gb' | 'strict' | 'ja-very-strict' | 'ja-strict' | 'ja-loose'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Qué signos no pueden abrir ni cerrar una línea (clreq §6.1.1 y el apéndice C.3 de JLReq; ver las tablas siguientes). <code>'auto'</code>: <code>'gb'</code> en China continental, <code>'basic'</code> en Taiwán y Hong Kong, <code>'ja-very-strict'</code> en Japón. Cualquier nivel puede elegirse en cualquier documento.</td>
+    </tr>
+    <tr>
+      <td><code>punctuationWidth</code></td>
+      <td><code>'auto' | 'fullwidth' | 'kaiming' | 'lineEndHalf' | 'halfwidth'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Qué ancho ocupan los signos de ancho completo (ver <a href="#anchos-de-la-puntuación">Anchos de la puntuación</a>). <code>'auto'</code>: <code>'kaiming'</code> en China continental, <code>'fullwidth'</code> en Taiwán, Hong Kong y Japón (en Japón, con las reglas de JLReq para las parejas, los finales de línea y los puntos medios).</td>
+    </tr>
+    <tr>
+      <td><code>compressAdjacent</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Dos signos seguidos (<code>。」</code>, <code>》（</code>, <code>：“</code>) ceden el medio cuadratín de blanco que queda entre ellos, y el par ocupa 1,5 cuadratines en vez de 2. <code>'auto'</code>: activado en China continental, Hong Kong y Japón, desactivado en Taiwán.</td>
+    </tr>
+    <tr>
+      <td><code>trimLineStart</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Un paréntesis o unas comillas de apertura que empiezan una línea ceden el medio cuadratín que llevan delante, y los de cierre que la acaban, el de detrás. <code>'auto'</code>: activado en China continental, Hong Kong y Japón, desactivado en Taiwán. En Japón un signo de cierre conserva su medio cuadratín a final de línea hasta que la línea lo necesita (ver <a href="#anchos-de-la-puntuación">Anchos de la puntuación</a>).</td>
+    </tr>
+    <tr>
+      <td><code>hangingPunctuation</code></td>
+      <td><code>'auto' | 'none' | 'allow' | 'force'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Si un signo de pausa o de cierre de oración puede colgar fuera del final de la línea (ver <a href="#puntuación-colgada">Puntuación colgada</a>). <code>'auto'</code>: <code>'allow'</code> en Japón (solo 、。，．), <code>'none'</code> en las demás regiones. Hasta postext 1.15 el valor por defecto era <code>'none'</code>, que es lo que <code>'auto'</code> sigue siendo fuera de Japón.</td>
+    </tr>
+    <tr>
+      <td><code>spaceAfterQuestion</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>Un cuadratín de espacio tras un ？ o un ！ de ancho completo (también tras ‼⁇⁈⁉, y tras una llamada de nota pegada a ellos) dentro de un párrafo, como lo compone el japonés (JLReq §3.1.6): no delante de un paréntesis de cierre ni de otro signo así, no al final de un párrafo, y se suprime al final de una línea. Un U+3000 o un espacio que el autor escribió ahí se convierten en ese espacio. Nunca se estira ni se encoge. <code>'auto'</code>: activado en Japón, desactivado en las demás regiones.</td>
+    </tr>
+    <tr>
+      <td><code>paragraphStartBracket</code></td>
+      <td><code>'auto' | 'indent' | 'half' | 'flush'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Cómo se compone un paréntesis de apertura que empieza un párrafo con sangría de primera línea (JLReq §3.1.5): <code>'indent'</code> conserva la sangría y da al paréntesis su cuadratín tras ella (patrón ①); <code>'half'</code> deja que el paréntesis ceda el blanco que hay delante de su dibujo, que llena entonces la segunda mitad de una sangría de un cuadratín, y el texto empieza donde empieza el de los demás párrafos (patrón ③); <code>'flush'</code> pone el paréntesis en el borde, sin sangría (天付き). Un párrafo sin sangría o con sangría francesa se queda como está. <code>'auto'</code>: <code>'half'</code> en Japón; en las demás regiones el paréntesis se compone como al principio de cualquier línea, igual que antes.</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>'normal'</code></td>
+      <td>Dónde se corta una línea entre dos caracteres. <code>'keep-all'</code> corta solo en un espacio (U+0020, U+3000) y junto a la puntuación donde <code>lineBreak</code> lo permite (tras 、。」, antes de 「), nunca entre dos letras (kana, kanji, hangul, latinas): para kana escrito con un espacio entre frases (分かち書き), como en los libros ilustrados y las cartillas, y para el coreano. Una frase más larga que la línea se corta por dentro como la cortaría <code>'normal'</code>. Un estilo de párrafo puede fijar el suyo (<code>wordBreak</code>). Desde postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>titleMinChars</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>Cuántos caracteres de un título de obra deja como mínimo un corte de línea a cada lado: dentro de <code>《…》</code> o <code>〈…〉</code>, escritos o añadidos por <code>bookTitleMark</code>, y dentro de un título <code>:book[…]</code> compuesto con la línea ondulada o sin marca. Con 2 ninguna línea acaba en <code>《說</code> con <code>文》</code> al comienzo de la siguiente, y un título de tres caracteres o menos no se parte nunca; en general no se parte ninguno de hasta el doble menos uno. La regla cede cuando la línea no tiene otro corte (un título más largo que la línea se sigue partiendo por dentro, donde <code>lineBreak</code> lo permite). Con <code>1</code> la línea puede partirse donde lo permita el nivel. Una configuración guardada antes de postext 1.25 (<code>configVersion</code> 10 o anterior), en un libro que tenga algún título, se lee con <code>1</code>. Desde postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>circledNumbers</code></td>
+      <td><code>'cjk' | 'western'</code></td>
+      <td><code>'cjk'</code></td>
+      <td>Cómo se componen en un párrafo CJK los números y letras en círculo, entre paréntesis y con punto: ①–⑳, ⑴–⒇, ⒈–⒛, ⓐ–ⓩ y el resto de U+2460–U+24FF, y los números ❶–❿ y ➀–➓ de los dingbats. <code>'cjk'</code>: como caracteres chinos, una celda sin espacio entre chino y latín alrededor, y ninguna línea acaba en uno, porque numera el texto que lo sigue; vale en todos los niveles de <code>lineBreak</code> que apartan del final de línea un signo de moneda (todos menos <code>none</code> y <code>ja-loose</code>). <code>'western'</code>: como letras latinas, con el espacio entre chino y latín a ambos lados, y la línea puede acabar en uno. El texto vertical los pone de pie en los dos casos. Una configuración guardada antes de postext 1.25, en un libro que tenga alguno, se lee con <code>'western'</code>. Desde postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>composeDesignText</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si el texto de diseño en chino o japonés (diseños de títulos y aperturas, cabeceras y folios, diseños de página, páginas de parte) se compone con las reglas del cuerpo: las de principio y final de línea de <code>lineBreak</code>, los anchos de los signos de <code>punctuationWidth</code> y <code>compressAdjacent</code>, <code>latinSpacing</code>, <code>hangingPunctuation</code> y <code>titleMinChars</code>. Una fila del texto (las líneas entre dos <code>\n</code>) se compone así cuando tiene más letras CJK que espacios entre palabras, como pasaría con un párrafo; las demás filas se parten en los espacios, como antes. Los saltos de línea explícitos, <code>paragraphIndent</code>, las capitulares y las marcas en línea siguen funcionando; las líneas quedan en bandera (no se reparten entre caracteres) y las lecturas, el warichu y las marcas de énfasis se imprimen como texto normal. Con <code>false</code> ese texto se parte en los espacios y cada signo conserva el ancho propio de la fuente. Una configuración guardada antes de postext 1.25 cuyo texto tenga CJK se lee con <code>false</code>. Desde postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>latinSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>&#123; value: 0.25, unit: 'em' &#125;</code></td>
+      <td>El espacio entre un carácter chino y la letra latina o la cifra que tiene al lado, en cuadratines del cuerpo del texto CJK o en cualquier medida; <code>0</code> lo quita (ver <a href="#espacio-entre-chino-y-latín">Espacio entre chino y latín</a>).</td>
+    </tr>
+    <tr>
+      <td><code>uprightDigits</code></td>
+      <td><code>0 | 2 | 3 | 4</code></td>
+      <td><code>2</code></td>
+      <td>Texto vertical: un número de hasta tantas cifras queda de pie en una sola casilla (tate-chu-yoko), salvo dentro de una frase latina, cuyas palabras sigue entonces tumbado; <code>0</code> lo desactiva (ver <a href="#números-en-texto-vertical">Números en texto vertical</a>).</td>
+    </tr>
+    <tr>
+      <td><code>grid</code></td>
+      <td><code>&#123; enabled?, charsPerLine?, linesPerPage?, show? &#125;</code></td>
+      <td>desactivada</td>
+      <td>La caja de texto en caracteres por línea y líneas por página (ver <a href="#retícula-de-caracteres">Retícula de caracteres</a>).</td>
+    </tr>
+    <tr>
+      <td><code>emphasis</code></td>
+      <td><code>'auto' | 'italic' | 'dots'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Qué hace el énfasis de Markdown (<code>*…*</code>) con los caracteres chinos y japoneses: <code>'dots'</code> pone una marca de énfasis junto a cada uno, como <code>:dots[…]</code> (con la forma y el lado de <code>emphasisMark</code>), y las letras latinas del mismo énfasis conservan la cursiva; <code>'italic'</code> los inclina, algo que una fuente CJK solo puede simular. <code>'auto'</code>: <code>'dots'</code> cuando el idioma del documento es el chino o el japonés, <code>'italic'</code> en los demás casos (ver <a href="#marcas-ruby-y-warichu">Marcas, ruby y warichu</a>).</td>
+    </tr>
+    <tr>
+      <td><code>emphasisMark</code></td>
+      <td><code>&#123; style?, fill?, position? &#125;</code></td>
+      <td><code>'auto'</code> en cada uno</td>
+      <td>La marca que dibujan <code>*…*</code> y un <code>:dots[…]</code> sin atributos: <code>style</code> <code>'dot'</code>, <code>'circle'</code> o <code>'sesame'</code> (﹅); <code>fill</code> <code>'filled'</code> u <code>'open'</code> (automático: hueco para el círculo); <code>position</code> <code>'over'</code> (a la derecha del texto vertical) o <code>'under'</code> (a su izquierda). Automático: en Japón, un sésamo relleno sobre el texto y a su derecha en texto vertical (JLReq §3.3.9); en las demás regiones, un punto bajo el texto y a su derecha en texto vertical, como antes. Los atributos de cada marca mandan.</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleMark</code></td>
+      <td><code>'auto' | 'brackets' | 'wavy' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Qué imprime <code>:book[…]</code>: signos alrededor del título (<code>bookTitleBrackets</code>), la línea ondulada de título bajo él, o el título solo. <code>'auto'</code>: signos en la China continental y en Japón, línea ondulada en Taiwán y Hong Kong.</td>
+    </tr>
+    <tr>
+      <td><code>bookTitleBrackets</code></td>
+      <td><code>'auto' | &#123; open, close &#125;[]</code></td>
+      <td><code>'auto'</code></td>
+      <td>Los signos de <code>:book[…]</code> con <code>'brackets'</code>, del exterior al interior; un título anidado a más profundidad que la lista toma la última pareja. <code>'auto'</code> (o una lista vacía): 『』 y luego 「」 en Japón, 《》 y luego 〈〉 en las demás regiones.</td>
+    </tr>
+    <tr>
+      <td><code>annotationColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el color del texto</td>
+      <td>Color de los puntos de énfasis y de las líneas de nombre propio y de título; el que toman por defecto las lecturas ruby y las notas warichu.</td>
+    </tr>
+    <tr>
+      <td><code>ruby</code></td>
+      <td><code>&#123; fontFamily?, fontSize?, color?, position?, overhang?, align?, smallKana? &#125;</code></td>
+      <td>medio cuerpo, <code>'auto'</code></td>
+      <td>Las lecturas de <code>:ruby[…]</code> y <code>&#123;紅樓|hóng|lóu&#125;</code>: fuente (por defecto, la del texto), tamaño (por defecto <code>&#123; value: 0.5, unit: 'em' &#125;</code> del texto; el zhuyin al 60 % de él), color, y dónde van cuando un ruby no lo dice (<code>'auto'</code>: el zhuyin a la derecha de cada carácter, el pinyin y los kana encima del texto en horizontal y a su derecha en vertical). <code>overhang</code>: cuánto puede invadir a sus vecinos una lectura más larga que su base: <code>'kana'</code>, un carácter de ruby sobre los kana, ー y el lado en blanco de un signo, medio sobre un paréntesis de apertura y nada sobre los kanji (JLReq §3.3.8); <code>'any'</code>, medio carácter de ruby sobre cualquier vecino sin lectura; <code>'none'</code>, nada; automático, <code>'kana'</code> en Japón y, en las demás regiones, un cuarto del cuerpo del ruby sobre cualquier vecino sin lectura, como antes. <code>align</code>: cómo se espacia una lectura más corta que su base: <code>'jis'</code>, 1:2:1 (media unidad en los extremos y una entre cada dos); <code>'center'</code>, centrada y sin espaciar; <code>'start'</code>, desde el principio de la base; automático, <code>'jis'</code> en Japón y <code>'center'</code> en las demás regiones. <code>smallKana: 'full'</code> compone a tamaño normal los kana pequeños de las lecturas (<code>'keep'</code>, el valor por defecto, los deja como se escriben). El <code>mode</code> y el <code>align</code> de cada ruby mandan.</td>
+    </tr>
+    <tr>
+      <td><code>warichu</code></td>
+      <td><code>&#123; fontSize?, color?, open?, close? &#125;</code></td>
+      <td>medio cuerpo; signos （） en Japón, ninguno en las demás regiones</td>
+      <td>Las notas en dos filas de <code>:warichu[…]</code>: el tamaño de la nota (por defecto medio em, de modo que las dos filas llenan el em de la línea), su color y los signos que se componen al tamaño del texto antes de la primera fila y tras la última (mandan los <code>open</code> / <code>close</code> de cada nota). En Japón un <code>open</code> o un <code>close</code> vacío (<code>''</code>) compone la nota sin ese signo.</td>
+    </tr>
+    <tr>
+      <td><code>kunten</code></td>
+      <td><code>&#123; fontSize?, color?, placement? &#125;</code></td>
+      <td>medio cuerpo, <code>'inline'</code></td>
+      <td>Las marcas de kanbun de <code>:kunten[…]</code> (返り点, 送り仮名, 竪点): su tamaño (por defecto <code>&#123; value: 0.5, unit: 'em' &#125;</code>, JIS X 4051 §5.5), su color (por defecto <code>annotationColor</code> y, si no, el del texto) y <code>placement</code>: <code>'inline'</code> compone las marcas de retorno tras su carácter, ocupando medio em, como las compone la JIS; <code>'interlinear'</code> pone todas las marcas en el hueco entre líneas, sin ocupar avance. Igual en todas las regiones (ver <a href="#marcas-ruby-y-warichu">Marcas, ruby y warichu</a>).</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '90px' }}>Nivel</th>
+      <th>Nunca al principio de una línea</th>
+      <th>Nunca al final de una línea</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>none</code></td><td>Nada: una línea puede cortarse entre dos caracteres cualesquiera, como hace la prensa de Taiwán y Hong Kong.</td><td>Nada.</td></tr>
+    <tr><td><code>basic</code></td><td>Los signos de pausa y de cierre de oración 、，；：。！？．‼⁇⁈⁉; las comillas de cierre ” ’ 」 』 y los paréntesis y corchetes de cierre ）〕］｝】〗》〉; los conectores – ～ ~ y una raya — sola entre dos palabras; los puntos medios · ‧ ・; las marcas de iteración 々〻ゝゞヽヾ y ー; las unidades de un número % ‰ ° ℃ ％ y los cuadros de unidad ㎡ ㎏ ㏄.</td><td>Las comillas de apertura “ ‘ 「 『 y los paréntesis y corchetes de apertura （〔［｛【〖《〈; los signos de moneda ¥ $ € £.</td></tr>
+    <tr><td><code>gb</code></td><td><code>basic</code>, y la barra / ／ (GB/T 15834—2011 §5.1.9).</td><td><code>basic</code>, y la barra.</td></tr>
+    <tr><td><code>strict</code></td><td><code>gb</code>, y la raya doble —— ⸺ y los puntos suspensivos …… ⋯⋯.</td><td><code>gb</code>.</td></tr>
+  </tbody>
+</table>
+
+Los niveles japoneses siguen las tres convenciones del apéndice C.3 de JLReq. En todos ellos ninguna línea termina con un paréntesis o unas comillas de apertura, un signo de moneda se queda con su número (salvo en <code>ja-loose</code>), la barra no tiene regla, y ——, ―― y …… pueden abrir una línea pero nunca se separan (tampoco 〳〵):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>Nivel</th>
+      <th>Nunca al principio de una línea</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>ja-very-strict</code></td><td>Los paréntesis y comillas de cierre; 、，。．; los guiones ‐ – ゠ 〜 ～; ？！‼⁇⁈⁉; ・：；; las marcas de repetición ゝゞヽヾ〻 y 々; ー; los kana pequeños ぁぃぅぇぉっゃゅょゎゕゖ ァィゥェォッャュョヮヵヶ ㇰ–ㇿ (y sus formas de medio ancho); las unidades ％ ℃. El valor por defecto de la JIS X 4051.</td></tr>
+    <tr><td><code>ja-strict</code></td><td><code>ja-very-strict</code>, menos los kana pequeños, ー y 々 (los libros en general, según JLReq).</td></tr>
+    <tr><td><code>ja-loose</code></td><td>Solo los paréntesis y comillas de cierre, 、， y 。． (periódicos).</td></tr>
+  </tbody>
+</table>
+
+En todos los niveles:
+
+- —— y …… forman una unidad de dos cuadratines que nunca se separa; dos unidades así seguidas pueden separarse entre sí.
+- Un número conserva sus signos y su unidad (¥5,999, 50%, 50％, 120㎡), también con un espacio entre ellos (−3 ℃, 50 %), y una palabra latina se mantiene entera: el texto occidental entre caracteres CJK se compone como un tramo que ninguna línea corta por dentro, salvo que el tramo solo sea más ancho que la línea (entonces se divide por una sílaba con guion, o por el último carácter que cabe; una dirección web, por sus uniones). Los cuadros de unidad ㎡ ㎏ ㎞ ㏄ (U+3371–337A, U+3380–33DF, U+33FF) van en el tramo de su número y no hacen CJK un párrafo latino.
+- Tampoco se corta un número o una palabra en cifras y letras de ancho completo (１２３４５６, ５０％, ￥５９９, ３．１４, １２：３０, ＡＢＣ); una línea justificada reparte el espacio entre sus caracteres igual que entre los han.
+- Un espacio entre palabras es un corte solo donde las reglas lo permiten: la línea no se corta ahí cuando el carácter siguiente no puede abrir una línea (`参见图表 （ 第三章 ）` nunca abre una línea con ）) o el último antes del espacio no puede cerrarla.
+- Una llamada de nota, un `:ref` y un superíndice o subíndice van con el carácter que los precede.
+- El espacio ideográfico U+3000 es un carácter de un cuadratín: una línea puede cortarse después de él, nunca antes; nunca se estira ni desaparece al principio de una línea. Para la sangría de dos caracteres de los párrafos chinos fija `bodyText.firstLineIndent: { value: 2, unit: 'em' }` en lugar de escribir dos U+3000 (el analizador descarta los que abren un párrafo).
+
+Cuando un carácter no cabe en la línea y puede abrir la siguiente, baja a ella y una línea justificada reparte lo que sobra. Cuando no puede abrir la línea siguiente (una coma, un paréntesis de cierre, el carácter que sigue a uno de apertura), la línea intenta primero admitirlo comprimiéndose (el llamado *push-in*, clreq §6.2.2.3): si el blanco que puede ceder —ver [Anchos de la puntuación](#anchos-de-la-puntuación)— cubre lo que sobresale, el carácter (con los signos que deben ir con él, unas comillas de cierre tras un punto) entra en la línea y la línea se ajusta a la medida. Si no, la línea le cede caracteres (el llamado *push-out*): el corte retrocede hasta el último punto que las reglas permiten, y una línea justificada reparte lo que sobra. En una línea más estrecha que un número con su punto final nada puede cerrar la línea, y se corta antes del punto de todos modos.
+
+A qué párrafos se aplica: a los que tienen más caracteres CJK (han, kana, bopomofo, hangul) que espacios entre palabras, aunque no haya dos seguidos (`第1条、第2条`, `价¥5,999。好`). Un espacio junto a un carácter o un signo CJK no es un espacio entre palabras: `2026 年 9 月 28 日` se compone como `2026年9月28日`. Se componen línea a línea, igual en la vía sin formato que en la de formato, así que un párrafo con una palabra en negrita se corta exactamente como el mismo texto sin ella. Un párrafo latino que cita un título o un nombre chino tiene más espacios que caracteres: conserva la división óptima de líneas, y una línea puede cortarse junto a sus caracteres CJK con las mismas reglas. Los pies de figura, las celdas de tabla, las notas y los recuadros se cortan también al nivel del documento. La partición por diccionario no alcanza las palabras latinas de un párrafo CJK.
+
+Una línea CJK justificada que no es la última de su párrafo se ensancha hasta la medida en este orden (clreq §6.2.2.4): los espacios entre palabras occidentales, hasta medio cuadratín cada uno; los espacios entre chino y latín, hasta medio cuadratín cada uno; después todos los huecos entre caracteres, y esos espacios, por igual. No se añade espacio dentro de una palabra latina, de un número o de un signo de dos cuadratines, ni junto a un conector o una barra. El espaciado se fija por segmento de la línea (`VDTLineSegment.tracking`, px tras cada carácter, incluidos en el `width` del segmento), que el canvas, el HTML y el PDF pintan como espaciado entre letras; una palabra latina seguida de un hueco da a su última letra un segmento propio. Un segmento contiene un tramo occidental, o caracteres de un mismo estilo, enlace y espaciado que avanzan lo mismo, así que el Sandbox reparte su anchura por igual entre ellos al colocar el cursor, y un enlace cubre solo sus propios caracteres. Cuando una línea necesitaría más de medio cuadratín entre sus caracteres (o más que `bodyText.maxJustifyTracking`, si está definido), se compone con ese máximo y queda corta: la línea lleva `cjkLoose` y `ragged`, y la composición da un aviso de contenido `cjkLooseLine` con el texto de la línea. Suele deberse a una palabra latina larga o a una dirección web que no puede subir a ella. Una línea sin ningún carácter CJK (el comienzo de una dirección web larga) queda en bandera sin el aviso, como una línea latina de una sola palabra. Ver [Separación silábica y justificación](/es/docs/justification#chino-japonés-y-coreano).
+
+### Anchos de la puntuación
+
+Un signo chino de ancho completo es medio cuadratín de dibujo y medio de blanco, y los ajustes solo cambian el blanco, nunca el dibujo (clreq §6.3.2). El blanco va delante del dibujo en un paréntesis o unas comillas de apertura, detrás en los de cierre, y detrás en los signos de pausa y de cierre de oración de China continental 、，。．；：？！, que van en la esquina de su caja; los signos que Taiwán y Hong Kong centran (、，。．；：) y los puntos medios guardan un cuarto de cuadratín a cada lado. `？！` ocupan siempre un cuadratín en texto horizontal de Taiwán y Hong Kong, y `：；？！` en texto vertical en todas partes. El punto medio de China continental ocupa medio cuadratín con cualquier estilo, centrado, en los dos sentidos de escritura (GB/T 15834, clreq §5.1): un dibujo de ancho completo cede el blanco de los dos lados, y en texto vertical su celda ya mide medio cuadratín.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '130px' }}>Estilo</th>
+      <th>Dentro de la línea</th>
+      <th>Al final de la línea</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fullwidth</code> (全角式)</td><td>Todos los signos, un cuadratín.</td><td>Un cuadratín; un paréntesis de cierre, medio, con <code>trimLineStart</code>.</td></tr>
+    <tr><td><code>kaiming</code> (开明式)</td><td>。．？！ un cuadratín; ，、；：, paréntesis, comillas y puntos medios, medio. La mayoría de los libros de China continental.</td><td>Todos los signos, medio cuadratín.</td></tr>
+    <tr><td><code>lineEndHalf</code> (行末半角)</td><td>Todos los signos, un cuadratín.</td><td>Todos los signos, medio cuadratín (la GB/T 15834—2011 §5.1.10 al pie de la letra).</td></tr>
+    <tr><td><code>halfwidth</code> (半角式)</td><td>Todos los signos, medio cuadratín, como en los diccionarios.</td><td>Medio cuadratín.</td></tr>
+  </tbody>
+</table>
+
+En Japón (`punctuationWidth: 'fullwidth'`, el valor automático) los signos siguen en cambio JLReq §3.1: 、，。． conservan su blanco tras el dibujo, ：； y ・ un cuarto de cuadratín a cada lado, y ？！ llenan su cuadratín. Un signo de cierre al final de una línea conserva su medio cuadratín, y lo cede entero, antes que ningún otro blanco, cuando la línea tiene que meter un carácter más; el blanco tras 。 nunca se reduce dentro de la línea. Una línea devuelve espacio en el orden de JLReq §3.8.3: los espacios entre palabras, el blanco del signo que acaba la línea, los puntos medios, los paréntesis y 、，, y después el espacio entre japonés y latín; y se espacia sin añadir espacio tras un paréntesis de apertura, delante de uno de cierre ni junto a 、。・：；？！ y U+3000 (§3.1.11). 、 y ・ entre dos numerales kanji van sin blanco y nunca se cortan (二、三日, 三・一四). Un documento japonés con otro `punctuationWidth` (`kaiming`, `halfwidth`…) sigue en su lugar las reglas de clreq de esta sección.
+
+Con `compressAdjacent`, dos signos seguidos ceden el blanco que queda entre ellos (las ocho reglas de los borradores anteriores de clreq): un paréntesis de cierre tras otro de cierre o tras un signo de pausa o de cierre de oración de China continental (`。」`, no tras los signos centrados de Taiwán y Hong Kong), un signo de pausa o de cierre de oración tras un paréntesis de cierre (`」，`), un paréntesis de apertura tras cualquiera de ellos o tras otro de apertura (`，「`, `》（`, `「『`), y un cuarto de cuadratín entre un punto medio y un paréntesis de cierre anterior o uno de apertura posterior. Nunca más de lo que deja el par en 1,5 cuadratines: con Kaiming `。”` ya ocupa 1,5 y así se queda, y `》（` ocupa uno. Con o sin `compressAdjacent`, Kaiming pasa el blanco de un signo de cierre de oración detrás del signo de cierre que lo sigue: los dos trazos quedan juntos y el medio cuadratín va después de la comilla (`。”␣母`, no `。␣”母`), y al final de una línea desaparece, como el de un punto solo. Con `trimLineStart`, un paréntesis de apertura que empieza una línea cede el blanco que lleva delante, y su trazo queda alineado con el borde del texto (en la primera línea de un párrafo queda medio cuadratín dentro de la sangría), y uno de cierre que acaba una línea cede el de detrás. Un signo centrado cede un cuarto de cuadratín por cada lado, nunca medio por uno. Cuando una línea se corta entre dos signos, ninguno conserva la compresión: cada uno se compone como signo en el borde de una línea (una `，` de ancho completo cuyo `「` abre la línea siguiente acaba la suya con un cuadratín entero).
+
+Una línea admite un carácter que no puede abrir la línea siguiente (*push-in*) cuando el blanco que aún puede ceder cubre lo que sobresale, en el orden de clreq: los espacios entre palabras hasta un cuarto de cuadratín, después los puntos medios, los paréntesis, los signos de pausa, los espacios entre chino y latín hasta un octavo de cuadratín y, al final, los signos de cierre de oración, cada paso repartido por igual. `kaiming` solo deja bajar a medio cuadratín sus signos de cierre de oración, y solo en este caso: a una línea a la que simplemente le falta sitio para un carácter más se le reparte el espacio, así que 。？！ conservan su cuadratín dentro de la línea. `lineEndHalf` deja bajar a medio cuadratín todos los signos; los de `fullwidth` no ceden nada (un libro de ancho completo conserva su retícula) y a los de `halfwidth` no les queda nada que ceder.
+
+Los signos que el latín comparte con el chino (“ ” ‘ ’ … — ·) ocupan en texto chino la caja de un signo chino, sea cual sea el avance que les da la fuente: LXGW WenKai dibuja “ ” con 0,35 em, Noto Serif SC la raya con 0,89 em y el · con un tercio de em. Cuentan como chinos cuando el carácter más cercano a uno u otro lado (saltando otros signos de estos) es chino, o cuando no tienen texto occidental al lado. La comilla de apertura se dibuja al final de su caja de un em y la de cierre al principio; el punto medio, los puntos suspensivos y una raya sola, en el centro; una pareja de puntos suspensivos (……) se compone como la fuente compone los dos juntos y se centra en sus dos em. El 破折号 (——) es un solo filete continuo: cada raya se estira sobre su em desde el margen lateral de la propia fuente, los dos trazos se solapan en la unión y suben al centro de los caracteres (`VDTLineSegment.inkScale`, una escala que solo afecta a la pintura). Después el estilo ajusta la caja como la de cualquier otro signo. Con texto occidental a ambos lados (`他说：He said “yes” and left.`) conservan el avance de la fuente, y un dibujo que ya mide un em no cambia nada.
+
+Los renderizadores no dejan que el navegador ajuste la puntuación por su cuenta. Chrome estrecha a medio em el primero de dos signos seguidos cuando los mide o los pinta en un solo trazo (`本）》录` en Noto Serif SC ocupa así 3,5 em), de modo que dos signos seguidos se miden y se pintan por separado, y las líneas HTML con texto CJK llevan `text-spacing-trim: space-all` y `text-autospace: no-autospace`, con las funciones `chws`, `halt` y `vchw` desactivadas.
+
+En el VDT un signo que cedió blanco es un segmento propio, cuyo `width` es el avance que conserva, con `inkOffset` (px): los renderizadores pintan su dibujo en `x + inkOffset`, de modo que un signo que cedió el blanco de delante (un paréntesis de apertura al principio de una línea) se dibuja esa distancia antes de su caja (un desplazamiento negativo). Un signo compartido compuesto en una caja china lleva el sitio de su dibujo dentro de la caja, menos el blanco que haya cedido delante, y puede ser positivo. El PDF muestra ese dibujo con un espaciado entre caracteres que termina su avance donde termina su caja, para que un lector nunca lo vea montado sobre el carácter siguiente, y mete su línea en un `/Span` con `/ActualText` (ver [Espacio entre chino y latín](#espacio-entre-chino-y-latín)). Qué lado del signo lleva el blanco lo decide la región, no la fuente: compón un libro con una fuente de su región (Noto Serif SC para China continental, TC para Taiwán, HK para Hong Kong); una fuente tradicional con una etiqueta de China continental comprime el lado equivocado de sus signos centrados.
+
+### Puntuación colgada
+
+`hangingPunctuation: 'allow'`, el valor automático en Japón, deja que uno de 、，。． (en China continental, cuyos signos van al principio de su caja, también ；：？！) cuelgue fuera del final de la línea cuando de otro modo abriría la siguiente y comprimir la línea no basta para meterlo; nunca en texto horizontal de Taiwán y Hong Kong, cuyos signos centrados parecerían cortados (en vertical sí puede). En texto vertical el signo colgado queda bajo el pie de la línea. `'force'` hace colgar ese signo siempre que acaba una línea (salvo en la última de un párrafo), y en cuanto no cabe. Un signo nunca cuelga si lo toca otro signo (`。」`, `，「`). El segmento colgado lleva `hangs`; el `bbox.width` de la línea, su justificación y su alineación lo dejan fuera, y el canvas y el PDF ensanchan el recorte de la columna con el signo colgado más ancho (`hangingPunctuationOverhang`), así que nunca se corta. La mayoría de los libros chinos no cuelgan la puntuación; clreq solo la recomienda junto con una retícula de caracteres. Los libros japoneses cuelgan 、。，． (*burasagari*), nunca ；：？！ ni los paréntesis, en los dos modos de escritura y solo cuando comprimir la línea no basta para meter el signo.
+
+### Espacio entre chino y latín
+
+`latinSpacing` (por defecto, un cuarto de cuadratín) pone un espacio entre un carácter chino (o kana) y la letra latina o la cifra europea que tiene al lado: `用iPhone拍照` y `1999年` se componen `用 iPhone 拍照` y `1999 年`. No se pone al principio ni al final de una línea, ni entre un carácter latino y un signo chino (`用iPhone，` no lleva nada antes de la coma), ni dentro de paréntesis chinos (`（iPhone）`), ni junto a un signo que no es letra ni cifra (`为¥5,999`). Un espacio que el autor escribió en ese punto (`用 iPhone 拍照`, como lo traen muchos textos de la web) se sustituye por el espacio entre chino y latín, no se suma, así que las dos grafías se componen igual; un espacio de no separación o un espacio ideográfico se quedan como están. En una línea justificada crece hasta medio cuadratín antes de repartir espacio entre los caracteres; en una línea que admite un carácter que no puede abrir la línea siguiente se reduce hasta un octavo de cuadratín. Una medida en una unidad que no sea em se convierte con los ppp de la página. `0` lo quita, y un espacio escrito ahí sigue siendo un espacio entre palabras.
+
+El espacio es un segmento de `kind: 'space'` con `autospace`, `text` vacío (o el espacio que escribió el autor); su `width` es definitivo, y la justificación de espacios de los renderizadores lo deja como está. Nunca está en el texto plano, así que la búsqueda, el copiar y pegar y los rangos de origen leen el texto tal como se escribió. El PDF mete cada línea compuesta en piezas (caracteres espaciados, espacios entre chino y latín, signos que cedieron blanco o que cuelgan) en un `/Span` cuyo `/ActualText` es el texto de la línea, de modo que la extracción de texto lee `用iPhone拍照` y no `用 iPhone 拍 照`, y lee como una sola línea una que lleva signos de medio cuadratín.
+
+### Números en texto vertical
+
+En texto vertical una palabra latina o un número largo se tumban, y un número corto queda de pie, con sus cifras una al lado de otra en una casilla de un cuadratín: el tate-chu-yoko (縱中橫, [clreq §2.1.3](https://www.w3.org/TR/clreq/#x2-1-3-mixed-text-composition-in-vertical-writing-mode), [`text-combine-upright` de CSS](https://www.w3.org/TR/css-writing-modes-4/#text-combine-upright)). `uprightDigits` fija cuántas cifras puede tener ese número: `2` (por defecto), `3`, `4`, o `0` para ninguno. `2026年9月28日` con `2` es el 2026 tumbado, el 9 de pie y el 28 de pie en una casilla.
+
+- El número entero o nada: con `2` un número de tres cifras va tumbado, nunca partido.
+- Un número pegado a una letra latina (`A4`, `mp3`, `3D`) se queda en su palabra, tumbado; igual un número con decimales o separador de millares (`3.14`, `10,000`).
+- Un número dentro de una frase latina sigue a la frase: si tiene una palabra latina a cada lado, va tumbado con las palabras (`printed in 49 and 32 copies`, `chapters 49, 32 and (7) of`). A cada lado se mira más allá de los espacios, de otros números, de las llamadas de nota, de la puntuación de un tramo tumbado (`, . : ; ( ) ' " - /`), de la raya y la semirraya y de las comillas inglesas (`pages 3–5 of`, `the “49” copies`) hasta la primera letra o el primer carácter chino. Un número cuyos signos llevan a texto chino queda de pie (`上午12:30:45开会`, `比分为3:2:1`, `见图(3)所示`, `他住在"12"号楼`), y también uno junto a un carácter o un signo chino, con espacio o sin él (`第 3 回`, `用iPhone 15拍攝`, `第3 copies`), uno junto a un signo que va derecho (`a 30×40 print`) y uno al principio o al final de un párrafo, que solo tiene palabra por un lado (`49 copies were printed`, `on page 7.`: escribe `:sideways[…]` para tumbarlo). El párrafo se lee entero, por encima de los saltos de línea, los énfasis y los enlaces.
+- Junto a un signo que Unicode pone de pie, cada número ocupa su propia casilla: `30×40` son 30, × y 40, todos de pie.
+- Una casilla con más caracteres de los que caben en un cuadratín se estrecha hasta el cuadratín; el espaciado y la justificación nunca entran en ella, solo van detrás.
+- Para cortar y justificar, la casilla cuenta como un carácter chino, y no lleva espacio entre chino y latín a ningún lado.
+- En Japón las parejas `!!`, `!?`, `?!` y `??`, de medio ancho o de ancho completo, también van de pie en una casilla (`すごい！？`), salvo que las toque una letra latina, una cifra o un tercer signo; una pareja de ancho completo se pinta con los signos de medio ancho. Los kana pequeños, ：；, “ ” (pintadas 〝〟) y ・ toman las formas verticales japonesas (ver [Composición japonesa › Formas verticales](/es/docs/japanese-layout#formas-verticales)).
+- El medidor y todos los motores de pintado ven las mismas casillas: el canvas pinta las cifras enderezadas y estrechadas, el PDF igual con la fuente horizontal, y el HTML las envuelve en `text-combine-upright: all`.
+
+A mano, tres marcas en línea mandan sobre el ajuste en texto vertical y no cambian nada en texto horizontal (ver [Formato del documento › Orientación en texto vertical](/es/docs/document-format#orientación-en-texto-vertical)):
+
+```markdown
+第:tcy[120]回、:upright[GDP]與:sideways[12]
+```
+
+`:tcy[…]` compone su texto en una casilla de pie, `:upright[…]` pone de pie cada carácter en su propia casilla (las letras latinas centradas en ella) y `:sideways[…]` tumba el tramo entero, también los caracteres chinos. En el VDT, un tramo `:tcy` es un segmento con `tcy: true` de un cuadratín de ancho; uno `:upright` o `:sideways` lleva `orientation`. Los números que `uprightDigits` compone en una casilla no llevan marca: los encuentra `verticalRuns(graphemes, region, uprightDigits)`. En un párrafo, un número corto que va con palabras latinas lleva `orientation: 'sideways'`, como si se hubiera escrito `:sideways[…]`: su segmento no siempre contiene las palabras con las que va.
+
+### Retícula de caracteres
+
+Una caja de texto china se especifica en caracteres (clreq §7.1.1): el cuerpo × caracteres por línea × líneas por página, más la interlínea y, a dos columnas, el medianil. `grid` la fija así:
+
+```ts
+cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
+```
+
+Con `enabled`, la configuración se reescribe antes de que nada la lea: cada columna mide `charsPerLine` cuadratines de `bodyText.fontSize`, y la caja de texto `linesPerPage` líneas de `bodyText.lineHeight`; con `layoutType: 'double'` el medianil es `layout.gutterWidth` redondeado a un número entero de cuadratines, al menos uno. Los márgenes de `page.margins` funcionan como mínimos: la caja de texto se coloca en el centro del área que dejan, y cada margen crece la mitad del sitio sobrante en su eje (un libro con márgenes espejados conserva la diferencia entre el interior y el exterior, y los dos crecen lo mismo). Sin valor, `charsPerLine` y `linesPerPage` toman los que quepan. Un número mayor de lo que cabe se reduce a lo que cabe y se avisa como `cjkGridClamped` en los avisos de configuración. El cuerpo y el interlineado se quedan como están escritos. En una disposición `oneAndHalf`, `charsPerLine` es el de la columna principal; la lateral toma el número entero de cuadratines más cercano al ancho que le da `sideColumnPercent` dentro de los márgenes configurados (al menos uno), el medianil se redondea como en dos columnas, y `sideColumnPercent` se reescribe para que las dos columnas midan cuadratines enteros. En texto vertical (`layout.writingMode: 'vertical-rl'`) los caracteres de una línea bajan por la página y las líneas la cruzan, así que `charsPerLine` mide la altura de la página, una disposición `double` da dos pisos, uno encima de otro, y las casillas de la retícula dibujada se centran en el eje sobre el que se centran los caracteres.
+
+Dos cajas de la práctica china, en 五号 (10,5 pt) con 6 pt de interlínea (`lineHeight: 16.5pt`):
+
+- 大32开, 140 × 203 mm, 28 × 28: una medida de 294 pt (103,7 mm) y una caja de 462 pt (163 mm); unos `page.margins` de 16/20 mm interior y exterior y 18/20 mm superior e inferior le dejan sitio.
+- 16开, 184 × 260 mm, dos columnas de 23 caracteres en 小五 (9 pt, líneas de 13,5 pt) con un medianil de dos caracteres: 2 × 207 pt + 18 pt.
+
+`show` dibuja la retícula (稿纸) sobre la caja de texto, un cuadrado gris claro por posición de carácter en cada línea (la caja de cuadratín del carácter alrededor de su línea de base), en cada columna de la página (la lateral de una disposición `oneAndHalf`, en el lado que le toca según la paridad de la página), en el canvas y en el HTML. El PDF solo la dibuja cuando `renderToPdf` recibe `characterGrid: true`: es una ayuda de pantalla. `cjkGridGeometry(config)` devuelve la retícula que fija una configuración (los números en uso, los márgenes, la caja de texto) y `applyCjkGrid(config)` la configuración reescrita.
+
+### Marcas, ruby y warichu
+
+El marcado de [marcas chinas, ruby y warichu](/es/docs/document-format#marcas-chinas-ruby-y-warichu) conserva su texto en el párrafo: la búsqueda, el índice general, las anclas del índice analítico y el texto copiado leen los caracteres tal como se escribieron, y de estos ajustes solo depende lo que se dibuja alrededor.
+
+- **Puntos de énfasis** (着重号, 傍点; `:dots[…]`, y `*…*` sobre caracteres CJK con `emphasis: 'dots'`): una marca por carácter, centrada en él (sin contar el espaciado de una línea justificada), nunca en la puntuación ni en los espacios; bajo el carácter en texto horizontal y a su derecha en vertical (clreq §5.3.1). `style` elige punto relleno, círculo o punto sésamo, `fill="open"` dibuja el contorno y `pos="over|under"` el lado; `emphasisMark` fija lo que una marca no indica (en Japón, un sésamo sobre el texto, a su derecha en vertical). Un sésamo tiene la misma orientación sobre el papel en los dos modos de escritura, y las marcas del lado de una lectura ruby van por fuera de ella.
+- **Líneas laterales** (傍線, `:sideline[…]{style pos}`): corren junto al texto, puntuación y espacios incluidos: `solid`, `double`, `wavy` o `dotted`, por defecto bajo el texto en horizontal y a su derecha en vertical; dos líneas que se tocan ceden cada una un octavo de em. Funcionan en cualquier escritura.
+- **Líneas de nombre propio y de título** (专名号 `:name[…]`, 书名号 `:book[…]` con `bookTitleMark: 'wavy'`): corren bajo la caja de los caracteres (a su izquierda en vertical) y atraviesan los espacios de la secuencia. Donde se tocan dos secuencias, cada extremo cede un octavo de em, de modo que `:name[賈寶玉]:name[林黛玉]` se lee como dos nombres. Si unos puntos y una línea marcan el mismo texto por el mismo lado, la línea va más cerca del texto. Con `'brackets'`, los 《》 son texto con el que se cortan las líneas, se pintan y se copian como cualquier carácter; no ocupan ningún carácter del texto plano ni del mapa de fuente (los segmentos llevan `inserted`).
+- **Ruby**: las lecturas ocupan el hueco entre líneas junto a la caja de la base, centradas en ella; una lectura con letras latinas (pinyin) sobre su base sube lo que bajan los rasgos descendentes de su fuente (g, j, p, q, y) y 0,04 em del texto más, para que no toquen la base, y todas las lecturas de la línea comparten línea base; una lectura más ancha que su base ensancha la caja de la base, menos el cuarto de em de ruby que puede invadir un vecino sin lectura, y dos lecturas guardan un cuarto de em de ruby entre sí (dos lecturas en zhuyin, un cuarto del em de sus símbolos, así que tres símbolos junto a cada uno de dos caracteres no salen de su casilla). Un ruby mono (una lectura por carácter) puede cortarse entre sus caracteres; un ruby de grupo, nunca. En Japón una lectura sigue en cambio `ruby.align` y `ruby.overhang`: se reparte 1:2:1 cuando es más corta que su base, e invade los kana pero no los kanji cuando es más larga, y el resto del sitio sale de espaciar la base; un ruby por carácter de dos o más caracteres es ruby jukugo, en el que cada carácter conserva su lectura, que puede invadir el carácter siguiente de la palabra pero nunca se solapa con otra lectura, y la línea sigue pudiendo cortarse entre ellos (JLReq §3.3). Al principio o al final de una línea, base y lectura se alinean con el borde (clreq §5.5.4). El zhuyin en texto horizontal forma una columna a la derecha de cada carácter, y la caja del carácter crece lo que mide la columna; en texto vertical la misma columna baja a la derecha de los caracteres. La marca de tono va a la derecha de la columna, con la mitad de su trazo por encima del último símbolo (clreq §5.5.3.3), colocada por su trazo porque las fuentes dibujan estas marcas altas dentro de su caja, y en vertical se mantiene de pie, igual que el punto del tono neutro sobre el primer símbolo.
+- **Notas warichu** (双行夹注): se pliegan en dos filas al tamaño de la nota, centradas en la línea y sin hueco entre ellas. La fila de arriba toma caracteres hasta tener al menos la mitad del fragmento, así que la segunda nunca es la más larga, y uno más mientras la de abajo empezaría con un signo que no puede abrir línea. Una nota más larga que el sitio que queda en la línea la llena y sigue en la línea, la columna o la página siguientes; sus signos van solo antes de la primera fila y tras la última. En texto vertical la fila de arriba es la de la derecha, que se lee primero.
+- **Marcas de kanbun** (`:kunten[字]{kaeri okuri tate}`): las marcas de retorno del último carácter van tras él, del lado del pie de la línea (abajo a la izquierda en texto vertical), sus okurigana van del lado de la cabeza a partir de su mitad (los más largos desplazan el carácter siguiente), y el tatesen es un filete corto hasta el carácter siguiente (JIS X 4051 §5). El texto copiado y el `/ActualText` del PDF leen los okurigana tras sus caracteres y dejan fuera las marcas de retorno; una interlínea demasiado estrecha para ellas se avisa con `kuntenExceedsLeading`.
+
+El paso de línea no cambia nunca: marcas y lecturas viven en el interlineado. Un párrafo cuyo hueco entre líneas (la altura de línea menos el cuerpo) mide menos de medio em con marcas por un lado, o cinco octavos con marcas por los dos (clreq §5.6.1), se avisa con `cjkMarksExceedLeading`; uno cuyas lecturas miden más que el hueco (una lectura en pinyin, con lo que sube), con `rubyExceedsLeading`. Dales a esos párrafos un estilo de párrafo con más interlineado. Los libros japoneses con furigana suelen usar un interlineado del texto de unos 1,75 em (JLReq §2.4.2).
+
+En el VDT un segmento marcado lleva `cjkMarks`, y la composición coloca los puntos y las líneas de sus líneas en `VDTLine.marks` (puntos, círculos, sésamos, líneas rectas, dobles, de puntos y onduladas, en el marco de flujo de la línea), que el canvas, el HTML y el PDF dibujan tal cual (PDF: `Artifact /Layout`; HTML: cajas `aria-hidden` y el texto con puntos en `<em>`). El segmento de la base de un ruby lleva `ruby` (la lectura y sus trozos; en una lectura japonesa, también el `id` que su anotación comparte con los demás caracteres de una palabra jukugo, y `jukugo`) y pinta la base en `inkOffset`, con `tracking`, cuando la lectura la ensanchó; un carácter con marcas de kanbun lleva `kunten` (sus trozos y su tatesen); el fragmento de una nota warichu en una línea es un segmento cuyo `text` es la fila de arriba y luego la de abajo, y cuyo `warichu` guarda las filas que los renderizadores pintan en su lugar. El PDF etiquetado pone la lectura en el `RT` del `Ruby` de su base y la nota en un `Warichu`, y el `/ActualText` de la línea lee el texto de la base y la nota una sola vez. Las marcas, lecturas y notas se dibujan en el texto, los títulos, las listas y los recuadros, y en los pies de figura, las celdas de tabla y las notas de los recursos, cuyas líneas llevan `marks` y `ruby` como las del texto; el texto de diseño conserva el texto sin ellas.
+
+El resolutor y el depurador siguen el patrón de las demás secciones. `spaceAfterQuestion`, `paragraphStartBracket` y `wordBreak`, y el `overhang`, el `align` y el `smallKana` del ruby, solo están en la configuración resuelta cuando cambian algo (en Japón, o cuando se fijan). `setCjkLineBreak` y `setCjkComposition` fijan el nivel y la composición (anchos de la puntuación, puntuación colgada, espacio entre chino y latín; `cjkCompositionOf(resolved.cjk, dpi)`) para las mediciones hechas fuera de `buildDocument`, que los toma de la configuración. Fuera de una composición, los signos conservan todo su avance y no se pone espacio entre chino y latín:
+
+```ts
+import { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, cjkRegionOf, setCjkLineBreak, setCjkComposition, cjkCompositionOf } from 'postext';
+
+resolveCjkConfig(undefined, 'zh-HK');
+// { region: 'hongkong', lineBreak: 'basic', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'none', latinSpacing: { value: 0.25, unit: 'em' }, uprightDigits: 2,
+//   grid: { enabled: false, charsPerLine: 0, linesPerPage: 0, show: false },
+//   emphasis: 'dots', emphasisMark: { style: 'dot', fill: 'auto', position: 'auto' },
+//   bookTitleMark: 'wavy', bookTitleBrackets: [{ open: '《', close: '》' }, { open: '〈', close: '〉' }],
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '', close: '' }, kunten: { … } }
+
+resolveCjkConfig(undefined, 'ja');
+// { region: 'japan', lineBreak: 'ja-very-strict', punctuationWidth: 'fullwidth', compressAdjacent: true,
+//   trimLineStart: true, hangingPunctuation: 'allow', spaceAfterQuestion: true, paragraphStartBracket: 'half', …,
+//   emphasisMark: { style: 'sesame', fill: 'auto', position: 'over' }, bookTitleMark: 'brackets',
+//   bookTitleBrackets: [{ open: '『', close: '』' }, { open: '「', close: '」' }],
+//   ruby: { fontSize: { value: 0.5, unit: 'em' }, position: 'auto', overhang: 'kana', align: 'jis' },
+//   warichu: { fontSize: { value: 0.5, unit: 'em' }, open: '（', close: '）' }, kunten: { … } }
+```
+
+En el Sandbox estos ajustes están en **Diseño › Escritura › Tipografía de Asia oriental**.

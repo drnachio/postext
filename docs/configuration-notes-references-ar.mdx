@@ -1,0 +1,827 @@
+{/* docs/configuration-notes-references-ar.mdx */}
+
+export const metadata = {
+  title: 'الإعدادات: الحواشي والإحالات',
+  sidebarTitle: 'الحواشي والإحالات',
+  description: 'الحواشي السفلية وترقيم الأسطر والإحالات المرجعية والاستشهادات، وجدول المحتويات والفهرس الأبجدي',
+  lang: 'ar',
+  lastUpdated: '2026-10-10',
+  readingTime: '4 دقائق',
+  order: 6,
+  parent: 'configuration',
+  plainSummary: "تتناول هذه الصفحة إعدادات أجزاء الكتاب التي تحيل إلى موضع آخر. تقع الحواشي أسفل الصفحة، وتقع أرقام الأسطر في الهامش. تشير الإحالات المرجعية إلى شكل أو قسم أو صفحة، وتشير الاستشهادات إلى المؤلفات التي تذكرها. يسرد جدول المحتويات الفصول، ويسرد الفهرس الأبجدي في آخر الكتاب المصطلحات مع صفحاتها. ويشرح كل قسم مظهر هذه الأجزاء وطريقة ترقيمها.",
+};
+
+# الإعدادات: الحواشي والإحالات
+
+
+## الحواشي السفلية
+
+تحدد الخاصية `footnotes` أين تذهب الحواشي المستشهد بها عبر `[^id]`، وكيف تُرقَّم وكيف تبدو. الترميز موصوف في [صيغة المستند](/ar/docs/document-format#الحواشي-السفلية).
+
+```ts
+interface FootnotesConfig {
+  placement?: 'column' | 'chapterEnd' | 'spread'; // Foot of the citing column, after the chapter, or beside the text of a spread.
+  numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Start again at each chapter, run on, or start again on each page / column / spread.
+  numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  symbols?: string[];         // رموز الإحالة التي يكتبها numberFormat: 'symbols'.
+  markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Raised, on the baseline, beside the word, or right of a vertical line.
+  markerSize?: Dimension;     // Inline, side or right marker size; em is the text around it.
+  numberGap?: 'en' | 'em';    // Space after the note's own number.
+  chapterEndAlign?: 'foot' | 'text';   // chapterEnd: notes at the column foot, or under the text.
+  fontSize?: Dimension;       // Note size; em is the body size.
+  lineHeight?: Dimension;     // Note leading; em is the note size.
+  color?: ColorValue;         // Note colour; the body colour when unset.
+  textAlign?: TextAlign;      // The body alignment when unset.
+  hangingIndent?: Dimension;  // Indent of a note's turnover lines.
+  spaceBetween?: Dimension;   // Space between two notes.
+  spaceAbove?: Dimension;     // Space between the text and the rule; em is the body size.
+  spaceBelowRule?: Dimension; // Space between the rule and the first note.
+  separator?: {
+    enabled?: boolean;        // Draw the rule.
+    width?: number;           // Rule length, a fraction of the column width.
+    lineWidth?: Dimension;    // Rule thickness.
+    color?: ColorValue;       // The note colour when unset.
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '160px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'column' | 'chapterEnd' | 'spread'</code></td>
+      <td><code>'column'</code> (الكتب اليابانية العمودية: <code>'chapterEnd'</code>)</td>
+      <td><code>'column'</code> تضع كل حاشية في أسفل العمود الذي يحوي السطر المستشهِد بها، تحت خط فاصل قصير؛ وفي تخطيط من عمود واحد يكون ذلك أسفل الصفحة. و<code>'chapterEnd'</code> تضع كل حواشي الفصل بعد آخر كتلة فيه، بترتيب الاستشهاد. و<code>'spread'</code> (傍注، للنص العمودي وحده) تضع الحواشي المستشهد بها في صفحتَي الصفحتين المتقابلتين في آخر صفحتهما الفردية، وهي الصفحة اليسرى في الكتاب المجلّد من اليمين، تحت الخط الفاصل: فالحواشي المستشهد بها في الصفحة الزوجية تنتظرها، والحاشية التي كانت ستترك للصفحة الفردية أقل من سطر نص واحد تبقى في أسفل الصفحة الزوجية مع ما بعدها، والفصل الذي ينتهي في صفحة زوجية يُبقي حواشيه المنتظرة فيها. وفي النص الأفقي تعود إلى <code>'column'</code> مع التحذير <code>unknownConfigValue</code>. منذ postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
+      <td><code>'chapter'</code> (الكتب اليابانية الأفقية: <code>'page'</code>؛ ومع <code>placement: 'spread'</code>: <code>'spread'</code>؛ ومع <code>numberFormat: 'symbols'</code> في ذيل العمود: <code>'page'</code>)</td>
+      <td><code>'chapter'</code> تبدأ من 1 من جديد تحت كل عنوان من المستوى 1 وفي بداية كل مستند. و<code>'document'</code> تستمر عبر المستند، وفي الكتاب الذي يُخرَج فصلًا فصلًا تستمر من فصل إلى الذي يليه (تحمل <code>continuationAfter</code> الرقم الأخير في <code>continuation.footnoteNumber</code>). و<code>'page'</code> تبدأ من 1 من جديد في كل صفحة، و<code>'column'</code> في كل عمود، فتعدّ الحواشي حيث يضعها الإخراج (أعمدة الصفحة بترتيب القراءة): وهي الحواشي المعتادة أسفل الصفحة في الكتاب الصيني، 页下注. يُخرَج المستند، ثم يُرقَّم بحسب المواضع التي وقعت فيها حواشيه، ثم يُعاد إخراجه حتى تثبت الأرقام (ثلاث عمليات بناء إضافية على الأكثر). كلتاهما تنطبقان على الحواشي في أسفل العمود: مع <code>placement: 'chapterEnd'</code> تُرقَّم الحواشي بحسب الفصل. و<code>'spread'</code> تبدأ من جديد في كل صفحتين متقابلتين (الصفحتان 2–3، و4–5…)، بترتيب الاستشهاد، مع <code>placement: 'spread'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>numberFormat</code></td>
+      <td><code>string</code></td>
+      <td><code>'decimal'</code></td>
+      <td>طريقة كتابة الأرقام، بأي صيغة كتابة تقبلها إعدادات الترقيم: <code>'decimal'</code>، <code>'lower-roman'</code>، <code>'lower-alpha'</code>، <code>'circled-decimal'</code> (أو <code>'①'</code>)، <code>'cjk-decimal'</code>، <code>'一'</code>… وتستخدمها العلامة والرقم الذي يفتتح الحاشية كلاهما. تكتب <code>circled-decimal</code> الأرقام التي تتجاوز 50 بالأرقام العشرية. والاسم غير المعروف يُرقِّم بالأرقام العشرية، مع تحذير <code>unknownNumberFormat</code>. وتُعلِّم <code>'symbols'</code> (أو <code>'&#42;'</code>) الحواشي برموز الإحالة، رموز <code>symbols</code> بالترتيب: &#42; † ‡ § ‖ ¶، ثم مضاعفةً (&#42;&#42; †† ‡‡…) ثم مثلَّثة؛ وعندئذ يُعاد عدّ الحواشي في كل صفحة ما لم يُضبط <code>numbering</code>. منذ postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>التسلسل الذي يكتبه <code>numberFormat: 'symbols'</code>، يُضاعَف ثم يُثلَّث متى نفد. تحمل الملفات اللاتينية في Google Fonts وFontsource الرموز &#42; † § ¶ (الخنجر في <code>latin-ext</code>) دون ‡ و‖، فيرسمهما ملف PDF بمحرف <code>.notdef</code> في الخط مع تحذير <code>missingGlyph</code>: مع خط كهذا احذفهما (<code>['&#42;', '†', '§', '¶']</code>) أو صُفَّ الحواشي بخط يحتويهما. تُهمَل السلاسل الفارغة، وتُبقي القائمة الفارغة التسلسل الافتراضي. منذ postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>markerPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline' | 'side' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'superscript'</code> ترفع العلامة في النص والرقمَ الذي يفتتح الحاشية، بحجم مصغَّر. و<code>'inline'</code> تضعهما على خط الأساس: العلامة بحجم <code>markerSize</code>، ورقم الحاشية بحجم الحاشية؛ وفي النص الرأسي تقف العلامة الدائرية ضمن السطر منتصبةً في خلية خاصة بها. و<code>'right'</code> تضع علامة مصغّرة ملاصقة للجانب الأيمن من السطر العمودي، كما تنضّد الكتب اليابانية العمودية （1）؛ وفي النص الأفقي تكون مرفوعة. و<code>'side'</code> (合印) تضع علامة صغيرة بجانب الكلمة المعلَّمة، على جانب الروبي فيها، تنتهي حيث ينتهي آخر حرف في الكلمة؛ ولا تأخذ حيّزًا في السطر، الذي ينكسر ويُضبط كأنها غير موجودة، والفجوة بين الأسطر الأضيق من أن تتسع لها يُبلَّغ عنها بالتحذير <code>rubyExceedsLeading</code>. و<code>'auto'</code> تعني ضمن السطر مع <code>circled-decimal</code>، و<code>'right'</code> في الكتاب الياباني العمودي، ومرفوعة في غير ذلك. وفي الحالتين تبقى العلامة مع الحرف الذي قبلها ولا تفتتح سطرًا أبدًا.</td>
+    </tr>
+    <tr>
+      <td><code>markerSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code>؛ و<code>0.6em</code> مع <code>'side'</code>، و<code>0.7em</code> مع <code>'right'</code></td>
+      <td>حجم العلامة ضمن السطر أو الجانبية أو اليمنى؛ و<code>em</code> هو حجم النص المحيط بها (<code>0.75em</code> تصغير شائع). لا أثر له في العلامة المرفوعة.</td>
+    </tr>
+    <tr>
+      <td><code>numberGap</code></td>
+      <td><code>'en' | 'em'</code></td>
+      <td><code>'en'</code> (الحواشي اليابانية بعد الفصل: <code>'em'</code>)</td>
+      <td>المسافة بعد الرقم الذي يفتتح الحاشية: مسافة en، أو em كامل بحجم الحاشية (مسافة إيديوغرافية حين يحوي الرقم أو الحاشية نص CJK)، لا تتسع ولا تنكسر أبدًا. منذ postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>markerTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>'&#123;n&#125;'</code> (الكتب اليابانية العمودية: <code>'（&#123;n&#125;）'</code>)</td>
+      <td>طريقة كتابة رقم الحاشية، حيث يمثّله <code>&#123;n&#125;</code> بتنسيق الترقيم وبأرقام المستند: <code>'(&#123;n&#125;)'</code> تعطي العلامات المحاطة بأقواس المعهودة في الكتب العربية، «(١)». وتكتب بها العلامةَ في النص والرقمَ الذي يفتتح الحاشية على السواء. والقالب الذي يخلو من <code>&#123;n&#125;</code> يُقرأ على أنه القيمة الافتراضية.</td>
+    </tr>
+    <tr>
+      <td><code>noteNumberPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>موضع الرقم الذي يفتتح الحاشية: مرفوعًا، أو على السطر بحجم الحاشية. <code>'auto'</code> تتبع <code>markerPosition</code>. الكتب العربية ترفع العلامة في النص وتضع رقم الحاشية نفسها على السطر.</td>
+    </tr>
+    <tr>
+      <td><code>chapterEndAlign</code></td>
+      <td><code>'foot' | 'text'</code></td>
+      <td><code>'foot'</code></td>
+      <td>مع <code>placement: 'chapterEnd'</code>: <code>'foot'</code> تضع الحواشي التي تختم عمودًا في أسفله، وتبقى الأسطر المتبقية بين النص والحواشي، كما تقف الحواشي في أسفل العمود. و<code>'text'</code> تضعها مباشرةً تحت النص.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>حجم نص الحاشية. <code>em</code> و<code>rem</code> هما حجم المتن. تستخدم الحواشي عائلة خط المتن وأوزانه.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.25em</code></td>
+      <td>تباعد أسطر نص الحاشية؛ و<code>em</code> هو حجم الحاشية. الحواشي خارج شبكة خطوط الأساس: تتراكم صعودًا من أسفل العمود، ويبقى النص فوقها على الشبكة.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لون المتن</td>
+      <td>لون نص الحاشية.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>TextAlign</code></td>
+      <td>محاذاة المتن</td>
+      <td>محاذاة نص الحاشية.</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>إزاحة السطر الثاني وما بعده من الحاشية، كي تصطف بعد رقمها.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>المسافة بين حاشيتين.</td>
+    </tr>
+    <tr>
+      <td><code>spaceAbove</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>المسافة بين آخر سطر من النص والخط الفاصل؛ و<code>em</code> هو حجم المتن. مع <code>'chapterEnd'</code> و<code>chapterEndAlign: 'text'</code>، يكون مجموع <code>spaceAbove</code> + <code>spaceBelowRule</code> هو المسافة بين النص وأول حاشية.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBelowRule</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.4em</code></td>
+      <td>المسافة بين الخط الفاصل وأول حاشية.</td>
+    </tr>
+    <tr>
+      <td><code>separator.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يرسم الخط الفاصل فوق حواشي كل عمود. ومع <code>false</code> تبقى المسافات التي فوقها.</td>
+    </tr>
+    <tr>
+      <td><code>separator.width</code></td>
+      <td><code>number</code></td>
+      <td><code>0.3</code></td>
+      <td>طول الخط الفاصل كسرًا من عرض العمود (0–1)، بدءًا من الحافة اليسرى للعمود.</td>
+    </tr>
+    <tr>
+      <td><code>separator.lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>سُمك الخط الفاصل.</td>
+    </tr>
+    <tr>
+      <td><code>separator.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لون الحاشية</td>
+      <td>لون الخط الفاصل.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+footnotes: {
+  fontSize: { value: 7.5, unit: 'pt' },
+  lineHeight: { value: 9.5, unit: 'pt' },
+  hangingIndent: { value: 0.8, unit: 'em' },
+  separator: { width: 0.25, lineWidth: { value: 0.4, unit: 'pt' } },
+}
+```
+
+**الكتب اليابانية.** المستند الياباني (`locale: 'ja'`، منذ postext 1.16) يعطي الحقول التي يتركها دون ضبط قيم JLReq §4.2. فالكتاب العمودي يضع حواشيه بعد الفصل (`placement: 'chapterEnd'`، 後注)، مرقّمة بحسب الفصل، مع علامات `（{n}）` على يمين السطر (`markerPosition: 'right'`، والأرقام قائمة بحسب `cjk.uprightDigits`)؛ والأفقي يضعها في أسفل الصفحة، مرقّمة لكل صفحة، مع علامات مرفوعة. وكلاهما يرسم الخط الفاصل بطول ثلث عرض السطر (`separator.width: 1/3`)، والحواشي بعد الفصل تأخذ `numberGap: 'em'` ومسافة بادئة معلّقة بعرض 2 em. والقيمة الصريحة هي التي تُعتمد، وتُحفظ عند الحفظ (يقارن `stripFootnotesDefaults` بالقيم الافتراضية للمستند نفسه)؛ وتُحسم المستندات الصينية والعربية واللاتينية كما كانت. وتعيد `footnoteDocumentDefaults(locale, writingMode, placement?)` هذه القيم. واكتب العلامة قبل 。 التي تختم الجملة (`先生[^1]。`): فهي تبقى مع الحرف الذي قبلها، و。 لا تفتتح سطرًا أبدًا. انظر [الإخراج الياباني › الحواشي](/ar/docs/japanese-layout#الحواشي).
+
+كيف تُخرَج الحواشي في أسفل العمود:
+
+- **الحاشية والاستشهاد يتشاركان العمود.** قبل أن يضع الإخراج سطرًا، يضيف ارتفاع الحواشي التي يستشهد بها ذلك السطر لأول مرة (والخط الفاصل، مع أول حاشية في العمود). والسطر الذي لا تتسع حواشيه تحته ينتقل إلى العمود التالي مع بقية فقرته، وفق قاعدتي الأسطر اليتيمة والأرامل. تتقلص مساحة النص في العمود بمقدار ارتفاع الحواشي، فلا تحسب موازنةُ الأعمدة والشريطُ الختامي للفصل إلا النص.
+- **عدة حواشي** في عمود واحد تتراكم بترتيب الاستشهاد تحت خط فاصل واحد. والحاشية التي يُستشهد بها مرة أخرى لاحقًا تحتفظ برقمها ولا تُنضَّد ثانيةً.
+- **العناصر العائمة السفلية.** الشكل الذي يشغل أسفل عمود بعد وضع حواشيه يوضع فوقها؛ والحواشي التي توضع بعد الشكل تأتي فوقه.
+- **الإطارات.** الحاشية المستشهد بها داخل إطار (ضمن السطر أو عائم أو ثابت) تذهب إلى أسفل العمود الذي يستمر فيه النص بعد الإطار، وهو عادةً العمود نفسه. والإطار الذي يختم المستند يترك حواشيه في أسفل العمود الذي انتهى فيه النص.
+- **الحدود.** لا تُقسَم الحاشية أبدًا: الحاشية الأطول من العمود تفيض منه. والعلامات في التعليقات وخلايا الجداول والعناوين لا تُقرأ (تُطبع كما كُتبت).
+- **المُخرجات.** ترسم Canvas وHTML وPDF الحواشي والعلامات (رقمًا مرفوعًا) والخط الفاصل. في PDF ترتبط كل علامة بحاشيتها، وPDF الموسوم يجعل كل حاشية عنصر `Note` بمعرّف `/ID` فريد مُدرج في `/IDTree` من شجرة البنية (PDF/UA-1). الحواشي كتل `VDTBlock` عُيّنت فيها `footnoteNote`، في `page.floats`؛ والخطوط الفاصلة في `page.footnoteAreas`.
+- **التحذيرات.** `undefinedFootnote` (علامة بلا تعريف: يُطبع الرقم فوق حاشية فارغة) و`unusedFootnote` (تعريف لا تستشهد به أي علامة: لا يُنضَّد).
+
+دالتا الحل والتجريد مماثلتان لنظيراتهما في الأقسام الأخرى:
+
+```ts
+import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, footnoteDocumentDefaults } from 'postext';
+
+resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // unset fields take the Japanese vertical defaults
+```
+
+
+## ترقيم الأسطر
+
+تطبع الخاصية `lineNumbers` في الهامش رقمَ كل سطر خامس (أو كل سطر رقمه من مضاعفات N) بجوار السطر، كما تفعل الطبعات المحققة ومختارات الشعر والنصوص القانونية والطبعات المدرسية. وهي تعدّ أبيات قصائد `:::verse`، أو كل أسطر النص. وهي معطّلة افتراضيًا. يُرسم كل رقم على خط قاعدة سطره، بحجم خاص به، ولا يحرّك أي سطر أبدًا: تُخرَج الصفحة تمامًا كما تُخرَج بلا أرقام. منذ postext 1.23.
+
+```ts
+interface LineNumbersConfig {
+  enabled?: boolean;        // معطّلة افتراضيًا.
+  count?: 'verse' | 'all';  // أبيات القصائد، أو كل أسطر النص.
+  interval?: number;        // اطبع مضاعفات N.
+  numberFirst?: boolean;    // اطبع أيضًا أول سطر بعد كل إعادة للعدّ.
+  restart?: 'document' | 'chapter' | 'section' | 'page' | 'poem'; // أين يبدأ العدّ من جديد.
+  startAt?: number;         // رقم أول سطر بعد إعادة العدّ.
+  position?: 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+  multiColumn?: 'each' | 'gutter' | 'outer-edges'; // الصفحات ذات العمودين أو أكثر.
+  gap?: Dimension;          // من النص إلى الرقم؛ وem حجم الرقم.
+  align?: 'auto' | 'left' | 'right';
+  fontFamily?: string;      // عائلة خط المتن إن لم تُحدَّد.
+  fontSize?: Dimension;     // وem حجم المتن.
+  fontWeight?: number;      // وزن المتن إن لم يُحدَّد.
+  italic?: boolean;
+  color?: ColorValue;       // لون المتن إن لم يُحدَّد.
+  format?: string;          // decimal، lower-roman، arabic-indic، 一…
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '160px' }}>الافتراضي</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يطبع أرقام الأسطر. المستند العمودي (<code>layout.writingMode: 'vertical-rl'</code>) لا يأخذ أي رقم، ويُبلَّغ عن <code>true</code> فيه بالتحذير <code>lineNumbersUnsupported</code>.</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>'verse' | 'all'</code></td>
+      <td><code>'verse'</code></td>
+      <td><code>'verse'</code> يعدّ أبيات قصائد <code>:::verse</code>، كل بيت مرة واحدة: ما ينتقل إلى السطر التالي من بيت أطول من العرض لا يأخذ رقمًا، والمسافة بين المقاطع لا تُعدّ. والقصيدة المنضّدة بالتخطيط العربي الكلاسيكي تعدّ سطرًا واحدًا لكل بيت؛ والسطر الثاني من البيت المدرَّج لا يُعدّ. و<code>'all'</code> يعدّ كل أسطر فقرات المتن وعناصر القوائم والاقتباسات والأبيات، بترتيب القراءة: صفحةً صفحة، وعمودًا عمودًا، من الأعلى إلى الأسفل.</td>
+    </tr>
+    <tr>
+      <td><code>interval</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>يطبع رقم كل سطر رقمه من مضاعفات هذا العدد (5، 10، 15…). والقصيدة التي أول أبياتها 37 تطبع 40، 45… ويمكن لسطر فتح القصيدة أن يحدّد فاصلًا خاصًا بها (<code>interval=N</code>).</td>
+    </tr>
+    <tr>
+      <td><code>numberFirst</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يطبع أيضًا رقم أول سطر يُعدّ بعد كل إعادة للعدّ.</td>
+    </tr>
+    <tr>
+      <td><code>restart</code></td>
+      <td><code>'document' | 'chapter' | 'section' | 'page' | 'poem'</code></td>
+      <td><code>'poem'</code> مع <code>count: 'verse'</code>، و<code>'page'</code> مع <code>count: 'all'</code></td>
+      <td>أين يبدأ العدّ من جديد: أبدًا (<code>'document'</code>، فيستمر عبر فصول الكتاب)، أو عند كل عنوان من المستوى 1 (<code>'chapter'</code>)، أو عند كل عنوان من المستوى 1 أو 2 (<code>'section'</code>)، أو في كل صفحة (<code>'page'</code>)، أو عند كل قصيدة <code>:::verse</code> (<code>'poem'</code>). ويعيد <code>lineStart=N</code> في قصيدة و<code>lines=N</code> في الموجّه <code>:::numbering</code> العدَّ في أي موضع، أيًّا كان الوضع.</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>رقم أول سطر بعد إعادة العدّ.</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side'</code></td>
+      <td><code>'outer'</code></td>
+      <td>الجهة التي تقف فيها الأرقام. <code>'outer'</code> هي الجهة البعيدة عن الكعب: يمين الصفحة الفردية ويسار الزوجية، وبالعكس في الكتاب المجلَّد من اليمين. و<code>'inner'</code> جهة الكعب. و<code>'left'</code> و<code>'right'</code> ثابتتان في كل الصفحات. و<code>'start'</code> و<code>'end'</code> تتبعان اتجاه المستند: <code>'start'</code> هي اليمين في كتاب من اليمين إلى اليسار. و<code>'side'</code> تضعها في العمود الجانبي لتخطيط <code>'oneAndHalf'</code> مع <code>layout.sideColumnRole: 'floats'</code>، ملاصقةً لحافة العمود الجانبي المجاورة للنص (ولا يُستعمل <code>gap</code>)؛ وفي صفحة بلا عمود جانبي تعود إلى <code>'outer'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>multiColumn</code></td>
+      <td><code>'each' | 'gutter' | 'outer-edges'</code></td>
+      <td><code>'outer-edges'</code></td>
+      <td>الصفحات التي فيها عمودان من النص أو أكثر جنبًا إلى جنب. <code>'outer-edges'</code> تضع أرقام العمود الأول على يساره وأرقام العمود الأخير على يمينه، وتتبع الأعمدة بينهما <code>'each'</code>. و<code>'gutter'</code> تضعها في الفواصل بين الأعمدة: أرقام العمود الأول على يمينه، وأرقام غيره على يسارها. و<code>'each'</code> تضع أرقام كل عمود في جهة <code>position</code>.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>المسافة من حافة العمود إلى الرقم؛ و<code>em</code> حجم الرقم نفسه.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> تحاذي كل رقم نحو النص: إلى اليمين في هامش أيسر، وإلى اليسار في هامش أيمن. و<code>'left'</code> و<code>'right'</code> تحاذيان الأرقام داخل عرض أعرض رقم في الصفحة.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>عائلة خط المتن</td>
+      <td>خط الأرقام. يُحمَّل ويُضمَّن كأي عائلة أخرى.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>حجم الأرقام؛ و<code>em</code> حجم المتن.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>وزن المتن</td>
+      <td>وزن الأرقام.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>ينضّد الأرقام بخط مائل.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لون المتن</td>
+      <td>لون الأرقام. واللون المرتبط باللوحة يتبع لوحات الأجزاء والأقسام.</td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>string</code></td>
+      <td>عشري</td>
+      <td>كيف تُكتب الأرقام، بأي من <a href="/ar/docs/configuration-page-layout#صيغ-كتابة-أنماط-الترقيم">صيغ كتابة أنماط الترقيم</a> (<code>'lower-roman'</code>، <code>'arabic-indic'</code>، <code>'一'</code>…). وتُكتب الأرقام العشرية بأرقام المستند (<code>numerals</code>). والاسم غير المعروف يرقّم بالعشري، مع التحذير <code>unknownNumberFormat</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+lineNumbers: {
+  enabled: true,
+  count: 'verse',
+  interval: 5,
+  restart: 'document',          // عدّ واحد للكتاب كله
+  position: 'outer',
+  fontSize: { value: 0.75, unit: 'em' },
+  italic: true,
+}
+```
+
+ما يُعدّ وما لا يُعدّ:
+
+- **لا يُعدّ أبدًا**: العناوين، والتعليقات، والجداول والصور، والصيغ المنفصلة، ونصوص التصميم (صفحات الافتتاح والترويسات)، والحواشي السفلية وحواشي آخر الفصل، وجدول المحتويات، ومداخل الفهرس وقائمة المراجع، والصفحات الفارغة.
+- **الإطارات والنثر.** نص الإطار لا يُعدّ، ومع `count: 'verse'` لا يُعدّ النثر أيضًا، إلا إذا قال نمط الفقرة الذي يُنضَّد به `lineNumbers: true`؛ والنمط الذي فيه `lineNumbers: false` لا يُعدّ أبدًا (انظر [أنماط الفقرات](/ar/docs/configuration-styles#أنماط-الفقرات)).
+- **قصيدة واحدة.** يقبل سطر فتح القصيدة `numbered=false` (لا تُعدّ أبياتها)، و`lineStart=N` (أول أبياتها رقمه N، ومنه يبدأ العدّ من جديد)، و`interval=N`. و`:::numbering{lines=N}` يعطي السطرَ المعدود التالي الرقمَ N، أينما كان. انظر [صيغة المستند › `:::verse`](/ar/docs/document-format#verse) و[`:::numbering`](/ar/docs/document-format#numbering).
+
+في كتاب يُخرَج فصلًا فصلًا، ينقل `restart: 'document'` العدّ من فصل إلى الذي يليه عبر `continuation.lineNumber`. ويعدّ `continuationAfter` الأبيات من النص؛ أما مع `count: 'all'` فيتوقف العدّ على الإخراج، فيمرّر التطبيق المضيف `lastLineNumber` من مستند الفصل السابق، كما يفعل Sandbox.
+
+مع `position: 'side'` تتقاسم الأرقام العمود الجانبي مع الإطارات والتعليقات والأشكال الجانبية. والرقم الذي يتراكب مع أحدها يُرسم مع ذلك، ولا يتحرك أيٌّ منهما، ويصدر الإخراج تحذير محتوى `lineNumberOverlap` يشير إلى السطر المرقَّم.
+
+**المُخرجات.** ترسم Canvas وPDF وعارض HTML وEPUB ذو التخطيط الثابت الأرقام. وفي PDF الموسوم تكون عناصر زخرفية (artifacts) في الإخراج، ويحمل كل منها `/ActualText` فارغًا، فينتقل النص المنسوخ أو المستخرج من سطر إلى سطر بدونها. ويخفيها مُخرَج HTML عن التقنيات المساعدة (`aria-hidden`) وعن التحديد وعن النص المنسوخ. أما EPUB المتدفق، الذي ينضّد نظام القراءة أسطره، فيحتفظ بأرقام الأبيات وحدها: عنصر `span` من الصنف `pt-line-number` (و`aria-hidden` هو أيضًا) في هامش البداية من المقطع، بجوار كل بيت يحمل رقمًا في النسخة المطبوعة. وفي VDT تكون الأرقام خانة تصميم في كل صفحة (`page.lineNumbers`، وكتل نصها معلَّمة بـ `artifact`) وقائمة علامات (`page.lineNumberMarks`: `number` و`label` و`columnIndex` و`blockId` و`lineIndex`)؛ ويسجّل المستند `lastLineNumber`.
+
+**غير مدعوم**: أرقام الأسطر في النص العمودي، والإحالة المرجعية التي تطبع رقم سطر، والحواشي المربوطة بأرقام الأسطر، وأرقام أسطر خلايا الجداول والتعليقات وقوائم الشيفرة.
+
+في Sandbox هذه الإعدادات هي قسم **ترقيم الأسطر** في لوحة التصميم. ودالتا الحل والتجريد مماثلتان لنظيراتهما في الأقسام الأخرى؛ والخط والوزن واللون تأتي من المتن:
+
+```ts
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from 'postext';
+
+resolveLineNumbersConfig(config.lineNumbers, resolvedBodyText); // الخط والوزن واللون غير المحدَّدة تتبع المتن
+```
+
+
+## الإحالات المرجعية
+
+تحدد الخاصية `crossRefs` الكلمات التي تطبعها [الإحالة المرجعية](/ar/docs/document-format#الإحالات-والمراسي) حول رقم أو صفحة، والنمطَ الذي تأخذه `:ref` حين لا تحدد نمطًا. يحمل كل قالب `{n}` حيث يوضع الرقم؛ والقالب الذي يخلو منه يأتي الرقم بعده مسبوقًا بمسافة غير قابلة للكسر (`"§"` يطبع *§ 3.2*). والقالب غير المعيَّن يتبع لغة المستند: *chapter / section / p.* بالإنجليزية، و*capítulo / sección / pág.* بالإسبانية، و`第{n}章` / `第{n}节` / `第{n}页` بالصينية، وهكذا للفرنسية والألمانية والإيطالية والبرتغالية والكتالونية والهولندية.
+
+```ts
+interface CrossRefsConfig {
+  chapter?: string;  // Words around a level-1 heading's number: "chapter {n}".
+  section?: string;  // Around any other heading's number: "section {n}".
+  page?: string;     // Around a page number: "p. {n}".
+  defaultStyle?: 'default' | 'number' | 'title' | 'page'; // A :ref without style=.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '160px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>chapter</code></td>
+      <td><code>string</code></td>
+      <td>بحسب اللغة</td>
+      <td>إحالة إلى عنوان من المستوى 1: <code>"chapter &#123;n&#125;"</code>. ورقم العنوان الذي يتضمن قالبُه الكلمةَ أصلًا (<code>Chapter &#123;1&#125;</code>، <code>第&#123;1:一&#125;章</code>) يُطبع كما هو.</td>
+    </tr>
+    <tr>
+      <td><code>section</code></td>
+      <td><code>string</code></td>
+      <td>بحسب اللغة</td>
+      <td>إحالة إلى عنوان من المستوى 2 إلى 6: <code>"section &#123;n&#125;"</code>، <code>"§ &#123;n&#125;"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>string</code></td>
+      <td>بحسب اللغة</td>
+      <td>إحالة إلى صفحة (<code>style=page</code>): <code>"p. &#123;n&#125;"</code>، <code>"page &#123;n&#125;"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>defaultStyle</code></td>
+      <td><code>'default' | 'number' | 'title' | 'page'</code></td>
+      <td><code>'default'</code></td>
+      <td>ما تطبعه <code>:ref</code> إلى عنوان أو مرساة دون <code>style=</code>. <code>'default'</code>: العنوان المرقّم بكلمته ورقمه، وغير المرقّم بنص عنوانه، والمرساة بنصها. والإحالة التي تعيّن <code>style</code> تحتفظ به، ولا تتأثر الإحالات إلى الأشكال والجداول.</td>
+    </tr>
+  </tbody>
+</table>
+
+تأخذ الإحالات لون كل إحالة ووزن خطها وميلها (`bodyText.referenceColor`، `referenceBold`، `referenceItalic`).
+
+## الاستشهادات
+
+تختار الخاصية `citations` نمط الاستشهاد وطريقة ظهور الاستشهادات وقائمة المراجع. الترميز موصوف في [الاستشهادات والمراجع](/ar/docs/document-format#الاستشهادات-وقائمة-المراجع)؛ ويطبّق النمطَ الحزمةُ `postext-citeproc`.
+
+```ts
+interface CitationsConfig {
+  style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
+  customStyle?: string;    // a whole CSL style (.csl XML), used with style: 'custom'
+  locale?: string;         // CSL locale; the document language when unset
+  link?: boolean;          // citations link to their entries
+  marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
+  collapseRanges?: boolean;
+  notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
+  bibliography?: {
+    title?: string;        // unset: the document language's word; '' or ' ': none
+    scope?: 'book' | 'chapter';
+    auto?: boolean;
+    fontSize?: Dimension;
+    lineHeight?: Dimension;
+    hangingIndent?: Dimension;
+    entrySpacing?: Dimension;
+    labelWidth?: Dimension;
+    labelAlign?: 'left' | 'right';
+    doi?: 'link' | 'text' | 'hide';
+    includeUncited?: boolean;
+    groupByLanguage?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '120px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>string</code></td>
+      <td><code>'apa'</code></td>
+      <td>معرّف نمط مضمَّن (انظر <a href="/ar/docs/document-format#الأنماط">الأنماط</a>) أو <code>'custom'</code>. النمط هو الذي يقرر ما تقوله الاستشهادات والمُدخلات: الأسماء، والتواريخ، والترتيب، وعلامات الترقيم، وهل الاستشهادات حواشٍ.</td>
+    </tr>
+    <tr>
+      <td><code>customStyle</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>نمط CSL كامل، أي محتوى XML لملف <code>.csl</code>، يُستخدم حين تكون <code>style</code> هي <code>'custom'</code>. يحمّله Sandbox من ملف.</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>لغة المستند</td>
+      <td>لغة CSL المحلية التي يكتب بها النمط كلماته (<code>en-US</code>، <code>es-ES</code>، <code>zh-CN</code>، <code>zh-TW</code>، <code>ja-JP</code>…). والمستند الياباني يُقرأ على أنه <code>ja-JP</code>: تصل الاستشهادات السردية بين مؤلفَين بـ と وتختصر الأكثر بـ ほか.</td>
+    </tr>
+    <tr>
+      <td><code>link</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يرتبط الاستشهاد بمُدخله في قائمة المراجع (رابط في PDF، ومرساة في HTML، ونقرة في Sandbox).</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'</code></td>
+      <td><code>'style'</code></td>
+      <td>كيف يعلّم النمط المرقَّم الاستشهاد: كما يكتبه النمط، أو <code>[1]</code>، أو <code>(1)</code>، أو رقمًا مرفوعًا، أو <code>〔1〕</code> (منتصبًا في النص الرأسي). ويلي الرقمَ محدِّدُ الموضع (locator).</td>
+    </tr>
+    <tr>
+      <td><code>collapseRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>الأرقام المتتالية تُكتب نطاقًا: <code>1–3</code> في علامة واحدة خاصة بها، و<code>[2]–[4]</code> في نمط IEEE. و<code>false</code> تبقيها منفصلة.</td>
+    </tr>
+    <tr>
+      <td><code>notes</code></td>
+      <td><code>'footnote' | 'warichu'</code></td>
+      <td><code>'footnote'</code></td>
+      <td>أين يضع نمطُ الحواشي استشهاداته: في حواشٍ سفلية (توضع وتُرقَّم كما تحدد <code>footnotes</code>)، أو في تعليقات من صفين داخل السطر (夹注).</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>الاستشهادات عبر الكتاب كله، أو كل فصل وحده (كل مستند، وكل عنوان من المستوى 1 بعد استشهاد): يرقّم النمط الرقمي كل فصل من 1، ويأخذ العمل المستشهد به في فصلين رقم كل فصل؛ ويكتب نمط الحواشي العمل كاملًا عند أول استشهاد به في كل فصل. يُستعمل مع <code>bibliography.scope: 'chapter'</code>، فتأخذ قوائم الفصول أرقام فصولها.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.title</code></td>
+      <td><code>string</code></td>
+      <td>بحسب اللغة</td>
+      <td>العنوان فوق القائمة، فقرة بخط عريض. إن تُرك فارغًا فلا عنوان. والعنوان الذي تكتبه بنفسك يوضع فوق <code>:::bibliography</code>.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.scope</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>قائمة واحدة بكل عمل يستشهد به الكتاب، أو قائمة لكل فصل بالأعمال التي يستشهد بها. في المستند المؤلف من عدة فصول، يبدأ كل H1 قائمة فصل جديدة؛ ومع <code>auto</code> يحصل الفصل الذي لا يضع <code>:::bibliography</code> على قائمته في نهايته.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.auto</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يضع القائمة بعد النص (في الفصل الأخير، للقائمة الشاملة للكتاب) حين لا تضعها أي <code>:::bibliography</code>.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>حجم المُدخلات؛ وem هو حجم المتن.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>تباعد أسطر المتن</td>
+      <td>تباعد أسطر المُدخلات.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>إزاحة الأسطر التالية من المُدخل غير المرقّم.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>المسافة بين مُدخلين.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td>أطول تسمية</td>
+      <td>عرض العمود الذي تقف فيه أرقام القائمة المرقّمة: يبدأ نص كل مُدخل على هذه المسافة إلى الداخل، في سطره الأول كما في أسطره التالية، فيتشارك <code>9.</code> و<code>10.</code> العمود. وتبقى التسمية جزءًا من نص المُدخل.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelAlign</code></td>
+      <td><code>'left' | 'right'</code></td>
+      <td><code>'left'</code></td>
+      <td>موضع التسمية في عمودها: ملاصقة لحافته اليسرى، أو ملاصقة للنص (فينتهي <code>9.</code> و<code>10.</code> معًا).</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.doi</code></td>
+      <td><code>'link' | 'text' | 'hide'</code></td>
+      <td><code>'link'</code></td>
+      <td>معرّفات DOI وعناوين URL روابطَ، أو نصًّا عاديًا، أو تُحذف.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.includeUncited</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يُدرج كل مرجع، سواء استُشهد به أم لا (مثل <code>nocite: "@*"</code>).</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.groupByLanguage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>الأعمال المكتوبة بالصينية واليابانية والكورية أولًا، ثم الأخرى. لأنماط المؤلف والتاريخ والمؤلف والصفحة فقط: القائمة المرقّمة تحتفظ بترتيب أرقامها.</td>
+    </tr>
+  </tbody>
+</table>
+
+## جدول المحتويات
+
+تضبط الخاصية `toc` ما يطبعه التوجيه `:::toc` (انظر [صيغة المستند](/ar/docs/document-format#toc)). تُجمَع المحتويات من **مخطّط** المستند (outline): كل عنوان برقمه وتسمية صفحته، وكل `:::part`؛ ولذلك تتبع الفصول: إن غيّرت اسم فصل، أو نقلته إلى جزء آخر، أو غيّرت مؤلفيه، تغيّرت المداخل معه. يتكوّن المدخل من رقم العنوان في عمود خاص به، ثم العنوان، ثم خط الإرشاد (leader) وتسمية الصفحة عند الحافة اليمنى، ثم سطر عنوان فرعي اختياري؛ أما الجزء فصفّ يصمّمه `parts.design`.
+
+```ts
+const config: PostextConfig = {
+  toc: {
+    levels: [{ level: 1, fontWeight: 700, color: { hex: '#00507b', model: 'hex' }, numberWidth: { value: 7.4, unit: 'mm' } }],
+    unnumbered: { color: { hex: '#000000', model: 'hex' } },
+    pageNumber: { fontWeight: 400, width: { value: 8, unit: 'mm' } },
+    leader: { char: '.', gap: { value: 1, unit: 'mm' } },
+    subtitle: { enabled: true, attr: 'author', italic: true, fontSize: { value: 8.5, unit: 'pt' } },
+    parts: {
+      height: { value: 23, unit: 'pt' },
+      marginTop: { value: 11.5, unit: 'pt' },
+      design: { elements: [/* a band box, 'SECTION {number}', '{titleText}', '{pageNumber}' */] },
+    },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>TocLevelConfig[]</code></td>
+      <td>المستوى 1</td>
+      <td>مستويات العناوين المُدرَجة، ولكل منها تنضيد مدخله: <code>fontFamily</code>، <code>fontSize</code>، <code>lineHeight</code> (افتراضيًا تباعد أسطر المتن، فتستقر المحتويات على الشبكة)، <code>fontWeight</code>، <code>italic</code>، <code>color</code>، <code>indent</code> (للمدخل كله)، <code>numberWidth</code> / <code>numberGap</code> (عمود الرقم الذي يبدأ العنوان بعده؛ تُحاذى الأرقام فيه إلى اليمين، والرقم الأعرض من <code>numberWidth</code>، مثل <code>الفصل الحادي عشر</code> أو <code>Chapter 12</code>، يوسّع عمود مستواه إلى عرض أعرض الأرقام)، <code>numberFontFamily</code>، <code>numberFontSize</code>، <code>numberFontWeight</code>، <code>numberColor</code>، <code>marginTop</code>، <code>marginBottom</code>. الحقول غير المضبوطة ترث إعدادات نص المتن. يقع الرقم على خط أساس السطر الأول من العنوان، أيًّا كان محرفه وحجمه، على Canvas وفي HTML وفي PDF (حتى postext 1.4 كان الرقم يتوسّط ارتفاع الحرف x (x-height) مثل نقطة القائمة، فكان محرف العرض أو الحجم الأكبر يعلو فوق العنوان). يجد المُخرِج الذي تكتبه بنفسك خط الأساس هذا في <code>bulletBaselineY</code> من كتلة المدخل؛ وما زال <code>bulletY</code> منتصف مربّع em للرقم، كما في 1.4، فيرسم المُخرِج الأقدم من الحقل الجديد الأرقام حيث كان يرسمها دائمًا.</td>
+    </tr>
+    <tr>
+      <td><code>unnumbered</code></td>
+      <td><code>TocEntryStyleConfig</code></td>
+      <td>—</td>
+      <td>قيم بديلة للعناوين التي يحمل نمطها <code>numbered: false</code> (كالتمهيد): لا تطبع رقمًا وتبدأ محاذية لإزاحة <code>indent</code> الخاصة بالمستوى.</td>
+    </tr>
+    <tr>
+      <td><code>pageNumber</code></td>
+      <td>كائن</td>
+      <td>محرف المستوى 1، بوزن المتن</td>
+      <td><code>fontFamily</code>، <code>fontSize</code>، <code>fontWeight</code>، <code>italic</code>، <code>color</code> لتسمية الصفحة، و<code>width</code> (افتراضيًا <code>2em</code>): العمود المحجوز لها عند الحافة اليمنى، حيث تُحاذى إلى اليمين.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>كائن</td>
+      <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
+      <td>يتكرّر <code>char</code> على امتداد الفراغ بين العنوان ورقم الصفحة، محاذى إلى اليمين لتصطفّ نقاط المداخل المتتالية (<code>'. '</code> يباعد بينها)؛ و<code>gap</code> أقل مسافة تُترك بين العنوان وخط الإرشاد. يأخذ خط الإرشاد من المحارف ما يتّسع له المكان، مقيسًا سلسلةً كاملة بمحرفه، فالمحرف الذي يباعد بين النقاط المتتالية بتقنين الأزواج (kerning) ينال نقاطًا أقل بدل نقاط تصل إلى رقم الصفحة. (حتى postext 1.4 كان العدد يُحسب من نقطة واحدة، وفي محرف كهذا كان خط الإرشاد يمتد من العنوان إلى داخل الرقم.) والعنوان الذي لا يترك للتسمية مكانًا يلتفّ أبكر قليلًا. وفي PDF الموسوم تكون النقاط عناصر زخرفية من عناصر الإخراج، فلا تدخل في النص المستخرَج. ويضع نص المتن خطوط الإرشاد نفسها عند <a href="/ar/docs/configuration-text#مواضع-الجدولة">مواضع الجدولة</a>.</td>
+    </tr>
+    <tr>
+      <td><code>subtitle</code></td>
+      <td>كائن</td>
+      <td><code>{"{ enabled: false, attr: 'author' }"}</code></td>
+      <td>سطر ثانٍ تحت المدخل مأخوذ من سمة في العنوان (<code>attr</code>)، أي مؤلفي الفصل، وله <code>fontFamily</code> و<code>fontSize</code> و<code>fontWeight</code> و<code>italic</code> (افتراضيًا <code>true</code>) و<code>color</code> خاصة به وإزاحة <code>indent</code> إضافية. يشارك السطر المدخل تباعد أسطره ولا ينفصل أبدًا عن عنوانه.</td>
+    </tr>
+    <tr>
+      <td><code>parts.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>هل تنال فواصل الأجزاء صفًّا.</td>
+    </tr>
+    <tr>
+      <td><code>parts.breakBefore</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>افتح صفحة جديدة قبل كل صف جزء ما عدا الأول، فتُدرَج فصول كل جزء في صفحة خاصة بها.</td>
+    </tr>
+    <tr>
+      <td><code>parts.design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>فارغ</td>
+      <td>تصميم الصف؛ حاويته هي الصف (عرض العمود × <code>height</code>). العناصر النائبة: <code>{'{number}'}</code>، <code>{'{numberDecimal}'}</code>، <code>{'{numberRoman}'}</code>…، <code>{'{titleText}'}</code> و<code>{'{pageNumber}'}</code> (تسمية صفحة الجزء؛ ومع <code>parts.page: false</code>، الذي لا يفتح صفحة جزء، تسمية الصفحة التي يبدأ عليها محتوى الجزء، حيث تنتقل الترويسات إليه؛ وفي كتاب يُخرَج فصلًا فصلًا، يشير السياج الذي يُغلق فصله إلى أول صفحة محتوى في الفصل التالي). تأخذ الألوان المرتبطة بلوحة الألوان قيمَ <code>palette</code> الخاصة بالجزء، فيأتي صف كل قسم بلونه. وحين يكون التصميم فارغًا، يُنضَّد <code>{'{number} {titleText}'}</code> (وبينهما <code>numberSeparator</code> الخاص بعنوان H1) ورقم الصفحة بتنضيد مدخل المستوى 1.</td>
+    </tr>
+    <tr>
+      <td><code>parts.height</code>، <code>marginTop</code>، <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code>، <code>0</code>، <code>0</code></td>
+      <td>ارتفاع الصف والمسافة حوله. وحدة <code>em</code> هي حجم نص المتن، فارتفاع الصف الافتراضي ضعف حجم المتن، لا سطران من المتن: مع متن 9.5/13.5 pt يكون 19 pt. ولصفّ بارتفاع سطرين من المتن، أعطِ الارتفاع بوحدة <code>pt</code> (<code>27pt</code> في ذلك المثال).</td>
+    </tr>
+  </tbody>
+</table>
+
+تسميات الصفحات هي التي يطبعها المستند. يعيد `buildDocument()` إخراج المستند الذي يحوي `:::toc` بتسميات الجولة السابقة حتى تستقر (ثلاث جولات إضافية على الأكثر)؛ أما المضيف الذي يُخرج كتابًا فصلًا فصلًا فيقدّم بدلًا من ذلك مخطّط الكتاب كله في `PostextContent.outline`، مجمَّعًا من `contentOutline()` (العناوين والأجزاء من النص وحده) و`outlineFromDoc()` (المداخل نفسها بتسميات الصفحات في إخراجٍ ما)، ويعيد إخراج فصل المحتويات كلما تغيّر `outlineKey()` لذلك المخطّط. يحمل كل مدخل عنوانٍ الرقمَ `number` الذي تطبعه المحتويات، ويحمل العنوان المرقّم كذلك `counter` الخاص به: العدّ الجاري لمستواه بعد أي `startAt`، أيًّا كان ما يطبعه القالب، وهو ما يعرضه المضيف بجانب الفصل في قوائمه الخاصة.
+
+## الفهرس الأبجدي
+
+تضبط الخاصية `index` ما يطبعه التوجيه `:::index` (انظر [صيغة المستند](/ar/docs/document-format#الفهرس-الأبجدي)): المصطلحات المعلَّمة بـ `:index[…]` و`:index{term="…"}` في النص، مرتّبةً ومجمّعةً حسب الحرف الأول (وفي الصينية حسب الحرف الأول من قراءة pinyin أو حسب عدد الضربات، وفي اليابانية حسب صف غوجوون، انظر `groupBy`)، ولكل منها الصفحات التي يقع فيها. يتكوّن المدخل من مصطلحه، ففاصل، فأرقام صفحاته؛ وتليه مداخله الفرعية، بخطوة إزاحة واحدة لكل مستوى، وتتدلّى أسطره الملتفّة بمقدار `turnoverIndent` فلا تصطفّ أبدًا مع مدخل فرعي.
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    // The index in two columns, under its own heading.
+    { id: 'index', numbered: false, layout: { layoutType: 'double', gutterWidth: { value: 6, unit: 'mm' } } },
+  ],
+  index: {
+    fontSize: { value: 8.5, unit: 'pt' },
+    lineHeight: { value: 11, unit: 'pt' },
+    rangeFormat: 'chicago',
+    groups: { fontFamily: 'Source Sans 3', fontWeight: 700, color: { hex: '#8a1c1c', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code>، <code>fontSize</code>، <code>lineHeight</code>، <code>fontWeight</code>، <code>color</code></td>
+      <td>—</td>
+      <td>نص المتن</td>
+      <td>تنضيد المداخل. كل سطر في الفهرس، بما فيه رؤوس الحروف، يُنضَّد على <code>lineHeight</code>؛ للفهرس إيقاعه الخاص ولا يلتزم بشبكة خطوط الأساس.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>إزاحة كل مستوى من المداخل الفرعية.</td>
+    </tr>
+    <tr>
+      <td><code>turnoverIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>إزاحة إضافية للأسطر الملتفّة من المدخل، فوق إزاحة مستواه.</td>
+    </tr>
+    <tr>
+      <td><code>entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>المسافة فوق كل مدخل رئيسي.</td>
+    </tr>
+    <tr>
+      <td><code>separator</code>، <code>locatorSeparator</code>، <code>rangeSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>', '</code>، <code>', '</code>، <code>'–'</code>؛ والأوّلان <code>'، '</code> في الخط العربي</td>
+      <td>ما يُطبع بين المصطلح وأول صفحة له، وبين صفحتين، وبين طرفي النطاق.</td>
+    </tr>
+    <tr>
+      <td><code>mergeRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>اضمم الصفحات المتتالية ذات صيغة الترقيم الواحدة في نطاق: <code>12, 13, 14</code> تُطبع <code>12–14</code>. لا تُضمّ الصفحات الرئيسية أبدًا.</td>
+    </tr>
+    <tr>
+      <td><code>rangeFormat</code></td>
+      <td><code>'full' | 'chicago'</code></td>
+      <td><code>'full'</code></td>
+      <td>كيف يُكتب الرقم الثاني في النطاق: كاملًا (<code>234–237</code>)، أو بحذف الأرقام التي يشترك فيها مع الأول، كما يطلب <em>The Chicago Manual of Style</em> (9.64): <code>71–72</code>، <code>100–104</code>، <code>101–8</code>، <code>321–28</code>، <code>1496–500</code>. التسميات الرومانية تُكتب كاملة دائمًا.</td>
+    </tr>
+    <tr>
+      <td><code>main</code></td>
+      <td><code>{'{ bold?, italic? }'}</code></td>
+      <td>عريض</td>
+      <td>كيف تُنضَّد الصفحة الرئيسية (<code>main</code> على العلامة).</td>
+    </tr>
+    <tr>
+      <td><code>see</code></td>
+      <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
+      <td>حسب اللغة، مائل (قائم في الخط العربي)</td>
+      <td>الكلمات التي تسبق الإحالة. إن لم تُضبط تتبع لغة المستند: <em>See</em> / <em>See also</em>، <em>Véase</em> / <em>Véase también</em>، <em>Voir</em> / <em>Voir aussi</em>، 见 / 另见 (見 / 另見 في الصينية التقليدية)… يضع الفهرس الصيني الإحالة بعد نقطة، بلا مسافة: <code>贾琏 12。见贾政</code>.</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>لغة المستند</td>
+      <td>اللغة التي يُرتَّب بترتيبها الأبجدي المداخل (وسم BCP 47 يقرؤه <code>Intl.Collator</code>). في الإسبانية تأتي <em>ñ</em> بعد <em>n</em> وتتصدّر مجموعة خاصة بها؛ ولا تغيّر العلامات فوق الحروف (accents) الترتيب أبدًا.</td>
+    </tr>
+    <tr>
+      <td><code>groupBy</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>ما تكونه رؤوس المجموعات. <code>'letter'</code>: الحرف الأول من مفتاح الترتيب. <code>'pinyin'</code>: المدخل الذي يبدأ بمقطع صيني (Han) يُصنَّف تحت الحرف اللاتيني الأول من قراءته بالـ pinyin (贾宝玉 تحت <code>J</code>)، ومفتاح الترتيب اللاتيني تحت حرفه، بعد المداخل الصينية لذلك الحرف (إذ يضع المرتِّب الحروف اللاتينية بعد المقاطع الصينية): <code>sort="jia mu"</code> يُختَم به حرف <code>J</code>. <code>'stroke'</code>: تحت عدد ضربات المقطع الأول، <code>一畫</code>، <code>二畫</code>… (<code>一画</code>… في الصينية المبسّطة). <code>'gojuon'</code>: يُصنَّف مدخل الكانا تحت صف غوجوون الخاص به، あ行، か行 … わ行، و<code>'kana'</code> تحت أول حرف كانا فيه (وتتشارك الكاتاكانا والهيراغانا الرؤوس)، بترتيب JIS X 4061 للفهرس الياباني: حسب القراءة (<code>yomi</code> في العلامة، وإلا قراءة الكانا في الروبي الذي فيها، وإلا <code>sort</code>، وإلا النص)، والكاتاكانا كالهيراغانا، والكانا الصغيرة كالكبيرة، و ー كالحرف الصوتي الذي قبلها، وغير المجهور (清) قبل المجهور (濁) قبل شبه المجهور (半濁)؛ الرموز أولًا، ثم الأرقام حسب قيمتها، ثم الكلمات اللاتينية تحت حروفها، ثم الكانا؛ والمدخل الذي ما زال يبدأ بكانجي يُبلَّغ عنه بالتحذير <code>indexReadingMissing</code> ويُنضَّد بعد الكانا بلا رأس. <code>'none'</code>: بلا رؤوس؛ تُفصَل الرموز والأرقام والكلمات بمسافة <code>groups.marginTop</code> وحدها. أما <code>'auto'</code> فيجمّع الفهرس الياباني (<code>ja</code>، <code>ja-*</code>) حسب صف غوجوون، والفهرس الصيني المبسّط (<code>zh</code>، <code>zh-Hans</code>، <code>zh-CN</code>) حسب pinyin، والتقليدي (<code>zh-Hant</code>، <code>zh-TW</code>، <code>zh-HK</code>) حسب الضربات، وكل لغة أخرى حسب الحرف. تُرتَّب المداخل بالترتيب الذي تأتي منه الرؤوس: فالفهرس <code>zh-Hant</code> المجمَّع حسب pinyin يُرتَّب حسب pinyin. القراءات وأعداد الضربات هي ما يعطيه المرتِّب (CLDR)؛ وحيث يقرأ مقطعًا قراءة خاطئة (重 بقراءة <em>zhòng</em> في 重阳، و行 بقراءة <em>xíng</em> في 行业)، أعطِ العلامة مفتاح <code>sort</code> بمقاطع ليس لها إلا القراءة التي تريدها، فيُرتَّب المدخل في موضعه: <code>sort="崇阳"</code> لـ 重阳، و<code>sort="航业"</code> لـ 行业. والمتصفح الذي لا يملك بيانات الترتيب الصيني يطبع فهرس pinyin أو فهرس الضربات بلا رؤوس.</td>
+    </tr>
+    <tr>
+      <td><code>ignoreArticle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> في العربية</td>
+      <td>رتّب المداخل العربية وجمّعها كأن أداة التعريف <code>ال</code> (<code>ٱل</code>) في أولها غير موجودة: تُصنَّف البصرة تحت ب، بين بدر وبغداد، وتُطبع كما كُتبت. تحتفظ <code>الله</code> بأداة التعريف، والمدخل الذي له مفتاح <code>sort</code> خاص يُرتَّب بذلك المفتاح كما هو. وأيًّا كانت قيمة هذا الإعداد، يتجاهل الفهرس العربي الحركات والتطويل، ويصنّف أ إ آ ٱ تحت ا، ويرتّب ؤ كما يرتّب و، وئ وى كما يرتّب ي، وة كما يرتّب ه.</td>
+    </tr>
+    <tr>
+      <td><code>groups.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>اطبع رأسًا فوق كل مجموعة من المداخل (<code>A</code>، <code>B</code>…، أو عدد الضربات، و<code>0–9</code> للأرقام، و<code>Symbols</code> للبقية؛ و<code>数字</code> / <code>數字</code> و<code>符号</code> / <code>符號</code> في الصينية).</td>
+    </tr>
+    <tr>
+      <td><code>groups.fontFamily</code>، <code>fontSize</code>، <code>fontWeight</code>، <code>italic</code>، <code>color</code></td>
+      <td>—</td>
+      <td>ما للمداخل، والوزن <code>700</code></td>
+      <td>محرف رأس الحرف. يُنضَّد على خطوة أسطر المداخل.</td>
+    </tr>
+    <tr>
+      <td><code>groups.marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td>سطر واحد من الفهرس</td>
+      <td>المسافة فوق كل مجموعة، برأس أو بدونه؛ ولا مسافة فوق المجموعة الأولى، التي تحدّد بُعدَها عن العنوان مسافةُ العنوان نفسه، ولا في أعلى العمود.</td>
+    </tr>
+    <tr>
+      <td><code>groups.symbolsLabel</code>، <code>numbersLabel</code></td>
+      <td><code>string</code></td>
+      <td>حسب اللغة؛ <code>'0–9'</code>، و<code>'数字'</code> / <code>'數字'</code> في الصينية</td>
+      <td>رأسا المداخل التي تبدأ برمز والتي تبدأ برقم.</td>
+    </tr>
+  </tbody>
+</table>
+
+تأتي أرقام الصفحات من مخطّط الكتاب، كما تأتي أرقام المحتويات: يُدرج `computeOutline()` و`contentOutline()` علامات الفهرس في النص مداخلَ من النوع `'indexMark'` (مع `indexMark.path` و`sort` و`see` و`seeAlso` و`main` و`range` و`index`)، ويعطي `outlineFromDoc()` كلًّا منها الصفحة التي وقعت عليها، وهي ما يسجّله البناء في `doc.indexMarks` (`{ sourceStart, pageIndex }` لكل علامة). يعيد `buildDocument()` إخراج المستند الذي يطبع فهرسه بنفسه حتى تستقر الأرقام؛ أما المضيف الذي يُخرج كتابًا فصلًا فصلًا فيسلّم الفصلَ الذي يحوي `:::index` مخطّطَ الكتاب كله في `PostextContent.outline`. يقسم `tocOutline()` و`indexOutline()` المخطّط إلى ما تقرؤه المحتويات وما يقرؤه الفهرس، ليتمكّن المضيف من ربط كل فصل بالجزء الذي يطبعه: فلا يعيد Sandbox إخراج فصل الفهرس إلا حين تتحرّك علامة، ولا فصل المحتويات إلا حين يتحرّك عنوان. ويخبر `contentOutline()` كذلك هل يطبع النص فهرسًا (`hasIndex`).

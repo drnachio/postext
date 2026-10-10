@@ -1,0 +1,1084 @@
+{/* docs/configuration-resources-es.mdx */}
+
+export const metadata = {
+  title: 'Configuración: recursos y tablas',
+  sidebarTitle: 'Recursos y tablas',
+  description: 'Los tipos de recurso y su numeración, los estilos de tablas y de pies de recurso, los diagramas a una tinta y los vídeos impresos',
+  lang: 'es',
+  lastUpdated: '2026-10-10',
+  readingTime: '5 min',
+  order: 8,
+  parent: 'configuration',
+  plainSummary: "Esta página reúne los ajustes de figuras, tablas, diagramas y vídeos. Postext los llama recursos y numera cada tipo por separado. Decides el aspecto de las tablas: sus filetes, sus fondos, su tipografía y cómo se parten entre páginas. Decides cómo se escribe el pie de una figura o de una tabla. También puedes imprimir los diagramas a una sola tinta y elegir cómo aparece un vídeo en el papel.",
+};
+
+# Configuración: recursos y tablas
+
+
+## Tipos de recurso
+
+Un **tipo de recurso** es una categoría definible por el usuario — *Figura*, *Tabla*, *Diagrama*, *Listado*… — que determina cómo se numeran, cómo se rotula su pie y cómo se referencian los recursos de esa clase. La lista vive en `config.resourceTypes`; el Sandbox la edita en **Diseño → Figuras y tablas → Numeración y colocación**.
+
+Cuando `config.resourceTypes` no está definido, Postext incluye tres valores por defecto integrados: **Figura**, **Tabla** y **Vídeo**, cada uno numerado por su cuenta como `{h1}.{n}` (reiniciando en cada encabezado de nivel 1) con contadores decimales. Una lista sin tipo `video` —la de un libro guardado antes de que existieran los vídeos— sigue numerando los recursos de vídeo con `typeId` `video`: se le añade para ellos el tipo integrado Vídeo (`effectiveResourceTypes(config, resources)`), y `defaultVideoResourceType(locale)` lo devuelve por separado. Se nombran en el idioma del documento: `config.locale` o, si no, `bodyText.hyphenation.locale` o, si no, el inglés (ver [Idioma del documento](/es/docs/configuration-text#idioma-del-documento)).
+
+Los valores por defecto integrados se adaptan al idioma. La función exportada `defaultResourceTypes(locale = 'en')` localiza los nombres de tipo, las etiquetas cortas y los prefijos de pie al idioma del documento — el inglés produce *Figure*/*Fig.* y *Table*/*Tab.*; el español produce *Figura*/*Fig.* y *Tabla*/*Tabla*; el francés, el alemán, el italiano, el portugués, el catalán y el neerlandés tienen los suyos (la tabla de [Idioma del documento](/es/docs/configuration-text#idioma-del-documento) los recoge). Las etiquetas regionales como `es-ES` se resuelven por idioma, y cualquier idioma sin traducción cae al inglés. El comportamiento de numeración (`numberingTemplate: '{h1}.{n}'`, `resetOn: 'h1'`, contadores decimales) es independiente del idioma. Cada llamada devuelve objetos nuevos, así que puedes mutar el resultado libremente:
+
+```ts
+import { defaultResourceTypes } from 'postext';
+
+const types = defaultResourceTypes('es');
+// => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
+//       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … },
+//     { id: 'video',  name: 'Vídeo',  shortLabel: 'Vídeo', captionPrefix: 'Vídeo', … }]
+```
+
+```ts
+type ResourceCounterFormat =
+  | 'decimal'
+  | 'roman-lower'
+  | 'roman-upper'
+  | 'alpha-lower'
+  | 'alpha-upper';
+
+type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
+interface ResourcePlacement {
+  position?: 'auto' | 'top' | 'bottom' | 'here'; // qué hueco libre puede ocupar el flotante; 'here' = incrustado en línea en la directiva ::resource
+  span?: 'column' | 'page' | 'side';             // una columna, todo el ancho de contenido o la columna lateral solo para flotantes
+  rotate?: 'ccw' | 'cw';                         // un cuarto de vuelta: una tabla apaisada en una página propia
+  width?: number;                                // fracción (0 < width < 1) del ancho de la columna o de la página; por defecto, todo el ancho
+  align?: 'left' | 'center' | 'right';           // dónde se sitúa un flotante más estrecho que su columna; por defecto 'left'
+  captionSide?: boolean;                         // pie junto a la figura, en la columna lateral de una disposición oneAndHalf (solo flotantes de columna)
+  columns?: number;                              // un flotante 'column' sobre tantas columnas contiguas (desde 1.18)
+  wrap?: 'none' | 'left' | 'right' | 'start' | 'end'; // texto al lado del recurso, en ese lado de su columna (desde 1.24)
+  wrapGap?: Dimension;                           // espacio entre el recurso ajustado y el texto (desde 1.24)
+}
+
+interface ResourceType {
+  id: string;                          // id estable, referenciado por Resource.typeId
+  name: string;                        // nombre singular, p. ej. "Figura"
+  namePlural?: string;                 // plural opcional, p. ej. "Figuras"
+  shortLabel: string;                  // etiqueta corta para refs en línea, p. ej. "Fig."
+  numberingTemplate: string;           // "{h1}.{n}" o "{n}"
+  resetOn: ResourceCounterReset;       // cuándo se reinicia el contador {n}
+  counterFormat: ResourceCounterFormat;// cómo se formatea {n}
+  captionPrefix: string;               // prefijo del pie, p. ej. "Figura"
+  defaultPlacement?: ResourcePlacement;// colocación de respaldo para los recursos de este tipo
+}
+```
+
+`ResourcePlacement` tiene la misma forma que el `placement` que un recurso define por su cuenta. `position` elige la clase de hueco libre que puede ocupar el flotante — `auto` (el valor por defecto) toma el primero tras la primera referencia, `top` / `bottom` lo limitan a esa clase de banda, `here` incrusta el recurso en línea. `span` fija la extensión del flotante: una columna, todo el ancho de contenido o la columna lateral solo para flotantes de una disposición de columna y media. `rotate` gira el recurso un cuarto de vuelta y lo convierte en un flotante a ancho de página en una página propia. `width` estrecha el flotante a una fracción de su columna (o de la página, en un flotante a ancho de página) — una tabla pequeña en una columna ancha, por ejemplo. `align` indica dónde se sitúa ese flotante más estrecho — a la izquierda por defecto, centrado o a la derecha — y dónde se sitúa en su hueco una imagen más estrecha que él: un mapa de bits más pequeño que la columna, o una imagen que `layout.fitFiguresToPage` redujo. El pie y la nota conservan la medida del hueco. (Hasta postext 1.4 esa imagen se componía siempre alineada a la izquierda). `captionSide` pone el pie junto a la figura en la columna lateral solo para flotantes de una disposición de columna y media (`layout.sideColumnRole: 'floats'`), a la altura del borde superior de la figura (del inferior en un flotante de pie); solo se aplica a los flotantes de columna, y una página sin esa columna mantiene el pie bajo la figura. Cuando ni el recurso ni su tipo definen una colocación, el valor integrado es `auto` / `column`. `shrink` (`'never'`, `'page'`, `'slot'`) y `minScale` (0.7 si no se indica) reducen una imagen flotante al sitio de su hueco en lugar de llevarla más adelante, y `captionMeasure: 'body'` compone el pie y la nota de una imagen más estrecha que su hueco a la anchura de la imagen (véase [Formato del documento › Colocación](/es/docs/document-format#colocación)); `layout.floatShrink` da el valor del documento para los dos primeros. `wrap` coloca una inserción en línea o un flotante de una columna en un lado de su columna con el texto compuesto a su lado, a `wrapGap` de distancia; `layout.wrap` guarda los valores por defecto (véase [Formato del documento › Ajuste del texto](/es/docs/document-format#ajuste-del-texto)). `citingPage` deja que un flotante `top` o `auto` encabece la página o la columna donde cae la línea que lo cita en lugar de tomar el primer hueco libre después de ella; `layout.floatsAtCitingPage` da el valor por defecto del documento y `layout.maxTopFraction` la fracción de la columna que puede ocupar (véase [Formato del documento › Colocación](/es/docs/document-format#colocación)).
+
+`columns` (desde postext 1.18) coloca un flotante `span: 'column'` sobre ese número de columnas contiguas en una página de varias: una foto sobre dos de las cinco columnas de un periódico. Su medida es la de esas columnas y los medianiles que las separan. Ocupa la cabeza de una serie de columnas vacías que empiezan a la misma altura, o el pie de la columna que lo cita y de las columnas vacías que la siguen; tantas columnas como tiene la página, o más, lo convierten en un flotante a todo el ancho. No se aplica a los `span` `'page'` y `'side'`, a un recurso girado (`rotate`) ni a una inserción en línea (`here`), y `captionSide` solo vale para un flotante de una columna.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>Identificador estable referenciado por el <code>typeId</code> de cada recurso. Se fija al crear el tipo; borrar un tipo al que aún apuntan recursos genera un aviso de <strong>tipo colgante</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td>Nombre singular. Lo usa la referencia en línea con <code>style="full"</code> (p. ej. <code>Figura 1.7</code>).</td>
+    </tr>
+    <tr>
+      <td><code>namePlural</code></td>
+      <td><code>string</code> (opcional)</td>
+      <td>Nombre plural, para etiquetas de la interfaz y listas de recursos.</td>
+    </tr>
+    <tr>
+      <td><code>shortLabel</code></td>
+      <td><code>string</code></td>
+      <td>Abreviatura compacta que usa el estilo de referencia en línea por defecto (p. ej. <code>Fig. 1.7</code>).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td>Plantilla del número calculado. Ver <strong>Tokens de plantilla</strong> más abajo. Las formas habituales son <code>{'{h1}.{n}'}</code> (ámbito de capítulo, p. ej. <code>2.3</code>) y <code>{'{n}'}</code> (un único conteo continuo).</td>
+    </tr>
+    <tr>
+      <td><code>resetOn</code></td>
+      <td><code>ResourceCounterReset</code></td>
+      <td><code>'never'</code> da un conteo continuo para todo el documento; <code>'h1'</code>..<code>'h6'</code> reinician el contador <code>{'{n}'}</code> cada vez que se encuentra un encabezado de ese nivel (o de cualquier ancestro). Ajústalo para que coincida con el nivel de encabezado que aparece en la plantilla — p. ej. <code>{'{h1}.{n}'}</code> con <code>resetOn: 'h1'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counterFormat</code></td>
+      <td><code>ResourceCounterFormat</code></td>
+      <td>Cómo se renderiza el contador <code>{'{n}'}</code>: decimal (<code>1, 2, 3</code>), romano minúsculo/mayúsculo (<code>i, ii</code> / <code>I, II</code>) o alfabético minúsculo/mayúsculo (<code>a, b</code> / <code>A, B</code>). También se aceptan las grafías de páginas y listas (<code>'lower-roman'</code>, <code>'arabic'</code>…; ver <a href="/es/docs/configuration-page-layout#grafías-de-los-formatos-de-numeración">Grafías de los formatos de numeración</a>); un valor desconocido cuenta en decimal y se notifica. Los tokens de encabezado (<code>{'{h1}'}</code>…) se renderizan siempre como decimales.</td>
+    </tr>
+    <tr>
+      <td><code>captionPrefix</code></td>
+      <td><code>string</code></td>
+      <td>Texto que se antepone al pie de figura/tabla. El número calculado sigue al prefijo — un pie se renderiza como <code>{'{captionPrefix}'} {'{número}'}. {'{texto del pie}'}</code>, p. ej. <strong>Figura 1.7. El plano original.</strong> Un tipo con <code>numberingTemplate</code> vacío no lleva número, y su pie se lee <code>{'{captionPrefix}'}. {'{texto del pie}'}</code>. Los espacios al final del prefijo se quitan, y un prefijo que ya acaba en <code>.</code>, <code>:</code>, <code>!</code>, <code>?</code> o <code>…</code> (o en su forma de ancho completo) no lleva un segundo punto: <strong>Lám. Líneas a 0°</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>defaultPlacement</code></td>
+      <td><code>ResourcePlacement</code> (opcional)</td>
+      <td>Colocación usada por los recursos de este tipo que no definen su propio <code>placement</code>: <code>position</code>, <code>span</code>, <code>rotate</code>, <code>width</code>, <code>align</code>, <code>captionSide</code> y <code>columns</code>, cada uno resuelto por separado. Cuando ni el recurso ni el tipo definen un campo, se aplica el valor integrado: <code>auto</code> / <code>column</code>, sin girar, todo el ancho, alineado a la izquierda, pie bajo la figura. Ver <a href="#numeración-y-referencias">Numeración y referencias</a> más abajo para la cadena de resolución y <a href="/es/docs/document-format#recursos">Formato del documento › Recursos</a> para lo que hace cada valor, incluidos los recursos girados.</td>
+    </tr>
+    <tr>
+      <td><code>captionStyle</code></td>
+      <td><code>CaptionStyleConfig</code> (opcional)</td>
+      <td>Sobrescritura parcial del <a href="#estilo-de-pies-de-recurso">estilo de pies</a> para los recursos de este tipo. Solo las claves que indiques sustituyen al <code>captionStyle</code> global; el resto se hereda (un <code>color</code> sobrescrito arrastra también el color de la etiqueta y de la nota salvo que se fijen explícitamente). Uso típico: tablas con el pie <em>encima</em> sobre una barra de color mientras las figuras conservan su pie debajo. Las referencias a la paleta se resuelven como cualquier otro color.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Tokens de plantilla
+
+`numberingTemplate` se renderiza con el mismo motor que la numeración de encabezados (ver [Encabezados](/es/docs/configuration-text#encabezados)). Reconoce dos clases de token:
+
+- `{n}` — el contador por tipo, formateado según `counterFormat`. Es el valor que se incrementa por recurso y se reinicia según `resetOn`.
+- `{h1}` … `{h6}` — los números de encabezado vigentes en el punto de la primera referencia, renderizados siempre como decimales. `{h1}` es el número del encabezado de nivel 1 actual, `{h2}` el de nivel 2, y así sucesivamente.
+
+Cualquier otro texto es literal. Una barra invertida escapa un `{`, `}` o `\` literal. Cuando un token de encabezado no tiene valor en su ámbito (p. ej. `{h1}` antes de cualquier encabezado de nivel 1), colapsa junto con su separador adyacente — así `{h1}.{n}` degrada con elegancia al contador a secas.
+
+Una plantilla vacía (`''`) no imprime número, aunque el tipo siga contando sus recursos: el pie se lee *Detalle. Líneas a 0°* y un `:ref` imprime solo la etiqueta (*Detalle*). Hasta postext 1.4 ese pie se leía *Detalle .Líneas a 0°* y la referencia acababa en un espacio de no separación.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Plantilla</th>
+      <th style={{ width: '180px' }}>Con <code>h1 = 2</code>, contador = 3</th>
+      <th>Notas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>{'{n}'}</code></td>
+      <td><code>3</code></td>
+      <td>Un único conteo continuo. Combínalo con <code>resetOn: 'never'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>{'{h1}.{n}'}</code></td>
+      <td><code>2.3</code></td>
+      <td>Ámbito de capítulo. Combínalo con <code>resetOn: 'h1'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>{'{h1}.{h2}.{n}'}</code></td>
+      <td><code>2.0.3</code></td>
+      <td>Ámbito de sección. Combínalo con <code>resetOn: 'h2'</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Numeración y referencias
+
+El número que produce un tipo de recurso es lo que imprime `:ref` y lo que sigue al prefijo del pie. `:ref{id}` es la forma principal: la primera referencia en orden de lectura **incorpora** el recurso, que flota al primer hueco libre tras esa referencia — el final de la columna de la referencia, el principio o el final de la siguiente columna vacía, o una banda de la página siguiente (según su colocación resuelta — `position: 'auto' | 'top' | 'bottom' | 'here'` y `span: 'column' | 'page' | 'side'`, más `rotate`, `width`, `align` y `captionSide`, resuelta por recurso, luego por el `defaultPlacement` de su tipo, y por último el valor integrado `auto` / `column`; `'top'` / `'bottom'` limitan la búsqueda a huecos de ese tipo). La inserción en bloque `::resource{id}` es opcional y solo se necesita para `placement.position: 'here'` — una inserción en línea, sin flotado, en un punto exacto del flujo. La gramática completa del lado del documento — ambas formas más las opciones `style` y `text` de `:ref` — se documenta en [Formato del documento › Recursos](/es/docs/document-format#recursos), incluido cómo el orden de primera referencia determina el conteo.
+
+Esto refleja la numeración de encabezados: igual que un nivel de encabezado lleva un `numberingTemplate`, un tipo de recurso también lo lleva — pero el contador del recurso (`{n}`) avanza por primera referencia en lugar de por encabezado, y `resetOn` lo ata de vuelta a la jerarquía de encabezados.
+
+### Qué se numera
+
+Un recurso se numera cuando el texto lo referencia — con `:ref` o con una inserción `::resource` —, en el orden de esas primeras referencias y sea cual sea su colocación: flotante, en línea (`here`), en la columna lateral o girado. Un recurso que solo dibuja un diseño — un elemento `image` de una apertura de capítulo, de una cabecera o de una página de parte — o que nada referencia no lleva número ni hace avanzar el contador de su tipo. Así, en un ensayo fotográfico cuyas láminas a sangre son imágenes de las aperturas y cuya única lámina menor es un flotante citado, ese flotante es la lámina **I**, por muchas láminas que hayan mostrado antes las aperturas; numera las láminas de las aperturas en su diseño (con un atributo como `{attr.plate}`) y deja el contador para las láminas que cita el texto.
+
+En un libro que se maqueta capítulo a capítulo (el Sandbox, `buildBundle`, o `buildDocument` con los contadores que entrega `continuationAfter()`), cuenta la primera referencia de todo el libro: un recurso conserva el número que recibió en el capítulo que lo cita por primera vez, y solo ese capítulo lo coloca. El `:ref` de un capítulo posterior imprime ese número y no coloca nada, y una inserción `::resource` de un recurso flotante es ahí una referencia más (una inserción `here` en línea se sigue componiendo donde está escrita). Esa referencia enlaza con la figura cuando la figura está en la misma salida: un PDF del libro entero la enlaza con la página del capítulo anterior. Un capítulo que se renderiza solo, en HTML o en PDF, la compone como texto sin enlace, en el color de los enlaces, porque su figura no está en ese documento. Un anfitrión que une en una sola página el HTML de los capítulos pasa a `renderToHtml` los recursos que anclan los capítulos, como `refTargets`, y esa referencia vuelve a enlazar con la figura del capítulo anterior:
+
+```ts
+import { anchoredResourceIds, buildBundle, renderToHtml } from 'postext';
+
+const docs = buildBundle(bundle);
+const refTargets = new Set(docs.flatMap((d) => [...anchoredResourceIds(d)]));
+const html = docs.map((d) => renderToHtml(d, { refTargets })).join('');
+```
+
+**Cambia en postext 1.5:** hasta la 1.4, cada capítulo que citaba una figura la volvía a colocar como flotante, y el HTML de todo `:ref` era un enlace, estuviera su figura en la página o no.
+
+`{h1}` es la cuenta de los encabezados de nivel 1: todo H1 la hace avanzar salvo que su estilo de encabezado fije `numbered: false` — un `numberingTemplate` vacío oculta el número del encabezado, no detiene la cuenta. Por eso un artículo cuyo único H1 es su título numera sus figuras `1.1`, `1.2`… con los tipos integrados `{h1}.{n}`. Hay dos maneras de imprimir Figura 1, 2…:
+
+- un tipo numerado `{n}` con `resetOn: 'never'` (con `resetOn: 'h1'` la cuenta volvería a empezar en cada H1);
+- un [estilo de encabezado](/es/docs/configuration-styles#estilos-de-encabezado) con `numbered: false` en el título, y en cualquier otro H1 que no deba contar: un encabezado así no hace avanzar `{h1}`, sino que lo deja como estaba — vacío antes del primer H1 que cuenta, donde `{h1}.{n}` se reduce al contador solo — y nunca dispara `resetOn: 'h1'`, así que la cuenta sigue a través de él. Tras `# Introducción` y su figura 1.1, la primera figura bajo un `# Apéndice` sin número es la 1.2, no la 2.1.
+
+```ts
+// Figura 1, 2, 3… en un documento de un solo artículo
+resourceTypes: defaultResourceTypes('es').map((t) => ({ ...t, numberingTemplate: '{n}', resetOn: 'never' })),
+```
+
+
+## Estilo de tablas
+
+La propiedad `tableStyle` controla la tipografía y la decoración de las tablas-recurso —de todas, salvo las que eligen un [estilo de tabla con nombre](#estilos-de-tabla-con-nombre)—. Las celdas de cuerpo y de cabecera se estilizan de forma independiente. La familia tipográfica, el tamaño y los colores heredan del texto de cuerpo resuelto cuando no se indican, de modo que un documento sin `tableStyle` renderiza las tablas con la tipografía del cuerpo.
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    headerBold: true,
+    headerBackground: { hex: '#f0f0f0', model: 'hex' },
+    borders: true,
+    borderWidth: { value: 0.75, unit: 'pt' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Propiedad</th>
+      <th style={{ width: '140px' }}>Tipo</th>
+      <th style={{ width: '160px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bodyFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>fuente del cuerpo</td>
+      <td>Familia tipográfica de las celdas de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>bodyFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>tamaño del cuerpo</td>
+      <td>Tamaño de fuente de las celdas de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>bodyColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cuerpo</td>
+      <td>Color del texto de las celdas de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>headerFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>fuente del cuerpo</td>
+      <td>Familia tipográfica de las celdas de cabecera.</td>
+    </tr>
+    <tr>
+      <td><code>headerFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>tamaño del cuerpo</td>
+      <td>Tamaño de fuente de las celdas de cabecera.</td>
+    </tr>
+    <tr>
+      <td><code>headerColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cuerpo</td>
+      <td>Color del texto de las celdas de cabecera.</td>
+    </tr>
+    <tr>
+      <td><code>headerBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Renderizar las celdas de cabecera en negrita.</td>
+    </tr>
+    <tr>
+      <td><code>headerItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderizar las celdas de cabecera en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>headerLetterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0pt</code></td>
+      <td>Espaciado tras cada carácter de una celda de cabecera, espacios incluidos, como el <code>letter-spacing</code> de CSS. Un valor positivo abre las letras (una cabecera en mayúsculas suele pedir entre <code>0.05em</code> y <code>0.1em</code>) y uno negativo las aprieta. Un <code>em</code> es el cuerpo de la cabecera. Las líneas de cabecera se miden con él, así que cortan, se centran y se alinean con el espaciado, y canvas, HTML y PDF lo pintan igual. Se aplica a todas las celdas de cabecera: las filas de cabecera y cualquier celda marcada con <code>isHeader</code>.</td>
+    </tr>
+    <tr>
+      <td><code>headerTextTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>Compone las celdas de cabecera en mayúsculas. El texto conserva su longitud, de modo que el Sandbox sigue asociando cada letra a la fuente: una letra cuya mayúscula es más larga (<code>ß</code>) se queda como está. Las referencias a recursos conservan su etiqueta.</td>
+    </tr>
+    <tr>
+      <td><code>headerBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pintar un relleno tras la fila de cabecera.</td>
+    </tr>
+    <tr>
+      <td><code>headerBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#f0f0f0</code></td>
+      <td>Color de relleno de la fila de cabecera.</td>
+    </tr>
+    <tr>
+      <td><code>bodyBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pintar un relleno tras las filas de cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>bodyBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffffff</code></td>
+      <td>Color de relleno de las filas de cuerpo (solo se pinta cuando está activado).</td>
+    </tr>
+    <tr>
+      <td><code>bodyAlternateBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Filas alternas: rellenar una de cada dos filas de cuerpo con <code>bodyAlternateBackground</code>. Véase <a href="#filas-alternas">filas alternas</a>.</td>
+    </tr>
+    <tr>
+      <td><code>bodyAlternateBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#f2f2f2</code></td>
+      <td>Color de relleno de las filas alternas (solo se pinta cuando está activado).</td>
+    </tr>
+    <tr>
+      <td><code>borders</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dibujar los bordes de las celdas.</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cuerpo</td>
+      <td>Color del trazo de los bordes.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75pt</code></td>
+      <td>Grosor del trazo de los bordes (≈1px a 96 DPI; escala con los DPI de la página). <code>'booktabs'</code> no lo usa: tiene sus propios grosores.</td>
+    </tr>
+    <tr>
+      <td><code>cellPadding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.375em</code></td>
+      <td>Relleno interior de cada celda.</td>
+    </tr>
+    <tr>
+      <td><code>rules</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'</code></td>
+      <td><code>'grid'</code></td>
+      <td>Qué filetes trazar cuando <code>borders</code> está activo: la rejilla completa de celdas, solo filetes horizontales (borde superior e inferior de cada fila, sin verticales), solo el marco exterior, ninguno, o los tres filetes de una tabla de revista (véase <a href="#filetes-booktabs">filetes booktabs</a>).</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Radio de las esquinas del marco exterior de la tabla. El marco se traza redondeado (con los filetes <code>grid</code> u <code>outer</code>), los fondos de las celdas y de la cabecera se recortan a él —también con <code>rules: 'none'</code> o sin bordes— y los filetes horizontales se recortan a su contorno exterior; los filetes interiores siguen rectos. Una tabla partida entre páginas redondea las esquinas superiores de su primera parte y las inferiores de la última. Se limita a la mitad del ancho y del alto de la tabla. Los filetes <code>'booktabs'</code> siguen rectos (los fondos sí se recortan).</td>
+    </tr>
+    <tr>
+      <td><code>heavyRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>Booktabs: los filetes de encima de la tabla y de debajo de su última fila. Un <code>em</code> es el cuerpo de las celdas.</td>
+    </tr>
+    <tr>
+      <td><code>lightRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>Booktabs: el filete bajo las filas de cabecera y los filetes de grupo.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.03em</code></td>
+      <td>Booktabs: los filetes bajo las celdas de cabecera que abarcan varias columnas.</td>
+    </tr>
+    <tr>
+      <td><code>spanRules</code></td>
+      <td><code>'trimmed' | 'full' | 'none'</code></td>
+      <td><code>'trimmed'</code></td>
+      <td>Booktabs: los filetes bajo las celdas de cabecera que abarcan varias columnas, por encima de la última fila de cabecera: acortados por los dos extremos en <code>spanRuleTrim</code>, de lado a lado de la celda, o ninguno.</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleTrim</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Booktabs: cuánto se acorta por cada extremo un filete de agrupación recortado.</td>
+    </tr>
+    <tr>
+      <td><code>groupRules</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Booktabs: un filete fino encima de cada fila del cuerpo que encabeza un grupo.</td>
+    </tr>
+    <tr>
+      <td><code>continuedFootRule</code></td>
+      <td><code>'bottom' | 'light' | 'none'</code></td>
+      <td><code>'light'</code></td>
+      <td>Booktabs: qué cierra la parte de una tabla partida que sigue en la página siguiente.</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'split' | 'clip' | 'hide'</code></td>
+      <td><code>'split'</code></td>
+      <td>Qué ocurre con una tabla más alta que la página: continuarla en las páginas siguientes, conservar solo las filas que caben, o no colocarla. Con <code>splitInline</code>, también con una tabla colocada en el texto que no cabe en lo que queda de su columna. Véase más abajo.</td>
+    </tr>
+    <tr>
+      <td><code>splitInline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Aplicar <code>overflow</code> también a las tablas colocadas <code>here</code>: una tabla en línea que no cabe en el espacio que queda en su columna se corta entre filas y sigue al principio de la columna siguiente. Con <code>false</code> una tabla así pasa entera a la columna siguiente, como hasta postext 1.24; las configuraciones guardadas por versiones anteriores cuyos capítulos insertan un recurso se leen con <code>false</code>. Véase <a href="#tablas-más-altas-que-la-página">Tablas más altas que la página</a>. Desde postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>continuedSuffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'(cont.)'</code></td>
+      <td>Se añade, en cursiva, al pie de cada parte continuada de una tabla dividida, tras un espacio; un sufijo que empieza por un carácter chino o de ancho completo (<code>'（续）'</code>) va pegado al pie.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Coloca un indicador bajo cada parte que continúa en la página siguiente.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'Continúa'</code> / <code>'Continued'</code></td>
+      <td>Texto de ese indicador, alineado a la derecha bajo la parte con la tipografía de la nota (véase <a href="#estilo-de-pies-de-recurso">estilo de pies</a>). El valor por defecto sigue el idioma del documento (ver <a href="/es/docs/configuration-text#idioma-del-documento">Idioma del documento</a> para los ocho idiomas).</td>
+    </tr>
+  </tbody>
+</table>
+
+Los grosores de borde se conservan fraccionarios: un filete de `0.5pt` se traza como línea fina en el PDF y en pantalla en lugar de redondearse a un píxel completo (el mínimo es 0.25px).
+
+### Filas alternas
+
+Una tabla de datos larga se sigue mejor de lado a lado cuando una de cada dos filas va sombreada. `bodyAlternateBackgroundEnabled` activa las franjas y `bodyAlternateBackground` fija su color:
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    bodyBackgroundEnabled: true,
+    bodyBackground: { hex: '#ffffff', model: 'hex' },
+    bodyAlternateBackgroundEnabled: true,
+    bodyAlternateBackground: { hex: '#eef3fa', model: 'hex' },
+  },
+};
+```
+
+Las filas se cuentan desde la primera tras las filas de cabecera (`TableModel.headerRowCount`, o las filas iniciales formadas por celdas de cabecera): esa fila conserva `bodyBackground` —o ningún relleno mientras `bodyBackgroundEnabled` está desactivado—, la siguiente toma el relleno alterno, y así sucesivamente. La cuenta sigue el modelo de la tabla, no la página, de modo que una tabla partida entre páginas conserva la franja de cada fila en todas ellas, y una celda combinada a lo largo de varias filas toma la franja de la primera. Las celdas de cabecera conservan el relleno de cabecera, el `background` propio de una celda prevalece sobre ambos y un color vinculado a la paleta sigue a la paleta. Un [estilo de tabla con nombre](#estilos-de-tabla-con-nombre) define los dos campos como cualquier otro, así que un estilo puede llevar franjas mientras las demás tablas del documento no; en el Sandbox son el interruptor *Filas alternas* y su color, en **Celdas del cuerpo**.
+
+En el VDT, las celdas de las filas alternas llevan `alternate: true` y la maquetación de la tabla lleva `bodyAlternateBackground`. `tableCellFill(table, cell)` devuelve el relleno con que se pinta una celda —el suyo, el de cabecera, el alterno o el de cuerpo—, que es lo que pintan los backends de canvas, HTML y PDF. Los rellenos vecinos se juntan sin costura: un navegador con una densidad de píxeles fraccionaria o un visor de PDF suavizan cada relleno por separado y dejarían asomar el papel en un filete finísimo entre dos celdas, así que los backends de HTML y PDF pintan `tableCellFillRects(table)` —el relleno de cada celda con una franja sobre cada borde que comparte con una celda pintada después, que esa celda luego cubre— y el canvas ajusta sus rellenos a los píxeles del dispositivo.
+
+### Filetes booktabs
+
+Las tablas de revistas y libros de texto se suelen componer con tres filetes y ninguna línea vertical: uno grueso encima de la tabla, uno fino bajo la cabecera y otro grueso bajo la última fila, con filetes cortos bajo las cabeceras que agrupan varias columnas (el paquete `booktabs` de LaTeX: `\toprule`, `\midrule`, `\cmidrule`, `\bottomrule`). `rules: 'booktabs'` traza ese patrón:
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    rules: 'booktabs',
+    borderColor: { hex: '#000000', model: 'hex' },
+    headerBackgroundEnabled: false,
+  },
+};
+```
+
+- El filete de encima de la tabla y el de debajo de su última fila tienen el grosor `heavyRuleWidth` (`0.08em`); el de bajo las filas de cabecera, `lightRuleWidth` (`0.05em`). Una tabla sin filas de cabecera no lleva filete de cabecera.
+- Una celda de cabecera que abarca varias columnas por encima de la última fila de cabecera lleva debajo un filete de grosor `spanRuleWidth` (`0.03em`). Con `spanRules: 'trimmed'` (el valor por defecto) el filete se acorta en `spanRuleTrim` (`0.5em`) por los dos extremos, para que los filetes de dos cabeceras vecinas no se toquen; `'full'` lo extiende de lado a lado de la celda y `'none'` lo suprime.
+- `groupRules: true` añade un filete fino encima de cada fila del cuerpo que encabeza un grupo (una sola celda de lado a lado de la tabla, o una fila de celdas de cabecera), salvo si la fila abre la tabla o una página, donde ya está el filete de cabecera.
+- Los grosores se resuelven contra el cuerpo de las celdas (`bodyFontSize`), de modo que una cabecera de cuerpo mayor no engrosa su filete. Un grosor de `0` suprime ese filete.
+- Los filetes toman `borderColor` (un color enlazado a la paleta sigue la paleta y `:::part palette`), y `borders: false` los apaga. `borderWidth` no se aplica, ni tampoco `borderRadius`: los filetes siguen rectos, aunque los fondos de las celdas sí se recortan al marco redondeado. Los fondos de cabecera, las filas alternas y el `background` propio de una celda funcionan como con los demás patrones, bajo los filetes.
+- Una tabla partida entre páginas repite sus filas de cabecera en cada parte, así que cada parte empieza con el filete grueso y el de cabecera. El filete grueso bajo la última fila cierra solo la última parte; una parte que sigue en la página siguiente termina con `continuedFootRule`: un filete fino (`'light'`, el valor por defecto), el grueso (`'bottom'`) o ninguno (`'none'`).
+
+La maquetación calcula los filetes una sola vez. La tabla del VDT los lleva como `strokes` (`{ x1, y1, x2, y2, widthPx }`, relativos a la esquina superior izquierda del cuerpo de la tabla), y el lienzo, el visor HTML, el PDF y el EPUB de maquetación fija trazan exactamente esos; en un PDF etiquetado son artefactos de maquetación. El EPUB adaptable los escribe como bordes CSS de la tabla y su cabecera, con los filetes recortados dibujados como líneas de fondo. En el Sandbox, **Booktabs** en el selector *Filetes* muestra estos campos y oculta *Grosor del borde* y *Radio de las esquinas*.
+
+### Estilos de tabla con nombre
+
+Un documento pocas veces compone todas sus tablas igual: una lista de comprobación en una cuadrícula azul marino con el marco redondeado, una fila de opciones encerrada solo por su marco exterior, una tabla de datos con filetes horizontales. `tableStyles` declara variantes con nombre, y un recurso de tabla elige una con `table.styleId`. Cada campo que un estilo deja sin definir se lee primero de `tableStyle` y después del texto de cuerpo, de modo que un estilo solo indica lo que distingue a sus tablas. Una tabla sin `styleId`, o con un id que ningún estilo declara, conserva `tableStyle`: un documento sin `tableStyles` se compone exactamente igual que antes.
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    borderColor: { hex: '#163a76', model: 'hex' },
+    borderWidth: { value: 1.3, unit: 'pt' },
+    borderRadius: { value: 10, unit: 'pt' },
+  },
+  tableStyles: [
+    {
+      id: 'option',
+      name: 'Fila de opciones',
+      rules: 'outer',
+      borderColor: { hex: '#7a9cc6', model: 'hex' },
+      borderWidth: { value: 1, unit: 'pt' },
+      borderRadius: { value: 8, unit: 'pt' },
+      headerBackgroundEnabled: false,
+    },
+  ],
+};
+
+// En los recursos: esta tabla se compone con el estilo "option".
+const resource: Resource = {
+  id: 'choices', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0,
+  table: { model: { rows: [/* … */] }, styleId: 'option' },
+};
+```
+
+Cada entrada admite todos los campos de `tableStyle` más `id` (lo que referencia `table.styleId`) y un `name` opcional para el editor (por defecto, el id). Todo lo que un estilo puede definir se aplica por tabla: tipografía, fondos, bordes, filetes, radio de las esquinas, relleno y el comportamiento de desbordamiento con sus cadenas de continuación. `resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)` devuelve la lista resuelta, `pickTableStyle(resolved, styleId)` el estilo con el que se compone una tabla, y `stripTableStylesDefaults` elimina los campos sin definir (conserva un campo igual a su valor por defecto, que sigue sustituyendo a un valor distinto de `tableStyle`). En un EPUB adaptable, un estilo con nombre es una clase de la tabla (`pt-table-<id>`) a la que da estilo la hoja de estilos del libro.
+
+### Tablas más altas que la página
+
+Una tabla flotante que no cabe en la página nueva que se le ofrece no se comprime ni se desborda: con `overflow: 'split'` (el valor por defecto) el motor la corta entre filas en el último borde que cabe en la página y la continúa en las páginas siguientes, tantas como haga falta. Cada parte continuada repite las filas de cabecera de la tabla (`TableModel.headerRowCount`, o las filas iniciales formadas por celdas de cabecera cuando no está definido) y lleva de nuevo el pie con `continuedSuffix` tras la descripción: «Tabla 6-4. Título *(cont.)*». Cada parte que sigue lleva `continuesMarker` debajo, alineado a la derecha, con la tipografía de la nota; la nota de la tabla se reserva para la última parte. Un corte nunca atraviesa una celda combinada (una celda con `rowSpan` pasa entera a la parte siguiente), y una fila que encabeza a las que la siguen —una sola celda a lo ancho de toda la tabla— pasa a la parte siguiente en lugar de quedar suelta al pie de la página. Una tabla booktabs cierra cada parte que sigue con `continuedFootRule` (véase [filetes booktabs](#filetes-booktabs)).
+
+**Dónde termina la primera parte.** Una tabla a la que se ofrece la cabeza de una columna vacía tras su referencia toma las filas que caben ahí y sigue en el hueco siguiente. Llena la columna hasta el pie cuando la tiene para ella sola: una parte que dejaría menos de tres líneas de texto debajo las ocupa también, en lugar de dejar un resto de texto suelto. Cuando la columna ya tiene otra banda de flotantes — una figura a ancho de página en la cabeza, por ejemplo —, la parte se detiene al menos tres líneas de texto antes del pie, el espacio para texto que deja cualquier flotante que comparte columna con otro, de modo que la columna termina con algo de texto bajo la tabla y no solo con flotantes. Para que una tabla larga llegue al pie de su columna, cítala donde la página en la que empieza no lleve otro flotante (tras la página de una figura a ancho de página, por ejemplo), o ajusta sus filas a la columna.
+
+`'clip'` conserva las filas iniciales que caben en la página y descarta el resto en silencio (la nota sigue cerrando la parte); `'hide'` no coloca la tabla. Ambos solo actúan cuando la tabla es más alta que una página: una tabla que cabe se coloca entera en cualquier modo.
+
+**Tablas colocadas en el texto.** Una tabla colocada `here` (insertada con `::resource`) sigue las mismas reglas desde postext 1.25 (`splitInline`, activado por defecto). Cuando no cabe en el espacio que queda en su columna, se corta entre filas: la primera parte conserva encima el hueco de los flotantes y al menos las filas de cabecera y dos filas del cuerpo (si caben menos, la tabla entera empieza en la columna siguiente, como antes); cada parte posterior abre la columna siguiente sin hueco encima, compuesta al ancho de esa columna (en una maqueta de columna y media, una parte que cae en la columna estrecha se compone a su ancho), y el texto que sigue a la línea `::resource` va tras la última parte. La repetición de la cabecera, el pie con el sufijo, la marca, la nota en la última parte, la cola de tres filas y los cortes que respetan las celdas combinadas y las filas que encabezan un grupo son los de una tabla flotante. Una tabla de menos de cinco filas de cuerpo nunca se corta. `'clip'` conserva las filas iniciales de una tabla en línea más alta que una columna, compuesta al principio de una columna; `'hide'` no coloca esa tabla; una más baja pasa entera a la columna siguiente en los dos modos. Una página que abre una tabla en línea solo reserva frente a los flotantes que acoge el espacio de su primera parte, de modo que una figura a ancho de página que espera encabeza esa página y la tabla sigue debajo. Las tablas en línea de una página vertical y las tablas dentro de un recuadro no se cortan. Con `splitInline: false` una tabla en línea pasa entera a la columna siguiente, como hasta postext 1.24.
+
+Las cadenas de continuación toman su valor por defecto del idioma del documento (`locale`, o en su defecto el idioma de la división silábica): inglés `(cont.)` / `Continued`, español `(cont.)` / `Continúa`, y lo mismo en francés, alemán, italiano, portugués, catalán y neerlandés (recogidas en [Idioma del documento](/es/docs/configuration-text#idioma-del-documento)).
+
+El contenido de una celda es markdown en línea, y un salto de línea dentro de la celda —un carácter de nueva línea, o `\\` como en pies y notas— abre un nuevo párrafo. Un párrafo que empieza por una viñeta o un guion (`•`, `-`, `*`, `–`) o por un número (`1.`, `1)`) seguido de un espacio se compone como elemento de lista: la marca se pinta tal como se escribió, el texto cuelga de ella a la distancia `unorderedLists.gap` del documento, las líneas partidas se alinean con el texto y dos espacios iniciales anidan un nivel. Así, una celda escrita como `• Ofrece elección\n• Acomoda a personas diestras y zurdas` sale como una lista de dos elementos. Una línea con solo espacios corrientes no añade nada; una línea con un espacio de no separación (U+00A0) es una línea de la celda, como en CommonMark, así que `1\n` seguido de un espacio de no separación da una fila de dos líneas. Un espacio de no separación al final del texto de una celda conserva su ancho: `760` y un espacio de no separación, alineados a la derecha sobre `(231)`, acaban un espacio antes del borde, lo que acerca el 0 al 1. Las cifras solo quedan exactamente en columna si el espacio es tan ancho como el paréntesis, y en la mayoría de las fuentes es más estrecho. (Hasta postext 1.4 se perdían los dos).
+
+Los anchos de columna pertenecen al modelo de la tabla, no al estilo: `TableModel.columnWidths` es un array opcional de pesos relativos, uno por columna, normalizados en el momento de maquetar — `[2, 1, 1]` da a la primera columna la mitad del ancho. Un array ausente, de longitud incorrecta o con algún peso no positivo vuelve al reparto igualitario. El editor de tablas mantiene el array alineado al añadir o quitar columnas.
+
+### Construir modelos de tabla
+
+Un `TableModel` es una cuadrícula por filas, y cada celda se maqueta según su posición en ella: `rows[r][c]` ocupa la columna `c`. Por eso una celda combinada conserva en la cuadrícula las celdas que cubre, cada una marcada con `hiddenBy` apuntando a su celda principal, a diferencia de una tabla HTML, que las omite. Las funciones de modelo que exporta `postext` mantienen esa forma; son funciones puras que devuelven un modelo nuevo: `mergeCells(model, { start, end })` y `unmergeCell(model, at)`, `addRow`, `addColumn`, `removeRow`, `removeColumn`, `setCellContent`, `setCellImage`, `setCellBackground` y `setAlignment`. Las cuatro funciones de filas y columnas mantienen enteras las combinaciones: una fila o columna añadida dentro de un bloque combinado lo ensancha, una añadida antes lo desplaza y una eliminada de él lo reduce —un bloque que pierde su primera fila o columna conserva su contenido en su nueva celda superior izquierda—, y cada `hiddenBy` sigue apuntando a su celda principal.
+
+`parseTSV(text, options?)` construye un modelo a partir de texto separado por tabuladores —un rango pegado desde una hoja de cálculo—: las filas se separan por saltos de línea, las celdas por tabuladores, y las filas cortas se rellenan para que la cuadrícula sea rectangular. `headerRows` convierte las filas iniciales en filas de cabecera: sus celdas reciben `isHeader` y el modelo `headerRowCount`, de modo que una tabla partida entre páginas las repite.
+
+```ts
+import { parseTSV, mergeCells } from 'postext';
+
+let model = parseTSV('Pieza\tCant.\tNota\nTornillo\t4\tM6\nTuerca\t8\t', { headerRows: 1 });
+// model.headerRowCount === 1; model.rows[0][0] es { content: 'Pieza', isHeader: true }
+model = mergeCells(model, { start: { row: 2, col: 1 }, end: { row: 2, col: 2 } });
+// rows[2][1] recibe colSpan: 2; rows[2][2] sigue en la cuadrícula con hiddenBy: { row: 2, col: 1 }
+```
+
+`tableGridIssues(model)` comprueba la cuadrícula. Devuelve una lista vacía para un modelo correcto y, si no, cada punto en que la cuadrícula se rompe, por orden de filas: `spanOverlap`, una celda visible bajo el `colSpan` / `rowSpan` de otra (`coveredBy` nombra esa celda) —lo que ocurre al omitir una celda cubierta al estilo HTML, porque todas las celdas que la siguen se desplazan sobre la combinación— y `missingCells`, una fila que termina antes de la última columna sin que ninguna combinación cubra el resto, lo que deja un hueco.
+
+```ts
+import { tableGridIssues } from 'postext';
+
+tableGridIssues({
+  rows: [
+    [{ content: 'A', colSpan: 2 }, { content: 'C' }],
+    [{ content: '1' }, { content: '2' }, { content: '3' }],
+  ],
+});
+// => [{ kind: 'spanOverlap', row: 0, col: 1, coveredBy: { row: 0, col: 0 } },
+//     { kind: 'missingCells', row: 0, col: 2 }]
+```
+
+Una tabla que el documento usa y cuya cuadrícula tiene esos problemas se notifica en `doc.contentWarnings` como `raggedTableGrid` (véase [Avisos del documento](/es/docs/configuration-programmatic-usage#avisos-del-documento)).
+
+
+## Estilo de pies de recurso
+
+La propiedad `captionStyle` controla los pies de recurso (la línea `Figura 1 — …` bajo — o sobre — imágenes, SVG y tablas). La etiqueta numerada y la descripción comparten tipografía y tamaño — una limitación del motor — pero la etiqueta puede llevar su propio peso, cursiva y color. La familia tipográfica, el tamaño y el color heredan del texto de cuerpo cuando no se indican. El pie puede situarse **encima** del recurso (la convención habitual para tablas) y componerse sobre una **barra** de color que ocupa todo el ancho del bloque; una **nota** opcional más pequeña (fuente, créditos — `Resource.note`) se estiliza mediante el subobjeto `note`. Un tipo de recurso puede sobrescribir cualquiera de estos campos para sus propios recursos mediante `ResourceType.captionStyle` (ver [Tipos de recurso](#tipos-de-recurso)).
+
+```ts
+const config: PostextConfig = {
+  captionStyle: {
+    align: 'center',
+    labelBold: true,
+    labelColor: { hex: '#295AA3', model: 'hex' },
+    descriptionItalic: true,
+    position: 'above',
+    backgroundEnabled: true,
+    padding: { value: 0.35, unit: 'em' },
+    note: { italic: true, align: 'left' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>fuente del cuerpo</td>
+      <td>Familia tipográfica del pie (etiqueta y descripción).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>tamaño del cuerpo</td>
+      <td>Tamaño de fuente del pie (etiqueta y descripción).</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cuerpo</td>
+      <td>Color del texto de la descripción.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
+      <td><code>'left'</code></td>
+      <td>Alineación horizontal de las líneas del pie. <code>'justify'</code> lleva todas las líneas salvo la última al ancho completo. Sobre una barra de pie las líneas se alinean dentro de su relleno; un pie lateral se alinea dentro de su propio ancho.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>Separación vertical entre el recurso y su pie.</td>
+    </tr>
+    <tr>
+      <td><code>labelBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Renderizar la etiqueta numerada (p. ej. <code>Figura 1</code>) en negrita.</td>
+    </tr>
+    <tr>
+      <td><code>labelItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderizar la etiqueta numerada en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>labelColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>color</code> del pie</td>
+      <td>Color de la etiqueta numerada.</td>
+    </tr>
+    <tr>
+      <td><code>descriptionItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderizar el texto de la descripción en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'above' | 'below'</code></td>
+      <td><code>'below'</code></td>
+      <td>Dónde se sitúa el pie. Con <code>'above'</code> el pie (y su barra) va primero y el cuerpo del recurso baja la altura del pie más <code>gap</code>; la nota pasa entonces bajo el cuerpo.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pintar una barra tras el pie. La barra ocupa todo el ancho del bloque y envuelve las líneas del pie más <code>padding</code> por cada lado.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color principal de la paleta</td>
+      <td>Color de relleno de la barra (solo se pinta cuando está activada).</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.35em</code></td>
+      <td>Relleno interior entre el borde de la barra y el texto del pie. Se ignora si la barra está desactivada.</td>
+    </tr>
+    <tr>
+      <td><code>note</code></td>
+      <td><code>object</code></td>
+      <td>—</td>
+      <td>Estilo de la nota del recurso — ver la subtabla siguiente.</td>
+    </tr>
+    <tr>
+      <td><code>labelNumberGap</code></td>
+      <td><code>string</code></td>
+      <td>espacio de no separación; <code>''</code> en un documento japonés</td>
+      <td>Lo que separa la etiqueta del número, en el pie y en un <code>:ref</code> en línea: <em>Figura 1.7</em>, <em>Fig. 1.7</em>. El chino y el japonés los componen juntos: <code>''</code> da 图1-1, y es el valor por defecto en un documento japonés (図1-1).</td>
+    </tr>
+    <tr>
+      <td><code>labelSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>'. '</code>; <code>'　'</code> en un documento japonés</td>
+      <td>Lo que sigue al número, antes de la descripción: <em>Figura 1.7. Un pie</em>. Los pies chinos llevan un espacio ideográfico, <code>'　'</code> (图1-1　标题), y los japoneses también, por defecto (図1-1　東京の地図, JLReq §4.3). Una etiqueta sin número conserva su propia regla: un punto, salvo que el prefijo ya termine en uno.</td>
+    </tr>
+  </tbody>
+</table>
+
+El subobjeto `note` estiliza `Resource.note`, una línea breve (fuente, créditos, una observación) compuesta bajo el recurso en un tamaño menor. Admite el mismo formato en línea y las mismas marcas `:ref` que el pie, y hereda la tipografía del pie. Se coloca bajo el pie cuando este va debajo, y bajo el cuerpo del recurso cuando el pie va encima; su altura cuenta en el bloque, de modo que un recurso con nota flota como una sola unidad.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>note.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>0.85 × tamaño del pie</td>
+      <td>Tamaño de fuente de la nota.</td>
+    </tr>
+    <tr>
+      <td><code>note.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>color</code> del pie</td>
+      <td>Color del texto de la nota.</td>
+    </tr>
+    <tr>
+      <td><code>note.italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderizar la nota en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>note.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.35em</code></td>
+      <td>Separación entre la nota y lo que la precede (pie o cuerpo).</td>
+    </tr>
+    <tr>
+      <td><code>note.align</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
+      <td><code>'left'</code></td>
+      <td>Alineación horizontal de las líneas de la nota, como <code>align</code> para el pie.</td>
+    </tr>
+  </tbody>
+</table>
+
+Las sobrescrituras por tipo se combinan con `mergeCaptionStyle(resolvedCaptionStyle, override, palette?)`, exportada para los hosts que necesiten la misma resolución fuera del pipeline.
+
+
+## Estilo de diagramas
+
+La propiedad `diagramStyle` controla cómo se colorean los diagramas SVG incrustados (recursos con `kind: 'svg'`) y en qué fuentes se compone su texto. El **modo a una sola tinta** es una pasada de recoloreado que convierte cada color del diagrama en un matiz de una única tinta, de modo que las figuras se reproduzcan fielmente cuando el documento se imprime con una sola tinta plana. Las **fuentes incrustadas** meten en cada SVG las variantes que nombra su texto, para que sus rótulos se compongan con las fuentes del documento en el canvas, en HTML y en EPUB (consulta [Fuentes en el texto de los SVG](#fuentes-en-el-texto-de-los-svg)).
+
+```ts
+const config: PostextConfig = {
+  diagramStyle: {
+    singleInk: true,
+    inkColor: { hex: '#295AA3', model: 'hex' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '200px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>singleInk</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Recolorear todos los diagramas SVG incrustados a matices de una única tinta.</td>
+    </tr>
+    <tr>
+      <td><code>inkColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>Color principal (<code>#295AA3</code>)</td>
+      <td>La tinta. Por defecto es el color principal de la paleta del documento (enlazado mediante <code>paletteId: 'main-color'</code>), de modo que cambiar la muestra de la paleta retintea los diagramas junto con los encabezados y las negritas.</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Incrustar en cada SVG las variantes que nombra su texto (<code>font-family</code>) como data URI de <code>@font-face</code> antes de mostrarlo como imagen: en el canvas, en HTML, en EPUB y en el ráster de reserva del PDF. Nunca se escribe en el archivo guardado. Un recurso se excluye con <code>svg.inlineFonts: false</code> (desde postext 1.25).</td>
+    </tr>
+  </tbody>
+</table>
+
+### Cómo funciona la tinta única
+
+Cuando `singleInk` está activado, cada color del marcado SVG se reescribe como un matiz de `inkColor` cuya intensidad es **1 − luminancia relativa** (coeficientes Rec. 709 aplicados a los canales con codificación gamma — una aproximación perceptual más que suficiente para el mapeo de matices). El mapeo preserva el valor percibido: el blanco se convierte en el blanco del papel, el negro en la tinta plena, y los rellenos claros siguen siendo claros con independencia de su tono original. Un fondo amarillo pálido pasa a ser un matiz pálido de la tinta; un trazo oscuro se acerca a la tinta plena.
+
+El recoloreado lo realiza la función exportada `applySingleInkToSvg(svgText, inkHex)`, que opera sin DOM, directamente sobre el marcado SVG como texto:
+
+- Los literales hexadecimales `#rgb` / `#rgba` / `#rrggbb` / `#rrggbbaa`, las funciones `rgb()` / `rgba()` y las funciones `hsl()` / `hsla()` se reescriben dondequiera que aparezcan — atributos de presentación, `style` en línea, degradados, `<defs>`. Las funciones pueden usar canales enteros, decimales o en porcentaje y la sintaxis con comas o con espacios, así que también se recolorean `rgb(11.37%, 20%, 50.59%)` (como lo escribe Cairo) y `rgb(51 102 153 / 50%)`. Una función teñida se escribe de nuevo como `rgb(…)` o `rgba(…)`.
+- Las palabras clave `white` y `black` solo se sustituyen cuando aparecen como valores de pintado (`fill`, `stroke`, `stop-color`, `flood-color`, `color` — como atributos o propiedades de estilo en línea), nunca dentro del contenido de texto ni de las etiquetas.
+- `none`, `transparent` y `currentColor` se dejan intactos, igual que el resto de colores con nombre (`red`, `steelblue`…) y el negro por defecto de una forma o un texto que no fija relleno. Da a esos elementos un color explícito para que se recoloreen.
+- Los canales alfa se preservan (los dígitos de `#rgba` / `#rrggbbaa` y el componente alfa de `rgba(…)` viajan sin cambios; un alfa en porcentaje se escribe como número).
+- Cuando `inkHex` no se puede interpretar, la entrada se devuelve sin cambios.
+- El resultado lleva `data-postext-single-ink="#…"` (la tinta) en su `<svg>` raíz, y un marcado que ya lo lleva se devuelve tal cual, nombre la tinta que nombre. El mapeo no es idempotente —una segunda pasada aclara todos los colores, y el negro sale a unos dos tercios de la tinta—, así que una imagen se recolorea una sola vez, llegue antes tu código o el backend. (La marca es nueva en postext 1.5; el marcado recoloreado por la 1.4 no la lleva).
+
+```ts
+import { applySingleInkToSvg } from 'postext';
+
+const recoloreado = applySingleInkToSvg(svgText, '#295AA3');
+applySingleInkToSvg(recoloreado, '#295AA3') === recoloreado; // true: nunca dos veces
+```
+
+La tinta única se aplica en los tres backends: el backend PDF recolorea los bytes SVG que le entrega `resourceBytes` antes de dibujarlos como vectores, y los backends canvas y HTML tiñen las imágenes SVG que pintan cuando se lo pides (consulta [Tinta única en canvas y en HTML](#tinta-única-en-canvas-y-en-html)), de modo que el PDF exportado coincide con la previsualización en pantalla.
+
+El resolver y el stripper siguen el mismo patrón que las demás secciones, junto con los tipos `DiagramStyleConfig` / `ResolvedDiagramStyleConfig`:
+
+```ts
+import {
+  DEFAULT_DIAGRAM_STYLE_CONFIG,
+  resolveDiagramStyleConfig,
+  stripDiagramStyleDefaults,
+  applySingleInkToSvg,
+} from 'postext';
+import type { DiagramStyleConfig, ResolvedDiagramStyleConfig } from 'postext';
+
+const resolved = resolveDiagramStyleConfig(config.diagramStyle);
+// => { singleInk: false, inkColor: { hex: '#295AA3', model: 'hex', paletteId: 'main-color' } }
+
+const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
+// => undefined cuando todo coincide con los valores por defecto
+```
+
+### Tinta única en canvas y en HTML
+
+Los backends canvas y HTML reciben las imágenes ya decodificadas (`registerResourceImage`) o como URL (`resourceImageUrl`), no el marcado SVG. Si se lo pides, aplican el mismo mapeo a lo que dibujan:
+
+- **Canvas** (`renderPage`, `renderPageToCanvas`, `renderToCanvas`). Toda imagen SVG a la que se aplica el tinte —una figura, la imagen de una celda de tabla, una imagen de diseño, un icono o `marker` de caja— se rasteriza al tamaño con que se coloca, y sus píxeles se tiñen con la tinta, tanto si se registró como `<img>` como si se registró como `ImageBitmap`. El mapa de bits teñido se guarda en la caché como cualquier ráster vectorial. Una imagen de mapa de bits nunca se tiñe.
+- **HTML** (`renderToHtml`, `renderToHtmlIndexed`). Cada `<img>` SVG recibe `filter: url(#pt-ink-…)`, que apunta a un `feColorMatrix` que lleva su página: un `<svg>` de tamaño cero con el `<filter>`, colocado el primero en la página y parte del `decorationHtml` de la página en la salida indexada. Todas las páginas lo llevan mientras se aplica la tinta única, tengan o no alguna imagen, de modo que un anfitrión que parchea los bloques uno a uno nunca introduce una imagen cuyo filtro falte.
+
+**Nunca se tiñe dos veces.** Hasta postext 1.4 los backends canvas y HTML pintaban las imágenes tal cual, así que los anfitriones recoloreaban el marcado por su cuenta con `applySingleInkToSvg` antes de entregarlo. Los adaptadores de paquetes y el Sandbox lo siguen haciendo, porque la pasada sobre el marcado da exactamente los colores del PDF (consulta el último párrafo de este apartado). Así, una imagen se tiñe una sola vez, por tres reglas que se cumplen en los tres backends:
+
+- **Lo que ya lleva la marca se deja como está.** El backend PDF recolorea `resourceBytes` con `applySingleInkToSvg`, de modo que unos bytes SVG ya recoloreados se dibujan tal cual. En canvas y en HTML, tampoco se tiñe nunca una imagen cargada desde un data URI SVG cuyo marcado lleva la marca.
+- **Desactivado salvo que lo pidas, en postext 1.x.** El canvas tiñe una imagen SVG registrada sin indicación propia solo cuando el renderizado pasa `singleInk: true` (`RenderPageOptions`), y una registrada con `registerResourceImage(id, img, { singleInk: true })` en cualquier renderizado. El backend HTML tiñe cuando `renderToHtml` recibe `singleInk: true`, o cuando su resolutor `resourceImageUrl` lleva `singleInk: true`. Un anfitrión escrito para la 1.4, que recolorea el marcado y registra la imagen decodificada sin indicación, conserva su salida. La próxima versión mayor teñirá por defecto.
+- **`singleInk: false` nunca se tiñe.** Detrás de una URL blob o de red no se puede leer el marcado, así que una imagen que recoloreaste tú y decodificas así se registra con `singleInk: false`, como hacen `registerBundleImages` y el Sandbox. `bundleImageUrl(bundle)` devuelve un resolutor que lleva `singleInk: false`, y `bundleResourceBytes` entrega al PDF los bytes del propio paquete, que el backend PDF recolorea una vez.
+
+Los dos backends saben de qué tipo es cada imagen gracias al VDT: una figura y una imagen de celda llevan el tipo de su recurso, y un bloque de imagen de diseño lleva `imageKind` (`'svg'` o `'bitmap'`), tomado de su recurso durante la composición. En un VDT construido antes de que existiera `imageKind`, el canvas trata como SVG una imagen de diseño registrada como fuente vectorial, y el backend HTML una cuya URL es un data URI SVG o termina en `.svg`.
+
+O recoloreas tú el marcado o dejas que los backends tiñan la imagen original, pero no las dos cosas:
+
+```ts
+import { applySingleInkToSvg, registerResourceImage, renderPage, renderToHtml } from 'postext';
+
+// SVG sin recolorear: se tiñe mientras diagramStyle.singleInk está activo…
+registerResourceImage('diagrama.svg', imgOriginal, { singleInk: true });
+// …o regístralo sin más y pídelo en cada renderizado.
+registerResourceImage('diagrama.svg', imgOriginal);
+const canvas = renderPage(doc.pages[0], doc, { singleInk: true });
+
+// Recoloreado antes de decodificarlo (como hacen los anfitriones de la 1.4): se pinta tal cual.
+const entintado = applySingleInkToSvg(svgText, tinta);
+registerResourceImage('diagrama.svg', await decodificar(entintado), { singleInk: false });
+
+// El backend HTML con URL al marcado sin recolorear.
+const html = renderToHtml(doc, { resourceImageUrl: urlDe, singleInk: true });
+```
+
+`renderToHtml` toma el valor por defecto de su `singleInk` de la indicación del propio resolutor, así que `bundleImageUrl(bundle)` no necesita la opción.
+
+Para cada color que reescribe la pasada sobre el marcado (valores hexadecimales, `rgb()` y `hsl()`, `white` y `black`; consulta [Cómo funciona la tinta única](#cómo-funciona-la-tinta-única)), el mapeo por píxeles da el mismo resultado, incluidos los bordes suavizados y los degradados. Los dos difieren donde la pasada sobre el marcado deja un color como está: los colores con nombre distintos de `white` y `black`, `currentColor`, las formas y los textos sin relleno (dibujados en el negro por defecto) y los mapas de bits incrustados en el SVG se tiñen en pantalla pero conservan su color en el PDF. Da a cada elemento del diagrama un color explícito en hexadecimal, `rgb()` o `hsl()` para obtener la misma salida. Cuando el canvas no puede leer los píxeles de vuelta (un `<img>` de otro origen, cargado sin CORS), la imagen se pinta sin teñir.
+
+### Fuentes en el texto de los SVG
+
+Un dibujo SVG se muestra a través de una imagen: un `<img>` en el canvas, en HTML y en EPUB. Un documento de imagen no ve las fuentes web de la página, así que `<text font-family="IBM Plex Sans">` caería en una fuente del sistema. Desde postext 1.25 el motor incrusta en el marcado las variantes que nombra el texto antes de decodificar la imagen o entregarla como URL: una regla `@font-face` por archivo de fuente, con sus bytes como data URI, en un `<style>` justo después de la etiqueta `<svg>` raíz. El PDF no necesita nada de esto: compone el texto SVG como texto real con sus fuentes incrustadas (consulta [Bytes de recursos y másteres de impresión](/es/docs/configuration-programmatic-usage#bytes-de-recursos-y-másteres-de-impresión)).
+
+Lo que pide el texto se lee de `font-family`, `font-weight`, `font-style` y `font`, como atributos, dentro de atributos `style` y heredado de los grupos que lo contienen; también cuenta una regla de `<style>` que nombre una familia. Quedan fuera las familias genéricas (`serif`, `sans-serif`…) y el texto de `<title>` o `<desc>`, y una familia que el propio SVG declara con `@font-face` no se toca. Un tramo recorre su lista de `font-family` hasta la primera familia que tenga variante. Primero se recolorea para la tinta única y después se incrustan las fuentes.
+
+Las variantes las da un **proveedor** con el contrato de `PdfFontProvider` de postext-pdf, así que un mismo proveedor sirve para los dos: se le llama con la familia, el peso y el estilo, y los caracteres que el SVG compone en esa variante, y responde con un archivo o con varios. A una familia servida en tramos de `unicode-range` (Fontsource, Google Fonts) se le responde con los tramos que necesitan esos caracteres, de modo que un SVG con rótulos latinos lleva solo el archivo `latin`. El proveedor por defecto lee el registro de fuentes del motor: `loadBundleFonts` registra allí las variantes de un paquete, y un anfitrión registra las suyas con `registerFontBytes(family, weight, style, bytes, { unicodeRange })`, o con `registerFontUrl(…)` para un archivo que se descarga la primera vez que un SVG lo necesita. Una familia que nadie ha registrado se busca en las reglas `@font-face` de las hojas de estilo legibles de la página. Un `FontFace` añadido a `document.fonts` a partir de bytes no conserva los bytes, así que el motor no puede leerlo de vuelta: registra también esas variantes.
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // recoloreado, fuentes incrustadas, decodificado, registrado
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+Dónde ocurre:
+
+- **Canvas.** `registerSvgImage(fileId, svgText, options)` recolorea (`inkHex`), incrusta las fuentes (`fonts`, un proveedor; `inlineFonts: false` se lo salta), decodifica y registra la imagen como fuente vectorial, y se resuelve con lo que ha sido de cada variante. `registerBundleImages(bundle)` hace lo mismo con los SVG de un paquete, primero con las variantes del propio paquete. `prepareSvgMarkup(svgText, options)` devuelve el marcado preparado para un anfitrión que decodifica por su cuenta.
+- **HTML.** `bundleImageUrl(bundle)` sirve el marcado SVG con las variantes del paquete incrustadas. `renderToHtml(doc, { inlineSvgFonts: true })` incrusta en los data URI SVG que devuelve `resourceImageUrl` las variantes que el registro tiene en memoria (o `inlineSvgFonts: { fonts, maxBytes, withhold }`). Una URL de objeto no se puede leer de forma síncrona, así que un anfitrión que sirve URL blob incrusta antes de crearlas.
+- **EPUB.** `postext-epub` incrusta desde las `fonts` del libro, y después desde `svgFonts.provider`, antes de escribir un SVG (consulta [Libros EPUB](/es/docs/configuration-programmatic-usage#libros-epub-postext-epub)).
+- **PDF.** El texto SVG se compone como texto real con las fuentes incrustadas. Un `<style>` que solo contiene reglas `@font-face` (variantes que incrustó el autor) ya no hace que la figura pase a ráster. Cuando una figura sí pasa a ráster (un filtro, un degradado), su ráster se hace con las variantes incrustadas desde el `fontProvider` del PDF.
+
+También se exportan las funciones de nivel más bajo: `svgFontRequests(svgText)` enumera las familias, el peso, el estilo y los caracteres de cada tramo; `inlineSvgFonts(svgText, provider, options)` e `inlineSvgFontsSync(svgText, syncProvider, options)` devuelven el marcado; `inlineSvgFontsDetailed` añade un informe de cada variante (`inlined`, `declared`, `unavailable`, `withheld`, `tooLarge`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Opción</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>Máximo de bytes de fuente incrustados en un SVG (antes del base64, que añade un tercio). Si las variantes juntas lo superan, no se incrusta ninguna y se avisa con <code>svgFontsTooLarge</code>.</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>los cuatro</td>
+      <td>Los formatos de archivo que se incrustan; los archivos de otros formatos se omiten.</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>ninguno</td>
+      <td>Familias que se dejan fuera de un archivo que sale de la aplicación (no redistribuibles). Su referencia se mantiene y el lector usa una fuente de reserva; <code>onWithheld(family)</code> recibe aviso de cada una.</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>ninguno</td>
+      <td>Recibe aviso de una familia sin variante (<code>svgFontUnavailable</code>) y del límite de tamaño (<code>svgFontsTooLarge</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+**Desactivarlo.** `diagramStyle.inlineFonts: false` deja todos los SVG como están guardados; `svg.inlineFonts: false` en un recurso deja ese SVG byte a byte como está, para un SVG que lleva sus propias variantes o que no debe cambiar. Un paquete escribe la exclusión del recurso como `"inlineFonts": false` en su `preset.json`.
+
+**Licencias.** Incrustar mete archivos de fuente dentro de imágenes que pueden salir de la aplicación (una exportación HTML, un EPUB). Ocurre cuando una imagen se muestra o se exporta, nunca en los bytes guardados del recurso, y `withhold` deja fuera las familias que una licencia no te permite ceder: el escritor de EPUB retiene las variantes marcadas con `redistributable: false`, y el Sandbox las familias personalizadas marcadas así.
+
+
+## Estilo de vídeo
+
+La propiedad `videoStyle` fija cómo se imprimen los [recursos de vídeo](/es/docs/document-format#vídeos) —la marca de reproducción y el código QR sobre la portada, y si la portada enlaza con el vídeo— y qué ofrecen sus reproductores en el visor HTML y en EPUB.
+
+```ts
+const config: PostextConfig = {
+  videoStyle: {
+    playMark: { shape: 'rounded', position: 'top-left', size: { value: 10, unit: 'mm' } },
+    qr: { position: 'bottom-right', size: { value: 20, unit: 'mm' }, errorCorrection: 'Q' },
+    player: { download: false, privacy: true },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>playMark</code></td>
+      <td><code>VideoPlayMarkConfig</code></td>
+      <td>ver abajo</td>
+      <td>La marca impresa sobre la portada que indica que se reproduce.</td>
+    </tr>
+    <tr>
+      <td><code>qr</code></td>
+      <td><code>VideoQrConfig</code></td>
+      <td>ver abajo</td>
+      <td>El código QR impreso sobre la portada: abre la página del vídeo en YouTube o Vimeo, o la dirección de producción de un archivo.</td>
+    </tr>
+    <tr>
+      <td><code>linkPoster</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Hace de la portada un enlace al vídeo: una anotación de enlace sobre ella en el PDF, y un <code>&lt;a&gt;</code> que la rodea en HTML y EPUB allí donde se muestre la portada.</td>
+    </tr>
+    <tr>
+      <td><code>html</code></td>
+      <td><code>'player'</code> · <code>'poster'</code></td>
+      <td><code>'player'</code></td>
+      <td>Qué pone la salida HTML en lugar de un vídeo: su reproductor, o la portada impresa con sus elementos superpuestos.</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>ver abajo</td>
+      <td>Las opciones de reproductor de todos los vídeos; el <code>video.player</code> de cada vídeo se aplica sobre ellas.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Marca de reproducción
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprime la marca.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'circle'</code> · <code>'rounded'</code> · <code>'triangle'</code></td><td><code>'circle'</code></td><td>Un disco con un triángulo, un rectángulo redondeado con un triángulo (1,45 veces más ancho que alto) o el triángulo solo, perfilado con el color de fondo.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'center'</code></td><td><code>'center'</code>, una esquina (<code>'top-left'</code>, <code>'top-right'</code>, <code>'bottom-left'</code>, <code>'bottom-right'</code>) o el centro de un lado (<code>'top'</code>, <code>'bottom'</code>, <code>'left'</code>, <code>'right'</code>). Las posiciones son físicas: la esquina superior derecha es la superior derecha también en un libro de derecha a izquierda.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>12mm</code></td><td>Altura de la marca; nunca más del 40 % del lado menor de la portada.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>4mm</code></td><td>Distancia a los bordes de la portada en una esquina o un lado.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>blanco</td><td>El triángulo.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>Color principal</td><td>El disco o el rectángulo de detrás; el perfil del triángulo cuando va solo. Vinculado a la paleta por defecto.</td></tr>
+    <tr><td><code>backgroundOpacity</code></td><td><code>number</code></td><td><code>0.9</code></td><td>Opacidad del fondo, de 0 a 1.</td></tr>
+  </tbody>
+</table>
+
+### Código QR
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Imprime el código. Un archivo sin dirección de producción no lo lleva.</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'bottom-right'</code></td><td>Como en la marca de reproducción. Da a las dos posiciones distintas.</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>18mm</code></td><td>Lado del código con su margen; nunca más del 45 % del lado menor de la portada. Las cámaras de los móviles leen módulos a partir de un tercio de milímetro: una dirección de 30 caracteres da un código de 29 módulos, así que 18 mm con un margen de 2 dan módulos de 0,55 mm.</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Distancia a los bordes de la portada.</td></tr>
+    <tr><td><code>errorCorrection</code></td><td><code>'L'</code> · <code>'M'</code> · <code>'Q'</code> · <code>'H'</code></td><td><code>'M'</code></td><td>Cuánto del código puede estar dañado o tapado sin que deje de leerse: alrededor de un 7 %, un 15 %, un 25 % o un 30 %. Sube por sí sola mientras el código conserve el mismo número de módulos.</td></tr>
+    <tr><td><code>quietZone</code></td><td><code>number</code></td><td><code>2</code></td><td>Módulos claros alrededor del código, sobre su placa (de 0 a 8). La placa se distingue de la portada, así que no hacen falta los cuatro módulos que pide la norma sobre papel en blanco.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>negro</td><td>Los módulos oscuros. Mantenlos oscuros sobre una placa clara: la mayoría de los lectores no leen códigos invertidos.</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>blanco</td><td>La placa.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td><code>1mm</code></td><td>Radio de las esquinas de la placa.</td></tr>
+  </tbody>
+</table>
+
+El propio motor codifica el código (`encodeQr(text, level)`: modo byte, UTF-8, versiones 1 a 40, la máscara con menor penalización) y lo dibuja como vectores: el canvas rellena un solo trazado con las series de módulos, el PDF un `drawSvgPath` y el HTML un `<path>` con `shape-rendering="crispEdges"`, así que sale nítido a cualquier tamaño de impresión.
+
+### Opciones del reproductor
+
+`VideoPlayerOptions`, en `videoStyle.player` y en el `video.player` de cada vídeo. El reproductor HTML5 de un archivo las respeta todas; los de YouTube y Vimeo, las que permiten sus parámetros de inserción.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th style={{ width: '170px' }}>La respetan</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>controls</code></td><td><code>true</code></td><td>YouTube, Vimeo, archivos</td><td>Muestra los controles del reproductor.</td></tr>
+    <tr><td><code>download</code></td><td><code>true</code></td><td>archivos</td><td>Ofrece el botón de descarga del navegador (<code>controlslist="nodownload"</code> cuando está desactivado). Oculta el botón; no protege el archivo. YouTube y Vimeo nunca ofrecen descarga.</td></tr>
+    <tr><td><code>fullscreen</code></td><td><code>true</code></td><td>YouTube, Vimeo, archivos</td><td>Ofrece la pantalla completa (<code>fs=0</code>, el <code>allowfullscreen</code> del iframe, <code>nofullscreen</code>).</td></tr>
+    <tr><td><code>playbackRate</code></td><td><code>true</code></td><td>Vimeo, archivos</td><td>Ofrece el menú de velocidad (<code>speed=0</code>, <code>noplaybackrate</code>).</td></tr>
+    <tr><td><code>pictureInPicture</code></td><td><code>true</code></td><td>Vimeo, archivos</td><td>Ofrece la imagen en imagen (<code>pip=0</code>, <code>disablepictureinpicture</code>).</td></tr>
+    <tr><td><code>remotePlayback</code></td><td><code>true</code></td><td>archivos</td><td>Ofrece enviar el vídeo a otra pantalla (<code>disableremoteplayback</code>).</td></tr>
+    <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube, Vimeo, archivos</td><td>Empieza a reproducirse solo, siempre sin sonido, como exigen los navegadores.</td></tr>
+    <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube, Vimeo, archivos</td><td>Empieza con el sonido apagado.</td></tr>
+    <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube, Vimeo, archivos</td><td>Vuelve a empezar al terminar.</td></tr>
+    <tr><td><code>exclusive</code></td><td><code>true</code></td><td>Folio, visor HTML, EPUB (si ejecuta scripts); archivos</td><td>Al empezar este vídeo se pausan los demás que están a la vista, de modo que solo se reproduce uno a la vez. Con <code>false</code> se reproduce junto a los demás: los clips sin sonido y en bucle de una página, varios a la vez. Desde postext 1.18.</td></tr>
+    <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>archivos</td><td>Cuánto carga el navegador antes de reproducir: <code>'none'</code>, <code>'metadata'</code> o <code>'auto'</code>.</td></tr>
+    <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube, Vimeo</td><td>Inserciones con más privacidad: YouTube desde <code>youtube-nocookie.com</code>, Vimeo con <code>dnt=1</code>.</td></tr>
+  </tbody>
+</table>
+
+Un EPUB conserva solo los atributos que conoce su esquema: un archivo se reproduce con <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> y <code>preload</code>, además de la marca <code>data-pt-alongside</code>, y el sistema de lectura decide el resto.
+
+Un vídeo que no es exclusivo lleva `data-pt-alongside` en la salida HTML. `coordinateVideoPlayback(root)` aplica la regla a los reproductores que hay bajo `root` (el elemento que contiene la salida de `renderToHtml`): empezar un vídeo exclusivo pausa todos los demás que se reproducen, y empezar uno que se reproduce junto a otros pausa solo los exclusivos. Devuelve una función que deja de escuchar. `playsAlongside(el)` y `videosToPause(started, videos, alongside)` dan la misma regla a un anfitrión con reproductores propios. En [Folio](/es/docs/document-format#vídeos-en-las-páginas-de-folio), un vídeo que arranca solo y se reproduce junto a otros (`autoplay` con `exclusive: false`) empieza, sin sonido, cada vez que su página aparece y se detiene cuando se pasa la página, varios a la vez, y `loop` lo vuelve a empezar al terminar. En un EPUB, la página o el capítulo con vídeos que coordinar (dos o más, uno de ellos exclusivo) enlaza la misma regla como un pequeño script, `scripts/videos.js` (la exportación `VIDEO_PLAYBACK_SCRIPT`), y el paquete declara ese documento `scripted`. Un sistema de lectura que ejecuta scripts aplica la regla a los vídeos de ese documento, aunque no a los de la página de enfrente, que es otro documento; uno que no los ejecuta reproduce cada vídeo según sus propias reglas, como hacen siempre los reproductores de YouTube y Vimeo.
+
+El resolutor y el depurador siguen el patrón de las demás secciones, junto a los tipos `VideoStyleConfig` / `ResolvedVideoStyleConfig`:
+
+```ts
+import {
+  DEFAULT_VIDEO_STYLE_CONFIG,
+  DEFAULT_VIDEO_PLAYER_OPTIONS,
+  resolveVideoStyleConfig,
+  resolveVideoPlayerOptions,
+  stripVideoStyleDefaults,
+} from 'postext';
+
+const resolved = resolveVideoStyleConfig(config.videoStyle);
+const player = resolveVideoPlayerOptions(resource.video?.player, resolved.player);
+const minimal = stripVideoStyleDefaults(config.videoStyle); // undefined si todo está por defecto
+```

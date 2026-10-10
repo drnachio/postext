@@ -1,0 +1,1502 @@
+{/* docs/configuration-styles-ar.mdx */}
+
+export const metadata = {
+  title: 'الإعدادات: الأنماط والأجزاء',
+  sidebarTitle: 'الأنماط والأجزاء',
+  description: 'الأنماط المسمّاة للفقرات والشارات وقوائم الشيفرة والإطارات والعناوين، والصفحات التي تفتتح كل جزء',
+  lang: 'ar',
+  lastUpdated: '2026-10-10',
+  readingTime: '7 دقائق',
+  order: 9,
+  parent: 'configuration',
+  plainSummary: "تتناول هذه الصفحة الأنماط المسمّاة التي تعرّفها مرة واحدة وتستعملها مرات كثيرة. يضبط نمط الفقرة نوعًا من النص، مثل قائمة المراجع أو المسرد. يرسم نمط الشارة ملصقًا صغيرًا داخل السطر، ويرسم نمط الإطار صندوقًا حول ملاحظة أو نصيحة. ولقوائم الشيفرة خطها وإطارها وألوانها. وتتناول الصفحة أيضًا الصفحات التي تفتتح كل جزء من الكتاب، وأنماط العناوين الخاصة.",
+};
+
+# الإعدادات: الأنماط والأجزاء
+
+
+## أنماط الفقرات
+
+تعلن الخاصية `paragraphStyles` أنماطًا مسمّاة يطبّقها المستند على مجموعة من الفقرات بحاوية `:::paragraphs{style="…"}`: المراجع، ومسارد المصطلحات، والملاحظات، وأي كتلة من المدخلات تحتاج إلى خطها ووزنها وميلها وحجمها وتباعد أسطرها وحروفها الكبيرة أو حروفها الكبيرة المصغّرة (small caps) أو إزاحتها المعلّقة (hanging indent) الخاصة. وكل حقل طباعي اختياري ويرث نص المتن حين لا يُحدَّد، فلا يذكر النمط إلا ما يختلف عن النص الجاري.
+
+```ts
+const config: PostextConfig = {
+  paragraphStyles: [
+    {
+      id: 'bibliography',
+      name: 'Bibliography',
+      fontSize: { value: 7, unit: 'pt' },
+      lineHeight: { value: 1.2, unit: 'em' },
+      hangingIndent: { value: 2, unit: 'em' },
+      spaceBetween: { value: 0.25, unit: 'em' },
+      marginTop: { value: 1, unit: 'em' },
+      marginBottom: { value: 1, unit: 'em' },
+    },
+  ],
+};
+```
+
+```md
+## References
+
+:::paragraphs{style="bibliography"}
+Knuth, D. E. (1984). *The TeXbook*. Addison-Wesley.
+
+Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '180px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>إلزامي</td>
+      <td>المعرّف الذي تشير إليه <code>:::paragraphs&#123;style="…"&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>اسم مقروء للبشر، لواجهات المحرّرات فقط.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>خط نص المتن</td>
+      <td>عائلة الخط. أوزانها هي <code>fontWeight</code> / <code>boldFontWeight</code> أدناه (أوزان نص المتن حين لا تُحدَّد).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>حجم نص المتن</td>
+      <td>حجم الخط.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>ارتفاع سطر المتن</td>
+      <td>تباعد الأسطر. الوحدتان <code>em</code>/<code>rem</code> نسبيتان إلى حجم خط النمط نفسه، فالقيمة الموروثة <code>1.5em</code> تضيق مع الحجم الأصغر.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لون نص المتن</td>
+      <td>لون النص. تحتفظ المقاطع الغامقة والمائلة بألوان التوكيد في المتن ما لم تحدد <code>boldColor</code> / <code>italicColor</code> ألوان النمط الخاصة.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>'left' | 'justify' | 'center' | 'right' | 'start' | 'end'</code></td>
+      <td>محاذاة المتن</td>
+      <td>المحاذاة الأفقية. تجعل <code>'center'</code> و<code>'right'</code> كل سطر بحافة حرّة من الجهة الأخرى: إهداء، كتلة توقيع. وفي فقرة من اليمين إلى اليسار تكون <code>'left'</code> جهة بدايتها، أي اليمين.</td>
+    </tr>
+    <tr>
+      <td><code>boldColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>bodyText.boldColor</code></td>
+      <td>لون المقاطع الغامقة (قائمة مؤلفين أسماؤهم بلون الدار).</td>
+    </tr>
+    <tr>
+      <td><code>italicColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>bodyText.italicColor</code></td>
+      <td>لون المقاطع المائلة (<code>*…*</code>)، وفي النمط <code>italic</code> لون المقاطع التي تصير قائمة. لا يتبع <code>color</code>: النمط الملوّن الذي ينبغي أن يبقى مائله بلونه يحدد الاثنين.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>bodyText.fontWeight</code></td>
+      <td>وزن النص العادي (100–900): سؤال نصف غامق في ورقة عمل، أو تصدير بوزن خفيف.</td>
+    </tr>
+    <tr>
+      <td><code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>bodyText.boldFontWeight</code></td>
+      <td>وزن المقاطع الغامقة (<code>**…**</code>).</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>نضّد الفقرات بخط مائل: إرشادات المسرح، أو تصدير. والمقطع المائل <code>*…*</code> داخلها يصير قائمًا، كما في الاقتباس الكتلي.</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>نضّد الفقرات بالحروف الكبيرة المصغّرة: الحروف الصغيرة حروفًا كبيرة بنسبة 70% من الحجم، والحروف الكبيرة بحجمها الكامل، وتُرسم على النحو نفسه في كل مُخرِج (انظر <a href="/ar/docs/document-format#الحروف-الكبيرة-المصغّرة">الحروف الكبيرة المصغّرة</a>): قائمة الشخصيات، أو مداخل مسرد المصطلحات.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td>تقسيم كلمات المتن</td>
+      <td>قسّم الكلمات بالواصلة عند ضبط الأسطر (يستخدم لغة المستند).</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>إزاحة كل سطر عن الحافة اليسرى للعمود (أو للإطار الذي تقع فيه الفقرات)؛ ووحدة <code>em</code> هي حجم النمط نفسه. تُقاس إزاحة السطر الأول والإزاحة المعلّقة منها، فيستطيع سطر شعري مُزاح أن يعلّق سطره المرحَّل (turnover) أعمق من بدايته: <code>indent: 1.5em</code> مع <code>hangingIndent: 2.5em</code> يضع السطر عند 1.5 em وسطره المرحَّل عند 4 em. والقيمة السالبة تُعدّ <code>0</code>.</td>
+    </tr>
+    <tr>
+      <td><code>endIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>إزاحة كل سطر عن جانب النهاية (يمين السطر الأفقي، وذيل السطر العمودي)؛ ووحدة <code>em</code> هي حجم النمط نفسه. ومع <code>textAlign: 'end'</code> تضع السطر مرفوعًا بضعة حروف عن الذيل، وهو 地からN字上げ في تاريخ الرسالة اليابانية أو توقيعها. منذ postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>firstLineIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td>إزاحة السطر الأول في المتن</td>
+      <td>إزاحة السطر الأول، من <code>indent</code>. مع <code>hangingIndent</code> غير صفري لا تُطبَّق إلا إذا حدّدها النمط نفسه: يبدأ السطر الأول عند <code>indent + firstLineIndent</code> والأسطر التالية عند <code>indent + hangingIndent</code>، فيمكن لسطر من الشعر أن يُزاح em واحدًا وتُعلَّق تتمّته 3 em. وإذا كانت موروثة من المتن تفسح للإزاحة المعلّقة ويبدأ السطر الأول عند <code>indent</code>، كما كان حتى postext 1.22 (والإعداد المحفوظ قبل ذلك تُحذف منه القيمة الصريحة في نمط كهذا).</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>إزاحة تُطبَّق على كل الأسطر ما عدا الأول، من <code>indent</code> — الشكل الكلاسيكي للمراجع ومسارد المصطلحات، وتتمّة سطر الشعر. يبدأ السطر الأول عند <code>indent</code>، أو عند <code>firstLineIndent</code> الخاص بالنمط إذا حدّده.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>المسافة العمودية بين الفقرات المتتالية داخل الحاوية. القيمة <code>0</code> تجعل المدخلات متلاصقة.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>المسافة فوق الفقرة الأولى في الحاوية. تندمج مع المسافة المعلّقة أصلًا وتختفي في رأس العمود، كأي هامش آخر.</td>
+    </tr>
+    <tr>
+      <td><code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>أقل مسافة تحت الفقرة الأخيرة في الحاوية. وطريقة التقائها بمسافة الكتلة التي تلي الحاوية يحددها <code>bodyText.paragraphContainerSpacing</code>.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>أعِد التدفق إلى شبكة خطوط الأساس تحت الحاوية، على أن تكون المسافة تحتها حدًّا أدنى. القيمة <code>false</code> تُبقي المسافة الدقيقة: يبقى النص بعد الحاوية خارج الشبكة حتى الكتلة التالية التي تُحاذى عليها (عنوان، أو نهاية قائمة، أو معادلة رياضية مستقلة)، وهذا لمستند يجري خارج الشبكة أو لمجموعة لها تباعد أسطر خاص بها. وداخل الإطار (callout)، الذي لا شبكة له، لا تغيّر شيئًا.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>حالة أحرف الفقرات: <code>'uppercase'</code> تنضّدها بالحروف الكبيرة (قائمة الشخصيات، سطر من الحركة المسرحية)، بما في ذلك كلمات الشارة وتسمية <code>:ref</code>. الطول يبقى على حاله، فتبقى خريطة المصدر في المحرّر مطابقة حرفًا بحرف: الحرف الذي صيغته الكبيرة أطول (<code>ß</code>) يُترك كما كُتب. تُترك الرياضيات كما هي، والترويسة التي تقرأ الفقرة علامةً (<code>&#123;firstMark.<em>style</em>&#125;</code>) تأخذ النص كما كُتب؛ أما نص التصميم فتنضّده بالحروف الكبيرة خاصيته <code>textTransform</code>.</td>
+    </tr>
+    <tr>
+      <td><code>wordBreak</code></td>
+      <td><code>'normal' | 'keep-all'</code></td>
+      <td><code>cjk.wordBreak</code></td>
+      <td>أين تنكسر أسطر الفقرات الصينية أو اليابانية أو الكورية بين المحارف (انظر <code>cjk.wordBreak</code>): <code>'keep-all'</code> لكتاب قراءة بالكانا مع مسافات بين العبارات يُقتبس في كتاب نثر عادي، و<code>'normal'</code> للعكس. منذ postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td>غير محدَّد</td>
+      <td>هل يعدّ <a href="/ar/docs/configuration-notes-references#ترقيم-الأسطر">ترقيم الأسطر</a> أسطر الفقرات. غير محدَّد: تُعدّ حين يكون <code>lineNumbers.count</code> هو <code>'all'</code>، وفي قصيدة منضّدة بالنمط حين تُعدّ الأبيات. <code>true</code>: تُعدّ مع <code>'verse'</code> أيضًا، وداخل الإطار، الذي لا يُعدّ نصه أبدًا في غير ذلك. <code>false</code>: لا تُعدّ أبدًا. منذ postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabStops</code></td>
+      <td><code>TabStop[]</code></td>
+      <td><code>bodyText.tabStops</code></td>
+      <td>مواضع الجدولة لفقرات النمط (انظر <a href="/ar/docs/configuration-text#مواضع-الجدولة">مواضع الجدولة</a>)، مقيسةً من <code>indent</code> في النمط. ومحرف الجدولة في نصها جدولة حين تكون للنمط مواضع أو مسافة، خاصة به أو مأخوذة من المتن. غير محدَّد: مواضع المتن؛ والقائمة الفارغة لا تحدّد أي موضع. منذ postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>tabInterval</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>bodyText.tabInterval</code></td>
+      <td>مواضع افتراضية بعد آخر موضع في <code>tabStops</code>. غير محدَّد: مسافة المتن. منذ postext 1.23.</td>
+    </tr>
+    <tr>
+      <td><code>dropCap</code></td>
+      <td><code>ParagraphDropCap</code></td>
+      <td>لا شيء</td>
+      <td>حرف استهلالي يفتتح الفقرة الأولى من كل مجموعة <code>:::paragraphs</code> منضَّدة بهذا النمط، أو كل فقرة مع <code>each: true</code> (انظر <a href="/ar/docs/configuration-text#الحروف-الاستهلالية">الحروف الاستهلالية</a>). و<code>&#123;dropcap=false&#125;</code> في سياج المجموعة يلغيه، و<code>&#123;dropcap=2&#125;</code> يحدّد أسطره. منذ postext 1.23.</td>
+    </tr>
+  </tbody>
+</table>
+
+تنضّد المسرحية إرشادات المسرح بخط مائل وقائمة شخصياتها بالحروف الكبيرة المصغّرة:
+
+```ts
+paragraphStyles: [
+  { id: 'direction', italic: true, fontSize: { value: 9, unit: 'pt' } },
+  { id: 'cast', smallCaps: true, textAlign: 'center', fontWeight: 600 },
+],
+```
+
+```md
+:::paragraphs{style="direction"}
+Elsinore. A platform before the castle. *Francisco* at his post.
+:::
+```
+
+تُطبع الإرشادات بخط مائل والاسم الذي داخلها قائمًا؛ وتسري الأوزان و`italic` و`smallCaps` الخاصة بالنمط داخل الإطارات أيضًا.
+
+يُزيح ديوان الشعر بعض الأسطر، ويعلّق السطر المرحَّل من بيت أطول من عرض السطر أعمق من البيت نفسه. تُدخل `indent` كل أسطر الفقرة إلى الداخل، وتُحسب الإزاحة المعلّقة من هناك:
+
+```ts
+paragraphStyles: [
+  { id: 'verse', textAlign: 'left', firstLineIndent: { value: 0, unit: 'em' }, hangingIndent: { value: 4, unit: 'em' } },
+  { id: 'verse-indented', textAlign: 'left', indent: { value: 1.5, unit: 'em' }, hangingIndent: { value: 2.5, unit: 'em' } },
+],
+```
+
+يبدأ السطر في `verse-indented` عند 1.5 em وسطره المرحَّل عند 4 em، على مستوى الأسطر المرحَّلة في `verse`. ومن دون `indent` يستطيع النمط أن يُزيح السطر الأول أو أن يعلّق الأسطر الأخرى، لا الاثنين معًا: تُتجاهل `firstLineIndent` متى حُدّدت `hangingIndent`.
+
+تضع قائمة الطعام كل سعر ملاصقًا لنهاية عرض السطر، وراء خط إرشاد من النقاط:
+
+```ts
+paragraphStyles: [
+  {
+    id: 'menu',
+    textAlign: 'left',
+    firstLineIndent: { value: 0, unit: 'em' },
+    tabStops: [{ position: 'end', align: 'end', leader: '. ' }],
+  },
+],
+```
+
+```md
+:::paragraphs{style="menu"}
+شوربة البصل :tab 8.50
+
+دنيس مشوي بالشمر والليمون :tab 21.00
+:::
+```
+
+تنتهي نقاط كل سطر قبل السعر بنصف em (`leaderGap`). والطبق الذي يطول عن سطره يلتفّ، ويحتفظ سطره الأخير بخط الإرشاد والسعر؛ وحين لا يتّسع السعر بجانب الكلمة الأخيرة تنزل تلك الكلمة معه.
+
+### الحاوية `:::paragraphs`
+
+يفتح السطر `:::paragraphs{style="<id>"}` الحاوية ويغلقها سطر `:::` وحده؛ وكل فقرة بينهما تأخذ النمط المسمّى، بينما تحتفظ العناوين والقوائم والكتل الأخرى داخلها بتنسيقها المعتاد. ويمكن أن تتداخل الحاويات داخل حاويات مسوّرة أخرى. ومعرّف `style` المجهول ليس خطأً: تُرسم الفقرات نصَّ متنٍ عاديًا.
+
+ويقبل السور أيضًا `align` (`start`، `end`، `left`، `right`، `center`، `justify`) و`indent` و`endIndent` (والأعداد المجرّدة بوحدة em)، مع نمط أو دونه: مع النمط تتجاوزه، ودونه تُطبَّق فوق نمط الحاوية المحيطة، أو فوق نمط النص حيث يقع السور (المتن، أو الجزء، أو القسم ذو النمط، أو الإطار). ويضع `:::paragraphs{align=end}` كتلة ملاصقة لنهاية السطر (地付き)، و`:::paragraphs{align=end endIndent=1}` كتلة مرفوعة عنها حرفًا واحدًا. منذ postext 1.16.
+
+داخل الحاوية يغادر التدفق شبكة خطوط الأساس، فالمدخل بحجم 7pt وتباعد أسطر 1.2em لا يمكن أن يستقر على شبكة 8pt/1.5em، ثم تعيد الفقرة الأخيرة التدفق إليها (الشبكة هي الغالبة؛ والمسافة تحتها حدٌّ أدنى، وهو العرف الذي تتبعه العناوين). وتنقسم المدخلات عبر الأعمدة والصفحات كفقرات المتن، مع الحماية نفسها من الأسطر اليتيمة (orphans) والأرامل (widows)؛ والعنوان الذي يسبق الحاوية مباشرة يبقى مع فقرتها الأولى.
+
+المسافة تحت الحاوية هي الأكبر بين `spaceBetween` و`marginBottom` الخاصتين بالنمط وتباعد الفقرات في النص المحيط (سطر واحد حين يكون `bodyText.paragraphSpacing` مفعّلًا)، وتندمج مع المسافة التي تحتفظ بها الكتلة التالية فوقها، كما تفعل المسافة بين فقرتين من المتن: فالعنوان بعد قائمة المراجع يقع تحت المدخل الأخير بمقدار `marginTop` الخاص به (أو بمسافة النمط حين تكون أكبر)، والفقرة بعد مجموعة من المدخلات الأضيق تحتفظ بتباعد فقرات النص. يعود التدفق إلى الشبكة تحت النص أولًا، وما لم تغطّه المحاذاة يُنقل في أسطر شبكة كاملة، فيقع النص بعد الحاوية على الشبكة. وحتى postext 1.4 كانت مسافة النمط توضع تحت السطر الأخير قبل المحاذاة، وتُضاف تحتها مسافة الكتلة التالية العليا، ويُهمَل تباعد الفقرات؛ والقيمة `bodyText.paragraphContainerSpacing: 'add'` تحتفظ بتلك القاعدة، والإعدادات المحفوظة قبلها تُقرأ بها. والنمط ذو `snapToGrid: false` لا يعود إلى الشبكة: يقع النص بعد الحاوية تحتها بالمسافة الدقيقة، خارج الشبكة حتى الكتلة التالية التي تُحاذى عليها. والحاوية التي تنتهي بقائمة تُنضَّد كما في 1.4 في كلتا القاعدتين: تحتفظ القائمة بمسافتها تحتها، وتتبع `marginBottom` تلك المسافة، مندمجةً مع مسافة الكتلة التالية.
+
+داخل `:::callout` تأخذ الحاوية هوامش نمطها على النحو نفسه: تندمج `marginTop` و`marginBottom` مع تباعد الكتل المحيطة بها (والقيمة السالبة تقرّبها)، والحاوية التي يبدأ بها الإطار لا تأخذ هامشًا علويًا، كما في رأس العمود. ولا شبكة خطوط أساس في الإطار يُعاد إليها، فالمسافة تحت الفقرة الأخيرة هي الأكبر بين `marginBottom` و`spaceBetween` وتباعد الفقرات الخاص بالإطار (`body.paragraphSpacing` الخاص به، أي سطر من نصه؛ ويُهمَل مع `paragraphContainerSpacing: 'add'`)، أو الهامش العلوي للكتلة التالية حين يكون أكبر منها كلها؛ والقيمة السالبة لـ `marginBottom` ترفع الكتلة التالية بدلًا من ذلك. (حتى postext 1.4 كانت الحاوية داخل الإطار تتجاهل الهامشين.)
+
+```ts
+const resolved = resolveParagraphStylesConfig(config.paragraphStyles, resolvedBodyText);
+// => every unset field filled from the resolved body text
+
+const minimal  = stripParagraphStylesDefaults(config.paragraphStyles);
+// => undefined when the list is empty; zero margins and `name === id` dropped
+```
+
+
+## أنماط الشارات
+
+تعلن الخاصية `chipStyles` الأنماط المسمّاة للشارة (chip) المضمّنة `:chip[text]{style="…"}`، أي المربعات الملوّنة المستديرة الزوايا لبنك كلمات أو مفتاح لوحة مفاتيح أو وسم (الصيغة وقواعد كسر الأسطر الخاصة بها في مرجع صيغة المستند). يأتي نمط واحد، `chip`، افتراضيًا (تعبئة زرقاء شاحبة مع خط شعري باللون الرئيسي، زوايا مستديرة قليلًا، والنص كالكلمات المحيطة به)، فتعمل `:chip[…]` دون أي إعداد؛ وإعلان `chipStyles` يستبدل تلك القائمة الافتراضية. والشارة التي بلا `style`، أو بمعرّف لا يعلنه أي نمط، تأخذ النمط الأول.
+
+```ts
+const config: PostextConfig = {
+  chipStyles: [
+    { id: 'chip', name: 'Word bank' },
+    {
+      id: 'key',
+      name: 'Keyboard key',
+      background: { hex: '#fff4d6', model: 'hex' },
+      borderColor: { hex: '#8a6d1f', model: 'hex' },
+      borderRadius: { value: 2, unit: 'pt' },
+      bold: true,
+    },
+  ],
+};
+```
+
+```md
+Classify: :chip[battery] :chip[cable] :chip[switch]
+
+Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"}.
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '180px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>إلزامي</td>
+      <td>المعرّف الذي تشير إليه <code>:chip[…]&#123;style="…"&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>اسم مقروء للبشر، لواجهات المحرّرات فقط.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>ارسم تعبئة المربع.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#e8eef7</code></td>
+      <td>تعبئة المربع (قابلة للربط بلوحة الألوان).</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>اللون الرئيسي في لوحة الألوان</td>
+      <td>لون الخط المحيط.</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>سُمك الخط المحيط؛ والقيمة <code>0</code> لا ترسم شيئًا. يُرسم الخط المحيط داخل حافة المربع.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>نصف قطر الزوايا، لا يتجاوز نصف ارتفاع المربع (القيمة الكبيرة تعطي شكل كبسولة).</td>
+    </tr>
+    <tr>
+      <td><code>paddingX</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>المساحة بين الخط المحيط والنص، يسارًا ويمينًا. وهي جزء من مقدار تقدّم الشارة.</td>
+    </tr>
+    <tr>
+      <td><code>paddingY</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.1em</code></td>
+      <td>المساحة فوق شريط النص وتحته. تُرسم خارج مربع السطر: لا تغيّر ارتفاع السطر أبدًا.</td>
+    </tr>
+    <tr>
+      <td><code>paddingTop</code>, <code>paddingBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>paddingY</code></td>
+      <td>المساحة فوق شريط النص أو تحته، كلٌّ منهما بدلًا من <code>paddingY</code>. يمتد الشريط 0.8 em فوق خط الأساس و0.25 em تحته، فيقع منتصفه على ارتفاع 0.275 em فوق خط الأساس، أدنى من منتصف الحرف الكبير (نحو 0.35 em في أغلب الخطوط): فيبدو الحرف الكبير أو الرقم في شارة مستديرة (<code>borderRadius: 1em</code>) مرتفعًا. والحشوة العليا التي تزيد على السفلى بضعف الفرق تتوسّطه: <code>paddingTop: 0.2em</code> مع <code>paddingBottom: 0.05em</code> لخط ارتفاع حروفه الكبيرة 0.7 em.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>النص المحيط</td>
+      <td>عائلة خط نص الشارة. تتبع الأوزان النص المحيط بها.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>النص المحيط</td>
+      <td>حجم نص الشارة؛ ووحدة <code>em</code> نسبية إلى النص المحيط.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>النص المحيط</td>
+      <td>لون نص الشارة. حين لا يُحدَّد، تحتفظ المقاطع الغامقة والمائلة بألوان التوكيد.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>نضّد نص الشارة بخط غامق، فوق تنسيقه الخاص.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>نضّد نص الشارة بخط مائل، فوق تنسيقه الخاص.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.25em</code></td>
+      <td>أقل مساحة تُترك بين المربع وكلمة أو شارة مجاورة عبر مسافة بين الكلمات؛ والمسافة الأضيق تُكمَّل داخل مقدار تقدّم الشارة، فلا يقتطع منها ضبط الأسطر أبدًا. ولا يُضاف شيء عند حافة السطر أو بجوار علامة ترقيم ملتصقة.</td>
+    </tr>
+  </tbody>
+</table>
+
+أطوال المربع بوحدة em (`paddingX`، `paddingY`، `borderRadius`، `borderWidth`، `gap`) نسبية إلى حجم خط الشارة نفسها. المربع شريط يمتد 0.8 em فوق خط الأساس و0.25 em تحته، يكبر بمقدار `paddingY` والخط المحيط؛ ويُرسم خارج مربع السطر ولا يغيّر تباعد الأسطر أبدًا، فتبقى شبكة خطوط الأساس سليمة. وحين يصير المربع أطول من خطوة السطر، يمكن أن تصطدم الشارة بشارة في السطر الذي فوقها أو تحتها، فيُدرج Sandbox تحذير «الشارات تلامس السطر التالي» حين تتداخل شارتان في سطرين مختلفين، مع مقدار التداخل بالنقاط، لكي تُقلَّص `paddingY` أو الخط المحيط أو `fontSize`. ولا يُبلَّغ عن شارة طويلة ليس فوقها ولا تحتها شارة.
+
+في الـ VDT الشارة مقطع سطر من `kind: 'chip'` يحمل حقله `chip` مقاطع النص (لكل منها سلسلة الخط وعرضها)، وهندسة المربع (`boxWidth`، `ascent`، `descent`، `paddingX`، `borderWidth`، `borderRadius`، وهوامش المسافة) وألوانه؛ و`text` الخاص بالمقطع عنصر نائب من حرف واحد، فتعدّ إزاحات النص العادي وخرائط المصدر الشارةَ حرفًا واحدًا.
+
+```ts
+const resolved = resolveChipStylesConfig(config.chipStyles);
+// => the built-in `chip` style when unset; every field filled
+
+const minimal  = stripChipStylesDefaults(config.chipStyles);
+// => undefined for the built-in default; static defaults dropped
+
+const style = pickChipStyle(resolved, 'key');
+// => the `key` style, else the first one
+```
+
+
+## قوائم الشيفرة
+
+تضبط الخاصية `codeStyle` مظهر قوائم الشيفرة: أسوار ```` ``` ```` و`~~~` في النص (انظر [صيغة المستند › كتل الشيفرة](/ar/docs/document-format#كتل-الشيفرة))، والشيفرة المضمّنة حين يُطلب لها خط شيفرة. تُنضَّد القائمة سطرًا سطرًا كما كُتبت، بخط ثابت العرض، داخل إطار: لا يُقسَّم أي سطر بالواصلة ولا يُضبط، وتحتفظ كل مسافة بعرضها، وتتقدّم الجدولة إلى موضع الجدولة التالي. ويأتي الإطار من الآلية نفسها التي تُخرج `:::callout`، فتنقسم القائمة بين أسطرها عبر الأعمدة والصفحات، ولكل جزء إطاره، والسور داخل إطار هو إطار متداخل فيه. كل الخصائص اختيارية. منذ postext 1.23.
+
+```ts
+const config: PostextConfig = {
+  codeStyle: {
+    fontFamily: 'JetBrains Mono',
+    fontSize: { value: 0.8, unit: 'em' },
+    background: { hex: '#0e1116', model: 'hex' },
+    color: { hex: '#d3d9df', model: 'hex' },
+    padding: { top: { value: 4, unit: 'mm' }, right: { value: 5, unit: 'mm' }, bottom: { value: 4, unit: 'mm' }, left: { value: 5, unit: 'mm' } },
+    borderRadius: { value: 2, unit: 'pt' },
+    lineNumbers: true,
+    tokens: {
+      keyword: { color: { hex: '#f2b134', model: 'hex' }, bold: true },
+      string: { color: { hex: '#3ddc84', model: 'hex' } },
+      comment: { color: { hex: '#8a939d', model: 'hex' }, italic: true },
+    },
+    inline: { background: { hex: '#eef1f4', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '190px' }}>الخاصية</th>
+      <th style={{ width: '180px' }}>النوع</th>
+      <th style={{ width: '150px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>blocks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>تُقرأ الأسوار كتلَ شيفرة. ومع <code>false</code> يُقرأ السور وأسطره Markdown كما في postext 1.22؛ وتأخذ هذه القيمةَ الإعداداتُ المخزّنة قبل 1.23 إذا كان في نصها سور (انظر <a href="/ar/docs/configuration-programmatic-usage#الحزم-التي-كتبها-postext-14-أو-ما-قبله">الحزم التي كتبها postext 1.4 أو ما قبله</a>).</td>
+    </tr>
+    <tr>
+      <td><code>indentedCode</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>تُقرأ أيضًا الأسطر المتتالية المزاحة أربعة أعمدة (أربع مسافات أو جدولة)، بعد سطر فارغ، قائمةَ شيفرة، ويُحذف من كل سطر أربعة أعمدة. موقوفة افتراضيًا: فكثيرًا ما تُزاح نصوص Postext بالمسافات، وعناصر القوائم المتداخلة تقرأ المسافات البادئة.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td><code>'Source Code Pro'</code></td>
+      <td>خط الشيفرة. الخط ثابت العرض يُبقي الأعمدة مصطفّة؛ ولتعليقات بالصينية أو اليابانية اختر خطًا فيه كانجي (BIZ UDGothic)، تأخذ محارفه كاملة العرض خليتين.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.85em</code></td>
+      <td><code>em</code> هو حجم المتن.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code> / <code>boldFontWeight</code></td>
+      <td><code>number</code></td>
+      <td><code>400</code> / <code>700</code></td>
+      <td>وزن الشيفرة ووزن الرموز العريضة.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>سطر الشبكة في المتن</td>
+      <td>تباعد أسطر الشيفرة؛ و<code>em</code> هو حجم الشيفرة. وإن لم يُضبط وقعت الأسطر على شبكة خطوط الأساس.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يعود النص الذي يلي القائمة إلى شبكة خطوط الأساس؛ ومع <code>false</code> يُحفظ <code>marginBottom</code> الدقيق، كما في الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>لون المتن</td>
+      <td>لون الشيفرة، وتأخذه الرموز التي ليس لها لون خاص.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>تعبئة الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td>موقوف، <code>#cccccc</code>، <code>0.5pt</code></td>
+      <td>حدّ الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>زوايا مستديرة؛ ويحتفظ بها كل جزء من القائمة المقسومة، كما في الإطار المقسوم.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.6em</code> لكلٍّ منها</td>
+      <td><code>em</code> هو حجم الشيفرة.</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>المسافة فوق الإطار وتحته.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page'</code></td>
+      <td><code>'column'</code></td>
+      <td>القائمة الممتدة على الصفحة تعبر كل أعمدة الصفحة متعددة الأعمدة، كما يفعل الإطار <code>span: 'page'</code>. ويضبط السور قيمته بـ<code>span=page</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tabSize</code></td>
+      <td><code>number</code></td>
+      <td><code>4</code></td>
+      <td>تتقدّم الجدولة إلى المضاعف التالي لهذا العدد من خلايا المحارف (ويُعدّ المحرف كامل العرض خليتين). وتبقى جدولةً: يحتفظ بها النص المنسوخ.</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'wrap' | 'shrink' | 'clip'</code></td>
+      <td><code>'wrap'</code></td>
+      <td>السطر الأعرض من الإطار. <code>'wrap'</code>: ينكسر بعد آخر مسافة أو علامة ترقيم تتسع (وبين محرفين إن لم تتسع أي منهما)، ويستمر الباقي تحته، مزاحًا بمقدار <code>wrapIndent</code> من الخلايا، خلف <code>wrapMarker</code>؛ ولا يبدأ جزء من قائمة مقسومة ببقية كهذه ما دام قطع آخر يتسع. <code>'shrink'</code>: تُنضَّد القائمة كلها أصغر حتى يتسع أعرض أسطرها، إلى <code>minFontScale</code> على الأكثر، ويُكسر ما لا يزال لا يتسع. <code>'clip'</code>: يتوقف السطر عند الحافة الداخلية للإطار، ولا تُطبع المحارف التي تتجاوزها. وكلٌّ منها يُطلق تحذير <code>codeOverflow</code>.</td>
+    </tr>
+    <tr>
+      <td><code>wrapIndent</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>إزاحة بقية السطر المكسور، بخلايا المحارف.</td>
+    </tr>
+    <tr>
+      <td><code>wrapMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'»'</code></td>
+      <td>توضع في تلك الإزاحة، بلون أرقام الأسطر، وليست جزءًا من النص (لا تُنسخ، ويرسمها ملف PDF الموسوم عنصرًا زخرفيًا (artifact)). و<code>''</code> لا تضع شيئًا. والمحرف <code>↪</code> غائب عن معظم خطوط الشيفرة، فيُطبع فيها مربعًا فارغًا.</td>
+    </tr>
+    <tr>
+      <td><code>minFontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>0.8</code></td>
+      <td>مع <code>'shrink'</code>، أصغر نسبة من <code>fontSize</code> تُنضَّد بها القائمة.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumbers</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>ترقيم أسطر كل قائمة، في هامش قبل الشيفرة. ويضبط السور قيمته بـ<code>lineNumbers</code> و<code>lineNumbers=false</code> و<code>start=N</code>. ولا رقم لبقية السطر المكسور. تُنضَّد الأرقام بجانب النص لا فيه: يخفيها عارض HTML عن التحديد وعن التقنيات المساعدة، ويرسمها ملف PDF الموسوم عناصرَ زخرفية.</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#8a8a8a</code></td>
+      <td>لون الأرقام (ولون علامة التتمة).</td>
+    </tr>
+    <tr>
+      <td><code>lineNumberGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>المسافة بين أعرض رقم والشيفرة؛ و<code>em</code> هو حجم الشيفرة.</td>
+    </tr>
+    <tr>
+      <td><code>highlightBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fff4c2</code></td>
+      <td>الشريط الملوّن خلف الأسطر التي يسمّيها السور بـ<code>highlight="3,5-7"</code>، على عرض الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>كما في نمط الإطار: <code>false</code> تقسم القائمة الأطول من المساحة المتبقية بين أسطرها؛ و<code>true</code> تنقلها كاملة، ولا تقسمها إلا إذا كانت أطول من عمود.</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>أقل عدد من الأسطر على كل جانب من القطع، فلا يضم أي جزء سطرًا واحدًا.</td>
+    </tr>
+    <tr>
+      <td><code>repeatTitle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>تكرار العنوان في رأس كل جزء، مع لاحقة «(cont.)» بلغة المستند.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code> / <code>continuesMarker</code></td>
+      <td><code>boolean</code> / <code>string</code></td>
+      <td><code>false</code> / «Continued»</td>
+      <td>علامة تحت السطر الأخير من كل جزء له تتمة.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>CalloutTitleStyleConfig</code></td>
+      <td>خط الشيفرة، عريض، 0.9 من حجمه</td>
+      <td>صف العنوان الذي يطبعه <code>title</code> في السور (انظر <a href="#أنماط-الإطارات">أنماط الإطارات</a> للحقول).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>CalloutLabelConfig</code></td>
+      <td>لا شيء</td>
+      <td>إذا ضُبط طُبع العنوان بدلًا من ذلك في لسان تسمية على الحافة العليا للإطار (بخط الشيفرة وحجمها ما لم يحدّد اللسان خطه).</td>
+    </tr>
+    <tr>
+      <td><code>highlight</code></td>
+      <td><code>'builtin' | 'none'</code></td>
+      <td><code>'builtin'</code></td>
+      <td>تلوين الرموز بالمُقطِّع المدمج (وبأي ملوّن مسجَّل)؛ و<code>'none'</code> تنضّد كل القوائم بلون <code>color</code>.</td>
+    </tr>
+    <tr>
+      <td><code>tokens</code></td>
+      <td><code>Partial&lt;Record&lt;CodeTokenKind, &#123; color?, bold?, italic? &#125;&gt;&gt;</code></td>
+      <td>لوحة ألوان هادئة</td>
+      <td>مظهر كل نوع من الرموز، يُدمج نوعًا نوعًا مع القيم الافتراضية (انظر أدناه). واللون المرتبط باللوحة يتبع <code>colorPalette</code> ولوحة الجزء.</td>
+    </tr>
+    <tr>
+      <td><code>inline</code></td>
+      <td><code>InlineCodeStyleConfig</code></td>
+      <td>غير مضبوط</td>
+      <td>الشيفرة المضمّنة بخط الشيفرة (انظر أدناه). وإن لم يُضبط نُضّدت الشيفرة المضمّنة بخط النص، كما قبل 1.23.</td>
+    </tr>
+  </tbody>
+</table>
+
+### تلوين الصياغة
+
+يسمّي مُقطِّع صغير مدمج في المحرّك رموزَ `js` و`ts` (`javascript` و`jsx` و`typescript` و`tsx`) و`json` و`python` و`bash` (`sh` و`zsh` و`shell`) و`console` (جلسة طرفية) و`css` و`html` و`xml` (`svg`) و`markdown` و`sql`؛ أما القائمة بأي لغة أخرى، أو بلا لغة، فتُنضَّد بلون `color`. وهو يقرأ القائمة كلها، فالتعليق أو السلسلة النصية الممتدة على عدة أسطر تبقى رمزًا واحدًا. وفي قائمة `console`، السطر الذي يبدأ بموجّه أوامر (`$ ` أو `% ` أو `# ` أو `> ` أو `>>> ` أو `PS …> `) هو ما كتبه المستخدم (`prompt`)، وكل سطر آخر هو ما طبعته البرامج (`output`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '140px' }}>النوع</th>
+      <th style={{ width: '200px' }}>القيمة الافتراضية</th>
+      <th>ما يسمّيه</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>keyword</code></td><td><code>#8b2c8f</code></td><td>الكلمات المحجوزة: <code>const</code> و<code>def</code> و<code>if</code> و<code>SELECT</code>، واسم وسم HTML، وقاعدة @ في CSS.</td></tr>
+    <tr><td><code>string</code></td><td><code>#3d7a2a</code></td><td>السلاسل النصية، والقوالب النصية (template literals)، وقيم السمات.</td></tr>
+    <tr><td><code>number</code></td><td><code>#985f00</code></td><td>الأرقام والثوابت (<code>true</code> و<code>None</code> و<code>null</code>)، والألوان، والكيانات (entities).</td></tr>
+    <tr><td><code>comment</code></td><td><code>#7a7f87</code>، مائل</td><td>التعليقات.</td></tr>
+    <tr><td><code>function</code></td><td><code>#2b5fb4</code></td><td>اسم يليه قوس؛ والأوامر المدمجة في الصدفة (shell).</td></tr>
+    <tr><td><code>type</code></td><td><code>#99540a</code></td><td>الأنواع وأسماء الأصناف المبدوءة بحرف كبير، ومحدِّدات CSS.</td></tr>
+    <tr><td><code>operator</code></td><td>لون الشيفرة</td><td>المعاملات، وأنابيب الصدفة وعمليات إعادة التوجيه.</td></tr>
+    <tr><td><code>punctuation</code></td><td>لون الشيفرة</td><td>الأقواس والفواصل.</td></tr>
+    <tr><td><code>variable</code></td><td><code>#b23b2e</code></td><td>متغيرات الصدفة، ومفاتيح JSON، وخصائص CSS، وسمات HTML، و<code>self</code>.</td></tr>
+    <tr><td><code>meta</code></td><td><code>#985f00</code></td><td>المزخرفات (decorators)، وخيارات سطر الأوامر (<code>-l</code> و<code>--all</code>)، وتعريف نوع المستند (doctype).</td></tr>
+    <tr><td><code>prompt</code></td><td>لون الشيفرة، عريض</td><td>السطر المكتوب في جلسة الطرفية.</td></tr>
+    <tr><td><code>output</code></td><td><code>#5c6168</code></td><td>ما طبعته البرامج.</td></tr>
+  </tbody>
+</table>
+
+يستطيع التطبيق المضيف أن يركّب ملوّنه الخاص (Shiki أو Prism أو highlight.js) عبر `registerCodeHighlighter`. والإعدادات بيانات قابلة للتسلسل، فتُسجَّل الدالة لدى المحرّك ولا تُكتب في `codeStyle`:
+
+```ts
+import { registerCodeHighlighter } from 'postext';
+
+// fn(code, lang) returns the listing's lines, each as runs whose texts join into the line.
+registerCodeHighlighter('rust', (code) => code.split('\n').map((line) => [
+  { text: line, token: line.trimStart().startsWith('//') ? 'comment' : undefined },
+]));
+registerCodeHighlighter('*', null); // remove the one registered for every language
+```
+
+الملوّن المسجَّل للغة ما يتقدّم على المسجَّل لـ`'*'`، وهذا يتقدّم على المُقطِّع المدمج. ويسمّي كل مقطع (run) نوعَ رمز في `token` (يلوّنه `tokens`) أو لونًا خاصًا به في `color` (قيمة CSS سداسية عشرية). ويُتجاوز الملوّن الذي يعيد `undefined`، أو يرمي استثناءً، أو يعيد أسطرًا لا تُكوِّن بضمّها أسطر القائمة نفسها. ويقرأ الإخراجُ السجلَّ حين ينضّد القائمة: سجّل الملوّن قبل البناء، وفي Web Worker (وSandbox يُخرج في واحد منها) سجّله داخل العامل نفسه.
+
+### الشيفرة المضمّنة
+
+يضبط `codeStyle.inline` النص الواقع بين علامتي الاقتباس المائلة بخط الشيفرة: وحدةً واحدة، كما الشارة، لا ينكسر السطر داخلها. وإن لم يُضبط احتفظت الشيفرة المضمّنة بخط النص.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '170px' }}>الخاصية</th>
+      <th style={{ width: '120px' }}>النوع</th>
+      <th style={{ width: '160px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fontFamily</code></td><td><code>string</code></td><td><code>codeStyle.fontFamily</code></td><td>الخط.</td></tr>
+    <tr><td><code>fontSize</code></td><td><code>Dimension</code></td><td><code>0.9em</code></td><td><code>em</code> هو حجم النص المحيط بها.</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>لون النص</td><td></td></tr>
+    <tr><td><code>bold</code> / <code>italic</code></td><td><code>boolean</code></td><td><code>false</code></td><td>فوق علامات النص نفسه (الشيفرة داخل العريض عريضة).</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>لا شيء</td><td>تعبئة خلف المقطع.</td></tr>
+    <tr><td><code>borderColor</code> / <code>borderWidth</code></td><td><code>ColorValue</code> / <code>Dimension</code></td><td>لا شيء / <code>0.5pt</code></td><td>خط محيط.</td></tr>
+    <tr><td><code>borderRadius</code></td><td><code>Dimension</code></td><td><code>0.2em</code></td><td><code>em</code> هو حجم المقطع.</td></tr>
+    <tr><td><code>paddingX</code> / <code>paddingY</code></td><td><code>Dimension</code></td><td><code>0.2em</code> مع تعبئة أو خط محيط، وإلا <code>0</code> / <code>0.1em</code></td><td>المساحة داخل التعبئة؛ والحشوة العمودية تُرسم خارج مربع السطر.</td></tr>
+  </tbody>
+</table>
+
+### طريقة تنضيد القائمة
+
+- **سطر لكل سطر في المصدر.** تُبنى الأسطر من مسافات التقدّم (advances) في خط الشيفرة نفسه، لا بمقسِّم أسطر الفقرة: تحتفظ المسافات بعرضها، وتُحفظ سلسلة المسافات كما هي، وتُزيح المسافات البادئة السطر. والقائمة في كتاب من اليمين إلى اليسار تُقرأ من اليسار إلى اليمين، وتُنضَّد أسطرها من الجهة البعيدة للإطار كما يُنضَّد اقتباس مكتوب من اليسار إلى اليمين، وأرقامها في الهامش على يسارها. وفي الكتاب العمودي تتبع القائمة التدفق العمودي (وتُدار حروفها اللاتينية على جنبها، كما يُنضّدها النص العمودي) ولا تأخذ أرقام أسطر.
+- **التقسيم.** القائمة الأطول من المساحة المتبقية تنقسم بين أسطرها عبر الأعمدة والصفحات، ولكل جزء إطاره الخاص، ولا تترك أبدًا أقل من `splitMinLines` سطرًا على أي جانب؛ وتبقى بقية السطر المكسور معه ما دام قطع آخر يتسع.
+- **المخرجات.** ترسم اللوحة (canvas) وعارض HTML وملف PDF الأسطر والإطار كما أُخرجت. ويحتفظ عارض HTML بالمسافات (`white-space: pre`)، فينسخ التحديد القائمة بإزاحتها وبفاصل سطر بعد كل سطر من المصدر، بلا أرقام ولا علامات تتمة. وينضّد ملف PDF الموسوم كل قائمة فقرةً تضم عنصر `Code`، بمحارف مسافة حقيقية، وأرقامها وعلامات تتمتها عناصر زخرفية. ويكتب EPUB القابل لإعادة التدفق `<pre><code class="language-…">` بألوان الرموز وبورقة أنماط مأخوذة من `codeStyle`؛ أما EPUB ثابت التخطيط فهو نسخة الطباعة.
+- **الخطوط.** يحمّل Sandbox و`configFontFamilies` خط الشيفرة حين يحتوي النص سورًا (أو حين يكون في الإعدادات قسم `codeStyle`)، بوزنيه العادي والعريض، قائمًا ومائلًا؛ ويضمّن ملف PDF الخطوط التي تستعملها الأسطر.
+
+## أنماط الإطارات
+
+تُعرِّف الخاصية `calloutStyles` أنماط الإطارات (callouts) المسمّاة التي يطبّقها المستند بالحاوية `:::callout{type="…"}`: الملاحظات والنصائح والتحذيرات وأهداف التعلّم، وكل محتوى يُفصل عن النص الجاري في إطار ملوّن الخلفية أو محاط بحدّ. يأتي افتراضيًا نمط محايد واحد هو `note` (خلفية رمادية فاتحة، بلا حدّ ولا شريط جانبي (stripe) ولا أيقونة ولا عنوان)، فتعمل `:::callout` دون أي إعداد؛ وتعريف `calloutStyles` يستبدل هذه القائمة الافتراضية.
+
+```ts
+const config: PostextConfig = {
+  calloutStyles: [
+    { id: 'note', name: 'Note' },
+    {
+      id: 'objectives',
+      name: 'Learning objectives',
+      title: 'Objectives',
+      stripe: { enabled: true, side: 'left' },
+      icon: { kind: 'glyph', glyph: '✓' },
+      titleStyle: { textTransform: 'uppercase' },
+      lists: { bulletChar: '–' },
+    },
+    {
+      id: 'warning',
+      title: 'Warning',
+      backgroundEnabled: false,
+      border: { enabled: true, color: { hex: '#AA0000', model: 'hex' }, width: { value: 1, unit: 'pt' } },
+      borderRadius: { value: 1, unit: 'mm' },
+      titleStyle: { color: { hex: '#AA0000', model: 'hex' } },
+    },
+  ],
+};
+```
+
+```md
+:::callout{type="objectives"}
+- Describe the parts of the lantern.
+- Trim the wick at dusk.
+:::
+
+:::callout{type="warning" title="Do not touch the lens"}
+The glass stays hot for an hour after the flame is out.
+:::
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '220px' }}>النوع</th>
+      <th style={{ width: '150px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>المعرّف الذي يختاره <code>:::callout&#123;type="…"&#125;</code>. والسياج (fence) الذي يحمل <code>type</code> غير معروف أو لا يحمله يستخدم أول نمط مُعرَّف (ويشير Sandbox إلى الأنواع غير المعروفة).</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>اسم مقروء للبشر (لواجهة المحرّر فقط).</td>
+    </tr>
+    <tr>
+      <td><code>title</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>نص العنوان الافتراضي؛ والقيمة الفارغة تعني عدم وجود عنوان. وتتجاوزه السمة <code>title</code> في السياج لكل حالة على حدة.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td><code>'column' | 'page' | 'side'</code></td>
+      <td><code>'column'</code></td>
+      <td>الامتداد الأفقي: العمود، أو كامل عرض المحتوى، أو العمود الجانبي المخصّص للعناصر العائمة في تخطيط العمود ونصف العمود (<code>layout.sideColumnRole: 'floats'</code>)، وعندئذ يغادر الإطار التدفق ويتراصّ في ذلك العمود بجانب النص الذي يقطعه. يمكن تجاوزه في كل حالة بالسمة <code>span</code>. وفي التخطيطات متعددة الأعمدة يصبح الإطار <code>'page'</code> <em>كتلة ممتدة</em> (span block): يقسم الصفحة إلى نطاقات أعمدة (column bands) ويحتل عمودًا خاصًا به بكامل العرض (انظر قسم الحاوية أدناه). والإطار الجانبي الذي لا يتسع له العمود الجانبي لصفحته يأخذ العمود الجانبي للصفحة التالية؛ وإذا انتهى الفصل (أو المستند) قبل ذلك، وُضع كل إطار ما زال ينتظر في العمود الجانبي لصفحة بعد النص، بترتيب أسيجتها، ونبّه البناء إلى ذلك (<code>afterText</code>؛ حتى postext 1.24 كانت الإطارات التي بعد أولى هذه الصفحات تسقط).</td>
+    </tr>
+    <tr>
+      <td><code>columns</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>عدد الأعمدة المتجاورة التي يشغلها الإطار العائم (<code>placement</code> بالقيمة <code>'auto'</code> أو <code>'top'</code> أو <code>'bottom'</code>، مع <code>span: 'column'</code>)، كما يفعل <code>placement.columns</code> للشكل: إطار خبر يمتد على ثلاثة من أعمدة الجريدة الخمسة. وإذا بلغ عدد الأعمدة عدد أعمدة الصفحة أو زاد عليه صار إطارًا بعرض الصفحة. والإطار الموضوع في التدفق (<code>'here'</code>) يبقى في عموده. يمكن تجاوزه لكل نسخة بالسمة <code>columns</code>. منذ postext 1.18.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'here' | 'auto' | 'top' | 'bottom' | 'fixed'</code></td>
+      <td><code>'here'</code></td>
+      <td>موضع الإطار. <code>'here'</code> يضعه داخل التدفق؛ و<code>'top'</code> / <code>'bottom'</code> <strong>يعوّمانه</strong> كما يُعوَّم المورد (و<code>'auto'</code> يأخذ أول نطاق يخلو، في رأس الصفحة أو في قدمها): يغادر التدفق حيث يرد ويأخذ أول نطاق حرّ عند تلك النقطة أو بعدها (قدم الصفحة الحالية، أو رأس الصفحة التالية التي يفتحها التدفق أو قدمها)، ويملأ النص الذي يليه الصفحة من حوله؛ و<code>'fixed'</code> يثبّته عند إحداثيات في الصفحة عبر <code>fixed</code> أدناه، خارج تدفق الأعمدة. انظر قسم الحاوية للتفاصيل. يمكن تجاوزه في كل حالة بالسمة <code>placement</code>.</td>
+    </tr>
+    <tr>
+      <td><code>sideAtColumnEnd</code></td>
+      <td><code>'before' | 'after'</code></td>
+      <td><code>'before'</code></td>
+      <td>موضع الإطار الجانبي (<code>span: 'side'</code>) حين لا يستمر النص الذي يلي سياجه في العمود نفسه: إما لأن العمود لم يبقَ فيه متسع له، وإما لأن قواعد الفصل تنقله (فقرة تنقلها قواعد الأسطر الأرامل (widows) والأسطر اليتيمة (orphans) كاملة، أو عنوان يُبقى مع نصه). <code>'before'</code> يبقيه عند سياجه، في تلك الصفحة، بجانب النص الذي قبله، ويرتفع من قدم العمود إن لم يتسع له ما تحت السياج: وهو موضع الشرح المكتوب بعد المقطع الذي يشرحه. و<code>'after'</code> يضعه بمحاذاة السطر الأول من النص الذي يلي السياج، في العمود الجانبي للصفحة التي يستمر فيها ذلك النص: وهو موضع رقم السطر أو العنوان الهامشي المكتوب قبل سطره. وحين يستمر النص في العمود نفسه، يضع كلاهما الإطار عند سياجه. والإطار الذي لا يليه شيء في فصله يبقى مع النص الذي قبله في الحالتين، والإطارات الجانبية المتتالية تحافظ على ترتيبها. حتى postext 1.4 كان كل إطار جانبي يتصرف كما في <code>'before'</code>، وهي القيمة الافتراضية الباقية: فنمط الشروح يُبقي إطاراته في صفحة المقطع الذي تشرحه.</td>
+    </tr>
+    <tr>
+      <td><code>fixed</code></td>
+      <td><code>{'{ anchor?, offset? }'}</code></td>
+      <td><code>{'{ anchor: { to: \'container\', edge: \'bottom-left\' } }'}</code></td>
+      <td>موضع الإطار <code>'fixed'</code>: مرساة <code>ElementAnchor</code> (<code>to</code>: <code>'container'</code> = منطقة محتوى الصفحة، معكوسة في الصفحات الزوجية؛ <code>'page'</code> = صندوق حدّ القص؛ <code>'bleed'</code> = صندوق النزف؛ <code>edge</code>: إحدى حواف الحاوية التسع) مع إزاحة اختيارية <code>offset</code> (بُعدا <code>x</code> / <code>y</code>).</td>
+    </tr>
+    <tr>
+      <td><code>floatBarrier</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يجعل الإطار حاجزًا للعناصر العائمة: كل شكل أو جدول أُشير إليه قبله يوضع قبله (في الخانات الحرّة من الصفحة، وإلا ففي صفحات تُفتح قبل الإطار)، فلا يفلت أي عنصر عائم إلى ما بعد الإطار الذي يختم الفصل (ملخّص «النقاط الرئيسية» عادةً). وصفحات افتتاح الفصول و<code>:::part</code> ونهاية المستند حواجز دائمًا.</td>
+    </tr>
+    <tr>
+      <td colSpan={4}>الإطار <code>span: 'page'</code> في صفحة متعددة الأعمدة يقطع النطاق تحت النص الذي يليه؛ والشكل الممتد بكامل العرض المشار إليه قبله يأخذ ذلك القطع أولًا: يُسوّى النص، ويقع الشكل حيث انتهى تمامًا، ويستمر الإطار تحته (أو ينتقل إلى الصفحة التالية إن لم يعد يتسع). والشكل الأطول من أن يلي النص المسوّى يفتح الصفحة التالية بدلًا من ذلك، والإطار بعده، ويبقى النطاق الذي تركه منتهيًا بأعمدة مستوية. والإطار القابل للتقسيم (<code>keepTogether: false</code>) يبدأ تحت النص والشكل بما يتسع من عناصره، ويستمر الباقي في الصفحة التالية.</td>
+    </tr>
+    <tr>
+      <td><code>width</code></td>
+      <td><code>'fill' | 'auto'</code></td>
+      <td><code>'fill'</code></td>
+      <td><code>'fill'</code> يمتد على العرض المتاح؛ و<code>'auto'</code> يضيق على قدر العنوان (للاستعمال كشارة) ويتجاهل العناصر الأبناء.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code> / <code>background</code></td>
+      <td><code>boolean</code> / <code>ColorValue</code></td>
+      <td><code>true</code> / <code>#f4f4f4</code></td>
+      <td>تعبئة الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>border</code></td>
+      <td><code>&#123; enabled, color, width &#125;</code></td>
+      <td><code>false</code>، <code>#cccccc</code>، <code>0.5pt</code></td>
+      <td>حدّ الإطار، يُرسم داخل حافته كما يُرسم حدّ عنصر الصندوق (انظر <a href="/ar/docs/configuration-page-layout#عناصر-الصندوق">عناصر الصندوق</a>).</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>نصف قطر زوايا الخلفية / الحدّ (لا يتجاوز نصف عرض الإطار ونصف ارتفاعه). ويتبعه الشريط الجانبي: في الإطار مستدير الزوايا يُقصّ الشريط على حدود الإطار المستديرة، كما تقصّ CSS الخاصية <code>border-left</code> على <code>border-radius</code>. ويحتفظ لسان <code>label</code> بزوايا قائمة.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>&#123; top, right, bottom, left &#125;</code></td>
+      <td><code>0.75em</code> لكلٍّ منها</td>
+      <td>المسافة الداخلية بين حافة الإطار ومحتواه. وقيم <code>em</code> نسبية إلى حجم نص الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>stripe</code></td>
+      <td><code>&#123; enabled, side, width, color &#125;</code></td>
+      <td><code>false</code>، <code>'left'</code>، <code>1.5em</code>، اللون الرئيسي</td>
+      <td>شريط مصمت على طول إحدى الحواف. الشريط <code>'left'</code> / <code>'right'</code> يضيّق المحتوى؛ والشريط <code>'top'</code> يدفعه إلى الأسفل. <code>'left'</code> و<code>'right'</code> جانبان من تدفق النص (في الكتاب المكتوب من اليمين إلى اليسار يكون <code>'left'</code> يمين الورقة)؛ أما <code>'start'</code> و<code>'end'</code> فيتبعان اتجاه الإطار نفسه، فالإطار <code>:::callout&#123;dir=ltr&#125;</code> في كتاب عربي يضع الشريط <code>'start'</code> على يساره. وفي الإطار ذي <code>borderRadius</code> تُدوَّر زواياه الخارجية مع زوايا الإطار (حتى postext 1.4 كانت تبقى قائمة وتبرز خارج التدوير).</td>
+    </tr>
+    <tr>
+      <td><code>icon</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, width, color, align, position, cornerSide &#125;</code></td>
+      <td><code>'none'</code>، خط العناوين، <code>400</code>، <code>1.5em</code>، اللون الرئيسي، <code>'top'</code>، <code>'inline'</code>، <code>'right'</code></td>
+      <td>رمز نصي (<code>kind: 'glyph'</code>) أو مورد نقطي / SVG (<code>kind: 'resource'</code> + <code>resourceId</code>) بجانب المحتوى. مع شريط جانبي تتوسّط الأيقونة الشريط؛ وإلا فإنها تحجز عمودًا خاصًا بها (<code>size</code> + <code>titleStyle.gap</code>). و<code>align: 'center'</code> يوسّطها عموديًا على المحتوى. وتُوضع صورة المورد داخل المربع مع الحفاظ على نسبة أبعادها، أو داخل صندوق <code>width</code> × <code>size</code> عند تعيين <code>width</code> (شريط عريض من الأيقونات)؛ والأيقونة الأطول من المحتوى تُطيل الإطار ليتسع لها (ومع <code>align: 'center'</code> يُوسَّط المحتوى عليها). و<code>position: 'corner'</code> يعلّق الأيقونة على زاوية علوية كشارة، نصفها خارج الحدّ، دون أن تأخذ من مساحة المحتوى؛ والأيقونة العريضة (<code>width</code>) تُوسَّط على الزاوية بحسب العرض الذي تُرسم به، وعلى الزاوية اليسرى يبدأ العنوان بعد نصفها الداخلي (حتى postext 1.4 كانت توضع بحسب ارتفاعها، فيتدلّى الشريط العريض خارج الإطار وفوق العنوان)؛ و<code>cornerSide</code> يختار الزاوية: <code>'right'</code> / <code>'left'</code>، أو <code>'outer'</code> / <code>'inner'</code> اللتان تتبعان زوجية الصفحة في الهوامش المعكوسة (الخارجية = اليمنى في الصفحة الفردية، واليسرى في الصفحة الزوجية).</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>&#123; kind, glyph, resourceId, fontFamily, fontWeight, size, color, align, gap, rule &#125;</code></td>
+      <td><code>'none'</code>، خط العناوين، <code>400</code>، <code>1.5em</code>، اللون الرئيسي، <code>'center'</code>، <code>0.5em</code>، الخط الفاصل معطّل (<code>0.5pt</code>، اللون الرئيسي، الطول <code>0</code>)</td>
+      <td>أيقونة ثانية تُرسم <em>خارج</em> الإطار، في عمود على يساره، مع خط عمودي اختياري <code>rule</code> بينها وبين الإطار: اليد التي تقول «اضغط هنا» بجانب شارة التقييم الذاتي. يصبح الإطار <code>[marker][rule][gap][box]</code> بارتفاع أطول الثلاثة؛ و<code>align</code> يوسّطها بعضها على بعض أو يحاذيها من الأعلى. و<code>rule.length</code> حدّ أدنى: يمتد الخط دائمًا على ارتفاع الإطار على الأقل.</td>
+    </tr>
+    <tr>
+      <td><code>titleStyle</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, italic, color, textTransform, gap, letterSpacing, indent, lineHeight &#125;</code></td>
+      <td>خط العناوين، حجم النص، <code>700</code>، <code>false</code>، اللون الرئيسي، <code>'none'</code>، <code>0.5em</code>، <code>0</code>، <code>0</code>، <code>1.2em</code></td>
+      <td>التنسيق الطباعي للعنوان. <code>gap</code> هي المسافة بين العنوان وأول عنصر ابن (وفاصل عمود الأيقونة). و<code>lineHeight</code> هو تباعد أسطر العنوان، وتُحسب <code>em</code> فيه بحجم العنوان نفسه؛ ويقع خط الأساس عند 0.8 منه نزولًا في كل سطر، كما في النص الجاري، فالعنوان المضبوط على تباعد أسطر النص (<code>lineHeight: 12pt</code> على شبكة 12 pt) يُبقي الإطار عددًا صحيحًا من الأسطر وعنوانه على الشبكة، في حين تضيف القيمة الافتراضية 1.2 em كسرًا من سطر إلى كل إطار. و<code>textTransform: 'uppercase'</code> لا يغيّر طول النص. و<code>letterSpacing</code> يضبط تتبّع العنوان (<code>letterSpacing</code> في canvas / <code>Tc</code> في PDF)؛ و<code>indent</code> يدفعه يمينًا بعيدًا عن الحافة الداخلية للإطار. والشارة المعلّقة على زاوية في جهة العنوان (الزاوية اليسرى) تحجز مكانها أولًا (نصفها الداخلي مضافًا إليه <code>gap</code>) فلا يصطدم بها العنوان في أي صفحة وقع؛ و<code>indent</code> لا يضيف إلا ما يتجاوز ذلك.</td>
+    </tr>
+    <tr>
+      <td><code>body</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td>يرث <code>bodyText</code>؛ <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
+      <td>التنسيق الطباعي للفقرات وعناصر القوائم داخل الإطار. كل حقل غير مُعيَّن يرث قيمة نص المتن؛ و<code>italicColor</code> يحدّد لون المقاطع المائلة (اقتباس بارز مائل بلون الإطار). و<code>fontWeight</code> / <code>boldFontWeight</code> يحدّدان وزنَي المقاطع العادية والعريضة؛ و<code>italic</code> يجعل نص الإطار مائلًا، فتستقيم مقاطع <code>*…*</code>؛ و<code>smallCaps</code> يجعله بحروف كبيرة مصغّرة (small caps)؛ و<code>tabStops</code> و<code>tabInterval</code> يستبدلان بقيم المتن داخل الإطار (انظر <a href="/ar/docs/configuration-text#مواضع-الجدولة">مواضع الجدولة</a>). انظر <a href="#التنسيق-الطباعي-داخل-الإطار">التنسيق الطباعي داخل الإطار</a> لمعرفة ما يأخذه نص الإطار أيضًا.</td>
+    </tr>
+    <tr>
+      <td><code>lists</code></td>
+      <td><code>&#123; bulletChar, color, indent, gap, itemSpacing, bulletFontSize, bulletFontWeight &#125;</code></td>
+      <td>يرث <code>unorderedLists</code></td>
+      <td>التنسيق الطباعي للقوائم داخل الإطار (وتنطبق <code>color</code> و<code>indent</code> و<code>gap</code> و<code>itemSpacing</code> على القوائم المرقّمة أيضًا). و<code>bulletFontSize</code> / <code>bulletFontWeight</code> يرسمان رمز التعداد بخط نص الإطار بذلك الحجم والوزن (نقطة تعداد ملوّنة ثقيلة).</td>
+    </tr>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>&#123; fontFamily, fontSize, fontWeight, color, background, position, height, paddingX, offset, inset, icon, rule &#125;</code></td>
+      <td>غير مُعيَّن (بلا لسان)</td>
+      <td>لسان على الحافة العليا للإطار يطبع سمة <code>label</code> من السياج: رقم الإطار المرقّم («BOX 1-1»). يلتصق بالزاوية <code>position</code> (<code>'top-right'</code> / <code>'top-left'</code>)، بإزاحة داخلية قدرها <code>inset</code>، ويرتفع <code>offset</code> فوق أعلى الإطار (وهذه المساحة جزء من الكتلة، فوق <code>marginTop</code>، فيحتفظ بها اللسان في رأس العمود أيضًا)، ويبلغ ارتفاعه <code>height</code> مع <code>paddingX</code> على جانبي النص، ويمكن أن يحمل بجانبه مورد أيقونة <code>icon</code> (<code>&#123; resourceId, width, gap &#125;</code>، في الجهة البعيدة عن الزاوية) وخطًا <code>rule</code> (<code>&#123; enabled, color, width &#125;</code>) على طول الحافة العليا من الزاوية البعيدة حتى اللسان. القيم الافتراضية: خط العناوين، حجم النص، <code>700</code>، أبيض على اللون الرئيسي، ارتفاع <code>1.4em</code>، حشوة <code>0.6em</code>. واللسان شكل قائم بذاته فوق الإطار، فيحتفظ بزواياه القائمة أيًّا كان <code>borderRadius</code> الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5em</code></td>
+      <td>الفاصل بين أعمدة مجموعة <code>:::columns</code> داخل الإطار (انظر قسم الحاوية أدناه).</td>
+    </tr>
+    <tr>
+      <td><code>marginTop</code> / <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code> / <code>0.75em</code></td>
+      <td>المسافة فوق الإطار (تندمج مع هامش الكتلة السابقة) والحدّ الأدنى للمسافة تحته (المسافة الدقيقة مع <code>snapToGrid: false</code>). والإطار العائم (<code>placement: 'top'</code> أو <code>'bottom'</code> أو <code>'auto'</code>) يُبقي فاصل العناصر العائمة، وهو سطر واحد من النص، بين نطاقه والنص؛ و<code>marginBottom</code> الأوسع من ذلك يحدّد المسافة تحت الإطار في نطاق علوي، و<code>marginTop</code> الأوسع يحدّد المسافة فوق الإطار في نطاق سفلي، مقرّبةً إلى الأعلى على الشبكة مع النطاق. حتى postext 1.4 كان الإطار العائم يتجاهل هوامشه.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>مع <code>true</code> يعود التدفق بعد الإطار إلى شبكة خطوط الأساس، فتكون المسافة تحته <code>marginBottom</code> مقرّبةً إلى الأعلى إلى أسطر شبكة كاملة. ومع <code>false</code> يحتفظ الإطار بقيمة <code>marginBottom</code> الدقيقة، التي تندمج مع الهامش العلوي للكتلة التالية (فالإطاران المتتاليان من هذا النمط تفصل بينهما <code>max(marginBottom, marginTop)</code> تمامًا)، وقد يقع النص الذي يليه خارج الشبكة حتى نقطة الالتقاط التالية (عنوان، أو نهاية قائمة)، كما بعد عنوان ذي <code>headings.snapToGrid: false</code>. وهو مخصّص للمستندات المؤلفة من إطارات متراصّة (أوراق العمل، الاستمارات). ينطبق على الإطارات داخل التدفق؛ أما الإطارات الممتدة على الصفحة في التخطيط متعدد الأعمدة، والإطارات العائمة والثابتة والجانبية، فتبقى على الشبكة، لأن نطاقات الأعمدة ومناطق العناصر العائمة تُخرَج عليها. ولا تتغيّر أدوات موازنة الأعمدة: الإطار الذي يختم عمودًا يُدفع مع ذلك إلى آخر خانة في شبكة العمود.</td>
+    </tr>
+    <tr>
+      <td><code>keepTogether</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>مع <code>true</code> يُبقى الإطار كاملًا: الإطار الذي لا تتسع له المساحة المتبقية ينتقل كاملًا إلى العمود أو الصفحة التالية. ولا يتعذّر إبقاء الإطار كاملًا إلا إذا كان أطول من عمود فارغ كامل (أو من صفحة كاملة للإطار <code>span: 'page'</code>): عندئذ يُقسَم وفق قواعد <code>false</code> أدناه بدلًا من أن يفيض، بدءًا من موضع وروده، ثم تنتقل كاملةً التتمةُ التي يتسع لها عمود؛ والإطار العائم (<code>placement: 'top' | 'bottom' | 'auto'</code>) بهذا الطول لا يطفو بل يبقى في التدفق حيث يرد. ومع <code>false</code> يمكن لأي إطار أن ينقسم بين كتله الأبناء أو بين أسطر فقرة أو عنصر قائمة: أعمق قطع يتسع يختم العمود الحالي (أو الصفحة، في الإطار <code>span: 'page'</code>، محاذيًا لأسفل الأعمدة) ويستمر الباقي في أعلى العمود التالي في إطار خاص به (بالحدّ والشريط نفسيهما، بلا أيقونة، وبلا عنوان ما لم يكرّره <code>repeatTitle</code>)، وينقسم مجددًا إن ظلّ أطول مما ينبغي. ويحتفظ نص كل جزء بالعمود الذي تأخذه الأيقونة المضمّنة في الجزء الأول، فارغًا، فيكون للإطار عرض سطر واحد في كل صفحة. والقطع داخل عنصر قائمة يترك نقطة تعداده مع الجزء الأول. ويتشارك إطار كل جزء <code>contentIndex</code> / <code>containerId</code> الخاصين بالسياج ويسجّل <code>callout.part</code> / <code>callout.continued</code>. استخدمه في إطار «النقاط الرئيسية» الطويل الذي يختم الفصل مع <code>headings.balancing.beforeSpan</code>، أو في نمط ملاحظات يجب ألا تدفع إطاراته شكلًا خارج الصفحة أبدًا. والإطار المتداخل (<code>:::callout</code> داخل إطار آخر) عنصر ابن واحد لأبيه: قد يقع القطع قبله أو بعده، ولا يقع داخله إلا إذا سمح نمطه بالتقسيم (<code>keepTogether: false</code>، أو كان أطول من عمود كامل)، وفق <code>splitMinLines</code> الخاص به.</td>
+    </tr>
+    <tr>
+      <td><code>splitMinLines</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>أقل عدد من أسطر النص يحتفظ به كل جزء من الإطار المقسوم (<code>keepTogether: false</code>، أو إطار يُبقى كاملًا وهو أطول من عمود كامل) على جانبي القطع. وهو يحمي النص فقط: الجانب الذي يضم شكلًا أو جدولًا أو صيغة منفصلة أو إطارًا متداخلًا واحدًا على الأقل مقبول أيًّا كان عدد أسطره، فقد يترك إطار من الصور صورة واحدة في صفحة. والقطع داخل فقرة أو عنصر قائمة يظل يعدّ كل الأسطر على كل جانب (ويُعدّ الشكل أو الصيغة هناك سطرًا واحدًا)، ويترك أيضًا <code>layout.boxChildSplitMinLines</code> سطرًا على الأقل من تلك الفقرة أو العنصر على كل جانب (سطرين افتراضيًا؛ أو هذا الحدّ الأدنى نفسه إن كان أقل، فالقيمة 1 تسمح بسطر واحد). ومع القيم الافتراضية لا يُقسم عنصر من سطرين أو ثلاثة أبدًا، ولا يُقسم عنصر من أربعة أسطر إلا سطرين وسطرين. ومع القيمة الافتراضية لا ينقسم أي إطار تاركًا سطر نص وحيدًا في قدم عمود أو في رأس العمود التالي؛ وحين لا يحقّق أي قطع الحدّ الأدنى ينتقل الإطار كاملًا. (قبل postext 1.5 كان القطع داخل الفقرة يتحقّق فقط من أسطر الجانب كله، فقد ينقسم عنصر من سطرين سطرًا وسطرًا حين تكمل أسطر أخرى من الإطار الحدّ الأدنى.)</td>
+    </tr>
+    <tr>
+      <td><code>repeatTitle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يكرّر العنوان في رأس كل تتمة للإطار المقسوم، متبوعًا بـ<code>continuedSuffix</code> («Key points (cont.)»). ويأخذ العنوان المكرَّر نمط العنوان. والإطار الذي لا عنوان له لا يكرّر شيئًا. انظر <a href="#علامات-الإطار-المقسوم">علامات الإطار المقسوم</a>.</td>
+    </tr>
+    <tr>
+      <td><code>continuedSuffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'(cont.)'</code></td>
+      <td>النص الذي يلي العنوان المكرَّر، بلغة المستند (<code>locale</code>، وإلا فلغة تقسيم الكلمات بالواصلة)، كما في الجدول المقسوم، ويُوصل بالعنوان كما يُوصل في الجدول.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يضع <code>continuesMarker</code> تحت السطر الأخير من كل جزء من الإطار المقسوم له تتمة، داخل الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'Continued'</code> / <code>'Continúa'</code></td>
+      <td>نص تلك العلامة («(MORE)» في السيناريو)، بخط نص الإطار وحجمه، بحسب لغة المستند.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerAlign</code></td>
+      <td><code>'left' | 'center' | 'right'</code></td>
+      <td><code>'right'</code></td>
+      <td>موضع العلامة ضمن العرض الداخلي للإطار.</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يجعل العلامة مائلة.</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>&#123; label, counter, numberingTemplate, resetOn, counterFormat, placement, bold, italic, suffix &#125;</code></td>
+      <td>غير مُعيَّن</td>
+      <td>يعدّ إطارات هذا النمط عبارات مرقّمة: مبرهنات وتوطئات وتعريفات. انظر <a href="#المبرهنات-المرقّمة-والبراهين">المبرهنات المرقّمة والبراهين</a>.</td>
+    </tr>
+    <tr>
+      <td><code>endMark</code></td>
+      <td><code>string</code></td>
+      <td><code>''</code></td>
+      <td>علامة تُصفّ محاذاةً إلى اليمين في آخر السطر الأخير من الإطار، كما يُختم البرهان بـ<code>'∎'</code> أو <code>'□'</code>: على السطر الأخير إن اتسعت له بعد مسافة، وإلا ففي سطر مستقل. والإطار الذي ينتهي بصيغة منفصلة لا رقم لها يجعل العلامة وسمًا للصيغة. عند تفعيل الرياضيات تُرسم المربعات (∎ □ ■ ▪ ◻ ▫) بحروف TeX نفسها، فتظهر حتى لو خلا منها الخط (ملفات latin في Fontsource)؛ وعند تعطيلها تُنضَّد بخط متن الإطار.</td>
+    </tr>
+  </tbody>
+</table>
+
+### الحاوية `:::callout`
+
+يفتح السطرُ `:::callout{type="<id>"}` الإطار، ويغلقه سطر فيه `:::` وحدها. يقبل السياج خمس سمات: `type` (معرّف النمط)، و`title` (يتجاوز عنوان النمط)، و`span` و`placement` و`columns` (تتجاوز قيم النمط)؛ ويُخرَج المحتوى الواقع بينهما داخل الإطار: عنوان اختياري، ثم الفقرات أو القوائم أو الاقتباسات الكتلية أو الصيغ أو الموارد المضمّنة، وكلٌّ منها يُنضَّد بتنسيق `body` / `lists` من النمط (وتحتفظ العناوين بأنماطها المعتادة). تندمج الهوامش بين العناصر الأبناء كما في النص الجاري؛ ويخرج داخل الإطار عن شبكة خطوط الأساس، ثم يعود التدفق إليها بعد الإطار بمسافة لا تقل عن `marginBottom` تحته (الأولوية للشبكة، والهامش حدّ أدنى، وهو العرف نفسه الذي تتبعه الموارد). أما النمط ذو `snapToGrid: false` فيحتفظ بقيمة `marginBottom` الدقيقة بدلًا من ذلك، ويبقى النص الذي يلي الإطار خارج الشبكة حتى العنوان التالي أو نهاية القائمة. والعنوان الذي يسبق الإطار مباشرةً يبقى معه.
+
+حدود هذا الإصدار:
+
+- يُبقى الإطار كاملًا ما لم يحدّد نمطه `keepTogether: false`. فإن لم تتسع له المساحة المتبقية في العمود انتقل كاملًا إلى العمود أو الصفحة التالية، وكذلك يخرج من عمود فارغ قصّرته نطاقات العناصر العائمة أو حدّ أقصى للنطاق (band cap)، ما دام عمود كامل يتسع له. أما الإطار الأطول من عمود كامل فيُقسم بدلًا من ذلك، كالإطار القابل للتقسيم؛ ولا يوضع رغم ذلك ويفيض إلا الإطار الذي لا يقسمه أي قطع (شكل أو جدول أو مجموعة `:::columns` أطول من العمود، أو `splitMinLines` لا يحقّقه أي قطع)؛ وعندئذ يسجّل الإخراج تحذير `calloutOverflow` (`VDTDocument.warnings`) يعرضه Sandbox. والإطار القابل للتقسيم يترك الجزء الذي يتسع (عناصر أبناء كاملة، أو أسطر فقرة بما لا يقل عن `splitMinLines` على كل جانب، ويكفي الشكل أو الجدول أو الصيغة المنفصلة وحده لجانب) ثم يستمر في إطار بلا أيقونة في العمود أو الصفحة التالية، بلا عنوان ما لم يكرّره النمط، ومع علامة اختيارية تحت الجزء الذي يتركه (انظر [علامات الإطار المقسوم](#علامات-الإطار-المقسوم)).
+- تُفسح العناصر العائمة المجال للإطار غير القابل للتقسيم. فحين تكون الكتلة التي تلي الإشارة إلى شكل مباشرةً إطارًا `keepTogether`، لا تُؤخذ الخانة التي لا تترك للإطار عمودًا من النطاق الحالي يستقر فيه (العمود الذي يحوي الإشارة أو عمود فارغ بعده، وكان يتسع له قبل العنصر العائم): ينتقل الشكل إلى خانته التالية، وهي عادةً الصفحة التالية، ويبقى الإطار في التدفق، كما يضعه المنضِّد، بدلًا من دفع الإطار خارج الصفحة وترك العمود للشكل وحده.
+- في التخطيط متعدد الأعمدة يجعل `span: 'page'` الإطارَ **كتلة ممتدة** (span block): يُخرَج بكامل عرض المحتوى ويقسم الصفحة إلى نطاقات أعمدة، فتُغلق أعمدة النص فوقه عند خط القطع، ويأخذ الإطار عمودًا خاصًا به بكامل العرض، ويُفتح تحته نطاق جديد من أعمدة النص، فيستمر التدفق تحت الإطار في كل الأعمدة. وحيث تكون الأعمدة *مستوية* (في أعلى الصفحة، أو مباشرةً تحت عنوان افتتاحي `span: 'page'`، أو مباشرةً تحت كتلة ممتدة أخرى، أو مباشرةً تحت نطاق عائم علوي) يقطع الإطار هناك ببساطة. أما إذا ورد في منتصف الصفحة والأعمدة غير متساوية، فيُوضع كما يضعه المنضِّد: يُقطع النص فوقه قطعًا مستويًا عبر كل الأعمدة (يعيد المحرّك تنفيذ التوزيع وقد قُصّرت أعمدة النطاق إلى العدد نفسه من أسطر الشبكة، فيفيض النص من عمود إلى عمود على نحو طبيعي وتظل كل قواعد الأسطر اليتيمة والأرامل والإبقاء مع التالي سارية)، ويمتد الإطار على الصفحة، وتُستأنف الأعمدة تحته. ويتطلب القطع جولتين إضافيتين من التوزيع؛ وحين لا يترك خط القطع متسعًا للإطار مع الحدّ الأدنى لأسطر الأرملة من النص تحته، أو لا يتسع أي ترتيب بعد بضع محاولات، ينتقل الإطار إلى أعلى الصفحة التالية. ويلتزم النص فوقه بالقطع: الفقرة التي لا يمكن أن تبدأ في الأسطر القليلة التي يحتفظ بها عمود تحت شكل فوق القطع تنتقل إلى العمود التالي (فيقف الشكل وحده في عموده)، وحين تظل كتلة ما تتجاوز القطع، يُؤخذ القطع أدنى بسطر بدلًا من موضع انتهاء تلك الكتلة. والإطار المقسوم الذي يفتح النطاق يُقطع هناك أيضًا، فلا تتجاوز بقيته القطع أبدًا. ومع `headings.balancing.beforeSpan` (القيمة الافتراضية) يُقطع النطاق الذي يتركه خلفه قطعًا مستويًا، كالنطاق الذي يختم الفصل، وحين يسمح النمط بالتقسيم (`keepTogether: false`) يختم جزءُ الإطار الذي يتسع تحت الأعمدة المسوّاة الصفحةَ ويفتح الباقي الصفحة التالية؛ ومع `beforeSpan: false` تُوازن الصفحة التي يتركها كالمعتاد، دون فرض فاصل صفحة. والعنوان الذي يسبق الكتلة الممتدة مباشرةً لا ينتقل معها. وفي التخطيطات أحادية العمود يكون `span: 'page'` ببساطة داخل التدفق.
+- `placement: 'fixed'` يُخرج الإطار من التدفق: يُخرَج الإطار (`width: 'auto'` يضيق على قدر العنوان، و`'fill'` يأخذ عرض عمود النص تحت نقطة الإرساء) ويُثبَّت في الصفحة التي يرد فيها ضمن التدفق، في الموضع الذي يصفه `fixed.anchor` / `fixed.offset`، وهو افتراضيًا الزاوية السفلية اليسرى من منطقة المحتوى. وتتخلى أعمدة النص التي يغطيها عن تلك المنطقة (تُقطع من الأسفل، أو من الأعلى إن كان العمود لا يزال فارغًا)، تمامًا كنطاق العناصر العائمة؛ وحين تكون المنطقة مشغولة بنص أو عنصر عائم أو كتلة ممتدة، ينتقل الإطار إلى الصفحة التالية. والإطار الثابت الذي يختم الفصل (أي تكون الكتلة التالية صفحة افتتاح فصل، أو `:::part`، أو إطارًا حاجزًا للعناصر العائمة، أو نهاية المستند) يسوّي أولًا الأعمدة فوقه (`headings.balancing.trailing`)، فتنتهي الصفحة الختامية القصيرة مستويةً مع الشارة تحتها. ويقع الإطار وأبناؤه في `page.floats` ويُرسمون خارج قصّ الأعمدة في كل مُخرِج.
+- `placement: 'top' | 'bottom'` **يعوّم** الإطار كما يُعوَّم المورد: يغادر التدفق حيث يرد ويأخذ أول نطاق حرّ بعد تلك النقطة (قدم الصفحة الحالية مع `'bottom'`، أو رأس الصفحة التالية التي يفتحها التدفق أو قدمها) بعرض العمود (`span: 'column'`) أو بكامل عرض المحتوى (`span: 'page'`)؛ ويملأ النص الذي يليه الصفحة التي غادرها. ويذهب إطاره وأبناؤه إلى `page.floats`، كما في الإطار الثابت. والإطار العائم الذي يتصدّر صفحة جديدة يوضع قبل الأشكال المنتظرة لتلك الصفحة، والشكل المذكور في صفحة سابقة الذي يتسع بعدئذ تحته يأخذ بقية تلك الصفحة حتى لو بقي أقل من ثلاثة أسطر نص (صفحة معرض: إطار وشكل، بلا نص بينهما). والإطار `span: 'side'` لا يطفو أبدًا: يتراصّ بجانب النص أيًّا كان موضعه. ومع `columns` أكبر من 1 (في النمط أو سمةً في السياج، منذ postext 1.18) يشغل الإطار `span: 'column'` هذا العدد من الأعمدة المتجاورة: رأس سلسلة من الأعمدة الفارغة التي تبدأ على مستوى واحد، أو أسفل العمود الحالي والأعمدة الفارغة التي تليه، كما في `:::callout{placement="top" columns="2"}`.
+- `width: 'auto'` يضيق على قدر العنوان فقط، ويتجاهل العناصر الأبناء.
+- `:::callout` المتداخل داخل إطار آخر إطار مستقل: يُخرَج بنمطه الخاص (الخلفية، والحدّ، ونصف قطر الزوايا، والحشوة، والشريط الجانبي، والعنوان، والأيقونة، والعلامة، واللسان، والتنسيق الطباعي) بكامل العرض الداخلي لأبيه ويتراصّ عنصرًا ابنًا واحدًا فيه، وتندمج `marginTop` / `marginBottom` الخاصة به مع جيرانه. ويُتجاهل `span` و`placement` الخاصان به (من السياج أو من النمط)، فالإطار المتداخل يجري دائمًا داخل أبيه، ويُتجاهل كذلك `floatBarrier` و`snapToGrid`. وتتداخل الإطارات إلى أي عمق، ويمكن أن تقع داخل مجموعة `:::columns` (كلٌّ منها كاملًا في عمود واحد). وحين ينقسم الأب، يقع القطع قبل الإطار المتداخل أو بعده، أو داخله إن سمح النمط المتداخل بالتقسيم؛ ويعيد كل جزء رسم الإطارات التي يقطعها، والإطار المتداخل المستمر من الجزء السابق يُسقط عنوانه وأيقونته، كتتمة الإطار في المستوى الأعلى.
+- مجموعة `:::columns{count=N}` … `:::` بين العناصر الأبناء تُخرج تلك العناصر في `N` أعمدة متساوية العرض، يفصل بينها `columnGap`، داخل الإطار: تُقطع السلسلة عند حدود الكتل أو الأسطر التي تسوّي الأعمدة على أفضل وجه (الفقرة أو عنصر القائمة المقطوع في منتصفه يستمر في رأس العمود التالي بلا نقطة تعداده)، ويبدأ كل عمود من أعلى المجموعة ويكون ارتفاع المجموعة بارتفاع أطول أعمدتها؛ وتعود العناصر التي تليها إلى كامل العرض. والإطار الذي ينقسم (`keepTogether: false`، أو الأطول من عمود) يقطع داخل المجموعة أيضًا، بين أعمدتها: فالمجموعة المتعرّجة (`snake`) تملأ أعمدتها واحدًا بعد آخر وتستمر في الجزء التالي، والمتوازية (`breaks`) تستمر تيارًا تيارًا (منذ postext 1.25؛ انظر [صيغة المستند › `:::columns`](/ar/docs/document-format#columns)). وتحلّ `gap` في السياج محلّ `columnGap` لتلك المجموعة، وترسم `rule` خطًا على طول كل فاصل بين الأعمدة. استخدمها لملخّص من عمودين للنقاط الرئيسية، أو لوضع جداول إطار عريض جنبًا إلى جنب.
+- السمة السادسة للسياج، `label`، تُطبع على لسان التسمية في النمط (انظر `label` أعلاه): `:::callout{type="box" label="BOX 1-1" title="The octet rule"}`؛ ومن دون `label` في النمط تُتجاهل السمة.
+
+في VDT يكون الإطار كتلة إطار `type: 'callout'` تقع زخرفته (الخلفية، والشريط الجانبي، والأيقونة، والعنوان) في `designOverlay`، تليها كتلها الأبناء في العمود نفسه؛ ويحمل الإطار وكل ابن `containerId` الخاص بالسياج. والإطار المتداخل كتلة إطار `type: 'callout'` مستقلة بين الأبناء، تليها كتلها؛ وهي تحتفظ بـ`containerId` الخاص بسياج المستوى الأعلى (فيظل التوزيع والموازنة يريان وحدة واحدة) وتضيف `calloutPath`، أي معرّفات حاويات الأسيجة المتداخلة المحيطة بها، من الخارج إلى الداخل (ومعرّف الإطار المتداخل نفسه هو آخر مدخل). ويعطي ملف PDF الموسوم كل إطار متداخل عنصر `Div` داخل عنصر أبيه. وتُحلّ صور الأيقونات كما تُحلّ صور الموارد: سجل الصور في canvas، والخيار `resourceImageUrl` في HTML، ومزوّد `resourceBytes` في PDF.
+
+```ts
+const resolved = resolveCalloutStylesConfig(config.calloutStyles, resolvedBodyText, resolvedHeadings, resolvedUnorderedLists, config.locale);
+// => every inherited field filled from the resolved sections; the optional
+//    locale picks the language of the continuation strings
+
+const minimal  = stripCalloutStylesDefaults(config.calloutStyles);
+// => undefined for the built-in `note` default; static defaults dropped
+```
+
+### المبرهنات المرقّمة والبراهين
+
+النمط الذي فيه `numbering` يعدّ إطاراته، كما تعدّ الحزمة `amsthm` في LaTeX بيئات المبرهنات (منذ postext 1.19). يطبع كل إطار تسميته ورقمه، «**Theorem 2.**» في أول فقرته الأولى، ويلي `title` السياج الرقمَ بين قوسين: يبدأ `:::callout{type="theorem" title="Bradley–Terry"}` بـ«**Theorem 2** (Bradley–Terry)**.**». والإطار الذي يُفتح بمعرّف (`{#thm:main}`) هدفٌ للإحالات، فتطبع «Theorem 2» (`:ref{id="thm:main"}`)، ويطبع `\ref{thm:main}` أو `style=number` الرقم 2.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '160px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>label</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>الكلمة التي تسبق الرقم: <code>'Theorem'</code>، <code>'Lemma'</code>، <code>'Definición'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>counter</code></td>
+      <td><code>string | false</code></td>
+      <td><code>id</code> النمط</td>
+      <td>العدّاد الذي تزيده الإطارات. والأنماط التي تسمّي عدّادًا واحدًا تتقاسمه، كما يفعل <code>\newtheorem&#123;lemma&#125;[theorem]</code>: Theorem 1، Lemma 2، Theorem 3. والقيمة <code>'equation'</code> تعدّ مع المعادلات التي تحمل تسمية. أما <code>false</code> فتطبع التسمية بلا رقم («<em>Proof.</em>» في البرهان).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code> / <code>resetOn</code> / <code>counterFormat</code></td>
+      <td><code>string</code> / <code>ResourceCounterReset</code> / <code>ResourceCounterFormat</code></td>
+      <td><code>'&#123;n&#125;'</code> / <code>'never'</code> / <code>'decimal'</code></td>
+      <td>كما في نوع المورد: <code>'&#123;h1&#125;.&#123;n&#125;'</code> مع <code>resetOn: 'h1'</code> يرقّم Theorem 2.1، 2.2… بحسب الفصل، و<code>'&#123;h1&#125;.&#123;h2&#125;.&#123;n&#125;'</code> مع <code>'h2'</code> بحسب القسم. والعدّاد الذي تتقاسمه عدة أنماط يواصل العدّ على ما تطبعه قوالبها، أيًّا كان.</td>
+    </tr>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'runIn' | 'title'</code></td>
+      <td><code>'runIn'</code></td>
+      <td><code>'runIn'</code> يفتتح الفقرة الأولى من الإطار بالتسمية (والإطار الذي يبدأ بقائمة أو صيغة أو إطار آخر يُعطى فقرة لها)؛ و<code>'title'</code> يجعل التسمية عنوان الإطار، بتنسيق <code>titleStyle</code> الخاص به: «Theorem 2 (Bradley–Terry)».</td>
+    </tr>
+    <tr>
+      <td><code>bold</code> / <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> / <code>false</code></td>
+      <td>هيئة التسمية المدمجة في الفقرة ولاحقتها، أيًّا كان متن الإطار: فالمتن المائل (<code>body.italic</code>) يُبقي التسمية القائمة قائمةً. ويُنضَّد العنوان الذي بين القوسين قائمًا بالوزن العادي.</td>
+    </tr>
+    <tr>
+      <td><code>suffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'.'</code></td>
+      <td>يُنضَّد بعد التسمية المدمجة في الفقرة وعنوانها.</td>
+    </tr>
+  </tbody>
+</table>
+
+البرهان نمطٌ تسميته بلا رقم وله علامة ختام:
+
+```ts
+calloutStyles: [
+  { id: 'theorem', numbering: { label: 'Theorem' }, body: { italic: true } },
+  { id: 'lemma', numbering: { label: 'Lemma', counter: 'theorem' }, body: { italic: true } },
+  { id: 'definition', numbering: { label: 'Definition' } },
+  { id: 'proof', backgroundEnabled: false, endMark: '□',
+    numbering: { label: 'Proof', counter: false, bold: false, italic: true } },
+]
+```
+
+وفي كتاب يُخرَج فصلًا فصلًا تستمر العدّادات من الفصل السابق (`LayoutContinuation.statementCounters`، التي تملؤها `continuationAfter`)، ويعطي مخطّط الكتاب مرساة كل إطار مرقّم تسميتها (`OutlineEntry.numberLabel`)، فتطبعها الإحالة من فصل آخر.
+
+### التنسيق الطباعي داخل الإطار
+
+ينضّد الإطار محتواه بتنسيق `body` و`lists` الخاص به؛ وكل ما عدا ذلك يحتفظ بأنماط المستند:
+
+- **الفقرات** تأخذ `body` الخاص بالإطار: الخط، والحجم، وتباعد الأسطر، واللون، وألوان التوكيد، والأوزان، و`italic`، و`smallCaps`، والمحاذاة، وتقسيم الكلمات بالواصلة، والإزاحة البادئة، والتباعد بين الفقرات. والحقل غير المُعيَّن يرث `bodyText`. ولون التوكيد الموروث يحتفظ بارتباطه بلوحة الألوان، فيتغيّر النص العريض والمائل وتسميات `:ref` داخل الإطار مع `colorPalette` كما تتغيّر خارجه. (حتى postext 1.4 كان النص العريض في الإطار يبقى `#295AA3` أيًّا كان اللون الرئيسي.)
+- **القوائم النقطية** تأخذ `lists` الخاص بالإطار (رمز التعداد، واللون، وحجم الرمز ووزنه، والإزاحة، والفاصل، والتباعد بين العناصر) فوق `unorderedLists`، ونصّها هو نص الإطار. و`lists.bulletChar` أو `lists.color` المختلف عن قيمة المستند (`unorderedLists`) يستبدل رمز التعداد أو اللون في كل المستويات؛ أما المكرِّر لقيمة المستند أو غير المُعيَّن فيترك لكل مستوى قيمته (`unorderedLists.levels`)، فتبقى الشرطات المتداخلة في الإطار.
+- **القوائم المرقّمة** تأخذ `lists.indent` و`gap` و`itemSpacing`، وتأخذ `lists.color` متى حدّده النمط، حتى لو كان لون رموز التعداد في المستند؛ والنمط الذي لا يحدّده يُبقي الأرقام بلون `orderedLists.color`. (حتى postext 1.4 لم يكن اللون يصل إلى الأرقام إلا إذا اختلف عن `unorderedLists.color`، فلم يكن لتعيينه على ذلك اللون نفسه أي أثر.) أما الرقم نفسه (خطه وحجمه وفاصله) فيأتي من `orderedLists` العام، لأن `lists` لا يضم إلا حقول رموز التعداد: نسّق أرقام الإطار هناك.
+- **`:::paragraphs` داخل الإطار** تستخدم نمط الفقرة الخاص بها، وكذلك في الإطارات المتداخلة. والحقول التي لا يحدّدها النمط ترث `bodyText` الخاص بالمستند، لا `body` الخاص بالإطار (ولا ميله ولا أحرفه الكبيرة الصغيرة).
+- **مجموعات `:::columns`** لا نمط خاصًا بها: تتشارك الأعمدة كلها تنسيق نص الإطار وقوائمه، ويحدّد `columnGap` الفاصل بينها.
+- **الاقتباسات الكتلية** تأخذ خط نص الإطار وحجمه وأوزانه (مائلة ورمادية، كما في النص الجاري)، وأحرفه الكبيرة الصغيرة. و**العناوين** تحتفظ بأنماط العناوين؛ و**الصيغ المنفصلة** بإعدادات الرياضيات.
+- **الأشكال والجداول** تحتفظ بأنماط التعليقات والجداول في المستند، بالعرض الداخلي للإطار؛ ويتبع وزناها العادي والعريض أوزانَ `body` في الإطار.
+- **الشارات (chips)** تحتفظ بنمط الشارة الخاص بها؛ ويُقرأ حجم `em` نسبةً إلى حجم نص الإطار.
+- **`:::space`** يُقاس بأسطر نص الإطار (انظر [`:::space`](/ar/docs/document-format#space) لمعرفة المواضع التي يُسقط فيها).
+- **الإطار المتداخل** يأخذ نمطه الخاص كاملًا؛ ويُتجاهل `span` و`placement` و`floatBarrier` و`snapToGrid` الخاصة به.
+
+### علامات الإطار المقسوم
+
+حين ينقسم الإطار عبر الأعمدة أو الصفحات (`keepTogether: false`، أو إطار أطول من عمود)، يبدأ كل جزء بعد الأول بلا عنوان ولا أيقونة، ولا شيء افتراضيًا يخبر القارئ بأن الإطار مستمر. ويضيف خياران العلامات التي يستعملها الكتاب أو السيناريو:
+
+- **`repeatTitle: true`** يكرّر العنوان في رأس كل تتمة، متبوعًا بـ`continuedSuffix`، فيكون افتراضيًا «Key points (cont.)». ويأخذ العنوان المكرَّر نمط العنوان، فمع `textTransform: 'uppercase'` يعطي «HAMLET (CONT'D)» كما في السيناريو. وتبقى الأيقونة ولسان التسمية في الجزء الأول.
+- **`continuesMarkerEnabled: true`** يضع `continuesMarker` («Continued»، أو «Continúa» في مستند إسباني) تحت السطر الأخير من كل جزء له تتمة، داخل الإطار، بخط نص الإطار وحجمه: مائلًا ما لم يكن `continuesMarkerItalic` مساويًا `false`، ومحاذيًا لليمين ما لم يحدّد `continuesMarkerAlign` القيمة `'left'` أو `'center'`. وتأخذ العلامة مساحة في الجزء الذي تختمه، ويُختار القطع بحيث تتسع لها.
+
+```ts
+calloutStyles: [{
+  id: 'speech',
+  keepTogether: false,
+  titleStyle: { textTransform: 'uppercase' },
+  repeatTitle: true,
+  continuedSuffix: "(CONT'D)",
+  continuesMarkerEnabled: true,
+  continuesMarker: '(MORE)',
+  continuesMarkerAlign: 'center',
+  continuesMarkerItalic: false,
+}],
+```
+
+```md
+:::callout{type="speech" title="Hamlet"}
+A speech long enough to run over the foot of the page…
+:::
+```
+
+ينتهي الجزء الذي يختم الصفحة بـ«(MORE)»، وتبدأ الصفحة التالية بـ«HAMLET (CONT'D)». وكلاهما من لوازم ترقيم الصفحات: في ملف PDF الميسَّر هما عنصران زخرفيان (artifacts)، وفي HTML يُخفيان عن التقنيات المساعدة، فيُقرأ العنوان مرة واحدة. وفي VDT هما كتلتا نص في `designOverlay` تحملان العلامة `artifact: true`.
+
+
+## الأجزاء
+
+تضبط الخاصية `parts` صفحات فواصل الأجزاء التي يفتحها المستند بالحاوية `:::part{number="…" title="…"}`، أي صفحة «الجزء الأول: الأسس» التي تجمع سلسلة من الفصول. ويشغل الجزء دائمًا صفحة خاصة به: تنتقل الحاوية إلى صفحة جديدة بالزوجية المضبوطة، وتحوّلها إلى صفحة أحادية العمود تأتي منطقة متنها من `parts.margins`، وتضع تصميم الافتتاح على الصفحة كلها، ثم تنتقل مجددًا بعد السياج الختامي فيبدأ الفصل التالي (بـ`breakBefore.parity` الخاص به) من صفحة نظيفة؛ ومع إعدادات H1 الافتراضية ينتج ذلك الترتيب التقليدي: صفحة الجزء فردية، تليها صفحة زوجية فارغة، ثم الفصل في الصفحة الفردية التالية.
+
+```ts
+const config: PostextConfig = {
+  parts: {
+    breakBefore: { parity: 'odd' },
+    breakAfter: { enabled: true, parity: 'any' },
+    margins: { top: { value: 9, unit: 'cm' }, left: { value: 3, unit: 'cm' }, right: { value: 3, unit: 'cm' } },
+    design: {
+      elements: [
+        {
+          kind: 'text', id: 'number', content: 'Part {numberRoman}',
+          fontSize: { value: 12, unit: 'pt' }, fontWeight: 600, align: 'left',
+          placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: { value: 3, unit: 'cm' }, y: { value: 5, unit: 'cm' } }, size: { width: 'auto', height: 'auto' } },
+        },
+        {
+          kind: 'text', id: 'title', content: '{titleText}',
+          fontSize: { value: 28, unit: 'pt' }, fontWeight: 700, align: 'left', overflow: 'wrap',
+          placement: { anchor: { to: '#number', edge: 'below' }, size: { width: { value: 15, unit: 'cm' }, height: 'auto' } },
+        },
+      ],
+    },
+    bodyStyle: { fontSize: { value: 11, unit: 'pt' }, numberColor: { hex: '#AA0000', model: 'hex' } },
+  },
+};
+```
+
+```md
+:::part{number="I" title="Foundations"}
+1. The lantern and its parts
+2. Trimming the wick
+3. Reading the weather
+:::
+
+# The lantern and its parts
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>هل تفتح <code>:::part</code> صفحة فاصلة. مع <code>false</code> لا تُفتح صفحة ولا يُنضَّد متن السياج: يسري رقم الجزء وعنوانه ولوحة ألوانه بدءًا من المحتوى التالي، دون فاصل خاص بها. الاستعمال المعتاد: <code>htmlViewer.overrides.parts.page: false</code>، أي نسخة للشاشة بلا فواصل أقسام.</td>
+    </tr>
+    <tr>
+      <td><code>breakBefore.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'odd'</code></td>
+      <td>زوجية الصفحة التي يبدأ فيها الجزء. القيم نفسها وقواعد ملكية الصفحات الفارغة نفسها كما في <a href="/ar/docs/configuration-text#الفاصل-قبل-العنوان">breakBefore</a> للعناوين: الصفحة الفارغة المُدرجة لبلوغ الزوجية تتبع الجزء (فـ<code>{'{partTitle}'}</code> فيها يشير بالفعل إلى الجزء الجديد)؛ أما الفاصل الإلزامي في <code>'always-*'</code> فيتبع المحتوى السابق.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>ينقل المحتوى الذي يلي السياج الختامي إلى صفحة جديدة. ومع <code>false</code> يستمر في العمود الوحيد لصفحة الجزء.</td>
+    </tr>
+    <tr>
+      <td><code>breakAfter.parity</code></td>
+      <td><code>HeadingBreakParity</code></td>
+      <td><code>'any'</code></td>
+      <td>زوجية تلك الصفحة الجديدة. اتركها على <code>'any'</code> ودع <code>breakBefore.parity</code> الخاص بالفصل التالي يقرّر هل تليها صفحة زوجية فارغة. ويُطبَّق الفاصل عند وضع الكتلة التالية، فالجزء الذي يختم المستند لا يترك صفحة فارغة في آخره.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>هوامش الصفحة</td>
+      <td>منطقة المتن في صفحة الجزء، أي العمود الوحيد الذي تجري فيه الكتل الواقعة داخل السياج. كل جانب غير مُعيَّن يرث هامش الصفحة؛ و<code>mirror</code> يبادل الداخلي والخارجي في الصفحات الزوجية تمامًا كهوامش الصفحة.</td>
+    </tr>
+    <tr>
+      <td><code>design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>فارغ</td>
+      <td>تصميم الافتتاح. حاويته هي <strong>صندوق حدّ القص</strong> للصفحة، فتتطابق مراسي الحاوية ومراسي <code>'page'</code>، ويمتد <code>'bleed'</code> حتى النزف حين تكون خطوط القص مفعّلة. زخرفي بحت: لا يحجز أي مساحة من المتن، فارفع <code>margins.top</code> لإبعاد المتن عنه. وحين يكون فارغًا، يُولَّد نص افتراضي <code>{'{number} {titleText}'}</code> بتنسيق H1 في أعلى يسار منطقة المتن، مع <code>numberSeparator</code> الخاص بـH1 بين الرقم والعنوان.</td>
+    </tr>
+    <tr>
+      <td><code>versoDesign</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>فارغ</td>
+      <td>تصميم الصفحة الزوجية الفارغة التي تلي صفحة الجزء (ظهر الورقة الفاصلة): الحاوية والعناصر النائبة نفسها كما في <code>design</code>. اتركه فارغًا لصفحة زوجية خالية. ولا يُرسم إلا حين تبقى الصفحة التي تلي صفحة الجزء فارغة، وهذا يتطلب فاصلًا بزوجية محددة: انظر <a href="#تصميم-الصفحة-الزوجية">تصميم الصفحة الزوجية</a> أدناه.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.fontFamily</code>، <code>fontSize</code>، <code>lineHeight</code>، <code>color</code>، <code>textAlign</code></td>
+      <td>كما في <code>bodyText</code></td>
+      <td>ترث <code>bodyText</code></td>
+      <td>التنسيق الطباعي للفقرات والاقتباسات الكتلية وعناصر القوائم داخل السياج. وتأتي الأوزان وألوان التوكيد وتقسيم الكلمات بالواصلة من نص المتن.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.bulletColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>unorderedLists.color</code></td>
+      <td>لون رموز التعداد في القوائم النقطية داخل الجزء.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.numberColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>orderedLists.color</code></td>
+      <td>لون الأرقام في القوائم المرقّمة داخل الجزء. وتُنضَّد الأرقام دائمًا بالوزن العريض لنص المتن، فتُقرأ قائمة الفصول كجدول محتويات.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.unorderedLists</code></td>
+      <td><code>UnorderedListsConfig</code></td>
+      <td>—</td>
+      <td>تجاوزات جزئية تُطبَّق فوق <code>unorderedLists</code> الخاص بالمستند داخل الجزء، بعد <code>bulletColor</code>. والقيم التي تخص القائمة كلها تسري إلى المستويات التي ورثتها؛ ومدخلات <code>levels</code> تنطبق على مستواها فقط.</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle.orderedLists</code></td>
+      <td><code>OrderedListsConfig</code></td>
+      <td>—</td>
+      <td>تجاوزات جزئية تُطبَّق فوق <code>orderedLists</code> الخاص بالمستند داخل الجزء، بعد <code>numberColor</code> والوزن العريض، مثل <code>separator</code> قيمته <code>'•'</code> مع <code>separatorFontFamily</code> و<code>separatorColor</code> خاصين به لقائمة الفصول في صفحة افتتاح الجزء.</td>
+    </tr>
+  </tbody>
+</table>
+
+### العناصر النائبة في تصميم الجزء
+
+تحلّ خانة التصميم مجموعة العناصر النائبة (placeholders) الخاصة بالعناوين بقيم الجزء نفسه: `{titleText}` هو `title` السياج؛ و`{number}` هو `number` كما كُتب تمامًا؛ و`{numberDecimal}` و`{numberRoman}` و`{numberRomanLower}` و`{numberAlpha}` و`{numberAlphaLower}` تعيد تنسيقه: يُحلَّل الرقم على أنه عدد عشري أو رقم روماني أو أرقام صينية، مع الكلمات التي تحيط بها أو دونها (`"IV"` و`"iv"` و`"4"` و`"４"` و`"四"` و`"卷四"` و`"第四卷"` كلها تعطي `{numberDecimal}` = `4`)، وتُحَلّ إلى `''` في أي حالة أخرى. وتتوفّر أيضًا `{partTitle}` / `{partNumber}`، و`{chapterTitle}` / `{chapterNumber}` (الفصل الذي يسبق الجزء)، و`{pageNumber}`، و`{totalPages}`، و`{bookTotalPages}`، والعناصر النائبة للبيانات الوصفية. و`{attr.<key>}` يقرأ سمات H1 للفصل الحالي.
+
+### تصميم الصفحة الزوجية
+
+يزيّن `versoDesign` الصفحة التي تلي صفحة الجزء مباشرةً حين لا تحمل محتوى: ظهر الورقة الفاصلة. والجزء نفسه لا يترك تلك الصفحة فارغة أبدًا. فالقيمة الافتراضية لـ`breakAfter.parity` هي `'any'`، لذا يبدأ المحتوى الذي يلي السياج في الصفحة التالية مباشرةً ما لم يطلب شيء زوجية محددة:
+
+- **عنوان الفصل التالي.** قيمة `breakBefore` الافتراضية لـH1 هي `'always-odd'`، و`'odd'` تفعل الشيء نفسه بعد صفحة جزء فردية: ينتقل الفصل إلى الصفحة الفردية التالية وتبقى الزوجية فارغة. فيُرسم تصميم الصفحة الزوجية.
+- **`parts.breakAfter: { enabled: true, parity: 'odd' }`.** يطلب الجزء بنفسه الصفحة الفردية التالية، أيًّا كان ما يفعله العنوان التالي. استخدمه حين يمكن أن تبدأ الفصول في أي من الجانبين (`breakBefore.parity: 'any'`، أو `breakBefore.enabled: false`).
+
+ومن دون أيٍّ منهما يبدأ الفصل في الصفحة الزوجية ولا يُرسم تصميمها. ومع `breakAfter.enabled: false` يستمر المحتوى في صفحة الجزء نفسها. وتأخذ الصفحة الزوجية لوحة ألوان الجزء، فالسمة `palette="band=#…"` في السياج تعيد تلوينها أيضًا.
+
+```ts
+parts: {
+  breakBefore: { parity: 'odd' },
+  breakAfter: { enabled: true, parity: 'odd' },   // always a blank verso to paint
+  versoDesign: {
+    elements: [{
+      kind: 'box', id: 'field',
+      style: { backgroundColor: { hex: '#b07d2b', model: 'hex', paletteId: 'band' } },
+      placement: { anchor: { to: 'page', edge: 'top-left' }, size: { width: 'fill', height: 'fill' } },
+    }],
+  },
+}
+```
+
+**جزء يختم فصله.** في كتاب يُخرَج فصلًا فصلًا (Sandbox، و`buildBundle`) يمكن أن يكون السياج `:::part` فصلًا قائمًا بذاته، أو نهاية فصل. فتكون صفحة الجزء عندئذ آخر صفحات الفصل، ويتولى الفصل التالي ما بقي على الجزء: يطبّق `breakAfter` قبل كتلته الأولى ويرسم `versoDesign` في صفحته الأولى حين تبقى فارغة. فتخرج الصفحات كما لو كان الكتاب كله في مستند واحد. ولا يجوز أن يلي السياج إلا التوجيهات التي لا تضع شيئًا (`:::numbering`، `:::space`)؛ وكل ما عداها محتوى من الفصل، فيأخذ الفاصل بنفسه. والفصل الفارغ الذي يلي الجزء مباشرةً صفحة قائمة بذاتها: وتلك الصفحة هي الزوجية. والمضيف الذي يُخرج الفصول بنفسه يحصل على ذلك من `continuationAfter()`، التي تُبلغ `afterPartPage: true` للفصل الذي ينتهي بجزء؛ مرّرها في `continuation` الخاص بالفصل التالي.
+
+### الحاوية `:::part`
+
+يفتح السطر `:::part{number="…" title="…"}` الجزء، ويغلقه `:::` وحدها؛ والسمتان اختياريتان (قيمتهما الافتراضية `''`). تجري الكتل الواقعة بينهما (قائمة الفصول عادةً) في العمود الوحيد لصفحة الجزء بتنسيق `bodyStyle`، بدءًا من `margins.top`؛ والمتن الأطول من الصفحة يستمر في صفحات عادية. وتُصنَّف الصفحة `role: 'part'` (ويحمل `VDTPage.partInfo` الرقم والعنوان)، فيمكن لعناصر الترويسة والتذييل أن تستهدفها أو تتخطاها بـ`pages: 'part'` / `pages: 'body'`؛ ويضيف مُخرِج PDF الجزء إلى المخطط (outline) فوق فصوله. والمتن الفارغ (`:::part{…}` يليه `:::` مباشرةً) هو الحالة الشائعة، وهو ينتج الصفحة مع ذلك، فالأجزاء المتتالية لا تتشارك صفحة أبدًا. و`:::part` المتداخل في جزء آخر يُدمج في الجزء الخارجي.
+
+وتعطي سمة ثالثة، `palette="<id>=<hex>[, <id>=<hex>…]"`، الجزءَ ألوانه الخاصة: في صفحة الجزء وفي كل صفحة تليها حتى الجزء التالي، يأخذ كل لون تصميم (الترويسة، والتذييل، ونطاق الافتتاح، وتصميما الجزء والصفحة الزوجية) مرتبط بأحد معرّفات لوحة الألوان هذه قيمةَ الجزء بدلًا من قيمة لوحة ألوان المستند. بهذا تعيد أقسام الكتاب تلوين لسان الزاوية ونقطة الترويسة ونطاق صفحة افتتاح الفصل دون تصميم ثانٍ: `:::part{number="II" title="…" palette="band=#f6c297"}`. ويتبعها تدفق النص أيضًا: في الصفحات نفسها، كل لون في التدفق يساوي القيمة الأساسية لمدخل متجاوَز في لوحة الألوان يأخذ قيمة الجزء، وذلك في ألوان العناوين والنص العريض والمائل والإحالات، ورموز التعداد وأرقام القوائم، وتسميات التعليقات وأشرطتها، ونص الجداول وخطوطها وتعبئاتها (الرأس، والمتن، والصفوف المتناوبة، وتعبئة الخلية الخاصة)، وإطارات callout (الخلفية، والحدّ، والشريط الجانبي، والعنوان)، والشارات (التعبئة، والحدّ الخارجي، والنص)؛ فالخاصية `headings.levels[1].color` المرتبطة بـ`band` تجعل عناوين كل قسم بلونه الخاص. وتحتفظ عيّنات الألوان المضمّنة باللون المكتوب فيها. وتُفصل الأزواج بفواصل أو فواصل منقوطة أو مسافات، ويربط `=` أو `:` بين المعرّف واللون، و`#` اختيارية. ويظل الجزء ساريًا بعد إغلاق سياجه: يتبع `{partTitle}` و`{partNumber}` ولوحة الألوان التدفقَ إلى الفصول التي تليه، ومن خلال `continuation.part` الذي تُبلغ عنه `continuationAfter()` إلى الفصول التي تُخرَج منفردة، فيُظهر الفصل الثاني من القسم القسمَ في ترويساته تمامًا كما يفعل الأول.
+
+قد يتشارك مدخلان من لوحة الألوان قيمة أساسية واحدة ويأخذان مع ذلك قيمتين مختلفتين في جزء ما، حين يتجاوز الجزء أحدهما دون الآخر أو يعطيهما لونين مختلفين. والقيمة وحدها لا تدل على المدخل الذي جاء منه لون التدفق، لذا يُطابَق كل لون في التدفق مع الإعدادات التي يمكن أن يأتي منها، ويأخذ القيمة التي ترتبط بها تلك الإعدادات. ويُميَّز بين ما يلي:
+
+- ألوان نص الكتلة: لون النص، وألوان النص العريض والمائل والإحالات، وعلامة القائمة (رمز تعداد أو رقم) والفاصل الذي يلي الرقم. فإذا كان `bodyText.color` مرتبطًا بـ`ink` و`bodyText.boldColor` مرتبطًا بـ`accent`، وكلاهما `#1a1a1a`، فإن الجزء ذا `palette="accent=#b8413d"` يعيد تلوين المقاطع العريضة ويترك النص؛ وإذا كان `unorderedLists.color` هو المرتبط بـ`accent`، فإنه يعيد تلوين رموز التعداد ويترك نص العناصر؛
+- كل مستوى من مستويات العناوين، وكل نمط عنوان يحدّد لونًا؛
+- نص صف المحتويات، ورقمه، ورقم صفحته وعنوانه الفرعي؛
+- في كل نمط إطار: التعبئات (الخلفية، والشريط الجانبي، ولسان التسمية)، والحدّ، والخطوط (خط العلامة وخط التسمية)، والنص (العنوان، والأيقونة، ورمز العلامة، والتسمية)؛
+- كل لون في كل نمط جدول وشارة وتعليق. ونمط الجدول المسمّى منفصل عن `tableStyle`، ونمط تعليق نوع المورد منفصل عن `captionStyle`. وتعبئة الخلية الخاصة تتبع ارتباطها الخاص.
+
+تبقى حالة واحدة تُحسم بالقيمة: إعدادات في أماكن مختلفة تحدّد اللون نفسه لكتلة ما. فـ`bodyText.color` و`bodyText.blockquote.color` و`color` في نمط الفقرة و`body.color` في نمط الإطار كلها تحدّد لون نص الكتلة، مثلًا. وحين يرتبط اثنان منها بمدخلين يتشاركان قيمة أساسية ويفرّق الجزء بينهما، يأخذ اللون القيمة المتجاوِزة (وآخرهما كتابةً إن تُجووز كلاهما). أعطِ هذه المدخلات قيمًا أساسية خاصة بها.
+
+```ts
+const resolved = resolvePartsConfig(config.parts, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);
+// => margins filled from the page, bodyStyle from the body / list configs
+
+const minimal = stripPartsDefaults(config.parts);
+// => undefined when only static defaults remain
+```
+
+
+## أنماط العناوين
+
+تُعرِّف الخاصية `headingStyles` أنماطًا مسمّاة يطبّقها المستند على عنوان بالصيغة `# Title {style="<id>"}`. ويفعل النمط أمرين. فهو يتجاوز تنسيق مستوى العنوان وتصميمه وترقيمه، أي كل حقل من مدخل المستوى ما عدا `level` (الخط، والحجم، واللون، و`breakBefore`، و`span`، و`advancedDesign`، و`textTransform`، و`hidden`، و`numberingTemplate`…)، ويحكم **القسم** الذي يفتحه العنوان: تأخذ صفحاته، حتى العنوان التالي من المستوى نفسه أو مستوى أعلى، ترويسات النمط وهندسة صفحاته وتنسيق متنه ولوحة ألوانه. بهذا تقع الصفحات التمهيدية للكتاب (تمهيد في عمود عريض واحد بأرقام صفحات رومانية ونطاقات زرقاء) في دليل من عمودين مرقّم بأرقام عشرية، دون إعداد ثانٍ.
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    {
+      id: 'front-matter',
+      numbered: false,
+      breakBefore: { enabled: true, parity: 'odd' },
+      span: 'page',
+      advancedDesign: { enabled: true, minHeight: { value: 52, unit: 'mm' }, slot: { elements: [/* bands, `{titleText}` */] } },
+      header: { elements: [/* folio | rule | `{title}. {subtitle}` */] },
+      margins: { left: { value: 50, unit: 'mm' }, right: { value: 17, unit: 'mm' } },
+      layout: { layoutType: 'single' },
+      bodyStyle: { fontSize: { value: 10.5, unit: 'pt' }, textAlign: 'justify' },
+      palette: { band: '#547396' },
+    },
+  ],
+};
+```
+
+```md
+# Preface {style="front-matter"}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '160px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>المعرّف الذي يُشار إليه بـ<code>{'{style="…"}'}</code> في سطر العنوان. والمعرّف غير المعروف يترك العنوان على حاله.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>اسم مقروء للبشر (لواجهة المحرّر فقط).</td>
+    </tr>
+    <tr>
+      <td><code>numbered</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>هل يُحتسب العنوان: يزيد عدّاد مستواه (أرقام <code>numberingTemplate</code>، و<code>{'{h1}'}</code> في أرقام الموارد)، والترتيب التسلسلي للفصل الذي يقوم عليه <code>{'{chapterNumber}'}</code>، والرقم المطبوع في المحتويات. <code>false</code> للتمهيد، أو قائمة المؤلفين، أو الفهرس الأبجدي: يبقى أول فصل مرقّم بعدها الفصل 1، ويكون <code>{'{chapterNumber}'}</code> فارغًا في صفحاتها.</td>
+    </tr>
+    <tr>
+      <td><code>toc</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>هل يُدرج <code>:::toc</code> العنوان. ويتجاوزه العنوان بـ<code>{'{toc="false"}'}</code> / <code>{'{toc="true"}'}</code>.</td>
+    </tr>
+    <tr>
+      <td><code>runningChapter</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>هل يصبح عنوان المستوى الأول من هذا النمط الفصلَ الجاري: الفصل الذي تسمّيه <code>{'{chapterTitle}'}</code> و<code>{'{chapterNumber}'}</code> و<code>{'{attr.<key>}'}</code> وصيغها <code>…AtTop</code> في صفحته والصفحات التي تليها. <code>false</code> للوحة مصوّرة (plate) أو خريطة أو غلاف منضَّد كعنوان H1 داخل فصل: تتخطاه الترويسات، في صفحته أيضًا، وتواصل تسمية الفصل الذي يقطعه؛ ولا يحدّد كذلك كلمةً دليلية <code>h1</code>. ويظل العنوان يُحتسب حين يكون <code>numbered</code> (فتصميمه يقرأ <code>{'{chapterNumber}'}</code> الخاص به) ويظل <code>:::toc</code> يُدرجه حين يكون <code>toc</code>. ومع <code>toc: false</code> أيضًا لا يحصل على علامة مرجعية في PDF: فاللوحة المصوّرة للفصل في الصفحة التي تسبق صفحة افتتاحه تترك العلامات المرجعية للفصول. وعناوين المستويات الأخرى تتجاهله. ومع القيمة الافتراضية تطبع الصفحات التي تلي اللوحة المصوّرة عنوانها. والتمهيد أو الاستهلال ذو <code>numbered: false</code> يظل فصلًا قائمًا بذاته ويحتفظ بالقيمة الافتراضية. ولا يغيّر هذا الخيار إلا الفصل الذي تسمّيه العناصر النائبة: فالنمط يظل يفتح قسمًا خاصًا به، كما يفعل كل نمط عنوان، فتأخذ الصفحات حتى عنوان المستوى الأول التالي خانات الترويسة وهوامش نمط اللوحة المصوّرة وأعمدته ونمط متنه ولوحة ألوانه (وقيم المستند حيث لا يحدّد النمط شيئًا)، لا تلك التي لقسم منسَّق فتحه الفصل المقطوع. وفي الكتاب الذي يُخرَج فصلًا فصلًا، لا تنتقل الترويسات من ملف فصل إلى الذي يليه، فاللوحة المصوّرة التي تفتح ملفًا تُظهر عناصر نائبة فارغة للفصل حتى أول عنوان فصل في الملف.</td>
+    </tr>
+    <tr>
+      <td>حقول المستوى</td>
+      <td>كما في <code>headings.levels[]</code></td>
+      <td>قيم المستوى</td>
+      <td><code>fontFamily</code>، <code>fontSize</code>، <code>lineHeight</code>، <code>fontWeight</code>، <code>italic</code>، <code>color</code>، <code>marginTop</code>، <code>marginBottom</code>، <code>snapToGrid</code>، <code>breakBefore</code>، <code>span</code>، <code>advancedDesign</code>، <code>textTransform</code>، <code>letterSpacing</code>، <code>lineSpan</code>، <code>indent</code>، <code>firstLineIndent</code>، <code>jidori</code>، <code>dropCap</code>، <code>hidden</code>: كلٌّ منها، إذا عُيِّن، يحلّ محلّ قيمة مستوى العنوان في عناوين هذا النمط (و<code>dropCap: false</code> يُسقط الحرف الاستهلالي الذي يضبطه المستوى). و<code>breakBefore</code> يُدمج حقلًا حقلًا فوق قيمة المستوى: النمط الذي لا يحدّد إلا <code>parity</code> يحتفظ بقيمة <code>enabled</code> الخاصة بالمستوى، والذي لا يحدّد إلا <code>enabled: true</code> يحتفظ بزوجية المستوى (حتى postext 1.4 كان الحقل الناقص يأتي بدلًا من ذلك من القيمة الافتراضية التي لا فاصل فيها).</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td>قيمة المستوى</td>
+      <td>القالب الذي تُرقَّم به عناوين النمط بدلًا من قالب مستواها (الرموز نفسها كما في <a href="/ar/docs/configuration-text#تجاوزات-كل-مستوى"><code>levels[].numberingTemplate</code></a>). ويبقى العدّاد عدّاد المستوى: نمط الملاحق ذو <code>'Appendix {'{1:A}'}'</code> بعد خمسة فصول سيطبع <em>Appendix F</em>، لذا أعد بدء العدّ بـ<code>{'{startAt=1}'}</code> في أول ملحق. و<code>''</code> لا يطبع رقمًا مع أن العنوان يظل يُحتسب: ولا حتى الترتيب التسلسلي للفصل الذي تُظهره المحتويات و<code>{'{chapterNumber}'}</code> لعنوان من المستوى الأول بلا قالب. ويظهر الرقم في التدفق، وفي <code>{'{number}'}</code> لتصميم النمط، وفي المحتويات، وفي <code>{'{chapterNumber}'}</code>.</td>
+    </tr>
+    <tr>
+      <td><code>header</code>، <code>footer</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>قيم المستند</td>
+      <td>ترويسات صفحات القسم، تحلّ هناك محلّ <code>header</code> / <code>footer</code> (وتظل مرشحات <code>parity</code> و<code>pages</code> للعناصر سارية). والخانة الفارغة تزيلها.</td>
+    </tr>
+    <tr>
+      <td><code>margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>هوامش الصفحة</td>
+      <td>منطقة المتن في صفحات القسم؛ كل جانب غير مُعيَّن يرث هامش الصفحة، بما في ذلك <code>mirror</code>. ويسري على الصفحات التي يفتحها القسم، فاقرنه بـ<code>breakBefore</code>.</td>
+    </tr>
+    <tr>
+      <td><code>layout</code></td>
+      <td><code>LayoutConfig</code></td>
+      <td><code>layout</code></td>
+      <td>تخطيط أعمدة صفحات القسم (<code>layoutType</code>، <code>gutterWidth</code>…): عمود عريض واحد لتمهيد منضَّد في كتاب من عمودين. ويُرسم <code>columnRule</code> الخاص به في صفحات القسم، وكل حقل لا يحدّده يأخذ قيمة <code>layout.columnRule</code> من المستند، فالقسم الذي لا يغيّر إلا أعمدته يحتفظ بالخط الفاصل للمستند (انظر <a href="/ar/docs/configuration-page-layout#الخط-الفاصل-بين-الأعمدة">الخط الفاصل بين الأعمدة</a>).</td>
+    </tr>
+    <tr>
+      <td><code>bodyStyle</code></td>
+      <td><code>PartsBodyStyleConfig</code></td>
+      <td>ترث <code>bodyText</code></td>
+      <td>التنسيق الطباعي للفقرات والاقتباسات الكتلية والقوائم في القسم، بالحقول نفسها كما في <a href="#الأجزاء">parts.bodyStyle</a>.</td>
+    </tr>
+    <tr>
+      <td><code>palette</code></td>
+      <td><code>Record&lt;string, string&gt;</code></td>
+      <td><code>{'{}'}</code></td>
+      <td>تجاوزات لوحة الألوان (المعرّف ← قيمة hex) لصفحات القسم، فوق تجاوزات الجزء الحالي: الآلية نفسها التي تتبعها السمة <code>palette</code> في الجزء، وبالمدى نفسه. فهي لا تشمل خانات التصميم المُخرَجة في تلك الصفحات وحدها (الترويسات، ونطاق الافتتاح، وكل لون مرتبط بمعرّف متجاوَز)، بل تشمل تدفق النص أيضًا، بالقيمة: كل لون في التدفق يساوي القيمة الأساسية لمدخل متجاوَز يأخذ قيمة القسم، كما تحت الجزء، وذلك في ألوان العناوين والنص العريض والمائل والإحالات، ورموز التعداد وأرقام القوائم، وتسميات التعليقات وأشرطتها، ونص الجداول وخطوطها وتعبئاتها، وإطارات callout (الخلفية، والحدّ، والشريط الجانبي، والعنوان)، والشارات (التعبئة، والحدّ الخارجي، والنص)، بما في ذلك قاعدة المدخلين اللذين يتشاركان قيمة أساسية (انظر <a href="#الحاوية-part">الحاوية <code>:::part</code></a>). وتحتفظ عيّنات الألوان المضمّنة باللون المكتوب فيها. ويتبعها لون الصفحة أيضًا: إذا كان <code>page.backgroundColor</code> مرتبطًا بمدخل مُستبدَل (أو كانت قيمته، دون ربط، هي القيمة الأساسية لذلك المدخل)، تُطلى صفحات القسم بقيمة القسم، فتُطبع الصفحات الاقتصادية في الصحيفة على لون السلمون وتبقى الصفحات الأخرى بيضاء. منذ postext 1.18.</td>
+    </tr>
+  </tbody>
+</table>
+
+يُغلق القسم عند العنوان التالي من المستوى نفسه أو مستوى أعلى: العنوان `#` غير المنسَّق بعد عنوان منسَّق يعيد ترويسات المستند وهندسته؛ والعنوان المنسَّق يفتح قسمه الخاص. والصفحات التي تركها القسم فارغة لأجل الزوجية تتبعه، كما تتبع عناوينَ الفصول.
+
+**فاصل الصفحة لا يحلّ محلّ فاصل العنوان نفسه.** يرث النمط `breakBefore` الخاص بمستواه (القيمة الافتراضية للمستوى الأول `{ enabled: true, parity: 'always-odd' }`)، ويطبّقه العنوان أينما وقع، حتى بعد `:::pagebreak` مباشرةً. يفتح فاصل الصفحة صفحة جديدة، ثم يظل العنوان يطلب جهته من الصفحتين المتقابلتين. مع `parity: 'odd'`، الفاصل الذي يقع على صفحة زوجية تليه صفحة فارغة، فيبدأ العنوان في الصفحة الفردية التالية. ومع `'always-odd'` تأتي الصفحة الفارغة الفاصلة أيضًا، ولا يغيّر فاصل الصفحة شيئًا، لأن العنوان كان سيفتح تلك الصفحة على أي حال. والنمط الذي يُراد أن يبدأ في الصفحة التي يفتحها فاصل يدوي، كصفحة المحتويات بعد صفحة العنوان، يعطّل فاصله الخاص:
+
+```ts
+headingStyles: [
+  // Starts where the text puts it: on the page the `:::pagebreak` before it opened.
+  { id: 'contents', numbered: false, toc: false, breakBefore: { enabled: false } },
+],
+```
+
+ولإبقاء صفحة خاصة به دون اختيار جهة، اضبط `breakBefore: { parity: 'any' }` بدلًا من ذلك واحذف `:::pagebreak`.
+
+**إلى أي قسم تنتمي الصفحة.** تُختار الترويسات ولوحة الألوان لكل صفحة، لا لكل عنوان. وتأخذ الصفحة القسم الساري بعد آخر تغيير للقسم فيها: حيث ينتهي قسم ويبدأ آخر في الصفحة نفسها (حرفان قصيران من معجم، مثلًا) تحمل الصفحة ترويسات الثاني ولوحة ألوانه؛ وحيث ينتهي قسم منسَّق في منتصف الصفحة عند عنوان غير منسَّق، تعود الصفحة إلى قيم المستند. و`{chapterTitle}` يتبع القاعدة نفسها: الصفحة التي يلتقي فيها فصلان تُظهر عنوان الأخير منهما. والصفحات الفارغة تتبع قاعدة [عناوين الفصول](/ar/docs/configuration-text#تبعية-الصفحات-الفارغة): الصفحة الفارغة لأجل الزوجية (`blankForParity`) تتبع القسم الذي يُفتح بعدها، والصفحة الفاصلة التي يضيفها فاصل `'always-odd'` / `'always-even'` (`blankForForce`) تتبع القسم الذي قبلها. وفاصل الجزء يُغلق القسم المفتوح.
+
+```md
+# A {style="letter"}
+
+Aardvark, abacus.
+
+# B {style="letter"}
+
+Babble, badger… (runs on to the next page)
+```
+
+يبدأ الحرفان كلاهما في الصفحة 1، فتأخذ الصفحة 1 ترويسات القسم `B`: لسان الإبهام (thumb tab) المضبوط في ترويسة النمط يقرأ «B» هناك، ولا تحمل أي صفحة لسان «A». أعطِ كل قسم صفحة خاصة به (`breakBefore`) حين يحتاج كلٌّ منها إلى لسانه.
+ملاحق مرقّمة بالحروف بعد فصول مرقّمة بالأرقام، وصفحة إهداء تُدرجها المحتويات والعلامات المرجعية في PDF لكن الصفحة نفسها لا تحمل عنوانها:
+
+```ts
+headingStyles: [
+  { id: 'appendix', numberingTemplate: 'Appendix {1:A}' },
+  { id: 'silent', hidden: true, numbered: false },
+],
+```
+
+```md
+# Dedication {style="silent"}
+
+For M., who read every draft.
+
+# Method
+
+…
+
+# Survey instrument {style="appendix" startAt=1}
+
+# Raw data {style="appendix"}
+```
+
+مع `numberingTemplate: '{1}.'` في المستوى الأول تطبع الفصول *1.* و*2.*…، والملاحق *Appendix A* و*Appendix B*. ويفتح الإهداء صفحته (بـ`breakBefore` الخاص بمستواه)، ولا يطبع إلا فقرته، ويظهر مع ذلك باسم *Dedication* في `:::toc` وفي ترويسات `{chapterTitle}` وفي مخطط PDF؛ أضف `toc: false` إلى النمط لإخراجه من المحتويات. واللوحة المصوّرة أو الخريطة المنضَّدة كعنوان H1 في منتصف فصل تحتاج عكس ما يحتاجه الإهداء: النمط ذو `runningChapter: false` (عادةً مع `numbered: false` و`toc: false`) يُبقي الترويسات على الفصل الذي تقطعه.
+
+```ts
+const resolved = resolveHeadingStylesConfig(config.headingStyles, resolvedPage, resolvedBodyText, resolvedUnorderedLists, resolvedOrderedLists);
+// => level overrides normalised, margins filled from the page, bodyStyle from the body
+
+const minimal = stripHeadingStylesDefaults(config.headingStyles);
+// => undefined when no style remains
+```

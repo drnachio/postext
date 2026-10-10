@@ -1,0 +1,826 @@
+{/* docs/configuration-notes-references-ca.mdx */}
+
+export const metadata = {
+  title: 'Configuració: notes i referències',
+  sidebarTitle: 'Notes i referències',
+  description: "Les notes a peu de pàgina, la numeració de línies, les referències creuades i les cites, l'índex de continguts i l'índex analític",
+  lang: 'ca',
+  lastUpdated: '2026-10-10',
+  readingTime: '4 min',
+  order: 6,
+  parent: 'configuration',
+  plainSummary: "Aquesta pàgina reuneix els paràmetres de les parts del llibre que remeten a un altre lloc. Les notes van a peu de pàgina i els números de línia van al marge. Les referències creuades anomenen una figura, una secció o una pàgina, i les cites anomenen les obres que esmentes. L'índex de continguts enumera els capítols i l'índex analític, al final, enumera termes amb les seves pàgines. Cada secció explica l'aspecte d'aquestes peces i com es numeren.",
+};
+
+# Configuració: notes i referències
+
+
+## Notes a peu de pàgina
+
+La propietat `footnotes` fixa on van les notes citades amb `[^id]`, com es numeren i quin aspecte tenen. El marcatge es descriu a [Format del document](/ca/docs/document-format#notes-a-peu-de-pàgina).
+
+```ts
+interface FootnotesConfig {
+  placement?: 'column' | 'chapterEnd' | 'spread'; // Peu de la columna que cita, després del capítol, o al costat del text d'un plec.
+  numbering?: 'chapter' | 'document' | 'page' | 'column' | 'spread'; // Reiniciar a cada capítol, continuar, o reiniciar a cada pàgina / columna / plec.
+  numberFormat?: string;      // decimal, lower-roman, circled-decimal (①)…
+  symbols?: string[];         // Els símbols de crida de numberFormat: 'symbols'.
+  markerPosition?: 'auto' | 'superscript' | 'inline' | 'side' | 'right'; // Volada, sobre la línia de base, al costat de la paraula, o a la dreta d'una línia vertical.
+  markerSize?: Dimension;     // Mida de la crida en línia, lateral o a la dreta; em és el text que l'envolta.
+  numberGap?: 'en' | 'em';    // Espai després del número de la nota mateixa.
+  chapterEndAlign?: 'foot' | 'text';   // chapterEnd: notes al peu de la columna, o sota el text.
+  fontSize?: Dimension;       // Cos de la nota; em és el cos del text.
+  lineHeight?: Dimension;     // Interlineat de la nota; em és el cos de la nota.
+  color?: ColorValue;         // Color de la nota; sense valor, el del cos.
+  textAlign?: TextAlign;      // Sense valor, l'alineació del cos.
+  hangingIndent?: Dimension;  // Sagnat de les línies següents d'una nota.
+  spaceBetween?: Dimension;   // Espai entre dues notes.
+  spaceAbove?: Dimension;     // Espai entre el text i el filet; em és el cos del text.
+  spaceBelowRule?: Dimension; // Espai entre el filet i la primera nota.
+  separator?: {
+    enabled?: boolean;        // Dibuixar el filet.
+    width?: number;           // Longitud del filet, fracció de l'amplada de columna.
+    lineWidth?: Dimension;    // Gruix del filet.
+    color?: ColorValue;       // Sense valor, el color de les notes.
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '160px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>placement</code></td>
+      <td><code>'column' | 'chapterEnd' | 'spread'</code></td>
+      <td><code>'column'</code> (llibres japonesos verticals: <code>'chapterEnd'</code>)</td>
+      <td><code>'column'</code> compon cada nota al peu de la columna que conté la línia que la cita, sota un filet curt; en una maqueta d'una columna és el peu de la pàgina. <code>'chapterEnd'</code> compon totes les notes d'un capítol després del seu darrer bloc, en l'ordre en què es citen. <code>'spread'</code> (傍注, només en text vertical) compon les notes citades a les dues pàgines d'un plec al final de la seva pàgina senar, l'esquerra en un llibre enquadernat per la dreta, sota el filet: les notes citades a la pàgina parella l'esperen, una nota que deixaria a la pàgina senar menys d'una línia de text es queda al peu de la pàgina parella amb les que la segueixen, i un capítol que acaba en una pàgina parella hi conserva les notes que esperaven. En text horitzontal torna a <code>'column'</code> amb un avís <code>unknownConfigValue</code>. Des de postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'chapter' | 'document' | 'page' | 'column' | 'spread'</code></td>
+      <td><code>'chapter'</code> (llibres japonesos horitzontals: <code>'page'</code>; amb <code>placement: 'spread'</code>: <code>'spread'</code>; amb <code>numberFormat: 'symbols'</code> al peu de la columna: <code>'page'</code>)</td>
+      <td><code>'chapter'</code> torna a començar per 1 sota cada títol de nivell 1 i al principi de cada document. <code>'document'</code> continua per tot el document i, en un llibre maquetat capítol a capítol, d'un capítol al següent (<code>continuationAfter</code> porta l'últim número a <code>continuation.footnoteNumber</code>). <code>'page'</code> torna a començar per 1 a cada pàgina i <code>'column'</code> a cada columna, comptant les notes on les col·loca la maquetació (les columnes d'una pàgina en ordre de lectura): el 页下注 habitual d'un llibre xinès. El document es maqueta, es numera segons on han caigut les seves notes i es torna a maquetar fins que els números es mantenen (com a màxim tres vegades més). Tots dos valen per a les notes al peu de la columna: amb <code>placement: 'chapterEnd'</code> les notes es numeren per capítol. <code>'spread'</code> torna a començar a cada plec (pàgines 2–3, 4–5…), en l'ordre de cita, per a <code>placement: 'spread'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>numberFormat</code></td>
+      <td><code>string</code></td>
+      <td><code>'decimal'</code></td>
+      <td>Com s'escriuen els números, amb qualsevol de les grafies que accepta la configuració de numeració: <code>'decimal'</code>, <code>'lower-roman'</code>, <code>'lower-alpha'</code>, <code>'circled-decimal'</code> (o <code>'①'</code>), <code>'cjk-decimal'</code>, <code>'一'</code>… El fan servir la crida i el número que obre la nota. <code>circled-decimal</code> escriu en decimal els números més grans que 50. Un nom desconegut numera en decimal, amb un avís <code>unknownNumberFormat</code>. <code>'symbols'</code> (o <code>'&#42;'</code>) marca les notes amb símbols de crida, els de <code>symbols</code> per ordre: &#42; † ‡ § ‖ ¶, després dobles (&#42;&#42; †† ‡‡…) i triples; aleshores les notes es tornen a comptar a cada pàgina tret que es fixi <code>numbering</code>. Des de postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>symbols</code></td>
+      <td><code>string[]</code></td>
+      <td><code>['&#42;', '†', '‡', '§', '‖', '¶']</code></td>
+      <td>La seqüència que escriu <code>numberFormat: 'symbols'</code>, doblada i després triplicada quan s'esgota. Els fitxers llatins de Google Fonts i Fontsource porten &#42; † § ¶ (la creu, a <code>latin-ext</code>) però ni ‡ ni ‖, que el PDF dibuixa llavors amb el glif <code>.notdef</code> de la font i un avís <code>missingGlyph</code>: amb una font així, traieu-los (<code>['&#42;', '†', '§', '¶']</code>) o componeu les notes en una font que els tingui. Les cadenes buides es descarten i una llista buida conserva la seqüència per defecte. Des de postext 1.19.</td>
+    </tr>
+    <tr>
+      <td><code>markerPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline' | 'side' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'superscript'</code> posa volats, a mida reduïda, la crida del text i el número que obre la nota. <code>'inline'</code> els compon sobre la línia de base: la crida a <code>markerSize</code>, el número de la nota a la mida de la nota; en text vertical, una crida en cercle en línia va dreta en una casella pròpia. <code>'right'</code> compon una crida reduïda arran del costat dret d'una línia vertical, com componen （1） els llibres verticals japonesos; en text horitzontal és una volada. <code>'side'</code> (合印) compon una crida petita al costat de la paraula marcada, al costat del seu ruby, que acaba on acaba l'últim caràcter de la paraula; no ocupa lloc a la línia, que es talla i es justifica com si no hi fos, i una interlínia massa estreta per a ella s'avisa amb <code>rubyExceedsLeading</code>. <code>'auto'</code> és en línia amb <code>circled-decimal</code>, <code>'right'</code> en un llibre japonès vertical i volada en els altres casos. En tots els casos la crida segueix el caràcter que la precedeix i mai no obre una línia.</td>
+    </tr>
+    <tr>
+      <td><code>markerSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code>; <code>0.6em</code> amb <code>'side'</code>, <code>0.7em</code> amb <code>'right'</code></td>
+      <td>Mida d'una crida en línia, lateral o a la dreta; <code>em</code> és la mida del text que l'envolta (<code>0.75em</code> és una reducció habitual). No afecta una crida volada.</td>
+    </tr>
+    <tr>
+      <td><code>numberGap</code></td>
+      <td><code>'en' | 'em'</code></td>
+      <td><code>'en'</code> (notes japoneses després del capítol: <code>'em'</code>)</td>
+      <td>L'espai després del número que obre una nota: un espai de mig quadratí o un quadratí sencer de la nota (un espai ideogràfic quan el número o la nota porten text CJK), que mai no s'estira ni es talla. Des de postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>markerTemplate</code></td>
+      <td><code>string</code></td>
+      <td><code>'&#123;n&#125;'</code> (llibres japonesos verticals: <code>'（&#123;n&#125;）'</code>)</td>
+      <td>Com s'escriu el número d'una nota; <code>&#123;n&#125;</code> el representa en el format de numeració i les xifres del document: <code>'(&#123;n&#125;)'</code> dona les crides entre parèntesis dels llibres àrabs, «(١)». Escriu igual la crida del text i el número que obre la nota. Una plantilla sense <code>&#123;n&#125;</code> es llegeix com el valor per defecte.</td>
+    </tr>
+    <tr>
+      <td><code>noteNumberPosition</code></td>
+      <td><code>'auto' | 'superscript' | 'inline'</code></td>
+      <td><code>'auto'</code></td>
+      <td>On va el número que obre la nota: volat, o sobre la línia a la mida de la nota. <code>'auto'</code> segueix <code>markerPosition</code>. Els llibres àrabs posen volada la crida del text i sobre la línia el número de la nota.</td>
+    </tr>
+    <tr>
+      <td><code>chapterEndAlign</code></td>
+      <td><code>'foot' | 'text'</code></td>
+      <td><code>'foot'</code></td>
+      <td>Amb <code>placement: 'chapterEnd'</code>: <code>'foot'</code> compon les notes que tanquen una columna al peu d'aquesta, amb les línies sobrants entre el text i les notes, igual que les notes al peu de columna. <code>'text'</code> les compon just sota el text.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Cos del text de les notes. <code>em</code> i <code>rem</code> són el cos del text. Les notes fan servir la família i els pesos del cos.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.25em</code></td>
+      <td>Interlineat de les notes; <code>em</code> és el cos de la nota. Les notes queden fora de la retícula de línies de base: s'apilen des del peu de la columna i el text de sobre continua a la retícula.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cos</td>
+      <td>Color del text de les notes.</td>
+    </tr>
+    <tr>
+      <td><code>textAlign</code></td>
+      <td><code>TextAlign</code></td>
+      <td>alineació del cos</td>
+      <td>Alineació del text de les notes.</td>
+    </tr>
+    <tr>
+      <td><code>hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Sagnat de la segona línia i següents d'una nota, per alinear-les després del seu número.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBetween</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Espai entre dues notes.</td>
+    </tr>
+    <tr>
+      <td><code>spaceAbove</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>Espai entre l'última línia de text i el filet; <code>em</code> és el cos del text. Amb <code>'chapterEnd'</code> i <code>chapterEndAlign: 'text'</code>, <code>spaceAbove</code> + <code>spaceBelowRule</code> és l'espai entre el text i la primera nota.</td>
+    </tr>
+    <tr>
+      <td><code>spaceBelowRule</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.4em</code></td>
+      <td>Espai entre el filet i la primera nota.</td>
+    </tr>
+    <tr>
+      <td><code>separator.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dibuixar el filet sobre les notes de cada columna. Amb <code>false</code> els espais de sobre es mantenen.</td>
+    </tr>
+    <tr>
+      <td><code>separator.width</code></td>
+      <td><code>number</code></td>
+      <td><code>0.3</code></td>
+      <td>Longitud del filet com a fracció de l'amplada de la columna (0–1), des de la seva vora esquerra.</td>
+    </tr>
+    <tr>
+      <td><code>separator.lineWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5pt</code></td>
+      <td>Gruix del filet.</td>
+    </tr>
+    <tr>
+      <td><code>separator.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color de les notes</td>
+      <td>Color del filet.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+footnotes: {
+  fontSize: { value: 7.5, unit: 'pt' },
+  lineHeight: { value: 9.5, unit: 'pt' },
+  hangingIndent: { value: 0.8, unit: 'em' },
+  separator: { width: 0.25, lineWidth: { value: 0.4, unit: 'pt' } },
+}
+```
+
+**Llibres japonesos.** Un document japonès (`locale: 'ja'`, des de postext 1.16) dona als camps que deixa sense fixar els valors de JLReq §4.2. Un llibre vertical compon les notes després del capítol (`placement: 'chapterEnd'`, 後注), numerades per capítol, amb crides `（{n}）` a la dreta de la línia (`markerPosition: 'right'`, amb les xifres dretes segons `cjk.uprightDigits`); un d'horitzontal les compon al peu de la pàgina, numerades a cada pàgina, amb crides volades. Tots dos tracen el filet amb un terç de la mesura (`separator.width: 1/3`), i les notes després del capítol porten `numberGap: 'em'` i un sagnat francès de dos quadratins. Un valor explícit mana i es conserva en desar (`stripFootnotesDefaults` compara amb els valors per defecte del mateix document); els documents xinesos, àrabs i llatins es resolen com abans. `footnoteDocumentDefaults(locale, writingMode, placement?)` retorna aquests valors. La crida s'escriu davant d'un 。 que tanca la frase (`先生[^1]。`): es queda amb el caràcter anterior, i 。 mai no obre una línia. Vegeu [Composició japonesa › Notes](/ca/docs/japanese-layout#notes).
+
+Com es componen les notes al peu de columna:
+
+- **La nota i la seva crida comparteixen columna.** Abans de col·locar una línia, la maquetació suma l'alçada de les notes que aquella línia cita per primer cop (i la del filet, en la primera nota de la columna). Una línia les notes de la qual no caben a sota passa a la columna següent amb la resta del seu paràgraf, segons les regles de vídues i òrfenes. L'àrea de text de la columna s'escurça en l'alçada de les notes, de manera que l'equilibrat de columnes i la banda de tancament d'un capítol només compten el text.
+- **Diverses notes** en una columna s'apilen en l'ordre de cita sota un únic filet. Una nota citada de nou més endavant conserva el seu número i no es torna a compondre.
+- **Flotants al peu.** Una figura que ocupa el peu d'una columna després que les seves notes s'hagin compost queda damunt d'elles; les notes compostes després de la figura queden damunt d'ella.
+- **Requadres.** Una nota citada dins d'un requadre (en línia, flotant o fix) va al peu de la columna on continua el text després del requadre, normalment la mateixa. Un requadre que tanca el document deixa les seves notes al peu de la columna on ha acabat el text.
+- **Límits.** Una nota mai no es parteix: una de més alta que la columna la desborda. Les crides en peus de figura, cel·les de taula i títols no es llegeixen (s'imprimeixen tal qual).
+- **Sortida.** El canvas, l'HTML i el PDF pinten les notes, les crides (un número volat) i el filet. Al PDF cada crida enllaça amb la seva nota, i un PDF etiquetat marca cada nota com a element `Note` amb un `/ID` únic llistat a l'`/IDTree` de l'arbre d'estructura (PDF/UA-1). Les notes són `VDTBlock` amb `footnoteNote`, a `page.floats`; els filets són a `page.footnoteAreas`.
+- **Avisos.** `undefinedFootnote` (una crida sense definició: el número s'imprimeix sobre una nota buida) i `unusedFootnote` (una definició que cap crida no cita: no es compon).
+
+El resolutor i el depurador segueixen el patró de les altres seccions:
+
+```ts
+import { DEFAULT_FOOTNOTES_CONFIG, resolveFootnotesConfig, stripFootnotesDefaults, footnoteDocumentDefaults } from 'postext';
+
+resolveFootnotesConfig(config.footnotes, 'ja', 'vertical-rl'); // els camps sense fixar prenen els valors japonesos verticals
+```
+
+
+## Numeració de línies
+
+La propietat `lineNumbers` imprimeix al marge el número de cada cinquena línia (o de cada enèsima), al seu costat, com fan les edicions crítiques, les antologies de poesia, els textos legals i les edicions escolars. Compta els versos dels poemes `:::verse`, o totes les línies del text. Està desactivada per defecte. Cada número es pinta sobre la línia de base de la seva línia, amb un cos propi, i no mou mai cap línia: la pàgina es compon exactament igual que sense números. Des de postext 1.23.
+
+```ts
+interface LineNumbersConfig {
+  enabled?: boolean;        // Desactivada per defecte.
+  count?: 'verse' | 'all';  // Els versos dels poemes, o totes les línies del text.
+  interval?: number;        // Imprimir els múltiples de N.
+  numberFirst?: boolean;    // Imprimir també la primera línia després de cada reinici.
+  restart?: 'document' | 'chapter' | 'section' | 'page' | 'poem'; // On torna a començar el compte.
+  startAt?: number;         // El número de la primera línia després d'un reinici.
+  position?: 'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side';
+  multiColumn?: 'each' | 'gutter' | 'outer-edges'; // Pàgines de dues columnes o més.
+  gap?: Dimension;          // Del text al número; em és el cos del número.
+  align?: 'auto' | 'left' | 'right';
+  fontFamily?: string;      // La família del cos si no es fixa.
+  fontSize?: Dimension;     // em és el cos del text.
+  fontWeight?: number;      // El pes del cos si no es fixa.
+  italic?: boolean;
+  color?: ColorValue;       // El color del cos si no es fixa.
+  format?: string;          // decimal, lower-roman, arabic-indic, 一…
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Propietat</th>
+      <th style={{ width: '200px' }}>Tipus</th>
+      <th style={{ width: '160px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Imprimeix els números de línia. Un document vertical (<code>layout.writingMode: 'vertical-rl'</code>) no en porta cap, i un <code>true</code> en un document així s'avisa com a <code>lineNumbersUnsupported</code>.</td>
+    </tr>
+    <tr>
+      <td><code>count</code></td>
+      <td><code>'verse' | 'all'</code></td>
+      <td><code>'verse'</code></td>
+      <td><code>'verse'</code> compta els versos dels poemes <code>:::verse</code>, cada vers una vegada: la part d'un vers massa llarg per a la caixa que passa a la línia següent no porta número, i l'espai entre estrofes no es compta. Un poema compost a la manera àrab clàssica compta una línia per bayt; la segona línia d'un bayt esglaonat no es compta. <code>'all'</code> compta totes les línies dels paràgrafs del cos, dels elements de llista, de les citacions i dels versos, en ordre de lectura: pàgina a pàgina, columna a columna, de dalt a baix.</td>
+    </tr>
+    <tr>
+      <td><code>interval</code></td>
+      <td><code>number</code></td>
+      <td><code>5</code></td>
+      <td>Imprimeix el número de cada línia que és múltiple d'aquest (5, 10, 15…). Un poema el primer vers del qual és el 37 imprimeix 40, 45… L'obertura d'un poema pot fixar-ne un de propi (<code>interval=N</code>).</td>
+    </tr>
+    <tr>
+      <td><code>numberFirst</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Imprimeix també el número de la primera línia comptada després de cada reinici.</td>
+    </tr>
+    <tr>
+      <td><code>restart</code></td>
+      <td><code>'document' | 'chapter' | 'section' | 'page' | 'poem'</code></td>
+      <td><code>'poem'</code> amb <code>count: 'verse'</code>, <code>'page'</code> amb <code>count: 'all'</code></td>
+      <td>On torna a començar el compte: mai (<code>'document'</code>, que continua per tots els capítols d'un llibre), a cada encapçalament de nivell 1 (<code>'chapter'</code>), a cada encapçalament de nivell 1 o 2 (<code>'section'</code>), a cada pàgina (<code>'page'</code>) o a cada poema <code>:::verse</code> (<code>'poem'</code>). El <code>lineStart=N</code> d'un poema i el <code>lines=N</code> de la directiva <code>:::numbering</code> el reinicien en qualsevol punt, sigui quin sigui el mode.</td>
+    </tr>
+    <tr>
+      <td><code>startAt</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>El número de la primera línia després d'un reinici.</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'outer' | 'inner' | 'left' | 'right' | 'start' | 'end' | 'side'</code></td>
+      <td><code>'outer'</code></td>
+      <td>El costat on van els números. <code>'outer'</code> és el costat oposat al llom: la dreta d'una pàgina senar i l'esquerra d'una de parell, al revés en un llibre enquadernat per la dreta. <code>'inner'</code> és el costat del llom. <code>'left'</code> i <code>'right'</code> són el mateix a totes les pàgines. <code>'start'</code> i <code>'end'</code> segueixen la direcció del document: <code>'start'</code> és la dreta en un llibre de dreta a esquerra. <code>'side'</code> els posa a la columna lateral d'una disposició <code>'oneAndHalf'</code> amb <code>layout.sideColumnRole: 'floats'</code>, contra la vora de la columna lateral que dona al text (<code>gap</code> no s'usa); en una pàgina sense columna lateral torna a <code>'outer'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>multiColumn</code></td>
+      <td><code>'each' | 'gutter' | 'outer-edges'</code></td>
+      <td><code>'outer-edges'</code></td>
+      <td>Pàgines amb dues columnes de text o més, l'una al costat de l'altra. <code>'outer-edges'</code> posa els números de la primera columna a la seva esquerra i els de l'última a la seva dreta; les columnes del mig segueixen <code>'each'</code>. <code>'gutter'</code> els posa als intercolumnis: els de la primera columna a la seva dreta, els de les altres a la seva esquerra. <code>'each'</code> posa els de cada columna al costat de <code>position</code>.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>La distància de la vora de la columna al número; <code>em</code> és el cos del número mateix.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'auto' | 'left' | 'right'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> alinea cada número cap al text: a la dreta en un marge esquerre, a l'esquerra en un de dret. <code>'left'</code> i <code>'right'</code> alineen els números dins l'amplada del número més ample de la pàgina.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>família del cos</td>
+      <td>Tipus de lletra dels números. Es carrega i s'incrusta com qualsevol altra família.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.8em</code></td>
+      <td>Cos dels números; <code>em</code> és el cos del text.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>pes del cos</td>
+      <td>Pes dels números.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compon els números en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>color del cos</td>
+      <td>Color dels números. Un color enllaçat a la paleta segueix les paletes de parts i seccions.</td>
+    </tr>
+    <tr>
+      <td><code>format</code></td>
+      <td><code>string</code></td>
+      <td>decimal</td>
+      <td>Com s'escriuen els números, amb qualsevol de les <a href="/ca/docs/configuration-page-layout#grafies-dels-formats-de-numeració">grafies dels formats de numeració</a> (<code>'lower-roman'</code>, <code>'arabic-indic'</code>, <code>'一'</code>…). Els números decimals s'escriuen amb les xifres del document (<code>numerals</code>). Un nom desconegut numera en decimal, amb un avís <code>unknownNumberFormat</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+lineNumbers: {
+  enabled: true,
+  count: 'verse',
+  interval: 5,
+  restart: 'document',          // un sol compte per a tot el llibre
+  position: 'outer',
+  fontSize: { value: 0.75, unit: 'em' },
+  italic: true,
+}
+```
+
+Què es compta i què no:
+
+- **No es compten mai** els encapçalaments, els peus, les taules i les imatges, les fórmules en bloc, el text de disseny (obertures, capçaleres), les notes a peu de pàgina i les notes de final de capítol, l'índex de continguts, les entrades de l'índex alfabètic i de la bibliografia, ni les pàgines en blanc.
+- **Requadres i prosa.** El text d'un requadre no es compta, i amb `count: 'verse'` tampoc la prosa, llevat que l'estil de paràgraf amb què es compon digui `lineNumbers: true`; un estil amb `lineNumbers: false` no es compta mai (vegeu [Estils de paràgraf](/ca/docs/configuration-styles#estils-de-paràgraf)).
+- **Un poema.** L'obertura d'un poema admet `numbered=false` (els seus versos no es compten), `lineStart=N` (el seu primer vers és l'N, i el compte torna a començar aquí) i `interval=N`. `:::numbering{lines=N}` dona el número N a la línia comptada següent, sigui on sigui. Vegeu [Format del document › `:::verse`](/ca/docs/document-format#verse) i [`:::numbering`](/ca/docs/document-format#numbering).
+
+En un llibre compost capítol a capítol, `restart: 'document'` porta el compte d'un capítol al següent a `continuation.lineNumber`. `continuationAfter` compta els versos a partir del text; amb `count: 'all'` el compte depèn de la composició, així que l'aplicació passa el `lastLineNumber` del document del capítol anterior, com fa el Sandbox.
+
+Amb `position: 'side'` els números comparteixen la columna lateral amb els requadres, els peus i les figures laterals. Un número que se superposa a un d'ells es pinta igualment, cap dels dos no es mou, i la composició dona un avís de contingut `lineNumberOverlap` que assenyala la línia numerada.
+
+**Sortida.** El canvas, el PDF, el visor HTML i l'EPUB de maquetació fixa pinten els números. En un PDF etiquetat són artefactes de paginació i cadascun porta un `/ActualText` buit, de manera que el text copiat o extret passa d'una línia a l'altra sense ells. La sortida HTML els amaga a les tecnologies d'assistència (`aria-hidden`), a la selecció i al text copiat. L'EPUB de maquetació fluida, les línies del qual compon el sistema de lectura, conserva només els números dels versos: un `span` `pt-line-number` (també `aria-hidden`) al marge inicial de l'estrofa, al costat de cada vers que porta número a la versió impresa. Al VDT els números són una ranura de disseny de cada pàgina (`page.lineNumbers`, amb els blocs de text marcats `artifact`) i una llista de marques (`page.lineNumberMarks`: `number`, `label`, `columnIndex`, `blockId`, `lineIndex`); el document desa `lastLineNumber`.
+
+**No s'admeten**: números de línia en text vertical, una referència creuada que imprimeixi el número d'una línia, notes enllaçades a números de línia, ni números per a les línies de cel·les de taula, peus o llistats de codi.
+
+Al Sandbox aquests ajustos són la secció **Numeració de línies** del tauler de disseny. El resolutor i el depurador segueixen el patró de les altres seccions; la font, el pes i el color surten del text de cos:
+
+```ts
+import { DEFAULT_LINE_NUMBERS_CONFIG, resolveLineNumbersConfig, stripLineNumbersDefaults } from 'postext';
+
+resolveLineNumbersConfig(config.lineNumbers, resolvedBodyText); // font, pes i color sense fixar segueixen el cos
+```
+
+
+## Referències creuades
+
+La propietat `crossRefs` fixa les paraules que una [referència creuada](/ca/docs/document-format#referències-creuades-i-àncores) imprimeix al voltant d'un número o d'una pàgina, i l'estil que pren un `:ref` que no n'indica cap. Cada plantilla porta `{n}` on va el número; una que no el porta rep el número després d'un espai no separable (`"§"` imprimeix *§ 3.2*). Una plantilla sense definir segueix la llengua del document: *capítulo / sección / pág.* en castellà, *chapter / section / p.* en anglès, `第{n}章` / `第{n}节` / `第{n}页` en xinès, i el mateix per al francès, l'alemany, l'italià, el portuguès, el català i el neerlandès.
+
+```ts
+interface CrossRefsConfig {
+  chapter?: string;  // Words around a level-1 heading's number: "chapter {n}".
+  section?: string;  // Around any other heading's number: "section {n}".
+  page?: string;     // Around a page number: "p. {n}".
+  defaultStyle?: 'default' | 'number' | 'title' | 'page'; // A :ref without style=.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propietat</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '160px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>chapter</code></td>
+      <td><code>string</code></td>
+      <td>segons la llengua</td>
+      <td>Una referència a un títol de nivell 1: <code>"capítulo &#123;n&#125;"</code>. Un número la plantilla del qual ja escriu la paraula (<code>Capítulo &#123;1&#125;</code>, <code>第&#123;1:一&#125;章</code>) s'imprimeix tal qual.</td>
+    </tr>
+    <tr>
+      <td><code>section</code></td>
+      <td><code>string</code></td>
+      <td>segons la llengua</td>
+      <td>Una referència a un títol de nivell 2 a 6: <code>"sección &#123;n&#125;"</code>, <code>"§ &#123;n&#125;"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>page</code></td>
+      <td><code>string</code></td>
+      <td>segons la llengua</td>
+      <td>Una referència de pàgina (<code>style=page</code>): <code>"pág. &#123;n&#125;"</code>, <code>"página &#123;n&#125;"</code>.</td>
+    </tr>
+    <tr>
+      <td><code>defaultStyle</code></td>
+      <td><code>'default' | 'number' | 'title' | 'page'</code></td>
+      <td><code>'default'</code></td>
+      <td>El que imprimeix un <code>:ref</code> a un títol o a una àncora sense <code>style=</code>. <code>'default'</code>: un títol numerat amb la seva paraula i el seu número, un sense número amb el seu títol, una àncora amb el seu text. Una referència que indica <code>style</code> el conserva, i les referències a figures i taules no canvien.</td>
+    </tr>
+  </tbody>
+</table>
+
+Les referències prenen el color, el pes i la inclinació de totes les referències (`bodyText.referenceColor`, `referenceBold`, `referenceItalic`).
+
+## Cites
+
+La propietat `citations` tria l'estil de cita i com es veuen les cites i la bibliografia. El marcatge es descriu a [Cites i bibliografia](/ca/docs/document-format#citacions-i-bibliografia); l'estil l'aplica el paquet `postext-citeproc`.
+
+```ts
+interface CitationsConfig {
+  style?: string;          // 'apa', 'ieee', 'chicago-notes-bibliography'… or 'custom'
+  customStyle?: string;    // a whole CSL style (.csl XML), used with style: 'custom'
+  locale?: string;         // CSL locale; the document language when unset
+  link?: boolean;          // citations link to their entries
+  marker?: 'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner';
+  collapseRanges?: boolean;
+  notes?: 'footnote' | 'warichu';
+  numbering?: 'book' | 'chapter';
+  bibliography?: {
+    title?: string;        // unset: the document language's word; '' or ' ': none
+    scope?: 'book' | 'chapter';
+    auto?: boolean;
+    fontSize?: Dimension;
+    lineHeight?: Dimension;
+    hangingIndent?: Dimension;
+    entrySpacing?: Dimension;
+    labelWidth?: Dimension;
+    labelAlign?: 'left' | 'right';
+    doi?: 'link' | 'text' | 'hide';
+    includeUncited?: boolean;
+    groupByLanguage?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>string</code></td>
+      <td><code>'apa'</code></td>
+      <td>L'id d'un estil inclòs (vegeu <a href="/ca/docs/document-format#estils">Estils</a>) o <code>'custom'</code>. L'estil decideix el que diuen les cites i les entrades: noms, dates, ordre, puntuació i si les cites són notes.</td>
+    </tr>
+    <tr>
+      <td><code>customStyle</code></td>
+      <td><code>string</code></td>
+      <td>—</td>
+      <td>Un estil CSL complet, l'XML d'un fitxer <code>.csl</code>, que es fa servir quan <code>style</code> és <code>'custom'</code>. El Sandbox el carrega des d'un fitxer.</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>llengua del document</td>
+      <td>La configuració regional CSL en què l'estil escriu les seves paraules (<code>es-ES</code>, <code>en-US</code>, <code>zh-CN</code>, <code>ja-JP</code>…). Un document japonès es llegeix com a <code>ja-JP</code>: les citacions narratives uneixen dos autors amb と i abreugen els altres amb ほか.</td>
+    </tr>
+    <tr>
+      <td><code>link</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Una cita enllaça amb la seva entrada a la bibliografia (enllaç al PDF, àncora a l'HTML, clic al Sandbox).</td>
+    </tr>
+    <tr>
+      <td><code>marker</code></td>
+      <td><code>'style' | 'brackets' | 'parentheses' | 'superscript' | 'corner'</code></td>
+      <td><code>'style'</code></td>
+      <td>Com marca la cita un estil numèric: com l'escriu l'estil, <code>[1]</code>, <code>(1)</code>, en superíndex o <code>〔1〕</code> (dret en text vertical). El localitzador va després del número.</td>
+    </tr>
+    <tr>
+      <td><code>collapseRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Números seguits com a interval: <code>1–3</code> amb una marca pròpia, <code>[2]–[4]</code> amb la d'IEEE. <code>false</code> els deixa separats.</td>
+    </tr>
+    <tr>
+      <td><code>notes</code></td>
+      <td><code>'footnote' | 'warichu'</code></td>
+      <td><code>'footnote'</code></td>
+      <td>On posa les seves cites un estil de notes: notes a peu de pàgina (com diu <code>footnotes</code>) o notes de dues línies dins del rengle (夹注).</td>
+    </tr>
+    <tr>
+      <td><code>numbering</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>Les citacions al llarg del llibre, o cada capítol pel seu compte (cada document, i cada encapçalament de nivell 1 després d'una citació): un estil numèric numera cada capítol des d'1 i una obra citada en dos capítols pren el número de cadascun; un estil de notes escriu l'obra completa a la seva primera citació de cada capítol. Pensat per a <code>bibliography.scope: 'chapter'</code>, les llistes del qual prenen llavors els números del capítol.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.title</code></td>
+      <td><code>string</code></td>
+      <td>segons la llengua</td>
+      <td>Títol sobre la llista, un paràgraf en negreta. En blanc: cap. Un títol propi va sobre <code>:::bibliography</code>.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.scope</code></td>
+      <td><code>'book' | 'chapter'</code></td>
+      <td><code>'book'</code></td>
+      <td>Una llista amb totes les obres que cita el llibre, o una per capítol amb les que cita cadascun. En un document de diversos capítols cada H1 comença una llista nova; amb <code>auto</code>, un capítol que no col·loca el seu <code>:::bibliography</code> rep la llista al final.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.auto</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Posa la llista després del text (després de l'últim capítol, si abasta tot el llibre) quan cap <code>:::bibliography</code> no la situa.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>Mida de les entrades; em és la mida del text.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>interlineat del text</td>
+      <td>Interlineat de les entrades.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.hangingIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>Sagnat de les línies següents d'una entrada sense número.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.3em</code></td>
+      <td>Espai entre dues entrades.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td>rètol més llarg</td>
+      <td>Amplada de la columna dels números d'una llista numerada: el text de cada entrada comença a aquesta distància, tant en la primera línia com en les següents, de manera que <code>9.</code> i <code>10.</code> comparteixen la columna. El número continua formant part del text de l'entrada.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.labelAlign</code></td>
+      <td><code>'left' | 'right'</code></td>
+      <td><code>'left'</code></td>
+      <td>On es col·loca el número a la seva columna: contra la vora esquerra o contra el text (<code>9.</code> i <code>10.</code> acaben alhora).</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.doi</code></td>
+      <td><code>'link' | 'text' | 'hide'</code></td>
+      <td><code>'link'</code></td>
+      <td>DOI i URL com a enllaços, com a text o fora.</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.includeUncited</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Llista totes les referències, citades o no (com <code>nocite: "@*"</code>).</td>
+    </tr>
+    <tr>
+      <td><code>bibliography.groupByLanguage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Primer les obres en xinès, japonès i coreà; després les altres. Només en estils autor-data i autor-pàgina: una llista numerada conserva l'ordre dels seus números.</td>
+    </tr>
+  </tbody>
+</table>
+## Índex de continguts
+
+La propietat `toc` configura el que imprimeix una directiva `:::toc` (vegeu [Format del document](/ca/docs/document-format#toc)). L'índex es munta a partir de l'**esquema** del document — cada encapçalament amb el seu número i la seva etiqueta de pàgina, cada `:::part` — de manera que segueix els capítols: canvia el nom d'un, mou-lo a una altra part, canvia'n els autors, i les entrades canvien amb ell. Una entrada és el número de l'encapçalament en una columna pròpia, el títol, una línia de punts i l'etiqueta de pàgina a la vora dreta, i després una línia de subtítol opcional; una part és una fila dissenyada per `parts.design`.
+
+```ts
+const config: PostextConfig = {
+  toc: {
+    levels: [{ level: 1, fontWeight: 700, color: { hex: '#00507b', model: 'hex' }, numberWidth: { value: 7.4, unit: 'mm' } }],
+    unnumbered: { color: { hex: '#000000', model: 'hex' } },
+    pageNumber: { fontWeight: 400, width: { value: 8, unit: 'mm' } },
+    leader: { char: '.', gap: { value: 1, unit: 'mm' } },
+    subtitle: { enabled: true, attr: 'author', italic: true, fontSize: { value: 8.5, unit: 'pt' } },
+    parts: {
+      height: { value: 23, unit: 'pt' },
+      marginTop: { value: 11.5, unit: 'pt' },
+      design: { elements: [/* una caixa de banda, 'SECCIÓ {number}', '{titleText}', '{pageNumber}' */] },
+    },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>levels</code></td>
+      <td><code>TocLevelConfig[]</code></td>
+      <td>nivell 1</td>
+      <td>Nivells d'encapçalament llistats, cadascun amb la tipografia de les seves entrades: <code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code> (per defecte l'interlineat del cos, perquè l'índex caigui a la retícula), <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>indent</code> (de tota l'entrada), <code>numberWidth</code> / <code>numberGap</code> (la columna de números després de la qual comença el títol; els números s'hi alineen a la dreta, i un número més ample que <code>numberWidth</code>, com <code>الفصل الحادي عشر</code> o <code>Capítol 12</code>, eixampla la columna del seu nivell fins al més ample), <code>numberFontFamily</code>, <code>numberFontSize</code>, <code>numberFontWeight</code>, <code>numberColor</code>, <code>marginTop</code>, <code>marginBottom</code>. Els camps sense fixar hereten el text de cos. El número s'assenta a la línia de base de la primera línia del títol, siguin quins siguin la seva font i el seu cos, al llenç, a l'HTML i al PDF (fins a postext 1.4 es centrava a l'altura de la x com un pic, de manera que una font de retolació o un cos més gran quedaven per sobre del títol). Un renderitzador propi troba aquesta línia de base al <code>bulletBaselineY</code> del bloc de l'entrada; <code>bulletY</code> continua sent el centre vertical del quadratí del número, com a la 1.4, de manera que un renderitzador anterior a aquest camp dibuixa els números on sempre.</td>
+    </tr>
+    <tr>
+      <td><code>unnumbered</code></td>
+      <td><code>TocEntryStyleConfig</code></td>
+      <td>—</td>
+      <td>Sobreescriptures per als encapçalaments l'estil dels quals declara <code>numbered: false</code> (un pròleg): no imprimeixen número i comencen arran a l'<code>indent</code> del nivell.</td>
+    </tr>
+    <tr>
+      <td><code>pageNumber</code></td>
+      <td>objecte</td>
+      <td>font del nivell 1, pes del cos</td>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code> de l'etiqueta de pàgina, i <code>width</code> (per defecte <code>2em</code>): la columna que se li reserva a la vora dreta, on s'alinea a la dreta.</td>
+    </tr>
+    <tr>
+      <td><code>leader</code></td>
+      <td>objecte</td>
+      <td><code>{"{ enabled: true, char: '.', gap: 0.5em }"}</code></td>
+      <td><code>char</code> es repeteix al llarg del buit entre el títol i el número de pàgina, alineat a la dreta perquè els punts d'entrades consecutives quedin en línia (<code>'. '</code> els espaia); <code>gap</code> és el buit mínim entre el títol i la línia de punts. La línia porta tants caràcters com hi caben, mesurada com una tira sencera en la seva font, de manera que una font que separa amb el kerning els punts seguits posa menys punts en lloc de punts que arribin al número de pàgina. (Fins a postext 1.4 el compte sortia d'un sol punt, i amb una font així la línia de punts anava del títol fins a muntar-se sobre el número). Un títol que no deixés lloc a l'etiqueta salta de línia una mica abans. En un PDF etiquetat els punts són artefactes, que el text extret omet. El text de cos posa els mateixos farciments a les seves <a href="/ca/docs/configuration-text#tabulacions">tabulacions</a>.</td>
+    </tr>
+    <tr>
+      <td><code>subtitle</code></td>
+      <td>objecte</td>
+      <td><code>{"{ enabled: false, attr: 'author' }"}</code></td>
+      <td>Una segona línia sota l'entrada presa d'un atribut de l'encapçalament (<code>attr</code>) — els autors del capítol — amb els seus propis <code>fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code> (per defecte <code>true</code>), <code>color</code> i <code>indent</code> addicional. La línia comparteix l'interlineat de l'entrada i mai no se separa del seu títol.</td>
+    </tr>
+    <tr>
+      <td><code>parts.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si els separadors de part reben una fila.</td>
+    </tr>
+    <tr>
+      <td><code>parts.breakBefore</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Obre una pàgina nova abans de cada fila de part excepte la primera, de manera que els capítols de cada part es llisten en una pàgina pròpia.</td>
+    </tr>
+    <tr>
+      <td><code>parts.design</code></td>
+      <td><code>DesignSlot</code></td>
+      <td>buit</td>
+      <td>Disseny de la fila; el seu contenidor és la fila (amplada de columna × <code>height</code>). Marcadors: <code>{'{number}'}</code>, <code>{'{numberDecimal}'}</code>, <code>{'{numberRoman}'}</code>…, <code>{'{titleText}'}</code> i <code>{'{pageNumber}'}</code> (l'etiqueta de la pàgina de part; amb <code>parts.page: false</code>, que no obre pàgina de part, l'etiqueta de la pàgina on comença el contingut de la part, on les capçaleres passen a la part; en un llibre maquetat capítol a capítol, una tanca que clou el seu capítol apunta a la primera pàgina amb contingut del capítol següent). Els colors lligats a la paleta prenen la <code>palette</code> de la mateixa part, així que la fila de cada secció surt amb el seu color. Buit, es componen <code>{'{number} {titleText}'}</code> (separats pel <code>numberSeparator</code> de l'H1) i el número de pàgina amb la tipografia de les entrades de nivell 1.</td>
+    </tr>
+    <tr>
+      <td><code>parts.height</code>, <code>marginTop</code>, <code>marginBottom</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code>, <code>0</code>, <code>0</code></td>
+      <td>Alçada de la fila i espai al seu voltant. <code>em</code> és el cos del text, així que la fila per defecte fa el doble del cos, no dues línies de text: amb un text de 9,5/13,5 pt fa 19 pt. Per a una fila de dues línies de text, dona l'alçada en <code>pt</code> (<code>27pt</code> en aquest cas).</td>
+    </tr>
+  </tbody>
+</table>
+
+Les etiquetes de pàgina són les que imprimeix el document. `buildDocument()` torna a compondre un document amb `:::toc` amb les etiquetes de la passada anterior fins que s'estabilitzen (tres passades addicionals com a màxim); un amfitrió que compon un llibre capítol a capítol subministra en lloc d'això l'esquema del llibre sencer com a `PostextContent.outline`, muntat amb `contentOutline()` (encapçalaments i parts a partir del text) i `outlineFromDoc()` (les mateixes entrades amb les etiquetes de pàgina d'una composició), i torna a compondre el capítol de l'índex cada vegada que canvia l'`outlineKey()` d'aquest esquema. Cada entrada d'encapçalament porta el `number` que imprimeix l'índex i, en un encapçalament numerat, el seu `counter`: el compte acumulat del nivell després de qualsevol `startAt`, imprimeixi el que imprimeixi la plantilla — el que un amfitrió mostra al costat d'un capítol a les seves pròpies llistes.
+
+## Índex analític
+
+La propietat `index` configura el que imprimeix una directiva `:::index` (vegeu [Format del document](/ca/docs/document-format#índex-analític)): els termes marcats amb `:index[…]` i `:index{term="…"}` al text, ordenats, agrupats per inicial (en xinès, per la inicial del pinyin o per traços, i en japonès per files del gojūon; vegeu `groupBy`) i cadascun amb les pàgines on cau. Una entrada és el seu terme, un separador i els seus números de pàgina; al darrere van les seves subentrades, amb un pas de sagnat per nivell, i les línies que continuen una entrada pengen `turnoverIndent` per no alinear-se mai amb una subentrada.
+
+```ts
+const config: PostextConfig = {
+  headingStyles: [
+    // L'índex a dues columnes, sota el seu propi encapçalament.
+    { id: 'indice', numbered: false, layout: { layoutType: 'double', gutterWidth: { value: 6, unit: 'mm' } } },
+  ],
+  index: {
+    fontSize: { value: 8.5, unit: 'pt' },
+    lineHeight: { value: 11, unit: 'pt' },
+    rangeFormat: 'chicago',
+    groups: { fontFamily: 'Source Sans 3', fontWeight: 700, color: { hex: '#8a1c1c', model: 'hex' } },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>color</code></td>
+      <td>—</td>
+      <td>el text de cos</td>
+      <td>Tipografia de les entrades. Totes les línies de l'índex, lletres de grup incloses, es componen sobre <code>lineHeight</code>; l'índex porta el seu propi ritme i no s'ajusta a la retícula de base.</td>
+    </tr>
+    <tr>
+      <td><code>indent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1em</code></td>
+      <td>Sagnat de cada nivell de subentrada.</td>
+    </tr>
+    <tr>
+      <td><code>turnoverIndent</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2em</code></td>
+      <td>Sagnat addicional de les línies que continuen una entrada, més enllà del seu nivell.</td>
+    </tr>
+    <tr>
+      <td><code>entrySpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>Espai sobre cada entrada principal.</td>
+    </tr>
+    <tr>
+      <td><code>separator</code>, <code>locatorSeparator</code>, <code>rangeSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>', '</code>, <code>', '</code>, <code>'–'</code>; les dues primeres, <code>'، '</code> en escriptura àrab</td>
+      <td>El que s'imprimeix entre el terme i la seva primera pàgina, entre dues pàgines i entre els extrems d'un interval.</td>
+    </tr>
+    <tr>
+      <td><code>mergeRanges</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Uneix en un interval les pàgines consecutives d'un mateix format de numeració: <code>12, 13, 14</code> s'imprimeix <code>12–14</code>. Les pàgines principals no s'uneixen mai.</td>
+    </tr>
+    <tr>
+      <td><code>rangeFormat</code></td>
+      <td><code>'full' | 'chicago'</code></td>
+      <td><code>'full'</code></td>
+      <td>Com s'escriu el segon número d'un interval: complet (<code>234–237</code>) o sense les xifres que comparteix amb el primer, com demana el <em>Manual d'estil de Chicago</em> (9.64): <code>71–72</code>, <code>100–104</code>, <code>101–8</code>, <code>321–28</code>, <code>1496–500</code>. Les etiquetes romanes s'escriuen sempre completes.</td>
+    </tr>
+    <tr>
+      <td><code>main</code></td>
+      <td><code>{'{ bold?, italic? }'}</code></td>
+      <td>negreta</td>
+      <td>Com es compon una pàgina principal (<code>main</code> a la marca).</td>
+    </tr>
+    <tr>
+      <td><code>see</code></td>
+      <td><code>{'{ label?, alsoLabel?, italic? }'}</code></td>
+      <td>segons la llengua, en cursiva (rodona en escriptura àrab)</td>
+      <td>Les paraules que precedeixen una remissió. Sense fixar, segueixen la llengua del document: <em>Véase</em> / <em>Véase también</em>, <em>See</em> / <em>See also</em>, <em>Voir</em> / <em>Voir aussi</em>, 见 / 另见 (見 / 另見 en xinès tradicional)… Un índex en xinès posa la remissió després d'un punt i sense espai: <code>贾琏 12。见贾政</code>.</td>
+    </tr>
+    <tr>
+      <td><code>locale</code></td>
+      <td><code>string</code></td>
+      <td>el del document</td>
+      <td>La llengua l'ordre alfabètic de la qual ordena les entrades (una etiqueta BCP 47, que llegeix <code>Intl.Collator</code>). En castellà la <em>ñ</em> va després de la <em>n</em> i encapçala un grup propi; els accents no alteren l'ordre.</td>
+    </tr>
+    <tr>
+      <td><code>groupBy</code></td>
+      <td><code>'auto' | 'letter' | 'pinyin' | 'stroke' | 'gojuon' | 'kana' | 'none'</code></td>
+      <td><code>'auto'</code></td>
+      <td>Què encapçala cada grup. <code>'letter'</code>: la primera lletra de la clau d'ordenació. <code>'pinyin'</code>: una entrada que comença per un caràcter han va sota la inicial llatina de la seva lectura en pinyin (贾宝玉 sota <code>J</code>), i una clau d'ordenació llatina sota la seva lletra, darrere de les entrades xineses d'aquesta lletra (l'ordenador de cadenes posa les lletres llatines després dels caràcters xinesos): <code>sort="jia mu"</code> tanca la <code>J</code>. <code>'stroke'</code>: sota el nombre de traços del primer caràcter, <code>一畫</code>, <code>二畫</code>… (<code>一画</code>… en xinès simplificat). <code>'gojuon'</code>: una entrada en kana va sota la seva fila del gojūon, あ行, か行 … わ行, i <code>'kana'</code>, sota el seu primer kana (katakana i hiragana comparteixen capçalera), en l'ordre JIS X 4061 d'un índex japonès: per la lectura (el <code>yomi</code> de la marca i, si no, la lectura en kana del seu ruby, després <code>sort</code> i després el text), els katakana com a hiragana, els kana petits com els grans, ー com la vocal que la precedeix, i el kana sense marca abans que el sonor i aquest abans que el semisonor; primer els símbols, després els nombres pel seu valor, després les paraules llatines sota les seves lletres i després els kana; una entrada que continua encapçalada per un kanji s'avisa amb <code>indexReadingMissing</code> i es col·loca després dels kana, sense capçalera. <code>'none'</code>: sense capçaleres; els símbols, les xifres i les paraules només se separen per <code>groups.marginTop</code>. <code>'auto'</code> agrupa un índex en japonès (<code>ja</code>, <code>ja-*</code>) per files del gojūon, un en xinès simplificat (<code>zh</code>, <code>zh-Hans</code>, <code>zh-CN</code>) per pinyin, un en xinès tradicional (<code>zh-Hant</code>, <code>zh-TW</code>, <code>zh-HK</code>) per traços i qualsevol altra llengua per lletra. Les entrades s'ordenen amb la col·lació de la qual surten les capçaleres: un índex <code>zh-Hant</code> agrupat per pinyin s'ordena per pinyin. Les lectures i els traços són els de l'ordenador de cadenes (CLDR); si llegeix malament un caràcter (重 com a <em>zhòng</em> a 重阳, 行 com a <em>xíng</em> a 行业), dona a la marca una clau <code>sort</code> escrita amb caràcters que només tinguin la lectura cercada, que s'ordena al seu lloc: <code>sort="崇阳"</code> per a 重阳, <code>sort="航业"</code> per a 行业. Un navegador sense dades de col·lació xinesa imprimeix un índex per pinyin o per traços sense capçaleres.</td>
+    </tr>
+    <tr>
+      <td><code>ignoreArticle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code> en àrab</td>
+      <td>Ordena i agrupa les entrades àrabs com si no portessin l'article inicial <code>ال</code> (<code>ٱل</code>): البصرة va sota ب, entre بدر i بغداد, i s'imprimeix tal com està escrita. <code>الله</code> conserva el seu article, i una entrada amb clau <code>sort</code> pròpia s'ordena per aquesta clau tal qual. En qualsevol cas, un índex en àrab ignora els signes vocàlics i el tatweel, posa أ إ آ ٱ sota ا, i ordena ؤ com a و, ئ i ى com a ي, ة com a ه.</td>
+    </tr>
+    <tr>
+      <td><code>groups.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Imprimeix una capçalera sobre cada grup d'entrades (<code>A</code>, <code>B</code>…, o el nombre de traços, <code>0–9</code> per a les xifres, <code>Símbolos</code> per a la resta; <code>数字</code> / <code>數字</code> i <code>符号</code> / <code>符號</code> en xinès).</td>
+    </tr>
+    <tr>
+      <td><code>groups.fontFamily</code>, <code>fontSize</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code></td>
+      <td>—</td>
+      <td>les de les entrades, pes <code>700</code></td>
+      <td>La tipografia de la lletra de capçalera. Es compon sobre l'interlineat de les entrades.</td>
+    </tr>
+    <tr>
+      <td><code>groups.marginTop</code></td>
+      <td><code>Dimension</code></td>
+      <td>una línia de l'índex</td>
+      <td>Espai sobre cada grup, amb lletra de capçalera o sense; cap sobre el primer grup, la distància del qual a l'encapçalament la fixa l'encapçalament, ni a dalt de tot d'una columna.</td>
+    </tr>
+    <tr>
+      <td><code>groups.symbolsLabel</code>, <code>numbersLabel</code></td>
+      <td><code>string</code></td>
+      <td>segons la llengua; <code>'0–9'</code>, <code>'数字'</code> / <code>'數字'</code> en xinès</td>
+      <td>Les capçaleres de les entrades que comencen per un símbol i per una xifra.</td>
+    </tr>
+  </tbody>
+</table>
+
+Els números de pàgina surten de l'esquema del llibre, com els de l'índex de continguts: `computeOutline()` i `contentOutline()` enumeren les marques d'un text com a entrades de tipus `'indexMark'` (amb `indexMark.path`, `sort`, `see`, `seeAlso`, `main`, `range` i `index`), i `outlineFromDoc()` dona a cadascuna la pàgina on va caure, que la composició registra a `doc.indexMarks` (`{ sourceStart, pageIndex }` per marca). `buildDocument()` torna a compondre un document que imprimeix el seu propi índex fins que els números s'estabilitzen; un amfitrió que compon un llibre capítol a capítol passa al capítol que conté `:::index` l'esquema del llibre sencer com a `PostextContent.outline`. `tocOutline()` i `indexOutline()` separen un esquema en allò que llegeixen l'índex de continguts i l'analític, perquè l'amfitrió associï cada capítol al que imprimeix: el sandbox torna a compondre el capítol de l'índex analític només quan es mou una marca, i el de l'índex de continguts només quan es mou un encapçalament. `contentOutline()` indica a més si un text imprimeix un índex analític (`hasIndex`).

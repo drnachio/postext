@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'pt',
   lastUpdated: '2026-10-05',
   readingTime: '30 min',
-  order: 8,
+  order: 17,
   plainSummary: "Esta página explica como o Postext compõe texto em japonês. Os livros japoneses são compostos de cima para baixo, em colunas lidas da direita para a esquerda, ou na horizontal, como esta página. Um documento em japonês segue as regras japonesas para quebrar as linhas, espaçar a pontuação, pôr pequenas guias de leitura sobre os caracteres e marcar a ênfase. A página trata também das notas, dos números escritos em kanji, dos títulos que ocupam um número fixo de linhas, do índice remissivo ordenado pelo som e de como trazer textos da biblioteca Aozora Bunko. No fim há dois exemplos completos e os limites que ainda existem.",
 };
 
@@ -15,7 +15,7 @@ export const metadata = {
 
 **Uma página japonesa mistura quatro escritas numa grade de células quadradas, e o espaçamento da pontuação faz parte do texto.**
 
-O Postext compõe o japonês na vertical e na horizontal, a partir de uma só fonte Markdown e uma só configuração. Um documento cujo idioma é o japonês quebra as linhas segundo as regras de kinsoku, dá a cada colchete e a cada vírgula o espaço que a composição japonesa lhes dá e o retira onde duas marcas se encontram, compõe o colchete que abre um parágrafo como faz a maioria dos romances, põe os kana pequenos e as marcas de uma linha vertical nas suas formas verticais, espaça os furigana em 1:2:1 sobre os seus kanji, coloca pontos de gergelim sobre as palavras enfatizadas, numera os capítulos 第一章 e ordena o índice pela leitura. Desde o postext 1.16, tudo isso decorre de `locale: 'ja'`; as versões anteriores compunham o japonês com os padrões do chinês continental. Esta página explica o que o motor faz e quais ajustes o controlam. A [referência de configuração](/pt/docs/configuration#tipografia-do-leste-asiático) lista cada chave com o seu valor padrão, e o [formato do documento](/pt/docs/document-format#marcas-chinesas-rubi-e-warichu) descreve a marcação.
+O Postext compõe o japonês na vertical e na horizontal, a partir de uma só fonte Markdown e uma só configuração. Um documento cujo idioma é o japonês quebra as linhas segundo as regras de kinsoku, dá a cada colchete e a cada vírgula o espaço que a composição japonesa lhes dá e o retira onde duas marcas se encontram, compõe o colchete que abre um parágrafo como faz a maioria dos romances, põe os kana pequenos e as marcas de uma linha vertical nas suas formas verticais, espaça os furigana em 1:2:1 sobre os seus kanji, coloca pontos de gergelim sobre as palavras enfatizadas, numera os capítulos 第一章 e ordena o índice pela leitura. Desde o postext 1.16, tudo isso decorre de `locale: 'ja'`; as versões anteriores compunham o japonês com os padrões do chinês continental. Esta página explica o que o motor faz e quais ajustes o controlam. A [referência de configuração](/pt/docs/configuration-east-asian#tipografia-do-leste-asiático) lista cada chave com o seu valor padrão, e o [formato do documento](/pt/docs/document-format#marcas-chinesas-rubi-e-warichu) descreve a marcação.
 
 As regras seguem os *Requirements for Japanese Text Layout* do W3C ([JLReq](https://www.w3.org/TR/jlreq/)), citados abaixo por seção, e a JIS X 4051, a norma japonesa que eles relatam. Boa parte do mecanismo é compartilhada com o chinês, e [Composição chinesa](/pt/docs/chinese-layout) descreve as partes que esta página só menciona: a grade de caracteres, a moldura girada de uma página vertical, a encadernação à direita e as saídas. As fontes de referência estão listadas no fim.
 
@@ -160,7 +160,7 @@ Os números de até dois algarismos ficam em pé numa só célula (`cjk.uprightD
 
 ### Páginas, andares e fólios
 
-Um livro japonês vertical costuma imprimir o fólio em algarismos arábicos no pé, e um fólio vertical em kanji ao longo da margem externa quando o projeto gráfico prevê um: `page.pageNumbering.format: 'cjk-decimal'` escreve 一〇五 para a página 105, a forma posicional que os fólios usam (JLReq §2.6). Os capítulos abrem numa página ímpar, que num livro encadernado à direita é uma página da esquerda: `breakBefore: { enabled: true, parity: 'odd' }`. Os cabeços na margem externa de [Elementos de texto vertical](/pt/docs/configuration#elementos-de-texto-verticais) funcionam sem mudanças nos livros japoneses.
+Um livro japonês vertical costuma imprimir o fólio em algarismos arábicos no pé, e um fólio vertical em kanji ao longo da margem externa quando o projeto gráfico prevê um: `page.pageNumbering.format: 'cjk-decimal'` escreve 一〇五 para a página 105, a forma posicional que os fólios usam (JLReq §2.6). Os capítulos abrem numa página ímpar, que num livro encadernado à direita é uma página da esquerda: `breakBefore: { enabled: true, parity: 'odd' }`. Os cabeços na margem externa de [Elementos de texto vertical](/pt/docs/configuration-page-layout#elementos-de-texto-verticais) funcionam sem mudanças nos livros japoneses.
 
 ## Furigana
 
@@ -342,7 +342,7 @@ Os livros japoneses posicionam as notas de mais maneiras que os ocidentais (JLRe
 
 ### Padrões para livros japoneses
 
-Quando o autor não os define, um documento japonês recebe estes valores (a [referência de configuração](/pt/docs/configuration#notas-de-rodapé) tem todos os campos):
+Quando o autor não os define, um documento japonês recebe estes valores (a [referência de configuração](/pt/docs/configuration-notes-references#notas-de-rodapé) tem todos os campos):
 
 <table>
   <thead>
@@ -398,7 +398,7 @@ Os furigana, as marcas de ênfase, as linhas laterais, os títulos de obras e o 
 
 A saída HTML escreve cada leitura como rubi semântico: `<ruby>東<rt>とう</rt>京<rt>きょう</rt></ruby>`, um `<ruby>` por palavra, que os leitores de tela leem. Toda página de um documento japonês leva `lang="ja"`, então um host que monta as páginas uma a uma também recebe as formas japonesas dos glifos. Um EPUB de layout fixo é feito dessas páginas.
 
-Um EPUB refluível leva as regras que um sistema de leitura consegue aplicar sozinho: `line-break: strict`, `normal` ou `loose` para os três níveis de kinsoku, `hanging-punctuation: allow-end` quando o livro usa pontuação pendente, `text-emphasis` para as marcas de gergelim sobre o texto, células em pé para os números curtos e os pares `!?` nos livros verticais, o em depois de ？！, as linhas laterais, os kunten, os marcadores de nota, as linhas ocupadas e os recuos dos títulos, e o `primary-writing-mode` de um livro vertical no seu pacote. A navegação recebe nomes em japonês. Veja [Livros EPUB](/pt/docs/configuration#livros-epub-postext-epub) para o resto da exportação.
+Um EPUB refluível leva as regras que um sistema de leitura consegue aplicar sozinho: `line-break: strict`, `normal` ou `loose` para os três níveis de kinsoku, `hanging-punctuation: allow-end` quando o livro usa pontuação pendente, `text-emphasis` para as marcas de gergelim sobre o texto, células em pé para os números curtos e os pares `!?` nos livros verticais, o em depois de ？！, as linhas laterais, os kunten, os marcadores de nota, as linhas ocupadas e os recuos dos títulos, e o `primary-writing-mode` de um livro vertical no seu pacote. A navegação recebe nomes em japonês. Veja [Livros EPUB](/pt/docs/configuration-programmatic-usage#livros-epub-postext-epub) para o resto da exportação.
 
 ## Fontes
 
@@ -410,7 +410,7 @@ O Postext compõe cada estilo numa só família, sem recorrer a outra para um ca
 - **No navegador**, o Fontsource serve uma família japonesa como cerca de cem arquivos numerados, cada um com parte dos caracteres; o Sandbox e a sua aba PDF carregam os que o texto usa. Nenhum arquivo do Fontsource contém hentaigana (𛀁) nem outros kana históricos.
 - **Sem itálico.** As fontes japonesas não têm; a ênfase é feita com marcas.
 
-[Fontes chinesas, japonesas e coreanas](/pt/docs/configuration#fontes-chinesas-japonesas-e-coreanas), na referência de configuração, traz o código do provedor de fontes.
+[Fontes chinesas, japonesas e coreanas](/pt/docs/configuration-programmatic-usage#fontes-chinesas-japonesas-e-coreanas), na referência de configuração, traz o código do provedor de fontes.
 
 ## Textos do Aozora Bunko
 
@@ -587,11 +587,11 @@ A estante de exemplos tem *Kokoro* (<span lang="ja" className="font-body">ここ
 - **Índice remissivo**: o separador continua sendo `, `; as entradas latinas vêm antes dos kana, sem opção para colocá-las no fim; uma marca invisível não toma a leitura de um rubi que esteja em outro ponto da linha.
 - **Citações**: SIST 02 é o único estilo japonês incluído; as citações autor-data mantêm a pontuação ASCII; as bibliografias não são ordenadas pela leitura.
 - **Tabelas**: o texto das células e das legendas é horizontal em todas as páginas.
-- **Números de linha**: não são impressos em texto vertical; um livro vertical que liga `lineNumbers` não recebe nenhum, com um aviso de configuração `lineNumbersUnsupported`. Os livros horizontais numeram as suas linhas como qualquer outro ([Configuração › Numeração de linhas](/pt/docs/configuration#numeração-de-linhas)).
+- **Números de linha**: não são impressos em texto vertical; um livro vertical que liga `lineNumbers` não recebe nenhum, com um aviso de configuração `lineNumbersUnsupported`. Os livros horizontais numeram as suas linhas como qualquer outro ([Configuração › Numeração de linhas](/pt/docs/configuration-notes-references#numeração-de-linhas)).
 - **Contorno de texto.** Na escrita horizontal uma imagem ou caixa pode ficar de um lado da coluna com o texto ao lado (veja [Contorno de texto](/pt/docs/document-format#contorno-de-texto)); com a grade de caracteres o espaço que ela ocupa é um número inteiro de caracteres, de modo que as linhas ao lado seguem a grade. A escrita vertical não compõe texto ao lado de uma figura: uma figura contornada mantém a faixa, com um aviso `textWrap` (`wrapUnsupported` para o padrão de um tipo de recurso).
 - **Tabulações.** Um parágrafo horizontal que contém uma tabulação (`:tab`, ou um caractere de tabulação sob um estilo com paradas de tabulação) é composto linha a linha: quebrado entre caracteres segundo o kinsoku, mas sem compressão dos yakumono nem justificação entre caracteres. No texto vertical não há paradas de tabulação: uma tabulação é um espaço entre palavras, e um `:tab` gera o aviso de conteúdo `tabInVerticalText`. Um parágrafo com rubi, warichu ou marcas de kanbun também compõe as suas tabulações como espaços entre palavras. Veja [Tabulações e paradas de tabulação](/pt/docs/document-format#tabulações-e-paradas-de-tabulação).
-- **Capitulares.** Um parágrafo horizontal pode abrir com uma capitular de um caractere, definida por um estilo de parágrafo ou por um nível de título (veja [Capitulares](/pt/docs/configuration#capitulares)): o seu tamanho toma a altura do próprio caractere em relação à do texto, e o compositor compõe as linhas encurtadas segundo o kinsoku, como de costume. O texto vertical não tem capitulares: um parágrafo que abriria com uma é composto sem ela e gera o aviso de conteúdo `dropCap`.
-- **Listagens de código.** Uma listagem horizontal é composta linha a linha na sua fonte de código; numa fonte monoespaçada com kanji (BIZ UDGothic), um caractere de largura total ocupa duas células, de modo que as colunas ficam alinhadas, e uma tabulação o conta como dois. No texto vertical, uma listagem segue o fluxo vertical, com o seu texto latino girado de lado, como o texto vertical o compõe, e não leva números de linha. Veja [Listagens de código](/pt/docs/configuration#listagens-de-código).
+- **Capitulares.** Um parágrafo horizontal pode abrir com uma capitular de um caractere, definida por um estilo de parágrafo ou por um nível de título (veja [Capitulares](/pt/docs/configuration-text#capitulares)): o seu tamanho toma a altura do próprio caractere em relação à do texto, e o compositor compõe as linhas encurtadas segundo o kinsoku, como de costume. O texto vertical não tem capitulares: um parágrafo que abriria com uma é composto sem ela e gera o aviso de conteúdo `dropCap`.
+- **Listagens de código.** Uma listagem horizontal é composta linha a linha na sua fonte de código; numa fonte monoespaçada com kanji (BIZ UDGothic), um caractere de largura total ocupa duas células, de modo que as colunas ficam alinhadas, e uma tabulação o conta como dois. No texto vertical, uma listagem segue o fluxo vertical, com o seu texto latino girado de lado, como o texto vertical o compõe, e não leva números de linha. Veja [Listagens de código](/pt/docs/configuration-styles#listagens-de-código).
 - **Fontes**: uma família por estilo, sem fonte de reserva; fontes CFF são incorporadas inteiras; as métricas verticais proporcionais (`vpal`) não são usadas.
 - **Texto do design** (cabeços, aberturas, títulos de boxe) segue o kinsoku, o espaçamento de yakumono e o espaço entre japonês e rōmaji, como o corpo (`cjk.composeDesignText`, desde o postext 1.25), mas fica irregular e imprime as leituras e as marcas como texto simples.
 

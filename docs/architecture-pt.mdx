@@ -159,7 +159,7 @@ interface Resource {
 ```
 
 Os **recursos** carregam os dados visuais: legendas, texto alternativo e um conteúdo específico do tipo. Os conteúdos binários (bitmaps, SVGs) ficam *fora da estrutura*: o recurso guarda só um `fileId`, e o renderizador o resolve na hora de desenhar (o Sandbox guarda os bytes no IndexedDB). Os recursos de tabela são a exceção: o `TableModel` deles (uma grade de células com mesclagens e alinhamento) viaja junto, porque são dados estruturados, não bytes.
-As **notas** são escritas no markdown: uma chamada `[^id]` onde a nota é citada e uma definição `[^id]:`, um parágrafo próprio em qualquer ponto do capítulo. O motor as numera na ordem em que são citadas pela primeira vez e compõe cada uma no pé da coluna que contém a linha que a cita, sob um fio curto, ou depois do último bloco do capítulo com `footnotes.placement: 'chapterEnd'` (veja [Notas de rodapé](/pt/docs/document-format#notas-de-rodapé) e [Configuração → Notas de rodapé](/pt/docs/configuration#notas-de-rodapé)). O modelo de conteúdo ainda aceita um array `notes`, mas nenhuma etapa do pipeline o lê.
+As **notas** são escritas no markdown: uma chamada `[^id]` onde a nota é citada e uma definição `[^id]:`, um parágrafo próprio em qualquer ponto do capítulo. O motor as numera na ordem em que são citadas pela primeira vez e compõe cada uma no pé da coluna que contém a linha que a cita, sob um fio curto, ou depois do último bloco do capítulo com `footnotes.placement: 'chapterEnd'` (veja [Notas de rodapé](/pt/docs/document-format#notas-de-rodapé) e [Configuração → Notas de rodapé](/pt/docs/configuration-notes-references#notas-de-rodapé)). O modelo de conteúdo ainda aceita um array `notes`, mas nenhuma etapa do pipeline o lê.
 
 Essa separação é uma escolha de design deliberada, e pesa mais do que parece. O markdown define a *ordem de leitura* e a *estrutura semântica*: o que vem primeiro, o que é título, onde uma nota de rodapé é citada e o que ela diz. O array de recursos traz os *dados visuais*: dimensões das imagens, texto das legendas, células das tabelas. Mantendo-os separados, o mesmo markdown pode ser diagramado de formas totalmente diferentes só com uma mudança de configuração. Uma diagramação acadêmica em duas colunas e um post de blog em uma coluna podem compartilhar o mesmo conteúdo-fonte. E o motor pode tomar decisões de posicionamento, como adiar uma imagem para a coluna seguinte porque ela não cabe ali, sem nunca tocar no seu conteúdo-fonte.
 
@@ -210,27 +210,27 @@ Cada aspecto do pipeline de layout é controlado por `PostextConfig`. O panorama
   <tbody>
     <tr>
       <td><code>bodyText</code> / <code>headings</code></td>
-      <td>Penalidades por campo para viúvas, órfãs e linhas curtas, regras de manter junto, limites de justificação, hifenização; veja <a href="/pt/docs/configuration#texto-do-corpo">Configuração → Texto do corpo</a></td>
+      <td>Penalidades por campo para viúvas, órfãs e linhas curtas, regras de manter junto, limites de justificação, hifenização; veja <a href="/pt/docs/configuration-text#texto-do-corpo">Configuração → Texto do corpo</a></td>
       <td>Passada 2, Passada 5</td>
     </tr>
     <tr>
       <td><code>tableStyle</code></td>
-      <td>Tipografia das células, bordas, raio dos cantos, preenchimentos do cabeçalho e do corpo para recursos <code>kind: 'table'</code>, além das variantes nomeadas de <code>tableStyles</code> que uma tabela escolhe com <code>table.styleId</code>; veja <a href="/pt/docs/configuration#estilo-de-tabela">Configuração → Estilo de tabela</a></td>
+      <td>Tipografia das células, bordas, raio dos cantos, preenchimentos do cabeçalho e do corpo para recursos <code>kind: 'table'</code>, além das variantes nomeadas de <code>tableStyles</code> que uma tabela escolhe com <code>table.styleId</code>; veja <a href="/pt/docs/configuration-resources#estilo-de-tabela">Configuração → Estilo de tabela</a></td>
       <td>Passada 4</td>
     </tr>
     <tr>
       <td><code>captionStyle</code></td>
-      <td>Tipografia das legendas dos recursos: o rótulo numerado e o texto da descrição; veja <a href="/pt/docs/configuration#estilo-de-legenda">Configuração → Estilo de legenda</a></td>
+      <td>Tipografia das legendas dos recursos: o rótulo numerado e o texto da descrição; veja <a href="/pt/docs/configuration-resources#estilo-de-legenda">Configuração → Estilo de legenda</a></td>
       <td>Passada 4</td>
     </tr>
     <tr>
       <td><code>diagramStyle</code></td>
-      <td><code>singleInk</code> + <code>inkColor</code>: recolore os diagramas SVG com tons de uma única tinta mapeados pela luminância, para que as figuras sejam reproduzidas com fidelidade na impressão com uma só cor especial; veja <a href="/pt/docs/configuration#estilo-de-diagramas">Configuração → Estilo de diagrama</a></td>
+      <td><code>singleInk</code> + <code>inkColor</code>: recolore os diagramas SVG com tons de uma única tinta mapeados pela luminância, para que as figuras sejam reproduzidas com fidelidade na impressão com uma só cor especial; veja <a href="/pt/docs/configuration-resources#estilo-de-diagramas">Configuração → Estilo de diagrama</a></td>
       <td>Renderizadores</td>
     </tr>
     <tr>
       <td><code>resourceTypes</code></td>
-      <td>Numeração tipada de recursos: modelos, formatos de contador, escopos de reinício, posicionamento padrão dos flutuantes; veja <a href="/pt/docs/configuration#tipos-de-recurso">Configuração → Tipos de recurso</a></td>
+      <td>Numeração tipada de recursos: modelos, formatos de contador, escopos de reinício, posicionamento padrão dos flutuantes; veja <a href="/pt/docs/configuration-resources#tipos-de-recurso">Configuração → Tipos de recurso</a></td>
       <td>Passada 1, Passada 4</td>
     </tr>
     <tr>
@@ -517,7 +517,7 @@ Essas penalidades ficam ao lado dos deméritos de sempre (a *badness*, ou razão
 
 Uma quarta pressão suave, `slackWeight`, pondera um custo quadrático de “espaço de coluna não usado” para que o algoritmo prefira conjuntos de quebras que preencham bem as colunas. Juntos, esses deméritos fazem da Passada 5 um refinamento de *quebra de linhas*: a maioria dos casos de viúva, órfã e *runt* se resolve dentro do solucionador de Knuth-Plass, e não com ajustes de espaçamento entre letras feitos depois.
 
-Tudo isso é ajustável em `BodyTextConfig`; veja [Configuração → Órfãs, viúvas, runts e regras de coesão](/pt/docs/configuration#órfãs-viúvas-linhas-curtas-e-regras-de-manter-junto). Definir qualquer `*Penalty` como `0` desativa, na prática, a regra correspondente.
+Tudo isso é ajustável em `BodyTextConfig`; veja [Configuração → Órfãs, viúvas, runts e regras de coesão](/pt/docs/configuration-text#órfãs-viúvas-linhas-curtas-e-regras-de-manter-junto). Definir qualquer `*Penalty` como `0` desativa, na prática, a regra correspondente.
 
 #### Regras estruturais de coesão (keep-together)
 
@@ -539,7 +539,7 @@ Essas correções são invisíveis quando bem feitas (o leitor nunca deveria per
 ### Passada 6: balanceamento de colunas
 
 - **Entrada:** VDT com a tipografia refinada
-- **Ação:** igualar a altura das colunas de cada página movendo blocos entre colunas para minimizar a diferença de altura (ativado por padrão; `headings.balancing.enabled: false` o desativa, veja [Configuração → Equilíbrio de colunas](/pt/docs/configuration#equilíbrio-de-colunas))
+- **Ação:** igualar a altura das colunas de cada página movendo blocos entre colunas para minimizar a diferença de altura (ativado por padrão; `headings.balancing.enabled: false` o desativa, veja [Configuração → Equilíbrio de colunas](/pt/docs/configuration-text#equilíbrio-de-colunas))
 - **Restrição:** não pode violar as regras de viúvas e órfãs estabelecidas na Passada 5
 - **Saída:** blocos podem ter mudado de coluna e são marcados como `dirty`
 
@@ -700,7 +700,7 @@ Como os dados binários dos recursos ficam fora do VDT, cada renderizador resolv
 
 Os quatro renderizadores disponíveis consomem o mesmo `VDTDocument`. A divisão entre `postext` (que exporta os renderizadores de canvas e HTML) e `postext-pdf` (que exporta o renderizador de PDF) é puramente uma questão de dependências: o caminho do PDF traz `pdf-lib` e `@pdf-lib/fontkit`, e a maioria das integrações web não precisa deles. Instale `postext-pdf` só quando quiser de fato emitir bytes de PDF. `postext-epub` é um pacote à parte pelo mesmo motivo, e só é necessário para livros digitais. A linha de comando não é um quinto renderizador: `postext-cli` roda esses mesmos geradores onde não há navegador.
 
-**Onde o layout roda:** o motor mede o texto em um canvas, então roda onde quer que receba um. Em um navegador, o pipeline pode rodar na thread principal (`buildDocument`) ou dentro de um Web Worker dedicado (`createLayoutWorker` de `postext/worker`). O caminho do worker é a integração recomendada para aplicativos guiados pela interface, porque tira a medição e o laço de convergência da thread principal, permite cancelamento em que a última chamada vence via `AbortSignal` e mantém o seu próprio cache de medição e cache de rasterização de fórmulas matemáticas, para que as reconstruções sucessivas continuem baratas. Veja [Configuração → Rodar o layout em um Web Worker](/pt/docs/configuration#executar-o-layout-em-um-web-worker) para o padrão de integração completo. Fora do navegador, a [linha de comando](/pt/docs/command-line) roda o mesmo pipeline com o Skia no lugar do canvas do navegador, de modo que um livro se divide nas mesmas páginas em um terminal, em um script ou em um servidor de build.
+**Onde o layout roda:** o motor mede o texto em um canvas, então roda onde quer que receba um. Em um navegador, o pipeline pode rodar na thread principal (`buildDocument`) ou dentro de um Web Worker dedicado (`createLayoutWorker` de `postext/worker`). O caminho do worker é a integração recomendada para aplicativos guiados pela interface, porque tira a medição e o laço de convergência da thread principal, permite cancelamento em que a última chamada vence via `AbortSignal` e mantém o seu próprio cache de medição e cache de rasterização de fórmulas matemáticas, para que as reconstruções sucessivas continuem baratas. Veja [Configuração → Rodar o layout em um Web Worker](/pt/docs/configuration-programmatic-usage#executar-o-layout-em-um-web-worker) para o padrão de integração completo. Fora do navegador, a [linha de comando](/pt/docs/command-line) roda o mesmo pipeline com o Skia no lugar do canvas do navegador, de modo que um livro se divide nas mesmas páginas em um terminal, em um script ou em um servidor de build.
 
 
 ## Estratégia de desempenho
@@ -792,7 +792,7 @@ assumir responsabilidades que pertencem a outro lugar seria o caminho mais rápi
 - **Invólucro de column-count do CSS.** O Postext substitui o layout de várias colunas do CSS; não o envolve. Ele calcula do zero uma geometria posicionada com precisão, porque o algoritmo de colunas do navegador não dá controle sobre a colocação de recursos, a prevenção de viúvas e órfãs e as regras tipográficas entre colunas. E é justamente disso que se trata.
 - **Gerenciamento de breakpoints responsivos.** O Postext calcula o layout para um tamanho de página dado. Quem o usa decide quando rediagramar (ao redimensionar a janela, ao mudar a orientação). O Postext não gerencia breakpoints, media queries nem decisões de design responsivo. Isso é com você.
 - **Edição colaborativa em tempo real.** O Postext é um cálculo de layout sem estado (entra conteúdo, sai geometria), não um sistema de documentos colaborativo com resolução de conflitos, transformações operacionais ou percepção de múltiplos usuários.
-- **Arquivos de fonte.** O pacote `postext` carrega as fontes, mas não as traz consigo. `prepareFonts` carrega, antes do primeiro layout, todas as faces que uma configuração e o seu texto pedem, e uma face que o conjunto de fontes não conseguiu fornecer aparece entre os avisos do documento como `fontFallback`. Os arquivos vêm de quem integra o motor: uma regra `@font-face` na página, ou uma função `resolve` que diz onde está cada face. Veja [Configuração → Carregar as fontes antes do layout](/pt/docs/configuration#carregar-as-fontes-antes-do-layout).
+- **Arquivos de fonte.** O pacote `postext` carrega as fontes, mas não as traz consigo. `prepareFonts` carrega, antes do primeiro layout, todas as faces que uma configuração e o seu texto pedem, e uma face que o conjunto de fontes não conseguiu fornecer aparece entre os avisos do documento como `fontFallback`. Os arquivos vêm de quem integra o motor: uma regra `@font-face` na página, ou uma função `resolve` que diz onde está cada face. Veja [Configuração → Carregar as fontes antes do layout](/pt/docs/configuration-programmatic-usage#carregar-as-fontes-antes-do-layout).
 
 
 ## Apêndice: relação com os tipos existentes

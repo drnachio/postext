@@ -1,0 +1,1195 @@
+{/* docs/configuration-fonts-colors-viewers-ja.mdx */}
+
+export const metadata = {
+  title: '設定：フォント、色、出力',
+  sidebarTitle: 'フォント、色、出力',
+  description: '単位、色とカラーパレット、カスタムフォント、HTMLビューアー、PDFと印刷出力、Folioビューアー、デバッグ',
+  lang: 'ja',
+  lastUpdated: '2026-10-10',
+  readingTime: '6分',
+  order: 11,
+  parent: 'configuration',
+  plainSummary: "このページでは、本全体で共有する設定と、出力の種類ごとの設定を説明します。寸法と色の書き方と、パレットの色に名前を付ける方法を説明します。自分のフォントを追加する方法を示します。続いて、Web表示、PDFファイル、印刷会社に渡すファイル、3Dの本を扱います。最後の節では、作業を助けるガイド線と警告を表示できます。",
+};
+
+# 設定：フォント、色、出力
+
+
+## 単位と色
+
+### 寸法
+
+Postextの物理的な寸法はすべて`Dimension`型を使います。値と単位の組です：
+
+```ts
+interface Dimension {
+  value: number;
+  unit: DimensionUnit; // 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem'
+}
+```
+
+**絶対単位**（`cm`、`mm`、`in`、`pt`、`px`）は、設定したDPIでピクセルに換算されます。300 DPIでは`1 cm`は約118 pxです。
+
+**相対単位**（`em`、`rem`）は現在の文字サイズに応じて変わります。`em`は要素自身の文字サイズ、`rem`は本文の文字サイズが基準です。
+
+### 色
+
+色は、16進表記と対象のカラーモデルの両方で保存します：
+
+```ts
+interface ColorValue {
+  hex: string;         // '#ff0000', 'transparent', etc.
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
+}
+```
+
+`model`フィールドは意図する色空間を示します。Web向けの描画では`'hex'`か`'rgb'`が一般的です。印刷のワークフローでは、`'cmyk'`はその色がCMYKで指定されたことを示し、`cmyk`がその値を保持します。CMYKの印刷用の描画ではこの値がそのまま使われ、`hex`は画面での表示に使われます（[CMYKで指定した色](#cmykで指定した色)を参照）。
+
+Postextは出版品質の出力を目指しているため、本文の色の既定値は`model: 'cmyk'`（`#000000`）です。見出し、太字、イタリック、リストの色の既定値は、パレットに連動した**メインカラー**（`#295AA3`、`model: 'hex'`）です。ページの背景とUIのオーバーレイ（ベースライングリッド、トンボ、デバッグ表示）の既定値は`model: 'hex'`です。別の書き出しの扱いが必要なら、任意のフィールドで`color.model`を上書きしてください。
+
+### 透明度
+
+色は半透明にできます。`hex`はアルファチャンネルを`#rgba`または`#rrggbbaa`の形で受け付けます。`rgb()` / `rgba()`の色も、カンマ区切りまたはスペース区切りの構文で、アルファを数値またはパーセンテージで書いて受け付けます。`transparent`は完全な透明です：
+
+```ts
+const config: PostextConfig = {
+  header: {
+    elements: [{
+      kind: 'box',
+      id: 'veil',
+      placement: {
+        anchor: { to: 'bleed', edge: 'top-left' },
+        size: { width: 'fill', height: { value: 40, unit: 'mm' } },
+      },
+      style: { backgroundColor: { hex: '#ffffffb3', model: 'hex' } }, // white at 70 %
+    }],
+  },
+  bodyText: { color: { hex: 'rgba(0, 0, 0, 0.85)', model: 'rgb' } },
+};
+```
+
+3つのバックエンドはこれを同じように描きます。canvasとHTMLビューアーは値をCSSの色として扱います。PDFバックエンドは色の不透明度を定数アルファとして設定します（塗りには`ca`、線には`CA`を持つ`ExtGState`）。対象はテキスト、罫線、ボックス、表の塗りと罫線、チップ、スウォッチ、数式です。半透明の色は、それより前に描かれたものの上に合成されます。ヘッダーやフッターのボックスは最後に描かれるため、その下のテキストを薄く覆います。扉の帯のボックスは最初に描かれるため、テキストの下のページに色を付けます。PDFを別の色空間に強制した場合（`pdfGeneration.forceColorSpace`と`colorSpace: 'cmyk'`または`'grayscale'`）、色は変換され、アルファは保たれます。Sandboxでは、カラーピッカーの不透明度スライダーがこれらの値を`#rrggbbaa`として書き込みます。ピッカーはほかの形式も読み込めます。
+
+
+## カスタムフォント
+
+Postextは、すべての`fontFamily`文字列を、Google Fontsのカタログと文書の`customFonts`リストの**両方**に照らして解決します。名前が衝突した場合はカスタムフォントが優先されます。`customFonts: [{ name: 'Roboto', … }]`を宣言すると、PostextはGoogle Fontsの「Roboto」ではなく、アップロードしたファイルを使います。
+
+カスタムフォントは次の場合に使います：
+
+- 文書に、Google Fontsにないブランド書体やライセンス書体が必要な場合。
+- 実行環境からGoogle FontsのCDNに到達できない場合（オフライン、イントラネット、プライバシーを重視する環境）。
+- フォントのバイナリを非公開に保ち、第三者にアップロードしてはならない場合。
+
+### 設定のスキーマ
+
+```ts
+type CustomFontFormat = 'woff2' | 'woff' | 'ttf' | 'otf';
+type CustomFontStyle = 'normal' | 'italic';
+
+interface CustomFontVariant {
+  weight: number;           // CSS font-weight, 100..900
+  style: CustomFontStyle;
+  fileId: string;           // opaque id of the binary in out-of-band storage
+  format: CustomFontFormat;
+  fileName?: string;        // original upload filename (optional, shown in UI)
+}
+
+interface CustomFontFamily {
+  name: string;             // used anywhere a Google Font family name fits
+  variants: CustomFontVariant[];
+}
+
+interface PostextConfig {
+  // ...
+  customFonts?: CustomFontFamily[];
+}
+```
+
+各バリアントのバイナリは、設定そのものには埋め込まれ**ません**。設定が保持するのは`fileId`のポインターだけで、バイト列は設定の外に保存されます。Sandboxでは、その保存先はIndexedDB（キーバリューストア、ブラウザー内のみ、文書ごとに非公開）です。Postextを別のホストに組み込む場合は、`buildDocument`の実行前にバイト列がメインスレッドに届きさえすれば、`fileId`をどのように解決してもかまいません（サーバーのエンドポイント、Service Workerのキャッシュなど、方法は問いません）。
+
+### Sandboxでのカスタムフォントの管理
+
+左のアクティビティバー（リソースとデザインのあいだ）から**フォント**パネルを開きます。**この本の書体**の一覧には、デザインが使うすべてのファミリーが、その役割と、Google Fontsのものか自分のファイルかとともに表示されます。**自分のフォントファイル**では、ファミリーごとに次の操作ができます：
+
+1. **フォントファミリーを追加**：空のファミリーを作ります。名前はその場で変更できます。
+2. **ファイルをアップロード**：ウェイト（100–900）とスタイル（normal / italic）を選び、`.woff2`、`.woff`、`.ttf`、`.otf`のファイルを1つ、*または複数*選びます。各ファイルは、そのとき選んでいる（ウェイト、スタイル）に結び付いた独立したバリアントになります。アップロードしたファイル名は記録されて行に表示されるので、バリアントを見分けられます。バリアントのウェイトとスタイルは、ドロップダウンからいつでも変更できます。
+3. **バリアントの重複は許されます**。2つのファイルが同じ（ウェイト、スタイル）の枠に入った場合は両方とも保持され、**フォントのバリアントの重複**警告が表示されるので、余分なファイルの設定を区別し直す必要があるとわかります。
+4. **バリアントを削除**または**ファミリーを削除**：設定の項目と、IndexedDBに保存したバイト列の*両方*を削除します。
+
+ファミリーを宣言すると、すべてのフォントピッカーで、Google Fontsの一覧の上にある**カスタム**グループに表示されます。それを選ぶと、適用したすべてのフォントファミリー欄にそのファミリーが設定されます。
+
+### 描画の仕組み
+
+内部では次のように動きます：
+
+- `customFonts`が変わると、宣言されたすべてのファミリーが`document.fonts`に`FontFace`として自動で登録されます。そのため、HTMLビューアー、Canvasビューポート（`document.fonts`を通して測定します）、CSSからの直接の参照はいずれも、ユーザーが先にフォントピッカーを開かなくてもカスタムの書体を使えます。
+- レイアウトワーカーは、既存のフォントペイロードの転送経路で同じArrayBufferを受け取ります。そのため測定（`buildFontString`、pretext）は、Google Fontsのフォントと同じ方法でメトリクスを求めます。
+- バリアントを変更または削除すると、そのファミリーについてワーカーがキャッシュしていた書体が破棄され、次のビルドで再登録されます。これにより、プレビューは常に現在のバリアントの組に追従します。
+- **PDF書き出し**：アップロードしたバイナリは同じ`PdfFontProvider`のパイプラインを通ります。`.woff2`は展開され、`.ttf`と`.otf`はそのまま渡されます。`.woff`ははっきりしたエラーで拒否されます（pdf-libは生のWOFFを埋め込めないため、`.woff2`/`.ttf`/`.otf`でアップロードし直してください）。CFFベースのOpenType（`OTTO`マジックを持つ`.otf`）は**サブセット化せずに**埋め込みます。pdf-libのCFFサブセッターは`save()`の時点ですべてのグリフを走査し、実際のフォントでは数分間止まることがあるためです。サブセット化を省くとPDFはやや大きくなりますが、描画時間が安定します。
+
+### フォント欠落の警告
+
+Sandboxの**検査**パネルは、カスタムフォントに固有の3種類の問題を**フォント**グループに表示します（いずれも、汎用の「読み込まれていない」警告を制御している`debug.warnings.missingFont`の切り替えで有効になります）：
+
+- **不明なフォントファミリー**：`fontFamily`が、既知のGoogle Fontでも現在宣言されているカスタムファミリーでもない名前を参照しています。いずれかの`fontFamily`欄がまだ参照しているカスタムファミリーを削除した場合も、DOMが気付くのを待たずにすぐに表示されます。
+- **フォントのバリアントがありません**：ファミリーはあるものの、標準のウェイト／スタイルの枠（400 / 700、normal / italic）の少なくとも1つにアップロード済みのファイルがありません。警告には、欠けている組み合わせが具体的に表示されます。
+- **フォントのバリアントの重複**：1つのファミリーの中で、2つ以上のアップロード済みファイルが同じ（ウェイト、スタイル）の枠を共有しています。描画時に実際に使われるのは1つのファイルだけです。警告は残りの項目を調整し直すよう促します。
+
+これらの警告をクリックするとフォントパネルが開き、欠けているバリアントのアップロード、ファミリーの再追加、重複の解消ができます。
+
+レイアウトができた後は、エンジンが報告する**レイアウトで代替フォントを使用**（`fontFallback`）もパネルに並びます。ページの計測に使われなかったフェイスのことで、存在しないか、ブラウザーが同じファミリーの別のウェイトや傾きから作って描いたものです。不明なファミリーやバリアントの欠落としてすでに挙がっているファミリーは、重ねて表示しません。最初のレイアウトの前は、`document.fonts`に対する検査がその代わりを務めます。
+
+## カラーパレット
+
+`PostextConfig`の`colorPalette`プロパティは、名前付きの色の再利用可能なセットを定義し、設定内の任意の`ColorValue`から参照できるようにします。CSSのカスタムプロパティやInDesignのスウォッチパネルに相当するもので、パレットの項目を1回変えれば、それを指すすべての色が文書全体で更新されます。
+
+```ts
+interface ColorPaletteEntry {
+  id: string;       // stable identifier — referenced by ColorValue.paletteId
+  name: string;     // human label shown in sandbox UIs
+  value: ColorValue;
+}
+```
+
+### 既定のパレット
+
+Postextには、**メインカラー**（`id: 'main-color'`、16進値`#295AA3`）という項目1つだけの既定のパレットが付属します。いくつかの既定値（見出しの色、本文の太字／イタリックの色、`:ref`の色、箇条書きと番号のマーカーの色）は`paletteId: 'main-color'`でこの項目を参照しているため、このスウォッチ1つを変えると、それを使う文書のすべての部分の色が変わります。
+
+既定のパレットは、3つのエクスポートで確認、複製、比較できます：
+
+```ts
+import {
+  DEFAULT_COLOR_PALETTE,
+  cloneDefaultColorPalette,
+  isDefaultColorPalette,
+} from 'postext';
+
+// Read-only snapshot of the shipped palette.
+DEFAULT_COLOR_PALETTE;
+// => [{ id: 'main-color', name: 'Main Color', value: { hex: '#295AA3', model: 'hex' } }]
+
+// Independent copy — mutate this, not DEFAULT_COLOR_PALETTE.
+const palette = cloneDefaultColorPalette();
+
+// Detect whether a user has customised the palette at all.
+isDefaultColorPalette(palette); // true
+```
+
+パレットは設定の最上位に置きます：
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'ink',    name: 'Ink',    value: { hex: '#0a0a0a', model: 'cmyk' } },
+    { id: 'accent', name: 'Accent', value: { hex: '#b8860b', model: 'hex' } },
+  ],
+  bodyText: { color: { hex: '#000000', model: 'cmyk', paletteId: 'ink' } },
+  headings: { color: { hex: '#000000', model: 'hex', paletteId: 'accent' } },
+};
+```
+
+### パレット項目の参照
+
+設定内の任意の`ColorValue`は、`colorPalette`の項目を指す省略可能な`paletteId`フィールドを持てます。対象は、ページの背景、本文の色（`:ref`の色を含む）、見出しの色、段間罫、リストの色、表・キャプション・チップ・囲みの色（ボックス、帯、アイコン、マーカー、ラベル、タイトル、本文）、トンボとベースライングリッドの色、デバッグ表示、そしてデザインのすべての色です。デザインの色には、柱、見出しの扉デザインと段内のデザイン、見出しスタイルのデザインと柱、部扉、目次の部の行（テキスト、罫線、ボックスの塗りと枠線、輪郭線、ドロップキャップ）が含まれます。このフィールドがあるときは、パレット項目の`hex` / `model`が、横に保存された予備の`hex` / `model`より優先されます。インラインの予備の値が使われるのは、パレットがない、空である、またはそのidを含まない場合だけです。パレットを理解しないツールが読む設定を配布するときに役立ちます。
+
+**postext 1.5での変更**。postext 1.4までは、パレットが届くのは決まった設定の一覧だけでした。デザインの色（柱、扉、見出しスタイル、部、目次の行）、`bodyText.referenceColor`、囲みのラベルの色、囲みの本文の太字／イタリックの色は、`paletteId`の横に保存された`hex`のままでした。保存された値がパレット項目と異なる文書（項目を変えたあとにSandboxで編集した文書すべてと、メインカラーが`#295AA3`でないときのすべての`:ref`）は、リンクのとおりパレットの色で印刷されるようになりました。色を元のままにするには、その`paletteId`を削除してください。
+
+### パレットの適用方法
+
+`buildDocument`はパレットを2か所で適用します。これにより、明示的に書いた上書きにも、あとから補われる既定値にも、参照した色が効きます：
+
+1. `applyPaletteToConfig(config)`：ユーザーの生の設定のうち、`paletteId`を持つすべての`ColorValue`を解決します。エンジンが実際に受け取る値を確認したいときに便利です。
+2. `applyPaletteToResolvedConfig(resolved, palette)`：既定値を解決した*あと*に実行し、パレットに連動した既定値（見出しの色、本文の太字／イタリックの色、`:ref`の色、リストの色、既定のデザインの色）を現在のパレットに合わせて書き換えます。
+
+どちらも設定全体を走査するため、パレットに連動した色が取り残されることはありません。テキストの流れのほとんどの色（本文、見出し、リスト、表、キャプション、チップ、囲みのボックス・タイトル・本文）は単純な値になります。それ以外の色（デザインの色、`:ref`の色、囲みのラベル）は、パレットの`hex` / `model`を受け取りつつ、**`paletteId`を保持します**。このリンクは、部の`palette`属性と見出しスタイルの`palette`がそれぞれのページで上書きするものなので（[部](/ja/docs/configuration-styles#部)を参照）、残しておく必要があります。`htmlViewer.overrides`は書かれたままです。HTMLビューアーはこれを最初にマージするため、そこに含まれるパレットは、デザインを含むすべてに適用されます。
+
+これらを自分で呼び出す必要はほとんどありませんが、確認や再利用ができるよう、両方ともエクスポートされています：
+
+```ts
+import {
+  applyPaletteToConfig,
+  applyPaletteToResolvedConfig,
+  resolveColorValue,
+} from 'postext';
+
+const flat = applyPaletteToConfig(config);
+// Every ColorValue with a paletteId in the raw config now carries the
+// palette entry's hex/model (a design colour keeps its paletteId).
+
+// `applyPaletteToResolvedConfig` is typically handled by buildDocument; use it
+// directly if you build a ResolvedConfig yourself and want the palette applied.
+```
+
+`resolveColorValue(value, palette, fallback)`は値を1つだけ解決する版です。設定をコードで組み立てていて、色を1つずつ解決する必要があるときに便利です。
+
+### パレットの編集
+
+`paletteId`が存在しない項目を指す色は、保存された`hex` / `model`で印刷されます。これは、項目が与えていた色より古い場合があります。そのため、項目を削除する前に、その項目に連動するすべての`ColorValue`を、項目の現在の値を持つ単純な色に書き換えてください。Sandboxの**パレット**セクション（**デザイン → 色**）は、項目を削除するときに、色がどこにあっても（デザインや囲みのラベルも含めて）これを行います。確認画面には、その項目を使うすべての設定が、名前または設定内のパス（`header.elements[2].color`）で表示されます。
+
+
+## HTMLビューアー
+
+`htmlViewer`プロパティは、HTMLバックエンドが画面上でページをどうレイアウトするかを制御します。適用されるのは`renderToHtml` / `renderToHtmlIndexed`で描画するときだけです。canvasとPDFの経路はこれをまったく無視し、設定された`page.width`、`page.height`、`page.dpi`を直接使います。
+
+```ts
+interface HtmlViewerConfig {
+  maxCharsPerLine?: number;     // Target column width, in characters of the body font.
+  columnGap?: number;            // Horizontal gap between columns in multi-column mode (px).
+  optimalLineBreaking?: boolean; // Use Knuth–Plass inside the HTML viewer instead of greedy.
+  overrides?: HtmlViewerOverrides; // Screen-only partial config merged over the document config.
+}
+
+type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxCharsPerLine</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>描画する各段の目標の行長で、本文フォントの文字数で表します。ビューポートは、その長さの代表的な文章の文字列を測って実際のピクセル幅を求めます。そのため、どのプロポーショナルフォントと文字サイズの組み合わせにも適応します。</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>number</code></td>
+      <td><code>50</code></td>
+      <td>ビューアーが複数段モードのときの段間の水平方向の間隔で、単位はCSSピクセルです。1段モードでは無視されます。</td>
+    </tr>
+    <tr>
+      <td><code>optimalLineBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>HTMLビューアーでKnuth–Plassの行分割を有効にします。ビューアーはリサイズや文字サイズの変更のたびにレイアウトをやり直すため、既定ではオフです。最初に収まる位置で改行する貪欲法なら、即座に反応すると感じられるほど高速です。canvasバックエンドと同じ最適な改行が必要なときにオンにします。</td>
+    </tr>
+    <tr>
+      <td><code>overrides</code></td>
+      <td><code>HtmlViewerOverrides</code></td>
+      <td>—</td>
+      <td>画面上でのみ適用される、部分的な文書設定です。HTMLビューアーはレイアウトの前に、これを文書設定の上にマージします（<code>applyHtmlViewerOverrides</code>）。canvasとPDFはこれを無視します。オブジェクトは再帰的にマージされます。<code>levels</code>配列（見出し、リスト、目次）は<code>level</code>をキーに項目ごとにマージされ、それ以外の配列（デザインスロットの<code>elements</code>、<code>calloutStyles</code>、<code>colorPalette</code>…）は元の配列を丸ごと置き換えます。典型的な使い方は、印刷用の帯のない章扉や、仕上がり枠の固定幅ではなく番号の横でタイトルを折り返す部扉です。SandboxではJSONとして編集します。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const config: PostextConfig = {
+  headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: true } }] },
+  htmlViewer: {
+    // On screen, chapters flow on without the page-span opener.
+    overrides: { headings: { levels: [{ level: 1, span: 'column', breakBefore: { enabled: false } }] } },
+  },
+};
+```
+
+リゾルバーとストリッパーは、ほかのセクションと同じパターンに従います：
+
+```ts
+import {
+  DEFAULT_HTML_VIEWER_CONFIG,
+  resolveHtmlViewerConfig,
+  stripHtmlViewerDefaults,
+} from 'postext';
+
+const resolved = resolveHtmlViewerConfig(config.htmlViewer);
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+
+const minimal = stripHtmlViewerDefaults(config.htmlViewer);
+// => undefined when everything matches the defaults
+```
+
+一連の使用例は、後述の[HTMLビューアーの統合](/ja/docs/configuration-programmatic-usage#htmlビューアーの統合)を参照してください。
+
+
+## PDF生成（設定）
+
+`pdfGeneration`プロパティは、PDFバックエンドが最終的な文書をどう出力するかを制御します。これらの設定は書き出し時に`postext-pdf`パッケージが使い、canvasとHTMLのビューアーは無視します。
+
+`buildDocument`はこれをVDTの中に`doc.config.pdfGeneration`として持ち運び、`renderToPdf`は各設定を、最初に値を与える場所から取ります：
+
+1. 自身のオプション（`outlines`、`accessible`、`colorSpace`）
+2. 最初に描画する文書の`pdfGeneration`（本では、最初の章の設定がファイル全体に適用されます）
+3. 既定値：しおりとタグ付けはオン、色はRGB
+
+そのため、`renderToPdf(doc, { fontProvider })`は設定に従い、`renderToPdf`に渡したオプションはその設定についてだけ優先されます。`forceColorSpace`と`colorSpace`は2つで`colorSpace`オプションに相当します。`forceColorSpace`がオンのあいだは設定の`colorSpace`が適用され、オフのあいだはPDFはRGBになります。以前のリリースの`postext-pdf`はオプションしか読みませんでした。現在は、`pdfGeneration`を指定した設定によって、オプションを渡さない呼び出し側のPDFも変わります。
+
+```ts
+type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
+
+interface PdfGenerationConfig {
+  outlines?: boolean;          // Emit PDF bookmarks from the heading tree.
+  forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
+  colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
+  accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '180px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>outlines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>見出しの階層からPDFのアウトライン（しおり）を出力し、読者がPDFビューアーのサイドバーから任意の見出しへ直接移動できるようにします。見出しの木構造に意味のない文書（1ページのポスターなど）ではオフにします。</td>
+    </tr>
+    <tr>
+      <td><code>forceColorSpace</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>trueのとき、書き出し時に、描画したPDFのすべての色を`colorSpace`に変換します。入力の色がすでに目的の色空間にある画面向けのPDFではオフのままにし、さまざまな素材が混在しても単一の色空間を保証したいときにオンにします。</td>
+    </tr>
+    <tr>
+      <td><code>colorSpace</code></td>
+      <td><code>'rgb' | 'cmyk' | 'grayscale'</code></td>
+      <td><code>'cmyk'</code></td>
+      <td>`forceColorSpace`がオンのときに使う変換先の色空間です。オフセット印刷には`'cmyk'`、画面専用のPDFには`'rgb'`、モノクロの印刷校正には`'grayscale'`を使います。`forceColorSpace`がfalseのときは効果がありません。CMYKへは[`print`](#印刷出力設定)の出力プロファイル（既定はFOGRA39）とその黒の扱いで分版され、RGBの画像も変換されます。`print`でPDF/X規格を指定すると、この値にかかわらずCMYKで書き出します。</td>
+    </tr>
+    <tr>
+      <td><code>accessible</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>PDF/UA-1に沿った、アクセシブルなタグ付きPDFを出力します。読む順序に並んだ論理構造ツリー（レベルを飛ばさない見出し、段落、リスト、引用ブロック、囲み、見出しセル付きの表、代替テキストとキャプション付きの図、数式、リンクとしてのクリック可能な参照、`:::toc`の内容は1つの`TOC`にまとめて行ごとに`TOCI`を置き、行の番号を`Lbl`、タイトルとページをリンクを含む`Reference`とします）、文書のタイトルと言語（最上位の`locale`）、XMPメタデータ内のPDF/UAの識別情報を含めます。また、装飾的な要素（ページの背景、罫線、ベースライングリッド、ヘッダーとフッター、トンボ、繰り返される表の見出し行、分割された囲みで繰り返されるタイトルと続きの印）をアーティファクトとして指定し、スクリーンリーダーが読み飛ばせるようにします。`altText`のない図は、代わりにキャプションを、それもなければラベルを使います。フロートした図や表は、それを最初に引用するテキスト、または`::resource`行の前のテキストの直後に読まれ、フロートしたボックスはフェンスの前のテキストのあとに読まれます。フロートがあとのページに置かれても同じです。フロートをまたいで続くリストや目次は1つの要素のままです。追加の構造が不要な印刷用マスターの場合だけオフにします。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+pdfGeneration: {
+  outlines: true,
+  accessible: true,
+  forceColorSpace: true,
+  colorSpace: 'cmyk',
+}
+```
+
+リゾルバーとストリッパーはほかのセクションと同じです：
+
+```ts
+import {
+  DEFAULT_PDF_GENERATION_CONFIG,
+  resolvePdfGenerationConfig,
+  stripPdfGenerationDefaults,
+} from 'postext';
+
+const resolved = resolvePdfGenerationConfig(config.pdfGeneration);
+// => { outlines: true, forceColorSpace: false, colorSpace: 'cmyk', accessible: true }
+
+const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
+// => undefined when everything matches the defaults
+```
+
+書き出しの一連の手順は、後述の[PDFの生成](/ja/docs/configuration-programmatic-usage#pdfの生成)を参照してください。
+
+
+## 印刷出力（設定）
+
+`print`プロパティは、本を印刷所に入稿する方法を決めます。ファイルのPDF/X規格、CMYKの分版に使う出力プロファイル、黒の刷り方、プリフライトのしきい値です。レイアウトはこれを無視するので、変更しても行が動くことはありません。これを読むのは次の3つです。ファイルを書き出すときの`postext-pdf`、組み上がった文書を検査するときの`preflightDocument`、canvasとFolioのビューアーの印刷プレビューです。
+
+```ts
+type PdfXStandard = 'none' | 'pdfx1a' | 'pdfx4';
+
+interface PrintConfig {
+  standard?: PdfXStandard;                 // 'none': an ordinary PDF.
+  outputProfile?: string;                  // A catalogue id ('fogra39', 'fogra51'…) or 'custom'.
+  customProfile?: CustomOutputProfile;     // An uploaded .icc file.
+  renderingIntent?: 'relative' | 'perceptual';
+  blackPointCompensation?: boolean;
+  convertImages?: boolean;                 // Separate RGB pictures (PDF/X-1a always does).
+  inkLimit?: number;                       // Total area coverage, percent.
+  black?: PrintBlackConfig;
+  preflight?: PrintPreflightConfig;
+}
+
+interface CustomOutputProfile {
+  name: string;           // Its description, or the file name.
+  fileId: string;         // The stored .icc file.
+  registryName?: string;  // The condition's ICC registry name (FOGRA51…), else 'Custom'.
+  inkLimit?: number;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>プロパティ</th>
+      <th style={{ width: '170px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>standard</code></td>
+      <td><code>'none' | 'pdfx1a' | 'pdfx4'</code></td>
+      <td><code>'none'</code></td>
+      <td>ファイルのPDF/Xの種類です。`'pdfx1a'`はPDF/X-1a:2003を書き出します。CMYKとグレーだけで透明を持たず、どの印刷所でも受け付けます。`'pdfx4'`はPDF/X-4を書き出します。透明とカラーマネジメントを保持する、現行のワークフロー向けの規格です。どちらを選んでも、`pdfGeneration.colorSpace`の値にかかわらず、すべての色を出力プロファイルで分版します。</td>
+    </tr>
+    <tr>
+      <td><code>outputProfile</code></td>
+      <td><code>string</code></td>
+      <td><code>'fogra39'</code></td>
+      <td>CMYKの分版先となる印刷条件です。[プロファイルの一覧](#出力プロファイル)にあるID、または`customProfile`を使う`'custom'`を指定します。一覧にないIDや、ファイルのない`'custom'`は既定値に戻り、設定の警告が出ます。</td>
+    </tr>
+    <tr>
+      <td><code>customProfile</code></td>
+      <td><code>CustomOutputProfile</code></td>
+      <td>なし</td>
+      <td>自分で用意するCMYKの出力プロファイルです。印刷所から渡されるもの（ECIの`PSOcoated_v3.icc`など）を使います。バイト列はフォントと同じく設定の外に保存され、`renderToPdf`には`outputProfile`オプションで渡します。`registryName`は、出力インテントの印刷条件の識別子として書き込まれます。</td>
+    </tr>
+    <tr>
+      <td><code>renderingIntent</code></td>
+      <td><code>'relative' | 'perceptual'</code></td>
+      <td><code>'relative'</code></td>
+      <td>相対的な色域を維持（relative colorimetric）は、印刷機で刷れる色を正確に保ち、それ以外を最も近い刷れる色に切り詰めます。知覚的（perceptual）は色域全体を圧縮し、色域外の色どうしの関係を保ちます。</td>
+    </tr>
+    <tr>
+      <td><code>blackPointCompensation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>相対的な色域を維持のとき、画面の黒を印刷機で刷れるいちばん濃い黒に合わせます。最も暗い階調がつぶれず、細部が残ります。</td>
+    </tr>
+    <tr>
+      <td><code>convertImages</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>RGBの画像をプロファイルでCMYKに分版します。PDF/X-1aは常に変換します。PDF/X-4で`false`にすると、画像はRGBのまま残り、ページの`/DefaultRGB`でsRGBとしてタグ付けされ、印刷所のRIPが変換します。CMYKとグレーのJPEGは常にそのまま埋め込まれます。</td>
+    </tr>
+    <tr>
+      <td><code>inkLimit</code></td>
+      <td><code>number</code></td>
+      <td>プロファイルの値</td>
+      <td>プリフライトが許すC+M+Y+Kの合計の上限（%）です。既定値は、プロファイルが分版するときの上限です（たいていのオフセット条件で300%、新聞用紙のIFRA26で230%）。</td>
+    </tr>
+    <tr>
+      <td><code>black</code></td>
+      <td><code>PrintBlackConfig</code></td>
+      <td><a href="#黒">黒</a>を参照</td>
+      <td>K版のみのグレー、オーバープリント、リッチブラック。</td>
+    </tr>
+    <tr>
+      <td><code>preflight</code></td>
+      <td><code>PrintPreflightConfig</code></td>
+      <td><a href="#プリフライト">プリフライト</a>を参照</td>
+      <td>プリフライトが検査する項目と、そのしきい値。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+print: {
+  standard: 'pdfx4',
+  outputProfile: 'fogra51',
+  black: { richBlackColor: { c: 60, m: 40, y: 40, k: 100 } },
+  preflight: { minImageResolution: 300, safeZone: { value: 5, unit: 'mm' } },
+}
+```
+
+### 出力プロファイル
+
+`postext`は、次のCMYK出力プロファイルを`icc/`フォルダーに同梱しています（どのnpm CDNでも`postext/icc/<id>.icc`、postext.devでは`/icc/<id>.icc`）。どれも既知の著作権の制約がありません（CC0）。colordのFOGRA、GRACoL、SWOP、新聞用のプロファイルは、各条件の特性データから生成されたものです。FOGRA51とFOGRA52は、postextがFogra自身のデータからArgyllCMSで作成しました。ECIのプロファイル（ISO Coated v2、PSO Coated v3、PSO Uncoated v3）は同じ条件を表しますが、再配布できません。印刷所に求められたら、カスタムプロファイルとしてアップロードしてください。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>ID</th>
+      <th>印刷条件</th>
+      <th style={{ width: '150px' }}>レジストリ名</th>
+      <th style={{ width: '90px' }}>総インキ量</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fogra39</code></td><td>オフセット、コート紙（ISO Coated v2の条件）</td><td>FOGRA39</td><td>300%</td></tr>
+    <tr><td><code>fogra51</code></td><td>オフセット、プレミアムコート紙（PSO Coated v3の条件）</td><td>FOGRA51</td><td>300%</td></tr>
+    <tr><td><code>fogra52</code></td><td>オフセット、上質紙（PSO Uncoated v3の条件）</td><td>FOGRA52</td><td>300%</td></tr>
+    <tr><td><code>fogra47</code></td><td>オフセット、白色の非塗工紙（PSO Uncoated ISO 12647）</td><td>FOGRA47</td><td>300%</td></tr>
+    <tr><td><code>fogra29</code></td><td>オフセット、白色の非塗工紙</td><td>FOGRA29</td><td>300%</td></tr>
+    <tr><td><code>fogra30</code></td><td>オフセット、黄みの非塗工紙</td><td>FOGRA30</td><td>340%</td></tr>
+    <tr><td><code>fogra27</code></td><td>オフセット、コート紙（ISO 12647-2:1996）</td><td>FOGRA27</td><td>300%</td></tr>
+    <tr><td><code>fogra28</code></td><td>ヒートセット輪転オフセット、光沢LWC紙</td><td>FOGRA28</td><td>300%</td></tr>
+    <tr><td><code>fogra45</code></td><td>ヒートセット輪転オフセット、改良LWC紙</td><td>FOGRA45</td><td>300%</td></tr>
+    <tr><td><code>fogra40</code></td><td>ヒートセット輪転オフセット、SC紙</td><td>FOGRA40</td><td>340%</td></tr>
+    <tr><td><code>gracol2006</code></td><td>GRACoL 2006、グレード1のコート紙</td><td>CGATS TR 006</td><td>300%</td></tr>
+    <tr><td><code>swop3</code></td><td>SWOP 2006、グレード3のコート紙</td><td>CGATS TR 003</td><td>300%</td></tr>
+    <tr><td><code>swop5</code></td><td>SWOP 2006、グレード5のコート紙</td><td>CGATS TR 005</td><td>300%</td></tr>
+    <tr><td><code>ifra26</code></td><td>コールドセットの新聞用紙（ISO 12647-3）</td><td>IFRA26</td><td>230%</td></tr>
+    <tr><td><code>snap2007</code></td><td>SNAP 2007の新聞用紙</td><td>CGATS TR 002</td><td>320%</td></tr>
+  </tbody>
+</table>
+
+`renderToPdf`は、プロファイルのバイト列を`outputProfile`オプションから読みます。渡されなければ、一覧のファイルを`profileBaseUrl`（既定は`https://cdn.jsdelivr.net/npm/postext/icc/`）から取得します。プロファイルを読み込めないとき、PDF/Xの描画は失敗します。通常のCMYKの描画は、`outputProfileUnavailable`の警告を出して教科書的な換算式に戻ります。
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { renderToPdf } from 'postext-pdf';
+
+const pdf = await renderToPdf(doc, {
+  fontProvider,
+  print: { standard: 'pdfx1a', outputProfile: 'fogra39' },
+  outputProfile: await readFile('node_modules/postext/icc/fogra39.icc'),
+});
+```
+
+### PDF/X-1aとPDF/X-4
+
+どちらの規格も、次のものを書き出します。
+
+- 印刷条件を示し、出力先のプロファイルを埋め込んだ出力インテント（`GTS_PDFX`）。
+- Info辞書（`GTS_PDFXVersion`、`/Trapped /False`、タイトルと日付）とXMPメタデータ（`pdfxid:GTSPDFXVersion`、文書とバージョンのID）の識別情報。タグ付きのファイルでは、PDF/UAの識別情報と統合します。
+- 各ページのTrimBoxとBleedBox（トンボがないときはページ全体）。
+- トレーラーの`/ID`。
+- プロファイルを通したDeviceCMYK（またはグレー）のすべての色と、レジストレーションカラーのトンボ。
+- リンク注釈は含めません。印刷用のファイルは裁ち落とし枠の内側に注釈を持たないので、画面用のPDFにあるリンクは省きます（しおりは残ります）。
+
+PDF/X-1a:2003は、オブジェクトストリームを使わないPDF 1.4で、透明を持ちません。半透明の色は紙の上に刷ったときの色で置き、画像のアルファは白の上で統合し、デバッグ用のページネガは省きます（`pageNegativeIgnored`の警告が出ます）。PDF/X-4はPDF 1.6です。透明は残り、各ページはCMYKで合成する透明グループを持ちます。`convertImages: false`で残したRGBの画像は、`/DefaultRGB`でsRGBとしてタグ付けされます。
+
+PDFの印刷用マスター（`svg.pdfFileId`）はそのまま埋め込まれるので、その色、フォント、透明はマスター自身のものです。マスターが持ち込むものは、プリフライトが報告します。
+
+### 黒
+
+```ts
+interface PrintBlackConfig {
+  kOnlyNeutrals?: boolean;      // Greys and black in black ink only.
+  overprint?: boolean;          // 100 % K overprints.
+  richBlack?: boolean;          // Large black areas in rich black.
+  richBlackColor?: CmykPercent; // { c, m, y, k } in percent.
+  richBlackMinSize?: Dimension; // The smaller side an area needs.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '140px' }}>型</th>
+      <th style={{ width: '170px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kOnlyNeutrals</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>無彩色（`#000000`、`#808080`…）は墨インキだけで刷ります。Kの値は明度が合うように選ばれ、見当ずれで色が揺れる4色グレーにはなりません。画像はプロファイル自身の墨版生成に従います。</td>
+    </tr>
+    <tr>
+      <td><code>overprint</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>K 100%だけで描くもの（黒の文字、罫線、線、小さな黒い図形）はオーバープリントします（`OPM 1`で`op`/`OP`）。印刷機で版がずれても、周りに白い縁が出ません。それ以外はノックアウトし、画像とシェーディングはオーバープリントしません。</td>
+    </tr>
+    <tr>
+      <td><code>richBlack</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>短辺が`richBlackMinSize`に達する黒い塗り（背景、帯、ボックス）は`richBlackColor`で刷り、ノックアウトします。濃いグレーではなく、深い黒に見えます。文字はリッチブラックになりません。</td>
+    </tr>
+    <tr>
+      <td><code>richBlackColor</code></td>
+      <td><code>CmykPercent</code></td>
+      <td><code>{`{ c: 60, m: 40, y: 40, k: 100 }`}</code></td>
+      <td>リッチブラックの配合（%）です。合計は総インキ量の上限より下に保ってください。プリフライトが確認します。</td>
+    </tr>
+    <tr>
+      <td><code>richBlackMinSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6mm</code></td>
+      <td>黒い面をリッチブラックで刷るのに必要な短辺の大きさです。</td>
+    </tr>
+  </tbody>
+</table>
+
+### CMYKで指定した色
+
+CMYKで書いた色は、その値をそのまま保ちます。印刷用の描画では`ColorValue.cmyk`（%）がそのまま使われ、`hex`は画面での表示になります。CMYKで指定したパレットの項目は、それに連動するすべての色に適用されます。
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### プリフライト
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // ppi at the printed size.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>プロパティ</th>
+      <th style={{ width: '110px' }}>型</th>
+      <th style={{ width: '100px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>検査を実行します。</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>印刷サイズ（トリミングを含む）での1インチあたりの画素数がこれを下回る、配置したビットマップに警告を出します。対象は図、表のセルの画像、デザインの画像、漫画のコマです。自身の解像度を持たないビットマップは原寸では`page.dpi`で印刷されるので、150 dpiで組んだページでは、そうした画像はすべて150 ppiで印刷されます。解像度（`bitmap.resolution`、`layout.bitmapResolution`）を持つビットマップは、原寸ではその解像度で印刷されます。</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>これを下回ると、警告は重大になります。`minImageResolution`より大きくはなりません。</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>これより細い罫線、枠、段間罫、表の罫、漫画のコマの枠。</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>これより小さく、複数のインキ（プロセスカラー、リッチブラック）で刷る文字。版がずれるとにじみます。K版だけの黒い文字は対象になりません。</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>仕上がり線からこの距離より近い文字。断裁で切られるおそれがあります。</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>仕上がり線からこの距離の手前で止まり、塗り足しまで届いていないボックスや画像。塗り足しまで伸ばすか、内側に寄せてください。</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>配置したPDFが埋め込んでいないフォントを報告します（Sandboxは各印刷用マスターを`inspectPrintMaster`で調べます）。Postextは組んだフォントをすべて埋め込みます。</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)`は組み上がった文書を検査し、問題の一覧を返します。各問題は、`kind`、`severity`（`'critical'`、`'warning'`、`'info'`）、本全体での`pageIndex`、問題のある`rect`（ページのpx）と、要素が持っていればそのソースの範囲を持ちます。`kind`は`lowImageResolution`、`declaredPixelsMismatch`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`、`nearTrim`です。`transform`を渡さないときは、無彩色を1色、それ以外の色を3色と数え、インキ量は検査しません。渡すと、色数もインキ量も正確に求めます。画像の解像度は、リソースが宣言するピクセル数から求めます。`imageSize(fileId)`がファイル自体のピクセル数を返すとき（バイト列に対する`bitmapInfo`、またはデコードした画像）は、そちらを使います。宣言がファイルと1ピクセルより大きく食い違うと`declaredPixelsMismatch`として1回報告され、ファイルにあるより多いピクセル数を宣言している場合は警告になります。`placedImageResolutions(doc, { resources, imageSize })`は、プリフライトの有効・無効にかかわらず、配置したすべてのビットマップをその実効ppiとともに一覧にします。
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
+
+### 印刷プレビュー
+
+canvasのページは、印刷される見た目で描けます。`createPrintPreview(transform, print, { paper, dpi })`は、設定からソフトプルーフを作ります。各ピクセルをプロファイルで分版し（PDFと同じく、無彩色はK版のみ）、画面の色に戻して表示します。`paper`がtrueなら、紙そのものの白の上に表示します。リッチブラックにする大きさの黒い面は、リッチブラックで表示されます。これを`renderPageToCanvas`に`printPreview`として渡します。`guides`は仕上がり線、塗り足し、セーフゾーンの線を加え、`marksFor`はページ上の領域（プリフライトの`rect`）を枠で囲みます。`postext-folio`も同じオブジェクトを`printPreview`として受け取ります（本の紙の色合いがページに付くので、`paper: false`にします）。
+
+```ts
+import { createPrintPreview, renderPageToCanvas } from 'postext';
+
+const preview = createPrintPreview(transform, print, { paper: true, dpi: doc.config.page.dpi });
+renderPageToCanvas(page, doc, canvas, {
+  printPreview: { ...preview, guides: { safeZonePx: 59 }, marksFor: () => issues.map((i) => i.rect!).filter(Boolean) },
+});
+```
+
+### カラーエンジン
+
+postextが使うカラーマネジメントは、独自のツールのためにエクスポートされています。ICC v2とv4のプロファイル（マトリクス/TRCと、`mft1`、`mft2`、`mAB`、`mBA`のルックアップテーブル）を、WebAssemblyを使わずに素のTypeScriptで読みます。
+
+- `parseIccProfile(bytes)`はプロファイルを読み、`deviceChannels(profile)`はそのチャンネル数を返します。
+- `outputTransform(profile, { intent, blackPointCompensation, preserveNeutrals })`は、`fromRgb(r, g, b)`（sRGB 0..1 → CMYK 0..1）、`toLab(cmyk, paper?)`、`proof(cmyk, paper?)`（CMYK → 画面のsRGB）を返します。
+- `cmykToLab`、`labToCmyk`、`srgbToLab`、`labToSrgb`、`deltaE`、`totalAreaCoverage`は単独の変換です。`buildRgbLut` / `sampleRgbLut`は、ピクセル処理用の密なルックアップテーブルを作って読みます。
+- `OUTPUT_PROFILES`、`outputProfileInfo(id)`、`loadOutputProfile(id, baseUrl?)`はプロファイルの一覧を返します。`srgbProfileBytes()`は、PDF/X-4がRGBのタグ付けに使うsRGBプロファイルを書き出します。`authoredCmykColors(config)`は、設定がCMYKで指定した色を一覧にします。
+
+リゾルバーとストリッパーはほかのセクションと同じです。`resolvePrintConfig`、`stripPrintDefaults`、`profileInkLimit(config)`（`inkLimit`で上書きする前の、設定が指定したプロファイルの上限）と、`DEFAULT_PRINT_CONFIG`、`DEFAULT_PRINT_BLACK_CONFIG`、`DEFAULT_PRINT_PREFLIGHT_CONFIG`、`DEFAULT_RICH_BLACK`があります。
+
+
+## Folioビューアー（設定）
+
+`folio`プロパティは、Folioビューアー（`postext-folio`）が印刷された本を3Dでどう見せるかを設定します。対象は視点の角度、紙、製本、本を置く台、照明です。レイアウトはこれを無視し、canvas、HTML、PDFの出力も同様です。`buildDocument`は、設定がいずれかの値を指定しているときに限り、解決した設定をVDTの`doc.config.folio`として持ち運びます。そのため、これらを指定しない文書のレイアウトハッシュは変わりません。
+
+```ts
+interface FolioConfig {
+  tilt?: number;                  // Degrees from straight above, 0–70.
+  yaw?: number;                   // Degrees round the book, −180–180.
+  paper?: {
+    type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
+         | 'bible' | 'newsprint' | 'cardStock' | 'board';
+    grammage?: number;            // g/m²
+    bulk?: number;                // cm³/g; caliper µm = grammage × bulk
+    finish?: 'auto' | 'uncoated' | 'matte' | 'silk' | 'gloss';
+    texture?: 'auto' | 'smooth' | 'vellum' | 'wove' | 'laid' | 'linen' | 'felt';
+    textureStrength?: number;     // 0–2
+    shade?: ColorValue;
+    showThrough?: boolean;
+  };
+  binding?: {
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch' | 'folded';
+    cover?: 'case' | 'pages';
+    coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
+    coverColor?: ColorValue;
+    spineImage?: string;          // resource id
+  };
+  surface?: {
+    type?: 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' | 'marble' | 'plain' | 'none';
+    color?: ColorValue;
+  };
+  lighting?: {
+    environment?: 'studio' | 'daylight' | 'lamp' | 'overcast' | 'night';
+    intensity?: number;           // 0.25–2
+    shadows?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '180px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>tilt</code></td>
+      <td><code>number</code></td>
+      <td><code>22</code></td>
+      <td>真上からの視点の傾きで、単位は度です。0–70の範囲に収めます。0では開いた本を真上から平らに見ます。角度を大きくするとページの地が手前に来て、本の束の厚みが見えるようになります。</td>
+    </tr>
+    <tr>
+      <td><code>yaw</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>本のまわりで視点を回す角度で、単位は度です。−180–180の範囲に収めます。0では本をページの地の側から見ます。正の角度では視点が本の右側へ、負の角度では左側へ回ります。<code>tilt</code>とあわせて、ビューアーが開いたときの視点となり、<code>resetView()</code>で戻る視点にもなります。</td>
+    </tr>
+    <tr>
+      <td><code>paper.type</code></td>
+      <td><code>FolioPaperType</code></td>
+      <td><code>'uncoated'</code>、新聞の判型では<code>'newsprint'</code></td>
+      <td>用紙です。下の5つのフィールドの既定値を与えます（用紙の表を参照）。<code>cardStock</code>は表紙用の厚紙、<code>board</code>はボードブックに使うような硬い板紙で、その丁は曲がらずにめくれます。</td>
+    </tr>
+    <tr>
+      <td><code>paper.grammage</code></td>
+      <td><code>number</code></td>
+      <td>用紙の値</td>
+      <td>1平方メートルあたりのグラム数で表す重さ（坪量）で、20–2500です。重い紙ほど厚く、硬く、不透明になります。丁は大きな曲線を描いて曲がり、裏面の透けが少なくなります。</td>
+    </tr>
+    <tr>
+      <td><code>paper.bulk</code></td>
+      <td><code>number</code></td>
+      <td>用紙の値</td>
+      <td>重さあたりの厚さ（嵩）で、単位はcm³/g、範囲は0.5–3です。1枚の紙厚（マイクロメートル）は坪量 × 嵩で、本の束の厚さはこれとページ数から決まります。</td>
+    </tr>
+    <tr>
+      <td><code>paper.finish</code></td>
+      <td><code>FolioPaperFinish</code></td>
+      <td><code>'auto'</code></td>
+      <td>非塗工（繊維のまま、光沢なし）か、塗工してカレンダー加工でマット、シルク（柔らかな光沢）、グロスに仕上げたものです。Folioでは、グロスのページはその上でめくられる紙葉を映します。<code>'auto'</code>は用紙の値を使います。</td>
+    </tr>
+    <tr>
+      <td><code>paper.texture</code></td>
+      <td><code>FolioPaperTexture</code></td>
+      <td><code>'auto'</code></td>
+      <td>表面の凹凸です。<code>smooth</code>（カレンダー加工の平滑な面）、<code>vellum</code>（細かなざらつき）、<code>wove</code>（多くの書籍用紙に見られる均一な地合いで、織った金網の上で抄かれます）、<code>laid</code>（ダンディロールが残す、細かく並んだ簀の目と、それと交わる間隔の広いチェーンライン）、<code>linen</code>（エンボス加工の布目）、<code>felt</code>（不規則なフェルト目）があります。<code>'auto'</code>は用紙の値を使います。</td>
+    </tr>
+    <tr>
+      <td><code>paper.textureStrength</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>光の中でテクスチャーがどれだけ強く見えるかで、0–2です。</td>
+    </tr>
+    <tr>
+      <td><code>paper.shade</code></td>
+      <td><code>ColorValue</code></td>
+      <td>用紙の値</td>
+      <td>印刷前の紙の色（白、ナチュラル、クリーム）です。ページはこの上に印刷されます。</td>
+    </tr>
+    <tr>
+      <td><code>paper.showThrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>薄い紙では、ページの裏面がかすかに透けて見えます。<code>bible</code>に次いで裏がよく透けるのは新聞用紙です。インキが紙の中にしみ込むためです。</td>
+    </tr>
+    <tr>
+      <td><code>binding.type</code></td>
+      <td><code>FolioBindingType</code></td>
+      <td><code>'hardcover'</code>、新聞の判型では<code>'folded'</code></td>
+      <td><code>hardcover</code>：上製本で、表紙ボードはページよりわずかに大きくなります。<code>paperback</code>：無線綴じ（背を削って糊付け）で、平らに開きにくくなります。<code>sewn</code>：折丁を糸でかがったソフトカバーです。<code>layflat</code>：のどにくぼみができず、平らに開きます。<code>saddleStitch</code>：雑誌や小冊子のように、折った紙を折り目でホチキス留めします。平らな背はありません。<code>folded</code>（postext 1.18以降）：新聞です。一度折った紙を重ねて差し込んだだけで、留めるものはありません。針金も背も表紙のボードもなく、最初のページが1面になります。<code>shade</code>を付けた<a href="/ja/docs/document-format#paper"><code>:::paper</code></a>の区間で、経済面などをサーモンピンクの新聞用紙に刷れます。</td>
+    </tr>
+    <tr>
+      <td><code>binding.cover</code></td>
+      <td><code>FolioCoverSource</code></td>
+      <td><code>'case'</code></td>
+      <td>表紙です。<code>'case'</code>はページをくるむ表紙を描きます。<code>'pages'</code>は本の最初のページを表表紙に、最後のページが偶数ページであればそれを裏表紙にします。本は表紙をめくるまで閉じた状態で置かれ、表紙は曲がらずにめくれます（中綴じでは、表紙はページより少し厚い紙で、ページと同じようにめくれます）。くるむ表紙は描かれません。</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverMaterial</code></td>
+      <td><code>FolioCoverMaterial</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code>は、上製本ではクロス、ほかの製本では厚紙（<code>'paper'</code>）です。</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>濃紺（<code>#2c3e57</code>）</td>
+      <td>表紙の素材の色です。</td>
+    </tr>
+    <tr>
+      <td><code>binding.spineImage</code></td>
+      <td><code>string</code></td>
+      <td>なし</td>
+      <td>背に印刷するビットマップまたはSVGリソースのidです。画像は、本を天を上にして立て、表表紙を右に向けたときに見える背の向きで用意します。背を覆うように、中央にそろえて収めます。中綴じと折りでは無視されます。</td>
+    </tr>
+    <tr>
+      <td><code>surface.type</code></td>
+      <td><code>FolioSurfaceType</code></td>
+      <td><code>'oak'</code></td>
+      <td>本を置く台です。<code>'none'</code>ではホストの背景がそのまま残ります。</td>
+    </tr>
+    <tr>
+      <td><code>surface.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>なし</td>
+      <td>置き台に色合いを付けます。<code>'plain'</code>ではこれが置き台の色になります。</td>
+    </tr>
+    <tr>
+      <td><code>lighting.environment</code></td>
+      <td><code>FolioEnvironment</code></td>
+      <td><code>'studio'</code></td>
+      <td>塗工紙や光沢紙に映り込む周囲の環境で、影を落とすキーライトと組になっています。</td>
+    </tr>
+    <tr>
+      <td><code>lighting.intensity</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>露出で、0.25–2です。</td>
+    </tr>
+    <tr>
+      <td><code>lighting.shadows</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>キーライトが落とす影です。</td>
+    </tr>
+  </tbody>
+</table>
+
+用紙と、それぞれが与える値（`FOLIO_PAPER_STOCKS`）です。製紙会社のデータシートにある代表的な値を使っています：
+
+<table>
+  <thead>
+    <tr>
+      <th>用紙</th>
+      <th>坪量</th>
+      <th>嵩</th>
+      <th>紙厚</th>
+      <th>仕上げ</th>
+      <th>テクスチャー</th>
+      <th>紙色</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>uncoated</code>（上質紙、オフセット）</td><td>90 g/m²</td><td>1.25</td><td>113 µm</td><td>非塗工</td><td>ウーブ</td><td><code>#fcfbf8</code></td></tr>
+    <tr><td><code>bookWove</code>（クリーム、嵩高）</td><td>80 g/m²</td><td>1.6</td><td>128 µm</td><td>非塗工</td><td>ウーブ</td><td><code>#f6efdc</code></td></tr>
+    <tr><td><code>coatedMatte</code></td><td>115 g/m²</td><td>1.0</td><td>115 µm</td><td>マット</td><td>平滑</td><td><code>#fdfdfc</code></td></tr>
+    <tr><td><code>coatedSilk</code></td><td>115 g/m²</td><td>0.9</td><td>104 µm</td><td>シルク</td><td>平滑</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>coatedGloss</code></td><td>115 g/m²</td><td>0.8</td><td>92 µm</td><td>グロス</td><td>平滑</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>bible</code></td><td>40 g/m²</td><td>1.1</td><td>44 µm</td><td>非塗工</td><td>ベラム</td><td><code>#f9f6ee</code></td></tr>
+    <tr><td><code>newsprint</code></td><td>48 g/m²</td><td>1.5</td><td>72 µm</td><td>非塗工</td><td>ウーブ</td><td><code>#ebe7dc</code></td></tr>
+    <tr><td><code>cardStock</code></td><td>250 g/m²</td><td>1.2</td><td>300 µm</td><td>非塗工</td><td>ベラム</td><td><code>#fbfaf6</code></td></tr>
+    <tr><td><code>board</code></td><td>1250 g/m²</td><td>1.6</td><td>2000 µm</td><td>シルク</td><td>平滑</td><td><code>#ffffff</code></td></tr>
+  </tbody>
+</table>
+
+クリーム色の書籍用紙に刷った並製本の小説を、読書灯の下のウォールナットの机に置いた例です：
+
+```ts
+folio: {
+  paper: { type: 'bookWove' },
+  binding: { type: 'paperback', coverColor: { hex: '#8a2b1f', model: 'hex' } },
+  surface: { type: 'walnut' },
+  lighting: { environment: 'lamp' },
+}
+```
+
+新聞の判型（`page.sizePreset`が`'broadsheet'`、`'berliner'`、`'tabloid'`、`'compact'`）のページは、設定が用紙も綴じも指定していなければ新聞として表示されます。用紙は`newsprint`、綴じは`folded`です（postext 1.18以降）。設定が指定した用紙や綴じはそのまま使われるので、`paper: { type: 'uncoated' }`とすればタブロイドが上質紙に刷られます。用紙を指定せずに設定した紙のフィールド（`grammage`や`shade`）は新聞用紙に適用されます。リゾルバーとストリッパーは判型を2番目の引数に取り、`folioForTrim(folio, sizePreset)`はこの2つの既定値を設定に書き込みます：
+
+```ts
+resolveFolioConfig({ tilt: 30 }, 'tabloid');
+// => { tilt: 30, paper: { type: 'newsprint', grammage: 48, bulk: 1.5, … }, binding: { type: 'folded', coverMaterial: 'paper', … }, … }
+
+stripFolioDefaults({ paper: { type: 'newsprint' }, binding: { type: 'folded' } }, 'tabloid');
+// => undefined
+```
+
+色は、設定のほかの色と同じくパレットのリンク（`paletteId`）に従います。リゾルバーとストリッパーはほかのセクションと同じです。ストリッパーは、選んだ用紙の値と等しい紙の値を取り除きます：
+
+```ts
+import { FOLIO_PAPER_STOCKS, DEFAULT_FOLIO_CONFIG, resolveFolioConfig, stripFolioDefaults } from 'postext';
+
+resolveFolioConfig({ paper: { type: 'bible' } }).paper;
+// => { type: 'bible', grammage: 40, bulk: 1.1, finish: 'uncoated', texture: 'vellum', textureStrength: 1, shade: { hex: '#f9f6ee', … }, showThrough: true }
+
+stripFolioDefaults({ paper: { type: 'bible', grammage: 40 } });
+// => { paper: { type: 'bible' } }
+```
+
+Sandboxでは、これらの設定はデザインパネルの**Folio**グループ（**デザイン → Folio → Folioビューアー（3D）**）にあります。Folioタブは、本を組み直さずに変更をその場で反映します。ビューアーそのものについては[3Dの本](/ja/docs/configuration-programmatic-usage#3dの本postext-folio)を、別の用紙に刷る一連のページについては[文書形式 › `:::paper`](/ja/docs/document-format#paper)を参照してください。
+
+
+## デバッグ
+
+`debug`プロパティは、2種類の執筆支援をまとめます。ソースのテキストと描画されたレイアウトを同期させる視覚的なオーバーレイと、組版上・構造上の問題をSandboxの検査パネルに表示する警告です。どちらも書き出す出力には影響しません。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>描画したレイアウトに映すキャレットです。<a href="#表示オーバーレイ">表示オーバーレイ</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>ソースの選択範囲をページ上で強調します。<a href="#表示オーバーレイ">表示オーバーレイ</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight</code></td>
+      <td><code>LooseLineHighlightConfig</code></td>
+      <td>両端そろえのゆるい行に重ねるオーバーレイです。<a href="#表示オーバーレイ">表示オーバーレイ</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative</code></td>
+      <td><code>{'{ enabled: boolean }'}</code></td>
+      <td>ページのハイコントラストの反転表示です。<a href="#表示オーバーレイ">表示オーバーレイ</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>warnings</code></td>
+      <td><code>WarningsToggleConfig</code></td>
+      <td>エディターに表示する執筆時の警告の種類ごとのブール値です。<a href="#警告">警告</a>を参照してください。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 表示オーバーレイ
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>プロパティ</th>
+      <th style={{ width: '120px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>ソースのカーソル位置を映すキャレットを、描画したレイアウトに表示します。</td>
+    </tr>
+    <tr>
+      <td><code>cursorSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#2563eb</code></td>
+      <td>そのキャレットの色です。</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>ソースの選択範囲に対応する、描画された範囲を強調します。</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fde04780</code></td>
+      <td>強調の色です。既定では半透明の黄色です。</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>語間が通常のスペース幅の<code>threshold</code>倍を超える両端そろえの行に、オーバーレイを描きます。</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ff000040</code></td>
+      <td>そのオーバーレイの色です。</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.threshold</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>両端そろえの行をゆるいとみなす、通常のスペース幅に対する倍率です。<code>looseLines</code>警告も同じしきい値を使います。スペースが3倍を超えて伸びる両端そろえの行は行末をそろえずに組まれるため、既定値のままでは、オーバーレイも警告も通常の本文ではほとんど何も見つけません。ゆるいがまだ両端そろえになっている行を見るには、値を下げてください（1.5や2）。</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>ページにハイコントラストの反転オーバーレイを重ねます。字形の細部に気を取られずに、見開きの全体の形（文字の密度、段末のそろい、余白）をひと目で確かめるのに役立ちます。</td>
+    </tr>
+  </tbody>
+</table>
+
+各`SyncIndicatorConfig`は`{ enabled: boolean; color?: ColorValue }`です。`LooseLineHighlightConfig`は`{ enabled: boolean; color?: ColorValue; threshold?: number }`です。`pageNegative`は最小限の`{ enabled: boolean }`の切り替えです。
+
+```ts
+debug: {
+  cursorSync: { enabled: true, color: { hex: '#ff0066', model: 'hex' } },
+  selectionSync: { enabled: false, color: { hex: '#fde04780', model: 'hex' } },
+  looseLineHighlight: { enabled: true, color: { hex: '#ff000040', model: 'hex' }, threshold: 3 },
+  pageNegative: { enabled: true },
+}
+```
+
+これらのオーバーレイは、SandboxがCanvasのプレビューの上に描くものです。ページの一部ではないため、`renderPage`、HTML出力、PDFがこれを描くことはありません。
+
+### 自前のcanvasでのゆるい行
+
+エンジンは、自分で描くページのために、ゆるい行の強調を2つのヘルパーとしてエクスポートしています：
+
+```ts
+import { buildDocument, renderPageToCanvas, drawLooseLines, findLooseLines } from 'postext';
+
+const doc = buildDocument(content, config);
+const canvas = document.querySelector('canvas')!;
+renderPageToCanvas(doc.pages[0], doc, canvas, { scale: 0.5 });
+drawLooseLines(canvas.getContext('2d')!, doc.pages[0], doc, { threshold: 2.5 });
+
+// The same lines as data: a report, an SVG overlay, a count per page.
+for (const { ratio, line, block } of findLooseLines(doc, { threshold: 2.5 })) {
+  console.log(`page ${block.pageIndex + 1}: ${ratio.toFixed(2)}× — ${line.text}`);
+}
+```
+
+- **`findLooseLines(doc, { threshold?, pageIndex? })`**：`justifiedSpaceRatio`が`threshold`を超えるすべての両端そろえの行を、読む順に返します（`{ block, line, ratio, x, y, width, height }`）。矩形はページのピクセル単位で、強調が覆う帯、つまりその行の位置でブロックの全幅にわたる帯です。これらは、Sandboxが強調し、検査パネルで`looseLine`として報告する行と同じです。
+- **`drawLooseLines(ctx, page, doc, { threshold?, color? })`**：1ページについてその帯を塗り、塗った行を返します。コンテキストの現在の変換のもとでページのピクセル単位で描くため、同じcanvasで`renderPage`または`renderPageToCanvas`を呼んだ直後に呼び出してください。どちらもコンテキストをページに合わせてスケールした状態のままにします。`color`には任意のcanvasの塗りスタイルを指定できます。
+- **既定値**：どちらのヘルパーも、文書の`debug.looseLineHighlight`ではなく、既定のしきい値（3）と色（`#ff000040`）を使います。この設定はSandboxのためのものです。設定に従わせるには、`resolveDebugConfig(config.debug).looseLineHighlight.threshold`と`.color.hex`を渡します。
+
+### 警告
+
+`debug.warnings`は、Sandboxの**検査**パネル（**デザイン → 詳細設定 → 警告**で編集）にどの執筆時の問題を表示するかを制御します。各キーは独立したブール値の切り替えで、1つを`false`にすると、ほかを無効にせずにその警告だけを止められます。
+
+これらの切り替えが絞り込むのはSandboxのパネルだけです。エンジン自身が記録する警告（`doc.warnings`に入る、段からあふれるボックス。`doc.contentWarnings`に入る、不明なリソースid・ディレクティブ・埋め込み・スタイルidと、不規則な表のグリッド）は切り替えにかかわらず記録され、レンダラーはプレースホルダーとして描いた画像を報告します。[文書の中の警告](/ja/docs/configuration-programmatic-usage#文書の中の警告)を参照してください。
+
+```ts
+interface WarningsToggleConfig {
+  missingFont?: boolean;
+  looseLines?: boolean;
+  headingHierarchy?: boolean;
+  consecutiveHeadings?: boolean;
+  listAfterHeading?: boolean;
+  designIssues?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '120px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>missingFont</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>設定が参照するフォントをブラウザーで読み込めなかったときに報告します。`fontFamily`の打ち間違いや`@fontsource/...`パッケージの不足を、描画結果で気付かれないままフォールバックフォントに置き換わる前に、早い段階で見つけられます。</td>
+    </tr>
+    <tr>
+      <td><code>looseLines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>語間が`debug.looseLineHighlight.threshold`を超える両端そろえの行を報告します。オーバーレイと対になる機能で、警告はパネルに一覧を出し、オーバーレイはその場で示します。</td>
+    </tr>
+    <tr>
+      <td><code>headingHierarchy</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>段階を飛ばす見出しレベルを報告します（H1の直後にH3が来るなど）。見出しの構造の飛びは、たいてい見出しの深さの打ち間違いか、文書のアウトラインの取り違えを示しています。</td>
+    </tr>
+    <tr>
+      <td><code>consecutiveHeadings</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>見出しのすぐあとに、段落やリストを挟まずに別の見出しが続くときに報告します。見出しの連続は多くのテンプレートで正当なもの（タイトルとサブタイトル、章とエピグラフ）なので、既定ではオフです。すべての見出しが本文を導入するはずの原稿ではオンにします。</td>
+    </tr>
+    <tr>
+      <td><code>listAfterHeading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>導入の段落なしで、見出しの直後にリストが始まるときに報告します。参考資料ではよくあることなので、既定ではオフです。すべてのリストを文章で導入すべき物語的な文章ではオンにします。</td>
+    </tr>
+    <tr>
+      <td><code>designIssues</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>デザインスロットの整合性の問題を報告します。対象は、ページのヘッダー、フッター、部扉とそのあとの白の偶数ページ、目次の部の行、見出しの詳細デザインのスロット、各見出しスタイルのデザインとセクションの柱です。循環するアンカーの連鎖、宙に浮いたアンカー参照（存在しなくなった<code>#id</code>にアンカーした要素）、<code>breakBefore</code>が無効なページ全幅の見出し、要素が<code>{'{titleText}'}</code>をまったく描かない有効な詳細デザインを検出します。</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+debug: {
+  warnings: {
+    missingFont: true,
+    looseLines: true,
+    headingHierarchy: true,
+    consecutiveHeadings: true,
+    listAfterHeading: false,
+    designIssues: true,
+  },
+}
+```
+
+これらのほかに、パネルには、レイアウト自体が出す警告（`VDTDocument.warnings`）、たとえば段からあふれる囲み（`calloutOverflow`）と、エンジンが置き換えた設定値（`VDTDocument.configWarnings`、または`collectConfigWarnings(config)`。後述の[設定の警告](#設定の警告)を参照）が常に表示されます。
+
+### 設定の警告
+
+設定そのものにある次の8種類の誤りは、決して黙って処理されず、どの切り替えでも隠せません。エンジンはどれについても失敗せず、値を置き換えるか設定を除外し、そのことを報告します：
+
+- **不明な番号形式**：番号付きリストの`numberFormat`、`page.pageNumbering.format`、リソースタイプの`counterFormat`のいずれかが、[番号書式の表記](/ja/docs/configuration-page-layout#番号書式の表記)のどれでもない場合です。10進数で番号を振ります。
+- **フォントファミリーにフォントスタックを指定**：`fontFamily`（または任意の`…FontFamily`）がCSSのフォントスタックを持つ場合です。テキストはスタックの最初のファミリーで組まれます（[`fontFamily`には1つのファミリー](/ja/docs/configuration-text#fontfamilyには1つのファミリー)を参照）。
+- **範囲外のサイド段**：`'oneAndHalf'`レイアウトの`sideColumnPercent`（文書のもの、または見出しスタイル自身の`layout`のもの）が、いずれかの段を内容幅の1%未満にしてしまう場合、または数値でない場合です。段は両方が取れる最も近い値で分けられ、`used`がその値を示します（`sideColumnPercentClamped`。[`'oneAndHalf'`レイアウト](/ja/docs/configuration-page-layout#レイアウトの種類)を参照）。
+- **範囲外の段数**：`'multiple'`レイアウトの`columnCount`（文書のもの、または見出しスタイル自身の`layout`のもの）が3〜8の整数ではない場合です。ページはいちばん近い有効な段数で分けられ（数値でなければ3）、`used`がその数を示します（`columnCountClamped`。[`'multiple'`レイアウト](/ja/docs/configuration-page-layout#レイアウトの種類)を参照）。
+- **大きすぎる文字グリッド**：`cjk.grid`の1行の字数または1ページの行数が、余白の内側に収まる数より多い場合です。グリッドは収まる最大の数で組まれ、`used`がその数を示します（`cjkGridClamped`。[文字グリッド](/ja/docs/configuration-east-asian#文字グリッド)を参照）。
+- **不明な設定**：`headings`、`headings.balancing`、見出しレベル、見出しスタイル、段落スタイルにないキーです。たとえば綴りを誤った`letterSpacng`、別のツールから持ち込んだ`tracking`、見出しスタイルに付けた`level`、段落スタイルに付けた`fontStyle: 'italic'`（段落スタイルは`italic: true`を取ります）などです。タブ位置も同じように検査されます（`leader`を`leaders`と書いた場合など）。エンジンはこれを無視します（postext 1.4までは何も知らせずに無視していました）。`value`はそのキー、`used`は空で、`suggestion`は、1、2文字の違いか大文字小文字の違いだけで済む設定があれば、その最も近い設定の名前を示します（`unknownConfigKey`）。
+- **不明な設定値**：いくつかの語のうち1つを取る設定に、別の値が入っている場合です。たとえば`direction: 'right'`です（`auto`、`ltr`、`rtl`のいずれかを取ります）。エンジンは代わりに既定値を読み、`used`がその結果を示します。`direction`なら文書の言語の方向になります（`unknownConfigValue`）。タブ位置の`align`が4つの語のどれでもなければ`'start'`として読み、`position`が長さでも`'end'`でも割合でもなければそのタブ位置を除外します（`used`は`'none'`）。漫画の設定の語も検査されます（[漫画 › 漫画の警告](/ja/docs/comics#漫画の警告)）。そのとき`used`は設定が解決された値（組み込みの吹き出しのスタイルでは、そのスタイル自身の既定値）で、近い語があれば`suggestion`がその語を示します。
+- **縦組みの行番号**：縦組みの文書（`layout.writingMode: 'vertical-rl'`）で`lineNumbers.enabled: true`を指定した場合です。縦組みのページには行番号が付かず、`used`は`false`です（`lineNumbersUnsupported`。[行番号](/ja/docs/configuration-notes-references#行番号)を参照）。
+- **縦組みでの回り込み** — 縦組みの文書でのリソースタイプの`defaultPlacement.wrap`。縦組みのページでは図版の横に本文を組まず、`used`は`none`です（`wrapUnsupported`。[文書の書式 › 回り込み](/ja/docs/document-format#回り込み)を参照）。側を指さない`wrap`は不明な設定値です。
+
+Sandboxはこれらを**検査**パネルに、設定のパスとともに表示します。コードでは、`buildDocument`が文書に`configWarnings`として付け（設定に問題がなければ存在しません）、`collectConfigWarnings(config)`はレイアウトを行わずにこれらを返します：
+
+```js
+import { buildDocument, collectConfigWarnings } from 'postext';
+
+// Plain JavaScript: in TypeScript, 'roman' does not type-check to begin with.
+const config = { bodyText: { fontFamily: 'EB Garamond, serif' }, orderedLists: { numberFormat: 'roman' } };
+const doc = buildDocument({ markdown }, config);
+doc.configWarnings;
+// [{ kind: 'fontFamilyStack', path: 'bodyText.fontFamily', value: 'EB Garamond, serif', used: 'EB Garamond' },
+//  { kind: 'unknownNumberFormat', path: 'orderedLists.numberFormat', value: 'roman', used: 'arabic' }]
+collectConfigWarnings(config); // the same list
+```
+
+入れ子になった部分的な設定もすべて検査されます。見出しスタイル、部の中のリスト、`htmlViewer.overrides`、デザインの要素が対象です。
+
+`formatWarning`（[文書の中の警告](/ja/docs/configuration-programmatic-usage#文書の中の警告)を参照）もこれらを説明し、設定のパスを先頭に置きます（`bodyText.fontFamily: font stack "EB Garamond, serif" — set in "EB Garamond"`、`headingStyles[0].letterSpacng: unknown setting "letterSpacng" — ignored (did you mean "letterSpacing"?)`）。そのため、ホストはビルドが返す3つの一覧すべてを1つのループで記録できます。

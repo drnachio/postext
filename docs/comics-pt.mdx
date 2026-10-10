@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'pt',
   lastUpdated: '2026-10-07',
   readingTime: '25 min',
-  order: 9,
+  order: 18,
   plainSummary: "Esta página explica como fazer uma história em quadrinhos com o Postext. Os desenhos são os quadros, e tudo o que os personagens dizem, pensam ou ouvem é escrito como texto no arquivo Markdown. O Postext coloca os quadros na página e desenha sozinho os balões, os recordatórios e as onomatopeias em volta das palavras. Para traduzir a HQ, você reescreve só as palavras, e o Postext faz o letreiramento de novo no outro idioma: o japonês em colunas, o árabe da direita para a esquerda. A página trata também das tiras dentro de um livro, das páginas que ocupam duas páginas lado a lado, das saídas e dos limites que ainda existem.",
 };
 
@@ -17,7 +17,7 @@ export const metadata = {
 
 Uma história em quadrinhos no Postext é um conjunto de desenhos e um roteiro. Os desenhos são recursos bitmap ou SVG comuns, feitos sem nenhum texto por cima. O roteiro fica no Markdown do capítulo: um bloco `:::page` corta uma página em quadros, dá a cada quadro seu desenho e lista, linha por linha, os balões, os recordatórios e as onomatopeias daquele quadro. O Postext distribui os quadros, recorta cada desenho para a sua célula sem cortar o que importa, compõe o texto na fonte de letreiramento do livro em um único corpo, desenha um balão em volta dele, aponta o rabicho para quem fala e posiciona os balões na ordem de leitura onde não cubram nenhum rosto. Uma tradução é outro arquivo Markdown com os mesmos quadros e outras palavras; o Postext refaz o letreiramento do zero, em colunas para o japonês e da direita para a esquerda para o árabe.
 
-Os quadrinhos só entram em ação quando usados: um documento sem `:::page` nem `:::strip` é diagramado exatamente como antes. As configurações ficam na [seção `comics` da configuração](/pt/docs/configuration#quadrinhos), e a marcação está resumida em [Formato do documento › Quadrinhos](/pt/docs/document-format#quadrinhos).
+Os quadrinhos só entram em ação quando usados: um documento sem `:::page` nem `:::strip` é diagramado exatamente como antes. As configurações ficam na [seção `comics` da configuração](/pt/docs/configuration-comics#quadrinhos), e a marcação está resumida em [Formato do documento › Quadrinhos](/pt/docs/document-format#quadrinhos).
 
 ## Páginas de quadrinhos
 
@@ -169,7 +169,7 @@ Um desenho sem área segura é recortado em torno do seu centro, ou em torno de 
 
 ### Estilos de quadro
 
-A aparência de um quadro vem de `comics.panel` (uma borda preta de 1 pt, fundo branco, `cover`), de um estilo nomeado em `comics.panelStyles` que uma página ou um quadro escolhe com `style=`, e do `border` e do `bg` do próprio quadro. Uma borda pode ser `solid`, `none` ou `rough`: um traço feito à mão que treme um pouco, igual em todas as compilações, já que o tremor é gerado a partir do quadro. Veja [Configuração › Quadrinhos](/pt/docs/configuration#quadrinhos) para todos os campos.
+A aparência de um quadro vem de `comics.panel` (uma borda preta de 1 pt, fundo branco, `cover`), de um estilo nomeado em `comics.panelStyles` que uma página ou um quadro escolhe com `style=`, e do `border` e do `bg` do próprio quadro. Uma borda pode ser `solid`, `none` ou `rough`: um traço feito à mão que treme um pouco, igual em todas as compilações, já que o tremor é gerado a partir do quadro. Veja [Configuração › Quadrinhos](/pt/docs/configuration-comics#quadrinhos) para todos os campos.
 
 ### Arte que sai do quadro
 
@@ -335,7 +335,7 @@ ghost{eerie}: Leave this house…
 caption{at=bottom-end}: Three streets away.
 ```
 
-Os contornos são `oval` (uma superelipse ajustada às linhas, `roundness` 2,2), `rounded`, `rectangle`, `cloud` (recortes arredondados contados a partir do perímetro), `burst` (`burstPoints` pontas, com profundidade `burstDepth`), `wavy`, `electric` e `none`. `dash` desenha um contorno tracejado, `double` um contorno duplo, e `wobble` (0–1) o faz tremer como se fosse feito à mão, sempre do mesmo jeito para o mesmo balão. Os rabichos são `curved`, `wedge`, `bubbles`, `zigzag` e `none`. Todos os campos, com os seus valores padrão, estão em [Configuração › Quadrinhos](/pt/docs/configuration#quadrinhos).
+Os contornos são `oval` (uma superelipse ajustada às linhas, `roundness` 2,2), `rounded`, `rectangle`, `cloud` (recortes arredondados contados a partir do perímetro), `burst` (`burstPoints` pontas, com profundidade `burstDepth`), `wavy`, `electric` e `none`. `dash` desenha um contorno tracejado, `double` um contorno duplo, e `wobble` (0–1) o faz tremer como se fosse feito à mão, sempre do mesmo jeito para o mesmo balão. Os rabichos são `curved`, `wedge`, `bubbles`, `zigzag` e `none`. Todos os campos, com os seus valores padrão, estão em [Configuração › Quadrinhos](/pt/docs/configuration-comics#quadrinhos).
 
 Os renderizadores desenham um balão do jeito que um letrista o arte-finaliza: todos os contornos de um grupo são traçados primeiro com o dobro da espessura, depois preenchidos, e depois o texto é composto. Por isso, dois corpos unidos e o seu rabicho saem como uma só forma, sem nenhuma linha entre eles.
 
@@ -443,7 +443,7 @@ Uma HQ ocidental é lida da esquerda para a direita: o primeiro quadro de uma fi
 - `'auto'` (o padrão): o sentido do idioma da edição. Da direita para a esquerda num documento da direita para a esquerda, de modo que uma edição árabe espelha as suas páginas; num documento vertical; e em japonês e chinês tradicional (`ja`, `zh-Hant`, `zh-TW`, `zh-HK`, `zh-MO`), de modo que uma edição japonesa de uma HQ ocidental é lida da direita para a esquerda, como os mangás. Em qualquer outro idioma, incluídos o chinês simplificado e o coreano (manhua e manhwa hoje são lidos da esquerda para a direita), é o sentido para o qual a arte foi desenhada, `comics.artDirection` (`'ltr'` por padrão): um mangá, com `artDirection: 'rtl'`, é lido da direita para a esquerda em qualquer idioma.
 - `'ltr'` ou `'rtl'` impõe um sentido ao livro inteiro, e o atributo `direction` de uma página o impõe a essa página.
 
-A encadernação acompanha os quadrinhos. Com `page.binding: 'auto'`, um livro cuja seção `comics` é lida da direita para a esquerda é encadernado à direita: a página 1 fica sozinha à esquerda da lombada, as páginas duplas são lidas `[3 | 2]`, os visualizadores viram as páginas para a esquerda, o PDF pede a ordem de páginas da direita para a esquerda e o EPUB declara uma progressão de páginas da direita para a esquerda. A seção `comics` decide pelo livro inteiro, então um capítulo sem páginas de quadrinhos é encadernado como os outros; a `direction` própria de uma página não muda a lombada de lugar. Um documento cujas páginas de quadrinhos seguem os valores padrão, sem seção `comics`, mantém a encadernação do seu texto (basta `comics: {}` para encaderná-lo no sentido de leitura dos seus quadrinhos). `page.binding: 'left'` ou `'right'` continua tendo prioridade. Veja [Encadernação](/pt/docs/configuration#encadernação).
+A encadernação acompanha os quadrinhos. Com `page.binding: 'auto'`, um livro cuja seção `comics` é lida da direita para a esquerda é encadernado à direita: a página 1 fica sozinha à esquerda da lombada, as páginas duplas são lidas `[3 | 2]`, os visualizadores viram as páginas para a esquerda, o PDF pede a ordem de páginas da direita para a esquerda e o EPUB declara uma progressão de páginas da direita para a esquerda. A seção `comics` decide pelo livro inteiro, então um capítulo sem páginas de quadrinhos é encadernado como os outros; a `direction` própria de uma página não muda a lombada de lugar. Um documento cujas páginas de quadrinhos seguem os valores padrão, sem seção `comics`, mantém a encadernação do seu texto (basta `comics: {}` para encaderná-lo no sentido de leitura dos seus quadrinhos). `page.binding: 'left'` ou `'right'` continua tendo prioridade. Veja [Encadernação](/pt/docs/configuration-page-layout#encadernação).
 
 A mesma fonte gera as duas diagramações. Uma página da direita para a esquerda distribui os quadros de cada fileira a partir da direita, então o quadro 1 fica no alto à direita; as inclinações se espelham junto, assim como os lados lógicos de `bleed`, `pad` e as palavras-chave de canto (um recordatório em `top-start` fica no alto à direita). As fileiras mantêm a sua ordem de cima para baixo, e a ordem de leitura do roteiro não muda. O letreiramento também espelha as suas regras: o primeiro balão de um quadro tende para a direita, e o seguinte só pode ficar mais alto se estiver mais à esquerda.
 
@@ -520,7 +520,7 @@ Cada aviso indica a linha ou o atributo a que se refere, e o painel Verificaçõ
   </tbody>
 </table>
 
-Os avisos voltam no `contentWarnings` do documento, com o intervalo de origem da linha ou do atributo a que se referem (veja [Configuração › Avisos no documento](/pt/docs/configuration#avisos-no-documento)).
+Os avisos voltam no `contentWarnings` do documento, com o intervalo de origem da linha ou do atributo a que se referem (veja [Configuração › Avisos no documento](/pt/docs/configuration-programmatic-usage#avisos-no-documento)).
 
 Uma configuração de quadrinhos que aceita uma entre poucas palavras e recebe outra, como `shape: 'ovl'` num estilo de balão ou `readingDirection: 'rlt'`, é lida com o seu valor padrão e aparece no painel Verificações como **Valor de configuração desconhecido** (`unknownConfigValue`), com o valor que o motor usou e a palavra mais próxima. As configurações verificadas são `readingDirection`, `artDirection`, o `borderStyle` e o `fit` de um estilo de quadro, o `writingMode`, o `textTransform`, o `dropFinalStop` e o `joinSameSpeaker` do letreiramento, e o `shape`, o `tail`, o `target`, o `position`, o `align` e o `textTransform` de um estilo de balão.
 

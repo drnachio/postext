@@ -1,0 +1,542 @@
+{/* docs/configuration-comics-ar.mdx */}
+
+export const metadata = {
+  title: 'الإعدادات: القصص المصورة',
+  sidebarTitle: 'إعدادات القصص المصورة',
+  description: 'إعدادات comics: الإطار العام لصفحات القصص المصورة وفواصلها، وأنماط الإطارات، وكتابة الحوار، وأنماط الفقاعات، وقائمة الشخصيات',
+  lang: 'ar',
+  lastUpdated: '2026-10-10',
+  readingTime: '3 دقائق',
+  order: 10,
+  parent: 'configuration',
+  plainSummary: "تتناول هذه الصفحة إعدادات صفحات القصص المصورة. تضبط الإطار العام للصفحة والفواصل بين الإطارات. وتختار خط كتابة الحوار وحجمه. وتعرّف طريقة رسم فقاعات الحوار ومربعات السرد والمؤثرات الصوتية. ويمكنك أيضًا سرد الشخصيات، ليتكلم كل منها بنمطه الخاص. ويشرح دليل القصص المصورة طريقة كتابة الصفحات نفسها.",
+};
+
+# الإعدادات: القصص المصورة
+
+
+## القصص المصورة
+
+تضبط الخاصية `comics` صفحات القصص المصورة (`:::page`) والشرائط المصورة (`:::strip`) والصفحات المزدوجة: الإطار العام والفواصل التي تُقطع منها الإطارات، وأنماط الإطارات، وكتابة الحوار، وأنماط الفقاعات، وقائمة الشخصيات. ولا يقرؤها إلا المستند الذي فيه قصص مصورة؛ فالمستند الذي ليس فيه شيء منها يُخرَج كما كان يُخرَج تمامًا، والمستند الذي فيه قصص مصورة وليس فيه قسم `comics` يأخذ القيم الافتراضية للغته. ويشرح دليل [القصص المصورة](/ar/docs/comics) الترميز وطريقة كتابة حوار الصفحات.
+
+```ts
+const config: PostextConfig = {
+  comics: {
+    readingDirection: 'auto',
+    gutter: { horizontal: { value: 5, unit: 'mm' }, vertical: { value: 2.5, unit: 'mm' } },
+    panel: { borderWidth: { value: 0.8, unit: 'pt' }, borderStyle: 'rough' },
+    panelStyles: [{ id: 'night', background: { hex: '#14142b', model: 'hex' }, borderColor: { hex: '#ffffff', model: 'hex' } }],
+    lettering: { fontSize: { value: 8.5, unit: 'pt' }, textTransform: 'uppercase' },
+    balloonStyles: [{ id: 'eerie', shape: 'wavy', italic: true }],
+    cast: [{ id: 'maya', name: 'مايا' }, { id: 'tomas', name: 'الجد توماس' }],
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>readingDirection</code></td>
+      <td><code>'auto' | 'ltr' | 'rtl'</code></td>
+      <td><code>'auto'</code></td>
+      <td>ترتيب الإطارات في الصف. <code>'auto'</code> يقرأ من اليمين إلى اليسار في المستند المكتوب من اليمين إلى اليسار وفي المستند العمودي وفي اليابانية والصينية التقليدية، وفي اتجاه <code>artDirection</code> فيما سواه (ومنه الصينية المبسطة والكورية). وسمة <code>direction</code> في الصفحة تتقدّم عليه. ومع <code>page.binding: 'auto'</code> يُجلَّد على اليمين الكتاب الذي تُقرأ قصصه المصورة من اليمين إلى اليسار.</td>
+    </tr>
+    <tr>
+      <td><code>artDirection</code></td>
+      <td><code>'ltr' | 'rtl'</code></td>
+      <td><code>'ltr'</code></td>
+      <td>اتجاه القراءة الذي رُسمت له الرسوم: <code>'rtl'</code> للمانغا.</td>
+    </tr>
+    <tr>
+      <td><code>mirrorArt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>اقلب رسوم الصفحة التي تُقرأ بعكس اتجاه <code>artDirection</code>. ويبقي الإطار رسمه كما رُسم مع <code>mirror=false</code>.</td>
+    </tr>
+    <tr>
+      <td><code>frame.margins</code></td>
+      <td><code>PageMargins</code></td>
+      <td>هوامش الصفحة</td>
+      <td>هوامش خاصة بصفحات القصص المصورة (<code>top</code> و<code>bottom</code> و<code>left</code> و<code>right</code> و<code>mirror</code>). تُقطع الإطارات من الصندوق الذي تتركه؛ وإن لم تُحدَّد فمن منطقة النص في الصفحة.</td>
+    </tr>
+    <tr>
+      <td><code>gutter.horizontal</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>4mm</code></td>
+      <td>المسافة بين الصفوف. وسمة <code>gutter</code> في الصفحة تتقدّم عليها.</td>
+    </tr>
+    <tr>
+      <td><code>gutter.vertical</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>2mm</code></td>
+      <td>المسافة بين الإطارات المتجاورة في الصف.</td>
+    </tr>
+    <tr>
+      <td><code>panel</code></td>
+      <td><code>PanelStyleConfig</code></td>
+      <td>انظر أدناه</td>
+      <td>نمط الإطار الافتراضي.</td>
+    </tr>
+    <tr>
+      <td><code>panelStyles</code></td>
+      <td><code>NamedPanelStyleConfig[]</code></td>
+      <td><code>[]</code></td>
+      <td>أنماط إطارات مسمّاة، تُختار بـ <code>:::page&#123;style=…&#125;</code> أو <code>::panel&#123;style=…&#125;</code>. لكل منها <code>id</code>، و<code>name</code> اختياري (لواجهات التحرير وحدها)، وحقول نمط الإطار؛ والحقول غير المحددة تتبع <code>panel</code>.</td>
+    </tr>
+    <tr>
+      <td><code>lettering</code></td>
+      <td><code>LetteringConfig</code></td>
+      <td>انظر أدناه</td>
+      <td>خط كل فقاعات الكتاب وحجمها وقواعد الدار فيها.</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyles</code></td>
+      <td><code>BalloonStyleConfig[]</code></td>
+      <td>الأنماط المدمجة التسعة</td>
+      <td>أنماط الفقاعات بحسب نوعها. الأنماط المدمجة موجودة دائمًا؛ والمدخل الذي يحمل معرّف أحدها يغيّره، والمدخل الذي يحمل معرّفًا جديدًا يضيف نمطًا يُطبَّق فوق <code>speech</code>.</td>
+    </tr>
+    <tr>
+      <td><code>cast</code></td>
+      <td><code>ComicCastMember[]</code></td>
+      <td><code>[]</code></td>
+      <td>الشخصيات (انظر <a href="#الشخصيات">الشخصيات</a>).</td>
+    </tr>
+    <tr>
+      <td><code>runningHeads</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>اطبع الترويسات وأرقام الصفحات في صفحات القصص المصورة. وحين يكون معطّلًا تكون صفحة القصة كلها إطارات، ويظل رقمها محسوبًا.</td>
+    </tr>
+    <tr>
+      <td><code>viewerLeaf</code></td>
+      <td><code>ComicViewerLeafConfig</code></td>
+      <td>غير محدد</td>
+      <td>للمضيفات التي ليست صفحاتها أوراقًا: يُخرج صفحات القصص المصورة على ورقة طباعة (<code>width</code> و<code>height</code> و<code>margins</code>) مصغّرة إلى <code>fitWidth</code> px (وبارتفاع لا يزيد على <code>fitHeight</code> px) في أعلى الصفحة. يضبطه عارض HTML في Sandbox، ولا يُحفظ أبدًا مع المستند.</td>
+    </tr>
+  </tbody>
+</table>
+
+### أنماط إطارات القصص المصورة
+
+`comics.panel` وكل مدخل في `comics.panelStyles`:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1pt</code></td>
+      <td>سُمك الحدّ؛ والقيمة <code>0</code> لا ترسم حدًّا. ويُخطّ الحدّ على محيط الإطار.</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>أسود</td>
+      <td>لون الحدّ (يمكن ربطه بلوحة الألوان).</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>نصف قطر زوايا الإطار المستطيل، ولا يتجاوز نصف ضلعه الأقصر. والإطار الذي يقطعه خط مائل تبقى زواياه حادة.</td>
+    </tr>
+    <tr>
+      <td><code>borderStyle</code></td>
+      <td><code>'solid' | 'rough' | 'none'</code></td>
+      <td><code>'solid'</code></td>
+      <td>خط نظيف، أو خط مرسوم باليد يهتز قليلًا (مشتق من الإطار، فيبقى هو نفسه في كل تنضيد)، أو بلا حدّ.</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>أبيض</td>
+      <td>التعبئة تحت الرسم: لون الإطار الفارغ، ولون الأشرطة حول الرسم المعروض كاملًا.</td>
+    </tr>
+    <tr>
+      <td><code>fit</code></td>
+      <td><code>'cover' | 'contain'</code></td>
+      <td><code>'cover'</code></td>
+      <td><code>cover</code> يقصّ الرسم ليملأ الإطار، ولا يقصّ داخل منطقته الآمنة أبدًا؛ و<code>contain</code> يعرضه كاملًا.</td>
+    </tr>
+    <tr>
+      <td><code>bleed</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>الإطارات التي بهذا النمط تتجاوز الإطار العام إلى حدّ القصّ ومنطقة النزف من كل جانب يلامسه.</td>
+    </tr>
+  </tbody>
+</table>
+
+### كتابة الحوار
+
+يضبط `comics.lettering` كل فقاعات الكتاب. للحوار حجم واحد: يمكن لنمط الفقاعة أن يغيّره بنسبة (`fontScale`)، ولا يُصغَّر النص أبدًا ليتسع في فقاعة.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>حسب اللغة</td>
+      <td>خط كتابة الحوار. إن لم يُحدَّد: <code>Comic Neue</code>؛ و<code>Zen Antique</code> في اليابانية، و<code>Noto Sans SC</code> في الصينية المبسطة، و<code>LXGW WenKai TC</code> في الصينية التقليدية، و<code>Playpen Sans Arabic</code> في العربية والفارسية والأردية (<code>defaultComicFont(locale)</code>).</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>7.5pt</code></td>
+      <td>حجم نص الفقاعات. ويُكتب حوار القصص المصورة عادةً بحجم 7 إلى 9 نقاط على الصفحة المطبوعة.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>number</code></td>
+      <td><code>1.15</code></td>
+      <td>المسافة بين الأسطر، مضاعفًا للحجم. وإذا تُرك على قيمته الافتراضية أخذت الفقاعات العمودية والصينية واليابانية 1.5، والعربية 1.45.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>أسود</td>
+      <td>لون النص.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>، <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>اجعل كتابة الحوار كلها عريضة أو مائلة. ولا يُمال حوار الصينية واليابانية والعربية أبدًا.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>مسافة إضافية بين الحروف؛ و<code>em</code> نسبةً إلى حجم النص. ولا تُطبَّق على العربية أبدًا.</td>
+    </tr>
+    <tr>
+      <td><code>writingMode</code></td>
+      <td><code>'auto' | 'horizontal' | 'vertical'</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> يكتب حوار اليابانية والصينية التقليدية، وحوار أي مستند منضَّد بالكتابة العمودية، في أعمدة عمودية، وكل ما سوى ذلك أفقيًا. وتنضّد علامة <code>vertical</code> أو <code>horizontal</code> في سطر الحوار ذلك السطر على خلاف ذلك (انظر <a href="/ar/docs/comics#كتابة-الحوار">القصص المصورة › كتابة الحوار</a>).</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>الأحرف الكبيرة كلها، المظهر التقليدي لكتابة الحوار في القصص الأمريكية والأوروبية. والكتابات التي لا تعرف الأحرف الكبيرة تبقى كما هي.</td>
+    </tr>
+    <tr>
+      <td><code>dropFinalStop</code></td>
+      <td><code>'auto' | boolean</code></td>
+      <td><code>'auto'</code></td>
+      <td>احذف النقطة التي تُنهي الفقاعة (<code>。</code> في المانغا). <code>'auto'</code>: في اليابانية والصينية فقط.</td>
+    </tr>
+    <tr>
+      <td><code>doubleDash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>اكتب الشرطة الطويلة <code>--</code>، وهي عادة في كتابة حوار القصص الأمريكية.</td>
+    </tr>
+    <tr>
+      <td><code>inset</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>1.5mm</code></td>
+      <td>المسافة المتروكة بين الفقاعة وحدّ إطارها. والتعليق السردي الملاصق للحدّ لا يلتزم بها.</td>
+    </tr>
+    <tr>
+      <td><code>joinSameSpeaker</code></td>
+      <td><code>'butt' | 'connector' | 'none'</code></td>
+      <td><code>'butt'</code></td>
+      <td>فقاعتان متتاليتان للمتحدث نفسه: جسمان مدموجان في محيط واحد، أو موصولان بعنق ضيق، أو منفصلان. ويطلب سطر الحوار ما يريد بـ <code>join</code> أو <code>join=false</code>.</td>
+    </tr>
+    <tr>
+      <td><code>maxColumnChars</code></td>
+      <td><code>number</code></td>
+      <td><code>8</code></td>
+      <td>في الكتابة العمودية: أكبر عدد من الحروف في عمود واحد من الفقاعة. والمؤثرات الصوتية تنكسر بعد خمسة.</td>
+    </tr>
+  </tbody>
+</table>
+
+### أنماط الفقاعات
+
+كل مدخل في `comics.balloonStyles` يُطبَّق فوق النمط المدمج الذي يحمل المعرّف نفسه (`speech` و`thought` و`whisper` و`shout` و`radio` و`caption` و`inner` و`note` و`sfx`)، أو فوق `speech` إن كان معرّفه جديدًا. والقيم الافتراضية أدناه قيم `speech`؛ وتسرد [صفحة القصص المصورة](/ar/docs/comics#أنماط-الفقاعات) ما يغيّره كل نمط مدمج. والأطوال بوحدة `em` نسبةً إلى حجم نص الفقاعة.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>مطلوب</td>
+      <td>الكلمة التي يسمّي بها سطر الحوار النمط: <code>ben&#123;whisper&#125;: …</code> أو <code>style=whisper</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>اسم مقروء، لواجهات التحرير وحدها.</td>
+    </tr>
+    <tr>
+      <td><code>shape</code></td>
+      <td><code>'oval' | 'rounded' | 'rectangle' | 'cloud' | 'burst' | 'wavy' | 'electric' | 'none'</code></td>
+      <td><code>'oval'</code></td>
+      <td>المحيط المرسوم حول النص. و<code>'none'</code> ينضّد النص على الرسم مباشرة.</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>أبيض</td>
+      <td>تعبئة الفقاعة.</td>
+    </tr>
+    <tr>
+      <td><code>stroke</code></td>
+      <td><code>ColorValue</code></td>
+      <td>أسود</td>
+      <td>لون المحيط.</td>
+    </tr>
+    <tr>
+      <td><code>strokeWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.6pt</code></td>
+      <td>سُمك المحيط.</td>
+    </tr>
+    <tr>
+      <td><code>dash</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>محيط متقطّع (الهمس).</td>
+    </tr>
+    <tr>
+      <td><code>double</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>محيط مزدوج.</td>
+    </tr>
+    <tr>
+      <td><code>wobble</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>اهتزاز المحيط كأنه مرسوم باليد، من 0 إلى 1، مشتق من الفقاعة فلا يتغير أبدًا بين تنضيد وآخر.</td>
+    </tr>
+    <tr>
+      <td><code>roundness</code></td>
+      <td><code>number</code></td>
+      <td><code>2.2</code></td>
+      <td>أُسّ القطع الناقص الفائق (superellipse) في الشكل البيضاوي: 2 قطع ناقص، والقيم الأعلى أقرب إلى المربع.</td>
+    </tr>
+    <tr>
+      <td><code>burstPoints</code></td>
+      <td><code>number</code></td>
+      <td><code>14</code></td>
+      <td>عدد رؤوس الانفجار؛ و<code>0</code> يحسبها من طول المحيط.</td>
+    </tr>
+    <tr>
+      <td><code>burstDepth</code></td>
+      <td><code>number</code></td>
+      <td><code>0.22</code></td>
+      <td>عمق رؤوس الانفجار، كسرًا من نصف قطر الجسم.</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.55em</code></td>
+      <td>الهواء بين النص والمحيط.</td>
+    </tr>
+    <tr>
+      <td><code>aspect</code></td>
+      <td><code>number</code></td>
+      <td><code>1.6</code></td>
+      <td>نسبة العرض إلى الارتفاع التي يسعى إليها تقسيم الأسطر في كتلة النص (الكتابة الأفقية).</td>
+    </tr>
+    <tr>
+      <td><code>tail</code></td>
+      <td><code>'curved' | 'wedge' | 'bubbles' | 'zigzag' | 'none'</code></td>
+      <td><code>'curved'</code></td>
+      <td>الذيل.</td>
+    </tr>
+    <tr>
+      <td><code>tailWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.9em</code></td>
+      <td>عرض الذيل حيث يخرج من المحيط.</td>
+    </tr>
+    <tr>
+      <td><code>tailReach</code></td>
+      <td><code>number</code></td>
+      <td><code>0.55</code></td>
+      <td>مدى امتداد الذيل نحو متحدثه، كسرًا من المسافة بين المحيط والفم.</td>
+    </tr>
+    <tr>
+      <td><code>target</code></td>
+      <td><code>'mouth' | 'head'</code></td>
+      <td><code>'mouth'</code></td>
+      <td>ما يتجه إليه الذيل: فم نقطة الارتكاز، أو رأسها (فقاعات التفكير).</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'auto' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end' | 'top' | 'bottom'</code></td>
+      <td><code>'auto'</code></td>
+      <td>موضع الفقاعة حين لا يثبّتها السطر: تضعها كتابة الحوار، أو في زاوية من الإطار أو عند حافة منه.</td>
+    </tr>
+    <tr>
+      <td><code>butt</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>ألصق فقاعة الزاوية أو الحافة بحدّ الإطار (التعليقات السردية).</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>خط كتابة الحوار</td>
+      <td>خط هذا النمط. ويأخذ <code>sfx</code> افتراضيًا خط المؤثرات الصوتية في اللغة: <code>Bangers</code>، و<code>Dela Gothic One</code> في اليابانية، و<code>ZCOOL KuaiLe</code> في الصينية المبسطة، و<code>LXGW WenKai TC</code> في الصينية التقليدية، و<code>Lalezar</code> في العربية (<code>defaultComicSfxFont(locale)</code>).</td>
+    </tr>
+    <tr>
+      <td><code>fontScale</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>حجم النص، مضاعفًا لحجم كتابة الحوار.</td>
+    </tr>
+    <tr>
+      <td><code>bold</code>، <code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td>قيمة كتابة الحوار</td>
+      <td>نص عريض أو مائل.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>قيمة كتابة الحوار</td>
+      <td>لون النص.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td>قيمة كتابة الحوار</td>
+      <td>الأحرف الكبيرة كلها لهذا النمط.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>قيمة كتابة الحوار</td>
+      <td>مسافة إضافية بين الحروف.</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'center' | 'start'</code></td>
+      <td><code>'center'</code></td>
+      <td>محاذاة الأسطر داخل الفقاعة.</td>
+    </tr>
+    <tr>
+      <td><code>halo</code></td>
+      <td><code>Dimension</code></td>
+      <td>بلا</td>
+      <td>سُمك خط يُرسم حول الحروف ليُقرأ النص فوق الرسم (المؤثرات الصوتية).</td>
+    </tr>
+    <tr>
+      <td><code>haloColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>أبيض</td>
+      <td>لون الهالة.</td>
+    </tr>
+    <tr>
+      <td><code>rotate</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>الدوران بالدرجات، في اتجاه عقارب الساعة. وسمة <code>rotate</code> في السطر تتقدّم عليه.</td>
+    </tr>
+  </tbody>
+</table>
+
+### الشخصيات
+
+كل مدخل في `comics.cast` يصف شخصية:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>الخاصية</th>
+      <th style={{ width: '200px' }}>النوع</th>
+      <th style={{ width: '140px' }}>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>مطلوب</td>
+      <td>مفتاح المتحدث في السيناريو وفي نقاط الارتكاز على الرسوم.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>الاسم الذي يطبعه مُخرَج HTML وكتاب EPUB المتدفق قبل أسطر الشخصية، وتعرضه واجهات التحرير.</td>
+    </tr>
+    <tr>
+      <td><code>balloonStyle</code></td>
+      <td><code>string</code></td>
+      <td><code>speech</code></td>
+      <td>نمط أسطر الشخصية التي لا تسمّي نمطًا.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>قيمة النمط</td>
+      <td>لون نص فقاعات الشخصية.</td>
+    </tr>
+    <tr>
+      <td><code>fill</code></td>
+      <td><code>ColorValue</code></td>
+      <td>قيمة النمط</td>
+      <td>تعبئة فقاعات الشخصية.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>قيمة النمط</td>
+      <td>خط فقاعات الشخصية.</td>
+    </tr>
+  </tbody>
+</table>
+
+يتقدّم `color` و`font` في السطر نفسه على قائمة الشخصيات، وتتقدّم قائمة الشخصيات على نمط الفقاعة. ويجوز أن يكون كل لون في القصص المصورة مدخلًا من لوحة الألوان، فيتبعها كأي لون مربوط بها.
+
+```ts
+const resolved = resolveComicsConfig(config.comics, 'ja');
+// => كل الحقول مملوءة؛ والخطان Zen Antique وDela Gothic One
+
+const minimal = stripComicsDefaults(config.comics, 'ja');
+// => undefined حين يكون كل شيء على قيمته الافتراضية
+
+const shout = pickBalloonStyle(resolved, 'shout'); // نمط الصراخ المدمج مع تغييرات الكتاب
+const night = pickPanelStyle(resolved, 'night');   // نمط إطار مسمّى، وإلا فالإطار الافتراضي
+```

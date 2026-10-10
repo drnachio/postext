@@ -1,0 +1,1195 @@
+{/* docs/configuration-fonts-colors-viewers-es.mdx */}
+
+export const metadata = {
+  title: 'Configuración: fuentes, colores y salida',
+  sidebarTitle: 'Fuentes, colores y salida',
+  description: 'Las unidades, los colores y la paleta, las fuentes personalizadas, el visor HTML, el PDF y la producción para imprenta, el visor Folio y la depuración',
+  lang: 'es',
+  lastUpdated: '2026-10-10',
+  readingTime: '6 min',
+  order: 11,
+  parent: 'configuration',
+  plainSummary: "Esta página reúne los ajustes que comparte todo el libro y los de cada tipo de salida. Explica cómo se escribe una medida y un color, y cómo se da nombre a los colores de una paleta. Enseña a añadir tus propias fuentes. Después trata la vista web, el archivo PDF, los archivos que pide una imprenta y el libro en 3D. La última sección activa las guías y las advertencias que ayudan mientras trabajas.",
+};
+
+# Configuración: fuentes, colores y salida
+
+
+## Unidades y colores
+
+### Dimensiones
+
+Todas las medidas físicas en Postext usan el tipo `Dimension` — un valor emparejado con una unidad:
+
+```ts
+interface Dimension {
+  value: number;
+  unit: DimensionUnit; // 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem'
+}
+```
+
+**Unidades absolutas** — `cm`, `mm`, `in`, `pt`, `px` — se convierten a píxeles usando los DPI configurados. A 300 DPI, `1 cm` equivale a aproximadamente 118 px.
+
+**Unidades relativas** — `em`, `rem` — escalan con el tamaño de fuente actual. Un `em` es relativo al tamaño de fuente del propio elemento; `rem` es relativo al tamaño de fuente del texto de cuerpo.
+
+### Colores
+
+Los colores se almacenan con una representación hexadecimal y un modelo de color objetivo:
+
+```ts
+interface ColorValue {
+  hex: string;         // '#ff0000', 'transparent', etc.
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  cmyk?: CmykPercent;  // Los valores de cuatricromía exactos de un color definido en CMYK.
+}
+```
+
+El campo `model` indica el espacio de color previsto. Para renderizado web, `'hex'` o `'rgb'` son los habituales. Para flujos de trabajo de impresión, `'cmyk'` dice que el color se definió en CMYK, y `cmyk` guarda sus valores: un renderizado CMYK para imprenta los pone tal cual, y `hex` es su representación en pantalla (ver [Colores definidos en CMYK](#colores-definidos-en-cmyk)).
+
+Como Postext apunta a salida de calidad editorial, el color por defecto del cuerpo de texto se publica con `model: 'cmyk'` (`#000000`). Los colores de encabezados, negritas, cursivas y listas toman por defecto el **Color principal** enlazado a la paleta (`#295AA3`, `model: 'hex'`). El fondo de página y los indicadores de interfaz (rejilla base, marcas de corte, indicadores de depuración) usan `model: 'hex'` por defecto. Sobrescribe `color.model` en cualquier campo si necesitas otra semántica de exportación.
+
+### Transparencia
+
+Un color puede ser translúcido. `hex` admite un canal alfa, como `#rgba` o `#rrggbbaa`. También admite un color `rgb()` / `rgba()`, con la sintaxis de comas o la de espacios, y el alfa como número o como porcentaje. `transparent` es del todo transparente:
+
+```ts
+const config: PostextConfig = {
+  header: {
+    elements: [{
+      kind: 'box',
+      id: 'velo',
+      placement: {
+        anchor: { to: 'bleed', edge: 'top-left' },
+        size: { width: 'fill', height: { value: 40, unit: 'mm' } },
+      },
+      style: { backgroundColor: { hex: '#ffffffb3', model: 'hex' } }, // blanco al 70 %
+    }],
+  },
+  bodyText: { color: { hex: 'rgba(0, 0, 0, 0.85)', model: 'rgb' } },
+};
+```
+
+Los tres backends lo pintan igual. El canvas y el visor HTML toman el valor como un color CSS. El backend PDF fija la opacidad del color como un alfa constante, un `ExtGState` con `ca` para los rellenos y `CA` para los trazos. Esto abarca el texto, los filetes, las cajas, los rellenos y bordes de las tablas, los chips, las muestras de color y las fórmulas. Un color translúcido se compone sobre lo que se pintó antes. Una caja de la cabecera o del pie se pinta la última, así que vela el texto que tiene debajo; una caja de una banda de apertura se pinta la primera, así que tiñe la página bajo el texto. Cuando el PDF se fuerza a otro espacio de color (`pdfGeneration.forceColorSpace` con `colorSpace: 'cmyk'` o `'grayscale'`), el color se convierte y conserva su alfa. En el Sandbox, el deslizador de opacidad del selector de color escribe estos valores como `#rrggbbaa`, y el selector también lee las demás formas.
+
+
+## Fuentes personalizadas
+
+Postext resuelve cada `fontFamily` contra **ambos** el catálogo de Google Fonts y la lista `customFonts` del documento. Las fuentes personalizadas tienen prioridad en caso de coincidencia de nombre: si declaras `customFonts: [{ name: 'Roboto', … }]`, Postext usará tu archivo en lugar de la "Roboto" de Google Fonts.
+
+Usa fuentes personalizadas cuando:
+
+- El documento requiere una tipografía de marca o con licencia que no está en Google Fonts.
+- El entorno no puede alcanzar la CDN de Google Fonts (sin conexión, intranet, sensibilidad de privacidad).
+- Necesitas mantener el archivo de fuente privado y evitar subirlo a un tercero.
+
+### Esquema de configuración
+
+```ts
+type CustomFontFormat = 'woff2' | 'woff' | 'ttf' | 'otf';
+type CustomFontStyle = 'normal' | 'italic';
+
+interface CustomFontVariant {
+  weight: number;           // CSS font-weight, 100..900
+  style: CustomFontStyle;
+  fileId: string;           // id opaco del binario en almacenamiento externo
+  format: CustomFontFormat;
+  fileName?: string;        // nombre original del archivo (se muestra en la UI)
+}
+
+interface CustomFontFamily {
+  name: string;             // se usa donde encajaría un nombre de Google Font
+  variants: CustomFontVariant[];
+}
+
+interface PostextConfig {
+  // ...
+  customFonts?: CustomFontFamily[];
+}
+```
+
+El binario de cada variante **no** se empotra en la propia configuración. La configuración solo guarda punteros `fileId`; los bytes viven fuera de ella. En el sandbox eso significa IndexedDB (almacén clave-valor, exclusivo del navegador, privado del documento). Un integrador que empotre Postext en otro entorno es libre de resolver `fileId` como prefiera —un endpoint de servidor, un service worker, lo que sea— mientras los bytes lleguen al hilo principal antes de `buildDocument`.
+
+### Gestionar fuentes personalizadas en el sandbox
+
+Abre el panel **Fuentes** desde la barra de actividad izquierda (entre Recursos y Diseño). Su lista **Tipos de letra de este libro** muestra cada familia que usa el diseño, con su función y si viene de Google Fonts o de un archivo propio. En **Tus archivos de fuente**, para cada familia:
+
+1. **Añadir familia** — crea una familia vacía; renómbrala en línea.
+2. **Subir variante(s)** — elige un peso (100–900) y un estilo (normal / italic), y selecciona uno *o varios* archivos `.woff2`, `.woff`, `.ttf` u `.otf`. Cada archivo se convierte en su propia variante asociada a la combinación (peso, estilo) seleccionada; el nombre del archivo queda guardado y se muestra en la fila para diferenciar variantes. Puedes retocar el peso o el estilo de una variante desde sus desplegables en cualquier momento.
+3. **Se permiten variantes duplicadas.** Si dos archivos caen en la misma ranura (peso, estilo), se guardan los dos y aparece un aviso **Duplicate font variant** para que ajustes los extras.
+4. **Eliminar variante** o **Eliminar familia** — elimina la entrada de la configuración *y* los bytes guardados en IndexedDB.
+
+Una vez declarada la familia, cada selector de fuente la agrupa bajo **Custom**, por encima de la lista de Google Fonts. Al elegirla, queda cableada a todos los campos `fontFamily` donde la apliques.
+
+### Comportamiento de renderizado
+
+Bajo el capó:
+
+- Cuando `customFonts` cambia, cada familia declarada se registra automáticamente como `FontFace` en `document.fonts` — por lo que el visor HTML, el visor Canvas (que mide a través de `document.fonts`) y cualquier referencia CSS directa toman la cara personalizada sin necesidad de abrir antes el Font Picker.
+- El worker de composición recibe los mismos `ArrayBuffer` por el mismo canal de transferencia de *font payloads*, así la medición (`buildFontString`, pretext) produce métricas idénticas a las de Google Fonts.
+- Cambiar o eliminar una variante descarta la cara cacheada en el worker para esa familia y se vuelve a registrar en el siguiente build, de modo que las previsualizaciones se mantienen sincronizadas con el conjunto actual de variantes.
+- **Exportación a PDF**: los binarios subidos fluyen por la misma canalización `PdfFontProvider`. Los `.woff2` se descomprimen; los `.ttf` y `.otf` se pasan tal cual. `.woff` se rechaza con un mensaje claro (pdf-lib no puede empotrar WOFF crudo — vuelve a subirlo como `.woff2`/`.ttf`/`.otf`). El OpenType con tablas CFF (`.otf` cuya firma es `OTTO`) se empotra **sin subsetting**, porque el subsetter CFF de pdf-lib recorre cada glifo al hacer `save()` y puede bloquearse durante minutos con fuentes reales; saltarse el subset intercambia algo más de tamaño de PDF por tiempos de render consistentes.
+
+### Avisos de fuentes faltantes
+
+El panel **Revisión** del Sandbox muestra en su grupo *Fuentes* tres modos de fallo específicos de las fuentes personalizadas (todos gobernados por el mismo toggle `debug.warnings.missingFont` que ya controla el aviso genérico "no cargada"):
+
+- **Familia desconocida** — un `fontFamily` referencia un nombre que no es ni una Google Font conocida ni una familia personalizada actualmente declarada. También salta al instante cuando eliminas una familia personalizada que algún `fontFamily` todavía referencia, sin esperar a que el DOM lo note.
+- **Variante faltante** — la familia existe pero al menos una de las ranuras estándar (400 / 700, normal / italic) no tiene archivo subido. El aviso enumera las combinaciones concretas que faltan.
+- **Variante duplicada** — dos o más archivos comparten la misma ranura (peso, estilo) dentro de una misma familia. Solo uno se usa al renderizar; el aviso te recuerda que retoques las entradas sobrantes.
+
+Al pulsar cualquiera de los avisos se abre el panel **Fuentes** para que subas la variante necesaria, vuelvas a añadir la familia o desambigües los duplicados.
+
+Cuando ya hay una composición, el panel muestra también el aviso del motor **Fuente sustituida en la composición** (`fontFallback`): una cara sin la que se midieron las páginas, porque falta o porque el navegador la dibuja a partir de otro peso o de otra inclinación. Una familia que ya figura como desconocida o con una variante faltante no aparece dos veces. Antes de la primera composición, ocupa su lugar una comprobación contra `document.fonts`.
+
+## Paleta de colores
+
+La propiedad `colorPalette` de `PostextConfig` permite definir un conjunto reutilizable de colores con nombre y referenciarlos desde cualquier `ColorValue` de la configuración. Es el equivalente en Postext a las custom properties de CSS o al panel de muestras de InDesign: cambia la entrada una sola vez y todos los colores que apunten a ella se actualizan en el documento.
+
+```ts
+interface ColorPaletteEntry {
+  id: string;       // identificador estable — referenciado por ColorValue.paletteId
+  name: string;     // etiqueta legible que se muestra en las UIs del sandbox
+  value: ColorValue;
+}
+```
+
+### La paleta por defecto
+
+Postext incluye una paleta por defecto con una única entrada llamada **Color principal** (`id: 'main-color'`, hex `#295AA3`). Varios valores por defecto — color de encabezados, color de negritas/cursivas del cuerpo, color de los `:ref`, color de viñetas y marcadores numéricos de listas — referencian esa entrada vía `paletteId: 'main-color'`, de modo que al cambiar esa única muestra se retintea cada elemento del documento que la utilice.
+
+Se puede inspeccionar, clonar o comparar la paleta por defecto mediante tres exportaciones:
+
+```ts
+import {
+  DEFAULT_COLOR_PALETTE,
+  cloneDefaultColorPalette,
+  isDefaultColorPalette,
+} from 'postext';
+
+// Snapshot de solo lectura de la paleta publicada.
+DEFAULT_COLOR_PALETTE;
+// => [{ id: 'main-color', name: 'Main Color', value: { hex: '#295AA3', model: 'hex' } }]
+
+// Copia independiente — muta esta, no DEFAULT_COLOR_PALETTE.
+const palette = cloneDefaultColorPalette();
+
+// Comprueba si el usuario ha personalizado la paleta.
+isDefaultColorPalette(palette); // true
+```
+
+La paleta vive en el nivel superior de la configuración:
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'tinta',  name: 'Tinta',  value: { hex: '#0a0a0a', model: 'cmyk' } },
+    { id: 'acento', name: 'Acento', value: { hex: '#b8860b', model: 'hex' } },
+  ],
+  bodyText: { color: { hex: '#000000', model: 'cmyk', paletteId: 'tinta' } },
+  headings: { color: { hex: '#000000', model: 'hex', paletteId: 'acento' } },
+};
+```
+
+### Referenciar una entrada de la paleta
+
+Cualquier `ColorValue` de la configuración puede llevar un campo opcional `paletteId` que apunta a una entrada de `colorPalette`: fondo de página, colores del cuerpo de texto (el de los `:ref` incluido), colores de encabezados, filetes de columna, colores de listas, colores de tablas, pies, chips y recuadros (caja, franja, icono, marcador, etiqueta, título y cuerpo), color de las marcas de corte y de la rejilla base, indicadores de depuración, y todos los colores de un diseño: las cabeceras y pies, las aperturas y los diseños en columna de los encabezados, los diseños y cabeceras de los estilos de encabezado, las páginas de parte y las filas de parte del índice (texto, filete, relleno y borde de caja, contorno, capitular). Cuando está presente, el `hex` / `model` de la entrada de la paleta ganan al `hex` / `model` almacenados como respaldo. El respaldo en línea solo se usa si la paleta falta, está vacía o no contiene ese id — útil al exportar una configuración que leerá una herramienta que no entienda paletas.
+
+**Cambio en postext 1.5.** Hasta postext 1.4 la paleta solo llegaba a una lista fija de ajustes: los colores de los diseños (cabeceras, aperturas, estilos de encabezado, partes, filas del índice), `bodyText.referenceColor`, los colores de las etiquetas de los recuadros y los de negrita y cursiva de su cuerpo conservaban el `hex` guardado junto a su `paletteId`. Un documento cuyo valor guardado no coincide con la entrada de la paleta —todos los editados en el Sandbox después de cambiar la entrada, y todos los `:ref` cuando el color principal no es `#295AA3`— imprime ahora el color de la paleta, como indica el enlace. Para conservar un color tal como estaba, quita su `paletteId`.
+
+### Cómo se aplican las paletas
+
+`buildDocument` ejecuta la paleta en dos puntos para que los colores referenciados funcionen tanto para las sobrescrituras que hayas indicado como para los valores por defecto que se completen después:
+
+1. `applyPaletteToConfig(config)` — resuelve cada `ColorValue` del config original que lleve `paletteId`. Útil para inspeccionar qué verá realmente el motor.
+2. `applyPaletteToResolvedConfig(resolved, palette)` — se ejecuta *después* de resolver los valores por defecto y reescribe los defaults enlazados a la paleta (color de encabezados, de negrita/cursiva del cuerpo, de los `:ref`, de listas, los colores de los diseños por defecto) para que coincidan con la paleta activa.
+
+Las dos recorren la configuración entera, así que ningún color enlazado a la paleta se queda atrás. La mayoría de los colores del flujo de texto (cuerpo, encabezados, listas, tablas, pies, chips, la caja, el título y el cuerpo de los recuadros) salen como valores sin enlace. Todos los demás —los colores de los diseños, el de los `:ref`, las etiquetas de los recuadros— toman el `hex` / `model` de la paleta y **conservan su `paletteId`**. Ese enlace es lo que el atributo `palette` de una parte y el `palette` de un estilo de encabezado sustituyen en sus páginas (véase [Partes](/es/docs/configuration-styles#partes)), así que debe sobrevivir. `htmlViewer.overrides` se deja tal cual: el visor HTML lo fusiona primero, y la paleta que traiga se aplica entonces a todo, diseños incluidos.
+
+Raramente necesitas invocarlas, pero ambas están exportadas para inspección y reutilización:
+
+```ts
+import {
+  applyPaletteToConfig,
+  applyPaletteToResolvedConfig,
+  resolveColorValue,
+} from 'postext';
+
+const flat = applyPaletteToConfig(config);
+// Cada ColorValue con paletteId en el config original lleva ahora el
+// hex/model de la entrada de la paleta (un color de diseño conserva su paletteId).
+
+// `applyPaletteToResolvedConfig` normalmente lo gestiona buildDocument; úsalo
+// directamente si construyes un ResolvedConfig a mano y quieres aplicar la paleta.
+```
+
+`resolveColorValue(value, palette, fallback)` es la variante para un único valor, útil cuando compones configuraciones de forma imperativa y necesitas resolver un color suelto.
+
+### Editar la paleta
+
+Un color cuyo `paletteId` no nombra ninguna entrada imprime su `hex` / `model` guardado, que puede ser anterior al color que le daba la entrada. Por eso, antes de eliminar una entrada, conviene reescribir cada `ColorValue` enlazado a ella como un color sin enlace con el valor actual de la entrada. La sección *Paleta* del Sandbox (**Diseño → Colores**) lo hace al borrar una entrada, esté donde esté el color (diseños y etiquetas de recuadro incluidos), y su confirmación enumera todos los ajustes que la usan: por su nombre o por su ruta en la configuración (`header.elements[2].color`).
+
+
+## Visor HTML
+
+La propiedad `htmlViewer` controla cómo el backend HTML dispone las páginas en pantalla. Solo se aplica cuando renderizas con `renderToHtml` / `renderToHtmlIndexed`; los caminos de canvas y PDF la ignoran por completo — consumen directamente los `page.width`, `page.height` y `page.dpi` configurados.
+
+```ts
+interface HtmlViewerConfig {
+  maxCharsPerLine?: number;     // Ancho objetivo de columna, en caracteres de la fuente del cuerpo.
+  columnGap?: number;            // Espacio horizontal entre columnas en modo multi-columna (px).
+  optimalLineBreaking?: boolean; // Usar Knuth–Plass dentro del visor HTML en lugar de greedy.
+  overrides?: HtmlViewerOverrides; // Configuración parcial solo para pantalla, fusionada sobre la del documento.
+}
+
+type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxCharsPerLine</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>Medida objetivo de cada columna renderizada, expresada en caracteres de la fuente del cuerpo. El viewport mide una cadena representativa de prosa con esa longitud para obtener el ancho real en píxeles — así el resultado se adapta a cualquier combinación de fuente proporcional y tamaño.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>number</code></td>
+      <td><code>50</code></td>
+      <td>Espacio horizontal, en píxeles CSS, entre columnas cuando el visor está en modo multi-columna. Se ignora en modo columna única.</td>
+    </tr>
+    <tr>
+      <td><code>optimalLineBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Activa la división de líneas Knuth–Plass dentro del visor HTML. Está desactivado por defecto porque el visor recompone la maquetación en cada resize o cambio de tamaño — el algoritmo greedy first-fit es lo bastante rápido para sentirse instantáneo. Actívalo cuando quieras los mismos cortes óptimos que usa el backend canvas.</td>
+    </tr>
+    <tr>
+      <td><code>overrides</code></td>
+      <td><code>HtmlViewerOverrides</code></td>
+      <td>—</td>
+      <td>Una configuración parcial del documento que solo se aplica en pantalla. El visor HTML la fusiona sobre la configuración del documento antes de componer (<code>applyHtmlViewerOverrides</code>); canvas y PDF la ignoran. Los objetos se fusionan recursivamente; una lista <code>levels</code> (encabezados, listas, índice) se fusiona entrada a entrada por <code>level</code>; cualquier otra lista — los <code>elements</code> de un bloque de diseño, <code>calloutStyles</code>, <code>colorPalette</code>… — sustituye a la lista base por completo. Uso típico: un inicio de capítulo sin las bandas de imprenta, o una página de parte cuyo título se envuelve contra el número en lugar de un ancho fijo de caja de corte. El sandbox lo edita como JSON.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const config: PostextConfig = {
+  headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: true } }] },
+  htmlViewer: {
+    // En pantalla, los capítulos siguen de corrido sin el inicio a toda página.
+    overrides: { headings: { levels: [{ level: 1, span: 'column', breakBefore: { enabled: false } }] } },
+  },
+};
+```
+
+El resolver y el stripper siguen el mismo patrón que las demás secciones:
+
+```ts
+import {
+  DEFAULT_HTML_VIEWER_CONFIG,
+  resolveHtmlViewerConfig,
+  stripHtmlViewerDefaults,
+} from 'postext';
+
+const resolved = resolveHtmlViewerConfig(config.htmlViewer);
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+
+const minimal = stripHtmlViewerDefaults(config.htmlViewer);
+// => undefined cuando todo coincide con los valores por defecto
+```
+
+Consulta [Integrar el visor HTML](/es/docs/configuration-programmatic-usage#integrar-el-visor-html) más abajo para un ejemplo completo.
+
+
+## Generación de PDF (configuración)
+
+La propiedad `pdfGeneration` controla cómo el backend PDF emite el documento final. Estos ajustes los consume el paquete `postext-pdf` en el momento de exportar; los visores canvas y HTML los ignoran.
+
+`buildDocument` los lleva en el VDT, como `doc.config.pdfGeneration`, y `renderToPdf` toma cada ajuste del primer sitio que lo da:
+
+1. sus propias opciones (`outlines`, `accessible`, `colorSpace`);
+2. el `pdfGeneration` del primer documento que recibe (en un libro, los ajustes del primer capítulo valen para todo el archivo);
+3. los valores por defecto: marcadores y etiquetado activados, color RGB.
+
+Así, `renderToPdf(doc, { fontProvider })` sigue la configuración, y una opción que se pasa a `renderToPdf` manda solo en ese ajuste. `forceColorSpace` y `colorSpace` equivalen juntos a la opción `colorSpace`: el `colorSpace` de la configuración se aplica mientras `forceColorSpace` está activado, y con él desactivado el PDF sale en RGB. Las versiones anteriores de `postext-pdf` leían solo las opciones; una configuración con `pdfGeneration` cambia ahora el PDF de quien llama sin opciones.
+
+```ts
+type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
+
+interface PdfGenerationConfig {
+  outlines?: boolean;          // Emitir marcadores PDF desde el árbol de encabezados.
+  forceColorSpace?: boolean;   // Convertir todos los colores a `colorSpace`.
+  colorSpace?: PdfColorSpace;  // Espacio destino cuando `forceColorSpace` es true.
+  accessible?: boolean;        // Salida etiquetada orientada a PDF/UA (árbol de estructura, texto alternativo, idioma).
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>outlines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Emite outlines (marcadores) PDF a partir de la jerarquía de encabezados, de modo que los lectores puedan saltar directamente a cualquier encabezado desde la barra lateral del visor PDF. Desactívalo para documentos en los que el árbol de encabezados no aporta valor (por ejemplo, pósteres de una sola página).</td>
+    </tr>
+    <tr>
+      <td><code>forceColorSpace</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Cuando es `true`, todos los colores del PDF renderizado se convierten a `colorSpace` al exportar. Déjalo desactivado en PDFs pensados para pantalla si los colores de entrada ya están en el espacio deseado; actívalo para garantizar un único espacio de color partiendo de fuentes heterogéneas.</td>
+    </tr>
+    <tr>
+      <td><code>colorSpace</code></td>
+      <td><code>'rgb' | 'cmyk' | 'grayscale'</code></td>
+      <td><code>'cmyk'</code></td>
+      <td>Espacio de color destino usado cuando `forceColorSpace` está activado. Usa `'cmyk'` para imprenta offset, `'rgb'` para PDFs solo-pantalla y `'grayscale'` para pruebas en blanco y negro. No tiene efecto si `forceColorSpace` es `false`. El CMYK se separa con el perfil de salida de [`print`](#producción-para-imprenta-configuración) (FOGRA39 por defecto) y su tratamiento del negro, y también se convierten las imágenes RGB; si allí se elige una norma PDF/X, el archivo sale en CMYK diga lo que diga este campo.</td>
+    </tr>
+    <tr>
+      <td><code>accessible</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Genera un PDF accesible y etiquetado, orientado a PDF/UA-1: un árbol de estructura lógica en orden de lectura (títulos que nunca saltan de nivel, párrafos, listas, citas, callouts, tablas con celdas de cabecera, figuras con su texto alternativo y su pie, fórmulas, referencias como enlaces, el índice de un `:::toc` como un solo `TOC` con un `TOCI` por fila: el número de la fila como `Lbl`, su título y su página como un `Reference` que contiene el enlace), el título y el idioma del documento (el `locale` de primer nivel), la identificación PDF/UA en los metadatos XMP, y toda marca decorativa (fondo de página, filetes, rejilla base, cabeceras y pies corridos, marcas de corte, cabeceras de tabla repetidas, el título repetido y el indicador de continuación de un aviso partido) señalada como artefacto para que los lectores de pantalla la omitan. Una figura sin `altText` usa su pie y, si no lo tiene, su etiqueta. Una figura o una tabla flotante se lee justo después del texto que la cita por primera vez, o del texto anterior a su línea `::resource`, y un recuadro flotante después del texto anterior a su apertura, aunque el flotante quede en una página posterior; una lista o un índice que siguen después de un flotante quedan en un solo elemento. Desactívalo solo para masters de imprenta donde la estructura adicional sobre.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+pdfGeneration: {
+  outlines: true,
+  accessible: true,
+  forceColorSpace: true,
+  colorSpace: 'cmyk',
+}
+```
+
+El resolver y el stripper siguen el mismo patrón que las demás secciones:
+
+```ts
+import {
+  DEFAULT_PDF_GENERATION_CONFIG,
+  resolvePdfGenerationConfig,
+  stripPdfGenerationDefaults,
+} from 'postext';
+
+const resolved = resolvePdfGenerationConfig(config.pdfGeneration);
+// => { outlines: true, forceColorSpace: false, colorSpace: 'cmyk', accessible: true }
+
+const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
+// => undefined cuando todo coincide con los valores por defecto
+```
+
+Consulta [Generación de PDF](/es/docs/configuration-programmatic-usage#generación-de-pdf) más abajo para la receta completa de exportación.
+
+
+## Producción para imprenta (configuración)
+
+La propiedad `print` dice cómo va un libro a imprenta: la norma PDF/X del archivo, el perfil de salida con el que se separa su CMYK, cómo se imprime el negro y los umbrales del preflight. La composición la ignora, así que cambiarla nunca mueve una línea. La leen tres cosas: `postext-pdf` cuando escribe el archivo, `preflightDocument` cuando revisa un documento ya maquetado y la simulación de impresión de los visores canvas y Folio.
+
+```ts
+type PdfXStandard = 'none' | 'pdfx1a' | 'pdfx4';
+
+interface PrintConfig {
+  standard?: PdfXStandard;                 // 'none': un PDF normal.
+  outputProfile?: string;                  // Un id del catálogo ('fogra39', 'fogra51'…) o 'custom'.
+  customProfile?: CustomOutputProfile;     // Un archivo .icc subido.
+  renderingIntent?: 'relative' | 'perceptual';
+  blackPointCompensation?: boolean;
+  convertImages?: boolean;                 // Separar las imágenes RGB (PDF/X-1a lo hace siempre).
+  inkLimit?: number;                       // Cobertura total de tinta, en porcentaje.
+  black?: PrintBlackConfig;
+  preflight?: PrintPreflightConfig;
+}
+
+interface CustomOutputProfile {
+  name: string;           // Su descripción, o el nombre del archivo.
+  fileId: string;         // El archivo .icc guardado.
+  registryName?: string;  // El nombre de la condición en el registro ICC (FOGRA51…); si no, 'Custom'.
+  inkLimit?: number;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>Propiedad</th>
+      <th style={{ width: '170px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>standard</code></td>
+      <td><code>'none' | 'pdfx1a' | 'pdfx4'</code></td>
+      <td><code>'none'</code></td>
+      <td>La variante PDF/X del archivo. `'pdfx1a'` escribe PDF/X-1a:2003: solo CMYK y gris, sin transparencias; lo acepta cualquier imprenta. `'pdfx4'` escribe PDF/X-4: conserva las transparencias y la gestión de color, para los flujos actuales. Las dos separan cada color con el perfil de salida, diga lo que diga `pdfGeneration.colorSpace`.</td>
+    </tr>
+    <tr>
+      <td><code>outputProfile</code></td>
+      <td><code>string</code></td>
+      <td><code>'fogra39'</code></td>
+      <td>La condición de impresión para la que se separa el CMYK: un id del [catálogo de perfiles](#perfiles-de-salida), o `'custom'` para `customProfile`. Un id que el catálogo no tiene, o `'custom'` sin archivo, vuelve al valor por defecto y genera un aviso de configuración.</td>
+    </tr>
+    <tr>
+      <td><code>customProfile</code></td>
+      <td><code>CustomOutputProfile</code></td>
+      <td>ninguno</td>
+      <td>Un perfil de salida CMYK que aportas tú, el que te da la imprenta (por ejemplo, `PSOcoated_v3.icc` de ECI). Sus bytes se guardan aparte, como los de una fuente; `renderToPdf` los recibe en su opción `outputProfile`. `registryName` se escribe como identificador de la condición en la condición de salida.</td>
+    </tr>
+    <tr>
+      <td><code>renderingIntent</code></td>
+      <td><code>'relative' | 'perceptual'</code></td>
+      <td><code>'relative'</code></td>
+      <td>El colorimétrico relativo mantiene exactos los colores que la máquina puede imprimir y lleva el resto al imprimible más cercano; el perceptual comprime toda la gama para que los colores fuera de gama conserven sus relaciones.</td>
+    </tr>
+    <tr>
+      <td><code>blackPointCompensation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Con el propósito relativo, lleva el negro de la pantalla al negro más oscuro que imprime la máquina, para que los tonos más oscuros conserven el detalle en lugar de empastarse.</td>
+    </tr>
+    <tr>
+      <td><code>convertImages</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Separa en CMYK las imágenes RGB con el perfil. PDF/X-1a lo hace siempre. En PDF/X-4, `false` las deja en RGB, etiquetadas como sRGB mediante el `/DefaultRGB` de las páginas, para que las convierta el RIP de la imprenta. Los JPEG en CMYK y en gris se insertan siempre tal como son.</td>
+    </tr>
+    <tr>
+      <td><code>inkLimit</code></td>
+      <td><code>number</code></td>
+      <td>el del perfil</td>
+      <td>El total máximo de C+M+Y+K, en porcentaje, que acepta el preflight. Por defecto, el límite con el que separa el perfil (300 % en la mayoría de condiciones de offset, 230 % en el papel prensa IFRA26).</td>
+    </tr>
+    <tr>
+      <td><code>black</code></td>
+      <td><code>PrintBlackConfig</code></td>
+      <td>ver <a href="#negro">Negro</a></td>
+      <td>Grises solo en K, sobreimpresión y negro enriquecido.</td>
+    </tr>
+    <tr>
+      <td><code>preflight</code></td>
+      <td><code>PrintPreflightConfig</code></td>
+      <td>ver <a href="#preflight">Preflight</a></td>
+      <td>Qué revisa el preflight y con qué umbrales.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+print: {
+  standard: 'pdfx4',
+  outputProfile: 'fogra51',
+  black: { richBlackColor: { c: 60, m: 40, y: 40, k: 100 } },
+  preflight: { minImageResolution: 300, safeZone: { value: 5, unit: 'mm' } },
+}
+```
+
+### Perfiles de salida
+
+`postext` incluye estos perfiles de salida CMYK en su carpeta `icc/` (`postext/icc/<id>.icc` en cualquier CDN de npm, y `/icc/<id>.icc` en postext.dev). Ninguno tiene restricciones de derechos conocidas (CC0): los perfiles FOGRA, GRACoL, SWOP y de prensa de colord, generados a partir de los datos de caracterización de cada condición, y FOGRA51 y FOGRA52, que postext ha creado con ArgyllCMS a partir de los datos de la propia Fogra. Los perfiles de ECI (ISO Coated v2, PSO Coated v3, PSO Uncoated v3) describen las mismas condiciones, pero no se pueden redistribuir; si tu imprenta los pide, súbelos como perfil personalizado.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Id</th>
+      <th>Condición</th>
+      <th style={{ width: '150px' }}>Nombre en el registro</th>
+      <th style={{ width: '90px' }}>Límite de tinta</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fogra39</code></td><td>Offset, papel estucado (condición de ISO Coated v2)</td><td>FOGRA39</td><td>300 %</td></tr>
+    <tr><td><code>fogra51</code></td><td>Offset, estucado de primera (condición de PSO Coated v3)</td><td>FOGRA51</td><td>300 %</td></tr>
+    <tr><td><code>fogra52</code></td><td>Offset, sin estucar libre de madera (condición de PSO Uncoated v3)</td><td>FOGRA52</td><td>300 %</td></tr>
+    <tr><td><code>fogra47</code></td><td>Offset, sin estucar blanco (PSO Uncoated ISO 12647)</td><td>FOGRA47</td><td>300 %</td></tr>
+    <tr><td><code>fogra29</code></td><td>Offset, sin estucar blanco</td><td>FOGRA29</td><td>300 %</td></tr>
+    <tr><td><code>fogra30</code></td><td>Offset, sin estucar amarillento</td><td>FOGRA30</td><td>340 %</td></tr>
+    <tr><td><code>fogra27</code></td><td>Offset, estucado (ISO 12647-2:1996)</td><td>FOGRA27</td><td>300 %</td></tr>
+    <tr><td><code>fogra28</code></td><td>Rotativa offset heatset, LWC brillante</td><td>FOGRA28</td><td>300 %</td></tr>
+    <tr><td><code>fogra45</code></td><td>Rotativa offset heatset, LWC mejorado</td><td>FOGRA45</td><td>300 %</td></tr>
+    <tr><td><code>fogra40</code></td><td>Rotativa offset heatset, papel SC</td><td>FOGRA40</td><td>340 %</td></tr>
+    <tr><td><code>gracol2006</code></td><td>GRACoL 2006, estucado de grado 1</td><td>CGATS TR 006</td><td>300 %</td></tr>
+    <tr><td><code>swop3</code></td><td>SWOP 2006, estucado de grado 3</td><td>CGATS TR 003</td><td>300 %</td></tr>
+    <tr><td><code>swop5</code></td><td>SWOP 2006, estucado de grado 5</td><td>CGATS TR 005</td><td>300 %</td></tr>
+    <tr><td><code>ifra26</code></td><td>Papel prensa coldset (ISO 12647-3)</td><td>IFRA26</td><td>230 %</td></tr>
+    <tr><td><code>snap2007</code></td><td>Papel prensa SNAP 2007</td><td>CGATS TR 002</td><td>320 %</td></tr>
+  </tbody>
+</table>
+
+`renderToPdf` lee los bytes del perfil de su opción `outputProfile`; sin ellos, descarga el archivo del catálogo desde `profileBaseUrl` (por defecto, `https://cdn.jsdelivr.net/npm/postext/icc/`). Un renderizado PDF/X cuyo perfil no se puede cargar falla; un renderizado CMYK normal recurre a la fórmula de manual y deja un aviso `outputProfileUnavailable`.
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { renderToPdf } from 'postext-pdf';
+
+const pdf = await renderToPdf(doc, {
+  fontProvider,
+  print: { standard: 'pdfx1a', outputProfile: 'fogra39' },
+  outputProfile: await readFile('node_modules/postext/icc/fogra39.icc'),
+});
+```
+
+### PDF/X-1a y PDF/X-4
+
+Las dos normas escriben:
+
+- la condición de salida (`GTS_PDFX`), que nombra la condición de impresión e incrusta el perfil de destino;
+- la identificación en el diccionario Info (`GTS_PDFXVersion`, `/Trapped /False`, el título y las fechas) y en los metadatos XMP (`pdfxid:GTSPDFXVersion`, los ids del documento y de la versión), unida a la identificación PDF/UA cuando el archivo está etiquetado;
+- una TrimBox y una BleedBox en cada página (la página entera cuando no hay marcas de corte);
+- el `/ID` del trailer;
+- cada color en DeviceCMYK (o gris) a través del perfil, y las marcas de corte en color de registro;
+- ninguna anotación de enlace: un archivo para imprenta no lleva ninguna dentro de su caja de sangrado, así que los enlaces del PDF de pantalla se quedan fuera (los marcadores se mantienen).
+
+PDF/X-1a:2003 es PDF 1.4 sin flujos de objetos y no admite transparencias: un color translúcido se pone como se imprimiría sobre el papel, el canal alfa de una imagen se acopla sobre blanco y el negativo de página de depuración se omite (con un aviso `pageNegativeIgnored`). PDF/X-4 es PDF 1.6: las transparencias se mantienen, cada página recibe un grupo de transparencia que funde en CMYK y las imágenes RGB que deja `convertImages: false` se etiquetan como sRGB mediante `/DefaultRGB`.
+
+Un original de impresión en PDF (`svg.pdfFileId`) se inserta tal como es, de modo que sus colores, fuentes y transparencias son los suyos; el preflight avisa de lo que trae.
+
+### Negro
+
+```ts
+interface PrintBlackConfig {
+  kOnlyNeutrals?: boolean;      // Grises y negro solo con tinta negra.
+  overprint?: boolean;          // El 100 % K sobreimprime.
+  richBlack?: boolean;          // Las masas negras grandes, en negro enriquecido.
+  richBlackColor?: CmykPercent; // { c, m, y, k } en porcentaje.
+  richBlackMinSize?: Dimension; // El lado menor que necesita una masa.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '140px' }}>Tipo</th>
+      <th style={{ width: '170px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kOnlyNeutrals</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Un color neutro (`#000000`, `#808080`…) se imprime solo con tinta negra, con la K elegida para igualar la luminosidad, nunca como un gris de cuatricromía que cambia con el registro. Las imágenes conservan la generación de negro del propio perfil.</td>
+    </tr>
+    <tr>
+      <td><code>overprint</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Lo que se pinta solo con 100 % K (texto negro, filetes, trazos, formas negras pequeñas) sobreimprime (`op`/`OP` con `OPM 1`), así que si una plancha se desplaza en máquina nunca se abre un borde blanco a su alrededor. Todo lo demás se reserva; las imágenes y los degradados nunca sobreimprimen.</td>
+    </tr>
+    <tr>
+      <td><code>richBlack</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Un relleno negro cuyo lado menor llega a `richBlackMinSize` (un fondo, una banda, una caja) se imprime en `richBlackColor` y reserva lo de debajo, para que se vea profundo y no gris oscuro. El texto nunca pasa a negro enriquecido.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackColor</code></td>
+      <td><code>CmykPercent</code></td>
+      <td><code>{`{ c: 60, m: 40, y: 40, k: 100 }`}</code></td>
+      <td>La receta del negro enriquecido, en porcentaje. Mantén su total por debajo del límite de tinta; el preflight lo comprueba.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackMinSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6mm</code></td>
+      <td>El lado menor que necesita una masa negra para imprimirse en negro enriquecido.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Colores definidos en CMYK
+
+Un color escrito en CMYK conserva sus valores exactos: `ColorValue.cmyk` (en porcentaje) se pone tal cual en un renderizado para imprenta, y `hex` es su representación en pantalla. Una entrada de la paleta definida en CMYK vale para todos los colores enlazados a ella.
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### Preflight
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // ppp al tamaño impreso.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>Propiedad</th>
+      <th style={{ width: '110px' }}>Tipo</th>
+      <th style={{ width: '100px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Ejecuta las comprobaciones.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Un mapa de bits colocado que quede por debajo de estos píxeles por pulgada a su tamaño impreso, recorte incluido, recibe un aviso: figuras, imágenes de celdas de tabla, imágenes de diseño, viñetas de cómic. Un mapa de bits sin resolución propia se imprime a `page.dpi` a su tamaño natural, así que una página maquetada a 150 dpi imprime todas esas imágenes a 150 ppp; uno con resolución (`bitmap.resolution`, `layout.bitmapResolution`) se imprime a esa resolución a su tamaño natural.</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Por debajo de este valor el aviso es crítico. Nunca por encima de `minImageResolution`.</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Filetes, bordes, filetes de columna, filetes de tabla y bordes de viñeta de cómic más finos que esto.</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Texto por debajo de este cuerpo compuesto en más de una tinta (un color de cuatricromía, negro enriquecido): se emborrona cuando las planchas se desplazan. El texto negro, solo en K, nunca cuenta.</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Texto más cerca del corte que esta distancia, donde la guillotina puede cortarlo.</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Una caja o imagen que se queda a esta distancia del corte sin llegar al sangrado: llévala a sangre o retírala.</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Avisa de las fuentes que un PDF colocado no incrusta (el Sandbox revisa cada original de impresión con `inspectPrintMaster`). Postext incrusta todas las fuentes que compone.</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)` ejecuta las comprobaciones sobre un documento maquetado y devuelve una lista de incidencias, cada una con un `kind`, una `severity` (`'critical'`, `'warning'` o `'info'`), el `pageIndex` absoluto en el libro, el `rect` afectado (px de página) y, cuando el elemento lo tiene, su rango en el texto fuente. Los tipos son `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` y `nearTrim`. Sin un `transform`, un neutro cuenta como una tinta y cualquier otro color como tres, y la cobertura no se comprueba; con él, los recuentos y la cobertura son exactos. La resolución de una imagen se calcula con los píxeles que declara su recurso, o con los del propio archivo cuando `imageSize(fileId)` los da (`bitmapInfo` sobre los bytes, o la imagen decodificada): una declaración que se aleja más de un píxel del archivo se señala una vez como `declaredPixelsMismatch`, un aviso cuando declara más píxeles de los que tiene el archivo. `placedImageResolutions(doc, { resources, imageSize })` enumera cada mapa de bits colocado con sus ppp efectivos, esté activado el preflight o no.
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // tamaños en píxeles de los mapas de bits
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // los píxeles reales de los archivos
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', según el archivo
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
+
+### Simulación de impresión
+
+Una página de canvas se puede pintar tal como se imprimirá. `createPrintPreview(transform, print, { paper, dpi })` construye la prueba en pantalla de una configuración: cada píxel se separa con el perfil (neutros solo en K, como en el PDF) y se vuelve a mostrar en pantalla, sobre el blanco del propio papel cuando `paper` es `true`; las masas negras lo bastante grandes para el negro enriquecido se ven en negro enriquecido. Pásalo a `renderPageToCanvas` como `printPreview`; `guides` añade las líneas del corte, el sangrado y la zona de seguridad, y `marksFor` recuadra zonas de una página (los `rect` del preflight). `postext-folio` acepta el mismo objeto como `printPreview` (con `paper: false`, porque el tono del papel del libro ya tiñe sus páginas).
+
+```ts
+import { createPrintPreview, renderPageToCanvas } from 'postext';
+
+const preview = createPrintPreview(transform, print, { paper: true, dpi: doc.config.page.dpi });
+renderPageToCanvas(page, doc, canvas, {
+  printPreview: { ...preview, guides: { safeZonePx: 59 }, marksFor: () => issues.map((i) => i.rect!).filter(Boolean) },
+});
+```
+
+### Motor de color
+
+La gestión de color que usa postext se exporta para tus propias herramientas. Lee perfiles ICC v2 y v4 (matriz/TRC y las tablas de consulta `mft1`, `mft2`, `mAB` y `mBA`) en TypeScript puro, sin WebAssembly.
+
+- `parseIccProfile(bytes)` lee un perfil; `deviceChannels(profile)` da su número de canales.
+- `outputTransform(profile, { intent, blackPointCompensation, preserveNeutrals })` devuelve `fromRgb(r, g, b)` (sRGB 0..1 → CMYK 0..1), `toLab(cmyk, paper?)` y `proof(cmyk, paper?)` (CMYK → sRGB de pantalla).
+- `cmykToLab`, `labToCmyk`, `srgbToLab`, `labToSrgb`, `deltaE` y `totalAreaCoverage` son las conversiones sueltas; `buildRgbLut` / `sampleRgbLut` crean y leen tablas densas para trabajar píxel a píxel.
+- `OUTPUT_PROFILES`, `outputProfileInfo(id)` y `loadOutputProfile(id, baseUrl?)` dan el catálogo; `srgbProfileBytes()` escribe el perfil sRGB con el que PDF/X-4 etiqueta el RGB; `authoredCmykColors(config)` enumera los colores que una configuración define en CMYK.
+
+El resolver y el stripper siguen el modelo de las demás secciones: `resolvePrintConfig`, `stripPrintDefaults` y `profileInkLimit(config)` (el límite del perfil que nombra una configuración, antes de aplicar `inkLimit`), con `DEFAULT_PRINT_CONFIG`, `DEFAULT_PRINT_BLACK_CONFIG`, `DEFAULT_PRINT_PREFLIGHT_CONFIG` y `DEFAULT_RICH_BLACK`.
+
+
+## Visor Folio (configuración)
+
+La propiedad `folio` decide cómo presenta el visor Folio (`postext-folio`) el libro impreso en 3D: el ángulo de la vista, el papel, la encuadernación, la superficie sobre la que descansa el libro y la luz. La composición la ignora, igual que la salida canvas, HTML y PDF. `buildDocument` lleva los ajustes resueltos en el VDT, como `doc.config.folio`, cuando la configuración fija alguno, así que un documento sin ellos conserva el hash de su composición.
+
+```ts
+interface FolioConfig {
+  tilt?: number;                  // Degrees from straight above, 0–70.
+  yaw?: number;                   // Degrees round the book, −180–180.
+  paper?: {
+    type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
+         | 'bible' | 'newsprint' | 'cardStock' | 'board';
+    grammage?: number;            // g/m²
+    bulk?: number;                // cm³/g; caliper µm = grammage × bulk
+    finish?: 'auto' | 'uncoated' | 'matte' | 'silk' | 'gloss';
+    texture?: 'auto' | 'smooth' | 'vellum' | 'wove' | 'laid' | 'linen' | 'felt';
+    textureStrength?: number;     // 0–2
+    shade?: ColorValue;
+    showThrough?: boolean;
+  };
+  binding?: {
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch' | 'folded';
+    cover?: 'case' | 'pages';
+    coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
+    coverColor?: ColorValue;
+    spineImage?: string;          // resource id
+  };
+  surface?: {
+    type?: 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' | 'marble' | 'plain' | 'none';
+    color?: ColorValue;
+  };
+  lighting?: {
+    environment?: 'studio' | 'daylight' | 'lamp' | 'overcast' | 'night';
+    intensity?: number;           // 0.25–2
+    shadows?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>tilt</code></td>
+      <td><code>number</code></td>
+      <td><code>22</code></td>
+      <td>Ángulo de la vista respecto a la vertical, en grados, limitado a 0–70. Con 0 el libro abierto se ve plano desde arriba; con un ángulo mayor el pie de las páginas se acerca y se aprecia el grosor del bloque de páginas.</td>
+    </tr>
+    <tr>
+      <td><code>yaw</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Cuánto gira la vista alrededor del libro, en grados, llevado a −180–180. Con 0 el libro se ve desde el pie de sus páginas; un ángulo positivo lleva la mirada hacia su derecha y uno negativo hacia su izquierda. Junto con <code>tilt</code> es la vista con que se abre el visor y a la que vuelve <code>resetView()</code>.</td>
+    </tr>
+    <tr>
+      <td><code>paper.type</code></td>
+      <td><code>FolioPaperType</code></td>
+      <td><code>'uncoated'</code>; <code>'newsprint'</code> en un formato de periódico</td>
+      <td>El tipo de papel. Da los valores por defecto de los cinco campos siguientes (ver la tabla de papeles). <code>cardStock</code> es cartulina de cubierta; <code>board</code> es cartón rígido, como el de un libro de cartón, y sus hojas pasan sin doblarse.</td>
+    </tr>
+    <tr>
+      <td><code>paper.grammage</code></td>
+      <td><code>number</code></td>
+      <td>el del papel</td>
+      <td>Gramaje en gramos por metro cuadrado, 20–2500. Un papel de más gramaje es más grueso, más rígido y más opaco: la hoja se curva más abierta y transparenta menos el reverso.</td>
+    </tr>
+    <tr>
+      <td><code>paper.bulk</code></td>
+      <td><code>number</code></td>
+      <td>el del papel</td>
+      <td>Mano: grosor por unidad de peso, en cm³/g, 0,5–3. El grosor de una hoja en micras es gramaje × mano, y de él y del número de páginas sale el lomo del bloque.</td>
+    </tr>
+    <tr>
+      <td><code>paper.finish</code></td>
+      <td><code>FolioPaperFinish</code></td>
+      <td><code>'auto'</code></td>
+      <td>Sin estucar (fibra, sin brillo) o estucado y calandrado hasta mate, semimate (<code>silk</code>, un brillo suave) o brillo. En Folio, una página de brillo refleja la hoja que pasa sobre ella. <code>'auto'</code> toma el del papel.</td>
+    </tr>
+    <tr>
+      <td><code>paper.texture</code></td>
+      <td><code>FolioPaperTexture</code></td>
+      <td><code>'auto'</code></td>
+      <td>El relieve de la superficie: <code>smooth</code> (lisa, calandrada), <code>vellum</code> (vitela, un grano fino), <code>wove</code> (la textura uniforme de casi todos los papeles de libro, formada sobre una tela metálica tejida), <code>laid</code> (verjurado: puntizones juntos cruzados por corondeles más separados), <code>linen</code> (tela, un gofrado de hilos cruzados), <code>felt</code> (las marcas irregulares de un fieltro). <code>'auto'</code> toma la del papel.</td>
+    </tr>
+    <tr>
+      <td><code>paper.textureStrength</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Cuánto se marca la textura con la luz, 0–2.</td>
+    </tr>
+    <tr>
+      <td><code>paper.shade</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el del papel</td>
+      <td>El color del papel antes de imprimir (blanco, natural, ahuesado). Las páginas se imprimen sobre él.</td>
+    </tr>
+    <tr>
+      <td><code>paper.showThrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>El reverso de la página se ve tenuemente a través del papel fino. Después del papel biblia, el papel prensa es el que más lo deja ver: su tinta penetra en la hoja.</td>
+    </tr>
+    <tr>
+      <td><code>binding.type</code></td>
+      <td><code>FolioBindingType</code></td>
+      <td><code>'hardcover'</code>; <code>'folded'</code> en un formato de periódico</td>
+      <td><code>hardcover</code>: cartoné, tapas algo mayores que las páginas. <code>paperback</code>: rústica fresada (lomo fresado y encolado), abre menos. <code>sewn</code>: rústica cosida. <code>layflat</code>: encuadernación plana, abre sin hundirse en el lomo. <code>saddleStitch</code>: grapado a caballete, pliegos doblados y grapados por el pliegue, como una revista o un folleto; sin lomo plano. <code>folded</code> (desde postext 1.18): un periódico, pliegos doblados una vez y metidos uno dentro de otro sin nada que los sujete; sin grapas, sin lomo y sin tapas, y la primera página es la portada. Un tramo <a href="/es/docs/document-format#paper"><code>:::paper</code></a> con <code>shade</code> imprime una sección, por ejemplo las páginas de economía, en papel prensa salmón.</td>
+    </tr>
+    <tr>
+      <td><code>binding.cover</code></td>
+      <td><code>FolioCoverSource</code></td>
+      <td><code>'case'</code></td>
+      <td>Las cubiertas. <code>'case'</code> dibuja una tapa alrededor de las páginas. <code>'pages'</code> toma la primera página del libro como cartón delantero y la última, si es par, como cartón trasero: el libro está cerrado hasta que se pasa la cubierta, los cartones giran rígidos y no se dibuja tapa.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverMaterial</code></td>
+      <td><code>FolioCoverMaterial</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> es tela en el cartoné y cartulina (<code>'paper'</code>) en las demás encuadernaciones.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>azul oscuro (<code>#2c3e57</code>)</td>
+      <td>El color del material de la cubierta.</td>
+    </tr>
+    <tr>
+      <td><code>binding.spineImage</code></td>
+      <td><code>string</code></td>
+      <td>ninguna</td>
+      <td>El id de un recurso de mapa de bits o SVG impreso en el lomo: el lomo tal como se ve con el libro de pie, la cabeza arriba y la cubierta a la derecha. Se ajusta hasta cubrir el lomo, centrado. El grapado a caballete y la encuadernación plegada no lo usan.</td>
+    </tr>
+    <tr>
+      <td><code>surface.type</code></td>
+      <td><code>FolioSurfaceType</code></td>
+      <td><code>'oak'</code></td>
+      <td>Sobre qué descansa el libro. <code>'none'</code> deja el fondo del anfitrión.</td>
+    </tr>
+    <tr>
+      <td><code>surface.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>ninguno</td>
+      <td>Tiñe la superficie; con <code>'plain'</code> es su color.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.environment</code></td>
+      <td><code>FolioEnvironment</code></td>
+      <td><code>'studio'</code></td>
+      <td>El entorno que reflejan los papeles estucados y de brillo, junto con la luz principal que proyecta las sombras.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.intensity</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Exposición, 0,25–2.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.shadows</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Sombras de la luz principal.</td>
+    </tr>
+  </tbody>
+</table>
+
+Los papeles y los valores que aportan (`FOLIO_PAPER_STOCKS`), habituales en las fichas técnicas de los fabricantes:
+
+<table>
+  <thead>
+    <tr>
+      <th>Papel</th>
+      <th>Gramaje</th>
+      <th>Mano</th>
+      <th>Grosor</th>
+      <th>Acabado</th>
+      <th>Textura</th>
+      <th>Tono</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>uncoated</code> (offset sin estucar)</td><td>90 g/m²</td><td>1.25</td><td>113 µm</td><td>sin estucar</td><td>uniforme</td><td><code>#fcfbf8</code></td></tr>
+    <tr><td><code>bookWove</code> (papel de libro ahuesado, alta mano)</td><td>80 g/m²</td><td>1.6</td><td>128 µm</td><td>sin estucar</td><td>uniforme</td><td><code>#f6efdc</code></td></tr>
+    <tr><td><code>coatedMatte</code> (estucado mate)</td><td>115 g/m²</td><td>1.0</td><td>115 µm</td><td>mate</td><td>lisa</td><td><code>#fdfdfc</code></td></tr>
+    <tr><td><code>coatedSilk</code> (estucado semimate)</td><td>115 g/m²</td><td>0.9</td><td>104 µm</td><td>semimate</td><td>lisa</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>coatedGloss</code> (estucado brillo)</td><td>115 g/m²</td><td>0.8</td><td>92 µm</td><td>brillo</td><td>lisa</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>bible</code> (papel biblia)</td><td>40 g/m²</td><td>1.1</td><td>44 µm</td><td>sin estucar</td><td>vitela</td><td><code>#f9f6ee</code></td></tr>
+    <tr><td><code>newsprint</code> (papel prensa)</td><td>48 g/m²</td><td>1.5</td><td>72 µm</td><td>sin estucar</td><td>uniforme</td><td><code>#ebe7dc</code></td></tr>
+    <tr><td><code>cardStock</code> (cartulina)</td><td>250 g/m²</td><td>1.2</td><td>300 µm</td><td>sin estucar</td><td>vitela</td><td><code>#fbfaf6</code></td></tr>
+    <tr><td><code>board</code> (cartón)</td><td>1250 g/m²</td><td>1.6</td><td>2000 µm</td><td>semimate</td><td>lisa</td><td><code>#ffffff</code></td></tr>
+  </tbody>
+</table>
+
+Una novela en papel ahuesado, en rústica fresada, sobre una mesa de nogal bajo una lámpara de lectura:
+
+```ts
+folio: {
+  paper: { type: 'bookWove' },
+  binding: { type: 'paperback', coverColor: { hex: '#8a2b1f', model: 'hex' } },
+  surface: { type: 'walnut' },
+  lighting: { environment: 'lamp' },
+}
+```
+
+Una página con formato de periódico (`page.sizePreset` `'broadsheet'`, `'berliner'`, `'tabloid'` o `'compact'`) se muestra como un periódico cuando la configuración no nombra papel ni encuadernación: papel `newsprint` y encuadernación `folded` (desde postext 1.18). El papel o la encuadernación que nombre la configuración se respetan, así que `paper: { type: 'uncoated' }` imprime un tabloide en papel offset. Los campos del papel que se fijan sin nombrar el tipo (un `grammage`, un `shade`) se aplican al papel prensa. El resolvedor y el limpiador reciben el formato como segundo argumento, y `folioForTrim(folio, sizePreset)` escribe esos dos valores en la configuración:
+
+```ts
+resolveFolioConfig({ tilt: 30 }, 'tabloid');
+// => { tilt: 30, paper: { type: 'newsprint', grammage: 48, bulk: 1.5, … }, binding: { type: 'folded', coverMaterial: 'paper', … }, … }
+
+stripFolioDefaults({ paper: { type: 'newsprint' }, binding: { type: 'folded' } }, 'tabloid');
+// => undefined
+```
+
+Los colores siguen los enlaces a la paleta como cualquier otro color de la configuración (`paletteId`). El resolvedor y el limpiador funcionan como en las demás secciones; el limpiador quita los valores del papel que coinciden con los del tipo elegido:
+
+```ts
+import { FOLIO_PAPER_STOCKS, DEFAULT_FOLIO_CONFIG, resolveFolioConfig, stripFolioDefaults } from 'postext';
+
+resolveFolioConfig({ paper: { type: 'bible' } }).paper;
+// => { type: 'bible', grammage: 40, bulk: 1.1, finish: 'uncoated', texture: 'vellum', textureStrength: 1, shade: { hex: '#f9f6ee', … }, showThrough: true }
+
+stripFolioDefaults({ paper: { type: 'bible', grammage: 40 } });
+// => { paper: { type: 'bible' } }
+```
+
+En el Sandbox estos ajustes forman el grupo **Folio** del panel Diseño (**Diseño → Folio → Visor Folio (3D)**), y la pestaña Folio los muestra a medida que los cambias, sin volver a componer el libro. El visor en sí se describe en [Un libro en 3D](/es/docs/configuration-programmatic-usage#un-libro-en-3d-postext-folio), y una tanda de páginas en otro papel, en [Formato del documento › `:::paper`](/es/docs/document-format#paper).
+
+
+## Depuración
+
+La propiedad `debug` agrupa dos tipos de ayudas de autoría: superposiciones visuales que mantienen sincronizados el texto fuente y la composición renderizada, y un conjunto de avisos que muestran en el panel Revisión del Sandbox los problemas tipográficos o estructurales del documento. Ninguno de los dos afecta a la salida exportada.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Propiedad</th>
+      <th style={{ width: '200px' }}>Tipo</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>Cursor reflejado en la composición renderizada — ver <a href="#superposiciones-visuales">Superposiciones visuales</a>.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>Selección de la fuente resaltada en la página — ver <a href="#superposiciones-visuales">Superposiciones visuales</a>.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight</code></td>
+      <td><code>LooseLineHighlightConfig</code></td>
+      <td>Superposición sobre las líneas justificadas flojas — ver <a href="#superposiciones-visuales">Superposiciones visuales</a>.</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative</code></td>
+      <td><code>{'{ enabled: boolean }'}</code></td>
+      <td>Negativo de alto contraste de la página — ver <a href="#superposiciones-visuales">Superposiciones visuales</a>.</td>
+    </tr>
+    <tr>
+      <td><code>warnings</code></td>
+      <td><code>WarningsToggleConfig</code></td>
+      <td>Un booleano por cada clase de aviso de autoría que muestra el editor — ver <a href="#avisos">Avisos</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Superposiciones visuales
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Propiedad</th>
+      <th style={{ width: '120px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Muestra un cursor en la composición renderizada que refleja la posición del cursor en la fuente.</td>
+    </tr>
+    <tr>
+      <td><code>cursorSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#2563eb</code></td>
+      <td>Color de ese cursor.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Resalta el rango renderizado que coincide con la selección en la fuente.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fde04780</code></td>
+      <td>Color del resaltado — un amarillo translúcido por defecto.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Pinta una superposición sobre las líneas justificadas cuyo espaciado entre palabras supera <code>threshold</code> veces el ancho del espacio normal.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ff000040</code></td>
+      <td>Color de esa superposición.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.threshold</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Multiplicador del ancho del espacio normal a partir del cual una línea justificada cuenta como floja. El aviso <code>looseLines</code> usa el mismo umbral. Una línea justificada cuyos espacios pasarían de 3 veces su ancho se compone en bandera, así que con el valor por defecto la capa y el aviso apenas encuentran nada en el texto corrido; bájalo (1.5 o 2) para ver las líneas flojas que siguen justificadas.</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renderiza una superposición en negativo de alto contraste sobre la página — útil para auditar visualmente la forma general de una doble página (densidad de texto, equilibrio de columnas, espacio en blanco) de un vistazo, sin distraerse con el detalle de los glifos.</td>
+    </tr>
+  </tbody>
+</table>
+
+Cada `SyncIndicatorConfig` es `{ enabled: boolean; color?: ColorValue }`. `LooseLineHighlightConfig` es `{ enabled: boolean; color?: ColorValue; threshold?: number }`. `pageNegative` es un simple interruptor `{ enabled: boolean }`.
+
+```ts
+debug: {
+  cursorSync: { enabled: true, color: { hex: '#ff0066', model: 'hex' } },
+  selectionSync: { enabled: false, color: { hex: '#fde04780', model: 'hex' } },
+  looseLineHighlight: { enabled: true, color: { hex: '#ff000040', model: 'hex' }, threshold: 3 },
+  pageNegative: { enabled: true },
+}
+```
+
+Estas superposiciones las dibuja el Sandbox sobre su vista Canvas. No forman parte de la página: ni `renderPage`, ni la salida HTML, ni el PDF las pintan nunca.
+
+### Líneas flojas en tu propio canvas
+
+El motor exporta el resaltado de líneas flojas como dos funciones auxiliares, para una página que pintas tú:
+
+```ts
+import { buildDocument, renderPageToCanvas, drawLooseLines, findLooseLines } from 'postext';
+
+const doc = buildDocument(content, config);
+const canvas = document.querySelector('canvas')!;
+renderPageToCanvas(doc.pages[0], doc, canvas, { scale: 0.5 });
+drawLooseLines(canvas.getContext('2d')!, doc.pages[0], doc, { threshold: 2.5 });
+
+// Las mismas líneas como datos: un informe, una capa SVG, un recuento por página.
+for (const { ratio, line, block } of findLooseLines(doc, { threshold: 2.5 })) {
+  console.log(`página ${block.pageIndex + 1}: ${ratio.toFixed(2)}× — ${line.text}`);
+}
+```
+
+- **`findLooseLines(doc, { threshold?, pageIndex? })`** devuelve, en orden de lectura, cada línea justificada cuyo `justifiedSpaceRatio` supera `threshold`: `{ block, line, ratio, x, y, width, height }`. El rectángulo, en píxeles de página, es la franja que cubre el resaltado: todo el ancho del bloque a la altura de la línea. Son las líneas que el Sandbox resalta y que su panel Revisión señala como `looseLine`.
+- **`drawLooseLines(ctx, page, doc, { threshold?, color? })`** rellena esas franjas en una página y devuelve las líneas que ha pintado. Dibuja en píxeles de página con la transformación actual del contexto, así que llámala justo después de `renderPage` o `renderPageToCanvas` sobre el mismo canvas: ambas dejan el contexto escalado a la página. `color` es cualquier estilo de relleno del canvas.
+- **Valores por defecto.** Las dos funciones usan el umbral (3) y el color (`#ff000040`) por defecto, no el `debug.looseLineHighlight` del documento: ese ajuste es del Sandbox. Para seguir una configuración, pasa `resolveDebugConfig(config.debug).looseLineHighlight.threshold` y `.color.hex`.
+
+### Avisos
+
+`debug.warnings` controla qué problemas de autoría aparecen en el panel **Revisión** del Sandbox (se edita en **Diseño → Avanzado → Avisos**). Cada clave es un interruptor booleano independiente; pon una en `false` para silenciar ese aviso concreto sin desactivar los demás.
+
+Estos interruptores solo filtran el panel del Sandbox. Los avisos que registra el propio motor —las cajas que desbordan su columna en `doc.warnings`; los ids de recurso, directivas, inserciones e ids de estilo desconocidos y las cuadrículas de tabla irregulares en `doc.contentWarnings`— están ahí digan lo que digan los interruptores, y los renderizadores notifican las imágenes que pintan como marcador de posición; véase [Avisos del documento](/es/docs/configuration-programmatic-usage#avisos-del-documento).
+
+```ts
+interface WarningsToggleConfig {
+  missingFont?: boolean;
+  looseLines?: boolean;
+  headingHierarchy?: boolean;
+  consecutiveHeadings?: boolean;
+  listAfterHeading?: boolean;
+  designIssues?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propiedad</th>
+      <th style={{ width: '120px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>missingFont</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa cuando una fuente referenciada por la configuración no ha podido cargarse en el navegador. Detecta erratas en `fontFamily` y paquetes `@fontsource/...` ausentes antes de que se conviertan en sustituciones silenciosas por una fuente de reserva en la salida renderizada.</td>
+    </tr>
+    <tr>
+      <td><code>looseLines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa de las líneas justificadas cuyo espaciado entre palabras supera `debug.looseLineHighlight.threshold`. Complementa la superposición: el aviso las enumera en el panel, la superposición las muestra en su posición.</td>
+    </tr>
+    <tr>
+      <td><code>headingHierarchy</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa de niveles de encabezado que saltan un rango — por ejemplo, un H1 seguido directamente de un H3. Los saltos en la jerarquía suelen indicar o bien una errata en la profundidad del encabezado o un malentendido sobre el esquema del documento.</td>
+    </tr>
+    <tr>
+      <td><code>consecutiveHeadings</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Avisa cuando un encabezado va seguido inmediatamente de otro encabezado, sin párrafo ni lista intermedios. Desactivado por defecto porque los encabezados encadenados son legítimos en muchas plantillas (título + subtítulo, capítulo + epígrafe); actívalo en manuscritos donde cada encabezado debe introducir prosa.</td>
+    </tr>
+    <tr>
+      <td><code>listAfterHeading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Avisa cuando una lista empieza inmediatamente después de un encabezado, sin párrafo introductorio. Desactivado por defecto porque el material de referencia suele hacerlo; actívalo en escritura narrativa donde cada lista debería estar encuadrada por prosa.</td>
+    </tr>
+    <tr>
+      <td><code>designIssues</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Avisa de problemas de integridad en las ranuras de diseño — encabezados de página, pies de página, la apertura de parte y el reverso en blanco que la sigue, las filas de parte del índice, ranuras de diseño avanzado de los encabezados, y el diseño y los encabezados y pies de sección de cada estilo de título. Cubre cadenas de anclaje cíclicas y referencias de anclaje colgantes (un elemento anclado a un <code>#id</code> que ya no existe), un encabezado con span de página cuyo <code>breakBefore</code> está desactivado, y un diseño avanzado habilitado cuyos elementos nunca renderizan <code>{'{titleText}'}</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+debug: {
+  warnings: {
+    missingFont: true,
+    looseLines: true,
+    headingHierarchy: true,
+    consecutiveHeadings: true,
+    listAfterHeading: false,
+    designIssues: true,
+  },
+}
+```
+
+Además de estos, el panel muestra siempre los avisos que emite la propia maquetación (`VDTDocument.warnings`), como una caja de aviso que desborda su columna (`calloutOverflow`), y los valores de configuración que el motor sustituyó (`VDTDocument.configWarnings`, o `collectConfigWarnings(config)`; ver [Avisos de configuración](#avisos-de-configuración) más abajo).
+
+### Avisos de configuración
+
+Ocho errores de la propia configuración nunca pasan en silencio, y ningún interruptor los oculta. El motor no falla por ninguno de ellos: sustituye el valor, o prescinde del ajuste, y lo dice.
+
+- **Formato de numeración desconocido**: un `numberFormat` de lista numerada, un `page.pageNumbering.format` o el `counterFormat` de un tipo de recurso que no es ninguna de las [grafías de los formatos de numeración](/es/docs/configuration-page-layout#grafías-de-los-formatos-de-numeración). Numera en decimal.
+- **Lista de fuentes en una familia**: un `fontFamily` (o cualquier `…FontFamily`) que contiene una lista de fuentes CSS. El texto se compone en la primera familia de la lista (ver [Una sola familia por `fontFamily`](/es/docs/configuration-text#una-sola-familia-por-fontfamily)).
+- **Columna lateral sin sitio**: un `sideColumnPercent` de una disposición `'oneAndHalf'` (la del documento, o el `layout` propio de un estilo de encabezado) que dejaría alguna de las columnas por debajo del 1% del ancho del área de contenido, o que no es un número. Las columnas se cortan en el valor más cercano que admiten las dos, y `used` lo indica (`sideColumnPercentClamped`; ver la [disposición `'oneAndHalf'`](/es/docs/configuration-page-layout#tipos-de-disposición)).
+- **Número de columnas fuera de rango**: un `columnCount` de una disposición `'multiple'` (la del documento, o el `layout` propio de un estilo de encabezado) que no es un número entero de 3 a 8. La página se divide en el número válido más cercano (3 si el valor no es un número), y `used` lo indica (`columnCountClamped`; véase la [disposición `'multiple'`](/es/docs/configuration-page-layout#tipos-de-disposición)).
+- **Retícula de caracteres demasiado grande**: un `cjk.grid` con más caracteres por línea o más líneas por página de los que caben entre los márgenes. La retícula se compone con los que caben, y `used` indica el número (`cjkGridClamped`; ver [Retícula de caracteres](/es/docs/configuration-east-asian#retícula-de-caracteres)).
+- **Ajuste de encabezado desconocido**: una clave que no existe en `headings`, `headings.balancing`, un nivel de encabezado, un estilo de encabezado o un estilo de párrafo: un `letterSpacng` mal escrito, un `tracking` tomado de otra herramienta, un `level` en un estilo de encabezado, un `fontStyle: 'italic'` en un estilo de párrafo (que lleva `italic: true`). Una tabulación se comprueba igual (un `leaders` por `leader`). El motor la ignora (hasta postext 1.4 lo hacía sin decir nada). `value` es la clave, `used` va vacío y `suggestion` nombra el ajuste al que más se parece, cuando dista una o dos letras o solo cambia en mayúsculas (`unknownConfigKey`).
+- **Valor de ajuste desconocido**: un ajuste que admite unas pocas palabras lleva otra, como `direction: 'right'` (admite `auto`, `ltr` o `rtl`). El motor lee en su lugar el valor por defecto, y `used` dice en qué quedó: para `direction`, la dirección del idioma del documento (`unknownConfigValue`). Un `align` de tabulación que no es ninguna de sus cuatro palabras se lee como `'start'`, y una `position` que no es una longitud, `'end'` ni un porcentaje descarta la tabulación (`used` es `'none'`). También se comprueban las palabras de los ajustes de cómic ([Cómics › Avisos de cómic](/es/docs/comics#avisos-de-cómic)): `used` es el valor en que quedó el ajuste (el valor por defecto del propio estilo de bocadillo, en un estilo integrado), y `suggestion` nombra la palabra a la que más se parece el valor, cuando hay una cercana.
+- **Números de línea en texto vertical**: `lineNumbers.enabled: true` en un documento compuesto en vertical (`layout.writingMode: 'vertical-rl'`). Las páginas verticales no llevan números de línea, y `used` es `false` (`lineNumbersUnsupported`; véase [Numeración de líneas](/es/docs/configuration-notes-references#numeración-de-líneas)).
+- **Ajuste del texto en escritura vertical** — el `defaultPlacement.wrap` de un tipo de recurso en un documento compuesto en vertical. Las páginas verticales no componen texto al lado de una figura, y `used` es `none` (`wrapUnsupported`; véase [Formato del documento › Ajuste del texto](/es/docs/document-format#ajuste-del-texto)). Un `wrap` que no nombra ningún lado es un valor de ajuste desconocido.
+
+El Sandbox los muestra en el panel **Revisión** con la ruta del ajuste. En código, `buildDocument` los deja en el documento como `configWarnings` (ausente cuando la configuración está limpia), y `collectConfigWarnings(config)` los devuelve sin componer nada:
+
+```js
+import { buildDocument, collectConfigWarnings } from 'postext';
+
+// JavaScript sin tipos: en TypeScript, 'roman' ni siquiera pasa la comprobación de tipos.
+const config = { bodyText: { fontFamily: 'EB Garamond, serif' }, orderedLists: { numberFormat: 'roman' } };
+const doc = buildDocument({ markdown }, config);
+doc.configWarnings;
+// [{ kind: 'fontFamilyStack', path: 'bodyText.fontFamily', value: 'EB Garamond, serif', used: 'EB Garamond' },
+//  { kind: 'unknownNumberFormat', path: 'orderedLists.numberFormat', value: 'roman', used: 'arabic' }]
+collectConfigWarnings(config); // la misma lista
+```
+
+También se revisa cada configuración parcial anidada: estilos de encabezado, las listas dentro de las partes, `htmlViewer.overrides`, elementos de diseño.
+
+`formatWarning` (ver [Avisos del documento](/es/docs/configuration-programmatic-usage#avisos-del-documento)) también los describe, con la ruta del ajuste delante —`bodyText.fontFamily: font stack "EB Garamond, serif" — set in "EB Garamond"`, `headingStyles[0].letterSpacng: unknown setting "letterSpacng" — ignored (did you mean "letterSpacing"?)`—, de modo que un anfitrión puede registrar en un solo bucle las tres listas que devuelve la composición.

@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ca',
   lastUpdated: '2026-10-09',
   readingTime: '10 min',
-  order: 13,
+  order: 22,
   plainSummary: "Aquesta pàgina és per a qui vol fer llibres amb Postext des d'un terminal en lloc del web. Baixes un sol fitxer per al teu ordinador i l'executes, sense instal·lar res més. Li dones el teu llibre, o uns quants fitxers de text, i en fa un PDF, una pàgina web, un llibre electrònic, imatges de les pàgines o un document de Word. També pot revisar un llibre per trobar-hi problemes i reunir-ne tots els fitxers en un de sol. Els programes i els assistents d'intel·ligència artificial també el poden fer servir, perquè pot respondre en un format que llegeixen sense dificultat.",
 };
 
@@ -114,7 +114,7 @@ postext image my-book.postext --page 1 -o cover.png
 Totes les ordres que llegeixen un llibre accepten qualsevol d'aquestes formes:
 
 - **Un fitxer `.postext`**: el paquet que el Sandbox exporta i obre (vegeu
-  [Paquets](/ca/docs/configuration#paquets-fitxers-postext)).
+  [Paquets](/ca/docs/configuration-programmatic-usage#paquets-fitxers-postext)).
 - **Una carpeta de llibre**: un paquet desempaquetat, amb el seu `preset.json`,
   els capítols, els recursos i les fonts. És el que lliura la skill per a
   agents, i `postext unpack` n'escriu una.
@@ -171,8 +171,8 @@ postext pdf book/ --color-space grayscale --no-outlines
 ```
 
 El PDF segueix els ajustos del mateix llibre (vegeu
-[Generació de PDF](/ca/docs/configuration#generació-de-pdf-configuració) i
-[Producció per a impremta](/ca/docs/configuration#producció-per-a-impremta-configuració));
+[Generació de PDF](/ca/docs/configuration-fonts-colors-viewers#generació-de-pdf-configuració) i
+[Producció per a impremta](/ca/docs/configuration-fonts-colors-viewers#producció-per-a-impremta-configuració));
 aquestes opcions els canvien per a una execució:
 
 - `--pdfx none|x1a|x4`: l'estàndard PDF/X per a una impremta.
@@ -211,7 +211,7 @@ postext epub book.postext --layout reflowable --cover cover.jpg
 `--layout fixed` (per defecte) conserva cada pàgina com la impresa, amb text
 seleccionable; `--layout reflowable` deixa que el sistema de lectura torni a
 compondre el text per a la seva pantalla (vegeu
-[Llibres EPUB](/ca/docs/configuration#llibres-epub-postext-epub)). La coberta
+[Llibres EPUB](/ca/docs/configuration-programmatic-usage#llibres-epub-postext-epub)). La coberta
 és la miniatura del llibre tret que `--cover` en doni una imatge. Les metadades
 del paquet (títol, autors, llengua, identificador) surten del frontmatter del
 primer capítol, com al Sandbox.

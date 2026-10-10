@@ -1,0 +1,1084 @@
+{/* docs/configuration-resources-ja.mdx */}
+
+export const metadata = {
+  title: '設定：リソースと表',
+  sidebarTitle: 'リソースと表',
+  description: 'リソースの種類とその番号付け、表とキャプションのスタイル、単色のダイアグラム、紙面上の動画',
+  lang: 'ja',
+  lastUpdated: '2026-10-10',
+  readingTime: '5分',
+  order: 8,
+  parent: 'configuration',
+  plainSummary: "このページでは、図、表、ダイアグラム、動画の設定を説明します。Postextはこれらをリソースと呼び、種類ごとに番号を付けます。罫線、塗り、文字、ページをまたぐときの分け方など、表の見た目を決めます。図や表に付けるキャプションの書き方を決めます。ダイアグラムを1色のインキで刷ることや、動画を紙の上でどう見せるかも選べます。",
+};
+
+# 設定：リソースと表
+
+
+## リソースの種類
+
+**リソースの種類**は、ユーザーが定義できる分類です。たとえば「図」「表」「ダイアグラム」「コードリスト」などで、その種類のリソースにどう番号を付け、キャプションを付け、参照するかを決めます。リストは`config.resourceTypes`にあり、Sandboxでは**デザイン → 図と表 → 番号付けと配置**で編集します。
+
+`config.resourceTypes`が未設定の場合、Postextは3つの組み込みの既定の種類、**図**（Figure）、**表**（Table）、**動画**（Video）を用意します。それぞれ独自の`{h1}.{n}`で番号を付け（レベル1の見出しのたびにリセット）、カウンターは10進数です。`video`の種類を含まないリスト（動画が導入される前に保存された本）でも、種類が`video`の動画リソースには番号が付きます。そのために組み込みの動画の種類が追加されます（`effectiveResourceTypes(config, resources)`）。`defaultVideoResourceType(locale)`はこの種類だけを返します。名前は文書の言語で付きます。`config.locale`、なければ`bodyText.hyphenation.locale`、それもなければ英語です（[文書の言語](/ja/docs/configuration-text#文書の言語)を参照）。
+
+組み込みの既定値はロケールに対応しています。エクスポートされた`defaultResourceTypes(locale = 'en')`は、種類の名前、略称、キャプションの接頭辞を文書のロケールに合わせてローカライズします。英語では「*Figure*/*Fig.*」と「*Table*/*Tab.*」、スペイン語では「*Figura*/*Fig.*」と「*Tabla*/*Tabla*」になり、フランス語、ドイツ語、イタリア語、ポルトガル語、カタルーニャ語、オランダ語にもそれぞれの名前があります（一覧は[文書の言語](/ja/docs/configuration-text#文書の言語)の表にあります）。`es-ES`のような地域付きのタグは言語で解決され、翻訳のないロケールは英語にフォールバックします。番号付けの動作（`numberingTemplate: '{h1}.{n}'`、`resetOn: 'h1'`、10進数のカウンター）は言語に依存しません。呼び出すたびに新しいオブジェクトを返すので、結果は自由に変更できます。
+
+```ts
+import { defaultResourceTypes } from 'postext';
+
+const types = defaultResourceTypes('es');
+// => [{ id: 'figure', name: 'Figura', shortLabel: 'Fig.', captionPrefix: 'Figura',
+//       numberingTemplate: '{h1}.{n}', resetOn: 'h1', counterFormat: 'decimal', … },
+//     { id: 'table',  name: 'Tabla',  shortLabel: 'Tabla', captionPrefix: 'Tabla', … },
+//     { id: 'video',  name: 'Vídeo',  shortLabel: 'Vídeo', captionPrefix: 'Vídeo', … }]
+```
+
+```ts
+type ResourceCounterFormat =
+  | 'decimal'
+  | 'roman-lower'
+  | 'roman-upper'
+  | 'alpha-lower'
+  | 'alpha-upper';
+
+type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
+
+interface ResourcePlacement {
+  position?: 'auto' | 'top' | 'bottom' | 'here'; // which free slot a float may take; 'here' = inline embed at the ::resource directive
+  span?: 'column' | 'page' | 'side';             // one column, the full content width, or the float-only side column
+  rotate?: 'ccw' | 'cw';                         // a quarter turn: a landscape table on a page of its own
+  width?: number;                                // fraction (0 < width < 1) of the column or page width; default: the whole width
+  align?: 'left' | 'center' | 'right';           // where a float narrower than its column sits; default 'left'
+  captionSide?: boolean;                         // caption beside the figure, in the side column of a oneAndHalf layout (column floats only)
+  columns?: number;                              // 'column'フロートがまたがる隣り合う段の数（1.18以降）
+  wrap?: 'none' | 'left' | 'right' | 'start' | 'end'; // リソースの横に本文を組み、リソースは段のその側（1.24以降）
+  wrapGap?: Dimension;                           // 回り込むリソースと本文との間隔（1.24以降）
+}
+
+interface ResourceType {
+  id: string;                          // stable id, referenced by Resource.typeId
+  name: string;                        // singular display name, e.g. "Figure"
+  namePlural?: string;                 // optional plural, e.g. "Figures"
+  shortLabel: string;                  // compact label for inline refs, e.g. "Fig."
+  numberingTemplate: string;           // "{h1}.{n}" or "{n}"
+  resetOn: ResourceCounterReset;       // when the {n} counter resets
+  counterFormat: ResourceCounterFormat;// how {n} is formatted
+  captionPrefix: string;               // prepended to the caption, e.g. "Figure"
+  defaultPlacement?: ResourcePlacement;// fallback placement for this type's resources
+}
+```
+
+`ResourcePlacement`は、リソースが自身の`placement`に設定するものと同じ形です。`position`はフロートが入れる空き位置の種類を選びます。`auto`（既定値）は最初の参照の後にある最初の空き位置を取り、`top`／`bottom`はその種類の帯に限定し、`here`はリソースをインラインで埋め込みます。`span`はフロートの範囲を、1段、本文領域の全幅、または1段半レイアウトのフロート専用サイド段から決めます。`rotate`はリソースを90度回転させ、独立したページに置くページ幅のフロートにします。`width`はフロートを段の幅（ページ幅のフロートではページの幅）の一部に狭めます。たとえば広い段に置く小さな表です。`align`は、そのように狭めたフロートを置く位置（既定は左、ほかに中央と右）と、空き位置より狭い画像をその中のどこに置くかを決めます。段より小さいビットマップや、`layout.fitFiguresToPage`が縮小した画像が対象です。キャプションと注は空き位置の行長を保ちます（postext 1.4までは、そうした画像は常に左そろえでした）。`captionSide`は、1段半レイアウト（`layout.sideColumnRole: 'floats'`）のフロート専用サイド段で、キャプションを図の横、図の上端（下側のフロートでは下端）の高さに置きます。段幅のフロートにだけ適用され、そうした段のないページではキャプションは図の下のままです。リソースもその種類も配置を設定しない場合、組み込みの既定値は`auto`／`column`です。`shrink`（`'never'`、`'page'`、`'slot'`）と`minScale`（未設定なら0.7）は、フロートの図版を次へ送らずに置き場所の空きまで縮小し、`captionMeasure: 'body'`は置き場所より幅の狭い図版のキャプションと注を図版の幅で組みます（[ドキュメント形式 › 配置](/ja/docs/document-format#配置)を参照）。前の2つのドキュメント既定値は`layout.floatShrink`で決めます。`wrap`は本文中の埋め込みや 1 段幅のフロートを段の片側に置き、`wrapGap`離して本文を横に組みます。既定値は`layout.wrap`にあります（[文書の書式 › 回り込み](/ja/docs/document-format#回り込み)を参照）。`citingPage`は、`top`または`auto`のフロートを、参照行の後の最初の空き位置ではなく、参照行のあるページまたは段の先頭に置きます。`layout.floatsAtCitingPage`が文書の既定値、`layout.maxTopFraction`がそのフロートの占めてよい段の割合です（[ドキュメント形式 › 配置](/ja/docs/document-format#配置)を参照）。
+
+`columns`（postext 1.18以降）は、複数の段があるページで、`span: 'column'`のフロートを指定した数の隣り合う段にまたがって置きます。新聞の5段のうち2段にまたがる写真などです。幅はそれらの段とその間の段間を合わせたものです。上端のそろった空の段の並びの頭か、引用した段とその後の空の段の足に置かれます。ページの段数以上を指定すると、ページ幅のフロートになります。`'page'`と`'side'`のspan、回転したリソース（`rotate`）、インラインの埋め込み（`here`）では無視され、`captionSide`は1段幅のフロートにだけ効きます。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '180px' }}>型</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>各リソースの<code>typeId</code>が参照する不変の識別子です。種類を作るときに1度だけ設定します。リソースがまだ参照している種類を削除すると、<strong>存在しない種類</strong>の警告が出ます。</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td>単数形の表示名です。<code>style="full"</code>のインライン参照で使われます（例：<code>Figure 1.7</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>namePlural</code></td>
+      <td><code>string</code>（省略可）</td>
+      <td>複数形の表示名で、UIのラベルやリソースの一覧に使います。</td>
+    </tr>
+    <tr>
+      <td><code>shortLabel</code></td>
+      <td><code>string</code></td>
+      <td>既定のインライン参照スタイルで使う短い略称です（例：<code>Fig. 1.7</code>）。</td>
+    </tr>
+    <tr>
+      <td><code>numberingTemplate</code></td>
+      <td><code>string</code></td>
+      <td>計算される番号のテンプレートです。下の<strong>テンプレートのトークン</strong>を参照してください。よく使う形は<code>{'{h1}.{n}'}</code>（章単位。例：<code>2.3</code>）と<code>{'{n}'}</code>（1つの通し番号）です。</td>
+    </tr>
+    <tr>
+      <td><code>resetOn</code></td>
+      <td><code>ResourceCounterReset</code></td>
+      <td><code>'never'</code>は文書全体の通し番号になります。<code>'h1'</code>〜<code>'h6'</code>は、そのレベル（またはその上位のいずれか）の見出しが現れるたびに<code>{'{n}'}</code>カウンターをリセットします。テンプレートに現れる見出しレベルに合わせて設定してください。たとえば<code>{'{h1}.{n}'}</code>には<code>resetOn: 'h1'</code>を組み合わせます。</td>
+    </tr>
+    <tr>
+      <td><code>counterFormat</code></td>
+      <td><code>ResourceCounterFormat</code></td>
+      <td><code>{'{n}'}</code>カウンターの表示形式です。10進数（<code>1, 2, 3</code>）、小文字・大文字のローマ数字（<code>i, ii</code>／<code>I, II</code>）、小文字・大文字のアルファベット（<code>a, b</code>／<code>A, B</code>）から選びます。ノンブルやリストの表記も使えます（<code>'lower-roman'</code>、<code>'arabic'</code>など。<a href="/ja/docs/configuration-page-layout#番号書式の表記">番号書式の表記</a>を参照）。不明な値は10進数で数え、報告されます。見出しのトークン（<code>{'{h1}'}</code>など）は常に10進数で表示されます。</td>
+    </tr>
+    <tr>
+      <td><code>captionPrefix</code></td>
+      <td><code>string</code></td>
+      <td>図や表のキャプションの前に付けるテキストです。計算された番号は接頭辞の後に続き、キャプションは<code>{'{captionPrefix}'} {'{number}'}. {'{caption text}'}</code>のように表示されます（例：<strong>Figure 1.7. The original plan.</strong>）。<code>numberingTemplate</code>が空の種類には番号がなく、キャプションは<code>{'{captionPrefix}'}. {'{caption text}'}</code>になります。接頭辞の末尾のスペースは取り除かれ、すでに<code>.</code>、<code>:</code>、<code>!</code>、<code>?</code>、<code>…</code>（またはそれらの全角形）で終わる接頭辞には、2つ目のピリオドを付けません（<strong>Pl. Lines at 0°</strong>）。</td>
+    </tr>
+    <tr>
+      <td><code>defaultPlacement</code></td>
+      <td><code>ResourcePlacement</code>（省略可）</td>
+      <td>自身の<code>placement</code>を設定しない、この種類のリソースが使う配置です。<code>position</code>、<code>span</code>、<code>rotate</code>、<code>width</code>、<code>align</code>、<code>captionSide</code>、<code>columns</code>はそれぞれ個別に解決されます。リソースも種類もあるフィールドを設定しない場合は、組み込みの既定値が適用されます。<code>auto</code>／<code>column</code>、回転なし、全幅、左そろえ、キャプションは図の下です。解決の順序は下の<a href="#番号付けと参照">番号付けと参照</a>を、回転したリソースを含む各値の動作は<a href="/ja/docs/document-format#リソース">文書形式 › リソース</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>captionStyle</code></td>
+      <td><code>CaptionStyleConfig</code>（省略可）</td>
+      <td>この種類のリソースに対する、<a href="#キャプションスタイル">キャプションのスタイル</a>の部分的な上書きです。設定したキーだけがグローバルの<code>captionStyle</code>を置き換え、それ以外はすべて継承されます（<code>color</code>を上書きすると、ラベルと注の色も明示的に設定されていない限りその色になります）。典型的な使い方は、表のキャプションを色付きの帯にして<em>上</em>に置き、図のキャプションは下のままにすることです。パレットの参照は、ほかの色と同じように解決されます。</td>
+    </tr>
+  </tbody>
+</table>
+
+### テンプレートのトークン
+
+`numberingTemplate`は、見出しの番号付けと同じエンジンで表示されます（[見出し](/ja/docs/configuration-text#見出し)を参照）。認識するトークンは2種類です。
+
+- `{n}`：種類ごとのカウンターで、`counterFormat`に従って書式化されます。リソースごとに増え、`resetOn`に従ってリセットされる値です。
+- `{h1}`〜`{h6}`：最初の参照の位置で有効な見出し番号で、常に10進数で表示されます。`{h1}`は現在のレベル1の見出しの番号、`{h2}`はレベル2の番号、以下同様です。
+
+そのほかのテキストは文字どおりに扱われます。バックスラッシュで、文字としての`{`、`}`、`\`をエスケープします。見出しのトークンにその範囲で値がない場合（たとえば最初のレベル1の見出しより前の`{h1}`）は、隣接する区切り文字とともに消えます。そのため`{h1}.{n}`は、カウンターだけの形に自然に縮退します。
+
+空のテンプレート（`''`）は番号を表示しませんが、その種類はリソースを数え続けます。キャプションは「*Do. Lines at 0°*」となり、`:ref`はラベルだけ（*Do*）を表示します。postext 1.4までは、そうしたキャプションは「*Do .Lines at 0°*」となり、参照の末尾にはノーブレークスペースが付いていました。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>テンプレート</th>
+      <th style={{ width: '180px' }}><code>h1 = 2</code>、カウンターが3のとき</th>
+      <th>備考</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>{'{n}'}</code></td>
+      <td><code>3</code></td>
+      <td>1つの通し番号。<code>resetOn: 'never'</code>と組み合わせます。</td>
+    </tr>
+    <tr>
+      <td><code>{'{h1}.{n}'}</code></td>
+      <td><code>2.3</code></td>
+      <td>章単位。<code>resetOn: 'h1'</code>と組み合わせます。</td>
+    </tr>
+    <tr>
+      <td><code>{'{h1}.{h2}.{n}'}</code></td>
+      <td><code>2.0.3</code></td>
+      <td>節単位。<code>resetOn: 'h2'</code>と組み合わせます。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 番号付けと参照
+
+リソースの種類が生成する番号は、`:ref`が表示し、キャプションの接頭辞の後に続くものです。基本の形は`:ref{id}`です。読む順で最初の参照がリソースを**取り込み**、リソースはその参照の後にある最初の空き位置へフロートとして配置されます。参照している段の下端、次の空いた段の上端または下端、あるいは次のページの帯です（解決された配置に従います。`position: 'auto' | 'top' | 'bottom' | 'here'`と`span: 'column' | 'page' | 'side'`、さらに`rotate`、`width`、`align`、`captionSide`は、リソースごと、次に種類の`defaultPlacement`、最後に組み込みの`auto`／`column`の順に解決されます。`'top'`／`'bottom'`はその種類の空き位置に探索を限定します）。ブロックとして埋め込む`::resource{id}`は省略可能で、`placement.position: 'here'`のとき、つまり流れの中の正確な位置にフロートさせずにインラインで埋め込むときにだけ必要です。文書側の完全な文法（両方の形と、`:ref`の`style`および`text`オプション）は、最初の参照の順序が番号にどう影響するかも含めて[文書形式 › リソース](/ja/docs/document-format#リソース)で説明しています。
+
+これは見出しの番号付けと対応しています。見出しのレベルが`numberingTemplate`を持つのと同じように、リソースの種類もテンプレートを持ちます。ただしリソースのカウンター（`{n}`）は見出しごとではなく最初の参照ごとに進み、`resetOn`によって見出しの階層と結び付きます。
+
+### 番号が付くもの
+
+リソースは、本文が`:ref`または`::resource`の埋め込みで参照したときに、最初の参照の順で番号が付きます。配置は問いません。フロート、インライン（`here`）、サイド段、回転のいずれでも同じです。デザインだけが描くリソース（章扉、柱、部扉の`image`要素）や、何からも参照されないリソースには番号が付かず、その種類のカウンターも進みません。そのため、裁ち落としの図版を章扉の画像にし、小さな図版1点だけを本文で引用したフロートにした写真集では、章扉がそれまでに何点の図版を見せていても、そのフロートが図版**I**になります。章扉の図版にはデザインの中で番号を付け（`{attr.plate}`のような属性を使います）、カウンターは本文が引用する図版のために残しておいてください。
+
+章ごとにレイアウトする本（Sandbox、`buildBundle`、または`continuationAfter()`が引き継ぐカウンターを使う`buildDocument`）では、本全体で最初の参照が有効です。リソースは最初に参照した章で得た番号を保ち、その章だけがリソースを配置します。後の章の`:ref`はその番号を表示しますが何も配置せず、そこでのフロートするリソースの`::resource`埋め込みもただの参照になります（インラインの`here`の埋め込みは、書かれた位置に組まれます）。そうした参照は、図が同じ出力にあればその図へリンクします。本全体のPDFでは、前の章のページへリンクします。章を単独でHTMLやPDFに描画した場合は、図がその文書にないため、リンクの色のプレーンテキストとして組みます。各章のHTMLを1つのページにつなげるホストは、各章が配置するリソースを`refTargets`として`renderToHtml`に渡します。そうすると、そうした参照は再び前の章の図へリンクします。
+
+```ts
+import { anchoredResourceIds, buildBundle, renderToHtml } from 'postext';
+
+const docs = buildBundle(bundle);
+const refTargets = new Set(docs.flatMap((d) => [...anchoredResourceIds(d)]));
+const html = docs.map((d) => renderToHtml(d, { refTargets })).join('');
+```
+
+**postext 1.5での変更**：1.4までは、図を参照するすべての章がその図を再びフロートとして配置し、すべての`:ref`のHTMLは、図がそのページにあるかどうかにかかわらずリンクでした。
+
+`{h1}`はレベル1の見出しの通し番号です。見出しスタイルが`numbered: false`を設定しない限り、すべてのH1がこの番号を進めます。空の`numberingTemplate`は見出しの番号を隠すだけで、数えるのは止めません。そのため、H1がタイトルだけの記事では、組み込みの`{h1}.{n}`の種類で図の番号が`1.1`、`1.2`…になります。図1、2…と表示する方法は2つあります。
+
+- `{n}`で番号を付け、`resetOn: 'never'`にした種類を使う（`resetOn: 'h1'`ではH1のたびに番号が最初からになります）。
+- タイトルと、数えたくないほかのH1に、`numbered: false`の[見出しスタイル](/ja/docs/configuration-styles#見出しスタイル)を指定する。そうした見出しは`{h1}`を進めず、そのままにします。最初の数える対象のH1より前では空のままで、`{h1}.{n}`はカウンターだけになります。また`resetOn: 'h1'`のリセットも起こさないので、番号はその見出しをまたいで続きます。`# Introduction`とその図1.1の後、番号なしの`# Appendix`の下にある最初の図は2.1ではなく1.2になります。
+
+```ts
+// Figure 1, 2, 3… in a single-article document
+resourceTypes: defaultResourceTypes('en').map((t) => ({ ...t, numberingTemplate: '{n}', resetOn: 'never' })),
+```
+
+
+## 表スタイル
+
+`tableStyle`プロパティは、表リソースの文字組みと装飾を設定します。[名前付きの表スタイル](#名前付きの表スタイル)を選んだ表を除き、すべての表に適用されます。本体のセルと見出しのセルは別々に設定します。フォントファミリー、サイズ、色は、未設定のときは解決済みの本文の値を継承するため、`tableStyle`のない文書では表が本文の文字組みで描画されます。
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    headerBold: true,
+    headerBackground: { hex: '#f0f0f0', model: 'hex' },
+    borders: true,
+    borderWidth: { value: 0.75, unit: 'pt' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>プロパティ</th>
+      <th style={{ width: '140px' }}>型</th>
+      <th style={{ width: '160px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bodyFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>本文のフォント</td>
+      <td>本体のセルのフォントファミリー。</td>
+    </tr>
+    <tr>
+      <td><code>bodyFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>本文のサイズ</td>
+      <td>本体のセルのフォントサイズ。</td>
+    </tr>
+    <tr>
+      <td><code>bodyColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>本文の色</td>
+      <td>本体のセルの文字色。</td>
+    </tr>
+    <tr>
+      <td><code>headerFontFamily</code></td>
+      <td><code>string</code></td>
+      <td>本文のフォント</td>
+      <td>見出しのセルのフォントファミリー。</td>
+    </tr>
+    <tr>
+      <td><code>headerFontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>本文のサイズ</td>
+      <td>見出しのセルのフォントサイズ。</td>
+    </tr>
+    <tr>
+      <td><code>headerColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>本文の色</td>
+      <td>見出しのセルの文字色。</td>
+    </tr>
+    <tr>
+      <td><code>headerBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>見出しのセルを太字で描画します。</td>
+    </tr>
+    <tr>
+      <td><code>headerItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>見出しのセルをイタリックで描画します。</td>
+    </tr>
+    <tr>
+      <td><code>headerLetterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0pt</code></td>
+      <td>見出しのセルの各文字の後に加えるトラッキングで、スペースも対象になります。CSSの<code>letter-spacing</code>と同じです。正の値は文字の間隔を広げ（大文字の見出しには通常<code>0.05em</code>から<code>0.1em</code>が適します）、負の値は詰めます。<code>em</code>は見出しのサイズです。見出しの行はこの値を含めて計測されるため、折り返し、中央ぞろえ、そろえにトラッキングが反映され、キャンバス、HTML、PDFで同じように描かれます。見出し行と、<code>isHeader</code>を指定したセルを含め、すべての見出しのセルに適用されます。</td>
+    </tr>
+    <tr>
+      <td><code>headerTextTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td>見出しのセルを大文字で組みます。テキストの長さは変わらないため、Sandboxは引き続き各文字をソースに対応付けられます。大文字にすると長くなる文字（<code>ß</code>）はそのまま残ります。リソースへの参照はラベルを保ちます。</td>
+    </tr>
+    <tr>
+      <td><code>headerBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>見出し行の背後を塗ります。</td>
+    </tr>
+    <tr>
+      <td><code>headerBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#f0f0f0</code></td>
+      <td>見出し行の塗りの色。</td>
+    </tr>
+    <tr>
+      <td><code>bodyBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>本体の行の背後を塗ります。</td>
+    </tr>
+    <tr>
+      <td><code>bodyBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ffffff</code></td>
+      <td>本体の行の塗りの色（有効なときだけ塗ります）。</td>
+    </tr>
+    <tr>
+      <td><code>bodyAlternateBackgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>縞模様の行。本体の行を1行おきに<code>bodyAlternateBackground</code>で塗ります。<a href="#縞模様の行">縞模様の行</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>bodyAlternateBackground</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#f2f2f2</code></td>
+      <td>交互の本体の行の塗り（有効なときだけ塗ります）。</td>
+    </tr>
+    <tr>
+      <td><code>borders</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>セルの罫線を引きます。</td>
+    </tr>
+    <tr>
+      <td><code>borderColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>本文の色</td>
+      <td>罫線の色。</td>
+    </tr>
+    <tr>
+      <td><code>borderWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75pt</code></td>
+      <td>罫線の太さ（96 DPIで約1px。ページのDPIに応じて変わります）。<code>'booktabs'</code>はこれを使わず、独自の太さを使います。</td>
+    </tr>
+    <tr>
+      <td><code>cellPadding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.375em</code></td>
+      <td>すべてのセルの内側余白。</td>
+    </tr>
+    <tr>
+      <td><code>rules</code></td>
+      <td><code>'grid' | 'horizontal' | 'outer' | 'none' | 'booktabs'</code></td>
+      <td><code>'grid'</code></td>
+      <td><code>borders</code>がオンのときに引く罫線です。セルの格子全体、水平の罫線だけ（各行の上端と下端。縦の罫線はなし）、外枠だけ、なし、または学術誌の表の三本罫（<a href="#booktabs-の罫線">booktabs の罫線</a>を参照）のいずれかです。</td>
+    </tr>
+    <tr>
+      <td><code>borderRadius</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0</code></td>
+      <td>表の外枠の角の半径です。外枠は角を丸めて引かれ（<code>grid</code>または<code>outer</code>の罫線の場合）、セルの塗りと見出しの背景はこの形で切り抜かれます。<code>rules: 'none'</code>のときや罫線がオフのときも同じです。水平の罫線は外側の輪郭に合わせて切り詰められ、内側の罫線はまっすぐなままです。ページをまたいで分割された表は、最初の部分の上の角と最後の部分の下の角を丸めます。値は表の幅と高さの半分までに制限されます。<code>'booktabs'</code>の罫線は直線のままです（塗りは角に合わせて切り抜かれます）。</td>
+    </tr>
+    <tr>
+      <td><code>heavyRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.08em</code></td>
+      <td>booktabs：表の上と最終行の下の罫線。<code>em</code>は本文セルの文字サイズです。</td>
+    </tr>
+    <tr>
+      <td><code>lightRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.05em</code></td>
+      <td>booktabs：見出し行の下の罫線とグループ罫。</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleWidth</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.03em</code></td>
+      <td>booktabs：複数列にまたがる見出しセルの下の罫線。</td>
+    </tr>
+    <tr>
+      <td><code>spanRules</code></td>
+      <td><code>'trimmed' | 'full' | 'none'</code></td>
+      <td><code>'trimmed'</code></td>
+      <td>booktabs：最後の見出し行より上で複数列にまたがる見出しセルの下の罫線。両端を<code>spanRuleTrim</code>ずつ詰める、セル幅いっぱいに引く、引かない、のいずれか。</td>
+    </tr>
+    <tr>
+      <td><code>spanRuleTrim</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.5em</code></td>
+      <td>booktabs：両端を詰めるまとめ罫を、片側でどれだけ短くするか。</td>
+    </tr>
+    <tr>
+      <td><code>groupRules</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>booktabs：グループの見出しとなる本体行の上に細罫を引きます。</td>
+    </tr>
+    <tr>
+      <td><code>continuedFootRule</code></td>
+      <td><code>'bottom' | 'light' | 'none'</code></td>
+      <td><code>'light'</code></td>
+      <td>booktabs：分割した表のうち次のページへ続く部分を閉じる罫線。</td>
+    </tr>
+    <tr>
+      <td><code>overflow</code></td>
+      <td><code>'split' | 'clip' | 'hide'</code></td>
+      <td><code>'split'</code></td>
+      <td>ページより高い表の扱いです。次のページ以降に続ける、収まる行だけを残す、表を省く、のいずれかです。<code>splitInline</code>がオンなら、本文中に置いた表で段の残りに収まらないものにも適用します。後述します。</td>
+    </tr>
+    <tr>
+      <td><code>splitInline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>here</code>に置いた表にも<code>overflow</code>を適用します。段に残った余地に収まらないインラインの表は、行の間で切られ、次の段の頭に続きます。<code>false</code>にすると、postext 1.24までと同じく、そうした表を丸ごと次の段に移します。以前のバージョンで保存された設定のうち、章でリソースを埋め込んでいるものは<code>false</code>として読み込まれます。<a href="#ページより高い表">ページより高い表</a>を参照。postext 1.25から。</td>
+    </tr>
+    <tr>
+      <td><code>continuedSuffix</code></td>
+      <td><code>string</code></td>
+      <td><code>'(cont.)'</code></td>
+      <td>分割された表の続きの各部分で、キャプションの後にスペースを挟み、イタリックで付け加えます。中国語の文字または全角文字で始まる接尾辞（<code>'（续）'</code>）は、キャプションに詰めて組みます。</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarkerEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>次のページに続く各部分の下にマーカーを置きます。</td>
+    </tr>
+    <tr>
+      <td><code>continuesMarker</code></td>
+      <td><code>string</code></td>
+      <td><code>'Continued'</code> / <code>'Continúa'</code></td>
+      <td>そのマーカーの文字列で、部分の下に注記の書体で右そろえに組みます（<a href="#キャプションスタイル">キャプションスタイル</a>を参照）。既定値は文書の言語に従います（8つの言語については<a href="/ja/docs/configuration-text#文書の言語">文書の言語</a>を参照）。</td>
+    </tr>
+  </tbody>
+</table>
+
+罫線の太さは端数のまま保たれます。`0.5pt`の罫線は1ピクセルに切り上げられず、PDFでも画面でもヘアラインとして引かれます（下限は0.25pxです）。
+
+### 縞模様の行
+
+長いデータ表は、1行おきに色を付けると行を横にたどりやすくなります。`bodyAlternateBackgroundEnabled`で縞をオンにし、`bodyAlternateBackground`でその色を設定します。
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    bodyBackgroundEnabled: true,
+    bodyBackground: { hex: '#ffffff', model: 'hex' },
+    bodyAlternateBackgroundEnabled: true,
+    bodyAlternateBackground: { hex: '#eef3fa', model: 'hex' },
+  },
+};
+```
+
+行は見出し行の次の行から数えます（見出し行は`TableModel.headerRowCount`、または見出しのセルだけからなる先頭の行）。その行は`bodyBackground`のまま（`bodyBackgroundEnabled`がオフなら塗りなし）で、次の行が交互の塗りになり、以下同様に続きます。数え方はページではなく表モデルに従います。そのため、ページをまたいで分割された表でも各行の縞はどのページでも変わらず、複数の行にわたって結合したセルは最初の行の縞になります。見出しのセルは見出しの塗りを保ち、セル自身の`background`はその両方に優先し、パレットに連動した色はパレットに従います。[名前付きの表スタイル](#名前付きの表スタイル)はこの2つのフィールドをほかのフィールドと同じように設定するため、1つのスタイルだけを縞模様にし、文書のほかの表はそのままにできます。Sandboxでは、**本体のセル**にある**縞模様の行**スイッチとその色がこれに当たります。
+
+VDTでは、交互の行のセルが`alternate: true`を持ち、表のレイアウトが`bodyAlternateBackground`を持ちます。`tableCellFill(table, cell)`は、セルを塗る色（セル自身の色、見出しの色、交互の色、本体の色のいずれか）を返し、キャンバス、HTML、PDFのバックエンドはどれもこの色で塗ります。隣り合う塗りは継ぎ目なく接します。端数のピクセル比で表示するブラウザーやPDFビューアーは塗りを1つずつアンチエイリアス処理するため、そのままでは2つのセルの間にヘアライン状にページが透けて見えます。そこでHTMLとPDFのバックエンドは`tableCellFillRects(table)`を塗ります。これは各セルの塗りに、後から塗るセルと共有するすべての辺をまたぐ細い帯を加えたもので、その帯は後のセルが覆います。キャンバスは塗りをデバイスピクセルに合わせます。
+
+### booktabs の罫線
+
+学術誌や教科書の表は、縦罫を使わず三本の罫線で組むのが普通です。表の上に太罫、見出しの下に細罫、最終行の下に太罫を引き、複数列をまとめる見出しの下には短い罫を引きます（LaTeX の`booktabs`パッケージの`\toprule`、`\midrule`、`\cmidrule`、`\bottomrule`）。`rules: 'booktabs'`はこの形を描きます。
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    rules: 'booktabs',
+    borderColor: { hex: '#000000', model: 'hex' },
+    headerBackgroundEnabled: false,
+  },
+};
+```
+
+- 表の上の罫線と最終行の下の罫線の太さは`heavyRuleWidth`（`0.08em`）、見出し行の下の罫線は`lightRuleWidth`（`0.05em`）です。見出し行のない表には見出しの罫線がありません。
+- 最後の見出し行より上で複数列にまたがる見出しセルの下には、太さ`spanRuleWidth`（`0.03em`）の罫線を引きます。`spanRules: 'trimmed'`（既定）では両端を`spanRuleTrim`（`0.5em`）ずつ詰めるので、隣り合う二つの見出しの罫線は接しません。`'full'`はセル幅いっぱいに引き、`'none'`は引きません。
+- `groupRules: true`は、グループの見出しとなる本体行（表の全幅にわたる一つのセル、または見出しセルだけの行）の上に細罫を加えます。その行が表やページの先頭に来るときは、見出しの罫線がすでにあるので加えません。
+- 太さは本文セルの文字サイズ（`bodyFontSize`）を基準に解決するので、見出しの文字が大きくても見出しの罫線は太くなりません。太さを`0`にするとその罫線は引きません。
+- 罫線の色は`borderColor`です（パレットに結び付いた色はパレットと`:::part palette`に従います）。`borders: false`ですべて消えます。`borderWidth`も`borderRadius`も効きません。罫線は直線のままで、セルの塗りは角丸の枠に合わせて切り抜かれます。見出しの塗り、縞模様の行、セル自身の`background`はほかのパターンと同じく罫線の下に塗られます。
+- ページをまたいで分割した表は各部分で見出し行を繰り返すので、どの部分も太罫と見出しの罫線で始まります。最終行の下の太罫は最後の部分だけを閉じます。次のページへ続く部分は`continuedFootRule`で終わります。細罫（`'light'`、既定）、太罫（`'bottom'`）、なし（`'none'`）のいずれかです。
+
+罫線はレイアウトが一度だけ計算します。VDT の表はそれを`strokes`（`{ x1, y1, x2, y2, widthPx }`、表本体の左上隅からの相対位置）として持ち、キャンバス、HTML ビューア、PDF、固定レイアウトの EPUB はそのとおりに引きます。タグ付き PDF ではレイアウトのアーティファクトです。リフロー型 EPUB では表と見出しの CSS の罫線として書き出し、両端を詰めた罫線は背景の線で描きます。Sandbox では、**罫線**のリストで**booktabs**（三本罫）を選ぶとこれらの項目が表示され、**罫線の太さ**と**角の半径**は隠れます。
+
+### 名前付きの表スタイル
+
+文書の表がすべて同じ体裁であることはまれです。角を丸めた外枠付きの紺の格子のチェックリスト、外枠だけで囲んだ選択肢の行、水平の罫線だけのデータ表、といった具合です。`tableStyles`で名前付きの変種を宣言し、表リソースは`table.styleId`でその1つを選びます。スタイルが設定していないフィールドは、まず`tableStyle`から、次に本文から読み取られるため、スタイルにはその表を区別する点だけを書けば済みます。`styleId`のない表や、どのスタイルも宣言していないidを持つ表は`tableStyle`のままです。`tableStyles`のない文書は、これまでとまったく同じに描画されます。
+
+```ts
+const config: PostextConfig = {
+  tableStyle: {
+    borderColor: { hex: '#163a76', model: 'hex' },
+    borderWidth: { value: 1.3, unit: 'pt' },
+    borderRadius: { value: 10, unit: 'pt' },
+  },
+  tableStyles: [
+    {
+      id: 'option',
+      name: 'Option row',
+      rules: 'outer',
+      borderColor: { hex: '#7a9cc6', model: 'hex' },
+      borderWidth: { value: 1, unit: 'pt' },
+      borderRadius: { value: 8, unit: 'pt' },
+      headerBackgroundEnabled: false,
+    },
+  ],
+};
+
+// In the resources: this table is set in the "option" style.
+const resource: Resource = {
+  id: 'choices', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0,
+  table: { model: { rows: [/* … */] }, styleId: 'option' },
+};
+```
+
+各エントリーは`tableStyle`のすべてのフィールドに加えて、`id`（`table.styleId`が参照するもの）と、エディター向けの省略可能な`name`（既定値はid）を取ります。スタイルで設定できるものはすべて表ごとに適用されます。文字組み、塗り、罫線、罫線の引き方、角の半径、内側余白、そして続きの文字列を含む、ページに収まらないときの扱いです。`resolveTableStylesConfig(styles, tableStyle, resolvedBodyText, locale?)`は解決済みのリストを、`pickTableStyle(resolved, styleId)`は表を組むスタイルを返し、`stripTableStylesDefaults`は未設定のフィールドを取り除きます（組み込みの既定値と等しいフィールドは残します。そのフィールドは、異なる`tableStyle`の値を引き続き上書きするからです）。リフロー型 EPUB では、名前付きスタイルは表のクラス（`pt-table-<id>`）になり、本のスタイルシートがそれを装飾します。
+
+### ページより高い表
+
+フロートの表が、渡された新しいページに収まらない場合でも、縮められたりはみ出したりはしません。`overflow: 'split'`（既定値）では、エンジンがページに収まる最後の行境界で表を分割し、必要なだけ次のページに続けます。続きの各部分は表の見出し行（`TableModel.headerRowCount`、未設定なら見出しのセルだけからなる先頭の行）を繰り返し、説明の後に`continuedSuffix`を付けたキャプションを再び掲げます（「Table 6-4. Title *(cont.)*」）。次に続く各部分の下には、注記の書体で`continuesMarker`を右そろえに置きます。表の注記は最後の部分まで持ち越されます。分割は結合したセルを横切りません（行方向に結合したセルは丸ごと次の部分に移ります）。また、下に続く行の見出しとなる行、つまり表の全幅にわたる1つのセルからなる行は、ページの末尾に取り残されず、次の部分へ送られます。booktabs の表は、続く各部分を`continuedFootRule`で閉じます（[booktabs の罫線](#booktabs-の罫線)を参照）。
+
+**最初の部分の終わる位置**。参照の後で空の段の頭を渡された表は、そこに収まる行を取り、次の枠に続きます。段を単独で占めるときは、段の下端まで埋めます。部分の下に本文の行が3行未満しか残らない場合は、テキストの切れ端を残さず、その行も取ります。段にすでに別のフロートの帯がある場合（たとえばページの頭を横切る全幅の図）は、部分は段の下端から少なくとも本文3行分手前で止まります。これは、フロートがほかのフロートと段を共有するときに残すテキストの余地で、段がフロートだけで終わらず、表の下にいくらかテキストが来るようにするためです。長い表を段の下端まで続けたい場合は、表が始まるページにほかのフロートがない位置で参照するか（たとえば全幅の図のあるページの次）、行を段に収まるようにしてください。
+
+`'clip'`はページに収まる先頭の行を残し、残りを知らせずに捨てます（注記はその部分の最後に置かれます）。`'hide'`は表全体を省きます。どちらも表がページより高いときだけ働き、収まる表はどのモードでも丸ごと置かれます。
+
+**本文中に置いた表**。`here`に置いた表（`::resource`で埋め込んだもの）も、postext 1.25から同じ規則に従います（`splitInline`、既定でオン）。段に残った余地に収まらないときは、行の間で切ります。最初の部分は上のフロートのアキを保ち、少なくとも見出し行と本体の2行を含みます（それに満たなければ、これまでどおり表全体が次の段から始まります）。続く各部分は、上にアキを取らずに次の段の頭から始まり、その段の幅で組まれます（1段半レイアウトで部分が狭い段に入れば、その幅で組みます）。`::resource`の行の後のテキストは、最後の部分の後に続きます。見出し行の繰り返し、接尾辞を付けたキャプション、続きの印、最後の部分の注記、3行以上の末尾、結合セルや見出しとなる行を避ける分割位置は、フロートの表と同じです。本体が5行未満の表は切りません。`'clip'`は段より高いインラインの表の先頭の収まる行を残し、段の頭に組みます。`'hide'`はそうした表を省きます。それより低い表は、どちらのモードでも丸ごと次の段に移ります。インラインの表が始めるページでは、そのページが受け取るフロートから空けておくのは最初の部分の余地だけなので、待っている全幅の図がそのページの頭に来て、表はその下に続きます。縦組みのページのインラインの表と、囲みの中の表は切りません。`splitInline: false`にすると、postext 1.24までと同じく、インラインの表を丸ごと次の段に移します。
+
+続きの文字列の既定値は文書の言語（`locale`、なければハイフネーションのロケール）によって決まります。英語は`(cont.)` / `Continued`、スペイン語は`(cont.)` / `Continúa`で、フランス語、ドイツ語、イタリア語、ポルトガル語、カタルーニャ語、オランダ語にも同様の既定値があります（[文書の言語](/ja/docs/configuration-text#文書の言語)に一覧があります）。
+
+セルの内容はインラインのMarkdownで、セル内の改行（改行文字、またはキャプションや注記と同じく`\\`）は新しい段落を始めます。行頭記号かダッシュ（`•`、`-`、`*`、`–`）または番号（`1.`、`1)`）の後にスペースが続く段落は、リストの項目として組まれます。記号は書かれたとおりに描かれ、テキストは文書の`unorderedLists.gap`だけ離れてぶら下がり、折り返した行はテキストにそろい、先頭のスペース2つで1段階入れ子になります。そのため、`• Ofrece elección\n• Acomoda a personas diestras y zurdas`と書いたセルは2項目のリストになります。通常のスペースだけの行は何も加えません。ノーブレークスペース（U+00A0）を含む行は、CommonMarkと同じくセルの1行になるため、`1\n`の後にノーブレークスペースを続けると、その行は2行分の高さになります。セルのテキスト末尾のノーブレークスペースは幅を保ちます。`760`とノーブレークスペースを`(231)`の上に右ぞろえで置くと、端からスペース1つ分手前で終わり、0が1に近づきます。数字が正確にそろうのは、スペースが括弧と同じ幅の場合だけで、たいていの書体ではスペースのほうが狭くなります（postext 1.4までは、どちらも取り除かれていました）。
+
+列の幅はスタイルではなく表モデルに属します。`TableModel.columnWidths`は列ごとの相対的な重みを並べた省略可能な配列で、レイアウト時に正規化されます。`[2, 1, 1]`は最初の列に幅の半分を与えます。配列がない場合、長さが合わない場合、正でない重みがある場合は、均等に分割されます。表エディターは、列を追加または削除したときに配列を列とそろえたまま保ちます。
+
+### 表モデルの構築
+
+`TableModel`は行優先の格子で、各セルは格子内の位置によって配置されます。`rows[r][c]`は列`c`に置かれます。そのため、結合したセルは自分が覆うセルを格子に残し、覆われた各セルには主セルを指す`hiddenBy`が付きます。覆われたセルを省くHTMLの表とは異なります。`postext`がエクスポートするモデルのヘルパーはこの形を保ちます。どれも新しいモデルを返す純粋関数で、`mergeCells(model, { start, end })`と`unmergeCell(model, at)`、`addRow`、`addColumn`、`removeRow`、`removeColumn`、`setCellContent`、`setCellImage`、`setCellBackground`、`setAlignment`があります。行と列の4つのヘルパーは結合を崩しません。結合したブロックの内側に追加した行や列はブロックを広げ、ブロックの前に追加したものはブロックを移動させ、ブロックから削除したものはブロックを縮めます。最初の行や列を失ったブロックは、新しい左上のセルに内容を保ちます。そして、すべての`hiddenBy`は引き続き主セルを指します。
+
+`parseTSV(text, options?)`は、タブ区切りのテキスト、つまりスプレッドシートから貼り付けた範囲からモデルを作ります。行は改行で、セルはタブで分割し、短い行は格子が長方形になるように補います。`headerRows`は先頭の行を見出し行にします。そのセルには`isHeader`が、モデルには`headerRowCount`が付くため、ページをまたいで分割された表ではこれらの行が繰り返されます。
+
+```ts
+import { parseTSV, mergeCells } from 'postext';
+
+let model = parseTSV('Part\tQty\tNote\nBolt\t4\tM6\nNut\t8\t', { headerRows: 1 });
+// model.headerRowCount === 1; model.rows[0][0] is { content: 'Part', isHeader: true }
+model = mergeCells(model, { start: { row: 2, col: 1 }, end: { row: 2, col: 2 } });
+// rows[2][1] gets colSpan: 2; rows[2][2] stays in the grid with hiddenBy: { row: 2, col: 1 }
+```
+
+`tableGridIssues(model)`は格子を検査します。健全なモデルには空のリストを返し、そうでなければ格子が壊れている箇所をすべて行の順に返します。`spanOverlap`は、別のセルの`colSpan` / `rowSpan`の下にある可視のセルです（`coveredBy`がそのセルを示します）。覆われたセルをHTMLのように省くとこうなります。その後のすべてのセルが結合の上にずれるためです。`missingCells`は、最後の列より前で終わり、残りを覆う結合もない行で、格子に穴が開きます。
+
+```ts
+import { tableGridIssues } from 'postext';
+
+tableGridIssues({
+  rows: [
+    [{ content: 'A', colSpan: 2 }, { content: 'C' }],
+    [{ content: '1' }, { content: '2' }, { content: '3' }],
+  ],
+});
+// => [{ kind: 'spanOverlap', row: 0, col: 1, coveredBy: { row: 0, col: 0 } },
+//     { kind: 'missingCells', row: 0, col: 2 }]
+```
+
+文書で使う表の格子にこのような問題があると、`doc.contentWarnings`に`raggedTableGrid`として報告されます（[文書の中の警告](/ja/docs/configuration-programmatic-usage#文書の中の警告)を参照）。
+
+
+## キャプションスタイル
+
+`captionStyle`プロパティは、リソースのキャプション（画像、SVG、表の下、または上に置く`Figure 1 — …`の行）を設定します。番号付きのラベルと説明は同じ書体とサイズを共有しますが（エンジンの制約です）、ラベルには独自のウェイト、イタリック、色を付けられます。フォントファミリー、サイズ、色は、未設定のときは本文の値を継承します。キャプションはリソースの**上**に置くことができ（表では通常この形です）、ブロックの幅いっぱいに広がる色付きの**帯**の上に組むこともできます。省略可能な小さめの**注記**（出典、クレジット。`Resource.note`）は、サブオブジェクト`note`で設定します。リソースの種類は、`ResourceType.captionStyle`で自分のリソースについてこれらのフィールドのどれでも上書きできます（[リソースの種類](#リソースの種類)を参照）。
+
+```ts
+const config: PostextConfig = {
+  captionStyle: {
+    align: 'center',
+    labelBold: true,
+    labelColor: { hex: '#295AA3', model: 'hex' },
+    descriptionItalic: true,
+    position: 'above',
+    backgroundEnabled: true,
+    padding: { value: 0.35, unit: 'em' },
+    note: { italic: true, align: 'left' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '180px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>本文のフォント</td>
+      <td>キャプションのフォントファミリー（ラベルと説明）。</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>本文のサイズ</td>
+      <td>キャプションのフォントサイズ（ラベルと説明）。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>本文の色</td>
+      <td>説明の文字色。</td>
+    </tr>
+    <tr>
+      <td><code>align</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
+      <td><code>'left'</code></td>
+      <td>キャプションの行の水平方向のそろえです。<code>'justify'</code>は最後の行以外を全幅に広げます。キャプションの帯の上では、行は帯の内側余白の内側でそろい、横に置くキャプションは自身の幅の中でそろいます。</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.75em</code></td>
+      <td>リソースとキャプションの間の垂直方向のアキ。</td>
+    </tr>
+    <tr>
+      <td><code>labelBold</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>番号付きのラベル（たとえば<code>Figure 1</code>）を太字で描画します。</td>
+    </tr>
+    <tr>
+      <td><code>labelItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>番号付きのラベルをイタリックで描画します。</td>
+    </tr>
+    <tr>
+      <td><code>labelColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>キャプションの<code>color</code></td>
+      <td>番号付きのラベルの色。</td>
+    </tr>
+    <tr>
+      <td><code>descriptionItalic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>説明のテキストをイタリックで描画します。</td>
+    </tr>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'above' | 'below'</code></td>
+      <td><code>'below'</code></td>
+      <td>キャプションの位置です。<code>'above'</code>ではキャプション（とその帯）が先に来て、リソースの本体はキャプションの高さと<code>gap</code>の分だけ下がります。この場合、注記は本体の下に置かれます。</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>キャプションの背後に帯を塗ります。帯はブロックの幅いっぱいに広がり、キャプションの行と四方の<code>padding</code>を囲みます。</td>
+    </tr>
+    <tr>
+      <td><code>background</code></td>
+      <td><code>ColorValue</code></td>
+      <td>パレットのメインカラー</td>
+      <td>帯の塗りの色（有効なときだけ塗ります）。</td>
+    </tr>
+    <tr>
+      <td><code>padding</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.35em</code></td>
+      <td>帯の縁とキャプションのテキストの間の内側余白。帯がオフのときは無視されます。</td>
+    </tr>
+    <tr>
+      <td><code>note</code></td>
+      <td><code>object</code></td>
+      <td>—</td>
+      <td>リソースの注記のスタイル。下のサブテーブルを参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>labelNumberGap</code></td>
+      <td><code>string</code></td>
+      <td>ノーブレークスペース。日本語の文書では<code>''</code></td>
+      <td>キャプションとインラインの<code>:ref</code>で、ラベルと番号の間に置くものです（<em>Figure 1.7</em>、<em>Fig. 1.7</em>）。中国語と日本語では詰めて組みます。<code>''</code>で图1-1になり、日本語の文書ではこれが既定値です（図1-1）。</td>
+    </tr>
+    <tr>
+      <td><code>labelSeparator</code></td>
+      <td><code>string</code></td>
+      <td><code>'. '</code>。日本語の文書では<code>'　'</code></td>
+      <td>番号の後、説明の前に置くものです（<em>Figure 1.7. A caption</em>）。中国語のキャプションは全角スペース<code>'　'</code>を使い（图1-1　标题）、日本語のキャプションも既定で同じです（図1-1　東京の地図、JLReq §4.3）。番号のないラベルは独自の規則に従い、接頭辞がピリオドで終わっていなければピリオドを付けます。</td>
+    </tr>
+  </tbody>
+</table>
+
+サブオブジェクト`note`は`Resource.note`のスタイルを設定します。これはリソースの下に小さめのサイズで組む短いテキスト（出典、クレジット、補足）です。キャプションと同じインライン書式と`:ref`を使え、キャプションの書体を継承します。キャプションが下にあるときはキャプションの下に、キャプションが上にあるときはリソースの本体の下に置かれます。注記の高さはブロックに含まれるため、注記付きのリソースは1つの単位としてフロートします。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>プロパティ</th>
+      <th style={{ width: '180px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>note.fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>キャプションのサイズの0.85倍</td>
+      <td>注記のフォントサイズ。</td>
+    </tr>
+    <tr>
+      <td><code>note.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>キャプションの<code>color</code></td>
+      <td>注記の文字色。</td>
+    </tr>
+    <tr>
+      <td><code>note.italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>注記をイタリックで描画します。</td>
+    </tr>
+    <tr>
+      <td><code>note.gap</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>0.35em</code></td>
+      <td>注記とその前にあるもの（キャプションまたは本体）の間のアキ。</td>
+    </tr>
+    <tr>
+      <td><code>note.align</code></td>
+      <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
+      <td><code>'left'</code></td>
+      <td>注記の行の水平方向のそろえ。キャプションの<code>align</code>と同じです。</td>
+    </tr>
+  </tbody>
+</table>
+
+種類ごとの上書きは`mergeCaptionStyle(resolvedCaptionStyle, override, palette?)`で統合されます。パイプラインの外で同じ解決を行う必要のあるホストのためにエクスポートされています。
+
+
+## ダイアグラムスタイル
+
+`diagramStyle`プロパティは、埋め込んだSVGのダイアグラム（`kind: 'svg'`のリソース）の色の付け方と、その文字を組むフォントを設定します。**単色刷りモード**は、ダイアグラム内のすべての色を1つのインキの濃淡に置き換える色変換の処理で、1色の特色で印刷する文書でも図が忠実に再現されます。**フォントの埋め込み**は、各SVGの文字が指定するフェイスをそのSVGに埋め込む処理で、ラベルがキャンバス、HTML、EPUBのどこでも文書のフォントで組まれます（[SVGの文字のフォント](#svgの文字のフォント)を参照）。
+
+```ts
+const config: PostextConfig = {
+  diagramStyle: {
+    singleInk: true,
+    inkColor: { hex: '#295AA3', model: 'hex' },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '200px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>singleInk</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>埋め込んだすべてのSVGダイアグラムを、1つのインキの濃淡に色変換します。</td>
+    </tr>
+    <tr>
+      <td><code>inkColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>メインカラー（<code>#295AA3</code>）</td>
+      <td>インキです。既定値は文書のパレットのメインカラーで（<code>paletteId: 'main-color'</code>でパレットに連動）、パレットの色見本を差し替えると、見出しや太字の範囲と一緒にダイアグラムの色も変わります。</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>各SVGを画像として表示する前に、その文字が指定するフェイス（<code>font-family</code>）を<code>@font-face</code>のデータURIとして埋め込みます。対象はキャンバス、HTML、EPUB、PDFのラスターのフォールバックです。保存されたファイルには書き込みません。リソース単位では<code>svg.inlineFonts: false</code>で無効にできます（postext 1.25以降）。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 単色刷りの仕組み
+
+`singleInk`を有効にすると、SVGマークアップ内のすべての色が`inkColor`の濃淡に書き換えられます。その濃さは**1 − 相対輝度**です（ガンマ補正済みのチャンネルにRec. 709の係数を適用します。知覚的な近似ですが、濃淡の対応付けには十分です）。この対応付けは知覚上の明るさを保ちます。白は紙の白に、黒はインキのベタになり、明るい塗りは元の色相にかかわらず明るいままです。淡い黄色の背景はインキの淡い濃淡になり、暗い線はインキのベタに近づきます。
+
+色変換はエクスポートされた`applySingleInkToSvg(svgText, inkHex)`が行います。この関数はDOMを使わず、SVGマークアップをテキストとして処理します。
+
+- `#rgb` / `#rgba` / `#rrggbb` / `#rrggbbaa`の16進リテラル、`rgb()` / `rgba()`関数、`hsl()` / `hsla()`関数は、表示属性、インラインの`style`、グラデーション、`<defs>`など、どこにあっても書き換えられます。関数のチャンネルは整数、小数、パーセントのいずれでもよく、カンマ区切りとスペース区切りのどちらの構文も使えます。そのため`rgb(11.37%, 20%, 50.59%)`（Cairoが書き出す形）や`rgb(51 102 153 / 50%)`も色変換されます。濃淡にした関数は`rgb(…)`または`rgba(…)`として書き戻されます。
+- `white`と`black`のキーワードは、ペイントの値として現れる場所（`fill`、`stroke`、`stop-color`、`flood-color`、`color`。属性またはインラインスタイルのプロパティとして）でだけ置き換えられ、テキストの内容やラベルの中では置き換えられません。
+- `none`、`transparent`、`currentColor`はそのまま残り、ほかの名前付きの色（`red`、`steelblue`など）や、塗りを指定していない図形やテキストの既定の黒もそのままです。こうした要素を色変換したい場合は、明示的に色を指定してください。
+- アルファチャンネルは保たれます（`#rgba` / `#rrggbbaa`の桁と`rgba(…)`のアルファ成分はそのまま引き継がれます。パーセントのアルファは数値として書き出されます）。
+- `inkHex`を解析できない場合は、入力がそのまま返されます。
+- 結果のルートの`<svg>`には`data-postext-single-ink="#…"`（インキ）が付き、すでにこの印を持つマークアップは、どのインキを示していてもそのまま返されます。この対応付けはべき等ではありません。2回目の処理ではすべての色が明るくなり、黒はインキの約3分の2になります。そのため画像の色変換は、利用者のコードとバックエンドのどちらが先に処理しても1回だけ行われます（この印はpostext 1.5で追加されたもので、1.4で色変換したマークアップには付いていません）。
+
+```ts
+import { applySingleInkToSvg } from 'postext';
+
+const recoloured = applySingleInkToSvg(svgText, '#295AA3');
+applySingleInkToSvg(recoloured, '#295AA3') === recoloured; // true: never twice
+```
+
+単色刷りは3つのバックエンドすべてに適用されます。PDFバックエンドは、`resourceBytes`から渡されたSVGのバイト列を色変換してからベクターとして描きます。キャンバスとHTMLのバックエンドは、求めに応じて描画するSVGの画像に色を付けます（[キャンバスとHTMLでの単色刷り](#キャンバスとhtmlでの単色刷り)を参照）。そのため、書き出したPDFは画面上のプレビューと一致します。
+
+解決関数（resolver）と既定値の除去関数（stripper）は、ほかのセクションと同じ形で、型`DiagramStyleConfig` / `ResolvedDiagramStyleConfig`とともに提供されます。
+
+```ts
+import {
+  DEFAULT_DIAGRAM_STYLE_CONFIG,
+  resolveDiagramStyleConfig,
+  stripDiagramStyleDefaults,
+  applySingleInkToSvg,
+} from 'postext';
+import type { DiagramStyleConfig, ResolvedDiagramStyleConfig } from 'postext';
+
+const resolved = resolveDiagramStyleConfig(config.diagramStyle);
+// => { singleInk: false, inkColor: { hex: '#295AA3', model: 'hex', paletteId: 'main-color' } }
+
+const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
+// => undefined when everything matches the defaults
+```
+
+### キャンバスとHTMLでの単色刷り
+
+キャンバスとHTMLのバックエンドは、画像をSVGマークアップではなく、デコード済みの画像（`registerResourceImage`）またはURL（`resourceImageUrl`）として受け取ります。求めに応じて、描くものに同じ対応付けを適用します。
+
+- **キャンバス**（`renderPage`、`renderPageToCanvas`、`renderToCanvas`）。色付けの対象となるすべてのSVG画像（図、表のセルの画像、デザインの画像、ボックスのアイコンやマーカー）は、配置されたサイズでラスタライズされ、そのピクセルがインキの濃淡に色付けされます。`<img>`として登録したか`ImageBitmap`として登録したかは問いません。色付けしたビットマップは、ほかのベクターのラスターと同じくキャッシュされます。ビットマップの画像は色付けされません。
+- **HTML**（`renderToHtml`、`renderToHtmlIndexed`）。各SVGの`<img>`には`filter: url(#pt-ink-…)`が付き、ページが持つ`feColorMatrix`を指します。これはサイズ0の`<svg>`に入った`<filter>`で、ページの最初に置かれ、インデックス付きの出力ではページの`decorationHtml`に含まれます。単色刷りが適用されている間は、画像の有無にかかわらずすべてのページがこれを持つため、ブロックを1つずつ差し替えるホストが、フィルターのない画像を持ち込むことはありません。
+
+**二度は色付けしない**。postext 1.4までは、キャンバスとHTMLのバックエンドは画像を渡されたとおりに描いていたため、ホストは渡す前に`applySingleInkToSvg`で自らマークアップを色変換していました。バンドルのアダプターとSandboxは今もそうしています。マークアップの処理はPDFとまったく同じ色になるからです（下の最後の段落を参照）。そのため画像の色付けは1回だけで、それを保証する次の3つの規則が3つのバックエンドすべてで成り立ちます。
+
+- **印の付いたマークアップには手を加えない**。PDFバックエンドは`resourceBytes`を`applySingleInkToSvg`で色変換するため、すでに色変換されたSVGのバイト列は渡されたとおりに描かれます。キャンバスとHTMLでも、マークアップに印のあるSVGのデータURIから読み込んだ画像は色付けされません。
+- **postext 1.xでは、求められない限りオフ**。キャンバスは、独自のフラグなしで登録されたSVG画像を、描画に`singleInk: true`（`RenderPageOptions`）が渡されたときだけ色付けし、`registerResourceImage(id, img, { singleInk: true })`で登録した画像はどの描画でも色付けします。HTMLバックエンドは、`renderToHtml`が`singleInk: true`を受け取ったとき、または`resourceImageUrl`のリゾルバーが`singleInk: true`を持つときに色付けします。1.4向けに書かれたホスト、つまりマークアップを色変換し、デコードした画像をフラグなしで登録するホストは、出力が変わりません。次のメジャーリリースでは既定で色付けするようになります。
+- **`singleInk: false`は色付けしない**。blobやネットワークのURLの先にあるマークアップは読み戻せないため、自分で色変換してそのような方法でデコードする画像は、`registerBundleImages`やSandboxと同じく`singleInk: false`で登録します。`bundleImageUrl(bundle)`は`singleInk: false`を持つリゾルバーを返し、`bundleResourceBytes`はバンドル自身のバイト列をPDFに渡し、PDFバックエンドがそれを1回だけ色変換します。
+
+どちらのバックエンドも、各画像の種別をVDTから知ります。図とセルの画像はリソースの種別を持ち、デザインの画像ブロックはレイアウト時にリソースから取った`imageKind`（`'svg'`または`'bitmap'`）を持ちます。`imageKind`ができる前に作られたVDTでは、キャンバスはベクターのソースとして登録されたデザインの画像をSVGとして扱い、HTMLバックエンドはURLがSVGのデータURIであるか`.svg`で終わる画像をSVGとして扱います。
+
+マークアップを自分で色変換するか、バックエンドに元の画像を色付けさせるか、どちらか一方にしてください。両方を行ってはいけません。
+
+```ts
+import { applySingleInkToSvg, registerResourceImage, renderPage, renderToHtml } from 'postext';
+
+// Raw SVG: tinted while diagramStyle.singleInk is on…
+registerResourceImage('diagram.svg', rawImg, { singleInk: true });
+// …or register it plainly and ask on each render.
+registerResourceImage('diagram.svg', rawImg);
+const canvas = renderPage(doc.pages[0], doc, { singleInk: true });
+
+// Recoloured before decoding (as postext 1.4 hosts do): painted as given.
+const inked = applySingleInkToSvg(svgText, ink);
+registerResourceImage('diagram.svg', await decode(inked), { singleInk: false });
+
+// The HTML backend with URLs to the raw markup.
+const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
+```
+
+`renderToHtml`は`singleInk`の既定値をリゾルバー自身のフラグから取るため、`bundleImageUrl(bundle)`にはオプションが要りません。
+
+マークアップの処理が書き換えるすべての色（16進、`rgb()`、`hsl()`の値、`white`と`black`。[単色刷りの仕組み](#単色刷りの仕組み)を参照）について、ピクセルの対応付けは、アンチエイリアスのかかった縁やグラデーションも含めて同じ結果になります。両者が異なるのは、マークアップの処理が色をそのまま残す場合です。`white`と`black`以外の名前付きの色、`currentColor`、塗りのない図形やテキスト（既定の黒で描かれるもの）、SVGに埋め込まれたビットマップは、画面では色付けされますが、PDFでは元の色のままです。まったく同じ出力を得るには、ダイアグラムのすべての要素に16進、`rgb()`、`hsl()`のいずれかで明示的に色を指定してください。キャンバスがピクセルを読み戻せない場合（別のオリジンからCORSなしで読み込んだ`<img>`）、画像は色付けされずに描かれます。
+
+### SVGの文字のフォント
+
+SVGの画像は、キャンバス、HTML、EPUBのいずれでも`<img>`という画像として表示されます。画像の文書からはページのWebフォントが見えないため、`<text font-family="IBM Plex Sans">`はシステムのフォントに置き換わってしまいます。postext 1.25以降、エンジンは画像をデコードする前、またはURLとして渡す前に、文字が指定するフェイスをマークアップに埋め込みます。フォントファイル1つにつき1つの`@font-face`規則を作り、そのバイト列をデータURIにして、ルートの`<svg>`タグの直後の`<style>`に入れます。PDFにはこの処理は要りません。PDFはSVGの文字を、埋め込んだフォントで実際のテキストとして組みます（[リソースのバイト列と印刷用マスター](/ja/docs/configuration-programmatic-usage#リソースのバイト列と印刷用マスター)を参照）。
+
+文字が求めるフェイスは、`font-family`、`font-weight`、`font-style`、`font`から読み取ります。属性に書かれたもの、`style`属性の中にあるもの、外側のグループから継承したもののいずれも対象です。ファミリーを指定する`<style>`の規則も数えます。総称ファミリー（`serif`、`sans-serif`など）と、`<title>`や`<desc>`の中の文字は除きます。SVG自身が`@font-face`で宣言しているファミリーには手を加えません。各テキストは`font-family`のリストを順にたどり、フェイスのある最初のファミリーを使います。単色刷りの色変換が先で、フォントの埋め込みはその後です。
+
+フェイスは**プロバイダー**から得ます。その取り決めはpostext-pdfの`PdfFontProvider`と同じなので、1つのプロバイダーを両方で使えます。プロバイダーはファミリー、ウェイト、スタイルと、SVGがそのフェイスで組む文字を受け取り、ファイルを1つまたは複数返します。unicode-rangeのスライスで配信されるファミリー（Fontsource、Google Fonts）には、それらの文字に必要なスライスだけが返されるので、ラベルがラテン文字だけのSVGには`latin`のファイルしか入りません。既定のプロバイダーはエンジンのフォントレジストリを読みます。`loadBundleFonts`はバンドルのフェイスをそこに登録し、ホストは自前のフェイスを`registerFontBytes(family, weight, style, bytes, { unicodeRange })`で登録できます。SVGが初めて必要とした時点で取得するファイルなら`registerFontUrl(…)`を使います。どこにも登録されていないファミリーは、ページの読み取り可能なスタイルシートの`@font-face`規則から探します。バイト列から`document.fonts`に追加した`FontFace`はバイト列を保持しないため、エンジンは読み戻せません。そうしたフェイスも登録してください。
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // 色変換、フォントの埋め込み、デコード、登録
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+処理が行われる場所は次のとおりです。
+
+- **キャンバス**：`registerSvgImage(fileId, svgText, options)`は、画像を色変換し（`inkHex`）、フォントを埋め込み（`fonts`はプロバイダー。`inlineFonts: false`で省略）、デコードしてベクターのソースとして登録し、各フェイスがどう扱われたかを返します。`registerBundleImages(bundle)`はバンドルのSVGに同じことを行い、まずバンドル自身のフェイスを使います。自分でデコードするホストには、`prepareSvgMarkup(svgText, options)`が処理済みのマークアップを返します。
+- **HTML**：`bundleImageUrl(bundle)`は、バンドルのフェイスを埋め込んだSVGマークアップを返します。`renderToHtml(doc, { inlineSvgFonts: true })`は、`resourceImageUrl`が返すSVGの`data:` URIに、レジストリがメモリに持つフェイスを埋め込みます（`inlineSvgFonts: { fonts, maxBytes, withhold }`の形でも指定できます）。オブジェクトURLは同期的に読めないので、blob URLを渡すホストはURLを作る前に埋め込んでください。
+- **EPUB**：`postext-epub`は、SVGを書き出す前に、本の`fonts`から、次に`svgFonts.provider`からフェイスを埋め込みます（[EPUBの本](/ja/docs/configuration-programmatic-usage#epubの本postext-epub)を参照）。
+- **PDF**：SVGの文字は、埋め込んだフォントで実際のテキストとして組まれます。`@font-face`規則だけを含む`<style>`（作者が埋め込んだフェイス）があっても、図はもうラスターに切り替わりません。図がラスターになる場合（フィルターやグラデーション）は、PDFの`fontProvider`から得たフェイスを埋め込んでからラスターを作ります。
+
+下位の関数もエクスポートされています。`svgFontRequests(svgText)`は各テキストのファミリー、ウェイト、スタイル、文字を列挙します。`inlineSvgFonts(svgText, provider, options)`と`inlineSvgFontsSync(svgText, syncProvider, options)`はマークアップを返し、`inlineSvgFontsDetailed`はそれに各フェイスの結果（`inlined`、`declared`、`unavailable`、`withheld`、`tooLarge`）を加えて返します。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>オプション</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>1つのSVGに埋め込むフォントのバイト数の上限です（base64にする前の値で、base64にすると3分の1増えます）。フェイスの合計がこれを超えると1つも埋め込まず、<code>svgFontsTooLarge</code>を報告します。</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>4つすべて</td>
+      <td>埋め込むファイル形式です。それ以外の形式のファイルは飛ばします。</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>なし</td>
+      <td>アプリの外に出るファイルから除くファミリーです（再配布できないもの）。参照は残り、読む側では別のフォントに置き換わります。除いたファミリーは1つずつ<code>onWithheld(family)</code>に通知されます。</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>なし</td>
+      <td>フェイスのないファミリー（<code>svgFontUnavailable</code>）と、サイズ上限の超過（<code>svgFontsTooLarge</code>）を受け取ります。</td>
+    </tr>
+  </tbody>
+</table>
+
+**無効にする**：`diagramStyle.inlineFonts: false`にすると、すべてのSVGが保存されたままになります。リソースに`svg.inlineFonts: false`を指定すると、そのSVGだけがバイト単位でそのまま残ります。自前のフェイスを持つSVGや、変更してはならないSVGに使います。バンドルは、リソースのこの指定を`preset.json`に`"inlineFonts": false`として書き込みます。
+
+**ライセンス**：埋め込みを行うと、アプリの外に出ることのある画像（HTMLの書き出し、EPUB）の中にフォントファイルが入ります。埋め込むのは画像を表示するときか書き出すときだけで、保存されたリソースのバイト列には書き込みません。また`withhold`は、ライセンス上ほかに渡せないファミリーを除きます。EPUBのライターは`redistributable: false`と指定されたフェイスを、Sandboxは再配布不可と指定されたカスタムファミリーを除きます。
+
+
+## 動画スタイル
+
+`videoStyle`プロパティは、[動画リソース](/ja/docs/document-format#動画)の印刷のされ方（ポスター画像に重ねる再生マークとQRコード、ポスター画像を動画へのリンクにするかどうか）と、HTMLビューアーとEPUBでプレーヤーが提供する機能を設定します。
+
+```ts
+const config: PostextConfig = {
+  videoStyle: {
+    playMark: { shape: 'rounded', position: 'top-left', size: { value: 10, unit: 'mm' } },
+    qr: { position: 'bottom-right', size: { value: 20, unit: 'mm' }, errorCorrection: 'Q' },
+    player: { download: false, privacy: true },
+  },
+};
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>playMark</code></td>
+      <td><code>VideoPlayMarkConfig</code></td>
+      <td>後述</td>
+      <td>ポスター画像に印刷し、再生できることを示すマーク。</td>
+    </tr>
+    <tr>
+      <td><code>qr</code></td>
+      <td><code>VideoQrConfig</code></td>
+      <td>後述</td>
+      <td>ポスター画像に印刷するQRコード。動画のYouTubeまたはVimeoのページ、あるいはファイルの公開先アドレスを開きます。</td>
+    </tr>
+    <tr>
+      <td><code>linkPoster</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>ポスター画像を動画へのリンクにします。PDFではポスター画像の上にリンク注釈を置き、HTMLとEPUBではポスター画像を表示するすべての場所でそれを<code>&lt;a&gt;</code>で囲みます。</td>
+    </tr>
+    <tr>
+      <td><code>html</code></td>
+      <td><code>'player'</code> · <code>'poster'</code></td>
+      <td><code>'player'</code></td>
+      <td>HTML出力で動画の位置に何を置くかです。プレーヤーか、オーバーレイ付きの印刷用のポスター画像かを選びます。</td>
+    </tr>
+    <tr>
+      <td><code>player</code></td>
+      <td><code>VideoPlayerOptions</code></td>
+      <td>後述</td>
+      <td>すべての動画のプレーヤーのオプションです。動画ごとの<code>video.player</code>がその上に重ねられます。</td>
+    </tr>
+  </tbody>
+</table>
+
+### 再生マーク
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>マークを印刷します。</td></tr>
+    <tr><td><code>shape</code></td><td><code>'circle'</code> · <code>'rounded'</code> · <code>'triangle'</code></td><td><code>'circle'</code></td><td>三角形入りの円、三角形入りの角丸長方形（幅は高さの1.45倍）、または背景色で縁取った三角形だけ。</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'center'</code></td><td><code>'center'</code>、角（<code>'top-left'</code>、<code>'top-right'</code>、<code>'bottom-left'</code>、<code>'bottom-right'</code>）、または辺の中央（<code>'top'</code>、<code>'bottom'</code>、<code>'left'</code>、<code>'right'</code>）。位置は物理的なもので、右から左の本でも右上の角は右上の角です。</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>12mm</code></td><td>マークの高さ。ポスター画像の短い辺の40%を超えることはありません。</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>4mm</code></td><td>角や辺に置くときの、ポスター画像の縁からの距離。</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>白</td><td>三角形。</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>メインカラー</td><td>背後の円または長方形。三角形だけのときはその縁取り。既定でパレットに連動します。</td></tr>
+    <tr><td><code>backgroundOpacity</code></td><td><code>number</code></td><td><code>0.9</code></td><td>背景の不透明度（0–1）。</td></tr>
+  </tbody>
+</table>
+
+### QRコード
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '200px' }}>型</th>
+      <th style={{ width: '140px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>コードを印刷します。公開先アドレスのないファイルには付きません。</td></tr>
+    <tr><td><code>position</code></td><td><code>VideoOverlayPosition</code></td><td><code>'bottom-right'</code></td><td>再生マークと同じです。2つには別々の位置を指定してください。</td></tr>
+    <tr><td><code>size</code></td><td><code>Dimension</code></td><td><code>18mm</code></td><td>クワイエットゾーンを含むコードの1辺。ポスター画像の短い辺の45%を超えることはありません。スマートフォンのカメラが読み取れるのは3分の1ミリメートル以上のモジュールです。30文字のアドレスは29モジュールのコードになるため、18 mmでクワイエットゾーンを2にすると、モジュールは0.55 mmになります。</td></tr>
+    <tr><td><code>inset</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>ポスター画像の縁からの距離。</td></tr>
+    <tr><td><code>errorCorrection</code></td><td><code>'L'</code> · <code>'M'</code> · <code>'Q'</code> · <code>'H'</code></td><td><code>'M'</code></td><td>コードがどれだけ損傷したり覆われたりしても読み取れるかで、約7%、15%、25%、30%です。コードのモジュール数が変わらない範囲で、自動的に引き上げられます。</td></tr>
+    <tr><td><code>quietZone</code></td><td><code>number</code></td><td><code>2</code></td><td>下地の上でコードの周りに置く明るいモジュールの数（0–8）。下地がポスター画像から浮き出るため、何もない紙の上で規格が求める4モジュールは必要ありません。</td></tr>
+    <tr><td><code>color</code></td><td><code>ColorValue</code></td><td>黒</td><td>暗いモジュール。明るい下地の上で暗い色にしてください。ほとんどのリーダーは反転したコードを読み取れません。</td></tr>
+    <tr><td><code>background</code></td><td><code>ColorValue</code></td><td>白</td><td>下地。</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td><code>1mm</code></td><td>下地の角の半径。</td></tr>
+  </tbody>
+</table>
+
+コードはエンジン自身がエンコードし（`encodeQr(text, level)`：バイトモード、UTF-8、バージョン1から40、ペナルティが最も低いマスク）、ベクターとして描きます。キャンバスはモジュールの連なりからなる1つのパスを塗り、PDFは1回の`drawSvgPath`、HTMLは`shape-rendering="crispEdges"`を指定した1つの`<path>`で描くため、どの印刷サイズでも鮮明なままです。
+
+### プレーヤーのオプション
+
+`VideoPlayerOptions`は、`videoStyle.player`と各動画の`video.player`で使います。ファイルのHTML5プレーヤーはすべてに従い、YouTubeとVimeoのプレーヤーは埋め込みパラメーターで指定できる範囲で従います。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>プロパティ</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th style={{ width: '170px' }}>対応</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>controls</code></td><td><code>true</code></td><td>YouTube、Vimeo、ファイル</td><td>プレーヤーのコントロールを表示します。</td></tr>
+    <tr><td><code>download</code></td><td><code>true</code></td><td>ファイル</td><td>ブラウザーのダウンロードボタンを表示します（オフのときは<code>controlslist="nodownload"</code>）。ボタンを隠すだけで、ファイルを保護するものではありません。YouTubeとVimeoはダウンロードを提供しません。</td></tr>
+    <tr><td><code>fullscreen</code></td><td><code>true</code></td><td>YouTube、Vimeo、ファイル</td><td>全画面表示を提供します（<code>fs=0</code>、iframeの<code>allowfullscreen</code>、<code>nofullscreen</code>）。</td></tr>
+    <tr><td><code>playbackRate</code></td><td><code>true</code></td><td>Vimeo、ファイル</td><td>再生速度のメニューを提供します（<code>speed=0</code>、<code>noplaybackrate</code>）。</td></tr>
+    <tr><td><code>pictureInPicture</code></td><td><code>true</code></td><td>Vimeo、ファイル</td><td>ピクチャー・イン・ピクチャーを提供します（<code>pip=0</code>、<code>disablepictureinpicture</code>）。</td></tr>
+    <tr><td><code>remotePlayback</code></td><td><code>true</code></td><td>ファイル</td><td>別の画面へのキャストを提供します（<code>disableremoteplayback</code>）。</td></tr>
+    <tr><td><code>autoplay</code></td><td><code>false</code></td><td>YouTube、Vimeo、ファイル</td><td>自動で再生を始めます。ブラウザーの要件どおり、常にミュートされます。</td></tr>
+    <tr><td><code>muted</code></td><td><code>false</code></td><td>YouTube、Vimeo、ファイル</td><td>音を消した状態で始めます。</td></tr>
+    <tr><td><code>loop</code></td><td><code>false</code></td><td>YouTube、Vimeo、ファイル</td><td>最後まで再生したら、最初から再び再生します。</td></tr>
+    <tr><td><code>exclusive</code></td><td><code>true</code></td><td>Folio、HTMLビューアー、EPUB（スクリプト実行時）／ファイル</td><td>この動画を再生すると、表示中のほかの動画は一時停止し、一度に1本だけが再生されます。<code>false</code>にすると、ほかの動画と同時に再生されます。ページ上の無音のループ動画を何本も同時に流す場合です。postext 1.18以降。</td></tr>
+    <tr><td><code>preload</code></td><td><code>'metadata'</code></td><td>ファイル</td><td>再生前にブラウザーが読み込む量です。<code>'none'</code>、<code>'metadata'</code>、<code>'auto'</code>のいずれかです。</td></tr>
+    <tr><td><code>privacy</code></td><td><code>true</code></td><td>YouTube、Vimeo</td><td>プライバシー強化モードの埋め込みです。YouTubeは<code>youtube-nocookie.com</code>から、Vimeoは<code>dnt=1</code>付きで埋め込みます。</td></tr>
+  </tbody>
+</table>
+
+EPUBはスキーマが認める属性だけを残します。ファイルは<code>controls</code>、<code>autoplay</code>、<code>muted</code>、<code>loop</code>、<code>playsinline</code>、<code>preload</code>付きで再生され、<code>data-pt-alongside</code>の印も残ります。それ以外はリーディングシステムが決めます。
+
+排他的でない動画には、HTML出力で`data-pt-alongside`が付きます。`coordinateVideoPlayback(root)`は、`root`（`renderToHtml`の出力を収める要素）の下のプレーヤーにこの規則を守らせます。排他的な動画を再生すると再生中のほかの動画がすべて一時停止し、同時に再生する動画を再生すると排他的な動画だけが一時停止します。戻り値は監視をやめる関数です。`playsAlongside(el)`と`videosToPause(started, videos, alongside)`は、独自のプレーヤーを持つホストに同じ規則を提供します。[Folio](/ja/docs/document-format#folioのページで再生する動画)では、自動再生でほかの動画と同時に再生する動画（`autoplay`と`exclusive: false`）は、そのページが表示されるたびに無音で始まり、ページがめくられると止まります。何本でも同時に再生され、`loop`を付けると最後まで行ったあと最初から繰り返します。EPUBでは、調整が必要な動画（2本以上で、そのうち少なくとも1本が排他的）を含むページや章が、同じ規則を小さなスクリプト`scripts/videos.js`（エクスポートされている`VIDEO_PLAYBACK_SCRIPT`）として読み込み、パッケージはその文書を`scripted`と宣言します。スクリプトを実行するリーディングシステムでは、その文書の動画がこの規則に従います。ただし、向かいのページは別の文書なので対象外です。スクリプトを実行しないリーディングシステムは、YouTubeやVimeoのプレーヤーと同じく、それぞれの決まりで動画を再生します。
+
+解決関数と既定値の除去関数は、ほかのセクションと同じ形で、型`VideoStyleConfig` / `ResolvedVideoStyleConfig`とともに提供されます。
+
+```ts
+import {
+  DEFAULT_VIDEO_STYLE_CONFIG,
+  DEFAULT_VIDEO_PLAYER_OPTIONS,
+  resolveVideoStyleConfig,
+  resolveVideoPlayerOptions,
+  stripVideoStyleDefaults,
+} from 'postext';
+
+const resolved = resolveVideoStyleConfig(config.videoStyle);
+const player = resolveVideoPlayerOptions(resource.video?.player, resolved.player);
+const minimal = stripVideoStyleDefaults(config.videoStyle); // undefined when all defaults
+```

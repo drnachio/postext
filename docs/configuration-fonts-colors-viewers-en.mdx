@@ -1,0 +1,1195 @@
+{/* docs/configuration-fonts-colors-viewers-en.mdx */}
+
+export const metadata = {
+  title: 'Configuration: fonts, colours and output',
+  sidebarTitle: 'Fonts, colours and output',
+  description: 'Units, colours and the palette, custom fonts, the HTML viewer, PDF and print production, the Folio viewer and the debug overlays',
+  lang: 'en',
+  lastUpdated: '2026-10-10',
+  readingTime: '6 min',
+  order: 11,
+  parent: 'configuration',
+  plainSummary: "This page covers the settings shared by the whole book and the settings for each kind of output. It explains how to write a measure and a colour, and how to name the colours of a palette. It shows how to add your own fonts. Then it covers the web view, the PDF file, the files a printing company asks for and the 3D book. The last section turns on the guides and warnings that help while you work.",
+};
+
+# Configuration: fonts, colours and output
+
+
+## Units and colors
+
+### Dimensions
+
+All physical measurements in Postext use the `Dimension` type — a value paired with a unit:
+
+```ts
+interface Dimension {
+  value: number;
+  unit: DimensionUnit; // 'cm' | 'mm' | 'in' | 'pt' | 'px' | 'em' | 'rem'
+}
+```
+
+**Absolute units** — `cm`, `mm`, `in`, `pt`, `px` — are converted to pixels using the configured DPI. At 300 DPI, `1 cm` equals approximately 118 px.
+
+**Relative units** — `em`, `rem` — scale with the current font size. An `em` is relative to the element's own font size; `rem` is relative to the body text font size.
+
+### Colors
+
+Colors are stored with both a hex representation and a target color model:
+
+```ts
+interface ColorValue {
+  hex: string;         // '#ff0000', 'transparent', etc.
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
+}
+```
+
+The `model` field indicates the intended color space. For web rendering, `'hex'` or `'rgb'` are typical. For print workflows, `'cmyk'` says the colour was specified in CMYK, and `cmyk` keeps its values: a CMYK print render sets them as they are, with `hex` as their screen rendering (see [Colours authored in CMYK](#colours-authored-in-cmyk)).
+
+Because Postext targets publication-grade output, the default body text color ships with `model: 'cmyk'` (`#000000`). Heading, bold, italic, and list colors default to the palette-linked **Main Color** (`#295AA3`, `model: 'hex'`). Page background and UI overlays (baseline grid, cut marks, debug indicators) default to `model: 'hex'`. Override `color.model` on any field if you need different export semantics.
+
+### Transparency
+
+A colour can be translucent. `hex` accepts an alpha channel, as `#rgba` or `#rrggbbaa`. It also accepts an `rgb()` / `rgba()` colour, in the comma or the space syntax, with the alpha as a number or a percentage. `transparent` is fully clear:
+
+```ts
+const config: PostextConfig = {
+  header: {
+    elements: [{
+      kind: 'box',
+      id: 'veil',
+      placement: {
+        anchor: { to: 'bleed', edge: 'top-left' },
+        size: { width: 'fill', height: { value: 40, unit: 'mm' } },
+      },
+      style: { backgroundColor: { hex: '#ffffffb3', model: 'hex' } }, // white at 70 %
+    }],
+  },
+  bodyText: { color: { hex: 'rgba(0, 0, 0, 0.85)', model: 'rgb' } },
+};
+```
+
+The three backends paint it the same way. The canvas and the HTML viewer take the value as a CSS colour. The PDF backend sets the colour's opacity as a constant alpha, an `ExtGState` with `ca` for fills and `CA` for strokes. This covers text, rules, boxes, table fills and borders, chips, swatches and formulas. A translucent colour composes over whatever was painted before it. A box in the header or footer is painted last, so it veils the text under it; a box in an opener band is painted first, so it tints the page under the text. When the PDF is forced into another colour space (`pdfGeneration.forceColorSpace` with `colorSpace: 'cmyk'` or `'grayscale'`), the colour is converted and its alpha kept. In the Sandbox, the opacity slider of the colour picker writes these values as `#rrggbbaa`, and the picker reads the other forms too.
+
+
+## Custom fonts
+
+Postext resolves every `fontFamily` string against **both** the Google Fonts catalogue and the document's `customFonts` list. Custom fonts take precedence on name collision — if you declare `customFonts: [{ name: 'Roboto', … }]`, Postext uses your uploaded file instead of the Google Fonts "Roboto".
+
+Use custom fonts when:
+
+- The document needs a brand or licensed typeface that is not on Google Fonts.
+- The environment can't reach the Google Fonts CDN (offline, intranet, privacy-sensitive).
+- You must keep the font binary private and not upload it to a third party.
+
+### Configuration schema
+
+```ts
+type CustomFontFormat = 'woff2' | 'woff' | 'ttf' | 'otf';
+type CustomFontStyle = 'normal' | 'italic';
+
+interface CustomFontVariant {
+  weight: number;           // CSS font-weight, 100..900
+  style: CustomFontStyle;
+  fileId: string;           // opaque id of the binary in out-of-band storage
+  format: CustomFontFormat;
+  fileName?: string;        // original upload filename (optional, shown in UI)
+}
+
+interface CustomFontFamily {
+  name: string;             // used anywhere a Google Font family name fits
+  variants: CustomFontVariant[];
+}
+
+interface PostextConfig {
+  // ...
+  customFonts?: CustomFontFamily[];
+}
+```
+
+Each variant's binary is **not** embedded in the config itself. The config only holds `fileId` pointers; the bytes live out-of-band. In the sandbox, that means IndexedDB (key-value store, browser-only, private to the document). An integrator embedding Postext in another host is free to resolve `fileId` however they like — a server endpoint, a service worker cache, anything — as long as the bytes reach the main thread before `buildDocument` runs.
+
+### Managing custom fonts in the sandbox
+
+Open the **Fonts** panel from the left activity bar (between Resources and Design). Its **Typefaces in this book** list shows every family the design uses, with its role and whether it comes from Google Fonts or from your file. Under **Your font files**, for each family:
+
+1. **Add font family** — creates an empty family; rename it inline.
+2. **Upload variant(s)** — pick a weight (100–900) and style (normal / italic), then choose one *or many* `.woff2`, `.woff`, `.ttf`, or `.otf` files. Each file becomes its own variant bound to the currently-selected (weight, style); the uploaded filename is remembered and shown in the row so you can tell variants apart. Re-tune a variant's weight or style from its dropdowns at any time.
+3. **Duplicate variants are allowed.** If two files land on the same (weight, style) slot, both are kept and a **Duplicate font variant** warning appears so you know to disambiguate the settings of the extras.
+4. **Delete variant** or **Delete family** — removes the entry from the config *and* the stored bytes from IndexedDB.
+
+Once a family is declared, every font picker groups it under **Custom**, above the Google Fonts list. Selecting it wires the family into every font-family field you apply it to.
+
+### Rendering behaviour
+
+Under the hood:
+
+- When `customFonts` changes, every declared family is automatically registered as `FontFace` entries on `document.fonts` — so the HTML viewer, the Canvas viewport (which measures through `document.fonts`), and any direct CSS reference all pick up the custom face without requiring the user to first open the Font Picker.
+- The layout worker receives the same ArrayBuffers through the existing font payload transfer path, so measurement (`buildFontString`, pretext) produces identical metrics to Google Fonts.
+- Changing or removing a variant drops the worker's cached face for that family and re-registers on the next build, so previews stay in sync with the current variant set.
+- **PDF export**: uploaded binaries flow through the same `PdfFontProvider` pipeline. `.woff2` files are decompressed; `.ttf` and `.otf` are passed through directly. `.woff` is rejected with a clear error (pdf-lib can't embed raw WOFF — re-upload as `.woff2`/`.ttf`/`.otf`). CFF-flavored OpenType (`.otf` with `OTTO` magic) is embedded **without subsetting**, because pdf-lib's CFF subsetter walks every glyph at `save()` time and can hang for minutes on real fonts; skipping subset trades a somewhat larger PDF for consistent render times.
+
+### Missing-font warnings
+
+The Sandbox's **Checks** panel lists three failure modes specific to custom fonts under its *Fonts* group (all enabled by the same `debug.warnings.missingFont` toggle that already guards the generic "not loaded" warning):
+
+- **Unknown font family** — a `fontFamily` references a name that is neither a known Google Font nor a currently-declared custom family. This also fires immediately when you delete a custom family that some `fontFamily` field still references, instead of waiting for the DOM to notice.
+- **Missing font variant** — the family exists but at least one of the standard weight/style slots (400 / 700, normal / italic) has no uploaded file. The warning lists the specific combinations that are missing.
+- **Duplicate font variant** — two or more uploaded files share the same (weight, style) slot within one family. Only one file is actually used at render time; the warning nudges you to retune the remaining entries.
+
+Clicking any of these warnings opens the Fonts panel so you can upload the missing variant, re-add the family, or disambiguate the duplicates.
+
+Once a layout exists, the panel also lists the engine's **Font fallback in the layout** (`fontFallback`): a face the pages were measured without, either missing or drawn by the browser from another weight or slant. A family already named as unknown or short of a variant is not listed twice. Before the first layout, a check against `document.fonts` stands in for it.
+
+## Color Palette
+
+The `colorPalette` property on `PostextConfig` lets you define a reusable set of named colors and reference them from any `ColorValue` in the configuration. It is the Postext equivalent of CSS custom properties or an InDesign swatches panel: change the palette entry once, and every color that points to it updates across the document.
+
+```ts
+interface ColorPaletteEntry {
+  id: string;       // stable identifier — referenced by ColorValue.paletteId
+  name: string;     // human label shown in sandbox UIs
+  value: ColorValue;
+}
+```
+
+### The default palette
+
+Postext ships with a single-entry default palette called **Main Color** (`id: 'main-color'`, hex `#295AA3`). Several defaults — heading color, bold/italic body color, `:ref` color, bullet and number-marker colors — reference this entry via `paletteId: 'main-color'`, so changing that one swatch retints every part of the document that uses it.
+
+You can inspect, clone, or compare against the default palette via three exports:
+
+```ts
+import {
+  DEFAULT_COLOR_PALETTE,
+  cloneDefaultColorPalette,
+  isDefaultColorPalette,
+} from 'postext';
+
+// Read-only snapshot of the shipped palette.
+DEFAULT_COLOR_PALETTE;
+// => [{ id: 'main-color', name: 'Main Color', value: { hex: '#295AA3', model: 'hex' } }]
+
+// Independent copy — mutate this, not DEFAULT_COLOR_PALETTE.
+const palette = cloneDefaultColorPalette();
+
+// Detect whether a user has customised the palette at all.
+isDefaultColorPalette(palette); // true
+```
+
+A palette lives at the top level of the config:
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'ink',    name: 'Ink',    value: { hex: '#0a0a0a', model: 'cmyk' } },
+    { id: 'accent', name: 'Accent', value: { hex: '#b8860b', model: 'hex' } },
+  ],
+  bodyText: { color: { hex: '#000000', model: 'cmyk', paletteId: 'ink' } },
+  headings: { color: { hex: '#000000', model: 'hex', paletteId: 'accent' } },
+};
+```
+
+### Referencing a palette entry
+
+Any `ColorValue` in the configuration can carry an optional `paletteId` field pointing at an entry in `colorPalette`: page background, body text colors (the `:ref` colour included), heading colors, column rules, list colors, table, caption, chip and callout colors (box, stripe, icon, marker, label, title, body), cut-mark and baseline-grid colors, debug indicators, and every colour of a design — the running heads, the heading openers and in-column designs, the heading styles' designs and running heads, the part pages and the contents' part rows (text, rule, box fill and border, outline, drop cap). When present, the palette entry's `hex` / `model` win over the fallback `hex` / `model` stored alongside. The inline fallback is only used if the palette is missing, empty, or doesn't contain that id — useful when shipping a config that will be read by a tool that doesn't understand palettes.
+
+**Changed in postext 1.5.** Up to postext 1.4 the palette reached only a fixed list of settings: the colours of the designs (running heads, openers, heading styles, parts, contents rows), `bodyText.referenceColor`, the callout label colours and the bold / italic colours of callout bodies kept the `hex` stored beside their `paletteId`. A document whose stored value differs from the palette entry — every one edited in the Sandbox after the entry changed, and every `:ref` when the Main Color is not `#295AA3` — now prints the palette colour, as the link says. To keep a colour as it was, remove its `paletteId`.
+
+### How palettes are applied
+
+`buildDocument` runs the palette in two places so referenced colors work both for overrides you spelled out and for defaults that are filled in later:
+
+1. `applyPaletteToConfig(config)` — resolves every `ColorValue` in the raw user config that carries a `paletteId`. Useful when you want to inspect what the engine will actually see.
+2. `applyPaletteToResolvedConfig(resolved, palette)` — runs *after* defaults are resolved and rewrites the palette-linked defaults (heading color, bold/italic body color, `:ref` color, list colors, the colours of the default designs) to match the active palette.
+
+Both walk the whole configuration, so no palette-linked colour is left behind. Most colours of the text flow (body text, headings, lists, tables, captions, chips, the callout box, title and body) come out as plain values. Every other one — the colours of the designs, the `:ref` colour, the callout labels — takes the palette's `hex` / `model` and **keeps its `paletteId`**. That link is what a part's `palette` attribute and a heading style's `palette` override on their pages (see [Parts](/en/docs/configuration-styles#parts)), so it has to survive. `htmlViewer.overrides` is left as written: the HTML viewer merges it first, and a palette it carries then applies to everything, the designs included.
+
+You rarely need to call these yourself, but both are exported so you can inspect or reuse them:
+
+```ts
+import {
+  applyPaletteToConfig,
+  applyPaletteToResolvedConfig,
+  resolveColorValue,
+} from 'postext';
+
+const flat = applyPaletteToConfig(config);
+// Every ColorValue with a paletteId in the raw config now carries the
+// palette entry's hex/model (a design colour keeps its paletteId).
+
+// `applyPaletteToResolvedConfig` is typically handled by buildDocument; use it
+// directly if you build a ResolvedConfig yourself and want the palette applied.
+```
+
+`resolveColorValue(value, palette, fallback)` is the single-value variant, handy when you are composing configs imperatively and need to resolve one color at a time.
+
+### Editing the palette
+
+A colour whose `paletteId` names no entry prints its stored `hex` / `model`, which may be older than the colour the entry gave it. So before removing an entry, rewrite every `ColorValue` linked to it as a plain colour holding the entry's current value. The Sandbox's *Palette* section (**Design → Colours**) does this when you delete an entry, wherever the colour sits (designs and callout labels included), and its confirmation lists every setting that uses the entry: by name, or by its path in the configuration (`header.elements[2].color`).
+
+
+## HTML Viewer
+
+The `htmlViewer` property controls how the HTML backend lays out pages on screen. It only applies when you render with `renderToHtml` / `renderToHtmlIndexed`; the canvas and PDF paths ignore it entirely — they consume the configured `page.width`, `page.height`, and `page.dpi` directly.
+
+```ts
+interface HtmlViewerConfig {
+  maxCharsPerLine?: number;     // Target column width, in characters of the body font.
+  columnGap?: number;            // Horizontal gap between columns in multi-column mode (px).
+  optimalLineBreaking?: boolean; // Use Knuth–Plass inside the HTML viewer instead of greedy.
+  overrides?: HtmlViewerOverrides; // Screen-only partial config merged over the document config.
+}
+
+type HtmlViewerOverrides = Omit<PostextConfig, 'htmlViewer'>;
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxCharsPerLine</code></td>
+      <td><code>number</code></td>
+      <td><code>70</code></td>
+      <td>Target measure for each rendered column, expressed in characters of the body font. The viewport samples a representative prose string at that length to derive the actual pixel width — so the result adapts to any proportional font and font-size combination.</td>
+    </tr>
+    <tr>
+      <td><code>columnGap</code></td>
+      <td><code>number</code></td>
+      <td><code>50</code></td>
+      <td>Horizontal gap, in CSS pixels, between columns when the viewer is in multi-column mode. Ignored in single-column mode.</td>
+    </tr>
+    <tr>
+      <td><code>optimalLineBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Enable Knuth–Plass line breaking in the HTML viewer. Off by default because the viewer reruns layout on every resize and font-size change — the greedy first-fit algorithm is fast enough to feel instantaneous. Turn it on when you want the same optimal breaks the canvas backend uses.</td>
+    </tr>
+    <tr>
+      <td><code>overrides</code></td>
+      <td><code>HtmlViewerOverrides</code></td>
+      <td>—</td>
+      <td>A partial document config that applies on screen only. The HTML viewer merges it over the document config before laying out (<code>applyHtmlViewerOverrides</code>); canvas and PDF ignore it. Objects merge recursively; a <code>levels</code> array (headings, lists, contents) merges entry by entry on <code>level</code>; every other array — a design slot's <code>elements</code>, <code>calloutStyles</code>, <code>colorPalette</code>… — replaces the base array wholesale. Typical use: a chapter opener without the print bands, or a part page whose title wraps against the number instead of a fixed trim-box width. The sandbox edits it as JSON.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+const config: PostextConfig = {
+  headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: true } }] },
+  htmlViewer: {
+    // On screen, chapters flow on without the page-span opener.
+    overrides: { headings: { levels: [{ level: 1, span: 'column', breakBefore: { enabled: false } }] } },
+  },
+};
+```
+
+Resolver and stripper follow the same pattern as the other sections:
+
+```ts
+import {
+  DEFAULT_HTML_VIEWER_CONFIG,
+  resolveHtmlViewerConfig,
+  stripHtmlViewerDefaults,
+} from 'postext';
+
+const resolved = resolveHtmlViewerConfig(config.htmlViewer);
+// => { maxCharsPerLine: 70, columnGap: 50, optimalLineBreaking: false }
+
+const minimal = stripHtmlViewerDefaults(config.htmlViewer);
+// => undefined when everything matches the defaults
+```
+
+See [Integrating the HTML viewer](/en/docs/configuration-programmatic-usage#integrating-the-html-viewer) below for an end-to-end example.
+
+
+## PDF generation (config)
+
+The `pdfGeneration` property controls how the PDF backend emits the final document. These settings are consumed by the `postext-pdf` package at export time; the canvas and HTML viewers ignore them.
+
+`buildDocument` carries them in the VDT, as `doc.config.pdfGeneration`, and `renderToPdf` takes each setting from the first place that gives it:
+
+1. its own options (`outlines`, `accessible`, `colorSpace`);
+2. the `pdfGeneration` of the first document it renders (in a book, the first chapter's settings apply to the whole file);
+3. the defaults: bookmarks and tagging on, RGB colour.
+
+So `renderToPdf(doc, { fontProvider })` follows the config, and an option passed to `renderToPdf` wins for that setting only. `forceColorSpace` and `colorSpace` together stand for the `colorSpace` option: the config's `colorSpace` applies while `forceColorSpace` is on, and the PDF is RGB while it is off. Earlier releases of `postext-pdf` read the options only; a config that sets `pdfGeneration` now changes the PDF of a caller that passes no options.
+
+```ts
+type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
+
+interface PdfGenerationConfig {
+  outlines?: boolean;          // Emit PDF bookmarks from the heading tree.
+  forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
+  colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
+  accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>outlines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Emit PDF outlines (bookmarks) from the heading hierarchy so readers can jump directly to any heading from the sidebar of a PDF viewer. Turn off for documents where the heading tree is meaningless (e.g. single-page posters).</td>
+    </tr>
+    <tr>
+      <td><code>forceColorSpace</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>When true, every colour in the rendered PDF is converted to `colorSpace` at export time. Leave off for screen-first PDFs where input colours are already in the desired space; turn on to guarantee a single colour space across mixed sources.</td>
+    </tr>
+    <tr>
+      <td><code>colorSpace</code></td>
+      <td><code>'rgb' | 'cmyk' | 'grayscale'</code></td>
+      <td><code>'cmyk'</code></td>
+      <td>Target colour space used when `forceColorSpace` is on. Use `'cmyk'` for offset printing, `'rgb'` for screen-only PDFs, and `'grayscale'` for black-and-white print proofs. Has no effect when `forceColorSpace` is false. CMYK is separated through the output profile of [`print`](#print-production-config) (FOGRA39 by default) with its black handling, and RGB pictures are converted too; a PDF/X standard there writes CMYK whatever this says.</td>
+    </tr>
+    <tr>
+      <td><code>accessible</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Emit an accessible, tagged PDF oriented to PDF/UA-1: a logical structure tree in reading order (headings that never skip a level, paragraphs, lists, block quotes, callouts, tables with header cells, figures with their alt text and captions, formulas, clickable refs as links, the contents of a `:::toc` as one `TOC` with a `TOCI` per row: the row's number a `Lbl`, its title and page a `Reference` holding the link), the document title and language (the top-level `locale`), the PDF/UA identification in the XMP metadata, and every decorative mark (page background, rules, baseline grid, running headers and footers, cut marks, repeated table headers, the repeated title and continuation marker of a split callout) flagged as an artifact so screen readers skip it. A figure without `altText` falls back to its caption, then to its label. A floated figure or table is read right after the text that first cites it, or the text before its `::resource` line, and a floated box after the text before its fence, even when the float is placed on a later page; a list or the contents that go on past a float stay one element. Turn off only for print masters where the extra structure is unwanted.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+pdfGeneration: {
+  outlines: true,
+  accessible: true,
+  forceColorSpace: true,
+  colorSpace: 'cmyk',
+}
+```
+
+Resolver and stripper match the other sections:
+
+```ts
+import {
+  DEFAULT_PDF_GENERATION_CONFIG,
+  resolvePdfGenerationConfig,
+  stripPdfGenerationDefaults,
+} from 'postext';
+
+const resolved = resolvePdfGenerationConfig(config.pdfGeneration);
+// => { outlines: true, forceColorSpace: false, colorSpace: 'cmyk', accessible: true }
+
+const minimal  = stripPdfGenerationDefaults(config.pdfGeneration);
+// => undefined when everything matches the defaults
+```
+
+See [Generating PDFs](/en/docs/configuration-programmatic-usage#generating-pdfs) below for the end-to-end export recipe.
+
+
+## Print production (config)
+
+The `print` property says how a book goes to press: the PDF/X standard of the file, the output profile its CMYK is separated with, how black prints, and the thresholds of the preflight. Layout ignores it, so changing it never moves a line. Three things read it: `postext-pdf` when it writes the file, `preflightDocument` when it checks a laid-out document, and the print preview of the canvas and Folio viewers.
+
+```ts
+type PdfXStandard = 'none' | 'pdfx1a' | 'pdfx4';
+
+interface PrintConfig {
+  standard?: PdfXStandard;                 // 'none': an ordinary PDF.
+  outputProfile?: string;                  // A catalogue id ('fogra39', 'fogra51'…) or 'custom'.
+  customProfile?: CustomOutputProfile;     // An uploaded .icc file.
+  renderingIntent?: 'relative' | 'perceptual';
+  blackPointCompensation?: boolean;
+  convertImages?: boolean;                 // Separate RGB pictures (PDF/X-1a always does).
+  inkLimit?: number;                       // Total area coverage, percent.
+  black?: PrintBlackConfig;
+  preflight?: PrintPreflightConfig;
+}
+
+interface CustomOutputProfile {
+  name: string;           // Its description, or the file name.
+  fileId: string;         // The stored .icc file.
+  registryName?: string;  // The condition's ICC registry name (FOGRA51…), else 'Custom'.
+  inkLimit?: number;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>Property</th>
+      <th style={{ width: '170px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>standard</code></td>
+      <td><code>'none' | 'pdfx1a' | 'pdfx4'</code></td>
+      <td><code>'none'</code></td>
+      <td>The PDF/X flavour of the file. `'pdfx1a'` writes PDF/X-1a:2003: CMYK and grey only, no transparency, accepted by every printer. `'pdfx4'` writes PDF/X-4: transparency and colour management kept, for current workflows. Either one separates every colour through the output profile, whatever `pdfGeneration.colorSpace` says.</td>
+    </tr>
+    <tr>
+      <td><code>outputProfile</code></td>
+      <td><code>string</code></td>
+      <td><code>'fogra39'</code></td>
+      <td>The printing condition CMYK is separated for: an id of the [profile catalogue](#output-profiles), or `'custom'` for `customProfile`. An id the catalogue lacks, or `'custom'` without a file, falls back to the default and gets a configuration warning.</td>
+    </tr>
+    <tr>
+      <td><code>customProfile</code></td>
+      <td><code>CustomOutputProfile</code></td>
+      <td>none</td>
+      <td>A CMYK output profile you supply, the one your printer gives you (ECI's `PSOcoated_v3.icc`, for instance). Its bytes are stored out of band like a font; `renderToPdf` takes them as its `outputProfile` option. `registryName` is written as the output intent's condition identifier.</td>
+    </tr>
+    <tr>
+      <td><code>renderingIntent</code></td>
+      <td><code>'relative' | 'perceptual'</code></td>
+      <td><code>'relative'</code></td>
+      <td>Relative colorimetric keeps the colours the press can print exact and clips the rest to the nearest printable one; perceptual compresses the whole range so out-of-gamut colours keep their relations.</td>
+    </tr>
+    <tr>
+      <td><code>blackPointCompensation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>With the relative intent, map the screen's black onto the darkest black the press prints, so the darkest tones keep their detail instead of filling in.</td>
+    </tr>
+    <tr>
+      <td><code>convertImages</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Separate RGB pictures into CMYK with the profile. PDF/X-1a always does. In PDF/X-4, `false` keeps them RGB, tagged sRGB through the pages' `/DefaultRGB`, for the printer's RIP to convert. CMYK and grey JPEGs are always embedded as they are.</td>
+    </tr>
+    <tr>
+      <td><code>inkLimit</code></td>
+      <td><code>number</code></td>
+      <td>the profile's</td>
+      <td>The highest total of C+M+Y+K, in percent, the preflight accepts. Defaults to the limit the profile separates to (300 % for most offset conditions, 230 % for IFRA26 newsprint).</td>
+    </tr>
+    <tr>
+      <td><code>black</code></td>
+      <td><code>PrintBlackConfig</code></td>
+      <td>see <a href="#black">Black</a></td>
+      <td>K-only greys, overprint and rich black.</td>
+    </tr>
+    <tr>
+      <td><code>preflight</code></td>
+      <td><code>PrintPreflightConfig</code></td>
+      <td>see <a href="#preflight">Preflight</a></td>
+      <td>What the preflight checks and its thresholds.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+print: {
+  standard: 'pdfx4',
+  outputProfile: 'fogra51',
+  black: { richBlackColor: { c: 60, m: 40, y: 40, k: 100 } },
+  preflight: { minImageResolution: 300, safeZone: { value: 5, unit: 'mm' } },
+}
+```
+
+### Output profiles
+
+`postext` ships these CMYK output profiles in its `icc/` folder (`postext/icc/<id>.icc` on any npm CDN, and `/icc/<id>.icc` on postext.dev). All of them are free of known copyright restrictions (CC0): the FOGRA, GRACoL, SWOP and newspaper profiles of colord, generated from the characterization data of each condition, and FOGRA51 and FOGRA52, built by postext with ArgyllCMS from Fogra's own data. ECI's profiles (ISO Coated v2, PSO Coated v3, PSO Uncoated v3) describe the same conditions but may not be redistributed; upload them as a custom profile if your printer asks for them.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '120px' }}>Id</th>
+      <th>Condition</th>
+      <th style={{ width: '150px' }}>Registry name</th>
+      <th style={{ width: '90px' }}>Ink limit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>fogra39</code></td><td>Offset, coated paper (ISO Coated v2 condition)</td><td>FOGRA39</td><td>300 %</td></tr>
+    <tr><td><code>fogra51</code></td><td>Offset, premium coated (PSO Coated v3 condition)</td><td>FOGRA51</td><td>300 %</td></tr>
+    <tr><td><code>fogra52</code></td><td>Offset, wood-free uncoated (PSO Uncoated v3 condition)</td><td>FOGRA52</td><td>300 %</td></tr>
+    <tr><td><code>fogra47</code></td><td>Offset, uncoated white (PSO Uncoated ISO 12647)</td><td>FOGRA47</td><td>300 %</td></tr>
+    <tr><td><code>fogra29</code></td><td>Offset, uncoated white</td><td>FOGRA29</td><td>300 %</td></tr>
+    <tr><td><code>fogra30</code></td><td>Offset, uncoated yellowish</td><td>FOGRA30</td><td>340 %</td></tr>
+    <tr><td><code>fogra27</code></td><td>Offset, coated (ISO 12647-2:1996)</td><td>FOGRA27</td><td>300 %</td></tr>
+    <tr><td><code>fogra28</code></td><td>Heatset web offset, glossy LWC</td><td>FOGRA28</td><td>300 %</td></tr>
+    <tr><td><code>fogra45</code></td><td>Heatset web offset, improved LWC</td><td>FOGRA45</td><td>300 %</td></tr>
+    <tr><td><code>fogra40</code></td><td>Heatset web offset, SC paper</td><td>FOGRA40</td><td>340 %</td></tr>
+    <tr><td><code>gracol2006</code></td><td>GRACoL 2006, grade 1 coated</td><td>CGATS TR 006</td><td>300 %</td></tr>
+    <tr><td><code>swop3</code></td><td>SWOP 2006, grade 3 coated</td><td>CGATS TR 003</td><td>300 %</td></tr>
+    <tr><td><code>swop5</code></td><td>SWOP 2006, grade 5 coated</td><td>CGATS TR 005</td><td>300 %</td></tr>
+    <tr><td><code>ifra26</code></td><td>Coldset newsprint (ISO 12647-3)</td><td>IFRA26</td><td>230 %</td></tr>
+    <tr><td><code>snap2007</code></td><td>SNAP 2007 newsprint</td><td>CGATS TR 002</td><td>320 %</td></tr>
+  </tbody>
+</table>
+
+`renderToPdf` reads the profile's bytes from its `outputProfile` option; without them it fetches the catalogue file from `profileBaseUrl` (by default `https://cdn.jsdelivr.net/npm/postext/icc/`). A PDF/X render whose profile cannot be loaded fails; a plain CMYK render falls back to the textbook formula with an `outputProfileUnavailable` warning.
+
+```ts
+import { readFile } from 'node:fs/promises';
+import { renderToPdf } from 'postext-pdf';
+
+const pdf = await renderToPdf(doc, {
+  fontProvider,
+  print: { standard: 'pdfx1a', outputProfile: 'fogra39' },
+  outputProfile: await readFile('node_modules/postext/icc/fogra39.icc'),
+});
+```
+
+### PDF/X-1a and PDF/X-4
+
+Both standards write:
+
+- the output intent (`GTS_PDFX`) naming the printing condition and embedding the destination profile;
+- the identification in the Info dictionary (`GTS_PDFXVersion`, `/Trapped /False`, the title and dates) and in the XMP metadata (`pdfxid:GTSPDFXVersion`, the document and version ids), merged with the PDF/UA identification when the file is tagged;
+- a TrimBox and a BleedBox on every page (the whole page when there are no cut lines);
+- the trailer `/ID`;
+- every colour in DeviceCMYK (or grey) through the profile, and the crop marks in registration colour;
+- no link annotations: a file for the press carries none inside its bleed box, so the links of the screen PDF are left out (bookmarks stay).
+
+PDF/X-1a:2003 is PDF 1.4 without object streams and has no transparency: a translucent colour is set as it would print over the paper, a picture's alpha is flattened over white, and the debug page negative is left out (with a `pageNegativeIgnored` warning). PDF/X-4 is PDF 1.6: transparency stays, each page gets a transparency group blending in CMYK, and RGB pictures kept by `convertImages: false` are tagged sRGB through `/DefaultRGB`.
+
+A PDF print master (`svg.pdfFileId`) is embedded as it is, so its colours, fonts and transparency are its own; the preflight reports what it brings in.
+
+### Black
+
+```ts
+interface PrintBlackConfig {
+  kOnlyNeutrals?: boolean;      // Greys and black in black ink only.
+  overprint?: boolean;          // 100 % K overprints.
+  richBlack?: boolean;          // Large black areas in rich black.
+  richBlackColor?: CmykPercent; // { c, m, y, k } in percent.
+  richBlackMinSize?: Dimension; // The smaller side an area needs.
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '140px' }}>Type</th>
+      <th style={{ width: '170px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>kOnlyNeutrals</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>A neutral colour (`#000000`, `#808080`…) prints with black ink alone, its K picked so the lightness matches, never as a four-colour grey that shifts with registration. Pictures keep the profile's own black generation.</td>
+    </tr>
+    <tr>
+      <td><code>overprint</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whatever paints in 100 % K alone (black text, rules, strokes, small black shapes) overprints (`op`/`OP` with `OPM 1`), so a plate shifting on press never opens a white edge round it. Everything else knocks out; pictures and shadings never overprint.</td>
+    </tr>
+    <tr>
+      <td><code>richBlack</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>A black fill whose smaller side reaches `richBlackMinSize` (a background, a band, a box) prints in `richBlackColor` and knocks out, so it looks deep instead of dark grey. Text never turns rich.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackColor</code></td>
+      <td><code>CmykPercent</code></td>
+      <td><code>{`{ c: 60, m: 40, y: 40, k: 100 }`}</code></td>
+      <td>The rich-black recipe, in percent. Keep its total under the ink limit; the preflight checks it.</td>
+    </tr>
+    <tr>
+      <td><code>richBlackMinSize</code></td>
+      <td><code>Dimension</code></td>
+      <td><code>6mm</code></td>
+      <td>The smaller side a black area needs to print in rich black.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Colours authored in CMYK
+
+A colour written in CMYK keeps its exact values: `ColorValue.cmyk` (percent) is set as it is in a print render, and `hex` is its screen rendering. A palette entry authored in CMYK covers every colour linked to it.
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### Preflight
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // ppi at the printed size.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '210px' }}>Property</th>
+      <th style={{ width: '110px' }}>Type</th>
+      <th style={{ width: '100px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Run the checks.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>A placed bitmap under this many pixels per inch at its printed size, crop included, gets a warning: figures, table-cell pictures, design images, comic panels. A bitmap with no resolution of its own prints at `page.dpi` at its natural size, so a page laid out at 150 dpi prints every such picture at 150 ppi; one with a resolution (`bitmap.resolution`, `layout.bitmapResolution`) prints at that resolution at its natural size.</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Under this the warning is critical. Never above `minImageResolution`.</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Rules, borders, column rules, table rules and comic panel borders thinner than this.</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Text under this size set in more than one ink (a process colour, rich black): it blurs when the plates shift. Black text, K only, never counts.</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Text closer than this to the trim, where the guillotine may cut it.</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>A box or picture that stops this close to the trim without reaching the bleed: run it into the bleed or pull it in.</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Report fonts a placed PDF does not embed (the Sandbox inspects each print master with `inspectPrintMaster`). Postext embeds every font it sets.</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)` runs the checks on a laid-out document and returns a list of issues, each with a `kind`, a `severity` (`'critical'`, `'warning'` or `'info'`), the book-absolute `pageIndex`, the offending `rect` (page px) and, when the element has one, its source range. The kinds are `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` and `nearTrim`. Without a `transform` a neutral counts one ink and any other colour three, and coverage is not checked; with one, the counts and the coverage are exact. The resolution of a picture is worked out from the pixels its resource declares, or from the file's own when `imageSize(fileId)` gives them (`bitmapInfo` on the bytes, or the decoded image): a declaration more than a pixel away from the file is reported once as `declaredPixelsMismatch`, a warning when it claims more pixels than the file has. `placedImageResolutions(doc, { resources, imageSize })` lists every placed bitmap with its effective ppi, whether the preflight is on or not.
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
+
+### Print preview
+
+A canvas page can be painted as it will print. `createPrintPreview(transform, print, { paper, dpi })` builds the soft proof of a setup: every pixel is separated through the profile (K-only neutrals, as in the PDF) and shown back on screen, on the paper's own white when `paper` is true; black areas large enough for rich black show as rich black. Hand it to `renderPageToCanvas` as `printPreview`; `guides` adds the trim, bleed and safe-zone lines and `marksFor` outlines areas of a page (the preflight's `rect`s). `postext-folio` takes the same object as `printPreview` (with `paper: false`, since the book's paper shade tints its pages).
+
+```ts
+import { createPrintPreview, renderPageToCanvas } from 'postext';
+
+const preview = createPrintPreview(transform, print, { paper: true, dpi: doc.config.page.dpi });
+renderPageToCanvas(page, doc, canvas, {
+  printPreview: { ...preview, guides: { safeZonePx: 59 }, marksFor: () => issues.map((i) => i.rect!).filter(Boolean) },
+});
+```
+
+### Colour engine
+
+The colour management postext uses is exported for your own tools. It reads ICC v2 and v4 profiles (matrix/TRC and the `mft1`, `mft2`, `mAB`, `mBA` lookup tables) in plain TypeScript, with no WebAssembly.
+
+- `parseIccProfile(bytes)` reads a profile; `deviceChannels(profile)` gives its channel count.
+- `outputTransform(profile, { intent, blackPointCompensation, preserveNeutrals })` returns `fromRgb(r, g, b)` (sRGB 0..1 → CMYK 0..1), `toLab(cmyk, paper?)` and `proof(cmyk, paper?)` (CMYK → screen sRGB).
+- `cmykToLab`, `labToCmyk`, `srgbToLab`, `labToSrgb`, `deltaE` and `totalAreaCoverage` are the single conversions; `buildRgbLut` / `sampleRgbLut` make and read dense lookups for pixel work.
+- `OUTPUT_PROFILES`, `outputProfileInfo(id)` and `loadOutputProfile(id, baseUrl?)` give the catalogue; `srgbProfileBytes()` writes the sRGB profile PDF/X-4 tags RGB with; `authoredCmykColors(config)` lists the colours a config authored in CMYK.
+
+The resolver and stripper match the other sections: `resolvePrintConfig`, `stripPrintDefaults` and `profileInkLimit(config)` (the limit of the profile a config names, before any `inkLimit` override), with `DEFAULT_PRINT_CONFIG`, `DEFAULT_PRINT_BLACK_CONFIG`, `DEFAULT_PRINT_PREFLIGHT_CONFIG` and `DEFAULT_RICH_BLACK`.
+
+
+## Folio viewer (config)
+
+The `folio` property sets how the Folio viewer (`postext-folio`) presents the printed book in 3D: the angle of the view, the paper, the binding, the surface the book lies on and the light. Layout ignores it, and so do the canvas, HTML and PDF output. `buildDocument` carries the resolved settings in the VDT as `doc.config.folio` when the config sets any, so a document without them keeps its layout hash.
+
+```ts
+interface FolioConfig {
+  tilt?: number;                  // Degrees from straight above, 0–70.
+  yaw?: number;                   // Degrees round the book, −180–180.
+  paper?: {
+    type?: 'uncoated' | 'bookWove' | 'coatedMatte' | 'coatedSilk' | 'coatedGloss'
+         | 'bible' | 'newsprint' | 'cardStock' | 'board';
+    grammage?: number;            // g/m²
+    bulk?: number;                // cm³/g; caliper µm = grammage × bulk
+    finish?: 'auto' | 'uncoated' | 'matte' | 'silk' | 'gloss';
+    texture?: 'auto' | 'smooth' | 'vellum' | 'wove' | 'laid' | 'linen' | 'felt';
+    textureStrength?: number;     // 0–2
+    shade?: ColorValue;
+    showThrough?: boolean;
+  };
+  binding?: {
+    type?: 'hardcover' | 'paperback' | 'sewn' | 'layflat' | 'saddleStitch' | 'folded';
+    cover?: 'case' | 'pages';
+    coverMaterial?: 'auto' | 'cloth' | 'paper' | 'leather';
+    coverColor?: ColorValue;
+    spineImage?: string;          // resource id
+  };
+  surface?: {
+    type?: 'oak' | 'walnut' | 'linen' | 'felt' | 'leather' | 'marble' | 'plain' | 'none';
+    color?: ColorValue;
+  };
+  lighting?: {
+    environment?: 'studio' | 'daylight' | 'lamp' | 'overcast' | 'night';
+    intensity?: number;           // 0.25–2
+    shadows?: boolean;
+  };
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '180px' }}>Type</th>
+      <th style={{ width: '140px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>tilt</code></td>
+      <td><code>number</code></td>
+      <td><code>22</code></td>
+      <td>Angle of the view away from straight above, in degrees, clamped to 0–70. At 0 the open book is seen flat from overhead; a larger angle brings the foot of the pages closer and shows the depth of the book block.</td>
+    </tr>
+    <tr>
+      <td><code>yaw</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>How far the view is turned round the book, in degrees, brought into −180–180. At 0 the book is seen from the foot of its pages; a positive angle brings the eye round to its right, a negative one to its left. With <code>tilt</code> it is the view the viewer opens on and the one <code>resetView()</code> eases back to.</td>
+    </tr>
+    <tr>
+      <td><code>paper.type</code></td>
+      <td><code>FolioPaperType</code></td>
+      <td><code>'uncoated'</code>; <code>'newsprint'</code> on a newspaper trim</td>
+      <td>The paper stock. It supplies the defaults of the five fields below (see the table of stocks). <code>cardStock</code> is cover card; <code>board</code> is rigid board, as in a board book, and its leaves turn without bending.</td>
+    </tr>
+    <tr>
+      <td><code>paper.grammage</code></td>
+      <td><code>number</code></td>
+      <td>the stock's</td>
+      <td>Weight in grams per square meter, 20–2500. Heavier paper is thicker, stiffer and more opaque: a leaf bends in a wider curve and shows less of the reverse.</td>
+    </tr>
+    <tr>
+      <td><code>paper.bulk</code></td>
+      <td><code>number</code></td>
+      <td>the stock's</td>
+      <td>Thickness per unit of weight, in cm³/g, 0.5–3. The caliper of a sheet in micrometers is grammage × bulk, and the thickness of the book block follows from it and the page count.</td>
+    </tr>
+    <tr>
+      <td><code>paper.finish</code></td>
+      <td><code>FolioPaperFinish</code></td>
+      <td><code>'auto'</code></td>
+      <td>Uncoated (fibre, no sheen), or coated and calendered to matte, silk (a soft sheen) or gloss. A gloss page mirrors the leaf turning over it in Folio. <code>'auto'</code> takes the stock's.</td>
+    </tr>
+    <tr>
+      <td><code>paper.texture</code></td>
+      <td><code>FolioPaperTexture</code></td>
+      <td><code>'auto'</code></td>
+      <td>The relief of the surface: <code>smooth</code> (calendered), <code>vellum</code> (a fine tooth), <code>wove</code> (the even texture of most book papers, formed on a woven wire), <code>laid</code> (close laid lines crossed by wider chain lines, left by a dandy roll), <code>linen</code> (an embossed cross-weave), <code>felt</code> (irregular felt marks). <code>'auto'</code> takes the stock's.</td>
+    </tr>
+    <tr>
+      <td><code>paper.textureStrength</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>How strongly the texture shows in the light, 0–2.</td>
+    </tr>
+    <tr>
+      <td><code>paper.shade</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the stock's</td>
+      <td>The colour of the paper before printing (white, natural, cream). The pages are printed on it.</td>
+    </tr>
+    <tr>
+      <td><code>paper.showThrough</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>The reverse of a page shows faintly through thin paper. After bible paper, newsprint shows it most: its ink soaks into the sheet.</td>
+    </tr>
+    <tr>
+      <td><code>binding.type</code></td>
+      <td><code>FolioBindingType</code></td>
+      <td><code>'hardcover'</code>; <code>'folded'</code> on a newspaper trim</td>
+      <td><code>hardcover</code>: case bound, boards slightly larger than the pages. <code>paperback</code>: perfect bound (milled and glued), opens less flat. <code>sewn</code>: a softcover with sewn sections. <code>layflat</code>: opens flat, with no dip at the gutter. <code>saddleStitch</code>: folded sheets stapled through the fold, as a magazine or a booklet; no flat spine. <code>folded</code> (since postext 1.18): a newspaper, sheets folded once and laid one inside the other with nothing holding them; no staples, no spine and no cover board, and the first page is the front. A <a href="/en/docs/document-format#paper"><code>:::paper</code></a> run with a <code>shade</code> prints a section, the business pages say, on salmon newsprint.</td>
+    </tr>
+    <tr>
+      <td><code>binding.cover</code></td>
+      <td><code>FolioCoverSource</code></td>
+      <td><code>'case'</code></td>
+      <td>The covers. <code>'case'</code> draws a case round the pages. <code>'pages'</code> takes the book's first page as the front board and its last page, when it is a verso, as the back board: the book lies closed until the cover is turned, the boards turn stiff (on a saddle stitch the cover is a sheet a little heavier than the pages and turns as they do), and no case is drawn.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverMaterial</code></td>
+      <td><code>FolioCoverMaterial</code></td>
+      <td><code>'auto'</code></td>
+      <td><code>'auto'</code> is cloth on a hardcover and card (<code>'paper'</code>) on the other bindings.</td>
+    </tr>
+    <tr>
+      <td><code>binding.coverColor</code></td>
+      <td><code>ColorValue</code></td>
+      <td>dark blue (<code>#2c3e57</code>)</td>
+      <td>The colour of the cover material.</td>
+    </tr>
+    <tr>
+      <td><code>binding.spineImage</code></td>
+      <td><code>string</code></td>
+      <td>none</td>
+      <td>The id of a bitmap or SVG resource printed on the spine: the spine as seen with the book standing, head up and the front cover to the right. It is fitted to cover the spine, centred. Ignored on a saddle stitch and on a folded binding.</td>
+    </tr>
+    <tr>
+      <td><code>surface.type</code></td>
+      <td><code>FolioSurfaceType</code></td>
+      <td><code>'oak'</code></td>
+      <td>What the book lies on. <code>'none'</code> leaves the host's background.</td>
+    </tr>
+    <tr>
+      <td><code>surface.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>none</td>
+      <td>Tints the surface; on <code>'plain'</code> it is the surface's colour.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.environment</code></td>
+      <td><code>FolioEnvironment</code></td>
+      <td><code>'studio'</code></td>
+      <td>The surroundings reflected by coated and gloss paper, paired with the key light that casts the shadows.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.intensity</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Exposure, 0.25–2.</td>
+    </tr>
+    <tr>
+      <td><code>lighting.shadows</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Shadows cast by the key light.</td>
+    </tr>
+  </tbody>
+</table>
+
+The stocks and the values they supply (`FOLIO_PAPER_STOCKS`), typical of mill data sheets:
+
+<table>
+  <thead>
+    <tr>
+      <th>Stock</th>
+      <th>Grammage</th>
+      <th>Bulk</th>
+      <th>Caliper</th>
+      <th>Finish</th>
+      <th>Texture</th>
+      <th>Shade</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>uncoated</code> (woodfree offset)</td><td>90 g/m²</td><td>1.25</td><td>113 µm</td><td>uncoated</td><td>wove</td><td><code>#fcfbf8</code></td></tr>
+    <tr><td><code>bookWove</code> (cream, high bulk)</td><td>80 g/m²</td><td>1.6</td><td>128 µm</td><td>uncoated</td><td>wove</td><td><code>#f6efdc</code></td></tr>
+    <tr><td><code>coatedMatte</code></td><td>115 g/m²</td><td>1.0</td><td>115 µm</td><td>matte</td><td>smooth</td><td><code>#fdfdfc</code></td></tr>
+    <tr><td><code>coatedSilk</code></td><td>115 g/m²</td><td>0.9</td><td>104 µm</td><td>silk</td><td>smooth</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>coatedGloss</code></td><td>115 g/m²</td><td>0.8</td><td>92 µm</td><td>gloss</td><td>smooth</td><td><code>#ffffff</code></td></tr>
+    <tr><td><code>bible</code></td><td>40 g/m²</td><td>1.1</td><td>44 µm</td><td>uncoated</td><td>vellum</td><td><code>#f9f6ee</code></td></tr>
+    <tr><td><code>newsprint</code></td><td>48 g/m²</td><td>1.5</td><td>72 µm</td><td>uncoated</td><td>wove</td><td><code>#ebe7dc</code></td></tr>
+    <tr><td><code>cardStock</code></td><td>250 g/m²</td><td>1.2</td><td>300 µm</td><td>uncoated</td><td>vellum</td><td><code>#fbfaf6</code></td></tr>
+    <tr><td><code>board</code></td><td>1250 g/m²</td><td>1.6</td><td>2000 µm</td><td>silk</td><td>smooth</td><td><code>#ffffff</code></td></tr>
+  </tbody>
+</table>
+
+A novel on cream book paper, bound as a paperback, on a walnut desk under a reading lamp:
+
+```ts
+folio: {
+  paper: { type: 'bookWove' },
+  binding: { type: 'paperback', coverColor: { hex: '#8a2b1f', model: 'hex' } },
+  surface: { type: 'walnut' },
+  lighting: { environment: 'lamp' },
+}
+```
+
+A page on a newspaper trim (`page.sizePreset` `'broadsheet'`, `'berliner'`, `'tabloid'` or `'compact'`) is shown as a newspaper when the config names no stock and no binding: `newsprint` paper and a `folded` binding (since postext 1.18). A stock or a binding the config names is kept, so `paper: { type: 'uncoated' }` prints a tabloid on offset paper. Paper fields set without a stock (a `grammage`, a `shade`) apply to the newsprint. The resolver and the stripper take the trim as a second argument, and `folioForTrim(folio, sizePreset)` writes the two defaults into the config:
+
+```ts
+resolveFolioConfig({ tilt: 30 }, 'tabloid');
+// => { tilt: 30, paper: { type: 'newsprint', grammage: 48, bulk: 1.5, … }, binding: { type: 'folded', coverMaterial: 'paper', … }, … }
+
+stripFolioDefaults({ paper: { type: 'newsprint' }, binding: { type: 'folded' } }, 'tabloid');
+// => undefined
+```
+
+The colours follow palette links like any other colour of the config (`paletteId`). Resolver and stripper match the other sections; the stripper drops paper values equal to the chosen stock's:
+
+```ts
+import { FOLIO_PAPER_STOCKS, DEFAULT_FOLIO_CONFIG, resolveFolioConfig, stripFolioDefaults } from 'postext';
+
+resolveFolioConfig({ paper: { type: 'bible' } }).paper;
+// => { type: 'bible', grammage: 40, bulk: 1.1, finish: 'uncoated', texture: 'vellum', textureStrength: 1, shade: { hex: '#f9f6ee', … }, showThrough: true }
+
+stripFolioDefaults({ paper: { type: 'bible', grammage: 40 } });
+// => { paper: { type: 'bible' } }
+```
+
+In the sandbox these settings are the **Folio** group of the Design panel (**Design → Folio → Folio viewer (3D)**), and the Folio tab shows them as you change them, without laying the book out again. See [A 3D book](/en/docs/configuration-programmatic-usage#a-3d-book-postext-folio) for the viewer itself, and [Document format › `:::paper`](/en/docs/document-format#paper) for a run of pages on another stock.
+
+
+## Debug
+
+The `debug` property groups two kinds of authoring aids: visual overlays that keep the source text and the rendered layout in sync, and a set of warnings that surface typographic or structural problems in the Sandbox's Checks panel. Neither affects exported output.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Property</th>
+      <th style={{ width: '200px' }}>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>Caret mirrored into the rendered layout — see <a href="#visual-overlays">Visual overlays</a>.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync</code></td>
+      <td><code>SyncIndicatorConfig</code></td>
+      <td>Source selection highlighted on the page — see <a href="#visual-overlays">Visual overlays</a>.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight</code></td>
+      <td><code>LooseLineHighlightConfig</code></td>
+      <td>Overlay on loose justified lines — see <a href="#visual-overlays">Visual overlays</a>.</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative</code></td>
+      <td><code>{'{ enabled: boolean }'}</code></td>
+      <td>High-contrast negative of the page — see <a href="#visual-overlays">Visual overlays</a>.</td>
+    </tr>
+    <tr>
+      <td><code>warnings</code></td>
+      <td><code>WarningsToggleConfig</code></td>
+      <td>One boolean per kind of authoring warning shown in the editor — see <a href="#warnings">Warnings</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+### Visual overlays
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '220px' }}>Property</th>
+      <th style={{ width: '120px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>cursorSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Shows a caret in the rendered layout mirroring the source cursor position.</td>
+    </tr>
+    <tr>
+      <td><code>cursorSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#2563eb</code></td>
+      <td>Colour of that caret.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Highlights the rendered range matching the source selection.</td>
+    </tr>
+    <tr>
+      <td><code>selectionSync.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#fde04780</code></td>
+      <td>Colour of the highlight — a translucent yellow by default.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Paints an overlay on justified lines whose word spacing exceeds <code>threshold</code> times the normal space width.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.color</code></td>
+      <td><code>ColorValue</code></td>
+      <td><code>#ff000040</code></td>
+      <td>Colour of that overlay.</td>
+    </tr>
+    <tr>
+      <td><code>looseLineHighlight.threshold</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Multiplier of the normal space width above which a justified line counts as loose. The <code>looseLines</code> warning uses the same threshold. A justified line whose spaces would stretch past 3× is set ragged, so at the default the overlay and the warning find almost nothing in running text; lower it (1.5 or 2) to see lines that are loose but still justified.</td>
+    </tr>
+    <tr>
+      <td><code>pageNegative.enabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Renders a high-contrast negative overlay over the page — useful for visually auditing the overall shape of a spread (text density, column balance, whitespace) at a glance, without being distracted by glyph detail.</td>
+    </tr>
+  </tbody>
+</table>
+
+Each `SyncIndicatorConfig` is `{ enabled: boolean; color?: ColorValue }`. `LooseLineHighlightConfig` is `{ enabled: boolean; color?: ColorValue; threshold?: number }`. `pageNegative` is a minimal `{ enabled: boolean }` toggle.
+
+```ts
+debug: {
+  cursorSync: { enabled: true, color: { hex: '#ff0066', model: 'hex' } },
+  selectionSync: { enabled: false, color: { hex: '#fde04780', model: 'hex' } },
+  looseLineHighlight: { enabled: true, color: { hex: '#ff000040', model: 'hex' }, threshold: 3 },
+  pageNegative: { enabled: true },
+}
+```
+
+These overlays are drawn by the Sandbox over its Canvas preview. They are not part of the page: `renderPage`, the HTML output and the PDF never paint them.
+
+### Loose lines in your own canvas
+
+The engine exports the loose-line highlight as two helpers, for a page you paint yourself:
+
+```ts
+import { buildDocument, renderPageToCanvas, drawLooseLines, findLooseLines } from 'postext';
+
+const doc = buildDocument(content, config);
+const canvas = document.querySelector('canvas')!;
+renderPageToCanvas(doc.pages[0], doc, canvas, { scale: 0.5 });
+drawLooseLines(canvas.getContext('2d')!, doc.pages[0], doc, { threshold: 2.5 });
+
+// The same lines as data: a report, an SVG overlay, a count per page.
+for (const { ratio, line, block } of findLooseLines(doc, { threshold: 2.5 })) {
+  console.log(`page ${block.pageIndex + 1}: ${ratio.toFixed(2)}× — ${line.text}`);
+}
+```
+
+- **`findLooseLines(doc, { threshold?, pageIndex? })`** returns every justified line whose `justifiedSpaceRatio` exceeds `threshold`, in reading order: `{ block, line, ratio, x, y, width, height }`. The rectangle, in page pixels, is the band the highlight covers: the block's full width across the line. These are the lines the Sandbox highlights and reports as `looseLine` in its Checks panel.
+- **`drawLooseLines(ctx, page, doc, { threshold?, color? })`** fills those bands for one page and returns the lines it painted. It draws in page pixels under the context's current transform, so call it right after `renderPage` or `renderPageToCanvas` on the same canvas: both leave the context scaled to the page. `color` is any canvas fill style.
+- **Defaults.** Both helpers use the default threshold (3) and colour (`#ff000040`), not the document's `debug.looseLineHighlight`: that setting belongs to the Sandbox. To follow a configuration, pass `resolveDebugConfig(config.debug).looseLineHighlight.threshold` and `.color.hex`.
+
+### Warnings
+
+`debug.warnings` controls which authoring issues appear in the Sandbox's **Checks** panel (edited in **Design → Advanced → Warnings**). Each key is an independent boolean toggle; set one to `false` to silence that specific warning without disabling the others.
+
+These toggles filter the Sandbox's panel only. The warnings the engine itself records — boxes that overflow their column in `doc.warnings`; unknown resource ids, directives, embeds and style ids, and irregular table grids in `doc.contentWarnings` — are there whatever the toggles say, and the renderers report images they paint as placeholders; see [Warnings in the document](/en/docs/configuration-programmatic-usage#warnings-in-the-document).
+
+```ts
+interface WarningsToggleConfig {
+  missingFont?: boolean;
+  looseLines?: boolean;
+  headingHierarchy?: boolean;
+  consecutiveHeadings?: boolean;
+  listAfterHeading?: boolean;
+  designIssues?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Property</th>
+      <th style={{ width: '120px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>missingFont</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Report when a font referenced by the configuration failed to load in the browser. Catches typos in `fontFamily` and missing `@fontsource/...` packages early, before they show up as silent fallback-font substitutions in the rendered output.</td>
+    </tr>
+    <tr>
+      <td><code>looseLines</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Report justified lines whose word spacing exceeds `debug.looseLineHighlight.threshold`. Pairs with the overlay: the warning enumerates them in the panel, the overlay shows them in place.</td>
+    </tr>
+    <tr>
+      <td><code>headingHierarchy</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Report heading levels that skip a rank — e.g. an H1 followed directly by an H3. Structural heading gaps usually indicate either a typo in the heading depth or a misunderstanding of the document's outline.</td>
+    </tr>
+    <tr>
+      <td><code>consecutiveHeadings</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Report when a heading is immediately followed by another heading with no paragraph or list between them. Off by default because stacked headings are legitimate in many templates (title + subtitle, chapter + epigraph); turn on for manuscripts where every heading is supposed to introduce prose.</td>
+    </tr>
+    <tr>
+      <td><code>listAfterHeading</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Report when a list starts immediately after a heading without an introductory paragraph. Off by default because reference material routinely does this; turn on for narrative writing where every list should be framed by prose.</td>
+    </tr>
+    <tr>
+      <td><code>designIssues</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Report integrity problems in design slots — page headers, footers, the part opener and the blank verso after it, the part rows of the contents, heading advanced-design slots, and each heading style's design and section running heads. Covers cyclic anchor chains and dangling anchor references (an element anchored to a <code>#id</code> that no longer exists), a page-span heading whose <code>breakBefore</code> is disabled, and an enabled advanced design whose elements never render <code>{'{titleText}'}</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+```ts
+debug: {
+  warnings: {
+    missingFont: true,
+    looseLines: true,
+    headingHierarchy: true,
+    consecutiveHeadings: true,
+    listAfterHeading: false,
+    designIssues: true,
+  },
+}
+```
+
+Besides these, the panel always lists the warnings the layout itself raises (`VDTDocument.warnings`), such as a callout that overflows its column (`calloutOverflow`), and the configuration values the engine replaced (`VDTDocument.configWarnings`, or `collectConfigWarnings(config)`; see [Configuration warnings](#configuration-warnings) below).
+
+### Configuration warnings
+
+Eight mistakes in the configuration itself are never silent, and no toggle hides them. The engine does not fail on any of them; it substitutes a value, or leaves the setting out, and says so:
+
+- **Unknown number format** — an ordered-list `numberFormat`, a `page.pageNumbering.format` or a resource type's `counterFormat` that is none of the [numbering format spellings](/en/docs/configuration-page-layout#numbering-format-spellings). It numbers in decimal.
+- **Font stack in a font family** — a `fontFamily` (or any `…FontFamily`) that holds a CSS font stack. The text is set in the stack's first family (see [One family per `fontFamily`](/en/docs/configuration-text#one-family-per-fontfamily)).
+- **Side column with no room** — a `'oneAndHalf'` layout's `sideColumnPercent` (the document's, or a heading style's own `layout`) that would leave one of the columns under 1% of the content width, or that is not a number. The columns are cut at the nearest value both can take, and `used` names it (`sideColumnPercentClamped`; see the [`'oneAndHalf'` layout](/en/docs/configuration-page-layout#layout-types)).
+- **Column count out of range** — a `'multiple'` layout's `columnCount` (the document's, or a heading style's own `layout`) that is not a whole number from 3 to 8. The page is cut into the nearest count that is (3 for a value that is not a number), and `used` names it (`columnCountClamped`; see the [`'multiple'` layout](/en/docs/configuration-page-layout#layout-types)).
+- **Character grid too large** — a `cjk.grid` with more characters per line or lines per page than the margins leave room for. The grid is set with the most that fit, and `used` names the number (`cjkGridClamped`; see [Character grid](/en/docs/configuration-east-asian#character-grid)).
+- **Unknown heading setting** — a key that `headings`, `headings.balancing`, a heading level, a heading style or a paragraph style does not have: a misspelt `letterSpacng`, a `tracking` borrowed from another tool, a `level` on a heading style, a `fontStyle: 'italic'` on a paragraph style (which takes `italic: true`). A tab stop is checked the same way (a `leaders` for `leader`). The engine ignores it (up to postext 1.4 it did so without a word). `value` is the key, `used` is empty, and `suggestion` names the setting it is closest to, when one is a letter or two away or differs only in case (`unknownConfigKey`).
+- **Unknown setting value** — a setting that takes one of a few words holding another, such as `direction: 'right'` (it takes `auto`, `ltr` or `rtl`). The engine reads the default instead, and `used` names what that came to: for `direction`, the direction of the document language (`unknownConfigValue`). A tab stop's `align` that is none of its four words is read as `'start'`, and a `position` that is no length, `'end'` or percentage leaves the stop out (`used` is `'none'`). The words of the comics settings are checked too ([Comics › Comic warnings](/en/docs/comics#comic-warnings)): `used` is the value the setting resolved to (a balloon style's own default, for a built-in style), and `suggestion` names the word the value is closest to, when one is close.
+- **Line numbers in vertical text** — `lineNumbers.enabled: true` in a document set vertically (`layout.writingMode: 'vertical-rl'`). Vertical pages get no line numbers, and `used` is `false` (`lineNumbersUnsupported`; see [Line numbers](/en/docs/configuration-notes-references#line-numbers)).
+- **Text wrap in vertical text** — a resource type's `defaultPlacement.wrap` in a document set vertically. Vertical pages set no text beside a figure, and `used` is `none` (`wrapUnsupported`; see [Document format › Text wrap](/en/docs/document-format#text-wrap)). A `wrap` that names no side is an unknown setting value.
+
+The Sandbox lists them in the **Checks** panel with the path of the setting. In code, `buildDocument` puts them on the document as `configWarnings` (absent when the configuration is clean), and `collectConfigWarnings(config)` returns them without laying anything out:
+
+```js
+import { buildDocument, collectConfigWarnings } from 'postext';
+
+// Plain JavaScript: in TypeScript, 'roman' does not type-check to begin with.
+const config = { bodyText: { fontFamily: 'EB Garamond, serif' }, orderedLists: { numberFormat: 'roman' } };
+const doc = buildDocument({ markdown }, config);
+doc.configWarnings;
+// [{ kind: 'fontFamilyStack', path: 'bodyText.fontFamily', value: 'EB Garamond, serif', used: 'EB Garamond' },
+//  { kind: 'unknownNumberFormat', path: 'orderedLists.numberFormat', value: 'roman', used: 'arabic' }]
+collectConfigWarnings(config); // the same list
+```
+
+Every nested partial configuration is checked too: heading styles, the lists inside parts, `htmlViewer.overrides`, design elements.
+
+`formatWarning` (see [Warnings in the document](/en/docs/configuration-programmatic-usage#warnings-in-the-document)) describes them too, with the path of the setting first — `bodyText.fontFamily: font stack "EB Garamond, serif" — set in "EB Garamond"`, `headingStyles[0].letterSpacng: unknown setting "letterSpacng" — ignored (did you mean "letterSpacing"?)` — so a host can log all three lists a build returns in one loop.
