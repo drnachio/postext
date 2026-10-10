@@ -111,6 +111,7 @@ findings; they exit 0 when green, 1 on any failure, 2 on a usage error.
 | `pnpm cookbook new <slug> --chapter <id> [--from <slug>]` | Copies `_template/` (or another recipe) to `cookbook/<slug>/` as a **draft**: a planned slug keeps its Nº, chapter and order from `_roadmap.json`, any other takes the next free Nº and the last place in the chapter; today's dates, and the slug and Nº written into `script.js`. |
 | `pnpm cookbook dev <slug> [--lang es] [--port 4400]` | Serves exactly the page the capture runs, and reloads it whenever you save a file of the recipe or the kit. Open it next to your editor. |
 | `pnpm cookbook lint [slug…] [--engine local]` | The static checks: `recipe.json`, both write-ups, every composed edition of the pen, assets, credits. Run it until it is silent. With `--engine local`, a draft may pin the next release (see below). |
+| `pnpm cookbook lint [slug…] --strict-fixed [--as-of x.y.z]` | Also fails every note about a pitfall the engine fixed at or before the recipe's pin (`gotchas.json` `fixedIn`): its id in `gotchas`, and each `workarounds` entry with the same `followup`. Plain `lint` only counts them, in one warning. `--as-of` reads every recipe as if it pinned at least that version: the list a clean-up works through before it bumps the pins. |
 | `pnpm cookbook capture [slug…]` | Runs the pen in Chrome against the released engine, verifies it (§11) and writes the pages, card, social image, PDF and `capture.json`. With no slug: every recipe whose capture is missing or stale. |
 | `pnpm cookbook capture <slug> --check` | Runs and verifies, writes nothing (a regression run). |
 | `pnpm cookbook capture <slug> --preview-dir <dir>` | Also writes PNG copies of every page, the card and the social image, and the PDF the pen builds, to `<dir>/<slug>/<lang>/`, with the `capture.json` entry the edition would get. |
@@ -756,7 +757,7 @@ share. Each file starts with a `"$comment"` that explains it; the loader ignores
 | `questions.json` | the reader questions Q01–Q178, how/why, index form, theme, gap | `Qnn` |
 | `gaps.json` | what Postext does not do, with aliases and the workaround; a gap the engine closes keeps its entry with `fixedIn` (the version), so the recipes and questions that name it still resolve, but the site no longer offers it as a gap or gives its recipes the Workaround badge | kebab-case id |
 | `warnings.json` | every engine, parse and Sandbox warning: label, cause, fix | warning kind |
-| `gotchas.json` | shared pitfalls, tied to a feature and to the engine follow-up that would retire them | kebab-case id |
+| `gotchas.json` | shared pitfalls, tied to a feature and to the engine follow-up that would retire them; one the engine fixes keeps its entry with `fixedIn` (the version) and a body that tells the old behaviour as past: a recipe that pins an older engine still lists it, under a "fixed in postext X" kicker, and a recipe that pins that version or a later one no longer shows it nor is found by it | kebab-case id |
 | `collections.json` | featured recipes and curated reading paths | kebab-case id |
 
 **Rules.** Ids are permanent: never rename one a recipe uses. Every text field has non-empty

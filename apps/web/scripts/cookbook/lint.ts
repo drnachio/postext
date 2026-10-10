@@ -11,11 +11,11 @@ import { loadRegistry } from "../../src/lib/cookbook/registry.ts";
 import type { RecipeMeta, Registry } from "../../src/lib/cookbook/types.ts";
 import { LOCALES } from "../../src/lib/cookbook/types.ts";
 import { lintRecipe, readReleasedEngine } from "../../src/lib/cookbook/lint.ts";
-import { previewDraft, recipeSchemaJson, validateRecipeSet, validateRegistry } from "../../src/lib/cookbook/validate.ts";
-import { UsageError, c, loadRecipes, mark, parseArgs, plural } from "./args.ts";
+import { fixedNotes, previewDraft, recipeSchemaJson, validateRecipeSet, validateRegistry } from "../../src/lib/cookbook/validate.ts";
+import { UsageError, c, flag, loadRecipes, mark, parseArgs, plural, str } from "./args.ts";
 import { SCHEMA_FILE } from "./schema.ts";
 
-export const LINT_USAGE = `pnpm cookbook lint [slug…] [--engine local]
+export const LINT_USAGE = `pnpm cookbook lint [slug…] [--engine local] [--strict-fixed [--as-of x.y.z]]
 
   Static checks of recipe.json, the write-ups and every composed pen,
   grouped by recipe (default: every recipe). Exits 1 on any failure.
@@ -23,7 +23,13 @@ export const LINT_USAGE = `pnpm cookbook lint [slug…] [--engine local]
   --engine local     The recipes are previewed on the workspace engine: a
                      draft may pin the next release (engine.postext newer
                      than packages/postext/package.json), as it does until
-                     that release is out and the recipe is captured`;
+                     that release is out and the recipe is captured
+  --strict-fixed     Fail every note about a pitfall the engine fixed at or
+                     before the recipe's pin (gotchas.json fixedIn): its id
+                     in "gotchas", and each "workarounds" entry with the
+                     same follow-up. Without it the lint only counts them
+  --as-of x.y.z      With --strict-fixed: read every recipe as if it pinned
+                     at least that version (the release a clean-up targets)`;
 
 // ─── Findings ───────────────────────────────────────────────────────────────
 
@@ -112,8 +118,16 @@ function printGroup(group: Group): void {
 // ─── The command ────────────────────────────────────────────────────────────
 
 export async function runLint(argv: readonly string[]): Promise<number> {
-  const args = parseArgs(argv, { engine: { type: "string", value: "local", choices: ["local"] } }, "lint");
+  const args = parseArgs(
+    argv,
+    { engine: { type: "string", value: "local", choices: ["local"] }, "strict-fixed": { type: "boolean" }, "as-of": { type: "string", value: "x.y.z" } },
+    "lint",
+  );
   const preview = args.options.engine === "local";
+  const strictFixed = flag(args, "strict-fixed");
+  const fixedAsOf = str(args, "as-of");
+  if (fixedAsOf !== undefined && !/^\d+\.\d+\.\d+$/.test(fixedAsOf)) throw new UsageError(`--as-of expects a version such as 1.24.0, not "${fixedAsOf}"`, "lint");
+  if (fixedAsOf !== undefined && !strictFixed) throw new UsageError("--as-of goes with --strict-fixed", "lint");
   const entries = loadRecipes();
   const slugs = entries.map((entry) => entry.slug);
   const unknown = args.positionals.filter((slug) => !slugs.includes(slug));
@@ -155,7 +169,7 @@ export async function runLint(argv: readonly string[]): Promise<number> {
       // recipe.json against the schema and the registries, every composed
       // edition, the assets and both write-ups (lib/cookbook/lint.ts).
       try {
-        const report = lintRecipe(slug, { registry: registry ?? undefined, knownSlugs: slugs, released, preview });
+        const report = lintRecipe(slug, { registry: registry ?? undefined, knownSlugs: slugs, released, preview, strictFixed, fixedAsOf });
         findings.push(...collectFindings(report));
         if (preview && previewDraft(meta, released)) {
           findings.push({
@@ -172,6 +186,22 @@ export async function runLint(argv: readonly string[]): Promise<number> {
       ? `Nº ${String(meta.number ?? "?").padStart(3, "0")} · ${meta.chapter ?? "?"} · ${meta.status ?? "?"}`
       : "recipe.json unreadable";
     groups.push({ name: slug, subtitle, findings: merge(findings) });
+  }
+
+  // Notes about pitfalls fixed at or before a recipe's pin: counted here,
+  // failed one by one with --strict-fixed (the default once the recipes
+  // written for postext 1.4 are cleaned, #641).
+  const pitfalls = registry?.gotchas;
+  if (pitfalls && !strictFixed) {
+    const stale = selected.flatMap(({ meta }) => (meta ? [fixedNotes(meta, pitfalls).length] : [])).filter((n) => n > 0);
+    if (stale.length) {
+      const total = stale.reduce((sum, n) => sum + n, 0);
+      shared.push({
+        level: "warn",
+        text: `${plural(total, "note")} in ${plural(stale.length, "recipe")} (gotchas ids, workarounds) about pitfalls fixed at or before the recipe's pin: pnpm cookbook lint --strict-fixed lists them`,
+        variants: [],
+      });
+    }
   }
 
   // Checks that could not run make the result incomplete, so they fail.

@@ -28,6 +28,7 @@ import { loadRegistry } from "@/lib/cookbook/registry";
 import { relatedRecipes } from "@/lib/cookbook/related";
 import type { ComposedPen, Credit, DocAnchor, LicenseId, Locale, Recipe, Registry } from "@/lib/cookbook/types";
 import { localizedText } from "@/lib/cookbook/types";
+import { shownGotchas } from "@/lib/cookbook/validate";
 
 type Messages = typeof en;
 const MESSAGES: Record<string, Messages> = { en, es: es as Messages, ca: ca as Messages, zh: zh as Messages, ja: ja as Messages, ar: ar as Messages, pt: pt as Messages };
@@ -1632,9 +1633,10 @@ export function recipeMarkdown(slug: string, locale: string): string | null {
   const variations = authored("variations");
   if (variations) out.push(`## ${headings.variations[lang]}`, "", variations, "");
 
-  // Pitfalls: the shared gotchas, the warnings the recipe explains, then its own lines.
+  // Pitfalls: the shared gotchas (a fixed one only while the recipe pins an
+  // engine older than the fix), the warnings the recipe explains, then its own lines.
   const pitfalls: string[] = [];
-  for (const id of meta.gotchas ?? []) {
+  for (const id of shownGotchas(meta, registry.gotchas)) {
     const gotcha = registry.gotchas[id];
     if (!gotcha) continue;
     const fixed = gotcha.fixedIn ? ` (${labels.fixedIn} postext ${gotcha.fixedIn})` : "";

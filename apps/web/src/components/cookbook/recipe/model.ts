@@ -26,6 +26,7 @@ import type {
   Taxonomy,
 } from "@/lib/cookbook/types";
 import { SECTION_ORDER } from "@/lib/cookbook/types";
+import { shownGotchas } from "@/lib/cookbook/validate";
 import { localizedUrl } from "@/lib/seo";
 
 export const REPO_URL = "https://github.com/drnachio/postext";
@@ -93,7 +94,7 @@ function sectionsFor(view: Omit<RecipeView, "sections">): RecipeSection[] {
     variations: Boolean(authored.variations),
     pitfalls:
       Boolean(authored.pitfalls) ||
-      (recipe.meta.gotchas ?? []).length > 0 ||
+      shownGotchas(recipe.meta, registry.gotchas).length > 0 ||
       (recipe.meta.explainsWarnings ?? []).length > 0,
     credits: true,
   };

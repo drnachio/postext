@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { docAnchor } from "@/lib/cookbook/docLinks";
 import type { GotchaId, WarningKind } from "@/lib/cookbook/types";
+import { shownGotchas } from "@/lib/cookbook/validate";
 import type { RecipeT, RecipeView } from "./model";
 
-/** One shared pitfall from gotchas.json (also `<Gotcha id>` in the MDX). */
+/** One shared pitfall from gotchas.json (also `<Gotcha id>` in the MDX, which
+ *  quotes it whatever the recipe pins). A fixed one says so in its kicker. */
 export function GotchaCard({ view, t, id }: { view: RecipeView; t: RecipeT; id: GotchaId }) {
   const { registry, locale } = view;
   const gotcha = registry.gotchas[id];
@@ -62,10 +64,12 @@ function WarningCard({ view, t, kind }: { view: RecipeView; t: RecipeT; kind: Wa
 }
 
 /** "Pitfalls" (generated): the recipe's gotchas, then the warnings it
- *  explains; the authored MDX lines follow. Server component. */
+ *  explains; the authored MDX lines follow. A pitfall the engine fixed is
+ *  listed only while the recipe pins an engine older than the fix
+ *  (`shownGotchas`). Server component. */
 export function Pitfalls({ view, t }: { view: RecipeView; t: RecipeT }) {
   const { meta } = view.recipe;
-  const gotchas = meta.gotchas ?? [];
+  const gotchas = shownGotchas(meta, view.registry.gotchas);
   const warnings = meta.explainsWarnings ?? [];
   if (gotchas.length + warnings.length === 0) return null;
   return (

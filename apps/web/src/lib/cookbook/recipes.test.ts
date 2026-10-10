@@ -15,9 +15,12 @@ import { LOCALES } from "./types.ts";
 import {
   RECIPE_SCHEMA,
   compareSemVer,
+  fixedNotes,
+  gotchaRetired,
   previewDraft,
   recipeSchemaJson,
   schemaErrors,
+  shownGotchas,
   unquotedFrontmatter,
   validateFrontmatter,
   validateRecipeMeta,
@@ -249,6 +252,67 @@ describe("validateRecipeMeta (fixture)", () => {
     expect(compareSemVer("1.4.1", "1.4.1")).toBe(0);
     expect(compareSemVer("1.10.0", "1.9.9")).toBe(1);
     expect(compareSemVer("1.3.9", "1.4.0")).toBe(-1);
+  });
+
+  it("shows a fixed pitfall only on a recipe pinned below the fix (#641)", () => {
+    const gotchas = {
+      "nbsp-breaks": { fixedIn: "1.5.0" },
+      "fonts-first": {},
+      "later-fix": { fixedIn: "1.19.0" },
+    } as unknown as Registry["gotchas"];
+    const listed = ["nbsp-breaks", "fonts-first", "later-fix", "not-in-the-registry"];
+    const at = (postext: string) => shownGotchas({ gotchas: listed, engine: { postext } } as unknown as RecipeMeta, gotchas);
+    // Written for 1.4.1: the pitfall is why its script looks as it does.
+    expect(at("1.4.1")).toEqual(listed);
+    // At the fix or later it no longer applies; an open one always does.
+    expect(at("1.5.0")).toEqual(["fonts-first", "later-fix", "not-in-the-registry"]);
+    expect(at("1.10.2")).toEqual(["fonts-first", "later-fix", "not-in-the-registry"]);
+    expect(at("1.19.0")).toEqual(["fonts-first", "not-in-the-registry"]);
+    expect(shownGotchas({ engine: { postext: "1.24.0" } } as unknown as RecipeMeta, gotchas)).toEqual([]);
+    expect(gotchaRetired({ fixedIn: "1.5.0" }, "1.5.0")).toBe(true);
+    expect(gotchaRetired({ fixedIn: "1.5.0" }, "1.4.9")).toBe(false);
+    expect(gotchaRetired({}, "9.0.0")).toBe(false);
+    expect(gotchaRetired({ fixedIn: "1.5.0" }, undefined)).toBe(false);
+  });
+
+  it("finds the notes about pitfalls fixed at or before the pin (#641)", () => {
+    const gotchas = {
+      "nbsp-breaks": { followup: "EF-66", fixedIn: "1.5.0" },
+      "worker-cdn-origin": { followup: "EF-35", fixedIn: "1.5.0" },
+      "worker-own-fonts": { followup: "EF-35" },
+      "style-inherits-break": { followup: "EF-60" },
+      "fonts-first": {},
+    } as unknown as Registry["gotchas"];
+    const meta = (postext: string) => ({
+      engine: { postext },
+      gotchas: ["nbsp-breaks", "fonts-first", "worker-own-fonts"],
+      workarounds: [
+        { followup: "EF-66", package: "postext", note: "a no-break space still breaks" },
+        { followup: "EF-60", package: "postext", note: "documented behaviour" },
+        { followup: "EF-35", package: "postext", note: "the worker starts from a blob" },
+        { package: "postext", note: "no follow-up" },
+        { followup: "EF-999", package: "postext", note: "no pitfall names it" },
+      ],
+    }) as unknown as RecipeMeta;
+    // Pinned below the fix: the notes describe the engine the recipe was written for.
+    expect(fixedNotes(meta("1.4.1"), gotchas)).toEqual([]);
+    const found = fixedNotes(meta("1.19.1"), gotchas);
+    expect(found.map((n) => [n.at, n.kind, n.followup, n.pitfalls, n.open])).toEqual([
+      ["gotchas", "gotcha", undefined, ["nbsp-breaks"], []],
+      ["workarounds[0]", "workaround", "EF-66", ["nbsp-breaks"], []],
+      // A partial fix: the note may be about the half that still applies.
+      ["workarounds[2]", "workaround", "EF-35", ["worker-cdn-origin"], ["worker-own-fonts"]],
+    ]);
+    expect(found[0].message).toBe('gotchas: "nbsp-breaks" is fixed in postext 1.5.0 and this recipe pins 1.19.1: take it out of the list');
+    expect(found[1].message).toBe(
+      'workarounds[0] (EF-66): its follow-up is fixed in postext 1.5.0 (pitfall "nbsp-breaks") and this recipe pins 1.19.1: ' +
+        'delete the note, or keep what is a design choice today without "followup"',
+    );
+    expect(found[2].message).toContain('"worker-own-fonts" (same follow-up) still applies');
+    // --as-of reads an older recipe as of the release a clean-up targets.
+    expect(fixedNotes(meta("1.4.1"), gotchas, "1.24.0").map((n) => n.at)).toEqual(["gotchas", "workarounds[0]", "workarounds[2]"]);
+    expect(fixedNotes(meta("1.4.1"), gotchas, "1.24.0")[0].message).toContain("the recipe is read as of 1.24.0");
+    expect(fixedNotes(meta("1.19.1"), gotchas, "1.4.0")).toEqual(found);
   });
 });
 

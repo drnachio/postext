@@ -391,7 +391,9 @@ export interface Gotcha {
   feature?: FeatureId;
   /** The engine follow-up whose fix would retire this pitfall ("EF-05"). */
   followup?: string;
-  /** The engine version that made this pitfall obsolete. */
+  /** The engine version that made this pitfall obsolete. A recipe pinned
+   *  below it still lists the pitfall, as fixed; one pinned at it or later
+   *  no longer shows it (`shownGotchas`). */
   fixedIn?: SemVer;
 }
 

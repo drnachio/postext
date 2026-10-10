@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { cookbookMarkdown, llmsTxt, markdownPaths, mdxToMarkdown, pageMarkdown } from "./markdown";
 import { getVisibleRecipes } from "./cookbook/recipes";
+import { loadRegistry } from "./cookbook/registry";
+import { compareSemVer } from "./cookbook/validate";
 
 const PAGE = "https://postext.dev/en/docs/x";
 
@@ -214,6 +216,22 @@ describe("page renditions", () => {
         // Every excerpt became a fence that names its lines.
         expect(md).toMatch(/^\/\/ script\.js, (lines|líneas) \d+–\d+$/m);
         expect(index).toContain(`/${locale}/cookbook/${recipe.slug}.md`);
+      }
+    }
+  });
+
+  it("lists a fixed pitfall only on a recipe pinned below the fix (#641)", () => {
+    const { gotchas } = loadRegistry();
+    for (const recipe of getVisibleRecipes()) {
+      const listed = recipe.meta.gotchas ?? [];
+      if (!listed.some((id) => gotchas[id]?.fixedIn)) continue;
+      const md = pageMarkdown("en", `/cookbook/${recipe.slug}`)!;
+      for (const id of listed) {
+        const gotcha = gotchas[id];
+        if (!gotcha?.fixedIn) continue;
+        const line = `(fixed in postext ${gotcha.fixedIn}) ${gotcha.body.en}`;
+        const below = compareSemVer(recipe.meta.engine.postext, gotcha.fixedIn) < 0;
+        expect(md.includes(line), `${recipe.slug} (postext ${recipe.meta.engine.postext}): ${id}`).toBe(below);
       }
     }
   });
