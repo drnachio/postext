@@ -40,7 +40,7 @@ The Markdown puts `:::space{lines=1}` between the last sentence and the colourin
 
 <Excerpt region="opener" />
 
-The Mm is the heading's text (`{titleText}`); the unit number, the series and the letter's name are attributes on the same heading line. The band, the butterfly and the apple are images, and an opener reserves no height for images. Without `minHeight` the opener ends at the foot of the word *manzana*, 88.7 mm from the top of the page, and the first activity title starts at 99.3 mm, 2.6 mm above the lowest point of the wave (101.9 mm). A `minHeight` of 16 grid lines ends the opener at 102.7 mm, and the title's two grid lines of `marginTop` start it at 113.3 mm, on the grid and 11.4 mm below the wave.
+The Mm is the heading's text (`{titleText}`); the unit number, the series and the letter's name are attributes on the same heading line. The band, the butterfly and the apple are images. The band is 104 mm deep, and the opener reserves the page down to its foot, so the first activity title starts at 113.3 mm, on the grid and 11.4 mm below the lowest point of the wave (101.9 mm).
 
 ### 6 · Icons beside the activity titles
 
@@ -58,9 +58,3 @@ A radius over half the chip's height is clamped to that half, so a large value d
 -  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5) };
 +  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5), borderRadius: em(1) };
 ```
-
-## Pitfalls
-
-Give `minHeight` whole grid lines. At 85 mm, 0.33 mm past the 16th line, the first title started 0.33 mm off the grid. Its heading block then ran on to the next grid line, 15.5 mm tall instead of 10.6, and everything under it on page 37 moved down 5.3 mm.
-
-With column balancing on, a `minHeight` of 16 lines left the activities of page 37 where 17 lines put them: the page had one grid line to spare, and balancing put it above the first activity title. The config turns balancing off (`headings.balancing`), so the spare line stays at the foot of the page.

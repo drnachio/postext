@@ -15,7 +15,7 @@ const palette = { ink: '#242832', paper: '#ffffff', muted: '#5f6470', // text; i
   // The vowel code: a syllable takes its vowel's colour. White on these fills measures
   // 3.2–4.9:1, above WCAG's 3:1 for large text: the vowel chips are bold, 20 pt or more.
   a: '#d9482b', e: '#dd740c', i: '#1f9a8f', o: '#3f6fd8', u: '#9152cf' };
-// Design elements read the hex and ignore the palette (gotcha: palette-skips-designs).
+// Every colour is linked to its palette entry by id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // The engine's defaults are linked to 'main-color': point it at the ink.
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.ink })
@@ -57,10 +57,9 @@ const tag = { textTransform: 'uppercase', letterSpacing: pt(1.5) };
 
 // #region opener: the letter's page: a cream band, a giant Mm and two things that start with m
 const BAND = 104; // mm: the depth of the band's drawing; its wave dips to 101.9 mm
-// Images reserve no height in an opener (gotcha: opener-image-no-reserve): by itself the
-// opener ends at the foot of the word manzana, 88.7 mm down, and the first title starts on
-// the wave's edge. 16 grid lines of minHeight start it on the grid, 11.4 mm below the wave.
-const opener = { enabled: true, minHeight: pt(16 * GRID),
+// The opener reserves down to the foot of the band's image, so the first activity title
+// starts under it: on the grid, 11.4 mm below the lowest point of the wave.
+const opener = { enabled: true,
   slot: { elements: [
     picture('band', 'banda', at(0, 0, { width: mm(210), height: mm(BAND) })),
     words('unit', '{attr.unit}', LABEL, 9, 700, 'paper', at(SIDE, 12.5), { ...tag,
@@ -129,16 +128,12 @@ const config = () => ({
     left: mm(SIDE), right: mm(SIDE) } }, // equal sides: nothing to mirror
   layout: { layoutType: 'single' },
   bodyText: { fontFamily: TEXT, fontSize: pt(11), lineHeight: pt(GRID), color: col('ink'),
-    referenceColor: col('ink'), // the palette never reaches it (gotcha: palette-skips-designs)
-    textAlign: 'left', firstLineIndent: pt(0) }, // ragged: 1.4.1 hyphenates no ragged text
+    textAlign: 'left', firstLineIndent: pt(0) }, // ragged, so no word is hyphenated
   headings: { fontFamily: LABEL, // the titles print through designs, but are measured in it
-    balancing: { enabled: false }, // or page 37's spare grid line goes above its first title
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
-      // A unit opens on a recto. span 'page' paints the band into the top margin, where a
-      // design kept in the column is cut off at the column's top edge.
-      { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
-        advancedDesign: opener }, H2] },
+      // A unit opens on a recto; its band is anchored to the page and paints up to the trim.
+      { level: 1, breakBefore: { enabled: true, parity: 'odd' }, advancedDesign: opener },
+      H2] },
   headingStyles: [activity('oye', 'oreja'), activity('lee', 'libro'), activity('mira', 'ojo'),
     activity('repasa', 'lapiz')],
   // #region reading: the child's lines on multiples of the 15 pt grid, the instructions at 10 pt
@@ -181,8 +176,7 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 // #region art: the band, the icons and the tracing rows, drawn in the palette's colours
 // The picture words are watercolours, JPEGs in assets/ painted on white and multiplied by the
 // cream, so they sit on the band and the tiles without a box. The rest is drawn here, with no
-// words in it: an SVG drawn as an image cannot use web fonts (gotcha: svg-no-webfonts), so the
-// tracing letters are strokes and every label is set by the page.
+// words in it: the tracing letters are strokes and every label is set by the page.
 const P = palette;
 const n = (v) => +v.toFixed(2);
 const svgDoc = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w * 10}" `

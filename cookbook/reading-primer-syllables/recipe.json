@@ -44,11 +44,7 @@
   ],
   "gotchas": [
     "chip-overlap",
-    "svg-no-webfonts",
-    "space-dropped-box-top",
-    "opener-image-no-reserve",
-    "headings-drop-h1-break",
-    "palette-skips-designs"
+    "space-dropped-box-top"
   ],
   "explainsWarnings": [
     "chipOverlap"
@@ -207,31 +203,6 @@
     "code-listings-and-keycaps"
   ],
   "workarounds": [
-    {
-      "followup": "EF-113",
-      "package": "postext",
-      "note": "the band is a page-anchored design element of the H1, which a design kept in the column clips at the column's top edge (the top 18 mm of page 37 printed white); span 'page' paints it into the top margin, although the unit is set in one column"
-    },
-    {
-      "followup": "EF-90",
-      "package": "postext",
-      "note": "the band, the butterfly and the apple are images and reserve no height in the opener: without minHeight it ends 88.7 mm down, at the foot of the word manzana, and the first activity title starts at 99.3 mm, against the band's wave (its lowest point is at 101.9 mm); minHeight is 16 lines of the 15 pt grid (84.67 mm), which starts the title at 113.25 mm, on the grid"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore (parity 'odd') is restated because any headings object drops it; each unit opens on a recto"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "the palette does not reach design-slot colours or bodyText.referenceColor; col() writes the hex beside every paletteId and referenceColor is restated in ink (the unit has no references, but without it the resolved colour is #295AA3)"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the giant letter's design lineHeight is the multiple 1, never a Dimension"
-    },
     {
       "followup": "EF-04",
       "package": "postext",

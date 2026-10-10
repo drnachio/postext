@@ -40,7 +40,7 @@ O Markdown põe `:::space{lines=1}` entre a última frase e o box para colorir, 
 
 <Excerpt region="opener" />
 
-O Mm é o texto do título (`{titleText}`); o número da unidade, a série e o nome da letra são atributos na mesma linha do título. A faixa, a borboleta e a maçã são imagens, e uma abertura não reserva altura para imagens. Sem `minHeight`, a abertura termina no pé da palavra *manzana*, a 88,7 mm do alto da página, e o título da primeira atividade começa a 99,3 mm, 2,6 mm acima do ponto mais baixo da onda (101,9 mm). Um `minHeight` de 16 linhas da grade termina a abertura a 102,7 mm, e as duas linhas de `marginTop` do título o fazem começar a 113,3 mm, na grade e 11,4 mm abaixo da onda.
+O Mm é o texto do título (`{titleText}`); o número da unidade, a série e o nome da letra são atributos na mesma linha do título. A faixa, a borboleta e a maçã são imagens. A faixa tem 104 mm de altura, e a abertura reserva a página até o pé dela, de modo que o título da primeira atividade começa a 113,3 mm, na grade e 11,4 mm abaixo do ponto mais baixo da onda (101,9 mm).
 
 ### 6 · Ícones ao lado dos títulos das atividades
 
@@ -58,9 +58,3 @@ Um raio maior que metade da altura do chip é limitado a essa metade, então um 
 -  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5) };
 +  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5), borderRadius: em(1) };
 ```
-
-## Erros comuns
-
-Dê a `minHeight` linhas inteiras da grade. Com 85 mm, 0,33 mm além da 16ª linha, o primeiro título começou 0,33 mm fora da grade. O bloco do título então se estendeu até a linha seguinte da grade, com 15,5 mm de altura em vez de 10,6, e tudo abaixo dele na página 37 desceu 5,3 mm.
-
-Com o equilíbrio de colunas ligado, um `minHeight` de 16 linhas deixava as atividades da página 37 onde 17 linhas as punham: a página tinha uma linha da grade de sobra, e o equilíbrio a colocava acima do título da primeira atividade. A configuração desliga o equilíbrio (`headings.balancing`), e a linha de sobra fica no pé da página.
