@@ -361,7 +361,9 @@ export function lintPen(
   }
   const math = Boolean(meta.engine?.math);
   const bundled = postextImports.some((imp) => imp.url === POSTEXT_BUNDLE_URL);
-  if (math && !bundled) fails.push(`script.js: engine.math recipes import every postext symbol from ${POSTEXT_BUNDLE_URL}`);
+  // Since postext 1.5 MathJax ships inside the package and `initMathEngine`
+  // fetches it from the plain import too (EF-15), so a maths recipe takes
+  // either URL; `?bundle` stays for the recipes written with it (#641).
   if (!math && bundled) fails.push(`script.js: ${POSTEXT_BUNDLE_URL} is only for engine.math recipes`);
   const postextNames = new Set(postextImports.flatMap((imp) => imp.names));
   if (math && !/\bawait\s+initMathEngine\s*\(\s*\)/.test(ownBare)) {

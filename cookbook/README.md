@@ -186,7 +186,8 @@ maths, workers or interactive rebuilds.
 3. **One engine entry.** Named imports come from `https://esm.sh/postext` (plus
    `https://esm.sh/postext-pdf` for PDFs, `https://esm.sh/postext-folio` for the 3D book,
    `https://esm.sh/postext-epub` for EPUB files), never pinned: the capture pins the released
-   version for you. Maths recipes import **every** symbol from `https://esm.sh/postext?bundle`.
+   version for you. Maths recipes use the same import; `https://esm.sh/postext?bundle`, which
+   postext 1.4 needed for MathJax, still lints in an `engine.math` recipe written with it.
 4. **Design first.** The file reads top to bottom: design, content, fonts, build. The answer
    sits at the top of CodePen's JS panel; the long sample and the kit are folded away.
 5. **Never the default skin** (§7).
@@ -259,8 +260,13 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
   `showPages` pairs pages across chapters and `renderToPdf` accepts the array of documents.
 - **HTML.** `document.getElementById('pages').innerHTML = renderToHtml(doc, { mode: 'single', background: '#fff', resourceImageUrl: imageUrl })`.
   Always pass a background (HTML pages are transparent) and use `capture.card: "screenshot"`.
-- **Maths.** Import everything from `https://esm.sh/postext?bundle`, `await initMathEngine()`
-  before the build, set `engine.math: true` and accept the known console noise:
+- **Maths.** Import `initMathEngine` with the other symbols from `https://esm.sh/postext`,
+  `await initMathEngine()` before the build and set `engine.math: true`. Since postext 1.5
+  MathJax ships inside the package and that import loads it, with a clean console. A recipe
+  written for 1.4 imports every symbol from `https://esm.sh/postext?bundle` instead (never
+  from both URLs: they are two engines), which the lint still accepts in an `engine.math`
+  recipe; move it to the plain import when its script next changes. Until then that build
+  prints two lines the recipe has to expect:
   `"expect": { "console": ["module \"buffer\" not found", "module \"esprima\" not found"] }`.
 - **Live controls.** `index.html` holds `<form id="controls">…</form>`; a `render()` rebuilds
   with `config()` and calls `showPages`. Add `"live"` to `outputs`.

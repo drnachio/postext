@@ -207,16 +207,17 @@ describe("lintPen (fixture)", () => {
     expect(twice).toContain("script.js: exactly one import statement from https://esm.sh/postext (or ?bundle for math), found 2");
   });
 
-  it("ties ?bundle to engine.math", () => {
-    const bundled = lint((s) => s.replace("'https://esm.sh/postext';", "'https://esm.sh/postext?bundle';")).fails;
+  it("keeps ?bundle to engine.math recipes, which may also use the plain import (#641)", () => {
+    const toBundle = (s: string) => s.replace("'https://esm.sh/postext';", "'https://esm.sh/postext?bundle';");
+    const bundled = lint(toBundle).fails;
     expect(bundled).toContain("script.js: https://esm.sh/postext?bundle is only for engine.math recipes");
+    // Since postext 1.5 the plain import loads MathJax: a maths recipe takes
+    // either URL, and still has to start the engine before it builds.
     const meta = { ...fixtureMeta(), engine: { ...fixtureMeta().engine, math: true } };
-    expect(lint(undefined, { meta }).fails).toEqual(
-      expect.arrayContaining([
-        "script.js: engine.math recipes import every postext symbol from https://esm.sh/postext?bundle",
-        "script.js: math recipes `await initMathEngine()` before the first build",
-      ]),
-    );
+    for (const fails of [lint(undefined, { meta }).fails, lint(toBundle, { meta }).fails]) {
+      expect(fails).toContain("script.js: math recipes `await initMathEngine()` before the first build");
+      expect(fails.filter((f) => f.includes("?bundle"))).toEqual([]);
+    }
   });
 
   it("ties the pdf output, the postext-pdf import and the pdf kit block", () => {

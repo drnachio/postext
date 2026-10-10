@@ -214,7 +214,8 @@ export interface RecipeMeta {
     postext: SemVer;
     /** Required when outputs has "pdf". */
     postextPdf?: SemVer;
-    /** Every postext symbol from esm.sh/postext?bundle + initMathEngine(). */
+    /** A maths recipe: `await initMathEngine()` before the first build (and
+     *  the plain import, or `?bundle` as the recipes written for 1.4 have). */
     math?: boolean;
     /** Blob-wrapped layout worker (captured against npm only). */
     worker?: boolean;

@@ -30,6 +30,9 @@ const DIRECTIVE_LINE = /^:::\s*([a-z][a-z0-9-]*)\s*(?:\{([^}]*)\})?\s*$/;
 export const RESOURCE_EMBED = /^::resource\s*\{id="([^"]+)"\}\s*$/;
 
 export const POSTEXT_URL = "https://esm.sh/postext";
+/** esm.sh's single-file build, which maths recipes needed up to postext 1.4
+ *  (EF-15). Since 1.5 the plain URL loads MathJax too; a maths recipe may
+ *  still import from this one, and no other recipe may. */
 export const POSTEXT_BUNDLE_URL = "https://esm.sh/postext?bundle";
 export const POSTEXT_PDF_URL = "https://esm.sh/postext-pdf";
 /** The citation engine (CSL styles; postext >= 1.12). */
