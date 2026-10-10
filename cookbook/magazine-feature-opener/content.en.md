@@ -87,7 +87,7 @@ Some of her pupils have gone further. Two years ago a class set the notebooks be
 
 The record will go on. Hanna’s son, who is fourteen, has taken over the November walks to the jetty to watch for the morning when the last dark patch of water disappears. He keeps a spreadsheet now, and every night a copy goes to a server at the university, where Lind stores her logger readings. But on the day the lake freezes he does what his great-great-grandfather did in 1911 and writes the date in pencil, in the notebook in the tin.
 
-Last winter the lake froze on the twenty-first of December and opened again on the eighteenth of March: eighty-seven days, almost exactly the modern average. Hanna wrote *ordinary* beside the dates, then crossed the word out. “Ordinary for now,” she says. :chip[⁠]{style="end"}
+Last winter the lake froze on the twenty-first of December and opened again on the eighteenth of March: eighty-seven days, almost exactly the modern average. Hanna wrote *ordinary* beside the dates, then crossed the word out. “Ordinary for now,” she says. :chip[ ]{style="end"}
 
 # Five Kinds of Ice {style="guide" kicker="Field guide" standfirst="How to read a frozen lake before you trust it with your weight, from the clear black sheet of early winter to the rotten candles of March." byline="Text by the editors" credit="Illustration generated in code for Boreal"}
 
@@ -101,7 +101,7 @@ Last winter the lake froze on the twenty-first of December and opened again on t
 
 **Candle ice.** In spring the sun rots the black ice along the boundaries of its crystals. The sheet can still look solid while it has become a bundle of loose vertical rods that give way under a boot. When the surface turns grey and granular, and the rods chime in the wind, stay on the shore.
 
-Never judge ice by its colour alone. Measure it every few steps, carry a pair of ice picks round your neck, and ask the people who live by the shore. :chip[⁠]{style="end"}
+Never judge ice by its colour alone. Measure it every few steps, carry a pair of ice picks round your neck, and ask the people who live by the shore. :chip[ ]{style="end"}
 
 :::paragraphs{style="colophon"}
 Set in Literata, Instrument Serif and Instrument Sans (SIL Open Font License) · Text: Postext Cookbook, CC BY 4.0 · Photographs: Ales Krivec and Hannah Donze, CC0, via Wikimedia Commons · The lake, the family, the scientists and the writer are fictional.

@@ -61,7 +61,7 @@ const opener = (resourceId, depth) => ({ // depth: how far down the page the pic
         placement: at('container', 'top-left', 0, depth - TOP + 9) },
       { kind: 'text', id: 'headline', content: '{titleText}', fontFamily: 'Instrument Serif',
         fontSize: pt(58), color: col('ink'), align: 'left', box: air, // wraps: a heading design
-        lineHeight: 0.94, // a multiple of the size (gotcha: design-lineheight-multiple)
+        lineHeight: 0.94, // tight: the two lines of the headline nearly touch
         placement: at('#kicker', 'below', 0, 2.5, HEAD) },
       { kind: 'text', id: 'standfirst', content: '{attr.standfirst}', italic: true,
         fontFamily: 'Instrument Serif', fontSize: pt(13.5), lineHeight: 1.22, // a multiple
@@ -150,23 +150,22 @@ const numbers = { id: 'numbers', span: 'page', placement: 'bottom', // floats to
 // The panel's figures are level-4 headings (#### 31), a level the story never uses.
 const figures = { level: 4, fontSize: pt(40), lineHeight: pt(40), color: col('ember'),
   marginBottom: pt(4) };
-// The end mark is a chip with no visible text: a U+2060 inside, because a chip of spaces
-// prints its markup (gotcha: empty-chip). Its lengths are in its own ems: paddingX makes
-// the width, and the height is its font size's band (0.8 ascent + 0.25 descent). It is ink,
-// not lake: the guide's palette would leave a lake chip teal on its rust page.
+// The end mark is a chip of one space, :chip[ ]{style="end"}: an empty box. Its lengths are
+// in its own ems: paddingX makes the width, and the height is its font size's band (0.8
+// ascent + 0.25 descent). It is ink, like the text it closes, in the story and in the guide.
 const endMark = { id: 'end', background: col('ink'), borderWidth: pt(0), borderRadius: pt(0),
   fontSize: em(0.62), paddingX: em(0.525), paddingY: em(0), gap: em(0.8) }; // 1.05 em square
 // #endregion
 
 // #region guide: the next item reuses the opener with its own picture, depth and accent
 const ART = 126; // mm: the drawing bleeds less far down the page than the photograph
-// On its pages, 'lake' turns rust in the opener, the headings and the boxes, but not in chips.
+// On its pages, 'lake' turns rust in the opener, the headings, the boxes and the chips.
 const guide = { id: 'guide', advancedDesign: opener('ice-art', ART),
   palette: { lake: palette.rust } };
 // #endregion
 
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-us', es: 'es' }), // each edition's hyphenation patterns
   resourceTypes: [photoType], // one unnumbered type for every picture (see the resources)
   colorPalette,
   page: { width: mm(TRIM), height: mm(297), margins: { top: mm(TOP), bottom: mm(20),
@@ -181,12 +180,7 @@ const config = () => ({
   // Hyphenation, optimal line breaking and widow control are on by default.
   headings: {
     fontFamily: 'Instrument Serif', fontWeight: 400, color: col('ink'),
-    // Under a top photo band on a closing page, this lever can drop the shorter column a line,
-    // out of line with the other (gotcha: float-stretch-closing-page). The switch covers every
-    // page, not only closing ones; the shipped copy does not trip it, edited copy might.
-    balancing: { stretchAfterFloats: false },
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break);
       // 'any' lets the next item open on the following page, recto or verso.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         marginBottom: pt(0), advancedDesign: opener('lake', 160) },
