@@ -32,12 +32,7 @@
     "cjk-locale-tag",
     "cjk-fonts-slices"
   ],
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "postext-citeproc 1.12.0 bundles the GB/T 7714 styles with their language-specific CSL-M layout commented out, so every entry gets 等 after three authors, Western ones included (the docs say et al. by language); the recipe passes the style as customStyle with that layout uncommented"
-    }
-  ],
+  "workarounds": [],
   "related": ["apa-thesis-with-bibtex", "chinese-official-document", "journal-article-with-maths"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],

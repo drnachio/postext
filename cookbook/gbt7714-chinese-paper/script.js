@@ -32,13 +32,11 @@ const AREA = (2 * CHARS + 2) * BODY * PT; // mm: two columns and a 2-em gutter, 
 // superscript [n] in the order works are first cited, joins three or more in a row into a
 // range and sets the list with its type codes: [M] book, [J] article, [D] thesis, [C]
 // conference paper, [EB/OL] web page. Its CSL file holds a second layout for works whose
-// language is English, with "et al." for 等, commented out: uncommented, a Western entry
-// takes "et al." and a Chinese one keeps 等, each chosen by the entry's `language`.
+// language is English, with "et al." for 等: a Western entry takes "et al." and a Chinese
+// one keeps 等, each chosen by the entry's `language`.
 registerCitationEngine(createCiteprocEngine({ styles: STYLES, locales: LOCALES }));
-const GBT = STYLES['china-national-standard-gb-t-7714-2015-numeric'];
 const citations = {
-  style: 'custom', // the bundled style with its English layout switched on
-  customStyle: GBT.replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/, '$1'),
+  style: 'china-national-standard-gb-t-7714-2015-numeric',
   locale: 'zh-CN', // 等, 卷, 版 and the other terms of the list
   bibliography: { fontSize: em(7.5 / BODY), lineHeight: pt(12), entrySpacing: pt(1.5),
     labelWidth: em(1.7) }, // turnovers under the text, not past it: [1] and a space

@@ -18,7 +18,7 @@ pageNotes: { "1": "第1页：虚构期刊《示例出版研究》的一篇论文
 
 代码就是上面的[简短回答](#简短回答)。引用引擎在第一次排版前注册一次，`postext-citeproc`自带GB/T 7714的三种样式：顺序编码制、著者-出版年制和注释体（[引用](/zh/docs/configuration#引用)）。正文里一条引文就是方括号里的一个代号。`[@tinker1963]`排出上标[1]，`[@rayner2016; @dyson2001; @lin2023]`排出[2–4]。两个相邻的序号不合并，排成[5,6]。同一文献再次被引用时沿用第一次的序号：第三段里的[4]，后文的[1]和[2]都是这样。
 
-标准要求西文文献的前三位著者之后写“et al.”，中文文献写“等”。随包的CSL文件为此准备了两套格式，其中一套专用于英文文献，但被注释掉了，结果所有条目都写“等”。简短回答从`STYLES`里取出这一样式的XML，去掉那套格式的注释，作为自定义样式传入。此后每条文献按自己的`language`字段选用格式：Rayner等五位著者写成“RAYNER K, SCHOTTER E R, MASSON M E J, et al.”，林岚等四位著者写成“林岚, 周明远, 陈思齐, 等”。`locale: 'zh-CN'`让文献表里的其余用语都用中文。
+标准要求西文文献的前三位著者之后写“et al.”，中文文献写“等”。随包的CSL文件为此准备了两套格式，其中一套专用于英文文献，每条文献按自己的`language`字段选用格式：Rayner等五位著者写成“RAYNER K, SCHOTTER E R, MASSON M E J, et al.”，林岚等四位著者写成“林岚, 周明远, 陈思齐, 等”。`locale: 'zh-CN'`让文献表里的其余用语都用中文。
 
 ### 2 · 用CSL-YAML块提供文献数据
 
@@ -56,9 +56,8 @@ pageNotes: { "1": "第1页：虚构期刊《示例出版研究》的一篇论文
 中西文混排的文献表，有时把中文文献排在西文文献之前。顺序编码制这样排，表中序号就不再依次递增，所以更适合著者-出版年制。
 
 ```diff
--  customStyle: GBT.replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/, '$1'),
-+  customStyle: STYLES['china-national-standard-gb-t-7714-2015-author-date']
-+    .replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/g, '$1'),
+-  style: 'china-national-standard-gb-t-7714-2015-numeric',
++  style: 'china-national-standard-gb-t-7714-2015-author-date',
    locale: 'zh-CN', // 等, 卷, 版 and the other terms of the list
 -  bibliography: { fontSize: em(7.5 / BODY), lineHeight: pt(12), entrySpacing: pt(1.5),
 +  bibliography: { groupByLanguage: true, fontSize: em(7.5 / BODY), lineHeight: pt(12),

@@ -18,7 +18,7 @@ Duas páginas de um artigo de pesquisa numa revista inventada de estudos editori
 
 O código está na [resposta curta](#a-resposta-curta), mais acima. O motor de citações é registrado uma vez, antes da primeira composição, e o `postext-citeproc` traz os três estilos da GB/T 7714: numérico, autor-data e de notas ([Citações](/pt/docs/configuration#citações-1)). No texto, uma citação é uma chave entre colchetes. `[@tinker1963]` imprime um [1] sobrescrito, e `[@rayner2016; @dyson2001; @lin2023]` imprime [2–4]. Dois números seguidos continuam como lista, [5,6]. Uma obra citada de novo mantém o primeiro número: [4] no terceiro parágrafo, e [1] e [2] mais adiante no artigo.
 
-A norma pede “et al.” depois dos três primeiros autores de uma obra ocidental e 等 depois dos de uma chinesa. O arquivo CSL incluído tem dois modelos para isso, um para obras em inglês, mas o inglês está comentado, então todas as entradas recebem 等. A resposta pega o XML do estilo em `STYLES`, descomenta esse modelo e passa o resultado como estilo próprio. Cada entrada passa então a tirar o modelo do seu próprio campo `language`: Rayner e quatro coautores viram “RAYNER K, SCHOTTER E R, MASSON M E J, et al.”, e 林岚 e três coautores viram “林岚, 周明远, 陈思齐, 等”. `locale: 'zh-CN'` escreve em chinês as demais palavras da lista.
+A norma pede “et al.” depois dos três primeiros autores de uma obra ocidental e 等 depois dos de uma chinesa. O arquivo CSL incluído tem dois modelos para isso, um deles para obras em inglês, e cada entrada tira o seu do próprio campo `language`: Rayner e quatro coautores viram “RAYNER K, SCHOTTER E R, MASSON M E J, et al.”, e 林岚 e três coautores viram “林岚, 周明远, 陈思齐, 等”. `locale: 'zh-CN'` escreve em chinês as demais palavras da lista.
 
 ### 2 · As referências num bloco CSL-YAML
 
@@ -56,9 +56,8 @@ Algumas revistas imprimem os números das citações na linha, no corpo do texto
 Bibliografias mistas às vezes são ordenadas com as obras chinesas antes das ocidentais. Num estilo numérico os números deixam então de correr em ordem pela lista, por isso isto combina melhor com o estilo autor-data.
 
 ```diff
--  customStyle: GBT.replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/, '$1'),
-+  customStyle: STYLES['china-national-standard-gb-t-7714-2015-author-date']
-+    .replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/g, '$1'),
+-  style: 'china-national-standard-gb-t-7714-2015-numeric',
++  style: 'china-national-standard-gb-t-7714-2015-author-date',
    locale: 'zh-CN', // 等, 卷, 版 and the other terms of the list
 -  bibliography: { fontSize: em(7.5 / BODY), lineHeight: pt(12), entrySpacing: pt(1.5),
 +  bibliography: { groupByLanguage: true, fontSize: em(7.5 / BODY), lineHeight: pt(12),
