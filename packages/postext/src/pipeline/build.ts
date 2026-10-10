@@ -109,6 +109,7 @@ import {
   closeBandAndInsertSpan,
   closeBandAt,
   pageLayoutOf,
+  FIT_EPS,
 } from './placement';
 import { chooseParagraphSplit } from './orphanWidow';
 import { layoutComicPage, comicPageLayoutWarnings } from '../comics/layoutPage';
@@ -226,9 +227,6 @@ import { headingLineSpanBand } from './lineSpan';
 import { columnCursorY, insetsBefore, minTextWidthPx, openColumnWrap, resolveCalloutWrap, resolveResourceWrap, type ResolvedWrap, runsBesideWrap, sameInsetsFrom, settleColumnWraps, transparentToWrap, wrapGapPx, wrapInsetSteps } from './textWrap';
 import { lineInsetsAt, type LineInsetStep } from '../measure/types';
 
-/** Tolerance for "does this block fit" checks against a column's free
- *  height, absorbing floating-point drift between grid multiples. */
-const FIT_EPS = 0.01;
 /** Room (px) under closing boxes a balancing pass must close to be kept on
  *  that ground alone (see `boxRoomIn`). */
 const BOX_ROOM_EPS_PX = 0.5;
@@ -6073,7 +6071,7 @@ function placeDocumentPass(
     if (measuredBlock?.kind.vdtType === 'resource' && resolved.layout.fitFiguresToPage) {
       const rb = measuredBlock.resourceBlock;
       const room = col.availableHeight - (col.blocks.length === 0 ? 0 : Math.max(pendingSpacing, floatGapPx));
-      if (rb && !rb.table && !rb.rotation && rb.bodyRect.height > 0 && measuredBlock.measured.totalHeight > room && room > 0) {
+      if (rb && !rb.table && !rb.rotation && rb.bodyRect.height > 0 && measuredBlock.measured.totalHeight > room + FIT_EPS && room > 0) {
         let width = rb.bodyRect.width;
         for (let attempt = 0; attempt < 3; attempt++) {
           const current = measuredBlock.resourceBlock!;
@@ -6085,11 +6083,11 @@ function placeDocumentPass(
           const smaller = measureContentBlock(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, { styleOverride, figureMaxBodyWidth: width });
           if (!smaller) break;
           measuredBlock = smaller;
-          if (smaller.measured.totalHeight <= room) break;
+          if (smaller.measured.totalHeight <= room + FIT_EPS) break;
         }
         // Still too tall at the smallest acceptable size: back to full size
         // and on to the next column, as without the option.
-        if (measuredBlock!.measured.totalHeight > room) {
+        if (measuredBlock!.measured.totalHeight > room + FIT_EPS) {
           measuredBlock = measureContentBlock(rawBlock, blockIdx, col.bbox.width, blockMeasureCtx, { styleOverride });
         }
       }
@@ -6778,7 +6776,9 @@ function placeDocumentPass(
       if (
         endsWithColon
         && partIndex === 0
-        && totalRemainHeight <= effectiveAvailable
+        // The tolerance of the fit check below (#635): a paragraph that
+        // fits by a hair of drift is one this rule reads too.
+        && totalRemainHeight <= effectiveAvailable + FIT_EPS
         && curCol.blocks.length > 0
       ) {
         const usedHeight = (curCol.bbox.height - curCol.availableHeight) + spacingBefore;
@@ -6804,7 +6804,7 @@ function placeDocumentPass(
         // and widow rules keep whole needs both. `'line'` keeps the 1.4
         // check, one line.
         if (
-          availableAfter < minSpaceForList
+          availableAfter < minSpaceForList - FIT_EPS
           || (resolved.bodyText.colonListRoom === 'item'
             && !firstListItemStarts(blockIdx, availableAfter - effectiveGap, curCol.bbox.width, blockMeasureCtx))
         ) {
@@ -7005,7 +7005,10 @@ function placeDocumentPass(
           // A `:::space` between the heading and its text needs room too.
           const minSpaceAfter = minLinesNeeded * bodyStyle.lineHeightPx
             + spaceLinesAfter(contentBlocks, blockIdx) * baselineGrid;
-          if (remainAfterHeading < minSpaceAfter) {
+          // The room is a difference of grid sums and the need a product:
+          // a head whose text ends on the last line of the column is short
+          // by floating-point drift alone (#635), and stays.
+          if (remainAfterHeading < minSpaceAfter - FIT_EPS) {
             if (curCol.blocks.length === 0) shortColumnMoves++;
             // Roll back any immediately-preceding heading blocks in this
             // column so they travel with this one.
@@ -7097,7 +7100,7 @@ function placeDocumentPass(
         // its margin and grid snap would carry the block past the foot: it
         // takes the rest of the column instead, as a design reaching past
         // the foot does (the text after it opens the next column or page).
-        if (vdtType === 'heading' && effectiveRemainHeight > totalRemainHeight && h > curCol.availableHeight) {
+        if (vdtType === 'heading' && effectiveRemainHeight > totalRemainHeight && h > curCol.availableHeight + FIT_EPS) {
           h = Math.max(effectiveRemainHeight, curCol.availableHeight);
         }
         placeBlockInColumn(blk, h, curCol, cursor);

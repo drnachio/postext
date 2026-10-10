@@ -498,8 +498,11 @@ export function enforcePageParity(
  * caller). Returns the height actually reserved for the block.
  */
 /** Tolerance for "does this block fit" checks against a column's free
- *  height, absorbing floating-point drift between grid multiples. */
-const FIT_EPS = 0.01;
+ *  height, absorbing floating-point drift between grid multiples: a line
+ *  pitch that is no whole number of pixels (29 pt at 150 dpi is 60.41666…
+ *  px) leaves the running sums of grid lines about 1e-13 px off (#635).
+ *  Every comparison of a free height with a needed one takes it. */
+export const FIT_EPS = 0.01;
 
 export function placeAtomicBlock(
   block: VDTBlock,

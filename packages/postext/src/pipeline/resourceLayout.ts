@@ -87,6 +87,7 @@ import { mergeCaptionStyle } from '../defaults/captionStyle';
 import { pickTableStyle } from '../defaults/tableStyle';
 import { resolveColorValue, startEndAsLeftRight } from '../defaults/shared';
 import { resolveBodyStyle } from './styles';
+import { FIT_EPS } from './placement';
 import { uppercasePreservingLength } from './buildBlockKind';
 import { lineTrailingTracking } from '../lineInk';
 import type { ResourceNumberingMap } from './resourceNumbering';
@@ -1633,7 +1634,7 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   let pageRoom: number | undefined;
   if (rotate && picture) {
     const room = footprintWidth - captionHeight - noteHeight - continuesHeight;
-    if (bodyHeight > room && bodyHeight > 0) {
+    if (bodyHeight > room + FIT_EPS && bodyHeight > 0) {
       const k = Math.max(0.01, room) / bodyHeight;
       bodyWidth *= k;
       bodyHeight *= k;
@@ -1651,10 +1652,10 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
       - dimensionToPx(m.top, dpi) - dimensionToPx(m.bottom, dpi);
     const room = areaHeight - captionHeight - noteHeight - continuesHeight - bodyStyle.lineHeightPx;
     // A picture with a safe area is cropped first, keeping its width.
-    if (bodyHeight > room && bodyHeight > 0 && room > 0 && flexRange) {
+    if (bodyHeight > room + FIT_EPS && bodyHeight > 0 && room > 0 && flexRange) {
       bodyHeight = Math.max(room, flexRange(bodyWidth).min);
     }
-    if (bodyHeight > room && bodyHeight > 0 && room > 0) {
+    if (bodyHeight > room + FIT_EPS && bodyHeight > 0 && room > 0) {
       const k = room / bodyHeight;
       bodyWidth *= k;
       bodyHeight *= k;
