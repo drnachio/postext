@@ -1180,7 +1180,7 @@ As [@garcia2020, p. 33] shows, reading on paper is faster [see @lopez2019, chap.
 ```
 
 - **`[@key]`** cites in parentheses; several works go in one pair of brackets, separated by `;`.
-- **Locator:** after a comma, `p. 33`, `pp. 4–6`, `chap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `l. 4`, `§ 4.2`; a bare number is a page. Spanish (`pág.`, `cap.`) and Chinese (`页`, `章`) words work too.
+- **Locator:** after a comma, `p. 33`, `pp. 4–6`, `chap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `l. 4`, `§ 4.2`; a bare number is a page. Spanish (`pág.`, `cap.`) and Chinese (`页`, `章`) words work too. A range takes an en dash or the two hyphens of TeX: `pp. 4--6` prints *4–6*.
 - **Prefix and suffix:** text before the `@` (`see`) and after the key or the locator (`, emphasis added`). The suffix keeps the comma written before it, with a locator or without one: `[@brown2020, inter alia]` prints *(Brown et al., 2020, inter alia)*, as Pandoc does; written without a comma (`[@brown2020 inter alia]`) it has none. Emphasis in a prefix or a suffix is set as emphasis in every style: `[*e.g.*, @brown2020, *inter alia*]`.
 - **`[-@key]`** leaves the author out, for a sentence that names the author already.
 - **`@key`** cites in the sentence (*García (2020)*); `@key [p. 4]` adds a locator.

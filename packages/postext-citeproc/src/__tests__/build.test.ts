@@ -174,6 +174,33 @@ describe('MLA narrative citations in the paragraph (#640)', () => {
   });
 });
 
+describe('a TeX double hyphen in a locator (#647)', () => {
+  const bib = `:::references{format=bibtex}
+@incollection{keatsode, author={Keats, John}, title={Ode on a Grecian Urn}, shorttitle={Ode}, booktitle={Lamia, Isabella, The Eve of St. Agnes, and Other Poems}, publisher={Taylor and Hessey}, year=1820, pages={113--116}}
+@book{stillinger1974, author={Stillinger, Jack}, title={The Texts of Keats's Poems}, publisher={Harvard UP}, year=1974}
+:::
+`;
+  const body = (dash: string): string => `# One\n\nThe urn speaks [@keatsode, lines 1${dash}3] and the survey lists it [@stillinger1974, pp. 12${dash}15, 20].\n\n${bib}`;
+  const build = (dash: string, style: string): VDTDocument => buildDocument({ markdown: body(dash) }, { ...config, locale: 'en-US', citations: { style } });
+
+  it('prints the range with an en dash, as the citation written with one does', () => {
+    for (const style of ['modern-language-association', 'apa']) {
+      const tex = lines(build('--', style)).join('\n');
+      expect(tex).toBe(lines(build('–', style)).join('\n'));
+      expect(tex).not.toContain('--');
+    }
+    expect(lines(build('--', 'modern-language-association')).join('\n')).toContain('(Keats 1–3)');
+    expect(lines(build('--', 'apa')).join('\n')).toContain('(Stillinger, 1974, pp.\u00a012–15, 20)');
+  });
+
+  it('the HTML output and the BibTeX pages carry the same dash', () => {
+    const html = renderToHtml(build('--', 'modern-language-association')).replace(/<[^>]+>/g, '');
+    expect(html).toContain('(Keats 1–3)');
+    expect(html).toContain('113–16');
+    expect(html).not.toContain('--');
+  });
+});
+
 describe('books', () => {
   it('numbers through the book and lists every work after the last chapter', () => {
     const docs = buildBundle({

@@ -46,6 +46,29 @@ describe('citation syntax (#268)', () => {
     expect(parseLocator(', see also')).toEqual({ suffix: ', see also' });
   });
 
+  it('reads a TeX double hyphen between two values as an en dash range (#647)', () => {
+    expect(cites('[@k, p. 1--3]')[0]!.cluster.items).toEqual([{ id: 'k', locator: '1–3', label: 'page' }]);
+    expect(cites('[@k, pp. 12--15, 20]')[0]!.cluster.items).toEqual([{ id: 'k', locator: '12–15, 20', label: 'page' }]);
+    expect(cites('[@keatsode, lines 1--3]')[0]!.cluster.items).toEqual([{ id: 'keatsode', locator: '1–3', label: 'line' }]);
+    expect(cites('[@k, 12--15, my words]')[0]!.cluster.items).toEqual([{ id: 'k', locator: '12–15', label: 'page', suffix: ', my words' }]);
+    expect(cites('[@k, chap. iv--vi]')[0]!.cluster.items).toEqual([{ id: 'k', locator: 'iv–vi', label: 'chapter' }]);
+    // Spaces around it stay as written, and a narrative citation's bracket reads the same way.
+    expect(parseLocator(', 1 -- 3')).toEqual({ locator: '1 – 3', label: 'page' });
+    expect(cites('@k [pp. 4--6] says so.')[0]!.cluster.items).toEqual([{ id: 'k', locator: '4–6', label: 'page' }]);
+    // The citation printed back when the book has no such reference is the text as written.
+    expect(cites('[@k, p. 1--3]')[0]!.raw).toBe('[@k, p. 1--3]');
+  });
+
+  it('leaves a lone hyphen, a dash and three hyphens in a locator as they were (#647)', () => {
+    expect(parseLocator(', 12-14')).toEqual({ locator: '12-14', label: 'page' });
+    expect(parseLocator(', 12–14')).toEqual({ locator: '12–14', label: 'page' });
+    expect(parseLocator(', 12—14')).toEqual({ locator: '12—14', label: 'page' });
+    // Three hyphens join nothing: the locator ends at the first value.
+    expect(parseLocator(', 12---14')).toEqual({ locator: '12', label: 'page', suffix: ', ---14' });
+    // Two hyphens with no value after them are a suffix.
+    expect(parseLocator(', 12-- and on')).toEqual({ locator: '12', label: 'page', suffix: ', -- and on' });
+  });
+
   it('keeps the comma before a suffix with no locator, as Pandoc does (#528)', () => {
     const [c] = cites('As shown [@brown2020language, inter alia].');
     expect(c!.cluster.items).toEqual([{ id: 'brown2020language', suffix: ', inter alia' }]);
@@ -113,6 +136,15 @@ describe('reference data (#268)', () => {
     // A lone "others" is a name.
     expect(parseBibtex('@misc{o, author={Others}}')[0]!.author).toEqual([{ family: 'Others' }]);
     expect(normalizeCslItem({ id: 'y', author: ['Smith, J.', 'others'] })!.author).toEqual([{ family: 'Smith', given: 'J.' }, { literal: 'others' }]);
+  });
+
+  it('reads the dashes of a BibTeX pages field as an en dash (#647)', () => {
+    const page = (pages: string): unknown => parseBibtex(`@article{k, title={T}, pages={${pages}}}`)[0]!.page;
+    expect(page('1--3')).toBe('1–3');
+    expect(page('1-3')).toBe('1–3');
+    expect(page('1 -- 3')).toBe('1–3');
+    expect(page('12--15, 20')).toBe('12–15, 20');
+    expect(page('113–116')).toBe('113–116');
   });
 
   it('keeps the short titles Zotero and BibLaTeX write', () => {
