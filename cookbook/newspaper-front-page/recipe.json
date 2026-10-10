@@ -44,9 +44,7 @@
     "Q64",
     "Q27"
   ],
-  "gaps": [
-    "three-columns"
-  ],
+  "gaps": [],
   "gotchas": [
     "top-float-next-page",
     "bitmap-print-size"

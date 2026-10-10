@@ -45,9 +45,7 @@
     "Q60",
     "Q52"
   ],
-  "gaps": [
-    "three-columns"
-  ],
+  "gaps": [],
   "gotchas": [
     "nested-callout-limits"
   ],

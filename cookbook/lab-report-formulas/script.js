@@ -38,8 +38,8 @@ const at = (to, edge, x = 0, y = 0) => ({ anchor: { to, edge }, offset: { x: mm(
 // #region answer: formulas and units in the text face; TeX for the reaction and equations
 // In the Markdown, ~…~ lowers a run and ^…^ raises it, in the text's own face at 58 % of
 // its size: CH~3~COOH, OH^−^ (the minus is U+2212), 25,0 cm^3^, 0,100 mol·dm^−3^, p*K*~a~.
-// The marks also work where TeX cannot go (gap: math-in-captions): captions and the table
-// cells this file writes, such as the column heads, each a quantity over its unit:
+// The marks also work in captions and table cells, which keep their own face ($…$ there
+// brings the maths face): the column heads this file writes, each a quantity over its unit:
 const units = { cm3: 'cm^3^', conc: 'mol·dm^−3^' }; // the dot keeps a unit one word
 const heads = t({ es: ['Valoración', 'V~inicial~', 'V~final~', 'V~b~ gastado'],
   en: ['Titration', 'V~initial~', 'V~final~', 'V~b~ used'] })

@@ -46,7 +46,7 @@ const layout = {
 };
 // The grid counts characters down a tier and lines across the page: 25 × 29.
 const cjk = { grid: { enabled: true, charsPerLine: CHARS, linesPerPage: 29 } };
-// The body has two tiers at most. The telegrams take three inside a page-span box floated to
+// The body stays in two tiers. The telegrams take three inside a page-span box floated to
 // the foot of the flow, the left of the sheet, with the fences
 //   :::callout{type="wires" span="page" placement="bottom" title="電報"} and :::columns{count=3}
 const wires = { id: 'wires', backgroundEnabled: false,

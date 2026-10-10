@@ -18,7 +18,7 @@
     ]
   },
   "answers": ["Q48", "Q49", "Q32", "Q40", "Q63"],
-  "gaps": ["math-in-captions"],
+  "gaps": [],
   "gotchas": [
     "math-bundle",
     "dollar-math"

@@ -18,7 +18,7 @@
     ]
   },
   "answers": ["Q102", "Q27", "Q78", "Q90"],
-  "gaps": ["three-columns"],
+  "gaps": [],
   "gotchas": ["page-span-heading-new-page", "cjk-fonts-slices", "cjk-locale-tag", "cjk-spread-order"],
   "explainsWarnings": [],
   "related": ["newspaper-front-page", "chinese-dates-upright", "vertical-novel-right-bound", "red-ink-commentary"],

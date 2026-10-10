@@ -18,7 +18,7 @@ Two sheets of a Chinese newspaper as it looked in 1912, the first year of the Re
 
 The code is [the short answer](#the-short-answer) above. With `writingMode: 'vertical-rl'` the page is a horizontal page turned a quarter turn, so `layoutType: 'double'` stacks two tiers, the upper one read first, and the column rule becomes a rule across the page between them ([vertical writing](/en/docs/configuration#vertical-writing)). The character grid sets each tier to 25 characters of 五號 (10.5 pt), the long end of a newspaper column, and the page to 29 lines; it rounds the gutter to two ems and grows the margins so the tiers sit in the middle of them ([character grid](/en/docs/configuration#character-grid)).
 
-Body text has two tiers at most. The telegrams get three inside a box: `span="page"` makes it as tall as the type area, `placement="bottom"` floats it to the foot of the flow, which on a vertical page is the left edge, and `:::columns{count=3}` cuts it into tiers. `columnGap` is what three tiers of 18 characters of 9 pt leave of the type area's 546 pt, so each tier holds whole characters.
+The body stays in two tiers and only the telegrams need three, so they go in a box: `span="page"` makes it as tall as the type area, `placement="bottom"` floats it to the foot of the flow, which on a vertical page is the left edge, and `:::columns{count=3}` cuts it into tiers. `columnGap` is what three tiers of 18 characters of 9 pt leave of the type area's 546 pt, so each tier holds whole characters.
 
 <PageShot page={2} crop="0.04,0.12,0.36,0.78" caption="Page 2: the telegrams in three tiers, the stripe on the box's top edge drawn as a rule down its right side." />
 

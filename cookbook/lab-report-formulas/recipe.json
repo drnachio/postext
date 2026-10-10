@@ -48,9 +48,7 @@
     "Q74",
     "Q40"
   ],
-  "gaps": [
-    "math-in-captions"
-  ],
+  "gaps": [],
   "gotchas": [
     "math-bundle",
     "negative-offsets",
