@@ -119,7 +119,6 @@ const config = () => ({
   headings: {
     fontFamily: MINCHO, color: col('ink'), fontWeight: 800,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
       { level: 1, breakBefore: { enabled: true, parity: 'any' } },
       chapter,
     ],

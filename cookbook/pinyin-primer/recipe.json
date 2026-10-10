@@ -28,9 +28,7 @@
     "ruby-not-in-designs",
     "cjk-face-region",
     "cjk-fonts-slices",
-    "cjk-locale-tag",
-    "headings-drop-h1-break",
-    "svg-no-webfonts"
+    "cjk-locale-tag"
   ],
   "explainsWarnings": ["rubyExceedsLeading"],
   "related": ["reading-primer-syllables", "zhuyin-vertical-reader", "chinese-novel-horizontal"],

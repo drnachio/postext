@@ -20,7 +20,9 @@
   "answers": ["Q149", "Q139", "Q145"],
   "gaps": [],
   "gotchas": [
-    "ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices", "headings-drop-h1-break"
+    "ja-locale-tag",
+    "ja-fonts-kana",
+    "cjk-fonts-slices"
   ],
   "explainsWarnings": [],
   "related": ["chinese-dates-upright", "chinese-official-document", "vertical-novel-right-bound"],

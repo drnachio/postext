@@ -17,7 +17,7 @@ const palette = {
   rule: '#d6cdbf', // the short rule under each title
   paper: '#fbf8f1',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -114,7 +114,6 @@ const config = () => ({
     textAlign: 'justify', firstLineIndent: em(2), indentAfterHeading: true, // 2 characters
     avoidWidows: true, avoidOrphans: true },
   headings: { fontFamily: e.kai, fontWeight: 400, color: col('ink'), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
     { level: 1, fontSize: pt(16), marginBottom: pt(0),
       advancedDesign: opener(e, 6, '第{numberHan}回'), // 第一回, 第二回… in the edition's script
       breakBefore: { enabled: true, parity: 'any' } }, // each 回 on a new page

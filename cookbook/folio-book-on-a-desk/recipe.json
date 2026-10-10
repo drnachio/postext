@@ -36,8 +36,7 @@
     "Q118"
   ],
   "gotchas": [
-    "folio-container-height",
-    "headings-drop-h1-break"
+    "folio-container-height"
   ],
   "related": [
     "paper-swatch-book",

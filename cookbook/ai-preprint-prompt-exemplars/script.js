@@ -30,7 +30,7 @@ const ZERO = pt(0);
 
 // #region answer: Figure 1 as boxes: two columns, a tab on each box, a ✓ or ✗ in the corner
 // :::columns{count=2 breaks="4"} inside the "figure" box opens the right column at its fourth
-// block; each nested box counts as one block (gotcha: callout-columns).
+// block; each nested box counts as one block.
 const tab = (fill) => ({ fontFamily: SANS, fontSize: pt(7), fontWeight: 600,
   color: col('paper'), background: col(fill), position: 'top-left', inset: mm(3),
   height: mm(4.2), offset: mm(2.1), paddingX: mm(2.2) }); // straddles the top edge
@@ -148,7 +148,7 @@ const config = () => ({
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: SANS, color: col('ink'), fontWeight: 600, levels: [
-    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // a new page, either side
     { level: 2, ...sans(11), numberingTemplate: '{2}', numberSeparator: ' ',
       lineHeight: pt(LEAD), marginTop: pt(LEAD), marginBottom: pt(LEAD / 2) },
     { level: 3, ...sans(9.6), numberingTemplate: '{2}.{3}', numberSeparator: ' ',

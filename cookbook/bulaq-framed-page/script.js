@@ -105,7 +105,6 @@ const config = () => ({
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(1.2), indentAfterHeading: false,
     optimalLineBreaking: true, avoidWidows: true, avoidOrphans: true },
-  // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
   headings: { fontFamily: RUQAA, fontWeight: 700, color: col('rubric'), textAlign: 'center',
     levels: [{ level: 1, fontSize: pt(22), lineHeight: pt(32), marginTop: pt(0),
       marginBottom: pt(8), breakBefore: { enabled: true, parity: 'any' } }] },

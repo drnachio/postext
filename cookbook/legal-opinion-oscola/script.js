@@ -17,7 +17,7 @@ const palette = {
   ink: '#1f1b1a', claret: '#5e1b26', tint: '#ecdcd8', rule: '#bfb4ad', muted: '#6b625d',
   paper: '#fcfaf6',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.claret })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -104,7 +104,7 @@ const head = (id, content, parity, edge, x, align) => ({
 const journal = t({ en: 'Notes on Obligations', es: 'Cuadernos de Obligaciones' });
 
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-us', es: 'es' }), // picks the hyphenation patterns
   colorPalette,
   citations,
   footnotes,
@@ -125,7 +125,7 @@ const config = () => ({
   headings: {
     fontFamily: TEXT, fontWeight: 400, color: col('ink'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // A new page on either side: the default would wait for a recto.
       { level: 1, fontSize: pt(27), breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: opener },
       { level: 2, italic: true, fontSize: pt(12), color: col('claret'),

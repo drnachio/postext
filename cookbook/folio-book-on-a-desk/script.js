@@ -87,7 +87,7 @@ const config = () => ({
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: 'Fraunces', color: col('ink'), fontWeight: 600, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // Chapters open on a recto; 'odd' leaves a blank verso only when one is needed.
     { level: 1, fontSize: pt(28), breakBefore: { enabled: true, parity: 'odd' },
       advancedDesign: opener },
     { level: 2, fontSize: pt(11.5), lineHeight: pt(LEAD), fontWeight: 400, italic: true,

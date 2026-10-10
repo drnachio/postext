@@ -44,10 +44,8 @@
     "Q106"
   ],
   "gotchas": [
-    "callout-columns",
     "nested-callout-limits",
-    "merged-cells-hiddenby",
-    "headings-drop-h1-break"
+    "merged-cells-hiddenby"
   ],
   "engine": {
     "postext": "1.25.0",

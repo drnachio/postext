@@ -14,7 +14,7 @@ const palette = {
   ink: '#1b1f24', navy: '#1d2c3c', orange: '#b8471b', tint: '#f7e7de', rule: '#d5cfc8',
   muted: '#5c636b', paper: '#ffffff',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.orange })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -79,7 +79,7 @@ const head = (id, content, parity, edge, x, extra = {}) => ({
 });
 
 const config = () => ({
-  locale: t({ en: 'en-gb', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-gb', es: 'es' }), // picks the hyphenation patterns
   colorPalette,
   crossRefs,
   page: { sizePreset: 'custom', width: mm(PAGE.w), height: mm(PAGE.h), dpi: 150,
@@ -92,7 +92,7 @@ const config = () => ({
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: DISPLAY, color: col('ink'), fontWeight: 700, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // A new page on either side: the default would wait for a recto.
     { level: 1, fontSize: pt(58), breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: cover },
     H2, H3,

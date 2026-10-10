@@ -33,12 +33,7 @@
   "answers": [
     "Q110"
   ],
-  "gotchas": [
-    "headings-drop-h1-break",
-    "palette-skips-designs",
-    "hyphenation-locales",
-    "numbering-vocabularies"
-  ],
+  "gotchas": [],
   "engine": {
     "postext": "1.25.0",
     "postextPdf": "1.25.0"

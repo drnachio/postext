@@ -130,12 +130,11 @@ const config = () => ({
   layout: { layoutType: 'single' },
   cjk,
   bodyText: { ...text, color: col('ink'), boldColor: col('ink'), italicColor: col('ink'),
-    referenceColor: col('ink') }, // the palette does not reach referenceColor
+    referenceColor: col('ink') }, // references in ink, not in the default accent
   headings: { fontFamily: KAI, color: col('ink'), fontWeight: 400, textAlign: 'center',
     snapToGrid: false,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
-      // Every lesson opens a page; span 'page' paints the band under the text.
+      // Every lesson opens a page, on either side; span 'page' paints the band under the text.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         marginBottom: mm(4), advancedDesign: opener },
       // The lesson's title: a plain heading, so its readings print (初号, 42 pt).
