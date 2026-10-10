@@ -8,6 +8,7 @@ export type WarningKind =
   | 'missingFont'
   | 'missingFontFamily'
   | 'missingFontVariant'
+  | 'fontFallback'
   | 'duplicateFontVariant'
   | 'looseLine'
   | 'cjkLooseLine'
@@ -34,6 +35,7 @@ export type WarningKind =
   | 'unclosedCodeBlock'
   | 'unknownParagraphStyle'
   | 'unknownCalloutType'
+  | 'columnsFlowUnknown'
   | 'unknownChipStyle'
   | 'duplicateAnchor'
   | 'unknownCitationKey'
@@ -76,6 +78,8 @@ export type WarningKind =
   | 'videoWithoutUrl'
   | 'videoUrlInvalid'
   | 'missingImage'
+  | 'svgFontUnavailable'
+  | 'svgFontsTooLarge'
   | 'storageUnavailable'
   | 'chapterFrontmatterIgnored'
   | 'fontFamilyStack'
@@ -86,6 +90,9 @@ export type WarningKind =
   | 'lineNumberOverlap'
   | 'dropCap'
   | 'textWrap'
+  | 'columnsTooNarrow'
+  | 'afterText'
+  | 'unplaced'
   | 'codeOverflow'
   | 'floatShrunk'
   | 'unknownConfigKey'
@@ -107,6 +114,10 @@ export type WarningKind =
 
 export type WarningPayload =
   | { kind: 'missingFont'; family: string }
+  /** The engine's `fontFallback` (#629): a face the layout's text was set
+   *  in that the font set could not give when it was built — missing, or
+   *  drawn by the browser from another weight or slant. */
+  | { kind: 'fontFallback'; family: string; weight: number; style: 'normal' | 'italic'; reason: 'missing' | 'synthesized' }
   /** Referenced family is neither a loaded Google Font nor a custom
    *  family in `customFonts`. Silently falls back to a system font at
    *  render time; this warning makes the fall-through visible. */
@@ -189,6 +200,9 @@ export type WarningPayload =
   /** A `:::callout{type="…"}` container names a type that is not in
    *  `config.calloutStyles`. */
   | { kind: 'unknownCalloutType'; type: string }
+  /** `:::columns{flow=…}` names neither `snake` nor `parallel` (#634): the
+   *  group takes the default. */
+  | { kind: 'columnsFlowUnknown'; value: string }
   /** A `:chip[…]{style="…"}` names a style that is not in
    *  `config.chipStyles`; the chip takes the first style. `inResource`
    *  names the resource whose caption, note or cell holds the chip. */
@@ -325,6 +339,13 @@ export type WarningPayload =
    *  file is missing from storage or does not decode): it is painted as a
    *  placeholder. */
   | { kind: 'missingImage'; resourceId: string; fileId: string }
+  /** An SVG picture the document shows names a font family in its text
+   *  with no face to embed in it (#630): the image sets that text in a
+   *  fallback face. */
+  | { kind: 'svgFontUnavailable'; resourceId: string; fileId: string; family: string; weight: number; style: 'normal' | 'italic' }
+  /** The faces an SVG picture's text names exceed the size cap: none was
+   *  embedded (#630). */
+  | { kind: 'svgFontsTooLarge'; resourceId: string; fileId: string; bytes: number }
   /** IndexedDB is unavailable (private browsing / storage disabled), so
    *  uploaded bitmaps and SVGs cannot be persisted or resolved. */
   | { kind: 'storageUnavailable' }
@@ -352,6 +373,16 @@ export type WarningPayload =
    *  the text beside it would be too narrow, it is too short for lines
    *  beside it, it moved on to the next column, or the text is vertical. */
   | { kind: 'textWrap'; reason: 'tooNarrow' | 'fewLines' | 'moved' | 'verticalText'; resourceId?: string; box?: string }
+  /** The sub-columns of a `:::columns` group are narrower than six ems of
+   *  their text (#634). */
+  | { kind: 'columnsTooNarrow'; columns: number; widthPx: number }
+  /** A side box, or a figure or table of the side column (`resourceId`),
+   *  set on book page `page`, which holds no text: its chapter's text
+   *  ended while it still waited for room in the side column (#639). */
+  | { kind: 'afterText'; page: number; resourceId?: string }
+  /** A box or a floated resource (`resourceId`) still waiting for a slot
+   *  when the layout ended (#639): it is on no page. */
+  | { kind: 'unplaced'; resourceId?: string }
   /** A line number set in the side column overlaps a side box, caption or
    *  figure (#621); both are painted. `number` as printed. */
   | { kind: 'lineNumberOverlap'; number: string }

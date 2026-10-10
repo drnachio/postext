@@ -193,10 +193,14 @@ layout
 │                                                             pHYs/JFIF/EXIF (bitmap.fileResolution), 72/96 = unset
 ├─ floatShrink        { mode='never', minScale=0.7 }          ≥ 1.24 document default of placement.shrink / minScale (see §ResourcePlacement)
 ├─ wrap               { gap?, minTextWidth=12em, minLinesBeside=2, defaultWidth=0.45 }   ≥ 1.24 text wrap defaults (placement.wrap, callout wrap); gap unset = one body line; minTextWidth a Dimension or a share of the column
+├─ floatsAtCitingPage boolean                                default false  ≥ 1.25 document default of placement.citingPage (see §ResourcePlacement)
+├─ maxTopFraction     number                                 default 0.7    ≥ 1.25 largest share of the column a float heading its citing page takes (with the floats already there)
 ├─ hugClosingFloats   boolean                                default true   closing page: page-wide floats below the last text move up under it
+├─ floatsUnderOpener  boolean                                default true   ≥ 1.25 under a span:'page' opener over 2+ text columns, the head of column 1 is a top slot; false = floats land from column 2, as ≤ 1.24 (a preset below configVersion 11 that sets a page-span heading reads false)
 ├─ inlineResourceGap  'around' | 'above'                     default 'around'  (a preset without configVersion ≥ 5 reads 'above')
 ├─ inlineResourceGapInBoxes boolean                          default true  (a preset below configVersion 6 reads false)
 ├─ boxChildSplitMinLines number                              default 2  lines of a paragraph/item a box cut leaves per side (a preset below configVersion 6 with a :::callout reads 1)
+├─ flowColumns        boolean                                default true   ≥ 1.25 :::columns outside a box sets sub-columns in the text (span="page" across a multi-column page), and a group, in a box or in the text, is cut across columns/pages; false = 1.24 (fence ignored outside a box, group never cut; a preset below configVersion 11 with a :::columns fence reads false)
 └─ writingMode        'horizontal-tb' | 'vertical-rl'         default 'horizontal-tb'   postext ≥ 1.9; a heading style's layout may set its own
 ```
 Geometry:
@@ -214,6 +218,11 @@ Geometry:
 - `sideColumnRole: 'floats'` = textbook margin column: body text never enters it; it receives
   resources / callouts with `span: 'side'` (stacked beside their first reference; side figures
   stack from the head of the channel on the citing page). `'text'`: text flows main → side column.
+  A side box its page's channel cannot hold takes the next page's. Where the chapter ends first, each
+  box still waiting takes the channel of a page after the text, in fence order (≥ 1.25; ≤ 1.24 dropped
+  all but the first such page), and the build reports each one (`afterText`): fence the glosses of a
+  short chapter early, or shorten them, until no `afterText` is left. A box taller than an empty
+  channel is set anyway (`calloutOverflow`).
 - Chapter-opener design containers (`span:'page'` headings) are the **whole content width**
   (main + gutter + side), not just the main column.
 - Default is `'double'`: a single-column book must say `layoutType: 'single'`.
@@ -577,6 +586,12 @@ headings
   snaps; 1.4 set it against the band when a heading followed the opener), a heading or display
   formula level with the first visible heading or display formula under the opener (balancing
   space above that one is not repeated), else with that text; what it snaps lands on the grid.
+  A floated box fenced right after the opener (`placement="top"`, with `columns="k"` for k columns),
+  or a `::resource` embed of a `top`/`auto` float there, takes the head of column 1 under the band,
+  level with the other columns' heads, and column 1's text starts under it (≥ 1.25,
+  `layout.floatsUnderOpener`; ≤ 1.24 it landed from column 2, so no teaser strip or page-span box is
+  needed to open a band first). Only over 2+ text columns; a float cited with `:ref` in the text still
+  follows its citing line.
 - Heading slot placeholders: `{titleText}`, `{number}`, `{numberDecimal}`, `{numberRoman}`,
   `{numberRomanLower}`, `{numberAlpha}`, `{numberAlphaLower}`, `{chapterNumber}`, `{chapterTitle}`,
   `{partTitle}`, `{partNumber}`, `{pageNumber}`, `{totalPages}`, `{title}`, `{subtitle}`,
@@ -594,8 +609,10 @@ Defaults:
 enabled true | maxLinesPerHeading 4 | stretchAfterLists true | maxLinesAfterList 1
 stretchAfterFloats true | maxLinesAfterFloat 1 | looseParagraphs true | maxLooseParagraphs 2
 trackParagraphs true | maxTracking 10 (‰ em) | trailing true | beforeSpan true
-closingBox 'first'  ('first' | 'last' | 'off')
+closingBox 'first'  ('first' | 'last' | 'off') | gridLines 'allow' ('allow' | 'off', ≥ 1.25)
 ```
+`enabled` is off by default in vertical text and on a character grid (`cjk.grid.enabled`, ≥ 1.25);
+`true` turns it on there.
 Levers in order: box closing a short column pushed to the foot → extra grid lines above headings
 (favouring lower level numbers) → after list ends → under top floats → loose paragraphs
 (TeX looseness +1, within `bodyText.maxWordSpacing`, optional ≤ maxTracking positive tracking).
@@ -604,6 +621,13 @@ Levers in order: box closing a short column pushed to the foot → extra grid li
 box lever after the spacing levers (the box takes only the fraction of a line they leave, so a
 box annotating the paragraph above it stays close to it); `'off'` never moves the box. Disable
 `enabled` for ragged-bottom books.
+On a character grid (≥ 1.25) balancing turned on keeps every character in its cell: the line levers
+add whole grid lines (the grid's pitch), `gridLines: 'off'` keeps them out (a standard that counts
+lines, GB/T 9704's 22 × 28), and a CJK paragraph runs a line long only when its characters spread
+≤ `maxTracking` apart, with no letter tracking (so a grid of whole cells rarely gets one). Leave
+`enabled` unset on a grid page: it is already off. `doc.gridBalancing` / `column.gridRefused` in the
+VDT say why a grid column ends short. Up to 1.24 a horizontal grid was balanced with loose paragraphs
+spread off the cells; recipes set `enabled: false` against it.
 
 ---------------------------------------------------------------------------------
 
@@ -737,7 +761,9 @@ and heading styles) and part pages (`parts.design`, `parts.versoDesign`), `'elli
 heads, folios (`header`, `footer`, a style's own) and contents part rows (`toc.parts.design`, fixed
 height). So leave it out on opener and part titles, and set it only where the slot's default is wrong (a
 running head that should wrap, a one-line kicker in an opener). Before 1.24 every slot fell back to
-`'ellipsis-end'`: when the pen pins an older engine, write `'wrap'` on titles. Every line cut by an
+`'ellipsis-end'`: when the pen pins an older engine, write `'wrap'` on titles. A row (between `\n`) in Chinese or
+Japanese is set by the CJK composer (≥ 1.25, `cjk.composeDesignText`): kinsoku, mark widths, Han–Latin space,
+book titles kept whole, as in the body; Latin rows wrap as before. Every line cut by an
 ellipsis, or clipped with ink past its box, raises the content warning `designTextTruncated` (≥ 1.24;
 `slot`, `elementId`, `text`, `mode`, `pageIndex`, once a chapter for a running head): read it in the
 render and fix the title or the box unless the cut is meant.
@@ -969,7 +995,7 @@ All em values = the callout body font size.
          + italic = false, smallCaps = false   (paragraphs, list items and blockquotes of the box)
   lists = { bulletChar, color, indent, gap, itemSpacing, bulletFontSize?, bulletFontWeight? }  → inherit unorderedLists
            (a set `color` also colours ordered-list numbers, even when equal to unorderedLists.color)
-  columnGap = 1.5em                  for :::columns{count=N} groups inside the box
+  columnGap = 1.5em                  for :::columns{count=N} groups inside the box (a fence `gap=` overrides it)
   marginTop = 0.75em, marginBottom = 0.75em (minimum; grid-snapped after)
   snapToGrid = true                  false = exact marginBottom (stacked-box worksheets)
   keepTogether = true                false = may split between children / lines; continuation drops icon (its column stays, empty) (+ title unless repeatTitle)
@@ -993,7 +1019,9 @@ Gotchas: `body.textAlign` only `'left'|'justify'`. Callout body inherits body te
 so boxes with coloured bold need `body.boldColor`. `span:'page'` in a multi-column layout cuts
 the page into bands (text above levelled). Nested callouts take their own style but ignore
 span/placement/floatBarrier/snapToGrid. Ordered-list numbers inside a box come from the global
-`orderedLists` (callout `lists` has bullet fields only); `:::columns` groups share the box body.
+`orderedLists` (callout `lists` has bullet fields only); `:::columns` groups share the box body. A box
+that splits cuts inside a group too (≥ 1.25, `layout.flowColumns`): snake groups fill their columns in
+turn, parallel ones (`breaks`) go on stream by stream; a nested box in a group stays whole.
 
 ---------------------------------------------------------------------------------
 
@@ -1110,6 +1138,13 @@ wrap?:    'none' (default) | 'left' | 'right' | 'start' | 'end'   ≥ 1.24: text
                          (minLinesBeside) = band + textWrap warning; columns with a wrap are not balanced
 wrapGap?: Dimension      ≥ 1.24: space between the wrapped item (caption included) and the text beside and under it;
                          default layout.wrap.gap, else one body line
+citingPage?: boolean     ≥ 1.25, position top/auto, span column/page, not rotated: head the page (page span) or column
+                         (column span, columns too) where the citing line lands, LaTeX's [t], instead of the first free
+                         slot after it; the text above the reference moves down under it. Only when it fits within
+                         layout.maxTopFraction of the column, the earlier floats of its sequence are set, no explicit
+                         break opens the page (chapter's first page, part, :::pagebreak), nothing page-wide stands above
+                         the citing line, and the citing line stays on that page; else its usual slot. Falls back to
+                         layout.floatsAtCitingPage. Read after its citation in tagged PDF / HTML
 ```
 Gotchas
 - **Engine default types follow the document language**: with `resourceTypes` unset, the
@@ -1147,6 +1182,10 @@ booktabs (≥ 1.24) — journal tables: heavy rule above + under the last row, l
   continuedFootRule = 'bottom' | 'light' | 'none' ('light': a split part that goes on ends light;
     every part repeats the header with top + header rules; only the last part gets the heavy rule)
 overflow = 'split' | 'clip' | 'hide'                ('split': repeats header rows, caption + continuedSuffix)
+splitInline = true   (≥ 1.25) overflow applies to `here` tables too: one that does not fit the rest of its column is
+  cut between rows (first part ≥ header + 2 rows, else the whole table moves on; parts go on at the head of the
+  next column at its width; < 5 body rows never cut); 'clip'/'hide' for one taller than a column; not inside boxes
+  or on vertical pages. false = 1.24 (moves whole); a preset below configVersion 11 embedding a resource reads false
 continuedSuffix = '(cont.)', continuesMarkerEnabled = true, continuesMarker = 'Continued' | 'Continúa' (by locale)
 ```
 tableStyles[]: `{ id (REQUIRED), name?, …any tableStyle field }` — unset fields inherit
@@ -1183,8 +1222,11 @@ Caption text supports inline markdown; a bold lead sentence is written as `**…
 
 ## 18. `diagramStyle`
 
-`{ singleInk = false, inkColor = main-color }` — recolours every SVG to tints of one ink by
-luminance (spot-colour books). Disables SVG `pdfFileId` print masters when on.
+`{ singleInk = false, inkColor = main-color, inlineFonts = true }` — `singleInk` recolours every
+SVG to tints of one ink by luminance (spot-colour books) and disables SVG `pdfFileId` print
+masters when on. `inlineFonts` (≥ 1.25) embeds in each SVG the faces its `<text>` names before it
+is shown as an image (canvas, HTML, EPUB, PDF raster fallback), so labels set in the book's fonts;
+a resource opts out with `svg.inlineFonts: false` (`"inlineFonts": false` in preset.json).
 
 ## 18a. `videoStyle` — VideoStyleConfig (postext ≥ 1.16)
 
@@ -1373,9 +1415,12 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 | `spaceAfterQuestion` | `'auto'`: off / off / off / on | ≥ 1.16; one em after ？！ inside a paragraph unless a closing bracket or another mark follows; a typed U+3000 there becomes that space; none at a line end |
 | `paragraphStartBracket` | `'auto'`: as any line start (Chinese) / `half` (Japan) | ≥ 1.16; a paragraph whose first-line indent meets an opening bracket: `'indent'` (JLReq ①, indent then 「), `'half'` (③, the bracket fills the indent cell, text at 1 em: Japanese novels), `'flush'` (天付き) |
 | `wordBreak` | `'normal'` | ≥ 1.16; `'keep-all'`: lines break only at spaces (U+0020, U+3000) and next to punctuation the level allows, never between two letters (kana, kanji, hangul, Latin): kana written with a space between phrases (分かち書き: picture books, primers) and Korean; a phrase longer than the line breaks inside. Replaces word joiners (U+2060) between kana. A paragraph style may set its own `wordBreak` |
+| `titleMinChars` | `2` | ≥ 1.25; a line breaks inside a 《…》/〈…〉 title (typed or added by `bookTitleMark`, also 『』 round a Japanese `:book[…]`) or a wavy/bare `:book[…]` only with this many title characters on either side: no `《說` / `文》` split, titles of ≤ 3 characters stay whole; gives way when the line has no other break. `1` = break anywhere the level allows (pre-1.25). Do not cut or reword a source to dodge a title break |
+| `circledNumbers` | `'cjk'` | ≥ 1.25; ①–⑳, ⑴, ⒈, ⓐ, ❶, ➀ (U+2460–24FF, U+2776–2793) are CJK characters: one cell, no Han–Latin space, never at a line end (every level but `none` / `ja-loose`), so `**①**天也` needs no word joiner. `'western'` = pre-1.25 (Latin letters, ¼ em each side, may end a line). Vertical: upright either way |
+| `composeDesignText` | `true` | ≥ 1.25; design text (openers, heading designs, running heads, page designs, part pages) whose row has more CJK letters than word spaces takes the body's `lineBreak`, mark widths, `latinSpacing`, hanging and title rule (ragged; ruby/warichu/dots print plain). A note may be one sentence with `，；、`: no `\n` per clause to dodge full-width marks. `false` = pre-1.25 (wrapped at spaces, marks at the font's width) |
 | `latinSpacing` | `{0.25, em}` | Han ↔ Latin letter/digit; replaces a typed space; `0` off |
 | `uprightDigits` | `2` | vertical text: numbers of ≤ N digits in one upright cell (0, 2, 3, 4), but not inside a Latin sentence (a Latin word on both sides, past spaces, numbers and marks), where they run sideways with it; `:tcy[…]` / `:sideways[…]` by hand |
-| `grid` | off | `{enabled, charsPerLine, linesPerPage, show}`: rewrites margins so columns are whole ems and the type area whole lines; configured margins are minimums; warning `cjkGridClamped` |
+| `grid` | off | `{enabled, charsPerLine, linesPerPage, show}`: rewrites margins so columns are whole ems and the type area whole lines; configured margins are minimums; warning `cjkGridClamped`. Column balancing is off on a grid unless `headings.balancing.enabled` (≥ 1.25, §5.2) |
 | `emphasis` | `'dots'` in a Chinese or Japanese document | what `*…*` does to CJK characters (`'italic'` fakes a slant) |
 | `emphasisMark` | `{style: 'auto', fill: 'auto', position: 'auto'}` | ≥ 1.16; the shape of `*…*` dots and of `:dots` without attributes: `style` `'dot'\|'circle'\|'sesame'`, `fill` `'filled'\|'open'`, `position` `'over'\|'under'` (over = right in vertical text). Auto: Chinese dot under (right in vertical); Japan sesame ﹅ over / right in both directions. Dots go outside a ruby reading on the same side |
 | `bookTitleMark` | brackets / wavy / wavy / brackets | `:book[…]` prints its brackets, a wavy line under it, or `'none'` |
@@ -1388,7 +1433,7 @@ CJK keeps Knuth–Plass. The guide is docs/chinese-layout-en.mdx (postext.dev/en
 Content warnings to expect: `cjkLooseLine` (a justified line needing more than ½ em between characters, set
 short), `cjkMarksExceedLeading` / `rubyExceedsLeading` (line gap under ½ em with marks on one side, ⅝ with both;
 give annotated text more leading), `kuntenExceedsLeading` (送り仮名 need half an em on the reading side),
-`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `textWrap` (≥ 1.24: a resource or box with wrap kept its band: `tooNarrow`, `fewLines`, `verticalText`, or an inline one `moved` to the next column), `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block); config
+`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `textWrap` (≥ 1.24: a resource or box with wrap kept its band: `tooNarrow`, `fewLines`, `verticalText`, or an inline one `moved` to the next column), `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block), `columnsFlowUnknown` (≥ 1.25: a `:::columns` flow other than snake/parallel; the default applies), `columnsTooNarrow` (≥ 1.25: sub-columns under six ems of their text: fewer columns or a smaller `gap`), `afterText` (≥ 1.25: a `span: 'side'` box or side figure set on a page with no text, because its chapter ended while it waited for the channel: fence it earlier or shorten it) and `unplaced` (≥ 1.25: a box or float no page could take, e.g. a side box in a section with no side column; it is on no page); config
 warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`.
 
 ```json
@@ -1437,8 +1482,8 @@ Guide: https://postext.dev/en/docs/japanese-layout. Everything below follows fro
 | centred page (扉, dedication) | `:::pagebreak{center}` | the next page's text centred head to foot (across the page in vertical text) |
 | kanbun | `:kunten[字]{kaeri="レ" okuri="ヲ"}`, `cjk.kunten` | 返り点 small at the lower left, 送り仮名 at the right (vertical) |
 
-Vertical multi-tier pages run on at a chapter end (nariyuki) with `headings.balancing.trailing: false`; the
-default balances them. Fonts: Noto Serif JP (body), Noto Sans JP (headings, gothic emphasis), or Shippori
+Vertical multi-tier pages run on at a chapter end (nariyuki) by default: balancing is off in vertical
+text (and on a character grid, ≥ 1.25) unless `headings.balancing.enabled: true`. Fonts: Noto Serif JP (body), Noto Sans JP (headings, gothic emphasis), or Shippori
 Mincho / B1 for a bunko look (it has no ō ū: rōmaji with macrons needs another face for that text).
 
 ```json
@@ -1606,17 +1651,17 @@ fore-edge column: `"layout": {"layoutType": "oneAndHalf", "sideColumnPercent":
 
 **preset.json** — `version: 2` manifest (full reference: project-format.md):
 ```
-{ version: 2, configVersion: 10, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
+{ version: 2, configVersion: 11, id, name, description?, locale?, locales?, thumbnail?, license?, credits?, tags?,
   default?, view?: { canvasScope?: 'book'|'chapter' },
   chapters: [{title, file}] | { "<locale>": [{title, file}] },
   config: PostextConfig,                          // WITHOUT customFonts
-  resources: [ Resource minus createdAt/updatedAt/bitmap/svg, plus file?, pdfFile?, width?, height?, resolution?, fileResolution?, note? ],
+  resources: [ Resource minus createdAt/updatedAt/bitmap/svg, plus file?, pdfFile?, inlineFonts?, width?, height?, resolution?, fileResolution?, note? ],
   fonts: [ { name, variants: [{ weight, style, file: "fonts/X.woff2" }], redistributable? } ],
   localized?: { "<locale>": { config?: Partial<PostextConfig> (top-level keys REPLACED wholesale),
                               resources?: [{ id, caption?, note?, altText?, table?, file?, pdfFile?, width?, height? }],
                               view?: { canvasScope?: 'book'|'chapter' } } } }   // the edition's view over `view` (≥ 1.9.2)
 ```
-`configVersion: 10` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
+`configVersion: 11` says `config` is written for today's rules (`preset_kit.write_manifest` sets it). Without it
 the bundle reads as postext 1.4 wrote it: H1 breaks pinned, maths × 1.1312 when a chapter has `$`,
 `layout.inlineResourceGap: 'above'` when a chapter embeds a `::resource`, `layout.inlineResourceGapInBoxes: false`
 when one is embedded inside a `:::callout`, `headings.inlineMarks: false` when a heading carries `*`, `_`, `^`,
@@ -1634,7 +1679,10 @@ backslash or sets `\\` before a space, and `codeStyle.blocks: false` when a chap
 fence (its lines then read as Markdown); one stamped 9 (postext 1.23), those of rules 10:
 `bodyText.verse.tighten: false` when a chapter sets a poem line by line, and `overflow: 'ellipsis-end'` written
 on every text element of a heading design or a part page (`parts.design`, `parts.versoDesign`) that sets none
-(in `htmlViewer.overrides` too). The pins keep what those rules changed, not
+(in `htmlViewer.overrides` too); one stamped 10 (postext 1.24), that of rules 11:
+`headings.balancing.enabled: true` on a horizontal `cjk.grid` config that does not set it, `tableStyle.splitInline: false`
+when a chapter embeds a resource, `layout.flowColumns: false` when a chapter opens a `:::columns` fence (#634) and
+`layout.floatsUnderOpener: false` when the config sets a `span: 'page'` heading (#639). The pins keep what those rules changed, not
 every 1.4 page: 1.5's layout fixes (page-span opener measure, drop caps in heading designs, tracking in boxes,
 the loose-paragraph limit…) apply to an old bundle too.
 Must NOT go in `config`: `customFonts` (built from `fonts[]`; fileIds are storage-local —
@@ -1760,6 +1808,19 @@ shows the reverse page more than any stock but bible (its coldset ink soaks into
 `debug`: `cursorSync {enabled=true,color}`, `selectionSync {enabled=true,color}`,
 `looseLineHighlight {enabled=false,color,threshold=3}`, `pageNegative {enabled=false}`,
 `warnings { missingFont=true, looseLines=true, headingHierarchy=true, consecutiveHeadings=false, listAfterHeading=false, designIssues=true }`.
+`missingFont` also gates the engine's `fontFallback` content warning (≥ 1.25): a face the text was set in
+that the browser's font set could not give when the build ran (`reason` `missing` or `synthesized`, a
+bold or italic drawn from another face). Only builds with a font set check it (the browser, a worker);
+`render.mjs` and the CLI do not.
+
+**Fonts and caches in browser code (≥ 1.25).** Build with `buildDocumentWithFonts(content, config,
+{ resolve })`, or call `prepareFonts(content, config, { resolve })` before `buildDocument`: it loads
+every face the config and the text ask for (all weights and slants, for the characters the text sets,
+so Arabic, Greek or CJK slices come in), from the page's `@font-face` rules or from `resolve(family,
+weight, style, { text })`, which answers with files like a PDF font provider. Faces that arrive later
+drop their family's measurements by themselves (`watchFonts` + `onFontsChanged(relayout)` for a live
+view); never call `clearMeasurementCache()` and rebuild by hand. A config object changed in place is
+resolved again on the next build, so a `config()` factory per build is not needed.
 
 ---------------------------------------------------------------------------------
 

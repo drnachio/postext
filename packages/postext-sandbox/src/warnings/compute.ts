@@ -10,6 +10,7 @@ import type {
   ResourceType,
   ResolvedDesignSlot,
   DesignContextKind,
+  SvgFontFaceReport,
 } from 'postext';
 import {
   spaceDirectiveLines,
@@ -110,6 +111,7 @@ const LAYOUT_CONTENT_KINDS: ReadonlySet<string> = new Set([
   'cjkMarksExceedLeading', 'rubyExceedsLeading', 'kuntenExceedsLeading', 'arabicMarksExceedLeading',
   'unbreakableWordOverflow', 'joiningScriptLetterSpacing',
   'comicPanelLetterbox', 'comicBalloonOverflow', 'lineNumberOverlap', 'dropCap', 'codeOverflow', 'textWrap',
+  'columnsTooNarrow',
 ]);
 
 /** Warnings the layout itself raised (`doc.warnings`): a box the engine
@@ -142,6 +144,29 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
         sourceStart: w.sourceStart,
         sourceEnd: w.sourceEnd,
         line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
+    if (w.kind === 'afterText' || w.kind === 'unplaced') {
+      // A side box or side float set on a page with no text, by its book
+      // page, and what the layout could place nowhere (#639).
+      out.push({
+        id: `layout-${w.kind}-${w.sourceStart ?? w.resourceId ?? 'x'}-${i}`,
+        payload: w.kind === 'afterText'
+          ? { kind: 'afterText', page: (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0), ...(w.resourceId !== undefined ? { resourceId: w.resourceId } : {}) }
+          : { kind: 'unplaced', ...(w.resourceId !== undefined ? { resourceId: w.resourceId } : {}) },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
+    if (w.kind === 'fontFallback') {
+      // A face the layout measured with a fallback (#629): one per face,
+      // whatever chapter found it; no place in the text.
+      out.push({
+        id: `font-fallback-${w.family}-${w.weight}-${w.style}`,
+        payload: { kind: 'fontFallback', family: w.family, weight: w.weight, style: w.style, reason: w.reason },
       });
       return;
     }
@@ -847,6 +872,8 @@ function collectResourceWarnings(
   configUsedIds: ReadonlySet<string> = new Set(),
   /** File ids whose payload could not be read or decoded. */
   unavailableImages: ReadonlySet<string> = new Set(),
+  /** SVG pictures whose fonts could not all be inlined, by file id (#630). */
+  svgFontIssues: ReadonlyMap<string, readonly SvgFontFaceReport[]> = new Map(),
 ): Warning[] {
   const out: Warning[] = [];
   let idx = 0;
@@ -858,8 +885,9 @@ function collectResourceWarnings(
   }
   const knownTypeIds = new Set(resourceTypes.map((t) => t.id));
 
-  // 1. Images the document uses with no readable payload.
-  if (unavailableImages.size > 0) {
+  // 1. Images the document uses with no readable payload, and SVG
+  //    pictures it uses whose fonts could not all be inlined (#630).
+  if (unavailableImages.size > 0 || svgFontIssues.size > 0) {
     const uses = firstResourceUses(blocks, markdown);
     const byId = new Map(resources.map((r) => [r.id, r]));
     // Cell images count where their table is used.
@@ -870,6 +898,32 @@ function collectResourceWarnings(
           const image = cell.image?.resourceId;
           if (image !== undefined && !uses.has(image) && !cellUses.has(image)) cellUses.set(image, at);
         }
+      }
+    }
+    const reportedFonts = new Set<string>();
+    for (const r of resources) {
+      const fileId = imageFileId(r);
+      const issues = fileId !== undefined ? svgFontIssues.get(fileId) : undefined;
+      if (!issues || fileId === undefined || unavailableImages.has(fileId) || reportedFonts.has(r.id)) continue;
+      const at = uses.get(r.id) ?? cellUses.get(r.id);
+      if (!at && !configUsedIds.has(r.id)) continue;
+      reportedFonts.add(r.id);
+      const where = at ? { sourceStart: at.start, sourceEnd: at.end, line: lineNumberForOffset(markdown, at.start) } : {};
+      const tooLarge = issues.filter((f) => f.status === 'tooLarge');
+      if (tooLarge.length > 0) {
+        out.push({
+          id: `resource-svg-fonts-too-large-${r.id}`,
+          payload: { kind: 'svgFontsTooLarge', resourceId: r.id, fileId, bytes: tooLarge.reduce((sum, f) => sum + (f.bytes ?? 0), 0) },
+          ...where,
+        });
+      }
+      for (const f of issues) {
+        if (f.status !== 'unavailable') continue;
+        out.push({
+          id: `resource-svg-font-${r.id}-${f.family}-${f.weight}-${f.style}`,
+          payload: { kind: 'svgFontUnavailable', resourceId: r.id, fileId, family: f.family, weight: f.weight, style: f.style },
+          ...where,
+        });
       }
     }
     const reported = new Set<string>();
@@ -953,6 +1007,10 @@ export function computeWarnings(params: {
   /** File ids of image payloads the previews could not read or decode
    *  (see `unavailableResourceImages`). Surfaces `missingImage`. */
   unavailableImages?: ReadonlySet<string>;
+  /** SVG pictures whose fonts the previews could not all inline, by file
+   *  id (see `svgFontIssues`). Surfaces `svgFontUnavailable` and
+   *  `svgFontsTooLarge` (#630). */
+  svgFontIssues?: ReadonlyMap<string, readonly SvgFontFaceReport[]>;
   /** The composed book `markdown` came from. When given, every located
    *  warning also carries its chapter and chapter-local line/offsets. */
   book?: ComposedBook;
@@ -968,8 +1026,8 @@ export function computeWarnings(params: {
    *  preflight runs. */
   preflight?: PreflightInputs;
 }): Warning[] {
-  const { markdown, config, doc, resources = [], storageUnavailable = false, unavailableImages, book, chapterTitles, pdfFontChecks = [], pdfFontChecksStale = false, preflight } = params;
-  const warnings = computeDocumentWarnings({ markdown, config, doc, resources, storageUnavailable, unavailableImages, bookMetadata: book?.metadata });
+  const { markdown, config, doc, resources = [], storageUnavailable = false, unavailableImages, svgFontIssues, book, chapterTitles, pdfFontChecks = [], pdfFontChecksStale = false, preflight } = params;
+  const warnings = computeDocumentWarnings({ markdown, config, doc, resources, storageUnavailable, unavailableImages, svgFontIssues, bookMetadata: book?.metadata });
   warnings.push(...pdfFontWarnings(pdfFontChecks, pdfFontChecksStale));
   if (preflight && doc) warnings.push(...collectPreflightWarnings(doc, config, resources, preflight));
   if (!book) return warnings;
@@ -1154,11 +1212,13 @@ function computeDocumentWarnings(params: {
   resources: Resource[];
   storageUnavailable: boolean;
   unavailableImages?: ReadonlySet<string>;
+  /** SVG pictures whose fonts could not all be inlined (#630). */
+  svgFontIssues?: ReadonlyMap<string, readonly SvgFontFaceReport[]>;
   /** The book's metadata (`ComposedBook.metadata`), handed to the engine
    *  beside `markdown`. */
   bookMetadata?: Record<string, unknown>;
 }): Warning[] {
-  const { markdown, config, doc, resources, storageUnavailable, unavailableImages, bookMetadata } = params;
+  const { markdown, config, doc, resources, storageUnavailable, unavailableImages, svgFontIssues, bookMetadata } = params;
   const debug = resolveDebugConfig(config.debug);
   const toggles = debug.warnings;
   const warnings: Warning[] = [];
@@ -1193,7 +1253,10 @@ function computeDocumentWarnings(params: {
     }
 
     const families = getConfigFontFamilies(config);
-    const specMissing = new Set(detectMissingFonts(config));
+    // With a layout, the engine's `fontFallback` says which faces it
+    // measured with a fallback (#629); this probe covers the time before
+    // the first one.
+    const specMissing = new Set(doc ? [] : detectMissingFonts(config));
     // Where emphasis is set as dots, only the Latin letters and digits of
     // `*…*` ask the body family for its italics.
     const text = { latinEmphasis: hasLatinEmphasis(blocks) };
@@ -1263,7 +1326,13 @@ function computeDocumentWarnings(params: {
   if (toggles.looseLines && doc) {
     warnings.push(...collectLooseLineWarnings(doc, debug, markdown));
   }
-  if (doc) warnings.push(...collectLayoutWarnings(doc, markdown));
+  if (doc) {
+    // A family the Sandbox already names as unknown or short of files is
+    // not reported again as a fallback.
+    const named = new Set(warnings.flatMap((w) => (w.payload.kind === 'missingFontFamily' || w.payload.kind === 'missingFontVariant' ? [w.payload.family.toLowerCase()] : [])));
+    warnings.push(...collectLayoutWarnings(doc, markdown).filter((w) => w.payload.kind !== 'fontFallback'
+      || (toggles.missingFont && !(w.payload.reason === 'missing' && named.has(w.payload.family.toLowerCase())))));
+  }
   if (doc) warnings.push(...collectHeadingDesignCutWarnings(doc, markdown));
 
   warnings.push(...collectHeaderFooterWarnings(config, doc, markdown, bookMetadata));
@@ -1292,6 +1361,7 @@ function computeDocumentWarnings(params: {
       // With no storage every payload is unreadable: `storageUnavailable`
       // says so once instead.
       storageUnavailable ? undefined : unavailableImages,
+      svgFontIssues,
     ),
   );
   if (storageUnavailable) {

@@ -45,6 +45,19 @@
  *    word spacing alone cannot gain the line, the placement pass also tries
  *    a little positive tracking on that paragraph (the compositor's classic
  *    fix), keeping the smallest value that works, never above `maxTracking`.
+ *
+ * On a character grid (`cjk.grid`, #632) every character stands in a cell
+ * one em wide and every line on the grid's line pitch, which is the
+ * baseline grid: the levers that move text by whole grid lines keep it on
+ * the grid, and `headings.balancing.gridLines: 'off'` keeps them out (a
+ * standard that counts lines has no empty row to give). The closing box
+ * and the pictures with a safe area are off the grid by design and work as
+ * anywhere. A loose paragraph is the exception: a CJK paragraph gains its
+ * line by breaking each line short and spreading the characters over the
+ * measure, which moves them off their cells; there it is accepted only
+ * when no gap between characters spreads past `maxTracking`, and no
+ * tracking is added to its letters (`measureLooseParagraph`). Balancing is
+ * off by default on a grid (`balancingOnByDefault`).
  */
 
 import type { BalanceLever, VDTBlock, VDTColumn, VDTDocument, VDTPage } from '../vdt';
@@ -638,7 +651,15 @@ export interface BalanceProposalOptions {
    *  (`headings.balancing.closingBox`); the document's setting when
    *  omitted. */
   closingBox?: ClosingBoxLever;
+  /** Whether the levers that add whole grid lines (headings, list ends,
+   *  after a display, after a float band) run: false on a character grid
+   *  with `headings.balancing.gridLines: 'off'` (#632). Default true. */
+  gridLines?: boolean;
 }
+
+/** The levers that add whole grid lines to a column, which
+ *  `headings.balancing.gridLines: 'off'` keeps out of a character grid. */
+export const GRID_LINE_LEVERS: readonly BalanceCandidateKind[] = ['heading', 'listEnd', 'afterDisplay', 'afterFloat'];
 
 /** Position of a column in a document, in reading order. */
 export interface ColumnPosition {
@@ -788,26 +809,28 @@ export function proposeBalanceLines(
       changed = true;
     }
 
+    // On a character grid that counts its lines, no row is added (#632).
+    const rows = options.gridLines !== false;
     const headings = gap.candidates
-      .filter((c) => c.kind === 'heading')
+      .filter((c) => rows && c.kind === 'heading')
       .sort((a, b) => a.level - b.level || a.order - b.order);
     remaining = distribute(headings, remaining, options.maxLinesPerHeading);
 
-    if (remaining > 0 && options.stretchAfterLists) {
+    if (remaining > 0 && rows && options.stretchAfterLists) {
       const listEnds = gap.candidates
         .filter((c) => c.kind === 'listEnd')
         .sort((a, b) => a.order - b.order);
       remaining = distribute(listEnds, remaining, options.maxLinesAfterList);
     }
 
-    if (remaining > 0) {
+    if (remaining > 0 && rows) {
       const afterDisplay = gap.candidates
         .filter((c) => c.kind === 'afterDisplay')
         .sort((a, b) => a.order - b.order);
       remaining = distribute(afterDisplay, remaining, 1);
     }
 
-    if (remaining > 0 && options.stretchAfterFloats) {
+    if (remaining > 0 && rows && options.stretchAfterFloats) {
       const afterFloats = gap.candidates
         .filter((c) => c.kind === 'afterFloat')
         .sort((a, b) => a.order - b.order);

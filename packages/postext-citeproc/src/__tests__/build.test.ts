@@ -130,6 +130,77 @@ describe('references written in the text', () => {
   });
 });
 
+describe('MLA narrative citations in the paragraph (#640)', () => {
+  // The citeproc unit test covers the composite citation alone; this checks its join with
+  // the words around it, on a justified line where a second space would stretch.
+  const bib = `:::references{format=bibtex}
+@book{stillinger1974, author={Stillinger, Jack}, title={The Texts of Keats's Poems}, publisher={Harvard UP}, year=1974}
+@book{keatsletters, author={Keats, John}, title={Letters of John Keats to His Family and Friends}, shorttitle={Letters}, publisher={Macmillan}, year=1925}
+@incollection{keatsode, author={Keats, John}, title={Ode on a Grecian Urn}, shorttitle={Ode}, booktitle={Lamia, Isabella, The Eve of St. Agnes, and Other Poems}, publisher={Taylor and Hessey}, year=1820, pages={113--116}}
+:::
+`;
+  const md = `# One\n\nThe Annals text has no inverted commas, as @stillinger1974 records in his survey of the transcripts, and @stillinger1974 [212] gives the variants. Keats wrote of it [@keatsletters, 41; @keatsode, lines 1–3].\n\n${bib}`;
+  const doc = buildDocument({ markdown: md }, { ...config, locale: 'en-US', bodyText: { textAlign: 'justify' }, citations: { style: 'modern-language-association' } });
+  const para = doc.blocks.find((b) => b.lines.some((l) => (l.segments ?? []).some((s) => s.href === '#ref-stillinger1974')))!;
+  const segments = para.lines.flatMap((l) => l.segments ?? []);
+
+  it('a narrative citation with no locator is followed by one space', () => {
+    const text = para.lines.map((l) => (l.segments ?? []).map((s) => s.text).join('')).join(' ');
+    expect(text).toContain('as Stillinger records in');
+    expect(text).not.toMatch(/Stillinger\s{2}/);
+    expect(text).toContain('Stillinger (212) gives');
+  });
+
+  it('no citation segment ends in a space before the following word', () => {
+    const cited = segments.filter((s) => s.href === '#ref-stillinger1974');
+    expect(cited.length).toBeGreaterThan(0);
+    for (const s of cited) expect(s.text).not.toMatch(/\s$/);
+    for (let i = 0; i + 1 < segments.length; i++) {
+      if (/\s$/.test(segments[i]!.text)) expect(segments[i + 1]!.text).not.toMatch(/^\s/);
+    }
+  });
+
+  it('the HTML output carries no space at the end of the citation', () => {
+    const html = renderToHtml(doc);
+    const text = (h: string) => h.replace(/<[^>]+>/g, '');
+    const narrative = /<a href="#pt-a-ref-stillinger1974"[^>]*>(.*?)<\/a>(.*?)records/.exec(html)!;
+    expect(text(narrative[1]!)).toBe('Stillinger');
+    expect(text(narrative[2]!)).toBe(' ');
+  });
+
+  it('BibTeX shorttitle tells two works by one author apart', () => {
+    const text = lines(doc).join('\n');
+    expect(text).toContain('(Keats, Letters 41; Keats, “Ode” 1–3)');
+  });
+});
+
+describe('a TeX double hyphen in a locator (#647)', () => {
+  const bib = `:::references{format=bibtex}
+@incollection{keatsode, author={Keats, John}, title={Ode on a Grecian Urn}, shorttitle={Ode}, booktitle={Lamia, Isabella, The Eve of St. Agnes, and Other Poems}, publisher={Taylor and Hessey}, year=1820, pages={113--116}}
+@book{stillinger1974, author={Stillinger, Jack}, title={The Texts of Keats's Poems}, publisher={Harvard UP}, year=1974}
+:::
+`;
+  const body = (dash: string): string => `# One\n\nThe urn speaks [@keatsode, lines 1${dash}3] and the survey lists it [@stillinger1974, pp. 12${dash}15, 20].\n\n${bib}`;
+  const build = (dash: string, style: string): VDTDocument => buildDocument({ markdown: body(dash) }, { ...config, locale: 'en-US', citations: { style } });
+
+  it('prints the range with an en dash, as the citation written with one does', () => {
+    for (const style of ['modern-language-association', 'apa']) {
+      const tex = lines(build('--', style)).join('\n');
+      expect(tex).toBe(lines(build('–', style)).join('\n'));
+      expect(tex).not.toContain('--');
+    }
+    expect(lines(build('--', 'modern-language-association')).join('\n')).toContain('(Keats 1–3)');
+    expect(lines(build('--', 'apa')).join('\n')).toContain('(Stillinger, 1974, pp.\u00a012–15, 20)');
+  });
+
+  it('the HTML output and the BibTeX pages carry the same dash', () => {
+    const html = renderToHtml(build('--', 'modern-language-association')).replace(/<[^>]+>/g, '');
+    expect(html).toContain('(Keats 1–3)');
+    expect(html).toContain('113–16');
+    expect(html).not.toContain('--');
+  });
+});
+
 describe('books', () => {
   it('numbers through the book and lists every work after the last chapter', () => {
     const docs = buildBundle({

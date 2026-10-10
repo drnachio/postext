@@ -14,7 +14,7 @@ import { loadRegistry } from "./registry.ts";
 import { readRecipeSources } from "./sources.ts";
 import { stepTitles } from "./sections.ts";
 import type { Catalog, CatalogRecipe, ComposedPen, Locale, Recipe, Registry } from "./types.ts";
-import { compareSemVer } from "./validate.ts";
+import { compareSemVer, shownGotchas } from "./validate.ts";
 import { packCatalog, type PackedCatalog } from "./wire.ts";
 
 const PRODUCTION = process.env.NODE_ENV === "production";
@@ -103,7 +103,7 @@ export function catalogRecipe(recipe: Recipe, locale: Locale, registry: Registry
       ),
       ...detected(recipe, locale),
       headings: unique(writeup ? stepTitles(writeup.body) : []),
-      gotchas: unique((meta.gotchas ?? []).map((id) => registry.gotchas[id]?.title[locale] ?? "")),
+      gotchas: unique(shownGotchas(meta, registry.gotchas).map((id) => registry.gotchas[id]?.title[locale] ?? "")),
       otherTitle: recipe.writeups[other]?.frontmatter.title ?? "",
     },
   };
@@ -187,7 +187,10 @@ export function buildCatalogWire(locale: Locale): PackedCatalog {
   const catalog = buildCatalog(locale);
   const recipes = new Map(getVisibleRecipes().map((r) => [r.slug, r.meta]));
   const registry: Registry | null = catalog.recipes.length > 0 ? loadRegistry() : null;
-  const ids = (slug: string) => ({ answers: recipes.get(slug)?.answers ?? [], gotchas: recipes.get(slug)?.gotchas ?? [] });
+  const ids = (slug: string) => {
+    const meta = recipes.get(slug);
+    return { answers: meta?.answers ?? [], gotchas: meta && registry ? shownGotchas(meta, registry.gotchas) : [] };
+  };
   const terms: PackedCatalog["terms"] = { questions: {}, gotchas: {} };
   for (const recipe of catalog.recipes) {
     const { answers, gotchas } = ids(recipe.slug);

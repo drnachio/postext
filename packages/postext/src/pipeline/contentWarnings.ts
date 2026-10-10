@@ -261,6 +261,8 @@ export function collectContentWarnings(
           out.push({ kind: 'unknownParagraphStyle', style: attrs.style, ...abs(range) });
         } else if (b.containerName === 'callout' && calloutStyles.size > 0 && attrs.type !== undefined && !calloutStyles.has(attrs.type)) {
           out.push({ kind: 'unknownCalloutType', type: attrs.type, ...abs(range) });
+        } else if (b.containerName === 'columns' && attrs.flow !== undefined && attrs.flow !== 'snake' && attrs.flow !== 'parallel') {
+          out.push({ kind: 'columnsFlowUnknown', value: attrs.flow, ...abs(range) });
         } else if (b.containerName === 'paper') {
           for (const issue of parsePaperAttrs(attrs, config?.colorPalette).issues) {
             out.push({ kind: 'paperAttributeInvalid', key: issue.key, value: issue.value, ...abs(range) });
@@ -764,6 +766,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'unknownCalloutType':
       text = `Unknown callout type "${w.type}" — the box takes the first callout style`;
       break;
+    case 'columnsFlowUnknown':
+      text = `Unknown flow "${w.value}" for :::columns — the group fills its columns in turn ("snake"), or stream by stream ("parallel") when it sets breaks`;
+      break;
     case 'paperAttributeInvalid':
       text = `:::paper ${w.key}="${w.value}" is not a value it reads — dropped, the pages keep the document's paper for it`;
       break;
@@ -812,9 +817,22 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'missingImage':
       text = `No image for file "${w.fileId}"${w.resourceId !== undefined ? ` (resource "${w.resourceId}")` : ''} — painted as a placeholder`;
       break;
+    case 'svgFontUnavailable':
+      text = `The SVG "${w.fileId}"${w.resourceId !== undefined ? ` (resource "${w.resourceId}")` : ''} sets text in "${w.family}" ${w.weight}${w.style === 'italic' ? ' italic' : ''}, which has no face to embed — the image sets it in a fallback face`;
+      break;
+    case 'svgFontsTooLarge':
+      text = `The fonts of the SVG "${w.fileId}"${w.resourceId !== undefined ? ` (resource "${w.resourceId}")` : ''} come to ${Math.round(w.bytes / 1024)} KB, over the ${Math.round(w.maxBytes / 1024)} KB cap — none was embedded`;
+      break;
     case 'cjkLooseLine':
       text = `The justified line "${w.text}" needs more space between its characters than the cap allows — it is set short of the measure`;
       break;
+    case 'fontFallback': {
+      const face = `"${w.family}" ${w.weight}${w.style === 'italic' ? ' italic' : ''}`;
+      text = w.reason === 'missing'
+        ? `The face ${face} was not loaded when the document was laid out — its text was measured with a fallback face; load it first (prepareFonts, buildDocumentWithFonts)`
+        : `The face ${face} has no file of its own — the browser draws it from another weight or slant of the family; load that face or set a weight the family has`;
+      break;
+    }
     case 'designTextTruncated':
       text = w.mode === 'clip'
         ? `The ${w.slot} text "${w.text}" (element "${w.elementId}") is wider than its box and clipped`
@@ -846,6 +864,15 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
           : `${what} — the listing is set at ${Math.round((w.scale ?? 1) * 100)} % of its size, and what still does not fit is turned over`;
       break;
     }
+    case 'columnsTooNarrow':
+      text = `The ${w.columns} columns of a :::columns group are ${Math.round(w.widthPx)} px wide, narrower than six ems of their text — few words fit a line; set fewer columns or a smaller gap`;
+      break;
+    case 'afterText':
+      text = `${w.resourceId !== undefined ? `The resource "${w.resourceId}"` : 'A side box'} stands in the side column of a page with no text — the text ended before the side column had room for it; fence it earlier or make it shorter`;
+      break;
+    case 'unplaced':
+      text = `${w.resourceId !== undefined ? `The resource "${w.resourceId}"` : 'A box'} found no slot before the layout ended — it is on no page`;
+      break;
     case 'textWrap': {
       const what = w.resourceId !== undefined ? `The resource "${w.resourceId}"` : `A "${w.box ?? 'callout'}" box`;
       text = w.reason === 'moved'

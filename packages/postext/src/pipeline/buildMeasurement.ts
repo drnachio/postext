@@ -10,7 +10,7 @@ import type { BlockStyle } from './styles';
 import type { MeasuredBlock, MeasurementCache } from '../measure';
 import { measureBlock, measureRichBlock, cachedMeasureBlock, cachedMeasureRichBlock } from '../measure';
 import { renderMath } from '../math';
-import { layoutResourceBlock } from './resourceLayout';
+import { layoutResourceBlock, type TableRowMetrics, type TableSliceSpec } from './resourceLayout';
 import type { ResourceNumberingMap } from './resourceNumbering';
 import type { CaptionCitations } from './citations';
 
@@ -45,6 +45,9 @@ export interface MeasurementInput {
   bodyHeightDelta?: number;
   /** A resource on a vertical page: set upright (`ResourceLayoutInput.upright`). */
   upright?: { maxLength: number };
+  /** A table: lay out only these rows (`ResourceLayoutInput.slice`, an
+   *  inline table split across columns, #634). */
+  tableSlice?: TableSliceSpec;
 }
 
 export interface MeasurementResult {
@@ -52,6 +55,8 @@ export interface MeasurementResult {
   mathDisplayRender?: ReturnType<typeof renderMath>;
   /** Present for `resource` blocks: the resolved, measured resource embed. */
   resourceBlock?: ResolvedResourceBlock;
+  /** A table laid out in full: its row metrics, for slice planning. */
+  tableRows?: TableRowMetrics;
 }
 
 export function runMeasurement(input: MeasurementInput): MeasurementResult {
@@ -65,7 +70,7 @@ export function runMeasurement(input: MeasurementInput): MeasurementResult {
       // Unknown resource id — emit nothing (the warnings phase surfaces this).
       return { measured: { lines: [], totalHeight: 0 } };
     }
-    const { block, totalHeight } = layoutResourceBlock({
+    const { block, totalHeight, tableRows } = layoutResourceBlock({
       resource: input.resource,
       resourceType: input.resourceType,
       number: input.resourceNumber ?? '',
@@ -78,6 +83,7 @@ export function runMeasurement(input: MeasurementInput): MeasurementResult {
       ...(input.maxBodyWidth !== undefined ? { maxBodyWidth: input.maxBodyWidth } : {}),
       ...(input.bodyHeightDelta ? { bodyHeightDelta: input.bodyHeightDelta } : {}),
       ...(input.upright ? { upright: input.upright } : {}),
+      ...(input.tableSlice ? { slice: input.tableSlice } : {}),
     });
     const measured: MeasuredBlock = {
       lines: [{
@@ -91,7 +97,7 @@ export function runMeasurement(input: MeasurementInput): MeasurementResult {
       }],
       totalHeight,
     };
-    return { measured, resourceBlock: block };
+    return { measured, resourceBlock: block, ...(tableRows ? { tableRows } : {}) };
   }
 
   // Math display block: bypass text layout entirely. Produce a single

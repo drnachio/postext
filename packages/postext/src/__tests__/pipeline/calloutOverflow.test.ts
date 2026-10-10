@@ -143,9 +143,11 @@ describe('keep-together box in a column cut short by floats', () => {
     expect(doc.warnings ?? []).toHaveLength(0);
 
     // A box taller than any column that no cut can split (a `:::columns`
-    // group is never cut) is placed anyway and reported.
+    // group under 1.24's rules, which never cut one) is placed anyway and
+    // reported. Since #634 the group is cut between its sub-columns.
     const group = [':::columns{count=2}', ...Array.from({ length: 12 }, () => filler(3)), ':::'].join('\n\n');
-    const tall = build(note(group), SMALL_PAGE());
+    expect(frames(build(note(group), SMALL_PAGE())).length).toBeGreaterThan(1);
+    const tall = build(note(group), { ...SMALL_PAGE(), layout: { layoutType: 'single', flowColumns: false } });
     expect(frames(tall)).toHaveLength(1);
     expect(tall.warnings).toBeDefined();
     expect(tall.warnings![0]!.kind).toBe('calloutOverflow');

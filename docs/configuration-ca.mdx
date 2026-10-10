@@ -476,6 +476,18 @@ La propietat `layout` controla com s'organitzen les columnes dins de l'àrea de 
       <td>Text compost al costat d'una imatge o una caixa més estreta que la columna (<code>placement.wrap</code>, el <code>wrap</code> d'una caixa): <code>gap</code>, l'espai entre l'element i el text (una línia del cos si no s'indica); <code>minTextWidth</code>, la mesura més estreta que pot tenir el text del costat, una longitud o una part de la columna (més estreta: l'element ocupa la banda sencera, amb un avís <code>textWrap</code>); <code>minLinesBeside</code>, el mínim de línies que val la pena compondre al costat; <code>defaultWidth</code>, la part de la columna que ocupa un element ajustat sense <code>width</code> propi. Vegeu <a href="/ca/docs/document-format#ajust-del-text">Format del document › Ajust del text</a>. Des de postext 1.24.</td>
     </tr>
     <tr>
+      <td><code>floatsAtCitingPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>El valor per defecte de <code>placement.citingPage</code>: un flotant <code>'top'</code> o <code>'auto'</code> pot ocupar el capdamunt de la pàgina (un flotant a l'amplada de la pàgina) o de la columna (un flotant de columna) on cau la línia que el cita per primer cop, en lloc del primer espai lliure després d'aquesta línia; el text que hi ha damunt de la referència baixa sota seu (vegeu <a href="/ca/docs/document-format#collocació">Format del document › Col·locació</a>). La col·locació del recurs i després el <code>defaultPlacement</code> del seu tipus el substitueixen. Des de postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>maxTopFraction</code></td>
+      <td><code>number</code></td>
+      <td><code>0.7</code></td>
+      <td>La fracció més gran de l'alçada de la columna, de 0 a 1, que pot ocupar un flotant que encapçala la pàgina o la columna que el cita, juntament amb els flotants que ja hi són, perquè la pàgina guardi lloc per al seu text (el <code>\topfraction</code> de LaTeX). Un flotant que n'ocuparia més va al seu espai habitual. Des de postext 1.25.</td>
+    </tr>
+    <tr>
       <td><code>hugClosingFloats</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -498,6 +510,18 @@ La propietat `layout` controla com s'organitzen les columnes dins de l'àrea de 
       <td><code>number</code></td>
       <td><code>2</code></td>
       <td>Mínim de línies d'un paràgraf o d'un element de llista que deixa a cada costat un tall dins seu quan una caixa es parteix (<code>splitMinLines</code>, a <a href="#estils-davís">Estils d'avís</a>, continua comptant totes les línies de la caixa a cada costat del tall). Un nombre enter, com a mínim 1. Amb el valor per defecte, un tall no deixa mai una línia sola d'un paràgraf o element al peu d'una columna ni al principi de la següent; si el <code>splitMinLines</code> de l'estil de la caixa és més petit, mana aquest. Amb <code>1</code> un tall pot deixar una línia del paràgraf o element a un costat, com fins a postext 1.4. Les configuracions desades per versions anteriors els capítols de les quals tenen algun <code>:::callout</code> es llegeixen amb <code>1</code> (vegeu <a href="#paquets-escrits-per-postext-14-o-anterior">Paquets escrits per postext 1.4 o anterior</a>); en codi, <code>pinLegacyBoxChildCut</code>, de <code>postext/bundle</code>, fa el mateix.</td>
+    </tr>
+    <tr>
+      <td><code>flowColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Una tanca <code>:::columns</code> fora d'un requadre compon els seus blocs en subcolumnes de la columna de text (o a tota l'amplada de la pàgina amb <code>span="page"</code>), i un grup, en un requadre o al text, es talla entre les seves subcolumnes quan no hi cap i continua a la columna o la pàgina següent (vegeu <a href="/ca/docs/document-format#columns">Format del document › <code>:::columns</code></a>). Amb <code>false</code> s'ignora la tanca fora d'un requadre i mai no es talla dins d'un grup, com fins a postext 1.24; les configuracions desades per versions anteriors els capítols de les quals tenen alguna tanca <code>:::columns</code> es llegeixen amb <code>false</code>; en codi, <code>pinLegacyFlowColumns</code>, de <code>postext/bundle</code>, fa el mateix. Una secció amb estil conserva el valor del document. Des de postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>floatsUnderOpener</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Sota una obertura a amplada de pàgina (un nivell o un estil d'encapçalament amb <code>span: 'page'</code>) composta sobre dues o més columnes de text, el capdamunt de la columna de la mateixa obertura, just sota la seva banda, és un buit per a un flotant <code>'top'</code> o <code>'auto'</code>, a l'alçada dels capdamunts de les altres columnes: una caixa flotant posada just després de l'obertura, o un recurs inserit allà, queda sota l'obertura a la primera columna (i en diverses a partir d'aquesta amb <code>columns</code>), i el text de la columna comença a sota. Un flotant citat al text continua anant després de la línia que el cita. Amb <code>false</code> no s'ofereix aquest buit i el flotant cau a partir de la segona columna, com fins a postext 1.24; les configuracions desades per versions anteriors que defineixen un encapçalament a amplada de pàgina es llegeixen amb <code>false</code>; en codi, <code>pinLegacyOpenerHeadFloats</code>, de <code>postext/bundle</code>, fa el mateix. Una secció amb estil conserva el valor del document. Des de postext 1.25.</td>
     </tr>
     <tr>
       <td><code>writingMode</code></td>
@@ -2263,6 +2287,8 @@ Les editorials esperen que cada columna comenci a la part superior de la pàgina
 4. **Finals de llista** — quan els encapçalaments no poden absorbir tot el buit, s'afegeix una línia de retícula on acaba una llista o enumeració (l'aire després d'una llista es llegeix amb naturalitat), amb un màxim per llista.
 5. **Paràgrafs correguts** — com a últim recurs, es recompon un paràgraf de la columna amb una línia més (el `\looseness=+1` de TeX), triant el paràgraf més llarg perquè l'espaiat addicional es dilueixi de manera invisible. La solució correguda només s'accepta quan totes les seves línies queden **per sota de `bodyText.maxWordSpacing`** — el color tipogràfic mai no supera el límit que ja tinguis configurat. Requereix `bodyText.optimalLineBreaking`.
 
+En una retícula de caràcters (`cjk.grid`, vegeu [Composició xinesa › La retícula de caràcters](/ca/docs/chinese-layout#la-retícula-de-caràcters)) cada caràcter ocupa una casella d'un quadratí d'amplada i cada línia cau al pas de línies de la retícula, que és també la retícula de base. Allà l'equilibratge està desactivat per defecte, com en el text vertical: una pàgina composta línia a línia sobre una retícula, a la manera de la GB/T 9704, que compta 22 línies de 28 caràcters, deixa curta la columna que acaba curta. Una configuració que fixa `enabled: true` rep palanques que respecten la retícula: els encapçalaments, els finals de llista, les fórmules en bloc i les figures prenen línies senceres de la retícula, de manera que el text de sota es desplaça files senceres, i `gridLines: 'off'` deixa fora aquestes palanques per a una norma que no té cap fila buida per cedir. Un paràgraf xinès o japonès guanya una línia només quan cap espai entre dos dels seus caràcters no s'obre més de `maxTracking`, i no rep tracking a les seves lletres: una línia a la qual falta un caràcter reparteix un quadratí entre els seus espais, molt per sobre dels 0,01 em per defecte, així que en una retícula de caselles senceres la palanca de paràgrafs correguts gairebé mai no troba res. La caixa que tanca una columna i les imatges amb zona segura queden fora de la retícula per disseny i funcionen com a qualsevol altra pàgina.
+
 L'última columna d'una pàgina només s'equilibra quan la pàgina flueix de manera natural cap a la següent — la pàgina final d'un capítol acaba curta de manera legítima. Aquesta pàgina, i una banda de tancament tallada a nivell per `trailing`, mantenen a més els caps de les seves columnes a la mateixa altura: no s'afegeix cap línia sota una figura o taula que encapçali una de les seves columnes (la palanca després de flotants), i un encapçalament o una caixa que obre una columna sota aquesta figura es queda al seu cap, digui el que digui `stretchAfterFloats`, de manera que cap columna no comença més avall que la veïna només per igualar els peus.
 
 <table>
@@ -2279,7 +2305,7 @@ L'última columna d'una pàgina només s'equilibra quan la pàgina flueix de man
       <td><code>enabled</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Si s'equilibren els finals de columna.</td>
+      <td>Si s'equilibren els finals de columna. Desactivat per defecte en text vertical (<code>layout.writingMode: 'vertical-rl'</code>) i en una retícula de caràcters (<code>cjk.grid.enabled</code>, des de postext 1.25); <code>true</code> l'activa també allà.</td>
     </tr>
     <tr>
       <td><code>maxLinesPerHeading</code></td>
@@ -2353,12 +2379,20 @@ L'última columna d'una pàgina només s'equilibra quan la pàgina flueix de man
       <td><code>'first'</code></td>
       <td>Quan pren un requadre que tanca una columna curta l'espai sota el seu peu (la palanca 1, registrada com a <code>trailingCallout</code>). <code>'first'</code>: abans que qualsevol altra palanca, com fins a postext 1.4 — el requadre es queda tot el buit, encara que siguin diverses línies, i els encapçalaments de damunt no reben res. <code>'last'</code>: després de les palanques d'encapçalaments, finals de llista, fórmules i flotants, que prenen abans les línies senceres; el requadre baixa amb el text de damunt i després pren només el que han deixat, normalment una fracció de línia, de manera que el seu peu continua caient a l'última casella de la retícula i queda a prop del text que comenta. <code>'off'</code>: mai; el requadre conserva l'espai sota el seu peu, tot i que les altres palanques encara el poden baixar línies senceres quan afegeixen espai per damunt, i la fracció de línia que sobra s'hi queda. En una pàgina de tancament, on el requadre és l'única palanca que alinea el seu peu amb la columna contigua, <code>'off'</code> el deixa on l'ha posat el flux. Qualsevol altre valor es llegeix com a <code>'first'</code>. Un requadre que tanca l'única columna de text de la seva banda (una pàgina d'una sola columna que acaba abans d'hora i el bloc següent de la qual obre la pàgina següent) no es mou mai: no hi ha cap columna al costat amb què alinear-lo (des de postext 1.19).</td>
     </tr>
+    <tr>
+      <td><code>gridLines</code></td>
+      <td><code>'allow' | 'off'</code></td>
+      <td><code>'allow'</code></td>
+      <td>En una retícula de caràcters: si poden actuar les palanques que afegeixen línies senceres de la retícula (damunt d'un encapçalament, on acaba una llista, sota una fórmula en bloc o una caixa, sota una figura que encapçala la columna). Mantenen cada caràcter a la seva casella; <code>'off'</code> convé a una norma que compta les línies de la pàgina, i deixa curta la columna. Sense efecte fora de la retícula. Qualsevol altre valor es llegeix com a <code>'allow'</code>. Des de postext 1.25.</td>
+    </tr>
   </tbody>
 </table>
 
 #### Quina palanca ha actuat
 
 La maquetació deixa constància de cada palanca que aplica, al bloc sobre el qual l'aplica: `block.balancing` al VDT que retorna `buildDocument`. Una prova d'impremta, un test o un informe poden dir per què una columna acaba alineada — i quines columnes no va poder tancar cap palanca. Els blocs que l'equilibratge deixa com estaven no porten `balancing`, i un document compost amb `enabled: false` no el porta en cap.
+
+En una retícula de caràcters el document diu per què una columna pot acabar curta: `doc.gridBalancing` és `{ off: true }` quan l'equilibratge està desactivat perquè la pàgina va sobre una retícula i la configuració no l'activa, i `{ gridLines: 'off' }` quan actua sense les palanques de línies senceres; una columna que continua curta porta `column.gridRefused`, les palanques que la retícula li ha negat (`'looseParagraph'` quan un paràgraf només podia guanyar la seva línia traient els caràcters de les seves caselles, i les palanques de línies senceres amb `gridLines: 'off'`). Cap dels dos no apareix fora de la retícula.
 
 ```ts
 interface VDTBalancing {
@@ -4008,6 +4042,9 @@ interface CjkConfig {
   spaceAfterQuestion?: 'auto' | boolean;    // Un quadratí després de ？！ dins d'un paràgraf (Japó).
   paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // Un parèntesi que obre un paràgraf sagnat.
   wordBreak?: 'normal' | 'keep-all';        // keep-all: tallar només als espais (分かち書き, coreà).
+  titleMinChars?: number;                   // Caràcters d'un títol d'obra a cada costat d'un tall; per defecte 2.
+  circledNumbers?: 'cjk' | 'western';       // ① ② com a caràcters xinesos (per defecte) o com a lletres llatines.
+  composeDesignText?: boolean;              // Regles CJK al text de disseny; per defecte true.
   latinSpacing?: Dimension;                 // Entre xinès i llatí; per defecte 0,25 em.
   uprightDigits?: 0 | 2 | 3 | 4;            // Text vertical: nombres en una casella; per defecte 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
@@ -4095,6 +4132,24 @@ interface CjkConfig {
       <td><code>'normal' | 'keep-all'</code></td>
       <td><code>'normal'</code></td>
       <td>On es talla una línia entre dos caràcters. <code>'keep-all'</code> talla només en un espai (U+0020, U+3000) i al costat de la puntuació on <code>lineBreak</code> ho permet (després de 、。」, abans de 「), mai entre dues lletres (kana, kanji, hangul, llatines): per a kana escrit amb un espai entre frases (分かち書き), com als llibres il·lustrats i les cartilles, i per al coreà. Una frase més llarga que la línia es talla per dins com la tallaria <code>'normal'</code>. Un estil de paràgraf pot fixar el seu (<code>wordBreak</code>). Des de postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>titleMinChars</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>Quants caràcters d'un títol d'obra deixa com a mínim un tall de línia a cada costat: dins de <code>《…》</code> o <code>〈…〉</code>, escrits o afegits per <code>bookTitleMark</code>, i dins d'un títol <code>:book[…]</code> compost amb la línia ondulada o sense marca. Amb 2 cap línia no acaba en <code>《說</code> amb <code>文》</code> al començament de la següent, i un títol de tres caràcters o menys no es parteix mai; en general no se'n parteix cap de fins al doble menys u. La regla cedeix quan la línia no té cap altre tall (un títol més llarg que la línia es continua partint per dins, on <code>lineBreak</code> ho permet). Amb <code>1</code> la línia es pot partir on ho permeti el nivell. Una configuració desada abans de postext 1.25 (<code>configVersion</code> 10 o anterior), en un llibre que tingui algun títol, es llegeix amb <code>1</code>. Des de postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>circledNumbers</code></td>
+      <td><code>'cjk' | 'western'</code></td>
+      <td><code>'cjk'</code></td>
+      <td>Com es componen en un paràgraf CJK els números i lletres en cercle, entre parèntesis i amb punt: ①–⑳, ⑴–⒇, ⒈–⒛, ⓐ–ⓩ i la resta d'U+2460–U+24FF, i els números ❶–❿ i ➀–➓ dels dingbats. <code>'cjk'</code>: com a caràcters xinesos, una cel·la sense espai entre xinès i llatí al voltant, i cap línia no hi acaba, perquè numeren el text que els segueix; val en tots els nivells de <code>lineBreak</code> que aparten del final de línia un signe de moneda (tots menys <code>none</code> i <code>ja-loose</code>). <code>'western'</code>: com a lletres llatines, amb l'espai entre xinès i llatí a tots dos costats, i la línia hi pot acabar. El text vertical els posa drets en tots dos casos. Una configuració desada abans de postext 1.25, en un llibre que en tingui algun, es llegeix amb <code>'western'</code>. Des de postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>composeDesignText</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si el text de disseny en xinès o japonès (dissenys de títols i obertures, capçaleres i folis, dissenys de pàgina, pàgines de part) es compon amb les regles del cos: les de principi i final de línia de <code>lineBreak</code>, les amplades dels signes de <code>punctuationWidth</code> i <code>compressAdjacent</code>, <code>latinSpacing</code>, <code>hangingPunctuation</code> i <code>titleMinChars</code>. Una fila del text (les línies entre dos <code>\n</code>) es compon així quan té més lletres CJK que espais entre paraules, com passaria amb un paràgraf; les altres files es parteixen als espais, com abans. Els salts de línia explícits, <code>paragraphIndent</code>, les caplletres i les marques en línia continuen funcionant; les línies queden en bandera (no es reparteixen entre caràcters) i les lectures, el warichu i les marques d'èmfasi s'imprimeixen com a text normal. Amb <code>false</code> aquest text es parteix als espais i cada signe conserva l'amplada pròpia de la font. Una configuració desada abans de postext 1.25 el text de la qual tingui CJK es llegeix amb <code>false</code>. Des de postext 1.25.</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -4385,7 +4440,7 @@ interface ResourceType {
 }
 ```
 
-`ResourcePlacement` té la mateixa forma que el `placement` que un recurs defineix pel seu compte. `position` tria la classe d'espai lliure que pot ocupar el flotant — `auto` (el valor per defecte) pren el primer després de la primera referència, `top` / `bottom` el limiten a aquella classe de banda, `here` incrusta el recurs en línia. `span` fixa l'extensió del flotant: una columna, tota l'amplada de contingut o la columna lateral només per a flotants d'una disposició de columna i mitja. `rotate` gira el recurs un quart de volta i el converteix en un flotant d'amplada de pàgina en una pàgina pròpia. `width` estreny el flotant a una fracció de la seva columna (o de la pàgina, en un flotant d'amplada de pàgina) — una taula petita en una columna ampla, per exemple. `align` indica on se situa aquest flotant més estret — a l'esquerra per defecte, centrat o a la dreta — i on se situa dins el seu espai una imatge més estreta que ell: un mapa de bits més petit que la columna, o una imatge que `layout.fitFiguresToPage` ha reduït. El peu i la nota conserven la mesura de l'espai. (Fins a postext 1.4 aquesta imatge es componia sempre alineada a l'esquerra). `captionSide` posa el peu al costat de la figura a la columna lateral només per a flotants d'una disposició de columna i mitja (`layout.sideColumnRole: 'floats'`), a l'alçada de la vora superior de la figura (de la inferior en un flotant de peu); només s'aplica als flotants de columna, i una pàgina sense aquella columna manté el peu sota la figura. Quan ni el recurs ni el seu tipus defineixen una col·locació, el valor integrat és `auto` / `column`. `shrink` (`'never'`, `'page'`, `'slot'`) i `minScale` (0.7 si no s'indica) redueixen una imatge flotant a l'espai del seu buit en lloc de portar-la més endavant, i `captionMeasure: 'body'` compon el peu i la nota d'una imatge més estreta que el seu buit a l'amplada de la imatge (vegeu [Format del document › Col·locació](/ca/docs/document-format#collocació)); `layout.floatShrink` dona el valor del document per als dos primers. `wrap` col·loca una inserció en línia o un flotant d'una columna a un costat de la columna amb el text compost al costat, a `wrapGap` de distància; `layout.wrap` desa els valors per defecte (vegeu [Format del document › Ajust del text](/ca/docs/document-format#ajust-del-text)).
+`ResourcePlacement` té la mateixa forma que el `placement` que un recurs defineix pel seu compte. `position` tria la classe d'espai lliure que pot ocupar el flotant — `auto` (el valor per defecte) pren el primer després de la primera referència, `top` / `bottom` el limiten a aquella classe de banda, `here` incrusta el recurs en línia. `span` fixa l'extensió del flotant: una columna, tota l'amplada de contingut o la columna lateral només per a flotants d'una disposició de columna i mitja. `rotate` gira el recurs un quart de volta i el converteix en un flotant d'amplada de pàgina en una pàgina pròpia. `width` estreny el flotant a una fracció de la seva columna (o de la pàgina, en un flotant d'amplada de pàgina) — una taula petita en una columna ampla, per exemple. `align` indica on se situa aquest flotant més estret — a l'esquerra per defecte, centrat o a la dreta — i on se situa dins el seu espai una imatge més estreta que ell: un mapa de bits més petit que la columna, o una imatge que `layout.fitFiguresToPage` ha reduït. El peu i la nota conserven la mesura de l'espai. (Fins a postext 1.4 aquesta imatge es componia sempre alineada a l'esquerra). `captionSide` posa el peu al costat de la figura a la columna lateral només per a flotants d'una disposició de columna i mitja (`layout.sideColumnRole: 'floats'`), a l'alçada de la vora superior de la figura (de la inferior en un flotant de peu); només s'aplica als flotants de columna, i una pàgina sense aquella columna manté el peu sota la figura. Quan ni el recurs ni el seu tipus defineixen una col·locació, el valor integrat és `auto` / `column`. `shrink` (`'never'`, `'page'`, `'slot'`) i `minScale` (0.7 si no s'indica) redueixen una imatge flotant a l'espai del seu buit en lloc de portar-la més endavant, i `captionMeasure: 'body'` compon el peu i la nota d'una imatge més estreta que el seu buit a l'amplada de la imatge (vegeu [Format del document › Col·locació](/ca/docs/document-format#collocació)); `layout.floatShrink` dona el valor del document per als dos primers. `wrap` col·loca una inserció en línia o un flotant d'una columna a un costat de la columna amb el text compost al costat, a `wrapGap` de distància; `layout.wrap` desa els valors per defecte (vegeu [Format del document › Ajust del text](/ca/docs/document-format#ajust-del-text)). `citingPage` deixa que un flotant `top` o `auto` encapçali la pàgina o la columna on cau la línia que el cita en lloc de prendre el primer espai lliure després d'ella; `layout.floatsAtCitingPage` dona el valor per defecte del document i `layout.maxTopFraction` la fracció de la columna que pot ocupar (vegeu [Format del document › Col·locació](/ca/docs/document-format#collocació)).
 
 `columns` (des de postext 1.18) col·loca un flotant `span: 'column'` sobre aquest nombre de columnes contigües en una pàgina de diverses: una foto sobre dues de les cinc columnes d'un diari. La seva mesura és la d'aquestes columnes i els espais que les separen. Ocupa el cap d'una sèrie de columnes buides que comencen a la mateixa altura, o el peu de la columna que el cita i de les columnes buides que la segueixen; tantes columnes com té la pàgina, o més, el converteixen en un flotant a tota l'amplada. No s'aplica als `span` `'page'` i `'side'`, a un recurs girat (`rotate`) ni a una inserció en línia (`here`), i `captionSide` només val per a un flotant d'una columna.
 
@@ -4725,7 +4780,13 @@ const config: PostextConfig = {
       <td><code>overflow</code></td>
       <td><code>'split' | 'clip' | 'hide'</code></td>
       <td><code>'split'</code></td>
-      <td>Què passa amb una taula més alta que la pàgina: continuar-la a les pàgines següents, conservar només les files que hi caben, o no col·locar-la. Vegeu més avall.</td>
+      <td>Què passa amb una taula més alta que la pàgina: continuar-la a les pàgines següents, conservar només les files que hi caben, o no col·locar-la. Amb <code>splitInline</code>, també amb una taula col·locada al text que no cap en el que queda de la seva columna. Vegeu més avall.</td>
+    </tr>
+    <tr>
+      <td><code>splitInline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Aplicar <code>overflow</code> també a les taules col·locades <code>here</code>: una taula en línia que no cap en l'espai que queda a la seva columna es talla entre files i continua al principi de la columna següent. Amb <code>false</code> una taula així passa sencera a la columna següent, com fins a postext 1.24; les configuracions desades per versions anteriors els capítols de les quals insereixen un recurs es llegeixen amb <code>false</code>. Vegeu <a href="#taules-més-altes-que-la-pàgina">Taules més altes que la pàgina</a>. Des de postext 1.25.</td>
     </tr>
     <tr>
       <td><code>continuedSuffix</code></td>
@@ -4830,7 +4891,9 @@ Una taula flotant que no cap a la pàgina nova que se li ofereix no es comprimei
 
 **On acaba la primera part.** Una taula a la qual s'ofereix el cap d'una columna buida després de la seva referència pren les files que hi caben i continua en el buit següent. Omple la columna fins al peu quan la té per a ella sola: una part que deixaria menys de tres línies de text a sota també les ocupa, en lloc de deixar un residu de text solt. Quan la columna ja té una altra banda de flotants —una figura a l'amplada de pàgina al cap, per exemple—, la part s'atura almenys tres línies de text abans del peu, l'espai per a text que deixa qualsevol flotant que comparteix columna amb un altre, de manera que la columna acaba amb una mica de text sota la taula i no només amb flotants. Perquè una taula llarga arribi al peu de la seva columna, cita-la on la pàgina en què comença no porti cap altre flotant (després de la pàgina d'una figura a l'amplada de pàgina, per exemple), o ajusta'n les files a la columna.
 
-`'clip'` conserva les files inicials que caben a la pàgina i descarta la resta en silenci (la nota continua tancant la part); `'hide'` no col·loca la taula. Tots dos només actuen quan la taula és més alta que una pàgina: una taula que hi cap es col·loca sencera en qualsevol mode. Les taules en línia (`placement.position: 'here'`) no es divideixen.
+`'clip'` conserva les files inicials que caben a la pàgina i descarta la resta en silenci (la nota continua tancant la part); `'hide'` no col·loca la taula. Tots dos només actuen quan la taula és més alta que una pàgina: una taula que hi cap es col·loca sencera en qualsevol mode.
+
+**Taules col·locades al text.** Una taula col·locada `here` (inserida amb `::resource`) segueix les mateixes regles des de postext 1.25 (`splitInline`, activat per defecte). Quan no cap en l'espai que queda a la seva columna, es talla entre files: la primera part conserva a sobre l'espai dels flotants i almenys les files de capçalera i dues files del cos (si n'hi caben menys, la taula sencera comença a la columna següent, com abans); cada part posterior obre la columna següent sense espai a sobre, composta a l'amplada d'aquella columna (en una maqueta de columna i mitja, una part que cau a la columna estreta es compon a la seva amplada), i el text que segueix la línia `::resource` va després de l'última part. La repetició de la capçalera, el peu amb el sufix, la marca, la nota a l'última part, la cua de tres files i els talls que respecten les cel·les combinades i les files que encapçalen un grup són els d'una taula flotant. Una taula de menys de cinc files de cos no es talla mai. `'clip'` conserva les files inicials d'una taula en línia més alta que una columna, composta al principi d'una columna; `'hide'` no col·loca aquesta taula; una de més baixa passa sencera a la columna següent en tots dos modes. Una pàgina que obre una taula en línia només reserva davant dels flotants que acull l'espai de la seva primera part, de manera que una figura a l'amplada de la pàgina que espera encapçala aquella pàgina i la taula continua a sota. Les taules en línia d'una pàgina vertical i les taules dins d'un requadre no es tallen. Amb `splitInline: false` una taula en línia passa sencera a la columna següent, com fins a postext 1.24.
 
 Les cadenes de continuació prenen el valor per defecte de la llengua del document (`locale`, o si no n'hi ha, la llengua de la partició de mots): anglès `(cont.)` / `Continued`, castellà `(cont.)` / `Continúa`, i el mateix en francès, alemany, italià, portuguès, català i neerlandès (recollides a [Llengua del document](#llengua-del-document)).
 
@@ -5049,7 +5112,7 @@ Les sobreescriptures per tipus es combinen amb `mergeCaptionStyle(resolvedCaptio
 
 ## Estil dels diagrames
 
-La propietat `diagramStyle` controla com s'acoloreixen els diagrames SVG incrustats (recursos amb `kind: 'svg'`). Avui la seva única funció és el **mode d'una sola tinta**: una passada de recoloració que converteix cada color del diagrama en un matís d'una única tinta, de manera que les figures es reprodueixin fidelment quan el document s'imprimeix amb una sola tinta plana.
+La propietat `diagramStyle` controla com s'acoloreixen els diagrames SVG incrustats (recursos amb `kind: 'svg'`) i amb quines fonts es compon el seu text. El **mode d'una sola tinta** és una passada de recoloració que converteix cada color del diagrama en un matís d'una única tinta, de manera que les figures es reprodueixin fidelment quan el document s'imprimeix amb una sola tinta plana. Les **fonts incrustades** posen dins de cada SVG les variants que anomena el seu text, perquè els seus rètols es componguin amb les fonts del document al canvas, en HTML i en EPUB (consulta [Fonts al text dels SVG](#fonts-al-text-dels-svg)).
 
 ```ts
 const config: PostextConfig = {
@@ -5081,6 +5144,12 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td>Color principal (<code>#295AA3</code>)</td>
       <td>La tinta. Per defecte és el color principal de la paleta del document (enllaçat mitjançant <code>paletteId: 'main-color'</code>), de manera que canviar la mostra de la paleta torna a tenyir els diagrames juntament amb els encapçalaments i les negretes.</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Incrustar a cada SVG les variants que anomena el seu text (<code>font-family</code>) com a data URI de <code>@font-face</code> abans de mostrar-lo com a imatge: al canvas, en HTML, en EPUB i al ràster de reserva del PDF. No s'escriu mai al fitxer desat. Un recurs en queda exclòs amb <code>svg.inlineFonts: false</code> (des de postext 1.25).</td>
     </tr>
   </tbody>
 </table>
@@ -5162,6 +5231,72 @@ const html = renderToHtml(doc, { resourceImageUrl: urlDe, singleInk: true });
 `renderToHtml` pren el valor per defecte del seu `singleInk` de la indicació del mateix resolutor, així que `bundleImageUrl(bundle)` no necessita l'opció.
 
 Per a cada color que reescriu la passada sobre el marcatge (valors hexadecimals, `rgb()` i `hsl()`, `white` i `black`; consulta [Com funciona la tinta única](#com-funciona-la-tinta-única)), el mapatge per píxels dona el mateix resultat, inclosos les vores suavitzades i els degradats. Tots dos difereixen on la passada sobre el marcatge deixa un color com està: els colors amb nom diferents de `white` i `black`, `currentColor`, les formes i els textos sense emplenament (dibuixats en el negre per defecte) i els mapes de bits incrustats a l'SVG es tenyeixen en pantalla però conserven el seu color al PDF. Dona a cada element del diagrama un color explícit en hexadecimal, `rgb()` o `hsl()` per obtenir la mateixa sortida. Quan el canvas no pot tornar a llegir els píxels (un `<img>` d'un altre origen, carregat sense CORS), la imatge es pinta sense tenyir.
+
+### Fonts al text dels SVG
+
+Un dibuix SVG es mostra a través d'una imatge: un `<img>` al canvas, en HTML i en EPUB. Un document d'imatge no veu les fonts web de la pàgina, així que `<text font-family="IBM Plex Sans">` cauria en una font del sistema. Des de postext 1.25 el motor incrusta al marcatge les variants que anomena el text abans de descodificar la imatge o de lliurar-la com a URL: una regla `@font-face` per fitxer de font, amb els seus bytes com a data URI, en un `<style>` just després de l'etiqueta `<svg>` arrel. El PDF no necessita res d'això: compon el text SVG com a text real amb les seves fonts incrustades (consulta [Bytes de recursos i màsters d'impressió](#bytes-de-recursos-i-màsters-dimpressió)).
+
+El que demana el text es llegeix de `font-family`, `font-weight`, `font-style` i `font`, com a atributs, dins d'atributs `style` i heretat dels grups que el contenen; també compta una regla de `<style>` que anomeni una família. En queden fora les famílies genèriques (`serif`, `sans-serif`…) i el text de `<title>` o `<desc>`, i una família que el mateix SVG declara amb `@font-face` no es toca. Un tram recorre la seva llista de `font-family` fins a la primera família que tingui variant. Primer es recoloreix per a la tinta única i després s'incrusten les fonts.
+
+Les variants les dona un **proveïdor** amb el contracte del `PdfFontProvider` de postext-pdf, de manera que un mateix proveïdor serveix per a tots dos: se'l crida amb la família, el pes i l'estil, i els caràcters que l'SVG compon en aquesta variant, i respon amb un fitxer o amb diversos. A una família servida en trams d'`unicode-range` (Fontsource, Google Fonts) se li respon amb els trams que necessiten aquests caràcters, de manera que un SVG amb rètols llatins porta només el fitxer `latin`. El proveïdor per defecte llegeix el registre de fonts del motor: `loadBundleFonts` hi registra les variants d'un paquet, i un amfitrió hi registra les seves amb `registerFontBytes(family, weight, style, bytes, { unicodeRange })`, o amb `registerFontUrl(…)` per a un fitxer que es descarrega la primera vegada que un SVG el necessita. Una família que ningú no ha registrat es busca a les regles `@font-face` dels fulls d'estil llegibles de la pàgina. Un `FontFace` afegit a `document.fonts` a partir de bytes no en conserva els bytes, així que el motor no el pot tornar a llegir: registra també aquestes variants.
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // recolorit, fonts incrustades, descodificat, registrat
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+On passa:
+
+- **Canvas.** `registerSvgImage(fileId, svgText, options)` recoloreix (`inkHex`), incrusta les fonts (`fonts`, un proveïdor; `inlineFonts: false` ho omet), descodifica i registra la imatge com a font vectorial, i es resol amb el que ha passat amb cada variant. `registerBundleImages(bundle)` fa el mateix amb els SVG d'un paquet, primer amb les variants del mateix paquet. `prepareSvgMarkup(svgText, options)` retorna el marcatge preparat per a un amfitrió que descodifica pel seu compte.
+- **HTML.** `bundleImageUrl(bundle)` serveix el marcatge SVG amb les variants del paquet incrustades. `renderToHtml(doc, { inlineSvgFonts: true })` incrusta als data URI SVG que retorna `resourceImageUrl` les variants que el registre té a la memòria (o `inlineSvgFonts: { fonts, maxBytes, withhold }`). Una URL d'objecte no es pot llegir de manera síncrona, així que un amfitrió que serveix URL blob incrusta abans de crear-les.
+- **EPUB.** `postext-epub` incrusta des de les `fonts` del llibre, i després des de `svgFonts.provider`, abans d'escriure un SVG (consulta [Llibres EPUB](#llibres-epub-postext-epub)).
+- **PDF.** El text SVG es compon com a text real amb les fonts incrustades. Un `<style>` que només conté regles `@font-face` (variants que va incrustar l'autor) ja no fa que la figura passi a ràster. Quan una figura sí que passa a ràster (un filtre, un degradat), el seu ràster es fa amb les variants incrustades des del `fontProvider` del PDF.
+
+També s'exporten les funcions de nivell més baix: `svgFontRequests(svgText)` enumera les famílies, el pes, l'estil i els caràcters de cada tram; `inlineSvgFonts(svgText, provider, options)` i `inlineSvgFontsSync(svgText, syncProvider, options)` retornen el marcatge; `inlineSvgFontsDetailed` hi afegeix un informe de cada variant (`inlined`, `declared`, `unavailable`, `withheld`, `tooLarge`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Opció</th>
+      <th style={{ width: '160px' }}>Tipus</th>
+      <th style={{ width: '120px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>Màxim de bytes de font incrustats en un SVG (abans del base64, que n'hi afegeix un terç). Si les variants juntes el superen, no se n'incrusta cap i s'avisa amb <code>svgFontsTooLarge</code>.</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>tots quatre</td>
+      <td>Els formats de fitxer que s'incrusten; els fitxers d'altres formats s'ometen.</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>cap</td>
+      <td>Famílies que es deixen fora d'un fitxer que surt de l'aplicació (no redistribuïbles). La seva referència es manté i el lector fa servir una font de reserva; <code>onWithheld(family)</code> rep avís de cadascuna.</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>cap</td>
+      <td>Rep avís d'una família sense variant (<code>svgFontUnavailable</code>) i del límit de mida (<code>svgFontsTooLarge</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+**Desactivar-ho.** `diagramStyle.inlineFonts: false` deixa tots els SVG tal com estan desats; `svg.inlineFonts: false` en un recurs deixa aquell SVG byte a byte com és, per a un SVG que porta les seves pròpies variants o que no ha de canviar. Un paquet escriu l'exclusió del recurs com a `"inlineFonts": false` al seu `preset.json`.
+
+**Llicències.** Incrustar posa fitxers de font dins d'imatges que poden sortir de l'aplicació (una exportació HTML, un EPUB). Passa quan una imatge es mostra o s'exporta, mai als bytes desats del recurs, i `withhold` deixa fora les famílies que una llicència no et permet cedir: l'escriptor d'EPUB reté les variants marcades amb `redistributable: false`, i el Sandbox, les famílies personalitzades marcades així.
 
 
 ## Estil de vídeo
@@ -6129,7 +6264,7 @@ El vidre continua calent una hora després d'apagar la flama.
       <td><code>span</code></td>
       <td><code>'column' | 'page' | 'side'</code></td>
       <td><code>'column'</code></td>
-      <td>Extensió horitzontal: la columna, l'amplada completa de l'àrea de contingut o la columna lateral només per a flotants d'una disposició de columna i mitja (<code>layout.sideColumnRole: 'floats'</code>) — la caixa surt llavors del flux i s'apila en aquella columna al costat del text que interromp. Es pot sobreescriure per instància amb l'atribut <code>span</code>. En disposicions multicolumna una caixa <code>'page'</code> es converteix en un <em>bloc d'amplada de pàgina</em>: divideix la pàgina en bandes de columnes i ocupa la seva pròpia columna a tota l'amplada (vegeu la secció del contenidor més avall).</td>
+      <td>Extensió horitzontal: la columna, l'amplada completa de l'àrea de contingut o la columna lateral només per a flotants d'una disposició de columna i mitja (<code>layout.sideColumnRole: 'floats'</code>) — la caixa surt llavors del flux i s'apila en aquella columna al costat del text que interromp. Es pot sobreescriure per instància amb l'atribut <code>span</code>. En disposicions multicolumna una caixa <code>'page'</code> es converteix en un <em>bloc d'amplada de pàgina</em>: divideix la pàgina en bandes de columnes i ocupa la seva pròpia columna a tota l'amplada (vegeu la secció del contenidor més avall). Una caixa lateral que no cap a la columna lateral de la seva pàgina ocupa la de la pàgina següent; si abans s'acaba el capítol (o el document), cada caixa que encara espera es compon a la columna lateral d'una pàgina posterior al text, en l'ordre de les seves tanques, i la composició ho avisa (<code>afterText</code>; fins a postext 1.24 les caixes posteriors a la primera d'aquestes pàgines es perdien).</td>
     </tr>
     <tr>
       <td><code>columns</code></td>
@@ -6329,7 +6464,7 @@ Límits d'aquesta versió:
 - `placement: 'top' | 'bottom'` fa **flotar** la caixa com un recurs: surt del flux on apareix i pren la primera banda lliure a partir d'aquest punt — el peu de la pàgina actual (`'bottom'`), o el cap / el peu de la pàgina següent que obre el flux — a l'amplada de la columna (`span: 'column'`) o a l'amplada completa de l'àrea de contingut (`span: 'page'`); el text que la segueix omple la pàgina que ha deixat. El seu marc i els seus fills van a `page.floats`, com els d'una caixa fixa. Una caixa flotant que encapçala una pàgina nova es col·loca abans que les figures que esperen aquella pàgina, i una figura citada en una pàgina anterior que llavors hi cap a sota pren la resta d'aquella pàgina encara que quedessin menys de tres línies de text (una pàgina galeria: caixa més figura, sense text entre totes dues). Una caixa `span: 'side'` mai no flota: s'apila al costat del text sigui quin sigui el seu `placement`. Amb `columns` més gran que 1 (a l'estil o com a atribut de la tanca, des de postext 1.18), una caixa `span: 'column'` ocupa aquest nombre de columnes contigües: el cap d'una sèrie de columnes buides que comencen a la mateixa altura, o el peu de la columna en curs i de les buides que la segueixen, com a `:::callout{placement="top" columns="2"}`.
 - `width: 'auto'` s'ajusta només al títol; els fills s'ignoren.
 - Un `:::callout` niat dins d'un altre avís és una caixa pròpia: es compon amb el seu propi estil (fons, vora, radi, farciment, franja, títol, icona, marcador, pestanya, tipografia) a l'amplada interior completa de la seva caixa mare i s'apila com un fill més, i el seu `marginTop` / `marginBottom` es fon amb el dels veïns. El seu `span` i el seu `placement` (de la tanca o de l'estil) s'ignoren —una caixa niada sempre flueix dins la seva mare—, igual que `floatBarrier` i `snapToGrid`. Les caixes es nien a qualsevol profunditat i poden anar dins d'un grup `:::columns` (cadascuna sencera, en una columna). Quan la caixa mare es parteix, el tall cau abans o després d'una caixa niada, o dins d'ella si el seu estil permet partir-la; cada fragment torna a dibuixar els marcs que travessa el tall, i una caixa niada que continua del fragment anterior perd el títol i la icona, com una continuació de primer nivell.
-- Un grup `:::columns{count=N}` … `:::` entre els fills compon aquests fills en `N` columnes d'igual amplada, separades per `columnGap`, dins la caixa: la seqüència es talla pels límits de bloc o de línia que millor anivellen les columnes (un paràgraf o element de llista tallat a mitges continua al cap de la columna següent sense la vinyeta), cada columna comença a la part superior del grup i el grup fa l'alçada de la columna més alta; els fills posteriors recuperen l'amplada completa. Una caixa partible (`keepTogether: false`) mai no talla dins d'un grup. Serveix per a un resum de punts clau a dues columnes o per a les taules d'un requadre ample posades una al costat de l'altra.
+- Un grup `:::columns{count=N}` … `:::` entre els fills compon aquests fills en `N` columnes d'igual amplada, separades per `columnGap`, dins la caixa: la seqüència es talla pels límits de bloc o de línia que millor anivellen les columnes (un paràgraf o element de llista tallat a mitges continua al cap de la columna següent sense la vinyeta), cada columna comença a la part superior del grup i el grup fa l'alçada de la columna més alta; els fills posteriors recuperen l'amplada completa. Una caixa que es parteix (`keepTogether: false`, o més alta que una columna) també talla dins d'un grup, entre les seves columnes: un grup en serpentina omple les columnes per torns i continua al fragment següent, i un de paral·lel (`breaks`) continua corrent a corrent (des de postext 1.25; vegeu [Format del document › `:::columns`](/ca/docs/document-format#columns)). Un `gap` a la tanca substitueix `columnGap` per a aquell grup, i `rule` traça un filet al llarg de cada espai entre columnes. Serveix per a un resum de punts clau a dues columnes o per a les taules d'un requadre ample posades una al costat de l'altra.
 - El sisè atribut de la tanca, `label`, s'imprimeix a la pestanya `label` de l'estil (vegeu més amunt): `:::callout{type="recuadro" label="RECUADRO 1-1" title="La regla del octeto"}`; sense estil de pestanya l'atribut s'ignora.
 
 Al VDT la caixa és un bloc marc de `type: 'callout'` la decoració del qual (fons, franja, icona, títol) viu a `designOverlay`, seguit dels seus blocs fills a la mateixa columna; el marc i cada fill porten el `containerId` de la tanca. Una caixa niada és un marc `type: 'callout'` propi entre els fills, seguit dels seus blocs; conserven el `containerId` de la tanca de primer nivell (la col·locació i l'equilibrat continuen veient una sola unitat) i afegeixen `calloutPath`, els identificadors de contenidor de les tanques niades que els envolten, de la més externa a la més interna (el d'un marc niat és l'última entrada). El PDF etiquetat dona a cada caixa niada un `Div` dins del de la seva mare. Les imatges d'icona es resolen com les dels recursos: el registre d'imatges del canvas, l'opció `resourceImageUrl` de l'HTML i el proveïdor `resourceBytes` del PDF.
@@ -7671,6 +7806,8 @@ El tauler **Revisió** del Sandbox mostra al seu grup *Fonts* tres modes de fall
 
 Si prems qualsevol dels avisos, s'obre el tauler **Fonts** perquè hi pugis la variant necessària, tornis a afegir la família o desfacis l'ambigüitat dels duplicats.
 
+Quan ja hi ha una composició, el tauler també mostra l'avís del motor **Font substituïda a la composició** (`fontFallback`): una cara sense la qual es van mesurar les pàgines, perquè falta o perquè el navegador la dibuixa a partir d'un altre pes o d'una altra inclinació. Una família que ja surt com a desconeguda o amb una variant que falta no hi apareix dues vegades. Abans de la primera composició, n'ocupa el lloc una comprovació contra `document.fonts`.
+
 ## Paleta de colors
 
 La propietat `colorPalette` de `PostextConfig` permet definir un conjunt reutilitzable de colors amb nom i fer-hi referència des de qualsevol `ColorValue` de la configuració. És l'equivalent a Postext de les custom properties de CSS o del tauler de mostres d'InDesign: canvia l'entrada una sola vegada i tots els colors que hi apuntin s'actualitzen al document.
@@ -8765,7 +8902,7 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
   <tbody>
     <tr>
       <td><code>calloutOverflow</code></td>
-      <td>Una caixa <code>:::callout</code> no cap en cap columna i cap tall no la pot partir.</td>
+      <td>Una caixa <code>:::callout</code> no cap en cap columna i cap tall no la pot partir. Una caixa amb <code>span: 'side'</code> més alta que una columna lateral buida també ho és (des de postext 1.25).</td>
       <td>Es col·loca igualment, desbordant la seva columna en <code>overflowPx</code> (a <code>pageIndex</code> / <code>columnIndex</code>). És l'únic tipus que apareix a <code>doc.warnings</code>; els de sota són a <code>doc.contentWarnings</code>.</td>
     </tr>
     <tr>
@@ -8807,6 +8944,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td><code>unknownCalloutType</code></td>
       <td><code>:::callout{'{'}type{'}'}</code> no anomena cap dels <code>calloutStyles</code>; només es registra quan n'hi ha algun de configurat.</td>
       <td>La caixa pren el primer estil d'avís.</td>
+    </tr>
+    <tr>
+      <td><code>columnsFlowUnknown</code></td>
+      <td><code>:::columns{'{'}flow{'}'}</code> no és ni <code>snake</code> ni <code>parallel</code>; <code>value</code> és el que hi diu.</td>
+      <td>El grup pren el valor per defecte: <code>parallel</code> amb <code>breaks</code>, <code>snake</code> sense.</td>
     </tr>
     <tr>
       <td><code>unknownChipStyle</code></td>
@@ -8878,6 +9020,26 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>Un recurs o una caixa amb el text ajustat al voltant (<code>placement.wrap</code>, el <code>wrap</code> d'una caixa) que no es compon com es va demanar. <code>reason</code>: <code>'tooNarrow'</code> (el text del costat quedaria més estret que <code>layout.wrap.minTextWidth</code>), <code>'fewLines'</code> (és més baix que <code>layout.wrap.minLinesBeside</code> línies), <code>'moved'</code> (un en línia massa alt per a l'espai que queda a la columna ha passat a la següent, amb la seva àncora) o <code>'verticalText'</code>. <code>resourceId</code> anomena un recurs, <code>box</code> l'estil d'una caixa. Assenyala la inserció o la caixa.</td>
       <td>L'element ocupa la banda sencera, o es col·loca a la columna següent, segons la raó.</td>
     </tr>
+    <tr>
+      <td><code>columnsTooNarrow</code></td>
+      <td>Les subcolumnes d'un grup <code>:::columns</code> són més estretes que sis emes del seu text: <code>columns</code> subcolumnes de <code>widthPx</code> cadascuna. Assenyala la tanca del grup.</td>
+      <td>El grup es compon com s'ha demanat, amb poques paraules per línia.</td>
+    </tr>
+    <tr>
+      <td><code>afterText</code></td>
+      <td>Una caixa amb <code>span: 'side'</code>, o una figura o taula de la columna lateral (<code>resourceId</code>), composta en una pàgina sense text: el text del seu capítol, o del document, es va acabar mentre esperava lloc a la columna lateral. Un per caixa o flotant; assenyala la caixa (o el bloc que cita el flotant), amb la seva pàgina. Des de postext 1.25.</td>
+      <td>Queda a la columna lateral d'una pàgina oberta després del text, les caixes en l'ordre de les seves tanques.</td>
+    </tr>
+    <tr>
+      <td><code>unplaced</code></td>
+      <td>Una caixa o un recurs flotant (<code>resourceId</code>) que encara esperava un buit quan es va acabar la composició: les pàgines obertes per a ell no el van poder acollir (una caixa lateral on aquestes pàgines no tenen columna lateral, per exemple). Assenyala la caixa o el bloc que cita el recurs; sense pàgina. Des de postext 1.25.</td>
+      <td>No és a cap pàgina. Fins a postext 1.24 desapareixia sense avís.</td>
+    </tr>
+    <tr>
+      <td><code>fontFallback</code></td>
+      <td>Una cara amb què es va compondre el text (<code>family</code>, <code>weight</code>, <code>style</code>) que el conjunt de fonts no podia donar quan es va executar el build: <code>reason: 'missing'</code>, no hi havia carregada ni instal·lada cap cara de la família; <code>'synthesized'</code>, el pes o la inclinació surten d'una altra cara de la família (una cursiva 700 demanada a una família que només té una rodona 400). Es comprova on hi ha un conjunt de fonts (<code>document.fonts</code>, el <code>self.fonts</code> d'un worker o <code>BuildDocumentOptions.fontSet</code>), sota <code>debug.warnings.missingFont</code>. No porta pàgina ni interval d'origen.</td>
+      <td>El text es mesura i es dibuixa amb la font de reserva, o amb la cara que el navegador fa més gruixuda o inclinada; els seus talls de línia canvien quan arriba la cara. Vegeu <a href="#carregar-les-fonts-abans-de-compondre">Carregar les fonts abans de compondre</a>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -8897,7 +9059,7 @@ const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownR
 
 `formatWarning(w)` retorna una descripció en anglès d'una línia. Un amfitrió que localitza els seus missatges distingeix per `kind` —i conserva una branca per defecte, perquè les versions menors poden afegir tipus—. `collectContentWarnings(markdown, config, resources)` retorna els avisos de contingut sense maquetar res (la llista que afegeix la composició, sense `pageIndex`), per a un editor que revisa el text mentre s'escriu. `collectHeadingDesignCuts(doc)` revisa una maquetació acabada a la recerca de dissenys d'encapçalament amb un text que passa del peu de la seva pàgina o de la seva columna (`kind: 'headingDesignCut'`; vegeu [Alçada reservada](#alçada-reservada)), que la maquetació mateixa no avisa, i `formatWarning` també en descriu els resultats. El tauler **Revisió** del Sandbox els mostra tots.
 
-Els renderitzadors notifiquen el que no poden pintar com es demana mitjançant una opció `onWarning`: `renderPageToCanvas`, `renderPage` i `renderToCanvas` (`RenderPageOptions`), `renderToHtml` i `renderToHtmlIndexed` (`RenderHtmlOptions`), i `renderToPdf` (`RenderToPdfOptions`, també a través del worker de PDF). Avui hi ha un únic tipus d'avís de renderitzat, `missingImage`: una imatge —una figura, la imatge d'una cel·la de taula, la icona d'un avís, una imatge de disseny— sense res a dibuixar es pinta com un marcador de posició neutre i es notifica, una vegada per `fileId` i crida de renderitzat, amb el seu `pageIndex`, el `resourceId` quan el renderitzador el coneix (figures i imatges de cel·la) i, al PDF, el `documentIndex` d'un renderitzat de diversos documents. Res a dibuixar vol dir: cap `registerResourceImage` per al `fileId` al canvas, cap URL de `resourceImageUrl` en HTML, i cap byte de `resourceBytes` —o bytes que no es descodifiquen— al PDF. Un recurs de mapa de bits o SVG que no anomena cap `fileId` no té res a demanar: es dibuixa com a marcador de posició sense avís. Els avisos de renderitzat no es desen al VDT: el que un amfitrió pot aportar canvia després de la maquetació.
+Els renderitzadors notifiquen el que no poden pintar com es demana mitjançant una opció `onWarning`: `renderPageToCanvas`, `renderPage` i `renderToCanvas` (`RenderPageOptions`), `renderToHtml` i `renderToHtmlIndexed` (`RenderHtmlOptions`), i `renderToPdf` (`RenderToPdfOptions`, també a través del worker de PDF). El principal tipus d'avís de renderitzat és `missingImage`: una imatge —una figura, la imatge d'una cel·la de taula, la icona d'un avís, una imatge de disseny— sense res a dibuixar es pinta com un marcador de posició neutre i es notifica, una vegada per `fileId` i crida de renderitzat, amb el seu `pageIndex`, el `resourceId` quan el renderitzador el coneix (figures i imatges de cel·la) i, al PDF, el `documentIndex` d'un renderitzat de diversos documents. Res a dibuixar vol dir: cap `registerResourceImage` per al `fileId` al canvas, cap URL de `resourceImageUrl` en HTML, i cap byte de `resourceBytes` —o bytes que no es descodifiquen— al PDF. Un recurs de mapa de bits o SVG que no anomena cap `fileId` no té res a demanar: es dibuixa com a marcador de posició sense avís. Dos tipus més vénen dels amfitrions que incrusten fonts a les imatges SVG (`registerSvgImage`, `registerBundleImages`, `bundleImageUrl`, `renderToHtml` amb `inlineSvgFonts`, postext-epub; consulta [Fonts al text dels SVG](#fonts-al-text-dels-svg)), amb el `fileId` i el `resourceId` de la imatge: `svgFontUnavailable` (`family`, `weight`, `style`), una família que anomena el seu text sense variant per incrustar, de manera que la imatge compon aquest text amb una font de reserva; i `svgFontsTooLarge` (`bytes`, `maxBytes`), variants per sobre del límit de mida, de les quals no se n'incrusta cap. Els avisos de renderitzat no es desen al VDT: el que un amfitrió pot aportar canvia després de la maquetació.
 
 ```ts
 import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
@@ -9043,28 +9205,64 @@ const blocks = parseMarkdown(content);
 ```
 
 Consulta la pàgina de [Format del document](/ca/docs/document-format) per veure la llista completa de construccions markdown que reconeix Postext.
-### Memòria cau de mesures
+### Carregar les fonts abans de compondre
 
-La mesura del text és el pas costós del procés de composició. Dues menes de memòria cau l'abarateixen, i es buiden de manera diferent:
-
-- **Una memòria cau de blocs que és teva.** `createMeasurementCache()` retorna una `MeasurementCache` que recorda cada paràgraf mesurat, amb el seu text, les seves fonts, la seva amplada, les seves opcions de tall de línia i el diccionari de partició de mots actiu com a clau. Passa-la com a tercer argument de `buildDocument` (o de `buildDocumentAsync`) per reutilitzar les mesures entre les passades de convergència i entre composicions: un editor que recompon el document a cada pulsació mesura llavors només els paràgrafs que han canviat. Sense ella, cada passada torna a mesurar tots els blocs. Un paràgraf llegit de la memòria cau és igual que un de mesurat de nou, de manera que una composició amb memòria cau talla cada línia com una sense; a postext 1.4.1 un paràgraf desat a la memòria cau perdia la marca d'una última línia massa curta, i l'ajust d'aquestes línies i l'equilibrat de columnes podien tallar-lo d'una altra manera. El worker de composició en conserva una entre composicions i la substitueix quan canvien les fonts.
-- **Memòries cau globals d'amplades.** Les amplades de paraula es desen per cadena de font en un estat de mòdul que comparteixen totes les composicions de la pàgina, i pretext té la seva pròpia memòria cau. Són les que queden obsoletes quan una font web arriba després d'haver mesurat el text amb una font de reserva.
+La composició mesura el text amb les cares que té el conjunt de fonts en el moment en què s'executa. `prepareFonts` carrega abans del primer build totes les cares que demanen una configuració i el seu text: el cos, els encapçalaments, les llistes, els títols i els cossos dels requadres, les taules, els textos dels elements de disseny, els titolets, l'índex de continguts, el codi i la retolació dels còmics, en cada pes i inclinació que fixa la configuració (les quatre de la família del cos, perquè `**` i `*` hi componen la negreta i la cursiva). Cada cara es carrega per als caràcters que compon el document, de manera que una família servida en trams de `unicode-range` (llatí estès, grec, àrab, els trams CJK de Google Fonts i Fontsource) porta els fitxers que el text necessita.
 
 ```ts
-import { buildDocument, createMeasurementCache, clearMeasurementCache } from 'postext';
-import type { MeasurementCache } from 'postext';
+import { prepareFonts, buildDocument, buildDocumentWithFonts } from 'postext';
 
-let cache: MeasurementCache = createMeasurementCache();
-let doc = buildDocument(content, config, cache);
+// Els fitxers de l'amfitrió: el contracte del proveïdor de fonts del PDF, així que una mateixa funció serveix per a tots dos.
+async function resolve(family: string, weight: number, style: 'normal' | 'italic') {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-${style}.woff2`;
+}
 
-// Ha acabat de carregar una font web: les amplades mesurades amb la de reserva no serveixen.
-await document.fonts.ready;
-clearMeasurementCache();           // sense argument: buida les memòries cau globals d'amplades
-cache = createMeasurementCache();  // una memòria cau de blocs no té clear(); crea'n una altra
-doc = buildDocument(content, config, cache);
+const report = await prepareFonts(content, config, { resolve });
+// report.loaded, report.missing, report.synthesized: { family, weight, style }[]
+const doc = buildDocument(content, config);
+
+// O en una sola crida: preparar, compondre, carregar les cares que han fet servir les pàgines i no hi eren, i tornar a compondre.
+const same = await buildDocumentWithFonts(content, config, { resolve });
 ```
 
-`clearMeasurementCache()` no rep arguments ni toca cap `MeasurementCache`: els seus blocs també es van mesurar amb les amplades velles, així que descarta-la i crea'n una de nova. Recompondre després de carregar una font sense buidar les memòries cau dona els mateixos talls de línia, mesurats amb la font de reserva.
+- **Les cares que declara la pàgina** (una regla `@font-face`, un `FontFace` ja afegit) es carreguen a través del conjunt de fonts (`document.fonts.load`, o `self.fonts` en un worker). **Les que no declara** es demanen a `resolve(family, weight, style, { text, codePoints })`, que respon amb un fitxer (bytes o una URL), amb diversos (els trams d'una cara), amb `{ source, unicodeRange, weight, style }` per a un tram o un rang variable, o amb `null`. El motor les afegeix com a `FontFace` quan s'han carregat totes, en l'ordre de la configuració i de cada resposta (latin, després latin-ext, després greek si el resolutor respon així), de manera que el conjunt de fonts queda igual sigui quin sigui l'ordre en què arribin els fitxers. També les inscriu al registre de fonts que llegeixen les [imatges SVG](#fonts-al-text-dels-svg) i els workers de composició. Un resolutor pot declarar la cara pel seu compte (afegir un full d'estils) i respondre `null`.
+- **L'informe** enumera a `loaded` les cares que cobreix una cara carregada (o una família instal·lada), a `missing` les que encara falten i a `synthesized` les que el navegador sintetitzaria a partir d'un altre pes o d'una altra inclinació. `timeoutMs` (10 000 per defecte) limita l'espera; una cara que llavors encara s'estigui carregant compta com a absent. On no hi ha conjunt de fonts (Node), `prepareFonts` no fa res i dona totes les cares per carregades.
+- **`buildDocumentWithFonts(content, config, options)`** prepara, compon amb `buildDocumentAsync`, llegeix les cares en què les pàgines han compost text de debò, carrega les que hi faltaven i torna a compondre (dues composicions més com a màxim). `withLoadedFonts(build, options)` fa el mateix al voltant de qualsevol funció de composició, per a un llibre que es compon capítol a capítol o per a un paquet (`buildBundle`) que retorna diversos documents. `options.onFonts` rep l'informe final.
+- **Després del build**, cada cara amb què es va compondre el text i que el conjunt de fonts no va poder donar apareix a `doc.contentWarnings` com a `fontFallback` (vegeu [Avisos del document](#avisos-del-document)).
+
+Les cares que arriben més tard es recullen soles. El motor anota, per a cada conjunt de fonts, quines cares de cada família hi havia carregades l'última vegada que s'hi va fixar; un build hi torna a mirar en començar (només si el conjunt ha crescut, s'ha encongit o ha acabat de carregar una cara) i descarta el que s'havia mesurat en les famílies amb cares canviades. `watchFonts(fontSet)` fa el mateix a mesura que es carreguen les cares, com a molt una vegada per fotograma d'animació per molts trams que porti una ràfega, i `onFontsChanged(listener)` diu a l'amfitrió quines famílies han canviat, perquè torni a compondre les pàgines:
+
+```ts
+import { watchFonts, onFontsChanged } from 'postext';
+
+const stop = watchFonts();                         // document.fonts per defecte
+const off = onFontsChanged((families) => relayout());
+```
+
+`prepareFonts` engega la vigilància sobre el conjunt on carrega (`watch: false` la deixa apagada).
+
+### Memòria cau de mesures
+
+La mesura del text és el pas costós del procés de composició. Dues menes de memòria cau l'abarateixen:
+
+- **Una memòria cau de blocs que és teva.** `createMeasurementCache()` retorna una `MeasurementCache` que recorda cada paràgraf mesurat, amb el seu text, les seves fonts, la seva amplada, les seves opcions de tall de línia i el diccionari de partició de mots actiu com a clau. Passa-la com a tercer argument de `buildDocument` (o de `buildDocumentAsync`) per reutilitzar les mesures entre les passades de convergència i entre composicions: un editor que recompon el document a cada pulsació mesura llavors només els paràgrafs que han canviat. Sense ella, cada passada torna a mesurar tots els blocs. Un paràgraf llegit de la memòria cau és igual que un de mesurat de nou, de manera que una composició amb memòria cau talla cada línia com una sense; a postext 1.4.1 un paràgraf desat a la memòria cau perdia la marca d'una última línia massa curta, i l'ajust d'aquestes línies i l'equilibrat de columnes podien tallar-lo d'una altra manera. La memòria cau porta la generació de mesures amb què es va omplir: quan arriben o se'n van cares d'una família, la seva consulta següent descarta els blocs compostos en aquella família, de manera que una memòria cau que es conserva mentre es carreguen les fonts mai no serveix línies mesurades amb la de reserva.
+- **Memòries cau globals d'amplades.** Les amplades de paraula es desen per cadena de font en un estat de mòdul que comparteixen totes les composicions de la pàgina, i pretext té la seva pròpia memòria cau. El motor descarta les amplades d'una família quan en canvien les cares (en començar un build, des de `watchFonts`, des de `prepareFonts` i des de `loadBundleFonts`); la memòria cau de pretext no té índex per família i es buida sencera.
+
+```ts
+import { buildDocument, createMeasurementCache, evictFontFamilies, clearMeasurementCache } from 'postext';
+
+const cache = createMeasurementCache();
+let doc = buildDocument(content, config, cache);
+
+// S'ha afegit a document.fonts una cara d'"EB Garamond": el build següent la veu,
+// amb la mateixa memòria cau, i torna a mesurar aquella família.
+doc = buildDocument(content, config, cache);
+
+// Un amfitrió que canvia cares que el motor no pot veure (un conjunt de fonts propi) ho avisa:
+evictFontFamilies(['EB Garamond']);   // les amplades i els blocs desats d'aquella família
+clearMeasurementCache();              // totes les famílies
+```
 
 Per a aplicacions que mesuren el text peça a peça, `cachedMeasureBlock(text, font, maxWidthPx, lineHeightPx, options, cache)` i `cachedMeasureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cache)` reben els arguments de `measureBlock` i `measureRichBlock` més la memòria cau, al final.
 
@@ -9073,8 +9271,8 @@ Per a aplicacions que mesuren el text peça a peça, `cachedMeasureBlock(text, f
 Part de l'estat de Postext viu en variables de mòdul. Tot el que importa `postext` en el mateix context de JavaScript (*realm*) el comparteix: una pàgina i els seus scripts comparteixen una còpia, mentre que cada iframe i cada worker tenen la seva. Amb un document per pàgina no es nota. Amb diversos documents a la mateixa pàgina —dues previsualitzacions en directe, una galeria d'exemples— sí:
 
 - **Imatges dels recursos.** `registerResourceImage(fileId, image)` omple un únic registre indexat per `fileId`, que llegeixen `renderPage` i `renderPageToCanvas`. Dos documents que registren `figure.svg` comparteixen aquesta entrada: guanya l'últim registre, per a tots dos. Posa als identificadors de fitxer un prefix per document, i crida `unregisterResourceImage(fileId)` o `clearResourceImages()` quan un document desapareix. Els ràsters que desa a la memòria cau el backend de canvas fan servir la mateixa clau i es descarten amb la imatge.
-- **Mesures del text.** Les amplades mesurades es desen a la memòria cau per cadena de font i text per a tot el context. El text mesurat abans que una font web acabés de carregar-se conserva les amplades de la font de reserva, en tots els documents, fins que `clearMeasurementCache()` (sense arguments) buida les memòries cau: crida-la quan les fonts s'hagin carregat i torna a compondre.
-- **Configuracions resoltes.** Cada objecte de configuració es resol una vegada i el resultat queda a la memòria cau associat a aquest objecte. Una configuració modificada al lloc i composta de nou es compon amb els valors antics: passa un objecte nou a cada canvi (`{ ...config, … }` o `structuredClone(config)`).
+- **Mesures del text.** Les amplades mesurades es desen a la memòria cau per cadena de font i text per a tot el context. Quan arriben o se'n van cares d'una família, el motor descarta les amplades d'aquella família per a tots els documents (vegeu [Carregar les fonts abans de compondre](#carregar-les-fonts-abans-de-compondre)); `clearMeasurementCache()` les descarta totes.
+- **Configuracions resoltes.** Cada objecte de configuració es resol una vegada i el resultat queda a la memòria cau associat a aquest objecte. Abans de res, cada build compara l'objecte amb el text que tenia quan es va resoldre (un `JSON.stringify`, uns 0,1 ms per a una configuració de llibre de 55 KB i 1,5 ms per a una de 240 KB), de manera que una configuració modificada al lloc, a qualsevol profunditat (`config.bodyText.fontSize = …`, un color de la paleta), es torna a resoldre. `invalidateConfig(config)` descarta la resolució a mà. `stableStringify` i `hashString` donen una clau de contingut que no depèn de l'ordre de les claus, per als amfitrions que desen composicions a la memòria cau per configuració.
 - **Llengua de la partició de mots.** Cada build fixa la llengua de partició de mots de tot el procés al `bodyText.hyphenation.locale` del seu document. Les funcions exportades `hyphenateText(text)` i `layoutDesignSlot` fan servir la llengua de l'últim build tret que els en passis una: crida `hyphenateText(text, 'es')`.
 - **Motor de fórmules.** Hi ha un únic motor MathJax i una única memòria cau de fórmules renderitzades per context; `initMathEngine()` l'engega per a tots.
 
@@ -9244,7 +9442,9 @@ await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'no
 const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
 ```
 
-**Un worker no veu les fonts de la pàgina.** Té el seu propi conjunt de fonts, que només conté les cares enviades amb `registerFonts` i les fonts instal·lades al sistema. Quan un build compon text en una família que el worker no troba, aquest text es mesura amb una font de reserva, així que els seus talls de línia no coincidiran amb els de la pàgina. El client imprimeix llavors un avís a la consola per família (`"EB Garamond" is not available inside the layout worker…`) i enumera les famílies a `BuildStats.missingFonts`, que rep el callback `onStats` de `build`.
+**Un worker no veu les fonts de la pàgina.** Té el seu propi conjunt de fonts, que només conté les cares enviades amb `registerFonts` i les fonts instal·lades al sistema. Quan un build compon text en una família que el worker no troba, aquest text es mesura amb una font de reserva, així que els seus talls de línia no coincidiran amb els de la pàgina. El client imprimeix llavors un avís a la consola per família (`"EB Garamond" is not available inside the layout worker…`) i enumera les famílies a `BuildStats.missingFonts`, que rep el callback `onStats` de `build`. El document mateix porta aquestes cares com a avisos de contingut `fontFallback`.
+
+`handle.prepareFonts(content, config, options)` executa [`prepareFonts`](#carregar-les-fonts-abans-de-compondre) a la pàgina i després envia al worker els fitxers de cada cara trobada que guarda el registre de fonts (els fitxers del resolutor, les cares d'un paquet, les regles `@font-face` llegibles de la pàgina), i d'aquests només els trams que contenen caràcters del document. Quan arriben cares al worker, aquest descarta només les mesures d'aquelles famílies, a més de la seva memòria cau de documents acabats.
 
 ### Recol·lecció de payloads de font (Fontsource / Google Fonts)
 
@@ -9338,6 +9538,7 @@ Les peces clau de l'API pública:
 - **`resolveHtmlViewerConfig(partial)`** — completa els valors per defecte del visor HTML (`maxCharsPerLine`, `columnGap`, `optimalLineBreaking`).
 - **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`** — primitives de mesura que serveixen per derivar una amplada de columna real en píxels a partir d'un objectiu en caràcters.
 - **`createMeasurementCache` / `clearMeasurementCache`** — memòries cau endollables per reutilitzar mesures entre recomposicions.
+- **`prepareFonts` / `buildDocumentWithFonts` / `watchFonts` / `onFontsChanged`** — carreguen les cares del document abans de compondre i tornen a compondre quan n'arriben de noves (vegeu [Carregar les fonts abans de compondre](#carregar-les-fonts-abans-de-compondre)).
 
 ### Exemple en directe: una cadena HTML
 
@@ -9359,6 +9560,8 @@ import {
   measureGlyphWidth,
   dimensionToPx,
   createMeasurementCache,
+  watchFonts,
+  onFontsChanged,
 } from 'postext';
 import type { PostextConfig, MeasurementCache } from 'postext';
 
@@ -9468,12 +9671,13 @@ export function PostextHtmlViewer({
 
     // Torna a mesurar quan es carreguen les web fonts perquè les amplades de glif no
     // quedin preses a partir de les fonts de reserva.
-    const onFontsDone = () => relayout();
-    document.fonts?.addEventListener?.('loadingdone', onFontsDone);
+    const stopWatching = watchFonts();
+    const off = onFontsChanged(() => relayout());
 
     return () => {
       ro.disconnect();
-      document.fonts?.removeEventListener?.('loadingdone', onFontsDone);
+      off();
+      stopWatching();
     };
   }, [markdown, config, mode]);
 
@@ -9485,7 +9689,7 @@ Algunes notes sobre el que fa l'exemple:
 
 - **Es mesura la columna, no s'aproxima.** Com que `maxCharsPerLine` és un *objectiu* expressat en caràcters, l'amplada real en píxels depèn de la font del cos. `measureGlyphWidth` dona una mesura real sobre la font triada, i manté la mesura coherent quan es canvia de font.
 - **Es reescriu la pàgina.** El visor HTML tracta cada "pàgina" del VDT com una columna en pantalla. L'exemple sobreescriu `page.width` amb l'amplada mesurada de columna, posa els marges a zero (el padding viu fora de la pàgina, al `.pt-doc` que l'embolcalla) i fa servir `HTML_DPI = 144` perquè `8pt` de cos resolgui a `16px`.
-- **Atent a la càrrega de fonts.** `document.fonts.loadingdone` es dispara quan arriba una web font acabada de sol·licitar. Si no es recompon llavors, el primer render fa servir mètriques de la font de reserva i es produeix un salt quan arriba la real.
+- **Atent a la càrrega de fonts.** `watchFonts` escolta `document.fonts` i, una vegada per fotograma, descarta el que s'havia mesurat en les famílies amb cares acabades d'arribar; `onFontsChanged` torna a compondre llavors la columna. Si no es recompon, el primer render fa servir mètriques de la font de reserva i es produeix un salt quan arriba la real.
 - **Es reutilitza la memòria cau de mesures.** Crear la memòria cau una sola vegada per component fa que els redimensionaments i els canvis d'escala de font reutilitzin mesures del render anterior en lloc de tornar a mesurar cada paràgraf.
 
 ### Pas següent
@@ -9814,7 +10018,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 `resourceBytes(fileId)` retorna els bytes en brut d'una imatge, i el backend els identifica pel seu contingut:
 
 - PNG, JPEG, GIF i WebP s'incrusten com a imatges;
-- el marcatge SVG es dibuixa com a traçats vectorials, o es rasteritza a 600 ppp al navegador quan fa servir funcions que queden fora del subconjunt vectorial;
+- el marcatge SVG es dibuixa com a traçats vectorials, amb el seu `text` compost com a text real amb les fonts incrustades del document, o es rasteritza a 600 ppp al navegador quan fa servir funcions que queden fora del subconjunt vectorial. Un `<style>` que només conté regles `@font-face` (variants que va incrustar l'autor) s'omet i la figura continua sent vectorial (des de postext-pdf 1.25); qualsevol altre full d'estil la converteix en ràster, fet amb les variants que anomena el seu text incrustades des de `fontProvider` (llevat que `diagramStyle.inlineFonts` o el `svg.inlineFonts` del recurs sigui `false`);
 - d'un PDF s'incrusta tal qual la primera pàgina, com un XObject de formulari.
 
 Cada imatge es desa una sola vegada al fitxer, encara que es dibuixi moltes vegades. Un SVG dibuixat amb traçats vectorials es converteix en un XObject de formulari que pinta cada pàgina, de manera que un marc o un logotip en el disseny de pàgina d'un document de trenta pàgines s'escriu una vegada i no trenta; cada pàgina més afegeix uns centenars de bytes. Fins a postext-pdf 1.4 cada pàgina portava la seva pròpia còpia dels traçats.
@@ -10088,10 +10292,10 @@ const bytes = await renderToEpub(docs, {
 
 Un document sol és un llibre d'un capítol: `renderToEpub([doc], options)`.
 
-- **`renderToEpub(docs, options): Promise<Uint8Array>`** escriu el fitxer. `options` és `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** escriu el fitxer. `options` és `{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
 - **`metadata`**: `title` i `language` (una etiqueta BCP 47) són obligatoris; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` i `modified` són opcionals. Un ISBN sense prefix passa a `urn:isbn:…`. Sense `identifier`, el llibre rep un `urn:uuid:` derivat del títol, els autors i l'idioma, de manera que una versió nova del mateix llibre conserva el seu lloc a la biblioteca del lector. Passa també `modified` per obtenir un fitxer idèntic byte a byte.
-- **`fonts`**: les variants que s'incrusten, `{ family, weight, style, bytes, format, unicodeRange? }`, amb `format` un de `woff2`, `woff`, `ttf`, `otf`. Cada variant passa a ser un fitxer i una regla `@font-face`; diversos fitxers amb el seu `unicodeRange` formen una sola variant (els trams de Google Fonts). Una família, un pes o un estil que les pàgines fan servir sense variant incrustada s'avisa com a `missingFont`, i els lectors en posen una de seva. Incrusta només les lletres la llicència de les quals ho permeti.
-- **`resourceBytes(fileId)`**: les imatges que col·loquen les pàgines, de manera síncrona o asíncrona, com a `{ bytes, mediaType }`; un `mediaType` buit es llegeix dels bytes. Dona els mapes de bits tal com estan desats i els SVG com el seu codi font, no el màster PDF d'impremta (`svg.pdfFileId`). Cada imatge es desa una vegada. En un llibre a una tinta (`diagramStyle.singleInk`) els SVG es recoloren al fitxer. Una imatge sense bytes s'avisa com a `missingImage` i queda com un marc buit.
+- **`fonts`**: les variants que s'incrusten, `{ family, weight, style, bytes, format, unicodeRange? }`, amb `format` un de `woff2`, `woff`, `ttf`, `otf`. Cada variant passa a ser un fitxer i una regla `@font-face`; diversos fitxers amb el seu `unicodeRange` formen una sola variant (els trams de Google Fonts). Una família, un pes o un estil que les pàgines fan servir sense variant incrustada s'avisa com a `missingFont`, i els lectors en posen una de seva. Incrusta només les lletres la llicència de les quals ho permeti: una variant amb `redistributable: false` no s'escriu mai al fitxer (el llibre es pot compondre amb ella, però el seu fitxer en queda fora, també de les imatges SVG).
+- **`resourceBytes(fileId)`**: les imatges que col·loquen les pàgines, de manera síncrona o asíncrona, com a `{ bytes, mediaType }`; un `mediaType` buit es llegeix dels bytes. Dona els mapes de bits tal com estan desats i els SVG com el seu codi font, no el màster PDF d'impremta (`svg.pdfFileId`). Cada imatge es desa una vegada. En un llibre a una tinta (`diagramStyle.singleInk`) els SVG es recoloren al fitxer. Cada SVG porta incrustades les variants que anomena el seu text, perquè un lector el mostra com una imatge que no veu les fonts del llibre (consulta [Fonts al text dels SVG](#fonts-al-text-dels-svg)): des de `fonts` (els trams que contenen els seus caràcters) i després des de **`svgFonts.provider`** per a una família que el text del llibre no fa servir. Les famílies de variants marcades amb `redistributable: false`, i les que anomeni `svgFonts.withhold(family)`, en queden fora i s'avisen una vegada cadascuna com a `fontWithheld`; una família sense variant s'avisa com a `svgFontUnavailable`, i les variants que superen `svgFonts.maxBytes` (2 MiB), com a `svgFontsTooLarge`. `svgFonts.inline: false`, `diagramStyle.inlineFonts: false` i el `svg.inlineFonts: false` d'un recurs conserven els bytes tal com es donen. Una imatge sense bytes s'avisa com a `missingImage` i queda com un marc buit.
 - **`cover`**: `{ bytes, mediaType, alt? }`, una imatge JPEG, PNG, WebP o SVG. Aleshores el llibre s'obre amb un document de coberta que la conté, i és la `cover-image` del paquet (la miniatura en una biblioteca). Sense coberta, la maquetació fixa anomena coberta la seva primera pàgina i el llibre fluid no té imatge de coberta.
 - **`onProgress({ phase, done, total })`**: `resources` (lletres i imatges), `documents` (pàgines en la maquetació fixa, capítols en la fluida) i després `package`. **`signal`** interromp entre passos.
 - **`readEpub(bytes)`** llegeix un fitxer per a un visor, sense `DOMParser`: maquetació, metadades, sentit de lectura, cada fitxer pel seu camí, el manifest, l'spine, el sumari, la llista de pàgines, el viewport de la maquetació fixa i la coberta. El lector del Sandbox s'hi basa.
@@ -10156,7 +10360,7 @@ El **`fileId` de cada fitxer és la seva ruta dins del paquet**. `resource.svg.f
 
 #### Paquets escrits per postext 1.4 o anterior
 
-Tot manifest que escriuen `createBundle` i el Sandbox porta `configVersion: 10`: les regles de configuració per a les quals es va escriure la seva `config`. Un manifest sense aquest camp el va escriure postext 1.4 o anterior, que resolia divuit coses d'una altra manera:
+Tot manifest que escriuen `createBundle` i el Sandbox porta `configVersion: 11`: les regles de configuració per a les quals es va escriure la seva `config`. Un manifest sense aquest camp el va escriure postext 1.4 o anterior, que resolia divuit coses d'una altra manera:
 
 - **Els salts d'encapçalament** (regles 3): fins a la 1.4, un objecte `headings` sense salt d'H1 no en tenia cap (vegeu [Configuració per nivell](#configuració-per-nivell)).
 - **La mida de les fórmules** (regles 4): fins a la 1.4, les fórmules sortien 1,131 vegades més grans del que diu `fontSizeScale` (vegeu [Mida de les fórmules](#matemàtiques)).
@@ -10177,7 +10381,7 @@ Tot manifest que escriuen `createBundle` i el Sandbox porta `configVersion: 10`:
 - **Les tanques de codi** (regles 9): fins a la 1.22, una tanca ```` ``` ```` o `~~~` i les línies de dins es llegien com a Markdown: les línies s'unien en paràgrafs, una línia amb `#` es convertia en un encapçalament i les tanques s'imprimien (vegeu `codeStyle.blocks` a [Llistats de codi](#llistats-de-codi)).
 - **Els versos partits** (regles 10): a la 1.23, un vers d'un poema compost vers a vers més ample que la caixa es partia amb el seu espaiat natural, per poc que sobrés (vegeu `bodyText.verse.tighten` a [Vers](#vers)).
 
-`openBundle` i `readBundle` llegeixen la `config` d'un manifest així, i la configuració de cada llengua a `localized`, a través de `migrateConfig`, que escriu els salts tal com els componia la 1.4 i multiplica l'escala de les fórmules per 1,131 (i divideix per aquest factor els marges de les fórmules en bloc donats en `em`). A un manifest marcat de `3` a `7`, que va escriure una versió preliminar de la 1.5, només se li apliquen les fixacions de les regles posteriors a la seva marca: amb `3`, la mida de les fórmules, l'espai en línia, les cinc fixacions de les regles 6, les dues de les regles 7 i les tres de les regles 8; amb `4`, l'espai en línia i les de les regles 6, 7 i 8; amb `5`, les de les regles 6, 7 i 8; amb `6`, les de les regles 7 i 8; amb `7`, només les de les regles 8. La divisió sota un encapçalament (`pinLegacyHeadingSplit`) s'escriu com a `headings.keepWithNextSplit: 'fill'` sobre el `headings` que deixen en vigor les capes, quan algun capítol llegit té un encapçalament i la configuració no anomena un valor propi, manté activat `headings.keepWithNext` i no desactiva `bodyText.avoidOrphans`. Els salts després del guionet d'un compost (`pinLegacyHyphenBreaks`) s'escriuen com a `bodyText.breakAfterHyphens: false` sobre el `bodyText` en vigor quan un capítol llegit té un guionet entre dues lletres i la configuració ni el fixa ja ni desactiva `optimalLineBreaking`. L'espai sota els contenidors (`pinLegacyParagraphContainerSpacing`) s'escriu com a `bodyText.paragraphContainerSpacing: 'add'` sobre el `bodyText` en vigor quan la configuració declara algun estil de paràgraf (a `paragraphStyles` o a la configuració pròpia del visor HTML), un capítol llegit obre un contenidor `:::paragraphs` en una línia pròpia i la configuració no el fixa ja. Els salts després d'un guió llarg (`pinLegacyDashBreaks`) s'escriuen com a `bodyText.breakAfterDashes: false` sobre el `bodyText` en vigor quan un capítol llegit té un guió llarg o un guió mitjà entre paraules sense espais (una lletra, una xifra o un signe de tancament davant, i una lletra, una xifra o un signe d'obertura darrere; unes cometes davant del guió compten quan les precedeix una lletra, una xifra, un signe de tancament o un espai de no separació, com a `«no»—y`, no a `dijo "—Hola`; una marca en línia enganxada al guió o a les cometes, com els `**` de `**I.**—Que`, compta a qualsevol dels dos costats) i la configuració no el fixa ja. La composició del text en bandera (`pinLegacyRaggedBreaking`) s'escriu com a `bodyText.optimalRagged: false` sobre el `bodyText` en vigor quan la configuració posa en bandera algun text corregut (un `textAlign` diferent de `'justify'` al text de cos, un estil de paràgraf, el cos d'un requadre, el d'una part o el d'un estil de secció (`headingStyles[].bodyStyle`), o a la configuració pròpia del visor HTML), no el fixa ja i no desactiva `optimalLineBreaking`. L'espai als requadres (`pinLegacyBoxResourceGap`) s'escriu com a `layout.inlineResourceGapInBoxes: false` sobre el `layout` en vigor quan un recurs s'insereix en una línia pròpia dins d'un `:::callout` dels capítols llegits i la configuració no el fixa ja. El tall de les caixes (`pinLegacyBoxChildCut`) s'escriu com a `layout.boxChildSplitMinLines: 1` sobre el `layout` en vigor quan un capítol llegit obre un `:::callout` en una línia pròpia i la configuració no el fixa ja. Les marques dels encapçalaments (`pinLegacyHeadingMarks`) s'escriuen com a `headings.inlineMarks: false` sobre el `headings` que deixen en vigor les capes, quan algun encapçalament dels capítols llegits porta una marca (`*`, `_`, `^`, `~`, `:smallcaps[` o un enllaç al títol) i la configuració no anomena un valor propi. A les caplletres (`pinLegacyDropCapSize`) se'ls escriu la mida de la 1.4 com a `dropCap.fontSize`, siguin on siguin: en la unitat de l'interlineat de l'element quan és una longitud, i si no, en la unitat del seu cos. El lloc sota els dos punts (`pinLegacyColonListRoom`) s'escriu com a `bodyText.colonListRoom: 'line'` sobre el `bodyText` en vigor quan una llista dels capítols llegits segueix una línia que acaba en dos punts (encara que hi hagi línies en blanc entre elles) i la configuració ni anomena un lloc ni desactiva `keepColonWithList`. L'espai en línia (`pinLegacyInlineGap`) s'escriu com a `layout.inlineResourceGap: 'above'` sobre el `layout` que deixen en vigor les capes, quan una línia dels capítols llegits insereix un recurs (`::resource{id="…"}` sola a la seva línia, tal com la llegeix l'analitzador: una menció al text o en un fragment de codi no compta) i la configuració no anomena un espai propi. La mida es fixa sobre el `math` que deixen en vigor les capes (el `math` propi d'una llengua substitueix el compartit), i només quan els capítols llegits tenen algun `$`: un paquet sense fórmules conserva la seva `config` tal com es va escriure. Si ni el manifest ni la llengua donen un `math`, el que queda en vigor és el de la `baseConfig` de `readBundle` (la del lector), i també es fixa, perquè la 1.4 componia les fórmules del paquet a aquesta mida: una base amb `fontSizeScale: 1.5` es llegeix com a 1,5 × 1,1312. Els salts d'encapçalament de la base es prenen tal com vénen. Així un paquet antic conserva el que componien aquestes regles, i `bundle.config` mostra els salts, la mida de les fórmules, els espais, les marques dels encapçalaments, la mida de les caplletres, el lloc sota els dos punts, el tall de les caixes, els salts després d'un guió llarg, els salts després del guionet d'un compost, la composició del text en bandera, la divisió sota un encapçalament i l'espai sota els contenidors amb què es compon. Les correccions de composició de la 1.5 no tenen fixació i se li apliquen com a qualsevol llibre, així que una pàgina a la qual afectin encara es pot moure (la llista és a [Mida de les fórmules](#matemàtiques)). Un `preset.json` escrit a mà per a les regles actuals posa `"configVersion": 10`; marcar així el manifest d'un paquet antic és també la manera de llegir-lo, amb una línia, amb les regles actuals (un paquet sense versió perd llavors també la fixació dels seus salts d'encapçalament). Un manifest marcat `8`, escrit per postext 1.5 a 1.22, rep només les quatre fixacions de les regles 9, com també tots els anteriors: la composició del vers (`pinLegacyVerseLayout`) s'escriu com a `bodyText.verse.layout: 'bayt'` al `bodyText` vigent, quan un capítol llegit compon un poema `:::verse` l'obertura del qual no anomena composició i les línies del qual no porten separador d'hemistiquis, i la configuració no el fixa ja; els sagnats aparellats (`pinLegacyPairedIndents`) treuen la `firstLineIndent` de tot estil de paràgraf (a `paragraphStyles` o als ajustos del visor HTML) que fixa també una `hangingIndent` diferent de zero; els salts de línia forçats (`pinLegacyHardBreaks`) s'escriuen com a `bodyText.hardLineBreaks: false` al `bodyText` vigent, quan un capítol llegit acaba una línia d'un paràgraf, una cita o un element de llista amb una barra inversa i el bloc continua a sota, o posa `\\` davant d'un espai i més text (llevat del codi en línia i les fórmules, les fórmules destacades, els títols i els poemes `:::verse`), i la configuració no el fixa ja; i les tanques de codi (`pinLegacyCodeBlocks`) s'escriuen com a `codeStyle.blocks: false` quan un capítol llegit obre una tanca ```` ``` ```` o `~~~` (de tres caràcters o més, amb tres espais de sagnat com a màxim) i la configuració no el fixa ja. Un manifest marcat `9`, escrit per postext 1.23, rep només la fixació de les regles 10, com també tots els anteriors: els versos partits (`pinLegacyVerseTightening`) s'escriuen com a `bodyText.verse.tighten: false` al `bodyText` vigent, quan un capítol llegit compon un poema vers a vers (una obertura `:::verse` que anomena `layout=lines`, o que no anomena composició sobre versos sense separador d'hemistiquis mentre la configuració no compongui aquests poemes com a bayts) i la configuració no el fixa ja.
+`openBundle` i `readBundle` llegeixen la `config` d'un manifest així, i la configuració de cada llengua a `localized`, a través de `migrateConfig`, que escriu els salts tal com els componia la 1.4 i multiplica l'escala de les fórmules per 1,131 (i divideix per aquest factor els marges de les fórmules en bloc donats en `em`). A un manifest marcat de `3` a `7`, que va escriure una versió preliminar de la 1.5, només se li apliquen les fixacions de les regles posteriors a la seva marca: amb `3`, la mida de les fórmules, l'espai en línia, les cinc fixacions de les regles 6, les dues de les regles 7 i les tres de les regles 8; amb `4`, l'espai en línia i les de les regles 6, 7 i 8; amb `5`, les de les regles 6, 7 i 8; amb `6`, les de les regles 7 i 8; amb `7`, només les de les regles 8. La divisió sota un encapçalament (`pinLegacyHeadingSplit`) s'escriu com a `headings.keepWithNextSplit: 'fill'` sobre el `headings` que deixen en vigor les capes, quan algun capítol llegit té un encapçalament i la configuració no anomena un valor propi, manté activat `headings.keepWithNext` i no desactiva `bodyText.avoidOrphans`. Els salts després del guionet d'un compost (`pinLegacyHyphenBreaks`) s'escriuen com a `bodyText.breakAfterHyphens: false` sobre el `bodyText` en vigor quan un capítol llegit té un guionet entre dues lletres i la configuració ni el fixa ja ni desactiva `optimalLineBreaking`. L'espai sota els contenidors (`pinLegacyParagraphContainerSpacing`) s'escriu com a `bodyText.paragraphContainerSpacing: 'add'` sobre el `bodyText` en vigor quan la configuració declara algun estil de paràgraf (a `paragraphStyles` o a la configuració pròpia del visor HTML), un capítol llegit obre un contenidor `:::paragraphs` en una línia pròpia i la configuració no el fixa ja. Els salts després d'un guió llarg (`pinLegacyDashBreaks`) s'escriuen com a `bodyText.breakAfterDashes: false` sobre el `bodyText` en vigor quan un capítol llegit té un guió llarg o un guió mitjà entre paraules sense espais (una lletra, una xifra o un signe de tancament davant, i una lletra, una xifra o un signe d'obertura darrere; unes cometes davant del guió compten quan les precedeix una lletra, una xifra, un signe de tancament o un espai de no separació, com a `«no»—y`, no a `dijo "—Hola`; una marca en línia enganxada al guió o a les cometes, com els `**` de `**I.**—Que`, compta a qualsevol dels dos costats) i la configuració no el fixa ja. La composició del text en bandera (`pinLegacyRaggedBreaking`) s'escriu com a `bodyText.optimalRagged: false` sobre el `bodyText` en vigor quan la configuració posa en bandera algun text corregut (un `textAlign` diferent de `'justify'` al text de cos, un estil de paràgraf, el cos d'un requadre, el d'una part o el d'un estil de secció (`headingStyles[].bodyStyle`), o a la configuració pròpia del visor HTML), no el fixa ja i no desactiva `optimalLineBreaking`. L'espai als requadres (`pinLegacyBoxResourceGap`) s'escriu com a `layout.inlineResourceGapInBoxes: false` sobre el `layout` en vigor quan un recurs s'insereix en una línia pròpia dins d'un `:::callout` dels capítols llegits i la configuració no el fixa ja. El tall de les caixes (`pinLegacyBoxChildCut`) s'escriu com a `layout.boxChildSplitMinLines: 1` sobre el `layout` en vigor quan un capítol llegit obre un `:::callout` en una línia pròpia i la configuració no el fixa ja. Les marques dels encapçalaments (`pinLegacyHeadingMarks`) s'escriuen com a `headings.inlineMarks: false` sobre el `headings` que deixen en vigor les capes, quan algun encapçalament dels capítols llegits porta una marca (`*`, `_`, `^`, `~`, `:smallcaps[` o un enllaç al títol) i la configuració no anomena un valor propi. A les caplletres (`pinLegacyDropCapSize`) se'ls escriu la mida de la 1.4 com a `dropCap.fontSize`, siguin on siguin: en la unitat de l'interlineat de l'element quan és una longitud, i si no, en la unitat del seu cos. El lloc sota els dos punts (`pinLegacyColonListRoom`) s'escriu com a `bodyText.colonListRoom: 'line'` sobre el `bodyText` en vigor quan una llista dels capítols llegits segueix una línia que acaba en dos punts (encara que hi hagi línies en blanc entre elles) i la configuració ni anomena un lloc ni desactiva `keepColonWithList`. L'espai en línia (`pinLegacyInlineGap`) s'escriu com a `layout.inlineResourceGap: 'above'` sobre el `layout` que deixen en vigor les capes, quan una línia dels capítols llegits insereix un recurs (`::resource{id="…"}` sola a la seva línia, tal com la llegeix l'analitzador: una menció al text o en un fragment de codi no compta) i la configuració no anomena un espai propi. La mida es fixa sobre el `math` que deixen en vigor les capes (el `math` propi d'una llengua substitueix el compartit), i només quan els capítols llegits tenen algun `$`: un paquet sense fórmules conserva la seva `config` tal com es va escriure. Si ni el manifest ni la llengua donen un `math`, el que queda en vigor és el de la `baseConfig` de `readBundle` (la del lector), i també es fixa, perquè la 1.4 componia les fórmules del paquet a aquesta mida: una base amb `fontSizeScale: 1.5` es llegeix com a 1,5 × 1,1312. Els salts d'encapçalament de la base es prenen tal com vénen. Així un paquet antic conserva el que componien aquestes regles, i `bundle.config` mostra els salts, la mida de les fórmules, els espais, les marques dels encapçalaments, la mida de les caplletres, el lloc sota els dos punts, el tall de les caixes, els salts després d'un guió llarg, els salts després del guionet d'un compost, la composició del text en bandera, la divisió sota un encapçalament i l'espai sota els contenidors amb què es compon. Les correccions de composició de la 1.5 no tenen fixació i se li apliquen com a qualsevol llibre, així que una pàgina a la qual afectin encara es pot moure (la llista és a [Mida de les fórmules](#matemàtiques)). Un `preset.json` escrit a mà per a les regles actuals posa `"configVersion": 11`; marcar així el manifest d'un paquet antic és també la manera de llegir-lo, amb una línia, amb les regles actuals (un paquet sense versió perd llavors també la fixació dels seus salts d'encapçalament). Un manifest marcat `8`, escrit per postext 1.5 a 1.22, rep només les quatre fixacions de les regles 9, com també tots els anteriors: la composició del vers (`pinLegacyVerseLayout`) s'escriu com a `bodyText.verse.layout: 'bayt'` al `bodyText` vigent, quan un capítol llegit compon un poema `:::verse` l'obertura del qual no anomena composició i les línies del qual no porten separador d'hemistiquis, i la configuració no el fixa ja; els sagnats aparellats (`pinLegacyPairedIndents`) treuen la `firstLineIndent` de tot estil de paràgraf (a `paragraphStyles` o als ajustos del visor HTML) que fixa també una `hangingIndent` diferent de zero; els salts de línia forçats (`pinLegacyHardBreaks`) s'escriuen com a `bodyText.hardLineBreaks: false` al `bodyText` vigent, quan un capítol llegit acaba una línia d'un paràgraf, una cita o un element de llista amb una barra inversa i el bloc continua a sota, o posa `\\` davant d'un espai i més text (llevat del codi en línia i les fórmules, les fórmules destacades, els títols i els poemes `:::verse`), i la configuració no el fixa ja; i les tanques de codi (`pinLegacyCodeBlocks`) s'escriuen com a `codeStyle.blocks: false` quan un capítol llegit obre una tanca ```` ``` ```` o `~~~` (de tres caràcters o més, amb tres espais de sagnat com a màxim) i la configuració no el fixa ja. Un manifest marcat `9`, escrit per postext 1.23, rep només la fixació de les regles 10, com també tots els anteriors: els versos partits (`pinLegacyVerseTightening`) s'escriuen com a `bodyText.verse.tighten: false` al `bodyText` vigent, quan un capítol llegit compon un poema vers a vers (una obertura `:::verse` que anomena `layout=lines`, o que no anomena composició sobre versos sense separador d'hemistiquis mentre la configuració no compongui aquests poemes com a bayts) i la configuració no el fixa ja. Un manifest marcat `10`, escrit per postext 1.24, rep només la fixació de les regles 11, com també tots els anteriors: l'equilibratge d'una retícula de caràcters (`pinLegacyGridBalancing`) s'escriu com a `headings.balancing.enabled: true` al `headings` vigent, quan la configuració combinada fixa `cjk.grid.enabled` en text horitzontal i no fixa ella mateixa `enabled`, perquè la 1.24 equilibrava aquestes pàgines per defecte. Les regles 11 també impedeixen que un títol d'obra es parteixi després d'un sol caràcter, componen els números en cercle com a caràcters xinesos i el text de disseny CJK amb les regles del cos (#637): un manifest marcat `10` o anterior rep `cjk.titleMinChars: 1` (`pinLegacyTitleBreaks`) quan un capítol llegit té un títol (《, 〈 o `:book[`), `cjk.circledNumbers: 'western'` (`pinLegacyCircledNumbers`) quan un en té un número en cercle (U+2460–U+24FF, U+2776–U+2793) i `cjk.composeDesignText: false` (`pinLegacyDesignText`) quan un capítol llegit o la mateixa configuració tenen text CJK; cadascun a la `cjk` vigent i només si la configuració no el fixa ja. També tallen les taules en línia i componen `:::columns` al text corregut (#634): un manifest marcat `10` o anterior rep `tableStyle.splitInline: false` (`pinLegacyInlineTableSplit`) al `tableStyle` vigent quan un capítol llegit insereix un recurs, i `layout.flowColumns: false` (`pinLegacyFlowColumns`) al `layout` vigent quan un capítol llegit obre una tanca `:::columns` en una línia pròpia, cadascun només si la configuració no el fixa ja. També ofereixen a un flotant el capdamunt de la columna d'una obertura a amplada de pàgina (#639): un manifest marcat `10` o anterior rep `layout.floatsUnderOpener: false` (`pinLegacyOpenerHeadFloats`) al `layout` vigent quan la configuració combinada defineix un nivell o un estil d'encapçalament amb `span: 'page'` i un capítol llegit té un encapçalament, només si la configuració no el fixa ja.
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -10207,8 +10411,8 @@ migrateConfig(config, CONFIG_VERSION); // regles actuals: la mateixa `config`
 
 Quatre utilitats connecten un paquet obert amb el motor i els backends:
 
-- **`loadBundleFonts(bundle)`** registra les fonts del paquet a `document.fonts`. Espera-la abans de compondre, perquè la composició mesura el text amb les fonts que té el navegador. Les famílies que el paquet anomena però no inclou (Google Fonts) les has de carregar tu, com en qualsevol altre document.
-- **`registerBundleImages(bundle)`** descodifica les imatges per al backend canvas (`renderPage`, `renderToCanvas`), incloses les portades dels vídeos. **`bundleImageUrl(bundle)`** és el resolvedor `resourceImageUrl` de `renderToHtml`, i **`bundleVideoUrl(bundle)`** el seu resolvedor `resourceVideoUrl` per als fitxers de vídeo que porta un paquet. Totes dues recoloren les figures SVG quan `diagramStyle.singleInk` és actiu, una sola vegada: recoloren el marcatge i marquen les imatges perquè cap backend no les torni a tenyir (consulta [Tinta única en canvas i en HTML](#tinta-única-en-canvas-i-en-html)).
+- **`loadBundleFonts(bundle)`** registra les fonts del paquet a `document.fonts`, i els seus bytes al registre de fonts del motor per a les imatges SVG (`registerFontBytes`). Espera-la abans de compondre, perquè la composició mesura el text amb les fonts que té el navegador. Les famílies que el paquet anomena però no inclou (Google Fonts) les has de carregar tu, com en qualsevol altre document.
+- **`registerBundleImages(bundle)`** descodifica les imatges per al backend canvas (`renderPage`, `renderToCanvas`), incloses les portades dels vídeos. **`bundleImageUrl(bundle)`** és el resolvedor `resourceImageUrl` de `renderToHtml`, i **`bundleVideoUrl(bundle)`** el seu resolvedor `resourceVideoUrl` per als fitxers de vídeo que porta un paquet. Totes dues recoloren les figures SVG quan `diagramStyle.singleInk` és actiu, una sola vegada: recoloren el marcatge i marquen les imatges perquè cap backend no les torni a tenyir (consulta [Tinta única en canvas i en HTML](#tinta-única-en-canvas-i-en-html)). Totes dues incrusten, a més, a cada SVG les variants que anomena el seu text, primer des de les fonts del mateix paquet i després des de les variants registrades al motor (consulta [Fonts al text dels SVG](#fonts-al-text-dels-svg)); `registerBundleImages(bundle, { onWarning })` i `bundleImageUrl(bundle, { onWarning })` avisen d'una família sense variant.
 - **`buildBundle(bundle)`** compon els capítols en ordre i retorna un `VDTDocument` per capítol. Cada capítol continua l'anterior: comptadors d'encapçalaments i de recursos, la part oberta, la paritat de pàgina i la numeració. Un capítol que imprimeix l'índex de continguts (`:::toc`) o l'analític (`:::index`) rep l'esquema del llibre sencer. Admet les mateixes opcions que `buildDocument`, més `config` per substituir la configuració del paquet, `cache` per compartir una memòria cau de mesures i `metadata` (vegeu més avall).
 - **`bundleResourceBytes(bundle)`** i **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** són les opcions `resourceBytes` i `fontProvider` de `renderToPdf` de `postext-pdf`. El proveïdor de fonts tria del paquet el pes més proper de l'estil demanat. Per a una variant `.woff2` necessita `decompressWoff2`, i per a una família que el paquet no inclou crida `fallback` amb els arguments del renderitzador, `request` inclòs, i lliura el que retorni. Un `fallback` que només baixa el fitxer `latin` de la família imprimeix com a caixes buides una família xinesa que el paquet no incrusta; un que respon amb els fragments, com `sliceFontProvider` a [Fonts xineses, japoneses i coreanes](#fonts-xineses-japoneses-i-coreanes), la imprimeix completa.
 

@@ -2,8 +2,8 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext';
-import { resolveHeadingsConfig, DEFAULT_HEADINGS_CONFIG, DEFAULT_COLUMN_BALANCING, dimensionsEqual, colorsEqual } from 'postext';
-import type { HeadingsConfig, HeadingLevelConfig, DimensionUnit, ClosingBoxLever, KeepWithNextSplit } from 'postext';
+import { resolveHeadingsConfig, balancingOnByDefault, DEFAULT_HEADINGS_CONFIG, DEFAULT_COLUMN_BALANCING, dimensionsEqual, colorsEqual } from 'postext';
+import type { HeadingsConfig, HeadingLevelConfig, DimensionUnit, ClosingBoxLever, GridLinesLever, KeepWithNextSplit } from 'postext';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -27,6 +27,11 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.headings);
   const headings = resolveHeadingsConfig(raw);
+  // Balancing is off by default in vertical text and on a character grid
+  // (#632): the toggle shows what the layout does.
+  const balancingDefault = useSandboxSelector((s) => balancingOnByDefault(s.config));
+  const onGrid = useSandboxSelector((s) => s.config.cjk?.grid?.enabled === true);
+  const balancingOn = raw?.balancing?.enabled ?? balancingDefault;
 
   const updateHeadings = (partial: Partial<HeadingsConfig>) => {
     dispatch({
@@ -45,7 +50,7 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const resetBalancingField = (
     field: 'enabled' | 'maxLinesPerHeading' | 'stretchAfterLists' | 'maxLinesAfterList' | 'stretchAfterFloats'
       | 'maxLinesAfterFloat' | 'looseParagraphs' | 'maxLooseParagraphs' | 'trackParagraphs' | 'maxTracking'
-      | 'trailing' | 'beforeSpan' | 'closingBox',
+      | 'trailing' | 'beforeSpan' | 'closingBox' | 'gridLines',
   ) => {
     if (!raw?.balancing) return;
     const next = { ...raw.balancing };
@@ -134,7 +139,8 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isKeepWithNextSplitDefault = headings.keepWithNextSplit === D.keepWithNextSplit;
   const isSnapToGridDefault = headings.snapToGrid === D.snapToGrid;
   const isInlineMarksDefault = headings.inlineMarks === D.inlineMarks;
-  const isBalEnabledDefault = headings.balancing.enabled === DEFAULT_COLUMN_BALANCING.enabled;
+  const isBalEnabledDefault = balancingOn === balancingDefault;
+  const isBalGridLinesDefault = (headings.balancing.gridLines ?? 'allow') === 'allow';
   const isBalMaxLinesDefault = headings.balancing.maxLinesPerHeading === DEFAULT_COLUMN_BALANCING.maxLinesPerHeading;
   const isBalAfterListsDefault = headings.balancing.stretchAfterLists === DEFAULT_COLUMN_BALANCING.stretchAfterLists;
   const isBalMaxAfterListDefault = headings.balancing.maxLinesAfterList === DEFAULT_COLUMN_BALANCING.maxLinesAfterList;
@@ -147,6 +153,11 @@ export const HeadingsSection = memo(function HeadingsSection() {
   const isBalTrailingDefault = headings.balancing.trailing === DEFAULT_COLUMN_BALANCING.trailing;
   const isBalBeforeSpanDefault = headings.balancing.beforeSpan === DEFAULT_COLUMN_BALANCING.beforeSpan;
   const isBalClosingBoxDefault = headings.balancing.closingBox === DEFAULT_COLUMN_BALANCING.closingBox;
+
+  const GRID_LINES_OPTIONS = [
+    { value: 'allow', label: labels.balanceGridLinesAllow },
+    { value: 'off', label: labels.balanceGridLinesOff },
+  ];
 
   const CLOSING_BOX_OPTIONS = [
     { value: 'first', label: labels.balanceClosingBoxFirst },
@@ -306,7 +317,7 @@ export const HeadingsSection = memo(function HeadingsSection() {
 
       <ToggleSwitch
         label={labels.balanceColumns}
-        checked={headings.balancing.enabled}
+        checked={balancingOn}
         onChange={(v) =>
           updateHeadings({ balancing: { ...raw?.balancing, enabled: v } })
         }
@@ -314,9 +325,27 @@ export const HeadingsSection = memo(function HeadingsSection() {
         isDefault={isBalEnabledDefault}
         onReset={() => resetBalancingField('enabled')}
       />
+      {onGrid && (
+        <p className="mb-2 text-xs" style={{ color: 'var(--slate)' }}>
+          {balancingOn ? labels.balanceGridNote : labels.balanceGridOffNote}
+        </p>
+      )}
 
-      {headings.balancing.enabled && (
+      {balancingOn && (
         <NestedGroup>
+          {onGrid && (
+            <SelectInput
+              label={labels.balanceGridLines}
+              value={headings.balancing.gridLines ?? 'allow'}
+              options={GRID_LINES_OPTIONS}
+              onChange={(value) =>
+                updateHeadings({ balancing: { ...raw?.balancing, gridLines: value as GridLinesLever } })
+              }
+              tooltip={labels.balanceGridLinesTooltip}
+              isDefault={isBalGridLinesDefault}
+              onReset={() => resetBalancingField('gridLines')}
+            />
+          )}
           <NumberInput
             label={labels.balanceColumnsMaxLines}
             value={headings.balancing.maxLinesPerHeading}

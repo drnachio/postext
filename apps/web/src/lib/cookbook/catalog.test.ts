@@ -183,6 +183,17 @@ describe("catalogRecipe (fixture)", () => {
     expect(entry.search.gotchas).toEqual(["Any headings object drops the H1 break (zh)"]);
   });
 
+  it("is not searched by a pitfall fixed at or before its pin (#641)", () => {
+    const registry = { ...REGISTRY, gotchas: { "headings-drop-h1-break": { ...REGISTRY.gotchas["headings-drop-h1-break"], fixedIn: "1.5.0" } } } as Registry;
+    const pinned = (postext: string): Recipe => {
+      const recipe = fixtureRecipe();
+      return { ...recipe, meta: { ...recipe.meta, engine: { postext } } as RecipeMeta };
+    };
+    expect(catalogRecipe(pinned("1.4.1"), "en", registry, []).search.gotchas).toEqual(["Any headings object drops the H1 break"]);
+    expect(catalogRecipe(pinned("1.5.0"), "en", registry, []).search.gotchas).toEqual([]);
+    expect(catalogRecipe(pinned("1.19.1"), "en", registry, []).search.gotchas).toEqual([]);
+  });
+
   it("works before the first capture", () => {
     const entry = catalogRecipe(fixtureRecipe(false), "en", REGISTRY, []);
     expect(entry.card).toEqual({ src: "", src480: "" });

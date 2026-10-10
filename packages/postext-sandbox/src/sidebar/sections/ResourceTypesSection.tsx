@@ -375,6 +375,18 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                       onReset={() => updateTypePlacement(type, { columns: undefined })}
                     />
                   )}
+                  {/* Resources of this type may head the page (column) that
+                      cites them (#633); the document's default otherwise. */}
+                  {type.defaultPlacement?.position !== 'bottom' && type.defaultPlacement?.position !== 'here' && type.defaultPlacement?.span !== 'side' && !type.defaultPlacement?.rotate && (
+                    <ToggleSwitch
+                      label={labels.resourceTypePlacementCitingPage}
+                      checked={type.defaultPlacement?.citingPage ?? config.layout?.floatsAtCitingPage ?? false}
+                      onChange={(v) => updateTypePlacement(type, { citingPage: v })}
+                      tooltip={labels.resourceTypePlacementCitingPageTooltip}
+                      isDefault={type.defaultPlacement?.citingPage === undefined}
+                      onReset={() => updateTypePlacement(type, { citingPage: undefined })}
+                    />
+                  )}
                   <NumberInput
                     label={labels.resourceTypePlacementWidth}
                     value={Math.round((type.defaultPlacement?.width ?? 1) * 100)}

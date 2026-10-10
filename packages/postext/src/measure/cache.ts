@@ -8,6 +8,7 @@ import { getCjkLineBreak } from './cjkClasses';
 import { getMeasureRegion, getMeasureUprightDigits, getMeasureWritingMode } from './vertical';
 import { cjkCompositionKey, getCjkComposition } from './cjkPunctuation';
 import { getMeasureDirection } from './bidiLines';
+import { evictionsSince, measurementGeneration } from './canvas';
 
 /** Options that change a block's lines, joined into its cache key. The
  *  active hyphenation dictionary is one: soft hyphens (and the syllables an
@@ -121,6 +122,30 @@ function cloneMeasuredBlock(block: MeasuredBlock): MeasuredBlock {
   };
 }
 
+/** Whether a cache key sets text in one of `families` (lower case): the
+ *  key holds the font strings it was measured with. A key whose text
+ *  names the family counts too, which only costs a measure. */
+function keyNamesFamily(key: string, families: ReadonlySet<string>): boolean {
+  const lower = key.toLowerCase();
+  for (const f of families) if (lower.includes(f)) return true;
+  return false;
+}
+
+/** `cache`, its blocks measured in faces that changed since it was filled
+ *  dropped (#629): a host that keeps its cache across font loads gets
+ *  fresh lines without clearing it. A cache not stamped yet is stamped. */
+function current(cache: MeasurementCache): MeasurementCache {
+  const generation = measurementGeneration();
+  if (cache._generation === generation) return cache;
+  if (cache._generation !== undefined && cache._blocks.size > 0) {
+    const { all, families } = evictionsSince(cache._generation);
+    if (all) cache._blocks.clear();
+    else for (const key of cache._blocks.keys()) if (keyNamesFamily(key, families)) cache._blocks.delete(key);
+  }
+  cache._generation = generation;
+  return cache;
+}
+
 export function cachedMeasureBlock(
   text: string,
   font: string,
@@ -130,7 +155,7 @@ export function cachedMeasureBlock(
   cache: MeasurementCache,
 ): MeasuredBlock {
   const key = buildPlainCacheKey(text, font, maxWidthPx, lineHeightPx, options);
-  const cached = cache._blocks.get(key);
+  const cached = current(cache)._blocks.get(key);
   if (cached) return cloneMeasuredBlock(cached);
   const result = measureBlock(text, font, maxWidthPx, lineHeightPx, options);
   cache._blocks.set(key, result);
@@ -149,7 +174,7 @@ export function cachedMeasureRichBlock(
   cache: MeasurementCache,
 ): MeasuredBlock {
   const key = buildRichCacheKey(spans, [normalFont, boldFont, italicFont, boldItalicFont], maxWidthPx, lineHeightPx, options);
-  const cached = cache._blocks.get(key);
+  const cached = current(cache)._blocks.get(key);
   if (cached) return cloneMeasuredBlock(cached);
   const result = measureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
   cache._blocks.set(key, result);

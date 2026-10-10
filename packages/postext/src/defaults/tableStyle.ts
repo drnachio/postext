@@ -48,6 +48,7 @@ const STATIC_DEFAULTS = {
   groupRules: false,
   continuedFootRule: 'light' as const,
   overflow: 'split' as const,
+  splitInline: true,
   continuesMarkerEnabled: true,
 } satisfies Partial<ResolvedTableStyleConfig>;
 
@@ -126,6 +127,7 @@ export function resolveTableStyleConfig(
     groupRules: p.groupRules ?? STATIC_DEFAULTS.groupRules,
     continuedFootRule: p.continuedFootRule ?? STATIC_DEFAULTS.continuedFootRule,
     overflow: p.overflow ?? STATIC_DEFAULTS.overflow,
+    splitInline: p.splitInline ?? STATIC_DEFAULTS.splitInline,
     continuedSuffix: p.continuedSuffix ?? strings.continuedSuffix,
     continuesMarkerEnabled: p.continuesMarkerEnabled ?? STATIC_DEFAULTS.continuesMarkerEnabled,
     continuesMarker: p.continuesMarker ?? strings.continuesMarker,
@@ -185,6 +187,7 @@ export function stripTableStyleDefaults(
   if (tableStyle.groupRules !== undefined && tableStyle.groupRules !== STATIC_DEFAULTS.groupRules) { r.groupRules = tableStyle.groupRules; has = true; }
   if (tableStyle.continuedFootRule !== undefined && tableStyle.continuedFootRule !== STATIC_DEFAULTS.continuedFootRule) { r.continuedFootRule = tableStyle.continuedFootRule; has = true; }
   if (tableStyle.overflow !== undefined && tableStyle.overflow !== STATIC_DEFAULTS.overflow) { r.overflow = tableStyle.overflow; has = true; }
+  if (tableStyle.splitInline !== undefined && tableStyle.splitInline !== STATIC_DEFAULTS.splitInline) { r.splitInline = tableStyle.splitInline; has = true; }
   if (tableStyle.continuesMarkerEnabled !== undefined && tableStyle.continuesMarkerEnabled !== STATIC_DEFAULTS.continuesMarkerEnabled) { r.continuesMarkerEnabled = tableStyle.continuesMarkerEnabled; has = true; }
 
   return has ? r : undefined;

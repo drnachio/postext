@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "mla-humanities-essay",
-  "sourceHash": "4524bad5dd60b91187aa5775700c221824ff69058be0d9d3ec49979a327b6a9f",
+  "sourceHash": "5cb97c45371a301c65a92e80c1ffd0da4f8b2219ca3ff4b5b41746cef0851e20",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.23.0",
+    "postextPdf": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.191Z",
+  "capturedAt": "2026-10-09T20:44:19.131Z",
   "variants": {
     "en": {
-      "hash8": "664f24ca",
-      "vdtHash": "6d83ee292ed673365a01cae16dd2ce46f5e62a07",
+      "hash8": "c436d685",
+      "vdtHash": "aeeb7aaff771f2fadcc155673cfa79108d5db99d",
       "timings": {
-        "importMs": 221,
-        "fontsMs": 69,
-        "buildMs": 13,
-        "totalMs": 981,
+        "importMs": 188,
+        "fontsMs": 87,
+        "buildMs": 12,
+        "totalMs": 1031,
         "builds": 2
       },
       "specimen": {
@@ -60,7 +60,7 @@
           "h": 1533,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 142128,
+          "bytes": 142878,
           "alt": "Page 2: The questions."
         },
         {
@@ -114,12 +114,12 @@
       },
       "pdf": {
         "file": "mla-humanities-essay.pdf",
-        "bytes": 86134,
+        "bytes": 86122,
         "pages": 4
       },
       "sandbox": {
         "file": "mla-humanities-essay.postext",
-        "bytes": 16912,
+        "bytes": 16907,
         "folio": "070584e0"
       },
       "detected": {
@@ -331,17 +331,23 @@
           "share": 0,
           "worst": 1.77
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "bd50b7fc",
-      "vdtHash": "c24eb081dc75adb55f56daadcf3c4d2eda705a64",
+      "hash8": "42dd12b7",
+      "vdtHash": "7e9d0444b1b469b4a6b5ab616769497245a62456",
       "timings": {
-        "importMs": 212,
-        "fontsMs": 69,
-        "buildMs": 19,
-        "totalMs": 970,
+        "importMs": 178,
+        "fontsMs": 67,
+        "buildMs": 16,
+        "totalMs": 909,
         "builds": 2
       },
       "specimen": {
@@ -384,7 +390,7 @@
           "h": 1533,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 150550,
+          "bytes": 150664,
           "alt": "Página 2: Las preguntas."
         },
         {
@@ -438,12 +444,12 @@
       },
       "pdf": {
         "file": "mla-humanities-essay.pdf",
-        "bytes": 91256,
+        "bytes": 91217,
         "pages": 4
       },
       "sandbox": {
         "file": "mla-humanities-essay.postext",
-        "bytes": 17049,
+        "bytes": 17039,
         "folio": "070584e0"
       },
       "detected": {
@@ -655,7 +661,13 @@
           "share": 0,
           "worst": 1.78
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

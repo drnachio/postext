@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 002 · Two-column paper with numbered equations ══════════
 // https://postext.dev/en/cookbook/journal-article-with-maths
 // Code: MIT · Text: original (CC BY 4.0) · Figures: generated in code (CC BY 4.0)
-// Fonts: STIX Two Text, Schibsted Grotesk, Azeret Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: STIX Two Text, Schibsted Grotesk, Azeret Mono (SIL OFL 1.1) · Needs postext ≥ 1.24.0
 // A research article in a fictional physics journal: a title block across the page, numbered
 // sections, MathJax formulas in the text and in the figures, a table computed from the data.
 import {
@@ -137,9 +137,9 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: { fontFamily: SANS, color: col('journal'), levels, // bold by default; levels below
     balancing: { stretchAfterFloats: false } }, // gotcha: float-stretch-closing-page (page 4)
   headingStyles, calloutStyles, chipStyles, paragraphStyles, // defined below
-  tableStyle: { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
+  tableStyle: { rules: 'booktabs', borderColor: col('ink'), // journal rules: top, header, bottom
     headerBackgroundEnabled: false, headerColor: col('journal'), headerFontFamily: SANS,
-    headerFontSize: pt(7.8), bodyFontSize: pt(8.6), cellPadding: mm(1) }, // gap: booktabs-rules
+    headerFontSize: pt(7.8), bodyFontSize: pt(8.6), cellPadding: mm(1) },
   captionStyle: { fontFamily: SANS, fontSize: pt(8), labelColor: col('journal'), gap: mm(2),
     note: { fontSize: pt(7), color: col('muted') } }, // in the text's ink; labels bold
   header, footer,

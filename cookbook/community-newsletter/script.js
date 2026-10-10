@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 042 · Community newsletter: lead story and briefs ═════
 // https://postext.dev/en/cookbook/community-newsletter
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Work Sans, Titan One, Courier Prime (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Work Sans, Titan One, Courier Prime (SIL OFL 1.1) · Needs postext ≥ 1.24.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
 } from 'https://esm.sh/postext';
@@ -12,7 +12,7 @@ const RECIPE = 'community-newsletter';
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
 // #region palette: garden colours, every one linked by id
 // ink: text · leaf: nameplate and headlines · tomato, the accent: tags, tab, column heads ·
-// straw: the band · marigold: second tag · tint: the box · rule: hairlines · muted: notes
+// straw: the band · marigold: second tag · tint: pale greens · rule: hairlines · muted: notes
 const palette = { ink: '#1d211c', leaf: '#2f6b3a', tomato: '#c43f2a', straw: '#f2d492',
   marigold: '#e2b33c', tint: '#eef4e8', rule: '#cfd3c6', muted: '#5f6659', paper: '#fbfaf5' };
 // The hex rides along: 1.4.1 designs read it, not the link (gotcha: palette-skips-designs).
@@ -47,9 +47,6 @@ const layout = {
 //   …
 //   :::columnbreak                                    ← from the last column: next page
 //   :chip[Continued from page 1]{style="jump"}        ← the lead goes on in the wide column
-// Fit the copy so that each column ends on a whole paragraph: in 1.4.1 a paragraph that
-// runs over into the other column keeps the measure it started with (gotcha:
-// split-paragraph-measure).
 // #endregion
 
 // #region masthead: the H1 is the nameplate; the issue tab reads the frontmatter
@@ -94,22 +91,16 @@ const chipStyles = [
 ];
 // #endregion
 
-// #region box: two columns inside a box set a paragraph beside its drawing
-// Text never runs round a picture in a column (text wrap is a gap), but a :::columns group
-// inside a box sets blocks side by side; breaks="2" opens column two at the second block:
-//   :::callout{type="bed" title="Sixteen squares by the gate"}
-//   :::columns{count=2 breaks="2"}
-//   The demonstration bed by the gate is 1.2 metres square …   ← block 1
-//   ::resource{id="bed"}                                        ← block 2
-//   :::
-//   :::                                   (gotcha: callout-columns)
-const bedBox = { id: 'bed', background: col('tint'), // one device: a tint, no stripe
-  padding: { top: mm(3.5), right: mm(4), bottom: mm(4), left: mm(4) }, columnGap: mm(5),
-  titleStyle: { ...caps(8.5, 'leaf'), gap: mm(2.4) },
-  body: { fontSize: pt(8.8), lineHeight: pt(12.4), paragraphSpacing: false } };
+// #region wrap: the bed drawing at the right of the column, the paragraph beside it
+// wrap sets the drawing at that side of its column, width of it, and the text after the
+// ::resource line runs beside it at the measure left over, then under it at full width:
+//   #### Sixteen squares by the gate {style="kicker"}
+//   ::resource{id="bed"}                     ← 51 mm at the right of the 113 mm column
+//   The demonstration bed by the gate is 1.2 metres square …   ← beside it, then under it
+const WRAP = { wrap: 'right', width: 0.45 }; // a body line of white between it and the text
 // #endregion
 
-// #region band: a narrower figure still takes the whole band of its column
+// #region band: a narrower figure without wrap keeps the whole band of its column
 const drawing = (id, w, h, placement = {}) => ({ id, typeId: 'drawing', kind: 'svg',
   svg: { fileId: `${id}.svg`, width: w * 10, height: h * 10 }, // mm × 10: fitted to the column
   placement: { position: 'here', ...placement }, // drawn where ::resource{id} stands
@@ -119,7 +110,7 @@ const drawing = (id, w, h, placement = {}) => ({ id, typeId: 'drawing', kind: 's
 // and below never moves into the white either side.
 const HEAT = { width: 0.62, align: 'center' };
 const resources = () => [drawing('plan', 114, 56.5), drawing('heat', 68, 40, HEAT),
-  drawing('bed', 50, 50), DRILL];
+  drawing('bed', 50, 50, WRAP), DRILL];
 // Newsletter drawings carry no "Figure 1": an empty prefix prints no label.
 const resourceTypes = [{ id: 'drawing', name: 'Drawing', shortLabel: 'Drawing',
   captionPrefix: '', numberingTemplate: '', resetOn: 'never', counterFormat: 'decimal' }];
@@ -137,7 +128,7 @@ const folio = { elements: [ // page 2's head: title and date over a hairline, th
 
 const label = (size, look = {}) => ({ fontFamily: LABEL, fontSize: pt(size), ...look });
 const config = () => ({ // a factory: the engine caches resolved configs per object
-  colorPalette, resourceTypes, chipStyles, layout, calloutStyles: [bedBox],
+  colorPalette, resourceTypes, chipStyles, layout,
   page: { width: mm(210), height: mm(297), dpi: 150, backgroundColor: col('paper'),
     margins: { top: mm(20), bottom: mm(18), left: mm(SIDE), right: mm(SIDE) } },
   bodyText: { fontFamily: TEXT, fontSize: pt(9.4), lineHeight: pt(LEAD), color: col('ink'),
@@ -160,6 +151,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     { id: 'masthead', marginBottom: pt(0), advancedDesign: masthead },
     { id: 'rail', fontSize: pt(17), lineHeight: pt(2 * LEAD), color: col('tomato') },
     { id: 'jump', fontSize: pt(19), lineHeight: pt(1.5 * LEAD), marginTop: pt(LEAD / 2) },
+    { id: 'kicker', color: col('leaf') }, // the level-4 caps in the leaf green: a box head
   ],
   paragraphStyles: [
     { id: 'standfirst', fontSize: pt(12), lineHeight: pt(16) },

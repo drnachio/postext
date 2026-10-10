@@ -224,3 +224,33 @@ describe('headings of a float are clamped where the float is read (EF-146)', () 
     expect(skips(sequence)).toEqual([]);
   });
 });
+
+// #633: a float set at the head of the page that cites it is painted above
+// its citing paragraph, and still read after it.
+describe('a float heading the page that cites it is read after its citation (#633)', () => {
+  it('follows the citing paragraph in the structure tree', async () => {
+    const md = [
+      ...Array.from({ length: 16 }, (_, i) => `${words(40, `p${i}w`)}.`),
+      `${words(10, 'lead')} the figure :ref{id=fig} ${words(10, 'citing')}.`,
+      ...Array.from({ length: 20 }, (_, i) => `${words(40, `q${i}w`)}.`),
+    ].join('\n\n');
+    const fig = figure('fig', { placement: { position: 'top', span: 'page', citingPage: true } });
+    const layout = buildDocument({ markdown: md, resources: [fig] }, { ...config, headings: { levels: [] } });
+    const page = layout.pages.find((p) => (p.floats ?? []).length > 0)!;
+    const float = page.floats![0]!;
+    const citing = layout.blocks.find((b) => b.lines.some((l) => (l.segments ?? []).some((s) => s.refResourceId === 'fig')))!;
+    const line = citing.lines.find((l) => (l.segments ?? []).some((s) => s.refResourceId === 'fig'))!;
+    // Painted above the citing line, on its page.
+    expect(citing.pageIndex).toBe(page.index);
+    expect(float.bbox.y + float.bbox.height).toBeLessThan(line.bbox.y);
+    const bytes633 = await renderToPdf(layout, { fontProvider, resourceBytes: () => PNG });
+    if (process.env.POSTEXT_633_OUT) fs.writeFileSync(process.env.POSTEXT_633_OUT, bytes633);
+    const pdf = await PDFDocument.load(bytes633);
+    const treeRoot = pdf.catalog.lookup(PDFName.of('StructTreeRoot'), PDFDict);
+    const tree = readElem(pdf, (treeRoot.get(PDFName.of('K')) as PDFArray).get(0) as PDFRef);
+    const types = tree.kids.map((k) => (k.type === 'Figure' ? `Figure:${k.alt}` : k.type));
+    // Sixteen paragraphs, the citing one, then the figure.
+    expect(types.indexOf('Figure:Alt fig')).toBe(17);
+    expect(types.slice(0, 17).every((t) => t === 'P')).toBe(true);
+  }, 60_000);
+});

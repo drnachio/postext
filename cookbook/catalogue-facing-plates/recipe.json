@@ -18,7 +18,7 @@
     ]
   },
   "answers": ["Q41", "Q64", "Q69", "Q28"],
-  "gaps": ["float-shrink"],
+  "gaps": [],
   "gotchas": ["top-float-next-page", "bitmap-print-size", "design-text-newline", "design-lineheight-multiple"],
   "explainsWarnings": ["bitmapTooSmall"],
   "related": ["seed-catalogue", "photo-essay-full-bleed", "textbook-margin-column", "five-chapter-openers"],
@@ -28,11 +28,10 @@
     { "followup": "EF-56", "package": "postext", "note": "the title and the tombstone give lineHeight as a multiple (pt leading / size for the tombstone), because a Dimension silently drops the opener's reserved height, minHeight included (gotcha design-lineheight-multiple)" },
     { "followup": "EF-111", "package": "postext", "note": "bodyText.maxRuntTracking is 0: a runt fix's negative tracking is measured but never painted (gotcha runt-tracking-unpainted)" },
     { "followup": "EF-01", "package": "postext", "note": "the three-line tombstone is one attribute with \\n breaks, which a design text honours only with a paragraphIndent, so it carries paragraphIndent: pt(0.01) (gotcha design-text-newline)" },
-    { "followup": "EF-98", "package": "postext", "note": "layout.fitFiguresToPage would shrink each plate to the page, but 1.4.1 sets the shrunk picture flush left in its page-wide float, ignoring align, with the caption at the block's edge; the pen computes placement.width from the scan's aspect ratio instead, so the float itself narrows and align: 'center' centres plate and caption" },
     { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted (the title feeds the verso folio line)" },
     { "followup": "EF-153", "package": "postext", "note": "the cover's tracked name (DORÉ) is moved right by half its tracking: 1.4.1 measures design text with the tracking after its last letter, so centred tracked capitals stand left of the centre line" }
   ],
-  "engine": { "postext": "1.23.0" },
+  "engine": { "postext": "1.24.0" },
   "kit": ["core", "fonts", "viewer"],
   "sample": { "locales": ["en"] },
   "capture": {

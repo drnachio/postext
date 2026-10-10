@@ -41,12 +41,19 @@ import {
 import { dimensionToPx } from '../units';
 import { applyCjkGrid } from './cjkGrid';
 import { directionOf, presentTag, resolveNumerals } from '../locale';
+import { configFingerprint } from '../util/stableHash';
+import { forgetFlowColorValues } from './partPalette';
 import { createBoundingBox, type BoundingBox, type ResolvedConfig } from '../vdt';
 
 // Resolved configs are never mutated (derived variants spread them), so
 // one resolution per config object serves every pass of a build and every
-// chapter counted against the same config on the main thread.
+// chapter counted against the same config on the main thread. A raw
+// config may be changed in place by its host, though (#629): each
+// resolution keeps the config's text as it was (`configFingerprint`), and
+// every build compares it first (`validateConfigCache`), dropping the
+// resolution when it no longer matches.
 const resolvedByConfig = new WeakMap<PostextConfig, ResolvedConfig>();
+const fingerprints = new WeakMap<PostextConfig, string>();
 let resolvedDefault: ResolvedConfig | null = null;
 
 export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
@@ -56,9 +63,41 @@ export function resolveAllConfig(rawConfig?: PostextConfig): ResolvedConfig {
   }
   const hit = resolvedByConfig.get(rawConfig);
   if (hit) return hit;
+  if (!fingerprints.has(rawConfig)) {
+    const fingerprint = configFingerprint(rawConfig);
+    if (fingerprint !== undefined) fingerprints.set(rawConfig, fingerprint);
+  }
   const resolved = resolveAllConfigUncached(rawConfig);
   resolvedByConfig.set(rawConfig, resolved);
   return resolved;
+}
+
+/**
+ * Forget what the engine derived from `config` (its resolution, the part
+ * palette's colour values): the next build resolves it again. For hosts
+ * that change a config object in place on purpose; builds also notice a
+ * change on their own (see {@link validateConfigCache}).
+ */
+export function invalidateConfig(config: PostextConfig): void {
+  resolvedByConfig.delete(config);
+  fingerprints.delete(config);
+  forgetFlowColorValues(config);
+}
+
+/**
+ * Check, once per build, that `config` still reads as it did when it was
+ * resolved; if it was changed in place since, drop the cached resolution
+ * (and the part palette memo) so the build sees the change. Costs one
+ * `JSON.stringify` of the config.
+ */
+export function validateConfigCache(config: PostextConfig | undefined): void {
+  if (!config) return;
+  const fingerprint = configFingerprint(config);
+  if (fingerprint === undefined) return;
+  const known = fingerprints.get(config);
+  if (known === fingerprint) return;
+  if (known !== undefined) invalidateConfig(config);
+  fingerprints.set(config, fingerprint);
 }
 
 function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
@@ -72,7 +111,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   const documentLocale = documentLocaleOf(config?.locale, bodyText.hyphenation);
   const layout = resolveLayoutConfig(config?.layout);
   const direction = resolveDirection(config?.direction, documentLocale);
-  const headings = verticalBalancing(resolveHeadingsConfig(config?.headings), layout, config?.headings?.balancing?.enabled);
+  const headings = defaultBalancing(resolveHeadingsConfig(config?.headings), config);
   const unorderedLists = resolveUnorderedListsConfig(config?.unorderedLists, bodyText);
   const orderedLists = resolveOrderedListsConfig(config?.orderedLists, bodyText, documentLocale);
   // A comic book (a config with a `comics` section) read right to left is
@@ -149,16 +188,32 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
 }
 
-/** Tiers of vertical text are not balanced: the flow fills the upper tier,
- *  then the next, and a chapter's last tiers end where their text ends
- *  (clreq §7.1.3.4). Column balancing is therefore off in a vertical
- *  document unless the config turns it on itself. */
-function verticalBalancing(
+/**
+ * Whether column balancing is on when `config` does not set
+ * `headings.balancing.enabled` itself. Off in two cases:
+ * - tiers of vertical text are not balanced: the flow fills the upper
+ *   tier, then the next, and a chapter's last tiers end where their text
+ *   ends (clreq §7.1.3.4);
+ * - a page on a character grid (`cjk.grid`, #632) is filled cell by cell
+ *   and line by line, the way the standards that count its lines set it
+ *   (GB/T 9704: 22 lines of 28 characters): a column that ends short is
+ *   left short, and no row is added above a heading. A config that turns
+ *   balancing on there gets the levers that keep every character in its
+ *   cell (see `pipeline/columnBalancing.ts`).
+ */
+export function balancingOnByDefault(config: PostextConfig | undefined): boolean {
+  if (config?.cjk?.grid?.enabled === true) return false;
+  return config?.layout?.writingMode !== 'vertical-rl';
+}
+
+/** The headings with column balancing off when the document's default
+ *  turns it off ({@link balancingOnByDefault}) and its config does not
+ *  turn it on itself. */
+function defaultBalancing(
   headings: ResolvedConfig['headings'],
-  layout: ResolvedConfig['layout'],
-  asked: boolean | undefined,
+  config: PostextConfig | undefined,
 ): ResolvedConfig['headings'] {
-  if (layout.writingMode !== 'vertical-rl' || asked !== undefined || !headings.balancing.enabled) return headings;
+  if (config?.headings?.balancing?.enabled !== undefined || !headings.balancing.enabled || balancingOnByDefault(config)) return headings;
   return { ...headings, balancing: { ...headings.balancing, enabled: false } };
 }
 

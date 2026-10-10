@@ -155,6 +155,23 @@ export interface ResourcePlacement {
    *  again (rounded up to whole grid lines). Default `layout.wrap.gap`,
    *  else one body line, the float gap. */
   wrapGap?: Dimension;
+  /** Let a `'top'` or `'auto'` float head the page (a page-span float) or
+   *  the column (a column float, across {@link columns} too) where the line
+   *  that first cites it lands, as LaTeX's `t` placement does, instead of
+   *  the first free slot after that line (#633). The text above the
+   *  reference moves down under it. It takes that head only when it fits
+   *  there within `layout.maxTopFraction` of the column, when the earlier
+   *  floats of its numbering sequence are already set, when the page is
+   *  not the first of a chapter or the page after a forced break (an
+   *  opener, a part, a `:::pagebreak`), and when nothing spanning the page
+   *  (a heading, a box) stands above the citing line; and only when, so
+   *  set, the citing line still lands on that page (that column). The
+   *  engine settles this over a few extra placement passes; a float that
+   *  does not qualify takes its usual slot. Rotated floats, side-column
+   *  floats and the rest of a table split across pages never do. Default:
+   *  the type's `defaultPlacement`, then `layout.floatsAtCitingPage`, then
+   *  `false`. */
+  citingPage?: boolean;
 }
 
 /** The side of its column a resource or a box sits on with text running
@@ -491,6 +508,12 @@ export interface Resource {
      *  `diagramStyle.singleInk` is on, since the recolouring pass only
      *  operates on SVG markup. */
     pdfFileId?: string;
+    /** `false` keeps the markup byte-identical when the picture is shown as
+     *  an image: no `@font-face` is added for the families its text names
+     *  (`diagramStyle.inlineFonts`), for an SVG that carries its faces
+     *  already or must stay as it is. Default: the document's
+     *  `diagramStyle.inlineFonts` (on). */
+    inlineFonts?: boolean;
   };
   /** Present when `kind === 'table'`. */
   table?: {
@@ -1013,6 +1036,18 @@ export interface LayoutConfig {
    *  default width (see {@link TextWrapConfig}). A resource opts in with
    *  `placement.wrap`, a box with its `wrap` attribute. */
   wrap?: TextWrapConfig;
+  /** The document default of `placement.citingPage` (#633): a `'top'` or
+   *  `'auto'` float may head the page or column where its citing line
+   *  lands, the text above the reference moving down under it. A
+   *  resource's placement, then its type's `defaultPlacement`, override
+   *  it. Default `false`: a float takes the first free slot after the line
+   *  that cites it. */
+  floatsAtCitingPage?: boolean;
+  /** The largest share of a column's height, 0 to 1, a float set at the
+   *  head of the page or column that cites it (`placement.citingPage`) may
+   *  take with the floats already standing there, so the page keeps some
+   *  room for its text (LaTeX's `\topfraction`). Default 0.7. */
+  maxTopFraction?: number;
   /** On the closing page of a chapter (and of the document), move the
    *  page-wide figures and tables set below the last band of text up to sit
    *  one float gap under it, stacked in their order, instead of at the page
@@ -1021,6 +1056,19 @@ export interface LayoutConfig {
    *  the page foot on the closing page as on every other page. Pages with a
    *  side column never move them. */
   hugClosingFloats?: boolean;
+  /** Under a page-span opener (a heading level or style with
+   *  `span: 'page'`) set over two or more text columns, the head of the
+   *  opener's own column, right under its band, is a slot for a `'top'` or
+   *  `'auto'` float, of one column or of several from it, level with the
+   *  heads of the other columns of the band (#639): a floated box fenced
+   *  right after the opener, or a resource embedded there, sits under the
+   *  opener in the first column and the column's text starts under it.
+   *  Default `true`. `false` keeps the rule of postext 1.24 and earlier:
+   *  the opener's column offers no head slot, so such a float lands from
+   *  the second column on. A configuration stored by an earlier version is
+   *  read with `false` when it sets a page-span heading (see
+   *  `migrateConfig` in `postext/bundle`). */
+  floatsUnderOpener?: boolean;
   /** Where an inline resource (`placement.position: 'here'`, embedded with
    *  `::resource`) keeps the float gap, a line: `'around'` keeps it above
    *  and below the resource, and the text after it goes back onto the
@@ -1042,6 +1090,16 @@ export interface LayoutConfig {
    *  version is read with `false` when its chapters embed a resource (see
    *  `migrateConfig` in `postext/bundle`). */
   inlineResourceGapInBoxes?: boolean;
+  /** `:::columns` groups in the running text and groups that split (#634):
+   *  a `:::columns` fence outside a box sets its blocks in sub-columns of
+   *  the text column (or, with `span="page"`, across the page), and a
+   *  group, in a box or in the text, is cut between its sub-columns when
+   *  the box goes on in the next column or page. Default `true`. `false`
+   *  keeps the rules of postext 1.24 and earlier: a fence outside a box is
+   *  ignored and a box never cuts inside a group. A configuration stored
+   *  by an earlier version is read with `false` when its chapters hold a
+   *  `:::columns` fence (see `migrateConfig` in `postext/bundle`). */
+  flowColumns?: boolean;
   /** Fewest lines of a paragraph or list item that a cut inside it leaves
    *  on each side when a box splits (see `CalloutStyleConfig.splitMinLines`,
    *  which still counts every line on each side of the cut). A whole number,
@@ -1103,9 +1161,13 @@ export interface ResolvedLayoutConfig {
   bitmapResolution: BitmapResolution;
   floatShrink: { mode: FloatShrinkMode; minScale: number };
   wrap: ResolvedTextWrapConfig;
+  floatsAtCitingPage: boolean;
+  maxTopFraction: number;
   hugClosingFloats: boolean;
+  floatsUnderOpener: boolean;
   inlineResourceGap: InlineResourceGap;
   inlineResourceGapInBoxes: boolean;
+  flowColumns: boolean;
   boxChildSplitMinLines: number;
   writingMode: WritingMode;
 }
@@ -2141,6 +2203,14 @@ export interface TableStyleConfig {
    *  it on the following pages (`'split'`, the default), keep only the rows
    *  that fit (`'clip'`), or leave it out (`'hide'`). See {@link TableOverflow}. */
   overflow?: TableOverflow;
+  /** Apply {@link overflow} to tables placed `here` too (#634): an inline
+   *  table that does not fit the room left in its column is cut between
+   *  rows and goes on at the head of the next column, before the text
+   *  after it (`'split'`); one taller than a column keeps its leading
+   *  rows (`'clip'`) or is left out (`'hide'`). `false` keeps the rule of
+   *  postext 1.24 and earlier: an inline table moves whole to the next
+   *  column. Default `true`. */
+  splitInline?: boolean;
   /** Suffix appended to the caption of every continuation slice of a split
    *  table (e.g. "Table 6-4. Title *(cont.)*"). Defaults to `"(cont.)"`. */
   continuedSuffix?: string;
@@ -2223,6 +2293,7 @@ export interface ResolvedTableStyleConfig {
   groupRules: boolean;
   continuedFootRule: TableContinuedFootRule;
   overflow: TableOverflow;
+  splitInline: boolean;
   continuedSuffix: string;
   continuesMarkerEnabled: boolean;
   continuesMarker: string;
@@ -2330,11 +2401,19 @@ export interface DiagramStyleConfig {
   singleInk?: boolean;
   /** The ink. Defaults to the document's main palette colour. */
   inkColor?: ColorValue;
+  /** Embed the faces an SVG's text names (`font-family`) in the picture as
+   *  `@font-face` data URIs before it is shown as an image (canvas, HTML,
+   *  EPUB, the PDF's raster fallback), so its labels are set in the
+   *  document's fonts: an image cannot see the page's web fonts. Never
+   *  written into the stored file. A resource opts out with
+   *  `svg.inlineFonts: false`. Default `true`. */
+  inlineFonts?: boolean;
 }
 
 export interface ResolvedDiagramStyleConfig {
   singleInk: boolean;
   inkColor: ColorValue;
+  inlineFonts: boolean;
 }
 
 /** Where an overlay sits on a video's poster: the centre, a corner or the
@@ -3698,6 +3777,10 @@ export interface HeadingsConfig {
 }
 
 export interface ColumnBalancingConfig {
+  /** Default `true`, except in vertical text (`layout.writingMode:
+   *  'vertical-rl'`) and on a character grid (`cjk.grid.enabled`, #632),
+   *  where columns are filled line by line and a column that ends short is
+   *  left short unless the configuration sets `true` itself. */
   enabled?: boolean;
   /** Maximum extra grid lines that may be added above a single heading. */
   maxLinesPerHeading?: number;
@@ -3772,11 +3855,24 @@ export interface ColumnBalancingConfig {
    *  the last line of the column beside it; `'off'` leaves it where it is
    *  there too. Any other value reads as `'first'`. */
   closingBox?: ClosingBoxLever;
+  /** On a character grid (`cjk.grid.enabled`, #632): whether the levers
+   *  that add whole grid lines — above a heading, where a list ends, under
+   *  a display or a box, under a float band — may run. They keep every
+   *  character in its cell (the baseline grid is the grid's line pitch),
+   *  but a standard that counts the lines of a page (GB/T 9704: 22 lines
+   *  of 28 characters) has no empty rows to give: `'off'` keeps them out
+   *  and leaves the other levers. Off the grid it has no effect. Default
+   *  `'allow'`; any other value reads as `'allow'`. */
+  gridLines?: GridLinesLever;
 }
 
 /** Where the column-balancing lever of a box closing a column runs
  *  (`ColumnBalancingConfig.closingBox`). */
 export type ClosingBoxLever = 'first' | 'last' | 'off';
+
+/** Whether the whole-line balancing levers run on a character grid
+ *  (`ColumnBalancingConfig.gridLines`). */
+export type GridLinesLever = 'allow' | 'off';
 
 /** How a paragraph kept with the heading above it splits at a column's foot
  *  (`HeadingsConfig.keepWithNextSplit`). */
@@ -3810,6 +3906,9 @@ export interface ResolvedHeadingsConfig {
     trailing: boolean;
     beforeSpan: boolean;
     closingBox: ClosingBoxLever;
+    /** Present only when `'off'` (#632): every other configuration
+     *  resolves as before. */
+    gridLines?: 'off';
   };
   levels: ResolvedHeadingLevelConfig[];
 }
@@ -4782,6 +4881,35 @@ export interface CjkConfig {
    *  picture books) and Korean. Default `'normal'`. A paragraph style may
    *  set its own (`ParagraphStyleConfig.wordBreak`). */
   wordBreak?: CjkWordBreak;
+  /** Book titles kept from one-character breaks (#637): a line breaks
+   *  inside a `《…》` or `〈…〉` title (and inside a `:book[…]` title) only
+   *  where at least this many of its characters stand on either side of
+   *  the break, so a title of up to twice this less one never breaks.
+   *  When no other break fits the line, the line breaks inside the title
+   *  anyway, as the level allows, rather than run past the measure.
+   *  Default `2`; `1` lets a line break anywhere the level allows (as up
+   *  to postext 1.24). */
+  titleMinChars?: number;
+  /** How the circled, parenthesized and full-stop numbers and letters are
+   *  set in a CJK paragraph (①–⑳, ⑴–⒇, ⒈–⒛, ⓐ–ⓩ, ❶–❿, ➀–➓; #637).
+   *  `'cjk'` (the default): as Chinese characters, one cell with no
+   *  Han–Latin space around them, and a line never ends on one (it labels
+   *  the text after it) at the levels that keep a currency sign off a
+   *  line end: every one but `none` and `ja-loose`.
+   *  `'western'`: as Western letters, as up to postext 1.24: the Han–Latin
+   *  space on both sides and a line may end on one. Vertical text sets
+   *  them upright either way. */
+  circledNumbers?: 'cjk' | 'western';
+  /** Whether a design text in Chinese or Japanese (a heading design or an
+   *  opener, a running head, a page design, a part page) is set with the
+   *  CJK rules of the body (#637): the line-start and line-end rules of
+   *  `lineBreak`, the mark widths of `punctuationWidth` and
+   *  `compressAdjacent`, `latinSpacing`, `hangingPunctuation` and the title
+   *  rule. Default `true`; `false` wraps it at spaces and sets every mark
+   *  at the font's own advance, as up to postext 1.24. A text that holds
+   *  no CJK, or more word spaces than CJK letters, is wrapped as Latin
+   *  text either way. */
+  composeDesignText?: boolean;
   /** The space set between a Han character (or kana) and a Latin letter or
    *  a European digit next to it (`用 iPhone 拍照`), in em of the CJK
    *  text's size or any length. Default `{ value: 0.25, unit: 'em' }`; `0`
@@ -5118,6 +5246,14 @@ export interface ResolvedCjkConfig {
   /** Set only when `'keep-all'`: absent, lines break between any two
    *  characters (`normal`). */
   wordBreak?: 'keep-all';
+  /** Characters of a book title kept on either side of a break (1 or
+   *  more). */
+  titleMinChars: number;
+  /** Set only when `'western'`: absent, circled numbers are set as Chinese
+   *  characters. */
+  circledNumbers?: 'western';
+  /** Set (false) only when off: absent, CJK design text is composed. */
+  composeDesignText?: false;
   latinSpacing: Dimension;
   uprightDigits: 0 | 2 | 3 | 4;
   grid: ResolvedCjkGridConfig;
@@ -5910,8 +6046,9 @@ export interface HeadingStyleConfig extends Omit<HeadingLevelConfig, 'level' | '
    *  Only its page geometry is read from it (`layoutType`, `gutterWidth`,
    *  the side column, `columnRule`), plus its `fitFiguresToPage` when a
    *  figure could move from an empty column cut short to a whole one;
-   *  `inlineResourceGap`, `inlineResourceGapInBoxes`,
-   *  `boxChildSplitMinLines` and `hugClosingFloats` stay the document's,
+   *  `inlineResourceGap`, `inlineResourceGapInBoxes`, `flowColumns`,
+   *  `boxChildSplitMinLines`, `hugClosingFloats` and `floatsUnderOpener`
+   *  stay the document's,
    *  and so does the `fitFiguresToPage` that shrinks figures.
    *  Unset, the section uses the document's `layout`. */
   layout?: LayoutConfig;

@@ -1,6 +1,6 @@
 ---
 title: "Fitxes de catàleg davant de les seves làmines"
-summary: "Cada fitxa obre pàgina parella i cita la làmina en començar el comentari; la làmina flota a la senar del davant amb 221 mm d'alçada i l'amplada proporcional."
+summary: "Cada fitxa obre pàgina parella i cita la làmina en començar el comentari; la làmina flota a la senar del davant, reduïda fins a omplir la caixa de text."
 plain: "Un petit catàleg d'exposició amb tres gravats antics del Quixot. Cada fitxa va en una pàgina esquerra i la seva imatge ocupa sencera la pàgina dreta del davant."
 description: "Catàleg de gabinet compost amb Postext: tres gravats de Doré, cada fitxa en pàgina parella davant de la seva làmina i, al final, una llista d'obres il·lustrada."
 question: "Com componc cada fitxa de catàleg a la pàgina esquerra amb la seva làmina al davant, a la dreta?"
@@ -10,13 +10,13 @@ pageNotes: { "1": "La coberta: sobre un negre càlid, un filet daurat emmarca un
 
 ## Què compondràs
 
-Un petit catàleg en anglès per a una exposició de gabinet: tres gravats en fusta del *Quixot* de Gustave Doré (París, 1863), en pàgina de 230 × 280 mm. La coberta compon DORÉ en Libre Bodoni de 88 pt sobre un negre càlid, sota un detall emmarcat de la làmina dels molins. Cada fitxa obre una pàgina parella amb un número de catàleg en sèpia al costat d'un títol en cursiva, la fitxa tècnica a la columna exterior, una entradeta amb caplletra de tres línies i el comentari. La primera frase del comentari cita la làmina, que obre la pàgina senar del davant, centrada i amb 221 mm d'alçada; làmina, peu i línia de crèdit omplen així la caixa de text. L'última pàgina és una llista d'obres amb una miniatura a la primera cel·la de cada fila i la pàgina on s'imprimeix cada làmina.
+Un petit catàleg en anglès per a una exposició de gabinet: tres gravats en fusta del *Quixot* de Gustave Doré (París, 1863), en pàgina de 230 × 280 mm. La coberta compon DORÉ en Libre Bodoni de 88 pt sobre un negre càlid, sota un detall emmarcat de la làmina dels molins. Cada fitxa obre una pàgina parella amb un número de catàleg en sèpia al costat d'un títol en cursiva, la fitxa tècnica a la columna exterior, una entradeta amb caplletra de tres línies i el comentari. La primera frase del comentari cita la làmina, que obre la pàgina senar del davant, centrada i reduïda fins que làmina, peu i línia de crèdit omplen la caixa de text, amb 215 mm d'alçada. L'última pàgina és una llista d'obres amb una miniatura a la primera cel·la de cada fila i la pàgina on s'imprimeix cada làmina.
 
 ## Elaboració
 
 ### 1 · La làmina espera la pàgina del davant
 
-El codi és [la resposta curta](#la-resposta-curta) de dalt. Cada fitxa salta a pàgina parella, i un flotant `top` no cau mai a la pàgina que el cita, així que la làmina citada a la primera frase del comentari se salta la parella i obre la senar del davant. Postext 1.4.1 no redueix un flotant perquè càpiga a l'espai que li queda a la seva pàgina, de manera que `plate()` calcula l'amplada del flotant a partir de la proporció de l'escaneig i de l'alçada que deixa la caixa de text un cop descomptats el peu i la línia de crèdit. `layout.fitFiguresToPage` reduiria una làmina massa alta per a la pàgina, però llavors la 1.4.1 enganxa la imatge reduïda a l'esquerra d'un flotant que continua ocupant tota l'amplada. Una fracció d'amplada estreny el mateix flotant, i `align: 'center'` centra la làmina juntament amb el seu peu.
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Cada fitxa salta a pàgina parella, i un flotant `top` no cau mai a la pàgina que el cita, així que la làmina citada a la primera frase del comentari se salta la parella i obre la senar del davant. La `defaultPlacement` del tipus de làmina demana `shrink: 'page'`: a tota la mesura una làmina faria 242 mm d'alçada, més del que cap a la caixa de text de la senar, de manera que Postext la redueix, sense canviar-ne les proporcions, fins que làmina, peu i línia de crèdit caben a la banda que queda sobre l'espai del flotant ([col·locació](/ca/docs/document-format#collocació)). `minScale: 0.5` deixaria baixar una làmina fins a la meitat de la seva amplada; aquí cadascuna en conserva unes nou desenes parts. `captionMeasure: 'body'` compon el peu i la línia de crèdit a l'amplada de la làmina, i `align: 'center'` els centra tots dos a la pàgina.
 
 ### 2 · El capçal de la fitxa surt del seu títol
 
@@ -28,7 +28,7 @@ Cada títol `#` porta com a atributs el seu capítol i la seva fitxa tècnica, i
 
 <Excerpt region="scans" />
 
-Postext mesura un mapa de bits pels píxels que declara, a la resolució del document, i no l'imprimeix mai més ample del que aquests píxels permeten. `plate()` declara l'original de cada làmina, l'escaneig de Commons reduït a 2400 px d'alçada: 1900 × 2400 px a Cat. 1, que a `page.dpi: 150` podria arribar a 322 mm. Per això mana la fracció d'amplada: la làmina fa 221 mm d'alçada, i a aquesta alçada 2400 px donen uns 275 ppp. Amb els 300 ppp per defecte, es quedaria en 161 mm d'amplada. El llenç dibuixa en aquesta caixa la imatge que estigui registrada, així que la recepta carrega d'`assets/` tres còpies de 835 px, 0,97 MB davant dels 5,8 MB dels originals. Si dibuixés els originals de 2400 px, els cels s'omplirien de bandes de moaré i les imatges de la captura pesarien uns 0,3 MB més, per sobre del límit d'1,4 MB del Receptari.
+Postext mesura un mapa de bits pels píxels que declara, a la resolució del document, i no l'imprimeix mai més ample del que aquests píxels permeten. `plate()` declara l'original de cada làmina, l'escaneig de Commons reduït a 2400 px d'alçada: 1900 × 2400 px a Cat. 1, que a `page.dpi: 150` podria arribar a 322 mm. Per això mana la caixa de text: la làmina fa 215 mm d'alçada, i a aquesta alçada 2400 px donen uns 283 ppp. Amb els 300 ppp per defecte, es quedaria en 161 mm d'amplada. El llenç dibuixa en aquesta caixa la imatge que estigui registrada, així que la recepta carrega d'`assets/` tres còpies de 835 px, 0,97 MB davant dels 5,8 MB dels originals. Si dibuixés els originals de 2400 px, els cels s'omplirien de bandes de moaré i les imatges de la captura pesarien uns 0,3 MB més, per sobre del límit d'1,4 MB del Receptari.
 
 ### 4 · Una coberta des d'un estil de títol
 
@@ -52,11 +52,12 @@ Una fitxa que es passa de la seva pàgina parella continua enviant la làmina a 
 
 ### Deixa aire sota les làmines
 
-Amb una alçada fixa, totes les làmines fan 190 mm, centrades, amb uns 31 mm de caixa de text buida sota la línia de crèdit.
+Una fracció d'amplada estreny el mateix flotant: al 78 % de la caixa de text, totes les làmines fan uns 188 mm d'alçada, centrades, amb uns 27 mm de caixa de text buida sota la línia de crèdit, i cap no s'ha de reduir.
 
 ```diff
--const PLATE_H = (LINES * LEAD - UNDER) * PT; // 221.1 mm: the rest of the text block
-+const PLATE_H = 190; // mm: the same height for every plate, with air below
+-  defaultPlacement: { position: 'top', span: 'page', align: 'center',
+-    shrink: 'page', minScale: 0.5, captionMeasure: 'body' },
++  defaultPlacement: { position: 'top', span: 'page', align: 'center', width: 0.78 },
 ```
 
 ### Posa figures a la columna exterior

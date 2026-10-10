@@ -478,6 +478,18 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td>段より狭い図版やボックスの横に組む本文（<code>placement.wrap</code>、ボックスの<code>wrap</code>）：<code>gap</code>は対象と本文との間隔（未設定なら本文 1 行分）、<code>minTextWidth</code>は横の本文の最小行長で、長さまたは段幅の割合（これより狭いと対象は全幅を占め、<code>textWrap</code>警告が出ます）、<code>minLinesBeside</code>は横に組む意味のある最少行数、<code>defaultWidth</code>は<code>width</code>のない回り込む対象が占める段幅の割合。<a href="/ja/docs/document-format#回り込み">文書の書式 › 回り込み</a>を参照。postext 1.24以降。</td>
     </tr>
     <tr>
+      <td><code>floatsAtCitingPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td><code>placement.citingPage</code>の文書全体の既定値です。<code>'top'</code>または<code>'auto'</code>のフロートを、最初に参照する行のあるページ（ページ幅のフロート）または段（段幅のフロート）の先頭に置けるようにします。その行の後の最初の空き位置ではありません。参照より前の本文はその下に送られます（<a href="/ja/docs/document-format#配置">ドキュメント形式 › 配置</a>を参照）。リソースの配置、次にその種類の<code>defaultPlacement</code>がこれより優先されます。postext 1.25 から。</td>
+    </tr>
+    <tr>
+      <td><code>maxTopFraction</code></td>
+      <td><code>number</code></td>
+      <td><code>0.7</code></td>
+      <td>参照するページまたは段の先頭に置くフロートが、すでにそこにあるフロートと合わせて段の高さに占めてよい最大の割合（0〜1）です。ページに本文の余地を残します（LaTeX の<code>\topfraction</code>）。これを超えるフロートは通常の位置に置かれます。postext 1.25 から。</td>
+    </tr>
+    <tr>
       <td><code>hugClosingFloats</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -500,6 +512,18 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td><code>number</code></td>
       <td><code>2</code></td>
       <td>囲みが分割されるとき、段落やリスト項目の内側での分割がその両側に残す最小の行数（<a href="#囲みスタイル">囲みのスタイル</a>の<code>splitMinLines</code>は、これまでどおり分割位置の両側で囲みのすべての行を数えます）。1以上の整数。既定値では、段落や項目の1行だけが段の下端や次の段の頭に取り残されることはありません。囲みスタイルの<code>splitMinLines</code>がこれより小さい場合は、そちらが上限になります。<code>1</code>にすると、postext 1.4までと同じく、段落や項目の1行だけを片側に残す分割を許します。以前のバージョンで保存された設定のうち、章に<code>:::callout</code>を含むものは<code>1</code>として読み込まれます（<a href="#postext-14以前で書き出したバンドル">postext 1.4以前で書き出されたバンドル</a>を参照）。コードでは、<code>postext/bundle</code>の<code>pinLegacyBoxChildCut</code>で同じことができます。</td>
+    </tr>
+    <tr>
+      <td><code>flowColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>囲みの外の<code>:::columns</code>フェンスは、そのブロックを本文の段の中の小段に組みます（<code>span="page"</code>ならページ幅いっぱいに）。また、グループは囲みの中でも本文中でも、収まらなければ小段の間で切られ、次の段やページに続きます（<a href="/ja/docs/document-format#columns">ドキュメント形式 › <code>:::columns</code></a>を参照）。<code>false</code>にすると、postext 1.24までと同じく、囲みの外のフェンスを無視し、グループの中では決して切りません。以前のバージョンで保存された設定のうち、章に<code>:::columns</code>フェンスを含むものは<code>false</code>として読み込まれます。コードでは、<code>postext/bundle</code>の<code>pinLegacyFlowColumns</code>で同じことができます。スタイル付きセクションはドキュメントの値を引き継ぎます。postext 1.25から。</td>
+    </tr>
+    <tr>
+      <td><code>floatsUnderOpener</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>2段以上の本文の上に組んだページ幅の章扉（<code>span: 'page'</code>の見出しレベルまたは見出しスタイル）の下では、章扉のある段の先頭、つまり章扉の帯のすぐ下が、<code>'top'</code>または<code>'auto'</code>のフロートの空き位置になり、ほかの段の先頭とそろいます。章扉の直後に置いたフロートの囲みや、そこに埋め込んだリソースは、第1段の章扉の下に入り（<code>columns</code>があれば第1段から数段にまたがり）、その段の本文はその下から始まります。本文中で参照されるフロートは、これまでどおり参照する行の後に置かれます。<code>false</code>にするとこの位置は使われず、postext 1.24までと同じくフロートは第2段から置かれます。以前のバージョンで保存された設定のうち、ページ幅の見出しを設定しているものは<code>false</code>として読み込まれます。コードでは、<code>postext/bundle</code>の<code>pinLegacyOpenerHeadFloats</code>で同じことができます。スタイル付きセクションはドキュメントの値を引き継ぎます。postext 1.25から。</td>
     </tr>
     <tr>
       <td><code>writingMode</code></td>
@@ -2270,6 +2294,8 @@ headings: {
 4. **リストの終わり**：見出しだけで空きを吸収しきれないとき、リストや番号付きリストの終わりにグリッドの行を足します（リストの後の空きは自然に読めます）。リストの終わりごとに上限があります。
 5. **ゆるい段落**：最後の手段として、段の中の段落1つを1行長く組み直します（TeXの`\looseness=+1`）。語間の広がりが目立たないよう、最も長い段落を選びます。ゆるくした組み方は、すべての行が**上限の`bodyText.maxWordSpacing`未満**にとどまる場合にだけ採用します。すでに設定した上限を文字の濃度（タイプカラー）が超えることはありません。`bodyText.optimalLineBreaking`が必要です。
 
+文字グリッド（`cjk.grid`、[中国語の組版 › 文字グリッド](/ja/docs/chinese-layout#文字グリッド)を参照）では、どの文字も幅1 emのマスに収まり、どの行もグリッドの行送りに乗ります。この行送りはベースライングリッドでもあります。縦組みと同じく、そこでは段末そろえは既定でオフです。GB/T 9704が28字22行と数えるように、グリッドに沿って1行ずつ組んだページでは、短い段は短いまま残ります。`enabled: true`を指定した設定では、グリッドを崩さない調整手段が使われます。見出し、リストの終わり、別行立て、図はグリッド行単位で空きを取るので、その下の本文は行単位で下がります。差し出せる空き行のない規格には、`gridLines: 'off'`でこれらを除外します。中国語や日本語の段落を1行長く組むのは、どの2文字の間も`maxTracking`を超えて広がらない場合だけで、文字にトラッキングを別に加えることもありません。1字分短い行は字間全体で1 emを広げることになり、既定の0.01 emをはるかに超えるので、マス単位のグリッドでは、ゆるい段落の調整手段はたいてい使える段落を見つけられません。段を閉じる囲みとセーフエリアのある画像は、もともとグリッドに縛られず、ほかの場所と同じように働きます。
+
 ページの最後の段をそろえるのは、そのページが自然に次のページへ続く場合だけです。章の最後のページは短く終わってよいからです。そのようなページと、`trailing`で高さをそろえて切った最後の帯では、段の頭もそろったままです。段の頭に置かれた図や表の下に行を足すこと（フロート後の調整手段）はせず、そのような図の下で段を始める見出しや囲みも、`stretchAfterFloats`の値にかかわらず段の頭にとどまります。末尾をそろえるためだけに、隣の段より低い位置から段を始めることはありません。
 
 <table>
@@ -2286,7 +2312,7 @@ headings: {
       <td><code>enabled</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>段の下端をそろえるかどうか。</td>
+      <td>段の下端をそろえるかどうか。縦組み（<code>layout.writingMode: 'vertical-rl'</code>）と文字グリッド（<code>cjk.grid.enabled</code>、postext 1.25から）では既定でオフです。<code>true</code>にすれば、そこでも有効になります。</td>
     </tr>
     <tr>
       <td><code>maxLinesPerHeading</code></td>
@@ -2360,12 +2386,20 @@ headings: {
       <td><code>'first'</code></td>
       <td>短い段を閉じる囲みが、いつその下の空きを取るか（調整手段1、<code>trailingCallout</code>として記録）。<code>'first'</code>：postext 1.4までと同様、ほかのどの調整手段よりも先に取ります。囲みは数行あっても空きをすべて取り、その上の見出しには何も残りません。<code>'last'</code>：見出し、リストの終わり、別行立て、フロートの各調整手段が先に行単位で空きを取った後に取ります。囲みはその上の本文とともに下がり、残った分（たいていは1行未満）だけを取るので、下端は最後のグリッド位置にそろったまま、注釈を付ける本文の近くにとどまります。<code>'off'</code>：取りません。囲みはその下の空きを残します。ただし、ほかの調整手段が囲みの上に空きを足せば行単位で下がることはあり、その下に残る1行未満の空きはそのままです。最後のページでは、隣の段と下端をそろえる調整手段が囲みしかないため、<code>'off'</code>では流れが置いた位置のままです。それ以外の値は<code>'first'</code>として扱います。帯の中で唯一の本文段を閉じる囲み（途中で終わる1段のページで、次のブロックが次ページから始まる場合）は動かしません。そろえる隣の段がないためです（postext 1.19から）。</td>
     </tr>
+    <tr>
+      <td><code>gridLines</code></td>
+      <td><code>'allow' | 'off'</code></td>
+      <td><code>'allow'</code></td>
+      <td>文字グリッド上で、グリッド行単位で行を足す調整手段（見出しの上、リストの終わり、別行立てや囲みの下、段の頭にある図の下）を働かせるかどうか。これらの手段はどの文字もマスに収めたままにします。<code>'off'</code>はページの行数を数える規格に向き、段を短いまま残します。グリッドの外では効果がありません。それ以外の値は<code>'allow'</code>として扱います。postext 1.25から。</td>
+    </tr>
   </tbody>
 </table>
 
 #### どの調整手段が働いたか
 
 レイアウトは、適用した調整手段をすべて、適用先のブロックに記録します。`buildDocument`が返すVDTの`block.balancing`です。これを使えば、校正刷り、テスト、レポートで、段がなぜ下端にそろっているか、またどの段はどの調整手段でも閉じられなかったかを示せます。段末そろえが手を付けなかったブロックには`balancing`がなく、`enabled: false`で組んだ文書には一切ありません。
+
+文字グリッドでは、段が短く終わりうる理由を文書が示します。ページがグリッド上にあり、設定が段末そろえを有効にしていないためにオフになっているときは`doc.gridBalancing`が`{ off: true }`、行単位の調整手段なしで働いているときは`{ gridLines: 'off' }`になります。それでも短い段には`column.gridRefused`が付き、グリッドのために使えなかった調整手段を示します（文字をマスからずらして広げなければ段落が1行を稼げなかった場合は`'looseParagraph'`、`gridLines: 'off'`のもとでは行単位の調整手段）。グリッドの外ではどちらもありません。
 
 ```ts
 interface VDTBalancing {
@@ -4020,6 +4054,9 @@ interface CjkConfig {
   spaceAfterQuestion?: 'auto' | boolean;    // One em after ？！ inside a paragraph (Japan).
   paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // A bracket opening an indented paragraph.
   wordBreak?: 'normal' | 'keep-all';        // keep-all: break only at spaces (分かち書き, Korean).
+  titleMinChars?: number;                   // Characters of a book title on either side of a break; default 2.
+  circledNumbers?: 'cjk' | 'western';       // ① ② as Chinese characters (default) or Latin letters.
+  composeDesignText?: boolean;              // CJK rules in design text; default true.
   latinSpacing?: Dimension;                 // Between Han and Latin; default 0.25 em.
   uprightDigits?: 0 | 2 | 3 | 4;            // Vertical text: numbers in one upright cell; default 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
@@ -4107,6 +4144,24 @@ interface CjkConfig {
       <td><code>'normal' | 'keep-all'</code></td>
       <td><code>'normal'</code></td>
       <td>2つの文字の間のどこで改行するかを決めます。<code>'keep-all'</code>はスペース（U+0020、U+3000）と、<code>lineBreak</code>が許す約物の隣（、。」の後、「の前）でだけ改行し、2つの文字（かな、漢字、ハングル、ラテン文字）の間では改行しません。絵本や初等教科書のように文節の間にスペースを入れて書くかな（分かち書き）や、韓国語に向いています。行より長い文節は、<code>'normal'</code>と同じ位置で文節の中で分割します。段落スタイルでも個別に設定できます（<code>wordBreak</code>）。postext 1.16以降。</td>
+    </tr>
+    <tr>
+      <td><code>titleMinChars</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>書名の途中で改行するとき、改行位置の前後にそれぞれ最低何字残すか。対象は<code>《…》</code>と<code>〈…〉</code>の中（直接入力したものも<code>bookTitleMark</code>が付けたものも）、および波線付きまたは記号なしで組む<code>:book[…]</code>の書名。2のとき、行末が<code>《說</code>で次の行が<code>文》</code>で始まることはなく、3字以下の書名は分割しない。一般に、この値の2倍から1を引いた字数以下の書名は分割しない。ほかに改行できる位置がない行ではこの規則を譲る（行より長い書名は、<code>lineBreak</code>が許す位置で途中から分割する）。<code>1</code>にすると、レベルが許す位置ならどこでも改行する。postext 1.25より前に保存した設定（<code>configVersion</code>が10以下）で、本に書名があるものは<code>1</code>として読み込む。postext 1.25以降。</td>
+    </tr>
+    <tr>
+      <td><code>circledNumbers</code></td>
+      <td><code>'cjk' | 'western'</code></td>
+      <td><code>'cjk'</code></td>
+      <td>CJKの段落での丸数字・括弧付き数字・ピリオド付き数字と文字の組み方：①〜⑳、⑴〜⒇、⒈〜⒛、ⓐ〜ⓩなどU+2460〜U+24FFの文字と、装飾記号の❶〜❿、➀〜➓。<code>'cjk'</code>：漢字として組む。1字分の枠に収め、前後に和欧間のアキを入れず、後に続く文に番号を振るものなので行末に置かない。通貨記号を行末に置かない<code>lineBreak</code>のレベル（<code>none</code>と<code>ja-loose</code>以外のすべて）で有効。<code>'western'</code>：欧文字として組み、前後に和欧間のアキを入れ、行末にも置ける。縦組ではどちらでも正立させる。postext 1.25より前に保存した設定で、本にこれらの文字があるものは<code>'western'</code>として読み込む。postext 1.25以降。</td>
+    </tr>
+    <tr>
+      <td><code>composeDesignText</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>中国語・日本語のデザインテキスト（見出しデザインと扉、柱とノンブル、ページデザイン、部扉）を本文と同じ規則で組むかどうか：<code>lineBreak</code>の禁則、<code>punctuationWidth</code>と<code>compressAdjacent</code>の約物の幅、<code>latinSpacing</code>、<code>hangingPunctuation</code>、<code>titleMinChars</code>。テキストの1行（2つの<code>\n</code>の間）は、段落と同じく、CJKの文字が語間スペースより多いときにこの規則で組む。それ以外の行は従来どおりスペースで折り返す。明示的な改行、<code>paragraphIndent</code>、ドロップキャップ、インラインの書式はそのまま働く。行は不揃いのまま（字間に配分しない）で、ルビ、割注、圏点はプレーンテキストとして印字する。<code>false</code>にすると、このテキストはスペースで折り返し、約物はフォント本来の幅のまま組む。postext 1.25より前に保存した設定で、テキストにCJKを含むものは<code>false</code>として読み込む。postext 1.25以降。</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -4398,7 +4453,7 @@ interface ResourceType {
 }
 ```
 
-`ResourcePlacement`は、リソースが自身の`placement`に設定するものと同じ形です。`position`はフロートが入れる空き位置の種類を選びます。`auto`（既定値）は最初の参照の後にある最初の空き位置を取り、`top`／`bottom`はその種類の帯に限定し、`here`はリソースをインラインで埋め込みます。`span`はフロートの範囲を、1段、本文領域の全幅、または1段半レイアウトのフロート専用サイド段から決めます。`rotate`はリソースを90度回転させ、独立したページに置くページ幅のフロートにします。`width`はフロートを段の幅（ページ幅のフロートではページの幅）の一部に狭めます。たとえば広い段に置く小さな表です。`align`は、そのように狭めたフロートを置く位置（既定は左、ほかに中央と右）と、空き位置より狭い画像をその中のどこに置くかを決めます。段より小さいビットマップや、`layout.fitFiguresToPage`が縮小した画像が対象です。キャプションと注は空き位置の行長を保ちます（postext 1.4までは、そうした画像は常に左そろえでした）。`captionSide`は、1段半レイアウト（`layout.sideColumnRole: 'floats'`）のフロート専用サイド段で、キャプションを図の横、図の上端（下側のフロートでは下端）の高さに置きます。段幅のフロートにだけ適用され、そうした段のないページではキャプションは図の下のままです。リソースもその種類も配置を設定しない場合、組み込みの既定値は`auto`／`column`です。`shrink`（`'never'`、`'page'`、`'slot'`）と`minScale`（未設定なら0.7）は、フロートの図版を次へ送らずに置き場所の空きまで縮小し、`captionMeasure: 'body'`は置き場所より幅の狭い図版のキャプションと注を図版の幅で組みます（[ドキュメント形式 › 配置](/ja/docs/document-format#配置)を参照）。前の2つのドキュメント既定値は`layout.floatShrink`で決めます。`wrap`は本文中の埋め込みや 1 段幅のフロートを段の片側に置き、`wrapGap`離して本文を横に組みます。既定値は`layout.wrap`にあります（[文書の書式 › 回り込み](/ja/docs/document-format#回り込み)を参照）。
+`ResourcePlacement`は、リソースが自身の`placement`に設定するものと同じ形です。`position`はフロートが入れる空き位置の種類を選びます。`auto`（既定値）は最初の参照の後にある最初の空き位置を取り、`top`／`bottom`はその種類の帯に限定し、`here`はリソースをインラインで埋め込みます。`span`はフロートの範囲を、1段、本文領域の全幅、または1段半レイアウトのフロート専用サイド段から決めます。`rotate`はリソースを90度回転させ、独立したページに置くページ幅のフロートにします。`width`はフロートを段の幅（ページ幅のフロートではページの幅）の一部に狭めます。たとえば広い段に置く小さな表です。`align`は、そのように狭めたフロートを置く位置（既定は左、ほかに中央と右）と、空き位置より狭い画像をその中のどこに置くかを決めます。段より小さいビットマップや、`layout.fitFiguresToPage`が縮小した画像が対象です。キャプションと注は空き位置の行長を保ちます（postext 1.4までは、そうした画像は常に左そろえでした）。`captionSide`は、1段半レイアウト（`layout.sideColumnRole: 'floats'`）のフロート専用サイド段で、キャプションを図の横、図の上端（下側のフロートでは下端）の高さに置きます。段幅のフロートにだけ適用され、そうした段のないページではキャプションは図の下のままです。リソースもその種類も配置を設定しない場合、組み込みの既定値は`auto`／`column`です。`shrink`（`'never'`、`'page'`、`'slot'`）と`minScale`（未設定なら0.7）は、フロートの図版を次へ送らずに置き場所の空きまで縮小し、`captionMeasure: 'body'`は置き場所より幅の狭い図版のキャプションと注を図版の幅で組みます（[ドキュメント形式 › 配置](/ja/docs/document-format#配置)を参照）。前の2つのドキュメント既定値は`layout.floatShrink`で決めます。`wrap`は本文中の埋め込みや 1 段幅のフロートを段の片側に置き、`wrapGap`離して本文を横に組みます。既定値は`layout.wrap`にあります（[文書の書式 › 回り込み](/ja/docs/document-format#回り込み)を参照）。`citingPage`は、`top`または`auto`のフロートを、参照行の後の最初の空き位置ではなく、参照行のあるページまたは段の先頭に置きます。`layout.floatsAtCitingPage`が文書の既定値、`layout.maxTopFraction`がそのフロートの占めてよい段の割合です（[ドキュメント形式 › 配置](/ja/docs/document-format#配置)を参照）。
 
 `columns`（postext 1.18以降）は、複数の段があるページで、`span: 'column'`のフロートを指定した数の隣り合う段にまたがって置きます。新聞の5段のうち2段にまたがる写真などです。幅はそれらの段とその間の段間を合わせたものです。上端のそろった空の段の並びの頭か、引用した段とその後の空の段の足に置かれます。ページの段数以上を指定すると、ページ幅のフロートになります。`'page'`と`'side'`のspan、回転したリソース（`rotate`）、インラインの埋め込み（`here`）では無視され、`captionSide`は1段幅のフロートにだけ効きます。
 
@@ -4738,7 +4793,13 @@ const config: PostextConfig = {
       <td><code>overflow</code></td>
       <td><code>'split' | 'clip' | 'hide'</code></td>
       <td><code>'split'</code></td>
-      <td>ページより高い表の扱いです。次のページ以降に続ける、収まる行だけを残す、表を省く、のいずれかです。後述します。</td>
+      <td>ページより高い表の扱いです。次のページ以降に続ける、収まる行だけを残す、表を省く、のいずれかです。<code>splitInline</code>がオンなら、本文中に置いた表で段の残りに収まらないものにも適用します。後述します。</td>
+    </tr>
+    <tr>
+      <td><code>splitInline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td><code>here</code>に置いた表にも<code>overflow</code>を適用します。段に残った余地に収まらないインラインの表は、行の間で切られ、次の段の頭に続きます。<code>false</code>にすると、postext 1.24までと同じく、そうした表を丸ごと次の段に移します。以前のバージョンで保存された設定のうち、章でリソースを埋め込んでいるものは<code>false</code>として読み込まれます。<a href="#ページより高い表">ページより高い表</a>を参照。postext 1.25から。</td>
     </tr>
     <tr>
       <td><code>continuedSuffix</code></td>
@@ -4844,7 +4905,9 @@ const resource: Resource = {
 
 **最初の部分の終わる位置**。参照の後で空の段の頭を渡された表は、そこに収まる行を取り、次の枠に続きます。段を単独で占めるときは、段の下端まで埋めます。部分の下に本文の行が3行未満しか残らない場合は、テキストの切れ端を残さず、その行も取ります。段にすでに別のフロートの帯がある場合（たとえばページの頭を横切る全幅の図）は、部分は段の下端から少なくとも本文3行分手前で止まります。これは、フロートがほかのフロートと段を共有するときに残すテキストの余地で、段がフロートだけで終わらず、表の下にいくらかテキストが来るようにするためです。長い表を段の下端まで続けたい場合は、表が始まるページにほかのフロートがない位置で参照するか（たとえば全幅の図のあるページの次）、行を段に収まるようにしてください。
 
-`'clip'`はページに収まる先頭の行を残し、残りを知らせずに捨てます（注記はその部分の最後に置かれます）。`'hide'`は表全体を省きます。どちらも表がページより高いときだけ働き、収まる表はどのモードでも丸ごと置かれます。インライン（`placement.position: 'here'`）の表は分割されません。
+`'clip'`はページに収まる先頭の行を残し、残りを知らせずに捨てます（注記はその部分の最後に置かれます）。`'hide'`は表全体を省きます。どちらも表がページより高いときだけ働き、収まる表はどのモードでも丸ごと置かれます。
+
+**本文中に置いた表**。`here`に置いた表（`::resource`で埋め込んだもの）も、postext 1.25から同じ規則に従います（`splitInline`、既定でオン）。段に残った余地に収まらないときは、行の間で切ります。最初の部分は上のフロートのアキを保ち、少なくとも見出し行と本体の2行を含みます（それに満たなければ、これまでどおり表全体が次の段から始まります）。続く各部分は、上にアキを取らずに次の段の頭から始まり、その段の幅で組まれます（1段半レイアウトで部分が狭い段に入れば、その幅で組みます）。`::resource`の行の後のテキストは、最後の部分の後に続きます。見出し行の繰り返し、接尾辞を付けたキャプション、続きの印、最後の部分の注記、3行以上の末尾、結合セルや見出しとなる行を避ける分割位置は、フロートの表と同じです。本体が5行未満の表は切りません。`'clip'`は段より高いインラインの表の先頭の収まる行を残し、段の頭に組みます。`'hide'`はそうした表を省きます。それより低い表は、どちらのモードでも丸ごと次の段に移ります。インラインの表が始めるページでは、そのページが受け取るフロートから空けておくのは最初の部分の余地だけなので、待っている全幅の図がそのページの頭に来て、表はその下に続きます。縦組みのページのインラインの表と、囲みの中の表は切りません。`splitInline: false`にすると、postext 1.24までと同じく、インラインの表を丸ごと次の段に移します。
 
 続きの文字列の既定値は文書の言語（`locale`、なければハイフネーションのロケール）によって決まります。英語は`(cont.)` / `Continued`、スペイン語は`(cont.)` / `Continúa`で、フランス語、ドイツ語、イタリア語、ポルトガル語、カタルーニャ語、オランダ語にも同様の既定値があります（[文書の言語](#文書の言語)に一覧があります）。
 
@@ -5063,7 +5126,7 @@ const config: PostextConfig = {
 
 ## ダイアグラムスタイル
 
-`diagramStyle`プロパティは、埋め込んだSVGのダイアグラム（`kind: 'svg'`のリソース）の色の付け方を設定します。現在の機能は**単色刷りモード**の1つだけです。ダイアグラム内のすべての色を1つのインキの濃淡に置き換える色変換の処理で、1色の特色で印刷する文書でも図が忠実に再現されます。
+`diagramStyle`プロパティは、埋め込んだSVGのダイアグラム（`kind: 'svg'`のリソース）の色の付け方と、その文字を組むフォントを設定します。**単色刷りモード**は、ダイアグラム内のすべての色を1つのインキの濃淡に置き換える色変換の処理で、1色の特色で印刷する文書でも図が忠実に再現されます。**フォントの埋め込み**は、各SVGの文字が指定するフェイスをそのSVGに埋め込む処理で、ラベルがキャンバス、HTML、EPUBのどこでも文書のフォントで組まれます（[SVGの文字のフォント](#svgの文字のフォント)を参照）。
 
 ```ts
 const config: PostextConfig = {
@@ -5095,6 +5158,12 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td>メインカラー（<code>#295AA3</code>）</td>
       <td>インキです。既定値は文書のパレットのメインカラーで（<code>paletteId: 'main-color'</code>でパレットに連動）、パレットの色見本を差し替えると、見出しや太字の範囲と一緒にダイアグラムの色も変わります。</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>各SVGを画像として表示する前に、その文字が指定するフェイス（<code>font-family</code>）を<code>@font-face</code>のデータURIとして埋め込みます。対象はキャンバス、HTML、EPUB、PDFのラスターのフォールバックです。保存されたファイルには書き込みません。リソース単位では<code>svg.inlineFonts: false</code>で無効にできます（postext 1.25以降）。</td>
     </tr>
   </tbody>
 </table>
@@ -5176,6 +5245,72 @@ const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
 `renderToHtml`は`singleInk`の既定値をリゾルバー自身のフラグから取るため、`bundleImageUrl(bundle)`にはオプションが要りません。
 
 マークアップの処理が書き換えるすべての色（16進、`rgb()`、`hsl()`の値、`white`と`black`。[単色刷りの仕組み](#単色刷りの仕組み)を参照）について、ピクセルの対応付けは、アンチエイリアスのかかった縁やグラデーションも含めて同じ結果になります。両者が異なるのは、マークアップの処理が色をそのまま残す場合です。`white`と`black`以外の名前付きの色、`currentColor`、塗りのない図形やテキスト（既定の黒で描かれるもの）、SVGに埋め込まれたビットマップは、画面では色付けされますが、PDFでは元の色のままです。まったく同じ出力を得るには、ダイアグラムのすべての要素に16進、`rgb()`、`hsl()`のいずれかで明示的に色を指定してください。キャンバスがピクセルを読み戻せない場合（別のオリジンからCORSなしで読み込んだ`<img>`）、画像は色付けされずに描かれます。
+
+### SVGの文字のフォント
+
+SVGの画像は、キャンバス、HTML、EPUBのいずれでも`<img>`という画像として表示されます。画像の文書からはページのWebフォントが見えないため、`<text font-family="IBM Plex Sans">`はシステムのフォントに置き換わってしまいます。postext 1.25以降、エンジンは画像をデコードする前、またはURLとして渡す前に、文字が指定するフェイスをマークアップに埋め込みます。フォントファイル1つにつき1つの`@font-face`規則を作り、そのバイト列をデータURIにして、ルートの`<svg>`タグの直後の`<style>`に入れます。PDFにはこの処理は要りません。PDFはSVGの文字を、埋め込んだフォントで実際のテキストとして組みます（[リソースのバイト列と印刷用マスター](#リソースのバイト列と印刷用マスター)を参照）。
+
+文字が求めるフェイスは、`font-family`、`font-weight`、`font-style`、`font`から読み取ります。属性に書かれたもの、`style`属性の中にあるもの、外側のグループから継承したもののいずれも対象です。ファミリーを指定する`<style>`の規則も数えます。総称ファミリー（`serif`、`sans-serif`など）と、`<title>`や`<desc>`の中の文字は除きます。SVG自身が`@font-face`で宣言しているファミリーには手を加えません。各テキストは`font-family`のリストを順にたどり、フェイスのある最初のファミリーを使います。単色刷りの色変換が先で、フォントの埋め込みはその後です。
+
+フェイスは**プロバイダー**から得ます。その取り決めはpostext-pdfの`PdfFontProvider`と同じなので、1つのプロバイダーを両方で使えます。プロバイダーはファミリー、ウェイト、スタイルと、SVGがそのフェイスで組む文字を受け取り、ファイルを1つまたは複数返します。unicode-rangeのスライスで配信されるファミリー（Fontsource、Google Fonts）には、それらの文字に必要なスライスだけが返されるので、ラベルがラテン文字だけのSVGには`latin`のファイルしか入りません。既定のプロバイダーはエンジンのフォントレジストリを読みます。`loadBundleFonts`はバンドルのフェイスをそこに登録し、ホストは自前のフェイスを`registerFontBytes(family, weight, style, bytes, { unicodeRange })`で登録できます。SVGが初めて必要とした時点で取得するファイルなら`registerFontUrl(…)`を使います。どこにも登録されていないファミリーは、ページの読み取り可能なスタイルシートの`@font-face`規則から探します。バイト列から`document.fonts`に追加した`FontFace`はバイト列を保持しないため、エンジンは読み戻せません。そうしたフェイスも登録してください。
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // 色変換、フォントの埋め込み、デコード、登録
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+処理が行われる場所は次のとおりです。
+
+- **キャンバス**：`registerSvgImage(fileId, svgText, options)`は、画像を色変換し（`inkHex`）、フォントを埋め込み（`fonts`はプロバイダー。`inlineFonts: false`で省略）、デコードしてベクターのソースとして登録し、各フェイスがどう扱われたかを返します。`registerBundleImages(bundle)`はバンドルのSVGに同じことを行い、まずバンドル自身のフェイスを使います。自分でデコードするホストには、`prepareSvgMarkup(svgText, options)`が処理済みのマークアップを返します。
+- **HTML**：`bundleImageUrl(bundle)`は、バンドルのフェイスを埋め込んだSVGマークアップを返します。`renderToHtml(doc, { inlineSvgFonts: true })`は、`resourceImageUrl`が返すSVGの`data:` URIに、レジストリがメモリに持つフェイスを埋め込みます（`inlineSvgFonts: { fonts, maxBytes, withhold }`の形でも指定できます）。オブジェクトURLは同期的に読めないので、blob URLを渡すホストはURLを作る前に埋め込んでください。
+- **EPUB**：`postext-epub`は、SVGを書き出す前に、本の`fonts`から、次に`svgFonts.provider`からフェイスを埋め込みます（[EPUBの本](#epubの本postext-epub)を参照）。
+- **PDF**：SVGの文字は、埋め込んだフォントで実際のテキストとして組まれます。`@font-face`規則だけを含む`<style>`（作者が埋め込んだフェイス）があっても、図はもうラスターに切り替わりません。図がラスターになる場合（フィルターやグラデーション）は、PDFの`fontProvider`から得たフェイスを埋め込んでからラスターを作ります。
+
+下位の関数もエクスポートされています。`svgFontRequests(svgText)`は各テキストのファミリー、ウェイト、スタイル、文字を列挙します。`inlineSvgFonts(svgText, provider, options)`と`inlineSvgFontsSync(svgText, syncProvider, options)`はマークアップを返し、`inlineSvgFontsDetailed`はそれに各フェイスの結果（`inlined`、`declared`、`unavailable`、`withheld`、`tooLarge`）を加えて返します。
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>オプション</th>
+      <th style={{ width: '160px' }}>型</th>
+      <th style={{ width: '120px' }}>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>1つのSVGに埋め込むフォントのバイト数の上限です（base64にする前の値で、base64にすると3分の1増えます）。フェイスの合計がこれを超えると1つも埋め込まず、<code>svgFontsTooLarge</code>を報告します。</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>4つすべて</td>
+      <td>埋め込むファイル形式です。それ以外の形式のファイルは飛ばします。</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>なし</td>
+      <td>アプリの外に出るファイルから除くファミリーです（再配布できないもの）。参照は残り、読む側では別のフォントに置き換わります。除いたファミリーは1つずつ<code>onWithheld(family)</code>に通知されます。</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>なし</td>
+      <td>フェイスのないファミリー（<code>svgFontUnavailable</code>）と、サイズ上限の超過（<code>svgFontsTooLarge</code>）を受け取ります。</td>
+    </tr>
+  </tbody>
+</table>
+
+**無効にする**：`diagramStyle.inlineFonts: false`にすると、すべてのSVGが保存されたままになります。リソースに`svg.inlineFonts: false`を指定すると、そのSVGだけがバイト単位でそのまま残ります。自前のフェイスを持つSVGや、変更してはならないSVGに使います。バンドルは、リソースのこの指定を`preset.json`に`"inlineFonts": false`として書き込みます。
+
+**ライセンス**：埋め込みを行うと、アプリの外に出ることのある画像（HTMLの書き出し、EPUB）の中にフォントファイルが入ります。埋め込むのは画像を表示するときか書き出すときだけで、保存されたリソースのバイト列には書き込みません。また`withhold`は、ライセンス上ほかに渡せないファミリーを除きます。EPUBのライターは`redistributable: false`と指定されたフェイスを、Sandboxは再配布不可と指定されたカスタムファミリーを除きます。
 
 
 ## 動画スタイル
@@ -6143,7 +6278,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>span</code></td>
       <td><code>'column' | 'page' | 'side'</code></td>
       <td><code>'column'</code></td>
-      <td>横方向の広がりです。段、版面の全幅、または1段半レイアウトのフロート専用のサイド段（<code>layout.sideColumnRole: 'floats'</code>）のいずれかです。サイド段のとき、囲みは流れから外れ、割り込んだ位置のテキストの横にあるその段に積まれます。<code>span</code>属性で個別に上書きできます。段組みのレイアウトでは<code>'page'</code>の囲みは<em>ページ幅のブロック</em>（span block）になります。ページを段の帯に分け、全幅の独自の段に収まります（後述のコンテナーの節を参照）。</td>
+      <td>横方向の広がりです。段、版面の全幅、または1段半レイアウトのフロート専用のサイド段（<code>layout.sideColumnRole: 'floats'</code>）のいずれかです。サイド段のとき、囲みは流れから外れ、割り込んだ位置のテキストの横にあるその段に積まれます。<code>span</code>属性で個別に上書きできます。段組みのレイアウトでは<code>'page'</code>の囲みは<em>ページ幅のブロック</em>（span block）になります。ページを段の帯に分け、全幅の独自の段に収まります（後述のコンテナーの節を参照）。そのページのサイド段に収まらないサイド段の囲みは、次のページのサイド段に置かれます。その前に章（または文書）が終わると、待っている囲みはそれぞれ、フェンスの順に本文の後のページのサイド段に置かれ、ビルドがそれを知らせます（<code>afterText</code>。postext 1.24までは、そうした最初のページより後の囲みは失われていました）。</td>
     </tr>
     <tr>
       <td><code>columns</code></td>
@@ -6344,7 +6479,7 @@ The glass stays hot for an hour after the flame is out.
 - `placement: 'top' | 'bottom'`は囲みをリソースと同じように**フロート**として配置します。囲みは現れた位置で流れから外れ、その位置以降で最初に空いている帯（現在のページの下（`'bottom'`）、または流れが次に開くページの上か下）に、段の幅（`span: 'column'`）または版面の全幅（`span: 'page'`）で入ります。後に続くテキストが、囲みの抜けたページを埋めます。枠と子要素は、固定の囲みと同じく`page.floats`に入ります。新しいページの先頭に来るフロートの囲みは、そのページを待っている図より先に組まれます。前のページで引用され、その下に収まる図は、テキストが3行未満しか残らないときでも、そのページの残りを使います（図版のページ：囲みと図だけで、間にテキストはありません）。`span: 'side'`の囲みはフロートになりません。placementにかかわらず、テキストの横に積まれます。`columns`が1より大きいとき（スタイルでもフェンスの属性でも指定でき、postext 1.18以降）、`span: 'column'`の囲みはその数の隣り合う段を使います。上端のそろった空の段の並びの頭か、現在の段とその後の空の段の足です。例：`:::callout{placement="top" columns="2"}`。
 - `width: 'auto'`はタイトルにだけ合わせて縮み、子要素は無視します。
 - ほかの囲みの中に入れ子にした`:::callout`は、独立した囲みです。自分のスタイル（背景、枠線、角の半径、内側余白、帯、タイトル、アイコン、マーカー、ラベル、文字組み）で、親の内側の全幅に組まれ、親の子要素の1つとして積まれます。`marginTop`/`marginBottom`は隣の要素と相殺されます。`span`と`placement`（フェンスまたはスタイル）は無視され、入れ子の囲みは常に親の中を流れます。`floatBarrier`と`snapToGrid`も無視されます。囲みは何重にでも入れ子にでき、`:::columns`グループの中にも置けます（それぞれ1つの段にまるごと入ります）。親が分割されるとき、切れ目は入れ子の囲みの前後に入り、入れ子のスタイルが分割を許すときはその中にも入ります。どの断片も、切れ目が通る枠を描き直します。前の断片から続く入れ子の囲みは、トップレベルの続きと同じく、タイトルとアイコンを省きます。
-- 子要素の中の`:::columns{count=N}`…`:::`グループは、囲みの中で、その子要素を等幅の`N`段に`columnGap`の間隔で組みます。段の高さが最もそろうブロックや行の境界で切り（途中で切れた段落やリスト項目は、次の段の先頭で行頭記号なしに続きます）、どの段もグループの上端から始まり、グループの高さは最も高い段に合わせます。グループの後の子要素は全幅に戻ります。分割された囲み（`keepTogether: false`）は、グループの中では切りません。要点を2段にまとめたり、幅の広い囲みで表を横に並べたりするのに使います。
+- 子要素の中の`:::columns{count=N}`…`:::`グループは、囲みの中で、その子要素を等幅の`N`段に`columnGap`の間隔で組みます。段の高さが最もそろうブロックや行の境界で切り（途中で切れた段落やリスト項目は、次の段の先頭で行頭記号なしに続きます）、どの段もグループの上端から始まり、グループの高さは最も高い段に合わせます。グループの後の子要素は全幅に戻ります。分割される囲み（`keepTogether: false`、または段より高い囲み）は、グループの中でも段と段の間で切ります。snake のグループは段を順に埋めて次の断片に続き、parallel のグループ（`breaks`）は流れごとに続きます（postext 1.25から。[ドキュメント形式 › `:::columns`](/ja/docs/document-format#columns)を参照）。フェンスの`gap`はそのグループについて`columnGap`の代わりになり、`rule`は各段間に罫線を引きます。要点を2段にまとめたり、幅の広い囲みで表を横に並べたりするのに使います。
 - フェンスの6つ目の属性`label`は、スタイルのラベルタブに印字されます（前述の`label`を参照）。例：`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`。`label`スタイルがなければこの属性は無視されます。
 
 VDTでは、囲みは`type: 'callout'`の枠ブロックになり、その装飾（背景、帯、アイコン、タイトル）は`designOverlay`に入ります。その後に、同じ段の中で子ブロックが続きます。枠とすべての子要素はフェンスの`containerId`を持ちます。入れ子の囲みは、子要素の中の独立した`type: 'callout'`の枠で、その後に自分のブロックが続きます。それらはトップレベルのフェンスの`containerId`を保ち（配置と段末そろえからは1つの単位に見えます）、`calloutPath`を加えます。これは周りの入れ子のフェンスのコンテナーidを外側から順に並べたものです（入れ子の枠自身のidが最後の要素です）。タグ付きPDFは、入れ子の囲みごとに、親の囲みの中に`Div`を作ります。アイコンの画像はリソースの画像と同じ方法で解決されます。canvasの画像レジストリー、HTMLの`resourceImageUrl`オプション、PDFの`resourceBytes`プロバイダーです。
@@ -7688,6 +7823,8 @@ Sandboxの**検査**パネルは、カスタムフォントに固有の3種類�
 
 これらの警告をクリックするとフォントパネルが開き、欠けているバリアントのアップロード、ファミリーの再追加、重複の解消ができます。
 
+レイアウトができた後は、エンジンが報告する**レイアウトで代替フォントを使用**（`fontFallback`）もパネルに並びます。ページの計測に使われなかったフェイスのことで、存在しないか、ブラウザーが同じファミリーの別のウェイトや傾きから作って描いたものです。不明なファミリーやバリアントの欠落としてすでに挙がっているファミリーは、重ねて表示しません。最初のレイアウトの前は、`document.fonts`に対する検査がその代わりを務めます。
+
 ## カラーパレット
 
 `PostextConfig`の`colorPalette`プロパティは、名前付きの色の再利用可能なセットを定義し、設定内の任意の`ColorValue`から参照できるようにします。CSSのカスタムプロパティやInDesignのスウォッチパネルに相当するもので、パレットの項目を1回変えれば、それを指すすべての色が文書全体で更新されます。
@@ -8783,7 +8920,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
   <tbody>
     <tr>
       <td><code>calloutOverflow</code></td>
-      <td><code>:::callout</code>のボックスがどの段にも収まらず、どこで切っても分割できない。</td>
+      <td><code>:::callout</code>のボックスがどの段にも収まらず、どこで切っても分割できない。空のサイド段より高い<code>span: 'side'</code>のボックスも同じです（postext 1.25から）。</td>
       <td>それでも配置され、段から<code>overflowPx</code>だけはみ出します（<code>pageIndex</code> / <code>columnIndex</code>の位置）。<code>doc.warnings</code>に入る唯一の種類で、以下の種類は<code>doc.contentWarnings</code>に入ります。</td>
     </tr>
     <tr>
@@ -8825,6 +8962,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>unknownCalloutType</code></td>
       <td><code>:::callout{'{'}type{'}'}</code>の名前が<code>calloutStyles</code>のどれにも該当しない。囲みスタイルが1つ以上設定されているときにだけ発生します。</td>
       <td>ボックスには最初の囲みスタイルが使われます。</td>
+    </tr>
+    <tr>
+      <td><code>columnsFlowUnknown</code></td>
+      <td><code>:::columns{'{'}flow{'}'}</code>が<code>snake</code>でも<code>parallel</code>でもない。<code>value</code>は書かれている値です。</td>
+      <td>グループには既定値が使われます。<code>breaks</code>があれば<code>parallel</code>、なければ<code>snake</code>です。</td>
     </tr>
     <tr>
       <td><code>unknownChipStyle</code></td>
@@ -8896,6 +9038,26 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>本文を回り込ませる設定のリソースまたはボックス（<code>placement.wrap</code>、ボックスの<code>wrap</code>）が指定どおりに組まれなかったこと。<code>reason</code>：<code>'tooNarrow'</code>（横の本文が<code>layout.wrap.minTextWidth</code>より狭くなる）、<code>'fewLines'</code>（<code>layout.wrap.minLinesBeside</code>行より低い）、<code>'moved'</code>（段の残りに収まらない本文中の対象がアンカーとともに次の段へ移った）、<code>'verticalText'</code>。<code>resourceId</code>はリソース、<code>box</code>はボックスのスタイル。埋め込みまたはボックスを指します。</td>
       <td>理由に応じて、対象は全幅を占めるか、次の段に置かれます。</td>
     </tr>
+    <tr>
+      <td><code>columnsTooNarrow</code></td>
+      <td><code>:::columns</code>グループの小段が、そのテキストの6 em より狭い。<code>columns</code>段で、それぞれ<code>widthPx</code>。グループのフェンスを指します。</td>
+      <td>グループは指定どおりに組まれ、1行に入る語はわずかになります。</td>
+    </tr>
+    <tr>
+      <td><code>afterText</code></td>
+      <td><code>span: 'side'</code>のボックス、またはサイド段の図・表（<code>resourceId</code>）が、本文のないページに置かれた。サイド段の空きを待っているうちに、章または文書の本文が終わった。ボックスまたはフロートごとに1件。ボックス（またはフロートを参照するブロック）を指し、ページが付きます。postext 1.25から。</td>
+      <td>本文の後に開いたページのサイド段に置かれます。ボックスはフェンスの順に並びます。</td>
+    </tr>
+    <tr>
+      <td><code>unplaced</code></td>
+      <td>組版が終わった時点でまだ空き位置を待っていたボックスまたはフロートのリソース（<code>resourceId</code>）。そのために開いたページには置けなかった（サイド段のないページでのサイド段のボックスなど）。ボックス、またはリソースを参照するブロックを指します。ページはありません。postext 1.25から。</td>
+      <td>どのページにもありません。postext 1.24までは、警告なしに消えていました。</td>
+    </tr>
+    <tr>
+      <td><code>fontFallback</code></td>
+      <td>テキストを組んだフェイス（<code>family</code>、<code>weight</code>、<code>style</code>）を、ビルドの時点でフォントセットが用意できなかったこと。<code>reason: 'missing'</code>は、そのファミリーのフェイスが1つも読み込まれておらず、インストールもされていない場合。<code>'synthesized'</code>は、そのウェイトや傾きをファミリーの別のフェイスから作っている場合です（400のレギュラーしかないファミリーに700のイタリックを求めたときなど）。フォントセットがある環境（<code>document.fonts</code>、ワーカーの<code>self.fonts</code>、<code>BuildDocumentOptions.fontSet</code>）で検査し、<code>debug.warnings.missingFont</code>で切り替えます。ページもソースの範囲も持ちません。</td>
+      <td>テキストは代替フォントで、またはブラウザーが太くしたり傾けたりしたフェイスで計測・描画されます。そのフェイスが届くと改行が変わります。<a href="#レイアウトの前にフォントを読み込む">レイアウトの前にフォントを読み込む</a>を参照してください。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -8915,7 +9077,7 @@ const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownR
 
 `formatWarning(w)`は英語の説明を1行で返します。メッセージをローカライズするホストは、代わりに`kind`で分岐してください。マイナーリリースで種類が増えることがあるので、既定の分岐も残しておきます。`collectContentWarnings(markdown, config, resources)`は、何もレイアウトせずに内容の警告を返します（ビルドが加えるのと同じリストで、`pageIndex`はありません）。入力しながらテキストを検査するエディター向けです。`collectHeadingDesignCuts(doc)`は、組み上がったレイアウトを調べ、見出しデザインのテキストがページや段の下端を越えているものを探します（`kind: 'headingDesignCut'`。[確保する高さ](#確保する高さ)を参照）。これはレイアウト自体は報告しないもので、その結果も`formatWarning`で説明できます。Sandboxの**検査**パネルは、これらをすべて一覧にします。
 
-レンダラーは、指定どおりに描けなかったものを`onWarning`オプションで報告します。対象は`renderPageToCanvas`、`renderPage`、`renderToCanvas`（`RenderPageOptions`）、`renderToHtml`と`renderToHtmlIndexed`（`RenderHtmlOptions`）、`renderToPdf`（`RenderToPdfOptions`。PDFワーカー経由でも可）です。描画時の種類は現在1つだけで、`missingImage`です。描くものがない画像（図、表のセルの画像、囲みのアイコン、デザイン画像）は中立的なプレースホルダーとして描かれ、`fileId`と描画呼び出しごとに1回報告されます。報告には`pageIndex`、描画側がわかる場合は`resourceId`（図とセルの画像）、PDFでは複数文書の描画における`documentIndex`が含まれます。描くものがないとは、canvasではその`fileId`の`registerResourceImage`がないこと、HTMLでは`resourceImageUrl`からURLが得られないこと、PDFでは`resourceBytes`からバイト列が得られないか、得られたバイト列をデコードできないことを指します。`fileId`をまったく持たないビットマップやSVGのリソースは、要求するものがないので、報告なしにプレースホルダーとして描かれます。描画時の警告はVDTには保存されません。ホストが用意できるものはレイアウトの後で変わるからです。
+レンダラーは、指定どおりに描けなかったものを`onWarning`オプションで報告します。対象は`renderPageToCanvas`、`renderPage`、`renderToCanvas`（`RenderPageOptions`）、`renderToHtml`と`renderToHtmlIndexed`（`RenderHtmlOptions`）、`renderToPdf`（`RenderToPdfOptions`。PDFワーカー経由でも可）です。描画時の主な種類は`missingImage`です。描くものがない画像（図、表のセルの画像、囲みのアイコン、デザイン画像）は中立的なプレースホルダーとして描かれ、`fileId`と描画呼び出しごとに1回報告されます。報告には`pageIndex`、描画側がわかる場合は`resourceId`（図とセルの画像）、PDFでは複数文書の描画における`documentIndex`が含まれます。描くものがないとは、canvasではその`fileId`の`registerResourceImage`がないこと、HTMLでは`resourceImageUrl`からURLが得られないこと、PDFでは`resourceBytes`からバイト列が得られないか、得られたバイト列をデコードできないことを指します。`fileId`をまったく持たないビットマップやSVGのリソースは、要求するものがないので、報告なしにプレースホルダーとして描かれます。ほかに2つの種類が、SVGの画像にフォントを埋め込むホスト（`registerSvgImage`、`registerBundleImages`、`bundleImageUrl`、`inlineSvgFonts`を指定した`renderToHtml`、postext-epub。[SVGの文字のフォント](#svgの文字のフォント)を参照）から、画像の`fileId`と`resourceId`とともに報告されます。`svgFontUnavailable`（`family`、`weight`、`style`）は、文字が指定するファミリーに埋め込めるフェイスがないことを示し、画像はその文字を代替のフェイスで組みます。`svgFontsTooLarge`（`bytes`、`maxBytes`）は、フェイスがサイズ上限を超え、1つも埋め込まれなかったことを示します。描画時の警告はVDTには保存されません。ホストが用意できるものはレイアウトの後で変わるからです。
 
 ```ts
 import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
@@ -9062,28 +9224,64 @@ const blocks = parseMarkdown(content);
 
 Postextが認識するMarkdownの構文の全一覧は、[文書形式](/ja/docs/document-format)のページを参照してください。
 
-### 計測キャッシュ
+### レイアウトの前にフォントを読み込む
 
-テキストの計測は、レイアウトの中で負荷の高い処理です。2種類のキャッシュがこれを軽くしており、クリアの方法はそれぞれ異なります。
-
-- **自分で持つブロックキャッシュ**。`createMeasurementCache()`は`MeasurementCache`を返します。これは計測したすべての段落を、テキスト、フォント、幅、改行のオプション、有効なハイフネーション辞書をキーとして記憶します。`buildDocument`（または`buildDocumentAsync`）の3番目の引数に渡すと、収束パスの間やビルドの間で計測結果を再利用できます。キー入力のたびに文書をレイアウトするエディターなら、変更された段落だけを計測すれば済みます。キャッシュがなければ、パスのたびにすべてのブロックを計測し直します。キャッシュから読んだ段落は新たに計測した段落と同じなので、キャッシュを使ったビルドは、使わないビルドとすべての行を同じように組みます。postext 1.4.1では、キャッシュした段落から最終行がラントであるという印が失われ、ラントの詰めや段末そろえで違う改行になることがありました。レイアウトのワーカーはビルドをまたいで1つのキャッシュを持ち、フォントが変わると新しいものに置き換えます。
-- **グローバルな幅のキャッシュ**。語の幅は、ページ内のすべてのビルドが共有するモジュールの状態に、フォント文字列ごとにキャッシュされます。pretextも独自のキャッシュを持っています。テキストを代替フォントで計測した後にWebフォントが届くと、これらは古くなります。
+レイアウトは、実行した時点でフォントセットにあるフェイスでテキストを計測します。`prepareFonts`は最初のビルドの前に、設定とそのテキストが求めるすべてのフェイスを読み込みます。対象は本文、見出し、リスト、囲みのタイトルと本文、表、デザインのテキスト、柱、目次、コード、漫画の写植で、設定が指定するウェイトと傾きのそれぞれを読み込みます（本文のファミリーは4つです。`**`と`*`がその中で太字とイタリックを組むためです）。各フェイスは文書が組む文字の分だけ読み込むので、`unicode-range`のスライスとして配信されるファミリー（Latin Extended、ギリシア文字、アラビア文字、Google FontsとFontsourceのCJKのスライス）からは、テキストに必要なファイルが届きます。
 
 ```ts
-import { buildDocument, createMeasurementCache, clearMeasurementCache } from 'postext';
-import type { MeasurementCache } from 'postext';
+import { prepareFonts, buildDocument, buildDocumentWithFonts } from 'postext';
 
-let cache: MeasurementCache = createMeasurementCache();
-let doc = buildDocument(content, config, cache);
+// ホストのファイル。PDFのフォントプロバイダーと同じ取り決めなので、1つの関数を両方で使える。
+async function resolve(family: string, weight: number, style: 'normal' | 'italic') {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-${style}.woff2`;
+}
 
-// A web font finished loading: widths measured with the fallback are stale.
-await document.fonts.ready;
-clearMeasurementCache();           // no argument: clears the global width caches
-cache = createMeasurementCache();  // a block cache has no clear(); start a new one
-doc = buildDocument(content, config, cache);
+const report = await prepareFonts(content, config, { resolve });
+// report.loaded、report.missing、report.synthesized：{ family, weight, style }[]
+const doc = buildDocument(content, config);
+
+// 1回の呼び出しでもよい：準備し、ビルドし、ページが使ったのに無かったフェイスを読み込んで、もう一度ビルドする。
+const same = await buildDocumentWithFonts(content, config, { resolve });
 ```
 
-`clearMeasurementCache()`は引数を取らず、`MeasurementCache`には触れません。そのブロックも古い幅で計測されているので、破棄して新しいものを作ってください。フォントの読み込み後にクリアせずに再ビルドしても、代替フォントで計測したのと同じ改行になります。
+- **ページが宣言しているフェイス**（`@font-face`規則、追加済みの`FontFace`）は、フォントセットを通して読み込みます（`document.fonts.load`、ワーカーでは`self.fonts`）。**宣言していないフェイス**は`resolve(family, weight, style, { text, codePoints })`に問い合わせます。リゾルバーは、ファイル1つ（バイト列またはURL）、複数のファイル（1つのフェイスのスライス）、スライスや可変の範囲を表す`{ source, unicodeRange, weight, style }`、または`null`を返します。エンジンはすべての読み込みが終わってから、設定の順と各回答の順（リゾルバーがそう返せば、latin、latin-ext、greekの順）にそれらを`FontFace`として追加します。そのため、ファイルがどんな順で届いてもフォントセットは同じになります。さらに、[SVGの画像](#svgの文字のフォント)とレイアウトのワーカーが読むフォントレジストリにも登録します。リゾルバーが自分でフェイスを宣言し（スタイルシートを追加して）、`null`を返してもかまいません。
+- **レポート**には、読み込んだフェイス（またはインストール済みのファミリー）で賄えるフェイス、まだ`missing`のフェイス、ブラウザーが別のウェイトや傾きから`synthesize`するフェイスが並びます。待ち時間の上限は`timeoutMs`（既定は10 000）で、その時点でまだ読み込み中のフェイスは欠落として数えます。フォントセットがない環境（Node）では、`prepareFonts`は何もせず、すべてのフェイスを読み込み済みとして報告します。
+- **`buildDocumentWithFonts(content, config, options)`**：フォントを準備し、`buildDocumentAsync`でビルドし、ページが実際にテキストを組んだフェイスを読み取り、欠けていたものを読み込んで、もう一度ビルドします（追加のビルドは最大2回）。`withLoadedFonts(build, options)`は、任意のビルド関数のまわりで同じことを行います。章ごとにビルドする本や、複数の文書を返すバンドル（`buildBundle`）に使えます。`options.onFonts`は最終的なレポートを受け取ります。
+- **ビルドの後**、テキストを組んだフェイスのうちフォントセットが用意できなかったものは、すべて`doc.contentWarnings`に`fontFallback`として挙がります（[文書の中の警告](#文書の中の警告)を参照）。
+
+後から届いたフェイスは、エンジンが自分で拾います。エンジンはフォントセットごとに、前回確かめたときに各ファミリーのどのフェイスが読み込まれていたかを覚えています。ビルドは開始時にもう一度確かめ（フォントセットが増えたか減ったか、フェイスの読み込みが終わったときだけ）、フェイスが変わったファミリーで計測した結果を捨てます。`watchFonts(fontSet)`はフェイスが読み込まれるたびに同じことを行い、一度に届くスライスがいくつあっても、アニメーションフレームあたり最大1回にとどめます。`onFontsChanged(listener)`は、どのファミリーが変わったかをホストに知らせるので、ホストはページをレイアウトし直せます。
+
+```ts
+import { watchFonts, onFontsChanged } from 'postext';
+
+const stop = watchFonts();                         // 既定はdocument.fonts
+const off = onFontsChanged((families) => relayout());
+```
+
+`prepareFonts`は、読み込み先のフォントセットの監視を始めます（`watch: false`で無効になります）。
+
+### 計測キャッシュ
+
+テキストの計測は、レイアウトの中で負荷の高い処理です。2種類のキャッシュがこれを軽くしています。
+
+- **自分で持つブロックキャッシュ**。`createMeasurementCache()`は`MeasurementCache`を返します。これは計測したすべての段落を、テキスト、フォント、幅、改行のオプション、有効なハイフネーション辞書をキーとして記憶します。`buildDocument`（または`buildDocumentAsync`）の3番目の引数に渡すと、収束パスの間やビルドの間で計測結果を再利用できます。キー入力のたびに文書をレイアウトするエディターなら、変更された段落だけを計測すれば済みます。キャッシュがなければ、パスのたびにすべてのブロックを計測し直します。キャッシュから読んだ段落は新たに計測した段落と同じなので、キャッシュを使ったビルドは、使わないビルドとすべての行を同じように組みます。postext 1.4.1では、キャッシュした段落から最終行がラントであるという印が失われ、ラントの詰めや段末そろえで違う改行になることがありました。キャッシュは、自分が埋められたときの計測の世代を持っています。あるファミリーのフェイスが届いたり消えたりすると、次の参照のときにそのファミリーで組んだブロックを捨てるので、フォントの読み込みをまたいで保持したキャッシュが、代替フォントで計測した行を返すことはありません。
+- **グローバルな幅のキャッシュ**。語の幅は、ページ内のすべてのビルドが共有するモジュールの状態に、フォント文字列ごとにキャッシュされます。pretextも独自のキャッシュを持っています。エンジンは、あるファミリーのフェイスが変わると（ビルドの開始時、`watchFonts`、`prepareFonts`、`loadBundleFonts`）、そのファミリーの幅を捨てます。pretextのキャッシュにはファミリーごとの索引がないので、丸ごと消去します。
+
+```ts
+import { buildDocument, createMeasurementCache, evictFontFamilies, clearMeasurementCache } from 'postext';
+
+const cache = createMeasurementCache();
+let doc = buildDocument(content, config, cache);
+
+// "EB Garamond"のフェイスがdocument.fontsに追加された：次のビルドはそれを見て、
+// 同じキャッシュのまま、そのファミリーを計測し直す。
+doc = buildDocument(content, config, cache);
+
+// エンジンから見えないフェイス（ホスト独自のフォントセット）を変えるホストは、そう伝える：
+evictFontFamilies(['EB Garamond']);   // そのファミリーの幅とキャッシュしたブロック
+clearMeasurementCache();              // すべてのファミリー
+```
 
 テキストを少しずつ計測するアプリケーション向けに、`cachedMeasureBlock(text, font, maxWidthPx, lineHeightPx, options, cache)`と`cachedMeasureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cache)`があります。`measureBlock`と`measureRichBlock`の引数に加えて、最後にキャッシュを取ります。
 
@@ -9092,8 +9290,8 @@ doc = buildDocument(content, config, cache);
 Postextの状態の一部は、モジュールレベルの変数にあります。同じJavaScriptのレルム（realm）で`postext`をインポートするものは、すべてこれを共有します。ページとそのスクリプトは1つのコピーを共有し、iframeやワーカーはそれぞれ自分のコピーを持ちます。1ページに1文書なら問題は起きません。1ページに複数の文書がある場合（2つのライブプレビュー、サンプルのギャラリーなど）は影響が出ます。
 
 - **リソースの画像**。`registerResourceImage(fileId, image)`は、`fileId`をキーとする1つの登録簿に書き込み、`renderPage`と`renderPageToCanvas`がそこから読みます。2つの文書がどちらも`figure.svg`を登録すると、その項目を共有し、最後の登録が両方に適用されます。ファイルidには文書ごとの接頭辞を付け、文書が不要になったら`unregisterResourceImage(fileId)`か`clearResourceImages()`を呼んでください。canvasバックエンドがキャッシュするラスターも同じキーで管理され、画像と一緒に破棄されます。
-- **テキストの計測**。計測した幅は、フォント文字列とテキストごとにレルム全体でキャッシュされます。Webフォントの読み込み完了前に計測したテキストは、`clearMeasurementCache()`（引数なし）がキャッシュを空にするまで、どの文書でも代替フォントの幅のままです。フォントが読み込まれたらこれを1回呼び、ビルドし直してください。
-- **解決済みの設定**。設定オブジェクトはそれぞれ1回だけ解決され、その結果がオブジェクトに結び付けてキャッシュされます。設定をその場で書き換えてビルドし直すと、古い設定でレイアウトされます。変更のたびに新しいオブジェクトを渡してください（`{ ...config, … }`または`structuredClone(config)`）。
+- **テキストの計測**。計測した幅は、フォント文字列とテキストごとにレルム全体でキャッシュされます。あるファミリーのフェイスが届いたり消えたりすると、エンジンはすべての文書についてそのファミリーの幅を捨てます（[レイアウトの前にフォントを読み込む](#レイアウトの前にフォントを読み込む)を参照）。`clearMeasurementCache()`はすべてを捨てます。
+- **解決済みの設定**。設定オブジェクトはそれぞれ1回だけ解決され、その結果がオブジェクトに結び付けてキャッシュされます。ビルドのたびに、まずオブジェクトを解決したときのテキストと比べるので（`JSON.stringify`を1回。55 KBの本の設定で約0.1 ms、240 KBの設定で約1.5 ms）、その場で書き換えた設定は、どの深さの変更でも（`config.bodyText.fontSize = …`、パレットの色）解決し直されます。`invalidateConfig(config)`を呼べば、解決結果を手動で捨てられます。`stableStringify`と`hashString`は、キーの順序に左右されない内容のキーを返します。設定ごとにレイアウトをキャッシュするホスト向けです。
 - **ハイフネーションの言語**。ビルドのたびに、プロセス全体のハイフネーション言語が、その文書の`bodyText.hyphenation.locale`に設定されます。公開されている`hyphenateText(text)`と`layoutDesignSlot`は、言語を渡さなければ最後のビルドの言語を使います。`hyphenateText(text, 'es')`のように呼んでください。
 - **数式エンジン**。MathJaxのエンジンと描画済み数式のキャッシュは、レルムに1つずつです。`initMathEngine()`は全員のためにそれを起動します。
 
@@ -9263,7 +9461,9 @@ await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'no
 const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
 ```
 
-**ワーカーにはページのフォントが見えません**。ワーカーは独自のフォントセットを持ち、そこにあるのは`registerFonts`で送ったフェイスと、システムにインストールされたフォントだけです。ワーカーが見つけられないファミリーでテキストを組むビルドでは、そのテキストは代替フォントで計測されるため、改行がページと一致しません。このときクライアントは、ファミリーごとに1回コンソールに警告を出し（`"EB Garamond" is not available inside the layout worker…`）、そのファミリーを`BuildStats.missingFonts`に挙げます。これは`build`の`onStats`コールバックが受け取ります。
+**ワーカーにはページのフォントが見えません**。ワーカーは独自のフォントセットを持ち、そこにあるのは`registerFonts`で送ったフェイスと、システムにインストールされたフォントだけです。ワーカーが見つけられないファミリーでテキストを組むビルドでは、そのテキストは代替フォントで計測されるため、改行がページと一致しません。このときクライアントは、ファミリーごとに1回コンソールに警告を出し（`"EB Garamond" is not available inside the layout worker…`）、そのファミリーを`BuildStats.missingFonts`に挙げます。これは`build`の`onStats`コールバックが受け取ります。文書自体も、同じフェイスを`fontFallback`のコンテンツ警告として持っています。
+
+`handle.prepareFonts(content, config, options)`は、ページで[`prepareFonts`](#レイアウトの前にフォントを読み込む)を実行し、見つかったフェイスのうちフォントレジストリがファイルを持っているもの（リゾルバーのファイル、バンドルのフェイス、ページの読み取り可能な`@font-face`規則）を、文書の文字を含むスライスに限ってワーカーに送ります。フェイスがワーカーに届くと、ワーカーはそのファミリーの計測結果と、仕上がった文書のキャッシュだけを捨てます。
 
 ### フォントペイロードの収集（Fontsource / Google Fonts）
 
@@ -9357,6 +9557,7 @@ HTMLビューアーは、Postextの画面向けのレンダラーです。ペー
 - **`resolveHtmlViewerConfig(partial)`**：HTMLビューアーの既定値（`maxCharsPerLine`、`columnGap`、`optimalLineBreaking`）を補います。
 - **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`**：目標の文字数から実際の段幅をピクセルで求めるための計測の基本関数です。
 - **`createMeasurementCache` / `clearMeasurementCache`**：差し替え可能なキャッシュで、再レイアウトの間で計測結果を再利用できます。
+- **`prepareFonts` / `buildDocumentWithFonts` / `watchFonts` / `onFontsChanged`**：レイアウトの前に文書のフェイスを読み込み、フェイスが届いたらレイアウトし直します（[レイアウトの前にフォントを読み込む](#レイアウトの前にフォントを読み込む)を参照）。
 
 ### ライブサンプル：HTML文字列
 
@@ -9378,6 +9579,8 @@ import {
   measureGlyphWidth,
   dimensionToPx,
   createMeasurementCache,
+  watchFonts,
+  onFontsChanged,
 } from 'postext';
 import type { PostextConfig, MeasurementCache } from 'postext';
 
@@ -9485,12 +9688,13 @@ export function PostextHtmlViewer({
     ro.observe(host);
 
     // Re-measure when web fonts land so glyph widths aren't taken from fallbacks.
-    const onFontsDone = () => relayout();
-    document.fonts?.addEventListener?.('loadingdone', onFontsDone);
+    const stopWatching = watchFonts();
+    const off = onFontsChanged(() => relayout());
 
     return () => {
       ro.disconnect();
-      document.fonts?.removeEventListener?.('loadingdone', onFontsDone);
+      off();
+      stopWatching();
     };
   }, [markdown, config, mode]);
 
@@ -9502,7 +9706,7 @@ export function PostextHtmlViewer({
 
 - **段幅は概算せずに計測する**。`maxCharsPerLine`は文字数で表した*目標*なので、実際のピクセル幅は本文のフォントによって変わります。`measureGlyphWidth`は選んだフォントで実際に計測するので、フォントを差し替えても行の長さが一定に保たれます。
 - **ページの書き換え**。HTMLビューアーは、VDTの各「ページ」を画面上の1つの段として扱います。この例では`page.width`を計測した段幅で上書きし、余白をゼロにして（パディングはページの外側、包んでいる`.pt-doc`のdivにあります）、`HTML_DPI = 144`を使うことで`8pt`の本文が`16px`になるようにしています。
-- **フォントの読み込みへの対応**。`document.fonts.loadingdone`は、新たに要求したWebフォントが届いたときに発火します。再レイアウトしなければ、最初の描画は代替フォントの計量値を使い、本来のフォントが届いたときに表示が跳ねます。
+- **フォントの読み込みへの対応**。`watchFonts`は`document.fonts`を監視し、フェイスが届いたファミリーで計測した結果を、1フレームに1回捨てます。続いて`onFontsChanged`が段をレイアウトし直します。再レイアウトしなければ、最初の描画は代替フォントの計量値を使い、本来のフォントが届いたときに表示が跳ねます。
 - **計測キャッシュの再利用**。コンポーネントごとに1回だけキャッシュを作ることで、サイズ変更やフォントの拡大縮小のときに、すべての段落を計測し直さず、前回の描画の計測結果を再利用できます。
 
 ### さらに進んだ統合
@@ -9832,7 +10036,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 `resourceBytes(fileId)`は画像の生のバイト列を返し、バックエンドはその形式を判別します。
 
 - PNG、JPEG、GIF、WebPは画像として埋め込まれます
-- SVGのマークアップはベクターのパスとして描かれます。ベクターのサブセットにない機能を使っている場合は、ブラウザーで600 dpiでラスタライズされます
+- SVGのマークアップはベクターのパスとして描かれ、その`text`は文書に埋め込んだフォントで実際のテキストとして組まれます。ベクターのサブセットにない機能を使っている場合は、ブラウザーで600 dpiでラスタライズされます。`@font-face`規則だけを含む`<style>`（作者が埋め込んだフェイス）は読み飛ばされ、図はベクターのままです（postext-pdf 1.25以降）。それ以外のスタイルシートがあると図はラスターになり、そのラスターは、文字が指定するフェイスを`fontProvider`から得て埋め込んでから作られます（`diagramStyle.inlineFonts`またはリソースの`svg.inlineFonts`が`false`の場合を除きます）
 - PDFは最初のページがそのまま、フォームXObjectとして埋め込まれます
 
 各画像は、何回描かれてもファイルには1回だけ格納されます。ベクターのパスとして描かれるSVGは、すべてのページが描画するフォームXObjectになるので、30ページのドキュメントのページデザインにある枠やロゴは、30回ではなく1回だけ書き込まれます。ページが1つ増えるごとに増えるのは数百バイトです。postext-pdf 1.4までは、各ページがパスのコピーをそれぞれ持っていました。
@@ -10107,10 +10311,10 @@ const bytes = await renderToEpub(docs, {
 
 単独のドキュメントは、1章だけの本として渡します（`renderToEpub([doc], options)`）。
 
-- **`renderToEpub(docs, options): Promise<Uint8Array>`**：ファイルを書き出します。`options`は`{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`です。
+- **`renderToEpub(docs, options): Promise<Uint8Array>`**：ファイルを書き出します。`options`は`{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`です。
 - **`metadata`**：`title`と`language`（BCP 47タグ）は必須で、`subtitle`、`creators`、`identifier`、`date`、`publisher`、`rights`、`description`、`modified`は省略できます。ISBNだけを書くと`urn:isbn:…`になります。`identifier`がなければ、本にはタイトル、著者、言語から導いた`urn:uuid:`が付くので、同じ本の新しい版も読者のライブラリーで同じ位置を保ちます。バイト単位で同一の出力を得るには、`modified`も渡してください。
-- **`fonts`**：埋め込むフェイス。`{ family, weight, style, bytes, format, unicodeRange? }`の形で、`format`は`woff2`、`woff`、`ttf`、`otf`のいずれかです。各フェイスは1つのファイルと1つの`@font-face`規則になり、`unicodeRange`を持つ複数のファイルで1つのフェイスを構成することもできます（Google Fontsのスライス）。ページが使うファミリー、ウェイト、スタイルに埋め込みフェイスがない場合は`missingFont`として報告され、リーディングシステムが独自のフォントで代替します。ライセンスが許すフォントだけを埋め込んでください。
-- **`resourceBytes(fileId)`**：ページが配置する画像を、同期または非同期で`{ bytes, mediaType }`として返します。`mediaType`が空ならバイト列から判別します。ビットマップは格納されたまま、SVGはソースのまま渡し、PDFの印刷用マスター（`svg.pdfFileId`）は渡さないでください。各画像は1回だけ格納されます。単色インクの本（`diagramStyle.singleInk`）では、ファイル内のSVGが色替えされます。バイト列のない画像は`missingImage`として報告され、空の枠として残ります。
+- **`fonts`**：埋め込むフェイス。`{ family, weight, style, bytes, format, unicodeRange? }`の形で、`format`は`woff2`、`woff`、`ttf`、`otf`のいずれかです。各フェイスは1つのファイルと1つの`@font-face`規則になり、`unicodeRange`を持つ複数のファイルで1つのフェイスを構成することもできます（Google Fontsのスライス）。ページが使うファミリー、ウェイト、スタイルに埋め込みフェイスがない場合は`missingFont`として報告され、リーディングシステムが独自のフォントで代替します。ライセンスが許すフォントだけを埋め込んでください。`redistributable: false`のフェイスがファイルに書き込まれることはありません（本をそのフェイスで組むことはできますが、ファイル自体は入らず、SVGの画像にも入りません）。
+- **`resourceBytes(fileId)`**：ページが配置する画像を、同期または非同期で`{ bytes, mediaType }`として返します。`mediaType`が空ならバイト列から判別します。ビットマップは格納されたまま、SVGはソースのまま渡し、PDFの印刷用マスター（`svg.pdfFileId`）は渡さないでください。各画像は1回だけ格納されます。単色インクの本（`diagramStyle.singleInk`）では、ファイル内のSVGが色替えされます。リーディングシステムはSVGを本のフォントが見えない画像として表示するので、SVGには文字が指定するフェイスが埋め込まれます（[SVGの文字のフォント](#svgの文字のフォント)を参照）。まず`fonts`から（その文字を収めるスライス）、本文で使われていないファミリーは次に<strong>`svgFonts.provider`</strong>から取ります。`redistributable: false`と指定されたフェイスのファミリーと、`svgFonts.withhold(family)`が指定するファミリーは入れず、それぞれ1回ずつ`fontWithheld`として報告します。フェイスのないファミリーは`svgFontUnavailable`、`svgFonts.maxBytes`（2 MiB）を超えるフェイスは`svgFontsTooLarge`として報告されます。`svgFonts.inline: false`、`diagramStyle.inlineFonts: false`、リソースの`svg.inlineFonts: false`のいずれかを指定すると、バイト列は渡されたままになります。バイト列のない画像は`missingImage`として報告され、空の枠として残ります。
 - **`cover`**：`{ bytes, mediaType, alt? }`。JPEG、PNG、WebP、SVGの画像です。指定すると、本はそれを収めた表紙の文書から始まり、その画像がパッケージの`cover-image`（ライブラリーのサムネイル）になります。指定しなければ、固定レイアウトでは最初のページが表紙として指定され、リフロー型の本には表紙画像がありません。
 - **`onProgress({ phase, done, total })`**：`resources`（フォントと画像）、`documents`（固定レイアウトではページ、リフロー型では章）、`package`の順に進みます。**`signal`**：ステップの合間で中止します。
 - **`readEpub(bytes)`**：ビューアーのためにファイルを読み戻します。`DOMParser`は使いません。レイアウト、メタデータ、読む方向、パスごとのすべてのファイル、マニフェスト、スパイン、目次、ページリスト、固定レイアウトのビューポート、表紙を返します。Sandboxのリーダーはこれをもとに作られています。
@@ -10175,7 +10379,7 @@ bundle.files;      // Map<path, Uint8Array>: every file of the bundle
 
 #### postext 1.4以前で書き出したバンドル
 
-`createBundle`とSandboxが書き出すマニフェストには、必ず`configVersion: 10`が入っています。これは、その`config`がどの設定規則を前提に書かれたかを示します。これを持たないマニフェストはpostext 1.4以前で書き出されたもので、次の18点の扱いが現在と異なります。
+`createBundle`とSandboxが書き出すマニフェストには、必ず`configVersion: 11`が入っています。これは、その`config`がどの設定規則を前提に書かれたかを示します。これを持たないマニフェストはpostext 1.4以前で書き出されたもので、次の18点の扱いが現在と異なります。
 
 - **見出しの改ページ**（規則3）：1.4までは、H1の改ページを持たない`headings`オブジェクトでは改ページが入りませんでした（[レベルごとの上書き](#レベルごとの上書き)を参照）。
 - **数式のサイズ**（規則4）：1.4までは、数式が`fontSizeScale`の指定より1.131倍大きく組まれていました（[数式のサイズ](#数式)を参照）。
@@ -10196,7 +10400,7 @@ bundle.files;      // Map<path, Uint8Array>: every file of the bundle
 - **コードフェンス**（規則9）：1.22までは、```` ``` ````や`~~~`のフェンスとその中の行をMarkdownとして読んでいました。行は段落に結合され、`#`の行は見出しになり、フェンスは印字されていました（[コードリスト](#コードリスト)の`codeStyle.blocks`を参照）。
 - **詩行の折り返し**（規則10）：1.23では、一行ずつ組む詩で行長より長い行は、はみ出しがわずかでも自然な語間のまま折り返していました（[詩](#詩)の`bodyText.verse.tighten`を参照）。
 
-`openBundle`と`readBundle`は、そのようなマニフェストの`config`と、各ロケールの`localized`の設定を`migrateConfig`を通して読み込みます。この関数は1.4が組んだ改ページを明示的に書き出し、数式の倍率に1.131を掛けます（`em`で指定した別行立て数式のアキはこの値で割ります）。1.5のプレリリースが書いた`3`から`7`の値を持つマニフェストには、その値より後の規則の固定だけが入ります。`3`なら数式のサイズ、インラインのアキ、規則6の5つの固定、規則7の2つ、規則8の3つ。`4`ならインラインのアキと、規則6、7、8の固定。`5`なら規則6、7、8の固定。`6`なら規則7と8の固定。`7`なら規則8の固定だけです。見出しの下での分割（`pinLegacyHeadingSplit`）は、各層を重ねた結果有効になる`headings`に`headings.keepWithNextSplit: 'fill'`として書き込まれます。条件は、読み込んだ章に見出しがあり、設定が独自の値を指定しておらず、`headings.keepWithNext`を有効のままにし、`bodyText.avoidOrphans`を無効にしていないことです。複合語の改行（`pinLegacyHyphenBreaks`）は、有効な`bodyText`に`bodyText.breakAfterHyphens: false`として書き込まれます。条件は、読み込んだ章に2文字の間のハイフンがあり、設定がこの値をすでに設定しておらず、`optimalLineBreaking`も無効にしていないことです。コンテナーの下のアキ（`pinLegacyParagraphContainerSpacing`）は、有効な`bodyText`に`bodyText.paragraphContainerSpacing: 'add'`として書き込まれます。条件は、設定が段落スタイルを（`paragraphStyles`またはHTMLビューアーの上書きで）宣言し、読み込んだ章が単独の行で`:::paragraphs`コンテナーを開き、設定がこの値をすでに設定していないことです。ダッシュでの改行（`pinLegacyDashBreaks`）は、有効な`bodyText`に`bodyText.breakAfterDashes: false`として書き込まれます。条件は、読み込んだ章に語と語の間に前後を詰めて置いたemダッシュやenダッシュがあり（前に文字、数字、閉じる約物があり、後ろに文字、数字、開き括弧や開き引用符があるもの。ダッシュの前の引用符は、その引用符の前に文字、数字、閉じる約物、ノーブレークスペースがあれば数に入ります。`"no"—and`は該当し、`said "—Hola`は該当しません。ダッシュや引用符に接するインラインのマーク、たとえば`**riddles.**—I`の`**`は、どちら側にあっても数に入ります）、設定がこの値をすでに設定していないことです。行末不ぞろいの改行（`pinLegacyRaggedBreaking`）は、有効な`bodyText`に`bodyText.optimalRagged: false`として書き込まれます。条件は、設定が本文テキストのどこかを行末不ぞろいにし（本文テキスト、段落スタイル、囲みの本文、部の本文、節のスタイルの本文（`headingStyles[].bodyStyle`）、またはHTMLビューアーの上書きで、`'justify'`以外の`textAlign`を指定する）、この値をすでに設定しておらず、`optimalLineBreaking`も無効にしていないことです。ボックスの中のアキ（`pinLegacyBoxResourceGap`）は、有効な`layout`に`layout.inlineResourceGapInBoxes: false`として書き込まれます。条件は、読み込んだ章の`:::callout`の中にリソースが単独の行で埋め込まれ、設定がこの値をすでに設定していないことです。ボックスの分割（`pinLegacyBoxChildCut`）は、有効な`layout`に`layout.boxChildSplitMinLines: 1`として書き込まれます。条件は、読み込んだ章が単独の行で`:::callout`を開き、設定がこの値をすでに設定していないことです。見出しのマーク（`pinLegacyHeadingMarks`）は、各層を重ねた結果有効になる`headings`に`headings.inlineMarks: false`として書き込まれます。条件は、読み込んだ章の見出しがマーク（タイトル内の`*`、`_`、`^`、`~`、`:smallcaps[`、またはリンク）を含み、設定が独自の値を指定していないことです。ドロップキャップ（`pinLegacyDropCapSize`）は、どこにあっても1.4のサイズが`dropCap.fontSize`として書き出されます。単位は、要素の行送りが長さで指定されていればその単位、そうでなければフォントサイズの単位です。コロンで終わる行の下の余地（`pinLegacyColonListRoom`）は、有効な`bodyText`に`bodyText.colonListRoom: 'line'`として書き込まれます。条件は、読み込んだ章のリストがコロンで終わる行に続き（間に空行があってもかまいません）、設定が余地を指定しておらず、`keepColonWithList`も無効にしていないことです。インラインのアキ（`pinLegacyInlineGap`）は、各層を重ねた結果有効になる`layout`に`layout.inlineResourceGap: 'above'`として書き込まれます。条件は、読み込んだ章のある行がリソースを埋め込み（パーサーの解釈どおり、`::resource{id="…"}`が単独で行にあるもの。本文中やコードスパンでの言及は数に入りません）、設定が独自のアキを指定していないことです。サイズは、各層を重ねた結果有効になる`math`に固定されます（ロケール独自の`math`は共有のものを置き換えます）。これは読み込んだ章に`$`がある場合に限られ、数式のないバンドルの`config`は書かれたまま残ります。マニフェストもロケールも`math`を指定しない場合、有効なものは`readBundle`の`baseConfig`（読み込む側自身の設定）のもので、これも固定されます。1.4はバンドルの数式をそのサイズで組んでいたからです。基本設定の`fontSizeScale: 1.5`は1.5 × 1.1312として読まれます。基本設定の見出しの改ページはそのまま使われます。このように古いバンドルはこれらの規則で組まれた結果を保ち、`bundle.config`には、実際に組むときの改ページ、数式のサイズ、アキ、見出しのマーク、ドロップキャップのサイズ、コロンで終わる行の下の余地、ボックスの分割、ダッシュでの改行、複合語の改行、行末不ぞろいの改行、見出しの下での分割、コンテナーの下のアキが表示されます。1.5のレイアウトの修正には固定がなく、ほかの本と同じく古いバンドルにも適用されるため、それらが関わるページは動くことがあります（一覧は[数式のサイズ](#数式)を参照）。現在の規則に合わせて手で書く`preset.json`には`"configVersion": 10`を指定します。古いバンドルのマニフェストにこの値を書き込むのも、現在の規則で読み込むための1行で済む方法です（その場合、バージョンのないバンドルは見出しの改ページの固定も失います）。`8`と記されたマニフェスト（postext 1.5〜1.22が書いたもの）は規則9の4つの固定だけを受け、それより古いものも同様に受けます。詩の組み方（`pinLegacyVerseLayout`）は、読んだ章に開始行で組み方を指定せず行に半句の区切りもない`:::verse`の詩があり、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.verse.layout: 'bayt'`として書き込まれます。組になった字下げ（`pinLegacyPairedIndents`）は、0でない`hangingIndent`も決めている段落スタイル（`paragraphStyles`またはHTMLビューアーの上書き設定のもの）すべてから`firstLineIndent`を外します。強制改行（`pinLegacyHardBreaks`）は、読んだ章に、段落・引用・リスト項目の行末がバックスラッシュで終わって次の行に続く箇所か、後ろにスペースと文字が続く`\\`があり（インラインのコードと数式、別行立ての数式、見出し、`:::verse`の詩は除く）、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.hardLineBreaks: false`として書き込まれます。コードフェンス（`pinLegacyCodeBlocks`）は、読んだ章が```` ``` ````か`~~~`のフェンス（3文字以上、行頭からのインデントは3スペースまで）を開き、設定がまだ決めていなければ、`codeStyle.blocks: false`として書き込まれます。`9`が付いたマニフェスト（postext 1.23で書き出したもの）には規則10の固定だけが適用され、それより古いものにも適用されます。詩行の折り返し（`pinLegacyVerseTightening`）は、読んだ章が詩を一行ずつ組んでいて（`:::verse`のフェンスが`layout=lines`を指定しているか、組み方を指定せず各行に半句の区切りがなく、設定がそのような詩をバイトとして組んでいない場合）、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.verse.tighten: false`として書き込まれます。
+`openBundle`と`readBundle`は、そのようなマニフェストの`config`と、各ロケールの`localized`の設定を`migrateConfig`を通して読み込みます。この関数は1.4が組んだ改ページを明示的に書き出し、数式の倍率に1.131を掛けます（`em`で指定した別行立て数式のアキはこの値で割ります）。1.5のプレリリースが書いた`3`から`7`の値を持つマニフェストには、その値より後の規則の固定だけが入ります。`3`なら数式のサイズ、インラインのアキ、規則6の5つの固定、規則7の2つ、規則8の3つ。`4`ならインラインのアキと、規則6、7、8の固定。`5`なら規則6、7、8の固定。`6`なら規則7と8の固定。`7`なら規則8の固定だけです。見出しの下での分割（`pinLegacyHeadingSplit`）は、各層を重ねた結果有効になる`headings`に`headings.keepWithNextSplit: 'fill'`として書き込まれます。条件は、読み込んだ章に見出しがあり、設定が独自の値を指定しておらず、`headings.keepWithNext`を有効のままにし、`bodyText.avoidOrphans`を無効にしていないことです。複合語の改行（`pinLegacyHyphenBreaks`）は、有効な`bodyText`に`bodyText.breakAfterHyphens: false`として書き込まれます。条件は、読み込んだ章に2文字の間のハイフンがあり、設定がこの値をすでに設定しておらず、`optimalLineBreaking`も無効にしていないことです。コンテナーの下のアキ（`pinLegacyParagraphContainerSpacing`）は、有効な`bodyText`に`bodyText.paragraphContainerSpacing: 'add'`として書き込まれます。条件は、設定が段落スタイルを（`paragraphStyles`またはHTMLビューアーの上書きで）宣言し、読み込んだ章が単独の行で`:::paragraphs`コンテナーを開き、設定がこの値をすでに設定していないことです。ダッシュでの改行（`pinLegacyDashBreaks`）は、有効な`bodyText`に`bodyText.breakAfterDashes: false`として書き込まれます。条件は、読み込んだ章に語と語の間に前後を詰めて置いたemダッシュやenダッシュがあり（前に文字、数字、閉じる約物があり、後ろに文字、数字、開き括弧や開き引用符があるもの。ダッシュの前の引用符は、その引用符の前に文字、数字、閉じる約物、ノーブレークスペースがあれば数に入ります。`"no"—and`は該当し、`said "—Hola`は該当しません。ダッシュや引用符に接するインラインのマーク、たとえば`**riddles.**—I`の`**`は、どちら側にあっても数に入ります）、設定がこの値をすでに設定していないことです。行末不ぞろいの改行（`pinLegacyRaggedBreaking`）は、有効な`bodyText`に`bodyText.optimalRagged: false`として書き込まれます。条件は、設定が本文テキストのどこかを行末不ぞろいにし（本文テキスト、段落スタイル、囲みの本文、部の本文、節のスタイルの本文（`headingStyles[].bodyStyle`）、またはHTMLビューアーの上書きで、`'justify'`以外の`textAlign`を指定する）、この値をすでに設定しておらず、`optimalLineBreaking`も無効にしていないことです。ボックスの中のアキ（`pinLegacyBoxResourceGap`）は、有効な`layout`に`layout.inlineResourceGapInBoxes: false`として書き込まれます。条件は、読み込んだ章の`:::callout`の中にリソースが単独の行で埋め込まれ、設定がこの値をすでに設定していないことです。ボックスの分割（`pinLegacyBoxChildCut`）は、有効な`layout`に`layout.boxChildSplitMinLines: 1`として書き込まれます。条件は、読み込んだ章が単独の行で`:::callout`を開き、設定がこの値をすでに設定していないことです。見出しのマーク（`pinLegacyHeadingMarks`）は、各層を重ねた結果有効になる`headings`に`headings.inlineMarks: false`として書き込まれます。条件は、読み込んだ章の見出しがマーク（タイトル内の`*`、`_`、`^`、`~`、`:smallcaps[`、またはリンク）を含み、設定が独自の値を指定していないことです。ドロップキャップ（`pinLegacyDropCapSize`）は、どこにあっても1.4のサイズが`dropCap.fontSize`として書き出されます。単位は、要素の行送りが長さで指定されていればその単位、そうでなければフォントサイズの単位です。コロンで終わる行の下の余地（`pinLegacyColonListRoom`）は、有効な`bodyText`に`bodyText.colonListRoom: 'line'`として書き込まれます。条件は、読み込んだ章のリストがコロンで終わる行に続き（間に空行があってもかまいません）、設定が余地を指定しておらず、`keepColonWithList`も無効にしていないことです。インラインのアキ（`pinLegacyInlineGap`）は、各層を重ねた結果有効になる`layout`に`layout.inlineResourceGap: 'above'`として書き込まれます。条件は、読み込んだ章のある行がリソースを埋め込み（パーサーの解釈どおり、`::resource{id="…"}`が単独で行にあるもの。本文中やコードスパンでの言及は数に入りません）、設定が独自のアキを指定していないことです。サイズは、各層を重ねた結果有効になる`math`に固定されます（ロケール独自の`math`は共有のものを置き換えます）。これは読み込んだ章に`$`がある場合に限られ、数式のないバンドルの`config`は書かれたまま残ります。マニフェストもロケールも`math`を指定しない場合、有効なものは`readBundle`の`baseConfig`（読み込む側自身の設定）のもので、これも固定されます。1.4はバンドルの数式をそのサイズで組んでいたからです。基本設定の`fontSizeScale: 1.5`は1.5 × 1.1312として読まれます。基本設定の見出しの改ページはそのまま使われます。このように古いバンドルはこれらの規則で組まれた結果を保ち、`bundle.config`には、実際に組むときの改ページ、数式のサイズ、アキ、見出しのマーク、ドロップキャップのサイズ、コロンで終わる行の下の余地、ボックスの分割、ダッシュでの改行、複合語の改行、行末不ぞろいの改行、見出しの下での分割、コンテナーの下のアキが表示されます。1.5のレイアウトの修正には固定がなく、ほかの本と同じく古いバンドルにも適用されるため、それらが関わるページは動くことがあります（一覧は[数式のサイズ](#数式)を参照）。現在の規則に合わせて手で書く`preset.json`には`"configVersion": 11`を指定します。古いバンドルのマニフェストにこの値を書き込むのも、現在の規則で読み込むための1行で済む方法です（その場合、バージョンのないバンドルは見出しの改ページの固定も失います）。`8`と記されたマニフェスト（postext 1.5〜1.22が書いたもの）は規則9の4つの固定だけを受け、それより古いものも同様に受けます。詩の組み方（`pinLegacyVerseLayout`）は、読んだ章に開始行で組み方を指定せず行に半句の区切りもない`:::verse`の詩があり、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.verse.layout: 'bayt'`として書き込まれます。組になった字下げ（`pinLegacyPairedIndents`）は、0でない`hangingIndent`も決めている段落スタイル（`paragraphStyles`またはHTMLビューアーの上書き設定のもの）すべてから`firstLineIndent`を外します。強制改行（`pinLegacyHardBreaks`）は、読んだ章に、段落・引用・リスト項目の行末がバックスラッシュで終わって次の行に続く箇所か、後ろにスペースと文字が続く`\\`があり（インラインのコードと数式、別行立ての数式、見出し、`:::verse`の詩は除く）、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.hardLineBreaks: false`として書き込まれます。コードフェンス（`pinLegacyCodeBlocks`）は、読んだ章が```` ``` ````か`~~~`のフェンス（3文字以上、行頭からのインデントは3スペースまで）を開き、設定がまだ決めていなければ、`codeStyle.blocks: false`として書き込まれます。`9`が付いたマニフェスト（postext 1.23で書き出したもの）には規則10の固定だけが適用され、それより古いものにも適用されます。詩行の折り返し（`pinLegacyVerseTightening`）は、読んだ章が詩を一行ずつ組んでいて（`:::verse`のフェンスが`layout=lines`を指定しているか、組み方を指定せず各行に半句の区切りがなく、設定がそのような詩をバイトとして組んでいない場合）、設定がまだ決めていなければ、有効な`bodyText`に`bodyText.verse.tighten: false`として書き込まれます。`10`が付いたマニフェスト（postext 1.24で書き出したもの）には規則11の固定だけが適用され、それより古いものにも適用されます。文字グリッドの段末そろえ（`pinLegacyGridBalancing`）は、統合後の設定が横組みで`cjk.grid.enabled`を指定し、`enabled`自体は指定していなければ、有効な`headings`に`headings.balancing.enabled: true`として書き込まれます。1.24はそのようなページを既定でそろえていたためです。規則11では、書名を1字目の後で分割しないこと、丸数字を漢字として組むこと、CJKのデザインテキストを本文の規則で組むことも加わった（#637）。`10`以前のマニフェストは、読み込んだ章に書名（《、〈、`:book[`）があれば`cjk.titleMinChars: 1`（`pinLegacyTitleBreaks`）、丸数字（U+2460〜U+24FF、U+2776〜U+2793）があれば`cjk.circledNumbers: 'western'`（`pinLegacyCircledNumbers`）、読み込んだ章か設定そのものにCJKのテキストがあれば`cjk.composeDesignText: false`（`pinLegacyDesignText`）を、それぞれ有効な`cjk`に受け取る。いずれも設定がその項目をまだ指定していない場合に限る。規則11では、インラインの表を切ることと、本文中で`:::columns`を組むことも加わりました（#634）。`10`以前のマニフェストは、読み込んだ章がリソースを埋め込んでいれば有効な`tableStyle`に`tableStyle.splitInline: false`（`pinLegacyInlineTableSplit`）を、読み込んだ章が単独の行で`:::columns`フェンスを開いていれば有効な`layout`に`layout.flowColumns: false`（`pinLegacyFlowColumns`）を受け取ります。どちらも、設定がその項目をまだ指定していない場合に限ります。規則11では、ページ幅の章扉のある段の先頭もフロートの空き位置になりました（#639）。`10`以前のマニフェストは、マージした設定が`span: 'page'`の見出しレベルまたは見出しスタイルを設定し、読み込んだ章に見出しがあれば、有効な`layout`に`layout.floatsUnderOpener: false`（`pinLegacyOpenerHeadFloats`）を受け取ります。これも、設定がその項目をまだ指定していない場合に限ります。
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -10226,8 +10430,8 @@ migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 
 開いたバンドルをエンジンとバックエンドにつなぐヘルパーは4つあります。
 
-- **`loadBundleFonts(bundle)`**：バンドルのフェイスを`document.fonts`に登録します。レイアウトはブラウザーが持つフォントでテキストを計測するので、組む前にその完了を待ってください。バンドルが指定していても収めていないファミリー（Google Fonts）は、ほかの文書と同じく自分で読み込む必要があります。
-- **`registerBundleImages(bundle)`**：canvasバックエンド（`renderPage`、`renderToCanvas`）のために画像をデコードします。動画のポスターも含みます。`renderToHtml`のリゾルバーは2つあり、**`bundleImageUrl(bundle)`**（`resourceImageUrl`）は画像を、**`bundleVideoUrl(bundle)`**（`resourceVideoUrl`）はバンドルが収める動画ファイルを解決します。どちらも`diagramStyle.singleInk`が有効な場合はSVGの図を一度だけ色替えします。マークアップを色替えし、画像に印を付けて、どのバックエンドも重ねて色を付けないようにします（[キャンバスとHTMLでの単色刷り](#キャンバスとhtmlでの単色刷り)を参照）。
+- **`loadBundleFonts(bundle)`**：バンドルのフェイスを`document.fonts`に登録し、SVGの画像のために、そのバイト列をエンジンのフォントレジストリにも登録します（`registerFontBytes`）。レイアウトはブラウザーが持つフォントでテキストを計測するので、組む前にその完了を待ってください。バンドルが指定していても収めていないファミリー（Google Fonts）は、ほかの文書と同じく自分で読み込む必要があります。
+- **`registerBundleImages(bundle)`**：canvasバックエンド（`renderPage`、`renderToCanvas`）のために画像をデコードします。動画のポスターも含みます。`renderToHtml`のリゾルバーは2つあり、**`bundleImageUrl(bundle)`**（`resourceImageUrl`）は画像を、**`bundleVideoUrl(bundle)`**（`resourceVideoUrl`）はバンドルが収める動画ファイルを解決します。どちらも`diagramStyle.singleInk`が有効な場合はSVGの図を一度だけ色替えします。マークアップを色替えし、画像に印を付けて、どのバックエンドも重ねて色を付けないようにします（[キャンバスとHTMLでの単色刷り](#キャンバスとhtmlでの単色刷り)を参照）。どちらも、各SVGに文字が指定するフェイスを、まずバンドル自身のフォントから、次にエンジンに登録されたフェイスから埋め込みます（[SVGの文字のフォント](#svgの文字のフォント)を参照）。`registerBundleImages(bundle, { onWarning })`と`bundleImageUrl(bundle, { onWarning })`は、フェイスのないファミリーを報告します。
 - **`buildBundle(bundle)`**：章を順に組み、章ごとに1つの`VDTDocument`を返します。各章は前の章を引き継ぎます。見出しとリソースのカウンター、開いている部、ページの奇偶、ノンブルです。目次（`:::toc`）や索引（`:::index`）を印字する章は、本全体のアウトラインを受け取ります。`buildDocument`と同じオプションに加えて、バンドルの設定を上書きする`config`、計測キャッシュを共有する`cache`、`metadata`（後述）を受け付けます。
 - **`bundleResourceBytes(bundle)`**、**`bundleFontProvider(bundle, { decodeWoff2, fallback })`**：`postext-pdf`の`renderToPdf`の`resourceBytes`オプションと`fontProvider`オプションです。フォントプロバイダーは、求められたスタイルのうち最も近いウェイトをバンドルから選びます。`.woff2`のフェイスには`decompressWoff2`が必要です。バンドルが収めていないファミリーについては、`request`を含むレンダラーの引数で`fallback`を呼び、その戻り値をそのまま渡します。ファミリーの`latin`ファイルだけを取得するフォールバックでは、バンドルが埋め込んでいない中国語のファミリーが空の四角として印字されます。[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)の`sliceFontProvider`のようにスライスで応えるフォールバックなら、すべて印字されます。
 

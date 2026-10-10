@@ -7,7 +7,10 @@ import { hasCompound } from './breakRules';
 
 export type { BreakTrace, LineInsetStep, LineWidthStep, MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './types';
 export { lineIndentAt, maxLineIndent } from './types';
-export { buildFontString, initHyphenator, clearMeasurementCache, createMeasurementCache } from './font';
+export { buildFontString, initHyphenator, clearMeasurementCache, createMeasurementCache, evictFontFamilies } from './font';
+export { measurementGeneration } from './canvas';
+export { parseFontString, fontStringFamily } from './fontString';
+export type { FontFaceRequest } from './fontString';
 export { measureGlyphWidth, measureTextWidth } from './canvas';
 export { measureBlock } from './plain';
 export { measureRichBlock } from './rich';

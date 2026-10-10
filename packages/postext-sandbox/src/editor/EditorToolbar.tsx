@@ -15,6 +15,7 @@ import {
   Redo2,
   SeparatorHorizontal,
   UnfoldVertical,
+  Columns2,
   Hash,
   Tag,
   ALargeSmall,
@@ -219,6 +220,17 @@ export function EditorToolbar({ viewRef, extraActions, lang }: EditorToolbarProp
       icon: <UnfoldVertical size={16} aria-hidden="true" />,
       label: labels.spaceDirective,
       action: () => { const v = getView(); if (v) insertBlockLine(v, ':::space'); },
+    },
+    {
+      icon: <Columns2 size={16} aria-hidden="true" />,
+      label: labels.columnsDirective,
+      action: () => {
+        const v = getView();
+        if (!v) return;
+        // A group of two sub-columns, the caret on its empty first line.
+        const text = ':::columns{count=2}\n\n:::';
+        insertBlockLine(v, text, ':::columns{count=2}\n'.length);
+      },
     },
     {
       icon: <Hash size={16} aria-hidden="true" />,

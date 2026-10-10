@@ -1766,6 +1766,18 @@ export interface ResolvedCalloutBlock {
  *    when word spacing alone could not gain the line). */
 export type BalanceLever = 'trailingCallout' | 'flexFigure' | 'heading' | 'listEnd' | 'afterDisplay' | 'afterFloat' | 'looseParagraph';
 
+/** Column balancing on a character grid (`VDTDocument.gridBalancing`,
+ *  #632). */
+export interface VDTGridBalancing {
+  /** Balancing is off because the document is set on the grid in
+   *  horizontal text and its configuration does not turn it on
+   *  (`headings.balancing.enabled`): short columns are left short.
+   *  (Vertical text has balancing off by default on or off the grid.) */
+  off?: true;
+  /** `headings.balancing.gridLines: 'off'`: no lever adds grid lines. */
+  gridLines?: 'off';
+}
+
 /** What column balancing did to one block (`VDTBlock.balancing`). */
 export interface VDTBalancing {
   /** The levers that fired on the block, in the order above. Usually one;
@@ -1822,6 +1834,20 @@ export interface VDTColumn {
    *  height in whole grid lines from its top. Absent when nothing in the
    *  column wraps. */
   exclusions?: VDTExclusion[];
+  /** In the column a page-span opener was set in, the foot (page y of the
+   *  flow frame, as `bbox`) of the float band set under the opener at the
+   *  column's head (#639, `layout.floatsUnderOpener`): the float is in
+   *  `VDTPage.floats`, the column's text starts here, and the rule of the
+   *  column's gutter starts no higher (`columnRuleSegments`). Absent when
+   *  no float stands there. */
+  headFloatFoot?: number;
+  /** On a character grid (#632), the levers balancing would have used on
+   *  this short column and the grid kept out: `'looseParagraph'` when a
+   *  paragraph could gain its line only by spreading its characters off
+   *  their cells, the whole-line levers (`'heading'`, `'listEnd'`,
+   *  `'afterDisplay'`, `'afterFloat'`) under `headings.balancing.gridLines:
+   *  'off'`. Why the column ends short; absent when nothing was refused. */
+  gridRefused?: BalanceLever[];
 }
 
 /** A region of a column that text wraps round (see `VDTColumn.exclusions`,
@@ -1883,6 +1909,15 @@ export interface VDTDesignTextRun {
    *  {@link VDTLineSegment.rtl}: shaped as one run, its brackets mirrored,
    *  never tracked. Absent on left-to-right runs. */
   rtl?: true;
+  /** Paint-only shift of the run's glyphs, px, as on
+   *  {@link VDTLineSegment.inkOffset}: present when the run's `width` is
+   *  its box rather than its glyphs' advance, in a design text set by the
+   *  CJK composer (#637): a full-width mark that gave up blank (negative
+   *  when the blank before its glyph went), a space set at the Han–Latin
+   *  width, a run that takes a Han–Latin space after it (0). Renderers
+   *  paint the glyphs at `x + inkOffset` and advance by `width`; the HTML
+   *  sets such a run in a box `width` wide. Absent on every other run. */
+  inkOffset?: number;
 }
 
 /** Line of wrapped text inside a `VDTDesignTextBlock`. */
@@ -2396,7 +2431,9 @@ export interface VDTLineNumberMark {
  *  the geometry still describes what was painted. */
 export interface CalloutOverflowWarning {
   /** `calloutOverflow`: a `:::callout` box that fits no column was placed
-   *  overflowing its column (by `overflowPx`). */
+   *  overflowing its column (by `overflowPx`). A `span: 'side'` box taller
+   *  than an empty side column is one too (#639), `columnIndex` then
+   *  naming the side column. */
   kind: 'calloutOverflow';
   pageIndex: number;
   columnIndex: number;
@@ -2525,6 +2562,10 @@ export type ContentWarning = ContentWarningBase & (
    *  takes the first one. Not raised while `calloutStyles` is unset or
    *  empty (every type is then the built-in plain box). */
   | { kind: 'unknownCalloutType'; type: string }
+  /** `:::columns{flow=…}` names neither `'snake'` nor `'parallel'` (#634):
+   *  the group takes the default (`'parallel'` with `breaks`, `'snake'`
+   *  without). */
+  | { kind: 'columnsFlowUnknown'; value: string }
   /** A `:::paper{…}` attribute the engine cannot read: an unknown key, a
    *  stock, finish or texture it does not know, a number out of range, a
    *  shade that is neither a hex colour nor a palette id, a `showThrough`
@@ -2730,6 +2771,24 @@ export type ContentWarning = ContentWarningBase & (
    *  vertical flow it takes its band whole. `resourceId` names a
    *  resource, `box` a box's style. Found by the layout. */
   | { kind: 'textWrap'; reason: 'tooNarrow' | 'fewLines' | 'moved' | 'verticalText'; resourceId?: string; box?: string }
+  /** `columnsTooNarrow` (#634): the sub-columns of a `:::columns` group
+   *  are narrower than six ems of its text, `widthPx` each, `columns` of
+   *  them: few words fit a line. Found by the layout. */
+  | { kind: 'columnsTooNarrow'; columns: number; widthPx: number }
+  /** `afterText` (#639): a `span: 'side'` box, or a figure or table of
+   *  the side column (`resourceId`), set on a page that holds no text: the
+   *  text of its chapter (or of the document) ended while it still waited
+   *  for room in the side column, so it took the side column of a page
+   *  opened after the text. One per box or float, with the range of the
+   *  box (of the block citing the float) and its page. Found by the
+   *  layout. */
+  | { kind: 'afterText'; resourceId?: string }
+  /** `unplaced` (#639): a `span: 'side'` box, a floated box or a floated
+   *  resource (`resourceId`) still waiting for a slot when the layout
+   *  ended: it is on no page (the pages opened for it had no side column,
+   *  say). The build reports it instead of dropping it silently. It has a
+   *  source range and no page. Found by the layout. */
+  | { kind: 'unplaced'; resourceId?: string }
   /** `designTextTruncated` (#628): a design text element did not fit its
    *  width and lost part of a line: cut by an ellipsis (`mode`
    *  `'ellipsis-*'`, its `overflow`) or clipped with ink past its box
@@ -2741,6 +2800,15 @@ export type ContentWarning = ContentWarningBase & (
    *  warning). `sourceStart` / `sourceEnd` when the text mirrors a heading
    *  or a frontmatter field. Found by the layout. */
   | { kind: 'designTextTruncated'; slot: VDTDesignSlotKind; elementId: string; text: string; mode: 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip' }
+  /** A face the document's text was set in that the font set could not
+   *  give when the build ran (#629): no face of the family was loaded nor
+   *  installed (`missing`: the text was measured and drawn with a fallback
+   *  face), or the weight or slant came from another face of the family,
+   *  which the browser draws bolder or slanted (`synthesized`). Checked
+   *  where there is a font set (`document.fonts`, a worker's `self.fonts`,
+   *  `BuildDocumentOptions.fontSet`), behind
+   *  `debug.warnings.missingFont`. No page and no source range. */
+  | { kind: 'fontFallback'; family: string; weight: number; style: 'normal' | 'italic'; reason: 'missing' | 'synthesized' }
 );
 
 /** Where a design slot is painted: a running head (`'header'`), a folio
@@ -2776,8 +2844,38 @@ export interface MissingImageWarning {
   documentIndex?: number;
 }
 
-/** Warnings a renderer reports while painting. */
-export type RenderWarning = MissingImageWarning;
+/** `svgFontUnavailable` (#630): a family an SVG picture's text names had
+ *  no face to embed in it, so the image sets that text in a fallback
+ *  face. Reported by the hosts that inline fonts into SVGs
+ *  (`registerSvgImage`, `registerBundleImages`, `bundleImageUrl`,
+ *  `renderToHtml` with `inlineSvgFonts`, postext-epub). */
+export interface SvgFontUnavailableWarning {
+  kind: 'svgFontUnavailable';
+  fileId: string;
+  resourceId?: string;
+  family: string;
+  weight: number;
+  style: 'normal' | 'italic';
+}
+
+/** `svgFontsTooLarge` (#630): the faces an SVG picture's text names
+ *  together exceed the size cap (`maxBytes`, 2 MiB by default), so none
+ *  was embedded. */
+export interface SvgFontsTooLargeWarning {
+  kind: 'svgFontsTooLarge';
+  fileId: string;
+  resourceId?: string;
+  /** Font bytes the faces would have added. */
+  bytes: number;
+  maxBytes: number;
+}
+
+/** What inlining fonts into an SVG picture can report. */
+export type SvgPictureFontWarning = SvgFontUnavailableWarning | SvgFontsTooLargeWarning;
+
+/** Warnings a renderer reports while painting, or a host while it
+ *  prepares the pictures. */
+export type RenderWarning = MissingImageWarning | SvgPictureFontWarning;
 
 export interface VDTDocument {
   pages: VDTPage[];
@@ -2809,6 +2907,8 @@ export interface VDTDocument {
   configWarnings?: ConfigWarning[];
   config: ResolvedConfig;
   baselineGrid: number;
+  /** Column balancing on a character grid (#632); absent off the grid. */
+  gridBalancing?: VDTGridBalancing;
   /** Pixel offset from canvas edge to trim edge (0 when cutLines disabled) */
   trimOffset: number;
   converged: boolean;

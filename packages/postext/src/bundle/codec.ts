@@ -472,6 +472,7 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
       ...rest,
       file: path,
       ...(pdfFile ? { pdfFile } : {}),
+      ...(svg?.inlineFonts === false ? { inlineFonts: false as const } : {}),
       ...(width ? { width } : {}),
       ...(height ? { height } : {}),
       ...(bitmap?.resolution ? { resolution: bitmap.resolution } : {}),

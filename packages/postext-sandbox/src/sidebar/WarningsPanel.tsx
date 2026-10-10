@@ -37,6 +37,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'missingFont':
     case 'missingFontFamily':
     case 'missingFontVariant':
+    case 'fontFallback':
     case 'duplicateFontVariant':
       return Type;
     case 'looseLine':
@@ -50,6 +51,9 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'lineNumberOverlap':
     case 'dropCap':
     case 'codeOverflow':
+    case 'columnsTooNarrow':
+    case 'afterText':
+    case 'unplaced':
       return FileWarning;
     case 'headingHierarchy':
       return Heading;
@@ -72,6 +76,7 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'unclosedContainer':
     case 'unclosedCodeBlock':
     case 'unknownParagraphStyle':
+    case 'columnsFlowUnknown':
     case 'unknownCalloutType':
     case 'unknownChipStyle':
     case 'duplicateAnchor':
@@ -120,6 +125,8 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'videoWithoutUrl':
     case 'videoUrlInvalid':
     case 'missingImage':
+    case 'svgFontUnavailable':
+    case 'svgFontsTooLarge':
       return Image;
     case 'storageUnavailable':
       return Database;
@@ -168,6 +175,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsMissingFontFamilyTitle;
     case 'missingFontVariant':
       return labels.warningsMissingFontVariantTitle;
+    case 'fontFallback':
+      return labels.warningsFontFallbackTitle;
     case 'duplicateFontVariant':
       return labels.warningsDuplicateFontVariantTitle;
     case 'looseLine':
@@ -220,6 +229,8 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsUnknownParagraphStyleTitle;
     case 'unknownCalloutType':
       return labels.warningsUnknownCalloutTypeTitle;
+    case 'columnsFlowUnknown':
+      return labels.warningsColumnsFlowUnknownTitle;
     case 'unknownChipStyle':
       return labels.warningsUnknownChipStyleTitle;
     case 'duplicateAnchor':
@@ -305,6 +316,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsVideoUrlInvalidTitle;
     case 'missingImage':
       return labels.warningsMissingImageTitle;
+    case 'svgFontUnavailable':
+      return labels.warningsSvgFontUnavailableTitle;
+    case 'svgFontsTooLarge':
+      return labels.warningsSvgFontsTooLargeTitle;
     case 'storageUnavailable':
       return labels.warningsStorageUnavailableTitle;
     case 'chapterFrontmatterIgnored':
@@ -327,6 +342,12 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsDropCapTitle;
     case 'codeOverflow':
       return labels.warningsCodeOverflowTitle;
+    case 'columnsTooNarrow':
+      return labels.warningsColumnsTooNarrowTitle;
+    case 'afterText':
+      return labels.warningsAfterTextTitle;
+    case 'unplaced':
+      return labels.warningsUnplacedTitle;
     case 'unknownConfigKey':
       return labels.warningsUnknownConfigKeyTitle;
     case 'unknownConfigValue':
@@ -405,6 +426,9 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `"${payload.family}" — ${labels.warningsMissingFontFamilyDetail}`;
     case 'missingFontVariant':
       return `"${payload.family}" [${formatVariantList(payload.variants)}] — ${labels.warningsMissingFontVariantDetail}`;
+    case 'fontFallback':
+      return (payload.reason === 'missing' ? labels.warningsFontFallbackMissingDetail : labels.warningsFontFallbackSynthesizedDetail)
+        .replace('__face__', `"${payload.family}" ${formatVariantList([payload])}`);
     case 'duplicateFontVariant': {
       const slots = payload.variants
         .map((v) => `${v.weight}${v.style === 'italic' ? ' italic' : ''} ×${v.count}`)
@@ -473,6 +497,8 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `:::paragraphs{style="${payload.style}"} — ${labels.warningsUnknownParagraphStyleDetail}`;
     case 'unknownCalloutType':
       return `:::callout{type="${payload.type}"} — ${labels.warningsUnknownCalloutTypeDetail}`;
+    case 'columnsFlowUnknown':
+      return `:::columns{flow="${payload.value}"} — ${labels.warningsColumnsFlowUnknownDetail}`;
     case 'unknownChipStyle':
       return `${inResource(payload.inResource)}:chip[…]{style="${payload.style}"} — ${labels.warningsUnknownChipStyleDetail}`;
     case 'duplicateAnchor':
@@ -585,6 +611,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return `#${payload.resourceId} · ${payload.url || '""'} — ${labels.warningsVideoUrlInvalidDetail}`;
     case 'missingImage':
       return `#${payload.resourceId} — ${labels.warningsMissingImageDetail}`;
+    case 'svgFontUnavailable':
+      return `#${payload.resourceId} — ${labels.warningsSvgFontUnavailableDetail.replace('__face__', `${payload.family} ${payload.weight}${payload.style === 'italic' ? ' italic' : ''}`)}`;
+    case 'svgFontsTooLarge':
+      return `#${payload.resourceId} — ${labels.warningsSvgFontsTooLargeDetail.replace('__size__', String(Math.round(payload.bytes / 1024)))}`;
     case 'storageUnavailable':
       return labels.warningsStorageUnavailableDetail;
     case 'chapterFrontmatterIgnored':
@@ -608,6 +638,12 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
     }
     case 'lineNumberOverlap':
       return labels.warningsLineNumberOverlapDetail.replace('__number__', payload.number);
+    case 'columnsTooNarrow':
+      return labels.warningsColumnsTooNarrowDetail.replace('__columns__', String(payload.columns));
+    case 'afterText':
+      return `${payload.resourceId !== undefined ? `#${payload.resourceId} — ` : ''}${labels.warningsAfterTextDetail.replace('__page__', String(payload.page))}`;
+    case 'unplaced':
+      return `${payload.resourceId !== undefined ? `#${payload.resourceId} — ` : ''}${labels.warningsUnplacedDetail}`;
     case 'codeOverflow': {
       const detail = payload.mode === 'wrap' ? labels.warningsCodeOverflowWrap
         : payload.mode === 'clip' ? labels.warningsCodeOverflowClip
@@ -687,6 +723,7 @@ function isFontWarning(kind: WarningPayload['kind']): boolean {
     kind === 'missingFont' ||
     kind === 'missingFontFamily' ||
     kind === 'missingFontVariant' ||
+    kind === 'fontFallback' ||
     kind === 'duplicateFontVariant' ||
     kind === 'missingGlyph' ||
     kind === 'variableFontDefaultInstance' ||

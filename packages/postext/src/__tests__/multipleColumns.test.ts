@@ -164,3 +164,226 @@ describe('a closing page cut level keeps its floats (#505)', () => {
     expect(floatOf(doc, 'v')!.page.index).toBe(0);
   });
 });
+
+describe('floats under a page-span opener (#639)', () => {
+  const W = (740 - 3 * 12) / 4;
+  const X = (i: number) => 30 + i * (W + 12);
+  const LINE = 11;
+  const headings = (span: 'page' | 'column', extra: Partial<PostextConfig> = {}): Partial<PostextConfig> => ({
+    headings: { levels: [{ level: 1, span, breakBefore: { enabled: false } }] },
+    calloutStyles: [{ id: 'note' }],
+    ...extra,
+  });
+  const box = (attrs = '', text = 'Box text.') => `:::callout{type="note" placement="top"${attrs}}\n${text}\n:::`;
+  const frameOf = (doc: VDTDocument) => (doc.pages[0]!.floats ?? []).find((b) => b.type === 'callout')!;
+  const opener = (doc: VDTDocument) => doc.pages[0]!.columns[0]!.blocks[0]!;
+  /** The y the first block after the opener starts at in column `i` (the
+   *  first block of any other column). */
+  const textTop = (doc: VDTDocument, i: number): number => textColumns(doc.pages[0]!)[i]!.blocks[i === 0 ? 1 : 0]!.bbox.y;
+  /** The grid-rounded band a top float `height` px tall takes. */
+  const band = (height: number): number => Math.ceil((height + LINE - 0.01) / LINE) * LINE;
+
+  it('a box across two columns heads columns 1 and 2 under the opener', () => {
+    const doc = build(`# Opener\n\n${box(' columns="2"')}\n\n${BODY}\n\n${BODY}`, config(4, headings('page')));
+    const frame = frameOf(doc);
+    const head = textColumns(doc.pages[0]!)[2]!.bbox.y;
+    expect(frame.bbox.x).toBeCloseTo(X(0), 3);
+    expect(frame.bbox.width).toBeCloseTo(2 * W + 12, 3);
+    // Under the opener's band, level with the heads of the other columns.
+    expect(frame.bbox.y).toBeGreaterThanOrEqual(opener(doc).bbox.y + opener(doc).bbox.height - 0.01);
+    expect(frame.bbox.y).toBeCloseTo(head, 3);
+    // The text of both columns starts under the box, on the same line.
+    expect(textTop(doc, 0)).toBeCloseTo(frame.bbox.y + band(frame.bbox.height), 3);
+    expect(textTop(doc, 1)).toBeCloseTo(textTop(doc, 0), 3);
+    expect(textTop(doc, 2)).toBeCloseTo(head, 3);
+    // The opener's column keeps its box (the opener stands in it) and
+    // records where the float's band ends; column 2 starts there.
+    const cols = textColumns(doc.pages[0]!);
+    expect(cols[0]!.bbox.y).toBeCloseTo(opener(doc).bbox.y, 3);
+    expect(cols[0]!.headFloatFoot).toBeCloseTo(textTop(doc, 0), 3);
+    expect(cols[1]!.bbox.y).toBeCloseTo(cols[0]!.headFloatFoot!, 3);
+    expect(cols[1]!.headFloatFoot).toBeUndefined();
+  });
+
+  it('the column rule never runs through a float under the opener', () => {
+    const box2 = build(`# Opener\n\n${box(' columns="2"')}\n\n${BODY}\n\n${BODY}`, config(4, headings('page')));
+    const frame = frameOf(box2);
+    const rules = columnRuleSegments(box2.pages[0]!.columns);
+    // Gutter 1|2 starts under the box; gutter 2|3 runs beside it from the
+    // band's head, where column 3 starts; gutter 3|4 too.
+    expect(rules).toHaveLength(3);
+    expect(rules[0]!.top).toBeCloseTo(frame.bbox.y + band(frame.bbox.height), 3);
+    expect(rules[1]!.top).toBeCloseTo(frame.bbox.y, 3);
+    expect(rules[1]!.x).toBeGreaterThan(frame.bbox.x + frame.bbox.width);
+    expect(rules[2]!.top).toBeCloseTo(frame.bbox.y, 3);
+
+    // A one-column box: the rule beside it runs the length of column 2,
+    // right of the box.
+    const box1 = build(`# Opener\n\n${box()}\n\n${BODY}\n\n${BODY}`, config(4, headings('page')));
+    const one = frameOf(box1);
+    const beside = columnRuleSegments(box1.pages[0]!.columns)[0]!;
+    expect(beside.top).toBeCloseTo(one.bbox.y, 3);
+    expect(beside.x).toBeGreaterThan(one.bbox.x + one.bbox.width);
+  });
+
+  it('a figure across two columns embedded after the opener does too', () => {
+    const doc = build(`# Opener\n\n::resource{id="a"}\n\n${BODY}\n\n${BODY}`, config(4, headings('page')), [picture('a', { position: 'top', columns: 2 })]);
+    const { page, f } = floatOf(doc, 'a')!;
+    expect(page.index).toBe(0);
+    expect(f.bbox.x).toBeCloseTo(X(0), 3);
+    expect(f.bbox.width).toBeCloseTo(2 * W + 12, 3);
+    expect(f.bbox.y).toBeCloseTo(textColumns(page)[2]!.bbox.y, 3);
+    expect(textTop(doc, 0)).toBeCloseTo(f.bbox.y + band(f.bbox.height), 3);
+    expect(textTop(doc, 1)).toBeCloseTo(textTop(doc, 0), 3);
+  });
+
+  it('a one-column box heads column 1, and a second one stacks under it', () => {
+    const one = build(`# Opener\n\n${box()}\n\n${BODY}\n\n${BODY}`, config(4, headings('page')));
+    const frame = frameOf(one);
+    expect(frame.bbox.x).toBeCloseTo(X(0), 3);
+    expect(frame.bbox.width).toBeCloseTo(W, 3);
+    expect(frame.bbox.y).toBeCloseTo(textColumns(one.pages[0]!)[1]!.bbox.y, 3);
+    expect(textTop(one, 0)).toBeCloseTo(frame.bbox.y + band(frame.bbox.height), 3);
+    // Column 2 starts at its head, as before.
+    expect(textTop(one, 1)).toBeCloseTo(frame.bbox.y, 3);
+
+    const two = build(`# Opener\n\n${box()}\n\n${box('', 'Second box.')}\n\n${BODY}\n\n${BODY}`, config(4, headings('page')));
+    const frames = two.pages[0]!.floats!.filter((b) => b.type === 'callout');
+    expect(frames.map((b) => Math.round(b.bbox.x))).toEqual([Math.round(X(0)), Math.round(X(0))]);
+    expect(frames[1]!.bbox.y).toBeCloseTo(frames[0]!.bbox.y + band(frames[0]!.bbox.height), 3);
+    expect(textTop(two, 0)).toBeCloseTo(frames[1]!.bbox.y + band(frames[1]!.bbox.height), 3);
+  });
+
+  it('a heading right under the float starts there, with no space above it', () => {
+    const cfg = config(4, { headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: false } }, { level: 2, marginTop: pt(22) }] }, calloutStyles: [{ id: 'note' }] });
+    const doc = build(`# Opener\n\n${box()}\n\n## Sub\n\n${BODY}\n\n${BODY}`, cfg);
+    const frame = frameOf(doc);
+    expect(textTop(doc, 0)).toBeCloseTo(frame.bbox.y + band(frame.bbox.height), 3);
+  });
+
+  it('a heading with no room left under the float moves on alone: the opener stays', () => {
+    // The box takes all but a line or two of column 1: the heading and
+    // the lines kept with it open column 2, and the opener is not taken
+    // along as a heading stranded at a column's foot would be.
+    const tall = Array.from({ length: 78 }, (_, i) => `Line ${i + 1}.`).join('\n\n');
+    const cfg = config(4, { headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: false } }] }, calloutStyles: [{ id: 'note', padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) } }] });
+    const doc = build(`# Opener\n\n${box('', tall)}\n\n## Sub\n\n${BODY}\n\n${BODY}`, cfg);
+    const cols = textColumns(doc.pages[0]!);
+    const frame = frameOf(doc);
+    expect(doc.pages[0]!.columns[0]!.blocks[0]).toBe(opener(doc));
+    expect(opener(doc).headingLevel).toBe(1);
+    expect(frame.bbox.x).toBeCloseTo(X(0), 3);
+    expect(cols[0]!.bbox.y + cols[0]!.bbox.height - (frame.bbox.y + frame.bbox.height)).toBeLessThan(5 * LINE);
+    // Nothing fits under the box; `## Sub` heads column 2.
+    expect(cols[0]!.blocks).toHaveLength(1);
+    expect(cols[1]!.blocks[0]!.type).toBe('heading');
+    expect(cols[1]!.blocks[0]!.headingLevel).toBe(2);
+    expect(doc.blocks.filter((b) => b.type === 'heading' && b.headingLevel === 1)).toHaveLength(1);
+  });
+
+  it('a closing page cut level keeps the float under its opener', () => {
+    // The level cut of the closing band goes no higher than the float's
+    // band, as for a float heading an empty column: cut higher, the capped
+    // pass would send the box to a page of its own.
+    const tall = Array.from({ length: 40 }, (_, i) => `Line ${i + 1}.`).join('\n\n');
+    const cfg = config(4, { headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: false } }] }, calloutStyles: [{ id: 'note', padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) } }] });
+    const doc = build(`# Opener\n\n${box('', tall)}\n\n${BODY}`, cfg);
+    expect(doc.pages).toHaveLength(1);
+    const frame = frameOf(doc);
+    expect(frame.bbox.x).toBeCloseTo(X(0), 3);
+    const cols = textColumns(doc.pages[0]!);
+    // The band is cut level at or under the float's band.
+    expect(cols.every((c) => c.trailingCap)).toBe(true);
+    const cut = cols[1]!.bbox.y + cols[1]!.bbox.height;
+    expect(cut).toBeGreaterThanOrEqual(cols[0]!.headFloatFoot! - 0.01);
+    for (const c of cols.slice(1)) expect(c.bbox.y + c.bbox.height).toBeCloseTo(cut, 3);
+  });
+
+  it('an opener set mid-page offers the head of its own column too', () => {
+    const cfg = config(4, {
+      headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: false } }, { level: 2, span: 'page', spanBreak: false }] },
+      calloutStyles: [{ id: 'note' }],
+    });
+    const doc = build(`# Opener\n\n${BODY}\n\n## Mid\n\n${box(' columns="2"')}\n\n${BODY}`, cfg);
+    const mid = doc.blocks.find((b) => b.type === 'heading' && b.headingLevel === 2)!;
+    const frame = frameOf(doc);
+    expect(mid.pageIndex).toBe(0);
+    expect(mid.bbox.y).toBeGreaterThan(opener(doc).bbox.y + 100);
+    expect(frame.bbox.x).toBeCloseTo(X(0), 3);
+    expect(frame.bbox.y).toBeGreaterThanOrEqual(mid.bbox.y + mid.bbox.height - 0.01);
+    const cols = doc.pages[0]!.columns.filter((c) => (c.band ?? 0) === (doc.pages[0]!.columns[mid.columnIndex]!.band ?? 0));
+    expect(frame.bbox.y).toBeCloseTo(cols[2]!.bbox.y, 3);
+  });
+
+  it('text wraps round a narrow box under the opener as at any column head', () => {
+    const two: PostextConfig = { ...config(4, headings('page')), layout: { layoutType: 'double' } };
+    const doc = build(`# Opener\n\n${box(' wrap="left" width="0.4"', 'Wrapped box of a few words here that takes some lines.')}\n\n${BODY}\n\n${BODY}`, two);
+    const frame = frameOf(doc);
+    const col = doc.pages[0]!.columns[0]!;
+    expect(frame.bbox.x).toBeCloseTo(col.bbox.x, 3);
+    expect(doc.contentWarnings ?? []).toEqual([]);
+    // The paragraph starts level with the box and its first lines run
+    // beside it; the lines under it take the whole measure.
+    const para = col.blocks[1]!;
+    expect(para.bbox.y).toBeCloseTo(frame.bbox.y, 3);
+    expect(para.lines[0]!.bbox.x).toBeGreaterThan(frame.bbox.x + frame.bbox.width - para.bbox.x - 0.01);
+    expect(para.lines[0]!.bbox.width).toBeLessThan(col.bbox.width - frame.bbox.width);
+    expect(para.lines[para.lines.length - 2]!.bbox.width).toBeGreaterThan(col.bbox.width - 40);
+  });
+
+  it('a float cited in the text still follows its citing line', () => {
+    // The paragraph that cites it is set first (a float never stands above
+    // the line that cites it), so column 1 has no head left.
+    const doc = build(`# Opener\n\nSee :ref{id="a"}. ${BODY}\n\n${BODY}`, config(4, headings('page')), [picture('a', { position: 'top', columns: 2 })]);
+    expect(floatOf(doc, 'a')!.f.bbox.x).toBeGreaterThan(X(1) - 0.5);
+    expect(textTop(doc, 0)).toBeCloseTo(textColumns(doc.pages[0]!)[1]!.bbox.y, 3);
+  });
+
+  it("a span: 'column' heading keeps its column: the float lands from column 2, as before", () => {
+    for (const markdown of [
+      `# Opener\n\n${box(' columns="2"')}\n\n${BODY}\n\n${BODY}`,
+      `# Opener\n\n${box()}\n\n${BODY}\n\n${BODY}`,
+    ]) {
+      const now = build(markdown, config(4, headings('column')));
+      const off = build(markdown, config(4, headings('column', { layout: { layoutType: 'multiple', columnCount: 4, gutterWidth: pt(12), columnRule: { enabled: true }, floatsUnderOpener: false } })));
+      expect(frameOf(now).bbox.x).toBeCloseTo(X(1), 3);
+      expect(frameOf(now).bbox.y).toBeCloseTo(30, 3);
+      expect(JSON.stringify(now.pages) === JSON.stringify(off.pages)).toBe(true);
+    }
+    const fig = build(`# Opener\n\n::resource{id="a"}\n\n${BODY}\n\n${BODY}`, config(4, headings('column')), [picture('a', { position: 'top', columns: 2 })]);
+    expect(floatOf(fig, 'a')!.f.bbox.x).toBeCloseTo(X(1), 3);
+  });
+
+  it('a single text column under its opener is unchanged', () => {
+    const markdown = `# Opener\n\n${box()}\n\n${BODY}\n\n${BODY}\n\n${BODY}`;
+    // (A side column that only takes floats is no text column.)
+    for (const layout of [{ layoutType: 'single' }, { layoutType: 'oneAndHalf', sideColumnRole: 'floats' }] as const) {
+      const now = build(markdown, { ...config(4, headings('page')), layout });
+      const off = build(markdown, { ...config(4, headings('page')), layout: { ...layout, floatsUnderOpener: false } });
+      expect(JSON.stringify(now.pages) === JSON.stringify(off.pages)).toBe(true);
+      expect(frameOf(now)).toBeUndefined();
+    }
+  });
+
+  it('layout.floatsUnderOpener: false keeps the slots of postext 1.24', () => {
+    const off = (span: 'page' | 'column') => config(4, headings(span, { layout: { layoutType: 'multiple', columnCount: 4, gutterWidth: pt(12), columnRule: { enabled: true }, floatsUnderOpener: false } }));
+    const two = build(`# Opener\n\n${box(' columns="2"')}\n\n${BODY}\n\n${BODY}`, off('page'));
+    expect(frameOf(two).bbox.x).toBeCloseTo(X(1), 3);
+    expect(textTop(two, 0)).toBeCloseTo(textColumns(two.pages[0]!)[3]!.bbox.y, 3);
+    const one = build(`# Opener\n\n${box()}\n\n${BODY}\n\n${BODY}`, off('page'));
+    expect(frameOf(one).bbox.x).toBeCloseTo(X(1), 3);
+    const fig = build(`# Opener\n\n::resource{id="a"}\n\n${BODY}\n\n${BODY}`, off('page'), [picture('a', { position: 'top', columns: 2 })]);
+    expect(floatOf(fig, 'a')!.f.bbox.x).toBeCloseTo(X(1), 3);
+  });
+
+  it('does the same in vertical text', () => {
+    const cfg: PostextConfig = { ...config(4, headings('page')), layout: { layoutType: 'multiple', columnCount: 4, gutterWidth: pt(12), writingMode: 'vertical-rl' } };
+    const doc = build(`# Opener\n\n${box(' columns="2"')}\n\n${BODY}\n\n${BODY}`, cfg);
+    const frame = frameOf(doc);
+    const cols = textColumns(doc.pages[0]!);
+    expect(frame.bbox.x).toBeCloseTo(cols[0]!.bbox.x, 3);
+    expect(frame.bbox.width).toBeCloseTo(cols[1]!.bbox.x + cols[1]!.bbox.width - cols[0]!.bbox.x, 3);
+    expect(frame.bbox.y).toBeCloseTo(cols[2]!.bbox.y, 3);
+    expect(textTop(doc, 0)).toBeCloseTo(cols[1]!.bbox.y, 3);
+  });
+});

@@ -33,7 +33,8 @@ import { dimensionsEqual } from './shared';
 
 /** `cjk` as written when nothing is set: everything follows the locale
  *  (marks hang in Japan only), lines break between characters (no
- *  `keep-all`), a quarter em between Han and Latin, no grid; readings, warichu notes and kanbun marks at half the text size
+ *  `keep-all`) but leave two characters of a book title on either side,
+ *  circled numbers and design text set as CJK (#637), a quarter em between Han and Latin, no grid; readings, warichu notes and kanbun marks at half the text size
  *  (the 返り点 after their character, JIS X 4051 §5.5), warichu brackets
  *  by region (none but in Japan, `defaultCjkWarichuBrackets`), marks in
  *  the text colour (`annotationColor` unset). */
@@ -47,6 +48,9 @@ export const DEFAULT_CJK_CONFIG: Required<Omit<CjkConfig, 'annotationColor'>> & 
   spaceAfterQuestion: 'auto',
   paragraphStartBracket: 'auto',
   wordBreak: 'normal',
+  titleMinChars: 2,
+  circledNumbers: 'cjk',
+  composeDesignText: true,
   latinSpacing: { value: 0.25, unit: 'em' },
   uprightDigits: 2,
   grid: { enabled: false, show: false },
@@ -295,6 +299,9 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
   const latinSpacing = isLength(partial?.latinSpacing) && partial.latinSpacing.value >= 0
     ? { value: partial.latinSpacing.value, unit: partial.latinSpacing.unit }
     : { ...DEFAULT_CJK_CONFIG.latinSpacing };
+  // At least one character a side; a fraction counts down.
+  const titleRaw = typeof partial?.titleMinChars === 'string' ? Number(partial.titleMinChars) : partial?.titleMinChars;
+  const titleMinChars = typeof titleRaw === 'number' && Number.isFinite(titleRaw) && titleRaw >= 1 ? Math.floor(titleRaw) : DEFAULT_CJK_CONFIG.titleMinChars;
   const digits = typeof partial?.uprightDigits === 'string' ? Number(partial.uprightDigits) : partial?.uprightDigits;
   const uprightDigits = digits === 0 || digits === 2 || digits === 3 || digits === 4 ? digits : DEFAULT_CJK_CONFIG.uprightDigits;
   return {
@@ -309,6 +316,9 @@ export function resolveCjkConfig(partial: CjkConfig | undefined, locale: string 
     ...(spaceAfterQuestion ? { spaceAfterQuestion: true as const } : {}),
     ...(paragraphStartBracket ? { paragraphStartBracket } : {}),
     ...(wordBreak === 'keep-all' ? { wordBreak } : {}),
+    titleMinChars,
+    ...(partial?.circledNumbers === 'western' ? { circledNumbers: 'western' as const } : {}),
+    ...(partial?.composeDesignText === false ? { composeDesignText: false as const } : {}),
     latinSpacing,
     uprightDigits,
     grid: resolveGrid(partial?.grid),
@@ -410,6 +420,9 @@ export function stripCjkDefaults(cjk?: CjkConfig): CjkConfig | undefined {
   if (cjk.spaceAfterQuestion !== undefined && cjk.spaceAfterQuestion !== d.spaceAfterQuestion) result.spaceAfterQuestion = cjk.spaceAfterQuestion;
   if (cjk.paragraphStartBracket !== undefined && cjk.paragraphStartBracket !== d.paragraphStartBracket) result.paragraphStartBracket = cjk.paragraphStartBracket;
   if (cjk.wordBreak !== undefined && cjk.wordBreak !== d.wordBreak) result.wordBreak = cjk.wordBreak;
+  if (cjk.titleMinChars !== undefined && cjk.titleMinChars !== d.titleMinChars) result.titleMinChars = cjk.titleMinChars;
+  if (cjk.circledNumbers !== undefined && cjk.circledNumbers !== d.circledNumbers) result.circledNumbers = cjk.circledNumbers;
+  if (cjk.composeDesignText !== undefined && cjk.composeDesignText !== d.composeDesignText) result.composeDesignText = cjk.composeDesignText;
   if (cjk.latinSpacing !== undefined && !dimensionsEqual(cjk.latinSpacing, d.latinSpacing)) result.latinSpacing = cjk.latinSpacing;
   if (cjk.uprightDigits !== undefined && cjk.uprightDigits !== d.uprightDigits) result.uprightDigits = cjk.uprightDigits;
   const grid = stripGridDefaults(cjk.grid);

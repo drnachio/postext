@@ -1,7 +1,7 @@
 // Fonts, pictures and identity shared by both renditions.
 
-import { applySingleInkToSvg, isHlsMimeType, resolveColorValue, type VDTDocument } from 'postext';
-import type { EpubFontFile, EpubItem, EpubMetadata, EpubResourceBytes, EpubWarning } from '../types';
+import { applySingleInkToSvg, chainSvgFontProviders, inlineSvgFontsDetailed, isHlsMimeType, parseUnicodeRange, resolveColorValue, type SvgFontProvider, type VDTDocument } from 'postext';
+import type { EpubFontFile, EpubItem, EpubMetadata, EpubResourceBytes, EpubSvgFontOptions, EpubWarning } from '../types';
 import { FONT_MEDIA_TYPES, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, sniffFontFormat, sniffImageType, sniffVideoType } from './media';
 import { uuidV5 } from './uuid';
 
@@ -55,6 +55,8 @@ export function fontAssets(fonts: readonly EpubFontFile[]): FontAssets {
   const names = new Set<string>();
   const seen = new Set<string>();
   for (const font of fonts) {
+    // A face the book may not hand on stays out of the package.
+    if (font.redistributable === false) continue;
     // The bytes decide the format: a host that names a TrueType file
     // `woff2` would otherwise get an item EPUBCheck rejects.
     const format = sniffFontFormat(font.bytes) ?? font.format;
@@ -179,21 +181,127 @@ export function singleInkOf(doc: VDTDocument | undefined): string | null {
   return ds?.singleInk ? resolveColorValue(ds.inkColor, doc!.config.colorPalette, ds.inkColor).hex : null;
 }
 
+function weightRange(weight: number | string): [number, number] {
+  const [lo, hi] = String(weight).trim().split(/\s+/).map(Number);
+  const a = Number.isFinite(lo) ? lo! : 400;
+  const b = hi !== undefined && Number.isFinite(hi) ? hi : a;
+  return [Math.min(a, b), Math.max(a, b)];
+}
+
+/** The book's fonts as an SVG font provider (#630): the cut nearest to the
+ *  weight asked for, the same style first, and of a family served as
+ *  unicode-range slices the files that hold the characters. Faces marked
+ *  not redistributable are never answered. */
+export function epubFontProvider(fonts: readonly EpubFontFile[]): SvgFontProvider {
+  return async (family, weight, style, request) => {
+    const lower = family.toLowerCase();
+    const faces = fonts.filter((f) => f.family.toLowerCase() === lower && f.redistributable !== false && f.bytes.length > 0);
+    if (faces.length === 0) throw new Error(`No face for "${family}"`);
+    const sameStyle = faces.filter((f) => f.style === style);
+    const pool = sameStyle.length > 0 ? sameStyle : faces;
+    const dist = (f: EpubFontFile) => {
+      const [lo, hi] = weightRange(f.weight);
+      return weight < lo ? lo - weight : weight > hi ? weight - hi : 0;
+    };
+    const best = Math.min(...pool.map(dist));
+    const cut = pool.filter((f) => dist(f) === best);
+    const w0 = String(cut[0]!.weight);
+    const codePoints = request?.codePoints;
+    const files = cut.filter((f) => {
+      if (String(f.weight) !== w0) return false;
+      const ranges = parseUnicodeRange(f.unicodeRange);
+      if (!ranges || !codePoints || codePoints.size === 0) return true;
+      for (const cp of codePoints) {
+        if (cp <= 0x20) continue;
+        for (const [lo, hi] of ranges) if (cp >= lo && cp <= hi) return true;
+      }
+      return false;
+    });
+    if (files.length === 0) throw new Error(`No file of "${family}" holds the text`);
+    return files.length === 1 ? files[0]!.bytes : files.map((f) => f.bytes);
+  };
+}
+
+/** The SVG pictures that keep their markup as given: none under
+ *  `diagramStyle.inlineFonts: false` (then `null`), else those of a
+ *  resource with `svg.inlineFonts: false`. */
+function svgKeepMarkup(docs: readonly VDTDocument[]): Set<string> | null {
+  if (docs[0]?.config?.diagramStyle?.inlineFonts === false) return null;
+  const keep = new Set<string>();
+  for (const doc of docs) {
+    for (const page of doc.pages) {
+      for (const b of [...page.columns.flatMap((c) => c.blocks), ...(page.floats ?? [])]) {
+        const svg = b.resourceBlock?.resource?.svg;
+        if (svg?.inlineFonts === false && svg.fileId) keep.add(svg.fileId);
+      }
+    }
+  }
+  return keep;
+}
+
+/** How a writer prepares SVG pictures: recolour, then inline the book's
+ *  fonts. Built once per book. */
+export interface SvgAssetPreparer {
+  (fileId: string, svgText: string): Promise<string>;
+}
+
+/** The SVG preparer of a book (#630): single ink (`diagramStyle.singleInk`)
+ *  first, then the faces the text names from `fonts` and
+ *  `svgFonts.provider`, families marked not redistributable left out and
+ *  reported once each as `fontWithheld`. */
+export function svgAssetPreparer(
+  docs: readonly VDTDocument[],
+  fonts: readonly EpubFontFile[] | undefined,
+  svgFonts: EpubSvgFontOptions | undefined,
+  onWarning?: (warning: EpubWarning) => void,
+): SvgAssetPreparer {
+  const ink = singleInkOf(docs[0]);
+  const keep = svgFonts?.inline === false ? null : svgKeepMarkup(docs);
+  const list = fonts ?? [];
+  const provider = chainSvgFontProviders(epubFontProvider(list), svgFonts?.provider);
+  const notRedistributable = new Set<string>();
+  const redistributable = new Set<string>();
+  for (const f of list) (f.redistributable === false ? notRedistributable : redistributable).add(f.family.toLowerCase());
+  const withhold = (family: string): boolean => {
+    const lower = family.toLowerCase();
+    return (notRedistributable.has(lower) && !redistributable.has(lower)) || !!svgFonts?.withhold?.(family);
+  };
+  const toldWithheld = new Set<string>();
+  return async (fileId, svgText) => {
+    let svg = ink ? applySingleInkToSvg(svgText, ink) : svgText;
+    if (!keep || keep.has(fileId)) return svg;
+    svg = (await inlineSvgFontsDetailed(svg, provider, {
+      withhold,
+      ...(svgFonts?.maxBytes !== undefined ? { maxBytes: svgFonts.maxBytes } : {}),
+      onWithheld: (family) => {
+        if (toldWithheld.has(family.toLowerCase())) return;
+        toldWithheld.add(family.toLowerCase());
+        onWarning?.({ kind: 'fontWithheld', family, fileId });
+      },
+      onWarning: (w) => onWarning?.(w.kind === 'svgFontUnavailable'
+        ? { kind: 'svgFontUnavailable', fileId, family: w.family, weight: w.weight, style: w.style }
+        : { kind: 'svgFontsTooLarge', fileId, bytes: w.bytes, maxBytes: w.maxBytes }),
+    })).svg;
+    return svg;
+  };
+}
+
 /** The pictures' files. Single-ink diagrams (`diagramStyle.singleInk`) are
  *  recoloured once here, as the PDF recolours their markup, rather than
  *  tinted by a CSS filter readers may not apply: the host hands over the
- *  SVG source. */
+ *  SVG source. SVGs then get the book's fonts their text names (#630). */
 export async function imageAssets(
   docs: readonly VDTDocument[],
   resourceBytes: EpubResourceBytes | undefined,
   onWarning?: (warning: EpubWarning) => void,
+  fonts?: { fonts?: readonly EpubFontFile[]; svgFonts?: EpubSvgFontOptions },
 ): Promise<ImageAssets> {
   const fileIds = [...new Set(docs.flatMap(placedFileIds))];
   const fetched = await Promise.all(fileIds.map(async (fileId) => ({ fileId, payload: await resourceBytes?.(fileId) })));
   const items: EpubItem[] = [];
   const hrefs = new Map<string, string>();
   const names = new Set<string>();
-  const ink = singleInkOf(docs[0]);
+  const prepare = svgAssetPreparer(docs, fonts?.fonts, fonts?.svgFonts, onWarning);
   for (const { fileId, payload } of fetched) {
     const mediaType = payload && payload.bytes.length > 0
       ? sniffImageType(payload.bytes) ?? (payload.mediaType in IMAGE_EXTENSIONS ? payload.mediaType : undefined)
@@ -205,9 +313,13 @@ export async function imageAssets(
     const ext = IMAGE_EXTENSIONS[mediaType]!;
     const name = unique(slug(fileId.replace(/\.[a-z0-9]+$/i, '')), names);
     const href = `images/${name}.${ext}`;
-    const data = mediaType === 'image/svg+xml' && ink
-      ? applySingleInkToSvg(new TextDecoder().decode(payload.bytes), ink)
-      : payload.bytes;
+    let data: Uint8Array | string = payload.bytes;
+    if (mediaType === 'image/svg+xml') {
+      // Bytes as given when nothing changed (a BOM and all).
+      const text = new TextDecoder().decode(payload.bytes);
+      const prepared = await prepare(fileId, text);
+      if (prepared !== text) data = prepared;
+    }
     items.push({ id: `img-${name}`, href, mediaType, data });
     hrefs.set(fileId, href);
   }

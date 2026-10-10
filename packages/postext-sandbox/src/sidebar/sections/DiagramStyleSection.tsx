@@ -8,7 +8,8 @@ import { CollapsibleSection, ColorPicker, ToggleSwitch } from '../../controls';
 
 /** Config-panel section for SVG diagram reproduction: the single-ink toggle
  *  plus the ink colour, which defaults to the palette's main colour so
- *  single-ink printing works out of the box. */
+ *  single-ink printing works out of the box, and whether SVG text gets the
+ *  book's fonts embedded (#630). */
 export const DiagramStyleSection = memo(function DiagramStyleSection() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
@@ -62,6 +63,15 @@ export const DiagramStyleSection = memo(function DiagramStyleSection() {
           fieldId="diagramStyle-inkColor"
         />
       )}
+      {/* SVG text in the book's fonts (#630). */}
+      <ToggleSwitch
+        label={labels.diagramInlineFonts}
+        checked={ds.inlineFonts}
+        onChange={(v) => update({ inlineFonts: v })}
+        tooltip={labels.diagramInlineFontsTooltip}
+        isDefault={unset('inlineFonts')}
+        onReset={() => resetField('inlineFonts')}
+      />
     </CollapsibleSection>
   );
 });

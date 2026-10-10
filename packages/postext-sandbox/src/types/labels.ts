@@ -95,6 +95,8 @@ export interface SandboxLabels {
   epubWarningMissingFace: string;
   epubWarningFontWithheld: string;
   epubWarningUnsupported: string;
+  epubWarningSvgFontUnavailable: string;
+  epubWarningSvgFontsTooLarge: string;
   epubPageFrame: string;
   epubChapterFrame: string;
 
@@ -216,6 +218,10 @@ export interface SandboxLabels {
   warningsThresholdLabel: string;
   warningsMissingFontTitle: string;
   warningsMissingFontDetail: string;
+  warningsFontFallbackTitle: string;
+  /** `__face__`: the family, weight and slant (`"Garamond" 700 italic`). */
+  warningsFontFallbackMissingDetail: string;
+  warningsFontFallbackSynthesizedDetail: string;
   warningsLooseLineTitle: string;
   warningsCjkLooseLineTitle: string;
   warningsCjkLooseLineDetail: string;
@@ -282,6 +288,8 @@ export interface SandboxLabels {
   warningsUnknownParagraphStyleDetail: string;
   warningsUnknownCalloutTypeTitle: string;
   warningsUnknownCalloutTypeDetail: string;
+  warningsColumnsFlowUnknownTitle: string;
+  warningsColumnsFlowUnknownDetail: string;
   warningsUnknownChipStyleTitle: string;
   warningsUnknownChipStyleDetail: string;
   warningsDuplicateAnchorTitle: string;
@@ -336,6 +344,10 @@ export interface SandboxLabels {
   warningsRaggedTableGridMissingDetail: string;
   warningsMissingImageTitle: string;
   warningsMissingImageDetail: string;
+  warningsSvgFontUnavailableTitle: string;
+  warningsSvgFontUnavailableDetail: string;
+  warningsSvgFontsTooLargeTitle: string;
+  warningsSvgFontsTooLargeDetail: string;
   warningsMissingGlyphTitle: string;
   warningsMissingGlyphDetail: string;
   warningsVariableFontTitle: string;
@@ -682,6 +694,14 @@ export interface SandboxLabels {
   cjkWordBreakTooltip: string;
   cjkWordBreakNormal: string;
   cjkWordBreakKeepAll: string;
+  cjkTitleMinChars: string;
+  cjkTitleMinCharsTooltip: string;
+  cjkCircledNumbers: string;
+  cjkCircledNumbersTooltip: string;
+  cjkCircledNumbersCjk: string;
+  cjkCircledNumbersWestern: string;
+  cjkComposeDesignText: string;
+  cjkComposeDesignTextTooltip: string;
   cjkPunctuationWidth: string;
   cjkPunctuationWidthTooltip: string;
   cjkPunctuationWidthKaiming: string;
@@ -1387,6 +1407,12 @@ export interface SandboxLabels {
   balanceClosingBoxFirst: string;
   balanceClosingBoxLast: string;
   balanceClosingBoxOff: string;
+  balanceGridLines: string;
+  balanceGridLinesTooltip: string;
+  balanceGridLinesAllow: string;
+  balanceGridLinesOff: string;
+  balanceGridNote: string;
+  balanceGridOffNote: string;
   balanceMaxTracking: string;
   balanceMaxTrackingTooltip: string;
 
@@ -1532,6 +1558,7 @@ export interface SandboxLabels {
   pagebreakDirectiveTooltip: string;
   spaceDirective: string;
   spaceDirectiveTooltip: string;
+  columnsDirective: string;
   chipInline: string;
   numberingDirective: string;
   numberingDirectiveTooltip: string;
@@ -1758,6 +1785,12 @@ export interface SandboxLabels {
   warningsFloatShrunkDetail: string;
   warningsFloatShrunkOverflowDetail: string;
   warningsTextWrapTitle: string;
+  warningsColumnsTooNarrowTitle: string;
+  warningsColumnsTooNarrowDetail: string;
+  warningsAfterTextTitle: string;
+  warningsAfterTextDetail: string;
+  warningsUnplacedTitle: string;
+  warningsUnplacedDetail: string;
   warningsTextWrapTooNarrow: string;
   warningsTextWrapFewLines: string;
   warningsTextWrapMoved: string;
@@ -2203,6 +2236,18 @@ export interface SandboxLabels {
   svgSourceHintUnlocked: string;
   resourcePdfMasterLabel: string;
   resourcePdfMasterHint: string;
+  resourceSvgFontsLabel: string;
+  resourceSvgFontsHint: string;
+  resourceSvgInlineFonts: string;
+  resourceSvgInlineFontsTooltip: string;
+  resourceSvgFontsNone: string;
+  resourceSvgFontsLoading: string;
+  resourceSvgFontInlined: string;
+  resourceSvgFontDeclared: string;
+  resourceSvgFontUnavailable: string;
+  resourceSvgFontWithheld: string;
+  resourceSvgFontTooLarge: string;
+  resourceSvgFontKept: string;
   resourceSafeAreaLabel: string;
   resourceSafeAreaHint: string;
   resourceSafeAreaNone: string;
@@ -2359,6 +2404,8 @@ export interface SandboxLabels {
   tableOverflowSplit: string;
   tableOverflowClip: string;
   tableOverflowHide: string;
+  tableSplitInline: string;
+  tableSplitInlineTooltip: string;
   tableContinuedSuffix: string;
   tableContinuedSuffixTooltip: string;
   tableContinuesMarkerEnabled: string;
@@ -2635,6 +2682,8 @@ export interface SandboxLabels {
   diagramSingleInkTooltip: string;
   diagramInkColor: string;
   diagramInkColorTooltip: string;
+  diagramInlineFonts: string;
+  diagramInlineFontsTooltip: string;
   parts: string;
   partsBreakBeforeParity: string;
   partsBreakBeforeParityTooltip: string;
@@ -2738,6 +2787,8 @@ export interface SandboxLabels {
   resourceTypePlacementAlignTooltip: string;
   resourceTypePlacementCaptionSide: string;
   resourceTypePlacementCaptionSideTooltip: string;
+  resourceTypePlacementCitingPage: string;
+  resourceTypePlacementCitingPageTooltip: string;
   resourceTypePlacementShrink: string;
   resourceTypePlacementShrinkTooltip: string;
   resourceShrinkNever: string;
@@ -3039,6 +3090,10 @@ export interface SandboxLabels {
   floatShrinkTooltip: string;
   floatShrinkMinScale: string;
   floatShrinkMinScaleTooltip: string;
+  floatsAtCitingPage: string;
+  floatsAtCitingPageTooltip: string;
+  maxTopFraction: string;
+  maxTopFractionTooltip: string;
   textWrapGap: string;
   textWrapGapTooltip: string;
   textWrapMinTextWidth: string;
@@ -3057,6 +3112,10 @@ export interface SandboxLabels {
   inlineResourceGapInBoxesTooltip: string;
   boxChildSplitMinLines: string;
   boxChildSplitMinLinesTooltip: string;
+  flowColumns: string;
+  flowColumnsTooltip: string;
+  floatsUnderOpener: string;
+  floatsUnderOpenerTooltip: string;
   pageGroupSize: string;
   pageGroupMargins: string;
   pageGroupMarginsDescription: string;

@@ -5,15 +5,15 @@ export { openBundle, createBundle, bundleFileMime } from './api';
 export type { PostextBundle, OpenBundleOptions, CreateBundleInput, CreateBundleLocale, CreatedBundle, BundleFileData } from './api';
 export { buildBundle } from './book';
 export type { BuildBundleOptions } from './book';
-export { loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundleFontProvider, diagramInkHex } from './adapters';
-export type { BundleSource, BundleFontProviderOptions, BundleFontRequest } from './adapters';
+export { loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundleFontProvider, bundleSvgFontProvider, svgInlinesFonts, diagramInkHex } from './adapters';
+export type { BundleSource, BundleFontProviderOptions, BundleFontRequest, BundleImageOptions } from './adapters';
 
 // Low-level codec, for hosts that store or serve bundles their own way.
 export { readBundle, planBundle, resolveBundleFiles, bundleBaseConfig, EXPORTABLE_FONT_FORMATS } from './codec';
 export type { ReadBundleOptions, ReadBundleResult, BundleMeta, BundleContent, BundleLocaleContent, PlannedFile, BundlePlan, BundleByteSources, ResolvedBundleFiles } from './codec';
 export { openBundleZip, zipBundle, POSTEXT_EXTENSION, POSTEXT_MIME, MANIFEST_FILE } from './zip';
 export type { OpenedBundleZip, ZipBundleOptions } from './zip';
-export { CONFIG_VERSION, LEGACY_MATH_SIZE, migrateConfig, pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHardBreaks, pinLegacyCodeBlocks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyPairedIndents, pinLegacyVerseLayout, pinLegacyVerseTightening, pinLegacyDesignOverflow, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking } from './configVersion';
+export { CONFIG_VERSION, LEGACY_MATH_SIZE, migrateConfig, pinLegacyBoxChildCut, pinLegacyBoxResourceGap, pinLegacyColonListRoom, pinLegacyDashBreaks, pinLegacyDropCapSize, pinLegacyHeadingBreaks, pinLegacyHeadingMarks, pinLegacyHardBreaks, pinLegacyCodeBlocks, pinLegacyHeadingSplit, pinLegacyHyphenBreaks, pinLegacyPairedIndents, pinLegacyVerseLayout, pinLegacyVerseTightening, pinLegacyDesignOverflow, pinLegacyGridBalancing, pinLegacyInlineTableSplit, pinLegacyFlowColumns, pinLegacyOpenerHeadFloats, pinLegacyTitleBreaks, pinLegacyCircledNumbers, pinLegacyDesignText, pinLegacyInlineGap, pinLegacyMathSize, pinLegacyParagraphContainerSpacing, pinLegacyRaggedBreaking } from './configVersion';
 export type { MigrateConfigOptions } from './configVersion';
 export {
   isBundleManifest,

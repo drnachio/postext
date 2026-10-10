@@ -382,11 +382,13 @@ Sources: ; .
 # The lantern and its parts
 ```
 
-### 7.4 `:::columns{count=N breaks="…"}` (multi-column group, callouts only)
+### 7.4 `:::columns{count=N breaks="…"}` (multi-column group)
 
 Source: ; .
-- **Only inside a `:::callout`.** Elsewhere the fences are ignored and the blocks flow normally.
-- `count`: integer, default 2.
+- **In a `:::callout`, or (postext ≥ 1.25, `layout.flowColumns`) in the running text.** In a box the columns share its inner width, `columnGap` apart, in the box typography. In the text they share the text column, a body line apart, in the text's own typography; `span="page"` on a page of several columns cuts the page into a band, like a page-span box (columns above close level, text resumes in every column below). Headings inside keep their style, number and TOC entry; footnotes go to the column foot. Up to 1.24 (and with `flowColumns: false`) the fences are ignored outside a box.
+- Use a main-flow group for column bands in the text (newspaper briefs, a poster's three columns, an index-like list) instead of a frameless page-span callout that only holds a group.
+- `count`: integer 2–6, default 2. `gap`: a length (`12pt`, `1em`); default `columnGap` in a box, a body line in the column, `layout.gutterWidth` across the page. `rule`: a rule down each gap (`layout.columnRule` colour/width).
+- **Splitting (≥ 1.25).** A group that does not fit (the rest of its column, or a box that splits) is cut and goes on in the next column/page. `flow="snake"` (default without `breaks`): one galley, columns filled in turn, cut between blocks or lines (≥ `layout.boxChildSplitMinLines` per side), the last part balanced. `flow="parallel"` (default with `breaks`): each `breaks` run is a stream kept in its own column, every stream going on in the same column of the next part: a poem and its translation stay level. A nested box in a group stays whole; a group inside a nested box is never cut. Groups that fit lay out as before. Warnings `columnsFlowUnknown`, `columnsTooNarrow`.
 - `breaks`: a comma list of **1-based block indices** within the group where columns 2, 3, … start. Values must be > 1. Without `breaks`, the columns are balanced, and a cut may fall inside a paragraph or list item. With `breaks`, there is no mid-paragraph cut.
 - `breaks` counts blocks only: paragraphs, list items (one each), display formulas, figures, tables; a nested callout counts as **one**. Directives (`:::space`) are **not** counted. A value past the last block or not after the previous break is ignored.
 - `:::space` inside the group separates blocks, but is **dropped at the top of the group and at each column head** (so equal stanza gaps line up across columns). Put space before the `:::columns` fence to push the group down.
@@ -436,7 +438,7 @@ Source: ; .
 
 Resources are JSON records in `PostextContent.resources` (in a preset: `preset.json → resources[]` plus the files). They are not Markdown. Main fields:
 - `id`, `typeId` (e.g. `figure`, `table`), `kind: bitmap|svg|table`, `caption`, `note`, `altText`, `placement`
-- the payload (`bitmap{fileId, format, width, height, resolution?, fileResolution?}`, `svg{fileId, pdfFileId?}`, `table{model, styleId?}`)
+- the payload (`bitmap{fileId, format, width, height, resolution?, fileResolution?}`, `svg{fileId, pdfFileId?, inlineFonts?}` (`inlineFonts: false` keeps the SVG's markup as stored; by default the faces its text names are embedded when it is shown, ≥ 1.25), `table{model, styleId?}`)
 - a bitmap's natural size: its pixels at `page.dpi`, or (≥ 1.24) `width × page.dpi / resolution` when it has a `resolution` (its own, or `layout.bitmapResolution`: a ppi, or `'file'` for the file's stated one, 72/96 counting as unset); the slot caps it and a smaller picture is never enlarged; `placement.width` narrows the slot
 - `safeArea` (bitmap/svg only, optional): `{x, y, width, height}` in fractions of the picture, top-left origin; the part always shown. With it the engine may crop outside it to make the figure taller or shorter (fit the room left, `fitFiguresToPage`, `placement.shrink` before it scales, column balancing lever `flexFigure`); without it the picture is always whole
 
@@ -458,8 +460,11 @@ The Markdown only cites them.
 - Recognised in paragraphs, list items, blockquotes, **headings**, callouts, and in resource captions, notes and table cells.
 - **Not recognised inside `:chip[…]`** (stays literal).
 - **The first mention places the resource.** A floated resource (`placement.position` `auto`/`top`/`bottom`) goes into the first free slot **after** its first reference: the bottom of the current column, the top of the next, or a band of the next page. You do NOT embed it again.
+- **Head of the citing page** (≥ 1.25): `placement.citingPage: true` (or `layout.floatsAtCitingPage`) lets a `top`/`auto` float head the page (column) where its citing line lands instead; the text above the reference moves down under it. Cite where the text wants the reference, not earlier to pull a figure forward.
 - Floats of one type never overtake each other.
 - Floats are flushed at chapter openers (`breakBefore`), `:::part`, `floatBarrier` callouts, and the end of the document. `:::pagebreak` sends pending floats to the next page.
+- **Under a page-span opener** (≥ 1.25, `layout.floatsUnderOpener`): on a page of 2+ text columns, a `top`/`auto` float embedded with `::resource` right after the `span: 'page'` heading (or a `placement="top"` box fenced there) takes the head of column 1 under the opener; with `columns` it runs across k columns from column 1. Up to 1.24 it landed from column 2.
+- **Side boxes at the end of a chapter** (≥ 1.25): `span="side"` boxes still waiting for the side column when the text ends each take the side column of a page after the text, in fence order, with an `afterText` warning per box (≤ 1.24 dropped all but the first page of them). Treat `afterText` as a layout fault to fix: fence the box earlier or shorten it.
 
 ### 9.2 Block embed `::resource{id="…"}` (inline placement)
 
@@ -795,19 +800,21 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 - `numberingInvalidFormat`, `numberingInvalidStartAt`, `pagebreakInvalidParity`
 - `unknownResourceId` (embed or ref), `duplicateResourceId`, `danglingTypeRef`
 - `headingHierarchy`, `consecutiveHeadings`, `listAfterHeading`
-- `chapterFrontmatterIgnored`, `calloutOverflow`
+- `chapterFrontmatterIgnored`, `calloutOverflow` (also a `span="side"` box taller than an empty side column, ≥ 1.25)
+- `afterText` (≥ 1.25: a side box or side figure set on a page with no text, after its chapter's text ended) and `unplaced` (≥ 1.25: a box or float on no page)
 - `unclosedCodeBlock` (≥ 1.23: a code fence with no closing fence; the rest of the chapter is code) and `codeOverflow` (a listing's line wider than its box, turned over, shrunk or cut, per `codeStyle.overflow`)
 - `tabInVerticalText` (≥ 1.23: a `:tab` in vertical text, set as a word space), and the config warnings `unknownConfigKey` / `unknownConfigValue` for a tab stop's unknown key, `align` or position (configuration.md §4a)
 - `lineNumberOverlap` (≥ 1.23: a line number in the side column falls on a side box, side caption or float; painted anyway), and the config warning `lineNumbersUnsupported` (`lineNumbers.enabled` on a vertical document, which gets no numbers)
 - `textWrap` (≥ 1.24: a resource or box with `wrap` kept its band whole: `tooNarrow` (text beside it under `layout.wrap.minTextWidth`), `fewLines` (shorter than `minLinesBeside`), `verticalText`; or `moved`: an inline one too tall for the room left moved to the next column with its anchor), and the config warning `wrapUnsupported` (a type's `defaultPlacement.wrap` in vertical text)
 - `dropCap` (≥ 1.23: a paragraph a drop cap opens could not take it as configured; `reason` `shortParagraph` (with `handling` reserve/shrink/skip), `split`, `joiningScript`, `verticalText`, `noLetter`), and the config warnings `unknownConfigKey` / `unknownConfigValue` for a drop cap's unknown key, `punctuation`, `shortParagraph`, `lines`, `sink` or `characters` (configuration.md §4b)
+- `fontFallback` (≥ 1.25, browser and worker builds: a face the text was set in that was not loaded, `missing`, or that the browser drew from another weight or slant, `synthesized`; load it with `prepareFonts` / `buildDocumentWithFonts`)
 - `fullwidthMarkup` (`：：：`, `＃`, `［＾…］`, `｛…｝`, `＊＊` typed with a Chinese input method: set as text), `attributeKeyInvalid` (a key outside ASCII, `作者=曹雪芹`: dropped, the block's other keys still apply)
 
 ---
 
 ## 14. Discrepancies: docs (`docs/document-format-en.mdx`) vs code
 
-1. **Containers:** the docs table says "Three container names" (callout, paragraphs, part). The code has **four**, including `columns`. The docs do describe `:::columns` in a later section.
+1. **Containers:** older docs said `:::columns` works only inside a callout. Since postext 1.25 it also runs in the main flow (`layout.flowColumns`, pinned off for presets below configVersion 11 that hold a group).
 2. **Callout `placement`:** the docs list `here|top|bottom|fixed`. The code also accepts **`auto`**, which floats to the first free band, top or bottom.
 3. **"Inline markup is recognised inside any text block (headings…)":** true for headings only with `headings.inlineMarks` on, the default since `configVersion` 6. A preset without it whose headings carry marks reads `inlineMarks: false`, and its headings stay plain (only refs, swatches and math survive).
 4. **Ordered list start:** the docs imply the start number is kept and the list counts from it. In fact **every item prints its own literal number**.
@@ -853,6 +860,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Bulleted/numbered list | One line per item. 2 spaces per nesting level. Type the real numbers. Letter or roman item labels are set by the config `numberFormat`, not the source. |
 | List item with several paragraphs | Not possible. Merge into one line, or follow the item with a plain paragraph. |
 | Sidebar / box / "Key points" / exercise | `:::callout{type="…" title="…" label="…"}`. Two columns inside use `:::columns`. Answer boxes use a nested callout. |
+| Column bands in the running text (briefs in three columns, a poster's columns across a two-column page, a bilingual poem side by side) | `:::columns{count=3 span="page" rule}` … `:::` in the text (≥ 1.25); `breaks` + the default `flow="parallel"` for side-by-side streams that must stay level across pages. No frameless box needed. |
 | Figure / photo / diagram | A resource plus `:ref{id="…"}` in the sentence that first cites it (auto float). For an unnumbered ornament or a fixed spot: `placement.position:"here"` plus `::resource{id="…"}` on its own line. |
 | Table | A table resource (`TableModel` JSON). Cite it with `:ref`. Math inside cells is impossible; use `^ ^`/`~ ~`/Unicode. Text the source aligned with tab stops (a menu, a cast list, marks at the margin, a form) is not a table: paragraphs with tab stops (rows above). |
 | Cross-reference "see Fig. 3.2" | `see :ref{id="fig-x"}`. For "Figure 3.2" use `style="full"`; for "figure 3.2" add `case="lower"`; for a bare number use `style="number"`. |
@@ -877,12 +885,15 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Chinese emphasis dots (着重号) | `:dots[…]`, or `*…*` in a Chinese document (dots by default). |
 | Proper-name line (专名号) | `:name[…]`. |
 | Book-title mark (书名号) | Keep typed 《》 as text. A classical/Taiwan edition with wavy lines: `:book[…]` (prints what `cjk.bookTitleMark` says). |
+| Sense or item numbers ① ② in a dictionary or a list run into the text (≥ 1.25) | Type them as they are (`**①**天也`): a circled number stays with the text after it and takes no Han–Latin space (`cjk.circledNumbers`). No word joiner after it, no excerpt cut to move a break off a title (`cjk.titleMinChars` keeps 《說文》 whole). |
 | Ruby: pinyin or zhuyin over/beside characters | `{字|zì}` / `:ruby[漢字]{rt="hàn zì"}`; HTML `<ruby>紅<rt>hóng</rt></ruby>` → `{紅|hóng}`. |
 | Inline two-line commentary (双行夹注, 割注) | `:warichu[…]`; a one-line note in brackets stays as text in （）. |
 | Numbers upright in vertical text (纵中横) | Nothing for ≤ 2 digits (automatic, `cjk.uprightDigits`); `:tcy[…]` for 3–4 characters or `A+`; `:upright[…]` for an acronym read letter by letter. A short number inside a Latin sentence runs sideways with it by itself; one that opens or ends a Latin paragraph (`49 copies…`, `…page 7.`) stands: `:sideways[…]` turns it. |
 | 回目 couplet / two-line chapter title | `# 甄士隱夢幻識通靈 \\ 賈雨村風塵懷閨秀`; the number from `numberingTemplate: '第{1:一}回'`, never typed. |
 | Paragraph indent of two ideographic spaces | Delete them; `bodyText.firstLineIndent: 2em`. |
+| Lesson or chapter number before a title that opens with ruby or a mark (`第十二課　{寓言\|ㄩˋ\|ㄧㄢˊ}…`) | `numberingTemplate` (`'第{1:一}課'`, `numberSeparator: '　'`), never typed: from 1.25 the number stays a span of its own, outside a ruby base, emphasis dots, a name or title line, a warichu, a tcy cell or a language tag (on ≤ 1.24 the reading centred over the number and the first character). |
 | Heads two cells in, turnover at the margin (GB/T 9704 公文) | `headings.levels[n].firstLineIndent: {value: 2, unit: 'em'}` (≥ 1.24); delete U+3000 typed in front of a head or in its `numberingTemplate`. |
+| A grid page whose columns end where their lines end (GB/T 9704 公文, 原稿用紙, 版心 counted in lines) | `cjk.grid` alone: from 1.25 balancing is off on a grid unless `headings.balancing.enabled: true`, and when on it keeps characters in their cells (`gridLines: 'off'` adds no rows). On ≤ 1.24 set `headings.balancing.enabled: false`. |
 | Japanese furigana (≥ 1.16) | One reading over the word `{麦藁帽\|むぎわらぼう}` (group; Aozora 《》, InDesign group ruby); one per character `{東京\|とう\|きょう}` (jukugo, may break between characters); `:ruby[東京]{rt="とう\|きょう" mode=mono}` keeps per-character mono ruby. Aozora `X《よみ》`, `｜X《よみ》` never stay in the text (`aozora.py`). |
 | 傍点 / 傍線 | `*…*` or `:dots[…]` (sesame in Japanese) / `:sideline[…]{style=…}`. |
 | 地付き, 地からN字上げ (a letter's date, a signature) | `:::paragraphs{align=end}` / `:::paragraphs{align=end endIndent=N}`. |
@@ -903,7 +914,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 4. Escape stray `*`, `_` (including inside words and URLs), `^`, `~` and `$` with a backslash.
 5. Attribute values contain no `}`. Quotes don't clash. `::resource` uses exactly `{id="…"}`.
 6. Every `type=`, `style=` and `:chip{style}` id exists in the config. Every `:ref` / `::resource` id exists in `resources`.
-7. Every opened `:::callout|paragraphs|part|columns` has its closing `:::`. `:::columns` appears only inside a callout.
+7. Every opened `:::callout|paragraphs|part|columns` has its closing `:::`. A `:::columns` outside a callout needs postext ≥ 1.25 (`layout.flowColumns`; below `configVersion` 11 it is ignored).
 8. No headings end in brace text unless it is meant as attributes. No `:chip` in headings.
 9. Frontmatter appears only in the book's first chapter.
 10. No GFM tables, code fences, HTML, or `---` rules remain. Every `[^id]` marker has one `[^id]:` definition in its chapter, and none sits in a heading, caption or cell.

@@ -104,6 +104,10 @@ The line-start and line-end rules (避头尾) say which marks may not open a lin
 
 At every level a line never splits the two-em dash —— or the ellipsis ……, a number and its sign or unit (¥5,999, 50%, 120㎡, −3 ℃), a Latin word, or a number written in full-width digits (１２：３０); a footnote marker, a `:ref` and a superscript stay with the character before them; and a line never breaks before an ideographic space. A Latin word or a web address wider than the whole line is the one exception: the word is divided at a syllable, the address at one of its joints.
 
+A book title is not broken after its first character or before its last: inside `《…》` and `〈…〉` (typed, or added round a `:book[…]` title) a line breaks only where two of the title's characters stand on either side, so no line ends on `《說` with `文》` opening the next, and a title of two or three characters stays whole. `cjk.titleMinChars` sets the number (`1` breaks anywhere the level allows). A line that has no other break still breaks inside a title rather than run past the measure.
+
+The circled numbers ① to ⑳ (and ⑴, ⒈, ⓐ, ❶ and their kin) are Chinese characters in Chinese text: each takes one cell with no Han–Latin space around it, and a line never ends on one, since it numbers the sense or item after it (at every level but `none`). A dictionary entry writes `**①**天也` with nothing between the number and its text. `cjk.circledNumbers: 'western'` sets them as Latin letters, as postext did up to 1.24.
+
 When the next character does not fit, the composer looks at it. If it may open a line, it goes down and a justified line is spread. If it may not (a comma, a closing bracket, the character after an opening one), the line first tries to take it in by giving up punctuation blank, the push-in of [clreq §6.2.2.3](https://www.w3.org/TR/clreq/#x6-2-2-3-procedures-for-inter-character-spacing-reduction); only when that blank does not cover the overflow does the line end earlier and carry the character before it down with the mark. Push-in comes first because it keeps the line's characters together; push-out is the fallback.
 
 ### Punctuation widths
@@ -168,6 +172,8 @@ cjk: { grid: { enabled: true, charsPerLine: 28, linesPerPage: 28, show: true } }
 ```
 
 Each column becomes `charsPerLine` ems of the body size and the type area `linesPerPage` lines of the body line height. The configured `page.margins` act as minimums: the type area is centred in the room they leave, each margin growing by half the difference. With two columns the gutter is rounded to a whole number of ems. A number larger than fits is reduced and reported (`cjkGridClamped`); an unset one takes as many as fit. `show` draws the grid (稿纸) on screen, one square per character position; the PDF leaves it out unless `renderToPdf` is given `characterGrid: true`.
+
+A page on the grid is filled line by line and is not balanced: a column that ends short, a heading kept with its text on the next page say, stays short, the way a GB/T 9704 document counts its 22 lines. `headings.balancing.enabled: true` turns balancing on with levers that keep the grid: lines added above headings and under lists, displays and figures are whole lines of the grid, which `headings.balancing.gridLines: 'off'` keeps out, and a paragraph runs a line long only when its characters spread no more than `headings.balancing.maxTracking` apart, which a line a whole character short never does at the default. Every character stays in its cell either way. See [Configuration › Column balancing](/en/docs/configuration#column-balancing).
 
 The usual books, at 五号 (10.5 pt) with a 6 pt line gap, a 16.5 pt line height:
 
@@ -411,7 +417,7 @@ In the Sandbox, **Design › Writing system** holds the document language, the w
 ## Known limits
 
 - **Korean** is set with the mainland Chinese defaults; its own rules (KLREQ) are not implemented. Japanese follows its own rules since postext 1.16 ([Japanese layout](/en/docs/japanese-layout)).
-- **Design text** (running heads, openers, box titles) breaks Chinese between any two characters, without the line-start and line-end rules or the punctuation widths. Fit such titles by hand.
+- **Design text** (running heads, openers, box titles, part pages) takes the line-start and line-end rules, the punctuation widths and the Han–Latin space of the body (`cjk.composeDesignText`, since postext 1.25), but its lines are ragged: they are not spread between characters.
 - **One writing mode per page.** A horizontal box inside a vertical page, native vertical tables with the header row on the right, and captions beside an upright figure are not available. Inline formulas, chips and swatches are turned sideways with a vertical line.
 - **Line numbers** are not printed in vertical text: a vertical book that turns `lineNumbers` on gets none, with a `lineNumbersUnsupported` configuration warning. Horizontal books number their lines like any other ([Configuration › Line numbers](/en/docs/configuration#line-numbers)).
 - **Text wrap.** In horizontal text a picture or a box can stand at one side of its column with the text beside it (see [Text wrap](/en/docs/document-format#text-wrap)); under the character grid the room it takes is a whole number of characters, so the lines beside it keep to the grid. Vertical text sets no text beside a figure: a wrapped figure keeps its band, with a `textWrap` warning (`wrapUnsupported` for a resource type's default).

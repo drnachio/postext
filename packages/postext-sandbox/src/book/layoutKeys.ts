@@ -3,7 +3,7 @@
 // fingerprints (rather than object identity) lets a record persisted in
 // storage or carried by a bundle stay current across sessions.
 
-import { stripConfigDefaults } from 'postext';
+import { hashString, hashStringWide, stableStringify as engineStableStringify, stripConfigDefaults } from 'postext';
 import type { LayoutContinuation, PostextConfig, Resource } from 'postext';
 import { version as ENGINE_VERSION } from 'postext/package.json';
 
@@ -22,39 +22,19 @@ export const ENGINE_KEY = `${ENGINE_VERSION}/${RECORD_FORMAT}`;
 const VOLATILE_KEYS = new Set(['fileId', 'pdfFileId', 'createdAt', 'updatedAt', 'customFonts']);
 
 /** JSON with sorted object keys and the volatile fields left out, so equal
- *  content gives equal text whatever the object came through. */
+ *  content gives equal text whatever the object came through (the
+ *  engine's, #629). */
 export function stableStringify(value: unknown): string {
-  return JSON.stringify(value, function replacer(this: unknown, key: string, v: unknown) {
-    if (VOLATILE_KEYS.has(key)) return undefined;
-    if (v && typeof v === 'object' && !Array.isArray(v)) {
-      const sorted: Record<string, unknown> = {};
-      for (const k of Object.keys(v as Record<string, unknown>).sort()) sorted[k] = (v as Record<string, unknown>)[k];
-      return sorted;
-    }
-    return v;
-  });
+  return engineStableStringify(value, VOLATILE_KEYS);
 }
 
-/** djb2 over a string, as 8 hex digits: short enough to store per record,
- *  distinct enough to tell configurations apart. */
-function hash(text: string): string {
-  let h = 5381;
-  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) | 0;
-  return (h >>> 0).toString(16).padStart(8, '0') + text.length.toString(16);
-}
+/** djb2 over a string, as 8 hex digits and the length (the engine's
+ *  `hashString`): the keys stored with layout records keep this shape. */
+const hash = hashString;
 
 /** Two independent 32-bit hashes side by side: a document cache keyed by
  *  the text must not confuse two chapters. */
-function hashWide(text: string): string {
-  let a = 5381;
-  let b = 0;
-  for (let i = 0; i < text.length; i++) {
-    const c = text.charCodeAt(i);
-    a = ((a << 5) + a + c) | 0;
-    b = (c + (b << 6) + (b << 16) - b) | 0;
-  }
-  return (a >>> 0).toString(16).padStart(8, '0') + (b >>> 0).toString(16).padStart(8, '0') + text.length.toString(16);
-}
+const hashWide = hashStringWide;
 
 /** Fingerprint of everything one build of a chapter depends on — the key
  *  the worker's document cache is looked up by. Fonts are left out on

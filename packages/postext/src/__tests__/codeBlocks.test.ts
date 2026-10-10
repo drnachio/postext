@@ -574,7 +574,7 @@ describe('stored documents (CONFIG_VERSION 9)', () => {
   ].join('\n');
 
   it('pins the 1.22 reading of fences for a configuration with fences in its text', () => {
-    expect(CONFIG_VERSION).toBe(10);
+    expect(CONFIG_VERSION).toBe(11);
     expect(pinLegacyCodeBlocks({} as PostextConfig)).toEqual({ codeStyle: { blocks: false } });
     const own = { codeStyle: { blocks: true } };
     expect(pinLegacyCodeBlocks(own)).toBe(own);

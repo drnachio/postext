@@ -360,6 +360,10 @@ Use `layout.layoutType: "oneAndHalf"`, `sideColumnRole: "floats"` and
 (placement `here`, a light top stripe and a small-caps title for the lemma).
 Insert the callout right after the paragraph it glosses. Anchor it on a text
 fragment of that paragraph and fail loudly when a fragment is not found.
+A gloss the channel of its page cannot hold waits for the next page; at the
+end of a chapter the ones still waiting take pages after the text and raise
+`afterText` (postext ≥ 1.25; earlier releases dropped them): move those
+glosses up or shorten them until the warning is gone.
 
 ### B3. Footnotes
 Postext ≥ 1.6 sets real footnotes (document-format.md §10.4,
@@ -566,6 +570,7 @@ numbers" panels, grey boxes, badges. In Markdown write
 | Key terms in colour inside | `body.boldColor` |
 | Two columns inside the box | `:::columns{count=2 breaks="4"}` inside the callout (`breaks` = index of the first block of column 2, from the printed page) + `columnGap` |
 | A 3-up "in numbers" panel | a dark callout (`span: "page"`) with `:::columns{count=3}` of `**22 000 000** people…` paragraphs |
+| Columns with no frame, in the text (briefs, a poster band) | no box: `:::columns{count=3 span="page"}` in the running text (≥ 1.25), `rule` for a rule down each gap |
 
 ### C3. Placement
 - Mid-page box across the columns: `span: "page"`.
@@ -627,6 +632,14 @@ Ways to choose placement automatically:
   column (width 0.9 when wide);
 - by original width: wider than the column → page.
 
+A figure the source sets at the head of the page that cites it (a plate
+over the text that introduces it, LaTeX's `[t]`): `citingPage: true` on
+its placement or its type's `defaultPlacement` (≥ 1.25), or
+`layout.floatsAtCitingPage` for the whole book. Do not move the citation
+earlier to drag the figure forward. It never heads a chapter's first page
+or a page after a forced break; `layout.maxTopFraction` (0.7) caps how
+much of the column it takes.
+
 ### D4. Vector figures for print
 Keep the original vector artwork as a single-page PDF **print master**
 (`pdfFile`). The PDF export embeds it verbatim, so text stays text. The screen
@@ -646,10 +659,13 @@ For picture clusters with soft masks or blends, render the region at 300 dpi.
 Keep crop regions in a JSON so they can be tuned.
 
 ### D6. Live-text figures (translated editions)
-Keep labels as SVG `<text>` and embed `@font-face` WOFF2 subsets of the
-faces they use in the SVG's own `<defs>`, since an `<img>` cannot see page
-fonts. Key translations by source text, not by run index (indices move when
-a crop is tuned).
+Keep labels as SVG `<text>` and name the family in `font-family`: since
+postext 1.25 the engine embeds the faces they use when the picture is shown
+(the bundle's fonts, then Google families), and the PDF sets them as real
+text, so neither outlines nor hand-made `@font-face` subsets are needed.
+Ship the faces the labels use in the bundle's `fonts` when they are not
+Google families. Key translations by source text, not by run index (indices
+move when a crop is tuned).
 
 - Words baked into rasters or outlined: erase them (interpolating the
   background) and set new `<text>`.
@@ -718,6 +734,11 @@ To cut them from a PDF: on a copy of the page, redact the cell's own text
   and there is a "(cont.)" suffix and a "Continued" marker in the document
   locale. The split never falls inside a rowspan or after a group-head row,
   and the tail keeps at least 3 rows.
+- A table set `here` splits the same way (≥ 1.25, `tableStyle.splitInline`):
+  keep it where the source has it (a menu course, a timetable, a parts list);
+  do not float it only to make it split. It goes on at the head of the next
+  column, before the text after it. Only turned (landscape) tables need a
+  float.
 
 ### D13. Infographics and charts
 Cut them as figures, or transcribe the data: a table resource, a callout
@@ -788,7 +809,8 @@ A Chinese family is tens of MB and thousands of glyphs; ship it cut to the book.
   Latin of the book (Amiri has its own). Headings default to Open Sans, the body to EB Garamond: neither has
   Arabic — `lint_project.py` flags it.
 - In the browser, the `arabic` subset file loads only when a character needs it; the Sandbox and the kit's
-  `loadArabicFonts` load it before layout, a host checks `document.fonts.load('16px Amiri', 'ب')`.
+  `loadArabicFonts` load it before layout; a host calls `prepareFonts(content, config, { resolve })`
+  (≥ 1.25), which loads every face for the characters the text sets, the `arabic` slice included.
 
 ### E8. Japanese faces
 - **Body (mincho 明朝)**: **Noto Serif JP** (variable 200–900; full JIS X 0213, so Aozora's 第3・第4水準 外字

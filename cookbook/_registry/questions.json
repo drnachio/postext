@@ -1708,16 +1708,15 @@
       "pt": "O Postext consegue compor três ou mais colunas de texto, ou fazer o texto contornar uma imagem?"
     },
     "index": {
-      "en": "Three columns and text wrap, workarounds for",
-      "es": "Tres columnas y contorneo, alternativas a",
-      "ca": "Tres columnes i contorn, alternatives a",
-      "zh": "三栏与文字绕排，变通办法",
-      "ar": "ثلاثة أعمدة والتفاف النص، حلول بديلة",
-      "ja": "3段組みと回り込み、代替手段",
-      "pt": "Três colunas e contorno de texto, alternativas para"
+      "en": "Three columns and text wrap",
+      "es": "Tres columnas y contorneo",
+      "ca": "Tres columnes i contorn",
+      "zh": "三栏与文字绕排",
+      "ar": "ثلاثة أعمدة والتفاف النص",
+      "ja": "3段組みと回り込み",
+      "pt": "Três colunas e contorno de texto"
     },
-    "theme": "page",
-    "gap": "text-wrap"
+    "theme": "page"
   },
   "Q79": {
     "kind": "how",

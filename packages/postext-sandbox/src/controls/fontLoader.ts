@@ -7,6 +7,7 @@ import {
   loadVerticalAlternates,
   localeScript,
   unregisterVerticalAlternates,
+  prepareFonts,
 } from 'postext';
 import { getFontFile } from '../storage/fontStorage';
 
@@ -225,11 +226,18 @@ export function ensureConfigFontsLoaded(config: PostextConfig, markdown?: FontCo
   if (typeof document === 'undefined' || !document.fonts) return Promise.resolve();
   const missing = missingConfigFontSpecs(config, markdown);
   if (missing.length === 0) return Promise.resolve();
-  const text = configFontSampleText(config);
-  return Promise.race([
-    Promise.all(missing.map((s) => document.fonts.load(s, text).catch(() => []))).then(() => {}),
-    new Promise<void>((resolve) => setTimeout(resolve, FONT_LOAD_TIMEOUT_MS)),
-  ]);
+  // The engine's preparation (#629): every face the configuration asks
+  // for, loaded for the characters the text sets (so the Arabic, Greek or
+  // CJK slices of a Google family come in before the first build), the
+  // measurements of the families that changed dropped. A family not
+  // declared yet gets its style sheet (`loadFont`) and is loaded from it.
+  return prepareFonts(markdown, config, {
+    timeoutMs: FONT_LOAD_TIMEOUT_MS,
+    resolve: async (family) => {
+      await loadFont(family);
+      return null;
+    },
+  }).then(() => {});
 }
 
 // ---------------------------------------------------------------------------

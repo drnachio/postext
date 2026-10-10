@@ -84,7 +84,9 @@ The bridge is open to cars, vans and buses, and closed to goods vehicles over 7.
 
 That has disappointed some traders. “It’s half a bridge for us,” said Priya Chandra, who runs the builders’ merchant on Mill Lane. “Our timber still comes round by Kirkby, eleven miles each way.”
 
-For the market, it came just in time. Stallholders from the south bank have carried their stock over the footbridge for a year, and Saturday’s market will be the first in more than a year with every pitch taken.
+For the market, it came just in time. Stallholders from the south bank have carried their stock over the footbridge for a year, and Saturday’s market will be the first in more than a year with every pitch taken. The bell will ring at eight, as it did before the flood, and the council is running a free bus from the station car park for the first four Saturdays.
+
+The county will inspect the town’s two other bridges, at Kirkby Lane and over the mill race, before the winter, and has promised to publish both reports. The first, on the Kirkby Lane bridge, is due in November, and the county’s engineers will present it at the Corn Exchange. The meeting is open to anyone who uses the bridges.
 
 :::callout{type="story" span="page" title="The wind farm vote"}
 ## Harrow was the one ward to say no {style="second"}

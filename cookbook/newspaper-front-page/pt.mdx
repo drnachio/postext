@@ -47,13 +47,13 @@ O código deste passo é [a resposta curta](#a-resposta-curta) acima. O corpo de
 :::
 ```
 
-`placement="bottom"` faz o boxe flutuar até o pé da <PageRef page={1}>página 1</PageRef>, onde ocupa 36,9 mm, e a notícia preenche os 83 mm de colunas acima dele. A 1.4.1 também não faz o texto contornar uma imagem. Um flutuante ocupa uma faixa inteira da coluna ou da página, então a foto principal é uma faixa sobre as duas colunas dentro do boxe da manchete, e o desenho da ponte ocupa a largura toda da coluna 1. Para pôr texto ao lado de uma imagem, use o mesmo tipo de boxe: em `:::columns{count=2 breaks="2"}`, a linha `::resource` abre a primeira coluna e o texto, a segunda.
+`placement="bottom"` faz o boxe flutuar até o pé da <PageRef page={1}>página 1</PageRef>, onde ocupa 36,9 mm, e a notícia preenche os 83 mm de colunas acima dele. A foto principal continua sendo uma faixa sobre as duas colunas dentro do boxe da manchete: o texto é composto ao lado de uma imagem mais estreita que a coluna, de um lado dela, nunca em volta de uma imagem que ocupa duas colunas. O desenho da ponte na página 2 tem o texto ao lado (passo 5).
 
 ### 5 · Imagens no texto, tabelas como flutuantes
 
 <Excerpt region="floats" />
 
-A foto fica no texto, dentro do boxe da manchete, porque um flutuante `top` na largura da página nunca cai acima da linha que o cita; como flutuante, a foto abriria a página 2 (veja Erros comuns). O desenho da ponte também fica no texto, depois do parágrafo sobre o pilar. A previsão flutua até o alto de uma coluna e cai no da coluna da direita. A tabela dos bairros flutua sob as duas colunas, onde o fio entre colunas para. Na última página ela fica logo abaixo das colunas balanceadas, e por isso o texto acima foi ajustado para levá-la até o pé. Os dois tipos de recurso definem `captionPrefix: ''`, e a 1.4.1 só imprime o rótulo da legenda quando o prefixo tem texto, então nenhuma legenda começa com “Figure 1”.
+A foto fica no texto, dentro do boxe da manchete, porque um flutuante `top` na largura da página nunca cai acima da linha que o cita; como flutuante, a foto abriria a página 2 (veja Erros comuns). O desenho da ponte também fica no texto, depois do parágrafo sobre o pilar, e `wrap: 'right'` com `width: 0.47` o põe à direita da coluna 1, com 47 % da largura dela, e os parágrafos seguintes são compostos ao lado dele e depois embaixo na medida inteira ([contorno de texto](/pt/docs/document-format#contorno-de-texto)). Nessa largura nenhuma linha ao lado fica frouxa; o texto da matéria foi reajustado ao desenho mais baixo. A previsão flutua até o alto de uma coluna e cai no da coluna da direita. A tabela dos bairros flutua sob as duas colunas, onde o fio entre colunas para. Na última página ela fica logo abaixo das colunas balanceadas, e por isso o texto acima foi ajustado para levá-la até o pé. Os dois tipos de recurso definem `captionPrefix: ''`, e a 1.4.1 só imprime o rótulo da legenda quando o prefixo tem texto, então nenhuma legenda começa com “Figure 1”.
 
 ### 6 · Uma página interna abre com um selo de seção
 

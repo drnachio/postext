@@ -478,6 +478,18 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td>Texto compuesto al lado de una imagen o una caja más estrecha que su columna (<code>placement.wrap</code>, el <code>wrap</code> de una caja): <code>gap</code>, el espacio entre el elemento y el texto (una línea del cuerpo si no se indica); <code>minTextWidth</code>, la medida más estrecha que puede tener el texto de al lado, una longitud o una parte de la columna (más estrecha: el elemento ocupa su banda entera, con un aviso <code>textWrap</code>); <code>minLinesBeside</code>, el mínimo de líneas que merece la pena componer a su lado; <code>defaultWidth</code>, la parte de la columna que ocupa un elemento ajustado sin <code>width</code> propio. Véase <a href="/es/docs/document-format#ajuste-del-texto">Formato del documento › Ajuste del texto</a>. Desde postext 1.24.</td>
     </tr>
     <tr>
+      <td><code>floatsAtCitingPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>El valor por defecto de <code>placement.citingPage</code>: un flotante <code>'top'</code> o <code>'auto'</code> puede ocupar la cabeza de la página (un flotante a lo ancho de la página) o de la columna (un flotante de columna) donde cae la línea que lo cita por primera vez, en lugar del primer hueco libre después de esa línea; el texto que hay encima de la referencia baja bajo él (véase <a href="/es/docs/document-format#colocación">Formato del documento › Colocación</a>). La colocación del recurso y después el <code>defaultPlacement</code> de su tipo lo sustituyen. Desde postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>maxTopFraction</code></td>
+      <td><code>number</code></td>
+      <td><code>0.7</code></td>
+      <td>La mayor fracción de la altura de la columna, de 0 a 1, que puede ocupar un flotante que encabeza la página o la columna que lo cita, junto con los flotantes que ya están allí, para que la página guarde sitio para su texto (el <code>\topfraction</code> de LaTeX). Un flotante que ocuparía más va a su hueco habitual. Desde postext 1.25.</td>
+    </tr>
+    <tr>
       <td><code>hugClosingFloats</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -500,6 +512,18 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td><code>number</code></td>
       <td><code>2</code></td>
       <td>Mínimo de líneas de un párrafo o de un elemento de lista que deja a cada lado un corte dentro de él cuando una caja se parte (<code>splitMinLines</code>, en <a href="#estilos-de-aviso">Estilos de aviso</a>, sigue contando todas las líneas de la caja a cada lado del corte). Un número entero, como mínimo 1. Con el valor por defecto, un corte nunca deja una línea sola de un párrafo o elemento al pie de una columna ni al principio de la siguiente; si el <code>splitMinLines</code> del estilo de la caja es menor, manda ese. Con <code>1</code> un corte puede dejar una línea del párrafo o elemento a un lado, como hasta postext 1.4. Las configuraciones guardadas por versiones anteriores cuyos capítulos tienen algún <code>:::callout</code> se leen con <code>1</code> (ver <a href="#paquetes-escritos-por-postext-14-o-anterior">Paquetes escritos por postext 1.4 o anterior</a>); en código, <code>pinLegacyBoxChildCut</code>, de <code>postext/bundle</code>, hace lo mismo.</td>
+    </tr>
+    <tr>
+      <td><code>flowColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Una valla <code>:::columns</code> fuera de un recuadro compone sus bloques en subcolumnas de la columna de texto (o a lo ancho de la página con <code>span="page"</code>), y un grupo, en un recuadro o en el texto, se corta entre sus subcolumnas cuando no cabe y sigue en la columna o la página siguiente (ver <a href="/es/docs/document-format#columns">Formato del documento › <code>:::columns</code></a>). Con <code>false</code> se ignora la valla fuera de un recuadro y nunca se corta dentro de un grupo, como hasta postext 1.24; las configuraciones guardadas por versiones anteriores cuyos capítulos tienen alguna valla <code>:::columns</code> se leen con <code>false</code>; en código, <code>pinLegacyFlowColumns</code>, de <code>postext/bundle</code>, hace lo mismo. Una sección con estilo conserva el valor del documento. Desde postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>floatsUnderOpener</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Bajo una apertura a ancho de página (un nivel o un estilo de encabezado con <code>span: 'page'</code>) compuesta sobre dos o más columnas de texto, la cabeza de la columna de la propia apertura, justo bajo su banda, es un hueco para un flotante <code>'top'</code> o <code>'auto'</code>, a la altura de las cabezas de las demás columnas: una caja flotante puesta justo después de la apertura, o un recurso incrustado ahí, queda bajo la apertura en la primera columna (y en varias a partir de ella con <code>columns</code>), y el texto de la columna empieza debajo. Un flotante citado en el texto sigue yendo después de la línea que lo cita. Con <code>false</code> no se ofrece ese hueco y el flotante cae a partir de la segunda columna, como hasta postext 1.24; las configuraciones guardadas por versiones anteriores que definen un encabezado a ancho de página se leen con <code>false</code>; en código, <code>pinLegacyOpenerHeadFloats</code>, de <code>postext/bundle</code>, hace lo mismo. Una sección con estilo conserva el valor del documento. Desde postext 1.25.</td>
     </tr>
     <tr>
       <td><code>writingMode</code></td>
@@ -2270,6 +2294,8 @@ Las editoriales esperan que cada columna empiece en la parte superior de la pág
 4. **Finales de lista** — cuando los encabezados no pueden absorber todo el hueco, se añade una línea de rejilla donde termina una lista o enumeración (el aire tras una lista se lee con naturalidad), con un máximo por lista.
 5. **Párrafos corridos** — como último recurso, se recompone un párrafo de la columna con una línea más (el `\looseness=+1` de TeX), eligiendo el párrafo más largo para que el espaciado adicional se diluya de forma invisible. La solución corrida solo se acepta cuando todas sus líneas quedan **por debajo de `bodyText.maxWordSpacing`** — el color tipográfico nunca supera el límite que ya tengas configurado. Requiere `bodyText.optimalLineBreaking`.
 
+En una retícula de caracteres (`cjk.grid`, véase [Composición china › La retícula de caracteres](/es/docs/chinese-layout#la-retícula-de-caracteres)) cada carácter ocupa una casilla de un cuadratín de ancho y cada línea cae en el paso de líneas de la retícula, que es también la rejilla base. Allí el equilibrado está desactivado por defecto, como en el texto vertical: una página compuesta línea a línea sobre una retícula, a la manera de la GB/T 9704, que cuenta 22 líneas de 28 caracteres, deja corta la columna que termina corta. Una configuración que fija `enabled: true` recibe palancas que respetan la retícula: los encabezados, los finales de lista, las fórmulas en bloque y las figuras toman líneas enteras de la retícula, de modo que el texto de debajo se desplaza filas enteras, y `gridLines: 'off'` deja fuera esas palancas para una norma que no tiene ninguna fila vacía que ceder. Un párrafo chino o japonés gana una línea solo cuando ningún hueco entre dos de sus caracteres se abre más de `maxTracking`, y no recibe tracking en sus letras: una línea a la que le falta un carácter reparte un cuadratín entre sus huecos, muy por encima de los 0,01 em por defecto, así que en una retícula de casillas enteras la palanca de párrafos corridos casi nunca encuentra nada. La caja que cierra una columna y las imágenes con zona segura quedan fuera de la retícula por diseño y funcionan como en cualquier otra página.
+
 La última columna de una página solo se equilibra cuando la página fluye de forma natural hacia la siguiente — la página final de un capítulo termina corta de forma legítima. Esa página, y una banda de cierre cortada a nivel por `trailing`, mantienen además las cabezas de sus columnas a la misma altura: no se añade ninguna línea bajo una figura o tabla que encabece una de sus columnas (la palanca tras flotantes), y un encabezado o una caja que abre una columna bajo esa figura se queda en su cabeza, diga lo que diga `stretchAfterFloats`, de modo que ninguna columna empieza más abajo que su vecina solo para igualar los pies.
 
 <table>
@@ -2286,7 +2312,7 @@ La última columna de una página solo se equilibra cuando la página fluye de f
       <td><code>enabled</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Si se equilibran los finales de columna.</td>
+      <td>Si se equilibran los finales de columna. Desactivado por defecto en texto vertical (<code>layout.writingMode: 'vertical-rl'</code>) y en una retícula de caracteres (<code>cjk.grid.enabled</code>, desde postext 1.25); <code>true</code> lo activa también ahí.</td>
     </tr>
     <tr>
       <td><code>maxLinesPerHeading</code></td>
@@ -2360,12 +2386,20 @@ La última columna de una página solo se equilibra cuando la página fluye de f
       <td><code>'first'</code></td>
       <td>Cuándo toma un recuadro que cierra una columna corta el espacio bajo su pie (la palanca 1, registrada como <code>trailingCallout</code>). <code>'first'</code>: antes que cualquier otra palanca, como hasta postext 1.4 — el recuadro se queda con todo el hueco, aunque sean varias líneas, y los encabezados de encima no reciben nada. <code>'last'</code>: después de las palancas de encabezados, finales de lista, fórmulas y flotantes, que toman antes las líneas enteras; el recuadro baja con el texto de encima y luego toma solo lo que dejaron, normalmente una fracción de línea, de modo que su pie sigue cayendo en la última casilla de la rejilla y queda cerca del texto que comenta. <code>'off'</code>: nunca; el recuadro conserva el espacio bajo su pie, aunque las demás palancas aún pueden bajarlo líneas enteras cuando añaden espacio por encima, y la fracción de línea que sobra se queda. En una página de cierre, donde el recuadro es la única palanca que alinea su pie con la columna contigua, <code>'off'</code> lo deja donde lo puso el flujo. Cualquier otro valor se lee como <code>'first'</code>. Un recuadro que cierra la única columna de texto de su banda (una página de una sola columna que acaba antes de tiempo y cuyo bloque siguiente abre la página siguiente) nunca se mueve: no hay columna al lado con la que alinearlo (desde postext 1.19).</td>
     </tr>
+    <tr>
+      <td><code>gridLines</code></td>
+      <td><code>'allow' | 'off'</code></td>
+      <td><code>'allow'</code></td>
+      <td>En una retícula de caracteres: si pueden actuar las palancas que añaden líneas enteras de la retícula (sobre un encabezado, donde termina una lista, bajo una fórmula en bloque o una caja, bajo una figura que encabeza la columna). Mantienen cada carácter en su casilla; <code>'off'</code> conviene a una norma que cuenta las líneas de la página, y deja corta la columna. Sin efecto fuera de la retícula. Cualquier otro valor se lee como <code>'allow'</code>. Desde postext 1.25.</td>
+    </tr>
   </tbody>
 </table>
 
 #### Qué palanca actuó
 
 La maquetación deja constancia de cada palanca que aplica, en el bloque sobre el que la aplica: `block.balancing` en el VDT que devuelve `buildDocument`. Una hoja de pruebas, un test o un informe pueden decir por qué una columna termina alineada — y qué columnas no pudo cerrar ninguna palanca. Los bloques que el equilibrado deja como estaban no llevan `balancing`, y un documento compuesto con `enabled: false` no lo lleva en ninguno.
+
+En una retícula de caracteres el documento dice por qué una columna puede terminar corta: `doc.gridBalancing` es `{ off: true }` cuando el equilibrado está desactivado porque la página va sobre una retícula y la configuración no lo activa, y `{ gridLines: 'off' }` cuando actúa sin las palancas de líneas enteras; una columna que sigue corta lleva `column.gridRefused`, las palancas que la retícula le negó (`'looseParagraph'` cuando un párrafo solo podía ganar su línea sacando sus caracteres de sus casillas, y las palancas de líneas enteras con `gridLines: 'off'`). Ninguno de los dos aparece fuera de la retícula.
 
 ```ts
 interface VDTBalancing {
@@ -4020,6 +4054,9 @@ interface CjkConfig {
   spaceAfterQuestion?: 'auto' | boolean;    // Un cuadratín tras ？！ dentro de un párrafo (Japón).
   paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // Un paréntesis que abre un párrafo sangrado.
   wordBreak?: 'normal' | 'keep-all';        // keep-all: cortar solo en los espacios (分かち書き, coreano).
+  titleMinChars?: number;                   // Caracteres de un título de obra a cada lado de un corte; por defecto 2.
+  circledNumbers?: 'cjk' | 'western';       // ① ② como caracteres chinos (por defecto) o como letras latinas.
+  composeDesignText?: boolean;              // Reglas CJK en el texto de diseño; por defecto true.
   latinSpacing?: Dimension;                 // Entre chino y latín; por defecto 0,25 em.
   uprightDigits?: 0 | 2 | 3 | 4;            // Texto vertical: números en una casilla; por defecto 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
@@ -4107,6 +4144,24 @@ interface CjkConfig {
       <td><code>'normal' | 'keep-all'</code></td>
       <td><code>'normal'</code></td>
       <td>Dónde se corta una línea entre dos caracteres. <code>'keep-all'</code> corta solo en un espacio (U+0020, U+3000) y junto a la puntuación donde <code>lineBreak</code> lo permite (tras 、。」, antes de 「), nunca entre dos letras (kana, kanji, hangul, latinas): para kana escrito con un espacio entre frases (分かち書き), como en los libros ilustrados y las cartillas, y para el coreano. Una frase más larga que la línea se corta por dentro como la cortaría <code>'normal'</code>. Un estilo de párrafo puede fijar el suyo (<code>wordBreak</code>). Desde postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>titleMinChars</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>Cuántos caracteres de un título de obra deja como mínimo un corte de línea a cada lado: dentro de <code>《…》</code> o <code>〈…〉</code>, escritos o añadidos por <code>bookTitleMark</code>, y dentro de un título <code>:book[…]</code> compuesto con la línea ondulada o sin marca. Con 2 ninguna línea acaba en <code>《說</code> con <code>文》</code> al comienzo de la siguiente, y un título de tres caracteres o menos no se parte nunca; en general no se parte ninguno de hasta el doble menos uno. La regla cede cuando la línea no tiene otro corte (un título más largo que la línea se sigue partiendo por dentro, donde <code>lineBreak</code> lo permite). Con <code>1</code> la línea puede partirse donde lo permita el nivel. Una configuración guardada antes de postext 1.25 (<code>configVersion</code> 10 o anterior), en un libro que tenga algún título, se lee con <code>1</code>. Desde postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>circledNumbers</code></td>
+      <td><code>'cjk' | 'western'</code></td>
+      <td><code>'cjk'</code></td>
+      <td>Cómo se componen en un párrafo CJK los números y letras en círculo, entre paréntesis y con punto: ①–⑳, ⑴–⒇, ⒈–⒛, ⓐ–ⓩ y el resto de U+2460–U+24FF, y los números ❶–❿ y ➀–➓ de los dingbats. <code>'cjk'</code>: como caracteres chinos, una celda sin espacio entre chino y latín alrededor, y ninguna línea acaba en uno, porque numera el texto que lo sigue; vale en todos los niveles de <code>lineBreak</code> que apartan del final de línea un signo de moneda (todos menos <code>none</code> y <code>ja-loose</code>). <code>'western'</code>: como letras latinas, con el espacio entre chino y latín a ambos lados, y la línea puede acabar en uno. El texto vertical los pone de pie en los dos casos. Una configuración guardada antes de postext 1.25, en un libro que tenga alguno, se lee con <code>'western'</code>. Desde postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>composeDesignText</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si el texto de diseño en chino o japonés (diseños de títulos y aperturas, cabeceras y folios, diseños de página, páginas de parte) se compone con las reglas del cuerpo: las de principio y final de línea de <code>lineBreak</code>, los anchos de los signos de <code>punctuationWidth</code> y <code>compressAdjacent</code>, <code>latinSpacing</code>, <code>hangingPunctuation</code> y <code>titleMinChars</code>. Una fila del texto (las líneas entre dos <code>\n</code>) se compone así cuando tiene más letras CJK que espacios entre palabras, como pasaría con un párrafo; las demás filas se parten en los espacios, como antes. Los saltos de línea explícitos, <code>paragraphIndent</code>, las capitulares y las marcas en línea siguen funcionando; las líneas quedan en bandera (no se reparten entre caracteres) y las lecturas, el warichu y las marcas de énfasis se imprimen como texto normal. Con <code>false</code> ese texto se parte en los espacios y cada signo conserva el ancho propio de la fuente. Una configuración guardada antes de postext 1.25 cuyo texto tenga CJK se lee con <code>false</code>. Desde postext 1.25.</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -4398,7 +4453,7 @@ interface ResourceType {
 }
 ```
 
-`ResourcePlacement` tiene la misma forma que el `placement` que un recurso define por su cuenta. `position` elige la clase de hueco libre que puede ocupar el flotante — `auto` (el valor por defecto) toma el primero tras la primera referencia, `top` / `bottom` lo limitan a esa clase de banda, `here` incrusta el recurso en línea. `span` fija la extensión del flotante: una columna, todo el ancho de contenido o la columna lateral solo para flotantes de una disposición de columna y media. `rotate` gira el recurso un cuarto de vuelta y lo convierte en un flotante a ancho de página en una página propia. `width` estrecha el flotante a una fracción de su columna (o de la página, en un flotante a ancho de página) — una tabla pequeña en una columna ancha, por ejemplo. `align` indica dónde se sitúa ese flotante más estrecho — a la izquierda por defecto, centrado o a la derecha — y dónde se sitúa en su hueco una imagen más estrecha que él: un mapa de bits más pequeño que la columna, o una imagen que `layout.fitFiguresToPage` redujo. El pie y la nota conservan la medida del hueco. (Hasta postext 1.4 esa imagen se componía siempre alineada a la izquierda). `captionSide` pone el pie junto a la figura en la columna lateral solo para flotantes de una disposición de columna y media (`layout.sideColumnRole: 'floats'`), a la altura del borde superior de la figura (del inferior en un flotante de pie); solo se aplica a los flotantes de columna, y una página sin esa columna mantiene el pie bajo la figura. Cuando ni el recurso ni su tipo definen una colocación, el valor integrado es `auto` / `column`. `shrink` (`'never'`, `'page'`, `'slot'`) y `minScale` (0.7 si no se indica) reducen una imagen flotante al sitio de su hueco en lugar de llevarla más adelante, y `captionMeasure: 'body'` compone el pie y la nota de una imagen más estrecha que su hueco a la anchura de la imagen (véase [Formato del documento › Colocación](/es/docs/document-format#colocación)); `layout.floatShrink` da el valor del documento para los dos primeros. `wrap` coloca una inserción en línea o un flotante de una columna en un lado de su columna con el texto compuesto a su lado, a `wrapGap` de distancia; `layout.wrap` guarda los valores por defecto (véase [Formato del documento › Ajuste del texto](/es/docs/document-format#ajuste-del-texto)).
+`ResourcePlacement` tiene la misma forma que el `placement` que un recurso define por su cuenta. `position` elige la clase de hueco libre que puede ocupar el flotante — `auto` (el valor por defecto) toma el primero tras la primera referencia, `top` / `bottom` lo limitan a esa clase de banda, `here` incrusta el recurso en línea. `span` fija la extensión del flotante: una columna, todo el ancho de contenido o la columna lateral solo para flotantes de una disposición de columna y media. `rotate` gira el recurso un cuarto de vuelta y lo convierte en un flotante a ancho de página en una página propia. `width` estrecha el flotante a una fracción de su columna (o de la página, en un flotante a ancho de página) — una tabla pequeña en una columna ancha, por ejemplo. `align` indica dónde se sitúa ese flotante más estrecho — a la izquierda por defecto, centrado o a la derecha — y dónde se sitúa en su hueco una imagen más estrecha que él: un mapa de bits más pequeño que la columna, o una imagen que `layout.fitFiguresToPage` redujo. El pie y la nota conservan la medida del hueco. (Hasta postext 1.4 esa imagen se componía siempre alineada a la izquierda). `captionSide` pone el pie junto a la figura en la columna lateral solo para flotantes de una disposición de columna y media (`layout.sideColumnRole: 'floats'`), a la altura del borde superior de la figura (del inferior en un flotante de pie); solo se aplica a los flotantes de columna, y una página sin esa columna mantiene el pie bajo la figura. Cuando ni el recurso ni su tipo definen una colocación, el valor integrado es `auto` / `column`. `shrink` (`'never'`, `'page'`, `'slot'`) y `minScale` (0.7 si no se indica) reducen una imagen flotante al sitio de su hueco en lugar de llevarla más adelante, y `captionMeasure: 'body'` compone el pie y la nota de una imagen más estrecha que su hueco a la anchura de la imagen (véase [Formato del documento › Colocación](/es/docs/document-format#colocación)); `layout.floatShrink` da el valor del documento para los dos primeros. `wrap` coloca una inserción en línea o un flotante de una columna en un lado de su columna con el texto compuesto a su lado, a `wrapGap` de distancia; `layout.wrap` guarda los valores por defecto (véase [Formato del documento › Ajuste del texto](/es/docs/document-format#ajuste-del-texto)). `citingPage` deja que un flotante `top` o `auto` encabece la página o la columna donde cae la línea que lo cita en lugar de tomar el primer hueco libre después de ella; `layout.floatsAtCitingPage` da el valor por defecto del documento y `layout.maxTopFraction` la fracción de la columna que puede ocupar (véase [Formato del documento › Colocación](/es/docs/document-format#colocación)).
 
 `columns` (desde postext 1.18) coloca un flotante `span: 'column'` sobre ese número de columnas contiguas en una página de varias: una foto sobre dos de las cinco columnas de un periódico. Su medida es la de esas columnas y los medianiles que las separan. Ocupa la cabeza de una serie de columnas vacías que empiezan a la misma altura, o el pie de la columna que lo cita y de las columnas vacías que la siguen; tantas columnas como tiene la página, o más, lo convierten en un flotante a todo el ancho. No se aplica a los `span` `'page'` y `'side'`, a un recurso girado (`rotate`) ni a una inserción en línea (`here`), y `captionSide` solo vale para un flotante de una columna.
 
@@ -4738,7 +4793,13 @@ const config: PostextConfig = {
       <td><code>overflow</code></td>
       <td><code>'split' | 'clip' | 'hide'</code></td>
       <td><code>'split'</code></td>
-      <td>Qué ocurre con una tabla más alta que la página: continuarla en las páginas siguientes, conservar solo las filas que caben, o no colocarla. Véase más abajo.</td>
+      <td>Qué ocurre con una tabla más alta que la página: continuarla en las páginas siguientes, conservar solo las filas que caben, o no colocarla. Con <code>splitInline</code>, también con una tabla colocada en el texto que no cabe en lo que queda de su columna. Véase más abajo.</td>
+    </tr>
+    <tr>
+      <td><code>splitInline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Aplicar <code>overflow</code> también a las tablas colocadas <code>here</code>: una tabla en línea que no cabe en el espacio que queda en su columna se corta entre filas y sigue al principio de la columna siguiente. Con <code>false</code> una tabla así pasa entera a la columna siguiente, como hasta postext 1.24; las configuraciones guardadas por versiones anteriores cuyos capítulos insertan un recurso se leen con <code>false</code>. Véase <a href="#tablas-más-altas-que-la-página">Tablas más altas que la página</a>. Desde postext 1.25.</td>
     </tr>
     <tr>
       <td><code>continuedSuffix</code></td>
@@ -4844,7 +4905,9 @@ Una tabla flotante que no cabe en la página nueva que se le ofrece no se compri
 
 **Dónde termina la primera parte.** Una tabla a la que se ofrece la cabeza de una columna vacía tras su referencia toma las filas que caben ahí y sigue en el hueco siguiente. Llena la columna hasta el pie cuando la tiene para ella sola: una parte que dejaría menos de tres líneas de texto debajo las ocupa también, en lugar de dejar un resto de texto suelto. Cuando la columna ya tiene otra banda de flotantes — una figura a ancho de página en la cabeza, por ejemplo —, la parte se detiene al menos tres líneas de texto antes del pie, el espacio para texto que deja cualquier flotante que comparte columna con otro, de modo que la columna termina con algo de texto bajo la tabla y no solo con flotantes. Para que una tabla larga llegue al pie de su columna, cítala donde la página en la que empieza no lleve otro flotante (tras la página de una figura a ancho de página, por ejemplo), o ajusta sus filas a la columna.
 
-`'clip'` conserva las filas iniciales que caben en la página y descarta el resto en silencio (la nota sigue cerrando la parte); `'hide'` no coloca la tabla. Ambos solo actúan cuando la tabla es más alta que una página: una tabla que cabe se coloca entera en cualquier modo. Las tablas en línea (`placement.position: 'here'`) no se dividen.
+`'clip'` conserva las filas iniciales que caben en la página y descarta el resto en silencio (la nota sigue cerrando la parte); `'hide'` no coloca la tabla. Ambos solo actúan cuando la tabla es más alta que una página: una tabla que cabe se coloca entera en cualquier modo.
+
+**Tablas colocadas en el texto.** Una tabla colocada `here` (insertada con `::resource`) sigue las mismas reglas desde postext 1.25 (`splitInline`, activado por defecto). Cuando no cabe en el espacio que queda en su columna, se corta entre filas: la primera parte conserva encima el hueco de los flotantes y al menos las filas de cabecera y dos filas del cuerpo (si caben menos, la tabla entera empieza en la columna siguiente, como antes); cada parte posterior abre la columna siguiente sin hueco encima, compuesta al ancho de esa columna (en una maqueta de columna y media, una parte que cae en la columna estrecha se compone a su ancho), y el texto que sigue a la línea `::resource` va tras la última parte. La repetición de la cabecera, el pie con el sufijo, la marca, la nota en la última parte, la cola de tres filas y los cortes que respetan las celdas combinadas y las filas que encabezan un grupo son los de una tabla flotante. Una tabla de menos de cinco filas de cuerpo nunca se corta. `'clip'` conserva las filas iniciales de una tabla en línea más alta que una columna, compuesta al principio de una columna; `'hide'` no coloca esa tabla; una más baja pasa entera a la columna siguiente en los dos modos. Una página que abre una tabla en línea solo reserva frente a los flotantes que acoge el espacio de su primera parte, de modo que una figura a ancho de página que espera encabeza esa página y la tabla sigue debajo. Las tablas en línea de una página vertical y las tablas dentro de un recuadro no se cortan. Con `splitInline: false` una tabla en línea pasa entera a la columna siguiente, como hasta postext 1.24.
 
 Las cadenas de continuación toman su valor por defecto del idioma del documento (`locale`, o en su defecto el idioma de la división silábica): inglés `(cont.)` / `Continued`, español `(cont.)` / `Continúa`, y lo mismo en francés, alemán, italiano, portugués, catalán y neerlandés (recogidas en [Idioma del documento](#idioma-del-documento)).
 
@@ -5063,7 +5126,7 @@ Las sobrescrituras por tipo se combinan con `mergeCaptionStyle(resolvedCaptionSt
 
 ## Estilo de diagramas
 
-La propiedad `diagramStyle` controla cómo se colorean los diagramas SVG incrustados (recursos con `kind: 'svg'`). Su única función hoy es el **modo a una sola tinta**: una pasada de recoloreado que convierte cada color del diagrama en un matiz de una única tinta, de modo que las figuras se reproduzcan fielmente cuando el documento se imprime con una sola tinta plana.
+La propiedad `diagramStyle` controla cómo se colorean los diagramas SVG incrustados (recursos con `kind: 'svg'`) y en qué fuentes se compone su texto. El **modo a una sola tinta** es una pasada de recoloreado que convierte cada color del diagrama en un matiz de una única tinta, de modo que las figuras se reproduzcan fielmente cuando el documento se imprime con una sola tinta plana. Las **fuentes incrustadas** meten en cada SVG las variantes que nombra su texto, para que sus rótulos se compongan con las fuentes del documento en el canvas, en HTML y en EPUB (consulta [Fuentes en el texto de los SVG](#fuentes-en-el-texto-de-los-svg)).
 
 ```ts
 const config: PostextConfig = {
@@ -5095,6 +5158,12 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td>Color principal (<code>#295AA3</code>)</td>
       <td>La tinta. Por defecto es el color principal de la paleta del documento (enlazado mediante <code>paletteId: 'main-color'</code>), de modo que cambiar la muestra de la paleta retintea los diagramas junto con los encabezados y las negritas.</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Incrustar en cada SVG las variantes que nombra su texto (<code>font-family</code>) como data URI de <code>@font-face</code> antes de mostrarlo como imagen: en el canvas, en HTML, en EPUB y en el ráster de reserva del PDF. Nunca se escribe en el archivo guardado. Un recurso se excluye con <code>svg.inlineFonts: false</code> (desde postext 1.25).</td>
     </tr>
   </tbody>
 </table>
@@ -5176,6 +5245,72 @@ const html = renderToHtml(doc, { resourceImageUrl: urlDe, singleInk: true });
 `renderToHtml` toma el valor por defecto de su `singleInk` de la indicación del propio resolutor, así que `bundleImageUrl(bundle)` no necesita la opción.
 
 Para cada color que reescribe la pasada sobre el marcado (valores hexadecimales, `rgb()` y `hsl()`, `white` y `black`; consulta [Cómo funciona la tinta única](#cómo-funciona-la-tinta-única)), el mapeo por píxeles da el mismo resultado, incluidos los bordes suavizados y los degradados. Los dos difieren donde la pasada sobre el marcado deja un color como está: los colores con nombre distintos de `white` y `black`, `currentColor`, las formas y los textos sin relleno (dibujados en el negro por defecto) y los mapas de bits incrustados en el SVG se tiñen en pantalla pero conservan su color en el PDF. Da a cada elemento del diagrama un color explícito en hexadecimal, `rgb()` o `hsl()` para obtener la misma salida. Cuando el canvas no puede leer los píxeles de vuelta (un `<img>` de otro origen, cargado sin CORS), la imagen se pinta sin teñir.
+
+### Fuentes en el texto de los SVG
+
+Un dibujo SVG se muestra a través de una imagen: un `<img>` en el canvas, en HTML y en EPUB. Un documento de imagen no ve las fuentes web de la página, así que `<text font-family="IBM Plex Sans">` caería en una fuente del sistema. Desde postext 1.25 el motor incrusta en el marcado las variantes que nombra el texto antes de decodificar la imagen o entregarla como URL: una regla `@font-face` por archivo de fuente, con sus bytes como data URI, en un `<style>` justo después de la etiqueta `<svg>` raíz. El PDF no necesita nada de esto: compone el texto SVG como texto real con sus fuentes incrustadas (consulta [Bytes de recursos y másteres de impresión](#bytes-de-recursos-y-másteres-de-impresión)).
+
+Lo que pide el texto se lee de `font-family`, `font-weight`, `font-style` y `font`, como atributos, dentro de atributos `style` y heredado de los grupos que lo contienen; también cuenta una regla de `<style>` que nombre una familia. Quedan fuera las familias genéricas (`serif`, `sans-serif`…) y el texto de `<title>` o `<desc>`, y una familia que el propio SVG declara con `@font-face` no se toca. Un tramo recorre su lista de `font-family` hasta la primera familia que tenga variante. Primero se recolorea para la tinta única y después se incrustan las fuentes.
+
+Las variantes las da un **proveedor** con el contrato de `PdfFontProvider` de postext-pdf, así que un mismo proveedor sirve para los dos: se le llama con la familia, el peso y el estilo, y los caracteres que el SVG compone en esa variante, y responde con un archivo o con varios. A una familia servida en tramos de `unicode-range` (Fontsource, Google Fonts) se le responde con los tramos que necesitan esos caracteres, de modo que un SVG con rótulos latinos lleva solo el archivo `latin`. El proveedor por defecto lee el registro de fuentes del motor: `loadBundleFonts` registra allí las variantes de un paquete, y un anfitrión registra las suyas con `registerFontBytes(family, weight, style, bytes, { unicodeRange })`, o con `registerFontUrl(…)` para un archivo que se descarga la primera vez que un SVG lo necesita. Una familia que nadie ha registrado se busca en las reglas `@font-face` de las hojas de estilo legibles de la página. Un `FontFace` añadido a `document.fonts` a partir de bytes no conserva los bytes, así que el motor no puede leerlo de vuelta: registra también esas variantes.
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // recoloreado, fuentes incrustadas, decodificado, registrado
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+Dónde ocurre:
+
+- **Canvas.** `registerSvgImage(fileId, svgText, options)` recolorea (`inkHex`), incrusta las fuentes (`fonts`, un proveedor; `inlineFonts: false` se lo salta), decodifica y registra la imagen como fuente vectorial, y se resuelve con lo que ha sido de cada variante. `registerBundleImages(bundle)` hace lo mismo con los SVG de un paquete, primero con las variantes del propio paquete. `prepareSvgMarkup(svgText, options)` devuelve el marcado preparado para un anfitrión que decodifica por su cuenta.
+- **HTML.** `bundleImageUrl(bundle)` sirve el marcado SVG con las variantes del paquete incrustadas. `renderToHtml(doc, { inlineSvgFonts: true })` incrusta en los data URI SVG que devuelve `resourceImageUrl` las variantes que el registro tiene en memoria (o `inlineSvgFonts: { fonts, maxBytes, withhold }`). Una URL de objeto no se puede leer de forma síncrona, así que un anfitrión que sirve URL blob incrusta antes de crearlas.
+- **EPUB.** `postext-epub` incrusta desde las `fonts` del libro, y después desde `svgFonts.provider`, antes de escribir un SVG (consulta [Libros EPUB](#libros-epub-postext-epub)).
+- **PDF.** El texto SVG se compone como texto real con las fuentes incrustadas. Un `<style>` que solo contiene reglas `@font-face` (variantes que incrustó el autor) ya no hace que la figura pase a ráster. Cuando una figura sí pasa a ráster (un filtro, un degradado), su ráster se hace con las variantes incrustadas desde el `fontProvider` del PDF.
+
+También se exportan las funciones de nivel más bajo: `svgFontRequests(svgText)` enumera las familias, el peso, el estilo y los caracteres de cada tramo; `inlineSvgFonts(svgText, provider, options)` e `inlineSvgFontsSync(svgText, syncProvider, options)` devuelven el marcado; `inlineSvgFontsDetailed` añade un informe de cada variante (`inlined`, `declared`, `unavailable`, `withheld`, `tooLarge`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Opción</th>
+      <th style={{ width: '160px' }}>Tipo</th>
+      <th style={{ width: '120px' }}>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>Máximo de bytes de fuente incrustados en un SVG (antes del base64, que añade un tercio). Si las variantes juntas lo superan, no se incrusta ninguna y se avisa con <code>svgFontsTooLarge</code>.</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>los cuatro</td>
+      <td>Los formatos de archivo que se incrustan; los archivos de otros formatos se omiten.</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>ninguno</td>
+      <td>Familias que se dejan fuera de un archivo que sale de la aplicación (no redistribuibles). Su referencia se mantiene y el lector usa una fuente de reserva; <code>onWithheld(family)</code> recibe aviso de cada una.</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>ninguno</td>
+      <td>Recibe aviso de una familia sin variante (<code>svgFontUnavailable</code>) y del límite de tamaño (<code>svgFontsTooLarge</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+**Desactivarlo.** `diagramStyle.inlineFonts: false` deja todos los SVG como están guardados; `svg.inlineFonts: false` en un recurso deja ese SVG byte a byte como está, para un SVG que lleva sus propias variantes o que no debe cambiar. Un paquete escribe la exclusión del recurso como `"inlineFonts": false` en su `preset.json`.
+
+**Licencias.** Incrustar mete archivos de fuente dentro de imágenes que pueden salir de la aplicación (una exportación HTML, un EPUB). Ocurre cuando una imagen se muestra o se exporta, nunca en los bytes guardados del recurso, y `withhold` deja fuera las familias que una licencia no te permite ceder: el escritor de EPUB retiene las variantes marcadas con `redistributable: false`, y el Sandbox las familias personalizadas marcadas así.
 
 
 ## Estilo de vídeo
@@ -6143,7 +6278,7 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td><code>span</code></td>
       <td><code>'column' | 'page' | 'side'</code></td>
       <td><code>'column'</code></td>
-      <td>Extensión horizontal: la columna, el ancho completo del área de contenido o la columna lateral solo para flotantes de una disposición de columna y media (<code>layout.sideColumnRole: 'floats'</code>) — la caja sale entonces del flujo y se apila en esa columna junto al texto que interrumpe. Se puede sobrescribir por instancia con el atributo <code>span</code>. En disposiciones multicolumna una caja <code>'page'</code> se convierte en un <em>bloque a ancho de página</em>: divide la página en bandas de columnas y ocupa su propia columna a todo el ancho (ver la sección del contenedor más abajo).</td>
+      <td>Extensión horizontal: la columna, el ancho completo del área de contenido o la columna lateral solo para flotantes de una disposición de columna y media (<code>layout.sideColumnRole: 'floats'</code>) — la caja sale entonces del flujo y se apila en esa columna junto al texto que interrumpe. Se puede sobrescribir por instancia con el atributo <code>span</code>. En disposiciones multicolumna una caja <code>'page'</code> se convierte en un <em>bloque a ancho de página</em>: divide la página en bandas de columnas y ocupa su propia columna a todo el ancho (ver la sección del contenedor más abajo). Una caja lateral que no cabe en la columna lateral de su página ocupa la de la página siguiente; si antes termina el capítulo (o el documento), cada caja que sigue esperando se compone en la columna lateral de una página posterior al texto, en el orden de sus vallas, y la composición lo avisa (<code>afterText</code>; hasta postext 1.24 las cajas posteriores a la primera de esas páginas se perdían).</td>
     </tr>
     <tr>
       <td><code>columns</code></td>
@@ -6344,7 +6479,7 @@ Límites de esta versión:
 - `placement: 'top' | 'bottom'` hace **flotar** la caja como un recurso: sale del flujo donde aparece y toma la primera banda libre a partir de ese punto — el pie de la página actual (`'bottom'`), o la cabeza / el pie de la siguiente página que abre el flujo — al ancho de la columna (`span: 'column'`) o al ancho completo del área de contenido (`span: 'page'`); el texto que la sigue rellena la página que dejó. Su marco y sus hijos van a `page.floats`, como los de una caja fija. Una caja flotante que encabeza una página nueva se coloca antes que las figuras que esperan esa página, y una figura citada en una página anterior que entonces cabe bajo ella toma el resto de esa página aunque quedaran menos de tres líneas de texto (una página galería: caja más figura, sin texto entre ambas). Una caja `span: 'side'` nunca flota: se apila junto al texto sea cual sea su `placement`. Con `columns` mayor que 1 (en el estilo o como atributo de la valla, desde postext 1.18), una caja `span: 'column'` ocupa ese número de columnas contiguas: la cabeza de una serie de columnas vacías que empiezan a la misma altura, o el pie de la columna en curso y de las vacías que la siguen, como en `:::callout{placement="top" columns="2"}`.
 - `width: 'auto'` se ajusta solo al título; los hijos se ignoran.
 - Un `:::callout` anidado dentro de otro aviso es una caja propia: se compone con su propio estilo (fondo, borde, radio, relleno, franja, título, icono, marcador, pestaña, tipografía) al ancho interior completo de su caja madre y se apila como un hijo más, con su `marginTop` / `marginBottom` colapsando con los vecinos. Su `span` y su `placement` (de la valla o del estilo) se ignoran —una caja anidada siempre fluye dentro de su madre—, igual que `floatBarrier` y `snapToGrid`. Las cajas se anidan a cualquier profundidad y pueden ir dentro de un grupo `:::columns` (cada una entera, en una columna). Cuando la caja madre se parte, el corte cae antes o después de una caja anidada, o dentro de ella si su estilo permite partirla; cada fragmento vuelve a dibujar los marcos que atraviesa el corte, y una caja anidada que continúa del fragmento anterior pierde su título y su icono, como una continuación de primer nivel.
-- Un grupo `:::columns{count=N}` … `:::` entre los hijos compone esos hijos en `N` columnas de igual ancho, separadas por `columnGap`, dentro de la caja: la secuencia se corta por los límites de bloque o de línea que mejor nivelan las columnas (un párrafo o elemento de lista cortado a medias sigue en la cabeza de la columna siguiente sin su viñeta), cada columna empieza en la parte superior del grupo y el grupo mide lo que la columna más alta; los hijos posteriores recuperan el ancho completo. Una caja partible (`keepTogether: false`) nunca corta dentro de un grupo. Sirve para un resumen de puntos clave a dos columnas o para las tablas de un recuadro ancho puestas lado a lado.
+- Un grupo `:::columns{count=N}` … `:::` entre los hijos compone esos hijos en `N` columnas de igual ancho, separadas por `columnGap`, dentro de la caja: la secuencia se corta por los límites de bloque o de línea que mejor nivelan las columnas (un párrafo o elemento de lista cortado a medias sigue en la cabeza de la columna siguiente sin su viñeta), cada columna empieza en la parte superior del grupo y el grupo mide lo que la columna más alta; los hijos posteriores recuperan el ancho completo. Una caja que se parte (`keepTogether: false`, o más alta que una columna) también corta dentro de un grupo, entre sus columnas: un grupo en serpentina llena sus columnas por turno y sigue en el fragmento siguiente, y uno paralelo (`breaks`) sigue corriente a corriente (desde postext 1.25; ver [Formato del documento › `:::columns`](/es/docs/document-format#columns)). Un `gap` en la valla sustituye a `columnGap` para ese grupo, y `rule` traza un filete a lo largo de cada medianil. Sirve para un resumen de puntos clave a dos columnas o para las tablas de un recuadro ancho puestas lado a lado.
 - El sexto atributo de la valla, `label`, se imprime en la pestaña `label` del estilo (véase arriba): `:::callout{type="recuadro" label="RECUADRO 1-1" title="La regla del octeto"}`; sin estilo de pestaña el atributo se ignora.
 
 En el VDT la caja es un bloque marco de `type: 'callout'` cuya decoración (fondo, franja, icono, título) vive en `designOverlay`, seguido de sus bloques hijos en la misma columna; el marco y cada hijo llevan el `containerId` de la valla. Una caja anidada es un marco `type: 'callout'` propio entre los hijos, seguido de sus bloques; conservan el `containerId` de la valla de primer nivel (la colocación y el equilibrado siguen viendo una sola unidad) y añaden `calloutPath`, los identificadores de contenedor de las vallas anidadas que los rodean, de la más externa a la más interna (el de un marco anidado es la última entrada). El PDF etiquetado da a cada caja anidada un `Div` dentro del de su madre. Las imágenes de icono se resuelven como las de los recursos: el registro de imágenes del canvas, la opción `resourceImageUrl` del HTML y el proveedor `resourceBytes` del PDF.
@@ -7689,6 +7824,8 @@ El panel **Revisión** del Sandbox muestra en su grupo *Fuentes* tres modos de f
 
 Al pulsar cualquiera de los avisos se abre el panel **Fuentes** para que subas la variante necesaria, vuelvas a añadir la familia o desambigües los duplicados.
 
+Cuando ya hay una composición, el panel muestra también el aviso del motor **Fuente sustituida en la composición** (`fontFallback`): una cara sin la que se midieron las páginas, porque falta o porque el navegador la dibuja a partir de otro peso o de otra inclinación. Una familia que ya figura como desconocida o con una variante faltante no aparece dos veces. Antes de la primera composición, ocupa su lugar una comprobación contra `document.fonts`.
+
 ## Paleta de colores
 
 La propiedad `colorPalette` de `PostextConfig` permite definir un conjunto reutilizable de colores con nombre y referenciarlos desde cualquier `ColorValue` de la configuración. Es el equivalente en Postext a las custom properties de CSS o al panel de muestras de InDesign: cambia la entrada una sola vez y todos los colores que apunten a ella se actualizan en el documento.
@@ -8784,7 +8921,7 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
   <tbody>
     <tr>
       <td><code>calloutOverflow</code></td>
-      <td>Una caja <code>:::callout</code> no cabe en ninguna columna y ningún corte puede partirla.</td>
+      <td>Una caja <code>:::callout</code> no cabe en ninguna columna y ningún corte puede partirla. Una caja con <code>span: 'side'</code> más alta que una columna lateral vacía también lo es (desde postext 1.25).</td>
       <td>Se coloca de todos modos, desbordando su columna en <code>overflowPx</code> (en <code>pageIndex</code> / <code>columnIndex</code>). Es el único tipo que aparece en <code>doc.warnings</code>; los de debajo están en <code>doc.contentWarnings</code>.</td>
     </tr>
     <tr>
@@ -8826,6 +8963,11 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td><code>unknownCalloutType</code></td>
       <td><code>:::callout{'{'}type{'}'}</code> no nombra ninguno de los <code>calloutStyles</code>; solo se registra cuando hay alguno configurado.</td>
       <td>La caja toma el primer estilo de aviso.</td>
+    </tr>
+    <tr>
+      <td><code>columnsFlowUnknown</code></td>
+      <td><code>:::columns{'{'}flow{'}'}</code> no es ni <code>snake</code> ni <code>parallel</code>; <code>value</code> es lo que dice.</td>
+      <td>El grupo toma el valor por defecto: <code>parallel</code> con <code>breaks</code>, <code>snake</code> sin él.</td>
     </tr>
     <tr>
       <td><code>unknownChipStyle</code></td>
@@ -8897,6 +9039,26 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td>Un recurso o una caja con el texto ajustado a su alrededor (<code>placement.wrap</code>, el <code>wrap</code> de una caja) que no se compone como se pidió. <code>reason</code>: <code>'tooNarrow'</code> (el texto de al lado quedaría más estrecho que <code>layout.wrap.minTextWidth</code>), <code>'fewLines'</code> (es más bajo que <code>layout.wrap.minLinesBeside</code> líneas), <code>'moved'</code> (uno en línea demasiado alto para el espacio que queda en su columna pasó a la siguiente, con su ancla) o <code>'verticalText'</code>. <code>resourceId</code> nombra un recurso, <code>box</code> el estilo de una caja. Señala la inserción o la caja.</td>
       <td>El elemento ocupa su banda entera, o se coloca en la columna siguiente, según la razón.</td>
     </tr>
+    <tr>
+      <td><code>columnsTooNarrow</code></td>
+      <td>Las subcolumnas de un grupo <code>:::columns</code> son más estrechas que seis emes de su texto: <code>columns</code> subcolumnas de <code>widthPx</code> cada una. Señala la valla del grupo.</td>
+      <td>El grupo se compone como se pidió, con pocas palabras por línea.</td>
+    </tr>
+    <tr>
+      <td><code>afterText</code></td>
+      <td>Una caja con <code>span: 'side'</code>, o una figura o tabla de la columna lateral (<code>resourceId</code>), compuesta en una página sin texto: el texto de su capítulo, o del documento, terminó mientras esperaba sitio en la columna lateral. Uno por caja o flotante; señala la caja (o el bloque que cita el flotante), con su página. Desde postext 1.25.</td>
+      <td>Queda en la columna lateral de una página abierta después del texto, las cajas en el orden de sus vallas.</td>
+    </tr>
+    <tr>
+      <td><code>unplaced</code></td>
+      <td>Una caja o un recurso flotante (<code>resourceId</code>) que seguía esperando un hueco cuando terminó la composición: las páginas abiertas para él no pudieron acogerlo (una caja lateral donde esas páginas no tienen columna lateral, por ejemplo). Señala la caja o el bloque que cita el recurso; sin página. Desde postext 1.25.</td>
+      <td>No está en ninguna página. Hasta postext 1.24 desaparecía sin aviso.</td>
+    </tr>
+    <tr>
+      <td><code>fontFallback</code></td>
+      <td>Una cara con la que se compuso el texto (<code>family</code>, <code>weight</code>, <code>style</code>) que el conjunto de fuentes no podía dar cuando se ejecutó el build: <code>reason: 'missing'</code>, no había cargada ni instalada ninguna cara de la familia; <code>'synthesized'</code>, el peso o la inclinación salen de otra cara de la familia (una cursiva 700 pedida a una familia que solo tiene una redonda 400). Se comprueba donde hay un conjunto de fuentes (<code>document.fonts</code>, el <code>self.fonts</code> de un worker o <code>BuildDocumentOptions.fontSet</code>), bajo <code>debug.warnings.missingFont</code>. No lleva página ni rango de origen.</td>
+      <td>El texto se mide y se dibuja con la fuente de reserva, o con la cara que el navegador engruesa o inclina; sus cortes de línea cambian cuando llega la cara. Ver <a href="#cargar-las-fuentes-antes-de-componer">Cargar las fuentes antes de componer</a>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -8916,7 +9078,7 @@ const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownR
 
 `formatWarning(w)` devuelve una descripción en inglés de una línea. Un anfitrión que localiza sus mensajes distingue por `kind` —y conserva una rama por defecto, porque las versiones menores pueden añadir tipos—. `collectContentWarnings(markdown, config, resources)` devuelve los avisos de contenido sin maquetar nada (la lista que añade la composición, sin `pageIndex`), para un editor que revisa el texto mientras se escribe. `collectHeadingDesignCuts(doc)` revisa una maquetación terminada en busca de diseños de encabezado cuyo texto pasa del pie de su página o de su columna (`kind: 'headingDesignCut'`; ver [Altura reservada](#altura-reservada)), que la propia maquetación no avisa, y `formatWarning` describe también sus resultados. El panel **Revisión** del Sandbox los muestra todos.
 
-Los renderizadores notifican lo que no pueden pintar como se pide mediante una opción `onWarning`: `renderPageToCanvas`, `renderPage` y `renderToCanvas` (`RenderPageOptions`), `renderToHtml` y `renderToHtmlIndexed` (`RenderHtmlOptions`), y `renderToPdf` (`RenderToPdfOptions`, también a través del worker de PDF). Hoy hay un único tipo de aviso de renderizado, `missingImage`: una imagen —una figura, la imagen de una celda de tabla, el icono de un aviso, una imagen de diseño— sin nada que dibujar se pinta como un marcador de posición neutro y se notifica, una vez por `fileId` y llamada de renderizado, con su `pageIndex`, el `resourceId` cuando el renderizador lo conoce (figuras e imágenes de celda) y, en el PDF, el `documentIndex` de un renderizado de varios documentos. Nada que dibujar significa: ningún `registerResourceImage` para el `fileId` en el canvas, ninguna URL de `resourceImageUrl` en HTML, y ningún byte de `resourceBytes` —o bytes que no se decodifican— en el PDF. Un recurso de mapa de bits o SVG que no nombra ningún `fileId` no tiene nada que pedir: se dibuja como marcador de posición sin aviso. Los avisos de renderizado no se guardan en el VDT: lo que un anfitrión puede aportar cambia después de la maquetación.
+Los renderizadores notifican lo que no pueden pintar como se pide mediante una opción `onWarning`: `renderPageToCanvas`, `renderPage` y `renderToCanvas` (`RenderPageOptions`), `renderToHtml` y `renderToHtmlIndexed` (`RenderHtmlOptions`), y `renderToPdf` (`RenderToPdfOptions`, también a través del worker de PDF). El principal tipo de aviso de renderizado es `missingImage`: una imagen —una figura, la imagen de una celda de tabla, el icono de un aviso, una imagen de diseño— sin nada que dibujar se pinta como un marcador de posición neutro y se notifica, una vez por `fileId` y llamada de renderizado, con su `pageIndex`, el `resourceId` cuando el renderizador lo conoce (figuras e imágenes de celda) y, en el PDF, el `documentIndex` de un renderizado de varios documentos. Nada que dibujar significa: ningún `registerResourceImage` para el `fileId` en el canvas, ninguna URL de `resourceImageUrl` en HTML, y ningún byte de `resourceBytes` —o bytes que no se decodifican— en el PDF. Un recurso de mapa de bits o SVG que no nombra ningún `fileId` no tiene nada que pedir: se dibuja como marcador de posición sin aviso. Otros dos tipos vienen de los anfitriones que incrustan fuentes en las imágenes SVG (`registerSvgImage`, `registerBundleImages`, `bundleImageUrl`, `renderToHtml` con `inlineSvgFonts`, postext-epub; consulta [Fuentes en el texto de los SVG](#fuentes-en-el-texto-de-los-svg)), con el `fileId` y el `resourceId` de la imagen: `svgFontUnavailable` (`family`, `weight`, `style`), una familia que nombra su texto sin variante que incrustar, de modo que la imagen compone ese texto con una fuente de reserva; y `svgFontsTooLarge` (`bytes`, `maxBytes`), variantes por encima del límite de tamaño, de las que no se incrusta ninguna. Los avisos de renderizado no se guardan en el VDT: lo que un anfitrión puede aportar cambia después de la maquetación.
 
 ```ts
 import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
@@ -9063,28 +9225,64 @@ const blocks = parseMarkdown(content);
 
 Consulta la página de [Formato del documento](/es/docs/document-format) para ver la lista completa de construcciones markdown que reconoce Postext.
 
-### Caché de medidas
+### Cargar las fuentes antes de componer
 
-La medición del texto es el paso costoso del proceso de composición. Dos clases de caché la abaratan, y se vacían de forma distinta:
-
-- **Una caché de bloques que es tuya.** `createMeasurementCache()` devuelve una `MeasurementCache` que recuerda cada párrafo medido, con su texto, sus fuentes, su ancho, sus opciones de corte de línea y el diccionario de separación silábica activo como clave. Pásala como tercer argumento de `buildDocument` (o de `buildDocumentAsync`) para reutilizar las medidas entre las pasadas de convergencia y entre composiciones: un editor que recompone el documento en cada pulsación mide entonces solo los párrafos que cambiaron. Sin ella, cada pasada vuelve a medir todos los bloques. Un párrafo leído de la caché es igual que uno medido de nuevo, así que una composición con caché corta cada línea como una sin ella; en postext 1.4.1 un párrafo guardado en caché perdía la marca de una última línea demasiado corta, y el ajuste de esas líneas y el equilibrado de columnas podían cortarlo de otra manera. El worker de composición conserva una entre composiciones y la sustituye cuando cambian las fuentes.
-- **Cachés globales de anchos.** Los anchos de palabra se guardan por cadena de fuente en un estado de módulo que comparten todas las composiciones de la página, y pretext tiene su propia caché. Son las que quedan obsoletas cuando una fuente web llega después de haberse medido el texto con una fuente de reserva.
+La composición mide el texto con las caras que tiene el conjunto de fuentes en el momento en que se ejecuta. `prepareFonts` carga antes del primer build todas las caras que piden una configuración y su texto: el cuerpo, los encabezados, las listas, los títulos y cuerpos de los recuadros, las tablas, los textos de los elementos de diseño, los titulillos, el índice de contenidos, el código y la rotulación de los cómics, en cada peso e inclinación que fija la configuración (las cuatro de la familia del cuerpo, porque `**` y `*` componen en ella la negrita y la cursiva). Cada cara se carga para los caracteres que compone el documento, de modo que una familia servida en tramos de `unicode-range` (latín extendido, griego, árabe, los tramos CJK de Google Fonts y Fontsource) trae los archivos que el texto necesita.
 
 ```ts
-import { buildDocument, createMeasurementCache, clearMeasurementCache } from 'postext';
-import type { MeasurementCache } from 'postext';
+import { prepareFonts, buildDocument, buildDocumentWithFonts } from 'postext';
 
-let cache: MeasurementCache = createMeasurementCache();
-let doc = buildDocument(content, config, cache);
+// Los archivos del anfitrión: el contrato del proveedor de fuentes del PDF, así que una misma función sirve a los dos.
+async function resolve(family: string, weight: number, style: 'normal' | 'italic') {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-${style}.woff2`;
+}
 
-// Ha terminado de cargar una fuente web: los anchos medidos con la de reserva no valen.
-await document.fonts.ready;
-clearMeasurementCache();           // sin argumento: vacía las cachés globales de anchos
-cache = createMeasurementCache();  // una caché de bloques no tiene clear(); crea otra
-doc = buildDocument(content, config, cache);
+const report = await prepareFonts(content, config, { resolve });
+// report.loaded, report.missing, report.synthesized: { family, weight, style }[]
+const doc = buildDocument(content, config);
+
+// O en una sola llamada: preparar, componer, cargar las caras que usaron las páginas y no estaban, y volver a componer.
+const same = await buildDocumentWithFonts(content, config, { resolve });
 ```
 
-`clearMeasurementCache()` no recibe argumentos ni toca ninguna `MeasurementCache`: sus bloques también se midieron con los anchos viejos, así que descártala y crea una nueva. Recomponer tras cargar una fuente sin vaciar las cachés da los mismos cortes de línea, medidos con la fuente de reserva.
+- **Las caras que declara la página** (una regla `@font-face`, un `FontFace` ya añadido) se cargan a través del conjunto de fuentes (`document.fonts.load`, o `self.fonts` en un worker). **Las que no declara** se piden a `resolve(family, weight, style, { text, codePoints })`, que responde con un archivo (bytes o una URL), con varios (los tramos de una cara), con `{ source, unicodeRange, weight, style }` para un tramo o un rango variable, o con `null`. El motor las añade como `FontFace` cuando han cargado todas, en el orden de la configuración y de cada respuesta (latin, luego latin-ext, luego greek si el resolutor responde así), de modo que el conjunto de fuentes queda igual sea cual sea el orden en que lleguen los archivos. También las registra en el registro de fuentes que leen las [imágenes SVG](#fuentes-en-el-texto-de-los-svg) y los workers de composición. Un resolutor puede declarar la cara por su cuenta (añadir una hoja de estilos) y responder `null`.
+- **El informe** enumera en `loaded` las caras que cubre una cara cargada (o una familia instalada), en `missing` las que siguen faltando y en `synthesized` las que el navegador sintetizaría a partir de otro peso o de otra inclinación. `timeoutMs` (10 000 por defecto) limita la espera; una cara que para entonces siga cargando cuenta como faltante. Donde no hay conjunto de fuentes (Node), `prepareFonts` no hace nada y da todas las caras por cargadas.
+- **`buildDocumentWithFonts(content, config, options)`** prepara, compone con `buildDocumentAsync`, lee las caras en las que las páginas compusieron texto de verdad, carga las que faltaban y vuelve a componer (dos composiciones más como mucho). `withLoadedFonts(build, options)` hace lo mismo alrededor de cualquier función de composición, para un libro que se compone capítulo a capítulo o para un paquete (`buildBundle`) que devuelve varios documentos. `options.onFonts` recibe el informe final.
+- **Después del build**, cada cara con la que se compuso el texto y que el conjunto de fuentes no pudo dar figura en `doc.contentWarnings` como `fontFallback` (ver [Avisos del documento](#avisos-del-documento)).
+
+Las caras que llegan más tarde se recogen solas. El motor apunta, por cada conjunto de fuentes, qué caras de cada familia estaban cargadas la última vez que miró; un build vuelve a mirar al empezar (solo si el conjunto creció, menguó o terminó de cargar una cara) y descarta lo medido en las familias cuyas caras cambiaron. `watchFonts(fontSet)` hace lo mismo a medida que cargan las caras, como mucho una vez por fotograma de animación por muchos tramos que traiga una ráfaga, y `onFontsChanged(listener)` le dice al anfitrión qué familias cambiaron, para que vuelva a componer las páginas:
+
+```ts
+import { watchFonts, onFontsChanged } from 'postext';
+
+const stop = watchFonts();                         // document.fonts por defecto
+const off = onFontsChanged((families) => relayout());
+```
+
+`prepareFonts` pone en marcha la vigilancia sobre el conjunto en el que carga (`watch: false` la deja apagada).
+
+### Caché de medidas
+
+La medición del texto es el paso costoso del proceso de composición. Dos clases de caché la abaratan:
+
+- **Una caché de bloques que es tuya.** `createMeasurementCache()` devuelve una `MeasurementCache` que recuerda cada párrafo medido, con su texto, sus fuentes, su ancho, sus opciones de corte de línea y el diccionario de separación silábica activo como clave. Pásala como tercer argumento de `buildDocument` (o de `buildDocumentAsync`) para reutilizar las medidas entre las pasadas de convergencia y entre composiciones: un editor que recompone el documento en cada pulsación mide entonces solo los párrafos que cambiaron. Sin ella, cada pasada vuelve a medir todos los bloques. Un párrafo leído de la caché es igual que uno medido de nuevo, así que una composición con caché corta cada línea como una sin ella; en postext 1.4.1 un párrafo guardado en caché perdía la marca de una última línea demasiado corta, y el ajuste de esas líneas y el equilibrado de columnas podían cortarlo de otra manera. La caché lleva la generación de medidas con la que se llenó: cuando llegan o se van caras de una familia, su siguiente consulta descarta los bloques compuestos en esa familia, así que una caché que se conserva mientras cargan las fuentes nunca sirve líneas medidas con la de reserva.
+- **Cachés globales de anchos.** Los anchos de palabra se guardan por cadena de fuente en un estado de módulo que comparten todas las composiciones de la página, y pretext tiene su propia caché. El motor descarta los anchos de una familia cuando cambian sus caras (al empezar un build, desde `watchFonts`, desde `prepareFonts` y desde `loadBundleFonts`); la caché de pretext no tiene índice por familia y se vacía entera.
+
+```ts
+import { buildDocument, createMeasurementCache, evictFontFamilies, clearMeasurementCache } from 'postext';
+
+const cache = createMeasurementCache();
+let doc = buildDocument(content, config, cache);
+
+// Se añadió a document.fonts una cara de "EB Garamond": el siguiente build la ve,
+// con la misma caché, y vuelve a medir esa familia.
+doc = buildDocument(content, config, cache);
+
+// Un anfitrión que cambia caras que el motor no puede ver (un conjunto de fuentes propio) lo avisa:
+evictFontFamilies(['EB Garamond']);   // los anchos y los bloques en caché de esa familia
+clearMeasurementCache();              // todas las familias
+```
 
 Para aplicaciones que miden el texto pieza a pieza, `cachedMeasureBlock(text, font, maxWidthPx, lineHeightPx, options, cache)` y `cachedMeasureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cache)` reciben los argumentos de `measureBlock` y `measureRichBlock` más la caché, al final.
 
@@ -9093,8 +9291,8 @@ Para aplicaciones que miden el texto pieza a pieza, `cachedMeasureBlock(text, fo
 Parte del estado de Postext vive en variables de módulo. Todo lo que importa `postext` en el mismo contexto de JavaScript (*realm*) lo comparte: una página y sus scripts comparten una copia, mientras que cada iframe y cada worker tienen la suya. Con un documento por página no se nota. Con varios documentos en la misma página —dos vistas previas en vivo, una galería de ejemplos— sí:
 
 - **Imágenes de los recursos.** `registerResourceImage(fileId, image)` llena un único registro indexado por `fileId`, que leen `renderPage` y `renderPageToCanvas`. Dos documentos que registran `figure.svg` comparten esa entrada: gana el último registro, para los dos. Pon a los identificadores de archivo un prefijo por documento, y llama a `unregisterResourceImage(fileId)` o a `clearResourceImages()` cuando un documento desaparece. Los rásteres que guarda en caché el backend de canvas usan la misma clave y se descartan con la imagen.
-- **Medidas del texto.** Los anchos medidos se guardan en caché por cadena de fuente y texto para todo el contexto. El texto medido antes de que una fuente web terminara de cargarse conserva los anchos de la fuente de reserva, en todos los documentos, hasta que `clearMeasurementCache()` (sin argumentos) vacía las cachés: llámala cuando las fuentes hayan cargado y vuelve a componer.
-- **Configuraciones resueltas.** Cada objeto de configuración se resuelve una vez y el resultado queda en caché asociado a ese objeto. Una configuración modificada en el sitio y compuesta de nuevo se compone con sus ajustes antiguos: pasa un objeto nuevo en cada cambio (`{ ...config, … }` o `structuredClone(config)`).
+- **Medidas del texto.** Los anchos medidos se guardan en caché por cadena de fuente y texto para todo el contexto. Cuando llegan o se van caras de una familia, el motor descarta los anchos de esa familia para todos los documentos (ver [Cargar las fuentes antes de componer](#cargar-las-fuentes-antes-de-componer)); `clearMeasurementCache()` los descarta todos.
+- **Configuraciones resueltas.** Cada objeto de configuración se resuelve una vez y el resultado queda en caché asociado a ese objeto. Antes de nada, cada build compara el objeto con el texto que tenía cuando se resolvió (un `JSON.stringify`, unos 0,1 ms para una configuración de libro de 55 KB y 1,5 ms para una de 240 KB), así que una configuración modificada en el sitio, a cualquier profundidad (`config.bodyText.fontSize = …`, un color de la paleta), se vuelve a resolver. `invalidateConfig(config)` descarta la resolución a mano. `stableStringify` y `hashString` dan una clave de contenido que no depende del orden de las claves, para los anfitriones que guardan composiciones en caché por configuración.
 - **Idioma de la separación silábica.** Cada build fija el idioma de separación silábica de todo el proceso al `bodyText.hyphenation.locale` de su documento. Las funciones exportadas `hyphenateText(text)` y `layoutDesignSlot` usan el idioma del último build salvo que les pases uno: llama a `hyphenateText(text, 'es')`.
 - **Motor de fórmulas.** Hay un único motor MathJax y una única caché de fórmulas renderizadas por contexto; `initMathEngine()` lo arranca para todos.
 
@@ -9264,7 +9462,9 @@ await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'no
 const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
 ```
 
-**Un worker no ve las fuentes de la página.** Tiene su propio conjunto de fuentes, que solo contiene las caras enviadas con `registerFonts` y las fuentes instaladas en el sistema. Cuando un build compone texto en una familia que el worker no encuentra, ese texto se mide con una fuente de reserva, así que sus cortes de línea no coincidirán con los de la página. El cliente imprime entonces un aviso en la consola por familia (`"EB Garamond" is not available inside the layout worker…`) y enumera las familias en `BuildStats.missingFonts`, que recibe el callback `onStats` de `build`.
+**Un worker no ve las fuentes de la página.** Tiene su propio conjunto de fuentes, que solo contiene las caras enviadas con `registerFonts` y las fuentes instaladas en el sistema. Cuando un build compone texto en una familia que el worker no encuentra, ese texto se mide con una fuente de reserva, así que sus cortes de línea no coincidirán con los de la página. El cliente imprime entonces un aviso en la consola por familia (`"EB Garamond" is not available inside the layout worker…`) y enumera las familias en `BuildStats.missingFonts`, que recibe el callback `onStats` de `build`. El propio documento lleva esas mismas caras como avisos de contenido `fontFallback`.
+
+`handle.prepareFonts(content, config, options)` ejecuta [`prepareFonts`](#cargar-las-fuentes-antes-de-componer) en la página y después envía al worker los archivos de cada cara encontrada que guarda el registro de fuentes (los archivos del resolutor, las caras de un paquete, las reglas `@font-face` legibles de la página), y de ellos solo los tramos que contienen caracteres del documento. Cuando llegan caras al worker, este descarta solo las medidas de esas familias, además de su caché de documentos terminados.
 
 ### Recolección de payloads de fuente (Fontsource / Google Fonts)
 
@@ -9358,6 +9558,7 @@ Las piezas clave de la API pública:
 - **`resolveHtmlViewerConfig(partial)`** — completa los valores por defecto del visor HTML (`maxCharsPerLine`, `columnGap`, `optimalLineBreaking`).
 - **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`** — primitivas de medida usadas para derivar un ancho de columna real en píxeles a partir de un objetivo en caracteres.
 - **`createMeasurementCache` / `clearMeasurementCache`** — cachés enchufables para reutilizar medidas entre recomposiciones.
+- **`prepareFonts` / `buildDocumentWithFonts` / `watchFonts` / `onFontsChanged`** — cargan las caras del documento antes de componer y vuelven a componer cuando llegan caras nuevas (ver [Cargar las fuentes antes de componer](#cargar-las-fuentes-antes-de-componer)).
 
 ### Ejemplo en vivo: una cadena HTML
 
@@ -9379,6 +9580,8 @@ import {
   measureGlyphWidth,
   dimensionToPx,
   createMeasurementCache,
+  watchFonts,
+  onFontsChanged,
 } from 'postext';
 import type { PostextConfig, MeasurementCache } from 'postext';
 
@@ -9488,12 +9691,13 @@ export function PostextHtmlViewer({
 
     // Vuelve a medir cuando cargan las web fonts para que los anchos de glifo no
     // queden tomados a partir de las fuentes de reserva.
-    const onFontsDone = () => relayout();
-    document.fonts?.addEventListener?.('loadingdone', onFontsDone);
+    const stopWatching = watchFonts();
+    const off = onFontsChanged(() => relayout());
 
     return () => {
       ro.disconnect();
-      document.fonts?.removeEventListener?.('loadingdone', onFontsDone);
+      off();
+      stopWatching();
     };
   }, [markdown, config, mode]);
 
@@ -9505,7 +9709,7 @@ Algunas notas sobre lo que hace el ejemplo:
 
 - **Se mide la columna, no se aproxima.** Como `maxCharsPerLine` es un *objetivo* expresado en caracteres, el ancho real en píxeles depende de la fuente del cuerpo. `measureGlyphWidth` da una medida real sobre la fuente elegida, manteniendo la medida consistente al cambiar de fuente.
 - **Se reescribe la página.** El visor HTML trata cada "página" del VDT como una columna en pantalla. El ejemplo sobrescribe `page.width` con el ancho medido de columna, pone los márgenes a cero (el padding vive fuera de la página, en el `.pt-doc` envolvente) y usa `HTML_DPI = 144` para que `8pt` de cuerpo resuelva a `16px`.
-- **Atento a la carga de fuentes.** `document.fonts.loadingdone` se dispara cuando llega una web font recién solicitada. Sin recomponer entonces, el primer render usa métricas de la fuente de reserva y se produce un salto cuando llega la real.
+- **Atento a la carga de fuentes.** `watchFonts` escucha `document.fonts` y, una vez por fotograma, descarta lo medido en las familias cuyas caras han llegado; `onFontsChanged` vuelve a componer entonces la columna. Sin recomponer, el primer render usa métricas de la fuente de reserva y se produce un salto cuando llega la real.
 - **Se reutiliza la caché de medidas.** Crear la caché una sola vez por componente hace que los resizes y los cambios de escala de fuente reutilicen medidas del render anterior en lugar de volver a medir cada párrafo.
 
 ### Siguiente paso
@@ -9835,7 +10039,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 `resourceBytes(fileId)` devuelve los bytes crudos de una imagen, y el backend los identifica por su contenido:
 
 - PNG, JPEG, GIF y WebP se incrustan como imágenes;
-- el marcado SVG se dibuja como trazados vectoriales, o se rasteriza a 600 ppp en el navegador cuando usa funciones que quedan fuera del subconjunto vectorial;
+- el marcado SVG se dibuja como trazados vectoriales, con su `text` compuesto como texto real con las fuentes incrustadas del documento, o se rasteriza a 600 ppp en el navegador cuando usa funciones que quedan fuera del subconjunto vectorial. Un `<style>` que solo contiene reglas `@font-face` (variantes que incrustó el autor) se omite y la figura sigue siendo vectorial (desde postext-pdf 1.25); cualquier otra hoja de estilo la convierte en ráster, hecho con las variantes que nombra su texto incrustadas desde `fontProvider` (salvo que `diagramStyle.inlineFonts` o el `svg.inlineFonts` del recurso sea `false`);
 - de un PDF se incrusta tal cual su primera página, como un XObject de formulario.
 
 Cada imagen se guarda una sola vez en el archivo, aunque se dibuje muchas veces. Un SVG dibujado con trazados vectoriales se convierte en un XObject de formulario que pinta cada página, así que un marco o un logotipo en el diseño de página de un documento de treinta páginas se escribe una vez y no treinta; cada página más añade unos cientos de bytes. Hasta postext-pdf 1.4 cada página llevaba su propia copia de los trazados.
@@ -10110,10 +10314,10 @@ const bytes = await renderToEpub(docs, {
 
 Un documento suelto es un libro de un capítulo: `renderToEpub([doc], options)`.
 
-- **`renderToEpub(docs, options): Promise<Uint8Array>`** escribe el archivo. `options` es `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** escribe el archivo. `options` es `{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
 - **`metadata`**: `title` y `language` (una etiqueta BCP 47) son obligatorios; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` y `modified` son opcionales. Un ISBN sin prefijo pasa a `urn:isbn:…`. Sin `identifier`, el libro recibe un `urn:uuid:` derivado del título, los autores y el idioma, de modo que una versión nueva del mismo libro conserva su sitio en la biblioteca del lector. Pasa también `modified` para obtener un archivo idéntico byte a byte.
-- **`fonts`**: las variantes que se incrustan, `{ family, weight, style, bytes, format, unicodeRange? }`, con `format` uno de `woff2`, `woff`, `ttf`, `otf`. Cada variante pasa a ser un archivo y una regla `@font-face`; varios archivos con su `unicodeRange` forman una sola variante (los tramos de Google Fonts). Una familia, un peso o un estilo que las páginas usan sin variante incrustada se avisa como `missingFont`, y los lectores ponen una suya. Incrusta solo las letras cuya licencia lo permita.
-- **`resourceBytes(fileId)`**: las imágenes que colocan las páginas, de forma síncrona o asíncrona, como `{ bytes, mediaType }`; un `mediaType` vacío se lee de los bytes. Da los mapas de bits tal como están guardados y los SVG como su código fuente, no el máster PDF de imprenta (`svg.pdfFileId`). Cada imagen se guarda una vez. En un libro a una tinta (`diagramStyle.singleInk`) los SVG se recolorean en el archivo. Una imagen sin bytes se avisa como `missingImage` y queda como un marco vacío.
+- **`fonts`**: las variantes que se incrustan, `{ family, weight, style, bytes, format, unicodeRange? }`, con `format` uno de `woff2`, `woff`, `ttf`, `otf`. Cada variante pasa a ser un archivo y una regla `@font-face`; varios archivos con su `unicodeRange` forman una sola variante (los tramos de Google Fonts). Una familia, un peso o un estilo que las páginas usan sin variante incrustada se avisa como `missingFont`, y los lectores ponen una suya. Incrusta solo las letras cuya licencia lo permita: una variante con `redistributable: false` nunca se escribe en el archivo (el libro puede componerse con ella, pero su archivo queda fuera, también de las imágenes SVG).
+- **`resourceBytes(fileId)`**: las imágenes que colocan las páginas, de forma síncrona o asíncrona, como `{ bytes, mediaType }`; un `mediaType` vacío se lee de los bytes. Da los mapas de bits tal como están guardados y los SVG como su código fuente, no el máster PDF de imprenta (`svg.pdfFileId`). Cada imagen se guarda una vez. En un libro a una tinta (`diagramStyle.singleInk`) los SVG se recolorean en el archivo. Cada SVG lleva incrustadas las variantes que nombra su texto, porque un lector lo muestra como una imagen que no ve las fuentes del libro (consulta [Fuentes en el texto de los SVG](#fuentes-en-el-texto-de-los-svg)): desde `fonts` (los tramos que contienen sus caracteres) y después desde **`svgFonts.provider`** para una familia que el texto del libro no usa. Las familias de variantes marcadas con `redistributable: false`, y las que nombre `svgFonts.withhold(family)`, quedan fuera y se avisan una vez cada una como `fontWithheld`; una familia sin variante se avisa como `svgFontUnavailable`, y las variantes que superan `svgFonts.maxBytes` (2 MiB), como `svgFontsTooLarge`. `svgFonts.inline: false`, `diagramStyle.inlineFonts: false` y el `svg.inlineFonts: false` de un recurso conservan los bytes tal como se dan. Una imagen sin bytes se avisa como `missingImage` y queda como un marco vacío.
 - **`cover`**: `{ bytes, mediaType, alt? }`, una imagen JPEG, PNG, WebP o SVG. El libro se abre entonces con un documento de cubierta que la contiene, y es la `cover-image` del paquete (la miniatura en una biblioteca). Sin ella, la maquetación fija nombra cubierta a su primera página y el libro fluido no tiene imagen de cubierta.
 - **`onProgress({ phase, done, total })`**: `resources` (letras e imágenes), `documents` (páginas en la maquetación fija, capítulos en la fluida) y después `package`. **`signal`** interrumpe entre pasos.
 - **`readEpub(bytes)`** lee un archivo para un visor, sin `DOMParser`: maquetación, metadatos, sentido de lectura, cada archivo por su ruta, el manifiesto, el spine, el índice, la lista de páginas, el viewport de la maquetación fija y la cubierta. El lector del Sandbox se apoya en ella.
@@ -10178,7 +10382,7 @@ El **`fileId` de cada archivo es su ruta dentro del paquete**. `resource.svg.fil
 
 #### Paquetes escritos por postext 1.4 o anterior
 
-Todo manifiesto que escriben `createBundle` y el Sandbox lleva `configVersion: 10`: las reglas de configuración para las que se escribió su `config`. Un manifiesto sin él lo escribió postext 1.4 o anterior, que resolvía dieciocho cosas de otra manera:
+Todo manifiesto que escriben `createBundle` y el Sandbox lleva `configVersion: 11`: las reglas de configuración para las que se escribió su `config`. Un manifiesto sin él lo escribió postext 1.4 o anterior, que resolvía dieciocho cosas de otra manera:
 
 - **Los saltos de encabezado** (reglas 3): hasta la 1.4, un objeto `headings` sin salto de H1 no tenía ninguno (ver [Configuración por nivel](#configuración-por-nivel)).
 - **El tamaño de las fórmulas** (reglas 4): hasta la 1.4, las fórmulas salían 1,131 veces más grandes de lo que dice `fontSizeScale` (ver [Tamaño de las fórmulas](#matemáticas)).
@@ -10199,7 +10403,7 @@ Todo manifiesto que escriben `createBundle` y el Sandbox lleva `configVersion: 1
 - **Las vallas de código** (reglas 9): hasta la 1.22, una valla ```` ``` ```` o `~~~` y las líneas que encierra se leían como Markdown: las líneas se unían en párrafos, una línea con `#` se convertía en encabezado y las vallas se imprimían (ver `codeStyle.blocks` en [Listados de código](#listados-de-código)).
 - **Los versos partidos** (reglas 10): en la 1.23, un verso de un poema compuesto verso a verso más ancho que la caja se partía con su espaciado natural, por poco que sobrara (ver `bodyText.verse.tighten` en [Verso](#verso)).
 
-`openBundle` y `readBundle` leen el `config` de un manifiesto así, y la configuración de cada idioma en `localized`, a través de `migrateConfig`, que escribe los saltos tal como los componía la 1.4 y multiplica la escala de las fórmulas por 1,131 (y divide por ese factor los márgenes de las fórmulas en bloque dados en `em`). A un manifiesto marcado con `3` a `7`, que escribió una versión preliminar de la 1.5, solo se le aplican las fijaciones de las reglas posteriores a su marca: con `3`, el tamaño de las fórmulas, el hueco en línea, las cinco fijaciones de las reglas 6, las dos de las reglas 7 y las tres de las reglas 8; con `4`, el hueco en línea y las de las reglas 6, 7 y 8; con `5`, las de las reglas 6, 7 y 8; con `6`, las de las reglas 7 y 8; con `7`, solo las de las reglas 8. La división bajo un encabezado (`pinLegacyHeadingSplit`) se escribe como `headings.keepWithNextSplit: 'fill'` sobre el `headings` que dejan en vigor las capas, cuando algún capítulo leído tiene un encabezado y la configuración no nombra un valor propio, mantiene activado `headings.keepWithNext` y no desactiva `bodyText.avoidOrphans`. Los cortes tras el guion de un compuesto (`pinLegacyHyphenBreaks`) se escriben como `bodyText.breakAfterHyphens: false` sobre el `bodyText` en vigor cuando un capítulo leído tiene un guion entre dos letras y la configuración ni lo fija ya ni desactiva `optimalLineBreaking`. El espacio bajo los contenedores (`pinLegacyParagraphContainerSpacing`) se escribe como `bodyText.paragraphContainerSpacing: 'add'` sobre el `bodyText` en vigor cuando la configuración declara algún estilo de párrafo (en `paragraphStyles` o en los ajustes propios del visor HTML), un capítulo leído abre un contenedor `:::paragraphs` en una línea propia y la configuración no lo fija ya. Los cortes tras una raya (`pinLegacyDashBreaks`) se escriben como `bodyText.breakAfterDashes: false` sobre el `bodyText` en vigor cuando un capítulo leído tiene una raya o una semirraya entre palabras sin espacios (una letra, una cifra o un signo de cierre delante, y una letra, una cifra o un signo de apertura detrás; unas comillas delante de la raya cuentan cuando las precede una letra, una cifra, un signo de cierre o un espacio de no separación, como en `«no»—y`, no en `dijo "—Hola`; una marca en línea pegada a la raya o a las comillas, como los `**` de `**I.**—Que`, cuenta a cualquiera de los dos lados) y la configuración no lo fija ya. La composición del texto en bandera (`pinLegacyRaggedBreaking`) se escribe como `bodyText.optimalRagged: false` sobre el `bodyText` en vigor cuando la configuración pone en bandera algún texto corrido (un `textAlign` distinto de `'justify'` en el texto de cuerpo, un estilo de párrafo, el cuerpo de un recuadro, el de una parte o el de un estilo de sección (`headingStyles[].bodyStyle`), o en los ajustes propios del visor HTML), no lo fija ya y no desactiva `optimalLineBreaking`. El hueco en los recuadros (`pinLegacyBoxResourceGap`) se escribe como `layout.inlineResourceGapInBoxes: false` sobre el `layout` en vigor cuando un recurso se inserta en su propia línea dentro de un `:::callout` de los capítulos leídos y la configuración no lo fija ya. El corte de las cajas (`pinLegacyBoxChildCut`) se escribe como `layout.boxChildSplitMinLines: 1` sobre el `layout` en vigor cuando un capítulo leído abre un `:::callout` en una línea propia y la configuración no lo fija ya. Las marcas de los encabezados (`pinLegacyHeadingMarks`) se escriben como `headings.inlineMarks: false` sobre el `headings` que dejan en vigor las capas, cuando algún encabezado de los capítulos leídos lleva una marca (`*`, `_`, `^`, `~`, `:smallcaps[` o un enlace en su título) y la configuración no nombra un valor propio. A las letras capitales (`pinLegacyDropCapSize`) se les escribe su tamaño de la 1.4 como `dropCap.fontSize`, estén donde estén: en la unidad del interlineado del elemento cuando es una longitud, y si no en la unidad de su cuerpo. El sitio bajo los dos puntos (`pinLegacyColonListRoom`) se escribe como `bodyText.colonListRoom: 'line'` sobre el `bodyText` en vigor cuando una lista de los capítulos leídos sigue a una línea que termina en dos puntos (aunque haya líneas en blanco entre ellas) y la configuración ni nombra un sitio ni desactiva `keepColonWithList`. El hueco en línea (`pinLegacyInlineGap`) se escribe como `layout.inlineResourceGap: 'above'` sobre el `layout` que dejan en vigor las capas, cuando una línea de los capítulos leídos inserta un recurso (`::resource{id="…"}` sola en su línea, tal como la lee el analizador: una mención en el texto o en un fragmento de código no cuenta) y la configuración no nombra un hueco propio. El tamaño se fija sobre el `math` que dejan en vigor las capas (el `math` propio de un idioma sustituye al compartido), y solo cuando los capítulos leídos tienen algún `$`: un paquete sin fórmulas conserva su `config` tal como se escribió. Si ni el manifiesto ni el idioma dan un `math`, el que queda en vigor es el de la `baseConfig` de `readBundle` (la del lector), y también se fija, porque la 1.4 componía las fórmulas del paquete a ese tamaño: una base con `fontSizeScale: 1.5` se lee como 1,5 × 1,1312. Los saltos de encabezado de la base se toman tal como vienen. Así un paquete antiguo conserva lo que componían esas reglas, y `bundle.config` muestra los saltos, el tamaño de las fórmulas, los huecos, las marcas de los encabezados, el tamaño de las letras capitales, el sitio bajo los dos puntos, el corte de las cajas, los cortes tras una raya, los cortes tras el guion de un compuesto, la composición del texto en bandera, la división bajo un encabezado y el espacio bajo los contenedores con los que se compone. Las correcciones de composición de la 1.5 no tienen fijación y se le aplican como a cualquier libro, así que una página a la que afecten aún puede moverse (la lista está en [Tamaño de las fórmulas](#matemáticas)). Un `preset.json` escrito a mano para las reglas actuales pone `"configVersion": 10`; marcar así el manifiesto de un paquete antiguo es también la forma de leerlo, con una línea, con las reglas actuales (un paquete sin versión pierde entonces también la fijación de sus saltos de encabezado). Un manifiesto marcado `8`, escrito por postext 1.5 a 1.22, recibe solo los cuatro fijados de las reglas 9, como también todos los anteriores: la composición del verso (`pinLegacyVerseLayout`) se escribe como `bodyText.verse.layout: 'bayt'` en el `bodyText` vigente, cuando un capítulo leído compone un poema `:::verse` cuya apertura no nombra composición y cuyas líneas no llevan separador de hemistiquios, y la configuración no lo fija ya; las sangrías emparejadas (`pinLegacyPairedIndents`) quitan la `firstLineIndent` de todo estilo de párrafo (en `paragraphStyles` o en los ajustes del visor HTML) que fija también una `hangingIndent` distinta de cero; los saltos de línea forzados (`pinLegacyHardBreaks`) se escriben como `bodyText.hardLineBreaks: false` en el `bodyText` vigente, cuando un capítulo leído termina una línea de un párrafo, una cita o un elemento de lista con una barra invertida y el bloque sigue debajo, o pone `\\` ante un espacio y más texto (salvo el código en línea y las fórmulas, las fórmulas destacadas, los títulos y los poemas `:::verse`), y la configuración no lo fija ya; y las vallas de código (`pinLegacyCodeBlocks`) se escriben como `codeStyle.blocks: false`, cuando un capítulo leído abre una valla ```` ``` ```` o `~~~` (de tres o más caracteres, con hasta tres espacios delante) y la configuración no lo fija ya. Un manifiesto marcado `9`, escrito por postext 1.23, recibe solo la fijación de las reglas 10, como también todos los anteriores: los versos partidos (`pinLegacyVerseTightening`) se escriben como `bodyText.verse.tighten: false` en el `bodyText` vigente, cuando un capítulo leído compone un poema verso a verso (una apertura `:::verse` que nombra `layout=lines`, o que no nombra composición sobre versos sin separador de hemistiquios mientras la configuración no componga esos poemas como bayts) y la configuración no lo fija ya.
+`openBundle` y `readBundle` leen el `config` de un manifiesto así, y la configuración de cada idioma en `localized`, a través de `migrateConfig`, que escribe los saltos tal como los componía la 1.4 y multiplica la escala de las fórmulas por 1,131 (y divide por ese factor los márgenes de las fórmulas en bloque dados en `em`). A un manifiesto marcado con `3` a `7`, que escribió una versión preliminar de la 1.5, solo se le aplican las fijaciones de las reglas posteriores a su marca: con `3`, el tamaño de las fórmulas, el hueco en línea, las cinco fijaciones de las reglas 6, las dos de las reglas 7 y las tres de las reglas 8; con `4`, el hueco en línea y las de las reglas 6, 7 y 8; con `5`, las de las reglas 6, 7 y 8; con `6`, las de las reglas 7 y 8; con `7`, solo las de las reglas 8. La división bajo un encabezado (`pinLegacyHeadingSplit`) se escribe como `headings.keepWithNextSplit: 'fill'` sobre el `headings` que dejan en vigor las capas, cuando algún capítulo leído tiene un encabezado y la configuración no nombra un valor propio, mantiene activado `headings.keepWithNext` y no desactiva `bodyText.avoidOrphans`. Los cortes tras el guion de un compuesto (`pinLegacyHyphenBreaks`) se escriben como `bodyText.breakAfterHyphens: false` sobre el `bodyText` en vigor cuando un capítulo leído tiene un guion entre dos letras y la configuración ni lo fija ya ni desactiva `optimalLineBreaking`. El espacio bajo los contenedores (`pinLegacyParagraphContainerSpacing`) se escribe como `bodyText.paragraphContainerSpacing: 'add'` sobre el `bodyText` en vigor cuando la configuración declara algún estilo de párrafo (en `paragraphStyles` o en los ajustes propios del visor HTML), un capítulo leído abre un contenedor `:::paragraphs` en una línea propia y la configuración no lo fija ya. Los cortes tras una raya (`pinLegacyDashBreaks`) se escriben como `bodyText.breakAfterDashes: false` sobre el `bodyText` en vigor cuando un capítulo leído tiene una raya o una semirraya entre palabras sin espacios (una letra, una cifra o un signo de cierre delante, y una letra, una cifra o un signo de apertura detrás; unas comillas delante de la raya cuentan cuando las precede una letra, una cifra, un signo de cierre o un espacio de no separación, como en `«no»—y`, no en `dijo "—Hola`; una marca en línea pegada a la raya o a las comillas, como los `**` de `**I.**—Que`, cuenta a cualquiera de los dos lados) y la configuración no lo fija ya. La composición del texto en bandera (`pinLegacyRaggedBreaking`) se escribe como `bodyText.optimalRagged: false` sobre el `bodyText` en vigor cuando la configuración pone en bandera algún texto corrido (un `textAlign` distinto de `'justify'` en el texto de cuerpo, un estilo de párrafo, el cuerpo de un recuadro, el de una parte o el de un estilo de sección (`headingStyles[].bodyStyle`), o en los ajustes propios del visor HTML), no lo fija ya y no desactiva `optimalLineBreaking`. El hueco en los recuadros (`pinLegacyBoxResourceGap`) se escribe como `layout.inlineResourceGapInBoxes: false` sobre el `layout` en vigor cuando un recurso se inserta en su propia línea dentro de un `:::callout` de los capítulos leídos y la configuración no lo fija ya. El corte de las cajas (`pinLegacyBoxChildCut`) se escribe como `layout.boxChildSplitMinLines: 1` sobre el `layout` en vigor cuando un capítulo leído abre un `:::callout` en una línea propia y la configuración no lo fija ya. Las marcas de los encabezados (`pinLegacyHeadingMarks`) se escriben como `headings.inlineMarks: false` sobre el `headings` que dejan en vigor las capas, cuando algún encabezado de los capítulos leídos lleva una marca (`*`, `_`, `^`, `~`, `:smallcaps[` o un enlace en su título) y la configuración no nombra un valor propio. A las letras capitales (`pinLegacyDropCapSize`) se les escribe su tamaño de la 1.4 como `dropCap.fontSize`, estén donde estén: en la unidad del interlineado del elemento cuando es una longitud, y si no en la unidad de su cuerpo. El sitio bajo los dos puntos (`pinLegacyColonListRoom`) se escribe como `bodyText.colonListRoom: 'line'` sobre el `bodyText` en vigor cuando una lista de los capítulos leídos sigue a una línea que termina en dos puntos (aunque haya líneas en blanco entre ellas) y la configuración ni nombra un sitio ni desactiva `keepColonWithList`. El hueco en línea (`pinLegacyInlineGap`) se escribe como `layout.inlineResourceGap: 'above'` sobre el `layout` que dejan en vigor las capas, cuando una línea de los capítulos leídos inserta un recurso (`::resource{id="…"}` sola en su línea, tal como la lee el analizador: una mención en el texto o en un fragmento de código no cuenta) y la configuración no nombra un hueco propio. El tamaño se fija sobre el `math` que dejan en vigor las capas (el `math` propio de un idioma sustituye al compartido), y solo cuando los capítulos leídos tienen algún `$`: un paquete sin fórmulas conserva su `config` tal como se escribió. Si ni el manifiesto ni el idioma dan un `math`, el que queda en vigor es el de la `baseConfig` de `readBundle` (la del lector), y también se fija, porque la 1.4 componía las fórmulas del paquete a ese tamaño: una base con `fontSizeScale: 1.5` se lee como 1,5 × 1,1312. Los saltos de encabezado de la base se toman tal como vienen. Así un paquete antiguo conserva lo que componían esas reglas, y `bundle.config` muestra los saltos, el tamaño de las fórmulas, los huecos, las marcas de los encabezados, el tamaño de las letras capitales, el sitio bajo los dos puntos, el corte de las cajas, los cortes tras una raya, los cortes tras el guion de un compuesto, la composición del texto en bandera, la división bajo un encabezado y el espacio bajo los contenedores con los que se compone. Las correcciones de composición de la 1.5 no tienen fijación y se le aplican como a cualquier libro, así que una página a la que afecten aún puede moverse (la lista está en [Tamaño de las fórmulas](#matemáticas)). Un `preset.json` escrito a mano para las reglas actuales pone `"configVersion": 11`; marcar así el manifiesto de un paquete antiguo es también la forma de leerlo, con una línea, con las reglas actuales (un paquete sin versión pierde entonces también la fijación de sus saltos de encabezado). Un manifiesto marcado `8`, escrito por postext 1.5 a 1.22, recibe solo los cuatro fijados de las reglas 9, como también todos los anteriores: la composición del verso (`pinLegacyVerseLayout`) se escribe como `bodyText.verse.layout: 'bayt'` en el `bodyText` vigente, cuando un capítulo leído compone un poema `:::verse` cuya apertura no nombra composición y cuyas líneas no llevan separador de hemistiquios, y la configuración no lo fija ya; las sangrías emparejadas (`pinLegacyPairedIndents`) quitan la `firstLineIndent` de todo estilo de párrafo (en `paragraphStyles` o en los ajustes del visor HTML) que fija también una `hangingIndent` distinta de cero; los saltos de línea forzados (`pinLegacyHardBreaks`) se escriben como `bodyText.hardLineBreaks: false` en el `bodyText` vigente, cuando un capítulo leído termina una línea de un párrafo, una cita o un elemento de lista con una barra invertida y el bloque sigue debajo, o pone `\\` ante un espacio y más texto (salvo el código en línea y las fórmulas, las fórmulas destacadas, los títulos y los poemas `:::verse`), y la configuración no lo fija ya; y las vallas de código (`pinLegacyCodeBlocks`) se escriben como `codeStyle.blocks: false`, cuando un capítulo leído abre una valla ```` ``` ```` o `~~~` (de tres o más caracteres, con hasta tres espacios delante) y la configuración no lo fija ya. Un manifiesto marcado `9`, escrito por postext 1.23, recibe solo la fijación de las reglas 10, como también todos los anteriores: los versos partidos (`pinLegacyVerseTightening`) se escriben como `bodyText.verse.tighten: false` en el `bodyText` vigente, cuando un capítulo leído compone un poema verso a verso (una apertura `:::verse` que nombra `layout=lines`, o que no nombra composición sobre versos sin separador de hemistiquios mientras la configuración no componga esos poemas como bayts) y la configuración no lo fija ya. Un manifiesto marcado `10`, escrito por postext 1.24, recibe solo la fijación de las reglas 11, como también todos los anteriores: el equilibrado de una retícula de caracteres (`pinLegacyGridBalancing`) se escribe como `headings.balancing.enabled: true` en el `headings` vigente, cuando la configuración combinada fija `cjk.grid.enabled` en texto horizontal y no fija ella misma `enabled`, porque la 1.24 equilibraba esas páginas por defecto. Las reglas 11 también impiden que un título de obra se parta tras un solo carácter, componen los números en círculo como caracteres chinos y el texto de diseño CJK con las reglas del cuerpo (#637): un manifiesto marcado `10` o anterior recibe `cjk.titleMinChars: 1` (`pinLegacyTitleBreaks`) cuando un capítulo leído tiene un título (《, 〈 o `:book[`), `cjk.circledNumbers: 'western'` (`pinLegacyCircledNumbers`) cuando uno tiene un número en círculo (U+2460–U+24FF, U+2776–U+2793) y `cjk.composeDesignText: false` (`pinLegacyDesignText`) cuando un capítulo leído o la propia configuración tienen texto CJK; cada uno en el `cjk` vigente y solo si la configuración no lo fija ya. También cortan las tablas en línea y componen `:::columns` en el texto corrido (#634): un manifiesto marcado `10` o anterior recibe `tableStyle.splitInline: false` (`pinLegacyInlineTableSplit`) en el `tableStyle` vigente cuando un capítulo leído inserta un recurso, y `layout.flowColumns: false` (`pinLegacyFlowColumns`) en el `layout` vigente cuando un capítulo leído abre una valla `:::columns` en una línea propia, cada uno solo si la configuración no lo fija ya. También ofrecen a un flotante la cabeza de la columna de una apertura a ancho de página (#639): un manifiesto marcado `10` o anterior recibe `layout.floatsUnderOpener: false` (`pinLegacyOpenerHeadFloats`) en el `layout` vigente cuando la configuración combinada define un nivel o un estilo de encabezado con `span: 'page'` y un capítulo leído tiene un encabezado, solo si la configuración no lo fija ya.
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -10229,8 +10433,8 @@ migrateConfig(config, CONFIG_VERSION); // reglas actuales: el propio `config`
 
 Cuatro utilidades conectan un paquete abierto con el motor y los backends:
 
-- **`loadBundleFonts(bundle)`** registra las fuentes del paquete en `document.fonts`. Espérala antes de componer, porque la composición mide el texto con las fuentes que tiene el navegador. Las familias que el paquete nombra pero no incluye (Google Fonts) tienes que cargarlas tú, como en cualquier otro documento.
-- **`registerBundleImages(bundle)`** decodifica las imágenes para el backend canvas (`renderPage`, `renderToCanvas`), portadas de vídeo incluidas. **`bundleImageUrl(bundle)`** es el resolvedor `resourceImageUrl` de `renderToHtml`, y **`bundleVideoUrl(bundle)`** su resolvedor `resourceVideoUrl` para los archivos de vídeo que lleva un paquete. Las dos recolorean las figuras SVG cuando `diagramStyle.singleInk` está activo, una sola vez: recolorean el marcado y marcan las imágenes para que ningún backend vuelva a teñirlas (consulta [Tinta única en canvas y en HTML](#tinta-única-en-canvas-y-en-html)).
+- **`loadBundleFonts(bundle)`** registra las fuentes del paquete en `document.fonts`, y sus bytes en el registro de fuentes del motor para las imágenes SVG (`registerFontBytes`). Espérala antes de componer, porque la composición mide el texto con las fuentes que tiene el navegador. Las familias que el paquete nombra pero no incluye (Google Fonts) tienes que cargarlas tú, como en cualquier otro documento.
+- **`registerBundleImages(bundle)`** decodifica las imágenes para el backend canvas (`renderPage`, `renderToCanvas`), portadas de vídeo incluidas. **`bundleImageUrl(bundle)`** es el resolvedor `resourceImageUrl` de `renderToHtml`, y **`bundleVideoUrl(bundle)`** su resolvedor `resourceVideoUrl` para los archivos de vídeo que lleva un paquete. Las dos recolorean las figuras SVG cuando `diagramStyle.singleInk` está activo, una sola vez: recolorean el marcado y marcan las imágenes para que ningún backend vuelva a teñirlas (consulta [Tinta única en canvas y en HTML](#tinta-única-en-canvas-y-en-html)). Las dos incrustan además en cada SVG las variantes que nombra su texto, primero desde las fuentes del propio paquete y después desde las variantes registradas en el motor (consulta [Fuentes en el texto de los SVG](#fuentes-en-el-texto-de-los-svg)); `registerBundleImages(bundle, { onWarning })` y `bundleImageUrl(bundle, { onWarning })` avisan de una familia sin variante.
 - **`buildBundle(bundle)`** compone los capítulos en orden y devuelve un `VDTDocument` por capítulo. Cada capítulo continúa al anterior: contadores de encabezados y de recursos, la parte abierta, la paridad de página y la numeración. Un capítulo que imprime el índice de contenidos (`:::toc`) o el analítico (`:::index`) recibe el esquema del libro entero. Admite las mismas opciones que `buildDocument`, más `config` para sustituir la configuración del paquete, `cache` para compartir una caché de medidas y `metadata` (ver más abajo).
 - **`bundleResourceBytes(bundle)`** y **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** son las opciones `resourceBytes` y `fontProvider` de `renderToPdf` de `postext-pdf`. El proveedor de fuentes elige del paquete el peso más cercano del estilo pedido. Para una variante `.woff2` necesita `decompressWoff2`, y para una familia que el paquete no incluye llama a `fallback` con los argumentos del renderizador, `request` incluido, y entrega lo que devuelva. Un `fallback` que solo descarga el archivo `latin` de la familia imprime como cajas vacías una familia china que el paquete no incrusta; uno que responde con los fragmentos, como `sliceFontProvider` en [Fuentes chinas, japonesas y coreanas](#fuentes-chinas-japonesas-y-coreanas), la imprime completa.
 

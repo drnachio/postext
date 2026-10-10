@@ -149,6 +149,11 @@ writeFileSync('/tmp/p12.jpg', await canvas.encode('jpeg', 85));
 - `PARSE unclosedMath|unclosedContainer`: a stray `$` or a missing `:::`.
 - `WARN calloutOverflow`: a keep-together box does not fit a column. Set
   `keepTogether: false`, shorten it, or change the box's span.
+- `WARN afterText` (postext ≥ 1.25): a `span: "side"` box or a side figure
+  stands on a page with no text, because its chapter ended while it waited
+  for room in the side column. Fence it earlier or shorten it.
+  `WARN unplaced`: a box or float is on no page (a side box in a section
+  whose layout has no side column): change its span or the section's layout.
 - `WARN unknownResourceId|unknownDirective|malformedEmbed|unknown…Style|raggedTableGrid`
   (releases with engine content warnings): a reference, `:::` line, `::resource`
   line or style id the engine could not resolve, or a table whose merged cells
@@ -184,7 +189,7 @@ writeFileSync('/tmp/p12.jpg', await canvas.encode('jpeg', 85));
   (heading breaks, formula size, space around inline resources, plain
   headings, drop-cap sizes, room under a colon line, box cuts, breaks at dashes, breaks at
   compounds' hyphens, ragged breaking, split under a heading, space under paragraph containers).
-  Set `"configVersion": 10` and check the pages again when the config is meant for today's rules.
+  Set `"configVersion": 11` and check the pages again when the config is meant for today's rules.
 - Run each language (`--lang`).
 
 ## 3. Compare with the source, page by page
@@ -304,14 +309,14 @@ the page images instead of claiming the port is visually verified.
 | Column one or two lines short at the foot | column balancing (`headings.balancing`), on by default: extra grid lines above headings → after lists → under top floats → loose paragraphs; `maxLooseParagraphs`, `maxTracking` |
 | Chapter's last page ragged between columns | `balancing.trailing` |
 | Short columns before a page-wide box | `balancing.beforeSpan`; `keepTogether: false` on the box |
-| Figure lands pages after its citation | cite earlier; `position: "auto"`; check the sequence order (floats never overtake); a page float cited on an opener goes to the next page |
+| Figure lands pages after its citation | `citingPage: true` (≥ 1.25, top/auto floats) to head the citing page; `position: "auto"` (the foot of the citing page); check the sequence order (floats never overtake); a float cited on a chapter's first page or after a break goes to the next page |
 | Box placed whole where the source runs text around it | floated box (`placement: "auto"`/`"top"`), fence right after the citing paragraph |
 | Box cut or overflowing | `keepTogether: false` + `splitMinLines`; floats yield to keep-together boxes |
 | Only the heading of a section fits at a column foot | it moves on by itself (a heading never closes a column); check `keepWithNext` |
 | Over-stretched justified lines (URLs, long compounds) | the engine sets those lines ragged; break URLs with `/`; add soft hyphens (U+00AD) |
 | Word overflowing a table cell | the engine divides it; widen `columnWidths` |
 | Numbered list drifting off the grid | restate list margins in pt/grid units for both list types |
-| Text in a figure in the wrong font | outline the text, or embed `@font-face` subsets in the SVG |
+| Text in a figure in the wrong font | the bundle (or Google) must hold the family its `font-family` names, spelt the same; Checks shows `svgFontUnavailable` (≥ 1.25 embeds the faces itself) |
 | Blank figure in the browser | too many nested SVG filters: flatten |
 | Page count differs by one per chapter | a copy-fitted source (`compact` style), or accept it and note it |
 | Chinese lines a character longer or shorter than the source's | `cjk.grid` `charsPerLine`; the region's `punctuationWidth` (Kaiming vs full width) and `compressAdjacent` |

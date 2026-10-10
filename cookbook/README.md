@@ -111,6 +111,7 @@ findings; they exit 0 when green, 1 on any failure, 2 on a usage error.
 | `pnpm cookbook new <slug> --chapter <id> [--from <slug>]` | Copies `_template/` (or another recipe) to `cookbook/<slug>/` as a **draft**: a planned slug keeps its Nº, chapter and order from `_roadmap.json`, any other takes the next free Nº and the last place in the chapter; today's dates, and the slug and Nº written into `script.js`. |
 | `pnpm cookbook dev <slug> [--lang es] [--port 4400]` | Serves exactly the page the capture runs, and reloads it whenever you save a file of the recipe or the kit. Open it next to your editor. |
 | `pnpm cookbook lint [slug…] [--engine local]` | The static checks: `recipe.json`, both write-ups, every composed edition of the pen, assets, credits. Run it until it is silent. With `--engine local`, a draft may pin the next release (see below). |
+| `pnpm cookbook lint [slug…] --strict-fixed [--as-of x.y.z]` | Also fails every note about a pitfall the engine fixed at or before the recipe's pin (`gotchas.json` `fixedIn`): its id in `gotchas`, and each `workarounds` entry with the same `followup`. Plain `lint` only counts them, in one warning. `--as-of` reads every recipe as if it pinned at least that version: the list a clean-up works through before it bumps the pins. |
 | `pnpm cookbook capture [slug…]` | Runs the pen in Chrome against the released engine, verifies it (§11) and writes the pages, card, social image, PDF and `capture.json`. With no slug: every recipe whose capture is missing or stale. |
 | `pnpm cookbook capture <slug> --check` | Runs and verifies, writes nothing (a regression run). |
 | `pnpm cookbook capture <slug> --preview-dir <dir>` | Also writes PNG copies of every page, the card and the social image, and the PDF the pen builds, to `<dir>/<slug>/<lang>/`, with the `capture.json` entry the edition would get. |
@@ -186,7 +187,8 @@ maths, workers or interactive rebuilds.
 3. **One engine entry.** Named imports come from `https://esm.sh/postext` (plus
    `https://esm.sh/postext-pdf` for PDFs, `https://esm.sh/postext-folio` for the 3D book,
    `https://esm.sh/postext-epub` for EPUB files), never pinned: the capture pins the released
-   version for you. Maths recipes import **every** symbol from `https://esm.sh/postext?bundle`.
+   version for you. Maths recipes use the same import; `https://esm.sh/postext?bundle`, which
+   postext 1.4 needed for MathJax, still lints in an `engine.math` recipe written with it.
 4. **Design first.** The file reads top to bottom: design, content, fonts, build. The answer
    sits at the top of CodePen's JS panel; the long sample and the kit are folded away.
 5. **Never the default skin** (§7).
@@ -259,8 +261,13 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
   `showPages` pairs pages across chapters and `renderToPdf` accepts the array of documents.
 - **HTML.** `document.getElementById('pages').innerHTML = renderToHtml(doc, { mode: 'single', background: '#fff', resourceImageUrl: imageUrl })`.
   Always pass a background (HTML pages are transparent) and use `capture.card: "screenshot"`.
-- **Maths.** Import everything from `https://esm.sh/postext?bundle`, `await initMathEngine()`
-  before the build, set `engine.math: true` and accept the known console noise:
+- **Maths.** Import `initMathEngine` with the other symbols from `https://esm.sh/postext`,
+  `await initMathEngine()` before the build and set `engine.math: true`. Since postext 1.5
+  MathJax ships inside the package and that import loads it, with a clean console. A recipe
+  written for 1.4 imports every symbol from `https://esm.sh/postext?bundle` instead (never
+  from both URLs: they are two engines), which the lint still accepts in an `engine.math`
+  recipe; move it to the plain import when its script next changes. Until then that build
+  prints two lines the recipe has to expect:
   `"expect": { "console": ["module \"buffer\" not found", "module \"esprima\" not found"] }`.
 - **Live controls.** `index.html` holds `<form id="controls">…</form>`; a `render()` rebuilds
   with `config()` and calls `showPages`. Add `"live"` to `outputs`.
@@ -750,7 +757,7 @@ share. Each file starts with a `"$comment"` that explains it; the loader ignores
 | `questions.json` | the reader questions Q01–Q178, how/why, index form, theme, gap | `Qnn` |
 | `gaps.json` | what Postext does not do, with aliases and the workaround; a gap the engine closes keeps its entry with `fixedIn` (the version), so the recipes and questions that name it still resolve, but the site no longer offers it as a gap or gives its recipes the Workaround badge | kebab-case id |
 | `warnings.json` | every engine, parse and Sandbox warning: label, cause, fix | warning kind |
-| `gotchas.json` | shared pitfalls, tied to a feature and to the engine follow-up that would retire them | kebab-case id |
+| `gotchas.json` | shared pitfalls, tied to a feature and to the engine follow-up that would retire them; one the engine fixes keeps its entry with `fixedIn` (the version) and a body that tells the old behaviour as past: a recipe that pins an older engine still lists it, under a "fixed in postext X" kicker, and a recipe that pins that version or a later one no longer shows it nor is found by it | kebab-case id |
 | `collections.json` | featured recipes and curated reading paths | kebab-case id |
 
 **Rules.** Ids are permanent: never rename one a recipe uses. Every text field has non-empty

@@ -5,7 +5,7 @@ import type { BuildPassInfo } from '../pipeline/build';
 import { initMathEngine, isMathReady } from '../math';
 import { contentHasMath } from '../parse/inlineSnippet';
 import { citationEngine, ensureCitationEngine, mayNeedCitations } from '../citations/registry';
-import { createMeasurementCache, clearMeasurementCache } from '../measure';
+import { createMeasurementCache, evictFontFamilies } from '../measure';
 import type { MeasurementCache } from '../measure';
 import type { RequestMessage, ResponseMessage, FontPayload } from './protocol';
 import { documentFontFamilies, fontFaceDescriptors, unavailableFontFamilies } from './fonts';
@@ -15,7 +15,7 @@ import type { VDTDocument } from '../vdt';
 const ctx: DedicatedWorkerGlobalScope = self as unknown as DedicatedWorkerGlobalScope;
 
 const registeredFaces = new Set<string>();
-let measurementCache: MeasurementCache = createMeasurementCache();
+const measurementCache: MeasurementCache = createMeasurementCache();
 let currentBuildId: number | null = null;
 let cancelRequestedFor: number | null = null;
 /** The last few documents built, by the fingerprint the host sent with
@@ -96,28 +96,35 @@ function missingFonts(doc: VDTDocument): string[] | undefined {
 async function registerFonts(faces: FontPayload[]): Promise<void> {
   const fontSet = (ctx as unknown as { fonts?: FontFaceSet }).fonts;
   if (!fontSet) return;
-  let addedAny = false;
-  await Promise.all(
+  const added = new Set<string>();
+  // Loaded side by side, added in the order they were sent (#629): a
+  // family's slices overlap at a few code points, where the order decides.
+  const loaded = await Promise.all(
     faces.map(async (face) => {
       const key = faceKey(face);
-      if (registeredFaces.has(key)) return;
+      if (registeredFaces.has(key)) return null;
       try {
         const ff = new FontFace(face.family, face.buffer, fontFaceDescriptors(face));
         await ff.load();
-        fontSet.add(ff);
-        registeredFaces.add(key);
-        addedAny = true;
+        return { key, ff, family: face.family };
       } catch (err) {
         console.warn('[postext/worker] failed to register font', face.family, err);
+        return null;
       }
     }),
   );
-  // Any build that measured text before these faces landed used fallback
-  // metrics. Drop the block-level cache and pretext's glyph cache so the
-  // next build re-measures with the real glyphs.
-  if (addedAny) {
-    measurementCache = createMeasurementCache();
-    clearMeasurementCache();
+  for (const entry of loaded) {
+    if (!entry || registeredFaces.has(entry.key)) continue;
+    fontSet.add(entry.ff);
+    registeredFaces.add(entry.key);
+    added.add(entry.family);
+  }
+  // Any build that measured text in these families before their faces
+  // landed used fallback metrics: drop those measurements (the widths, the
+  // blocks of the measurement cache at its next lookup, pretext's glyph
+  // cache) so the next build re-measures with the real glyphs.
+  if (added.size > 0) {
+    evictFontFamilies(added);
     docCache.clear();
     familyAvailable.clear();
   }
@@ -139,8 +146,7 @@ function unregisterFonts(families: string[]): void {
     if (targets.has(family)) registeredFaces.delete(key);
   }
   // A dropped face may have been cached against old glyph metrics.
-  measurementCache = createMeasurementCache();
-  clearMeasurementCache();
+  evictFontFamilies(families);
   docCache.clear();
   familyAvailable.clear();
 }

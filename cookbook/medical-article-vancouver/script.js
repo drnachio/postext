@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 095 · A medical article in Vancouver style ══════════════
 // https://postext.dev/en/cookbook/medical-article-vancouver
 // Code: MIT · Text: original (CC BY 4.0) · Chart: generated in code (CC BY 4.0)
-// Fonts: PT Serif, Fira Sans, Fira Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.12.1
+// Fonts: PT Serif, Fira Sans, Fira Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.23.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
   registerResourceImage, defaultResourceTypes, parseTSV,
@@ -42,7 +42,8 @@ const citations = {
   marker: 'superscript', collapseRanges: true, // raised 1 and 6–8, not [1] and [6–8]
   link: true, // each number jumps to its reference, in the PDF and on screen
   bibliography: { fontSize: em(0.86), lineHeight: pt(10.4), entrySpacing: pt(1.6),
-    labelWidth: mm(2.85), // the width of "1. " at 8 pt: the turnovers line up with the text
+    labelWidth: mm(5.5), labelAlign: 'right', // a column for the numbers: 9. and 10. end
+    // together, and every entry's text starts at one x, first line and turnovers alike
     doi: 'link' }, // https://doi.org/… printed whole and clickable
 };
 // #endregion

@@ -39,6 +39,7 @@ import {
 } from './placeholders';
 import { hasJoiningScript, joinsWithNext } from '../bidi';
 import { designBaseDirection, directRuns } from './bidiText';
+import { composeCjkDesignParagraph, composesDesignAsCjk, type CjkDesignFonts } from './cjkText';
 import {
   RichMeasurer,
   ellipsisEndCut,
@@ -46,6 +47,8 @@ import {
   ellipsisStartCut,
   parseRichDesignText,
   plainDesignText,
+  richDesignSpans,
+  richFontSet,
   singleRichLine,
   wrapRich,
   type DesignTextRun,
@@ -806,6 +809,72 @@ function layoutText(
   };
 }
 
+/**
+ * Lay out a text some of whose rows (`\n` apart) compose as CJK (#637):
+ * those rows are set by the CJK composer (`design/cjkText.ts`), wrapped
+ * when `overflow` wraps and set on one line otherwise; the others as
+ * `layoutText` (or, with inline marks, `layoutRichText`) sets them.
+ * Undefined when a line wider than its room should lose characters to an
+ * ellipsis: the caller then sets the text as before.
+ */
+function layoutCjkRows(
+  source: string,
+  spansOf: (a: number, b: number) => InlineSpan[],
+  fonts: CjkDesignFonts,
+  richM: RichMeasurer | undefined,
+  measure: TextMeasure,
+  measureIn: (text: string, font: string) => number,
+  lineHeightPx: number,
+  letterSpacingPx: number,
+  overflow: TextOverflow,
+  maxContentWidth: number | undefined,
+  hyphenate: boolean | undefined,
+): TextMeasurement | undefined {
+  const wrap = overflow === 'wrap' && maxContentWidth !== undefined;
+  const rows: { text: string; width: number; runs?: DesignTextRun[]; xOffset?: number }[] = [];
+  let truncated = false;
+  // A line wider than the room of a text that does not wrap: clipped, or
+  // left to the ellipsis of the plain path.
+  const tooWide = (width: number): boolean => !wrap && maxContentWidth !== undefined && width > maxContentWidth + CLIP_SLACK_PX;
+  let start = 0;
+  for (const row of source.split('\n')) {
+    const end = start + row.length;
+    if (composesDesignAsCjk(row)) {
+      const lines = composeCjkDesignParagraph(spansOf(start, end), fonts, wrap ? maxContentWidth : undefined, lineHeightPx, letterSpacingPx, measureIn);
+      if (lines.some((l) => tooWide(l.width))) {
+        if (overflow !== 'clip') return undefined;
+        truncated = true;
+      }
+      if (lines.length === 0) rows.push({ text: '', width: 0 });
+      for (const l of lines) rows.push({ text: l.text, width: l.width, ...(l.runs ? { runs: l.runs } : {}), ...(l.xOffset ? { xOffset: l.xOffset } : {}) });
+    } else if (wrap) {
+      if (richM) rows.push(...wrapRich(richM, start, end, () => maxContentWidth, hyphenate ?? false));
+      else for (const t of wrapToWidth(row, measure, maxContentWidth, hyphenate ?? false)) rows.push({ text: t, width: measure(t) });
+    } else {
+      const line = richM ? richM.rangeLine(start, end) : { text: row, width: measure(row) };
+      if (tooWide(line.width)) {
+        if (overflow !== 'clip') return undefined;
+        truncated = true;
+      }
+      rows.push(line);
+    }
+    start = end + 1;
+  }
+  const lines = stackLines(rows, lineHeightPx);
+  rows.forEach((r, i) => {
+    if (r.xOffset) lines[i]!.xOffset = r.xOffset;
+  });
+  const natural = lines.reduce((mx, l) => Math.max(mx, l.width + (l.xOffset ?? 0)), 0);
+  const clip = !wrap && maxContentWidth !== undefined;
+  return {
+    lines,
+    contentWidth: clip ? Math.min(natural, maxContentWidth) : natural,
+    contentHeight: lines.length * lineHeightPx,
+    needsClip: clip,
+    ...(truncated ? { truncated: true } : {}),
+  };
+}
+
 /** Lay out a text with inline marks: the same rules as `layoutText`, with
  *  every line built from runs. */
 function layoutRichText(
@@ -1303,6 +1372,14 @@ function layoutTextElement(
     && !joinsWithNext(paragraphs[0]!, 0)
     ? el.dropCap
     : undefined;
+  // Rows of Chinese or Japanese are set by the CJK composer (#637): the
+  // fonts of their inline marks, and the spans of a range of `source`
+  // (`plain`, the range's text, when the text has no marks).
+  const cjkFonts: CjkDesignFonts = richM
+    ? richFontSet({ family: el.fontFamily, sizePx: fontSizePx, weight: el.fontWeight, italic: el.italic })
+    : { normal: fontString, bold: fontString, italic: fontString, boldItalic: fontString };
+  const spansOf = (a: number, b: number, plain: string): InlineSpan[] =>
+    richM ? richDesignSpans(richM.rt, a, b) : [{ text: plain, bold: false, italic: false }];
   let m: TextMeasurement;
   let cap: { text: string; font: string; fontPx: number; width: number; lines: number; color: string } | undefined;
   if ((dropCap || justify || (paraIndentPx > 0 && paragraphs.length > 1)) && wraps && contentMax !== undefined) {
@@ -1338,6 +1415,27 @@ function layoutTextElement(
         if (p > 0 && i === 0) return paraIndentPx;
         return 0;
       };
+      if (composesDesignAsCjk(para)) {
+        // A paragraph of Chinese or Japanese (#637): set by the CJK
+        // composer, ragged (its lines are not stretched at word spaces),
+        // each line as far in as its offset says (the last entry repeats).
+        const indents: number[] = [];
+        for (let i = 0; i <= Math.max(capLines, 1); i++) indents.push(offsetOf(i));
+        const [a, b] = paraRanges[p]!;
+        for (const l of composeCjkDesignParagraph(spansOf(a, b, para), cjkFonts, maxW, lineHeightPx, letterSpacingPx, measureIn, indents)) {
+          wrapped.push({
+            text: l.text,
+            width: l.width,
+            xOffset: l.xOffset,
+            topY: lineNo * lineHeightPx,
+            baselineY: lineNo * lineHeightPx + lineHeightPx * 0.8,
+            height: lineHeightPx,
+            ...(l.runs ? { runs: l.runs } : {}),
+          });
+          lineNo++;
+        }
+        return;
+      }
       const lines: { text: string; width: number; runs?: DesignTextRun[]; wordSpacingPx?: number }[] = richM
         ? wrapRich(richM, paraRanges[p]![0], paraRanges[p]![1], (i) => maxW - offsetOf(i), el.hyphenate ?? false, fill)
         : wrapWithWidths(para, measure, (i) => maxW - offsetOf(i), el.hyphenate ?? false, 0, fill).map((t) => ({ text: t, width: measure(t) }));
@@ -1363,10 +1461,13 @@ function layoutTextElement(
     });
     const w = wrapped.reduce((mx, l) => Math.max(mx, l.width + (l.xOffset ?? 0)), 0);
     m = { lines: wrapped, contentWidth: w, contentHeight: wrapped.length * lineHeightPx, needsClip: false };
-  } else if (richM && contentMax !== undefined) {
-    m = layoutRichText(richM, lineHeightPx, el.overflow, contentMax, el.hyphenate);
   } else {
-    m = layoutText(text, measure, lineHeightPx, el.overflow, contentMax, el.hyphenate);
+    const cjk = source.split('\n').some(composesDesignAsCjk)
+      ? layoutCjkRows(source, (a, b) => spansOf(a, b, source.slice(a, b)), cjkFonts, richM, measure, measureIn, lineHeightPx, letterSpacingPx, el.overflow, contentMax, el.hyphenate)
+      : undefined;
+    if (cjk) m = cjk;
+    else if (richM && contentMax !== undefined) m = layoutRichText(richM, lineHeightPx, el.overflow, contentMax, el.hyphenate);
+    else m = layoutText(text, measure, lineHeightPx, el.overflow, contentMax, el.hyphenate);
   }
   // Set vertically (in a vertical flow, or turned by `writingMode`): each
   // line's characters stand on the middle of its line box, as a vertical

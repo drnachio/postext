@@ -23,6 +23,7 @@ import { BitmapUploader, type BitmapUploadResult } from './BitmapUploader';
 import { BitmapResolutionField } from './BitmapResolutionField';
 import { SvgUploader, type SvgUploadResult } from './SvgUploader';
 import { PdfMasterUploader } from './PdfMasterUploader';
+import { SvgFontsField } from './SvgFontsField';
 import { SafeAreaField } from './SafeAreaEditor';
 import { applyMarks } from './pictureMarks';
 import { VideoEditor } from './VideoEditor';
@@ -167,6 +168,10 @@ export function ResourceDetail({
   const placementShrink = currentPlacement.shrink ?? typePlacement.shrink ?? floatShrink?.mode ?? 'never';
   const placementMinScale = currentPlacement.minScale ?? typePlacement.minScale ?? floatShrink?.minScale ?? DEFAULT_FLOAT_MIN_SCALE;
   const placementCaptionMeasure = currentPlacement.captionMeasure ?? typePlacement.captionMeasure ?? 'slot';
+  // Heading the page or column that cites it (#633): the resource's own
+  // value → its type's → the document's `layout.floatsAtCitingPage`.
+  const floatsAtCitingPage = useSandboxSelector((s) => s.config.layout?.floatsAtCitingPage);
+  const placementCitingPage = currentPlacement.citingPage ?? typePlacement.citingPage ?? floatsAtCitingPage ?? false;
 
   // Named table style (`config.tableStyles`); unset = the document's table style.
   const tableStyles = useSandboxSelector((s) => s.config.tableStyles) ?? [];
@@ -232,9 +237,10 @@ export function ResourceDetail({
     onChange(
       touch({
         kind: 'svg',
-        // A replaced SVG keeps its print master: the master is the
-        // publisher's original and outlives screen-side re-exports.
-        svg: { fileId: r.fileId, width: r.width, height: r.height, pdfFileId: resource.svg?.pdfFileId },
+        // A replaced SVG keeps its print master (the master is the
+        // publisher's original and outlives screen-side re-exports) and its
+        // font opt-out (#630).
+        svg: { fileId: r.fileId, width: r.width, height: r.height, pdfFileId: resource.svg?.pdfFileId, ...(resource.svg?.inlineFonts === false ? { inlineFonts: false } : {}) },
         bitmap: undefined,
         table: undefined,
         video: undefined,
@@ -470,6 +476,19 @@ export function ResourceDetail({
               onReset={() => setPlacementKey('columns', undefined)}
             />
           )}
+          {/* A top or automatic float may head the page (column) where the
+              line citing it lands, the text above the reference moving
+              down under it (#633). Not for turned or side-column floats. */}
+          {!placementInline && !placementRotated && placementPosition !== 'bottom' && placementSpan !== 'side' && (
+            <ToggleSwitch
+              label={labels.resourceTypePlacementCitingPage}
+              tooltip={labels.resourceTypePlacementCitingPageTooltip}
+              checked={placementCitingPage}
+              onChange={(v) => setPlacementKey('citingPage', v)}
+              isDefault={currentPlacement.citingPage === undefined}
+              onReset={() => setPlacementKey('citingPage', undefined)}
+            />
+          )}
           {/* Width fraction and alignment of a resource narrower than its
               slot (floats and inline embeds alike; a picture narrower than
               the column follows the alignment at full width too), and the
@@ -630,6 +649,9 @@ export function ResourceDetail({
               onRemoved={() => applyPdfMaster(undefined)}
             />
           </Field>
+        )}
+        {resource.kind === 'svg' && resource.svg?.fileId && (
+          <SvgFontsField resource={resource} onChange={(svg) => onChange(touch({ svg }))} />
         )}
         {resource.kind === 'svg' && resource.svg?.fileId && (
           <SvgSourceEditor

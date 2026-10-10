@@ -59,9 +59,11 @@ from typing import Any
 # centred hemistichs, a first-line indent dropped from a style that hangs, a
 # backslash ending a line printed. A manifest stamped 9 (postext 1.23) gets
 # the rules-10 pin: a line of verse a little too wide turns over instead of
-# tightening its word spaces. An engine older than 1.23 reads 9 as 8, one
-# older than 1.24 reads 10 as 9.
-CONFIG_VERSION = 10
+# tightening its word spaces. A manifest stamped 10 (postext 1.24) gets the
+# rules-11 pin: a horizontal page on a character grid stays balanced. An
+# engine older than 1.23 reads 9 as 8, one older than 1.24 reads 10 as 9,
+# one older than 1.25 reads 11 as 10.
+CONFIG_VERSION = 11
 
 # ---------------------------------------------------------------------------
 # primitives
@@ -279,7 +281,8 @@ def bitmap(project: Path | str, id_: str, file: str, caption: str = "", *, type_
 def svg(project: Path | str, id_: str, file: str, caption: str = "", *, type_id: str = "figure",
         pdf_file: str | None = None, alt: str | None = None, note: str | None = None,
         position: str | None = None, span: str | None = None, safe_area: dict | None = None,
-        anchors: list | None = None, avoid: list | None = None, **placement) -> dict:
+        anchors: list | None = None, avoid: list | None = None, inline_fonts: bool = True,
+        **placement) -> dict:
     size = svg_size(Path(project) / file)
     r = {"id": id_, "typeId": type_id, "kind": "svg", "file": file, "caption": caption,
          "altText": alt if alt is not None else re.sub(r"[*_^~]", "", caption)}
@@ -288,6 +291,9 @@ def svg(project: Path | str, id_: str, file: str, caption: str = "", *, type_id:
     _picture_marks(r, safe_area, anchors, avoid)
     if pdf_file:
         r["pdfFile"] = pdf_file
+    if not inline_fonts:
+        # Keep the markup as stored: no @font-face added when shown (postext >= 1.25).
+        r["inlineFonts"] = False
     if note:
         r["note"] = note
     pl = _placement(position, span, **placement)
@@ -541,7 +547,7 @@ def resources() -> list:
 def main() -> None:
     primary = LANGS[0]
     manifest = {{
-        "version": 2, "configVersion": 10, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
+        "version": 2, "configVersion": 11, "id": ID, "name": NAME, "locale": primary, "locales": LANGS,
         "view": {{"canvasScope": "book"}},
         "chapters": {{lang: chapters_from_dir(HERE, lang) for lang in LANGS}},
         "config": config(primary),

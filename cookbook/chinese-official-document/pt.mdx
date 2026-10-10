@@ -26,7 +26,7 @@ Todo sinal ocupa uma casa inteira e não cede nada dela, então numa linha de ch
 
 <Excerpt region="levels" />
 
-A norma compõe 一、 em 黑体, （一） em 楷体, e 1. e （1） na fonte do texto, todos no corpo do texto. `{2:一}` imprime o numeral chinês informal na escrita de `locale` ([numeração](/pt/docs/configuration#numeração)). Com o corpo e a entrelinha do texto e sem margens, um título ocupa uma linha da grade, e o texto embaixo dele também fica na grade. Os títulos não têm recuo próprio, então os dois espaços ideográficos no começo de cada modelo são as duas casas que a norma deixa ([configurações por nível](/pt/docs/configuration#sobrescritas-por-nível)).
+A norma compõe 一、 em 黑体, （一） em 楷体, e 1. e （1） na fonte do texto, todos no corpo do texto. `{2:一}` imprime o numeral chinês informal na escrita de `locale` ([numeração](/pt/docs/configuration#numeração)). Com o corpo e a entrelinha do texto e sem margens, um título ocupa uma linha da grade, e o texto embaixo dele também fica na grade. `firstLineIndent: em(2)` recua cada título duas casas, contadas em ems do corpo, e um título que passa para uma segunda linha a começa na margem, como a norma pede; o número vem depois do recuo, então o sumário e os marcadores do PDF leem 一、 sem espaços na frente ([configurações por nível](/pt/docs/configuration#sobrescritas-por-nível)).
 
 ### 3 · O timbre, linha por linha
 

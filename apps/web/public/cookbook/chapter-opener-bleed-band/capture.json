@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "chapter-opener-bleed-band",
-  "sourceHash": "b83ec37c5f21ccfb7e518635867aad91e53d0d008299b762282efec80ef6615c",
+  "sourceHash": "b0ec8126860b1e2106ca479a7e6584b6f50891c1307ef06ac4d4e433e3c6d78b",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.24.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.791Z",
+  "capturedAt": "2026-10-09T21:08:28.810Z",
   "variants": {
     "en": {
-      "hash8": "50f20e00",
+      "hash8": "0ec1af65",
       "vdtHash": "09940d9699e7702a8cda351e3491448efa48de26",
       "timings": {
-        "importMs": 150,
-        "fontsMs": 30,
-        "buildMs": 177,
-        "totalMs": 1240,
+        "importMs": 130,
+        "fontsMs": 43,
+        "buildMs": 144,
+        "totalMs": 1135,
         "builds": 2
       },
       "specimen": {
@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "chapter-opener-bleed-band.postext",
-        "bytes": 34536,
+        "bytes": 34518,
         "folio": "43da5799"
       },
       "detected": {
@@ -238,7 +238,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 266,
+        "configLeaves": 262,
         "designElements": 15,
         "directives": [
           ":::paragraphs"
@@ -336,13 +336,13 @@
       }
     },
     "es": {
-      "hash8": "3abb992d",
+      "hash8": "0b37892f",
       "vdtHash": "256f874234a5d86a1ea1a8b1319f24f1128a52f6",
       "timings": {
-        "importMs": 156,
-        "fontsMs": 24,
-        "buildMs": 42,
-        "totalMs": 919,
+        "importMs": 180,
+        "fontsMs": 28,
+        "buildMs": 37,
+        "totalMs": 907,
         "builds": 2
       },
       "specimen": {
@@ -441,7 +441,7 @@
       },
       "sandbox": {
         "file": "chapter-opener-bleed-band.postext",
-        "bytes": 34757,
+        "bytes": 34738,
         "folio": "43da5799"
       },
       "detected": {
@@ -564,7 +564,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 266,
+        "configLeaves": 262,
         "designElements": 15,
         "directives": [
           ":::paragraphs"

@@ -150,7 +150,9 @@ export function renderTextBlock(ctx: CanvasRenderingContext2D, block: VDTDesignT
       ctx.font = run.fontString;
       // A vertical line: the orientation its author gave the run
       // (`:tcy`, `:upright`, `:sideways`).
-      const runX = x;
+      // A run whose width is its box (a CJK mark that gave up blank, #637)
+      // paints its glyphs `inkOffset` into it.
+      const runX = x + (run.inkOffset ?? 0);
       paintRunInDirection(ctx, run.rtl, () => paint(run.text, runX, line.baselineY + (run.baselineShift ?? 0), segmentOrientation(run)));
       x += run.width;
     }

@@ -51,6 +51,10 @@ export interface ResolvedPlacement {
    *  upright picture. */
   shrink: FloatShrinkMode;
   minScale: number;
+  /** The float may head the page or column its citing line lands on
+   *  (`placement.citingPage`, #633): a `'top'` or `'auto'` float of a
+   *  column or page span, not turned. */
+  citingPage: boolean;
 }
 
 /** A planned float: the resource, its resolved placement, and the index of the
@@ -94,6 +98,12 @@ export interface PlannedFloat {
   wrap?: 'left' | 'right';
   /** The wrap's own gap (`placement.wrapGap`, else `layout.wrap.gap`). */
   wrapGap?: Dimension;
+  /** May head the page (page span) or column (column span) where its
+   *  citing line lands (`placement.citingPage`, #633): the build proposes
+   *  that slot after a pass and keeps it while the citing line stays
+   *  there. Absent for a float that takes the first free slot after its
+   *  reference. */
+  citingPage?: true;
   /** For the rest of a table split across pages: the first model row still
    *  to place (the header rows are repeated above it). Absent (or `0`) for
    *  a whole resource. */
@@ -127,6 +137,8 @@ export function resolveResourcePlacement(
   type: ResourceType | undefined,
   noRotation = false,
   shrinkDefault?: FloatShrinkDefault,
+  /** `layout.floatsAtCitingPage`: the default of `placement.citingPage`. */
+  citingPageDefault = false,
 ): ResolvedPlacement {
   const position =
     resource.placement?.position ?? type?.defaultPlacement?.position ?? 'auto';
@@ -145,7 +157,9 @@ export function resolveResourcePlacement(
     : 'never';
   const minScale = floatMinScaleOf(resource.placement?.minScale) ?? floatMinScaleOf(type?.defaultPlacement?.minScale)
     ?? shrinkDefault?.minScale ?? DEFAULT_FLOAT_MIN_SCALE;
-  return { position, span, widthFraction, align, captionSide, columns, shrink, minScale, ...(rotate ? { rotate } : {}) };
+  const citingPage = (position === 'top' || position === 'auto') && !rotate && span !== 'side'
+    && (resource.placement?.citingPage ?? type?.defaultPlacement?.citingPage ?? citingPageDefault) === true;
+  return { position, span, widthFraction, align, captionSide, columns, shrink, minScale, citingPage, ...(rotate ? { rotate } : {}) };
 }
 
 /**
@@ -175,6 +189,8 @@ export function computeFloatPlan(
   /** `layout.wrap`: how a float that asks for text wrap is set (#627);
    *  absent, no float wraps. */
   wrapSettings?: ResolvedTextWrapConfig,
+  /** `layout.floatsAtCitingPage` (#633). */
+  citingPageDefault = false,
 ): PlannedFloat[] {
   const noRotationAt = typeof noRotation === 'function' ? noRotation : () => noRotation;
   const resourceById = new Map<string, Resource>();
@@ -192,7 +208,7 @@ export function computeFloatPlan(
     if (!resource) return;
     const type = typeById.get(resource.typeId);
     const upright = noRotationAt(blockIdx);
-    const { position, span, rotate, widthFraction, align, captionSide, columns, shrink, minScale } = resolveResourcePlacement(resource, type, upright, shrinkDefault);
+    const { position, span, rotate, widthFraction, align, captionSide, columns, shrink, minScale, citingPage } = resolveResourcePlacement(resource, type, upright, shrinkDefault, citingPageDefault);
     if (position === 'here') return;
     // Text wrap (#627): a one-column float of horizontal text, upright,
     // its caption under it; any other keeps its band whole.
@@ -205,6 +221,7 @@ export function computeFloatPlan(
         widthFraction: wrap.width, align: wrap.side, wrap: wrap.side,
         ...(wrap.gap ? { wrapGap: wrap.gap } : {}),
         ...(shrink !== 'never' ? { shrink, minScale } : {}),
+        ...(citingPage ? { citingPage } : {}),
       });
       return;
     }
@@ -218,6 +235,7 @@ export function computeFloatPlan(
       ...(captionSide && span === 'column' && columns === 1 ? { captionSide } : {}),
       ...(columns > 1 && span === 'column' && !rotate ? { columns } : {}),
       ...(shrink !== 'never' && !upright ? { shrink, minScale } : {}),
+      ...(citingPage ? { citingPage } : {}),
     });
   };
 

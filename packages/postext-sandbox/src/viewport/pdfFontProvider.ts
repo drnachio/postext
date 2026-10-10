@@ -57,18 +57,20 @@ function fontsourceCssUrl(family: string, weight: number, style: 'normal' | 'ita
 }
 
 /** A WOFF2 file as TrueType bytes, fetched once per URL (a failed fetch is
- *  tried again next time). */
-function fetchAndDecompress(url: string): Promise<Uint8Array> {
-  const cached = bytesCache.get(url);
+ *  tried again next time); as fetched with `raw` (an SVG picture's
+ *  `@font-face` takes WOFF2 as it is, #630). */
+function fetchAndDecompress(url: string, raw = false): Promise<Uint8Array> {
+  const key = raw ? `raw:${url}` : url;
+  const cached = bytesCache.get(key);
   if (cached) return cached;
   const promise = (async () => {
     const res = await fetch(url, { mode: 'cors' });
     if (!res.ok) throw new Error(`font fetch failed: ${res.status} ${url}`);
     const buf = new Uint8Array(await res.arrayBuffer());
-    return decompressWoff2(buf);
+    return raw ? buf : decompressWoff2(buf);
   })();
-  bytesCache.set(url, promise);
-  promise.catch(() => bytesCache.delete(url));
+  bytesCache.set(key, promise);
+  promise.catch(() => bytesCache.delete(key));
   return promise;
 }
 
@@ -99,11 +101,11 @@ function fetchSlices(family: string, weight: number, style: 'normal' | 'italic')
 /** Each file of a face, fetched with one retry; a file that still fails is
  *  left out, so a CDN hiccup costs the characters of that file (reported as
  *  missing glyphs), not the face. Rejects only when every file failed. */
-async function fetchFaceFiles(slices: readonly FontSlice[]): Promise<Uint8Array[]> {
+async function fetchFaceFiles(slices: readonly FontSlice[], raw = false): Promise<Uint8Array[]> {
   const files = await mapLimit(slices, FETCH_CONCURRENCY, async (slice) => {
     for (let attempt = 0; ; attempt++) {
       try {
-        return await fetchAndDecompress(slice.url);
+        return await fetchAndDecompress(slice.url, raw);
       } catch (err) {
         if (attempt >= FETCH_RETRIES) {
           console.warn(`[pdfFontProvider] left out ${slice.url}: ${err instanceof Error ? err.message : String(err)}`);
@@ -147,20 +149,31 @@ function pickCustomVariant(
   pool[0]!);
 }
 
+/** One view per stored font file, so an SVG that inlines it again finds
+ *  its base64 cached (#630). */
+const customViews = new Map<string, Uint8Array>();
+
 async function loadCustomFontBytes(
   family: CustomFontFamily,
   weight: number,
   style: 'normal' | 'italic',
+  raw = false,
 ): Promise<Uint8Array> {
   const variant = pickCustomVariant(family, weight, style);
   if (!variant) {
     throw new Error(`custom font "${family.name}" has no uploaded variants`);
   }
+  if (raw && customViews.has(variant.fileId)) return customViews.get(variant.fileId)!;
   const file = await getFontFile(variant.fileId);
   if (!file) {
     throw new Error(`custom font "${family.name}" is missing its uploaded file`);
   }
   const bytes = new Uint8Array(file.buffer);
+  // An SVG picture takes every format as uploaded.
+  if (raw) {
+    customViews.set(variant.fileId, bytes);
+    return bytes;
+  }
   switch (variant.format) {
     case 'woff2':
       return decompressWoff2(bytes);
@@ -186,8 +199,12 @@ async function loadCustomFontBytes(
  * English, `latin` and `latin-ext` for Czech, and for a Chinese family the
  * numbered unicode-range slices the text touches — the `latin` file of Noto
  * Serif SC has no Han at all. Without the stylesheet, the `latin` file.
+ *
+ * With `raw`, files come as stored or fetched (WOFF2 and WOFF included),
+ * for the `@font-face` rules of SVG pictures (#630).
  */
-export function createPdfFontProvider(): PdfFontProvider {
+export function createPdfFontProvider(options: { raw?: boolean } = {}): PdfFontProvider {
+  const raw = options.raw === true;
   return async (family, weight, style, request) => {
     // Custom families bypass the Google/Fontsource path entirely: resolve
     // bytes from IndexedDB and only decompress when the uploaded file was
@@ -195,7 +212,7 @@ export function createPdfFontProvider(): PdfFontProvider {
     // or delete variants at any time, and the fileId captures identity.
     const custom = getCustomFontFamily(family);
     if (custom) {
-      return await loadCustomFontBytes(custom, weight, style);
+      return await loadCustomFontBytes(custom, weight, style, raw);
     }
 
     await loadFont(family);
@@ -208,14 +225,14 @@ export function createPdfFontProvider(): PdfFontProvider {
     const slices = (await fetchSlices(family, targetWeight, style))
       ?? (style === 'italic' ? await fetchSlices(family, targetWeight, 'normal') : null);
     if (slices) {
-      return fetchFaceFiles(pickSlices(slices, request?.codePoints));
+      return fetchFaceFiles(pickSlices(slices, request?.codePoints), raw);
     }
 
     try {
-      return await fetchAndDecompress(fontsourceWoff2Url(family, targetWeight, style));
+      return await fetchAndDecompress(fontsourceWoff2Url(family, targetWeight, style), raw);
     } catch (err) {
       if (style === 'italic') {
-        return await fetchAndDecompress(fontsourceWoff2Url(family, targetWeight, 'normal'));
+        return await fetchAndDecompress(fontsourceWoff2Url(family, targetWeight, 'normal'), raw);
       }
       throw err;
     }

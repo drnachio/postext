@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-official-document",
-  "sourceHash": "fbaba62c6372d8527cd52c64f2608cd19b74a09c5704e9da800131f0c2ac25df",
+  "sourceHash": "02854dc35fadc795559894678dcff26b85064cd851751496e2820a723230d58d",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.24.0",
+    "postextPdf": "1.24.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.840Z",
+  "capturedAt": "2026-10-09T21:08:28.848Z",
   "variants": {
     "en": {
-      "hash8": "216be3f0",
-      "vdtHash": "16149f3f2cece312f8444b5285767b3619148576",
+      "hash8": "3cc74138",
+      "vdtHash": "19599584a680e62544ebe96e1967de409ea4e326",
       "timings": {
-        "importMs": 203,
-        "fontsMs": 224,
-        "buildMs": 12,
-        "totalMs": 1049,
+        "importMs": 186,
+        "fontsMs": 213,
+        "buildMs": 11,
+        "totalMs": 1012,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Noto Serif SC"
         ],
         "pages": 4,
-        "ownLines": 180
+        "ownLines": 179
       },
       "pages": [
         {
@@ -115,12 +115,12 @@
       },
       "pdf": {
         "file": "chinese-official-document.pdf",
-        "bytes": 129554,
+        "bytes": 129473,
         "pages": 4
       },
       "sandbox": {
         "file": "chinese-official-document.postext",
-        "bytes": 20545,
+        "bytes": 20548,
         "folio": "f2e4b92d"
       },
       "detected": {
@@ -209,6 +209,7 @@
           "headings.levels",
           "headings.levels[].advancedDesign",
           "headings.levels[].breakBefore",
+          "headings.levels[].firstLineIndent",
           "headings.levels[].fontFamily",
           "headings.levels[].fontSize",
           "headings.levels[].fontWeight",
@@ -274,7 +275,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 387,
+        "configLeaves": 391,
         "designElements": 18,
         "directives": [
           ":::paragraphs",
@@ -356,19 +357,24 @@
           {
             "check": "C26",
             "severity": "warn",
-            "detail": "the hero is 15.3 % colour, pictures or display type (aim for 25 %+)"
+            "detail": "the hero is 15.1 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "es": {
-      "hash8": "7a079429",
-      "vdtHash": "f97c4ead35ec3c7dca8ce5f0e6d83e5731444be0",
+      "hash8": "9f78e138",
+      "vdtHash": "e485e964b2cb16efe1562af647506188cbddeaba",
       "timings": {
-        "importMs": 193,
-        "fontsMs": 217,
+        "importMs": 178,
+        "fontsMs": 198,
         "buildMs": 11,
-        "totalMs": 1084,
+        "totalMs": 1005,
         "builds": 2
       },
       "specimen": {
@@ -390,7 +396,7 @@
           "Noto Serif SC"
         ],
         "pages": 4,
-        "ownLines": 180
+        "ownLines": 179
       },
       "pages": [
         {
@@ -466,12 +472,12 @@
       },
       "pdf": {
         "file": "chinese-official-document.pdf",
-        "bytes": 129832,
+        "bytes": 129751,
         "pages": 4
       },
       "sandbox": {
         "file": "chinese-official-document.postext",
-        "bytes": 20565,
+        "bytes": 20567,
         "folio": "f2e4b92d"
       },
       "detected": {
@@ -560,6 +566,7 @@
           "headings.levels",
           "headings.levels[].advancedDesign",
           "headings.levels[].breakBefore",
+          "headings.levels[].firstLineIndent",
           "headings.levels[].fontFamily",
           "headings.levels[].fontSize",
           "headings.levels[].fontWeight",
@@ -625,7 +632,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 387,
+        "configLeaves": 391,
         "designElements": 18,
         "directives": [
           ":::paragraphs",
@@ -707,7 +714,12 @@
           {
             "check": "C26",
             "severity": "warn",
-            "detail": "the hero is 15.3 % colour, pictures or display type (aim for 25 %+)"
+            "detail": "the hero is 15.1 % colour, pictures or display type (aim for 25 %+)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

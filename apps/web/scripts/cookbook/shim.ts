@@ -58,7 +58,9 @@ export function resolveEngine(spec: string = "npm"): EngineSpec {
   throw new Error(`--engine expects npm, npm@x.y.z or local, not "${spec}"`);
 }
 
-/** Specifiers a pen may import → the shim that serves them. */
+/** Specifiers a pen may import → the shim that serves them. A maths recipe
+ *  imports the engine from either of the first two (`?bundle` was required
+ *  up to postext 1.4); both shims start MathJax through `initMathEngine`. */
 export const SHIM_PATHS = {
   "https://esm.sh/postext": "/__shim/postext.js",
   "https://esm.sh/postext?bundle": "/__shim/postext-bundle.js",

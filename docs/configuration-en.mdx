@@ -478,6 +478,18 @@ The `layout` property controls how columns are arranged within the content area.
       <td>Text running beside a picture or a box narrower than its column (<code>placement.wrap</code>, a box's <code>wrap</code>): <code>gap</code>, the space between the item and the text (one body line when unset); <code>minTextWidth</code>, the narrowest measure the text beside it may take, a length or a share of the column (narrower: the item takes its band whole, with a <code>textWrap</code> warning); <code>minLinesBeside</code>, the fewest lines worth setting beside it; <code>defaultWidth</code>, the share of the column a wrapped item takes when it sets no <code>width</code>. See <a href="/en/docs/document-format#text-wrap">Document format › Text wrap</a>. Since postext 1.24.</td>
     </tr>
     <tr>
+      <td><code>floatsAtCitingPage</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>The document default for <code>placement.citingPage</code>: a <code>'top'</code> or <code>'auto'</code> float may take the head of the page (a page-span float) or of the column (a column float) where the line that first cites it lands, instead of the first free slot after that line; the text above the reference moves down under it (see <a href="/en/docs/document-format#placement">Document format › Placement</a>). A resource's placement, then its type's <code>defaultPlacement</code>, override it. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>maxTopFraction</code></td>
+      <td><code>number</code></td>
+      <td><code>0.7</code></td>
+      <td>The largest share of a column's height, 0 to 1, that a float heading the page or column that cites it may take, with the floats already standing there, so the page keeps room for its text (LaTeX's <code>\topfraction</code>). A float that would take more goes to its usual slot. Since postext 1.25.</td>
+    </tr>
+    <tr>
       <td><code>hugClosingFloats</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -500,6 +512,18 @@ The `layout` property controls how columns are arranged within the content area.
       <td><code>number</code></td>
       <td><code>2</code></td>
       <td>Fewest lines of a paragraph or list item that a cut inside it leaves on each side when a box splits (<code>splitMinLines</code>, under <a href="#callout-styles">Callout styles</a>, still counts every line of the box on each side of the cut). A whole number, at least 1. With the default a cut never leaves a lone line of a paragraph or item at the foot of a column or at the head of the next; a box style whose <code>splitMinLines</code> is lower sets the limit instead. <code>1</code> lets a cut leave one line of the paragraph or item on a side, as up to postext 1.4. Configurations stored by earlier versions whose chapters hold a <code>:::callout</code> are read with <code>1</code> (see <a href="#bundles-written-by-postext-14-or-earlier">Bundles written by postext 1.4 or earlier</a>); in code, <code>pinLegacyBoxChildCut</code> from <code>postext/bundle</code> does the same.</td>
+    </tr>
+    <tr>
+      <td><code>flowColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>A <code>:::columns</code> fence outside a box sets its blocks in sub-columns of the text column (or across the page with <code>span="page"</code>), and a group, in a box or in the text, is cut between its sub-columns when it does not fit, going on in the next column or page (see <a href="/en/docs/document-format#columns">Document format › <code>:::columns</code></a>). <code>false</code> ignores the fence outside a box and never cuts inside a group, as up to postext 1.24; configurations stored by earlier versions whose chapters hold a <code>:::columns</code> fence are read with <code>false</code>; in code, <code>pinLegacyFlowColumns</code> from <code>postext/bundle</code> does the same. A styled section keeps the document's value. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>floatsUnderOpener</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Under a page-wide opener (a heading level or style with <code>span: 'page'</code>) set over two or more text columns, the head of the opener's own column, right under its band, is a slot for a <code>'top'</code> or <code>'auto'</code> float, level with the heads of the other columns: a floated box fenced right after the opener, or a resource embedded there, sits under the opener in the first column (across several columns from it with <code>columns</code>), and the column's text starts under it. A float cited in running text still follows the line that cites it. <code>false</code> offers no slot there, so such a float lands from the second column on, as up to postext 1.24; configurations stored by earlier versions that set a page-wide heading are read with <code>false</code>; in code, <code>pinLegacyOpenerHeadFloats</code> from <code>postext/bundle</code> does the same. A styled section keeps the document's value. Since postext 1.25.</td>
     </tr>
     <tr>
       <td><code>writingMode</code></td>
@@ -2270,6 +2294,8 @@ Publishers expect every column to start at the top of the page and end flush wit
 4. **List ends** — when the headings cannot absorb the whole gap, a grid line is added where a list/enumeration ends (space after a list reads naturally), capped per list end.
 5. **Loose paragraphs** — as a last resort, one paragraph of the column is re-broken one line longer (TeX's `\looseness=+1`), choosing the longest paragraph so the extra word spacing dilutes invisibly. The loose solution is only accepted when every line stays **below `bodyText.maxWordSpacing`** — type colour never exceeds the limit you already configured. Requires `bodyText.optimalLineBreaking`.
 
+On a character grid (`cjk.grid`, see [Chinese layout › The character grid](/en/docs/chinese-layout#the-character-grid)) every character stands in a cell one em wide and every line on the grid's line pitch, which is also the baseline grid. Balancing is off there by default, as in vertical text: a page set line by line on a grid, the way GB/T 9704 counts 22 lines of 28 characters, leaves a short column short. A configuration that sets `enabled: true` gets levers that keep the grid: headings, list ends, displays and figures take whole grid lines, so the text below them moves by whole rows, and `gridLines: 'off'` keeps those out for a standard that has no empty row to give. A Chinese or Japanese paragraph runs a line long only when no gap between two of its characters spreads past `maxTracking`, and takes no tracking on its letters: a line a character short spreads an em over its gaps, far past the default 0.01 em, so on a grid of whole cells the loose lever usually finds nothing. The box closing a column and the pictures with a safe area are off the grid by design and work as anywhere.
+
 The last column of a page is only balanced when the page flows naturally into the next one — a chapter's closing page legitimately ends short. Such a page, and a closing band cut level by `trailing`, also keeps its column heads level: no line is added under a figure or table heading one of its columns (the after-float lever), and a heading or a box that opens a column under such a figure stays at its head, whatever `stretchAfterFloats` says, so a column never starts lower than the one beside it just to line the feet up.
 
 <table>
@@ -2286,7 +2312,7 @@ The last column of a page is only balanced when the page flows naturally into th
       <td><code>enabled</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Whether to balance column bottoms.</td>
+      <td>Whether to balance column bottoms. Off by default in vertical text (<code>layout.writingMode: 'vertical-rl'</code>) and on a character grid (<code>cjk.grid.enabled</code>, since postext 1.25); <code>true</code> turns it on there too.</td>
     </tr>
     <tr>
       <td><code>maxLinesPerHeading</code></td>
@@ -2360,12 +2386,20 @@ The last column of a page is only balanced when the page flows naturally into th
       <td><code>'first'</code></td>
       <td>When a box closing a short column takes the room under its foot (lever 1, recorded as <code>trailingCallout</code>). <code>'first'</code>: before any other lever, as up to postext 1.4 — the box takes the whole gap, even several lines, and the headings above it get none. <code>'last'</code>: after the heading, list-end, display and float levers, which take whole lines first; the box moves down with the text above it and then takes only what they left, usually a fraction of a line, so its foot still meets the last grid slot and it stays close to the text it annotates. <code>'off'</code>: never; the box keeps the room under its foot, though the other levers can still move it down by whole lines when they add space above it, and the fraction of a line left under it stays. On a closing page, where the box is the only lever that lines its foot up with the column beside it, <code>'off'</code> leaves it where the flow put it. Any other value reads as <code>'first'</code>. A box closing the only text column of its band (a one-column page that ends early, its next block opening the next page) is never moved: there is no column beside it to line up with (since postext 1.19).</td>
     </tr>
+    <tr>
+      <td><code>gridLines</code></td>
+      <td><code>'allow' | 'off'</code></td>
+      <td><code>'allow'</code></td>
+      <td>On a character grid: whether the levers that add whole grid lines (above a heading, where a list ends, under a display or a box, under a figure heading the column) may run. They keep every character in its cell; <code>'off'</code> suits a standard that counts the lines of a page, and leaves the column short instead. No effect off the grid. Any other value reads as <code>'allow'</code>. Since postext 1.25.</td>
+    </tr>
   </tbody>
 </table>
 
 #### Which lever fired
 
 The layout records every lever it applied, on the block it applied to: `block.balancing` in the VDT that `buildDocument` returns. A proof sheet, a test or a report can say why a column ends flush — and which columns no lever could close. Blocks the balancing left alone carry no `balancing`, and a document built with `enabled: false` has none.
+
+On a character grid the document says why a column may end short: `doc.gridBalancing` is `{ off: true }` when balancing is off because the page is on a grid and the configuration does not turn it on, and `{ gridLines: 'off' }` when it runs without the whole-line levers; a column still short carries `column.gridRefused`, the levers the grid kept from it (`'looseParagraph'` when a paragraph could gain its line only by spreading its characters off their cells, the whole-line levers under `gridLines: 'off'`). Both are absent off the grid.
 
 ```ts
 interface VDTBalancing {
@@ -4020,6 +4054,9 @@ interface CjkConfig {
   spaceAfterQuestion?: 'auto' | boolean;    // One em after ？！ inside a paragraph (Japan).
   paragraphStartBracket?: 'auto' | 'indent' | 'half' | 'flush'; // A bracket opening an indented paragraph.
   wordBreak?: 'normal' | 'keep-all';        // keep-all: break only at spaces (分かち書き, Korean).
+  titleMinChars?: number;                   // Characters of a book title on either side of a break; default 2.
+  circledNumbers?: 'cjk' | 'western';       // ① ② as Chinese characters (default) or Latin letters.
+  composeDesignText?: boolean;              // CJK rules in design text; default true.
   latinSpacing?: Dimension;                 // Between Han and Latin; default 0.25 em.
   uprightDigits?: 0 | 2 | 3 | 4;            // Vertical text: numbers in one upright cell; default 2.
   grid?: { enabled?: boolean; charsPerLine?: number; linesPerPage?: number; show?: boolean };
@@ -4107,6 +4144,24 @@ interface CjkConfig {
       <td><code>'normal' | 'keep-all'</code></td>
       <td><code>'normal'</code></td>
       <td>Where a line breaks between two characters. <code>'keep-all'</code> breaks only at a space (U+0020, U+3000) and next to punctuation where <code>lineBreak</code> allows it (after 、。」, before 「), never between two letters (kana, kanji, hangul, Latin): for kana written with a space between phrases (分かち書き), as in picture books and first readers, and for Korean. A phrase longer than the line is broken inside it as <code>'normal'</code> would break it. A paragraph style may set its own (<code>wordBreak</code>). Since postext 1.16.</td>
+    </tr>
+    <tr>
+      <td><code>titleMinChars</code></td>
+      <td><code>number</code></td>
+      <td><code>2</code></td>
+      <td>How many characters of a book title a line break leaves on either side of it at least: inside <code>《…》</code> or <code>〈…〉</code>, typed or added by <code>bookTitleMark</code>, and inside a <code>:book[…]</code> title set with the wavy line or bare. At 2 no line ends on <code>《說</code> with <code>文》</code> opening the next, and a title of three characters or fewer is never broken; a title of up to twice this less one never is. The rule gives way when a line has no other break (a title longer than the line still breaks inside, where <code>lineBreak</code> allows). <code>1</code> lets a line break anywhere the level allows. A configuration stored before postext 1.25 (<code>configVersion</code> 10 or older) in a book that sets a title is read with <code>1</code>. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>circledNumbers</code></td>
+      <td><code>'cjk' | 'western'</code></td>
+      <td><code>'cjk'</code></td>
+      <td>How the circled, parenthesized and full-stop numbers and letters are set in a CJK paragraph: ①–⑳, ⑴–⒇, ⒈–⒛, ⓐ–ⓩ and the rest of U+2460–U+24FF, and the dingbat numbers ❶–❿, ➀–➓. <code>'cjk'</code>: as Chinese characters, one cell with no Han–Latin space around them, and no line ends on one, since it numbers the text after it: at every <code>lineBreak</code> level that keeps a currency sign off a line end (all but <code>none</code> and <code>ja-loose</code>). <code>'western'</code>: as Latin letters, with the Han–Latin space on both sides, and a line may end on one. Vertical text stands them upright either way. A configuration stored before postext 1.25 in a book that sets one is read with <code>'western'</code>. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>composeDesignText</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether design text in Chinese or Japanese (heading designs and openers, running heads and folios, page designs, part pages) is set with the rules of the body: the line-start and line-end rules of <code>lineBreak</code>, the mark widths of <code>punctuationWidth</code> and <code>compressAdjacent</code>, <code>latinSpacing</code>, <code>hangingPunctuation</code> and <code>titleMinChars</code>. A row of the text (the lines between two <code>\n</code>) is set this way when it holds more CJK letters than word spaces, as a paragraph would be; other rows are wrapped at spaces as before. Explicit line breaks, <code>paragraphIndent</code>, drop caps and inline marks keep working; the lines stay ragged (not spread between characters) and readings, warichu and emphasis marks print as plain text. <code>false</code> wraps such text at spaces with every mark at the font's own width. A configuration stored before postext 1.25 whose text holds CJK is read with <code>false</code>. Since postext 1.25.</td>
     </tr>
     <tr>
       <td><code>latinSpacing</code></td>
@@ -4398,7 +4453,7 @@ interface ResourceType {
 }
 ```
 
-`ResourcePlacement` is the same shape a resource sets on its own `placement`. `position` picks the kind of free slot a float may take — `auto` (the default) takes the first one after the first reference, `top` / `bottom` restrict it to that kind of band, `here` embeds the resource inline. `span` sets the float's extent: one column, the full content width, or the float-only side column of a column-and-a-half layout. `rotate` turns the resource a quarter turn and makes it a page-span float on a page of its own. `width` narrows a float to a fraction of its column (or of the page for a page-span float) — a small table in a wide column, say. `align` says where such a narrower float sits — left by default, centre or right — and where a picture narrower than its slot sits in it: a bitmap smaller than the column, or an image `layout.fitFiguresToPage` shrank. The caption and the note keep the slot's measure. (Up to postext 1.4 such a picture was always set flush left.) `captionSide` sets the caption beside the figure in the float-only side column of a column-and-a-half layout (`layout.sideColumnRole: 'floats'`), level with the figure's top (its bottom for a bottom float); it applies to column floats only, and a page without such a column keeps the caption under the figure. When neither the resource nor its type sets a placement, the built-in default is `auto` / `column`. `shrink` (`'never'`, `'page'`, `'slot'`) and `minScale` (0.7 when unset) scale a floated picture down to the room of its slot instead of moving it on, and `captionMeasure: 'body'` sets the caption and note of a picture narrower than its slot at the picture's width (see [Document format › Placement](/en/docs/document-format#placement)); `layout.floatShrink` gives the document default for the first two. `wrap` sets an inline embed or a one-column float at one side of its column with the text running beside it, `wrapGap` clear of it; `layout.wrap` holds the defaults (see [Document format › Text wrap](/en/docs/document-format#text-wrap)).
+`ResourcePlacement` is the same shape a resource sets on its own `placement`. `position` picks the kind of free slot a float may take — `auto` (the default) takes the first one after the first reference, `top` / `bottom` restrict it to that kind of band, `here` embeds the resource inline. `span` sets the float's extent: one column, the full content width, or the float-only side column of a column-and-a-half layout. `rotate` turns the resource a quarter turn and makes it a page-span float on a page of its own. `width` narrows a float to a fraction of its column (or of the page for a page-span float) — a small table in a wide column, say. `align` says where such a narrower float sits — left by default, centre or right — and where a picture narrower than its slot sits in it: a bitmap smaller than the column, or an image `layout.fitFiguresToPage` shrank. The caption and the note keep the slot's measure. (Up to postext 1.4 such a picture was always set flush left.) `captionSide` sets the caption beside the figure in the float-only side column of a column-and-a-half layout (`layout.sideColumnRole: 'floats'`), level with the figure's top (its bottom for a bottom float); it applies to column floats only, and a page without such a column keeps the caption under the figure. When neither the resource nor its type sets a placement, the built-in default is `auto` / `column`. `shrink` (`'never'`, `'page'`, `'slot'`) and `minScale` (0.7 when unset) scale a floated picture down to the room of its slot instead of moving it on, and `captionMeasure: 'body'` sets the caption and note of a picture narrower than its slot at the picture's width (see [Document format › Placement](/en/docs/document-format#placement)); `layout.floatShrink` gives the document default for the first two. `wrap` sets an inline embed or a one-column float at one side of its column with the text running beside it, `wrapGap` clear of it; `layout.wrap` holds the defaults (see [Document format › Text wrap](/en/docs/document-format#text-wrap)). `citingPage` lets a `top` or `auto` float head the page or column where its citing line lands instead of taking the first free slot after it; `layout.floatsAtCitingPage` gives the document default and `layout.maxTopFraction` the share of the column it may take (see [Document format › Placement](/en/docs/document-format#placement)).
 
 `columns` (since postext 1.18) sets a `span: 'column'` float across that many adjacent columns on a page of several: a picture across two of a newspaper's five columns. Its measure is those columns and the gutters between them. It takes the head of a run of empty columns that start level, or the foot of the column that cites it and of the empty columns after it; as many columns as the page has, or more, make it a page-span float. It is ignored by `'page'` and `'side'` spans, by a turned resource (`rotate`) and by an inline (`here`) embed, and `captionSide` applies only to a float one column wide.
 
@@ -4738,7 +4793,13 @@ const config: PostextConfig = {
       <td><code>overflow</code></td>
       <td><code>'split' | 'clip' | 'hide'</code></td>
       <td><code>'split'</code></td>
-      <td>What becomes of a table taller than the page: continue it on the following pages, keep only the rows that fit, or leave it out. See below.</td>
+      <td>What becomes of a table taller than the page: continue it on the following pages, keep only the rows that fit, or leave it out. With <code>splitInline</code>, also of a table set in the text that does not fit the rest of its column. See below.</td>
+    </tr>
+    <tr>
+      <td><code>splitInline</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Apply <code>overflow</code> to tables placed <code>here</code> too: an inline table that does not fit the room left in its column is cut between rows and goes on at the head of the next column. <code>false</code> moves such a table whole to the next column, as up to postext 1.24; configurations stored by earlier versions whose chapters embed a resource are read with <code>false</code>. See <a href="#tables-taller-than-the-page">Tables taller than the page</a>. Since postext 1.25.</td>
     </tr>
     <tr>
       <td><code>continuedSuffix</code></td>
@@ -4844,7 +4905,9 @@ A floated table that does not fit the fresh page it is offered is not squeezed o
 
 **Where the first part ends.** A table offered the head of an empty column after its reference takes the rows that fit there and continues in the next slot. It fills the column to its foot when it has the column to itself: a part that would leave fewer than three body lines under it takes those too, rather than leave a stub of text. When the column already holds another float band — a page-wide figure across the head of the page, say — the part stops at least three body lines short of the foot instead, the room for text any float leaves when it shares a column with another, so the column ends with some text under the table rather than with floats alone. To have a long table run to the foot of its column, cite it where the page it starts on carries no other float (after the page of a page-wide figure, for instance), or fit its rows to the column.
 
-`'clip'` keeps the leading rows that fit the page and drops the rest silently (the note still closes the part); `'hide'` leaves the table out altogether. Both apply only when the table is taller than a page: a table that fits is placed whole in any mode. Inline (`placement.position: 'here'`) tables are not split.
+`'clip'` keeps the leading rows that fit the page and drops the rest silently (the note still closes the part); `'hide'` leaves the table out altogether. Both apply only when the table is taller than a page: a table that fits is placed whole in any mode.
+
+**Tables set in the text.** A table placed `here` (embedded with `::resource`) follows the same rules since postext 1.25 (`splitInline`, on by default). When it does not fit the room left in its column, it is cut between rows: the first part keeps the float gap above it and at least the header rows and two body rows (fewer, and the whole table starts in the next column, as before), every later part opens the next column with no gap above it, laid out at that column's width (a one-and-a-half layout sets a part in the narrow column at its width), and the text after the `::resource` line follows the last part. The header repeat, the suffixed caption, the marker, the note on the last part, the three-row tail and the cuts that respect merged cells and group heads are those of a floated table. A table of fewer than five body rows is never cut. `'clip'` keeps the leading rows of an inline table taller than a column, set at the head of a column; `'hide'` leaves such a table out; a shorter one moves whole to the next column in either mode. A page an inline table opens keeps only its first part's room clear of the floats it takes, so a waiting page-wide figure heads that page and the table goes on under it. Inline tables on a vertical page, and tables inside a box, are not cut. `splitInline: false` moves an inline table whole to the next column, as up to postext 1.24.
 
 The continuation strings default per document language (`locale`, else the hyphenation locale): English `(cont.)` / `Continued`, Spanish `(cont.)` / `Continúa`, and likewise in French, German, Italian, Portuguese, Catalan and Dutch (listed under [Document language](#document-language)).
 
@@ -5063,7 +5126,7 @@ Per-type overrides are merged with `mergeCaptionStyle(resolvedCaptionStyle, over
 
 ## Diagram style
 
-The `diagramStyle` property controls how embedded SVG diagrams (`kind: 'svg'` resources) are coloured. Its single feature today is **single-ink mode**: a recolouring pass that maps every colour in a diagram to a tint of one ink, so figures reproduce faithfully when the document is printed with a single spot colour.
+The `diagramStyle` property controls how embedded SVG diagrams (`kind: 'svg'` resources) are coloured and which fonts their text is set in. **Single-ink mode** is a recolouring pass that maps every colour in a diagram to a tint of one ink, so figures reproduce faithfully when the document is printed with a single spot colour. **Inlined fonts** embed in each SVG the faces its text names, so its labels are set in the document's fonts on the canvas, in HTML and in EPUB (see [Fonts in SVG text](#fonts-in-svg-text)).
 
 ```ts
 const config: PostextConfig = {
@@ -5095,6 +5158,12 @@ const config: PostextConfig = {
       <td><code>ColorValue</code></td>
       <td>Main Color (<code>#295AA3</code>)</td>
       <td>The ink. Defaults to the document's main palette colour (palette-linked via <code>paletteId: 'main-color'</code>), so swapping the palette swatch retints the diagrams along with headings and bold runs.</td>
+    </tr>
+    <tr>
+      <td><code>inlineFonts</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Embed in each SVG the faces its text names (<code>font-family</code>) as <code>@font-face</code> data URIs before it is shown as an image: on the canvas, in HTML, in EPUB and in the PDF's raster fallback. Never written into the stored file. A resource opts out with <code>svg.inlineFonts: false</code> (since postext 1.25).</td>
     </tr>
   </tbody>
 </table>
@@ -5176,6 +5245,72 @@ const html = renderToHtml(doc, { resourceImageUrl: urlFor, singleInk: true });
 `renderToHtml` takes its `singleInk` default from the resolver's own flag, so `bundleImageUrl(bundle)` needs no option.
 
 For every colour the markup pass rewrites (hex, `rgb()` and `hsl()` values, `white` and `black`; see [How single ink works](#how-single-ink-works)), the pixel mapping gives the same result, antialiased edges and gradients included. The two differ where the markup pass leaves a colour alone: named colours other than `white` and `black`, `currentColor`, shapes and text with no fill (drawn in the default black), and bitmaps embedded in the SVG are tinted on screen but keep their colour in the PDF. Give every element of a diagram an explicit hex, `rgb()` or `hsl()` colour to get identical output. When the canvas cannot read the pixels back (an `<img>` from another origin, loaded without CORS), the picture is painted untinted.
+
+### Fonts in SVG text
+
+An SVG picture is shown through an image: an `<img>` on the canvas, in HTML and in EPUB. An image document cannot see the page's web fonts, so `<text font-family="IBM Plex Sans">` would fall back to a system face. Since postext 1.25 the engine embeds the faces the text names in the markup before the picture is decoded or handed out as a URL: one `@font-face` rule per font file, its bytes as a data URI, in a `<style>` right after the root `<svg>` tag. The PDF needs none of this: it sets SVG text as real text in its embedded fonts (see [Resource bytes and print masters](#resource-bytes-and-print-masters)).
+
+What the text asks for is read from `font-family`, `font-weight`, `font-style` and `font`, as attributes, in `style` attributes and inherited from enclosing groups; a `<style>` rule that names a family counts too. Generic families (`serif`, `sans-serif`…) and text in `<title>` or `<desc>` are left out, and a family the SVG declares itself with `@font-face` is left alone. A run falls through its `font-family` list to the first family that has a face. Recolouring for single ink comes first, then the fonts.
+
+The faces come from a **provider** with the contract of postext-pdf's `PdfFontProvider`, so one provider serves both: it is called with the family, weight and style, and the characters the SVG sets in that face, and answers with one file or several. A family served as unicode-range slices (Fontsource, Google Fonts) is answered with the slices those characters need, so an SVG with Latin labels carries the `latin` file only. The default provider reads the engine's font registry: `loadBundleFonts` registers a bundle's faces there, and a host registers its own with `registerFontBytes(family, weight, style, bytes, { unicodeRange })`, or `registerFontUrl(…)` for a file fetched the first time an SVG needs it. A family nothing registered is looked for in the `@font-face` rules of the page's readable style sheets. A `FontFace` added to `document.fonts` from bytes keeps no bytes, so the engine cannot read it back: register those faces too.
+
+```ts
+import { registerFontBytes, registerSvgImage, renderPage } from 'postext';
+
+registerFontBytes('IBM Plex Sans', 700, 'normal', plexBoldWoff2);
+await registerSvgImage('chart.svg', svgText);   // recoloured, fonts inlined, decoded, registered
+const canvas = renderPage(doc.pages[0], doc);
+```
+
+Where it happens:
+
+- **Canvas.** `registerSvgImage(fileId, svgText, options)` recolours (`inkHex`), inlines (`fonts`, a provider; `inlineFonts: false` skips it), decodes and registers the picture as a vector source, and resolves to what became of each face. `registerBundleImages(bundle)` does the same for a bundle's SVGs, from the bundle's own faces first. `prepareSvgMarkup(svgText, options)` returns the prepared markup for a host that decodes on its own.
+- **HTML.** `bundleImageUrl(bundle)` serves SVG markup with the bundle's faces inlined. `renderToHtml(doc, { inlineSvgFonts: true })` inlines into the SVG `data:` URIs `resourceImageUrl` returns, from the faces the registry holds in memory (or `inlineSvgFonts: { fonts, maxBytes, withhold }`). An object URL cannot be read synchronously, so a host that serves blob URLs inlines before it makes them.
+- **EPUB.** `postext-epub` inlines from the book's `fonts`, then `svgFonts.provider`, before it writes an SVG (see [EPUB books](#epub-books-postext-epub)).
+- **PDF.** SVG text is set as real text in the embedded fonts. A `<style>` that holds only `@font-face` rules (faces an author embedded) no longer makes the figure fall back to a raster. When a figure does fall back (a filter, a gradient), its raster is made with the faces inlined from the PDF's `fontProvider`.
+
+The lower-level functions are exported too: `svgFontRequests(svgText)` lists each run's families, weight, style and characters; `inlineSvgFonts(svgText, provider, options)` and `inlineSvgFontsSync(svgText, syncProvider, options)` return the markup; `inlineSvgFontsDetailed` adds a report of each face (`inlined`, `declared`, `unavailable`, `withheld`, `tooLarge`).
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '180px' }}>Option</th>
+      <th style={{ width: '160px' }}>Type</th>
+      <th style={{ width: '120px' }}>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>maxBytes</code></td>
+      <td><code>number</code></td>
+      <td>2 MiB</td>
+      <td>Most font bytes embedded in one SVG (before base64, which adds a third). Faces that together exceed it are not embedded at all, and <code>svgFontsTooLarge</code> is reported.</td>
+    </tr>
+    <tr>
+      <td><code>formats</code></td>
+      <td><code>('woff2' | 'woff' | 'ttf' | 'otf')[]</code></td>
+      <td>all four</td>
+      <td>The file formats to embed; files of other formats are skipped.</td>
+    </tr>
+    <tr>
+      <td><code>withhold</code></td>
+      <td><code>(family) =&gt; boolean</code></td>
+      <td>none</td>
+      <td>Families to leave out of a file that leaves the app (not redistributable). Their reference stays and the reader falls back; <code>onWithheld(family)</code> is told of each.</td>
+    </tr>
+    <tr>
+      <td><code>onWarning</code></td>
+      <td><code>(warning) =&gt; void</code></td>
+      <td>none</td>
+      <td>Told of a family with no face (<code>svgFontUnavailable</code>) and of the size cap (<code>svgFontsTooLarge</code>).</td>
+    </tr>
+  </tbody>
+</table>
+
+**Opting out.** `diagramStyle.inlineFonts: false` leaves every SVG as stored; `svg.inlineFonts: false` on a resource leaves that one byte for byte as it is, for an SVG that carries its own faces or must not change. A bundle writes the resource's opt-out as `"inlineFonts": false` in its `preset.json`.
+
+**Licences.** Inlining puts font files inside pictures that can leave the app (an HTML export, an EPUB). It happens when a picture is shown or exported, never in the stored resource bytes, and `withhold` keeps out the families a licence does not let you hand on: the EPUB writer withholds the faces marked `redistributable: false`, and the Sandbox the custom families marked so.
 
 
 ## Video style
@@ -6143,7 +6278,7 @@ The glass stays hot for an hour after the flame is out.
       <td><code>span</code></td>
       <td><code>'column' | 'page' | 'side'</code></td>
       <td><code>'column'</code></td>
-      <td>Horizontal extent: the column, the full content width, or the float-only side column of a one-and-a-half layout (<code>layout.sideColumnRole: 'floats'</code>) — the box then leaves the flow and stacks in that column beside the text it interrupts. Overridable per instance with the <code>span</code> attribute. In multi-column layouts a <code>'page'</code> box becomes a <em>span block</em>: it splits the page into column bands and sits in its own full-width column (see the container section below).</td>
+      <td>Horizontal extent: the column, the full content width, or the float-only side column of a one-and-a-half layout (<code>layout.sideColumnRole: 'floats'</code>) — the box then leaves the flow and stacks in that column beside the text it interrupts. Overridable per instance with the <code>span</code> attribute. In multi-column layouts a <code>'page'</code> box becomes a <em>span block</em>: it splits the page into column bands and sits in its own full-width column (see the container section below). A side box its page's side column cannot hold takes the side column of the next page; where the chapter (or the document) ends first, each box still waiting is set in the side column of a page after the text, in the order of their fences, and the build reports it (<code>afterText</code>; up to postext 1.24 the boxes after the first such page were dropped).</td>
     </tr>
     <tr>
       <td><code>columns</code></td>
@@ -6344,7 +6479,7 @@ Limits in this version:
 - `placement: 'top' | 'bottom'` **floats** the box like a resource: it leaves the flow where it occurs and takes the first free band after that point — the foot of the current page (`'bottom'`), or the head / foot of the next page the flow opens — at the column width (`span: 'column'`) or the full content width (`span: 'page'`); the text after it fills the page it left. Its frame and children go to `page.floats`, as a fixed box does. A floated box heading a fresh page is set before the figures waiting for that page, and a figure cited on an earlier page that then fits under it takes the rest of that page even when fewer than three text lines would remain (a gallery page: box plus figure, no text between them). A `span: 'side'` box never floats: it stacks beside the text whatever its placement. With `columns` above 1 (in the style or as the fence's attribute, since postext 1.18) a `span: 'column'` box takes that many adjacent columns: the head of a run of empty columns that start level, or the foot of the current column and of the empty ones after it, as in `:::callout{placement="top" columns="2"}`.
 - `width: 'auto'` shrink-wraps the title only; children are ignored.
 - A `:::callout` nested inside another callout is a box of its own: it is laid out with its own style (background, border, radius, padding, stripe, title, icon, marker, label, typography) at the full inner width of its parent and stacks as one child of it, its `marginTop` / `marginBottom` collapsing with its neighbours. Its `span` and `placement` (fence or style) are ignored — a nested box always flows inside its parent — and so are `floatBarrier` and `snapToGrid`. Boxes nest to any depth and may sit inside a `:::columns` group (each one whole, in one column). When the parent splits, the cut falls before or after a nested box, or inside it when the nested style allows splitting; every fragment redraws the frames it cuts through, and a nested box continued from the previous fragment drops its title and icon, like a top-level continuation.
-- A `:::columns{count=N}` … `:::` group among the children lays those children out in `N` columns of equal width, `columnGap` apart, inside the box: the run is cut at the block or line boundaries that level the columns best (a paragraph or list item cut mid-way continues at the head of the next column without its bullet), every column starts at the group's top and the group is as tall as its tallest column; the children after it return to the full width. A split box (`keepTogether: false`) never cuts inside a group. Use it for a two-column summary of key points, or the tables of a wide box set side by side.
+- A `:::columns{count=N}` … `:::` group among the children lays those children out in `N` columns of equal width, `columnGap` apart, inside the box: the run is cut at the block or line boundaries that level the columns best (a paragraph or list item cut mid-way continues at the head of the next column without its bullet), every column starts at the group's top and the group is as tall as its tallest column; the children after it return to the full width. A box that splits (`keepTogether: false`, or taller than a column) cuts inside a group too, between its columns: a snake group fills its columns in turn and goes on in the next fragment, a parallel one (`breaks`) goes on stream by stream (since postext 1.25; see [Document format › `:::columns`](/en/docs/document-format#columns)). A `gap` on the fence replaces `columnGap` for that group, and `rule` draws a rule down each gutter. Use it for a two-column summary of key points, or the tables of a wide box set side by side.
 - The fence's sixth attribute, `label`, prints on the style's label tab (see `label` above) — `:::callout{type="box" label="BOX 1-1" title="The octet rule"}`; without a `label` style the attribute is ignored.
 
 In the VDT the box is a `type: 'callout'` frame block whose decoration (background, stripe, icon, title) lives on `designOverlay`, followed by its child blocks in the same column; the frame and every child carry the fence's `containerId`. A nested box is a `type: 'callout'` frame of its own among the children, followed by its blocks; they keep the top-level fence's `containerId` (placement and balancing still see one unit) and add `calloutPath`, the container ids of the nested fences around them, outermost first (a nested frame's own id is the last entry). The tagged PDF gives each nested box a `Div` inside its parent's. Icon images resolve like resource images: the canvas image registry, the HTML `resourceImageUrl` option and the PDF `resourceBytes` provider.
@@ -7689,6 +7824,8 @@ The Sandbox's **Checks** panel lists three failure modes specific to custom font
 
 Clicking any of these warnings opens the Fonts panel so you can upload the missing variant, re-add the family, or disambiguate the duplicates.
 
+Once a layout exists, the panel also lists the engine's **Font fallback in the layout** (`fontFallback`): a face the pages were measured without, either missing or drawn by the browser from another weight or slant. A family already named as unknown or short of a variant is not listed twice. Before the first layout, a check against `document.fonts` stands in for it.
+
 ## Color Palette
 
 The `colorPalette` property on `PostextConfig` lets you define a reusable set of named colors and reference them from any `ColorValue` in the configuration. It is the Postext equivalent of CSS custom properties or an InDesign swatches panel: change the palette entry once, and every color that points to it updates across the document.
@@ -8784,7 +8921,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
   <tbody>
     <tr>
       <td><code>calloutOverflow</code></td>
-      <td>A <code>:::callout</code> box fits no column and no cut can split it.</td>
+      <td>A <code>:::callout</code> box fits no column and no cut can split it. A <code>span: 'side'</code> box taller than an empty side column is one too (since postext 1.25).</td>
       <td>It is placed anyway, overflowing its column by <code>overflowPx</code> (on <code>pageIndex</code> / <code>columnIndex</code>). The one kind listed in <code>doc.warnings</code>; the kinds below are in <code>doc.contentWarnings</code>.</td>
     </tr>
     <tr>
@@ -8826,6 +8963,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td><code>unknownCalloutType</code></td>
       <td><code>:::callout{'{'}type{'}'}</code> names none of the <code>calloutStyles</code> — only raised once some are configured.</td>
       <td>The box takes the first callout style.</td>
+    </tr>
+    <tr>
+      <td><code>columnsFlowUnknown</code></td>
+      <td><code>:::columns{'{'}flow{'}'}</code> is neither <code>snake</code> nor <code>parallel</code>; <code>value</code> is what it says.</td>
+      <td>The group takes the default: <code>parallel</code> with <code>breaks</code>, <code>snake</code> without.</td>
     </tr>
     <tr>
       <td><code>unknownChipStyle</code></td>
@@ -8897,6 +9039,26 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>A resource or a box set to wrap the text round it (<code>placement.wrap</code>, a box's <code>wrap</code>) that does not as asked. <code>reason</code>: <code>'tooNarrow'</code> (the text beside it would be narrower than <code>layout.wrap.minTextWidth</code>), <code>'fewLines'</code> (it is shorter than <code>layout.wrap.minLinesBeside</code> lines), <code>'moved'</code> (an inline one too tall for the room left in its column moved on to the next, its anchor with it) or <code>'verticalText'</code>. <code>resourceId</code> names a resource, <code>box</code> a box's style. Points at the embed or the box.</td>
       <td>The item takes its band whole, or stands in the next column, as the reason says.</td>
     </tr>
+    <tr>
+      <td><code>columnsTooNarrow</code></td>
+      <td>The sub-columns of a <code>:::columns</code> group are narrower than six ems of their text: <code>columns</code> of them, <code>widthPx</code> each. Points at the group's fence.</td>
+      <td>The group is set as asked, with few words to a line.</td>
+    </tr>
+    <tr>
+      <td><code>afterText</code></td>
+      <td>A <code>span: 'side'</code> box, or a figure or table of the side column (<code>resourceId</code>), set on a page that holds no text: the text of its chapter, or of the document, ended while it still waited for room in the side column. One per box or float; points at the box (at the block citing the float), with its page. Since postext 1.25.</td>
+      <td>It stands in the side column of a page opened after the text, the boxes in the order of their fences.</td>
+    </tr>
+    <tr>
+      <td><code>unplaced</code></td>
+      <td>A box or a floated resource (<code>resourceId</code>) still waiting for a slot when the layout ended: the pages opened for it could not take it (a side box where those pages have no side column, say). Points at the box or at the block citing the resource; no page. Since postext 1.25.</td>
+      <td>It is on no page. Up to postext 1.24 it dropped out without a warning.</td>
+    </tr>
+    <tr>
+      <td><code>fontFallback</code></td>
+      <td>A face the text was set in (<code>family</code>, <code>weight</code>, <code>style</code>) that the font set could not give when the build ran: <code>reason: 'missing'</code>, no face of the family was loaded nor installed; <code>'synthesized'</code>, the weight or slant comes from another face of the family (a 700 italic asked of a family with only a 400 regular). Checked where there is a font set (<code>document.fonts</code>, a worker's <code>self.fonts</code>, or <code>BuildDocumentOptions.fontSet</code>), behind <code>debug.warnings.missingFont</code>. No page and no source range.</td>
+      <td>The text is measured and drawn with the fallback face, or with the face the browser makes bolder or slanted; its line breaks change once the face arrives. See <a href="#loading-fonts-before-layout">Loading fonts before layout</a>.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -8916,7 +9078,7 @@ const missing = (doc.contentWarnings ?? []).flatMap((w) => (w.kind === 'unknownR
 
 `formatWarning(w)` returns a one-line English description. A host that localises its messages switches on `kind` instead — and keeps a default branch, since minor releases may add kinds. `collectContentWarnings(markdown, config, resources)` returns the content warnings without laying anything out (the list the build adds, without `pageIndex`), for an editor that checks the text as it is typed. `collectHeadingDesignCuts(doc)` checks a finished layout for heading designs whose text runs past the foot of their page or column (`kind: 'headingDesignCut'`; see [Reserved height](#reserved-height)), which the layout itself does not report, and `formatWarning` describes its results as well. The Sandbox's **Checks** panel lists them all.
 
-The renderers report what they cannot paint as asked through an `onWarning` option: `renderPageToCanvas`, `renderPage` and `renderToCanvas` (`RenderPageOptions`), `renderToHtml` and `renderToHtmlIndexed` (`RenderHtmlOptions`), and `renderToPdf` (`RenderToPdfOptions`, also through the PDF worker). Today there is one render kind, `missingImage`: an image — a figure, a table cell's image, a callout icon, a design image — with nothing to draw is painted as a neutral placeholder and reported, once per `fileId` and render call, with its `pageIndex`, the `resourceId` when the painter knows it (figures and cell images), and in the PDF the `documentIndex` of a multi-document render. Nothing to draw means no `registerResourceImage` for the `fileId` on the canvas, no URL from `resourceImageUrl` in HTML, and no bytes from `resourceBytes` — or bytes that do not decode — in the PDF. A bitmap or SVG resource that names no `fileId` at all has nothing to ask for: it is drawn as a placeholder without a report. Render warnings are not stored in the VDT: what a host can supply changes after the layout.
+The renderers report what they cannot paint as asked through an `onWarning` option: `renderPageToCanvas`, `renderPage` and `renderToCanvas` (`RenderPageOptions`), `renderToHtml` and `renderToHtmlIndexed` (`RenderHtmlOptions`), and `renderToPdf` (`RenderToPdfOptions`, also through the PDF worker). The main render kind is `missingImage`: an image — a figure, a table cell's image, a callout icon, a design image — with nothing to draw is painted as a neutral placeholder and reported, once per `fileId` and render call, with its `pageIndex`, the `resourceId` when the painter knows it (figures and cell images), and in the PDF the `documentIndex` of a multi-document render. Nothing to draw means no `registerResourceImage` for the `fileId` on the canvas, no URL from `resourceImageUrl` in HTML, and no bytes from `resourceBytes` — or bytes that do not decode — in the PDF. A bitmap or SVG resource that names no `fileId` at all has nothing to ask for: it is drawn as a placeholder without a report. Two more kinds come from the hosts that embed fonts in SVG pictures (`registerSvgImage`, `registerBundleImages`, `bundleImageUrl`, `renderToHtml` with `inlineSvgFonts`, postext-epub; see [Fonts in SVG text](#fonts-in-svg-text)), with the picture's `fileId` and `resourceId`: `svgFontUnavailable` (`family`, `weight`, `style`), a family its text names with no face to embed, so the image sets that text in a fallback face; and `svgFontsTooLarge` (`bytes`, `maxBytes`), faces over the size cap, none embedded. Render warnings are not stored in the VDT: what a host can supply changes after the layout.
 
 ```ts
 import { buildDocument, renderPage, type RenderWarning, type Resource } from 'postext';
@@ -9063,28 +9225,64 @@ const blocks = parseMarkdown(content);
 
 See the [Document Format](/en/docs/document-format) page for the full list of markdown constructs Postext recognises.
 
-### Measurement cache
+### Loading fonts before layout
 
-Text measurement is the expensive step in layout. Two kinds of cache keep it cheap, and they are cleared differently:
-
-- **A block cache you own.** `createMeasurementCache()` returns a `MeasurementCache` that remembers every measured paragraph, keyed by its text, fonts, width, line-breaking options and the active hyphenation dictionary. Pass it as the third argument of `buildDocument` (or `buildDocumentAsync`) to reuse measurements across the convergence passes and across builds: an editor that lays the document out on every keystroke then measures only the paragraphs that changed. Without one, every pass measures every block again. A paragraph read from the cache is the same as one measured afresh, so a build with a cache sets every line as a build without one does; in postext 1.4.1 a cached paragraph lost the mark of a runt last line, and runt tightening and column balancing could then break it differently. The layout worker keeps one across builds and replaces it when fonts change.
-- **Global width caches.** Word widths are cached per font string in module state that every build in the page shares, and pretext keeps a cache of its own. These go stale when a web font arrives after text was measured with a fallback font.
+Layout measures text with the faces the font set has when it runs. `prepareFonts` loads every face a configuration and its text ask for before the first build: the body, headings, lists, callout titles and bodies, tables, design texts, running heads, contents, code and comic lettering, in each weight and slant the configuration sets (the four of the body family, since `**` and `*` set bold and italic in it). Each face is loaded for the characters the document sets, so a family served as `unicode-range` slices (Latin Extended, Greek, Arabic, the CJK slices of Google Fonts and Fontsource) brings the files the text needs.
 
 ```ts
-import { buildDocument, createMeasurementCache, clearMeasurementCache } from 'postext';
-import type { MeasurementCache } from 'postext';
+import { prepareFonts, buildDocument, buildDocumentWithFonts } from 'postext';
 
-let cache: MeasurementCache = createMeasurementCache();
-let doc = buildDocument(content, config, cache);
+// The host's files: the PDF font provider's contract, so one function serves both.
+async function resolve(family: string, weight: number, style: 'normal' | 'italic') {
+  const id = family.toLowerCase().replace(/\s+/g, '-');
+  return `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-${style}.woff2`;
+}
 
-// A web font finished loading: widths measured with the fallback are stale.
-await document.fonts.ready;
-clearMeasurementCache();           // no argument: clears the global width caches
-cache = createMeasurementCache();  // a block cache has no clear(); start a new one
-doc = buildDocument(content, config, cache);
+const report = await prepareFonts(content, config, { resolve });
+// report.loaded, report.missing, report.synthesized: { family, weight, style }[]
+const doc = buildDocument(content, config);
+
+// Or in one call: prepare, build, load any face the pages used that was not there, build again.
+const same = await buildDocumentWithFonts(content, config, { resolve });
 ```
 
-`clearMeasurementCache()` takes no argument and does not touch a `MeasurementCache`: its blocks were measured with the old widths too, so drop it and create a new one. Rebuilding after a font loads without clearing gives the same, fallback-measured line breaks.
+- **Faces the page declares** (an `@font-face` rule, a `FontFace` already added) are loaded through the font set (`document.fonts.load`, or `self.fonts` in a worker). **Faces it does not declare** are asked of `resolve(family, weight, style, { text, codePoints })`, which answers with a file (bytes, or a URL), several files (the slices of a face), `{ source, unicodeRange, weight, style }` for a slice or a variable range, or `null`. The engine adds them as `FontFace`s once all have loaded, in the order of the configuration and of each answer (latin, then latin-ext, then greek when the resolver answers so), so the font set is the same whatever order the files arrive in. It also registers them with the font registry that [SVG pictures](#fonts-in-svg-text) and layout workers read. A resolver may declare the face itself (add a style sheet) and answer `null`.
+- **The report** lists the faces a loaded face answers for (or an installed family), the ones still `missing`, and the ones the browser would `synthesize` from another weight or slant. `timeoutMs` (10 000 by default) bounds the wait; a face still loading then counts as missing. Where there is no font set (Node), `prepareFonts` does nothing and reports every face loaded.
+- **`buildDocumentWithFonts(content, config, options)`** prepares, builds with `buildDocumentAsync`, reads the faces the pages actually set text in, loads any that were missing, and builds again (at most two extra builds). `withLoadedFonts(build, options)` does the same around any build function, for a book built chapter by chapter or a bundle (`buildBundle`) that returns several documents. `options.onFonts` receives the final report.
+- **After the build**, every face the text was set in that the font set could not give is listed in `doc.contentWarnings` as `fontFallback` (see [Warnings in the document](#warnings-in-the-document)).
+
+Faces that arrive later are picked up on their own. The engine keeps, per font set, which faces of each family were loaded when it last looked; a build looks again at its start (only when the set grew, shrank or finished loading a face) and drops what was measured in the families whose faces changed. `watchFonts(fontSet)` does the same as faces load, at most once per animation frame however many slices a burst brings, and `onFontsChanged(listener)` tells the host which families changed, so it can lay the pages out again:
+
+```ts
+import { watchFonts, onFontsChanged } from 'postext';
+
+const stop = watchFonts();                         // document.fonts by default
+const off = onFontsChanged((families) => relayout());
+```
+
+`prepareFonts` starts the watch on the set it loads into (`watch: false` leaves it off).
+
+### Measurement cache
+
+Text measurement is the expensive step in layout. Two kinds of cache keep it cheap:
+
+- **A block cache you own.** `createMeasurementCache()` returns a `MeasurementCache` that remembers every measured paragraph, keyed by its text, fonts, width, line-breaking options and the active hyphenation dictionary. Pass it as the third argument of `buildDocument` (or `buildDocumentAsync`) to reuse measurements across the convergence passes and across builds: an editor that lays the document out on every keystroke then measures only the paragraphs that changed. Without one, every pass measures every block again. A paragraph read from the cache is the same as one measured afresh, so a build with a cache sets every line as a build without one does; in postext 1.4.1 a cached paragraph lost the mark of a runt last line, and runt tightening and column balancing could then break it differently. The cache carries the measurement generation it was filled under: when faces of a family arrive or leave, its next lookup drops the blocks set in that family, so a cache kept across font loads never serves fallback-measured lines.
+- **Global width caches.** Word widths are cached per font string in module state that every build in the page shares, and pretext keeps a cache of its own. The engine drops the widths of a family when its faces change (at the start of a build, from `watchFonts`, from `prepareFonts` and `loadBundleFonts`); pretext's cache has no family index and is cleared whole.
+
+```ts
+import { buildDocument, createMeasurementCache, evictFontFamilies, clearMeasurementCache } from 'postext';
+
+const cache = createMeasurementCache();
+let doc = buildDocument(content, config, cache);
+
+// A face of "EB Garamond" was added to document.fonts: the next build sees it,
+// with the same cache, and measures that family again.
+doc = buildDocument(content, config, cache);
+
+// A host that changes faces the engine cannot see (a font set of its own) says so:
+evictFontFamilies(['EB Garamond']);   // that family's widths and cached blocks
+clearMeasurementCache();              // every family
+```
 
 For applications that measure text piece by piece, `cachedMeasureBlock(text, font, maxWidthPx, lineHeightPx, options, cache)` and `cachedMeasureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cache)` take the arguments of `measureBlock` and `measureRichBlock` plus the cache, last.
 
@@ -9093,8 +9291,8 @@ For applications that measure text piece by piece, `cachedMeasureBlock(text, fon
 Some of Postext's state lives in module-level variables. Everything that imports `postext` in the same JavaScript realm shares it: a page and its scripts share one copy, while each iframe and each worker has its own. One document per page never notices. Several documents in one page — two live previews, a gallery of examples — do:
 
 - **Resource images.** `registerResourceImage(fileId, image)` fills one registry keyed by `fileId`, which `renderPage` and `renderPageToCanvas` read. Two documents that both register `figure.svg` share that entry: the last registration wins, for both. Give file ids a per-document prefix, and call `unregisterResourceImage(fileId)` or `clearResourceImages()` when a document goes away. The rasters the canvas backend caches are keyed the same way and dropped with the image.
-- **Text measurements.** Measured widths are cached per font string and text for the whole realm. Text measured before a web font finished loading keeps the fallback font's widths, for every document, until `clearMeasurementCache()` (no arguments) empties the caches: call it once the fonts have loaded, then build again.
-- **Resolved configurations.** Each configuration object is resolved once and the result is cached against that object. A configuration changed in place and built again is laid out with its old settings: pass a new object for every change (`{ ...config, … }` or `structuredClone(config)`).
+- **Text measurements.** Measured widths are cached per font string and text for the whole realm. When faces of a family arrive or leave, the engine drops that family's widths for every document (see [Loading fonts before layout](#loading-fonts-before-layout)); `clearMeasurementCache()` drops them all.
+- **Resolved configurations.** Each configuration object is resolved once and the result is cached against that object. Every build first compares the object with the text it had when it was resolved (one `JSON.stringify`, about 0.1 ms for a 55 KB book configuration and 1.5 ms for a 240 KB one), so a configuration changed in place, at any depth (`config.bodyText.fontSize = …`, a palette colour), is resolved again. `invalidateConfig(config)` drops the resolution by hand. `stableStringify` and `hashString` give a content key that does not depend on key order, for hosts that cache layouts by configuration.
 - **Hyphenation language.** Every build sets the process-wide hyphenation language to its document's `bodyText.hyphenation.locale`. The exported `hyphenateText(text)` and `layoutDesignSlot` use the language of the last build unless you pass one: call `hyphenateText(text, 'es')`.
 - **Math engine.** There is one MathJax engine and one cache of rendered formulas for the realm; `initMathEngine()` starts it for everyone.
 
@@ -9264,7 +9462,9 @@ await layout.registerFonts(await Promise.all([face(400, 'normal'), face(700, 'no
 const doc = await layout.build({ markdown }, { bodyText: { fontFamily: 'EB Garamond' } });
 ```
 
-**A worker does not see the page's fonts.** It has a font set of its own, holding only the faces sent with `registerFonts` and the fonts installed on the system. When a build sets text in a family the worker cannot find, that text is measured with a fallback font, so its line breaks will not match the page. The client then prints one console warning per family (`"EB Garamond" is not available inside the layout worker…`), and lists the families in `BuildStats.missingFonts`, which the `onStats` callback of `build` receives.
+**A worker does not see the page's fonts.** It has a font set of its own, holding only the faces sent with `registerFonts` and the fonts installed on the system. When a build sets text in a family the worker cannot find, that text is measured with a fallback font, so its line breaks will not match the page. The client then prints one console warning per family (`"EB Garamond" is not available inside the layout worker…`), and lists the families in `BuildStats.missingFonts`, which the `onStats` callback of `build` receives. The document itself carries the same faces as `fontFallback` content warnings.
+
+`handle.prepareFonts(content, config, options)` runs [`prepareFonts`](#loading-fonts-before-layout) on the page and then sends the worker the files of every face it found that the font registry holds (the resolver's files, a bundle's faces, the page's readable `@font-face` rules), only the slices that hold the document's characters. When faces reach the worker, it drops the measurements of those families only and its cache of finished documents.
 
 ### Font payload collection (Fontsource / Google Fonts)
 
@@ -9358,6 +9558,7 @@ The key pieces from the public API:
 - **`resolveHtmlViewerConfig(partial)`** — fills in the HTML-viewer defaults (`maxCharsPerLine`, `columnGap`, `optimalLineBreaking`).
 - **`buildFontString` + `measureGlyphWidth` + `dimensionToPx`** — measurement primitives used to derive an actual pixel column width from a target character count.
 - **`createMeasurementCache` / `clearMeasurementCache`** — pluggable caches so you can reuse measurements across re-layouts.
+- **`prepareFonts` / `buildDocumentWithFonts` / `watchFonts` / `onFontsChanged`** — load the document's faces before layout and lay out again when faces arrive (see [Loading fonts before layout](#loading-fonts-before-layout)).
 
 ### Live example: an HTML string
 
@@ -9379,6 +9580,8 @@ import {
   measureGlyphWidth,
   dimensionToPx,
   createMeasurementCache,
+  watchFonts,
+  onFontsChanged,
 } from 'postext';
 import type { PostextConfig, MeasurementCache } from 'postext';
 
@@ -9486,12 +9689,13 @@ export function PostextHtmlViewer({
     ro.observe(host);
 
     // Re-measure when web fonts land so glyph widths aren't taken from fallbacks.
-    const onFontsDone = () => relayout();
-    document.fonts?.addEventListener?.('loadingdone', onFontsDone);
+    const stopWatching = watchFonts();
+    const off = onFontsChanged(() => relayout());
 
     return () => {
       ro.disconnect();
-      document.fonts?.removeEventListener?.('loadingdone', onFontsDone);
+      off();
+      stopWatching();
     };
   }, [markdown, config, mode]);
 
@@ -9503,7 +9707,7 @@ A few notes on what this example is doing:
 
 - **Measuring the column, not approximating it.** Because `maxCharsPerLine` is a *target* expressed in characters, the actual pixel width depends on the body font. `measureGlyphWidth` gives a real measurement against the chosen font, which keeps the measure consistent across font swaps.
 - **Rewriting the page.** The HTML viewer treats each VDT "page" as one on-screen column. The example overrides `page.width` with the measured column width, sets margins to zero (the padding lives outside the page in the wrapping `.pt-doc` div), and uses `HTML_DPI = 144` so `8pt` body text resolves to `16px`.
-- **Font-loading awareness.** `document.fonts.loadingdone` fires when a newly-requested web font has arrived. Without the relayout, the first render uses a fallback font's metrics and jumps when the real font lands.
+- **Font-loading awareness.** `watchFonts` listens to `document.fonts` and, once a frame, drops what was measured in the families whose faces arrived; `onFontsChanged` then lays the column out again. Without the relayout, the first render uses a fallback font's metrics and jumps when the real font lands.
 - **Reusing the measurement cache.** Creating the cache once per component means resizes and font-scale changes reuse measurements from the previous render instead of re-measuring every paragraph.
 
 ### Going further
@@ -9833,7 +10037,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 `resourceBytes(fileId)` returns the raw bytes of a picture, and the backend sniffs them:
 
 - PNG, JPEG, GIF and WebP embed as images;
-- SVG markup is drawn as vector paths, or rasterised at 600 dpi in the browser when it uses features outside the vector subset;
+- SVG markup is drawn as vector paths, its `text` set as real text in the document's embedded fonts, or rasterised at 600 dpi in the browser when it uses features outside the vector subset. A `<style>` that holds only `@font-face` rules (faces an author embedded) is skipped and keeps the figure vector (since postext-pdf 1.25); any other style sheet makes it a raster, made with the faces its text names inlined from `fontProvider` (unless `diagramStyle.inlineFonts` or the resource's `svg.inlineFonts` is `false`);
 - a PDF has its first page embedded verbatim, as a form XObject.
 
 Each picture is stored in the file once, however many times it is drawn. An SVG drawn as vector paths becomes a form XObject that every page paints, so a frame or a logo in the page design of a thirty-page document is written once, not thirty times; each further page adds a few hundred bytes. Up to postext-pdf 1.4 every page carried its own copy of the paths.
@@ -10108,10 +10312,10 @@ const bytes = await renderToEpub(docs, {
 
 A single document is a book of one chapter: `renderToEpub([doc], options)`.
 
-- **`renderToEpub(docs, options): Promise<Uint8Array>`** writes the file. `options` is `{ layout, metadata, fonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
+- **`renderToEpub(docs, options): Promise<Uint8Array>`** writes the file. `options` is `{ layout, metadata, fonts?, svgFonts?, resourceBytes?, cover?, onProgress?, onWarning?, signal? }`.
 - **`metadata`**: `title` and `language` (a BCP 47 tag) are required; `subtitle`, `creators`, `identifier`, `date`, `publisher`, `rights`, `description` and `modified` are optional. A bare ISBN becomes `urn:isbn:…`. Without an `identifier` the book gets a `urn:uuid:` derived from its title, creators and language, so a new version of the same book keeps its place in a reader's library. Pass `modified` too for byte-identical output.
-- **`fonts`**: the faces to embed, `{ family, weight, style, bytes, format, unicodeRange? }` with `format` one of `woff2`, `woff`, `ttf`, `otf`. Each face becomes a file and an `@font-face` rule; several files with their `unicodeRange` make one face (Google Fonts slices). A family, weight or style the pages use with no embedded face is reported as `missingFont`, and reading systems substitute their own. Embed only fonts whose licence allows it.
-- **`resourceBytes(fileId)`**: the pictures the pages place, sync or async, as `{ bytes, mediaType }`; an empty `mediaType` is read from the bytes. Give bitmaps as stored and SVGs as their source, not the PDF print master (`svg.pdfFileId`). Each picture is stored once. A single-ink book (`diagramStyle.singleInk`) has its SVGs recoloured in the file. A picture with no bytes is reported as `missingImage` and left as an empty frame.
+- **`fonts`**: the faces to embed, `{ family, weight, style, bytes, format, unicodeRange? }` with `format` one of `woff2`, `woff`, `ttf`, `otf`. Each face becomes a file and an `@font-face` rule; several files with their `unicodeRange` make one face (Google Fonts slices). A family, weight or style the pages use with no embedded face is reported as `missingFont`, and reading systems substitute their own. Embed only fonts whose licence allows it: a face with `redistributable: false` is never written into the file (the book may be set with it, but its file stays out, also of SVG pictures).
+- **`resourceBytes(fileId)`**: the pictures the pages place, sync or async, as `{ bytes, mediaType }`; an empty `mediaType` is read from the bytes. Give bitmaps as stored and SVGs as their source, not the PDF print master (`svg.pdfFileId`). Each picture is stored once. A single-ink book (`diagramStyle.singleInk`) has its SVGs recoloured in the file. An SVG gets the faces its text names embedded in it, since a reading system shows it as an image that cannot see the book's fonts (see [Fonts in SVG text](#fonts-in-svg-text)): from `fonts` (the slices that hold its characters), then from **`svgFonts.provider`** for a family the book's text does not use. Families of faces marked `redistributable: false`, and those `svgFonts.withhold(family)` names, stay out and are reported once each as `fontWithheld`; a family with no face is reported as `svgFontUnavailable`, faces over `svgFonts.maxBytes` (2 MiB) as `svgFontsTooLarge`. `svgFonts.inline: false`, `diagramStyle.inlineFonts: false` and a resource's `svg.inlineFonts: false` keep the bytes as given. A picture with no bytes is reported as `missingImage` and left as an empty frame.
 - **`cover`**: `{ bytes, mediaType, alt? }`, a JPEG, PNG, WebP or SVG picture. The book then opens on a cover document holding it, and it is the package's `cover-image` (the thumbnail in a library). Without one, the fixed layout names its first page as the cover and the reflowable book has no cover picture.
 - **`onProgress({ phase, done, total })`**: `resources` (fonts and pictures), `documents` (pages for a fixed layout, chapters for a reflowable one), then `package`. **`signal`** aborts between steps.
 - **`readEpub(bytes)`** reads a file back for a viewer, without `DOMParser`: layout, metadata, reading direction, every file by path, the manifest, the spine, the table of contents, the page list, the fixed-layout viewport and the cover. The sandbox's reader is built on it.
@@ -10176,7 +10380,7 @@ A payload's **`fileId` is its path inside the bundle**. `resource.svg.fileId`, `
 
 #### Bundles written by postext 1.4 or earlier
 
-Every manifest `createBundle` and the Sandbox write carries `configVersion: 10`: the configuration rules its `config` was written for. A manifest without it was written by postext 1.4 or earlier, which set eighteen things differently:
+Every manifest `createBundle` and the Sandbox write carries `configVersion: 11`: the configuration rules its `config` was written for. A manifest without it was written by postext 1.4 or earlier, which set eighteen things differently:
 
 - **Heading breaks** (rules 3): up to 1.4, a `headings` object with no H1 break had none (see [Per-level overrides](#per-level-overrides)).
 - **The maths size** (rules 4): up to 1.4, formulas came out 1.131 times larger than `fontSizeScale` says (see [Formula size](#math)).
@@ -10197,7 +10401,7 @@ Every manifest `createBundle` and the Sandbox write carries `configVersion: 10`:
 - **Code fences** (rules 9): up to 1.22, a ```` ``` ```` or `~~~` fence and the lines inside it were read as Markdown: lines joined into paragraphs, a `#` line became a heading, the fences printed (see `codeStyle.blocks` under [Code listings](#code-listings)).
 - **Verse turnovers** (rules 10): in 1.23, a line of a poem set line by line that was wider than the measure turned over at its natural word spacing, however little it overflowed (see `bodyText.verse.tighten` under [Verse](#verse)).
 
-`openBundle` and `readBundle` read such a manifest's `config`, and each locale's `localized` configuration, through `migrateConfig`, which writes out the breaks 1.4 laid out and multiplies the maths scale by 1.131 (its `em` display margins divided by it). A manifest stamped `3` to `7`, written by a 1.5 prerelease, only gets the pins of the rules after its stamp. With `3` that is the maths size, the inline gap, the five pins of rules 6, the two of rules 7 and the three of rules 8; with `4`, the inline gap and the pins of rules 6, 7 and 8; with `5`, the pins of rules 6, 7 and 8; with `6`, the pins of rules 7 and 8; with `7`, the pins of rules 8 alone. The split under a heading (`pinLegacyHeadingSplit`) is written as `headings.keepWithNextSplit: 'fill'` on the `headings` the layers leave in force, when a chapter read has a heading and the configuration names no value of its own, keeps `headings.keepWithNext` on and does not turn `bodyText.avoidOrphans` off. The compound breaks (`pinLegacyHyphenBreaks`) are written as `bodyText.breakAfterHyphens: false` on the `bodyText` in force, when a chapter read sets a hyphen between two letters and the configuration neither sets it already nor turns `optimalLineBreaking` off. The space under containers (`pinLegacyParagraphContainerSpacing`) is written as `bodyText.paragraphContainerSpacing: 'add'` on the `bodyText` in force, when the configuration declares a paragraph style (in `paragraphStyles` or the HTML viewer's overrides), a chapter read opens a `:::paragraphs` container on a line of its own, and the configuration does not set it already. The dash breaks (`pinLegacyDashBreaks`) are written as `bodyText.breakAfterDashes: false` on the `bodyText` in force, when a chapter read sets an em or en dash closed between words (a letter, a digit or closing punctuation before it, a letter, a digit or an opening bracket or quote after it; a quotation mark before it counts when a letter, a digit, closing punctuation or a no-break space stands before the quote, as in `"no"—and`, not in `said "—Hola`; an inline mark touching the dash or the quote, such as the `**` of `**riddles.**—I`, counts on either side) and the configuration does not set it already. The ragged breaking (`pinLegacyRaggedBreaking`) is written as `bodyText.optimalRagged: false` on the `bodyText` in force, when the configuration sets some running text ragged (a `textAlign` other than `'justify'` on the body text, a paragraph style, a box body, the body of a part or the body of a section style (`headingStyles[].bodyStyle`), or in the HTML viewer's overrides), does not set it already and does not turn `optimalLineBreaking` off. The gap in boxes (`pinLegacyBoxResourceGap`) is written as `layout.inlineResourceGapInBoxes: false` on the `layout` in force, when a resource is embedded on its own line inside a `:::callout` of the chapters read and the configuration does not set it already. The box cut (`pinLegacyBoxChildCut`) is written as `layout.boxChildSplitMinLines: 1` on the `layout` in force, when a chapter read opens a `:::callout` on a line of its own and the configuration does not set it already. The heading marks (`pinLegacyHeadingMarks`) are written as `headings.inlineMarks: false` on the `headings` the layers leave in force, when a heading of the chapters read carries a mark (`*`, `_`, `^`, `~`, `:smallcaps[` or a link in its title) and the configuration names no value of its own. The drop caps (`pinLegacyDropCapSize`) get their 1.4 size written out as `dropCap.fontSize`, wherever they sit: in the unit of the element's leading when that is a length, else in the unit of its font size. The colon-line room (`pinLegacyColonListRoom`) is written as `bodyText.colonListRoom: 'line'` on the `bodyText` in force, when a list of the chapters read follows a line ending in a colon (blank lines between them allowed) and the configuration neither names a room nor turns `keepColonWithList` off. The inline gap (`pinLegacyInlineGap`) is written as `layout.inlineResourceGap: 'above'` on the `layout` the layers leave in force, when a line of the chapters read embeds a resource (`::resource{id="…"}` alone on its line, as the parser reads it: a mention in running text or in a code span does not count) and the configuration names no gap of its own. The size is pinned on the `math` the layers leave in force (a locale's own `math` replaces the shared one), and only when the chapters read have a `$`: a bundle without maths keeps its `config` as written. When neither the manifest nor the locale names a `math`, the one in force is `readBundle`'s `baseConfig` (the reader's own), and it is pinned too, since 1.4 set the bundle's formulas at that size: a base `fontSizeScale: 1.5` reads as 1.5 × 1.1312. The base's heading breaks are taken as they are. An old bundle therefore keeps what these rules laid out, and `bundle.config` shows the breaks, the maths size, the gaps, the heading marks, the drop-cap sizes, the colon-line room, the box cut, the dash breaks, the compound breaks, the ragged breaking, the split under a heading and the space under containers it is laid out with. The layout fixes of 1.5 have no pin and apply to it as to any book, so a page they touch can still move (see [Formula size](#math) for the list). A `preset.json` written by hand for today's rules sets `"configVersion": 10`; stamping an old bundle's manifest with it is also the one-line way to read it with today's rules (an unversioned bundle then loses its heading-break pin too). A manifest stamped `8`, written by postext 1.5 to 1.22, gets the four pins of rules 9 alone, as every older one does too: the verse layout (`pinLegacyVerseLayout`) is written as `bodyText.verse.layout: 'bayt'` on the `bodyText` in force, when a chapter read sets a `:::verse` poem whose fence names no layout and whose lines carry no hemistich separator and the configuration does not set it already; the paired indents (`pinLegacyPairedIndents`) drop the `firstLineIndent` of every paragraph style (in `paragraphStyles` or the HTML viewer's overrides) that also sets a non-zero `hangingIndent`; the forced line breaks (`pinLegacyHardBreaks`) are written as `bodyText.hardLineBreaks: false` on the `bodyText` in force, when a chapter read ends a line of a paragraph, a quotation or a list item with a backslash and the block goes on below it, or sets `\\` before a space and more text (inline code and maths, display formulas, headings and `:::verse` poems aside), and the configuration does not set it already; and the code fences (`pinLegacyCodeBlocks`) are written as `codeStyle.blocks: false`, when a chapter read opens a ```` ``` ```` or `~~~` fence (three or more, up to three spaces in) and the configuration does not set it already. A manifest stamped `9`, written by postext 1.23, gets the pin of rules 10 alone, as every older one does too: the verse turnovers (`pinLegacyVerseTightening`) are written as `bodyText.verse.tighten: false` on the `bodyText` in force, when a chapter read sets a poem line by line (a `:::verse` fence that names `layout=lines`, or names no layout over lines with no hemistich separator while the configuration does not set such poems as bayts) and the configuration does not set it already.
+`openBundle` and `readBundle` read such a manifest's `config`, and each locale's `localized` configuration, through `migrateConfig`, which writes out the breaks 1.4 laid out and multiplies the maths scale by 1.131 (its `em` display margins divided by it). A manifest stamped `3` to `7`, written by a 1.5 prerelease, only gets the pins of the rules after its stamp. With `3` that is the maths size, the inline gap, the five pins of rules 6, the two of rules 7 and the three of rules 8; with `4`, the inline gap and the pins of rules 6, 7 and 8; with `5`, the pins of rules 6, 7 and 8; with `6`, the pins of rules 7 and 8; with `7`, the pins of rules 8 alone. The split under a heading (`pinLegacyHeadingSplit`) is written as `headings.keepWithNextSplit: 'fill'` on the `headings` the layers leave in force, when a chapter read has a heading and the configuration names no value of its own, keeps `headings.keepWithNext` on and does not turn `bodyText.avoidOrphans` off. The compound breaks (`pinLegacyHyphenBreaks`) are written as `bodyText.breakAfterHyphens: false` on the `bodyText` in force, when a chapter read sets a hyphen between two letters and the configuration neither sets it already nor turns `optimalLineBreaking` off. The space under containers (`pinLegacyParagraphContainerSpacing`) is written as `bodyText.paragraphContainerSpacing: 'add'` on the `bodyText` in force, when the configuration declares a paragraph style (in `paragraphStyles` or the HTML viewer's overrides), a chapter read opens a `:::paragraphs` container on a line of its own, and the configuration does not set it already. The dash breaks (`pinLegacyDashBreaks`) are written as `bodyText.breakAfterDashes: false` on the `bodyText` in force, when a chapter read sets an em or en dash closed between words (a letter, a digit or closing punctuation before it, a letter, a digit or an opening bracket or quote after it; a quotation mark before it counts when a letter, a digit, closing punctuation or a no-break space stands before the quote, as in `"no"—and`, not in `said "—Hola`; an inline mark touching the dash or the quote, such as the `**` of `**riddles.**—I`, counts on either side) and the configuration does not set it already. The ragged breaking (`pinLegacyRaggedBreaking`) is written as `bodyText.optimalRagged: false` on the `bodyText` in force, when the configuration sets some running text ragged (a `textAlign` other than `'justify'` on the body text, a paragraph style, a box body, the body of a part or the body of a section style (`headingStyles[].bodyStyle`), or in the HTML viewer's overrides), does not set it already and does not turn `optimalLineBreaking` off. The gap in boxes (`pinLegacyBoxResourceGap`) is written as `layout.inlineResourceGapInBoxes: false` on the `layout` in force, when a resource is embedded on its own line inside a `:::callout` of the chapters read and the configuration does not set it already. The box cut (`pinLegacyBoxChildCut`) is written as `layout.boxChildSplitMinLines: 1` on the `layout` in force, when a chapter read opens a `:::callout` on a line of its own and the configuration does not set it already. The heading marks (`pinLegacyHeadingMarks`) are written as `headings.inlineMarks: false` on the `headings` the layers leave in force, when a heading of the chapters read carries a mark (`*`, `_`, `^`, `~`, `:smallcaps[` or a link in its title) and the configuration names no value of its own. The drop caps (`pinLegacyDropCapSize`) get their 1.4 size written out as `dropCap.fontSize`, wherever they sit: in the unit of the element's leading when that is a length, else in the unit of its font size. The colon-line room (`pinLegacyColonListRoom`) is written as `bodyText.colonListRoom: 'line'` on the `bodyText` in force, when a list of the chapters read follows a line ending in a colon (blank lines between them allowed) and the configuration neither names a room nor turns `keepColonWithList` off. The inline gap (`pinLegacyInlineGap`) is written as `layout.inlineResourceGap: 'above'` on the `layout` the layers leave in force, when a line of the chapters read embeds a resource (`::resource{id="…"}` alone on its line, as the parser reads it: a mention in running text or in a code span does not count) and the configuration names no gap of its own. The size is pinned on the `math` the layers leave in force (a locale's own `math` replaces the shared one), and only when the chapters read have a `$`: a bundle without maths keeps its `config` as written. When neither the manifest nor the locale names a `math`, the one in force is `readBundle`'s `baseConfig` (the reader's own), and it is pinned too, since 1.4 set the bundle's formulas at that size: a base `fontSizeScale: 1.5` reads as 1.5 × 1.1312. The base's heading breaks are taken as they are. An old bundle therefore keeps what these rules laid out, and `bundle.config` shows the breaks, the maths size, the gaps, the heading marks, the drop-cap sizes, the colon-line room, the box cut, the dash breaks, the compound breaks, the ragged breaking, the split under a heading and the space under containers it is laid out with. The layout fixes of 1.5 have no pin and apply to it as to any book, so a page they touch can still move (see [Formula size](#math) for the list). A `preset.json` written by hand for today's rules sets `"configVersion": 11`; stamping an old bundle's manifest with it is also the one-line way to read it with today's rules (an unversioned bundle then loses its heading-break pin too). A manifest stamped `8`, written by postext 1.5 to 1.22, gets the four pins of rules 9 alone, as every older one does too: the verse layout (`pinLegacyVerseLayout`) is written as `bodyText.verse.layout: 'bayt'` on the `bodyText` in force, when a chapter read sets a `:::verse` poem whose fence names no layout and whose lines carry no hemistich separator and the configuration does not set it already; the paired indents (`pinLegacyPairedIndents`) drop the `firstLineIndent` of every paragraph style (in `paragraphStyles` or the HTML viewer's overrides) that also sets a non-zero `hangingIndent`; the forced line breaks (`pinLegacyHardBreaks`) are written as `bodyText.hardLineBreaks: false` on the `bodyText` in force, when a chapter read ends a line of a paragraph, a quotation or a list item with a backslash and the block goes on below it, or sets `\\` before a space and more text (inline code and maths, display formulas, headings and `:::verse` poems aside), and the configuration does not set it already; and the code fences (`pinLegacyCodeBlocks`) are written as `codeStyle.blocks: false`, when a chapter read opens a ```` ``` ```` or `~~~` fence (three or more, up to three spaces in) and the configuration does not set it already. A manifest stamped `9`, written by postext 1.23, gets the pin of rules 10 alone, as every older one does too: the verse turnovers (`pinLegacyVerseTightening`) are written as `bodyText.verse.tighten: false` on the `bodyText` in force, when a chapter read sets a poem line by line (a `:::verse` fence that names `layout=lines`, or names no layout over lines with no hemistich separator while the configuration does not set such poems as bayts) and the configuration does not set it already. A manifest stamped `10`, written by postext 1.24, gets the pin of rules 11 alone, as every older one does too: the balancing of a character grid (`pinLegacyGridBalancing`) is written as `headings.balancing.enabled: true` on the `headings` in force, when the merged configuration sets `cjk.grid.enabled` in horizontal text and does not set `enabled` itself, since 1.24 balanced such a page by default. The rules of 11 also keep book titles from one-character breaks, set circled numbers as Chinese characters and set CJK design text with the body's rules (#637): a manifest stamped `10` or older gets `cjk.titleMinChars: 1` (`pinLegacyTitleBreaks`) when a chapter read sets a title (《 〈 or `:book[`), `cjk.circledNumbers: 'western'` (`pinLegacyCircledNumbers`) when one sets a circled number (U+2460–U+24FF, U+2776–U+2793), and `cjk.composeDesignText: false` (`pinLegacyDesignText`) when a chapter read or the configuration itself holds CJK text, each on the `cjk` in force and only when the configuration does not set it already. They also cut inline tables and set `:::columns` in the running text (#634): a manifest stamped `10` or older gets `tableStyle.splitInline: false` (`pinLegacyInlineTableSplit`) on the `tableStyle` in force when a chapter read embeds a resource, and `layout.flowColumns: false` (`pinLegacyFlowColumns`) on the `layout` in force when a chapter read opens a `:::columns` fence on a line of its own, each only when the configuration does not set it already. They offer a float the head of a page-span opener's own column as well (#639): a manifest stamped `10` or older gets `layout.floatsUnderOpener: false` (`pinLegacyOpenerHeadFloats`) on the `layout` in force when the merged configuration sets a heading level or style with `span: 'page'` and a chapter read has a heading, only when the configuration does not set it already.
 
 ```ts
 import { CONFIG_VERSION, migrateConfig } from 'postext/bundle';
@@ -10227,8 +10431,8 @@ migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 
 Four helpers connect an opened bundle to the engine and the backends:
 
-- **`loadBundleFonts(bundle)`** registers the bundle's faces with `document.fonts`. Await it before laying out, because layout measures text with the fonts the browser has. Families the bundle names but does not carry (Google Fonts) still have to be loaded by you, as in any other document.
-- **`registerBundleImages(bundle)`** decodes the pictures for the canvas backend (`renderPage`, `renderToCanvas`), video posters included. **`bundleImageUrl(bundle)`** is the `resourceImageUrl` resolver for `renderToHtml`, and **`bundleVideoUrl(bundle)`** its `resourceVideoUrl` resolver for the video files a bundle carries. Both recolour SVG figures when `diagramStyle.singleInk` is on, once: they recolour the markup and flag the pictures so that no backend tints them again (see [Single ink on canvas and in HTML](#single-ink-on-canvas-and-in-html)).
+- **`loadBundleFonts(bundle)`** registers the bundle's faces with `document.fonts`, and their bytes with the engine's font registry for SVG pictures (`registerFontBytes`). Await it before laying out, because layout measures text with the fonts the browser has. Families the bundle names but does not carry (Google Fonts) still have to be loaded by you, as in any other document.
+- **`registerBundleImages(bundle)`** decodes the pictures for the canvas backend (`renderPage`, `renderToCanvas`), video posters included. **`bundleImageUrl(bundle)`** is the `resourceImageUrl` resolver for `renderToHtml`, and **`bundleVideoUrl(bundle)`** its `resourceVideoUrl` resolver for the video files a bundle carries. Both recolour SVG figures when `diagramStyle.singleInk` is on, once: they recolour the markup and flag the pictures so that no backend tints them again (see [Single ink on canvas and in HTML](#single-ink-on-canvas-and-in-html)). Both also embed in each SVG the faces its text names, from the bundle's own fonts first, then from the faces registered with the engine (see [Fonts in SVG text](#fonts-in-svg-text)); `registerBundleImages(bundle, { onWarning })` and `bundleImageUrl(bundle, { onWarning })` report a family with no face.
 - **`buildBundle(bundle)`** lays the chapters out in order and returns one `VDTDocument` per chapter. Each chapter continues the one before it: heading and resource counters, the open part, page parity and page numbering. A chapter that prints the contents (`:::toc`) or the index (`:::index`) receives the whole book's outline. It takes the same options as `buildDocument`, plus `config` to override the bundle's configuration, `cache` to share a measurement cache and `metadata` (see below).
 - **`bundleResourceBytes(bundle)`** and **`bundleFontProvider(bundle, { decodeWoff2, fallback })`** are the `resourceBytes` and `fontProvider` options of `postext-pdf`'s `renderToPdf`. The font provider picks the nearest weight of the requested style from the bundle. For a `.woff2` face it needs `decompressWoff2`, and for a family the bundle does not carry it calls `fallback` with the renderer's arguments, `request` included, and passes on whatever it returns. A fallback that fetches only a family's `latin` file prints a Chinese family the bundle does not embed as empty boxes; one that answers with slices, such as `sliceFontProvider` in [Chinese, Japanese and Korean fonts](#chinese-japanese-and-korean-fonts), prints it whole.
 

@@ -6365,22 +6365,22 @@
   },
   "callout-columns": {
     "label": {
-      "en": "Columns inside a box",
-      "es": "Columnas dentro de un recuadro",
-      "ca": "Columnes dins d'un requadre",
-      "zh": "框内分栏",
-      "ar": "أعمدة داخل الإطار",
-      "ja": "囲みの中の段組み",
-      "pt": "Colunas dentro de um boxe"
+      "en": "Columns in a box or in the text",
+      "es": "Columnas en un recuadro o en el texto",
+      "ca": "Columnes en un requadre o al text",
+      "zh": "框内或正文中的分栏",
+      "ar": "أعمدة داخل الإطار أو النص",
+      "ja": "囲みの中や本文中の段組み",
+      "pt": "Colunas num boxe ou no texto"
     },
     "definition": {
-      "en": "Two or more balanced columns within a callout, such as a text column beside a figure or a three-up panel.",
-      "es": "Dos o más columnas equilibradas dentro de un recuadro, como un texto junto a una figura o un panel de tres.",
-      "ca": "Dues o més columnes equilibrades dins d'un requadre, com un text al costat d'una figura o un plafó de tres.",
-      "zh": "标注框内两个或更多齐底的栏，例如图旁的文字栏或三联面板。",
-      "ar": "عمودان متوازنان أو أكثر داخل إطار، كعمود نص بجانب شكل أو لوحة من ثلاثة أقسام.",
-      "ja": "囲みの中に高さをそろえた2つ以上の段を組みます。図の横にテキストの段を置く形や、3つ並べたパネルなどに使います。",
-      "pt": "Duas ou mais colunas equilibradas dentro de um boxe, como um texto ao lado de uma figura ou um painel de três."
+      "en": "Two or more columns set by a :::columns group, within a callout or in the running text: a text column beside a figure, a three-up panel or a band of briefs across the page.",
+      "es": "Dos o más columnas compuestas con un grupo :::columns, dentro de un recuadro o en el texto corrido: un texto junto a una figura, un panel de tres o una banda de breves a lo ancho de la página.",
+      "ca": "Dues o més columnes compostes amb un grup :::columns, dins d'un requadre o al text corregut: un text al costat d'una figura, un plafó de tres o una banda de breus a tota l'amplada de la pàgina.",
+      "zh": "用 :::columns 组排出的两个或更多的栏，可在标注框内，也可在正文中：例如图旁的文字栏、三联面板，或横跨整页的一排简讯。",
+      "ar": "عمودان أو أكثر تنضّدهما مجموعة :::columns، داخل إطار أو في النص الجاري: كعمود نص بجانب شكل، أو لوحة من ثلاثة أقسام، أو شريط أخبار موجزة بعرض الصفحة.",
+      "ja": ":::columns グループで、囲みの中または本文中に2つ以上の段を組みます。図の横にテキストの段を置く形、3つ並べたパネル、ページ幅いっぱいの短信の帯などに使います。",
+      "pt": "Duas ou mais colunas compostas por um grupo :::columns, dentro de um boxe ou no texto corrido: um texto ao lado de uma figura, um painel de três ou uma faixa de notas breves na largura da página."
     },
     "aliases": {
       "en": [

@@ -42,7 +42,7 @@ import { loadRegistry } from "./registry.ts";
 import { listRecipeSlugs, readKit, readRecipeMeta, readRecipeSources } from "./sources.ts";
 import type { ComposedPen, KitBlock, Locale, RecipeMeta, RecipeSources, Registry, SampleLocale } from "./types.ts";
 import { KIT_ORDER, LOCALES } from "./types.ts";
-import { unquotedFrontmatter, validateRecipeMeta, validateRecipeSet } from "./validate.ts";
+import { fixedNotes, unquotedFrontmatter, validateRecipeMeta, validateRecipeSet } from "./validate.ts";
 import { readWriteup, writeupRefs } from "./writeup.ts";
 import { CJK_CHARS_PER_WORD, JAPANESE_CHARS_PER_WORD, styleMessages, textLength } from "./style.ts";
 
@@ -361,7 +361,9 @@ export function lintPen(
   }
   const math = Boolean(meta.engine?.math);
   const bundled = postextImports.some((imp) => imp.url === POSTEXT_BUNDLE_URL);
-  if (math && !bundled) fails.push(`script.js: engine.math recipes import every postext symbol from ${POSTEXT_BUNDLE_URL}`);
+  // Since postext 1.5 MathJax ships inside the package and `initMathEngine`
+  // fetches it from the plain import too (EF-15), so a maths recipe takes
+  // either URL; `?bundle` stays for the recipes written with it (#641).
   if (!math && bundled) fails.push(`script.js: ${POSTEXT_BUNDLE_URL} is only for engine.math recipes`);
   const postextNames = new Set(postextImports.flatMap((imp) => imp.names));
   if (math && !/\bawait\s+initMathEngine\s*\(\s*\)/.test(ownBare)) {
@@ -862,6 +864,13 @@ export interface LintRecipeOptions {
   released?: { postext?: string; postextPdf?: string };
   /** `--engine local`: a draft may pin the next release (validate.ts). */
   preview?: boolean;
+  /** `--strict-fixed`: fail the notes about pitfalls fixed at or before the
+   *  recipe's pin (`fixedNotes`). Off by default until the recipes written
+   *  for 1.4 are cleaned (#641). */
+  strictFixed?: boolean;
+  /** `--as-of x.y.z`, with `strictFixed`: read every recipe as if it pinned
+   *  at least that version. */
+  fixedAsOf?: string;
 }
 
 /** Everything `pnpm cookbook lint <slug>` checks: recipe.json, every
@@ -892,6 +901,7 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
       (e) => `recipe.json › ${e}`,
     ),
   );
+  if (options.strictFixed) fails.push(...fixedNotes(meta, registry.gotchas, options.fixedAsOf).map((note) => `recipe.json › ${note.message}`));
   if (!Array.isArray(meta.sample?.locales) || !Array.isArray(meta.kit)) return report();
 
   const sources = readRecipeSources(slug);

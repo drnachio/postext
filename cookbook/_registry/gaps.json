@@ -458,13 +458,13 @@
       ]
     },
     "explanation": {
-      "en": "Fixed in postext 1.24: placement.wrap sets a picture narrower than its column at one side of it, and the text after it runs beside it, then full width under it: a ::resource placed 'here', or a one-column float at the head or foot of a column. layout.wrap holds the gap, the narrowest text beside it and the default width. A box takes :::callout{wrap=\"right\" width=0.4}. A :::columns group holding the text and the picture is no longer needed.",
-      "es": "Resuelto en postext 1.24: placement.wrap coloca una imagen más estrecha que su columna en uno de sus lados, y el texto que le sigue se compone a su lado y después a todo el ancho debajo: un ::resource colocado 'here', o un flotante de una columna en la cabecera o el pie de una columna. layout.wrap guarda la separación, el texto más estrecho a su lado y el ancho por defecto. Una caja admite :::callout{wrap=\"right\" width=0.4}. Ya no hace falta un grupo :::columns con el texto y la imagen.",
-      "ca": "Resolt a postext 1.24: placement.wrap col·loca una imatge més estreta que la columna a un dels costats, i el text que la segueix es compon al costat i després a tota l'amplada a sota: un ::resource col·locat 'here', o un flotant d'una columna al capdamunt o al peu d'una columna. layout.wrap desa la separació, el text més estret al costat i l'amplada per defecte. Una caixa admet :::callout{wrap=\"right\" width=0.4}. Ja no cal un grup :::columns amb el text i la imatge.",
-      "zh": "已在postext 1.24中解决：placement.wrap把比栏窄的图片放在栏的一侧，后面的正文排在它旁边，到它下方后恢复全宽：可以是放在'here'的::resource，也可以是位于栏首或栏尾、宽一栏的浮动体。layout.wrap存放间距、旁边正文的最小宽度和默认宽度。框可以写成:::callout{wrap=\"right\" width=0.4}。不再需要用:::columns组把正文和图片放在一起。",
-      "ar": "حُلّت في postext 1.24: يضع placement.wrap صورة أضيق من عمودها في أحد جانبيه، ويُصفّ النص الذي يليها بجانبها ثم بكامل العرض تحتها: ::resource موضوع 'here'، أو عنصر عائم بعرض عمود واحد في أعلى عمود أو أسفله. ويحفظ layout.wrap المسافة وأضيق نص بجانبها والعرض الافتراضي. ويقبل الصندوق :::callout{wrap=\"right\" width=0.4}. ولم تعد هناك حاجة إلى مجموعة :::columns تضم النص والصورة.",
-      "ja": "postext 1.24で解決：placement.wrapは段より狭い図版を段の片側に置き、続く本文をその横に、下では全幅で組みます。'here'に置いた::resourceにも、段頭や段末に置く1段幅のフロートにも使えます。layout.wrapには間隔、横の本文の最小幅、既定の幅があります。ボックスは:::callout{wrap=\"right\" width=0.4}と書けます。本文と図版を:::columnsグループにまとめる必要はもうありません。",
-      "pt": "Resolvido no postext 1.24: placement.wrap põe uma imagem mais estreita que a coluna de um lado dela, e o texto seguinte é composto ao lado e depois na largura toda embaixo: um ::resource posto em 'here', ou um flutuante de uma coluna no alto ou no pé de uma coluna. layout.wrap guarda o espaço, o texto mais estreito ao lado e a largura padrão. Uma caixa aceita :::callout{wrap=\"right\" width=0.4}. Não é mais preciso um grupo :::columns com o texto e a imagem."
+      "en": "Fixed in postext 1.24: placement.wrap sets a picture narrower than its column at one side of it, and the text after it runs beside it, then full width under it: a ::resource placed 'here', or a one-column float at the head or foot of a column. layout.wrap holds the gap, the narrowest text beside it and the default width. A box takes :::callout{wrap=\"right\" width=0.4}. Up to 1.23 the text beside a picture needed a :::columns group holding both.",
+      "es": "Resuelto en postext 1.24: placement.wrap coloca una imagen más estrecha que su columna en uno de sus lados, y el texto que le sigue se compone a su lado y después a todo el ancho debajo: un ::resource colocado 'here', o un flotante de una columna en la cabecera o el pie de una columna. layout.wrap guarda la separación, el texto más estrecho a su lado y el ancho por defecto. Una caja admite :::callout{wrap=\"right\" width=0.4}. Hasta la 1.23, para poner texto junto a una imagen hacía falta un grupo :::columns con los dos.",
+      "ca": "Resolt a postext 1.24: placement.wrap col·loca una imatge més estreta que la columna a un dels costats, i el text que la segueix es compon al costat i després a tota l'amplada a sota: un ::resource col·locat 'here', o un flotant d'una columna al capdamunt o al peu d'una columna. layout.wrap desa la separació, el text més estret al costat i l'amplada per defecte. Una caixa admet :::callout{wrap=\"right\" width=0.4}. Fins a la 1.23, per posar text al costat d'una imatge calia un grup :::columns amb tots dos.",
+      "zh": "已在postext 1.24中解决：placement.wrap把比栏窄的图片放在栏的一侧，后面的正文排在它旁边，到它下方后恢复全宽：可以是放在'here'的::resource，也可以是位于栏首或栏尾、宽一栏的浮动体。layout.wrap存放间距、旁边正文的最小宽度和默认宽度。框可以写成:::callout{wrap=\"right\" width=0.4}。1.23及以前，要让正文排在图片旁边，只能用:::columns组把两者放在一起。",
+      "ar": "حُلّت في postext 1.24: يضع placement.wrap صورة أضيق من عمودها في أحد جانبيه، ويُصفّ النص الذي يليها بجانبها ثم بكامل العرض تحتها: ::resource موضوع 'here'، أو عنصر عائم بعرض عمود واحد في أعلى عمود أو أسفله. ويحفظ layout.wrap المسافة وأضيق نص بجانبها والعرض الافتراضي. ويقبل الصندوق :::callout{wrap=\"right\" width=0.4}. وحتى 1.23 كان وضع النص بجانب صورة يحتاج إلى مجموعة :::columns تضمّهما.",
+      "ja": "postext 1.24で解決：placement.wrapは段より狭い図版を段の片側に置き、続く本文をその横に、下では全幅で組みます。'here'に置いた::resourceにも、段頭や段末に置く1段幅のフロートにも使えます。layout.wrapには間隔、横の本文の最小幅、既定の幅があります。ボックスは:::callout{wrap=\"right\" width=0.4}と書けます。1.23までは、図版の横に本文を組むには、両方を:::columnsグループにまとめる必要がありました。",
+      "pt": "Resolvido no postext 1.24: placement.wrap põe uma imagem mais estreita que a coluna de um lado dela, e o texto seguinte é composto ao lado e depois na largura toda embaixo: um ::resource posto em 'here', ou um flutuante de uma coluna no alto ou no pé de uma coluna. layout.wrap guarda o espaço, o texto mais estreito ao lado e a largura padrão. Uma caixa aceita :::callout{wrap=\"right\" width=0.4}. Até a 1.23, pôr texto ao lado de uma imagem exigia um grupo :::columns com os dois."
     },
     "docs": {
       "slug": "document-format",
@@ -477,7 +477,8 @@
         "ja": "回り込み",
         "pt": "Contorno de texto"
       }
-    }
+    },
+    "fixedIn": "1.24.0"
   },
   "body-drop-cap": {
     "label": {
@@ -801,13 +802,13 @@
       ]
     },
     "explanation": {
-      "en": "Layout measures text with the browser's canvas, so it runs in a browser or a Web Worker. For batch jobs, drive a headless browser; postext-pdf can read fonts from disk once the layout exists.",
-      "es": "La composición mide el texto con el canvas del navegador, así que se ejecuta en un navegador o en un Web Worker. Para trabajos por lotes, usa un navegador sin interfaz; postext-pdf puede leer las fuentes del disco una vez hecha la composición.",
-      "ca": "La composició mesura el text amb el canvas del navegador, així que s'executa en un navegador o en un Web Worker. Per a feines per lots, fes servir un navegador sense interfície; postext-pdf pot llegir les fonts del disc un cop feta la composició.",
-      "zh": "排版借助浏览器的canvas测量文字，因此只能在浏览器或Web Worker中运行。批量任务可以驱动无头浏览器；版面生成之后，postext-pdf可以从磁盘读取字体。",
-      "ar": "يقيس الإخراج النص بلوحة Canvas في المتصفح، فهو يعمل في متصفح أو في Web Worker. وللمهام الدفعية، شغّل متصفحًا بلا واجهة؛ ويستطيع postext-pdf قراءة الخطوط من القرص بعد وجود الإخراج.",
-      "ja": "レイアウトはブラウザーのcanvasで文字を計測するため、ブラウザーかWeb Workerの中で動きます。バッチ処理にはヘッドレスブラウザーを操作してください。レイアウトができていれば、postext-pdfはディスクからフォントを読み込めます。",
-      "pt": "O motor de layout mede o texto com o canvas do navegador, por isso roda em um navegador ou em um Web Worker. Para trabalhos em lote, use um navegador headless; o postext-pdf pode ler as fontes do disco depois que o layout estiver pronto."
+      "en": "Layout measures text with a canvas, so the postext package runs in a browser or a Web Worker, and importing it in Node needs a canvas of your own. For batch jobs use the postext command line (postext-cli, since postext 1.22): one executable that lays a book out and writes the PDF, HTML, EPUB, page images or Word file with no browser. A headless browser remains the other way; postext-pdf can read fonts from disk once the layout exists.",
+      "es": "La composición mide el texto con un canvas, así que el paquete postext se ejecuta en un navegador o en un Web Worker, e importarlo en Node exige aportar un canvas. Para trabajos por lotes usa la línea de comandos de postext (postext-cli, desde postext 1.22): un ejecutable que compone un libro y escribe el PDF, el HTML, el EPUB, las imágenes de página o el archivo de Word sin navegador. La otra vía sigue siendo un navegador sin interfaz; postext-pdf puede leer las fuentes del disco una vez hecha la composición.",
+      "ca": "La composició mesura el text amb un canvas, així que el paquet postext s'executa en un navegador o en un Web Worker, i importar-lo a Node exigeix aportar-hi un canvas propi. Per a feines per lots, fes servir la línia d'ordres de postext (postext-cli, des de postext 1.22): un sol executable que compon un llibre i escriu el PDF, l'HTML, l'EPUB, les imatges de pàgina o el fitxer de Word sense navegador. L'altra via continua sent un navegador sense interfície; postext-pdf pot llegir les fonts del disc un cop feta la composició.",
+      "zh": "排版借助canvas测量文字，因此postext包在浏览器或Web Worker中运行，在Node中导入它需要自备canvas。批量任务请用postext命令行（postext-cli，从postext 1.22起）：一个可执行文件就能排出一本书，并写出PDF、HTML、EPUB、页面图像或Word文件，不需要浏览器。无头浏览器仍是另一条途径；版面生成之后，postext-pdf可以从磁盘读取字体。",
+      "ar": "يقيس الإخراج النص بلوحة Canvas، فحزمة postext تعمل في متصفح أو في Web Worker، واستيرادها في Node يحتاج إلى لوحة Canvas توفّرها أنت. وللمهام الدفعية استخدم سطر أوامر postext (postext-cli، منذ postext 1.22): ملف تنفيذي واحد يُخرج كتابًا ويكتب ملف PDF أو HTML أو EPUB أو صور الصفحات أو ملف Word بلا متصفح. ويبقى المتصفح بلا واجهة الطريق الآخر؛ ويستطيع postext-pdf قراءة الخطوط من القرص بعد وجود الإخراج.",
+      "ja": "レイアウトはcanvasで文字を計測するため、postextパッケージはブラウザーかWeb Workerの中で動き、Nodeでimportするには自前のcanvasが必要です。バッチ処理にはpostextのコマンドライン（postext-cli、postext 1.22から）を使ってください。ブラウザーなしで本をレイアウトし、PDF、HTML、EPUB、ページ画像、Wordファイルを書き出す1つの実行ファイルです。ヘッドレスブラウザーを使う方法も残っています。レイアウトができていれば、postext-pdfはディスクからフォントを読み込めます。",
+      "pt": "O layout mede o texto com um canvas, por isso o pacote postext roda em um navegador ou em um Web Worker, e importá-lo no Node exige um canvas fornecido por você. Para trabalhos em lote, use a linha de comando do postext (postext-cli, desde o postext 1.22): um executável que diagrama um livro e grava o PDF, o HTML, o EPUB, as imagens de página ou o arquivo do Word sem navegador. Um navegador headless continua sendo o outro caminho; o postext-pdf pode ler as fontes do disco depois que o layout estiver pronto."
     },
     "docs": {
       "slug": "architecture",
@@ -893,7 +894,8 @@
         "ja": "配置",
         "pt": "Posicionamento"
       }
-    }
+    },
+    "fixedIn": "1.24.0"
   },
   "math-in-captions": {
     "label": {
@@ -1365,13 +1367,13 @@
       ]
     },
     "explanation": {
-      "en": "Only justified text is hyphenated; ragged-right text breaks between words. Justify the passage, or reword by hand the lines that end far short; the narrower the measure, the deeper the rag.",
-      "es": "Solo se separa por sílabas el texto justificado; el texto en bandera corta entre palabras. Justifica el pasaje o retoca a mano las líneas que quedan demasiado cortas; cuanto más estrecha es la medida, más profunda es la bandera.",
-      "ca": "Només es parteixen els mots del text justificat; el text en bandera talla entre paraules. Justifica el passatge o retoca a mà les línies que queden massa curtes; com més estreta és la mesura, més profunda és la bandera.",
-      "zh": "只有两端对齐的文字会断词；左对齐不齐行的文字在词间断行。把这段改为两端对齐，或者手动改写那些行尾空得很多的行；行长越窄，行尾越参差。",
-      "ar": "لا تُقسَّم الكلمات بالواصلة إلا في النص المضبوط؛ والنص ذو الحافة اليمنى الحرة ينكسر بين الكلمات. اضبط المقطع، أو أعد صياغة الأسطر التي تنتهي قصيرة جدًّا بيدك؛ فكلما ضاق السطر ازداد تفاوت الحافة.",
-      "ja": "ハイフネーションされるのは両端そろえのテキストだけで、行末不ぞろいのテキストは語と語の間で改行されます。その箇所を両端そろえにするか、極端に短く終わる行を手で書き換えてください。行長が狭いほど、行末の凹凸は大きくなります。",
-      "pt": "Só o texto justificado é hifenizado; o texto alinhado à esquerda quebra entre palavras. Justifique o trecho ou reescreva à mão as linhas que ficam muito curtas; quanto mais estreita a medida, mais irregular fica a bandeira."
+      "en": "Fixed in postext 1.5: bodyText.hyphenation.ragged: true hyphenates ragged text too, within a hyphenation zone (3 em by default), so a word is divided only when sending it down whole would leave more than the zone empty. It is off by default: ragged text keeps its words whole until you ask. Up to 1.4 only justified text was hyphenated, and the lines that ended far short were justified or reworded by hand.",
+      "es": "Resuelto en postext 1.5: bodyText.hyphenation.ragged: true separa también por sílabas el texto en bandera, dentro de una zona de separación (3 em por defecto), de modo que una palabra solo se parte si bajarla entera dejaría vacío más que esa zona. Viene desactivado: el texto en bandera conserva sus palabras enteras hasta que lo pidas. Hasta la 1.4 solo se separaba el texto justificado, y las líneas que quedaban demasiado cortas se justificaban o se retocaban a mano.",
+      "ca": "Resolt a postext 1.5: bodyText.hyphenation.ragged: true parteix també els mots del text en bandera, dins d'una zona de partició (3 em per defecte), de manera que un mot només es divideix si baixar-lo sencer deixaria buit més espai que aquesta zona. Ve desactivat: el text en bandera conserva els mots sencers fins que ho demanis. Fins a la 1.4 només es partien els mots del text justificat, i les línies que quedaven massa curtes es justificaven o es retocaven a mà.",
+      "zh": "已在postext 1.5中解决：bodyText.hyphenation.ragged: true让齐左文字也断词，但限于断词区（默认3 em）之内，所以只有把整个词移到下一行会留出比断词区更宽的空白时，才把这个词拆开。它默认关闭：齐左文字在你要求之前保持词的完整。1.4及以前，只有两端对齐的文字会断词，行尾空得很多的行要改为两端对齐或手动改写。",
+      "ar": "حُلّت في postext 1.5: يقسّم bodyText.hyphenation.ragged: true النص غير المضبوط بالواصلة أيضًا، ضمن منطقة تقسيم (3 em افتراضيًا)، فلا تُقسَّم الكلمة إلا إذا كان إنزالها كاملة سيترك فارغًا أكثر من تلك المنطقة. وهو معطَّل افتراضيًا: يحتفظ النص غير المضبوط بكلماته كاملة إلى أن تطلب ذلك. وحتى 1.4 لم يكن يُقسَّم بالواصلة إلا النص المضبوط، وكانت الأسطر التي تنتهي قصيرة جدًّا تُضبط أو تُعاد صياغتها باليد.",
+      "ja": "postext 1.5で解決しました。bodyText.hyphenation.ragged: trueで、行末不ぞろいのテキストもハイフネーションゾーン（既定で3 em）の範囲でハイフネーションされ、語が分割されるのは、丸ごと次の行に送るとゾーンより広い空きが残るときだけです。既定では無効で、指定するまで行末不ぞろいのテキストは語を分割しません。1.4までは、ハイフネーションされるのは両端そろえのテキストだけで、極端に短く終わる行は両端そろえにするか、手で書き換えていました。",
+      "pt": "Resolvido no postext 1.5: bodyText.hyphenation.ragged: true hifeniza também o texto em bandeira, dentro de uma zona de hifenização (3 em por padrão), de modo que uma palavra só é dividida quando mandá-la inteira para a linha de baixo deixaria vazio mais do que a zona. Vem desativado por padrão: o texto em bandeira mantém as palavras inteiras até você pedir. Até a 1.4, só o texto justificado era hifenizado, e as linhas que ficavam muito curtas eram justificadas ou reescritas à mão."
     },
     "docs": {
       "slug": "configuration",
@@ -1384,7 +1386,8 @@
         "ja": "ハイフネーション",
         "pt": "Hifenização"
       }
-    }
+    },
+    "fixedIn": "1.5.0"
   },
   "booktabs-rules": {
     "label": {
@@ -1463,7 +1466,8 @@
         "ja": "booktabs の罫線",
         "pt": "Fios booktabs"
       }
-    }
+    },
+    "fixedIn": "1.24.0"
   },
   "pdf-x": {
     "label": {

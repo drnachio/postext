@@ -11,6 +11,8 @@ import {
   resolveColorValue,
   resolveLayoutConfig,
   coordinateVideoPlayback,
+  watchFonts,
+  onFontsChanged,
 } from 'postext';
 import type {
   VDTDocument,
@@ -265,14 +267,15 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
   // arrives, so invalidate the measurement caches before the next relayout.
   useEffect(() => {
     if (typeof document === 'undefined' || !document.fonts) return;
-    const onLoadingDone = () => {
-      // Worker owns its own measurement cache; when fonts land the main
-      // thread re-triggers a relayout and the worker picks up the newly-
-      // registered faces on its next build.
-      scheduleRelayout(0);
+    // The engine's watch (#629) drops the measurements of the families
+    // that arrived (once a frame); the worker picks up the newly
+    // registered faces on its next build.
+    const stop = watchFonts(document.fonts);
+    const off = onFontsChanged(() => scheduleRelayout(0));
+    return () => {
+      off();
+      stop();
     };
-    document.fonts.addEventListener('loadingdone', onLoadingDone);
-    return () => document.fonts.removeEventListener('loadingdone', onLoadingDone);
   }, [scheduleRelayout]);
 
   // ResizeObserver on the host div → debounced relayout.
@@ -332,8 +335,8 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
 
     // NOTE: the measurement cache persists across relayouts. Keys bake in
     // text + font + width + line-breaking options, so entries that no longer
-    // match simply go unused. The font `loadingdone` handler clears the
-    // cache when glyph measurements may have changed.
+    // match simply go unused; blocks measured in a family whose faces
+    // changed are dropped by the engine at the next lookup (#629).
 
     // Resolve body font + size → measure N-char target column width.
     const bodyFontFamily = currentConfig.bodyText?.fontFamily ?? 'EB Garamond';
@@ -440,7 +443,7 @@ function HtmlPreview({ fontScale, columnMode, onGeneratingChange, onScrollBounds
       const inkHex = ds.singleInk
         ? resolveColorValue(ds.inkColor, currentConfig.colorPalette, ds.inkColor).hex
         : null;
-      await ensureResourceImageUrls(resourcesRef.current, inkHex).catch(() => false);
+      await ensureResourceImageUrls(resourcesRef.current, inkHex, { inlineFonts: ds.inlineFonts }).catch(() => false);
       // Uploaded videos play from object URLs too (#454).
       await ensureResourceVideoUrls(resourcesRef.current).catch(() => false);
       if (seq !== renderSeqRef.current) return;

@@ -14,6 +14,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'missingFont':
     case 'missingFontFamily':
     case 'missingFontVariant':
+    case 'fontFallback':
     case 'duplicateFontVariant':
     case 'fontFamilyStack':
     case 'missingGlyph':
@@ -32,6 +33,8 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'videoWithoutUrl':
     case 'videoUrlInvalid':
     case 'missingImage':
+    case 'svgFontUnavailable':
+    case 'svgFontsTooLarge':
     case 'comicUnknownArt':
     case 'comicPanelLetterbox':
     case 'comicAnchorOutsideSafeArea':
@@ -69,6 +72,9 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'lineNumberOverlap':
     case 'dropCap':
     case 'codeOverflow':
+    case 'columnsTooNarrow':
+    case 'afterText':
+    case 'unplaced':
     case 'parityCascade':
     case 'unsupportedHyphenationLocale':
     case 'comicBalloonOverflow':

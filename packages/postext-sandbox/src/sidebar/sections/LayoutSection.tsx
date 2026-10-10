@@ -364,6 +364,39 @@ export const LayoutSection = memo(function LayoutSection() {
           />
         </NestedGroup>
       )}
+      {/* Floats heading the page or column that cites them (#633): the
+          default a resource type or a resource may override, and the share
+          of the column such a float may take. */}
+      <ToggleSwitch
+        label={labels.floatsAtCitingPage}
+        checked={layout.floatsAtCitingPage}
+        onChange={(v) => updateLayout({ floatsAtCitingPage: v })}
+        tooltip={labels.floatsAtCitingPageTooltip}
+        isDefault={layout.floatsAtCitingPage === D.floatsAtCitingPage}
+        onReset={() => resetField('floatsAtCitingPage')}
+      />
+      <NumberInput
+        label={labels.maxTopFraction}
+        value={Math.round(layout.maxTopFraction * 100)}
+        onChange={(v) => updateLayout({ maxTopFraction: Math.min(100, Math.max(10, v)) / 100 })}
+        min={10}
+        max={100}
+        step={5}
+        suffix="%"
+        tooltip={labels.maxTopFractionTooltip}
+        isDefault={layout.maxTopFraction === D.maxTopFraction}
+        onReset={() => resetField('maxTopFraction')}
+      />
+      {/* The head of a page-span opener's own column as a float slot
+          (#639). */}
+      <ToggleSwitch
+        label={labels.floatsUnderOpener}
+        checked={layout.floatsUnderOpener}
+        onChange={(v) => updateLayout({ floatsUnderOpener: v })}
+        tooltip={labels.floatsUnderOpenerTooltip}
+        isDefault={layout.floatsUnderOpener === D.floatsUnderOpener}
+        onReset={() => resetField('floatsUnderOpener')}
+      />
       {/* Text wrap round pictures and boxes (#627): the defaults a
           resource, a resource type or a box may set aside. */}
       <DimensionInput
@@ -451,6 +484,14 @@ export const LayoutSection = memo(function LayoutSection() {
         tooltip={labels.boxChildSplitMinLinesTooltip}
         isDefault={layout.boxChildSplitMinLines === D.boxChildSplitMinLines}
         onReset={() => resetField('boxChildSplitMinLines')}
+      />
+      <ToggleSwitch
+        label={labels.flowColumns}
+        checked={layout.flowColumns}
+        onChange={(v) => updateLayout({ flowColumns: v })}
+        tooltip={labels.flowColumnsTooltip}
+        isDefault={layout.flowColumns === D.flowColumns}
+        onReset={() => resetField('flowColumns')}
       />
       <ToggleSwitch
         label={labels.hugClosingFloats}

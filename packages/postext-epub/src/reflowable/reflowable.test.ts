@@ -782,3 +782,16 @@ describe('reflowable rendition: code listings (#624)', () => {
     expect(pub.items.find((i) => i.href === 'styles/book.css')!.data as string).not.toContain('pt-code');
   });
 });
+
+describe('reflowable rendition: :::columns in the running text (#634)', () => {
+  it('writes a group as a plain block of its paragraphs, in reading order, joined across its cuts', async () => {
+    const items = Array.from({ length: 40 }, (_, i) => `Item ${i} has a few words so that it takes a few lines in a narrow column.`);
+    const md = ['Before the group.', '', ':::columns{count=3}', items.join('\n\n'), ':::', '', 'After the group.'].join('\n');
+    const { pub, files, all } = await render([layOut(md, baseConfig)]);
+    expectSound(pub, files);
+    expect(all).toContain('<div class="pt-columns">');
+    expect(all).not.toContain('<aside');
+    const found = [...all.matchAll(/<p[^>]*>Item (\d+) /g)].map((m) => Number(m[1]));
+    expect(found).toEqual(Array.from({ length: 40 }, (_, i) => i));
+  });
+});

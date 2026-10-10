@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "medical-article-vancouver",
-  "sourceHash": "9eab7cad3463897d9924ec691bfd5a0b1caaada5c7a72b75bc1e158b660e6031",
+  "sourceHash": "7bc5e7537f793c4621f5711350ad17b1d179e3bc1cf4fd9fbf973f85f1be46c9",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.23.0",
+    "postextPdf": "1.23.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.180Z",
+  "capturedAt": "2026-10-09T20:44:19.124Z",
   "variants": {
     "en": {
-      "hash8": "d153faa6",
-      "vdtHash": "32d7294ce826407b5b17b743481064bc094dd576",
+      "hash8": "ce6b2671",
+      "vdtHash": "664c1cc1968e625f35b19432dc038ec6947580c8",
       "timings": {
-        "importMs": 230,
-        "fontsMs": 77,
-        "buildMs": 49,
-        "totalMs": 1064,
+        "importMs": 588,
+        "fontsMs": 4001,
+        "buildMs": 41,
+        "totalMs": 5365,
         "builds": 2
       },
       "specimen": {
@@ -40,7 +40,7 @@
           "PT Serif"
         ],
         "pages": 3,
-        "ownLines": 179
+        "ownLines": 180
       },
       "pages": [
         {
@@ -62,7 +62,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 190204,
+          "bytes": 190216,
           "alt": "Page 182: Outcomes and analysis. Table 1. Characteristics of the patients at baseline. · Figure 1. Mean home systolic pressure by week in the telemonitoring group, with its 95% confidence interval. The dashed line is the home target of 135 mm Hg."
         },
         {
@@ -73,7 +73,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 116214,
+          "bytes": 116130,
           "alt": "Page 183: References."
         }
       ],
@@ -101,12 +101,12 @@
       },
       "pdf": {
         "file": "medical-article-vancouver.pdf",
-        "bytes": 181035,
+        "bytes": 180491,
         "pages": 3
       },
       "sandbox": {
         "file": "medical-article-vancouver.postext",
-        "bytes": 53214,
+        "bytes": 53224,
         "folio": "b245c39c"
       },
       "detected": {
@@ -192,6 +192,7 @@
           "citations.bibliography.doi",
           "citations.bibliography.entrySpacing",
           "citations.bibliography.fontSize",
+          "citations.bibliography.labelAlign",
           "citations.bibliography.labelWidth",
           "citations.bibliography.lineHeight",
           "citations.collapseRanges",
@@ -315,7 +316,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 400,
+        "configLeaves": 401,
         "designElements": 14,
         "directives": [
           ":::callout",
@@ -399,17 +400,23 @@
           "share": 0.0108,
           "worst": 2.21
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "80e51e47",
-      "vdtHash": "7d8767dd0bf652221b9d21ed3150ad072901f5b3",
+      "hash8": "ef791bd5",
+      "vdtHash": "de7caee6ad82d8f4d42b3b7a0a1717e8c8df7fb4",
       "timings": {
-        "importMs": 214,
-        "fontsMs": 77,
-        "buildMs": 53,
-        "totalMs": 1066,
+        "importMs": 568,
+        "fontsMs": 1002,
+        "buildMs": 41,
+        "totalMs": 3783,
         "builds": 2
       },
       "specimen": {
@@ -432,7 +439,7 @@
           "PT Serif"
         ],
         "pages": 3,
-        "ownLines": 179
+        "ownLines": 180
       },
       "pages": [
         {
@@ -454,7 +461,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 189612,
+          "bytes": 189652,
           "alt": "Página 182: Intervenciones. Tabla 1. Características de los pacientes al inicio. · Figura 1. Presión sistólica domiciliaria media por semana en el grupo de telemonitorización, con su intervalo de confianza del 95 %. La línea discontinua es el objetivo de 135 mm Hg."
         },
         {
@@ -465,7 +472,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 149628,
+          "bytes": 149484,
           "alt": "Página 183: Información del artículo."
         }
       ],
@@ -493,12 +500,12 @@
       },
       "pdf": {
         "file": "medical-article-vancouver.pdf",
-        "bytes": 190291,
+        "bytes": 189707,
         "pages": 3
       },
       "sandbox": {
         "file": "medical-article-vancouver.postext",
-        "bytes": 54443,
+        "bytes": 54456,
         "folio": "b245c39c"
       },
       "detected": {
@@ -584,6 +591,7 @@
           "citations.bibliography.doi",
           "citations.bibliography.entrySpacing",
           "citations.bibliography.fontSize",
+          "citations.bibliography.labelAlign",
           "citations.bibliography.labelWidth",
           "citations.bibliography.lineHeight",
           "citations.collapseRanges",
@@ -707,7 +715,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 400,
+        "configLeaves": 401,
         "designElements": 14,
         "directives": [
           ":::callout",
@@ -785,13 +793,19 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 2,
         "looseLines": {
           "count": 0,
           "share": 0,
           "worst": 1.97
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 027 · Newspaper front page ═══════════════════════════
 // https://postext.dev/en/cookbook/newspaper-front-page
 // Code: MIT · Text: original (CC BY 4.0) · Photo: Jason Blackeye (CC0)
-// Fonts: Grenze Gotisch, PT Serif, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: Grenze Gotisch, PT Serif, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.24.0
 import {
   buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
 } from 'https://esm.sh/postext';
@@ -358,9 +358,10 @@ const resources = [
     caption: '**File picture:** turbines on an upland ridge. Each of the three planned for '
       + 'Harrow Ridge would generate 2.3 megawatts.',
     note: 'Photograph: Jason Blackeye, CC0, via Wikimedia Commons' }),
-  // Drawn in code (the art region) and set inline, where ::resource puts it in column 1.
+  // Drawn in code (the art region) and set inline, where ::resource puts it in column 1,
+  // at the column's right with the next paragraph running beside it (text wrap).
   resource('bridge', 'picture', 'svg', { fileId: 'bridge.svg', width: 1190, height: 460 },
-    { placement: { position: 'here' },
+    { placement: { position: 'here', wrap: 'right', width: 0.47 },
       altText: 'Drawing of a two-arch stone bridge between sloping river banks; under its '
         + 'central pier, a red concrete footing.',
       caption: '**The rebuilt pier.** Its new concrete footing (red) goes six metres below the '

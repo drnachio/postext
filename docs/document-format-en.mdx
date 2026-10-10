@@ -322,7 +322,7 @@ Keep the lantern lit **every** night.
 :::
 ```
 
-Four container names are recognized in the text flow (a fifth, `:::columns`, works only inside a callout and is described below). What each one renders is set in its own section of the configuration:
+Five container names are recognized in the text flow. What each one renders is set in its own section of the configuration:
 
 <table>
   <thead>
@@ -347,6 +347,10 @@ Four container names are recognized in the text flow (a fifth, `:::columns`, wor
     <tr>
       <td><code>:::paper&#123;…&#125;</code> … <code>:::</code></td>
       <td>A run of pages printed on another paper stock, such as a section of gloss plates in a matte book. Only the Folio viewer shows it.</td>
+    </tr>
+    <tr>
+      <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Blocks set in several columns of their own: inside a box, in the text column, or across a page of several columns. See <a href="#columns"><code>:::columns</code></a> below.</td>
     </tr>
   </tbody>
 </table>
@@ -383,7 +387,44 @@ A fence does not need a blank line before it: an opening or closing fence glued 
 
 ### `:::columns`
 
-Inside a `:::callout`, a `:::columns{count=2}` … `:::` group sets the blocks between its fences in `count` columns of equal width (the style's `columnGap` apart): the run is cut where the columns level best — between blocks, or between the lines of a paragraph or list item, whose tail goes on at the head of the next column without its bullet — and the box grows to the tallest column. Blocks after the group take the full width again. Outside a callout the fences are ignored and the blocks flow as usual. A `breaks` attribute fixes the column starts instead of balancing: `:::columns{count=2 breaks="4"}` opens the second column at the group's fourth block (a comma list for more columns), with no cut inside a paragraph — a text column beside a figure column.
+A `:::columns{count=2}` … `:::` group sets the blocks between its fences in `count` columns of equal width (2 to 6), the text after it taking the full width again. Inside a `:::callout` the columns share the box's inner width, the style's `columnGap` apart, in the box's body and list typography, and the box grows to the tallest column. In the running text (since postext 1.25) they share the text column, a body line apart, and the blocks keep the text's own typography; with `span="page"`, on a page of several columns, the group cuts the page into a band as a page-span box does: the columns above it close level, the group is set across the content width (the gutter apart) and the text goes on in every column under it. On a one-column page `span="page"` sets it in the column. Headings inside a group keep their style, number and entry in the contents, a footnote cited in it goes to the foot of the text column, and figures it cites float as usual.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Attribute</th>
+      <th>Effect</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>count</code></td>
+      <td>How many columns, 2 to 6. Default 2.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>The space between the columns, a length (<code>12pt</code>, <code>1em</code>, <code>4mm</code>). Default: the box style's <code>columnGap</code> in a box, a body line in the text column, <code>layout.gutterWidth</code> across the page.</td>
+    </tr>
+    <tr>
+      <td><code>rule</code></td>
+      <td>Draw a rule down each gap, in the colour and width of <code>layout.columnRule</code>: <code>:::columns&#123;count=3 rule&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>breaks</code></td>
+      <td>The blocks that open each column after the first, instead of balancing: <code>breaks="4"</code> opens the second column at the group's fourth block (a comma list for more columns). See below how it counts.</td>
+    </tr>
+    <tr>
+      <td><code>flow</code></td>
+      <td>How a group that does not fit goes on: <code>snake</code> (the default without <code>breaks</code>) or <code>parallel</code> (the default with <code>breaks</code>). See <a href="#splitting-a-group">Splitting a group</a>.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td>In the running text only: <code>column</code> (the default) or <code>page</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+A group set whole is cut where its columns level best — between blocks, or between the lines of a paragraph or list item, whose tail goes on at the head of the next column without its bullet — unless `breaks` fixes the column starts, with no cut inside a paragraph: a text column beside a figure column.
 
 ```md
 :::callout{type="summary"}
@@ -420,6 +461,27 @@ El farero duerme de día.
 ```
 
 Here the fourth block, "La lámpara…", opens the second column; the two `:::space` lines are not counted and leave the same gap in both columns.
+
+#### Splitting a group
+
+Since postext 1.25 a group that does not fit the room it has — the rest of its column in the running text, or the part of a box that splits (`keepTogether: false`, or a box taller than a column) — is cut between its columns and goes on in the next column or page, in a box of its own for a group in a box:
+
+- **`flow="snake"`**, the default without `breaks`: the group's blocks run as one galley, like the text of a newspaper story. A part that goes on fills its columns in turn, as level as the cuts allow, cutting between blocks or between the lines of a paragraph or list item (at least `layout.boxChildSplitMinLines` lines of it on each side, two by default); the last part is balanced as a whole group is.
+- **`flow="parallel"`**, the default with `breaks`: each run the breaks start is a stream that keeps its own column. A part fills every stream down to the room it has, and each one goes on in the same column of the next part, so a poem and its translation set side by side stay level stanza by stanza. A parallel group without `breaks` goes on as a snake group.
+
+A nested box in a group stays whole, moving to the next part, and a group inside a nested box is never cut. A group that fits is set exactly as before. `layout.flowColumns: false` keeps the rules of postext 1.24: a fence outside a box is ignored and a group is never cut; books saved before 1.25 that hold a `:::columns` group are read that way. The Sandbox reports a `flow` it does not know (**Unknown column flow**) and columns narrower than six ems of their text (**Columns too narrow**).
+
+```md
+## Briefs
+
+:::columns{count=3 span="page" rule}
+**Harbour.** The new pier opens on Monday…
+
+**Market.** Stall rents stay as they are…
+
+**Weather.** Rain from the west by the evening…
+:::
+```
 
 A `:::callout` fence also accepts `label="…"`: the text a style with a `label` tab prints on the box's top corner (`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`).
 
@@ -1118,7 +1180,7 @@ As [@garcia2020, p. 33] shows, reading on paper is faster [see @lopez2019, chap.
 ```
 
 - **`[@key]`** cites in parentheses; several works go in one pair of brackets, separated by `;`.
-- **Locator:** after a comma, `p. 33`, `pp. 4–6`, `chap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `l. 4`, `§ 4.2`; a bare number is a page. Spanish (`pág.`, `cap.`) and Chinese (`页`, `章`) words work too.
+- **Locator:** after a comma, `p. 33`, `pp. 4–6`, `chap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `l. 4`, `§ 4.2`; a bare number is a page. Spanish (`pág.`, `cap.`) and Chinese (`页`, `章`) words work too. A range takes an en dash or the two hyphens of TeX: `pp. 4--6` prints *4–6*.
 - **Prefix and suffix:** text before the `@` (`see`) and after the key or the locator (`, emphasis added`). The suffix keeps the comma written before it, with a locator or without one: `[@brown2020, inter alia]` prints *(Brown et al., 2020, inter alia)*, as Pandoc does; written without a comma (`[@brown2020 inter alia]`) it has none. Emphasis in a prefix or a suffix is set as emphasis in every style: `[*e.g.*, @brown2020, *inter alia*]`.
 - **`[-@key]`** leaves the author out, for a sentence that names the author already.
 - **`@key`** cites in the sentence (*García (2020)*); `@key [p. 4]` adds a locator.
@@ -1479,7 +1541,7 @@ Each resource has a **placement** that decides where its float lands, resolved p
     <tr>
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (the default) takes the first free slot after the reference, top or bottom; <code>"top"</code> / <code>"bottom"</code> only accept slots of that kind; <code>"here"</code> opts out of floating and embeds inline at the <code>::resource</code> directive.</td>
+      <td><code>"auto"</code> (the default) takes the first free slot after the reference, top or bottom; <code>"top"</code> / <code>"bottom"</code> only accept slots of that kind; <code>"here"</code> opts out of floating and embeds inline at the <code>::resource</code> directive (a table placed there is cut between rows when it does not fit the rest of its column, see <a href="/en/docs/configuration#tables-taller-than-the-page">Tables taller than the page</a>).</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
@@ -1521,12 +1583,21 @@ Each resource has a **placement** that decides where its float lands, resolved p
       <td><code>"none"</code> · <code>"left"</code> · <code>"right"</code> · <code>"start"</code> · <code>"end"</code>; a length</td>
       <td>Run the text beside the resource: it sits at that side of its column, and the lines beside it are set to the measure left over, <code>wrapGap</code> clear of its box (caption included), then return to the full measure under it. An inline (<code>"here"</code>) embed and a one-column float at the head or foot of a column take it; page-span, multi-column, side-column and turned floats keep their band. The resource takes <code>width</code> of the column, or <code>layout.wrap.defaultWidth</code> (0.45). <code>wrapGap</code> defaults to <code>layout.wrap.gap</code>, else one body line. See <a href="#text-wrap">Text wrap</a>. Since postext 1.24.</td>
     </tr>
+    <tr>
+      <td><code>citingPage</code></td>
+      <td><code>true</code> · <code>false</code>, default <code>false</code></td>
+      <td>Let a <code>"top"</code> or <code>"auto"</code> float take the head of the page (a page-span float) or of the column (a column float, across <code>columns</code> too) where the line that first cites it lands, as LaTeX's <code>t</code> placement does, instead of the first free slot after that line. The text above the reference moves down under the float. It does so only when the float fits there within <code>layout.maxTopFraction</code> of the column (0.7 by default), when the earlier floats of its numbering sequence are already set, when no explicit break opens the page (a chapter's first page, a part, a <code>:::pagebreak</code>) and nothing spanning the page stands above the citing line, and when, so set, the citing line still lands on that page (in a column the float heads); otherwise the float takes its usual slot. Turned floats, side-column floats and the rest of a table split across pages never move this way. Default: the type's <code>defaultPlacement</code>, then <code>layout.floatsAtCitingPage</code>. Since postext 1.25.</td>
+    </tr>
   </tbody>
 </table>
 
-A float goes into the **first free slot after its first reference**, in reading order: the bottom of the column the reference sits in, then the top and the bottom of the next empty column of the same page, then the bands of the next page the flow opens (a page-span float takes the bottom of the page when every column still has room for it, else a band of the next page). A page an inline figure or table opens counts too: a float waiting for that page takes its head, above the figure or table, when both fit on it; when they do not, the figure or table keeps the page and the float waits for the next one. Up to postext 1.4 such a page was skipped, and the float waited for the page after it even when both fitted. It is set at its size unless its `shrink` lets it scale to the room of a slot (see the table above), and it never lands before its reference. Floats of one numbering sequence appear in reference order: a figure that fits nowhere on a page holds up the figures behind it (a waiting table does not hold up a figure, nor the other way round), so figure 12 never appears before figure 11. A table that would otherwise wait is cut instead: offered the head of an empty column, it takes the rows that fit and continues in the next slot — the column beside it or the next page — with its header rows repeated (see `tableStyle.overflow`).
+A float goes into the **first free slot after its first reference**, in reading order: the bottom of the column the reference sits in, then the top and the bottom of the next empty column of the same page, then the bands of the next page the flow opens (a page-span float takes the bottom of the page when every column still has room for it, else a band of the next page). A page an inline figure or table opens counts too: a float waiting for that page takes its head, above the figure or table, when both fit on it; when they do not, the figure or table keeps the page and the float waits for the next one. Up to postext 1.4 such a page was skipped, and the float waited for the page after it even when both fitted. It is set at its size unless its `shrink` lets it scale to the room of a slot (see the table above), and it never lands before its reference. Floats of one numbering sequence appear in reference order: a figure that fits nowhere on a page holds up the figures behind it (a waiting table does not hold up a figure, nor the other way round), so figure 12 never appears before figure 11. A table that would otherwise wait is cut instead: offered the head of an empty column, it takes the rows that fit and continues in the next slot — the column beside it or the next page — with its header rows repeated (see `tableStyle.overflow`). A `top` or `auto` float with `citingPage` on may instead head the page (or the column) where its citing line lands, the text above the reference moving down under it: it is then painted above its reference on the same page, never on an earlier one, and still read after it in a tagged PDF and in the HTML. The engine settles this over a few extra passes and keeps it only while the citing line stays on that page.
 
 Floats never escape their chapter: at a chapter opener (a heading level with `breakBefore` or `span: 'page'`), a `:::part`, a callout style with `floatBarrier: true` (the closing "key points" box of a chapter) and at the end of the document, every float still pending is placed first — in the page's free slots, or on pages opened ahead of the boundary. A float first cited by the opener itself (a chapter title that names its figure), or by the first block after a `:::part`, belongs to the new chapter: it lands after that line, like any other. A figure or table that asked for the head of a page may then take the foot of the chapter's closing page, under its balanced columns, rather than a page of its own. A `:::pagebreak` simply sends pending floats to the page that follows it.
+
+Under a page-wide opener set over two or more text columns, the opener's own column counts as empty at its head while nothing follows the opener in it: a floated box fenced right after the opener, or a resource embedded there with `::resource`, takes the head of the first column, under the opener and level with the heads of the other columns (across several columns from it with `columns`), and the column's text starts under it. A float cited in running text still follows its citing line. Up to postext 1.24 the first column offered no slot there and such a float landed from the second column on; `layout.floatsUnderOpener: false` keeps that (see [Configuration › Layout](/en/docs/configuration#layout)).
+
+Side boxes (`span="side"`) keep to their chapter too. A box the side column of its page cannot hold takes the side column of the next page; where the chapter, or the document, ends first, each box still waiting is set in the side column of a page opened after the text, in the order of their fences, and a side figure cited after them stands behind them. Such a page holds no text, so the build reports every box and figure on it (`afterText`). A box taller than an empty side column is set anyway and reported (`calloutOverflow`), and anything that still finds no page is reported too (`unplaced`) rather than dropped. Up to postext 1.24 only the first of those pages was opened and the boxes left were lost without a warning.
 
 Float bands are corrected against the baseline grid so the surrounding text keeps the page-wide vertical rhythm. A **top** band grows its bottom margin to the next grid line, so the text below the float stays aligned with the neighbouring columns and the facing page. A **bottom** float is anchored so its caption's last line shares a baseline with the last text line of the other columns (captionless content aligns its bottom edge to the last grid slot) — full pages therefore end at the same height across columns and across facing pages.
 

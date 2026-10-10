@@ -182,3 +182,43 @@ describe('justified design text in the PDF (EF-109)', () => {
     expect(x).toBeCloseTo(block.bbox.x + block.bbox.width, 3);
   });
 });
+
+describe('a float under a page-span opener in the PDF (#639)', () => {
+  it('strokes the rule of the opener\'s column from under the float, never through it', async () => {
+    const config: PostextConfig = {
+      page: { width: pt(800), height: pt(600), margins: { top: pt(30), bottom: pt(30), left: pt(30), right: pt(30) } },
+      layout: { layoutType: 'multiple', columnCount: 4, gutterWidth: pt(12), columnRule: { enabled: true, color: hex('#2266aa'), lineWidth: pt(1) } },
+      locale: 'en-us',
+      header: { elements: [] },
+      footer: { elements: [] },
+      headings: { levels: [{ level: 1, span: 'page', breakBefore: { enabled: false } }] },
+      calloutStyles: [{ id: 'note' }],
+    };
+    const md = `# Opener\n\n:::callout{type="note" placement="top" columns="2"}\nA box across two columns, under the opener.\n:::\n\n${BODY}\n\n${BODY}\n\n${BODY}`;
+    const doc = buildDocument({ markdown: md }, config);
+    const page = doc.pages[0]!;
+    const frame = page.floats!.find((b) => b.type === 'callout')!;
+    // The box heads columns 1 and 2; column 1 records where its band ends.
+    expect(frame.bbox.x).toBeCloseTo(page.columns[0]!.bbox.x, 3);
+    const foot = page.columns[0]!.headFloatFoot!;
+    expect(foot).toBeGreaterThan(frame.bbox.y + frame.bbox.height - 0.01);
+    const segments = columnRuleSegments(page.columns);
+    expect(segments).toHaveLength(3);
+    expect(segments[0]!.top).toBeCloseTo(foot, 3);
+
+    const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider, accessible: false, outlines: false }));
+    const vertical = strokedLines(pageContent(pdf.getPage(0)))
+      .filter((l) => Math.abs(l.x1 - l.x2) < 0.01 && l.rgb === '0.133 0.400 0.667');
+    expect(vertical).toHaveLength(3);
+    const scale = 72 / doc.config.page.dpi;
+    const heightPt = pdf.getPage(0).getHeight();
+    for (const seg of segments) {
+      const line = vertical.find((l) => Math.abs(l.x1 - seg.x * scale) < 0.01)!;
+      expect(line).toBeDefined();
+      expect(Math.max(line.y1, line.y2)).toBeCloseTo(heightPt - seg.top * scale, 2);
+    }
+    // The first gutter's rule starts under the box.
+    const first = vertical.find((l) => Math.abs(l.x1 - segments[0]!.x * scale) < 0.01)!;
+    expect(heightPt - Math.max(first.y1, first.y2)).toBeGreaterThan((frame.bbox.y + frame.bbox.height) * scale - 0.01);
+  }, 60_000);
+});

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "newspaper-front-page",
-  "sourceHash": "eb1d15f115951857623a75a21a3d6005bb55db7d8622fcb67f72bff6acc935bb",
+  "sourceHash": "992ef1830f99dc00f523d7d6caa3d9eaf182017374bd7b834c0a81464c24db86",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.24.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.203Z",
+  "capturedAt": "2026-10-09T21:08:28.803Z",
   "variants": {
     "en": {
-      "hash8": "aee917ba",
-      "vdtHash": "644a18bf31dec623c4df2fa15227455ffe9d8baf",
+      "hash8": "8965ce04",
+      "vdtHash": "09ecca8a345c42b910663f23feb1eb91c8d953dc",
       "timings": {
-        "importMs": 156,
-        "fontsMs": 67,
-        "buildMs": 34,
-        "totalMs": 927,
+        "importMs": 296,
+        "fontsMs": 86,
+        "buildMs": 33,
+        "totalMs": 1113,
         "builds": 2
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "PT Serif"
         ],
         "pages": 2,
-        "ownLines": 237
+        "ownLines": 238
       },
       "pages": [
         {
@@ -61,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 181208,
+          "bytes": 184068,
           "alt": "Opening page 2: Town & Valley. The rebuilt pier. Its new concrete footing (red) goes six metres below the riverbed. Both arches were relaid with their own stones. · The next five days · How the wards voted."
         }
       ],
@@ -89,7 +89,7 @@
       },
       "sandbox": {
         "file": "newspaper-front-page.postext",
-        "bytes": 200459,
+        "bytes": 200644,
         "folio": "7d33b710"
       },
       "detected": {
@@ -372,11 +372,17 @@
         "converged": true,
         "iterationCount": 2,
         "looseLines": {
-          "count": 0,
-          "share": 0,
-          "worst": 1.6
+          "count": 1,
+          "share": 0.0152,
+          "worst": 1.75
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

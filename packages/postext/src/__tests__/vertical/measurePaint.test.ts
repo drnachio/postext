@@ -256,7 +256,11 @@ describe('vertical text: what stands upright on the sheet is measured horizontal
   });
 
   it('measures running heads, which stay horizontal on the sheet, as horizontal text', () => {
+    // Set at the glyphs' own advances (`composeDesignText: false`): the
+    // CJK composer (#637) gives · a full-width box in horizontal Chinese
+    // text too, which a vertical cell would also be.
     const doc = buildDocument({ markdown: '此開卷第一回也。' }, config('zh-Hant', 'left', {
+      cjk: { punctuationWidth: 'fullwidth', compressAdjacent: false, trimLineStart: false, latinSpacing: { value: 0, unit: 'em' }, composeDesignText: false },
       header: {
         elements: [{
           kind: 'text', id: 'rh', overflow: 'clip', fontSize: pt(8), content: '紅樓夢·第一回',
@@ -271,6 +275,17 @@ describe('vertical text: what stands upright on the sheet is measured horizontal
     const em = Number(/(\d*\.?\d+)px/.exec(text.fontString)![1]);
     // 紅樓夢 and 第一回 one em each, · half an em (the stub): not a cell.
     expect(text.lines[0]!.width).toBeCloseTo(6 * em + em / 2);
+    // Composed (the default): · in its Chinese box, one em.
+    const composed = buildDocument({ markdown: '此開卷第一回也。' }, config('zh-Hant', 'left', {
+      header: {
+        elements: [{
+          kind: 'text', id: 'rh', overflow: 'clip', fontSize: pt(8), content: '紅樓夢·第一回',
+          placement: { anchor: { to: 'container', edge: 'bottom-left' }, size: { width: 'fill' } },
+        }],
+      } as PostextConfig['header'],
+    })).pages[0]!.header!.blocks.find((b) => b.kind === 'text')!;
+    if (composed.kind !== 'text') return;
+    expect(composed.lines[0]!.width).toBeCloseTo(7 * em);
   });
 });
 

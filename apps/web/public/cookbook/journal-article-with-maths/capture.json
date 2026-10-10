@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "journal-article-with-maths",
-  "sourceHash": "74b61aa33f61f60f271eb25dccccd5e0c3679779fe9dba7efd8a948ee499fea2",
+  "sourceHash": "e84dcc597560f69c05aaa0e38700b5382f5420e3e3355b2436a1d1fcbff55348",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.24.0",
+    "postextPdf": "1.24.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.049Z",
+  "capturedAt": "2026-10-09T21:08:28.777Z",
   "variants": {
     "en": {
-      "hash8": "26f519f0",
+      "hash8": "4d52cfcd",
       "vdtHash": "3c2875ea9a7bbcc435c26811a2f5bed589308737",
       "timings": {
-        "importMs": 298,
-        "fontsMs": 120,
-        "buildMs": 49,
-        "totalMs": 1202,
+        "importMs": 28355,
+        "fontsMs": 10390,
+        "buildMs": 44,
+        "totalMs": 39627,
         "builds": 2
       },
       "specimen": {
@@ -73,7 +73,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 187012,
+          "bytes": 186638,
           "alt": "Page 215: 4 Results. Table 1. Measured and predicted periods of the one-metre pendulum, in seconds, and their excess and residual in per cent. · Figure 2. The period against the amplitude, as a ratio to T0: Eq. (6) (solid), the first two terms of Eq. (7) (dashed) and the measu…"
         },
         {
@@ -116,12 +116,12 @@
       },
       "pdf": {
         "file": "journal-article-with-maths.pdf",
-        "bytes": 281425,
+        "bytes": 280511,
         "pages": 4
       },
       "sandbox": {
         "file": "journal-article-with-maths.postext",
-        "bytes": 45096,
+        "bytes": 45081,
         "folio": "ba291173"
       },
       "detected": {
@@ -298,7 +298,6 @@
           "tableStyle",
           "tableStyle.bodyFontSize",
           "tableStyle.borderColor",
-          "tableStyle.borderWidth",
           "tableStyle.cellPadding",
           "tableStyle.headerBackgroundEnabled",
           "tableStyle.headerColor",
@@ -323,7 +322,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 455,
+        "configLeaves": 454,
         "designElements": 21,
         "directives": [
           ":::callout",
@@ -433,7 +432,13 @@
           "share": 0,
           "worst": 1.93
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "C21",
+            "severity": "warn",
+            "detail": "the pen took 39.6 s to finish (warning at 30 s)"
+          }
+        ]
       }
     }
   }

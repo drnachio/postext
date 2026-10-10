@@ -126,6 +126,24 @@ describe('design text runs and outlines in the PDF backend (EF-25)', () => {
     expect(content).not.toMatch(/ Tr\n/);
   });
 
+  it('paints a run whose width is its box at x + inkOffset (#637)', async () => {
+    // A CJK mark that gave up the blank before its glyph: its box 10 px
+    // wide, its glyph painted 10 px before it; the run after it starts at
+    // the box's end.
+    const { content } = await render({ bbox: { x: 0, y: 0, width: 612, height: 792 }, blocks: [block({
+      lines: [{
+        text: 'a(b', xOffset: 0, baselineY: 96, width: 40,
+        runs: [
+          { text: 'a', fontString: '20px Fraunces', width: 20 },
+          { text: '(', fontString: '20px Fraunces', width: 10, inkOffset: -10 },
+          { text: 'b', fontString: '20px Fraunces', width: 10 },
+        ],
+      }],
+    })] } as unknown as VDTDesignSlot);
+    const tm = [...content.matchAll(/1 0 0 1 ([\d.]+) ([\d.]+) Tm/g)].map((m) => [Number(m[1]), Number(m[2])]);
+    expect(tm).toEqual([[72, 696], [82, 696], [102, 696]]);
+  });
+
   it('strokes the glyphs over the fill (render mode 2), or alone for hollow letters (mode 1)', async () => {
     const stroke = { widthPx: 2, color: '#aa0000' };
     const filled = await render({ bbox: { x: 0, y: 0, width: 612, height: 792 }, blocks: [block({ stroke, lines: [{ text: '1863', xOffset: 0, baselineY: 96, width: 60 }] })] } as unknown as VDTDesignSlot);

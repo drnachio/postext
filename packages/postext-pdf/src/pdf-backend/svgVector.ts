@@ -24,7 +24,8 @@
  * not loaded such text bails out to the raster embed.
  *
  * Anything else — images, gradients, patterns, masks, filters, markers,
- * symbols, nested `svg`, style sheets, `objectBoundingBox` clips, text on a
+ * symbols, nested `svg`, style sheets (other than `@font-face` rules alone,
+ * which are skipped), `objectBoundingBox` clips, text on a
  * path or with per-glyph positioning, text in a font the resolver cannot
  * provide — makes {@link svgToVectorDrawing} return `null`, and the caller
  * falls back to a raster embed. Bailing out (rather than drawing an
@@ -83,6 +84,7 @@ import { isPrintMode, modeKey } from '../print/colorMode';
 import { applyPrintPass, overprintStateDict } from '../print/printPass';
 import { shapedSvgText } from './shapedText';
 import { complexShaperReady, needsComplexShaping } from '../complexShaping';
+import { isFontFaceOnlyStyleSheet } from 'postext';
 
 // ---------------------------------------------------------------- IR types
 
@@ -1267,7 +1269,11 @@ function walk(w: Walker, el: XmlEl, ctm: Matrix, parentStyle: Style, clips: Vect
   const { local, foreign } = localName(el.name);
   if (foreign) return; // inkscape:*, sodipodi:*, rdf:* …
   if (SKIPPED.has(local)) {
-    if (local === 'style' && el.hasText) unsupported('style sheet');
+    // A sheet of `@font-face` rules only (the faces an author embedded,
+    // #630) changes no geometry: its text is set in the embedded fonts.
+    if (local === 'style' && el.hasText && !isFontFaceOnlyStyleSheet(el.content.filter((c): c is string => typeof c === 'string').join(''))) {
+      unsupported('style sheet');
+    }
     return;
   }
   const attrs = el.attrs;

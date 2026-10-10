@@ -37,7 +37,7 @@ const config: PostextConfig = { page: { sizePreset: '17x24', dpi: 100 }, layout:
 
 /** The side-heads repro: the figure is cited on page 1, three paragraphs
  *  later an inline table does not fit page 1 and opens page 2. */
-const build = (fig: Resource, rows = 12, before = 3): VDTDocument => {
+const build = (fig: Resource, rows = 12, before = 3, extra: PostextConfig = {}): VDTDocument => {
   const paras = [
     ...Array.from({ length: 5 }, (_, i) => para(60, i)),
     `See :ref{id="fig"} for the layout. ${para(40, 9)}`,
@@ -45,7 +45,7 @@ const build = (fig: Resource, rows = 12, before = 3): VDTDocument => {
     '::resource{id="tab"}',
     ...Array.from({ length: 8 }, (_, i) => para(60, 40 + i)),
   ];
-  return buildDocument({ markdown: `# Title\n\n${paras.join('\n\n')}`, resources: [fig, table(rows)] }, config, createMeasurementCache());
+  return buildDocument({ markdown: `# Title\n\n${paras.join('\n\n')}`, resources: [fig, table(rows)] }, { ...config, ...extra }, createMeasurementCache());
 };
 
 const figurePage = (doc: VDTDocument): number => doc.pages.findIndex((p) => (p.floats ?? []).some((f) => f.id === 'float-fig'));
@@ -67,16 +67,29 @@ describe('a page an inline table opens takes the floats waiting for it (EF-160)'
     }
   });
 
-  it('leaves the head to the table when the two do not fit together', () => {
+  it('leaves the head to an unsplit table when the two do not fit together', () => {
     // A figure too tall to share page 2 with the table, and a table too
-    // long to share it with the figure: the table opens page 2 and the
-    // figure waits for page 3, as before.
+    // long to share it with the figure: a table that moves whole
+    // (`splitInline: false`, postext 1.24) opens page 2 and the figure
+    // waits for page 3.
     for (const [height, rows] of [[400, 12], [150, 20]] as const) {
-      const doc = build(figure(height), rows);
+      const doc = build(figure(height), rows, 3, { tableStyle: { splitInline: false } });
       const tab = tableBlock(doc);
       expect(tab.pageIndex, `${height}/${rows}`).toBe(1);
       expect(tab.bbox.y).toBeCloseTo(doc.pages[1]!.contentArea.y, 0);
       expect(figurePage(doc), `${height}/${rows}`).toBe(2);
     }
+  });
+
+  it('a table that splits holds only its first slice: the figure heads the page and the table goes on under it (#634)', () => {
+    const doc = build(figure(150), 20);
+    const slices = doc.blocks.filter((b) => b.type === 'resource' && b.resourceBlock?.resource.id === 'tab');
+    expect(slices.length).toBeGreaterThan(1);
+    const fig = doc.pages[figurePage(doc)]!.floats!.find((f) => f.id === 'float-fig')!;
+    const under = slices.find((b) => b.pageIndex === figurePage(doc))!;
+    expect(under).toBeDefined();
+    expect(fig.bbox.y + fig.bbox.height).toBeLessThanOrEqual(under.bbox.y);
+    // No page before the figure's is left to the table alone.
+    expect(slices[0]!.pageIndex).toBeLessThanOrEqual(figurePage(doc));
   });
 });

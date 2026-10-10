@@ -322,7 +322,7 @@ Keep the lantern lit **every** night.
 :::
 ```
 
-Quatro nomes de contêiner são reconhecidos no fluxo do texto (um quinto, `:::columns`, só funciona dentro de um boxe e é descrito abaixo). O que cada um produz é definido na sua própria seção da configuração:
+Cinco nomes de contêiner são reconhecidos no fluxo do texto. O que cada um produz é definido na sua própria seção da configuração:
 
 <table>
   <thead>
@@ -347,6 +347,10 @@ Quatro nomes de contêiner são reconhecidos no fluxo do texto (um quinto, `:::c
     <tr>
       <td><code>:::paper&#123;…&#125;</code> … <code>:::</code></td>
       <td>Uma sequência de páginas impressas em outro papel, como um caderno de pranchas em papel brilhante dentro de um livro em papel fosco. Só o visualizador Folio mostra isso.</td>
+    </tr>
+    <tr>
+      <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
+      <td>Blocos compostos em colunas próprias: dentro de um boxe, na coluna de texto ou ao longo de uma página de várias colunas. Veja <a href="#columns"><code>:::columns</code></a> abaixo.</td>
     </tr>
   </tbody>
 </table>
@@ -383,7 +387,44 @@ Uma cerca não precisa de uma linha em branco antes dela: uma cerca de abertura 
 
 ### `:::columns`
 
-Dentro de um `:::callout`, um grupo `:::columns{count=2}` … `:::` compõe os blocos entre as suas cercas em `count` colunas de mesma largura (separadas pelo `columnGap` do estilo): a sequência é cortada onde as colunas ficam mais niveladas (entre blocos, ou entre as linhas de um parágrafo ou item de lista, cujo final continua no topo da coluna seguinte sem o marcador), e o boxe cresce até a altura da coluna mais alta. Os blocos depois do grupo voltam a ocupar a largura inteira. Fora de um boxe, as cercas são ignoradas e os blocos fluem normalmente. Um atributo `breaks` fixa o início das colunas em vez de balanceá-las: `:::columns{count=2 breaks="4"}` abre a segunda coluna no quarto bloco do grupo (uma lista separada por vírgulas para mais colunas), sem corte dentro de um parágrafo: uma coluna de texto ao lado de uma coluna de figura.
+Um grupo `:::columns{count=2}` … `:::` compõe os blocos entre as suas cercas em `count` colunas de mesma largura (de 2 a 6), e o texto depois dele volta a ocupar a largura inteira. Dentro de um `:::callout`, as colunas dividem a largura interna do boxe, separadas pelo `columnGap` do estilo, com a tipografia de corpo e de listas do boxe, e o boxe cresce até a altura da coluna mais alta. No texto corrido (desde o postext 1.25), elas dividem a coluna de texto, separadas por uma linha do corpo, e os blocos mantêm a tipografia do próprio texto; com `span="page"`, numa página de várias colunas, o grupo corta a página em uma faixa, como um boxe de largura total: as colunas acima dele terminam niveladas, o grupo é composto na largura do conteúdo (separado pela medianiz) e o texto continua em todas as colunas embaixo dele. Numa página de uma coluna, `span="page"` o compõe na coluna. Os títulos dentro de um grupo mantêm o seu estilo, o seu número e a sua entrada no sumário, uma nota de rodapé citada nele vai para o pé da coluna de texto, e as figuras que ele cita flutuam normalmente.
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '160px' }}>Atributo</th>
+      <th>Efeito</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>count</code></td>
+      <td>Quantas colunas, de 2 a 6. Padrão: 2.</td>
+    </tr>
+    <tr>
+      <td><code>gap</code></td>
+      <td>O espaço entre as colunas, um comprimento (<code>12pt</code>, <code>1em</code>, <code>4mm</code>). Padrão: o <code>columnGap</code> do estilo do boxe num boxe, uma linha do corpo na coluna de texto, <code>layout.gutterWidth</code> ao longo da página.</td>
+    </tr>
+    <tr>
+      <td><code>rule</code></td>
+      <td>Traça um fio ao longo de cada espaço, na cor e na espessura de <code>layout.columnRule</code>: <code>:::columns&#123;count=3 rule&#125;</code>.</td>
+    </tr>
+    <tr>
+      <td><code>breaks</code></td>
+      <td>Os blocos que abrem cada coluna depois da primeira, em vez de balancear: <code>breaks="4"</code> abre a segunda coluna no quarto bloco do grupo (uma lista separada por vírgulas para mais colunas). Veja abaixo como ele conta.</td>
+    </tr>
+    <tr>
+      <td><code>flow</code></td>
+      <td>Como continua um grupo que não cabe: <code>snake</code> (o padrão sem <code>breaks</code>) ou <code>parallel</code> (o padrão com <code>breaks</code>). Veja <a href="#dividir-um-grupo">Dividir um grupo</a>.</td>
+    </tr>
+    <tr>
+      <td><code>span</code></td>
+      <td>Só no texto corrido: <code>column</code> (o padrão) ou <code>page</code>.</td>
+    </tr>
+  </tbody>
+</table>
+
+Um grupo composto inteiro é cortado onde as suas colunas ficam mais niveladas (entre blocos, ou entre as linhas de um parágrafo ou item de lista, cujo final continua no topo da coluna seguinte sem o marcador), a menos que `breaks` fixe o início das colunas, sem corte dentro de um parágrafo: uma coluna de texto ao lado de uma coluna de figura.
 
 ```md
 :::callout{type="summary"}
@@ -420,6 +461,27 @@ El farero duerme de día.
 ```
 
 Aqui o quarto bloco, “La lámpara…”, abre a segunda coluna; as duas linhas `:::space` não são contadas e deixam o mesmo espaço nas duas colunas.
+
+#### Dividir um grupo
+
+Desde o postext 1.25, um grupo que não cabe no espaço que tem (o resto da sua coluna no texto corrido, ou a parte de um boxe que se divide: `keepTogether: false`, ou um boxe mais alto que uma coluna) é cortado entre as suas colunas e continua na coluna ou página seguinte, num boxe próprio quando o grupo está num boxe:
+
+- **`flow="snake"`**, o padrão sem `breaks`: os blocos do grupo correm como um único granel, como o texto de uma matéria de jornal. Uma parte que continua preenche as suas colunas uma após a outra, tão niveladas quanto os cortes permitem, cortando entre blocos ou entre as linhas de um parágrafo ou item de lista (pelo menos `layout.boxChildSplitMinLines` linhas dele de cada lado, duas por padrão); a última parte é balanceada como um grupo inteiro.
+- **`flow="parallel"`**, o padrão com `breaks`: cada sequência que os `breaks` iniciam é um fluxo que mantém a sua própria coluna. Uma parte preenche todos os fluxos até o espaço que tem, e cada um continua na mesma coluna da parte seguinte, de modo que um poema e a sua tradução postos lado a lado ficam nivelados estrofe por estrofe. Um grupo paralelo sem `breaks` continua como um grupo `snake`.
+
+Um boxe aninhado num grupo fica inteiro e passa para a parte seguinte, e um grupo dentro de um boxe aninhado nunca é cortado. Um grupo que cabe é composto exatamente como antes. `layout.flowColumns: false` mantém as regras do postext 1.24: uma cerca fora de um boxe é ignorada e um grupo nunca é cortado; os livros salvos antes da 1.25 que têm um grupo `:::columns` são lidos assim. O Sandbox avisa de um `flow` que não conhece (**Fluxo de colunas desconhecido**) e de colunas mais estreitas que seis emes do seu texto (**Colunas estreitas demais**).
+
+```md
+## Notas breves
+
+:::columns{count=3 span="page" rule}
+**Porto.** O novo cais abre na segunda-feira…
+
+**Mercado.** O aluguel das bancas não muda…
+
+**Tempo.** Chuva vinda do oeste ao fim da tarde…
+:::
+```
 
 Uma cerca `:::callout` também aceita `label="…"`: o texto que um estilo com uma aba `label` imprime no canto superior do boxe (`:::callout{type="box" label="BOX 1-1" title="The octet rule"}`).
 
@@ -1117,7 +1179,7 @@ As [@garcia2020, p. 33] shows, reading on paper is faster [see @lopez2019, chap.
 ```
 
 - **`[@key]`** cita entre parênteses; várias obras vão num mesmo par de colchetes, separadas por `;`.
-- **Localizador:** depois de uma vírgula, `p. 33`, `pp. 4–6`, `chap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `l. 4`, `§ 4.2`; um número sozinho é uma página. As palavras em espanhol (`pág.`, `cap.`) e em chinês (`页`, `章`) também funcionam.
+- **Localizador:** depois de uma vírgula, `p. 33`, `pp. 4–6`, `chap. 2`, `sec. IV`, `fig. 3`, `vol. 2`, `n. 12`, `l. 4`, `§ 4.2`; um número sozinho é uma página. As palavras em espanhol (`pág.`, `cap.`) e em chinês (`页`, `章`) também funcionam. Um intervalo leva meia-risca ou os dois hífens do TeX: `pp. 4--6` imprime *4–6*.
 - **Prefixo e sufixo:** texto antes do `@` (`see`) e depois da chave ou do localizador (`, emphasis added`). O sufixo mantém a vírgula escrita antes dele, com ou sem localizador: `[@brown2020, inter alia]` imprime *(Brown et al., 2020, inter alia)*, como faz o Pandoc; escrito sem vírgula (`[@brown2020 inter alia]`), sai sem ela. A ênfase num prefixo ou num sufixo é composta como ênfase em todos os estilos: `[*e.g.*, @brown2020, *inter alia*]`.
 - **`[-@key]`** omite o autor, para uma frase que já o nomeia.
 - **`@key`** cita dentro da frase (*García (2020)*); `@key [p. 4]` acrescenta um localizador.
@@ -1478,7 +1540,7 @@ Cada recurso tem um **posicionamento** que decide onde o flutuante fica, resolvi
     <tr>
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (o padrão) ocupa o primeiro espaço livre depois da referência, no topo ou no pé; <code>"top"</code> / <code>"bottom"</code> só aceitam espaços desse tipo; <code>"here"</code> desativa a flutuação e insere o recurso em linha na diretiva <code>::resource</code>.</td>
+      <td><code>"auto"</code> (o padrão) ocupa o primeiro espaço livre depois da referência, no topo ou no pé; <code>"top"</code> / <code>"bottom"</code> só aceitam espaços desse tipo; <code>"here"</code> desativa a flutuação e insere o recurso em linha na diretiva <code>::resource</code> (uma tabela posicionada aí é cortada entre linhas quando não cabe no resto da sua coluna; veja <a href="/pt/docs/configuration#tabelas-mais-altas-que-a-página">Tabelas mais altas que a página</a>).</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
@@ -1520,12 +1582,21 @@ Cada recurso tem um **posicionamento** que decide onde o flutuante fica, resolvi
       <td><code>"none"</code> · <code>"left"</code> · <code>"right"</code> · <code>"start"</code> · <code>"end"</code>; um comprimento</td>
       <td>Compõe o texto ao lado do recurso: ele fica naquele lado da coluna, e as linhas ao lado são ajustadas à medida que sobra, a <code>wrapGap</code> da caixa dele (legenda incluída), e voltam à medida inteira embaixo. Vale para uma inserção em linha (<code>"here"</code>) e para um flutuante de uma coluna no alto ou no pé de uma coluna; flutuantes de página, de várias colunas, da coluna lateral e girados mantêm a faixa. O recurso ocupa <code>width</code> da coluna, ou <code>layout.wrap.defaultWidth</code> (0,45). <code>wrapGap</code> tem como padrão <code>layout.wrap.gap</code>, ou uma linha do corpo. Veja <a href="#contorno-de-texto">Contorno de texto</a>. Desde o postext 1.24.</td>
     </tr>
+    <tr>
+      <td><code>citingPage</code></td>
+      <td><code>true</code> · <code>false</code>, padrão <code>false</code></td>
+      <td>Deixa um flutuante <code>"top"</code> ou <code>"auto"</code> ocupar o topo da página (um flutuante na largura da página) ou da coluna (um flutuante de coluna, também na largura de <code>columns</code>) onde cai a linha que o cita pela primeira vez, como faz o posicionamento <code>t</code> do LaTeX, em vez do primeiro espaço livre depois dessa linha. O texto acima da referência desce para baixo do flutuante. Só faz isso quando o flutuante cabe ali dentro de <code>layout.maxTopFraction</code> da coluna (0,7 por padrão), quando os flutuantes anteriores da sua sequência de numeração já estão posicionados, quando nenhuma quebra explícita abre a página (a primeira página de um capítulo, uma parte, um <code>:::pagebreak</code>) e nada na largura da página fica acima da linha que o cita, e quando, assim posicionado, a linha que o cita continua caindo nessa página (numa coluna que o flutuante encabeça); senão, o flutuante ocupa o seu espaço habitual. Flutuantes girados, os da coluna lateral e o resto de uma tabela dividida entre páginas nunca se movem assim. Padrão: o <code>defaultPlacement</code> do tipo e depois <code>layout.floatsAtCitingPage</code>. Desde o postext 1.25.</td>
+    </tr>
   </tbody>
 </table>
 
-Um flutuante vai para o **primeiro espaço livre depois da sua primeira referência**, na ordem de leitura: o pé da coluna em que está a referência, depois o topo e o pé da próxima coluna vazia da mesma página, depois as faixas da próxima página que o fluxo abre (um flutuante que ocupa a página fica no pé da página quando todas as colunas ainda têm espaço para ele; caso contrário, numa faixa da página seguinte). Uma página aberta por uma figura ou tabela em linha também conta: um flutuante à espera dessa página ocupa o topo dela, acima da figura ou tabela, quando os dois cabem nela; quando não cabem, a figura ou tabela fica com a página e o flutuante espera a seguinte. Até o postext 1.4, essa página era pulada, e o flutuante esperava a página depois dela mesmo quando os dois cabiam. Ele é composto no seu tamanho, a menos que o seu `shrink` o deixe reduzir-se ao espaço de uma posição (veja a tabela acima), e nunca fica antes da sua referência. Os flutuantes de uma mesma sequência de numeração aparecem na ordem das referências: uma figura que não cabe em lugar nenhum de uma página segura as figuras que vêm atrás dela (uma tabela à espera não segura uma figura, nem o contrário), de modo que a figura 12 nunca aparece antes da figura 11. Uma tabela que, sem isso, teria de esperar é cortada: quando lhe é oferecido o topo de uma coluna vazia, ela ocupa as linhas que cabem e continua no espaço seguinte (a coluna ao lado ou a próxima página), com as linhas de cabeçalho repetidas (veja `tableStyle.overflow`).
+Um flutuante vai para o **primeiro espaço livre depois da sua primeira referência**, na ordem de leitura: o pé da coluna em que está a referência, depois o topo e o pé da próxima coluna vazia da mesma página, depois as faixas da próxima página que o fluxo abre (um flutuante que ocupa a página fica no pé da página quando todas as colunas ainda têm espaço para ele; caso contrário, numa faixa da página seguinte). Uma página aberta por uma figura ou tabela em linha também conta: um flutuante à espera dessa página ocupa o topo dela, acima da figura ou tabela, quando os dois cabem nela; quando não cabem, a figura ou tabela fica com a página e o flutuante espera a seguinte. Até o postext 1.4, essa página era pulada, e o flutuante esperava a página depois dela mesmo quando os dois cabiam. Ele é composto no seu tamanho, a menos que o seu `shrink` o deixe reduzir-se ao espaço de uma posição (veja a tabela acima), e nunca fica antes da sua referência. Os flutuantes de uma mesma sequência de numeração aparecem na ordem das referências: uma figura que não cabe em lugar nenhum de uma página segura as figuras que vêm atrás dela (uma tabela à espera não segura uma figura, nem o contrário), de modo que a figura 12 nunca aparece antes da figura 11. Uma tabela que, sem isso, teria de esperar é cortada: quando lhe é oferecido o topo de uma coluna vazia, ela ocupa as linhas que cabem e continua no espaço seguinte (a coluna ao lado ou a próxima página), com as linhas de cabeçalho repetidas (veja `tableStyle.overflow`). Um flutuante `top` ou `auto` com `citingPage` ligado pode, em vez disso, encabeçar a página (ou a coluna) onde cai a linha que o cita, e o texto acima da referência desce para baixo dele: fica pintado acima da sua referência na mesma página, nunca numa anterior, e num PDF etiquetado e no HTML continua sendo lido depois dela. O motor resolve isso em algumas passadas a mais e só o mantém enquanto a linha que o cita continuar nessa página.
 
 Os flutuantes nunca escapam do seu capítulo: numa abertura de capítulo (um nível de título com `breakBefore` ou `span: 'page'`), num `:::part`, num estilo de boxe com `floatBarrier: true` (o boxe de “pontos-chave” que fecha um capítulo) e no fim do documento, todo flutuante ainda pendente é posicionado antes, nos espaços livres da página ou em páginas abertas antes da fronteira. Um flutuante citado pela primeira vez pela própria abertura (um título de capítulo que nomeia sua figura), ou pelo primeiro bloco depois de um `:::part`, pertence ao capítulo novo: ele fica depois dessa linha, como qualquer outro. Uma figura ou tabela que pediu o topo de uma página pode então ocupar o pé da página de fechamento do capítulo, sob as colunas balanceadas, em vez de uma página só para ela. Um `:::pagebreak` simplesmente manda os flutuantes pendentes para a página que vem depois dele.
+
+Sob uma abertura de largura de página composta sobre duas ou mais colunas de texto, a coluna da própria abertura conta como vazia no topo enquanto nada vem depois da abertura nela: um boxe flutuante colocado logo depois da abertura, ou um recurso incorporado ali com `::resource`, ocupa o topo da primeira coluna, sob a abertura e na altura dos topos das outras colunas (em várias colunas a partir dela com `columns`), e o texto da coluna começa abaixo dele. Um flutuante citado no texto continua indo depois da linha que o cita. Até o postext 1.24 a primeira coluna não oferecia esse espaço e o flutuante caía a partir da segunda; `layout.floatsUnderOpener: false` mantém isso (veja [Configuração › Layout](/pt/docs/configuration#diagramação)).
+
+Os boxes laterais (`span="side"`) também não saem do seu capítulo. Um boxe que não cabe na coluna lateral da sua página ocupa a da página seguinte; se o capítulo, ou o documento, termina antes, cada boxe ainda à espera é composto na coluna lateral de uma página aberta depois do texto, na ordem dos seus delimitadores, e uma figura lateral citada depois deles fica atrás. Essa página não tem texto, então a diagramação avisa de cada boxe e figura que está nela (`afterText`). Um boxe mais alto que uma coluna lateral vazia é composto mesmo assim e avisado (`calloutOverflow`), e o que ainda assim não encontra página também é avisado (`unplaced`) em vez de sumir. Até o postext 1.24 só a primeira dessas páginas era aberta e os boxes restantes se perdiam sem aviso.
 
 As faixas de flutuantes são corrigidas em relação à grade de linhas de base para que o texto em volta mantenha o ritmo vertical da página inteira. Uma faixa **no topo** aumenta sua margem inferior até a próxima linha da grade, de modo que o texto abaixo do flutuante continua alinhado com as colunas vizinhas e com a página oposta. Um flutuante **no pé** é ancorado de modo que a última linha da legenda compartilhe uma linha de base com a última linha de texto das outras colunas (um conteúdo sem legenda alinha sua borda inferior à última posição da grade); as páginas cheias, portanto, terminam na mesma altura entre colunas e entre páginas opostas.
 

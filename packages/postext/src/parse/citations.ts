@@ -66,8 +66,10 @@ const LABELS: Readonly<Record<string, string>> = {
 
 /** One locator value: a number (`33`, `12a`) or a whole roman numeral. */
 const LOCATOR_TOKEN = /^(?:\p{N}+(?:[.:]\p{N}+)*[a-z]?|[ivxlcdm]+|[IVXLCDM]+)(?=$|[\s,;\-–—&)])/u;
-/** What joins two values of a locator: a dash, a comma, `&`, `and`, `y`. */
-const LOCATOR_JOIN = /^(?:\s*[-–—,&]\s*|\s+(?:and|y|e|et)\s+)/u;
+/** What joins two values of a locator: a dash, a comma, `&`, `and`, `y`.
+ *  A TeX double hyphen (`1--3`) is a range dash (#647); three hyphens are
+ *  not a join. */
+const LOCATOR_JOIN = /^(?:\s*(?:--(?!-)|[-–—,&])\s*|\s+(?:and|y|e|et)\s+)/u;
 
 /** The longest locator at the start of `text` ("12–14", "3, 5 and 7"):
  *  the characters it spans, or 0. */
@@ -111,7 +113,9 @@ export function parseLocator(rest: string): Pick<CitationItemInput, 'locator' | 
   if (length === 0 || (!label && !/^\p{N}/u.test(text))) {
     return text ? { suffix: `, ${(label ? word![0] : '') + text}` } : {};
   }
-  const locator = text.slice(0, length).trim();
+  // `1--3` is the range BibTeX and Pandoc users write: an en dash, as
+  // Pandoc's reader makes it (#647). A lone hyphen stays as written.
+  const locator = text.slice(0, length).trim().replace(/--/g, '–');
   let after = text.slice(length).trim();
   if (after.startsWith(',')) after = after.slice(1).trim();
   // A suffix after the locator keeps the comma it was written with.

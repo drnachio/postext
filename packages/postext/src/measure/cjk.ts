@@ -1,4 +1,4 @@
-import { cjkBreakAllowed, cjkClassOf, getCjkLineBreak, isCjkGrapheme, type CjkLineBreakLevel } from './cjkClasses';
+import { cjkBreakAllowed, cjkClassOf, getCjkLineBreak, isCjkGrapheme, isLabelEndProhibited, type CjkLineBreakLevel } from './cjkClasses';
 import { lastGrapheme } from './graphemes';
 
 /**
@@ -46,5 +46,7 @@ export function cjkJoinBreaks(left: string, right: string, level: CjkLineBreakLe
   const aCjk = CJK_RE.test(a);
   const bCjk = CJK_RE.test(b);
   if (!aCjk && !bCjk) return false;
+  // A circled number labels the text after it (#637).
+  if (isLabelEndProhibited(a, level)) return false;
   return cjkBreakAllowed(cjkClassOf(a), isCjkGrapheme(a), cjkClassOf(b), isCjkGrapheme(b), level, a, b);
 }

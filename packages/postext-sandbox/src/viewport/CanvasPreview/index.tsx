@@ -8,7 +8,7 @@ import { stitchDocuments, type StitchedBook } from '../../book/stitch';
 import type { ComposedBook } from '../../book/types';
 import { buildBookChapters, type HeldChapterDoc } from '../../book/buildBook';
 import { preflightInputs } from '../../print/preflightInputs';
-import { dimensionToPx, preflightDocument, renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue } from 'postext';
+import { dimensionToPx, preflightDocument, renderPageToCanvas, resolveDebugConfig, resolveDiagramStyleConfig, resolveColorValue, watchFonts, onFontsChanged } from 'postext';
 import type { BoundingBox, PrintPreview } from 'postext';
 import { previewFor, usePrintSetup } from '../../print/printSetup';
 import { usePrintPreview } from '../../print/printPreviewToggle';
@@ -409,17 +409,20 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     applyDisplaySize(displayWidth, displayHeight);
   }, [zoom, fitMode, applyDisplaySize]);
 
-  // Rebuild when any font finishes loading after the initial layout.
-  // document.fonts.ready only waits for *currently pending* faces; a face
-  // requested later (or one that slips past the preload) can land after the
-  // first measurement, poisoning the cache with fallback metrics. Bumping
-  // rebuildKey on loadingdone invalidates the measurement cache and triggers
-  // a fresh buildDocument with the now-loaded glyph widths.
+  // Rebuild when faces arrive after the initial layout. document.fonts.ready
+  // only waits for *currently pending* faces; a face requested later (or one
+  // that slips past the preload) can land after the first measurement. The
+  // engine's watch (#629) drops what was measured in those families, once
+  // a frame however many slices a burst brings, and bumping rebuildKey
+  // lays the pages out again with the real glyph widths.
   useEffect(() => {
     if (typeof document === 'undefined' || !document.fonts) return;
-    const onLoadingDone = () => setRebuildKey((k) => k + 1);
-    document.fonts.addEventListener('loadingdone', onLoadingDone);
-    return () => document.fonts.removeEventListener('loadingdone', onLoadingDone);
+    const stop = watchFonts(document.fonts);
+    const off = onFontsChanged(() => setRebuildKey((k) => k + 1));
+    return () => {
+      off();
+      stop();
+    };
   }, []);
 
   // BUILD effect — produces a new VDT document when the markdown, config, or
@@ -632,6 +635,8 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     if (!ds.singleInk) return null;
     return resolveColorValue(ds.inkColor, deferredConfig.colorPalette, ds.inkColor).hex;
   }, [deferredConfig]);
+  // SVG text in the book's fonts (#630) unless diagramStyle.inlineFonts is off.
+  const inlineSvgFonts = deferredConfig.diagramStyle?.inlineFonts !== false;
 
   // Decode resource image payloads (bitmaps/SVGs) from IndexedDB and register
   // them with the canvas backend, then repaint. The worker lays out from the
@@ -643,7 +648,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   // by the repaint of the call that supersedes it, or of the next build.
   useEffect(() => {
     let cancelled = false;
-    ensureResourceImages(deferredResources, diagramInkHex)
+    ensureResourceImages(deferredResources, diagramInkHex, { inlineFonts: inlineSvgFonts })
       .then((changed) => {
         if (!cancelled && changed) setPaintKey((k) => k + 1);
       })
@@ -651,7 +656,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     return () => {
       cancelled = true;
     };
-  }, [deferredResources, diagramInkHex]);
+  }, [deferredResources, diagramInkHex, inlineSvgFonts]);
 
   // LAYOUT effect — (re)builds the page DOM and repaints visible pages.
   // Runs when a new doc is produced, or when view mode changes. Resize is

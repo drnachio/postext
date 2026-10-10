@@ -140,6 +140,9 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
         closingBox: CLOSING_BOX_LEVERS.includes(partial.balancing.closingBox as ClosingBoxLever)
           ? partial.balancing.closingBox!
           : DEFAULT_COLUMN_BALANCING.closingBox,
+        // Absent unless `'off'` (#632), so every other configuration
+        // resolves as before.
+        ...(partial.balancing.gridLines === 'off' ? { gridLines: 'off' as const } : {}),
       }
     : { ...DEFAULT_COLUMN_BALANCING };
 

@@ -68,13 +68,11 @@ Llena un cajón cada vez, con verde y marrón en carretillas más o menos iguale
 
 Al voltearlo entra aire en el centro y la temperatura vuelve a subir: el cajón uno, volteado el 18 de marzo, pasaba de 60 °C dos días después. Cada semana, dos parcelas se encargan de la horca según el turno de la caseta. En septiembre cada parcela se llevará dos carretillas de compost, y el resto irá al bancal de la puerta.
 
-:::callout{type="bed" title="Dieciséis cuadros junto a la puerta"}
-:::columns{count=2 breaks="2"}
-El bancal de muestra de la puerta mide 1,2 metros de lado y tiene el mismo borde de tablones que los cajones. Este año lleva 15 centímetros de compost de la planta municipal; la próxima primavera llevará el nuestro. Unas cuerdas lo reparten en dieciséis cuadros de 30 centímetros, con una, cuatro, nueve o dieciséis plantas según el tamaño del cultivo. El 5.º B del colegio San Blas lo plantó el 20 de marzo y lleva su diario.
+#### Dieciséis cuadros junto a la puerta {style="kicker"}
 
 ::resource{id="bed"}
-:::
-:::
+
+El bancal de muestra de la puerta mide 1,2 metros de lado y tiene el mismo borde de tablones que los cajones. Este año lleva 15 centímetros de compost de la planta municipal; la próxima primavera llevará el nuestro. Unas cuerdas lo reparten en dieciséis cuadros de 30 centímetros, con una, cuatro, nueve o dieciséis plantas según el tamaño del cultivo. El 5.º B del colegio San Blas lo plantó el 20 de marzo y lleva su diario.
 
 :::columnbreak
 

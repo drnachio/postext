@@ -10,7 +10,7 @@
 
 import type { ContentBlock } from '../parse';
 import type { Resource, ResourceType } from '../types';
-import type { ResolvedResourceBlock, VDTLine } from '../vdt';
+import type { ResolvedConfig, ResolvedResourceBlock, VDTLine } from '../vdt';
 import type { BreakTrace, MeasuredBlock, MeasurementCache } from '../measure';
 import type { renderMath } from '../math';
 import type { BlockStyle } from './styles';
@@ -28,7 +28,7 @@ import { measureVerse } from './verse';
 import { measureVerseLines, verseLinesSettings, versesLineByLine } from './verseLines';
 import { composesAsCjk } from '../measure/cjkCompose';
 import { measuringVertically } from '../measure/vertical';
-import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRefContext } from './resourceLayout';
+import { resolveRefSpans, resolveSwatchSpans, shiftResourceBlockX, type AnchorRefContext, type TableRowMetrics, type TableSliceSpec } from './resourceLayout';
 import { chipContextOf, resolveChipSpans } from './chips';
 import { hasAnnotations, resolveAnnotationSpans } from './annotations';
 import type { ResourceNumberingMap } from './resourceNumbering';
@@ -123,6 +123,9 @@ export interface MeasuredContentBlock {
   mathDisplayRender?: ReturnType<typeof renderMath>;
   /** Present for `resource` kinds: the laid-out image/table + caption group. */
   resourceBlock?: ResolvedResourceBlock;
+  /** A table measured in full: its row metrics at this width, from which a
+   *  slice is planned (an inline table split across columns, #634). */
+  tableRows?: TableRowMetrics;
   /** Tracking the text was measured with (px per glyph), when column
    *  balancing asked for it — renderers must paint the block with it. */
   letterSpacingPx?: number;
@@ -137,6 +140,28 @@ export interface MeasuredContentBlock {
   direction?: 'ltr';
 }
 
+/** The most a justified line may spread between two letters, px
+ * (`bodyText.maxJustifyTracking`, EF-65), or undefined when off, so the
+ * common-case cache keys stay unchanged. A loose paragraph on a character
+ * grid (`gridEm`, #632) the CJK composer sets is held to the balancing
+ * cap as well; a cap of zero is passed as a hair above it, since the
+ * composer reads zero as no cap. */
+function justifyTrackingPx(
+  resolved: ResolvedConfig,
+  style: BlockStyle,
+  vdtType: string,
+  text: string,
+  gridEm: number | undefined,
+): number | undefined {
+  const justified = style.textAlign === 'justify' && vdtType !== 'heading';
+  const own = resolved.bodyText.maxJustifyTracking > 0 && justified
+    ? (resolved.bodyText.maxJustifyTracking / 1000) * style.fontSizePx
+    : undefined;
+  if (gridEm === undefined || !justified || !composesAsCjk(text)) return own;
+  const grid = Math.max(1e-6, gridEm * style.fontSizePx);
+  return own === undefined ? grid : Math.min(own, grid);
+}
+
 export interface MeasureContentBlockOptions {
   /** Column-balancing "run a paragraph long" — Knuth-Plass looseness. Left
    *  undefined for the common case so measurement cache keys are unchanged. */
@@ -144,6 +169,12 @@ export interface MeasureContentBlockOptions {
   /** Column-balancing tracking for a loose paragraph, in em per glyph
    *  (`headings.balancing.maxTracking / 1000` at most). Rich path only. */
   trackingEm?: number;
+  /** Column balancing on a character grid (#632): the most a justified
+   *  line of a paragraph the CJK composer sets may spread between two
+   *  characters, in em (`headings.balancing.maxTracking / 1000`). A line
+   *  that needs more is set ragged and flagged `cjkLoose`, so the loose
+   *  paragraph is refused. Other paragraphs ignore it. */
+  gridTrackingEm?: number;
   /** Paragraph style forced by an enclosing `:::paragraphs` container. */
   styleOverride?: BlockStyle;
   /** Resource blocks: the widest a figure's image may be set, its caption
@@ -156,6 +187,9 @@ export interface MeasureContentBlockOptions {
   /** Resource blocks on a vertical page: set upright, the frame at most
    *  this wide (see `ResourceLayoutInput.upright`). */
   uprightMaxLength?: number;
+  /** Table resources: lay out only these rows, the slice of an inline
+   *  table split across columns (#634, `ResourceLayoutInput.slice`). */
+  tableSlice?: TableSliceSpec;
   /** Lines (1-based) a column or a page ends on, which should not end on
    *  a hyphen (`bodyText.hyphenateAcrossColumns: false`). */
   avoidHyphenAtLines?: readonly number[];
@@ -356,7 +390,7 @@ export function measureContentBlock(
     const frac = wrap ? wrap.width : typeof rawFrac === 'number' && rawFrac > 0 && rawFrac < 1 ? rawFrac : 1;
     const align = wrap ? wrap.side : startEndAsLeftRight(kind.resource.placement?.align ?? kind.resourceType?.defaultPlacement?.align ?? 'left');
     const embedWidth = columnWidth * frac;
-    const { resourceBlock, measured } = runMeasurement({
+    const { resourceBlock, measured, tableRows } = runMeasurement({
       vdtType,
       rawBlock,
       contentBlock,
@@ -376,6 +410,7 @@ export function measureContentBlock(
       ...(opts?.figureMaxBodyWidth !== undefined ? { maxBodyWidth: opts.figureMaxBodyWidth } : {}),
       ...(opts?.figureHeightDelta ? { bodyHeightDelta: opts.figureHeightDelta } : {}),
       ...(opts?.uprightMaxLength !== undefined ? { upright: { maxLength: opts.uprightMaxLength } } : {}),
+      ...(opts?.tableSlice ? { tableSlice: opts.tableSlice } : {}),
     });
     if (!resourceBlock) return null;
     if (frac < 1) {
@@ -384,7 +419,7 @@ export function measureContentBlock(
       if (resourceBlock.rotation) resourceBlock.rotation.originX += dx;
       else shiftResourceBlockX(resourceBlock, dx);
     }
-    return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock };
+    return { kind, contentBlock, measured, prefixLen: 0, absoluteSourceMap: [], resourceBlock, ...(tableRows ? { tableRows } : {}) };
   }
 
   // Inline code in the code face (#624, `codeStyle.inline`), before the
@@ -607,9 +642,7 @@ export function measureContentBlock(
     hyphenationZonePx: style.hyphenationZonePx,
     // Justification tracking (EF-65): left undefined when off, so the
     // common-case cache keys stay unchanged.
-    justifyTrackingPx: resolved.bodyText.maxJustifyTracking > 0 && style.textAlign === 'justify' && vdtType !== 'heading'
-      ? (resolved.bodyText.maxJustifyTracking / 1000) * style.fontSizePx
-      : undefined,
+    justifyTrackingPx: justifyTrackingPx(resolved, style, vdtType, contentBlock.text, opts?.gridTrackingEm),
     // Kashida justification (#375): undefined when off (every document
     // not in an Arabic-script language), so those cache keys are unchanged.
     kashida: style.textAlign === 'justify' && vdtType !== 'heading'

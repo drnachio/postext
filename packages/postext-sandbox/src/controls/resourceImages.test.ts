@@ -8,7 +8,16 @@ const blobs = new Map<string, { contentType: string; bytes: ArrayBuffer }>();
 vi.mock('../storage/blobStore', () => ({
   getBlob: async (fileId: string) => blobs.get(fileId) ?? null,
 }));
-vi.mock('./svgFonts', () => ({ inlineSvgFonts: async (svg: string) => svg }));
+/** The faces the stand-in provider holds, by family (#630). */
+const heldFonts = new Map<string, Uint8Array>();
+vi.mock('./svgFontProvider', () => ({
+  sandboxSvgFontProvider: () => async (family: string) => {
+    const bytes = heldFonts.get(family);
+    if (!bytes) throw new Error('no such font in tests');
+    return bytes;
+  },
+  svgFontGeneration: () => 0,
+}));
 vi.mock('./svgTextIndex', () => ({ ensureSvgTextIndex: () => undefined, dropSvgTextIndex: () => undefined }));
 const registered: { fileId: string; options: unknown }[] = [];
 vi.mock('postext', async (importOriginal) => ({
@@ -23,6 +32,8 @@ const {
   ensureResourceImageUrls,
   getResourceImageUrl,
   invalidateResourceImage,
+  svgFontIssues,
+  svgFontReport,
   unavailableResourceImages,
 } = await import('./resourceImages');
 
@@ -62,7 +73,8 @@ beforeEach(() => {
 
 afterEach(() => {
   Object.assign(G, saved);
-  for (const id of ['broken.png', 'late.png', 'fig.svg']) invalidateResourceImage(id);
+  for (const id of ['broken.png', 'late.png', 'fig.svg', 'chart.svg']) invalidateResourceImage(id);
+  heldFonts.clear();
 });
 
 describe('image payloads the previews cannot show', () => {
@@ -97,5 +109,28 @@ describe('single ink in the Sandbox', () => {
     // The HTML tab's URL serves the same markup, recoloured once.
     await ensureResourceImageUrls([resource('fig.svg', 'svg')], INK);
     expect(await (await fetch(getResourceImageUrl('fig.svg')!)).text()).toBe(applySingleInkToSvg(RAW, INK));
+  });
+});
+
+describe('fonts in SVG pictures (#630)', () => {
+  const CHART = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2 1"><text font-family="Lato">Q3</text><text font-family="Nowhere">x</text></svg>';
+
+  it('inlines the faces the provider holds, keeps a report and lists the missing family', async () => {
+    heldFonts.set('Lato', Uint8Array.from([0x77, 0x4f, 0x46, 0x32, 0, 0]));
+    blobs.set('chart.svg', { contentType: 'image/svg+xml', bytes: enc(CHART) });
+    await ensureResourceImages([resource('chart.svg', 'svg')]);
+    expect(decodedMarkup[0]).toContain('@font-face{font-family:"Lato";font-weight:400;font-style:normal;src:url(data:font/woff2;base64,');
+    expect(svgFontReport('chart.svg')?.map((f) => `${f.family}:${f.status}`)).toEqual(['Lato:inlined', 'Nowhere:unavailable']);
+    expect([...svgFontIssues().keys()]).toEqual(['chart.svg']);
+  });
+
+  it('leaves the markup as stored for a resource with svg.inlineFonts: false', async () => {
+    heldFonts.set('Lato', Uint8Array.from([0x77, 0x4f, 0x46, 0x32, 0, 0]));
+    blobs.set('chart.svg', { contentType: 'image/svg+xml', bytes: enc(CHART) });
+    const r = resource('chart.svg', 'svg');
+    await ensureResourceImages([{ ...r, svg: { ...r.svg!, inlineFonts: false } }]);
+    expect(decodedMarkup[0]).toBe(CHART);
+    await ensureResourceImageUrls([r], null, { inlineFonts: false });
+    expect(await (await fetch(getResourceImageUrl('chart.svg')!)).text()).toBe(CHART);
   });
 });

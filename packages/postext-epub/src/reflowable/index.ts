@@ -132,9 +132,12 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
   // (running heads and opener designs are print furniture here).
   onProgress?.({ phase: 'resources', done: 0, total: 2 });
   const missing: EpubWarning[] = [];
-  const images = await imageAssets(docs, options.resourceBytes, (w) => missing.push(w));
+  const images = await imageAssets(docs, options.resourceBytes, (w) => missing.push(w), options);
   const videos = await videoAssets(docs, options.resourceBytes);
-  for (const w of missing) if (w.kind !== 'missingImage' || book.images.has(w.fileId)) warn(w);
+  for (const w of missing) {
+    const fileId = 'fileId' in w ? w.fileId : undefined;
+    if (fileId === undefined || book.images.has(fileId)) warn(w);
+  }
   const usedImages = new Set([...book.images].map((id) => images.hrefOf(id)).filter((h): h is string => h !== undefined));
   const fonts = fontAssets(options.fonts ?? []);
   onProgress?.({ phase: 'resources', done: 1, total: 2 });
