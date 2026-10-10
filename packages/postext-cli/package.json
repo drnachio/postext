@@ -1,6 +1,6 @@
 {
   "name": "postext-cli",
-  "version": "1.25.1",
+  "version": "1.25.2",
   "description": "The postext command line: PDF, HTML, EPUB, page images and Word files from a .postext book or loose Markdown, in one self-contained executable for Linux, macOS and Windows.",
   "type": "module",
   "license": "MIT",
