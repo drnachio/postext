@@ -55,8 +55,8 @@ const piece = (id, kind, body) => ({ id, typeId: 'menu', kind, createdAt: 0, upd
 
 // #region wines: region rows merged across the three columns, prices under their labels
 function wineList(tsv) {
-  let m = { ...parseTSV(tsv), headerRowCount: 1, columnWidths: [5, 1, 1] };
-  m.rows = m.rows.map((row, r) => row.map((cell, c) => (c === 0 ? cell : { align: 'right',
+  let m = { ...parseTSV(tsv, { headerRows: 1 }), columnWidths: [5, 1, 1] }; // the head row
+  m.rows = m.rows.map((row, r) => row.map((cell, c) => (c === 0 ? cell : { ...cell, align: 'right',
     content: r > 0 && cell.content ? `**${cell.content}**` : cell.content }))); // as the dishes'
   m.rows.forEach(([first, ...rest], r) => { // a line with one field names a region
     if (r === 0 || !first.content || rest.some((cell) => cell.content)) return;
@@ -81,7 +81,7 @@ const rule = (edge, x) => ({ kind: 'rule', id: `rule-${edge}`, color: col('brass
     offset: { x: mm(x), y: pt(6) } } }); // 6 pt down: the middle of Limelight's capitals
 const courseHead = { enabled: true, slot: { elements: [
   { kind: 'text', id: 'title', content: '{titleText}', fontFamily: DISPLAY, fontSize: pt(15),
-    lineHeight: 0.96, // a multiple (gotcha: design-lineheight-multiple): 14.4 pt, one line
+    lineHeight: 0.96, // 14.4 pt: the title stays inside one 14.5 pt grid line
     textTransform: 'uppercase', color: col('wine'),
     placement: { anchor: { to: 'container', edge: 'top' } } },
   rule('left-of', -4), rule('right-of', 4),
@@ -112,7 +112,7 @@ const paragraphStyles = [dish,
 
 // #region centred: one axis for the card: the name, the course heads and the notes centred
 // bodyText (in config) centres the lines under the name and the notes; only the dishes and the
-// wine list keep a left edge. A ragged line is never hyphenated (gotcha: ragged-no-hyphenation),
+// wine list keep a left edge. Ragged text is hyphenated only with bodyText.hyphenation.ragged,
 // so the config sets no locale: French patterns would change nothing on this card.
 const headings = { fontFamily: DISPLAY, fontWeight: 400, color: col('wine'), textAlign: 'center',
   levels: [ // Limelight ships one weight, 400, and no italic

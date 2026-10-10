@@ -28,7 +28,7 @@ pageNotes: { "1": "菜单正面，米色纸：酒红与稻草色相间的遮阳�
 
 <Excerpt region="wines" />
 
-酒单仍是表格：两种价格分列在各自的表头12 cl和75 cl之下，而一行制表位无法给它们配上表头。`parseTSV`不会把任何一行标记为表头，所以`wineList`手动设置`headerRowCount: 1`。这样Appellation · cépage、12 cl和75 cl就用表头字体Josefin Sans印在各自的列上方。只有一个字段的行表示产区名。它的单元格成为居中的表头单元格，`mergeCells`把它横跨三列展开，并把它覆盖的两个单元格标为`hiddenBy`（[构建表格模型](/zh/docs/configuration#构建表格模型)）。如果只在第一列居中，BLANCS会比La Cave和Le Comptoir居中的轴线偏左22.6 mm。TSV中的空行会变成一行空单元格，高一行半，这一行就是Blancs和Rouges上方的空隙。
+酒单仍是表格：两种价格分列在各自的表头12 cl和75 cl之下，而一行制表位无法给它们配上表头。`parseTSV(tsv, { headerRows: 1 })`把第一行读作表头行，所以Appellation · cépage、12 cl和75 cl用表头字体Josefin Sans印在各自的列上方。只有一个字段的行表示产区名。它的单元格成为居中的表头单元格，`mergeCells`把它横跨三列展开，并把它覆盖的两个单元格标为`hiddenBy`（[构建表格模型](/zh/docs/configuration#构建表格模型)）。如果只在第一列居中，BLANCS会比La Cave和Le Comptoir居中的轴线偏左22.6 mm。TSV中的空行会变成一行空单元格，高一行半，这一行就是Blancs和Rouges上方的空隙。
 
 ### 4 · 在菜类标题两侧各挂一条线
 
