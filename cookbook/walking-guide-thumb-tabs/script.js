@@ -30,8 +30,7 @@ const WALKS = {
   belem: { band: '#2b7a78', bandInk: '#236866', onBand: '#ffffff', wash: '#e1eeed' },
 };
 const NAMES = { alfama: 'Alfama', baixa: 'Baixa', belem: 'Belém' };
-// A walk's palette follows the paletteId; the hex is written out too, since the document
-// palette never reaches design elements (gotcha: palette-skips-designs).
+// A walk's palette follows the paletteId; the hex beside it is the colour's base value.
 const col = (id) => ({ hex: palette[id] ?? WALKS[id].band, model: 'hex', paletteId: id });
 const entry = (id, hex) => ({ id, name: id, value: { hex, model: 'hex' } });
 const colorPalette = [
@@ -101,16 +100,15 @@ const header = { elements: [...heads, ...tabs, ...blankPage] };
 // A walk's first page has no running head: its folio drops to the foot.
 const footer = { elements: [{ ...head('drop-folio', '{pageNumber}', 'all',
   at('container', 'top', 0, 7), folio), pages: 'opener', align: 'center' }] };
-// Page 2 comes before Walk 1, where {chapterNumber} is empty, so its header has no tabs. With the
-// level's break off (gotcha: style-inherits-break) and in the column, it is a 'body' page.
+// Page 2 comes before Walk 1, where {chapterNumber} is empty, so its header has no tabs. With
+// the level's break off (gotcha: style-inherits-break), it is a 'body' page.
 const introStyle = { id: 'intro', numbered: false, header: { elements: heads },
-  span: 'column', breakBefore: { enabled: false }, advancedDesign: { enabled: false },
+  breakBefore: { enabled: false }, advancedDesign: { enabled: false },
   fontSize: pt(24), lineHeight: pt(2 * LEAD), marginBottom: pt(LEAD / 2) };
 // #endregion
 
 // #region levels: a walk opens under a band in its colour; its stops are numbered circles
 const walkLevel = { level: 1, breakBefore: { enabled: true, parity: 'odd' }, // a recto
-  span: 'page', // kept in the column, the band would be cut at the top margin, 18 mm down
   // The band ends 30 mm into the text area; a floor of 8 grid lines, with nothing added
   // under it, starts the text 7.3 mm below the band.
   marginBottom: pt(0), advancedDesign: { enabled: true, minHeight: pt(8 * LEAD), slot: {
@@ -149,8 +147,8 @@ const cover = { enabled: true, slot: { elements: [
   rim('plaque', 13, 88, 94, 62, { backgroundColor: col('paper'), borderWidth: pt(1.6) }),
   rim('frame', 15.2, 90.2, 89.6, 57.6, { borderWidth: pt(0.5) }), // the inner frame line
   text('kicker', t({ en: 'A pocket guide', es: 'Guía de bolsillo' }), { ...label, align: 'center',
-    fontSize: pt(8.5), letterSpacing: pt(2), color: col('bandInk') }, // centred text sits left
-  { ...at('page', 'top-left', 13 + 0.35, 96), ...plaque }), // by half its tracking: 1 pt, 0.35 mm
+    fontSize: pt(8.5), letterSpacing: pt(2), color: col('bandInk') },
+  { ...at('page', 'top-left', 13, 96), ...plaque }), // as wide as the plaque, and centred on it
   text('title', '{titleText}', { ...display, fontSize: pt(46), lineHeight: 0.98, align: 'center',
     color: col('band') }, { ...at('#kicker', 'below', 0, 2), ...plaque }),
   text('subtitle', '{subtitle}', { fontFamily: 'Albert Sans', italic: true, fontSize: pt(10.5),
@@ -176,8 +174,8 @@ const calloutStyles = [{ id: 'dontmiss', title: t({ en: 'Don’t miss', es: 'No 
   titleStyle: { ...label, fontSize: pt(8.5), fontWeight: 700, letterSpacing: pt(1.5),
     color: col('bandInk') },
   body: { fontSize: pt(9), lineHeight: pt(12.4), color: col('ink') } }];
-// A walk's palette does not reach chips: one linked to 'band' would stay tile blue in every
-// walk, so the facts are ink on paper (gotcha: section-palette-skips-chips).
+// The facts are ink on paper in every walk: the walk's colour is kept for the tab, the stops
+// and the box, and a chip linked to 'band' would follow it too.
 const chipStyles = [{ id: 'fact', background: col('paper'), borderColor: col('muted'),
   borderWidth: pt(0.6), borderRadius: mm(0.8), paddingX: mm(1.4), paddingY: mm(0.5),
   fontFamily: 'Asap Condensed', fontSize: em(0.92), color: col('ink'), bold: true }];
@@ -190,15 +188,13 @@ const config = () => ({
     backgroundColor: col('paper'), margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom),
       left: mm(MARGIN.inner), right: mm(MARGIN.outer), mirror: true } },
   layout: { layoutType: 'single' },
-  // Ragged text for short lines of directions. It is never hyphenated (gotcha:
-  // ragged-no-hyphenation) and never checked for runts (gotcha: ragged-runts).
+  // Ragged text for short lines of directions, with no hyphens: ragged text is divided only
+  // when bodyText.hyphenation.ragged asks for it.
   bodyText: { fontFamily: 'Albert Sans', fontSize: pt(9.4), lineHeight: pt(LEAD),
     color: col('ink'), boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'left', firstLineIndent: mm(0), paragraphSpacing: true },
   // No lines added above the stops to fill a page: a guide's pages may end short.
   headings: { ...display, color: col('ink'), balancing: { enabled: false },
-    // Any headings object drops the level-1 break: it is stated in walkLevel
-    // (gotcha: headings-drop-h1-break).
     levels: [walkLevel, stopLevel] },
   headingStyles: [
     { id: 'cover', numbered: false, advancedDesign: cover,
@@ -297,8 +293,7 @@ const tileIcon = () => sheet(TILE, TILE, tiles(TILE, TILE, TILE, palette.band, B
   + `<rect x="0.35" y="0.35" width="${TILE - 0.7}" height="${TILE - 0.7}" `
   + `${line(palette.band, 0.7)}/>`);
 
-// Digits drawn as strokes in a 6 × 10 box: an SVG drawn as an image cannot use the page's
-// web fonts (gotcha: svg-no-webfonts).
+// Digits and capitals drawn as strokes in a 6 × 10 box, so the map carries no font.
 const GLYPH = {
   0: 'M3 0C0.6 0 0 2.6 0 5S0.6 10 3 10 6 7.4 6 5 5.4 0 3 0Z',
   1: 'M1.2 2.2L3.6 0V10',
