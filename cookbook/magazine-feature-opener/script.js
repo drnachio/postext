@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 004 · Magazine feature: photo opener to end mark ═══════
 // https://postext.dev/en/cookbook/magazine-feature-opener
 // Code: MIT · Text: original (CC BY 4.0) · Photos: Ales Krivec, Hannah Donze (CC0)
-// Fonts: Literata, Instrument Serif, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: Literata, Instrument Serif, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A nature feature from a winter issue. The level-1 heading carries its kicker, standfirst,
 // byline and photo credit as attributes, and one opener design lays them out under a bleed
 // photograph; the story runs on with a pull quote, a fact box, a photo band, a numbers panel
 // and an end mark, and the next item reuses the opener with a drawing in place of the photo.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -165,7 +165,7 @@ const guide = { id: 'guide', advancedDesign: opener('ice-art', ART),
   palette: { lake: palette.rust } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   resourceTypes: [photoType], // one unnumbered type for every picture (see the resources)
   colorPalette,
@@ -299,17 +299,16 @@ function iceArt() { // in mm, TRIM × ART: sky, shore, snow, white ice, black ic
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Literata: ['400', '400i', '700'], 'Instrument Serif': ['400', '400i'],
   'Instrument Sans': ['400', '500', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all([loadImage('lake-2000.jpg', asset('lake-2000.jpg')),
   loadImage('thaw-2000.jpg', asset('thaw-2000.jpg')), loadSvg('ice-art.svg', iceArt())]);
 const continuation = { pageNumbering: { startAt: 57 } }; // pages 57–60 of the issue
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Magazine feature: photo opener to end mark',
   es: 'Reportaje de revista: de la foto de apertura al signo final' }) });
 

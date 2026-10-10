@@ -21,8 +21,7 @@
   "gaps": ["markdown-extras"],
   "gotchas": [
     "ellipsis-mid-word", "overflow-ellipsis-default", "negative-offsets", "palette-skips-designs",
-    "header-paints-over-text", "parity-page1-recto", "headings-drop-h1-break", "quote-frontmatter",
-    "fonts-first", "style-italic-colour", "hyphenation-locales"
+    "header-paints-over-text", "parity-page1-recto", "headings-drop-h1-break", "quote-frontmatter", "style-italic-colour", "hyphenation-locales"
   ],
   "explainsWarnings": ["headerFooterUnknownPlaceholder", "headerFooterMetadataMissing"],
   "related": ["walking-guide-thumb-tabs", "book-from-chapters", "chapter-opener-bleed-band"],
@@ -35,7 +34,7 @@
     { "followup": "EF-89", "package": "postext", "note": "runtMinCharacters: 16 lets essay IV end on 'our minds.': at the default 20 both 'our minds.' and 'minds.' fall under the threshold, and the flat runtPenalty cannot prefer the two-word ending, so Knuth–Plass keeps the tighter first line and leaves 'minds.' alone" },
     { "followup": "EF-14", "package": "postext", "note": "locale is the exact bundled code ('en-us' | 'es'): a region-tagged code such as 'es-ES' silently hyphenates as American English (gotcha hyphenation-locales)" }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -81,5 +80,5 @@
   },
   "license": { "code": "MIT", "content": "MIT" },
   "created": "2026-09-25",
-  "updated": "2026-09-25"
+  "updated": "2026-10-10"
 }

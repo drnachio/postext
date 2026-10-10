@@ -41,9 +41,7 @@
   "gaps": [],
   "gotchas": [
     "ja-locale-tag",
-    "cjk-fonts-slices",
-    "config-cache-identity",
-    "fonts-first"
+    "cjk-fonts-slices"
   ],
   "explainsWarnings": [],
   "related": [
@@ -52,8 +50,8 @@
     "hiragana-picture-book"
   ],
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -252,5 +250,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-07",
-  "updated": "2026-10-07"
+  "updated": "2026-10-10"
 }

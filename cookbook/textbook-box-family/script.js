@@ -1,9 +1,11 @@
 // ═══ Postext Cookbook · Nº 008 · A family of textbook boxes ═══════════════════════
 // https://postext.dev/en/cookbook/textbook-box-family
 // Code: MIT · Text: original (CC BY 4.0) · Drawings and icons: generated in code (CC BY 4.0)
-// Fonts: Noto Serif, Lexend, Barlow Semi Condensed (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes } from 'https://esm.sh/postext';
+// Fonts: Noto Serif, Lexend, Barlow Semi Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
+  defaultResourceTypes,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'textbook-box-family';
@@ -116,7 +118,7 @@ const header = { elements: [ // folios on the fore-edge, never on the opener
 const footer = { elements: [{ ...head('drop', '{pageNumber}', 'all', 'bottom', 0, folio, -12),
   pages: 'opener' }] };
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes only (gotcha: hyphenation-locales)
   resourceTypes: defaultResourceTypes(LANG), // "Figura" (gotcha: resource-types-locale)
   colorPalette, header, footer,
@@ -381,16 +383,16 @@ const drawings = { target, bulb, flask, caution, safety, check, cell, mosaic, fu
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { 'Noto Serif': ['400', '400i', '700'], Lexend: ['700', '800'], // text, display,
-  'Barlow Semi Condensed': ['400', '600', '700'] }; // labels (gotcha: fonts-first)
+  'Barlow Semi Condensed': ['400', '600', '700'] }; // labels
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await Promise.all([loadFonts(FONTS, markdown),
+await Promise.all([prepareFonts(markdown, config(), kitFonts(FONTS)),
   ...Object.entries(drawings).map(([id, draw]) => loadSvg(`${id}.svg`, draw()))]);
 // Folio 27 is odd like page 1, always a recto: parity follows the page (gotcha: parity-page1-recto)
 const continuation = { pageNumbering: { startAt: 27 },
   headings: { h1: 1, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 } }; // the next # is chapter 2
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Living Matter, chapter 2', es: 'Materia viva, capítulo 2' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

@@ -2,8 +2,10 @@
 // https://postext.dev/en/cookbook/product-manual-warnings
 // Code: MIT · Text: original, in German (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
 // Fonts: Red Hat Text, Red Hat Display, Red Hat Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  parseTSV, mergeCells } from 'https://esm.sh/postext';
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage, parseTSV,
+  mergeCells,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'product-manual-warnings';
@@ -127,7 +129,7 @@ const folio = (parity, edge) => words(`folio-${parity}`, '{pageNumber}', DISPLAY
   'paper', pin('page', edge, 0, -9, { width: mm(11) }), { parity, pages: 'body', align: 'center',
     box: { backgroundColor: col('brand'), padding: pad(3.5) } });
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   locale: 'de', resourceTypes, colorPalette, calloutStyles, chipStyles, tableStyle, orderedLists,
   tableStyles: [{ id: 'bare', cellPadding: mm(1.1) }], // the legend and the data: no head row
   unorderedLists, headingStyles: [cover], layout: { layoutType: 'single' },
@@ -278,13 +280,14 @@ const drawings = async () => ({ 'kettle.svg': coverArt(),
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { 'Red Hat Text': ['400', '400i', '600'], // text, continuation notes, bold runs
   'Red Hat Display': ['500', '600', '700', '800'], // heads, tabs and numbers; chips; the SVG
-  'Red Hat Mono': ['500', '600'] }; // running heads, keys, table heads (gotcha: fonts-first)
+  'Red Hat Mono': ['500', '600'] }; // running heads, keys, table heads
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const allText = [markdown, parts, faults, data].join('\n');
-await Promise.all([loadFonts(FONTS, allText),
+await Promise.all([prepareFonts(allText, config(), kitFonts(FONTS)),
   ...Object.entries(await drawings()).map(([id, markup]) => loadSvg(id, markup))]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), allText);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: allText });
 showPages(doc, { title: 'Verra W1 · Bedienungsanleitung' }); // the sample is German in both
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

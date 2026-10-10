@@ -54,9 +54,7 @@
     "dollar-math",
     "palette-skips-designs",
     "svg-no-webfonts",
-    "config-cache-identity",
-    "hyphenation-locales",
-    "fonts-first"
+    "hyphenation-locales"
   ],
   "explainsWarnings": [],
   "related": [
@@ -103,7 +101,7 @@
     }
   ],
   "engine": {
-    "postext": "1.23.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -183,5 +181,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

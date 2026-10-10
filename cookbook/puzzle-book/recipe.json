@@ -22,7 +22,7 @@
   "gotchas": [
     "cell-blank-line", "opener-clipped-at-top",
     "section-palette-skips-chips", "palette-skips-designs", "headings-drop-h1-break",
-    "design-lineheight-multiple", "svg-no-webfonts", "config-cache-identity", "fonts-first"
+    "design-lineheight-multiple", "svg-no-webfonts"
   ],
   "workarounds": [
     { "followup": "EF-154", "package": "postext", "note": "every white square of the crossword gets its second line from a word joiner (U+2060): 1.4.1 drops a table-cell paragraph that is empty or holds only a no-break space, and with U+00A0 there every row came out one line deep (5.1 mm), a grid 45.5 mm tall instead of 84.7 mm square" },

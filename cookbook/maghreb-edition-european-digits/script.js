@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 109 · A Maghreb edition of an Arabic text, with European digits ═══
 // https://postext.dev/en/cookbook/maghreb-edition-european-digits
 // Code: MIT · Text: original Arabic prose (CC BY 4.0) · Pattern: drawn in code
-// Fonts: Noto Naskh Arabic, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.15.0
+// Fonts: Noto Naskh Arabic, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -37,7 +37,7 @@ const captionStyle = { fontFamily: TEXT, fontSize: pt(10), color: col('ink'), la
 // #endregion
 
 // #region answer: ar-MA prints 1, 2, 3 in every number the engine writes
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   // Written out, never LANG (gotcha: arabic-locale-tag). The Moroccan tag keeps the text right
   // to left and the binding on the right, and sets numerals: 'auto' to European digits: the
   // folios, the chapter and section numbers, the list, the notes and the figure number.
@@ -110,7 +110,7 @@ const resources = [{ id: 'zellige', typeId: 'figure', kind: 'svg', createdAt: 0,
     + 'sobre fondo verde, con pequeños cuadrados ocre entre ellas.' }) }];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Naskh Arabic': ['400', '700'], // TEXT: the chapter, notes, captions; bold emphasis
   'Noto Kufi Arabic': ['400', '700'], // LABEL: headings, folios
 };
@@ -120,7 +120,8 @@ await loadFonts(FONTS, markdown);
 // Each Arabic face's letters live in a file of their own (gotcha: arabic-fonts-subset).
 await loadArabicFonts(FONTS, markdown + resources[0].caption);
 await loadSvg('zellige.svg', zellige(BAND_W, BAND_H, 13));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A Maghreb edition with European digits',
   es: 'Una edición magrebí con cifras europeas' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: arabicPdfProvider, resourceBytes: imageBytes }),

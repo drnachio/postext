@@ -1,10 +1,9 @@
 // ═══ Postext Cookbook · Nº 075 · A vertical Chinese novel, bound on the right ════════
 // https://postext.dev/en/cookbook/vertical-novel-right-bound
 // Code: MIT · Text: 三國演義 ch. 1, zh.wikisource (CC BY-SA 4.0) · Plate: woodcut, 1592 (PD)
-// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC, Source Serif 4 (OFL) · Needs postext ≥ 1.9.0
+// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC, Source Serif 4 (OFL) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -157,7 +156,7 @@ const resources = [{
 }];
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'zh-Hant', // written out, never LANG (gotcha: cjk-locale-tag)
   colorPalette,
   page,
@@ -207,8 +206,9 @@ await loadCjkFonts({ [KAI]: ['400'] }, `${heads}${verse}${attr('editor')}${attr(
 await loadCjkFonts({ [HEI]: ['400'] }, `${heads}第回一二三四五六七八九十`, { vertical: true });
 // #endregion
 await loadImage('peach-garden.jpg', asset('peach-garden-oath-1592-v2.jpg'));
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A vertical Chinese novel, bound on the right',
   es: 'Una novela china vertical, encuadernada por la derecha' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider, resourceBytes: imageBytes }),

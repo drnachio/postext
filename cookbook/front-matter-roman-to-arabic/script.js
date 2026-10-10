@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 006 · Front matter: roman folios, then page 1 ═══════════
 // https://postext.dev/en/cookbook/front-matter-roman-to-arabic
 // Code: MIT · Text: M. & P. B. Shelley, 1818 (PD) · Pictures: diffusion models; marks drawn in code
-// Fonts: Fanwood Text, Playfair Display SC, Cinzel (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Fanwood Text, Playfair Display SC, Cinzel (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -202,7 +202,7 @@ const header = { elements: [
 ] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us', // hyphenation patterns, by exact code (gotcha: hyphenation-locales)
   colorPalette, layout: { layoutType: 'single' },
   page: { // mirror: left is the inner margin; 150 dpi is for the screen
@@ -286,17 +286,16 @@ await Promise.all(paintings.map(({ bitmap: b }) => loadImage(b.fileId, asset(b.f
 const resources = [...paintings, ...emblems];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Loaded before the first build (gotcha: fonts-first). The PDF asks for a bold Fanwood and an
+// Loaded before the first build. The PDF asks for a bold Fanwood and an
 // italic Cinzel too; the kit's provider snaps to shipped faces (gotcha: pdf-provider-all-styles).
 const FONTS = { 'Fanwood Text': ['400', '400i'], Cinzel: ['400', '600'],
   'Playfair Display SC': ['400', '400i', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // #region build: lay out once (buildDocument settles the contents), show, offer a PDF
-await loadFonts(FONTS, markdown);
 // :::toc lists each heading with the label of the page it lands on; buildDocument lays the
 // document out again until those labels stop moving (ix for the Preface, 1 for Letter I).
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Frankenstein · the opening leaves' });
 // The PDF gets /PageLabels from the same labels: a viewer numbers its pages i–x, then 1, 2.
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),

@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 044 · Critical edition: line numbers and line-keyed notes ═══
 // https://postext.dev/en/cookbook/critical-edition-line-numbers
 // Code: MIT · Text: Milton, Poems (1645) (PD) · Notes: CC BY 4.0 · Laurel: diffusion models
-// Fonts: Linden Hill, Imbue, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Linden Hill, Imbue, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Lycidas in the spelling of 1645, with a number beside every fifth line and two pages of
 // notes keyed to those numbers, so the verse carries no note markers.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en')
@@ -151,7 +151,7 @@ const footer = { elements: [drop('odd', 'bottom-right', -OUTER),
   drop('even', 'bottom-left', OUTER)] };
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, page, layout, header, footer,
   bodyText: { // every paragraph sits in a styled container and takes these as defaults
     fontFamily: TEXT, fontSize: pt(10.5), lineHeight: pt(LEAD), color: col('ink'),
@@ -182,14 +182,13 @@ await loadImage(resources[0].bitmap.fileId, asset(resources[0].bitmap.fileId));
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Loaded before the first build (gotcha: fonts-first). Linden Hill has no bold, Imbue no italic.
+// Loaded before the first build. Linden Hill has no bold, Imbue no italic.
 const FONTS = { 'Linden Hill': ['400', '400i'], Imbue: ['300'], 'Libre Franklin': ['400', '500'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown + notes);
 const source = `${markdown}\n\n${notes}`;
-const doc = await buildWithFonts(() => buildDocument({ markdown: source, resources }, config()),
-  source);
+const doc = await buildDocumentWithFonts({ markdown: source, resources }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Lycidas · with line numbers and notes' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

@@ -38,8 +38,7 @@
     "cjk-locale-tag",
     "headings-drop-h1-break",
     "merged-cells-hiddenby",
-    "overflow-ellipsis-default",
-    "fonts-first"
+    "overflow-ellipsis-default"
   ],
   "explainsWarnings": ["cjkGridClamped"],
   "related": [

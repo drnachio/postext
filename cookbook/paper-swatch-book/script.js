@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 101 · A swatch book, every leaf on its own paper ═══════════
 // https://postext.dev/en/cookbook/paper-swatch-book
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Crimson Pro, Libre Caslon Display, IBM Plex Sans Cond. (OFL) · Needs postext ≥ 1.13.4
+// Fonts: Crimson Pro, Libre Caslon Display, IBM Plex Sans Cond. (OFL) · Needs postext ≥ 1.25.0
 //
 // A paper merchant's stock book: each leaf sits inside a :::paper fence that names its stock,
 // and postext-folio draws that leaf with the stock's shade, surface, stiffness and opacity.
 // Turn the leaves and compare: the gloss sheet turns flat and stiff, the bible paper falls
 // over at once and shows its back through, the card covers turn as boards.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { createFolioFromDocument } from 'https://esm.sh/postext-folio';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -99,7 +99,7 @@ const spec = { id: 'spec', fontFamily: 'IBM Plex Sans Condensed', fontSize: pt(8
   boldColor: col('oxblood') };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us',
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
@@ -152,8 +152,7 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'The Stock Book · four papers in Folio' });
 
 // #region answer: every page carries its stock; the viewer draws each leaf with it

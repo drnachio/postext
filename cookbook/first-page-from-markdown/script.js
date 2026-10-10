@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 012 · From a Markdown string to a designed page ══════════
 // https://postext.dev/en/cookbook/first-page-from-markdown
 // Code: MIT · Text: original (CC BY 4.0) · Photo: diffusion models
-// Fonts: Newsreader, Young Serif, Inter Tight (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Newsreader, Young Serif, Inter Tight (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 //
 // This pen sets a Markdown string with a frontmatter block on two magazine pages and paints
 // them on canvases. The whole design is in config(); swap config() for {} in the build
 // below to see the engine's defaults.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es' | 'pt')
@@ -123,7 +123,7 @@ const colophon = () => ({ id: 'colophon', backgroundEnabled: false, marginTop: p
     textAlign: 'left', hyphenation: false, firstLineIndent: pt(0) } });
 
 // #region answer: one config factory in place of the default skin: page, type, colour, slots
-const config = () => ({ // a new object per build (gotcha: config-cache-identity)
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es', pt: 'pt' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette: colorPalette(),
   page: { // mirror: left is the inner margin and right the outer one; versos swap them
@@ -172,7 +172,7 @@ const markdown = /* @content */ '';
 const resources = [landscape];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// #region fonts: every face the design uses, loaded first (gotcha: fonts-first)
+// #region fonts: every face the design uses, loaded before the first build
 const FONTS = {
   Newsreader: ['400', '400i', '700'], // text
   'Young Serif': ['400'], // display: it ships one weight, so the headings ask for 400
@@ -181,11 +181,9 @@ const FONTS = {
 // #endregion
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-// #region build: fonts, the photograph, one buildDocument call with a fresh config, then paint
-await loadFonts(FONTS, markdown);
+// #region build: the photograph, one buildDocumentWithFonts call with a fresh config, then paint
 await loadImage(landscape.bitmap.fileId, asset(landscape.bitmap.fileId));
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 // showPages paints each page with renderPageToCanvas(page, doc, canvas, { scale }).
 showPages(doc, {
   title: t({ en: 'From a Markdown string to a designed page',

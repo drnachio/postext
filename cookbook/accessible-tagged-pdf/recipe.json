@@ -56,8 +56,6 @@
     "style-inherits-break",
     "palette-skips-designs",
     "overflow-ellipsis-default",
-    "config-cache-identity",
-    "fonts-first",
     "latin-subset"
   ],
   "explainsWarnings": [],
@@ -115,8 +113,8 @@
     }
   ],
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -188,5 +186,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-10-01"
+  "updated": "2026-10-10"
 }

@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 057 · One-page CV with a sidebar ═══════════════════════
 // https://postext.dev/en/cookbook/cv-with-sidebar
 // Code: MIT · Text: original (CC BY 4.0) · Drawing: made in code (CC BY 4.0)
-// Fonts: Hedvig Letters Serif, Hanken Grotesk (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Hedvig Letters Serif, Hanken Grotesk (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -151,7 +151,7 @@ const sectionLevel = { level: 2, fontSize: pt(14), lineHeight: pt(20),
   marginTop: pt(3 * LEAD - 20), marginBottom: pt(9), advancedDesign: sectionHead };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, layout, chipStyles, header, footer: { elements: [] },
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
     margins: { top: mm(TOP), bottom: mm(BOTTOM), left: mm(LEFT), right: mm(RIGHT) } },
@@ -208,17 +208,16 @@ function mix(a, b, k) { // a blend of two palette colours, k of the way from a t
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses, loaded before the first build (gotcha: fonts-first).
+// Every face the design uses, loaded before the first build.
 const FONTS = { 'Hedvig Letters Serif': ['400'], 'Hanken Grotesk': ['400', '400i', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('books.svg', books());
 const resources = [{ id: 'books', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
   svg: { fileId: 'books.svg', width: BOOKS.w * 10, height: BOOKS.h * 10 },
   altText: t({ en: 'A stack of five cloth-bound books',
     es: 'Una pila de cinco libros encuadernados en tela' }) }];
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'One-page CV with a sidebar',
   es: 'Currículum de una página con barra lateral' }) });
 

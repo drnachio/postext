@@ -3,8 +3,9 @@
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: diffusion models
 // Fonts: Gelasio, Alfa Slab One, Cabin Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A fictional seed farm's spring list: a table read from TSV, a packet pictured in each row.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  parseTSV, mergeCells, setAlignment, setCellBackground, setCellContent, setCellImage,
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage, parseTSV,
+  mergeCells, setAlignment, setCellBackground, setCellContent, setCellImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -161,7 +162,7 @@ const order = { id: 'order', span: 'page', layout: { layoutType: 'single' }, // 
   ] } } };
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette,
   page: { width: mm(TRIM.w), height: mm(TRIM.h), dpi: 150, backgroundColor: col('paper'),
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
@@ -219,7 +220,7 @@ const orderForm = form('order', [16, 73, 20, 20, 28], [['No.', 'Variety', 'Packe
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   Gelasio: ['400', '400i', '700'], // text, captions, notes and the list
   'Alfa Slab One': ['400'], // display: the cover, section heads, the order sheet
   'Cabin Condensed': ['400', '600', '700'], // labels: heads, prices, chips, the forms
@@ -237,12 +238,12 @@ const resources = [vegetableList(list), shipTo, orderForm,
     'A sunflower and a staked tomato plant in a ploughed field.'),
   ...varieties.map((name) => picture(slug(name), `${slug(name)}-360.jpg`, [360, 480], // 3 : 4
     `Seed packet of ${name}.`))];
-await loadFonts(FONTS, markdown + list);
+await prepareFonts(markdown + list, config(), kitFonts(FONTS));
 await Promise.all(resources.flatMap(({ bitmap }) => bitmap
   ? [loadImage(bitmap.fileId, asset(bitmap.fileId))] : []));
 // #endregion
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()),
-  markdown + list);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: markdown + list });
 showPages(doc, { title: 'Brindlewood Seed Co. · Spring 2027' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

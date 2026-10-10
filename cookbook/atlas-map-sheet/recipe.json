@@ -22,8 +22,7 @@
   "gotchas": [
     "top-float-next-page", "no-zebra", "svg-no-webfonts", "resource-types-locale", "nbsp-breaks",
     "ragged-runts", "style-italic-colour", "headings-drop-h1-break", "palette-skips-designs",
-    "design-lineheight-multiple", "overflow-ellipsis-default", "config-cache-identity",
-    "fonts-first", "quote-frontmatter"
+    "design-lineheight-multiple", "overflow-ellipsis-default", "quote-frontmatter"
   ],
   "workarounds": [
     { "followup": "EF-189", "package": "postext", "note": "1.4.1 does not level a closing page that follows a page taken whole by a float (here the turned chart on page 3; a page-tall figure that is not turned does the same): without a break, every paragraph of page 4 fills its left-hand column and only the colophon, which no longer fits there, starts the right-hand one; a :::columnbreak before 'About this sheet' splits the closing text by hand in both editions. Move it when the text changes" },
@@ -38,7 +37,7 @@
     { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted: the title feeds the opener's large name and the verso running head" }
   ],
   "related": ["garden-almanac", "walking-guide-thumb-tabs", "figures-float-where-cited", "textbook-margin-column"],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -65,5 +64,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

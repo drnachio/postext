@@ -39,8 +39,7 @@
     "headings-drop-h1-break",
     "palette-skips-designs",
     "design-lineheight-multiple",
-    "balancing-drops-last-box",
-    "fonts-first"
+    "balancing-drops-last-box"
   ],
   "related": ["poetry-collection", "spanish-pocket-novel", "recipe-card", "worksheet-answer-boxes"],
   "workarounds": [

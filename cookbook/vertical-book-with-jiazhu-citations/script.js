@@ -3,7 +3,7 @@
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
 // Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerCitationEngine,
   loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
@@ -81,7 +81,7 @@ const header = { elements: [
       size: { width: mm(100) } } },
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   // Traditional characters to the mainland's rules, as Beijing and Shanghai publishers set
   // classical scholarship (gotcha: cjk-locale-tag). The citations follow it: zh-TW terms.
   locale: 'zh-Hant-CN',
@@ -110,7 +110,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md: the same Chinese text in both
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif SC': ['400', '700'], // SONG: the text, notes, list, imprint; the list's title
   'Noto Sans SC': ['400', '700'], // HEI: the fore-edge heads and folios; 第三章
   'LXGW WenKai TC': ['400'], // KAI: the chapter's title
@@ -128,7 +128,8 @@ await loadCjkFonts({ [SONG]: ['700'] }, markdown.match(/bibliography\{title="([^
   { vertical: true });
 await loadCjkFonts({ [HEI]: ['700'] }, numerals);
 await loadCjkFonts({ [KAI]: ['400'] }, heading);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'Vertical Chinese with citations in inline notes',
   es: 'Chino vertical con citas en notas dentro del renglón' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

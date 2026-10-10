@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 053 · Conference programme with a merged schedule grid ═══════
 // https://postext.dev/en/cookbook/conference-programme
 // Code: MIT · Text: original, in Catalan (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Schibsted Grotesk, Unbounded, Chivo Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Schibsted Grotesk, Unbounded, Chivo Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
   defaultResourceTypes, mergeCells, setCellContent, setCellBackground, setAlignment,
 } from 'https://esm.sh/postext';
 
@@ -164,8 +164,8 @@ const coverStyle = { id: 'coberta', numbered: false,
         caps(8.5)),
     ] } } };
 
-const config = () => ({ // a factory: configs are cached by identity
-  // (gotcha: config-cache-identity)
+const config = () => ({
+
   resourceTypes, colorPalette, tableStyle, chipStyles, paragraphStyles,
   header, footer, headingStyles: [coverStyle],
   page: { width: mm(PAGE.w), height: mm(PAGE.h), dpi: 150, // a 1,004 px canvas per page
@@ -296,15 +296,16 @@ for (const { svg: { fileId }, markup } of drawings) await loadSvg(fileId, markup
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the layout uses, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the layout uses, loaded before the build
   'Schibsted Grotesk': ['400', '400i', '700'], // text, bios and cells
   Unbounded: ['600', '700', '800'], // sections; titles; the day's numeral
   'Chivo Mono': ['400', '400i', '500', '700'] }; // labels, times, captions and the colophon
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const allText = [markdown, dijous, divendres].join('\n');
-await loadFonts(FONTS, allText);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), allText);
+await prepareFonts(allText, config(), kitFonts(FONTS));
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: allText });
 showPages(doc, { title: 'Jornades de Tipografia i Edició Digital · Programa' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

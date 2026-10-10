@@ -22,7 +22,7 @@ The code is [the short answer](#the-short-answer) above. Postext measures every 
 
 <Excerpt region="build" />
 
-`registerFaces()` resolves only when every face in `FONTS` has loaded, so the first build measures with the faces the PDF will embed. It is also the only build, because `FONTS` lists every bold and italic a block of Crimson Text or Fraunces can ask for, and the kit's `buildWithFonts` finds nothing to add ([Measurement cache](/en/docs/configuration#measurement-cache)). That check only helps the screen. If `FONTS` misses a face, `buildWithFonts` loads it and runs the layout again, with a console warning when a block is set in that face and none when it is a bold or an italic, but the PDF still gets the closest face the provider has.
+`registerFaces()` resolves only when every face in `FONTS` has loaded, so the first build measures with the faces the PDF will embed. It is also the only build, because `FONTS` lists every bold and italic a block of Crimson Text or Fraunces can ask for, and `buildDocumentWithFonts` finds every face it looks for already declared ([Loading fonts before layout](/en/docs/configuration#loading-fonts-before-layout)). That check only helps the screen. If `FONTS` misses a face, the engine asks the kit for it, loads the Fontsource file and runs the layout again with no console warning, but the PDF still gets the closest face the provider has.
 
 ### 3 · The export, and a list of what it embedded
 

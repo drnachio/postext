@@ -3,7 +3,7 @@
 // Code: MIT · Text: 芥川龍之介『蜘蛛の糸』『尾生の信』, Aozora Bunko 92, 24 (PD) · Pictures: none
 // Fonts: Noto Serif JP, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -96,7 +96,7 @@ const first = { id: 'first', footer: { elements: [{ kind: 'text', id: 'colophon'
     size: { width: mm(118) } } }] } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   page: {
@@ -139,7 +139,8 @@ await loadCjkFonts({ [MINCHO]: ['600'] }, `${heads}`, { vertical: true });
 const colophon = markdown.match(/colophon="([^"]*)"/)[1];
 await loadCjkFonts({ [GOTHIC]: ['400'] }, `${title}${heads}${colophon}`, { vertical: true });
 // #endregion
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A Japanese story in two tiers, its title across both',
   es: 'Un cuento japonés en dos pisos, con el título sobre ambos' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

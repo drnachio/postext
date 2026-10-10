@@ -1,10 +1,11 @@
 // ═══ Postext Cookbook · Nº 041 · .postext round trip in two languages ════════════
 // https://postext.dev/en/cookbook/bundle-round-trip
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: DM Sans, DM Serif Display, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { createBundle, openBundle, loadBundleFonts, registerBundleImages, buildBundle,
-  bundleFontProvider, bundleResourceBytes, defaultResourceTypes, renderPageToCanvas,
-  clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: DM Sans, DM Serif Display, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  createBundle, openBundle, loadBundleFonts, registerBundleImages, buildBundle, bundleFontProvider,
+  bundleResourceBytes, defaultResourceTypes, renderPageToCanvas,
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -51,7 +52,7 @@ const cover = { id: 'cover', advancedDesign: { enabled: true, slot: { elements: 
 ] } } };
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   // #region labels: the edition's language, written into the file with the rest of the config
   // Hyphenation patterns and the PDF's /Lang, by exact code (gotcha: hyphenation-locales).
   locale: t({ en: 'en-us', es: 'es' }),
@@ -245,7 +246,7 @@ const resources = [
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face the pages use. They travel inside the bundle, so the reader loads them from
-// there, before the layout (gotcha: fonts-first).
+// there, before the layout.
 const FONTS = { 'DM Sans': ['400', '400i', '700'], 'DM Serif Display': ['400', '400i'],
   'Instrument Sans': ['400', '700'] };
 

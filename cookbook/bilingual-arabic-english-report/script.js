@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 106 · A bilingual Arabic–English report ═══════════════════
 // https://postext.dev/en/cookbook/bilingual-arabic-english-report
 // Code: MIT · Text: original Arabic, English and Spanish prose (CC BY 4.0) · Pictures: none
-// Fonts: IBM Plex Sans Arabic, IBM Plex Sans (SIL OFL 1.1) · Needs postext ≥ 1.15.0
+// Fonts: IBM Plex Sans Arabic, IBM Plex Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
+  buildDocument, withLoadedFonts, renderPageToCanvas, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -100,7 +100,7 @@ const band = { enabled: true, minHeight: mm(70), slot: { elements: [
 ] } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
   colorPalette, bodyText, resourceTypes,
   page: { width: mm(210), height: mm(280), dpi: 150,
@@ -135,7 +135,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md: the Arabic, with English or Spanish
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'IBM Plex Sans Arabic': ['400', '600', '700'], // ARABIC: text, headings, tables, folios
   'IBM Plex Sans': ['300', '400', '400i', '600'], // LATIN: the second language, its table
 };
@@ -144,7 +144,8 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
 await loadFonts(FONTS, markdown);
 // Each Arabic face's letters live in a file of their own (gotcha: arabic-fonts-subset).
 await loadArabicFonts(FONTS, markdown + JSON.stringify(resources));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A bilingual Arabic–English report',
   es: 'Un informe bilingüe árabe-español' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: arabicPdfProvider }), `${RECIPE}.pdf`);

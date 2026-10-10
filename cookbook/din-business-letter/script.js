@@ -1,10 +1,11 @@
 // ═══ Postext Cookbook · Nº 058 · Business letter to DIN 5008 ═════════════════════
 // https://postext.dev/en/cookbook/din-business-letter
 // Code: MIT · Text: original, in German (CC BY 4.0) · Logo, signature: drawn in code (CC BY 4.0)
-// Fonts: Nunito Sans, Familjen Grotesk, Reddit Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Nunito Sans, Familjen Grotesk, Reddit Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A German quotation on A4 whose H1 design pins the letterhead and the address to DIN 5008.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -159,7 +160,7 @@ const resources = [ // an image element draws the logo; nothing cites it
 ];
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   locale: 'de', resourceTypes, colorPalette, // German hyphenation (gotcha: hyphenation-locales)
   page: { sizePreset: 'custom', width: mm(210), height: mm(297), dpi: 150, margins: {
     top: mm(DIN.top), bottom: mm(DIN.bottom), left: mm(DIN.left), right: mm(DIN.right) } },
@@ -236,15 +237,14 @@ function signatureSvg() { // 'M. Tessin' in a quick, forward-leaning hand
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the pages paint, loaded before the first build (gotcha: fonts-first).
+// Every face the pages paint, loaded before the first build.
 const FONTS = { 'Nunito Sans': ['400', '700'], 'Familjen Grotesk': ['700'],
   'Reddit Mono': ['400', '500'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadSvg('logo.svg', logoSvg(palette.paper));
 await loadSvg('signature.svg', signatureSvg());
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Business letter to DIN 5008', es: 'Carta comercial DIN 5008' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

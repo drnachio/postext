@@ -57,8 +57,7 @@
     "palette-skips-designs",
     "design-lineheight-multiple",
     "overflow-ellipsis-default",
-    "quote-frontmatter",
-    "fonts-first"
+    "quote-frontmatter"
   ],
   "explainsWarnings": [],
   "related": [
@@ -115,7 +114,7 @@
     }
   ],
   "engine": {
-    "postext": "1.23.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -216,5 +215,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-25"
+  "updated": "2026-10-10"
 }

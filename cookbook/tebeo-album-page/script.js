@@ -1,12 +1,12 @@
 // ═══ Postext Cookbook · Nº 152 · An album page in clear line, with narration captions ═══
 // https://postext.dev/en/cookbook/tebeo-album-page
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Patrick Hand, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.21.0
+// Fonts: Patrick Hand, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.25.0
 // A Spanish album page in the Franco-Belgian way: four tiers, yellow narration boxes, and
 // balloons lettered in upper and lower case. Every edition re-letters the same split and art.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultComicFont, defaultComicSfxFont,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, defaultComicFont,
+  defaultComicSfxFont,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -85,7 +85,7 @@ const titlePage = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: LOCALE,
   colorPalette,
   page: {
@@ -274,8 +274,9 @@ const resources = await Promise.all([
 ]);
 // pageIndexOffset 1: the title page is a verso, so it faces the story's first page.
 const continuation = { pageIndexOffset: 1, pageNumbering: { startAt: 2 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown, resources, continuation }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ es: 'Una página de álbum', en: 'An album page', ca: "Una pàgina d'àlbum",
   zh: '一页欧式漫画', ar: 'صفحة من ألبوم مصوّر', ja: 'BDのアルバムの一ページ',
   pt: 'Uma página de álbum' }) });

@@ -21,8 +21,7 @@
   "gotchas": [
     "headings-drop-h1-break", "ragged-run-punctuation", "nbsp-breaks", "latin-subset",
     "svg-no-webfonts", "top-float-next-page", "callout-columns", "resource-types-locale",
-    "hyphenation-locales", "fonts-first", "overflow-ellipsis-default", "parity-page1-recto",
-    "config-cache-identity"
+    "hyphenation-locales", "overflow-ellipsis-default", "parity-page1-recto"
   ],
   "explainsWarnings": ["unknownCalloutType"],
   "related": [
@@ -41,7 +40,7 @@
     { "followup": "EF-14", "package": "postext", "note": "locale is the exact bundled code ('en-us' | 'es'): a region-tagged code such as 'es-ES' silently hyphenates as American English (gotcha hyphenation-locales)" },
     { "followup": "EF-99", "package": "postext", "note": "borderRadius does not reach a side stripe (painted as its own square bar, unclipped), so only the unstriped warning is rounded and Method step 3 says why; revisit the step when fixed" }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -68,5 +67,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

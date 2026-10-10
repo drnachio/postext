@@ -31,7 +31,7 @@
     { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted (the title feeds the verso folio line)" },
     { "followup": "EF-153", "package": "postext", "note": "the cover's tracked name (DORÉ) is moved right by half its tracking: 1.4.1 measures design text with the tracking after its last letter, so centred tracked capitals stand left of the centre line" }
   ],
-  "engine": { "postext": "1.24.0" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer"],
   "sample": { "locales": ["en"] },
   "capture": {
@@ -117,5 +117,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-09"
+  "updated": "2026-10-10"
 }

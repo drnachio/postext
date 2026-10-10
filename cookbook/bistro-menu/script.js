@@ -4,8 +4,10 @@
 // Fonts: Limelight, Noticia Text, Josefin Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // The autumn menu of an imaginary Paris bistro: two sides of one card, each dish a paragraph
 // whose price a tab sends to the right margin, the wine list a table with no rules.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  parseTSV, mergeCells } from 'https://esm.sh/postext';
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage, parseTSV,
+  mergeCells,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'bistro-menu';
@@ -192,7 +194,7 @@ function bottles() { // 158 × 29 mm: glasses, bottles and a carafe on a brass s
 }
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, tableStyle, resourceTypes,
   page: { sizePreset: 'custom', width: mm(230), height: mm(310), dpi: 150,
     backgroundColor: col('paper'), // one card, printed both sides: margins are not mirrored
@@ -218,16 +220,17 @@ const resources = [
 ];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the pages paint, loaded before the first build (gotcha: fonts-first).
+// Every face the pages paint, loaded before the first build.
 const FONTS = { 'Noticia Text': ['400', '400i', '700'], Limelight: ['400'],
   'Josefin Sans': ['700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const allText = markdown + wines;
-await loadFonts(FONTS, allText);
+await prepareFonts(allText, config(), kitFonts(FONTS));
 await loadSvg('awning.svg', awning());
 await loadSvg('bottles.svg', bottles());
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), allText);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: allText });
 showPages(doc, { title: t({ en: 'Les Tanneurs: autumn menu',
   es: 'Les Tanneurs: carta de otoño' }) });
 

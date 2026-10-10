@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 047 · Walking guide with thumb tabs ═══════════════════
 // https://postext.dev/en/cookbook/walking-guide-thumb-tabs
 // Code: MIT · Text: original (CC BY 4.0) · Map and tiles: drawn in code (CC BY 4.0)
-// Fonts: Albert Sans, DM Serif Display, Asap Condensed (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Albert Sans, DM Serif Display, Asap Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A pocket guide to Lisbon. Each walk is a heading style that sets four colours, and the tab,
 // the stop numbers, the box's tint and title and the blank page before the walk take them.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -184,7 +184,7 @@ const chipStyles = [{ id: 'fact', background: col('paper'), borderColor: col('mu
 // #endregion
 
 const MAP_WORD = t({ en: 'Map', es: 'Plano' }); // the caption reads 'Map 1'
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'), margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom),
@@ -466,7 +466,7 @@ const resources = [map, svg('tiles-cover', TRIM.width, 112), svg('tiles-band', 3
   svg('tiles-page', TRIM.width, TRIM.height), svg('tile', TILE, TILE)];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses, loaded before the first build (gotcha: fonts-first).
+// Every face the design uses, loaded before the first build.
 const FONTS = {
   'Albert Sans': ['400', '400i'], // text, the route under a walk's name
   'DM Serif Display': ['400'], // walk names, stops, the cover
@@ -474,9 +474,8 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 for (const [id, art] of Object.entries(drawings())) await loadSvg(`${id}.svg`, art);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Lisbon on Foot', es: 'Lisboa a pie' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

@@ -37,7 +37,7 @@
     { "followup": "EF-56", "package": "postext", "note": "the numeral and the other design texts take lineHeight as a multiple of their size, never pt(): a Dimension would silently drop the opener's reservation (gotcha design-lineheight-multiple)" },
     { "followup": "EF-14", "package": "postext", "note": "hyphenation matches exact codes only, so the config sets locale: t({ en: 'en-us', es: 'es' }) (gotcha hyphenation-locales)" }
   ],
-  "engine": { "postext": "1.24.0" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -64,5 +64,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-09"
+  "updated": "2026-10-10"
 }

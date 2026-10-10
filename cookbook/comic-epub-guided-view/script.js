@@ -1,15 +1,14 @@
 // ═══ Postext Cookbook · Nº 148 · A comic EPUB read panel by panel ═══════════════════
 // https://postext.dev/en/cookbook/comic-epub-guided-view
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.21.0
+// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.25.0
 //
 // A short comic laid out once and exported four ways: a PDF for print, a fixed-layout EPUB
 // whose region-based navigation lets a reading system step through it panel by panel, the
 // same EPUB with Kindle Panel View, and a reflowable EPUB with each panel's lines as text.
 // Each file is read back to list what a reader will find in it.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { renderToEpub, readEpub } from 'https://esm.sh/postext-epub';
@@ -56,7 +55,7 @@ const footer = { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber}'
   fontFamily: LETTERING, fontSize: pt(7.5), color: col('muted'), align: 'center',
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { x: mm(0), y: mm(-8) } } }] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-gb', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar', pt: 'pt-BR' }),
   colorPalette, comics,
   // The trim of an American comic book, 6⅝ × 10³⁄₁₆ in.
@@ -145,7 +144,7 @@ const ALT = {
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face of the six editions; each edition loads the latin files of all of them and the
-// Japanese, Chinese or Arabic files of its own two (gotcha: fonts-first).
+// Japanese, Chinese or Arabic files of its own two.
 const FONTS = {
   'Comic Neue': ['400', '400i', '700', '700i'],
   Bangers: ['400'],
@@ -202,7 +201,8 @@ const resources = await Promise.all([
   panel('lh-maya', asset('lh-maya.jpg')), panel('lh-biscuit', asset('lh-biscuit.jpg')),
   panel('lh-beam', asset('lh-beam.jpg')),
 ]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A comic EPUB read panel by panel',
   es: 'Un EPUB de cómic que se lee viñeta a viñeta', pt: 'Um EPUB de HQ lido quadro a quadro' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: comicPdfProvider, resourceBytes: imageBytes }),

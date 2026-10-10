@@ -52,8 +52,7 @@
     "headings-drop-h1-break",
     "box-paragraph-margins",
     "runt-tracking-unpainted",
-    "hyphenation-locales",
-    "fonts-first"
+    "hyphenation-locales"
   ],
   "explainsWarnings": [],
   "workarounds": [
@@ -95,7 +94,7 @@
     "front-matter-roman-to-arabic"
   ],
   "engine": {
-    "postext": "1.7.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -220,5 +219,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-28"
+  "updated": "2026-10-10"
 }

@@ -1,8 +1,10 @@
 // ═══ Postext Cookbook · Nº 048 · Code listings and keycaps ═══
 // https://postext.dev/en/cookbook/code-listings-and-keycaps
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Charis SIL, Sora, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.23.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Charis SIL, Sora, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocument, prepareFonts, withLoadedFonts, renderPageToCanvas,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'code-listings-and-keycaps';
@@ -115,7 +117,7 @@ const head = (id, content, parity, edge, x, extra = {}) => ({
 });
 const folio = { fontWeight: 700, color: col('ember') };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette, chipStyles, orderedLists, paragraphStyles: [resume],
   calloutStyles: [sheet, aside, colophon], codeStyle,
@@ -156,9 +158,9 @@ const FONTS = { 'Charis SIL': ['400', '400i'], Sora: ['400', '700', '800'],
   'JetBrains Mono': ['400', '400i', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
+await prepareFonts(markdown, config(), kitFonts(FONTS));
 const build = () => buildDocument({ markdown, continuation }, config());
-const doc = await buildWithFonts(build, markdown);
+const doc = await withLoadedFonts(build, { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'The Shell, Gently', es: 'La terminal, con calma' }) });
 
 // @kit core fonts viewer · the Cookbook inlines cookbook/_kit/*.js here

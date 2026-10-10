@@ -1,12 +1,12 @@
 // ═══ Postext Cookbook · Nº 138 · Machine-learning paper with theorems and proofs ═══
 // https://postext.dev/en/cookbook/ml-paper-theorems-proofs
 // Code: MIT · Text: Rafailov et al. 2023, arXiv:2305.18290 (CC BY 4.0), abridged · Art: code
-// Fonts: Spectral, Work Sans, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: Spectral, Work Sans, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // DPO (NeurIPS 2023) re-set as a preprint: numbered equations with labels and references,
 // definition, lemma and theorem boxes, proofs that end in a square, author–year citations.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  registerCitationEngine, defaultResourceTypes, initMathEngine, renderMath,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, registerCitationEngine,
+  defaultResourceTypes, initMathEngine, renderMath,
 } from 'https://esm.sh/postext?bundle';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -123,7 +123,7 @@ const citations = { style: 'harvard-cite-them-right', link: true,
     entrySpacing: pt(1.6), doi: 'link' } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us', colorPalette, resourceTypes, citations,
   crossRefs: { section: 'Section {n}' }, // "Section 5", as the paper writes it
   page: { width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
@@ -299,7 +299,7 @@ function pipeline(face) { // 130 × 64 mm: RLHF on the left, DPO on the right
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages paint, loaded before the first build (gotcha: fonts-first)
+const FONTS = { // every face the pages paint, loaded before the first build
   Spectral: ['400', '400i', '600', '700', '700i'],
   'Work Sans': ['400', '400i', '500', '600', '700'],
   'JetBrains Mono': ['400'],
@@ -307,11 +307,10 @@ const FONTS = { // every face the pages paint, loaded before the first build (go
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await initMathEngine(); // gotcha: math-bundle. Unawaited, formulas paint as grey boxes
-await loadFonts(FONTS, source);
 await loadSvg('sigmoids.svg', sigmoids());
 await loadSvg('pipeline.svg', pipeline(await inlineFace(SANS, 400) + await inlineFace(SANS, 600)));
 const content = () => ({ markdown: source, resources: resources() });
-const doc = await buildWithFonts(() => buildDocument(content(), config()), source);
+const doc = await buildDocumentWithFonts(content(), config(), kitFonts(FONTS));
 showPages(doc, { title: 'Machine-learning paper with theorems and proofs' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`); // text in the Fontsource faces; formulas and figures as vector paths

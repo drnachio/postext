@@ -3,8 +3,7 @@
 // Code: MIT · Text: original (CC BY 4.0) · Art: drawn in code · Typefaces: SIL OFL 1.1
 // Fonts: Brygada 1918, Epilogue, Spline Sans Mono, Mrs Saint Delafield · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage, mergeCells,
-  inlineSvgFonts,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, mergeCells, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -134,7 +133,7 @@ const footer = { elements: [
   foot('recto-part', '{partTitle}', 'odd', -(MARGIN.outer + 8), { color: col('band') }),
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, resourceTypes,
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
@@ -352,7 +351,8 @@ function hoursArt(face) {
 }
 // The chair's signature: her name in a script face, and the stroke she draws under it.
 function signatureArt(face) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="420" height="150" viewBox="0 0 42 15" ${face}>`
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="150" viewBox="0 0 42 15" '
+    + `${face}>`
     + `<text x="1" y="10" font-size="10" fill="${palette.band}">Maren Coles</text>`
     + '<path d="M3 13.2C14 12.1 27 12.6 40 11.3" fill="none" '
     + `stroke="${palette.band}" stroke-width="0.35" stroke-linecap="round"/></svg>`;
@@ -365,15 +365,14 @@ async function drawArt() {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   'Brygada 1918': ['400', '400i', '700'], // 700: the list dashes
   Epilogue: ['400', '700', '800'], // 700: the crossheads; 800: the display
   'Spline Sans Mono': ['400', '400i', '500', '700'], 'Mrs Saint Delafield': ['400'] }; // signature
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await drawArt();
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Annual report with flush columns',
   es: 'Memoria anual con columnas a ras' }) });
 

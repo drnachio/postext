@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 092 · A manual whose references point to pages ══════════
 // https://postext.dev/en/cookbook/manual-see-page-references
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.12.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -78,7 +78,7 @@ const head = (id, content, parity, edge, x, extra = {}) => ({
   letterSpacing: pt(1.1), color: col('muted'), placement: at('page', edge, x, 10), ...extra,
 });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-gb', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette,
   crossRefs,
@@ -128,15 +128,14 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ '';
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first).
+// Every face the design uses.
 const FONTS = {
   Archivo: ['400', '400i', '700'],
   'Archivo Narrow': ['700'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 const title = t({ en: 'A manual whose references point to pages',
   es: 'Un manual cuyas remisiones apuntan a páginas' });
 showPages(doc, { title });

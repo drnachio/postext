@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 084 · A vertical newspaper page in tiers ═══════════════
 // https://postext.dev/en/cookbook/vertical-newspaper-tiers
 // Code: MIT · Text: Shenbao, 1912 (PD); gazette, stele report: zh.wikisource (CC BY-SA 4.0)
-// Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -123,7 +123,7 @@ const footer = { elements: [text('colophon', '{attr.colophon}', HEI, 400, 7, 'mu
   pages: 'body', placement: at(0, 17, fill) })] }; // 6 mm under the tiers
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'zh-Hant', // Taiwan conventions: centred punctuation (gotcha: cjk-locale-tag)
   colorPalette,
   page: {
@@ -186,7 +186,8 @@ await loadFonts(FONTS, markdown);
 for (const [family, weights, text, vertical] of voices) {
   await loadCjkFonts({ [family]: weights }, text, { vertical });
 }
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A vertical newspaper page in tiers',
   es: 'Una página de periódico vertical, en pisos' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

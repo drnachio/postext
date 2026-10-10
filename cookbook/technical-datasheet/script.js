@@ -5,7 +5,7 @@
 // The datasheet of a fictional sensor. Postext reads no pipe tables, so the tables are data:
 // TSV pasted from a spreadsheet, parsed into table models, then merged, aligned and filled.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
   defaultResourceTypes, parseTSV, mergeCells, setAlignment, setCellBackground,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
@@ -147,7 +147,7 @@ const footer = { elements: [ // every page: an image element works in a running 
 ] };
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   // Tables and figures count 1, 2, 3 through the document; table captions sit above.
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}',
     ...(type.id === 'table' && { captionStyle: { position: 'above' } }) })),
@@ -376,7 +376,7 @@ async function loadDrawing(fileId, markup, face) {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the layout uses, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the layout uses, loaded before the build
   'Fira Sans': ['400', '400i', '600', '600i'], // text; 600 is the bold
   'Fira Sans Condensed': ['400', '400i', '600', '700'], // display: title, heads, captions
   'Fira Mono': ['400'], // labels: pin names, codes, document number, the drawings' labels
@@ -384,12 +384,13 @@ const FONTS = { // every face the layout uses, loaded before the build (gotcha: 
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const allText = [markdown, electrical, pins, registers, ordering].join('\n'); // all it prints
-await loadFonts(FONTS, allText);
+await prepareFonts(allText, config(), kitFonts(FONTS));
 await loadSvg('logo.svg', logo);
 const drawings = { pinout: pinout(), circuit: circuit(), outline: outline() }; // by resource id
 const face = await fontFace(MONO); // fetched once for the three drawings
 for (const [id, markup] of Object.entries(drawings)) await loadDrawing(`${id}.svg`, markup, face);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), allText);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: allText });
 showPages(doc, { title: 'PX-7021 datasheet' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`); // the same faces; the drawings stay vectors with real text

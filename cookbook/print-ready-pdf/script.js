@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 024 · Print-ready PDF: bleed, crop marks and CMYK ═══════════
 // https://postext.dev/en/cookbook/print-ready-pdf
 // Code: MIT · Text: original (CC BY 4.0) · Maps: generated in code (CC BY 4.0)
-// Fonts: Karla, Space Grotesk, Space Mono (SIL OFL 1.1) · Needs postext ≥ 1.22.0
+// Fonts: Karla, Space Grotesk, Space Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // An exhibition leaflet set up for the press: bleed and crop marks on every page, and a
 // PDF/X-4 file separated for FOGRA51 that embeds its fonts and takes the maps and the floor
 // plan from print masters, checked by the preflight before it is offered.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, preflightDocument, loadOutputProfile, outputTransform,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
+  preflightDocument, loadOutputProfile, outputTransform,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -177,7 +177,7 @@ const back = { id: 'back', numbered: false, breakBefore: { enabled: true, parity
   ] } };
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   locale: LANG, // hyphenation (for justified text only) and the PDF's /Lang
   // "Figura 1": Spanish names by hand (gotcha: resource-types-locale), one running count
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}',
@@ -393,16 +393,15 @@ const resources = [
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face the pages use. Layout measures with the browser's fonts, so the kit loads them
-// from Fontsource before the first build (gotcha: fonts-first); the PDF embeds the same files,
+// from Fontsource before the first build; the PDF embeds the same files,
 // Fontsource's latin subsets, which cover Spanish (gotcha: latin-subset).
 const FONTS = { Karla: ['400', '400i', '700'], 'Space Grotesk': ['400', '700'],
   'Space Mono': ['400', '400i', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all(Object.entries(DRAWINGS)
   .map(([id, [size, shapes]]) => loadSvg(`${id}.svg`, toSvg(...size, shapes))));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Cartografías imaginarias · PDF listo para imprenta' });
 const inputs = { resources, masters };
 offerPdf(() => pressPdf(doc, 'press', inputs), `${RECIPE}.pdf`); // the file for the press

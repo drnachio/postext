@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 049 · Exam paper with an answer sheet ═════════════════
 // https://postext.dev/en/cookbook/exam-paper
 // Code: MIT · Text: Lincoln (PD); questions, Spanish translation (CC BY 4.0) · Art: in code
-// Fonts: PT Serif, Inter Tight (SIL OFL 1.1) · Needs postext ≥ 1.23.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: PT Serif, Inter Tight (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'exam-paper';
@@ -148,7 +149,7 @@ const section = { enabled: true, slot: { elements: [ // Section A, Section B: in
   text('title', '{titleText}', LABEL, 20, 800, 'ink', { anchor: { to: '#kicker',
     edge: 'below' }, offset: { y: mm(1.2) }, size: { width: 'fill' } }, { lineHeight: 1.05 })] } };
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes only (gotcha: hyphenation-locales)
   resourceTypes: [{ id: 'form', name: 'Form', shortLabel: '', captionPrefix: '',
     numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal' }], // no label
@@ -237,12 +238,12 @@ const resources = [picture, candidate, grid, answerLines('lines-ai', '11 a) i)',
   answerLines('lines-c', '11 c)', 8)];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { 'PT Serif': ['400', '400i', '700', '700i'], // (gotcha: fonts-first)
+const FONTS = { 'PT Serif': ['400', '400i', '700', '700i'],
   'Inter Tight': ['400', '600', '700', '800'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await Promise.all([loadFonts(FONTS, markdown), loadSvg('year.svg', year())]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+await Promise.all([prepareFonts(markdown, config(), kitFonts(FONTS)), loadSvg('year.svg', year())]);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'History Paper 2', es: 'Historia, prueba 2' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

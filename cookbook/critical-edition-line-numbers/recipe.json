@@ -51,9 +51,7 @@
     "style-inherits-break",
     "headings-drop-h1-break",
     "palette-skips-designs",
-    "design-lineheight-multiple",
-    "config-cache-identity",
-    "fonts-first"
+    "design-lineheight-multiple"
   ],
   "explainsWarnings": [],
   "related": [
@@ -110,7 +108,7 @@
     }
   ],
   "engine": {
-    "postext": "1.23.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -212,5 +210,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-28"
+  "updated": "2026-10-10"
 }

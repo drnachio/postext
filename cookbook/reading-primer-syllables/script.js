@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 060 · Early reader with syllable chips ════════════════
 // https://postext.dev/en/cookbook/reading-primer-syllables
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: diffusion models · Icons: drawn in code
-// Fonts: Andika, DynaPuff, Playpen Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Andika, DynaPuff, Playpen Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage, setCellImage,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage, setCellImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'es'; // @lang: the language of the sample document ('en' | 'es')
@@ -123,7 +123,7 @@ const folio = (parity, edge, x, textEdge, textX) => [
     { parity, verticalAlign: 'middle', align: textEdge.endsWith('left') ? 'left' : 'right' }),
 ];
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, chipStyles, tableStyles, resourceTypes: [sheet],
   page: { width: mm(210), height: mm(260), dpi: 150, margins: { top: mm(TOP), bottom: mm(20),
     left: mm(SIDE), right: mm(SIDE) } }, // equal sides: nothing to mirror
@@ -284,12 +284,13 @@ const FONTS = { Andika: ['400', '700'], DynaPuff: ['700'], 'Playpen Sans': ['400
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const text = syllables(markdown);
-await Promise.all([loadFonts(FONTS, text), // every face before the build (gotcha: fonts-first)
+await Promise.all([prepareFonts(text, config(), kitFonts(FONTS)), // every face before the build
   ...Object.entries(drawings).map(([id, draw]) => loadSvg(`${id}.svg`, draw())),
   ...Object.values(PAINTINGS).map(([file]) => loadImage(file, asset(file)))]);
 const continuation = { pageIndexOffset: 36, pageNumbering: { startAt: 37 } }; // 37: a recto
-const doc = await buildWithFonts(() => buildDocument({ markdown: text, resources, continuation },
-  config()), text);
+const doc = await buildDocumentWithFonts({ markdown: text, resources, continuation },
+  config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Letra a letra · La eme' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

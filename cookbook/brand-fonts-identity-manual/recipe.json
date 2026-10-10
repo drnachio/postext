@@ -32,7 +32,6 @@
   },
   "answers": ["Q09", "Q02", "Q25", "Q52", "Q08"],
   "gotchas": [
-    "fonts-first",
     "custom-fonts-declarative",
     "pdf-provider-all-styles",
     "faked-font-styles",
@@ -41,7 +40,6 @@
     "palette-skips-designs",
     "design-lineheight-multiple",
     "overflow-ellipsis-default",
-    "config-cache-identity",
     "quote-frontmatter"
   ],
   "workarounds": [
@@ -77,7 +75,7 @@
     }
   ],
   "related": ["pdf-with-embedded-fonts", "fonts-before-layout", "parts-in-colour", "technical-datasheet"],
-  "engine": { "postext": "1.19.1", "postextPdf": "1.19.1" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["en"] },
   "capture": {
@@ -123,5 +121,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

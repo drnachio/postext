@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 097 · A reading list from a Zotero BibTeX export ═══════
 // https://postext.dev/en/cookbook/zotero-bibtex-nocite
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Spectral, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.12.1
+// Fonts: Spectral, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
 
@@ -76,7 +76,7 @@ const head = (id, content, parity, edge, x, extra = {}) => ({
 const folio = { color: col('accent') };
 const listName = t({ en: 'HPS 214 · Reading list', es: 'HPS 214 · Lecturas' });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }),
   colorPalette,
   citations,
@@ -126,8 +126,7 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'A reading list from Zotero', es: 'Lecturas desde Zotero' }) });
 
 // @kit core fonts viewer · the Cookbook inlines cookbook/_kit/*.js here

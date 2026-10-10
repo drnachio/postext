@@ -49,8 +49,7 @@
     "palette-skips-designs",
     "design-lineheight-multiple",
     "overflow-ellipsis-default",
-    "hyphenation-locales",
-    "fonts-first"
+    "hyphenation-locales"
   ],
   "explainsWarnings": [],
   "related": [
@@ -106,7 +105,7 @@
     }
   ],
   "engine": {
-    "postext": "1.8.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -216,5 +215,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-28"
+  "updated": "2026-10-10"
 }

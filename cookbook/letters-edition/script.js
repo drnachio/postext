@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 064 · Letters edition: datelines and signatures ════════════
 // https://postext.dev/en/cookbook/letters-edition
 // Code: MIT · Text: Frederick II and Voltaire, 1740 and 1778 (PD) · Cover photo: diffusion models
-// Fonts: Crimson Pro, IM Fell French Canon, IM Fell DW Pica SC (SIL OFL) · Needs postext ≥ 1.23.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Crimson Pro, IM Fell French Canon, IM Fell DW Pica SC (SIL OFL) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'letters-edition';
@@ -72,7 +73,7 @@ const letters = { level: 1, numberingTemplate: '{1:I}', advancedDesign: letterHe
   // headings-drop-h1-break), and a fixed engine would put each letter on a recto.
   breakBefore: { enabled: false }, marginTop: pt(2 * LEAD),
   // The hidden heading line is measured in the heading face: italic keeps it the IM Fell cut
-  // that FONTS loads (gotcha: fonts-first). Upright, it would need the roman, which FONTS
+  // that FONTS loads. Upright, it would need the roman, which FONTS
   // leaves out; the layout would change only for a title long enough to wrap.
   italic: true };
 // #endregion
@@ -139,7 +140,7 @@ const bodyText = { fontFamily: 'Crimson Pro', fontSize: pt(10), lineHeight: pt(L
   maxRuntTracking: 0 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'fr', // the exact code of the bundled patterns (gotcha: hyphenation-locales)
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
@@ -194,14 +195,13 @@ const resources = [{ id: 'binding', typeId: 'figure', kind: 'svg', createdAt: 0,
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces (gotcha: fonts-first)
+const FONTS = { // text, display and label faces
   'Crimson Pro': ['400', '400i'], 'IM Fell French Canon': ['400i'], 'IM Fell DW Pica SC': ['400'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadSvg('binding.svg', bindingSvg());
 await loadImage('letters-1160.jpg', asset('letters-1160.jpg'));
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Letters edition', es: 'Edición de cartas' }) });
 
 // @kit

@@ -21,8 +21,7 @@
   "gaps": ["math-in-captions"],
   "gotchas": [
     "math-bundle", "math-tag-vanishes", "dollar-math", "nbsp-breaks", "design-text-no-inline-marks",
-    "svg-no-webfonts", "float-stretch-closing-page", "quote-frontmatter", "headings-drop-h1-break",
-    "fonts-first"
+    "svg-no-webfonts", "float-stretch-closing-page", "quote-frontmatter", "headings-drop-h1-break"
   ],
   "explainsWarnings": ["invalidMath", "unclosedMath"],
   "related": [
@@ -45,7 +44,7 @@
     { "followup": "EF-83", "package": "postext", "note": "in-column headings take no letterSpacing: the back-matter headings are untracked capitals (textTransform uppercase)" },
     { "followup": "EF-79", "package": "postext", "note": "on a closing page under a page-wide top float, a heading that opens a column is still a balancing lever (stretchAfterFloats: false does not switch it off) and drops a grid line, so the column heads no longer align; the back matter is fitted so no heading opens column 2 of p. 216" }
   ],
-  "engine": { "postext": "1.24.0", "postextPdf": "1.24.0", "math": true },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0", "math": true },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["en"] },
   "capture": {
@@ -73,5 +72,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-09"
+  "updated": "2026-10-10"
 }

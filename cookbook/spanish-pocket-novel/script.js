@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 016 · Justified Spanish in a pocket novel ═════════════════
 // https://postext.dev/en/cookbook/spanish-pocket-novel
 // Code: MIT · Text: B. Pérez Galdós, Marianela, 1878 (PD, Gutenberg #17340) · Map: drawn in code
-// Fonts: Gentium Book Plus, Libre Bodoni, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.23.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
-  registerResourceImage } from 'https://esm.sh/postext';
+// Fonts: Gentium Book Plus, Libre Bodoni, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, defaultResourceTypes, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'es'; // @lang: the language of the sample document (this recipe is Spanish only)
 const RECIPE = 'spanish-pocket-novel';
@@ -151,7 +152,7 @@ const paragraphStyles = [
 ];
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: LOCALE,
   resourceTypes,
   colorPalette,
@@ -291,19 +292,18 @@ function drawMap(face, W, H) { // drawn for W 86 × H 112: the mines above, the 
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Gentium Book Plus': ['400', '400i', '700'], // text, captions (700: 'Figura 1.'), the note
   'Libre Bodoni': ['400', '400i', '700'], // asterisks, the chapter's title, the initial
   'Marcellus SC': ['400'], // chapter label, plate name, running heads
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('plano.svg', drawMap(await labelFace(), MEASURE, MAP_H));
 // The map is book page 8, a verso, facing chapter I: folios and parity follow the book.
 const continuation = { pageIndexOffset: 7, pageNumbering: { startAt: 8 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Español justificado en una novela de bolsillo' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

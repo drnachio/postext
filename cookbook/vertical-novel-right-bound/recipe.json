@@ -58,8 +58,8 @@
     "five-chapter-openers"
   ],
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -160,5 +160,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-29",
-  "updated": "2026-09-30"
+  "updated": "2026-10-10"
 }

@@ -36,7 +36,7 @@
     { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted, so the verso running head's {title} always prints" },
     { "followup": "EF-162", "package": "postext", "note": "the same body-size title heading keeps {titleText} on one line: 1.4.1 rebuilds {titleText} from the hidden heading's wrapped lines joined with a space, so a title that wraps after the hyphen of 'Word-Book' prints 'Word- Book' in the band" }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -76,5 +76,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-09-29"
+  "updated": "2026-10-10"
 }

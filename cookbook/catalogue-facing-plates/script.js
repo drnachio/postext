@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 034 · Catalogue entries facing their plates ══════════════
 // https://postext.dev/en/cookbook/catalogue-facing-plates
 // Code: MIT · Text: original (CC BY 4.0), Ormsby 1885 (PD) · Plates: Doré and Pisan, 1863 (PD)
-// Fonts: Ibarra Real Nova, Libre Bodoni, Sofia Sans Condensed (OFL 1.1) · Needs postext ≥ 1.24.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Ibarra Real Nova, Libre Bodoni, Sofia Sans Condensed (OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en')
 const RECIPE = 'catalogue-facing-plates';
@@ -178,7 +179,7 @@ const footer = { elements: [ // folios at the outer foot; entries (versos) add t
     { color: col('ink'), align: 'right' }),
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, resourceTypes: [plateType, listType],
   // A bitmap is never set wider than its declared pixels at this dpi: at 150 dpi a 1,900-px
   // scan may reach 322 mm, so the text block decides (at 300 dpi it stops at 161 mm).
@@ -258,7 +259,7 @@ async function loadPlates() {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Ibarra Real Nova': ['400', '400i'], // text, the lead, the checklist
   'Libre Bodoni': ['400', '400i'], // numerals, titles, drop caps, the cover
   'Sofia Sans Condensed': ['400', '600', '700'], // labels, tombstones, captions, folios
@@ -266,8 +267,10 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const words = `${markdown}\n${plateTexts}\n${CREDIT}`; // their letters decide the font subsets
-const [, resources] = await Promise.all([loadFonts(FONTS, words), loadPlates()]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), words);
+const [, resources] = await Promise.all([
+  prepareFonts(words, config(), kitFonts(FONTS)), loadPlates()]);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: words });
 // #region check: every page past an opener holds a plate, so each plate faces its entry
 const astray = doc.pages.find((pg) => pg.role !== 'opener' && !pg.floats?.length);
 if (astray) { // text run past its verso, or the blank page that follows it

@@ -1,14 +1,13 @@
 // ═══ Postext Cookbook · Nº 145 · Every kind of balloon on a lighthouse page ═════════
 // https://postext.dev/en/cookbook/balloon-kinds
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.21.0
+// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.25.0
 //
 // One comic page that uses every kind of balloon the engine draws, with a letterer's style
 // sheet in front of it. Each line of the script names its speaker and, when it is not plain
 // speech, its kind; the shape, the tail and the type follow from the balloon style.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -74,7 +73,7 @@ const footer = { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber}'
   align: 'center', placement: { anchor: { to: 'page', edge: 'bottom' },
     offset: { x: mm(0), y: mm(-8) } } }] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar',
     pt: 'pt-BR' }),
   colorPalette, comics,
@@ -217,7 +216,7 @@ const ART = {
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face of the six editions; each edition loads the latin files of all of them and the
-// Japanese, Chinese or Arabic files of its own two (gotcha: fonts-first).
+// Japanese, Chinese or Arabic files of its own two.
 const FONTS = {
   'Comic Neue': ['400', '400i', '700', '700i'],
   Bangers: ['400'],
@@ -243,7 +242,8 @@ const resources = await Promise.all([
   comicPanel('bk-window', asset('bk-window.jpg'), ART['bk-window']),
   comicPanel('bk-morning', asset('bk-morning.jpg'), ART['bk-morning']),
 ]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'Every kind of balloon on a lighthouse page',
   es: 'Todos los bocadillos en una página del faro',
   pt: 'Todos os tipos de balão numa página do farol' }) });

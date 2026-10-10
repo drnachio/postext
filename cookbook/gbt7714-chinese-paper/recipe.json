@@ -32,8 +32,7 @@
     "cjk-locale-tag",
     "cjk-fonts-slices",
     "headings-drop-h1-break",
-    "quote-frontmatter",
-    "fonts-first"
+    "quote-frontmatter"
   ],
   "workarounds": [
     {
@@ -65,5 +64,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-10-01",
-  "updated": "2026-10-09"
+  "updated": "2026-10-10"
 }

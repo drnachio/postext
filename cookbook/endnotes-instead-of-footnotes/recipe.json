@@ -23,7 +23,7 @@
     "digit-period-list", "ragged-no-hyphenation", "section-column-rule", "nbsp-breaks",
     "top-float-next-page", "palette-skips-designs", "opener-reserves-anchored", "headings-drop-h1-break",
     "overflow-ellipsis-default", "svg-no-webfonts", "svg-no-marker-filters", "parity-page1-recto",
-    "quote-frontmatter", "config-cache-identity", "fonts-first"
+    "quote-frontmatter"
   ],
   "explainsWarnings": [],
   "related": ["annotated-classic-glosses", "critical-edition-line-numbers", "thesis-back-matter", "journal-article-with-maths"],
@@ -37,7 +37,7 @@
     { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted" },
     { "followup": "EF-18", "package": "postext", "note": "the opener sets no minHeight: its soot field, a page-anchored box reaching below the heading, sets the reserve (gotcha opener-reserves-anchored), and the H1's default 9 pt bottom margin rides on it; if page-anchored elements stop counting, give the opener minHeight: mm(FIELD - TOP)" }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en"] },
   "capture": {
@@ -72,5 +72,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-28"
+  "updated": "2026-10-10"
 }

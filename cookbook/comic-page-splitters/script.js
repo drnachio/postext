@@ -1,15 +1,14 @@
 // ═══ Postext Cookbook · Nº 144 · One set of panels, three page splits ═══════════════
 // https://postext.dev/en/cookbook/comic-page-splitters
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.21.0
+// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.25.0
 //
 // A layout proof for one page of a comic: the same five pictures and the same lines of
 // dialogue laid out under three `split` trees. Each picture carries a safe area, so its subject
 // stays in view whether its cell is wide, tall or square, and the lettering is placed again
 // around the speakers' anchors on every page and in every language.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -70,7 +69,7 @@ const footer = { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber}'
   align: 'center', placement: { anchor: { to: 'page', edge: 'bottom' },
     offset: { x: mm(0), y: mm(-8) } } }] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar',
     pt: 'pt-BR' }),
   colorPalette, comics,
@@ -191,7 +190,7 @@ const ART = {
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face of the six editions; each edition loads the latin files of all of them and the
-// Japanese, Chinese or Arabic files of its own two (gotcha: fonts-first).
+// Japanese, Chinese or Arabic files of its own two.
 const FONTS = {
   'Comic Neue': ['400', '400i', '700', '700i'],
   Bangers: ['400'],
@@ -216,7 +215,8 @@ const resources = await Promise.all([
   comicPanel('lh-biscuit', asset('lh-biscuit.jpg'), ART['lh-biscuit']),
   comicPanel('lh-beam', asset('lh-beam.jpg'), ART['lh-beam']),
 ]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'One set of panels, three page splits',
   es: 'Las mismas viñetas en tres divisiones de página',
   pt: 'Os mesmos quadros em três divisões de página' }) });

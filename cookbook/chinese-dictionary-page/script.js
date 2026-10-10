@@ -2,7 +2,7 @@
 // https://postext.dev/en/cookbook/chinese-dictionary-page
 // Code: MIT · Text: 康熙字典 (1716), Wikisource transcription, CC BY-SA 4.0 · Pinyin: CC BY 4.0
 // Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -108,7 +108,7 @@ const paragraphStyles = [
   { id: 'colophon', ...colophon, fontFamily: SONG, marginTop: pt(3) },
 ];
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   // Taiwan's rules: full-width punctuation, centred in Noto Serif TC, and the basic
   // line breaking. Written out, never LANG (gotcha: cjk-locale-tag).
   locale: 'zh-Hant',
@@ -141,7 +141,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif TC': ['400', '700', '900'], // SONG: the entries, readings, credits; the headwords
   'Noto Sans TC': ['700'], // HEI: guide words, folios, the tab
   'LXGW WenKai TC': ['400'], // KAI: the colophon's sentence of Chinese
@@ -162,8 +162,9 @@ await loadCjkFonts({ [KAI]: ['400'] }, all(/style="colophon-zh"\}\n(.+)\n/g));
 // #endregion
 // Pages 634 to 637 of the dictionary: page 1 is a verso, so the four lie as two spreads.
 const continuation = { pageIndexOffset: 633, pageNumbering: { startAt: 634 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, continuation }, config()), markdown);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown, continuation }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'A Chinese dictionary page',
   es: 'Una página de diccionario chino' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

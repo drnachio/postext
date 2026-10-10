@@ -38,7 +38,7 @@ pageNotes: { "1": "实验4.2的首页：一条砖红色色带，上面是标题T
 
 ### 5 · 在画布、PDF和EPUB里排出θ和π
 
-Source Serif 4的希腊字母放在Fontsource单独的`greek`文件里，与`latin`文件并列。`loadFonts(FONTS, markdown)`在正文里发现希腊字母，就为这个字体族的每种字体加载这个文件；哪种字体排了θ或π，`fontsourceProvider`就把它和latin文件一起嵌入PDF，所以这两个字母不需要另写代码。EPUB只嵌入代码交给它的字体，因此第4步把正文字体的`greek`文件排在拉丁文件之后，各用自己的`unicodeRange`限定在希腊字母区段。
+Source Serif 4的希腊字母放在Fontsource单独的`greek`文件里，与`latin`文件并列。`kitFonts(FONTS)`在正文里发现希腊字母，就为这个字体族的每种字体加载这个文件；哪种字体排了θ或π，`fontsourceProvider`就把它和latin文件一起嵌入PDF，所以这两个字母不需要另写代码。EPUB只嵌入代码交给它的字体，因此第4步把正文字体的`greek`文件排在拉丁文件之后，各用自己的`unicodeRange`限定在希腊字母区段。
 
 ### 6 · 在代码里算出这张表
 

@@ -15,7 +15,7 @@
   "answers": ["Q147", "Q135", "Q144", "Q140"],
   "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order", "aozora-cp932", "quote-frontmatter", "font-range-holes", "vertical-two-frames"],
   "related": ["vertical-novel-right-bound", "trade-paperback-novel", "catalan-pocket-novella", "arabic-novel-right-bound"],
-  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -51,5 +51,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-10-05",
-  "updated": "2026-10-05"
+  "updated": "2026-10-10"
 }

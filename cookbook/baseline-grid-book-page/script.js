@@ -1,11 +1,10 @@
 // ═══ Postext Cookbook · Nº 013 · A book page on a baseline grid ═════════════════════
 // https://postext.dev/en/cookbook/baseline-grid-book-page
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code (CC BY 4.0)
-// Fonts: Vollkorn, Playfair Display, Vollkorn SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Vollkorn, Playfair Display, Vollkorn SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // An essay on the canon of page proportions, on a page that shows its geometry and grid.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
-  registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, defaultResourceTypes, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es' | 'pt')
@@ -91,7 +90,7 @@ const continuation = { pageIndexOffset: 8, pageNumbering: { startAt: 9 } };
 const balancing = { stretchAfterFloats: false };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es', pt: 'pt' }), // exact codes (gotcha: hyphenation-locales)
   resourceTypes: defaultResourceTypes(LANG), // localized captions (gotcha: resource-types-locale)
   colorPalette,
@@ -244,18 +243,17 @@ const resources = [
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the pages paint, loaded before the first build (gotcha: fonts-first).
+// Every face the pages paint, loaded before the first build.
 const FONTS = { // text, display and label faces (Vollkorn SC ships no italic)
   Vollkorn: ['400', '400i', '700'], 'Playfair Display': ['700', '700i'],
   'Vollkorn SC': ['400', '600'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('canon.svg', canonSvg(...CANON));
 await loadSvg('pages.svg', pagesSvg(...PAGES));
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'A book page on a baseline grid',
   es: 'Una página de libro sobre una rejilla base',
   pt: 'Uma página de livro sobre a grade de linhas de base' }) });

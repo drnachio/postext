@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 068 · Photo essay with full-bleed plates ═══════════════
 // https://postext.dev/en/cookbook/photo-essay-full-bleed
 // Code: MIT · Text: original (CC BY 4.0) · Plates: diffusion models
-// Fonts: Andada Pro, Syne, Syne Mono (SIL OFL 1.1) · Needs postext ≥ 1.8.0
+// Fonts: Andada Pro, Syne, Syne Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Sierra, a landscape photobook: one day in a mountain range in six plates, each on a page of
 // its own and one across the gutter of a spread, with three short texts between them.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'es'; // @lang: the language of the sample document ('en' | 'es')
@@ -116,7 +116,7 @@ const footer = { elements: [
 ] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   // The English sample is British English, set with the US patterns: 1.4.1 ships no en-gb.
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette,
@@ -180,14 +180,13 @@ const resources = [ // the five the heading styles draw, never cited, and plate 
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   'Andada Pro': ['400'], Syne: ['700', '800'], 'Syne Mono': ['400'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 const files = resources.map((r) => r.bitmap.fileId); // a resource names a file: load each
 await Promise.all(files.map((f) => loadImage(f, asset(f))));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Sierra: a photo essay in landscape',
   es: 'Sierra: un ensayo fotográfico apaisado' }) });
 

@@ -56,8 +56,7 @@
     "palette-skips-designs",
     "design-lineheight-multiple",
     "overflow-ellipsis-default",
-    "runt-tracking-unpainted",
-    "fonts-first"
+    "runt-tracking-unpainted"
   ],
   "explainsWarnings": [],
   "related": [
@@ -99,7 +98,7 @@
     }
   ],
   "engine": {
-    "postext": "1.24.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -183,5 +182,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-10-09"
+  "updated": "2026-10-10"
 }

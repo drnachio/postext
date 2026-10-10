@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 023 · Magazine cover and sectioned contents ═══════════════
 // https://postext.dev/en/cookbook/magazine-cover-and-contents
 // Code: MIT · Text: original (CC BY 4.0) · Photos: R. Heuvel, chuttersnap, m. tuna (CC0), diffusion
-// Fonts: Spectral, Bodoni Moda, Jost (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Spectral, Bodoni Moda, Jost (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -177,7 +177,7 @@ const boxText = { textAlign: 'left', hyphenation: false, firstLineIndent: pt(0) 
 const boxStyle = { backgroundEnabled: false, ...flush, // one device: a stripe in 'band'
   stripe: { enabled: true, side: 'top', width: pt(2), color: col('band') },
   padding: { top: mm(3), right: pt(0), bottom: pt(0), left: pt(0) } };
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette, resourceTypes: [photoType],
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
@@ -274,16 +274,15 @@ function barcodeArt() { // 32 × 14 mm on paper: bars and no digits, so it reads
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Spectral: ['400', '400i', '700'], 'Bodoni Moda': ['400', '400i', '600', '700', '900'],
   Jost: ['400', '600'] }; // Spectral 700: the contributors' names; Jost 400: the captions
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 const photos = [...new Set(resources.flatMap((r) => r.bitmap?.fileId ?? []))]; // each JPEG once
 await Promise.all([...photos.map((file) => loadImage(file, asset(file))),
   loadSvg('barcode.svg', barcodeArt())]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Magazine cover and sectioned contents',
   es: 'Portada de revista e índice por secciones' }) });
 

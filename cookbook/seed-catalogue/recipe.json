@@ -52,8 +52,6 @@
     "palette-skips-designs",
     "overflow-ellipsis-default",
     "headings-drop-h1-break",
-    "config-cache-identity",
-    "fonts-first",
     "cell-dollar-backslash"
   ],
   "workarounds": [

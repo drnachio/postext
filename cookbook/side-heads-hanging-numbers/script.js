@@ -1,10 +1,9 @@
 // ═══ Postext Cookbook · Nº 045 · Side heads, hanging numbers and run-in heads ═══════
 // https://postext.dev/en/cookbook/side-heads-hanging-numbers
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: made in code (MIT)
-// Fonts: Mona Sans, Noto Serif Display, DM Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: Mona Sans, Noto Serif Display, DM Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 
 const LANG = 'es'; // @lang: the language of the sample document ('en' | 'es')
@@ -155,7 +154,7 @@ const footer = { elements: [
 ] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   // Figura / Tabla, counted through the whole brief: 1, 2… (gotcha: resource-types-locale)
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
   colorPalette,
@@ -386,9 +385,8 @@ const source = sideHeads(markdown);
 await loadSvg('situacion.svg', situacionSvg());
 await loadSvg('parcela.svg', parcelaSvg());
 await loadSvg('fachada.svg', fachadaSvg());
-await loadFonts(FONTS, source);
-const doc = await buildWithFonts(() => buildDocument({ markdown: source, resources }, config()),
-  source);
+const doc = await buildDocumentWithFonts({ markdown: source, resources }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Competition brief', es: 'Bases del concurso' }) });
 
 // @kit

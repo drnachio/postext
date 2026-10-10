@@ -22,7 +22,7 @@ O código é [a resposta curta](#a-resposta-curta) logo acima. O Postext mede ca
 
 <Excerpt region="build" />
 
-`registerFaces()` só se resolve quando todas as fontes de `FONTS` estão carregadas, então a primeira composição já mede com as fontes que o PDF vai incorporar. Ela também é a única, porque `FONTS` lista cada negrito e cada itálico que um bloco de Crimson Text ou de Fraunces pode pedir, e o `buildWithFonts` do kit não encontra nada para acrescentar ([Cache de medidas](/pt/docs/configuration#cache-de-medidas)). Essa verificação só ajuda a tela. Se faltar uma fonte em `FONTS`, o `buildWithFonts` a carrega e refaz a diagramação, com um aviso no console quando um bloco é composto nessa fonte e sem aviso nenhum quando é um negrito ou um itálico, mas o PDF continua recebendo a fonte mais próxima que o provedor tiver.
+`registerFaces()` só se resolve quando todas as fontes de `FONTS` estão carregadas, então a primeira composição já mede com as fontes que o PDF vai incorporar. Ela também é a única, porque `FONTS` lista cada negrito e cada itálico que um bloco de Crimson Text ou de Fraunces pode pedir, e o `buildDocumentWithFonts` já encontra declaradas todas as fontes que procura ([Carregar as fontes antes do layout](/pt/docs/configuration#carregar-as-fontes-antes-do-layout)). Essa verificação só ajuda a tela. Se faltar uma fonte em `FONTS`, o motor a pede ao kit, carrega o arquivo do Fontsource e refaz a diagramação sem aviso no console, mas o PDF continua recebendo a fonte mais próxima que o provedor tiver.
 
 ### 3 · A exportação e a lista do que foi incorporado
 

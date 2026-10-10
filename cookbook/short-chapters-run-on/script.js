@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 065 · Pocket classic: short chapters that run on ═══════════
 // https://postext.dev/en/cookbook/short-chapters-run-on
 // Code: MIT · Text: Machado de Assis, Dom Casmurro, 1899 (PD, Gutenberg #55752) · Plate: painted
-// Fonts: Tinos (Apache 2.0), Abril Fatface, League Spartan (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Tinos (Apache 2.0), Abril Fatface, League Spartan (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the viewer's title; the sample is Portuguese
 const RECIPE = 'short-chapters-run-on';
@@ -146,7 +147,7 @@ const colophon = { id: 'colophon', placement: 'bottom', backgroundEnabled: false
   body: { fontFamily: TEXT, fontSize: pt(7.6), lineHeight: pt(LEAD * 0.8), color: col('muted'),
     italicColor: col('muted'), textAlign: 'left', firstLineIndent: pt(0) } };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: LOCALE,
   colorPalette,
   page,
@@ -208,21 +209,20 @@ function roundelSvg() {
 const markdown = /* @content */ '';
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   Tinos: ['400', '400i'], // text, colophon; italic: the plate's quote, the colophon's title
   'Abril Fatface': ['400'], // chapter numerals and the cover title
   'League Spartan': ['600'], // chapter titles, running heads, folios, the cover's capitals
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('roundel.svg', roundelSvg());
 await loadImage('plate-1100.jpg', asset('plate-1100.jpg'));
 // #region excerpt: these pages continue a book: chapter CXVIII is under way, the next is CXIX
 const continuation = { headings: { h1: 118, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 } };
 // #endregion
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Dom Casmurro, a pocket edition',
   es: 'Dom Casmurro, edición de bolsillo' }) });
 

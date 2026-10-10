@@ -22,7 +22,7 @@ El código es [la respuesta corta](#la-respuesta-corta) de arriba. Postext mide 
 
 <Excerpt region="build" />
 
-`registerFaces()` no se resuelve hasta que se hayan cargado todas las fuentes de `FONTS`, así que la primera composición ya mide con las fuentes que va a incrustar el PDF. No hace falta una segunda, porque `FONTS` enumera cada negrita y cada cursiva que puede pedir un bloque de Crimson Text o de Fraunces, y `buildWithFonts`, del kit, no encuentra nada que añadir ([Caché de medidas](/es/docs/configuration#caché-de-medidas)). Esa comprobación solo sirve para la pantalla. Si a `FONTS` le falta una fuente, `buildWithFonts` la carga y vuelve a componer, con un aviso en la consola si un bloque se compone con ella y sin aviso si es una negrita o una cursiva, pero el PDF recibe igualmente la fuente más próxima de las que tiene el proveedor.
+`registerFaces()` no se resuelve hasta que se hayan cargado todas las fuentes de `FONTS`, así que la primera composición ya mide con las fuentes que va a incrustar el PDF. No hace falta una segunda, porque `FONTS` enumera cada negrita y cada cursiva que puede pedir un bloque de Crimson Text o de Fraunces, y `buildDocumentWithFonts` encuentra ya declaradas todas las fuentes que busca ([Cargar las fuentes antes de componer](/es/docs/configuration#cargar-las-fuentes-antes-de-componer)). Esa comprobación solo sirve para la pantalla. Si a `FONTS` le falta una fuente, el motor se la pide al kit, carga el archivo de Fontsource y vuelve a componer sin avisar en la consola, pero el PDF recibe igualmente la fuente más próxima de las que tiene el proveedor.
 
 ### 3 · La exportación y la lista de lo que incrustó
 

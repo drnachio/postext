@@ -3,8 +3,8 @@
 // Code: MIT · Text: Wei et al. 2022, arXiv:2201.11903 (CC BY 4.0) · Charts: drawn in code
 // Fonts: Newsreader, IBM Plex Sans, IBM Plex Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  registerResourceImage, inlineSvgFonts,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
+  inlineSvgFonts,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -121,7 +121,7 @@ const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'bottom', 
     edge: 'bottom' }, offset: { x: ZERO, y: mm(-14) }, size: { width: mm(20) } } })] };
 
 const sans = (size) => ({ fontFamily: SANS, fontSize: pt(size), fontWeight: 600 });
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us', colorPalette, citations, resourceTypes, header, footer,
   crossRefs: { section: 'Section {n}' }, // \cref prints "Section 3"
   calloutStyles: [...promptBoxes,
@@ -340,12 +340,11 @@ const FONTS = {
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const source = [markdown, later, refs].join('\n\n');
-await loadFonts(FONTS, source);
 await Promise.all([loadSvg('gsm8k.svg', barChart()), loadSvg('scale.svg', scaleChart()),
   loadSvg('right.svg', markSvg(palette.green, 'M18 33l9 9 19-20')),
   loadSvg('wrong.svg', markSvg(palette.red, 'M21 21l22 22M43 21L21 43'))]);
 const content = { markdown: source, resources: resources() };
-const doc = await buildWithFonts(() => buildDocument(content, config()), source);
+const doc = await buildDocumentWithFonts(content, config(), kitFonts(FONTS));
 showPages(doc, { title: 'An AI preprint with prompt exemplars' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

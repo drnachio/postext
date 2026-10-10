@@ -54,11 +54,10 @@
     "design-lineheight-multiple",
     "overflow-ellipsis-default",
     "runt-tracking-unpainted",
-    "fonts-first",
     "design-text-no-inline-marks"
   ],
   "engine": {
-    "postext": "1.23.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -167,7 +166,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-26",
+  "updated": "2026-10-10",
   "gaps": [],
   "explainsWarnings": [],
   "workarounds": [

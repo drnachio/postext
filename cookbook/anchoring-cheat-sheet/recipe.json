@@ -19,8 +19,7 @@
   "answers": ["Q81", "Q79"],
   "gotchas": [
     "header-paints-over-text", "attr-values", "overflow-ellipsis-default",
-    "design-lineheight-multiple", "palette-skips-designs", "headings-drop-h1-break",
-    "config-cache-identity", "fonts-first"
+    "design-lineheight-multiple", "palette-skips-designs", "headings-drop-h1-break"
   ],
   "explainsWarnings": ["designCyclicAnchor", "designDanglingAnchor"],
   "related": [
@@ -34,7 +33,7 @@
     { "followup": "EF-56", "package": "postext", "note": "every design text takes lineHeight as a multiple of its size, never pt(): a Dimension would silently drop the opener's reserved height (gotcha design-lineheight-multiple)" },
     { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside the paletteId, because 1.4.1 paints design elements from the hex (gotcha palette-skips-designs)" }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -60,5 +59,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 027 · Newspaper front page ═══════════════════════════
 // https://postext.dev/en/cookbook/newspaper-front-page
 // Code: MIT · Text: original (CC BY 4.0) · Photo: Jason Blackeye (CC0)
-// Fonts: Grenze Gotisch, PT Serif, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: Grenze Gotisch, PT Serif, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -140,7 +140,7 @@ const header = { elements: [...folio('even', 'left', 1), ...folio('odd', 'right'
 // #endregion
 
 const label = { fontFamily: 'Libre Franklin', fontSize: pt(8), firstLineIndent: pt(0) };
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, resourceTypes,
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'), margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom),
@@ -385,15 +385,14 @@ resources.push(...bars.map((b) => resource(b.id, 'panel', 'svg', // the bars the
 const markdown = /* @content */ ''; // content.en.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   'PT Serif': ['400', '400i', '700'], 'Grenze Gotisch': ['700'],
   'Libre Franklin': ['400', '600', '700', '800', '900'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all([loadImage('ridge-2400.jpg', asset('ridge-2400.jpg')),
   loadSvg('bridge.svg', bridgeSvg()), ...bars.map((b) => loadSvg(`${b.id}.svg`, b.svg))]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Newspaper front page' });
 
 // @kit

@@ -26,7 +26,7 @@
     ]
   },
   "answers": ["Q97", "Q94"],
-  "gotchas": ["cjk-fonts-slices", "cjk-no-italic", "cjk-locale-tag", "cjk-face-region", "headings-drop-h1-break", "palette-skips-designs", "config-cache-identity"],
+  "gotchas": ["cjk-fonts-slices", "cjk-no-italic", "cjk-locale-tag", "cjk-face-region", "headings-drop-h1-break", "palette-skips-designs"],
   "related": ["names-and-subjects-indexes", "back-of-book-index", "chinese-novel-horizontal"],
   "workarounds": [
     { "package": "postext", "note": "the index note is a heading attribute (note=\"…\") that the opener design prints above the two columns, not a paragraph: as the first paragraph under the index heading, column balancing's loose-paragraph lever spread it to twelve characters a line in a column of fourteen to even out the Traditional edition's last page" }

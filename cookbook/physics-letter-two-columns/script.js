@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 140 · A physics letter with a data figure across the top ═══
 // https://postext.dev/en/cookbook/physics-letter-two-columns
 // Code: MIT · Text: Abbott et al., PRL 116, 061102 (CC BY 3.0) · Data: GWOSC (CC BY 4.0)
-// Fonts: Gelasio, Albert Sans (SIL OFL 1.1) · Needs postext ≥ 1.19.0
+// Fonts: Gelasio, Albert Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  registerCitationEngine, defaultResourceTypes, initMathEngine, renderMath,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, registerCitationEngine,
+  defaultResourceTypes, initMathEngine, renderMath,
 } from 'https://esm.sh/postext?bundle';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -112,7 +112,7 @@ const footer = { elements: [
 ] };
 
 const sans = (size, weight) => ({ fontFamily: SANS, fontSize: pt(size), fontWeight: weight });
-const config = () => ({ // a factory (gotcha: config-cache-identity)
+const config = () => ({
   locale: 'en-us', colorPalette, citations, header, footer, paragraphStyles,
   // FIG. 1 and TABLE I in the captions, Fig. 1 and Table I in the text: the APS convention
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}',
@@ -417,14 +417,13 @@ const PYCBC = [[7.22, 4], [7.42, 14], [7.62, 12], [7.82, 16], [8.02, 7], [8.22, 
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages paint (gotcha: fonts-first)
+const FONTS = { // every face the pages paint
   Gelasio: ['400', '400i', '700', '700i'],
   'Albert Sans': ['400', '400i', '500', '600', '700', '700i'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await initMathEngine(); // gotcha: math-bundle. Unawaited, every formula is a grey box
-await loadFonts(FONTS, source);
 const figures = { // width, drawing, placement, alt text
   fig1: [MEASURE, figure1, { position: 'here', span: 'page' }, 'One chirp in both detectors.'],
   fig2: [COLUMN, figure2, { position: 'top' }, 'Strain; separation falls, speed rises.'],
@@ -441,8 +440,8 @@ for (const [id, [width, draw, placement, altText]] of Object.entries(figures)) {
 }
 resources.push({ id: 'tab1', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0,
   placement: { position: 'auto' }, caption: caption.tab1, note: caption['tab1.note'], table });
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown: source, resources }, config()), source);
+const doc = await buildDocumentWithFonts({ markdown: source, resources }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'A physics letter with its figure across both columns' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`); // formulas and figures stay vector paths

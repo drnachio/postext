@@ -57,9 +57,7 @@
     "design-lineheight-multiple",
     "overflow-ellipsis-default",
     "svg-no-webfonts",
-    "parity-page1-recto",
-    "config-cache-identity",
-    "fonts-first"
+    "parity-page1-recto"
   ],
   "explainsWarnings": [
     "calloutOverflow"
@@ -118,7 +116,7 @@
     }
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -202,5 +200,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

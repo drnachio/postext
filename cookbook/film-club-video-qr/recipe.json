@@ -35,12 +35,11 @@
     "resource-types-locale",
     "resource-double-quotes",
     "headings-drop-h1-break",
-    "overflow-ellipsis-default",
-    "fonts-first"
+    "overflow-ellipsis-default"
   ],
   "explainsWarnings": ["videoWithoutPoster"],
   "related": ["figures-float-where-cited", "photo-essay-full-bleed"],
-  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [2, 3], "card": "spread", "pages": "all", "expect": { "pages": [6, 6] } },
@@ -100,5 +99,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-10-05",
-  "updated": "2026-10-05"
+  "updated": "2026-10-10"
 }

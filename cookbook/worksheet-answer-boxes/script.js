@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 022 · Worksheet with answer boxes and a word bank ══════
 // https://postext.dev/en/cookbook/worksheet-answer-boxes
 // Code: MIT · Text: original (CC BY 4.0) · Plant: diffusion models · Icons: drawn in code
-// Fonts: Andika, Baloo 2, Fredoka (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Andika, Baloo 2, Fredoka (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'worksheet-answer-boxes';
@@ -146,7 +147,7 @@ const foods = () => ({ id: 'foods', typeId: 'sheet', kind: 'table', createdAt: 0
     rows: FOODS.map((name, r) => matchRow(ICONS[r], name, PARTS[r])) } } });
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes only (gotcha: hyphenation-locales)
   resourceTypes: [sheetType], colorPalette, chipStyles, tableStyles, header: { elements: [] },
   footer: { elements: [words('foot', '{title} · {subtitle} · {attr.unit} · {pageNumber}', LABEL,
@@ -272,14 +273,14 @@ pictures.push(...[['plant', 994], ['plant-foot', 98]].map(([id, h]) => ({ id, ty
 const resources = [...pictures, foods()];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { Andika: ['400', '700'], 'Baloo 2': ['700', '800'], // (gotcha: fonts-first)
+const FONTS = { Andika: ['400', '700'], 'Baloo 2': ['700', '800'],
   Fredoka: ['400', '500', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await Promise.all([loadFonts(FONTS, markdown),
+await Promise.all([prepareFonts(markdown, config(), kitFonts(FONTS)),
   ...Object.entries(drawings).map(([id, draw]) => loadSvg(`${id}.svg`, draw())),
   ...['plant-1092.jpg', 'plant-foot-1092.jpg'].map((file) => loadImage(file, asset(file)))]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Plants and their parts', es: 'Las plantas y sus partes' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

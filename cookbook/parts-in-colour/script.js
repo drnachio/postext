@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 019 · Parts in colour from one attribute ═══════════════════════
 // https://postext.dev/en/cookbook/parts-in-colour
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: diffusion models
-// Fonts: Alegreya, Zilla Slab, Barlow Condensed (SIL OFL 1.1) · Needs postext ≥ 1.7.0
+// Fonts: Alegreya, Zilla Slab, Barlow Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A pocket field guide to two habitats. Each :::part names its own 'band' colour, and every
 // colour linked to 'band' takes it: the divider and its verso, the tab, the field marks.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -185,7 +185,7 @@ const contentsOpener = { enabled: true, minHeight: mm(STRIP), slot: { elements: 
     at('top-left', 0, STRIP - MARGIN.top + TITLE_DROP, 'container')),
 ] } };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // hyphenation, by exact code (gotcha: hyphenation-locales)
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
@@ -253,14 +253,13 @@ const resources = [drawing('cover', [1152, 1536]), drawing('strip', [1536, 451])
     { caption: CAPTIONS[id], placement: { position: 'here' } }))];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses, loaded before the first build (gotcha: fonts-first).
+// Every face the design uses, loaded before the first build.
 const FONTS = { Alegreya: ['400', '400i', '700'], 'Zilla Slab': ['600', '700'], // text, display
   'Barlow Condensed': ['400', '600', '700'] }; // and labels
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all(resources.map(({ bitmap: b }) => loadImage(b.fileId, asset(b.fileId))));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: BOOK });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 135 · Magazine feature on a three-column grid ═════════
 // https://postext.dev/en/cookbook/magazine-three-column-feature
 // Code: MIT · Text: original (CC BY 4.0) · Photographs: generated with diffusion models
-// Fonts: Source Serif 4, Fraunces, Barlow Condensed (SIL OFL 1.1) · Needs postext ≥ 1.18.0
+// Fonts: Source Serif 4, Fraunces, Barlow Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A travel feature from a monthly magazine, pages 84–89 of the issue. The story opens on a
 // spread, a photograph bled across both pages, then runs on in three columns: pictures across
 // two of them, one across the page and one in a single column, a pull quote floated across
 // two columns, a sidebar in one, running heads, folios and an end mark.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -133,7 +133,7 @@ const footer = { elements: [{ kind: 'text', id: 'drop-folio', content: '{pageNum
   placement: pin('bottom-right', -MARGIN.outer, -12) }] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us', // an exact hyphenation code (gotcha: hyphenation-locales)
   colorPalette, resourceTypes: [photoType],
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
@@ -254,18 +254,17 @@ function islandMap() { // in mm: a long, low island lying south-west to north-ea
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   'Source Serif 4': ['400', '400i', '600'], Fraunces: ['400i', '600'],
   'Barlow Condensed': ['500', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all([...resources.filter((r) => r.bitmap).map(({ bitmap }) =>
   loadImage(bitmap.fileId, asset(bitmap.fileId))), loadSvg('map.svg', islandMap())]);
 // Pages 84–89 of the issue: page 84 is a verso, so the opener lies open as a spread.
 const continuation = { pageIndexOffset: 83, pageNumbering: { startAt: 84 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Magazine feature on a three-column grid' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 061 · Screenplay format ═══════════════════════════════
 // https://postext.dev/en/cookbook/screenplay-format
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Courier Prime, Oswald (SIL OFL 1.1), Special Elite (Apache 2.0) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Courier Prime, Oswald (SIL OFL 1.1), Special Elite (Apache 2.0) · Needs postext ≥ 1.25.0
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'screenplay-format';
@@ -207,7 +207,7 @@ const flyleaf = { id: 'flyleaf', span: 'page', // the inside of the cover, facin
   ] } } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette,
   page,
   layout: { layoutType: 'single' },
@@ -233,8 +233,7 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Lost Property · a short film',
   es: 'Objetos perdidos · un cortometraje' }) });
 

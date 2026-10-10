@@ -3,8 +3,8 @@
 // Code: MIT · Text: Fitzpatrick, Darcy & Vierhile 2017 (CC BY 4.0), abridged · Figures: code
 // Fonts: Lora, Nunito Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  registerResourceImage, defaultResourceTypes, mergeCells, initMathEngine, inlineSvgFonts,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
+  defaultResourceTypes, mergeCells, initMathEngine, inlineSvgFonts,
 } from 'https://esm.sh/postext?bundle'; // with MathJax (gotcha: math-bundle)
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -116,7 +116,7 @@ registerCitationEngine(createCiteprocEngine({ styles: STYLES, locales: LOCALES }
 const sans = (size, weight) => ({ fontFamily: SANS, fontSize: pt(size), fontWeight: weight });
 const small = (id, size, lead, extra) => ({ id, fontFamily: SANS, fontSize: pt(size),
   lineHeight: pt(lead), textAlign: 'left', firstLineIndent: pt(0), ...extra });
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us',
   // "Table 1" over its table, "Figure 1" under its figure; one count, not 1.1 (title unnumbered)
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type,
@@ -349,12 +349,11 @@ const FONTS = { Lora: ['400', '400i', '700', '700i'],
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const paper = `${markdown}\n\n${results}\n\n${references}`;
-await loadFonts(FONTS, paper);
 await loadSvg('consort.svg', consortSvg(LABELS));
 for (const fig of THEMES) await loadSvg(fig.file, themeSvg(fig, LABELS));
 await initMathEngine(); // χ² is maths: no Lora file has χ, not even its math file
 const content = { markdown: paper, resources: resources() };
-const doc = await buildWithFonts(() => buildDocument(content, config()), paper);
+const doc = await buildDocumentWithFonts(content, config(), kitFonts(FONTS));
 showPages(doc, { title: 'A clinical trial report with a CONSORT diagram' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

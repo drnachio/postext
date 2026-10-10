@@ -46,8 +46,7 @@
     "bitmap-print-size",
     "headings-drop-h1-break",
     "overflow-ellipsis-default",
-    "design-lineheight-multiple",
-    "fonts-first"
+    "design-lineheight-multiple"
   ],
   "engine": {
     "postext": "1.25.0"

@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 011 · One source, print and screen editions ═══════════
 // https://postext.dev/en/cookbook/print-and-screen-editions
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: code (CC BY 4.0) · Photo: diffusion models
-// Fonts: Newsreader, Gloock, Reddit Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, renderToHtml, applyHtmlViewerOverrides,
-  clearMeasurementCache, registerResourceImage, defaultResourceTypes,
+// Fonts: Newsreader, Gloock, Reddit Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocument, prepareFonts, withLoadedFonts, renderPageToCanvas, renderToHtml,
+  applyHtmlViewerOverrides, registerResourceImage, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -127,7 +128,6 @@ const colophon = { id: 'colophon', fontFamily: 'Reddit Sans', fontSize: pt(7.5),
   lineHeight: pt(11), color: col('muted'), textAlign: 'left', firstLineIndent: pt(0),
   marginTop: pt(14) };
 
-// A factory: the engine caches resolved configs per object (gotcha: config-cache-identity).
 const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   // The locale does not name the figures (gotcha: resource-types-locale): "Figura" in Spanish,
@@ -278,15 +278,16 @@ async function drawFigures() { // the drawings in both palettes, the part page's
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Newsreader: ['400', '400i', '700'], Gloock: ['400'],
   'Reddit Sans': ['400', '400i', '600', '700'] }; // 400: captions and the colophon
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
+await prepareFonts(markdown, config(), kitFonts(FONTS));
 await drawFigures();
-const doc = await buildWithFonts( // print: every page on the kit's desk, and one beside the screen
-  () => buildDocument({ markdown, resources: figures('day') }, config()), markdown);
+const doc = await withLoadedFonts( // print: every page on the kit's desk, and one beside the screen
+  () => buildDocument({ markdown, resources: figures('day') }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'One source, print and screen editions',
   es: 'Un solo original, ediciones impresa y de pantalla' }) });
 

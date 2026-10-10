@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 030 · Anthology with bylines ═══════════════════════════════
 // https://postext.dev/en/cookbook/anthology-with-bylines
 // Code: MIT · Text: Hazlitt, Thoreau, Stevenson (public domain) · Cover: diffusion models
-// Fonts: Spectral, Gloock, Hanken Grotesk (SIL OFL 1.1) · Needs postext ≥ 1.23.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Spectral, Gloock, Hanken Grotesk (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'anthology-with-bylines';
@@ -148,7 +149,7 @@ const contentsOpener = { enabled: true, slot: { elements: [ // {title}, {subtitl
 ] } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'), margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom),
@@ -192,13 +193,12 @@ const resources = [{ id: 'cover', typeId: 'figure', kind: 'bitmap', createdAt: 0
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces (gotcha: fonts-first)
+const FONTS = { // text, display and label faces
   Spectral: ['400', '400i'], Gloock: ['400'], 'Hanken Grotesk': ['600'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadImage('cover-1200.jpg', asset('cover-1200.jpg'));
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Anthology with bylines', es: 'Antología con firmas de autor' }) });
 
 // @kit

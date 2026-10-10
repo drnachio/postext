@@ -38,7 +38,7 @@ El full s'organitza al voltant de dos vídeos l'un al costat de l'altre i de req
 
 ### 5 · Compon θ i π al llenç, al PDF i a l'EPUB
 
-Source Serif 4 guarda les lletres gregues en un fitxer de Fontsource propi, `greek`, al costat del `latin`. `loadFonts(FONTS, markdown)` troba lletres gregues al text i carrega aquest fitxer per a cada font de la família, i `fontsourceProvider` l'incrusta al PDF al costat del llatí en cada font que compon θ o π, així que aquestes dues lletres no necessiten codi. L'EPUB només incrusta les fonts que li passa el codi, per això el pas 4 hi afegeix els fitxers grecs de la font del text després dels llatins, cadascun limitat al bloc grec pel seu `unicodeRange`.
+Source Serif 4 guarda les lletres gregues en un fitxer de Fontsource propi, `greek`, al costat del `latin`. `kitFonts(FONTS)` troba lletres gregues al text i carrega aquest fitxer per a cada font de la família, i `fontsourceProvider` l'incrusta al PDF al costat del llatí en cada font que compon θ o π, així que aquestes dues lletres no necessiten codi. L'EPUB només incrusta les fonts que li passa el codi, per això el pas 4 hi afegeix els fitxers grecs de la font del text després dels llatins, cadascun limitat al bloc grec pel seu `unicodeRange`.
 
 ### 6 · Calcula la taula al codi
 

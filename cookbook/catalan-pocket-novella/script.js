@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 104 · A Catalan novella, hyphenated by the IEC rules ═══════
 // https://postext.dev/en/cookbook/catalan-pocket-novella
 // Code: MIT · Text: N. Oller, El transplantat, 1928 (PD, Viquitexts) · Pictures: diffusion models
-// Fonts: Crimson Pro, Cormorant Garamond, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.14.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Crimson Pro, Cormorant Garamond, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document (the sample is Catalan in both)
@@ -162,7 +163,7 @@ const paragraphStyles = [
     marginTop: pt(2 * LEAD) },
 ];
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: LOCALE,
   resourceTypes, colorPalette, page, bodyText, paragraphStyles, headingStyles, header, footer,
   layout: { layoutType: 'single' },
@@ -179,16 +180,15 @@ const markdown = [/* @content */ '', /* @content:c1a */ '', /* @content:c1b */ '
   /* @content:c2 */ '', /* @content:c3 */ '', /* @content:c4 */ ''].join('\n\n');
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Crimson Pro': ['400', '400i'], // the text, the note, the colophon, the folios
   'Cormorant Garamond': ['500i', '600'], // half-title and title; the chapter numerals
   'Cormorant SC': ['400', '600'], // the closing Fi; author, labels, running heads
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all(Object.values(PICTURES).map(([file]) => loadImage(file, asset(file))));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'El transplantat' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

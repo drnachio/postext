@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 040 · Brand fonts in layout, PDF and bundle ════════════
 // https://postext.dev/en/cookbook/brand-fonts-identity-manual
 // Code: MIT · Text and drawings: original (CC BY 4.0) · Metro de Alba is a fictional network
-// Fonts: Public Sans, Big Shoulders Display, Spline Sans Mono (OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: Public Sans, Big Shoulders Display, Spline Sans Mono (OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, setCellBackground, createBundle,
+  buildDocument, renderPageToCanvas, registerResourceImage, defaultResourceTypes, setCellBackground,
+  createBundle,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -166,7 +166,7 @@ const resourceTypes = [...defaultResourceTypes(LANG),
 const FOOT = { position: 'bottom' }; // cited in one paragraph: its page's foot, one per column
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, resourceTypes, customFonts: customFonts(),
   page: { width: mm(PAGE.width), height: mm(PAGE.height), dpi: 150,
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
@@ -357,7 +357,7 @@ const FONTS = {
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // #region build: the brand's faces first, then the pages, then a PDF from the same bytes
-await loadBrandFonts(); // the answer, step 1 (gotcha: fonts-first)
+await loadBrandFonts(); // the answer, step 1
 for (const [fileId, markup] of Object.entries(ART)) await loadSvg(fileId, markup);
 const doc = buildDocument({ markdown, resources }, config());
 showPages(doc, { title: 'Metro de Alba · Identity manual' });

@@ -3,7 +3,7 @@
 // Code: MIT · Text: original (CC BY 4.0) · Salt pans and flamingo: diffusion models
 // Fonts: Castoro, Castoro Titling, Tenor Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'es'; // @lang: the language of the sample document ('en' | 'es')
@@ -136,7 +136,7 @@ const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', edgeAt('bo
   { ...folio, pages: 'opener' })] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: LOCALE,
   colorPalette,
   page: {
@@ -187,13 +187,11 @@ for (const { bitmap } of resources) await loadImage(bitmap.fileId, asset(bitmap.
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Loaded before the first build (gotcha: fonts-first). None of the three ships a bold.
+// Loaded before the first build. None of the three ships a bold.
 const FONTS = { Castoro: ['400', '400i'], 'Castoro Titling': ['400'], 'Tenor Sans': ['400'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()),
-  markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'August Salt · five poems with a facing translation',
   es: 'Sal de agosto · cinco poemas con traducción enfrentada' }) });
 

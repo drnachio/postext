@@ -1,13 +1,12 @@
 // ═══ Postext Cookbook · Nº 116 · Photos that grow to fill a short column ═══════════
 // https://postext.dev/en/cookbook/photos-fill-short-columns
 // Code: MIT · Text: original (CC BY 4.0) · Photos: diffusion models
-// Fonts: Newsreader, Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Newsreader, Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 //
 // A magazine feature set twice. Without safe areas some columns end short; with them the
 // engine crops each photo outside its area to set it taller, and the photos fill those lines.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -103,7 +102,7 @@ const footer = { elements: [] }; // the opener carries no folio: its photo bleed
 const types = () => defaultResourceTypes(LANG).map((type) => ({ ...type,
   numberingTemplate: '{n}', resetOn: 'never' })); // 'Figura 3', not '1.3', in a one-article issue
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-gb', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   resourceTypes: types(), // "Figura" in Spanish (gotcha: resource-types-locale)
   colorPalette,
@@ -161,15 +160,14 @@ const resources = (safe) => ['estuario', ...Object.keys(CAPTIONS)].map((id) => p
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Newsreader: ['400', '400i', '600'], Archivo: ['800'], 'Archivo Narrow': ['600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all(resources(false).map((r) => loadImage(r.bitmap.fileId, asset(r.bitmap.fileId))));
 // #region builds: the same text, config and photos, without and then with the safe areas
-const build = (safe) => buildWithFonts(() =>
-  buildDocument({ markdown, resources: resources(safe) }, config()), markdown);
+const build = (safe) => buildDocumentWithFonts({ markdown, resources: resources(safe) }, config(),
+  kitFonts(FONTS));
 const docs = { plain: await build(false), safe: await build(true) };
 // #endregion
 const title = t({ en: 'Photos that grow to fill a short column',

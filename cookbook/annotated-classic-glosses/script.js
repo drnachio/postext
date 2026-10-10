@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 032 · Annotated classic with margin glosses ════════════
 // https://postext.dev/en/cookbook/annotated-classic-glosses
 // Code: MIT · Text: Lewis Carroll (PD), glosses (CC BY 4.0) · Headpiece: diffusion models
-// Fonts: Unna, Rozha One, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: Unna, Rozha One, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // The mad tea-party as an annotated edition: the text keeps to one column, and its glosses stand
 // in the outer margin beside the lines they explain, changing sides with the spread.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en')
@@ -189,7 +189,7 @@ const footer = { elements: [{ ...head('drop-folio', 'odd', '{pageNumber}', -OUTE
   pages: 'opener', placement: { anchor: { to: 'page', edge: 'bottom-right' },
     offset: { x: mm(-OUTER), y: mm(-DROP) } } }] };
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, page, layout, bodyText, paragraphStyles, calloutStyles, chipStyles, header,
   footer,
   headings: {
@@ -216,18 +216,17 @@ const resources = [{ id: 'tea-table', typeId: 'figure', kind: 'bitmap', createdA
     + 'end and a red arm-chair at the other.' }];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Unna: ['400', '400i', '700'], // 700: the folios and the gloss letters
   'Rozha One': ['400'],
   'Cormorant SC': ['600'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadImage('tea-table-1560.jpg', asset('tea-table-1560.jpg'));
 const continuation = { pageNumbering: { startAt: 81 } }; // chapter VII of a book: an odd folio
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Annotated classic with margin glosses' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

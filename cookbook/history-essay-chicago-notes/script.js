@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 089 · A history essay with Chicago notes ═══════════════
 // https://postext.dev/en/cookbook/history-essay-chicago-notes
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Crimson Pro, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.12.0
+// Fonts: Crimson Pro, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -80,7 +80,7 @@ const head = (id, content, parity, edge, x, align) => ({
   align, placement: at('page', edge, x, 12),
 });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette,
   citations,
@@ -127,15 +127,14 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ '';
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first).
+// Every face the design uses.
 const FONTS = {
   'Crimson Pro': ['300', '400', '400i', '600', '600i'],
   'IBM Plex Sans Condensed': ['400', '600'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 const title = t({ en: 'A history essay with Chicago notes',
   es: 'Un ensayo de historia con notas de Chicago' });
 showPages(doc, { title });

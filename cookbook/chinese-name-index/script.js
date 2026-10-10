@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 079 · An index of Chinese names, by pinyin and by strokes ═══
 // https://postext.dev/en/cookbook/chinese-name-index
 // Code: MIT · Text: 紅樓夢 (1792), zh.wikisource revision 9685985 (CC BY-SA 4.0) · Pictures: none
-// Fonts: Noto Serif/Sans SC/TC, Ma Shan Zheng, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Noto Serif/Sans SC/TC, Ma Shan Zheng, LXGW WenKai TC (OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -100,7 +100,7 @@ const footer = (e) => ({ elements: [ // folios at the outer foot, openers includ
 // #endregion
 
 let e = EDITIONS.hans; // the edition config() lays out: the build loop below sets it
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: e.locale, // zh-Hans or zh-Hant, never LANG (gotcha: cjk-locale-tag)
   colorPalette,
   page: { sizePreset: 'custom', width: mm(140), height: mm(203), dpi: 150, // 大32开
@@ -133,7 +133,7 @@ const markdown = /* @content */ ''; // the Simplified edition, content.<lang>.md
 const traditional = /* @content:hant */ ''; // the Traditional edition, content.hant.<lang>.md
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first). The CJK families load by slices.
+// Every face the design uses. The CJK families load by slices.
 const FONTS = { 'Noto Serif SC': ['400', '700'], 'Noto Sans SC': ['700'], 'Ma Shan Zheng': ['400'],
   'Noto Serif TC': ['400', '700'], 'Noto Sans TC': ['700'], 'LXGW WenKai TC': ['400'] };
 
@@ -154,7 +154,8 @@ for (const [key, md] of [['hans', markdown], ['hant', traditional]]) {
 const docs = {};
 for (const [key, md] of [['hans', markdown], ['hant', traditional]]) {
   e = EDITIONS[key];
-  docs[key] = await buildWithFonts(() => buildDocument({ markdown: md }, config()), md);
+  docs[key] = await withLoadedFonts(() => buildDocument({ markdown: md }, config()),
+    { ...kitFonts(FONTS), text: md });
 }
 const title = t({ en: 'A Chinese name index', es: 'Un índice de nombres chinos' });
 // The desk shows either edition, and the PDF is built from the one on it.

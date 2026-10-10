@@ -21,8 +21,8 @@
   "gaps": ["pipe-tables"],
   "gotchas": [
     "merged-cells-hiddenby", "no-zebra", "svg-no-webfonts", "latin-subset",
-    "headings-drop-h1-break", "fonts-first", "nbsp-breaks", "palette-skips-designs",
-    "overflow-ellipsis-default", "config-cache-identity"
+    "headings-drop-h1-break", "nbsp-breaks", "palette-skips-designs",
+    "overflow-ellipsis-default"
   ],
   "workarounds": [
     { "followup": "EF-23", "package": "postext", "note": "zebra rows are filled cell by cell with setCellBackground" },

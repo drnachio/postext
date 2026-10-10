@@ -38,7 +38,7 @@ As coordenadas foram lidas uma única vez, quando a receita foi escrita, da entr
 
 ### 5 · Letras gregas e acentos no PDF
 
-O Fontsource divide cada fonte por sistema de escrita. `loadFonts(FONTS, markdown)` lê o texto que recebe e carrega o arquivo latin-ext de cada fonte quando ela compõe Ž ou Š, e o arquivo grego quando compõe α ou χ; `fontsourceProvider` incorpora esses mesmos arquivos no PDF a partir dos caracteres que cada fonte compõe. Cα, χ, Žídek e Šali não pedem código próprio: a receita passa o markdown, que reúne todos os blocos de conteúdo, e o provedor do kit.
+O Fontsource divide cada fonte por sistema de escrita. `kitFonts(FONTS)` lê o texto que recebe e carrega o arquivo latin-ext de cada fonte quando ela compõe Ž ou Š, e o arquivo grego quando compõe α ou χ; `fontsourceProvider` incorpora esses mesmos arquivos no PDF a partir dos caracteres que cada fonte compõe. Cα, χ, Žídek e Šali não pedem código próprio: a receita passa o markdown, que reúne todos os blocos de conteúdo, e o provedor do kit.
 
 ## Variações
 

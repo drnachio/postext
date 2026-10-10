@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 007 · One book from separate chapters ══════════════════════════
 // https://postext.dev/en/cookbook/book-from-chapters
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Andada Pro, Rozha One, Figtree (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Andada Pro, Rozha One, Figtree (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A handbook in four seasons written as five Markdown documents, laid out by buildBundle as
 // one book: parity, folios, chapter and figure numbers and the contents run straight through.
 import {
-  buildBundle, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerResourceImage,
   defaultResourceTypes,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
@@ -73,7 +73,7 @@ const calloutStyles = [{ id: 'colophon', placement: 'bottom', backgroundEnabled:
 // buildBundle lays the documents out in order with one config and carries state from each to
 // the next: the pages already set (so parity goes on), the folio, the chapter and figure counts.
 const book = () => buildBundle({ chapters, config: config(), resources });
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   headings: { ...display, levels: [
     // Every chapter opens on a recto: after a chapter that ends on one, the next document
     // starts with a blank verso of its own. Restated, because any headings object drops
@@ -288,7 +288,7 @@ const resources = [svg('cover', [TRIM.width, TRIM.height]),
     CAPTIONS[season]))];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses, loaded before the first build (gotcha: fonts-first).
+// Every face the design uses, loaded before the first build.
 // Rozha One ships one face: renderToPdf still asks for its bold and italic, which the kit's
 // provider snaps to that face (gotcha: pdf-provider-all-styles).
 const FONTS = { // text, display and labels
@@ -298,11 +298,12 @@ const FONTS = { // text, display and labels
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // #region build: draw, lay the book out, show it as spreads, offer one PDF of all chapters
 const text = chapters.map((chapter) => chapter.markdown).join('\n');
-await loadFonts(FONTS, text);
+await prepareFonts(text, config(), kitFonts(FONTS));
 const art = { cover: coverArt(), cells: cornerArt(true), comb: cornerArt(false) };
 for (const [season, plan] of Object.entries(SEASONS)) art[`${season}-frame`] = frameArt(plan);
 for (const [id, markup] of Object.entries(art)) await loadSvg(`${id}.svg`, markup);
-const docs = await buildWithFonts(book, text); // one VDTDocument per Markdown document
+// One VDTDocument per Markdown document.
+const docs = await withLoadedFonts(book, { ...kitFonts(FONTS), text });
 showPages(docs, { title: BOOK_TITLE });
 // renderToPdf takes the array: one file for the book, with a bookmark per chapter.
 offerPdf(() => renderToPdf(docs, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),

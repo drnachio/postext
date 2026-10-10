@@ -21,7 +21,7 @@
   "gotchas": [
     "headings-drop-h1-break", "bundle-metadata", "style-inherits-break", "bundle-ref-places-again",
     "design-lineheight-multiple", "parity-page1-recto", "resource-types-locale",
-    "hyphenation-locales", "pdf-provider-all-styles", "nbsp-breaks", "fonts-first",
+    "hyphenation-locales", "pdf-provider-all-styles", "nbsp-breaks",
     "toc-number-baseline"
   ],
   "explainsWarnings": ["chapterFrontmatterIgnored"],
@@ -39,7 +39,7 @@
     { "followup": "EF-14", "package": "postext", "note": "hyphenation matches exact codes only, so the config sets locale: t({ en: 'en-us', es: 'es' }) (gotcha hyphenation-locales)" }
   ],
   "related": ["front-matter-roman-to-arabic", "running-heads-by-parity", "chapter-opener-bleed-band", "figures-float-where-cited"],
-  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -68,5 +68,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

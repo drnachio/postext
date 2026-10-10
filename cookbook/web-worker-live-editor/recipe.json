@@ -49,8 +49,6 @@
   "gotchas": [
     "worker-cdn-origin",
     "worker-own-fonts",
-    "fonts-first",
-    "config-cache-identity",
     "headings-drop-h1-break",
     "palette-skips-designs",
     "design-lineheight-multiple",
@@ -101,7 +99,7 @@
     }
   ],
   "engine": {
-    "postext": "1.4.1",
+    "postext": "1.25.0",
     "worker": true
   },
   "kit": [
@@ -200,5 +198,5 @@
     "content": "MIT"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

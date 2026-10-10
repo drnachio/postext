@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 126 · A Japanese index in gojūon order, read from its readings ═══
 // https://postext.dev/en/cookbook/gojuon-index
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Noto Serif JP, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.16.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Noto Serif JP, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the frame; the chapter is Japanese in both
@@ -67,7 +67,7 @@ const head = (id, content, parity, edge, x, extra) => ({ kind: 'text', id, conte
     edge }, offset: { x: mm(x), y: mm(12) } }, ...extra });
 const folio = { fontWeight: 700, color: col('vermilion') };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   index,
@@ -109,7 +109,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md: the same Japanese chapter in both
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif JP': ['400', '700'], // 明朝: the text and the index, its main pages bold
   'Noto Sans JP': ['400', '700'], // ゴシック: titles, heads, row heads, folios, colophon
 };
@@ -125,8 +125,8 @@ await loadCjkFonts({ [GOTHIC]: FONTS[GOTHIC] },
   `${all(/^#+ .*$/gm)}${all(/colophon"\}\n[^\n]*/g)}組版の言葉${ROWS}`);
 // Page 1 is page 9 of the book, a recto; the index follows the chapter.
 const continuation = { pageIndexOffset: 8, pageNumbering: { startAt: 9 } };
-const doc = await buildWithFonts(() => buildDocument({ markdown, continuation }, config()),
-  markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, continuation }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'A Japanese index in gojūon order',
   es: 'Un índice japonés en orden gojūon' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

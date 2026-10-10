@@ -3,7 +3,7 @@
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
 // Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -96,7 +96,7 @@ const header = { elements: [
       size: { width: mm(AREA) } } },
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'zh-Hans', // written out, never LANG (gotcha: cjk-locale-tag)
   colorPalette,
   citations,
@@ -135,7 +135,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md: the same Chinese text in both
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif SC': ['400'], // SONG: the text, the references, the affiliations
   'Noto Sans SC': ['400', '700'], // HEI: running heads; the journal, title, heads, labels
   'LXGW WenKai TC': ['400'], // KAI: the authors' names
@@ -150,7 +150,8 @@ await loadFonts(FONTS, markdown);
 await loadCjkFonts({ [SONG]: ['400'] }, `${markdown}等版卷期页`);
 await loadCjkFonts({ [HEI]: ['400', '700'] }, `${heads}${labels}0123456789`);
 await loadCjkFonts({ [KAI]: ['400'] }, all(/authors="[^"]*"/g));
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'A Chinese paper cited to GB/T 7714',
   es: 'Un artículo chino citado según la GB/T 7714' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

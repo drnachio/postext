@@ -22,8 +22,7 @@
   "gotchas": [
     "merged-cells-hiddenby", "top-float-next-page", "here-table-no-split",
     "resource-types-locale", "ragged-runts", "headings-drop-h1-break", "palette-skips-designs",
-    "design-lineheight-multiple", "overflow-ellipsis-default", "svg-no-webfonts", "nbsp-breaks",
-    "config-cache-identity", "fonts-first"
+    "design-lineheight-multiple", "overflow-ellipsis-default", "svg-no-webfonts", "nbsp-breaks"
   ],
   "workarounds": [
     { "followup": "EF-34", "package": "postext", "note": "the grid is built row by row from the programme text, and every span goes through mergeCells, which keeps the covered cells in the grid marked hiddenBy" },
@@ -36,7 +35,7 @@
     { "followup": "EF-56", "package": "postext", "note": "design text lineHeight is given as a multiple" }
   ],
   "related": ["garden-almanac", "seed-catalogue", "technical-datasheet", "magazine-feature-opener"],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -64,5 +63,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-09-27"
+  "updated": "2026-10-10"
 }

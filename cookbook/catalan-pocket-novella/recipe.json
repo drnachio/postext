@@ -54,8 +54,7 @@
     "palette-skips-designs",
     "overflow-ellipsis-default",
     "attr-values",
-    "quote-frontmatter",
-    "fonts-first"
+    "quote-frontmatter"
   ],
   "explainsWarnings": [],
   "related": [
@@ -66,8 +65,8 @@
   ],
   "workarounds": [],
   "engine": {
-    "postext": "1.14.0",
-    "postextPdf": "1.14.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -192,7 +191,7 @@
     "content": "MIT"
   },
   "created": "2026-10-04",
-  "updated": "2026-10-04",
+  "updated": "2026-10-10",
   "folio": {
     "paper": {
       "type": "bookWove",

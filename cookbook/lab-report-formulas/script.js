@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 028 · Lab report: formulas, subscripts and a titration curve ═══
 // https://postext.dev/en/cookbook/lab-report-formulas
 // Code: MIT · Text: original (CC BY 4.0) · Figures: drawn in code (CC BY 4.0)
-// Fonts: Inria Serif, Inria Sans, Sometype Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: Inria Serif, Inria Sans, Sometype Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, initMathEngine, renderMath, mergeCells,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
+  initMathEngine, renderMath, mergeCells,
 } from 'https://esm.sh/postext?bundle';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -171,7 +171,7 @@ const paragraphStyles = [
 ];
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ es: 'es', en: 'en-us' }), // exact codes (gotcha: hyphenation-locales)
   resourceTypes, colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
@@ -348,17 +348,16 @@ const resources = [BURETTE, // the head's picture: uncited, so never placed in t
 ];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages paint, loaded before the first build (gotcha: fonts-first)
+const FONTS = { // every face the pages paint, loaded before the first build
   'Inria Serif': ['400', '400i', '700'],
   'Inria Sans': ['400', '400i', '700'], // 400i: the K of K~a~ in Figure 1's caption
   'Sometype Mono': ['400', '500', '600', '700'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('burette.svg', burette()); // for the canvas, and kept as bytes for the PDF
 await loadSvg('curve.svg', curve());
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ es: 'Informe de laboratorio', en: 'Lab report' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`); // text in the Fontsource faces; formulas and figures as vector paths

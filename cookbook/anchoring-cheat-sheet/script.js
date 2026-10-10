@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 029 · Anchoring cheat sheet: a poster built from chained elements ═══
 // https://postext.dev/en/cookbook/anchoring-cheat-sheet
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Funnel Display, Funnel Sans, Martian Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Funnel Display, Funnel Sans, Martian Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // An A3 poster whose elements hang from the bleed, the page, their slot or one another, never
 // from coordinates; the second sheet is the same poster with each element framed and tagged.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -148,7 +148,7 @@ const TAGS = { // where each tag sits against its element: [edge, x, y, text]
 // #endregion
 
 const LEAD = 16; // body leading in pt
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette,
   page: { width: mm(A3.width), height: mm(A3.height), dpi: 150, // 150 dpi is for the screen
     cutLines: { enabled: BLEED > 0, bleed: mm(BLEED) },
@@ -235,7 +235,7 @@ const resources = [
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the pages paint, loaded before the first build (gotcha: fonts-first).
+// Every face the pages paint, loaded before the first build.
 const FONTS = {
   'Funnel Display': ['800'],
   'Funnel Sans': ['400', '400i', '600', '700'],
@@ -245,10 +245,9 @@ const FONTS = {
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadSvg('corona.svg', coronaSvg());
 await loadSvg('mark.svg', markSvg());
-await loadFonts(FONTS, markdown);
 // pageIndexOffset 1 makes the poster a verso, so the viewer sets the two sheets side by side.
 const content = { markdown, resources, continuation: { pageIndexOffset: 1 } };
-const doc = await buildWithFonts(() => buildDocument(content, config()), markdown);
+const doc = await buildDocumentWithFonts(content, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Anchoring cheat sheet', es: 'Chuleta de anclajes' }) });
 
 // @kit

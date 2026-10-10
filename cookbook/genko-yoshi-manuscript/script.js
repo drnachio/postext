@@ -3,7 +3,7 @@
 // Code: MIT · Text: 夏目漱石『坊っちゃん』, Aozora Bunko 752 (public domain) · Pictures: none
 // Fonts: Klee One, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -89,7 +89,7 @@ const footer = { elements: [{ kind: 'text', id: 'colophon', content: '{attr.colo
     size: { width: mm(120) } } }] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   page: {
@@ -129,7 +129,8 @@ await loadFonts(FONTS, markdown); // the Latin files: the colophon
 await loadCjkFonts({ [PEN]: ['400'] }, `${markdown}（）一二三四五六七八九十`, { vertical: true });
 await loadCjkFonts({ 'Noto Sans JP': ['400'] }, `20×20${colophon}`);
 // #endregion
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A story on genkō yōshi, one character to a square',
   es: 'Un relato en genkō yōshi, un carácter por casilla' }) });
 // The PDF draws the squares only when asked: a grid is a screen aid in a book, the page here.

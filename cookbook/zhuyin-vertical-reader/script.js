@@ -3,8 +3,7 @@
 // Code: MIT · Text: Han Feizi, zh.wikisource (CC BY-SA 4.0) · Pictures: diffusion models
 // Fonts: Iansui, LXGW WenKai TC, Noto Serif TC, Noto Sans TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -104,7 +103,7 @@ const footer = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'zh-Hant', // Taiwan: full-width punctuation, centred in its cell (gotcha: cjk-locale-tag)
   colorPalette,
   resourceTypes,
@@ -189,8 +188,9 @@ await loadCjkFonts({ [HEI]: ['400', '700'] }, LABELS, { vertical: true });
 await Promise.all(Object.values(plates).map((fileId) => loadImage(fileId, asset(fileId))));
 // Lesson 12 of a reader: page 86 is a verso, so the lesson opens on a spread.
 const continuation = { pageIndexOffset: 1, pageNumbering: { startAt: 86 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown, resources, continuation }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A vertical reader with zhuyin',
   es: 'Un libro de lectura vertical con zhuyin' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider, resourceBytes: imageBytes }),

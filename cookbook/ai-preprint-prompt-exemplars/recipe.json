@@ -47,9 +47,7 @@
     "callout-columns",
     "nested-callout-limits",
     "merged-cells-hiddenby",
-    "headings-drop-h1-break",
-    "fonts-first",
-    "config-cache-identity"
+    "headings-drop-h1-break"
   ],
   "engine": {
     "postext": "1.25.0",

@@ -39,8 +39,7 @@
     "bitmap-print-size",
     "design-lineheight-multiple",
     "runt-tracking-unpainted",
-    "hyphenation-locales",
-    "fonts-first"
+    "hyphenation-locales"
   ],
   "explainsWarnings": [],
   "related": ["magazine-feature-opener", "riso-zine-single-ink", "newspaper-front-page", "parts-in-colour"],
@@ -86,7 +85,7 @@
       "note": "bodyText.maxRuntTracking is 0 (gotcha runt-tracking-unpainted): in 1.4.1 a runt fix can give a paragraph negative tracking (a block letterSpacing), which the layout measures but the canvas and postext-pdf renderers paint only above 0; its justified lines then crush their word spaces (painted segment by segment, overlapping by under 1 px), and an unstyled ragged last line, painted with one fillText, runs about 1.9 mm past the column edge and is clipped (the Spanish feature once printed 'como todo el mund', its 'o.' cut); word spacing alone still shortens runts, and the remaining runts were copy-fitted"
     }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": {
     "locales": ["en", "es"]
@@ -178,5 +177,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

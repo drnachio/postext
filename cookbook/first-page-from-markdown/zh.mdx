@@ -18,7 +18,7 @@ pageNotes: { "1": "页面上部是一张照片：黄昏时的盐田，一行脚�
 
 <Excerpt region="fonts" />
 
-Postext用浏览器已经加载的字体测量文字，并缓存宽度，所以字体到达之前运行的构建会一直保留错误的断行。这套工具从Fontsource加载这些文件，也就是PDF会嵌入的同一批文件。`buildWithFonts`随后检查页面用到的所有字体。如果某个块或设计元素用了未加载的字体，它会在控制台打印警告，加载该字体后重新构建；如果Fontsource没有这款字体，pen会报错停止（见“常见问题”）。正文字体的粗体和斜体变体加载时不打印警告，而且只在字族确实有这些变体时才加载。
+Postext用排版时浏览器里已有的字体测量文字，所以赶在字体到达之前运行的构建会留下后备字体的断行。`buildDocumentWithFonts`在第一次构建前加载配置里写到的每款字体和`FONTS`里的字体；`kitFonts(FONTS)`把Fontsource的文件交给它，也就是PDF会嵌入的同一批文件。随后它检查页面用到的字体，把还缺的加载进来，再构建一次。Fontsource没有的字体仍用后备字体，并在`doc.contentWarnings`里记为`fontFallback`。正文字体的粗体和斜体只在字族确实有时才加载。
 
 ### 2 · 先给颜色命名，再引用名字
 
@@ -48,17 +48,17 @@ Postext用浏览器已经加载的字体测量文字，并缓存宽度，所以�
 
 <Excerpt region="build" />
 
-`config()`是一个函数，因为引擎按对象标识缓存每份解析后的配置，只有每次构建都拿到一个新对象，修改的设置才会生效。`showPages`按装订成书的样子摆放页面，第1页单独在右侧，并用`renderPageToCanvas`绘制每一页。
+`config()`是一个函数，这样每次构建都读到调色板当前的值：它会再次调用第2步里的设计工厂函数。`buildDocumentWithFonts`接收内容、这份配置和套件的字体选项，返回排好的文档。`showPages`按装订成书的样子摆放页面，第1页单独在右侧，并用`renderPageToCanvas`绘制每一页。
 
 ## 变化
 
 ### 看看配置替换了什么
 
-用空配置构建，同一段Markdown会排在17 × 24 cm的页面上，正文是8 pt的EB Garamond，标题是蓝色Open Sans，线上方是蓝色书眉；这套工具会替你加载这些字体，并打印控制台警告。
+用空配置构建，同一段Markdown会排在17 × 24 cm的页面上，正文是8 pt的EB Garamond，标题是蓝色Open Sans，线上方是蓝色书眉；默认配置写到了这两个字族，所以引擎也会加载它们。
 
 ```diff
--  () => buildDocument({ markdown, resources }, config()), markdown);
-+  () => buildDocument({ markdown, resources }, {}), markdown);
+-const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
++const doc = await buildDocumentWithFonts({ markdown, resources }, {}, kitFonts(FONTS));
 ```
 
 ### 给整页换色

@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 123 · A Japanese technical manual: kana, kanji and Latin ═══
 // https://postext.dev/en/cookbook/japanese-technical-manual
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code
-// Fonts: Noto Serif JP, Noto Sans JP, BIZ UDGothic (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Noto Serif JP, Noto Sans JP, BIZ UDGothic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes, parseTSV,
+  buildDocument, withLoadedFonts, renderPageToCanvas, defaultResourceTypes, parseTSV,
   registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
@@ -103,7 +103,7 @@ const header = { elements: [
   head('r-folio', '{pageNumber}', 'odd', 'top-right', 0, folio),
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   resourceTypes: defaultResourceTypes('ja'), // 図 and 表, numbered by chapter: 図3-1
   colorPalette,
@@ -209,7 +209,7 @@ function bytesArt(style) {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif JP': ['400'], // 明朝: the text, the notes, the table
   'Noto Sans JP': ['400', '700'], // ゴシック: heads, the lead, labels, the point box, folios
   'BIZ UDGothic': ['400'], // the code: fixed pitch, half-width Latin, inline and in the listing
@@ -228,8 +228,9 @@ const code = (markdown.match(/^```[\s\S]*?^```$|`[^`\n]+`/gm) ?? []).join('');
 await loadCjkFonts({ [CODE]: FONTS[CODE] }, code);
 await loadSvg('bytes.svg', bytesArt(await codeFace()));
 const continuation = { pageIndexOffset: 40, pageNumbering: { startAt: 41 }, headings: { h1: 2 } };
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources, continuation },
-  config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources, continuation },
+  config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'A Japanese technical manual',
   es: 'Un manual técnico japonés' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider, resourceBytes: imageBytes }),

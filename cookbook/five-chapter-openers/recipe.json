@@ -21,7 +21,7 @@
   "gaps": ["rotated-text"],
   "gotchas": [
     "attr-values", "palette-skips-designs", "headings-drop-h1-break",
-    "overflow-ellipsis-default", "design-lineheight-multiple", "config-cache-identity", "fonts-first",
+    "overflow-ellipsis-default", "design-lineheight-multiple",
     "hyphenation-locales"
   ],
   "related": [
@@ -36,7 +36,7 @@
     { "followup": "EF-05", "package": "postext", "note": "any headings object drops the level's default odd break; span 'page' still opens every chapter on a new page, so levels[0].breakBefore is restated with parity 'any' to state the side on purpose (the hook for the 'odd' Variation), and the styles inherit it" },
     { "followup": "EF-14", "package": "postext", "note": "hyphenation matches exact codes only, so the config sets locale: t({ en: 'en-us', es: 'es' }) (gotcha hyphenation-locales)" }
   ],
-  "engine": { "postext": "1.23.0" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -64,5 +64,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-09"
+  "updated": "2026-10-10"
 }

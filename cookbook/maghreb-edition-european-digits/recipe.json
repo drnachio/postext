@@ -37,12 +37,11 @@
     "arabic-locale-tag",
     "arabic-fonts-subset",
     "headings-drop-h1-break",
-    "digit-period-list",
-    "fonts-first"
+    "digit-period-list"
   ],
   "engine": {
-    "postext": "1.15.0",
-    "postextPdf": "1.15.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -98,7 +97,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-04",
-  "updated": "2026-10-04",
+  "updated": "2026-10-10",
   "related": [
     "arabic-novel-right-bound",
     "arabic-research-article",

@@ -1,15 +1,14 @@
 // ═══ Postext Cookbook · Nº 155 · A Pepper&Carrot page re-lettered from its transcript ═══
 // https://postext.dev/en/cookbook/pepper-and-carrot-page
 // Code: MIT · Text and art: David Revoy and translators, Pepper&Carrot ep. 8 (CC BY 4.0)
-// Fonts: Comic Neue, Bangers, Grenze Gotisch and 11 more (OFL) · Needs postext ≥ 1.21.0
+// Fonts: Comic Neue, Bangers, Grenze Gotisch and 11 more (OFL) · Needs postext ≥ 1.25.0
 //
 // Two pages of an open-licensed webcomic, Pepper&Carrot episode 8 by David Revoy, set again
 // from his text-free artwork: the panels are cut from his pages, the speakers' anchors come
 // from the tails of his balloons, and the words come from the official translations, so the
 // engine letters every edition itself.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -85,7 +84,7 @@ const footer = { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber}'
   fontFamily: TEXT, fontSize: pt(7.5), color: col('muted'), align: 'center',
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { x: mm(0), y: mm(-3) } } }] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-gb', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar', pt: 'pt-BR' }),
   colorPalette, comics,
   // Revoy's pages are A4 with 8.5 mm of white around the art.
@@ -191,7 +190,7 @@ const ALT = {
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face of the six editions; each edition loads the latin files of all of them and the
-// Japanese, Chinese or Arabic files of its own (gotcha: fonts-first).
+// Japanese, Chinese or Arabic files of its own.
 const FONTS = {
   'Comic Neue': ['400', '400i', '700', '700i'],
   Bangers: ['400'],
@@ -247,7 +246,8 @@ const resources = await Promise.all([
   panel('e08p05-3', asset('e08p05-3.jpg')), panel('e08p06-1', asset('e08p06-1.jpg')),
   panel('e08p06-2', asset('e08p06-2.jpg')), panel('e08p06-3', asset('e08p06-3.jpg')),
 ]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A Pepper&Carrot page re-lettered from its transcript',
   es: 'Una página de Pepper&Carrot rotulada de nuevo a partir de su transcripción',
   pt: 'Uma página de Pepper&Carrot reletreirada pela transcrição' }) });

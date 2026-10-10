@@ -48,15 +48,13 @@
     "space-dropped-box-top",
     "opener-image-no-reserve",
     "headings-drop-h1-break",
-    "palette-skips-designs",
-    "fonts-first",
-    "config-cache-identity"
+    "palette-skips-designs"
   ],
   "explainsWarnings": [
     "chipOverlap"
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -202,7 +200,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-26",
+  "updated": "2026-10-10",
   "related": [
     "worksheet-answer-boxes",
     "exam-paper",

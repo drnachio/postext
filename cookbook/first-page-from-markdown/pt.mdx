@@ -18,7 +18,7 @@ As páginas de abertura de uma reportagem de viagem em *Caderno de campo*, uma r
 
 <Excerpt region="fonts" />
 
-O Postext mede o texto com as fontes que o navegador já carregou e guarda as larguras em cache, então uma composição que roda antes de as fontes chegarem mantém as quebras de linha erradas. O kit carrega estes arquivos do Fontsource, os mesmos que um PDF incorporaria. Depois, `buildWithFonts` percorre as fontes que as páginas usam. Se um bloco ou um elemento de design estiver composto numa fonte que não foi carregada, ele emite um aviso no console, carrega a fonte e compõe de novo; quando o Fontsource não tem essa fonte, o pen para com um erro (veja “Erros comuns”). As variantes negrito e itálico de uma fonte de texto carregam sem aviso, e só quando a família as tem.
+O Postext mede o texto com as fontes que o navegador tem na hora de compor, então uma composição que rodasse antes de as fontes chegarem manteria as quebras de linha de uma fonte substituta. `buildDocumentWithFonts` carrega, antes da primeira composição, todas as fontes que a configuração cita e as de `FONTS`; `kitFonts(FONTS)` entrega os arquivos do Fontsource, os mesmos que um PDF incorporaria. Depois ele percorre as fontes que as páginas usam, carrega as que ainda faltam e compõe de novo. Uma fonte que o Fontsource não tem fica na substituta e aparece em `doc.contentWarnings` como `fontFallback`. O negrito e o itálico de uma fonte de texto só carregam quando a família os tem.
 
 ### 2 · Dê nome às cores e aponte para os nomes
 
@@ -48,17 +48,17 @@ Deixe `header` de fora e volta o padrão do motor: Open Sans sobre um fio de lar
 
 <Excerpt region="build" />
 
-`config()` é uma função porque o motor guarda em cache cada configuração resolvida pela identidade do objeto, então um ajuste editado só faz efeito se cada composição receber um objeto novo. `showPages` dispõe as páginas como ficam num livro encadernado, com a página 1 sozinha à direita, e pinta cada uma com `renderPageToCanvas`.
+`config()` é uma função para que cada composição leia a paleta como ela está: chama de novo as funções de design do passo 2. `buildDocumentWithFonts` recebe o conteúdo, essa configuração e as opções de fontes do kit, e devolve o documento. `showPages` dispõe as páginas como ficam num livro encadernado, com a página 1 sozinha à direita, e pinta cada uma com `renderPageToCanvas`.
 
 ## Variações
 
 ### Veja o que a configuração substitui
 
-Componha com uma configuração vazia e o mesmo Markdown sai numa página de 17 × 24 cm em EB Garamond de 8 pt, com títulos azuis em Open Sans e um cabeço azul sobre um fio; o kit carrega essas fontes para você, com um aviso no console.
+Componha com uma configuração vazia e o mesmo Markdown sai numa página de 17 × 24 cm em EB Garamond de 8 pt, com títulos azuis em Open Sans e um cabeço azul sobre um fio; o motor carrega também essas duas famílias, porque a configuração padrão as cita.
 
 ```diff
--  () => buildDocument({ markdown, resources }, config()), markdown);
-+  () => buildDocument({ markdown, resources }, {}), markdown);
+-const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
++const doc = await buildDocumentWithFonts({ markdown, resources }, {}, kitFonts(FONTS));
 ```
 
 ### Troque a cor da página inteira

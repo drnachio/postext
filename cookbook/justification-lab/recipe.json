@@ -46,15 +46,13 @@
     "ragged-no-hyphenation",
     "hyphenation-locales",
     "sandbox-only-warnings",
-    "config-cache-identity",
     "callout-columns",
     "opener-image-no-reserve",
     "top-float-next-page",
     "svg-no-webfonts",
     "design-lineheight-multiple",
     "palette-skips-designs",
-    "headings-drop-h1-break",
-    "fonts-first"
+    "headings-drop-h1-break"
   ],
   "explainsWarnings": [
     "looseLine"
@@ -102,7 +100,7 @@
     }
   ],
   "engine": {
-    "postext": "1.19.1"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -178,6 +176,6 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-10-06",
+  "updated": "2026-10-10",
   "related": ["spanish-pocket-novel", "proof-sheet-diagnostics", "baseline-grid-book-page", "section-heads-field-manual"]
 }

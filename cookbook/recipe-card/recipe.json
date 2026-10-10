@@ -56,9 +56,7 @@
     "design-lineheight-multiple",
     "overflow-ellipsis-default",
     "palette-skips-designs",
-    "svg-no-webfonts",
-    "config-cache-identity",
-    "fonts-first"
+    "svg-no-webfonts"
   ],
   "related": [
     "bistro-menu",
@@ -109,7 +107,7 @@
     }
   ],
   "engine": {
-    "postext": "1.8.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -205,5 +203,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-28"
+  "updated": "2026-10-10"
 }

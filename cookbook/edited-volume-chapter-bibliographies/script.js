@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 098 · An edited volume with a bibliography per chapter ═════
 // https://postext.dev/en/cookbook/edited-volume-chapter-bibliographies
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Libre Caslon Text & Display, IBM Plex Sans Condensed (OFL 1.1) · Needs postext ≥ 1.12.1
+// Fonts: Libre Caslon Text & Display, IBM Plex Sans Condensed (OFL 1.1) · Needs postext ≥ 1.25.0
 // Three essays by three contributors, each a Markdown document of its own with its own
 // BibTeX block, laid out by buildBundle as one volume: every chapter closes on its own list.
 import {
-  buildBundle, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -130,7 +130,7 @@ const contents = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }),
   colorPalette,
   citations,
@@ -184,7 +184,7 @@ const book = () => buildBundle({ chapters, config: config(), resources: [] });
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces (gotcha: fonts-first)
+const FONTS = { // text, display and label faces
   'Libre Caslon Text': ['400', '400i', '700'],
   'Libre Caslon Display': ['400'],
   'IBM Plex Sans Condensed': ['400', '500', '600'],
@@ -192,8 +192,9 @@ const FONTS = { // text, display and label faces (gotcha: fonts-first)
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const all = chapters.map((chapter) => chapter.markdown).join('\n');
-await loadFonts(FONTS, all);
-const docs = await buildWithFonts(book, all); // one VDTDocument per Markdown document
+await prepareFonts(all, config(), kitFonts(FONTS));
+const docs = await withLoadedFonts(book,
+  { ...kitFonts(FONTS), text: all }); // one VDTDocument per Markdown document
 showPages(docs, { title: t({ en: 'The Working Page', es: 'La página en obra' }) });
 offerPdf(() => renderToPdf(docs, { fontProvider: fontsourceProvider }), `${RECIPE}.pdf`);
 

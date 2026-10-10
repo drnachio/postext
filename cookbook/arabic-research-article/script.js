@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 107 · An Arabic research article with notes, citations and an index ═══
 // https://postext.dev/en/cookbook/arabic-research-article
 // Code: MIT · Text: original Arabic prose (CC BY 4.0) · Pictures: none
-// Fonts: Amiri, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.15.0
+// Fonts: Amiri, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -89,7 +89,7 @@ const header = { elements: [
 ] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
   colorPalette, citations, footnotes, index,
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
@@ -133,7 +133,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md: the same Arabic article in both
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   Amiri: ['400', '700'], // TEXT: the article, notes, references, index; bold emphasis
   'Noto Kufi Arabic': ['400', '700'], // LABEL: masthead, section heads, running heads
 };
@@ -142,7 +142,8 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
 await loadFonts(FONTS, markdown);
 // Each Arabic face's letters live in a file of their own (gotcha: arabic-fonts-subset).
 await loadArabicFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'An Arabic research article',
   es: 'Un artículo académico árabe' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: arabicPdfProvider }), `${RECIPE}.pdf`);

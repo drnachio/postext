@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 038 · Trade paperback: sunk openers and recto chapters ═══
 // https://postext.dev/en/cookbook/trade-paperback-novel
 // Code: MIT · Text: The Awakening (Gutenberg #160), Quincas Borba (PD) · Cover: diffusion models
-// Fonts: Crimson Pro, Cormorant Garamond, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Crimson Pro, Cormorant Garamond, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the sample's language: 'en' (Chopin) | 'pt' (Machado de Assis)
@@ -155,7 +155,7 @@ const resources = [
 ];
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', pt: 'pt' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette,
   resourceTypes: [ornament],
@@ -196,18 +196,16 @@ function drawFleuron(color) { // a camomile head between two leafy sprigs
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Crimson Pro': ['400', '400i'], // text, colophon, folios
   'Cormorant Garamond': ['500i'], // numerals, cover title, the recto's running head
   'Cormorant SC': ['600'], // the leads, the author on the cover and the verso
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadImage(painting.bitmap.fileId, asset(painting.bitmap.fileId));
 await loadSvg('fleuron.svg', drawFleuron(palette.rubric));
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Trade paperback: sunk openers and recto chapters',
   pt: 'Romance em brochura: aberturas rebaixadas em página ímpar' }) });
 

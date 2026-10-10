@@ -1,12 +1,12 @@
 // ═══ Postext Cookbook · Nº 094 · A technical book whose references cross chapters ═══
 // https://postext.dev/en/cookbook/technical-book-crossref-chapters
 // Code: MIT · Text: original (CC BY 4.0) · Charts: generated in code (CC BY 4.0)
-// Fonts: IBM Plex Serif, Sans Condensed and Mono (SIL OFL 1.1) · Needs postext ≥ 1.12.1
+// Fonts: IBM Plex Serif, Sans Condensed and Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A small handbook in four Markdown documents. The text writes @fig:sun, @tbl:loads and
 // @sec:array-size the way pandoc-crossref reads them, and buildBundle resolves each one to
 // the right number, title or page wherever in the book its target lies.
 import {
-  buildBundle, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerResourceImage,
   defaultResourceTypes, parseTSV, setAlignment,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
@@ -140,7 +140,7 @@ const contents = { // what :::toc prints: chapters in the condensed face, sectio
   leader: { char: '. ', gap: mm(2) },
 };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-gb', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   crossRefs, resourceTypes, colorPalette, toc: contents, header, footer,
   page: { sizePreset: 'custom', width: mm(TRIM.w), height: mm(TRIM.h), dpi: 150,
@@ -354,7 +354,7 @@ function coverArt(w, h) {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first).
+// Every face the design uses.
 const FONTS = {
   'IBM Plex Serif': ['400', '400i', '600'],
   'IBM Plex Sans Condensed': ['400', '600', '700'],
@@ -363,13 +363,14 @@ const FONTS = {
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const text = chapters.map((chapter) => chapter.markdown).join('\n');
-await loadFonts(FONTS, text);
+await prepareFonts(text, config(), kitFonts(FONTS));
 const face = await labelFace();
 await loadSvg('cover.svg', sheet(TRIM.w, 110, coverArt(TRIM.w, 110)));
 await loadSvg('profile.svg', sheet(MEASURE, 50, profileArt(MEASURE, 50), face));
 await loadSvg('sun.svg', sheet(MEASURE, 46, sunArt(MEASURE, 46), face));
 await loadSvg('soc.svg', sheet(MEASURE, 50, socArt(MEASURE, 50), face));
-const docs = await buildWithFonts(book, text); // one VDTDocument per Markdown document
+// One VDTDocument per Markdown document.
+const docs = await withLoadedFonts(book, { ...kitFonts(FONTS), text });
 showPages(docs, { title: t({ en: 'Power for a Cabin', es: 'Energía para una cabaña' }) });
 // One PDF for the book: a reference in chapter 3 links to its table in chapter 1.
 offerPdf(() => renderToPdf(docs, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),

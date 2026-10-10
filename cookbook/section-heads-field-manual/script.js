@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 018 · Section heads seven levels deep ═════════════════
 // https://postext.dev/en/cookbook/section-heads-field-manual
 // Code: MIT · Text: original (CC BY 4.0) · Picture: drawn in code (MIT)
-// Fonts: IBM Plex Serif, Sans Condensed, Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: IBM Plex Serif, Sans Condensed, Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -150,7 +150,7 @@ const folio = { ...runHead, fontFamily: LABEL, color: col('band') };
 const head = (id, content, parity, edge, x, style = runHead) => ({ kind: 'text', id, content,
   parity, pages: 'body', ...style, placement: at('page', edge, mm(x), mm(HEAD)) });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
@@ -239,14 +239,13 @@ function profileSvg() {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the pages paint, loaded before the first build (gotcha: fonts-first).
+// Every face the pages paint, loaded before the first build.
 const FONTS = { 'IBM Plex Serif': ['400', '400i', '700'],
   'IBM Plex Sans Condensed': ['500i', '600', '700'], 'IBM Plex Mono': ['400', '500', '600'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('profile.svg', profileSvg());
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Section heads seven levels deep',
   es: 'Títulos de sección hasta siete niveles' }) });
 

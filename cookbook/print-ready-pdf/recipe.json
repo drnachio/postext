@@ -23,7 +23,7 @@
     "pdf-master-resourcebytes", "pdf-provider-all-styles", "svg-no-marker-filters",
     "svg-no-webfonts", "latin-subset", "opener-image-no-reserve", "ragged-no-hyphenation",
     "resource-types-locale", "headings-drop-h1-break", "palette-skips-designs",
-    "overflow-ellipsis-default", "config-cache-identity", "fonts-first"
+    "overflow-ellipsis-default"
   ],
   "explainsWarnings": [],
   "related": ["riso-zine-single-ink", "accessible-tagged-pdf", "chapter-opener-bleed-band", "book-from-chapters"],
@@ -37,7 +37,7 @@
     { "followup": "EF-90", "package": "postext", "note": "the cover's map, a bleed-anchored image, reserves no height, so the text puts :::pagebreak after the cover heading; without it the lead and the first room print over the map" },
     { "followup": "EF-120", "package": "postext", "note": "crop marks start markOffset outside the trim, not outside the bleed, so a bleed wider than the 3 mm default offset puts the marks on the artwork (canvas and PDF): cutLines sets markOffset: mm(BLEED) so one number keeps them clear" }
   ],
-  "engine": { "postext": "1.22.0", "postextPdf": "1.22.0" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["es"] },
   "capture": {
@@ -65,5 +65,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-07"
+  "updated": "2026-10-10"
 }

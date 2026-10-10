@@ -1,10 +1,9 @@
 // ═══ Postext Cookbook · Nº 039 · Accessible tagged PDF (PDF/UA) ═════════════════════
 // https://postext.dev/en/cookbook/accessible-tagged-pdf
 // Code: MIT · Text: original (CC BY 4.0) · Pictograms: generated in code (CC BY 4.0)
-// Fonts: Atkinson Hyperlegible Next and Mono, Public Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Atkinson Hyperlegible Next and Mono, Public Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, parseTSV,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes, parseTSV,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -122,7 +121,7 @@ const footer = { elements: [ // the PDF tags these as pagination artifacts
   text('folio', '{pageNumber}', { ...label(9, 'ink', 700), align: 'right', overflow: 'clip' },
     at('container', 'bottom-right', 0, -10.6))] };
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   // #region identity: the language the PDF declares, and captions in that language
   locale: LANG, // → /Lang es (it hyphenates justified text only: gotcha ragged-no-hyphenation)
   resourceTypes: defaultResourceTypes(LANG), // "Figura", "Tabla" (gotcha: resource-types-locale)
@@ -292,16 +291,15 @@ function showReadingOrder(page) { // over the viewer's page, and in the Cookbook
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Loaded before layout (gotcha: fonts-first); the PDF embeds the same files (gotcha: latin-subset)
+// Loaded before layout; the PDF embeds the same files (gotcha: latin-subset)
 const FONTS = { 'Atkinson Hyperlegible Next': ['400', '400i', '700', '700i'],
   'Atkinson Hyperlegible Mono': ['400', '700'], 'Public Sans': ['700', '800'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('contenedores.svg', binsSvg(FIGURE, 23));
 await loadSvg('calle.svg', binsSvg(STREET, 36));
 const content = { markdown, resources: resources() };
-const doc = await buildWithFonts(() => buildDocument(content, config()), markdown);
+const doc = await buildDocumentWithFonts(content, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Reciclar en el barrio · PDF accesible' });
 showReadingOrder(doc.pages[2]); // page 3: every tagged block numbered in reading order
 offerPdf(() => exportPdf(doc), `${RECIPE}.pdf`);

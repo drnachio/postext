@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 067 · Atlas sheet: numbered maps and a rotated overview ═════
 // https://postext.dev/en/cookbook/atlas-map-sheet
 // Code: MIT · Text: original (CC BY 4.0) · Maps: generated in code from seed 1874 (CC BY 4.0)
-// Fonts: Marcellus, Alegreya Sans, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Marcellus, Alegreya Sans, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, setCellBackground, setAlignment,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
+  setCellBackground, setAlignment,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -159,7 +159,7 @@ function gazetteer() {
 }
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, header, footer, captionStyle,
   // Spanish names Tabla; the map type is named in the pen (gotcha: resource-types-locale).
   resourceTypes: [mapType, { ...defaultResourceTypes(LANG)[1], numberingTemplate: '{n}' }],
@@ -627,15 +627,14 @@ await loadSvg('rose.svg', rose(ROSE)); // drawn by the opener, never cited, so n
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the layout uses, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the layout uses, loaded before the build
   'Alegreya Sans': ['400', '400i', '700'], // text, lead, place names and chips
   'Alegreya Sans SC': ['400', '500', '700'], // captions, heads, kicker, table head, labels
   Marcellus: ['400'], // the atlas's name, section heads and folios: one weight, no italic
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'The Solan Isles · Sheet 1', es: 'Las islas Solan · Hoja 1' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

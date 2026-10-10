@@ -3,7 +3,7 @@
 // Code: MIT · Text: original (CC BY 4.0) · Photos: generated (CC BY 4.0)
 // Fonts: Newsreader, Playfair Display, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -145,7 +145,7 @@ const opinion = { id: 'opinion', advancedDesign: flag, // its section runs in fi
   layout: { layoutType: 'multiple', columnCount: 5 } }; // 67 mm: a 47-character measure
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, resourceTypes,
   page: { sizePreset: 'broadsheet', dpi: 150, backgroundColor: col('paper'), // 375 × 597 mm
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.side),
@@ -289,19 +289,18 @@ const back = /* @content:back */ ''; // content.back.en.md: page 4
 const markdown = [front, city, views, back].join('\n\n');
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Newsreader: ['400', '400i', '600', '700', '700i'], 'Playfair Display': ['700', '800', '900'],
   'Archivo Narrow': ['400', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all([loadImage('quays-1440.jpg', asset('quays-1440.jpg')),
   loadImage('barrier-1152.jpg', asset('barrier-1152.jpg')),
   loadImage('terrace-1440.jpg', asset('terrace-1440.jpg')),
   loadImage('baths-1536x768.jpg', asset('baths-1536x768.jpg')),
   loadImage('stage-1800.jpg', asset('stage-1800.jpg')),
   ...Object.entries(SKY).map(([id, svg]) => loadSvg(`${id}.svg`, svg))]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'The Corrington Despatch' });
 
 // @kit

@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 063 · Certificate with a guilloche border ═══════════════
 // https://postext.dev/en/cookbook/certificate-single-page
 // Code: MIT · Text: original (CC BY 4.0) · Guilloche and seal: generated in code (CC BY 4.0)
-// Fonts: Rosarivo, Pinyon Script, Aboreto (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Rosarivo, Pinyon Script, Aboreto (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // End-of-course certificates, one page per student, drawn by one heading style, in one PDF.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -129,7 +129,7 @@ const signatures = [
 ];
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // the PDF's /Lang; centred text is never hyphenated
   colorPalette,
   page: { width: mm(W), height: mm(H), dpi: 150, backgroundColor: col('paper'),
@@ -253,15 +253,15 @@ function sealSvg() {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Loaded from Fontsource before the first build: layout measures with them (gotcha: fonts-first)
+// Loaded from Fontsource before the first build: layout measures with them
 const FONTS = { Rosarivo: ['400', '400i'], 'Pinyon Script': ['400'], Aboreto: ['400'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, merged);
 await loadSvg('guilloche.svg', guillocheSvg());
 await loadSvg('seal.svg', sealSvg());
-const doc = await buildWithFonts(() => buildDocument({ markdown: merged, metadata, resources },
-  config()), merged);
+const doc = await buildDocumentWithFonts({ markdown: merged, metadata, resources },
+  config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Certificate with a guilloche border',
   es: 'Diploma con orla de guilloché' }) });
 // #region pdf: one document with a page per student, so one PDF holds the whole class

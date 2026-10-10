@@ -29,14 +29,12 @@
   },
   "answers": ["Q25", "Q50", "Q52"],
   "gotchas": [
-    "config-cache-identity",
     "palette-skips-designs",
     "ragged-run-punctuation",
     "ragged-runts",
     "headings-drop-h1-break",
     "resource-types-locale",
-    "design-lineheight-multiple",
-    "fonts-first"
+    "design-lineheight-multiple"
   ],
   "explainsWarnings": [],
   "related": [
@@ -83,7 +81,7 @@
     }
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.25.0"
   },
   "kit": ["core", "fonts", "viewer"],
   "sample": {
@@ -133,5 +131,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

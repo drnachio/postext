@@ -21,7 +21,7 @@
   "gotchas": [
     "attr-values", "headings-drop-h1-break", "style-inherits-break", "toc-number-baseline",
     "heading-number-placeholders", "palette-skips-designs", "box-paragraph-margins",
-    "runt-tracking-unpainted", "fonts-first", "overflow-ellipsis-default"
+    "runt-tracking-unpainted", "overflow-ellipsis-default"
   ],
   "gaps": [],
   "explainsWarnings": [],
@@ -37,7 +37,7 @@
     { "followup": "EF-135","package": "postext", "note": "the lines of verse Hazlitt quotes are a :::verse{style=\"verse\"} block in *italics*, not a Markdown blockquote: 1.4.1 paints a blockquote in a hard-coded #666666 italic, with the body's first-line indent and no side indent, and no colour or indent setting reaches it"}
   ],
   "related": ["front-matter-roman-to-arabic", "letters-edition", "running-heads-by-parity", "magazine-cover-and-contents"],
-  "engine": {"postext": "1.23.0"},
+  "engine": {"postext": "1.25.0"},
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": {"locales": ["en"]},
   "capture": {
@@ -125,5 +125,5 @@
   },
   "license": {"code": "MIT", "content": "CC-BY-4.0"},
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

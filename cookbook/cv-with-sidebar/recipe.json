@@ -37,7 +37,6 @@
     "design-lineheight-multiple",
     "ragged-no-hyphenation",
     "ragged-runts",
-    "fonts-first",
     "headings-drop-h1-break"
   ],
   "explainsWarnings": [],
@@ -79,7 +78,7 @@
       "note": "ragged paragraphs get no runt control in 1.4.1, so the profile, the bullets and the sidebar entries were reworded in both editions until none ends on a lone short word (gotcha ragged-runts)"
     }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -114,5 +113,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

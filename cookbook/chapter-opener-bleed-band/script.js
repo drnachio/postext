@@ -1,12 +1,11 @@
 // ═══ Postext Cookbook · Nº 003 · Chapter opener on a full-bleed band ══════════════
 // https://postext.dev/en/cookbook/chapter-opener-bleed-band
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Roboto Serif, Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: Roboto Serif, Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Two chapters of a geology textbook. Every level-1 heading becomes a colour band bled off the
 // top of the page, its number standing on the band's foot; a heading style recolours chapter 4.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -113,7 +112,7 @@ const footer = { elements: [{ kind: 'text', id: 'drop-folio', content: '{pageNum
 // #endregion
 
 const LEAD = 13.2; // body leading in pt: the baseline grid
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes only (gotcha: hyphenation-locales)
   resourceTypes: defaultResourceTypes(LANG), // "Figura" in Spanish (gotcha: resource-types-locale)
   colorPalette, headingStyles,
@@ -253,18 +252,17 @@ const resources = [
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   'Roboto Serif': ['400', '400i', '700'], Archivo: ['700', '800'],
   'Archivo Narrow': ['400', '400i', '600', '700'] }; // 400i: the colophon's book title
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 for (const [id, art] of Object.entries(ART)) await loadSvg(`${id}.svg`, art.markup);
 // #region build: chapters 3 and 4 of a longer book, so the counters start where 2 ended
 const continuation = { pageNumbering: { startAt: 41 }, // an odd folio: page 1 is still a recto
   headings: { h1: 2, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 } }; // the next # is chapter 3
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Chapter opener on a full-bleed band',
   es: 'Apertura de capítulo sobre banda a sangre' }) });
 // #endregion

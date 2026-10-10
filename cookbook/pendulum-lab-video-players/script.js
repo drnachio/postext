@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 132 · A lab sheet whose clips play on screen and in the EPUB ════
 // https://postext.dev/en/cookbook/pendulum-lab-video-players
 // Code: MIT · Text: original (CC BY 4.0) · Clips: rendered in code (CC BY 4.0)
-// Fonts: Source Serif 4, Red Hat Display, Red Hat Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: Source Serif 4, Red Hat Display, Red Hat Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, renderToHtml, applyHtmlViewerOverrides,
-  clearMeasurementCache, registerResourceImage, defaultResourceTypes, resourceVideoLink,
+  buildDocument, buildDocumentWithFonts, prepareFonts, renderPageToCanvas, renderToHtml,
+  applyHtmlViewerOverrides, registerResourceImage, defaultResourceTypes, resourceVideoLink,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { renderToEpub, readEpub } from 'https://esm.sh/postext-epub';
@@ -122,7 +122,7 @@ const box = (id, extra) => ({ id, background: col('cream'), borderRadius: mm(1.5
   titleStyle: { ...label(7.5), gap: mm(1.2) }, body: { fontSize: pt(9.2), lineHeight: pt(LEAD),
     textAlign: 'left', firstLineIndent: pt(0) }, ...extra });
 
-const config = () => ({ // a factory: the engine caches configs by identity
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   // Figure, Table, Video in the sheet's language, counted 1, 2… (gotcha: resource-types-locale)
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}',
@@ -185,16 +185,16 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 const resources = [...clips, data, periods];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Source Serif 4': ['400', '400i', '700', '700i'], 'Red Hat Display': ['700', '800'],
   'Red Hat Mono': ['400', '500', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // θ and π: markdown has Greek letters, so the kit loads Source Serif 4's greek file too
 // and the PDF provider embeds it beside the latin one (gotcha: latin-subset).
-await Promise.all([loadFonts(FONTS, markdown),
+await Promise.all([prepareFonts(markdown, config(), kitFonts(FONTS)),
   ...clips.map(({ video }) => loadImage(video.poster.fileId, asset(video.poster.fileId)))]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'The period of a pendulum', es: 'El periodo de un péndulo' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

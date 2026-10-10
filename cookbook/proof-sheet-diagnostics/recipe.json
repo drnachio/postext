@@ -50,14 +50,12 @@
     "dollar-math",
     "digit-period-list",
     "callout-columns",
-    "config-cache-identity",
     "opener-image-no-reserve",
     "palette-skips-designs",
     "headings-drop-h1-break",
     "hyphenation-locales",
     "design-lineheight-multiple",
-    "runt-tracking-unpainted",
-    "fonts-first"
+    "runt-tracking-unpainted"
   ],
   "explainsWarnings": [
     "unclosedMath",
@@ -126,7 +124,7 @@
     }
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -204,5 +202,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-27"
+  "updated": "2026-10-10"
 }

@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 083 · Tang poems facing their English verse ═══════════════
 // https://postext.dev/en/cookbook/tang-poems-facing-english
 // Code: MIT · Text: Tang poems, zh.wikisource; H. A. Giles, 1901, Project Gutenberg (PD)
-// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC, Source Serif 4 (OFL) · Needs postext ≥ 1.23.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC, Source Serif 4 (OFL) · Needs postext ≥ 1.25.0
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -136,7 +136,7 @@ const paragraphStyles = [shi, verse,
     italicColor: col('muted'), textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD) },
 ];
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'zh-Hant', // the Chinese sets the rules; written out, never LANG (gotcha: cjk-locale-tag)
   colorPalette,
   page: {
@@ -163,7 +163,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif TC': ['400', '700', '900'], // SERIF: the notes; the titles; 唐詩
   'LXGW WenKai TC': ['400'], // KAI: the poems and the seal
   'Noto Sans TC': ['400'], // HEI: the poet lines, the recto's head
@@ -184,8 +184,9 @@ await Promise.all([
   loadCjkFonts({ [HEI]: ['400'] }, grab(/(?<=(?:poet|name)=")[^"]*/g)),
 ]);
 // #endregion
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'Tang poems facing their English verse',
   es: 'Poemas Tang frente a su versión inglesa' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

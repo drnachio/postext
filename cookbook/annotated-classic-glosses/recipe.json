@@ -36,7 +36,7 @@
     { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated with parity 'odd' because a headings object drops it (gotcha headings-drop-h1-break)" }
   ],
   "related": ["critical-edition-line-numbers", "textbook-margin-column", "endnotes-instead-of-footnotes", "spanish-pocket-novel"],
-  "engine": { "postext": "1.24.0" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en"] },
   "capture": {
@@ -83,5 +83,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-09"
+  "updated": "2026-10-10"
 }

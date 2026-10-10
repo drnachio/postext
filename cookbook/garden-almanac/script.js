@@ -2,7 +2,8 @@
 // https://postext.dev/en/cookbook/garden-almanac
 // Code: MIT · Text: original, Italian (CC BY 4.0) · Field: diffusion models · Icons: CC BY 4.0
 // Fonts: Piazzolla, Gilda Display, Commissioner (SIL OFL 1.1) · Needs postext ≥ 1.25.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage, parseTSV,
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage, parseTSV,
   mergeCells, setCellContent, setCellBackground, setCellImage, setAlignment,
 } from 'https://esm.sh/postext';
 
@@ -184,7 +185,7 @@ const bare = (id, extra) => ({ id, backgroundEnabled: false, borderWidth: pt(0),
   paddingX: pt(0), ...extra }); // a chip that is only a change of face, size or colour
 const note = (color) => ({ fontFamily: TEXT, fontSize: em(0.5), italic: true, color: col(color) });
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   locale: 'it', resourceTypes, colorPalette, tableStyle, tableStyles, header, footer,
   page: { width: mm(PAGE.w), height: mm(PAGE.h), dpi: 150, backgroundColor: col('paper'),
     pageNumbering: { startAt: 27 }, margins: { top: mm(PAGE.top), bottom: mm(PAGE.bottom),
@@ -324,14 +325,15 @@ const resources = [...pictures, // never cited: the opener and the cells draw th
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the layout uses, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the layout uses, loaded before the build
   Piazzolla: ['400', '400i', '600'], // text, notes and proverb; 600 for caption labels
   'Gilda Display': ['400'], Commissioner: ['600'] }; // display and days; labels and table heads
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const allText = [markdown, sowing, companions].join('\n');
-await loadFonts(FONTS, allText);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), allText);
+await prepareFonts(allText, config(), kitFonts(FONTS));
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: allText });
 showPages(doc, { title: 'Almanacco dell’orto 2027 · Marzo' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

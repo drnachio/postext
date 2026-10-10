@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 095 · A medical article in Vancouver style ══════════════
 // https://postext.dev/en/cookbook/medical-article-vancouver
 // Code: MIT · Text: original (CC BY 4.0) · Chart: generated in code (CC BY 4.0)
-// Fonts: PT Serif, Fira Sans, Fira Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: PT Serif, Fira Sans, Fira Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  registerResourceImage, defaultResourceTypes, parseTSV,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
+  defaultResourceTypes, parseTSV,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -114,7 +114,7 @@ const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'bottom-ri
 ] };
 
 const sans = (size, weight) => ({ fontFamily: SANS, fontSize: pt(size), fontWeight: weight });
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-gb', es: 'es' }),
   // "(Table 1)" in the text, not "Tab. 1"; Table 1, not 1.1, as the title is numbered: false
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, shortLabel: type.name,
@@ -230,10 +230,9 @@ const FONTS = { 'PT Serif': ['400', '400i', '700', '700i'], 'Fira Sans': ['400',
   'Fira Sans Condensed': ['500', '600'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('home.svg', homeChart(await inlineFace(SANS, 400)));
 const content = { markdown, resources: resources() };
-const doc = await buildWithFonts(() => buildDocument(content, config()), markdown);
+const doc = await buildDocumentWithFonts(content, config(), kitFonts(FONTS));
 const title = t({ en: 'A medical article in Vancouver style',
   es: 'Un artículo médico en estilo Vancouver' });
 showPages(doc, { title });

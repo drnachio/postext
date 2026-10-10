@@ -21,8 +21,7 @@
   "gaps": [],
   "gotchas": [
     "top-float-next-page", "float-stretch-closing-page", "headings-drop-h1-break",
-    "palette-skips-designs", "hyphenation-locales", "resource-types-locale", "quote-frontmatter",
-    "fonts-first"
+    "palette-skips-designs", "hyphenation-locales", "resource-types-locale", "quote-frontmatter"
   ],
   "explainsWarnings": [],
   "related": [
@@ -67,7 +66,7 @@
       "note": "the title stays in the first column: a heading level with span: 'page' and no advancedDesign is measured at the column width, so its band keeps the height of the wrapped title while it prints one line across the page, and the column rule is drawn through the band"
     }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es", "pt"] },
   "capture": {
@@ -115,5 +114,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

@@ -51,9 +51,7 @@
     "merged-cells-hiddenby",
     "dollar-math",
     "headings-drop-h1-break",
-    "top-float-next-page",
-    "fonts-first",
-    "config-cache-identity"
+    "top-float-next-page"
   ],
   "engine": {
     "postext": "1.25.0",

@@ -103,7 +103,7 @@
       "note": "the H1 breakBefore is restated (parity 'any') because a headings object drops it; in a brief with one H1 it changes nothing"
     }
   ],
-  "engine": { "postext": "1.19.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["es"] },
   "capture": {
@@ -131,5 +131,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

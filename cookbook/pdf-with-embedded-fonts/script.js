@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 025 · A real PDF with the same fonts embedded ═══════════
 // https://postext.dev/en/cookbook/pdf-with-embedded-fonts
 // Code: MIT · Text: notes original (CC BY 4.0), poems in the public domain · Cover: drawn in code
-// Fonts: Crimson Text, Fraunces, Tenor Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Crimson Text, Fraunces, Tenor Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -28,7 +28,7 @@ function fontFile(family, weight, style) {
 const facesOf = (family) => (FONTS[family] ?? []).map((spec) =>
   ({ spec, weight: parseInt(spec, 10), style: spec.endsWith('i') ? 'italic' : 'normal' }));
 
-// The screen: a FontFace per face, from those bytes, before the first build (gotcha: fonts-first).
+// The screen: a FontFace per face, from those bytes, before the first build.
 const registerFaces = () => Promise.all(Object.keys(FONTS).flatMap((family) =>
   facesOf(family).map(async ({ weight, style }) => {
     const face = new FontFace(family, await fontFile(family, weight, style),
@@ -116,7 +116,7 @@ const aside = { id: 'aside', breakBefore: { enabled: false }, advancedDesign: { 
   ...H2, marginTop: pt(LEAD) };
 // #endregion
 
-const config = () => ({ // a new object per build (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, resourceTypes: [plain], headings, headingStyles: [cover, aside],
   page: { width: mm(PAGE.width), height: mm(PAGE.height), backgroundColor: col('paper'),
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
@@ -199,8 +199,9 @@ const FONTS = { 'Crimson Text': ['400', '400i', '600', '600i'], Fraunces: ['300'
 // #region build: the faces first, then the layout, then a check that nothing was missed
 await registerFaces(); // the answer: every face in FONTS, from its own bytes
 await loadSvg('cover.svg', coverArt(PAGE.width, PAGE.height, WAVES));
-// buildWithFonts (the Cookbook kit) adds any face FONTS forgot, for the screen only, and rebuilds.
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+// buildDocumentWithFonts finds these faces declared; one FONTS forgot would come from Fontsource
+// (kitFonts), for the screen only, and the document would be built again.
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Home from Sea · a recital programme' });
 // #endregion
 

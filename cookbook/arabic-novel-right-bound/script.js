@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 105 · An Arabic novel set right to left, bound on the right ═══
 // https://postext.dev/en/cookbook/arabic-novel-right-bound
 // Code: MIT · Text: original Arabic prose (CC BY 4.0) · Pattern: drawn in code
-// Fonts: Markazi Text, Reem Kufi, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.15.0
+// Fonts: Markazi Text, Reem Kufi, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -118,7 +118,7 @@ const plate = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
   colorPalette, page, bodyText, layout: { layoutType: 'single' },
   headings: { fontFamily: DISPLAY, fontWeight: 600, color: col('ink'), levels: [chapter] },
@@ -182,7 +182,7 @@ const resources = [
 ];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Markazi Text': ['400'], // TEXT: the novel, the part page's line, the colophon
   'Reem Kufi': ['600'], // DISPLAY: the part's name, the chapter titles
   'Noto Kufi Arabic': ['400', '600'], // LABEL: running heads, folios, kickers
@@ -196,8 +196,9 @@ await loadSvg('lattice.svg', lattice());
 await loadSvg('star.svg', brassStar());
 // The excerpt opens on page 10 of the book, a right-hand page: folios and parity follow it.
 const continuation = { pageIndexOffset: 9, pageNumbering: { startAt: 10 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown, resources, continuation }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'An Arabic novel, bound on the right',
   es: 'Una novela árabe encuadernada por la derecha' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: arabicPdfProvider, resourceBytes: imageBytes }),

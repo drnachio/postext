@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 131 · Film club programme with video QR codes ═════════
 // https://postext.dev/en/cookbook/film-club-video-qr
 // Code: MIT · Text and title cards: original (CC BY 4.0) · Films: Blender Foundation (CC BY)
-// Fonts: Literata, Big Shoulders Display, Barlow Semi Condensed (SIL OFL) · Needs postext ≥ 1.16.1
+// Fonts: Literata, Big Shoulders Display, Barlow Semi Condensed (SIL OFL) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
   defaultResourceTypes, parseVideoUrl, videoWatchUrl,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
@@ -135,7 +135,7 @@ const footer = { elements: [ // folios at the outer foot, the programme's name b
 ] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), colorPalette, videoStyle,
   resourceTypes: defaultResourceTypes(LANG).map((ty) => (ty.id === 'video' ? filmType(ty) : ty)),
   page: { sizePreset: 'custom', width: mm(TRIM.w), height: mm(TRIM.h), dpi: 150,
@@ -324,17 +324,17 @@ async function titleCard(f) {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages and the cards use (gotcha: fonts-first)
+const FONTS = { // every face the pages and the cards use
   Literata: ['400', '400i'], // the programme notes, the cover's standfirst
   'Big Shoulders Display': ['700', '800'], // titles, on the pages and the cards
   'Barlow Semi Condensed': ['500', '600', '700'], // kickers, credits, captions, folios
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-for (const f of FILMS) await titleCard(f); // after the fonts: the cards set type too
+await prepareFonts(markdown, config(), kitFonts(FONTS)); // before the cards: they set type too
+for (const f of FILMS) await titleCard(f);
 const resources = FILMS.map(film);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Film club programme', es: 'Programa de cineclub' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

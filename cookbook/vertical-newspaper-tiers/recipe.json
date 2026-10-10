@@ -21,11 +21,11 @@
   "gaps": ["three-columns"],
   "gotchas": [
     "page-span-heading-new-page", "callout-columns", "cjk-fonts-slices", "cjk-locale-tag",
-    "cjk-spread-order", "headings-drop-h1-break", "config-cache-identity"
+    "cjk-spread-order", "headings-drop-h1-break"
   ],
   "explainsWarnings": [],
   "related": ["newspaper-front-page", "chinese-dates-upright", "vertical-novel-right-bound", "red-ink-commentary"],
-  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": 1, "card": "page", "expect": { "pages": [2, 2] } },
@@ -93,5 +93,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-29",
-  "updated": "2026-09-29"
+  "updated": "2026-10-10"
 }

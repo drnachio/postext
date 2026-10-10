@@ -46,9 +46,7 @@
     "bundle-metadata",
     "attr-values",
     "style-inherits-break",
-    "fonts-first",
-    "quote-frontmatter",
-    "config-cache-identity"
+    "quote-frontmatter"
   ],
   "related": [
     "apa-thesis-with-bibtex",
@@ -56,8 +54,8 @@
     "book-from-chapters"
   ],
   "engine": {
-    "postext": "1.12.1",
-    "postextPdf": "1.12.1"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -111,7 +109,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-01",
-  "updated": "2026-10-01",
+  "updated": "2026-10-10",
   "downloads": {
     "pdf": true
   }

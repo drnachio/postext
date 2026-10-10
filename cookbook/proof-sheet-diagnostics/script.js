@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 055 · A galley proof with every fault marked in red ══════
 // https://postext.dev/en/cookbook/proof-sheet-diagnostics
 // Code: MIT · Text: original (CC BY 4.0) · Map: code (CC BY 4.0) · Photo: diffusion models
-// Fonts: Charis SIL, Chivo, Fragment Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Charis SIL, Chivo, Fragment Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
   parseMarkdownWithIssues, KNOWN_DIRECTIVES, KNOWN_CONTAINERS,
 } from 'https://esm.sh/postext';
 
@@ -75,7 +75,7 @@ const calloutStyles = [...boxes, side('quote', { fontSize: pt(12.5), lineHeight:
   side('dates', { fontSize: pt(9), lineHeight: pt(12), paragraphSpacing: true }),
   side('colophon', { fontSize: pt(6.5), lineHeight: pt(9.5), color: col('muted') }, MONO)];
 
-const config = () => ({ // a fresh object per build (gotcha: config-cache-identity)
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), colorPalette, // exact codes (gotcha: hyphenation-locales)
   resourceTypes: [{ id: 'figure', name: t({ en: 'Map', es: 'Mapa' }),
     captionPrefix: t({ en: 'Map', es: 'Mapa' }), shortLabel: t({ en: 'map', es: 'mapa' }),
@@ -291,15 +291,15 @@ const resources = [{ id: 'route', typeId: 'figure', kind: 'svg', createdAt: 0, u
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { 'Charis SIL': ['400', '400i', '700', '700i'], Chivo: ['400', '700', '900'],
-  'Fragment Mono': ['400'] }; // every face, loaded before the first build (gotcha: fonts-first)
+  'Fragment Mono': ['400'] }; // every face, loaded before the first build
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await Promise.all([loadFonts(FONTS, markdown), loadSvg('route.svg', routeMap()),
-  loadImage('crossing-1590.jpg', asset('crossing-1590.jpg'))]);
+await Promise.all([prepareFonts(markdown, config(), kitFonts(FONTS)),
+  loadSvg('route.svg', routeMap()), loadImage('crossing-1590.jpg', asset('crossing-1590.jpg'))]);
 const $ = (id) => document.getElementById(id); // the proof desk of index.html
 const source = $('source');
 for (const el of document.querySelectorAll('#proof [data-en]')) el.textContent = el.dataset[LANG];
-const build = (m) => buildWithFonts(() => buildDocument({ markdown: m, resources }, config()), m);
+const build = (m) => buildDocumentWithFonts({ markdown: m, resources }, config(), kitFonts(FONTS));
 const proofAgain = async (md) => proofDesk(source.value = md, await build(md));
 const first = await proofAgain(firstPass(markdown)); // first: the galley as it came in
 const doc = await build(markdown); // last: the corrected galley, the pages below

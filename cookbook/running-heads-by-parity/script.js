@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 005 · Running heads by parity ═══════════════════════════════
 // https://postext.dev/en/cookbook/running-heads-by-parity
 // Code: MIT · Text: Montaigne, tr. Cotton (PD, Gutenberg #3600); es: new translation (MIT)
-// Fonts: Baskervville, Libre Caslon Display, Alegreya SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Baskervville, Libre Caslon Display, Alegreya SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Pages 29 to 33 of a pocket Montaigne. Versos carry the book's title and rectos the essay's,
 // the folios sit in tabs in the outer margin, and an opener prints only a folio at the foot.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'running-heads-by-parity';
@@ -122,7 +122,7 @@ const opener = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // hyphenation by exact code (gotcha: hyphenation-locales)
   colorPalette,
   page: geometry,
@@ -174,19 +174,17 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses, loaded before the first build (gotcha: fonts-first).
+// Every face the design uses, loaded before the first build.
 const FONTS = { // text, display and label faces (Libre Caslon Display has no italic)
   Baskervville: ['400', '400i'], 'Libre Caslon Display': ['400'], 'Alegreya SC': ['400', '700'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 // #region build: pages 29 to 33 of the book
 // 28 pages come before this one, so recto and verso, the mirrored margins and the odd/even
 // heads follow the book page (gotcha: parity-page1-recto); the folios start at 29.
 const continuation = { pageIndexOffset: 28, pageNumbering: { startAt: 29 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, continuation }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Running heads by parity', es: 'Cabeceras según la paridad' }) });
 // #endregion
 

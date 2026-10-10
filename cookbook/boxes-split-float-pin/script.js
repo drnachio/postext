@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 021 · Boxes that split, float and pin ══════════════════
 // https://postext.dev/en/cookbook/boxes-split-float-pin
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Host Grotesk, Commit Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Host Grotesk, Commit Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Four pages of a school lab workbook in Spanish, and five ways a box can sit on them.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
   defaultResourceTypes,
 } from 'https://esm.sh/postext';
 
@@ -139,7 +139,7 @@ const footer = { elements: [{ ...head('drop', '{pageNumber}', 'all', 'bottom', 0
   pages: 'opener', // the drop folio, 11 mm above the foot of the opener
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { y: mm(-11) } } }] };
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   // The document's language; ragged text is never hyphenated (gotcha: ragged-no-hyphenation).
   locale: 'es',
   resourceTypes: defaultResourceTypes(LANG), // "Figura", "Tabla" (gotcha: resource-types-locale)
@@ -318,17 +318,17 @@ function mano() { // a hand that points right, at the badge
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses: layout measures with the browser's fonts (gotcha: fonts-first).
+// Every face the design uses: layout measures with the browser's fonts.
 const FONTS = { 'Host Grotesk': ['400', '700', '800'], 'Commit Mono': ['400', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const drawings = { sombras, reloj, aviso, compas, mano };
-await Promise.all([loadFonts(FONTS, markdown),
+await Promise.all([prepareFonts(markdown, config(), kitFonts(FONTS)),
   ...Object.entries(drawings).map(([id, draw]) => loadSvg(`${id}.svg`, draw()))]);
 // Folio 41 is odd like page 1, a recto; the next # is Práctica 4, so the figure is 4.1.
 const continuation = { pageNumbering: { startAt: 41 }, headings: { h1: 3 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Taller de ciencias · Práctica 4' });
 // Layout warnings in the bar: a box that no cut could split overflows as calloutOverflow.
 const warnings = (doc.warnings ?? []).map((w) => w.kind).join(', ') || 'none';

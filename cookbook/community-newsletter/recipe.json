@@ -53,8 +53,7 @@
     "headings-drop-h1-break",
     "palette-skips-designs",
     "design-lineheight-multiple",
-    "svg-no-webfonts",
-    "fonts-first"
+    "svg-no-webfonts"
   ],
   "explainsWarnings": [],
   "related": [
@@ -106,7 +105,7 @@
     }
   ],
   "engine": {
-    "postext": "1.24.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -181,5 +180,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-10-09"
+  "updated": "2026-10-10"
 }

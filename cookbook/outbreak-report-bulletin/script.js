@@ -1,9 +1,11 @@
 // ═══ Postext Cookbook · Nº 143 · A weekly bulletin report: the first AIDS reports ═══
 // https://postext.dev/en/cookbook/outbreak-report-bulletin
 // Code: MIT · Text: CDC, MMWR 1981;30:250–252 and 305–308 (public domain) · Chart: original
-// Fonts: IBM Plex Serif, Libre Franklin, Plex Sans Condensed (OFL) · Needs postext ≥ 1.19.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  registerResourceImage, defaultResourceTypes, parseTSV, mergeCells } from 'https://esm.sh/postext';
+// Fonts: IBM Plex Serif, Libre Franklin, Plex Sans Condensed (OFL) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
+  defaultResourceTypes, parseTSV, mergeCells,
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
 
@@ -103,7 +105,7 @@ const citations = { style: 'american-medical-association', marker: 'parentheses'
     lineHeight: pt(10.6), entrySpacing: pt(1.5), labelAlign: 'right' } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us', colorPalette, citations, paragraphStyles, header, footer,
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, shortLabel: type.name,
     resetOn: 'h1', numberingTemplate: '{n}', // each report counts its tables from 1
@@ -260,10 +262,9 @@ const FONTS = { 'IBM Plex Serif': ['400', '400i', '600', '600i'], 'Libre Frankli
   'IBM Plex Sans Condensed': ['400', '400i', '500', '600', '600i', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 const faces = await inlineFace(LABEL, 400) + await inlineFace(LABEL, 600);
 await loadSvg('timeline.svg', timeline(faces));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Surveillance Notes · Reprint No. 1' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider,
   resourceBytes: imageBytes }), `${RECIPE}.pdf`);

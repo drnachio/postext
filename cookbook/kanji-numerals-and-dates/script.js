@@ -1,11 +1,10 @@
 // ═══ Postext Cookbook · Nº 129 · Kanji numerals, counters and dates in vertical text ═══
 // https://postext.dev/en/cookbook/kanji-numerals-and-dates
 // Code: MIT · Text: written for the recipe (CC BY 4.0)
-// Fonts: Noto Serif JP, Noto Sans JP, Zen Maru Gothic (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Noto Serif JP, Noto Sans JP, Zen Maru Gothic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A neighbourhood newsletter set vertically: every way Japanese writes a number.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
-  formatNumeral,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates, formatNumeral,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -112,7 +111,7 @@ const resourceTypes = [{ id: 'table', name: '表', shortLabel: '表', captionPre
   numberingTemplate: '{n}', counterFormat: '一', resetOn: 'never' }]; // 表一, 表二…
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   resourceTypes,
@@ -175,8 +174,9 @@ await loadFonts(FONTS, markdown);
 await loadCjkFonts({ [MINCHO]: FONTS[MINCHO] }, markdown, { vertical: true });
 await loadCjkFonts({ [GOTHIC]: FONTS[GOTHIC] }, gothicText, { vertical: true });
 await loadCjkFonts({ [ROUND]: FONTS[ROUND] }, heads, { vertical: true });
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources: [calendar] }, config()), markdown);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown, resources: [calendar] }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A newsletter in kanji numerals',
   es: 'Un boletín con numerales kanji' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

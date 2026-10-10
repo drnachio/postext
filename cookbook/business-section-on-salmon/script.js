@@ -7,7 +7,7 @@
 // the Business section on salmon paper in six, with its own flag and accent.
 // One heading style carries the change; a :::paper run gives Folio the salmon stock.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage, inlineSvgFonts,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -154,7 +154,7 @@ const headline = (id, size, look = {}) => ({ id, fontSize: pt(size), lineHeight:
   marginBottom: pt(size * 0.2), ...look });
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-gb', colorPalette, resourceTypes,
   page: { sizePreset: 'berliner', dpi: 150, backgroundColor: col('paper'),
     margins: { top: mm(M.top), bottom: mm(M.bottom), left: mm(M.side), right: mm(M.side) } },
@@ -479,18 +479,17 @@ const markdown = /* @content */ ''; // content.en.md: pages 1–4
 const businessPages = /* @content:business */ ''; // content.business.en.md: pages 5–8
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   'Source Serif 4': ['400', '400i', '700'], 'Playfair Display': ['400i', '700', '900'],
   'Archivo Narrow': ['400', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const all = `${markdown}\n\n${businessPages}`;
-await loadFonts(FONTS, all);
 await Promise.all([...resources.filter((r) => r.bitmap)
   .map((r) => loadImage(r.bitmap.fileId, asset(r.bitmap.fileId))),
 loadSvg('gate.svg', gateSvg()), loadSvg('throughput.svg', throughputSvg()),
 loadSvg('mx40.svg', mx40Svg()), loadSvg('sectors.svg', sectorsSvg())]);
-const doc = await buildWithFonts(() => buildDocument({ markdown: all, resources }, config()), all);
+const doc = await buildDocumentWithFonts({ markdown: all, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'The Marrowick Ledger · Business on salmon' });
 
 // @kit

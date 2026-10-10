@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 046 · Dictionary with a moving thumb index ═══════════════
 // https://postext.dev/en/cookbook/dictionary-thumb-index
 // Code: MIT · Text: W. H. Smyth, 1867 (PD); Spanish translation CC BY 4.0 · Pictures: code
-// Fonts: Alegreya, Alegreya SC, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Alegreya, Alegreya SC, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -148,7 +148,7 @@ const titleBand = { enabled: true, slot: { elements: [
 const titleStyle = { id: 'title', span: 'page', advancedDesign: titleBand, fontSize: pt(BODY) };
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette, footer,
   header: { elements: [] }, // every page takes the header of its letter's style
@@ -217,9 +217,8 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('anchor.svg', anchorSvg());
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'The Sailor’s Word-Book', es: 'Vocabulario del marinero' }) });
 
 // @kit

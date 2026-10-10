@@ -19,8 +19,8 @@
   },
   "answers": ["Q04", "Q15"],
   "gotchas": [
-    "html-limits", "palette-skips-designs", "config-cache-identity",
-    "viewer-settings-sandbox-only", "fonts-first", "headings-drop-h1-break",
+    "html-limits", "palette-skips-designs",
+    "viewer-settings-sandbox-only", "headings-drop-h1-break",
     "opener-reserves-anchored", "resource-types-locale", "hyphenation-locales",
     "overflow-ellipsis-default", "float-stretch-closing-page", "ragged-run-punctuation"
   ],
@@ -43,7 +43,7 @@
     { "followup": "EF-91", "package": "postext", "note": "the screen pane keeps a min-height of 400 px (style.css and the script's fallback): in 1.4.1 an advanced-design opener taller than the page's content area loses its whole reservation, minHeight included, and the body prints over it with no warning; at 240 × 340 and 270 × 320 px the Rain opener (in English, the title and a seven-line lead) overlaps the first paragraph in both languages" },
     { "followup": "EF-97", "package": "postext", "note": "the screen overrides set bodyText.avoidWidows: false: with it on, 1.4.1 places a paragraph taller than the page's content area whole in an empty column with room for one line (under a float), when the widow rule refuses a one-line split, so it runs off the foot of the page (seen at panes of 240–280 × 410–520 px)" }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": {
     "locales": ["en", "es"]
@@ -96,5 +96,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

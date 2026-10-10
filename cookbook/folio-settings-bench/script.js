@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 103 · A bench for the Folio viewer's settings ═══════════════
 // https://postext.dev/en/cookbook/folio-settings-bench
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Source Serif 4, Outfit (SIL OFL 1.1) · Needs postext ≥ 1.13.4
+// Fonts: Source Serif 4, Outfit (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 //
 // A pocket book of knots, laid out once and opened in postext-folio next to a form of every
 // folio setting: paper, binding, covers, desk, light and tilt. Each change goes to the viewer
 // with setAppearance, so the book is redrawn in place and no page is laid out or painted
 // again. The settings as code sit under the form, ready to paste into config.folio.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { createFolioFromDocument } from 'https://esm.sh/postext-folio';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -86,7 +86,7 @@ function folioOf() { // 'paper.grammage' → { paper: { grammage } }, typed by t
 const show = (name, value) => { form.elements[name].value = value; };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us',
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
@@ -119,8 +119,7 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 const FONTS = { 'Source Serif 4': ['400', '400i', '700'], Outfit: ['400', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Six Knots · the Folio settings bench' });
 // cover: 'pages' needs an even count (gotcha: folio-cover-pages-even); the back's break
 // gives it one.

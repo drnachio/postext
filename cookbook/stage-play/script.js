@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 070 · Play script: cast list, speakers and stage directions ═══
 // https://postext.dev/en/cookbook/stage-play
 // Code: MIT · Text: Oscar Wilde, 1895 (PD, Gutenberg #844), Spanish: the Cookbook · Art: in code
-// Fonts: Libre Baskerville, Abril Fatface, Playfair Display SC (OFL 1.1) · Needs postext ≥ 1.23.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Libre Baskerville, Abril Fatface, Playfair Display SC (OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'stage-play';
@@ -142,7 +143,7 @@ const footer = { elements: [{ ...head('drop-folio', '{pageNumber}', 'all', 'top'
   placement: { anchor: { to: 'container', edge: 'top' }, offset: { y: mm(8) } } }] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // hyphenation by exact code (gotcha: hyphenation-locales)
   colorPalette,
   resourceTypes,
@@ -297,11 +298,10 @@ const resources = art;
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { 'Libre Baskerville': ['400', '400i', '700'], 'Abril Fatface': ['400'],
-  'Playfair Display SC': ['400'] }; // all loaded before the first build (gotcha: fonts-first)
+  'Playfair Display SC': ['400'] }; // all loaded before the first build
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: doc.metadata.title }); // the frontmatter's title
 
 // @kit core fonts viewer images

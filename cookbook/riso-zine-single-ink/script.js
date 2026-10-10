@@ -1,12 +1,11 @@
 // ═══ Postext Cookbook · Nº 051 · Two-ink riso zine: art in one spot colour ═════════
 // https://postext.dev/en/cookbook/riso-zine-single-ink
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code (CC BY 4.0)
-// Fonts: Epilogue, Anton, Space Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Epilogue, Anton, Space Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A four-page zine for a risograph with a blue drum and a fluorescent pink one. The drawings
 // are made in full colour and printed from the pink drum as tints of pink.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  applySingleInkToSvg,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, applySingleInkToSvg,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -164,7 +163,7 @@ const back = { id: 'back', span: 'page', // the setting moon runs past the text 
       placement: at('page', 'bottom-right', 30, 34, { width: mm(76), height: mm(76) }) },
   ] } } };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, diagramStyle, resourceTypes: [drawing],
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'), margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom),
@@ -387,15 +386,14 @@ function blind(text = 'NOT IN SERVICE') {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Text, display and label faces, loaded before the build (gotcha: fonts-first).
+// Text, display and label faces, loaded before the build.
 const FONTS = { Epilogue: ['400', '700'], Anton: ['400'], 'Space Mono': ['400', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 const map = network();
 await Promise.all([registerArt('network.svg', map), registerArt('moon.svg', moon()),
   registerArt('blind.svg', blind()), registerSnapshot('as-drawn.png', map, 600, 417)]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Night Buses: a two-ink riso zine' });
 offerPdf(() => renderToPdf(doc, pdfOptions), `${RECIPE}.pdf`);
 // A grey proof: the pages as a photocopier or a one-drum reprint would print them.

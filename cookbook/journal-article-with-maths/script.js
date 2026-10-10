@@ -1,12 +1,12 @@
 // ═══ Postext Cookbook · Nº 002 · Two-column paper with numbered equations ══════════
 // https://postext.dev/en/cookbook/journal-article-with-maths
 // Code: MIT · Text: original (CC BY 4.0) · Figures: generated in code (CC BY 4.0)
-// Fonts: STIX Two Text, Schibsted Grotesk, Azeret Mono (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: STIX Two Text, Schibsted Grotesk, Azeret Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A research article in a fictional physics journal: a title block across the page, numbered
 // sections, MathJax formulas in the text and in the figures, a table computed from the data.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, initMathEngine, renderMath,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
+  initMathEngine, renderMath,
 } from 'https://esm.sh/postext?bundle';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -123,7 +123,7 @@ const footer = { elements: [
     { ...folio, align: 'right', pages: 'opener', overflow: 'clip' }),
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   resourceTypes, colorPalette, // resourceTypes below: Figure 1, Table 1 through the article
   page: { width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150, pageNumbering: { startAt: 213 },
     margins: { top: mm(TOP), bottom: mm(BOTTOM), left: mm(M), right: mm(M), mirror: true } },
@@ -324,19 +324,18 @@ function phase() { // 176 × 76 mm, across the page: the orbits of Eq. (3)
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages paint, loaded before the first build (gotcha: fonts-first)
+const FONTS = { // every face the pages paint, loaded before the first build
   'STIX Two Text': ['400', '400i', '700'],
   'Schibsted Grotesk': ['400', '400i', '500', '600', '700', '700i'],
   'Azeret Mono': ['400', '600'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 for (const [id, draw] of Object.entries({ strobe, geometry, period, phase })) {
   await loadSvg(`${id}.svg`, draw()); // registered for the canvas, kept as bytes for the PDF
 }
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown: numbered(markdown), resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown: numbered(markdown), resources }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Two-column paper with numbered equations' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`); // text in the Fontsource faces; formulas and figures as vector paths

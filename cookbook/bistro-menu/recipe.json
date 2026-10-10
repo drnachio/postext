@@ -14,7 +14,7 @@
   },
   "answers": ["Q65", "Q51", "Q73", "Q10"],
   "gaps": [],
-  "gotchas": ["merged-cells-hiddenby", "here-figure-no-space-after", "design-lineheight-multiple", "ragged-no-hyphenation", "config-cache-identity", "fonts-first"],
+  "gotchas": ["merged-cells-hiddenby", "here-figure-no-space-after", "design-lineheight-multiple", "ragged-no-hyphenation"],
   "workarounds": [
     {"followup": "EF-34", "package": "postext", "note": "parseTSV leaves headerRowCount unset, so the wine list's head row is declared by hand; the region rows are merged with mergeCells, which marks the covered cells hiddenBy"},
     {"followup": "EF-56", "package": "postext", "note": "the course-head title's lineHeight is a multiple of its size, 0.96 (14.4 pt), so the design stays inside one 14.5 pt grid line"},

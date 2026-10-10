@@ -3,7 +3,7 @@
 // Code: MIT · Text: 論語, 孟浩然「春暁」 (public domain); kunten and readings CC BY 4.0
 // Fonts: Zen Old Mincho, Klee One, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -85,7 +85,7 @@ const first = { id: 'first', footer: { elements: [{ kind: 'text', id: 'colophon'
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { y: mm(-7) },
     size: { width: mm(118) } } }] } };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   page: {
@@ -135,7 +135,8 @@ await loadCjkFonts({ [GOTHIC]: ['400', '700'] },
   `${heads}${colophon}${markdown.match(/kicker="([^"]*)"/)[1]}漢文訓読一二三四五六七八九十`,
   { vertical: true });
 // #endregion
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'Kanbun with its reading marks, and the Japanese reading',
   es: 'Kanbun con sus marcas de lectura y la lectura japonesa' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

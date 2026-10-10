@@ -50,12 +50,11 @@
     "runt-tracking-unpainted",
     "quote-frontmatter",
     "hyphenation-locales",
-    "fonts-first",
     "opener-clipped-at-top",
     "opener-image-no-reserve"
   ],
   "engine": {
-    "postext": "1.23.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -156,7 +155,7 @@
     "content": "MIT"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-26",
+  "updated": "2026-10-10",
   "gaps": [],
   "related": [
     "screenplay-format",

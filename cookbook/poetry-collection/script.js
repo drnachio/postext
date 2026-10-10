@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 015 · Poems set line by line ═════════════════════════════
 // https://postext.dev/en/cookbook/poetry-collection
 // Code: MIT · Text: G. M. Hopkins, Poems, 1918 (PD) · Plate: diffusion models · Sprig: code
-// Fonts: Sorts Mill Goudy, Italiana, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Sorts Mill Goudy, Italiana, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -135,7 +135,7 @@ const folio = (pages) => ({ kind: 'text', id: `folio-${pages}`, content: '{pageN
   fontFamily: 'Marcellus SC', fontSize: pt(9), color: col('muted'), align: 'center',
   placement: { anchor: { to: 'container', edge: 'top' }, offset: { y: mm(10) } } });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette,
   // The list replaces Figure and Table; a book with figures spreads defaultResourceTypes() in.
   resourceTypes: [ornament],
@@ -249,14 +249,12 @@ const resources = [
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Loaded before the first build (gotcha: fonts-first). None of the three ships a bold.
+// Loaded before the first build. None of the three ships a bold.
 const FONTS = { 'Sorts Mill Goudy': ['400', '400i'], Italiana: ['400'], 'Marcellus SC': ['400'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 // :::toc lists the page each poem lands on: the build lays out again until those settle.
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()),
-  markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Pied Beauty · four poems by Gerard Manley Hopkins' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

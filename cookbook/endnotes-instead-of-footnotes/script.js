@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 020 · Endnotes on a page of their own, in two columns ═════
 // https://postext.dev/en/cookbook/endnotes-instead-of-footnotes
 // Code: MIT · Text: Faraday, ed. Crookes (PD) · Notes, figure: CC BY 4.0 · Photos: diffusion models
-// Fonts: Libre Bodoni, Besley, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Libre Bodoni, Besley, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'endnotes-instead-of-footnotes';
@@ -143,7 +144,7 @@ const header = { elements: [ // the book on the verso, the lecture on the recto,
 const dropFolio = text('drop', '{pageNumber}', DISPLAY, 8.6, 'ink', at('page', 'bottom', 0, -12),
   { fontWeight: 700, align: 'center', pages: 'opener' }); // the lecture's and the notes' openers
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, header, footer: { elements: [dropFolio] },
   page: { width: mm(156), height: mm(234), dpi: 150, // a trade octavo
     backgroundColor: col('paper'), margins: { top: mm(TOP), bottom: mm(23), left: mm(INNER),
@@ -276,19 +277,19 @@ const drawings = { flame };
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses, loaded before the first build (gotcha: fonts-first).
+// Every face the design uses, loaded before the first build.
 const FONTS = { 'Libre Bodoni': ['400', '400i', '700'], // text and notes (700: the numbers)
   Besley: ['500i', '700', '800'], 'Archivo Narrow': ['400', '400i', '600', '700'] }; // labels
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const source = endnotes(markdown); // the answer, run before the engine sees the text
-await Promise.all([loadFonts(FONTS, source),
+await Promise.all([prepareFonts(source, config(), kitFonts(FONTS)),
   ...resources.filter((r) => r.bitmap).map(({ bitmap: b }) => loadImage(b.fileId, asset(b.fileId))),
   ...Object.entries(drawings).map(([id, draw]) => loadSvg(`${id}.svg`, draw()))]);
 // The lecture starts on folio 15, a recto, 14 pages into the book (gotcha: parity-page1-recto).
 const continuation = { pageIndexOffset: 14, pageNumbering: { startAt: 15 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown: source, resources, continuation }, config()), source);
+const doc = await buildDocumentWithFonts({ markdown: source, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'The Chemical History of a Candle, Lecture I' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

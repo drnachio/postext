@@ -29,7 +29,7 @@
     { "followup": "EF-153", "package": "postext", "note": "the centred, tracked capitals of the stamps (SHOOTING DRAFT, the date, COPY 07) and of the company name sit left by half their tracking, so the caps() helper moves each text box right by that half" },
     { "followup": "EF-182", "package": "postext", "note": "the dialogue style's top padding is −2.4 pt because a callout title always sits on a line 1.2 times its size (14.4 pt at 12 pt) and titleStyle has no lineHeight: the negative padding takes the difference back, so every speech is a whole number of 12-pt lines" }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -56,5 +56,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

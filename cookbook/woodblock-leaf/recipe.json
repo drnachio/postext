@@ -24,7 +24,7 @@
     "cjk-source-script-mix", "headings-drop-h1-break"
   ],
   "related": ["red-ink-commentary", "vertical-novel-right-bound", "baseline-grid-book-page", "certificate-single-page"],
-  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -66,5 +66,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-29",
-  "updated": "2026-09-29"
+  "updated": "2026-10-10"
 }

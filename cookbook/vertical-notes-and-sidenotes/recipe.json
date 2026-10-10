@@ -15,7 +15,7 @@
   "answers": ["Q142", "Q45", "Q138"],
   "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order"],
   "related": ["novel-footnotes-column-foot", "vertical-book-with-jiazhu-citations", "endnotes-instead-of-footnotes", "bunko-novel-furigana"],
-  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [2, 3], "card": "spread", "pages": "all" },
@@ -47,5 +47,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-10-05",
-  "updated": "2026-10-05"
+  "updated": "2026-10-10"
 }

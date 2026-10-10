@@ -21,8 +21,7 @@
   "gaps": [],
   "gotchas": [ "merged-cells-hiddenby", "resource-types-locale",
     "opener-image-no-reserve", "headings-drop-h1-break", "palette-skips-designs",
-    "design-lineheight-multiple", "overflow-ellipsis-default", "config-cache-identity",
-    "fonts-first"
+    "design-lineheight-multiple", "overflow-ellipsis-default"
   ],
   "workarounds": [
     { "followup": "EF-34", "package": "postext", "note": "parseTSV leaves headerRowCount unset, so the matrix's head row is declared by hand; every merge goes through mergeCells, which marks the covered cells hiddenBy" },

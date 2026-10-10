@@ -18,7 +18,7 @@ Metro de Alba视觉识别手册的四页。这是一个虚构的地铁系统，�
 
 <Excerpt region="build" />
 
-排版时用`document.fonts`里的字体测量每个词，所以[简短回答](#简短回答)里的`loadBrandFonts()`把每个文件下载一次，保留它的字节，并在`buildDocument`运行之前注册一个用这些字节创建的`FontFace`。套件里的`loadFonts`只从Fontsource下载，而品牌的字体文件放在自己的服务器上。在postext-pdf 1.4.1里，`renderToPdf`会请求十种字体，其中四种没有文字用到（标题字体的斜体，以及等宽字体的斜体、SemiBold和SemiBold斜体），`brandFontProvider`对每个请求都返回同一字族里最接近的文件（[为什么需要字体提供器？](/zh/docs/configuration#为什么需要字体提供函数)）。页面只用到Canvas测量过的六个文件，但1.4.1还会为这四个请求各写入一份未使用的替身文件副本。
+排版时用`document.fonts`里的字体测量每个词，所以[简短回答](#简短回答)里的`loadBrandFonts()`把每个文件下载一次，保留它的字节，并在`buildDocument`运行之前注册一个用这些字节创建的`FontFace`。套件里的`kitFonts`只从Fontsource下载，而品牌的字体文件放在自己的服务器上。在postext-pdf 1.4.1里，`renderToPdf`会请求十种字体，其中四种没有文字用到（标题字体的斜体，以及等宽字体的斜体、SemiBold和SemiBold斜体），`brandFontProvider`对每个请求都返回同一字族里最接近的文件（[为什么需要字体提供器？](/zh/docs/configuration#为什么需要字体提供函数)）。页面只用到Canvas测量过的六个文件，但1.4.1还会为这四个请求各写入一份未使用的替身文件副本。
 
 ### 2 · 颜色系统就是一个列表
 

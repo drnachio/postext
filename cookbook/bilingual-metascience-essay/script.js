@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 141 · A metascience essay in English and Spanish ═══════
 // https://postext.dev/en/cookbook/bilingual-metascience-essay
 // Code: MIT · Text: J. P. A. Ioannidis, PLoS Med 2005 (CC BY) · Figures: drawn in code (CC BY 4.0)
-// Fonts: Gelasio, Sofia Sans Semi Condensed (SIL OFL 1.1) · Needs postext ≥ 1.19.0
+// Fonts: Gelasio, Sofia Sans Semi Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
   registerCitationEngine, defaultResourceTypes, initMathEngine, parseTSV, mergeCells, setAlignment,
 } from 'https://esm.sh/postext?bundle';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
@@ -98,7 +98,7 @@ const footer = { elements: [text('drop-folio', '{pageNumber}', SANS, 7.5, 'accen
   at('page', 'bottom-right', -OUTER, -12), { ...folio, align: 'right', pages: 'opener',
     overflow: 'clip' })] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   ...edition, colorPalette, header, footer,
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
     margins: { top: mm(TOP), bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER),
@@ -282,19 +282,19 @@ const bandArt = () => `<svg xmlns="http://www.w3.org/2000/svg" width="1400" heig
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages paint, loaded before the first build (gotcha: fonts-first)
+const FONTS = { // every face the pages paint, loaded before the first build
   Gelasio: ['400', '400i', '600', '700', '700i'],
   'Sofia Sans Semi Condensed': ['400', '400i', '600', '700', '700i', '800'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown + blocks);
+await prepareFonts(markdown + blocks, config(), kitFonts(FONTS));
 const face = await inlineFace(SANS, 400); // one face: the figures set no bold
 await loadSvg('fig-bias.svg', panels(face, ppv, [0.05, 0.2, 0.5, 0.8], 'u', 2,
   (power, R) => ppv(power, R, 0)));
 await loadSvg('fig-teams.svg', panels(face, teams, [1, 5, 10, 50], 'n', 0));
 await loadSvg('band-art.svg', bandArt());
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'A metascience essay in English and Spanish',
   es: 'Un ensayo de metaciencia en inglés y en español' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),

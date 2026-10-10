@@ -1,12 +1,11 @@
 // ═══ Postext Cookbook · Nº 014 · Justification lab ════════════════════════════════
 // https://postext.dev/en/cookbook/justification-lab
 // Code: MIT · Text: original (CC BY 4.0) · Diagram: generated in code (CC BY 4.0)
-// Fonts: Petrona, Bricolage Grotesque, Source Code Pro (SIL OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: Petrona, Bricolage Grotesque, Source Code Pro (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A type journal's essay set twice from one design, Knuth–Plass and greedy: the two page 2s
 // side by side with their loose lines marked from the layout tree, then the published pages.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  parseMarkdownWithIssues,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, parseMarkdownWithIssues,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -50,9 +49,7 @@ const bodyText = { // config().bodyText
 // Hyphenation follows the document's locale, by exact code (gotcha: hyphenation-locales):
 const locale = t({ en: 'en-us', es: 'es' }); // config().locale; 'es-ES' would be English
 // The control: first-fit breaking, which sets each line once and moves on, with the widow and
-// orphan guards off (runts are priced inside Knuth–Plass only). Same text, fonts and measure;
-// a fresh object on every call, like config() itself, because the engine caches resolved
-// configs by identity (gotcha: config-cache-identity).
+// orphan guards off (runts are priced inside Knuth–Plass only). Same text, fonts and measure.
 const GREEDY = { optimalLineBreaking: false, avoidWidows: false, avoidOrphans: false };
 const control = () => ({ ...config(), bodyText: { ...bodyText, ...GREEDY } });
 // #endregion
@@ -132,7 +129,7 @@ const calloutStyles = [
 ];
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale, colorPalette,
   page: { width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150, margins: { top: mm(TOP),
     bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER), mirror: true } },
@@ -297,15 +294,13 @@ function compare(pairs) {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the pages and the comparison paint, loaded before the build (gotcha: fonts-first).
+// Every face the pages and the comparison paint, loaded before the build.
 const FONTS = { Petrona: ['400', '400i', '700', '700i'], 'Bricolage Grotesque': ['800'],
   'Source Code Pro': ['400', '500', '600'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('diagram.svg', diagram());
-const build = (cfg) => buildWithFonts(() => buildDocument({ markdown, resources }, cfg()),
-  markdown);
+const build = (cfg) => buildDocumentWithFonts({ markdown, resources }, cfg(), kitFonts(FONTS));
 const greedy = await build(control); // first: the control, for the comparison only
 const doc = await build(config); // last: the published pages
 showPages(doc, { title: t({ en: 'Justification lab', es: 'Laboratorio de justificación' }) });

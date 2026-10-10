@@ -49,8 +49,7 @@
     "page-span-heading-new-page",
     "paper-run-whole-leaves",
     "folio-cover-pages-even",
-    "overflow-ellipsis-default",
-    "fonts-first"
+    "overflow-ellipsis-default"
   ],
   "related": [
     "newspaper-front-page",

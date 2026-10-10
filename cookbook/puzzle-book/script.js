@@ -2,8 +2,10 @@
 // https://postext.dev/en/cookbook/puzzle-book
 // Code: MIT · Text and puzzles: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
 // Fonts: Lexend, Lilita One, Chivo Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  setCellBackground } from 'https://esm.sh/postext';
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
+  setCellBackground,
+} from 'https://esm.sh/postext';
 
 const LANG = 'es'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'puzzle-book';
@@ -177,7 +179,7 @@ const chip = (id, fill) => ({ id, fontFamily: LABEL, fontSize: em(0.8), bold: tr
   borderWidth: pt(0.75), borderRadius: em(1), paddingX: em(0.45) });
 
 // resourceTypes is declared with the answers below: config() runs later.
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, resourceTypes, tableStyle, tableStyles, footer, header: { elements: [] },
   page: { width: mm(PAGE), height: mm(PAGE), dpi: 150, margins: { top: mm(MARGIN),
     bottom: mm(MARGIN), left: mm(MARGIN), right: mm(MARGIN) } },
@@ -419,13 +421,14 @@ const answers = [
 const resources = [...puzzles, ...answers];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   Lexend: ['400', '600', '700'], 'Lilita One': ['400'], 'Chivo Mono': ['400', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const allText = [markdown, crosswordText, searchText].join('\n');
-await loadFonts(FONTS, allText);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), allText);
+await prepareFonts(allText, config(), kitFonts(FONTS));
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: allText });
 showPages(doc, { title: t({ en: 'Summer Workbook · Puzzles from the sea',
   es: 'Cuaderno de verano · Pasatiempos del mar' }) });
 

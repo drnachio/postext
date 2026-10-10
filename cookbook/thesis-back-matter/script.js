@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 031 · Thesis back matter: appendix, glossary and index ═══
 // https://postext.dev/en/cookbook/thesis-back-matter
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Libertinus Serif, Serif Display and Sans (SIL OFL 1.1) · Needs postext ≥ 1.7.0
+// Fonts: Libertinus Serif, Serif Display and Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -122,7 +122,7 @@ const index = { fontFamily: TEXT, fontSize: pt(9), lineHeight: pt(11.6), color: 
     marginTop: pt(7.5) } };
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, header: chapterHeads, footer, layout: { layoutType: 'single' },
   page: { sizePreset: 'custom', width: mm(176), height: mm(250), dpi: 150, // B5
     margins: { top: mm(TOP), bottom: mm(24), left: mm(INNER), right: mm(OUTER), mirror: true } },
@@ -181,15 +181,14 @@ const resources = [
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { 'Libertinus Serif': ['400', '400i', '700'], 'Libertinus Serif Display': ['400'],
-  'Libertinus Sans': ['700'] }; // every face the pages use, loaded first (gotcha: fonts-first)
+  'Libertinus Sans': ['700'] }; // every face the pages use, loaded first
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // The thesis's sixth and last chapter opens on page 171, a recto.
 const continuation = { pageIndexOffset: 170, pageNumbering: { startAt: 171 }, headings: { h1: 5 } };
-await loadFonts(FONTS, markdown);
 // The index is laid out again until its page numbers settle, inside this one call.
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Reading on Screens and Paper: the back matter' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider }), `${RECIPE}.pdf`);
 

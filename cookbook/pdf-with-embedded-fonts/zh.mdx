@@ -22,7 +22,7 @@ pageNotes: { "1": "封面：夜色蓝绿铺满到成品边缘，金色小号大�
 
 <Excerpt region="build" />
 
-`registerFaces()`要等`FONTS`中的每款字体都加载完才会完成，所以第一次构建所用的字体就是PDF将要嵌入的字体。这也是唯一一次构建：`FONTS`列出了Crimson Text或Fraunces文本块可能用到的每种粗体和斜体，工具包的`buildWithFonts`找不到需要补充的字体（[测量缓存](/zh/docs/configuration#测量缓存)）。这项检查只对屏幕有用。如果`FONTS`漏了某款字体，`buildWithFonts`会加载它并重新排版；若有文本块整体用这款字体排，控制台会给出警告，若只是粗体或斜体则不会。但PDF拿到的仍是提供器手里最接近的那款字体。
+`registerFaces()`要等`FONTS`中的每款字体都加载完才会完成，所以第一次构建所用的字体就是PDF将要嵌入的字体。这也是唯一一次构建：`FONTS`列出了Crimson Text或Fraunces文本块可能用到的每种粗体和斜体，`buildDocumentWithFonts`要找的每款字体都已经声明好了（[排版前加载字体](/zh/docs/configuration#排版前加载字体)）。这项检查只对屏幕有用。如果`FONTS`漏了某款字体，引擎会向工具包要这款字体，加载Fontsource的文件并重新排版，控制台不给警告。但PDF拿到的仍是提供器手里最接近的那款字体。
 
 ### 3 · 导出，并列出嵌入了什么
 

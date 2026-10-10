@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 073 · An index of names and an index of subjects ═══════
 // https://postext.dev/en/cookbook/names-and-subjects-indexes
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Crimson Pro, Bodoni Moda, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.7.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Crimson Pro, Bodoni Moda, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -96,7 +96,7 @@ const footer = { elements: [{ ...head('drop-folio', '{pageNumber}', 'all', 'bott
   { ...folio, align: 'center', placement: at('page', 'bottom', 0, -12) }), pages: 'opener' }] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
@@ -134,7 +134,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first).
+// Every face the design uses.
 const FONTS = {
   'Crimson Pro': ['400', '400i', '600', '700'],
   'Bodoni Moda': ['400', '400i', '600'],
@@ -142,12 +142,11 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 // #region build: one buildDocument, laid out again until the index's page numbers settle
 // A pass finds the page of every mark and prints both indexes with those numbers. When the
 // printed index moves a mark (an index set before the text would), the layout runs again,
 // until no page number changes (in a buildBundle book, the chapter with :::index gets them all).
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 // #endregion
 showPages(doc, { title: t({ en: 'Two indexes', es: 'Dos índices' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider }), `${RECIPE}.pdf`);

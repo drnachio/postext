@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 062 · Shaped verse: Herbert's Easter Wings, centred line by line ═
 // https://postext.dev/en/cookbook/shaped-verse
 // Code: MIT · Text: G. Herbert, The Temple, 1633 (PD; EEBO-TCP, CC0) · Spanish version: CC BY 4.0
-// Fonts: IM Fell English, Great Primer and English SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: IM Fell English, Great Primer and English SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'shaped-verse';
@@ -76,7 +76,7 @@ const titles = {
 // A blank line adds no space, so every gap on these pages is a :::space{lines=N}, which adds
 // N lines of the 17 pt grid (one without the attribute). ## opens a page for each poem, and
 // :::pagebreak opens the last page.
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette,
   page: { // mirror: left is the inner margin; 150 dpi is for the screen
     sizePreset: 'custom', width: mm(TRIM.w), height: mm(TRIM.h), dpi: 150,
@@ -99,7 +99,7 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face the design uses. Layout measures with the browser's fonts, so the
-// kit loads them from Fontsource before the first build (gotcha: fonts-first).
+// kit loads them from Fontsource before the first build.
 const FONTS = {
   'IM Fell English': ['400', '400i'],
   'IM Fell Great Primer': ['400'],
@@ -107,8 +107,7 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Easter Wings and The Altar', es: 'Alas de Pascua y El altar' }) });
 
 // @kit

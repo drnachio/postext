@@ -1,12 +1,11 @@
 // ═══ Postext Cookbook · Nº 001 · Textbook with a margin column ═══════════════════
 // https://postext.dev/en/cookbook/textbook-margin-column
 // Code: MIT · Text: original (CC BY 4.0) · Diagrams: generated in code (CC BY 4.0)
-// Fonts: Merriweather, Merriweather Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Merriweather, Merriweather Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A chapter of a physics textbook in the column-and-a-half layout: the body text keeps to
 // the main column, and the outer margin is a channel for diagrams, captions and glosses.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -140,7 +139,7 @@ const footer = { elements: [
 ] };
 // #endregion
 
-const config = () => ({ // a factory: a fresh object per build (gotcha: config-cache-identity)
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes only (gotcha: hyphenation-locales)
   resourceTypes,
   colorPalette,
@@ -433,19 +432,18 @@ const resources = [ // no placement: a main-column float, its caption in the cha
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Merriweather: ['300', '300i', '400i', '700'],
   'Merriweather Sans': ['300', '300i', '700', '800'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all([...drawings].map(([fileId, markup]) => loadSvg(fileId, markup)));
 // #region build: chapter 4 of a longer book, so the counters start where chapter 3 ended
 const continuation = { pageNumbering: { startAt: 87 }, // odd, like page 1: a recto
   headings: { h1: 3, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 } }; // the next # is chapter 4
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Textbook with a margin column',
   es: 'Libro de texto con columna al margen' }) });
 // #endregion

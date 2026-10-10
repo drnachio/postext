@@ -22,7 +22,7 @@
   "gotchas": [
     "section-last-wins", "section-palette-skips-chips", "palette-skips-designs",
     "style-inherits-break", "headings-drop-h1-break", "negative-offsets", "parity-page1-recto",
-    "ragged-no-hyphenation", "ragged-runts", "svg-no-webfonts", "fonts-first"
+    "ragged-no-hyphenation", "ragged-runts", "svg-no-webfonts"
   ],
   "explainsWarnings": [],
   "workarounds": [
@@ -38,7 +38,7 @@
     { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted" }
   ],
   "related": ["parts-in-colour", "running-heads-by-parity", "chapter-opener-bleed-band", "recipe-card"],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -74,5 +74,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

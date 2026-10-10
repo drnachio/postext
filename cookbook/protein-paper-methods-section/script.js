@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 139 · A protein paper with a Methods section ════════════
 // https://postext.dev/en/cookbook/protein-paper-methods-section
 // Code: MIT · Text: Jumper et al. 2021, abridged (CC BY 4.0) · Figures: drawn in code
-// Fonts: Noto Serif, Noto Sans (SIL OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: Noto Serif, Noto Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  registerResourceImage, defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
+  defaultResourceTypes,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -99,7 +99,7 @@ const footer = { elements: [text('licence', 'Open access · CC BY 4.0 · '
   + 'creativecommons.org/licenses/by/4.0', SANS, 7, { pages: 'opener',
   color: col('muted'), placement: at('page', 'bottom-left', INNER, -12, 150) })] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-gb',
   // Nature's labels: "Fig. 1 | Title." and "Table 1 | Title.", numbered 1, 2… not 1.1
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type,
@@ -328,10 +328,10 @@ const FONTS = { 'Noto Serif': ['400', '400i', '700', '700i'],
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // Cα, χ, Žídek and Šali: the kit adds the greek and latin-ext files the text needs, on screen
 // and in the PDF (gotcha: latin-subset); markdown carries every content slot
-await loadFonts(FONTS, markdown);
 await loadSvg('fig1.svg', figure1(await inlineFace(SANS, 400)));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources: resources() },
-  config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources: resources() },
+  config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'A protein paper with a Methods section' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

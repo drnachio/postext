@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 033 · Recipe card: ingredients beside the method ═══════
 // https://postext.dev/en/cookbook/recipe-card
 // Code: MIT · Text: original (CC BY 4.0) · Photos: diffusion models · Pictograms: CC BY 4.0
-// Fonts: Young Serif, Figtree, Caveat (SIL OFL 1.1) · Needs postext ≥ 1.8.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Young Serif, Figtree, Caveat (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'recipe-card';
@@ -131,7 +132,7 @@ const footer = { elements: [
   foot('recto-folio', '{pageNumber}', 'odd', 'bottom-right', -PAGE.outer, folio),
 ] };
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, chipStyles, orderedLists, footer, header: { elements: [] },
   page: { width: mm(PAGE.w), height: mm(PAGE.h), dpi: 150, backgroundColor: col('paper'),
     margins: { top: mm(PAGE.top), bottom: mm(20), left: mm(PAGE.inner),
@@ -197,7 +198,7 @@ const kit = svgDoc(8 * KIT, 8, egg(3, -12) + egg(5, 14)
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face the design uses. Layout measures with the browser's fonts, so the
-// kit loads them from Fontsource before the first build (gotcha: fonts-first).
+// kit loads them from Fontsource before the first build.
 const FONTS = { Figtree: ['400', '400i', '600', '700'], 'Young Serif': ['400'], Caveat: ['600'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
@@ -226,11 +227,11 @@ const photos = resources.filter((r) => r.kind === 'bitmap').map((r) => r.bitmap.
 await Promise.all([...photos.map((file) => loadImage(file, asset(file))),
   ...Object.entries(ART).map(([id, [svg]]) => loadSvg(`${id}.svg`, svg))]);
 // #endregion
-await loadFonts(FONTS, markdown);
 // The excerpt is pages 58 and 59 of the book: 57 pages come before it, so the tortilla opens
 // on a verso and the two recipes face each other.
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources,
-  continuation: { pageIndexOffset: 57, pageNumbering: { startAt: 58 } } }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources,
+  continuation: { pageIndexOffset: 57, pageNumbering: { startAt: 58 } } }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Recipe card', es: 'Tarjeta de receta' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

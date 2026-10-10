@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 096 · A humanities essay with MLA works cited ══════════
 // https://postext.dev/en/cookbook/mla-humanities-essay
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Spectral, Spectral SC (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Spectral, Spectral SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -87,7 +87,7 @@ const head = (id, content, parity, edge, x, align) => ({
   placement: at('page', edge, x, 12),
 });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   colorPalette,
   citations,
@@ -138,15 +138,14 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ '';
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first).
+// Every face the design uses.
 const FONTS = {
   Spectral: ['300', '300i', '400', '400i', '600', '600i'],
   'Spectral SC': ['400', '500', '600'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 const title = t({ en: 'A humanities essay with MLA works cited',
   es: 'Un ensayo de humanidades con obras citadas en MLA' });
 showPages(doc, { title });

@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 017 · Five chapter openers in one book ═════════════════
 // https://postext.dev/en/cookbook/five-chapter-openers
 // Code: MIT · Text: original (CC BY 4.0) · Ornament: generated in code (CC BY 4.0)
-// Fonts: Lora, Fraunces, Geist, Geist Mono (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Lora, Fraunces, Geist, Geist Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A small book about openers, each chapter set in the one it describes. Every heading style
 // brings its opener and palette; three move the margins, two bring their own type and folios.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -222,7 +222,7 @@ const tinyFolio = { elements: [tiny('even', 'bottom-left'), tiny('odd', 'bottom-
 // #endregion
 
 const flush = { textAlign: 'left', firstLineIndent: pt(0) };
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette,
   locale: t({ en: 'en-us', es: 'es' }), // hyphenation, by exact code (gotcha: hyphenation-locales)
   page: { width: mm(TRIM.w), height: mm(TRIM.h), dpi: 150, // 150 dpi: a screen edition
@@ -271,14 +271,13 @@ const resources = [{ id: 'fleuron', typeId: 'figure', kind: 'svg', createdAt: 0,
     es: 'Un florón de imprenta: una roseta de cuatro pétalos entre dos volutas con hojas.' }) }];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display, label and figure faces (gotcha: fonts-first)
+const FONTS = { // text, display, label and figure faces
   Lora: ['400', '400i'], Fraunces: ['300', '300i', '400', '600', '900'],
   Geist: ['400', '400i', '500', '600', '700'], 'Geist Mono': ['500', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('fleuron.svg', fleuron(palette.lapis)); // a picture's colours are fixed when drawn
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Five chapter openers', es: 'Cinco aperturas de capítulo' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

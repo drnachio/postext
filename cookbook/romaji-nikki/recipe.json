@@ -19,11 +19,10 @@
   },
   "answers": ["Q150", "Q145"],
   "gaps": [],
-  "gotchas": ["ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices", "headings-drop-h1-break", "config-cache-identity",
-    "fonts-first"],
+  "gotchas": ["ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices", "headings-drop-h1-break"],
   "explainsWarnings": [],
   "related": ["tang-poems-facing-english", "catalan-pocket-novella", "pinyin-primer"],
-  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": 1, "card": "page", "expect": { "pages": [4, 5] } },
@@ -64,5 +63,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-10-05",
-  "updated": "2026-10-05"
+  "updated": "2026-10-10"
 }

@@ -45,13 +45,11 @@
   ],
   "gotchas": [
     "headings-drop-h1-break",
-    "svg-no-webfonts",
-    "fonts-first",
-    "config-cache-identity"
+    "svg-no-webfonts"
   ],
   "engine": {
-    "postext": "1.19.0",
-    "postextPdf": "1.19.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -144,5 +142,5 @@
     "one-text-four-citation-styles"
   ],
   "created": "2026-10-06",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

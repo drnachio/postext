@@ -57,8 +57,7 @@
     "numbering-next-page",
     "palette-skips-designs",
     "overflow-ellipsis-default",
-    "quote-frontmatter",
-    "fonts-first"
+    "quote-frontmatter"
   ],
   "explainsWarnings": [],
   "related": [
@@ -135,7 +134,7 @@
     }
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -238,5 +237,5 @@
     "content": "MIT"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

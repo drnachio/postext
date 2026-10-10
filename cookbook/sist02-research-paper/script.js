@@ -3,8 +3,8 @@
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code
 // Fonts: Noto Serif JP, Noto Sans JP, Shippori Mincho B1 (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  defaultResourceTypes, parseTSV, registerResourceImage,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerCitationEngine, defaultResourceTypes,
+  parseTSV, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -95,7 +95,7 @@ const header = { elements: [
   head('r-folio', '{pageNumber}', 'odd', 'top-right', 0, folio),
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   resourceTypes: defaultResourceTypes('ja').map((type) => ({ ...type,
     numberingTemplate: '{n}' })), // 図1, 表1: a paper numbers through, not by chapter
@@ -193,7 +193,7 @@ function seriesArt(style) {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif JP': ['400'], // 明朝: text, abstract, notes, references, author
   'Noto Sans JP': ['400', '700'], // ゴシック: journal, heads, labels, captions, table head
   'Shippori Mincho B1': ['700'], // the title, a display mincho
@@ -210,8 +210,8 @@ await loadCjkFonts({ [MINCHO]: FONTS[MINCHO] }, `${markdown}${SIZES}ほかと編
 await loadCjkFonts({ [GOTHIC]: FONTS[GOTHIC] }, gothic);
 await loadCjkFonts({ [TITLE]: FONTS[TITLE] }, all(/^# .*$/gm));
 await loadSvg('series.svg', seriesArt(await labelFace()));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()),
-  markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'A Japanese paper cited to SIST 02',
   es: 'Un artículo japonés citado según SIST 02' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider, resourceBytes: imageBytes }),

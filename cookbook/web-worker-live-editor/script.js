@@ -1,10 +1,9 @@
 // ═══ Postext Cookbook · Nº 056 · Live editor with layout in a Web Worker ═══════════
 // https://postext.dev/en/cookbook/web-worker-live-editor
 // Code: MIT · Text: H. G. Wells, The Time Machine, 1895 (PD, Gutenberg #35) · Dial: generated
-// Fonts: Baskervville, Baskervville SC, Cinzel (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Baskervville, Baskervville SC, Cinzel (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, createMeasurementCache, renderPageToCanvas, clearMeasurementCache,
-  registerResourceImage,
+  buildDocument, createMeasurementCache, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { createLayoutWorker } from 'https://esm.sh/postext/worker';
 
@@ -113,7 +112,7 @@ const colophon = { id: 'colophon', fontSize: pt(7.5), lineHeight: pt(10.5), colo
   textAlign: 'center', firstLineIndent: pt(0) };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette,
   page,
   layout: { layoutType: 'single' }, // one column: the default is two

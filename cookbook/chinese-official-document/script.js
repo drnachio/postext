@@ -3,7 +3,7 @@
 // Code: MIT · Text: a fictitious notice written for the recipe (CC BY 4.0) · Pictures: none
 // Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, parseTSV, mergeCells,
+  buildDocument, withLoadedFonts, renderPageToCanvas, parseTSV, mergeCells,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -154,7 +154,7 @@ const resources = [{ id: 'schedule', typeId: 'schedule', kind: 'table', createdA
 const resourceTypes = [{ id: 'schedule', name: '日程', shortLabel: '', numberingTemplate: '',
   resetOn: 'never', counterFormat: 'decimal', captionPrefix: '' }]; // no label, no number
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'zh-Hans', // written out, never LANG (gotcha: cjk-locale-tag)
   colorPalette, page, layout: { layoutType: 'single' }, cjk, bodyText, resourceTypes,
   headings: { fontFamily: SONG, fontWeight: 400, color: col('ink'), levels: [notice, ...levels] },
@@ -169,7 +169,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif SC': ['400', '900'], // SONG: the text, number, folios, 版记; the name, the titles
   'Noto Sans SC': ['400', '500'], // HEI: the head line, table heads; the 一、 heads, label, stamp
   'LXGW WenKai TC': ['400'], // KAI: the （一） heads
@@ -185,7 +185,8 @@ await loadCjkFonts({ [SONG]: ['900'] }, `${lines(/^# .*$/gm)}文件`);
 await loadCjkFonts({ [HEI]: ['400'] }, `${lines(/^subtitle: .*$|colophon="[^"]*"/gm)}${heads}`);
 await loadCjkFonts({ [HEI]: ['500'] }, `${lines(/^## .*$/gm)}一二三四五六七八九十、附件样　张`);
 await loadCjkFonts({ [KAI]: ['400'] }, `${lines(/^### .*$/gm)}一二三四五六七八九十（）`);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'A Chinese official document to GB/T 9704',
   es: 'Un documento oficial chino según la GB/T 9704' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

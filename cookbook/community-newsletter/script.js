@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 042 · Community newsletter: lead story and briefs ═════
 // https://postext.dev/en/cookbook/community-newsletter
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Work Sans, Titan One, Courier Prime (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: Work Sans, Titan One, Courier Prime (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -127,7 +127,7 @@ const folio = { elements: [ // page 2's head: title and date over a hairline, th
 ] };
 
 const label = (size, look = {}) => ({ fontFamily: LABEL, fontSize: pt(size), ...look });
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, resourceTypes, chipStyles, layout,
   page: { width: mm(210), height: mm(297), dpi: 150, backgroundColor: col('paper'),
     margins: { top: mm(20), bottom: mm(18), left: mm(SIDE), right: mm(SIDE) } },
@@ -429,17 +429,16 @@ const CAPTIONS = {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Text, display and label faces, loaded before the build (gotcha: fonts-first).
+// Text, display and label faces, loaded before the build.
 const FONTS = {
   'Work Sans': ['400', '700'], 'Titan One': ['400'], 'Courier Prime': ['400', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 const face = await inlineFace(LABEL, 700); // the label face, for the drawings' own lettering
 await Promise.all([loadSvg('plan.svg', planSvg(face)), loadSvg('heat.svg', heatSvg(face)),
   loadSvg('bed.svg', bedSvg()), loadSvg('drill.svg', drillSvg())]);
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources: resources() }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources: resources() }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Community newsletter', es: 'Boletín vecinal' }) });
 
 // @kit

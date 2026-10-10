@@ -48,16 +48,15 @@
     "opener-image-no-reserve",
     "overflow-ellipsis-default",
     "resource-types-locale",
-    "hyphenation-locales",
-    "fonts-first"
+    "hyphenation-locales"
   ],
   "related": [
     "figures-float-where-cited",
     "photo-essay-full-bleed"
   ],
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -202,5 +201,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-05",
-  "updated": "2026-10-05"
+  "updated": "2026-10-10"
 }

@@ -50,9 +50,7 @@
     "math-bundle",
     "svg-no-webfonts",
     "headings-drop-h1-break",
-    "fonts-first",
-    "quote-frontmatter",
-    "config-cache-identity"
+    "quote-frontmatter"
   ],
   "related": [
     "journal-article-with-maths",
@@ -61,8 +59,8 @@
     "figures-float-where-cited"
   ],
   "engine": {
-    "postext": "1.19.0",
-    "postextPdf": "1.19.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "math": true
   },
   "kit": [
@@ -163,5 +161,5 @@
   },
   "workarounds": [],
   "created": "2026-10-06",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

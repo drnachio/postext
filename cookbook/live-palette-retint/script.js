@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 054 · Retint a whole document from one palette ═══════════
 // https://postext.dev/en/cookbook/live-palette-retint
 // Code: MIT · Text: original (CC BY 4.0) · Artwork: design boxes generated in code (CC BY 4.0)
-// Fonts: Syne, Plus Jakarta Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes }
-  from 'https://esm.sh/postext';
+// Fonts: Syne, Plus Jakarta Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocument, buildDocumentWithFonts, renderPageToCanvas, defaultResourceTypes,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'live-palette-retint';
@@ -33,7 +34,7 @@ function retint(way) {
     : Object.hasOwn(palette, v.paletteId ?? '') ? { ...v, hex: palette[v.paletteId] }
       : Object.fromEntries(Object.entries(v).map(([k, x]) => [k, relink(x)])));
   return { // a new object on every call: resolved configs are cached per object
-    ...relink(config()), // (gotcha: config-cache-identity)
+    ...relink(config()),
     colorPalette: entries({ ...palette, 'main-color': palette.band }), // the defaults take the band
   };
 }
@@ -96,7 +97,7 @@ const footer = furniture('folio', '{pageNumber}', 'bottom-left', -12, { fontFami
       left: mm(2.4) } } });
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   // "Tabla" in Spanish (gotcha: resource-types-locale); one table: "Table 1", not "1.1"
   resourceTypes: defaultResourceTypes(LANG).map((r) => ({ ...r, numberingTemplate: '{n}' })),
   colorPalette: entries(HOUSE), // the red edition; retint() replaces it
@@ -174,10 +175,9 @@ function waveform() {
 const FONTS = { 'Plus Jakarta Sans': ['400', '400i', '700'], Syne: ['700', '800'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 const TITLE = t({ en: 'One programme, four palettes', es: 'Un programa, cuatro paletas' });
-const build = (way) => buildWithFonts(() => buildDocument({ markdown, resources }, retint(way)),
-  markdown);
+const build = (way) => buildDocumentWithFonts({ markdown, resources }, retint(way),
+  kitFonts(FONTS));
 const docs = {}; // red is built last: the capture shows the last build on its pages
 for (const way of ['sand', 'violet', 'teal', 'red']) docs[way] = await build(way);
 

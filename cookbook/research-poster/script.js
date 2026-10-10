@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 059 · Research poster on one big page ══════════════════
 // https://postext.dev/en/cookbook/research-poster
 // Code: MIT · Text and data: original, synthetic (CC BY 4.0) · Figures: generated in code
-// Fonts: Rethink Sans, Bitter, Saira Condensed (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Rethink Sans, Bitter, Saira Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPage, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPage, renderPageToCanvas, registerResourceImage,
   defaultResourceTypes,
 } from 'https://esm.sh/postext';
 
@@ -128,7 +128,7 @@ const strip = { id: 'strip', background: col('tint'), // one device: a tint
   body: { fontSize: pt(18), lineHeight: pt(24) } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, page,
   layout: { layoutType: 'double', gutterWidth: mm(GAP) },
   // The summary's type; the boxes take the family, the rag and the paragraph spacing from it.
@@ -404,17 +404,16 @@ const resources = [
 ];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   'Rethink Sans': ['400', '400i', '700'],
   Bitter: ['400', '700', '800'], // 400: the stat style's base face, which the build measures
   'Saira Condensed': ['600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 const face = await inlineFace('Saira Condensed', 600);
 await Promise.all([loadSvg('plan.svg', planSvg(face)), loadSvg('heat.svg', heatSvg(face)),
   loadSvg('bars.svg', barsSvg(face)), loadSvg('mark.svg', markSvg())]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Research poster', es: 'Póster científico' }) });
 // The e-poster: renderPage paints the page at its own size, 1,701 × 2,268 px at 72 dpi.
 const png = Object.assign(document.createElement('a'), { download: `${RECIPE}.png`,

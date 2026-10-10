@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 130 · Japanese in Latin letters: Takuboku's Rōmaji Diary ════
 // https://postext.dev/en/cookbook/romaji-nikki
 // Code: MIT · Text: Ishikawa Takuboku, 1909 (public domain); transcription (CC BY 4.0)
-// Fonts: Source Serif 4, Source Sans 3, Noto Serif JP (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Source Serif 4, Source Sans 3, Noto Serif JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A diary written in Japanese with Latin letters, and its reading in kana under each paragraph.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the note; the diary is Japanese in both editions
@@ -99,7 +99,7 @@ const header = { elements: [
 ] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   ...language, // ja-Latn, written out (gotcha: ja-locale-tag)
   colorPalette,
   page: {
@@ -132,7 +132,8 @@ const kanaText = (markdown.match(/:::paragraphs\{style="kana"\}[\s\S]*?:::/g) ??
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadFonts(FONTS, markdown); // and the latin-ext files, for the ō of the note
 await loadCjkFonts({ [MINCHO]: FONTS[MINCHO] }, kanaText);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'The Rōmaji Diary', es: 'El diario en rōmaji' }) });
 // #region macrons: the PDF gets each Latin face's latin-ext file too
 // Fontsource keeps ō ū ā in a latin-ext file. cjkPdfProvider serves Noto Serif JP from its

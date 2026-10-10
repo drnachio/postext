@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 009 · Figures that float to where you cite them ═════════
 // https://postext.dev/en/cookbook/figures-float-where-cited
 // Code: MIT · Text: original (CC BY 4.0) · Figures: diffusion models, labels in code
-// Fonts: Faustina, Montserrat, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Faustina, Montserrat, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 //
 // Chapter 2 of a geomorphology textbook. Six of its seven figures float, each to the first
 // free slot its placement allows, counting from the paragraph that first cites it. Figure 2.6
 // is set where ::resource embeds it. The figures are numbered in order of first mention.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
   defaultResourceTypes, parseMarkdown,
 } from 'https://esm.sh/postext';
 
@@ -113,7 +113,7 @@ const footer = { elements: [ // the drop folio: on the opener only, centred 9 mm
     { fontWeight: 800, align: 'center', pages: 'opener' })] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
   ...captions(),
   colorPalette,
@@ -335,7 +335,7 @@ const PAINTINGS = { // each figure's painting, a file in assets/, named by its w
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the layout uses, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the layout uses, loaded before the build
   Faustina: ['400', '400i', '700'], // text
   Montserrat: ['800'], // display: title, section heads, numeral, folios
   'IBM Plex Sans Condensed': ['400', '400i', '600', '700'], // labels: kicker, heads, captions
@@ -343,7 +343,7 @@ const FONTS = { // every face the layout uses, loaded before the build (gotcha: 
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const words = `${markdown}\n${figureTexts}`; // captions too: their letters decide the subsets
-await loadFonts(FONTS, words);
+await prepareFonts(words, config(), kitFonts(FONTS));
 checkFigures(); // a wrong id stops here, and the viewer's bar says why
 // #region build: register the drawings, then set chapter 2 of a longer book
 const face = await labelFace();
@@ -355,8 +355,8 @@ for (const { id, svg: { fileId, width, height } } of resources) { // each under 
 // One chapter came before: figures number 2.1, 2.2… and the folios start at 27.
 const continuation = { pageNumbering: { startAt: 27 }, // odd, to match the recto of page 1
   headings: { h1: 1, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 } }; // the next # is chapter 2
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), words);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  { ...kitFonts(FONTS), text: words });
 showPages(doc, { title: t({ en: 'Figures that float to where you cite them',
   es: 'Figuras que flotan hasta donde las citas' }) });
 // #endregion
