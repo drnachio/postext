@@ -137,7 +137,7 @@ const markdown = /* @content */ ''; // content.<lang>.md: the Arabic, with Engli
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { // every face the pages use, loaded before the build
   'IBM Plex Sans Arabic': ['400', '600', '700'], // ARABIC: text, headings, tables, folios
-  'IBM Plex Sans': ['300', '400', '400i', '600'], // LATIN: the second language, its table
+  'IBM Plex Sans': ['300', '400', '400i', '600', '700'], // LATIN: the second language, its table
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────

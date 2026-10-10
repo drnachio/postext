@@ -148,7 +148,7 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 const FONTS = {
   'Crimson Pro': ['400', '400i', '700'],
   'Libre Caslon Display': ['400'],
-  'IBM Plex Sans Condensed': ['400', '600'],
+  'IBM Plex Sans Condensed': ['400', '600', '700'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────

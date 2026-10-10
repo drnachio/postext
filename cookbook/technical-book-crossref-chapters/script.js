@@ -358,7 +358,7 @@ function coverArt(w, h) {
 const FONTS = {
   'IBM Plex Serif': ['400', '400i', '600'],
   'IBM Plex Sans Condensed': ['400', '600', '700'],
-  'IBM Plex Mono': ['400', '600'],
+  'IBM Plex Mono': ['400', '600', '700'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────

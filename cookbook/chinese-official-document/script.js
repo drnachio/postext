@@ -180,7 +180,8 @@ const FONTS = { // every face the pages use, loaded before the build
 const lines = (re) => (markdown.match(re) ?? []).join('');
 const [table, heads] = [SCHEDULE.flat().join(''), SCHEDULE[0].join('')];
 await loadFonts(FONTS, markdown);
-await loadCjkFonts({ [SONG]: ['400'] }, `${markdown}${table}0123456789—.（）`);
+// The text face also sets the folios and the imprint's label, 抄送.
+await loadCjkFonts({ [SONG]: ['400'] }, `${markdown}${table}0123456789—.（）抄送`);
 await loadCjkFonts({ [SONG]: ['900'] }, `${lines(/^# .*$/gm)}文件`);
 await loadCjkFonts({ [HEI]: ['400'] }, `${lines(/^subtitle: .*$|colophon="[^"]*"/gm)}${heads}`);
 await loadCjkFonts({ [HEI]: ['500'] }, `${lines(/^## .*$/gm)}一二三四五六七八九十、附件样　张`);

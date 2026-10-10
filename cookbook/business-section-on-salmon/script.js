@@ -481,7 +481,7 @@ const businessPages = /* @content:business */ ''; // content.business.en.md: pag
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { // text, display and label faces, loaded before the build
   'Source Serif 4': ['400', '400i', '700'], 'Playfair Display': ['400i', '700', '900'],
-  'Archivo Narrow': ['400', '600', '700'] };
+  'Archivo Narrow': ['400', '400i', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const all = `${markdown}\n\n${businessPages}`;

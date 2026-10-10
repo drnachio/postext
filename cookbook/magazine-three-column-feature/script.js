@@ -256,7 +256,7 @@ function islandMap() { // in mm: a long, low island lying south-west to north-ea
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { // text, display and label faces, loaded before the build
   'Source Serif 4': ['400', '400i', '600'], Fraunces: ['400i', '600'],
-  'Barlow Condensed': ['500', '600', '700'] };
+  'Barlow Condensed': ['400', '500', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await Promise.all([...resources.filter((r) => r.bitmap).map(({ bitmap }) =>
