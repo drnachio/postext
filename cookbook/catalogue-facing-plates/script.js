@@ -15,8 +15,7 @@ const palette = {
   sepia: '#8a6a45', gilt: '#c9ad86', // the accent on paper (4.6:1) and on the night (6.9:1)
   rule: '#cfc6b8', muted: '#6c665e', // hairlines; tombstones, credit lines, folios
 };
-// A linked colour carries its hex too: postext 1.4.1 reads the hex, not the palette, in design
-// slots and referenceColor (gotcha: palette-skips-designs).
+// col(id): a colour linked to its palette entry, with the entry's hex beside the id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -40,8 +39,7 @@ const MAIN = BLOCK_W - MAIN_X; // 119.7 mm: the measure, about 71 characters
 // float never lands on its citing page (gotcha: top-float-next-page), so it opens the recto.
 const entryLevel = () => ({
   level: 1, span: 'page', numberingTemplate: '{1}', // {number} in the opener: Cat. 1, 2, 3
-  // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
-  breakBefore: { enabled: true, parity: 'even' },
+  breakBefore: { enabled: true, parity: 'even' }, // an entry opens a verso, facing its plate
   marginBottom: pt(LEAD), advancedDesign: entryOpener(),
   dropCap: { lines: 3, fontFamily: DISPLAY, color: col('sepia'), gap: mm(1.6) }, // the lead's
 });
@@ -70,7 +68,7 @@ function picture(id, image, altText) {
     bitmap: { fileId: `${id}.jpg`, format: 'jpeg', width: image.width, height: image.height } };
 }
 
-// Design-slot shorthands; text wraps instead of ending in '…' (gotcha: overflow-ellipsis-default).
+// Design-slot shorthands; every text wraps, the folio lines too.
 const at = (to, edge, x, y, width) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) },
   ...(width !== undefined && { size: { width: width === 'fill' ? 'fill' : mm(width) } }) });
 const text = (id, content, fontFamily, size, color, placement, more = {}) => ({ kind: 'text',
@@ -81,7 +79,7 @@ const caps = (size) => ({ fontWeight: 600, textTransform: 'uppercase',
 
 // #region opener: the entry's head, a numeral and tombstone beside the title and the lead
 const [KICKER, NUMERAL] = [8.5, { size: 80, y: 7 }]; // pt: labels; the numeral, y in mm
-const TITLE = { size: 30, lineHeight: 1.08 }; // pt (gotcha: design-lineheight-multiple)
+const TITLE = { size: 30, lineHeight: 1.08 }; // pt; a multiple of the size
 const HEAD_RULE = NUMERAL.y + NUMERAL.size * PT + 3; // mm: the hairline under the numeral
 // mm: the lead, the entry's first paragraph, 5 mm under the hairline on the next grid line;
 // the opener ends a line above it (the level's marginBottom), and the tombstone faces it.
@@ -108,11 +106,10 @@ const entryOpener = () => ({ enabled: true, minHeight: mm(LEAD_Y - LEAD * PT),
   slot: { elements: [...head('Cat.', '{number}'),
   text('chapter', '{attr.chapter}', LABEL, KICKER, 'sepia',
     at('container', 'top-left', MAIN_X, 0, MAIN), caps(KICKER)),
-  // Baseline on the lead's; \n breaks only with a paragraphIndent (gotcha: design-text-newline).
+  // Baseline on the lead's; the attribute's \n breaks give its three lines.
   text('tombstone', '{attr.tombstone}', LABEL, TOMB.size, 'muted',
     at('container', 'top-left', 0, LEAD_Y + BASE * (LEADIN.lead - TOMB.lead) * PT, SIDE - 6),
-    { lineHeight: TOMB.lead / TOMB.size, paragraphIndent: pt(0.01),
-      reserve: false }), // beside the lead: it holds no room of its own
+    { lineHeight: TOMB.lead / TOMB.size, reserve: false }), // beside the lead: no room of its own
 ] } });
 // #endregion
 
@@ -121,8 +118,8 @@ const DETAIL = 'windmills-detail-540.jpg'; // a square cut from Cat. 3, at its s
 const FRAME = { w: 124, y: 40, pad: 3.5 }; // mm: the picture, its top, the hairline's inset
 const FRAME_X = (TRIM.w - FRAME.w) / 2;
 const NAME = { size: 88, track: 8, y: 176 }; // pt, pt, mm
-const centred = (id, content, family, size, color, y, more, x = 0) => text(id, content, family,
-  size, color, at('page', 'top', x, y, 'fill'), { align: 'center', ...more });
+const centred = (id, content, family, size, color, y, more) => text(id, content, family,
+  size, color, at('page', 'top', 0, y, 'fill'), { align: 'center', ...more });
 const coverStyle = () => ({
   id: 'cover', numbered: false, header: { elements: [] }, footer: { elements: [] },
   advancedDesign: { enabled: true, slot: { elements: [ // painted in this order
@@ -134,9 +131,9 @@ const coverStyle = () => ({
     { kind: 'image', id: 'detail', resourceId: 'cover-detail',
       placement: at('page', 'top-left', FRAME_X, FRAME.y, FRAME.w) },
     centred('kicker', '{attr.kicker}', LABEL, 8.5, 'gilt', 18, caps(8.5)),
-    // 1.4.1 counts the tracking after the last letter as well, so the word moves right by half.
+    // Tracked capitals centre on their letters: the tracking after the É is left out.
     centred('name', '{titleText}', DISPLAY, NAME.size, 'paper', NAME.y, { lineHeight: 1,
-      textTransform: 'uppercase', letterSpacing: pt(NAME.track) }, (NAME.track / 2) * PT),
+      textTransform: 'uppercase', letterSpacing: pt(NAME.track) }),
     centred('subtitle', '{attr.subtitle}', DISPLAY, 18, 'paper', NAME.y + NAME.size * PT + 4,
       { italic: true }),
     centred('foot', '{attr.foot}', LABEL, 8.5, 'gilt', 250, caps(8.5)),
@@ -194,7 +191,6 @@ const config = () => ({
     boldColor: col('ink'), italicColor: col('ink'),
     referenceColor: col('sepia'), referenceBold: false, // 'Cat. 1' in the accent, regular weight
     firstLineIndent: mm(4.5), indentAfterHeading: false, minWordSpacing: 0.8, maxWordSpacing: 1.5,
-    maxRuntTracking: 0, // gotcha: runt-tracking-unpainted
   },
   headings: { fontFamily: DISPLAY, fontWeight: 400, color: col('ink'), levels: [entryLevel()] },
   headingStyles: [coverStyle(), checklistStyle()],
