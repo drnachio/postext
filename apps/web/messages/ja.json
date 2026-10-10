@@ -44,8 +44,11 @@
     "chapter": "章",
     "contentsTitle": "目次",
     "contentsKicker": "Postextドキュメント",
-    "contentsLead": "3部9章の構成です。Postextとは何か、どのように作られているか。Postextが自動化する組版の技法。そしてPostextを使うための道具です。",
-    "readingTime": "読了時間"
+    "contentsLead": "3部構成です。Postextとは何か、どのように作られているか。Postextが自動化する組版の技法。そしてPostextを使うための道具です。",
+    "readingTime": "読了時間",
+    "previousChapter": "前の章",
+    "nextChapter": "次の章",
+    "neighbours": "前の章と次の章"
   },
   "CodePen": {
     "run": "CodePenで実行",

@@ -42,11 +42,11 @@ export default async function DocsIndexPage({
   const t = await getTranslations("Docs");
 
   const docs = getAllDocs().filter((d) => d.locales[locale]);
-  const groups: { part: DocPart; items: { slug: string; n: number; title: string; description: string; readingTime: string }[] }[] = [];
+  const groups: { part: DocPart; items: { slug: string; n: number; title: string; description: string; readingTime: string; child: boolean }[] }[] = [];
   docs.forEach((doc, i) => {
     const meta = doc.locales[locale]!;
     const part = docPart(meta.order);
-    const item = { slug: doc.slug, n: i + 1, title: meta.sidebarTitle, description: meta.description, readingTime: meta.readingTime };
+    const item = { slug: doc.slug, n: i + 1, title: meta.sidebarTitle, description: meta.description, readingTime: meta.readingTime, child: Boolean(meta.parent) };
     const last = groups[groups.length - 1];
     if (last && last.part.key === part.key) last.items.push(item);
     else groups.push({ part, items: [item] });
@@ -70,13 +70,14 @@ export default async function DocsIndexPage({
             <ol className="mt-4 divide-y divide-rule border-y border-rule">
               {items.map((it) => (
                 <li key={it.slug}>
-                  <Link href={`/docs/${it.slug}`} className="group flex gap-4 py-4 md:gap-5">
+                  {/* A page of a reference is set in under the page that opens it. */}
+                  <Link href={`/docs/${it.slug}`} className={`group flex gap-4 md:gap-5 ${it.child ? "py-3 ps-6 md:ps-9" : "py-4"}`}>
                     <span className="w-7 shrink-0 pt-1 text-end font-sans text-sm font-bold text-(--part-ink) tabular-nums">
                       {it.n}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-baseline gap-3">
-                        <span className="min-w-0 font-display text-xl font-semibold tracking-[-0.01em] transition-colors group-hover:text-(--part-ink) md:text-2xl">
+                        <span className={`min-w-0 font-display font-semibold tracking-[-0.01em] transition-colors group-hover:text-(--part-ink) ${it.child ? "text-lg md:text-xl" : "text-xl md:text-2xl"}`}>
                           {it.title}
                         </span>
                         <span aria-hidden="true" className="mb-1.5 min-w-8 flex-1 border-b-2 border-dotted border-rule-strong" />

@@ -44,8 +44,11 @@
     "chapter": "章",
     "contentsTitle": "目录",
     "contentsKicker": "Postext文档",
-    "contentsLead": "三篇九章：Postext是什么、如何构建；它自动完成的排版工艺；以及配合它使用的工具。",
-    "readingTime": "阅读时间"
+    "contentsLead": "共三篇：Postext是什么、如何构建；它自动完成的排版工艺；以及配合它使用的工具。",
+    "readingTime": "阅读时间",
+    "previousChapter": "上一章",
+    "nextChapter": "下一章",
+    "neighbours": "上一章和下一章"
   },
   "CodePen": {
     "run": "在CodePen中运行",

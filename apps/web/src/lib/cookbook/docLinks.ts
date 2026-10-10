@@ -14,7 +14,7 @@ import { LOCALES } from "./types.ts";
 const memo = new Map<string, { at: number; toc: TocItem[] | null }>();
 /** How long development reuses a doc's headings. A recipe's Markdown
  *  rendition resolves dozens of anchors, and every miss re-reads and
- *  re-slugs the whole doc (configuration-en.mdx takes about 10 ms). */
+ *  re-slugs the whole doc (a long page takes a few milliseconds). */
 const DEV_TTL_MS = 1500;
 
 /** A doc's headings; memoised in production, for DEV_TTL_MS in development. */
@@ -49,7 +49,7 @@ export function docAnchor(anchor: DocAnchor, locale: Locale): string | null {
   return path ? `/${locale}${path}` : null;
 }
 
-/** Whether an internal docs link (`/es/docs/configuration#estilo-de-tablas`,
+/** Whether an internal docs link (`/es/docs/configuration-resources#estilo-de-tablas`,
  *  with or without a fragment) points at an existing doc and heading. */
 export function docLinkExists(href: string): boolean {
   const m = /^\/(en|es|ca|zh|ja|ar|pt)\/docs\/([a-z0-9-]+)\/?(?:#(.+))?$/.exec(href);

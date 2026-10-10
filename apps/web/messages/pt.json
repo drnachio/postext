@@ -44,8 +44,11 @@
     "chapter": "Capítulo",
     "contentsTitle": "Sumário",
     "contentsKicker": "Documentação do Postext",
-    "contentsLead": "Nove capítulos em três partes: o que é o Postext e como ele é construído, o ofício tipográfico que ele automatiza e as ferramentas com que você o usa.",
-    "readingTime": "Tempo de leitura"
+    "contentsLead": "Três partes: o que é o Postext e como ele é construído, o ofício tipográfico que ele automatiza e as ferramentas com que você o usa.",
+    "readingTime": "Tempo de leitura",
+    "previousChapter": "Anterior",
+    "nextChapter": "Próximo",
+    "neighbours": "Capítulo anterior e próximo capítulo"
   },
   "CodePen": {
     "run": "Executar no CodePen",

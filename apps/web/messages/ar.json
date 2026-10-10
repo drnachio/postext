@@ -44,8 +44,11 @@
     "chapter": "الفصل",
     "contentsTitle": "المحتويات",
     "contentsKicker": "توثيق Postext",
-    "contentsLead": "تسعة فصول في ثلاثة أجزاء: ما هو Postext وكيف بُني، والحرفة الطباعية التي يؤتمتها، والأدوات التي تستخدمه بها.",
-    "readingTime": "مدة القراءة"
+    "contentsLead": "ثلاثة أجزاء: ما هو Postext وكيف بُني، والحرفة الطباعية التي يؤتمتها، والأدوات التي تستخدمه بها.",
+    "readingTime": "مدة القراءة",
+    "previousChapter": "السابق",
+    "nextChapter": "التالي",
+    "neighbours": "الفصل السابق والفصل التالي"
   },
   "CodePen": {
     "run": "شغّل على CodePen",

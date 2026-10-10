@@ -14,8 +14,10 @@ const PARTS: DocPart[] = [
   { key: "practice", number: "III", color: "vermilion" },
 ];
 
-/** Last `order` of each part (inclusive); anything later is "practice". */
-const PART_ENDS = [2, 9];
+/** Last `order` of each part (inclusive); anything later is "practice".
+ *  Part II runs from Configuration (3) and the nine pages of its reference
+ *  (4–12) to Comics (18). */
+const PART_ENDS = [2, 18];
 
 export function docPart(order: number): DocPart {
   const i = PART_ENDS.findIndex((end) => order <= end);

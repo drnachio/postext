@@ -22,7 +22,7 @@ const HEADINGS: Record<SectionId, [string, string, string, string, string, strin
   pitfalls: ["Pitfalls", "Errores frecuentes", "常见问题", "Errors freqüents", "أخطاء شائعة", "よくあるつまずき", "Erros comuns"],
   credits: ["Credits", "Créditos", "致谢", "Crèdits", "الحقوق", "クレジット", "Créditos"],
 };
-const ANCHOR: DocAnchor = { slug: "configuration", heading: { en: "Table style", es: "Estilo de tablas", ca: "Estil de taules", zh: "表格样式", ar: "نمط الجداول", ja: "表のスタイル", pt: "Estilo de tabela" } };
+const ANCHOR: DocAnchor = { slug: "configuration-resources", heading: { en: "Table style", es: "Estilo de tablas", ca: "Estil de taules", zh: "表格样式", ar: "نمط الجداول", ja: "表のスタイル", pt: "Estilo de tabela" } };
 
 function fixtureRegistry(): Registry {
   return {
@@ -130,16 +130,20 @@ describe("validateRegistry (fixture)", () => {
 
 describe("docLinks", () => {
   it("resolves an anchor with the doc page's slugger", () => {
-    expect(docAnchor(ANCHOR, "en")).toBe("/en/docs/configuration#table-style");
-    expect(docAnchorPath(ANCHOR, "es")).toBe("/docs/configuration#estilo-de-tablas");
-    expect(docAnchorPath(ANCHOR, "ca")).toBe("/docs/configuration#estil-de-taules");
-    expect(docAnchorPath(ANCHOR, "ar")).toBe("/docs/configuration#نمط-الجداول");
+    expect(docAnchor(ANCHOR, "en")).toBe("/en/docs/configuration-resources#table-style");
+    expect(docAnchorPath(ANCHOR, "es")).toBe("/docs/configuration-resources#estilo-de-tablas");
+    expect(docAnchorPath(ANCHOR, "ca")).toBe("/docs/configuration-resources#estil-de-taules");
+    expect(docAnchorPath(ANCHOR, "ar")).toBe("/docs/configuration-resources#نمط-الجداول");
     expect(resolveDocAnchor({ slug: "configuration", heading: L("No such heading") }, "en")).toBeNull();
     expect(resolveDocAnchor({ slug: "no-such-doc", heading: ANCHOR.heading }, "en")).toBeNull();
   });
 
   it("checks internal docs links", () => {
-    expect(docLinkExists("/en/docs/configuration#table-style")).toBe(true);
+    expect(docLinkExists("/en/docs/configuration-resources#table-style")).toBe(true);
+    // The section left the entry page with the split (#655): the old address
+    // is a dead link in source, whatever the page's redirect does for readers.
+    expect(docLinkExists("/en/docs/configuration#table-style")).toBe(false);
+    expect(docLinkExists("/en/docs/configuration#index")).toBe(true);
     expect(docLinkExists("/es/docs/configuration")).toBe(true);
     expect(docLinkExists("/zh/docs/configuration")).toBe(true);
     expect(docLinkExists("/fr/docs/configuration")).toBe(false);

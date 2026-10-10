@@ -44,8 +44,11 @@
     "chapter": "Capítol",
     "contentsTitle": "Índex",
     "contentsKicker": "Documentació de Postext",
-    "contentsLead": "Nou capítols en tres parts: què és Postext i com està construït, l'ofici tipogràfic que automatitza i les eines amb què es fa servir.",
-    "readingTime": "Temps de lectura"
+    "contentsLead": "Tres parts: què és Postext i com està construït, l'ofici tipogràfic que automatitza i les eines amb què es fa servir.",
+    "readingTime": "Temps de lectura",
+    "previousChapter": "Anterior",
+    "nextChapter": "Següent",
+    "neighbours": "Capítols anterior i següent"
   },
   "CodePen": {
     "run": "Executar a CodePen",

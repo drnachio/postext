@@ -44,8 +44,11 @@
     "chapter": "Chapter",
     "contentsTitle": "Contents",
     "contentsKicker": "Postext documentation",
-    "contentsLead": "Nine chapters in three parts: what Postext is and how it is built, the typographic craft it automates, and the tools you use it with.",
-    "readingTime": "Reading time"
+    "contentsLead": "Three parts: what Postext is and how it is built, the typographic craft it automates, and the tools you use it with.",
+    "readingTime": "Reading time",
+    "previousChapter": "Previous",
+    "nextChapter": "Next",
+    "neighbours": "Previous and next chapters"
   },
   "CodePen": {
     "run": "Run on CodePen",
