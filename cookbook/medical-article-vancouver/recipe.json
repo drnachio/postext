@@ -37,11 +37,7 @@
     "Q106"
   ],
   "gotchas": [
-    "style-header-whole-section",
-    "headings-drop-h1-break",
-    "svg-no-webfonts",
-    "resource-types-locale",
-    "quote-frontmatter"
+    "style-header-whole-section"
   ],
   "engine": {
     "postext": "1.25.0",
