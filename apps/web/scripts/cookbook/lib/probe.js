@@ -19,7 +19,21 @@ const LATIN = [
 ];
 const MAIN_COLOR = '#295AA3';
 /** Content warnings on how the text is set that C5 reports. */
-const TEXT_WARNING_KINDS = new Set(['arabicMarksExceedLeading', 'unbreakableWordOverflow', 'joiningScriptLetterSpacing', 'lineNumberOverlap', 'tabInVerticalText', 'dropCap', 'codeOverflow', 'textWrap']);
+const TEXT_WARNING_KINDS = new Set(['arabicMarksExceedLeading', 'unbreakableWordOverflow', 'joiningScriptLetterSpacing', 'lineNumberOverlap', 'tabInVerticalText', 'dropCap', 'codeOverflow', 'textWrap',
+  'afterText', 'unplaced', 'columnsTooNarrow', 'columnsFlowUnknown', 'fontFallback']);
+/** What the page shows for the content warnings of postext 1.25: the side
+ *  box or float left after the text or on no page (#639), a `:::columns`
+ *  group too narrow or with an unknown flow (#634), a face measured in a
+ *  fallback (#629). */
+function layoutDetail(w) {
+  switch (w.kind) {
+    case 'afterText': case 'unplaced': return w.resourceId ?? 'a side box';
+    case 'columnsTooNarrow': return `${w.columns} columns of ${Math.round(w.widthPx)} px`;
+    case 'columnsFlowUnknown': return `flow="${w.value}"`;
+    case 'fontFallback': return `${w.family} ${w.weight}${w.style === 'italic' ? ' italic' : ''} (${w.reason})`;
+    default: return undefined;
+  }
+}
 /** What a comic warning names: the picture, the panel, the speaker, the style. */
 function comicDetail(w) {
   return [w.resourceId, w.anchorId, w.panel === undefined ? undefined : `panel ${w.panel + 1}`,
@@ -730,7 +744,11 @@ export function facts({ select = 'last', hero = [] } = {}) {
   // drop cap could not be set as configured (#623), a code listing with
   // lines wider than its box (#624), a floated picture that runs past the
   // text block even at its smallest scale (#626; one merely shrunk to its
-  // slot is what the recipe asked for), and a comic's (a
+  // slot is what the recipe asked for), a side box or float set on a page
+  // after the text, or on no page at all (#639), a `:::columns` group whose
+  // columns are narrower than six ems or whose `flow` the engine does not
+  // know (#634), a face the layout measured in a fallback or that the
+  // browser synthesizes (#629, the engine's own account of C12), and a comic's (a
   // picture letterboxed in its cell, a balloon that found no room, more
   // panels than cells…), except a speaker with no anchor, which
   // is how an off-panel voice is written.
@@ -739,7 +757,7 @@ export function facts({ select = 'last', hero = [] } = {}) {
     .map((w) => ({
       kind: w.kind,
       page: w.pageIndex === undefined ? null : nOf(doc, w.pageIndex),
-      detail: w.kind === 'floatShrunk' ? `${w.resourceId} at ${Math.round(w.scale * 100)} %: ${w.overflowPx} px past the text block` : w.kind === 'codeOverflow' ? `${w.mode}: ${w.lines} line(s)${w.lang ? ` of ${w.lang}` : ''}` : w.kind === 'dropCap' ? `${w.reason}${w.handling ? ` (${w.handling})` : ''}: ${w.text}` : w.kind === 'textWrap' ? `${w.resourceId ?? `box ${w.box ?? ''}`.trim()}: ${w.reason}` : w.text ?? (w.kind === 'lineNumberOverlap' ? `line ${w.number}` : w.kind === 'tabInVerticalText' ? ':tab' : comicDetail(w)),
+      detail: layoutDetail(w) ?? (w.kind === 'floatShrunk' ? `${w.resourceId} at ${Math.round(w.scale * 100)} %: ${w.overflowPx} px past the text block` : w.kind === 'codeOverflow' ? `${w.mode}: ${w.lines} line(s)${w.lang ? ` of ${w.lang}` : ''}` : w.kind === 'dropCap' ? `${w.reason}${w.handling ? ` (${w.handling})` : ''}: ${w.text}` : w.kind === 'textWrap' ? `${w.resourceId ?? `box ${w.box ?? ''}`.trim()}: ${w.reason}` : w.text ?? (w.kind === 'lineNumberOverlap' ? `line ${w.number}` : w.kind === 'tabInVerticalText' ? ':tab' : comicDetail(w))),
     })));
   // C31: config values the engine replaced (a character grid cut to the
   // page, an unknown numbering format, a key no setting has). Every
