@@ -38,8 +38,6 @@ La :ref{id="dijous" style="full" case="lower"} recull el programa del dia, franj
 
 **Ada Rigau** (Barcelona, 1990) dissenya lletres grotesques. Ha dibuixat els accents, la ce trencada i la ela geminada d’una família de set gruixos i en portarà els esbossos.
 
-:::columnbreak
-
 **Rosa Fontanet** (Girona, 1975) fotografia els rètols pintats de la ciutat des del 2004 i n’ha publicat dos llibres. Fa una ponència a la tarda i guia el passeig del vespre pel Barri Vell.
 
 **Oriol Mas** (Tarragona, 1984) compon llibres amb codi: escriu el text en Markdown i descriu la pàgina en un fitxer de configuració. Ha compost així aquest programa.

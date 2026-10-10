@@ -22,13 +22,13 @@ El codi és [la resposta curta](#la-resposta-curta) de més amunt. Cada jornada 
 
 <Excerpt region="split" />
 
-La graella del dijous es cita a la pàgina 2 i va a dalt d'una pàgina. Un flotant no puja mai per sobre de la seva referència, així que la graella obre la pàgina 3. No hi cap, i `overflow: 'split'` la talla entre dues files, mai dins d'una cel·la combinada ([Taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). La pàgina 3 acaba amb la fila de les 17.30 i l'avís a sota. La 4 repeteix la fila de capçalera i el peu complet, amb la llegenda de colors, seguit de `(continuació)`, i la nota només apareix sota aquesta última part. La del divendres va al peu d'una pàgina i cap sota el text que la cita a la pàgina 5. Postext 1.4.1 només inclou en anglès i en castellà els noms dels tipus de recurs i aquests dos textos, així que les paraules catalanes, plurals inclosos, s'escriuen sobre `defaultResourceTypes('ca')` i a l'estil de taula. `numberingTemplate: '{n}'` amb `resetOn: 'never'` numera les dues graelles en una sola sèrie: Taula 1 i Taula 2.
+La graella del dijous es cita a la pàgina 2 i va a dalt d'una pàgina. Un flotant no puja mai per sobre de la seva referència, així que la graella obre la pàgina 3. No hi cap, i `overflow: 'split'` la talla entre dues files, mai dins d'una cel·la combinada ([Taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). La pàgina 3 acaba amb la fila de les 17.30 i l'avís a sota. La 4 repeteix la fila de capçalera i el peu complet, amb la llegenda de colors, seguit de `(continuació)`, i la nota només apareix sota aquesta última part. La del divendres va al peu d'una pàgina i cap sota el text que la cita a la pàgina 5. `defaultResourceTypes('ca')` dona als tipus els noms en català, Figura i Taula. Els textos catalans del motor per a una taula partida són `(cont.)` i `Continua`; l'estil de taula els escriu sencers. `numberingTemplate: '{n}'` amb `resetOn: 'never'` numera les dues graelles en una sola sèrie: Taula 1 i Taula 2.
 
 ### 3 · Talla els emplenaments en peces
 
 <Excerpt region="tiles" />
 
-`setCellBackground`, a la resposta curta, dona a cada sessió el color de la paleta del seu itinerari, i uns filets d'1,6 pt del color del paper tallen els emplenaments en peces separades per línies blanques ([Estil de taules](/ca/docs/configuration#estil-de-taules)). Una taula té un sol color de text per a les cel·les del cos, així que el blanc de la plenària és un xip l'estil del qual fixa el color i treu l'emplenament, la vora i el marge lateral del xip. Les hores i les parts del dia també són xips, en Chivo Mono ([Estils de xip](/ca/docs/configuration#estils-de-xip)). Un xip no es parteix mai entre dues línies; el títol d'una plenària i la línia del seu ponent caben cadascun en una línia de la cel·la de tres sales. A la nota del plànol, el xip `sala` deixa el text tal com és i manté en una línia el número i el nom de cada sala, cosa que a la 1.4.1 no aconsegueix un espai de no separació.
+`setCellBackground`, a la resposta curta, dona a cada sessió el color de la paleta del seu itinerari, i uns filets d'1,6 pt del color del paper tallen els emplenaments en peces separades per línies blanques ([Estil de taules](/ca/docs/configuration#estil-de-taules)). Una taula té un sol color de text per a les cel·les del cos, així que el blanc de la plenària és un xip l'estil del qual fixa el color i treu l'emplenament, la vora i el marge lateral del xip. Les hores i les parts del dia també són xips, en Chivo Mono ([Estils de xip](/ca/docs/configuration#estils-de-xip)). Un xip no es parteix mai entre dues línies; el títol d'una plenària i la línia del seu ponent caben cadascun en una línia de la cel·la de tres sales. A la nota del plànol, el xip `sala` deixa el text tal com és i manté en una línia el número i el nom de cada sala, com faria un espai de no separació entre les seves paraules.
 
 ### 4 · Obre cada jornada amb una banda
 
@@ -40,7 +40,7 @@ El disseny del títol de primer nivell dibuixa la banda: una caixa de 76 mm d'al
 
 <Excerpt region="bios" />
 
-Cada ponent és un paràgraf d'un bloc `:::paragraphs{style="bio"}`. El nom en negreta comença a la vora de la columna i les línies següents entren 4 mm, en sagnat francès, així que els noms queden alineats columna avall, com en un índex ([Estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). El text va en bandera, un ajust en què la 1.4.1 no evita les últimes línies d'una sola paraula, així que cada nota es va reescriure fins que la seva última línia en va tenir almenys dues.
+Cada ponent és un paràgraf d'un bloc `:::paragraphs{style="bio"}`. El nom en negreta comença a la vora de la columna i les línies següents entren 4 mm, en sagnat francès, així que els noms queden alineats columna avall, com en un índex ([Estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)).
 
 ## Variants
 
@@ -61,7 +61,3 @@ Si es compta per títols de primer nivell, com als tipus predefinits, surten la 
 -  numberingTemplate: '{n}', resetOn: 'never' })); // Taula 1, Taula 2: one count, not per day
 +  numberingTemplate: '{h1}.{n}', resetOn: 'h1' })); // Taula 1.1, Taula 2.1: per day
 ```
-
-## Errors freqüents
-
-- Les columnes de la pàgina 4 s'igualen a mà, amb un `:::columnbreak` abans de la nota de Rosa Fontanet. Postext 1.4.1 no iguala l'última pàgina d'un capítol quan l'obre la resta d'una taula partida, així que la primera columna arriba al peu i la segona es queda curta. Mou el salt cada vegada que canviï el text del dijous.
