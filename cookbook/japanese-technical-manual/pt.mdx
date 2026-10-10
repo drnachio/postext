@@ -32,7 +32,7 @@ A cerca é um [bloco de código](/pt/docs/document-format#blocos-de-código): o 
 
 <Excerpt region="resources" />
 
-`defaultResourceTypes('ja')` dá aos tipos os nomes 図 e 表 e os numera por capítulo com hífen, e `continuation.headings` faz deste o capítulo 3, então a primeira figura é 図3-1. Um documento `ja` junta rótulo e número sem espaço e põe um espaço ideográfico depois do número, como os livros japoneses imprimem 図3-1　「が」の二つの表し方, de modo que o estilo de legenda só escolhe a fonte e as cores. A tabela fica em `'here'`, sob o parágrafo que a cita. Os rótulos da figura são só latinos, U+304C e E3 81 8C, desenhados com o arquivo latin da fonte de código embutido no SVG.
+`defaultResourceTypes('ja')` dá aos tipos os nomes 図 e 表 e os numera por capítulo com hífen, e `continuation.headings` faz deste o capítulo 3, então a primeira figura é 図3-1. Um documento `ja` junta rótulo e número sem espaço e põe um espaço ideográfico depois do número, como os livros japoneses imprimem 図3-1　「が」の二つの表し方, de modo que o estilo de legenda só escolhe a fonte e as cores. A tabela fica em `'here'`, sob o parágrafo que a cita. Os rótulos da figura são só latinos, U+304C e E3 81 8C: o SVG nomeia a fonte de código no seu estilo e `loadSvg` embute o arquivo da fonte antes de desenhar a imagem.
 
 ### 4 · Notas por página, do jeito japonês
 

@@ -32,7 +32,7 @@ The fence is a [code block](/en/docs/document-format#code-blocks): Postext sets 
 
 <Excerpt region="resources" />
 
-`defaultResourceTypes('ja')` names the types 図 and 表 and numbers them by chapter with a hyphen, and `continuation.headings` makes this chapter 3, so the first figure is 図3-1. A `ja` document sets the label and the number solid and puts an ideographic space after the number, as Japanese books print 図3-1　「が」の二つの表し方, so the caption style only picks the face and the colours. The table is placed `'here'`, under the paragraph that cites it. The figure’s labels are Latin only, U+304C and E3 81 8C, drawn with the code face’s latin file embedded in the SVG.
+`defaultResourceTypes('ja')` names the types 図 and 表 and numbers them by chapter with a hyphen, and `continuation.headings` makes this chapter 3, so the first figure is 図3-1. A `ja` document sets the label and the number solid and puts an ideographic space after the number, as Japanese books print 図3-1　「が」の二つの表し方, so the caption style only picks the face and the colours. The table is placed `'here'`, under the paragraph that cites it. The figure’s labels are Latin only, U+304C and E3 81 8C: the SVG names the code face in its style, and `loadSvg` embeds the font file before the picture is drawn.
 
 ### 4 · Notes per page, the Japanese way
 

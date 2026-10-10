@@ -31,7 +31,7 @@
     ]
   },
   "answers": ["Q106", "Q142"],
-  "gotchas": ["ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices", "svg-no-webfonts", "headings-drop-h1-break", "quote-frontmatter"],
+  "gotchas": ["ja-locale-tag", "ja-fonts-kana", "cjk-fonts-slices"],
   "related": ["gbt7714-chinese-paper", "arabic-research-article", "apa-thesis-with-bibtex"],
   "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images", "cjk"],

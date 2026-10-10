@@ -49,9 +49,7 @@
   "gotchas": [
     "ja-locale-tag",
     "ja-fonts-kana",
-    "cjk-fonts-slices",
-    "svg-no-webfonts",
-    "headings-drop-h1-break"
+    "cjk-fonts-slices"
   ],
   "related": [
     "code-listings-and-keycaps",

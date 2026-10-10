@@ -32,7 +32,7 @@ La tanca és un [bloc de codi](/ca/docs/document-format#blocs-de-codi): Postext 
 
 <Excerpt region="resources" />
 
-`defaultResourceTypes('ja')` anomena els tipus 図 i 表 i els numera per capítol amb un guionet, i `continuation.headings` fa d'aquest el capítol 3, així que la primera figura és 図3-1. Un document `ja` ajunta el rètol i el número i posa un espai ideogràfic després del número, com imprimeixen els llibres japonesos 図3-1　「が」の二つの表し方, de manera que l'estil de peu només tria la lletra i els colors. La taula va a `'here'`, sota el paràgraf que la cita. Els rètols de la figura són només llatins, U+304C i E3 81 8C, dibuixats amb el fitxer latin de la lletra de codi incrustat a l'SVG.
+`defaultResourceTypes('ja')` anomena els tipus 図 i 表 i els numera per capítol amb un guionet, i `continuation.headings` fa d'aquest el capítol 3, així que la primera figura és 図3-1. Un document `ja` ajunta el rètol i el número i posa un espai ideogràfic després del número, com imprimeixen els llibres japonesos 図3-1　「が」の二つの表し方, de manera que l'estil de peu només tria la lletra i els colors. La taula va a `'here'`, sota el paràgraf que la cita. Els rètols de la figura són només llatins, U+304C i E3 81 8C: l'SVG anomena la lletra de codi al seu estil i `loadSvg` hi incrusta el fitxer de la font abans de dibuixar la imatge.
 
 ### 4 · Notes per pàgina, a la japonesa
 

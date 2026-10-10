@@ -4,7 +4,7 @@
 // Fonts: Noto Serif JP, Noto Sans JP, BIZ UDGothic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, defaultResourceTypes, parseTSV,
-  registerResourceImage,
+  registerResourceImage, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -116,7 +116,7 @@ const config = () => ({
   headings: { fontFamily: GOTHIC, fontWeight: 700, color: col('ink'),
     balancing: { enabled: false }, // no lines added above heads: the grid holds
     levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // parity 'odd': the chapter opens on a recto, and no blank page is forced before it.
     { level: 1, numberingTemplate: '第{1}章', breakBefore: { enabled: true, parity: 'odd' },
       advancedDesign: opener },
     // 3行取り: each section head takes three body lines, so the grid holds across it.
@@ -180,19 +180,9 @@ const resources = [
 ];
 // #endregion
 
-// #region art: the figure's labels in the code face, embedded (gotcha: svg-no-webfonts)
-async function codeFace() {
-  const url = 'https://cdn.jsdelivr.net/npm/@fontsource/biz-udgothic@5/files/'
-    + 'biz-udgothic-latin-400-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 8192) {
-    bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
-  }
-  return `@font-face{font-family:C;src:url(data:font/woff2;base64,${btoa(bin)}) format('woff2')}`
-    + `text{font-family:C;font-size:3.2px;text-anchor:middle;fill:${palette.ink}}`;
-}
-function bytesArt(style) {
+// #region art: the figure's labels name the code face, and loadSvg embeds its file
+const LABELS = `text{font-family:"${CODE}";font-size:3.2px;text-anchor:middle;fill:${palette.ink}}`;
+function bytesArt() {
   const box = (x, y, w, h, fill, stroke, text) => `<rect x="${x}" y="${y}" width="${w}" `
     + `height="${h}" fill="${palette[fill]}" stroke="${palette[stroke]}" stroke-width=".3"/>`
     + `<text x="${x + w / 2}" y="${y + h / 2 + 1.1}">${text}</text>`;
@@ -203,7 +193,7 @@ function bytesArt(style) {
     + bytes.map((b, i) => box(26 + i * 10 + Math.floor(i / 3), y + 9, 9.5, 7, 'paper', 'rule', b))
       .join('') + side(103, y + 9, `${bytes.length} bytes`, 'muted');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1175" height="400" viewBox="0 0 117.5 40">`
-    + `<style>${style}</style>${row(3, 'NFC', ['U+304C'], ['E3', '81', '8C'])}`
+    + `<style>${LABELS}</style>${row(3, 'NFC', ['U+304C'], ['E3', '81', '8C'])}`
     + `${row(22, 'NFD', ['U+304B', 'U+3099'], ['E3', '81', '8B', 'E3', '82', '99'])}</svg>`;
 }
 // #endregion
@@ -226,7 +216,7 @@ await loadCjkFonts({ [MINCHO]: FONTS[MINCHO] }, `${markdown}${FORMS}`);
 await loadCjkFonts({ [GOTHIC]: FONTS[GOTHIC] }, gothic);
 const code = (markdown.match(/^```[\s\S]*?^```$|`[^`\n]+`/gm) ?? []).join('');
 await loadCjkFonts({ [CODE]: FONTS[CODE] }, code);
-await loadSvg('bytes.svg', bytesArt(await codeFace()));
+await loadSvg('bytes.svg', bytesArt());
 const continuation = { pageIndexOffset: 40, pageNumbering: { startAt: 41 }, headings: { h1: 2 } };
 const doc = await withLoadedFonts(() => buildDocument({ markdown, resources, continuation },
   config()),
