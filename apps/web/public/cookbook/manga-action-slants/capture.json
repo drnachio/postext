@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "manga-action-slants",
-  "sourceHash": "6acfbd26dbe689cf94c19992b79891898fe53f53981b7619211a6cd932e48003",
+  "sourceHash": "f5c054929d5f0b467d1a836f01a84a3e9a33aead22b12d75674ce37650027114",
   "engine": {
-    "postext": "1.25.0",
-    "postextPdf": "1.25.0",
+    "postext": "1.25.1",
+    "postextPdf": "1.25.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-10T13:35:13.599Z",
+  "capturedAt": "2026-10-10T15:14:42.331Z",
   "variants": {
     "en": {
-      "hash8": "72dd833f",
+      "hash8": "bd40cc60",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 167,
-        "fontsMs": 237,
-        "buildMs": 167,
-        "totalMs": 1257,
+        "importMs": 172,
+        "fontsMs": 269,
+        "buildMs": 180,
+        "totalMs": 1309,
         "builds": 2
       },
       "specimen": {
@@ -83,7 +83,7 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 971998,
+        "bytes": 971996,
         "pages": 2
       },
       "sandbox": {
@@ -230,13 +230,13 @@
       }
     },
     "es": {
-      "hash8": "1604b807",
+      "hash8": "98ef498f",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 166,
-        "fontsMs": 214,
-        "buildMs": 170,
-        "totalMs": 2726,
+        "importMs": 177,
+        "fontsMs": 224,
+        "buildMs": 171,
+        "totalMs": 1268,
         "builds": 2
       },
       "specimen": {
@@ -449,13 +449,13 @@
       }
     },
     "ca": {
-      "hash8": "bf23f227",
+      "hash8": "1ad4f6ba",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 167,
-        "fontsMs": 217,
-        "buildMs": 169,
-        "totalMs": 1256,
+        "importMs": 165,
+        "fontsMs": 222,
+        "buildMs": 180,
+        "totalMs": 1274,
         "builds": 2
       },
       "specimen": {
@@ -668,13 +668,13 @@
       }
     },
     "zh": {
-      "hash8": "08791e81",
+      "hash8": "5433717a",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 168,
-        "fontsMs": 210,
-        "buildMs": 169,
-        "totalMs": 1306,
+        "importMs": 176,
+        "fontsMs": 225,
+        "buildMs": 170,
+        "totalMs": 1385,
         "builds": 2
       },
       "specimen": {
@@ -715,7 +715,7 @@
           "h": 1422,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 196912,
+          "bytes": 196890,
           "alt": "第 1 页。"
         }
       ],
@@ -740,12 +740,12 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 972274,
+        "bytes": 972241,
         "pages": 2
       },
       "sandbox": {
         "file": "manga-action-slants.postext",
-        "bytes": 958306,
+        "bytes": 958302,
         "folio": "80b0969c"
       },
       "detected": {
@@ -887,13 +887,13 @@
       }
     },
     "ar": {
-      "hash8": "aa08d24f",
+      "hash8": "fd8d8230",
       "vdtHash": "08247c9074426635127f197675bbff6d2e99ae28",
       "timings": {
-        "importMs": 174,
-        "fontsMs": 238,
-        "buildMs": 172,
-        "totalMs": 1272,
+        "importMs": 236,
+        "fontsMs": 272,
+        "buildMs": 181,
+        "totalMs": 1375,
         "builds": 2
       },
       "specimen": {
@@ -1106,13 +1106,13 @@
       }
     },
     "ja": {
-      "hash8": "733e62c2",
+      "hash8": "0466fce2",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 176,
-        "fontsMs": 227,
-        "buildMs": 169,
-        "totalMs": 1261,
+        "importMs": 264,
+        "fontsMs": 267,
+        "buildMs": 181,
+        "totalMs": 1431,
         "builds": 2
       },
       "specimen": {
@@ -1178,7 +1178,7 @@
       },
       "pdf": {
         "file": "manga-action-slants.pdf",
-        "bytes": 971703,
+        "bytes": 971704,
         "pages": 2
       },
       "sandbox": {
@@ -1325,13 +1325,13 @@
       }
     },
     "pt": {
-      "hash8": "fafa47ba",
+      "hash8": "73e1a088",
       "vdtHash": "edf7e181b770ebe984a92cac22158327d3bcec4c",
       "timings": {
-        "importMs": 181,
-        "fontsMs": 237,
-        "buildMs": 179,
-        "totalMs": 1294,
+        "importMs": 174,
+        "fontsMs": 225,
+        "buildMs": 171,
+        "totalMs": 1255,
         "builds": 2
       },
       "specimen": {
