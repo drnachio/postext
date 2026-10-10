@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "comic-epub-guided-view",
-  "sourceHash": "12c6b6eef3283c33efc7c5cbb0fcad5fe2c5aaa058cb2c81dba4e831890dd54a",
+  "sourceHash": "71d7fe870a44d9eea1aa4c936f76604cc7a272c296634e5e1d40e12c2902ec57",
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T14:45:50.856Z",
+  "capturedAt": "2026-10-10T13:33:15.216Z",
   "variants": {
     "en": {
-      "hash8": "42521586",
+      "hash8": "1607e9af",
       "vdtHash": "64c420f4051c59e7c12aca770d7ead2328540ded",
       "timings": {
-        "importMs": 7390,
-        "fontsMs": 132,
-        "buildMs": 258,
-        "totalMs": 8487,
+        "importMs": 4020,
+        "fontsMs": 97,
+        "buildMs": 209,
+        "totalMs": 4862,
         "builds": 1
       },
       "specimen": {
@@ -99,24 +99,24 @@
       },
       "pdf": {
         "file": "comic-epub-guided-view.pdf",
-        "bytes": 812734,
+        "bytes": 812736,
         "pages": 3
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 806949
+        "bytes": 806950
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "readEpub",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToEpub",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -280,13 +280,13 @@
       }
     },
     "es": {
-      "hash8": "680a974f",
+      "hash8": "5d71e86e",
       "vdtHash": "e3390a1020791a0ab7ade1d7db54b176d75fcf9d",
       "timings": {
-        "importMs": 363,
-        "fontsMs": 192,
-        "buildMs": 235,
-        "totalMs": 1421,
+        "importMs": 175,
+        "fontsMs": 75,
+        "buildMs": 179,
+        "totalMs": 962,
         "builds": 1
       },
       "specimen": {
@@ -373,19 +373,19 @@
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 806918
+        "bytes": 806919
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "readEpub",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToEpub",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -549,13 +549,13 @@
       }
     },
     "ca": {
-      "hash8": "dd9e7a09",
+      "hash8": "bb0b28ef",
       "vdtHash": "52378a5a6f5c12056b8aa0d4afd146f52762148e",
       "timings": {
-        "importMs": 538,
-        "fontsMs": 137,
-        "buildMs": 256,
-        "totalMs": 1532,
+        "importMs": 170,
+        "fontsMs": 85,
+        "buildMs": 193,
+        "totalMs": 1015,
         "builds": 1
       },
       "specimen": {
@@ -637,24 +637,24 @@
       },
       "pdf": {
         "file": "comic-epub-guided-view.pdf",
-        "bytes": 813542,
+        "bytes": 813543,
         "pages": 3
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 806885
+        "bytes": 806886
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "readEpub",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToEpub",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -818,13 +818,13 @@
       }
     },
     "zh": {
-      "hash8": "5a5988bb",
+      "hash8": "fe08c6e6",
       "vdtHash": "1ae1a2a01eb6d5de92779490b23522a6747ebf11",
       "timings": {
-        "importMs": 380,
-        "fontsMs": 505,
-        "buildMs": 467,
-        "totalMs": 2398,
+        "importMs": 170,
+        "fontsMs": 231,
+        "buildMs": 204,
+        "totalMs": 1439,
         "builds": 1
       },
       "specimen": {
@@ -867,7 +867,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 239692,
+          "bytes": 237128,
           "alt": "第 2 页。"
         },
         {
@@ -878,7 +878,7 @@
           "h": 1542,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 204910,
+          "bytes": 204958,
           "alt": "第 3 页。"
         }
       ],
@@ -906,24 +906,24 @@
       },
       "pdf": {
         "file": "comic-epub-guided-view.pdf",
-        "bytes": 844938,
+        "bytes": 845171,
         "pages": 3
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 807335
+        "bytes": 807230
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "readEpub",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToEpub",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1088,13 +1088,13 @@
       }
     },
     "ar": {
-      "hash8": "25a020dc",
+      "hash8": "77cb4625",
       "vdtHash": "8bf6113f0eff83e357b09713e25ae9e612868aab",
       "timings": {
-        "importMs": 593,
-        "fontsMs": 201,
-        "buildMs": 203,
-        "totalMs": 1675,
+        "importMs": 178,
+        "fontsMs": 104,
+        "buildMs": 177,
+        "totalMs": 1042,
         "builds": 1
       },
       "specimen": {
@@ -1177,24 +1177,24 @@
       },
       "pdf": {
         "file": "comic-epub-guided-view.pdf",
-        "bytes": 823544,
+        "bytes": 823545,
         "pages": 3
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 807686
+        "bytes": 807687
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "readEpub",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToEpub",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1361,13 +1361,13 @@
       }
     },
     "ja": {
-      "hash8": "f02b4641",
+      "hash8": "10e77ef3",
       "vdtHash": "4e664c70bd7729b7c091d697b398a62d48b3803a",
       "timings": {
-        "importMs": 559,
-        "fontsMs": 529,
-        "buildMs": 401,
-        "totalMs": 2557,
+        "importMs": 429,
+        "fontsMs": 676,
+        "buildMs": 741,
+        "totalMs": 6292,
         "builds": 1
       },
       "specimen": {
@@ -1410,7 +1410,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 237054,
+          "bytes": 237842,
           "alt": "2ページ。"
         },
         {
@@ -1450,24 +1450,24 @@
       },
       "pdf": {
         "file": "comic-epub-guided-view.pdf",
-        "bytes": 847412,
+        "bytes": 847513,
         "pages": 3
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 807424
+        "bytes": 807447
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "readEpub",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToEpub",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1629,23 +1629,17 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "pt": {
-      "hash8": "071f4ffa",
+      "hash8": "a5c73d39",
       "vdtHash": "55f251632ca226235a26fa4dae410d75d1032b48",
       "timings": {
-        "importMs": 376,
-        "fontsMs": 235,
-        "buildMs": 228,
-        "totalMs": 1477,
+        "importMs": 178,
+        "fontsMs": 85,
+        "buildMs": 188,
+        "totalMs": 1034,
         "builds": 1
       },
       "specimen": {
@@ -1727,24 +1721,24 @@
       },
       "pdf": {
         "file": "comic-epub-guided-view.pdf",
-        "bytes": 813029,
+        "bytes": 813030,
         "pages": 3
       },
       "sandbox": {
         "file": "comic-epub-guided-view.postext",
-        "bytes": 806857
+        "bytes": 806858
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "readEpub",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToEpub",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

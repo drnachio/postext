@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "broadsheet-six-columns",
-  "sourceHash": "1142f36d82050818d3d2afad752e8eff265c9f0db26ebf37fdc3c335a35218c9",
+  "sourceHash": "9bfa8fd571572b8b19d3cf79437ff61c77945bf8656876c962d5911be49774a2",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.730Z",
+  "capturedAt": "2026-10-10T13:31:25.221Z",
   "variants": {
     "en": {
-      "hash8": "49f78219",
+      "hash8": "560ba2b0",
       "vdtHash": "6ba0d9f1ae397abe97c836bdba853d2592ae5618",
       "timings": {
-        "importMs": 156,
-        "fontsMs": 74,
-        "buildMs": 148,
-        "totalMs": 1233,
-        "builds": 2
+        "importMs": 129,
+        "fontsMs": 44,
+        "buildMs": 106,
+        "totalMs": 1062,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "Playfair Display"
         ],
         "pages": 4,
-        "ownLines": 247
+        "ownLines": 245
       },
       "pages": [
         {
@@ -116,13 +116,12 @@
       },
       "sandbox": {
         "file": "broadsheet-six-columns.postext",
-        "bytes": 1366180,
+        "bytes": 1366179,
         "folio": "ac94dacf"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],

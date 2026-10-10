@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "anchoring-cheat-sheet",
-  "sourceHash": "e792bae09f143caa9d9b94ffe964be1c3aa43fd488073a847c01a592dc709751",
+  "sourceHash": "f0ca36f0579d5153a3b66f4f34e8d7b9d88795340e38124b471c794bda53fac9",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.589Z",
+  "capturedAt": "2026-10-10T13:30:00.618Z",
   "variants": {
     "en": {
-      "hash8": "ac6b838b",
+      "hash8": "7cd1c372",
       "vdtHash": "59ee6ae558f6f77c0458c9afbdb28a60d4f5c10c",
       "timings": {
-        "importMs": 212,
-        "fontsMs": 56,
-        "buildMs": 14,
-        "totalMs": 997,
-        "builds": 2
+        "importMs": 145,
+        "fontsMs": 4,
+        "buildMs": 26,
+        "totalMs": 780,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Martian Mono"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 178
       },
       "pages": [
         {
@@ -85,13 +85,12 @@
       },
       "sandbox": {
         "file": "anchoring-cheat-sheet.postext",
-        "bytes": 42851,
+        "bytes": 42853,
         "folio": "061973f6"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -260,14 +259,14 @@
       }
     },
     "es": {
-      "hash8": "0c33931c",
+      "hash8": "021ba53c",
       "vdtHash": "179bf5efd21133b9f31e23d9b510a3cd99a11c00",
       "timings": {
-        "importMs": 157,
-        "fontsMs": 31,
-        "buildMs": 14,
-        "totalMs": 819,
-        "builds": 2
+        "importMs": 134,
+        "fontsMs": 4,
+        "buildMs": 26,
+        "totalMs": 773,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -289,7 +288,7 @@
           "Martian Mono"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 178
       },
       "pages": [
         {
@@ -335,13 +334,12 @@
       },
       "sandbox": {
         "file": "anchoring-cheat-sheet.postext",
-        "bytes": 42387,
+        "bytes": 42389,
         "folio": "061973f6"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],

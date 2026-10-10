@@ -1,31 +1,31 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-official-document",
-  "sourceHash": "02854dc35fadc795559894678dcff26b85064cd851751496e2820a723230d58d",
+  "sourceHash": "d7982e5d52b3041846d8917c9ca9291941d09bd8a5d324aacfb60a2d897ebc66",
   "engine": {
-    "postext": "1.24.0",
-    "postextPdf": "1.24.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T21:08:28.848Z",
+  "capturedAt": "2026-10-10T13:32:12.353Z",
   "variants": {
     "en": {
-      "hash8": "3cc74138",
-      "vdtHash": "19599584a680e62544ebe96e1967de409ea4e326",
+      "hash8": "3887671f",
+      "vdtHash": "80d8a526f7da634513bcf335a6e1537e7fa4f2f7",
       "timings": {
-        "importMs": 186,
-        "fontsMs": 213,
-        "buildMs": 11,
-        "totalMs": 1012,
-        "builds": 2
+        "importMs": 210,
+        "fontsMs": 183,
+        "buildMs": 51,
+        "totalMs": 1019,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
           210,
           297
         ],
-        "dpi": 144,
+        "dpi": 150,
         "layoutType": "single",
         "mirror": true,
         "body": {
@@ -50,7 +50,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 56380,
+          "bytes": 56428,
           "alt": "Opening page 1: 示例市出版协会关于举办 2026年中文排版实务培训班的 通知."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 72648,
+          "bytes": 72828,
           "alt": "Page 2: 二、培训地点."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 50232,
+          "bytes": 50208,
           "alt": "Page 3: 五、报名办法."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 46394,
+          "bytes": 46456,
           "alt": "Opening page 4: 培训日程安排."
         }
       ],
@@ -115,23 +115,23 @@
       },
       "pdf": {
         "file": "chinese-official-document.pdf",
-        "bytes": 129473,
+        "bytes": 130052,
         "pages": 4
       },
       "sandbox": {
         "file": "chinese-official-document.postext",
-        "bytes": 20548,
+        "bytes": 20519,
         "folio": "f2e4b92d"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "mergeCells",
           "parseTSV",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -201,8 +201,6 @@
           "headingStyles[].span",
           "headingStyles[].toc",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -275,7 +273,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 391,
+        "configLeaves": 390,
         "designElements": 18,
         "directives": [
           ":::paragraphs",
@@ -321,7 +319,6 @@
           "character-grid",
           "cjk-line-breaking",
           "cjk-punctuation",
-          "column-balancing",
           "han-latin-spacing",
           "heading-attributes",
           "heading-numbering",
@@ -368,21 +365,21 @@
       }
     },
     "es": {
-      "hash8": "9f78e138",
-      "vdtHash": "e485e964b2cb16efe1562af647506188cbddeaba",
+      "hash8": "dc9360b2",
+      "vdtHash": "2dcc65ad799e08155e5c0b6dd70622f5e28c1808",
       "timings": {
-        "importMs": 178,
-        "fontsMs": 198,
-        "buildMs": 11,
-        "totalMs": 1005,
-        "builds": 2
+        "importMs": 171,
+        "fontsMs": 184,
+        "buildMs": 51,
+        "totalMs": 977,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
           210,
           297
         ],
-        "dpi": 144,
+        "dpi": 150,
         "layoutType": "single",
         "mirror": true,
         "body": {
@@ -407,7 +404,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 56526,
+          "bytes": 56588,
           "alt": "Página de apertura 1: 示例市出版协会关于举办 2026年中文排版实务培训班的 通知."
         },
         {
@@ -418,7 +415,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 72900,
+          "bytes": 72984,
           "alt": "Página 2: 二、培训地点."
         },
         {
@@ -429,7 +426,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 50370,
+          "bytes": 50362,
           "alt": "Página 3: 五、报名办法."
         },
         {
@@ -440,7 +437,7 @@
           "h": 1414,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 46468,
+          "bytes": 46454,
           "alt": "Página de apertura 4: 培训日程安排."
         }
       ],
@@ -472,23 +469,23 @@
       },
       "pdf": {
         "file": "chinese-official-document.pdf",
-        "bytes": 129751,
+        "bytes": 130333,
         "pages": 4
       },
       "sandbox": {
         "file": "chinese-official-document.postext",
-        "bytes": 20567,
+        "bytes": 20569,
         "folio": "f2e4b92d"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "mergeCells",
           "parseTSV",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -558,8 +555,6 @@
           "headingStyles[].span",
           "headingStyles[].toc",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -632,7 +627,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 391,
+        "configLeaves": 390,
         "designElements": 18,
         "directives": [
           ":::paragraphs",
@@ -678,7 +673,6 @@
           "character-grid",
           "cjk-line-breaking",
           "cjk-punctuation",
-          "column-balancing",
           "han-latin-spacing",
           "heading-attributes",
           "heading-numbering",

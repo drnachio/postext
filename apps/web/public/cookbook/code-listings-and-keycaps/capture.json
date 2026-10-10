@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "code-listings-and-keycaps",
-  "sourceHash": "23aac31a3a08110445f455d3ac052e4ffbe4cc2ff4002b61e502d45f60b2107a",
+  "sourceHash": "fef937359c580eda8e67714031d33588e6b39afc8466042a93b332ccce4e83eb",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:30:14.541Z",
+  "capturedAt": "2026-10-10T13:33:15.094Z",
   "variants": {
     "en": {
-      "hash8": "f4806a7c",
+      "hash8": "f5b3d481",
       "vdtHash": "8b3311fe4bda801d997d19193889d8a025dee896",
       "timings": {
-        "importMs": 431,
-        "fontsMs": 825,
-        "buildMs": 10,
-        "totalMs": 1960,
-        "builds": 2
+        "importMs": 142,
+        "fontsMs": 37,
+        "buildMs": 61,
+        "totalMs": 868,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Sora"
         ],
         "pages": 3,
-        "ownLines": 148
+        "ownLines": 147
       },
       "pages": [
         {
@@ -100,14 +100,15 @@
       },
       "sandbox": {
         "file": "code-listings-and-keycaps.postext",
-        "bytes": 24531,
+        "bytes": 24507,
         "folio": "e7298095"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
-          "renderPageToCanvas"
+          "prepareFonts",
+          "renderPageToCanvas",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -119,7 +120,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.referenceColor",
           "calloutStyles",
@@ -303,7 +303,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 318,
+        "configLeaves": 314,
         "designElements": 8,
         "directives": [
           ":::callout",
@@ -395,14 +395,14 @@
       }
     },
     "es": {
-      "hash8": "c65dd8a5",
+      "hash8": "483c90bb",
       "vdtHash": "f61d6e1ac7d69bfb6a85cc1f21905dd10cfc0c68",
       "timings": {
-        "importMs": 167,
-        "fontsMs": 43,
-        "buildMs": 13,
-        "totalMs": 909,
-        "builds": 2
+        "importMs": 131,
+        "fontsMs": 27,
+        "buildMs": 60,
+        "totalMs": 781,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -424,7 +424,7 @@
           "Sora"
         ],
         "pages": 3,
-        "ownLines": 148
+        "ownLines": 147
       },
       "pages": [
         {
@@ -485,14 +485,15 @@
       },
       "sandbox": {
         "file": "code-listings-and-keycaps.postext",
-        "bytes": 24872,
+        "bytes": 24848,
         "folio": "e7298095"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
-          "renderPageToCanvas"
+          "prepareFonts",
+          "renderPageToCanvas",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -504,7 +505,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.referenceColor",
           "calloutStyles",
@@ -688,7 +688,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 318,
+        "configLeaves": 314,
         "designElements": 8,
         "directives": [
           ":::callout",

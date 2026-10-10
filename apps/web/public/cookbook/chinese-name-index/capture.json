@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-name-index",
-  "sourceHash": "248e0618282b27492be2dcdeb83584c13d68a08344a4c7060e5b379346c814c6",
+  "sourceHash": "a48c1bd63ecfa0229aaad5ebd68ffa4e29b14d8cc9e5e50e9a6a6d2b82d475a3",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.816Z",
+  "capturedAt": "2026-10-10T13:32:12.324Z",
   "variants": {
     "en": {
-      "hash8": "ed9b68c5",
-      "vdtHash": "3d6700b81d644051f452c8a8a34fae97a9444c3a",
+      "hash8": "3786885b",
+      "vdtHash": "806ff71f0e296c1eec42c672755b3698792e0706",
       "timings": {
-        "importMs": 200,
-        "fontsMs": 545,
-        "buildMs": 125,
-        "totalMs": 1531,
+        "importMs": 166,
+        "fontsMs": 698,
+        "buildMs": 298,
+        "totalMs": 6533,
         "builds": 2
       },
       "specimen": {
@@ -119,7 +119,7 @@
           "h": 1450,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 37840,
+          "bytes": 38630,
           "alt": "Opening page 7: 人名索引."
         },
         {
@@ -130,7 +130,7 @@
           "h": 1450,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 38100,
+          "bytes": 37264,
           "alt": "Page 8."
         },
         {
@@ -163,7 +163,7 @@
           "h": 1450,
           "file": "p15.webp",
           "strip": "p15.s.webp",
-          "bytes": 38212,
+          "bytes": 39666,
           "alt": "Opening page 7: 人名索引."
         },
         {
@@ -174,7 +174,7 @@
           "h": 1450,
           "file": "p16.webp",
           "strip": "p16.s.webp",
-          "bytes": 44364,
+          "bytes": 42776,
           "alt": "Page 8."
         }
       ],
@@ -226,21 +226,21 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 306875,
+        "bytes": 307038,
         "pages": 8
       },
       "sandbox": {
         "file": "chinese-name-index.postext",
-        "bytes": 20903,
+        "bytes": 21497,
         "folio": "8948df8d"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -448,7 +448,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 1,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -459,17 +459,23 @@
           "share": 0,
           "worst": 0.09
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "123c22b3",
-      "vdtHash": "3e1da01925ffe042b2ce2f1485d41af6294281c0",
+      "hash8": "314007b3",
+      "vdtHash": "9ceec76cc50e854b729119287299511966ae2f19",
       "timings": {
-        "importMs": 198,
-        "fontsMs": 522,
-        "buildMs": 109,
-        "totalMs": 1479,
+        "importMs": 163,
+        "fontsMs": 437,
+        "buildMs": 79,
+        "totalMs": 1264,
         "builds": 2
       },
       "specimen": {
@@ -571,7 +577,7 @@
           "h": 1450,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 37840,
+          "bytes": 38630,
           "alt": "Página de apertura 7: 人名索引."
         },
         {
@@ -582,7 +588,7 @@
           "h": 1450,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 39902,
+          "bytes": 39156,
           "alt": "Página 8."
         },
         {
@@ -615,7 +621,7 @@
           "h": 1450,
           "file": "p15.webp",
           "strip": "p15.s.webp",
-          "bytes": 38212,
+          "bytes": 39666,
           "alt": "Página de apertura 7: 人名索引."
         },
         {
@@ -626,7 +632,7 @@
           "h": 1450,
           "file": "p16.webp",
           "strip": "p16.s.webp",
-          "bytes": 45702,
+          "bytes": 44264,
           "alt": "Página 8."
         }
       ],
@@ -678,21 +684,21 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 307322,
+        "bytes": 307479,
         "pages": 8
       },
       "sandbox": {
         "file": "chinese-name-index.postext",
-        "bytes": 20946,
+        "bytes": 21541,
         "folio": "8948df8d"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -900,7 +906,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 1,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -911,7 +917,13 @@
           "share": 0,
           "worst": 0.09
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

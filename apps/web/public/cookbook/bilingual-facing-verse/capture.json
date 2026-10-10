@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "bilingual-facing-verse",
-  "sourceHash": "0d443a81ed43b5aac4c1a9c6d58b85dfde937a2c4a8af55d9de4ec2cbb349677",
+  "sourceHash": "c28c273adb137752539441c16b23db5fb5cb83c470890fb361f6f99dc1b92622",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:24:37.882Z",
+  "capturedAt": "2026-10-10T13:31:25.148Z",
   "variants": {
     "en": {
-      "hash8": "cf8d4f0a",
-      "vdtHash": "a47a526788d57f452ebd46387e78d7f3fa398b5d",
+      "hash8": "1687e132",
+      "vdtHash": "129547437132769e83b543787acbd0ea6bd5d8fe",
       "timings": {
-        "importMs": 116,
-        "fontsMs": 41,
-        "buildMs": 48,
-        "totalMs": 777,
+        "importMs": 131,
+        "fontsMs": 26,
+        "buildMs": 36,
+        "totalMs": 4846,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Tenor Sans"
         ],
         "pages": 5,
-        "ownLines": 167
+        "ownLines": 161
       },
       "pages": [
         {
@@ -71,7 +71,7 @@
           "h": 1500,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 108982,
+          "bytes": 108948,
           "alt": "Opening page 3: August Salt."
         },
         {
@@ -125,13 +125,12 @@
       },
       "sandbox": {
         "file": "bilingual-facing-verse.postext",
-        "bytes": 211095,
+        "bytes": 212399,
         "folio": "ee93f084"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -151,6 +150,7 @@
           "calloutStyles[].backgroundEnabled",
           "calloutStyles[].columnGap",
           "calloutStyles[].id",
+          "calloutStyles[].keepTogether",
           "calloutStyles[].marginBottom",
           "calloutStyles[].marginTop",
           "calloutStyles[].padding",
@@ -197,17 +197,16 @@
           "headingStyles",
           "headingStyles[].advancedDesign",
           "headingStyles[].advancedDesign.enabled",
-          "headingStyles[].advancedDesign.minHeight",
           "headingStyles[].advancedDesign.slot",
           "headingStyles[].footer",
           "headingStyles[].footer.elements",
           "headingStyles[].header",
           "headingStyles[].header.elements",
           "headingStyles[].id",
-          "headingStyles[].span",
+          "headingStyles[].marginBottom",
           "headings",
           "headings.balancing",
-          "headings.balancing.enabled",
+          "headings.balancing.closingBox",
           "headings.fontFamily",
           "headings.fontWeight",
           "headings.levels",
@@ -294,6 +293,7 @@
         "features": [
           "bibliography",
           "callout-columns",
+          "callout-splitting",
           "callout-styles",
           "column-balancing",
           "heading-attributes",
@@ -326,13 +326,13 @@
       }
     },
     "es": {
-      "hash8": "8e119e0e",
-      "vdtHash": "287f506abf059d46be4750a587146658ce118134",
+      "hash8": "b8b83084",
+      "vdtHash": "ca557f462a56e6869b897a41818d29d6b2669d3d",
       "timings": {
-        "importMs": 162,
-        "fontsMs": 43,
-        "buildMs": 46,
-        "totalMs": 802,
+        "importMs": 129,
+        "fontsMs": 27,
+        "buildMs": 36,
+        "totalMs": 776,
         "builds": 1
       },
       "specimen": {
@@ -354,7 +354,7 @@
           "Tenor Sans"
         ],
         "pages": 5,
-        "ownLines": 167
+        "ownLines": 161
       },
       "pages": [
         {
@@ -387,7 +387,7 @@
           "h": 1500,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 110224,
+          "bytes": 110194,
           "alt": "Página de apertura 3: Sal de agosto."
         },
         {
@@ -441,13 +441,12 @@
       },
       "sandbox": {
         "file": "bilingual-facing-verse.postext",
-        "bytes": 211552,
+        "bytes": 212895,
         "folio": "ee93f084"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -467,6 +466,7 @@
           "calloutStyles[].backgroundEnabled",
           "calloutStyles[].columnGap",
           "calloutStyles[].id",
+          "calloutStyles[].keepTogether",
           "calloutStyles[].marginBottom",
           "calloutStyles[].marginTop",
           "calloutStyles[].padding",
@@ -513,17 +513,16 @@
           "headingStyles",
           "headingStyles[].advancedDesign",
           "headingStyles[].advancedDesign.enabled",
-          "headingStyles[].advancedDesign.minHeight",
           "headingStyles[].advancedDesign.slot",
           "headingStyles[].footer",
           "headingStyles[].footer.elements",
           "headingStyles[].header",
           "headingStyles[].header.elements",
           "headingStyles[].id",
-          "headingStyles[].span",
+          "headingStyles[].marginBottom",
           "headings",
           "headings.balancing",
-          "headings.balancing.enabled",
+          "headings.balancing.closingBox",
           "headings.fontFamily",
           "headings.fontWeight",
           "headings.levels",
@@ -610,6 +609,7 @@
         "features": [
           "bibliography",
           "callout-columns",
+          "callout-splitting",
           "callout-styles",
           "column-balancing",
           "heading-attributes",

@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "accessible-tagged-pdf",
-  "sourceHash": "d37f212cb11bb9efd1a262753475ffee71bfbceb45d9f49efdf90926084393fe",
+  "sourceHash": "501f3b0ab5546a6508fb84568c7a2b8be1f441c48e07b57490b7472f697281e4",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:41.256Z",
+  "capturedAt": "2026-10-10T13:30:00.598Z",
   "variants": {
     "es": {
-      "hash8": "a42b675b",
+      "hash8": "135598ef",
       "vdtHash": "b4d90a107216c3f089ce544b14ad07edef22c525",
       "timings": {
-        "importMs": 777,
-        "fontsMs": 9786,
-        "buildMs": 30,
-        "totalMs": 11309,
-        "builds": 2
+        "importMs": 5719,
+        "fontsMs": 109,
+        "buildMs": 221,
+        "totalMs": 8424,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -116,20 +116,18 @@
       },
       "pdf": {
         "file": "accessible-tagged-pdf.pdf",
-        "bytes": 58360,
+        "bytes": 58526,
         "pages": 4
       },
       "sandbox": {
         "file": "accessible-tagged-pdf.postext",
-        "bytes": 36453,
+        "bytes": 36300,
         "folio": "ccb10a06"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
-          "defaultResourceTypes",
           "parseTSV",
           "registerResourceImage",
           "renderPageToCanvas",
@@ -241,7 +239,6 @@
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].spaceBetween",
-          "resourceTypes",
           "tableStyle",
           "tableStyle.bodyFontSize",
           "tableStyle.borderColor",
@@ -288,12 +285,11 @@
           "orderedLists",
           "page",
           "paragraphStyles",
-          "resourceTypes",
           "tableStyle",
           "toc",
           "unorderedLists"
         ],
-        "configLeaves": 252,
+        "configLeaves": 248,
         "designElements": 9,
         "directives": [
           ":::paragraphs",
@@ -356,7 +352,6 @@
           "heading-numbering",
           "heading-styles",
           "inline-embeds",
-          "localised-labels",
           "off-grid-spacing",
           "opener-band",
           "opener-design",
@@ -364,7 +359,6 @@
           "paragraph-styles",
           "pdf-export",
           "pdf-fonts",
-          "resource-types",
           "resources",
           "section-geometry",
           "section-running-heads",

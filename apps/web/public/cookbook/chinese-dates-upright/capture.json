@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-dates-upright",
-  "sourceHash": "20c66a8276e4c93173d5753c7120d68c07d833b50067b6c8e273ed30b124b5d9",
+  "sourceHash": "fd5afe7caeb18b38054a99b6f95eab0b2faf09ce5559387620411a40e5f591a7",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.799Z",
+  "capturedAt": "2026-10-10T13:32:12.292Z",
   "variants": {
     "en": {
-      "hash8": "6668b99a",
+      "hash8": "37d6f720",
       "vdtHash": "ec36a99bb1848c89d578e641ede8f72b6d77ab73",
       "timings": {
-        "importMs": 200,
-        "fontsMs": 489,
-        "buildMs": 13,
-        "totalMs": 3673,
-        "builds": 2
+        "importMs": 176,
+        "fontsMs": 370,
+        "buildMs": 50,
+        "totalMs": 1178,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Noto Serif TC"
         ],
         "pages": 7,
-        "ownLines": 180
+        "ownLines": 181
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1413,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 29012,
+          "bytes": 29066,
           "alt": "Opening page 一: 民國元年文告二種."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1413,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 105314,
+          "bytes": 105308,
           "alt": "Opening page 二: 臨時大總統宣言書."
         },
         {
@@ -94,7 +94,7 @@
           "h": 1413,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 58872,
+          "bytes": 58886,
           "alt": "Opening page 五: 中華民國臨時約法."
         },
         {
@@ -153,22 +153,22 @@
       },
       "pdf": {
         "file": "chinese-dates-upright.pdf",
-        "bytes": 311142,
+        "bytes": 311160,
         "pages": 7
       },
       "sandbox": {
         "file": "chinese-dates-upright.postext",
-        "bytes": 13097,
+        "bytes": 13107,
         "folio": "90be425d"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -354,14 +354,14 @@
       }
     },
     "es": {
-      "hash8": "58a11c35",
+      "hash8": "c969777d",
       "vdtHash": "a7ee20363f99c4ac3349d778e006dd3f48f0873f",
       "timings": {
-        "importMs": 201,
-        "fontsMs": 408,
-        "buildMs": 12,
-        "totalMs": 1231,
-        "builds": 2
+        "importMs": 165,
+        "fontsMs": 338,
+        "buildMs": 50,
+        "totalMs": 1131,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -382,7 +382,7 @@
           "Noto Serif TC"
         ],
         "pages": 7,
-        "ownLines": 180
+        "ownLines": 181
       },
       "pages": [
         {
@@ -393,7 +393,7 @@
           "h": 1413,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 28828,
+          "bytes": 28882,
           "alt": "Página de apertura 一: 民國元年文告二種."
         },
         {
@@ -404,7 +404,7 @@
           "h": 1413,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 104910,
+          "bytes": 104898,
           "alt": "Página de apertura 二: 臨時大總統宣言書."
         },
         {
@@ -437,7 +437,7 @@
           "h": 1413,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 59032,
+          "bytes": 58990,
           "alt": "Página de apertura 五: 中華民國臨時約法."
         },
         {
@@ -496,22 +496,22 @@
       },
       "pdf": {
         "file": "chinese-dates-upright.pdf",
-        "bytes": 311177,
+        "bytes": 311190,
         "pages": 7
       },
       "sandbox": {
         "file": "chinese-dates-upright.postext",
-        "bytes": 13172,
+        "bytes": 13186,
         "folio": "90be425d"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

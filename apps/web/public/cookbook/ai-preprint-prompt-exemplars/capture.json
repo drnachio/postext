@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "ai-preprint-prompt-exemplars",
-  "sourceHash": "560048c6bb16b9fab95a059cbc4a268182671d275e939fc07567b51fe17ea3b3",
+  "sourceHash": "8cd68f70e5517b1b342781a6db7dcb207710d9f819d7d04bad9bed00e7a26580",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.583Z",
+  "capturedAt": "2026-10-10T13:30:00.606Z",
   "variants": {
     "en": {
-      "hash8": "844ed938",
+      "hash8": "8aeaef51",
       "vdtHash": "4813f98bfd4fbd520eabf7f094830a42cf259800",
       "timings": {
-        "importMs": 644,
-        "fontsMs": 546,
-        "buildMs": 1581,
-        "totalMs": 9052,
-        "builds": 2
+        "importMs": 5662,
+        "fontsMs": 70,
+        "buildMs": 856,
+        "totalMs": 7219,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "Newsreader"
         ],
         "pages": 7,
-        "ownLines": 240
+        "ownLines": 238
       },
       "pages": [
         {
@@ -153,22 +153,22 @@
       },
       "pdf": {
         "file": "ai-preprint-prompt-exemplars.pdf",
-        "bytes": 597230,
+        "bytes": 261234,
         "pages": 7
       },
       "sandbox": {
         "file": "ai-preprint-prompt-exemplars.postext",
-        "bytes": 153274,
+        "bytes": 153348,
         "folio": "055119a2"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
+          "inlineSvgFonts",
           "registerCitationEngine",
           "registerResourceImage",
           "renderPageToCanvas",
@@ -528,11 +528,6 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.32 MB (warning at 0.9 MB for 7 pages)"
-          },
-          {
-            "check": "C21",
-            "severity": "warn",
-            "detail": "the build took 1581 ms (warning at 1.5 s)"
           }
         ]
       }

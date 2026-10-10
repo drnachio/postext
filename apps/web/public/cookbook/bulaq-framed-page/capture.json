@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "bulaq-framed-page",
-  "sourceHash": "80ad153b0eea7c51557082d59f9bdbd5b2ea27978f9689ea6da41656960e7cc3",
+  "sourceHash": "42b6f289d369e82ee7b3c22301b797c4c6d937646afbc4d7bda3be30e588fde4",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.739Z",
+  "capturedAt": "2026-10-10T13:31:25.239Z",
   "variants": {
     "en": {
-      "hash8": "1dc4c6ee",
+      "hash8": "e2373776",
       "vdtHash": "acddaade55c702ea22d1cfb43fd75ed936cfb706",
       "timings": {
-        "importMs": 206,
-        "fontsMs": 80,
-        "buildMs": 107,
-        "totalMs": 960,
+        "importMs": 158,
+        "fontsMs": 65,
+        "buildMs": 93,
+        "totalMs": 864,
         "builds": 1
       },
       "specimen": {
@@ -142,20 +142,20 @@
       },
       "pdf": {
         "file": "bulaq-framed-page.pdf",
-        "bytes": 110090,
+        "bytes": 110092,
         "pages": 6
       },
       "sandbox": {
         "file": "bulaq-framed-page.postext",
-        "bytes": 26083
+        "bytes": 26084
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -365,13 +365,13 @@
       }
     },
     "es": {
-      "hash8": "97e7b14d",
+      "hash8": "55a8b915",
       "vdtHash": "bc5305865b5f1064b0d873e4b2c8774cd596d796",
       "timings": {
-        "importMs": 194,
-        "fontsMs": 103,
-        "buildMs": 109,
-        "totalMs": 977,
+        "importMs": 168,
+        "fontsMs": 64,
+        "buildMs": 93,
+        "totalMs": 871,
         "builds": 1
       },
       "specimen": {
@@ -459,7 +459,7 @@
           "h": 1412,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 44732,
+          "bytes": 44706,
           "alt": "Página ٦."
         }
       ],
@@ -496,20 +496,20 @@
       },
       "pdf": {
         "file": "bulaq-framed-page.pdf",
-        "bytes": 110972,
+        "bytes": 110966,
         "pages": 6
       },
       "sandbox": {
         "file": "bulaq-framed-page.postext",
-        "bytes": 26109
+        "bytes": 26110
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

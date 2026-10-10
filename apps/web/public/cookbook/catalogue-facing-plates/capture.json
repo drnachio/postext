@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "catalogue-facing-plates",
-  "sourceHash": "c0f3b261375cb709c0f312e2b6c6e5b0964376ebfb0e198cc6dc1ed197f28866",
+  "sourceHash": "0d08daea7029d41bb2f0658db4e854d670a32dbebebb2002e9d994e347f64e23",
   "engine": {
-    "postext": "1.24.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T21:08:28.784Z",
+  "capturedAt": "2026-10-10T13:32:12.250Z",
   "variants": {
     "en": {
-      "hash8": "1c93f3e2",
-      "vdtHash": "3471f104367eae809252e1b615e2cec7ce71a064",
+      "hash8": "12444f46",
+      "vdtHash": "bf99b7e82877d64c06b215348160a803ddaa2bc9",
       "timings": {
-        "importMs": 23734,
-        "fontsMs": 1071,
-        "buildMs": 112,
-        "totalMs": 29543,
-        "builds": 2
+        "importMs": 137,
+        "fontsMs": 50,
+        "buildMs": 44,
+        "totalMs": 814,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Sofia Sans Condensed"
         ],
         "pages": 8,
-        "ownLines": 248
+        "ownLines": 246
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1217,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 115444,
+          "bytes": 115336,
           "alt": "Opening page 1: Doré."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1217,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 86800,
+          "bytes": 86814,
           "alt": "Opening page 2: 1 Don Quixote in His Library."
         },
         {
@@ -83,7 +83,7 @@
           "h": 1217,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 80024,
+          "bytes": 80022,
           "alt": "Opening page 4: 2 The Vigil of Arms."
         },
         {
@@ -105,7 +105,7 @@
           "h": 1217,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 76976,
+          "bytes": 76968,
           "alt": "Opening page 6: 3 The Adventure of the Windmills."
         },
         {
@@ -167,13 +167,13 @@
       },
       "sandbox": {
         "file": "catalogue-facing-plates.postext",
-        "bytes": 1603576,
+        "bytes": 1603544,
         "folio": "2f38e47f"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -187,7 +187,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.referenceBold",
@@ -312,7 +311,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 403,
+        "configLeaves": 401,
         "designElements": 20,
         "directives": [
           ":::paragraphs",

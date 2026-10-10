@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "bilingual-arabic-english-report",
-  "sourceHash": "23195cb02ca8468d14443a420a1326e7e1a58b8e503f73db9a1ea1647c54dec8",
+  "sourceHash": "9b128e2d27fa95cb1aed6cce660543596c7aac9ddfac51e3bb22ebde477caa69",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.680Z",
+  "capturedAt": "2026-10-10T13:31:25.135Z",
   "variants": {
     "en": {
-      "hash8": "c46f84cf",
+      "hash8": "fa85de4b",
       "vdtHash": "4bceb305cd96b95e4ecc6e961222346b21659658",
       "timings": {
-        "importMs": 222,
-        "fontsMs": 76,
-        "buildMs": 19,
-        "totalMs": 952,
-        "builds": 2
+        "importMs": 160,
+        "fontsMs": 65,
+        "buildMs": 65,
+        "totalMs": 828,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "IBM Plex Sans Arabic"
         ],
         "pages": 3,
-        "ownLines": 140
+        "ownLines": 141
       },
       "pages": [
         {
@@ -100,22 +100,22 @@
       },
       "pdf": {
         "file": "bilingual-arabic-english-report.pdf",
-        "bytes": 82783,
+        "bytes": 82782,
         "pages": 3
       },
       "sandbox": {
         "file": "bilingual-arabic-english-report.postext",
-        "bytes": 16522,
+        "bytes": 16521,
         "folio": "3c25eba8"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultResourceTypes",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -332,14 +332,14 @@
       }
     },
     "es": {
-      "hash8": "55a7bce6",
+      "hash8": "a2c3fb03",
       "vdtHash": "5566b29fc623b9305db2e752679458380661b1bf",
       "timings": {
-        "importMs": 209,
-        "fontsMs": 70,
-        "buildMs": 29,
-        "totalMs": 948,
-        "builds": 2
+        "importMs": 167,
+        "fontsMs": 58,
+        "buildMs": 73,
+        "totalMs": 830,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -359,7 +359,7 @@
           "IBM Plex Sans Arabic"
         ],
         "pages": 3,
-        "ownLines": 140
+        "ownLines": 141
       },
       "pages": [
         {
@@ -421,7 +421,7 @@
       },
       "pdf": {
         "file": "bilingual-arabic-english-report.pdf",
-        "bytes": 83717,
+        "bytes": 83719,
         "pages": 3
       },
       "sandbox": {
@@ -432,11 +432,11 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultResourceTypes",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
