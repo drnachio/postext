@@ -50,7 +50,6 @@ const opener = {
           offset: { x: mm(0), y: mm(12) } } },
       { kind: 'text', id: 'title', content: '{titleText}', fontFamily: 'Source Serif 4',
         fontSize: pt(27), lineHeight: 1.08, fontWeight: 700, color: col('ink'), align: 'left',
-        overflow: 'wrap', // design text ends in an ellipsis by default
         placement: { anchor: { to: '#kicker', edge: 'below' }, offset: { x: mm(0), y: mm(3) },
           size: { width: mm(96), height: 'auto' } } },
       { kind: 'rule', id: 'rule', direction: 'horizontal', thickness: pt(1.5), color: col('accent'),
