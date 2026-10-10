@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 150 · An action page with slanted gutters ═════════════════
 // https://postext.dev/en/cookbook/manga-action-slants
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.25.1
 // The last page of a kendo final: slanted panels, a borderless strike, ドン kept in every edition.
 import {
   buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, loadVerticalAlternates,

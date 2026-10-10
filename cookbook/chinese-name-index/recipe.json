@@ -32,7 +32,7 @@
   "workarounds": [
     { "package": "postext", "note": "the index note is a heading attribute (note=\"…\") that the opener design prints above the two columns, not a paragraph: as the first paragraph under the index heading, column balancing's loose-paragraph lever spread it to twelve characters a line in a column of fourteen to even out the Traditional edition's last page" }
   ],
-  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
+  "engine": { "postext": "1.25.1", "postextPdf": "1.25.1" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": {

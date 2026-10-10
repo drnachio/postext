@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "balloon-kinds",
-  "sourceHash": "d2fbd9cf8f90a7b6bc89da17b9d1fd98df56199fe6e8add05aed055156a1a2be",
+  "sourceHash": "806db0074c5ad20760f25b012e1f3e68491c251bdc36f0a616e41fbf40f4a525",
   "engine": {
-    "postext": "1.25.0",
-    "postextPdf": "1.25.0",
+    "postext": "1.25.1",
+    "postextPdf": "1.25.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-10T13:31:25.082Z",
+  "capturedAt": "2026-10-10T15:13:10.676Z",
   "variants": {
     "en": {
-      "hash8": "23b8aa56",
+      "hash8": "497f2b00",
       "vdtHash": "aa6038474d3814b65b099c7673ca550da790f2ac",
       "timings": {
-        "importMs": 178,
-        "fontsMs": 91,
-        "buildMs": 832,
-        "totalMs": 1676,
+        "importMs": 994,
+        "fontsMs": 188,
+        "buildMs": 3604,
+        "totalMs": 13015,
         "builds": 1
       },
       "specimen": {
@@ -288,13 +288,13 @@
       }
     },
     "es": {
-      "hash8": "8f39c5ee",
+      "hash8": "88886a86",
       "vdtHash": "d92725194a04f0c55e91328d6ba3e31a2b0605aa",
       "timings": {
-        "importMs": 170,
-        "fontsMs": 103,
-        "buildMs": 828,
-        "totalMs": 1672,
+        "importMs": 974,
+        "fontsMs": 208,
+        "buildMs": 3420,
+        "totalMs": 5636,
         "builds": 1
       },
       "specimen": {
@@ -565,13 +565,13 @@
       }
     },
     "ca": {
-      "hash8": "2a791937",
+      "hash8": "f812ef69",
       "vdtHash": "b6e9f48a51be5d712f6a516304ef8d349f628a67",
       "timings": {
-        "importMs": 170,
-        "fontsMs": 89,
-        "buildMs": 822,
-        "totalMs": 3948,
+        "importMs": 277,
+        "fontsMs": 152,
+        "buildMs": 952,
+        "totalMs": 2045,
         "builds": 1
       },
       "specimen": {
@@ -842,13 +842,13 @@
       }
     },
     "zh": {
-      "hash8": "757cc4d0",
+      "hash8": "df47389b",
       "vdtHash": "e5d8d8201d02170f703ecfc8d5157acf8a7fc672",
       "timings": {
-        "importMs": 168,
-        "fontsMs": 277,
-        "buildMs": 1014,
-        "totalMs": 2037,
+        "importMs": 255,
+        "fontsMs": 341,
+        "buildMs": 1077,
+        "totalMs": 2207,
         "builds": 1
       },
       "specimen": {
@@ -891,7 +891,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 256046,
+          "bytes": 255794,
           "alt": "第 2 页。"
         }
       ],
@@ -919,12 +919,12 @@
       },
       "pdf": {
         "file": "balloon-kinds.pdf",
-        "bytes": 1027834,
+        "bytes": 1027853,
         "pages": 2
       },
       "sandbox": {
         "file": "balloon-kinds.postext",
-        "bytes": 955292
+        "bytes": 955310
       },
       "detected": {
         "apis": [
@@ -1120,13 +1120,13 @@
       }
     },
     "ar": {
-      "hash8": "dcf86422",
+      "hash8": "5aa1f282",
       "vdtHash": "5f6b4d44638e4ee94b5f0efa78ce82129df9bb4f",
       "timings": {
-        "importMs": 170,
-        "fontsMs": 105,
-        "buildMs": 856,
-        "totalMs": 1676,
+        "importMs": 296,
+        "fontsMs": 159,
+        "buildMs": 934,
+        "totalMs": 1938,
         "builds": 1
       },
       "specimen": {
@@ -1401,13 +1401,13 @@
       }
     },
     "ja": {
-      "hash8": "d46a87d2",
+      "hash8": "0fc2b675",
       "vdtHash": "0e6ee466ff2c3d5c774c0f76df332dee818e9800",
       "timings": {
-        "importMs": 169,
-        "fontsMs": 370,
-        "buildMs": 587,
-        "totalMs": 3735,
+        "importMs": 237,
+        "fontsMs": 392,
+        "buildMs": 661,
+        "totalMs": 3897,
         "builds": 1
       },
       "specimen": {
@@ -1681,13 +1681,13 @@
       }
     },
     "pt": {
-      "hash8": "3dc81081",
+      "hash8": "9c1d9758",
       "vdtHash": "d590b47ec89fa4eea9cd847a57dabb02f06b39dc",
       "timings": {
-        "importMs": 167,
-        "fontsMs": 88,
-        "buildMs": 862,
-        "totalMs": 1689,
+        "importMs": 196,
+        "fontsMs": 101,
+        "buildMs": 1029,
+        "totalMs": 1886,
         "builds": 1
       },
       "specimen": {

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-name-index",
-  "sourceHash": "40210ec24cc5c7047f1dc9e7b844bcb37ad5793af8b7ac1b2102661dada2e517",
+  "sourceHash": "e47afde83a002d08a65fe35b9b59d5de207adb1848f67366da9ee708dc107963",
   "engine": {
-    "postext": "1.25.0",
-    "postextPdf": "1.25.0",
+    "postext": "1.25.1",
+    "postextPdf": "1.25.1",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-10T13:52:52.614Z",
+  "capturedAt": "2026-10-10T15:10:14.656Z",
   "variants": {
     "en": {
-      "hash8": "b3ee1349",
+      "hash8": "e535dc94",
       "vdtHash": "1a0eb15c1d61a6694da694b1489cd6aeecec12e3",
       "timings": {
-        "importMs": 498,
-        "fontsMs": 1387,
-        "buildMs": 443,
-        "totalMs": 3467,
+        "importMs": 19149,
+        "fontsMs": 1504,
+        "buildMs": 369,
+        "totalMs": 22650,
         "builds": 2
       },
       "specimen": {
@@ -231,7 +231,7 @@
       },
       "sandbox": {
         "file": "chinese-name-index.postext",
-        "bytes": 21497,
+        "bytes": 21507,
         "folio": "8948df8d"
       },
       "detected": {
@@ -462,23 +462,17 @@
           "share": 0,
           "worst": 0.09
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "dbb132fc",
+      "hash8": "9be13e02",
       "vdtHash": "340fd2720dca8b879e2003244464b1ee4c2a8f6e",
       "timings": {
-        "importMs": 199,
-        "fontsMs": 475,
-        "buildMs": 109,
-        "totalMs": 1451,
+        "importMs": 19085,
+        "fontsMs": 545,
+        "buildMs": 118,
+        "totalMs": 20459,
         "builds": 2
       },
       "specimen": {
@@ -687,12 +681,12 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 307497,
+        "bytes": 307494,
         "pages": 8
       },
       "sandbox": {
         "file": "chinese-name-index.postext",
-        "bytes": 21541,
+        "bytes": 21551,
         "folio": "8948df8d"
       },
       "detected": {
@@ -923,13 +917,7 @@
           "share": 0,
           "worst": 0.09
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

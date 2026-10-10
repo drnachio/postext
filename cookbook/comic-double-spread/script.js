@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 154 · One comic page across a double spread ═══════════════
 // https://postext.dev/en/cookbook/comic-double-spread
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Patrick Hand, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.25.0
+// Fonts: Patrick Hand, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.25.1
 // One split tree laid across two facing pages: a panorama runs over the spine, and the
 // tier under it splits at the spine's gutter. Same album, same lettering as Nº 152.
 import {
