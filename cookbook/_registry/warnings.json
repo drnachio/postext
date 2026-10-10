@@ -4373,5 +4373,89 @@
         "pt": "Frontmatter"
       }
     }
+  },
+  "columnsFlowUnknown": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown column flow",
+      "es": "Flujo de columnas desconocido",
+      "ca": "Flux de columnes desconegut",
+      "zh": "未知的分栏走向",
+      "ar": "تدفّق أعمدة غير معروف",
+      "ja": "不明な段組の流し方",
+      "pt": "Fluxo de colunas desconhecido"
+    },
+    "cause": {
+      "en": "A :::columns fence sets flow to something other than snake or parallel, so the group takes the default: parallel with breaks, snake without.",
+      "es": "Un cercado :::columns pone en flow algo distinto de snake o parallel, así que el grupo toma el valor por defecto: parallel con breaks, snake sin ellos.",
+      "ca": "Una tanca :::columns posa a flow una cosa diferent de snake o parallel, de manera que el grup pren el valor per defecte: parallel amb breaks, snake sense.",
+      "zh": "某个 :::columns 围栏的 flow 既不是 snake 也不是 parallel，于是该组采用默认值：有 breaks 时为 parallel，没有时为 snake。",
+      "ar": "سياج :::columns يضع في flow قيمة غير snake أو parallel، فتأخذ المجموعة القيمة الافتراضية: parallel مع breaks، وsnake من دونها.",
+      "ja": ":::columns フェンスの flow が snake でも parallel でもないため、グループは既定値になります（breaks があれば parallel、なければ snake）。",
+      "pt": "Uma cerca :::columns põe em flow algo diferente de snake ou parallel, então o grupo usa o padrão: parallel com breaks, snake sem."
+    },
+    "fix": {
+      "en": "Write flow=\"snake\" for one galley that fills the columns in turn, or flow=\"parallel\" with breaks for streams that keep their own columns.",
+      "es": "Escribe flow=\"snake\" para una sola tira que llena las columnas por turno, o flow=\"parallel\" con breaks para series que conservan su columna.",
+      "ca": "Escriu flow=\"snake\" per a una sola tira que omple les columnes per torn, o flow=\"parallel\" amb breaks per a sèries que conserven la seva columna.",
+      "zh": "写 flow=\"snake\" 表示一条依次填满各栏的长条，或写 flow=\"parallel\" 并配合 breaks，让各路保留各自的栏。",
+      "ar": "اكتب flow=\"snake\" لشريط واحد يملأ الأعمدة بالتتابع، أو flow=\"parallel\" مع breaks لسلاسل تحتفظ كلٌّ منها بعمودها.",
+      "ja": "段を順に埋める一続きには flow=\"snake\"、それぞれの段を保つ流れには breaks とともに flow=\"parallel\" と書いてください。",
+      "pt": "Escreva flow=\"snake\" para uma única tira que enche as colunas por vez, ou flow=\"parallel\" com breaks para séries que mantêm a sua coluna."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::columns`",
+        "es": "`:::columns`",
+        "ca": "`:::columns`",
+        "zh": "`:::columns`",
+        "ar": "`:::columns`",
+        "ja": "`:::columns`",
+        "pt": "`:::columns`"
+      }
+    }
+  },
+  "columnsTooNarrow": {
+    "source": "engine",
+    "label": {
+      "en": "Columns too narrow",
+      "es": "Columnas demasiado estrechas",
+      "ca": "Columnes massa estretes",
+      "zh": "分栏过窄",
+      "ar": "أعمدة ضيقة جدًا",
+      "ja": "段が狭すぎる",
+      "pt": "Colunas estreitas demais"
+    },
+    "cause": {
+      "en": "The columns of a :::columns group are narrower than six ems of their text: few words fit a line, and justified lines open wide spaces.",
+      "es": "Las columnas de un grupo :::columns son más estrechas que seis emes de su texto: caben pocas palabras por línea y las líneas justificadas abren espacios anchos.",
+      "ca": "Les columnes d'un grup :::columns són més estretes que sis emes del seu text: hi caben poques paraules per línia i les línies justificades obren espais amples.",
+      "zh": ":::columns 组的各栏比其文字的六个全身还窄：每行只放得下很少的字词，两端对齐的行会拉出很宽的空隙。",
+      "ar": "أعمدة مجموعة :::columns أضيق من ستة em من نصها: لا يتسع السطر إلا لكلمات قليلة، وتفتح الأسطر المضبوطة فراغات واسعة.",
+      "ja": ":::columns グループの段が文字の6全角より狭く、1行に入る語がわずかで、両端揃えの行に広い空きができます。",
+      "pt": "As colunas de um grupo :::columns são mais estreitas que seis emes do seu texto: cabem poucas palavras por linha e as linhas justificadas abrem espaços largos."
+    },
+    "fix": {
+      "en": "Set fewer columns (count), a smaller gap, or put the group across the page (span=\"page\") or in a wider box.",
+      "es": "Pon menos columnas (count), un gap menor, o lleva el grupo a lo ancho de la página (span=\"page\") o a un recuadro más ancho.",
+      "ca": "Posa-hi menys columnes (count), un gap menor, o porta el grup a tota l'amplada de la pàgina (span=\"page\") o a un requadre més ample.",
+      "zh": "减少栏数（count）、缩小 gap，或让该组横跨整页（span=\"page\"），或放进更宽的框。",
+      "ar": "قلّل عدد الأعمدة (count) أو gap، أو اجعل المجموعة بعرض الصفحة (span=\"page\") أو ضعها في إطار أعرض.",
+      "ja": "段数（count）を減らすか gap を小さくするか、グループをページ幅（span=\"page\"）にするか、より広い囲みに入れてください。",
+      "pt": "Use menos colunas (count), um gap menor, ou leve o grupo para a largura da página (span=\"page\") ou para um boxe mais largo."
+    },
+    "docs": {
+      "slug": "document-format",
+      "heading": {
+        "en": "`:::columns`",
+        "es": "`:::columns`",
+        "ca": "`:::columns`",
+        "zh": "`:::columns`",
+        "ar": "`:::columns`",
+        "ja": "`:::columns`",
+        "pt": "`:::columns`"
+      }
+    }
   }
 }

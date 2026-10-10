@@ -779,43 +779,43 @@
   },
   "callout-columns": {
     "title": {
-      "en": ":::columns works only inside a box and never splits",
-      "es": ":::columns solo funciona dentro de un recuadro y no se parte",
-      "ca": ":::columns només funciona dins d'un requadre i no es parteix",
-      "zh": ":::columns只在框内起作用，且不会拆分",
-      "ar": "لا يعمل :::columns إلا داخل إطار ولا ينقسم أبدًا",
-      "ja": ":::columnsは囲みの中でしか効かず、分割されない",
-      "pt": ":::columns só funciona dentro de um boxe e nunca se divide"
+      "en": ":::columns runs in the text and splits only from postext 1.25",
+      "es": ":::columns funciona en el texto y se parte solo desde postext 1.25",
+      "ca": ":::columns funciona al text i es parteix només des de postext 1.25",
+      "zh": ":::columns 从 postext 1.25 起才能用于正文并可拆分",
+      "ar": "لا يعمل :::columns في النص ولا ينقسم إلا ابتداءً من postext 1.25",
+      "ja": ":::columns が本文中で使え、分割されるのは postext 1.25 から",
+      "pt": ":::columns só funciona no texto e se divide a partir do postext 1.25"
     },
     "body": {
-      "en": ":::columns is ignored outside a callout, and a box that splits never cuts inside a columns group. A breaks attribute counts child blocks, with a nested box as one.",
-      "es": ":::columns se ignora fuera de un recuadro, y un recuadro que se parte nunca corta dentro de un grupo de columnas. El atributo breaks cuenta bloques hijos, y un recuadro anidado cuenta como uno.",
-      "ca": ":::columns s'ignora fora d'un requadre, i un requadre que es parteix mai no talla dins d'un grup de columnes. L'atribut breaks compta blocs fills, i un requadre imbricat compta com un.",
-      "zh": ":::columns在标注框之外会被忽略，拆分的框也不会从columns组中间断开。breaks属性按子块计数，嵌套的框算一个。",
-      "ar": "يُتجاهَل :::columns خارج الإطار، والإطار الذي ينقسم لا يقطع أبدًا داخل مجموعة أعمدة. السمة breaks تعدّ الكتل الأبناء، والإطار المتداخل يُعدّ كتلة واحدة.",
-      "ja": ":::columnsは囲みの外では無視されます。また、囲みが分割されても、columnsグループの内部で切れることはありません。breaks属性は子ブロックを数え、入れ子の囲みは1つと数えます。",
-      "pt": ":::columns é ignorado fora de um boxe, e um boxe que se divide nunca corta dentro de um grupo de colunas. O atributo breaks conta blocos filhos, e um boxe aninhado conta como um."
+      "en": "From postext 1.25 a :::columns group also works outside a box: in the text column, or across a page of several columns with span=\"page\" (with gap and rule), with no frameless box around it. A group that does not fit, in a box or in the text, is cut between its columns and goes on in the next column or page: flow=\"snake\" fills the columns in turn, flow=\"parallel\" (the default with breaks) keeps each stream in its own column, level. A breaks attribute counts child blocks, with a nested box as one; a nested box in a group stays whole. Up to 1.24 the fence was ignored outside a box and a box never cut inside a group.",
+      "es": "Desde postext 1.25 un grupo :::columns funciona también fuera de un recuadro: en la columna de texto, o a lo ancho de una página de varias columnas con span=\"page\" (con gap y rule), sin un recuadro sin marco alrededor. Un grupo que no cabe, en un recuadro o en el texto, se corta entre sus columnas y sigue en la columna o página siguiente: flow=\"snake\" llena las columnas por turno, flow=\"parallel\" (el valor por defecto con breaks) mantiene cada serie en su columna, niveladas. El atributo breaks cuenta bloques hijos, y un recuadro anidado cuenta como uno; un recuadro anidado en un grupo no se parte. Hasta la 1.24 el cercado se ignoraba fuera de un recuadro y un recuadro nunca cortaba dentro de un grupo.",
+      "ca": "Des de postext 1.25 un grup :::columns funciona també fora d'un requadre: a la columna de text, o a tota l'amplada d'una pàgina de diverses columnes amb span=\"page\" (amb gap i rule), sense cap requadre sense marc al voltant. Un grup que no hi cap, en un requadre o al text, es talla entre les seves columnes i continua a la columna o pàgina següent: flow=\"snake\" omple les columnes per torn, flow=\"parallel\" (el valor per defecte amb breaks) manté cada sèrie a la seva columna, anivellades. L'atribut breaks compta blocs fills, i un requadre imbricat compta com un; un requadre imbricat en un grup no es parteix. Fins a la 1.24 la tanca s'ignorava fora d'un requadre i un requadre mai no tallava dins d'un grup.",
+      "zh": "从 postext 1.25 起，:::columns 组也可以用在框外：排在正文栏内，或用 span=\"page\" 横跨多栏页面（可加 gap 和 rule），不必再套一个无边框的框。放不下的组，无论在框内还是正文中，都会在栏与栏之间断开，在下一栏或下一页接续：flow=\"snake\" 依次填满各栏，flow=\"parallel\"（设了 breaks 时的默认值）让每一路留在自己的栏中，彼此对齐。breaks 属性按子块计数，嵌套的框算一个；组内嵌套的框不拆分。在 1.24 及以前，框外的这一围栏会被忽略，框拆分时也从不在组内断开。",
+      "ar": "ابتداءً من postext 1.25 تعمل مجموعة :::columns خارج الإطار أيضًا: داخل عمود النص، أو بعرض صفحة متعددة الأعمدة مع span=\"page\" (مع gap وrule)، دون إطار بلا حدود يحيط بها. والمجموعة التي لا تتسع، في إطار أو في النص، تُقطع بين أعمدتها وتُستكمل في العمود أو الصفحة التالية: flow=\"snake\" يملأ الأعمدة بالتتابع، وflow=\"parallel\" (الافتراضي مع breaks) يُبقي كل سلسلة في عمودها متحاذية. السمة breaks تعدّ الكتل الأبناء، والإطار المتداخل يُعدّ كتلة واحدة؛ والإطار المتداخل في مجموعة لا ينقسم. حتى 1.24 كان السياج يُتجاهَل خارج الإطار، ولم يكن الإطار يقطع أبدًا داخل مجموعة.",
+      "ja": "postext 1.25 から、:::columns グループは囲みの外でも使えます。本文の段の中に、または span=\"page\" で複数段のページの幅いっぱいに組め（gap と rule も使えます）、枠のない囲みで包む必要はありません。収まらないグループは、囲みの中でも本文中でも段と段の間で区切られ、次の段やページに続きます。flow=\"snake\" は段を順に埋め、flow=\"parallel\"（breaks があるときの既定値）は流れごとに自分の段に保ち、高さをそろえます。breaks 属性は子ブロックを数え、入れ子の囲みは1つと数えます。グループ内の入れ子の囲みは分割されません。1.24 までは、囲みの外のこのフェンスは無視され、囲みがグループの内部で切れることもありませんでした。",
+      "pt": "A partir do postext 1.25 um grupo :::columns funciona também fora de um boxe: na coluna de texto, ou na largura de uma página de várias colunas com span=\"page\" (com gap e rule), sem um boxe sem moldura em volta. Um grupo que não cabe, num boxe ou no texto, é cortado entre as suas colunas e continua na coluna ou página seguinte: flow=\"snake\" enche as colunas por vez, flow=\"parallel\" (o padrão com breaks) mantém cada série na sua coluna, niveladas. O atributo breaks conta blocos filhos, e um boxe aninhado conta como um; um boxe aninhado num grupo não se divide. Até o 1.24 a cerca era ignorada fora de um boxe e um boxe nunca cortava dentro de um grupo."
     },
     "feature": "callout-columns"
   },
   "here-table-no-split": {
     "title": {
-      "en": "A 'here' table never splits",
-      "es": "Una tabla 'here' nunca se parte",
-      "ca": "Una taula 'here' no es parteix mai",
-      "zh": "'here'表格从不拆分",
-      "ar": "الجدول 'here' لا ينقسم أبدًا",
-      "ja": "'here'の表は分割されない",
-      "pt": "Uma tabela 'here' nunca se divide"
+      "en": "A 'here' table splits only from postext 1.25",
+      "es": "Una tabla 'here' solo se parte desde postext 1.25",
+      "ca": "Una taula 'here' només es parteix des de postext 1.25",
+      "zh": "'here'表格从 postext 1.25 起才会拆分",
+      "ar": "الجدول 'here' لا ينقسم إلا ابتداءً من postext 1.25",
+      "ja": "'here'の表が分割されるのは postext 1.25 から",
+      "pt": "Uma tabela 'here' só se divide a partir do postext 1.25"
     },
     "body": {
-      "en": "Only floated tables split across columns and pages; a table placed 'here' moves whole. Let a long table float, or keep inline tables short.",
-      "es": "Solo se parten entre columnas y páginas las tablas flotantes; una tabla colocada 'here' se mueve entera. Deja flotar las tablas largas o mantén cortas las tablas en línea.",
-      "ca": "Només es parteixen entre columnes i pàgines les taules flotants; una taula col·locada 'here' es mou sencera. Deixa flotar les taules llargues o mantén curtes les taules en línia.",
-      "zh": "只有浮动的表才会跨栏、跨页拆分；放在'here'的表整体移动。让长表浮动，或者让行内的表保持简短。",
-      "ar": "لا تنقسم عبر الأعمدة والصفحات إلا الجداول العائمة؛ أما الجدول الموضوع 'here' فينتقل كاملًا. اجعل الجدول الطويل يطفو، أو أبقِ الجداول داخل النص قصيرة.",
-      "ja": "段やページをまたいで分割されるのはフロートの表だけで、'here'に置いた表はまとめて移動します。長い表はフロートにするか、インラインの表を短くしてください。",
-      "pt": "Só as tabelas flutuantes se dividem entre colunas e páginas; uma tabela posicionada como 'here' se move inteira. Deixe as tabelas longas flutuarem ou mantenha curtas as tabelas em linha."
+      "en": "From postext 1.25 a table placed 'here' that does not fit the rest of its column is cut between rows by its style's overflow (tableStyle.splitInline, on by default): the header repeats, the caption takes its suffix, and the rest goes on at the head of the next column, before the text that follows it. Keep long tables where the text has them; only a table that must turn (placement.rotate) needs to float. Up to 1.24, and with splitInline: false, such a table moves whole to the next column.",
+      "es": "Desde postext 1.25 una tabla colocada 'here' que no cabe en lo que queda de su columna se corta entre filas según el overflow de su estilo (tableStyle.splitInline, activado por defecto): la cabecera se repite, el pie lleva su sufijo y el resto sigue al principio de la columna siguiente, antes del texto que la sigue. Deja las tablas largas donde las pone el texto; solo una tabla que debe girar (placement.rotate) necesita flotar. Hasta la 1.24, y con splitInline: false, esa tabla pasa entera a la columna siguiente.",
+      "ca": "Des de postext 1.25 una taula col·locada 'here' que no cap en el que queda de la seva columna es talla entre files segons l'overflow del seu estil (tableStyle.splitInline, activat per defecte): la capçalera es repeteix, el peu porta el seu sufix i la resta continua al principi de la columna següent, abans del text que la segueix. Deixa les taules llargues on les posa el text; només una taula que ha de girar (placement.rotate) necessita flotar. Fins a la 1.24, i amb splitInline: false, aquesta taula passa sencera a la columna següent.",
+      "zh": "从 postext 1.25 起，放在'here'的表若放不进本栏剩余的空间，会按其样式的 overflow 在行与行之间断开（tableStyle.splitInline，默认开启）：表头重复，题注加上续表后缀，其余部分在下一栏顶部接续，排在其后的正文之前。长表就留在正文写它的位置；只有必须旋转的表（placement.rotate）才需要浮动。在 1.24 及以前，或设 splitInline: false 时，这样的表会整体移到下一栏。",
+      "ar": "ابتداءً من postext 1.25 يُقطع الجدول الموضوع 'here' الذي لا يتسع له ما تبقّى من عموده بين الصفوف وفق overflow في نمطه (tableStyle.splitInline، مفعّل افتراضيًا): يتكرر الرأس، ويحمل التعليق لاحقته، ويُستكمل الباقي في رأس العمود التالي قبل النص الذي يليه. أبقِ الجداول الطويلة حيث يضعها النص؛ لا يحتاج إلى الطفو إلا الجدول الذي يجب تدويره (placement.rotate). حتى 1.24، ومع splitInline: false، ينتقل هذا الجدول كاملًا إلى العمود التالي.",
+      "ja": "postext 1.25 から、'here'に置いた表が段の残りに収まらないときは、スタイルの overflow に従って行の間で区切られます（tableStyle.splitInline、既定でオン）。見出し行が繰り返され、キャプションに続きの接尾辞が付き、残りは次の段の頭、後に続く本文の前に組まれます。長い表は本文が置いた位置のままにしてください。フロートにする必要があるのは回転させる表（placement.rotate）だけです。1.24 まで、また splitInline: false のときは、表全体が次の段に移ります。",
+      "pt": "A partir do postext 1.25 uma tabela posicionada como 'here' que não cabe no que resta da sua coluna é cortada entre linhas conforme o overflow do seu estilo (tableStyle.splitInline, ligado por padrão): o cabeçalho se repete, a legenda recebe o sufixo e o resto continua no alto da coluna seguinte, antes do texto que vem depois dela. Deixe as tabelas longas onde o texto as coloca; só uma tabela que precisa girar (placement.rotate) precisa flutuar. Até o 1.24, e com splitInline: false, essa tabela passa inteira para a coluna seguinte."
     },
     "feature": "table-split"
   },
@@ -1920,13 +1920,13 @@
       "pt": "Uma página que começa com uma tabela no texto pula um flutuante superior pendente"
     },
     "body": {
-      "en": "In postext 1.4.1, when an inline table (position 'here', set with ::resource) moves to the head of the next page, a page-wide 'top' float cited on the page before does not take the head of that page: it waits for the page after. Float the table too (position 'top' or 'auto', cited with :ref), or cite the figure where the next page opens on text.",
-      "es": "En postext 1.4.1, cuando una tabla en línea (posición 'here', colocada con ::resource) pasa a la cabeza de la página siguiente, un flotante 'top' a todo el ancho citado en la página anterior no ocupa la cabeza de esa página: espera a la de después. Haz flotar también la tabla (posición 'top' o 'auto', citada con :ref) o cita la figura donde la página siguiente empiece con texto.",
-      "ca": "A postext 1.4.1, quan una taula en línia (posició 'here', col·locada amb ::resource) passa al capdamunt de la pàgina següent, un flotant 'top' a tota l'amplada citat a la pàgina anterior no ocupa el capdamunt d'aquesta pàgina: espera la de després. Fes flotar també la taula (posició 'top' o 'auto', citada amb :ref) o cita la figura on la pàgina següent comenci amb text.",
-      "zh": "在postext 1.4.1中，当一个行内表（位置'here'，用::resource排入）移到下一页顶部时，在前一页引用的整页宽'top'浮动体不会占据该页顶部，而是等到再下一页。把表也设为浮动（位置'top'或'auto'，用:ref引用），或者在下一页以正文开头的地方引用该图。",
-      "ar": "في postext 1.4.1، حين ينتقل جدول داخل النص (الموضع 'here'، موضوع بـ ::resource) إلى رأس الصفحة التالية، لا يشغل العنصر العائم 'top' الممتد بعرض الصفحة والمُحال إليه في الصفحة السابقة رأسَ تلك الصفحة: ينتظر الصفحة التي بعدها. اجعل الجدول يطفو أيضًا (الموضع 'top' أو 'auto'، مُحالًا إليه بـ :ref)، أو أحِل إلى الشكل حيث تبدأ الصفحة التالية بنص.",
-      "ja": "postext 1.4.1では、インラインの表（::resourceで位置'here'に置いた表）が次のページの頭に移ると、前のページで参照したページ幅の'top'フロートはそのページの頭に入らず、さらに次のページまで待ちます。表もフロートにする（位置'top'または'auto'にして:refで参照する）か、次のページが本文で始まる位置で図を参照してください。",
-      "pt": "No postext 1.4.1, quando uma tabela em linha (posição 'here', colocada com ::resource) passa para o alto da página seguinte, uma flutuante 'top' na largura da página citada na página anterior não ocupa o alto dessa página: espera a próxima. Faça a tabela flutuar também (posição 'top' ou 'auto', citada com :ref) ou cite a figura onde a página seguinte começa com texto."
+      "en": "In postext 1.4.1, when an inline table (position 'here', set with ::resource) moves to the head of the next page, a page-wide 'top' float cited on the page before does not take the head of that page: it waits for the page after. Later versions let the figure head that page when the table leaves it room, and from 1.25 a table that does not fit is cut between rows, so the page it opens keeps only its first part's room: the figure heads the page and the table goes on under it. With splitInline: false a long table still takes the whole head; float the table too, or cite the figure where the next page opens on text.",
+      "es": "En postext 1.4.1, cuando una tabla en línea (posición 'here', colocada con ::resource) pasa a la cabeza de la página siguiente, un flotante 'top' a todo el ancho citado en la página anterior no ocupa la cabeza de esa página: espera a la de después. Las versiones posteriores dejan que la figura encabece esa página cuando la tabla le deja sitio, y desde la 1.25 una tabla que no cabe se corta entre filas, de modo que la página que abre solo reserva el sitio de su primera parte: la figura encabeza la página y la tabla sigue debajo. Con splitInline: false una tabla larga sigue ocupando toda la cabeza; haz flotar también la tabla o cita la figura donde la página siguiente empiece con texto.",
+      "ca": "A postext 1.4.1, quan una taula en línia (posició 'here', col·locada amb ::resource) passa al capdamunt de la pàgina següent, un flotant 'top' a tota l'amplada citat a la pàgina anterior no ocupa el capdamunt d'aquesta pàgina: espera la de després. Les versions posteriors deixen que la figura encapçali aquesta pàgina quan la taula li deixa lloc, i des de la 1.25 una taula que no hi cap es talla entre files, de manera que la pàgina que obre només reserva el lloc de la seva primera part: la figura encapçala la pàgina i la taula continua a sota. Amb splitInline: false una taula llarga continua ocupant tot el capdamunt; fes flotar també la taula o cita la figura on la pàgina següent comenci amb text.",
+      "zh": "在 postext 1.4.1 中，当一个行内表（位置'here'，用::resource排入）移到下一页顶部时，在前一页引用的整页宽'top'浮动体不会占据该页顶部，而是等到再下一页。之后的版本在表留出空间时让图占据该页顶部；从 1.25 起，放不下的表会在行与行之间断开，它所开启的页面只为第一部分留出空间：图占据页顶，表在其下接续。设 splitInline: false 时，长表仍会占据整个页顶；那就把表也设为浮动，或者在下一页以正文开头的地方引用该图。",
+      "ar": "في postext 1.4.1، حين ينتقل جدول داخل النص (الموضع 'here'، موضوع بـ ::resource) إلى رأس الصفحة التالية، لا يشغل العنصر العائم 'top' الممتد بعرض الصفحة والمُحال إليه في الصفحة السابقة رأسَ تلك الصفحة: ينتظر الصفحة التي بعدها. وتتيح الإصدارات اللاحقة للشكل أن يتصدّر تلك الصفحة حين يترك له الجدول مكانًا، وابتداءً من 1.25 يُقطع الجدول الذي لا يتسع بين الصفوف، فلا تحجز الصفحة التي يفتحها إلا مكان جزئه الأول: يتصدّر الشكل الصفحة ويُستكمل الجدول تحته. ومع splitInline: false يظل الجدول الطويل يشغل الرأس كله؛ اجعل الجدول يطفو أيضًا، أو أحِل إلى الشكل حيث تبدأ الصفحة التالية بنص.",
+      "ja": "postext 1.4.1 では、インラインの表（::resourceで位置'here'に置いた表）が次のページの頭に移ると、前のページで参照したページ幅の'top'フロートはそのページの頭に入らず、さらに次のページまで待ちます。その後のバージョンでは、表が場所を残せば図がそのページの頭に入り、1.25 からは収まらない表が行の間で区切られるので、表が開くページは最初の部分の場所だけを確保します。図がページの頭に入り、表はその下に続きます。splitInline: false のときは長い表が頭全体を占めたままなので、表もフロートにするか、次のページが本文で始まる位置で図を参照してください。",
+      "pt": "No postext 1.4.1, quando uma tabela em linha (posição 'here', colocada com ::resource) passa para o alto da página seguinte, uma flutuante 'top' na largura da página citada na página anterior não ocupa o alto dessa página: espera a próxima. As versões seguintes deixam a figura encabeçar essa página quando a tabela lhe deixa espaço, e a partir do 1.25 uma tabela que não cabe é cortada entre linhas, de modo que a página que ela abre reserva só o espaço da primeira parte: a figura encabeça a página e a tabela continua embaixo. Com splitInline: false uma tabela longa ainda ocupa todo o alto; faça a tabela flutuar também ou cite a figura onde a página seguinte começa com texto."
     },
     "feature": "float-placement",
     "followup": "EF-160"
