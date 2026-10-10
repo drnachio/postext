@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 086 · A Chinese dictionary page with guide words ═════════
 // https://postext.dev/en/cookbook/chinese-dictionary-page
 // Code: MIT · Text: 康熙字典 (1716), Wikisource transcription, CC BY-SA 4.0 · Pinyin: CC BY 4.0
-// Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -94,8 +94,8 @@ const headword = { level: 2, fontSize: pt(15), lineHeight: pt(2 * LEAD), marginT
 // #region senses: one paragraph to an entry, the sense numbers ① ② in cinnabar
 // As the Kangxi Dictionary sets an entry: the rhyme-book readings (反切), then the senses
 // run in, each after its number. '**②**' marks a number, and the text prints its bold in
-// cinnabar: the only bold on these pages. A word joiner (U+2060, invisible) follows each
-// number in the Markdown: no line ends on a number, away from the sense it opens.
+// cinnabar: the only bold on these pages. A circled number is a Chinese character to the
+// composer: no line ends on one, away from the sense it opens, and no space follows it.
 const bodyText = { fontFamily: SONG, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
   boldColor: col('cinnabar'), italicColor: col('ink'), referenceColor: col('ink'),
   textAlign: 'justify', firstLineIndent: pt(0) }; // no indent: the headword opens the entry

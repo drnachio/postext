@@ -43,7 +43,6 @@
     "Q94"
   ],
   "gotchas": [
-    "circled-numbers-western",
     "ruby-not-in-designs",
     "cjk-fonts-slices",
     "cjk-locale-tag",
@@ -55,19 +54,9 @@
     "pinyin-primer",
     "chinese-novel-horizontal"
   ],
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "the CJK composer may break a line inside a book title after its first character (《說|文》). The Kangxi excerpts are cut, clause by clause and in the source's order, so that no title breaks after its first character and every column but the last ends on its last grid line (checked in the VDT, both editions); 鐵 keeps one of its ancient forms (〔古文〕銕) and 天 leaves out its direct reading (並腆平聲), which moves their first line breaks off 《說|文》"
-    },
-    {
-      "package": "postext",
-      "note": "the CJK composer classes the circled numbers ① to ⑳ as Latin letters: a line may end on a sense number whose sense opens the next line, and cjk.latinSpacing puts its quarter em after the number. Each number is followed by a word joiner (U+2060) in the Markdown, which the CJK composer honours since the #201 review fixes (it broke on both sides of one before); without it the sense numbers would have to be kept off the line ends by hand"
-    }
-  ],
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -156,5 +145,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-29",
-  "updated": "2026-09-29"
+  "updated": "2026-10-10"
 }
