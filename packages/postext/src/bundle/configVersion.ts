@@ -92,7 +92,7 @@ import { hasCJK } from '../measure/cjk';
  *   - a text element of a heading design or a part page that sets no
  *     `overflow` wraps onto more lines (#628), where up to 1.23 it was cut
  *     with an ellipsis ({@link pinLegacyDesignOverflow}).
- * - 11, six rules:
+ * - 11, seven rules:
  *   - a horizontal page on a character grid (`cjk.grid.enabled`) is not
  *     balanced unless `headings.balancing.enabled` says so (#632), where
  *     up to 1.24 it was ({@link pinLegacyGridBalancing});
@@ -113,7 +113,11 @@ import { hasCJK } from '../measure/cjk';
  *   - a design text in Chinese or Japanese takes the body's CJK rules
  *     (`cjk.composeDesignText`, #637), where up to 1.24 it was wrapped at
  *     spaces with every mark at its own advance ({@link
- *     pinLegacyDesignText}).
+ *     pinLegacyDesignText});
+ *   - under a page-span opener set over several text columns, the head of
+ *     the opener's own column is a slot for a top float
+ *     (`layout.floatsUnderOpener`, #639), where up to 1.24 such a float
+ *     landed from the second column on ({@link pinLegacyOpenerHeadFloats}).
  *
  * A configuration stored without a version was written for postext 1.4 or
  * earlier. One stored under 3 to 7 was written by a 1.5 prerelease, and
@@ -125,7 +129,7 @@ import { hasCJK } from '../measure/cjk';
  * written by postext 1.5 to 1.22 and gets the version-9 pins (which every
  * older one gets too); one stored under 9 was written by postext 1.23 and
  * gets the version-10 pins (which every older one gets too); one stored
- * under 10 was written by postext 1.24 and gets the version-11 pin (which
+ * under 10 was written by postext 1.24 and gets the version-11 pins (which
  * every older one gets too).
  */
 export const CONFIG_VERSION = 11;
@@ -189,6 +193,9 @@ const DESIGN_TEXT_RULES = 11;
 const INLINE_TABLE_SPLIT_RULES = 11;
 /** The rules that set `:::columns` in the running text and cut groups. */
 const FLOW_COLUMNS_RULES = 11;
+/** The rules that offer a float the head of a page-span opener's own
+ *  column. */
+const OPENER_HEAD_FLOAT_RULES = 11;
 
 /** Up to 1.4 a drop cap with no `fontSize` was as tall as the line boxes it
  *  spans divided by this, the share of a letter's size its capitals take. */
@@ -651,6 +658,30 @@ export function pinLegacyFlowColumns<T extends Partial<PostextConfig>>(config: T
   const layout: LayoutConfig = isRecord(config.layout) ? config.layout : {};
   if (layout.flowColumns !== undefined) return config;
   return { ...config, layout: { ...layout, flowColumns: false } };
+}
+
+/**
+ * A configuration written before #639 (postext 1.24 or earlier), pinned to
+ * the slots 1.24 offered under a page-span opener:
+ * `layout.floatsUnderOpener: false`, so a float fenced or embedded right
+ * after an opener set over several text columns lands from the second
+ * column on, where today it takes the head of the opener's own column,
+ * under its band. A configuration that sets `floatsUnderOpener` is
+ * returned as it is (the same object).
+ */
+export function pinLegacyOpenerHeadFloats<T extends Partial<PostextConfig>>(config: T): T {
+  const layout: LayoutConfig = isRecord(config.layout) ? config.layout : {};
+  if (layout.floatsUnderOpener !== undefined) return config;
+  return { ...config, layout: { ...layout, floatsUnderOpener: false } };
+}
+
+/** Whether a configuration sets a page-span heading: a heading level or a
+ *  heading style with `span: 'page'` (no level spans the page by
+ *  default). */
+function setsPageSpanHeading(config: Partial<PostextConfig>): boolean {
+  const spans = (entries: unknown): boolean =>
+    Array.isArray(entries) && entries.some((e) => isRecord(e) && e.span === 'page');
+  return (isRecord(config.headings) && spans(config.headings.levels)) || spans(config.headingStyles);
 }
 
 /** A `:::columns` opening fence on a line of its own. */
@@ -1204,7 +1235,9 @@ export interface MigrateConfigOptions {
    * circled number not the 1.24 Western circled numbers (see {@link
    * pinLegacyCircledNumbers}), and text with no CJK (in a configuration
    * whose own text holds none) not the 1.24 design text (see {@link
-   * pinLegacyDesignText}).
+   * pinLegacyDesignText}); and text with no heading (in a configuration
+   * that sets a page-span heading) is not given the 1.24 slots under an
+   * opener (see {@link pinLegacyOpenerHeadFloats}).
    * That keeps a stored configuration as
    * short as it was. Without it the size is pinned whenever maths is on,
    * and the gaps, the room, the heading marks, the box cut, the dash
@@ -1262,7 +1295,10 @@ export interface MigrateConfigOptions {
  * `options.content` shows none, its circled numbers by {@link
  * pinLegacyCircledNumbers}, unless `options.content` shows none, and its
  * design text by {@link pinLegacyDesignText}, unless neither
- * `options.content` nor the configuration holds CJK text. A current one is returned as it is (the same object).
+ * `options.content` nor the configuration holds CJK text, and the slots
+ * under its page-span openers by {@link pinLegacyOpenerHeadFloats}, when
+ * it sets a heading level or style with `span: 'page'`, unless
+ * `options.content` shows no heading. A current one is returned as it is (the same object).
  * Migrate a stored configuration once and store it again under
  * `CONFIG_VERSION`: the maths pin multiplies a scale, so a configuration
  * read twice under its old number would grow twice.
@@ -1299,6 +1335,7 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   if (rules < DESIGN_TEXT_RULES && mayHaveCjkDesignText(content, out)) out = pinLegacyDesignText(out);
   if (rules < INLINE_TABLE_SPLIT_RULES && mayEmbedResources(content)) out = pinLegacyInlineTableSplit(out);
   if (rules < FLOW_COLUMNS_RULES && mayHaveColumnGroups(content)) out = pinLegacyFlowColumns(out);
+  if (rules < OPENER_HEAD_FLOAT_RULES && setsPageSpanHeading(out) && mayHaveHeadings(content)) out = pinLegacyOpenerHeadFloats(out);
   return out;
 }
 
@@ -1320,9 +1357,10 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
  * drop caps and the overflow of heading and part design texts wherever
  * they sit in the merged configuration, the balancing of a horizontal
  * character grid on the merged `cjk`, `layout` and `headings`, the
- * inline tables on the `tableStyle` in force, the `:::columns` groups on
- * the `layout` in force, and the book titles, the
- * circled numbers and the design text on the `cjk` in force.
+ * inline tables on the `tableStyle` in force, the `:::columns` groups and
+ * the slots under a page-span opener on the `layout` in force (the slots
+ * when the merged configuration sets a page-span heading), and the book
+ * titles, the circled numbers and the design text on the `cjk` in force.
  * @internal `readBundle`'s; hosts call {@link migrateConfig}.
  */
 export function migrateBundleConfig(
@@ -1361,5 +1399,6 @@ export function migrateBundleConfig(
   if (rules < DESIGN_TEXT_RULES && mayHaveCjkDesignText(content, merged)) merged = pinLegacyDesignText(merged);
   if (rules < INLINE_TABLE_SPLIT_RULES && mayEmbedResources(content)) merged = pinLegacyInlineTableSplit(merged);
   if (rules < FLOW_COLUMNS_RULES && mayHaveColumnGroups(content)) merged = pinLegacyFlowColumns(merged);
+  if (rules < OPENER_HEAD_FLOAT_RULES && setsPageSpanHeading(merged) && mayHaveHeadings(content)) merged = pinLegacyOpenerHeadFloats(merged);
   return merged;
 }

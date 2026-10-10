@@ -103,6 +103,7 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   floatsAtCitingPage: false,
   maxTopFraction: DEFAULT_MAX_TOP_FRACTION,
   hugClosingFloats: true,
+  floatsUnderOpener: true,
   inlineResourceGap: 'around',
   inlineResourceGapInBoxes: true,
   flowColumns: true,
@@ -134,6 +135,7 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
     floatsAtCitingPage: partial.floatsAtCitingPage === true,
     maxTopFraction: maxTopFractionOf(partial.maxTopFraction) ?? DEFAULT_MAX_TOP_FRACTION,
     hugClosingFloats: partial.hugClosingFloats ?? DEFAULT_LAYOUT_CONFIG.hugClosingFloats,
+    floatsUnderOpener: partial.floatsUnderOpener ?? DEFAULT_LAYOUT_CONFIG.floatsUnderOpener,
     inlineResourceGap: partial.inlineResourceGap === 'above' ? 'above' : DEFAULT_LAYOUT_CONFIG.inlineResourceGap,
     inlineResourceGapInBoxes: partial.inlineResourceGapInBoxes ?? DEFAULT_LAYOUT_CONFIG.inlineResourceGapInBoxes,
     flowColumns: partial.flowColumns ?? DEFAULT_LAYOUT_CONFIG.flowColumns,
@@ -220,6 +222,10 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
   }
   if (layout.hugClosingFloats !== undefined && layout.hugClosingFloats !== DEFAULT_LAYOUT_CONFIG.hugClosingFloats) {
     result.hugClosingFloats = layout.hugClosingFloats;
+    hasOverride = true;
+  }
+  if (layout.floatsUnderOpener !== undefined && layout.floatsUnderOpener !== DEFAULT_LAYOUT_CONFIG.floatsUnderOpener) {
+    result.floatsUnderOpener = layout.floatsUnderOpener;
     hasOverride = true;
   }
   if (layout.inlineResourceGap !== undefined && layout.inlineResourceGap !== DEFAULT_LAYOUT_CONFIG.inlineResourceGap) {

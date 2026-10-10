@@ -4,7 +4,10 @@
  * A pending float (a figure / table incorporated by its first reference) is
  * offered the slots of the CURRENT page in reading order after the cursor:
  * the top of the referencing column when it is still empty, its bottom, then
- * the top and bottom of every later empty text column of the same band. A
+ * the top and bottom of every later empty text column of the same band. The
+ * column a page-span opener was set in counts as empty at its head while it
+ * holds nothing but the opener: its head is the first line under the
+ * opener's band (#639). A
  * page-span float on a multi-column band gets one slot: the band's bottom.
  * What does not fit on the current page waits for the next page opened by
  * the flow (`flushFloatsIntoPage` in `build.ts`). `'top'` / `'bottom'`
@@ -41,12 +44,16 @@ export interface FloatSlot {
  *  levels the closing band and leaves the true bottom free. */
 export type ColumnCapKind = 'span' | 'trailing' | undefined;
 
-/** Candidate slots on the current page, in reading order after the cursor. */
+/** Candidate slots on the current page, in reading order after the cursor.
+ *  `openerHeadOf` gives, for the column that holds a page-span opener and
+ *  nothing after it, the y of its head under the opener's band (#639);
+ *  `undefined` for any other column. */
 export function enumerateCurrentPageSlots(
   page: VDTPage,
   cursorColumnIndex: number,
   f: PlannedFloat,
   capKindOf: (col: VDTColumn) => ColumnCapKind,
+  openerHeadOf: (col: VDTColumn) => number | undefined = () => undefined,
 ): FloatSlot[] {
   const cursorCol = page.columns[cursorColumnIndex];
   if (!cursorCol || cursorCol.kind === 'span' || page.partInfo || page.comic) return [];
@@ -57,6 +64,9 @@ export function enumerateCurrentPageSlots(
   const wantsTop = f.position !== 'bottom';
   const wantsBottom = f.position !== 'top';
   const bottomFree = (col: VDTColumn): boolean => capKindOf(col) !== 'span';
+  /** Where a column's head stands, and whether a float may still take it. */
+  const headY = (col: VDTColumn): number => openerHeadOf(col) ?? col.bbox.y;
+  const headFree = (col: VDTColumn): boolean => col.blocks.length === 0 || openerHeadOf(col) !== undefined;
 
   // A side float takes the side column of the band, right beside the text
   // that cites it (never above it); a page without a side column offers
@@ -91,8 +101,8 @@ export function enumerateCurrentPageSlots(
       const group = textCols.slice(i, i + across);
       if (i > from && group[0]!.blocks.length > 0) continue;
       if (!group.slice(1).every((c) => c.blocks.length === 0)) continue;
-      const level = group.every((c) => Math.abs(c.bbox.y - group[0]!.bbox.y) < 0.5);
-      if (wantsTop && level && group[0]!.blocks.length === 0) slots.push({ cols: group, position: 'top', pageSpan: false });
+      const level = group.every((c) => Math.abs(headY(c) - headY(group[0]!)) < 0.5);
+      if (wantsTop && level && headFree(group[0]!)) slots.push({ cols: group, position: 'top', pageSpan: false });
       if (wantsBottom && group.every(bottomFree)) slots.push({ cols: group, position: 'bottom', pageSpan: false });
     }
     return slots;
@@ -103,7 +113,7 @@ export function enumerateCurrentPageSlots(
     const col = cols[i]!;
     const empty = col.blocks.length === 0;
     if (i > start && !empty) continue;
-    if (wantsTop && empty) slots.push({ cols: [col], position: 'top', pageSpan: false });
+    if (wantsTop && headFree(col)) slots.push({ cols: [col], position: 'top', pageSpan: false });
     if (wantsBottom && bottomFree(col)) slots.push({ cols: [col], position: 'bottom', pageSpan: false });
   }
   return slots;

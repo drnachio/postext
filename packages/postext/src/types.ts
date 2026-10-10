@@ -1056,6 +1056,19 @@ export interface LayoutConfig {
    *  the page foot on the closing page as on every other page. Pages with a
    *  side column never move them. */
   hugClosingFloats?: boolean;
+  /** Under a page-span opener (a heading level or style with
+   *  `span: 'page'`) set over two or more text columns, the head of the
+   *  opener's own column, right under its band, is a slot for a `'top'` or
+   *  `'auto'` float, of one column or of several from it, level with the
+   *  heads of the other columns of the band (#639): a floated box fenced
+   *  right after the opener, or a resource embedded there, sits under the
+   *  opener in the first column and the column's text starts under it.
+   *  Default `true`. `false` keeps the rule of postext 1.24 and earlier:
+   *  the opener's column offers no head slot, so such a float lands from
+   *  the second column on. A configuration stored by an earlier version is
+   *  read with `false` when it sets a page-span heading (see
+   *  `migrateConfig` in `postext/bundle`). */
+  floatsUnderOpener?: boolean;
   /** Where an inline resource (`placement.position: 'here'`, embedded with
    *  `::resource`) keeps the float gap, a line: `'around'` keeps it above
    *  and below the resource, and the text after it goes back onto the
@@ -1151,6 +1164,7 @@ export interface ResolvedLayoutConfig {
   floatsAtCitingPage: boolean;
   maxTopFraction: number;
   hugClosingFloats: boolean;
+  floatsUnderOpener: boolean;
   inlineResourceGap: InlineResourceGap;
   inlineResourceGapInBoxes: boolean;
   flowColumns: boolean;
@@ -6033,7 +6047,8 @@ export interface HeadingStyleConfig extends Omit<HeadingLevelConfig, 'level' | '
    *  the side column, `columnRule`), plus its `fitFiguresToPage` when a
    *  figure could move from an empty column cut short to a whole one;
    *  `inlineResourceGap`, `inlineResourceGapInBoxes`, `flowColumns`,
-   *  `boxChildSplitMinLines` and `hugClosingFloats` stay the document's,
+   *  `boxChildSplitMinLines`, `hugClosingFloats` and `floatsUnderOpener`
+   *  stay the document's,
    *  and so does the `fitFiguresToPage` that shrinks figures.
    *  Unset, the section uses the document's `layout`. */
   layout?: LayoutConfig;

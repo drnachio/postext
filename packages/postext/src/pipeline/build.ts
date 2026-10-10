@@ -1946,6 +1946,24 @@ function placeDocumentPass(
     let cut = false;
     /** A rotated block wider than the band (its upright height). */
     const tooWide = (m: FloatMeasure): boolean => m.rotatedWidth !== undefined && m.rotatedWidth > width + 0.01;
+    /** The columns of the slot that hold a page-span opener and nothing
+     *  after it (#639), with the y of their head under the opener's band:
+     *  there the band is taken from the flow under the opener — the column
+     *  keeps its box, the opener stands in it — where an empty column's
+     *  head moves down under the band. */
+    const openerHeads = new Map<VDTColumn, number>();
+    if (position === 'top' && mode === 'strict' && !pageSpan && !side) {
+      for (const c of targetCols) {
+        const top = openerHeadOf(c);
+        if (top !== undefined) openerHeads.set(c, top);
+      }
+    }
+    /** What such a column loses above the band: from the flow's position
+     *  under the opener down to the grid line the band starts on. */
+    const leadOf = (c: VDTColumn): number => {
+      const top = openerHeads.get(c);
+      return top === undefined ? 0 : Math.max(0, top - columnCursorY(c));
+    };
 
     if (side) {
       // The side column's stack: the float goes under what the column holds
@@ -2059,7 +2077,7 @@ function placeDocumentPass(
       // to another band, as `fitsStrict` keeps it); the loop below checks
       // the band as for any float.
       if (f.shrink === 'slot' && measure.body && !rotated) {
-        const room = Math.min(...targetCols.map((c) => c.availableHeight - (columnHasFloatBand(page, c) ? minTextPx : 0)));
+        const room = Math.min(...targetCols.map((c) => c.availableHeight - leadOf(c) - (columnHasFloatBand(page, c) ? minTextPx : 0)));
         if (need > room + 0.01) {
           const s = shrinkToRoom(f, width, aside, measure, room, position === 'top', bandOf);
           if (!s?.fits) return 'defer';
@@ -2073,7 +2091,7 @@ function placeDocumentPass(
           continue;
         }
         const hasBand = columnHasFloatBand(page, c);
-        if (fitsStrict(need, c, hasBand, minTextPx)) continue;
+        if (fitsStrict(need + leadOf(c), c, hasBand, minTextPx)) continue;
         // The head of an empty column: a splittable table is cut to the
         // column and continues in the next slot — the compositor sets a
         // long table beside the text that cites it, not pages later. A
@@ -2124,6 +2142,9 @@ function placeDocumentPass(
     const flush = rotated?.upright ? (f.align === 'center' ? 0.5 : f.align === 'right' ? 1 : 0) : rotated ? rotatedFlushEnd(page) : false;
     const built = buildFloatBlock(f.resourceId, xLeft, width, slice, rotated, flush, aside, mirroredOf(page), cap);
     if (!built) return 'skip';
+    // Under an opener in its own column the band starts at that column's
+    // head, the grid line the heads beside it stand on.
+    y = openerHeads.get(first) ?? y;
 
     // The caption beside the figure takes its band of the side column: a
     // top float's caption is consumed from the stack's head (when the
@@ -2143,6 +2164,14 @@ function placeDocumentPass(
     }
 
     for (const col of targetCols) {
+      if (openerHeads.has(col)) {
+        col.availableHeight = Math.max(0, col.availableHeight - leadOf(col) - need);
+        openerHeadFloats.set(col, columnCursorY(col));
+        // What the opener left under it went into the band's gap.
+        pendingSpacing = 0;
+        inlineGapOwed = null;
+        continue;
+      }
       const r = { ...reservedOf(col) };
       if (position === 'top') {
         col.bbox.y += need;
@@ -2187,22 +2216,27 @@ function placeDocumentPass(
         textWrapNotes.push({ kind: 'textWrap', reason, resourceId: f.resourceId, pageIndex: page.index });
       } else {
         const exWidth = wrapExclusionWidth(first.bbox.width, width, gap);
-        const exY = position === 'top' ? first.bbox.y - need : first.bbox.y + first.bbox.height;
-        const list = floatWraps.get(first) ?? [];
-        list.push({
-          position,
-          need,
-          ex: {
-            x: f.wrap === 'left' ? first.bbox.x : first.bbox.x + first.bbox.width - exWidth,
-            y: exY,
-            width: exWidth,
-            height: need,
-            side: f.wrap,
-            gap: exWidth - width,
-            ownerId: built.block.id,
-          },
-        });
-        floatWraps.set(first, list);
+        const underOpener = openerHeads.has(first);
+        const exY = underOpener ? y : position === 'top' ? first.bbox.y - need : first.bbox.y + first.bbox.height;
+        const ex: VDTExclusion = {
+          x: f.wrap === 'left' ? first.bbox.x : first.bbox.x + first.bbox.width - exWidth,
+          y: exY,
+          width: exWidth,
+          height: need,
+          side: f.wrap,
+          gap: exWidth - width,
+          ownerId: built.block.id,
+        };
+        if (underOpener) {
+          // The band was taken from the flow: the text placed next takes
+          // it back and runs beside the float, as it does beside an inline
+          // figure that wraps (`pendingWrap`).
+          pendingWrap = { col: first, blocks: first.blocks.length, cursorY: columnCursorY(first), ex };
+        } else {
+          const list = floatWraps.get(first) ?? [];
+          list.push({ position, need, ex });
+          floatWraps.set(first, list);
+        }
       }
     }
 
@@ -2432,7 +2466,7 @@ function placeDocumentPass(
       // refuse (a head-of-page float offered the foot of the current page);
       // floated callouts keep their placement.
       const asked = anyPosition && !f.rotate && !f.callout && f.position !== 'auto' ? { ...f, position: 'auto' as const } : f;
-      let slots = enumerateCurrentPageSlots(page, cursor.columnIndex, asked, capKindOf);
+      let slots = enumerateCurrentPageSlots(page, cursor.columnIndex, asked, capKindOf, openerHeadOf);
       // The rest of a table cut on this page only takes the slots after
       // its previous slice in reading order (never the foot of the column
       // before it; a page-span rest waits for the next page).
@@ -3291,6 +3325,7 @@ function placeDocumentPass(
    *  level snaps, or would but for the heading after it). */
   const reserveOpenerBand = (headingCol: VDTColumn, h: number, opener?: VDTBlock, pending = 0, gridText = true): void => {
     const page = doc.pages[cursor.pageIndex]!;
+    if (opener) openerOwnColumn.set(headingCol, opener);
     for (const otherCol of page.columns) {
       if (otherCol === headingCol) continue;
       // An opener set mid-page (#539) heads its own band only.
@@ -3319,6 +3354,43 @@ function placeDocumentPass(
    *  the opener, its column, the band's foot, where text right under the
    *  opener starts and the float band the column held at its head then. */
   const openerBandHeads = new Map<VDTColumn, { openerCol: VDTColumn; opener: VDTBlock; foot: number; textTop: number; floatTop: number }>();
+  /** The column each page-span opener was set in (#639). */
+  const openerOwnColumn = new Map<VDTColumn, VDTBlock>();
+  /** The opener's own columns a float took the head of, under the opener:
+   *  where the float's band ends, the flow's position right after it. */
+  const openerHeadFloats = new Map<VDTColumn, number>();
+  /**
+   * The head of the opener's own column under its band (#639): the first
+   * grid line at or under the opener, level with the heads the band's other
+   * columns were given (`reserveOpenerBand`), while the column holds nothing
+   * after the opener and the band has another text column beside it — a
+   * single text column under its heading has no other head to be level
+   * with, and keeps the rule every column with content has. `undefined`
+   * for any other column, and under `layout.floatsUnderOpener: false`
+   * (postext 1.24 and earlier: the opener's column offered no head slot,
+   * so a float fenced right after the opener landed from column 2).
+   */
+  const openerHeadOf = (col: VDTColumn): number | undefined => {
+    if (!resolved.layout.floatsUnderOpener) return undefined;
+    const opener = openerOwnColumn.get(col);
+    if (!opener || col.blocks[col.blocks.length - 1] !== opener) return undefined;
+    const page = doc.pages[opener.pageIndex];
+    if (!page) return undefined;
+    const beside = bandColumns(page, col.band ?? 0).filter((c) => c !== col && c.kind !== 'side' && c.kind !== 'span');
+    if (beside.length === 0) return undefined;
+    return gridUpOnPage(page, columnCursorY(col));
+  };
+  /** Whether the flow in `col` stands right under a float set at the head
+   *  of the opener's own column: the block placed next starts there as at
+   *  a column's head, with no space above it. */
+  const underOpenerHeadFloat = (col: VDTColumn): boolean => {
+    const foot = openerHeadFloats.get(col);
+    return foot !== undefined && col.blocks[col.blocks.length - 1] === openerOwnColumn.get(col)
+      && Math.abs(columnCursorY(col) - foot) < 0.01;
+  };
+  /** Whether what is placed next in `col` opens it: the column is empty,
+   *  or holds an opener and the float set under it at its head. */
+  const atColumnHead = (col: VDTColumn): boolean => col.blocks.length === 0 || underOpenerHeadFloat(col);
   /**
    * The room above the first block of a column headed by an opener band,
    * relative to the column's head, or undefined for any other column (or
@@ -3345,7 +3417,9 @@ function placeDocumentPass(
     const head = openerBandHeads.get(col);
     if (!head || col.blocks.length > 0 || reservedOf(col).top !== head.floatTop) return undefined;
     let target = head.textTop;
-    if (level) {
+    // (With a float under the opener in its own column, the first block
+    // there stands under that float: nothing to be level with, #639.)
+    if (level && !openerHeadFloats.has(head.openerCol)) {
       const at = head.openerCol.blocks.indexOf(head.opener);
       const next = at >= 0 ? head.openerCol.blocks.slice(at + 1).find((b) => !b.hidden) : undefined;
       if (next && (next.type === 'heading' || next.type === 'mathDisplay')) {
@@ -5123,7 +5197,7 @@ function placeDocumentPass(
         note('fewLines');
         return false;
       }
-      const spacing = col.blocks.length === 0 ? 0 : pendingSpacing;
+      const spacing = atColumnHead(col) ? 0 : pendingSpacing;
       if (result.totalHeight > col.availableHeight - spacing + 0.01 && col.blocks.length > 0 && attempt < 4) {
         if (attempt === 0) note('moved');
         pendingSpacing = 0;
@@ -5411,7 +5485,7 @@ function placeDocumentPass(
       const balanceBefore = curCol.blocks.length > 0 || reservedOf(curCol).top > 0
         ? (balanceExtraPx?.get(balanceKey(startIdx, part)) ?? 0)
         : 0;
-      const spacing = (curCol.blocks.length === 0 ? 0 : Math.max(pendingBeforeSelfSnapping(startIdx), result.marginTopPx)) + balanceBefore;
+      const spacing = (atColumnHead(curCol) ? 0 : Math.max(pendingBeforeSelfSnapping(startIdx), result.marginTopPx)) + balanceBefore;
       const roomPx = curCol.availableHeight - spacing;
       let fragment: CalloutFragment | null = null;
       if (result.totalHeight > roomPx + 0.01) {
@@ -5487,7 +5561,7 @@ function placeDocumentPass(
       const placed = fragment ? fragment.result : result;
       const to = fragment ? fragment.to : L.end;
       if (part > 0 || fragment) markFragment(placed, part, fragment !== null);
-      const spacingBefore = (curCol.blocks.length === 0 ? 0 : Math.max(pendingBeforeSelfSnapping(startIdx), placed.marginTopPx)) + balanceBefore;
+      const spacingBefore = (atColumnHead(curCol) ? 0 : Math.max(pendingBeforeSelfSnapping(startIdx), placed.marginTopPx)) + balanceBefore;
       if (balanceBefore > 0) {
         addBalanceExtra(curCol, balanceBefore);
         placed.frame.balancing = { levers: ['trailingCallout'], spaceAbove: balanceBefore };
@@ -6119,7 +6193,7 @@ function placeDocumentPass(
     // rather than move on and leave the column short (#442).
     if (measuredBlock?.kind.vdtType === 'resource' && measuredBlock.resourceBlock?.bodyFlex) {
       const flex = measuredBlock.resourceBlock.bodyFlex;
-      const room = col.availableHeight - (col.blocks.length === 0 ? 0 : Math.max(pendingSpacing, floatGapPx));
+      const room = col.availableHeight - (atColumnHead(col) ? 0 : Math.max(pendingSpacing, floatGapPx));
       const over = measuredBlock.measured.totalHeight - room;
       if (over > 0.01 && room > 0 && over <= flex.shrink + 0.01) {
         const cropped = measureContentBlock(rawBlock, blockIdx, measureWidth, blockMeasureCtx, {
@@ -6134,7 +6208,7 @@ function placeDocumentPass(
     // the page empty. Never below MIN_INLINE_FIGURE_SCALE of its size.
     if (measuredBlock?.kind.vdtType === 'resource' && resolved.layout.fitFiguresToPage) {
       const rb = measuredBlock.resourceBlock;
-      const room = col.availableHeight - (col.blocks.length === 0 ? 0 : Math.max(pendingSpacing, floatGapPx));
+      const room = col.availableHeight - (atColumnHead(col) ? 0 : Math.max(pendingSpacing, floatGapPx));
       if (rb && !rb.table && !rb.rotation && rb.bodyRect.height > 0 && measuredBlock.measured.totalHeight > room + FIT_EPS && room > 0) {
         let width = rb.bodyRect.width;
         for (let attempt = 0; attempt < 3; attempt++) {
@@ -6582,7 +6656,9 @@ function placeDocumentPass(
       /** Column balancing: the levers applied to this placement, stamped
        *  on the block it places (`VDTBlock.balancing`). */
       let balancing: VDTBalancing | undefined;
-      if (!isFirstInColumn) {
+      // (Right under a float at the head of the opener's own column, #639,
+      // the block starts as at a column's head: no space above it.)
+      if (!isFirstInColumn && !underOpenerHeadFloat(curCol)) {
         spacingBefore = pendingSpacing;
         if (vdtType === 'heading' || vdtType === 'mathDisplay') {
           spacingBefore = Math.max(partIndex === 0 ? pendingBeforeSelfSnapping(blockIdx) : spacingBefore, style.marginTopPx);
