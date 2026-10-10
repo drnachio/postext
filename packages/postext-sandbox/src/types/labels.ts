@@ -1787,6 +1787,10 @@ export interface SandboxLabels {
   warningsTextWrapTitle: string;
   warningsColumnsTooNarrowTitle: string;
   warningsColumnsTooNarrowDetail: string;
+  warningsAfterTextTitle: string;
+  warningsAfterTextDetail: string;
+  warningsUnplacedTitle: string;
+  warningsUnplacedDetail: string;
   warningsTextWrapTooNarrow: string;
   warningsTextWrapFewLines: string;
   warningsTextWrapMoved: string;

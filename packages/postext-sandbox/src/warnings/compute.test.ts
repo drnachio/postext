@@ -543,6 +543,41 @@ describe('engine content warnings', () => {
     expect(warningCategory('columnsTooNarrow')).toBe('typesetting');
   });
 
+  it('reports side boxes set after the text, and one no page could take (#639)', () => {
+    const mm = (value: number) => ({ value, unit: 'mm' as const });
+    const pt = (value: number) => ({ value, unit: 'pt' as const });
+    // Eight lines a page, a side column that only takes floats.
+    const config: PostextConfig = {
+      page: { width: mm(100), height: mm(60), dpi: 150, margins: { top: mm(10), bottom: mm(10.48), left: mm(10), right: mm(10) } },
+      layout: { layoutType: 'oneAndHalf', sideColumnPercent: 20, sideColumnRole: 'floats', gutterWidth: mm(3) },
+      bodyText: { fontSize: pt(10), lineHeight: pt(14), textAlign: 'left', firstLineIndent: pt(0) },
+      calloutStyles: [{ id: 'n', backgroundEnabled: false, padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) } }],
+      header: { elements: [] },
+      footer: { elements: [] },
+    };
+    const box = (name: string) => `:::callout{type="n" span="side"}\n${Array.from({ length: 6 }, (_, i) => `${name}${i + 1}`).join('\n\n')}\n:::`;
+    const md = ['Text.', box('A'), box('B'), box('C')].join('\n\n');
+    const doc = buildDocument({ markdown: md }, config);
+    expect(doc.pages).toHaveLength(3);
+    const found = computeWarnings({ markdown: md, config, doc }).filter((w) => w.payload.kind === 'afterText');
+    expect(found.map((w) => w.payload)).toEqual([{ kind: 'afterText', page: 2 }, { kind: 'afterText', page: 3 }]);
+    expect(found.map((w) => w.line)).toEqual([17, 31]);
+    expect(warningCategory('afterText')).toBe('typesetting');
+
+    // The section the heading opens has no side column: B has no page.
+    const plain: PostextConfig = {
+      ...config,
+      headings: { levels: [{ level: 2, breakBefore: { enabled: false } }] },
+      headingStyles: [{ id: 'plain', layout: { layoutType: 'single' } }],
+    };
+    const lost = ['Text.', '## Section {style="plain"}', 'More.', box('A'), box('B')].join('\n\n');
+    const unplaced = computeWarnings({ markdown: lost, config: plain, doc: buildDocument({ markdown: lost }, plain) })
+      .filter((w) => w.payload.kind === 'unplaced');
+    expect(unplaced.map((w) => w.payload)).toEqual([{ kind: 'unplaced' }]);
+    expect(lost.slice(unplaced[0]!.sourceStart, unplaced[0]!.sourceEnd)).toContain('B1');
+    expect(warningCategory('unplaced')).toBe('typesetting');
+  });
+
   it('flags an image the previews cannot read, unless storage itself is out', () => {
     const md = 'Look :ref{id="photo"}.';
     const found = computeWarnings({ markdown: md, config: {}, doc: null, resources: [photo], unavailableImages: new Set(['file-photo']) })

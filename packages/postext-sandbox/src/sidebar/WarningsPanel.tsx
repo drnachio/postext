@@ -52,6 +52,8 @@ function iconFor(kind: WarningPayload['kind']) {
     case 'dropCap':
     case 'codeOverflow':
     case 'columnsTooNarrow':
+    case 'afterText':
+    case 'unplaced':
       return FileWarning;
     case 'headingHierarchy':
       return Heading;
@@ -342,6 +344,10 @@ function titleFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsCodeOverflowTitle;
     case 'columnsTooNarrow':
       return labels.warningsColumnsTooNarrowTitle;
+    case 'afterText':
+      return labels.warningsAfterTextTitle;
+    case 'unplaced':
+      return labels.warningsUnplacedTitle;
     case 'unknownConfigKey':
       return labels.warningsUnknownConfigKeyTitle;
     case 'unknownConfigValue':
@@ -634,6 +640,10 @@ function detailFor(payload: WarningPayload, labels: SandboxLabels): string {
       return labels.warningsLineNumberOverlapDetail.replace('__number__', payload.number);
     case 'columnsTooNarrow':
       return labels.warningsColumnsTooNarrowDetail.replace('__columns__', String(payload.columns));
+    case 'afterText':
+      return `${payload.resourceId !== undefined ? `#${payload.resourceId} — ` : ''}${labels.warningsAfterTextDetail.replace('__page__', String(payload.page))}`;
+    case 'unplaced':
+      return `${payload.resourceId !== undefined ? `#${payload.resourceId} — ` : ''}${labels.warningsUnplacedDetail}`;
     case 'codeOverflow': {
       const detail = payload.mode === 'wrap' ? labels.warningsCodeOverflowWrap
         : payload.mode === 'clip' ? labels.warningsCodeOverflowClip

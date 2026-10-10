@@ -147,6 +147,20 @@ function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warning[] {
       });
       return;
     }
+    if (w.kind === 'afterText' || w.kind === 'unplaced') {
+      // A side box or side float set on a page with no text, by its book
+      // page, and what the layout could place nowhere (#639).
+      out.push({
+        id: `layout-${w.kind}-${w.sourceStart ?? w.resourceId ?? 'x'}-${i}`,
+        payload: w.kind === 'afterText'
+          ? { kind: 'afterText', page: (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0), ...(w.resourceId !== undefined ? { resourceId: w.resourceId } : {}) }
+          : { kind: 'unplaced', ...(w.resourceId !== undefined ? { resourceId: w.resourceId } : {}) },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
     if (w.kind === 'fontFallback') {
       // A face the layout measured with a fallback (#629): one per face,
       // whatever chapter found it; no place in the text.

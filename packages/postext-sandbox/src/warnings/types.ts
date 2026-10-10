@@ -91,6 +91,8 @@ export type WarningKind =
   | 'dropCap'
   | 'textWrap'
   | 'columnsTooNarrow'
+  | 'afterText'
+  | 'unplaced'
   | 'codeOverflow'
   | 'floatShrunk'
   | 'unknownConfigKey'
@@ -374,6 +376,13 @@ export type WarningPayload =
   /** The sub-columns of a `:::columns` group are narrower than six ems of
    *  their text (#634). */
   | { kind: 'columnsTooNarrow'; columns: number; widthPx: number }
+  /** A side box, or a figure or table of the side column (`resourceId`),
+   *  set on book page `page`, which holds no text: its chapter's text
+   *  ended while it still waited for room in the side column (#639). */
+  | { kind: 'afterText'; page: number; resourceId?: string }
+  /** A box or a floated resource (`resourceId`) still waiting for a slot
+   *  when the layout ended (#639): it is on no page. */
+  | { kind: 'unplaced'; resourceId?: string }
   /** A line number set in the side column overlaps a side box, caption or
    *  figure (#621); both are painted. `number` as printed. */
   | { kind: 'lineNumberOverlap'; number: string }

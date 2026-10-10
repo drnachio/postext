@@ -73,6 +73,8 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'dropCap':
     case 'codeOverflow':
     case 'columnsTooNarrow':
+    case 'afterText':
+    case 'unplaced':
     case 'parityCascade':
     case 'unsupportedHyphenationLocale':
     case 'comicBalloonOverflow':
