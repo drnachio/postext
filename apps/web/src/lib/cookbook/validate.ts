@@ -9,7 +9,7 @@
  *
  * Pure and isomorphic: no I/O.
  */
-import type { Gotcha, GotchaId, Locale, RecipeMeta, Registry } from "./types.ts";
+import type { GapId, Gotcha, GotchaId, Locale, RecipeMeta, Registry } from "./types.ts";
 import {
   CHAPTER_IDS,
   GENRE_IDS,
@@ -578,6 +578,34 @@ export function fixedNotes(
     });
   });
   return notes;
+}
+
+/** One closed gap `recipe.json` still lists. */
+export interface FixedGap {
+  gap: GapId;
+  /** The version that closed it. */
+  fixedIn: string;
+  message: string;
+}
+
+/**
+ * The ids in a recipe's `gaps` that the engine closed at or before the
+ * version the recipe pins (#641): the recipe no longer works around them, so
+ * each one leaves the list, like a fixed pitfall leaves `gotchas`
+ * (`fixedNotes`). A recipe pinned below the fix keeps the id: its script
+ * still takes the way round. `asOf` reads the recipe as if it pinned at
+ * least that version.
+ */
+export function fixedGaps(meta: Pick<RecipeMeta, "gaps" | "engine">, gaps: Registry["gaps"] | undefined, asOf?: string): FixedGap[] {
+  const own = typeof meta.engine?.postext === "string" ? meta.engine.postext : undefined;
+  const pinned = asOf && (!own || compareSemVer(asOf, own) > 0) ? asOf : own;
+  if (!pinned) return [];
+  const pins = pinned === own ? `this recipe pins ${pinned}` : `the recipe is read as of ${pinned}`;
+  return asStrings(meta.gaps).flatMap((id) => {
+    const fixedIn = gaps?.[id]?.fixedIn;
+    if (!fixedIn || !gotchaRetired({ fixedIn }, pinned)) return [];
+    return [{ gap: id, fixedIn, message: `gaps: "${id}" is closed in postext ${fixedIn} and ${pins}: take it out of the list` }];
+  });
 }
 
 function isValidDate(value: unknown): value is string {

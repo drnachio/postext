@@ -153,10 +153,10 @@ The TypeScript source of truth is `RecipeMeta` in `apps/web/src/lib/cookbook/typ
 | `outputs` | 1–4 of `canvas html pdf epub bundle live`. `pdf` ⇔ the `pdf` kit block ⇔ an import from `https://esm.sh/postext-pdf` ⇔ `engine.postextPdf`; `epub` ⇔ an import from `https://esm.sh/postext-epub`. |
 | `features` | `primary`: 1–3 features the recipe **teaches**; `also`: up to 17 others it uses. Ids from `_registry/features.json`. |
 | `answers` | Question ids (`Q01`…`Q178`); `answers[0]` is the question the recipe page leads with. |
-| `gaps` | Unsupported features the recipe works around (gives the Workaround badge). |
+| `gaps` | Unsupported features the recipe works around (gives the Workaround badge). When the engine closes one (`fixedIn` in `gaps.json`) and the recipe pins that version or a later one, the id leaves the list: the lint fails it. |
 | `gotchas`, `explainsWarnings` | Shared pitfalls and warning kinds shown under Pitfalls. |
 | `related` | Up to four hand-picked sibling slugs; the rest are computed. |
-| `workarounds` | Engine bugs the recipe routes around: `{ followup?, issue?, package, note }`, revisited when fixed. |
+| `workarounds` | Notes on code a reader would not expect: `{ followup?, issue?, package, note }`. With a `followup` (the engine follow-up, such as `EF-66`; `issue` adds a GitHub issue number), the note is a workaround: an engine bug the recipe routes around, deleted with its code when the fix is released; the lint reports it once a pitfall with that follow-up has `fixedIn` at or below the recipe's pin. Without a `followup` it is a design note: a setting the recipe keeps by choice, which stays as long as the code does. The page does not print these notes. |
 | `engine` | `postext` minimum version (≤ the released one, or the next release in a preview draft, §3); `postextPdf` for PDF recipes; `math`, `worker` flags. |
 | `kit` | Blocks to inline: always `core`, `fonts`, `viewer`; plus `pdf`, `images`, `cjk`, `arabic`, `book` and `comics` when used (`book` or `cjk`, never both: each declares `showBook`). |
 | `sample.locales` | Languages with a `content.<lang>.md`; `[0]` is the fallback edition. Usually `en` and `es`; any site locale may have an edition of its own (a comic re-lettered per language writes all six), and a page shows its own edition, else the Spanish one for Catalan, else `[0]`. A value that changes with the edition is written `t({ en: 'en', ja: 'ja', … })`; the lint reads `config.locale` written so for each edition. |
@@ -774,7 +774,7 @@ share. Each file starts with a `"$comment"` that explains it; the loader ignores
 | `apis.json` | exported engine symbols → docs section | symbol name |
 | `config.json` | top-level config keys → docs section | key |
 | `questions.json` | the reader questions Q01–Q178, how/why, index form, theme, gap | `Qnn` |
-| `gaps.json` | what Postext does not do, with aliases and the workaround; a gap the engine closes keeps its entry with `fixedIn` (the version), so the recipes and questions that name it still resolve, but the site no longer offers it as a gap or gives its recipes the Workaround badge | kebab-case id |
+| `gaps.json` | what Postext does not do, with aliases and the workaround; a gap the engine closes keeps its entry with `fixedIn` (the version), so the questions and the older-pinned recipes that name it still resolve, but the site no longer offers it as a gap or gives its recipes the Workaround badge; a recipe that pins that version or a later one takes the id out of its `gaps` (the lint fails it) | kebab-case id |
 | `warnings.json` | every engine, parse and Sandbox warning: label, cause, fix | warning kind |
 | `gotchas.json` | shared pitfalls, tied to a feature and to the engine follow-up that would retire them; one the engine fixes keeps its entry with `fixedIn` (the version) and a body that tells the old behaviour as past: a recipe that pins an older engine still lists it, under a "fixed in postext X" kicker, and a recipe that pins that version or a later one no longer shows it nor is found by it | kebab-case id |
 | `collections.json` | featured recipes and curated reading paths | kebab-case id |

@@ -42,7 +42,7 @@ import { loadRegistry } from "./registry.ts";
 import { listRecipeSlugs, readKit, readRecipeMeta, readRecipeSources } from "./sources.ts";
 import type { ComposedPen, KitBlock, Locale, RecipeMeta, RecipeSources, Registry, SampleLocale } from "./types.ts";
 import { KIT_ORDER, LOCALES } from "./types.ts";
-import { compareSemVer, fixedNotes, unquotedFrontmatter, validateRecipeMeta, validateRecipeSet } from "./validate.ts";
+import { compareSemVer, fixedGaps, fixedNotes, unquotedFrontmatter, validateRecipeMeta, validateRecipeSet } from "./validate.ts";
 import { readWriteup, writeupRefs } from "./writeup.ts";
 import { CJK_CHARS_PER_WORD, JAPANESE_CHARS_PER_WORD, styleMessages, textLength } from "./style.ts";
 
@@ -920,6 +920,10 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
     return report();
   }
   const knownSlugs = options.knownSlugs ?? listRecipeSlugs();
+  // A gap the engine closed at or before the recipe's pin is no longer worked
+  // around: its id leaves `gaps` (#641). Always a failure: no recipe listed
+  // one when this check arrived, so it needs no `--strict-fixed`.
+  fails.push(...fixedGaps(meta, registry.gaps, options.fixedAsOf).map((note) => `recipe.json › ${note.message}`));
   fails.push(
     // Worded like scripts/cookbook/lint.ts, which also validates recipe.json and merges equal findings.
     ...validateRecipeMeta(meta, slug, registry, { knownSlugs, released: options.released ?? readReleasedEngine(), preview: options.preview }).map(
