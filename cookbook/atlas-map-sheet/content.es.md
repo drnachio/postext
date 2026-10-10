@@ -36,8 +36,6 @@ Casi todos los nombres de las islas son nórdicos, de los siglos en que pertenec
 
 El nomenclátor recoge los diecisiete lugares numerados de norte a sur. Su última columna da el cuadro de la carta en que está cada uno: la letra indica la columna, contada desde el oeste, y la cifra la fila, contada desde el norte. Kirkwick, el número 6, está en el cuadro D3, con el Ward of Brannay. Carrick, el número 8, está en H4, en la costa de tierra firme, al final de la línea del transbordador. Los mismos números marcan el mapa del extremo norte, así que Tofts, el número 5, puede buscarse en cualquiera de las dos escalas. La cuadrícula es propia de este atlas, no de ningún organismo cartográfico, y todas sus hojas usan los mismos cuadros de 8 kilómetros.
 
-:::columnbreak
-
 ## Sobre esta hoja {style="imprint"}
 
 Las costas siguen el levantamiento de 1874, cotejado con fotografías aéreas de 2019. Las alturas están en metros sobre el nivel medio del mar. Las profundidades están en metros bajo la marea más baja; las sondas del *voe* de Kirkwick las tomó la junta del puerto en mayo de 2024, y las de la carta, el buque hidrográfico *Petrel* en 2023. Las carreteras son las abiertas al tráfico. Los caminos, las cercas y los lindes de las parcelas figuran en las hojas de seis pulgadas por milla, que se venden en la oficina del puerto.

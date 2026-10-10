@@ -34,13 +34,13 @@ O código é [a resposta curta](#a-resposta-curta) logo acima. O mapa 1 é um fl
 
 <Excerpt region="resources" />
 
-Um recurso recebe o número da primeira citação dele no texto, e `:ref{id="north"}` imprime o rótulo curto do tipo e esse número, Map 2, no texto corrido ou numa nota de legenda. A carta e o índice toponímico são citados pela primeira vez na página 2, nessa ordem, então a carta fica com a página 3 e o índice com o alto da página 4. A rosa dos ventos é um recurso do mesmo tipo, mas só a abertura a desenha e o texto nunca a cita, então os mapas continuam contando de 1 a 4. Cada entrada da chave do porto é um único chip sem preenchimento, borda nem espaçamento interno, de modo que o número, o nome e o ponto depois dele ficam na mesma linha; com espaços não separáveis no lugar, a 1.4.1 quebra a chave em inglês entre o 3 e *harbour office*.
+Um recurso recebe o número da primeira citação dele no texto, e `:ref{id="north"}` imprime o rótulo curto do tipo e esse número, Map 2, no texto corrido ou numa nota de legenda. A carta e o índice toponímico são citados pela primeira vez na página 2, nessa ordem, então a carta fica com a página 3 e o índice com o alto da página 4. A rosa dos ventos é um recurso do mesmo tipo, mas só a abertura a desenha e o texto nunca a cita, então os mapas continuam contando de 1 a 4. Cada entrada da chave do porto é um único chip sem preenchimento, borda nem espaçamento interno, de modo que o número, o nome e o ponto depois dele ficam na mesma linha.
 
 ### 5 · Números que os mapas e o índice toponímico compartilham
 
 <Excerpt region="gazetteer" />
 
-`PLACES` está ordenada de norte a sul e numerada nessa ordem, e os mapas imprimem os números em discos vermelhos e a tabela em chips vermelhos. `square()` calcula o quadrado da carta a partir das mesmas coordenadas em quilômetros que posicionam cada marca nos mapas, então Kirkwick, número 6, fica em D3 na carta e na tabela. Um estilo de tabela tem um único preenchimento para o corpo, por isso uma linha sim, outra não é preenchida célula a célula com `setCellBackground`.
+`PLACES` está ordenada de norte a sul e numerada nessa ordem, e os mapas imprimem os números em discos vermelhos e a tabela em chips vermelhos. `square()` calcula o quadrado da carta a partir das mesmas coordenadas em quilômetros que posicionam cada marca nos mapas, então Kirkwick, número 6, fica em D3 na carta e na tabela. O azul-claro de uma linha sim, outra não vem do estilo de tabela: `bodyAlternateBackgroundEnabled`, com `bodyAlternateBackground` vinculado a `sea`.
 
 ### 6 · O nome do atlas numa faixa do seu próprio azul
 
@@ -66,7 +66,3 @@ Uma tabela gira com a mesma configuração e, quando é larga demais para uma p�
 ### Ponha um mapa na margem
 
 Num layout de coluna e meia, a coluna externa pode receber figuras e as suas legendas, sem texto: veja <RecipeLink slug="textbook-margin-column">o livro didático com coluna na margem</RecipeLink>.
-
-## Erros comuns
-
-- O texto final da <PageRef page={4}>página 4</PageRef> é dividido à mão com um `:::columnbreak`. O Postext 1.4.1 não nivela as colunas de uma página final que vem depois de uma página dada inteira a um flutuante, aqui a carta girada, e sem a quebra todos os parágrafos vão para a coluna esquerda e só o colofão começa a coluna direita. Mude a quebra de lugar quando o texto mudar.

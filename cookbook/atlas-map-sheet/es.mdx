@@ -34,13 +34,13 @@ El código es [la respuesta corta](#la-respuesta-corta), más arriba. El mapa 1 
 
 <Excerpt region="resources" />
 
-Un recurso recibe su número en la primera cita del texto, y `:ref{id="north" case="lower"}` imprime la etiqueta corta del tipo y ese número en minúscula, «mapa 2», tanto en el texto como en una nota. La carta y el nomenclátor se citan por primera vez en la página 2, por ese orden, así que la carta ocupa la página 3, y el nomenclátor, la cabeza de la página 4. La rosa de los vientos es un recurso del mismo tipo, pero solo la dibuja la apertura y el texto no la cita nunca, así que los mapas siguen numerados del 1 al 4. Cada entrada de la clave del puerto es un solo chip sin fondo, borde ni relleno, de modo que el número, el nombre y el punto que va detrás quedan en la misma línea; con espacios de no separación, 1.4.1 parte la clave de la edición inglesa entre el 3 y *harbour office*.
+Un recurso recibe su número en la primera cita del texto, y `:ref{id="north" case="lower"}` imprime la etiqueta corta del tipo y ese número en minúscula, «mapa 2», tanto en el texto como en una nota. La carta y el nomenclátor se citan por primera vez en la página 2, por ese orden, así que la carta ocupa la página 3, y el nomenclátor, la cabeza de la página 4. La rosa de los vientos es un recurso del mismo tipo, pero solo la dibuja la apertura y el texto no la cita nunca, así que los mapas siguen numerados del 1 al 4. Cada entrada de la clave del puerto es un solo chip sin fondo, borde ni relleno, de modo que el número, el nombre y el punto que va detrás quedan en la misma línea.
 
 ### 5 · Números que comparten los mapas y el nomenclátor
 
 <Excerpt region="gazetteer" />
 
-`PLACES` va ordenada de norte a sur y numerada en ese orden; los mapas imprimen esos números en discos rojos, y la tabla, en chips rojos. `square()` calcula el cuadro de la carta con las mismas coordenadas en kilómetros que sitúan cada marca en los mapas, así que Kirkwick, el número 6, cae en D3 tanto en la carta como en la tabla. Un estilo de tabla tiene un solo relleno para el cuerpo, así que una fila de cada dos se rellena celda a celda con `setCellBackground`.
+`PLACES` va ordenada de norte a sur y numerada en ese orden; los mapas imprimen esos números en discos rojos, y la tabla, en chips rojos. `square()` calcula el cuadro de la carta con las mismas coordenadas en kilómetros que sitúan cada marca en los mapas, así que Kirkwick, el número 6, cae en D3 tanto en la carta como en la tabla. El azul pálido de una fila de cada dos lo pone el estilo de tabla: `bodyAlternateBackgroundEnabled`, con `bodyAlternateBackground` enlazado a `sea`.
 
 ### 6 · El nombre del atlas en una banda de su propio azul
 
@@ -66,7 +66,3 @@ Una tabla gira con el mismo ajuste y, cuando es demasiado ancha para una página
 ### Pon un mapa al margen
 
 En una maqueta de columna y media, la columna exterior puede reservarse para las figuras y sus pies, sin texto: mira <RecipeLink slug="textbook-margin-column">el libro de texto con columna al margen</RecipeLink>.
-
-## Errores frecuentes
-
-- El texto de cierre de la <PageRef page={4}>página 4</PageRef> se reparte a mano con un `:::columnbreak`. Postext 1.4.1 no equilibra las columnas de una página de cierre que sigue a una página ocupada entera por un flotante, aquí la carta girada, y sin el salto todos los párrafos van a la columna izquierda y solo el colofón empieza la derecha. Mueve el salto cuando cambie el texto.

@@ -34,13 +34,13 @@ El codi és [la resposta curta](#la-resposta-curta), més amunt. El mapa 1 és u
 
 <Excerpt region="resources" />
 
-Un recurs rep el seu número a la primera citació del text, i `:ref{id="north" case="lower"}` imprimeix l'etiqueta curta del tipus i aquest número en minúscula, «mapa 2», tant al text com en una nota. La carta i el nomenclàtor es citen per primera vegada a la pàgina 2, en aquest ordre, així que la carta ocupa la pàgina 3, i el nomenclàtor, el capdamunt de la pàgina 4. La rosa dels vents és un recurs del mateix tipus, però només la dibuixa l'obertura i el text no la cita mai, així que els mapes continuen numerats de l'1 al 4. Cada entrada de la clau del port és un sol chip sense fons, vora ni farciment, de manera que el número, el nom i el punt que va darrere queden a la mateixa línia; amb espais de no separació, la 1.4.1 parteix la clau de l'edició anglesa entre el 3 i *harbour office*.
+Un recurs rep el seu número a la primera citació del text, i `:ref{id="north" case="lower"}` imprimeix l'etiqueta curta del tipus i aquest número en minúscula, «mapa 2», tant al text com en una nota. La carta i el nomenclàtor es citen per primera vegada a la pàgina 2, en aquest ordre, així que la carta ocupa la pàgina 3, i el nomenclàtor, el capdamunt de la pàgina 4. La rosa dels vents és un recurs del mateix tipus, però només la dibuixa l'obertura i el text no la cita mai, així que els mapes continuen numerats de l'1 al 4. Cada entrada de la clau del port és un sol chip sense fons, vora ni farciment, de manera que el número, el nom i el punt que va darrere queden a la mateixa línia.
 
 ### 5 · Números que comparteixen els mapes i el nomenclàtor
 
 <Excerpt region="gazetteer" />
 
-`PLACES` va ordenada de nord a sud i numerada en aquest ordre; els mapes imprimeixen aquests números en discos vermells, i la taula, en chips vermells. `square()` calcula el quadre de la carta amb les mateixes coordenades en quilòmetres que situen cada marca als mapes, així que Kirkwick, el número 6, cau a D3 tant a la carta com a la taula. Un estil de taula té un sol farciment per al cos, així que una fila de cada dues s'omple cel·la a cel·la amb `setCellBackground`.
+`PLACES` va ordenada de nord a sud i numerada en aquest ordre; els mapes imprimeixen aquests números en discos vermells, i la taula, en chips vermells. `square()` calcula el quadre de la carta amb les mateixes coordenades en quilòmetres que situen cada marca als mapes, així que Kirkwick, el número 6, cau a D3 tant a la carta com a la taula. El blau pàl·lid d'una fila de cada dues el posa l'estil de taula: `bodyAlternateBackgroundEnabled`, amb `bodyAlternateBackground` enllaçat a `sea`.
 
 ### 6 · El nom de l'atles en una banda del seu propi blau
 
@@ -66,7 +66,3 @@ Una taula gira amb la mateixa opció i, quan és massa ampla per a una pàgina, 
 ### Posa un mapa al marge
 
 En una maqueta de columna i mitja, la columna exterior es pot reservar per a les figures i els seus peus, sense text: mira <RecipeLink slug="textbook-margin-column">el llibre de text amb columna al marge</RecipeLink>.
-
-## Errors freqüents
-
-- El text de tancament de la <PageRef page={4}>pàgina 4</PageRef> es reparteix a mà amb un `:::columnbreak`. Postext 1.4.1 no equilibra les columnes d'una pàgina de tancament que segueix una pàgina ocupada sencera per un flotant, aquí la carta girada, i sense el salt tots els paràgrafs van a la columna esquerra i només el colofó comença la dreta. Mou el salt quan canviï el text.
