@@ -49,17 +49,8 @@
   ],
   "gaps": [],
   "gotchas": [
-    "headings-drop-h1-break",
     "parity-page1-recto",
-    "design-text-newline",
-    "design-lineheight-multiple",
-    "design-text-ragged",
-    "overflow-ellipsis-default",
-    "runt-tracking-unpainted",
-    "palette-skips-designs",
-    "resource-double-quotes",
-    "hyphenation-locales",
-    "quote-frontmatter"
+    "resource-double-quotes"
   ],
   "explainsWarnings": [
     "parityCascade"
@@ -70,58 +61,7 @@
     "front-matter-roman-to-arabic",
     "running-heads-by-parity"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "level 1 restates breakBefore (parity 'odd') because any headings object drops the H1 break"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "every frontmatter value is quoted: title and author feed the cover and the running heads"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside the paletteId, because the cover, opener and running-head designs do not read the palette"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the lead's design-text lineHeight is the multiple LEAD / 9.5, never a Dimension, which would drop the opener's reservation"
-    },
-    {
-      "followup": "EF-01",
-      "package": "postext",
-      "note": "the lead sets paragraphIndent: pt(0.01) so that the \\n in each lead attribute breaks the line; at 0 the lead prints the two characters \\n and wraps where the measure ends"
-    },
-    {
-      "followup": "EF-109",
-      "package": "postext",
-      "note": "design text cannot be justified, so the small-caps lead is a centred display of two lines broken by sense instead of a justified first line"
-    },
-    {
-      "followup": "EF-111",
-      "package": "postext",
-      "note": "bodyText.maxRuntTracking: 0: at the default, the paragraph ending 'nodding good-by to him.' is set a line shorter with negative tracking the canvas does not paint"
-    },
-    {
-      "followup": "EF-66",
-      "package": "postext",
-      "note": "the U+00A0 after Mr. and Mrs. holds only in plain paragraphs; in the two paragraphs with italics it is an ordinary space, and neither line happens to break there"
-    },
-    {
-      "followup": "EF-14",
-      "package": "postext",
-      "note": "locale is the exact bundled code ('en-us' | 'pt'): 'pt-BR' would hyphenate the Portuguese edition as American English"
-    },
-    {
-      "followup": "EF-113",
-      "package": "postext",
-      "note": "the cover style sets span: 'page' in this single-column book: kept in the column, its design is clipped at the column top (165 mm down, the section's margin), so the art disappears and the title loses its top"
-    }
-  ],
+  "workarounds": [],
   "engine": {
     "postext": "1.25.0"
   },

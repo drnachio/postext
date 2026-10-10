@@ -16,7 +16,7 @@ const palette = { // every colour in the config links to one of these
   muted: '#6e655b', // running heads, folios on openers, the colophon
   paper: '#fbf7ef', // a cream book paper
 };
-// Each colour names its palette entry and carries its hex (gotcha: palette-skips-designs).
+// Each colour names its palette entry and carries its hex.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -46,8 +46,8 @@ const page = {
 // #region answer: a sunk opener: the numeral, a hairline, and the first sentence in small caps
 // # I {lead="A green and yellow parrot, … kept repeating over and over:"}
 // The heading's text is the numeral, printed by {titleText}; the chapter's first sentence
-// travels as the heading's lead attribute, printed by {attr.lead} in small capitals and
-// centred, because design text is never justified (gotcha: design-text-ragged).
+// travels as the heading's lead attribute, printed by {attr.lead} in small capitals: a
+// centred display, which a \n in the attribute breaks by sense.
 const [LEAD_AT, BODY_AT] = [9, 12]; // grid lines: the lead's top; where the text starts
 const NUMERAL = 48; // pt
 const RULE_Y = (LEAD_AT - 1.5) * LEAD * MM_PER_PT; // mm: a line and a half above the lead
@@ -66,21 +66,19 @@ const opener = {
       color: col('rubric'), placement: { ...centred(mm(RULE_Y)), size: { width: mm(18) } } },
     { kind: 'text', id: 'lead', content: '{attr.lead}', fontFamily: LABEL, fontWeight: 600,
       fontSize: pt(9.5), letterSpacing: pt(0.6), color: col('ink'), align: 'center',
-      lineHeight: LEAD / 9.5, // a multiple, never pt() (gotcha: design-lineheight-multiple)
-      overflow: 'wrap', // wrap, not '…' (gotcha: overflow-ellipsis-default)
-      paragraphIndent: pt(0.01), // a \n in the lead breaks the line (gotcha: design-text-newline)
+      lineHeight: LEAD / 9.5, // one grid line to each line of the lead
       placement: { ...centred(line(LEAD_AT)), size: { width: mm(MEASURE) } } },
   ] },
 };
 // Every chapter opens on a recto: 'odd' adds a blank verso only after a chapter that ends on
-// a recto (restated: gotcha headings-drop-h1-break). marginBottom 0: the level's default
-// 0.5 em would start the text a line lower.
+// a recto, where the default 'always-odd' leaves a blank page after every chapter.
+// marginBottom 0: the level's default 0.5 em would start the text a line lower.
 const chapter = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
   marginBottom: pt(0), italic: true, advancedDesign: opener };
 // #endregion
 
 // #region heads: the author on the verso, the title on the recto, folios outside
-// {author} and {title} come from the frontmatter, every value quoted (gotcha: quote-frontmatter).
+// {author} and {title} come from the frontmatter.
 const HEAD_Y = 12; // mm from the top edge to the top of the running heads
 const SHIFT = (INNER - OUTER) / 2; // mm: the text block's centre is off the page's centre
 const head = (id, content, parity, edge, x, style) => ({
@@ -112,7 +110,6 @@ const COLOPHON_TOP = TOP + (LINES - COLOPHON_LINES) * LEAD * MM_PER_PT; // mm: t
 const onPage = (y) => ({ anchor: { to: 'page', edge: 'top' }, offset: { y: mm(y) } }); // y mm down
 const cover = {
   id: 'cover',
-  span: 'page', // kept in the column, the design is clipped at the column top, 165 mm down
   header: { elements: [] }, footer: { elements: [] }, // no running heads on p. 1 or p. 2
   margins: { top: mm(COLOPHON_TOP) },
   advancedDesign: { enabled: true, slot: { elements: [
@@ -156,7 +153,7 @@ const resources = [
 // #endregion
 
 const config = () => ({
-  locale: t({ en: 'en-us', pt: 'pt' }), // exact codes (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-us', pt: 'pt' }), // each edition's hyphenation patterns
   colorPalette,
   resourceTypes: [ornament],
   page,
@@ -166,7 +163,6 @@ const config = () => ({
     boldColor: col('ink'), italicColor: col('ink'),
     firstLineIndent: mm(4), indentAfterHeading: false,
     minWordSpacing: 0.7, maxWordSpacing: 1.9, // at the default 0.6 a line closes to 0.62
-    maxRuntTracking: 0, // gotcha: runt-tracking-unpainted
   },
   // The designs paint every heading; the level's own face is the numeral's (500 italic), so the
   // kit has no unused face to load.
