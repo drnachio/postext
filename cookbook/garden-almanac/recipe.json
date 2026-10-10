@@ -19,19 +19,12 @@
   },
   "answers": ["Q67", "Q65", "Q68", "Q69", "Q52"],
   "gaps": [],
-  "gotchas": [ "merged-cells-hiddenby", "resource-types-locale",
-    "opener-image-no-reserve", "headings-drop-h1-break", "palette-skips-designs",
-    "design-lineheight-multiple", "overflow-ellipsis-default"
+  "gotchas": [
+    "merged-cells-hiddenby"
   ],
   "workarounds": [
-    { "followup": "EF-34", "package": "postext", "note": "parseTSV leaves headerRowCount unset, so the matrix's head row is declared by hand; every merge goes through mergeCells, which marks the covered cells hiddenBy" },
-    { "followup": "EF-33", "package": "postext", "note": "1.4.1 names resource types and table continuation strings in English and Spanish only: the Italian Tabella, (segue) and Continua alla pagina seguente are written by hand" },
-    { "followup": "EF-90", "package": "postext", "note": "the opener's drawing, an image element, reserves no height, so minHeight starts the text on the first grid line 5 mm or more under it" },
-    { "followup": "EF-94", "package": "postext", "note": "page 28 is the last page of text, so 1.4.1 lifts the page-wide matrix to one line under the text; the copy and the matrix's drawings are sized so that it ends about 10 mm above the bottom margin" },
-    { "followup": "EF-05", "package": "postext", "note": "the H1 page break is restated in headings.levels[0].breakBefore" },
-    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId: 1.4.1 paints header, footer and opener element colours from the hex" },
-    { "followup": "EF-56", "package": "postext", "note": "design text lineHeight is given as a multiple" },
-    { "followup": "EF-154", "package": "postext", "note": "a day without a note gets its second line from a word joiner (U+2060), not a no-break space: 1.4.1 sets no line for a table-cell paragraph that holds only U+00A0, so the weeks without notes came out a line shorter" }
+    { "followup": "EF-34", "package": "postext", "note": "every merge of the calendar's and the chart's heads goes through mergeCells, which marks the covered cells hiddenBy" },
+    { "package": "postext", "note": "page 28 is the chapter's closing page, where a page-wide float moves up to one line under the text (layout.hugClosingFloats, on by default); the copy and the matrix's drawings are sized so that the matrix ends about 10 mm above the bottom margin" }
   ],
   "related": ["atlas-map-sheet", "annual-report-flush-columns", "bistro-menu", "recipe-card"],
   "engine": { "postext": "1.25.0" },
