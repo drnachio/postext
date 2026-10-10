@@ -22,7 +22,7 @@ The code is [the short answer](#the-short-answer) above. The TSV holds only word
 
 <Excerpt region="split" />
 
-The letter on page 1 cites the list with `:ref{id="vegetables" text="the price list"}`, and `text` prints those words in place of a number. A cited table floats to the first free slot after the citation, here the top of page 2. The list does not fit there, so the engine cuts it between rows after Jimmy Nardello, never inside a merged kind. Page 3 repeats the head row and the caption band with the suffix; the marker goes under the first part and the note under the last ([Tables taller than the page](/en/docs/configuration#tables-taller-than-the-page)). `parseTSV` marks no cell as a header, so `headerRowCount: 1` is set by hand to paint the first row as the head row and repeat it on page 3. The suffix and the marker are italic and take the caption's face, so the band stays in Gelasio; Cabin Condensed has no italic.
+The letter on page 1 cites the list with `:ref{id="vegetables" text="the price list"}`, and `text` prints those words in place of a number. A cited table floats to the first free slot after the citation, here the top of page 2. The list does not fit there, so the engine cuts it between rows after Jimmy Nardello, never inside a merged kind. Page 3 repeats the head row and the caption band with the suffix; the marker goes under the first part and the note under the last ([Tables taller than the page](/en/docs/configuration#tables-taller-than-the-page)). `parseTSV(tsv, { headerRows: 1 })` makes the first row the head row, which is painted as one and repeated on page 3. The suffix and the marker are italic and take the caption's face, so the band stays in Gelasio; Cabin Condensed has no italic.
 
 ### 3 · A resource for every packet
 
@@ -40,7 +40,7 @@ The two grids use the named style `form`, with grid rules, a 2.5 mm radius on th
 
 <Excerpt region="cover" />
 
-The cover painting is an image element, and an image adds nothing to the height an opener reserves. Without `minHeight` the letter would start 55 mm from the top of the page, over the sunflower. `SINK` adds 10 mm of air under the painting and rounds the depth below the top margin up to whole 13 pt lines, 34 of them, so both columns of the letter start on the grid, 177.9 mm down the page.
+The cover reserves down to the foot of its painting, 164 mm down the page, and without `minHeight` the letter would start on the first grid line under it, against the soil. `minHeight` is a floor set a little lower: `SINK` adds 10 mm of air under the painting and rounds the depth below the top margin up to whole 13 pt lines, 34 of them, so both columns of the letter start on the grid, 177.9 mm down the page. The cover’s frame reaches the foot of the page; `reserve: false` keeps it out of that count.
 
 ## Variations
 
@@ -65,4 +65,4 @@ At 40% the rows drop to 29 mm, but the two beans share a merged cell and need 57
 ## Pitfalls
 
 - A resource nobody cites is never placed. Take the `:ref` out of the letter and the catalogue has no price list.
-- In 75 mm columns Knuth–Plass can leave a justified line whose spaces stretch past `maxWordSpacing`. The letter and the trial notes were reworded until the loosest line stretched its spaces 1.33 times their normal width. The notes are also fitted to 14 lines: with 13, the closing page's column balancing puts a blank grid line above From Our Trial Garden, and the heading starts one line lower than the text in the other column.
+- In 75 mm columns Knuth–Plass can leave a justified line whose spaces stretch past `maxWordSpacing`; `bodyText.maxJustifyTracking` lets such a line take a little tracking instead. Here the letter and the trial notes were reworded until the loosest line stretched its spaces 1.33 times their normal width.

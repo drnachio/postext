@@ -22,7 +22,7 @@ O código é [a resposta curta](#a-resposta-curta) lá em cima. O TSV guarda só
 
 <Excerpt region="split" />
 
-A carta da página 1 cita a lista com `:ref{id="vegetables" text="the price list"}`, e `text` imprime essas palavras no lugar de um número. Uma tabela citada flutua para o primeiro espaço livre depois da citação, aqui o alto da página 2. A lista não cabe ali, então o motor a corta entre linhas depois de Jimmy Nardello, nunca dentro de um tipo mesclado. A página 3 repete a linha de cabeçalho e a faixa da legenda com o sufixo; o aviso de continuação vai sob a primeira parte, e a nota, sob a última ([tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)). `parseTSV` não marca nenhuma célula como cabeçalho, então `headerRowCount: 1` é definido à mão para pintar a primeira linha como cabeçalho e repeti-la na página 3. O sufixo e o aviso vão em itálico e usam a fonte da legenda, por isso a faixa fica em Gelasio; a Cabin Condensed não tem itálico.
+A carta da página 1 cita a lista com `:ref{id="vegetables" text="the price list"}`, e `text` imprime essas palavras no lugar de um número. Uma tabela citada flutua para o primeiro espaço livre depois da citação, aqui o alto da página 2. A lista não cabe ali, então o motor a corta entre linhas depois de Jimmy Nardello, nunca dentro de um tipo mesclado. A página 3 repete a linha de cabeçalho e a faixa da legenda com o sufixo; o aviso de continuação vai sob a primeira parte, e a nota, sob a última ([tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)). `parseTSV(tsv, { headerRows: 1 })` faz da primeira linha o cabeçalho, que é pintado como tal e repetido na página 3. O sufixo e o aviso vão em itálico e usam a fonte da legenda, por isso a faixa fica em Gelasio; a Cabin Condensed não tem itálico.
 
 ### 3 · Um recurso para cada envelope
 
@@ -40,7 +40,7 @@ As duas grades usam o estilo nomeado `form`, com fios em grade, raio de 2,5 mm n
 
 <Excerpt region="cover" />
 
-A pintura da capa é um elemento de imagem, e uma imagem não acrescenta nada à altura que uma abertura reserva. Sem `minHeight`, a carta começaria a 55 mm do alto da página, em cima do girassol. `SINK` acrescenta 10 mm de respiro sob a pintura e arredonda a profundidade abaixo da margem superior para cima, em linhas inteiras de 13 pt, 34 delas, de modo que as duas colunas da carta começam na grade, a 177,9 mm do alto da página.
+A capa reserva até o pé da sua pintura, a 164 mm do alto da página, e sem `minHeight` a carta começaria na primeira linha da grade abaixo dela, colada à terra. `minHeight` é um mínimo um pouco mais baixo: `SINK` acrescenta 10 mm de respiro sob a pintura e arredonda a profundidade abaixo da margem superior para cima, em linhas inteiras de 13 pt, 34 delas, de modo que as duas colunas da carta começam na grade, a 177,9 mm do alto da página. A moldura da capa vai até o pé da página; `reserve: false` a deixa fora dessa conta.
 
 ## Variações
 
@@ -65,4 +65,4 @@ A 40%, as linhas caem para 29 mm, mas os dois feijões dividem uma célula mescl
 ## Erros comuns
 
 - Um recurso que ninguém cita nunca é posicionado. Tire o `:ref` da carta e o catálogo fica sem lista de preços.
-- Em colunas de 75 mm, o Knuth–Plass pode deixar uma linha justificada com espaços esticados além de `maxWordSpacing`. A carta e as notas do campo de testes foram reescritas até que a linha mais frouxa abrisse os espaços 1,33 vez a largura normal. As notas também estão ajustadas para 14 linhas: com 13, o equilíbrio de colunas da página final põe uma linha da grade em branco acima de From Our Trial Garden, e o título começa uma linha abaixo do texto da outra coluna.
+- Em colunas de 75 mm, o Knuth–Plass pode deixar uma linha justificada com espaços esticados além de `maxWordSpacing`; `bodyText.maxJustifyTracking` deixa uma linha assim receber um pouco de espaçamento entre letras no lugar disso. Aqui a carta e as notas do campo de testes foram reescritas até que a linha mais frouxa abrisse os espaços 1,33 vez a largura normal.

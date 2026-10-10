@@ -22,7 +22,7 @@ El codi és a [la resposta curta](#la-resposta-curta), més amunt. El TSV només
 
 <Excerpt region="split" />
 
-La carta de la pàgina 1 cita la llista amb `:ref{id="vegetables" text="the price list"}`, i `text` imprimeix aquestes paraules en lloc d'un número. Una taula citada flota al primer forat lliure després de la cita, que aquí és el cap de la pàgina 2. La llista no hi cap sencera, així que el motor la talla entre files després de Jimmy Nardello, mai dins d'una classe combinada. A la pàgina 3 es repeteixen la fila de capçalera i la banda del peu, ara amb el sufix; l'avís va sota la primera part i la nota, sota l'última ([taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). `parseTSV` no marca cap cel·la com a capçalera, així que cal posar `headerRowCount: 1` a mà perquè la primera fila es pinti com a capçalera i es repeteixi a la pàgina 3. El sufix i l'avís van en cursiva amb la lletra del peu, i per això la banda es compon en Gelasio i no en Cabin Condensed, que no té cursiva.
+La carta de la pàgina 1 cita la llista amb `:ref{id="vegetables" text="the price list"}`, i `text` imprimeix aquestes paraules en lloc d'un número. Una taula citada flota al primer forat lliure després de la cita, que aquí és el cap de la pàgina 2. La llista no hi cap sencera, així que el motor la talla entre files després de Jimmy Nardello, mai dins d'una classe combinada. A la pàgina 3 es repeteixen la fila de capçalera i la banda del peu, ara amb el sufix; l'avís va sota la primera part i la nota, sota l'última ([taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). `parseTSV(tsv, { headerRows: 1 })` converteix la primera fila en la capçalera, que es pinta com a tal i es repeteix a la pàgina 3. El sufix i l'avís van en cursiva amb la lletra del peu, i per això la banda es compon en Gelasio i no en Cabin Condensed, que no té cursiva.
 
 ### 3 · Un recurs per a cada sobre
 
@@ -40,7 +40,7 @@ Les dues taules del full de comanda fan servir l'estil amb nom `form`, amb filet
 
 <Excerpt region="cover" />
 
-La pintura de la coberta és un element d'imatge, i una imatge no suma res a l'alçada que reserva una obertura. Sense `minHeight`, la carta començaria a 55 mm de la vora superior de la pàgina, damunt del gira-sol. `SINK` deixa 10 mm d'aire sota la pintura i arrodoneix la distància des del marge superior a línies senceres de 13 pt, 34 en total, així que les dues columnes de la carta arrenquen a la retícula de base, a 177,9 mm de la vora.
+La coberta reserva fins a la vora inferior de la seva pintura, a 164 mm de la vora superior de la pàgina, i sense `minHeight` la carta començaria a la primera línia de la retícula de base que queda a sota, enganxada a la terra. `minHeight` és un mínim una mica més baix: `SINK` deixa 10 mm d'aire sota la pintura i arrodoneix la distància des del marge superior a línies senceres de 13 pt, 34 en total, així que les dues columnes de la carta arrenquen a la retícula de base, a 177,9 mm de la vora. El marc de la coberta arriba fins al peu de la pàgina; `reserve: false` el deixa fora d'aquest compte.
 
 ## Variants
 
@@ -65,4 +65,4 @@ Al 40 %, les files baixen a 29 mm, però les dues mongetes comparteixen una cel�
 ## Errors freqüents
 
 - Un recurs que ningú no cita no es col·loca mai. Si treus el `:ref` de la carta, el catàleg es queda sense llista de preus.
-- En columnes de 75 mm, Knuth–Plass pot deixar una línia justificada amb els espais més oberts del que permet `maxWordSpacing`. La carta i les notes del camp d'assaig es van reescriure fins que la línia més oberta va estirar els espais 1,33 vegades la seva amplada normal. Les notes ocupen a més 14 línies justes: amb 13, l'equilibri de columnes de la pàgina de tancament deixa una línia de la retícula de base en blanc sobre From Our Trial Garden, i el títol comença una línia més avall que el text de l'altra columna.
+- En columnes de 75 mm, Knuth–Plass pot deixar una línia justificada amb els espais més oberts del que permet `maxWordSpacing`; `bodyText.maxJustifyTracking` deixa que una línia així prengui una mica d'interlletratge en lloc d'això. Aquí la carta i les notes del camp d'assaig es van reescriure fins que la línia més oberta va estirar els espais 1,33 vegades la seva amplada normal.

@@ -18,7 +18,7 @@ const palette = { // eight named colours; every colour in the config links to on
   basil: '#2f6b3b', sun: '#e8b53a', // rules, ORGANIC, the form's head; the cover's banner
   rule: '#c7ae86', muted: '#6d5f50', // hairlines; running heads and notes
 };
-// 1.4.1 designs read the hex, not paletteId: col() sets both (gotcha: palette-skips-designs).
+// col() links a colour to its palette entry; the hex is the value the entry holds.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries(palette)
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -33,7 +33,7 @@ const caps = (size, fontWeight = 600) => ({ fontFamily: LABEL, fontSize: pt(size
 const on = (to, edge, x, y, size) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) },
   ...(size && { size }) });
 const text = (id, content, placement, style) => ({ kind: 'text', id, content, placement,
-  overflow: 'wrap', ...style }); // not '…' (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', ...style }); // a long line takes a second one, in the heads too
 const chip = (id, size, ink, box) => ({ id, fontFamily: LABEL, bold: true, fontSize: em(size),
   color: col(ink), borderRadius: pt(1.2), ...box });
 const rule = (id, below, gap, thickness) => ({ kind: 'rule', id, direction: 'horizontal',
@@ -44,7 +44,7 @@ const rule = (id, below, gap, thickness) => ({ kind: 'rule', id, direction: 'hor
 const at = (row, c) => ({ row, col: c });
 const slug = (name) => name.toLowerCase().replace(/\W+/g, '-'); // 'Gold Medal' → 'gold-medal'
 function priceList(tsv) { // Kind · Variety · Description · Packet · Ounce, under one head row
-  let m = { ...parseTSV(tsv), headerRowCount: 1, columnWidths: [20, 40, 63, 17, 17] }; // mm
+  let m = { ...parseTSV(tsv, { headerRows: 1 }), columnWidths: [20, 40, 63, 17, 17] }; // mm
   for (const c of [0, 1]) m = setAlignment(m, at(0, c), 'center'); // each head over its column
   for (const c of [3, 4]) m = setAlignment(m, at(0, c), 'right');
   for (let r = 1; r < m.rows.length; r++) {
@@ -54,8 +54,7 @@ function priceList(tsv) { // Kind · Variety · Description · Packet · Ounce, 
     m = setCellImage(m, at(r, 1), { resourceId: slug(variety), width: PACKET });
     m = setCellContent(m, at(r, 1), `**${variety}**`);
     m = setAlignment(m, at(r, 1), 'center');
-    for (const c of [3, 4]) { // prices in the label face: lining figures, flush right, and a
-      // bare $, since a cell prints the backslash of \$ (gotcha: cell-dollar-backslash)
+    for (const c of [3, 4]) { // prices in the label face: lining figures, flush right
       m = setCellContent(m, at(r, c), `:chip[$${m.rows[r][c].content}]{style="price"}`);
       m = setAlignment(m, at(r, c), 'right');
     }
@@ -118,18 +117,14 @@ const FRAME = 8; // mm: the cover's frame, in from the trim
 const AIR = 10; // mm: at least this much between the painting and the letter
 const SINK = Math.ceil((ART.y + ART.h + AIR - MARGIN.top) / (LEAD * 25.4 / 72)); // lines
 const cover = { id: 'cover', span: 'page', footer: { elements: [] },
-  // A style's header replaces the document's on every page of its section, so it carries
-  // the running heads too. The frame is drawn there: in the design it would count as
-  // reserved height down to the page's foot, more than the column holds, and 1.4.1 then
-  // drops the reservation and sets the letter over the painting (gotcha:
-  // opener-reserves-anchored).
-  header: { elements: [...header.elements, { kind: 'box', id: 'frame', pages: 'opener',
-    style: { borderColor: col('basil'), borderWidth: pt(1.2) },
-    placement: on('page', 'top-left', FRAME, FRAME,
-      { width: mm(TRIM.w - 2 * FRAME), height: mm(TRIM.h - 2 * FRAME) }) }] },
-  // The painting is an image, and images do not count towards the height an opener
-  // reserves (gotcha: opener-image-no-reserve): minHeight holds the letter under it.
+  // The opener reserves down to the painting's foot; minHeight is a floor AIR lower, on the
+  // grid. The frame reaches the page's foot, so it stays out of that count: reserve: false
+  // (gotcha: opener-reserves-anchored).
   advancedDesign: { enabled: true, minHeight: pt(SINK * LEAD), slot: { elements: [
+    { kind: 'box', id: 'frame', reserve: false,
+      style: { borderColor: col('basil'), borderWidth: pt(1.2) },
+      placement: on('page', 'top-left', FRAME, FRAME,
+        { width: mm(TRIM.w - 2 * FRAME), height: mm(TRIM.h - 2 * FRAME) }) },
     text('publisher', '{title}', on('page', 'top', 0, 17), { ...caps(9.5), color: col('basil') }),
     text('title', '{titleText}', on('page', 'top', 0, 23), { fontFamily: DISPLAY,
       fontSize: pt(58), lineHeight: 1, color: col('tomato') }),
@@ -173,7 +168,7 @@ const config = () => ({
     firstLineIndent: mm(4), indentAfterHeading: false, // ~48 characters to a 75 mm column, so
     maxWordSpacing: 1.6 }, // a cap under the default 2; Knuth–Plass can exceed it, so reword to fit
   headings: { fontFamily: DISPLAY, fontWeight: 400, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // parity 'any': an H1 opens on the next page, either side (the default waits for a recto).
     { level: 1, breakBefore: { enabled: true, parity: 'any' }, marginBottom: pt(0) }, h2] },
   headingStyles: [cover, order],
   paragraphStyles: [
