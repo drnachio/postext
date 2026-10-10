@@ -19,6 +19,7 @@ import {
 import type { Catalog, PartColor } from "@/lib/cookbook/types";
 import { unpackCatalog, type PackedCatalog } from "@/lib/cookbook/wire";
 import { findPhrase, foldQuery, phraseTier, rankByPhrase } from "@/lib/searchPhrase";
+import { scrollToAnchor } from "@/lib/scrollToAnchor";
 
 interface IndexPayload {
   locale: string;
@@ -316,7 +317,7 @@ export function DocsSearchPalette() {
       if (hash) {
         const el = document.getElementById(hash);
         if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
+          scrollToAnchor(el);
           history.replaceState(null, "", `#${hash}`);
           return;
         }
