@@ -20,6 +20,7 @@
       "cjk-line-breaking",
       "running-heads",
       "mirrored-margins",
+      "column-balancing",
       "paragraph-styles",
       "color-palette",
       "pdf-export"

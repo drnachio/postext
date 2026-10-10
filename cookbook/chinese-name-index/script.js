@@ -113,11 +113,11 @@ const config = () => ({
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(2), indentAfterHeading: true, // 2 characters
     avoidWidows: true, avoidOrphans: true },
-  headings: { fontFamily: e.kai, fontWeight: 400, color: col('ink'), levels: [
-    { level: 1, fontSize: pt(16), marginBottom: pt(0),
+  // Off by default on a character grid: turned on, the two columns of each index end level.
+  headings: { fontFamily: e.kai, fontWeight: 400, color: col('ink'), balancing: { enabled: true },
+    levels: [{ level: 1, fontSize: pt(16), marginBottom: pt(0),
       advancedDesign: opener(e, 6, '第{numberHan}回'), // 第一回, 第二回… in the edition's script
-      breakBefore: { enabled: true, parity: 'any' } }, // each 回 on a new page
-  ] },
+      breakBefore: { enabled: true, parity: 'any' } }] }, // each 回 on a new page
   headingStyles: [{ ...indexHeading, span: 'page', marginBottom: pt(0),
     advancedDesign: opener(e, 7, '{attr.kicker}', indexNote(e)) }],
   index: index(e),

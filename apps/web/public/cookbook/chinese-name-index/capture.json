@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-name-index",
-  "sourceHash": "a48c1bd63ecfa0229aaad5ebd68ffa4e29b14d8cc9e5e50e9a6a6d2b82d475a3",
+  "sourceHash": "40210ec24cc5c7047f1dc9e7b844bcb37ad5793af8b7ac1b2102661dada2e517",
   "engine": {
     "postext": "1.25.0",
     "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-10T13:32:12.324Z",
+  "capturedAt": "2026-10-10T13:52:52.614Z",
   "variants": {
     "en": {
-      "hash8": "3786885b",
-      "vdtHash": "806ff71f0e296c1eec42c672755b3698792e0706",
+      "hash8": "b3ee1349",
+      "vdtHash": "1a0eb15c1d61a6694da694b1489cd6aeecec12e3",
       "timings": {
-        "importMs": 166,
-        "fontsMs": 698,
-        "buildMs": 298,
-        "totalMs": 6533,
+        "importMs": 498,
+        "fontsMs": 1387,
+        "buildMs": 443,
+        "totalMs": 3467,
         "builds": 2
       },
       "specimen": {
@@ -130,7 +130,7 @@
           "h": 1450,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 37264,
+          "bytes": 37258,
           "alt": "Page 8."
         },
         {
@@ -174,7 +174,7 @@
           "h": 1450,
           "file": "p16.webp",
           "strip": "p16.s.webp",
-          "bytes": 42776,
+          "bytes": 42862,
           "alt": "Page 8."
         }
       ],
@@ -226,7 +226,7 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 307038,
+        "bytes": 307058,
         "pages": 8
       },
       "sandbox": {
@@ -308,6 +308,8 @@
           "headingStyles[].numbered",
           "headingStyles[].span",
           "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -371,7 +373,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 238,
+        "configLeaves": 239,
         "designElements": 11,
         "directives": [
           ":::index",
@@ -432,6 +434,7 @@
           "back-of-book-index",
           "character-grid",
           "cjk-line-breaking",
+          "column-balancing",
           "heading-attributes",
           "heading-styles",
           "opener-design",
@@ -448,7 +451,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 1,
+        "iterationCount": 2,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -469,13 +472,13 @@
       }
     },
     "es": {
-      "hash8": "314007b3",
-      "vdtHash": "9ceec76cc50e854b729119287299511966ae2f19",
+      "hash8": "dbb132fc",
+      "vdtHash": "340fd2720dca8b879e2003244464b1ee4c2a8f6e",
       "timings": {
-        "importMs": 163,
-        "fontsMs": 437,
-        "buildMs": 79,
-        "totalMs": 1264,
+        "importMs": 199,
+        "fontsMs": 475,
+        "buildMs": 109,
+        "totalMs": 1451,
         "builds": 2
       },
       "specimen": {
@@ -588,7 +591,7 @@
           "h": 1450,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 39156,
+          "bytes": 39128,
           "alt": "Página 8."
         },
         {
@@ -632,7 +635,7 @@
           "h": 1450,
           "file": "p16.webp",
           "strip": "p16.s.webp",
-          "bytes": 44264,
+          "bytes": 44168,
           "alt": "Página 8."
         }
       ],
@@ -684,7 +687,7 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 307479,
+        "bytes": 307497,
         "pages": 8
       },
       "sandbox": {
@@ -766,6 +769,8 @@
           "headingStyles[].numbered",
           "headingStyles[].span",
           "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -829,7 +834,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 238,
+        "configLeaves": 239,
         "designElements": 11,
         "directives": [
           ":::index",
@@ -890,6 +895,7 @@
           "back-of-book-index",
           "character-grid",
           "cjk-line-breaking",
+          "column-balancing",
           "heading-attributes",
           "heading-styles",
           "opener-design",
@@ -906,7 +912,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 1,
+        "iterationCount": 2,
         "looseLines": {
           "count": 0,
           "share": 0,
