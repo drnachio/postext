@@ -9247,7 +9247,7 @@ const same = await buildDocumentWithFonts(content, config, { resolve });
 - **`buildDocumentWithFonts(content, config, options)`**：准备字体，用`buildDocumentAsync`构建，读出页面实际排字所用的字体，加载其中字体集给不出来的（只有页面才显出的字重，即使族内另一个字重可以顶替，也会向`resolve`索要），再构建一次（最多多构建两次）。`withLoadedFonts(build, options)`对任意构建函数做同样的事，适用于逐章构建的书，或返回多个文档的文件包（`buildBundle`）。`options.onFonts`接收最终的报告。
 - **构建之后**，文字排版所用而字体集给不出来的每个字体，都在`doc.contentWarnings`中列为`fontFallback`（见[文档中的警告](#文档中的警告)）。
 
-之后才到达的字体，引擎会自己察觉。引擎为每个字体集记下它上次查看时每个字体族已加载了哪些字体；每次构建开始时再看一次（只在字体集变大、变小或有字体加载完成时），并丢弃在字体有变化的字体族中测得的结果。`watchFonts(fontSet)`在字体加载的过程中做同样的事，一批无论带来多少个切片，每个动画帧最多一次；`onFontsChanged(listener)`告诉宿主哪些字体族变了，以便它重新排版页面：
+之后才到达的字体，引擎会自己察觉。引擎为每个字体集记下它上次查看时每个字体族已加载了哪些字体；每次构建开始时再看一次（只在字体集变大、变小、正在加载或有字体加载完成时），并丢弃在字体有变化的字体族中测得的结果。`watchFonts(fontSet)`在字体加载的过程中做同样的事，一批无论带来多少个切片，每个动画帧最多一次；`onFontsChanged(listener)`告诉宿主哪些字体族变了，以便它重新排版页面：
 
 ```ts
 import { watchFonts, onFontsChanged } from 'postext';
