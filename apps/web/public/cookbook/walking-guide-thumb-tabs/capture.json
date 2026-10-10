@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "walking-guide-thumb-tabs",
-  "sourceHash": "b54b8a20ebd27d69b90b5fd552dd9f0e65478b4c153e0d3fab3ce8e6b2c94561",
+  "sourceHash": "d1571a7ba53f07983d28a33b237f519c03bc20fb7d59bb9965282b64883951c7",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.583Z",
+  "capturedAt": "2026-10-10T13:39:44.836Z",
   "variants": {
     "en": {
-      "hash8": "ce602c21",
-      "vdtHash": "0632e9c7f1441281541b144442add92bbeddeef1",
+      "hash8": "aa604b16",
+      "vdtHash": "c010ed3feb0418e4b90b7c1452b0a5ed8382b016",
       "timings": {
-        "importMs": 204,
-        "fontsMs": 1522,
-        "buildMs": 50,
-        "totalMs": 7330,
-        "builds": 2
+        "importMs": 127,
+        "fontsMs": 26,
+        "buildMs": 33,
+        "totalMs": 794,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "DM Serif Display"
         ],
         "pages": 7,
-        "ownLines": 249
+        "ownLines": 244
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1667,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 138476,
+          "bytes": 138464,
           "alt": "Opening page 1: Lisbon on Foot."
         },
         {
@@ -151,13 +151,12 @@
       },
       "sandbox": {
         "file": "walking-guide-thumb-tabs.postext",
-        "bytes": 52341,
+        "bytes": 52318,
         "folio": "98b88fc8"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -281,7 +280,6 @@
           "headingStyles[].palette.bandInk",
           "headingStyles[].palette.onBand",
           "headingStyles[].palette.wash",
-          "headingStyles[].span",
           "headings",
           "headings.balancing",
           "headings.balancing.enabled",
@@ -295,7 +293,6 @@
           "headings.levels[].marginBottom",
           "headings.levels[].marginTop",
           "headings.levels[].numberingTemplate",
-          "headings.levels[].span",
           "layout",
           "layout.layoutType",
           "page",
@@ -342,7 +339,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 653,
+        "configLeaves": 651,
         "designElements": 33,
         "directives": [
           ":::pagebreak",
@@ -401,7 +398,6 @@
           "heading-numbering",
           "heading-styles",
           "inline-embeds",
-          "opener-band",
           "opener-design",
           "page-background",
           "page-breaks",
@@ -424,18 +420,24 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "2a180bf7",
-      "vdtHash": "50a363b41e832e008c278385323da2742705c4cb",
+      "hash8": "fb57ef34",
+      "vdtHash": "a815c1872f39b5d214ccc846aab8b7ab7cc5016f",
       "timings": {
-        "importMs": 148,
-        "fontsMs": 49,
-        "buildMs": 13,
-        "totalMs": 838,
-        "builds": 2
+        "importMs": 129,
+        "fontsMs": 27,
+        "buildMs": 31,
+        "totalMs": 795,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -456,7 +458,7 @@
           "DM Serif Display"
         ],
         "pages": 7,
-        "ownLines": 249
+        "ownLines": 244
       },
       "pages": [
         {
@@ -467,7 +469,7 @@
           "h": 1667,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 137414,
+          "bytes": 137506,
           "alt": "Página de apertura 1: Lisboa a pie."
         },
         {
@@ -569,13 +571,12 @@
       },
       "sandbox": {
         "file": "walking-guide-thumb-tabs.postext",
-        "bytes": 52589,
+        "bytes": 52564,
         "folio": "98b88fc8"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -699,7 +700,6 @@
           "headingStyles[].palette.bandInk",
           "headingStyles[].palette.onBand",
           "headingStyles[].palette.wash",
-          "headingStyles[].span",
           "headings",
           "headings.balancing",
           "headings.balancing.enabled",
@@ -713,7 +713,6 @@
           "headings.levels[].marginBottom",
           "headings.levels[].marginTop",
           "headings.levels[].numberingTemplate",
-          "headings.levels[].span",
           "layout",
           "layout.layoutType",
           "page",
@@ -760,7 +759,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 653,
+        "configLeaves": 651,
         "designElements": 33,
         "directives": [
           ":::pagebreak",
@@ -819,7 +818,6 @@
           "heading-numbering",
           "heading-styles",
           "inline-embeds",
-          "opener-band",
           "opener-design",
           "page-background",
           "page-breaks",
@@ -842,7 +840,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

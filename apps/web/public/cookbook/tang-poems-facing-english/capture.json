@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "tang-poems-facing-english",
-  "sourceHash": "b63ed03fc8a758b6cdeda04aa1a3a6a69eee75b430d660ac1781e90e159cf091",
+  "sourceHash": "d9c51db4d9cc60e5ccab43b675a8e6d4074d3a51b9661bc03edc378b64340761",
   "engine": {
-    "postext": "1.23.0",
-    "postextPdf": "1.23.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:24:37.848Z",
+  "capturedAt": "2026-10-10T13:38:51.812Z",
   "variants": {
     "en": {
-      "hash8": "98fefe97",
+      "hash8": "44038347",
       "vdtHash": "fe8c3a47fa7b583c9e933c9c02686ce3641c7333",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 234,
-        "buildMs": 14,
+        "importMs": 186,
+        "fontsMs": 252,
+        "buildMs": 73,
         "totalMs": 1080,
-        "builds": 2
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -41,7 +41,7 @@
           "Source Serif 4"
         ],
         "pages": 10,
-        "ownLines": 178
+        "ownLines": 180
       },
       "pages": [
         {
@@ -195,21 +195,21 @@
       },
       "pdf": {
         "file": "tang-poems-facing-english.pdf",
-        "bytes": 153068,
+        "bytes": 153206,
         "pages": 10
       },
       "sandbox": {
         "file": "tang-poems-facing-english.postext",
-        "bytes": 14869,
+        "bytes": 14870,
         "folio": "e5860b68"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -425,24 +425,18 @@
           "share": 0,
           "worst": 1.81
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "531cace4",
+      "hash8": "a438ff9c",
       "vdtHash": "20379a704ae4498bfa893f920147d2e635607fa6",
       "timings": {
-        "importMs": 150,
-        "fontsMs": 230,
-        "buildMs": 18,
-        "totalMs": 1010,
-        "builds": 2
+        "importMs": 201,
+        "fontsMs": 248,
+        "buildMs": 74,
+        "totalMs": 1097,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -465,7 +459,7 @@
           "Source Serif 4"
         ],
         "pages": 10,
-        "ownLines": 178
+        "ownLines": 180
       },
       "pages": [
         {
@@ -619,21 +613,21 @@
       },
       "pdf": {
         "file": "tang-poems-facing-english.pdf",
-        "bytes": 155333,
+        "bytes": 155465,
         "pages": 10
       },
       "sandbox": {
         "file": "tang-poems-facing-english.postext",
-        "bytes": 15136,
+        "bytes": 15137,
         "folio": "e5860b68"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -849,13 +843,7 @@
           "share": 0,
           "worst": 1.79
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "vocalised-classical-prose",
-  "sourceHash": "be76d77b175e82f181554fb333b8a62d297069d4286245a61634f9c3b63c1e85",
+  "sourceHash": "85ed9ca3ae1f9c050e85722813a0f9737594f7ade97cb5c992e546b8cb1ffd39",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.571Z",
+  "capturedAt": "2026-10-10T13:39:44.830Z",
   "variants": {
     "en": {
-      "hash8": "e2100c7f",
+      "hash8": "b2bcfe35",
       "vdtHash": "19f1fc45f2f16b0bdbeb7e787694a9850d547d8e",
       "timings": {
-        "importMs": 141,
-        "fontsMs": 44,
-        "buildMs": 92,
-        "totalMs": 827,
+        "importMs": 124,
+        "fontsMs": 32,
+        "buildMs": 79,
+        "totalMs": 774,
         "builds": 1
       },
       "specimen": {
@@ -37,7 +37,7 @@
           "Aref Ruqaa"
         ],
         "pages": 4,
-        "ownLines": 94
+        "ownLines": 95
       },
       "pages": [
         {
@@ -114,13 +114,13 @@
       },
       "sandbox": {
         "file": "vocalised-classical-prose.postext",
-        "bytes": 36124
+        "bytes": 36125
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
-          "renderPageToCanvas"
+          "renderPageToCanvas",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -243,13 +243,13 @@
       }
     },
     "es": {
-      "hash8": "f0e75d8f",
+      "hash8": "c0726fbd",
       "vdtHash": "63bdfc263bbdec2ad7bca8e8b6f3ef2e15d0a9ae",
       "timings": {
-        "importMs": 138,
-        "fontsMs": 40,
-        "buildMs": 116,
-        "totalMs": 838,
+        "importMs": 125,
+        "fontsMs": 32,
+        "buildMs": 102,
+        "totalMs": 2213,
         "builds": 1
       },
       "specimen": {
@@ -270,7 +270,7 @@
           "Aref Ruqaa"
         ],
         "pages": 4,
-        "ownLines": 94
+        "ownLines": 95
       },
       "pages": [
         {
@@ -281,7 +281,7 @@
           "h": 1500,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 83666,
+          "bytes": 83664,
           "alt": "Página de apertura ١: المقامة المارستانية."
         },
         {
@@ -314,7 +314,7 @@
           "h": 1500,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 72606,
+          "bytes": 72556,
           "alt": "Página ٤."
         }
       ],
@@ -347,13 +347,13 @@
       },
       "sandbox": {
         "file": "vocalised-classical-prose.postext",
-        "bytes": 36172
+        "bytes": 36171
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
-          "renderPageToCanvas"
+          "renderPageToCanvas",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

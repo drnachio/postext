@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "seed-catalogue",
-  "sourceHash": "85e4df81ee8dc50fbdb95946d47a55aa291120ca5239d607f49f34b8218f268a",
+  "sourceHash": "1bf5d64fa3dc49988fedc126218960e403f10b7df044187b7cbbc2cad4641e52",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.428Z",
+  "capturedAt": "2026-10-10T13:38:07.630Z",
   "variants": {
     "en": {
-      "hash8": "ddd982db",
-      "vdtHash": "7b51fa4173870c535d343310cf1dc9e53f354c34",
+      "hash8": "9ae3d693",
+      "vdtHash": "3ccd93ebb4a4b6a4aa9815376b23d2df3d4bbc03",
       "timings": {
-        "importMs": 159,
-        "fontsMs": 46,
-        "buildMs": 19,
-        "totalMs": 870,
-        "builds": 2
+        "importMs": 127,
+        "fontsMs": 45,
+        "buildMs": 40,
+        "totalMs": 2579,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Gelasio"
         ],
         "pages": 4,
-        "ownLines": 231
+        "ownLines": 227
       },
       "pages": [
         {
@@ -115,15 +115,15 @@
       },
       "sandbox": {
         "file": "seed-catalogue.postext",
-        "bytes": 713748,
+        "bytes": 713547,
         "folio": "d45f6f65"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "mergeCells",
           "parseTSV",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "setAlignment",
@@ -206,8 +206,6 @@
           "headingStyles[].advancedDesign.slot",
           "headingStyles[].footer",
           "headingStyles[].footer.elements",
-          "headingStyles[].header",
-          "headingStyles[].header.elements",
           "headingStyles[].id",
           "headingStyles[].layout",
           "headingStyles[].layout.layoutType",
@@ -293,8 +291,8 @@
           "tableStyle",
           "tableStyles"
         ],
-        "configLeaves": 433,
-        "designElements": 22,
+        "configLeaves": 373,
+        "designElements": 18,
         "directives": [
           ":::paragraphs",
           "::resource"
@@ -376,7 +374,13 @@
           "share": 0,
           "worst": 1.33
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

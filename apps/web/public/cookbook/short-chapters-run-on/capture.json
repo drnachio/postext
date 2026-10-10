@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "short-chapters-run-on",
-  "sourceHash": "25bf77c365ca04d722c14e7da43423eb7daf1288574d670f97df34d01c0ea682",
+  "sourceHash": "8116fbb598a7acf7620cb5582348dc354f58a3b58e31c419826df489e5fa5471",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.437Z",
+  "capturedAt": "2026-10-10T13:38:07.647Z",
   "variants": {
     "en": {
-      "hash8": "cd3503a3",
-      "vdtHash": "8c777fd896afc31dbcaa664ec56281f651b23034",
+      "hash8": "0cacd0ef",
+      "vdtHash": "0a4e888018b89eeec4134d4772ee19072b16797c",
       "timings": {
-        "importMs": 415,
-        "fontsMs": 1303,
-        "buildMs": 59,
-        "totalMs": 84924,
-        "builds": 2
+        "importMs": 128,
+        "fontsMs": 32,
+        "buildMs": 55,
+        "totalMs": 804,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Tinos"
         ],
         "pages": 7,
-        "ownLines": 173
+        "ownLines": 167
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1618,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 20760,
+          "bytes": 20682,
           "alt": "Opening page 1: Dom Casmurro."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1618,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 161666,
+          "bytes": 161580,
           "alt": "Opening page 212: Capítulo CXXIII."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1618,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 155942,
+          "bytes": 155850,
           "alt": "Page 213: CXIX Não faça isso, querida."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1618,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 126636,
+          "bytes": 126762,
           "alt": "Page 214: CXX Os autos."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1618,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 140106,
+          "bytes": 139990,
           "alt": "Page 215: CXXII O enterro."
         },
         {
@@ -104,7 +104,7 @@
           "h": 1618,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 147188,
+          "bytes": 147212,
           "alt": "Page 216: CXXIII Olhos de ressaca."
         },
         {
@@ -115,7 +115,7 @@
           "h": 1618,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 52396,
+          "bytes": 52352,
           "alt": "Page 217."
         }
       ],
@@ -151,13 +151,12 @@
       },
       "sandbox": {
         "file": "short-chapters-run-on.postext",
-        "bytes": 322274,
+        "bytes": 322275,
         "folio": "badc8643"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -168,7 +167,6 @@
           "bodyText.fontFamily",
           "bodyText.fontSize",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.referenceColor",
           "calloutStyles",
           "calloutStyles[].backgroundEnabled",
@@ -273,10 +271,9 @@
           "locale",
           "page"
         ],
-        "configLeaves": 290,
+        "configLeaves": 288,
         "designElements": 17,
         "directives": [
-          ":::pagebreak",
           ":::numbering",
           ":::callout"
         ],
@@ -319,7 +316,6 @@
           "heading-styles",
           "opener-design",
           "page-background",
-          "page-breaks",
           "page-role-filters",
           "resources",
           "roman-front-matter",
@@ -343,9 +339,9 @@
             "detail": "the edition's images weigh 0.98 MB (warning at 0.9 MB for 7 pages)"
           },
           {
-            "check": "C21",
-            "severity": "warn",
-            "detail": "the pen took 84.9 s to finish (warning at 30 s)"
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",
@@ -356,14 +352,14 @@
       }
     },
     "es": {
-      "hash8": "99a63d00",
-      "vdtHash": "8c777fd896afc31dbcaa664ec56281f651b23034",
+      "hash8": "79b48472",
+      "vdtHash": "0a4e888018b89eeec4134d4772ee19072b16797c",
       "timings": {
-        "importMs": 188,
-        "fontsMs": 58,
-        "buildMs": 26,
-        "totalMs": 971,
-        "builds": 2
+        "importMs": 143,
+        "fontsMs": 48,
+        "buildMs": 255,
+        "totalMs": 1476,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -384,7 +380,7 @@
           "Tinos"
         ],
         "pages": 7,
-        "ownLines": 173
+        "ownLines": 167
       },
       "pages": [
         {
@@ -395,7 +391,7 @@
           "h": 1618,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 20760,
+          "bytes": 20682,
           "alt": "Página de apertura 1: Dom Casmurro."
         },
         {
@@ -406,7 +402,7 @@
           "h": 1618,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 161666,
+          "bytes": 161580,
           "alt": "Página de apertura 212: Capítulo CXXIII."
         },
         {
@@ -417,7 +413,7 @@
           "h": 1618,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 155942,
+          "bytes": 155850,
           "alt": "Página 213: CXIX Não faça isso, querida."
         },
         {
@@ -428,7 +424,7 @@
           "h": 1618,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 126636,
+          "bytes": 126762,
           "alt": "Página 214: CXX Os autos."
         },
         {
@@ -439,7 +435,7 @@
           "h": 1618,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 140106,
+          "bytes": 139990,
           "alt": "Página 215: CXXII O enterro."
         },
         {
@@ -450,7 +446,7 @@
           "h": 1618,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 147188,
+          "bytes": 147212,
           "alt": "Página 216: CXXIII Olhos de ressaca."
         },
         {
@@ -461,7 +457,7 @@
           "h": 1618,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 52396,
+          "bytes": 52352,
           "alt": "Página 217."
         }
       ],
@@ -502,8 +498,7 @@
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -514,7 +509,6 @@
           "bodyText.fontFamily",
           "bodyText.fontSize",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.referenceColor",
           "calloutStyles",
           "calloutStyles[].backgroundEnabled",
@@ -619,10 +613,9 @@
           "locale",
           "page"
         ],
-        "configLeaves": 290,
+        "configLeaves": 288,
         "designElements": 17,
         "directives": [
-          ":::pagebreak",
           ":::numbering",
           ":::callout"
         ],
@@ -665,7 +658,6 @@
           "heading-styles",
           "opener-design",
           "page-background",
-          "page-breaks",
           "page-role-filters",
           "resources",
           "roman-front-matter",
@@ -687,6 +679,11 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 0.98 MB (warning at 0.9 MB for 7 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",

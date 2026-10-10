@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "sist02-research-paper",
-  "sourceHash": "6b3717793897761b1aee9d9f8e24ed60954c99dddbb6d4e7f88f46ad6ff89c01",
+  "sourceHash": "c2b83eed84e5f56655cdcc9a55665db325bc1034525d4415ca2ff395bb1455f4",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.445Z",
+  "capturedAt": "2026-10-10T13:38:07.664Z",
   "variants": {
     "en": {
-      "hash8": "85f75243",
-      "vdtHash": "03cb3867fe7c3c99fdc9a17f973b69fec46ad3b3",
+      "hash8": "137b2b6f",
+      "vdtHash": "23ea1c15cac1ae9327a3b09ab42a449364380499",
       "timings": {
-        "importMs": 223,
-        "fontsMs": 324,
-        "buildMs": 26,
-        "totalMs": 1268,
-        "builds": 2
+        "importMs": 183,
+        "fontsMs": 274,
+        "buildMs": 113,
+        "totalMs": 1111,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "Shippori Mincho B1"
         ],
         "pages": 2,
-        "ownLines": 177
+        "ownLines": 176
       },
       "pages": [
         {
@@ -51,7 +51,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 106462,
+          "bytes": 106510,
           "alt": "Opening page 23: 号数活字の三つの系列： 近代日本の活字の大きさは どう決められたか. 表1 号数活字の大きさ。新号数はJIS Z 8305（1962）による."
         },
         {
@@ -62,7 +62,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 89750,
+          "bytes": 89774,
           "alt": "Page 24: 4. ポイントへの移行. 図1 号数活字の三つの系列。上から初号系、一号系、三号系。正 方形は旧号数の大きさを実寸で示す."
         }
       ],
@@ -90,12 +90,12 @@
       },
       "pdf": {
         "file": "sist02-research-paper.pdf",
-        "bytes": 226920,
+        "bytes": 227174,
         "pages": 2
       },
       "sandbox": {
         "file": "sist02-research-paper.postext",
-        "bytes": 32214,
+        "bytes": 32356,
         "folio": "5f42a5f6"
       },
       "detected": {
@@ -103,15 +103,16 @@
           "LOCALES",
           "STYLES",
           "buildDocument",
-          "clearMeasurementCache",
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "parseTSV",
           "registerCitationEngine",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -210,8 +211,6 @@
           "headingStyles[].numbered",
           "headingStyles[].span",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -289,7 +288,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 302,
+        "configLeaves": 301,
         "designElements": 12,
         "directives": [
           ":::callout",
@@ -336,7 +335,6 @@
           "chips",
           "citation-styles",
           "cjk-line-breaking",
-          "column-balancing",
           "cross-references",
           "footnotes",
           "generated-bibliography",
@@ -373,18 +371,24 @@
           "share": 0,
           "worst": 0.05
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "a7fcb92f",
-      "vdtHash": "21cff54640c4ea41ce1b30974ae61f880b4b83ed",
+      "hash8": "6f684871",
+      "vdtHash": "827dea1eb5e6ae77c1555fe4790d8c0a09784129",
       "timings": {
-        "importMs": 227,
-        "fontsMs": 318,
-        "buildMs": 87,
-        "totalMs": 3418,
-        "builds": 2
+        "importMs": 186,
+        "fontsMs": 269,
+        "buildMs": 109,
+        "totalMs": 3655,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -406,7 +410,7 @@
           "Shippori Mincho B1"
         ],
         "pages": 2,
-        "ownLines": 177
+        "ownLines": 176
       },
       "pages": [
         {
@@ -417,7 +421,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 106462,
+          "bytes": 106510,
           "alt": "Página de apertura 23: 号数活字の三つの系列： 近代日本の活字の大きさは どう決められたか. 表1 号数活字の大きさ。新号数はJIS Z 8305（1962）による."
         },
         {
@@ -428,7 +432,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 89642,
+          "bytes": 89654,
           "alt": "Página 24: 4. ポイントへの移行. 図1 号数活字の三つの系列。上から初号系、一号系、三号系。正 方形は旧号数の大きさを実寸で示す."
         }
       ],
@@ -456,12 +460,12 @@
       },
       "pdf": {
         "file": "sist02-research-paper.pdf",
-        "bytes": 226825,
+        "bytes": 227074,
         "pages": 2
       },
       "sandbox": {
         "file": "sist02-research-paper.postext",
-        "bytes": 32282,
+        "bytes": 32426,
         "folio": "5f42a5f6"
       },
       "detected": {
@@ -469,15 +473,16 @@
           "LOCALES",
           "STYLES",
           "buildDocument",
-          "clearMeasurementCache",
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "parseTSV",
           "registerCitationEngine",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -576,8 +581,6 @@
           "headingStyles[].numbered",
           "headingStyles[].span",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -655,7 +658,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 302,
+        "configLeaves": 301,
         "designElements": 12,
         "directives": [
           ":::callout",
@@ -702,7 +705,6 @@
           "chips",
           "citation-styles",
           "cjk-line-breaking",
-          "column-balancing",
           "cross-references",
           "footnotes",
           "generated-bibliography",
@@ -739,7 +741,13 @@
           "share": 0,
           "worst": 0.05
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

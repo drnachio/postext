@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "technical-datasheet",
-  "sourceHash": "9617333df64c5a7cdc5273998444d8e27867fb242aa79f467a3044721f7d4ceb",
+  "sourceHash": "d386d06ca0bae8b926c3fc704e1060e78621704b39d58145e9984c5caedcb4d0",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.499Z",
+  "capturedAt": "2026-10-10T13:38:51.911Z",
   "variants": {
     "en": {
-      "hash8": "ce239e70",
+      "hash8": "1c29d353",
       "vdtHash": "3a9b91ec355070ecf8c0d62f5a22ae56ce432a1a",
       "timings": {
-        "importMs": 238,
-        "fontsMs": 149,
-        "buildMs": 41,
-        "totalMs": 1079,
-        "builds": 2
+        "importMs": 170,
+        "fontsMs": 89,
+        "buildMs": 66,
+        "totalMs": 922,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "Fira Sans Condensed"
         ],
         "pages": 4,
-        "ownLines": 268
+        "ownLines": 255
       },
       "pages": [
         {
@@ -116,22 +116,23 @@
       },
       "pdf": {
         "file": "technical-datasheet.pdf",
-        "bytes": 134546,
+        "bytes": 134548,
         "pages": 4
       },
       "sandbox": {
         "file": "technical-datasheet.postext",
-        "bytes": 108628,
+        "bytes": 78005,
         "folio": "ca48c30e"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "mergeCells",
           "parseTSV",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToPdf",
@@ -324,7 +325,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 442,
+        "configLeaves": 441,
         "designElements": 21,
         "directives": [
           ":::columnbreak",

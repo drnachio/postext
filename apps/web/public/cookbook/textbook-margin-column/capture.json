@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "textbook-margin-column",
-  "sourceHash": "7eef75118d75b27dd9cdb76fde7aba9d6a5a145692c1b29031987a63b2afbbb8",
+  "sourceHash": "1b0f04efeedd69639fd2c4158b993f6901e6ef2a2120f4289d2391d713afe8e3",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.511Z",
+  "capturedAt": "2026-10-10T13:38:51.932Z",
   "variants": {
     "en": {
-      "hash8": "af83a123",
+      "hash8": "5a5b729d",
       "vdtHash": "a601945d5147436ead9c994844b45ac4ec76a676",
       "timings": {
-        "importMs": 143,
-        "fontsMs": 36,
-        "buildMs": 19,
-        "totalMs": 880,
-        "builds": 2
+        "importMs": 124,
+        "fontsMs": 4,
+        "buildMs": 54,
+        "totalMs": 3853,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Merriweather Sans"
         ],
         "pages": 4,
-        "ownLines": 244
+        "ownLines": 240
       },
       "pages": [
         {
@@ -114,13 +114,12 @@
       },
       "sandbox": {
         "file": "textbook-margin-column.postext",
-        "bytes": 29407,
+        "bytes": 29406,
         "folio": "ccdc6a5d"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
           "registerResourceImage",
           "renderPageToCanvas"
@@ -385,14 +384,14 @@
       }
     },
     "es": {
-      "hash8": "ed02ec3b",
+      "hash8": "e1c4de6a",
       "vdtHash": "d981da01d244693a337bfbf8fe84d097564a7a42",
       "timings": {
-        "importMs": 144,
-        "fontsMs": 24,
-        "buildMs": 22,
-        "totalMs": 819,
-        "builds": 2
+        "importMs": 127,
+        "fontsMs": 4,
+        "buildMs": 54,
+        "totalMs": 804,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -413,7 +412,7 @@
           "Merriweather Sans"
         ],
         "pages": 4,
-        "ownLines": 244
+        "ownLines": 240
       },
       "pages": [
         {
@@ -494,8 +493,7 @@
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
           "registerResourceImage",
           "renderPageToCanvas"

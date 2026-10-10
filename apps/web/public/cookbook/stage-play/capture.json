@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "stage-play",
-  "sourceHash": "4b09eac196da08a8304d29c7e83df3a8813d65e14ba9d602f131fb857499e16f",
+  "sourceHash": "7f2690dce5790a7e47268e9428e5724f470383e93776d984f11e49c1bf1ffa6a",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:24:37.944Z",
+  "capturedAt": "2026-10-10T13:38:51.778Z",
   "variants": {
     "en": {
-      "hash8": "13c0f1e2",
-      "vdtHash": "1777610edf6f1bf575d4067c8bcfec3d1b4b3774",
+      "hash8": "2c592f5e",
+      "vdtHash": "7accaf882306030a989b52c0513e9a1e8c33a1bf",
       "timings": {
-        "importMs": 115,
-        "fontsMs": 28,
-        "buildMs": 10,
-        "totalMs": 759,
-        "builds": 2
+        "importMs": 396,
+        "fontsMs": 20,
+        "buildMs": 339,
+        "totalMs": 3034,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Playfair Display SC"
         ],
         "pages": 5,
-        "ownLines": 163
+        "ownLines": 157
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1543,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 33672,
+          "bytes": 33708,
           "alt": "Opening page 1: THE IMPORTANCE OF BEING EARNEST."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1543,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 142924,
+          "bytes": 147314,
           "alt": "Page 4."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1543,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 147942,
+          "bytes": 143516,
           "alt": "Page 5."
         }
       ],
@@ -125,13 +125,12 @@
       },
       "sandbox": {
         "file": "stage-play.postext",
-        "bytes": 22482,
+        "bytes": 22401,
         "folio": "059474f1"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -145,7 +144,6 @@
           "bodyText.hangingIndent",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "colorPalette",
@@ -259,10 +257,9 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 295,
+        "configLeaves": 286,
         "designElements": 14,
         "directives": [
-          ":::pagebreak",
           ":::paragraphs",
           "::resource",
           ":::space"
@@ -309,7 +306,6 @@
           "inline-embeds",
           "opener-design",
           "page-background",
-          "page-breaks",
           "page-role-filters",
           "paragraph-styles",
           "resource-types",
@@ -326,7 +322,7 @@
         "looseLines": {
           "count": 0,
           "share": 0,
-          "worst": 1.78
+          "worst": 1.51
         },
         "findings": [
           {
@@ -338,14 +334,14 @@
       }
     },
     "es": {
-      "hash8": "b1ed06a7",
-      "vdtHash": "5b62fc26b136fb58c44a197bc8755ec2d92d5634",
+      "hash8": "e085f524",
+      "vdtHash": "e5b1fe795f2a01b7037caf01111416ac60d66d8d",
       "timings": {
-        "importMs": 115,
-        "fontsMs": 30,
-        "buildMs": 13,
-        "totalMs": 758,
-        "builds": 2
+        "importMs": 140,
+        "fontsMs": 3,
+        "buildMs": 40,
+        "totalMs": 816,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -366,7 +362,7 @@
           "Playfair Display SC"
         ],
         "pages": 5,
-        "ownLines": 163
+        "ownLines": 157
       },
       "pages": [
         {
@@ -377,7 +373,7 @@
           "h": 1543,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 33664,
+          "bytes": 33804,
           "alt": "Página de apertura 1: LA IMPORTANCIA DE LLAMARSE ERNESTO."
         },
         {
@@ -453,13 +449,12 @@
       },
       "sandbox": {
         "file": "stage-play.postext",
-        "bytes": 22552,
+        "bytes": 22526,
         "folio": "059474f1"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -473,7 +468,6 @@
           "bodyText.hangingIndent",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "colorPalette",
@@ -587,10 +581,9 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 295,
+        "configLeaves": 286,
         "designElements": 14,
         "directives": [
-          ":::pagebreak",
           ":::paragraphs",
           "::resource",
           ":::space"
@@ -637,7 +630,6 @@
           "inline-embeds",
           "opener-design",
           "page-background",
-          "page-breaks",
           "page-role-filters",
           "paragraph-styles",
           "resource-types",

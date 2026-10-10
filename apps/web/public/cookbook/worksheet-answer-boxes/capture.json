@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "worksheet-answer-boxes",
-  "sourceHash": "db6cfc592690a76a0ea81300c41ebfdb9363659ec1f5c8b2f29c695312e9e375",
+  "sourceHash": "32d5a0ba226a97097d5855d182afdf81a9c4e89979e5e1e2185a599bbbacdec2",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.631Z",
+  "capturedAt": "2026-10-10T13:39:44.857Z",
   "variants": {
     "en": {
-      "hash8": "c61f2e56",
-      "vdtHash": "c01fadc567a217a890736c2dfaaca6719f8f7ace",
+      "hash8": "5cc916ef",
+      "vdtHash": "c720126e609fa8973f8b483b4a13138299964fa9",
       "timings": {
-        "importMs": 385,
-        "fontsMs": 839,
-        "buildMs": 38,
-        "totalMs": 6404,
-        "builds": 2
+        "importMs": 136,
+        "fontsMs": 32,
+        "buildMs": 29,
+        "totalMs": 779,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Fredoka"
         ],
         "pages": 4,
-        "ownLines": 183
+        "ownLines": 185
       },
       "pages": [
         {
@@ -71,7 +71,7 @@
           "h": 1300,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 33208,
+          "bytes": 33710,
           "alt": "Page 3: 4 Parts we eat."
         },
         {
@@ -114,13 +114,13 @@
       },
       "sandbox": {
         "file": "worksheet-answer-boxes.postext",
-        "bytes": 211371,
+        "bytes": 211354,
         "folio": "8736fae7"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -223,6 +223,7 @@
           "headings.levels[].span",
           "headings.snapToGrid",
           "layout",
+          "layout.inlineResourceGapInBoxes",
           "layout.layoutType",
           "locale",
           "orderedLists",
@@ -259,9 +260,7 @@
           "tableStyles[].bodyColor",
           "tableStyles[].bodyFontFamily",
           "tableStyles[].bodyFontSize",
-          "tableStyles[].borderColor",
           "tableStyles[].borderRadius",
-          "tableStyles[].borderWidth",
           "tableStyles[].cellPadding",
           "tableStyles[].headerBackgroundEnabled",
           "tableStyles[].id",
@@ -284,7 +283,7 @@
           "resourceTypes",
           "tableStyles"
         ],
-        "configLeaves": 488,
+        "configLeaves": 487,
         "designElements": 22,
         "directives": [
           ":::paragraphs",
@@ -376,18 +375,24 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "3a8837e5",
-      "vdtHash": "4b8612c7c131d61b9f8017be83b730561359e8e9",
+      "hash8": "12f644c5",
+      "vdtHash": "9fa9701a345dfed3d54118aca1373cc4e41fad61",
       "timings": {
-        "importMs": 152,
-        "fontsMs": 45,
-        "buildMs": 13,
-        "totalMs": 828,
-        "builds": 2
+        "importMs": 132,
+        "fontsMs": 32,
+        "buildMs": 29,
+        "totalMs": 780,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -408,7 +413,7 @@
           "Fredoka"
         ],
         "pages": 4,
-        "ownLines": 183
+        "ownLines": 185
       },
       "pages": [
         {
@@ -441,7 +446,7 @@
           "h": 1300,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 35524,
+          "bytes": 36252,
           "alt": "Página 3: 4 Partes que comemos."
         },
         {
@@ -484,13 +489,13 @@
       },
       "sandbox": {
         "file": "worksheet-answer-boxes.postext",
-        "bytes": 212263,
+        "bytes": 212254,
         "folio": "8736fae7"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -593,6 +598,7 @@
           "headings.levels[].span",
           "headings.snapToGrid",
           "layout",
+          "layout.inlineResourceGapInBoxes",
           "layout.layoutType",
           "locale",
           "orderedLists",
@@ -629,9 +635,7 @@
           "tableStyles[].bodyColor",
           "tableStyles[].bodyFontFamily",
           "tableStyles[].bodyFontSize",
-          "tableStyles[].borderColor",
           "tableStyles[].borderRadius",
-          "tableStyles[].borderWidth",
           "tableStyles[].cellPadding",
           "tableStyles[].headerBackgroundEnabled",
           "tableStyles[].id",
@@ -654,7 +658,7 @@
           "resourceTypes",
           "tableStyles"
         ],
-        "configLeaves": 488,
+        "configLeaves": 487,
         "designElements": 22,
         "directives": [
           ":::paragraphs",
@@ -746,7 +750,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

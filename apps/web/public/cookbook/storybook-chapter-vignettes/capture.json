@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "storybook-chapter-vignettes",
-  "sourceHash": "77d126642e3a6fb630c6f7957d6b332486438224cd98477f3144b4ac0989e95c",
+  "sourceHash": "6d42061f0fdbf29a41ff2c74e196ea2f515b4f406c821bb9c837d43f4e9c3fef",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.460Z",
+  "capturedAt": "2026-10-10T13:38:51.785Z",
   "variants": {
     "en": {
-      "hash8": "e7cb97cd",
-      "vdtHash": "32a6dbf2b64de486bd6fc2cd0ab3ec6f0eb1325f",
+      "hash8": "543ba649",
+      "vdtHash": "80bef070de771a40c5d40c51e1be4067e521cc0a",
       "timings": {
-        "importMs": 175,
-        "fontsMs": 56,
-        "buildMs": 126,
-        "totalMs": 1108,
-        "builds": 2
+        "importMs": 143,
+        "fontsMs": 32,
+        "buildMs": 170,
+        "totalMs": 958,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Quicksand"
         ],
         "pages": 5,
-        "ownLines": 167
+        "ownLines": 159
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1263,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 228718,
+          "bytes": 229186,
           "alt": "Opening page 6: Pinocchio."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1263,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 91494,
+          "bytes": 91406,
           "alt": "Opening page 7: Capitolo I."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1263,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 130522,
+          "bytes": 130498,
           "alt": "Page 8."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1263,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 92550,
+          "bytes": 92674,
           "alt": "Page 9."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1263,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 90878,
+          "bytes": 90918,
           "alt": "Opening page 10: Capitolo II."
         }
       ],
@@ -125,13 +125,12 @@
       },
       "sandbox": {
         "file": "storybook-chapter-vignettes.postext",
-        "bytes": 820948,
+        "bytes": 820910,
         "folio": "ebfafef3"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -191,7 +190,6 @@
           "headingStyles[].footer",
           "headingStyles[].footer.elements",
           "headingStyles[].id",
-          "headingStyles[].span",
           "headings",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -248,7 +246,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 268,
+        "configLeaves": 267,
         "designElements": 13,
         "directives": [
           "::resource",
@@ -323,6 +321,11 @@
             "detail": "3 of 43 justified lines (7.0 %) stretch past 1.45× (worst 1.58×); loosest: p. 3 1.58× “— Ho capito; — disse allora ridendo e grattando…”, p. 4 1.55× “Questa volta il povero maestro Ciliegia cadde g…”, p. 3 1.48× “E ripresa l’ascia in mano, tirò giù un solennis…”"
           },
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 5: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -331,14 +334,14 @@
       }
     },
     "es": {
-      "hash8": "184e0591",
-      "vdtHash": "32a6dbf2b64de486bd6fc2cd0ab3ec6f0eb1325f",
+      "hash8": "1225cf2f",
+      "vdtHash": "80bef070de771a40c5d40c51e1be4067e521cc0a",
       "timings": {
-        "importMs": 157,
-        "fontsMs": 56,
-        "buildMs": 125,
-        "totalMs": 1150,
-        "builds": 2
+        "importMs": 137,
+        "fontsMs": 33,
+        "buildMs": 167,
+        "totalMs": 942,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -359,7 +362,7 @@
           "Quicksand"
         ],
         "pages": 5,
-        "ownLines": 167
+        "ownLines": 159
       },
       "pages": [
         {
@@ -370,7 +373,7 @@
           "h": 1263,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 228718,
+          "bytes": 229186,
           "alt": "Página de apertura 6: Pinocchio."
         },
         {
@@ -381,7 +384,7 @@
           "h": 1263,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 91494,
+          "bytes": 91406,
           "alt": "Página de apertura 7: Capitolo I."
         },
         {
@@ -392,7 +395,7 @@
           "h": 1263,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 130522,
+          "bytes": 130498,
           "alt": "Página 8."
         },
         {
@@ -403,7 +406,7 @@
           "h": 1263,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 92550,
+          "bytes": 92674,
           "alt": "Página 9."
         },
         {
@@ -414,7 +417,7 @@
           "h": 1263,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 90878,
+          "bytes": 90918,
           "alt": "Página de apertura 10: Capitolo II."
         }
       ],
@@ -446,13 +449,12 @@
       },
       "sandbox": {
         "file": "storybook-chapter-vignettes.postext",
-        "bytes": 820995,
+        "bytes": 820957,
         "folio": "ebfafef3"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -512,7 +514,6 @@
           "headingStyles[].footer",
           "headingStyles[].footer.elements",
           "headingStyles[].id",
-          "headingStyles[].span",
           "headings",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -569,7 +570,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 268,
+        "configLeaves": 267,
         "designElements": 13,
         "directives": [
           "::resource",
@@ -642,6 +643,11 @@
             "check": "C24",
             "severity": "warn",
             "detail": "3 of 43 justified lines (7.0 %) stretch past 1.45× (worst 1.58×); loosest: p. 3 1.58× “— Ho capito; — disse allora ridendo e grattando…”, p. 4 1.55× “Questa volta il povero maestro Ciliegia cadde g…”, p. 3 1.48× “E ripresa l’ascia in mano, tirò giù un solennis…”"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",

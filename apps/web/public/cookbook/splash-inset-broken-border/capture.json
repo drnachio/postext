@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "splash-inset-broken-border",
-  "sourceHash": "1fd52d3601131588d7389f94621e9a34a3fd9b6b39c1bc9b446b06d745cb8e57",
+  "sourceHash": "e6ad00038ef9c6b129939b3f0414df655fa1db576da34ea1d0a1e647def8c11c",
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T14:45:50.752Z",
+  "capturedAt": "2026-10-10T13:38:07.711Z",
   "variants": {
     "en": {
-      "hash8": "753fd6a5",
+      "hash8": "15399c4b",
       "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
       "timings": {
-        "importMs": 553,
-        "fontsMs": 132,
-        "buildMs": 144,
-        "totalMs": 1442,
+        "importMs": 157,
+        "fontsMs": 82,
+        "buildMs": 111,
+        "totalMs": 907,
         "builds": 1
       },
       "specimen": {
@@ -87,22 +87,22 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 770585,
+        "bytes": 770586,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766535
+        "bytes": 766538
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -232,13 +232,13 @@
       }
     },
     "es": {
-      "hash8": "c6cd11d4",
+      "hash8": "acb287c3",
       "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
       "timings": {
-        "importMs": 526,
-        "fontsMs": 96,
-        "buildMs": 161,
-        "totalMs": 1458,
+        "importMs": 174,
+        "fontsMs": 74,
+        "buildMs": 106,
+        "totalMs": 918,
         "builds": 1
       },
       "specimen": {
@@ -313,17 +313,17 @@
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766680
+        "bytes": 766683
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -453,13 +453,13 @@
       }
     },
     "ca": {
-      "hash8": "5ec41270",
+      "hash8": "60fe8523",
       "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
       "timings": {
-        "importMs": 843,
-        "fontsMs": 206,
-        "buildMs": 165,
-        "totalMs": 1914,
+        "importMs": 185,
+        "fontsMs": 101,
+        "buildMs": 115,
+        "totalMs": 963,
         "builds": 1
       },
       "specimen": {
@@ -529,22 +529,22 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 770167,
+        "bytes": 770168,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766693
+        "bytes": 766696
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -674,13 +674,13 @@
       }
     },
     "zh": {
-      "hash8": "f9dc5f73",
+      "hash8": "2d038ca1",
       "vdtHash": "69a714d811223c07ee4617800fe1b6c4129a8924",
       "timings": {
-        "importMs": 629,
-        "fontsMs": 646,
-        "buildMs": 215,
-        "totalMs": 2159,
+        "importMs": 168,
+        "fontsMs": 216,
+        "buildMs": 125,
+        "totalMs": 1065,
         "builds": 1
       },
       "specimen": {
@@ -711,7 +711,7 @@
           "h": 1542,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 265120,
+          "bytes": 265026,
           "alt": "第 1 页。"
         },
         {
@@ -722,7 +722,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 220548,
+          "bytes": 220628,
           "alt": "第 2 页。"
         }
       ],
@@ -750,22 +750,22 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 791636,
+        "bytes": 791767,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766627
+        "bytes": 766606
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -896,13 +896,13 @@
       }
     },
     "ar": {
-      "hash8": "c9805406",
+      "hash8": "894d9515",
       "vdtHash": "7a907b581ba76903673d89d9523d7dd4926f3c7c",
       "timings": {
-        "importMs": 563,
-        "fontsMs": 377,
-        "buildMs": 142,
-        "totalMs": 1686,
+        "importMs": 167,
+        "fontsMs": 99,
+        "buildMs": 108,
+        "totalMs": 905,
         "builds": 1
       },
       "specimen": {
@@ -973,22 +973,22 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 769404,
+        "bytes": 769405,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766732
+        "bytes": 766735
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1121,13 +1121,13 @@
       }
     },
     "ja": {
-      "hash8": "0f5943af",
+      "hash8": "eed8b3a9",
       "vdtHash": "a6e280cef897624f349f209d33e1f87e3bbbca57",
       "timings": {
-        "importMs": 716,
-        "fontsMs": 747,
-        "buildMs": 295,
-        "totalMs": 2361,
+        "importMs": 164,
+        "fontsMs": 217,
+        "buildMs": 93,
+        "totalMs": 1044,
         "builds": 1
       },
       "specimen": {
@@ -1203,17 +1203,17 @@
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766835
+        "bytes": 766838
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1345,13 +1345,13 @@
       }
     },
     "pt": {
-      "hash8": "a5f7df16",
+      "hash8": "a85a2784",
       "vdtHash": "d39988f948629b14665e1d027a6153b51f287a63",
       "timings": {
-        "importMs": 633,
-        "fontsMs": 126,
-        "buildMs": 141,
-        "totalMs": 1544,
+        "importMs": 165,
+        "fontsMs": 74,
+        "buildMs": 107,
+        "totalMs": 911,
         "builds": 1
       },
       "specimen": {
@@ -1421,22 +1421,22 @@
       },
       "pdf": {
         "file": "splash-inset-broken-border.pdf",
-        "bytes": 770777,
+        "bytes": 770779,
         "pages": 2
       },
       "sandbox": {
         "file": "splash-inset-broken-border.postext",
-        "bytes": 766620
+        "bytes": 766623
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

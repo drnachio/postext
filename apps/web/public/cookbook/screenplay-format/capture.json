@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "screenplay-format",
-  "sourceHash": "22c8584908c3dbce426b11df6ccb83000a96c0644d8d5fec4e46ca63fecf7409",
+  "sourceHash": "d003b3ba46b39ca8efa7e71837b38b7b536fa66b0bc1f9e35eeec8d8f9f402b4",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.417Z",
+  "capturedAt": "2026-10-10T13:38:07.615Z",
   "variants": {
     "en": {
-      "hash8": "8c3f08b3",
-      "vdtHash": "9fd24f7bc2126a76cef3da360ca67a96b8a0e7b9",
+      "hash8": "49212b80",
+      "vdtHash": "6bfb0c3f14c1e753ba023b6adcad451afd00112f",
       "timings": {
-        "importMs": 168,
-        "fontsMs": 30,
-        "buildMs": 14,
-        "totalMs": 829,
-        "builds": 2
+        "importMs": 132,
+        "fontsMs": 0,
+        "buildMs": 34,
+        "totalMs": 786,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Special Elite"
         ],
         "pages": 5,
-        "ownLines": 154
+        "ownLines": 148
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 13538,
+          "bytes": 13560,
           "alt": "Opening page 1: Lost Property."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 16686,
+          "bytes": 16702,
           "alt": "Opening page 2: Notice."
         },
         {
@@ -71,7 +71,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 67736,
+          "bytes": 67820,
           "alt": "Opening page 1: Lost Property."
         },
         {
@@ -82,7 +82,7 @@
           "h": 1294,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 59802,
+          "bytes": 59932,
           "alt": "Page 2: 3 INT. LOST PROPERTY OFFICE, STORE ROOM — CONTINUOUS."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1294,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 62296,
+          "bytes": 62264,
           "alt": "Page 3: 5 EXT. BRANNOCK STREET STATION — DAY."
         }
       ],
@@ -125,13 +125,12 @@
       },
       "sandbox": {
         "file": "screenplay-format.postext",
-        "bytes": 11599,
+        "bytes": 11525,
         "folio": "23a03f17"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "renderPageToCanvas"
         ],
         "configKeys": [
@@ -142,7 +141,6 @@
           "bodyText.fontSize",
           "bodyText.lineHeight",
           "bodyText.paragraphSpacing",
-          "bodyText.referenceColor",
           "bodyText.textAlign",
           "calloutStyles",
           "calloutStyles[].backgroundEnabled",
@@ -161,6 +159,7 @@
           "calloutStyles[].titleStyle.fontWeight",
           "calloutStyles[].titleStyle.gap",
           "calloutStyles[].titleStyle.indent",
+          "calloutStyles[].titleStyle.lineHeight",
           "calloutStyles[].titleStyle.textTransform",
           "colorPalette",
           "colorPalette[].id",
@@ -281,18 +280,24 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "98119cdb",
-      "vdtHash": "3998854b31447ab0848bf70177eb3e491dab371c",
+      "hash8": "a762adb5",
+      "vdtHash": "f2b5530f9eccb204df4aeaa752c7e1fe9b1c4390",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 31,
-        "buildMs": 13,
-        "totalMs": 826,
-        "builds": 2
+        "importMs": 126,
+        "fontsMs": 1,
+        "buildMs": 34,
+        "totalMs": 769,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -313,7 +318,7 @@
           "Special Elite"
         ],
         "pages": 5,
-        "ownLines": 154
+        "ownLines": 148
       },
       "pages": [
         {
@@ -324,7 +329,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 15064,
+          "bytes": 14864,
           "alt": "Página de apertura 1: Objetos perdidos."
         },
         {
@@ -335,7 +340,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 17754,
+          "bytes": 17768,
           "alt": "Página de apertura 2: Aviso."
         },
         {
@@ -346,7 +351,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 72230,
+          "bytes": 72176,
           "alt": "Página de apertura 1: Objetos perdidos."
         },
         {
@@ -357,7 +362,7 @@
           "h": 1294,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 65894,
+          "bytes": 65840,
           "alt": "Página 2: 3 INT. OFICINA DE OBJETOS PERDIDOS, ALMACÉN — CONTINUO."
         },
         {
@@ -368,7 +373,7 @@
           "h": 1294,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 67058,
+          "bytes": 67236,
           "alt": "Página 3: 5 EXT. ESTACIÓN DE LA CALLE BRAÑOSA — DÍA."
         }
       ],
@@ -400,13 +405,12 @@
       },
       "sandbox": {
         "file": "screenplay-format.postext",
-        "bytes": 12107,
+        "bytes": 12063,
         "folio": "23a03f17"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "renderPageToCanvas"
         ],
         "configKeys": [
@@ -417,7 +421,6 @@
           "bodyText.fontSize",
           "bodyText.lineHeight",
           "bodyText.paragraphSpacing",
-          "bodyText.referenceColor",
           "bodyText.textAlign",
           "calloutStyles",
           "calloutStyles[].backgroundEnabled",
@@ -436,6 +439,7 @@
           "calloutStyles[].titleStyle.fontWeight",
           "calloutStyles[].titleStyle.gap",
           "calloutStyles[].titleStyle.indent",
+          "calloutStyles[].titleStyle.lineHeight",
           "calloutStyles[].titleStyle.textTransform",
           "colorPalette",
           "colorPalette[].id",
@@ -556,7 +560,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

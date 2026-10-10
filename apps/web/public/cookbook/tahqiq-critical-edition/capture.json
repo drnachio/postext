@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "tahqiq-critical-edition",
-  "sourceHash": "894c91ec34557630a4ccbbba40ec22fa44bbee17d706f1ad562a1b9f5fb89c67",
+  "sourceHash": "7c1674a6f12d4e1c5da184128c21f7d04bbdb5c179b4f4285f847f25d9935253",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.466Z",
+  "capturedAt": "2026-10-10T13:38:51.797Z",
   "variants": {
     "en": {
-      "hash8": "5ffd8e7e",
+      "hash8": "5eeabd3e",
       "vdtHash": "450e833fb8a7df45805cb108debda8aee3d87a64",
       "timings": {
-        "importMs": 184,
-        "fontsMs": 73,
-        "buildMs": 217,
-        "totalMs": 1406,
-        "builds": 2
+        "importMs": 171,
+        "fontsMs": 63,
+        "buildMs": 670,
+        "totalMs": 2873,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Aref Ruqaa"
         ],
         "pages": 11,
-        "ownLines": 164
+        "ownLines": 165
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1412,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 22314,
+          "bytes": 22318,
           "alt": "Opening page أ: مقدمة ابن خلدون."
         },
         {
@@ -60,7 +60,7 @@
           "h": 1412,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 16352,
+          "bytes": 16358,
           "alt": "Opening page ب: الطبعة."
         },
         {
@@ -204,20 +204,20 @@
       },
       "pdf": {
         "file": "tahqiq-critical-edition.pdf",
-        "bytes": 153120,
+        "bytes": 153124,
         "pages": 11
       },
       "sandbox": {
         "file": "tahqiq-critical-edition.postext",
-        "bytes": 26931
+        "bytes": 26930
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -433,14 +433,14 @@
       }
     },
     "es": {
-      "hash8": "2f3f29b8",
+      "hash8": "0a1cc9ce",
       "vdtHash": "67748458f8413e649340d042e072eef7e43cf3de",
       "timings": {
-        "importMs": 184,
-        "fontsMs": 75,
-        "buildMs": 229,
-        "totalMs": 1429,
-        "builds": 2
+        "importMs": 189,
+        "fontsMs": 62,
+        "buildMs": 316,
+        "totalMs": 1110,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -460,7 +460,7 @@
           "Aref Ruqaa"
         ],
         "pages": 11,
-        "ownLines": 164
+        "ownLines": 165
       },
       "pages": [
         {
@@ -626,20 +626,20 @@
       },
       "pdf": {
         "file": "tahqiq-critical-edition.pdf",
-        "bytes": 151481,
+        "bytes": 151480,
         "pages": 11
       },
       "sandbox": {
         "file": "tahqiq-critical-edition.postext",
-        "bytes": 26968
+        "bytes": 26967
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
