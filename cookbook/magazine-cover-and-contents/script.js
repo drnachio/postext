@@ -18,7 +18,7 @@ const palette = {
   muted: '#6b6358', // credits and the standfirsts in the contents
   olive: '#5d6a2b', terracotta: '#a3472a', wine: '#7a2c3a', // as in the :::part fences: edit both
 };
-// A part overrides by id; designs paint the hex in 1.4.1 (gotcha: palette-skips-designs).
+// A part overrides by id: col() writes the id beside the hex, and the designs follow it.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -59,7 +59,7 @@ const cover = { enabled: true, slot: { elements: [
   text('issue', '{attr.issue}', { ...small, align: 'right' },
     at('page', 'top-right', -MARGIN.outer, 12)),
   text('masthead', '{titleText}', { ...bodoni, fontWeight: 900, fontSize: pt(118),
-    lineHeight: 0.86, // a multiple of the size (gotcha: design-lineheight-multiple)
+    lineHeight: 0.86, // set tight: the masthead is capitals, with no descenders
     letterSpacing: pt(1), textTransform: 'uppercase', align: 'center', color: col('ink') },
   { ...at('#strap', 'below', 0, 6), size: { width: mm(MASTHEAD) } }),
   ...coverLine(1, 'olive'), ...coverLine(2, 'terracotta'), ...coverLine(3, 'wine'),
@@ -96,8 +96,8 @@ const contents = { // passed to the config as `toc`
   leader: { enabled: false }, subtitle: { enabled: true, attr: 'standfirst', // in italic
     fontFamily: 'Spectral', fontSize: pt(10), color: col('muted') },
   // A part row is a design as wide as the column; its 'band' takes the part's palette. No
-  // {pageNumber}: a part with no divider page has no page (gotcha: toc-part-rows-no-label).
-  parts: { height: pt(2 * LEAD), design: { elements: [ // two grid lines (1.4.1's default: 2 em)
+  // {pageNumber} in it: each story under the tab prints its own page.
+  parts: { height: pt(2 * LEAD), design: { elements: [ // two grid lines (the default: 2 em)
     { kind: 'rule', id: 'line', thickness: pt(0.75), color: col('band'), // behind the tab
       placement: { ...mid, size: { width: 'fill' } } },
     text('tab', '{titleText}', { ...label, fontSize: pt(8), letterSpacing: pt(1.6),
@@ -145,8 +145,8 @@ const opener = (resourceId) => ({ enabled: true, slot: { elements: [
   text('standfirst', '{attr.standfirst}', { fontFamily: 'Spectral', italic: true,
     fontSize: pt(11.5), lineHeight: 1.35, overflow: 'wrap', align: 'left',
     color: col('paper'), box: panel(0, 6) }, below('title')),
-  // The picture reserves nothing (gotcha: opener-image-no-reserve); the panel and the byline
-  // reach below it, and the byline's empty padding keeps the story 5 mm under it.
+  // The panel and the byline reach below the picture's foot, so they set where the story
+  // starts; the byline's empty padding keeps the first line 5 mm under it.
   text('byline', '{attr.byline}', { ...small, fontSize: pt(7.5), letterSpacing: pt(1.3),
     box: { padding: { top: mm(4), bottom: mm(5) } } }, at('#standfirst', 'below')),
 ] } });
@@ -178,7 +178,7 @@ const boxStyle = { backgroundEnabled: false, ...flush, // one device: a stripe i
   stripe: { enabled: true, side: 'top', width: pt(2), color: col('band') },
   padding: { top: mm(3), right: pt(0), bottom: pt(0), left: pt(0) } };
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-us', es: 'es' }), // each edition's hyphenation patterns
   colorPalette, resourceTypes: [photoType],
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'), margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom),
@@ -188,10 +188,9 @@ const config = () => ({
     color: col('ink'), boldColor: col('band'), italicColor: col('ink'),
     referenceColor: col('ink'), firstLineIndent: mm(3.5), indentAfterHeading: false,
     minWordSpacing: 0.7, maxWordSpacing: 1.7, // tighter than the 0.6–2 defaults
-    runtMinCharacters: 40, // counted in word spaces: last lines under about 20 letters cost
-    maxRuntTracking: 0 }, // tracking 1.4.1 never paints (gotcha: runt-tracking-unpainted)
+    runtMinCharacters: 40 }, // counted in word spaces: last lines under about 20 letters cost
   headings: { fontFamily: 'Bodoni Moda', marginBottom: pt(0), levels: [
-    // Restated (gotcha: headings-drop-h1-break); 'any': a story opens on the very next page.
+    // 'any': a story opens on the very next page, left or right.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } },
     { level: 2, fontSize: pt(15), lineHeight: pt(LEAD), fontWeight: 400, italic: true,
       color: col('band'), marginTop: pt(LEAD) },

@@ -28,7 +28,7 @@ With `parts.page: false`, a fence such as `:::part{title="Features" palette="ban
 
 <Excerpt region="palette" />
 
-A part overrides palette entries by id, so everything that changes with the section links to `band`: the opener's panel, the folio tab, the bullets and list numbers, the pull quote, and the fact box's stripe and title. In the text the override goes by value: any colour whose hex equals `band`'s base hex (`#8b6a3e`) takes the section's, which is why no other entry uses that hex. Design elements work the other way round. Postext 1.4.1 paints the hex written beside their `paletteId` and ignores `colorPalette`, but a part's override reaches them through the `paletteId`, so `col()` writes both.
+A part overrides palette entries by id, so everything that changes with the section links to `band`: the opener's panel, the folio tab, the bullets and list numbers, the pull quote, and the fact box's stripe and title. In the text the override goes by value: any colour whose hex equals `band`'s base hex (`#8b6a3e`) takes the section's, which is why no other entry uses that hex. Design elements work the other way round: a part's override reaches them through the `paletteId`, so `col()` writes the id beside the hex.
 
 ### 4 · Let the contents group themselves
 
@@ -40,7 +40,7 @@ A part overrides palette entries by id, so everything that changes with the sect
 
 <Excerpt region="opener" />
 
-The picture bleeds off the top of the page and reaches 150 mm down it. A panel in `band` rises 34 mm into its foot. The panel is three text boxes 136 mm wide, each chained `below` the one before, holding the section's name from `{partTitle}`, the title and the standfirst. The picture reserves no height, so the story starts under the lowest element that does, the byline, whose empty 5 mm of bottom padding keeps the first line at least that far below it.
+The picture bleeds off the top of the page and reaches 150 mm down it. A panel in `band` rises 34 mm into its foot. The panel is three text boxes 136 mm wide, each chained `below` the one before, holding the section's name from `{partTitle}`, the title and the standfirst. The panel and the byline reach below the picture's foot, so the story starts under the lowest element, the byline, whose empty 5 mm of bottom padding keeps the first line at least that far below it.
 
 ### 6 · Name the section in the folio
 

@@ -28,7 +28,7 @@ Con `parts.page: false`, una valla como `:::part{title="Reportajes" palette="ban
 
 <Excerpt region="palette" />
 
-Una parte redefine entradas de la paleta por su id, así que todo lo que cambia con la sección se enlaza a `band`: el panel de la apertura, la pestaña del folio, las viñetas y los números de las listas, la cita destacada, y el filete y el título del recuadro de datos. En el texto, la redefinición va por valor: cualquier color cuyo hex coincida con el hex base de `band` (`#8b6a3e`) toma el de la sección, y por eso ninguna otra entrada usa ese hex. En los elementos de diseño es al revés. Postext 1.4.1 pinta el hex escrito junto a su `paletteId` y no consulta `colorPalette`, pero la redefinición de una parte les llega por el `paletteId`; por eso `col()` escribe los dos.
+Una parte redefine entradas de la paleta por su id, así que todo lo que cambia con la sección se enlaza a `band`: el panel de la apertura, la pestaña del folio, las viñetas y los números de las listas, la cita destacada, y el filete y el título del recuadro de datos. En el texto, la redefinición va por valor: cualquier color cuyo hex coincida con el hex base de `band` (`#8b6a3e`) toma el de la sección, y por eso ninguna otra entrada usa ese hex. En los elementos de diseño es al revés: la redefinición de una parte les llega por el `paletteId`, y por eso `col()` escribe el id junto al hex.
 
 ### 4 · Deja que el sumario se agrupe solo
 
@@ -40,7 +40,7 @@ Una parte redefine entradas de la paleta por su id, así que todo lo que cambia 
 
 <Excerpt region="opener" />
 
-La imagen, a sangre, ocupa los 150 mm de arriba de la página. Un panel en `band` monta 34 mm sobre su pie: son tres cajas de texto de 136 mm, cada una anclada `below` (debajo) de la anterior, con el nombre de la sección que da `{partTitle}`, el título y la entradilla. La imagen no reserva altura, así que el texto empieza bajo el elemento más bajo que sí la reserva, la firma, cuyo relleno inferior vacío de 5 mm lo mantiene al menos a esa distancia.
+La imagen, a sangre, ocupa los 150 mm de arriba de la página. Un panel en `band` monta 34 mm sobre su pie: son tres cajas de texto de 136 mm, cada una anclada `below` (debajo) de la anterior, con el nombre de la sección que da `{partTitle}`, el título y la entradilla. El panel y la firma bajan más que el pie de la imagen, así que el texto empieza bajo el elemento más bajo, la firma, cuyo relleno inferior vacío de 5 mm lo mantiene al menos a esa distancia.
 
 ### 6 · Nombra la sección en el folio
 

@@ -28,7 +28,7 @@ Amb `parts.page: false`, una tanca com `:::part{title="Reportajes" palette="band
 
 <Excerpt region="palette" />
 
-Una part redefineix entrades de la paleta pel seu id, així que tot el que canvia amb la secció s'enllaça a `band`: el plafó de l'obertura, la pestanya del foli, les vinyetes i els números de les llistes, la cita destacada, i el filet i el títol del requadre de dades. En el text, la redefinició va per valor: qualsevol color amb un hex que coincideixi amb l'hex base de `band` (`#8b6a3e`) pren el de la secció, i per això cap altra entrada no fa servir aquest hex. En els elements de disseny és al revés. Postext 1.4.1 pinta l'hex escrit al costat del seu `paletteId` i no consulta `colorPalette`, però la redefinició d'una part els arriba pel `paletteId`; per això `col()` escriu tots dos.
+Una part redefineix entrades de la paleta pel seu id, així que tot el que canvia amb la secció s'enllaça a `band`: el plafó de l'obertura, la pestanya del foli, les vinyetes i els números de les llistes, la cita destacada, i el filet i el títol del requadre de dades. En el text, la redefinició va per valor: qualsevol color amb un hex que coincideixi amb l'hex base de `band` (`#8b6a3e`) pren el de la secció, i per això cap altra entrada no fa servir aquest hex. En els elements de disseny és al revés: la redefinició d'una part els arriba pel `paletteId`, i per això `col()` escriu l'id al costat de l'hex.
 
 ### 4 · Deixa que el sumari s'agrupi sol
 
@@ -40,7 +40,7 @@ Una part redefineix entrades de la paleta pel seu id, així que tot el que canvi
 
 <Excerpt region="opener" />
 
-La imatge, a sang, ocupa els 150 mm de dalt de la pàgina. Un plafó en `band` munta 34 mm sobre el seu peu: són tres caixes de text de 136 mm, cadascuna ancorada `below` (a sota) de l'anterior, amb el nom de la secció que dona `{partTitle}`, el títol i l'entradeta. La imatge no reserva alçada, així que el text comença sota l'element més baix que sí que en reserva, la signatura, amb un farciment inferior buit de 5 mm que el manté com a mínim a aquesta distància.
+La imatge, a sang, ocupa els 150 mm de dalt de la pàgina. Un plafó en `band` munta 34 mm sobre el seu peu: són tres caixes de text de 136 mm, cadascuna ancorada `below` (a sota) de l'anterior, amb el nom de la secció que dona `{partTitle}`, el títol i l'entradeta. El plafó i la signatura baixen més que el peu de la imatge, així que el text comença sota l'element més baix, la signatura, amb un farciment inferior buit de 5 mm que el manté com a mínim a aquesta distància.
 
 ### 6 · Anomena la secció al foli
 
