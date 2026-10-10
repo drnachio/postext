@@ -18,7 +18,7 @@ Pages 29 to 33 of a pocket edition of Montaigne’s *Essays* in Charles Cotton�
 
 <Excerpt region="palette" />
 
-Every colour in the configuration links to one of these entries. If you leave `header` undefined, the engine draws its built-in head: `{title}` on rectos and `{chapterTitle}` on versos over a 1 pt rule, in Open Sans 600 at 8 pt and `#295AA3` blue ([headers and footers](/en/docs/configuration#headers--footers)). Pointing `main-color` at the sepia recolours the text defaults but leaves that head blue, because design slots never read the palette. So each head here is written out in full, with its colours in hex. Bold, italic and references also default to `main-color`, and `bodyText` sets them back to the ink.
+Every colour in the configuration links to one of these entries. If you leave `header` undefined, the engine draws its built-in head: `{title}` on rectos and `{chapterTitle}` on versos over a 1 pt rule, in Open Sans 600 at 8 pt and `#295AA3` blue ([headers and footers](/en/docs/configuration#headers--footers)). Pointing `main-color` at the sepia recolours the text defaults and that head with them, but its face, its rule and the side each title prints on stay the engine’s. So each head here is written out in full, with every colour linked to a palette entry. Bold, italic and references also default to `main-color`, and `bodyText` sets them back to the ink.
 
 ### 2 · Build every head from one tab
 
@@ -46,7 +46,7 @@ The opener sets the title in full with `overflow: 'wrap'` and breaks it at each 
 
 <Excerpt region="levels" />
 
-Any `headings` object switches off the H1 page break, so it is restated. With `'odd'`, an essay that ends on a recto is followed by a blank verso. The Spanish edition has one, because its chapter IV ends on page 31; here chapter IV ends on page 32, a verso, and chapter V opens on page 33. The heads’ `pages: 'body'` keeps them off blank pages and off openers (the pages whose first block is this heading). The footer’s `pages: 'opener'` prints the drop folio on openers only ([text elements](/en/docs/configuration#text-elements)).
+With `'odd'`, an essay that ends on a recto is followed by a blank verso. The Spanish edition has one, because its chapter IV ends on page 31; here chapter IV ends on page 32, a verso, and chapter V opens on page 33. The heads’ `pages: 'body'` keeps them off blank pages and off openers (the pages whose first block is this heading). The footer’s `pages: 'opener'` prints the drop folio on openers only ([text elements](/en/docs/configuration#text-elements)).
 
 ### 6 · Start the folios at 29
 
@@ -89,5 +89,5 @@ A box with `pages: 'blank'` prints only on the pages the recto break adds: in th
 
 ## Pitfalls
 
-- `CAP` is fitted to essay IV’s title in each edition, the only one a running head shows here. Essay V’s head would still be cut mid-word (“Whether the governor of a place besieged ou…”), so a book of long titles needs the short running title from Variations.
+- `CAP` is set in each edition for essay IV’s title, the only one a running head shows here. The ellipsis follows the last whole word that fits, and that word can be a preposition: at 64 mm the Spanish head would end “…sus pasiones sobre…”. A book of long titles needs the short running title from Variations.
 - In the English edition, raising `minWordSpacing` from 0.7 to 0.75 leaves the first line of essay V (“Quintus Marcius, the Roman legate…”) with no break inside the band, and its word spaces stretch to 2.4 times their normal width. The Spanish edition has no such line. After any change, check the loosest lines the capture lists.

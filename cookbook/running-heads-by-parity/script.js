@@ -20,9 +20,8 @@ const palette = {
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
-  // Text-style defaults (headings, bold, italic, lists, boxes) link to 'main-color'. The
-  // built-in header and footer keep #295AA3, and design slots never read the palette
-  // (gotcha: palette-skips-designs), so every element colour here carries its hex.
+  // Text-style defaults (headings, bold, italic, lists, boxes) link to 'main-color':
+  // pointed at the sepia, none of them prints in the engine's blue.
   { id: 'main-color', name: 'sepia (defaults)', value: { hex: palette.sepia, model: 'hex' } },
 ];
 // #endregion
@@ -67,11 +66,11 @@ const geometry = { // left is the inner margin on a recto; mirror swaps it on th
 // #region answer: running heads by parity: book on the verso, essay on the recto, folios outside
 const GAP = 3; // mm from the tab to the divider, which lands on the text block's edge
 const HEAD = 12; // mm from the top edge of the page to the top of the tab
-const CAP = t({ en: 60.5, es: 66.8 }); // mm: fitted so essay IV's head ends on a word
-// (gotcha: ellipsis-mid-word); a short running title (see Variations) suits any title
+const CAP = t({ en: 60.5, es: 66.8 }); // mm: the head's widest line, set per edition so
+// essay IV's is cut after 'false' and 'objetos'; a short running title suits any title
 const page = (edge) => ({ to: 'page', edge }); // the trim box (gotcha: negative-offsets)
 const header = { elements: [
-  // Verso (even): tab | divider | THE BOOK'S TITLE from the frontmatter (gotcha: quote-frontmatter)
+  // Verso (even): tab | divider | THE BOOK'S TITLE from the frontmatter
   folio({ id: 'folio-even', parity: 'even', pages: 'body', anchor: page('top-left'),
     x: OUTER - GAP - TAB, y: HEAD }),
   divider({ id: 'rule-even', parity: 'even', from: 'folio-even', edge: 'right-of', x: GAP }),
@@ -87,7 +86,7 @@ const header = { elements: [
   { kind: 'text', id: 'essay', content: '{chapterTitle}', parity: 'odd', pages: 'body',
     fontFamily: 'Baskervville', italic: true, fontSize: pt(TITLE_PT),
     lineHeight: LINE / TITLE_PT, color: col('muted'),
-    overflow: 'ellipsis-end', // stated, though default (gotcha: overflow-ellipsis-default)
+    overflow: 'ellipsis-end', // stated, though a running head's default
     placement: { anchor: { to: '#rule-odd', edge: 'left-of' },
       offset: { x: mm(-2.5), y: pt(PAD.top) }, size: { maxWidth: mm(CAP) } } },
 ] };
@@ -123,7 +122,7 @@ const opener = {
 // #endregion
 
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es' }), // hyphenation by exact code (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-us', es: 'es' }), // the language of the hyphenation patterns
   colorPalette,
   page: geometry,
   layout: { layoutType: 'single' },
@@ -140,7 +139,6 @@ const config = () => ({
   headings: { // 400, the face's only weight: the default 700 would ask for one that is missing
     fontFamily: 'Libre Caslon Display', fontWeight: 400, color: col('ink'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
       // 'odd' puts every opener on a recto, adding a blank verso when one is needed;
       // span: 'page' makes the design an opener, where a \\ in the title breaks the line.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
@@ -161,8 +159,6 @@ const config = () => ({
     // over the colophon is eight em dashes of Alegreya SC that overlap into a 0.5 pt line.
     { id: 'end', fontFamily: 'Alegreya SC', fontSize: pt(8), color: col('sepia'),
       textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD) },
-    // No italics in the colophon: a style's italic runs take bodyText.italicColor, the ink,
-    // and would print darker than the muted words around them (gotcha: style-italic-colour).
     { id: 'colophon', fontSize: pt(7), lineHeight: pt(9.5), color: col('muted'),
       textAlign: 'left', firstLineIndent: pt(0) },
   ],

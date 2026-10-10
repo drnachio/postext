@@ -18,7 +18,7 @@ As páginas 29 a 33 de uma edição de bolso dos *Ensaios* de Montaigne na tradu
 
 <Excerpt region="palette" />
 
-Cada cor da configuração aponta para uma destas entradas. Se você deixar `header` sem definir, o motor desenha o cabeço embutido: `{title}` nas ímpares e `{chapterTitle}` nas pares, sobre um fio de 1 pt, em Open Sans 600 de 8 pt e no azul `#295AA3` ([cabeçalhos e rodapés](/pt/docs/configuration#cabeços-e-rodapés)). Apontar `main-color` para o sépia muda as cores padrão do texto, mas deixa aquele cabeço em azul, porque os espaços de design nunca leem a paleta. Por isso cada cabeço aqui é escrito por inteiro, com as cores em hexadecimal. O negrito, o itálico e as referências também usam `main-color` por padrão, e `bodyText` os devolve à cor da tinta.
+Cada cor da configuração aponta para uma destas entradas. Se você deixar `header` sem definir, o motor desenha o cabeço embutido: `{title}` nas ímpares e `{chapterTitle}` nas pares, sobre um fio de 1 pt, em Open Sans 600 de 8 pt e no azul `#295AA3` ([cabeçalhos e rodapés](/pt/docs/configuration#cabeços-e-rodapés)). Apontar `main-color` para o sépia muda as cores padrão do texto e a daquele cabeço também, mas a fonte, o fio e o lado em que cada título sai continuam sendo os do motor. Por isso cada cabeço aqui é escrito por inteiro, com cada cor ligada a uma entrada da paleta. O negrito, o itálico e as referências também usam `main-color` por padrão, e `bodyText` os devolve à cor da tinta.
 
 ### 2 · Todos os cabeços saem de uma aba
 
@@ -46,7 +46,7 @@ A abertura compõe o título completo com `overflow: 'wrap'` e o quebra em cada 
 
 <Excerpt region="levels" />
 
-Qualquer objeto `headings` desliga a quebra de página do H1, por isso ela é declarada de novo. Com `'odd'`, um ensaio que termina numa ímpar é seguido por uma página par em branco. A edição espanhola tem uma, porque lá o capítulo IV termina na página 31; aqui o capítulo IV termina na página 32, uma par, e o capítulo V abre na 33. O `pages: 'body'` dos cabeços os mantém fora das páginas em branco e das aberturas (as páginas cujo primeiro bloco é este título). O `pages: 'opener'` do rodapé imprime o fólio ao pé só nas aberturas ([elementos de texto](/pt/docs/configuration#elementos-de-texto)).
+Com `'odd'`, um ensaio que termina numa ímpar é seguido por uma página par em branco. A edição espanhola tem uma, porque lá o capítulo IV termina na página 31; aqui o capítulo IV termina na página 32, uma par, e o capítulo V abre na 33. O `pages: 'body'` dos cabeços os mantém fora das páginas em branco e das aberturas (as páginas cujo primeiro bloco é este título). O `pages: 'opener'` do rodapé imprime o fólio ao pé só nas aberturas ([elementos de texto](/pt/docs/configuration#elementos-de-texto)).
 
 ### 6 · Comece os fólios em 29
 
@@ -89,5 +89,5 @@ Uma caixa com `pages: 'blank'` só é impressa nas páginas que a quebra para í
 
 ## Erros comuns
 
-- `CAP` é ajustado ao título do ensaio IV em cada edição, o único que um cabeço mostra aqui. O cabeço do ensaio V ainda seria cortado no meio de uma palavra (“Whether the governor of a place besieged ou…”), então um livro de títulos longos precisa do título corrente curto das Variações.
+- `CAP` é definido em cada edição para o título do ensaio IV, o único que um cabeço mostra aqui. As reticências vêm depois da última palavra inteira que cabe, e essa palavra pode ser uma preposição: com 64 mm o cabeço da edição espanhola terminaria em “…sus pasiones sobre…”. Um livro de títulos longos precisa do título corrente curto das Variações.
 - Na edição inglesa, subir `minWordSpacing` de 0,7 para 0,75 deixa a primeira linha do ensaio V (“Quintus Marcius, the Roman legate…”) sem nenhum ponto de quebra dentro da faixa, e os espaços entre palavras se abrem até 2,4 vezes a largura normal. A edição espanhola não tem essa linha. Depois de qualquer mudança, confira as linhas mais frouxas que a captura lista.

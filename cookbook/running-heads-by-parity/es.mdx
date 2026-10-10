@@ -18,7 +18,7 @@ Las páginas 29 a 33 de los *Ensayos* de Montaigne en edición de bolsillo y tra
 
 <Excerpt region="palette" />
 
-Cada color de la configuración enlaza con una de estas entradas. Si dejas `header` sin definir, el motor dibuja su cabecera de serie: `{title}` en las impares y `{chapterTitle}` en las pares sobre un filete de 1 pt, en Open Sans 600 de 8 pt y en azul `#295AA3` ([encabezados y pies](/es/docs/configuration#encabezados-y-pies)). Si `main-color` toma el valor del sepia, cambian los colores por defecto del texto, pero esa cabecera sigue en azul, porque las ranuras de diseño no leen la paleta. Por eso aquí cada cabecera se escribe entera, con sus colores en hexadecimal. La negrita, la cursiva y las referencias también toman `main-color` por defecto, y `bodyText` les devuelve el color de la tinta.
+Cada color de la configuración enlaza con una de estas entradas. Si dejas `header` sin definir, el motor dibuja su cabecera de serie: `{title}` en las impares y `{chapterTitle}` en las pares sobre un filete de 1 pt, en Open Sans 600 de 8 pt y en azul `#295AA3` ([encabezados y pies](/es/docs/configuration#encabezados-y-pies)). Si `main-color` toma el valor del sepia, cambian los colores por defecto del texto y también el de esa cabecera, pero su letra, su filete y el lado en que va cada título siguen siendo los del motor. Por eso aquí cada cabecera se escribe entera, con cada color enlazado a una entrada de la paleta. La negrita, la cursiva y las referencias también toman `main-color` por defecto, y `bodyText` les devuelve el color de la tinta.
 
 ### 2 · Todas las cabeceras salen de una pestaña
 
@@ -46,7 +46,7 @@ La apertura compone el título completo con `overflow: 'wrap'`, partido en cada 
 
 <Excerpt region="levels" />
 
-Cualquier objeto `headings` desactiva el salto de página del H1; por eso aquí se vuelve a declarar. Con `'odd'`, a un ensayo que termina en impar le sigue una página par en blanco. Aquí el capítulo IV acaba en <PageRef page={3}>una impar</PageRef>, de modo que la 32 queda en blanco y el V abre en la 33. El `pages: 'body'` de las cabeceras las deja fuera de las páginas en blanco y de las aperturas (las páginas cuyo primer bloque es este título). El `pages: 'opener'` del pie imprime el folio solo en las aperturas ([elementos de texto](/es/docs/configuration#elementos-de-texto)).
+Con `'odd'`, a un ensayo que termina en impar le sigue una página par en blanco. Aquí el capítulo IV acaba en <PageRef page={3}>una impar</PageRef>, de modo que la 32 queda en blanco y el V abre en la 33. El `pages: 'body'` de las cabeceras las deja fuera de las páginas en blanco y de las aperturas (las páginas cuyo primer bloque es este título). El `pages: 'opener'` del pie imprime el folio solo en las aperturas ([elementos de texto](/es/docs/configuration#elementos-de-texto)).
 
 ### 6 · Los folios empiezan en 29
 
@@ -89,5 +89,5 @@ Un elemento `box` con `pages: 'blank'` solo se imprime en las páginas que añad
 
 ## Errores frecuentes
 
-- `CAP` está ajustado al título del ensayo IV en cada edición, el único que muestra aquí una cabecera. La del ensayo V quedaría cortada a mitad de palabra («Si el jefe de una plaza sitiada debe salir a parlam…»), así que un libro de títulos largos necesita el titulillo corto de las variantes.
+- `CAP` está fijado en cada edición para el título del ensayo IV, el único que muestra aquí una cabecera. Los puntos suspensivos van tras la última palabra entera que cabe, y esa palabra puede ser una preposición: con 64 mm esta cabecera acabaría en «…sus pasiones sobre…». Un libro de títulos largos necesita el titulillo corto de las variantes.
 - En la edición inglesa, subir `minWordSpacing` de 0,7 a 0,75 deja la primera línea del ensayo V («Quintus Marcius, the Roman legate…») sin ningún corte dentro de la horquilla, y sus espacios entre palabras se abren hasta 2,4 veces su ancho normal. En la española no pasa. Después de cualquier cambio, revisa las líneas más abiertas que lista la captura.
