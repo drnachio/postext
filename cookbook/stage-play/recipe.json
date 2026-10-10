@@ -42,16 +42,7 @@
     "Q73"
   ],
   "gotchas": [
-    "headings-drop-h1-break",
-    "style-italic-colour",
-    "resource-double-quotes",
-    "palette-skips-designs",
-    "design-lineheight-multiple",
-    "runt-tracking-unpainted",
-    "quote-frontmatter",
-    "hyphenation-locales",
-    "opener-clipped-at-top",
-    "opener-image-no-reserve"
+    "resource-double-quotes"
   ],
   "engine": {
     "postext": "1.25.0"
@@ -163,61 +154,5 @@
     "technical-datasheet",
     "letters-edition"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "level 1 restates breakBefore (parity 'odd') because any headings object drops the H1 break; the act opens on page 3, facing the cast list"
-    },
-    {
-      "followup": "EF-68",
-      "package": "postext",
-      "note": "a paragraph style has no italicColor, so the directions' grey is bodyText.italicColor: every italic run of the dialogue takes it too, Lane's emphasised 'is' included"
-    },
-    {
-      "followup": "EF-173",
-      "package": "postext",
-      "note": "a paragraph style has no italic switch, so every direction and the scene description are written *…* in the Markdown"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside every paletteId, because the title page's lines and the running heads are design elements that do not read colorPalette"
-    },
-    {
-      "followup": "EF-113",
-      "package": "postext",
-      "note": "the playbill style sets span: 'page' in this single-column book: kept in the column, its design is cut off at the top and at the foot of the text block, 20 mm below the top of the sheet and 23.3 mm above its foot, while the sides still reach the bleed"
-    },
-    {
-      "followup": "EF-90",
-      "package": "postext",
-      "note": "the Markdown ends the title page with :::pagebreak: its plum ground is an image, which reserves no height, so the heading holds the page only down to its lowest text line, the premiere at 176 mm. The captured pages are the same without the break, but with the theatre and the premiere at 150 and 156 mm and no break, 'The Persons of the Play' starts on page 1 in both editions"
-    },
-    {
-      "followup": "EF-153",
-      "package": "postext",
-      "note": "each centred, tracked line of the title page is moved right by half its tracking: without it OSCAR WILDE sits 0.56 mm left of centre, with it 0.07 mm"
-    },
-    {
-      "followup": "EF-111",
-      "package": "postext",
-      "note": "bodyText.maxRuntTracking: 0: at the default (10‰), Algernon's 'Is marriage so demoralising as that?' is pulled onto one line with -10‰ of tracking, 2.0 mm across its 60 characters, and word spaces at 0.74 of normal; the canvas paints no negative tracking, so the eight spaces absorb those 2.0 mm as well and print at 0.52 of normal, below minWordSpacing (0.65)"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the title page's design text sets lineHeight: 1, a multiple, never a Dimension, which would drop the whole design"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "title, subtitle and author are quoted in the frontmatter: they feed the running head and the title page"
-    },
-    {
-      "followup": "EF-14",
-      "package": "postext",
-      "note": "locale is the exact code 'en-us' or 'es', the only forms that hyphenate"
-    }
-  ]
+  "workarounds": []
 }

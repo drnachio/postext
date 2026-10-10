@@ -18,7 +18,7 @@ O começo de *The Importance of Being Earnest*, de Oscar Wilde, composto como um
 
 <Excerpt region="acts" />
 
-O título do ato é um título de nível 1 em Abril Fatface de 24 pt, sem slot de design. `textTransform` o passa para maiúsculas, e as três linhas de 13,6 pt da grade que ele ocupa deixam as maiúsculas 5,5 mm abaixo do topo da mancha ([títulos](/pt/docs/configuration#títulos)). `textAlign: 'center'` não aceita um valor por nível, então centraliza também os títulos do elenco e o rótulo *Scene*. `breakBefore` com paridade `'odd'` leva o ato para uma página ímpar, diante do elenco. A configuração precisa repetir isso, porque qualquer objeto `headings` desativa a quebra de página do primeiro nível ([quebrar antes](/pt/docs/configuration#quebra-antes)).
+O título do ato é um título de nível 1 em Abril Fatface de 24 pt, sem slot de design. `textTransform` o passa para maiúsculas, e as três linhas de 13,6 pt da grade que ele ocupa deixam as maiúsculas 5,5 mm abaixo do topo da mancha ([títulos](/pt/docs/configuration#títulos)). `textAlign: 'center'` não aceita um valor por nível, então centraliza também os títulos do elenco e o rótulo *Scene*. `breakBefore` com paridade `'odd'` leva o ato para uma página ímpar, diante do elenco. O padrão, `'always-odd'`, deixaria duas páginas em branco entre os dois ([quebrar antes](/pt/docs/configuration#quebra-antes)).
 
 ### 2 · O elenco é uma fileira de pontos até cada ator
 
@@ -36,9 +36,9 @@ Um tipo de recurso com `captionPrefix` e `shortLabel` vazios imprime as imagens 
 
 <Excerpt region="playbill" />
 
-`# The Importance of Being Earnest {style="playbill" …}` leva o título em quatro atributos, que o design compõe em duas famílias: Abril Fatface de 40 e 60 pt para os substantivos e Libre Baskerville itálico de 17 pt para *The* e *of Being* ([atributos de título](/pt/docs/document-format#atributos-de-título)). O fundo ameixa, a moldura e o cravo são um único SVG desenhado em código e ancorado na sangria ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). O estilo usa `span: 'page'` embora o livro tenha uma só coluna. Preso à coluna, o design seria cortado no alto e no pé da mancha, 20 mm abaixo do topo da folha e 23,3 mm acima do pé. O `header` vazio do estilo tira os cabeços do elenco, que pertence à mesma seção, e o `footer` vazio tira da folha de rosto o fólio no pé, que sairia em ameixa sobre ameixa ([estilos de título](/pt/docs/configuration#estilos-de-título)).
+`# The Importance of Being Earnest {style="playbill" …}` leva o título em quatro atributos, que o design compõe em duas famílias: Abril Fatface de 40 e 60 pt para os substantivos e Libre Baskerville itálico de 17 pt para *The* e *of Being* ([atributos de título](/pt/docs/document-format#atributos-de-título)). O fundo ameixa, a moldura e o cravo são um único SVG desenhado em código e ancorado na sangria ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). O estilo usa `span: 'page'` embora o livro tenha uma só coluna. Preso à coluna, o design seria cortado no pé da mancha, 23,3 mm acima do pé da folha. O `header` vazio do estilo tira os cabeços do elenco, que pertence à mesma seção, e o `footer` vazio tira da folha de rosto o fólio no pé, que sairia em ameixa sobre ameixa ([estilos de título](/pt/docs/configuration#estilos-de-título)).
 
-As imagens de uma abertura não reservam altura, então o título ocupa a página só até a linha de texto mais baixa, a da estreia, a 176 mm. O espaço que sobra embaixo é curto demais para o título seguinte, e as páginas capturadas saem iguais sem o `:::pagebreak` depois da folha de rosto. A quebra está ali para edições futuras: sem ela, subir o teatro e a estreia para 150 e 156 mm faz *The Persons of the Play* começar sobre a folha ameixa. Na 1.4.1, uma linha centralizada com `letterSpacing` fica deslocada para a esquerda metade desse espaçamento, por isso `line()` move cada linha espaçada a mesma distância para a direita. *OSCAR WILDE* fica a 0,07 mm do centro, e não a 0,56.
+O fundo é um elemento de imagem, e uma abertura reserva altura até o pé de suas imagens, então o título ocupa a folha inteira: *The Persons of the Play* começa na página 2 sem nenhum `:::pagebreak` depois da folha de rosto, onde quer que fiquem as linhas dela. As linhas centralizadas com `letterSpacing` também dispensam correção. O espaçamento depois da última letra não entra na centralização, e *OSCAR WILDE* fica no centro da página.
 
 ### 5 · Cabeços que pulam a primeira página do ato
 
@@ -67,14 +67,14 @@ Alinhada à esquerda e com um recuo de primeira linha de 5 mm, uma rubrica de um
 `paragraphSpacing: true` acrescenta uma linha da grade em branco depois de cada fala. O ato em inglês passa então de três para cinco páginas, e o em espanhol para quatro.
 
 ```diff
-   maxRuntTracking: 0, // gotcha: runt-tracking-unpainted
+   firstLineIndent: mm(5), hangingIndent: true, // the name at the margin, the turnovers hung
 +  paragraphSpacing: true,
  };
 ```
 
 ## Erros comuns
 
-- Todo trecho em itálico do diálogo assume `italicColor`, inclusive a ênfase, por isso o *is* enfático de Lane sai no cinza das rubricas. O cinza precisa ficar em `bodyText` porque, na 1.4.1, um estilo de parágrafo não consegue dar ao seu itálico uma cor própria; só em redondo o *is* ficaria em tinta.
-- Três falas de Wilde terminam numa palavra sozinha: *information.*, *that?* e *you.* O script define `bodyText.maxRuntTracking: 0` por causa do erro *O ajuste de linhas curtas pode apertar um tracking que nunca é pintado*. Com o valor padrão, a 1.4.1 sobe *that?* para a linha anterior com 2,0 mm de tracking negativo que o canvas não pinta, e a linha sai com os espaços entre palavras na metade da largura. Mexendo só no espaçamento entre palavras, *that?* sobe apenas com um `minWordSpacing` de 0,5, que esmaga a linha do mesmo jeito, ou com uma medida 1,5 mm mais larga, que deixa dez linhas mais frouxas que 1,5 vez o espaço normal, em vez de duas. As páginas em inglês ficam com as três linhas curtas para não mudar as palavras de Wilde. A tradução espanhola foi reescrita onde uma linha terminava numa palavra de uma letra ou onde uma sílaba ficava sozinha.
+- Todo trecho em itálico do diálogo assume `italicColor`, inclusive a ênfase, por isso o *is* enfático de Lane sai no cinza das rubricas. O cinza fica em `bodyText` porque a maioria das rubricas está dentro de uma fala, no mesmo parágrafo que a ênfase; só em redondo o *is* ficaria em tinta.
+- Duas falas de Wilde terminam numa palavra sozinha: *information.* e *you.* Uma terceira, *that?*, sobe para a linha anterior com o 1 % de tracking negativo que `bodyText.maxRuntTracking` admite por padrão. As páginas em inglês ficam com as duas linhas curtas para não mudar as palavras de Wilde. A tradução espanhola foi reescrita onde uma linha terminava numa palavra de uma letra ou onde uma sílaba ficava sozinha.
 - Os nomes são hifenizados como qualquer outra palavra: *Au-gusta* e *Gwen-dolen* se partem entre duas linhas na página 5. Um word joiner (U+2060) dentro de *Augusta* mantém o nome inteiro, mas estica a linha de cima até 1,71 vez o espaço normal, então o texto em inglês fica com os hífens.
 - No canvas, a Playfair Display SC desenha *fi* como uma ligadura em minúscula, e *first* sairia com um *fi* minúsculo entre versaletes. Por isso a linha que encabeça o elenco diz *The original cast*.

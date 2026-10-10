@@ -6,8 +6,6 @@ author: "Oscar Wilde"
 
 # The Importance of Being Earnest {style="playbill" small="The" big="Importance" link="of Being" name="Earnest" theatre="St James’s Theatre · London" premiere="First performed on 14 February 1895"}
 
-:::pagebreak
-
 ## The Persons of the Play
 
 :::paragraphs{style="bill-head"}

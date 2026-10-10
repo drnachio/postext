@@ -18,7 +18,7 @@ El comienzo de *La importancia de llamarse Ernesto*, de Oscar Wilde, en una edic
 
 <Excerpt region="acts" />
 
-El acto se abre con un título de primer nivel en Abril Fatface de 24 pt, sin ranura de diseño. `textTransform` lo pasa a versales, y las tres líneas de 13,6 pt de la rejilla que ocupa dejan esas versales 5,5 mm por debajo del borde superior de la caja ([encabezados](/es/docs/configuration#encabezados)). `textAlign: 'center'` no admite un valor por nivel, así que centra también los títulos del reparto y el rótulo *Escena*. `breakBefore` con paridad `'odd'` lleva el acto a una página impar, frente al reparto. La configuración tiene que repetirlo, porque cualquier objeto `headings` desactiva el salto de página del primer nivel ([saltar antes](/es/docs/configuration#saltar-antes)).
+El acto se abre con un título de primer nivel en Abril Fatface de 24 pt, sin ranura de diseño. `textTransform` lo pasa a versales, y las tres líneas de 13,6 pt de la rejilla que ocupa dejan esas versales 5,5 mm por debajo del borde superior de la caja ([encabezados](/es/docs/configuration#encabezados)). `textAlign: 'center'` no admite un valor por nivel, así que centra también los títulos del reparto y el rótulo *Escena*. `breakBefore` con paridad `'odd'` lleva el acto a una página impar, frente al reparto. El valor por defecto, `'always-odd'`, dejaría dos páginas en blanco entre ambos ([saltar antes](/es/docs/configuration#saltar-antes)).
 
 ### 2 · El reparto es una fila de puntos hasta cada actor
 
@@ -36,9 +36,9 @@ Un tipo de recurso con `captionPrefix` y `shortLabel` vacíos imprime sus ilustr
 
 <Excerpt region="playbill" />
 
-`# La importancia de llamarse Ernesto {style="playbill" …}` lleva el título en cuatro atributos que el diseño compone en dos familias: Abril Fatface de 40 y 60 pt para los sustantivos y Libre Baskerville cursiva de 17 pt para *La* y *de llamarse* ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). El fondo ciruela, el marco y el clavel son un solo SVG dibujado en código y anclado al sangrado ([elementos de imagen](/es/docs/configuration#elementos-de-imagen)). El estilo lleva `span: 'page'` aunque el libro tenga una sola columna. Si el diseño se quedara en la columna, se cortaría arriba y abajo por los bordes de la caja de texto, a 20 mm del borde superior de la hoja y a 23,3 mm del inferior. El `header` vacío del estilo quita las cabeceras del reparto, que pertenece a la misma sección, y su `footer` vacío quita de la portada el folio al pie, que saldría en ciruela sobre ciruela ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)).
+`# La importancia de llamarse Ernesto {style="playbill" …}` lleva el título en cuatro atributos que el diseño compone en dos familias: Abril Fatface de 40 y 60 pt para los sustantivos y Libre Baskerville cursiva de 17 pt para *La* y *de llamarse* ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). El fondo ciruela, el marco y el clavel son un solo SVG dibujado en código y anclado al sangrado ([elementos de imagen](/es/docs/configuration#elementos-de-imagen)). El estilo lleva `span: 'page'` aunque el libro tenga una sola columna. Si el diseño se quedara en la columna, se cortaría por el pie de la caja de texto, a 23,3 mm del borde inferior de la hoja. El `header` vacío del estilo quita las cabeceras del reparto, que pertenece a la misma sección, y su `footer` vacío quita de la portada el folio al pie, que saldría en ciruela sobre ciruela ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)).
 
-Las imágenes de una apertura no reservan altura, así que el título ocupa la página solo hasta su línea de texto más baja, la del estreno, a 176 mm. El hueco que queda debajo no basta para el título siguiente, y sin el `:::pagebreak` que sigue a la portada las páginas capturadas salen iguales. El salto está ahí por si se retoca la portada: si lo quitas y subes el teatro y el estreno a 150 y 156 mm, *Personajes de la obra* empieza sobre la hoja ciruela. En la 1.4.1, una línea centrada con `letterSpacing` queda desplazada a la izquierda la mitad de ese espaciado, y `line()` corre cada línea espaciada lo mismo hacia la derecha. *OSCAR WILDE* queda así a 0,07 mm del centro en lugar de a 0,56.
+El fondo es un elemento de imagen, y una apertura reserva altura hasta el pie de sus imágenes, así que el título ocupa la hoja entera: *Personajes de la obra* empieza en la página 2 sin ningún `:::pagebreak` tras la portada, estén donde estén sus líneas. Tampoco hay que corregir las líneas centradas con `letterSpacing`. El espaciado que sigue a la última letra no cuenta al centrar, y *OSCAR WILDE* queda en el centro de la página.
 
 ### 5 · Cabeceras que se saltan la primera página del acto
 
@@ -67,14 +67,14 @@ En bandera y con una sangría de primera línea de 5 mm, una acotación de una l
 `paragraphSpacing: true` añade una línea en blanco de la rejilla tras cada parlamento. El acto inglés pasa entonces de tres a cinco páginas, y el español, de tres a cuatro.
 
 ```diff
-   maxRuntTracking: 0, // gotcha: runt-tracking-unpainted
+   firstLineIndent: mm(5), hangingIndent: true, // the name at the margin, the turnovers hung
 +  paragraphSpacing: true,
  };
 ```
 
 ## Errores frecuentes
 
-- Toda cursiva del diálogo toma `italicColor`, también la de énfasis, y el *es* que subraya Lane sale en el gris de las acotaciones. El gris tiene que ir en `bodyText` porque en la 1.4.1 un estilo de párrafo no puede dar a su cursiva un color propio; solo en redonda quedaría ese *es* en tinta.
-- En la edición inglesa, tres parlamentos de Wilde terminan en una palabra sola: *information.*, *that?* y *you.* El script pone `bodyText.maxRuntTracking: 0` por el error *El arreglo de las líneas cortas puede apretar un interletraje que nunca se pinta*. Con el valor por defecto, la 1.4.1 sube *that?* a la línea anterior con 2,0 mm de interletraje negativo que el lienzo no pinta, y la línea sale con los espacios entre palabras a la mitad de su ancho. Tocando solo el espacio entre palabras, *that?* sube únicamente con un `minWordSpacing` de 0,5, que aprieta la línea igual, o con una medida 1,5 mm más ancha, que deja diez líneas por encima de 1,5 veces el espacio normal en lugar de dos. Las tres líneas cortas se quedan, para no tocar el texto de Wilde. La traducción española se reescribió allí donde una línea acababa en una palabra de una letra o donde una sílaba quedaba sola.
+- Toda cursiva del diálogo toma `italicColor`, también la de énfasis, y el *es* que subraya Lane sale en el gris de las acotaciones. El gris va en `bodyText` porque la mayoría de las acotaciones están dentro de un parlamento, en el mismo párrafo que el énfasis; solo en redonda quedaría ese *es* en tinta.
+- En la edición inglesa, dos parlamentos de Wilde terminan en una palabra sola: *information.* y *you.* Un tercero, *that?*, sube a la línea anterior con el 1 % de interletraje negativo que `bodyText.maxRuntTracking` admite por defecto. Las dos líneas cortas se quedan, para no tocar el texto de Wilde. La traducción española se reescribió allí donde una línea acababa en una palabra de una letra o donde una sílaba quedaba sola.
 - Los nombres se dividen como cualquier otra palabra: en la página 5 de la edición inglesa, *Au-gusta* y *Gwen-dolen* se parten entre dos líneas. Un carácter de unión de palabras (U+2060) dentro de *Augusta* mantiene el nombre entero, pero estira la línea anterior hasta 1,71 veces el espacio normal, así que el texto inglés conserva los guiones.
 - En el lienzo, Playfair Display SC dibuja *fi* como una ligadura en minúscula, así que *first* saldría con una *fi* minúscula entre versalitas. Por eso la cabecera del reparto inglés dice *The original cast*.
