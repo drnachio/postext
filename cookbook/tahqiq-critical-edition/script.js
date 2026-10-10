@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 113 · A critical edition (taḥqīq) with notes per page ═══════
 // https://postext.dev/en/cookbook/tahqiq-critical-edition
 // Code: MIT · Text: Ibn Khaldūn, al-Muqaddima, ar.wikisource (PD) · Pictures: none
-// Fonts: Amiri, Aref Ruqaa (SIL OFL 1.1) · Needs postext ≥ 1.15.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Amiri, Aref Ruqaa (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -135,7 +135,7 @@ const imprintPage = { id: 'imprint', ...blind, advancedDesign: design([
 ], 0) };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ar', // right to left, bound on the right, digits ٠–٩ (gotcha: arabic-locale-tag)
   colorPalette,
   page: { width: mm(W), height: mm(H), dpi: 150, backgroundColor: col('paper'), pageNumbering,
@@ -145,7 +145,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(1.5), indentAfterHeading: false,
     optimalLineBreaking: true, avoidWidows: true, avoidOrphans: true },
-  // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+  // parity 'any': a level-one heading opens the next page, on either side.
   headings: { fontFamily: NASKH, fontWeight: 700, color: col('accent'),
     levels: [{ level: 1, fontSize: pt(24), breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: opener }] },
@@ -161,7 +161,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   Amiri: ['400', '700'], // NASKH: text, notes, headings, heads, the Latin lines
   'Aref Ruqaa': ['700'], // RUQAA: the title
 };
@@ -170,7 +170,8 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
 await loadFonts(FONTS, markdown);
 // The arabic file of each face, which loadFonts leaves out (gotcha: arabic-fonts-subset).
 await loadArabicFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A critical edition with notes per page',
   es: 'Una edición crítica con notas por página' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: arabicPdfProvider }), `${RECIPE}.pdf`);

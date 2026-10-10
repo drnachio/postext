@@ -18,7 +18,7 @@ pageNotes: { "1": "A página divisória de Notes on Weather: um campo azul-chuva
 
 <Excerpt region="palette" />
 
-Toda cor da configuração aponta para um id da paleta, e o hex escrito ao lado é só o valor de reserva diurno. Assim, a edição de tela passa para as cores noturnas trocando um único array. Os [overrides](/pt/docs/configuration#visualizador-html) da [resposta curta](#a-resposta-curta) mesclam objetos chave a chave e os níveis de título por `level`, e substituem inteiro qualquer outro array, inclusive `colorPalette`. `main-color` faz parte da paleta, então os valores padrão do motor que o usam também mudam. No postext 1.4.1, a paleta nova não chega aos elementos de design nem à cor das referências, por isso `relink()` reescreve cada cor vinculada a partir da paleta da configuração mesclada.
+Toda cor da configuração aponta para um id da paleta, e o hex escrito ao lado é só o valor de reserva diurno. Assim, a edição de tela passa para as cores noturnas trocando um único array. Os [overrides](/pt/docs/configuration#visualizador-html) da [resposta curta](#a-resposta-curta) mesclam objetos chave a chave e os níveis de título por `level`, e substituem inteiro qualquer outro array, inclusive `colorPalette`. `main-color` faz parte da paleta, então os valores padrão do motor que o usam também mudam. A paleta nova chega a todas as cores vinculadas a ela: o texto, as legendas, os elementos de design das aberturas e a cor das referências.
 
 ### 2 · Aberturas: uma faixa no papel, as palavras na tela
 
@@ -42,7 +42,7 @@ Trocar a paleta não recolore um SVG, então cada desenho é feito uma vez por p
 
 <Excerpt region="screen" />
 
-Cada página de tela tem a altura do painel, então `fitFiguresToPage` reduz o pluviômetro até ele caber numa página com a legenda ([layout](/pt/docs/configuration#diagramação)). A 96 dpi, a resolução que o CSS pressupõe, os milímetros e pontos herdados do impresso aparecem no tamanho nominal ([integrar o visualizador HTML](/pt/docs/configuration#integração-do-visualizador-html)). O pen escreve as linhas com posição absoluta de `renderToHtml` dentro de um Shadow DOM, onde os seletores da página não as alcançam. O `all: initial` do contêiner também bloqueia propriedades herdadas como `letter-spacing`: o motor mediu as linhas sem elas, e um valor herdado faria o texto se sobrepor. As páginas HTML são transparentes, a menos que alguém as pinte, então `page.backgroundColor` tira da paleta o papel noturno. O ResizeObserver espera 150 ms e só recompõe, a partir de uma `config()` nova, quando a largura ou a altura do painel mudou; depois da recomposição, o painel volta a rolar até a mesma fração da sua altura.
+Cada página de tela tem a altura do painel, então `fitFiguresToPage` reduz o pluviômetro até ele caber numa página com a legenda ([layout](/pt/docs/configuration#diagramação)). A 96 dpi, a resolução que o CSS pressupõe, os milímetros e pontos herdados do impresso aparecem no tamanho nominal ([integrar o visualizador HTML](/pt/docs/configuration#integração-do-visualizador-html)). O pen escreve as linhas com posição absoluta de `renderToHtml` dentro de um Shadow DOM, onde os seletores da página não as alcançam. Propriedades herdadas como `letter-spacing` atravessam essa fronteira, e a raiz da edição as redefine por conta própria, porque o motor mediu as linhas sem elas. As páginas HTML são transparentes, a menos que alguém as pinte, então `page.backgroundColor` tira da paleta o papel noturno. O ResizeObserver espera 150 ms e só recompõe, a partir de uma `config()` nova, quando a largura ou a altura do painel mudou; depois da recomposição, o painel volta a rolar até a mesma fração da sua altura.
 
 ## Variações
 
@@ -67,8 +67,5 @@ Para uma abertura impressa mais pesada, com uma faixa saturada e um número de c
 
 ## Erros comuns
 
-- Confira o fim de cada nota depois de editar. Se o último parágrafo de uma nota empurrar um rabo de duas linhas para uma página nova (o controle de viúvas mantém as duas linhas juntas), o postext 1.4.1 dá à coluna dessa página a altura de uma linha, e o canvas corta a segunda. As duas amostras foram ajustadas para que nenhuma nota termine assim.
-- Em texto alinhado à esquerda, a 1.4.1 pode terminar uma linha no “(” antes de uma referência, e num painel que o leitor pode redimensionar alguma largura vai produzir essa quebra. Estas notas escrevem “as Fig. 2 shows”, nunca “(Fig. 2)”.
-- Deixe um parágrafo de tela começar na última linha de uma página (`avoidWidows: false`). Com essa regra ligada, a 1.4.1 pode forçar um parágrafo mais alto que a página, inteiro, para o vão embaixo de uma figura, onde ele passa do pé da página; um painel de 240 × 460 ou 260 × 500 px mostra isso.
-- Mantenha o painel com pelo menos 400 px de altura (o `min-height` do pen). Num painel estreito com menos de uns 350 px de altura, a abertura de tela fica mais alta que a área de conteúdo da página; o postext 1.4.1 então descarta a reserva inteira e compõe o primeiro parágrafo por cima do título.
+- Mantenha o painel com pelo menos 400 px de altura (o `min-height` do pen). Num painel estreito com menos de uns 350 px de altura, a abertura de tela fica mais alta que a área de conteúdo da página; ela então ocupa a página inteira, e o primeiro parágrafo da nota começa na seguinte.
 - Dê um tamanho ao painel antes de diagramá-lo. Um painel sem largura, escondido ou espremido numa linha flex, daria uma página de largura zero, e é por isso que `showScreen()` ignora um painel mais estreito ou mais baixo que `FOLDED`, 200 px.

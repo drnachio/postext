@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "baseline-grid-book-page",
-  "sourceHash": "e5b12ebd49e1e152195741c6a9642d0deeaf7ec7f43233cbd4022798e58aac62",
+  "sourceHash": "4da345377ee64256890044e00a06436b177ad6515bc68f3aab1583ba85ebbe73",
   "engine": {
-    "postext": "1.20.3",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T12:46:43.025Z",
+  "capturedAt": "2026-10-10T13:31:25.123Z",
   "variants": {
     "en": {
-      "hash8": "98ebf19f",
+      "hash8": "a4b99817",
       "vdtHash": "e34bb0c4f98af58e2a09050a71580f54f4aa2825",
       "timings": {
-        "importMs": 1683,
-        "fontsMs": 1420,
-        "buildMs": 55,
-        "totalMs": 3920,
-        "builds": 2
+        "importMs": 130,
+        "fontsMs": 3,
+        "buildMs": 95,
+        "totalMs": 834,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Vollkorn SC"
         ],
         "pages": 3,
-        "ownLines": 190
+        "ownLines": 184
       },
       "pages": [
         {
@@ -100,14 +100,12 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 43297,
+        "bytes": 43132,
         "folio": "e8c31713"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
-          "defaultResourceTypes",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -159,7 +157,7 @@
           "header.elements[].placement",
           "headings",
           "headings.balancing",
-          "headings.balancing.stretchAfterFloats",
+          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.levels",
@@ -208,7 +206,6 @@
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].textAlign",
-          "resourceTypes",
           "unorderedLists",
           "unorderedLists.bulletChar",
           "unorderedLists.color",
@@ -228,10 +225,9 @@
           "orderedLists",
           "page",
           "paragraphStyles",
-          "resourceTypes",
           "unorderedLists"
         ],
-        "configLeaves": 163,
+        "configLeaves": 162,
         "designElements": 5,
         "directives": [
           ":::paragraphs"
@@ -286,11 +282,9 @@
           "column-balancing",
           "column-rule",
           "figure-citations",
-          "localised-labels",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
-          "resource-types",
           "resources"
         ],
         "suggestedLevel": 2
@@ -313,14 +307,14 @@
       }
     },
     "es": {
-      "hash8": "59c99ad0",
+      "hash8": "5ab86930",
       "vdtHash": "3ec9824bf629a4c985cc966b0148c0d4767ceb63",
       "timings": {
-        "importMs": 1648,
-        "fontsMs": 275,
-        "buildMs": 25,
-        "totalMs": 2746,
-        "builds": 2
+        "importMs": 136,
+        "fontsMs": 3,
+        "buildMs": 55,
+        "totalMs": 768,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -342,7 +336,7 @@
           "Vollkorn SC"
         ],
         "pages": 3,
-        "ownLines": 190
+        "ownLines": 184
       },
       "pages": [
         {
@@ -403,14 +397,12 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 44050,
+        "bytes": 43881,
         "folio": "e8c31713"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
-          "defaultResourceTypes",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -462,7 +454,7 @@
           "header.elements[].placement",
           "headings",
           "headings.balancing",
-          "headings.balancing.stretchAfterFloats",
+          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.levels",
@@ -511,7 +503,6 @@
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].textAlign",
-          "resourceTypes",
           "unorderedLists",
           "unorderedLists.bulletChar",
           "unorderedLists.color",
@@ -531,10 +522,9 @@
           "orderedLists",
           "page",
           "paragraphStyles",
-          "resourceTypes",
           "unorderedLists"
         ],
-        "configLeaves": 163,
+        "configLeaves": 162,
         "designElements": 5,
         "directives": [
           ":::paragraphs"
@@ -589,11 +579,9 @@
           "column-balancing",
           "column-rule",
           "figure-citations",
-          "localised-labels",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
-          "resource-types",
           "resources"
         ],
         "suggestedLevel": 2
@@ -616,14 +604,14 @@
       }
     },
     "pt": {
-      "hash8": "b042d72f",
+      "hash8": "7bee3e84",
       "vdtHash": "7a03c9cb64a80ab94177512d466b3f26e345287f",
       "timings": {
-        "importMs": 495,
-        "fontsMs": 178,
-        "buildMs": 82,
-        "totalMs": 1570,
-        "builds": 2
+        "importMs": 129,
+        "fontsMs": 3,
+        "buildMs": 106,
+        "totalMs": 843,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -645,7 +633,7 @@
           "Vollkorn SC"
         ],
         "pages": 3,
-        "ownLines": 190
+        "ownLines": 184
       },
       "pages": [
         {
@@ -706,14 +694,12 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 43126,
+        "bytes": 42956,
         "folio": "e8c31713"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
-          "defaultResourceTypes",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -765,7 +751,7 @@
           "header.elements[].placement",
           "headings",
           "headings.balancing",
-          "headings.balancing.stretchAfterFloats",
+          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.levels",
@@ -814,7 +800,6 @@
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].textAlign",
-          "resourceTypes",
           "unorderedLists",
           "unorderedLists.bulletChar",
           "unorderedLists.color",
@@ -834,10 +819,9 @@
           "orderedLists",
           "page",
           "paragraphStyles",
-          "resourceTypes",
           "unorderedLists"
         ],
-        "configLeaves": 163,
+        "configLeaves": 162,
         "designElements": 5,
         "directives": [
           ":::paragraphs"
@@ -892,11 +876,9 @@
           "column-balancing",
           "column-rule",
           "figure-citations",
-          "localised-labels",
           "page-background",
           "page-role-filters",
           "paragraph-styles",
-          "resource-types",
           "resources"
         ],
         "suggestedLevel": 2

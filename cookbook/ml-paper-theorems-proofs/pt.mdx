@@ -40,7 +40,7 @@ O título é o único título de nível 1, e o estilo `paper` dele desenha em se
 
 <Excerpt region="art" />
 
-A figura 1 é desenhada em SVG a partir das caixas e das palavras do original. Um SVG desenhado como imagem não pode usar as fontes web da página, então `inlineFace()` embute os dois arquivos de Work Sans que os rótulos usam, e `tex()` escreve os rótulos `y_w ≻ y_l` como traçados do MathJax, os mesmos glifos das equações. As pontas de seta são traçados desenhados, e não marcadores SVG, para que a figura continue vetorial no PDF.
+A figura 1 é desenhada em SVG a partir das caixas e das palavras do original. Os rótulos indicam Work Sans em `font-family`, e `loadSvg` passa o SVG por `inlineSvgFonts`, do motor, que embute os dois arquivos de Work Sans que eles usam; `tex()` escreve os rótulos `y_w ≻ y_l` como traçados do MathJax, os mesmos glifos das equações. As pontas de seta são traçados desenhados, e não marcadores SVG, para que a figura continue vetorial no PDF.
 
 ## Variações
 

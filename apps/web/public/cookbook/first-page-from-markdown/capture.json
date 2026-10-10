@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "first-page-from-markdown",
-  "sourceHash": "bc06fcf222b99d9e046bfc3efe05d968ee61209ccd85fac7cf3c0b8a34f32259",
+  "sourceHash": "44b0b50daec0c12d2116a4229a1e18806071e0c1549480b6dab91776d22ec409",
   "engine": {
-    "postext": "1.20.3",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T12:38:16.747Z",
+  "capturedAt": "2026-10-10T13:33:44.471Z",
   "variants": {
     "en": {
-      "hash8": "2049ef23",
+      "hash8": "2df698a1",
       "vdtHash": "07c56b8d23023596323db7886c283256ac133054",
       "timings": {
-        "importMs": 675,
-        "fontsMs": 1456,
-        "buildMs": 72,
-        "totalMs": 2991,
-        "builds": 2
+        "importMs": 129,
+        "fontsMs": 26,
+        "buildMs": 408,
+        "totalMs": 1373,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Young Serif"
         ],
         "pages": 2,
-        "ownLines": 174
+        "ownLines": 169
       },
       "pages": [
         {
@@ -89,13 +89,12 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 193176,
+        "bytes": 193161,
         "folio": "579e6f1a"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -211,7 +210,7 @@
           "page",
           "unorderedLists"
         ],
-        "configLeaves": 209,
+        "configLeaves": 207,
         "designElements": 10,
         "directives": [
           ":::callout"
@@ -280,14 +279,14 @@
       }
     },
     "es": {
-      "hash8": "ff561f3f",
+      "hash8": "362f52cc",
       "vdtHash": "1e26a3350d2d18641aafd17b9408bbe5a95fba4b",
       "timings": {
-        "importMs": 683,
-        "fontsMs": 548,
-        "buildMs": 18,
-        "totalMs": 1941,
-        "builds": 2
+        "importMs": 128,
+        "fontsMs": 25,
+        "buildMs": 49,
+        "totalMs": 789,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -309,7 +308,7 @@
           "Young Serif"
         ],
         "pages": 2,
-        "ownLines": 174
+        "ownLines": 169
       },
       "pages": [
         {
@@ -359,13 +358,12 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 193531,
+        "bytes": 193512,
         "folio": "579e6f1a"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -481,7 +479,7 @@
           "page",
           "unorderedLists"
         ],
-        "configLeaves": 209,
+        "configLeaves": 207,
         "designElements": 10,
         "directives": [
           ":::callout"
@@ -550,14 +548,14 @@
       }
     },
     "pt": {
-      "hash8": "a10462ed",
+      "hash8": "1201e0c7",
       "vdtHash": "e0adb9fecd13a0fc4c60faa93b63baaf7b57aed8",
       "timings": {
-        "importMs": 463,
-        "fontsMs": 64,
-        "buildMs": 49,
-        "totalMs": 1291,
-        "builds": 2
+        "importMs": 125,
+        "fontsMs": 26,
+        "buildMs": 88,
+        "totalMs": 822,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -579,7 +577,7 @@
           "Young Serif"
         ],
         "pages": 2,
-        "ownLines": 174
+        "ownLines": 169
       },
       "pages": [
         {
@@ -629,13 +627,12 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 193594,
+        "bytes": 193575,
         "folio": "579e6f1a"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -751,7 +748,7 @@
           "page",
           "unorderedLists"
         ],
-        "configLeaves": 209,
+        "configLeaves": 207,
         "designElements": 10,
         "directives": [
           ":::callout"

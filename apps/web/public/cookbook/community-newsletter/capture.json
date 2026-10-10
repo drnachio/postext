@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "community-newsletter",
-  "sourceHash": "b6bb66f04e49e0a0ea7faaaf749d47d82861b62bdbe9fec1189cede804c2cc00",
+  "sourceHash": "76e1c1da5b20ab2527b47788a706b3b2c010fe40ce4375af93e8ff0a6fd18d2d",
   "engine": {
-    "postext": "1.24.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T21:08:28.795Z",
+  "capturedAt": "2026-10-10T13:33:15.379Z",
   "variants": {
     "en": {
-      "hash8": "4a323cd4",
+      "hash8": "385e42f3",
       "vdtHash": "d5f528c1898961589bbd0d00ab128b8154b465c0",
       "timings": {
-        "importMs": 23670,
-        "fontsMs": 86,
-        "buildMs": 21,
-        "totalMs": 24611,
-        "builds": 2
+        "importMs": 130,
+        "fontsMs": 28,
+        "buildMs": 44,
+        "totalMs": 798,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Work Sans"
         ],
         "pages": 2,
-        "ownLines": 172
+        "ownLines": 167
       },
       "pages": [
         {
@@ -89,13 +89,13 @@
       },
       "sandbox": {
         "file": "community-newsletter.postext",
-        "bytes": 81089,
+        "bytes": 81189,
         "folio": "0414c868"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "inlineSvgFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -298,24 +298,18 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "es": {
-      "hash8": "a1d94580",
+      "hash8": "e28bf307",
       "vdtHash": "2d63db2667b0a76991738b00efd6a90668e9169c",
       "timings": {
-        "importMs": 293,
-        "fontsMs": 43,
-        "buildMs": 14,
-        "totalMs": 1012,
-        "builds": 2
+        "importMs": 132,
+        "fontsMs": 28,
+        "buildMs": 34,
+        "totalMs": 785,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -337,7 +331,7 @@
           "Work Sans"
         ],
         "pages": 2,
-        "ownLines": 172
+        "ownLines": 167
       },
       "pages": [
         {
@@ -387,13 +381,13 @@
       },
       "sandbox": {
         "file": "community-newsletter.postext",
-        "bytes": 81766,
+        "bytes": 81868,
         "folio": "0414c868"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "inlineSvgFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -596,13 +590,7 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

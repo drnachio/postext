@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "conference-programme",
-  "sourceHash": "1afc8302e3c17caa514a7837bc97e2875ce17a0b5271273341badda73fe732df",
+  "sourceHash": "4b620f45bd4f2b5f99fcc4d8eafc6121dede39b84cc1563317a1aedff628a17e",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.872Z",
+  "capturedAt": "2026-10-10T13:33:15.393Z",
   "variants": {
     "en": {
-      "hash8": "32f53acf",
+      "hash8": "9b819592",
       "vdtHash": "de4ea46dde1c68725e907636d3a4d6b6e0c843dc",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 39,
-        "buildMs": 27,
-        "totalMs": 898,
-        "builds": 2
+        "importMs": 134,
+        "fontsMs": 35,
+        "buildMs": 53,
+        "totalMs": 810,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Unbounded"
         ],
         "pages": 6,
-        "ownLines": 216
+        "ownLines": 213
       },
       "pages": [
         {
@@ -141,15 +141,15 @@
       },
       "sandbox": {
         "file": "conference-programme.postext",
-        "bytes": 32740,
+        "bytes": 32726,
         "folio": "1751ca77"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
           "mergeCells",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "setAlignment",
@@ -308,8 +308,7 @@
         "configLeaves": 365,
         "designElements": 16,
         "directives": [
-          ":::paragraphs",
-          ":::columnbreak"
+          ":::paragraphs"
         ],
         "inline": [
           "{attrs}",
@@ -382,7 +381,6 @@
           "localised-labels",
           "opener-band",
           "opener-design",
-          "page-breaks",
           "page-role-filters",
           "paragraph-styles",
           "resource-types",
@@ -407,14 +405,14 @@
       }
     },
     "es": {
-      "hash8": "bbb9c703",
+      "hash8": "9c6f48a3",
       "vdtHash": "de4ea46dde1c68725e907636d3a4d6b6e0c843dc",
       "timings": {
-        "importMs": 163,
-        "fontsMs": 35,
-        "buildMs": 28,
-        "totalMs": 900,
-        "builds": 2
+        "importMs": 130,
+        "fontsMs": 30,
+        "buildMs": 53,
+        "totalMs": 797,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -436,7 +434,7 @@
           "Unbounded"
         ],
         "pages": 6,
-        "ownLines": 216
+        "ownLines": 213
       },
       "pages": [
         {
@@ -538,15 +536,15 @@
       },
       "sandbox": {
         "file": "conference-programme.postext",
-        "bytes": 32745,
+        "bytes": 32732,
         "folio": "1751ca77"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
           "mergeCells",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "setAlignment",
@@ -705,8 +703,7 @@
         "configLeaves": 365,
         "designElements": 16,
         "directives": [
-          ":::paragraphs",
-          ":::columnbreak"
+          ":::paragraphs"
         ],
         "inline": [
           "{attrs}",
@@ -779,7 +776,6 @@
           "localised-labels",
           "opener-band",
           "opener-design",
-          "page-breaks",
           "page-role-filters",
           "paragraph-styles",
           "resource-types",

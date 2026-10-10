@@ -24,13 +24,13 @@ A 300 ppp, el valor por defecto, el póster corta cada línea en el mismo sitio 
 
 <Excerpt region="band" />
 
-El H1 lleva como atributos el encuentro, el número del póster, los autores y las filiaciones, y su diseño los compone sobre un rectángulo verde de 158 mm de alto, anclado a la página ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El rectángulo acaba 133 mm por debajo del margen superior. Sin `minHeight`, el resumen empezaría a 0,9 mm del verde; un `minHeight` de once líneas de la rejilla base lo separa 14 mm. El texto de diseño imprime texto plano, así que las llamadas de filiación son los caracteres ¹ ² ³, las únicas cifras voladas del rango Latin-1.
+El H1 lleva como atributos el encuentro, el número del póster, los autores y las filiaciones, y su diseño los compone sobre un rectángulo verde de 158 mm de alto, anclado a la página ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El rectángulo acaba 133 mm por debajo del margen superior. Sin `minHeight`, el resumen empezaría a 0,9 mm del verde; un `minHeight` de once líneas de la rejilla base lo separa 14 mm. Las llamadas de filiación son los caracteres ¹ ² ³, las únicas cifras voladas del rango Latin-1.
 
 ### 3 · Anida los paneles en un recuadro a todo el ancho
 
 <Excerpt region="answer" highlight="3-9,21" />
 
-El cuerpo admite como mucho dos columnas, así que la retícula es un grupo `:::columns{count=3}` dentro de un recuadro, y `span="page"` extiende ese recuadro sobre las dos columnas del cuerpo, bajo el resumen ([`:::columns`](/es/docs/document-format#columns)). Cada panel es un recuadro anidado en el grupo: toma su propio estilo, los 175 mm de ancho de la columna y 18 mm de `marginTop` bajo el panel de encima ([el contenedor `:::callout`](/es/docs/configuration#el-contenedor-callout)). `breaks="3,4"` lleva el tercer panel, Resultados, a la cabeza de la columna central, y el cuarto, Conclusiones, a la de la última. Sin él, el grupo se equilibra y corta por el panel más próximo a cada tercio de la pila. Con este texto los cortes caen en los mismos dos paneles; el atributo los fija por si el texto cambia.
+El cuerpo va a dos columnas y los paneles a tres, así que la retícula es un grupo `:::columns{count=3}` dentro de un recuadro sin marco, y `span="page"` extiende ese recuadro sobre las dos columnas del cuerpo, bajo el resumen ([`:::columns`](/es/docs/document-format#columns)). Un grupo escrito directamente en el texto también puede ocupar todo el ancho, pero deja debajo una línea de separación entre párrafos, aquí 38 pt, y la franja de palabras clave pasaría a una segunda página. Cada panel es un recuadro anidado en el grupo: toma su propio estilo, los 175 mm de ancho de la columna y 18 mm de `marginTop` bajo el panel de encima ([el contenedor `:::callout`](/es/docs/configuration#el-contenedor-callout)). `breaks="3,4"` lleva el tercer panel, Resultados, a la cabeza de la columna central, y el cuarto, Conclusiones, a la de la última. Sin él, el grupo se equilibra y corta por el panel más próximo a cada tercio de la pila. Con este texto los cortes caen en los mismos dos paneles; el atributo los fija por si el texto cambia.
 
 ### 4 · Deja cada figura en su panel
 
@@ -42,13 +42,13 @@ Una figura con posición `'here'` se queda en el panel donde la pone `::resource
 
 <Excerpt region="palette" />
 
-Las celdas del mapa de calor y las cuatro muestras `:swatch{color="…"}` de su leyenda remiten a las mismas entradas de la paleta, así que un valor nuevo para `cool` cambia a la vez el mapa y la leyenda ([formato en línea](/es/docs/document-format#formato-en-línea)). La leyenda es un segundo grupo `:::columns`, con dos entradas por columna, dentro del panel de Resultados. Cada color lleva además su valor hexadecimal, que es lo que 1.4.1 pinta en el diseño de la banda.
+Las celdas del mapa de calor y las cuatro muestras `:swatch{color="…"}` de su leyenda remiten a las mismas entradas de la paleta, así que un valor nuevo para `cool` cambia a la vez el mapa y la leyenda ([formato en línea](/es/docs/document-format#formato-en-línea)). La leyenda es un segundo grupo `:::columns`, con dos entradas por columna, dentro del panel de Resultados.
 
 ### 6 · Compón la cifra principal con un estilo de párrafo
 
 <Excerpt region="type" />
 
-Los estilos de párrafo se aplican dentro de los recuadros, también en los anidados, así que −4,2 °C es un bloque `:::paragraphs{style="stat"}` en Bitter a 150 pt dentro del panel de Resultados ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). En 1.4.1 un estilo de párrafo no fija el peso de la letra, así que la cifra va en negrita y sale en Bitter 700. Un segundo estilo da a las referencias una sangría francesa de 9 mm. La franja de palabras clave es un recuadro tintado con `placement="bottom"`, que flota al pie de la página bajo la retícula.
+Los estilos de párrafo se aplican dentro de los recuadros, también en los anidados, así que −4,2 °C es un bloque `:::paragraphs{style="stat"}` en Bitter a 150 pt dentro del panel de Resultados ([estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). La cifra va en negrita, así que sale en Bitter 700 y en el `boldColor` del estilo, el naranja del panel. Un segundo estilo da a las referencias una sangría francesa de 9 mm. La franja de palabras clave es un recuadro tintado con `placement="bottom"`, que flota al pie de la página bajo la retícula.
 
 ## Variantes
 
@@ -64,5 +64,5 @@ Si el congreso pide un archivo mayor, sale un PNG de 3543 × 4724 px con los mis
 ## Errores frecuentes
 
 - En el canvas, Rethink Sans sustituye una cifra sola entre paréntesis, como el fascículo de 11(3), por la cifra en círculo, así que las referencias dan solo el volumen y las páginas.
-- En 1.4.1 un recuadro a todo el ancho que cierra el documento pasa a una página nueva si no le quedan debajo dos líneas del cuerpo. Por eso la franja de palabras clave flota con `placement="bottom"`, que la asienta en el margen inferior, dentro de los 50 mm que quedan bajo la retícula.
-- En 1.4.1 un párrafo que sigue a un grupo `:::paragraphs` se separa de él solo por el `spaceBetween` del estilo, aquí 2,8 mm bajo la última referencia. Un `:::space{lines=0.75}` antes del agradecimiento abre 10,8 mm, cerca de los 10,6 mm que separan los demás párrafos de un panel.
+- Un recuadro a todo el ancho que cierra el documento pasa a una página nueva si no le quedan debajo dos líneas del cuerpo. Por eso la franja de palabras clave flota con `placement="bottom"`, que la asienta en el margen inferior, dentro de los 50 mm que quedan bajo la retícula.
+- `bodyText.paragraphContainerSpacing: 'add'` cierra un grupo `:::paragraphs` con el espacio propio de su estilo, y así −4,2 °C queda pegado a la línea que lo explica. Bajo la última referencia ese espacio es el `spaceBetween` del estilo, 2,8 mm, de modo que un `:::space{lines=0.75}` antes del agradecimiento abre 10,8 mm, cerca de los 10,6 mm que separan los demás párrafos de un panel. Con el valor por defecto, `'collapse'`, a un grupo le sigue una línea de la separación entre párrafos del panel: el agradecimiento no necesita `:::space`, pero la línea que se añade bajo −4,2 °C manda la franja de palabras clave a una segunda página.

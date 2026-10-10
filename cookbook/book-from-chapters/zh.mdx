@@ -18,7 +18,7 @@ pageNotes: { "6": "第6页留空：Winter只占一页，所以Spring从下一个
 
 <Excerpt region="chapters" />
 
-每个季节都是独立的文档，所以你可以改写一章而不必打开其他章。第一个文档包含frontmatter、封面和目录。在Postext 1.4.1中，后面的文档不会继承它的任何元数据，PDF只从第一个文档读取书名和作者。
+每个季节都是独立的文档，所以你可以改写一章而不必打开其他章。第一个文档包含frontmatter、封面和目录。它的元数据就是全书的元数据：`{title}`和`{author}`在每一章都印出这些内容，PDF也从它读取书名和作者。
 
 ### 2 · 跨文档接续的规则
 
@@ -40,7 +40,7 @@ pageNotes: { "6": "第6页留空：Winter只占一页，所以Spring从下一个
 
 <Excerpt region="running-heads" />
 
-只有第一个文档有frontmatter，所以在Postext 1.4.1中，`{title}`在后面每个文档里都印不出内容，Autumn也一样。因此左页书眉里的书名是作为普通文本直接写上的。`{chapterTitle}`和`{pageNumber}`逐页解析，在每个文档里都能印出；第11页是唯一的正文右页，在页码旁印着SUMMER。`pages: 'body'`让章首页和空白页都不印书眉。
+只有第一个文档有frontmatter，而`buildBundle`把它交给每一章，所以左页书眉在五个文档里都印出全书的`{title}`。`{chapterTitle}`和`{pageNumber}`逐页解析，在每个文档里都能印出；第11页是唯一的正文右页，在页码旁印着SUMMER。`pages: 'body'`让章首页和空白页都不印书眉。
 
 ### 6 · 屏幕上看跨页，整本书输出一个PDF
 
@@ -64,7 +64,10 @@ pageNotes: { "6": "第6页留空：Winter只占一页，所以Spring从下一个
 一个从不重置的图计数器会把四幅巢框跨文档编为1到4，而不是1.1到4.1。
 
 ```diff
--  resourceTypes: defaultResourceTypes(LANG),
+   buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerResourceImage,
++  defaultResourceTypes,
+@@
+   locale: t({ en: 'en-us', es: 'es' }),
 +  resourceTypes: defaultResourceTypes(LANG)
 +    .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' })),
 ```

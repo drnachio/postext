@@ -1918,6 +1918,13 @@ export interface VDTDesignTextRun {
    *  paint the glyphs at `x + inkOffset` and advance by `width`; the HTML
    *  sets such a run in a box `width` wide. Absent on every other run. */
   inkOffset?: number;
+  /** Paint-only stretch of the run's glyph along the line, as on
+   *  {@link VDTLineSegment.inkScale}: a dash of a Chinese 破折号 (——) in a
+   *  design text set by the CJK composer (#652), stretched from where
+   *  `inkOffset` puts it so the pair prints as one rule over its two ems.
+   *  Down a vertical line it is set (even when 1) and the dash is painted
+   *  turned with the column. Absent on every other run. */
+  inkScale?: number;
 }
 
 /** Line of wrapped text inside a `VDTDesignTextBlock`. */
@@ -2802,9 +2809,11 @@ export type ContentWarning = ContentWarningBase & (
   | { kind: 'designTextTruncated'; slot: VDTDesignSlotKind; elementId: string; text: string; mode: 'ellipsis-start' | 'ellipsis-end' | 'ellipsis-middle' | 'clip' }
   /** A face the document's text was set in that the font set could not
    *  give when the build ran (#629): no face of the family was loaded nor
-   *  installed (`missing`: the text was measured and drawn with a fallback
-   *  face), or the weight or slant came from another face of the family,
-   *  which the browser draws bolder or slanted (`synthesized`). Checked
+   *  installed, or the one that answers for the weight and slant had not
+   *  loaded (`missing`: the text was measured and drawn with a fallback
+   *  face), or the family has no face of that weight or slant and the
+   *  browser took it from another one, as it is (the 700 for a 600) or
+   *  drawn bolder or slanted (`synthesized`, #650). Checked
    *  where there is a font set (`document.fonts`, a worker's `self.fonts`,
    *  `BuildDocumentOptions.fontSet`), behind
    *  `debug.warnings.missingFont`. No page and no source range. */

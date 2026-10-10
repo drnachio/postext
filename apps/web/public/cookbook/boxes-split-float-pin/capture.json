@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "boxes-split-float-pin",
-  "sourceHash": "9a058fb7c7cb48ae852d87205d8140b363d54d3d8d1a06134fc94633dc5d6e29",
+  "sourceHash": "6a3c63f788ab2b1d6b0db5fa054d3cbbb8011691195c1309da4f1f6213e8e833",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.718Z",
+  "capturedAt": "2026-10-10T13:31:25.206Z",
   "variants": {
     "es": {
-      "hash8": "684f8d21",
+      "hash8": "ef273a85",
       "vdtHash": "731766a34e54522c0cbf634b2c7f9ff4a2b60ec3",
       "timings": {
-        "importMs": 187,
-        "fontsMs": 26,
-        "buildMs": 58,
-        "totalMs": 994,
-        "builds": 2
+        "importMs": 130,
+        "fontsMs": 31,
+        "buildMs": 86,
+        "totalMs": 831,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Host Grotesk"
         ],
         "pages": 4,
-        "ownLines": 227
+        "ownLines": 222
       },
       "pages": [
         {
@@ -114,14 +114,13 @@
       },
       "sandbox": {
         "file": "boxes-split-float-pin.postext",
-        "bytes": 34838,
+        "bytes": 34657,
         "folio": "bcf271e0"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
-          "defaultResourceTypes",
+          "buildDocumentWithFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -224,8 +223,6 @@
           "header.elements[].placement",
           "header.elements[].textTransform",
           "headings",
-          "headings.balancing",
-          "headings.balancing.stretchAfterFloats",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -264,7 +261,6 @@
           "paragraphStyles[].fontSize",
           "paragraphStyles[].id",
           "paragraphStyles[].lineHeight",
-          "resourceTypes",
           "tableStyle",
           "tableStyle.bodyColor",
           "tableStyle.bodyFontFamily",
@@ -299,12 +295,11 @@
           "orderedLists",
           "page",
           "paragraphStyles",
-          "resourceTypes",
           "tableStyle",
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 367,
+        "configLeaves": 361,
         "designElements": 11,
         "directives": [
           ":::callout",
@@ -355,19 +350,16 @@
           "callout-marker",
           "callout-splitting",
           "callout-styles",
-          "column-balancing",
           "figure-citations",
           "fixed-callouts",
           "floated-callouts",
           "heading-attributes",
           "heading-numbering",
           "inline-embeds",
-          "localised-labels",
           "opener-band",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
-          "resource-types",
           "resources",
           "table-styles",
           "vertical-space"

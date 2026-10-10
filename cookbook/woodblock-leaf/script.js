@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 085 · A woodblock leaf: double frame, rules and centre strip ═══
 // https://postext.dev/en/cookbook/woodblock-leaf
 // Code: MIT · Text: 論語集註 卷一, 四庫全書 copy, zh.wikisource (CC BY-SA 4.0) · Pictures: none
-// Fonts: Noto Serif TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Fonts: Noto Serif TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A title page and three leaves of Zhu Xi's commentary on the Analects, set as a woodblock
 // printed them: each spread is one leaf, its two halves either side of the centre strip
 // (版心), the text in a double frame with a rule between every two columns, the commentary
 // folded into two small rows inside the column.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -60,7 +60,7 @@ const cjk = { grid: { enabled: true, charsPerLine: CHARS, linesPerPage: LINES } 
 // prints nothing and starts a right-hand page; the centre strip prints their count.
 const leaf = {
   level: 1, hidden: true, numberingTemplate: '{1:一}', // 一, 二, 三
-  breakBefore: { enabled: true, parity: 'even' }, // gotcha: headings-drop-h1-break
+  breakBefore: { enabled: true, parity: 'even' }, // even pages lie on the right in this binding
 };
 // #endregion
 
@@ -143,7 +143,7 @@ const titlePage = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'zh-Hant', // written out, never LANG (gotcha: cjk-locale-tag)
   colorPalette, page, layout, cjk,
   header: { elements: [...furniture('even'), ...furniture('odd')] },
@@ -179,8 +179,9 @@ await loadCjkFonts({ [SONG]: FONTS[SONG] }, `${markdown}論語集註卷一二三
 await loadCjkFonts({ [KAI]: FONTS[KAI] }, `論語集註${note}`);
 // #endregion
 await loadSvg('fish.svg', FISH);
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A woodblock leaf: double frame, rules and centre strip',
   es: 'Una hoja xilográfica: marco doble, filetes y franja central' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider, resourceBytes: imageBytes }),

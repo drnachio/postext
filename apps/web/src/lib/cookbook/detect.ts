@@ -338,7 +338,9 @@ export function usedApis(js: string, scan: JsScan = scanJs(js), imports = parseI
 
 // ─── Config ─────────────────────────────────────────────────────────────────
 
-const CONFIG_FACTORY = /\bconst\s+config\s*=\s*\(\s*\)\s*=>\s*\(\s*\{/;
+// A factory (`const config = () => ({`) or, since postext 1.25 checks a
+// config changed in place (#629), one object (`const config = {`).
+const CONFIG_FACTORY = /\bconst\s+config\s*=\s*(?:\(\s*\)\s*=>\s*\(\s*)?\{/;
 
 /** Offsets of the config factory's object literal braces, or null. */
 export function configObjectRange(scan: JsScan): [number, number] | null {

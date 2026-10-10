@@ -1,16 +1,16 @@
 ---
 title: "Mostrari amb totes les fonts carregades abans de compondre"
-summary: "Un mostrari de quatre pàgines on la primera composició anomena les fonts que usa; el pen les carrega, buida la memòria cau d'amplades i recompon."
+summary: "Un mostrari de quatre pàgines compost una vegada abans d'hora, com a prova, i després amb les fonts que demanen la configuració i el text ja carregades."
 plain: "Un fullet de quatre pàgines que mostra tres tipus de lletra. Ensenya per què totes les fonts han d'acabar de carregar-se abans de compondre les pàgines; si no, les línies es tallen on no toca."
-description: "Declara un FontFace per fitxer, llegeix quines fonts demana una primera composició de Postext, carrega-les i buida la memòria cau de mesures abans de refer-la."
+description: "Declara un FontFace per fitxer i deixa que buildDocumentWithFonts carregui les fonts que demanen la configuració i el text abans de mesurar la primera línia."
 question: "Per què canvien els meus talls de línia o se solapen les paraules del PDF, i com carrego bé les fonts?"
-aliases: ["fonts web", "fonts allotjades", "FontFace", "document.fonts", "font de reserva", "unicode-range", "latin-ext", "clearMeasurementCache", "mostrari tipogràfic", "auditoria de fonts"]
-pageNotes: { "1": "La coberta de House Specimen Nº 3: un camp blau ultramar ocupa la meitat superior de la pàgina amb una Ag blanca en Noto Serif Display cursiva de 240 pt i dues línies en monoespaiada que l'anomenen a ella i a les fonts de text i d'etiquetes; a sota, el títol Three faces, proofed, una entradeta en cursiva i el primer paràgraf.", "2": "Una cascada d'Ysabeau Office de 7 a 14 pt, una línia per cos, retolada al costat en monoespaiada blava, i després pangrames en espanyol, polonès i txec a 13 pt.", "3": "L'auditoria: una taula en IBM Plex Mono, amb la fila de capçalera en blau ultramar, que enumera les deu fonts que va demanar la composició, amb cada família anomenada una sola vegada, els cossos de cada font i una línia d'estat llegida de la segona composició, entre paràgrafs que l'expliquen.", "4": "El primer paràgraf de la pàgina 1, dues vegades. A dalt, marcat «first», tal com el va deixar la primera composició: les seves línies es tallen en altres llocs i algunes sobrepassen un filet fi a la vora de la mesura i entren en una veladura blau ultramar. A baix, marcat «last», tal com el va deixar l'última, amb totes les línies abans del filet. Un peu compta les línies que la primera composició va tallar en un altre lloc; segueixen el paràgraf final i el colofó." }
+aliases: ["fonts web", "fonts allotjades", "FontFace", "document.fonts", "font de reserva", "unicode-range", "latin-ext", "prepareFonts", "buildDocumentWithFonts", "fontFallback", "mostrari tipogràfic", "auditoria de fonts"]
+pageNotes: { "1": "La coberta de House Specimen Nº 3: un camp blau ultramar ocupa la meitat superior de la pàgina amb una Ag blanca en Noto Serif Display cursiva de 240 pt i dues línies en monoespaiada que l'anomenen a ella i a les fonts de text i d'etiquetes; a sota, el títol Three faces, proofed, una entradeta en cursiva i el primer paràgraf.", "2": "Una cascada d'Ysabeau Office de 7 a 14 pt, una línia per cos, retolada al costat en monoespaiada blava, i després pangrames en espanyol, polonès i txec a 13 pt.", "3": "L'auditoria: una taula en IBM Plex Mono, amb la fila de capçalera en blau ultramar, que enumera les deu fonts que declara el quadernet, amb cada família anomenada una sola vegada, si les pàgines componen res amb cada una i els fitxers baixats per a ella, i una línia d'estat llegida de la composició, entre paràgrafs que l'expliquen.", "4": "El primer paràgraf de la pàgina 1, dues vegades. A dalt, marcat «early», tal com el va deixar la composició primerenca: les seves línies es tallen en altres llocs i algunes sobrepassen un filet fi a la vora de la mesura i entren en una veladura blau ultramar. A baix, marcat «last», tal com el va deixar l'última, amb totes les línies abans del filet. Un peu compta les línies que la composició primerenca va tallar en un altre lloc i les fonts que va compondre amb una de reserva; segueixen el paràgraf final i el colofó." }
 ---
 
 ## Què compondràs
 
-*House Specimen Nº 3*, de la impremta imaginària Pellow Lane Press, és un mostrari de quatre pàgines, en anglès, per a tres fonts. A la coberta, un camp blau ultramar porta una *Ag* blanca en Noto Serif Display cursiva de 240 pt i dues línies en monoespaiada amb els noms de les tres fonts; a sota va el títol. La pàgina 2 recorre Ysabeau Office en cascada, de 7 a 14 pt, i compon pangrames en espanyol, polonès i txec les ż, ř i ů dels quals necessiten un segon fitxer. La pàgina 3 és l'auditoria: una taula en IBM Plex Mono amb les deu fonts que va demanar la composició i els seus cossos. La pàgina 4 repeteix el primer paràgraf de la pàgina 1 segons la primera composició i l'última. La primera, feta abans que arribessin les fonts, talla les línies en altres llocs, i algunes surten de la mesura.
+*House Specimen Nº 3*, de la impremta imaginària Pellow Lane Press, és un mostrari de quatre pàgines, en anglès, per a tres fonts. A la coberta, un camp blau ultramar porta una *Ag* blanca en Noto Serif Display cursiva de 240 pt i dues línies en monoespaiada amb els noms de les tres fonts; a sota va el títol. La pàgina 2 recorre Ysabeau Office en cascada, de 7 a 14 pt, i compon pangrames en espanyol, polonès i txec les ż, ř i ů dels quals necessiten un segon fitxer. La pàgina 3 és l'auditoria: una taula en IBM Plex Mono amb les deu fonts que declara el quadernet, les sis amb què es componen les seves pàgines i els fitxers que el navegador va baixar per a cada una. La pàgina 4 repeteix el primer paràgraf de la pàgina 1 segons una composició primerenca i segons l'última. La primerenca, feta abans que el navegador tingués cap fitxer de font, talla les línies en altres llocs, i algunes surten de la mesura.
 
 ## Elaboració
 
@@ -18,25 +18,23 @@ pageNotes: { "1": "La coberta de House Specimen Nº 3: un camp blau ultramar ocu
 
 <Excerpt region="declare" />
 
-Un `FontFace` correspon a un fitxer, igual que una regla `@font-face`, així que una font amb un fitxer latin i un altre de latin-ext es declara amb dos objectes `FontFace` que comparteixen família, pes i estil i només es distingeixen pel `unicodeRange`, copiat del CSS de la família. Afegir-los a `document.fonts` no baixa res: el navegador baixa cada fitxer quan una crida a `load()` o una línia de text necessita els seus caràcters. `buildDocument` no carrega fonts (només ho fa `loadBundleFonts`, amb els fitxers que porta a dins un paquet `.postext`), i `customFonts` a la configuració es limita a descriure aquests fitxers, així que una pàgina composta a partir de Markdown ha de declarar els seus.
+Un `FontFace` correspon a un fitxer, igual que una regla `@font-face`, així que una font amb un fitxer latin i un altre de latin-ext es declara amb dos objectes `FontFace` que comparteixen família, pes i estil i només es distingeixen pel `unicodeRange`, copiat del CSS de la família. Afegir-los a `document.fonts` no baixa res: el navegador baixa cada fitxer quan una crida a `load()` o una línia de text necessita els seus caràcters. Postext carrega a través de `document.fonts` les fonts que la pàgina declara; les que ningú declara les demana a l'opció `resolve`, que és com les altres receptes reben del kit els seus fitxers de Fontsource. `customFonts` a la configuració es limita a descriure els fitxers d'un paquet `.postext`, així que una pàgina composta a partir de Markdown declara els seus o lliura un `resolve`.
 
-### 2 · Compon, carrega, buida la memòria cau i torna a compondre
+### 2 · Carrega les fonts i després compon
 
-<Excerpt region="build" />
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `buildDocumentWithFonts` comença per `prepareFonts`, que llegeix a la configuració i al text totes les fonts que demanen, en cada pes i estil, i les carrega amb els caràcters del mateix document com a mostra, de manera que els fitxers latin-ext arriben amb els pangrames en polonès i en txec ([Carregar les fonts abans de compondre](/ca/docs/configuration#carregar-les-fonts-abans-de-compondre)). Després compon, llegeix amb quines fonts han quedat compostes les pàgines, carrega les que la configuració no anomenava i torna a compondre. `onFonts` rep l'informe d'aquesta última revisió: les fonts carregades (`loaded`), les que falten (`missing`) i les que el navegador hauria imitat a partir d'un altre pes o estil (`synthesized`). El pen compon tres vegades perquè el quadernet imprimeix la seva pròpia prova: una vegada abans d'hora, una altra amb les fonts i una última amb la taula i la imatge ja omplertes.
 
-La primera composició mesura amb el que tingui el navegador, que és una font de reserva, però les seves pàgines ja anomenen totes les fonts que necessiten. `buildWithLoadedFonts`, la resposta curta de més amunt, recull aquests noms a cada composició, carrega les fonts que encara falten amb el text del quadernet com a mostra i torna a compondre, fins que una composició ja no troba res per carregar. Amb aquesta mostra es baixen també els fitxers latin-ext de la font de titulars i de la monoespaiada, que no componen cap d'aquestes lletres; si et preocupa el pes de la baixada, carrega cada font només amb el seu propi text. `clearMeasurementCache()` no porta arguments i buida les amplades que va desar la primera composició; sense aquesta crida, la segona repeteix tots els talls de línia de la primera (consulta «Variants»).
-
-### 3 · Extreu l'auditoria de la composició
+### 3 · Treu l'auditoria de l'informe
 
 <Excerpt region="audit" />
 
-La taula surt del mateix recorregut, agrupat per font, amb cada cos passat dels píxels de la composició a punts. La seva nota llegeix dos camps més de la composició que descriu: `converged`, que val `true` quan les passades de la composició s'han estabilitzat, i `warnings`, que a la 1.4.1 recull cada requadre que no cap a cap columna. Comprova'ls abans de mostrar o exportar una pàgina. La taula té més fonts de les que es veuen a les pàgines, perquè cada bloc de text, taula i peu anomena una negreta, una cursiva i una negreta cursiva al costat de la seva pròpia font, i `renderToPdf` les demana totes. La resposta curta exigeix un `FontFace` propi per a cada font amb què es compon alguna cosa, perquè `document.fonts.check()` dona per bona una família sense declarar i una negreta que el navegador pot imitar. Les fonts que només s'anomenen es carreguen si estan declarades; una família sense fitxer de cursiva passa la comprovació, i la taula marcaria les seves cursives amb «no file».
+La taula parteix de les fonts que declara `FONTS` i hi afegeix el que l'informe diu de cada una: si les pàgines componen res amb ella, si el navegador la va imitar o si va sortir en una font de reserva. L'última columna enumera els fitxers el `FontFace` dels quals va arribar a `loaded`. Se'n van baixar setze dels vint: Postext carrega les quatre variants de la família del text, perquè `**` i `*` les poden demanar a qualsevol paràgraf, i les dues cursives de la monoespaiada, que cap ajust anomena, no es van arribar a baixar. La nota llegeix tres coses més del document acabat: `contentWarnings`, on una font mesurada amb una de reserva apareix com a `fontFallback`; `converged`, que val `true` quan les passades de la composició s'han estabilitzat, i `warnings`. Comprova-les totes tres abans de mostrar o exportar una pàgina.
 
-### 4 · Desa la primera composició com a prova
+### 4 · Desa una composició primerenca com a prova
 
 <Excerpt region="art-proof" />
 
-`buildWithLoadedFonts` retorna totes les composicions, així que el pen pot tornar a pintar la primera quan ja han arribat les fonts reals i comparar-la línia a línia amb l'última; d'aquesta comparació surt la xifra del peu. Una línia sense estils, mesurada amb una font de reserva més estreta, surt de la mesura fins que el retall de la columna, 2 pt més enllà de la seva vora, li talla les últimes lletres; per això el pen pinta la pàgina 1 amb la columna eixamplada, perquè es vegi tot el que desborda. El canvas i `postext-pdf` dibuixen cada tram d'una línia justificada o amb estils barrejats allà on el va mesurar la composició, així que una font real més ampla que la de reserva es munta sobre la paraula següent, i en un PDF compost abans que arribin les fonts les paraules acaben solapades.
+El pen crida una vegada `buildDocument` abans de declarar cap font, així que aquesta composició mesura totes les paraules amb la font de reserva del navegador. Quan ja han arribat les fonts reals, el pen la torna a pintar i la compara línia a línia amb l'última; d'aquesta comparació surt el nombre de línies del peu, i el de fonts, dels avisos `fontFallback` de la mateixa composició primerenca. Una línia sense estils, mesurada amb una font de reserva més estreta, surt de la mesura fins que el retall de la columna, 2 pt més enllà de la seva vora, li talla les últimes lletres; per això el pen pinta la pàgina 1 amb la columna eixamplada, perquè es vegi tot el que desborda. El canvas i `postext-pdf` dibuixen cada tram d'una línia justificada o amb estils barrejats allà on el va mesurar la composició, així que una font real més ampla que la de reserva es munta sobre la paraula següent, i en un PDF compost abans que arribin les fonts les paraules acaben solapades. Res de la composició primerenca passa a la següent: `prepareFonts` troba les fonts noves a `document.fonts` i descarta les amplades mesurades en les seves famílies, així que no cal cridar `clearMeasurementCache()`.
 
 ### 5 · Una cascada al ritme del text
 
@@ -48,22 +46,17 @@ Ysabeau Office compon el text en cos 11 sobre 15,5 pt, amb una línia en blanc e
 
 <Excerpt region="opener" />
 
-La coberta és el disseny del nivell H1: les lletres de l'atribut `glyphs` del títol, en la font de titulars a 240 pt, i a sota dues línies en monoespaiada que anomenen aquesta font i les de text i d'etiquetes, com en el mostrari d'una foneria tipogràfica. `span: 'page'` deixa que el camp, ancorat a la sang, surti per la vora superior; dins de la columna, el disseny es retalla al marge superior i perd la part alta del camp i l'avanttítol. `minHeight` es compta des del marge superior i reserva l'espai fins a `Y.end`, 42 mm per sota del camp; sense aquest valor, el text comença una línia més amunt, enganxat a l'entradeta.
+La coberta és el disseny del nivell H1: les lletres de l'atribut `glyphs` del títol, en la font de titulars a 240 pt, i a sota dues línies en monoespaiada que anomenen aquesta font i les de text i d'etiquetes, com en el mostrari d'una foneria tipogràfica. `span: 'page'` estén el títol a tota la pàgina, i el camp penja de la cantonada superior esquerra de la sang, així que surt per la vora superior. `minHeight` es compta des del marge superior i reserva l'espai fins a `Y.end`, 42 mm per sota del camp; sense aquest valor, el text comença una línia més amunt, enganxat a l'entradeta.
 
 ## Variants
 
-### Deixa la memòria cau tranquil·la
+### Lliura els fitxers amb `resolve`
 
-El pen continua carregant totes les fonts, però la segona composició conserva tots els talls de línia de la primera: les dues tires de la pàgina 4 sobrepassen el filet, el peu compta 0 línies tallades en un altre lloc i als peus en monoespaiada les paraules es munten les unes sobre les altres, perquè cada tram es dibuixa on el va mesurar la font de reserva.
-
-```diff
--    clearMeasurementCache(); // the widths measured with a fallback stay cached until cleared
-+    // clearMeasurementCache();
-```
+`kitFonts(FONTS)`, a <RecipeLink slug="first-page-from-markdown">d'una cadena Markdown a una pàgina dissenyada</RecipeLink>, no declara res: Postext demana al seu `resolve` els fitxers de cada font i els afegeix ell mateix a `document.fonts`.
 
 ### Oblida una font
 
-Treu la negreta d'IBM Plex Mono, que compon l'avanttítol i la fila de capçalera de la taula, i el pen s'atura amb `No FontFace for IBM Plex Mono 700 normal` abans de mostrar cap pàgina; si només s'hagués fet servir `document.fonts.check()`, el navegador hauria engruixit la rodona.
+Treu la negreta d'IBM Plex Mono, que compon l'avanttítol, la fila de capçalera de la taula i les etiquetes dels peus: el navegador engruixeix la rodona, la taula marca la font amb «faked» i la nota compta un avís `fontFallback`, que anomena IBM Plex Mono 700 com a `synthesized`.
 
 ```diff
 -  'IBM Plex Mono': ['400', '400i', '700', '700i'], // labels, chips, the table, captions
@@ -76,5 +69,5 @@ Treu la negreta d'IBM Plex Mono, que compon l'avanttítol i la fila de capçaler
 
 ## Errors freqüents
 
-- `document.fonts.load(font)` sense text de mostra només carrega el fitxer que cobreix l'espai, el latin; passa-li el text, o la ż i la ř sortiran sense avís en una font del sistema.
-- `renderPageToCanvas` i `postext-pdf` retallen cada columna 2 pt més enllà de la seva vora, així que una línia mesurada amb una font de reserva més estreta perd les últimes lletres sense cap avís.
+- Si carregues una font pel teu compte, `document.fonts.load(font)` sense text de mostra només carrega el fitxer que cobreix l'espai, el latin, i la ż i la ř surten en una font del sistema. `prepareFonts` hi passa els caràcters del mateix document.
+- `renderPageToCanvas` i `postext-pdf` retallen cada columna 2 pt més enllà de la seva vora, així que una línia mesurada amb una font de reserva més estreta perd les últimes lletres. La composició que la va mesurar anomena la font a `doc.contentWarnings` com a `fontFallback`: llegeix aquesta llista abans de mostrar o exportar una pàgina.

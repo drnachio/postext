@@ -1,12 +1,12 @@
 // ═══ Postext Cookbook · Nº 154 · One comic page across a double spread ═══════════════
 // https://postext.dev/en/cookbook/comic-double-spread
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Patrick Hand, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.21.0
+// Fonts: Patrick Hand, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.25.0
 // One split tree laid across two facing pages: a panorama runs over the spine, and the
 // tier under it splits at the spine's gutter. Same album, same lettering as Nº 152.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultComicFont, defaultComicSfxFont,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, defaultComicFont,
+  defaultComicSfxFont,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -83,7 +83,7 @@ const foot = (id, content, y, extra) => ({ kind: 'text', id, content, fontFamily
   align: 'center', pages: 'comic',
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { y: mm(y) } }, ...extra });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: LOCALE,
   colorPalette,
   page: {
@@ -197,8 +197,9 @@ const resources = await Promise.all([
   comicPanel('ds1', asset('ds1-1900.jpg'), ART.ds1), comicPanel('ds2', asset('ds2.jpg'), ART.ds2),
   comicPanel('ds3', asset('ds3.jpg'), ART.ds3), comicPanel('ds4', asset('ds4.jpg'), ART.ds4),
 ]);
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown + COLOPHON);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown, resources, continuation }, config()),
+  { ...kitFonts(FONTS), text: markdown + COLOPHON });
 showBook(doc, { title: t({ es: 'Una página de cómic a doble página',
   en: 'One comic page across a double spread', ca: 'Una pàgina de còmic a doble pàgina',
   zh: '横跨两页的漫画', ar: 'صفحة قصص مصوّرة على صفحتين متقابلتين', ja: '見開きの漫画',

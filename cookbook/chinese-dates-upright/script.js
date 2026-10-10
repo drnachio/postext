@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 081 · Dates and acronyms upright in vertical text ═══════
 // https://postext.dev/en/cookbook/chinese-dates-upright
 // Code: MIT · Text: 1912 documents, zh.wikisource (CC BY-SA 4.0); notes (CC BY 4.0)
-// Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Two founding documents of the Republic of China, 1912, set vertically as a reader.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -119,7 +119,7 @@ const cover = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'zh-Hant', // Taiwan conventions: centred punctuation (gotcha: cjk-locale-tag)
   colorPalette,
   page: {
@@ -139,7 +139,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: {
     fontFamily: HEI, color: col('seal'), fontWeight: 700,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // Each document opens on the next page, whichever side that is.
       { level: 1, breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
       { level: 2, fontSize: pt(BODY), lineHeight: pt(LEAD), marginTop: pt(LEAD),
         marginBottom: pt(0) },
@@ -187,7 +187,8 @@ await loadFonts(FONTS, markdown);
 await loadCjkFonts({ [SONG]: FONTS[SONG] }, markdown, { vertical: true });
 await loadCjkFonts({ [HEI]: FONTS[HEI] }, heiText, { vertical: true });
 await loadCjkFonts({ [KAI]: FONTS[KAI] }, kaiText, { vertical: true });
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'Two documents of 1912', es: 'Dos documentos de 1912' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);
 

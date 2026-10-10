@@ -16,13 +16,13 @@ El número 12 de *Galerada*, revista de un taller tipográfico, en A5 y a dos co
 
 ### 1 · Estrecha los límites y conserva las protecciones
 
-El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. [Knuth–Plass](/es/docs/justification#knuth-plass-ver-el-párrafo-completo), la separación silábica, las penalizaciones de viudas, huérfanas y líneas cortas y los títulos unidos a su texto vienen activados por defecto, así que la edición publicada solo estrecha los [límites del espaciado](/es/docs/justification#límites-de-espaciado-entre-palabras) a 0,8 y 1,6 veces un espacio normal (por defecto son 0,6 y 2). Una línea que pasa del límite superior cuesta más que cualquier guion o línea corta, así que el algoritmo prueba antes otros cortes; sin esos dos límites, este ensayo compone ocho líneas por encima de 1,6. La partición depende de `locale` y de su código exacto: `'es'`, `'fr'` y `'de'` tienen sus propios patrones de TeX, mientras que `'es-ES'` se parte como inglés estadounidense sin ningún aviso.
+El código de este paso es [la respuesta corta](#la-respuesta-corta) de arriba. [Knuth–Plass](/es/docs/justification#knuth-plass-ver-el-párrafo-completo), la separación silábica, las penalizaciones de viudas, huérfanas y líneas cortas y los títulos unidos a su texto vienen activados por defecto, así que la edición publicada solo estrecha los [límites del espaciado](/es/docs/justification#límites-de-espaciado-entre-palabras) a 0,8 y 1,6 veces un espacio normal (por defecto son 0,6 y 2). Una línea que pasa del límite superior cuesta más que cualquier guion o línea corta, así que el algoritmo prueba antes otros cortes; sin esos dos límites, este ensayo compone ocho líneas por encima de 1,6. La partición depende de `locale`: `'es'`, `'fr'` y `'de'` tienen sus propios patrones de TeX, una etiqueta regional como `'es-ES'` toma los de su idioma, y un idioma sin patrones se parte como inglés estadounidense, con un aviso en la consola.
 
 ### 2 · Marca las líneas flojas desde el árbol de composición
 
 <Excerpt region="marks" />
 
-Solo el Sandbox aplica `debug.looseLineHighlight`, y `doc.warnings` nunca menciona una línea floja, así que `marks()` lee directamente el [VDT](/es/docs/justification#depuración-de-líneas-flojas). Cada línea justificada lleva su `justifiedSpaceRatio`, un párrafo partido entre dos columnas vuelve como un bloque por fragmento, y una línea de más de 3× no tiene proporción, porque el motor [la compone en bandera](/es/docs/justification#líneas-que-el-algoritmo-no-puede-llenar) y la marca con `line.ragged`. Con cuarenta caracteres por línea, los límites no bastan para que todas queden por debajo de 1,6; mientras se ajustaba el texto del ensayo, las marcas señalaron qué frases había que reescribir.
+`findLooseLines` devuelve las líneas justificadas cuyos espacios se estiran por encima de un umbral, aquí el límite superior, cada una con la franja que cubre el resaltado ([Líneas flojas en tu propio canvas](/es/docs/configuration#líneas-flojas-en-tu-propio-canvas)). `marks()` añade lo que esa lista deja fuera, leído del [VDT](/es/docs/justification#depuración-de-líneas-flojas): una línea de más de 3× no tiene proporción, porque el motor [la compone en bandera](/es/docs/justification#líneas-que-el-algoritmo-no-puede-llenar) y la marca con `line.ragged`, y un párrafo partido entre dos columnas vuelve como un bloque por fragmento, que es como se encuentran las líneas solas. Con cuarenta caracteres por línea, los límites no bastan para que todas queden por debajo de 1,6; mientras se ajustaba el texto del ensayo, las marcas señalaron qué frases había que reescribir.
 
 ### 3 · Pon el control junto a la página publicada
 
@@ -34,23 +34,23 @@ Las dos ediciones salen del mismo diseño, así que cualquier diferencia entre l
 
 <Excerpt region="bench" />
 
-Un recuadro compone todas las columnas de un grupo [`:::columns`](/es/docs/document-format#columns) con un único estilo de texto, así que cada ficha es un recuadro anidado con su propio `body`, y `breaks="3"` apila en la primera columna la ficha en bandera y la que no parte palabras. La ficha en bandera no necesita `hyphenation: false`, porque el texto en bandera nunca se parte. El banco flota al pie de la página 3 con `placement: 'bottom'`, y su relleno inferior repite el marco de 4 mm porque el `marginBottom` de la última ficha se pierde al final del recuadro.
+Un recuadro compone todas las columnas de un grupo [`:::columns`](/es/docs/document-format#columns) con un único estilo de texto, así que cada ficha es un recuadro anidado con su propio `body`, y `breaks="3"` apila en la primera columna la ficha en bandera y la que no parte palabras. La ficha en bandera no necesita `hyphenation: false`: el texto en bandera no parte palabras salvo que se active `bodyText.hyphenation.ragged`. El banco flota al pie de la página 3 con `placement: 'bottom'`, y su relleno inferior repite el marco de 4 mm porque el `marginBottom` de la última ficha se pierde al final del recuadro.
 
 ### 5 · Dibuja el modelo en la apertura
 
 <Excerpt region="opener" />
 
-El diagrama es un [elemento de imagen](/es/docs/configuration#elementos-de-imagen) del diseño del H1. Como figura sería un flotante `top` a todo el ancho, y un flotante `top` citado en la página 1 abre la página 2. La banda es una caja, y las cajas cuentan para la altura que reserva una apertura, pero las imágenes no, así que el texto empieza bajo la banda sin `minHeight`, una línea más abajo por el `marginBottom` que el H1 trae por defecto. Los rótulos son texto de diseño colocado sobre las coordenadas del propio dibujo, porque un SVG pintado como imagen no puede usar las fuentes web de la página.
+El diagrama es un [elemento de imagen](/es/docs/configuration#elementos-de-imagen) del diseño del H1. Como figura sería un flotante `top` a todo el ancho, y un flotante `top` citado en la página 1 abre la página 2. La banda baja más que el diagrama, y una apertura reserva altura hasta su elemento más bajo, así que el texto empieza bajo la banda sin `minHeight`, una línea más abajo por el `marginBottom` que el H1 trae por defecto. Los rótulos son texto de diseño colocado sobre las coordenadas del propio dibujo, compuesto y espaciado como los demás rótulos de la apertura.
 
 ## Variantes
 
 ### Parte un texto en alemán
 
-Los patrones de partición se eligen por código exacto, así que un texto alemán necesita `'de'`.
+El `locale` elige los patrones de partición, así que un texto alemán lleva `'de'`, o una etiqueta regional como `'de-AT'`.
 
 ```diff
--const locale = t({ en: 'en-us', es: 'es' }); // config().locale; 'es-ES' would be English
-+const locale = 'de'; // German patterns; 'de-DE' would hyphenate as English
+-const locale = t({ en: 'en-us', es: 'es' }); // config().locale: each edition's patterns
++const locale = 'de'; // German patterns; 'de-AT' picks them too
 ```
 
 ### Marca solo las peores líneas
@@ -58,11 +58,11 @@ Los patrones de partición se eligen por código exacto, así que un texto alem�
 Sube el umbral de 1,6 a 2 y el resaltador marca solo las líneas cuyos espacios pasan del doble.
 
 ```diff
--        if (line.justifiedSpaceRatio > FENCES.maxWordSpacing || line.ragged) {
-+        if (line.justifiedSpaceRatio > 2 || line.ragged) {
+-  const loose = findLooseLines(doc, { threshold: FENCES.maxWordSpacing, pageIndex: page.index });
++  const loose = findLooseLines(doc, { threshold: 2, pageIndex: page.index });
 ```
 
 ## Errores frecuentes
 
-- Un recuadro que queda al final de una columna baja hasta el pie cuando se equilibran las columnas, lejos del párrafo al que pertenece. Ajusta el texto para que la columna se llene, como hizo falta con el recuadro de ajustes bajo «Límites para la cola».
+- Un recuadro que queda al final de una columna baja hasta el pie cuando se equilibran las columnas, lejos del párrafo al que pertenece. Ajusta el texto para que la columna se llene, como hizo falta con el recuadro de ajustes bajo «Límites para la cola», o pon `headings.balancing.closingBox` en `'off'`, que nunca mueve el recuadro.
 - La ficha sin partición no enseña los huecos más anchos que le harían falta. Una línea justificada cuyos espacios pasarían de tres veces el normal se compone en bandera, con su espaciado natural, dentro de un recuadro igual que en el texto corrido, así que la cuarta línea de la ficha acaba antes de la medida. Las líneas que quedan por debajo de ese tope siguen justificadas, y sus huecos son los que muestra la ficha.

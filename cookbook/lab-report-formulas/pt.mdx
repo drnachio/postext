@@ -16,7 +16,7 @@ Três alunos do terceiro ano do ensino médio titulam um vinagre de maçã com h
 
 ### 1 · Escreva as fórmulas como texto e deixe o TeX para as equações
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. [`~…~` e `^…^`](/pt/docs/document-format#formatação-em-linha) compõem um trecho a 58 % do corpo na própria fonte do texto, então `CH~3~COOH`, `OH^−^` (o sinal de menos é U+2212) e `cm^3^` mantêm o peso e a cor da frase em volta. As marcas também funcionam em legendas e células de tabela, onde o TeX não pode ser usado. A reação, escrita com o `\ce{…}` do mhchem, e as equações são TeX entre `$$`. O [motor de matemática](/pt/docs/configuration#inicializar-o-motor-de-fórmulas) só vem na versão `?bundle`, então todos os símbolos são importados dela. `math.fontSizeScale` vale 0,495 / 0,442, cerca de 1,12: a altura de x de uma fórmula é a do TeX, 0,442 em do corpo, e a da Inria Serif é 0,495 em, então a escala deixa as minúsculas da fórmula e do texto na mesma altura.
+O código é [a resposta curta](#a-resposta-curta) logo acima. [`~…~` e `^…^`](/pt/docs/document-format#formatação-em-linha) compõem um trecho a 58 % do corpo na própria fonte do texto, então `CH~3~COOH`, `OH^−^` (o sinal de menos é U+2212) e `cm^3^` mantêm o peso e a cor da frase em volta. As marcas também funcionam em legendas e células de tabela, na fonte da legenda ou da célula; `$…$` em linha também é composto ali, na fonte das fórmulas. A reação, escrita com o `\ce{…}` do mhchem, e as equações são TeX entre `$$`. `await initMathEngine()` inicia o [motor de matemática](/pt/docs/configuration#inicializar-o-motor-de-fórmulas) antes da composição; ele vem do mesmo import que os outros símbolos. `math.fontSizeScale` vale 0,495 / 0,442, cerca de 1,12: a altura de x de uma fórmula é a do TeX, 0,442 em do corpo, e a da Inria Serif é 0,495 em, então a escala deixa as minúsculas da fórmula e do texto na mesma altura.
 
 ### 2 · Pendure os números das seções na margem
 
@@ -34,7 +34,7 @@ O único H1 do relatório usa o [estilo de título](/pt/docs/configuration#largu
 
 <Excerpt region="labels" />
 
-[`defaultResourceTypes(LANG)`](/pt/docs/configuration#tipos-de-recurso) dá Tabla e Figura na edição em espanhol, que o locale sozinho deixaria em inglês. O modelo `{h1}.{n}` deles imprime aqui só um 1, porque o H1 do relatório não tem número e um `{h1}` vazio cai junto com o seu ponto. A legenda da tabela vai acima dela, onde os relatórios a põem. O texto cita a tabela e a figura com `:ref{id="lecturas" style="full"}`, na tinta e no peso das palavras em volta.
+Os tipos embutidos seguem o `locale` do documento, então a edição em espanhol diz Tabla e Figura sem nenhum ajuste. [`defaultResourceTypes(LANG)`](/pt/docs/configuration#tipos-de-recurso) devolve esses tipos para que a receita mude um deles. O modelo `{h1}.{n}` deles imprime aqui só um 1, porque o H1 do relatório não tem número e um `{h1}` vazio cai junto com o seu ponto. A legenda da tabela vai acima dela, onde os relatórios a põem. O texto cita a tabela e a figura com `:ref{id="lecturas" style="full"}`, na tinta e no peso das palavras em volta.
 
 ### 5 · Calcule a tabela e a curva a partir das mesmas leituras
 
@@ -46,7 +46,7 @@ Os quatro pares de leituras da bureta dão todas as células da tabela 1, a méd
 
 <Excerpt region="references" />
 
-Um bloco `:::paragraphs{style="references"}` aplica o [estilo de parágrafo](/pt/docs/configuration#estilos-de-parágrafo) a cada referência: 9 pt sobre 12,5 pt, alinhado à esquerda, com recuo deslocado de 6 mm e 4 pt entre as entradas. Na versão 1.4.1, parágrafos alinhados à esquerda nunca são hifenizados, então um título longo como *Fundamentals of Analytical Chemistry* só quebra entre palavras. O colofão tem um estilo próprio, Inria Sans em 7,4 pt, com uma linha de 15 pt de espaço acima.
+Um bloco `:::paragraphs{style="references"}` aplica o [estilo de parágrafo](/pt/docs/configuration#estilos-de-parágrafo) a cada referência: 9 pt sobre 12,5 pt, alinhado à esquerda, com recuo deslocado de 6 mm e 4 pt entre as entradas. Parágrafos alinhados à esquerda não são hifenizados, a menos que `bodyText.hyphenation.ragged` peça, então um título longo como *Fundamentals of Analytical Chemistry* só quebra entre palavras. O colofão tem um estilo próprio, Inria Sans em 7,4 pt, com uma linha de 15 pt de espaço acima.
 
 ## Variações
 
@@ -74,8 +74,6 @@ Os resultados passam a ser a tabela 5.1 e a figura 5.1, com a contagem reiniciad
 
 ## Erros comuns
 
-- Uma fórmula em destaque não fica presa à linha que a apresenta, então uma frase que termina em “so” pode fechar uma página com a equação já na seguinte. O texto das duas edições foi ajustado para que a página 1 termine com a equação de [OH⁻] sob a sua frase.
+- Por padrão, uma fórmula em destaque não fica presa à linha que a apresenta, então uma frase que termina em “so” pode fechar uma página com a equação já na seguinte; `math.keepWithLeadIn: true` leva essa linha para a página seguinte junto com a fórmula. Aqui o texto das duas edições foi ajustado para que a página 1 termine com a equação de [OH⁻] sob a sua frase.
 - Os glifos do TeX são os do MathJax, não os da Inria Serif, e uma equação fica um pouco mais leve que o texto em volta. Mantenha as fórmulas dentro das frases como marcas `~` e `^`, e reserve o TeX para as linhas que precisam dele.
-- Na versão 1.4.1, um design de título mantido na coluna é cortado na borda superior da coluna. O estilo `report` usa `span: 'page'` neste relatório de uma coluna só por esse motivo: sem ele, os 24 mm de cima da faixa e da bureta saem em branco.
-- Uma legenda é composta alinhada à esquerda, e na versão 1.4.1 uma linha alinhada à esquerda pode quebrar entre uma palavra e o seu sobrescrito. Com duas linhas, a legenda da tabela 1 quebrava entre `mol·dm` e `−3`, por isso foi reduzida a uma linha; confira cada legenda que leve uma unidade.
-- As fontes web não chegam a um SVG desenhado como imagem, então os rótulos das marcas e os títulos dos eixos da curva são contornos do MathJax: `tex()` pede a `renderMath` os traçados de cada rótulo e os põe no SVG. Eles continuam vetoriais no PDF e usam os mesmos glifos das equações.
+- Os rótulos das marcas e os títulos dos eixos da curva são contornos do MathJax, com os mesmos glifos das equações e vetoriais no PDF: `tex()` pede a `renderMath` os traçados de cada rótulo e os põe no SVG. Só podem ser desenhados depois que `initMathEngine()` termina.

@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 142 · A clinical trial report with a CONSORT diagram ══════
 // https://postext.dev/en/cookbook/clinical-trial-consort-flow
 // Code: MIT · Text: Fitzpatrick, Darcy & Vierhile 2017 (CC BY 4.0), abridged · Figures: code
-// Fonts: Lora, Nunito Sans (SIL OFL 1.1) · Needs postext ≥ 1.18.0
+// Fonts: Lora, Nunito Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  registerResourceImage, defaultResourceTypes, mergeCells, initMathEngine,
-} from 'https://esm.sh/postext?bundle'; // with MathJax (gotcha: math-bundle)
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
+  defaultResourceTypes, mergeCells, initMathEngine, inlineSvgFonts,
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
 
@@ -116,7 +116,7 @@ registerCitationEngine(createCiteprocEngine({ styles: STYLES, locales: LOCALES }
 const sans = (size, weight) => ({ fontFamily: SANS, fontSize: pt(size), fontWeight: weight });
 const small = (id, size, lead, extra) => ({ id, fontFamily: SANS, fontSize: pt(size),
   lineHeight: pt(lead), textAlign: 'left', firstLineIndent: pt(0), ...extra });
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us',
   // "Table 1" over its table, "Figure 1" under its figure; one count, not 1.1 (title unnumbered)
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type,
@@ -141,7 +141,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: SANS, color: col('accent'), fontWeight: 800, levels: [
-    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // any page: no forced recto
     { level: 2, ...sans(11.5, 800), lineHeight: pt(LEAD), marginTop: pt(LEAD),
       marginBottom: pt(0) },
     { level: 3, ...sans(9.4, 700), color: col('ink'), lineHeight: pt(LEAD),
@@ -223,24 +223,11 @@ const resources = () => [consort,
 ];
 // #endregion
 
-// #region art: the CONSORT diagram and the theme charts, their labels in Nunito Sans inline
+// #region art: the CONSORT diagram and the theme charts, their labels in Nunito Sans
 const n2 = (v) => +v.toFixed(2);
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-// An SVG image sees no web fonts (gotcha: svg-no-webfonts): faces go inline.
-async function inlineFaces(family, weights) {
-  const id = family.toLowerCase().replace(/\s+/g, '-');
-  let css = '';
-  for (const w of weights) {
-    const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${w}`
-      + '-normal.woff2';
-    const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-    let bin = '';
-    for (const b of bytes) bin += String.fromCharCode(b);
-    css += `@font-face{font-family:F;font-weight:${w};src:url(data:font/woff2;base64,`
-      + `${btoa(bin)}) format('woff2')}`;
-  }
-  return `<style>${css}text{font-family:F}</style>`;
-}
+// The labels' family, named on the root element: loadSvg embeds its faces.
+const LABELS = `font-family="${SANS}"`;
 const label = (x, y, s, size, weight, fill, anchor = 'middle') => `<text x="${n2(x)}" `
   + `y="${n2(y)}" font-size="${size}" font-weight="${weight}" fill="${fill}" `
   + `text-anchor="${anchor}">${esc(s)}</text>`;
@@ -302,7 +289,7 @@ function consortSvg(face) { // 176 mm wide, the full measure; one unit is a mill
     if (cx === R) parts.push(stage(lost.top - 3, 'Follow-up'), stage(t2.bottom + 2.75, 'Analysis'));
   }
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1760" height="${CONSORT_H * 10}" `
-    + `viewBox="0 0 ${W} ${CONSORT_H}">${face}${parts.join('')}</svg>`;
+    + `viewBox="0 0 ${W} ${CONSORT_H}" ${face}>${parts.join('')}</svg>`;
 }
 // The thematic maps (Figs 3, 4) as bars.
 const THEMES = [
@@ -352,7 +339,7 @@ function themeSvg({ id, themes }, face) { // 84.5 mm wide: one column
       + label(X0 + w + 1.2, y + 3, String(n), 2.55, 800, palette.ink, 'start');
   });
   return `<svg xmlns="http://www.w3.org/2000/svg" width="845" height="${Math.round(H * 10)}" `
-    + `viewBox="0 0 ${W} ${n2(H)}">${face}${svg}</svg>`;
+    + `viewBox="0 0 ${W} ${n2(H)}" ${face}>${svg}</svg>`;
 }
 // #endregion
 
@@ -362,13 +349,11 @@ const FONTS = { Lora: ['400', '400i', '700', '700i'],
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const paper = `${markdown}\n\n${results}\n\n${references}`;
-await loadFonts(FONTS, paper);
-const face = await inlineFaces(SANS, [400, 800]);
-await loadSvg('consort.svg', consortSvg(face));
-for (const fig of THEMES) await loadSvg(fig.file, themeSvg(fig, face));
+await loadSvg('consort.svg', consortSvg(LABELS));
+for (const fig of THEMES) await loadSvg(fig.file, themeSvg(fig, LABELS));
 await initMathEngine(); // χ² is maths: no Lora file has χ, not even its math file
 const content = { markdown: paper, resources: resources() };
-const doc = await buildWithFonts(() => buildDocument(content, config()), paper);
+const doc = await buildDocumentWithFonts(content, config(), kitFonts(FONTS));
 showPages(doc, { title: 'A clinical trial report with a CONSORT diagram' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

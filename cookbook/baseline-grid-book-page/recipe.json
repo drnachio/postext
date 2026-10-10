@@ -20,54 +20,15 @@
   "answers": ["Q16", "Q17", "Q19", "Q21"],
   "gaps": [],
   "gotchas": [
-    "top-float-next-page", "float-stretch-closing-page", "headings-drop-h1-break",
-    "palette-skips-designs", "hyphenation-locales", "resource-types-locale", "quote-frontmatter",
-    "fonts-first"
+    "top-float-next-page"
   ],
   "explainsWarnings": [],
   "related": [
     "spanish-pocket-novel", "running-heads-by-parity", "section-heads-field-manual",
     "justification-lab"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "levels[0].breakBefore is restated, because any headings object drops the H1 page break"
-    },
-    {
-      "followup": "EF-14",
-      "package": "postext",
-      "note": "locale is the exact bundled code ('en-us' | 'es' | 'pt'): a region-tagged code such as 'pt-BR' would hyphenate the Spanish or Portuguese edition as American English"
-    },
-    {
-      "followup": "EF-33",
-      "package": "postext",
-      "note": "resourceTypes: defaultResourceTypes(LANG) makes the Spanish captions and :ref labels read 'Figura'; config.locale alone leaves them in English"
-    },
-    {
-      "followup": "EF-70",
-      "package": "postext",
-      "note": "headings.balancing.stretchAfterFloats is false as a guard: with the first draft of the copy the lever started the second closing column on the English page 11 one line low under the page-wide figure; the fitted copy splits evenly and no longer trips it"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "the running heads and folios take col(), which writes each hex beside its paletteId, because design slots (and bodyText.referenceColor) never read the palette"
-    },
-    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted" },
-    {
-      "followup": "EF-65",
-      "package": "postext",
-      "note": "copy-fitted: in 78 mm columns of Vollkorn several justified lines stretched past maxWordSpacing (up to 2.75×) with the first draft; both samples were reworded until no line exceeds the default 2 (worst 1.88 in English, 1.83 in Spanish). Tightening min/maxWordSpacing to 0.75/1.8 left lines past the cap and doubled the hyphenated line ends in Spanish, so the defaults stay"
-    },
-    {
-      "followup": "EF-100",
-      "package": "postext",
-      "note": "the title stays in the first column: a heading level with span: 'page' and no advancedDesign is measured at the column width, so its band keeps the height of the wrapped title while it prints one line across the page, and the column rule is drawn through the band"
-    }
-  ],
-  "engine": { "postext": "1.4.1" },
+  "workarounds": [],
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es", "pt"] },
   "capture": {
@@ -115,5 +76,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

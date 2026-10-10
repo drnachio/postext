@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "paper-swatch-book",
-  "sourceHash": "4825ef6b4677202f040bcd0fc4cbecae77bf1c0313286a5ee07b92d1fd772012",
+  "sourceHash": "1365a41ea7765c3701ce15fe9837e7157eb0bd7c2dc2f542e998a40976503a80",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.233Z",
+  "capturedAt": "2026-10-10T13:37:01.495Z",
   "variants": {
     "en": {
-      "hash8": "96497d59",
+      "hash8": "e5b40569",
       "vdtHash": "ca5cf49b23a242d725eea9a31c91c29469b8f4c4",
       "timings": {
-        "importMs": 164,
-        "fontsMs": 36,
-        "buildMs": 21,
-        "totalMs": 861,
-        "builds": 2
+        "importMs": 158,
+        "fontsMs": 3,
+        "buildMs": 49,
+        "totalMs": 886,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Libre Caslon Display"
         ],
         "pages": 12,
-        "ownLines": 163
+        "ownLines": 161
       },
       "pages": [
         {
@@ -218,13 +218,12 @@
       },
       "sandbox": {
         "file": "paper-swatch-book.postext",
-        "bytes": 30842,
+        "bytes": 30844,
         "folio": "c0edc776"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createFolioFromDocument",
           "renderPageToCanvas"
         ],

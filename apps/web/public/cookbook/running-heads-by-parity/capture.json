@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "running-heads-by-parity",
-  "sourceHash": "a2ac0f24a1f78208af08b55405b2e18c5611f046a9bcde996612d3545687bb73",
+  "sourceHash": "5db63d1a9005aeda12f7cf3262948e87729fba59c05b30608beedd0549375458",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.406Z",
+  "capturedAt": "2026-10-10T13:38:07.599Z",
   "variants": {
     "en": {
-      "hash8": "0933ea33",
+      "hash8": "5ed586f5",
       "vdtHash": "0fd2ce0f5bc9963d0e66b0da481d735d672036c2",
       "timings": {
-        "importMs": 159,
-        "fontsMs": 25,
-        "buildMs": 67,
-        "totalMs": 981,
-        "builds": 2
+        "importMs": 182,
+        "fontsMs": 0,
+        "buildMs": 110,
+        "totalMs": 902,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Libre Caslon Display"
         ],
         "pages": 5,
-        "ownLines": 180
+        "ownLines": 174
       },
       "pages": [
         {
@@ -125,13 +125,12 @@
       },
       "sandbox": {
         "file": "running-heads-by-parity.postext",
-        "bytes": 24096,
+        "bytes": 24097,
         "folio": "95f31ab7"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "renderPageToCanvas"
         ],
         "configKeys": [
@@ -316,14 +315,14 @@
       }
     },
     "es": {
-      "hash8": "c8b04492",
+      "hash8": "4a2dc20e",
       "vdtHash": "03511421b5d1dfa2a26bebd282903dc09494abdc",
       "timings": {
-        "importMs": 162,
-        "fontsMs": 26,
-        "buildMs": 16,
-        "totalMs": 836,
-        "builds": 2
+        "importMs": 135,
+        "fontsMs": 1,
+        "buildMs": 45,
+        "totalMs": 787,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -344,7 +343,7 @@
           "Libre Caslon Display"
         ],
         "pages": 5,
-        "ownLines": 180
+        "ownLines": 174
       },
       "pages": [
         {
@@ -431,13 +430,12 @@
       },
       "sandbox": {
         "file": "running-heads-by-parity.postext",
-        "bytes": 22538,
+        "bytes": 22539,
         "folio": "95f31ab7"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "renderPageToCanvas"
         ],
         "configKeys": [

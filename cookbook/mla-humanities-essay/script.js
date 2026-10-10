@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 096 · A humanities essay with MLA works cited ══════════
 // https://postext.dev/en/cookbook/mla-humanities-essay
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Spectral, Spectral SC (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Spectral, Spectral SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -17,7 +17,7 @@ const palette = {
   ink: '#1f1a17', glaze: '#231c19', clay: '#9a3d22', slip: '#e3a27e', rule: '#c9bdb0',
   muted: '#6b6159', paper: '#fffdf9',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// Every colour is linked to its palette entry by id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.clay })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -87,8 +87,8 @@ const head = (id, content, parity, edge, x, align) => ({
   placement: at('page', edge, x, 12),
 });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // hyphenation patterns and the engine's own words
   colorPalette,
   citations,
   page: {
@@ -108,7 +108,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: {
     fontFamily: LABEL, fontWeight: 600, color: col('clay'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': an essay starts on the next page, left or right.
       { level: 1, fontFamily: TEXT, fontSize: pt(56), marginBottom: pt(0),
         breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
       { level: 2, fontSize: pt(11.5), letterSpacing: pt(0.9), lineHeight: pt(LEAD),
@@ -138,15 +138,14 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ '';
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first).
+// Every face the design uses.
 const FONTS = {
   Spectral: ['300', '300i', '400', '400i', '600', '600i'],
   'Spectral SC': ['400', '500', '600'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 const title = t({ en: 'A humanities essay with MLA works cited',
   es: 'Un ensayo de humanidades con obras citadas en MLA' });
 showPages(doc, { title });

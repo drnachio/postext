@@ -1,12 +1,12 @@
 // ═══ Postext Cookbook · Nº 100 · A laid-out book on the desk, in 3D ═══════════════════
 // https://postext.dev/en/cookbook/folio-book-on-a-desk
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Literata, Fraunces, Work Sans (SIL OFL 1.1) · Needs postext ≥ 1.13.4
+// Fonts: Literata, Fraunces, Work Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 //
 // A chapter of a short novel, laid out on a trade-book page and opened with postext-folio as a
 // cloth-bound book lying on a walnut desk. Take the right-hand page by its edge and drag it
 // over, click a page, or use the arrow keys. The flat pages follow under the book.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { createFolioFromDocument } from 'https://esm.sh/postext-folio';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -74,7 +74,7 @@ const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'bottom', 
     offset: { y: mm(-11) } } })] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us',
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
@@ -87,7 +87,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: 'Fraunces', color: col('ink'), fontWeight: 600, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // Chapters open on a recto; 'odd' leaves a blank verso only when one is needed.
     { level: 1, fontSize: pt(28), breakBefore: { enabled: true, parity: 'odd' },
       advancedDesign: opener },
     { level: 2, fontSize: pt(11.5), lineHeight: pt(LEAD), fontWeight: 400, italic: true,
@@ -111,8 +111,7 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'The Ferryman’s Ledger · in Folio' });
 
 // #region answer: the document opened as a book; the container gives it its size

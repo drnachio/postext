@@ -28,13 +28,13 @@ An image element draws a resource at the size of its placement ([image elements]
 
 <Excerpt region="title" />
 
-Each line is anchored to the page's `'top'` edge, which centres it, with a `y` measured from the trim, so the block keeps its place whatever the margins; `y()` stretches those positions from Letter to A4. The name is the heading's own text, read through `{titleText}`, so the PDF bookmarks and tags carry it. With `overflow: 'wrap'` a long name takes a second line; the default would cut it short with an ellipsis. `centred()` shifts each tracked line right by half its tracking. Without it, each one sits that far left of the page's centre: 0.4 mm for the kicker, 0.5 mm for *Certificate* and 0.7 mm for *of completion*.
+Each line is anchored to the page's `'top'` edge, which centres it, with a `y` measured from the trim, so the block keeps its place whatever the margins; `y()` stretches those positions from Letter to A4. The name is the heading's own text, read through `{titleText}`, so the PDF bookmarks and tags carry it. A long name takes a second line, since a heading design wraps its text (`overflow: 'wrap'`). The tracked lines need no correction: the tracking after the last letter is left out of the measure, so the letters themselves are centred.
 
 ### 4 · Hang the seal and the signatures from one edge
 
 <Excerpt region="signatures" />
 
-Everything in the footer is measured from `SIGN`, the seal's top edge, and the style's bottom margin ends the text area at the same edge, so a citation too long for the page moves on to the next one instead of running under the seal. Moved into the opener, the lines and the names would count towards its height ([span and advanced design](/en/docs/configuration#span-and-advanced-design)); since they reach below the text area, 1.4.1 would drop the whole reservation and start the citation 7.6 mm under the top margin, on top of the title. `LINE` takes the width between the page margins, subtracts the seal's 34 mm disc, halves the rest and takes off 3 mm, so each line stops 3 mm short of the seal on both trims (56 mm long on Letter, 53 mm on A4). Each name and role is a text element as wide as its line, which centres it under the line.
+Everything in the footer is measured from `SIGN`, the seal's top edge, and the style's bottom margin ends the text area at the same edge, so a citation too long for the page moves on to the next one instead of running under the seal. Moved into the opener, the lines and the names would count towards its height ([span and advanced design](/en/docs/configuration#span-and-advanced-design)); since they reach below the text area, the opener would claim the whole page and send the citation to the next one. `LINE` takes the width between the page margins, subtracts the seal's 34 mm disc, halves the rest and takes off 3 mm, so each line stops 3 mm short of the seal on both trims (56 mm long on Letter, 53 mm on A4). Each name and role is a text element as wide as its line, which centres it under the line.
 
 ### 5 · Merge the class list into headings
 
@@ -46,13 +46,13 @@ Each row becomes a `#` heading that names the style and carries the serial as an
 
 <Excerpt region="pdf" />
 
-The class is one document, so `renderToPdf` writes a single three-page file with a bookmark per heading, each named after a student. `renderToPdf` also takes an array of documents, such as the chapters of a book, but a document per student means one `buildDocument` call for each. As headings, the whole class is laid out in one build, and the viewer shows all three certificates from that build. Besides the four faces the pages print, the PDF asks for bold and bold italic Rosarivo, which Fontsource does not ship: the kit's font provider snaps each request to the nearest face the family has ([why a font provider?](/en/docs/configuration#why-a-font-provider)).
+The class is one document, so `renderToPdf` writes a single three-page file with a bookmark per heading, each named after a student. `renderToPdf` also takes an array of documents, such as the chapters of a book, but a document per student means one `buildDocument` call for each. As headings, the whole class is laid out in one build, and the viewer shows all three certificates from that build. The PDF embeds the four faces the pages print, which the kit's font provider fetches from Fontsource ([why a font provider?](/en/docs/configuration#why-a-font-provider)).
 
 ## Variations
 
 ### Print a PDF per student
 
-One button per student builds that certificate as a document of its own, with a fresh `config()`, and names the file after the serial number; each file weighs about 245 KB.
+One button per student builds that certificate as a document of its own, with `buildDocumentWithFonts` as the pen's own build, and names the file after the serial number; each file weighs about 245 KB.
 
 ```diff
 -offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
@@ -60,9 +60,10 @@ One button per student builds that certificate as a document of its own, with a 
 -document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',
 -  es: 'Toda la clase en un PDF' });
 +for (const [name, serial] of CLASS) {
-+  offerPdf(() => renderToPdf(buildDocument({ markdown:
-+    `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`, metadata, resources },
-+    config()), { fontProvider: fontsourceProvider, resourceBytes: imageBytes }), `${serial}.pdf`);
++  const one = `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`;
++  offerPdf(async () => renderToPdf(await buildDocumentWithFonts({ markdown: one, metadata,
++    resources }, config(), kitFonts(FONTS)), { fontProvider: fontsourceProvider,
++    resourceBytes: imageBytes }), `${serial}.pdf`);
 +  document.querySelector(`[data-postext-pdf="${serial}.pdf"]`).textContent = name;
 +}
 ```
@@ -75,8 +76,3 @@ The SVG art and the config read the same `palette` object, so changing one entry
 -  teal: '#1f5f5b', // the frame, the title lines
 +  teal: '#2b3a67', // the frame, the title lines
 ```
-
-## Pitfalls
-
-- In 1.4.1 a centred design text with `letterSpacing` sits half a letter space left of its anchor, and a right-set one ends a whole space short, because its width includes the tracking after its last letter. `space()` moves the tracked lines back.
-- postext-pdf 1.4.1 writes an SVG into the content stream of every page that draws it, with no shared copy: the frame adds about 210 KB to each page, so the three-page PDF weighs 694 KB (58 KB without the frame) and a class of thirty would weigh about 6.6 MB.

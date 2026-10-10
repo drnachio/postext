@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 044 · Critical edition: line numbers and line-keyed notes ═══
 // https://postext.dev/en/cookbook/critical-edition-line-numbers
 // Code: MIT · Text: Milton, Poems (1645) (PD) · Notes: CC BY 4.0 · Laurel: diffusion models
-// Fonts: Linden Hill, Imbue, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Linden Hill, Imbue, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Lycidas in the spelling of 1645, with a number beside every fifth line and two pages of
 // notes keyed to those numbers, so the verse carries no note markers.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en')
@@ -19,8 +19,7 @@ const palette = {
   muted: '#6a706a', // running heads, the colophon
   paper: '#ffffff',
 };
-// col(id) carries the hex beside the id, because design slots paint the hex
-// (gotcha: palette-skips-designs).
+// col(id) carries the hex beside the id of its palette entry.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries(palette)
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -77,29 +76,28 @@ const verseStyles = [{ id: 'verse', hangingIndent: em(2) }];
 const OPENER_LINES = 20; // of the page's 34: the first verse paragraph, 14 lines, takes the rest
 const at = (id, edge, y) => ({ anchor: { to: id, edge }, offset: { x: mm(0), y: mm(y) } });
 const title = (size, tracking, placement) => ({ kind: 'text', id: 'title', content: '{titleText}',
-  // lineHeight is a multiple of the size (gotcha: design-lineheight-multiple).
   fontFamily: DISPLAY, fontWeight: 300, fontSize: pt(size), lineHeight: 1,
   letterSpacing: pt(tracking), textTransform: 'uppercase', color: col('ink'), placement });
 const opener = { enabled: true, minHeight: pt(OPENER_LINES * LEAD), slot: { elements: [
-  // An image element reserves no height (gotcha: opener-image-no-reserve): the kicker, title
-  // and headnote under it reach down 20 lines. minHeight is a floor at the same depth, so a
-  // shorter headnote leaves the verse on line 21.
+  // The laurel ends above the kicker, so the depth comes from the texts: kicker, title and
+  // headnote reach down 20 lines. minHeight is a floor at the same depth, so a shorter
+  // headnote leaves the verse on line 21.
   { kind: 'image', id: 'laurel', resourceId: 'laurel',
     placement: { anchor: { to: 'page', edge: 'top-right' }, size: { width: mm(104) } } },
   { kind: 'text', id: 'kicker', content: '{author}', fontFamily: LABEL, fontWeight: 500,
     fontSize: pt(8), letterSpacing: pt(1.6), textTransform: 'uppercase', color: col('laurel'),
     placement: at('container', 'top-left', 50) },
   title(66, 2, at('#kicker', 'below', 1)),
-  // # Lycidas {headnote="In this Monody …"}. Design text wraps ragged and has no inline
-  // italics (gotcha: design-text-no-inline-marks); at 64 mm no word stands alone.
+  // # Lycidas {headnote="In this Monody …"}: the whole headnote in italic, ragged; at
+  // 64 mm no word stands alone.
   { kind: 'text', id: 'headnote', content: '{attr.headnote}', fontFamily: TEXT, italic: true,
-    fontSize: pt(9.5), lineHeight: 13 / 9.5, color: col('ink'), align: 'left', overflow: 'wrap',
+    fontSize: pt(9.5), lineHeight: 13 / 9.5, color: col('ink'), align: 'left',
     placement: { ...at('#title', 'below', 3), size: { width: mm(64) } } },
 ] } };
-// Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break). span
-// 'page' paints the laurel above the text block, where a column clips its design. With the
-// default marginBottom the verse would start on line 22 and send line 14 to page 2.
-const poem = { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
+// The poem opens on a recto. Its design stays in the column, and the laurel, anchored to the
+// page's corner, is painted above the text block all the same. With the default
+// marginBottom the verse would start on line 22 and send line 14 to page 2.
+const poem = { level: 1, breakBefore: { enabled: true, parity: 'odd' },
   advancedDesign: opener, marginBottom: pt(0) };
 // #endregion
 
@@ -120,8 +118,8 @@ const chipStyles = [{ id: 'line', backgroundEnabled: false, borderWidth: pt(0), 
   fontFamily: LABEL, fontSize: em(0.9), color: col('laurel') }];
 // # Notes {style="notes"} opens the next page under the title's capitals, smaller. A heading
 // style keeps the level's break unless it sets its own (gotcha: style-inherits-break). Its
-// design stays in the column, so the title lines up with the notes on either page.
-const notesHead = { id: 'notes', span: 'column', breakBefore: { enabled: true, parity: 'any' },
+// design stays in the column too, so the title lines up with the notes on either page.
+const notesHead = { id: 'notes', breakBefore: { enabled: true, parity: 'any' },
   advancedDesign: { enabled: true,
     slot: { elements: [title(30, 1, at('container', 'top-left', 0))] } } };
 // #endregion
@@ -151,13 +149,13 @@ const footer = { elements: [drop('odd', 'bottom-right', -OUTER),
   drop('even', 'bottom-left', OUTER)] };
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, page, layout, header, footer,
   bodyText: { // every paragraph sits in a styled container and takes these as defaults
     fontFamily: TEXT, fontSize: pt(10.5), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
-    // Ragged throughout, verse and notes alike, so nothing is hyphenated
-    // (gotcha: ragged-no-hyphenation).
+    // Ragged throughout, verse and notes alike: ragged text keeps its words whole unless
+    // bodyText.hyphenation.ragged asks otherwise.
     textAlign: 'left', firstLineIndent: pt(0), verse,
   },
   // The designs print the titles, but each heading's own text is still measured, in this face.
@@ -182,14 +180,13 @@ await loadImage(resources[0].bitmap.fileId, asset(resources[0].bitmap.fileId));
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Loaded before the first build (gotcha: fonts-first). Linden Hill has no bold, Imbue no italic.
+// Loaded before the first build. Linden Hill has no bold, Imbue no italic.
 const FONTS = { 'Linden Hill': ['400', '400i'], Imbue: ['300'], 'Libre Franklin': ['400', '500'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown + notes);
 const source = `${markdown}\n\n${notes}`;
-const doc = await buildWithFonts(() => buildDocument({ markdown: source, resources }, config()),
-  source);
+const doc = await buildDocumentWithFonts({ markdown: source, resources }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Lycidas · with line numbers and notes' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

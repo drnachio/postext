@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "magazine-cover-and-contents",
-  "sourceHash": "3335c6641f8a983bf62ca556ed431504a894a32414dc3472d2238d1d8091d18d",
+  "sourceHash": "8143ba37f38c7fa6e400a117bc3918839d588f221072cb731b6a748590d054eb",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.145Z",
+  "capturedAt": "2026-10-10T13:35:13.501Z",
   "variants": {
     "en": {
-      "hash8": "c765d989",
+      "hash8": "2afd3f00",
       "vdtHash": "df0858ff3432514c448b2daceae76992cfffce7a",
       "timings": {
-        "importMs": 143,
-        "fontsMs": 71,
-        "buildMs": 398,
-        "totalMs": 1690,
-        "builds": 2
+        "importMs": 181,
+        "fontsMs": 46,
+        "buildMs": 480,
+        "totalMs": 1324,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Spectral"
         ],
         "pages": 6,
-        "ownLines": 250
+        "ownLines": 248
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 242826,
+          "bytes": 242850,
           "alt": "Opening page 1: Fallow."
         },
         {
@@ -141,13 +141,12 @@
       },
       "sandbox": {
         "file": "magazine-cover-and-contents.postext",
-        "bytes": 2084689,
+        "bytes": 2084675,
         "folio": "c6787b35"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -161,7 +160,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.referenceColor",
@@ -336,7 +334,7 @@
           "toc",
           "unorderedLists"
         ],
-        "configLeaves": 952,
+        "configLeaves": 951,
         "designElements": 49,
         "directives": [
           ":::toc",
@@ -446,14 +444,14 @@
       }
     },
     "es": {
-      "hash8": "e7ebb916",
-      "vdtHash": "878cf6b8e25dea2d54d06d1ce1ef7d332d455493",
+      "hash8": "54a4060c",
+      "vdtHash": "b04f7a030281c4a106cebe48cf11c285657299c9",
       "timings": {
-        "importMs": 148,
-        "fontsMs": 63,
-        "buildMs": 70,
-        "totalMs": 998,
-        "builds": 2
+        "importMs": 133,
+        "fontsMs": 44,
+        "buildMs": 129,
+        "totalMs": 922,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -475,7 +473,7 @@
           "Spectral"
         ],
         "pages": 6,
-        "ownLines": 250
+        "ownLines": 248
       },
       "pages": [
         {
@@ -541,7 +539,7 @@
           "h": 1304,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 148434,
+          "bytes": 148268,
           "alt": "Página de apertura 6: El pan de la trilla."
         }
       ],
@@ -577,13 +575,12 @@
       },
       "sandbox": {
         "file": "magazine-cover-and-contents.postext",
-        "bytes": 2085403,
+        "bytes": 2085390,
         "folio": "c6787b35"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -597,7 +594,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.referenceColor",
@@ -772,7 +768,7 @@
           "toc",
           "unorderedLists"
         ],
-        "configLeaves": 952,
+        "configLeaves": 951,
         "designElements": 49,
         "directives": [
           ":::toc",
@@ -869,7 +865,7 @@
         "iterationCount": 2,
         "looseLines": {
           "count": 1,
-          "share": 0.0081,
+          "share": 0.0082,
           "worst": 2.29
         },
         "findings": [
@@ -877,6 +873,11 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.35 MB (warning at 0.9 MB for 6 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

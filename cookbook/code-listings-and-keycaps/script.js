@@ -1,8 +1,10 @@
 // ═══ Postext Cookbook · Nº 048 · Code listings and keycaps ═══
 // https://postext.dev/en/cookbook/code-listings-and-keycaps
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Charis SIL, Sora, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.23.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Charis SIL, Sora, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocument, prepareFonts, withLoadedFonts, renderPageToCanvas,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'code-listings-and-keycaps';
@@ -11,7 +13,7 @@ const RECIPE = 'code-listings-and-keycaps';
 const palette = { ink: '#1b1f24', muted: '#5c636b', ember: '#9a5410', // text, heads, accent
   night: '#0e1116', code: '#d3d9df', amber: '#f2b134', phosphor: '#3ddc84', // the listings
   slate: '#8a939d' }; // comments in a listing, the outline of a key (code is its face)
-// Design elements read the hex, not the palette id (gotcha: palette-skips-designs).
+// Every colour is linked to its palette entry by id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // The engine's defaults link to 'main-color': point it at the accent, so nothing prints blue.
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.ember })
@@ -95,14 +97,13 @@ const orderedLists = { fontFamily: DISPLAY, fontWeight: 800, color: col('ember')
 const OUTER = 15; // mm: the outer margin; the running heads align to it
 const text = (id, content, family, size, look, placement) => ({ kind: 'text', id, content,
   fontFamily: family, fontSize: pt(size), color: col('ink'), placement, ...look,
-  align: 'left', overflow: 'wrap' }); // design text is centred and cut with '…' by default
+  align: 'left' }); // design text is centred by default; an opener wraps its text
 const below = (id, y, width) => ({ anchor: { to: `#${id}`, edge: 'below' },
   offset: { x: ZERO, y: mm(y) }, size: { width } });
 const opener = { enabled: true, slot: { elements: [
   text('kicker', '{attr.kicker}', MONO, 8, { fontWeight: 700, letterSpacing: pt(1.6),
     textTransform: 'uppercase', color: col('ember') },
   { anchor: { to: 'container', edge: 'top-left' }, offset: { x: ZERO, y: mm(4) } }),
-  // Design lineHeights are multiples (gotcha: design-lineheight-multiple).
   text('title', '{titleText}', DISPLAY, 33, { fontWeight: 800, lineHeight: 1.04 },
     below('kicker', 3.5, mm(118))),
   text('lead', '{attr.lead}', TEXT, 12, { italic: true, lineHeight: 1.36 },
@@ -115,8 +116,8 @@ const head = (id, content, parity, edge, x, extra = {}) => ({
 });
 const folio = { fontWeight: 700, color: col('ember') };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // the hyphenation patterns of each edition
   colorPalette, chipStyles, orderedLists, paragraphStyles: [resume],
   calloutStyles: [sheet, aside, colophon], codeStyle,
   // #region page: a text column and a margin column that only listings and notes enter
@@ -128,11 +129,9 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   bodyText: { ...spacing, // keycaps
     fontFamily: TEXT, fontSize: pt(10), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
-    firstLineIndent: mm(4.5), indentAfterHeading: false,
-    maxRuntTracking: 0, // tracking it cannot paint (gotcha: runt-tracking-unpainted)
-  },
+    firstLineIndent: mm(4.5), indentAfterHeading: false },
   headings: { fontFamily: DISPLAY, color: col('ink'), fontWeight: 800, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // parity 'odd': the next recto; the default 'always-odd' also leaves a blank page before it.
     { level: 1, breakBefore: { enabled: true, parity: 'odd' }, advancedDesign: opener },
     { level: 2, fontSize: pt(13), lineHeight: pt(LEAD), marginTop: pt(LEAD), marginBottom: ZERO },
   ] },
@@ -156,9 +155,9 @@ const FONTS = { 'Charis SIL': ['400', '400i'], Sora: ['400', '700', '800'],
   'JetBrains Mono': ['400', '400i', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
+await prepareFonts(markdown, config(), kitFonts(FONTS));
 const build = () => buildDocument({ markdown, continuation }, config());
-const doc = await buildWithFonts(build, markdown);
+const doc = await withLoadedFonts(build, { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'The Shell, Gently', es: 'La terminal, con calma' }) });
 
 // @kit core fonts viewer · the Cookbook inlines cookbook/_kit/*.js here

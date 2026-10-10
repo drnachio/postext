@@ -48,8 +48,6 @@ The planes and the limes keep their blocks cool all afternoon; the Parade stays 
 :::
 :::
 
-:::space{lines=0.33}
-
 ::resource{id="heat"}
 
 At 15:00 the paving (:ref{id="bars"}) was 48.4 °C on the Parade and 33.4 °C under the densest crowns.

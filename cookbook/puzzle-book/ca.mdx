@@ -22,40 +22,37 @@ El codi és [la resposta curta](#la-resposta-curta) de dalt. `tableStyle` posa t
 
 <Excerpt region="crossword" />
 
-Cada casella blanca porta dues línies de Chivo Mono de 8,9 pt (el número de la definició i una línia buida) dins d'1 pt de farciment interior, 26,7 pt en total: 9,41 mm, un novè de l'amplada de la taula. Nou caselles mesuren 84,7 mm, el mateix que quinze línies de 16 pt del text principal, i el requadre de les definicions comença a la retícula de base una línia més avall. Una casella porta número, en ordre de lectura, quan hi comença una paraula horitzontal o vertical. El número és un superíndex en negreta de 5,2 pt (el 58 % de 8,9 pt) pujat 3 pt (un terç de 8,9 pt), i això el col·loca a la cantonada superior de la casella. La línia buida és un caràcter d'unió de paraules (U+2060). Amb un espai de no separació al seu lloc, la 1.4.1 descarta aquesta línia i la graella es queda en 45,5 mm d'alçada. Una casella negra és una cel·la buida amb `background` propi, vinculat a `ink`.
+Cada casella blanca porta dues línies de Chivo Mono de 8,9 pt (el número de la definició i una línia buida) dins d'1 pt de farciment interior, 26,7 pt en total: 9,41 mm, un novè de l'amplada de la taula. Nou caselles mesuren 84,7 mm, el mateix que quinze línies de 16 pt del text principal, i el requadre de les definicions comença a la retícula de base una línia més avall. Una casella porta número, en ordre de lectura, quan hi comença una paraula horitzontal o vertical. El número és un superíndex en negreta de 5,2 pt (el 58 % de 8,9 pt) pujat 3 pt (un terç de 8,9 pt), i això el col·loca a la cantonada superior de la casella. La línia buida és un caràcter d'unió de paraules (U+2060). Una línia que es deixa buida no suma alçada a la cel·la, i la graella es quedaria en 45,5 mm d'alçada. Una casella negra és una cel·la buida amb `background` propi, vinculat a `ink`.
 
 ### 3 · El codi cerca les paraules a la graella
 
 <Excerpt region="search" />
 
-La graella són dotze línies de majúscules en el seu propi fitxer de contingut, després de la llista de paraules que cal cercar. `locate()` cerca cada paraula en les vuit direccions i llança un error si no hi apareix exactament una vegada, de manera que una errata a la graella o a la llista atura la composició abans que s'imprimeixi una paraula que ningú no podrà trobar. `setCellBackground` retorna un model de taula nou amb una casella més emplenada. L'emplenament va vinculat a una entrada de la paleta i tapa la tessel·la de l'estil: corall per a SOMBRILLA a la pàgina 3, menta per a les deu paraules a la pàgina 5. A la 1.4.1 els estils de taula amb nom no tenen cap opció per alternar el fons de les files, així que la primera variant crida `setCellBackground` a totes les cel·les d'una fila sí i una altra no. El banc de paraules damunt de la graella són dues files centrades de xips: el de SOMBRILLA va emplenat de corall, com les seves caselles, i els altres nou són blancs amb vora blau marí.
+La graella són dotze línies de majúscules en el seu propi fitxer de contingut, després de la llista de paraules que cal cercar. `locate()` cerca cada paraula en les vuit direccions i llança un error si no hi apareix exactament una vegada, de manera que una errata a la graella o a la llista atura la composició abans que s'imprimeixi una paraula que ningú no podrà trobar. `setCellBackground` retorna un model de taula nou amb una casella més emplenada. L'emplenament va vinculat a una entrada de la paleta i tapa la tessel·la de l'estil: corall per a SOMBRILLA a la pàgina 3, menta per a les deu paraules a la pàgina 5. La primera variant alterna el fons de les files des de l'estil de taula (`bodyAlternateBackground`), i l'emplenament propi d'una cel·la tapa aquesta franja. El banc de paraules damunt de la graella són dues files centrades de xips: el de SOMBRILLA va emplenat de corall, com les seves caselles, i els altres nou són blancs amb vora blau marí.
 
 ### 4 · Una obertura, quatre colors
 
 <Excerpt region="openers" />
 
-Les pàgines de la 2 a la 5 comparteixen el mateix disseny. Un camp de color baixa 40 mm des de la vora superior i acaba en un peu ondulat dibuixat amb el color del paper; l'avanttítol, el títol i el tema, a la seva píndola blanca, surten de la línia del títol i dels seus atributs. El camp i el disc del foli estan vinculats a l'entrada `band` de la paleta, i l'estil de títol de cada pàgina li dona el seu propi valor, de manera que `# Sopa de letras {style="sopa"}` els torna menta a la pàgina 3. El nivell 1 porta `span: 'page'` tot i que el quadern té una sola columna: la 1.4.1 retalla pel marge superior de 16 mm un disseny que es queda a la columna, i això tallaria la part de dalt del camp i l'avanttítol. La caixa del camp compta en l'alçada que reserva l'obertura, de manera que el text comença a la línia següent de la retícula de base, a 44,2 mm de la vora superior i 4 mm per sota de les onades.
+Les pàgines de la 2 a la 5 comparteixen el mateix disseny. Un camp de color baixa 40 mm des de la vora superior i acaba en un peu ondulat dibuixat amb el color del paper; l'avanttítol, el títol i el tema, a la seva píndola blanca, surten de la línia del títol i dels seus atributs. El camp i el disc del foli estan vinculats a l'entrada `band` de la paleta, i l'estil de títol de cada pàgina li dona el seu propi valor, de manera que `# Sopa de letras {style="sopa"}` els torna menta a la pàgina 3. El nivell 1 porta `span: 'page'` tot i que el quadern té una sola columna: un disseny que es queda a la seva columna es talla al peu de la columna, i el dibuix de la coberta s'acabaria 16 mm abans de la vora inferior. La caixa del camp compta en l'alçada que reserva l'obertura, de manera que el text comença a la línia següent de la retícula de base, a 44,2 mm de la vora superior i 4 mm per sota de les onades.
 
 ### 5 · Les solucions surten de les mateixes dades
 
 <Excerpt region="answers" />
 
-La pàgina de solucions torna a cridar `crossword()` amb `solved` i `wordSearch()` amb les deu paraules, sobre els mateixos fitxers de contingut que els passatemps, de manera que si canvies una graella també en canvia la solució. Els passatemps i els dibuixos són del tipus Plain, el `captionPrefix` buit del qual no imprimeix peu en un recurs sense text de peu. Les solucions són del tipus Solució, numerades de l'1 al 3 en ordre de lectura perquè coincideixin amb els avanttítols, de Passatemps 1 a Passatemps 3. Van en un requadre sense fons ni vora que conté `:::columns{count=3 breaks="2,3"}`, on `breaks` obre una columna nova a la segona i a la tercera solució; cadascuna mesura 54 mm d'amplada en una columna de 55,3 mm. El requadre Sabies que…? fa el mateix amb `breaks="2"` per posar el dibuix del niu al costat del seu paràgraf.
+La pàgina de solucions torna a cridar `crossword()` amb `solved` i `wordSearch()` amb les deu paraules, sobre els mateixos fitxers de contingut que els passatemps, de manera que si canvies una graella també en canvia la solució. Els passatemps i els dibuixos són del tipus Plain, el `captionPrefix` buit del qual no imprimeix peu en un recurs sense text de peu. Les solucions són del tipus Solució, numerades de l'1 al 3 en ordre de lectura perquè coincideixin amb els avanttítols, de Passatemps 1 a Passatemps 3. Van en un grup `:::columns{count=3 breaks="2,3" gap=6mm}` al text, sense cap requadre al voltant (postext 1.25): `breaks` obre una columna nova a la segona i a la tercera solució, i `gap` separa les columnes 6 mm; cada solució mesura 54 mm d'amplada en una columna de 55,3 mm. El requadre Sabies que…? conté un grup propi, amb `breaks="2"`, per posar el dibuix del niu al costat del seu paràgraf.
 
 ## Variants
 
 ### Alterna el fons de les files de la sopa de lletres
 
-Un groc més intens en una fila sí i una altra no ajuda un lector petit a seguir la fila, i com que les paraules s'emplenen després, SOMBRILLA continua en corall i la solució conserva les seves paraules en menta.
+Un groc més intens en una fila sí i una altra no ajuda un lector petit a seguir la fila. L'emplenament propi d'una cel·la tapa la franja, així que SOMBRILLA continua en corall; la solució té el seu propi estil i no porta franges.
 
 ```diff
-   let model = { rows: letters.map((line) => [...line].map((content) => ({ content,
-     align: 'center' }))) };
-+  const stripe = { hex: '#ffdd80', model: 'hex' }; // a shade deeper than the tiles
-+  letters.forEach((line, r) => r % 2 && [...line].forEach((_, c) => {
-+    model = setCellBackground(model, { row: r, col: c }, stripe);
-+  }));
-   for (const [word, fill] of fills) {
+     bodyBackgroundEnabled: true, bodyBackground: col('tint'), // tiles with white joints
++    bodyAlternateBackgroundEnabled: true, // a shade deeper than the tiles on every other row
++    bodyAlternateBackground: { hex: '#ffdd80', model: 'hex' },
+     borderColor: col('paper'), borderWidth: pt(2.4), borderRadius: mm(4) },
 ```
 
 ### Dibuixa un laberint més difícil
@@ -70,4 +67,4 @@ Amb 21 per 11 caselles en la mateixa amplada, cadascuna mesura 8,4 mm, i la solu
 ## Errors freqüents
 
 - Els números de les definicions del requadre s'escriuen a mà al fitxer de contingut, i els de la graella es calculen. Després de canviar una graella, repassa-hi les definicions, perquè el codi no les compara.
-- La paleta d'un estil de títol canvia el color dels elements de disseny, del text i dels filets de les taules, però no el de l'interior d'un SVG, així que les onades del peu de cada camp es dibuixen amb el color del paper i un sol dibuix serveix per als quatre camps. A la 1.4.1 tampoc no arriba als emplenaments de les taules: una casella dels mots encreuats vinculada a `band` continuaria en blau mar a la pàgina groga de solucions.
+- La paleta d'un estil de títol canvia el color dels elements de disseny, del text i dels filets i els emplenaments de les taules, però no el de l'interior d'un SVG, així que les onades del peu de cada camp es dibuixen amb el color del paper i un sol dibuix serveix per als quatre camps.

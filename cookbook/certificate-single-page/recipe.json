@@ -44,15 +44,8 @@
   "gotchas": [
     "opener-reserves-anchored",
     "header-paints-over-text",
-    "headings-drop-h1-break",
     "attr-values",
-    "design-lineheight-multiple",
-    "ragged-runts",
-    "svg-no-webfonts",
-    "svg-no-marker-filters",
-    "pdf-provider-all-styles",
-    "config-cache-identity",
-    "fonts-first"
+    "svg-no-marker-filters"
   ],
   "explainsWarnings": [],
   "related": [
@@ -61,46 +54,10 @@
     "pdf-with-embedded-fonts",
     "print-ready-pdf"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-18",
-      "package": "postext",
-      "note": "the seal, the signature lines, the names and the imprint live in the style's footer, not its opener: page-anchored rules and texts in an opener count towards the height it reserves (gotcha opener-reserves-anchored)"
-    },
-    {
-      "followup": "EF-91",
-      "package": "postext",
-      "note": "the signature block reaches below the text area (it starts where the style's bottom margin ends it), and an opener design that does so loses its whole reservation, minHeight included, with no warning: moved into the opener, it makes the citation start 7.6 mm under the top margin, on top of the title; in the footer it reserves nothing"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "a headings object drops the H1 page break, so level 1 states breakBefore with parity 'any' (one page per student, no blank backs) and the certificate style inherits it"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "design text lineHeight is given as multiples of the size (1 for the title, 1.25 for the name): a pt() value silently drops the opener's reserved height in 1.4.1 (gotcha design-lineheight-multiple)"
-    },
-    {
-      "followup": "EF-153",
-      "package": "postext",
-      "note": "a centred design text with letterSpacing is measured with the tracking after its last letter, so it sits half a letter space left of centre, and a right-set one ends a space short: space() moves the three tracked title lines and the roles right by half their tracking (0.2 to 0.7 mm) and the serial number by the whole of it"
-    },
-    {
-      "followup": "EF-147",
-      "package": "postext",
-      "note": "the citation is centred, so its lines are broken one at a time with no runt check (gotcha ragged-runts): the wording was fitted by hand in both editions so that no last line is a runt, no line ends on a one-letter word or a hard hyphen, and the course title stays on one line"
-    },
-    {
-      "followup": "EF-20",
-      "package": "postext-pdf",
-      "note": "besides the four faces the pages print, the PDF asks for Rosarivo 700 and 700 italic, which Fontsource does not ship: the kit's fontsourceProvider snaps each request to the nearest weight and style the family has (gotcha pdf-provider-all-styles)"
-    }
-  ],
+  "workarounds": [],
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -163,5 +120,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

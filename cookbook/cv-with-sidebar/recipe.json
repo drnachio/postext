@@ -32,54 +32,22 @@
     "side-boxes-line-apart",
     "space-dropped-box-top",
     "header-paints-over-text",
-    "nested-callout-limits",
-    "palette-skips-designs",
-    "design-lineheight-multiple",
-    "ragged-no-hyphenation",
-    "ragged-runts",
-    "fonts-first",
-    "headings-drop-h1-break"
+    "nested-callout-limits"
   ],
   "explainsWarnings": [],
   "related": ["textbook-margin-column", "side-heads-hanging-numbers", "research-poster", "worksheet-answer-boxes"],
   "workarounds": [
     {
-      "followup": "EF-18",
       "package": "postext",
-      "note": "the band is painted by header boxes in the margins, not by a box in the name's design: in 1.4.1 a page-anchored box that ends just above the column's foot makes the H1 reserve 265 mm, past the foot, so the whole text column moves to page 2, and one that runs on to the trim drops the H1's reserved height, so the profile rises from 45.9 to 30.3 mm and runs over the role"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 states breakBefore: { enabled: false }: 1.4.1 already drops the H1 break once a headings object exists, and the explicit value keeps the name and the text column on page 1, beside the sidebar box, once the default always-odd break comes back (gotcha headings-drop-h1-break)"
+      "note": "the band is painted by header boxes in the margins, not by a box in the name's design: the heading reserves a box's height, so one as tall as the band sends the text column to page 2, and with reserve: false it would still be cut at the column's foot, short of the bottom margin"
     },
     {
       "followup": "EF-04",
       "package": "postext",
-      "note": "the :::space that runs the band down to the foot is the last child of the sidebar box, after the sections: at the top of a box 1.4.1 drops it (gotcha space-dropped-box-top)"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes each colour's hex beside its paletteId, because 1.4.1 does not apply colorPalette to design elements: the band boxes in the header, the name, the role, the section and job heads (gotcha palette-skips-designs)"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "every design text sets lineHeight as a multiple of its size (1 for the name, 20 / 14 for the section heads, LEAD / JOB for the job heads): a pt() value would drop the heading's reserved height (gotcha design-lineheight-multiple)"
-    },
-    {
-      "followup": "EF-21",
-      "package": "postext",
-      "note": "the text is ragged, in the column and in the sidebar, and so never hyphenated: the recipe sets no locale and claims no hyphenation, and the lines are fitted by rewording (gotcha ragged-no-hyphenation)"
-    },
-    {
-      "followup": "EF-147",
-      "package": "postext",
-      "note": "ragged paragraphs get no runt control in 1.4.1, so the profile, the bullets and the sidebar entries were reworded in both editions until none ends on a lone short word (gotcha ragged-runts)"
+      "note": "the :::space that runs the band down to the foot is the last child of the sidebar box, after the sections: at the top of an untitled box that has other content a :::space is dropped (gotcha space-dropped-box-top)"
     }
   ],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -114,5 +82,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

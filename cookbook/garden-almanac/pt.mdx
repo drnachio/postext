@@ -16,7 +16,7 @@ As páginas de março de um almanaque de horta escrito em italiano. A página 27
 
 ### 1 · Gire a tabela e deixe que ela continue
 
-O código está na [resposta curta](#a-resposta-curta), mais acima. `rotate: 'ccw'` faz da tabela uma flutuante com span de página, em páginas próprias ([Posição](/pt/docs/document-format#posicionamento)), com o cabeçalho voltado para a borda esquerda da página, e ela fica encostada na lombada tanto na página ímpar quanto na par. Ela é diagramada ao longo da altura da mancha, 227 dos seus 237 mm: as 47 linhas inteiras da grade de 14 pt que cabem, menos uma linha para o espaço da flutuante. As linhas da tabela se empilham na largura de 176 mm e, quando passam dela, a tabela é cortada entre duas linhas e continua na página seguinte sob as suas duas linhas de cabeçalho e a legenda, que termina em `(segue)` ([Tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)). Só uma flutuante pode girar ou se dividir: com `position: 'here'` a rotação é ignorada e a tabela nunca se divide. O cabeçalho tem três tipos de células mescladas: `Coltura` ocupa as duas linhas de cabeçalho, cada estação fica sobre os seus meses e cada mês sobre as suas duas quinzenas.
+O código está na [resposta curta](#a-resposta-curta), mais acima. `rotate: 'ccw'` faz da tabela uma flutuante com span de página, em páginas próprias ([Posição](/pt/docs/document-format#posicionamento)), com o cabeçalho voltado para a borda esquerda da página, e ela fica encostada na lombada tanto na página ímpar quanto na par. Ela é diagramada ao longo da altura da mancha, 227 dos seus 237 mm: as 47 linhas inteiras da grade de 14 pt que cabem, menos uma linha para o espaço da flutuante. As linhas da tabela se empilham na largura de 176 mm e, quando passam dela, a tabela é cortada entre duas linhas e continua na página seguinte sob as suas duas linhas de cabeçalho e a legenda, que termina em `(segue)` ([Tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)). Só uma flutuante pode girar: com `position: 'here'` a rotação é ignorada, e a tabela se dividiria sem girar, entre linhas, onde a coluna termina. O cabeçalho tem três tipos de células mescladas: `Coltura` ocupa as duas linhas de cabeçalho, cada estação fica sobre os seus meses e cada mês sobre as suas duas quinzenas.
 
 ### 2 · Um calendário calculado a partir de datas
 
@@ -28,25 +28,25 @@ Os números de dia de `Date.UTC` dão a cada data o seu dia da semana, e a grade
 
 <Excerpt region="matrix" />
 
-Os pares são digitados como TSV, um símbolo por célula. No postext 1.4.1, `parseTSV` cria células simples e deixa `headerRowCount` sem valor, então `headerRowCount: 1` é acrescentado à mão para que a linha com os nomes das culturas seja o cabeçalho. Os pesos de `columnWidths` são milímetros da medida de 176 mm: 26 para os nomes, 15 para cada cultura. Cada símbolo nomeia uma entrada da paleta, que `setCellBackground` põe como preenchimento da célula; o `+` e o `−` também são impressos, num chip a 1,4 em, para que a matriz continue legível numa cópia em tons de cinza. A diagonal junta cada cultura com ela mesma, e ali `setCellImage` põe o desenho da cultura, a 62 % da largura interna da célula.
+Os pares são digitados como TSV, um símbolo por célula. `parseTSV(tsv, { headerRows: 1 })` faz da linha com os nomes das culturas o cabeçalho. Os pesos de `columnWidths` são milímetros da medida de 176 mm: 26 para os nomes, 15 para cada cultura. Cada símbolo nomeia uma entrada da paleta, que `setCellBackground` põe como preenchimento da célula; o `+` e o `−` também são impressos, num chip a 1,4 em, para que a matriz continue legível numa cópia em tons de cinza. A diagonal junta cada cultura com ela mesma, e ali `setCellImage` põe o desenho da cultura, a 62 % da largura interna da célula.
 
 ### 4 · Faça a legenda das cores com amostras
 
 <Excerpt region="resources" />
 
-`:swatch{color="leaf"}` compõe um quadrado de três quartos do corpo, preenchido com uma entrada da paleta e contornado na cor do texto; estas páginas o usam no texto corrido, em duas legendas e numa nota. A chave de cores da tabela de semeadura vai na legenda, porque cada parte de uma tabela dividida repete a legenda, e a nota sai só embaixo da última parte. O calendário é um tipo de recurso próprio com prefixo de legenda vazio, e a legenda dele começa pela chave de cores em vez de um rótulo `Tabella`. `position: 'bottom'` com `span: 'page'` põe o calendário e a matriz na largura das duas colunas, no pé das suas páginas. A página 28 é a última página de texto. Numa página assim, a 1.4.1 sobe uma flutuante de largura total até uma linha abaixo do texto, por isso a matriz termina 10 mm acima da margem inferior.
+`:swatch{color="leaf"}` compõe um quadrado de três quartos do corpo, preenchido com uma entrada da paleta e contornado na cor do texto; estas páginas o usam no texto corrido, em duas legendas e numa nota. A chave de cores da tabela de semeadura vai na legenda, porque cada parte de uma tabela dividida repete a legenda, e a nota sai só embaixo da última parte. O calendário é um tipo de recurso próprio com prefixo de legenda vazio, e a legenda dele começa pela chave de cores em vez de um rótulo `Tabella`. `position: 'bottom'` com `span: 'page'` põe o calendário e a matriz na largura das duas colunas, no pé das suas páginas. A página 28 é a última página de texto. Na última página de um capítulo, uma flutuante de largura total sobe até uma linha abaixo do texto, por isso a matriz termina 10 mm acima da margem inferior; com `layout.hugClosingFloats: false` ela ficaria no pé da página.
 
 ### 5 · Um estilo da casa e uma variante por tabela
 
 <Excerpt region="styles" />
 
-`tableStyle` define o estilo da casa: um cabeçalho cor de tinta com rótulos cor de papel em Commissioner, fios finos entre as linhas e os textos de continuação em italiano, que a 1.4.1 só traz em inglês e espanhol. Cada estilo nomeado declara só o que a sua tabela muda. O calendário compõe os dias em Gilda Display a 15 pt; a matriz tira o preenchimento do cabeçalho; a matriz e a tabela de semeadura desenham fios de grade na cor do papel, com 2 pt e 1 pt, que cortam os preenchimentos em casas.
+`tableStyle` define o estilo da casa: um cabeçalho cor de tinta com rótulos cor de papel em Commissioner, fios finos entre as linhas e a linha que fecha cada parte de uma tabela dividida. Um documento em italiano fecha a parte com `Continua` e acrescenta `(segue)` à legenda da parte seguinte; o almanaque escreve a primeira por extenso, `Continua alla pagina seguente`. Cada estilo nomeado declara só o que a sua tabela muda. O calendário compõe os dias em Gilda Display a 15 pt; a matriz tira o preenchimento do cabeçalho; a matriz e a tabela de semeadura desenham fios de grade na cor do papel, com 2 pt e 1 pt, que cortam os preenchimentos em casas.
 
 ### 6 · O mês abre com uma pintura
 
 <Excerpt region="opener" />
 
-O título de nível 1 é desenhado a partir de um encaixe de elementos. A aquarela é um elemento de imagem no alto da página, e o chapéu, o provérbio e a fonte dele vêm dos atributos do título. Na 1.4.1 um elemento de imagem não reserva altura, e `minHeight` compensa isso: 92 mm de pintura mais 5 mm de respiro, menos os 22 mm da margem superior, dão 75 mm, que se arredondam para cima em 16 linhas de 14 pt (79 mm). A primeira linha de texto fica a 101 mm do alto da página, 9 mm abaixo da terra. O título se desloca 1,5 mm para a esquerda, o espaço lateral do M da Gilda Display a 84 pt, e a serifa do M se alinha com o chapéu; o provérbio volta a mesma medida.
+O título de nível 1 é desenhado a partir de um encaixe de elementos. A aquarela é um elemento de imagem no alto da página, e o chapéu, o provérbio e a fonte dele vêm dos atributos do título. A abertura reserva até o pé da pintura, e `minHeight` é um mínimo um pouco mais baixo: 92 mm de pintura mais 5 mm de respiro, menos os 22 mm da margem superior, dão 75 mm, que se arredondam para cima em 16 linhas de 14 pt (79 mm). A primeira linha de texto fica a 101 mm do alto da página, 9 mm abaixo da terra. O título se desloca 1,5 mm para a esquerda, o espaço lateral do M da Gilda Display a 84 pt, e a serifa do M se alinha com o chapéu; o provérbio volta a mesma medida.
 
 ## Variações
 
@@ -55,8 +55,8 @@ O título de nível 1 é desenhado a partir de um encaixe de elementos. A aquare
 O cabeçalho passa a ficar voltado para a borda direita da página, e o leitor gira o livro para o outro lado.
 
 ```diff
--const chartPlacement = { rotate: 'ccw' }; // a float, never 'here' (gotcha: here-table-no-split)
-+const chartPlacement = { rotate: 'cw' }; // a float, never 'here' (gotcha: here-table-no-split)
+-const chartPlacement = { rotate: 'ccw' }; // a float: 'here' ignores the turn
++const chartPlacement = { rotate: 'cw' }; // a float: 'here' ignores the turn
 ```
 
 ## Erros comuns

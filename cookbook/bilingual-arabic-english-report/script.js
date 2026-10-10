@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 106 · A bilingual Arabic–English report ═══════════════════
 // https://postext.dev/en/cookbook/bilingual-arabic-english-report
 // Code: MIT · Text: original Arabic, English and Spanish prose (CC BY 4.0) · Pictures: none
-// Fonts: IBM Plex Sans Arabic, IBM Plex Sans (SIL OFL 1.1) · Needs postext ≥ 1.15.0
+// Fonts: IBM Plex Sans Arabic, IBM Plex Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
+  buildDocument, withLoadedFonts, renderPageToCanvas, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -100,14 +100,14 @@ const band = { enabled: true, minHeight: mm(70), slot: { elements: [
 ] } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag)
   colorPalette, bodyText, resourceTypes,
   page: { width: mm(210), height: mm(280), dpi: 150,
     margins: { top: mm(22), bottom: mm(22), left: mm(SIDE), right: mm(SIDE), mirror: true } },
   layout: { layoutType: 'single' },
   headings: { fontFamily: ARABIC, fontWeight: 700, color: col('teal'), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // The report starts on the page it reaches, left or right, with no blank page before it.
     { level: 1, breakBefore: { enabled: true, parity: 'any' }, marginTop: pt(0),
       marginBottom: pt(0), advancedDesign: band },
     { level: 2, fontSize: pt(17), lineHeight: pt(26), marginTop: pt(LEAD), marginBottom: pt(0) },
@@ -135,16 +135,17 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md: the Arabic, with English or Spanish
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'IBM Plex Sans Arabic': ['400', '600', '700'], // ARABIC: text, headings, tables, folios
-  'IBM Plex Sans': ['300', '400', '400i', '600'], // LATIN: the second language, its table
+  'IBM Plex Sans': ['300', '400', '400i', '600', '700'], // LATIN: the second language, its table
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadFonts(FONTS, markdown);
 // Each Arabic face's letters live in a file of their own (gotcha: arabic-fonts-subset).
 await loadArabicFonts(FONTS, markdown + JSON.stringify(resources));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A bilingual Arabic–English report',
   es: 'Un informe bilingüe árabe-español' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: arabicPdfProvider }), `${RECIPE}.pdf`);

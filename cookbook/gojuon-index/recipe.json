@@ -46,9 +46,7 @@
     "ja-locale-tag",
     "ja-fonts-kana",
     "cjk-fonts-slices",
-    "cjk-no-italic",
-    "headings-drop-h1-break",
-    "fonts-first"
+    "cjk-no-italic"
   ],
   "explainsWarnings": [
     "indexReadingMissing"
@@ -59,8 +57,8 @@
     "names-and-subjects-indexes"
   ],
   "engine": {
-    "postext": "1.16.1",
-    "postextPdf": "1.16.1"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -135,5 +133,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-05",
-  "updated": "2026-10-05"
+  "updated": "2026-10-10"
 }

@@ -16,19 +16,19 @@ The last seven pages of a doctoral thesis on reading from screens and paper, set
 
 ### 1 · Give each part of the back matter a heading style
 
-The code is [the short answer](#the-short-answer) above. `# Glossary {style="glossary" note="…"}` opens a section that runs to the next level-1 heading, and its pages take the style's layout, running heads and opener ([heading styles](/en/docs/configuration#heading-styles)), so the glossary and the index switch to two columns while the references, whose style sets no layout, fall back to the document's single column. `numbered: false` keeps these headings out of the chapter count (delete it and the glossary's band prints 8), and each style names its page break, because one that names none inherits the chapter's `'odd'` and leaves blank versos. The glossary and reference entries are paragraphs of a `:::paragraphs{style="…"}` block at 9.3 pt on 12.4 pt, against the text's 11 on 14.6, with turnover lines that hang 1 em in the glossary and 1.5 em in the references ([paragraph styles](/en/docs/configuration#paragraph-styles)).
+The code is [the short answer](#the-short-answer) above. `# Glossary {style="glossary" note="…"}` opens a section that runs to the next level-1 heading, and its pages take the style's layout, running heads and opener ([heading styles](/en/docs/configuration#heading-styles)), so the glossary and the index switch to two columns while the references, whose style sets no layout, fall back to the document's single column. `numbered: false` keeps these headings out of the chapter count (delete it and the glossary's band prints 2), and each style names its page break, because one that names none inherits the chapter's `'odd'` and leaves blank versos. The glossary and reference entries are paragraphs of a `:::paragraphs{style="…"}` block at 9.3 pt on 12.4 pt, against the text's 11 on 14.6, with turnover lines that hang 1 em in the glossary and 1.5 em in the references ([paragraph styles](/en/docs/configuration#paragraph-styles)).
 
 ### 2 · Draw one band for every opener
 
 <Excerpt region="opener" />
 
-The mark is `{number}`, empty on an unnumbered heading, so one design serves the chapter, the appendix, which passes `{attr.letter}` as its mark, and the back-matter sections, which print their `{attr.note}` where the numeral would stand. `minHeight` reserves eight lines of 14.6 pt, 41.2 mm from the top of the text block, which clears the band by 3.2 mm and keeps the text on its grid. Design text sets its baseline at 0.8 of the line, so a bottom-aligned box whose foot sits `below()` under a baseline puts its last line on that baseline. The title, the 118 pt numeral and the last line of the note all stand on the title's baseline, 52.5 mm below the trim. The numeral's line is 0.72 of its size, because in 1.4.1 a line taller than its box ignores `verticalAlign: 'bottom'`.
+The mark is `{number}`: 6 on the chapter, A on the appendix and nothing on an unnumbered heading. One design serves all three, and the back-matter sections print their `{attr.note}` where the numeral would stand. `minHeight` reserves eight lines of 14.6 pt, 41.2 mm from the top of the text block, which clears the band by 3.2 mm and keeps the text on its grid. Design text sets its baseline at 0.8 of the line, so a bottom-aligned box whose foot sits `below()` under a baseline puts its last line on that baseline. The title, the 118 pt numeral and the last line of the note all stand on the title's baseline, 52.5 mm below the trim. The numeral's line is 0.72 of its size, so the line fits inside its box.
 
-### 3 · Letter the appendix by hand
+### 3 · Letter the appendix from its style
 
 <Excerpt region="appendix" />
 
-In postext 1.4.1 a heading style cannot change its level's numbering, so the appendix is unnumbered and `# Interview guide {style="appendix" letter="A"}` carries the letter. The attribute feeds the band and the appendix's running head, and a resource type of its own numbers its tables A.1, A.2 and so on; with the default type the table would be Table 6.2, since an unnumbered heading leaves the chapter counter at 6. The chapter's own headings count from the level templates: `'{1}.{2}'` prints 6.1, and `continuation.headings.h1: 5` makes this the sixth chapter.
+The appendix style sets `numberingTemplate: '{1:A}'`, which prints the level's counter as a letter, and `# Interview guide {style="appendix" startAt=1}` restarts that counter, so the first appendix is A and not G ([heading styles](/en/docs/configuration#heading-styles)). The band reads the letter through `{number}` and the running head through `{chapterNumber}`. A resource type's `{h1}` prints the counter as a number, so a type of its own numbers the appendix's tables A.1, A.2 and so on; with the default type the table would be Table 1.1. The chapter's own headings count from the level templates: `'{1}.{2}'` prints 6.1, and `continuation.headings.h1: 5` makes this the sixth chapter.
 
 ### 4 · Put the running heads on the outer edge
 
@@ -46,9 +46,9 @@ The four text elements are anchored to the page and filtered by `parity`, which 
 
 <Excerpt region="palette" />
 
-The engine's defaults for bold, italic and list markers follow the palette entry `main-color`, so pointing it at the ink prints them black instead of blue ([color palette](/en/docs/configuration#color-palette)). The palette does not reach `bodyText.referenceColor` in 1.4.1, so the config restates it: without that line, *Table 6.1* in the text prints in #295AA3 blue. `referenceBold: false` sets the reference in roman, like the author–year citations around it.
+The engine's defaults for bold, italic, list markers and references follow the palette entry `main-color`, so pointing it at the ink prints them black instead of blue ([color palette](/en/docs/configuration#color-palette)). `referenceBold: false` sets *Table 6.1* in roman, like the author–year citations around it.
 
-<Note>Three things stay manual: a list of tables, a cross-reference to a page of text (*see p. 172*) and, in 1.4.1, a lettered counter for appendices. In a whole thesis laid out chapter by chapter with `buildBundle`, the chapter that holds `:::index` receives the marks of every chapter.</Note>
+<Note>A list of tables stays manual. In a whole thesis laid out chapter by chapter with `buildBundle`, the chapter that holds `:::index` receives the marks of every chapter.</Note>
 
 ## Variations
 

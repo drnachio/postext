@@ -32,7 +32,7 @@ La valla es un [bloque de código](/es/docs/document-format#bloques-de-código):
 
 <Excerpt region="resources" />
 
-`defaultResourceTypes('ja')` llama a los tipos 図 y 表 y los numera por capítulo con un guion, y `continuation.headings` hace de este el capítulo 3, así que la primera figura es 図3-1. Un documento `ja` junta rótulo y número y pone un espacio ideográfico tras el número, como imprimen los libros japoneses 図3-1　「が」の二つの表し方, así que el estilo de pie solo elige la letra y los colores. La tabla va en `'here'`, debajo del párrafo que la cita. Los rótulos de la figura son solo latinos, U+304C y E3 81 8C, dibujados con el archivo latin de la letra de código incrustado en el SVG.
+`defaultResourceTypes('ja')` llama a los tipos 図 y 表 y los numera por capítulo con un guion, y `continuation.headings` hace de este el capítulo 3, así que la primera figura es 図3-1. Un documento `ja` junta rótulo y número y pone un espacio ideográfico tras el número, como imprimen los libros japoneses 図3-1　「が」の二つの表し方, así que el estilo de pie solo elige la letra y los colores. La tabla va en `'here'`, debajo del párrafo que la cita. Los rótulos de la figura son solo latinos, U+304C y E3 81 8C: el SVG nombra la letra de código en su estilo y `loadSvg` incrusta el archivo de la fuente antes de dibujar la imagen.
 
 ### 4 · Notas por página, a la japonesa
 

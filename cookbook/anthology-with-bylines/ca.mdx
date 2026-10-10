@@ -24,7 +24,7 @@ El `numberingTemplate: '{1:I}'` del nivell numera els assaigs I, II i III, i `{n
 
 <Excerpt region="contents" />
 
-`:::toc` al Markdown imprimeix una entrada per cada títol inclòs, amb el número, el text del títol, la línia de punts, l'etiqueta de la pàgina i, gràcies a `subtitle`, l'autor. `buildDocument` torna a compondre el llibre fins que les etiquetes de pàgina deixen de canviar, de manera que, si un assaig canvia de títol o d'extensió, l'índex s'actualitza ([índex de continguts](/ca/docs/configuration#índex-de-continguts)). Postext 1.4.1 col·loca el centre del número de cada entrada 0,3 vegades el cos de l'entrada per sobre de la línia de base, i Chrome situa el centre de Gloock 0,3125 em per sobre de la seva, així que un numeral de 0,3 × 15 ÷ 0,3125 = 14,4 pt s'assenta a la línia de base del títol de 15 pt; un de 12 pt queda 0,3 mm més amunt. Un llibre amb parts hi afegeix, a més, una fila per cada `:::part`, amb el disseny de `toc.parts.design`, com a <RecipeLink slug="parts-in-colour">Parts en color</RecipeLink>.
+`:::toc` al Markdown imprimeix una entrada per cada títol inclòs, amb el número, el text del títol, la línia de punts, l'etiqueta de la pàgina i, gràcies a `subtitle`, l'autor. `buildDocument` torna a compondre el llibre fins que les etiquetes de pàgina deixen de canviar, de manera que, si un assaig canvia de títol o d'extensió, l'índex s'actualitza ([índex de continguts](/ca/docs/configuration#índex-de-continguts)). El numeral de cada entrada pren la font i el cos del títol, tret que `numberFontFamily` o `numberFontSize` diguin una altra cosa, i s'assenta a la línia de base de la primera línia del títol amb qualsevol cos. Un llibre amb parts hi afegeix, a més, una fila per cada `:::part`, amb el disseny de `toc.parts.design`, com a <RecipeLink slug="parts-in-colour">Parts en color</RecipeLink>.
 
 ### 3 · L'autor a la pàgina parella, l'assaig a la senar
 
@@ -36,13 +36,13 @@ Cada capçalera s'ancora a la pàgina, a 11 mm de la vora superior, i `parity` t
 
 <Excerpt region="front" />
 
-Amb `numbered: false`, la coberta i l'índex no fan avançar el comptador, així que Hazlitt és el I, i `toc: false` els deixa fora de la llista ([estils de títol](/ca/docs/configuration#estils-dencapçalament)). Els dos estils hereten el `breakBefore` del nivell, amb paritat `'any'`, i per això l'índex segueix la coberta a la pàgina 2 sense cap `:::pagebreak`. L'estil de la coberta ocupa tota la pàgina encara que el llibre tingui una sola columna, perquè un disseny que es queda a la columna es retalla per les vores superior i inferior i deixaria 20 mm de paper per sobre del paisatge.
+Amb `numbered: false`, la coberta i l'índex no fan avançar el comptador, així que Hazlitt és el I, i `toc: false` els deixa fora de la llista ([estils de títol](/ca/docs/configuration#estils-dencapçalament)). Els dos estils hereten el `breakBefore` del nivell, amb paritat `'any'`, i per això l'índex segueix la coberta a la pàgina 2 sense cap `:::pagebreak`. L'estil de la coberta ocupa tota la pàgina encara que el llibre tingui una sola columna, perquè un disseny que es queda a la columna es talla al peu d'aquesta i deixaria 22 mm de paper per sota del paisatge.
 
 ### 5 · Cada color escrit amb el seu enllaç a la paleta
 
 <Excerpt region="palette" />
 
-A la 1.4.1 `colorPalette` arriba als estils de text però no als elements de disseny, així que `col()` escriu el valor hexadecimal de cada color al costat del seu `paletteId`, i aquest valor és el que pinten les signatures, les capçaleres i la coberta. Amb `main-color` en el color de la tinta, els valors per defecte que la configuració no redefineix surten en aquest color i no en el blau del motor, `#295AA3`.
+`col()` escriu el valor hexadecimal de cada color al costat del seu `paletteId`, i el motor segueix aquest enllaç: les signatures, les capçaleres i la coberta prenen el que `colorPalette` desi sota aquell identificador, així que una altra paleta amb els mateixos identificadors canvia el color de tot el llibre. Amb `main-color` en el color de la tinta, els valors per defecte que la configuració no redefineix surten en aquest color i no en el blau del motor, `#295AA3`.
 
 ## Variants
 
@@ -78,6 +78,5 @@ Amb la paritat `'odd'`, Stevenson passa a la pàgina 9, després d'una pàgina 8
 
 ## Errors freqüents
 
-- Hazlitt cita versos enmig de les frases. Els versos van en un bloc `:::verse{style="verse" align=start}`, una línia de Markdown per vers, entrats 8 mm, i la frase que continua després va en un estil `runon`, sense sagnat. Una cita en bloc de Markdown sortiria en cursiva d'un gris fix, `#666666`, amb el sagnat de primera línia del cos i sense sagnat lateral, i cap opció de configuració ho canvia a la 1.4.1.
+- Hazlitt cita versos enmig de les frases. Els versos van en un bloc `:::verse{style="verse" align=start}`, una línia de Markdown per vers, entrats 8 mm, i la frase que continua després va en un estil `runon`, sense sagnat. Una cita en bloc de Markdown no serveix aquí: les seves línies s'uneixen com les d'un paràgraf i els versos sortirien seguits, com prosa.
 - Un atribut que falta en un títol no imprimeix res ni avisa. Sense `author="…"`, la signatura i la capçalera parella d'aquell assaig surten buides i la seva línia sota el títol desapareix de l'índex.
-- Els 14,4 pt del pas 2 només valen per a Gloock. Amb una altra font, esbrina a quina alçada sobre la línia de base posa Chrome el seu centre: `measureText('I').alphabeticBaseline` amb `textBaseline = 'middle'` la retorna en píxels, amb el signe canviat. Després dona a `numberFontSize` el valor de 0,3 vegades el cos de l'entrada dividit per aquesta distància en em (la de Hanken Grotesk és 0,2675 em).

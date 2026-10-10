@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-novel-horizontal",
-  "sourceHash": "90aaec117096f4d4ec8a4ffaa3cea1448a89a9b0fb26706716e15cbf79438f00",
+  "sourceHash": "ebd9c948d64d0b3825c41963346e1cd2e55f3d467167ed2bec8a9337f56804f4",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.830Z",
+  "capturedAt": "2026-10-10T13:32:12.346Z",
   "variants": {
     "en": {
-      "hash8": "a17cc922",
+      "hash8": "1b4c1ad8",
       "vdtHash": "608e031e1bb1719ed4463a33ca71342e90ecc42e",
       "timings": {
-        "importMs": 196,
-        "fontsMs": 309,
-        "buildMs": 19,
-        "totalMs": 1179,
-        "builds": 2
+        "importMs": 172,
+        "fontsMs": 268,
+        "buildMs": 60,
+        "totalMs": 1054,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Noto Serif SC"
         ],
         "pages": 7,
-        "ownLines": 178
+        "ownLines": 179
       },
       "pages": [
         {
@@ -152,7 +152,7 @@
       },
       "pdf": {
         "file": "chinese-novel-horizontal.pdf",
-        "bytes": 650944,
+        "bytes": 651138,
         "pages": 7
       },
       "sandbox": {
@@ -163,11 +163,11 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -362,14 +362,14 @@
       }
     },
     "es": {
-      "hash8": "36acc807",
+      "hash8": "8aef49db",
       "vdtHash": "27f3916327caf4aff3f8eb8cd7ea1329b7162b13",
       "timings": {
-        "importMs": 192,
-        "fontsMs": 285,
-        "buildMs": 16,
-        "totalMs": 1138,
-        "builds": 2
+        "importMs": 172,
+        "fontsMs": 282,
+        "buildMs": 61,
+        "totalMs": 1068,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -390,7 +390,7 @@
           "Noto Serif SC"
         ],
         "pages": 7,
-        "ownLines": 178
+        "ownLines": 179
       },
       "pages": [
         {
@@ -503,22 +503,22 @@
       },
       "pdf": {
         "file": "chinese-novel-horizontal.pdf",
-        "bytes": 650934,
+        "bytes": 651127,
         "pages": 7
       },
       "sandbox": {
         "file": "chinese-novel-horizontal.postext",
-        "bytes": 391420,
+        "bytes": 391419,
         "folio": "77b45883"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

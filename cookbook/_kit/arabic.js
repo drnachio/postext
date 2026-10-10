@@ -47,7 +47,7 @@ function arabicFileUrl(family, weight, style) {
  *  family (the latin files come from loadFonts) and loads it. `text` is
  *  the sample: fails when it holds an Arabic-script character the arabic
  *  file does not cover. List every weight the pages set in Arabic: a weight
- *  left to buildWithFonts gets the latin file only, and its Arabic letters
+ *  left to the engine's later round gets the latin file only, and its Arabic letters
  *  fall back to a system face. Resolves to the number of files loaded. */
 async function loadArabicFonts(faces, text = '') {
   kitStatus('Loading fonts…');

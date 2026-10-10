@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 063 · Certificate with a guilloche border ═══════════════
 // https://postext.dev/en/cookbook/certificate-single-page
 // Code: MIT · Text: original (CC BY 4.0) · Guilloche and seal: generated in code (CC BY 4.0)
-// Fonts: Rosarivo, Pinyon Script, Aboreto (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Rosarivo, Pinyon Script, Aboreto (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // End-of-course certificates, one page per student, drawn by one heading style, in one PDF.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -32,9 +32,6 @@ const y = (mm) => (mm * H) / 279.4;
 const SIGN = y(194); // mm from the top: the seal's top edge, where the text area ends
 const SEAL = { w: 40, h: 45, r: 17 }; // mm: the seal with its ribbon tails, and its disc's radius
 const at = (edge, x, top) => ({ anchor: { to: 'page', edge }, offset: { x: mm(x), y: mm(top) } });
-// A tracked line is measured with a letter space after its last letter, so a centred one
-// sits half a space left and a right-set one stops a space short: space() gives it in mm.
-const space = (tracking) => (tracking * 25.4) / 72;
 const caps = { fontFamily: 'Aboreto', textTransform: 'uppercase', color: col('teal') };
 
 // #region answer: one heading style draws the whole certificate
@@ -45,8 +42,8 @@ const certificate = () => ({ // a function: it uses the elements defined below
   margins: { left: mm(SIDE), right: mm(SIDE), bottom: mm(H - SIGN) },
   // Header and footer elements paint over the page and reserve nothing (gotcha:
   // header-paints-over-text), so the frame, the seal and the signatures go there. In the
-  // opener the signature lines would count towards its height, and a design that reaches
-  // below the text area loses the whole reservation (gotcha: opener-reserves-anchored).
+  // opener the signature lines would count towards its height (gotcha:
+  // opener-reserves-anchored), and a design that reaches below the text area takes the page.
   header: { elements: [frame, serial] },
   footer: { elements: signatures },
   // The citation starts 18 lines of the 17 pt grid under the top margin, 140 mm down (19
@@ -66,7 +63,7 @@ const frame = { kind: 'image', id: 'frame', resourceId: 'guilloche',
     size: { width: 'fill', height: 'fill' } } }; // the SVG has the page's proportions
 const serial = { kind: 'text', id: 'serial', ...caps, fontSize: pt(8.5), letterSpacing: pt(1.6),
   content: t({ en: 'No. {attr.serial}', es: 'N.º {attr.serial}' }), // from the heading line
-  color: col('seal'), align: 'right', placement: at('top-right', space(1.6) - MARGIN, 29) };
+  color: col('seal'), align: 'right', placement: at('top-right', -MARGIN, 29) };
 const PX = 10; // declared pixels per mm: an SVG resource only needs the right proportions
 const svg = (id, w, h, altText) => ({ id, typeId: 'figure', kind: 'svg', createdAt: 0,
   updatedAt: 0, altText, svg: { fileId: `${id}.svg`, width: w * PX, height: h * PX } });
@@ -79,22 +76,22 @@ const resources = [
 // #endregion
 
 // #region title: the opener holds the title block; the name is the heading's own text
-const centred = (top, tracking = 0) => at('top', space(tracking) / 2, y(top));
+const centred = (top) => at('top', 0, y(top)); // tracked or not, the letters are centred
 const title = [
   { kind: 'text', id: 'kicker', ...caps, fontSize: pt(9.5), letterSpacing: pt(2.4),
     content: t({ en: 'The Quoin Room · Letterpress workshop',
       es: 'La Cuña · Taller de tipografía' }),
-    placement: centred(39, 2.4) },
+    placement: centred(39) },
   { kind: 'text', id: 'title', content: t({ en: 'Certificate', es: 'Diploma' }), ...caps,
-    fontSize: pt(46), lineHeight: 1, letterSpacing: pt(3), placement: centred(48, 3) },
+    fontSize: pt(46), lineHeight: 1, letterSpacing: pt(3), placement: centred(48) },
   { kind: 'text', id: 'of', content: t({ en: 'of completion', es: 'de aprovechamiento' }),
-    ...caps, fontSize: pt(11), letterSpacing: pt(4), placement: centred(68, 4) },
+    ...caps, fontSize: pt(11), letterSpacing: pt(4), placement: centred(68) },
   { kind: 'text', id: 'lead', content: t({ en: 'This certifies that', es: 'Se otorga a' }),
     fontFamily: 'Rosarivo', italic: true, fontSize: pt(13), color: col('muted'),
     placement: centred(90) },
   { kind: 'text', id: 'name', content: '{titleText}', fontFamily: 'Pinyon Script',
-    fontSize: pt(48), lineHeight: 1.25, // a multiple (gotcha: design-lineheight-multiple)
-    color: col('ink'), align: 'center', overflow: 'wrap', // a long name wraps, never ends in '…'
+    fontSize: pt(48), lineHeight: 1.25, // 60 pt from line to line of a long name
+    color: col('ink'), align: 'center', overflow: 'wrap', // a long name takes a second line
     placement: { ...centred(97), size: { width: mm(W - 2 * MARGIN) } } },
   { kind: 'rule', id: 'underline', direction: 'horizontal', thickness: pt(0.75),
     color: col('gold'), placement: { anchor: { to: '#name', edge: 'below' },
@@ -120,7 +117,7 @@ const signatures = [
       color: col('ink'), align: 'center', placement: under(`line${i}`, 1.6) },
     { kind: 'text', id: `role${i}`, content: role, ...caps, fontSize: pt(7.5),
       letterSpacing: pt(1.4), color: col('muted'), align: 'center',
-      placement: under(`who${i}`, 0.6, space(1.4) / 2) },
+      placement: under(`who${i}`, 0.6) },
   ]),
   { kind: 'text', id: 'imprint', fontFamily: 'Rosarivo', italic: true, fontSize: pt(7),
     content: t({ en: 'Printed at the Quoin Room · set in Rosarivo, Pinyon Script and Aboreto',
@@ -129,7 +126,7 @@ const signatures = [
 ];
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }), // the PDF's /Lang; centred text is never hyphenated
   colorPalette,
   page: { width: mm(W), height: mm(H), dpi: 150, backgroundColor: col('paper'),
@@ -140,13 +137,12 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
     // Ink for the italic (the course title, the date line) and for any bold you add to the
     // wording; referenceColor falls back to boldColor.
     boldColor: col('ink'), italicColor: col('ink'),
-    // Centred lines get no runt check (gotcha: ragged-runts): the wording was fitted by hand.
     textAlign: 'center', firstLineIndent: pt(0), paragraphSpacing: true,
   },
   // The design replaces the heading's own text, which the PDF still tags and bookmarks: set it
   // in a face the pages load, regular, since Rosarivo has no bold.
   headings: { fontFamily: 'Rosarivo', fontWeight: 400,
-    // One page per student, no blank backs; the style inherits it (gotcha: headings-drop-h1-break).
+    // One page per student, no blank backs; the certificate style inherits it.
     levels: [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }] },
   headingStyles: [certificate()],
   header: { elements: [] }, // no page-wide furniture: the certificate style sets its own
@@ -172,8 +168,8 @@ const metadata = { // the PDF's title and author
 
 // #region art: the guilloche frame and the seal, drawn as SVG paths
 // Strokes and fills only: no <marker>, filter or mask, so the PDF keeps both drawings vector
-// (gotcha: svg-no-marker-filters), and no text, which could not see the web fonts (gotcha:
-// svg-no-webfonts). No random numbers, so every build draws the same curves.
+// (gotcha: svg-no-marker-filters), and no text. No random numbers, so every build draws the
+// same curves.
 const TAU = 2 * Math.PI;
 const r2 = (v) => Math.round(v * 100) / 100;
 // A polyline in relative moves, about a tenth smaller than in absolute coordinates.
@@ -253,20 +249,18 @@ function sealSvg() {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Loaded from Fontsource before the first build: layout measures with them (gotcha: fonts-first)
+// Loaded from Fontsource before the first build: layout measures with them
 const FONTS = { Rosarivo: ['400', '400i'], 'Pinyon Script': ['400'], Aboreto: ['400'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, merged);
 await loadSvg('guilloche.svg', guillocheSvg());
 await loadSvg('seal.svg', sealSvg());
-const doc = await buildWithFonts(() => buildDocument({ markdown: merged, metadata, resources },
-  config()), merged);
+const doc = await buildDocumentWithFonts({ markdown: merged, metadata, resources },
+  config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Certificate with a guilloche border',
   es: 'Diploma con orla de guilloché' }) });
 // #region pdf: one document with a page per student, so one PDF holds the whole class
-// The PDF also asks for bold and bold italic Rosarivo, which the family does not ship: the
-// kit's provider snaps each request to the nearest face (gotcha: pdf-provider-all-styles).
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`); // bookmarks: one per heading, so one per student
 document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',

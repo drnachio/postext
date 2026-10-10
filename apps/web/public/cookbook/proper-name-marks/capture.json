@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "proper-name-marks",
-  "sourceHash": "d2d4cbde6e8fc14699ba3c14244f05c73449d89a26b06f0932ecda5d545477ef",
+  "sourceHash": "b38180bed6bafe4e10bba49a5cb5c235bd3854170098330cc9fc13a25754b5d0",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.315Z",
+  "capturedAt": "2026-10-10T13:37:31.811Z",
   "variants": {
     "en": {
-      "hash8": "76bf2e78",
+      "hash8": "32143f19",
       "vdtHash": "666b14ae1706626f3a5dda2a0371d7dcbd4dd76e",
       "timings": {
-        "importMs": 195,
-        "fontsMs": 395,
-        "buildMs": 9,
-        "totalMs": 1230,
-        "builds": 2
+        "importMs": 205,
+        "fontsMs": 369,
+        "buildMs": 50,
+        "totalMs": 1177,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Noto Serif TC"
         ],
         "pages": 3,
-        "ownLines": 167
+        "ownLines": 168
       },
       "pages": [
         {
@@ -101,22 +101,22 @@
       },
       "pdf": {
         "file": "proper-name-marks.pdf",
-        "bytes": 169634,
+        "bytes": 169717,
         "pages": 3
       },
       "sandbox": {
         "file": "proper-name-marks.postext",
-        "bytes": 22673,
+        "bytes": 22672,
         "folio": "dd71612a"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -308,14 +308,14 @@
       }
     },
     "es": {
-      "hash8": "15141389",
+      "hash8": "78c7d000",
       "vdtHash": "4ef88f23fb888f40f39312aab00daabe9b7c9bf4",
       "timings": {
-        "importMs": 201,
-        "fontsMs": 380,
-        "buildMs": 10,
-        "totalMs": 1184,
-        "builds": 2
+        "importMs": 188,
+        "fontsMs": 343,
+        "buildMs": 156,
+        "totalMs": 4630,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -336,7 +336,7 @@
           "Noto Serif TC"
         ],
         "pages": 3,
-        "ownLines": 167
+        "ownLines": 168
       },
       "pages": [
         {
@@ -398,22 +398,22 @@
       },
       "pdf": {
         "file": "proper-name-marks.pdf",
-        "bytes": 170121,
+        "bytes": 170200,
         "pages": 3
       },
       "sandbox": {
         "file": "proper-name-marks.postext",
-        "bytes": 22776,
+        "bytes": 22775,
         "folio": "dd71612a"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

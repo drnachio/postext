@@ -36,8 +36,6 @@ Most names on the islands are Norse, from the centuries when they belonged to No
 
 The gazetteer lists the seventeen numbered places from north to south. Its last column gives the square of the chart that holds each one: the letter names the column, counted from the west, and the figure the row, counted from the north. Kirkwick, number 6, lies in square D3 with the Ward of Brannay. Carrick, number 8, is in H4, on the mainland shore at the end of the ferry line. The same numbers mark the map of the north end, so Tofts, number 5, can be found at either scale. The grid belongs to this atlas, not to any national survey, and every sheet of the atlas uses the same squares of 8 kilometres.
 
-:::columnbreak
-
 ## About this sheet {style="imprint"}
 
 The coasts follow the survey of 1874, checked against air photographs taken in 2019. Heights are in metres above mean sea level. Depths are in metres below the lowest tide; the soundings in the voe of Kirkwick were taken by the harbour trust in May 2024, those of the chart by the survey vessel *Petrel* in 2023. The roads are those open to cars. Tracks, fences and the boundaries of the crofts appear on the six-inch sheets, sold at the harbour office.

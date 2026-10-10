@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 042 · Community newsletter: lead story and briefs ═════
 // https://postext.dev/en/cookbook/community-newsletter
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Work Sans, Titan One, Courier Prime (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: Work Sans, Titan One, Courier Prime (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -15,7 +15,7 @@ const RECIPE = 'community-newsletter';
 // straw: the band · marigold: second tag · tint: pale greens · rule: hairlines · muted: notes
 const palette = { ink: '#1d211c', leaf: '#2f6b3a', tomato: '#c43f2a', straw: '#f2d492',
   marigold: '#e2b33c', tint: '#eef4e8', rule: '#cfd3c6', muted: '#5f6659', paper: '#fbfaf5' };
-// The hex rides along: 1.4.1 designs read it, not the link (gotcha: palette-skips-designs).
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [ // defaults link to 'main-color': point it at the leaf, never blue
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -56,8 +56,7 @@ const DRILL = { id: 'drill', typeId: 'drawing', kind: 'svg', createdAt: 0, updat
 const masthead = { enabled: true,
   minHeight: pt(10 * LEAD), // ten grid lines: the text starts one line clear of the band
   slot: { elements: [
-    // The band, 62 mm deep, covers the column rule, which 1.4.1 starts at the top of the text
-    // area on this page, behind the masthead, however deep the masthead is.
+    // The band is 62 mm deep. The column rule starts under the masthead, where the text does.
     { kind: 'box', id: 'band', style: { backgroundColor: col('straw') },
       placement: { ...at('page', 'top-left'), size: { width: mm(210), height: mm(62) } } },
     { kind: 'image', id: 'drill', resourceId: 'drill', // seedlings along the band's foot
@@ -65,11 +64,10 @@ const masthead = { enabled: true,
     { kind: 'text', id: 'society', content: '{subtitle}', ...caps(8, 'leaf'), align: 'left',
       placement: { ...at('page', 'top-left', SIDE, 12), size: { width: mm(150) } } },
     { kind: 'text', id: 'title', content: '{titleText}', fontFamily: DISPLAY, fontSize: pt(60),
-      lineHeight: 0.9, // a multiple of the size (gotcha: design-lineheight-multiple)
+      lineHeight: 0.9, // 54 pt from line to line
       color: col('leaf'), align: 'left', overflow: 'wrap', // two lines in 178 mm
       placement: { ...at('page', 'top-left', SIDE - BEARING, 17), size: { width: mm(178) } } },
-    // {attr.issue} comes from the H1 line, {publishDate} from the quoted frontmatter
-    // (gotcha: quote-frontmatter): an unquoted date prints nothing here.
+    // {attr.issue} comes from the H1 line, {publishDate} from the frontmatter.
     { kind: 'text', id: 'tab', content: '{attr.issue} · {publishDate}', ...caps(9, 'paper'),
       align: 'right', box: { backgroundColor: col('tomato'),
         padding: { top: mm(1.8), right: mm(3.2), bottom: mm(1.6), left: mm(3.2) } },
@@ -127,17 +125,16 @@ const folio = { elements: [ // page 2's head: title and date over a hairline, th
 ] };
 
 const label = (size, look = {}) => ({ fontFamily: LABEL, fontSize: pt(size), ...look });
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, resourceTypes, chipStyles, layout,
   page: { width: mm(210), height: mm(297), dpi: 150, backgroundColor: col('paper'),
     margins: { top: mm(20), bottom: mm(18), left: mm(SIDE), right: mm(SIDE) } },
   bodyText: { fontFamily: TEXT, fontSize: pt(9.4), lineHeight: pt(LEAD), color: col('ink'),
-    referenceColor: col('leaf'), // for a :ref label: the palette reaches bold but not this
-    // colour, which would stay the default blue (gotcha: palette-skips-designs)
-    // Ragged: no hyphens, no runt check (gotchas: ragged-no-hyphenation, ragged-runts)
+    referenceColor: col('leaf'), // a :ref label, if one is added, prints in the leaf green
+    // Ragged, and so without hyphens: bodyText.hyphenation.ragged is off by default.
     textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true },
   headings: { fontFamily: DISPLAY, fontWeight: 400, color: col('leaf'), levels: [
-    // Restated (gotcha: headings-drop-h1-break); span: 'page' sets the masthead over both columns
+    // span: 'page' sets the masthead over both columns.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } },
     { level: 2, fontSize: pt(24), lineHeight: pt(2 * LEAD), marginTop: pt(0),
       marginBottom: pt(LEAD / 2) },
@@ -188,8 +185,8 @@ const SOIL = mix(P.tomato, P.ink, 0.62);
 const EARTH = mix(SOIL, P.straw, 0.28);
 const GRASS = mix(P.tint, P.leaf, 0.3);
 const DEEP = mix(P.leaf, P.ink, 0.35);
-const svgOf = (w, h, body, style = '') => `<svg xmlns="http://www.w3.org/2000/svg" `
-  + `width="${w * 10}" height="${h * 10}" viewBox="0 0 ${w} ${h}">${style}${body}</svg>`;
+const svgOf = (w, h, body, face = '') => `<svg xmlns="http://www.w3.org/2000/svg" `
+  + `width="${w * 10}" height="${h * 10}" viewBox="0 0 ${w} ${h}"${face}>${body}</svg>`;
 const dot = (x, y, r, fill) => `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}" fill="${fill}"/>`;
 const rect = (x, y, w, h, fill, extra = '') => `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" `
   + `height="${f(h)}" fill="${fill}"${extra}/>`;
@@ -289,18 +286,8 @@ function planSvg(face) { // 114 × 56.5 mm: the top of the Wren Lane site, north
   row(2, W - 2, PATH + 6.5, H - PATH - 8.5, 5, ['', 'shed', 'glass', '', 'shed']);
   return svgOf(W, H, out, face);
 }
-// An SVG drawn as an image cannot see the page's web fonts (gotcha: svg-no-webfonts), so the
-// chart carries its label face inline, as a data URL of the Fontsource file.
-async function inlineFace(family, weight) {
-  const id = family.toLowerCase().replace(/\s+/g, '-');
-  const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}`
-    + '-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return `<style>@font-face{font-family:L;src:url(data:font/woff2;base64,${btoa(bin)}) `
-    + `format('woff2')}text{font-family:L;font-weight:700}</style>`;
-}
+// The plan and the chart name their label face on the root element, and loadSvg embeds it.
+const FACE = ` font-family="${LABEL}" font-weight="700"`;
 const HEAT_LOG = [12, 24, 38, 49, 57, 63, 64, 62, 59, 55, 51, 47, 56, 61, 62, 60, 57, 54, 51, 48,
   46, 44]; // °C at the heap's centre, 7 to 28 March; turned after the reading on the 18th
 function heatSvg(face) { // 68 × 40 mm; the plot runs 7–28 March and 0–70 °C
@@ -429,17 +416,15 @@ const CAPTIONS = {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Text, display and label faces, loaded before the build (gotcha: fonts-first).
+// Text, display and label faces, loaded before the build.
 const FONTS = {
   'Work Sans': ['400', '700'], 'Titan One': ['400'], 'Courier Prime': ['400', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const face = await inlineFace(LABEL, 700); // the label face, for the drawings' own lettering
-await Promise.all([loadSvg('plan.svg', planSvg(face)), loadSvg('heat.svg', heatSvg(face)),
+await Promise.all([loadSvg('plan.svg', planSvg(FACE)), loadSvg('heat.svg', heatSvg(FACE)),
   loadSvg('bed.svg', bedSvg()), loadSvg('drill.svg', drillSvg())]);
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources: resources() }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources: resources() }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Community newsletter', es: 'Boletín vecinal' }) });
 
 // @kit

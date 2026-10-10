@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 139 · A protein paper with a Methods section ════════════
 // https://postext.dev/en/cookbook/protein-paper-methods-section
 // Code: MIT · Text: Jumper et al. 2021, abridged (CC BY 4.0) · Figures: drawn in code
-// Fonts: Noto Serif, Noto Sans (SIL OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: Noto Serif, Noto Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  registerResourceImage, defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
+  defaultResourceTypes, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -99,7 +99,7 @@ const footer = { elements: [text('licence', 'Open access · CC BY 4.0 · '
   + 'creativecommons.org/licenses/by/4.0', SANS, 7, { pages: 'opener',
   color: col('muted'), placement: at('page', 'bottom-left', INNER, -12, 150) })] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-gb',
   // Nature's labels: "Fig. 1 | Title." and "Table 1 | Title.", numbered 1, 2… not 1.1
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type,
@@ -119,7 +119,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: SANS, color: col('ink'), fontWeight: 700, levels: [
-    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // recto or verso
     { level: 2, fontSize: pt(10), lineHeight: pt(LEAD), marginTop: pt(LEAD),
       marginBottom: pt(0) },
     { level: 3, fontSize: pt(8.2), lineHeight: pt(SMALL), color: col('accent'),
@@ -225,18 +225,8 @@ const PLDDT = [
   97,96,97,94,87,90,84,82,69,65,64,61,55,53,
 ];
 const n2 = (v) => +v.toFixed(2);
-// An SVG drawn as an image cannot see the page's web fonts (gotcha: svg-no-webfonts), so the
-// figure carries Noto Sans inline, as a data URL of the Fontsource file.
-async function inlineFace(family, weight) {
-  const id = family.toLowerCase().replace(/\s+/g, '-');
-  const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}`
-    + '-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return `<style>@font-face{font-family:F;src:url(data:font/woff2;base64,${btoa(bin)}) `
-    + `format('woff2')}text{font-family:F}</style>`;
-}
+// The figure names Noto Sans on its root; loadSvg embeds the faces its labels set
+// (inlineSvgFonts), so the canvas and the PDF draw them in the page's own sans.
 const label = (x, y, s, size = 2.5, extra = '') => { // ink unless extra sets a fill
   const fill = extra.includes('fill') ? '' : `fill="${palette.ink}" `;
   return `<text x="${n2(x)}" y="${n2(y)}" font-size="${size}" ${fill}${extra}>${s}</text>`;
@@ -317,8 +307,8 @@ function backbone() {
   });
   return s + label(138, 39, 'T1049 · residues 25–158', 2.5, 'font-weight="700"');
 }
-const figure1 = (face) => '<svg xmlns="http://www.w3.org/2000/svg" width="1780" height="640" '
-  + `viewBox="0 0 178 64">${face}${bars()}${backbone()}</svg>`;
+const figure1 = () => '<svg xmlns="http://www.w3.org/2000/svg" width="1780" height="640" '
+  + `viewBox="0 0 178 64" font-family="${SANS}">${bars()}${backbone()}</svg>`;
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
@@ -328,10 +318,10 @@ const FONTS = { 'Noto Serif': ['400', '400i', '700', '700i'],
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // Cα, χ, Žídek and Šali: the kit adds the greek and latin-ext files the text needs, on screen
 // and in the PDF (gotcha: latin-subset); markdown carries every content slot
-await loadFonts(FONTS, markdown);
-await loadSvg('fig1.svg', figure1(await inlineFace(SANS, 400)));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources: resources() },
-  config()), markdown);
+await loadSvg('fig1.svg', figure1());
+const doc = await buildDocumentWithFonts({ markdown, resources: resources() },
+  config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'A protein paper with a Methods section' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

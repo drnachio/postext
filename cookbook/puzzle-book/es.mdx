@@ -22,40 +22,37 @@ El código es [la respuesta corta](#la-respuesta-corta) de arriba. `tableStyle` 
 
 <Excerpt region="crossword" />
 
-Cada casilla blanca lleva dos líneas de Chivo Mono de 8,9 pt (el número de la definición y una línea vacía) dentro de 1 pt de relleno interior, 26,7 pt en total: 9,41 mm, un noveno del ancho de la tabla. Nueve casillas miden 84,7 mm, lo mismo que quince líneas de 16 pt del texto principal, y el recuadro de las definiciones empieza en la rejilla base una línea más abajo. Una casilla lleva número, en orden de lectura, cuando en ella empieza una palabra horizontal o vertical. El número es un superíndice en negrita de 5,2 pt (el 58 % de 8,9 pt) subido 3 pt (un tercio de 8,9 pt), y eso lo coloca en la esquina superior de la casilla. La línea vacía es un carácter de unión de palabras (U+2060). Con un espacio de no separación en su lugar, la 1.4.1 descarta esa línea y la rejilla se queda en 45,5 mm de alto. Una casilla negra es una celda vacía con `background` propio, vinculado a `ink`.
+Cada casilla blanca lleva dos líneas de Chivo Mono de 8,9 pt (el número de la definición y una línea vacía) dentro de 1 pt de relleno interior, 26,7 pt en total: 9,41 mm, un noveno del ancho de la tabla. Nueve casillas miden 84,7 mm, lo mismo que quince líneas de 16 pt del texto principal, y el recuadro de las definiciones empieza en la rejilla base una línea más abajo. Una casilla lleva número, en orden de lectura, cuando en ella empieza una palabra horizontal o vertical. El número es un superíndice en negrita de 5,2 pt (el 58 % de 8,9 pt) subido 3 pt (un tercio de 8,9 pt), y eso lo coloca en la esquina superior de la casilla. La línea vacía es un carácter de unión de palabras (U+2060). Una línea que se deja vacía no suma altura a la celda, y la rejilla se quedaría en 45,5 mm de alto. Una casilla negra es una celda vacía con `background` propio, vinculado a `ink`.
 
 ### 3 · El código busca las palabras en la rejilla
 
 <Excerpt region="search" />
 
-La rejilla son doce líneas de mayúsculas en su propio archivo de contenido, después de la lista de palabras que hay que buscar. `locate()` busca cada palabra en las ocho direcciones y lanza un error si no aparece exactamente una vez, así que una errata en la rejilla o en la lista detiene la composición antes de que se imprima una palabra que nadie podrá encontrar. `setCellBackground` devuelve un modelo de tabla nuevo con una casilla más rellena. El relleno va vinculado a una entrada de la paleta y tapa la tesela del estilo: coral para SOMBRILLA en la página 3, menta para las diez palabras en la página 5. En la 1.4.1 los estilos de tabla con nombre no tienen ningún ajuste para alternar el fondo de las filas, así que la primera variante llama a `setCellBackground` en todas las celdas de una fila sí y otra no. El banco de palabras de encima de la rejilla son dos filas centradas de chips: el de SOMBRILLA va relleno de coral, como sus casillas, y los otros nueve son blancos con borde azul marino.
+La rejilla son doce líneas de mayúsculas en su propio archivo de contenido, después de la lista de palabras que hay que buscar. `locate()` busca cada palabra en las ocho direcciones y lanza un error si no aparece exactamente una vez, así que una errata en la rejilla o en la lista detiene la composición antes de que se imprima una palabra que nadie podrá encontrar. `setCellBackground` devuelve un modelo de tabla nuevo con una casilla más rellena. El relleno va vinculado a una entrada de la paleta y tapa la tesela del estilo: coral para SOMBRILLA en la página 3, menta para las diez palabras en la página 5. La primera variante alterna el fondo de las filas desde el estilo de tabla (`bodyAlternateBackground`), y el relleno propio de una celda tapa esa franja. El banco de palabras de encima de la rejilla son dos filas centradas de chips: el de SOMBRILLA va relleno de coral, como sus casillas, y los otros nueve son blancos con borde azul marino.
 
 ### 4 · Una apertura, cuatro colores
 
 <Excerpt region="openers" />
 
-Las páginas de la 2 a la 5 comparten el mismo diseño. Un campo de color baja 40 mm desde el borde superior y termina en un pie ondulado dibujado en el color del papel; el antetítulo, el título y el tema, en su píldora blanca, salen de la línea del título y de sus atributos. El campo y el disco del folio están vinculados a la entrada `band` de la paleta, y el estilo de título de cada página le da su propio valor, de modo que `# Sopa de letras {style="sopa"}` los vuelve menta en la página 3. El nivel 1 lleva `span: 'page'` aunque el cuaderno tiene una sola columna: la 1.4.1 recorta por el margen superior de 16 mm un diseño que se queda en la columna, y eso cortaría la parte de arriba del campo y el antetítulo. La caja del campo cuenta en la altura que reserva la apertura, así que el texto empieza en la siguiente línea de la rejilla base, a 44,2 mm del borde superior y 4 mm por debajo de las olas.
+Las páginas de la 2 a la 5 comparten el mismo diseño. Un campo de color baja 40 mm desde el borde superior y termina en un pie ondulado dibujado en el color del papel; el antetítulo, el título y el tema, en su píldora blanca, salen de la línea del título y de sus atributos. El campo y el disco del folio están vinculados a la entrada `band` de la paleta, y el estilo de título de cada página le da su propio valor, de modo que `# Sopa de letras {style="sopa"}` los vuelve menta en la página 3. El nivel 1 lleva `span: 'page'` aunque el cuaderno tiene una sola columna: un diseño que se queda en su columna se corta en el pie de la columna, y el dibujo de la cubierta acabaría 16 mm antes del borde inferior. La caja del campo cuenta en la altura que reserva la apertura, así que el texto empieza en la siguiente línea de la rejilla base, a 44,2 mm del borde superior y 4 mm por debajo de las olas.
 
 ### 5 · Las soluciones salen de los mismos datos
 
 <Excerpt region="answers" />
 
-La página de soluciones vuelve a llamar a `crossword()` con `solved` y a `wordSearch()` con las diez palabras, sobre los mismos archivos de contenido que los pasatiempos, así que si cambias una rejilla cambia también su solución. Los pasatiempos y los dibujos son del tipo Plain, cuyo `captionPrefix` vacío no imprime pie en un recurso sin texto de pie. Las soluciones son del tipo Solución, numeradas del 1 al 3 en orden de lectura para que coincidan con los antetítulos, de Pasatiempo 1 a Pasatiempo 3. Van en un recuadro sin fondo ni borde que contiene `:::columns{count=3 breaks="2,3"}`, donde `breaks` abre una columna nueva en la segunda y en la tercera solución; cada una mide 54 mm de ancho en una columna de 55,3 mm. El recuadro ¿Sabías que…? hace lo mismo con `breaks="2"` para poner el dibujo del nido junto a su párrafo.
+La página de soluciones vuelve a llamar a `crossword()` con `solved` y a `wordSearch()` con las diez palabras, sobre los mismos archivos de contenido que los pasatiempos, así que si cambias una rejilla cambia también su solución. Los pasatiempos y los dibujos son del tipo Plain, cuyo `captionPrefix` vacío no imprime pie en un recurso sin texto de pie. Las soluciones son del tipo Solución, numeradas del 1 al 3 en orden de lectura para que coincidan con los antetítulos, de Pasatiempo 1 a Pasatiempo 3. Van en un grupo `:::columns{count=3 breaks="2,3" gap=6mm}` en el texto, sin recuadro alrededor (postext 1.25): `breaks` abre una columna nueva en la segunda y en la tercera solución, y `gap` separa las columnas 6 mm; cada solución mide 54 mm de ancho en una columna de 55,3 mm. El recuadro ¿Sabías que…? contiene un grupo propio, con `breaks="2"`, para poner el dibujo del nido junto a su párrafo.
 
 ## Variantes
 
 ### Alterna el fondo de las filas de la sopa de letras
 
-Un amarillo más intenso en una fila sí y otra no ayuda a un lector pequeño a seguir la fila, y como las palabras se rellenan después, SOMBRILLA sigue en coral y la solución conserva sus palabras en menta.
+Un amarillo más intenso en una fila sí y otra no ayuda a un lector pequeño a seguir la fila. El relleno propio de una celda tapa la franja, así que SOMBRILLA sigue en coral; la solución tiene su propio estilo y no lleva franjas.
 
 ```diff
-   let model = { rows: letters.map((line) => [...line].map((content) => ({ content,
-     align: 'center' }))) };
-+  const stripe = { hex: '#ffdd80', model: 'hex' }; // a shade deeper than the tiles
-+  letters.forEach((line, r) => r % 2 && [...line].forEach((_, c) => {
-+    model = setCellBackground(model, { row: r, col: c }, stripe);
-+  }));
-   for (const [word, fill] of fills) {
+     bodyBackgroundEnabled: true, bodyBackground: col('tint'), // tiles with white joints
++    bodyAlternateBackgroundEnabled: true, // a shade deeper than the tiles on every other row
++    bodyAlternateBackground: { hex: '#ffdd80', model: 'hex' },
+     borderColor: col('paper'), borderWidth: pt(2.4), borderRadius: mm(4) },
 ```
 
 ### Dibuja un laberinto más difícil
@@ -70,4 +67,4 @@ Con 21 por 11 casillas en el mismo ancho, cada una mide 8,4 mm, y la solución d
 ## Errores frecuentes
 
 - Los números de las definiciones del recuadro se escriben a mano en el archivo de contenido, y los de la rejilla se calculan. Después de cambiar una rejilla, repasa las definiciones con ella, porque el código no las compara.
-- La paleta de un estilo de título cambia el color de los elementos de diseño, del texto y de los filetes de las tablas, pero no el del interior de un SVG, así que las olas del pie de cada campo se dibujan en el color del papel y un solo dibujo sirve para los cuatro campos. En la 1.4.1 tampoco llega a los rellenos de las tablas: una casilla del crucigrama vinculada a `band` seguiría en azul mar en la página amarilla de soluciones.
+- La paleta de un estilo de título cambia el color de los elementos de diseño, del texto y de los filetes y los rellenos de las tablas, pero no el del interior de un SVG, así que las olas del pie de cada campo se dibujan en el color del papel y un solo dibujo sirve para los cuatro campos.

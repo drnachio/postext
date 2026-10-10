@@ -40,13 +40,13 @@ pageNotes: { "1": "Tortilla de patatas：顶部是一张照片，金黄的土豆
 
 <Excerpt region="opener" />
 
-`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}`选定标题样式，并用属性填入各个位置，斜体引言也在其中（[标题属性](/zh/docs/document-format#标题属性)）。图片元素的`resourceId`是`'{attr.art}'`，和文字里的占位符一样，所以两道菜共用一个样式，由各自的标题指明照片（[图片元素](/zh/docs/configuration#图像元素)）。每个胶囊标签锚定在前一个的`right-of`，标题锚定在第一个胶囊的`above`，眉题在标题上方，所以标题变长时眉题上移，胶囊标签留在原来那一行。在1.4.1中照片不预留高度，但它下面的引言会预留，所以不设`minHeight`卡片也从引言下方开始。批注和照片以及箭头一样锚定在页面上，箭头是用代码绘制的第二个图片元素；两页上批注都在箭头前2 mm处结束，尽管对称的页边距让右页的版心向右移了2 mm。
+`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}`选定标题样式，并用属性填入各个位置，斜体引言也在其中（[标题属性](/zh/docs/document-format#标题属性)）。图片元素的`resourceId`是`'{attr.art}'`，和文字里的占位符一样，所以两道菜共用一个样式，由各自的标题指明照片（[图片元素](/zh/docs/configuration#图像元素)）。每个胶囊标签锚定在前一个的`right-of`，标题锚定在第一个胶囊的`above`，眉题在标题上方，所以标题变长时眉题上移，胶囊标签留在原来那一行。引言是设计里位置最低的元素，章首区一直预留到它的最后一行，所以不设`minHeight`卡片也从引言下方开始。批注和照片以及箭头一样锚定在页面上，箭头是用代码绘制的第二个图片元素；两页上批注都在箭头前2 mm处结束，尽管对称的页边距让右页的版心向右移了2 mm。
 
 ### 6 · 把图片注册为资源
 
 <Excerpt region="pictures" />
 
-开篇的两个图片元素、页签的图标和清单标题栏的图标各自指明一个资源，Canvas绘制`loadImage`或`loadSvg`为它注册的文件。没有`:ref`引用这些资源，所以它们都不会成为编号的图。照片和作为图片绘制的SVG都用不了页面的网页字体，所以图片里没有文字：手写批注是叠在上面的设计文字。
+开篇的两个图片元素、页签的图标和清单标题栏的图标各自指明一个资源，Canvas绘制`loadImage`或`loadSvg`为它注册的文件。没有`:ref`引用这些资源，所以它们都不会成为编号的图。图片里没有文字：手写批注是叠在上面的设计文字。
 
 ## 变化
 
@@ -83,6 +83,5 @@ pageNotes: { "1": "Tortilla de patatas：顶部是一张照片，金黄的土豆
 
 ## 常见问题
 
-- 1.4.1中页签的label没有`textTransform`和`letterSpacing`，所以SERVES 4和PARA 4在围栏里直接用大写输入。
+- 页签的label没有`textTransform`和`letterSpacing`，所以SERVES 4和PARA 4在围栏里直接用大写输入。
 - 任务框☐不在三种字体中的任何一种里，浏览器用系统字体绘制它，形状随系统而变。
-- 宽图标要留在框自己的栏里：`position: 'corner'`时，1.4.1按图标高度的一半而不是宽度的一半偏移，18.75 mm的长条会超出框的右边缘16 mm。

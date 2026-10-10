@@ -1,7 +1,8 @@
 // The faces a laid-out document set its text in, and which of them the
 // font set could not give (#629): a family no face answers for, or a weight
-// or slant the browser makes up from another face (bold drawn heavier,
-// italic slanted). Shared by the main thread and the layout worker.
+// or slant the family has no face for, which the browser takes from
+// another one (the nearest weight as it is, bold drawn heavier, italic
+// slanted; #650). Shared by the main thread and the layout worker.
 
 import type { VDTDocument, VDTLine } from '../vdt';
 import { quoteFamily } from '../measure/font';
@@ -26,6 +27,8 @@ export interface FontFaceLike {
  *  the engine uses. Tests pass a fake. */
 export interface FontFaceSetLike extends Iterable<FontFaceLike> {
   readonly size?: number;
+  /** `'loading'` while faces of the set load, up to its `loadingdone`. */
+  readonly status?: string;
   load(font: string, text?: string): Promise<FontFaceLike[]>;
   add(face: FontFaceLike): unknown;
   addEventListener?(type: 'loadingdone', listener: (event: { fontfaces?: readonly FontFaceLike[] }) => void): void;
@@ -102,18 +105,22 @@ function matchWeight(faces: readonly IndexedFace[], target: number): IndexedFace
   return target < 400 ? lighter[0] ?? heavier[0] : heavier[0] ?? lighter[0];
 }
 
-/** How `faces` (loaded ones) answer for a weight and slant: the face CSS
- *  matching picks, and whether the browser draws it bolder or slanted
- *  (a bold of 600 or more set from a face of 500 or less; an italic set
- *  from an upright face). Undefined when `faces` is empty. */
-export function matchFace(faces: readonly IndexedFace[], weight: number, style: 'normal' | 'italic'): { face: IndexedFace; synthesized: boolean } | undefined {
+/** How `faces` answer for a weight and slant: the face CSS matching
+ *  picks, whether it is a face of that weight and slant (`exact`: its
+ *  weight, or its variable range, holds the one asked, in the slant
+ *  asked), and whether the browser draws it bolder or slanted
+ *  (`synthesized`: a bold of 600 or more set from a face of 500 or less;
+ *  an italic set from an upright face). A face neither exact nor
+ *  synthesized is drawn as it is: the 700 for a 600, the italic for an
+ *  upright. Undefined when `faces` is empty. */
+export function matchFace(faces: readonly IndexedFace[], weight: number, style: 'normal' | 'italic'): { face: IndexedFace; exact: boolean; synthesized: boolean } | undefined {
   if (faces.length === 0) return undefined;
   const sameStyle = faces.filter((f) => f.style === style);
   const pool = sameStyle.length > 0 ? sameStyle : faces;
   const face = matchWeight(pool, weight)!;
   const syntheticBold = weight >= 600 && face.weight[1] <= 500;
   const syntheticItalic = style === 'italic' && face.style !== 'italic';
-  return { face, synthesized: syntheticBold || syntheticItalic };
+  return { face, exact: face.style === style && distance(face.weight, weight) === 0, synthesized: syntheticBold || syntheticItalic };
 }
 
 /** A key per face request. */
@@ -244,9 +251,10 @@ export function unavailableFontFamilies(
     measureWidth(`72px ${quoteFamily(family)}, ${generic}`, PROBE) === measureWidth(`72px ${generic}`, PROBE)));
 }
 
-/** Why a face fell back: no face of the family answered (`missing`), or
- *  the browser drew the weight or slant from another face
- *  (`synthesized`). */
+/** Why a face fell back: no loaded face answered, so the text was set in
+ *  the fallback font (`missing`), or the family has no face of that
+ *  weight or slant and the browser drew it from another one, as it is or
+ *  made bolder or slanted (`synthesized`). */
 export type FontFallbackReason = 'missing' | 'synthesized';
 
 export interface FontFallback extends FontFaceRequest {
@@ -276,10 +284,15 @@ export function forgetInstalledFamilies(): void {
 }
 
 /**
- * The faces of `faces` that `fontSet` could not give: a family with no
- * loaded face (and not installed, by the width probe) is `missing`; a
- * weight or slant matched by a face the browser has to draw bolder or
- * slanted is `synthesized`. Generic families are never reported.
+ * The faces of `faces` that `fontSet` could not give. The weight and slant
+ * are matched among the faces the family declares, as CSS does (#650).
+ * `missing`: the family has no face (and is not installed, by the width
+ * probe), or the one matching settles on has not loaded, so the browser
+ * set the text in the fallback font. `synthesized`: that face is loaded
+ * but is not one of the weight and slant asked — the 700 answering for a
+ * 600, a regular made bold, an upright slanted — so the text was measured
+ * with another cut than the file a PDF embeds for the face. Generic
+ * families are never reported.
  */
 export function fontFallbacks(faces: readonly FontFaceRequest[], fontSet: Iterable<FontFaceLike>, options?: FontFallbackOptions): FontFallback[] {
   const wanted = faces.filter((f) => !isGenericFamily(f.family));
@@ -304,7 +317,14 @@ export function fontFallbacks(faces: readonly FontFaceRequest[], fontSet: Iterab
       out.push({ ...f, reason: 'missing' });
       continue;
     }
-    if (matchFace(loaded, f.weight, f.style)?.synthesized) out.push({ ...f, reason: 'synthesized' });
+    // The cut matching settles on, among loaded faces and others alike:
+    // until one of its files (a cut may come as `unicode-range` slices)
+    // has loaded, the browser sets the text in the fallback font, not in
+    // a neighbour that is there.
+    const cut = matchFace(declared, f.weight, f.style)!;
+    const there = loaded.some((d) => d.style === cut.face.style && d.weight[0] === cut.face.weight[0] && d.weight[1] === cut.face.weight[1]);
+    if (!there) out.push({ ...f, reason: 'missing' });
+    else if (!cut.exact) out.push({ ...f, reason: 'synthesized' });
   }
   return out;
 }

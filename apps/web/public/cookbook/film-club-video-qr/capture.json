@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "film-club-video-qr",
-  "sourceHash": "2bcebc7d3170ffdffd8fe30db1606f55091b11985e6b9fa6610717d96cba0c90",
+  "sourceHash": "5934403cd3b1b8b4f843ec2a7784ed17033ee8464c2775b157a6e9d5896f024a",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.937Z",
+  "capturedAt": "2026-10-10T13:33:44.461Z",
   "variants": {
     "en": {
-      "hash8": "fa121685",
+      "hash8": "52c022b5",
       "vdtHash": "3a0bdec19ce7c4f9ff84113449547eb0830ba503",
       "timings": {
-        "importMs": 221,
-        "fontsMs": 130,
-        "buildMs": 24,
-        "totalMs": 1028,
-        "builds": 2
+        "importMs": 182,
+        "fontsMs": 110,
+        "buildMs": 44,
+        "totalMs": 925,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -50,7 +50,7 @@
           "h": 1424,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 84110,
+          "bytes": 84126,
           "alt": "Opening page 1: Open Movies."
         },
         {
@@ -141,21 +141,21 @@
       },
       "pdf": {
         "file": "film-club-video-qr.pdf",
-        "bytes": 299442,
+        "bytes": 299440,
         "pages": 6
       },
       "sandbox": {
         "file": "film-club-video-qr.postext",
-        "bytes": 411676,
+        "bytes": 411675,
         "folio": "edbbafa0"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
           "parseVideoUrl",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToPdf",
@@ -402,14 +402,14 @@
       }
     },
     "es": {
-      "hash8": "01230f67",
+      "hash8": "666147d3",
       "vdtHash": "80469d22f149be1907cf7e9ea6c697761367045f",
       "timings": {
-        "importMs": 221,
-        "fontsMs": 119,
-        "buildMs": 26,
-        "totalMs": 1044,
-        "builds": 2
+        "importMs": 175,
+        "fontsMs": 104,
+        "buildMs": 49,
+        "totalMs": 913,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -441,7 +441,7 @@
           "h": 1424,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 95440,
+          "bytes": 95444,
           "alt": "Página de apertura 1: Películas abiertas."
         },
         {
@@ -542,11 +542,11 @@
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
           "parseVideoUrl",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToPdf",

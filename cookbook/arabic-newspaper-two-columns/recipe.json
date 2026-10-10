@@ -42,14 +42,11 @@
   ],
   "gotchas": [
     "arabic-locale-tag",
-    "arabic-fonts-subset",
-    "headings-drop-h1-break",
-    "callout-columns",
-    "fonts-first"
+    "arabic-fonts-subset"
   ],
   "engine": {
-    "postext": "1.15.0",
-    "postextPdf": "1.15.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -116,7 +113,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-04",
-  "updated": "2026-10-04",
+  "updated": "2026-10-10",
   "related": [
     "newspaper-front-page",
     "arabic-novel-right-bound",

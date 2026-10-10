@@ -14,9 +14,9 @@
   },
   "answers": ["Q43", "Q145"],
   "gaps": [],
-  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-spread-order", "quote-frontmatter", "font-range-holes"],
+  "gotchas": ["ja-locale-tag", "cjk-fonts-slices", "cjk-spread-order", "font-range-holes"],
   "related": ["poetry-collection", "tang-poems-facing-english", "bunko-novel-furigana", "shaped-verse"],
-  "engine": { "postext": "1.23.0", "postextPdf": "1.23.0" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [2, 3], "card": "spread", "pages": "all" },
@@ -57,5 +57,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-10-05",
-  "updated": "2026-10-05"
+  "updated": "2026-10-10"
 }

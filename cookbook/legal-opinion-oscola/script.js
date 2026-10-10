@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 099 · A legal opinion cited in OSCOLA ══════════════════
 // https://postext.dev/en/cookbook/legal-opinion-oscola
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Libre Baskerville, Libre Caslon Display, Libre Franklin (OFL 1.1) · Needs postext ≥ 1.12.1
+// Fonts: Libre Baskerville, Libre Caslon Display, Libre Franklin (OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -17,7 +17,7 @@ const palette = {
   ink: '#1f1b1a', claret: '#5e1b26', tint: '#ecdcd8', rule: '#bfb4ad', muted: '#6b625d',
   paper: '#fcfaf6',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.claret })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -103,8 +103,8 @@ const head = (id, content, parity, edge, x, align) => ({
 });
 const journal = t({ en: 'Notes on Obligations', es: 'Cuadernos de Obligaciones' });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // picks the hyphenation patterns
   colorPalette,
   citations,
   footnotes,
@@ -125,7 +125,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: {
     fontFamily: TEXT, fontWeight: 400, color: col('ink'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // A new page on either side: the default would wait for a recto.
       { level: 1, fontSize: pt(27), breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: opener },
       { level: 2, italic: true, fontSize: pt(12), color: col('claret'),
@@ -153,7 +153,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ '';
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first).
+// Every face the design uses.
 const FONTS = {
   'Libre Baskerville': ['400', '400i', '700'],
   'Libre Caslon Display': ['400'],
@@ -161,8 +161,7 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 const title = t({ en: 'A legal opinion cited in OSCOLA',
   es: 'Un dictamen jurídico citado en OSCOLA' });
 showPages(doc, { title });

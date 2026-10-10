@@ -18,7 +18,7 @@ pageNotes: { "6": "A página 6 fica em branco: Winter ocupa uma página só, ent
 
 <Excerpt region="chapters" />
 
-Cada estação é um documento próprio, então você pode reescrever um capítulo sem abrir os outros. O primeiro documento tem o frontmatter, a capa e o sumário. No Postext 1.4.1 os documentos seguintes não herdam nenhum desses metadados, e o PDF lê o título e a autoria só do primeiro documento.
+Cada estação é um documento próprio, então você pode reescrever um capítulo sem abrir os outros. O primeiro documento tem o frontmatter, a capa e o sumário. Os metadados dele são os do livro: `{title}` e `{author}` os imprimem em todos os capítulos, e o PDF tira dele o título e a autoria.
 
 ### 2 · Regras que passam de um documento para outro
 
@@ -40,7 +40,7 @@ O código deste passo está [na resposta curta](#a-resposta-curta), mais acima. 
 
 <Excerpt region="running-heads" />
 
-Só o primeiro documento tem frontmatter, então no Postext 1.4.1 `{title}` não imprime nada nos documentos seguintes, Autumn incluído. Por isso o cabeço das páginas pares traz o título do livro digitado como texto fixo. `{chapterTitle}` e `{pageNumber}` são resolvidos página a página e saem em todos os documentos; a página 11, a única ímpar de texto corrido, traz SUMMER ao lado do fólio. `pages: 'body'` tira os cabeços das aberturas e da página em branco.
+Só o primeiro documento tem frontmatter, e `buildBundle` o entrega a todos os capítulos, então o cabeço das páginas pares imprime o `{title}` do livro nos cinco documentos. `{chapterTitle}` e `{pageNumber}` são resolvidos página a página e saem em todos os documentos; a página 11, a única ímpar de texto corrido, traz SUMMER ao lado do fólio. `pages: 'body'` tira os cabeços das aberturas e da página em branco.
 
 ### 6 · Páginas duplas na tela, um PDF para o livro
 
@@ -64,7 +64,10 @@ Passe um só documento para `renderToPdf` para tirar uma prova de Spring sozinho
 Um contador de figuras que nunca reinicia numera os quatro quadros de 1 a 4 através dos documentos, em vez de 1.1 a 4.1.
 
 ```diff
--  resourceTypes: defaultResourceTypes(LANG),
+   buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerResourceImage,
++  defaultResourceTypes,
+@@
+   locale: t({ en: 'en-us', es: 'es' }),
 +  resourceTypes: defaultResourceTypes(LANG)
 +    .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' })),
 ```

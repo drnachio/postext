@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 057 · One-page CV with a sidebar ═══════════════════════
 // https://postext.dev/en/cookbook/cv-with-sidebar
 // Code: MIT · Text: original (CC BY 4.0) · Drawing: made in code (CC BY 4.0)
-// Fonts: Hedvig Letters Serif, Hanken Grotesk (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Hedvig Letters Serif, Hanken Grotesk (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -20,7 +20,7 @@ const palette = {
   muted: '#6c5f69', // dates, employers, the colophon (6.0:1)
   paper: '#ffffff', // the page, and the text on the band (14.4:1)
 };
-// 1.4.1 design elements paint the hex and ignore the paletteId (gotcha: palette-skips-designs).
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.accent })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -112,9 +112,7 @@ const nameplate = { enabled: true, slot: { elements: [
 ] } };
 const nameLevel = { level: 1, // span stays 'column': the name heads the text column only
   // No break before the name: the sidebar box is already on the page, and a break would
-  // move the name and the whole text column to page 2. 1.4.1 drops the H1 break anyway once
-  // `headings` is set (gotcha: headings-drop-h1-break); the explicit value keeps the page
-  // whole once that default returns.
+  // move the name and the whole text column to page 2.
   breakBefore: { enabled: false },
   marginBottom: pt(LEAD), // one grid line of air under the role
   advancedDesign: nameplate };
@@ -131,7 +129,7 @@ const sectionHead = { enabled: true, slot: { elements: [
 // #region jobs: each job heading sets the title left and the dates flush right
 const JOB = 9.8; // pt: the job title, the dates and the employer share the size and leading
 const jobText = (id, content, look) => ({ kind: 'text', id, content, fontFamily: SANS,
-  fontSize: pt(JOB), lineHeight: LEAD / JOB, // a multiple (gotcha: design-lineheight-multiple)
+  fontSize: pt(JOB), lineHeight: LEAD / JOB, // the body's leading, as a multiple of the size
   align: 'left', ...look }); // without align, design text is centred in its box
 const job = { enabled: true, slot: { elements: [
   jobText('title', '{titleText}', { fontWeight: 700, color: col('ink'), overflow: 'wrap',
@@ -151,7 +149,7 @@ const sectionLevel = { level: 2, fontSize: pt(14), lineHeight: pt(20),
   marginTop: pt(3 * LEAD - 20), marginBottom: pt(9), advancedDesign: sectionHead };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, layout, chipStyles, header, footer: { elements: [] },
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
     margins: { top: mm(TOP), bottom: mm(BOTTOM), left: mm(LEFT), right: mm(RIGHT) } },
@@ -159,8 +157,8 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     italicColor: col('ink'), // the titles in Selected books
     referenceColor: col('ink'), // no :ref yet; one added later prints in ink, not default blue
     textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true },
-  // Each level draws its own design, but 1.4.1 still measures the hidden heading text in this
-  // face. Without it the default is Open Sans, and the page would have to load that face too.
+  // Each level draws its own design. The headings still name the text face, so the config
+  // asks for no face beyond FONTS: their default is Open Sans.
   headings: { fontFamily: SANS, levels: [nameLevel, sectionLevel, jobLevel] },
   unorderedLists: { bulletChar: '–', color: col('ink'), fontWeight: 400, itemSpacing: pt(0),
     marginTop: pt(0), marginBottom: pt(0) },
@@ -208,17 +206,16 @@ function mix(a, b, k) { // a blend of two palette colours, k of the way from a t
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses, loaded before the first build (gotcha: fonts-first).
+// Every face the design uses, loaded before the first build.
 const FONTS = { 'Hedvig Letters Serif': ['400'], 'Hanken Grotesk': ['400', '400i', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('books.svg', books());
 const resources = [{ id: 'books', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0,
   svg: { fileId: 'books.svg', width: BOOKS.w * 10, height: BOOKS.h * 10 },
   altText: t({ en: 'A stack of five cloth-bound books',
     es: 'Una pila de cinco libros encuadernados en tela' }) }];
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'One-page CV with a sidebar',
   es: 'Currículum de una página con barra lateral' }) });
 

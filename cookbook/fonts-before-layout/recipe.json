@@ -19,21 +19,12 @@
   },
   "answers": ["Q03", "Q09", "Q77"],
   "gotchas": [
-    "fonts-first", "font-family-one-name", "latin-subset", "pdf-provider-all-styles",
-    "config-cache-identity", "headings-drop-h1-break", "palette-skips-designs",
-    "design-lineheight-multiple", "overflow-ellipsis-default"
+    "latin-subset"
   ],
-  "explainsWarnings": ["missingFont", "missingFontVariant"],
-  "workarounds": [
-    { "followup": "EF-45", "package": "postext", "note": "clearMeasurementCache() is called with no argument: in 1.4.1 it takes none and empties the global width caches, while the docs' 'Measurement cache' section shows clearMeasurementCache(cache)" },
-    { "followup": "EF-13", "package": "postext", "note": "every fontFamily names one family: a CSS stack is read as a single family that does not exist and measures with a fallback, with no warning (gotcha font-family-one-name)" },
-    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because any headings object drops it (gotcha headings-drop-h1-break)" },
-    { "followup": "EF-71", "package": "postext", "note": "col() writes the palette hex beside each paletteId: 1.4.1 paints opener, header and footer elements from the inline hex (gotcha palette-skips-designs)" },
-    { "followup": "EF-56", "package": "postext", "note": "the opener's design texts give lineHeight as a multiple (1, 1.05, 1.35), never pt(): a dimension drops the opener's reservation (gotcha design-lineheight-multiple)" },
-    { "followup": "EF-113", "package": "postext", "note": "the H1 level sets span: 'page' so its bleed-anchored field reaches the top edge. A heading design kept in the column is clipped at the top margin, although page- and bleed-anchored elements still paint into the side margins; here the clip would cut the head of the field and hide the kicker, with no warning" }
-  ],
+  "explainsWarnings": ["fontFallback", "missingFont", "missingFontVariant"],
+  "workarounds": [],
   "related": ["brand-fonts-identity-manual", "web-worker-live-editor", "first-page-from-markdown", "print-and-screen-editions"],
-  "engine": { "postext": "1.4.1" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer"],
   "sample": { "locales": ["en"] },
   "capture": {
@@ -60,5 +51,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

@@ -34,7 +34,7 @@ Les taules, els peus, les notes i els textos alternatius són a `content.resourc
 
 <Excerpt region="art" />
 
-Cada panell recorre *R* de 0 a 1 amb la mateixa `ppv()` que omple la taula 4. Dibuixar les corbes amb la fórmula fa veure una cosa que la figura del 2005 amaga: les seves corbes corresponen a *u* = 0; 0,05; 0,20 i 0,80, mentre que la llegenda diu 0,05; 0,20; 0,50 i 0,80. Aquesta versió dibuixa els valors de la llegenda, hi afegeix en traç discontinu la corba sense biaix i ho explica a la nota del peu. Els rètols són text en la lletra dels rètols: l'SVG porta la font com a `@font-face` en línia per al llenç, i el PDF els compon amb la font que lliura el proveïdor.
+Cada panell recorre *R* de 0 a 1 amb la mateixa `ppv()` que omple la taula 4. Dibuixar les corbes amb la fórmula fa veure una cosa que la figura del 2005 amaga: les seves corbes corresponen a *u* = 0; 0,05; 0,20 i 0,80, mentre que la llegenda diu 0,05; 0,20; 0,50 i 0,80. Aquesta versió dibuixa els valors de la llegenda, hi afegeix en traç discontinu la corba sense biaix i ho explica a la nota del peu. Els rètols són text que anomena la lletra dels rètols: `loadSvg` passa el dibuix per `inlineSvgFonts`, que hi incrusta aquesta font per al llenç, i el PDF els compon amb la font que lliura el proveïdor.
 
 ### 5 · Una primera pàgina i un requadre per a un assaig
 

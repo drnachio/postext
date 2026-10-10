@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "side-heads-hanging-numbers",
-  "sourceHash": "4b58824ca9547e5d3b5ebd9a5255a33df6d353d0336555034ae34a923ba50d9d",
+  "sourceHash": "83fe709e48636cb5300f4e566c65367acb33ee71c10cef0c209b581150aaa53d",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.443Z",
+  "capturedAt": "2026-10-10T13:38:07.658Z",
   "variants": {
     "es": {
-      "hash8": "47014947",
+      "hash8": "2482255c",
       "vdtHash": "cc90da5f778b435d2f2a01e5a54259e7f794e1a7",
       "timings": {
-        "importMs": 157,
-        "fontsMs": 33,
-        "buildMs": 20,
-        "totalMs": 873,
-        "builds": 2
+        "importMs": 143,
+        "fontsMs": 4,
+        "buildMs": 39,
+        "totalMs": 802,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Noto Serif Display"
         ],
         "pages": 5,
-        "ownLines": 250
+        "ownLines": 246
       },
       "pages": [
         {
@@ -126,13 +126,12 @@
       },
       "sandbox": {
         "file": "side-heads-hanging-numbers.postext",
-        "bytes": 27487,
+        "bytes": 27486,
         "folio": "2324bd6f"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
           "registerResourceImage",
           "renderPageToCanvas"

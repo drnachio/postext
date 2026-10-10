@@ -13,8 +13,8 @@
     "also": ["opener-design", "heading-attributes", "page-role-filters", "widows-orphans-runts", "paragraph-styles", "callout-styles"]
   },
   "answers": ["Q16", "Q30"],
-  "gotchas": ["headings-drop-h1-break", "fonts-first"],
-  "engine": { "postext": "1.4.1" },
+  "gotchas": [],
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer"],
   "sample": { "locales": ["en"] },
   "capture": { "hero": 1, "card": "page" },

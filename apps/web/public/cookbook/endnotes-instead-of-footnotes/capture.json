@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "endnotes-instead-of-footnotes",
-  "sourceHash": "c36d178139e4f0cf7846ff8dacda9283dbfba96f400c48e8d5bf5aac34696c34",
+  "sourceHash": "5432046a1341e60d0b328f83221909471c1bc8fbf855687f414fd3d92e24a2d4",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.917Z",
+  "capturedAt": "2026-10-10T13:33:44.427Z",
   "variants": {
     "en": {
-      "hash8": "2e4fde9e",
-      "vdtHash": "2bceacc428ae878a57ec22b4f6c556577b50651c",
+      "hash8": "a18ccd23",
+      "vdtHash": "e4999498153329210326f1834fe8debf4c9f584d",
       "timings": {
-        "importMs": 161,
-        "fontsMs": 33,
-        "buildMs": 31,
-        "totalMs": 916,
-        "builds": 2
+        "importMs": 387,
+        "fontsMs": 81,
+        "buildMs": 482,
+        "totalMs": 3264,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Libre Bodoni"
         ],
         "pages": 5,
-        "ownLines": 186
+        "ownLines": 185
       },
       "pages": [
         {
@@ -125,13 +125,13 @@
       },
       "sandbox": {
         "file": "endnotes-instead-of-footnotes.postext",
-        "bytes": 78138,
+        "bytes": 78127,
         "folio": "3d3a1e90"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -193,6 +193,7 @@
           "headingStyles[].breakBefore.parity",
           "headingStyles[].id",
           "headingStyles[].layout",
+          "headingStyles[].layout.columnRule",
           "headingStyles[].layout.gutterWidth",
           "headingStyles[].layout.layoutType",
           "headingStyles[].span",
@@ -203,11 +204,7 @@
           "headings.levels[].advancedDesign",
           "headings.levels[].breakBefore",
           "headings.levels[].level",
-          "headings.levels[].span",
           "layout",
-          "layout.columnRule",
-          "layout.columnRule.color",
-          "layout.columnRule.enabled",
           "layout.layoutType",
           "page",
           "page.backgroundColor",
@@ -252,7 +249,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 333,
+        "configLeaves": 332,
         "designElements": 18,
         "directives": [
           ":::paragraphs"
@@ -317,11 +314,9 @@
         ],
         "features": [
           "bibliography",
-          "column-rule",
           "figure-citations",
           "heading-attributes",
           "heading-styles",
-          "opener-band",
           "opener-design",
           "page-background",
           "page-role-filters",
@@ -342,6 +337,11 @@
           "worst": 1.78
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

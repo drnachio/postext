@@ -24,13 +24,13 @@ A 300 ppp, el valor per defecte, el pòster talla cada línia al mateix lloc que
 
 <Excerpt region="band" />
 
-L'H1 porta com a atributs la trobada, el número del pòster, els autors i les filiacions, i el seu disseny els compon sobre un rectangle verd de 158 mm d'alt, ancorat a la pàgina ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). El rectangle acaba 133 mm per sota del marge superior. Sense `minHeight`, el resum començaria a 0,9 mm del verd; un `minHeight` d'onze línies de la retícula de base el separa 14 mm. El text de disseny imprimeix text pla, així que les crides de filiació són els caràcters ¹ ² ³, les úniques xifres volades del rang Latin-1.
+L'H1 porta com a atributs la trobada, el número del pòster, els autors i les filiacions, i el seu disseny els compon sobre un rectangle verd de 158 mm d'alt, ancorat a la pàgina ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)). El rectangle acaba 133 mm per sota del marge superior. Sense `minHeight`, el resum començaria a 0,9 mm del verd; un `minHeight` d'onze línies de la retícula de base el separa 14 mm. Les crides de filiació són els caràcters ¹ ² ³, les úniques xifres volades del rang Latin-1.
 
 ### 3 · Nia els panells en un requadre a tota l'amplada
 
 <Excerpt region="answer" highlight="3-9,21" />
 
-El cos admet com a molt dues columnes, així que la retícula és un grup `:::columns{count=3}` dins d'un requadre, i `span="page"` estén aquest requadre sobre les dues columnes del cos, sota el resum ([`:::columns`](/ca/docs/document-format#columns)). Cada panell és un requadre niat en el grup: pren el seu propi estil, els 175 mm d'amplada de la columna i 18 mm de `marginTop` sota el panell de sobre ([el contenidor `:::callout`](/ca/docs/configuration#el-contenidor-callout)). `breaks="3,4"` porta el tercer panell, Resultados, al cap de la columna central, i el quart, Conclusiones, al de l'última. Sense això, el grup s'equilibra i talla pel panell més proper a cada terç de la pila. Amb aquest text els talls cauen en els mateixos dos panells; l'atribut els fixa per si el text canvia.
+El cos va a dues columnes i els panells a tres, així que la retícula és un grup `:::columns{count=3}` dins d'un requadre sense marc, i `span="page"` estén aquest requadre sobre les dues columnes del cos, sota el resum ([`:::columns`](/ca/docs/document-format#columns)). Un grup escrit directament al text també pot ocupar tota l'amplada, però deixa a sota una línia de separació entre paràgrafs, aquí 38 pt, i la franja de paraules clau passaria a una segona pàgina. Cada panell és un requadre niat en el grup: pren el seu propi estil, els 175 mm d'amplada de la columna i 18 mm de `marginTop` sota el panell de sobre ([el contenidor `:::callout`](/ca/docs/configuration#el-contenidor-callout)). `breaks="3,4"` porta el tercer panell, Resultados, al cap de la columna central, i el quart, Conclusiones, al de l'última. Sense això, el grup s'equilibra i talla pel panell més proper a cada terç de la pila. Amb aquest text els talls cauen en els mateixos dos panells; l'atribut els fixa per si el text canvia.
 
 ### 4 · Deixa cada figura al seu panell
 
@@ -42,13 +42,13 @@ Una figura amb posició `'here'` es queda al panell on la posa `::resource`; amb
 
 <Excerpt region="palette" />
 
-Les cel·les del mapa de calor i les quatre mostres `:swatch{color="…"}` de la seva llegenda remeten a les mateixes entrades de la paleta, així que un valor nou per a `cool` canvia alhora el mapa i la llegenda ([format en línia](/ca/docs/document-format#format-en-línia)). La llegenda és un segon grup `:::columns`, amb dues entrades per columna, dins del panell de Resultados. Cada color porta a més el seu valor hexadecimal, que és el que la 1.4.1 pinta en el disseny de la banda.
+Les cel·les del mapa de calor i les quatre mostres `:swatch{color="…"}` de la seva llegenda remeten a les mateixes entrades de la paleta, així que un valor nou per a `cool` canvia alhora el mapa i la llegenda ([format en línia](/ca/docs/document-format#format-en-línia)). La llegenda és un segon grup `:::columns`, amb dues entrades per columna, dins del panell de Resultados.
 
 ### 6 · Compon la xifra principal amb un estil de paràgraf
 
 <Excerpt region="type" />
 
-Els estils de paràgraf s'apliquen dins dels requadres, també als niats, així que −4,2 °C és un bloc `:::paragraphs{style="stat"}` en Bitter a 150 pt dins del panell de Resultados ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). A la 1.4.1 un estil de paràgraf no fixa el pes de la lletra, així que la xifra va en negreta i surt en Bitter 700. Un segon estil dona a les referències un sagnat francès de 9 mm. La franja de paraules clau és un requadre tintat amb `placement="bottom"`, que flota al peu de la pàgina sota la retícula.
+Els estils de paràgraf s'apliquen dins dels requadres, també als niats, així que −4,2 °C és un bloc `:::paragraphs{style="stat"}` en Bitter a 150 pt dins del panell de Resultados ([estils de paràgraf](/ca/docs/configuration#estils-de-paràgraf)). La xifra va en negreta, així que surt en Bitter 700 i en el `boldColor` de l'estil, el taronja del panell. Un segon estil dona a les referències un sagnat francès de 9 mm. La franja de paraules clau és un requadre tintat amb `placement="bottom"`, que flota al peu de la pàgina sota la retícula.
 
 ## Variants
 
@@ -64,5 +64,5 @@ Si el congrés demana un fitxer més gran, surt un PNG de 3543 × 4724 px amb el
 ## Errors freqüents
 
 - Al canvas, Rethink Sans substitueix una xifra sola entre parèntesis, com el fascicle d'11(3), per la xifra en cercle, així que les referències donen només el volum i les pàgines.
-- A la 1.4.1 un requadre a tota l'amplada que tanca el document passa a una pàgina nova si no li queden a sota dues línies del cos. Per això la franja de paraules clau flota amb `placement="bottom"`, que l'assenta al marge inferior, dins dels 50 mm que queden sota la retícula.
-- A la 1.4.1 un paràgraf que segueix un grup `:::paragraphs` se'n separa només pel `spaceBetween` de l'estil, aquí 2,8 mm sota l'última referència. Un `:::space{lines=0.75}` abans de l'agraïment obre 10,8 mm, a prop dels 10,6 mm que separen els altres paràgrafs d'un panell.
+- Un requadre a tota l'amplada que tanca el document passa a una pàgina nova si no li queden a sota dues línies del cos. Per això la franja de paraules clau flota amb `placement="bottom"`, que l'assenta al marge inferior, dins dels 50 mm que queden sota la retícula.
+- `bodyText.paragraphContainerSpacing: 'add'` tanca un grup `:::paragraphs` amb l'espai propi del seu estil, i així −4,2 °C queda enganxat a la línia que l'explica. Sota l'última referència aquest espai és el `spaceBetween` de l'estil, 2,8 mm, de manera que un `:::space{lines=0.75}` abans de l'agraïment obre 10,8 mm, a prop dels 10,6 mm que separen els altres paràgrafs d'un panell. Amb el valor per defecte, `'collapse'`, després d'un grup ve una línia de la separació entre paràgrafs del panell: l'agraïment no necessita `:::space`, però la línia que s'afegeix sota −4,2 °C envia la franja de paraules clau a una segona pàgina.

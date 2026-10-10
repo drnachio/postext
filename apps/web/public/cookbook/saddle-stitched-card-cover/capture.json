@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "saddle-stitched-card-cover",
-  "sourceHash": "f1f5eff26379a260b1940d68c11c32632e5a3115d453a17c248293e2ae1ba53b",
+  "sourceHash": "a818de223a5c6613d237f0f6116dd7ca81686e08abb531e4fbb4284ca3cbcd2b",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.413Z",
+  "capturedAt": "2026-10-10T13:38:07.607Z",
   "variants": {
     "en": {
-      "hash8": "325e882e",
+      "hash8": "1625cfd8",
       "vdtHash": "b81ea95ce3d428a6c883d46948d8fa5a9a059b5b",
       "timings": {
-        "importMs": 176,
-        "fontsMs": 30,
-        "buildMs": 26,
-        "totalMs": 876,
-        "builds": 2
+        "importMs": 202,
+        "fontsMs": 3,
+        "buildMs": 57,
+        "totalMs": 877,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -37,7 +37,7 @@
           "Newsreader"
         ],
         "pages": 8,
-        "ownLines": 160
+        "ownLines": 159
       },
       "pages": [
         {
@@ -165,13 +165,12 @@
       },
       "sandbox": {
         "file": "saddle-stitched-card-cover.postext",
-        "bytes": 11074,
+        "bytes": 11072,
         "folio": "0753e69b"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createFolioFromDocument",
           "renderPageToCanvas"
         ],

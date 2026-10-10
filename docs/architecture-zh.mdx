@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '架构',
   description: 'Postext排版引擎的技术架构',
   lang: 'zh',
-  lastUpdated: '2026-10-04',
+  lastUpdated: '2026-10-10',
   readingTime: '38分钟',
   order: 2,
   plainSummary: "本页讲解Postext的内部工作原理，面向程序员。首先，Postext在不往屏幕上画任何东西的情况下测量每个词，所以速度很快。然后它算出每一行、每张图和每一栏的位置，并把这份排版方案保存在内存里。它反复计算，直到没有任何东西再移动。最后，它把排好的页面输出为网页、Canvas图像或PDF文件。你改动一个词时，只有改动的部分会重新计算。",
@@ -66,7 +66,7 @@ export const metadata = {
     </tr>
     <tr>
       <td><strong>资源</strong></td>
-      <td>通过id与正文关联的非文本元素：位图、SVG或表格（<code>Resource</code>，<code>kind: 'bitmap' | 'svg' | 'table'</code>）。资源在首次引用时按类型编号（图1、表2.1……），并浮动到该引用附近某页顶部或底部的一个区带中。</td>
+      <td>通过id与正文关联的非文本元素：位图、SVG、表格或视频（<code>Resource</code>，<code>kind: 'bitmap' | 'svg' | 'table' | 'video'</code>）。资源在首次引用时按类型编号（图1、表2.1……），并浮动到该引用附近某页顶部或底部的一个区带中。</td>
     </tr>
     <tr>
       <td><strong>注释</strong></td>
@@ -110,7 +110,7 @@ export const metadata = {
 
 ## 系统架构
 
-<Illustration name="SystemArchitecture" data='{"title": "Postext系统架构", "desc": "增强Markdown和PostextConfig进入解析器，由它构建虚拟文档树。Pretext测量文本。七遍排版处理在收敛循环中修改VDT。后端把最终的VDT渲染为HTML或PDF。", "caption": "解析器 → VDT ↔ Pretext → 七遍排版处理 → 后端 → 输出。", "markdown": "增强Markdown", "configTitle": "PostextConfig", "configSubtitle": "（栏、规则、间距）", "engine": "排版引擎", "parser": "解析器", "pass1": "第1遍", "vdtLine1": "虚拟文档树", "vdtLine2": "（VDT）", "vdtAttr1": "可变，原地修改", "vdtAttr2": "页面 > 栏 > 块", "vdtAttr3": "每个节点都有bbox", "vdtAttr4": "dirty标记跟踪", "pretext": "Pretext", "pretextSubtitle": "文本测量", "passesTitle": "排版各遍（读取并修改VDT）", "passes": [{"num": "第2遍", "name": "文本测量（借助Pretext）"}, {"num": "第3遍", "name": "页面与栏的安放"}, {"num": "第4遍", "name": "资源安放"}, {"num": "第5遍", "name": "排版精修"}, {"num": "第6遍", "name": "各栏齐底"}, {"num": "第7遍", "name": "垂直韵律对齐"}], "convergence": "收敛（最多5次）", "backend": "后端", "backendSubtitle": "（统一接口）", "backendItems": ["Canvas / 浏览器", "PDF", "服务器端（规划中）"], "output": "HTML / PDF", "outputSubtitle": "渲染输出"}' />
+<Illustration name="SystemArchitecture" data='{"title": "Postext系统架构", "desc": "增强Markdown和PostextConfig进入解析器，由它构建虚拟文档树。Pretext测量文本。七遍排版处理在收敛循环中修改VDT。后端把最终的VDT渲染为HTML或PDF。", "caption": "解析器 → VDT ↔ Pretext → 七遍排版处理 → 后端 → 输出。", "markdown": "增强Markdown", "configTitle": "PostextConfig", "configSubtitle": "（栏、规则、间距）", "engine": "排版引擎", "parser": "解析器", "pass1": "第1遍", "vdtLine1": "虚拟文档树", "vdtLine2": "（VDT）", "vdtAttr1": "可变，原地修改", "vdtAttr2": "页面 > 栏 > 块", "vdtAttr3": "每个节点都有bbox", "vdtAttr4": "dirty标记跟踪", "pretext": "Pretext", "pretextSubtitle": "文本测量", "passesTitle": "排版各遍（读取并修改VDT）", "passes": [{"num": "第2遍", "name": "文本测量（借助Pretext）"}, {"num": "第3遍", "name": "页面与栏的安放"}, {"num": "第4遍", "name": "资源安放"}, {"num": "第5遍", "name": "排版精修"}, {"num": "第6遍", "name": "各栏齐底"}, {"num": "第7遍", "name": "垂直韵律对齐"}], "convergence": "收敛（最多5次）", "backend": "后端", "backendSubtitle": "（统一接口）", "backendItems": ["Canvas / 浏览器", "PDF", "EPUB"], "output": "HTML / PDF", "outputSubtitle": "渲染输出"}' />
 
 **内容在引擎中经历的过程如下：**
 
@@ -135,14 +135,14 @@ export const metadata = {
 interface PostextContent {
   markdown: string;            // 带:ref / ::resource标记的增强markdown
   metadata?: DocumentMetadata; // 标题、副标题、作者、发布日期……
-  resources?: Resource[];      // 位图、SVG、表格，按id引用
+  resources?: Resource[];      // 位图、SVG、表格、视频，按id引用
   notes?: PostextNote[];       // 不读取：脚注在markdown中写成[^id]
 }
 
 interface Resource {
   id: string;                  // 稳定的id，供行内:ref引用
   typeId: string;              // 该资源所属的ResourceType（'figure'、'table'……）
-  kind: 'bitmap' | 'svg' | 'table';
+  kind: 'bitmap' | 'svg' | 'table' | 'video';
   caption?: string;            // 类型前缀和编号由计算得出，不写在这里
   altText?: string;
   createdAt: number;
@@ -151,15 +151,16 @@ interface Resource {
   bitmap?: { fileId: string; format: string; width: number; height: number };
   svg?: { fileId: string; width?: number; height?: number };
   table?: { model: TableModel };
+  video?: ResourceVideo;       // 从哪里播放；页面上画的是它的封面
   placement?: ResourcePlacement; // 可选：单个资源覆盖浮动设置
   safeArea?: ResourceSafeArea;  // 位图 / svg：{ x, y, width, height }，以比例表示，始终显示的部分
 }
 ```
 
 **资源**承载视觉数据：题注、替代文本，以及与其类型对应的数据。二进制数据（位图、SVG）存放在*带外*：资源只保存一个`fileId`，渲染器在绘制时再去解析它（沙盒把这些字节保存在IndexedDB里）。表格资源是例外：它的`TableModel`（一个带合并和对齐信息的单元格网格）随资源一起内联传递，因为它是结构化数据，而不是字节。
-**注释**本来要承载内容和标记样式，并从markdown中的行内位置引用。它们尚未实现：引擎忽略`notes`，markdown也没有引用注释的语法。
+**注释**写在markdown里：引用脚注的地方写`[^id]`标记，定义`[^id]:`自成一段，可以放在本章的任何位置。引擎按首次引用的顺序给脚注编号，把每条脚注排在引用它的那一行所在栏的底部，上方有一条短线；设置`footnotes.placement: 'chapterEnd'`时，则排在该章最后一个块之后（见[脚注](/zh/docs/document-format#脚注)和[配置 → 脚注](/zh/docs/configuration#脚注)）。内容模型仍然接受`notes`数组，但流水线的任何阶段都不读取它。
 
-这种分离是一个有明确取向的设计选择，其意义比看上去要大。markdown掌管*阅读顺序*和*语义结构*：什么在前，什么是标题，脚注在哪里被引用。资源数组和注释数组掌管*视觉数据*：图片尺寸、题注文字、注释内容。两者分开后，同一份markdown只需改变配置，就能排成完全不同的样子。双栏的学术版式和单栏的博客文章可以共用同一份源内容。引擎也可以做出安放上的决定，比如因为这一栏放不下而把图片推迟到下一栏，却完全不必改动你的源内容。
+这种分离是一个有明确取向的设计选择，其意义比看上去要大。markdown掌管*阅读顺序*和*语义结构*：什么在前，什么是标题，脚注在哪里被引用、写了什么。资源数组掌管*视觉数据*：图片尺寸、题注文字、表格单元格。两者分开后，同一份markdown只需改变配置，就能排成完全不同的样子。双栏的学术版式和单栏的博客文章可以共用同一份源内容。引擎也可以做出安放上的决定，比如因为这一栏放不下而把图片推迟到下一栏，却完全不必改动你的源内容。
 
 ```typescript
 // 示例：一篇引用了一幅图的简单文章
@@ -241,7 +242,7 @@ Italy by 1465 and France by 1470.
 
 ### 解析策略
 
-解析有意设计成流水线中最简单的一步。Markdown输入后被解析成AST，每个节点变成一个`VDTBlock`。资源引用按ID在`resources[]`数组中解析（`notes[]`数组目前不读取：注释在计划中，尚未实现）。输出是一个扁平的块列表，每个块有类型、有内容，但没有分配页面，没有所在栏，也没有位置。
+解析有意设计成流水线中最简单的一步。Markdown输入后被解析成AST，每个节点变成一个`VDTBlock`。资源引用按ID在`resources[]`数组中解析。脚注定义（以`[^id]:`开头的段落）离开文本流，按id保存，留给引用它们的标记；`notes[]`数组不读取。输出是一个扁平的块列表，每个块有类型、有内容，但没有分配页面，没有所在栏，也没有位置。
 
 可以把它看成一份清单：“先是一个标题，然后是一个200词的段落，然后是一处图的引用，然后又是一个段落。”没有测量，没有定位，也完全没有版面上的决定。繁重的工作从第2遍开始。
 
@@ -338,10 +339,10 @@ interface VDTLine {
   plainEnd?: number;
 }
 
-// 经过测量、可以安放的资源嵌入（位图 / svg / 表格）
+// 经过测量、可以安放的资源嵌入（位图 / svg / 表格 / 视频）
 interface ResolvedResourceBlock {
   resource: Resource;
-  kind: 'bitmap' | 'svg' | 'table';
+  kind: 'bitmap' | 'svg' | 'table' | 'video';
   number: string;             // 计算出的编号，例如"1.7"
   captionPrefix: string;      // 例如"Figure"
   bodyRect: BoundingBox;      // 图片 / 表格区域
@@ -386,7 +387,7 @@ Dirty跟踪让引擎不必重做已经正确完成的工作。当某一遍移动
 ### 第1遍：内容结构化
 
 - **输入**：原始的`PostextContent`
-- **处理**：把Markdown解析成AST，按ID在`resources[]`中解析资源引用，创建初始的`VDTBlock`节点（注释以及`notes[]`尚在计划中，未实现）
+- **处理**：把Markdown解析成AST，按ID在`resources[]`中解析资源引用，把脚注定义（`[^id]:`）移出文本流并按引用顺序给标记编号，创建初始的`VDTBlock`节点（不读取`notes[]`）
 - **输出**：扁平的`VDTBlock[]`（已确定类型并填入内容，但尚未分配页和栏）
 - **只运行一次**（不属于收敛循环）
 
@@ -467,7 +468,7 @@ const { height } = layout(prepared, columnWidth, 24); // 行距24px
   </tbody>
 </table>
 
-- **延后放置**：在当前页找不到任何合适位置的浮动体会等到文本流打开的下一页；它从不被缩小或拆分。在章节边界处，它会被排到边界之前新开的页面上
+- **延后放置**：在当前页找不到任何合适位置的浮动体会等到文本流打开的下一页。在章节边界处，它会被排到边界之前新开的页面上。图片保持原尺寸，除非`placement.shrink`（或作用于整个文档的`layout.floatShrink`）允许把它缩小到某个位置实有的空间。新页面也放不下的表格按行切开，在后续页面上接续，并重复表头行（`tableStyle.overflow: 'split'`，默认值）
 - **输出**：资源定位在页面浮动带中（`page.floats`），受影响的栏高度相应减少，使文本绕开浮动带排布
 
 资源放置是有意思的地方，因为浮动体不只是占据空间，还会重塑周围的空间。包含引用的块落定后，等待中的浮动体会依次尝试当前页该块之后的空闲位置：先是该栏底部，再是下一个空栏的顶部和底部（通栏浮动体则是页底，前提是每栏都还有空间）；哪里都放不下的，就等到下一页，在那里等待中的浮动体先占据各自的浮动带，然后才排入文本。各栏缩短以容纳在浮动带之间，文本不间断地流过变窄的栏，读者在提到图的位置附近（但不一定恰好在那里）看到它。这是专业排版的标准做法，图书中随处可见。
@@ -533,7 +534,7 @@ const { height } = layout(prepared, columnWidth, 24); // 行距24px
 ### 第6遍：各栏齐底
 
 - **输入**：已完成排版精修的VDT
-- **处理**：在栏之间移动块，使每页各栏高度相等，尽量减小高度差（本应控制这一功能的`ColumnConfig.balancing`标志，是那些已声明但未接入的旧选项之一）
+- **处理**：在栏之间移动块，使每页各栏高度相等，尽量减小高度差（默认开启；`headings.balancing.enabled: false`可将其关闭，见[配置 → 各栏齐底](/zh/docs/configuration#各栏齐底)）
 - **约束**：不得违反第5遍建立的段末孤行和段首孤行规则
 - **输出**：块可能在栏之间移动过，并被标记为`dirty`
 
@@ -682,17 +683,17 @@ renderToEpub(docs, options): Promise<Uint8Array>;
       <td><strong>已发布</strong></td>
     </tr>
     <tr>
-      <td><strong>服务器端</strong></td>
-      <td>Pretext + node-canvas</td>
-      <td>用于SSR和批量生成的无头渲染</td>
-      <td>未来</td>
+      <td><strong>命令行</strong></td>
+      <td>基于Skia（<code>@napi-rs/canvas</code>）的Pretext，由Skia代替浏览器的Canvas</td>
+      <td>PDF、HTML和EPUB写入器，以及页面图像和Word，在终端中运行，不需要浏览器（<code>postext-cli</code>）</td>
+      <td><strong>已发布</strong></td>
     </tr>
   </tbody>
 </table>
 
-四个已发布的后端都接收同一个`VDTDocument`。`postext`（导出Canvas和HTML后端）与`postext-pdf`（导出PDF后端）的拆分纯粹是出于依赖考虑：PDF路径会引入`pdf-lib`和`@pdf-lib/fontkit`，而大多数Web集成并不需要它们。只有在确实要输出PDF字节时才安装`postext-pdf`。`postext-epub`出于同样的原因单独成包，只在制作电子书时需要。
+四个已发布的后端都接收同一个`VDTDocument`。`postext`（导出Canvas和HTML后端）与`postext-pdf`（导出PDF后端）的拆分纯粹是出于依赖考虑：PDF路径会引入`pdf-lib`和`@pdf-lib/fontkit`，而大多数Web集成并不需要它们。只有在确实要输出PDF字节时才安装`postext-pdf`。`postext-epub`出于同样的原因单独成包，只在制作电子书时需要。命令行不是第五个后端：`postext-cli`在没有浏览器的地方运行同样这些写入器。
 
-**仅限浏览器的约束**：在第一阶段，所有排版计算都在浏览器的客户端进行。流水线既可以在主线程上运行（`buildDocument`），也可以在专用的Web Worker中运行（`postext/worker`中的`createLayoutWorker`）。对于由UI驱动的应用，推荐使用工作线程方式：它让测量和收敛循环远离主线程，支持通过`AbortSignal`进行“后发者胜”的取消，并拥有自己的测量缓存和数学公式光栅缓存，使连续的重新构建保持低开销。完整的集成模式参见[配置 → 在Web Worker中运行排版](/zh/docs/configuration#在web-worker中运行排版)。服务器端渲染是一个有意推迟的范围决策：先把浏览器体验做好，再扩展到其他目标。
+**排版在哪里运行**：引擎在Canvas上测量文本，所以只要有Canvas就能运行。在浏览器中，流水线既可以在主线程上运行（`buildDocument`），也可以在专用的Web Worker中运行（`postext/worker`中的`createLayoutWorker`）。对于由UI驱动的应用，推荐使用工作线程方式：它让测量和收敛循环远离主线程，支持通过`AbortSignal`进行“后发者胜”的取消，并拥有自己的测量缓存和数学公式光栅缓存，使连续的重新构建保持低开销。完整的集成模式参见[配置 → 在Web Worker中运行排版](/zh/docs/configuration#在web-worker中运行排版)。在浏览器之外，[命令行](/zh/docs/command-line)用Skia代替浏览器的Canvas运行同一条流水线，所以同一本书在终端、脚本或构建服务器上分出的页面完全相同。
 
 
 ## 性能策略
@@ -776,12 +777,11 @@ bench('layout 50-page document', () => {
 
 下面每一条限制都是有意的取舍。引擎本身已经足够复杂，再去承担本该由别处负责的工作，最容易让它永远做不完。
 
-- **服务端渲染**。所有排版都在浏览器中进行。引擎依赖Canvas字体度量（通过Pretext），而这需要浏览器环境。以后也许会有基于`node-canvas`的服务端后端，但它不在最初的设计之内。浏览器优先。
 - **所见即所得编辑**。Postext是排版引擎，不是编辑器：输入内容，输出几何信息。构建交互式编辑界面（光标管理、选区、撤销/重做、输入处理）是另一个完全不同的问题。Postext可以作为编辑器的渲染后端，但它本身不提供编辑功能。
 - **CSS column-count的封装**。Postext取代CSS多栏布局，而不是在它外面包一层。它从零开始计算精确定位的几何信息，因为浏览器的分栏算法无法控制资源的摆放、段首孤行和段末孤行的避免，以及跨栏的排版规则。而这些恰恰是Postext存在的意义。
 - **响应式断点管理**。Postext按给定的页面尺寸计算版面。何时重新排版（视口尺寸变化、屏幕方向变化时）由调用方决定。Postext不管理断点、媒体查询，也不替你做响应式设计的决定。那是你的工作。
 - **实时协同编辑**。Postext是无状态的排版计算（输入内容，输出几何信息），不是带冲突解决、操作变换或多用户感知的协同文档系统。
-- **字体加载与管理**。Postext假定字体已经加载好、可以用来度量。字体加载、字体回退链和字体子集化都由调用方负责。如果Postext度量文本时某个字体还没有加载，度量会使用浏览器的回退字体，等真正的字体加载完成后，版面就错了。请先加载字体。
+- **字体文件**。`postext`包负责加载字体，但不自带字体。`prepareFonts`在第一次构建之前加载配置及其文本要求的所有字体，字体集无法提供的字体会作为`fontFallback`列在文档的警告中。文件本身由宿主提供：页面上的一条`@font-face`规则，或者一个说明每个字体在哪里的`resolve`函数。见[配置 → 排版前加载字体](/zh/docs/configuration#排版前加载字体)。
 
 
 ## 附录：与现有类型的对应关系
@@ -806,7 +806,7 @@ bench('layout 50-page document', () => {
     </tr>
     <tr>
       <td><code>Resource</code></td>
-      <td>带类型的位图/SVG/表格资源。在度量阶段变成<code>ResolvedResourceBlock</code>，随后要么成为类型为<code>'resource'</code>的行内<code>VDTBlock</code>（摆放位置为<code>'here'</code>），要么成为页面横带中的浮动体（第4遍）</td>
+      <td>带类型的位图/SVG/表格/视频资源。在度量阶段变成<code>ResolvedResourceBlock</code>，随后要么成为类型为<code>'resource'</code>的行内<code>VDTBlock</code>（摆放位置为<code>'here'</code>），要么成为页面横带中的浮动体（第4遍）</td>
     </tr>
     <tr>
       <td><code>ResourceType</code></td>

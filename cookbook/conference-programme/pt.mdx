@@ -22,13 +22,13 @@ O código é [a resposta curta](#a-resposta-curta) lá em cima. Cada dia é text
 
 <Excerpt region="split" />
 
-A grade de quinta-feira é citada na página 2 e posicionada no alto de uma página. Uma flutuante nunca sobe acima da sua referência, então a grade abre a página 3. Ela é mais alta que a página, e `overflow: 'split'` a corta entre duas linhas, nunca dentro de uma célula mesclada ([Tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)). A página 3 termina com a linha das 17.30 e o aviso embaixo. A página 4 repete a linha de cabeçalho e a legenda inteira, com as amostras de cor, seguida de `(continuació)`, e a nota só aparece sob esta última parte. A grade de sexta-feira vai para o pé de uma página e cabe sob o texto que a cita na página 5. O Postext 1.4.1 traz os nomes dos tipos de recurso e esses dois textos só em inglês e espanhol, então as palavras em catalão, plurais incluídos, são escritas sobre `defaultResourceTypes('ca')` e no estilo de tabela. `numberingTemplate: '{n}'` com `resetOn: 'never'` numera as duas grades numa só série, Taula 1 e Taula 2.
+A grade de quinta-feira é citada na página 2 e posicionada no alto de uma página. Uma flutuante nunca sobe acima da sua referência, então a grade abre a página 3. Ela é mais alta que a página, e `overflow: 'split'` a corta entre duas linhas, nunca dentro de uma célula mesclada ([Tabelas mais altas que a página](/pt/docs/configuration#tabelas-mais-altas-que-a-página)). A página 3 termina com a linha das 17.30 e o aviso embaixo. A página 4 repete a linha de cabeçalho e a legenda inteira, com as amostras de cor, seguida de `(continuació)`, e a nota só aparece sob esta última parte. A grade de sexta-feira vai para o pé de uma página e cabe sob o texto que a cita na página 5. `defaultResourceTypes('ca')` dá aos tipos os nomes em catalão, Figura e Taula. Os textos em catalão do motor para uma tabela dividida são `(cont.)` e `Continua`; o estilo de tabela os escreve por extenso. `numberingTemplate: '{n}'` com `resetOn: 'never'` numera as duas grades numa só série, Taula 1 e Taula 2.
 
 ### 3 · Corte os preenchimentos em blocos
 
 <Excerpt region="tiles" />
 
-`setCellBackground`, na resposta curta, dá a cada sessão a cor da paleta da sua trilha, e fios de 1,6 pt na cor do papel cortam os preenchimentos em blocos separados por linhas brancas ([Estilo de tabela](/pt/docs/configuration#estilo-de-tabela)). Uma tabela tem uma única cor de texto para as células do corpo, por isso o texto branco da plenária é um chip cujo estilo define a cor e desliga o preenchimento, a borda e o espaçamento lateral do chip. Os horários e as partes do dia também são chips, em Chivo Mono ([Estilos de chip](/pt/docs/configuration#estilos-de-chip)). Um chip nunca quebra entre linhas; o título de uma plenária e a linha do palestrante cabem cada um numa linha da célula de três salas. Na nota da planta, o chip `sala` deixa o texto como está e mantém numa só linha o número e o nome de cada sala, coisa que um espaço inseparável não faz na 1.4.1.
+`setCellBackground`, na resposta curta, dá a cada sessão a cor da paleta da sua trilha, e fios de 1,6 pt na cor do papel cortam os preenchimentos em blocos separados por linhas brancas ([Estilo de tabela](/pt/docs/configuration#estilo-de-tabela)). Uma tabela tem uma única cor de texto para as células do corpo, por isso o texto branco da plenária é um chip cujo estilo define a cor e desliga o preenchimento, a borda e o espaçamento lateral do chip. Os horários e as partes do dia também são chips, em Chivo Mono ([Estilos de chip](/pt/docs/configuration#estilos-de-chip)). Um chip nunca quebra entre linhas; o título de uma plenária e a linha do palestrante cabem cada um numa linha da célula de três salas. Na nota da planta, o chip `sala` deixa o texto como está e mantém numa só linha o número e o nome de cada sala, como faria um espaço inseparável entre as palavras.
 
 ### 4 · Abra cada dia com uma faixa
 
@@ -40,7 +40,7 @@ O design do título de nível 1 desenha a faixa: uma caixa de 76 mm de altura a 
 
 <Excerpt region="bios" />
 
-Cada palestrante é um parágrafo de um bloco `:::paragraphs{style="bio"}`. O nome em negrito começa na borda da coluna e as linhas de baixo entram 4 mm, em recuo deslocado, e assim os nomes se alinham coluna abaixo como num índice ([Estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)). O texto é alinhado à esquerda, e a 1.4.1 não controla linhas curtas em texto em bandeira, por isso cada nota foi reescrita até a última linha ter pelo menos duas palavras.
+Cada palestrante é um parágrafo de um bloco `:::paragraphs{style="bio"}`. O nome em negrito começa na borda da coluna e as linhas de baixo entram 4 mm, em recuo deslocado, e assim os nomes se alinham coluna abaixo como num índice ([Estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo)).
 
 ## Variações
 
@@ -61,7 +61,3 @@ Contar por título de nível 1, como fazem os tipos predefinidos, dá Taula 1.1 
 -  numberingTemplate: '{n}', resetOn: 'never' })); // Taula 1, Taula 2: one count, not per day
 +  numberingTemplate: '{h1}.{n}', resetOn: 'h1' })); // Taula 1.1, Taula 2.1: per day
 ```
-
-## Erros comuns
-
-- As colunas da página 4 são niveladas à mão, com um `:::columnbreak` antes da nota de Rosa Fontanet. O Postext 1.4.1 não nivela a última página de um capítulo quando o resto de uma tabela dividida a abre, então a primeira coluna vai até o pé e a segunda fica curta. Mude a quebra de lugar sempre que o texto de quinta-feira mudar.

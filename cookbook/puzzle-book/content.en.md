@@ -59,14 +59,12 @@ This turtle has just hatched from a nest buried in the beach. Help it reach the 
 
 # Answers {style="soluciones" kicker="No peeking until the end" theme="Puzzles 1 to 3" colophon="Original puzzles, text and drawings (CC BY 4.0) · Set in Lexend, Lilita One and Chivo Mono (SIL OFL)"}
 
-:::callout{type="soluciones"}
-:::columns{count=3 breaks="2,3"}
+:::columns{count=3 breaks="2,3" gap=6mm}
 ::resource{id="sol-crucigrama"}
 
 ::resource{id="sol-sopa"}
 
 ::resource{id="sol-laberinto"}
-:::
 :::
 
 :::callout{type="dato" title="Did you know?"}

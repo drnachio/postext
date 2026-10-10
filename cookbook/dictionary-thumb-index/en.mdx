@@ -22,7 +22,7 @@ The code is [the short answer](#the-short-answer) above. `TABS` lists 22 tabs, w
 
 <Excerpt region="running-heads" />
 
-The heads are text elements anchored to the page and filtered by `parity` and `pages: 'body'` ([text elements](/en/docs/configuration#text-elements)). The title on page 1 spans both columns, which makes page 1 an opener. The heads skip it, and its folio comes from the footer, an element set to `pages: 'opener'` that prints 6 mm below the text block. On a recto `{chapterTitle}` prints the letter of the last level-1 heading on or before the page, *Letter C*. Since postext 1.5.0 `{firstMark.<key>}` and `{lastMark.<key>}` print a page’s first and last headword instead, the guide words most dictionaries carry; this recipe was set with 1.4.1 and keeps the letter.
+The heads are text elements anchored to the page and filtered by `parity` and `pages: 'body'` ([text elements](/en/docs/configuration#text-elements)). The title on page 1 spans both columns, which makes page 1 an opener. The heads skip it, and its folio comes from the footer, an element set to `pages: 'opener'` that prints 6 mm below the text block. On a recto `{chapterTitle}` prints the letter of the last level-1 heading on or before the page, *Letter C*. `{firstMark.<key>}` and `{lastMark.<key>}` print a page’s first and last headword instead, the guide words most dictionaries carry; this recipe keeps the letter, which is what its tabs index.
 
 ### 3 · Colour the headwords and nothing else
 
@@ -34,13 +34,13 @@ Each entry is one paragraph of a `:::paragraphs{style="entry"}` block, its turno
 
 <Excerpt region="letter-heads" />
 
-`LETTER`, 55.8 pt, is the size at which a capital of Alegreya SC 900 (0.652 em tall) stands on the fourth baseline and reaches the cap line of the first body line. The letter and the brass rule end inside the fifth line, and the heading block snaps down to the next grid line, so each head is five lines deep and the entries under it stay on the grid. On <PageRef page={3}>page 3</PageRef> the C at the head of the second column is level with the first four lines of the first column. Level 1 sets `breakBefore: { enabled: false }`, and the letter styles inherit it. In 1.4.1 any `headings` object already drops the level-1 page break; with the value written out, the letters keep running on if a later release brings that break back.
+`LETTER`, 55.8 pt, is the size at which a capital of Alegreya SC 900 (0.652 em tall) stands on the fourth baseline and reaches the cap line of the first body line. The letter and the brass rule end inside the fifth line, and the heading block snaps down to the next grid line, so each head is five lines deep and the entries under it stay on the grid. On <PageRef page={3}>page 3</PageRef> the C at the head of the second column is level with the first four lines of the first column. Level 1 sets `breakBefore: { enabled: false }`, which switches off the page break a level-1 heading has by default, and the letter styles inherit it, so B and C open mid-column.
 
 ### 5 · Lay the title across both columns
 
 <Excerpt region="title" />
 
-The title style spans the page with a band that holds the anchor, the name, a subtitle and a byline read from heading attributes, and a double rule ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The thin rule ends 45.1 mm below the top of the text block, so the band snaps to 13 grid lines, or 47.7 mm. Under a page-wide heading the column rule still starts at the top of the text block and would cross the title. A paper-coloured box covers the band down to the thin rule, and the column rule shows only below it. `{titleText}` joins the hidden heading’s wrapped lines with a space, and 1.4.1 wraps a page-wide heading at the column width. At the default H1 size the band printed *Word- Book*, so the title style sets the hidden heading at body size, which fits the name on one line of the 60 mm column.
+The title style spans the page with a band that holds the anchor, the name, a subtitle and a byline read from heading attributes, and a double rule ([span and advanced design](/en/docs/configuration#span-and-advanced-design)). The thin rule ends 45.1 mm below the top of the text block, so the band snaps to 13 grid lines, or 47.7 mm. The column rule starts under the band, on the line where the text of the two columns starts.
 
 ## Variations
 
@@ -55,5 +55,4 @@ Printed thumb indexes usually show only the current letter’s tab; take `ladder
 
 ## Pitfalls
 
-- In postext 1.4.1 the column rule under a page-wide heading starts at the top of the text block even when the band is a whole number of grid lines deep, as this one is. A box in the page’s colour, painted under the other elements of the design, covers it.
 - A 60 mm column holds about 50 characters, and Smyth’s English cannot be reworded. In the capture, 18 of the 218 justified English lines (8 %) stretch their spaces past 1.7 times the normal width, against under 2 % in the Spanish, whose translation was fitted to the column. The English stood at 17 % before the five entries that set worst (*Aground*, *Aloft*, *Belay*, *Cockpit*, *Crow’s nest*) were swapped for others. Choose entries that set well, or widen the column.

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "atlas-map-sheet",
-  "sourceHash": "3bea5b9ca3df4ded86ff4e4765a9037b1ba6927fdbf8c9f4106b482e37c032c5",
+  "sourceHash": "2c209fcb70b5743805b80d415b3f5ada56eb90e02faae44d845c39762c6ca70e",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.656Z",
+  "capturedAt": "2026-10-10T13:30:00.720Z",
   "variants": {
     "en": {
-      "hash8": "cf413456",
+      "hash8": "835229aa",
       "vdtHash": "c0198ebf0d4818c7e03a23e60ccabae747e764d0",
       "timings": {
-        "importMs": 167,
-        "fontsMs": 1130,
-        "buildMs": 21,
-        "totalMs": 1943,
-        "builds": 2
+        "importMs": 123,
+        "fontsMs": 913,
+        "buildMs": 57,
+        "totalMs": 1706,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Marcellus"
         ],
         "pages": 4,
-        "ownLines": 248
+        "ownLines": 243
       },
       "pages": [
         {
@@ -115,18 +115,16 @@
       },
       "sandbox": {
         "file": "atlas-map-sheet.postext",
-        "bytes": 512941,
+        "bytes": 512821,
         "folio": "415ce2a3"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
           "registerResourceImage",
           "renderPageToCanvas",
-          "setAlignment",
-          "setCellBackground"
+          "setAlignment"
         ],
         "configKeys": [
           "bodyText",
@@ -245,6 +243,8 @@
           "resourceTypes[].resetOn",
           "resourceTypes[].shortLabel",
           "tableStyle",
+          "tableStyle.bodyAlternateBackground",
+          "tableStyle.bodyAlternateBackgroundEnabled",
           "tableStyle.bodyFontSize",
           "tableStyle.borderColor",
           "tableStyle.borderWidth",
@@ -270,10 +270,9 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 290,
+        "configLeaves": 292,
         "designElements": 12,
         "directives": [
-          ":::columnbreak",
           ":::paragraphs"
         ],
         "inline": [
@@ -324,7 +323,6 @@
           }
         ],
         "features": [
-          "cell-fills",
           "figure-citations",
           "heading-attributes",
           "heading-styles",
@@ -332,7 +330,6 @@
           "opener-band",
           "opener-design",
           "page-background",
-          "page-breaks",
           "page-role-filters",
           "paragraph-styles",
           "resource-types",
@@ -344,7 +341,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 1,
+        "iterationCount": 3,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -354,14 +351,14 @@
       }
     },
     "es": {
-      "hash8": "acad0582",
+      "hash8": "8740adf1",
       "vdtHash": "5ba6ab722b92c3720a9778169d45ee9a8d8a558b",
       "timings": {
-        "importMs": 163,
-        "fontsMs": 1036,
-        "buildMs": 19,
-        "totalMs": 1848,
-        "builds": 2
+        "importMs": 157,
+        "fontsMs": 920,
+        "buildMs": 48,
+        "totalMs": 1728,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -383,7 +380,7 @@
           "Marcellus"
         ],
         "pages": 4,
-        "ownLines": 248
+        "ownLines": 243
       },
       "pages": [
         {
@@ -459,18 +456,16 @@
       },
       "sandbox": {
         "file": "atlas-map-sheet.postext",
-        "bytes": 513409,
+        "bytes": 513288,
         "folio": "415ce2a3"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
           "registerResourceImage",
           "renderPageToCanvas",
-          "setAlignment",
-          "setCellBackground"
+          "setAlignment"
         ],
         "configKeys": [
           "bodyText",
@@ -589,6 +584,8 @@
           "resourceTypes[].resetOn",
           "resourceTypes[].shortLabel",
           "tableStyle",
+          "tableStyle.bodyAlternateBackground",
+          "tableStyle.bodyAlternateBackgroundEnabled",
           "tableStyle.bodyFontSize",
           "tableStyle.borderColor",
           "tableStyle.borderWidth",
@@ -614,10 +611,9 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 290,
+        "configLeaves": 292,
         "designElements": 12,
         "directives": [
-          ":::columnbreak",
           ":::paragraphs"
         ],
         "inline": [
@@ -668,7 +664,6 @@
           }
         ],
         "features": [
-          "cell-fills",
           "figure-citations",
           "heading-attributes",
           "heading-styles",
@@ -676,7 +671,6 @@
           "opener-band",
           "opener-design",
           "page-background",
-          "page-breaks",
           "page-role-filters",
           "paragraph-styles",
           "resource-types",
@@ -688,7 +682,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 1,
+        "iterationCount": 2,
         "looseLines": {
           "count": 0,
           "share": 0,

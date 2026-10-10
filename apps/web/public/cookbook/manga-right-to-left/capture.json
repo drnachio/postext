@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "manga-right-to-left",
-  "sourceHash": "cf61e2c676d1f57c3033e7d04dd9508478d92578bfba186d6aa8ca361f50f2b5",
+  "sourceHash": "472b49f2de1268ba14a85ce4e47316b073abe38d7241b41c3ae67300aa3a071b",
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T14:45:51.079Z",
+  "capturedAt": "2026-10-10T13:40:16.152Z",
   "variants": {
     "en": {
-      "hash8": "8dcf6661",
+      "hash8": "7bbe108f",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 238,
-        "fontsMs": 366,
-        "buildMs": 1349,
-        "totalMs": 3163,
+        "importMs": 167,
+        "fontsMs": 237,
+        "buildMs": 970,
+        "totalMs": 2450,
         "builds": 2
       },
       "specimen": {
@@ -47,7 +47,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 175150,
+          "bytes": 175128,
           "alt": "Page 1."
         },
         {
@@ -109,23 +109,23 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1521419,
+        "bytes": 1521455,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411235,
+        "bytes": 1411272,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -255,13 +255,13 @@
       }
     },
     "es": {
-      "hash8": "38aa5be2",
+      "hash8": "282cd2d5",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 332,
-        "fontsMs": 389,
-        "buildMs": 1380,
-        "totalMs": 3261,
+        "importMs": 165,
+        "fontsMs": 240,
+        "buildMs": 978,
+        "totalMs": 2395,
         "builds": 2
       },
       "specimen": {
@@ -291,7 +291,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 175150,
+          "bytes": 175128,
           "alt": "Página 1."
         },
         {
@@ -353,23 +353,23 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1522877,
+        "bytes": 1522910,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411384,
+        "bytes": 1411421,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -499,13 +499,13 @@
       }
     },
     "ca": {
-      "hash8": "6529983b",
+      "hash8": "0ecb16f9",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 322,
-        "fontsMs": 421,
-        "buildMs": 1422,
-        "totalMs": 3457,
+        "importMs": 166,
+        "fontsMs": 233,
+        "buildMs": 965,
+        "totalMs": 2436,
         "builds": 2
       },
       "specimen": {
@@ -535,7 +535,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 175150,
+          "bytes": 175128,
           "alt": "Pàgina 1."
         },
         {
@@ -597,23 +597,23 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1522190,
+        "bytes": 1522224,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411370,
+        "bytes": 1411407,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -743,13 +743,13 @@
       }
     },
     "zh": {
-      "hash8": "e7b562d1",
+      "hash8": "3995481a",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 388,
-        "fontsMs": 428,
-        "buildMs": 1430,
-        "totalMs": 4045,
+        "importMs": 167,
+        "fontsMs": 234,
+        "buildMs": 964,
+        "totalMs": 2718,
         "builds": 2
       },
       "specimen": {
@@ -779,7 +779,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 175150,
+          "bytes": 175128,
           "alt": "第 1 页。"
         },
         {
@@ -801,7 +801,7 @@
           "h": 1422,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 181624,
+          "bytes": 181604,
           "alt": "第 1 页。"
         },
         {
@@ -812,7 +812,7 @@
           "h": 1422,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 173172,
+          "bytes": 173650,
           "alt": "第 2 页。"
         }
       ],
@@ -841,23 +841,23 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1544490,
+        "bytes": 1544630,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411433,
+        "bytes": 1411470,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -987,13 +987,13 @@
       }
     },
     "ar": {
-      "hash8": "5d89e5b4",
+      "hash8": "3acc6b2e",
       "vdtHash": "c4f6386f59669ebec0168fbe2ea7e1b804875630",
       "timings": {
-        "importMs": 372,
-        "fontsMs": 463,
-        "buildMs": 1418,
-        "totalMs": 3524,
+        "importMs": 175,
+        "fontsMs": 240,
+        "buildMs": 966,
+        "totalMs": 2435,
         "builds": 2
       },
       "specimen": {
@@ -1023,7 +1023,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 175150,
+          "bytes": 175128,
           "alt": "الصفحة 1."
         },
         {
@@ -1085,23 +1085,23 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1530247,
+        "bytes": 1530290,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411767,
+        "bytes": 1411803,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1231,13 +1231,13 @@
       }
     },
     "ja": {
-      "hash8": "cd5de12e",
+      "hash8": "7dcfdb82",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 190,
-        "fontsMs": 295,
-        "buildMs": 1346,
-        "totalMs": 2989,
+        "importMs": 194,
+        "fontsMs": 258,
+        "buildMs": 962,
+        "totalMs": 2455,
         "builds": 2
       },
       "specimen": {
@@ -1267,7 +1267,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 175150,
+          "bytes": 175128,
           "alt": "1ページ。"
         },
         {
@@ -1329,23 +1329,23 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1521107,
+        "bytes": 1521140,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411434,
+        "bytes": 1411471,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1475,13 +1475,13 @@
       }
     },
     "pt": {
-      "hash8": "206bf889",
+      "hash8": "c25c0d6e",
       "vdtHash": "8ca35eceacc095b5b8cf682d943afae58bf077f4",
       "timings": {
-        "importMs": 431,
-        "fontsMs": 460,
-        "buildMs": 1484,
-        "totalMs": 3641,
+        "importMs": 167,
+        "fontsMs": 238,
+        "buildMs": 965,
+        "totalMs": 2454,
         "builds": 2
       },
       "specimen": {
@@ -1511,7 +1511,7 @@
           "h": 1422,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 175150,
+          "bytes": 175128,
           "alt": "Página 1."
         },
         {
@@ -1573,23 +1573,23 @@
       },
       "pdf": {
         "file": "manga-right-to-left.pdf",
-        "bytes": 1521983,
+        "bytes": 1522016,
         "pages": 4
       },
       "sandbox": {
         "file": "manga-right-to-left.postext",
-        "bytes": 1411366,
+        "bytes": 1411403,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

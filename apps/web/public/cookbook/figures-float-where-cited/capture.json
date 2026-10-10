@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "figures-float-where-cited",
-  "sourceHash": "4d031e4fefea254806374213334c1bb6d1882edfe74d5704dd5b5b5ebbefc847",
+  "sourceHash": "67b3a77283bd0f60b8c791a95b646c6a6da629faf53b93341b1435b08345d797",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.930Z",
+  "capturedAt": "2026-10-10T13:33:44.450Z",
   "variants": {
     "en": {
-      "hash8": "60029e79",
-      "vdtHash": "a60e59f1072698bac136056b366a185a5af49dfd",
+      "hash8": "45d2926d",
+      "vdtHash": "08ca59610cbec5bcb94bf491bc1c3fdb643f5207",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 142,
-        "buildMs": 700,
-        "totalMs": 3328,
-        "builds": 2
+        "importMs": 138,
+        "fontsMs": 133,
+        "buildMs": 297,
+        "totalMs": 1143,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Montserrat"
         ],
         "pages": 4,
-        "ownLines": 239
+        "ownLines": 228
       },
       "pages": [
         {
@@ -72,7 +72,7 @@
           "h": 1250,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 168760,
+          "bytes": 174230,
           "alt": "Page 29: 2.3 The tools of the ice. Figure 2.6. Roche moutonnée. The ice polished the gentle face and plucked the steep one. · Figure 2.4. Abrasion: stones held in the base of the ice scratch the bed. · Figure 2.5. Plucking: water freezes in the joints and the ice carries block…"
         },
         {
@@ -83,7 +83,7 @@
           "h": 1250,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 148954,
+          "bytes": 144040,
           "alt": "Page 30: 2.6 Reading a glacial landscape. Figure 2.7. Two glaciers join: their lateral moraines become a medial one, and the terminal moraine dams a lake."
         }
       ],
@@ -115,15 +115,15 @@
       },
       "sandbox": {
         "file": "figures-float-where-cited.postext",
-        "bytes": 1458252,
+        "bytes": 1458643,
         "folio": "3d25f7bf"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
-          "defaultResourceTypes",
+          "buildDocumentWithFonts",
+          "inlineSvgFonts",
           "parseMarkdown",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -219,7 +219,6 @@
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].textAlign",
-          "resourceTypes",
           "unorderedLists",
           "unorderedLists.color",
           "unorderedLists.marginBottom",
@@ -236,14 +235,12 @@
           "locale",
           "page",
           "paragraphStyles",
-          "resourceTypes",
           "unorderedLists"
         ],
-        "configLeaves": 251,
+        "configLeaves": 247,
         "designElements": 12,
         "directives": [
           "::resource",
-          ":::space",
           ":::paragraphs"
         ],
         "inline": [
@@ -303,26 +300,28 @@
           "heading-attributes",
           "heading-numbering",
           "inline-embeds",
-          "localised-labels",
           "opener-band",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
-          "resource-types",
-          "resources",
-          "vertical-space"
+          "resources"
         ],
         "suggestedLevel": 3
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 5,
+        "iterationCount": 4,
         "looseLines": {
           "count": 0,
           "share": 0,
-          "worst": 1.95
+          "worst": 1.98
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -332,14 +331,14 @@
       }
     },
     "es": {
-      "hash8": "39a66c0a",
-      "vdtHash": "f8d3efa1b0ff98ae8bdc20a85f61261d7734e080",
+      "hash8": "cd6b41f5",
+      "vdtHash": "bc5ab5fc99c5c9b16276829c453ff4e984a0ab11",
       "timings": {
-        "importMs": 156,
-        "fontsMs": 136,
-        "buildMs": 372,
-        "totalMs": 1710,
-        "builds": 2
+        "importMs": 141,
+        "fontsMs": 216,
+        "buildMs": 1186,
+        "totalMs": 4136,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -361,7 +360,7 @@
           "Montserrat"
         ],
         "pages": 4,
-        "ownLines": 239
+        "ownLines": 228
       },
       "pages": [
         {
@@ -394,7 +393,7 @@
           "h": 1250,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 170782,
+          "bytes": 174318,
           "alt": "Página 29: 2.3 Las herramientas del hielo. Figura 2.6. Roca aborregada. El hielo pulió la cara tendida y arrancó bloques de la abrupta. · Figura 2.4. Abrasión: los cantos presos en la base del hielo rayan el lecho. · Figura 2.5. Arranque: el agua se hiela en las diaclasas y el…"
         },
         {
@@ -405,7 +404,7 @@
           "h": 1250,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 148046,
+          "bytes": 144190,
           "alt": "Página 30: 2.6 Cómo leer un paisaje glaciar. Figura 2.7. Dos glaciares se unen: sus morrenas laterales forman la central, y la frontal represa un lago."
         }
       ],
@@ -437,15 +436,15 @@
       },
       "sandbox": {
         "file": "figures-float-where-cited.postext",
-        "bytes": 1460010,
+        "bytes": 1458709,
         "folio": "3d25f7bf"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
-          "defaultResourceTypes",
+          "buildDocumentWithFonts",
+          "inlineSvgFonts",
           "parseMarkdown",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -541,7 +540,6 @@
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].textAlign",
-          "resourceTypes",
           "unorderedLists",
           "unorderedLists.color",
           "unorderedLists.marginBottom",
@@ -558,14 +556,12 @@
           "locale",
           "page",
           "paragraphStyles",
-          "resourceTypes",
           "unorderedLists"
         ],
-        "configLeaves": 251,
+        "configLeaves": 247,
         "designElements": 12,
         "directives": [
           "::resource",
-          ":::space",
           ":::paragraphs"
         ],
         "inline": [
@@ -625,14 +621,11 @@
           "heading-attributes",
           "heading-numbering",
           "inline-embeds",
-          "localised-labels",
           "opener-band",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
-          "resource-types",
-          "resources",
-          "vertical-space"
+          "resources"
         ],
         "suggestedLevel": 3
       },
@@ -642,9 +635,14 @@
         "looseLines": {
           "count": 0,
           "share": 0,
-          "worst": 1.92
+          "worst": 1.98
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

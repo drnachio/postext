@@ -40,12 +40,10 @@
     "Q176"
   ],
   "gotchas": [
-    "fonts-first",
-    "config-cache-identity"
   ],
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -185,7 +183,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-07",
-  "updated": "2026-10-07",
+  "updated": "2026-10-10",
   "related": [
     "tebeo-album-page",
     "comic-double-spread"

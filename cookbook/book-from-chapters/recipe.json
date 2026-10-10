@@ -19,27 +19,15 @@
   },
   "answers": ["Q06", "Q37", "Q24", "Q31"],
   "gotchas": [
-    "headings-drop-h1-break", "bundle-metadata", "style-inherits-break", "bundle-ref-places-again",
-    "design-lineheight-multiple", "parity-page1-recto", "resource-types-locale",
-    "hyphenation-locales", "pdf-provider-all-styles", "nbsp-breaks", "fonts-first",
-    "toc-number-baseline"
+    "style-inherits-break",
+    "parity-page1-recto"
   ],
   "explainsWarnings": ["chapterFrontmatterIgnored"],
   "workarounds": [
-    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
-    { "followup": "EF-08", "package": "postext", "note": "the verso running head writes the book title literally (BOOK_TITLE): {title} is blank in every document without its own frontmatter" },
-    { "followup": "EF-33", "package": "postext", "note": "config.locale does not localise Figure: resourceTypes: defaultResourceTypes(LANG) is passed by hand" },
-    { "followup": "EF-20", "package": "postext-pdf", "note": "Rozha One ships one face: the kit provider snaps the bold and italic renderToPdf asks for" },
-    { "followup": "EF-60", "package": "postext", "note": "the contents heading style restates breakBefore: { enabled: false }, or it inherits the H1's parity 'odd' and lands behind a blank page 2" },
-    { "followup": "EF-58", "package": "postext", "note": "contents numbers are painted centred on the line, ~0.7 mm above the title's baseline; no toc option moves them in 1.4.1" },
-    { "followup": "EF-66", "package": "postext", "note": "the colophon sets one statement per paragraph: a no-break space would not keep \"CC BY 4.0\" on one line" },
-    { "followup": "EF-57", "package": "postext", "note": "later chapters refer back to the October frame in words ('The same frame in January…'), never with :ref{id=\"autumn-frame\"}, which would place Figure 1.1 again in their own document" },
-    { "followup": "EF-113", "package": "postext", "note": "the H1 level sets span: 'page' in this single-column book only so that the opener paints unclipped: a heading design kept in the column is clipped at the column's top edge, which would cut the comb that reaches the top of the page" },
-    { "followup": "EF-56", "package": "postext", "note": "every design text's lineHeight is a multiple of its size, never pt(): a Dimension would silently drop the opener's reservation (gotcha design-lineheight-multiple)" },
-    { "followup": "EF-14", "package": "postext", "note": "hyphenation matches exact codes only, so the config sets locale: t({ en: 'en-us', es: 'es' }) (gotcha hyphenation-locales)" }
+    {"followup": "EF-60", "package": "postext", "note": "the contents heading style restates breakBefore: { enabled: false }, or it inherits the H1's parity 'odd' and lands behind a blank page 2"}
   ],
   "related": ["front-matter-roman-to-arabic", "running-heads-by-parity", "chapter-opener-bleed-band", "figures-float-where-cited"],
-  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -68,5 +56,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

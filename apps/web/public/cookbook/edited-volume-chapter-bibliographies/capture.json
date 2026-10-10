@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "edited-volume-chapter-bibliographies",
-  "sourceHash": "7096800b03741e18b319ea005c6a202349578f50d3502a4e447d643bc183a06d",
+  "sourceHash": "e2711f65fe26f1fba6edeec93654b57476f5fc790b0641f923f0020e13c4ad29",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.906Z",
+  "capturedAt": "2026-10-10T13:41:47.488Z",
   "variants": {
     "en": {
-      "hash8": "07bfe3ea",
+      "hash8": "5e64b5f5",
       "vdtHash": "304bc003428dc52b418d521a9e2e401f56507bcf",
       "timings": {
-        "importMs": 234,
-        "fontsMs": 67,
-        "buildMs": 234,
-        "totalMs": 9984,
-        "builds": 2
+        "importMs": 764,
+        "fontsMs": 1730,
+        "buildMs": 566,
+        "totalMs": 3598,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -193,12 +193,12 @@
       },
       "pdf": {
         "file": "edited-volume-chapter-bibliographies.pdf",
-        "bytes": 143783,
+        "bytes": 143845,
         "pages": 10
       },
       "sandbox": {
         "file": "edited-volume-chapter-bibliographies.postext",
-        "bytes": 17576,
+        "bytes": 17575,
         "folio": "3594c3d3"
       },
       "detected": {
@@ -206,12 +206,13 @@
           "LOCALES",
           "STYLES",
           "buildBundle",
-          "clearMeasurementCache",
           "createCiteprocEngine",
           "decompressWoff2",
+          "prepareFonts",
           "registerCitationEngine",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -486,14 +487,14 @@
       }
     },
     "es": {
-      "hash8": "b83434b3",
+      "hash8": "88cb7344",
       "vdtHash": "ede375b516fe6097d1585685858f3b6043945a36",
       "timings": {
-        "importMs": 213,
-        "fontsMs": 60,
-        "buildMs": 66,
-        "totalMs": 6208,
-        "builds": 2
+        "importMs": 662,
+        "fontsMs": 100,
+        "buildMs": 568,
+        "totalMs": 1903,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -668,12 +669,12 @@
       },
       "pdf": {
         "file": "edited-volume-chapter-bibliographies.pdf",
-        "bytes": 158010,
+        "bytes": 158085,
         "pages": 10
       },
       "sandbox": {
         "file": "edited-volume-chapter-bibliographies.postext",
-        "bytes": 17691,
+        "bytes": 17690,
         "folio": "3594c3d3"
       },
       "detected": {
@@ -681,12 +682,13 @@
           "LOCALES",
           "STYLES",
           "buildBundle",
-          "clearMeasurementCache",
           "createCiteprocEngine",
           "decompressWoff2",
+          "prepareFonts",
           "registerCitationEngine",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

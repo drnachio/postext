@@ -36,7 +36,7 @@ En lloc del seu text, el títol imprimeix un disseny a la columna. Allà, `{numb
 
 <Excerpt region="front" />
 
-Un estil de títol pot saltar a una pàgina nova i dibuixar-hi un disseny, així que l'avantportada, el frontispici i la portada són un títol cadascun, amb el seu estil. Amb `numbered: false` no entren al compte, i el primer poema continua sent el I. `toc: false` els deixa fora de l'índex, i com que el seu peu de pàgina és buit, les seves pàgines no porten foli ([estils de títol](/ca/docs/configuration#estils-dencapçalament)). Els estils ocupen la pàgina sencera perquè un disseny a la columna es retalla a la caixa de text: la làmina, que va a sang, perdria les vores i es quedaria sense peu. El peu de la làmina surt de l'atribut `caption` del títol; l'autor, el títol i el subtítol de la portada, del frontmatter.
+Un estil de títol pot saltar a una pàgina nova i dibuixar-hi un disseny, així que l'avantportada, el frontispici i la portada són un títol cadascun, amb el seu estil. Amb `numbered: false` no entren al compte, i el primer poema continua sent el I. `toc: false` els deixa fora de l'índex, i com que el seu peu de pàgina és buit, les seves pàgines no porten foli ([estils de títol](/ca/docs/configuration#estils-dencapçalament)). Els estils ocupen la pàgina sencera perquè un disseny que es queda a la columna el retalla el peu de la caixa de text: la làmina, que va a sang, perdria la part de baix i es quedaria sense peu. El peu de la làmina surt de l'atribut `caption` del títol; l'autor, el títol i el subtítol de la portada, del frontmatter.
 
 ### 5 · L'índex s'omple sol
 
@@ -95,5 +95,5 @@ L'estil del comptador a la plantilla canvia alhora el número de la pàgina del 
 - Mantén junts els versos d'una estrofa: una línia en blanc dins d'un bloc `:::verse` obre una altra estrofa, siguin quantes siguin les línies en blanc.
 - Un vers que comença amb un signe més i un espai és un vers esglaonat, que comença on va acabar el de dalt; escriu `\+` per imprimir el signe més.
 - Sense `align=start` cada poema es centra sobre el seu vers més llarg, i llavors cadascun queda a una distància diferent del marge.
-- Perquè dues paraules passin juntes a la línia de sota, uneix-les amb un espai de no separació (U+00A0), com *the soil* i *bright wings.* a la pàgina 5. Es manté en un vers de text pla; en un amb cursiva o negreta el motor continua tallant-hi.
+- Perquè dues paraules passin juntes a la línia de sota, uneix-les amb un espai de no separació (U+00A0), com *the soil* i *bright wings.* a la pàgina 5.
 - Un element del peu de pàgina amb `pages` a `'all'` s'imprimeix també a les pàgines en blanc. Aquí el foli es compon de dos elements, un per a les obertures i un altre per a les pàgines de text, així que una pàgina parella en blanc queda en blanc.

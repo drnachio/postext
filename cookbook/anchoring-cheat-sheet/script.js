@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 029 · Anchoring cheat sheet: a poster built from chained elements ═══
 // https://postext.dev/en/cookbook/anchoring-cheat-sheet
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Funnel Display, Funnel Sans, Martian Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Funnel Display, Funnel Sans, Martian Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // An A3 poster whose elements hang from the bleed, the page, their slot or one another, never
 // from coordinates; the second sheet is the same poster with each element framed and tagged.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -20,8 +20,7 @@ const palette = {
   muted: '#5c5f66', // speakers and the colophon
   guide: '#ff2d9b', // frames and tags on the construction sheet
 };
-// col(id): a palette-linked colour that also carries its hex, because 1.4.1 paints design
-// elements from the hex (gotcha: palette-skips-designs).
+// col(id): a colour linked to its palette entry, so a swapped palette recolours the sheet.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -37,13 +36,13 @@ const at = (to, edge, x = 0, y = 0, size) => ({ anchor: { to, edge },
   offset: { x: mm(x), y: mm(y) }, ...(size && { size }) });
 const wide = (w) => ({ width: mm(w) }); // fixed, so a text is as wide as its column
 const square = (d) => ({ width: mm(d), height: mm(d) });
-// Design text is centred and cut with '…' by default (gotcha: overflow-ellipsis-default).
+// Design text is centred by default, and in a footer it is cut with '…': these wrap, set left.
 const text = (id, content, face, placement) => ({ kind: 'text', id, content, overflow: 'wrap',
   align: 'left', ...face, placement });
 const face = (fontFamily, size, fontWeight, colour, more) => ({ fontFamily, fontSize: pt(size),
   fontWeight, color: col(colour), ...more });
 const caps = (tracking) => ({ letterSpacing: pt(tracking), textTransform: 'uppercase' });
-const FACE = { // lineHeight: a multiple, never pt() (gotcha: design-lineheight-multiple)
+const FACE = { // lineHeight as a multiple of each size
   kicker: face('Martian Mono', 12, 500, 'sun', caps(1.8)),
   title: face('Funnel Display', 120, 800, 'paper', { lineHeight: 0.86 }),
   deck: face('Funnel Sans', 22, 400, 'paper', { lineHeight: 1.22 }),
@@ -148,7 +147,7 @@ const TAGS = { // where each tag sits against its element: [edge, x, y, text]
 // #endregion
 
 const LEAD = 16; // body leading in pt
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette,
   page: { width: mm(A3.width), height: mm(A3.height), dpi: 150, // 150 dpi is for the screen
     cutLines: { enabled: BLEED > 0, bleed: mm(BLEED) },
@@ -160,7 +159,7 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
   // The hidden title is still measured, so it needs a face FONTS loads.
   headings: { fontFamily: 'Funnel Display', fontWeight: 800,
     levels: [{ level: 1, span: 'page', advancedDesign: poster(),
-      breakBefore: { enabled: true, parity: 'any' } }] }, // gotcha: headings-drop-h1-break
+      breakBefore: { enabled: true, parity: 'any' } }] }, // each poster on a new sheet
   // {style="guides"}: the same design framed and tagged, and a header and footer of its own.
   headingStyles: [{ id: 'guides',
     advancedDesign: { enabled: true, slot: { elements: guides(poster().slot.elements, TAGS) } },
@@ -235,7 +234,7 @@ const resources = [
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the pages paint, loaded before the first build (gotcha: fonts-first).
+// Every face the pages paint, loaded before the first build.
 const FONTS = {
   'Funnel Display': ['800'],
   'Funnel Sans': ['400', '400i', '600', '700'],
@@ -245,10 +244,9 @@ const FONTS = {
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadSvg('corona.svg', coronaSvg());
 await loadSvg('mark.svg', markSvg());
-await loadFonts(FONTS, markdown);
 // pageIndexOffset 1 makes the poster a verso, so the viewer sets the two sheets side by side.
 const content = { markdown, resources, continuation: { pageIndexOffset: 1 } };
-const doc = await buildWithFonts(() => buildDocument(content, config()), markdown);
+const doc = await buildDocumentWithFonts(content, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Anchoring cheat sheet', es: 'Chuleta de anclajes' }) });
 
 // @kit

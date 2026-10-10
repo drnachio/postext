@@ -30,13 +30,13 @@ pageNotes: { "1": "DL折页的正面：沙色底上是眉题Arenal estuary · Vi
 
 <Excerpt region="resources" />
 
-两幅图是示例生成的SVG代码，放在各自资源的`svg.fileId`下交给`files`；表是数据，所以连同题注一起放在`preset.json`里。剖面图和表都设为`position: 'here'`：剖面图在背面页首，开放时间表在引用它的段落下方。在1.4.1里，行内资源下方不留空，所以表后加一行`:::space{lines=0.5}`，在题注下留出3.7 mm；没有它，下一段会在题注下方1.4 mm处开始。
+两幅图是示例生成的SVG代码，放在各自资源的`svg.fileId`下交给`files`；表是数据，所以连同题注一起放在`preset.json`里。剖面图和表都设为`position: 'here'`：剖面图在背面页首，开放时间表在引用它的段落下方。折页设了`layout.inlineResourceGap: 'above'`，行内资源只在上方留空，背面才排得进一面：剖面图后面的标题自带上方间距，表后的一行`:::space{lines=0.5}`在题注下留出3.7 mm。
 
-### 4 · 把标签写进文件
+### 4 · 让标签跟着文件的语言
 
 <Excerpt region="labels" />
 
-当文件里没有`resourceTypes`时，`openBundle`按读者要求的语言生成它们，而不是按文件的语言：用`{ locale: 'en' }`打开西班牙文折页，或者在/en/sandbox的沙盒里导入它，西班牙文正文上方就会印出Figure 1.1。写进配置的类型会取代这个默认值，所以西班牙文文件不管在哪里打开，都印成Figura 1和Tabla 1。`'{n}'`去掉章号，两页的折页用不着它（[资源类型](/zh/docs/configuration#资源类型)）。同一个`config()`还设置了`locale`，它决定使用西班牙文断词模式（背面的compuer-tas）以及PDF声明的语言。
+读取文件的一方按文件自身的语言生成内置类型：配置里不写`resourceTypes`时，西班牙文折页不管在哪里打开，包括在/en/sandbox的沙盒里，都印成Figura 1.1和Tabla 1.1。折页写出类型只是为了编号：`'{n}'`去掉章号，两页的折页用不着它（[资源类型](/zh/docs/configuration#资源类型)）。同一个`config()`还设置了`locale`，它决定使用西班牙文断词模式（背面的compuer-tas）以及PDF声明的语言。
 
 ### 5 · 把同样的字节交出去
 
@@ -48,7 +48,7 @@ pageNotes: { "1": "DL折页的正面：沙色底上是眉题Arenal estuary · Vi
 
 <Excerpt region="cover" />
 
-正面就是封面标题的版面设计：图按原尺寸锚定在页面上，标题文字通过`{titleText}`取得，眉题、导语和信息行来自标题的属性，语言标签是一个带方框的文本元素。H1这一级设为`span: 'page'`，所以图从纸边开始。如果标题设计留在栏内，就会在版心的上下边缘被截断：图会从下移12 mm处开始，到离下边缘13 mm处就停止，语言标签也会缩成一条看不到字母的细条。
+正面就是封面标题的版面设计：图按原尺寸锚定在页面上，标题文字通过`{titleText}`取得，眉题、导语和信息行来自标题的属性，语言标签是一个带方框的文本元素。H1这一级设为`span: 'page'`，所以图一直排到纸的下边缘。如果标题设计留在栏内，就会在版心的下边缘被截断：图到离下边缘13 mm处就停止。
 
 ## 变化
 
@@ -62,9 +62,9 @@ Postext指南把英文和西班牙文的章节、配置和题注放在一个文�
 +const bundle = await openBundle(await guide.arrayBuffer(), { locale: LANG });
 ```
 
-### 让读者决定标签
+### 按章给图编号
 
-不写类型时，标签跟随打开文件时所用的语言，图的编号也从封面标题起算：西班牙文版在这里印成Figura 1.1，在/en/sandbox的沙盒导入后则印成Figure 1.1。
+不写类型时，读取的一方按文件的语言和默认的编号生成它们，图的编号从封面标题起算：西班牙文版印成Figura 1.1和Tabla 1.1，英文版印成Figure 1.1和Table 1.1。
 
 ```diff
 -  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
@@ -72,4 +72,4 @@ Postext指南把英文和西班牙文的章节、配置和题注放在一个文�
 
 ## 常见问题
 
-- postext 1.4.1里的`createBundle`每个文件只写一种语言。[双语文件包](/zh/docs/configuration#双语文件包)里介绍的`localized`输入不在这个版本中，不过`openBundle` 1.4.1能读取这类文件。
+- 这里每个版本各写成一个文件。要把两种语言放进同一个文件，就给`createBundle`传一个`localized`映射（[双语文件包](/zh/docs/configuration#双语文件包)）；之后`openBundle(bytes, { locale })`可以读出其中任一版本。

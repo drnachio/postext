@@ -1,8 +1,8 @@
 ---
 title: "Editor ao vivo com a diagramação num Web Worker"
-summary: "Markdown ao lado de uma página de bolso: um worker criado a partir de um blob compõe com as próprias fontes, e cada tecla cancela a composição em andamento."
+summary: "Markdown ao lado de uma página de bolso: um Web Worker compõe com as próprias fontes, e cada tecla cancela a composição em andamento."
 plain: "Um editor ao vivo para uma pequena edição de bolso de A Máquina do Tempo. A cada tecla, a página é diagramada de novo em segundo plano, e a tela continua respondendo."
-description: "Diagrame páginas do Postext num Web Worker iniciado de um blob da mesma origem, envie as fontes, cancele a composição a cada tecla e pinte na thread principal."
+description: "Diagrame páginas do Postext num Web Worker iniciado com uma só chamada, envie as fontes, cancele a composição a cada tecla e pinte na thread principal."
 question: "Como manter um editor fluido enquanto um texto longo é diagramado, com fontes e cancelamento num Web Worker?"
 aliases: ["Web Worker", "createLayoutWorker", "registerFonts", "AbortController", "cancelar uma composição", "visualização ao vivo", "pré-visualização em tempo real", "fora da thread principal", "editor de Markdown", "headless", "sem interface", "Node"]
 pageNotes: { "1": "A folha de rosto: nos 84 mm de cima, um campo cor de sangue de boi emoldurado por um fio duplo dourado traz um mostrador de latão com quatro mostradores pequenos; embaixo, em papel creme, The Time Machine em Cinzel, em duas linhas, An Invention em itálico sangue de boi, um fio curto de latão e H. G. Wells em versaletes.", "2": "O texto do capítulo I começa na nona linha, sob um numeral romano sangue de boi, um fio curto de latão e INTRODUCTION em maiúsculas espaçadas; os dois primeiros parágrafos enchem o resto da página, e o fólio fica no pé.", "3": "Uma página ímpar de falas curtas, com Introduction em versaletes sangue de boi sobre o texto e o fólio na margem externa.", "4": "Uma página par com o cabeço The Time Machine e o fólio na margem externa; uma frase do Viajante do Tempo vem em itálico.", "5": "Uma página ímpar sobre a geometria de quatro dimensões, com o cabeço Introduction." }
@@ -14,17 +14,17 @@ Você compõe o capítulo I de *A Máquina do Tempo*, de H. G. Wells, em inglês
 
 ## Preparo
 
-### 1 · Iniciar o worker a partir de um blob
+### 1 · Iniciar o worker com uma chamada
 
-O código deste passo é [a resposta curta](#a-resposta-curta) acima. Na 1.4.1, `createLayoutWorker()` chamado sem opções inicia o arquivo do worker que fica ao lado do módulo. Quando o módulo vem do esm.sh, esse arquivo está na origem do esm.sh, e o construtor `Worker` lança um SecurityError. Uma URL de blob criada pela página tem a origem da página, então a resposta curta inicia um worker de módulo a partir de um blob de uma linha que importa `postext/worker/entry` do esm.sh, e passa esse worker para `createLayoutWorker({ worker })`. O `build()` do objeto retornado aceita o mesmo conteúdo e a mesma configuração que `buildDocument()` e resolve com o mesmo tipo de documento ([Rodar a diagramação num Web Worker](/pt/docs/configuration#executar-o-layout-em-um-web-worker)).
+O código deste passo é [a resposta curta](#a-resposta-curta) acima. `createLayoutWorker()` vai sem opções. Quando o módulo vem do esm.sh, o arquivo do worker está na origem do esm.sh, onde o construtor `Worker` o recusaria, então o motor inicia a sua entrada de worker por um blob da origem da página, na mesma versão que a página importou. Num app empacotado, a mesma chamada inicia o arquivo do worker que fica ao lado do módulo. O `build()` do objeto retornado aceita o mesmo conteúdo e a mesma configuração que `buildDocument()` e resolve com o mesmo tipo de documento ([Rodar a diagramação num Web Worker](/pt/docs/configuration#executar-o-layout-em-um-web-worker)).
 
-<Note>O Postext não tem modo de servidor: ele mede o texto com um canvas, então diagrama num navegador ou num worker. Para um trabalho em lote, abra a página no Chrome headless com o Puppeteer e tire dali as páginas ou o PDF. Para um projeto `.postext` em disco, o `render.mjs` da skill postext-port roda o motor no Node e mede com o fontkit, a partir das fontes do próprio projeto, no lugar de um canvas ([Scripts](/pt/docs/skill#scripts)).</Note>
+<Note>O pacote postext mede o texto com um canvas, então diagrama num navegador ou num worker. Para um trabalho em lote, a linha de comando do postext (postext-cli) diagrama um livro e grava o PDF sem navegador; a outra via é abrir a página no Chrome headless com o Puppeteer. Para um projeto `.postext` em disco, o `render.mjs` da skill postext-port roda o motor no Node e mede com o fontkit, a partir das fontes do próprio projeto, no lugar de um canvas ([Scripts](/pt/docs/skill#scripts)).</Note>
 
 ### 2 · Carregar cada fonte duas vezes
 
 <Excerpt region="fonts" />
 
-O worker tem o seu próprio `FontFaceSet` e não enxerga as fontes que a página carregou, então a resposta curta baixa os mesmos arquivos do Fontsource e passa os bytes para `registerFonts()`, com cada peso como string (`'400'`). Sem essa chamada, o worker da 1.4.1 mede com uma fonte substituta e não avisa: compõe este capítulo em 175 linhas em vez de 190, e a primeira linha termina em “him)” em vez de “of”. Um arquivo de fonte que não baixa também passa sem erro. Se o worker recebe uma página 404 no lugar da Baskervville redonda, `registerFonts()` resolve do mesmo jeito e o capítulo sai em 186 linhas, com um aviso só no console do worker. Por isso a resposta curta confere o status de cada resposta antes de enviar qualquer byte, e lança um erro com a fonte e o status HTTP. A página também carrega as mesmas fontes com `loadFonts()`, porque o canvas pinta com as fontes da página.
+O worker tem o seu próprio `FontFaceSet` e não enxerga as fontes que a página carregou, então a resposta curta baixa os mesmos arquivos do Fontsource e passa os bytes para `registerFonts()`, com cada peso como string (`'400'`). Sem essa chamada, o worker mede com uma fonte substituta: compõe este capítulo em 175 linhas em vez de 190, a primeira linha termina em “him)” em vez de “of”, e o console da página nomeia uma vez cada família que falta. Um arquivo de fonte que não baixa é mais difícil de notar. Se o worker recebe uma página 404 no lugar da Baskervville redonda, `registerFonts()` resolve do mesmo jeito e o capítulo sai em 186 linhas, com um aviso só no console do worker. Por isso a resposta curta confere o status de cada resposta antes de enviar qualquer byte, e lança um erro com a fonte e o status HTTP. A página também carrega as mesmas fontes com `loadFonts()`, porque o canvas pinta com as fontes da página.
 
 ### 3 · Compor a cada tecla, pintar na thread principal
 
@@ -38,7 +38,7 @@ O worker tem o seu próprio `FontFaceSet` e não enxerga as fontes que a página
 
 <Excerpt region="title" />
 
-A linha `# The Time Machine {style="title"}` compõe a página 1 no estilo de título `title`, cujos `header` e `footer` vazios deixam a página sem cabeços nem fólio. `numbered: false` deixa o título fora da contagem de capítulos, então Introduction continua sendo o capítulo I. A ilustração é ancorada no canto superior esquerdo da sangria, e o nome do autor fica abaixo do pé da coluna; `span: 'page'` deixa o design pintar nos dois lugares. Sem isso, a 1.4.1 recorta o design na coluna, a ilustração perde os 15 mm de cima e o nome do autor não é pintado.
+A linha `# The Time Machine {style="title"}` compõe a página 1 no estilo de título `title`, cujos `header` e `footer` vazios deixam a página sem cabeços nem fólio. `numbered: false` deixa o título fora da contagem de capítulos, então Introduction continua sendo o capítulo I. A ilustração é ancorada no canto superior esquerdo da sangria, e o nome do autor fica abaixo do pé da coluna. Um design mantido na coluna é cortado no pé dela, por isso o estilo define `span: 'page'`; sem isso, o nome do autor não é pintado.
 
 ### 5 · Cabeços conforme o papel da página
 
@@ -50,9 +50,4 @@ A linha `# The Time Machine {style="title"}` compõe a página 1 no estilo de t�
 
 <Excerpt region="opener" />
 
-O `{number}` do design imprime o número do capítulo na forma que `numberingTemplate: '{1:I}'` lhe dá, um I romano. `minHeight` reserva pelo menos oito linhas, então o texto começa na nona enquanto o título ocupar uma ou duas, e mais abaixo quando um título mais longo precisar de mais espaço. `breakBefore` é repetido porque um objeto `headings` derruba a quebra padrão do H1; `parity: 'any'` deixa o capítulo abrir na página 2, de frente para a segunda página dele.
-
-## Erros comuns
-
-- No postext 1.4.1, uma composição com cache de medidas pode quebrar as linhas de outro jeito que uma sem cache, e o worker sempre mantém um. Na medida de 90 mm desta receita, o capítulo dá 190 linhas nos dois casos, mas com margens de 13 e 10 mm (uma medida de 87 mm) e o espaçamento entre palavras padrão ele dá 196 linhas sem cache e 199 com cache. O pen dá à thread principal um cache próprio (`createMeasurementCache()`), para que as duas threads continuem compondo as mesmas páginas quando você muda a medida.
-- Um import map na página não chega ao worker. Se você fixar `https://esm.sh/postext@1.4.1` na página, fixe o `import` do blob na mesma versão, ou as duas threads podem rodar versões diferentes.
+O `{number}` do design imprime o número do capítulo na forma que `numberingTemplate: '{1:I}'` lhe dá, um I romano. `minHeight` reserva pelo menos oito linhas, então o texto começa na nona enquanto o título ocupar uma ou duas, e mais abaixo quando um título mais longo precisar de mais espaço. `breakBefore` com `parity: 'any'` deixa o capítulo abrir na página 2, de frente para a segunda página dele; o padrão o levaria para a página 3, ímpar.

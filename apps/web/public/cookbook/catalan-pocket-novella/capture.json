@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "catalan-pocket-novella",
-  "sourceHash": "bf935dd6ff934846a34578dcd997df081b2cc4866533e5fd58bff2f428d5db35",
+  "sourceHash": "80209bc933915516f6a096939080d242e8991b59aba7d4e90d260edbafd52077",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.758Z",
+  "capturedAt": "2026-10-10T13:32:12.223Z",
   "variants": {
     "en": {
-      "hash8": "e4a3489c",
+      "hash8": "db8c24fd",
       "vdtHash": "9a0787796bccf4a16e970b26df816ca3e21a551f",
       "timings": {
-        "importMs": 198,
-        "fontsMs": 97,
-        "buildMs": 1156,
-        "totalMs": 3207,
-        "builds": 2
+        "importMs": 167,
+        "fontsMs": 78,
+        "buildMs": 892,
+        "totalMs": 4752,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -167,18 +167,17 @@
       },
       "pdf": {
         "file": "catalan-pocket-novella.pdf",
-        "bytes": 1777440,
+        "bytes": 1777438,
         "pages": 32
       },
       "sandbox": {
         "file": "catalan-pocket-novella.postext",
-        "bytes": 1492583,
+        "bytes": 1492584,
         "folio": "8e6f438d"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
@@ -375,14 +374,14 @@
       }
     },
     "es": {
-      "hash8": "0dc07127",
+      "hash8": "b2e0544e",
       "vdtHash": "9a0787796bccf4a16e970b26df816ca3e21a551f",
       "timings": {
-        "importMs": 208,
-        "fontsMs": 101,
-        "buildMs": 1111,
-        "totalMs": 4382,
-        "builds": 2
+        "importMs": 199,
+        "fontsMs": 70,
+        "buildMs": 895,
+        "totalMs": 1774,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -531,18 +530,17 @@
       },
       "pdf": {
         "file": "catalan-pocket-novella.pdf",
-        "bytes": 1777440,
+        "bytes": 1777438,
         "pages": 32
       },
       "sandbox": {
         "file": "catalan-pocket-novella.postext",
-        "bytes": 1492598,
+        "bytes": 1492599,
         "folio": "8e6f438d"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",

@@ -32,19 +32,19 @@ El margen inferior mide 16,3 mm, lo que queda de los 178 mm de alto tras el marg
 
 <Excerpt region="heads" />
 
-`{title}` imprime el título de los metadatos del documento, y `{chapterTitle}`, el del último capítulo que empieza en la página o antes, así que la 217 nombra el CXXIII, que empezó en la 216 ([elementos de texto](/es/docs/configuration#elementos-de-texto)). La 213 nombra el CXIX, que empieza al pie, aunque sus primeras 25 líneas cierran el CXVIII: 1.4.1 no tiene marcador para el capítulo con el que abre una página. `SHIFT` lleva las cabeceras al centro de la caja de texto, a 1 mm del centro de la página, porque el margen interior mide 2 mm más que el exterior.
+`{title}` imprime el título de los metadatos del documento, y `{chapterTitle}`, el del último capítulo que empieza en la página o antes, así que la 217 nombra el CXXIII, que empezó en la 216 ([elementos de texto](/es/docs/configuration#elementos-de-texto)). La 213 nombra el CXIX, que empieza al pie, aunque sus primeras 25 líneas cierran el CXVIII. `{chapterTitleAtTop}` nombra en su lugar el capítulo con el que abre la página, pero este extracto no trae el título del CXVIII. `SHIFT` lleva las cabeceras al centro de la caja de texto, a 1 mm del centro de la página, porque el margen interior mide 2 mm más que el exterior.
 
 ### 4 · Dibuja la cubierta y la lámina como títulos
 
 <Excerpt region="cover" />
 
-Las dos son [estilos de título](/es/docs/configuration#estilos-de-encabezado) con `numbered: false`, así que el primer capítulo numerado sigue siendo el CXIX. `span: 'page'` las convierte en páginas de apertura. Sin él, las bandas de la cubierta se cortan en los bordes superior e inferior de la caja de texto, la cabecera y el folio 1 se imprimen sobre la cubierta y el título sale en una sola línea. El pie de la lámina sale de su título: CAPÍTULO CXXIII es el texto del título, y la cita en cursiva, su atributo `quote` ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). El `:::pagebreak` que sigue a cada una aparta el texto de las ilustraciones, porque 1.4.1 no reserva sitio para la banda del pie de la cubierta ni para la imagen de la lámina.
+Las dos son [estilos de título](/es/docs/configuration#estilos-de-encabezado) con `numbered: false`, así que el primer capítulo numerado sigue siendo el CXIX. `span: 'page'` las convierte en páginas de apertura. Sin él, la banda del pie de la cubierta y la imagen de la lámina se cortan en el borde inferior de la caja de texto, y la cabecera y el folio se imprimen sobre las dos páginas. El pie de la lámina sale de su título: CAPÍTULO CXXIII es el texto del título, y la cita en cursiva, su atributo `quote` ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). Cada diseño llega al pie de su página, así que el título reserva la página entera y el texto empieza en la siguiente sin ningún `:::pagebreak`.
 
 ### 5 · Di al fragmento en qué punto del libro está
 
 <Excerpt region="excerpt" />
 
-`continuation.headings` da los contadores de títulos con los que empieza el fragmento. Con `h1: 118`, el primer título numerado es el capítulo CXIX; sin él, los cinco capítulos salen numerados del I al V. `numberingTemplate: '{1:I}'`, en el nivel de capítulo, pone esos números en romanos, y el diseño los imprime con `{number}`. `:::numbering{startAt=212}`, tras el salto de página de la cubierta, numera la lámina como 212 y las páginas de texto de la 213 a la 217 ([`:::numbering`](/es/docs/document-format#numbering)).
+`continuation.headings` da los contadores de títulos con los que empieza el fragmento. Con `h1: 118`, el primer título numerado es el capítulo CXIX; sin él, los cinco capítulos salen numerados del I al V. `numberingTemplate: '{1:I}'`, en el nivel de capítulo, pone esos números en romanos, y el diseño los imprime con `{number}`. `:::numbering{startAt=212}`, tras la cubierta, numera la lámina como 212 y las páginas de texto de la 213 a la 217 ([`:::numbering`](/es/docs/document-format#numbering)).
 
 ## Variantes
 
@@ -69,10 +69,8 @@ Con un salto antes de cada capítulo, las cinco páginas de texto pasan a ser si
 
 ## Errores frecuentes
 
-- Si subes `widowMinLines` a 3, en 1.4.1 el CXIX y el CXXI se quedan al pie con tres líneas debajo, y sus párrafos de cuatro líneas se parten en tres y una: las páginas 214 y 215 empiezan con una línea sola, sea cual sea el valor de `orphanPenalty`.
+- Si subes `widowMinLines` a 3, el párrafo de cuatro líneas que sigue al CXIX no tiene por dónde partirse: tres líneas y una abrirían la página 214 con una línea sola. El título pasa a la página siguiente con su texto y la 213 acaba seis líneas antes.
 - Si el CXVIII crece unas líneas, al CXIX solo le queda sitio para una línea bajo su título. `keepWithNext` lleva entonces el título a la página 214, y la 213 acaba cuatro o cinco líneas antes del pie; con `keepWithNext: false`, el título cierra la 213 sin texto debajo.
-- La lámina es un H1, así que `{chapterTitle}` recurre a ella: una página de texto en la que no ha empezado ningún capítulo desde la lámina, como la 213 cuando el CXIX pasa a la siguiente, lleva como cabecera CAPÍTULO CXXIII.
+- La lámina es un H1, así que `{chapterTitle}` recurre a ella: una página de texto en la que no ha empezado ningún capítulo desde la lámina, como la 213 cuando el CXIX pasa a la siguiente, lleva como cabecera CAPÍTULO CXXIII. Con `runningChapter: false` en el estilo de la lámina, las cabeceras la pasan por alto.
 - Con `avoidRunts` desactivado, la última línea del libro lleva *manhã.* sola en lugar de *nadador da manhã.*
-- Sin el `:::pagebreak` que sigue a la cubierta, y sin la lámina, el capítulo CXVIII empieza a 19,5 mm del borde superior de la cubierta, bajo su línea de título de 3 mm. Sin el que sigue a la lámina, once líneas de texto se imprimen sobre el mar si el pie de la lámina sube a 94 mm.
-- En estas páginas ninguna línea se corta por el guion de un pronombre enclítico (*Vesti-me*, *metteu-se*). Pon en cursiva *Emfim*, la primera palabra del CXXIII, y 1.4.1 compone ese párrafo con el corte de líneas del texto con marcas, que acaba una línea en *vencer-* y empieza la siguiente con *se a si mesma*, sin el guion que la ortografía portuguesa repite al principio de la línea.
 - Estos saltos de página valen solo para este texto a 9,5 sobre 12,6 pt en una medida de 84 mm. Si cambias el texto, el cuerpo o la medida, vuelve a mirar el pie de cada página y el blanco sobre cada título.

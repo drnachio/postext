@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "haiku-and-tanka",
-  "sourceHash": "47f6f39ce13fa46e94c7c54a80cef678d0ad4a075abc9d3e0b3c64a3c541c3b4",
+  "sourceHash": "6dd21bf9bb4c9638ba35ef5f6328efcdcf2b02bf612d3839aeef4b51627665ea",
   "engine": {
-    "postext": "1.23.0",
-    "postextPdf": "1.23.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:24:37.835Z",
+  "capturedAt": "2026-10-10T13:34:26.167Z",
   "variants": {
     "en": {
-      "hash8": "72bab16b",
-      "vdtHash": "ce39168b13414f54a299bebc7a5239ed507221e5",
+      "hash8": "ef6f7435",
+      "vdtHash": "13ce231229385092a116f5b882dd32b68cee5ae4",
       "timings": {
-        "importMs": 29962,
-        "fontsMs": 2416,
-        "buildMs": 148,
-        "totalMs": 37204,
+        "importMs": 179,
+        "fontsMs": 251,
+        "buildMs": 59,
+        "totalMs": 1045,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Shippori Mincho"
         ],
         "pages": 8,
-        "ownLines": 152
+        "ownLines": 153
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1480,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 58312,
+          "bytes": 58284,
           "alt": "Opening page 一: おくのほそ道."
         },
         {
@@ -93,7 +93,7 @@
           "h": 1480,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 18770,
+          "bytes": 18788,
           "alt": "Opening page 五: 一握の砂."
         },
         {
@@ -167,7 +167,7 @@
       },
       "pdf": {
         "file": "haiku-and-tanka.pdf",
-        "bytes": 221323,
+        "bytes": 221331,
         "pages": 8
       },
       "sandbox": {
@@ -178,11 +178,11 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -345,17 +345,23 @@
           "share": 0,
           "worst": 0.25
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "46bb8598",
-      "vdtHash": "1354e2318a2f7dceeb5cf30eb53f854430c494a0",
+      "hash8": "4fe41eb9",
+      "vdtHash": "16c42ed11ef1ea371c5cfb568fe37e5474bb16fa",
       "timings": {
-        "importMs": 29916,
-        "fontsMs": 278,
-        "buildMs": 55,
-        "totalMs": 30869,
+        "importMs": 382,
+        "fontsMs": 692,
+        "buildMs": 258,
+        "totalMs": 4213,
         "builds": 1
       },
       "specimen": {
@@ -376,7 +382,7 @@
           "Shippori Mincho"
         ],
         "pages": 8,
-        "ownLines": 152
+        "ownLines": 153
       },
       "pages": [
         {
@@ -387,7 +393,7 @@
           "h": 1480,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 58254,
+          "bytes": 58266,
           "alt": "Página de apertura 一: おくのほそ道."
         },
         {
@@ -431,7 +437,7 @@
           "h": 1480,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 18770,
+          "bytes": 18788,
           "alt": "Página de apertura 五: 一握の砂."
         },
         {
@@ -505,22 +511,22 @@
       },
       "pdf": {
         "file": "haiku-and-tanka.pdf",
-        "bytes": 221341,
+        "bytes": 221346,
         "pages": 8
       },
       "sandbox": {
         "file": "haiku-and-tanka.postext",
-        "bytes": 17714,
+        "bytes": 17713,
         "folio": "7e0edbf5"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -683,7 +689,13 @@
           "share": 0,
           "worst": 0.25
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

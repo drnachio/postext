@@ -25,8 +25,8 @@ guide needs a fix.
   and correct.
 - **Runs on its own.** The composed `script.js` runs in CodePen, in a downloaded `.html`
   file or pasted into any `<script type="module">`, with no build step.
-- **Honest about gaps.** When Postext cannot do something (line numbers, pipe tables, text
-  wrapped around a picture), the recipe shows the workaround and says so; it never fakes the
+- **Honest about gaps.** When Postext cannot do something (pipe tables, Markdown `![]()`
+  images, raw HTML), the recipe shows the workaround and says so; it never fakes the
   feature.
 - **Permanent.** A recipe has a catalogue number (Nº) that is never reused and an English
   slug that never changes (renames go through `formerSlugs`).
@@ -110,8 +110,8 @@ findings; they exit 0 when green, 1 on any failure, 2 on a usage error.
 |---|---|
 | `pnpm cookbook new <slug> --chapter <id> [--from <slug>]` | Copies `_template/` (or another recipe) to `cookbook/<slug>/` as a **draft**: a planned slug keeps its Nº, chapter and order from `_roadmap.json`, any other takes the next free Nº and the last place in the chapter; today's dates, and the slug and Nº written into `script.js`. |
 | `pnpm cookbook dev <slug> [--lang es] [--port 4400]` | Serves exactly the page the capture runs, and reloads it whenever you save a file of the recipe or the kit. Open it next to your editor. |
-| `pnpm cookbook lint [slug…] [--engine local]` | The static checks: `recipe.json`, both write-ups, every composed edition of the pen, assets, credits. Run it until it is silent. With `--engine local`, a draft may pin the next release (see below). |
-| `pnpm cookbook lint [slug…] --strict-fixed [--as-of x.y.z]` | Also fails every note about a pitfall the engine fixed at or before the recipe's pin (`gotchas.json` `fixedIn`): its id in `gotchas`, and each `workarounds` entry with the same `followup`. Plain `lint` only counts them, in one warning. `--as-of` reads every recipe as if it pinned at least that version: the list a clean-up works through before it bumps the pins. |
+| `pnpm cookbook lint [slug…] [--engine local]` | The static checks: `recipe.json`, both write-ups, every composed edition of the pen, assets, credits. Run it until it is silent. With `--engine local`, a draft may pin the next release (see below). It fails every note about a pitfall the engine fixed at or before the recipe's pin (`gotchas.json` `fixedIn`): its id in `gotchas`, and each `workarounds` entry with the same `followup`. |
+| `pnpm cookbook lint [slug…] --as-of x.y.z` | Judges those notes as if every recipe pinned at least that version: the list a clean-up works through before it bumps the pins. |
 | `pnpm cookbook capture [slug…]` | Runs the pen in Chrome against the released engine, verifies it (§11) and writes the pages, card, social image, PDF and `capture.json`. With no slug: every recipe whose capture is missing or stale. |
 | `pnpm cookbook capture <slug> --check` | Runs and verifies, writes nothing (a regression run). |
 | `pnpm cookbook capture <slug> --preview-dir <dir>` | Also writes PNG copies of every page, the card and the social image, and the PDF the pen builds, to `<dir>/<slug>/<lang>/`, with the `capture.json` entry the edition would get. |
@@ -153,10 +153,10 @@ The TypeScript source of truth is `RecipeMeta` in `apps/web/src/lib/cookbook/typ
 | `outputs` | 1–4 of `canvas html pdf epub bundle live`. `pdf` ⇔ the `pdf` kit block ⇔ an import from `https://esm.sh/postext-pdf` ⇔ `engine.postextPdf`; `epub` ⇔ an import from `https://esm.sh/postext-epub`. |
 | `features` | `primary`: 1–3 features the recipe **teaches**; `also`: up to 17 others it uses. Ids from `_registry/features.json`. |
 | `answers` | Question ids (`Q01`…`Q178`); `answers[0]` is the question the recipe page leads with. |
-| `gaps` | Unsupported features the recipe works around (gives the Workaround badge). |
+| `gaps` | Unsupported features the recipe works around (gives the Workaround badge). When the engine closes one (`fixedIn` in `gaps.json`) and the recipe pins that version or a later one, the id leaves the list: the lint fails it. |
 | `gotchas`, `explainsWarnings` | Shared pitfalls and warning kinds shown under Pitfalls. |
 | `related` | Up to four hand-picked sibling slugs; the rest are computed. |
-| `workarounds` | Engine bugs the recipe routes around: `{ followup?, issue?, package, note }`, revisited when fixed. |
+| `workarounds` | Notes on code a reader would not expect: `{ followup?, issue?, package, note }`. With a `followup` (the engine follow-up, such as `EF-66`; `issue` adds a GitHub issue number), the note is a workaround: an engine bug the recipe routes around, deleted with its code when the fix is released; the lint reports it once a pitfall with that follow-up has `fixedIn` at or below the recipe's pin. Without a `followup` it is a design note: a setting the recipe keeps by choice, which stays as long as the code does. The page does not print these notes. |
 | `engine` | `postext` minimum version (≤ the released one, or the next release in a preview draft, §3); `postextPdf` for PDF recipes; `math`, `worker` flags. |
 | `kit` | Blocks to inline: always `core`, `fonts`, `viewer`; plus `pdf`, `images`, `cjk`, `arabic`, `book` and `comics` when used (`book` or `cjk`, never both: each declares `showBook`). |
 | `sample.locales` | Languages with a `content.<lang>.md`; `[0]` is the fallback edition. Usually `en` and `es`; any site locale may have an edition of its own (a comic re-lettered per language writes all six), and a page shows its own edition, else the Spanish one for Catalan, else `[0]`. A value that changes with the edition is written `t({ en: 'en', ja: 'ja', … })`; the lint reads `config.locale` written so for each edition. |
@@ -201,8 +201,8 @@ Start from `_template/script.js`; it runs as it is. The fixed parts, in order:
 // ═══ Postext Cookbook · Nº 009 · Magazine opener on a full-bleed photo ═══════════   line 1
 // https://postext.dev/en/cookbook/magazine-photo-opener                              line 2
 // Code: MIT · Text: ESO eso2315 (CC BY 4.0) · Photo: ESO/VPHAS+ (CC BY 4.0)           line 3
-// Fonts: Newsreader, Archivo, Chivo (SIL OFL 1.1) · Needs postext ≥ 1.4.1            line 4
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Newsreader, Archivo, Chivo (SIL OFL 1.1) · Needs postext ≥ 1.25.0           line 4
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'magazine-photo-opener';
@@ -210,7 +210,7 @@ const RECIPE = 'magazine-photo-opener';
 // ─── 1 · Design ─────────────────────────────────────────────────────────────
 // #region answer: <what it shows>      exactly one; 10–40 lines; the technique itself
 // #endregion
-const config = () => ({ /* … */ });     // a factory, never a shared object
+const config = { /* … */ };            // one object; a change made in place is seen by the next build
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ '';     // content.<lang>.md, inlined by composition
@@ -219,8 +219,7 @@ const markdown = /* @content */ '';     // content.<lang>.md, inlined by composi
 const FONTS = { Newsreader: ['400', '400i', '700', '700i'], Archivo: ['700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config, kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Magazine opener', es: 'Apertura de revista' }) });
 
 // @kit                                  the last line
@@ -244,7 +243,7 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
 
 ### 5.3 Variants
 
-- **PDF.** Add `"pdf"` to `outputs` and `kit`, `"postextPdf": "1.4.1"` to `engine`, and
+- **PDF.** Add `"pdf"` to `outputs` and `kit`, `"postextPdf": "1.25.0"` to `engine`, and
   `"downloads": { "pdf": true }` to serve the file:
   ```js
   import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
@@ -256,7 +255,8 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
   at print size: `await loadImage('lagoon.jpg', asset('lagoon-2400.jpg'))`, then a resource
   `{ id, typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0, bitmap: { fileId: 'lagoon.jpg', format: 'jpeg', width: 2400, height: 1520 }, caption, note, altText }`.
   Draw generated SVG with `loadSvg(fileId, markup)`.
-- **Books.** `buildWithFonts(() => buildBundle({ chapters: [{ markdown }, { markdown: chapter2 }], config: config(), resources }))`
+- **Books.** `await prepareFonts(text, config, kitFonts(FONTS))`, then
+  `await withLoadedFonts(() => buildBundle({ chapters: [{ markdown }, { markdown: chapter2 }], config, resources }), { ...kitFonts(FONTS), text })`
   with `const chapter2 = /* @content:chapter-2 */ '';` and `content.chapter-2.en.md`.
   `showPages` pairs pages across chapters and `renderToPdf` accepts the array of documents.
 - **HTML.** `document.getElementById('pages').innerHTML = renderToHtml(doc, { mode: 'single', background: '#fff', resourceImageUrl: imageUrl })`.
@@ -269,8 +269,8 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
   recipe; move it to the plain import when its script next changes. Until then that build
   prints two lines the recipe has to expect:
   `"expect": { "console": ["module \"buffer\" not found", "module \"esprima\" not found"] }`.
-- **Live controls.** `index.html` holds `<form id="controls">…</form>`; a `render()` rebuilds
-  with `config()` and calls `showPages`. Add `"live"` to `outputs`.
+- **Live controls.** `index.html` holds `<form id="controls">…</form>`; a `render()` changes
+  `config` in place (the next build sees it), rebuilds with `buildDocument` and calls `showPages`. Add `"live"` to `outputs`.
 - **Workers.** Follow the docs' "Running layout in a Web Worker" and set `engine.worker: true`.
 - **Folio (3D book).** Import `createFolioFromDocument` from `https://esm.sh/postext-folio` (the
   capture pins `packages/postext-folio`'s version) and mount it in a container with a height:
@@ -304,8 +304,9 @@ Its functions are hoisted declarations you can call from anywhere in the script:
 | `mm(n)`, `pt(n)`, `em(n)` | core | Dimensions: `mm(18)` is `{ value: 18, unit: 'mm' }`. |
 | `t({ en, es })` | core | The string for the sample's language. |
 | `asset(file)` | core | The jsDelivr URL of `cookbook/<slug>/assets/<file>`. |
-| `loadFonts(FONTS, text)` | fonts | Loads every face from Fontsource before the first build: the latin file, plus latin-ext when the text has letters such as č ł †, and greek when it has Greek letters, for the families that ship those files (`kitSubsetsFor`; Lora and Gelasio have no greek file: set Greek in them as maths, `$\chi^2$`). Pass every slot whose text the pages set. |
-| `buildWithFonts(build, text)` | fonts | Runs the build, loads any face the pages use that `FONTS` forgot (with a warning the capture fails on), and rebuilds. |
+| `kitFonts(FONTS)` | fonts | The options of the engine's `buildDocumentWithFonts`, `prepareFonts` and `withLoadedFonts` (import them from postext): the Fontsource resolver and the faces of `FONTS`. The engine loads every face the config and `FONTS` ask for before the first build, then any face the pages used that was missing, and builds again; a face it could not load is a `fontFallback` content warning. List the exact weights and slants the pages set, the bold of a label and the italic of a note too: a weight another face of the family answers without synthesis (a 600 italic set from the 700 italic) is not fetched, the PDF embeds the exact file, and C12 fails the difference. |
+| `fontsourceResolver` | fonts | The resolver itself: a face's latin file, plus latin-ext when the text has letters such as č ł †, and greek when it has Greek letters, for the families that ship those files (`kitSubsetsFor`; Lora and Gelasio have no greek file: set Greek in them as maths, `$\chi^2$`), always in that order; null for a weight or slant Fontsource does not ship. |
+| `loadFonts(FONTS, text)` | fonts | For the cjk, arabic and comics blocks, which add files of their own after it: the latin (and latin-ext, greek) files of `FONTS` added to `document.fonts` by hand, in that order once all have loaded. Such a pen builds with `withLoadedFonts(() => buildDocument(…), { ...kitFonts(FONTS), text })`. |
 | `showPages(doc \| docs, { title })` | viewer | The dark desk with facing spreads; sets `data-postext="ready"`. |
 | `offerPdf(makePdf, filename)` | pdf | A "Build the PDF" button, then open and download links. |
 | `fontsourceProvider` | pdf | The PDF font provider: snaps to shipped weights, falls back from missing italics, and embeds the latin file, then the latin-ext and greek files a face's letters need, as `loadFonts` loads them on screen. |
@@ -313,7 +314,7 @@ Its functions are hoisted declarations you can call from anywhere in the script:
 | `imageBytes`, `imageUrl` | images | The `resourceBytes` of `renderToPdf` and the `resourceImageUrl` of `renderToHtml`. |
 | `loadCjkFonts(faces, text, { vertical })` | cjk | Chinese, Japanese and Korean faces (the other families of `faces` are left to `loadFonts`): one `FontFace` per Fontsource unicode-range file, loading the files `text` touches; fails on a character no file has, or when api.fontsource.org does not answer. One face: `loadCjkFonts(FONTS, markdown)`. Several voices: one call per voice with the text it sets, `loadCjkFonts({ 'LXGW WenKai TC': ['400'] }, quotes)`, so the Kai and Hei faces do not fetch a file for every character of the book (C12 fails a character set from a file that was not loaded). `vertical: true` also loads each family's vertical punctuation for the canvas (import `loadVerticalAlternates`). |
 | `cjkPdfProvider` | cjk | The PDF font provider for such faces: the files that hold each face's characters. Other families get `fontsourceProvider`'s latin file (so list `pdf` too), and their latin-ext file as well when the face sets letters only that file has: ō ū in rōmaji, ǎ in pinyin. |
-| `loadArabicFonts(faces, text)` | arabic | The arabic file of every listed weight of each Arabic family (Amiri, Noto Naskh Arabic, Scheherazade New…; the other families of `faces` are left alone), after `loadFonts`, which loads their latin files. Fails on an Arabic-script character the arabic files lack, or when api.fontsource.org does not answer. List every weight the pages set in Arabic in `FONTS`: a weight `buildWithFonts` loads late gets its latin file only (C12 fails it). |
+| `loadArabicFonts(faces, text)` | arabic | The arabic file of every listed weight of each Arabic family (Amiri, Noto Naskh Arabic, Scheherazade New…; the other families of `faces` are left alone), after `loadFonts`, which loads their latin files. Fails on an Arabic-script character the arabic files lack, or when api.fontsource.org does not answer. List every weight the pages set in Arabic in `FONTS`: a weight the engine loads in its later round gets its latin file only (C12 fails it). |
 | `arabicPdfProvider` | arabic | The PDF font provider for such faces: the arabic file when the face sets Arabic, then latin, and latin-ext for letters such as ā ḥ ʿ; postext-pdf shapes the Arabic with HarfBuzz from those bytes. Other families go to `fontsourceProvider`, so list `pdf` too. |
 | `showBook(doc \| docs, { title, binding })` | book | `showPages` for a book bound on either edge: a right-bound document (`doc.binding`, `'right'` for `page.binding: 'right'` and, with the binding left to `'auto'`, for right-to-left text and vertical text) lies mirrored, page 1 alone on the left of the spine, then `[3 \| 2]`. The `cjk` block carries the same function for the Chinese recipes captured with it; a recipe lists one of the two. |
 | `loadComicFonts(faces, text)` | comics | After `loadFonts` (and `loadCjkFonts` or `loadArabicFonts` for those scripts): for each family, the regular, bold, italic and bold italic Fontsource does not ship are declared with its nearest file, so the bold of a shout or a sound effect and the italic of an inner voice measure and paint the letters the PDF embeds, not a bold or a slant the browser makes up. The comic faces of `defaultComicFont` and `defaultComicSfxFont` (Comic Neue, Zen Antique, Noto Sans SC, LXGW WenKai TC, Playpen Sans Arabic; Bangers, Dela Gothic One, ZCOOL KuaiLe, Lalezar) mostly ship one weight: list in `FONTS` only what Fontsource ships (`Bangers: ['400']`) and let this block add the rest. A CJK face needs the `cjk` block, an Arabic face setting Arabic the `arabic` block. |
@@ -328,13 +329,31 @@ whole Cookbook is verified again.
 - ES2022, two-space indent, single quotes, semicolons, lines of 100 characters or fewer.
   No classes, no frameworks, no dependencies beyond `postext` and `postext-pdf`.
 - Comments in English (the Spanish explanation lives in `es.mdx`). They say *why*, and cite
-  shared pitfalls by id: `// gotcha: headings-drop-h1-break`.
-- `const config = () => ({ … })`: the engine caches resolved configs by object identity.
-- Any `headings` object drops the H1 page break: restate
-  `levels: [{ level: 1, breakBefore: { enabled: true, parity } }]`.
-- `fontFamily` holds one family, never a CSS stack.
-- Ordered lists use `numberFormat: 'arabic'` (`'decimal'` prints "undefined").
-- `::resource{id="…"}` takes double quotes; every frontmatter value is quoted.
+  shared pitfalls by id: `// gotcha: resource-double-quotes`. Cite a pitfall the recipe's
+  engine still has: one that `gotchas.json` marks `fixedIn` at or before the pin is history
+  (§10), and a comment or a line of code that routes around it goes.
+- `const config = { … }`, one object; a factory (`const config = () => ({ … })`) still lints.
+  Since postext 1.25 the engine sees a config changed in place.
+- A `headings` object is partial: it merges onto each level's defaults, so an H1 keeps its
+  break to a recto (`{ enabled: true, parity: 'always-odd' }`) whatever else the object sets.
+  Write `breakBefore` on a level only to change it: `{ parity: 'odd' }` for a recto with no
+  blank page forced before it, `{ enabled: false }` for chapters that run on. A pen may
+  still restate the default; the lint asks for it only in a recipe pinned below 1.5.0,
+  where any `headings` object dropped the break.
+- `fontFamily` names one family. The engine sets a CSS stack in its first family and ignores
+  the other names (there is no fallback chain), so the lint fails a stack.
+- Numbering formats are spelt alike everywhere: lists, resource counters, page labels and
+  `:::numbering` each take `'arabic'` or `'decimal'`, `'upper-roman'` or `'roman-upper'`, and
+  the template tokens (`'1'`, `'i'`, `'I'`, `'a'`, `'A'`). A name the engine does not know
+  numbers in decimal and comes back as an `unknownNumberFormat` config warning, which fails
+  the capture (C31).
+- `::resource{id="…"}` takes double quotes. Frontmatter values are quoted, in the sample as
+  in the write-ups: the engine prints an unquoted number, date or list (a date as its
+  calendar day in the document's language), but YAML reads an unquoted `: ` or `#` as
+  syntax, and a quoted value prints exactly as typed.
+- The faces load before the build: `kitFonts(FONTS)` handed to the engine, `loadFonts(FONTS, …)`
+  under the cjk, arabic and comics blocks, or `loadBundleFonts(bundle)` when the pen takes
+  them from a bundle's own files. The lint warns when it finds none of the three.
 - Bitmaps declare `width` and `height` in pixels at print size.
 - No `Math.random()` (use a seeded Mulberry32 for generated art), no clock, no dates from
   `new Date()`: captures must be deterministic.
@@ -569,9 +588,9 @@ them for print, and readers copy what a recipe shows. The default look is: a
 a grey `#f4f4f4` box for callouts and a spreadsheet grid for tables.
 
 **Every recipe sets at least:** page geometry (mirrored for books); body family, size and
-leading; bold, italic and reference colours back to ink; `headings`, with the H1
-`breakBefore` restated; `header` and `footer`; a semantic `colorPalette` with every colour
-linked; and callout, table and caption styles whenever the recipe uses them.
+leading; bold, italic and reference colours back to ink; `headings` (the H1 keeps its break
+to a recto unless the recipe changes it); `header` and `footer`; a semantic `colorPalette`
+with every colour linked; and callout, table and caption styles whenever the recipe uses them.
 
 The lint fails a config without `bodyText`, `header`, `footer` or `colorPalette`. The capture
 (check C17) fails on any of: body text in EB Garamond 8 pt; a heading level in Open Sans
@@ -755,7 +774,7 @@ share. Each file starts with a `"$comment"` that explains it; the loader ignores
 | `apis.json` | exported engine symbols → docs section | symbol name |
 | `config.json` | top-level config keys → docs section | key |
 | `questions.json` | the reader questions Q01–Q178, how/why, index form, theme, gap | `Qnn` |
-| `gaps.json` | what Postext does not do, with aliases and the workaround; a gap the engine closes keeps its entry with `fixedIn` (the version), so the recipes and questions that name it still resolve, but the site no longer offers it as a gap or gives its recipes the Workaround badge | kebab-case id |
+| `gaps.json` | what Postext does not do, with aliases and the workaround; a gap the engine closes keeps its entry with `fixedIn` (the version), so the questions and the older-pinned recipes that name it still resolve, but the site no longer offers it as a gap or gives its recipes the Workaround badge; a recipe that pins that version or a later one takes the id out of its `gaps` (the lint fails it) | kebab-case id |
 | `warnings.json` | every engine, parse and Sandbox warning: label, cause, fix | warning kind |
 | `gotchas.json` | shared pitfalls, tied to a feature and to the engine follow-up that would retire them; one the engine fixes keeps its entry with `fixedIn` (the version) and a body that tells the old behaviour as past: a recipe that pins an older engine still lists it, under a "fixed in postext X" kicker, and a recipe that pins that version or a later one no longer shows it nor is found by it | kebab-case id |
 | `collections.json` | featured recipes and curated reading paths | kebab-case id |
@@ -797,14 +816,14 @@ longer matches the published pages.
 **Failures** block the write: script errors or timeouts (C1), console errors not listed in
 `expect.console` (C2), failed or disallowed network requests (C3), nothing built (C4), layout
 warnings not in `expect.warnings` (C5; with the index's warnings and the content warnings on how
-the text is set: `arabicMarksExceedLeading`, `unbreakableWordOverflow`, `joiningScriptLetterSpacing`, and every comic warning
+the text is set: `arabicMarksExceedLeading`, `unbreakableWordOverflow`, `joiningScriptLetterSpacing`, a side box or float set on a page after the text or on no page (`afterText`, `unplaced`), a `:::columns` group too narrow or with an unknown `flow` (`columnsTooNarrow`, `columnsFlowUnknown`), a face measured in a fallback or synthesized (`fontFallback`), and every comic warning
 but `comicUnknownSpeaker`: `comicPanelLetterbox`, `comicBalloonOverflow`, `comicPanelCount`…), a layout that did not converge (C6), parse issues
 (C7), unknown directives (C8), unknown style ids (C9), unknown references that print "?"
 (C10), unregistered images (C11), faces used but not loaded, or a CJK face setting characters
-whose files were not loaded when the layout ran (C12; an Arabic face counts the same way, so a weight the arabic block did not load fails it), `FONTS` incomplete (C13),
+whose files were not loaded when the layout ran (C12; an Arabic face counts the same way, so a weight the arabic block did not load fails it),
 PDF errors (C14), a tainted canvas (C15), "undefined" or "NaN" printed (C16), the default
-skin (C17), empty pages (C18), missing credits (C19), over budget (C20), a warm build over
-4 s (C21), and, for an `epub` output, no EPUB written before the module settled, or a file
+skin (C17), empty pages (C18), missing credits (C19), over budget (C20), a build over
+4 s (C21; the one build of `buildDocumentWithFonts` starts with nothing measured), and, for an `epub` output, no EPUB written before the module settled, or a file
 that `readEpub` cannot read back in its own layout (C30; the writer's `missingFont` and
 `missingImage` reports are warnings), and a config value the engine could not use as written
 (C31, from `doc.configWarnings`): a character grid or a side column cut to what the page holds

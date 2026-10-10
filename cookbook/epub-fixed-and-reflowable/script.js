@@ -1,14 +1,14 @@
 // ═══ Postext Cookbook · Nº 115 · One book, two EPUB 3 files: fixed and reflowable ════
 // https://postext.dev/en/cookbook/epub-fixed-and-reflowable
 // Code: MIT · Text: Aesop, tr. G. F. Townsend, 1867; L. Alas, Clarín, 1893 (PD) · Pictures: none
-// Fonts: Libre Caslon Text, Libre Caslon Display, Jost (SIL OFL 1.1) · Needs postext ≥ 1.15.0
+// Fonts: Libre Caslon Text, Libre Caslon Display, Jost (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 //
 // A small book of three chapters, laid out once with buildBundle and written as two EPUB 3
 // files with postext-epub: a fixed layout that keeps every printed page, and reflowable text
 // that a phone or an e-reader sets again. Each file is read back with readEpub to list what
 // a reading system will open, with a link to download it.
 import {
-  buildBundle, renderPageToCanvas, clearMeasurementCache,
+  buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas,
 } from 'https://esm.sh/postext';
 import { renderToEpub, readEpub } from 'https://esm.sh/postext-epub';
 
@@ -77,7 +77,7 @@ const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'bottom', 
   { ...folio, pages: 'opener', placement: at('page', 'bottom', 0, -11) })] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: LANG,
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
@@ -90,7 +90,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: TEXT, color: col('ink'), fontWeight: 400, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // A book or chapter opens on the next page, left or right: no blank versos in an EPUB.
     { level: 1, fontFamily: DISPLAY, fontSize: pt(28),
       breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
     { level: 2, fontSize: pt(11.5), lineHeight: pt(LEAD), italic: true, color: col('accent'),
@@ -119,7 +119,7 @@ const chapters = [/* @content */ '', /* @content:c1 */ '', /* @content:c2 */ '',
 const markdown = chapters.map((c) => c.markdown).join('\n\n'); // every word, for the fonts
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Libre Caslon Text': ['400', '400i'], // the text, the fable titles, the imprint
   'Libre Caslon Display': ['400'], // the book's and the chapters' titles
   Jost: ['500', '600'], // kickers, author, running heads
@@ -141,8 +141,9 @@ const epubFonts = (faces) => Promise.all(Object.entries(faces).flatMap(([family,
 // #endregion
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const docs = await buildWithFonts(() => buildBundle({ chapters, config: config() }), markdown);
+await prepareFonts(markdown, config(), kitFonts(FONTS));
+const docs = await withLoadedFonts(() => buildBundle({ chapters, config: config() }),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(docs, { title: `${docs[0].metadata.title} · EPUB 3` });
 
 // #region answer: one layout, two EPUB 3 files: every printed page, or text that reflows

@@ -48,19 +48,10 @@
     "cjk-spread-order",
     "cjk-locale-tag"
   ],
-  "workarounds": [
-    {
-      "package": "postext",
-      "note": "the lesson and fable numbers are typed into the headings: a numberingTemplate joins the number to the title's first span (buildBlockKind.ts, the heading case), and when that span is a ruby base the reading is centred over the number and the first character together; the `marked` test there should count ruby, warichu, emphasis marks, name and title lines, tcy and orientation runs"
-    },
-    {
-      "package": "postext",
-      "note": "each box and picture of the upper tier is fenced or cited where the channel of its page has room: a span 'side' box, or a side figure queued behind one, that finds no room before the text ends gets a page of its own with nothing under it, and the ones after it are dropped with no warning (in both writing modes; figures alone get pages of their own)"
-    }
-  ],
+  "workarounds": [],
   "engine": {
-    "postext": "1.9.0",
-    "postextPdf": "1.9.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -181,5 +172,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-29",
-  "updated": "2026-09-30"
+  "updated": "2026-10-10"
 }

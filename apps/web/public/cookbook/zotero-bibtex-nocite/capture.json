@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "zotero-bibtex-nocite",
-  "sourceHash": "be0bf13dc448f2ad9710ece71bfce709c11cf319b7d7d988df694d0060dc012f",
+  "sourceHash": "6e2a96ca3618d76a90c4797088cd91653e1051e7a55b233dbe1ab9eba3df95f5",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.646Z",
+  "capturedAt": "2026-10-10T13:39:44.954Z",
   "variants": {
     "en": {
-      "hash8": "09e2b65f",
+      "hash8": "87c1e58f",
       "vdtHash": "58b2adb558c4b1f4d991a09587851a71d25acbf0",
       "timings": {
-        "importMs": 159,
-        "fontsMs": 35,
-        "buildMs": 57,
-        "totalMs": 2788,
-        "builds": 2
+        "importMs": 158,
+        "fontsMs": 5,
+        "buildMs": 553,
+        "totalMs": 1324,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Spectral"
         ],
         "pages": 2,
-        "ownLines": 121
+        "ownLines": 120
       },
       "pages": [
         {
@@ -95,8 +95,7 @@
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "registerCitationEngine",
           "renderPageToCanvas"
@@ -266,14 +265,14 @@
       }
     },
     "es": {
-      "hash8": "9682f092",
+      "hash8": "9fcc60f6",
       "vdtHash": "655bcf601c1bf04052d6efffa40d159ce5cd7e18",
       "timings": {
-        "importMs": 166,
-        "fontsMs": 33,
-        "buildMs": 26,
-        "totalMs": 1382,
-        "builds": 2
+        "importMs": 148,
+        "fontsMs": 5,
+        "buildMs": 489,
+        "totalMs": 1235,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -294,7 +293,7 @@
           "Spectral"
         ],
         "pages": 2,
-        "ownLines": 121
+        "ownLines": 120
       },
       "pages": [
         {
@@ -351,8 +350,7 @@
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "registerCitationEngine",
           "renderPageToCanvas"

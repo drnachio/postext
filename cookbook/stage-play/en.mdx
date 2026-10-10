@@ -18,7 +18,7 @@ The opening of Oscar Wilde’s *The Importance of Being Earnest*, set as a five-
 
 <Excerpt region="acts" />
 
-The act title is a first-level heading in Abril Fatface at 24 pt, with no design slot. `textTransform` sets it in capitals, and its three grid lines of 13.6 pt put the capitals 5.5 mm below the top of the text block ([headings](/en/docs/configuration#headings)). `textAlign: 'center'` cannot be set per level, so it also centres the cast list’s headings and the *Scene* label. `breakBefore` with parity `'odd'` starts the act on a recto, facing the cast list. The config has to restate it, because any `headings` object turns the first level’s page break off ([break before](/en/docs/configuration#break-before)).
+The act title is a first-level heading in Abril Fatface at 24 pt, with no design slot. `textTransform` sets it in capitals, and its three grid lines of 13.6 pt put the capitals 5.5 mm below the top of the text block ([headings](/en/docs/configuration#headings)). `textAlign: 'center'` cannot be set per level, so it also centres the cast list’s headings and the *Scene* label. `breakBefore` with parity `'odd'` starts the act on a recto, facing the cast list. The default, `'always-odd'`, would put two blank pages between them ([break before](/en/docs/configuration#break-before)).
 
 ### 2 · The cast list is a row of dots to each actor
 
@@ -36,9 +36,9 @@ A resource type with an empty `captionPrefix` and `shortLabel` prints its pictur
 
 <Excerpt region="playbill" />
 
-`# The Importance of Being Earnest {style="playbill" …}` carries the title in four attributes, which the design sets in two faces: Abril Fatface at 40 and 60 pt for the nouns, Libre Baskerville italic at 17 pt for *The* and *of Being* ([heading attributes](/en/docs/document-format#heading-attributes)). The plum ground, the frame and the carnation are one SVG drawn in code and anchored to the bleed ([image elements](/en/docs/configuration#image-elements)). The style sets `span: 'page'` although the book has one column. Kept in the column, the design would be cut off at the top and at the foot of the text block, 20 mm below the top of the sheet and 23.3 mm above its foot. The style’s empty `header` keeps the running heads off the cast list, which belongs to the same section, and its empty `footer` keeps the drop folio off the title page, where it would print plum on plum ([heading styles](/en/docs/configuration#heading-styles)).
+`# The Importance of Being Earnest {style="playbill" …}` carries the title in four attributes, which the design sets in two faces: Abril Fatface at 40 and 60 pt for the nouns, Libre Baskerville italic at 17 pt for *The* and *of Being* ([heading attributes](/en/docs/document-format#heading-attributes)). The plum ground, the frame and the carnation are one SVG drawn in code and anchored to the bleed ([image elements](/en/docs/configuration#image-elements)). The style sets `span: 'page'` although the book has one column. Kept in the column, the design would be cut off at the foot of the text block, 23.3 mm above the foot of the sheet. The style’s empty `header` keeps the running heads off the cast list, which belongs to the same section, and its empty `footer` keeps the drop folio off the title page, where it would print plum on plum ([heading styles](/en/docs/configuration#heading-styles)).
 
-An opener’s images reserve no height, so the heading holds the page only down to its lowest line of text, the premiere at 176 mm. The space left below it is too short for the next heading, and the captured pages come out the same without the `:::pagebreak` after the title. The break is there for later edits: without it, moving the theatre and the premiere up to 150 and 156 mm starts *The Persons of the Play* on the plum sheet. In 1.4.1 a centred line with `letterSpacing` sits half that spacing left of centre, so `line()` moves each tracked line right by the same amount. *OSCAR WILDE* is 0.07 mm off centre instead of 0.56.
+The ground is an image element, and an opener reserves down to the foot of its images, so the heading holds the whole sheet: *The Persons of the Play* starts on page 2 with no `:::pagebreak` after the title, wherever the title page’s lines stand. A centred line with `letterSpacing` needs no correction either. The spacing after its last letter is left out of the centring, and *OSCAR WILDE* stands on the centre of the page.
 
 ### 5 · Running heads that skip the act’s first page
 
@@ -67,14 +67,14 @@ Set flush left with a 5 mm first-line indent, a one-line direction starts where 
 `paragraphSpacing: true` adds a blank grid line after every speech. The English act then runs to five pages instead of three, the Spanish one to four.
 
 ```diff
-   maxRuntTracking: 0, // gotcha: runt-tracking-unpainted
+   firstLineIndent: mm(5), hangingIndent: true, // the name at the margin, the turnovers hung
 +  paragraphSpacing: true,
  };
 ```
 
 ## Pitfalls
 
-- Every italic run in the dialogue takes `italicColor`, emphasis included, so Lane’s emphatic *is* prints in the grey of the directions. The grey has to go on `bodyText` because in 1.4.1 a paragraph style cannot give its italics a colour of their own; only roman type would keep the *is* in ink.
-- Three of Wilde’s speeches end on a word alone: *information.*, *that?* and *you.* The script sets `bodyText.maxRuntTracking: 0` because of the pitfall *A runt fix can tighten tracking that is never painted*. At the default, 1.4.1 pulls *that?* up with 2.0 mm of negative tracking that the canvas does not paint, and the line prints with its word spaces at half their width. With word spacing alone, *that?* moves up only with a `minWordSpacing` of 0.5, which crushes the line the same way, or with a measure 1.5 mm wider, which sets ten lines looser than 1.5 times the normal space instead of two. The English pages keep the three runts rather than change Wilde’s words. The Spanish translation was reworded wherever a line ended on a one-letter word or a syllable stood alone.
+- Every italic run in the dialogue takes `italicColor`, emphasis included, so Lane’s emphatic *is* prints in the grey of the directions. The grey goes on `bodyText` because most directions stand inside a speech, in the same paragraph as the emphasis; only roman type would keep the *is* in ink.
+- Two of Wilde’s speeches end on a word alone: *information.* and *you.* A third, *that?*, is pulled up onto the line before by the runt fix, with the 1 % of negative tracking that `bodyText.maxRuntTracking` allows by default. The English pages keep the two runts rather than change Wilde’s words. The Spanish translation was reworded wherever a line ended on a one-letter word or a syllable stood alone.
 - Names hyphenate like any other word: *Au-gusta* and *Gwen-dolen* break across lines on page 5. A word joiner (U+2060) inside *Augusta* keeps it whole, but it stretches the line above to 1.71 times the normal word space, so the English text keeps the hyphens.
 - Playfair Display SC draws *fi* as a lowercase ligature on the canvas, so *first* would print a lowercase *fi* among small capitals. That is why the cast list’s head says *The original cast*.

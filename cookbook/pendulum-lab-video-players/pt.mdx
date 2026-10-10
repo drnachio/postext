@@ -38,7 +38,7 @@ A folha é montada em torno de dois vídeos lado a lado e de caixas vazias para 
 
 ### 5 · Componha θ e π no canvas, no PDF e no EPUB
 
-A Source Serif 4 guarda as letras gregas num arquivo próprio do Fontsource, `greek`, ao lado do `latin`. `loadFonts(FONTS, markdown)` encontra letras gregas no texto e carrega esse arquivo para cada fonte da família, e o `fontsourceProvider` o incorpora ao PDF junto com o arquivo latin em cada fonte que compõe θ ou π, então essas duas letras não exigem código nenhum. O EPUB incorpora só as fontes que o pen lhe entrega, por isso o passo 4 lista os arquivos greek da fonte do texto depois dos latin, cada um limitado ao bloco grego pelo seu `unicodeRange`.
+A Source Serif 4 guarda as letras gregas num arquivo próprio do Fontsource, `greek`, ao lado do `latin`. `kitFonts(FONTS)` encontra letras gregas no texto e carrega esse arquivo para cada fonte da família, e o `fontsourceProvider` o incorpora ao PDF junto com o arquivo latin em cada fonte que compõe θ ou π, então essas duas letras não exigem código nenhum. O EPUB incorpora só as fontes que o pen lhe entrega, por isso o passo 4 lista os arquivos greek da fonte do texto depois dos latin, cada um limitado ao bloco grego pelo seu `unicodeRange`.
 
 ### 6 · Calcule a tabela no código
 

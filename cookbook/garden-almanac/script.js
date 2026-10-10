@@ -1,8 +1,9 @@
 // ═══ Postext Cookbook · Nº 035 · Garden almanac: calendar grid and landscape chart ═════
 // https://postext.dev/en/cookbook/garden-almanac
 // Code: MIT · Text: original, Italian (CC BY 4.0) · Field: diffusion models · Icons: CC BY 4.0
-// Fonts: Piazzolla, Gilda Display, Commissioner (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage, parseTSV,
+// Fonts: Piazzolla, Gilda Display, Commissioner (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage, parseTSV,
   mergeCells, setCellContent, setCellBackground, setCellImage, setAlignment,
 } from 'https://esm.sh/postext';
 
@@ -15,7 +16,7 @@ const palette = { ink: '#262a22', paper: '#fbf8ef', // a green-black on unbleach
   green: '#5b8a32', ochre: '#d39a2e', brown: '#7a5230', // sown outdoors, in a seedbed, planted
   leaf: '#bfdaa2', blush: '#f3cdbd', cream: '#e9ddc1', // good pairs, bad pairs, neutral pairs
   sky: '#cfe2e6', rule: '#cfc6b2', muted: '#6b6e63' }; // sky and work box; hairlines; notes
-// 1.4.1 design slots read the hex, not the id: col() writes both (gotcha: palette-skips-designs)
+// col() links a colour to its palette entry; the hex is the value the entry holds.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.red }) // the defaults' id
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -29,7 +30,7 @@ const chip = (text, style) => `:chip[${text}]{style="${style}"}`;
 // #region answer: a crops × fortnights chart, turned to landscape on pages of its own
 // The chart's `placement` (#region resources): a quarter turn makes it a page-span float on
 // pages of its own, flush to the spine; rows past the page's width go on under a repeated head.
-const chartPlacement = { rotate: 'ccw' }; // a float, never 'here' (gotcha: here-table-no-split)
+const chartPlacement = { rotate: 'ccw' }; // a float: 'here' ignores the turn
 const MONTHS = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
 const SEASONS = [['INVERNO', 2], ['PRIMAVERA', 3], ['ESTATE', 3], ['AUTUNNO', 3], ['INVERNO', 1]];
 const STATES = { S: 'ochre', C: 'green', T: 'brown' }; // seedbed, sown outdoors, planted out
@@ -112,7 +113,7 @@ function calendarTable() { // the grid, and the quarters it draws, listed for th
 // #region matrix: companion pairs pasted as TSV; each symbol becomes a palette fill
 const FILLS = { '+': 'leaf', '−': 'blush', '': 'cream' }; // good, bad, no known effect
 function companionTable(tsv) {
-  let m = { ...parseTSV(tsv), headerRowCount: 1, columnWidths: [26, ...Array(10).fill(15)] };
+  let m = { ...parseTSV(tsv, { headerRows: 1 }), columnWidths: [26, ...Array(10).fill(15)] };
   for (let r = 1; r < m.rows.length; r++) {
     m = setAlignment(m, at(r, 0), 'left', 'middle');
     for (let c = 1; c < m.rows[r].length; c++) {
@@ -133,8 +134,8 @@ function companionTable(tsv) {
 const tableStyle = { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
   headerBackground: col('ink'), headerColor: col('paper'), headerFontFamily: LABEL,
   headerFontSize: pt(7), bodyFontSize: pt(8.5), cellPadding: mm(1.2),
-  // 1.4.1 has continuation strings in English and Spanish only (gotcha: resource-types-locale).
-  continuedSuffix: '(segue)', continuesMarker: 'Continua alla pagina seguente' };
+  // An Italian document's split table says '(segue)' and 'Continua'; this spells the second out.
+  continuesMarker: 'Continua alla pagina seguente' };
 const tableStyles = [
   { id: 'calendario', bodyFontFamily: DISPLAY, bodyFontSize: pt(15), cellPadding: mm(1.4) },
   { id: 'matrice', rules: 'grid', borderColor: col('paper'), borderWidth: pt(2), // tiles
@@ -151,10 +152,9 @@ const pin = (to, edge, x, y, size) => ({ anchor: { to, edge }, offset: { x: mm(x
 const text = (id, content, family, size, color, placement, extra) => ({ kind: 'text', id,
   content, fontFamily: family, fontSize: pt(size), color: col(color), placement,
   align: placement.anchor.edge.endsWith('right') ? 'right' : 'left',
-  overflow: 'wrap', ...extra }); // not '…' at the edge (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', ...extra }); // a long line takes a second one, in the heads too
 const caps = (s) => ({ fontWeight: 600, textTransform: 'uppercase', letterSpacing: pt(s / 5) });
-// The painting reserves nothing (gotcha: opener-image-no-reserve), so the text starts on the
-// first grid line at least AIR under it.
+// minHeight: a floor under what the painting reserves, the first grid line AIR or more below it.
 const OPENER_H = pt(LEAD * Math.ceil((ART_H + AIR - PAGE.top) / (LEAD * 25.4 / 72)));
 const opener = { enabled: true, minHeight: OPENER_H, slot: { elements: [
   { kind: 'image', id: 'art', resourceId: 'campo',
@@ -162,7 +162,7 @@ const opener = { enabled: true, minHeight: OPENER_H, slot: { elements: [
   text('kicker', '{attr.kicker}', LABEL, 8.5, 'red', pin('page', 'top-left', PAGE.inner, 12),
     caps(8.5)), // page 1 is a recto: its inner margin is on the left
   text('title', '{titleText}', DISPLAY, 84, 'ink', pin('#kicker', 'below', -BEARING, 1),
-    { lineHeight: 1 }), // a multiple, never pt() (gotcha: design-lineheight-multiple)
+    { lineHeight: 1 }), // a multiple of the size: set solid
   text('proverb', '{attr.proverb}', TEXT, 12.5, 'ink',
     pin('#title', 'below', BEARING, 1, { width: mm(140) }), { italic: true, lineHeight: 1.3 }),
   text('source', '{attr.source}', LABEL, 7, 'ink', pin('#proverb', 'below', 0, 1.6), caps(7)),
@@ -184,7 +184,7 @@ const bare = (id, extra) => ({ id, backgroundEnabled: false, borderWidth: pt(0),
   paddingX: pt(0), ...extra }); // a chip that is only a change of face, size or colour
 const note = (color) => ({ fontFamily: TEXT, fontSize: em(0.5), italic: true, color: col(color) });
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   locale: 'it', resourceTypes, colorPalette, tableStyle, tableStyles, header, footer,
   page: { width: mm(PAGE.w), height: mm(PAGE.h), dpi: 150, backgroundColor: col('paper'),
     pageNumbering: { startAt: 27 }, margins: { top: mm(PAGE.top), bottom: mm(PAGE.bottom),
@@ -195,7 +195,7 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
     referenceColor: col('ink'), referenceBold: false, firstLineIndent: mm(4),
     indentAfterHeading: false, minWordSpacing: 0.8, maxWordSpacing: 1.6 }, // from 0.6 and 2
   headings: { fontFamily: DISPLAY, fontWeight: 400, color: col('ink'), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // parity 'odd': the month opens on a recto, after a blank verso only when one is needed.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
       advancedDesign: opener, marginBottom: pt(0) },
     { level: 2, fontSize: pt(17), lineHeight: pt(2 * LEAD), marginTop: pt(LEAD),
@@ -296,7 +296,7 @@ await loadImage('campo-1680.jpg', asset('campo-1680.jpg'));
 // #endregion
 
 // #region resources: the three tables, keyed by colour swatches in captions and notes
-const resourceTypes = [ // 1.4.1 has English and Spanish ones (gotcha: resource-types-locale)
+const resourceTypes = [ // the almanac's own two: tables numbered through, a bare calendar
   { id: 'table', name: 'Tabella', shortLabel: 'Tab.', captionPrefix: 'Tabella',
     captionStyle: { position: 'above' } },
   { id: 'calendar', name: 'Calendario', shortLabel: 'Cal.', captionPrefix: '' }, // no label
@@ -324,14 +324,15 @@ const resources = [...pictures, // never cited: the opener and the cells draw th
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the layout uses, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the layout uses, loaded before the build
   Piazzolla: ['400', '400i', '600'], // text, notes and proverb; 600 for caption labels
   'Gilda Display': ['400'], Commissioner: ['600'] }; // display and days; labels and table heads
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const allText = [markdown, sowing, companions].join('\n');
-await loadFonts(FONTS, allText);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), allText);
+await prepareFonts(allText, config(), kitFonts(FONTS));
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: allText });
 showPages(doc, { title: 'Almanacco dell’orto 2027 · Marzo' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

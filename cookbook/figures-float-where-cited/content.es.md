@@ -29,8 +29,6 @@ Las dos herramientas actúan a la vez sobre cualquier resalte del lecho, y el re
 
 ::resource{id="roche"}
 
-:::space{lines=1}
-
 Su cara de aguas arriba, pulida por abrasión, es suave y tendida; la de aguas abajo, donde el glaciar arrancó bloques, es abrupta y rugosa. Basta mirar hacia dónde apunta la cara áspera para saber hacia dónde iba el hielo. El nombre francés, *roche moutonnée*, lo acuñó el naturalista ginebrino Horace-Bénédict de Saussure a finales del siglo XVIII.
 
 ## Valles en artesa

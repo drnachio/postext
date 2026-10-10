@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 015 · Poems set line by line ═════════════════════════════
 // https://postext.dev/en/cookbook/poetry-collection
 // Code: MIT · Text: G. M. Hopkins, Poems, 1918 (PD) · Plate: diffusion models · Sprig: code
-// Fonts: Sorts Mill Goudy, Italiana, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Sorts Mill Goudy, Italiana, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -17,7 +17,7 @@ const palette = { // every colour in the config links to one of these
   muted: '#746a60', // dates, folios, leaders and the colophon
   paper: '#fbf8f2', // the page
 };
-// The hex travels with the id: designs do not read the palette (gotcha: palette-skips-designs).
+// A colour is its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -40,7 +40,7 @@ const LEAD = 15; // pt: the body's leading, the grid every line of verse sits on
 const verse = {
   id: 'verse',
   hangingIndent: em(2), // a turnover hangs 2 em past its line's start: 4 em under a 2 em indent
-  // Verse is never hyphenated; ragged text is not in 1.4.1 either (gotcha: ragged-no-hyphenation).
+  // Verse keeps its words whole, even where bodyText.hyphenation.ragged is switched on.
   hyphenation: false,
 };
 // Hook-up: paragraphStyles: [verse, …]; the Markdown goes to buildDocument as it is written.
@@ -55,20 +55,20 @@ const lineStyles = [
 // #endregion
 
 // #region poem-head: every poem opens a page under its numeral and its title
-// '{1:I}' numbers the poems I to IV and {number} prints it (gotcha: heading-number-placeholders).
+// '{1:I}' numbers the poems I to IV: {number} prints the numeral here, :::toc in the contents.
 // The head is HEAD_LINES grid lines (minHeight, no bottom margin), so each poem starts on the same
-// line; numeral and title fill 4, or 5 if the title wraps (gotcha: overflow-ellipsis-default).
+// line; numeral and title fill 4, or 5 if the title wraps.
 const HEAD_LINES = 6;
 const poemHead = { enabled: true, minHeight: pt(LEAD * HEAD_LINES), slot: { elements: [
   { kind: 'text', id: 'numeral', content: '{number}', fontFamily: 'Italiana', fontSize: pt(22),
     color: col('sage'), align: 'left',
     placement: { anchor: { to: 'container', edge: 'top-left' } } },
   { kind: 'text', id: 'title', content: '{titleText}', fontFamily: 'Sorts Mill Goudy',
-    italic: true, fontSize: pt(17), color: col('ink'), align: 'left', overflow: 'wrap',
+    italic: true, fontSize: pt(17), color: col('ink'), align: 'left',
     placement: { anchor: { to: '#numeral', edge: 'below' }, offset: { y: mm(2) },
       size: { width: 'fill' } } },
 ] } };
-// Parity 'any': the next page, recto or verso (restated: gotcha headings-drop-h1-break).
+// Parity 'any': the next page, recto or verso, with no blank page between two poems.
 const poems = { level: 1, numberingTemplate: '{1:I}', advancedDesign: poemHead,
   marginBottom: pt(0), breakBefore: { enabled: true, parity: 'any' } };
 // #endregion
@@ -88,14 +88,13 @@ const design = (...elements) => ({ enabled: true, slot: { elements } });
 const front = [
   { id: 'half-title', ...leaf,
     advancedDesign: design(face('title', '{titleText}', 'Italiana', 20, 60)) },
-  { id: 'plate', ...leaf, advancedDesign: design( // span 'page': a column clips its design
+  { id: 'plate', ...leaf, advancedDesign: design( // span 'page': a column's foot would cut it
     image('plate', { anchor: { to: 'bleed', edge: 'top-left' }, size: { width: 'fill' } }),
     face('caption', '{attr.caption}', 'Sorts Mill Goudy', 8.5, 203,
       { italic: true, color: col('muted') })) },
   { id: 'title-page', ...leaf, advancedDesign: design(
     face('author', '{author}', 'Marcellus SC', 10, 46, // {author}, {title}: the frontmatter
       { letterSpacing: pt(2.4), textTransform: 'uppercase' }),
-    // A multiple of the size, never pt() (gotcha: design-lineheight-multiple).
     face('title', '{title}', 'Italiana', 54, 56, { lineHeight: 1 }),
     face('subtitle', '{subtitle}', 'Sorts Mill Goudy', 13, 80,
       { italic: true, color: col('sage') }),
@@ -108,8 +107,7 @@ const front = [
 // #endregion
 
 // #region contents: what :::toc prints for each poem: numeral, italic title, leader, page
-// The toc centres each numeral on its line, not on the baseline (gotcha: toc-number-baseline);
-// left at the titles' size, these Italiana numerals land on it, where 9 pt ones rode high.
+// The numerals stand on the titles' baseline, in Italiana and sage, at the titles' size.
 const contents = {
   levels: [{ level: 1, italic: true, marginBottom: pt(LEAD), numberFontFamily: 'Italiana',
     numberFontWeight: 400, numberColor: col('sage'), numberWidth: mm(6), numberGap: mm(3) }],
@@ -135,7 +133,7 @@ const folio = (pages) => ({ kind: 'text', id: `folio-${pages}`, content: '{pageN
   fontFamily: 'Marcellus SC', fontSize: pt(9), color: col('muted'), align: 'center',
   placement: { anchor: { to: 'container', edge: 'top' }, offset: { y: mm(10) } } });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette,
   // The list replaces Figure and Table; a book with figures spreads defaultResourceTypes() in.
   resourceTypes: [ornament],
@@ -249,14 +247,12 @@ const resources = [
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Loaded before the first build (gotcha: fonts-first). None of the three ships a bold.
+// Loaded before the first build. None of the three ships a bold.
 const FONTS = { 'Sorts Mill Goudy': ['400', '400i'], Italiana: ['400'], 'Marcellus SC': ['400'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 // :::toc lists the page each poem lands on: the build lays out again until those settle.
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()),
-  markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Pied Beauty · four poems by Gerard Manley Hopkins' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "front-matter-roman-to-arabic",
-  "sourceHash": "a54c854eed7ff71c35a7c7c2c1f88db1b971c473ceb492ee8f4ee5f68ca0105c",
+  "sourceHash": "ccec248245816826ae6d8167d1e15b3c8a308c9bcddd026b69a0e1519d817da7",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.964Z",
+  "capturedAt": "2026-10-10T13:33:44.504Z",
   "variants": {
     "en": {
-      "hash8": "303dd849",
-      "vdtHash": "aa74dbade306e0cc15d98c918a8d36b8bce9c862",
+      "hash8": "3478102c",
+      "vdtHash": "6b30688371fe69812e948b42fa8e0b1f27fae379",
       "timings": {
-        "importMs": 195,
-        "fontsMs": 95,
-        "buildMs": 85,
-        "totalMs": 1149,
-        "builds": 2
+        "importMs": 200,
+        "fontsMs": 62,
+        "buildMs": 130,
+        "totalMs": 986,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Playfair Display SC"
         ],
         "pages": 14,
-        "ownLines": 250
+        "ownLines": 242
       },
       "pages": [
         {
@@ -94,7 +94,7 @@
           "h": 1535,
           "file": "p06.webp",
           "strip": "p06.s.webp",
-          "bytes": 35736,
+          "bytes": 35920,
           "alt": "Opening page vi: Imprint."
         },
         {
@@ -223,18 +223,17 @@
       },
       "pdf": {
         "file": "front-matter-roman-to-arabic.pdf",
-        "bytes": 815689,
+        "bytes": 815715,
         "pages": 14
       },
       "sandbox": {
         "file": "front-matter-roman-to-arabic.postext",
-        "bytes": 713726,
+        "bytes": 713658,
         "folio": "ba949066"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
@@ -303,6 +302,7 @@
           "headingStyles[].footer.elements",
           "headingStyles[].header",
           "headingStyles[].header.elements",
+          "headingStyles[].hidden",
           "headingStyles[].id",
           "headingStyles[].margins",
           "headingStyles[].margins.left",
@@ -380,8 +380,8 @@
           "paragraphStyles",
           "toc"
         ],
-        "configLeaves": 554,
-        "designElements": 30,
+        "configLeaves": 545,
+        "designElements": 29,
         "directives": [
           ":::paragraphs",
           ":::toc",
@@ -461,7 +461,13 @@
           "share": 0,
           "worst": 1.71
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

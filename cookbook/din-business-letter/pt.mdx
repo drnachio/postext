@@ -20,13 +20,13 @@ A Fensterwerkstatt Tessin, uma oficina inventada de Berlim que restaura janelas 
 
 `at()` ancora um elemento pelo canto superior esquerdo a `'page'`, a caixa de refile ([posicionamento de elementos](/pt/docs/configuration#posicionamento-de-elementos)), então cada `x` e cada `y` é uma distância a partir do canto da folha, e os números da norma entram sem mudança: o endereço a 25 mm da esquerda e 62,7 mm do alto, o primeiro rótulo do bloco de informações a 125 e 50. Esses elementos formam o design do H1. O texto do título é o assunto (`{titleText}`) e os atributos dele guardam o endereço e as referências, de modo que a configuração guarda o papel timbrado e o Markdown guarda a carta. O assunto, a 100,6 mm, é o elemento mais baixo, então o título reserva a folha até o pé do assunto. `marginBottom` acrescenta as duas linhas em branco, e a saudação começa na linha seguinte da grade, a 117 mm.
 
-O endereço é um único atributo com `\n` entre as linhas. Na 1.4.1, um texto de design só transforma o `\n` de um atributo em quebra de linha quando o seu `paragraphIndent` é maior que zero. O endereço usa 0,01 pt, um recuo pequeno demais para se ver; com 0, a barra e o n saem impressos no endereço. Sem `span: 'page'`, o design fica na coluna de texto e é cortado na margem superior de 27 mm, o que tira o logotipo e o nome e deixa só os 5 mm de baixo da faixa.
+O endereço é um único atributo com `\n` entre as linhas, e cada `\n` abre uma linha nova no texto de design. O título fica na coluna de texto, e o design dele pinta do mesmo jeito a faixa, o logotipo e o nome acima da margem superior de 27 mm, porque cada elemento está preso à página.
 
 ### 2 · Encadeie o bloco de informações a partir de um rótulo fixo
 
 <Excerpt region="info" />
 
-Só o primeiro rótulo é fixado na folha. Cada um dos outros é ancorado `'below'` do anterior, e cada valor ao seu rótulo com `'align-top'` e um deslocamento de 29 mm, então uma linha acrescentada a `INFO` não precisa de coordenadas. O texto de design põe a linha de base a 80% da caixa da linha. O rótulo de 7 pt com `lineHeight: 12 / 7` e o valor de 9 pt com `12 / 9` ganham os dois uma linha de 12 pt, e por isso dividem a linha de base em cada fileira de 4,23 mm.
+Só o primeiro rótulo é fixado na folha. Cada um dos outros é ancorado `'below'` do anterior, e cada valor ao seu rótulo com `'align-top'` e um deslocamento de 29 mm, então uma linha acrescentada a `INFO` não precisa de coordenadas. O texto de design põe a linha de base a 80% da caixa da linha. O rótulo de 7 pt e o valor de 9 pt usam os dois `lineHeight: pt(ROW)`, uma linha de 12 pt, e por isso dividem a linha de base em cada fileira de 4,23 mm.
 
 ### 3 · Desenhe o timbre no mesmo design
 
@@ -44,9 +44,8 @@ Um elemento do design do H1 fixado abaixo do assunto aumenta a altura que o tít
 
 <Excerpt region="signature" />
 
-`::resource{id="signature"}` põe o desenho embaixo de “Mit freundlichen Grüßen”, e `width: 0.297` o deixa com 49 mm de largura e 21,1 mm de altura, um pouco menos que quatro linhas de 15 pt. O texto depois de um recurso no fluxo volta para a grade do texto corrido. Com `0.25`, o desenho tinha 17,8 mm de altura, e os 3,4 mm que a grade acrescentava embaixo afastavam o nome da assinatura. O tipo de recurso tem `captionPrefix` vazio, e a 1.4.1 não compõe legenda quando o prefixo e a legenda estão vazios, então nenhum rótulo ou número aparece embaixo da assinatura ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)). O logotipo é um recurso do mesmo tipo, desenhado só pelo elemento de imagem. Nenhum `:ref` ou `::resource` o cita, então ele nunca entra no fluxo.
+`::resource{id="signature"}` põe o desenho embaixo de “Mit freundlichen Grüßen”, e `width: 0.297` o deixa com 49 mm de largura e 21,1 mm de altura, um pouco menos que quatro linhas de 15 pt. O texto depois de um recurso no fluxo volta para a grade do texto corrido. Com `0.25`, o desenho tinha 17,8 mm de altura, e os 3,4 mm que a grade acrescentava embaixo afastavam o nome da assinatura. O tipo de recurso tem `captionPrefix` vazio, e o Postext não compõe legenda quando o prefixo e a legenda estão vazios, então nenhum rótulo ou número aparece embaixo da assinatura ([tipos de recurso](/pt/docs/configuration#tipos-de-recurso)). O logotipo é um recurso do mesmo tipo, desenhado só pelo elemento de imagem. Nenhum `:ref` ou `::resource` o cita, então ele nunca entra no fluxo.
 
 ## Erros comuns
 
-- O cartão sobre `\n` em atributos diz que, com `paragraphIndent` em 0, o texto fica numa linha só. Na 1.4.1 o endereço quebra ao chegar aos 75 mm de largura, e os dois caracteres `\n` saem impressos onde a linha deveria quebrar.
 - `{totalPages}` conta as páginas do documento inteiro, então com duas cartas num mesmo arquivo Markdown a segunda folha da primeira carta diria “Seite 2 von 4”. Componha cada carta separadamente.

@@ -60,4 +60,4 @@ O <RecipeLink slug="textbook-margin-column">livro didático com coluna na margem
 ## Erros comuns
 
 - Ajuste o `:::space` à página. Na edição em inglês, 2,76 linhas terminam o boxe 0,8 mm acima do pé da coluna. Com 2,96 linhas ele passa 0,1 mm do pé e a barra inteira vai para a página 2; com 2,66 abre-se uma tira de papel entre o boxe e a caixa do pé.
-- Uma caixa no design do nome não serve para pintar a faixa. Uma que termina logo acima do pé da coluna faz o título reservar 265 mm, mais que os 260,8 mm da coluna, e o texto vai para a página 2; uma que segue até o pé da folha anula a altura reservada pelo título, e o perfil sobe para 30,3 mm, por cima da profissão.
+- Uma caixa no design do nome não serve para pintar a faixa. O título reserva a altura da caixa, então uma caixa tão alta quanto a faixa o faz reservar mais que os 260,8 mm da coluna, e o texto vai para a página 2. Com `reserve: false` a caixa não reserva nada, mas um design mantido na coluna é cortado no pé da coluna, e a margem inferior ficaria em branco.

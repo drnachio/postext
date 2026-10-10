@@ -62,6 +62,11 @@ describe("C5: content warnings on how the text is set (#401)", () => {
     { kind: "codeOverflow", page: 2, detail: "wrap: 1 line(s) of js" },
     { kind: "floatShrunk", page: 3, detail: "plate at 70 %: 18 px past the text block" },
     { kind: "textWrap", page: 2, detail: "bed: tooNarrow" },
+    { kind: "afterText", page: 5, detail: "a side box" },
+    { kind: "unplaced", page: null, detail: "plate-2" },
+    { kind: "columnsTooNarrow", page: 3, detail: "4 columns of 61 px" },
+    { kind: "columnsFlowUnknown", page: null, detail: 'flow="snak"' },
+    { kind: "fontFallback", page: null, detail: "Bangers 700 (synthesized)" },
   ];
 
   it("fails a recipe on the Arabic, word-overflow, line-number and tab warnings it does not expect", () => {
@@ -76,6 +81,13 @@ describe("C5: content warnings on how the text is set (#401)", () => {
       ["fail", 'codeOverflow "wrap: 1 line(s) of js" on page 2'],
       ["fail", 'floatShrunk "plate at 70 %: 18 px past the text block" on page 3'],
       ["fail", 'textWrap "bed: tooNarrow" on page 2'],
+      // postext 1.25: side boxes after the text or on no page (#639), column
+      // groups (#634), faces measured in a fallback (#629).
+      ["fail", 'afterText "a side box" on page 5'],
+      ["fail", 'unplaced "plate-2"'],
+      ["fail", 'columnsTooNarrow "4 columns of 61 px" on page 3'],
+      ["fail", 'columnsFlowUnknown "flow="snak""'],
+      ["fail", 'fontFallback "Bangers 700 (synthesized)"'],
     ]);
   });
 

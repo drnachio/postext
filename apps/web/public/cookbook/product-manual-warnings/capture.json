@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "product-manual-warnings",
-  "sourceHash": "3888fdc8ccbe372ae89244bb0daa33fc8c073929522357d50cb50a94bf3b8887",
+  "sourceHash": "aaff816da0ff095bc68cedcce7d3bf347e967e8fde2543377fab50e68bf4c953",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.304Z",
+  "capturedAt": "2026-10-10T13:37:31.793Z",
   "variants": {
     "en": {
-      "hash8": "4177ea74",
+      "hash8": "73093578",
       "vdtHash": "c6694c75b66054e9d29d93bf956d7dcdc25d9b32",
       "timings": {
-        "importMs": 147,
-        "fontsMs": 41,
-        "buildMs": 38,
-        "totalMs": 2039,
-        "builds": 2
+        "importMs": 142,
+        "fontsMs": 39,
+        "buildMs": 92,
+        "totalMs": 876,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -151,15 +151,17 @@
       },
       "sandbox": {
         "file": "product-manual-warnings.postext",
-        "bytes": 35861,
+        "bytes": 35984,
         "folio": "6d89ead9"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "defaultResourceTypes",
+          "inlineSvgFonts",
           "mergeCells",
           "parseTSV",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -173,7 +175,6 @@
           "bodyText.fontSize",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.paragraphSpacing",
@@ -334,6 +335,7 @@
           "resourceTypes[].counterFormat",
           "resourceTypes[].id",
           "resourceTypes[].name",
+          "resourceTypes[].namePlural",
           "resourceTypes[].numberingTemplate",
           "resourceTypes[].resetOn",
           "resourceTypes[].shortLabel",
@@ -383,7 +385,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 470,
+        "configLeaves": 479,
         "designElements": 14,
         "directives": [
           ":::pagebreak",
@@ -457,6 +459,7 @@
           "heading-numbering",
           "heading-styles",
           "inline-embeds",
+          "localised-labels",
           "opener-design",
           "page-breaks",
           "page-role-filters",
@@ -487,14 +490,14 @@
       }
     },
     "es": {
-      "hash8": "d1f6066a",
+      "hash8": "e3a4fdce",
       "vdtHash": "c6694c75b66054e9d29d93bf956d7dcdc25d9b32",
       "timings": {
-        "importMs": 149,
-        "fontsMs": 35,
-        "buildMs": 37,
-        "totalMs": 943,
-        "builds": 2
+        "importMs": 131,
+        "fontsMs": 30,
+        "buildMs": 86,
+        "totalMs": 819,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -628,15 +631,17 @@
       },
       "sandbox": {
         "file": "product-manual-warnings.postext",
-        "bytes": 35883,
+        "bytes": 36007,
         "folio": "6d89ead9"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "defaultResourceTypes",
+          "inlineSvgFonts",
           "mergeCells",
           "parseTSV",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -650,7 +655,6 @@
           "bodyText.fontSize",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.paragraphSpacing",
@@ -811,6 +815,7 @@
           "resourceTypes[].counterFormat",
           "resourceTypes[].id",
           "resourceTypes[].name",
+          "resourceTypes[].namePlural",
           "resourceTypes[].numberingTemplate",
           "resourceTypes[].resetOn",
           "resourceTypes[].shortLabel",
@@ -860,7 +865,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 470,
+        "configLeaves": 479,
         "designElements": 14,
         "directives": [
           ":::pagebreak",
@@ -934,6 +939,7 @@
           "heading-numbering",
           "heading-styles",
           "inline-embeds",
+          "localised-labels",
           "opener-design",
           "page-breaks",
           "page-role-filters",

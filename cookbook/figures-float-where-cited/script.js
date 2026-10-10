@@ -1,14 +1,14 @@
 // ═══ Postext Cookbook · Nº 009 · Figures that float to where you cite them ═════════
 // https://postext.dev/en/cookbook/figures-float-where-cited
 // Code: MIT · Text: original (CC BY 4.0) · Figures: diffusion models, labels in code
-// Fonts: Faustina, Montserrat, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Faustina, Montserrat, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 //
 // Chapter 2 of a geomorphology textbook. Six of its seven figures float, each to the first
 // free slot its placement allows, counting from the paragraph that first cites it. Figure 2.6
 // is set where ::resource embeds it. The figures are numbered in order of first mention.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, parseMarkdown,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
+  inlineSvgFonts, parseMarkdown,
 } from 'https://esm.sh/postext';
 
 const LANG = 'es'; // @lang: the language of the sample document ('es' | 'en')
@@ -26,8 +26,7 @@ const palette = {
   muted: '#5d6a72', // running heads, credit notes, the colophon
   paper: '#ffffff',
 };
-// A linked colour carries its hex too: postext 1.4.1 design slots and referenceColor read
-// the hex, not the palette (gotcha: palette-skips-designs).
+// A linked colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -46,9 +45,9 @@ const COLUMN = (MEASURE - GUTTER) / 2; // 81 mm: a column, and a column figure
 
 // #region captions: the type name in the document's language; bold label, italic description
 const captions = () => ({
-  // config.locale sets hyphenation, not captions (gotcha: resource-types-locale):
-  // 'Figura 2.3' and 'Fig. 2.3' come from the localised types, numbered {h1}.{n} per chapter.
-  resourceTypes: defaultResourceTypes(LANG),
+  // The built-in types take their names from the locale: 'Figure 2.3' and 'fig. 2.3' with
+  // 'en-us', 'Figura 2.3' with 'es', numbered {h1}.{n} per chapter. It sets hyphenation too.
+  locale: t({ en: 'en-us', es: 'es' }),
   captionStyle: { // the text colour follows bodyText; the note is 0.85 × the caption size
     fontFamily: LABEL, fontSize: pt(8.3), gap: mm(2.2),
     labelColor: col('glacier'), descriptionItalic: true, // the label is bold by default
@@ -66,8 +65,6 @@ const text = (id, content, family, size, color, placement, extra) => ({ kind: 't
   align: 'left', ...extra });
 const caps = (size) => ({ fontWeight: 600, textTransform: 'uppercase',
   letterSpacing: pt(size * 0.18) }); // capitals tracked 0.18 em
-// Opener texts break onto more lines instead of ending in '…' (gotcha: overflow-ellipsis-default).
-const wrap = { overflow: 'wrap' };
 const [SLAB, RIBBON, RIBBON_END] = [64, 30, 70]; // mm: slab height; ribbon width and length
 const [TEXT_X, KICKER_Y] = [RIBBON + 8, 10]; // mm: the opener texts start 8 mm right of the ribbon
 const [TITLE_W, LEAD_W] = [118, 112]; // mm: the title's measure, and a shorter standfirst
@@ -86,11 +83,11 @@ const opener = {
       { fontWeight: 800, lineHeight: 1, align: 'center' }),
     text('kicker', t({ en: 'Chapter {chapterNumber} · {attr.topic}',
       es: 'Capítulo {chapterNumber} · {attr.topic}' }), LABEL, 8.5, 'glacier',
-    at('container', 'top-left', TEXT_X, KICKER_Y), { ...caps(8.5), ...wrap }),
+    at('container', 'top-left', TEXT_X, KICKER_Y), caps(8.5)),
     text('title', '{titleText}', DISPLAY, 27, 'ink', at('#kicker', 'below', 0, 2.6, TITLE_W),
-      { fontWeight: 800, lineHeight: 1.06, ...wrap }),
+      { fontWeight: 800, lineHeight: 1.06 }),
     text('lead', '{attr.lead}', TEXT, 10.6, 'ink', at('#title', 'below', 0, 4.2, LEAD_W),
-      { italic: true, lineHeight: 1.38, hyphenate: true, ...wrap }),
+      { italic: true, lineHeight: 1.38, hyphenate: true }),
   ] },
 };
 const HAIRLINE = TOP - 5; // mm from the top edge: the rule under the running heads
@@ -113,8 +110,7 @@ const footer = { elements: [ // the drop folio: on the opener only, centred 9 mm
     { fontWeight: 800, align: 'center', pages: 'opener' })] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+const config = () => ({
   ...captions(),
   colorPalette,
   page: { width: mm(PAGE_W), height: mm(PAGE_H), dpi: 150, // a compact textbook trim
@@ -133,7 +129,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     // head from floating in a gap, and the balancer's other levers take what is left.
     balancing: { maxLinesPerHeading: 1 },
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // A chapter opens on a recto; 'odd' leaves a blank verso only when one is needed.
       { level: 1, fontSize: pt(27), span: 'page', breakBefore: { enabled: true, parity: 'odd' },
         marginTop: pt(0), marginBottom: pt(0), advancedDesign: opener },
       { level: 2, fontSize: pt(11.5), lineHeight: pt(LEAD), numberingTemplate: '{1}.{2}',
@@ -183,42 +179,36 @@ const resources = [
   // Cited in the same sentence, the two take the next two column heads, side by side.
   figure('abrasion', 48, { position: 'top' }),
   figure('plucking', 48, { position: 'top' }),
-  // No float: set exactly where ::resource{id="roche"} stands. In postext 1.4.1 an inline
-  // figure gets a grid line above it but only the grid snap below, so the Markdown follows
-  // it with :::space{lines=1} (gotcha: here-figure-no-space-after).
+  // No float: set exactly where ::resource{id="roche"} stands, with the same gap above it
+  // and below it.
   figure('roche', 42, { position: 'here' }),
   // A band of its own, half the text width and centred. It is cited on the chapter's last
   // page, where a 'top' float would wait for the next page; a float cannot leave its
-  // chapter, so this one goes to the foot of the last page. A float is queued where its
-  // citing paragraph starts, so that paragraph starts on the last page
-  // (gotcha: float-queues-at-paragraph).
+  // chapter, so this one goes to the foot of the last page.
   figure('moraines', 50, { position: 'top', span: 'page', width: 0.5, align: 'center' }),
 ];
 // #endregion
 
-// #region check: every cited id exists and every figure gets placed, before the build
-// An unknown :ref prints '?' and a figure nobody names is never placed, and postext 1.4.1
-// warns about neither (gotcha: unknown-ref-silent). The engine's own parser lists the
-// mentions exactly as numbering and placement read them; an embed needs double quotes
-// (gotcha: resource-double-quotes).
-function checkFigures() {
-  const [named, embedded] = [[], new Set()];
+// #region check: stop on an unknown id, and on a figure the text never places
+// The build lists every :ref and ::resource to an id no resource has in doc.contentWarnings
+// (kind 'unknownResourceId'); each prints '?' on the page. A figure nobody names is never
+// placed and raises no warning, so the pen reads the mentions with the engine's own parser;
+// an embed needs double quotes (gotcha: resource-double-quotes).
+function checkFigures(doc) {
+  const [named, embedded] = [new Set(), new Set()];
   for (const block of parseMarkdown(markdown)) {
     if (block.type === 'resourceBlock' && block.resourceId) {
-      named.push(block.resourceId);
+      named.add(block.resourceId);
       embedded.add(block.resourceId);
     }
-    for (const span of block.spans) if (span.ref?.resourceId) named.push(span.ref.resourceId);
+    for (const span of block.spans) if (span.ref?.resourceId) named.add(span.ref.resourceId);
   }
-  const ids = resources.map((r) => r.id);
-  const types = new Set(captions().resourceTypes.map((type) => type.id));
+  const unknown = (doc.contentWarnings ?? []).filter((w) => w.kind === 'unknownResourceId');
   const problems = [
-    ...[...new Set(named)].filter((id) => !ids.includes(id)).map((id) => `unknown id "${id}"`),
-    ...ids.filter((id, i) => ids.indexOf(id) !== i).map((id) => `"${id}" is defined twice`),
-    ...ids.filter((id) => !named.includes(id)).map((id) => `"${id}" is never cited`),
+    ...new Set(unknown.map((w) => `unknown id "${w.resourceId}"`)),
+    ...resources.filter((r) => !named.has(r.id)).map((r) => `"${r.id}" is never cited`),
     ...resources.filter((r) => r.placement.position === 'here' && !embedded.has(r.id))
       .map((r) => `"${r.id}" is placed 'here' but no ::resource line embeds it`),
-    ...resources.filter((r) => !types.has(r.typeId)).map((r) => `"${r.id}": no type ${r.typeId}`),
   ];
   if (problems.length) throw new Error(`Figures: ${problems.join('; ')}`);
 }
@@ -244,30 +234,13 @@ function label(x, y, words, { anchor = 'start', to, bold = false, color = C.ink 
     + `${bold ? ' font-weight="600"' : ''}>${words}</text>`;
 }
 const L = (en, es) => t({ en, es });
-// An SVG loaded as an <img> has no access to the page's web fonts (gotcha: svg-no-webfonts),
-// so each drawing embeds the two weights its labels use. The latin subsets cover the English
-// and Spanish labels.
+// The labels name their face on the SVG's root element, and loadSvg embeds the weights they
+// set in the drawing: an SVG shown as an image cannot reach the page's fonts by itself.
 const LABEL_MM = 2.45; // the label size in the drawings' millimetres: about 7 pt in print
-async function labelFace() {
-  const id = fontsourceId(LABEL);
-  const faces = await Promise.all(['400', '600'].map(async (weight) => {
-    const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}-`
-      + 'normal.woff2';
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Label face not found (${res.status}): ${url}`);
-    const bytes = new Uint8Array(await res.arrayBuffer());
-    let bin = '';
-    for (let i = 0; i < bytes.length; i += 8192) {
-      bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
-    }
-    return `@font-face{font-family:L;font-weight:${weight};`
-      + `src:url(data:font/woff2;base64,${btoa(bin)}) format('woff2')}`;
-  }));
-  return `${faces.join('')}text{font-family:L;font-size:${LABEL_MM}px}`;
-}
 // The viewBox is the figure's printed size in mm; the SVG's own size is set in mm too.
-const svg = (w, h, face, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${n2(w)}mm" `
-  + `height="${n2(h)}mm" viewBox="0 0 ${n2(w)} ${n2(h)}"><style>${face}</style>${body}</svg>`;
+const svg = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${n2(w)}mm" `
+  + `height="${n2(h)}mm" viewBox="0 0 ${n2(w)} ${n2(h)}" font-family="${LABEL}" `
+  + `font-size="${LABEL_MM}">${body}</svg>`;
 
 // The labels of each figure, in its millimetres, placed on its painting.
 const DRAWINGS = {
@@ -335,7 +308,7 @@ const PAINTINGS = { // each figure's painting, a file in assets/, named by its w
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the layout uses, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the layout uses, loaded before the build
   Faustina: ['400', '400i', '700'], // text
   Montserrat: ['800'], // display: title, section heads, numeral, folios
   'IBM Plex Sans Condensed': ['400', '400i', '600', '700'], // labels: kicker, heads, captions
@@ -343,20 +316,19 @@ const FONTS = { // every face the layout uses, loaded before the build (gotcha: 
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const words = `${markdown}\n${figureTexts}`; // captions too: their letters decide the subsets
-await loadFonts(FONTS, words);
-checkFigures(); // a wrong id stops here, and the viewer's bar says why
+await prepareFonts(words, config(), kitFonts(FONTS));
 // #region build: register the drawings, then set chapter 2 of a longer book
-const face = await labelFace();
 for (const { id, svg: { fileId, width, height } } of resources) { // each under its svg.fileId
   const art = await dataUrl(PAINTINGS[id]);
-  await loadSvg(fileId, svg(width, height, face, `<image href="${art}" width="${n2(width)}" `
+  await loadSvg(fileId, svg(width, height, `<image href="${art}" width="${n2(width)}" `
     + `height="${n2(height)}" preserveAspectRatio="none"/>${DRAWINGS[id](width, height)}`));
 }
 // One chapter came before: figures number 2.1, 2.2… and the folios start at 27.
 const continuation = { pageNumbering: { startAt: 27 }, // odd, to match the recto of page 1
   headings: { h1: 1, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 } }; // the next # is chapter 2
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), words);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  { ...kitFonts(FONTS), text: words });
+checkFigures(doc); // a wrong id stops here, and the viewer's bar says why
 showPages(doc, { title: t({ en: 'Figures that float to where you cite them',
   es: 'Figuras que flotan hasta donde las citas' }) });
 // #endregion

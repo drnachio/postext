@@ -24,8 +24,8 @@
     ]
   },
   "answers": ["Q85"],
-  "gotchas": ["headings-drop-h1-break", "resource-types-locale", "svg-no-webfonts", "merged-cells-hiddenby", "fonts-first"],
-  "engine": { "postext": "1.7.0", "postextPdf": "1.7.0" },
+  "gotchas": ["merged-cells-hiddenby"],
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -53,5 +53,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-28",
-  "updated": "2026-09-28"
+  "updated": "2026-10-10"
 }

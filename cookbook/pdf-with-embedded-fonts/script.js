@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 025 · A real PDF with the same fonts embedded ═══════════
 // https://postext.dev/en/cookbook/pdf-with-embedded-fonts
 // Code: MIT · Text: notes original (CC BY 4.0), poems in the public domain · Cover: drawn in code
-// Fonts: Crimson Text, Fraunces, Tenor Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Crimson Text, Fraunces, Tenor Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -28,7 +28,7 @@ function fontFile(family, weight, style) {
 const facesOf = (family) => (FONTS[family] ?? []).map((spec) =>
   ({ spec, weight: parseInt(spec, 10), style: spec.endsWith('i') ? 'italic' : 'normal' }));
 
-// The screen: a FontFace per face, from those bytes, before the first build (gotcha: fonts-first).
+// The screen: a FontFace per face, from those bytes, before the first build.
 const registerFaces = () => Promise.all(Object.keys(FONTS).flatMap((family) =>
   facesOf(family).map(async ({ weight, style }) => {
     const face = new FontFace(family, await fontFile(family, weight, style),
@@ -36,9 +36,9 @@ const registerFaces = () => Promise.all(Object.keys(FONTS).flatMap((family) =>
     document.fonts.add(await face.load());
   })));
 
-// The PDF: the same bytes as TrueType. renderToPdf asks for the bold and italic of every family,
-// set or not, and a refusal stops it (gotcha: pdf-provider-all-styles). A face FONTS lacks gets
-// the closest one it has, and is logged as a stand-in: no text may be set in a stand-in.
+// The PDF: the same bytes as TrueType. renderToPdf asks for each face the pages paint and no
+// other. A face FONTS lacks gets the closest one it has, and is logged as a stand-in: the
+// status line should list none.
 const embedded = new Set(), standIns = new Set(); // shown once the PDF is ready
 async function fontProvider(family, weight, style) {
   if (!FONTS[family]) throw new Error(`${family} is not in FONTS: no page was set in it`);
@@ -56,7 +56,7 @@ const palette = { // eight named colours; every colour in the config links to on
   gilt: '#c9a227', bronze: '#806414', // the accent; deepened to 5.4:1 for small type on paper
   foam: '#e3ebe8', rule: '#b9c6c2', // cover small type and the table's total; hairlines
   muted: '#5c6b70', paper: '#fbfaf6' }; // feet and colophon; the page
-// The hex rides along: 1.4.1 designs read it, not the link (gotcha: palette-skips-designs).
+// A colour is its hex and the palette entry it links to.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [...Object.entries(palette), ['main-color', palette.band]] // the defaults'
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })); // id: teal, never blue
@@ -70,9 +70,9 @@ const H2 = { italic: true, fontSize: pt(13.5), lineHeight: pt(2 * LEAD) }; // tw
 const label = (size, ink) => ({ fontFamily: 'Tenor Sans', fontSize: pt(size),
   letterSpacing: pt(size * TRACK), textTransform: 'uppercase', color: col(ink) });
 const title = (size) => ({ fontFamily: 'Fraunces', fontWeight: 300, italic: true,
-  fontSize: pt(size), lineHeight: 1 }); // a multiple (gotcha: design-lineheight-multiple)
+  fontSize: pt(size), lineHeight: 1 }); // set solid
 const text = (id, content, placement, style) => ({ kind: 'text', id, content, placement,
-  overflow: 'wrap', ...style }); // not '…' (gotcha: overflow-ellipsis-default)
+  ...style }); // in a heading design a long text wraps
 const at = (to, edge, y, width) => ({ anchor: { to, edge }, offset: { y: mm(y) },
   ...(width && { size: { width: mm(width) } }) });
 
@@ -107,7 +107,7 @@ const foot = (parity, edge, x, content) => ({ kind: 'text', id: parity, content,
 // #region headings: the heading tree is the bookmark tree
 const headings = { fontFamily: 'Fraunces', fontWeight: 300, color: col('band'),
   marginTop: pt(0), marginBottom: pt(0), // a two-line H2 carries its own space above
-  levels: [ // a headings object drops the H1 break: restated (gotcha: headings-drop-h1-break)
+  levels: [ // a section opens on the next page, left or right: a programme has no blank pages
     { level: 1, breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
     { level: 2, ...H2 },
   ] };
@@ -116,7 +116,7 @@ const aside = { id: 'aside', breakBefore: { enabled: false }, advancedDesign: { 
   ...H2, marginTop: pt(LEAD) };
 // #endregion
 
-const config = () => ({ // a new object per build (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, resourceTypes: [plain], headings, headingStyles: [cover, aside],
   page: { width: mm(PAGE.width), height: mm(PAGE.height), backgroundColor: col('paper'),
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
@@ -191,16 +191,16 @@ function coverArt(w, h, top) { // mm: the page, and where the waves begin
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Each bold and italic a block may ask for. Tenor Sans has 400 only (gotcha: faked-font-styles).
-const FONTS = { 'Crimson Text': ['400', '400i', '600', '600i'], Fraunces: ['300', '300i'],
+// The faces the pages set, and no other. Tenor Sans has 400 only (gotcha: faked-font-styles).
+const FONTS = { 'Crimson Text': ['400', '400i', '600'], Fraunces: ['300i'],
   'Tenor Sans': ['400'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // #region build: the faces first, then the layout, then a check that nothing was missed
 await registerFaces(); // the answer: every face in FONTS, from its own bytes
 await loadSvg('cover.svg', coverArt(PAGE.width, PAGE.height, WAVES));
-// buildWithFonts (the Cookbook kit) adds any face FONTS forgot, for the screen only, and rebuilds.
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+// Every face is declared by now; one FONTS forgot would come from Fontsource, for the screen only.
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Home from Sea · a recital programme' });
 // #endregion
 

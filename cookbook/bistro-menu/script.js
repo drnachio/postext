@@ -1,11 +1,13 @@
 // ═══ Postext Cookbook · Nº 052 · Bistro menu: prices on a tab stop ═══════════════════
 // https://postext.dev/en/cookbook/bistro-menu
 // Code: MIT · Text: original, in French (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Limelight, Noticia Text, Josefin Sans (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Limelight, Noticia Text, Josefin Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // The autumn menu of an imaginary Paris bistro: two sides of one card, each dish a paragraph
 // whose price a tab sends to the right margin, the wine list a table with no rules.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  parseTSV, mergeCells } from 'https://esm.sh/postext';
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage, parseTSV,
+  mergeCells,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'bistro-menu';
@@ -42,8 +44,8 @@ const tableStyle = { rules: 'none', cellPadding: pt(LEAD / 4), // a row: 1½ lin
 
 // #region type: one resource type for the whole card: set where it stands, never numbered
 // No caption prefix and no caption, so no 'Table 1' line prints under the wine list. Placement
-// 'here' sets each piece at its ::resource line; such a table never splits, so a list that
-// outgrows the page moves to the next one whole (gotcha: here-table-no-split).
+// 'here' sets each piece at its ::resource line; a list that outgrows the page is cut
+// between rows and goes on at the head of the next one.
 const resourceTypes = [{ id: 'menu', name: 'Menu', shortLabel: 'Menu', captionPrefix: '',
   numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal',
   defaultPlacement: { position: 'here' } }];
@@ -53,8 +55,8 @@ const piece = (id, kind, body) => ({ id, typeId: 'menu', kind, createdAt: 0, upd
 
 // #region wines: region rows merged across the three columns, prices under their labels
 function wineList(tsv) {
-  let m = { ...parseTSV(tsv), headerRowCount: 1, columnWidths: [5, 1, 1] };
-  m.rows = m.rows.map((row, r) => row.map((cell, c) => (c === 0 ? cell : { align: 'right',
+  let m = { ...parseTSV(tsv, { headerRows: 1 }), columnWidths: [5, 1, 1] }; // the head row
+  m.rows = m.rows.map((row, r) => row.map((cell, c) => (c === 0 ? cell : { ...cell, align: 'right',
     content: r > 0 && cell.content ? `**${cell.content}**` : cell.content }))); // as the dishes'
   m.rows.forEach(([first, ...rest], r) => { // a line with one field names a region
     if (r === 0 || !first.content || rest.some((cell) => cell.content)) return;
@@ -79,7 +81,7 @@ const rule = (edge, x) => ({ kind: 'rule', id: `rule-${edge}`, color: col('brass
     offset: { x: mm(x), y: pt(6) } } }); // 6 pt down: the middle of Limelight's capitals
 const courseHead = { enabled: true, slot: { elements: [
   { kind: 'text', id: 'title', content: '{titleText}', fontFamily: DISPLAY, fontSize: pt(15),
-    lineHeight: 0.96, // a multiple (gotcha: design-lineheight-multiple): 14.4 pt, one line
+    lineHeight: 0.96, // 14.4 pt: the title stays inside one 14.5 pt grid line
     textTransform: 'uppercase', color: col('wine'),
     placement: { anchor: { to: 'container', edge: 'top' } } },
   rule('left-of', -4), rule('right-of', 4),
@@ -110,7 +112,7 @@ const paragraphStyles = [dish,
 
 // #region centred: one axis for the card: the name, the course heads and the notes centred
 // bodyText (in config) centres the lines under the name and the notes; only the dishes and the
-// wine list keep a left edge. A ragged line is never hyphenated (gotcha: ragged-no-hyphenation),
+// wine list keep a left edge. Ragged text is hyphenated only with bodyText.hyphenation.ragged,
 // so the config sets no locale: French patterns would change nothing on this card.
 const headings = { fontFamily: DISPLAY, fontWeight: 400, color: col('wine'), textAlign: 'center',
   levels: [ // Limelight ships one weight, 400, and no italic
@@ -192,7 +194,7 @@ function bottles() { // 158 × 29 mm: glasses, bottles and a carafe on a brass s
 }
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, tableStyle, resourceTypes,
   page: { sizePreset: 'custom', width: mm(230), height: mm(310), dpi: 150,
     backgroundColor: col('paper'), // one card, printed both sides: margins are not mirrored
@@ -218,16 +220,17 @@ const resources = [
 ];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the pages paint, loaded before the first build (gotcha: fonts-first).
+// Every face the pages paint, loaded before the first build.
 const FONTS = { 'Noticia Text': ['400', '400i', '700'], Limelight: ['400'],
   'Josefin Sans': ['700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const allText = markdown + wines;
-await loadFonts(FONTS, allText);
+await prepareFonts(allText, config(), kitFonts(FONTS));
 await loadSvg('awning.svg', awning());
 await loadSvg('bottles.svg', bottles());
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), allText);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: allText });
 showPages(doc, { title: t({ en: 'Les Tanneurs: autumn menu',
   es: 'Les Tanneurs: carta de otoño' }) });
 

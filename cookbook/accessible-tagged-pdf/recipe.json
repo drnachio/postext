@@ -45,19 +45,7 @@
     "Q02"
   ],
   "gotchas": [
-    "float-read-last",
-    "toc-leader-kerning",
-    "ragged-runts",
-    "quote-frontmatter",
-    "resource-types-locale",
-    "ragged-no-hyphenation",
-    "unknown-ref-silent",
-    "headings-drop-h1-break",
     "style-inherits-break",
-    "palette-skips-designs",
-    "overflow-ellipsis-default",
-    "config-cache-identity",
-    "fonts-first",
     "latin-subset"
   ],
   "explainsWarnings": [],
@@ -69,54 +57,14 @@
   ],
   "workarounds": [
     {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "every frontmatter value is quoted, since the PDF takes /Title and /Author from title and author (a YAML number or date would leave the PDF without a title)"
-    },
-    {
-      "followup": "EF-33",
-      "package": "postext",
-      "note": "config.locale gives the PDF its /Lang but not the captions: resourceTypes: defaultResourceTypes(LANG) prints Figura 1.1 and Tabla 1.1"
-    },
-    {
-      "followup": "EF-21",
-      "package": "postext",
-      "note": "the guide is set ragged, so it is never hyphenated: locale 'es' is there for /Lang, and nothing claims Spanish hyphenation"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "level 1's breakBefore (parity 'any') is restated, since any headings object drops it"
-    },
-    {
       "followup": "EF-60",
       "package": "postext",
       "note": "the presentacion heading style sets breakBefore: { enabled: false }, or it would inherit level 1's break and leave the contents alone on page 2"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside each paletteId, because the bands, the cover and the footer (design elements) paint the hex"
-    },
-    {
-      "followup": "EF-148",
-      "package": "postext",
-      "note": "the contents' leaders take the page numbers' face (toc.pageNumber.fontFamily), set to Atkinson Hyperlegible Next: in Public Sans, the face of the entries, a run of full stops kerns wider than the single dot the leader is counted from, so the dots overran into the page numbers and stopped lining up"
-    },
-    {
-      "followup": "EF-147",
-      "package": "postext",
-      "note": "ragged paragraphs and captions are broken without the runt penalty (avoidRunts works in justified text only), so the one-word last lines of the drafts ('mano.', 'gris.', 'barrer.', '010.', 'casa:', and 'Estación.' in the caption of table 2.1) were reworded by hand"
-    },
-    {
-      "followup": "EF-146",
-      "package": "postext-pdf",
-      "note": "the figure and both tables are placed inline (placement 'here' and ::resource): renderToPdf tags a page's floats after all its column text, so a floated figure would be read after the last paragraph and the table of its page"
     }
   ],
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -188,5 +136,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-10-01"
+  "updated": "2026-10-10"
 }

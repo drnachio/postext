@@ -10,7 +10,7 @@ pageNotes: { "1": "La cubierta: azul petróleo hasta el corte, The Harbour Conso
 
 ## Lo que vas a componer
 
-El programa de mano, en inglés, de un recital al atardecer, *Home from Sea*: cuatro páginas A5 para soprano, violonchelo y arpa. La cubierta es azul petróleo, con el título en Fraunces cursiva dorada y filas de escamas de olas doradas que suben desde el pie. Dentro, el orden del programa es una tabla con el encabezado azul en versales de Tenor Sans y el total sobre fondo claro. Las notas van en Crimson Text justificado, y los poemas de las tres canciones, de Longfellow, Stevenson y Tennyson, conservan las sangrías de sus ediciones impresas. El botón *Build the PDF* genera el archivo que mandarías al público o colgarías en la web de la sala. Sus páginas coinciden línea a línea con la pantalla. Incrusta solo las siete fuentes que cargó el navegador, y cada título es un marcador. Para imprenta, mira <RecipeLink slug="print-ready-pdf">el PDF con sangrado y CMYK</RecipeLink>.
+El programa de mano, en inglés, de un recital al atardecer, *Home from Sea*: cuatro páginas A5 para soprano, violonchelo y arpa. La cubierta es azul petróleo, con el título en Fraunces cursiva dorada y filas de escamas de olas doradas que suben desde el pie. Dentro, el orden del programa es una tabla con el encabezado azul en versales de Tenor Sans y el total sobre fondo claro. Las notas van en Crimson Text justificado, y los poemas de las tres canciones, de Longfellow, Stevenson y Tennyson, conservan las sangrías de sus ediciones impresas. El botón *Build the PDF* genera el archivo que mandarías al público o colgarías en la web de la sala. Sus páginas coinciden línea a línea con la pantalla. Incrusta solo las cinco fuentes que cargó el navegador, y cada título es un marcador. Para imprenta, mira <RecipeLink slug="print-ready-pdf">el PDF con sangrado y CMYK</RecipeLink>.
 
 ## Elaboración
 
@@ -22,13 +22,13 @@ El código es [la respuesta corta](#la-respuesta-corta) de arriba. Postext mide 
 
 <Excerpt region="build" />
 
-`registerFaces()` no se resuelve hasta que se hayan cargado todas las fuentes de `FONTS`, así que la primera composición ya mide con las fuentes que va a incrustar el PDF. No hace falta una segunda, porque `FONTS` enumera cada negrita y cada cursiva que puede pedir un bloque de Crimson Text o de Fraunces, y `buildWithFonts`, del kit, no encuentra nada que añadir ([Caché de medidas](/es/docs/configuration#caché-de-medidas)). Esa comprobación solo sirve para la pantalla. Si a `FONTS` le falta una fuente, `buildWithFonts` la carga y vuelve a componer, con un aviso en la consola si un bloque se compone con ella y sin aviso si es una negrita o una cursiva, pero el PDF recibe igualmente la fuente más próxima de las que tiene el proveedor.
+`registerFaces()` no se resuelve hasta que se hayan cargado todas las fuentes de `FONTS`, así que la primera composición ya mide con las fuentes que va a incrustar el PDF. No hace falta una segunda, porque `FONTS` enumera todas las fuentes que componen las páginas, y `buildDocumentWithFonts` encuentra ya declaradas todas las fuentes que busca ([Cargar las fuentes antes de componer](/es/docs/configuration#cargar-las-fuentes-antes-de-componer)). Esa comprobación solo sirve para la pantalla. Si a `FONTS` le falta una fuente, el motor se la pide al kit, carga el archivo de Fontsource y vuelve a componer sin avisar en la consola, pero el PDF recibe igualmente la fuente más próxima de las que tiene el proveedor.
 
 ### 3 · La exportación y la lista de lo que incrustó
 
 <Excerpt region="pdf" />
 
-`renderToPdf` llama a `onProgress` en tres fases: `prepare` cuando ya ha incrustado las fuentes y la cubierta, `pages` tras cada página y `save` antes de escribir el archivo. Aquí pide al proveedor diez fuentes. La línea de estado enumera los siete archivos que sirvió el proveedor, que son exactamente los de `FONTS`, y tres sustitutas, todas de Tenor Sans, una familia con solo la redonda de peso 400 que aquí nunca se usa en negrita ni en cursiva. Cualquier otra sustituta delata una fuente que falta en `FONTS`. Si quitas Crimson Text 600, la línea muestra `Crimson Text 600 → 400` y la negrita de *The Harbour Consort*, en la página 4, sale con el peso normal. La vista previa de CodePen no puede mostrar un PDF, así que `offerPdf`, del kit, cambia el botón por dos enlaces: uno abre el PDF en otra pestaña y el otro lo descarga ([Generación de PDF](/es/docs/configuration#generación-de-pdf)).
+`renderToPdf` llama a `onProgress` en tres fases: `prepare` cuando ya ha incrustado las fuentes y la cubierta, `pages` tras cada página y `save` antes de escribir el archivo. Solo pide al proveedor las fuentes que pintan las páginas, aquí cinco. La línea de estado enumera los cinco archivos que sirvió el proveedor, que son exactamente los de `FONTS`, y ninguna sustituta. Una sustituta delata una fuente que falta en `FONTS`. Si quitas Crimson Text 600, la línea muestra `Crimson Text 600 → 400` y la negrita de *The Harbour Consort*, en la página 4, sale con el peso normal. La vista previa de CodePen no puede mostrar un PDF, así que `offerPdf`, del kit, cambia el botón por dos enlaces: uno abre el PDF en otra pestaña y el otro lo descarga ([Generación de PDF](/es/docs/configuration#generación-de-pdf)).
 
 ### 4 · El árbol de títulos es el árbol de marcadores
 
@@ -40,7 +40,7 @@ En el panel de marcadores del PDF aparecen el título de la cubierta, *Programme
 
 <Excerpt region="cover" />
 
-Todos los valores del frontmatter van entre comillas. La cubierta imprime dos de ellos con `{author}` y `{subtitle}`, y el PDF toma de ahí el título, *Home from Sea*, y el autor, *The Harbour Consort*, para sus propiedades de documento. La fecha y el lugar son atributos del título de la cubierta. El dibujo de detrás es un solo SVG del ancho de la página, y el PDF lo conserva como trazados vectoriales.
+La cubierta imprime dos valores del frontmatter con `{author}` y `{subtitle}`, y el PDF toma de ahí el título, *Home from Sea*, y el autor, *The Harbour Consort*, para sus propiedades de documento. La fecha y el lugar son atributos del título de la cubierta. El dibujo de detrás es un solo SVG del ancho de la página, y el PDF lo conserva como trazados vectoriales.
 
 ## Variantes
 
@@ -67,6 +67,6 @@ Cambia la URL de Fontsource por la de tus copias de los mismos archivos WOFF2 es
 
 ## Errores frecuentes
 
-Enumera en `FONTS` cada negrita y cada cursiva que pueda usar tu texto. Si olvidas una, en pantalla no lo notarás, porque el kit la carga sin avisar; el PDF, en cambio, imprime la fuente más próxima que tenga el proveedor, y solo lo delatan las sustitutas de la línea de estado.
+Enumera en `FONTS` todas las fuentes que componen tus páginas, también la negrita y la cursiva del texto. Si olvidas una, en pantalla no lo notarás, porque el kit la carga sin avisar; el PDF, en cambio, imprime la fuente más próxima que tenga el proveedor, y solo lo delatan las sustitutas de la línea de estado.
 
 Usa archivos estáticos, uno por peso y estilo. De un WOFF2 variable solo se incrusta la instancia por defecto, así que una negrita saldría con el peso normal ([¿Por qué un proveedor de fuentes?](/es/docs/configuration#por-qué-un-proveedor-de-fuentes)).

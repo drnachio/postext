@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 017 · Five chapter openers in one book ═════════════════
 // https://postext.dev/en/cookbook/five-chapter-openers
 // Code: MIT · Text: original (CC BY 4.0) · Ornament: generated in code (CC BY 4.0)
-// Fonts: Lora, Fraunces, Geist, Geist Mono (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Lora, Fraunces, Geist, Geist Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A small book about openers, each chapter set in the one it describes. Every heading style
 // brings its opener and palette; three move the margins, two bring their own type and folios.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -19,8 +19,8 @@ const RECIPE = 'five-chapter-openers';
 // heading, the section fields it names; the rest comes from the level and the document.
 const level1 = () => ({ level: 1,
   // span 'page' opens each chapter at the head of a new page and runs its opener across
-  // every column (chapter four has two). Any headings object drops the default break to a
-  // recto (gotcha: headings-drop-h1-break): restate the side, 'any' for short chapters.
+  // every column (chapter four has two). By default an H1 waits for a recto, with a blank
+  // page before it; parity 'any' lets these short chapters open on either side.
   span: 'page',
   breakBefore: { enabled: true, parity: 'any' },
   marginBottom: pt(0), // each opener ends where its first paragraph starts
@@ -60,8 +60,8 @@ const palette = { // every colour in the config links to one of these by id
   paper: '#ffffff', // type on colour
   lapis: '#24427a', magenta: '#a3155e', signal: '#ff5a1f', graphite: '#4a4f57',
 };
-// col(id): a palette-linked colour. It carries the hex too, because 1.4.1 paints design
-// elements from the hex (gotcha: palette-skips-designs).
+// col(id): a palette-linked colour, so a style's palette can swap 'accent' on its own pages.
+// The hex is the value the entry holds in the book's palette.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -79,8 +79,8 @@ const QUIET = { size: 12.5, lead: 17.5, inner: 30, outer: 44 }; // the coda: pt,
 // Design-slot shorthands. at(): a placement from an anchor's edge, x and y in mm.
 const at = (to, edge, x, y, width) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) },
   ...(width !== undefined && { size: { width: width === 'fill' ? 'fill' : mm(width) } }) });
-// Design text wraps; left alone it ends in '…' (gotcha: overflow-ellipsis-default). A number
-// lineHeight multiplies the size, never pt() (gotcha: design-lineheight-multiple).
+// Every design text wraps: an opener's would anyway, a running head's would end in '…'.
+// A number lineHeight multiplies the size.
 const text = (id, content, fontFamily, size, placement, extra = {}) => ({ kind: 'text', id,
   content, fontFamily, fontSize: pt(size), color: col('ink'), align: 'left', overflow: 'wrap',
   placement, ...extra });
@@ -222,9 +222,9 @@ const tinyFolio = { elements: [tiny('even', 'bottom-left'), tiny('odd', 'bottom-
 // #endregion
 
 const flush = { textAlign: 'left', firstLineIndent: pt(0) };
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette,
-  locale: t({ en: 'en-us', es: 'es' }), // hyphenation, by exact code (gotcha: hyphenation-locales)
+  locale: t({ en: 'en-us', es: 'es' }), // the hyphenation patterns of each edition
   page: { width: mm(TRIM.w), height: mm(TRIM.h), dpi: 150, // 150 dpi: a screen edition
     margins: { top: mm(TOP), bottom: mm(22), left: mm(INNER), right: mm(OUTER), mirror: true } },
   layout: { layoutType: 'single' },
@@ -271,14 +271,13 @@ const resources = [{ id: 'fleuron', typeId: 'figure', kind: 'svg', createdAt: 0,
     es: 'Un florón de imprenta: una roseta de cuatro pétalos entre dos volutas con hojas.' }) }];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display, label and figure faces (gotcha: fonts-first)
+const FONTS = { // text, display, label and figure faces
   Lora: ['400', '400i'], Fraunces: ['300', '300i', '400', '600', '900'],
   Geist: ['400', '400i', '500', '600', '700'], 'Geist Mono': ['500', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('fleuron.svg', fleuron(palette.lapis)); // a picture's colours are fixed when drawn
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Five chapter openers', es: 'Cinco aperturas de capítulo' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

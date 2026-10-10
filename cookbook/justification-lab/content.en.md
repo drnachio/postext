@@ -44,13 +44,13 @@ Unhyphenated justification in a narrow measure hands every shortfall to the few 
 Unhyphenated justification in a narrow measure hands every shortfall to the few word spaces on the line. With hyphenation the line breaker can end a line inside a word too, and the slack is shared out in amounts too small to notice.
 :::
 
-The same words set three ways, in a measure a little narrower than these columns. Ragged text breaks only between words, whatever the hyphenation setting. Justified without hyphens, a few spaces take up all the slack. With hyphens, the spaces stay even at the cost of a few broken words.
+The same words set three ways, in a measure a little narrower than these columns. Ragged text breaks only between words unless it is told to hyphenate. Justified without hyphens, a few spaces take up all the slack. With hyphens, the spaces stay even at the cost of a few broken words.
 :::
 :::
 
 ## Hyphens
 
-Hyphens hand the breaker more places to end a line, and in a narrow measure they are not optional. Postext hyphenates with the TeX patterns of the document’s language, which it takes from an exact code: *en-us* for this issue and *es* for its Spanish edition. A code it lacks, such as *es-ES*, falls back to American English without notice. The patterns serve justified text only; ragged lines break only between words, so a narrow ragged column gets a deep rag.
+Hyphens hand the breaker more places to end a line, and in a narrow measure they are not optional. Postext hyphenates with the TeX patterns of the document’s language, which it takes from an exact code: *en-us* for this issue and *es* for its Spanish edition. A code it lacks, such as *eu-ES*, falls back to American English with a warning. The patterns serve justified text only; ragged lines break only between words, so a narrow ragged column gets a deep rag.
 
 ## Widows, orphans and runts
 

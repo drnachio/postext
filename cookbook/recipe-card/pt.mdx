@@ -40,13 +40,13 @@ O box `prep` só tem o título e o ícone, e por isso funciona como cabeçalho: 
 
 <Excerpt region="opener" />
 
-`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}` escolhe o estilo de título e preenche os seus encaixes com os atributos, entre eles o texto de apresentação em itálico ([atributos de título](/pt/docs/document-format#atributos-de-título)). O `resourceId` do elemento de imagem é `'{attr.art}'`, um marcador como o de um texto, e assim as duas receitas dividem um estilo e cada título indica a sua fotografia ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). Cada pílula é ancorada `right-of` à anterior, o título `above` à primeira pílula e o antetítulo acima do título, então um título mais longo empurra o antetítulo para cima enquanto as pílulas mantêm a sua linha. Na 1.4.1 a fotografia não reserva altura, mas o texto de apresentação embaixo dela reserva, e a ficha começa abaixo dele sem `minHeight`. A nota é ancorada à página, como a fotografia e a seta, um segundo elemento de imagem desenhado em código, e termina 2 mm antes da seta nas duas páginas, embora as margens espelhadas desloquem a mancha 2 mm para a direita na página ímpar.
+`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}` escolhe o estilo de título e preenche os seus encaixes com os atributos, entre eles o texto de apresentação em itálico ([atributos de título](/pt/docs/document-format#atributos-de-título)). O `resourceId` do elemento de imagem é `'{attr.art}'`, um marcador como o de um texto, e assim as duas receitas dividem um estilo e cada título indica a sua fotografia ([elementos de imagem](/pt/docs/configuration#elementos-de-imagem)). Cada pílula é ancorada `right-of` à anterior, o título `above` à primeira pílula e o antetítulo acima do título, então um título mais longo empurra o antetítulo para cima enquanto as pílulas mantêm a sua linha. O texto de apresentação é o elemento mais baixo do design, então a abertura reserva até a última linha dele e a ficha começa logo abaixo, sem `minHeight`. A nota é ancorada à página, como a fotografia e a seta, um segundo elemento de imagem desenhado em código, e termina 2 mm antes da seta nas duas páginas, embora as margens espelhadas desloquem a mancha 2 mm para a direita na página ímpar.
 
 ### 6 · Registre as imagens como recursos
 
 <Excerpt region="pictures" />
 
-Os dois elementos de imagem da abertura, o ícone da aba e o ícone do cabeçalho do checklist indicam cada um um recurso, e o canvas pinta o arquivo que `loadImage` ou `loadSvg` registrou para ele. Nenhum `:ref` cita esses recursos, então nenhum vira figura numerada. Nem uma fotografia nem um SVG desenhado como imagem podem usar as fontes web da página, por isso as imagens não levam palavras: as notas manuscritas são texto de design composto por cima.
+Os dois elementos de imagem da abertura, o ícone da aba e o ícone do cabeçalho do checklist indicam cada um um recurso, e o canvas pinta o arquivo que `loadImage` ou `loadSvg` registrou para ele. Nenhum `:ref` cita esses recursos, então nenhum vira figura numerada. As imagens não levam palavras: as notas manuscritas são texto de design composto por cima.
 
 ## Variações
 
@@ -83,6 +83,5 @@ Sem os boxes de coluna, `breaks` indica o filho que abre a coluna direita, e cad
 
 ## Erros comuns
 
-- Na 1.4.1 um rótulo não tem `textTransform` nem `letterSpacing`, então SERVES 4 e PARA 4 são digitados em maiúsculas nos delimitadores.
+- Um rótulo não tem `textTransform` nem `letterSpacing`, então SERVES 4 e PARA 4 são digitados em maiúsculas nos delimitadores.
 - A caixa de tarefa ☐ não está em nenhuma das três fontes, então o navegador a desenha com uma fonte do sistema e a forma muda de um sistema para outro.
-- Mantenha um ícone largo na coluna própria do box: com `position: 'corner'`, a 1.4.1 o desloca metade da altura, não metade da largura, e a tira de 18,75 mm passa 16 mm da borda direita do box.

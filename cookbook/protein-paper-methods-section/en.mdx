@@ -38,7 +38,7 @@ The coordinates were read once, when the recipe was written, from PDB entry 6Y4F
 
 ### 5 · Greek letters and accents in the PDF
 
-Fontsource splits each face by script. `loadFonts(FONTS, markdown)` reads the text it is given and loads each face's latin-ext file when it sets Ž or Š and its greek file when it sets α or χ; `fontsourceProvider` embeds the same files in the PDF from the characters each face sets. Cα, χ, Žídek and Šali take no code of their own: the recipe passes the markdown, which holds every content slot, and the kit's provider.
+Fontsource splits each face by script. `kitFonts(FONTS)` reads the text it is given and loads each face's latin-ext file when it sets Ž or Š and its greek file when it sets α or χ; `fontsourceProvider` embeds the same files in the PDF from the characters each face sets. Cα, χ, Žídek and Šali take no code of their own: the recipe passes the markdown, which holds every content slot, and the kit's provider.
 
 ## Variations
 

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "brand-fonts-identity-manual",
-  "sourceHash": "f2ed3f5c42c1b248a60ec24dd77e2732a57da67ca88fa0b9831682e48b7d79c8",
+  "sourceHash": "0833e10e903fe8f2d301e763f8e9c774ffb2db8563d7ea20191ff3bca322df8b",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.721Z",
+  "capturedAt": "2026-10-10T13:31:25.209Z",
   "variants": {
     "en": {
-      "hash8": "6d9ee8eb",
+      "hash8": "99638ab8",
       "vdtHash": "7652cc7706c7245b2d0bb848c7e717c4b21838a8",
       "timings": {
-        "importMs": 214,
-        "fontsMs": 53,
-        "buildMs": 62,
-        "totalMs": 2399,
+        "importMs": 159,
+        "fontsMs": 50,
+        "buildMs": 56,
+        "totalMs": 827,
         "builds": 1
       },
       "specimen": {
@@ -40,7 +40,7 @@
           "Spline Sans Mono"
         ],
         "pages": 4,
-        "ownLines": 249
+        "ownLines": 246
       },
       "pages": [
         {
@@ -73,7 +73,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 99506,
+          "bytes": 99490,
           "alt": "Opening page 3: 02 Type."
         },
         {
@@ -84,7 +84,7 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 108066,
+          "bytes": 108030,
           "alt": "Opening page 4: 03 Usage. Do 1. Lines at 0°, 45° and 90°, bent together at an even spacing; one capsule for the interchange. · Don’t 1. Free angles, mixed radii, uneven spacing and stations drawn in the line colour."
         }
       ],
@@ -121,13 +121,12 @@
       },
       "sandbox": {
         "file": "brand-fonts-identity-manual.postext",
-        "bytes": 106301,
+        "bytes": 106300,
         "folio": "17625bac"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "createBundle",
           "decompressWoff2",
           "defaultResourceTypes",

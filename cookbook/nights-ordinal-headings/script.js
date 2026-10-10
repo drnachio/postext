@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 112 · Night headings in Arabic ordinal words ═══════════
 // https://postext.dev/en/cookbook/nights-ordinal-headings
 // Code: MIT · Text: Alf layla wa-layla, Hindawi Foundation 2022 (CC BY 4.0) · Pictures: none
-// Fonts: Amiri, Aref Ruqaa, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.15.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Amiri, Aref Ruqaa, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -115,7 +115,7 @@ const titlePage = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ar', // right to left, bound on the right, digits ٠–٩ (gotcha: arabic-locale-tag)
   colorPalette,
   page: { width: mm(170), height: mm(240), dpi: 150, backgroundColor: col('paper'),
@@ -125,7 +125,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(1.5), indentAfterHeading: false,
     optimalLineBreaking: true, avoidWidows: true, avoidOrphans: true },
-  // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+  // parity 'any': a level-1 heading opens the next page, whichever side it falls on.
   headings: { fontFamily: NASKH, fontWeight: 700, color: col('accent'), textAlign: 'center',
     levels: [
       { level: 1, fontSize: pt(30), breakBefore: { enabled: true, parity: 'any' },
@@ -152,7 +152,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   Amiri: ['400', '400i', '700'], // NASKH: the text, the sub-tale titles; the Latin lines
   'Aref Ruqaa': ['700'], // RUQAA: the book, the tale and the nights
   'Noto Kufi Arabic': ['500'], // KUFI: kickers, the formula, running heads and folios
@@ -162,7 +162,8 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
 await loadFonts(FONTS, markdown);
 // The arabic file of each face, which loadFonts leaves out (gotcha: arabic-fonts-subset).
 await loadArabicFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'Night headings in Arabic ordinal words',
   es: 'Noches numeradas con ordinales árabes' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: arabicPdfProvider }), `${RECIPE}.pdf`);

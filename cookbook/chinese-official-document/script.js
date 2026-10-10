@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 082 · A Chinese official document to GB/T 9704 ═════════
 // https://postext.dev/en/cookbook/chinese-official-document
 // Code: MIT · Text: a fictitious notice written for the recipe (CC BY 4.0) · Pictures: none
-// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: Noto Serif SC, Noto Sans SC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, parseTSV, mergeCells,
+  buildDocument, withLoadedFonts, renderPageToCanvas, parseTSV, mergeCells,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -33,8 +33,7 @@ const cjk = {
   latinSpacing: em(0), // 〔2026〕7号 and 2026年9月28日 set solid, as the standard prints them
 };
 const page = {
-  // 144 dpi is 2 px to the point: the 29 pt lines add up with no rounding (see Pitfalls).
-  width: mm(210), height: mm(297), dpi: 144, backgroundColor: col('paper'),
+  width: mm(210), height: mm(297), dpi: 150, backgroundColor: col('paper'),
   // With the grid on, margins are minimums. These leave 28 × 22 cells and 0.02 mm to share,
   // so the type area sits 37 mm under the head and 28 mm from the binding edge.
   margins: { top: mm(TOP), bottom: mm(297 - TOP - AREA.h - 0.02), left: mm(INNER),
@@ -88,7 +87,7 @@ const letterhead = { enabled: true, minHeight: pt(13 * LEAD), slot: { elements: 
 ] } };
 const notice = { level: 1, span: 'page', advancedDesign: letterhead,
   marginTop: pt(0), marginBottom: pt(LEAD), // 空一行: a blank line, then the addressee
-  breakBefore: { enabled: true, parity: 'any' } }; // gotcha: headings-drop-h1-break
+  breakBefore: { enabled: true, parity: 'any' } }; // a notice opens on the next page
 // #endregion
 
 // #region folios: “— 1 —” in 四号, 7 mm under the type area, a cell in from the outer edge
@@ -155,11 +154,10 @@ const resources = [{ id: 'schedule', typeId: 'schedule', kind: 'table', createdA
 const resourceTypes = [{ id: 'schedule', name: '日程', shortLabel: '', numberingTemplate: '',
   resetOn: 'never', counterFormat: 'decimal', captionPrefix: '' }]; // no label, no number
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'zh-Hans', // written out, never LANG (gotcha: cjk-locale-tag)
   colorPalette, page, layout: { layoutType: 'single' }, cjk, bodyText, resourceTypes,
-  headings: { fontFamily: SONG, fontWeight: 400, color: col('ink'), levels: [notice, ...levels],
-    balancing: { enabled: false } }, // no lines added over heads, no paragraph set loose
+  headings: { fontFamily: SONG, fontWeight: 400, color: col('ink'), levels: [notice, ...levels] },
   headingStyles: [annex], paragraphStyles, header, footer,
   tableStyle: { borderColor: col('ink'), borderWidth: pt(0.75), cellPadding: mm(2),
     headerBackgroundEnabled: false, headerBold: false, headerFontFamily: HEI, bodyFontFamily: SONG,
@@ -171,7 +169,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif SC': ['400', '900'], // SONG: the text, number, folios, 版记; the name, the titles
   'Noto Sans SC': ['400', '500'], // HEI: the head line, table heads; the 一、 heads, label, stamp
   'LXGW WenKai TC': ['400'], // KAI: the （一） heads
@@ -182,12 +180,14 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
 const lines = (re) => (markdown.match(re) ?? []).join('');
 const [table, heads] = [SCHEDULE.flat().join(''), SCHEDULE[0].join('')];
 await loadFonts(FONTS, markdown);
-await loadCjkFonts({ [SONG]: ['400'] }, `${markdown}${table}0123456789—.（）`);
+// The text face also sets the folios and the imprint's label, 抄送.
+await loadCjkFonts({ [SONG]: ['400'] }, `${markdown}${table}0123456789—.（）抄送`);
 await loadCjkFonts({ [SONG]: ['900'] }, `${lines(/^# .*$/gm)}文件`);
 await loadCjkFonts({ [HEI]: ['400'] }, `${lines(/^subtitle: .*$|colophon="[^"]*"/gm)}${heads}`);
 await loadCjkFonts({ [HEI]: ['500'] }, `${lines(/^## .*$/gm)}一二三四五六七八九十、附件样　张`);
 await loadCjkFonts({ [KAI]: ['400'] }, `${lines(/^### .*$/gm)}一二三四五六七八九十（）`);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'A Chinese official document to GB/T 9704',
   es: 'Un documento oficial chino según la GB/T 9704' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

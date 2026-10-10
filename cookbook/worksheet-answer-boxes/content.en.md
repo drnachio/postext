@@ -37,12 +37,12 @@ Six parts of the pea plant on page 1 have a number. Choose a word from the word 
 :::
 
 :::columns{count=3}
-1. :chip[⁠]{style="wide"}
-2. :chip[⁠]{style="wide"}
-3. :chip[⁠]{style="wide"}
-4. :chip[⁠]{style="wide"}
-5. :chip[⁠]{style="wide"}
-6. :chip[⁠]{style="wide"}
+1. :chip[ ]{style="wide"}
+2. :chip[ ]{style="wide"}
+3. :chip[ ]{style="wide"}
+4. :chip[ ]{style="wide"}
+5. :chip[ ]{style="wide"}
+6. :chip[ ]{style="wide"}
 :::
 :::
 
@@ -55,12 +55,12 @@ Finish each sentence with a word from the word bank.
 :chip[food]{style="word"} :chip[insects]{style="word"} :chip[water]{style="word"} :chip[plant]{style="word"} :chip[upright]{style="word"} :chip[seeds]{style="word"}
 :::
 
-1. The **roots** hold the plant in the soil and take in :chip[⁠]{style="blank"}.
-2. The **stem** keeps the plant :chip[⁠]{style="blank"} and carries water to the leaves.
-3. The **leaves** use sunlight to make :chip[⁠]{style="blank"} for the plant.
-4. The **flower** has bright petals that attract :chip[⁠]{style="blank"} such as bees.
-5. The **fruit** grows around the :chip[⁠]{style="blank"} and keeps them safe.
-6. A **seed** can grow into a new :chip[⁠]{style="blank"}.
+1. The **roots** hold the plant in the soil and take in :chip[ ]{style="blank"}.
+2. The **stem** keeps the plant :chip[ ]{style="blank"} and carries water to the leaves.
+3. The **leaves** use sunlight to make :chip[ ]{style="blank"} for the plant.
+4. The **flower** has bright petals that attract :chip[ ]{style="blank"} such as bees.
+5. The **fruit** grows around the :chip[ ]{style="blank"} and keeps them safe.
+6. A **seed** can grow into a new :chip[ ]{style="blank"}.
 :::
 
 **Did you know?** A pea plant cannot stand up on its own. It climbs by wrapping thin, curly tendrils around anything it touches.
@@ -108,9 +108,9 @@ I saw
 :::callout{type="card"}
 Colour a circle for each thing you can do.
 
-- :chip[⁠]{style="tick"} I can name the six parts of a plant.
-- :chip[⁠]{style="tick"} I can say what each part does.
-- :chip[⁠]{style="tick"} I can tell which part of a plant a food comes from.
+- :chip[ ]{style="tick"} I can name the six parts of a plant.
+- :chip[ ]{style="tick"} I can say what each part does.
+- :chip[ ]{style="tick"} I can tell which part of a plant a food comes from.
 :::
 
 :::paragraphs{style="colophon"}

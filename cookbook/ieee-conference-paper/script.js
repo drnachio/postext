@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 088 · A two-column conference paper in IEEE style ═══════
 // https://postext.dev/en/cookbook/ieee-conference-paper
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: STIX Two Text, Schibsted Grotesk (SIL OFL 1.1) · Needs postext ≥ 1.12.0
+// Fonts: STIX Two Text, Schibsted Grotesk (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -84,7 +84,7 @@ const calloutStyles = [{ id: 'abstract', span: 'page', backgroundEnabled: false,
 
 // #region sections: I. INTRODUCTION, centred capitals; references print "Section II"
 const levels = [
-  { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
+  { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // any page: no forced recto
   { level: 2, numberingTemplate: '{2:I}.', numberSeparator: ' ', fontSize: pt(9),
     lineHeight: pt(LEAD), fontWeight: 400, letterSpacing: em(0.06), textTransform: 'uppercase',
     marginTop: pt(LEAD), marginBottom: pt(0) }, // a line above, none below: at a column's head
@@ -104,7 +104,7 @@ const footer = { elements: [
       size: { width: mm(MEASURE) } } },
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }),
   colorPalette, citations, crossRefs, calloutStyles, headingStyles,
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
@@ -133,8 +133,7 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 const title = t({ en: 'An IEEE conference paper', es: 'Una ponencia en estilo IEEE' });
 showPages(doc, { title });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider }), `${RECIPE}.pdf`);

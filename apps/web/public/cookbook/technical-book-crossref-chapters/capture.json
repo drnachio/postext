@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "technical-book-crossref-chapters",
-  "sourceHash": "287760a0f32113acdfd5806268c90c04f5eef1ca47b514ee3d47fc92cf7ed4af",
+  "sourceHash": "4465626bf373d262ac3edf2d95ffdd727cbcafe426dc9c6b01e84420ee20cd25",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.486Z",
+  "capturedAt": "2026-10-10T13:38:51.903Z",
   "variants": {
     "en": {
-      "hash8": "ce5f4702",
+      "hash8": "89757f80",
       "vdtHash": "e1f58045d77de2db248f5072a9578a5e8b54f424",
       "timings": {
-        "importMs": 187,
-        "fontsMs": 78,
-        "buildMs": 50,
-        "totalMs": 1033,
-        "builds": 2
+        "importMs": 166,
+        "fontsMs": 64,
+        "buildMs": 96,
+        "totalMs": 893,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "IBM Plex Serif"
         ],
         "pages": 9,
-        "ownLines": 244
+        "ownLines": 243
       },
       "pages": [
         {
@@ -178,25 +178,27 @@
       },
       "pdf": {
         "file": "technical-book-crossref-chapters.pdf",
-        "bytes": 445303,
+        "bytes": 445470,
         "pages": 9
       },
       "sandbox": {
         "file": "technical-book-crossref-chapters.postext",
-        "bytes": 66684,
+        "bytes": 66925,
         "folio": "e5e8575d"
       },
       "detected": {
         "apis": [
           "buildBundle",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "parseTSV",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToPdf",
-          "setAlignment"
+          "setAlignment",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -473,14 +475,14 @@
       }
     },
     "es": {
-      "hash8": "b5bb37c6",
+      "hash8": "1160f2fb",
       "vdtHash": "b4b0b8a6a796295037cf26db3e4cb19c2f61731b",
       "timings": {
-        "importMs": 174,
-        "fontsMs": 65,
-        "buildMs": 49,
-        "totalMs": 1001,
-        "builds": 2
+        "importMs": 167,
+        "fontsMs": 64,
+        "buildMs": 98,
+        "totalMs": 898,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -501,7 +503,7 @@
           "IBM Plex Serif"
         ],
         "pages": 9,
-        "ownLines": 244
+        "ownLines": 243
       },
       "pages": [
         {
@@ -640,25 +642,27 @@
       },
       "pdf": {
         "file": "technical-book-crossref-chapters.pdf",
-        "bytes": 453627,
+        "bytes": 453799,
         "pages": 9
       },
       "sandbox": {
         "file": "technical-book-crossref-chapters.postext",
-        "bytes": 68002,
+        "bytes": 68239,
         "folio": "e5e8575d"
       },
       "detected": {
         "apis": [
           "buildBundle",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "parseTSV",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "renderToPdf",
-          "setAlignment"
+          "setAlignment",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

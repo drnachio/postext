@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 121 · Notes beside a vertical Japanese text, across the spread ══
 // https://postext.dev/en/cookbook/vertical-notes-and-sidenotes
 // Code: MIT · Text: 樋口一葉『たけくらべ』, Aozora Bunko 389 (PD); notes CC BY 4.0 · Pictures: none
-// Fonts: Shippori Mincho, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Shippori Mincho, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -55,7 +55,7 @@ const PT = 25.4 / 72; // mm in a point
 const page = (down, across) => ({ anchor: { to: 'page', edge: 'top-left' },
   offset: { x: mm(down), y: mm(across) } });
 const TITLE = 26; // pt
-// gotcha: headings-drop-h1-break
+// parity 'any': the story opens on the next page, either side (the default waits for a recto).
 const story = { level: 1, breakBefore: { enabled: true, parity: 'any' },
   advancedDesign: { enabled: true, minHeight: lines(LINES), slot: { elements: [
     { kind: 'text', id: 'title', content: '{titleText}', fontFamily: MINCHO, fontWeight: 700,
@@ -89,7 +89,7 @@ const footer = { elements: [{ kind: 'text', id: 'colophon', content: '{attr.colo
     size: { width: mm(100) } } }] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   page: {
@@ -129,7 +129,8 @@ await loadCjkFonts({ [MINCHO]: ['400'] }, `${markdown}（）0123456789`, { verti
 await loadCjkFonts({ [MINCHO]: ['700'] }, `${title}${author}一`);
 await loadCjkFonts({ [GOTHIC]: ['400'] },
   `${title}${markdown.match(/colophon="([^"]*)"/)[1]}一二三四五六七八九十`, { vertical: true });
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'Notes beside a vertical Japanese text, across the spread',
   es: 'Notas junto a un texto japonés vertical, en la doble página' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

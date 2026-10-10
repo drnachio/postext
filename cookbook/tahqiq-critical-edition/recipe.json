@@ -45,13 +45,11 @@
   "gotchas": [
     "arabic-locale-tag",
     "arabic-fonts-subset",
-    "numbering-next-page",
-    "headings-drop-h1-break",
-    "fonts-first"
+    "numbering-next-page"
   ],
   "engine": {
-    "postext": "1.15.0",
-    "postextPdf": "1.15.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -118,7 +116,7 @@
     "content": "MIT"
   },
   "created": "2026-10-04",
-  "updated": "2026-10-04",
+  "updated": "2026-10-10",
   "related": [
     "front-matter-roman-to-arabic",
     "qasida-diwan-page"

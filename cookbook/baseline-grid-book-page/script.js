@@ -1,11 +1,10 @@
 // ═══ Postext Cookbook · Nº 013 · A book page on a baseline grid ═════════════════════
 // https://postext.dev/en/cookbook/baseline-grid-book-page
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code (CC BY 4.0)
-// Fonts: Vollkorn, Playfair Display, Vollkorn SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Vollkorn, Playfair Display, Vollkorn SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // An essay on the canon of page proportions, on a page that shows its geometry and grid.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
-  registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es' | 'pt')
@@ -55,7 +54,6 @@ const onGrid = { marginTop: pt(0), marginBottom: pt(0) };
 // #endregion
 
 // #region heads: the book's title on versos, the essay's on rectos, folios from page 9
-// Design slots skip the palette: col() writes each hex too (gotcha: palette-skips-designs).
 const OUTER = 4 * UNIT; // mm: the heads end where the text block does
 const RISE = 1.5 * UNIT; // mm: heads 12 mm into the head margin; the drop folio 12 mm below
 const TAB = 7; // mm from a folio to the title beside it
@@ -86,14 +84,11 @@ const continuation = { pageIndexOffset: 8, pageNumbering: { startAt: 9 } };
 
 // #region balance: full columns end flush, and the last page ends level
 // On by default: it fills a column a keep rule leaves short, and cuts the last page level.
-// Off: the lever that starts a short closing column a line low under a page-wide figure;
-// this copy never trips it, other copy can (gotcha: float-stretch-closing-page).
-const balancing = { stretchAfterFloats: false };
+const balancing = { enabled: true };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es', pt: 'pt' }), // exact codes (gotcha: hyphenation-locales)
-  resourceTypes: defaultResourceTypes(LANG), // localized captions (gotcha: resource-types-locale)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es', pt: 'pt' }), // hyphenation, and Figure, Figura in captions
   colorPalette,
   page,
   layout,
@@ -103,7 +98,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   // #region flow: heads that leave the grid and come back to it; lists that never leave it
   headings: { fontFamily: 'Playfair Display', color: col('ink'), balancing,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'odd': the essay opens on a recto.
       // Two lines of 46 pt, each four leads tall, then one lead: the text starts on line 10.
       { level: 1, breakBefore: { enabled: true, parity: 'odd' },
         fontSize: pt(46), lineHeight: pt(4 * LEAD), italic: true, color: col('rubric'),
@@ -244,18 +239,17 @@ const resources = [
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the pages paint, loaded before the first build (gotcha: fonts-first).
+// Every face the pages paint, loaded before the first build.
 const FONTS = { // text, display and label faces (Vollkorn SC ships no italic)
   Vollkorn: ['400', '400i', '700'], 'Playfair Display': ['700', '700i'],
   'Vollkorn SC': ['400', '600'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('canon.svg', canonSvg(...CANON));
 await loadSvg('pages.svg', pagesSvg(...PAGES));
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'A book page on a baseline grid',
   es: 'Una página de libro sobre una rejilla base',
   pt: 'Uma página de livro sobre a grade de linhas de base' }) });

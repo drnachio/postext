@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "pdf-with-embedded-fonts",
-  "sourceHash": "496ff3dbb91e502fe9def7815b5eecc0cc30d029be722aa819e73c172d5ca8aa",
+  "sourceHash": "5496f16ce0a9c27971ba363f124618f98da93b20bbb3c528a23dac4ee3f379d3",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.246Z",
+  "capturedAt": "2026-10-10T13:37:01.515Z",
   "variants": {
     "en": {
-      "hash8": "b17656f6",
+      "hash8": "3dc68dc3",
       "vdtHash": "6614b01a37d0ff6a777bd67b097f1a4e32a7cf36",
       "timings": {
-        "importMs": 193,
-        "fontsMs": 59,
-        "buildMs": 57,
-        "totalMs": 864,
+        "importMs": 168,
+        "fontsMs": 49,
+        "buildMs": 33,
+        "totalMs": 812,
         "builds": 1
       },
       "specimen": {
@@ -115,18 +115,17 @@
       },
       "pdf": {
         "file": "pdf-with-embedded-fonts.pdf",
-        "bytes": 89367,
+        "bytes": 89369,
         "pages": 4
       },
       "sandbox": {
         "file": "pdf-with-embedded-fonts.postext",
-        "bytes": 30452,
+        "bytes": 30426,
         "folio": "885e614d"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
@@ -247,7 +246,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 234,
+        "configLeaves": 227,
         "designElements": 11,
         "directives": [
           "::resource",

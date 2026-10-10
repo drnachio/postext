@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "outbreak-report-bulletin",
-  "sourceHash": "5908c6299e8f38b1beeed0b6bbd9d3e6ac184e8cfebb0d3175fabf6822cf31d5",
+  "sourceHash": "ec9e8886a9d16245ad269d66d8da5022327165ce8be3d078507ab33aa2ffa091",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.230Z",
+  "capturedAt": "2026-10-10T13:41:56.004Z",
   "variants": {
     "en": {
-      "hash8": "dc714724",
+      "hash8": "b0018284",
       "vdtHash": "09f36dea9457a56ffb6aa43e12e8a6ffe5bf4e4d",
       "timings": {
-        "importMs": 228,
-        "fontsMs": 93,
-        "buildMs": 304,
-        "totalMs": 1658,
-        "builds": 2
+        "importMs": 216,
+        "fontsMs": 60,
+        "buildMs": 356,
+        "totalMs": 1222,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -51,7 +51,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 136552,
+          "bytes": 136546,
           "alt": "Opening page 1: Pneumocystis Pneumonia — Los Angeles. Figure 1. The five patients, September 1980 to May 1981, by month. The illness before the pneumonia is counted back from the month of diagnosis, as each report gives it."
         },
         {
@@ -142,23 +142,23 @@
       },
       "pdf": {
         "file": "outbreak-report-bulletin.pdf",
-        "bytes": 379061,
+        "bytes": 193006,
         "pages": 6
       },
       "sandbox": {
         "file": "outbreak-report-bulletin.postext",
-        "bytes": 73732,
+        "bytes": 95664,
         "folio": "0cf5d184"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "mergeCells",
           "parseTSV",
           "registerCitationEngine",

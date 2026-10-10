@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "yonkoma",
-  "sourceHash": "405908584499a8f9b7b3f28629cf5cd4042f8b42cb3fe1183e9358cc33df73ca",
+  "sourceHash": "4865269db44f309fc315bccbb1c9444b62a249434220df175ce255c088e70944",
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T15:02:19.776Z",
+  "capturedAt": "2026-10-10T13:42:27.895Z",
   "variants": {
     "en": {
-      "hash8": "7870e91d",
+      "hash8": "caa3bb14",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 456,
-        "fontsMs": 358,
-        "buildMs": 403,
-        "totalMs": 1990,
+        "importMs": 208,
+        "fontsMs": 245,
+        "buildMs": 349,
+        "totalMs": 1568,
         "builds": 2
       },
       "specimen": {
@@ -94,12 +94,12 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -234,13 +234,13 @@
       }
     },
     "es": {
-      "hash8": "b63859db",
+      "hash8": "fabd6864",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 297,
-        "fontsMs": 435,
-        "buildMs": 412,
-        "totalMs": 1950,
+        "importMs": 173,
+        "fontsMs": 215,
+        "buildMs": 328,
+        "totalMs": 1498,
         "builds": 2
       },
       "specimen": {
@@ -306,23 +306,23 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1323955,
+        "bytes": 1323954,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1264225,
+        "bytes": 1264224,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -457,13 +457,13 @@
       }
     },
     "ca": {
-      "hash8": "1641b7d3",
+      "hash8": "a34e3987",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 178,
-        "fontsMs": 288,
-        "buildMs": 406,
-        "totalMs": 1681,
+        "importMs": 168,
+        "fontsMs": 216,
+        "buildMs": 337,
+        "totalMs": 1513,
         "builds": 2
       },
       "specimen": {
@@ -529,23 +529,23 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1323600,
+        "bytes": 1323599,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1264277,
+        "bytes": 1264276,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -680,13 +680,13 @@
       }
     },
     "zh": {
-      "hash8": "20d55943",
+      "hash8": "353191f8",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 362,
-        "fontsMs": 440,
-        "buildMs": 407,
-        "totalMs": 2250,
+        "importMs": 229,
+        "fontsMs": 262,
+        "buildMs": 340,
+        "totalMs": 1792,
         "builds": 2
       },
       "specimen": {
@@ -727,7 +727,7 @@
           "h": 1419,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 160490,
+          "bytes": 160422,
           "alt": "第 1 页。"
         }
       ],
@@ -752,23 +752,23 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1338438,
+        "bytes": 1338576,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1264296,
+        "bytes": 1264325,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -903,13 +903,13 @@
       }
     },
     "ar": {
-      "hash8": "d973cc14",
+      "hash8": "c173815c",
       "vdtHash": "d61540f9adce65e201a2f033d6b41fbdbc3c42aa",
       "timings": {
-        "importMs": 356,
-        "fontsMs": 338,
-        "buildMs": 402,
-        "totalMs": 1901,
+        "importMs": 343,
+        "fontsMs": 503,
+        "buildMs": 351,
+        "totalMs": 2005,
         "builds": 2
       },
       "specimen": {
@@ -975,23 +975,23 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1328962,
+        "bytes": 1328961,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1264456,
+        "bytes": 1264455,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1126,13 +1126,13 @@
       }
     },
     "ja": {
-      "hash8": "aac1ae97",
+      "hash8": "5af56b7a",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 245,
-        "fontsMs": 372,
-        "buildMs": 412,
-        "totalMs": 1816,
+        "importMs": 226,
+        "fontsMs": 251,
+        "buildMs": 339,
+        "totalMs": 1599,
         "builds": 2
       },
       "specimen": {
@@ -1198,23 +1198,23 @@
       },
       "pdf": {
         "file": "yonkoma.pdf",
-        "bytes": 1322844,
+        "bytes": 1322846,
         "pages": 2
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1264347,
+        "bytes": 1264346,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1349,13 +1349,13 @@
       }
     },
     "pt": {
-      "hash8": "fea40c3e",
+      "hash8": "43d5cdea",
       "vdtHash": "41ee8e035d65bb490bdec97899c77aeb70675f16",
       "timings": {
-        "importMs": 152,
-        "fontsMs": 221,
-        "buildMs": 391,
-        "totalMs": 1552,
+        "importMs": 602,
+        "fontsMs": 416,
+        "buildMs": 349,
+        "totalMs": 2198,
         "builds": 2
       },
       "specimen": {
@@ -1426,18 +1426,18 @@
       },
       "sandbox": {
         "file": "yonkoma.postext",
-        "bytes": 1264624,
+        "bytes": 1264623,
         "folio": "80b0969c"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

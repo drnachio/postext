@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "tebeo-album-page",
-  "sourceHash": "2e621d5d621692f552fe64ac24798d0215c1a8555d2f8b00b394b4dca19cea64",
+  "sourceHash": "35bdaf77e4f89e5fcd5cb440b29839e00569cb379374878be1028eee7ec93321",
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T14:45:51.352Z",
+  "capturedAt": "2026-10-10T13:42:10.058Z",
   "variants": {
     "en": {
-      "hash8": "a0ee169c",
+      "hash8": "f3af63f7",
       "vdtHash": "3d4f16a94ffba3a564a4a4e255512896aba9d4dc",
       "timings": {
-        "importMs": 326,
-        "fontsMs": 161,
-        "buildMs": 592,
-        "totalMs": 1632,
+        "importMs": 179,
+        "fontsMs": 102,
+        "buildMs": 499,
+        "totalMs": 1347,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 137
+        "ownLines": 138
       },
       "pages": [
         {
@@ -84,23 +84,23 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1117119,
+        "bytes": 1117123,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1115569
+        "bytes": 1115571
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -291,13 +291,13 @@
       }
     },
     "es": {
-      "hash8": "231e5685",
+      "hash8": "ed3ae538",
       "vdtHash": "816559f29b2f089a5478fb77ff9f71633bd18276",
       "timings": {
-        "importMs": 287,
-        "fontsMs": 139,
-        "buildMs": 427,
-        "totalMs": 1425,
+        "importMs": 196,
+        "fontsMs": 90,
+        "buildMs": 367,
+        "totalMs": 1221,
         "builds": 1
       },
       "specimen": {
@@ -318,7 +318,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 137
+        "ownLines": 138
       },
       "pages": [
         {
@@ -364,23 +364,23 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1117720,
+        "bytes": 1117721,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1116169
+        "bytes": 1116171
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -576,13 +576,13 @@
       }
     },
     "ca": {
-      "hash8": "616bbc27",
+      "hash8": "f804c712",
       "vdtHash": "e61eea129a4c07d9e4cf2b7611a7cba4124222aa",
       "timings": {
-        "importMs": 343,
-        "fontsMs": 99,
-        "buildMs": 445,
-        "totalMs": 4181,
+        "importMs": 166,
+        "fontsMs": 84,
+        "buildMs": 376,
+        "totalMs": 1184,
         "builds": 1
       },
       "specimen": {
@@ -603,7 +603,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 137
+        "ownLines": 138
       },
       "pages": [
         {
@@ -649,23 +649,23 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1117586,
+        "bytes": 1117588,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1116298
+        "bytes": 1116302
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -861,13 +861,13 @@
       }
     },
     "zh": {
-      "hash8": "6690d70c",
+      "hash8": "9155ac26",
       "vdtHash": "50f3d980fc2b9de7346d2b56fbf3f9cffc139eba",
       "timings": {
-        "importMs": 205,
-        "fontsMs": 370,
-        "buildMs": 925,
-        "totalMs": 2061,
+        "importMs": 198,
+        "fontsMs": 290,
+        "buildMs": 464,
+        "totalMs": 1522,
         "builds": 1
       },
       "specimen": {
@@ -888,7 +888,7 @@
           "ZCOOL KuaiLe"
         ],
         "pages": 2,
-        "ownLines": 137
+        "ownLines": 138
       },
       "pages": [
         {
@@ -910,7 +910,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 245418,
+          "bytes": 246022,
           "alt": "第 3 页。"
         }
       ],
@@ -934,23 +934,23 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1157490,
+        "bytes": 1157831,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1115388
+        "bytes": 1115398
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1142,13 +1142,13 @@
       }
     },
     "ar": {
-      "hash8": "8788b270",
+      "hash8": "5dee1097",
       "vdtHash": "96eb0cd503d6ae90a7b895eec4ff8cb1bbc9eb81",
       "timings": {
-        "importMs": 276,
-        "fontsMs": 158,
-        "buildMs": 468,
-        "totalMs": 1483,
+        "importMs": 185,
+        "fontsMs": 118,
+        "buildMs": 411,
+        "totalMs": 1251,
         "builds": 1
       },
       "specimen": {
@@ -1169,7 +1169,7 @@
           "Playpen Sans Arabic"
         ],
         "pages": 2,
-        "ownLines": 137
+        "ownLines": 138
       },
       "pages": [
         {
@@ -1221,18 +1221,18 @@
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1115447
+        "bytes": 1115448
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1426,13 +1426,13 @@
       }
     },
     "ja": {
-      "hash8": "aabc33d7",
+      "hash8": "c56aa33e",
       "vdtHash": "d99080b560120794a7fae42a57d1aa6aa08b5ec8",
       "timings": {
-        "importMs": 417,
-        "fontsMs": 364,
-        "buildMs": 1199,
-        "totalMs": 2537,
+        "importMs": 194,
+        "fontsMs": 245,
+        "buildMs": 445,
+        "totalMs": 1463,
         "builds": 1
       },
       "specimen": {
@@ -1453,7 +1453,7 @@
           "Zen Antique"
         ],
         "pages": 2,
-        "ownLines": 137
+        "ownLines": 138
       },
       "pages": [
         {
@@ -1475,7 +1475,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 237172,
+          "bytes": 238392,
           "alt": "3ページ。"
         }
       ],
@@ -1500,23 +1500,23 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1154935,
+        "bytes": 1154964,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1116228
+        "bytes": 1116216
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1701,11 +1701,6 @@
             "detail": "card.webp weighs 98 KB (aim for ≤ 90 KB)"
           },
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -1714,13 +1709,13 @@
       }
     },
     "pt": {
-      "hash8": "3b9cdc27",
+      "hash8": "0f11dc75",
       "vdtHash": "f140d5646d4b07bf163f4cf2c9873b6db7e64670",
       "timings": {
-        "importMs": 285,
-        "fontsMs": 118,
-        "buildMs": 460,
-        "totalMs": 1449,
+        "importMs": 188,
+        "fontsMs": 101,
+        "buildMs": 403,
+        "totalMs": 1254,
         "builds": 1
       },
       "specimen": {
@@ -1741,7 +1736,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 137
+        "ownLines": 138
       },
       "pages": [
         {
@@ -1787,23 +1782,23 @@
       },
       "pdf": {
         "file": "tebeo-album-page.pdf",
-        "bytes": 1117154,
+        "bytes": 1117156,
         "pages": 2
       },
       "sandbox": {
         "file": "tebeo-album-page.postext",
-        "bytes": 1115974
+        "bytes": 1115976
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

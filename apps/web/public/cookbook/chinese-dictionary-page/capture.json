@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-dictionary-page",
-  "sourceHash": "d272ce5bb56933f29779da3dd4f9ef0df3d89f79216af4e5054ca98929540d22",
+  "sourceHash": "3bfe01ea63647eb75432b409bdbf6eca2bb00eb1bf2bd0ca057877eea8fdb0f2",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.806Z",
+  "capturedAt": "2026-10-10T13:32:12.309Z",
   "variants": {
     "en": {
-      "hash8": "bdf16374",
-      "vdtHash": "83c4dea9b86c080bc171ade893e793a82f7ea796",
+      "hash8": "4950c7f6",
+      "vdtHash": "cfa6149af9193b50741ee0960827cb37cf495f4a",
       "timings": {
-        "importMs": 204,
-        "fontsMs": 349,
-        "buildMs": 13,
-        "totalMs": 1224,
-        "builds": 2
+        "importMs": 167,
+        "fontsMs": 278,
+        "buildMs": 57,
+        "totalMs": 1047,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -51,7 +51,7 @@
           "h": 1450,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 136164,
+          "bytes": 136356,
           "alt": "Page 634: 天."
         },
         {
@@ -62,7 +62,7 @@
           "h": 1450,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 140350,
+          "bytes": 140604,
           "alt": "Page 635: 腆."
         },
         {
@@ -73,7 +73,7 @@
           "h": 1450,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 134058,
+          "bytes": 134194,
           "alt": "Page 636: 挑."
         },
         {
@@ -84,7 +84,7 @@
           "h": 1450,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 127436,
+          "bytes": 127628,
           "alt": "Page 637: 餮."
         }
       ],
@@ -112,21 +112,21 @@
       },
       "pdf": {
         "file": "chinese-dictionary-page.pdf",
-        "bytes": 312792,
+        "bytes": 313188,
         "pages": 4
       },
       "sandbox": {
         "file": "chinese-dictionary-page.postext",
-        "bytes": 26023,
+        "bytes": 25964,
         "folio": "662b056b"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -288,9 +288,14 @@
         "cjkLooseLines": {
           "count": 0,
           "share": 0,
-          "worst": 0.15
+          "worst": 0.23
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",
@@ -300,14 +305,14 @@
       }
     },
     "es": {
-      "hash8": "663bd9ae",
-      "vdtHash": "97d639df1a3ade0191fd3263536c04070e71b84a",
+      "hash8": "e242e6a4",
+      "vdtHash": "93a22ee2b7e98d49e22d96155531645f76fcea8e",
       "timings": {
-        "importMs": 265,
-        "fontsMs": 321,
-        "buildMs": 14,
-        "totalMs": 1241,
-        "builds": 2
+        "importMs": 177,
+        "fontsMs": 265,
+        "buildMs": 59,
+        "totalMs": 1047,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -340,7 +345,7 @@
           "h": 1450,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 136164,
+          "bytes": 136356,
           "alt": "Página 634: 天."
         },
         {
@@ -351,7 +356,7 @@
           "h": 1450,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 140350,
+          "bytes": 140604,
           "alt": "Página 635: 腆."
         },
         {
@@ -362,7 +367,7 @@
           "h": 1450,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 134058,
+          "bytes": 134194,
           "alt": "Página 636: 挑."
         },
         {
@@ -373,7 +378,7 @@
           "h": 1450,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 127804,
+          "bytes": 128054,
           "alt": "Página 637: 餮."
         }
       ],
@@ -401,21 +406,21 @@
       },
       "pdf": {
         "file": "chinese-dictionary-page.pdf",
-        "bytes": 312765,
+        "bytes": 313168,
         "pages": 4
       },
       "sandbox": {
         "file": "chinese-dictionary-page.postext",
-        "bytes": 26093,
+        "bytes": 26037,
         "folio": "662b056b"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -577,9 +582,14 @@
         "cjkLooseLines": {
           "count": 0,
           "share": 0,
-          "worst": 0.15
+          "worst": 0.23
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

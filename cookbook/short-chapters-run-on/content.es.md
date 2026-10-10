@@ -5,13 +5,9 @@ author: "Machado de Assis"
 
 # Dom \\ Casmurro {style="cover"}
 
-:::pagebreak
-
 :::numbering{startAt=212}
 
 # Capítulo CXXIII {style="plate" quote="«…grandes e abertos, como a vaga do mar lá fóra, como se quizesse tragar tambem o nadador da manhã.»"}
-
-:::pagebreak
 
 O retrato de Escobar, que eu tinha alli, ao pé do de minha mãe, falou-me como se fosse a propria pessoa. Combati sinceramente os impulsos que trazia do Flamengo; rejeitei a figura da mulher do meu amigo, e chamei-me desleal. Demais, quem me affirmava que houvesse alguma intenção daquella especie no gesto da despedida e nos anteriores? Tudo podia ligar-se ao interesse da nossa viagem. Sancha e Capitú eram tão amigas que seria um prazer mais para ellas irem juntas. Quando houvesse alguma intenção sexual, quem me provaria que não era mais que uma sensação fulgurante, destinada a morrer com a noite e o somno? Ha remorsos que não nascem de outro peccado, nem tem maior duração. Agarrei-me a esta hypothese que se conciliava com a mão de Sancha, que eu sentia de memoria dentro da minha mão, quente e demorada, apertada e apertando…
 

@@ -3,7 +3,7 @@ title: "Newspaper front page"
 summary: "A local weekly's front page and page 2 in two ruled columns, with page-wide headlines set as boxes and a four-column strip of briefs floated to the foot."
 plain: "The front page and page 2 of a local weekly newspaper. It shows how to run big headlines across the full page and place a strip of short news items at the bottom."
 description: "A newspaper front page in Postext, with the code: a blackletter nameplate, headlines in page-wide boxes, ruled columns and four columns of briefs at the foot."
-question: "Can I set a newspaper page with more than two columns, or wrap the text around its photo?"
+question: "How do I set a newspaper front page, with headlines across the columns and a four-column strip of briefs?"
 aliases: ["newspaper", "front page", "broadsheet", "tabloid", "nameplate", "masthead", "banner headline", "news in brief", "three columns", "four columns", "column rule", "local paper"]
 pageNotes: { "1": "The front page of The Elverdale Courier: the blackletter nameplate between a weather ear and a price ear, a thick and a thin rule over the dateline, the two-line banner Harrow Ridge turbines win the town’s vote, an italic deck, a photograph of wind turbines on a snowy ridge across both columns, the story in two justified columns parted by a hairline, and a tinted In brief strip of four columns at the foot, each brief opening on a red chip.", "2": "Page 2, headed by a red Town & Valley flag on a black bar: the Old Mill Bridge story with a drawing of the two-arch bridge between its banks and its new footing in red, a five-day forecast table at the head of the right column, a second headline across the page over the ward results story and a Letters column, and a table of how the five wards voted, with a red and grey bar in each row, across the foot." }
 ---
@@ -18,13 +18,13 @@ The front page and page 2 of *The Elverdale Courier*, an invented valley weekly,
 
 <Excerpt region="palette" />
 
-The page is newsprint (#f8f5ee) and the type near-black ink (#111315). The one red, #a6192e, goes on the section flags, the kickers, the chips and the yes bars. Each colour carries its `paletteId` and its hex, because 1.4.1 paints design elements from the hex. `main-color` points at the ink, so the italics and every default the config leaves alone print in ink. `bodyText.boldColor` is set to the ink as well. The reference colour falls back to it and each box copies it for its bold text, and the palette recolours neither. Without it, the two references on page 2 and the bold lead-ins of the briefs print in the default blue, #295AA3.
+The page is newsprint (#f8f5ee) and the type near-black ink (#111315). The one red, #a6192e, goes on the section flags, the kickers, the chips and the yes bars. Each colour is linked to its palette entry through `paletteId`. `main-color` points at the ink, so the bold, the italics, the two references on page 2 and every default the config leaves alone print in ink; left at its own value, they would print in the default blue, #295AA3.
 
 ### 2 · The nameplate is the front page's H1
 
 <Excerpt region="nameplate" />
 
-`# The Elverdale Courier` takes the `front` heading style, which fills the masthead from the heading's text and seven of its attributes (`issue`, `area`, `outlook`, `temps`, `since`, `day` and `price`); the date comes from `publishDate` in the frontmatter. An empty box seven grid lines deep (31.1 mm) sets the height of the opener. The rules, the dateline and the name hang from its foot, so the opener ends on a grid line. Make the box 6.6 lines deep and 1.4.1 draws the column rule down through the name and the dateline.
+`# The Elverdale Courier` takes the `front` heading style, which fills the masthead from the heading's text and seven of its attributes (`issue`, `area`, `outlook`, `temps`, `since`, `day` and `price`); the date comes from `publishDate` in the frontmatter. An empty box seven grid lines deep (31.1 mm) sets the height of the opener. The rules, the dateline and the name hang from its foot, so the opener ends on a grid line.
 
 ### 3 · A headline across both columns is a box
 
@@ -32,9 +32,9 @@ The page is newsprint (#f8f5ee) and the type near-black ink (#111315). The one r
 
 A heading spans both columns only as an opener, and an opener starts a new page. Put `span: 'page'` on the ward story's H2 instead of its box and that story moves to a third page. A frameless box with `span="page"` can start mid-page. On <PageRef page={2}>page 2</PageRef> the columns are cut level above it and resume below. The box holds the H2 in one of three heading styles (56, 30 or 22 pt), the italic deck and, on the front page, the photograph. Its `marginBottom` of half a line starts the columns on the next grid line, 3.4 mm under the deck on page 2. At the default margin the gap is 7.8 mm and the letters run onto a third page.
 
-### 4 · More than two columns live inside a box
+### 4 · The four-column strip is a box with columns
 
-The code for this step is [the short answer](#the-short-answer) above. A page's body takes two columns at most ([Layout types](/en/docs/configuration#layout-types)), so a newspaper's four or five columns go in a box, here a page-wide one holding a [`:::columns`](/en/docs/document-format#columns) group. `breaks` counts the group's blocks, one per brief, so briefs 2, 3 and 4 open columns 2, 3 and 4. Each column is 49 mm wide, with the page's 6 mm gutter between them.
+The code for this step is [the short answer](#the-short-answer) above. The body of both pages runs in two columns ([Layout types](/en/docs/configuration#layout-types)). The briefs need four only at the foot of page 1, under a title and on a tint, so they go in a box, here a page-wide one holding a [`:::columns`](/en/docs/document-format#columns) group. `breaks` counts the group's blocks, one per brief, so briefs 2, 3 and 4 open columns 2, 3 and 4. Each column is 49 mm wide, with the page's 6 mm gutter between them.
 
 ```markdown
 :::callout{type="briefs" span="page" placement="bottom" title="In brief"}
@@ -53,7 +53,7 @@ The code for this step is [the short answer](#the-short-answer) above. A page's 
 
 <Excerpt region="floats" />
 
-The photograph is inline in the banner box because a page-wide `top` float never lands above the line that cites it; as a float, the photo would open page 2 (see Pitfalls). The bridge drawing is inline too, after the paragraph about the pier, and `wrap: 'right'` with `width: 0.47` sets it at the right of column 1, 47 % of the column wide, the next paragraphs running beside it and then under it at the full measure ([text wrap](/en/docs/document-format#text-wrap)). At that width no line beside it is set loose; the copy of the story was refitted to the shorter drawing. The forecast floats to the head of a column and lands at the top of the right one. The ward table floats under both columns, where the column rule stops. On the last page it sits right under the balanced columns, so the copy above it was fitted to bring it down to the foot. Both resource types set `captionPrefix: ''`, and 1.4.1 prints a caption label only when the prefix has text, so no caption starts with "Figure 1".
+The photograph is inline in the banner box because a page-wide `top` float never lands above the line that cites it; as a float, the photo would open page 2 (see Pitfalls). The bridge drawing is inline too, after the paragraph about the pier, and `wrap: 'right'` with `width: 0.47` sets it at the right of column 1, 47 % of the column wide, the next paragraphs running beside it and then under it at the full measure ([text wrap](/en/docs/document-format#text-wrap)). At that width no line beside it is set loose; the copy of the story was refitted to the shorter drawing. The forecast floats to the head of a column and lands at the top of the right one. The ward table floats under both columns, where the column rule stops. On the last page it sits right under the balanced columns, so the copy above it was fitted to bring it down to the foot. Both resource types set `captionPrefix: ''`, and a caption label prints only when the prefix has text, so no caption starts with "Figure 1".
 
 ### 6 · An inside page opens on a section flag
 

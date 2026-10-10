@@ -509,10 +509,9 @@ function collect(input: CheckInput): Finding[] {
   for (const issue of input.net) add("C3", issue.severity, issue.detail);
   for (const failure of input.failedRequests.slice(0, 8)) add("C3", "fail", failure);
 
-  // C13: the kit had to load faces FONTS does not list.
-  for (const m of input.console.filter((x) => x.text.includes("[cookbook] FONTS does not list"))) {
-    add("C13", "fail", m.text.replace(/^\[cookbook\]\s*/, ""));
-  }
+  // C13 (the kit had to load faces FONTS does not list) went with kit fonts
+  // v2: since postext 1.25 the engine loads the faces a config names, and
+  // reports one it could not load as a `fontFallback` warning (C5, C12).
 
   if (input.settleTimedOut) add("H10", "warn", "builds kept arriving: no 500 ms quiet window within 10 s");
   if (input.passive) add("C3", "info", "a worker recipe: captured without request interception (hosts checked, network not cached)");

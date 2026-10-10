@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 070 · Play script: cast list, speakers and stage directions ═══
 // https://postext.dev/en/cookbook/stage-play
 // Code: MIT · Text: Oscar Wilde, 1895 (PD, Gutenberg #844), Spanish: the Cookbook · Art: in code
-// Fonts: Libre Baskerville, Abril Fatface, Playfair Display SC (OFL 1.1) · Needs postext ≥ 1.23.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Libre Baskerville, Abril Fatface, Playfair Display SC (OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'stage-play';
@@ -17,7 +18,7 @@ const palette = { // every colour in the config links to one of these
   muted: '#6c6168', // stage directions and running heads (5.5:1 on the paper)
   paper: '#fbf6ec', // a cream stock
 };
-// The hex travels with the id: designs do not read the palette (gotcha: palette-skips-designs).
+// A colour is its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -43,16 +44,14 @@ const dialogue = {
   italicColor: col('muted'), // *[Languidly.]*, in a speech or a paragraph of its own
   minWordSpacing: 0.65, maxWordSpacing: 1.8, // justified (the default); limits inside 0.6–2
   firstLineIndent: mm(5), hangingIndent: true, // the name at the margin, the turnovers hung
-  maxRuntTracking: 0, // gotcha: runt-tracking-unpainted
 };
-// Directions: smaller and centred, on the same grid. A paragraph style has no italic switch
-// or colour (gotcha: style-italic-colour): the text is written *…* and takes the grey.
+// Directions: smaller and centred, on the same grid. They are written *…* like the ones
+// inside a speech, so both take the body's italic grey.
 const direction = { id: 'direction', fontSize: pt(8.6),
   textAlign: 'center', firstLineIndent: pt(0) };
 // #endregion
 
 // #region acts: an act title is a plain first-level heading, centred and set in capitals
-// Any headings object drops the H1 break: restated (gotcha: headings-drop-h1-break).
 const headings = {
   fontFamily: LABEL, fontWeight: 400, color: col('ink'),
   textAlign: 'center', // every level: the act, the cast list's heads, the scene
@@ -94,18 +93,14 @@ const resourceTypes = [
 
 // #region playbill: the title page, a heading style whose design fills the sheet
 // # The Importance of Being Earnest {style="playbill" small="The" big="Importance" …}
-// Each attribute is a playbill line in its own face and size, its lineHeight a multiple
-// (gotcha: design-lineheight-multiple). The ground is an image and reserves no height
-// (gotcha: opener-image-no-reserve): :::pagebreak keeps the title page alone if its foot
-// lines move up.
+// Each attribute is a playbill line in its own face and size. The ground is an image that
+// fills the sheet: the heading reserves down to its foot, so the cast list starts on page 2.
 const line = (id, content, font, size, y, color, extra = {}) => ({ kind: 'text', id, content,
   fontFamily: font, fontSize: pt(size), lineHeight: 1, color: col(color), align: 'center',
-  // Centred and tracked, a line sits half its tracking left of centre: x puts it back.
-  placement: { anchor: { to: 'page', edge: 'top' },
-    offset: { x: pt((extra.letterSpacing?.value ?? 0) / 2), y: mm(y) } }, ...extra });
+  placement: { anchor: { to: 'page', edge: 'top' }, offset: { y: mm(y) } }, ...extra });
 const tracked = (track) => ({ textTransform: 'uppercase', letterSpacing: pt(track) });
 const playbill = {
-  id: 'playbill', span: 'page', // even in one column (gotcha: opener-clipped-at-top)
+  id: 'playbill', span: 'page', // kept in the column, its foot would cut the ground
   header: { elements: [] }, footer: { elements: [] }, // no heads on p. 2, no folio on p. 1
   advancedDesign: { enabled: true, slot: { elements: [
     { kind: 'image', id: 'ground', resourceId: 'playbill',
@@ -142,8 +137,8 @@ const footer = { elements: [{ ...head('drop-folio', '{pageNumber}', 'all', 'top'
   placement: { anchor: { to: 'container', edge: 'top' }, offset: { y: mm(8) } } }] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es' }), // hyphenation by exact code (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // each edition's hyphenation patterns
   colorPalette,
   resourceTypes,
   page: {
@@ -297,11 +292,10 @@ const resources = art;
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { 'Libre Baskerville': ['400', '400i', '700'], 'Abril Fatface': ['400'],
-  'Playfair Display SC': ['400'] }; // all loaded before the first build (gotcha: fonts-first)
+  'Playfair Display SC': ['400'] }; // all loaded before the first build
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: doc.metadata.title }); // the frontmatter's title
 
 // @kit core fonts viewer images

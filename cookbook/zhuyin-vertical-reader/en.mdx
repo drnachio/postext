@@ -34,7 +34,7 @@ The lesson is in Iansui, a Kai hand drawn from Klee One to Taiwan's standard cha
 
 <Excerpt region="furniture" />
 
-In a book bound on the right the verso lies on the right of the spread, so even pages carry the unit's tab and the folio at the right edge and odd pages at the left. The tab is a box with a text element over it; `writingMode: 'vertical-rl'` on the element sets 第三單元　寓言故事 down the tab, while the folios and the foot lines stay horizontal.
+In a book bound on the right the verso lies on the right of the spread, so even pages carry the unit's tab and the folio at the right edge and odd pages at the left. The tab is a box with a text element over it; `writingMode: 'vertical-rl'` on the element sets 第三單元　寓言故事 down the tab, while the folios and the foot lines stay horizontal. The lesson and fable numbers come from the headings' `numberingTemplate` (`第{1:一}課` and `{2:一}`, an ideographic space as `numberSeparator`, `{startAt=12}` on the lesson), set apart from the title so the zhuyin of 寓 stays over 寓; the odd foot line prints `{chapterNumber}　{chapterTitle}`, since `{chapterTitle}` leaves the number out.
 
 ## Variations
 
@@ -56,9 +56,5 @@ Some readers print the readings lighter than the text, so the characters come fo
 - Take the readings from Taiwan's dictionary. Tools built on mainland dictionaries, pypinyin among them, give 度 duó, 寧 nìng, 時候 shíhou and 市場 shìchǎng; the Ministry of Education's *Revised Mandarin Chinese Dictionary*, which Taiwan's readers follow, reads ㄉㄨㄛˋ, ㄋㄧㄥˊ, ㄕˊ ㄏㄡˋ and ㄕˋ ㄔㄤˊ, and sets 故事, 家裡 and 過來 with a neutral second syllable. moedict.tw serves it word by word. It keeps 一 and 不 in their own tone, and so does this lesson.
 
 - Draw a few characters in each face before you mix them. LXGW WenKai TC follows the inherited forms and draws 為 (U+70BA) as 爲, so a lesson in it printed 爲宋國笑 in the text and 為宋國笑 in the Ming note on the same spread. Iansui draws the standard 為.
-
-- The lesson and fable numbers are typed into the headings (`# 第十二課　{寓言兩則|…}`). A `numberingTemplate` joins the number to the first character of the title, and when that character has a reading, the reading is centred over the number and the character together.
-
-- Count what the upper tier of each page has to hold, and fence each box where its page has room. The author box is fenced before 語文天地 so that it opens the tier of page 89, and the new characters, fenced after the idioms, follow it. A box or picture that finds no room before the text ends is set on a page with nothing under it, and the next one is left out with no warning, so check that every one of them is on the pages.
 
 - Iansui has one weight. The headings stand out by size and the idiom headwords by colour: the `idiom` style sets `boldFontWeight: 400` with the accent as `boldColor`, so `**…**` changes the colour and not the face.

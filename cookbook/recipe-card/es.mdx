@@ -40,13 +40,13 @@ El recuadro `prep` solo lleva su título y su icono, y por eso hace de encabezad
 
 <Excerpt region="opener" />
 
-`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}` elige el estilo de título y llena sus ranuras con los atributos, también la entradilla en cursiva ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). El `resourceId` del elemento de imagen es `'{attr.art}'`, un marcador como los de un texto, así que las dos recetas comparten un estilo y cada título nombra su fotografía ([elementos de imagen](/es/docs/configuration#elementos-de-imagen)). Cada píldora se ancla con `right-of` a la anterior, el título con `above` a la primera y el antetítulo sobre el título, así que un título más largo empuja hacia arriba el antetítulo y las píldoras no se mueven de su línea. En la 1.4.1 la fotografía no reserva altura, pero la entradilla que va debajo sí, de modo que la tarjeta empieza bajo ella sin `minHeight`. La nota se ancla a la página, como la fotografía y la flecha, un segundo elemento de imagen dibujado en código, y termina a 2 mm de la flecha en las dos páginas, aunque con los márgenes en espejo la caja de la página impar empiece 2 mm más a la derecha.
+`# Tortilla \\ de patatas {style="receta" art="tortilla" kicker="…" lead="…"}` elige el estilo de título y llena sus ranuras con los atributos, también la entradilla en cursiva ([atributos de encabezado](/es/docs/document-format#atributos-de-encabezado)). El `resourceId` del elemento de imagen es `'{attr.art}'`, un marcador como los de un texto, así que las dos recetas comparten un estilo y cada título nombra su fotografía ([elementos de imagen](/es/docs/configuration#elementos-de-imagen)). Cada píldora se ancla con `right-of` a la anterior, el título con `above` a la primera y el antetítulo sobre el título, así que un título más largo empuja hacia arriba el antetítulo y las píldoras no se mueven de su línea. La entradilla es el elemento más bajo del diseño, así que la apertura reserva hasta su última línea y la tarjeta empieza bajo ella sin `minHeight`. La nota se ancla a la página, como la fotografía y la flecha, un segundo elemento de imagen dibujado en código, y termina a 2 mm de la flecha en las dos páginas, aunque con los márgenes en espejo la caja de la página impar empiece 2 mm más a la derecha.
 
 ### 6 · Registra las imágenes como recursos
 
 <Excerpt region="pictures" />
 
-Los dos elementos de imagen de la apertura, el icono de la pestaña y el del encabezado de la lista nombran cada uno un recurso, y el lienzo pinta el archivo que `loadImage` o `loadSvg` registró para él. Ningún `:ref` cita estos recursos, así que ninguno se convierte en una figura numerada. Ni una fotografía ni un SVG pintado como imagen pueden usar las fuentes web de la página, por eso las imágenes no llevan palabras: las notas manuscritas son texto de diseño compuesto encima.
+Los dos elementos de imagen de la apertura, el icono de la pestaña y el del encabezado de la lista nombran cada uno un recurso, y el lienzo pinta el archivo que `loadImage` o `loadSvg` registró para él. Ningún `:ref` cita estos recursos, así que ninguno se convierte en una figura numerada. Las imágenes no llevan palabras: las notas manuscritas son texto de diseño compuesto encima.
 
 ## Variantes
 
@@ -83,6 +83,5 @@ Con `'top-left'` la pestaña pasa a la esquina izquierda, el tenedor y el cuchil
 
 ## Errores frecuentes
 
-- En la 1.4.1 el rótulo de la pestaña (`label`) no tiene `textTransform` ni `letterSpacing`, así que PARA 4 y SERVES 4 van ya en mayúsculas en las vallas.
+- El rótulo de la pestaña (`label`) no tiene `textTransform` ni `letterSpacing`, así que PARA 4 y SERVES 4 van ya en mayúsculas en las vallas.
 - La casilla de tarea ☐ no está en ninguna de las tres fuentes, así que el navegador la dibuja con una fuente del sistema y su forma cambia de un sistema a otro.
-- Deja un icono ancho en la columna propia del recuadro: con `position: 'corner'`, la 1.4.1 lo desplaza la mitad de su altura, no de su anchura, y la tira de 18,75 mm sobresale 16 mm por el borde derecho del recuadro.

@@ -18,7 +18,7 @@ pageNotes: { "4": "La página 4 es el dorso de la portadilla de la parte I. El t
 
 <Excerpt region="palette" />
 
-Una parte redefine entradas de la paleta por su id, así que todo lo que debe cambiar con el hábitat se enlaza a una sola entrada, `band`. Su valor propio, un gris pizarra, solo se ve fuera de las partes (en el antetítulo de la cubierta y en el título de la nota del índice), y ningún otro color de la configuración comparte ese hex. `col()` escribe además el hex junto al id, porque en Postext 1.4.1 la paleta del documento no llega a los elementos de diseño; la redefinición de una parte sí llega, a través del id.
+Una parte redefine entradas de la paleta por su id, así que todo lo que debe cambiar con el hábitat se enlaza a una sola entrada, `band`. Su valor propio, un gris pizarra, solo se ve fuera de las partes (en el antetítulo de la cubierta y en el título de la nota del índice), y ningún otro color de la configuración comparte ese hex. `col()` da a cada color su `paletteId`, y ese id es lo que sigue la redefinición de una parte, tanto en los estilos de texto como en los elementos de diseño.
 
 ### 2 · Una portadilla, su dorso y su lista
 

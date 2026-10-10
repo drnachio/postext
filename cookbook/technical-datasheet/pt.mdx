@@ -16,13 +16,13 @@ Este é o datasheet de quatro páginas do PX-7021, um sensor de temperatura de u
 
 ### 1 · Colar os dados e depois dar forma à tabela
 
-O código é a [resposta curta](#a-resposta-curta) acima. No postext 1.4.1, `parseTSV` deixa `headerRowCount` sem definir, então as duas linhas de cabeçalho são declaradas à mão; se a tabela se dividisse, as duas se repetiriam em cada parte. Os pesos de `columnWidths` somam 180, a largura da mancha em milímetros, de modo que cada peso é a largura da sua coluna na página. `mergeCells` mantém no lugar cada célula coberta e a marca com `hiddenBy`, assim nenhuma coluna se desloca. `setAlignment` trabalha célula por célula e apaga o alinhamento vertical quando você não o informa, por isso a maioria das chamadas passa `'middle'` de novo. O cinza alterna de um parâmetro para o seguinte, o que mantém as duas linhas de Accuracy no mesmo fundo; alternando por linha, a segunda ficaria branca.
+O código é a [resposta curta](#a-resposta-curta) acima. `parseTSV(tsv, { headerRows: 2 })` marca as duas linhas de cabeçalho; se a tabela se dividisse, as duas se repetiriam em cada parte. Os pesos de `columnWidths` somam 180, a largura da mancha em milímetros, de modo que cada peso é a largura da sua coluna na página. `mergeCells` mantém no lugar cada célula coberta e a marca com `hiddenBy`, assim nenhuma coluna se desloca. `setAlignment` trabalha célula por célula e apaga o alinhamento vertical quando você não o informa, por isso a maioria das chamadas passa `'middle'` de novo. O cinza alterna de um parâmetro para o seguinte, o que mantém as duas linhas de Accuracy no mesmo fundo; alternando por linha, como faz `bodyAlternateBackground` no estilo de tabela, a segunda ficaria branca.
 
 ### 2 · Cada modelo vira um recurso
 
 <Excerpt region="resources" />
 
-Cada tabela e cada desenho é um recurso com legenda, e as tabelas acrescentam uma nota e um estilo nomeado. Legendas e notas aceitam itálico, subscrito e sobrescrito: a tabela elétrica dá as condições de teste com `*V*~DD~` na legenda e numera as notas com `^1^` na nota. Um flutuante ocupa o primeiro espaço livre depois do seu primeiro `:ref`. A Tabela 1 é citada na página 1 e posicionada na cabeça de uma página, na largura toda, então abre a página 2. O desenho do encapsulamento vai no pé de uma página, na largura toda, e as outras tabelas mantêm o posicionamento padrão, um flutuante com a largura de uma coluna. Uma tabela posicionada `here` nunca se divide.
+Cada tabela e cada desenho é um recurso com legenda, e as tabelas acrescentam uma nota e um estilo nomeado. Legendas e notas aceitam itálico, subscrito e sobrescrito: a tabela elétrica dá as condições de teste com `*V*~DD~` na legenda e numera as notas com `^1^` na nota. Um flutuante ocupa o primeiro espaço livre depois do seu primeiro `:ref`. A Tabela 1 é citada na página 1 e posicionada na cabeça de uma página, na largura toda, então abre a página 2. O desenho do encapsulamento vai no pé de uma página, na largura toda, e as outras tabelas mantêm o posicionamento padrão, um flutuante com a largura de uma coluna. Uma tabela posicionada `here` fica no texto; se não couber no resto da coluna, também se divide entre linhas.
 
 ### 3 · Deixar uma tabela longa se dividir sozinha
 
@@ -40,7 +40,7 @@ A tabela de pinos e o mapa de registradores saem os dois de `groupedTable`. Uma 
 
 <Excerpt region="drawing" />
 
-Um SVG chega ao canvas como imagem, e uma imagem não pode usar as fontes web da página, então os rótulos da pinagem, do circuito e do desenho do encapsulamento cairiam numa fonte do sistema. O PDF recebe a marcação pura e compõe cada `<text>` como texto selecionável nas fontes que incorpora. Para o canvas, cada desenho é registrado uma segunda vez com o arquivo da Fira Mono dentro, baixado uma única vez pelo carregador de fontes do bloco pdf do kit.
+Os rótulos da pinagem, do circuito e do desenho do encapsulamento são elementos `<text>` que pedem a Fira Mono, a fonte de rótulos do documento. Um SVG chega ao canvas como imagem, então o `loadSvg` do kit passa antes a marcação por `inlineSvgFonts`, que incorpora ao SVG as fontes que o texto dele nomeia; o canvas desenha então os rótulos em Fira Mono. O PDF compõe cada `<text>` como texto selecionável nas fontes que incorpora.
 
 ### 6 · Abertura, cabeço e rodapé
 
@@ -73,4 +73,4 @@ O estilo de legenda do tipo tabela pode pintar uma barra atrás da legenda, aqui
 
 - A primeira parte de uma tabela dividida deixa o pé da coluna para o texto quando cabem três linhas ou mais embaixo dela, e sempre faz isso numa coluna que já tem um flutuante. Comece uma tabela longa numa coluna sem outro flutuante, como faz o mapa de registradores, e ajuste as linhas para que a primeira parte chegue ao pé da coluna.
 - Os elementos de texto de design são centralizados por padrão. A linha fina tem largura fixa, então precisa de `align: 'left'` para se alinhar sob o código da peça.
-- Na página de fechamento de um capítulo, o postext 1.4.1 sobe os flutuantes na largura da página posicionados abaixo do texto até uma linha do texto corrido abaixo dele, de modo que uma figura `bottom` ali fica sob a última linha de texto, e não no pé da página. O texto da página 4 foi redigido para encher as colunas, e o desenho do encapsulamento tem 48,3 mm de altura para que o texto acima dele termine numa linha da grade. Assim o desenho não tem espaço para subir e termina na mesma altura do pé das outras páginas.
+- Na página de fechamento de um capítulo, o Postext sobe os flutuantes na largura da página posicionados abaixo do texto até uma linha do texto corrido abaixo dele, de modo que uma figura `bottom` ali fica sob a última linha de texto, e não no pé da página. O texto da página 4 foi redigido para encher as colunas, e o desenho do encapsulamento tem 48,3 mm de altura para que o texto acima dele termine numa linha da grade. Assim o desenho não tem espaço para subir e termina na mesma altura do pé das outras páginas. Com `layout.hugClosingFloats: false`, ele não os sobe.

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "textbook-box-family",
-  "sourceHash": "fa03a0397611956564a51fac8683f52bb75aa01397459fca4e08c611e0ba36a4",
+  "sourceHash": "35771ad903193a6d15944e74d42c30aee1f677b8913b31faebe4c3953104b064",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.505Z",
+  "capturedAt": "2026-10-10T13:38:51.918Z",
   "variants": {
     "en": {
-      "hash8": "bc5684d7",
+      "hash8": "e72ebdd9",
       "vdtHash": "dc28595e779ffca5d21fcfb164e4e34256c3f5e4",
       "timings": {
-        "importMs": 151,
-        "fontsMs": 45,
-        "buildMs": 24,
-        "totalMs": 924,
-        "builds": 2
+        "importMs": 130,
+        "fontsMs": 36,
+        "buildMs": 59,
+        "totalMs": 814,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -100,14 +100,13 @@
       },
       "sandbox": {
         "file": "textbook-box-family.postext",
-        "bytes": 45433,
+        "bytes": 45271,
         "folio": "4d63ba9f"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
-          "defaultResourceTypes",
+          "buildDocumentWithFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -270,9 +269,7 @@
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].textAlign",
-          "resourceTypes",
           "unorderedLists",
-          "unorderedLists.color",
           "unorderedLists.marginBottom",
           "unorderedLists.marginTop"
         ],
@@ -289,10 +286,9 @@
           "orderedLists",
           "page",
           "paragraphStyles",
-          "resourceTypes",
           "unorderedLists"
         ],
-        "configLeaves": 440,
+        "configLeaves": 434,
         "designElements": 10,
         "directives": [
           ":::callout",
@@ -363,12 +359,10 @@
           "heading-attributes",
           "heading-numbering",
           "inline-embeds",
-          "localised-labels",
           "opener-band",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
-          "resource-types",
           "resources",
           "span-boxes",
           "title-line-breaks"
@@ -393,14 +387,14 @@
       }
     },
     "es": {
-      "hash8": "c5c92e47",
+      "hash8": "63ae8e06",
       "vdtHash": "b95d9fed920cda47bd315548b4bf324147383d0b",
       "timings": {
-        "importMs": 139,
-        "fontsMs": 36,
-        "buildMs": 24,
-        "totalMs": 872,
-        "builds": 2
+        "importMs": 125,
+        "fontsMs": 33,
+        "buildMs": 51,
+        "totalMs": 797,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -433,7 +427,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 166874,
+          "bytes": 166886,
           "alt": "Página de apertura 27: Células y membranas."
         },
         {
@@ -483,14 +477,13 @@
       },
       "sandbox": {
         "file": "textbook-box-family.postext",
-        "bytes": 44130,
+        "bytes": 43960,
         "folio": "4d63ba9f"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
-          "defaultResourceTypes",
+          "buildDocumentWithFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -653,9 +646,7 @@
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
           "paragraphStyles[].textAlign",
-          "resourceTypes",
           "unorderedLists",
-          "unorderedLists.color",
           "unorderedLists.marginBottom",
           "unorderedLists.marginTop"
         ],
@@ -672,10 +663,9 @@
           "orderedLists",
           "page",
           "paragraphStyles",
-          "resourceTypes",
           "unorderedLists"
         ],
-        "configLeaves": 440,
+        "configLeaves": 434,
         "designElements": 10,
         "directives": [
           ":::callout",
@@ -746,12 +736,10 @@
           "heading-attributes",
           "heading-numbering",
           "inline-embeds",
-          "localised-labels",
           "opener-band",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
-          "resource-types",
           "resources",
           "span-boxes",
           "title-line-breaks"

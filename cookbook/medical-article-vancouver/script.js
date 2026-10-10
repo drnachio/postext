@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 095 · A medical article in Vancouver style ══════════════
 // https://postext.dev/en/cookbook/medical-article-vancouver
 // Code: MIT · Text: original (CC BY 4.0) · Chart: generated in code (CC BY 4.0)
-// Fonts: PT Serif, Fira Sans, Fira Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: PT Serif, Fira Sans, Fira Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  registerResourceImage, defaultResourceTypes, parseTSV,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
+  defaultResourceTypes, parseTSV, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -114,7 +114,7 @@ const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'bottom-ri
 ] };
 
 const sans = (size, weight) => ({ fontFamily: SANS, fontSize: pt(size), fontWeight: weight });
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-gb', es: 'es' }),
   // "(Table 1)" in the text, not "Tab. 1"; Table 1, not 1.1, as the title is numbered: false
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, shortLabel: type.name,
@@ -136,7 +136,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: SANS, color: col('accent'), fontWeight: 600, levels: [
-    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // the article opens a page
     { level: 2, ...sans(11.5, 600), lineHeight: pt(LEAD), marginTop: pt(LEAD),
       marginBottom: pt(0) }, // a line above, the text straight under it
     { level: 3, ...sans(9.3, 600), color: col('ink'), lineHeight: pt(LEAD),
@@ -177,21 +177,11 @@ const resources = () => [
 ];
 // #endregion
 
-// #region art: the weekly chart, its labels set in Fira Sans carried inside the SVG
+// #region art: the weekly chart, its labels set in Fira Sans
 const HOME = [158.4, 153.1, 149.6, 146.2, 143.8, 141.5, 139.9, 138.6, 137.4, 136.1, 135.3, 134.6];
 const n2 = (v) => +v.toFixed(2);
-// An SVG drawn as an image cannot see the page's web fonts (gotcha: svg-no-webfonts), so the
-// chart carries its face inline, as a data URL of the Fontsource file.
-async function inlineFace(family, weight) {
-  const id = family.toLowerCase().replace(/\s+/g, '-');
-  const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}`
-    + '-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return `<style>@font-face{font-family:F;src:url(data:font/woff2;base64,${btoa(bin)}) `
-    + `format('woff2')}text{font-family:F}</style>`;
-}
+// The labels' family, named on the root element: loadSvg embeds its face.
+const LABELS = `font-family="${SANS}"`;
 function homeChart(face) { // 85 × 52 mm: the width of a column
   const [W, H, L, R, T, B] = [85, 52, 11, 3, 4, 42];
   const x = (week) => L + ((week - 1) / 11) * (W - L - R);
@@ -215,7 +205,7 @@ function homeChart(face) { // 85 × 52 mm: the width of a column
     return x0 + 2 > W - R ? '' : `M${x0} ${n2(y(135))}h2`;
   }).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="850" height="520" `
-    + `viewBox="0 0 ${W} ${H}">${face}${grid}`
+    + `viewBox="0 0 ${W} ${H}" ${face}>${grid}`
     + `<path d="M${upper.join('L')}L${lower.join('L')}Z" fill="${palette.tint}"/>`
     + `<path d="${dash}" stroke="${palette.ink}" stroke-width="0.3"/>`
     + `<path d="M${L} ${B}H${W - R}" stroke="${palette.ink}" stroke-width="0.35"/>`
@@ -230,10 +220,9 @@ const FONTS = { 'PT Serif': ['400', '400i', '700', '700i'], 'Fira Sans': ['400',
   'Fira Sans Condensed': ['500', '600'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-await loadSvg('home.svg', homeChart(await inlineFace(SANS, 400)));
+await loadSvg('home.svg', homeChart(LABELS));
 const content = { markdown, resources: resources() };
-const doc = await buildWithFonts(() => buildDocument(content, config()), markdown);
+const doc = await buildDocumentWithFonts(content, config(), kitFonts(FONTS));
 const title = t({ en: 'A medical article in Vancouver style',
   es: 'Un artículo médico en estilo Vancouver' });
 showPages(doc, { title });

@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "bunko-novel-furigana",
-  "sourceHash": "a6eb0d4957ec9622254b71829cee7fd1e75731126e59221e4bb03374d52b37ae",
+  "sourceHash": "3cb4d7e8efcfd0c4ed2db7216fe1ed512618fd6a008beb29d7809b71caf9137f",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:41.261Z",
+  "capturedAt": "2026-10-10T13:32:12.195Z",
   "variants": {
     "en": {
-      "hash8": "57e5aaba",
+      "hash8": "b771d77d",
       "vdtHash": "ae497d72124770c9b1aea2745ff736b9d1e127b4",
       "timings": {
-        "importMs": 741,
-        "fontsMs": 2274,
-        "buildMs": 57,
-        "totalMs": 8846,
-        "builds": 2
+        "importMs": 171,
+        "fontsMs": 318,
+        "buildMs": 53,
+        "totalMs": 1112,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Shippori Mincho B1"
         ],
         "pages": 9,
-        "ownLines": 144
+        "ownLines": 145
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1410,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 16146,
+          "bytes": 16124,
           "alt": "Opening page 一: 夢十夜."
         },
         {
@@ -157,17 +157,17 @@
       },
       "sandbox": {
         "file": "bunko-novel-furigana.postext",
-        "bytes": 27562,
+        "bytes": 27563,
         "folio": "c397d9a7"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -342,14 +342,14 @@
       }
     },
     "es": {
-      "hash8": "cdf9c246",
+      "hash8": "06443ef0",
       "vdtHash": "72eb958384aeb0aaac00a9ffe41d7026da546383",
       "timings": {
-        "importMs": 238,
-        "fontsMs": 435,
-        "buildMs": 16,
-        "totalMs": 1426,
-        "builds": 2
+        "importMs": 162,
+        "fontsMs": 292,
+        "buildMs": 56,
+        "totalMs": 1077,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -369,7 +369,7 @@
           "Shippori Mincho B1"
         ],
         "pages": 9,
-        "ownLines": 144
+        "ownLines": 145
       },
       "pages": [
         {
@@ -380,7 +380,7 @@
           "h": 1410,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 17074,
+          "bytes": 17072,
           "alt": "Página de apertura 一: 夢十夜."
         },
         {
@@ -483,22 +483,22 @@
       },
       "pdf": {
         "file": "bunko-novel-furigana.pdf",
-        "bytes": 330935,
+        "bytes": 330937,
         "pages": 9
       },
       "sandbox": {
         "file": "bunko-novel-furigana.postext",
-        "bytes": 27602,
+        "bytes": 27603,
         "folio": "c397d9a7"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

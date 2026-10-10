@@ -49,15 +49,7 @@
   "gotchas": [
     "numbering-next-page",
     "style-inherits-break",
-    "invisible-heading",
     "parity-page1-recto",
-    "numbering-vocabularies",
-    "quote-frontmatter",
-    "headings-drop-h1-break",
-    "style-italic-colour",
-    "nbsp-breaks",
-    "pdf-provider-all-styles",
-    "opener-image-no-reserve",
     "section-last-wins"
   ],
   "explainsWarnings": [
@@ -72,54 +64,14 @@
   ],
   "workarounds": [
     {
-      "followup": "EF-26",
-      "package": "postext",
-      "note": "the imprint page's heading holds a 0.1 pt box, and the dedication's an ornament, so neither prints its title"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore is restated because a headings object drops it"
-    },
-    {
       "followup": "EF-60",
       "package": "postext",
       "note": "the leaves and the front style restate breakBefore with parity 'any', or each would inherit level 1's odd break and a blank verso"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "every frontmatter value is quoted: the year prints on the title page through {publishDate}"
-    },
-    {
-      "followup": "EF-68",
-      "package": "postext",
-      "note": "the small-print style stays in ink, because a paragraph style's italic runs take bodyText.italicColor"
-    },
-    {
-      "followup": "EF-66",
-      "package": "postext",
-      "note": "the no-break spaces in the imprint (1 January 1818, eBook 41445, CC BY 4.0), the Preface (Dr. Darwin) and Letter I (St. Petersburgh) do not glue yet: the lines were checked so no pair splits; re-check after editing any of them"
-    },
-    {
-      "followup": "EF-90",
-      "package": "postext",
-      "note": "an opener's image elements never count towards the height the heading reserves (measureHeadingAdvancedDesignHeight lays the slot out without resources): Letter I's minHeight alone puts the first line under the drawing"
-    },
-    {
-      "followup": "EF-91",
-      "package": "postext",
-      "note": "a heading design that reaches below the text block's foot drops its whole reserved height, minHeight included (build.ts places the oversize heading at its text height): the cover's type ends above the foot"
-    },
-    {
-      "followup": "EF-20",
-      "package": "postext-pdf",
-      "note": "Fanwood Text has no bold and Cinzel no italic: the kit's provider snaps to the faces each family ships"
     }
   ],
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -265,5 +217,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-28"
+  "updated": "2026-10-10"
 }

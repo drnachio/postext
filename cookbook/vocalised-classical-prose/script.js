@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 111 · Fully vocalised classical prose with Qur'anic brackets ═══
 // https://postext.dev/en/cookbook/vocalised-classical-prose
 // Code: MIT · Text: al-Hamadhānī, Maqāmāt, ar.wikisource (PD) · Pictures: none
-// Fonts: Amiri, Aref Ruqaa (SIL OFL 1.1) · Needs postext ≥ 1.15.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Amiri, Aref Ruqaa (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'vocalised-classical-prose';
@@ -63,7 +63,7 @@ const page = {
 const headings = {
   fontFamily: NASKH, color: col('ink'), textAlign: 'center',
   levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // The maqāma opens on a recto.
     { level: 1, fontFamily: RUQAA, fontWeight: 700, fontSize: pt(32), lineHeight: pt(LEAD * 3),
       color: col('rubric'), marginTop: pt(0), marginBottom: pt(0),
       breakBefore: { enabled: true, parity: 'odd' } },
@@ -75,7 +75,7 @@ const headings = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ar', // right to left, bound on the right, digits ٠–٩ (gotcha: arabic-locale-tag)
   colorPalette,
   page,
@@ -90,7 +90,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   Amiri: ['400', '700'], // NASKH: the maqāma, the author, the note and its Latin
   'Aref Ruqaa': ['700'], // RUQAA: the title
 };
@@ -99,7 +99,8 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
 await loadFonts(FONTS, markdown);
 // The arabic file of each face, which loadFonts leaves out (gotcha: arabic-fonts-subset).
 await loadArabicFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'Fully vocalised classical prose',
   es: 'Prosa clásica con todas sus vocales' }) });
 

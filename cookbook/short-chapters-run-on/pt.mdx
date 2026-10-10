@@ -32,19 +32,19 @@ A margem inferior tem 16,3 mm, o que sobra dos 178 mm de altura depois da margem
 
 <Excerpt region="heads" />
 
-`{title}` imprime o título do frontmatter, e `{chapterTitle}`, o último capítulo que começa na página ou antes dela, de modo que a página 217 nomeia o CXXIII, que começou na 216 ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). A página 213 nomeia o CXIX, que começa ao pé dela, embora as suas primeiras 25 linhas fechem o CXVIII: a versão 1.4.1 não tem marcador para o capítulo em que uma página abre. `SHIFT` leva os cabeços para o centro da mancha, 1 mm fora do centro da página, porque a margem interna é 2 mm mais larga que a externa.
+`{title}` imprime o título do frontmatter, e `{chapterTitle}`, o último capítulo que começa na página ou antes dela, de modo que a página 217 nomeia o CXXIII, que começou na 216 ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). A página 213 nomeia o CXIX, que começa ao pé dela, embora as suas primeiras 25 linhas fechem o CXVIII. `{chapterTitleAtTop}` nomeia, em vez disso, o capítulo em que a página abre, mas este trecho não traz o título do CXVIII. `SHIFT` leva os cabeços para o centro da mancha, 1 mm fora do centro da página, porque a margem interna é 2 mm mais larga que a externa.
 
 ### 4 · Desenhe a capa e a prancha como títulos
 
 <Excerpt region="cover" />
 
-As duas são [estilos de título](/pt/docs/configuration#estilos-de-título) com `numbered: false`, então o primeiro capítulo numerado continua sendo o CXIX. `span: 'page'` faz de cada uma uma página de abertura. Sem ele, as faixas da capa param no alto e no pé da mancha, o cabeço e o fólio 1 são impressos na capa, e o título sai numa linha só. A legenda da prancha vem do seu título: CAPÍTULO CXXIII é o texto do título, e a citação em itálico é o atributo `quote` ([atributos de título](/pt/docs/document-format#atributos-de-título)). O `:::pagebreak` depois de cada uma mantém o texto longe da arte, já que a versão 1.4.1 não reserva espaço para a faixa do pé da capa nem para a imagem da prancha.
+As duas são [estilos de título](/pt/docs/configuration#estilos-de-título) com `numbered: false`, então o primeiro capítulo numerado continua sendo o CXIX. `span: 'page'` faz de cada uma uma página de abertura. Sem ele, a faixa do pé da capa e a imagem da prancha param no pé da mancha, e o cabeço e o fólio são impressos nas duas páginas. A legenda da prancha vem do seu título: CAPÍTULO CXXIII é o texto do título, e a citação em itálico é o atributo `quote` ([atributos de título](/pt/docs/document-format#atributos-de-título)). Cada design chega ao pé da sua página, então o título reserva a página inteira e o texto começa na seguinte, sem nenhum `:::pagebreak`.
 
 ### 5 · Diga ao trecho onde ele fica no livro
 
 <Excerpt region="excerpt" />
 
-`continuation.headings` dá os contadores de títulos a partir dos quais o trecho começa. Com `h1: 118`, o primeiro título numerado é o capítulo CXIX; sem ele, os cinco capítulos são numerados de I a V. `numberingTemplate: '{1:I}'` no nível de capítulo compõe esses números em algarismos romanos, e o design os imprime com `{number}`. `:::numbering{startAt=212}`, depois da quebra de página da capa, numera a prancha como 212 e as páginas de texto de 213 a 217 ([numeração](/pt/docs/document-format#numbering)).
+`continuation.headings` dá os contadores de títulos a partir dos quais o trecho começa. Com `h1: 118`, o primeiro título numerado é o capítulo CXIX; sem ele, os cinco capítulos são numerados de I a V. `numberingTemplate: '{1:I}'` no nível de capítulo compõe esses números em algarismos romanos, e o design os imprime com `{number}`. `:::numbering{startAt=212}`, depois da capa, numera a prancha como 212 e as páginas de texto de 213 a 217 ([numeração](/pt/docs/document-format#numbering)).
 
 ## Variações
 
@@ -69,10 +69,8 @@ Com uma quebra antes de cada capítulo, as cinco páginas de texto viram sete: a
 
 ## Erros comuns
 
-- Subir `widowMinLines` para 3 na versão 1.4.1 deixa o CXIX e o CXXI manterem três linhas embaixo deles ao pé, e os seus parágrafos de quatro linhas passam a se dividir em três e uma: uma linha solta abre as páginas 214 e 215, qualquer que seja o `orphanPenalty`.
+- Subir `widowMinLines` para 3 deixa o parágrafo de quatro linhas sob o CXIX sem onde se dividir: três linhas e uma abririam a página 214 com uma linha solta. O título passa para a página seguinte com o seu texto, e a 213 termina seis linhas antes.
 - Se o CXVIII crescer algumas linhas, o CXIX só terá espaço para uma linha sob o título. `keepWithNext` então leva o título para a página 214, e a página 213 termina quatro ou cinco linhas mais curta; com `keepWithNext: false`, o título fecha a página 213 sem texto embaixo.
-- A prancha é um H1, então `{chapterTitle}` recorre a ela: uma página de texto em que nenhum capítulo começou desde a prancha, como a 213 depois que o CXIX muda de página, imprime CAPÍTULO CXXIII como cabeço.
+- A prancha é um H1, então `{chapterTitle}` recorre a ela: uma página de texto em que nenhum capítulo começou desde a prancha, como a 213 depois que o CXIX muda de página, imprime CAPÍTULO CXXIII como cabeço. Com `runningChapter: false` no estilo da prancha, os cabeços passam por cima dela.
 - Desligue `avoidRunts` e a última linha do livro fica só com *manhã.* em vez de *nadador da manhã.*
-- Sem o `:::pagebreak` depois da capa, e sem prancha, o capítulo CXVIII começa a 19,5 mm do alto da capa, sob a linha de 3 mm do título dela. Sem o que vem depois da prancha, onze linhas de texto são impressas sobre o mar quando a legenda sobe para 94 mm.
-- Nenhuma linha destas páginas quebra no hífen de uma ênclise (*Vesti-me*, *metteu-se*). Ponha *Emfim*, a primeira palavra do CXXIII, em itálico e a versão 1.4.1 manda esse parágrafo para o quebrador de linhas do texto com marcas inline, que termina uma linha em *vencer-* e começa a seguinte com *se a si mesma*, sem o hífen que a ortografia portuguesa repete no início da linha.
 - Essas quebras de página só valem para este texto, em 9,5 sobre 12,6 pt numa medida de 84 mm. Depois de mudar o texto, o corpo ou a medida, confira de novo o pé de cada página e o espaço acima de cada título.

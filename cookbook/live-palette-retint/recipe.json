@@ -28,16 +28,7 @@
     ]
   },
   "answers": ["Q25", "Q50", "Q52"],
-  "gotchas": [
-    "config-cache-identity",
-    "palette-skips-designs",
-    "ragged-run-punctuation",
-    "ragged-runts",
-    "headings-drop-h1-break",
-    "resource-types-locale",
-    "design-lineheight-multiple",
-    "fonts-first"
-  ],
+  "gotchas": [],
   "explainsWarnings": [],
   "related": [
     "print-and-screen-editions",
@@ -45,45 +36,9 @@
     "riso-zine-single-ink",
     "brand-fonts-identity-manual"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "retint() rewrites the hex of every palette-linked colour from the colourway before each build: 1.4.1 leaves design-slot elements (the band, the waveform bars, the opener type, the running head and the folio pill) and bodyText.referenceColor at the hex written beside their paletteId (gotcha palette-skips-designs); without relink() the teal edition prints all of them in the red edition's colours"
-    },
-    {
-      "followup": "EF-130",
-      "package": "postext",
-      "note": "bodyText.boldColor is set with the palette id deep and the tickets box sets no body.boldColor, so the box copies the linked colour and its bold follows every colourway; with bodyText.boldColor unset, 1.4.1 copies the main-color default into the box, and in the teal edition its bold printed #295AA3 while the bold outside it took the band (gotcha palette-skips-designs)"
-    },
-    {
-      "followup": "EF-73",
-      "package": "postext",
-      "note": "the ragged samples keep '**Quay Stage**,' and '**Escenario del Muelle**,' mid-line in both editions, and a bold time is always followed by a chip, never by punctuation (gotcha ragged-run-punctuation)"
-    },
-    {
-      "followup": "EF-147",
-      "package": "postext",
-      "note": "ragged listings get no runt control in 1.4.1: both samples are reworded until every item and box ends on two words or more (gotcha ragged-runts)"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 restates breakBefore because a headings object drops it (gotcha headings-drop-h1-break)"
-    },
-    {
-      "followup": "EF-33",
-      "package": "postext",
-      "note": "resourceTypes: defaultResourceTypes(LANG), so the grid's caption reads 'Tabla 1' in Spanish (gotcha resource-types-locale)"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the opener's title and standfirst give lineHeight as a multiple (gotcha design-lineheight-multiple)"
-    }
-  ],
+  "workarounds": [],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.25.0"
   },
   "kit": ["core", "fonts", "viewer"],
   "sample": {
@@ -133,5 +88,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

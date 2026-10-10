@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "woodblock-leaf",
-  "sourceHash": "68859460cba09e8208f7e2271f553f855cfea3f7b1184d294c88c4b25f76abc9",
+  "sourceHash": "487e16162b16c67a624c6ace91bca5bb4fc921136ef5dd1e24c19d7bcc6bfa4b",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.624Z",
+  "capturedAt": "2026-10-10T13:39:44.851Z",
   "variants": {
     "en": {
-      "hash8": "fd4d83dd",
+      "hash8": "7d0f320b",
       "vdtHash": "91ea12b4e4b739496a275ae667b92b4fef3b7255",
       "timings": {
-        "importMs": 196,
-        "fontsMs": 199,
-        "buildMs": 12,
-        "totalMs": 1032,
-        "builds": 2
+        "importMs": 166,
+        "fontsMs": 173,
+        "buildMs": 50,
+        "totalMs": 919,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Noto Serif TC"
         ],
         "pages": 7,
-        "ownLines": 177
+        "ownLines": 178
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1764,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 32978,
+          "bytes": 32968,
           "alt": "Opening page 1: 論語集註."
         },
         {
@@ -131,17 +131,17 @@
       },
       "sandbox": {
         "file": "woodblock-leaf.postext",
-        "bytes": 25760,
+        "bytes": 25761,
         "folio": "64761808"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -300,14 +300,14 @@
       }
     },
     "es": {
-      "hash8": "6d541ffe",
+      "hash8": "81dfc8a0",
       "vdtHash": "644b1ce8232fdd9b1350f719fe85772a763d0d2d",
       "timings": {
-        "importMs": 184,
-        "fontsMs": 198,
-        "buildMs": 12,
-        "totalMs": 1024,
-        "builds": 2
+        "importMs": 177,
+        "fontsMs": 170,
+        "buildMs": 50,
+        "totalMs": 927,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -327,7 +327,7 @@
           "Noto Serif TC"
         ],
         "pages": 7,
-        "ownLines": 177
+        "ownLines": 178
       },
       "pages": [
         {
@@ -338,7 +338,7 @@
           "h": 1764,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 33770,
+          "bytes": 33764,
           "alt": "Página de apertura 1: 論語集註."
         },
         {
@@ -420,17 +420,17 @@
       },
       "sandbox": {
         "file": "woodblock-leaf.postext",
-        "bytes": 25797,
+        "bytes": 25798,
         "folio": "64761808"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

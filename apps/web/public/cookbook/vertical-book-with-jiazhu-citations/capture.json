@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "vertical-book-with-jiazhu-citations",
-  "sourceHash": "1156e71c64ffab67d2ac145d6b62a6256b0a64ca61f36680e966f5b8ab2ec0c2",
+  "sourceHash": "7382a4930a92a7cd46a3738c878423cc2e6939b28656b586a77fe2dfbc1b52c0",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.543Z",
+  "capturedAt": "2026-10-10T13:39:44.784Z",
   "variants": {
     "en": {
-      "hash8": "c165f24b",
+      "hash8": "1815c2be",
       "vdtHash": "145ae37043f79b2d0f52558a88dac9c4ff75d044",
       "timings": {
-        "importMs": 199,
-        "fontsMs": 2488,
-        "buildMs": 298,
-        "totalMs": 8212,
+        "importMs": 625,
+        "fontsMs": 1017,
+        "buildMs": 489,
+        "totalMs": 5257,
         "builds": 1
       },
       "specimen": {
@@ -101,12 +101,12 @@
       },
       "pdf": {
         "file": "vertical-book-with-jiazhu-citations.pdf",
-        "bytes": 178146,
+        "bytes": 178144,
         "pages": 3
       },
       "sandbox": {
         "file": "vertical-book-with-jiazhu-citations.postext",
-        "bytes": 19865,
+        "bytes": 19853,
         "folio": "3a3c9a0c"
       },
       "detected": {
@@ -114,13 +114,13 @@
           "LOCALES",
           "STYLES",
           "buildDocument",
-          "clearMeasurementCache",
           "createCiteprocEngine",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerCitationEngine",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -169,8 +169,6 @@
           "header.elements[].placement",
           "header.elements[].writingMode",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -213,7 +211,7 @@
           "locale",
           "page"
         ],
-        "configLeaves": 169,
+        "configLeaves": 168,
         "designElements": 9,
         "directives": [
           ":::bibliography",
@@ -258,7 +256,6 @@
           "character-grid",
           "citation-styles",
           "cjk-line-breaking",
-          "column-balancing",
           "generated-bibliography",
           "heading-attributes",
           "heading-numbering",
@@ -292,13 +289,13 @@
       }
     },
     "es": {
-      "hash8": "df53e44c",
+      "hash8": "90df70d1",
       "vdtHash": "83e36ad2ad05da7d3aa5cc40f6a50bebfb723e9a",
       "timings": {
-        "importMs": 241,
-        "fontsMs": 319,
-        "buildMs": 93,
-        "totalMs": 1238,
+        "importMs": 200,
+        "fontsMs": 299,
+        "buildMs": 80,
+        "totalMs": 1197,
         "builds": 1
       },
       "specimen": {
@@ -382,12 +379,12 @@
       },
       "pdf": {
         "file": "vertical-book-with-jiazhu-citations.pdf",
-        "bytes": 178089,
+        "bytes": 178093,
         "pages": 3
       },
       "sandbox": {
         "file": "vertical-book-with-jiazhu-citations.postext",
-        "bytes": 19918,
+        "bytes": 19905,
         "folio": "3a3c9a0c"
       },
       "detected": {
@@ -395,13 +392,13 @@
           "LOCALES",
           "STYLES",
           "buildDocument",
-          "clearMeasurementCache",
           "createCiteprocEngine",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerCitationEngine",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -450,8 +447,6 @@
           "header.elements[].placement",
           "header.elements[].writingMode",
           "headings",
-          "headings.balancing",
-          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -494,7 +489,7 @@
           "locale",
           "page"
         ],
-        "configLeaves": 169,
+        "configLeaves": 168,
         "designElements": 9,
         "directives": [
           ":::bibliography",
@@ -539,7 +534,6 @@
           "character-grid",
           "citation-styles",
           "cjk-line-breaking",
-          "column-balancing",
           "generated-bibliography",
           "heading-attributes",
           "heading-numbering",

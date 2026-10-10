@@ -1,11 +1,12 @@
 // ═══ Postext Cookbook · Nº 141 · A metascience essay in English and Spanish ═══════
 // https://postext.dev/en/cookbook/bilingual-metascience-essay
 // Code: MIT · Text: J. P. A. Ioannidis, PLoS Med 2005 (CC BY) · Figures: drawn in code (CC BY 4.0)
-// Fonts: Gelasio, Sofia Sans Semi Condensed (SIL OFL 1.1) · Needs postext ≥ 1.19.0
+// Fonts: Gelasio, Sofia Sans Semi Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
   registerCitationEngine, defaultResourceTypes, initMathEngine, parseTSV, mergeCells, setAlignment,
-} from 'https://esm.sh/postext?bundle';
+  inlineSvgFonts,
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
 
@@ -31,8 +32,7 @@ const [FIG_W, FIG_H] = [MEASURE, 60]; // mm: Figures 1 and 2, across both column
 // The Cookbook composes the pen once per edition: content.<LANG>.md and each named slot
 // replace the @content markers. What else follows the language is set here.
 const edition = {
-  // Hyphenation patterns and the words the engine writes (Tabla, Continúa) follow the
-  // locale, an exact code (gotcha: hyphenation-locales).
+  // Hyphenation patterns and the words the engine writes (Tabla, Continúa) follow the locale.
   locale: t({ en: 'en-us', es: 'es' }),
   // Table 1 / Tabla 1, Figure 1 / Figura 1, counted through the essay; tables caption above.
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, shortLabel: type.name,
@@ -98,7 +98,7 @@ const footer = { elements: [text('drop-folio', '{pageNumber}', SANS, 7.5, 'accen
   at('page', 'bottom-right', -OUTER, -12), { ...folio, align: 'right', pages: 'opener',
     overflow: 'clip' })] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   ...edition, colorPalette, header, footer,
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
     margins: { top: mm(TOP), bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER),
@@ -111,7 +111,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   math: { marginTop: pt(LEAD / 2), marginBottom: pt(LEAD / 2), keepWithLeadIn: true },
   headings: { fontFamily: SANS, color: col('navy'), fontWeight: 700, levels: [
-    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // the next page, either side
     { level: 2, fontSize: pt(12), lineHeight: pt(LEAD), marginTop: pt(LEAD),
       marginBottom: pt(LEAD / 2) },
   ] },
@@ -220,18 +220,8 @@ const captionStyle = { fontFamily: SANS, fontSize: pt(8.2), color: col('ink'), l
 
 // #region art: Figures 1 and 2 drawn from Eqs. (2) and (3), the band's curves from Eq. (2)
 const R2 = (x) => Math.round(x * 100) / 100;
-// An SVG drawn as a picture cannot use the page's web fonts (gotcha: svg-no-webfonts): the
-// figures carry the label face inline under its own name, which the PDF asks the provider for.
-async function inlineFace(family, weight) {
-  const id = family.toLowerCase().replace(/\s+/g, '-');
-  const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}`
-    + '-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return `@font-face{font-family:'${family}';font-weight:${weight};`
-    + `src:url(data:font/woff2;base64,${btoa(bin)}) format('woff2')}`;
-}
+// Each label names the label face: loadSvg embeds it for the canvas (inlineSvgFonts), and the
+// PDF asks the provider for it.
 const mix = (f) => `#${[1, 3, 5].map((i) => Math.round(parseInt(palette.navy.slice(i, i + 2), 16)
   * (1 - f) + parseInt(palette.accent.slice(i, i + 2), 16) * f).toString(16).padStart(2, '0'))
   .join('')}`; // navy for the first curve, vermilion for the last
@@ -241,9 +231,9 @@ const line = (points, stroke, width, extra = '') => `<path d="M${points.map(([x,
   `${R2(x)} ${R2(y)}`).join('L')}" fill="none" stroke="${stroke}" stroke-width="${width}" `
   + `${extra}/>`;
 // Three panels, power 0.80, 0.50 and 0.20; PPV in % against R from 0 to 1, one curve per value.
-function panels(face, curve, values, name, digits, dashed) {
+function panels(curve, values, name, digits, dashed) {
   const [pw, top, plotH, left] = [52, 12, 34, 8]; // panel width, plot top and height, y labels
-  let out = `<style>${face}</style>`;
+  let out = '';
   [0.8, 0.5, 0.2].forEach((power, p) => {
     const x0 = p * (pw + (FIG_W - 3 * pw) / 2) + left;
     const X = (R) => x0 + R * (pw - left - 2);
@@ -282,19 +272,18 @@ const bandArt = () => `<svg xmlns="http://www.w3.org/2000/svg" width="1400" heig
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages paint, loaded before the first build (gotcha: fonts-first)
+const FONTS = { // every face the pages paint, loaded before the first build
   Gelasio: ['400', '400i', '600', '700', '700i'],
   'Sofia Sans Semi Condensed': ['400', '400i', '600', '700', '700i', '800'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown + blocks);
-const face = await inlineFace(SANS, 400); // one face: the figures set no bold
-await loadSvg('fig-bias.svg', panels(face, ppv, [0.05, 0.2, 0.5, 0.8], 'u', 2,
+await prepareFonts(markdown + blocks, config(), kitFonts(FONTS));
+await loadSvg('fig-bias.svg', panels(ppv, [0.05, 0.2, 0.5, 0.8], 'u', 2,
   (power, R) => ppv(power, R, 0)));
-await loadSvg('fig-teams.svg', panels(face, teams, [1, 5, 10, 50], 'n', 0));
+await loadSvg('fig-teams.svg', panels(teams, [1, 5, 10, 50], 'n', 0));
 await loadSvg('band-art.svg', bandArt());
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'A metascience essay in English and Spanish',
   es: 'Un ensayo de metaciencia en inglés y en español' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),

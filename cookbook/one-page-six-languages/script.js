@@ -1,12 +1,12 @@
 // ═══ Postext Cookbook · Nº 153 · One page lettered in six languages ═══════════════════
 // https://postext.dev/en/cookbook/one-page-six-languages
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Comic Neue, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.21.0
+// Fonts: Comic Neue, Bangers, the comic faces of each script (OFL) · Needs postext ≥ 1.25.0
 // One comic page, its split and its five pictures fixed, lettered from a script per
 // language: each edition sets its own page, and the French one beside it.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultComicFont, defaultComicSfxFont,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, defaultComicFont,
+  defaultComicSfxFont,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -58,7 +58,7 @@ const footerFor = (lang, locale) => ({ elements: [{ kind: 'text', id: 'edition',
   fontSize: pt(8), color: col('muted'), align: 'center', pages: 'comic',
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { y: mm(-8) } } }] });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: LOCALE,
   colorPalette,
   page: {
@@ -183,10 +183,11 @@ const resources = await Promise.all([
 ]);
 // #region editions: the edition's page, then the French one from the same config and art
 const build = (md, cfg) =>
-  buildWithFonts(() => buildDocument({ markdown: md, resources }, cfg), md);
+  withLoadedFonts(() => buildDocument({ markdown: md, resources }, cfg),
+    { ...kitFonts(FONTS), text: md });
 const docs = [await build(markdown, config())];
 // French is not a site language, so every edition carries its page: the same config
-// with another locale, as a new object (the engine caches resolved configs by identity).
+// with another locale.
 docs.push(await build(french, { ...config(), locale: 'fr', footer: footerFor('fr', 'fr') }));
 // #endregion
 showBook(docs, { title: t({ en: 'One page in six languages', es: 'Una página en seis idiomas',

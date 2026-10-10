@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "annotated-classic-glosses",
-  "sourceHash": "59ca656384b599c38935c2e4e6d11df64fd75dc12032941b2d8c8511158589c1",
+  "sourceHash": "ff2a34173a5fc543bf6d3f9b42ecfb94e9a476fea35664498e7dad5a42b52120",
   "engine": {
-    "postext": "1.24.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T21:08:28.839Z",
+  "capturedAt": "2026-10-10T13:30:00.627Z",
   "variants": {
     "en": {
-      "hash8": "1c06707f",
+      "hash8": "affbb3c8",
       "vdtHash": "049a0a0d8b1d507eb126c2b88daebb95f4deb600",
       "timings": {
-        "importMs": 137,
-        "fontsMs": 42,
-        "buildMs": 38,
-        "totalMs": 907,
-        "builds": 2
+        "importMs": 152,
+        "fontsMs": 26,
+        "buildMs": 82,
+        "totalMs": 864,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Unna"
         ],
         "pages": 3,
-        "ownLines": 216
+        "ownLines": 202
       },
       "pages": [
         {
@@ -100,13 +100,12 @@
       },
       "sandbox": {
         "file": "annotated-classic-glosses.postext",
-        "bytes": 319039,
+        "bytes": 319012,
         "folio": "923d57f4"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -117,6 +116,7 @@
           "bodyText.firstLineIndent",
           "bodyText.fontFamily",
           "bodyText.fontSize",
+          "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
           "bodyText.minWordSpacing",
@@ -210,10 +210,7 @@
           "page.margins.mirror",
           "page.margins.right",
           "page.margins.top",
-          "page.width",
-          "paragraphStyles",
-          "paragraphStyles[].firstLineIndent",
-          "paragraphStyles[].id"
+          "page.width"
         ],
         "configSections": [
           "bodyText",
@@ -224,14 +221,12 @@
           "header",
           "headings",
           "layout",
-          "page",
-          "paragraphStyles"
+          "page"
         ],
-        "configLeaves": 253,
+        "configLeaves": 252,
         "designElements": 11,
         "directives": [
-          ":::callout",
-          ":::paragraphs"
+          ":::callout"
         ],
         "inline": [
           "{attrs}",
@@ -281,7 +276,6 @@
           "opener-design",
           "page-background",
           "page-role-filters",
-          "paragraph-styles",
           "resources",
           "side-boxes",
           "side-column-floats"

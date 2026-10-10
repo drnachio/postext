@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 092 · A manual whose references point to pages ══════════
 // https://postext.dev/en/cookbook/manual-see-page-references
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.12.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -14,7 +14,7 @@ const palette = {
   ink: '#1b1f24', navy: '#1d2c3c', orange: '#b8471b', tint: '#f7e7de', rule: '#d5cfc8',
   muted: '#5c636b', paper: '#ffffff',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.orange })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -78,8 +78,8 @@ const head = (id, content, parity, edge, x, extra = {}) => ({
   letterSpacing: pt(1.1), color: col('muted'), placement: at('page', edge, x, 10), ...extra,
 });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-gb', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-gb', es: 'es' }), // picks the hyphenation patterns
   colorPalette,
   crossRefs,
   page: { sizePreset: 'custom', width: mm(PAGE.w), height: mm(PAGE.h), dpi: 150,
@@ -92,7 +92,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: DISPLAY, color: col('ink'), fontWeight: 700, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // A new page on either side: the default would wait for a recto.
     { level: 1, fontSize: pt(58), breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: cover },
     H2, H3,
@@ -128,15 +128,14 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ '';
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first).
+// Every face the design uses.
 const FONTS = {
   Archivo: ['400', '400i', '700'],
   'Archivo Narrow': ['700'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 const title = t({ en: 'A manual whose references point to pages',
   es: 'Un manual cuyas remisiones apuntan a páginas' });
 showPages(doc, { title });

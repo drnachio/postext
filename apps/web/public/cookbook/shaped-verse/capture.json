@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "shaped-verse",
-  "sourceHash": "321d9cebb0ed650f15757f30128b3b3832da7a1eff26024f8845166aa8d1740a",
+  "sourceHash": "5e4f95b8a7587a67f42e11396b5915e5e81ac0fae933b509750315524bfb91dc",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.430Z",
+  "capturedAt": "2026-10-10T13:38:07.636Z",
   "variants": {
     "en": {
-      "hash8": "dc0a7851",
+      "hash8": "5d3a7c45",
       "vdtHash": "e68d134f3f30cd3f24d988e99b3f3a1d9ea8578a",
       "timings": {
-        "importMs": 152,
-        "fontsMs": 31,
-        "buildMs": 6,
-        "totalMs": 769,
-        "builds": 2
+        "importMs": 130,
+        "fontsMs": 0,
+        "buildMs": 19,
+        "totalMs": 765,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "IM Fell Great Primer"
         ],
         "pages": 4,
-        "ownLines": 102
+        "ownLines": 98
       },
       "pages": [
         {
@@ -114,13 +114,12 @@
       },
       "sandbox": {
         "file": "shaped-verse.postext",
-        "bytes": 19435,
+        "bytes": 19421,
         "folio": "900eced1"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "renderPageToCanvas"
         ],
         "configKeys": [
@@ -130,7 +129,6 @@
           "bodyText.fontFamily",
           "bodyText.fontSize",
           "bodyText.lineHeight",
-          "bodyText.referenceColor",
           "bodyText.textAlign",
           "colorPalette",
           "colorPalette[].id",
@@ -178,7 +176,7 @@
           "layout",
           "page"
         ],
-        "configLeaves": 55,
+        "configLeaves": 54,
         "designElements": 0,
         "directives": [
           ":::space",
@@ -231,14 +229,14 @@
       }
     },
     "es": {
-      "hash8": "5466efaf",
+      "hash8": "d1381d9e",
       "vdtHash": "41a22084e64aec2a822b75bbd8eb77fceb4ecb07",
       "timings": {
-        "importMs": 160,
-        "fontsMs": 26,
-        "buildMs": 6,
-        "totalMs": 774,
-        "builds": 2
+        "importMs": 133,
+        "fontsMs": 0,
+        "buildMs": 19,
+        "totalMs": 760,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -259,7 +257,7 @@
           "IM Fell Great Primer"
         ],
         "pages": 4,
-        "ownLines": 102
+        "ownLines": 98
       },
       "pages": [
         {
@@ -335,13 +333,12 @@
       },
       "sandbox": {
         "file": "shaped-verse.postext",
-        "bytes": 19326,
+        "bytes": 19313,
         "folio": "900eced1"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "renderPageToCanvas"
         ],
         "configKeys": [
@@ -351,7 +348,6 @@
           "bodyText.fontFamily",
           "bodyText.fontSize",
           "bodyText.lineHeight",
-          "bodyText.referenceColor",
           "bodyText.textAlign",
           "colorPalette",
           "colorPalette[].id",
@@ -399,7 +395,7 @@
           "layout",
           "page"
         ],
-        "configLeaves": 55,
+        "configLeaves": 54,
         "designElements": 0,
         "directives": [
           ":::space",

@@ -45,23 +45,9 @@
     "Q60",
     "Q52"
   ],
-  "gaps": [
-    "three-columns"
-  ],
+  "gaps": [],
   "gotchas": [
-    "callout-columns",
-    "nested-callout-limits",
-    "design-text-no-inline-marks",
-    "box-embed-no-gap",
-    "svg-no-webfonts",
-    "style-italic-colour",
-    "ragged-runts",
-    "ragged-run-punctuation",
-    "nbsp-breaks",
-    "palette-skips-designs",
-    "design-lineheight-multiple",
-    "overflow-ellipsis-default",
-    "headings-drop-h1-break"
+    "nested-callout-limits"
   ],
   "explainsWarnings": [],
   "related": [
@@ -72,68 +58,12 @@
   ],
   "workarounds": [
     {
-      "followup": "EF-25",
       "package": "postext",
-      "note": "the affiliation marks in the title band are the characters ¹ ² ³, because design text prints plain text and ^1^ would appear as written (gotcha design-text-no-inline-marks); they are the only superscript figures in Latin-1, so the poster stops at three affiliations"
-    },
-    {
-      "followup": "EF-173",
-      "package": "postext",
-      "note": "the headline −4.2 °C is written **bold** inside the 'stat' paragraph style, which prints it in Bitter 700: 1.4.1 paragraph styles have no fontWeight"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes each colour's hex beside its paletteId, because 1.4.1 does not apply colorPalette to the band's design elements (gotcha palette-skips-designs)"
-    },
-    {
-      "followup": "EF-68",
-      "package": "postext",
-      "note": "bodyText.italicColor is restated in ink: the italic journal titles of the 'refs' paragraph style take it, and without it they print in main-color green (gotcha style-italic-colour)"
-    },
-    {
-      "followup": "EF-130",
-      "package": "postext",
-      "note": "bodyText.boldColor is restated in ink: each panel copies it for its bold lead-ins, and the :ref labels fall back to it; without it they print in main-color green"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "design text lineHeight is a multiple of the size (1.2, and 1 for the title): a pt() value silently drops the band's reserved height in 1.4.1 (gotcha design-lineheight-multiple)"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore is restated because any headings object drops it (gotcha headings-drop-h1-break). The file holds one poster, so the restatement changes nothing on this page; a second H1 would start a page of its own"
-    },
-    {
-      "followup": "EF-117",
-      "package": "postext",
-      "note": "a :::space{lines=0.33} opens 3.5 mm between the key's :::columns group and Figure 2 in the Results panel: the group leaves no margin, and a figure set inside a box adds none of its own (gotcha box-embed-no-gap)"
-    },
-    {
-      "followup": "EF-73",
-      "package": "postext",
-      "note": "the copy is worded so that each (Fig. n) sits mid-line: in the ragged panels 1.4.1 ended a line on the '(' before a :ref (gotcha ragged-run-punctuation)"
-    },
-    {
-      "followup": "EF-66",
-      "package": "postext",
-      "note": "figures and units are copy-fitted so that no pair such as 15 °C breaks at a line end: 1.4.1 breaks at a no-break space as at any other (gotcha nbsp-breaks)"
-    },
-    {
-      "followup": "EF-147",
-      "package": "postext",
-      "note": "ragged paragraphs that ended on a single word in either edition were reworded, since 1.4.1 applies no runt protection to ragged text (gotcha ragged-runts)"
-    },
-    {
-      "followup": "EF-181",
-      "package": "postext",
-      "note": "a :::space{lines=0.75} opens 10.8 mm between the references' :::paragraphs group and the acknowledgement, near the 10.6 mm between the other paragraphs of a panel: in 1.4.1 a paragraph after a :::paragraphs container gets the style's spaceBetween (8 pt, 2.8 mm) instead of the body's paragraph spacing (30 pt in the panels)"
+      "note": "bodyText.paragraphContainerSpacing is 'add', so a :::paragraphs group ends on its style's own space: −4.2 °C sits on the line that explains it, and a :::space{lines=0.75} opens 10.8 mm between the references and the acknowledgement. With the default 'collapse' the line added under −4.2 °C moves the keyword strip to a second page"
     }
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -208,5 +138,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

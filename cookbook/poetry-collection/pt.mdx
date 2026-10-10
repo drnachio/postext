@@ -36,7 +36,7 @@ Em vez do seu texto, o título imprime um design na coluna. Nesse design, `{numb
 
 <Excerpt region="front" />
 
-Um estilo de título pode quebrar para uma página nova e desenhar um design nela, então a falsa folha de rosto, o frontispício e a folha de rosto são um título cada, com estilo próprio. `numbered: false` os deixa fora da contagem, e o primeiro poema continua sendo o I. `toc: false` os deixa fora do sumário, e um rodapé vazio deixa as páginas deles sem fólio ([estilos de título](/pt/docs/configuration#estilos-de-título)). Os estilos ocupam a página inteira porque um design na coluna é recortado na mancha de texto, o que cortaria a prancha sangrada nas margens e deixaria de fora a legenda. A legenda vem do atributo `caption` do título; o autor, o título e o subtítulo da folha de rosto vêm do frontmatter.
+Um estilo de título pode quebrar para uma página nova e desenhar um design nela, então a falsa folha de rosto, o frontispício e a folha de rosto são um título cada, com estilo próprio. `numbered: false` os deixa fora da contagem, e o primeiro poema continua sendo o I. `toc: false` os deixa fora do sumário, e um rodapé vazio deixa as páginas deles sem fólio ([estilos de título](/pt/docs/configuration#estilos-de-título)). Os estilos ocupam a página inteira porque o pé da mancha de texto corta um design preso à coluna, o que cortaria ali a prancha sangrada e deixaria de fora a legenda. A legenda vem do atributo `caption` do título; o autor, o título e o subtítulo da folha de rosto vêm do frontmatter.
 
 ### 5 · O sumário se preenche sozinho
 
@@ -95,5 +95,5 @@ O estilo do contador no modelo muda ao mesmo tempo o numeral na página do poema
 - Mantenha juntos os versos de uma estrofe: uma linha em branco dentro de um bloco `:::verse` abre outra estrofe, sejam quantas forem as linhas em branco.
 - Um verso que começa com um sinal de mais e um espaço é um verso escalonado, que começa onde terminou o de cima; escreva `\+` para imprimir o sinal de mais.
 - Sem `align=start` cada poema é centralizado pelo seu verso mais longo, e então cada um fica a uma distância diferente da margem.
-- Para que duas palavras passem juntas para a linha de baixo, una-as com um espaço não separável (U+00A0), como *the soil* e *bright wings.* na página 5. Isso vale num verso de texto simples; num verso com itálico ou negrito, o motor ainda quebra ali.
+- Para que duas palavras passem juntas para a linha de baixo, una-as com um espaço não separável (U+00A0), como *the soil* e *bright wings.* na página 5.
 - Um elemento de rodapé com `pages` deixado em `'all'` sai também nas páginas em branco. Aqui o fólio são dois elementos, um para as páginas de abertura e outro para as páginas de texto, então uma página par em branco continua em branco.

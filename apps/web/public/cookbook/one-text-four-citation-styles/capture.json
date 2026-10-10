@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "one-text-four-citation-styles",
-  "sourceHash": "c280f55409742257a475e0b4b7ad54a07939dd35a11782a3535e1b62fa5984f7",
+  "sourceHash": "71ffa703f7e936b5e5abb26540efeb45e147eb5d54038f96b1258393a7b3b1da",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.221Z",
+  "capturedAt": "2026-10-10T13:36:24.552Z",
   "variants": {
     "en": {
-      "hash8": "589f0701",
+      "hash8": "a18d3b37",
       "vdtHash": "738c861917f1a894851698719dbc92df71bf120f",
       "timings": {
-        "importMs": 158,
-        "fontsMs": 33,
-        "buildMs": 291,
-        "totalMs": 1535,
+        "importMs": 139,
+        "fontsMs": 5,
+        "buildMs": 246,
+        "totalMs": 1432,
         "builds": 4
       },
       "specimen": {
@@ -37,7 +37,7 @@
           "Source Serif 4"
         ],
         "pages": 4,
-        "ownLines": 113
+        "ownLines": 112
       },
       "pages": [
         {
@@ -109,15 +109,14 @@
       },
       "sandbox": {
         "file": "one-text-four-citation-styles.postext",
-        "bytes": 21301,
+        "bytes": 21300,
         "folio": "973c2e27"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "registerCitationEngine",
           "renderPageToCanvas"
@@ -280,13 +279,13 @@
       }
     },
     "es": {
-      "hash8": "cf8cf400",
+      "hash8": "84150b95",
       "vdtHash": "169ddf78ce9d908bcc79982fe2ab5872f24edcea",
       "timings": {
-        "importMs": 168,
-        "fontsMs": 29,
-        "buildMs": 292,
-        "totalMs": 1525,
+        "importMs": 143,
+        "fontsMs": 5,
+        "buildMs": 245,
+        "totalMs": 1424,
         "builds": 4
       },
       "specimen": {
@@ -307,7 +306,7 @@
           "Source Serif 4"
         ],
         "pages": 4,
-        "ownLines": 113
+        "ownLines": 112
       },
       "pages": [
         {
@@ -379,15 +378,14 @@
       },
       "sandbox": {
         "file": "one-text-four-citation-styles.postext",
-        "bytes": 22459,
+        "bytes": 22458,
         "folio": "973c2e27"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "registerCitationEngine",
           "renderPageToCanvas"

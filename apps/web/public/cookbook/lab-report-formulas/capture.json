@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "lab-report-formulas",
-  "sourceHash": "792da7af9d0cdfa37c9503ce150838d8a123158b614de51a49217b42015ade86",
+  "sourceHash": "0bcc8867c4fc47dd7e46fde2d5c9f8e202a9228a6829de719facf5ac9cc5cae0",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.107Z",
+  "capturedAt": "2026-10-10T13:35:13.431Z",
   "variants": {
     "en": {
-      "hash8": "972da2bc",
-      "vdtHash": "b3bd3f6cf3a3b1034cbc94f67eff7a19f8c704ae",
+      "hash8": "ac8fd05e",
+      "vdtHash": "78a366fe1aa21b9c025482a889d0ae88a74aba07",
       "timings": {
-        "importMs": 289,
-        "fontsMs": 115,
-        "buildMs": 18,
-        "totalMs": 1111,
-        "builds": 2
+        "importMs": 175,
+        "fontsMs": 110,
+        "buildMs": 63,
+        "totalMs": 950,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Sometype Mono"
         ],
         "pages": 4,
-        "ownLines": 242
+        "ownLines": 236
       },
       "pages": [
         {
@@ -115,18 +115,17 @@
       },
       "pdf": {
         "file": "lab-report-formulas.pdf",
-        "bytes": 193492,
+        "bytes": 193512,
         "pages": 4
       },
       "sandbox": {
         "file": "lab-report-formulas.postext",
-        "bytes": 36491,
+        "bytes": 36467,
         "folio": "977c8d61"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
           "initMathEngine",
@@ -146,7 +145,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.referenceBold",
@@ -234,7 +232,6 @@
           "headingStyles[].advancedDesign.slot",
           "headingStyles[].id",
           "headingStyles[].numbered",
-          "headingStyles[].span",
           "headings",
           "headings.color",
           "headings.fontFamily",
@@ -328,7 +325,7 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 521,
+        "configLeaves": 519,
         "designElements": 24,
         "directives": [
           ":::callout",
@@ -430,18 +427,24 @@
           "share": 0.0164,
           "worst": 1.53
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "7b17640a",
-      "vdtHash": "4bcd8b5d059dd6466290e1cb9a0f121064aa8ca2",
+      "hash8": "0e815132",
+      "vdtHash": "6be2b97b8c7d9bc8f5a005e8ce47c6f7c091c39b",
       "timings": {
-        "importMs": 292,
-        "fontsMs": 117,
-        "buildMs": 23,
-        "totalMs": 1126,
-        "builds": 2
+        "importMs": 197,
+        "fontsMs": 108,
+        "buildMs": 66,
+        "totalMs": 982,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -462,7 +465,7 @@
           "Sometype Mono"
         ],
         "pages": 4,
-        "ownLines": 242
+        "ownLines": 236
       },
       "pages": [
         {
@@ -538,18 +541,17 @@
       },
       "pdf": {
         "file": "lab-report-formulas.pdf",
-        "bytes": 205498,
+        "bytes": 205505,
         "pages": 4
       },
       "sandbox": {
         "file": "lab-report-formulas.postext",
-        "bytes": 37862,
+        "bytes": 37839,
         "folio": "977c8d61"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
           "initMathEngine",
@@ -569,7 +571,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.referenceBold",
@@ -657,7 +658,6 @@
           "headingStyles[].advancedDesign.slot",
           "headingStyles[].id",
           "headingStyles[].numbered",
-          "headingStyles[].span",
           "headings",
           "headings.color",
           "headings.fontFamily",
@@ -751,7 +751,7 @@
           "tableStyle",
           "unorderedLists"
         ],
-        "configLeaves": 521,
+        "configLeaves": 519,
         "designElements": 24,
         "directives": [
           ":::callout",
@@ -853,7 +853,13 @@
           "share": 0.0154,
           "worst": 1.52
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

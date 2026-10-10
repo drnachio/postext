@@ -20,19 +20,19 @@
       "cjk-line-breaking",
       "running-heads",
       "mirrored-margins",
+      "column-balancing",
       "paragraph-styles",
       "color-palette",
       "pdf-export"
     ]
   },
   "answers": ["Q97", "Q94"],
-  "gotchas": ["cjk-fonts-slices", "cjk-no-italic", "cjk-locale-tag", "cjk-face-region", "headings-drop-h1-break", "palette-skips-designs", "config-cache-identity"],
+  "gotchas": ["cjk-fonts-slices", "cjk-no-italic", "cjk-locale-tag", "cjk-face-region"],
   "related": ["names-and-subjects-indexes", "back-of-book-index", "chinese-novel-horizontal"],
   "workarounds": [
-    { "package": "postext", "note": "the index note is a heading attribute (note=\"…\") that the opener design prints above the two columns, not a paragraph: as the first paragraph under the index heading, column balancing's loose-paragraph lever spread it to twelve characters a line in a column of fourteen to even out the Traditional edition's last page" },
-    { "package": "postext", "note": "design text sets every Chinese mark full width and has no line-start or line-end rules (禁则): with ，；、 inside its lines the note set them a full em beside the Kaiming half-width marks of the Simplified text around it, and the Traditional note broke inside 頁碼. It is written as three sentences, one to a line with the \\n escape, each ending in 。, its only mark" }
+    { "package": "postext", "note": "the index note is a heading attribute (note=\"…\") that the opener design prints above the two columns, not a paragraph: as the first paragraph under the index heading, column balancing's loose-paragraph lever spread it to twelve characters a line in a column of fourteen to even out the Traditional edition's last page" }
   ],
-  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -75,5 +75,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-29",
-  "updated": "2026-09-30"
+  "updated": "2026-10-10"
 }

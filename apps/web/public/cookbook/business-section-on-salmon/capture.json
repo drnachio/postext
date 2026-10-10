@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "business-section-on-salmon",
-  "sourceHash": "2045330640994ad4d77b50d6cc67c1caea3fcc4ab1b33d3d243a7af5d002cadf",
+  "sourceHash": "77df3a00111da2eb9fef384d331b78a55a7d81469551373a60712b0c4afd579b",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.755Z",
+  "capturedAt": "2026-10-10T13:32:12.210Z",
   "variants": {
     "en": {
-      "hash8": "a6def7aa",
-      "vdtHash": "cca3cd24ff16e07d4cb514310ccfafaa519ae0ae",
+      "hash8": "6ed37707",
+      "vdtHash": "e77de348d34994369e423dfefb2a4d85a7f6a591",
       "timings": {
-        "importMs": 155,
-        "fontsMs": 89,
-        "buildMs": 612,
-        "totalMs": 6704,
-        "builds": 2
+        "importMs": 142,
+        "fontsMs": 48,
+        "buildMs": 619,
+        "totalMs": 1409,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "Source Serif 4"
         ],
         "pages": 8,
-        "ownLines": 244
+        "ownLines": 242
       },
       "pages": [
         {
@@ -153,13 +153,13 @@
       },
       "sandbox": {
         "file": "business-section-on-salmon.postext",
-        "bytes": 1216089,
+        "bytes": 1216328,
         "folio": "77d83e3b"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "inlineSvgFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -397,6 +397,11 @@
           {
             "family": "Archivo Narrow",
             "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Archivo Narrow",
+            "weight": 400,
             "style": "normal"
           },
           {
@@ -470,7 +475,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 9,
+        "iterationCount": 8,
         "looseLines": {
           "count": 22,
           "share": 0.0445,
@@ -486,6 +491,11 @@
             "check": "C24",
             "severity": "warn",
             "detail": "22 of 494 justified lines (4.5 %) stretch past 2× (worst 2.98×); loosest: p. 3 2.98× “Saltmarsh, Fenner’s Green and”, p. 1 2.86× “council had expected, and the”, p. 7 2.71× “The company estimated”"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 138 · Machine-learning paper with theorems and proofs ═══
 // https://postext.dev/en/cookbook/ml-paper-theorems-proofs
 // Code: MIT · Text: Rafailov et al. 2023, arXiv:2305.18290 (CC BY 4.0), abridged · Art: code
-// Fonts: Spectral, Work Sans, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: Spectral, Work Sans, JetBrains Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // DPO (NeurIPS 2023) re-set as a preprint: numbered equations with labels and references,
 // definition, lemma and theorem boxes, proofs that end in a square, author–year citations.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  registerCitationEngine, defaultResourceTypes, initMathEngine, renderMath,
-} from 'https://esm.sh/postext?bundle';
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, registerCitationEngine,
+  defaultResourceTypes, initMathEngine, renderMath, inlineSvgFonts,
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
 
@@ -123,7 +123,7 @@ const citations = { style: 'harvard-cite-them-right', link: true,
     entrySpacing: pt(1.6), doi: 'link' } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us', colorPalette, resourceTypes, citations,
   crossRefs: { section: 'Section {n}' }, // "Section 5", as the paper writes it
   page: { width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
@@ -142,7 +142,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   // spacing, and a page held short by a tall display may end a few lines up.
   balancing: { maxLinesPerHeading: 1 },
   levels: [
-    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // no blank page before it
     { level: 2, numberingTemplate: '{2}', fontSize: pt(11.5), lineHeight: pt(LEAD),
       marginTop: pt(LEAD), marginBottom: pt(LEAD / 2) },
     { level: 3, numberingTemplate: '{2}.{3}', fontSize: pt(9.8), lineHeight: pt(LEAD),
@@ -215,7 +215,7 @@ const resources = () => [
       + 'CNN/DailyMail input articles.' },
 ];
 
-// #region art: σ(βu) on the band, and Figure 1, its words in Work Sans carried in the SVG
+// #region art: σ(βu) on the band, and Figure 1, its words in the Work Sans the SVG names
 const R = (x) => Math.round(x * 100) / 100;
 const svg = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w * PX_PER_MM}" `
   + `height="${h * PX_PER_MM}" viewBox="0 0 ${w} ${h}">${body}</svg>`;
@@ -231,22 +231,13 @@ function sigmoids() { // 108 × 24 mm over the kicker: σ(βu) for β from 0.25 
   });
   return svg(108, 24, out);
 }
-async function inlineFace(family, weight) { // a face an SVG image can use (svg-no-webfonts)
-  const id = family.toLowerCase().replace(/\s+/g, '-');
-  const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}`
-    + '-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return `@font-face{font-family:'${family}';font-weight:${weight};`
-    + `src:url(data:font/woff2;base64,${btoa(bin)})}`;
-}
 function tex(markup, x, y, size, color = 'ink', anchor = 0) { // maths as MathJax paths
   const r = renderMath(markup, false, 100);
   const k = size / 1000;
   return `<g transform="translate(${R(x - anchor * r.viewBox.width * k)} ${R(y)}) scale(${k})" `
     + `fill="${palette[color]}">${r.paths.map((p) => `<path d="${p.d}"/>`).join('')}</g>`;
 }
+// Each label names its family and weight: loadSvg embeds the Work Sans files they set.
 const words = (x, y, s, { size = 2.6, weight = 400, color = 'ink', anchor = 'start' } = {}) =>
   `<text x="${R(x)}" y="${R(y)}" font-family="${SANS}" font-weight="${weight}" `
   + `font-size="${size}" fill="${palette[color]}" text-anchor="${anchor}">${s}</text>`;
@@ -273,15 +264,14 @@ function preferences(x, y, w) { // a prompt and two answers, the preferred one f
     + page(2.4) + tex('y_w', x + 9.4, y + 20.6, 3) + tex('\\succ', x + 14, y + 20.4, 3, 'accent')
     + page(18.4) + tex('y_l', x + 25.4, y + 20.6, 3);
 }
-function pipeline(face) { // 130 × 64 mm: RLHF on the left, DPO on the right
+function pipeline() { // 130 × 64 mm: RLHF on the left, DPO on the right
   const title = (x, name, sub, color) => words(x, 4, name, { size: 3.2, weight: 600, color })
     + words(x, 8, sub, { size: 2.3, color: 'muted' });
   const model = (x, y, w, label, color) => rect(x, y, w, 9, color)
     + words(x + w / 2, y + 5.8, label, { size: 2.6, weight: 600, color, anchor: 'middle' });
   const note = (x, y, lines, color, anchor) => lines.map((line, i) => words(x, y + i * 3, line,
     { size: 2.3, color, anchor })).join('');
-  return svg(MEASURE, 64, `<style>${face}</style>`
-    + title(0, 'RLHF', 'Reinforcement learning from human feedback', 'ochre')
+  return svg(MEASURE, 64, title(0, 'RLHF', 'Reinforcement learning from human feedback', 'ochre')
     + preferences(0, 14, 32)
     + arrow([[33, 26.5], [48, 26.5]], 'ochre') + note(40.5, 22.4, ['maximum'], 'ochre', 'middle')
     + note(40.5, 31.4, ['likelihood'], 'ochre', 'middle')
@@ -299,7 +289,7 @@ function pipeline(face) { // 130 × 64 mm: RLHF on the left, DPO on the right
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages paint, loaded before the first build (gotcha: fonts-first)
+const FONTS = { // every face the pages paint, loaded before the first build
   Spectral: ['400', '400i', '600', '700', '700i'],
   'Work Sans': ['400', '400i', '500', '600', '700'],
   'JetBrains Mono': ['400'],
@@ -307,11 +297,10 @@ const FONTS = { // every face the pages paint, loaded before the first build (go
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await initMathEngine(); // gotcha: math-bundle. Unawaited, formulas paint as grey boxes
-await loadFonts(FONTS, source);
 await loadSvg('sigmoids.svg', sigmoids());
-await loadSvg('pipeline.svg', pipeline(await inlineFace(SANS, 400) + await inlineFace(SANS, 600)));
+await loadSvg('pipeline.svg', pipeline());
 const content = () => ({ markdown: source, resources: resources() });
-const doc = await buildWithFonts(() => buildDocument(content(), config()), source);
+const doc = await buildDocumentWithFonts(content(), config(), kitFonts(FONTS));
 showPages(doc, { title: 'Machine-learning paper with theorems and proofs' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`); // text in the Fontsource faces; formulas and figures as vector paths

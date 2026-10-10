@@ -46,7 +46,7 @@ El que hagi de sortir a totes les pàgines, com aquesta banda, va a la ranura de
 
 ### Afegeix 3 mm de sang i marques de tall
 
-Amb 3 mm de `BLEED` s'activen les marques de tall, i el cel i la banda del peu, que pengen de la sang, hi entren 3 mm mentre `INSET` deixa el text al marge; el Sol, la Lluna i la corona pengen de la pàgina, i com que la 1.4.1 no retalla els elements de disseny a la sang, continuen pel marge blanc fins a la vora del full.
+Amb 3 mm de `BLEED` s'activen les marques de tall, i el cel i la banda del peu, que pengen de la sang, hi entren 3 mm mentre `INSET` deixa el text al marge; el Sol, la Lluna i la corona pengen de la pàgina, i tot el que pinta una pàgina es retalla a la sang, de manera que el Sol s'acaba 3 mm més enllà del tall i fora de la sang només queden les marques de tall.
 
 ```diff
 -const BLEED = 0; // mm; 3 for the printer, which switches on page.cutLines below
@@ -66,6 +66,6 @@ Amb 20 mm menys de `SKY` puja la vora del cel, i amb ella l'entradeta, el títol
 
 ## Errors freqüents
 
-- En un pen, la versió 1.4.1 no avisa d'un ancoratge cíclic ni d'un de trencat. El tauler Revisió del Sandbox els assenyala a la capçalera, al peu, a les portadelles de part i als nivells de títol, però no als estils de títol com `guides`. Un element ancorat a un `#id` que no existeix es col·loca respecte al contenidor: una vora d'element com `'below'` cau a la cantonada superior esquerra del contenidor, amb el seu desplaçament, i una vora de contenidor com `'top-right'`, en aquesta cantonada. En un bucle, un element cau de la mateixa manera i els altres s'hi encadenen.
-- A la 1.4.1, `'align-left'` i `'align-top'` porten al mateix punt: tots dos posen la cantonada superior esquerra de l'element sobre la de la seva àncora.
+- En un pen res no avisa d'un ancoratge cíclic ni d'un de trencat. El tauler Revisió del Sandbox els assenyala a la capçalera, al peu, a les portadelles de part i als nivells de títol, però no als estils de títol com `guides`. Un element ancorat a un `#id` que no existeix es col·loca respecte al contenidor: una vora d'element com `'below'` cau a la cantonada superior esquerra del contenidor, amb el seu desplaçament, i una vora de contenidor com `'top-right'`, en aquesta cantonada. En un bucle, un element cau de la mateixa manera i els altres s'hi encadenen.
+- `'align-left'` i `'align-top'` porten al mateix punt: tots dos posen la cantonada superior esquerra de l'element sobre la de la seva àncora.
 - Una vora es pinta centrada sobre el contorn de la caixa, així que cada marc rosa d'1 pt sobresurt 0,5 pt de la caixa que traça, tot i que la documentació de la configuració diu que els traços es pinten per dins.

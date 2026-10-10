@@ -34,7 +34,7 @@ La lliçó va en Iansui, una lletra Kai dibuixada a partir de Klee One amb les f
 
 <Excerpt region="furniture" />
 
-En un llibre amb el llom a la dreta, la pàgina parella queda a la dreta del plec, així que les parelles porten la pestanya de la unitat i el foli a la vora dreta i les senars a l'esquerra. La pestanya és una caixa amb un element de text a sobre; `writingMode: 'vertical-rl'` a l'element compon 第三單元　寓言故事 de dalt a baix, mentre que els folis i les línies del peu continuen en horitzontal.
+En un llibre amb el llom a la dreta, la pàgina parella queda a la dreta del plec, així que les parelles porten la pestanya de la unitat i el foli a la vora dreta i les senars a l'esquerra. La pestanya és una caixa amb un element de text a sobre; `writingMode: 'vertical-rl'` a l'element compon 第三單元　寓言故事 de dalt a baix, mentre que els folis i les línies del peu continuen en horitzontal. Els números de la lliçó i de les faules surten del `numberingTemplate` dels títols (`第{1:一}課` i `{2:一}`, amb un espai ideogràfic com a `numberSeparator` i `{startAt=12}` a la lliçó), separats del títol, de manera que el zhuyin de 寓 queda sobre 寓; la línia del peu de les senars imprimeix `{chapterNumber}　{chapterTitle}`, perquè `{chapterTitle}` deixa fora el número.
 
 ## Variants
 
@@ -56,9 +56,5 @@ Alguns llibres imprimeixen les lectures més clares que el text, perquè els car
 - Pren les lectures del diccionari de Taiwan. Les eines fetes sobre diccionaris del continent, pypinyin entre elles, donen 度 duó, 寧 nìng, 時候 shíhou i 市場 shìchǎng; el *Diccionari Revisat de Xinès Mandarí* del Ministeri d'Educació, que segueixen els llibres de Taiwan, llegeix ㄉㄨㄛˋ, ㄋㄧㄥˊ, ㄕˊ ㄏㄡˋ i ㄕˋ ㄔㄤˊ, i posa en to neutre la segona síl·laba de 故事, 家裡 i 過來. moedict.tw el serveix paraula per paraula. Manté 一 i 不 en el seu to propi, i aquesta lliçó també.
 
 - Dibuixa uns quants caràcters en cada font abans de barrejar-les. LXGW WenKai TC segueix les formes heretades i dibuixa 為 (U+70BA) com 爲, així que una lliçó composta amb aquesta font imprimia 爲宋國笑 al text i 為宋國笑 a la nota en Ming del mateix plec. Iansui dibuixa el 為 estàndard.
-
-- Els números de la lliçó i de les faules s'escriuen als títols (`# 第十二課　{寓言兩則|…}`). Un `numberingTemplate` uneix el número al primer caràcter del títol, i quan aquest caràcter porta lectura, la lectura se centra sobre el número i el caràcter junts.
-
-- Calcula què ha de cabre al pis de dalt de cada pàgina i obre cada requadre on la seva pàgina tingui lloc. El requadre de l'autor s'obre abans de 語文天地 perquè comenci el pis de la pàgina 89, i el dels caràcters nous, obert després de les frases fetes, va darrere. Un requadre o un dibuix que no troba lloc abans que acabi el text surt en una pàgina sense res a sota, i el següent es queda fora sense avís, així que comprova que tots apareixen a les pàgines.
 
 - Iansui té un sol gruix. Els títols destaquen per la mida i els lemes de les frases fetes pel color: l'estil `idiom` fixa `boldFontWeight: 400` amb l'accent com a `boldColor`, així que `**…**` canvia el color i no la lletra.

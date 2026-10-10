@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "qasida-diwan-page",
-  "sourceHash": "55a6d4b5b49332a17b73728ac4d6ec28b471788628b41b68c0260711f40e831e",
+  "sourceHash": "53c0afefaffd4517fc0a6cbc0ad46839189eb17496dcb69a7b1f313a98d71a2e",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.348Z",
+  "capturedAt": "2026-10-10T13:37:31.839Z",
   "variants": {
     "en": {
-      "hash8": "30da5bbe",
+      "hash8": "ed927e9b",
       "vdtHash": "c99ac9822289cbbf710009cc43ae7c08724964f2",
       "timings": {
-        "importMs": 199,
-        "fontsMs": 91,
-        "buildMs": 82,
-        "totalMs": 929,
+        "importMs": 190,
+        "fontsMs": 70,
+        "buildMs": 73,
+        "totalMs": 878,
         "builds": 1
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Noto Kufi Arabic"
         ],
         "pages": 4,
-        "ownLines": 143
+        "ownLines": 144
       },
       "pages": [
         {
@@ -116,7 +116,7 @@
       },
       "pdf": {
         "file": "qasida-diwan-page.pdf",
-        "bytes": 79914,
+        "bytes": 79916,
         "pages": 4
       },
       "sandbox": {
@@ -126,10 +126,10 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -314,13 +314,13 @@
       }
     },
     "es": {
-      "hash8": "f9fe359b",
+      "hash8": "d70a54c2",
       "vdtHash": "18615235935b6a3e2d7176c71e2720a69ae9b7af",
       "timings": {
-        "importMs": 187,
-        "fontsMs": 88,
-        "buildMs": 80,
-        "totalMs": 914,
+        "importMs": 171,
+        "fontsMs": 67,
+        "buildMs": 74,
+        "totalMs": 852,
         "builds": 1
       },
       "specimen": {
@@ -342,7 +342,7 @@
           "Noto Kufi Arabic"
         ],
         "pages": 4,
-        "ownLines": 143
+        "ownLines": 144
       },
       "pages": [
         {
@@ -386,7 +386,7 @@
           "h": 1412,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 101186,
+          "bytes": 101168,
           "alt": "Página ٤."
         }
       ],
@@ -419,7 +419,7 @@
       },
       "pdf": {
         "file": "qasida-diwan-page.pdf",
-        "bytes": 80115,
+        "bytes": 80116,
         "pages": 4
       },
       "sandbox": {
@@ -429,10 +429,10 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

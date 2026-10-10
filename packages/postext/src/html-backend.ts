@@ -1647,10 +1647,14 @@ function verticalDesignLines(block: VDTDesignTextBlock, v: VerticalHtml, originX
     const inner: string[] = [];
     for (const run of runs) {
       const runFont = quoteFontString(run.fontString);
-      const decl = runFont !== font ? `font:${runFont};` : '';
+      // A dash of a 破折号 (`inkScale`, #652): turned with the flow and
+      // stretched down the column, as a body segment's is.
+      const stretched = run.inkScale !== undefined;
+      const decl = (runFont !== font ? `font:${runFont};` : '')
+        + (stretched ? `transform:scaleY(${run.inkScale!.toFixed(4)});transform-origin:0 0;${DASH_FEATURES_DECL}` : '');
       // A run whose width is its box (a CJK mark that gave up blank, #637)
       // sets its glyphs `inkOffset` into it.
-      inner.push(verticalSpan(x + (run.inkOffset ?? 0), axisOf(run.fontString, run.baselineShift ?? 0), verticalTextHtml(run.text, v, segmentOrientation(run), run.fontString, block.letterSpacingPx ?? 0), decl));
+      inner.push(verticalSpan(x + (run.inkOffset ?? 0), axisOf(run.fontString, run.baselineShift ?? 0), verticalTextHtml(run.text, v, stretched ? 'sideways' : segmentOrientation(run), run.fontString, block.letterSpacingPx ?? 0), decl));
       x += run.width;
     }
     const width = Math.max(line.width, x);
@@ -2203,7 +2207,13 @@ function renderDesignTextBlock(block: VDTDesignTextBlock, options?: HtmlPaint): 
           const boxDecl = run.inkOffset !== undefined && !run.stacked
             ? `display:inline-block;width:${run.width.toFixed(3)}px;${run.inkOffset !== 0 ? `text-indent:${run.inkOffset.toFixed(3)}px;` : ''}`
             : '';
-          return fontDecl || cjkDecl || stackDecl || shiftDecl || boxDecl ? `<span style="${fontDecl}${cjkDecl}${stackDecl}${shiftDecl}${boxDecl}">${esc(run.text)}</span>` : esc(run.text);
+          // A dash of a 破折号 (`inkScale`, #652): a box of its own inside
+          // the run's, stretched from where the run's indent puts its
+          // glyph, as a body segment's is.
+          const text = run.inkScale !== undefined
+            ? `<span style="display:inline-block;text-indent:0;${inkScaleDecl(run.inkScale)}">${esc(run.text)}</span>`
+            : esc(run.text);
+          return fontDecl || cjkDecl || stackDecl || shiftDecl || boxDecl ? `<span style="${fontDecl}${cjkDecl}${stackDecl}${shiftDecl}${boxDecl}">${text}</span>` : text;
         }).join('')
       : esc(line.text);
     const lineDecl = !line.runs && hasCJK(line.text) ? CJK_TEXT_DECL : '';

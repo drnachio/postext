@@ -16,7 +16,7 @@ Las páginas de marzo de un almanaque de huerto en italiano. La página 27 se ab
 
 ### 1 · Gira el gráfico y deja que continúe
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. Con `rotate: 'ccw'`, la tabla pasa a ser un flotante a lo ancho de la página, en páginas propias ([Colocación](/es/docs/document-format#colocación)), con la cabecera hacia el borde izquierdo, y se pega al lomo tanto en la página impar como en la par. Girada, la tabla se compone a lo alto de la caja de texto y ocupa 227 de sus 237 mm: las 47 líneas enteras de 14 pt que caben en la rejilla, menos una para la separación del flotante. Sus filas se apilan a lo ancho de los 176 mm de la caja; cuando ya no caben, la tabla se corta entre dos filas y continúa en la página siguiente, bajo sus dos filas de cabecera y su pie, que termina en `(segue)` ([Tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)). Solo un flotante puede girar o partirse: con `position: 'here'` el giro se ignora y la tabla nunca se parte. La cabecera lleva tres clases de celdas combinadas: `Coltura` ocupa sus dos filas, cada estación abarca sus meses y cada mes, sus dos quincenas.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Con `rotate: 'ccw'`, la tabla pasa a ser un flotante a lo ancho de la página, en páginas propias ([Colocación](/es/docs/document-format#colocación)), con la cabecera hacia el borde izquierdo, y se pega al lomo tanto en la página impar como en la par. Girada, la tabla se compone a lo alto de la caja de texto y ocupa 227 de sus 237 mm: las 47 líneas enteras de 14 pt que caben en la rejilla, menos una para la separación del flotante. Sus filas se apilan a lo ancho de los 176 mm de la caja; cuando ya no caben, la tabla se corta entre dos filas y continúa en la página siguiente, bajo sus dos filas de cabecera y su pie, que termina en `(segue)` ([Tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)). Solo un flotante puede girar: con `position: 'here'` el giro se ignora, y la tabla se partiría sin girar, entre filas, donde acaba su columna. La cabecera lleva tres clases de celdas combinadas: `Coltura` ocupa sus dos filas, cada estación abarca sus meses y cada mes, sus dos quincenas.
 
 ### 2 · Un calendario calculado con fechas
 
@@ -28,25 +28,25 @@ Con `Date.UTC`, cada fecha se convierte en un número de día, y de ese número 
 
 <Excerpt region="matrix" />
 
-Las parejas se escriben como TSV, un símbolo por celda. En postext 1.4.1, `parseTSV` crea celdas normales y deja `headerRowCount` sin fijar, así que se añade a mano `headerRowCount: 1` para que la fila con los nombres de los cultivos sea la cabecera. Los pesos de `columnWidths` reparten en milímetros los 176 mm de la medida: 26 para los nombres y 15 para cada cultivo. Cada símbolo corresponde a una entrada de la paleta, que `setCellBackground` pone de fondo en la celda; el `+` y el `−` se imprimen también, en un chip a 1,4 em, para que la matriz se lea en una copia en escala de grises. La diagonal empareja cada cultivo consigo mismo, y ahí `setCellImage` pone su dibujo, al 62 % del ancho interior de la celda.
+Las parejas se escriben como TSV, un símbolo por celda. `parseTSV(tsv, { headerRows: 1 })` convierte la fila con los nombres de los cultivos en la cabecera. Los pesos de `columnWidths` reparten en milímetros los 176 mm de la medida: 26 para los nombres y 15 para cada cultivo. Cada símbolo corresponde a una entrada de la paleta, que `setCellBackground` pone de fondo en la celda; el `+` y el `−` se imprimen también, en un chip a 1,4 em, para que la matriz se lea en una copia en escala de grises. La diagonal empareja cada cultivo consigo mismo, y ahí `setCellImage` pone su dibujo, al 62 % del ancho interior de la celda.
 
 ### 4 · Pon la leyenda con muestras de color
 
 <Excerpt region="resources" />
 
-`:swatch{color="leaf"}` compone un cuadrado de tres cuartos del cuerpo, relleno con una entrada de la paleta y perfilado en el color del texto; estas páginas lo usan en el texto corrido, en dos pies y en una nota. La leyenda del gráfico va en su pie, porque cada parte de una tabla partida repite el pie, mientras que la nota solo sale bajo la última. El calendario es un tipo de recurso propio con el prefijo del pie vacío, y su pie empieza por la leyenda y no por una etiqueta `Tabella`. `position: 'bottom'` con `span: 'page'` coloca el calendario y la matriz a lo ancho de las dos columnas, al pie de su página. La página 28 es la última con texto. En una página así, 1.4.1 sube el flotante a lo ancho de la página hasta una línea por debajo del texto; por eso la matriz termina 10 mm por encima del margen inferior.
+`:swatch{color="leaf"}` compone un cuadrado de tres cuartos del cuerpo, relleno con una entrada de la paleta y perfilado en el color del texto; estas páginas lo usan en el texto corrido, en dos pies y en una nota. La leyenda del gráfico va en su pie, porque cada parte de una tabla partida repite el pie, mientras que la nota solo sale bajo la última. El calendario es un tipo de recurso propio con el prefijo del pie vacío, y su pie empieza por la leyenda y no por una etiqueta `Tabella`. `position: 'bottom'` con `span: 'page'` coloca el calendario y la matriz a lo ancho de las dos columnas, al pie de su página. La página 28 es la última con texto. En la última página de un capítulo, un flotante a lo ancho de la página sube hasta una línea por debajo del texto; por eso la matriz termina 10 mm por encima del margen inferior, y con `layout.hugClosingFloats: false` se quedaría al pie de la página.
 
 ### 5 · Un estilo de la casa y una variante por tabla
 
 <Excerpt region="styles" />
 
-`tableStyle` fija el estilo de la casa: cabecera con fondo de tinta y rótulos en Commissioner del color del papel, filetes finos entre filas y los textos de continuación en italiano, que 1.4.1 solo trae en inglés y en español. Cada estilo con nombre indica solo lo que cambia su tabla. El calendario compone los días en Gilda Display a 15 pt; la matriz quita el relleno de la cabecera, y la matriz y el gráfico trazan una rejilla de filetes del color del papel, de 2 pt y 1 pt, que corta sus rellenos en casillas.
+`tableStyle` fija el estilo de la casa: cabecera con fondo de tinta y rótulos en Commissioner del color del papel, filetes finos entre filas y la línea que cierra cada parte de una tabla partida. Un documento en italiano cierra la parte con `Continua` y añade `(segue)` al pie de la parte siguiente; el almanaque escribe la primera entera, `Continua alla pagina seguente`. Cada estilo con nombre indica solo lo que cambia su tabla. El calendario compone los días en Gilda Display a 15 pt; la matriz quita el relleno de la cabecera, y la matriz y el gráfico trazan una rejilla de filetes del color del papel, de 2 pt y 1 pt, que corta sus rellenos en casillas.
 
 ### 6 · El mes se abre con una acuarela
 
 <Excerpt region="opener" />
 
-El título de primer nivel se dibuja con una ranura de elementos. La acuarela es un elemento de imagen en la cabeza de la página, y el antetítulo, el refrán y su fuente salen de los atributos del título. En 1.4.1 un elemento de imagen no reserva altura, y `minHeight` lo compensa: 92 mm de acuarela más 5 mm de aire, menos los 22 mm del margen superior, dan 75 mm, que se redondean hacia arriba a 16 líneas de 14 pt (79 mm). La primera línea de texto queda a 101 mm del borde superior de la página, 9 mm por debajo de la tierra. El título se desplaza 1,5 mm a la izquierda, lo que mide el blanco lateral de la M de Gilda Display a 84 pt, y así la gracia de la M se alinea con el antetítulo; el refrán se desplaza lo mismo hacia la derecha.
+El título de primer nivel se dibuja con una ranura de elementos. La acuarela es un elemento de imagen en la cabeza de la página, y el antetítulo, el refrán y su fuente salen de los atributos del título. La apertura reserva hasta el borde inferior de la acuarela, y `minHeight` es un mínimo algo más bajo: 92 mm de acuarela más 5 mm de aire, menos los 22 mm del margen superior, dan 75 mm, que se redondean hacia arriba a 16 líneas de 14 pt (79 mm). La primera línea de texto queda a 101 mm del borde superior de la página, 9 mm por debajo de la tierra. El título se desplaza 1,5 mm a la izquierda, lo que mide el blanco lateral de la M de Gilda Display a 84 pt, y así la gracia de la M se alinea con el antetítulo; el refrán se desplaza lo mismo hacia la derecha.
 
 ## Variantes
 
@@ -55,8 +55,8 @@ El título de primer nivel se dibuja con una ranura de elementos. La acuarela es
 La cabecera mira entonces al borde derecho de la página, y el lector gira el libro hacia el otro lado.
 
 ```diff
--const chartPlacement = { rotate: 'ccw' }; // a float, never 'here' (gotcha: here-table-no-split)
-+const chartPlacement = { rotate: 'cw' }; // a float, never 'here' (gotcha: here-table-no-split)
+-const chartPlacement = { rotate: 'ccw' }; // a float: 'here' ignores the turn
++const chartPlacement = { rotate: 'cw' }; // a float: 'here' ignores the turn
 ```
 
 ## Errores frecuentes

@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 074 · A Chinese novel page on a 28 × 28 grid ════════════
 // https://postext.dev/en/cookbook/chinese-novel-horizontal
 // Code: MIT · Text: Lu Xun, 故乡 (1921), public domain, zh.wikisource · Plate: diffusion models
-// Fonts: Noto Serif SC, Noto Sans SC, Ma Shan Zheng (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Fonts: Noto Serif SC, Noto Sans SC, Ma Shan Zheng (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -79,7 +79,7 @@ const opener = {
       letterSpacing: pt(5), color: col('ink'), align: 'center', placement: centred(34) },
   ] },
 };
-// Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+// parity 'any': a story opens on the next page, left or right.
 const chapter = { level: 1, breakBefore: { enabled: true, parity: 'any' },
   marginTop: pt(0), marginBottom: pt(0), advancedDesign: opener };
 // #endregion
@@ -153,7 +153,7 @@ const paragraphStyles = [
 ];
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'zh-Hans', // written out, never LANG (gotcha: cjk-locale-tag)
   colorPalette, page, layout: { layoutType: 'single' }, cjk, bodyText,
   // The designs paint the titles; weight 400 keeps the heading blocks in the loaded face.
@@ -165,7 +165,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif SC': ['400', '900'], // SONG: the text; the title
   'Noto Sans SC': ['400'], // HEI: running heads, folios, the author, the colophon
   'Ma Shan Zheng': ['400'], // KAI: the plate's quotation
@@ -183,8 +183,9 @@ await loadCjkFonts({ [KAI]: ['400'] }, part(/^# .*style="plate".*$/m));
 await loadImage(resources[0].bitmap.fileId, asset(resources[0].bitmap.fileId));
 // The plate is page 70 of the book, a verso: folios and parity follow the book.
 const continuation = { pageIndexOffset: 69, pageNumbering: { startAt: 70 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown, resources, continuation }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'A Chinese novel page on a 28 × 28 grid',
   es: 'Una página de novela china en una retícula de 28 × 28' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider, resourceBytes: imageBytes }),

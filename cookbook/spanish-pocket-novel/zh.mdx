@@ -16,7 +16,7 @@ pageNotes: { "1": "卷首插图：一幅推想的Socartes矿区地图，用虚�
 
 ### 1 · 西班牙语音节，收紧词间距
 
-代码见上面的[简短回答](#简短回答)。`locale: 'es'`选用西班牙语的断词规则，而且只有这个代码才行：用`'es-ES'`时，这几页会按美式规则断成*cabal-los*、*hi-erro*和*establec-imiento*，还有一行的词间距会拉大到2.13倍（[支持的语言](/zh/docs/justification#支持的语言区域)）。两端对齐、Knuth–Plass以及段首孤行、段末孤行规则默认都已开启。86 mm的行长还需要收紧词间距：用默认的`maxWordSpacing: 2`时，有八行超过1.6倍，最宽的达到1.89倍；设为1.7时最宽为1.65倍，因为断行程序改为断开*hie-rro*和*ca-lles*（[词间距上下限](/zh/docs/justification#词间距上下限)）。超过上限的行代价高得多，但仍然允许，所以在更窄、没有更好断点的行长上，仍可能超出。`runtMinCharacters: 26`能抓住默认的20个空格宽度放过的断词残片：*siem- / pre adelante.*变成*Adelante, / siempre adelante.*，*So- / cartes [fig. 1].*变成*de / Socartes [fig. 1].*（[孤字](/zh/docs/configuration#段首孤行段末孤行孤字与不拆分规则)）。
+代码见上面的[简短回答](#简短回答)。`locale: 'es'`选用西班牙语的断词规则，`'es-ES'`或`'es-MX'`这样带地区的标签也一样；默认语言的美式规则则会断成*cabal-los*、*hi-erro*和*establec-imiento*（[支持的语言](/zh/docs/justification#支持的语言区域)）。两端对齐、Knuth–Plass以及段首孤行、段末孤行规则默认都已开启。86 mm的行长还需要收紧词间距：用默认的`maxWordSpacing: 2`时，有八行超过1.6倍，最宽的达到1.89倍；设为1.7时最宽为1.65倍，因为断行程序改为断开*hie-rro*和*ca-lles*（[词间距上下限](/zh/docs/justification#词间距上下限)）。超过上限的行代价高得多，但仍然允许，所以在更窄、没有更好断点的行长上，仍可能超出。`runtMinCharacters: 26`能抓住默认的20个空格宽度放过的断词残片：*siem- / pre adelante.*变成*Adelante, / siempre adelante.*，*So- / cartes [fig. 1].*变成*de / Socartes [fig. 1].*（[孤字](/zh/docs/configuration#段首孤行段末孤行孤字与不拆分规则)）。
 
 ### 2 · 由整行构成的口袋本页面
 
@@ -28,7 +28,7 @@ pageNotes: { "1": "卷首插图：一幅推想的Socartes矿区地图，用虚�
 
 <Excerpt region="opener" />
 
-编号模板只印数字（1、01、I、i、A、a），不印文字，所以*capítulo primero*来自标题自己的`ordinal`属性（[标题属性](/zh/docs/document-format#标题属性)）。首字属于章这一级：它的`dropCap`给每个一级标题后的第一段开头，段落就按原样写在Markdown里（[首字下沉](/zh/docs/configuration#首字下沉)）。`lines: 1`加上相当于三个行距的`fontSize`，让它成为抬高的首字，立在第一条基线上；第一行让出首字的宽度和默认间距，与段落其余各行一起两端对齐。字母高出第一行，段落会在上方以整行为单位为这段升高留出空间：这里是两行（`RISE`），所以`minHeight`让章首页在第`SINK - RISE`行结束，正文第一行仍落在第`SINK`行，即页面往下四分之一处。章这一级的`marginBottom: 0`取代默认的外边距（默认值会多出一个空行）。带首字下沉的段落不用首行缩进。
+*capítulo primero*来自标题自己的`ordinal`属性（[标题属性](/zh/docs/document-format#标题属性)）。用`'{1:ordinal}'`编号的级别会自己拼出这个词，但章前的插图页也是一级标题，所以这一级不带计数器。首字属于章这一级：它的`dropCap`给每个一级标题后的第一段开头，段落就按原样写在Markdown里（[首字下沉](/zh/docs/configuration#首字下沉)）。`lines: 1`加上相当于三个行距的`fontSize`，让它成为抬高的首字，立在第一条基线上；第一行让出首字的宽度和默认间距，与段落其余各行一起两端对齐。字母高出第一行，段落会在上方以整行为单位为这段升高留出空间：这里是两行（`RISE`），所以`minHeight`让章首页在第`SINK - RISE`行结束，正文第一行仍落在第`SINK`行，即页面往下四分之一处。章这一级的`marginBottom: 0`取代默认的外边距（默认值会多出一个空行）。带首字下沉的段落不用首行缩进。
 
 <PageShot page={2} crop="0.08,0.1,0.84,0.289" caption="第9页：本章的章序和标题，以及与两端对齐正文第一行并排的抬高首字。" />
 
@@ -36,7 +36,7 @@ pageNotes: { "1": "卷首插图：一幅推想的Socartes矿区地图，用虚�
 
 <Excerpt region="figure" />
 
-`position: 'here'`把地图放在`::resource{id="plano"}`所在的位置，位于一个单独的标题之下。这个标题让书中第8页成为首页，而书眉会跳过首页。它的样式清空页脚并自带分页，因此即使各章都从右页开始，这幅插图仍与第一章相对，不带书眉和页码（[标题样式](/zh/docs/configuration#标题样式)）。简短回答中的西班牙语资源类型在地图下印*Figura 1.*（不设`resourceTypes`时，无论语言是什么都印*Figure 1.1*），在正文中印*Fig. 1*，Markdown中`:ref`的`case="lower"`把它变成*fig. 1*。引用放在方括号里，西班牙语版本用方括号标出编者在作者原文之外添加的内容。
+`position: 'here'`把地图放在`::resource{id="plano"}`所在的位置，位于一个单独的标题之下。这个标题让书中第8页成为首页，而书眉会跳过首页。它的样式清空页脚并自带分页，因此即使各章都从右页开始，这幅插图仍与第一章相对，不带书眉和页码（[标题样式](/zh/docs/configuration#标题样式)）。简短回答中的西班牙语资源类型在地图下印*Figura 1.*（不设`resourceTypes`时印*Figura 1.1*，按章编号），在正文中印*Fig. 1*，Markdown中`:ref`的`case="lower"`把它变成*fig. 1*。引用放在方括号里，西班牙语版本用方括号标出编者在作者原文之外添加的内容。
 
 ### 5 · 左页印作者，右页印书名
 
@@ -48,7 +48,7 @@ pageNotes: { "1": "卷首插图：一幅推想的Socartes矿区地图，用虚�
 
 <Excerpt region="styles" />
 
-最后一页<PageRef page={5}>第12页</PageRef>以三个段落样式收尾。牛血红色Bodoni的星号居中排在一个[`:::space{lines=2}`](/zh/docs/document-format#space)之后，因为空行不会增加空白。版本说明是8.3 pt、11 pt行距，版权页信息是7.5 pt，用书眉的灰色。版本说明保持墨色：段落样式没有斜体颜色，灰色说明中的斜体*Marianela*会比周围的字印得更深。在Markdown中，对白以raya（—）开头，绝不能用连字符，因为行首的连字符加空格会开启一个列表。说明开头的*1878.*会开启一个编号列表，所以在年份前加一个词连接符（U+2060）。星号要转义（`\*`）；不转义的话，第一个会开启项目符号列表，另两个会开启一段斜体，这一行就消失了。
+最后一页<PageRef page={5}>第12页</PageRef>以三个段落样式收尾。牛血红色Bodoni的星号居中排在一个[`:::space{lines=2}`](/zh/docs/document-format#space)之后，因为空行不会增加空白。版本说明是8.3 pt、11 pt行距，版权页信息是7.5 pt，用书眉的灰色。版本说明保持墨色；如果改成灰色，样式还要设`italicColor`，否则斜体的*Marianela*会比周围的字印得更深。在Markdown中，对白以raya（—）开头，绝不能用连字符，因为行首的连字符加空格会开启一个列表。说明开头的*1878.*会开启一个编号列表，所以在年份前加一个词连接符（U+2060）。星号要转义（`\*`）；不转义的话，第一个会开启项目符号列表，另两个会开启一段斜体，这一行就消失了。
 
 ## 变化
 

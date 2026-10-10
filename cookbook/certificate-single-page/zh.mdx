@@ -28,13 +28,13 @@ Quoin Room的结业证书。这是普罗维登斯一家虚构的凸版印刷工�
 
 <Excerpt region="title" />
 
-每一行都锚定在页面的`'top'`边上，也就是水平居中，`y`从裁切边量起，所以无论页边距怎么设，标题块都待在原位；`y()`把这些位置从Letter拉伸到A4。姓名就是标题自己的文字，通过`{titleText}`读取，所以PDF的书签和标签里都有它。设了`overflow: 'wrap'`后，长姓名会折到第二行；默认设置则会用省略号截断。`centred()`把每一行加了字距的文字右移其字距的一半。没有它，每一行都会偏到页面中线左侧这么多：眉题0.4 mm，*Certificate* 0.5 mm，*of completion* 0.7 mm。
+每一行都锚定在页面的`'top'`边上，也就是水平居中，`y`从裁切边量起，所以无论页边距怎么设，标题块都待在原位；`y()`把这些位置从Letter拉伸到A4。姓名就是标题自己的文字，通过`{titleText}`读取，所以PDF的书签和标签里都有它。长姓名会折到第二行，因为标题设计里的文本会自动换行（`overflow: 'wrap'`）。加了字距的行不需要修正：最后一个字母后面的字距不计入宽度，居中的就是字母本身。
 
 ### 4 · 印章和签名都从同一条边量起
 
 <Excerpt region="signatures" />
 
-页脚里的一切都从`SIGN`量起，也就是印章的上边缘；样式的下边距也让正文区域止于同一条边，所以嘉许语太长时会转到下一页，而不会压到印章下面。如果把签名线和姓名移进章首区，它们会计入章首区的高度（[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）；由于它们伸到正文区域之下，1.4.1会放弃整个预留，让嘉许语从上页边距下方7.6 mm处开始，压在标题上。`LINE`取两侧页边距之间的宽度，减去印章34 mm的圆盘，剩下的对半分，再减去3 mm，所以在两种纸张尺寸上，每条签名线都在离印章3 mm处停止（Letter上长56 mm，A4上长53 mm）。每个姓名和职务都是一个与签名线等宽的文本元素，因此在线下居中。
+页脚里的一切都从`SIGN`量起，也就是印章的上边缘；样式的下边距也让正文区域止于同一条边，所以嘉许语太长时会转到下一页，而不会压到印章下面。如果把签名线和姓名移进章首区，它们会计入章首区的高度（[通栏与高级设计](/zh/docs/configuration#通栏与高级设计)）；由于它们伸到正文区域之下，章首区会占满整页，嘉许语只能转到下一页。`LINE`取两侧页边距之间的宽度，减去印章34 mm的圆盘，剩下的对半分，再减去3 mm，所以在两种纸张尺寸上，每条签名线都在离印章3 mm处停止（Letter上长56 mm，A4上长53 mm）。每个姓名和职务都是一个与签名线等宽的文本元素，因此在线下居中。
 
 ### 5 · 把班级名单合并成标题
 
@@ -46,23 +46,24 @@ Quoin Room的结业证书。这是普罗维登斯一家虚构的凸版印刷工�
 
 <Excerpt region="pdf" />
 
-全班是一个文档，所以`renderToPdf`写出一个三页的文件，每个标题一个书签，以学员姓名命名。`renderToPdf`也接受文档数组，比如一本书的各章；但每位学员一个文档，就意味着每人调用一次`buildDocument`。写成标题后，全班在一次构建中完成排版，查看器显示的三张证书都来自这次构建。除了页面上用到的四种字体，PDF还会请求Rosarivo的粗体和粗斜体，而Fontsource没有提供：套件的字体提供器把每个请求对应到这个字族现有的最接近的字体（[为什么需要字体提供器？](/zh/docs/configuration#为什么需要字体提供函数)）。
+全班是一个文档，所以`renderToPdf`写出一个三页的文件，每个标题一个书签，以学员姓名命名。`renderToPdf`也接受文档数组，比如一本书的各章；但每位学员一个文档，就意味着每人调用一次`buildDocument`。写成标题后，全班在一次构建中完成排版，查看器显示的三张证书都来自这次构建。PDF嵌入页面上用到的四种字体，由套件的字体提供器从Fontsource取来（[为什么需要字体提供器？](/zh/docs/configuration#为什么需要字体提供函数)）。
 
 ## 变化
 
 ### 每位学员一个PDF
 
-每位学员一个按钮，用一个新的`config()`把那张证书作为独立文档生成，并以编号命名文件；每个文件约245 KB。
+每位学员一个按钮，和示例自己的构建一样用`buildDocumentWithFonts`把那张证书作为独立文档生成，并以编号命名文件；每个文件约245 KB。
 
 ```diff
 -offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
--  `${RECIPE}.pdf`); // 书签：每个标题一个，也就是每位学员一个
+-  `${RECIPE}.pdf`); // bookmarks: one per heading, so one per student
 -document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',
 -  es: 'Toda la clase en un PDF' });
 +for (const [name, serial] of CLASS) {
-+  offerPdf(() => renderToPdf(buildDocument({ markdown:
-+    `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`, metadata, resources },
-+    config()), { fontProvider: fontsourceProvider, resourceBytes: imageBytes }), `${serial}.pdf`);
++  const one = `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`;
++  offerPdf(async () => renderToPdf(await buildDocumentWithFonts({ markdown: one, metadata,
++    resources }, config(), kitFonts(FONTS)), { fontProvider: fontsourceProvider,
++    resourceBytes: imageBytes }), `${serial}.pdf`);
 +  document.querySelector(`[data-postext-pdf="${serial}.pdf"]`).textContent = name;
 +}
 ```
@@ -72,11 +73,6 @@ Quoin Room的结业证书。这是普罗维登斯一家虚构的凸版印刷工�
 SVG图稿和配置读取同一个`palette`对象，所以改一个条目，就能给边框、花饰图案和标题行换色。
 
 ```diff
--  teal: '#1f5f5b', // 边框、标题行
-+  teal: '#2b3a67', // 边框、标题行
+-  teal: '#1f5f5b', // the frame, the title lines
++  teal: '#2b3a67', // the frame, the title lines
 ```
-
-## 常见问题
-
-- 在1.4.1里，居中且带`letterSpacing`的设计文本会偏到锚点左侧半个字距，右对齐的则少排一整个字距，因为它的宽度包含了最后一个字母后面的字距。`space()`把加了字距的行移回原位。
-- postext-pdf 1.4.1把SVG写进每个绘制它的页面的内容流，没有共享副本：边框让每页增加约210 KB，所以三页的PDF有694 KB（去掉边框是58 KB），一个三十人的班级约6.6 MB。

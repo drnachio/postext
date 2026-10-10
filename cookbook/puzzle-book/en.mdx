@@ -22,40 +22,37 @@ The code is [the short answer](#the-short-answer) above. `tableStyle` sets Chivo
 
 <Excerpt region="crossword" />
 
-A white square holds two lines of 8.9 pt Chivo Mono (the clue number and an empty line) inside 1 pt of padding, 26.7 pt in all: 9.41 mm, a ninth of the table's width. Nine squares are 84.7 mm deep, the depth of fifteen 16 pt lines of body text, and the clue box starts on the baseline grid one line below. A square gets a number, in reading order, when an across or a down word starts in it. The number is a bold superscript of 5.2 pt (58 % of 8.9 pt) raised 3 pt (a third of 8.9 pt), which puts it in the square's top corner. The empty line is a word joiner (U+2060). With a no-break space in its place, 1.4.1 drops the line and the grid comes out 45.5 mm deep. A black square is an empty cell with a `background` of its own, linked to `ink`.
+A white square holds two lines of 8.9 pt Chivo Mono (the clue number and an empty line) inside 1 pt of padding, 26.7 pt in all: 9.41 mm, a ninth of the table's width. Nine squares are 84.7 mm deep, the depth of fifteen 16 pt lines of body text, and the clue box starts on the baseline grid one line below. A square gets a number, in reading order, when an across or a down word starts in it. The number is a bold superscript of 5.2 pt (58 % of 8.9 pt) raised 3 pt (a third of 8.9 pt), which puts it in the square's top corner. The empty line is a word joiner (U+2060). A line left empty adds no depth to the cell, and the grid would come out 45.5 mm deep. A black square is an empty cell with a `background` of its own, linked to `ink`.
 
 ### 3 · The code finds the words in the grid
 
 <Excerpt region="search" />
 
-The grid is twelve lines of capitals in its own content file, after the list of words to find. `locate()` looks for each word in eight directions and throws unless there is exactly one match, so a typo in the grid or in the list stops the build before it prints a word nobody can find. `setCellBackground` returns a new table model with one more square filled. The fill is linked to a palette entry and covers the style's tile: coral for UMBRELLA on page 3, mint for all ten words on page 5. Named table styles have no setting for alternate rows in 1.4.1, so the first Variation calls `setCellBackground` on every cell of every other row. The word bank above the grid is two centred rows of chips: UMBRELLA's is filled coral like its squares, and the other nine are white with a navy border.
+The grid is twelve lines of capitals in its own content file, after the list of words to find. `locate()` looks for each word in eight directions and throws unless there is exactly one match, so a typo in the grid or in the list stops the build before it prints a word nobody can find. `setCellBackground` returns a new table model with one more square filled. The fill is linked to a palette entry and covers the style's tile: coral for UMBRELLA on page 3, mint for all ten words on page 5. The first Variation stripes every other row from the table style (`bodyAlternateBackground`), and a cell's own fill covers the stripe. The word bank above the grid is two centred rows of chips: UMBRELLA's is filled coral like its squares, and the other nine are white with a navy border.
 
 ### 4 · One opener, four colours
 
 <Excerpt region="openers" />
 
-Pages 2 to 5 share one design. A colour field runs 40 mm down from the top edge and ends in a wavy foot drawn in the paper's colour; the kicker, the title and the theme in its white pill come from the heading line and its attributes. The field and the folio disc are linked to the palette entry `band`, and each page's heading style gives `band` its own value, so `# Word Search {style="sopa"}` turns both mint on page 3. Level 1 sets `span: 'page'` although the book has a single column: 1.4.1 clips a design kept in the column at the 16 mm top margin, which would cut off the top of the field and the kicker. The field's box counts towards the depth the opener reserves, so the text starts on the next grid line, 44.2 mm from the top edge and 4 mm under the waves.
+Pages 2 to 5 share one design. A colour field runs 40 mm down from the top edge and ends in a wavy foot drawn in the paper's colour; the kicker, the title and the theme in its white pill come from the heading line and its attributes. The field and the folio disc are linked to the palette entry `band`, and each page's heading style gives `band` its own value, so `# Word Search {style="sopa"}` turns both mint on page 3. Level 1 sets `span: 'page'` although the book has a single column: a design kept in its column is cut at the column's foot, which would end the cover's picture 16 mm short of the bottom edge. The field's box counts towards the depth the opener reserves, so the text starts on the next grid line, 44.2 mm from the top edge and 4 mm under the waves.
 
 ### 5 · The answers come from the same data
 
 <Excerpt region="answers" />
 
-The answer page calls `crossword()` with `solved` and `wordSearch()` with all ten words, on the same content files as the puzzles, so an edit to a grid changes its answer too. The puzzles and the drawings use the type Plain, whose empty `captionPrefix` prints no caption for a resource with no caption text. The answers use the type Solution, numbered 1 to 3 in reading order to match the kickers Puzzle 1 to Puzzle 3. They sit in a box with no fill or border that holds `:::columns{count=3 breaks="2,3"}`, where `breaks` opens a new column at the second and third answers; each answer is 54 mm wide in a 55.3 mm column. The Did you know? box does the same with `breaks="2"` to set the nest drawing beside its paragraph.
+The answer page calls `crossword()` with `solved` and `wordSearch()` with all ten words, on the same content files as the puzzles, so an edit to a grid changes its answer too. The puzzles and the drawings use the type Plain, whose empty `captionPrefix` prints no caption for a resource with no caption text. The answers use the type Solution, numbered 1 to 3 in reading order to match the kickers Puzzle 1 to Puzzle 3. They sit in a `:::columns{count=3 breaks="2,3" gap=6mm}` group in the text, with no box around it (postext 1.25): `breaks` opens a new column at the second and third answers, and `gap` sets the columns 6 mm apart; each answer is 54 mm wide in a 55.3 mm column. The Did you know? box holds a group of its own, with `breaks="2"`, to set the nest drawing beside its paragraph.
 
 ## Variations
 
 ### Stripe the word search's rows
 
-A deeper yellow on every other row helps a young reader follow a line of letters, and since the words are filled after the stripes, UMBRELLA stays coral and the answer grid keeps its mint words.
+A deeper yellow on every other row helps a young reader follow a line of letters. A cell's own fill covers the stripe, so UMBRELLA stays coral; the answer grid has a style of its own and takes no stripes.
 
 ```diff
-   let model = { rows: letters.map((line) => [...line].map((content) => ({ content,
-     align: 'center' }))) };
-+  const stripe = { hex: '#ffdd80', model: 'hex' }; // a shade deeper than the tiles
-+  letters.forEach((line, r) => r % 2 && [...line].forEach((_, c) => {
-+    model = setCellBackground(model, { row: r, col: c }, stripe);
-+  }));
-   for (const [word, fill] of fills) {
+     bodyBackgroundEnabled: true, bodyBackground: col('tint'), // tiles with white joints
++    bodyAlternateBackgroundEnabled: true, // a shade deeper than the tiles on every other row
++    bodyAlternateBackground: { hex: '#ffdd80', model: 'hex' },
+     borderColor: col('paper'), borderWidth: pt(2.4), borderRadius: mm(4) },
 ```
 
 ### Draw a harder maze
@@ -70,4 +67,4 @@ Twenty-one by eleven squares fit the same width at 8.4 mm each, and the answer o
 ## Pitfalls
 
 - The clue numbers in the box are typed in the content file, while the ones in the grid are computed. After you edit a grid, check the clues against it, since the code does not compare them.
-- A heading style's palette recolours design elements, text and table rules, but not the inside of an SVG, so the waves at the foot of each field are drawn in the paper's colour and one drawing serves all four fields. In 1.4.1 it skips table fills too: a crossword square linked to `band` would stay sea blue on the yellow answer page.
+- A heading style's palette recolours design elements, text, and the rules and fills of tables, but not the inside of an SVG, so the waves at the foot of each field are drawn in the paper's colour and one drawing serves all four fields.

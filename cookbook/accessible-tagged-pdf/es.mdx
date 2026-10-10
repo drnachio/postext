@@ -18,7 +18,7 @@ pageNotes: { "1": "La cubierta: una banda azul marino en los tres quintos superi
 
 <Excerpt region="identity" />
 
-postext-pdf escribe el idioma de las etiquetas a partir de `locale`, aquí `/Lang es`, para que un lector de pantalla lea la guía con pronunciación española; si falta, el archivo declara `en-US`. El `title` y el `author` del frontmatter de `content.es.md` dan el título y el autor del PDF, y el archivo pide a los visores que muestren ese título en la barra de la ventana en lugar del nombre de archivo. `defaultResourceTypes(LANG)` da a los pies y a las citas sus nombres en español: «Figura 1.1», «tabla 1.1». El texto accesible de la figura y de las tablas está en [la respuesta corta](#la-respuesta-corta): el `altText` da la descripción alternativa de la figura (`/Alt`) y el resumen de cada tabla (`/Summary`), y la primera fila y la primera columna de las dos tablas se etiquetan como celdas de cabecera.
+postext-pdf escribe el idioma de las etiquetas a partir de `locale`, aquí `/Lang es`, para que un lector de pantalla lea la guía con pronunciación española; si falta, el archivo declara `en-US`. El `title` y el `author` del frontmatter de `content.es.md` dan el título y el autor del PDF, y el archivo pide a los visores que muestren ese título en la barra de la ventana en lugar del nombre de archivo. El mismo `locale` da a los pies y a las citas sus nombres en español: «Figura 1.1», «tabla 1.1». El texto accesible de la figura y de las tablas está en [la respuesta corta](#la-respuesta-corta): el `altText` da la descripción alternativa de la figura (`/Alt`) y el resumen de cada tabla (`/Summary`), y la primera fila y la primera columna de las dos tablas se etiquetan como celdas de cabecera.
 
 ### 2 · Un solo esquema, y una banda de cubierta con el título y nada más
 
@@ -30,13 +30,13 @@ El árbol de etiquetas toma sus elementos H1 y H2 de los títulos del Markdown, 
 
 <Excerpt region="contents" />
 
-`:::toc` recoge los H1 y los H2 con el número de página que imprimen, y en el PDF cada una de sus once filas enlaza con el principio de su página. Las citas `:ref` de la página 3, «figura 1.1» y «tabla 1.1», y la de la página 4, «tabla 2.1», llevan a la figura y a las tablas. Las líneas de puntos usan la letra de los números de página, Atkinson Hyperlegible Next Bold, porque en Public Sans una serie de puntos ocupa más que el punto suelto con el que se calcula la línea, y los puntos se montaban sobre los números.
+`:::toc` recoge los H1 y los H2 con el número de página que imprimen, y en el PDF cada una de sus once filas enlaza con el principio de su página. Las citas `:ref` de la página 3, «figura 1.1» y «tabla 1.1», y la de la página 4, «tabla 2.1», llevan a la figura y a las tablas. Los números de página van en la letra del texto, Atkinson Hyperlegible Next Bold, y las líneas de puntos toman la letra de los números, no la Public Sans de las entradas.
 
 ### 4 · El orden de lectura, dibujado en la página
 
 <Excerpt region="reading-order" />
 
-Un lector de pantalla sigue las etiquetas, y `renderToPdf` etiqueta cada página en el orden en que la pinta: el título de la banda, la primera columna de arriba abajo, la segunda y, al final, los flotantes de la página. Esta función repite ese orden para numerar los recuadros de la página 3, y el árbol de estructura del PDF da los mismos catorce elementos en el mismo orden. Ese orden obliga a poner la figura y las dos tablas en el flujo, con `placement: { position: 'here' }` y una línea `::resource`. Si flotara al pie de la primera columna, la figura 1.1 se etiquetaría después de la tabla 1.1, el último bloque de su página. El párrafo del vidrio que sigue en la segunda columna conserva un solo número, el 9, porque el PDF etiqueta las dos partes como un único párrafo.
+Un lector de pantalla sigue las etiquetas. `renderToPdf` etiqueta primero el título de la banda y después cada columna de arriba abajo, y lee un flotante justo después del párrafo que lo cita, se pinte donde se pinte. Esta función repite ese orden para numerar los recuadros de la página 3, y el árbol de estructura del PDF da los mismos catorce elementos en el mismo orden. La figura y las dos tablas van en el flujo, con `placement: { position: 'here' }` y una línea `::resource`, para que quien lee con la vista también las encuentre bajo la frase que las cita. El párrafo del vidrio que sigue en la segunda columna conserva un solo número, el 9, porque el PDF etiqueta las dos partes como un único párrafo.
 
 ### 5 · Colores elegidos por su contraste
 
@@ -48,7 +48,7 @@ PDF/UA-1 no comprueba el color, pero WCAG 2.2 pide 4,5:1 entre el texto y su fon
 
 ### Deja flotar la figura
 
-Quita la colocación y la figura 1.1 flota al pie de la primera columna de la página 3, y el PDF la etiqueta después de la tabla 1.1, el último bloque de la página.
+Quita la colocación y la figura 1.1 flota al pie de la primera columna de la página 3. El PDF la sigue leyendo después del párrafo que la cita, así que el dibujo le mantiene el número 3 y el orden de las etiquetas no cambia.
 
 ```diff
 -  { id: 'contenedores', typeId: 'figure', kind: 'svg', placement: { position: 'here' },
@@ -59,4 +59,4 @@ Quita la colocación y la figura 1.1 flota al pie de la primera columna de la p�
 
 El código no puede validar su propio PDF, porque veraPDF funciona fuera del navegador. Descarga el archivo y ejecuta `verapdf -f ua1 accessible-tagged-pdf.pdf`; el PDF capturado para esta página pasa la validación. El validador no sabe si un texto alternativo describe su imagen, así que escucha también la guía con un lector de pantalla.
 
-Esta guía se capturó con postext 1.4.1, en el que un enlace de Markdown imprimía sus palabras sin añadir ningún enlace al PDF; por eso el colofón imprime la dirección web completa. Desde postext 1.10 un enlace `[texto](url)` funciona en el PDF y se etiqueta como un elemento `Link` cuyo texto son las palabras enlazadas.
+El colofón imprime la dirección web completa porque la guía se escribió para postext 1.4.1, en el que un enlace de Markdown imprimía sus palabras sin añadir ningún enlace al PDF. Desde postext 1.10 un enlace `[texto](url)` funciona en el PDF y se etiqueta como un elemento `Link` cuyo texto son las palabras enlazadas.

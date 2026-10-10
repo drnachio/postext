@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "annual-report-flush-columns",
-  "sourceHash": "01517dea1f4f751f61ba6891565b99809935dfb3bfae8d1c21cebfbb0d75b8bc",
+  "sourceHash": "e824117977d2d9a872cac13e9bdaa7831589250800454f90be83d95c8fee6cba",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.598Z",
+  "capturedAt": "2026-10-10T13:30:00.646Z",
   "variants": {
     "en": {
-      "hash8": "66f53819",
-      "vdtHash": "adb34a96431ae68d6cc0138596e4372ca87fdcbb",
+      "hash8": "196c89de",
+      "vdtHash": "b585cd45d2e8e8119620237d6fc4b106362d869b",
       "timings": {
-        "importMs": 165,
-        "fontsMs": 51,
-        "buildMs": 70,
-        "totalMs": 996,
-        "builds": 2
+        "importMs": 127,
+        "fontsMs": 28,
+        "buildMs": 110,
+        "totalMs": 2409,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Spline Sans Mono"
         ],
         "pages": 5,
-        "ownLines": 250
+        "ownLines": 248
       },
       "pages": [
         {
@@ -126,13 +126,13 @@
       },
       "sandbox": {
         "file": "annual-report-flush-columns.postext",
-        "bytes": 88396,
+        "bytes": 88681,
         "folio": "8ef7de69"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "inlineSvgFonts",
           "mergeCells",
           "registerResourceImage",
           "renderPageToCanvas"
@@ -409,7 +409,13 @@
           "share": 0,
           "worst": 1.78
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

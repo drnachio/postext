@@ -196,7 +196,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   warningsMissingFontDetail: 'Not loaded — falling back to a system font.',
   warningsFontFallbackTitle: 'Font fallback in the layout',
   warningsFontFallbackMissingDetail: '__face__ was not loaded when the pages were laid out — its text was measured with a fallback font.',
-  warningsFontFallbackSynthesizedDetail: '__face__ has no file of its own — the browser draws it bolder or slanted from another face of the family.',
+  warningsFontFallbackSynthesizedDetail: '__face__ has no file of its own — the browser draws it from another weight or slant of the family.',
   warningsLooseLineTitle: 'Loose line',
   warningsCjkLooseLineTitle: 'CJK line set short',
   warningsCjkLooseLineDetail: '“__text__”: reaching the measure would spread its characters past the limit (half an em, or the maximum justification tracking when it is set), so the line stops short. A long word or web address that cannot break, on the next line, usually causes it.',

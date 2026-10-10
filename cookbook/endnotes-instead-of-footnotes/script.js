@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 020 · Endnotes on a page of their own, in two columns ═════
 // https://postext.dev/en/cookbook/endnotes-instead-of-footnotes
 // Code: MIT · Text: Faraday, ed. Crookes (PD) · Notes, figure: CC BY 4.0 · Photos: diffusion models
-// Fonts: Libre Bodoni, Besley, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Libre Bodoni, Besley, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'endnotes-instead-of-footnotes';
@@ -18,7 +19,6 @@ const palette = {
 };
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // The engine's defaults link to 'main-color': point it at the ember, so nothing prints blue.
-// col() writes the hex too: design slots do not read the palette (gotcha: palette-skips-designs).
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.ember })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
 // #endregion
@@ -70,7 +70,7 @@ function hang(label = '5') { // from ten notes on, pass the widest label: hang('
   const width = (w, s) => { ctx.font = `${w} 100px "${TEXT}"`; return ctx.measureText(s).width; };
   return em((width(700, label) + width(400, ' ')) / 100);
 }
-// Ragged, as justifying would stretch the en space (gotcha: ragged-no-hyphenation).
+// Ragged, as justifying would stretch the en space after each number.
 const noteStyles = () => [{ id: 'note', fontSize: pt(NOTE), lineHeight: pt(NOTE * 1.3),
   textAlign: 'left', hangingIndent: hang() },
   // 22 pt above the colophon is copy-fitted: its last line and the first column's share a line.
@@ -79,7 +79,7 @@ const noteStyles = () => [{ id: 'note', fontSize: pt(NOTE), lineHeight: pt(NOTE 
 ];
 // #endregion
 
-// Design text wraps (it ends in an ellipsis by default: gotcha overflow-ellipsis-default).
+// Design text, set left; it wraps where a folio or a running head would end in an ellipsis.
 const text = (id, content, family, size, color, placement, extra) => ({ kind: 'text', id,
   content, fontFamily: family, fontSize: pt(size), color: col(color), placement,
   overflow: 'wrap', align: 'left', ...extra });
@@ -105,7 +105,7 @@ const opener = { enabled: true,
   slot: { elements: [soot(FIELD), art('candle', 40, 100, FIELD, 10), series,
     text('kicker', '{attr.kicker}', LABEL, 9.5, 'flame', below('series', 17, 60), caps(9.5)),
     text('title', '{titleText}', DISPLAY, 48, 'wax', below('kicker', 1.5, 96), display),
-    // 86 mm breaks the subtitle after a dash: no-break spaces do not hold (gotcha: nbsp-breaks)
+    // 86 mm wide, so the subtitle breaks after a dash, never before one
     text('subtitle', '{attr.subtitle}', DISPLAY, 11.5, 'rule', below('title', 3.5, 86),
       { fontWeight: 500, italic: true, lineHeight: 1.3 }),
     text('byline', '{attr.byline}', LABEL, 7.6, 'rule', below('subtitle', 7, 84), caps(7.6)),
@@ -118,7 +118,8 @@ const BAND = 82; // mm from the trim's top: level with the foot of Figure 1 acro
 const BAND_GAP = 5; // mm more of minHeight moves the notes down a line
 const notesSection = { id: 'notes', // an opener page: the drop folio, no running heads
   breakBefore: { enabled: true, parity: 'any' }, span: 'page', // the next page, either side
-  layout: { layoutType: 'double', gutterWidth: mm(6) }, // two columns of about 40 characters
+  layout: { layoutType: 'double', gutterWidth: mm(6), // two columns of about 40 characters
+    columnRule: { enabled: true, color: col('rule') } }, // and a hairline between them
   advancedDesign: { enabled: true, minHeight: mm(BAND - TOP + BAND_GAP), slot: { elements: [
     soot(BAND), art('snuffed', 32, 64, BAND, 12), series,
     text('kicker', '{attr.kicker}', LABEL, 9.5, 'flame', at('container', 'top-left', 0, 16),
@@ -143,20 +144,18 @@ const header = { elements: [ // the book on the verso, the lecture on the recto,
 const dropFolio = text('drop', '{pageNumber}', DISPLAY, 8.6, 'ink', at('page', 'bottom', 0, -12),
   { fontWeight: 700, align: 'center', pages: 'opener' }); // the lecture's and the notes' openers
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, header, footer: { elements: [dropFolio] },
   page: { width: mm(156), height: mm(234), dpi: 150, // a trade octavo
     backgroundColor: col('paper'), margins: { top: mm(TOP), bottom: mm(23), left: mm(INNER),
       right: mm(OUTER), mirror: true } }, // left is the inner margin
-  // Drawn only where a page has two columns: the notes' (gotcha: section-column-rule).
-  layout: { layoutType: 'single', columnRule: { enabled: true, color: col('rule') } },
+  layout: { layoutType: 'single' },
   bodyText: { fontFamily: TEXT, fontSize: pt(10), lineHeight: pt(13.8), color: col('ink'),
     italicColor: col('ink'), ...markers, firstLineIndent: mm(4.5), indentAfterHeading: false,
     minWordSpacing: 0.85, maxWordSpacing: 1.8 }, // the loosest lines reach 1.78 under any cap
   headings: { fontFamily: DISPLAY, color: col('ink'), levels: [
-    // Break restated (gotcha: headings-drop-h1-break); the span lets the design reach the trim.
-    { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
-      advancedDesign: opener },
+    // parity 'odd': the next recto; the default 'always-odd' also leaves a blank page before it.
+    { level: 1, breakBefore: { enabled: true, parity: 'odd' }, advancedDesign: opener },
   ] },
   headingStyles: [notesSection], paragraphStyles: noteStyles(),
   // One figure, numbered through the book: "Figure 1", not the chapter-scoped "Figure 1.1".
@@ -186,8 +185,8 @@ const resources = [
 ];
 
 // #region art: Figure 1, the flame as seen and in section, in the palette
-// No words in the drawings: an SVG drawn as an image cannot use web fonts
-// (gotcha: svg-no-webfonts). Arrowheads are paths (gotcha: svg-no-marker-filters).
+// No words in the drawings: the caption names the parts. Arrowheads are paths
+// (gotcha: svg-no-marker-filters).
 const n = (v) => +v.toFixed(2);
 const svg = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w * 10}" `
   + `height="${h * 10}" viewBox="0 0 ${w} ${h}">${body}</svg>`;
@@ -276,19 +275,19 @@ const drawings = { flame };
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses, loaded before the first build (gotcha: fonts-first).
+// Every face the design uses, loaded before the first build.
 const FONTS = { 'Libre Bodoni': ['400', '400i', '700'], // text and notes (700: the numbers)
   Besley: ['500i', '700', '800'], 'Archivo Narrow': ['400', '400i', '600', '700'] }; // labels
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const source = endnotes(markdown); // the answer, run before the engine sees the text
-await Promise.all([loadFonts(FONTS, source),
+await Promise.all([prepareFonts(source, config(), kitFonts(FONTS)),
   ...resources.filter((r) => r.bitmap).map(({ bitmap: b }) => loadImage(b.fileId, asset(b.fileId))),
   ...Object.entries(drawings).map(([id, draw]) => loadSvg(`${id}.svg`, draw()))]);
 // The lecture starts on folio 15, a recto, 14 pages into the book (gotcha: parity-page1-recto).
 const continuation = { pageIndexOffset: 14, pageNumbering: { startAt: 15 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown: source, resources, continuation }, config()), source);
+const doc = await buildDocumentWithFonts({ markdown: source, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'The Chemical History of a Candle, Lecture I' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

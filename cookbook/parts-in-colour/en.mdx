@@ -18,7 +18,7 @@ pageNotes: { "4": "Page 4 is the back of the Part I divider. The text leaves it 
 
 <Excerpt region="palette" />
 
-A part overrides palette entries by id, so everything that should change with the habitat links to one entry, `band`. Its own value, a slate, prints only outside the parts (the cover's kicker and the title of the note under the contents), and no other colour in the config has the same hex. `col()` writes the hex beside the id, because in Postext 1.4.1 the document palette never reaches design elements; a part's override does, through the id.
+A part overrides palette entries by id, so everything that should change with the habitat links to one entry, `band`. Its own value, a slate, prints only outside the parts (the cover's kicker and the title of the note under the contents), and no other colour in the config has the same hex. `col()` gives every colour its `paletteId`, and that id is what a part's override follows, in the text styles and in the design elements alike.
 
 ### 2 · A divider, its verso and its list
 

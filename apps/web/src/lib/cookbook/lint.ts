@@ -42,7 +42,7 @@ import { loadRegistry } from "./registry.ts";
 import { listRecipeSlugs, readKit, readRecipeMeta, readRecipeSources } from "./sources.ts";
 import type { ComposedPen, KitBlock, Locale, RecipeMeta, RecipeSources, Registry, SampleLocale } from "./types.ts";
 import { KIT_ORDER, LOCALES } from "./types.ts";
-import { fixedNotes, unquotedFrontmatter, validateRecipeMeta, validateRecipeSet } from "./validate.ts";
+import { compareSemVer, fixedGaps, fixedNotes, unquotedFrontmatter, validateRecipeMeta, validateRecipeSet } from "./validate.ts";
 import { readWriteup, writeupRefs } from "./writeup.ts";
 import { CJK_CHARS_PER_WORD, JAPANESE_CHARS_PER_WORD, styleMessages, textLength } from "./style.ts";
 
@@ -90,7 +90,9 @@ export const NETWORK_ALLOWLIST: readonly { host: string; path?: string }[] = [
 /** The engine symbol each kit block calls (spec §7.3). */
 export const KIT_IMPORTS: Record<KitBlock, { module: "postext" | "postext-pdf"; name: string } | null> = {
   core: null,
-  fonts: { module: "postext", name: "clearMeasurementCache" },
+  // kitFonts and fontsourceResolver feed the engine's buildDocumentWithFonts
+  // (fonts v3, #629), which the recipe imports itself.
+  fonts: null,
   viewer: { module: "postext", name: "renderPageToCanvas" },
   pdf: { module: "postext-pdf", name: "decompressWoff2" },
   images: { module: "postext", name: "registerResourceImage" },
@@ -402,7 +404,7 @@ export function lintPen(
   // Config.
   const range = configObjectRange(scan);
   const keys = configKeys(js, scan);
-  if (!range) fails.push("script.js: the config is a factory, `const config = () => ({ … })` (the engine caches resolved configs per object)");
+  if (!range) fails.push("script.js: declare the config as `const config = { … }` (or a factory, `const config = () => ({ … })`)");
   else {
     for (const key of keys) {
       if (!CONFIG_KEYS.includes(key)) fails.push(`${at(range[0])}: \`${key}\` is not a config key (typo? the engine ignores it)`);
@@ -417,19 +419,29 @@ export function lintPen(
     }
     for (const key of advised) if (!keys.includes(key)) warns.push(`script.js: the config should set \`${key}\` (never the default skin)`);
   }
-  if (keys.includes("headings") && !hasLevelOneBreak(scan, (offset) => folded.has(lineAt(offset)))) {
+  // Two traps of postext 1.4, fixed in 1.5 (pitfalls headings-drop-h1-break
+  // and numbering-vocabularies): only a recipe pinned below the fix still
+  // has to route around them. From 1.5 a partial `headings` object merges
+  // onto each level's defaults, so a pen states `breakBefore` only to change
+  // it, and a list numbers with 'decimal' as with 'arabic'.
+  const before15 = pinnedBefore(meta, "1.5.0");
+  if (before15 && keys.includes("headings") && !hasLevelOneBreak(scan, (offset) => folded.has(lineAt(offset)))) {
     fails.push(
-      "script.js: any `headings` object drops the default H1 page break; restate it: " +
-        "`levels: [{ level: 1, breakBefore: { … } }]` (gotcha headings-drop-h1-break)",
+      "script.js: up to postext 1.4 any `headings` object drops the default H1 page break; restate it: " +
+        "`levels: [{ level: 1, breakBefore: { … } }]`, or pin postext ≥ 1.5.0, which keeps it (gotcha headings-drop-h1-break)",
     );
   }
 
   // Engine traps.
   for (const m of ownCode.matchAll(/\bfontFamily\s*:\s*(['"`])([^'"`\n]*)\1/g)) {
-    if (m[2].includes(",")) fails.push(`${at(m.index ?? 0)}: fontFamily holds one family, not a stack ("${m[2]}")`);
+    if (m[2].includes(",")) {
+      fails.push(`${at(m.index ?? 0)}: fontFamily names one family, not a stack ("${m[2]}"): the engine sets the first name and ignores the rest`);
+    }
   }
-  for (const m of ownCode.matchAll(/\bnumberFormat\s*:\s*['"`]decimal['"`]/g)) {
-    fails.push(`${at(m.index ?? 0)}: ordered lists use numberFormat: 'arabic' ('decimal' prints "undefined")`);
+  if (before15) {
+    for (const m of ownCode.matchAll(/\bnumberFormat\s*:\s*['"`]decimal['"`]/g)) {
+      fails.push(`${at(m.index ?? 0)}: up to postext 1.4 ordered lists use numberFormat: 'arabic' ('decimal' prints "undefined"); pin postext ≥ 1.5.0 to write 'decimal'`);
+    }
   }
   for (const m of ownBare.matchAll(/\bbitmap\s*:\s*\{/g)) {
     const open = (m.index ?? 0) + m[0].length - 1;
@@ -526,7 +538,12 @@ export function lintPen(
     fails.push("script.js: downloads.pdf needs offerPdf(…) (the capture clicks its button)");
   }
   if (!/^const FONTS = \{/m.test(ownCode)) fails.push("script.js: declare every face in `const FONTS = { Family: ['400', '400i'] }`");
-  else if (!/\bloadFonts\s*\(\s*FONTS\b/.test(ownBare)) warns.push("script.js: load the faces with `await loadFonts(FONTS, markdown)` before the build");
+  // The faces reach the engine from the kit (`kitFonts(FONTS)`, or `loadFonts`
+  // under the cjk, arabic and comics blocks) or from a bundle's own files
+  // (`loadBundleFonts(bundle)`, the bundle API).
+  else if (!/\b(?:loadFonts|kitFonts)\s*\(\s*FONTS\b|\bloadBundleFonts\s*\(/.test(ownBare)) {
+    warns.push("script.js: load the faces before the build: `buildDocumentWithFonts(content, config, kitFonts(FONTS))`, or `loadBundleFonts(bundle)` for a bundle's own files");
+  }
 
   // Content files.
   const cjkKit = meta.kit?.includes("cjk") ?? false;
@@ -745,6 +762,14 @@ function lintArabic(
   }
 }
 
+/** Whether a recipe pins an engine older than `version`: the traps fixed in
+ *  that release still bind its script. A recipe with no readable pin is read
+ *  as current (`validateRecipeMeta` fails the pin itself). */
+function pinnedBefore(meta: Pick<RecipeMeta, "engine">, version: string): boolean {
+  const pinned = meta.engine?.postext;
+  return typeof pinned === "string" && /^\d+\.\d+\.\d+$/.test(pinned) && compareSemVer(pinned, version) < 0;
+}
+
 /** True when some object literal in the recipe's own code has `level: 1`
  *  and a `breakBefore` key. */
 function hasLevelOneBreak(scan: ReturnType<typeof scanJs>, isFolded: (offset: number) => boolean): boolean {
@@ -864,12 +889,8 @@ export interface LintRecipeOptions {
   released?: { postext?: string; postextPdf?: string };
   /** `--engine local`: a draft may pin the next release (validate.ts). */
   preview?: boolean;
-  /** `--strict-fixed`: fail the notes about pitfalls fixed at or before the
-   *  recipe's pin (`fixedNotes`). Off by default until the recipes written
-   *  for 1.4 are cleaned (#641). */
-  strictFixed?: boolean;
-  /** `--as-of x.y.z`, with `strictFixed`: read every recipe as if it pinned
-   *  at least that version. */
+  /** `--as-of x.y.z`: judge the notes about fixed pitfalls (`fixedNotes`)
+   *  as if every recipe pinned at least that version. */
   fixedAsOf?: string;
 }
 
@@ -895,13 +916,20 @@ export function lintRecipe(slug: string, options: LintRecipeOptions = {}): Recip
     return report();
   }
   const knownSlugs = options.knownSlugs ?? listRecipeSlugs();
+  // A gap the engine closed at or before the recipe's pin is no longer worked
+  // around: its id leaves `gaps` (#641). Always a failure: no recipe listed
+  // one when this check arrived, so it needs no `--strict-fixed`.
+  fails.push(...fixedGaps(meta, registry.gaps, options.fixedAsOf).map((note) => `recipe.json › ${note.message}`));
   fails.push(
     // Worded like scripts/cookbook/lint.ts, which also validates recipe.json and merges equal findings.
     ...validateRecipeMeta(meta, slug, registry, { knownSlugs, released: options.released ?? readReleasedEngine(), preview: options.preview }).map(
       (e) => `recipe.json › ${e}`,
     ),
   );
-  if (options.strictFixed) fails.push(...fixedNotes(meta, registry.gotchas, options.fixedAsOf).map((note) => `recipe.json › ${note.message}`));
+  // A note about a pitfall fixed at or before the recipe's pin fails (#641):
+  // the page no longer shows the pitfall, and a workaround that names its
+  // follow-up explains code by a bug the recipe's engine does not have.
+  fails.push(...fixedNotes(meta, registry.gotchas, options.fixedAsOf).map((note) => `recipe.json › ${note.message}`));
   if (!Array.isArray(meta.sample?.locales) || !Array.isArray(meta.kit)) return report();
 
   const sources = readRecipeSources(slug);

@@ -15,6 +15,7 @@ import { LOCALES } from "./types.ts";
 import {
   RECIPE_SCHEMA,
   compareSemVer,
+  fixedGaps,
   fixedNotes,
   gotchaRetired,
   previewDraft,
@@ -313,6 +314,35 @@ describe("validateRecipeMeta (fixture)", () => {
     expect(fixedNotes(meta("1.4.1"), gotchas, "1.24.0").map((n) => n.at)).toEqual(["gotchas", "workarounds[0]", "workarounds[2]"]);
     expect(fixedNotes(meta("1.4.1"), gotchas, "1.24.0")[0].message).toContain("the recipe is read as of 1.24.0");
     expect(fixedNotes(meta("1.19.1"), gotchas, "1.4.0")).toEqual(found);
+  });
+
+  it("finds the gaps closed at or before the pin (#641)", () => {
+    const gaps = {
+      "three-columns": { fixedIn: "1.18.0" },
+      "pdf-x": { fixedIn: "1.22.0" },
+      "pipe-tables": {},
+    } as unknown as Registry["gaps"];
+    const meta = (postext: string) => ({ engine: { postext }, gaps: ["three-columns", "pipe-tables", "pdf-x", "not-in-the-registry"] }) as unknown as RecipeMeta;
+    // Pinned below the fix: the recipe still takes the way round.
+    expect(fixedGaps(meta("1.17.3"), gaps)).toEqual([]);
+    expect(fixedGaps(meta("1.18.0"), gaps)).toEqual([
+      { gap: "three-columns", fixedIn: "1.18.0", message: 'gaps: "three-columns" is closed in postext 1.18.0 and this recipe pins 1.18.0: take it out of the list' },
+    ]);
+    // An open gap stays whatever the pin.
+    expect(fixedGaps(meta("1.25.0"), gaps).map((g) => g.gap)).toEqual(["three-columns", "pdf-x"]);
+    expect(fixedGaps(meta("1.4.1"), gaps, "1.22.0").map((g) => g.message)).toEqual([
+      'gaps: "three-columns" is closed in postext 1.18.0 and the recipe is read as of 1.22.0: take it out of the list',
+      'gaps: "pdf-x" is closed in postext 1.22.0 and the recipe is read as of 1.22.0: take it out of the list',
+    ]);
+    expect(fixedGaps(meta("1.25.0"), gaps, "1.4.0").map((g) => g.gap)).toEqual(["three-columns", "pdf-x"]);
+    expect(fixedGaps({ engine: { postext: "1.25.0" } } as unknown as RecipeMeta, gaps)).toEqual([]);
+    expect(fixedGaps(meta("1.25.0"), undefined)).toEqual([]);
+  });
+
+  it("no recipe lists a gap closed at or before its pin (#641)", () => {
+    const { gaps } = loadRegistry();
+    const listed = listRecipeSlugs().flatMap((slug) => fixedGaps(readRecipeMeta(slug), gaps).map((g) => `${slug}: ${g.message}`));
+    expect(listed).toEqual([]);
   });
 });
 

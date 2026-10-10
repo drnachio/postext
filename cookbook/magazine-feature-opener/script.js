@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 004 · Magazine feature: photo opener to end mark ═══════
 // https://postext.dev/en/cookbook/magazine-feature-opener
 // Code: MIT · Text: original (CC BY 4.0) · Photos: Ales Krivec, Hannah Donze (CC0)
-// Fonts: Literata, Instrument Serif, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: Literata, Instrument Serif, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A nature feature from a winter issue. The level-1 heading carries its kicker, standfirst,
 // byline and photo credit as attributes, and one opener design lays them out under a bleed
 // photograph; the story runs on with a pull quote, a fact box, a photo band, a numbers panel
 // and an end mark, and the next item reuses the opener with a drawing in place of the photo.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -61,7 +61,7 @@ const opener = (resourceId, depth) => ({ // depth: how far down the page the pic
         placement: at('container', 'top-left', 0, depth - TOP + 9) },
       { kind: 'text', id: 'headline', content: '{titleText}', fontFamily: 'Instrument Serif',
         fontSize: pt(58), color: col('ink'), align: 'left', box: air, // wraps: a heading design
-        lineHeight: 0.94, // a multiple of the size (gotcha: design-lineheight-multiple)
+        lineHeight: 0.94, // tight: the two lines of the headline nearly touch
         placement: at('#kicker', 'below', 0, 2.5, HEAD) },
       { kind: 'text', id: 'standfirst', content: '{attr.standfirst}', italic: true,
         fontFamily: 'Instrument Serif', fontSize: pt(13.5), lineHeight: 1.22, // a multiple
@@ -150,23 +150,22 @@ const numbers = { id: 'numbers', span: 'page', placement: 'bottom', // floats to
 // The panel's figures are level-4 headings (#### 31), a level the story never uses.
 const figures = { level: 4, fontSize: pt(40), lineHeight: pt(40), color: col('ember'),
   marginBottom: pt(4) };
-// The end mark is a chip with no visible text: a U+2060 inside, because a chip of spaces
-// prints its markup (gotcha: empty-chip). Its lengths are in its own ems: paddingX makes
-// the width, and the height is its font size's band (0.8 ascent + 0.25 descent). It is ink,
-// not lake: the guide's palette would leave a lake chip teal on its rust page.
+// The end mark is a chip of one space, :chip[ ]{style="end"}: an empty box. Its lengths are
+// in its own ems: paddingX makes the width, and the height is its font size's band (0.8
+// ascent + 0.25 descent). It is ink, like the text it closes, in the story and in the guide.
 const endMark = { id: 'end', background: col('ink'), borderWidth: pt(0), borderRadius: pt(0),
   fontSize: em(0.62), paddingX: em(0.525), paddingY: em(0), gap: em(0.8) }; // 1.05 em square
 // #endregion
 
 // #region guide: the next item reuses the opener with its own picture, depth and accent
 const ART = 126; // mm: the drawing bleeds less far down the page than the photograph
-// On its pages, 'lake' turns rust in the opener, the headings and the boxes, but not in chips.
+// On its pages, 'lake' turns rust in the opener, the headings, the boxes and the chips.
 const guide = { id: 'guide', advancedDesign: opener('ice-art', ART),
   palette: { lake: palette.rust } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // each edition's hyphenation patterns
   resourceTypes: [photoType], // one unnumbered type for every picture (see the resources)
   colorPalette,
   page: { width: mm(TRIM), height: mm(297), margins: { top: mm(TOP), bottom: mm(20),
@@ -181,12 +180,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   // Hyphenation, optimal line breaking and widow control are on by default.
   headings: {
     fontFamily: 'Instrument Serif', fontWeight: 400, color: col('ink'),
-    // Under a top photo band on a closing page, this lever can drop the shorter column a line,
-    // out of line with the other (gotcha: float-stretch-closing-page). The switch covers every
-    // page, not only closing ones; the shipped copy does not trip it, edited copy might.
-    balancing: { stretchAfterFloats: false },
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break);
       // 'any' lets the next item open on the following page, recto or verso.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         marginBottom: pt(0), advancedDesign: opener('lake', 160) },
@@ -299,17 +293,16 @@ function iceArt() { // in mm, TRIM × ART: sky, shore, snow, white ice, black ic
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Literata: ['400', '400i', '700'], 'Instrument Serif': ['400', '400i'],
   'Instrument Sans': ['400', '500', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all([loadImage('lake-2000.jpg', asset('lake-2000.jpg')),
   loadImage('thaw-2000.jpg', asset('thaw-2000.jpg')), loadSvg('ice-art.svg', iceArt())]);
 const continuation = { pageNumbering: { startAt: 57 } }; // pages 57–60 of the issue
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Magazine feature: photo opener to end mark',
   es: 'Reportaje de revista: de la foto de apertura al signo final' }) });
 

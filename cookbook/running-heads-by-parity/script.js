@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 005 · Running heads by parity ═══════════════════════════════
 // https://postext.dev/en/cookbook/running-heads-by-parity
 // Code: MIT · Text: Montaigne, tr. Cotton (PD, Gutenberg #3600); es: new translation (MIT)
-// Fonts: Baskervville, Libre Caslon Display, Alegreya SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Baskervville, Libre Caslon Display, Alegreya SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Pages 29 to 33 of a pocket Montaigne. Versos carry the book's title and rectos the essay's,
 // the folios sit in tabs in the outer margin, and an opener prints only a folio at the foot.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'running-heads-by-parity';
@@ -20,9 +20,8 @@ const palette = {
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
-  // Text-style defaults (headings, bold, italic, lists, boxes) link to 'main-color'. The
-  // built-in header and footer keep #295AA3, and design slots never read the palette
-  // (gotcha: palette-skips-designs), so every element colour here carries its hex.
+  // Text-style defaults (headings, bold, italic, lists, boxes) link to 'main-color':
+  // pointed at the sepia, none of them prints in the engine's blue.
   { id: 'main-color', name: 'sepia (defaults)', value: { hex: palette.sepia, model: 'hex' } },
 ];
 // #endregion
@@ -67,11 +66,11 @@ const geometry = { // left is the inner margin on a recto; mirror swaps it on th
 // #region answer: running heads by parity: book on the verso, essay on the recto, folios outside
 const GAP = 3; // mm from the tab to the divider, which lands on the text block's edge
 const HEAD = 12; // mm from the top edge of the page to the top of the tab
-const CAP = t({ en: 60.5, es: 66.8 }); // mm: fitted so essay IV's head ends on a word
-// (gotcha: ellipsis-mid-word); a short running title (see Variations) suits any title
+const CAP = t({ en: 60.5, es: 66.8 }); // mm: the head's widest line, set per edition so
+// essay IV's is cut after 'false' and 'objetos'; a short running title suits any title
 const page = (edge) => ({ to: 'page', edge }); // the trim box (gotcha: negative-offsets)
 const header = { elements: [
-  // Verso (even): tab | divider | THE BOOK'S TITLE from the frontmatter (gotcha: quote-frontmatter)
+  // Verso (even): tab | divider | THE BOOK'S TITLE from the frontmatter
   folio({ id: 'folio-even', parity: 'even', pages: 'body', anchor: page('top-left'),
     x: OUTER - GAP - TAB, y: HEAD }),
   divider({ id: 'rule-even', parity: 'even', from: 'folio-even', edge: 'right-of', x: GAP }),
@@ -87,7 +86,7 @@ const header = { elements: [
   { kind: 'text', id: 'essay', content: '{chapterTitle}', parity: 'odd', pages: 'body',
     fontFamily: 'Baskervville', italic: true, fontSize: pt(TITLE_PT),
     lineHeight: LINE / TITLE_PT, color: col('muted'),
-    overflow: 'ellipsis-end', // stated, though default (gotcha: overflow-ellipsis-default)
+    overflow: 'ellipsis-end', // stated, though a running head's default
     placement: { anchor: { to: '#rule-odd', edge: 'left-of' },
       offset: { x: mm(-2.5), y: pt(PAD.top) }, size: { maxWidth: mm(CAP) } } },
 ] };
@@ -122,8 +121,8 @@ const opener = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es' }), // hyphenation by exact code (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // the language of the hyphenation patterns
   colorPalette,
   page: geometry,
   layout: { layoutType: 'single' },
@@ -140,7 +139,6 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: { // 400, the face's only weight: the default 700 would ask for one that is missing
     fontFamily: 'Libre Caslon Display', fontWeight: 400, color: col('ink'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
       // 'odd' puts every opener on a recto, adding a blank verso when one is needed;
       // span: 'page' makes the design an opener, where a \\ in the title breaks the line.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
@@ -161,8 +159,6 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     // over the colophon is eight em dashes of Alegreya SC that overlap into a 0.5 pt line.
     { id: 'end', fontFamily: 'Alegreya SC', fontSize: pt(8), color: col('sepia'),
       textAlign: 'left', firstLineIndent: pt(0), marginTop: pt(LEAD) },
-    // No italics in the colophon: a style's italic runs take bodyText.italicColor, the ink,
-    // and would print darker than the muted words around them (gotcha: style-italic-colour).
     { id: 'colophon', fontSize: pt(7), lineHeight: pt(9.5), color: col('muted'),
       textAlign: 'left', firstLineIndent: pt(0) },
   ],
@@ -174,19 +170,17 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses, loaded before the first build (gotcha: fonts-first).
+// Every face the design uses, loaded before the first build.
 const FONTS = { // text, display and label faces (Libre Caslon Display has no italic)
   Baskervville: ['400', '400i'], 'Libre Caslon Display': ['400'], 'Alegreya SC': ['400', '700'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 // #region build: pages 29 to 33 of the book
 // 28 pages come before this one, so recto and verso, the mirrored margins and the odd/even
 // heads follow the book page (gotcha: parity-page1-recto); the folios start at 29.
 const continuation = { pageIndexOffset: 28, pageNumbering: { startAt: 29 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, continuation }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Running heads by parity', es: 'Cabeceras según la paridad' }) });
 // #endregion
 

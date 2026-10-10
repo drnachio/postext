@@ -2,7 +2,7 @@ import type { PostextConfig } from '../types';
 import { stripPageDefaults } from './page';
 import { stripLayoutDefaults } from './layout';
 import { stripBodyTextDefaults } from './bodyText';
-import { stripHeadingsDefaults } from './headings';
+import { balancingOnByDefault, stripHeadingsDefaults } from './headings';
 import { stripTableStyleDefaults, stripTableStylesDefaults } from './tableStyle';
 import { stripCaptionStyleDefaults } from './captionStyle';
 import { stripDiagramStyleDefaults } from './diagramStyle';
@@ -27,16 +27,17 @@ import { stripCrossRefsDefaults } from './crossRefs';
 import { stripCitationsDefaults } from './citations';
 import { stripIndexDefaults } from './indexConfig';
 import { stripCjkDefaults } from './cjk';
-import { stripComicsDefaults } from './comics';
+import { comicReadingDirection, stripComicsDefaults } from './comics';
 import { stripLineNumbersDefaults } from './lineNumbers';
 import { stripCodeStyleDefaults } from './codeStyle';
+import { presentTag } from '../locale';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, resolvePageConfig, stripPageDefaults } from './page';
 export { DEFAULT_COLUMN_RULE, DEFAULT_LAYOUT_CONFIG, DEFAULT_FLOAT_MIN_SCALE, DEFAULT_MAX_TOP_FRACTION, DEFAULT_TEXT_WRAP, resolveLayoutConfig, stripLayoutDefaults } from './layout';
 export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_BLOCKQUOTE_CONFIG, hyphenationEqual, resolveBodyTextConfig, stripBodyTextDefaults } from './bodyText';
 export { DEFAULT_VERSE_CONFIG, resolveVerseConfig, stripVerseDefaults } from './verse';
-export { DEFAULT_COLUMN_BALANCING, DEFAULT_HEADINGS_CONFIG, resolveHeadingsConfig, stripHeadingsDefaults } from './headings';
+export { DEFAULT_COLUMN_BALANCING, DEFAULT_HEADINGS_CONFIG, balancingOnByDefault, resolveHeadingsConfig, stripHeadingsDefaults } from './headings';
 export { resolveTableStyleConfig, stripTableStyleDefaults, resolveTableStylesConfig, stripTableStylesDefaults, pickTableStyle, defaultTableContinuationStrings } from './tableStyle';
 export { resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle, defaultCaptionLabels } from './captionStyle';
 export { DEFAULT_DIAGRAM_STYLE_CONFIG, resolveDiagramStyleConfig, stripDiagramStyleDefaults } from './diagramStyle';
@@ -68,8 +69,25 @@ export { DEFAULT_INDEX_CONFIG, resolveIndexConfig, stripIndexDefaults } from './
 export { DEFAULT_PANEL_STYLE, DEFAULT_COMIC_GUTTER, DEFAULT_LETTERING_STATIC, DEFAULT_BALLOON_STYLES, DEFAULT_BALLOON_STYLE_IDS, defaultComicFont, defaultComicSfxFont, resolveComicsConfig, resolvedComics, comicReadingDirection, pickPanelStyle, pickBalloonStyle, stripComicsDefaults } from './comics';
 export { DEFAULT_CJK_CONFIG, resolveCjkConfig, stripCjkDefaults, defaultCjkLineBreak, defaultCjkPunctuationWidth, defaultCjkCompression, defaultCjkEmphasis, defaultCjkBookTitleMark, defaultCjkBookTitleBrackets, defaultCjkEmphasisMark, defaultCjkWarichuBrackets, defaultCjkHangingPunctuation, defaultCjkSpaceAfterQuestion, defaultCjkParagraphStartBracket, defaultCjkRubyOverhang, defaultCjkRubyAlign } from './cjk';
 
+/** The document language as `resolveAllConfig` reads it for the defaults
+ *  that follow it (captions, notes, the index, comics): `locale`, else the
+ *  hyphenation locale as written; `undefined` when neither names one. */
+function documentLocaleOf(config: PostextConfig): string | undefined {
+  return presentTag(config.locale) ?? presentTag(config.bodyText?.hyphenation?.locale);
+}
+
+/**
+ * `config` without the values that restate a default. A default that
+ * depends on the rest of the configuration (the document language, the
+ * writing mode, a character grid, a page size preset) is the default of
+ * this configuration: a value that differs from it is kept even where it
+ * equals the default of a plain document (#651), so that
+ * `resolveAllConfig(stripConfigDefaults(config))` lays out like
+ * `resolveAllConfig(config)`.
+ */
 export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   const result: PostextConfig = { ...config };
+  const documentLocale = documentLocaleOf(config);
   const strippedPage = stripPageDefaults(config.page);
   if (strippedPage) {
     result.page = strippedPage;
@@ -88,7 +106,9 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.bodyText;
   }
-  const strippedHeadings = stripHeadingsDefaults(config.headings);
+  // Balancing is off by default on a character grid and in vertical text
+  // (#632): `enabled` is compared with the default of this document.
+  const strippedHeadings = stripHeadingsDefaults(config.headings, balancingOnByDefault(config));
   if (strippedHeadings) {
     result.headings = strippedHeadings;
   } else {
@@ -106,7 +126,7 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.tableStyles;
   }
-  const strippedCaptionStyle = stripCaptionStyleDefaults(config.captionStyle, config.locale);
+  const strippedCaptionStyle = stripCaptionStyleDefaults(config.captionStyle, documentLocale);
   if (strippedCaptionStyle) {
     result.captionStyle = strippedCaptionStyle;
   } else {
@@ -214,7 +234,7 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.headingStyles;
   }
-  const strippedFootnotes = stripFootnotesDefaults(config.footnotes, config.locale, config.layout?.writingMode);
+  const strippedFootnotes = stripFootnotesDefaults(config.footnotes, documentLocale, config.layout?.writingMode);
   if (strippedFootnotes) {
     result.footnotes = strippedFootnotes;
   } else {
@@ -256,15 +276,20 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.toc;
   }
-  const strippedIndex = stripIndexDefaults(config.index);
+  const strippedIndex = stripIndexDefaults(config.index, documentLocale);
   if (strippedIndex) {
     result.index = strippedIndex;
   } else {
     delete result.index;
   }
-  const strippedComics = stripComicsDefaults(config.comics, config.locale ?? config.bodyText?.hyphenation?.locale);
+  const strippedComics = stripComicsDefaults(config.comics, documentLocale);
   if (strippedComics) {
     result.comics = strippedComics;
+  } else if (config.comics && comicReadingDirection(undefined, { locale: documentLocale }) === 'rtl') {
+    // The section itself says the document is a comic book: in a language
+    // whose comics read right to left (Japanese, Traditional Chinese) it
+    // binds the book on the right, so one left at its defaults stays.
+    result.comics = {};
   } else {
     delete result.comics;
   }

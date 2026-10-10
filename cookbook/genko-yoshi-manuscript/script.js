@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 120 · A story on genkō yōshi, one character to a square ═══
 // https://postext.dev/en/cookbook/genko-yoshi-manuscript
 // Code: MIT · Text: 夏目漱石『坊っちゃん』, Aozora Bunko 752 (public domain) · Pictures: none
-// Fonts: Klee One, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Klee One, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -55,7 +55,7 @@ const cjk = {
 // square above the foot (地から一字上げ), a blank square between family and given names.
 // lineSpan: 1 keeps the title on one line of the grid, in the text's own size and face.
 const title = { level: 1, fontFamily: PEN, fontSize: pt(CELL), fontWeight: 400, lineSpan: 1,
-  indent: em(2), breakBefore: { enabled: true, parity: 'any' } }; // gotcha: headings-drop-h1-break
+  indent: em(2), breakBefore: { enabled: true, parity: 'any' } }; // the next sheet, either side
 const paragraphStyles = [
   { id: 'name', textAlign: 'end', endIndent: em(1), firstLineIndent: em(0) },
 ];
@@ -89,7 +89,7 @@ const footer = { elements: [{ kind: 'text', id: 'colophon', content: '{attr.colo
     size: { width: mm(120) } } }] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   page: {
@@ -105,8 +105,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'left', firstLineIndent: em(1), indentAfterHeading: true, // a blank square
   },
-  headings: { fontFamily: PEN, color: col('ink'), levels: [title],
-    balancing: { enabled: false } }, // gotcha: cjk-grid-balancing
+  headings: { fontFamily: PEN, color: col('ink'), levels: [title] },
   paragraphStyles,
   header,
   footer,
@@ -130,7 +129,8 @@ await loadFonts(FONTS, markdown); // the Latin files: the colophon
 await loadCjkFonts({ [PEN]: ['400'] }, `${markdown}（）一二三四五六七八九十`, { vertical: true });
 await loadCjkFonts({ 'Noto Sans JP': ['400'] }, `20×20${colophon}`);
 // #endregion
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A story on genkō yōshi, one character to a square',
   es: 'Un relato en genkō yōshi, un carácter por casilla' }) });
 // The PDF draws the squares only when asked: a grid is a screen aid in a book, the page here.

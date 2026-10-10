@@ -34,13 +34,13 @@ The code is [the short answer](#the-short-answer) above. Map 1 is a `bottom` flo
 
 <Excerpt region="resources" />
 
-A resource takes its number from the text's first citation of it, and `:ref{id="north"}` prints the type's short label and that number, Map 2, in the running text or in a caption note. The chart and the gazetteer are first cited on page 2, in that order, so the chart takes page 3 and the gazetteer the head of page 4. The compass rose is a resource of the same type, but only the opener draws it and the text never cites it, so the maps still count from 1 to 4. Each entry of the harbour key is one chip with no fill, border or padding, so its number, its name and the dot after it stay on one line; with no-break spaces instead, 1.4.1 breaks the English key between 3 and *harbour office*.
+A resource takes its number from the text's first citation of it, and `:ref{id="north"}` prints the type's short label and that number, Map 2, in the running text or in a caption note. The chart and the gazetteer are first cited on page 2, in that order, so the chart takes page 3 and the gazetteer the head of page 4. The compass rose is a resource of the same type, but only the opener draws it and the text never cites it, so the maps still count from 1 to 4. Each entry of the harbour key is one chip with no fill, border or padding, so its number, its name and the dot after it stay on one line.
 
 ### 5 · Numbers the maps and the gazetteer share
 
 <Excerpt region="gazetteer" />
 
-`PLACES` is sorted from north to south and numbered in that order, and the maps print the numbers in red discs and the table in red chips. `square()` works out the chart square from the same kilometre coordinates that place each mark on the maps, so Kirkwick, number 6, is in D3 on the chart and in the table. A table style has one body fill, so every other row is filled cell by cell with `setCellBackground`.
+`PLACES` is sorted from north to south and numbered in that order, and the maps print the numbers in red discs and the table in red chips. `square()` works out the chart square from the same kilometre coordinates that place each mark on the maps, so Kirkwick, number 6, is in D3 on the chart and in the table. Every second row takes its pale blue from the table style: `bodyAlternateBackgroundEnabled`, with `bodyAlternateBackground` linked to `sea`.
 
 ### 6 · The atlas's name on a band of its own blue
 
@@ -66,7 +66,3 @@ A table turns with the same setting and, when it is too wide for one page, conti
 ### Put a map in the margin
 
 In a column-and-a-half layout the outer column can hold figures and their captions and no text: see <RecipeLink slug="textbook-margin-column">the textbook with a margin column</RecipeLink>.
-
-## Pitfalls
-
-- The closing text on <PageRef page={4}>page 4</PageRef> is split by hand with a `:::columnbreak`. Postext 1.4.1 does not level the columns of a closing page that follows a page given whole to a float, here the turned chart, and without the break every paragraph goes into the left-hand column and only the colophon starts the right-hand one. Move the break when the text changes.

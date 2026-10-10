@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "poetry-collection",
-  "sourceHash": "9fe3feb4fa261854e3df62d3bbe1a681fc34801a682f68fb059b6a9cab085464",
+  "sourceHash": "cb0f3b0c16717e75b0c0386bbbffccb0be68044b71440cbd1fcd83d34b9207ab",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:25:13.486Z",
+  "capturedAt": "2026-10-10T13:37:01.683Z",
   "variants": {
     "en": {
-      "hash8": "c12f38b5",
+      "hash8": "e8261824",
       "vdtHash": "6f34e685fb292bf6fd80f59acad0e217d78802af",
       "timings": {
-        "importMs": 580,
-        "fontsMs": 5939,
-        "buildMs": 56,
-        "totalMs": 7211,
+        "importMs": 120,
+        "fontsMs": 34,
+        "buildMs": 39,
+        "totalMs": 787,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Sorts Mill Goudy"
         ],
         "pages": 8,
-        "ownLines": 163
+        "ownLines": 159
       },
       "pages": [
         {
@@ -166,13 +166,12 @@
       },
       "sandbox": {
         "file": "poetry-collection.postext",
-        "bytes": 370777,
+        "bytes": 370763,
         "folio": "6d3a2b7c"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -307,7 +306,7 @@
           "resourceTypes",
           "toc"
         ],
-        "configLeaves": 262,
+        "configLeaves": 261,
         "designElements": 12,
         "directives": [
           ":::toc",
@@ -374,13 +373,7 @@
           "share": 0,
           "worst": 1.51
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

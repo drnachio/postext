@@ -1,12 +1,11 @@
 // ═══ Postext Cookbook · Nº 001 · Textbook with a margin column ═══════════════════
 // https://postext.dev/en/cookbook/textbook-margin-column
 // Code: MIT · Text: original (CC BY 4.0) · Diagrams: generated in code (CC BY 4.0)
-// Fonts: Merriweather, Merriweather Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Merriweather, Merriweather Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A chapter of a physics textbook in the column-and-a-half layout: the body text keeps to
 // the main column, and the outer margin is a channel for diagrams, captions and glosses.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -23,8 +22,8 @@ const palette = {
   muted: '#5b6863', // running heads, the normals in the diagrams, the colophon
   paper: '#ffffff',
 };
-// A colour carries its id and its hex: 1.4.1 paints design elements and referenceColor from the
-// hex alone (gotcha: palette-skips-designs), so retint by editing `palette`, not colorPalette.
+// A colour carries its id and its hex. The diagrams read `palette` as well, so retint the
+// chapter by editing it: the text, the designs and the drawings change together.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -46,16 +45,15 @@ const layout = {
   sideColumnSide: 'outer', // right on a recto, left on a verso (the margins are mirrored)
   gutterWidth: mm(7), // the text column keeps the rest: 176 − 52.8 − 7 = 116 mm
 };
-// A figure placed with span 'side' stacks in the channel from the head of the page that cites it.
-// The stack ignores the opener's numeral: on a first page, cite side figures after the objectives.
+// A figure placed with span 'side' stacks in the channel from the head of the page that cites it,
+// under the numeral on a chapter's first page.
 const side = { span: 'side' };
 // A figure left in the text column (the default span) sets its caption in the channel beside
 // it; page-wide floats ignore captionSide and keep theirs underneath.
 const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id !== 'figure' ? type
-  : { ...type, defaultPlacement: { captionSide: true } })); // gotcha: resource-types-locale
+  : { ...type, defaultPlacement: { captionSide: true } })); // the built-in types, in LANG
 // A box fenced :::callout{type="term" span="side"} leaves the flow and lands in the channel at the
-// height the text has reached. Fence each gloss after a paragraph, never straight after a heading
-// (gotcha: side-box-after-heading).
+// height the text has reached: fence each gloss before the paragraph it should stand beside.
 // #endregion
 // The channel's width, the measure of everything the opener and the heads set in it: 52.8 mm.
 const CHANNEL = ((TRIM_W - INNER - OUTER) * layout.sideColumnPercent) / 100;
@@ -140,8 +138,8 @@ const footer = { elements: [
 ] };
 // #endregion
 
-const config = () => ({ // a factory: a fresh object per build (gotcha: config-cache-identity)
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes only (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // each edition's hyphenation patterns
   resourceTypes,
   colorPalette,
   page: { width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150, margins: { top: mm(TOP),
@@ -154,7 +152,6 @@ const config = () => ({ // a factory: a fresh object per build (gotcha: config-c
   headings: {
     fontFamily: SANS, color: col('ink'), fontWeight: 800,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
       // 'odd': kicker, numeral and drop folio sit at the right edge, the outer one only on a recto.
       // The heading stays in the main column; its design draws it.
       { level: 1, breakBefore: { enabled: true, parity: 'odd' }, marginBottom: pt(LEAD),
@@ -179,7 +176,7 @@ const config = () => ({ // a factory: a fresh object per build (gotcha: config-c
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
-// Captions carry the labels the diagrams leave out (gotcha: svg-no-webfonts).
+// The diagrams are drawn without lettering: their captions carry the labels.
 const captions = {
   'burning-glass': {
     en: 'A burning glass. A converging lens bends parallel rays of sunlight so that they all '
@@ -433,19 +430,18 @@ const resources = [ // no placement: a main-column float, its caption in the cha
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Merriweather: ['300', '300i', '400i', '700'],
   'Merriweather Sans': ['300', '300i', '700', '800'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all([...drawings].map(([fileId, markup]) => loadSvg(fileId, markup)));
 // #region build: chapter 4 of a longer book, so the counters start where chapter 3 ended
 const continuation = { pageNumbering: { startAt: 87 }, // odd, like page 1: a recto
   headings: { h1: 3, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 } }; // the next # is chapter 4
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Textbook with a margin column',
   es: 'Libro de texto con columna al margen' }) });
 // #endregion

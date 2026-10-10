@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "ml-paper-theorems-proofs",
-  "sourceHash": "67d58c5886df3e7ba1b775885e7346404e643afe2924e4f4b50250084bd702bf",
+  "sourceHash": "98fb6265488b985a28d74863f52863790201e836886b1e9fb38e40aeb1aecd9a",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.186Z",
+  "capturedAt": "2026-10-10T13:36:24.371Z",
   "variants": {
     "en": {
-      "hash8": "71474f93",
+      "hash8": "44db0eae",
       "vdtHash": "9d4b6e85431982908f2f84b7eeae0d8c04a74d46",
       "timings": {
-        "importMs": 371,
-        "fontsMs": 146,
-        "buildMs": 71,
-        "totalMs": 1540,
-        "builds": 2
+        "importMs": 181,
+        "fontsMs": 118,
+        "buildMs": 302,
+        "totalMs": 1230,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Work Sans"
         ],
         "pages": 10,
-        "ownLines": 219
+        "ownLines": 218
       },
       "pages": [
         {
@@ -193,24 +193,24 @@
       },
       "pdf": {
         "file": "ml-paper-theorems-proofs.pdf",
-        "bytes": 1165810,
+        "bytes": 981338,
         "pages": 10
       },
       "sandbox": {
         "file": "ml-paper-theorems-proofs.postext",
-        "bytes": 86663,
+        "bytes": 86708,
         "folio": "70aa8698"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
           "initMathEngine",
+          "inlineSvgFonts",
           "registerCitationEngine",
           "registerResourceImage",
           "renderMath",

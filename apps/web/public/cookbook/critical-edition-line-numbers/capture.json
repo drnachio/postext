@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "critical-edition-line-numbers",
-  "sourceHash": "3032338aef8b7e7caec2846fac2483f17761366db4f75a8f52f411491bb3b6ab",
+  "sourceHash": "37d983ea84084bfc17c6dd8c53d7bad6063b1ba76d5a3aa5d5b7fff0254aaa82",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:24:37.913Z",
+  "capturedAt": "2026-10-10T13:33:15.399Z",
   "variants": {
     "en": {
-      "hash8": "c5eec724",
-      "vdtHash": "d112c5c149b78cce98f43c19953d68b86338782d",
+      "hash8": "9e67fbab",
+      "vdtHash": "97b236012d609303db3366f6b877ca2cf481634a",
       "timings": {
-        "importMs": 124,
-        "fontsMs": 45,
-        "buildMs": 30,
-        "totalMs": 868,
-        "builds": 2
+        "importMs": 132,
+        "fontsMs": 21,
+        "buildMs": 54,
+        "totalMs": 800,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Linden Hill"
         ],
         "pages": 9,
-        "ownLines": 171
+        "ownLines": 168
       },
       "pages": [
         {
@@ -152,13 +152,12 @@
       },
       "sandbox": {
         "file": "critical-edition-line-numbers.postext",
-        "bytes": 108018,
+        "bytes": 107987,
         "folio": "bc0e5eea"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -223,7 +222,6 @@
           "headingStyles[].breakBefore.enabled",
           "headingStyles[].breakBefore.parity",
           "headingStyles[].id",
-          "headingStyles[].span",
           "headings",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -232,7 +230,6 @@
           "headings.levels[].breakBefore",
           "headings.levels[].level",
           "headings.levels[].marginBottom",
-          "headings.levels[].span",
           "layout",
           "layout.gutterWidth",
           "layout.layoutType",
@@ -281,7 +278,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 233,
+        "configLeaves": 230,
         "designElements": 11,
         "directives": [
           ":::verse",
@@ -330,7 +327,6 @@
           "heading-attributes",
           "heading-styles",
           "line-numbers",
-          "opener-band",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",

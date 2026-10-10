@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 018 · Section heads seven levels deep ═════════════════
 // https://postext.dev/en/cookbook/section-heads-field-manual
 // Code: MIT · Text: original (CC BY 4.0) · Picture: drawn in code (MIT)
-// Fonts: IBM Plex Serif, Sans Condensed, Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: IBM Plex Serif, Sans Condensed, Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -18,7 +18,7 @@ const palette = { // forest green for structure, a signal amber for numbers
   tint: '#e9f0e6', // the opener's sky; the legend on the green (5.5:1)
   muted: '#5f6a62', // running heads, level 7, roman list numbers, the colophon (5.6:1)
 };
-// The hex as well as the id: design slots read only the hex (gotcha: palette-skips-designs).
+// col(id): a colour linked to its palette entry, in text styles and design slots alike.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // Defaults this config does not restate link to 'main-color', so it points at the accent.
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.band })
@@ -42,7 +42,7 @@ const pill = { kind: 'text', id: 'pill', content: '{number}', ...face, color: co
     padding: { top: pt(PAD), bottom: pt(PAD), left: mm(1.8), right: mm(1.8) } }, // number
   placement: at('container', 'top-left') }; // plus its padding
 // 'right-of' hangs the title on the pill's right edge and aligns its lines left, so a long
-// title wraps beside the number, never under it (gotcha: overflow-ellipsis-default).
+// title wraps beside the number, never under it.
 const sectionTitle = (from) => ({ kind: 'text', id: 'title', content: '{titleText}', ...face,
   color: col('ink'), overflow: 'wrap', box: { padding: { top: pt(PAD) } },
   placement: at(`#${from}`, 'right-of', mm(2.2)) });
@@ -52,7 +52,7 @@ const h2 = { level: 2, numberingTemplate: '{1}.{2}',
 // #endregion
 
 // #region ruled: level 3, a green rule over the number and a tracked capital title
-// Headings have no letterSpacing of their own; design text has, so this head is a design.
+// A rule, a mono number and a tracked title: three elements, so this head is a design.
 const small = { fontSize: pt(8.4), lineHeight: LH };
 const DROP = 6; // pt: the rule drops this far toward the number, which keeps its grid line
 const h3 = { level: 3, numberingTemplate: '{1}.{2}.{3}', // 1.5.1: restarts under every H2
@@ -72,8 +72,8 @@ const DEPTH = 96; // mm: the profile's foot, measured from the top of the page
 const CLEAR = 6; // mm: the least room between the profile's foot and the text under it
 const LEGEND = 7; // mm: how far the legend's top sits above the profile's foot
 const big = { ...face, fontSize: pt(54), lineHeight: 1, color: col('ink') };
-// A picture reserves no height in an opener (gotcha: opener-image-no-reserve), so minHeight
-// reaches past the profile: the text starts on the first grid line CLEAR mm or more under it.
+// The opener reserves height down to the profile's foot; minHeight reaches CLEAR mm past
+// it, so the text starts on the first grid line CLEAR mm or more under the picture.
 const opener = { enabled: true, minHeight: mm(DEPTH - TOP + CLEAR), slot: { elements: [
   { kind: 'image', id: 'profile', resourceId: 'profile',
     placement: { ...at('page', 'top-left'), size: { width: 'fill' } } },
@@ -85,7 +85,7 @@ const opener = { enabled: true, minHeight: mm(DEPTH - TOP + CLEAR), slot: { elem
   { kind: 'text', id: 'lead', content: '{attr.lead}', fontFamily: 'IBM Plex Serif', italic: true,
     fontSize: pt(11.5), lineHeight: 1.3, color: col('ink'), align: 'left', overflow: 'wrap',
     placement: { ...at('#num', 'below', mm(0), mm(5)), size: { width: mm(100) } } },
-  // Design text: an SVG drawn as an image cannot use web fonts (gotcha: svg-no-webfonts).
+  // The legend is design text over the picture: each edition words it in its heading.
   { kind: 'text', id: 'legend', content: '{attr.profile}', fontFamily: LABEL, fontWeight: 500,
     fontSize: pt(7), color: col('tint'), placement: at('page', 'top-right', mm(-OUTER),
       mm(DEPTH - LEGEND)) },
@@ -96,7 +96,7 @@ const opener = { enabled: true, minHeight: mm(DEPTH - TOP + CLEAR), slot: { elem
 const headings = { fontFamily: DISPLAY, color: col('ink'), // every head sits on the grid,
   lineHeight: pt(LEAD), marginTop: pt(LEAD), marginBottom: pt(0), // a line above, none below
   levels: [
-    // Any headings object drops the H1 page break: restated (gotcha: headings-drop-h1-break).
+    // Each chapter opens on a recto.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
       numberingTemplate: '{1}', advancedDesign: opener },
     h2, h3,
@@ -109,8 +109,8 @@ const headings = { fontFamily: DISPLAY, color: col('ink'), // every head sits on
 
 // #region styles: a seventh level and an unnumbered section as heading styles; run-in terms
 const headingStyles = [
-  // Markdown stops at ######, and a heading drops *marks* (gotcha: heading-marks-dropped):
-  // '###### Rock bar {style="level7"}' stays level 6, set in lower case, lighter and grey.
+  // Markdown stops at ######: '###### Rock bar {style="level7"}' stays level 6 in the
+  // outline and is set in lower case, lighter and grey.
   { id: 'level7', fontFamily: DISPLAY, fontWeight: 500, italic: true, fontSize: pt(8.4),
     textTransform: 'none', color: col('muted') },
   // numbered: false: no number, and the H2 counter does not move. An empty {number} would
@@ -134,7 +134,7 @@ const paragraphStyles = [
 // Zero margins keep lists on the grid; a '- [ ]' item's bullet becomes taskCheckboxChar, '☐'.
 const unorderedLists = { gap: mm(2), marginTop: pt(0), marginBottom: pt(0), color: col('band'),
   levels: [{ level: 2, bulletChar: '–', color: col('sage') }] }; // '•' stays at level 1
-// Level 1 keeps the defaults: 'arabic', never CSS's 'decimal' (gotcha: numbering-vocabularies).
+// Level 1 keeps the defaults: 'arabic' and a full stop.
 const orderedLists = { fontFamily: DISPLAY, color: col('band'), gap: mm(1.6),
   marginTop: pt(0), marginBottom: pt(0), levels: [
     { level: 2, numberFormat: 'lower-alpha', separator: ')' },
@@ -150,8 +150,8 @@ const folio = { ...runHead, fontFamily: LABEL, color: col('band') };
 const head = (id, content, parity, edge, x, style = runHead) => ({ kind: 'text', id, content,
   parity, pages: 'body', ...style, placement: at('page', edge, mm(x), mm(HEAD)) });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // each edition's hyphenation patterns
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     margins: { top: mm(TOP), bottom: mm(TRIM.height - TOP - (LINES * LEAD * 25.4) / 72),
@@ -160,8 +160,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   bodyText: { fontFamily: 'IBM Plex Serif', fontSize: pt(9.4), lineHeight: pt(LEAD),
     color: col('ink'), boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: mm(4), indentAfterHeading: false,
-    minWordSpacing: 0.85, maxWordSpacing: 1.4, // a narrow band: an even grey, line to line
-    maxRuntTracking: 0 }, // runt fixes tighten spaces only (gotcha: runt-tracking-unpainted)
+    minWordSpacing: 0.85, maxWordSpacing: 1.4 }, // a narrow band: an even grey, line to line
   headings, headingStyles, paragraphStyles, unorderedLists, orderedLists,
   header: { elements: [head('v-folio', '{pageNumber}', 'even', 'top-left', OUTER, folio),
     head('v-book', '{title}', 'even', 'top-left', OUTER + FOLIO_GAP),
@@ -239,14 +238,13 @@ function profileSvg() {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the pages paint, loaded before the first build (gotcha: fonts-first).
+// Every face the pages paint, loaded before the first build.
 const FONTS = { 'IBM Plex Serif': ['400', '400i', '700'],
   'IBM Plex Sans Condensed': ['500i', '600', '700'], 'IBM Plex Mono': ['400', '500', '600'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('profile.svg', profileSvg());
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Section heads seven levels deep',
   es: 'Títulos de sección hasta siete niveles' }) });
 

@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "pendulum-lab-video-players",
-  "sourceHash": "abb05f821c366f464f77a94b3142ebbcee0f1bd867064008b09a21c9fb936d80",
+  "sourceHash": "7535c6df5c6766b366a162bd3a713974f490b5346c2cb0adffb41410dd9e9e2b",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:29:57.983Z",
+  "capturedAt": "2026-10-10T13:37:01.518Z",
   "variants": {
     "en": {
-      "hash8": "c7eeb54a",
+      "hash8": "e5eab7e4",
       "vdtHash": "94759318a3e45b73760fbb922e9ad52f9d61dc59",
       "timings": {
-        "importMs": 947,
-        "fontsMs": 1407,
-        "buildMs": 199,
-        "totalMs": 3366,
-        "builds": 3
+        "importMs": 220,
+        "fontsMs": 59,
+        "buildMs": 130,
+        "totalMs": 1110,
+        "builds": 2
       },
       "specimen": {
         "trimMm": [
@@ -95,15 +95,16 @@
       },
       "sandbox": {
         "file": "pendulum-lab-video-players.postext",
-        "bytes": 29824
+        "bytes": 29823
       },
       "detected": {
         "apis": [
           "applyHtmlViewerOverrides",
           "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
+          "prepareFonts",
           "readEpub",
           "registerResourceImage",
           "renderPageToCanvas",
@@ -439,14 +440,14 @@
       }
     },
     "es": {
-      "hash8": "911ad308",
+      "hash8": "6a7fdf73",
       "vdtHash": "3319433561377b893b4c0d9f9f215b446b89ed68",
       "timings": {
-        "importMs": 432,
-        "fontsMs": 139,
-        "buildMs": 163,
-        "totalMs": 1666,
-        "builds": 3
+        "importMs": 174,
+        "fontsMs": 53,
+        "buildMs": 112,
+        "totalMs": 1038,
+        "builds": 2
       },
       "specimen": {
         "trimMm": [
@@ -523,15 +524,16 @@
       },
       "sandbox": {
         "file": "pendulum-lab-video-players.postext",
-        "bytes": 30262
+        "bytes": 30261
       },
       "detected": {
         "apis": [
           "applyHtmlViewerOverrides",
           "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
+          "prepareFonts",
           "readEpub",
           "registerResourceImage",
           "renderPageToCanvas",

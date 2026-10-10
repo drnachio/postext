@@ -32,13 +32,13 @@ pageNotes: { "1": "封面：梅紫色色带上印着奶油色大写的MACHADO DE
 
 <Excerpt region="heads" />
 
-`{title}`印出frontmatter中的标题，`{chapterTitle}`印出在本页或本页之前开始的最后一章，所以第217页印的是从第216页开始的CXXIII（[文字元素](/zh/docs/configuration#文本元素)）。第213页印的是在其页脚才开始的CXIX，尽管这一页的前25行还属于CXVIII：1.4.1没有表示“页面开头所在章”的占位符。`SHIFT`把书眉移到版心的中线上，与页面中线相差1 mm，因为内侧页边距比外侧宽2 mm。
+`{title}`印出frontmatter中的标题，`{chapterTitle}`印出在本页或本页之前开始的最后一章，所以第217页印的是从第216页开始的CXXIII（[文字元素](/zh/docs/configuration#文本元素)）。第213页印的是在其页脚才开始的CXIX，尽管这一页的前25行还属于CXVIII。`{chapterTitleAtTop}`印的是页面开头所在的章，但这段节选里没有CXVIII的标题。`SHIFT`把书眉移到版心的中线上，与页面中线相差1 mm，因为内侧页边距比外侧宽2 mm。
 
 ### 4 · 用标题画出封面和插页
 
 <Excerpt region="cover" />
 
-两者都是`numbered: false`的[标题样式](/zh/docs/configuration#标题样式)，所以第一个编号的章仍是CXIX。`span: 'page'`让每个都成为独占一页的首页。没有它，封面的色带只画到版心的顶部和底部，书眉和页码1会印在封面上，标题也会排成一行。插页的题注来自它的标题：CAPÍTULO CXXIII是标题文字，斜体引文是它的`quote`属性（[标题属性](/zh/docs/document-format#标题属性)）。每个后面的`:::pagebreak`让正文避开图画，因为1.4.1不会为封面的页脚色带或插页的图画预留空间。
+两者都是`numbered: false`的[标题样式](/zh/docs/configuration#标题样式)，所以第一个编号的章仍是CXIX。`span: 'page'`让每个都成为独占一页的首页。没有它，封面底部的色带和插页的图画只画到版心的底边，书眉和页码也会印在这两页上。插页的题注来自它的标题：CAPÍTULO CXXIII是标题文字，斜体引文是它的`quote`属性（[标题属性](/zh/docs/document-format#标题属性)）。两个设计都一直画到页面底边，所以标题预留整页，正文从下一页开始，不需要`:::pagebreak`。
 
 ### 5 · 告诉节选它在书中的位置
 
@@ -69,10 +69,8 @@ pageNotes: { "1": "封面：梅紫色色带上印着奶油色大写的MACHADO DE
 
 ## 常见问题
 
-- 在1.4.1中把`widowMinLines`提高到3，CXIX和CXXI就能在页脚的标题下保留三行，而它们的四行段落会拆成三行和一行：无论`orphanPenalty`是多少，第214页和第215页都会以单独一行开头。
+- 把`widowMinLines`提高到3，CXIX下面的四行段落就无处可拆：拆成三行和一行，第214页会以单独一行开头。于是标题连同正文移到下一页，第213页少排六行。
 - 如果CXVIII多出几行，CXIX的标题下就只剩一行的空间。这时`keepWithNext`会把标题带到第214页，第213页会短四五行；设`keepWithNext: false`时，标题会在第213页末尾孤零零地收尾，下面没有正文。
-- 插页是H1，所以`{chapterTitle}`会退回到它：插页之后还没有任何一章开始的正文页，比如CXIX移走之后的第213页，会把CAPÍTULO CXXIII印作书眉。
+- 插页是H1，所以`{chapterTitle}`会退回到它：插页之后还没有任何一章开始的正文页，比如CXIX移走之后的第213页，会把CAPÍTULO CXXIII印作书眉。给插页的样式设`runningChapter: false`，书眉就会跳过它。
 - 关闭`avoidRunts`，全书最后一行就只剩*manhã.*，而不是*nadador da manhã.*。
-- 去掉封面后的`:::pagebreak`并且没有插页时，第CXVIII章会从封面顶部往下19.5 mm处、3 mm的标题行下方开始。去掉插页后的那个分页，题注上移到94 mm后，会有十一行正文印在海面上。
-- 这几页没有一行在附着代词的连字符处断开（*Vesti-me*、*metteu-se*）。若把CXXIII的第一个词*Emfim*设为斜体，1.4.1会让这一段走带行内标记文本的断行流程：一行止于*vencer-*，下一行以*se a si mesma*开头，没有按葡萄牙语拼写规则在行首重复连字符。
 - 这些分页只对这段文字、9.5/12.6 pt、84 mm行长成立。修改文字、字号或行长后，要重新检查每页页脚和每个标题上方的空白。

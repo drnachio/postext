@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 128 · A Meiji proclamation in kanji and katakana ═════════
 // https://postext.dev/en/cookbook/katakana-majiri-proclamation
 // Code: MIT · Text: Kanpō 1889, ja.wikisource (CC BY-SA 4.0); notes (CC BY 4.0)
-// Fonts: Shippori Mincho B1, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Shippori Mincho B1, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // The Meiji Constitution as the Official Gazette printed it: kanji and katakana, vertical.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -97,7 +97,7 @@ const cover = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   page: {
@@ -119,7 +119,6 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: {
     fontFamily: MINCHO, color: col('ink'), fontWeight: 800,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
       { level: 1, breakBefore: { enabled: true, parity: 'any' } },
       chapter,
     ],
@@ -165,7 +164,8 @@ await loadFonts(FONTS, markdown);
 await loadCjkFonts({ [MINCHO]: FONTS[MINCHO] }, markdown.replace(/^- .*$/gm, ''),
   { vertical: true });
 await loadCjkFonts({ [GOTHIC]: FONTS[GOTHIC] }, gothicText, { vertical: true });
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'The Meiji Constitution, 1889',
   es: 'La Constitución Meiji, 1889' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

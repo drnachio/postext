@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 087 · A thesis chapter cited in APA 7 ═══════════════════
 // https://postext.dev/en/cookbook/apa-thesis-with-bibtex
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Literata, Public Sans (SIL OFL 1.1) · Needs postext ≥ 1.12.0
+// Fonts: Literata, Public Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -74,7 +74,7 @@ const head = (id, content, edge, x) => ({
   placement: { anchor: { to: 'page', edge }, offset: { x: mm(x), y: mm(14) } },
 });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }),
   colorPalette,
   citations,
@@ -94,7 +94,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: {
     fontFamily: TEXT, color: col('ink'), fontWeight: 600,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // A chapter opens on the next page, recto or verso.
       { level: 1, numberingTemplate: '{1}', fontSize: pt(22),
         breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
       { level: 2, numberingTemplate: '{1}.{2}', numberSeparator: '  ', fontSize: pt(13),
@@ -121,8 +121,7 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 const title = t({ en: 'A thesis chapter in APA 7', es: 'Un capítulo de tesis en APA 7' });
 showPages(doc, { title });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider }), `${RECIPE}.pdf`);

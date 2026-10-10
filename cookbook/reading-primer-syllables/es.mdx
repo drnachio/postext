@@ -40,7 +40,7 @@ Entre la última frase y el recuadro para colorear, el Markdown lleva `:::space{
 
 <Excerpt region="opener" />
 
-La Mm es el texto del título (`{titleText}`), y el número de la unidad, la serie y el nombre de la letra son atributos de esa misma línea. La franja, la mariposa y la manzana son imágenes, y una apertura no reserva altura para las imágenes. Sin `minHeight`, la apertura acaba al pie de la palabra *manzana*, a 88,7 mm del borde superior de la página, y el título de la primera actividad empieza a 99,3 mm, 2,6 mm por encima del punto más bajo de la onda (101,9 mm). Con un `minHeight` de 16 líneas de la rejilla base, la apertura termina a 102,7 mm, y las dos líneas de `marginTop` del título lo bajan a 113,3 mm, sobre la rejilla y 11,4 mm por debajo de la onda.
+La Mm es el texto del título (`{titleText}`), y el número de la unidad, la serie y el nombre de la letra son atributos de esa misma línea. La franja, la mariposa y la manzana son imágenes. La franja mide 104 mm de alto, y la apertura reserva la página hasta su pie, así que el título de la primera actividad empieza a 113,3 mm, sobre la rejilla y 11,4 mm por debajo del punto más bajo de la onda (101,9 mm).
 
 ### 6 · Iconos junto a los títulos de actividad
 
@@ -58,9 +58,3 @@ Un radio mayor que la mitad de la altura del chip se recorta a esa mitad, así q
 -  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5) };
 +  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5), borderRadius: em(1) };
 ```
-
-## Errores frecuentes
-
-Da a `minHeight` líneas enteras de la rejilla base. Con 85 mm, 0,33 mm más allá de la línea 16, el primer título empezó 0,33 mm fuera de la rejilla. Su bloque se alargó entonces hasta la línea siguiente, 15,5 mm en lugar de 10,6, y todo lo que va debajo en la página 37 bajó 5,3 mm.
-
-Con el equilibrado de columnas activo, un `minHeight` de 16 líneas dejaba las actividades de la página 37 donde las dejaban 17: a la página le sobraba una línea de la rejilla base, y el equilibrado la ponía encima del título de la primera actividad. La configuración lo desactiva (`headings.balancing`), así que la línea sobrante se queda al pie de la página.

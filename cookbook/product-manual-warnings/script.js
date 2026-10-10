@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 050 · Product manual with safety notices ════════════════
 // https://postext.dev/en/cookbook/product-manual-warnings
 // Code: MIT · Text: original, in German (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Red Hat Text, Red Hat Display, Red Hat Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  parseTSV, mergeCells } from 'https://esm.sh/postext';
+// Fonts: Red Hat Text, Red Hat Display, Red Hat Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage, parseTSV,
+  mergeCells, defaultResourceTypes, inlineSvgFonts } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'product-manual-warnings';
@@ -13,7 +14,7 @@ const palette = { ink: '#1a1f24', paper: '#ffffff', // a blue-black on white
   brand: '#10727b', tint: '#e4f0f1', // the house teal (5.7:1 on white) and its pale tint
   warning: '#d62e1f', caution: '#f2a900', // the signal colours of WARNUNG and VORSICHT
   rule: '#cfd5da', muted: '#5b6570' }; // hairlines; running heads and notes
-// 1.4.1 design slots read the hex, not the id: col() writes both (gotcha: palette-skips-designs)
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.brand }) // the defaults
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -26,7 +27,7 @@ const pad = (y, x = 0) => ({ top: pt(y), bottom: pt(y), left: pt(x), right: pt(x
 
 // #region answer: signal-word boxes: a band in the hazard's colour carries its triangle
 const BAND = 8.5; // mm: a stripe on the side is the icon's column; the icon is centred on it
-const [TITLE, TITLE_GAP] = [8.6, 2.4]; // pt; 1.4.1 sets a box title 1.2 times its size
+const [TITLE, TITLE_GAP] = [8.6, 2.4]; // pt; a box title's line is 1.2 times its size
 const PAD_Y = (2 * LEAD - 1.2 * TITLE - TITLE_GAP) / 2; // pt: title and padding fill two lines
 const notice = (id, hue, ink, icon) => ({ id, backgroundEnabled: false,
   stripe: { enabled: true, side: 'left', width: mm(BAND), color: col(hue) },
@@ -48,14 +49,13 @@ const calloutStyles = [
 
 // #region types: German names for figures and tables, and for a table's continuation
 const counted = { numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal' }; // 1, 2…
-const resourceTypes = [ // 1.4.1 names them in English or Spanish (gotcha: resource-types-locale)
-  { id: 'figure', name: 'Abbildung', shortLabel: 'Abb.', captionPrefix: 'Abbildung', ...counted },
-  { id: 'table', name: 'Tabelle', shortLabel: 'Tab.', captionPrefix: 'Tabelle', ...counted,
-    captionStyle: { position: 'above' } }, // a table is captioned over its head
-];
+// The built-in types in German, Abbildung and Tabelle; a table is captioned over its head.
+const resourceTypes = defaultResourceTypes('de').map((type) => ({ ...type, ...counted,
+  ...(type.id === 'table' && { captionStyle: { position: 'above' } }) }));
 const tableStyle = { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
   headerBackground: col('ink'), headerColor: col('paper'), headerFontFamily: MONO,
   headerFontSize: pt(7.6), bodyFontSize: pt(8.2), cellPadding: mm(1.3),
+  // The engine's own German strings are '(Forts.)' and 'Wird fortgesetzt': these spell them out.
   continuedSuffix: '(Fortsetzung)', continuesMarker: 'Fortsetzung auf der nächsten Seite' };
 // #endregion
 
@@ -100,7 +100,7 @@ const words = (id, content, family, size, weight, color, placement, extra) => ({
 const ART = { x: 36, y: 52, w: 73 }; // mm: the cover's white kettle, on a teal wall and a worktop
 const COUNTER = ART.y + (ART.w * 119.4) / 112; // mm: its base's foot (row 119.4 of 112 wide)
 const cover = { id: 'cover', numbered: false, breakBefore: { enabled: false },
-  span: 'page', // in the column, 1.4.1 clips the design at the column top, 19 mm down the page
+  span: 'page', // an 'opener' page: the running head and the folio keep to 'body' pages
   advancedDesign: { enabled: true, minHeight: mm(PAGE.h - PAGE.top - PAGE.bottom),
     slot: { elements: [
       { kind: 'box', id: 'wall', style: { backgroundColor: col('brand') },
@@ -127,7 +127,7 @@ const folio = (parity, edge) => words(`folio-${parity}`, '{pageNumber}', DISPLAY
   'paper', pin('page', edge, 0, -9, { width: mm(11) }), { parity, pages: 'body', align: 'center',
     box: { backgroundColor: col('brand'), padding: pad(3.5) } });
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   locale: 'de', resourceTypes, colorPalette, calloutStyles, chipStyles, tableStyle, orderedLists,
   tableStyles: [{ id: 'bare', cellPadding: mm(1.1) }], // the legend and the data: no head row
   unorderedLists, headingStyles: [cover], layout: { layoutType: 'single' },
@@ -136,8 +136,7 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
   bodyText: { fontFamily: TEXT, fontSize: pt(9.3), lineHeight: pt(LEAD), color: col('ink'),
     boldFontWeight: 600, boldColor: col('ink'), italicColor: col('ink'),
     referenceColor: col('ink'), referenceBold: false, firstLineIndent: pt(0),
-    paragraphSpacing: true, minWordSpacing: 0.8, maxWordSpacing: 1.8, // from 0.6 and 2
-    maxRuntTracking: 0 }, // gotcha: runt-tracking-unpainted
+    paragraphSpacing: true, minWordSpacing: 0.8, maxWordSpacing: 1.8 }, // from 0.6 and 2
   headings: { fontFamily: DISPLAY, fontWeight: 800, color: col('ink'), lineHeight: pt(LEAD),
     levels: [section, { level: 2, fontSize: pt(10.4), color: col('brand'), marginTop: pt(LEAD),
       marginBottom: pt(0), numberingTemplate: '{1}.{2}' }] }, // 3.1, 3.2 …
@@ -156,8 +155,8 @@ const faults = /* @content:stoerungen */ ''; // TSV: fault, cause, remedy
 const data = /* @content:daten */ ''; // TSV: technical data, two columns
 
 // #region tables: a TSV per table; a blank first cell shares the fault above it
-function faultTable(tsv) { // parseTSV leaves the head row to you: headerRowCount
-  let m = { ...parseTSV(tsv), headerRowCount: 1, columnWidths: [30, 34, 36] }; // weights
+function faultTable(tsv) { // the first line is the head row; the widths are weights
+  let m = { ...parseTSV(tsv, { headerRows: 1 }), columnWidths: [30, 34, 36] };
   for (let r = 2, top = 1; r < m.rows.length; r++) { // a rowspan per fault: no cut runs through it
     if (m.rows[r][0].content) top = r; // mergeCells hides what it covers: merged-cells-hiddenby
     else m = mergeCells(m, { start: { row: top, col: 0 }, end: { row: r, col: 0 } });
@@ -174,7 +173,7 @@ const table = (id, caption, model, styleId = 'bare', where = HERE) => ({ id, typ
 const tables = [table('legende', 'Teile des Verra W1', legend),
   table('daten', 'Kenndaten des VW-170', fold(parseTSV(data).rows, [20, 30, 20, 30])),
   table('stoerungen', 'Störungen und ihre Behebung', faultTable(faults), null, // the house style,
-    { placement: { position: 'top' } })]; // a float, so it can split (gotcha: here-table-no-split)
+    { placement: { position: 'top' } })]; // a float: it heads the page after its citation
 // #endregion
 
 const svgFile = (id, width = 240, height = 240) => ({ id, typeId: 'figure', kind: 'svg',
@@ -188,8 +187,8 @@ const resources = [
 
 // #region art: the kettle, its parts diagram with embedded digits, and the three notice icons
 const n = (v) => +v.toFixed(2);
-const svg = (w, h, body, style = '') => `<svg xmlns="http://www.w3.org/2000/svg" `
-  + `width="${w * 10}" height="${h * 10}" viewBox="0 0 ${w} ${h}">${style}${body}</svg>`;
+const svg = (w, h, body, face = '') => `<svg xmlns="http://www.w3.org/2000/svg" `
+  + `width="${w * 10}" height="${h * 10}" viewBox="0 0 ${w} ${h}"${face}>${body}</svg>`;
 const path = (d, fill, stroke = 'none', width = 0, extra = '') => `<path d="${d}" `
   + `fill="${fill}" stroke="${stroke}" stroke-width="${width}" stroke-linejoin="round" `
   + `stroke-linecap="round"${extra}/>`;
@@ -234,7 +233,7 @@ const PARTS = [ // a point on the kettle grid, then the leader's corners in mm; 
   [[42, 28.6], [[X0 + 21, 2.5], [8, 2.5]]], [[15, 34], [[8, 14]]], [[13, 112.5], [[8, 42]]],
   [[37.5, 112.5], [[8, 52]]], [[87, 30.6], [[X0 + 43.5, 2.5], [110, 2.5]]],
   [[100.5, 58], [[110, 22]]], [[68.2, 94], [[110, 38.5]]], [[104, 125], [[110, 52]]]];
-function partsArt(face) { // the digits need a face embedded in the SVG (gotcha: svg-no-webfonts)
+function partsArt() { // the digits name their face on the root; loadSvg embeds it
   let out = `<g transform="translate(${X0} ${Y0}) scale(${S})">`
     + kettle(palette.ink, palette.paper, palette.tint, 1.4) + '</g>';
   PARTS.forEach(([[x, y], corners], i) => {
@@ -246,7 +245,7 @@ function partsArt(face) { // the digits need a face embedded in the SVG (gotcha:
       + `<text x="${dx}" y="${n(dy + 1.2)}" text-anchor="middle" fill="${palette.paper}">`
       + `${i + 1}</text>`;
   });
-  return svg(118, 56, out, `<style>${face}text{font-family:N;font-size:3.3px}</style>`);
+  return svg(118, 56, out, ` font-family="${DISPLAY}" font-weight="700" font-size="3.3"`);
 }
 function triangle(fg, mark) { // a rounded safety alert triangle, its '!' in the band's colour
   return svg(24, 24, path('M12 2.4L22.6 20.6H1.4Z', fg, fg, 2.2) + path('M12 8.6V14.4', 'none',
@@ -257,20 +256,7 @@ function info() {
     + `<circle cx="12" cy="7.2" r="1.6" fill="${palette.paper}"/>`
     + path('M12 11V17.6', 'none', palette.paper, 2.8));
 }
-async function embeddedFace(family, weight) { // a Fontsource file as a data URL
-  const id = family.toLowerCase().replace(/\s+/g, '-');
-  const res = await fetch(`https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-`
-    + `${weight}-normal.woff2`);
-  if (!res.ok) throw new Error(`Font not found (${res.status}): ${family} ${weight}`);
-  const bytes = new Uint8Array(await res.arrayBuffer());
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 8192) {
-    bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
-  }
-  return `@font-face{font-family:N;src:url(data:font/woff2;base64,${btoa(bin)}) format('woff2')}`;
-}
-const drawings = async () => ({ 'kettle.svg': coverArt(),
-  'teile.svg': partsArt(await embeddedFace(DISPLAY, 700)),
+const drawings = () => ({ 'kettle.svg': coverArt(), 'teile.svg': partsArt(),
   'triangle-white.svg': triangle(palette.paper, palette.warning),
   'triangle-ink.svg': triangle(palette.ink, palette.caution), 'info.svg': info() });
 // #endregion
@@ -278,13 +264,14 @@ const drawings = async () => ({ 'kettle.svg': coverArt(),
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { 'Red Hat Text': ['400', '400i', '600'], // text, continuation notes, bold runs
   'Red Hat Display': ['500', '600', '700', '800'], // heads, tabs and numbers; chips; the SVG
-  'Red Hat Mono': ['500', '600'] }; // running heads, keys, table heads (gotcha: fonts-first)
+  'Red Hat Mono': ['500', '600'] }; // running heads, keys, table heads
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const allText = [markdown, parts, faults, data].join('\n');
-await Promise.all([loadFonts(FONTS, allText),
-  ...Object.entries(await drawings()).map(([id, markup]) => loadSvg(id, markup))]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), allText);
+await Promise.all([prepareFonts(allText, config(), kitFonts(FONTS)),
+  ...Object.entries(drawings()).map(([id, markup]) => loadSvg(id, markup))]);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: allText });
 showPages(doc, { title: 'Verra W1 · Bedienungsanleitung' }); // the sample is German in both
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

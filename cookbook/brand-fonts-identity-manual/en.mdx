@@ -18,13 +18,13 @@ Four pages of the identity manual for Metro de Alba, a fictional metro of five l
 
 <Excerpt region="build" />
 
-Layout measures every word with the faces in `document.fonts`, so `loadBrandFonts()` in [the short answer](#the-short-answer) fetches each file once, keeps its bytes and registers a `FontFace` built from them before `buildDocument` runs. The kit's `loadFonts` only fetches from Fontsource, and a brand serves its files from its own server. In postext-pdf 1.4.1 `renderToPdf` asks for ten faces, four of which no text uses (the display face's italic, and the italic, SemiBold and SemiBold italic of the monospace), and `brandFontProvider` answers each request with the closest file of the same family ([Why a font provider?](/en/docs/configuration#why-a-font-provider)). The pages use only the six files the canvas measured, but 1.4.1 also writes an unused copy of the stand-in file for each of those four requests.
+Layout measures every word with the faces in `document.fonts`, so `loadBrandFonts()` in [the short answer](#the-short-answer) fetches each file once, keeps its bytes and registers a `FontFace` built from them before `buildDocument` runs. The kit's `kitFonts` only fetches from Fontsource, and a brand serves its files from its own server. `renderToPdf` asks for the faces the pages paint, and `brandFontProvider` answers each request with the bytes already fetched; a weight or slant the brand lacks would get the closest file of the same family ([Why a font provider?](/en/docs/configuration#why-a-font-provider)). The PDF embeds the six files the canvas measured, each once.
 
 ### 2 · The colour system is one list
 
 <Excerpt region="colours" />
 
-Because the palette and Table 1.1 are built from the same nine rows, the table cannot list a value the pages do not use. `setCellBackground` fills the empty first cell of each row with that row's colour, linked to the palette. In the text, `:swatch{color="line-2"}` takes a palette id and draws a square outlined in the text colour. `main-color` has the hex of Ink, so headings and bold and italic runs, whose defaults link to it, print in Ink instead of the engine's blue. References keep that blue in 1.4.1 whatever `main-color` holds; `bodyText.referenceColor: col('ink')` sets them in Ink as well ([Color Palette](/en/docs/configuration#color-palette)).
+Because the palette and Table 1.1 are built from the same nine rows, the table cannot list a value the pages do not use. `setCellBackground` fills the empty first cell of each row with that row's colour, linked to the palette. In the text, `:swatch{color="line-2"}` takes a palette id and draws a square outlined in the text colour. `main-color` has the hex of Ink, so headings and bold and italic runs, whose defaults link to it, print in Ink instead of the engine's blue. `bodyText.referenceColor: col('ink')` names Ink for references as well ([Color Palette](/en/docs/configuration#color-palette)).
 
 ### 3 · One opener, three line colours
 

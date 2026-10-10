@@ -818,7 +818,7 @@
     "warningsMissingFontDetail": "Não carregou: usando uma fonte do sistema no lugar.",
     "warningsFontFallbackTitle": "Fonte substituta no layout",
     "warningsFontFallbackMissingDetail": "__face__ não estava carregada quando as páginas foram compostas: o texto foi medido com uma fonte substituta.",
-    "warningsFontFallbackSynthesizedDetail": "__face__ não tem arquivo próprio: o navegador a desenha mais grossa ou inclinada a partir de outra fonte da família.",
+    "warningsFontFallbackSynthesizedDetail": "__face__ não tem arquivo próprio: o navegador a desenha com outro peso ou outra inclinação da família.",
     "warningsLooseLineTitle": "Linha frouxa",
     "warningsCjkLooseLineTitle": "Linha CJK aquém da medida",
     "warningsCjkLooseLineDetail": "“__text__”: para chegar à medida, os caracteres teriam de se afastar além do limite (meio eme, ou o tracking máximo de justificação, quando definido), então a linha termina antes. Em geral a causa é uma palavra longa ou um endereço da web que não pode ser quebrado, na linha seguinte.",

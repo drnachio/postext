@@ -28,7 +28,7 @@ El primer `:ref` a una figura la numera y la sitúa donde indica su [colocación
 
 <Excerpt region="opener" />
 
-El título de primer nivel se queda en la columna de texto, donde una [ranura de diseño](/es/docs/configuration#span-y-diseño-avanzado) apila su texto, el filete y la entradilla; el antetítulo cuelga de la esquina superior derecha de la página y el número, del antetítulo, los dos con el ancho del canal. `minHeight` fija la altura de la apertura en nueve líneas de la rejilla (42,9 mm), que dan cabida a un título de una línea, el filete y una entradilla de cuatro, así que con una entradilla más corta el texto no sube. El antetítulo y el número de 104 pt acaban 40,6 mm por debajo del margen superior, dentro de esas nueve líneas, así que tampoco bajan el texto. El canal solo está a la derecha en las páginas impares, y por eso el título de primer nivel salta a página impar. El recuadro de objetivos va después del primer párrafo y no justo tras el título, y ninguna figura del margen se cita antes que él (lo explica «Errores frecuentes»).
+El título de primer nivel se queda en la columna de texto, donde una [ranura de diseño](/es/docs/configuration#span-y-diseño-avanzado) apila su texto, el filete y la entradilla; el antetítulo cuelga de la esquina superior derecha de la página y el número, del antetítulo, los dos con el ancho del canal. `minHeight` fija la altura de la apertura en nueve líneas de la rejilla (42,9 mm), que dan cabida a un título de una línea, el filete y una entradilla de cuatro, así que con una entradilla más corta el texto no sube. El antetítulo y el número de 104 pt acaban 40,6 mm por debajo del margen superior, dentro de esas nueve líneas, así que tampoco bajan el texto. El canal solo está a la derecha en las páginas impares, y por eso el título de primer nivel salta a página impar. El recuadro de objetivos va después del primer párrafo, y ninguna figura del margen se cita antes que él, así que queda bajo el número (lo explica «Errores frecuentes»).
 
 ### 4 · Lleva los folios al lado del canal
 
@@ -46,7 +46,7 @@ Estas páginas son el capítulo 4 de un libro más largo. La continuación deja 
 
 <Excerpt region="palette" />
 
-Cada color de la configuración enlaza con una entrada de la paleta y lleva además su hex, que `col()` copia del mismo objeto. Postext 1.4.1 pinta los elementos de diseño y el color de las remisiones con ese hex, no con la entrada de la paleta (lo explica «Errores frecuentes»). Para cambiar los colores del capítulo, edita `palette`: los diagramas leen el mismo objeto, así que su vidrio, sus rayos, sus paneles oscuros y su fondo claro cambian a la vez que números, antetítulos y glosas. `main-color` apunta al color de acento, así que los colores por defecto de los estilos de texto que la configuración no fija salen en verde y no en el azul del motor.
+Cada color de la configuración enlaza con una entrada de la paleta y lleva además su hex, que `col()` copia del mismo objeto. Para cambiar los colores del capítulo, edita `palette`: los diagramas leen el mismo objeto, así que su vidrio, sus rayos, sus paneles oscuros y su fondo claro cambian a la vez que números, antetítulos y glosas. `main-color` apunta al color de acento, así que los colores por defecto de los estilos de texto que la configuración no fija salen en verde y no en el azul del motor.
 
 ## Variantes
 
@@ -56,8 +56,8 @@ Con los valores por defecto del tipo figura, los pies de las figuras 4.1, 4.4 y 
 
 ```diff
 -const resourceTypes = defaultResourceTypes(LANG).map((type) => (type.id !== 'figure' ? type
--  : { ...type, defaultPlacement: { captionSide: true } })); // gotcha: resource-types-locale
-+const resourceTypes = defaultResourceTypes(LANG); // gotcha: resource-types-locale
+-  : { ...type, defaultPlacement: { captionSide: true } })); // the built-in types, in LANG
++const resourceTypes = defaultResourceTypes(LANG); // what the engine uses when none are set
 ```
 
 ### Pon el canal a la derecha en todas las páginas
@@ -88,4 +88,4 @@ Para un documento que se lee página a página en pantalla, desactiva los márge
 ## Errores frecuentes
 
 - Figuras y glosas se apilan en el canal en el orden en que el texto llega a ellas, nunca una al lado de otra. La glosa del ángulo límite va después del párrafo de la ley de Snell y antes del que cita la figura 4.3, así que en la <PageRef page={2}>página 88</PageRef> se apila entre las figuras 4.2 y 4.3, junto al párrafo que presenta el término. Con la valla después de esa cita, caería bajo la figura 4.3.
-- En la primera página de un capítulo, cita las figuras del margen solo después del recuadro de objetivos. Las figuras laterales se apilan desde la cabeza del canal sin dejar sitio al antetítulo ni al número anclados allí, así que una figura citada en el primer párrafo se pinta encima de ellos.
+- En la primera página de un capítulo, las figuras laterales se apilan bajo el antetítulo y el número. Una figura citada en el primer párrafo ocupa ese sitio y baja el recuadro de objetivos por el canal, así que este capítulo cita su primera figura del margen después del recuadro.

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chapter-opener-bleed-band",
-  "sourceHash": "b0ec8126860b1e2106ca479a7e6584b6f50891c1307ef06ac4d4e433e3c6d78b",
+  "sourceHash": "a2ddeef213e710b29a94719d87094f5b8b9e14c39744e61a11e25cbb79a8ef43",
   "engine": {
-    "postext": "1.24.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T21:08:28.810Z",
+  "capturedAt": "2026-10-10T13:32:12.278Z",
   "variants": {
     "en": {
-      "hash8": "0ec1af65",
+      "hash8": "9e28e70d",
       "vdtHash": "09940d9699e7702a8cda351e3491448efa48de26",
       "timings": {
-        "importMs": 130,
-        "fontsMs": 43,
-        "buildMs": 144,
-        "totalMs": 1135,
-        "builds": 2
+        "importMs": 127,
+        "fontsMs": 2,
+        "buildMs": 216,
+        "totalMs": 964,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Roboto Serif"
         ],
         "pages": 4,
-        "ownLines": 181
+        "ownLines": 174
       },
       "pages": [
         {
@@ -115,14 +115,12 @@
       },
       "sandbox": {
         "file": "chapter-opener-bleed-band.postext",
-        "bytes": 34518,
+        "bytes": 34386,
         "folio": "43da5799"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
-          "defaultResourceTypes",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -220,8 +218,7 @@
           "paragraphStyles[].id",
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
-          "paragraphStyles[].textAlign",
-          "resourceTypes"
+          "paragraphStyles[].textAlign"
         ],
         "configSections": [
           "bodyText",
@@ -235,10 +232,9 @@
           "locale",
           "orderedLists",
           "page",
-          "paragraphStyles",
-          "resourceTypes"
+          "paragraphStyles"
         ],
-        "configLeaves": 262,
+        "configLeaves": 261,
         "designElements": 15,
         "directives": [
           ":::paragraphs"
@@ -306,13 +302,11 @@
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
-          "localised-labels",
           "opener-band",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
           "part-palettes",
-          "resource-types",
           "resources",
           "title-line-breaks"
         ],
@@ -336,14 +330,14 @@
       }
     },
     "es": {
-      "hash8": "0b37892f",
+      "hash8": "fb0ded86",
       "vdtHash": "256f874234a5d86a1ea1a8b1319f24f1128a52f6",
       "timings": {
-        "importMs": 180,
-        "fontsMs": 28,
-        "buildMs": 37,
-        "totalMs": 907,
-        "builds": 2
+        "importMs": 128,
+        "fontsMs": 3,
+        "buildMs": 69,
+        "totalMs": 812,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -365,7 +359,7 @@
           "Roboto Serif"
         ],
         "pages": 4,
-        "ownLines": 181
+        "ownLines": 174
       },
       "pages": [
         {
@@ -441,14 +435,12 @@
       },
       "sandbox": {
         "file": "chapter-opener-bleed-band.postext",
-        "bytes": 34738,
+        "bytes": 34602,
         "folio": "43da5799"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
-          "defaultResourceTypes",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -546,8 +538,7 @@
           "paragraphStyles[].id",
           "paragraphStyles[].lineHeight",
           "paragraphStyles[].marginTop",
-          "paragraphStyles[].textAlign",
-          "resourceTypes"
+          "paragraphStyles[].textAlign"
         ],
         "configSections": [
           "bodyText",
@@ -561,10 +552,9 @@
           "locale",
           "orderedLists",
           "page",
-          "paragraphStyles",
-          "resourceTypes"
+          "paragraphStyles"
         ],
-        "configLeaves": 262,
+        "configLeaves": 261,
         "designElements": 15,
         "directives": [
           ":::paragraphs"
@@ -632,13 +622,11 @@
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
-          "localised-labels",
           "opener-band",
           "opener-design",
           "page-role-filters",
           "paragraph-styles",
           "part-palettes",
-          "resource-types",
           "resources",
           "title-line-breaks"
         ],

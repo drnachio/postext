@@ -64,13 +64,12 @@ La resposta curta calcula el marge de peu: als 280 mm del format els resta els 2
 Sense equilibrat, les deu últimes línies de la pàgina 11 i el colofó van totes a la primera columna, i la segona queda buida.
 
 ```diff
--const balancing = { stretchAfterFloats: false };
+-const balancing = { enabled: true };
 +const balancing = { enabled: false };
 ```
 
 ## Errors freqüents
 
-- Un nivell de títol amb `span: 'page'` i sense `advancedDesign` hauria d'estendre el títol sobre les dues columnes, però postext 1.4.1 el mesura amb l'amplada d'una sola: «El canon secreto» s'imprimeix en una línia a tota l'amplada i reserva l'alçada de dues; el filet de columna travessa aquesta banda. Aquí el títol es queda a la primera columna.
 - La regla segons la qual un flotant `top` mai no cau a la pàgina que el cita val per als flotants a tota l'amplada. Un flotant `top` de columna sí que pot caure a la pàgina que el cita, al capdamunt d'una columna posterior, com la figura 1.1 a la pàgina 9.
 - El format, els marges i l'espai entre columnes van en unitats absolutes (mm, pt, cm, in). Un `em` no hi té cap cos amb què mesurar-se, i la composició s'atura amb «dimensionToPx: baseFontSizePx is required for unit "em"».
 - L'espai entre paraules de Vollkorn és estret, 0,2 em, així que en columnes d'uns 50 caràcters algunes línies justificades queden fluixes o atapeïdes. El text es va ajustar línia a línia amb l'informe de línies fluixes de la captura; torna a comprovar-ho si canvies el text o l'amplada.

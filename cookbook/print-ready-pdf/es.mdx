@@ -30,7 +30,7 @@ La caja del uñero cuelga del marco del sangrado y mide `BLEED` más que el uñe
 
 <Excerpt region="covers" />
 
-`cutLines` añade a cada lado de la página el sangrado, la separación de la marca y la marca de 5 mm, que aquí suman 11 mm, y como la respuesta corta iguala la separación al sangrado, las marcas empiezan en el borde del sangrado y van hacia fuera, en la plancha del negro. Un elemento de imagen anclado al sangrado con `width: 'fill'` toma el ancho de ese marco y conserva su proporción: el mapa de la cubierta está dibujado a 176 × 233 mm, el formato más 3 mm por lado, así que llega hasta el borde del sangrado, donde empiezan las marcas, mientras el texto cuelga de la caja de texto, bien dentro del corte. La contracubierta es un estilo de título cuyo pie de página sustituye al del documento, con una banda del mismo generador anclada al pie del sangrado y un margen inferior que detiene el texto 8 mm por encima.
+`cutLines` añade a cada lado de la página el sangrado, la separación de la marca y la marca de 5 mm, que aquí suman 11 mm. La separación es de 3 mm por defecto, lo mismo que este sangrado, así que las marcas empiezan en el borde del sangrado y van hacia fuera; con un sangrado mayor seguirían empezando en su borde, nunca dentro. Un elemento de imagen anclado al sangrado con `width: 'fill'` toma el ancho de ese marco y conserva su proporción: el mapa de la cubierta está dibujado a 176 × 233 mm, el formato más 3 mm por lado, así que llega hasta el borde del sangrado, donde empiezan las marcas, mientras el texto cuelga de la caja de texto, bien dentro del corte. La contracubierta es un estilo de título cuyo pie de página sustituye al del documento, con una banda del mismo generador anclada al pie del sangrado y un margen inferior que detiene el texto 8 mm por encima.
 
 ### 4 · Títulos que se convierten en marcadores
 
@@ -42,13 +42,13 @@ La caja del uñero cuelga del marco del sangrado y mide `BLEED` más que el uñe
 
 <Excerpt region="master" />
 
-Cada dibujo se define una sola vez, como trazados. La región del arte los convierte en el SVG que pinta el lienzo, y esta región escribe los mismos trazados en un PDF CMYK de una página, con mezclas elegidas para que la prueba se parezca a la pantalla; así el mar va en C100 M45 Y80 K55, el verde de la paleta. Cada recurso nombra su máster en `svg.pdfFileId`, `pressPdf()` (en la respuesta corta) entrega los bytes del máster a `renderToPdf` con el identificador del SVG, y postext-pdf incrusta esa página tal cual, en vectores y con las tintas del máster. Lo hace con el plano, que es una figura, y con el mapa de la cubierta y la banda de la contracubierta, que son imágenes de diseño. La prueba en escala de grises recibe los SVG, porque un máster incrustado nunca se convierte y seguiría en color.
+Cada dibujo se define una sola vez, como trazados. La región del arte los convierte en el SVG que pinta el lienzo, y esta región escribe los mismos trazados en un PDF CMYK de una página, con mezclas elegidas para que la prueba se parezca a la pantalla; así el mar va en C100 M45 Y80 K55, el verde de la paleta. Cada recurso nombra su máster en `svg.pdfFileId`; `renderToPdf` pide ese identificador, `pressPdf()` (en la respuesta corta) responde con los bytes del máster, y postext-pdf incrusta esa página tal cual, en vectores y con las tintas del máster. Lo hace con el plano, que es una figura, y con el mapa de la cubierta y la banda de la contracubierta, que son imágenes de diseño. La prueba en escala de grises recibe los SVG, porque un máster incrustado nunca se convierte y seguiría en color.
 
 ## Variantes
 
 ### Pide 5 mm de sangrado
 
-El arte, el uñero y la escala gráfica se miden desde `BLEED`, y las marcas de corte lo siguen gracias a `markOffset`, así que para una imprenta que pida 5 mm basta este cambio, y cada hoja pasa a medir 200 × 257 mm.
+El arte, el uñero y la escala gráfica se miden desde `BLEED`, y las marcas de corte empiezan en el borde del sangrado, así que para una imprenta que pida 5 mm basta este cambio, y cada hoja pasa a medir 196 × 253 mm.
 
 ```diff
 -const BLEED = 3; // mm of artwork past the trim: the cover, the tab and the back band reach it
@@ -70,5 +70,4 @@ Sin `pdfFileId`, el archivo de imprenta dibuja cada imagen desde su SVG, tambié
 - Un PDF/X no se genera sin su perfil de salida. `renderToPdf` descarga `fogra51.icc` de `profileBaseUrl` (aquí, la carpeta `/icc/` de postext.dev); para servirlo tú, pasa los bytes del archivo como `outputProfile`.
 - El preflight señala el texto de menos de 9 pt que lleva más de una tinta. Las etiquetas de 7,5 pt en negrita y en verde aguantan bien cuatro tintas sobre papel estucado, así que `print.preflight.smallTextSize` es 7 pt; el colofón de 6,3 pt, que en verde salvia serían tres tintas sobre una banda de cuatro, va calado en el color del papel.
 - Un archivo PDF/X no lleva anotaciones de enlace, porque un archivo para imprenta no puede tenerlas dentro de su BleedBox; los marcadores se mantienen.
-- Una marca de corte empieza a `markOffset` del corte, no del sangrado, así que con un sangrado mayor que la separación por defecto de 3 mm las marcas se imprimen sobre la ilustración. Mantén la separación igual al sangrado, como hace aquí `cutLines`.
 - Una vez generado, cada botón se convierte en un enlace «Open the PDF ↗» y otro de descarga, y solo los de descarga llevan el nombre de su archivo.

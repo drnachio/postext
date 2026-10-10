@@ -1,12 +1,12 @@
 // ═══ Postext Cookbook · Nº 010 · Datasheet: tables from data, merged headers ════════
 // https://postext.dev/en/cookbook/technical-datasheet
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Fira Sans, Fira Sans Condensed, Fira Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Fira Sans, Fira Sans Condensed, Fira Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // The datasheet of a fictional sensor. Postext reads no pipe tables, so the tables are data:
 // TSV pasted from a spreadsheet, parsed into table models, then merged, aligned and filled.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, parseTSV, mergeCells, setAlignment, setCellBackground,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
+  defaultResourceTypes, parseTSV, mergeCells, setAlignment, setCellBackground, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -20,7 +20,7 @@ const palette = { // eight named colours; every colour in the config links to on
   hazard: '#f2b705', rule: '#c9ccd3', // maximum ratings and the badge; hairlines
   muted: '#5d636d', paper: '#ffffff', // running heads, notes and units; white
 };
-// 1.4.1 designs ignore paletteId and read the hex: col() sets both (gotcha: palette-skips-designs).
+// Every colour carries its paletteId: change a value in `palette` and all its uses follow.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [ // the defaults link to 'main-color', so it is set to the brand violet
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -32,8 +32,8 @@ const at = (row, column) => ({ row, col: column });
 const span = (r0, c0, r1, c1) => ({ start: at(r0, c0), end: at(r1, c1) });
 const C = { group: 0, param: 1, symbol: 2, conditions: 3, min: 4, max: 6, unit: 7 }; // columns
 function electricalTable(tsv) {
-  // In 1.4.1 parseTSV makes plain cells and leaves headerRowCount unset: the head is two rows.
-  let m = Object.assign(parseTSV(tsv), { headerRowCount: 2,
+  // headerRows marks the head, two rows here, which a split table would repeat on each part.
+  let m = Object.assign(parseTSV(tsv, { headerRows: 2 }), {
     columnWidths: [22, 44, 16, 38, 15, 15, 15, 15] }); // weights: mm of the 180 mm measure
   // 'Parameter' covers two columns and two rows; 'Value' spans Min, Typ and Max. mergeCells
   // marks the covered cells hiddenBy, so no column shifts (gotcha: merged-cells-hiddenby).
@@ -59,8 +59,8 @@ function electricalTable(tsv) {
       }
       // Figures flush right, as datasheets set them (no decimal tab: gap tab-stops).
       m = setAlignment(m, at(r, c), c >= C.min && c <= C.max ? 'right' : 'left', 'middle');
-      // A table style has no zebra rows, so they are filled cell by cell (gotcha: no-zebra). Each
-      // helper returns a new model, cheap at 20 rows; for thousands, set the cell fields directly.
+      // tableStyle.bodyAlternateBackground alternates row by row; this fill changes with the
+      // parameter, so it is set cell by cell. Each helper returns a new model, cheap at 20 rows.
       if (c === C.group) m = setCellBackground(m, at(r, c), col('tint'));
       else if (zebra) m = setCellBackground(m, at(r, c), col('zebra'));
     }
@@ -71,7 +71,7 @@ function electricalTable(tsv) {
 
 // #region split: group rows, codes and lists in cells; a table taller than its slot splits
 function groupedTable(tsv, columnWidths) {
-  let m = Object.assign(parseTSV(tsv), { headerRowCount: 1, columnWidths });
+  let m = Object.assign(parseTSV(tsv, { headerRows: 1 }), { columnWidths });
   const codes = [0, 2]; // Pin and Type, Addr. and Reset: short codes, centred, in a bare chip
   // A TSV cell holds no line break: the data writes \n, and a line opening with • is a list.
   m.rows = m.rows.map((row, r) => row.map((cell, c) => ({ ...cell,
@@ -124,9 +124,8 @@ const opener = {
     text('kicker', '{attr.kicker}', COND, 9.5, 'tint', inset('top-left', 30), caps(9.5)),
     text('title', '{titleText}', COND, 64, 'paper', place('#kicker', 'below', 0, 0.5),
       { fontWeight: 700, lineHeight: 1 }),
-    // A design text that overflows its width ends in '…' (gotcha: overflow-ellipsis-default).
     text('lead', '{attr.lead}', 'Fira Sans', 12, 'paper', place('#title', 'below', 0, 2.5,
-      { width: mm(108) }), { lineHeight: 1.32, align: 'left', overflow: 'wrap' }),
+      { width: mm(108) }), { lineHeight: 1.32, align: 'left' }), // wraps within its width
     text('status', 'Preliminary', COND, 7.5, 'ink', place('#lead', 'below', 0, 4.5), badge),
     ...[1, 2, 3].flatMap((n) => keyFigure(n, 15 + 15 * n)),
   ] },
@@ -147,7 +146,7 @@ const footer = { elements: [ // every page: an image element works in a running 
 ] };
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   // Tables and figures count 1, 2, 3 through the document; table captions sit above.
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}',
     ...(type.id === 'table' && { captionStyle: { position: 'above' } }) })),
@@ -159,7 +158,7 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
     boldFontWeight: 600, boldColor: col('ink'), italicColor: col('ink'), textAlign: 'left',
     referenceColor: col('brand'), firstLineIndent: pt(0), paragraphSpacing: true },
   headings: { fontFamily: COND, color: col('ink'),
-    levels: [ // H1 restated: any headings object drops its break (gotcha: headings-drop-h1-break)
+    levels: [ // 'any': a loose sheet has no rectos, so the H1 asks for no blank page
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: opener, marginBottom: pt(0) }, // the opener's minHeight sets the gap
       // Margin and line add up to whole grid lines (three, then two), so the grid adds no air.
@@ -208,7 +207,7 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
 });
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
-const markdown = /* @content */ ''; // reworded so no unit starts a line (gotcha: nbsp-breaks)
+const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 const electrical = /* @content:electrical */ ''; // the tables: TSV, pasted from a spreadsheet
 const pins = /* @content:pins */ '';
 const registers = /* @content:registers */ '';
@@ -216,8 +215,8 @@ const ordering = /* @content:ordering */ '';
 
 // #region art: the logo, pinout and circuit at column width, the outline at page width, in mm
 const SCALE = 10; // px per mm of the drawings' intrinsic size: the engine keeps only the ratio
-// The outline is 48.3 mm tall so that the text above it ends on a whole grid line: the
-// closing-page lift (EF-94) then leaves it at the foot, level with the other pages.
+// The outline is 48.3 mm tall so that the text above it ends on a whole grid line: a closing
+// page lifts its page-wide floats to the text (layout.hugClosingFloats), and here none is left.
 const LOGO = [24, 24], PINOUT = [87, 47], CIRCUIT = [87, 56], OUTLINE = [180, 48.3]; // mm
 // One size family, in mm at 1:1 (1 mm = 2.83 pt): names 7.4 pt, labels and dimensions 6.8 pt,
 // notes 6.2 pt, pin numbers 6 pt; all under the 9.3 pt text and the 9.5 pt captions.
@@ -345,38 +344,20 @@ const resources = [
     placement: { position: 'top', span: 'page' }, note: 'Typical values at 3.3 V and 25 °C. '
       + '^1^ Tested at 25 °C and 50 °C, the rest by characterization. ^2^ Characterized, not '
       + 'tested in production. ^3^ One conversion a second, bus idle.' }),
-  // No placement: these float, and only a floated table splits (gotcha: here-table-no-split).
+  // No placement: these float to the first free slot after their reference and split there.
   table('pins', 'Pin functions', groupedTable(pins, [9, 16, 10, 52]), { styleId: 'grouped',
     note: 'Types: P power, G ground, I input, O open-drain output, I/O open-drain input and '
       + 'output.' }),
   table('registers', 'Register map', groupedTable(registers, [9, 17, 11, 50]), {
     styleId: 'grouped', note: 'Reset values apply at power-on and after a general-call reset.' }),
-  table('ordering', 'Order codes', Object.assign(parseTSV(ordering), { headerRowCount: 1,
+  table('ordering', 'Order codes', Object.assign(parseTSV(ordering, { headerRows: 1 }), {
     columnWidths: [23, 29, 18, 17] }), { styleId: 'ordering',
     note: 'WLCSP-4: fixed address 48h, no ALERT output.' }),
 ];
 // #endregion
 
-// #region drawing: the drawings' labels stay text, in the document's own label face
-// An SVG drawn as an image cannot use the page's fonts (gotcha: svg-no-webfonts): the PDF sets
-// its labels as real text in the faces it embeds; the canvas copy embeds the face itself.
-async function fontFace(family) { // the same TTF the PDF embeds, from the pdf kit block
-  const ttf = await fontsourceProvider(family, 400, 'normal');
-  const base64 = btoa(Array.from(ttf, (b) => String.fromCharCode(b)).join(''));
-  return `@font-face{font-family:'${family}';src:url(data:font/ttf;base64,${base64})}`;
-}
-async function loadDrawing(fileId, markup, face) {
-  await loadSvg(fileId, markup); // registers the plain SVG and keeps its bytes for the PDF
-  const img = new Image();
-  img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-    markup.replace(/<svg[^>]*>/, (tag) => `${tag}<style>${face}</style>`))}`;
-  await img.decode();
-  registerResourceImage(fileId, img); // replaces the canvas copy only
-}
-// #endregion
-
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the layout uses, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the layout uses, loaded before the build
   'Fira Sans': ['400', '400i', '600', '600i'], // text; 600 is the bold
   'Fira Sans Condensed': ['400', '400i', '600', '700'], // display: title, heads, captions
   'Fira Mono': ['400'], // labels: pin names, codes, document number, the drawings' labels
@@ -384,12 +365,17 @@ const FONTS = { // every face the layout uses, loaded before the build (gotcha: 
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const allText = [markdown, electrical, pins, registers, ordering].join('\n'); // all it prints
-await loadFonts(FONTS, allText);
+await prepareFonts(allText, config(), kitFonts(FONTS));
+// #region drawing: the drawings' labels stay text, in the document's own label face
+// label() writes each <text> with font-family="Fira Mono". loadSvg runs the markup through
+// inlineSvgFonts, which embeds that face in the SVG, so the canvas draws the labels in it;
+// the PDF sets them as real text in the Fira Mono it embeds.
 await loadSvg('logo.svg', logo);
 const drawings = { pinout: pinout(), circuit: circuit(), outline: outline() }; // by resource id
-const face = await fontFace(MONO); // fetched once for the three drawings
-for (const [id, markup] of Object.entries(drawings)) await loadDrawing(`${id}.svg`, markup, face);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), allText);
+for (const [id, markup] of Object.entries(drawings)) await loadSvg(`${id}.svg`, markup);
+// #endregion
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: allText });
 showPages(doc, { title: 'PX-7021 datasheet' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`); // the same faces; the drawings stay vectors with real text

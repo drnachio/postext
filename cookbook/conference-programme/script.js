@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 053 · Conference programme with a merged schedule grid ═══════
 // https://postext.dev/en/cookbook/conference-programme
 // Code: MIT · Text: original, in Catalan (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Schibsted Grotesk, Unbounded, Chivo Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Schibsted Grotesk, Unbounded, Chivo Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
   defaultResourceTypes, mergeCells, setCellContent, setCellBackground, setAlignment,
 } from 'https://esm.sh/postext';
 
@@ -18,8 +18,7 @@ const palette = {
   accent: '#6a3ed3', // kickers, caption labels, the parts of the day
   muted: '#67636f', // running heads and notes
 };
-// 1.4.1 paints design slots from the hex, not the id: col() writes both
-// (gotcha: palette-skips-designs)
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.accent }) // defaults' id
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -67,14 +66,12 @@ function schedule(text) { // '11.15 | T Title / Speaker | ^' · a bare line: a p
 // #endregion
 
 // #region split: where each day's grid lands and how it continues, labelled in Catalan
-const CATALAN = { // 1.4.1 names types in English and Spanish only (gotcha: resource-types-locale)
-  figure: { name: 'Figura', namePlural: 'Figures', shortLabel: 'fig.', captionPrefix: 'Figura' },
-  table: { name: 'Taula', namePlural: 'Taules', shortLabel: 'taula', captionPrefix: 'Taula',
-    captionStyle: { position: 'above' } },
-};
-const resourceTypes = defaultResourceTypes('ca').map((type) => ({ ...type, ...CATALAN[type.id],
+// The built-in types in Catalan, Figura and Taula; a grid's caption goes above it.
+const resourceTypes = defaultResourceTypes('ca').map((type) => ({ ...type,
+  ...(type.id === 'table' && { captionStyle: { position: 'above' } }),
   numberingTemplate: '{n}', resetOn: 'never' })); // Taula 1, Taula 2: one count, not per day
 const SPLIT = { overflow: 'split', // the default; the other values are 'clip' and 'hide'
+  // The engine's own Catalan strings are '(cont.)' and 'Continua': these spell them out.
   continuedSuffix: '(continuació)', // after the caption of every part but the first
   continuesMarker: 'Continua a la pàgina següent' }; // under every part but the last
 // Thursday is cited on page 2 and placed at the top, so it opens page 3 (gotcha:
@@ -93,14 +90,14 @@ const bare = (id, extra) => ({ id, backgroundEnabled: false, borderWidth: pt(0),
 const chipStyles = [bare('blanc', { color: col('paper') }), // the plenary's type, on ink
   bare('hora', { fontFamily: LABEL, fontSize: em(0.96), bold: true }),
   bare('franja', { fontFamily: LABEL, fontSize: em(0.92), bold: true, color: col('accent') }),
-  bare('sala')]; // keeps each room of the plan's note on one line (gotcha: nbsp-breaks)
+  bare('sala')]; // keeps each room of the plan's note on one line
 // #endregion
 
 // #region opener: an ink band per day with the date, a 144 pt numeral and the day's name
 const BAND = 76, STRIP = 8, AIR = 7; // mm: band from the trim, its strip of modules, air below
 const text = (id, content, family, size, color, placement, extra) => ({ kind: 'text', id,
   content, fontFamily: family, fontSize: pt(size), color: col(color), placement, align: 'left',
-  overflow: 'wrap', ...extra }); // not '…' at the edge (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', ...extra }); // a long line wraps, in the running heads too
 const pin = (to, edge, x, y, size) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) },
   ...(size && { size }) });
 const caps = (size) => ({ fontWeight: 500, textTransform: 'uppercase',
@@ -117,7 +114,7 @@ const opener = { enabled: true, minHeight: mm(BAND - PAGE.top + AIR), slot: { el
     BAND - STRIP, { width: mm(PAGE.w), height: mm(STRIP) }) }, // on the band's foot
   text('date', '{attr.date}', LABEL, 8, 'edicio', pin('container', 'top-left', 0, 0), caps(8)),
   text('numeral', '{attr.day}', DISPLAY, NUMERAL, 'paper', pin('#date', 'below', -BEARING, 1),
-    { fontWeight: 800, lineHeight: 1 }), // a multiple (gotcha: design-lineheight-multiple)
+    { fontWeight: 800, lineHeight: 1 }), // a 144 pt line box
   text('title', '{titleText}', DISPLAY, 26, 'paper', // its baseline level with the numeral's
     pin('#numeral', 'right-of', 5, BASELINE * (NUMERAL - 26) * PT),
     { fontWeight: 700, lineHeight: 1 }),
@@ -164,8 +161,8 @@ const coverStyle = { id: 'coberta', numbered: false,
         caps(8.5)),
     ] } } };
 
-const config = () => ({ // a factory: configs are cached by identity
-  // (gotcha: config-cache-identity)
+const config = () => ({
+
   resourceTypes, colorPalette, tableStyle, chipStyles, paragraphStyles,
   header, footer, headingStyles: [coverStyle],
   page: { width: mm(PAGE.w), height: mm(PAGE.h), dpi: 150, // a 1,004 px canvas per page
@@ -176,7 +173,7 @@ const config = () => ({ // a factory: configs are cached by identity
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true }, // ragged, spaced
   headings: { fontFamily: DISPLAY, fontWeight: 600, color: col('ink'), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // A day opens a new page, on either side.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: opener, marginBottom: pt(0) },
     { level: 2, fontSize: pt(11.5), lineHeight: pt(LEAD), marginTop: pt(LEAD),
@@ -237,8 +234,7 @@ function strip(w, s) { // the band's foot: one row of modules in the three track
   return svg(w, s, out);
 }
 // The floor plan: ink walls, a tinted courtyard and the rooms numbered in discs. The digits
-// are strokes, because an SVG picture cannot use the page's web fonts (gotcha:
-// svg-no-webfonts); the caption's note names the rooms.
+// are strokes, so the plan carries no font; the caption's note names the rooms.
 const DIGITS = { 1: 'M1.8 2.6 3.6 1V9', 2: 'M1 3A2.5 2.5 0 1 1 5.2 4.8L1 9H5.4',
   3: 'M1.2 1H5L2.8 4.2A2.6 2.6 0 1 1 1 8.2', 4: 'M4.2 9V1L.8 6.6H5.6',
   5: 'M5.2 1H1.6L1.2 4.6A2.8 2.8 0 1 1 1.2 8.6',
@@ -296,15 +292,16 @@ for (const { svg: { fileId }, markup } of drawings) await loadSvg(fileId, markup
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the layout uses, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the layout uses, loaded before the build
   'Schibsted Grotesk': ['400', '400i', '700'], // text, bios and cells
   Unbounded: ['600', '700', '800'], // sections; titles; the day's numeral
   'Chivo Mono': ['400', '400i', '500', '700'] }; // labels, times, captions and the colophon
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const allText = [markdown, dijous, divendres].join('\n');
-await loadFonts(FONTS, allText);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), allText);
+await prepareFonts(allText, config(), kitFonts(FONTS));
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(),
+  { ...kitFonts(FONTS), text: allText });
 showPages(doc, { title: 'Jornades de Tipografia i Edició Digital · Programa' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

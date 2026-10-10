@@ -16,7 +16,7 @@ A la pràctica 4 de Química, tres alumnes de 2n de Batxillerat valoren un vinag
 
 ### 1 · Fórmules com a text, TeX per a les equacions
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. [`~…~` i `^…^`](/ca/docs/document-format#format-en-línia) componen un tram al 58 % del cos en la lletra del text, de manera que `CH~3~COOH`, `OH^−^` (el seu signe menys és U+2212) i `cm^3^` conserven el pes i el color de la frase que els envolta. Les marques serveixen també als peus i a les cel·les de taula, on no hi cap TeX. La reacció, escrita amb `\ce{…}` de mhchem, i les equacions van en TeX entre `$$`. El [motor de fórmules](/ca/docs/configuration#arrencar-el-motor-de-fórmules) només ve a la versió `?bundle`, així que tots els símbols s'importen d'aquesta. `math.fontSizeScale` val 0,495 / 0,442, uns 1,12: l'alçada de la x d'una fórmula és la de TeX, 0,442 em del cos, i la d'Inria Serif és de 0,495 em, de manera que l'escala deixa les minúscules de fórmula i text a la mateixa alçada.
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. [`~…~` i `^…^`](/ca/docs/document-format#format-en-línia) componen un tram al 58 % del cos en la lletra del text, de manera que `CH~3~COOH`, `OH^−^` (el seu signe menys és U+2212) i `cm^3^` conserven el pes i el color de la frase que els envolta. Les marques serveixen també als peus i a les cel·les de taula, en la lletra del peu o de la cel·la; `$…$` en línia també s'hi compon, en la lletra de les fórmules. La reacció, escrita amb `\ce{…}` de mhchem, i les equacions van en TeX entre `$$`. `await initMathEngine()` arrenca el [motor de fórmules](/ca/docs/configuration#arrencar-el-motor-de-fórmules) abans de compondre; s'importa del mateix lloc que la resta de símbols. `math.fontSizeScale` val 0,495 / 0,442, uns 1,12: l'alçada de la x d'una fórmula és la de TeX, 0,442 em del cos, i la d'Inria Serif és de 0,495 em, de manera que l'escala deixa les minúscules de fórmula i text a la mateixa alçada.
 
 ### 2 · Números de secció penjats al marge
 
@@ -34,7 +34,7 @@ L'únic H1 de l'informe porta l'[estil de títol](/ca/docs/configuration#span-i-
 
 <Excerpt region="labels" />
 
-[`defaultResourceTypes(LANG)`](/ca/docs/configuration#tipus-de-recurs) dona Tabla i Figura a l'edició espanyola; el `locale` tot sol les deixaria en anglès. La plantilla `{h1}.{n}` imprimeix aquí un 1 a seques, perquè l'H1 de l'informe no porta número i un `{h1}` buit desapareix amb el seu punt. El peu de la taula va a sobre, com és costum als informes. El text cita taula i figura amb `:ref{id="lecturas" style="full" case="lower"}`, que escriu «tabla 1» en minúscula, amb la tinta i el pes del text.
+Els tipus incorporats segueixen el `locale` del document, així que l'edició espanyola diu Tabla i Figura sense ajustar res. [`defaultResourceTypes(LANG)`](/ca/docs/configuration#tipus-de-recurs) retorna aquests tipus perquè la recepta en canviï un. La plantilla `{h1}.{n}` imprimeix aquí un 1 a seques, perquè l'H1 de l'informe no porta número i un `{h1}` buit desapareix amb el seu punt. El peu de la taula va a sobre, com és costum als informes. El text cita taula i figura amb `:ref{id="lecturas" style="full" case="lower"}`, que escriu «tabla 1» en minúscula, amb la tinta i el pes del text.
 
 ### 5 · Una sola sèrie de lectures per a la taula i la corba
 
@@ -46,7 +46,7 @@ Les quatre parelles de lectures de la bureta donen totes les cel·les de la taul
 
 <Excerpt region="references" />
 
-Un contenidor `:::paragraphs{style="references"}` aplica l'[estil de paràgraf](/ca/docs/configuration#estils-de-paràgraf) a cada referència: 9 pt sobre 12,5 pt, en bandera, amb 6 mm de sagnat francès i 4 pt entre entrades. A la 1.4.1 el text en bandera no té partició de mots, així que un títol llarg com *Fundamentos de química analítica* només es talla entre paraules. El colofó porta un estil propi, Inria Sans a 7,4 pt, amb una línia de 15 pt de blanc a sobre.
+Un contenidor `:::paragraphs{style="references"}` aplica l'[estil de paràgraf](/ca/docs/configuration#estils-de-paràgraf) a cada referència: 9 pt sobre 12,5 pt, en bandera, amb 6 mm de sagnat francès i 4 pt entre entrades. El text en bandera no porta partició de mots tret que `bodyText.hyphenation.ragged` la demani, així que un títol llarg com *Fundamentos de química analítica* només es talla entre paraules. El colofó porta un estil propi, Inria Sans a 7,4 pt, amb una línia de 15 pt de blanc a sobre.
 
 ## Variants
 
@@ -74,8 +74,6 @@ Els resultats passen a ser la taula 5.1 i la figura 5.1, amb el compte reiniciat
 
 ## Errors freqüents
 
-- Una equació destacada no queda unida a la frase que la presenta, i una frase que acaba en «así que» pot tancar una pàgina amb l'equació ja a la següent. El text de les dues edicions està ajustat perquè l'equació de [OH⁻] tanqui la pàgina 1 sota la seva frase.
+- Per defecte, una equació destacada no queda unida a la frase que la presenta, i una frase que acaba en «así que» pot tancar una pàgina amb l'equació ja a la següent; `math.keepWithLeadIn: true` passa aquesta línia a la pàgina següent amb l'equació. Aquí el text de les dues edicions està ajustat perquè l'equació de [OH⁻] tanqui la pàgina 1 sota la seva frase.
 - Els glifs de TeX són els de MathJax, no els d'Inria Serif, i una equació pesa una mica menys que el text que l'envolta. Deixa les fórmules que van dins d'una frase com a marques `~` i `^`, i reserva TeX per a les línies que el necessiten.
-- A la 1.4.1, un disseny de títol que es queda a la columna es retalla pel límit superior de la columna. L'estil `report` porta `span: 'page'` en aquest informe d'una sola columna només per això: sense aquesta opció, els 24 mm de dalt de la banda i de la bureta surten en blanc.
-- Els peus es componen en bandera, i a la 1.4.1 una línia en bandera es pot partir entre una paraula i el seu superíndex. Quan ocupava dues línies, el peu de la taula 1 de l'edició anglesa es tallava entre `mol·dm` i `−3`; ara cap en una línia a les dues edicions. Revisa cada peu que porti una unitat.
-- Les fonts web no arriben a un SVG dibuixat com a imatge, així que les xifres dels eixos i els seus rètols a la corba són contorns de MathJax: `tex()` demana a `renderMath` els traçats de cada rètol i els col·loca a l'SVG. Al PDF continuen sent vectorials i tenen els mateixos glifs que les equacions.
+- Les xifres dels eixos i els seus rètols a la corba són contorns de MathJax, amb els mateixos glifs que les equacions i vectorials al PDF: `tex()` demana a `renderMath` els traçats de cada rètol i els col·loca a l'SVG. Només es poden dibuixar quan `initMathEngine()` ha acabat.

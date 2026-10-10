@@ -34,7 +34,7 @@ A lição é composta em Iansui, uma letra Kai desenhada a partir da Klee One na
 
 <Excerpt region="furniture" />
 
-Num livro encadernado pela direita, a página par fica à direita da página dupla, então as páginas pares levam a aba da unidade e o fólio na borda direita, e as ímpares na esquerda. A aba é uma caixa com um elemento de texto por cima; `writingMode: 'vertical-rl'` no elemento compõe 第三單元　寓言故事 descendo pela aba, enquanto os fólios e as linhas do pé continuam horizontais.
+Num livro encadernado pela direita, a página par fica à direita da página dupla, então as páginas pares levam a aba da unidade e o fólio na borda direita, e as ímpares na esquerda. A aba é uma caixa com um elemento de texto por cima; `writingMode: 'vertical-rl'` no elemento compõe 第三單元　寓言故事 descendo pela aba, enquanto os fólios e as linhas do pé continuam horizontais. Os números da lição e das fábulas vêm do `numberingTemplate` dos títulos (`第{1:一}課` e `{2:一}`, com um espaço ideográfico como `numberSeparator` e `{startAt=12}` na lição), separados do título, de modo que o zhuyin de 寓 fica sobre 寓; a linha do pé das ímpares imprime `{chapterNumber}　{chapterTitle}`, porque `{chapterTitle}` deixa o número de fora.
 
 ## Variações
 
@@ -56,9 +56,5 @@ Alguns livros de leitura imprimem as leituras mais claras que o texto, para que 
 - Tire as leituras do dicionário de Taiwan. Ferramentas feitas sobre dicionários do continente, entre elas o pypinyin, dão 度 duó, 寧 nìng, 時候 shíhou e 市場 shìchǎng; o *Dicionário Revisado de Chinês Mandarim* do Ministério da Educação, que os livros de leitura de Taiwan seguem, lê ㄉㄨㄛˋ, ㄋㄧㄥˊ, ㄕˊ ㄏㄡˋ e ㄕˋ ㄔㄤˊ, e põe em tom neutro a segunda sílaba de 故事, 家裡 e 過來. O moedict.tw o oferece palavra por palavra. Ele mantém 一 e 不 no tom próprio, e esta lição também.
 
 - Desenhe alguns caracteres em cada fonte antes de misturá-las. A LXGW WenKai TC segue as formas herdadas e desenha 為 (U+70BA) como 爲, então uma lição composta nela imprimia 爲宋國笑 no texto e 為宋國笑 na nota em Ming da mesma página dupla. A Iansui desenha o 為 padrão.
-
-- Os números da lição e das fábulas são digitados nos títulos (`# 第十二課　{寓言兩則|…}`). Um `numberingTemplate` junta o número ao primeiro caractere do título, e quando esse caractere tem leitura, a leitura fica centralizada sobre o número e o caractere juntos.
-
-- Calcule o que o andar de cima de cada página precisa comportar e abra cada boxe onde a página dele tem espaço. O boxe do autor é aberto antes de 語文天地 para começar o andar da página 89, e o dos caracteres novos, aberto depois das expressões idiomáticas, vem em seguida. Um boxe ou uma figura que não encontra espaço antes do fim do texto sai numa página sem nada embaixo, e o seguinte fica de fora sem aviso, então confira se todos estão nas páginas.
 
 - A Iansui tem um só peso. Os títulos se destacam pelo tamanho, e as entradas das expressões idiomáticas pela cor: o estilo `idiom` define `boldFontWeight: 400` com a cor de destaque como `boldColor`, então `**…**` muda a cor e não a letra.

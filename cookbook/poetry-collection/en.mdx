@@ -36,7 +36,7 @@ Instead of its text, the heading prints a design in the column. In that design, 
 
 <Excerpt region="front" />
 
-A heading style can break to a new page and draw a design there, so the half-title, the frontispiece and the title page are one heading each, with a style of its own. `numbered: false` keeps them out of the count, and the first poem is still I. `toc: false` keeps them out of the contents, and an empty footer leaves their pages without a folio ([heading styles](/en/docs/configuration#heading-styles)). The styles span the page because a design in the column is clipped to the text block, which would crop the full-bleed plate to the margins and cut off its caption. The caption comes from the heading's `caption` attribute; the author, title and subtitle on the title page come from the frontmatter.
+A heading style can break to a new page and draw a design there, so the half-title, the frontispiece and the title page are one heading each, with a style of its own. `numbered: false` keeps them out of the count, and the first poem is still I. `toc: false` keeps them out of the contents, and an empty footer leaves their pages without a folio ([heading styles](/en/docs/configuration#heading-styles)). The styles span the page because the foot of the text block cuts a design kept in the column, which would crop the full-bleed plate there and lose its caption. The caption comes from the heading's `caption` attribute; the author, title and subtitle on the title page come from the frontmatter.
 
 ### 5 · The contents fill themselves in
 
@@ -95,5 +95,5 @@ The template's counter style changes the numeral on the poem's page and in the c
 - Keep the lines of a stanza together: a blank line inside a `:::verse` block starts a new stanza, however many blank lines there are.
 - A line that starts with a plus sign and a space is a stepped line, set where the line above ended; write `\+` to print the plus sign.
 - Without `align=start` each poem is centred on its longest line, and every poem then sits at a different distance from the margin.
-- To turn two words over together, tie them with a no-break space (U+00A0), as *the soil* and *bright wings.* are on page 5. It holds in a line of plain text; in a line with italic or bold the engine still breaks there.
+- To turn two words over together, tie them with a no-break space (U+00A0), as *the soil* and *bright wings.* are on page 5.
 - A footer element with `pages` left at `'all'` prints on blank pages too. The folio here is two elements, one for openers and one for body pages, so a blank verso stays blank.

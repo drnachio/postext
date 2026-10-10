@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 123 · A Japanese technical manual: kana, kanji and Latin ═══
 // https://postext.dev/en/cookbook/japanese-technical-manual
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code
-// Fonts: Noto Serif JP, Noto Sans JP, BIZ UDGothic (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Noto Serif JP, Noto Sans JP, BIZ UDGothic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes, parseTSV,
-  registerResourceImage,
+  buildDocument, withLoadedFonts, renderPageToCanvas, defaultResourceTypes, parseTSV,
+  registerResourceImage, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -103,7 +103,7 @@ const header = { elements: [
   head('r-folio', '{pageNumber}', 'odd', 'top-right', 0, folio),
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   resourceTypes: defaultResourceTypes('ja'), // 図 and 表, numbered by chapter: 図3-1
   colorPalette,
@@ -116,7 +116,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: { fontFamily: GOTHIC, fontWeight: 700, color: col('ink'),
     balancing: { enabled: false }, // no lines added above heads: the grid holds
     levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // parity 'odd': the chapter opens on a recto, after a blank verso only when one is needed.
     { level: 1, numberingTemplate: '第{1}章', breakBefore: { enabled: true, parity: 'odd' },
       advancedDesign: opener },
     // 3行取り: each section head takes three body lines, so the grid holds across it.
@@ -180,19 +180,9 @@ const resources = [
 ];
 // #endregion
 
-// #region art: the figure's labels in the code face, embedded (gotcha: svg-no-webfonts)
-async function codeFace() {
-  const url = 'https://cdn.jsdelivr.net/npm/@fontsource/biz-udgothic@5/files/'
-    + 'biz-udgothic-latin-400-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 8192) {
-    bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
-  }
-  return `@font-face{font-family:C;src:url(data:font/woff2;base64,${btoa(bin)}) format('woff2')}`
-    + `text{font-family:C;font-size:3.2px;text-anchor:middle;fill:${palette.ink}}`;
-}
-function bytesArt(style) {
+// #region art: the figure's labels name the code face, and loadSvg embeds its file
+const LABELS = `text{font-family:"${CODE}";font-size:3.2px;text-anchor:middle;fill:${palette.ink}}`;
+function bytesArt() {
   const box = (x, y, w, h, fill, stroke, text) => `<rect x="${x}" y="${y}" width="${w}" `
     + `height="${h}" fill="${palette[fill]}" stroke="${palette[stroke]}" stroke-width=".3"/>`
     + `<text x="${x + w / 2}" y="${y + h / 2 + 1.1}">${text}</text>`;
@@ -203,13 +193,13 @@ function bytesArt(style) {
     + bytes.map((b, i) => box(26 + i * 10 + Math.floor(i / 3), y + 9, 9.5, 7, 'paper', 'rule', b))
       .join('') + side(103, y + 9, `${bytes.length} bytes`, 'muted');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1175" height="400" viewBox="0 0 117.5 40">`
-    + `<style>${style}</style>${row(3, 'NFC', ['U+304C'], ['E3', '81', '8C'])}`
+    + `<style>${LABELS}</style>${row(3, 'NFC', ['U+304C'], ['E3', '81', '8C'])}`
     + `${row(22, 'NFD', ['U+304B', 'U+3099'], ['E3', '81', '8B', 'E3', '82', '99'])}</svg>`;
 }
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif JP': ['400'], // 明朝: the text, the notes, the table
   'Noto Sans JP': ['400', '700'], // ゴシック: heads, the lead, labels, the point box, folios
   'BIZ UDGothic': ['400'], // the code: fixed pitch, half-width Latin, inline and in the listing
@@ -226,10 +216,11 @@ await loadCjkFonts({ [MINCHO]: FONTS[MINCHO] }, `${markdown}${FORMS}`);
 await loadCjkFonts({ [GOTHIC]: FONTS[GOTHIC] }, gothic);
 const code = (markdown.match(/^```[\s\S]*?^```$|`[^`\n]+`/gm) ?? []).join('');
 await loadCjkFonts({ [CODE]: FONTS[CODE] }, code);
-await loadSvg('bytes.svg', bytesArt(await codeFace()));
+await loadSvg('bytes.svg', bytesArt());
 const continuation = { pageIndexOffset: 40, pageNumbering: { startAt: 41 }, headings: { h1: 2 } };
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources, continuation },
-  config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources, continuation },
+  config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'A Japanese technical manual',
   es: 'Un manual técnico japonés' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider, resourceBytes: imageBytes }),

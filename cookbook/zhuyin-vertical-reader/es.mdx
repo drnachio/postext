@@ -34,7 +34,7 @@ La lección va en Iansui, una letra Kai dibujada a partir de Klee One con las fo
 
 <Excerpt region="furniture" />
 
-En un libro con el lomo a la derecha, la página par queda a la derecha del pliego, así que las pares llevan la pestaña de la unidad y el folio en el borde derecho y las impares en el izquierdo. La pestaña es una caja con un elemento de texto encima; `writingMode: 'vertical-rl'` en el elemento compone 第三單元　寓言故事 de arriba abajo, mientras los folios y las líneas del pie siguen en horizontal.
+En un libro con el lomo a la derecha, la página par queda a la derecha del pliego, así que las pares llevan la pestaña de la unidad y el folio en el borde derecho y las impares en el izquierdo. La pestaña es una caja con un elemento de texto encima; `writingMode: 'vertical-rl'` en el elemento compone 第三單元　寓言故事 de arriba abajo, mientras los folios y las líneas del pie siguen en horizontal. Los números de la lección y de las fábulas salen del `numberingTemplate` de los títulos (`第{1:一}課` y `{2:一}`, con un espacio ideográfico como `numberSeparator` y `{startAt=12}` en la lección), aparte del título, de modo que el zhuyin de 寓 queda sobre 寓; la línea del pie de las impares imprime `{chapterNumber}　{chapterTitle}`, porque `{chapterTitle}` deja fuera el número.
 
 ## Variantes
 
@@ -56,9 +56,5 @@ Algunos libros imprimen las lecturas más claras que el texto, para que los cara
 - Toma las lecturas del diccionario de Taiwán. Las herramientas hechas sobre diccionarios del continente, pypinyin entre ellas, dan 度 duó, 寧 nìng, 時候 shíhou y 市場 shìchǎng; el *Diccionario Revisado de Chino Mandarín* del Ministerio de Educación, que siguen los libros de Taiwán, lee ㄉㄨㄛˋ, ㄋㄧㄥˊ, ㄕˊ ㄏㄡˋ y ㄕˋ ㄔㄤˊ, y pone en tono neutro la segunda sílaba de 故事, 家裡 y 過來. moedict.tw lo sirve palabra por palabra. Mantiene 一 y 不 en su tono propio, y esta lección también.
 
 - Dibuja unos cuantos caracteres en cada fuente antes de mezclarlas. LXGW WenKai TC sigue las formas heredadas y dibuja 為 (U+70BA) como 爲, así que una lección compuesta con ella imprimía 爲宋國笑 en el texto y 為宋國笑 en la nota en Ming del mismo pliego. Iansui dibuja el 為 estándar.
-
-- Los números de la lección y de las fábulas se escriben en los títulos (`# 第十二課　{寓言兩則|…}`). Un `numberingTemplate` une el número al primer carácter del título, y cuando ese carácter lleva lectura, la lectura se centra sobre el número y el carácter juntos.
-
-- Calcula lo que tiene que caber en el piso de arriba de cada página y abre cada recuadro donde su página tenga sitio. El recuadro del autor se abre antes de 語文天地 para que empiece el piso de la página 89, y el de los caracteres nuevos, abierto tras las frases hechas, va detrás. Un recuadro o un dibujo que no encuentra sitio antes de que acabe el texto sale en una página sin nada debajo, y el siguiente se queda fuera sin aviso, así que comprueba que todos aparecen en las páginas.
 
 - Iansui tiene un solo grosor. Los títulos destacan por el tamaño y los lemas de las frases hechas por el color: el estilo `idiom` fija `boldFontWeight: 400` con el acento como `boldColor`, así que `**…**` cambia el color y no la letra.

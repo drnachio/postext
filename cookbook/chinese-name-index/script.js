@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 079 · An index of Chinese names, by pinyin and by strokes ═══
 // https://postext.dev/en/cookbook/chinese-name-index
 // Code: MIT · Text: 紅樓夢 (1792), zh.wikisource revision 9685985 (CC BY-SA 4.0) · Pictures: none
-// Fonts: Noto Serif/Sans SC/TC, Ma Shan Zheng, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Noto Serif/Sans SC/TC, Ma Shan Zheng, LXGW WenKai TC (OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -17,7 +17,7 @@ const palette = {
   rule: '#d6cdbf', // the short rule under each title
   paper: '#fbf8f1',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -100,7 +100,7 @@ const footer = (e) => ({ elements: [ // folios at the outer foot, openers includ
 // #endregion
 
 let e = EDITIONS.hans; // the edition config() lays out: the build loop below sets it
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: e.locale, // zh-Hans or zh-Hant, never LANG (gotcha: cjk-locale-tag)
   colorPalette,
   page: { sizePreset: 'custom', width: mm(140), height: mm(203), dpi: 150, // 大32开
@@ -113,12 +113,11 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(2), indentAfterHeading: true, // 2 characters
     avoidWidows: true, avoidOrphans: true },
-  headings: { fontFamily: e.kai, fontWeight: 400, color: col('ink'), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
-    { level: 1, fontSize: pt(16), marginBottom: pt(0),
+  // Off by default on a character grid: turned on, the two columns of each index end level.
+  headings: { fontFamily: e.kai, fontWeight: 400, color: col('ink'), balancing: { enabled: true },
+    levels: [{ level: 1, fontSize: pt(16), marginBottom: pt(0),
       advancedDesign: opener(e, 6, '第{numberHan}回'), // 第一回, 第二回… in the edition's script
-      breakBefore: { enabled: true, parity: 'any' } }, // each 回 on a new page
-  ] },
+      breakBefore: { enabled: true, parity: 'any' } }] }, // each 回 on a new page
   headingStyles: [{ ...indexHeading, span: 'page', marginBottom: pt(0),
     advancedDesign: opener(e, 7, '{attr.kicker}', indexNote(e)) }],
   index: index(e),
@@ -133,7 +132,7 @@ const markdown = /* @content */ ''; // the Simplified edition, content.<lang>.md
 const traditional = /* @content:hant */ ''; // the Traditional edition, content.hant.<lang>.md
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first). The CJK families load by slices.
+// Every face the design uses. The CJK families load by slices.
 const FONTS = { 'Noto Serif SC': ['400', '700'], 'Noto Sans SC': ['700'], 'Ma Shan Zheng': ['400'],
   'Noto Serif TC': ['400', '700'], 'Noto Sans TC': ['700'], 'LXGW WenKai TC': ['400'] };
 
@@ -154,7 +153,8 @@ for (const [key, md] of [['hans', markdown], ['hant', traditional]]) {
 const docs = {};
 for (const [key, md] of [['hans', markdown], ['hant', traditional]]) {
   e = EDITIONS[key];
-  docs[key] = await buildWithFonts(() => buildDocument({ markdown: md }, config()), md);
+  docs[key] = await withLoadedFonts(() => buildDocument({ markdown: md }, config()),
+    { ...kitFonts(FONTS), text: md });
 }
 const title = t({ en: 'A Chinese name index', es: 'Un índice de nombres chinos' });
 // The desk shows either edition, and the PDF is built from the one on it.

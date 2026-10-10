@@ -44,13 +44,11 @@
     "arabic-locale-tag",
     "arabic-fonts-subset",
     "cjk-spread-order",
-    "headings-drop-h1-break",
-    "style-inherits-break",
-    "fonts-first"
+    "style-inherits-break"
   ],
   "engine": {
-    "postext": "1.15.0",
-    "postextPdf": "1.15.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -113,7 +111,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-04",
-  "updated": "2026-10-04",
+  "updated": "2026-10-10",
   "related": [
     "trade-paperback-novel",
     "vertical-novel-right-bound",

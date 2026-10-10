@@ -34,7 +34,6 @@
       "running-heads",
       "page-role-filters",
       "color-palette",
-      "vertical-space",
       "column-balancing"
     ]
   },
@@ -49,68 +48,19 @@
   ],
   "gotchas": [
     "top-float-next-page",
-    "float-queues-at-paragraph",
-    "here-figure-no-space-after",
-    "unknown-ref-silent",
-    "resource-types-locale",
     "resource-double-quotes",
-    "sandbox-only-warnings",
-    "svg-no-webfonts",
-    "svg-no-marker-filters",
-    "hyphenation-locales",
-    "headings-drop-h1-break",
-    "overflow-ellipsis-default",
-    "palette-skips-designs",
-    "fonts-first"
+    "svg-no-marker-filters"
   ],
   "explainsWarnings": [
-    "unknownResourceId",
-    "danglingTypeRef"
+    "unknownResourceId"
   ],
   "related": [
     "chapter-opener-bleed-band",
     "textbook-margin-column",
     "technical-datasheet"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-19",
-      "package": "postext",
-      "note": "the engine does not warn about unknown :ref ids or uncited figures, so the pen lists the mentions with parseMarkdown, diffs the ids itself and throws before building"
-    },
-    {
-      "followup": "EF-33",
-      "package": "postext",
-      "note": "config.locale does not localise Figure: resourceTypes: defaultResourceTypes(LANG) is passed by hand"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "the H1 breakBefore is restated because a headings object drops it"
-    },
-    {
-      "followup": "EF-69",
-      "package": "postext",
-      "note": "a float is queued when its citing paragraph starts, not at the :ref line, so the lakes paragraph cites Figure 2.7 in its first sentence and starts on the chapter's last page, which keeps the figure below its citation (gotcha float-queues-at-paragraph)"
-    },
-    {
-      "followup": "EF-93",
-      "package": "postext",
-      "note": "an inline (position 'here') figure gets one grid line of space above it (build.ts spacingBefore = max(pendingSpacing, floatGapPx)) but below it only the grid-snap remainder, so the text after it can start right under the credit note; the Markdown follows ::resource{id=\"roche\"} with :::space{lines=1} (gotcha here-figure-no-space-after)"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the palette hex beside each paletteId and bodyText.referenceColor is restated: 1.4.1 paints the opener, running-head and drop-folio colours and referenceColor from the inline hex, never from the palette (gotcha palette-skips-designs)"
-    },
-    {
-      "followup": "EF-14",
-      "package": "postext",
-      "note": "locale is the exact bundled code ('en-us' | 'es'): a region-tagged code such as 'es-ES' silently hyphenates as American English (gotcha hyphenation-locales)"
-    }
-  ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -244,5 +194,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-28"
+  "updated": "2026-10-10"
 }

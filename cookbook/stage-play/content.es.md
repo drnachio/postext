@@ -6,8 +6,6 @@ author: "Oscar Wilde"
 
 # La importancia de llamarse Ernesto {style="playbill" small="La" big="Importancia" link="de llamarse" name="Ernesto" theatre="Teatro St James’s · Londres" premiere="Estrenada el 14 de febrero de 1895"}
 
-:::pagebreak
-
 ## Personajes de la obra
 
 :::paragraphs{style="bill-head"}

@@ -20,9 +20,7 @@
   "answers": ["Q29", "Q28", "Q27", "Q33"],
   "gaps": ["rotated-text"],
   "gotchas": [
-    "attr-values", "palette-skips-designs", "headings-drop-h1-break",
-    "overflow-ellipsis-default", "design-lineheight-multiple", "config-cache-identity", "fonts-first",
-    "hyphenation-locales"
+    "attr-values"
   ],
   "related": [
     "chapter-opener-bleed-band",
@@ -30,13 +28,8 @@
     "short-chapters-run-on",
     "photo-essay-full-bleed"
   ],
-  "workarounds": [
-    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside the paletteId, because 1.4.1 paints design elements from the hex (gotcha palette-skips-designs); the style palettes still swap 'accent' on their own pages" },
-    { "followup": "EF-59", "package": "postext", "note": "the spec badge prints {chapterNumber} in an H1 opener without a numberingTemplate, measured empty but painted as the ordinal; harmless here, because an empty design text still takes one line box and the hairline below the badge sets the reservation" },
-    { "followup": "EF-05", "package": "postext", "note": "any headings object drops the level's default odd break; span 'page' still opens every chapter on a new page, so levels[0].breakBefore is restated with parity 'any' to state the side on purpose (the hook for the 'odd' Variation), and the styles inherit it" },
-    { "followup": "EF-14", "package": "postext", "note": "hyphenation matches exact codes only, so the config sets locale: t({ en: 'en-us', es: 'es' }) (gotcha hyphenation-locales)" }
-  ],
-  "engine": { "postext": "1.23.0" },
+  "workarounds": [],
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -64,5 +57,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-09"
+  "updated": "2026-10-10"
 }

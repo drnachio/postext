@@ -28,7 +28,7 @@ Com `parts.page: false`, uma cerca como `:::part{title="Features" palette="band=
 
 <Excerpt region="palette" />
 
-Uma parte substitui entradas da paleta pelo id, então tudo o que muda com a seção fica ligado a `band`: o painel da abertura, a aba do fólio, os marcadores e os números das listas, o olho de citação, e o fio e o título do boxe de dados. No texto, a substituição é feita pelo valor: qualquer cor cujo hex seja igual ao hex base de `band` (`#8b6a3e`) assume a da seção, e por isso nenhuma outra entrada usa esse hex. Nos elementos de design é o contrário. O Postext 1.4.1 pinta o hex escrito ao lado do `paletteId` e ignora `colorPalette`, mas a substituição feita por uma parte chega a eles pelo `paletteId`; por isso `col()` escreve os dois.
+Uma parte substitui entradas da paleta pelo id, então tudo o que muda com a seção fica ligado a `band`: o painel da abertura, a aba do fólio, os marcadores e os números das listas, o olho de citação, e o fio e o título do boxe de dados. No texto, a substituição é feita pelo valor: qualquer cor cujo hex seja igual ao hex base de `band` (`#8b6a3e`) assume a da seção, e por isso nenhuma outra entrada usa esse hex. Nos elementos de design é o contrário: a substituição feita por uma parte chega a eles pelo `paletteId`, e por isso `col()` escreve o id ao lado do hex.
 
 ### 4 · Deixar o sumário se agrupar sozinho
 
@@ -40,7 +40,7 @@ Uma parte substitui entradas da paleta pelo id, então tudo o que muda com a se�
 
 <Excerpt region="opener" />
 
-A imagem sangra pelo alto da página e desce 150 mm. Um painel em `band` sobe 34 mm sobre o pé dela. O painel são três caixas de texto de 136 mm de largura, cada uma encadeada `below` (abaixo) da anterior, com o nome da seção vindo de `{partTitle}`, o título e o olho. A imagem não reserva altura, então a matéria começa sob o elemento mais baixo que reserva, a assinatura, cujo preenchimento inferior vazio de 5 mm mantém a primeira linha pelo menos a essa distância.
+A imagem sangra pelo alto da página e desce 150 mm. Um painel em `band` sobe 34 mm sobre o pé dela. O painel são três caixas de texto de 136 mm de largura, cada uma encadeada `below` (abaixo) da anterior, com o nome da seção vindo de `{partTitle}`, o título e o olho. O painel e a assinatura descem além do pé da imagem, então a matéria começa sob o elemento mais baixo, a assinatura, cujo preenchimento inferior vazio de 5 mm mantém a primeira linha pelo menos a essa distância.
 
 ### 6 · Pôr o nome da seção no fólio
 

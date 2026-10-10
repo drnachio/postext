@@ -19,25 +19,18 @@
   },
   "answers": ["Q28", "Q29", "Q44"],
   "gotchas": [
-    "attr-values", "bitmap-print-size", "top-float-next-page", "empty-chip", "fonts-first",
-    "header-paints-over-text", "headings-drop-h1-break",
-    "float-stretch-closing-page", "hyphenation-locales", "design-lineheight-multiple",
-    "callout-columns"
+    "attr-values",
+    "bitmap-print-size",
+    "top-float-next-page",
+    "header-paints-over-text"
   ],
   "explainsWarnings": ["bitmapTooSmall"],
   "related": [
     "magazine-cover-and-contents", "first-page-from-markdown", "print-and-screen-editions",
     "figures-float-where-cited"
   ],
-  "workarounds": [
-    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
-    { "followup": "EF-02", "package": "postext", "note": "the end mark is a chip holding a U+2060 word joiner, since a chip of spaces prints its markup" },
-    { "followup": "EF-70", "package": "postext", "note": "headings.balancing.stretchAfterFloats is off: on a story's closing page under a page-wide top float, the lever drops the shorter column a line, out of line with the other (gotcha float-stretch-closing-page); switched off on every page as a guard for edited copy, since the shipped copy does not trip it" },
-    { "followup": "EF-14", "package": "postext", "note": "exact hyphenation codes 'en-us' and 'es': a regional tag such as 'es-ES' falls back to American English (gotcha hyphenation-locales)" },
-    { "followup": "EF-87", "package": "postext", "note": "the end mark is ink because a section palette does not reach chip colours: a lake chip would stay teal on the field guide's rust page (pipeline/partPalette.ts recolours segment colours, not chip boxes)" },
-    { "followup": "EF-56", "package": "postext", "note": "design text lineHeight is given as multiples of the size (0.94, 1.22): a pt() value silently drops the opener's reserved height in 1.4.1 (gotcha design-lineheight-multiple)" }
-  ],
-  "engine": { "postext": "1.24.0" },
+  "workarounds": [],
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": 1, "card": "page", "expect": { "pages": [4, 4] } },
@@ -74,5 +67,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-09"
+  "updated": "2026-10-10"
 }

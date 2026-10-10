@@ -30,13 +30,13 @@ Un paquet porta una font quan `customFonts` l'anomena i `files` en desa els byte
 
 <Excerpt region="resources" />
 
-Els dos dibuixos són SVG que genera el mateix pen i que es lliuren a `files` amb el `svg.fileId` del seu recurs; la taula són dades, així que viatja a `preset.json` amb el seu peu. La secció i la taula es col·loquen amb `position: 'here'`: la secció al capdamunt del revers i l'horari sota el paràgraf que el cita. A la versió 1.4.1, un recurs en línia no porta aire a sota, així que una línia `:::space{lines=0.5}` després de la taula deixa 3,7 mm sota el peu; sense aquesta línia, el paràgraf següent comença a 1,4 mm del peu.
+Els dos dibuixos són SVG que genera el mateix pen i que es lliuren a `files` amb el `svg.fileId` del seu recurs; la taula són dades, així que viatja a `preset.json` amb el seu peu. La secció i la taula es col·loquen amb `position: 'here'`: la secció al capdamunt del revers i l'horari sota el paràgraf que el cita. El fulletó fixa `layout.inlineResourceGap: 'above'`, que deixa l'aire d'un recurs en línia només per sobre, i així el revers cap en una cara: el títol que segueix la secció porta el seu propi espai, i una línia `:::space{lines=0.5}` després de la taula deixa 3,7 mm sota el peu.
 
-### 4 · Escriu les etiquetes al fitxer
+### 4 · Mantén les etiquetes en la llengua del fitxer
 
 <Excerpt region="labels" />
 
-Quan un fitxer no porta `resourceTypes`, `openBundle` els crea en la llengua que demana qui l'obre, no en la del fitxer: el fulletó en castellà obert amb `{ locale: 'en' }`, o importat al Sandbox des de /en/sandbox, imprimeix Figure 1.1 sobre text en castellà. Els tipus escrits a la configuració substitueixen aquests, així que el fitxer en castellà imprimeix Figura 1 i Tabla 1 l'obri qui l'obri. `'{n}'` treu el número de capítol, que un fulletó de dues pàgines no necessita ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). La mateixa funció `config()` fixa `locale`, que tria els patrons de partició de mots del castellà (compuer-tas al revers) i la llengua que declara el PDF.
+Qui obre un fitxer crea els tipus integrats en la llengua que aquest fitxer serveix: sense `resourceTypes` a la configuració, el fulletó en castellà imprimeix Figura 1.1 i Tabla 1.1 l'obri qui l'obri, també el Sandbox des de /en/sandbox. El fulletó escriu els tipus només pels números: `'{n}'` treu el número de capítol, que un fulletó de dues pàgines no necessita ([tipus de recurs](/ca/docs/configuration#tipus-de-recurs)). La mateixa funció `config()` fixa `locale`, que tria els patrons de partició de mots del castellà (compuer-tas al revers) i la llengua que declara el PDF.
 
 ### 5 · Lliura els mateixos bytes
 
@@ -48,7 +48,7 @@ L'enllaç ofereix els mateixos `bytes` des dels quals es van compondre les pàgi
 
 <Excerpt region="cover" />
 
-La portada és el disseny del títol de coberta: el dibuix ancorat a la pàgina a mida completa, el text del títol amb `{titleText}`, l'avanttítol, l'entradeta i la línia de dades, que surten dels seus atributs, i un text amb caixa per a la pestanya de la llengua. El nivell 1 dels títols porta `span: 'page'`, així que el dibuix comença a la vora del paper. Si es queda a la columna, el disseny es talla a les vores superior i inferior de la caixa de text: el dibuix començaria 12 mm més avall i acabaria 13 mm abans de la vora inferior, i la pestanya de la llengua quedaria en una tira sense lletres.
+La portada és el disseny del títol de coberta: el dibuix ancorat a la pàgina a mida completa, el text del títol amb `{titleText}`, l'avanttítol, l'entradeta i la línia de dades, que surten dels seus atributs, i un text amb caixa per a la pestanya de la llengua. El nivell 1 dels títols porta `span: 'page'`, així que el dibuix arriba a la vora inferior del paper. Si es queda a la columna, el disseny es talla al peu de la caixa de text: el dibuix acabaria 13 mm abans de la vora inferior.
 
 ## Variants
 
@@ -62,9 +62,9 @@ La guia de Postext porta en un sol fitxer els seus capítols, la seva configurac
 +const bundle = await openBundle(await guide.arrayBuffer(), { locale: LANG });
 ```
 
-### Deixa que el lector triï les etiquetes
+### Numera les figures per capítol
 
-Sense els tipus, les etiquetes segueixen la llengua amb què s'obre el fitxer i les figures compten des del títol de coberta: l'edició castellana imprimeix aquí Figura 1.1, i Figure 1.1 quan la importa el Sandbox des de /en/sandbox.
+Sense els tipus, qui obre el fitxer els crea en la seva llengua amb la numeració per defecte, i les figures compten des del títol de coberta: Figura 1.1 i Tabla 1.1 en l'edició castellana, Figure 1.1 i Table 1.1 en l'anglesa.
 
 ```diff
 -  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
@@ -72,4 +72,4 @@ Sense els tipus, les etiquetes segueixen la llengua amb què s'obre el fitxer i 
 
 ## Errors freqüents
 
-- A postext 1.4.1, `createBundle` escriu una sola llengua per fitxer. L'entrada `localized` que descriu [Paquets bilingües](/ca/docs/configuration#paquets-bilingües) no és en aquesta versió, tot i que `openBundle` 1.4.1 ja llegeix aquests fitxers.
+- Aquí cada edició és un fitxer propi. Per portar les dues llengües en un de sol, passa a `createBundle` un mapa `localized` ([Paquets bilingües](/ca/docs/configuration#paquets-bilingües)); `openBundle(bytes, { locale })` llegeix llavors qualsevol de les dues edicions.

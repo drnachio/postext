@@ -24,7 +24,7 @@ O `numberingTemplate: '{1:I}'` do nível numera os ensaios I, II e III, e `{numb
 
 <Excerpt region="contents" />
 
-`:::toc` no Markdown imprime uma entrada por título listado: número, título, linha de pontos, rótulo da página e, por meio de `subtitle`, o autor. `buildDocument` diagrama o livro de novo até os rótulos de página pararem de mudar, então um ensaio renomeado ou mais longo atualiza o sumário ([sumário](/pt/docs/configuration#sumário)). O Postext 1.4.1 coloca o centro do número de uma entrada 0,3 × o corpo da entrada acima da linha de base, e o Chrome coloca o centro da Gloock 0,3125 em acima da linha de base dela, então um numeral de 0,3 × 15 ÷ 0,3125 = 14,4 pt fica apoiado na linha de base do título de 15 pt; um de 12 pt sobe 0,3 mm. Um livro com partes também ganha uma linha para cada `:::part`, desenhada por `toc.parts.design`, como em <RecipeLink slug="parts-in-colour">Partes em cores</RecipeLink>.
+`:::toc` no Markdown imprime uma entrada por título listado: número, título, linha de pontos, rótulo da página e, por meio de `subtitle`, o autor. `buildDocument` diagrama o livro de novo até os rótulos de página pararem de mudar, então um ensaio renomeado ou mais longo atualiza o sumário ([sumário](/pt/docs/configuration#sumário)). O numeral de uma entrada usa a fonte e o corpo do título, a menos que `numberFontFamily` ou `numberFontSize` digam outra coisa, e fica apoiado na linha de base da primeira linha do título em qualquer corpo. Um livro com partes também ganha uma linha para cada `:::part`, desenhada por `toc.parts.design`, como em <RecipeLink slug="parts-in-colour">Partes em cores</RecipeLink>.
 
 ### 3 · Autor na página par, ensaio na ímpar
 
@@ -36,13 +36,13 @@ Cada cabeço é ancorado à página, a 11 mm da borda superior, e `parity` escol
 
 <Excerpt region="front" />
 
-Com `numbered: false`, a capa e o sumário não avançam o contador, então Hazlitt é o I, e `toc: false` os mantém fora da lista ([estilos de título](/pt/docs/configuration#estilos-de-título)). Os dois estilos herdam o `breakBefore` do nível, com paridade `'any'`, e é por isso que o sumário vem logo depois da capa, na página 2, sem um `:::pagebreak`. O estilo da capa ocupa a página inteira num livro de uma coluna porque um design mantido na coluna é recortado nas bordas superior e inferior da coluna, o que deixaria 20 mm de papel acima da paisagem.
+Com `numbered: false`, a capa e o sumário não avançam o contador, então Hazlitt é o I, e `toc: false` os mantém fora da lista ([estilos de título](/pt/docs/configuration#estilos-de-título)). Os dois estilos herdam o `breakBefore` do nível, com paridade `'any'`, e é por isso que o sumário vem logo depois da capa, na página 2, sem um `:::pagebreak`. O estilo da capa ocupa a página inteira num livro de uma coluna porque um design mantido na coluna é cortado no pé da coluna, o que deixaria 22 mm de papel abaixo da paisagem.
 
 ### 5 · Escreva cada cor por extenso com o seu vínculo à paleta
 
 <Excerpt region="palette" />
 
-Na 1.4.1, `colorPalette` chega aos estilos de texto mas não aos elementos de design, então `col()` escreve o hex de cada cor ao lado do seu `paletteId`: as assinaturas, os cabeços e a capa pintam esse hex. Apontar `main-color` para a cor da tinta cobre todos os valores padrão que a configuração não redefine, que de outro modo sairiam no azul do motor, `#295AA3`.
+`col()` escreve o hex de cada cor ao lado do seu `paletteId`, e o motor segue esse vínculo: as assinaturas, os cabeços e a capa usam o que `colorPalette` guarda sob esse id, então outra paleta com os mesmos ids muda a cor do livro inteiro. Apontar `main-color` para a cor da tinta cobre todos os valores padrão que a configuração não redefine, que de outro modo sairiam no azul do motor, `#295AA3`.
 
 ## Variações
 
@@ -78,6 +78,5 @@ Com a paridade `'odd'`, Stevenson passa para a página 9, depois de uma página 
 
 ## Erros comuns
 
-- Hazlitt cita versos no meio das frases. Os versos vão num bloco `:::verse{style="verse" align=start}`, uma linha de Markdown por verso, recuados 8 mm, e a frase que continua depois dele vai num estilo `runon`, sem recuo. Uma citação em bloco do Markdown sairia num itálico cinza fixo, `#666666`, com o recuo de primeira linha do corpo e sem recuo lateral, e nenhuma configuração muda isso na 1.4.1.
+- Hazlitt cita versos no meio das frases. Os versos vão num bloco `:::verse{style="verse" align=start}`, uma linha de Markdown por verso, recuados 8 mm, e a frase que continua depois dele vai num estilo `runon`, sem recuo. Uma citação em bloco do Markdown não serve aqui: as linhas dela são unidas como as de um parágrafo, e os versos sairiam corridos, como prosa.
 - Um atributo que falta num título não imprime nada e não gera aviso. Sem `author="…"`, a assinatura e o cabeço par de um ensaio saem vazios, e a linha dele sob o título some do sumário.
-- Os 14,4 pt do passo 2 valem só para a Gloock. Para outra fonte, descubra a que altura acima da linha de base o Chrome põe o centro dela: `measureText('I').alphabeticBaseline` com `textBaseline = 'middle'` devolve esse valor, com o sinal trocado, em pixels. Depois defina `numberFontSize` como 0,3 × o corpo da entrada dividido por essa distância em em (a da Hanken Grotesk é 0,2675 em).

@@ -26,9 +26,9 @@
     ]
   },
   "answers": ["Q131"],
-  "gotchas": ["epub-embeds-given-fonts", "headings-drop-h1-break", "fonts-first", "config-cache-identity"],
+  "gotchas": ["epub-embeds-given-fonts"],
   "related": ["catalan-pocket-novella", "folio-book-on-a-desk", "bundle-round-trip"],
-  "engine": { "postext": "1.15.0" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [2, 3], "card": "spread", "pages": [1, 2, 3, 4, 5, 6] },
@@ -63,5 +63,5 @@
   },
   "license": { "code": "MIT", "content": "MIT" },
   "created": "2026-10-04",
-  "updated": "2026-10-04"
+  "updated": "2026-10-10"
 }

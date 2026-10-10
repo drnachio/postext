@@ -17,24 +17,10 @@
     ]
   },
   "answers": ["Q71"],
-  "gotchas": [
-    "single-ink-canvas", "svg-no-webfonts", "palette-skips-designs", "opener-image-no-reserve",
-    "design-lineheight-multiple", "design-text-newline", "top-float-next-page",
-    "ragged-run-punctuation", "headings-drop-h1-break", "fonts-first"
-  ],
+  "gotchas": ["top-float-next-page"],
   "related": ["print-ready-pdf", "live-palette-retint", "magazine-cover-and-contents", "figures-float-where-cited"],
-  "workarounds": [
-    { "followup": "EF-17", "package": "postext", "note": "the canvas paints registered SVGs as they are, so each drawing is recoloured with applySingleInkToSvg before loadSvg registers it, while renderToPdf gets the drawing as drawn through resourceBytes and recolours it once itself" },
-    { "followup": "EF-113", "package": "postext", "note": "the cover and back cover heading styles set span: 'page', or the masthead above the text block, the pole's foot and the setting moon below it are clipped at the column's edges" },
-    { "followup": "EF-90", "package": "postext", "note": "the inset's and the back cover's heading designs set a minHeight floor at the height of their picture (the back cover's blind plus 6 mm), since a design's images reserve no room" },
-    { "followup": "EF-56", "package": "postext", "note": "design text lineHeight is given as multiples of the size (0.9, 0.95, 1.25, 1.4)" },
-    { "followup": "EF-01", "package": "postext", "note": "the stop flag's four words are stacked by a 12 mm box that holds one word a line, not by \\n in the attribute (which also turns into a literal \\N under textTransform: 'uppercase' in 1.4.1)" },
-    { "followup": "EF-71", "package": "postext", "note": "col() writes the hex beside each paletteId, because 1.4.1 does not apply colorPalette to design elements" },
-    { "followup": "EF-73", "package": "postext", "note": "the reference to the map is not bracketed: in the ragged text the '(' before :ref ended the line above the reference, so the sentence was reworded" },
-    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" }
-  ],
-  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
-  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
+  "kit": ["core", "fonts", "viewer", "pdf"],
   "sample": { "locales": ["en"] },
   "capture": {
     "hero": [2, 3],
@@ -62,5 +48,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-26",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

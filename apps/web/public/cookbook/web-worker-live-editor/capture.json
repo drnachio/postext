@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "web-worker-live-editor",
-  "sourceHash": "bf9a106e31e45a09b59237ff55a5cb78d240e521d1163f17258e7f9bb4d1f78c",
+  "sourceHash": "1bee20042cfa3cf0eebe3476dd27453a6d3b6fb1bc89ff6972bd5d924fc66fe2",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.614Z",
+  "capturedAt": "2026-10-10T13:39:44.843Z",
   "variants": {
     "en": {
-      "hash8": "8de5d8ef",
-      "vdtHash": "718485d3ed3a2ab318607b517bc6378593a62ca7",
+      "hash8": "b5b92ae9",
+      "vdtHash": "f28c72ad1821926ff80cada74187bed204248786",
       "timings": {
-        "importMs": 1134,
-        "fontsMs": 705,
-        "buildMs": 104,
-        "totalMs": 2507,
+        "importMs": 4652,
+        "fontsMs": 430,
+        "buildMs": 364,
+        "totalMs": 6985,
         "builds": 1
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Cinzel"
         ],
         "pages": 9,
-        "ownLines": 248
+        "ownLines": 242
       },
       "pages": [
         {
@@ -125,13 +125,12 @@
       },
       "sandbox": {
         "file": "web-worker-live-editor.postext",
-        "bytes": 218791,
+        "bytes": 211765,
         "folio": "ddaa1eeb"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "createLayoutWorker",
           "createMeasurementCache",
           "registerResourceImage",
@@ -147,7 +146,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "colorPalette",
@@ -233,7 +231,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 229,
+        "configLeaves": 228,
         "designElements": 14,
         "directives": [
           ":::space",
@@ -289,8 +287,8 @@
         "converged": true,
         "iterationCount": 2,
         "looseLines": {
-          "count": 2,
-          "share": 0.015,
+          "count": 1,
+          "share": 0.0076,
           "worst": 2.09
         },
         "findings": [
@@ -298,6 +296,11 @@
             "check": "C3",
             "severity": "info",
             "detail": "a worker recipe: captured without request interception (hosts checked, network not cached)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }

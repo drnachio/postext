@@ -208,6 +208,26 @@ export function buildDocument(content, config, cache, options) {
   } finally { end(); }
 }
 
+// The engine's font preparation around a build (#629): recorded as the
+// document it returns, with the faces loaded when its last build ran.
+// Its time is the passes of its last build (font loading left out).
+export async function buildDocumentWithFonts(content, config, options) {
+  const started = performance.now();
+  let ms = 0;
+  const onPass = (info) => {
+    if (info.pass === 1 && info.tocRound === 0) ms = 0;
+    ms += info.ms;
+    options?.onPass?.(info);
+  };
+  cb.pending++;
+  let doc;
+  try { doc = await real.buildDocumentWithFonts(content, config, { ...options, onPass }); } finally { cb.pending = Math.max(0, cb.pending - 1); }
+  begin();
+  end();
+  record({ kind: 'document', shim: SHIM, content, config, docs: [doc], ms, at: started });
+  return doc;
+}
+
 export function buildBundle(bundle, options) {
   const t0 = begin();
   const done = (docs) => {

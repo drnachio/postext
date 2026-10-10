@@ -1810,7 +1810,8 @@ shows the reverse page more than any stock but bible (its coldset ink soaks into
 `warnings { missingFont=true, looseLines=true, headingHierarchy=true, consecutiveHeadings=false, listAfterHeading=false, designIssues=true }`.
 `missingFont` also gates the engine's `fontFallback` content warning (≥ 1.25): a face the text was set in
 that the browser's font set could not give when the build ran (`reason` `missing` or `synthesized`, a
-bold or italic drawn from another face). Only builds with a font set check it (the browser, a worker);
+weight or slant the family has no face for, drawn from another of its faces: a 600 set from the 700 as
+much as a bold made from the regular). Only builds with a font set check it (the browser, a worker);
 `render.mjs` and the CLI do not.
 
 **Fonts and caches in browser code (≥ 1.25).** Build with `buildDocumentWithFonts(content, config,

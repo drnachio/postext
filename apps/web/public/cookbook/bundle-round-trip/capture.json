@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "bundle-round-trip",
-  "sourceHash": "8420c03e87a46bf1d1dff541e94bdb660e270a0f2104d91c4141444aaeae4740",
+  "sourceHash": "a56e21724307e6ffb002643478468aea0dd8d314194148910776900f08c593f1",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.747Z",
+  "capturedAt": "2026-10-10T13:32:12.183Z",
   "variants": {
     "en": {
-      "hash8": "87ed4cb2",
+      "hash8": "ba693737",
       "vdtHash": "9d78aec63b8001efc6fe8ab9462147635d9429b5",
       "timings": {
-        "importMs": 209,
-        "fontsMs": 119,
-        "buildMs": 151,
-        "totalMs": 1754,
+        "importMs": 519,
+        "fontsMs": 178,
+        "buildMs": 200,
+        "totalMs": 7052,
         "builds": 1
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Instrument Sans"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 178
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 2121,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 69496,
+          "bytes": 69508,
           "alt": "Opening page 1: The Tide Mill."
         },
         {
@@ -89,12 +89,12 @@
       },
       "pdf": {
         "file": "bundle-round-trip.pdf",
-        "bytes": 39053,
+        "bytes": 39054,
         "pages": 2
       },
       "sandbox": {
         "file": "bundle-round-trip.postext",
-        "bytes": 147674,
+        "bytes": 147664,
         "folio": "c651b1f6"
       },
       "detected": {
@@ -102,7 +102,6 @@
           "buildBundle",
           "bundleFontProvider",
           "bundleResourceBytes",
-          "clearMeasurementCache",
           "createBundle",
           "decompressWoff2",
           "defaultResourceTypes",
@@ -231,7 +230,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 249,
+        "configLeaves": 244,
         "designElements": 8,
         "directives": [
           ":::pagebreak",
@@ -318,13 +317,13 @@
       }
     },
     "es": {
-      "hash8": "bc4175ae",
+      "hash8": "e8769c96",
       "vdtHash": "671bbcedbc544bcd4c4314863a203f82da3b2c79",
       "timings": {
-        "importMs": 201,
-        "fontsMs": 65,
-        "buildMs": 42,
-        "totalMs": 879,
+        "importMs": 186,
+        "fontsMs": 68,
+        "buildMs": 43,
+        "totalMs": 886,
         "builds": 1
       },
       "specimen": {
@@ -346,7 +345,7 @@
           "Instrument Sans"
         ],
         "pages": 2,
-        "ownLines": 180
+        "ownLines": 178
       },
       "pages": [
         {
@@ -401,7 +400,7 @@
       },
       "sandbox": {
         "file": "bundle-round-trip.postext",
-        "bytes": 149506,
+        "bytes": 149495,
         "folio": "c651b1f6"
       },
       "detected": {
@@ -409,7 +408,6 @@
           "buildBundle",
           "bundleFontProvider",
           "bundleResourceBytes",
-          "clearMeasurementCache",
           "createBundle",
           "decompressWoff2",
           "defaultResourceTypes",
@@ -538,7 +536,7 @@
           "resourceTypes",
           "tableStyle"
         ],
-        "configLeaves": 249,
+        "configLeaves": 244,
         "designElements": 8,
         "directives": [
           ":::pagebreak",

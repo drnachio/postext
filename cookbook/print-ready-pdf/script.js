@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 024 · Print-ready PDF: bleed, crop marks and CMYK ═══════════
 // https://postext.dev/en/cookbook/print-ready-pdf
 // Code: MIT · Text: original (CC BY 4.0) · Maps: generated in code (CC BY 4.0)
-// Fonts: Karla, Space Grotesk, Space Mono (SIL OFL 1.1) · Needs postext ≥ 1.22.0
+// Fonts: Karla, Space Grotesk, Space Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // An exhibition leaflet set up for the press: bleed and crop marks on every page, and a
 // PDF/X-4 file separated for FOGRA51 that embeds its fonts and takes the maps and the floor
 // plan from print masters, checked by the preflight before it is offered.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, preflightDocument, loadOutputProfile, outputTransform,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
+  preflightDocument, loadOutputProfile, outputTransform,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -33,8 +33,7 @@ const cmyk = ([c, m, y, k]) => ({ c, m, y, k });
 const value = (id) => (AUTHORED[id]
   ? { hex: palette[id], model: 'cmyk', cmyk: cmyk(AUTHORED[id]) }
   : { hex: palette[id], model: 'hex' });
-// col(id): a palette-linked colour. It carries the hex too, because postext paints design
-// elements from the hex (gotcha: palette-skips-designs).
+// col(id): a palette-linked colour: the hex for the screen and, where authored, its build.
 const col = (id) => ({ ...value(id), paletteId: id });
 const colorPalette = [
   ...Object.keys(palette).map((id) => ({ id, name: id, value: value(id) })),
@@ -45,10 +44,10 @@ const colorPalette = [
 
 // #region answer: bleed and crop marks on every page; a CMYK PDF that swaps in print masters
 const BLEED = 3; // mm of artwork past the trim: the cover, the tab and the back band reach it
-// Hook-up: config().page.cutLines. A mark starts markOffset outside the trim and runs 5 mm
-// (markLength): an offset equal to the bleed keeps the marks off the artwork whatever BLEED
-// is. Each page grows by doc.trimOffset a side, bleed + offset + mark: 11 mm here.
-const cutLines = { enabled: true, bleed: mm(BLEED), markOffset: mm(BLEED) };
+// Hook-up: config().page.cutLines. A mark starts markOffset outside the trim (3 mm by default)
+// and never inside the bleed, and runs 5 mm (markLength). Each page grows by doc.trimOffset
+// a side, bleed + offset + mark: 11 mm here.
+const cutLines = { enabled: true, bleed: mm(BLEED) };
 
 // Hook-up: config().print. PDF/X-4 for the press on FOGRA51 (PSO Coated v3, the leaflet's
 // 150 g coated matte): every colour separated through the profile (the authored ones as
@@ -62,22 +61,17 @@ const PROFILES = 'https://postext.dev/icc/';
 
 // `masters` holds print-master bytes by fileId (section 2 writes them). The proof is an
 // ordinary greyscale PDF: no PDF/X, which would force CMYK.
-function pressPdf(doc, kind, { resources, masters }) {
+function pressPdf(doc, kind, masters) {
   const press = kind === 'press';
-  // A resource names its master in svg.pdfFileId, but outside bundles renderToPdf only asks
-  // for svg.fileId: answer that id with the master (gotcha: pdf-master-resourcebytes).
-  const masterOf = new Map(resources.filter((r) => r.svg?.pdfFileId)
-    .map((r) => [r.svg.fileId, r.svg.pdfFileId]));
   return renderToPdf(doc, {
-    // The kit's provider snaps weights and falls back to upright, since the PDF asks for every
-    // style of every family (gotcha: pdf-provider-all-styles); TrueType faces are subset.
-    fontProvider: fontsourceProvider,
+    fontProvider: fontsourceProvider, // Fontsource's files; TrueType faces are subset
     // The press file takes config().print, its profile fetched from PROFILES
     // (outputProfile: the .icc bytes, to hand it over yourself).
     profileBaseUrl: PROFILES,
     ...(press ? {} : { print: { standard: 'none' }, colorSpace: 'grayscale' }),
-    // The proof keeps the SVGs, which its grey conversion can reach; masters stay in CMYK.
-    resourceBytes: (fileId) => (press && masters.get(masterOf.get(fileId))) || imageBytes(fileId),
+    // renderToPdf asks for a drawing's master (svg.pdfFileId) first, then for its SVG. The
+    // proof answers the SVG only, which its grey conversion can reach; a master stays in CMYK.
+    resourceBytes: (fileId) => (press && masters.get(fileId)) || imageBytes(fileId),
   }); // bookmarks (from the headings) and /PageLabels (from the folios) come by default
 }
 // #endregion
@@ -122,7 +116,6 @@ const room = (kicker) => ({ enabled: true, slot: { elements: [ // a waypoint, ki
     placement: { anchor: { to: '#stop', edge: 'right-of' }, offset: { x: mm(2.2) } } },
   { kind: 'text', id: 'title', content: '{titleText}', fontFamily: 'Space Grotesk',
     fontWeight: 700, fontSize: pt(17), lineHeight: 1.08, color: col('ink'), align: 'left',
-    overflow: 'wrap', // design text ends in '…' by default (gotcha: overflow-ellipsis-default)
     placement: { anchor: { to: '#stop', edge: 'below' }, offset: { y: mm(1.2) },
       size: { width: 'fill' } } },
 ] } });
@@ -132,9 +125,9 @@ const BAND = 44; // mm from the trim foot to the top of the back band
 const onForest = { color: col('paper'), align: 'left', overflow: 'wrap' };
 const art = (resourceId, edge) => ({ kind: 'image', id: resourceId, resourceId,
   placement: { anchor: { to: 'bleed', edge }, size: { width: 'fill' } } }); // height: its ratio
-// The map reserves no height (gotcha: opener-image-no-reserve), so the text puts a
-// :::pagebreak right after the cover heading: without it the lead would start on the map.
-// span: 'page' makes the cover an opener, so furniture set to pages: 'body' skips it.
+// The map is as tall as the sheet and the cover reserves down to its foot, so the lead
+// starts on page 2. span: 'page' makes the cover an opener, so furniture set to
+// pages: 'body' skips it.
 const cover = { id: 'cover', numbered: false, span: 'page', advancedDesign: { enabled: true,
   slot: { elements: [ // paint order: the map first, the type on top
     art('cubierta', 'top-left'),
@@ -177,9 +170,9 @@ const back = { id: 'back', numbered: false, breakBefore: { enabled: true, parity
   ] } };
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
-  locale: LANG, // hyphenation (for justified text only) and the PDF's /Lang
-  // "Figura 1": Spanish names by hand (gotcha: resource-types-locale), one running count
+const config = () => ({
+  locale: LANG, // the PDF's /Lang, and "Figura" in the caption
+  // The built-in types in the leaflet's language, with one running count: "Figura 1".
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}',
     resetOn: 'never' })),
   colorPalette,
@@ -190,8 +183,8 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
   layout: { layoutType: 'single' },
   bodyText: { fontFamily: 'Karla', fontSize: pt(9.6), lineHeight: pt(LEAD), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('forest'),
-    // Ragged, like the labels. Ragged text is never hyphenated (gotcha: ragged-no-hyphenation);
-    // the 118 mm measure keeps the rag shallow.
+    // Ragged, like the labels, and so not hyphenated (ragged text keeps its words whole
+    // unless hyphenation.ragged asks); the 118 mm measure keeps the rag shallow.
     textAlign: 'left', firstLineIndent: mm(0), paragraphSpacing: true },
   // #region levels: every room a numbered H1 with no page break, so each is a PDF bookmark
   headings: {
@@ -199,9 +192,9 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
     // a face the pages already load, or the PDF embeds Open Sans for that text alone.
     fontFamily: 'Space Grotesk',
     levels: [
-      // Rooms follow on: any headings object drops the H1 break (gotcha: headings-drop-h1-break),
-      // so it is stated off. The back cover breaks through its style, a :::pagebreak ends the
-      // front one. The template numbers kicker and bookmark: "Sala 1 Una isla en ninguna parte".
+      // Rooms follow on: the H1's page break is off. The back cover breaks through its style,
+      // and the front one fills its page. The template numbers kicker and bookmark: "Sala 1
+      // Una isla en ninguna parte".
       { level: 1, numberingTemplate: 'Sala {1}', breakBefore: { enabled: false },
         marginTop: pt(LEAD), advancedDesign: room('{number} · {attr.fecha}') },
     ],
@@ -311,7 +304,7 @@ const bandShapes = terrain(...BANDART, [ // the back band: the same sea, another
   island([[4, 26, 13]], 9, 0.7)]); // an islet cut by the trim: its bleed is on the sheet
 
 // The floor plan, 118 × 54 mm: walls with doorways, cases, and the route with numbered stops.
-// Stroked numerals in a 0.6 × 1 box: SVG text gets none of the web fonts (gotcha: svg-no-webfonts).
+// Stroked numerals in a 0.6 × 1 box: paths like the rest, which the print masters can hold.
 const DIGITS = {
   1: 'M0.14 0.22L0.36 0L0.36 1',
   2: 'M0.04 0.24C0.08 -0.06 0.58 -0.06 0.56 0.28C0.54 0.52 0.04 0.7 0.04 1L0.58 1',
@@ -393,20 +386,18 @@ const resources = [
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face the pages use. Layout measures with the browser's fonts, so the kit loads them
-// from Fontsource before the first build (gotcha: fonts-first); the PDF embeds the same files,
+// from Fontsource before the first build; the PDF embeds the same files,
 // Fontsource's latin subsets, which cover Spanish (gotcha: latin-subset).
 const FONTS = { Karla: ['400', '400i', '700'], 'Space Grotesk': ['400', '700'],
   'Space Mono': ['400', '400i', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all(Object.entries(DRAWINGS)
   .map(([id, [size, shapes]]) => loadSvg(`${id}.svg`, toSvg(...size, shapes))));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Cartografías imaginarias · PDF listo para imprenta' });
-const inputs = { resources, masters };
-offerPdf(() => pressPdf(doc, 'press', inputs), `${RECIPE}.pdf`); // the file for the press
-offerPdf(() => pressPdf(doc, 'proof', inputs), `${RECIPE}-proof.pdf`); // a proof to read
+offerPdf(() => pressPdf(doc, 'press', masters), `${RECIPE}.pdf`); // the file for the press
+offerPdf(() => pressPdf(doc, 'proof', masters), `${RECIPE}-proof.pdf`); // a proof to read
 // The kit names both buttons alike; once built, each download link carries its file name.
 const button = (file) => document.querySelector(`[data-postext-pdf="${file}"]`);
 button(`${RECIPE}.pdf`).textContent = 'Press PDF (PDF/X-4)';

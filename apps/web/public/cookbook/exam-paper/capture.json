@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "exam-paper",
-  "sourceHash": "bf0a4e4a8881ee3dab64a5b4e44e29dfb870841f290ba611bfba6dd5a5b941e7",
+  "sourceHash": "0a334df620a0dba9243ab4b78ede31e309b1de5657e466b36af1e962b7050b71",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:24:37.926Z",
+  "capturedAt": "2026-10-10T13:33:44.440Z",
   "variants": {
     "en": {
-      "hash8": "4c8c8de4",
-      "vdtHash": "40947dc6a255294ab358d98d23e56a26aa6379a2",
+      "hash8": "04afe677",
+      "vdtHash": "f49cc0ea280bbd27748cd242d2cffc82ec625700",
       "timings": {
-        "importMs": 138,
-        "fontsMs": 49,
-        "buildMs": 16,
-        "totalMs": 814,
-        "builds": 2
+        "importMs": 134,
+        "fontsMs": 32,
+        "buildMs": 45,
+        "totalMs": 799,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -48,7 +48,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 67528,
+          "bytes": 67512,
           "alt": "Opening page 1: History. Section A answer grid."
         },
         {
@@ -113,13 +113,14 @@
       },
       "sandbox": {
         "file": "exam-paper.postext",
-        "bytes": 23341,
+        "bytes": 45454,
         "folio": "059452bc"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "inlineSvgFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -336,7 +337,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 426,
+        "configLeaves": 425,
         "designElements": 16,
         "directives": [
           "::resource",
@@ -431,14 +432,14 @@
       }
     },
     "es": {
-      "hash8": "24f7f7ff",
-      "vdtHash": "ed19a464103b6e973aace41efbe1c9b983aa281b",
+      "hash8": "7c48da4a",
+      "vdtHash": "7066da48c16d318de3498b882396f8d3b4e76f34",
       "timings": {
-        "importMs": 117,
-        "fontsMs": 25,
-        "buildMs": 15,
-        "totalMs": 756,
-        "builds": 2
+        "importMs": 132,
+        "fontsMs": 29,
+        "buildMs": 48,
+        "totalMs": 792,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -469,7 +470,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 69656,
+          "bytes": 69590,
           "alt": "Página de apertura 1: Historia. Parte A: plantilla de respuestas."
         },
         {
@@ -534,13 +535,14 @@
       },
       "sandbox": {
         "file": "exam-paper.postext",
-        "bytes": 23794,
+        "bytes": 46074,
         "folio": "059452bc"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
+          "inlineSvgFonts",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -757,7 +759,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 426,
+        "configLeaves": 425,
         "designElements": 16,
         "directives": [
           "::resource",

@@ -60,4 +60,4 @@ El <RecipeLink slug="textbook-margin-column">libro de texto con columna al marge
 ## Errores frecuentes
 
 - Ajusta el `:::space` a la página. En la edición española, 1,76 líneas terminan el recuadro 0,8 mm por encima del pie de la columna. Con 1,96 líneas pasa del pie en 0,1 mm y la barra entera se va a la página 2; con 1,66 se abre una franja de papel entre el recuadro y la caja del pie.
-- Una caja del diseño del nombre no sirve para pintar la banda. Si termina justo encima del pie de la columna, el título reserva 265 mm, más que los 260,8 mm de la columna, y el texto pasa a la página 2; si llega hasta el pie de la hoja, el título pierde la altura que reservaba y el perfil sube a 30,3 mm y se monta sobre la profesión.
+- Una caja del diseño del nombre no sirve para pintar la banda. El título reserva la altura de la caja, así que una tan alta como la banda le hace reservar más que los 260,8 mm de la columna, y el texto pasa a la página 2. Con `reserve: false` la caja no reserva nada, pero un diseño que se queda en la columna se corta al pie de esta, y el margen inferior quedaría en blanco.

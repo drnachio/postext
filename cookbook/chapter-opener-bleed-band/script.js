@@ -1,12 +1,11 @@
 // ═══ Postext Cookbook · Nº 003 · Chapter opener on a full-bleed band ══════════════
 // https://postext.dev/en/cookbook/chapter-opener-bleed-band
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Roboto Serif, Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: Roboto Serif, Archivo, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Two chapters of a geology textbook. Every level-1 heading becomes a colour band bled off the
 // top of the page, its number standing on the band's foot; a heading style recolours chapter 4.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -22,8 +21,7 @@ const palette = {
   muted: '#6b6259', // running heads and the colophon
   paper: '#ffffff', // type on the band
 };
-// col(id): a palette-linked colour. It carries the hex too, because 1.4.1 paints design
-// elements and the reference colour from the hex (gotcha: palette-skips-designs).
+// col(id): a colour linked to its palette entry, with the entry's hex beside the link.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -32,7 +30,7 @@ const colorPalette = [
 ];
 // {style="teal"} on a heading line swaps 'band' up to the next level-1 heading: the style's
 // palette reaches design slots through their link and repaints every text colour equal to
-// the base 'band'. (Swapping colorPalette itself would not reach the design slots.)
+// the base 'band'.
 const headingStyles = [{ id: 'teal', palette: { band: palette.band2 } }];
 // #endregion
 
@@ -59,10 +57,9 @@ const opener = { enabled: true,
         anchor: bleedTop, size: { height: mm(BLEED + BAND) } } }, // no width: runs to the far edge
       { kind: 'rule', id: 'foot', color: col('ink'), thickness: mm(1.6), placement: {
         anchor: bleedTop, offset: { y: mm(BLEED + BAND) } } },
-      // {numberDecimal} is empty on headings (gotcha: heading-number-placeholders)
       { kind: 'text', id: 'numeral', content: '{chapterNumber}', ...onBand,
         fontFamily: 'Archivo', fontWeight: 800, fontSize: pt(NUMERAL),
-        lineHeight: 1, // a multiple of the size, never pt() (gotcha: design-lineheight-multiple)
+        lineHeight: 1, // a box as tall as the type: the y below counts on it
         placement: { anchor: { to: 'page', edge: 'top-right' }, // the fore-edge of a recto
           offset: { x: mm(BEARING - OUTER), y: mm(BAND - 0.8 * NUMERAL * PT) } } }, // on the foot
       { kind: 'text', id: 'kicker', ...onBand, fontFamily: 'Archivo Narrow', fontWeight: 600,
@@ -95,7 +92,7 @@ const side = (parity) => { // the fore-edge is a verso's left edge and a recto's
   return [
     { kind: 'text', id: `folio-${parity}`, content: '{pageNumber}', ...folio,
       placement: at('page', OUTER, baseline(9)) },
-    // Textbooks name the chapter on the verso and the section on the recto; 1.4.1 has no
+    // Textbooks name the chapter on the verso and the section on the recto; there is no
     // section placeholder, so the recto names the book.
     { kind: 'text', id: `head-${parity}`, content: s > 0 ? '{chapterTitle}' : '{title}',
       ...label, placement: at('page', OUTER + INSET, baseline(7.5)) },
@@ -113,9 +110,8 @@ const footer = { elements: [{ kind: 'text', id: 'drop-folio', content: '{pageNum
 // #endregion
 
 const LEAD = 13.2; // body leading in pt: the baseline grid
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes only (gotcha: hyphenation-locales)
-  resourceTypes: defaultResourceTypes(LANG), // "Figura" in Spanish (gotcha: resource-types-locale)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // hyphenation, and "Figura" in the Spanish captions
   colorPalette, headingStyles,
   page: { width: mm(210), height: mm(280), dpi: 150, // a textbook trim; 150 dpi is for the screen
     cutLines: { enabled: BLEED > 0, bleed: mm(BLEED) }, // bleed and crop marks once BLEED is set
@@ -128,11 +124,9 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
   headings: {
     fontFamily: 'Archivo', color: col('band'),
     levels: [
-      // span: 'page' alone opens each chapter on the next page, whatever its side. The break,
-      // which any headings object drops (gotcha: headings-drop-h1-break), is restated for its
-      // parity: 'odd' keeps openers on rectos, so the numeral's right-edge anchor is the fore-edge.
-      // The copy is fitted so no chapter spills a few lines onto a page before an odd opener:
-      // 1.4.1 sets such a page's column shorter than its text and drops the last line.
+      // parity: 'odd' keeps openers on rectos, so the numeral's right-edge anchor is the
+      // fore-edge. The copy is fitted so no chapter spills a few lines onto a page of its own,
+      // which would leave that page and a blank verso before the next opener.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
         // 0: the hidden title's default 0.5 em would add a grid line, and AIR alone sets the gap
         marginBottom: pt(0), advancedDesign: opener },
@@ -155,7 +149,6 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // #region art: two drawings made of shapes only; their labels live in the captions
-// No text in the SVG: an SVG image cannot use the page's web fonts (gotcha: svg-no-webfonts).
 const PX = 10; // SVG pixels per viewBox unit: 348 units = 174 mm, so about 500 dpi in print
 const svg = (w, h, body) => ({ width: w * PX, height: h * PX, // the size the resource declares
   markup: `<svg xmlns="http://www.w3.org/2000/svg" width="${w * PX}" height="${h * PX}" `
@@ -253,18 +246,17 @@ const resources = [
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   'Roboto Serif': ['400', '400i', '700'], Archivo: ['700', '800'],
   'Archivo Narrow': ['400', '400i', '600', '700'] }; // 400i: the colophon's book title
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 for (const [id, art] of Object.entries(ART)) await loadSvg(`${id}.svg`, art.markup);
 // #region build: chapters 3 and 4 of a longer book, so the counters start where 2 ended
 const continuation = { pageNumbering: { startAt: 41 }, // an odd folio: page 1 is still a recto
   headings: { h1: 2, h2: 0, h3: 0, h4: 0, h5: 0, h6: 0 } }; // the next # is chapter 3
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Chapter opener on a full-bleed band',
   es: 'Apertura de capítulo sobre banda a sangre' }) });
 // #endregion

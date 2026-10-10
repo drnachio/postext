@@ -13,9 +13,9 @@
     "also": ["vertical-writing", "right-binding", "gyodori-headings", "kana-scripts", "cjk-fonts", "aozora-import", "paragraph-styles", "design-elements", "running-heads", "page-background", "color-palette", "pdf-export"]
   },
   "answers": ["Q90", "Q136"],
-  "gotchas": ["ja-locale-tag", "headings-drop-h1-break", "cjk-fonts-slices", "cjk-grid-balancing", "vertical-two-frames"],
+  "gotchas": ["ja-locale-tag", "cjk-fonts-slices", "vertical-two-frames"],
   "related": ["chinese-official-document", "bunko-novel-furigana", "woodblock-leaf", "chinese-novel-horizontal"],
-  "engine": { "postext": "1.16.1", "postextPdf": "1.16.1" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": 1, "card": "page", "pages": "all" },
@@ -41,5 +41,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-10-05",
-  "updated": "2026-10-05"
+  "updated": "2026-10-10"
 }

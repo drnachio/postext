@@ -16,7 +16,7 @@ En la práctica 4 de Química, tres alumnos de 2.º de Bachillerato valoran un v
 
 ### 1 · Fórmulas como texto, TeX para las ecuaciones
 
-El código es [la respuesta corta](#la-respuesta-corta) de arriba. [`~…~` y `^…^`](/es/docs/document-format#formato-en-línea) componen un tramo al 58 % del cuerpo en la letra del texto, así que `CH~3~COOH`, `OH^−^` (su signo menos es U+2212) y `cm^3^` conservan el peso y el color de la frase que los rodea. Las marcas sirven también en pies y celdas de tabla, donde no cabe TeX. La reacción, escrita con `\ce{…}` de mhchem, y las ecuaciones van en TeX entre `$$`. El [motor de fórmulas](/es/docs/configuration#arrancar-el-motor-de-fórmulas) solo viene en la versión `?bundle`, así que todos los símbolos se importan de ella. `math.fontSizeScale` vale 0,495 / 0,442, unos 1,12: la altura de la x de una fórmula es la de TeX, 0,442 em del cuerpo, y la de Inria Serif es de 0,495 em, así que la escala deja las minúsculas de fórmula y texto a la misma altura.
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. [`~…~` y `^…^`](/es/docs/document-format#formato-en-línea) componen un tramo al 58 % del cuerpo en la letra del texto, así que `CH~3~COOH`, `OH^−^` (su signo menos es U+2212) y `cm^3^` conservan el peso y el color de la frase que los rodea. Las marcas sirven también en pies y celdas de tabla, en la letra del pie o de la celda; `$…$` en línea también se compone ahí, en la letra de las fórmulas. La reacción, escrita con `\ce{…}` de mhchem, y las ecuaciones van en TeX entre `$$`. `await initMathEngine()` arranca el [motor de fórmulas](/es/docs/configuration#arrancar-el-motor-de-fórmulas) antes de componer; se importa del mismo sitio que los demás símbolos. `math.fontSizeScale` vale 0,495 / 0,442, unos 1,12: la altura de la x de una fórmula es la de TeX, 0,442 em del cuerpo, y la de Inria Serif es de 0,495 em, así que la escala deja las minúsculas de fórmula y texto a la misma altura.
 
 ### 2 · Números de sección colgados en el margen
 
@@ -34,7 +34,7 @@ El único H1 del informe lleva el [estilo de título](/es/docs/configuration#spa
 
 <Excerpt region="labels" />
 
-[`defaultResourceTypes(LANG)`](/es/docs/configuration#tipos-de-recurso) da Tabla y Figura en la edición española; el `locale` por sí solo las dejaría en inglés. Su plantilla `{h1}.{n}` imprime aquí un 1 a secas, porque el H1 del informe no lleva número y un `{h1}` vacío desaparece con su punto. El pie de la tabla va encima, como es costumbre en los informes. El texto cita tabla y figura con `:ref{id="lecturas" style="full" case="lower"}`, que escribe «tabla 1» en minúscula, con la tinta y el peso del texto.
+Los tipos incorporados siguen el `locale` del documento, así que la edición española dice Tabla y Figura sin ajustar nada. [`defaultResourceTypes(LANG)`](/es/docs/configuration#tipos-de-recurso) devuelve esos tipos para que la receta cambie uno. Su plantilla `{h1}.{n}` imprime aquí un 1 a secas, porque el H1 del informe no lleva número y un `{h1}` vacío desaparece con su punto. El pie de la tabla va encima, como es costumbre en los informes. El texto cita tabla y figura con `:ref{id="lecturas" style="full" case="lower"}`, que escribe «tabla 1» en minúscula, con la tinta y el peso del texto.
 
 ### 5 · Una sola serie de lecturas para la tabla y la curva
 
@@ -46,7 +46,7 @@ Las cuatro parejas de lecturas de la bureta dan todas las celdas de la tabla 1, 
 
 <Excerpt region="references" />
 
-Un contenedor `:::paragraphs{style="references"}` aplica el [estilo de párrafo](/es/docs/configuration#estilos-de-párrafo) a cada referencia: 9 pt sobre 12,5 pt, en bandera, con 6 mm de sangría francesa y 4 pt entre entradas. En la 1.4.1 el texto en bandera no tiene separación silábica, así que un título largo como *Fundamentos de química analítica* solo se corta entre palabras. El colofón lleva un estilo propio, Inria Sans a 7,4 pt, con una línea de 15 pt de blanco encima.
+Un contenedor `:::paragraphs{style="references"}` aplica el [estilo de párrafo](/es/docs/configuration#estilos-de-párrafo) a cada referencia: 9 pt sobre 12,5 pt, en bandera, con 6 mm de sangría francesa y 4 pt entre entradas. El texto en bandera no lleva separación silábica salvo que `bodyText.hyphenation.ragged` la pida, así que un título largo como *Fundamentos de química analítica* solo se corta entre palabras. El colofón lleva un estilo propio, Inria Sans a 7,4 pt, con una línea de 15 pt de blanco encima.
 
 ## Variantes
 
@@ -74,8 +74,6 @@ Los resultados pasan a ser la tabla 5.1 y la figura 5.1, con la cuenta reiniciad
 
 ## Errores frecuentes
 
-- Una ecuación destacada no queda unida a la frase que la presenta, y una frase que acaba en «así que» puede cerrar una página con la ecuación ya en la siguiente. El texto de las dos ediciones está ajustado para que la ecuación de [OH⁻] cierre la página 1 bajo su frase.
+- Por defecto, una ecuación destacada no queda unida a la frase que la presenta, y una frase que acaba en «así que» puede cerrar una página con la ecuación ya en la siguiente; `math.keepWithLeadIn: true` pasa esa línea a la página siguiente junto con la ecuación. Aquí el texto de las dos ediciones está ajustado para que la ecuación de [OH⁻] cierre la página 1 bajo su frase.
 - Los glifos de TeX son los de MathJax, no los de Inria Serif, y una ecuación pesa algo menos que el texto que la rodea. Deja las fórmulas que van dentro de una frase como marcas `~` y `^`, y reserva TeX para las líneas que lo necesitan.
-- En la 1.4.1, un diseño de título que se queda en la columna se recorta por el borde superior de la columna. El estilo `report` lleva `span: 'page'` en este informe de una sola columna solo por eso: sin él, los 24 mm de arriba de la banda y de la bureta salen en blanco.
-- Los pies se componen en bandera, y en la 1.4.1 una línea en bandera puede partirse entre una palabra y su superíndice. Cuando ocupaba dos líneas, el pie de la tabla 1 de la edición inglesa se cortaba entre `mol·dm` y `−3`; ahora cabe en una línea en las dos ediciones. Revisa cada pie que lleve una unidad.
-- Las fuentes web no llegan a un SVG dibujado como imagen, así que las cifras de los ejes y sus rótulos en la curva son contornos de MathJax: `tex()` pide a `renderMath` los trazados de cada rótulo y los coloca en el SVG. En el PDF siguen siendo vectoriales y tienen los mismos glifos que las ecuaciones.
+- Las cifras de los ejes y sus rótulos en la curva son contornos de MathJax, con los mismos glifos que las ecuaciones y vectoriales en el PDF: `tex()` pide a `renderMath` los trazados de cada rótulo y los coloca en el SVG. Solo pueden dibujarse cuando `initMathEngine()` ha terminado.

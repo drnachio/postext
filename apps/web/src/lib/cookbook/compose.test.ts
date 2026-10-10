@@ -159,7 +159,7 @@ describe("composePen", () => {
     const kit = readKit();
     expect(Object.keys(kit).sort()).toEqual(["arabic", "book", "cjk", "comics", "core", "fonts", "images", "pdf", "viewer"]);
     const pen = composePen(sources(), { sample: { locales: ["en"] }, kit: ["core", "fonts", "viewer", "pdf", "images", "cjk"] }, "en", { kit });
-    expect(pen.js).toContain("function buildWithFonts(");
+    expect(pen.js).toContain("function fontsourceResolver(");
     expect(pen.js).toContain("function offerPdf(");
     expect(pen.js).toContain("async function loadCjkFonts(");
     expect(pen.js).toContain("async function cjkPdfProvider(");

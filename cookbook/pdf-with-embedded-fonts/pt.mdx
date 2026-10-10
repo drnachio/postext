@@ -10,7 +10,7 @@ pageNotes: { "1": "A capa: azul-petróleo noturno até o refile, The Harbour Con
 
 ## O que você vai compor
 
-O programa de um recital ao entardecer, *Home from Sea*: quatro páginas A5 para um conjunto de soprano, violoncelo e harpa. A capa é azul-petróleo noturno, com o título em Fraunces itálico dourado e fileiras de escamas de onda douradas subindo do pé. Por dentro, a ordem do programa é uma tabela com cabeçalho azul-petróleo em versais de Tenor Sans e uma linha de total com fundo tingido. As notas estão em Crimson Text justificado. As letras das três canções são poemas de Longfellow, Stevenson e Tennyson, compostos com os recuos das edições impressas. O botão *Build the PDF* gera o arquivo que você mandaria ao público por e-mail ou publicaria no site da sala de concertos. As quatro páginas batem linha a linha com a tela. O arquivo incorpora só os sete arquivos de fonte que o navegador carregou, e cada título é um marcador. Para impressão em gráfica, veja <RecipeLink slug="print-ready-pdf">o PDF pronto para impressão</RecipeLink>.
+O programa de um recital ao entardecer, *Home from Sea*: quatro páginas A5 para um conjunto de soprano, violoncelo e harpa. A capa é azul-petróleo noturno, com o título em Fraunces itálico dourado e fileiras de escamas de onda douradas subindo do pé. Por dentro, a ordem do programa é uma tabela com cabeçalho azul-petróleo em versais de Tenor Sans e uma linha de total com fundo tingido. As notas estão em Crimson Text justificado. As letras das três canções são poemas de Longfellow, Stevenson e Tennyson, compostos com os recuos das edições impressas. O botão *Build the PDF* gera o arquivo que você mandaria ao público por e-mail ou publicaria no site da sala de concertos. As quatro páginas batem linha a linha com a tela. O arquivo incorpora só os cinco arquivos de fonte que o navegador carregou, e cada título é um marcador. Para impressão em gráfica, veja <RecipeLink slug="print-ready-pdf">o PDF pronto para impressão</RecipeLink>.
 
 ## Preparo
 
@@ -22,13 +22,13 @@ O código é [a resposta curta](#a-resposta-curta) logo acima. O Postext mede ca
 
 <Excerpt region="build" />
 
-`registerFaces()` só se resolve quando todas as fontes de `FONTS` estão carregadas, então a primeira composição já mede com as fontes que o PDF vai incorporar. Ela também é a única, porque `FONTS` lista cada negrito e cada itálico que um bloco de Crimson Text ou de Fraunces pode pedir, e o `buildWithFonts` do kit não encontra nada para acrescentar ([Cache de medidas](/pt/docs/configuration#cache-de-medidas)). Essa verificação só ajuda a tela. Se faltar uma fonte em `FONTS`, o `buildWithFonts` a carrega e refaz a diagramação, com um aviso no console quando um bloco é composto nessa fonte e sem aviso nenhum quando é um negrito ou um itálico, mas o PDF continua recebendo a fonte mais próxima que o provedor tiver.
+`registerFaces()` só se resolve quando todas as fontes de `FONTS` estão carregadas, então a primeira composição já mede com as fontes que o PDF vai incorporar. Ela também é a única, porque `FONTS` lista todas as fontes em que as páginas são compostas, e o `buildDocumentWithFonts` já encontra declaradas todas as fontes que procura ([Carregar as fontes antes do layout](/pt/docs/configuration#carregar-as-fontes-antes-do-layout)). Essa verificação só ajuda a tela. Se faltar uma fonte em `FONTS`, o motor a pede ao kit, carrega o arquivo do Fontsource e refaz a diagramação sem aviso no console, mas o PDF continua recebendo a fonte mais próxima que o provedor tiver.
 
 ### 3 · A exportação e a lista do que foi incorporado
 
 <Excerpt region="pdf" />
 
-`renderToPdf` chama `onProgress` em três fases: `prepare` depois de incorporar as fontes e a capa, `pages` depois de cada página e `save` antes de gravar o arquivo. Aqui ele pede dez fontes ao provedor. A linha de status lista os sete arquivos que o provedor serviu, exatamente os de `FONTS`, e três substitutas, todas de Tenor Sans, família que só tem o regular 400 e que aqui nunca aparece em negrito nem em itálico. Qualquer outra substituta denuncia uma fonte que falta em `FONTS`. Se você tirar a Crimson Text 600, a linha mostra `Crimson Text 600 → 400` e o negrito de *The Harbour Consort*, na página 4, sai com peso regular. A visualização do CodePen não consegue mostrar um PDF, então o `offerPdf` do kit troca o botão por dois links, um que abre o PDF numa nova aba e outro que o baixa ([Geração de PDF](/pt/docs/configuration#geração-de-pdf)).
+`renderToPdf` chama `onProgress` em três fases: `prepare` depois de incorporar as fontes e a capa, `pages` depois de cada página e `save` antes de gravar o arquivo. Ele só pede ao provedor as fontes que as páginas pintam, aqui cinco. A linha de status lista os cinco arquivos que o provedor serviu, exatamente os de `FONTS`, e nenhuma substituta. Uma substituta denuncia uma fonte que falta em `FONTS`. Se você tirar a Crimson Text 600, a linha mostra `Crimson Text 600 → 400` e o negrito de *The Harbour Consort*, na página 4, sai com peso regular. A visualização do CodePen não consegue mostrar um PDF, então o `offerPdf` do kit troca o botão por dois links, um que abre o PDF numa nova aba e outro que o baixa ([Geração de PDF](/pt/docs/configuration#geração-de-pdf)).
 
 ### 4 · A árvore de títulos é a árvore de marcadores
 
@@ -40,7 +40,7 @@ No PDF, o painel de marcadores mostra o título da capa, *Programme* com *About 
 
 <Excerpt region="cover" />
 
-Todos os valores do frontmatter vão entre aspas. A capa imprime dois deles com `{author}` e `{subtitle}`, e as propriedades do documento PDF tiram do mesmo bloco o título, *Home from Sea*, e o autor, *The Harbour Consort*. A data e o local são atributos do título da capa. O desenho atrás deles é um único SVG da largura da página, e o PDF o mantém como traçados vetoriais.
+A capa imprime dois valores do frontmatter com `{author}` e `{subtitle}`, e as propriedades do documento PDF tiram do mesmo bloco o título, *Home from Sea*, e o autor, *The Harbour Consort*. A data e o local são atributos do título da capa. O desenho atrás deles é um único SVG da largura da página, e o PDF o mantém como traçados vetoriais.
 
 ## Variações
 
@@ -67,6 +67,6 @@ Aponte o fetch para cópias suas dos mesmos arquivos WOFF2 estáticos, um por pe
 
 ## Erros comuns
 
-Liste em `FONTS` cada negrito e cada itálico que o seu texto pode usar. Se faltar um, a tela continua certa, porque o kit carrega a fonte sem avisar, mas o PDF imprime a fonte mais próxima que o provedor tiver, e só as substitutas na linha de status revelam a troca.
+Liste em `FONTS` todas as fontes em que as suas páginas são compostas, inclusive o negrito e o itálico do texto. Se faltar um, a tela continua certa, porque o kit carrega a fonte sem avisar, mas o PDF imprime a fonte mais próxima que o provedor tiver, e só as substitutas na linha de status revelam a troca.
 
 Use arquivos estáticos, um por peso e estilo. De um WOFF2 variável, o PDF incorpora só a instância padrão, e um trecho em negrito sairia com peso regular ([Por que um provedor de fontes?](/pt/docs/configuration#por-que-um-provedor-de-fontes)).

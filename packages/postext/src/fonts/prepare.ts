@@ -89,13 +89,16 @@ export interface PrepareFontsOptions {
 
 /** What a preparation found. */
 export interface FontReport {
-  /** Faces a loaded face answers for (or an installed family). */
+  /** Faces a loaded face of their weight and slant answers for (or an
+   *  installed family). */
   loaded: FontFaceRequest[];
-  /** Faces no face of the family answers for: their text is measured
-   *  with a fallback face. */
+  /** Faces no loaded face answers for (none of the family, or the one
+   *  that would is still loading): their text is measured with a fallback
+   *  face. */
   missing: FontFaceRequest[];
-  /** Faces the browser draws from another weight or slant of the family
-   *  (bold made heavier, italic slanted). */
+  /** Faces the family has no face for, which the browser draws from
+   *  another weight or slant of it (the nearest weight as it is, bold
+   *  made heavier, italic slanted). */
   synthesized: FontFaceRequest[];
   /** `FontFace`s added from the resolver's files. */
   added: number;
@@ -370,14 +373,18 @@ export async function prepareFonts(
 }
 
 async function prepareFaces(wanted: readonly FontFaceRequest[], fontSet: FontFaceSetLike, sample: string, options: PrepareFontsOptions): Promise<FontReport> {
-  const known = isFontSetTracked(fontSet);
-  if (!known) syncFontSet(fontSet);
+  if (!isFontSetTracked(fontSet)) syncFontSet(fontSet);
   const { added, touched } = await loadFaces(wanted, fontSet, sample, options);
-  // Drop what was measured in the families whose faces changed: the set's
-  // own record says which when the engine knew it before; on first sight,
-  // every family this call loaded faces for.
-  const changed = new Set(syncFontSet(fontSet, { evict: false }));
-  if (!known) for (const family of touched) changed.add(family.toLowerCase());
+  // Drop what was measured in the families whose faces changed: those
+  // the set's record shows, and every family this call loaded faces for.
+  // The set is read whatever it reports (#649): `fontSet.load` resolves a
+  // task before the set's `loadingdone`, and a declared face that loads
+  // leaves the size as it was, so a set known from an earlier build would
+  // pass for unchanged and the builds that follow would keep the widths
+  // of the fallback face. Recording it here also leaves that
+  // `loadingdone` nothing to drop a second time.
+  const changed = new Set(syncFontSet(fontSet, { evict: false, force: true }));
+  for (const family of touched) changed.add(family.toLowerCase());
   if (changed.size > 0) evictFontFamilies(changed);
   if (options.watch !== false) watchFonts(fontSet);
   return classify(wanted, fontSet, options, added);
@@ -410,8 +417,10 @@ function documentText(docs: readonly VDTDocument[]): string {
 /**
  * Run `build`, then load the faces its pages set text in that the font set
  * could not give (a weight the configuration did not name, a face
- * resolved only now), drop their measurements and build again — at most
- * `maxRounds` extra builds (2). `build` returns a document or several.
+ * resolved only now; one a neighbour of the family answered for is asked
+ * of the resolver like any other, #650), drop their measurements and
+ * build again — at most `maxRounds` extra builds (2). `build` returns a
+ * document or several.
  * Faces that stay missing are reported (`onFonts`) and listed by each
  * document's `fontFallback` warnings.
  */

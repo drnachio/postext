@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "photo-essay-full-bleed",
-  "sourceHash": "a813df7398a1a243991df689cdd54f67d6f771faaa7a641ed3eae4eb7dd145b8",
+  "sourceHash": "45920d2a0bc9d8899ca53671a2f963ac1b34aad9476dfd467d0ecaad1b91538a",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.251Z",
+  "capturedAt": "2026-10-10T13:37:01.618Z",
   "variants": {
     "en": {
-      "hash8": "3f09c3df",
-      "vdtHash": "06ae992e932298dabfe0bf8739364d0527d93c0d",
+      "hash8": "50d13949",
+      "vdtHash": "081c1868cdd99a2e7c0c2fd10ad83762feccd1c4",
       "timings": {
-        "importMs": 159,
-        "fontsMs": 62,
-        "buildMs": 10,
-        "totalMs": 838,
-        "builds": 2
+        "importMs": 126,
+        "fontsMs": 46,
+        "buildMs": 31,
+        "totalMs": 796,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Syne Mono"
         ],
         "pages": 9,
-        "ownLines": 180
+        "ownLines": 176
       },
       "pages": [
         {
@@ -177,13 +177,12 @@
       },
       "sandbox": {
         "file": "photo-essay-full-bleed.postext",
-        "bytes": 1718542,
+        "bytes": 1718468,
         "folio": "fb4fa41a"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -197,7 +196,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.referenceBold",
@@ -228,17 +226,11 @@
           "headingStyles",
           "headingStyles[].advancedDesign",
           "headingStyles[].advancedDesign.enabled",
-          "headingStyles[].advancedDesign.minHeight",
           "headingStyles[].advancedDesign.slot",
           "headingStyles[].breakBefore",
           "headingStyles[].breakBefore.enabled",
           "headingStyles[].breakBefore.parity",
           "headingStyles[].id",
-          "headingStyles[].margins",
-          "headingStyles[].margins.bottom",
-          "headingStyles[].margins.left",
-          "headingStyles[].margins.right",
-          "headingStyles[].margins.top",
           "headingStyles[].span",
           "headings",
           "headings.fontFamily",
@@ -281,7 +273,7 @@
           "page",
           "resourceTypes"
         ],
-        "configLeaves": 342,
+        "configLeaves": 316,
         "designElements": 21,
         "directives": [],
         "inline": [
@@ -323,8 +315,7 @@
           "page-background",
           "page-role-filters",
           "resource-types",
-          "resources",
-          "section-geometry"
+          "resources"
         ],
         "suggestedLevel": 3
       },
@@ -336,18 +327,24 @@
           "share": 0,
           "worst": 1.51
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "6ec7453b",
-      "vdtHash": "abac35841ff68aa65b21c2e5fc629d2386c01d45",
+      "hash8": "0b55d623",
+      "vdtHash": "70b8dc3093c70fc1c90d4908e864abcdaa8aacec",
       "timings": {
-        "importMs": 141,
-        "fontsMs": 61,
-        "buildMs": 10,
-        "totalMs": 822,
-        "builds": 2
+        "importMs": 143,
+        "fontsMs": 47,
+        "buildMs": 33,
+        "totalMs": 817,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -368,7 +365,7 @@
           "Syne Mono"
         ],
         "pages": 9,
-        "ownLines": 180
+        "ownLines": 176
       },
       "pages": [
         {
@@ -507,13 +504,12 @@
       },
       "sandbox": {
         "file": "photo-essay-full-bleed.postext",
-        "bytes": 1718691,
+        "bytes": 1718618,
         "folio": "fb4fa41a"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -527,7 +523,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.referenceBold",
@@ -558,17 +553,11 @@
           "headingStyles",
           "headingStyles[].advancedDesign",
           "headingStyles[].advancedDesign.enabled",
-          "headingStyles[].advancedDesign.minHeight",
           "headingStyles[].advancedDesign.slot",
           "headingStyles[].breakBefore",
           "headingStyles[].breakBefore.enabled",
           "headingStyles[].breakBefore.parity",
           "headingStyles[].id",
-          "headingStyles[].margins",
-          "headingStyles[].margins.bottom",
-          "headingStyles[].margins.left",
-          "headingStyles[].margins.right",
-          "headingStyles[].margins.top",
           "headingStyles[].span",
           "headings",
           "headings.fontFamily",
@@ -611,7 +600,7 @@
           "page",
           "resourceTypes"
         ],
-        "configLeaves": 342,
+        "configLeaves": 316,
         "designElements": 21,
         "directives": [],
         "inline": [
@@ -653,8 +642,7 @@
           "page-background",
           "page-role-filters",
           "resource-types",
-          "resources",
-          "section-geometry"
+          "resources"
         ],
         "suggestedLevel": 3
       },
@@ -666,7 +654,13 @@
           "share": 0,
           "worst": 1.45
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

@@ -18,7 +18,7 @@ pageNotes: { "1": "La coberta: una banda blau marí als tres cinquens superiors,
 
 <Excerpt region="identity" />
 
-postext-pdf escriu la llengua de les etiquetes a partir de `locale`, aquí `/Lang es`, perquè un lector de pantalla llegeixi la guia amb pronunciació espanyola; si falta, el fitxer declara `en-US`. El `title` i l'`author` del frontmatter de `content.es.md` donen el títol i l'autor del PDF, i el fitxer demana als visors que mostrin aquest títol a la barra de la finestra en lloc del nom del fitxer. `defaultResourceTypes(LANG)` dona als peus i a les cites els noms en espanyol: «Figura 1.1», «tabla 1.1». El text accessible de la figura i de les taules és a [la resposta curta](#la-resposta-curta): l'`altText` dona la descripció alternativa de la figura (`/Alt`) i el resum de cada taula (`/Summary`), i la primera fila i la primera columna de les dues taules s'etiqueten com a cel·les de capçalera.
+postext-pdf escriu la llengua de les etiquetes a partir de `locale`, aquí `/Lang es`, perquè un lector de pantalla llegeixi la guia amb pronunciació espanyola; si falta, el fitxer declara `en-US`. El `title` i l'`author` del frontmatter de `content.es.md` donen el títol i l'autor del PDF, i el fitxer demana als visors que mostrin aquest títol a la barra de la finestra en lloc del nom del fitxer. El mateix `locale` dona als peus i a les cites els noms en espanyol: «Figura 1.1», «tabla 1.1». El text accessible de la figura i de les taules és a [la resposta curta](#la-resposta-curta): l'`altText` dona la descripció alternativa de la figura (`/Alt`) i el resum de cada taula (`/Summary`), i la primera fila i la primera columna de les dues taules s'etiqueten com a cel·les de capçalera.
 
 ### 2 · Un sol esquema, i una banda de coberta amb el títol i res més
 
@@ -30,13 +30,13 @@ L'arbre d'etiquetes pren els elements H1 i H2 dels títols del Markdown, i els m
 
 <Excerpt region="contents" />
 
-`:::toc` recull els H1 i els H2 amb el número de pàgina que imprimeixen, i al PDF cadascuna de les seves onze files enllaça amb el començament de la seva pàgina. Les cites `:ref` de la pàgina 3, «figura 1.1» i «tabla 1.1», i la de la pàgina 4, «tabla 2.1», porten a la figura i a les taules. Les línies de punts fan servir la lletra dels números de pàgina, Atkinson Hyperlegible Next Bold, perquè en Public Sans una sèrie de punts ocupa més que el punt solt amb què es calcula la línia, i els punts es muntaven sobre els números.
+`:::toc` recull els H1 i els H2 amb el número de pàgina que imprimeixen, i al PDF cadascuna de les seves onze files enllaça amb el començament de la seva pàgina. Les cites `:ref` de la pàgina 3, «figura 1.1» i «tabla 1.1», i la de la pàgina 4, «tabla 2.1», porten a la figura i a les taules. Els números de pàgina van en la lletra del text, Atkinson Hyperlegible Next Bold, i les línies de punts prenen la lletra dels números, no la Public Sans de les entrades.
 
 ### 4 · L'ordre de lectura, dibuixat a la pàgina
 
 <Excerpt region="reading-order" />
 
-Un lector de pantalla segueix les etiquetes, i `renderToPdf` etiqueta cada pàgina en l'ordre en què la pinta: el títol de la banda, la primera columna de dalt a baix, la segona i, al final, els flotants de la pàgina. Aquesta funció repeteix aquest ordre per numerar els requadres de la pàgina 3, i l'arbre d'estructura del PDF dona els mateixos catorze elements en el mateix ordre. Aquest ordre obliga a posar la figura i les dues taules al flux, amb `placement: { position: 'here' }` i una línia `::resource`. Si flotés al peu de la primera columna, la figura 1.1 s'etiquetaria després de la taula 1.1, l'últim bloc de la seva pàgina. El paràgraf del vidre que continua a la segona columna conserva un sol número, el 9, perquè el PDF etiqueta les dues parts com un únic paràgraf.
+Un lector de pantalla segueix les etiquetes. `renderToPdf` etiqueta primer el títol de la banda i després cada columna de dalt a baix, i llegeix un flotant just després del paràgraf que el cita, es pinti on es pinti. Aquesta funció repeteix aquest ordre per numerar els requadres de la pàgina 3, i l'arbre d'estructura del PDF dona els mateixos catorze elements en el mateix ordre. La figura i les dues taules van al flux, amb `placement: { position: 'here' }` i una línia `::resource`, perquè qui llegeix amb la vista també les trobi sota la frase que les cita. El paràgraf del vidre que continua a la segona columna conserva un sol número, el 9, perquè el PDF etiqueta les dues parts com un únic paràgraf.
 
 ### 5 · Colors triats pel seu contrast
 
@@ -48,7 +48,7 @@ PDF/UA-1 no comprova el color, però WCAG 2.2 demana 4,5:1 entre el text i el se
 
 ### Deixa flotar la figura
 
-Treu la col·locació i la figura 1.1 flota al peu de la primera columna de la pàgina 3, i el PDF l'etiqueta després de la taula 1.1, l'últim bloc de la pàgina.
+Treu la col·locació i la figura 1.1 flota al peu de la primera columna de la pàgina 3. El PDF la continua llegint després del paràgraf que la cita, de manera que el dibuix li manté el número 3 i l'ordre de les etiquetes no canvia.
 
 ```diff
 -  { id: 'contenedores', typeId: 'figure', kind: 'svg', placement: { position: 'here' },
@@ -59,4 +59,4 @@ Treu la col·locació i la figura 1.1 flota al peu de la primera columna de la p
 
 El codi no pot validar el seu propi PDF, perquè veraPDF funciona fora del navegador. Baixa el fitxer i executa `verapdf -f ua1 accessible-tagged-pdf.pdf`; el PDF capturat per a aquesta pàgina passa la validació. El validador no sap si un text alternatiu descriu la seva imatge, així que escolta també la guia amb un lector de pantalla.
 
-Aquesta guia es va capturar amb postext 1.4.1, en què un enllaç de Markdown imprimia les seves paraules sense afegir cap enllaç al PDF; per això el colofó imprimeix l'adreça web completa. Des de postext 1.10 un enllaç `[texto](url)` funciona al PDF i s'etiqueta com a element `Link` el text del qual són les paraules enllaçades.
+El colofó imprimeix l'adreça web completa perquè la guia es va escriure per a postext 1.4.1, en què un enllaç de Markdown imprimia les seves paraules sense afegir cap enllaç al PDF. Des de postext 1.10 un enllaç `[texto](url)` funciona al PDF i s'etiqueta com a element `Link` el text del qual són les paraules enllaçades.

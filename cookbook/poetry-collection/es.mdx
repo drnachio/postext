@@ -36,7 +36,7 @@ En lugar de su texto, el título imprime un diseño en la columna. Ahí, `{numbe
 
 <Excerpt region="front" />
 
-Un estilo de título puede saltar a una página nueva y dibujar en ella un diseño, así que la anteportada, el frontispicio y la portada son un título cada uno, con su estilo. Con `numbered: false` no entran en la cuenta, y el primer poema sigue siendo el I. `toc: false` los deja fuera del índice, y como su pie de página está vacío, sus páginas no llevan folio ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). Los estilos ocupan la página entera porque un diseño en la columna se recorta a la caja de texto: la lámina, que va a sangre, perdería los bordes y se quedaría sin pie. El pie de la lámina sale del atributo `caption` del título; el autor, el título y el subtítulo de la portada, del frontmatter.
+Un estilo de título puede saltar a una página nueva y dibujar en ella un diseño, así que la anteportada, el frontispicio y la portada son un título cada uno, con su estilo. Con `numbered: false` no entran en la cuenta, y el primer poema sigue siendo el I. `toc: false` los deja fuera del índice, y como su pie de página está vacío, sus páginas no llevan folio ([estilos de encabezado](/es/docs/configuration#estilos-de-encabezado)). Los estilos ocupan la página entera porque a un diseño que se queda en la columna lo recorta el pie de la caja de texto: la lámina, que va a sangre, perdería la parte de abajo y se quedaría sin pie. El pie de la lámina sale del atributo `caption` del título; el autor, el título y el subtítulo de la portada, del frontmatter.
 
 ### 5 · El índice se rellena solo
 
@@ -95,5 +95,5 @@ El estilo del contador en la plantilla cambia a la vez el número de la página 
 - Mantén juntos los versos de una estrofa: una línea en blanco dentro de un bloque `:::verse` abre otra estrofa, sean cuantas sean las líneas en blanco.
 - Un verso que empieza con un signo más y un espacio es un verso escalonado, que empieza donde terminó el de arriba; escribe `\+` para imprimir el signo más.
 - Sin `align=start` cada poema se centra sobre su verso más largo, y entonces cada uno queda a una distancia distinta del margen.
-- Para que dos palabras pasen juntas a la línea de abajo, únelas con un espacio de no separación (U+00A0), como *the soil* y *bright wings.* en la página 5. Se mantiene en un verso de texto llano; en uno con cursiva o negrita el motor sigue cortando ahí.
+- Para que dos palabras pasen juntas a la línea de abajo, únelas con un espacio de no separación (U+00A0), como *the soil* y *bright wings.* en la página 5.
 - Un elemento del pie de página con `pages` en `'all'` se imprime también en las páginas en blanco. Aquí el folio se compone de dos elementos, uno para las aperturas y otro para las páginas de texto, así que una página par en blanco se queda en blanco.

@@ -40,7 +40,7 @@ El títol és l'únic títol de nivell 1, i el seu estil `paper` dibuixa al seu 
 
 <Excerpt region="art" />
 
-La figura 1 es dibuixa en SVG a partir de les caixes i les paraules de l'original. Un SVG que es pinta com a imatge no veu les fonts web de la pàgina, així que `inlineFace()` incrusta els dos fitxers de Work Sans que fan servir els rètols, i `tex()` escriu `y_w ≻ y_l` com a traços de MathJax, els mateixos glifs de les equacions. Les puntes de fletxa són traçats i no marcadors SVG, i per això la figura continua sent vectorial al PDF.
+La figura 1 es dibuixa en SVG a partir de les caixes i les paraules de l'original. Els rètols anomenen Work Sans a `font-family`, i `loadSvg` passa l'SVG per `inlineSvgFonts`, del motor, que hi incrusta els dos fitxers de Work Sans que fan servir; `tex()` escriu `y_w ≻ y_l` com a traços de MathJax, els mateixos glifs de les equacions. Les puntes de fletxa són traçats i no marcadors SVG, i per això la figura continua sent vectorial al PDF.
 
 ## Variants
 

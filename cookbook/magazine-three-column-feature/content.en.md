@@ -91,7 +91,7 @@ The old salt makers are not sentimental about their trade. Brás will tell you t
 
 On the last Saturday of the season the cooperative weighs the year’s harvest on the old platform scale in the salt store, sack by sack, with a notebook and a pencil. Last year it came to 1,860 tonnes of coarse salt and a little under eleven tonnes of flower, the best year since the cooperative began. The figure is chalked on the door of the store, where it stays until the rain washes it off, some time in October.
 
-At the end of September the salt goes down to the quay at Porto Velho in linen sacks of fifty kilos each, and the last boat of the season carries it to the mainland. The pans are flooded with sea water for the winter, to protect the clay from the rain and the frost. By November, when the rakers start mending their gates, the flats look like a lake again, and the herons are back on the walls, waiting. :chip[⁠]{style="end"}
+At the end of September the salt goes down to the quay at Porto Velho in linen sacks of fifty kilos each, and the last boat of the season carries it to the mainland. The pans are flooded with sea water for the winter, to protect the clay from the rain and the frost. By November, when the rakers start mending their gates, the flats look like a lake again, and the herons are back on the walls, waiting. :chip[ ]{style="end"}
 
 :::paragraphs{style="colophon"}
 Marisal, the Alvarra pans and everyone in this feature are fictional · Set in Source Serif 4, Fraunces and Barlow Condensed (SIL Open Font License) · Text: CC BY 4.0 · Photographs generated with diffusion models

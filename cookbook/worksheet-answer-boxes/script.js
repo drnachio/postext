@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 022 · Worksheet with answer boxes and a word bank ══════
 // https://postext.dev/en/cookbook/worksheet-answer-boxes
 // Code: MIT · Text: original (CC BY 4.0) · Plant: diffusion models · Icons: drawn in code
-// Fonts: Andika, Baloo 2, Fredoka (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Andika, Baloo 2, Fredoka (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, prepareFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
 const RECIPE = 'worksheet-answer-boxes';
@@ -12,7 +13,7 @@ const RECIPE = 'worksheet-answer-boxes';
 const palette = { ink: '#243040', muted: '#5d6975', paper: '#ffffff', // type; prompts; boxes
   leaf: '#2f7d4a', sun: '#f4b43a', soil: '#8a5a36', // the accent; words to pick; drawings
   tint: '#e5f1e7', rule: '#a9c9b1' }; // the activity cards; answer-box outlines
-// Design elements read the hex and ignore the palette (gotcha: palette-skips-designs).
+// Each colour names its palette entry and carries its hex.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // The engine's defaults link to 'main-color': point it at the leaf, so nothing prints blue.
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.leaf })
@@ -25,7 +26,7 @@ const [TOP, SIDE] = [18, 16]; // mm; a sheet printed one-sided, so the margins d
 //   :::callout{type="card"}
 //   What is inside the pea pods?
 //   :::callout{type="answer"}
-//   Write here               ← a prompt first: a box of :::space alone collapses
+//   Write here               ← the prompt first: a :::space that opens a box is dropped
 //   :::space{lines=3}           (gotcha: space-dropped-box-top)
 //   :::
 //   :::
@@ -59,9 +60,9 @@ const bank = nested('bank', { title: t({ en: 'Word bank', es: 'Banco de palabras
 // #region chips: words to pick, blanks to fill, dots to join, circles to colour
 const chip = (id, fill, look) => ({ id, fontFamily: LABEL, background: col(fill),
   borderWidth: pt(0), borderColor: col('leaf'), borderRadius: em(1), ...look });
-// An empty chip holds a U+2060 word joiner, as one of spaces prints its markup (gotcha:
-// empty-chip). Its box is a band 1.25 em tall, so paddingX ROUND makes it a circle.
-const [EMPTY, ROUND, OUTLINE] = ['\u2060', em(0.625), pt(0.9)];
+// An empty chip, :chip[ ], is a box of padding and outline alone. It is a band 1.25 em tall,
+// so paddingX ROUND makes it a circle.
+const [ROUND, OUTLINE] = [em(0.625), pt(0.9)];
 // A blank is all padding, 2 × paddingX wide and 19.6 pt tall: taller than the 17 pt line, so
 // the card's itemSpacing sets its items 24 pt apart (gotcha: chip-overlap).
 const blank = (id, width) => chip(id, 'paper', { borderWidth: OUTLINE, borderRadius: mm(1.4),
@@ -107,7 +108,7 @@ const dot = ([n, x, y]) => words(`dot${n}`, String(n), DISPLAY, 10.5, 800, at(DI
 const field = (id, label, x, w) => [words(`${id}-label`, label, LABEL, 7.5, 600, at(x, 59), tag),
   { kind: 'box', id, style: { backgroundColor: col('paper'), borderRadius: mm(1.6) },
     placement: at(x, 63, { width: mm(w), height: mm(7.5) }) }]; // a label over a white field
-// Images reserve no height in an opener (gotcha: opener-image-no-reserve), so minHeight does.
+// The opener reserves down to the disc's foot; minHeight adds AIR, 5 mm, under it.
 const opener = () => ({ enabled: true, minHeight: mm(DISC.y + DISC.d + AIR - TOP),
   slot: { elements: [
     { kind: 'box', id: 'band', style: { backgroundColor: col('leaf') },
@@ -130,29 +131,30 @@ const opener = () => ({ enabled: true, minHeight: mm(DISC.y + DISC.d + AIR - TOP
 const tableStyles = [{ id: 'match', borderRadius: mm(3), // no header row, so no header fill
   headerBackgroundEnabled: false, bodyBackgroundEnabled: true, bodyBackground: col('paper'),
   bodyFontFamily: LABEL, bodyFontSize: pt(13), bodyColor: col('ink'), cellPadding: mm(1.4),
-  // White rules on the white panel: unseen, but they hide the canvas's seams between cells.
-  rules: 'grid', borderColor: col('paper'), borderWidth: pt(1) }];
+  rules: 'none' }]; // the white panel is the body fill alone
 const cell = (content, extra) => ({ content, verticalAlign: 'middle', ...extra });
-const dotCell = () => cell(`:chip[${EMPTY}]{style="dot"}`, { align: 'center' });
+const dotCell = () => cell(':chip[ ]{style="dot"}', { align: 'center' });
 const matchRow = (icon, food, part) => [cell('', { image: { resourceId: icon, width: 0.76 },
   align: 'center' }), cell(food), dotCell(), cell(''), dotCell(),
 cell(`:chip[${part}]{style="word"}`)];
 const sheetType = { id: 'sheet', name: 'Worksheet item', shortLabel: '', captionPrefix: '',
   numberingTemplate: '{n}', resetOn: 'never', counterFormat: 'decimal' }; // no caption, no number
-// Set 'here' in its card, after a :::space (gotcha: box-embed-no-gap); built once FOODS exist.
+// Set 'here' in its card, built once FOODS exist. A box keeps a line of its text, 6 mm, over
+// an embedded table; with that off (see layout), a :::space{lines=0.33} sets ASK instead.
 const foods = () => ({ id: 'foods', typeId: 'sheet', kind: 'table', createdAt: 0, updatedAt: 0,
   placement: { position: 'here' }, table: { styleId: 'match', model: {
     columnWidths: [0.14, 0.25, 0.06, 0.31, 0.06, 0.18], // the widest gap: room to draw a line
     rows: FOODS.map((name, r) => matchRow(ICONS[r], name, PARTS[r])) } } });
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes only (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // the hyphenation patterns of the edition
   resourceTypes: [sheetType], colorPalette, chipStyles, tableStyles, header: { elements: [] },
   footer: { elements: [words('foot', '{title} · {subtitle} · {attr.unit} · {pageNumber}', LABEL,
     7.8, 600, at(SIDE, -11, undefined, 'bottom-left'), { ...tag, color: col('muted') })] },
   page: { width: mm(200), height: mm(260), dpi: 150, margins: { top: mm(TOP), bottom: mm(20),
-    left: mm(SIDE), right: mm(SIDE) } }, layout: { layoutType: 'single' },
+    left: mm(SIDE), right: mm(SIDE) } },
+  layout: { layoutType: 'single', inlineResourceGapInBoxes: false }, // ASK over the table
   bodyText: { fontFamily: TEXT, fontSize: pt(12), lineHeight: pt(17), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true },
@@ -160,7 +162,7 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
   headings: { fontFamily: DISPLAY, snapToGrid: false, // or what follows snaps back to the grid
     balancing: { enabled: false }, // no extra space above headings to fill out a page
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': a sheet opens the next page, on either side.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         marginTop: pt(0), marginBottom: pt(0), advancedDesign: opener() },
       { level: 2, numberingTemplate: '{2}', marginTop: mm(0), marginBottom: mm(0),
@@ -187,8 +189,8 @@ const PARTS = t({ en: 'leaf|seeds|root|fruit|stem|flower',
 // The pea plant is a watercolour already set in its disc, in two JPEGs that meet at the band's
 // edge: the top one's corners carry the band's green, the foot's are white. One picture would
 // resample its green-to-white step and print a pale line along the band's edge. No words in
-// the drawings: an SVG drawn as an image cannot use web fonts (gotcha: svg-no-webfonts); the
-// plant's numbers are design elements set in Baloo 2 over the picture (see the band).
+// the drawings: the plant's numbers are design elements set in Baloo 2 over the picture (see
+// the band).
 // [number, x, y] in the disc's millimetres: each numbered dot, where its leader line starts.
 const LABELS = [[1, 58, 8], [2, 68, 33], [3, 9, 44], [4, 13, 20], [5, 62, 52], [6, 18, 66]];
 const n = (v) => +v.toFixed(2);
@@ -272,14 +274,14 @@ pictures.push(...[['plant', 994], ['plant-foot', 98]].map(([id, h]) => ({ id, ty
 const resources = [...pictures, foods()];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { Andika: ['400', '700'], 'Baloo 2': ['700', '800'], // (gotcha: fonts-first)
+const FONTS = { Andika: ['400', '700'], 'Baloo 2': ['700', '800'],
   Fredoka: ['400', '500', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await Promise.all([loadFonts(FONTS, markdown),
+await Promise.all([prepareFonts(markdown, config(), kitFonts(FONTS)),
   ...Object.entries(drawings).map(([id, draw]) => loadSvg(`${id}.svg`, draw())),
   ...['plant-1092.jpg', 'plant-foot-1092.jpg'].map((file) => loadImage(file, asset(file)))]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Plants and their parts', es: 'Las plantas y sus partes' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

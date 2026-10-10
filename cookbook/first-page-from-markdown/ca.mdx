@@ -18,13 +18,13 @@ Les primeres pàgines d'un reportatge de viatges en una revista petita, *Quadern
 
 <Excerpt region="fonts" />
 
-Postext mesura el text amb les fonts que el navegador ja ha carregat i desa les mesures a la memòria cau, de manera que una composició que s'avança a les fonts conserva els talls de línia equivocats. El kit carrega aquests fitxers de Fontsource, els mateixos que incrustaria un PDF. Després, `buildWithFonts` repassa les fonts que fan servir les pàgines. Si un bloc o un element de disseny està compost en una font que no s'ha carregat, avisa a la consola, la carrega i torna a compondre; si Fontsource no té aquesta font, el pen s'atura amb un error (consulta «Errors freqüents»). Les negretes i cursives d'una font de text es carreguen sense avís, i només si la família les inclou.
+Postext mesura el text amb les fonts que el navegador té quan es compon, de manera que una composició que s'avancés a les fonts conservaria els talls de línia d'una font de reserva. `buildDocumentWithFonts` carrega abans de la primera composició totes les fonts que anomena la configuració i les de `FONTS`; `kitFonts(FONTS)` li dona els fitxers de Fontsource, els mateixos que incrustaria un PDF. Després repassa les fonts que fan servir les pàgines, carrega les que faltin i torna a compondre. Una font que Fontsource no té es queda en la de reserva i surt a `doc.contentWarnings` com a `fontFallback`. Les negretes i cursives d'una font de text només es carreguen si la família les inclou.
 
 ### 2 · Anomena els colors i apunta als noms
 
 <Excerpt region="palette" />
 
-Cada color de la configuració és `col('id')`, un identificador de la paleta amb el seu valor hexadecimal al costat. `bodyText.boldColor`, `italicColor`, `referenceColor` i `unorderedLists.color` apunten a `ink`, i `headings.color`, a l'accent. Els valors per defecte del motor per a títols, negretes, cursives i pics estan enllaçats a `main-color`, i aquesta paleta dona a aquesta entrada el color de l'accent, de manera que qualsevol d'ells que no fixis surt anyil i no blau. A Postext 1.4.1, els elements de capçaleres, peus i obertures, i també `referenceColor`, es pinten amb el valor hexadecimal, no amb l'identificador; per això els objectes de disseny són funcions que `config()` crida a cada composició, i `col()` copia cada vegada el valor vigent de `palette`. El signe de fi és una mostra de color en línia que anomena `band`, així que també canvia amb la paleta. La capçalera per defecte no llegeix la paleta i es queda blava fins que la substitueixis (pas 5).
+Cada color de la configuració és `col('id')`, un identificador de la paleta amb el seu valor hexadecimal al costat. `bodyText.boldColor`, `italicColor`, `referenceColor` i `unorderedLists.color` apunten a `ink`, i `headings.color`, a l'accent. Els valors per defecte del motor per a títols, negretes, cursives i pics estan enllaçats a `main-color`, i aquesta paleta dona a aquesta entrada el color de l'accent, de manera que qualsevol d'ells que no fixis surt anyil i no blau. Els objectes de disseny són funcions que `config()` crida a cada composició, i `col()` copia cada vegada el valor vigent de `palette`, així que un sol canvi a `palette` arriba igualment al text, als folis i a l'obertura. El signe de fi és una mostra de color en línia que anomena `band`, així que també canvia amb la paleta. La capçalera per defecte també està enllaçada a `main-color`, així que sortiria en el color de l'accent fins que la substitueixis (pas 5).
 
 ### 3 · Una fotografia retallada al seu marc
 
@@ -48,17 +48,17 @@ Si omets `header`, torna la capçalera per defecte del motor: Open Sans sobre un
 
 <Excerpt region="build" />
 
-`config()` és una funció perquè el motor desa a la memòria cau cada configuració resolta segons la identitat de l'objecte, de manera que un ajust editat només té efecte si cada composició rep un objecte nou. `showPages` col·loca les pàgines com anirien en un llibre enquadernat, amb la pàgina 1 sola a la dreta, i pinta cadascuna amb `renderPageToCanvas`.
+`config()` és una funció perquè cada composició llegeixi la paleta tal com està: torna a cridar les funcions de disseny del pas 2. També valdria un únic objecte de configuració modificat al seu lloc: des de postext 1.25 el motor veu el canvi a la composició següent. `buildDocumentWithFonts` rep el contingut, aquesta configuració i les opcions de fonts del kit, i torna el document. `showPages` col·loca les pàgines com anirien en un llibre enquadernat, amb la pàgina 1 sola a la dreta, i pinta cadascuna amb `renderPageToCanvas`.
 
 ## Variants
 
 ### Mira què substitueix la configuració
 
-Compon amb una configuració buida i el mateix Markdown surt en una pàgina de 17 × 24 cm, en EB Garamond de 8 punts, amb títols blaus en Open Sans i una capçalera blava sobre un filet; el kit carrega aquestes fonts per tu, amb un avís a la consola.
+Compon amb una configuració buida i el mateix Markdown surt en una pàgina de 17 × 24 cm, en EB Garamond de 8 punts, amb títols blaus en Open Sans i una capçalera blava sobre un filet; el motor carrega també aquestes dues famílies, perquè la configuració per defecte les anomena.
 
 ```diff
--  () => buildDocument({ markdown, resources }, config()), markdown);
-+  () => buildDocument({ markdown, resources }, {}), markdown);
+-const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
++const doc = await buildDocumentWithFonts({ markdown, resources }, {}, kitFonts(FONTS));
 ```
 
 ### Canvia el color de tota la pàgina
@@ -86,4 +86,4 @@ Canvia l'accent i la següent execució pinta amb el nou color els folis, els su
 
 ## Errors freqüents
 
-- Young Serif només té un pes. Els títols van en negreta per defecte, així que aquí `headings.fontWeight: 400` és obligatori: sense això, el kit cerca una Young Serif negreta que Fontsource no té i el pen s'atura amb un error.
+- Young Serif només té un pes. Els títols van en negreta per defecte, així que aquí `headings.fontWeight: 400` és obligatori: sense això, els títols demanen una Young Serif negreta que Fontsource no té, el navegador engruixeix la normal i `doc.contentWarnings` anota la font com a `fontFallback`.

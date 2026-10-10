@@ -1,11 +1,10 @@
 // ═══ Postext Cookbook · Nº 127 · A hiragana picture book, spaced by phrase ══════════
 // https://postext.dev/en/cookbook/hiragana-picture-book
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Klee One, Zen Maru Gothic (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Klee One, Zen Maru Gothic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A picture book for small readers: hiragana only, a space between phrases, vertical.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -84,7 +83,7 @@ const cover = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   resourceTypes,
@@ -140,8 +139,9 @@ await loadCjkFonts({ [HAND]: FONTS[HAND] }, markdown, { vertical: true });
 await loadCjkFonts({ [ROUND]: FONTS[ROUND] }, 'かみのふねおしまい', { vertical: true });
 // A design slot or ::resource names a resource, the resource a file id: load each file.
 await Promise.all(Object.values(PICTURES).map(([file]) => loadImage(file, asset(file))));
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources: pictures }, config()), markdown);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown, resources: pictures }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A hiragana picture book',
   es: 'Un libro ilustrado en hiragana' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider, resourceBytes: imageBytes }),

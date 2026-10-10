@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "bilingual-metascience-essay",
-  "sourceHash": "18646043ff447b873dc0ef506e64932ea638f315007b46701c362c2ddf8e8678",
+  "sourceHash": "fedecaf7b852fd87ae4c9631a4c348f747b76551d1a25282e81849dcd8498f21",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.692Z",
+  "capturedAt": "2026-10-10T13:31:25.166Z",
   "variants": {
     "en": {
-      "hash8": "00c27ea1",
+      "hash8": "88e03085",
       "vdtHash": "1a2618d11698ead020024ad1a2162631052e37ba",
       "timings": {
-        "importMs": 313,
-        "fontsMs": 124,
-        "buildMs": 585,
-        "totalMs": 1571,
+        "importMs": 175,
+        "fontsMs": 2210,
+        "buildMs": 444,
+        "totalMs": 3400,
         "builds": 1
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Sofia Sans Semi Condensed"
         ],
         "pages": 7,
-        "ownLines": 221
+        "ownLines": 220
       },
       "pages": [
         {
@@ -72,7 +72,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 114166,
+          "bytes": 114136,
           "alt": "Page 3: Corollaries. Table 2. Research Findings and True Relationships in the Presence of Bias · Figure 1. PPV (Probability That a Research Finding Is True) as a Function of the Pre-Study Odds for Various Levels of Bias, ￼ · Table 3. Research Findings and True Relationships in…"
         },
         {
@@ -141,26 +141,27 @@
       },
       "pdf": {
         "file": "bilingual-metascience-essay.pdf",
-        "bytes": 783183,
+        "bytes": 395444,
         "pages": 7
       },
       "sandbox": {
         "file": "bilingual-metascience-essay.postext",
-        "bytes": 90820,
+        "bytes": 123951,
         "folio": "a418809e"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
           "initMathEngine",
+          "inlineSvgFonts",
           "mergeCells",
           "parseTSV",
+          "prepareFonts",
           "registerCitationEngine",
           "registerResourceImage",
           "renderPageToCanvas",
@@ -494,13 +495,13 @@
       }
     },
     "es": {
-      "hash8": "8e48b8c1",
+      "hash8": "2a2ff1c7",
       "vdtHash": "12998927793173f946a0c06b165ddf5435e27291",
       "timings": {
-        "importMs": 313,
-        "fontsMs": 116,
-        "buildMs": 539,
-        "totalMs": 1535,
+        "importMs": 189,
+        "fontsMs": 128,
+        "buildMs": 408,
+        "totalMs": 1279,
         "builds": 1
       },
       "specimen": {
@@ -522,7 +523,7 @@
           "Sofia Sans Semi Condensed"
         ],
         "pages": 7,
-        "ownLines": 221
+        "ownLines": 220
       },
       "pages": [
         {
@@ -555,7 +556,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 118766,
+          "bytes": 118764,
           "alt": "Página 3: Corolarios. Tabla 2. Resultados de la investigación y relaciones verdaderas en presencia de sesgo · Figura 1. VPP (probabilidad de que un resultado de la investigación sea verdadero) en función de la razón de probabilidades previa al estudio para varios niveles de se…"
         },
         {
@@ -624,26 +625,27 @@
       },
       "pdf": {
         "file": "bilingual-metascience-essay.pdf",
-        "bytes": 821180,
+        "bytes": 425215,
         "pages": 7
       },
       "sandbox": {
         "file": "bilingual-metascience-essay.postext",
-        "bytes": 93412,
+        "bytes": 126638,
         "folio": "a418809e"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
           "initMathEngine",
+          "inlineSvgFonts",
           "mergeCells",
           "parseTSV",
+          "prepareFonts",
           "registerCitationEngine",
           "registerResourceImage",
           "renderPageToCanvas",

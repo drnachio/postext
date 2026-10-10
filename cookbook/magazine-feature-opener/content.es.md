@@ -87,7 +87,7 @@ Una clase fue más lejos: comparó los cuadernos con el registro escolar de la f
 
 El registro seguirá. El hijo de Hanna, que tiene catorce años, se ha hecho cargo de los paseos de noviembre al embarcadero, en busca de la mañana en que desaparece la última mancha de agua oscura. Ahora usa una hoja de cálculo con copia en la universidad. Pero el día en que el lago se hiela también escribe la fecha a lápiz, en el cuaderno de la lata, porque así lo hacía su tatarabuelo.
 
-El invierno pasado el lago se heló el 21 de diciembre y se abrió el 18 de marzo: ochenta y siete días, casi exactamente la media actual. Hanna escribió *normal* junto a las fechas y luego tachó la palabra. «Normal por ahora», dice. :chip[⁠]{style="end"}
+El invierno pasado el lago se heló el 21 de diciembre y se abrió el 18 de marzo: ochenta y siete días, casi exactamente la media actual. Hanna escribió *normal* junto a las fechas y luego tachó la palabra. «Normal por ahora», dice. :chip[ ]{style="end"}
 
 # Cinco clases \\ de hielo {style="guide" kicker="Guía de campo" standfirst="Cómo leer un lago helado antes de confiarle tu peso, desde la lámina negra y clara de principios de invierno hasta las velas podridas de marzo." byline="Texto de la redacción" credit="Ilustración generada con código para Boreal"}
 
@@ -101,7 +101,7 @@ El invierno pasado el lago se heló el 21 de diciembre y se abrió el 18 de marz
 
 **Hielo de velas.** En primavera el sol pudre el hielo negro por las juntas entre sus cristales. La lámina aún puede parecer sólida cuando ya se ha convertido en un haz de varillas verticales sueltas que ceden bajo una bota. Si la superficie se vuelve gris y granulosa, y las varillas tintinean con el viento, quédate en la orilla.
 
-No juzgues nunca el hielo solo por su color. Mídelo cada pocos pasos y pregunta a quienes viven junto a la orilla. :chip[⁠]{style="end"}
+No juzgues nunca el hielo solo por su color. Mídelo cada pocos pasos y pregunta a quienes viven junto a la orilla. :chip[ ]{style="end"}
 
 :::paragraphs{style="colophon"}
 Compuesto en Literata, Instrument Serif e Instrument Sans (SIL Open Font License) · Texto: Recetario de Postext, CC BY 4.0 · Fotografías: Ales Krivec y Hannah Donze, CC0, vía Wikimedia Commons · El lago, la familia, los científicos y la autora son ficticios.

@@ -47,15 +47,8 @@
   ],
   "gaps": [],
   "gotchas": [
-    "hyphenation-locales",
-    "opener-image-no-reserve",
     "style-inherits-break",
-    "headings-drop-h1-break",
-    "palette-skips-designs",
-    "overflow-ellipsis-default",
-    "attr-values",
-    "quote-frontmatter",
-    "fonts-first"
+    "attr-values"
   ],
   "explainsWarnings": [],
   "related": [
@@ -66,8 +59,8 @@
   ],
   "workarounds": [],
   "engine": {
-    "postext": "1.14.0",
-    "postextPdf": "1.14.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -192,7 +185,7 @@
     "content": "MIT"
   },
   "created": "2026-10-04",
-  "updated": "2026-10-04",
+  "updated": "2026-10-10",
   "folio": {
     "paper": {
       "type": "bookWove",

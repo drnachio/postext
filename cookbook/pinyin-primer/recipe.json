@@ -28,14 +28,11 @@
     "ruby-not-in-designs",
     "cjk-face-region",
     "cjk-fonts-slices",
-    "cjk-locale-tag",
-    "headings-drop-h1-break",
-    "svg-no-webfonts",
-    "fonts-first"
+    "cjk-locale-tag"
   ],
   "explainsWarnings": ["rubyExceedsLeading"],
   "related": ["reading-primer-syllables", "zhuyin-vertical-reader", "chinese-novel-horizontal"],
-  "engine": { "postext": "1.9.0" },
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [1, 2], "card": "spread", "pages": "all", "expect": { "pages": [4, 4] } },
@@ -120,5 +117,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-29",
-  "updated": "2026-09-29"
+  "updated": "2026-10-10"
 }

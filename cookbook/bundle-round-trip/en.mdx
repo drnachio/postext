@@ -30,13 +30,13 @@ A bundle carries a face when `customFonts` names it and `files` holds its bytes 
 
 <Excerpt region="resources" />
 
-The two drawings are SVG markup made by the pen, handed to `files` under the `svg.fileId` of their resources; the table is data, so it travels in `preset.json` with its caption. The section and the table are set with `position: 'here'`: the section at the head of the back, the hours under the paragraph that cites them. In 1.4.1 an inline resource gets no space below it, so a `:::space{lines=0.5}` line after the table leaves 3.7 mm under its caption; without it the next paragraph starts 1.4 mm under the caption.
+The two drawings are SVG markup made by the pen, handed to `files` under the `svg.fileId` of their resources; the table is data, so it travels in `preset.json` with its caption. The section and the table are set with `position: 'here'`: the section at the head of the back, the hours under the paragraph that cites them. The leaflet sets `layout.inlineResourceGap: 'above'`, which keeps an inline resource's gap above it only, so the back fits on one side: the heading under the section brings its own space, and a `:::space{lines=0.5}` line after the table leaves 3.7 mm under its caption.
 
-### 4 · Write the labels into the file
+### 4 · Keep the labels in the file's language
 
 <Excerpt region="labels" />
 
-When a file has no `resourceTypes`, `openBundle` builds them in the language the reader asks for, not in the file's: the Spanish leaflet opened with `{ locale: 'en' }`, or imported into the Sandbox at /en/sandbox, prints Figure 1.1 over Spanish text. Types written into the config replace that default, so the Spanish file prints Figura 1 and Tabla 1 wherever it is opened. `'{n}'` drops the chapter number, which a two-page leaflet does not need ([resource types](/en/docs/configuration#resource-types)). The same `config()` sets `locale`, which picks the Spanish hyphenation patterns (compuer-tas on the back) and the language the PDF declares.
+A reader builds the built-in types in the language the file serves: with no `resourceTypes` in its config, the Spanish leaflet prints Figura 1.1 and Tabla 1.1 wherever it is opened, the Sandbox at /en/sandbox included. The leaflet writes the types for their numbers alone: `'{n}'` drops the chapter number, which a two-page leaflet does not need ([resource types](/en/docs/configuration#resource-types)). The same `config()` sets `locale`, which picks the Spanish hyphenation patterns (compuer-tas on the back) and the language the PDF declares.
 
 ### 5 · Hand the same bytes on
 
@@ -48,7 +48,7 @@ The link offers the `bytes` the pages were laid out from, 132 KB with the fonts.
 
 <Excerpt region="cover" />
 
-The front is the design of the cover heading: the drawing anchored to the page at full size, the heading's text through `{titleText}`, the kicker, lead and facts line from its attributes, and a text element with a box for the language tab. The H1 level is `span: 'page'`, so the drawing starts at the paper's edge. A heading design kept in the column is cut at the text block's top and bottom edges: the drawing would start 12 mm down and stop 13 mm above the bottom edge, and the language tab would shrink to a strip without its letters.
+The front is the design of the cover heading: the drawing anchored to the page at full size, the heading's text through `{titleText}`, the kicker, lead and facts line from its attributes, and a text element with a box for the language tab. The H1 level is `span: 'page'`, so the drawing runs to the paper's bottom edge. A heading design kept in the column is cut at the foot of the text block: the drawing would stop 13 mm above the bottom edge.
 
 ## Variations
 
@@ -62,9 +62,9 @@ The Postext guide carries its English and Spanish chapters, config and captions 
 +const bundle = await openBundle(await guide.arrayBuffer(), { locale: LANG });
 ```
 
-### Let the reader pick the labels
+### Count the figures by chapter
 
-Without the types, the labels follow the language the file is opened in, and the figures count from the cover heading: the Spanish edition prints Figura 1.1 here and Figure 1.1 once the Sandbox at /en/sandbox imports it.
+Without the types the reader builds them in the file's language with the default numbers, and the figures count from the cover heading: Figure 1.1 and Table 1.1 here, Figura 1.1 and Tabla 1.1 in the Spanish edition.
 
 ```diff
 -  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
@@ -72,4 +72,4 @@ Without the types, the labels follow the language the file is opened in, and the
 
 ## Pitfalls
 
-- `createBundle` in postext 1.4.1 writes one language per file. The `localized` input under [Bilingual bundles](/en/docs/configuration#bilingual-bundles) is not in that release, though `openBundle` 1.4.1 reads such files.
+- Each edition here is a file of its own. To carry both languages in one file, give `createBundle` a `localized` map ([Bilingual bundles](/en/docs/configuration#bilingual-bundles)); `openBundle(bytes, { locale })` then reads either edition.

@@ -1,11 +1,10 @@
 // ═══ Postext Cookbook · Nº 149 · Manga read right to left, lettered vertically ══════
 // https://postext.dev/en/cookbook/manga-right-to-left
 // Code: MIT · Story: written for the recipe (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.21.0
+// Fonts: Zen Antique, Comic Neue and six more (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Two pages of a kendo manga: the Japanese original, then the same pages lettered again.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -71,7 +70,7 @@ const balloons = () => [
 ];
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   // Each edition's language, written out (gotcha: ja-locale-tag); the original is built
   // with 'ja' in every edition (edition('ja') below).
   locale: t({ ja: 'ja', en: 'en-us', es: 'es', ca: 'ca', zh: 'zh-Hans', ar: 'ar', pt: 'pt-BR' }),
@@ -256,8 +255,9 @@ await loadFonts(FONTS, Object.values(TEXT).join('\n'));
 const resources = await panels();
 const build = async (lang) => { // the same pictures and page; this language's lettering
   await loadEdition(lang);
-  return buildWithFonts(() => buildDocument({ markdown: TEXT[lang], resources,
-    continuation: { pageIndexOffset: 1 } }, edition(lang)), TEXT[lang]);
+  return withLoadedFonts(() => buildDocument({ markdown: TEXT[lang], resources,
+    continuation: { pageIndexOffset: 1 } }, edition(lang)),
+    { ...kitFonts(FONTS), text: TEXT[lang] });
 };
 const docs = [await build('ja'), await build(FACING)];
 // #endregion

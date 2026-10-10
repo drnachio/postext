@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import { PDFArray, PDFDocument, PDFRawStream, decodePDFRawStream } from 'pdf-lib';
 import { buildDocument } from 'postext';
-import type { PostextConfig, VDTDocument } from 'postext';
+import type { PostextConfig, VDTDesignTextBlock, VDTDocument } from 'postext';
 import { renderToPdf } from '../pdf-backend';
 
 // A 破折号 (——) in Chinese text prints as one rule over its two ems: each
@@ -98,6 +98,68 @@ describe('a 破折号 in the PDF', () => {
       expect([m[3], m[4], m[5], m[6]].map(Number)).toEqual([1, 0, 0, 1]);
     }
     // One em apart down the line, from where the layout put each glyph.
+    const xs = shows.map((m) => Number(m[7]));
+    expect(xs[1]! - xs[0]!).toBeCloseTo(16 + dashes[1]!.inkOffset! - dashes[0]!.inkOffset!, 3);
+  }, 60_000);
+
+  // #652: the running heads, heading designs and comic balloons a design
+  // text block carries.
+  const withHead = (vertical: boolean): PostextConfig => ({
+    ...config,
+    header: {
+      elements: [{
+        kind: 'text', id: 'head', content: '女子——一一', fontFamily: 'Lora', fontSize: pt(16),
+        placement: { anchor: { to: 'page', edge: 'top-left' }, offset: { x: pt(20), y: pt(2) } },
+        ...(vertical ? { writingMode: 'vertical-rl' as const } : {}),
+      }],
+    },
+  } as PostextConfig);
+  const headOf = (doc: VDTDocument): VDTDesignTextBlock => doc.pages[0]!.header!.blocks.find((b) => b.kind === 'text') as VDTDesignTextBlock;
+
+  it('stretches the dashes of a design text as it does the body’s (#652)', async () => {
+    const doc = buildDocument({ markdown: '正文' }, withHead(false));
+    const head = headOf(doc);
+    const line = head.lines[0]!;
+    const dashes = line.runs!.filter((r) => r.text === '—');
+    expect(dashes).toHaveLength(2);
+    const scale = (16 - 0.8 + 0.32) / 11.2;
+    for (const d of dashes) expect(d.inkScale).toBeCloseTo(scale);
+    const content = await contentOf(doc);
+    const on = [...content.matchAll(/([\d.]+) Tz/g)].map((m) => Number(m[1]));
+    expect(on.filter((v) => Math.abs(v - scale * 100) < 0.01)).toHaveLength(2);
+    expect(on.filter((v) => v === 100)).toHaveLength(2);
+    // Each dash's text object starts at its box plus its ink offset, raised
+    // by its baseline shift.
+    const tms = [...content.matchAll(/1 0 0 1 (-?[\d.]+) (-?[\d.]+) Tm/g)].map((m) => [Number(m[1]), Number(m[2])]);
+    let x = head.bbox.x + line.xOffset;
+    for (const run of line.runs!) {
+      if (run.inkScale !== undefined) {
+        const gx = x + run.inkOffset!;
+        const gy = 400 - (line.baselineY + run.baselineShift!);
+        expect(tms.some(([tx, ty]) => Math.abs(tx! - gx) < 1e-3 && Math.abs(ty! - gy) < 1e-3), `dash at ${gx}, ${gy}`).toBe(true);
+      }
+      x += run.width;
+    }
+  }, 60_000);
+
+  it('shows the dashes of a vertical design text turned with its frame, stretched down the column (#652)', async () => {
+    const doc = buildDocument({ markdown: '正文' }, withHead(true));
+    const head = headOf(doc);
+    expect(head.vertical).toBeDefined();
+    const dashes = head.lines[0]!.runs!.filter((r) => r.text === '—');
+    expect(dashes).toHaveLength(2);
+    const scale = (16 - 0.8 + 0.32) / 11.2;
+    for (const d of dashes) expect(d.inkScale).toBeCloseTo(scale);
+    const content = await contentOf(doc);
+    const shows = [...content.matchAll(/([\d.]+) Tz\s+q[\s\S]*?BT[\s\S]*?\/(\S+) [\d.]+ Tf[\s\S]*?(-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) Tm[\s\S]*?ET\s+Q\s+100 Tz/g)];
+    expect(shows).toHaveLength(2);
+    for (const m of shows) {
+      expect(Number(m[1])).toBeCloseTo(scale * 100, 2);
+      // The horizontal glyph under an unturned text matrix: the block's
+      // frame turns it.
+      expect(m[2]!.endsWith('V')).toBe(false);
+      expect([m[3], m[4], m[5], m[6]].map(Number)).toEqual([1, 0, 0, 1]);
+    }
     const xs = shows.map((m) => Number(m[7]));
     expect(xs[1]! - xs[0]!).toBeCloseTo(16 + dashes[1]!.inkOffset! - dashes[0]!.inkOffset!, 3);
   }, 60_000);

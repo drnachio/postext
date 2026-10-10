@@ -22,7 +22,7 @@ O código é [a resposta curta](#a-resposta-curta) lá em cima. `TABS` lista 22 
 
 <Excerpt region="running-heads" />
 
-Os cabeços são elementos de texto ancorados à página e filtrados por `parity` e `pages: 'body'` ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). O título da página 1 ocupa as duas colunas, o que faz dela uma página de abertura. Os cabeços pulam essa página, e o fólio dela vem do rodapé, um elemento com `pages: 'opener'` que imprime 6 mm abaixo da mancha. Numa página ímpar, `{chapterTitle}` imprime a letra do último título de nível 1 que está na página ou antes dela, *Letter C*. Desde o postext 1.5.0, `{firstMark.<key>}` e `{lastMark.<key>}` imprimem no lugar dela o primeiro e o último lema da página, as palavras-guia que a maioria dos dicionários traz; esta receita foi composta com a 1.4.1 e mantém a letra.
+Os cabeços são elementos de texto ancorados à página e filtrados por `parity` e `pages: 'body'` ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). O título da página 1 ocupa as duas colunas, o que faz dela uma página de abertura. Os cabeços pulam essa página, e o fólio dela vem do rodapé, um elemento com `pages: 'opener'` que imprime 6 mm abaixo da mancha. Numa página ímpar, `{chapterTitle}` imprime a letra do último título de nível 1 que está na página ou antes dela, *Letter C*. `{firstMark.<key>}` e `{lastMark.<key>}` imprimem no lugar dela o primeiro e o último lema da página, as palavras-guia que a maioria dos dicionários traz; esta receita mantém a letra, que é o que as suas abas indexam.
 
 ### 3 · Dê cor aos lemas e a nada mais
 
@@ -34,13 +34,13 @@ Cada verbete é um parágrafo de um bloco `:::paragraphs{style="entry"}`, com as
 
 <Excerpt region="letter-heads" />
 
-`LETTER`, 55,8 pt, é o corpo em que uma maiúscula da Alegreya SC 900 (0,652 em de altura) se apoia na quarta linha de base e alcança a altura das maiúsculas da primeira linha do texto. A letra e o fio cor de latão terminam dentro da quinta linha, e o bloco do título desce até a linha seguinte da grade, então cada inicial ocupa cinco linhas e os verbetes abaixo dela continuam na grade. Na <PageRef page={3}>página 3</PageRef>, o C no alto da segunda coluna fica alinhado com as quatro primeiras linhas da primeira coluna. O nível 1 define `breakBefore: { enabled: false }`, e os estilos das letras herdam esse valor. Na 1.4.1 qualquer objeto `headings` já tira a quebra de página do nível 1; com o valor escrito, as letras continuam seguidas se uma versão futura trouxer a quebra de volta.
+`LETTER`, 55,8 pt, é o corpo em que uma maiúscula da Alegreya SC 900 (0,652 em de altura) se apoia na quarta linha de base e alcança a altura das maiúsculas da primeira linha do texto. A letra e o fio cor de latão terminam dentro da quinta linha, e o bloco do título desce até a linha seguinte da grade, então cada inicial ocupa cinco linhas e os verbetes abaixo dela continuam na grade. Na <PageRef page={3}>página 3</PageRef>, o C no alto da segunda coluna fica alinhado com as quatro primeiras linhas da primeira coluna. O nível 1 define `breakBefore: { enabled: false }`, que desliga a quebra de página que um título de nível 1 tem por padrão, e os estilos das letras herdam esse valor, então B e C começam no meio da coluna.
 
 ### 5 · Estenda o título pelas duas colunas
 
 <Excerpt region="title" />
 
-O estilo do título ocupa a largura da página com uma faixa que reúne a âncora, o nome, um subtítulo e uma linha de autoria lidos de atributos do título, e um fio duplo ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). O fio fino termina 45,1 mm abaixo do alto da mancha, então a faixa se ajusta a 13 linhas da grade, ou 47,7 mm. Sob um título na largura da página, o fio entre colunas continua começando no alto da mancha e atravessaria o título. Uma caixa da cor do papel cobre a faixa até o fio fino, e o fio entre colunas só aparece abaixo dela. `{titleText}` junta com um espaço as linhas quebradas do título oculto, e a 1.4.1 quebra um título na largura da página pela largura da coluna. No corpo padrão do H1, a faixa imprimia *Word- Book*, por isso o estilo do título compõe o título oculto no corpo do texto, o que faz o nome caber numa linha da coluna de 60 mm.
+O estilo do título ocupa a largura da página com uma faixa que reúne a âncora, o nome, um subtítulo e uma linha de autoria lidos de atributos do título, e um fio duplo ([span e design avançado](/pt/docs/configuration#largura-e-design-avançado)). O fio fino termina 45,1 mm abaixo do alto da mancha, então a faixa se ajusta a 13 linhas da grade, ou 47,7 mm. O fio entre colunas começa abaixo da faixa, na linha em que começa o texto das duas colunas.
 
 ## Variações
 
@@ -55,5 +55,4 @@ Os índices de dedo impressos costumam mostrar só a aba da letra atual; tire `l
 
 ## Erros comuns
 
-- No postext 1.4.1, o fio entre colunas sob um título na largura da página começa no alto da mancha mesmo quando a faixa tem um número inteiro de linhas da grade, como esta. Uma caixa da cor da página, pintada por baixo dos outros elementos do design, o cobre.
 - Uma coluna de 60 mm comporta uns 50 caracteres, e o inglês de Smyth não pode ser reescrito. Na captura, 18 das 218 linhas justificadas em inglês (8%) esticam os espaços além de 1,7 vez a largura normal, contra menos de 2% no espanhol, cuja tradução foi ajustada à coluna. O inglês estava em 17% antes de os cinco verbetes que compunham pior (*Aground*, *Aloft*, *Belay*, *Cockpit*, *Crow’s nest*) serem trocados por outros. Escolha verbetes que componham bem, ou alargue a coluna.

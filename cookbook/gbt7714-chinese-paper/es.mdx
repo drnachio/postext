@@ -18,7 +18,7 @@ Dos páginas de un artículo de investigación en una revista inventada de estud
 
 El código es [la respuesta corta](#la-respuesta-corta) de arriba. El motor de citas se registra una vez, antes de la primera composición, y `postext-citeproc` trae los tres estilos de la GB/T 7714: numérico, autor-fecha y de notas ([Citas](/es/docs/configuration#citas)). En el texto, una cita es una clave entre corchetes. `[@tinker1963]` imprime un [1] volado, y `[@rayner2016; @dyson2001; @lin2023]` imprime [2–4]. Dos números seguidos quedan como lista, [5,6]. Una obra citada de nuevo conserva su primer número: [4] en el tercer párrafo, y [1] y [2] más adelante.
 
-La norma pide «et al.» tras los tres primeros autores de una obra occidental y 等 tras los de una china. El archivo CSL incluido trae dos plantillas para eso, una para las obras en inglés, pero la inglesa está comentada, así que todas las entradas reciben 等. La respuesta toma el XML del estilo de `STYLES`, descomenta esa plantilla y pasa el resultado como estilo propio. Cada entrada toma entonces su plantilla de su propio campo `language`: Rayner y cuatro coautores quedan en «RAYNER K, SCHOTTER E R, MASSON M E J, et al.», y 林岚 y tres coautores en «林岚, 周明远, 陈思齐, 等». `locale: 'zh-CN'` escribe en chino el resto de las palabras de la lista.
+La norma pide «et al.» tras los tres primeros autores de una obra occidental y 等 tras los de una china. El archivo CSL incluido trae dos plantillas para eso, una de ellas para las obras en inglés, y cada entrada toma la suya según su propio campo `language`: Rayner y cuatro coautores quedan en «RAYNER K, SCHOTTER E R, MASSON M E J, et al.», y 林岚 y tres coautores en «林岚, 周明远, 陈思齐, 等». `locale: 'zh-CN'` escribe en chino el resto de las palabras de la lista.
 
 ### 2 · Las referencias en un bloque CSL-YAML
 
@@ -56,9 +56,8 @@ Algunas revistas imprimen los números de cita en la línea, al cuerpo del texto
 Las bibliografías mixtas se ordenan a veces con las obras chinas delante de las occidentales. En un estilo numérico los números dejarían de correr en orden por la lista, así que conviene más el estilo autor-fecha.
 
 ```diff
--  customStyle: GBT.replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/, '$1'),
-+  customStyle: STYLES['china-national-standard-gb-t-7714-2015-author-date']
-+    .replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/g, '$1'),
+-  style: 'china-national-standard-gb-t-7714-2015-numeric',
++  style: 'china-national-standard-gb-t-7714-2015-author-date',
    locale: 'zh-CN', // 等, 卷, 版 and the other terms of the list
 -  bibliography: { fontSize: em(7.5 / BODY), lineHeight: pt(12), entrySpacing: pt(1.5),
 +  bibliography: { groupByLanguage: true, fontSize: em(7.5 / BODY), lineHeight: pt(12),
@@ -69,4 +68,4 @@ Las bibliografías mixtas se ordenan a veces con las obras chinas delante de las
 - Una cita narrativa, `@zhou2019` sin corchetes, nombra a los autores y añade el número, pero la clave sigue por los caracteres chinos que vengan detrás, así que `@zhou2019认为` se lee como una clave que no existe. Escribe el nombre en el texto y la cita detrás, `周明远[@zhou2019]认为`, como hacen de todos modos los artículos chinos.
 - El estilo numérico incluido no imprime localizadores: `[@zhou2019, 页 45]` da [5] sin la página. La GB/T 7714 pone la página tras el corchete, dentro del volado, [5]45; mientras el estilo no lo haga, escribe la página en la frase.
 - LXGW WenKai TC, la única Kai de Fontsource, es una fuente de Taiwán: dibuja ，y 。 en el centro de la casilla, y con `zh-Hans` el motor recorta la mitad derecha de la casilla, que corta el signo. El resumen va en Noto Serif SC, y la Kai se queda para los nombres de los autores, que no llevan puntuación.
-- En una retícula de caracteres, el equilibrado de columnas añadiría líneas sobre los títulos y espaciaría los caracteres de un párrafo para llenar una columna corta. `headings.balancing.enabled: false` mantiene cada línea en la retícula, y la segunda columna de la página 1 acaba tres líneas antes: el título 2 结果 necesita sus dos líneas y dos de texto debajo, así que abre la página 2.
+- En una retícula de caracteres el equilibrado de columnas está desactivado por defecto, de modo que cada línea se queda en la retícula y la segunda columna de la página 1 acaba tres líneas antes: el título 2 结果 necesita sus dos líneas y dos de texto debajo, así que abre la página 2. `headings.balancing.enabled: true` llenaría esa columna con líneas enteras de la retícula sobre sus títulos, sin sacar nunca un carácter de su casilla.

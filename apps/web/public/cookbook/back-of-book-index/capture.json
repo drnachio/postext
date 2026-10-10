@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "back-of-book-index",
-  "sourceHash": "320a01d5ea0e7717aa7a1dadbb692a0d1a2b0283c0f2c9ce520d877520dba1c6",
+  "sourceHash": "84f1070a8304f9ea803e4421c58383a5fadb739a0b13f11b9ae413a8c233955e",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.662Z",
+  "capturedAt": "2026-10-10T13:31:25.039Z",
   "variants": {
     "en": {
-      "hash8": "dcea6941",
+      "hash8": "c72cff5c",
       "vdtHash": "c7f1e624bf90550bed5b62f69b3d301932919a12",
       "timings": {
-        "importMs": 199,
-        "fontsMs": 63,
-        "buildMs": 73,
-        "totalMs": 1046,
+        "importMs": 455,
+        "fontsMs": 93,
+        "buildMs": 173,
+        "totalMs": 2318,
         "builds": 2
       },
       "specimen": {
@@ -193,23 +193,24 @@
       },
       "pdf": {
         "file": "back-of-book-index.pdf",
-        "bytes": 200792,
+        "bytes": 200794,
         "pages": 10
       },
       "sandbox": {
         "file": "back-of-book-index.postext",
-        "bytes": 29689,
+        "bytes": 29688,
         "folio": "8dec2b23"
       },
       "detected": {
         "apis": [
           "buildBundle",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultResourceTypes",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -518,13 +519,13 @@
       }
     },
     "es": {
-      "hash8": "69f7fa97",
+      "hash8": "47ea09cb",
       "vdtHash": "9d1482384dc3a95e72c83b7edb688a3adeff615f",
       "timings": {
-        "importMs": 218,
-        "fontsMs": 62,
-        "buildMs": 81,
-        "totalMs": 1089,
+        "importMs": 176,
+        "fontsMs": 61,
+        "buildMs": 60,
+        "totalMs": 1044,
         "builds": 2
       },
       "specimen": {
@@ -700,23 +701,24 @@
       },
       "pdf": {
         "file": "back-of-book-index.pdf",
-        "bytes": 218671,
+        "bytes": 218674,
         "pages": 10
       },
       "sandbox": {
         "file": "back-of-book-index.postext",
-        "bytes": 30276,
+        "bytes": 30275,
         "folio": "8dec2b23"
       },
       "detected": {
         "apis": [
           "buildBundle",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultResourceTypes",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

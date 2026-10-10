@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "zhuyin-vertical-reader",
-  "sourceHash": "404490d1e2eb9c32a1aabf27dadcfe6ccdcd9c26f6440b71a2415fb53b37e49c",
+  "sourceHash": "7f7b8304966e37c0e95007d0995d136390f5650f065725713b9b2e1263436f20",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.636Z",
+  "capturedAt": "2026-10-10T13:39:44.945Z",
   "variants": {
     "en": {
-      "hash8": "c4dca5ef",
-      "vdtHash": "522843d863498ed4af274649e676a64bd5ee9cc4",
+      "hash8": "7e51f8ec",
+      "vdtHash": "e77bb0f67ca7cb10281ff4162f00c7cdfd9d8835",
       "timings": {
-        "importMs": 189,
-        "fontsMs": 385,
-        "buildMs": 21,
-        "totalMs": 1253,
-        "builds": 2
+        "importMs": 171,
+        "fontsMs": 313,
+        "buildMs": 61,
+        "totalMs": 1108,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -40,7 +40,7 @@
           "Noto Serif TC"
         ],
         "pages": 4,
-        "ownLines": 183
+        "ownLines": 184
       },
       "pages": [
         {
@@ -62,7 +62,7 @@
           "h": 1413,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 87098,
+          "bytes": 86808,
           "alt": "Page 87: 語譯."
         },
         {
@@ -113,23 +113,23 @@
       },
       "pdf": {
         "file": "zhuyin-vertical-reader.pdf",
-        "bytes": 741196,
+        "bytes": 741345,
         "pages": 4
       },
       "sandbox": {
         "file": "zhuyin-vertical-reader.postext",
-        "bytes": 507689,
+        "bytes": 507842,
         "folio": "351449da"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -215,6 +215,7 @@
           "headingStyles[].lineHeight",
           "headingStyles[].marginBottom",
           "headingStyles[].marginTop",
+          "headingStyles[].numbered",
           "headings",
           "headings.color",
           "headings.fontFamily",
@@ -229,6 +230,8 @@
           "headings.levels[].lineHeight",
           "headings.levels[].marginBottom",
           "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
           "layout",
           "layout.gutterWidth",
           "layout.layoutType",
@@ -292,7 +295,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 284,
+        "configLeaves": 289,
         "designElements": 8,
         "directives": [
           ":::paragraphs",
@@ -335,6 +338,7 @@
           "cjk-line-breaking",
           "column-and-a-half",
           "heading-attributes",
+          "heading-numbering",
           "heading-styles",
           "inline-embeds",
           "page-role-filters",
@@ -348,6 +352,7 @@
           "side-boxes",
           "side-column-floats",
           "tate-chu-yoko",
+          "unnumbered-headings",
           "vertical-writing"
         ],
         "suggestedLevel": 3
@@ -367,6 +372,11 @@
         },
         "findings": [
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -375,14 +385,14 @@
       }
     },
     "es": {
-      "hash8": "e7e8cdf9",
-      "vdtHash": "add9581c8d2fc07b11d4f735eaae4d55f2ef84a9",
+      "hash8": "0d29bc54",
+      "vdtHash": "1d229fff9ab019b5318bfd45fa59eeb6cb610e89",
       "timings": {
-        "importMs": 182,
-        "fontsMs": 373,
-        "buildMs": 16,
-        "totalMs": 1235,
-        "builds": 2
+        "importMs": 159,
+        "fontsMs": 305,
+        "buildMs": 61,
+        "totalMs": 1083,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -404,7 +414,7 @@
           "Noto Serif TC"
         ],
         "pages": 4,
-        "ownLines": 183
+        "ownLines": 184
       },
       "pages": [
         {
@@ -426,7 +436,7 @@
           "h": 1413,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 87098,
+          "bytes": 86808,
           "alt": "Página 87: 語譯."
         },
         {
@@ -477,23 +487,23 @@
       },
       "pdf": {
         "file": "zhuyin-vertical-reader.pdf",
-        "bytes": 741349,
+        "bytes": 741513,
         "pages": 4
       },
       "sandbox": {
         "file": "zhuyin-vertical-reader.postext",
-        "bytes": 507724,
+        "bytes": 507878,
         "folio": "351449da"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -579,6 +589,7 @@
           "headingStyles[].lineHeight",
           "headingStyles[].marginBottom",
           "headingStyles[].marginTop",
+          "headingStyles[].numbered",
           "headings",
           "headings.color",
           "headings.fontFamily",
@@ -593,6 +604,8 @@
           "headings.levels[].lineHeight",
           "headings.levels[].marginBottom",
           "headings.levels[].marginTop",
+          "headings.levels[].numberSeparator",
+          "headings.levels[].numberingTemplate",
           "layout",
           "layout.gutterWidth",
           "layout.layoutType",
@@ -656,7 +669,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 284,
+        "configLeaves": 289,
         "designElements": 8,
         "directives": [
           ":::paragraphs",
@@ -699,6 +712,7 @@
           "cjk-line-breaking",
           "column-and-a-half",
           "heading-attributes",
+          "heading-numbering",
           "heading-styles",
           "inline-embeds",
           "page-role-filters",
@@ -712,6 +726,7 @@
           "side-boxes",
           "side-column-floats",
           "tate-chu-yoko",
+          "unnumbered-headings",
           "vertical-writing"
         ],
         "suggestedLevel": 3
@@ -730,6 +745,11 @@
           "worst": 0.17
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

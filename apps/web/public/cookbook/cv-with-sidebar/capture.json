@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "cv-with-sidebar",
-  "sourceHash": "139df91d2dab8a87c5048be5e9f0fb2e21e0593ce43223d13d1c24e6974b092a",
+  "sourceHash": "69bfbbb2664f43671a8ad727c01dcdb6e21ba8580c7c993e2c58e3b3312b22fa",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.888Z",
+  "capturedAt": "2026-10-10T13:33:15.408Z",
   "variants": {
     "en": {
-      "hash8": "19e7c766",
+      "hash8": "d16f3a1c",
       "vdtHash": "92600c27d780bd4fb06c0c104b39322d0186616d",
       "timings": {
-        "importMs": 145,
-        "fontsMs": 27,
-        "buildMs": 9,
-        "totalMs": 1834,
-        "builds": 2
+        "importMs": 131,
+        "fontsMs": 2,
+        "buildMs": 25,
+        "totalMs": 756,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Hedvig Letters Serif"
         ],
         "pages": 1,
-        "ownLines": 178
+        "ownLines": 175
       },
       "pages": [
         {
@@ -78,8 +78,7 @@
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -262,14 +261,14 @@
       }
     },
     "es": {
-      "hash8": "010a5cef",
+      "hash8": "fa7e5899",
       "vdtHash": "44f7eab9b9c0d2daf9dc1441a3c6b92fbccaef08",
       "timings": {
-        "importMs": 160,
-        "fontsMs": 27,
-        "buildMs": 9,
-        "totalMs": 826,
-        "builds": 2
+        "importMs": 138,
+        "fontsMs": 1,
+        "buildMs": 25,
+        "totalMs": 2232,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -290,7 +289,7 @@
           "Hedvig Letters Serif"
         ],
         "pages": 1,
-        "ownLines": 178
+        "ownLines": 175
       },
       "pages": [
         {
@@ -325,13 +324,12 @@
       },
       "sandbox": {
         "file": "cv-with-sidebar.postext",
-        "bytes": 31518,
+        "bytes": 31517,
         "folio": "4fd007fe"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],

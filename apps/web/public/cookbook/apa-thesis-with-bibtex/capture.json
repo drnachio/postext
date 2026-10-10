@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "apa-thesis-with-bibtex",
-  "sourceHash": "cd1c5cff431a9cc14b8e982513bbfedb616be625432807d1cf155ebebea90f55",
+  "sourceHash": "4c78be393f0fb0eca4f0d9bec717930ba9f152b748145c8ccd7e4fd09d1cadad",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.618Z",
+  "capturedAt": "2026-10-10T13:30:00.665Z",
   "variants": {
     "en": {
-      "hash8": "a8b3536b",
+      "hash8": "ff8da26f",
       "vdtHash": "064168bafa9f29102ffa317ff0a1cacd624073cc",
       "timings": {
-        "importMs": 249,
-        "fontsMs": 65,
-        "buildMs": 20,
-        "totalMs": 1284,
-        "builds": 2
+        "importMs": 205,
+        "fontsMs": 31,
+        "buildMs": 269,
+        "totalMs": 1112,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Public Sans"
         ],
         "pages": 3,
-        "ownLines": 118
+        "ownLines": 117
       },
       "pages": [
         {
@@ -99,20 +99,19 @@
       },
       "pdf": {
         "file": "apa-thesis-with-bibtex.pdf",
-        "bytes": 60462,
+        "bytes": 60464,
         "pages": 3
       },
       "sandbox": {
         "file": "apa-thesis-with-bibtex.postext",
-        "bytes": 18556,
+        "bytes": 18557,
         "folio": "2af3feac"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",
@@ -288,14 +287,14 @@
       }
     },
     "es": {
-      "hash8": "b559db38",
+      "hash8": "b86bbc97",
       "vdtHash": "22875495bd6613d87ca6bb628d6be8c26b147d03",
       "timings": {
-        "importMs": 271,
-        "fontsMs": 73,
-        "buildMs": 25,
-        "totalMs": 1337,
-        "builds": 2
+        "importMs": 189,
+        "fontsMs": 50,
+        "buildMs": 1162,
+        "totalMs": 3737,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -315,7 +314,7 @@
           "Public Sans"
         ],
         "pages": 3,
-        "ownLines": 118
+        "ownLines": 117
       },
       "pages": [
         {
@@ -376,20 +375,19 @@
       },
       "pdf": {
         "file": "apa-thesis-with-bibtex.pdf",
-        "bytes": 66515,
+        "bytes": 66514,
         "pages": 3
       },
       "sandbox": {
         "file": "apa-thesis-with-bibtex.postext",
-        "bytes": 18502,
+        "bytes": 18503,
         "folio": "2af3feac"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",

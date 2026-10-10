@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "vertical-novel-right-bound",
-  "sourceHash": "d8ec3dabe5ec93e2f8dbee706378af9b07ae7c70799929704c8dd201b3b6a224",
+  "sourceHash": "4256cbaf87fdfc9ffd95d8398c9406472fc3104902d79e1f4f007f2982d30380",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.561Z",
+  "capturedAt": "2026-10-10T13:39:44.818Z",
   "variants": {
     "en": {
-      "hash8": "0fe4a081",
+      "hash8": "b1e1a772",
       "vdtHash": "58000b5255810f22acfb16d4f41cad6543f075f1",
       "timings": {
-        "importMs": 196,
-        "fontsMs": 426,
-        "buildMs": 12,
-        "totalMs": 1242,
-        "builds": 2
+        "importMs": 164,
+        "fontsMs": 344,
+        "buildMs": 49,
+        "totalMs": 1135,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -159,18 +159,18 @@
       },
       "sandbox": {
         "file": "vertical-novel-right-bound.postext",
-        "bytes": 279296,
+        "bytes": 279295,
         "folio": "02ddac55"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -356,14 +356,14 @@
       }
     },
     "es": {
-      "hash8": "9137dff1",
+      "hash8": "94dab267",
       "vdtHash": "bcdcb37b970cfa95fdc05fce7542f1935663495b",
       "timings": {
-        "importMs": 190,
-        "fontsMs": 442,
-        "buildMs": 12,
-        "totalMs": 1254,
-        "builds": 2
+        "importMs": 166,
+        "fontsMs": 346,
+        "buildMs": 49,
+        "totalMs": 1089,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -510,12 +510,12 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

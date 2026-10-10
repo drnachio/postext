@@ -46,57 +46,9 @@
   "gaps": [],
   "gotchas": [
     "opener-reserves-anchored",
-    "design-text-newline",
-    "header-paints-over-text",
-    "headings-drop-h1-break",
-    "overflow-ellipsis-default",
-    "design-lineheight-multiple",
-    "palette-skips-designs",
-    "hyphenation-locales",
-    "pdf-provider-all-styles"
+    "header-paints-over-text"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-18",
-      "package": "postext",
-      "note": "an opener reserves height down to its lowest page-anchored element, so the fold and punch marks (105, 148.5 and 210 mm) live in the header slot and the subject is the lowest element of the H1's design (gotcha opener-reserves-anchored); with the 210 mm mark in the design, the salutation drops to 222.8 mm and the letter runs to three pages"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "a letter starts on a new sheet only because headings.levels[0] restates breakBefore with parity 'any': any headings object drops the H1's page break (gotcha headings-drop-h1-break)"
-    },
-    {
-      "followup": "EF-01",
-      "package": "postext",
-      "note": "the \\n of the address attribute breaks lines only when the text element has paragraphIndent above zero, so the address sets paragraphIndent to 0.01 pt; at 0 the two characters print in the address (gotcha design-text-newline)"
-    },
-    {
-      "followup": "EF-113",
-      "package": "postext",
-      "note": "span 'page' on the single-column H1: a design kept in the column is clipped at the column's top edge, which cuts the band, the logo and the firm's name above the 27 mm top margin"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "every design text gives lineHeight as a multiple of its size (12/7 and 12/9 for the 12 pt rows of the information block), never pt(): a Dimension would silently drop the heading's reserve (gotcha design-lineheight-multiple)"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside the paletteId, because 1.4.1 paints the band, the letterhead type, the marks and the company data from the hex (gotcha palette-skips-designs)"
-    },
-    {
-      "followup": "EF-14",
-      "package": "postext",
-      "note": "locale 'de', the exact code: German hyphenation patterns load only by exact code (gotcha hyphenation-locales)"
-    },
-    {
-      "followup": "EF-20",
-      "package": "postext-pdf",
-      "note": "the PDF asks for an italic of every family and Reddit Mono has none: the kit's fontsourceProvider falls back to the upright face (gotcha pdf-provider-all-styles)"
-    }
-  ],
+  "workarounds": [],
   "explainsWarnings": [],
   "related": [
     "anchoring-cheat-sheet",
@@ -105,8 +57,8 @@
     "print-ready-pdf"
   ],
   "engine": {
-    "postext": "1.4.1",
-    "postextPdf": "1.4.1"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -176,5 +128,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-27"
+  "updated": "2026-10-10"
 }

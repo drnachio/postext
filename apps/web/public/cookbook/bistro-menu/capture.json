@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "bistro-menu",
-  "sourceHash": "4388a686a5592fea8fc06b71ab1a885155a18d1e77df2a8900c7e2aecb93dd0e",
+  "sourceHash": "9fa2874a1629c15927b13e37366072a6894b3f63bf33659c0bbf7fee73f28aca",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:25:13.499Z",
+  "capturedAt": "2026-10-10T13:31:25.179Z",
   "variants": {
     "en": {
-      "hash8": "ba308faf",
+      "hash8": "5c296fd4",
       "vdtHash": "006ad9e905a6d78d3dea4d05c500815703794116",
       "timings": {
-        "importMs": 117,
-        "fontsMs": 42,
-        "buildMs": 7,
-        "totalMs": 805,
-        "builds": 2
+        "importMs": 130,
+        "fontsMs": 30,
+        "buildMs": 23,
+        "totalMs": 759,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Noticia Text"
         ],
         "pages": 2,
-        "ownLines": 149
+        "ownLines": 152
       },
       "pages": [
         {
@@ -88,15 +88,15 @@
       },
       "sandbox": {
         "file": "bistro-menu.postext",
-        "bytes": 25572,
+        "bytes": 25579,
         "folio": "bda6e41d"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "mergeCells",
           "parseTSV",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -275,14 +275,14 @@
       }
     },
     "es": {
-      "hash8": "3e5c6308",
+      "hash8": "d90c5c23",
       "vdtHash": "d5f60de0e53f5cd6ee29178611c26a9a557f506b",
       "timings": {
-        "importMs": 116,
-        "fontsMs": 28,
-        "buildMs": 6,
-        "totalMs": 756,
-        "builds": 2
+        "importMs": 123,
+        "fontsMs": 29,
+        "buildMs": 23,
+        "totalMs": 757,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -303,7 +303,7 @@
           "Noticia Text"
         ],
         "pages": 2,
-        "ownLines": 149
+        "ownLines": 152
       },
       "pages": [
         {
@@ -353,15 +353,15 @@
       },
       "sandbox": {
         "file": "bistro-menu.postext",
-        "bytes": 26055,
+        "bytes": 26062,
         "folio": "bda6e41d"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "mergeCells",
           "parseTSV",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],

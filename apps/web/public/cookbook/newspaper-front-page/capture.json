@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "newspaper-front-page",
-  "sourceHash": "992ef1830f99dc00f523d7d6caa3d9eaf182017374bd7b834c0a81464c24db86",
+  "sourceHash": "97f96cbaf2570e577385a042145b779ae7d05672595c1a59abe32847e636287b",
   "engine": {
-    "postext": "1.24.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T21:08:28.803Z",
+  "capturedAt": "2026-10-10T13:36:24.464Z",
   "variants": {
     "en": {
-      "hash8": "8965ce04",
+      "hash8": "ebefd2bc",
       "vdtHash": "09ecca8a345c42b910663f23feb1eb91c8d953dc",
       "timings": {
-        "importMs": 296,
-        "fontsMs": 86,
-        "buildMs": 33,
-        "totalMs": 1113,
-        "builds": 2
+        "importMs": 135,
+        "fontsMs": 34,
+        "buildMs": 105,
+        "totalMs": 2725,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "PT Serif"
         ],
         "pages": 2,
-        "ownLines": 238
+        "ownLines": 232
       },
       "pages": [
         {
@@ -61,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 184068,
+          "bytes": 184104,
           "alt": "Opening page 2: Town & Valley. The rebuilt pier. Its new concrete footing (red) goes six metres below the riverbed. Both arches were relaid with their own stones. · The next five days · How the wards voted."
         }
       ],
@@ -89,26 +89,23 @@
       },
       "sandbox": {
         "file": "newspaper-front-page.postext",
-        "bytes": 200644,
+        "bytes": 200621,
         "folio": "7d33b710"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
         "configKeys": [
           "bodyText",
-          "bodyText.boldColor",
           "bodyText.color",
           "bodyText.firstLineIndent",
           "bodyText.fontFamily",
           "bodyText.fontSize",
           "bodyText.indentAfterHeading",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.textAlign",
@@ -279,7 +276,7 @@
           "tableStyle",
           "tableStyles"
         ],
-        "configLeaves": 505,
+        "configLeaves": 503,
         "designElements": 22,
         "directives": [
           ":::callout",
@@ -376,13 +373,7 @@
           "share": 0.0152,
           "worst": 1.75
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     }
   }

@@ -1,14 +1,13 @@
 // ═══ Postext Cookbook · Nº 147 · A splash page, an inset and a broken border ═══════
 // https://postext.dev/en/cookbook/splash-inset-broken-border
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.21.0
+// Fonts: Comic Neue, Bangers and the faces of five editions (OFL) · Needs postext ≥ 1.25.0
 //
 // Two pages of a storm: a splash page that bleeds off all four edges with a small inset panel
 // laid over it, then a page whose top tier bleeds off three edges, whose second panel lets a
 // gull fly out over its border, and whose last panel holds only captions on a night-blue ground.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -68,7 +67,7 @@ const footer = { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber}'
   fontFamily: LETTERING, fontSize: pt(7.5), color: col('muted'), align: 'center',
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { x: mm(0), y: mm(-7) } } }] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-gb', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar',
     pt: 'pt-BR' }),
   colorPalette, comics,
@@ -80,7 +79,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   bodyText: { fontFamily: LETTERING, fontSize: pt(10), lineHeight: pt(14), color: col('ink'),
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink') },
   headings: { fontFamily: SFX, color: col('ink'),
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // The story opens on the next page, recto or verso.
     levels: [{ level: 1, fontSize: pt(30), breakBefore: { enabled: true, parity: 'any' } }] },
   header: { elements: [] }, footer,
 });
@@ -156,7 +155,7 @@ const ALT = {
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face of the six editions; each edition loads the latin files of all of them and the
-// Japanese, Chinese or Arabic files of its own two (gotcha: fonts-first).
+// Japanese, Chinese or Arabic files of its own two.
 const FONTS = {
   'Comic Neue': ['400', '400i', '700', '700i'],
   Bangers: ['400'],
@@ -180,7 +179,8 @@ const resources = await Promise.all([
   panel('sp-wave', asset('sp-wave.jpg')), panel('sp-tomas', asset('sp-tomas.jpg')),
   panel('sp-tomas-pop', asset('sp-tomas-pop.png')),
 ]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A splash page, an inset and a broken border',
   es: 'Una página splash, una viñeta insertada y un borde roto',
   pt: 'Uma página splash, um quadro inserido e uma borda quebrada' }) });

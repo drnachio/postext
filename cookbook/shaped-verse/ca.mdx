@@ -16,7 +16,7 @@ Un quadernet de quatre pàgines A5, un plec A4 doblegat per la meitat, que reune
 
 ### 1 · Cada vers és un paràgraf centrat
 
-El codi és a [la resposta curta](#la-resposta-curta), més amunt. Postext ajunta en un sol paràgraf les línies seguides del Markdown, així que cada vers va en un paràgraf propi, amb una línia en blanc al darrere. `textAlign: 'center'` centra cada vers, amb la seva amplada natural, sobre l'eix de la mesura, i com que la 1.4.1 només aplica la partició de mots al text justificat, cap paraula no es parteix ([text de cos](/ca/docs/configuration#text-de-cos)). Cada vers obre el seu paràgraf, així que el sagnat de primera línia per defecte, d'1,5 em, el desplaçaria 3,3 mm a la dreta de l'eix dels títols; amb `firstLineIndent: pt(0)`, poemes i títols comparteixen eix.
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. Postext ajunta en un sol paràgraf les línies seguides del Markdown, així que cada vers va en un paràgraf propi, amb una línia en blanc al darrere. `textAlign: 'center'` centra cada vers, amb la seva amplada natural, sobre l'eix de la mesura, i com que la partició de mots només s'aplica al text justificat, tret que s'activi `hyphenation.ragged`, cap paraula no es parteix ([text de cos](/ca/docs/configuration#text-de-cos)). Cada vers obre el seu paràgraf, així que el sagnat de primera línia per defecte, d'1,5 em, el desplaçaria 3,3 mm a la dreta de l'eix dels títols; amb `firstLineIndent: pt(0)`, poemes i títols comparteixen eix.
 
 ### 2 · La mesura admet el vers més llarg
 
@@ -28,7 +28,7 @@ Un vers que no hi cap passa a una segona línia, i com que les dues meitats es c
 
 <Excerpt region="titles" />
 
-Cap nivell no porta disseny, només ajustos tipogràfics, i `headings.textAlign` centra els tres ([encapçalaments](/ca/docs/configuration#encapçalaments)). La paritat `'any'` obre cada poema a la pàgina següent, sigui parella o senar, de manera que l'altar de la pàgina 2 queda davant de les ales de la 3. Un `marginTop` no baixaria aquests títols, perquè la 1.4.1 descarta l'espai sobre un títol que obre pàgina. En canvi, l'interlineat del nivell 2, de tres línies de la retícula, deixa cada títol uns 5 mm més avall, i els dos poemes comencen a la línia 5 de la caixa. El nivell 1 obre el document i aquí no necessita salt, però el porta igualment perquè un segon títol `#` obri en pàgina senar. El nivell 3 compon els quatre rètols de les pàgines 1 i 4 en les versaletes d'IM Fell English SC, al cos del text.
+Cap nivell no porta disseny, només ajustos tipogràfics, i `headings.textAlign` centra els tres ([encapçalaments](/ca/docs/configuration#encapçalaments)). La paritat `'any'` obre cada poema a la pàgina següent, sigui parella o senar, de manera que l'altar de la pàgina 2 queda davant de les ales de la 3. Un `marginTop` no baixaria aquests títols, perquè l'espai sobre un títol que obre pàgina es descarta. En canvi, l'interlineat del nivell 2, de tres línies de la retícula, deixa cada títol uns 5 mm més avall, i els dos poemes comencen a la línia 5 de la caixa. El nivell 1 obre el document i aquí no necessita salt, però el porta igualment perquè un segon títol `#` obri en pàgina senar. El nivell 3 compon els quatre rètols de les pàgines 1 i 4 en les versaletes d'IM Fell English SC, al cos del text.
 
 ### 4 · El Markdown espaia i talla les pàgines
 
@@ -52,14 +52,14 @@ Amb la paritat `'odd'`, *L'altar* i *Ales de Pasqua* obren a les pàgines 3 i 5,
 Amb `textAlign: 'left'` cada vers arrenca al marge i els dos poemes conserven només el contorn dret; la resta del text de cos, del subtítol al colofó, també passa a l'esquerra, i només els títols continuen centrats.
 
 ```diff
--  textAlign: 'center', // ragged on both sides; 1.4.1 hyphenates justified text only
-+  textAlign: 'left', // ragged right; 1.4.1 hyphenates justified text only
+-  textAlign: 'center', // ragged on both sides; only justified text is hyphenated by default
++  textAlign: 'left', // ragged right; only justified text is hyphenated by default
 ```
 
 ## Errors freqüents
 
 - Un vers més llarg que la mesura passa a una segona línia, i les dues meitats es centren per separat. Mesura el vers més ample abans de fixar el cos i els marges. Per a vers en bandera, amb sagnat francès als versos que no hi caben, consulta <RecipeLink slug="poetry-collection">Poemes compostos vers a vers</RecipeLink>.
 - Un paràgraf perd els espais inicials, així que no pots donar forma a un vers omplint-lo d'espais. L'amplada de cada vers depèn només de les seves paraules, i una traducció ha de buscar versos d'una amplada semblant a la de l'original, com fa l'edició castellana.
-- En centrar, cada vers conserva la seva amplada natural, així que la llosa i la base de *L'altar* no queden a escaire: el tercer i el quart vers de la llosa són més estrets que els dos primers. Justificar tampoc no les iguala, perquè la 1.4.1 deixa l'última línia d'un paràgraf justificat amb la seva amplada natural, i cadascun d'aquests versos és un paràgraf.
+- En centrar, cada vers conserva la seva amplada natural, així que la llosa i la base de *L'altar* no queden a escaire: el tercer i el quart vers de la llosa són més estrets que els dos primers. Justificar tampoc no les iguala, perquè l'última línia d'un paràgraf justificat conserva la seva amplada natural, i cadascun d'aquests versos és un paràgraf.
 - La portada i l'última pàgina arriben fins a l'última línia de la retícula. Una línia més a la portada, per un epígraf més llarg, un text que ja no cap en una línia o un `:::space` més gran, porta el rètol del peu i les dues línies que el segueixen a una pàgina pròpia; una línia més a l'última pàgina envia tota sola l'última línia del colofó a una cinquena pàgina. Si afegeixes una línia a qualsevol de les dues, treu-ne una altra d'un `:::space` de més amunt.
 - Postext no compon text de costat, com els impressors de 1633 van compondre *Easter Wings*: només giren figures i taules senceres. Aquí les estrofes van dretes, i la nota de la pàgina 4 ho diu.

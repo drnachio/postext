@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "one-page-six-languages",
-  "sourceHash": "021746e89db6d86a23127798e6521b6458050be8e17667959a31103f468f1908",
+  "sourceHash": "664665aa421a79efd0163675762cc78064e74d51831a15676aa37850eee99652",
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T15:02:19.679Z",
+  "capturedAt": "2026-10-10T13:36:24.515Z",
   "variants": {
     "en": {
-      "hash8": "2c80d1c8",
+      "hash8": "ec333b85",
       "vdtHash": "f449370ee3262648d8ec670b3847b33451c2fdda",
       "timings": {
-        "importMs": 192,
-        "fontsMs": 172,
-        "buildMs": 181,
-        "totalMs": 1256,
+        "importMs": 166,
+        "fontsMs": 90,
+        "buildMs": 171,
+        "totalMs": 1107,
         "builds": 2
       },
       "specimen": {
@@ -37,7 +37,7 @@
           "Comic Neue"
         ],
         "pages": 2,
-        "ownLines": 106
+        "ownLines": 107
       },
       "pages": [
         {
@@ -87,23 +87,23 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 801588,
+        "bytes": 801589,
         "pages": 1
       },
       "sandbox": {
         "file": "one-page-six-languages.postext",
-        "bytes": 794297
+        "bytes": 794298
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -234,13 +234,13 @@
       }
     },
     "es": {
-      "hash8": "a7b1906c",
+      "hash8": "2f094bf9",
       "vdtHash": "a17aabb0ecf88ff14b0fcb36da2997ab31273c85",
       "timings": {
-        "importMs": 339,
-        "fontsMs": 97,
-        "buildMs": 188,
-        "totalMs": 1376,
+        "importMs": 168,
+        "fontsMs": 90,
+        "buildMs": 177,
+        "totalMs": 1113,
         "builds": 2
       },
       "specimen": {
@@ -260,7 +260,7 @@
           "Comic Neue"
         ],
         "pages": 2,
-        "ownLines": 106
+        "ownLines": 107
       },
       "pages": [
         {
@@ -310,7 +310,7 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 801388,
+        "bytes": 801389,
         "pages": 1
       },
       "sandbox": {
@@ -320,13 +320,13 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -457,13 +457,13 @@
       }
     },
     "zh": {
-      "hash8": "d9e23317",
+      "hash8": "79c717f7",
       "vdtHash": "965e9d9f675437e307a4f6b60577836d19cc3680",
       "timings": {
-        "importMs": 185,
-        "fontsMs": 2245,
-        "buildMs": 860,
-        "totalMs": 13970,
+        "importMs": 170,
+        "fontsMs": 230,
+        "buildMs": 690,
+        "totalMs": 6030,
         "builds": 2
       },
       "specimen": {
@@ -484,7 +484,7 @@
           "Noto Sans SC"
         ],
         "pages": 2,
-        "ownLines": 106
+        "ownLines": 107
       },
       "pages": [
         {
@@ -495,7 +495,7 @@
           "h": 1529,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 210924,
+          "bytes": 210972,
           "alt": "第 1 页。"
         },
         {
@@ -534,23 +534,23 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 809855,
+        "bytes": 809978,
         "pages": 1
       },
       "sandbox": {
         "file": "one-page-six-languages.postext",
-        "bytes": 794631
+        "bytes": 794590
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -687,13 +687,13 @@
       }
     },
     "ar": {
-      "hash8": "f713950b",
+      "hash8": "1d7cceca",
       "vdtHash": "1d414c377facb28050190ad6c02af58bbc3e0a09",
       "timings": {
-        "importMs": 292,
-        "fontsMs": 165,
-        "buildMs": 229,
-        "totalMs": 1361,
+        "importMs": 168,
+        "fontsMs": 109,
+        "buildMs": 155,
+        "totalMs": 1087,
         "builds": 2
       },
       "specimen": {
@@ -714,7 +714,7 @@
           "Playpen Sans Arabic"
         ],
         "pages": 2,
-        "ownLines": 106
+        "ownLines": 107
       },
       "pages": [
         {
@@ -765,23 +765,23 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 806250,
+        "bytes": 806251,
         "pages": 1
       },
       "sandbox": {
         "file": "one-page-six-languages.postext",
-        "bytes": 794923
+        "bytes": 794922
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -920,13 +920,13 @@
       }
     },
     "ja": {
-      "hash8": "c32e80ae",
+      "hash8": "900c604a",
       "vdtHash": "6b576972cb22932447af736fc3e9eeeb34cf423d",
       "timings": {
-        "importMs": 190,
-        "fontsMs": 383,
-        "buildMs": 280,
-        "totalMs": 1608,
+        "importMs": 178,
+        "fontsMs": 192,
+        "buildMs": 134,
+        "totalMs": 1198,
         "builds": 2
       },
       "specimen": {
@@ -947,7 +947,7 @@
           "Zen Antique"
         ],
         "pages": 2,
-        "ownLines": 106
+        "ownLines": 107
       },
       "pages": [
         {
@@ -998,23 +998,23 @@
       },
       "pdf": {
         "file": "one-page-six-languages.pdf",
-        "bytes": 820248,
+        "bytes": 820374,
         "pages": 1
       },
       "sandbox": {
         "file": "one-page-six-languages.postext",
-        "bytes": 794914
+        "bytes": 794913
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

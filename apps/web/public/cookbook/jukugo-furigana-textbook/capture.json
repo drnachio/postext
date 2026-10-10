@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "jukugo-furigana-textbook",
-  "sourceHash": "1d17f01fff5a775a55f793bebe2385aa18fa35ad7d4c661de31554da7592e554",
+  "sourceHash": "c2f61ec3894126acc578c1d1141cdbb4ad6ee0325f8a32066769086040f66d95",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.053Z",
+  "capturedAt": "2026-10-10T13:34:26.272Z",
   "variants": {
     "en": {
-      "hash8": "445b78f4",
+      "hash8": "4115bacb",
       "vdtHash": "46b3aa633741641ce902faf136384cec338f1712",
       "timings": {
-        "importMs": 194,
-        "fontsMs": 230,
-        "buildMs": 73,
-        "totalMs": 1084,
+        "importMs": 156,
+        "fontsMs": 198,
+        "buildMs": 63,
+        "totalMs": 991,
         "builds": 1
       },
       "specimen": {
@@ -71,7 +71,7 @@
           "h": 1412,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 63148,
+          "bytes": 63146,
           "alt": "Page 26."
         }
       ],
@@ -99,21 +99,21 @@
       },
       "pdf": {
         "file": "jukugo-furigana-textbook.pdf",
-        "bytes": 129655,
+        "bytes": 129772,
         "pages": 3
       },
       "sandbox": {
         "file": "jukugo-furigana-textbook.postext",
-        "bytes": 22210,
+        "bytes": 22211,
         "folio": "2b1033e5"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -309,13 +309,13 @@
       }
     },
     "es": {
-      "hash8": "4f2c1d6a",
+      "hash8": "1e423a44",
       "vdtHash": "269d61745a8190a6b011f56a5856133565442470",
       "timings": {
-        "importMs": 230,
-        "fontsMs": 228,
-        "buildMs": 62,
-        "totalMs": 1101,
+        "importMs": 166,
+        "fontsMs": 185,
+        "buildMs": 55,
+        "totalMs": 982,
         "builds": 1
       },
       "specimen": {
@@ -397,21 +397,21 @@
       },
       "pdf": {
         "file": "jukugo-furigana-textbook.pdf",
-        "bytes": 129827,
+        "bytes": 129942,
         "pages": 3
       },
       "sandbox": {
         "file": "jukugo-furigana-textbook.postext",
-        "bytes": 22238,
+        "bytes": 22239,
         "folio": "2b1033e5"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

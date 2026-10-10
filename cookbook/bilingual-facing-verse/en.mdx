@@ -16,7 +16,7 @@ A bilingual chapbook of five poems about a salt pan in the south of Spain, 156 �
 
 ### 1 · A poem is a box with a fixed column break
 
-The code is [the short answer](#the-short-answer) above. `:::columns` works only inside a box, so each poem is a callout whose style drops the fill and the padding and prints the fence’s `title`, the numeral ([`:::columns`](/en/docs/document-format#columns)). Without `breaks`, the group cuts where its two columns come out level. Both halves of these poems are the same height, so the cut falls on the English title anyway; lengthen two lines of *The Rake* until they turn over, and the cut moves one block down and leaves THE RAKE at the foot of the Spanish column. `breaks="5"` names the block that opens the second column, so the English title heads it whatever the heights of the two halves.
+The code is [the short answer](#the-short-answer) above. Each poem is a callout around a `:::columns` group; its style drops the fill and the padding and prints the fence’s `title`, the numeral ([`:::columns`](/en/docs/document-format#columns)). Without `breaks`, the group cuts where its two columns come out level. Both halves of these poems are the same height, so the cut falls on the English title anyway; lengthen two lines of *The Rake* until they turn over, and the cut moves one block down and leaves THE RAKE at the foot of the Spanish column. `breaks="5"` names the block that opens the second column, so the English title heads it whatever the heights of the two halves.
 
 ### 2 · A :::verse block per column, a blank line per stanza break
 
@@ -30,13 +30,13 @@ Each half of a poem is a `:::verse` block: a line of verse a line of the Markdow
 
 <Excerpt region="note" />
 
-`locale` picks the hyphenation patterns by exact code. With `'es'` the Spanish note breaks *ori-ginal* and *Duna-liella*; with the English patterns both words go whole to the next line, and only *arras-traba* breaks under either ([supported locales](/en/docs/justification#supported-locales)). Word spaces may shrink to 0.8 and stretch to 1.35 of their normal width, and no justified line in either note stretches past that. The note’s heading is a design whose one element, the title, sits 36 mm below the top of the text block, so the note starts 73 mm from the top edge of its page.
+`locale` picks the hyphenation patterns. With `'es'` the Spanish note breaks *ori-ginal* and *Duna-liella*; with the English patterns both words go whole to the next line, and only *arras-traba* breaks under either ([supported locales](/en/docs/justification#supported-locales)). Word spaces may shrink to 0.8 and stretch to 1.35 of their normal width, and no justified line in either note stretches past that. The note’s heading is a design whose one element, the title, sits 36 mm below the top of the text block, so the note starts 73 mm from the top edge of its page.
 
 ### 4 · The title page and the watercolour are headings
 
 <Excerpt region="front" />
 
-Each is a level-1 heading with a style of its own ([heading styles](/en/docs/configuration#heading-styles)): the title page’s design takes `{author}` from the frontmatter, and both designs take `{attr.other}` from the heading’s attributes. The watercolour starts at the top edge of the page, above the text block, where a design kept in the column would be clipped, so its style has `span: 'page'`. An image reserves no height, so without `minHeight` the heading is 25.6 mm deep and poem I starts 58 mm down the page, on a picture that reaches 84 mm. A `minHeight` of eleven lines plus the level’s one-line bottom margin ends the heading at 83.4 mm.
+Each is a level-1 heading with a style of its own ([heading styles](/en/docs/configuration#heading-styles)): the title page’s design takes `{author}` from the frontmatter, and both designs take `{attr.other}` from the heading’s attributes. The watercolour is anchored to the top edge of the page, above the text block, and the heading reserves down to its foot, 84 mm down the page. The style sets `marginBottom: pt(0)`, so the gap under the picture is the poem’s own two-line top margin, and poem I starts on the first grid line at least two lines below the picture.
 
 ### 5 · The running heads name both languages
 
@@ -60,8 +60,8 @@ At 12 mm the columns narrow to 53 mm, and *Los turistas paran y hacen fotos:* tu
 At 3 em, *reflection.* on page 3 starts one em further in.
 
 ```diff
--const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(2) };
-+const verse = { id: 'verse', textAlign: 'left', hangingIndent: em(3) };
+-const verse = { id: 'verse', hangingIndent: em(2) };
++const verse = { id: 'verse', hangingIndent: em(3) };
 ```
 
 ## Pitfalls

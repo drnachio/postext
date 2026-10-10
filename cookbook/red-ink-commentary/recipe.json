@@ -20,11 +20,14 @@
   "answers": ["Q98", "Q87"],
   "gaps": ["interlinear-notes"],
   "gotchas": [
-    "side-box-starts-at-fence", "vertical-side-column-top", "cjk-fonts-slices",
-    "cjk-spread-order", "cjk-locale-tag", "headings-drop-h1-break"
+    "side-box-starts-at-fence",
+    "vertical-side-column-top",
+    "cjk-fonts-slices",
+    "cjk-spread-order",
+    "cjk-locale-tag"
   ],
   "related": ["annotated-classic-glosses", "textbook-margin-column", "vertical-novel-right-bound"],
-  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -68,5 +71,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-29",
-  "updated": "2026-09-29"
+  "updated": "2026-10-10"
 }

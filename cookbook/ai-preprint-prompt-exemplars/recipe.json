@@ -44,17 +44,12 @@
     "Q106"
   ],
   "gotchas": [
-    "callout-columns",
     "nested-callout-limits",
-    "merged-cells-hiddenby",
-    "svg-no-webfonts",
-    "headings-drop-h1-break",
-    "fonts-first",
-    "config-cache-identity"
+    "merged-cells-hiddenby"
   ],
   "engine": {
-    "postext": "1.19.0",
-    "postextPdf": "1.19.0"
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0"
   },
   "kit": [
     "core",
@@ -140,5 +135,5 @@
     "code-listings-and-keycaps"
   ],
   "created": "2026-10-06",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

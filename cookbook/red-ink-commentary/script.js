@@ -1,12 +1,12 @@
 // ═══ Postext Cookbook · Nº 078 · Red-ink commentary in the line and the head margin ═══
 // https://postext.dev/en/cookbook/red-ink-commentary
 // Code: MIT · Text: 脂硯齋重評石頭記, Jiaxu manuscript, Wikisource (CC BY-SA 4.0) · Pictures: none
-// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Fonts: Noto Serif TC, LXGW WenKai TC, Noto Sans TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // The first chapter of the Stone as a commentary edition: the text set vertically, the
 // comments the manuscript writes beside the columns folded into two small red rows inside
 // the line, the head-margin comments in red Kai above the columns they gloss.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -96,7 +96,7 @@ const header = { elements: [
 ] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs by identity
+const config = () => ({
   locale: 'zh-Hant', // Taiwan conventions: centred full-width marks (gotcha: cjk-locale-tag)
   colorPalette, layout, cjk, header,
   footer: { elements: [] },
@@ -119,7 +119,7 @@ const config = () => ({ // a factory: the engine caches resolved configs by iden
   },
   headings: {
     fontFamily: SONG, color: col('ink'),
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // The chapter opens on the next page, whichever side it falls on.
     levels: [{ level: 1, fontSize: pt(30), breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: opener }],
   },
@@ -163,7 +163,8 @@ await loadCjkFonts({ [KAI]: FONTS[KAI] }, blocks('meipi') + blocks('note'), { ve
 await loadCjkFonts({ [HEI]: FONTS[HEI] }, `脂硯齋重評石頭記第一回${numerals}${blocks('colophon')}`,
   { vertical: true });
 // #endregion
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A red-ink commentary edition',
   es: 'Una edición comentada en rojo' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

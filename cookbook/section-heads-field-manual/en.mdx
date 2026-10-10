@@ -16,7 +16,7 @@ Chapter 1 of a trail crew's field manual, *Drainage*, on three B5 pages in two c
 
 ### 1 · Put the number in a pill that grows with it
 
-The code is in [the short answer](#the-short-answer) above. `numberingTemplate: '{1}.{2}'` joins the chapter and section counters into 1.1 to 1.12 ([per-level overrides](/en/docs/configuration#per-level-overrides)). A level with an advanced design no longer prints the number before its title, so the design places `{number}` itself. Here it sits in a text element with a filled, rounded `box` and no width, so the pill is as wide as the number plus its padding: 10.1 mm for 1.9 and 12.7 mm for 1.10. `'right-of'` hangs the title on the pill's right edge and aligns its lines left, which is why the long title of 1.5 wraps beside the number ([element placement](/en/docs/configuration#element-placement)). The title also needs `overflow: 'wrap'`, because by default design text that does not fit is cut with an ellipsis. The pill is 3 pt shorter than two grid lines, and every section head starts on a grid line, so those 3 pt are the gap between the pill and the text under it, whether the head opens a column or follows a paragraph.
+The code is in [the short answer](#the-short-answer) above. `numberingTemplate: '{1}.{2}'` joins the chapter and section counters into 1.1 to 1.12 ([per-level overrides](/en/docs/configuration#per-level-overrides)). A level with an advanced design no longer prints the number before its title, so the design places `{number}` itself. Here it sits in a text element with a filled, rounded `box` and no width, so the pill is as wide as the number plus its padding: 10.1 mm for 1.9 and 12.7 mm for 1.10. `'right-of'` hangs the title on the pill's right edge and aligns its lines left, which is why the long title of 1.5 wraps beside the number ([element placement](/en/docs/configuration#element-placement)). The pill is 3 pt shorter than two grid lines, and every section head starts on a grid line, so those 3 pt are the gap between the pill and the text under it, whether the head opens a column or follows a paragraph.
 
 <PageShot page={3} crop="0.07,0.3,0.44,0.215" caption="Page 3: the pill widens from 1.9 to 1.10, and the title moves right by the width of the extra digit." />
 
@@ -24,31 +24,31 @@ The code is in [the short answer](#the-short-answer) above. `numberingTemplate: 
 
 <Excerpt region="ruled" />
 
-In 1.4.1 a heading level has no `letterSpacing`, but design text does, so level 3 is drawn by a design as well: a 0.75 pt green rule, the number in IBM Plex Mono and the tracked title beside it. The third counter of `'{1}.{2}.{3}'` restarts under every section, so 1.2.1 and 1.5.1 both end in 1. `DROP` lowers only the rule. The number is placed `LEAD - DROP` under it, which keeps number and title a grid line below the top of the head for any `DROP`. With the rule nearer the number than the paragraph above, it reads as part of the head.
+Level 3 is drawn by a design as well: a 0.75 pt green rule, the number in IBM Plex Mono and the tracked title beside it. The third counter of `'{1}.{2}.{3}'` restarts under every section, so 1.2.1 and 1.5.1 both end in 1. `DROP` lowers only the rule. The number is placed `LEAD - DROP` under it, which keeps number and title a grid line below the top of the head for any `DROP`. With the rule nearer the number than the paragraph above, it reads as part of the head.
 
 ### 3 · Step down through levels 4 to 6
 
 <Excerpt region="levels" />
 
-A level without a `numberingTemplate` prints no number, so from level 4 down the heads differ in face, colour or case instead: an italic serif at level 4, the display face in green at 5 and semibold mono capitals at 6. The line height and margins set on `headings` itself reach every level and put each head on the grid, with a blank line above it and none below. Any `headings` object drops the default page break before a chapter, so level 1 restates it.
+A level without a `numberingTemplate` prints no number, so from level 4 down the heads differ in face, colour or case instead: an italic serif at level 4, the display face in green at 5 and semibold mono capitals at 6. The line height and margins set on `headings` itself reach every level and put each head on the grid, with a blank line above it and none below. Level 1 opens each chapter on a recto, with `parity: 'odd'`.
 
 ### 4 · Make a seventh level and an unnumbered section with styles
 
 <Excerpt region="styles" />
 
-Markdown stops at `######`, and a heading drops its bold and italic marks, so `###### *Rock bar*` would print as one more level 6. The heading style `'level7'` sets the tool names in a grey condensed italic of weight 500, lighter than the 600 of level 6, and `textTransform: 'none'` switches off the capitals they would otherwise inherit. They read a step below the mono label above them, though at 8.4 pt they are larger than its 7.8 pt ([heading styles](/en/docs/configuration#heading-styles)). `numbered: false` leaves the checklist out of the count, so a section after it would still be 1.13. An empty `{number}` would still paint the amber pill, so the style brings its own design, with a hollow square in the pill's place. The green run-in terms of the safety rules come from the `boldColor` of a paragraph style.
+Markdown stops at `######`, and `###### *Rock bar*` would be one more level 6, only in italics. The heading style `'level7'` sets the tool names in a grey condensed italic of weight 500, lighter than the 600 of level 6, and `textTransform: 'none'` switches off the capitals they would otherwise inherit. They read a step below the mono label above them, though at 8.4 pt they are larger than its 7.8 pt ([heading styles](/en/docs/configuration#heading-styles)). `numbered: false` leaves the checklist out of the count, so a section after it would still be 1.13. An empty `{number}` would still paint the amber pill, so the style brings its own design, with a hollow square in the pill's place. The green run-in terms of the safety rules come from the `boldColor` of a paragraph style.
 
 ### 5 · Change the list markers with depth
 
 <Excerpt region="lists" />
 
-Each depth takes its own marker, colour and separator from `levels`: the checklist counts 1., a) and i. ([ordered per-level overrides](/en/docs/configuration#ordered-per-level-overrides)) and the bullets fade from green to sage ([unordered per-level overrides](/en/docs/configuration#unordered-per-level-overrides)). Level 1 keeps the default format, `'arabic'`; `'decimal'`, the word CSS uses, would print “undefined”. The two `- [ ]` items that close the checklist print `taskCheckboxChar`, ☐ by default, in place of the bullet, in the green of the first-level bullets ([task list extensions](/en/docs/configuration#task-list-extensions)). With zero margins above and below, every list stays on the baseline grid.
+Each depth takes its own marker, colour and separator from `levels`: the checklist counts 1., a) and i. ([ordered per-level overrides](/en/docs/configuration#ordered-per-level-overrides)) and the bullets fade from green to sage ([unordered per-level overrides](/en/docs/configuration#unordered-per-level-overrides)). Level 1 keeps the default format, `'arabic'`. The two `- [ ]` items that close the checklist print `taskCheckboxChar`, ☐ by default, in place of the bullet, in the green of the first-level bullets ([task list extensions](/en/docs/configuration#task-list-extensions)). With zero margins above and below, every list stays on the baseline grid.
 
 ### 6 · Open the chapter on the trail's profile
 
 <Excerpt region="opener" />
 
-The profile is an image element of the opener, anchored to the page and as wide as it. A page-wide figure floated to the top and cited on page 1 would have opened page 2 instead ([image elements](/en/docs/configuration#image-elements)). In an opener a picture reserves no height, so `minHeight` starts the text on the first grid line 6 mm or more below it. The legend on the green is design text, because an SVG drawn as an image cannot use the page's fonts. The large pill reuses the section pill's face and fill, and `{number}` prints the chapter's own number, from `numberingTemplate: '{1}'`.
+The profile is an image element of the opener, anchored to the page and as wide as it. A page-wide figure floated to the top and cited on page 1 would have opened page 2 instead ([image elements](/en/docs/configuration#image-elements)). The opener reserves height down to the picture's foot, and `minHeight` reaches 6 mm past it, so the text starts on the first grid line 6 mm or more below the profile. The legend on the green is design text, filled from the heading's `profile` attribute. The large pill reuses the section pill's face and fill, and `{number}` prints the chapter's own number, from `numberingTemplate: '{1}'`.
 
 ## Variations
 
@@ -73,4 +73,3 @@ A fixed width, that of 1.10, centres each number in an equal pill and lines the 
 ## Pitfalls
 
 - The seventh level is a level-6 heading with the style `level7`, so no head in the sample drops more than one level below the head before it: *The trench*, *Tools for the trench*, STEEL BARS and *Rock bar* run 4, 5, 6, 6. The Sandbox warning “Heading hierarchy jump” reports exactly such a skip, so it never appears on this chapter.
-- A lead-in line that ends in a colon stays with its list only if the first item fits in the room left: in 1.4.1 the rule checks for one line, so a two-line first item that meets a single free line moves to the next column alone and strands the colon. Section 1.2 keeps its first item to one line in both editions.

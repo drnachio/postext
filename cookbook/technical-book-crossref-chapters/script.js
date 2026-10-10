@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 094 · A technical book whose references cross chapters ═══
 // https://postext.dev/en/cookbook/technical-book-crossref-chapters
 // Code: MIT · Text: original (CC BY 4.0) · Charts: generated in code (CC BY 4.0)
-// Fonts: IBM Plex Serif, Sans Condensed and Mono (SIL OFL 1.1) · Needs postext ≥ 1.12.1
+// Fonts: IBM Plex Serif, Sans Condensed and Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A small handbook in four Markdown documents. The text writes @fig:sun, @tbl:loads and
 // @sec:array-size the way pandoc-crossref reads them, and buildBundle resolves each one to
 // the right number, title or page wherever in the book its target lies.
 import {
-  buildBundle, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, parseTSV, setAlignment,
+  buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerResourceImage,
+  defaultResourceTypes, parseTSV, setAlignment, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -26,7 +26,7 @@ const palette = {
   muted: '#5e636a', // running heads, colophon, chart labels
   paper: '#ffffff',
 };
-// A design element paints the hex beside its paletteId (gotcha: palette-skips-designs).
+// Each colour names its palette entry and carries its hex.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.accent })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -140,8 +140,8 @@ const contents = { // what :::toc prints: chapters in the condensed face, sectio
   leader: { char: '. ', gap: mm(2) },
 };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-gb', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-gb', es: 'es' }), // British patterns for the English edition
   crossRefs, resourceTypes, colorPalette, toc: contents, header, footer,
   page: { sizePreset: 'custom', width: mm(TRIM.w), height: mm(TRIM.h), dpi: 150,
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
@@ -154,7 +154,6 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: COND, color: col('ink'), fontWeight: 600, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
     // 'any': short chapters start on the next page, recto or verso.
     { level: 1, fontSize: pt(30), numberingTemplate: '{1}',
       breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener,
@@ -239,19 +238,8 @@ const resources = [
 ];
 
 // #region art: the cover and three charts, drawn in code in the book's palette
-// An SVG loaded as an image has no access to the page's web fonts (gotcha:
-// svg-no-webfonts), so the charts embed the one IBM Plex Mono face their labels use.
-async function labelFace() {
-  const url = 'https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5/files/'
-    + 'ibm-plex-mono-latin-400-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 8192) {
-    bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
-  }
-  return `@font-face{font-family:L;src:url(data:font/woff2;base64,${btoa(bin)}) format('woff2')}`
-    + `text{font-family:L;font-size:2.5px;fill:${palette.muted}}`;
-}
+// The charts name their label face in a style rule, and loadSvg embeds its Fontsource file.
+const LABELS = `text{font-family:'IBM Plex Mono';font-size:2.5px;fill:${palette.muted}}`;
 const n2 = (v) => +v.toFixed(2);
 const sheet = (w, h, body, style = '') => `<svg xmlns="http://www.w3.org/2000/svg" `
   + `width="${w * 10}" height="${h * 10}" viewBox="0 0 ${w} ${h}"><style>${style}</style>`
@@ -354,22 +342,22 @@ function coverArt(w, h) {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first).
+// Every face the design uses.
 const FONTS = {
   'IBM Plex Serif': ['400', '400i', '600'],
   'IBM Plex Sans Condensed': ['400', '600', '700'],
-  'IBM Plex Mono': ['400', '600'],
+  'IBM Plex Mono': ['400', '600', '700'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const text = chapters.map((chapter) => chapter.markdown).join('\n');
-await loadFonts(FONTS, text);
-const face = await labelFace();
+await prepareFonts(text, config(), kitFonts(FONTS));
 await loadSvg('cover.svg', sheet(TRIM.w, 110, coverArt(TRIM.w, 110)));
-await loadSvg('profile.svg', sheet(MEASURE, 50, profileArt(MEASURE, 50), face));
-await loadSvg('sun.svg', sheet(MEASURE, 46, sunArt(MEASURE, 46), face));
-await loadSvg('soc.svg', sheet(MEASURE, 50, socArt(MEASURE, 50), face));
-const docs = await buildWithFonts(book, text); // one VDTDocument per Markdown document
+await loadSvg('profile.svg', sheet(MEASURE, 50, profileArt(MEASURE, 50), LABELS));
+await loadSvg('sun.svg', sheet(MEASURE, 46, sunArt(MEASURE, 46), LABELS));
+await loadSvg('soc.svg', sheet(MEASURE, 50, socArt(MEASURE, 50), LABELS));
+// One VDTDocument per Markdown document.
+const docs = await withLoadedFonts(book, { ...kitFonts(FONTS), text });
 showPages(docs, { title: t({ en: 'Power for a Cabin', es: 'Energía para una cabaña' }) });
 // One PDF for the book: a reference in chapter 3 links to its table in chapter 1.
 offerPdf(() => renderToPdf(docs, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),

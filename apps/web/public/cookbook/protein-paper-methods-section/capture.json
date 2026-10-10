@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "protein-paper-methods-section",
-  "sourceHash": "42114df2d3cdc22b1135c185cf15361547c7a7dd19d0c15ec4e55a4281ededbc",
+  "sourceHash": "7f49cea4043bea9e59944abb1f9d23d63bc67f67d3a32931278083f0eda85d63",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.326Z",
+  "capturedAt": "2026-10-10T13:37:31.821Z",
   "variants": {
     "en": {
-      "hash8": "ba79ec83",
+      "hash8": "102fdf8b",
       "vdtHash": "7d65b4d482af7e0ae5727f913c9c9a21dd94b38d",
       "timings": {
-        "importMs": 221,
-        "fontsMs": 103,
-        "buildMs": 828,
-        "totalMs": 2765,
-        "builds": 2
+        "importMs": 188,
+        "fontsMs": 64,
+        "buildMs": 836,
+        "totalMs": 1670,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -50,7 +50,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 189364,
+          "bytes": 189470,
           "alt": "Opening page 1: Highly accurate protein structure prediction with AlphaFold. Fig. 1 | AlphaFold produces highly accurate structures. a, Median accuracy on the CASP14 domains of AlphaFold and of the next best method, as r.m.s.d.95 over Cα atoms (backbone) and over all atoms, wi…"
         },
         {
@@ -126,23 +126,23 @@
       },
       "pdf": {
         "file": "protein-paper-methods-section.pdf",
-        "bytes": 514913,
+        "bytes": 204711,
         "pages": 5
       },
       "sandbox": {
         "file": "protein-paper-methods-section.postext",
-        "bytes": 64388,
+        "bytes": 77812,
         "folio": "9eaee533"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "registerCitationEngine",
           "registerResourceImage",
           "renderPageToCanvas",

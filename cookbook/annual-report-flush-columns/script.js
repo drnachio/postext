@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 037 · Annual report with flush columns ═══════════════════════
 // https://postext.dev/en/cookbook/annual-report-flush-columns
 // Code: MIT · Text: original (CC BY 4.0) · Art: drawn in code · Typefaces: SIL OFL 1.1
-// Fonts: Brygada 1918, Epilogue, Spline Sans Mono, Mrs Saint Delafield · Needs postext ≥ 1.4.1
+// Fonts: Brygada 1918, Epilogue, Spline Sans Mono, Mrs Saint Delafield · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage, mergeCells,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, mergeCells, inlineSvgFonts,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -21,7 +21,7 @@ const palette = {
   mist: '#9fb1bd', // small print on the ink cover
   paper: '#ffffff',
 };
-// Designs paint the hex (gotcha: palette-skips-designs); a :::part recolours by paletteId.
+// Every colour is linked to its palette entry, so a :::part recolours it by paletteId.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries(palette)
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -74,8 +74,7 @@ const cover = { enabled: true, slot: { elements: [
     overflow: 'wrap' }, { ...at('page', 'bottom-left', MARGIN.inner, -14), // the text block's
     size: { width: mm(TRIM.width - MARGIN.inner - MARGIN.outer) } }), // width: 'fill' hits the trim
 ] } };
-// A section opener: a strip in the part's colour, then title and standfirst. Design text's
-// lineHeight is a multiple of its size (gotcha: design-lineheight-multiple).
+// A section opener: a strip in the part's colour, then title and standfirst.
 const STRIP = 8; // mm
 const onStrip = { ...mono, fontSize: pt(8), letterSpacing: pt(1.4), color: col('paper') };
 const opener = { enabled: true, minHeight: mm(56), slot: { elements: [
@@ -133,7 +132,7 @@ const footer = { elements: [
   foot('recto-part', '{partTitle}', 'odd', -(MARGIN.outer + 8), { color: col('band') }),
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, resourceTypes,
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
@@ -143,7 +142,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   bodyText: { ...flowText, color: col('ink'), boldColor: col('ink'), italicColor: col('ink'),
     referenceColor: col('ink'), referenceBold: false },
   headings: { fontFamily: 'Epilogue', color: col('band'), balancing, levels: [
-    // Restated (gotcha: headings-drop-h1-break); 'any': a section opens on the next page.
+    // 'any': a section opens on the next page, recto or verso, with no blank before it.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: opener },
     { level: 2, fontSize: pt(11.5), fontWeight: 700, ...onGrid },
@@ -196,9 +195,9 @@ const siteTable = (rows) => ({ headerRowCount: 1, columnWidths: [3, 1, 1.3, 1.3]
     right(figure(mw, 1)), ...n.map((v) => right(figure(v)))]),
   [{ content: '**All sites**', ...fill }, ...[2, 3, 4].map((i, k) => right(`**${figure(rows
     .reduce((sum, row) => sum + row[i], 0), k ? 0 : 1)}**`, fill))]] }); // the totals, summed
-// Accounting style: losses in brackets, and gains followed by a no-break space as wide as a
-// bracket, so the digits line up. Cells are trimmed, so a word joiner (U+2060) keeps it.
-const pad = '\u00a0\u2060';
+// Accounting style: losses in brackets, and gains followed by a no-break space, as wide as a
+// bracket in a monospaced face, so the digits line up.
+const pad = '\u00a0';
 const money = (n) => (n < 0 ? `(${figure(-n)})` : `${figure(n)}${pad}`);
 function statement(rows) {
   const sum = [0, 0];
@@ -253,18 +252,9 @@ const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookboo
 // #region art: the cover's ribbons and the charts, drawn from DATA with the page's palette
 const MONTHS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
 const n2 = (v) => +v.toFixed(2);
-// An SVG drawn as an image cannot see the page's web fonts (gotcha: svg-no-webfonts), so each
-// drawing carries its face inline, as a data URL of the Fontsource file.
-async function inlineFace(family, weight) {
-  const id = family.toLowerCase().replace(/\s+/g, '-');
-  const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}`
-    + '-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return `<style>@font-face{font-family:F;src:url(data:font/woff2;base64,${btoa(bin)}) `
-    + `format('woff2')}text{font-family:F}</style>`;
-}
+// The faces of the drawings' labels, named on the root element: loadSvg embeds them.
+const LABELS = 'font-family="Spline Sans Mono" font-weight="500"';
+const HAND = 'font-family="Mrs Saint Delafield"';
 // A smooth path through points (Catmull–Rom turned into cubic Béziers).
 function smooth(pts) {
   let d = `M${n2(pts[0][0])} ${n2(pts[0][1])}`;
@@ -305,7 +295,7 @@ function ribbonsArt(face) {
     * SPREAD + 1.2)}" font-size="3.4" letter-spacing="0.6" text-anchor="middle" fill="${ink}">`
     + `${name}</text>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W * 10}" height="${H * 10}" `
-    + `viewBox="0 0 ${W} ${H}">${face}${layer(DATA.sun, DATA.wind, palette.sun)}`
+    + `viewBox="0 0 ${W} ${H}" ${face}>${layer(DATA.sun, DATA.wind, palette.sun)}`
     + `${layer(DATA.wind, DATA.sun, palette.wind)}${ticks}`
     + `${label('WIND', 1, DATA.wind, DATA.sun, palette.ink)}`
     + `${label('SUN', 5, DATA.sun, DATA.wind, palette.ink)}</svg>`;
@@ -330,7 +320,7 @@ function monthlyArt(face) {
       + `fill="${palette.ink}">${m}</text>`;
   }).join('');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W * 10}" height="${H * 10}" `
-    + `viewBox="0 0 ${W} ${H}">${face}${grid}${bars}</svg>`;
+    + `viewBox="0 0 ${W} ${H}" ${face}>${grid}${bars}</svg>`;
 }
 // Chart 2: a ring of the turbines' hours with its key beside it, 84.5 × 47 mm (one column).
 function hoursArt(face) {
@@ -356,34 +346,32 @@ function hoursArt(face) {
     + `fill="${palette.ink}">${available.toFixed(1)}%</text><text x="${CX}" y="${CY + 5}" `
     + `font-size="2.2" text-anchor="middle" fill="${palette.muted}">available</text>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W * 10}" height="${H * 10}" `
-    + `viewBox="0 0 ${W} ${H}">${face}${ring}${middle}${key}</svg>`;
+    + `viewBox="0 0 ${W} ${H}" ${face}>${ring}${middle}${key}</svg>`;
 }
 // The chair's signature: her name in a script face, and the stroke she draws under it.
 function signatureArt(face) {
-  return '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="150" viewBox="0 0 42 15">'
-    + `${face}<text x="1" y="10" font-size="10" fill="${palette.band}">Maren Coles</text>`
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="420" height="150" viewBox="0 0 42 15" '
+    + `${face}>`
+    + `<text x="1" y="10" font-size="10" fill="${palette.band}">Maren Coles</text>`
     + '<path d="M3 13.2C14 12.1 27 12.6 40 11.3" fill="none" '
     + `stroke="${palette.band}" stroke-width="0.35" stroke-linecap="round"/></svg>`;
 }
 async function drawArt() {
-  const [face, hand] = await Promise.all([inlineFace('Spline Sans Mono', 500),
-    inlineFace('Mrs Saint Delafield', 400)]);
-  await Promise.all([loadSvg('ribbons.svg', ribbonsArt(face)), loadSvg('monthly.svg',
-    monthlyArt(face)), loadSvg('hours.svg', hoursArt(face)), loadSvg('signature.svg',
-    signatureArt(hand))]);
+  await Promise.all([loadSvg('ribbons.svg', ribbonsArt(LABELS)), loadSvg('monthly.svg',
+    monthlyArt(LABELS)), loadSvg('hours.svg', hoursArt(LABELS)), loadSvg('signature.svg',
+    signatureArt(HAND))]);
 }
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   'Brygada 1918': ['400', '400i', '700'], // 700: the list dashes
   Epilogue: ['400', '700', '800'], // 700: the crossheads; 800: the display
   'Spline Sans Mono': ['400', '400i', '500', '700'], 'Mrs Saint Delafield': ['400'] }; // signature
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await drawArt();
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Annual report with flush columns',
   es: 'Memoria anual con columnas a ras' }) });
 

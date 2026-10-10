@@ -1,9 +1,11 @@
 // ═══ Postext Cookbook · Nº 016 · Justified Spanish in a pocket novel ═════════════════
 // https://postext.dev/en/cookbook/spanish-pocket-novel
 // Code: MIT · Text: B. Pérez Galdós, Marianela, 1878 (PD, Gutenberg #17340) · Map: drawn in code
-// Fonts: Gentium Book Plus, Libre Bodoni, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.23.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
-  registerResourceImage } from 'https://esm.sh/postext';
+// Fonts: Gentium Book Plus, Libre Bodoni, Marcellus SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, defaultResourceTypes, registerResourceImage,
+  inlineSvgFonts,
+} from 'https://esm.sh/postext';
 
 const LANG = 'es'; // @lang: the language of the sample document (this recipe is Spanish only)
 const RECIPE = 'spanish-pocket-novel';
@@ -16,7 +18,7 @@ const palette = {
   paper: '#f7f2e8', // an ivory book paper
   slag: '#c8553d', moss: '#6f7a4f', water: '#58707f', // the map: mined earth, woods, river
 };
-// Each colour names its palette entry and carries its hex (gotcha: palette-skips-designs).
+// col(id): a colour linked to its palette entry, in text styles and design slots alike.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -42,7 +44,7 @@ const page = {
 // #endregion
 
 // #region answer: Spanish syllables, word spaces under 1.7×, captions that say Figura
-const LOCALE = 'es'; // config().locale; 'es-ES' gets US breaks (gotcha: hyphenation-locales)
+const LOCALE = 'es'; // config().locale: Spanish hyphenation, and Spanish caption labels
 const bodyText = { // config().bodyText
   fontFamily: TEXT, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
   boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
@@ -54,8 +56,8 @@ const bodyText = { // config().bodyText
   // A last line under 26 space widths is a runt; at 20, 'siem- / pre adelante.' got through.
   maxWordSpacing: 1.7, runtMinCharacters: 26,
 };
-// config().resourceTypes, as the locale leaves captions in English (gotcha:
-// resource-types-locale): 'Figura' and 'Fig.', numbered through the book, Figura 1.
+// config().resourceTypes: the built-in types, 'Figura' and 'Fig.' in Spanish, renumbered
+// through the book (Figura 1) where the default counts by chapter (Figura 1.1).
 const resourceTypes = defaultResourceTypes(LOCALE)
   .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' }));
 // #endregion
@@ -69,21 +71,21 @@ const centred = (y) => ({ anchor: { to: 'container', edge: 'top' }, offset: { y:
 const opener = {
   enabled: true,
   slot: { elements: [
-    // Numbering templates print numerals only (1, 01, I, i, A, a); a number in words comes
-    // from the heading's own attribute: # Perdido {ordinal="primero"}
+    // The ordinal is written in the heading, # Perdido {ordinal="primero"}: the plate before
+    // the chapter is a level-1 heading too, so the level carries no counter.
     { kind: 'text', id: 'chapter', content: 'capítulo {attr.ordinal}', ...smallCaps,
       placement: centred(LABEL_Y) },
     { kind: 'rule', id: 'rule', direction: 'horizontal', thickness: pt(0.6),
       color: col('oxblood'), placement: { ...centred(RULE_Y), size: { width: mm(9) } } },
     { kind: 'text', id: 'title', content: '{titleText}', fontFamily: DISPLAY, italic: true,
       fontSize: pt(26), lineHeight: 1.1, color: col('ink'), align: 'center',
-      overflow: 'wrap', // longer titles wrap, not '…' (gotcha: overflow-ellipsis-default)
+      overflow: 'wrap', // a longer title takes a second line
       placement: centred(TITLE_Y) },
   ] },
   // The text starts SINK lines down; the initial's rise takes the last RISE of them.
   minHeight: pt((SINK - RISE) * LEAD),
 };
-// The break restated (gotcha: headings-drop-h1-break): the next page, as pocket books do.
+// parity 'any': each chapter opens on the next page, as pocket books do.
 // marginBottom replaces the level's default, a blank line of its own. The first paragraph
 // of the chapter opens with a raised initial: lines: 1 stands it on the first baseline,
 // three leads tall, and the paragraph keeps its rise clear above it.
@@ -143,7 +145,7 @@ const captionStyle = { fontFamily: TEXT, fontSize: pt(8.3), gap: mm(2),
 const paragraphStyles = [
   { id: 'asterismo', fontFamily: DISPLAY, fontSize: pt(11), color: col('oxblood'),
     textAlign: 'center' },
-  // In ink, not muted: a style has no italic colour (gotcha: style-italic-colour).
+  // In ink: a muted note would need italicColor too, for its italic Marianela.
   { id: 'nota', fontSize: pt(8.3), lineHeight: pt(LEAD * 0.8), firstLineIndent: pt(0),
     marginTop: pt(LEAD) },
   { id: 'colofon', fontSize: pt(7.5), color: col('muted'), textAlign: 'center',
@@ -151,7 +153,7 @@ const paragraphStyles = [
 ];
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: LOCALE,
   resourceTypes,
   colorPalette,
@@ -196,19 +198,8 @@ function smooth(list, close = false) {
   }
   return close ? `${d}Z` : d;
 }
-async function labelFace() { // Marcellus SC inside the SVG (gotcha: svg-no-webfonts)
-  const url = 'https://cdn.jsdelivr.net/npm/@fontsource/marcellus-sc@5/files/'
-    + 'marcellus-sc-latin-400-normal.woff2';
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Label face not found (${res.status}): ${url}`);
-  const bytes = new Uint8Array(await res.arrayBuffer());
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 8192) {
-    bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
-  }
-  return `@font-face{font-family:L;src:url(data:font/woff2;base64,${btoa(bin)}) format('woff2')}`;
-}
-function drawMap(face, W, H) { // drawn for W 86 × H 112: the mines above, the town below
+// The map's names are set in the label face, named on the root element: loadSvg embeds it.
+function drawMap(W, H) { // drawn for W 86 × H 112: the mines above, the town below
   const rnd = mulberry32(1878);
   const C = {
     ground: mix(palette.paper, palette.moss, 0.16), hill: mix(palette.moss, palette.paper, 0.45),
@@ -285,25 +276,23 @@ function drawMap(face, W, H) { // drawn for W 86 × H 112: the mines above, the 
   out.push(`<rect x="0.2" y="0.2" width="${W - 0.4}" height="${H - 0.4}" fill="none" `
     + `stroke="${C.ink}" stroke-width="0.4"/>`);
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" `
-    + `viewBox="0 0 ${W} ${H}"><style>${face}text{font-family:L;font-size:2.35px}</style>`
-    + `${out.join('')}</svg>`;
+    + `viewBox="0 0 ${W} ${H}" font-family="${LABEL}" font-size="2.35">${out.join('')}</svg>`;
 }
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Gentium Book Plus': ['400', '400i', '700'], // text, captions (700: 'Figura 1.'), the note
   'Libre Bodoni': ['400', '400i', '700'], // asterisks, the chapter's title, the initial
   'Marcellus SC': ['400'], // chapter label, plate name, running heads
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-await loadSvg('plano.svg', drawMap(await labelFace(), MEASURE, MAP_H));
+await loadSvg('plano.svg', drawMap(MEASURE, MAP_H));
 // The map is book page 8, a verso, facing chapter I: folios and parity follow the book.
 const continuation = { pageIndexOffset: 7, pageNumbering: { startAt: 8 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Español justificado en una novela de bolsillo' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

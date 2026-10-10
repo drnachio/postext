@@ -10,7 +10,7 @@ pageNotes: { "1": "The cover: night teal to the trim, The Harbour Consort in sma
 
 ## What you'll build
 
-The programme for a twilight recital, *Home from Sea*: four A5 pages for a consort of soprano, cello and harp. The cover is night teal, with the title in gilt Fraunces italic and rows of gilt wave scales rising from the foot. Inside, the order of performance is a table with a teal head in Tenor Sans capitals and a tinted total row. The notes are justified Crimson Text. The words of the three songs are poems by Longfellow, Stevenson and Tennyson, set with the indents of their printed editions. The *Build the PDF* button makes the file you would email to the audience or put on the venue's website. Its four pages match the screen line for line. It embeds only the seven font files the browser loaded, and each heading is a bookmark. For commercial printing, see <RecipeLink slug="print-ready-pdf">the print-ready PDF</RecipeLink>.
+The programme for a twilight recital, *Home from Sea*: four A5 pages for a consort of soprano, cello and harp. The cover is night teal, with the title in gilt Fraunces italic and rows of gilt wave scales rising from the foot. Inside, the order of performance is a table with a teal head in Tenor Sans capitals and a tinted total row. The notes are justified Crimson Text. The words of the three songs are poems by Longfellow, Stevenson and Tennyson, set with the indents of their printed editions. The *Build the PDF* button makes the file you would email to the audience or put on the venue's website. Its four pages match the screen line for line. It embeds only the five font files the browser loaded, and each heading is a bookmark. For commercial printing, see <RecipeLink slug="print-ready-pdf">the print-ready PDF</RecipeLink>.
 
 ## Method
 
@@ -22,13 +22,13 @@ The code is [the short answer](#the-short-answer) above. Postext measures every 
 
 <Excerpt region="build" />
 
-`registerFaces()` resolves only when every face in `FONTS` has loaded, so the first build measures with the faces the PDF will embed. It is also the only build, because `FONTS` lists every bold and italic a block of Crimson Text or Fraunces can ask for, and the kit's `buildWithFonts` finds nothing to add ([Measurement cache](/en/docs/configuration#measurement-cache)). That check only helps the screen. If `FONTS` misses a face, `buildWithFonts` loads it and runs the layout again, with a console warning when a block is set in that face and none when it is a bold or an italic, but the PDF still gets the closest face the provider has.
+`registerFaces()` resolves only when every face in `FONTS` has loaded, so the first build measures with the faces the PDF will embed. It is also the only build, because `FONTS` lists every face the pages set, and `buildDocumentWithFonts` finds every face it looks for already declared ([Loading fonts before layout](/en/docs/configuration#loading-fonts-before-layout)). That check only helps the screen. If `FONTS` misses a face, the engine asks the kit for it, loads the Fontsource file and runs the layout again with no console warning, but the PDF still gets the closest face the provider has.
 
 ### 3 · The export, and a list of what it embedded
 
 <Excerpt region="pdf" />
 
-`renderToPdf` calls `onProgress` in three phases: `prepare` once the fonts and the cover are embedded, `pages` after each page, and `save` before it writes the file. Here it asks the provider for ten faces. The status line lists the seven files the provider served, exactly the ones in `FONTS`, and three stand-ins, all for Tenor Sans, which ships only a regular 400 and is never set in bold or italic here. Any other stand-in points to a face missing from `FONTS`. If you remove Crimson Text 600, the line reports `Crimson Text 600 → 400` and the bold *The Harbour Consort* on page 4 prints at regular weight. CodePen's preview cannot show a PDF, so the kit's `offerPdf` replaces the button with two links, one that opens the PDF in a new tab and one that downloads it ([Generating PDFs](/en/docs/configuration#generating-pdfs)).
+`renderToPdf` calls `onProgress` in three phases: `prepare` once the fonts and the cover are embedded, `pages` after each page, and `save` before it writes the file. It asks the provider only for the faces the pages paint, here five. The status line lists the five files the provider served, exactly the ones in `FONTS`, and no stand-in. A stand-in points to a face missing from `FONTS`. If you remove Crimson Text 600, the line reports `Crimson Text 600 → 400` and the bold *The Harbour Consort* on page 4 prints at regular weight. CodePen's preview cannot show a PDF, so the kit's `offerPdf` replaces the button with two links, one that opens the PDF in a new tab and one that downloads it ([Generating PDFs](/en/docs/configuration#generating-pdfs)).
 
 ### 4 · The heading tree is the bookmark tree
 
@@ -40,7 +40,7 @@ In the PDF, the bookmarks panel shows the cover's title, *Programme* with *About
 
 <Excerpt region="cover" />
 
-Every frontmatter value is quoted. The cover prints two of them through `{author}` and `{subtitle}`, and the PDF's document properties take the title *Home from Sea* and the author *The Harbour Consort* from the same block. The date and the venue are attributes of the cover heading. The drawing behind them is one SVG the width of the page, and the PDF keeps it as vector paths.
+The cover prints two frontmatter values through `{author}` and `{subtitle}`, and the PDF's document properties take the title *Home from Sea* and the author *The Harbour Consort* from the same block. The date and the venue are attributes of the cover heading. The drawing behind them is one SVG the width of the page, and the PDF keeps it as vector paths.
 
 ## Variations
 
@@ -67,6 +67,6 @@ Point the fetch at your own copies of the same static WOFF2 files, one per weigh
 
 ## Pitfalls
 
-List in `FONTS` every bold and italic your text can use. If one is missing, the screen still looks right, because the kit loads the face without a warning, but the PDF prints the provider's nearest face, and only the stand-ins on the status line reveal the swap.
+List in `FONTS` every face your pages set, the bold and the italic of the text among them. If one is missing, the screen still looks right, because the kit loads the face without a warning, but the PDF prints the provider's nearest face, and only the stand-ins on the status line reveal the swap.
 
 Use static files, one per weight and style. From a variable WOFF2 the PDF embeds only the default instance, so a bold run would print at regular weight ([Why a font provider?](/en/docs/configuration#why-a-font-provider)).

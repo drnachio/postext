@@ -60,4 +60,4 @@ The <RecipeLink slug="textbook-margin-column">textbook with a margin column</Rec
 ## Pitfalls
 
 - Fit the `:::space` to the page. In the English edition 2.76 lines end the box 0.8 mm above the column's foot. At 2.96 lines it runs 0.1 mm past the foot and the whole sidebar moves to page 2; at 2.66 a strip of paper opens between the box and the foot box.
-- A box in the name's design cannot paint the band. One that ends just above the column's foot makes the heading reserve 265 mm, more than the column's 260.8 mm, and the text moves to page 2; one that runs on to the foot of the sheet drops the heading's reserved height, and the profile rises to 30.3 mm, over the role.
+- A box in the name's design is no way to paint the band. The heading reserves the box's height, so a box as tall as the band makes it reserve more than the column's 260.8 mm, and the text moves to page 2. With `reserve: false` the box reserves nothing, but a design in the column is cut at the column's foot, and the bottom margin would stay white.

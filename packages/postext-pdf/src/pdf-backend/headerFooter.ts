@@ -8,6 +8,7 @@ import type {
 } from 'postext';
 import { segmentOrientation } from 'postext';
 import { drawRightToLeftRun } from './rtlRun';
+import { inkScaleOperators } from './inkScale';
 import { drawEmbeddedResource, figureLayout, type ResourceImageMap } from './renderResourceBlock';
 import { tagArtifact, tagContent, type ArtifactSpec, type StructAttrs, type StructElem } from './tagging';
 
@@ -230,6 +231,15 @@ export function renderTextBlock(
       const gx = x + (run.inkOffset ?? 0);
       if (run.rtl && actualText !== undefined) drawTextPx(ctx, run.text, gx, y, runFont, runSize, color, outline, actualText, undefined, 'rtl');
       else if (run.rtl) drawRightToLeftRun(ctx, run.text, gx, y, runFont, runSize, color, outline);
+      else if (run.inkScale !== undefined) {
+        // A dash of a 破折号 (#652): stretched over its cell (`Tz`), and
+        // shown turned with the frame down a vertical line, as a body
+        // segment's is.
+        const stretch = inkScaleOperators(run.inkScale);
+        ctx.page.pushOperators(...stretch.before);
+        drawTextPx(ctx, run.text, gx, y, runFont, runSize, color, outline, actualText, ctx.vertical ? 'sideways' : undefined);
+        ctx.page.pushOperators(...stretch.after);
+      }
       // A vertical line: the orientation its author gave the run.
       else drawTextPx(ctx, run.text, gx, y, runFont, runSize, color, outline, actualText, segmentOrientation(run));
       x += run.width;

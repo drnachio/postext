@@ -32,48 +32,15 @@
   },
   "answers": ["Q02", "Q03"],
   "gotchas": [
-    "fonts-first",
-    "pdf-provider-all-styles",
     "faked-font-styles",
     "latin-subset",
-    "quote-frontmatter",
-    "headings-drop-h1-break",
-    "style-inherits-break",
-    "palette-skips-designs",
-    "design-lineheight-multiple",
-    "overflow-ellipsis-default",
-    "config-cache-identity"
+    "style-inherits-break"
   ],
   "workarounds": [
-    {
-      "followup": "EF-20",
-      "package": "postext-pdf",
-      "note": "renderToPdf asks for the bold and italic of every family, set or not: FONTS lists every one Crimson Text and Fraunces can be asked for, and the provider answers Tenor Sans's missing styles with its one face and logs each stand-in"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "every frontmatter value is quoted: the cover prints {author} and {subtitle}, and the PDF takes its title and author from them"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "level 1's breakBefore (parity 'any') is restated because a headings object drops it"
-    },
     {
       "followup": "EF-60",
       "package": "postext",
       "note": "the performers' heading style sets breakBefore: { enabled: false }, or it would inherit level 1's page break"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside each paletteId: 1.4.1 paints the cover, opener and footer elements from the hex (gotcha palette-skips-designs)"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the design titles take lineHeight as a multiple (1, 0.95, 1.25), never a Dimension"
     }
   ],
   "related": [
@@ -82,7 +49,7 @@
     "book-from-chapters",
     "front-matter-roman-to-arabic"
   ],
-  "engine": { "postext": "1.4.1", "postextPdf": "1.4.1" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images"],
   "sample": {
     "locales": ["en"]
@@ -161,5 +128,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

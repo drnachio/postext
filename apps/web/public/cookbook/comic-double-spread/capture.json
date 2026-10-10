@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "comic-double-spread",
-  "sourceHash": "d01bef578127b2a65bb9f9f8b6faf2efdc90c70daf16145ee35052abc0c77867",
+  "sourceHash": "d6c85c0e0753d8352ac0826ab7c5e317582894bd20b10267e0d025375aa78037",
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T14:45:51.512Z",
+  "capturedAt": "2026-10-10T13:33:15.111Z",
   "variants": {
     "en": {
-      "hash8": "dd8ef9f6",
+      "hash8": "1c31a3ad",
       "vdtHash": "6d1ab509a3fcd3d3cd62c9cb4ec3083deec81511",
       "timings": {
-        "importMs": 293,
-        "fontsMs": 123,
-        "buildMs": 358,
-        "totalMs": 1341,
+        "importMs": 175,
+        "fontsMs": 94,
+        "buildMs": 293,
+        "totalMs": 1122,
         "builds": 1
       },
       "specimen": {
@@ -37,7 +37,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 124
+        "ownLines": 125
       },
       "pages": [
         {
@@ -88,18 +88,18 @@
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893340
+        "bytes": 893342
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -255,13 +255,13 @@
       }
     },
     "es": {
-      "hash8": "b89d229c",
+      "hash8": "cebbcbe6",
       "vdtHash": "28c0aa1dddebc1a19af91ea4e5df75e8b5dd8a8e",
       "timings": {
-        "importMs": 276,
-        "fontsMs": 171,
-        "buildMs": 330,
-        "totalMs": 5276,
+        "importMs": 186,
+        "fontsMs": 97,
+        "buildMs": 287,
+        "totalMs": 1129,
         "builds": 1
       },
       "specimen": {
@@ -281,7 +281,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 124
+        "ownLines": 125
       },
       "pages": [
         {
@@ -332,18 +332,18 @@
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893510
+        "bytes": 893512
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -499,13 +499,13 @@
       }
     },
     "ca": {
-      "hash8": "ea72c3e6",
+      "hash8": "a2e69453",
       "vdtHash": "e051cb0bfac9ed7bda549de1dc7a909fb242d473",
       "timings": {
-        "importMs": 255,
-        "fontsMs": 152,
-        "buildMs": 335,
-        "totalMs": 1315,
+        "importMs": 174,
+        "fontsMs": 95,
+        "buildMs": 300,
+        "totalMs": 1128,
         "builds": 1
       },
       "specimen": {
@@ -525,7 +525,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 124
+        "ownLines": 125
       },
       "pages": [
         {
@@ -576,18 +576,18 @@
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893419
+        "bytes": 893422
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -743,13 +743,13 @@
       }
     },
     "zh": {
-      "hash8": "c6729b46",
-      "vdtHash": "3d5f55ee3df3e73798dbe8e4588f5be32f72419e",
+      "hash8": "30f3c9d6",
+      "vdtHash": "a95d6688e5763446c909ea3f306a081d82b8d8fa",
       "timings": {
-        "importMs": 264,
-        "fontsMs": 333,
-        "buildMs": 463,
-        "totalMs": 1597,
+        "importMs": 190,
+        "fontsMs": 238,
+        "buildMs": 307,
+        "totalMs": 1302,
         "builds": 1
       },
       "specimen": {
@@ -769,7 +769,7 @@
           "Noto Sans SC"
         ],
         "pages": 2,
-        "ownLines": 124
+        "ownLines": 125
       },
       "pages": [
         {
@@ -780,7 +780,7 @@
           "h": 1304,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 228858,
+          "bytes": 228914,
           "alt": "第 2 页。"
         },
         {
@@ -791,7 +791,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 213726,
+          "bytes": 215766,
           "alt": "第 3 页。"
         }
       ],
@@ -815,23 +815,23 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 895601,
+        "bytes": 895734,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893615
+        "bytes": 893753
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -972,12 +972,17 @@
           {
             "check": "C20",
             "severity": "warn",
-            "detail": "card.webp weighs 133 KB (aim for ≤ 90 KB)"
+            "detail": "card.webp weighs 134 KB (aim for ≤ 90 KB)"
           },
           {
             "check": "C20",
             "severity": "warn",
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",
@@ -988,13 +993,13 @@
       }
     },
     "ar": {
-      "hash8": "270007b9",
+      "hash8": "c6f02245",
       "vdtHash": "62186dc3c174a7a0486ed05494d986ce8953dc58",
       "timings": {
-        "importMs": 264,
-        "fontsMs": 133,
-        "buildMs": 364,
-        "totalMs": 1325,
+        "importMs": 166,
+        "fontsMs": 107,
+        "buildMs": 300,
+        "totalMs": 1118,
         "builds": 1
       },
       "specimen": {
@@ -1014,7 +1019,7 @@
           "Playpen Sans Arabic"
         ],
         "pages": 2,
-        "ownLines": 124
+        "ownLines": 125
       },
       "pages": [
         {
@@ -1061,23 +1066,23 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 885243,
+        "bytes": 885244,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893796
+        "bytes": 893798
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1236,13 +1241,13 @@
       }
     },
     "ja": {
-      "hash8": "a6e488af",
-      "vdtHash": "cfc96c450c21c65571b4a98629a0c75ebebaecee",
+      "hash8": "8520dc40",
+      "vdtHash": "e0fea0a1e39d501e8c605675983a84d3865583a3",
       "timings": {
-        "importMs": 390,
-        "fontsMs": 365,
-        "buildMs": 517,
-        "totalMs": 1840,
+        "importMs": 183,
+        "fontsMs": 188,
+        "buildMs": 1055,
+        "totalMs": 9458,
         "builds": 1
       },
       "specimen": {
@@ -1262,7 +1267,7 @@
           "Zen Antique"
         ],
         "pages": 2,
-        "ownLines": 124
+        "ownLines": 125
       },
       "pages": [
         {
@@ -1284,7 +1289,7 @@
           "h": 1304,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 231932,
+          "bytes": 231966,
           "alt": "3ページ。"
         }
       ],
@@ -1309,23 +1314,23 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 895437,
+        "bytes": 895743,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893695
+        "bytes": 893802
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1475,6 +1480,11 @@
             "detail": "card.480.webp weighs 46 KB (aim for ≤ 35 KB)"
           },
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 1: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -1483,13 +1493,13 @@
       }
     },
     "pt": {
-      "hash8": "d65e72dc",
+      "hash8": "49853c71",
       "vdtHash": "c4dea0ea56e8899c4f01360bf573ad13b84489c7",
       "timings": {
-        "importMs": 533,
-        "fontsMs": 215,
-        "buildMs": 435,
-        "totalMs": 1779,
+        "importMs": 170,
+        "fontsMs": 94,
+        "buildMs": 339,
+        "totalMs": 1166,
         "builds": 1
       },
       "specimen": {
@@ -1509,7 +1519,7 @@
           "Patrick Hand"
         ],
         "pages": 2,
-        "ownLines": 124
+        "ownLines": 125
       },
       "pages": [
         {
@@ -1555,23 +1565,23 @@
       },
       "pdf": {
         "file": "comic-double-spread.pdf",
-        "bytes": 873618,
+        "bytes": 873622,
         "pages": 2
       },
       "sandbox": {
         "file": "comic-double-spread.postext",
-        "bytes": 893469
+        "bytes": 893473
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "defaultComicFont",
           "defaultComicSfxFont",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

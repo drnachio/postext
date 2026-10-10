@@ -20,13 +20,13 @@ Fensterwerkstatt Tessin, an invented Berlin workshop that restores box windows, 
 
 `at()` anchors an element by its top-left corner to `'page'`, the trim box ([element placement](/en/docs/configuration#element-placement)), so each `x` and `y` is a distance from the corner of the sheet and the figures of the standard go in unchanged: the address at 25 mm across and 62.7 mm down, the first label of the information block at 125 and 50. These elements form the design of the H1. The heading’s text is the subject (`{titleText}`) and its attributes hold the address and the references, so the config holds the stationery and the Markdown holds the letter. The subject, at 100.6 mm, is the lowest element, so the heading reserves the sheet down to the subject’s foot. `marginBottom` adds the two blank lines, and the salutation starts on the next grid line, at 117 mm.
 
-The address is one attribute with `\n` between its lines. In 1.4.1 a design text turns an attribute’s `\n` into a line break only when its `paragraphIndent` is above zero. The address sets 0.01 pt, an indent too small to see; at 0, the backslash and the n print in the address. Without `span: 'page'` the design stays in the text column and is clipped at the 27 mm top margin, which cuts off the logo and the name and leaves only the bottom 5 mm of the band.
+The address is one attribute with `\n` between its lines, and each `\n` starts a new line in the design text. The heading sits in the text column, and its design still paints the band, the logo and the name above the 27 mm top margin, since each element is pinned to the page.
 
 ### 2 · Chain the information block from one pinned label
 
 <Excerpt region="info" />
 
-Only the first label is pinned to the sheet. Every other label is anchored `'below'` the one before it, and each value to its label with `'align-top'` and a 29 mm offset, so a row added to `INFO` needs no coordinates. Design text sets its baseline at 80% of the line box. The 7 pt label at `lineHeight: 12 / 7` and the 9 pt value at `12 / 9` both get a 12 pt line, so they share a baseline on every 4.23 mm row.
+Only the first label is pinned to the sheet. Every other label is anchored `'below'` the one before it, and each value to its label with `'align-top'` and a 29 mm offset, so a row added to `INFO` needs no coordinates. Design text sets its baseline at 80% of the line box. The 7 pt label and the 9 pt value both set `lineHeight: pt(ROW)`, a 12 pt line, so they share a baseline on every 4.23 mm row.
 
 ### 3 · Draw the letterhead into the same design
 
@@ -44,9 +44,8 @@ An element of the H1’s design pinned below the subject adds to the height the 
 
 <Excerpt region="signature" />
 
-`::resource{id="signature"}` sets the drawing under “Mit freundlichen Grüßen”, and `width: 0.297` makes it 49 mm wide and 21.1 mm deep, just under four 15 pt lines. The text after a resource in the flow returns to the body’s grid. At `0.25` the drawing was 17.8 mm deep, and the 3.4 mm the grid added under it pushed the name away from the signature. The resource type has an empty `captionPrefix`, and 1.4.1 sets no caption when both the prefix and the caption are empty, so no label or number appears under the signature ([resource types](/en/docs/configuration#resource-types)). The logo is a resource of the same type, drawn only by the image element. No `:ref` or `::resource` names it, so it never enters the flow.
+`::resource{id="signature"}` sets the drawing under “Mit freundlichen Grüßen”, and `width: 0.297` makes it 49 mm wide and 21.1 mm deep, just under four 15 pt lines. The text after a resource in the flow returns to the body’s grid. At `0.25` the drawing was 17.8 mm deep, and the 3.4 mm the grid added under it pushed the name away from the signature. The resource type has an empty `captionPrefix`, and Postext sets no caption when both the prefix and the caption are empty, so no label or number appears under the signature ([resource types](/en/docs/configuration#resource-types)). The logo is a resource of the same type, drawn only by the image element. No `:ref` or `::resource` names it, so it never enters the flow.
 
 ## Pitfalls
 
-- The card on `\n` in attributes says that with `paragraphIndent` at 0 the text stays on one line. In 1.4.1 the address wraps at its 75 mm width, and the two characters `\n` print wherever a line should break.
 - `{totalPages}` counts the pages of the whole document, so with two letters in one Markdown file the second sheet of the first letter would read “Seite 2 von 4”. Build each letter on its own.

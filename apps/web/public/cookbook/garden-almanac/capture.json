@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "garden-almanac",
-  "sourceHash": "a48bffc052278ea7d657e7ed4643baeda8873ca04016de31537e25f09b14876e",
+  "sourceHash": "a8f9824bf71a217f08e0108d196abec8c668d9bd22eaa54cc5590610d13618ff",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.974Z",
+  "capturedAt": "2026-10-10T13:33:44.515Z",
   "variants": {
     "en": {
-      "hash8": "3bc42d60",
+      "hash8": "5684a806",
       "vdtHash": "a20d77284011ed50dcea8a967e12f1dd70557b55",
       "timings": {
-        "importMs": 186,
-        "fontsMs": 91,
-        "buildMs": 34,
-        "totalMs": 951,
-        "builds": 2
+        "importMs": 132,
+        "fontsMs": 70,
+        "buildMs": 59,
+        "totalMs": 860,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Piazzolla"
         ],
         "pages": 4,
-        "ownLines": 250
+        "ownLines": 251
       },
       "pages": [
         {
@@ -115,15 +115,15 @@
       },
       "sandbox": {
         "file": "garden-almanac.postext",
-        "bytes": 190192,
+        "bytes": 190188,
         "folio": "49229ae8"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "mergeCells",
           "parseTSV",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "setAlignment",
@@ -274,7 +274,6 @@
           "tableStyle.borderColor",
           "tableStyle.borderWidth",
           "tableStyle.cellPadding",
-          "tableStyle.continuedSuffix",
           "tableStyle.continuesMarker",
           "tableStyle.headerBackground",
           "tableStyle.headerColor",
@@ -315,7 +314,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 353,
+        "configLeaves": 352,
         "designElements": 10,
         "directives": [
           ":::callout",
@@ -393,14 +392,14 @@
       }
     },
     "es": {
-      "hash8": "3e9169c6",
+      "hash8": "d47662ba",
       "vdtHash": "a20d77284011ed50dcea8a967e12f1dd70557b55",
       "timings": {
-        "importMs": 284,
-        "fontsMs": 102,
-        "buildMs": 49,
-        "totalMs": 1102,
-        "builds": 2
+        "importMs": 132,
+        "fontsMs": 68,
+        "buildMs": 57,
+        "totalMs": 845,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -422,7 +421,7 @@
           "Piazzolla"
         ],
         "pages": 4,
-        "ownLines": 250
+        "ownLines": 251
       },
       "pages": [
         {
@@ -498,15 +497,15 @@
       },
       "sandbox": {
         "file": "garden-almanac.postext",
-        "bytes": 190192,
+        "bytes": 190190,
         "folio": "49229ae8"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "mergeCells",
           "parseTSV",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
           "setAlignment",
@@ -657,7 +656,6 @@
           "tableStyle.borderColor",
           "tableStyle.borderWidth",
           "tableStyle.cellPadding",
-          "tableStyle.continuedSuffix",
           "tableStyle.continuesMarker",
           "tableStyle.headerBackground",
           "tableStyle.headerColor",
@@ -698,7 +696,7 @@
           "tableStyles",
           "unorderedLists"
         ],
-        "configLeaves": 353,
+        "configLeaves": 352,
         "designElements": 10,
         "directives": [
           ":::callout",

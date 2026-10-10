@@ -47,12 +47,7 @@
   ],
   "gaps": [],
   "gotchas": [
-    "math-bundle",
-    "svg-no-webfonts",
-    "headings-drop-h1-break",
-    "fonts-first",
-    "quote-frontmatter",
-    "config-cache-identity"
+    "math-bundle"
   ],
   "related": [
     "journal-article-with-maths",
@@ -61,8 +56,8 @@
     "figures-float-where-cited"
   ],
   "engine": {
-    "postext": "1.19.0",
-    "postextPdf": "1.19.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "math": true
   },
   "kit": [
@@ -87,13 +82,7 @@
       "w": 0.98,
       "h": 0.5
     },
-    "pages": "all",
-    "expect": {
-      "console": [
-        "module \"buffer\" not found",
-        "module \"esprima\" not found"
-      ]
-    }
+    "pages": "all"
   },
   "downloads": {
     "pdf": true
@@ -163,5 +152,5 @@
   },
   "workarounds": [],
   "created": "2026-10-06",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

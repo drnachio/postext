@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "two-tier-tankobon",
-  "sourceHash": "b7da88133e4b187755b1db410bb266d5aba3b18dcfdcd23c177ee33f621b9021",
+  "sourceHash": "09418af666e90223936244e2d93c530116133d7ff865555df8d2d4f080214ae7",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.531Z",
+  "capturedAt": "2026-10-10T13:38:51.965Z",
   "variants": {
     "en": {
-      "hash8": "fd52d11d",
+      "hash8": "abc6a7b8",
       "vdtHash": "09d7d319dbab446fd8b42929455865cf6ede7689",
       "timings": {
-        "importMs": 205,
-        "fontsMs": 374,
-        "buildMs": 24,
-        "totalMs": 1250,
-        "builds": 2
+        "importMs": 172,
+        "fontsMs": 313,
+        "buildMs": 60,
+        "totalMs": 1095,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -153,22 +153,22 @@
       },
       "pdf": {
         "file": "two-tier-tankobon.pdf",
-        "bytes": 281131,
+        "bytes": 281137,
         "pages": 7
       },
       "sandbox": {
         "file": "two-tier-tankobon.postext",
-        "bytes": 24445,
+        "bytes": 24441,
         "folio": "95c7420e"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -213,7 +213,6 @@
           "headingStyles[].id",
           "headings",
           "headings.balancing",
-          "headings.balancing.enabled",
           "headings.balancing.trailing",
           "headings.color",
           "headings.fontFamily",
@@ -263,7 +262,7 @@
           "locale",
           "page"
         ],
-        "configLeaves": 146,
+        "configLeaves": 145,
         "designElements": 6,
         "directives": [
           ":::paragraphs",
@@ -336,14 +335,14 @@
       }
     },
     "es": {
-      "hash8": "45869c3c",
+      "hash8": "d908e8ec",
       "vdtHash": "b9cfdc8c7358f549f9c08cb0fb706c7ac4927e57",
       "timings": {
-        "importMs": 189,
-        "fontsMs": 377,
-        "buildMs": 23,
-        "totalMs": 1236,
-        "builds": 2
+        "importMs": 168,
+        "fontsMs": 299,
+        "buildMs": 60,
+        "totalMs": 1075,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -478,22 +477,22 @@
       },
       "pdf": {
         "file": "two-tier-tankobon.pdf",
-        "bytes": 281275,
+        "bytes": 281284,
         "pages": 7
       },
       "sandbox": {
         "file": "two-tier-tankobon.postext",
-        "bytes": 24468,
+        "bytes": 24463,
         "folio": "95c7420e"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -538,7 +537,6 @@
           "headingStyles[].id",
           "headings",
           "headings.balancing",
-          "headings.balancing.enabled",
           "headings.balancing.trailing",
           "headings.color",
           "headings.fontFamily",
@@ -588,7 +586,7 @@
           "locale",
           "page"
         ],
-        "configLeaves": 146,
+        "configLeaves": 145,
         "designElements": 6,
         "directives": [
           ":::paragraphs",

@@ -24,7 +24,7 @@ pageNotes: { "2": "目录：铁锈色罗马数字，用Gloock排的随笔标题�
 
 <Excerpt region="contents" />
 
-Markdown中的`:::toc`为每个列入的标题印一条目录项：编号、标题、前导符、页码标签，以及通过`subtitle`印出的作者。`buildDocument`反复排版整本书，直到页码标签不再变化，所以随笔改了名或变长，目录都会更新（[目录](/zh/docs/configuration#目录)）。Postext 1.4.1把目录项编号的中线放在基线之上0.3 × 目录项字号处，而Chrome把Gloock的中线放在其基线之上0.3125 em处，所以0.3 × 15 ÷ 0.3125 = 14.4 pt的编号正好立在15 pt标题的基线上；12 pt的编号会高出0.3 mm。带篇的书还会为每个`:::part`加一行，由`toc.parts.design`绘制，见<RecipeLink slug="parts-in-colour">用一个属性给各篇配色</RecipeLink>。
+Markdown中的`:::toc`为每个列入的标题印一条目录项：编号、标题、前导符、页码标签，以及通过`subtitle`印出的作者。`buildDocument`反复排版整本书，直到页码标签不再变化，所以随笔改了名或变长，目录都会更新（[目录](/zh/docs/configuration#目录)）。目录项的编号沿用标题的字体和字号，除非`numberFontFamily`或`numberFontSize`另有指定；不论字号多大，它都立在标题首行的基线上。带篇的书还会为每个`:::part`加一行，由`toc.parts.design`绘制，见<RecipeLink slug="parts-in-colour">用一个属性给各篇配色</RecipeLink>。
 
 ### 3 · 左页印作者，右页印随笔标题
 
@@ -36,13 +36,13 @@ Markdown中的`:::toc`为每个列入的标题印一条目录项：编号、标�
 
 <Excerpt region="front" />
 
-设了`numbered: false`，封面和目录不会推进计数器，所以Hazlitt是I；`toc: false`让它们不进入目录（[标题样式](/zh/docs/configuration#标题样式)）。两种样式都继承该层级的`breakBefore`，奇偶性为`'any'`，所以目录不用`:::pagebreak`就紧接封面排在第2页。在单栏书中，封面样式跨越整页，因为留在栏内的设计会在栏的上下边缘被裁掉，风景上方会空出20 mm白纸。
+设了`numbered: false`，封面和目录不会推进计数器，所以Hazlitt是I；`toc: false`让它们不进入目录（[标题样式](/zh/docs/configuration#标题样式)）。两种样式都继承该层级的`breakBefore`，奇偶性为`'any'`，所以目录不用`:::pagebreak`就紧接封面排在第2页。在单栏书中，封面样式跨越整页，因为留在栏内的设计会在栏的下边缘被裁掉，风景下方会空出22 mm白纸。
 
 ### 5 · 每个颜色都连同调色板关联一起写出
 
 <Excerpt region="palette" />
 
-在1.4.1中，`colorPalette`作用于文本样式，但作用不到设计元素，所以`col()`在每个颜色的`paletteId`旁写出它的hex值：署名行、书眉和封面都用这个hex绘制。把`main-color`指向墨色，可以覆盖配置中没有重新指定的所有默认值，否则它们会印成引擎的蓝色`#295AA3`。
+`col()`在每个颜色的`paletteId`旁写出它的hex值，引擎跟随的是这条关联：署名行、书眉和封面都取`colorPalette`里该id下的颜色，所以换一套id相同的调色板，整本书的颜色都跟着变。把`main-color`指向墨色，可以覆盖配置中没有重新指定的所有默认值，否则它们会印成引擎的蓝色`#295AA3`。
 
 ## 变化
 
@@ -78,6 +78,5 @@ Markdown中的`:::toc`为每个列入的标题印一条目录项：编号、标�
 
 ## 常见问题
 
-- Hazlitt在句子中间引用诗句。诗句放在`:::verse{style="verse" align=start}`块里，Markdown的一行就是一行诗，缩进8 mm，诗后接续的句子用不缩进的`runon`样式。如果用Markdown引用块，它会印成固定的`#666666`灰色斜体，带正文的首行缩进而没有左右缩进，1.4.1里也没有设置可以改变这一点。
+- Hazlitt在句子中间引用诗句。诗句放在`:::verse{style="verse" align=start}`块里，Markdown的一行就是一行诗，缩进8 mm，诗后接续的句子用不缩进的`runon`样式。Markdown引用块在这里不合用：它的各行会像段落一样连成一片，诗句就排成了散文。
 - 标题缺少的属性什么也不印，也不报警告。缺了`author="…"`，这篇随笔的署名行和左页书眉都是空的，目录中标题下的那一行也会消失。
-- 第2步的14.4 pt只适用于Gloock。换其他字体时，要先查出Chrome把它的中线放在基线之上多远：设`textBaseline = 'middle'`，`measureText('I').alphabeticBaseline`返回这个距离的相反数，单位是像素。然后把`numberFontSize`设为0.3 × 目录项字号除以这个以em计的距离（Hanken Grotesk是0.2675 em）。

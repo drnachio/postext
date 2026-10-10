@@ -3610,16 +3610,18 @@
       "pt": "Fontes antes da diagramação"
     },
     "definition": {
-      "en": "Layout measures with the faces the browser has loaded, so every face is loaded first and the measurement cache cleared if one arrives late.",
-      "es": "La composición mide con las fuentes que el navegador ha cargado, así que cada fuente se carga antes y la caché de medidas se vacía si alguna llega tarde.",
-      "ca": "La composició mesura amb les fonts que el navegador ha carregat, així que cada font es carrega abans i la memòria cau de mesures es buida si alguna arriba tard.",
-      "zh": "排版按浏览器已加载的字体测量，所以每种字体都要先加载；如果某种字体来晚了，要清除测量缓存。",
-      "ar": "يقيس الإخراج بالخطوط التي حمّلها المتصفح، لذا يُحمَّل كل خط أولًا، وتُفرَّغ ذاكرة القياس المؤقتة إن وصل أحدها متأخرًا.",
-      "ja": "レイアウトはブラウザーが読み込んだ書体で計測します。そのため先にすべての書体を読み込み、遅れて届いたものがあれば計測キャッシュを消去します。",
-      "pt": "O layout mede com as fontes que o navegador já carregou, por isso cada fonte é carregada antes e o cache de medidas é limpo se alguma chegar atrasada."
+      "en": "Layout measures with the faces the browser has loaded, so the engine loads the document's faces before layout (prepareFonts, buildDocumentWithFonts) and its measurement caches follow the faces: one that arrives later drops what was measured in its family.",
+      "es": "La composición mide con las fuentes que el navegador ha cargado, así que el motor carga las fuentes del documento antes de componer (prepareFonts, buildDocumentWithFonts) y sus cachés de medidas siguen a las fuentes: la que llega más tarde descarta lo medido en su familia.",
+      "ca": "La composició mesura amb les fonts que el navegador ha carregat, així que el motor carrega les fonts del document abans de compondre (prepareFonts, buildDocumentWithFonts) i les seves memòries cau de mesures segueixen les fonts: la que arriba més tard descarta el que s'havia mesurat en la seva família.",
+      "zh": "排版按浏览器已加载的字体测量，所以引擎在排版前加载文档用到的字体（prepareFonts、buildDocumentWithFonts），测量缓存也随字体更新：之后才到的字体会作废其字族已有的测量结果。",
+      "ar": "يقيس الإخراج بالخطوط التي حمّلها المتصفح، لذا يحمّل المحرّك خطوط المستند قبل الإخراج (prepareFonts، buildDocumentWithFonts)، وتتبع ذاكراتُ القياس المؤقتة الخطوطَ: فالخط الذي يصل لاحقًا يُسقط ما قيس في عائلته.",
+      "ja": "レイアウトはブラウザーが読み込んだ書体で計測します。そのためエンジンはレイアウトの前に文書の書体を読み込み（prepareFonts、buildDocumentWithFonts）、計測キャッシュも書体に追従します。遅れて届いた書体は、そのファミリーの計測結果を破棄します。",
+      "pt": "O layout mede com as fontes que o navegador já carregou, por isso o motor carrega as fontes do documento antes do layout (prepareFonts, buildDocumentWithFonts) e seus caches de medidas acompanham as fontes: a que chega depois descarta o que foi medido na sua família."
     },
     "aliases": {
       "en": [
+        "prepareFonts",
+        "buildDocumentWithFonts",
         "web fonts",
         "FontFace",
         "document.fonts",
@@ -3629,6 +3631,8 @@
         "clearMeasurementCache"
       ],
       "es": [
+        "prepareFonts",
+        "buildDocumentWithFonts",
         "fuentes web",
         "FontFace",
         "document.fonts",
@@ -3638,6 +3642,8 @@
         "clearMeasurementCache"
       ],
       "ca": [
+        "prepareFonts",
+        "buildDocumentWithFonts",
         "fonts web",
         "FontFace",
         "document.fonts",
@@ -3647,6 +3653,8 @@
         "clearMeasurementCache"
       ],
       "zh": [
+        "prepareFonts",
+        "buildDocumentWithFonts",
         "网络字体",
         "字体加载",
         "断行变了",
@@ -3658,6 +3666,8 @@
         "clearMeasurementCache"
       ],
       "ar": [
+        "prepareFonts",
+        "buildDocumentWithFonts",
         "خطوط الويب",
         "FontFace",
         "Fontsource",
@@ -3666,6 +3676,8 @@
         "clearMeasurementCache"
       ],
       "ja": [
+        "prepareFonts",
+        "buildDocumentWithFonts",
         "Webフォント",
         "FontFace",
         "document.fonts",
@@ -3674,6 +3686,8 @@
         "改行位置が変わる"
       ],
       "pt": [
+        "prepareFonts",
+        "buildDocumentWithFonts",
         "fontes web",
         "webfonts",
         "FontFace",
@@ -3688,13 +3702,13 @@
     "docs": {
       "slug": "configuration",
       "heading": {
-        "en": "Measurement cache",
-        "es": "Caché de medidas",
-        "ca": "Memòria cau de mesures",
-        "zh": "测量缓存",
-        "ar": "ذاكرة القياس المؤقتة",
-        "ja": "計測キャッシュ",
-        "pt": "Cache de medidas"
+        "en": "Loading fonts before layout",
+        "es": "Cargar las fuentes antes de componer",
+        "ca": "Carregar les fonts abans de compondre",
+        "zh": "排版前加载字体",
+        "ar": "تحميل الخطوط قبل الإخراج",
+        "ja": "レイアウトの前にフォントを読み込む",
+        "pt": "Carregar as fontes antes do layout"
       }
     }
   },
@@ -8613,19 +8627,25 @@
         "booktabs",
         "horizontal rules",
         "rounded table",
-        "header fill"
+        "header fill",
+        "zebra rows",
+        "bodyAlternateBackground"
       ],
       "es": [
         "tableStyle",
         "filetes horizontales",
         "tabla redondeada",
-        "relleno de cabecera"
+        "relleno de cabecera",
+        "filas alternas",
+        "bodyAlternateBackground"
       ],
       "ca": [
         "tableStyle",
         "filets horitzontals",
         "taula arrodonida",
-        "emplenament de capçalera"
+        "emplenament de capçalera",
+        "files alternes",
+        "bodyAlternateBackground"
       ],
       "zh": [
         "表格样式",
@@ -8634,21 +8654,28 @@
         "圆角表格",
         "表头底色",
         "tableStyle",
-        "booktabs"
+        "booktabs",
+        "斑马纹",
+        "隔行变色",
+        "bodyAlternateBackground"
       ],
       "ar": [
         "tableStyle",
         "booktabs",
         "خطوط أفقية",
         "جدول مستدير الزوايا",
-        "تعبئة الرأس"
+        "تعبئة الرأس",
+        "صفوف متناوبة الألوان",
+        "bodyAlternateBackground"
       ],
       "ja": [
         "tableStyle",
         "booktabs",
         "横罫",
         "角丸の表",
-        "ヘッダーの塗り"
+        "ヘッダーの塗り",
+        "ゼブラ縞",
+        "bodyAlternateBackground"
       ],
       "pt": [
         "tableStyle",
@@ -8656,7 +8683,10 @@
         "fios horizontais",
         "tabela arredondada",
         "preenchimento do cabeçalho",
-        "tabela sem fios"
+        "tabela sem fios",
+        "linhas zebradas",
+        "zebrado",
+        "bodyAlternateBackground"
       ]
     },
     "group": "tables",
@@ -8868,13 +8898,13 @@
       "pt": "Preenchimento de células"
     },
     "definition": {
-      "en": "A palette-linked background per cell, for heat maps, compatibility matrices and zebra rows set by hand.",
-      "es": "Un fondo por celda enlazado a la paleta, para mapas de calor, matrices de compatibilidad y filas alternas hechas a mano.",
-      "ca": "Un fons per cel·la enllaçat a la paleta, per a mapes de calor, matrius de compatibilitat i files alternes fetes a mà.",
-      "zh": "与调色板关联的单元格背景，用于热图、兼容性矩阵和手工设置的斑马纹行。",
-      "ar": "خلفية مرتبطة بلوحة الألوان لكل خلية، للخرائط الحرارية ومصفوفات التوافق والصفوف متناوبة الألوان المضبوطة يدويًا.",
-      "ja": "パレットにひも付けたセルごとの背景色です。ヒートマップ、互換性の表、手作業で付けるゼブラ縞などに使います。",
-      "pt": "Um fundo por célula ligado à paleta, para mapas de calor, matrizes de compatibilidade e linhas zebradas feitas à mão."
+      "en": "A palette-linked background per cell, for heat maps, compatibility matrices and bands that follow the data; plain zebra rows are the table style's (bodyAlternateBackground).",
+      "es": "Un fondo por celda enlazado a la paleta, para mapas de calor, matrices de compatibilidad y bandas que siguen los datos; las filas alternas corrientes las pone el estilo de tabla (bodyAlternateBackground).",
+      "ca": "Un fons per cel·la enllaçat a la paleta, per a mapes de calor, matrius de compatibilitat i bandes que segueixen les dades; les files alternes corrents les posa l'estil de taula (bodyAlternateBackground).",
+      "zh": "与调色板关联的单元格背景，用于热图、兼容性矩阵和随数据变化的色带；普通的斑马纹行由表格样式设置（bodyAlternateBackground）。",
+      "ar": "خلفية مرتبطة بلوحة الألوان لكل خلية، للخرائط الحرارية ومصفوفات التوافق والأشرطة التي تتبع البيانات؛ أما الصفوف متناوبة الألوان العادية فيضعها نمط الجدول (bodyAlternateBackground).",
+      "ja": "パレットにひも付けたセルごとの背景色です。ヒートマップ、互換性の表、データに合わせて変わる帯などに使います。1行おきの普通のゼブラ縞は表スタイルで付けます（bodyAlternateBackground）。",
+      "pt": "Um fundo por célula ligado à paleta, para mapas de calor, matrizes de compatibilidade e faixas que acompanham os dados; as linhas zebradas comuns ficam por conta do estilo de tabela (bodyAlternateBackground)."
     },
     "aliases": {
       "en": [

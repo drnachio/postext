@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "spanish-pocket-novel",
-  "sourceHash": "de7588f3265d8da66a90e9ed45437d18de7606d40989d06845f2c755e49c9626",
+  "sourceHash": "04bec2544813ba9accb06d879bdb7a28aee65121947c598453f439c5ce3cdbb8",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:24:37.952Z",
+  "capturedAt": "2026-10-10T13:38:07.670Z",
   "variants": {
     "es": {
-      "hash8": "f784e87e",
+      "hash8": "69c9b296",
       "vdtHash": "bb126315f9ebc5c6545bba48f33c62e9e98b73ef",
       "timings": {
-        "importMs": 119,
-        "fontsMs": 36,
-        "buildMs": 14,
-        "totalMs": 6452,
-        "builds": 2
+        "importMs": 122,
+        "fontsMs": 23,
+        "buildMs": 45,
+        "totalMs": 778,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Marcellus SC"
         ],
         "pages": 5,
-        "ownLines": 176
+        "ownLines": 177
       },
       "pages": [
         {
@@ -125,14 +125,14 @@
       },
       "sandbox": {
         "file": "spanish-pocket-novel.postext",
-        "bytes": 43046,
+        "bytes": 43106,
         "folio": "bb7ddf9c"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
+          "inlineSvgFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -327,11 +327,6 @@
           "worst": 1.6500000000000001
         },
         "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
           {
             "check": "sandbox",
             "severity": "info",

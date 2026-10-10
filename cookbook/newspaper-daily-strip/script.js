@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 146 · A daily strip and a Sunday half page in the newspaper ═══
 // https://postext.dev/en/cookbook/newspaper-daily-strip
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: generated with diffusion models
-// Fonts: Newsreader, Archivo Narrow, Comic Neue, Bangers and 12 more (OFL) · Needs postext ≥ 1.21.0
+// Fonts: Newsreader, Archivo Narrow, Comic Neue, Bangers and 12 more (OFL) · Needs postext ≥ 1.25.0
 //
 // Two pages of a newspaper's pull-out comics section: a four-panel daily strip across the head
 // of a four-column page, and a Sunday half page with its own panel grid. Both are :::strip blocks
 // in the text: the columns flow around them as they flow around a page-wide figure.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -94,7 +94,7 @@ const header = { elements: [
   { kind: 'rule', id: 'bar', thickness: pt(3), color: col('ink'), placement: across(24.5) },
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-gb', es: 'es', ca: 'ca', ja: 'ja', zh: 'zh-Hans', ar: 'ar',
     pt: 'pt-BR' }),
   colorPalette, comics,
@@ -111,7 +111,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: TEXT, fontWeight: 700, color: col('ink'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': a headline that opens a page takes the next one, on either side.
       { level: 1, span: 'page', fontSize: pt(28), lineHeight: pt(32), marginTop: pt(0),
         marginBottom: pt(LEAD * 0.5), breakBefore: { enabled: true, parity: 'any' } },
       { level: 2, fontFamily: LABEL, fontSize: pt(12), lineHeight: pt(LEAD),
@@ -228,7 +228,7 @@ const ALT = {
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face of the six editions; each edition loads the latin files of all of them and the
-// Chinese, Japanese or Arabic files of its own (gotcha: fonts-first).
+// Chinese, Japanese or Arabic files of its own.
 const FONTS = {
   Newsreader: ['400', '400i', '700'],
   'Archivo Narrow': ['400', '700'],
@@ -260,7 +260,8 @@ const resources = await Promise.all([
   panel('po4', asset('po4.jpg')), panel('po5', asset('po5.jpg')), panel('po6', asset('po6.jpg')),
   panel('po7', asset('po7.jpg')),
 ]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A daily strip and a Sunday half page in the newspaper',
   es: 'Una tira diaria y media página dominical en el periódico',
   pt: 'Uma tirinha diária e meia página de domingo no jornal' }) });

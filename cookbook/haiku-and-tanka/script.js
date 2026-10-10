@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 119 · Haiku and tanka set vertically ═══════════════════
 // https://postext.dev/en/cookbook/haiku-and-tanka
 // Code: MIT · Text: 芭蕉『おくのほそ道』, 啄木『一握の砂』, Aozora Bunko (PD) · Pictures: none
-// Fonts: Shippori Mincho, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.23.0
+// Fonts: Shippori Mincho, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -77,7 +77,7 @@ const at = (down, across) => ({ anchor: { to: 'container', edge: 'top-left' },
   offset: { x: pt(down), y: pt(across) } });
 const TITLE = 18; // pt
 const part = {
-  level: 1, breakBefore: { enabled: true, parity: 'any' }, // gotcha: headings-drop-h1-break
+  level: 1, breakBefore: { enabled: true, parity: 'any' }, // the next page, either side
   advancedDesign: { enabled: true, minHeight: lines(5), slot: { elements: [
     { kind: 'text', id: 'title', content: '{titleText}', fontFamily: MINCHO, fontWeight: 700,
       fontSize: pt(TITLE), lineHeight: 1, letterSpacing: pt(4), color: col('ink'),
@@ -116,7 +116,7 @@ const first = { id: 'first', footer: { elements: [{ kind: 'text', id: 'colophon'
     size: { width: mm(100) } } }] } };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   page: {
@@ -158,7 +158,8 @@ await loadCjkFonts({ [MINCHO]: ['700'] }, heads);
 await loadCjkFonts({ [GOTHIC]: ['400'] },
   `${title}${heads}${markdown.match(/colophon="([^"]*)"/)[1]}一二三四五六七八九十`, { vertical: true });
 // #endregion
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'Haiku and tanka set vertically',
   es: 'Haikus y tankas compuestos en vertical' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

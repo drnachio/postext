@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "trade-paperback-novel",
-  "sourceHash": "67d460fafe19f738d7b349f406549daf5ae31f356e1eeee9b47d2e7da9019fd4",
+  "sourceHash": "b7eaa8e1a23cd415d74af56595280c7c47b1a02a330c93c38e83b65b5c3fdbfc",
   "engine": {
-    "postext": "1.20.3",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T12:46:48.312Z",
+  "capturedAt": "2026-10-10T13:38:51.954Z",
   "variants": {
     "en": {
-      "hash8": "ad3a4c30",
-      "vdtHash": "74d74a3090b02cab00c23ec4eb835daace1283ca",
+      "hash8": "20865bc3",
+      "vdtHash": "943e25adaaeece018d1454fa9c4a4ef08ac53672",
       "timings": {
-        "importMs": 2417,
-        "fontsMs": 51,
-        "buildMs": 26,
-        "totalMs": 3204,
-        "builds": 2
+        "importMs": 127,
+        "fontsMs": 33,
+        "buildMs": 42,
+        "totalMs": 794,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Crimson Pro"
         ],
         "pages": 8,
-        "ownLines": 185
+        "ownLines": 179
       },
       "pages": [
         {
@@ -71,7 +71,7 @@
           "h": 1543,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 118212,
+          "bytes": 118200,
           "alt": "Opening page 3: I."
         },
         {
@@ -115,7 +115,7 @@
           "h": 1543,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 122066,
+          "bytes": 122078,
           "alt": "Opening page 7: II."
         },
         {
@@ -166,13 +166,12 @@
       },
       "sandbox": {
         "file": "trade-paperback-novel.postext",
-        "bytes": 374216,
+        "bytes": 374165,
         "folio": "846eba29"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -186,7 +185,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "colorPalette",
@@ -229,7 +227,6 @@
           "headingStyles[].id",
           "headingStyles[].margins",
           "headingStyles[].margins.top",
-          "headingStyles[].span",
           "headings",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -288,7 +285,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 211,
+        "configLeaves": 207,
         "designElements": 12,
         "directives": [
           ":::paragraphs",
@@ -354,19 +351,24 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 1.09 MB (warning at 0.9 MB for 8 pages)"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "pt": {
-      "hash8": "75a7079f",
-      "vdtHash": "c620ed40ce98d09342332b7b54392454f807b855",
+      "hash8": "b6055ecd",
+      "vdtHash": "527f0f79e6bd928a5f104d91d82b5f67304b5ac9",
       "timings": {
-        "importMs": 490,
-        "fontsMs": 121,
-        "buildMs": 141,
-        "totalMs": 1644,
-        "builds": 2
+        "importMs": 172,
+        "fontsMs": 80,
+        "buildMs": 682,
+        "totalMs": 3056,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -387,7 +389,7 @@
           "Crimson Pro"
         ],
         "pages": 8,
-        "ownLines": 185
+        "ownLines": 179
       },
       "pages": [
         {
@@ -420,7 +422,7 @@
           "h": 1543,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 67142,
+          "bytes": 67124,
           "alt": "Página de abertura 3: I."
         },
         {
@@ -515,13 +517,12 @@
       },
       "sandbox": {
         "file": "trade-paperback-novel.postext",
-        "bytes": 372872,
+        "bytes": 372815,
         "folio": "846eba29"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -535,7 +536,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "colorPalette",
@@ -578,7 +578,6 @@
           "headingStyles[].id",
           "headingStyles[].margins",
           "headingStyles[].margins.top",
-          "headingStyles[].span",
           "headings",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -637,7 +636,7 @@
           "paragraphStyles",
           "resourceTypes"
         ],
-        "configLeaves": 211,
+        "configLeaves": 207,
         "designElements": 12,
         "directives": [
           ":::paragraphs",
@@ -693,7 +692,13 @@
           "share": 0.0179,
           "worst": 2.23
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

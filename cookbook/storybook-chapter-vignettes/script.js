@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 066 · Storybook chapters with vignettes and summaries ═══
 // https://postext.dev/en/cookbook/storybook-chapter-vignettes
 // Code: MIT · Text: C. Collodi, 1883 (PD, Gutenberg #52484) · Pictures: diffusion models
-// Fonts: Averia Serif Libre, Fredericka the Great, Quicksand (SIL OFL 1.1) · Needs postext ≥ 1.8.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Averia Serif Libre, Fredericka the Great, Quicksand (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document (the sample is Italian in both)
 const RECIPE = 'storybook-chapter-vignettes';
@@ -15,7 +16,7 @@ const palette = { // every colour in the config comes from here; the pictures we
   bark: '#6b4224', // chapter lines, running heads, the title
   wood: '#9a5f30', // the folio discs
 };
-// Each colour names its palette entry and carries its hex (gotcha: palette-skips-designs).
+// col(id): a colour linked to its palette entry, with the entry's hex beside the id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [
   ...Object.entries(palette).map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } })),
@@ -34,12 +35,10 @@ const at = (to, edge, x = 0, y = 0, size) => ({ anchor: { to, edge },
   offset: { x: mm(x), y: mm(y) }, ...(size && { size }) });
 const text = (id, content, fontFamily, size, placement, extra = {}) => ({ kind: 'text', id,
   content, fontFamily, fontSize: pt(size), color: col('ink'), align: 'center',
-  overflow: 'wrap', // wrap, never '…' (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', // a long line wraps in every slot, the running heads too
   placement, ...extra });
 const caps = (tracking) => ({ textTransform: 'uppercase', letterSpacing: pt(tracking),
   color: col('bark') });
-// Half a tracking (mm): 1.4.1 tracks after a centred line's last letter, shifting it left.
-const trail = (tracking) => (tracking * 25.4) / 72 / 2;
 
 // #region answer: one opener for every chapter: the vignette the heading names, then its summary
 // # Capitolo I {style="capitolo" vignetta="ceppo" summary="Come andò che Maestro Ciliegia…"}
@@ -55,13 +54,11 @@ const opener = { enabled: true,
     { kind: 'image', id: 'vignette', resourceId: '{attr.vignetta}',
       placement: at('container', 'top', 0, 0,
         { width: mm(VIGNETTE.width), height: mm(VIGNETTE.height) }) },
-    // Placed from the container, not from #vignette: images do not count in the height an
-    // opener reserves (gotcha: opener-image-no-reserve), the texts under them do.
-    text('chapter', '{titleText}', DISPLAY, 24, at('container', 'top-left', trail(2.4),
+    // The chapter line 6 mm under the picture's foot, the summary 5 mm under the chapter line.
+    text('chapter', '{titleText}', DISPLAY, 24, at('container', 'top-left', 0,
       VIGNETTE.height + 6, { width: mm(MEASURE) }), { ...caps(2.4), lineHeight: 1 }),
     text('summary', '{attr.summary}', TEXT, 12.5, at('#chapter', 'below',
-      (MEASURE - SUMMARY) / 2 - trail(2.4), 5, { width: mm(SUMMARY) }),
-    { italic: true, lineHeight: 1.38 }), // a multiple (gotcha: design-lineheight-multiple)
+      (MEASURE - SUMMARY) / 2, 5, { width: mm(SUMMARY) }), { italic: true, lineHeight: 1.38 }),
   ] },
 };
 const chapter = { id: 'capitolo', advancedDesign: opener };
@@ -73,17 +70,16 @@ const SKY = 150; // mm from the top edge: the foot of the painted field
 // the frontmatter. Every element hangs from the page, so the field runs off three edges.
 const frontispiece = {
   id: 'frontespizio',
-  span: 'page', // or the field is cut at the top of the text block (gotcha: opener-clipped-at-top)
   footer: { elements: [] }, // no folio; the running heads already skip openers
   advancedDesign: { enabled: true, slot: { elements: [ // array order is paint order
     { kind: 'image', id: 'landscape', resourceId: 'frontespizio', // cut to the field's 190:150
       placement: at('page', 'top-left', 0, 0, { width: 'fill', height: mm(SKY) }) },
-    text('kicker', '{attr.kicker}', LABEL, 11, at('page', 'top', trail(2.6), SKY + 11),
+    text('kicker', '{attr.kicker}', LABEL, 11, at('page', 'top', 0, SKY + 11),
       { ...caps(2.6), fontWeight: 700 }),
     text('title', '{titleText}', DISPLAY, 70, at('page', 'top', 0, SKY + 17),
       { lineHeight: 1, color: col('bark') }),
     text('subtitle', '{subtitle}', TEXT, 15, at('page', 'top', 0, SKY + 44), { italic: true }),
-    text('author', '{author}', LABEL, 9, at('page', 'top', trail(2), SKY + 58),
+    text('author', '{author}', LABEL, 9, at('page', 'top', 0, SKY + 58),
       { ...caps(2), fontWeight: 600 }),
   ] } },
 };
@@ -94,7 +90,7 @@ const frontispiece = {
 const continuation = { pageIndexOffset: 5, pageNumbering: { startAt: 6 } };
 const SHIFT = (INNER - OUTER) / 2; // mm: the text block's centre sits off the page's centre
 const head = (id, content, parity, x) => text(id, content, LABEL, 8,
-  at('page', 'top', x + trail(1.8), 12), { ...caps(1.8), fontWeight: 600, parity, pages: 'body' });
+  at('page', 'top', x, 12), { ...caps(1.8), fontWeight: 600, parity, pages: 'body' });
 const DISC = 7.4; // mm: the folio's disc
 // A fixed square with a radius of half its side is a circle; the figures sit in its middle.
 // lineHeight 1.17: the baseline falls at 0.8 of the line, 0.94 em down, so Quicksand's
@@ -137,8 +133,8 @@ const resources = Object.entries(PICTURES).map(([id, [fileId, w, h, altText]]) =
   bitmap: { fileId, format: 'jpeg', width: w, height: h } }));
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: 'it', // Italian hyphenation, by its exact code (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: 'it', // Italian hyphenation
   resourceTypes, colorPalette, header, footer, layout: { layoutType: 'single' },
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150, backgroundColor: col('paper'),
     margins: { top: mm(TOP), bottom: mm(BOTTOM), left: mm(INNER), right: mm(OUTER),
@@ -146,16 +142,13 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   bodyText: {
     fontFamily: TEXT, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
     italicColor: col('ink'), // *ohi* in ink, not in the defaults' bark
-    // The book cites nothing, but a :ref added later prints in ink: main-color does not reach
-    // this colour, which stays #295AA3 (gotcha: palette-skips-designs).
-    referenceColor: col('ink'),
+    referenceColor: col('ink'), // the book cites nothing; a :ref added later prints in ink too
     firstLineIndent: mm(5), indentAfterHeading: false,
     maxWordSpacing: 1.45, // the default 2 lets 14 lines stretch past 1.45×; 3 still do, to 1.58×
   },
   headings: {
     fontFamily: DISPLAY, fontWeight: 400, // the designs paint the titles: no Open Sans to load
-    // Any headings object drops the H1 break (gotcha: headings-drop-h1-break): every
-    // chapter on a new page, on either side, so chapter II opens on a verso.
+    // Every chapter on a new page, on either side, so chapter II opens on a verso.
     levels: [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }],
   },
   headingStyles: [frontispiece, chapter],
@@ -169,14 +162,13 @@ const markdown = /* @content */ ''; // content.<lang>.md: Collodi's Italian in b
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { 'Averia Serif Libre': ['400', '400i'], 'Fredericka the Great': ['400'],
-  Quicksand: ['400', '600', '700'] }; // every face, loaded before layout (gotcha: fonts-first)
+  Quicksand: ['400', '600', '700'] }; // every face, loaded before layout
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 // A design slot or ::resource names a resource, the resource a file id: load each file.
 await Promise.all(Object.values(PICTURES).map(([file]) => loadImage(file, asset(file))));
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Le avventure di Pinocchio' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 076 · A pinyin primer: readings over every character ═══
 // https://postext.dev/en/cookbook/pinyin-primer
 // Code: MIT · Text: 三字經 (PD); pinyin, notes: CC BY 4.0 · Vignettes: diffusion models
-// Fonts: LXGW WenKai TC, Noto Sans TC, Andika (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Fonts: LXGW WenKai TC, Noto Sans TC, Andika (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -116,7 +116,7 @@ const folio = (parity, edge, x, sign) => [
     placement: { ...at(edge, x + sign * (DISC + 3)), size: { width: mm(60), height: mm(DISC) } } },
 ];
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   // #region locale: Hong Kong's rules, the ones the Kai face is drawn for
   // Punctuation at full width, where LXGW WenKai TC centres it as Hong Kong and Taiwan print
   // it, and the basic line-breaking rules. Written out, never LANG (gotcha: cjk-locale-tag).
@@ -130,12 +130,11 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   layout: { layoutType: 'single' },
   cjk,
   bodyText: { ...text, color: col('ink'), boldColor: col('ink'), italicColor: col('ink'),
-    referenceColor: col('ink') }, // the palette does not reach referenceColor
+    referenceColor: col('ink') }, // references in ink, not in the default accent
   headings: { fontFamily: KAI, color: col('ink'), fontWeight: 400, textAlign: 'center',
     snapToGrid: false,
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
-      // Every lesson opens a page; span 'page' paints the band under the text.
+      // Every lesson opens a page, on either side; span 'page' paints the band under the text.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         marginBottom: mm(4), advancedDesign: opener },
       // The lesson's title: a plain heading, so its readings print (初号, 42 pt).
@@ -184,7 +183,7 @@ const artwork = [{ id: 'tian', typeId: 'figure', kind: 'svg', createdAt: 0, upda
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face the design uses. Layout measures with the browser's fonts, so the
-// kit loads them from Fontsource before the first build (gotcha: fonts-first).
+// kit loads them from Fontsource before the first build.
 const FONTS = {
   'LXGW WenKai TC': ['400'], // 楷: the text and the titles
   'Noto Sans TC': ['700'], // 黑: badges, labels, the series line
@@ -204,8 +203,9 @@ await Promise.all([loadCjkFonts({ [KAI]: FONTS[KAI] }, markdown),
 // #endregion
 // Page 1 is page 36 of the primer: a verso, so the four lessons lie as two spreads.
 const continuation = { pageIndexOffset: 35, pageNumbering: { startAt: 36 } };
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources: artwork,
-  continuation }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources: artwork,
+  continuation }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A pinyin primer', es: 'Una cartilla con pinyin' }) });
 
 // @kit core fonts viewer images cjk

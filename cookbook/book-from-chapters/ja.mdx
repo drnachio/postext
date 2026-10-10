@@ -18,7 +18,7 @@ pageNotes: { "6": "6ページは白ページです。「冬」の章が1ペー�
 
 <Excerpt region="chapters" />
 
-季節ごとに独立した文書なので、ほかの章を開かずに1章だけを書き直せます。最初の文書にはフロントマター、表紙、目次が入ります。Postext 1.4.1では、2つ目以降の文書はそのメタデータを何も引き継がず、PDFは表題と著者を最初の文書からしか読みません。
+季節ごとに独立した文書なので、ほかの章を開かずに1章だけを書き直せます。最初の文書にはフロントマター、表紙、目次が入ります。そのメタデータが本全体のメタデータになります。`{title}`と`{author}`はどの章でもそれを印字し、PDFも表題と著者をそこから読みます。
 
 ### 2 · 文書をまたいで続く規則
 
@@ -40,7 +40,7 @@ pageNotes: { "6": "6ページは白ページです。「冬」の章が1ペー�
 
 <Excerpt region="running-heads" />
 
-フロントマターがあるのは最初の文書だけなので、Postext 1.4.1では秋の章を含む2つ目以降のすべての文書で`{title}`は何も印字しません。そこで偶数ページの柱には本の表題をそのまま文字で入力しています。`{chapterTitle}`と`{pageNumber}`はページごとに解決されるので、どの文書でも印字されます。唯一の右側の本文ページである11ページには、ノンブルの横にSUMMERが入ります。`pages: 'body'`で、章扉と白ページには柱を付けません。
+フロントマターがあるのは最初の文書だけですが、`buildBundle`がそれをすべての章に渡すので、偶数ページの柱は5つの文書のどれでも本の`{title}`を印字します。`{chapterTitle}`と`{pageNumber}`はページごとに解決されるので、どの文書でも印字されます。唯一の右側の本文ページである11ページには、ノンブルの横にSUMMERが入ります。`pages: 'body'`で、章扉と白ページには柱を付けません。
 
 ### 6 · 画面では見開き、本はひとつのPDFに
 
@@ -64,7 +64,10 @@ pageNotes: { "6": "6ページは白ページです。「冬」の章が1ペー�
 一度もリセットしない図のカウンターを使うと、4点の巣枠の図には1.1〜4.1ではなく、文書をまたいで1〜4の番号が振られます。
 
 ```diff
--  resourceTypes: defaultResourceTypes(LANG),
+   buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerResourceImage,
++  defaultResourceTypes,
+@@
+   locale: t({ en: 'en-us', es: 'es' }),
 +  resourceTypes: defaultResourceTypes(LANG)
 +    .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' })),
 ```

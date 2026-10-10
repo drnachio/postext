@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "book-from-chapters",
-  "sourceHash": "2a5b20f2f9e34fef7c14e199d2b070fb07d9cffecd55d7f99be8e2c04e8b713c",
+  "sourceHash": "15abc1f691990e3eef9cc63a639c7a57b661028cf9c21f2eb2e7287b8bf7bf9e",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.706Z",
+  "capturedAt": "2026-10-10T13:31:25.194Z",
   "variants": {
     "en": {
-      "hash8": "2f13683c",
+      "hash8": "c2bb04c3",
       "vdtHash": "f30a948b0460cc11bb87a060ab7f7d4773874543",
       "timings": {
-        "importMs": 207,
-        "fontsMs": 70,
-        "buildMs": 28,
-        "totalMs": 985,
-        "builds": 2
+        "importMs": 166,
+        "fontsMs": 63,
+        "buildMs": 73,
+        "totalMs": 2441,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Rozha One"
         ],
         "pages": 11,
-        "ownLines": 238
+        "ownLines": 229
       },
       "pages": [
         {
@@ -204,23 +204,23 @@
       },
       "pdf": {
         "file": "book-from-chapters.pdf",
-        "bytes": 121181,
+        "bytes": 121305,
         "pages": 11
       },
       "sandbox": {
         "file": "book-from-chapters.postext",
-        "bytes": 46862,
+        "bytes": 46717,
         "folio": "0459f0ab"
       },
       "detected": {
         "apis": [
           "buildBundle",
-          "clearMeasurementCache",
           "decompressWoff2",
-          "defaultResourceTypes",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -334,7 +334,6 @@
           "page.margins.top",
           "page.sizePreset",
           "page.width",
-          "resourceTypes",
           "toc",
           "toc.leader",
           "toc.leader.char",
@@ -377,10 +376,9 @@
           "layout",
           "locale",
           "page",
-          "resourceTypes",
           "toc"
         ],
-        "configLeaves": 358,
+        "configLeaves": 357,
         "designElements": 18,
         "directives": [
           ":::toc",
@@ -439,7 +437,6 @@
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
-          "localised-labels",
           "multi-chapter-books",
           "opener-band",
           "opener-design",
@@ -447,7 +444,6 @@
           "page-role-filters",
           "pdf-export",
           "pdf-fonts",
-          "resource-types",
           "resources",
           "section-running-heads",
           "title-line-breaks",
@@ -468,14 +464,14 @@
       }
     },
     "es": {
-      "hash8": "784781a3",
+      "hash8": "473a63be",
       "vdtHash": "4318a5ee42febf16ef120e79bed345170046a19a",
       "timings": {
-        "importMs": 198,
-        "fontsMs": 64,
-        "buildMs": 34,
-        "totalMs": 985,
-        "builds": 2
+        "importMs": 163,
+        "fontsMs": 62,
+        "buildMs": 78,
+        "totalMs": 872,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -496,7 +492,7 @@
           "Rozha One"
         ],
         "pages": 11,
-        "ownLines": 238
+        "ownLines": 229
       },
       "pages": [
         {
@@ -661,23 +657,23 @@
       },
       "pdf": {
         "file": "book-from-chapters.pdf",
-        "bytes": 130434,
+        "bytes": 130549,
         "pages": 11
       },
       "sandbox": {
         "file": "book-from-chapters.postext",
-        "bytes": 47317,
+        "bytes": 47169,
         "folio": "0459f0ab"
       },
       "detected": {
         "apis": [
           "buildBundle",
-          "clearMeasurementCache",
           "decompressWoff2",
-          "defaultResourceTypes",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -791,7 +787,6 @@
           "page.margins.top",
           "page.sizePreset",
           "page.width",
-          "resourceTypes",
           "toc",
           "toc.leader",
           "toc.leader.char",
@@ -834,10 +829,9 @@
           "layout",
           "locale",
           "page",
-          "resourceTypes",
           "toc"
         ],
-        "configLeaves": 358,
+        "configLeaves": 357,
         "designElements": 18,
         "directives": [
           ":::toc",
@@ -896,7 +890,6 @@
           "heading-attributes",
           "heading-numbering",
           "heading-styles",
-          "localised-labels",
           "multi-chapter-books",
           "opener-band",
           "opener-design",
@@ -904,7 +897,6 @@
           "page-role-filters",
           "pdf-export",
           "pdf-fonts",
-          "resource-types",
           "resources",
           "section-running-heads",
           "title-line-breaks",

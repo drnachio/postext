@@ -37,12 +37,12 @@ Seis partes de la planta de guisante de la página 1 tienen un número. Elige un
 :::
 
 :::columns{count=3}
-1. :chip[⁠]{style="wide"}
-2. :chip[⁠]{style="wide"}
-3. :chip[⁠]{style="wide"}
-4. :chip[⁠]{style="wide"}
-5. :chip[⁠]{style="wide"}
-6. :chip[⁠]{style="wide"}
+1. :chip[ ]{style="wide"}
+2. :chip[ ]{style="wide"}
+3. :chip[ ]{style="wide"}
+4. :chip[ ]{style="wide"}
+5. :chip[ ]{style="wide"}
+6. :chip[ ]{style="wide"}
 :::
 :::
 
@@ -55,12 +55,12 @@ Completa cada frase con una palabra del banco de palabras.
 :chip[alimento]{style="word"} :chip[insectos]{style="word"} :chip[agua]{style="word"} :chip[planta]{style="word"} :chip[erguida]{style="word"} :chip[semillas]{style="word"}
 :::
 
-1. Las **raíces** sujetan la planta al suelo y absorben :chip[⁠]{style="blank"}.
-2. El **tallo** mantiene la planta :chip[⁠]{style="blank"} y lleva el agua hasta las hojas.
-3. Las **hojas** usan la luz del sol para fabricar :chip[⁠]{style="blank"} para la planta.
-4. La **flor** atrae a los :chip[⁠]{style="blank"} con sus pétalos de colores.
-5. El **fruto** crece alrededor de las :chip[⁠]{style="blank"} y las protege.
-6. De una **semilla** puede nacer una nueva :chip[⁠]{style="blank"}.
+1. Las **raíces** sujetan la planta al suelo y absorben :chip[ ]{style="blank"}.
+2. El **tallo** mantiene la planta :chip[ ]{style="blank"} y lleva el agua hasta las hojas.
+3. Las **hojas** usan la luz del sol para fabricar :chip[ ]{style="blank"} para la planta.
+4. La **flor** atrae a los :chip[ ]{style="blank"} con sus pétalos de colores.
+5. El **fruto** crece alrededor de las :chip[ ]{style="blank"} y las protege.
+6. De una **semilla** puede nacer una nueva :chip[ ]{style="blank"}.
 :::
 
 **¿Sabías que…?** La planta de guisante no se sostiene sola: trepa enroscando sus zarcillos, finos y rizados, en todo lo que toca.
@@ -108,9 +108,9 @@ He visto
 :::callout{type="card"}
 Colorea un círculo por cada cosa que sabes hacer.
 
-- :chip[⁠]{style="tick"} Sé nombrar las seis partes de una planta.
-- :chip[⁠]{style="tick"} Sé explicar para qué sirve cada parte.
-- :chip[⁠]{style="tick"} Sé decir de qué parte de la planta viene cada alimento.
+- :chip[ ]{style="tick"} Sé nombrar las seis partes de una planta.
+- :chip[ ]{style="tick"} Sé explicar para qué sirve cada parte.
+- :chip[ ]{style="tick"} Sé decir de qué parte de la planta viene cada alimento.
 :::
 
 :::paragraphs{style="colophon"}

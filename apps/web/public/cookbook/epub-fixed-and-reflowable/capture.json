@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "epub-fixed-and-reflowable",
-  "sourceHash": "05a9dec55e2cc714e12fd376d180b283338ebf879e1484a6af676811d9f0f1e5",
+  "sourceHash": "6ba77cdd6f7396b8171c685f9e59acb43c326191cff349346e767142b579baca",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.920Z",
+  "capturedAt": "2026-10-10T13:33:44.431Z",
   "variants": {
     "en": {
-      "hash8": "3670184b",
+      "hash8": "2156bf3e",
       "vdtHash": "c96216bea05311b078948a2306d76538cec6bd71",
       "timings": {
-        "importMs": 153,
-        "fontsMs": 33,
-        "buildMs": 34,
-        "totalMs": 874,
-        "builds": 2
+        "importMs": 146,
+        "fontsMs": 67,
+        "buildMs": 79,
+        "totalMs": 921,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Libre Caslon Text"
         ],
         "pages": 14,
-        "ownLines": 177
+        "ownLines": 178
       },
       "pages": [
         {
@@ -140,15 +140,16 @@
       },
       "sandbox": {
         "file": "epub-fixed-and-reflowable.postext",
-        "bytes": 21839
+        "bytes": 21837
       },
       "detected": {
         "apis": [
           "buildBundle",
-          "clearMeasurementCache",
+          "prepareFonts",
           "readEpub",
           "renderPageToCanvas",
-          "renderToEpub"
+          "renderToEpub",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -339,14 +340,14 @@
       }
     },
     "es": {
-      "hash8": "3e78fe7f",
+      "hash8": "d797508e",
       "vdtHash": "c8c457410ceb3f9647d1d1ca3698831678e7f732",
       "timings": {
-        "importMs": 157,
-        "fontsMs": 25,
-        "buildMs": 322,
-        "totalMs": 1488,
-        "builds": 2
+        "importMs": 149,
+        "fontsMs": 40,
+        "buildMs": 345,
+        "totalMs": 1075,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -367,7 +368,7 @@
           "Libre Caslon Text"
         ],
         "pages": 17,
-        "ownLines": 177
+        "ownLines": 178
       },
       "pages": [
         {
@@ -469,15 +470,16 @@
       },
       "sandbox": {
         "file": "epub-fixed-and-reflowable.postext",
-        "bytes": 26870
+        "bytes": 26868
       },
       "detected": {
         "apis": [
           "buildBundle",
-          "clearMeasurementCache",
+          "prepareFonts",
           "readEpub",
           "renderPageToCanvas",
-          "renderToEpub"
+          "renderToEpub",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

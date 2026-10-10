@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "dictionary-thumb-index",
-  "sourceHash": "407bd11e9c26b70d59ce7b50a58eb8b6d33fb01d499e1e362d2785df5e29ee52",
+  "sourceHash": "c39a1786f3cb1aaf1b952b902875019330dcf6e7adb5bc8a7c958f34af68d7aa",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.896Z",
+  "capturedAt": "2026-10-10T13:33:15.414Z",
   "variants": {
     "en": {
-      "hash8": "90e0c60c",
-      "vdtHash": "87d08fcf6eca455eadc56154f4976db2c9a3edcc",
+      "hash8": "014b9643",
+      "vdtHash": "40081a6d9d872656c89be8952a727c07fef7d9c8",
       "timings": {
-        "importMs": 151,
-        "fontsMs": 35,
-        "buildMs": 248,
-        "totalMs": 2627,
-        "builds": 2
+        "importMs": 129,
+        "fontsMs": 2,
+        "buildMs": 165,
+        "totalMs": 950,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Alegreya Sans SC"
         ],
         "pages": 4,
-        "ownLines": 185
+        "ownLines": 176
       },
       "pages": [
         {
@@ -51,7 +51,7 @@
           "file": "p01.webp",
           "strip": "p01.s.webp",
           "bytes": 152320,
-          "alt": "Opening page 1: The Sailor’s Word-Book."
+          "alt": "Opening page 1: The Sailor’s Word- Book."
         },
         {
           "n": 2,
@@ -115,13 +115,12 @@
       },
       "sandbox": {
         "file": "dictionary-thumb-index.postext",
-        "bytes": 82334,
+        "bytes": 82269,
         "folio": "444e4865"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -160,7 +159,6 @@
           "headingStyles[].advancedDesign",
           "headingStyles[].advancedDesign.enabled",
           "headingStyles[].advancedDesign.slot",
-          "headingStyles[].fontSize",
           "headingStyles[].header",
           "headingStyles[].header.elements",
           "headingStyles[].id",
@@ -214,8 +212,8 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 35148,
-        "designElements": 2506,
+        "configLeaves": 35140,
+        "designElements": 2505,
         "directives": [
           ":::paragraphs"
         ],
@@ -286,19 +284,24 @@
             "check": "C24",
             "severity": "warn",
             "detail": "18 of 218 justified lines (8.3 %) stretch past 1.7× (worst 2.11×); loosest: p. 3 2.11× “which the distances of ships in a fleet are fre-”, p. 2 2.08× “verse position of the drift being understood. –”, p. 1 2.0100000000000002× “taken aback, when brought to by an unexpected”"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           }
         ]
       }
     },
     "es": {
-      "hash8": "5f68ac49",
-      "vdtHash": "f9ff0c30c0d714f25e704489246e0c0c498f6083",
+      "hash8": "bd37a34a",
+      "vdtHash": "c6030654a9992bf13cd7c3124e1edd94f45c4675",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 26,
-        "buildMs": 256,
-        "totalMs": 1377,
-        "builds": 2
+        "importMs": 131,
+        "fontsMs": 2,
+        "buildMs": 248,
+        "totalMs": 2283,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -320,7 +323,7 @@
           "Alegreya Sans SC"
         ],
         "pages": 4,
-        "ownLines": 185
+        "ownLines": 176
       },
       "pages": [
         {
@@ -396,13 +399,12 @@
       },
       "sandbox": {
         "file": "dictionary-thumb-index.postext",
-        "bytes": 83495,
+        "bytes": 83424,
         "folio": "444e4865"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -441,7 +443,6 @@
           "headingStyles[].advancedDesign",
           "headingStyles[].advancedDesign.enabled",
           "headingStyles[].advancedDesign.slot",
-          "headingStyles[].fontSize",
           "headingStyles[].header",
           "headingStyles[].header.elements",
           "headingStyles[].id",
@@ -495,8 +496,8 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 35148,
-        "designElements": 2506,
+        "configLeaves": 35140,
+        "designElements": 2505,
         "directives": [
           ":::paragraphs"
         ],
@@ -562,7 +563,13 @@
           "share": 0.0134,
           "worst": 1.77
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

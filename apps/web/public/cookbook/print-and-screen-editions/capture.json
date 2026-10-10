@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "print-and-screen-editions",
-  "sourceHash": "9fba039b7d43d32382be135d3e9599fde58f5f3b058f0103fc4a8e42e69033a7",
+  "sourceHash": "bb523de2efc3fc9042ec3590a545ec7b81203b2a871431ac1033b48abdbf45d3",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.298Z",
+  "capturedAt": "2026-10-10T13:37:01.693Z",
   "variants": {
     "en": {
-      "hash8": "59e5e740",
+      "hash8": "ddc76c05",
       "vdtHash": "cc87c7261b2e48619ba709c49b9fb9a15ec7ee96",
       "timings": {
-        "importMs": 156,
-        "fontsMs": 51,
-        "buildMs": 272,
-        "totalMs": 1250,
-        "builds": 3
+        "importMs": 128,
+        "fontsMs": 41,
+        "buildMs": 229,
+        "totalMs": 952,
+        "builds": 2
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Reddit Sans"
         ],
         "pages": 4,
-        "ownLines": 253
+        "ownLines": 238
       },
       "pages": [
         {
@@ -115,18 +115,19 @@
       },
       "sandbox": {
         "file": "print-and-screen-editions.postext",
-        "bytes": 186550,
+        "bytes": 186513,
         "folio": "d9a24b31"
       },
       "detected": {
         "apis": [
           "applyHtmlViewerOverrides",
           "buildDocument",
-          "clearMeasurementCache",
           "defaultResourceTypes",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToHtml"
+          "renderToHtml",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -168,8 +169,6 @@
           "header",
           "header.elements",
           "headings",
-          "headings.balancing",
-          "headings.balancing.stretchAfterFloats",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -252,7 +251,7 @@
           "parts",
           "resourceTypes"
         ],
-        "configLeaves": 344,
+        "configLeaves": 342,
         "designElements": 14,
         "directives": [
           ":::part",
@@ -310,7 +309,6 @@
           }
         ],
         "features": [
-          "column-balancing",
           "figure-citations",
           "heading-attributes",
           "html-viewer",
@@ -339,14 +337,14 @@
       }
     },
     "es": {
-      "hash8": "af4e6fa5",
+      "hash8": "f32099e5",
       "vdtHash": "b21de88e54730916b7395c401324be276c556e68",
       "timings": {
-        "importMs": 163,
-        "fontsMs": 40,
-        "buildMs": 106,
-        "totalMs": 968,
-        "builds": 3
+        "importMs": 127,
+        "fontsMs": 49,
+        "buildMs": 95,
+        "totalMs": 838,
+        "builds": 2
       },
       "specimen": {
         "trimMm": [
@@ -368,7 +366,7 @@
           "Reddit Sans"
         ],
         "pages": 4,
-        "ownLines": 253
+        "ownLines": 238
       },
       "pages": [
         {
@@ -444,18 +442,19 @@
       },
       "sandbox": {
         "file": "print-and-screen-editions.postext",
-        "bytes": 187233,
+        "bytes": 187195,
         "folio": "d9a24b31"
       },
       "detected": {
         "apis": [
           "applyHtmlViewerOverrides",
           "buildDocument",
-          "clearMeasurementCache",
           "defaultResourceTypes",
+          "prepareFonts",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToHtml"
+          "renderToHtml",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -497,8 +496,6 @@
           "header",
           "header.elements",
           "headings",
-          "headings.balancing",
-          "headings.balancing.stretchAfterFloats",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -581,7 +578,7 @@
           "parts",
           "resourceTypes"
         ],
-        "configLeaves": 344,
+        "configLeaves": 342,
         "designElements": 14,
         "directives": [
           ":::part",
@@ -639,7 +636,6 @@
           }
         ],
         "features": [
-          "column-balancing",
           "figure-citations",
           "heading-attributes",
           "html-viewer",

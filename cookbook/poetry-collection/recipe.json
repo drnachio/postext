@@ -47,18 +47,9 @@
   ],
   "gaps": [],
   "gotchas": [
-    "ragged-no-hyphenation",
     "digit-period-list",
-    "toc-number-baseline",
-    "heading-number-placeholders",
     "style-inherits-break",
-    "headings-drop-h1-break",
-    "resource-double-quotes",
-    "palette-skips-designs",
-    "design-lineheight-multiple",
-    "overflow-ellipsis-default",
-    "quote-frontmatter",
-    "fonts-first"
+    "resource-double-quotes"
   ],
   "explainsWarnings": [],
   "related": [
@@ -69,53 +60,13 @@
   ],
   "workarounds": [
     {
-      "followup": "EF-21",
-      "package": "postext",
-      "note": "the verse style says hyphenation: false although it changes nothing in 1.4.1, where ragged text is never hyphenated: it keeps the verse whole if ragged text starts to hyphenate"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "level 1's breakBefore (parity 'any') is restated because a headings object drops it"
-    },
-    {
       "followup": "EF-60",
       "package": "postext",
       "note": "the front-matter heading styles restate breakBefore parity 'any' instead of inheriting level 1's, so a change to the poems' parity cannot put blank pages between the preliminary leaves"
-    },
-    {
-      "followup": "EF-09",
-      "package": "postext",
-      "note": "the roman numerals come from numberingTemplate '{1:I}' through {number}; {numberRoman} is filled only on part pages"
-    },
-    {
-      "followup": "EF-58",
-      "package": "postext",
-      "note": "the contents numerals are set at the titles' size (Italiana 11 pt), where they sit on the titles' baseline to within a pixel at 150 dpi; at 9 pt they rode visibly high"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "every design colour carries its hex beside its paletteId (col()), because design slots never read the palette"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "the title page's title takes lineHeight: 1, a multiple; a Dimension would silently drop the design's reserved height"
-    },
-    {
-      "followup": "EF-11",
-      "package": "postext",
-      "note": "every frontmatter value is quoted: the title page prints {title}, {subtitle} and {author}"
-    },
-    {
-      "followup": "EF-66",
-      "package": "postext",
-      "note": "the two ties in God’s Grandeur (the soil, bright wings.) sit in verse lines with no italic or bold, where U+00A0 holds; in a line with inline formatting it would still break"
     }
   ],
   "engine": {
-    "postext": "1.23.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -216,5 +167,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-25",
-  "updated": "2026-09-25"
+  "updated": "2026-10-10"
 }

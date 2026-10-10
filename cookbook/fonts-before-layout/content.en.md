@@ -5,7 +5,7 @@ author: "Pellow Lane Press"
 
 # Three faces, proofed {kicker="Pellow Lane Press · House specimen Nº 3" lead="Our text, display and label faces at work, and proof that each of them had arrived before these lines were set." glyphs="Ag" label="Noto Serif Display 900 italic · 240 pt" faces="Text: Ysabeau Office · Labels: IBM Plex Mono"}
 
-A compositor in a metal shop could only set a line in a face that was in the case. Postext measures every word with the fonts the browser holds at that moment and keeps the widths, so a face that arrives a second late leaves the page broken for a fallback, with no warning. These pages were built three times: once to learn which faces the layout asks for, again once all of them had loaded, and a last time to print their list on page 3 and, on page 4, what the first build got wrong.
+A compositor in a metal shop could only set a line in a face that was in the case. Postext measures every word with the fonts the browser holds at that moment, so a page built a second too early is broken for a fallback face. These pages were built three times: once too early, on purpose, with no font file in the browser; again once Postext had loaded every face the design asks for; and a last time to print their list on page 3 and, on page 4, what the early build got wrong.
 
 ## Seven sizes of the text face
 
@@ -55,23 +55,23 @@ Spanish needs nothing beyond the latin file of each face. Polish and Czech need 
 
 ## The proof
 
-The script compiled the table below from the layout. After the first build, it walked the finished pages for every font they had asked for, in the text, headings, chips, tables, captions, opener and running heads. It loaded each face that had not arrived, emptied the measurement cache and built the pages again, then wrote down what it had found.
+The table below is Postext’s own report. Before it measured a line of the second build, it read the design and the text for every face they ask for, in the text, headings, chips, table, captions, opener and running heads, and loaded each one for the letters these pages set. Once the pages were laid out it looked at the faces their lines were set in, and found none missing.
 
 ::resource{id="faces"}
 
-Some faces in the table set nothing in this booklet. Beside the face of every block of text, table and caption, Postext names a bold, an italic and a bold italic, whether the text uses them or not, and a PDF export asks for all of them. The script loads each one it has a file for.
+Some faces in the table set nothing in this booklet. Postext loads the regular, the italic, the bold and the bold italic of the text face, because any paragraph may ask for them with a pair of asterisks. The two italics of the mono face were declared and never asked for, so the browser fetched no file for them.
 
-Before loading anything, the script also checked that every face some text is set in had a file of its own. It could not rely on the browser’s check, which answers yes for a family nobody declared and for any bold it can fake by thickening the regular.
+A face with no file would not pass unnoticed. The browser sets a family nobody declared in a system face and fakes a missing bold by thickening the regular; Postext names both in its report and among the warnings of the finished document.
 
 :::pagebreak
 
-## What the first build got wrong
+## What the early build got wrong
 
-The first build ran before any of these files had arrived, so the browser measured its words in a fallback face. Drawn in the real faces, its lines no longer fit the measure.
+The early build ran before the browser had any of these files, so its words were measured in a fallback face. Drawn in the real faces, its lines no longer fit the measure.
 
 ::resource{id="proof"}
 
-The fallback widths stay in the measurement cache, and a second build made without emptying it breaks every line where the first one did.
+When the faces arrived, Postext dropped every width it had measured in their families, and the next build measured each word again.
 
 :::paragraphs{style="colophon"}
 Set in Ysabeau Office, Noto Serif Display and IBM Plex Mono (SIL OFL 1.1) · Text: original, CC BY 4.0 · Pellow Lane Press is imaginary.

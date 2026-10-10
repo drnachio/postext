@@ -1,12 +1,11 @@
 // ═══ Postext Cookbook · Nº 007 · One book from separate chapters ══════════════════════════
 // https://postext.dev/en/cookbook/book-from-chapters
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: Andada Pro, Rozha One, Figtree (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Andada Pro, Rozha One, Figtree (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A handbook in four seasons written as five Markdown documents, laid out by buildBundle as
 // one book: parity, folios, chapter and figure numbers and the contents run straight through.
 import {
-  buildBundle, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes,
+  buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -62,8 +61,7 @@ const subhead = { level: 2, fontFamily: 'Andada Pro', fontWeight: 700, fontSize:
 const captionStyle = { fontFamily: 'Figtree', fontSize: pt(7.6), gap: mm(2.5),
   labelColor: col('accent') };
 // The colophon floats to the foot of the last page: a box with no background, placed
-// 'bottom'. One statement per paragraph, because a no-break space would not keep
-// "CC BY 4.0" on one line (gotcha: nbsp-breaks).
+// 'bottom', with one statement per paragraph.
 const calloutStyles = [{ id: 'colophon', placement: 'bottom', backgroundEnabled: false,
   padding: { top: pt(0), right: pt(0), bottom: pt(0), left: pt(0) }, marginBottom: pt(0),
   body: { fontFamily: 'Figtree', fontSize: pt(7), lineHeight: pt(10), color: col('muted'),
@@ -73,16 +71,15 @@ const calloutStyles = [{ id: 'colophon', placement: 'bottom', backgroundEnabled:
 // buildBundle lays the documents out in order with one config and carries state from each to
 // the next: the pages already set (so parity goes on), the folio, the chapter and figure counts.
 const book = () => buildBundle({ chapters, config: config(), resources });
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   headings: { ...display, levels: [
     // Every chapter opens on a recto: after a chapter that ends on one, the next document
-    // starts with a blank verso of its own. Restated, because any headings object drops
-    // the H1 break (gotcha: headings-drop-h1-break).
+    // starts with a blank verso of its own.
     { level: 1, breakBefore: { enabled: true, parity: 'odd' },
       // '{1}' puts the number in the PDF bookmarks ('1 Autumn'); the contents and
       // {chapterNumber} count the chapters in order either way.
       numberingTemplate: '{1}', advancedDesign: opener,
-      span: 'page' }, // a page-wide opener, painted unclipped: the comb reaches the top edge
+      span: 'page' }, // in the column a design stops at the column's foot: the cover would too
     subhead,
   ] },
   // The cover and the contents are headings that take no number, no contents entry and no
@@ -94,13 +91,12 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     { id: 'contents', numbered: false, toc: false, breakBefore: { enabled: false },
       advancedDesign: contentsOpener, ...bare },
   ],
-  // Figures number {h1}.{n} and the counters carry on (Winter's is 2.1). The types are passed
-  // only because config.locale does not turn Figure into Figura (gotcha: resource-types-locale).
-  resourceTypes: defaultResourceTypes(LANG),
   // :::toc in the first document lists the whole book with the folio each chapter lands on:
   // buildBundle lays the book out again (three passes at most) until those folios settle.
   toc: contents,
-  locale: t({ en: 'en-us', es: 'es' }), // hyphenation, by exact code (gotcha: hyphenation-locales)
+  // The locale picks the hyphenation patterns and names the figures Figure or Figura. They
+  // number {h1}.{n}, and the counters carry on from document to document (Winter's is 2.1).
+  locale: t({ en: 'en-us', es: 'es' }),
   colorPalette, page, layout: { layoutType: 'single' }, bodyText, captionStyle, calloutStyles,
   header, footer, // the look: above, and in the regions below
 });
@@ -176,7 +172,6 @@ const cover = { enabled: true, slot: { elements: [
     placement: { anchor: { to: 'bleed', edge: 'top-left' }, size: { width: 'fill' } } },
   { kind: 'text', id: 'kicker', content: '{subtitle}', ...label, fontSize: pt(8.5),
     color: col('ink'), placement: at('top-left', 17, 116) },
-  // A design text's lineHeight is a multiple (gotcha: design-lineheight-multiple).
   { kind: 'text', id: 'title', content: '{titleText}', ...display, fontSize: pt(54),
     lineHeight: 0.98, align: 'left', overflow: 'wrap', placement: below('kicker', 4, 125) },
   { kind: 'rule', id: 'rule', direction: 'horizontal', thickness: pt(2), color: col('ink'),
@@ -219,8 +214,6 @@ const contentsOpener = { ...opener, minHeight: mm(40), slot: { elements: [
 // #region contents: what :::toc prints: numbers in the accent, dotted leaders, folios
 const contents = {
   levels: [
-    // The numbers sit ~0.7 mm high in Postext 1.4.1: they are centred on the line
-    // (gotcha: toc-number-baseline).
     { level: 1, fontFamily: 'Rozha One', fontSize: pt(16), lineHeight: pt(18),
       numberFontFamily: 'Figtree', numberFontSize: pt(11), numberFontWeight: 700,
       numberColor: col('accent'), numberWidth: mm(7), numberGap: mm(4), marginTop: pt(8) },
@@ -241,12 +234,10 @@ const head = (id, content, parity, placement, extra = {}) => ({
   ...label, color: col('muted'), placement, ...extra,
 });
 const folio = { fontSize: pt(8.5), fontWeight: 700, color: col('accent') };
-// In Postext 1.4.1 {title} is blank from the second document on (Autumn included): only the
-// first one has frontmatter (gotcha: bundle-metadata). So the verso writes the title out.
-const BOOK_TITLE = t({ en: 'A Beekeeper’s Year', es: 'Un año de colmenar' });
+// Only the first document has frontmatter, and its {title} is the book's in every chapter.
 const header = { elements: [
   head('verso-folio', '{pageNumber}', 'even', at('top-left', MARGIN.outer, HEAD.y), folio),
-  head('verso-title', BOOK_TITLE, 'even', at('top-left', MARGIN.outer + HEAD.gap, HEAD.y)),
+  head('verso-title', '{title}', 'even', at('top-left', MARGIN.outer + HEAD.gap, HEAD.y)),
   // {chapterTitle} and {pageNumber} are worked out page by page, in every document.
   head('recto-title', '{chapterTitle}', 'odd',
     at('top-right', -(MARGIN.outer + HEAD.gap), HEAD.y)),
@@ -288,9 +279,8 @@ const resources = [svg('cover', [TRIM.width, TRIM.height]),
     CAPTIONS[season]))];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses, loaded before the first build (gotcha: fonts-first).
-// Rozha One ships one face: renderToPdf still asks for its bold and italic, which the kit's
-// provider snaps to that face (gotcha: pdf-provider-all-styles).
+// Every face the design uses, loaded before the first build.
+// Rozha One ships one face, the 400 the titles set.
 const FONTS = { // text, display and labels
   'Andada Pro': ['400', '400i', '700'], 'Rozha One': ['400'], Figtree: ['400', '600', '700'],
 };
@@ -298,12 +288,13 @@ const FONTS = { // text, display and labels
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // #region build: draw, lay the book out, show it as spreads, offer one PDF of all chapters
 const text = chapters.map((chapter) => chapter.markdown).join('\n');
-await loadFonts(FONTS, text);
+await prepareFonts(text, config(), kitFonts(FONTS));
 const art = { cover: coverArt(), cells: cornerArt(true), comb: cornerArt(false) };
 for (const [season, plan] of Object.entries(SEASONS)) art[`${season}-frame`] = frameArt(plan);
 for (const [id, markup] of Object.entries(art)) await loadSvg(`${id}.svg`, markup);
-const docs = await buildWithFonts(book, text); // one VDTDocument per Markdown document
-showPages(docs, { title: BOOK_TITLE });
+// One VDTDocument per Markdown document.
+const docs = await withLoadedFonts(book, { ...kitFonts(FONTS), text });
+showPages(docs, { title: t({ en: 'A Beekeeper’s Year', es: 'Un año de colmenar' }) });
 // renderToPdf takes the array: one file for the book, with a bookmark per chapter.
 offerPdf(() => renderToPdf(docs, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

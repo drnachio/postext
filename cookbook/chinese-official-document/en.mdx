@@ -74,5 +74,4 @@ The canvas draws a grey square for every cell of the 28 × 22 grid, and the PDF 
 
 ## Pitfalls
 
-- At 150 dpi a 29 pt line is 60.41666… px. When a head and a two-line paragraph fell on the last three lines of a page, the check that keeps a head with its text summed the grid lines 10⁻¹³ px short and sent the head to the next page, which left three blank lines. At 144 dpi a point is two pixels and the sums are exact, so the page keeps its 22 lines.
 - A justified line shares its slack between the Chinese characters and any space it holds, and the space takes more than its share: on page 2 the one in GB/T 15834 opened to nearly twice the width of the one in GB/T 9704 above it. The content writes both numbers with a no-break space (U+00A0), which keeps each number in one piece, so the slack goes between the characters.

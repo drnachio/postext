@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 046 · Dictionary with a moving thumb index ═══════════════
 // https://postext.dev/en/cookbook/dictionary-thumb-index
 // Code: MIT · Text: W. H. Smyth, 1867 (PD); Spanish translation CC BY 4.0 · Pictures: code
-// Fonts: Alegreya, Alegreya SC, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Alegreya, Alegreya SC, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -93,7 +93,7 @@ const BODY = 8; // pt: a reference size, about 50 characters to the 60 mm column
 const bodyText = { fontFamily: TEXT, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
   boldColor: col('ink'), italicColor: col('ink'), firstLineIndent: mm(0),
   minWordSpacing: 0.7, maxWordSpacing: 1.7,
-  maxRuntTracking: 0 }; // gotcha: runt-tracking-unpainted
+  maxRuntTracking: 0 }; // a short last line stays: tracking it away crushes a 60 mm line
 const paragraphStyles = [
   { id: 'entry', hangingIndent: em(1), boldColor: col('navy') }, // :::paragraphs{style="entry"}
   { id: 'colophon', fontSize: pt(7), color: col('muted'), textAlign: 'center',
@@ -127,10 +127,6 @@ const rule = (id, y, thickness) => ({ kind: 'rule', id, direction: 'horizontal',
   thickness: pt(thickness), color: col('navy'), placement: { anchor: { to: 'container',
     edge: 'top-left' }, offset: { y: mm(y) }, size: { width: 'fill' } } });
 const titleBand = { enabled: true, slot: { elements: [
-  // The column rule starts at the top of the text block, under the band too: a field of
-  // paper down to the thin rule covers it, so it hangs from the double rule.
-  { kind: 'box', id: 'field', style: { backgroundColor: col('paper') }, placement: {
-    anchor: { to: 'container', edge: 'top-left' }, size: { width: 'fill', height: mm(45) } } },
   { kind: 'image', id: 'anchor', resourceId: 'anchor', placement: {
     anchor: { to: 'container', edge: 'top' }, size: { width: 'auto', height: mm(18) } } },
   centred('name', '{titleText}', DISPLAY, 22, 1.1, 20, 0, { fontWeight: 900 }),
@@ -141,15 +137,12 @@ const titleBand = { enabled: true, slot: { elements: [
   rule('thick', 43.6, 1.2),
   rule('thin', 45, 0.4),
 ] } };
-// '# The Sailor’s Word-Book {style="title" subtitle="…" byline="…"}' opens page 1. The band's
-// {titleText} joins the hidden heading's wrapped lines with a space, and a page-span heading
-// wraps at the column width: at the default H1 size the band printed 'Word- Book'. At body
-// size the hidden title fits one line of the 60 mm column.
-const titleStyle = { id: 'title', span: 'page', advancedDesign: titleBand, fontSize: pt(BODY) };
+// '# The Sailor’s Word-Book {style="title" subtitle="…" byline="…"}' opens page 1.
+const titleStyle = { id: 'title', span: 'page', advancedDesign: titleBand };
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // the hyphenation patterns of each edition
   colorPalette, footer,
   header: { elements: [] }, // every page takes the header of its letter's style
   page: { sizePreset: 'custom', width: mm(150), height: mm(200), dpi: 150,
@@ -162,9 +155,8 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
   // The designs paint every heading; the hidden ones are still measured, and in the face
   // FONTS loads, or the kit would fetch Open Sans 700 for text nobody sees.
   headings: { fontFamily: DISPLAY, fontWeight: 900, levels: [
-    // Letters run on in the column. Any headings object already drops the H1 break
-    // (gotcha: headings-drop-h1-break); stating it keeps them running on if that default
-    // returns, and the letter styles inherit it (gotcha: style-inherits-break).
+    // Letters run on in the column: the H1 page break is switched off here, and the letter
+    // styles inherit that (gotcha: style-inherits-break).
     { level: 1, breakBefore: { enabled: false }, marginTop: pt(LEAD), marginBottom: pt(0),
       advancedDesign: letterHead },
   ] },
@@ -217,9 +209,8 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadSvg('anchor.svg', anchorSvg());
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'The Sailor’s Word-Book', es: 'Vocabulario del marinero' }) });
 
 // @kit

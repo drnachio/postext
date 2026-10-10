@@ -38,9 +38,7 @@
   "gotchas": [
     "folio-cover-pages-even",
     "paper-run-whole-leaves",
-    "folio-container-height",
-    "fonts-first",
-    "config-cache-identity"
+    "folio-container-height"
   ],
   "related": [
     "paper-swatch-book",
@@ -48,7 +46,7 @@
     "riso-zine-single-ink"
   ],
   "engine": {
-    "postext": "1.13.4"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -123,5 +121,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-04",
-  "updated": "2026-10-04"
+  "updated": "2026-10-10"
 }

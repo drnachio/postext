@@ -16,7 +16,7 @@ The March pages of a gardener's almanac written in Italian. Page 27 opens on a w
 
 ### 1 · Turn the chart and let it run on
 
-The code is [the short answer](#the-short-answer) above. `rotate: 'ccw'` makes the table a page-span float on pages of its own ([Placement](/en/docs/document-format#placement)), with its head towards the left edge of the page, and it sits against the spine on both the recto and the verso. It is laid out along the height of the text area, 227 of its 237 mm: the 47 whole 14 pt grid lines that fit, less one line for the float gap. Its rows stack across the 176 mm width, and when they outrun it the table is cut between two rows and goes on over the page under its two head rows and its caption, which ends in `(segue)` ([Tables taller than the page](/en/docs/configuration#tables-taller-than-the-page)). Only a float can turn or split: at `position: 'here'` the rotation is ignored and the table never splits. The head is merged three ways: `Coltura` down both head rows, each season over its months, and each month over its two fortnights.
+The code is [the short answer](#the-short-answer) above. `rotate: 'ccw'` makes the table a page-span float on pages of its own ([Placement](/en/docs/document-format#placement)), with its head towards the left edge of the page, and it sits against the spine on both the recto and the verso. It is laid out along the height of the text area, 227 of its 237 mm: the 47 whole 14 pt grid lines that fit, less one line for the float gap. Its rows stack across the 176 mm width, and when they outrun it the table is cut between two rows and goes on over the page under its two head rows and its caption, which ends in `(segue)` ([Tables taller than the page](/en/docs/configuration#tables-taller-than-the-page)). Only a float can turn: at `position: 'here'` the rotation is ignored, and the table would be cut upright, between rows, where its column ends. The head is merged three ways: `Coltura` down both head rows, each season over its months, and each month over its two fortnights.
 
 ### 2 · A calendar computed from dates
 
@@ -28,25 +28,25 @@ Day numbers from `Date.UTC` give every date its weekday, and the grid starts on 
 
 <Excerpt region="matrix" />
 
-The pairs are typed as TSV, one symbol per cell. In postext 1.4.1 `parseTSV` makes plain cells and leaves `headerRowCount` unset, so `headerRowCount: 1` is added by hand to make the row of crop names the head. The `columnWidths` weights are millimetres of the 176 mm measure: 26 for the names, 15 for each crop. Each symbol names a palette entry, which `setCellBackground` lays in as the cell's fill; the `+` and `−` are printed as well, in a chip at 1.4 em, so the matrix still reads in a greyscale copy. The diagonal pairs a crop with itself, and there `setCellImage` puts the crop's drawing, at 62 % of the cell's inner width.
+The pairs are typed as TSV, one symbol per cell. `parseTSV(tsv, { headerRows: 1 })` makes the row of crop names the head. The `columnWidths` weights are millimetres of the 176 mm measure: 26 for the names, 15 for each crop. Each symbol names a palette entry, which `setCellBackground` lays in as the cell's fill; the `+` and `−` are printed as well, in a chip at 1.4 em, so the matrix still reads in a greyscale copy. The diagonal pairs a crop with itself, and there `setCellImage` puts the crop's drawing, at 62 % of the cell's inner width.
 
 ### 4 · Key the colours with swatches
 
 <Excerpt region="resources" />
 
-`:swatch{color="leaf"}` sets a square three quarters of the type size, filled with a palette entry and outlined in the text colour; these pages use it in running text, in two captions and in a note. The chart's key goes in its caption, because every part of a split table repeats the caption and the note is set under the last part only. The calendar is a resource type of its own with an empty caption prefix, and its caption opens on the key instead of a `Tabella` label. `position: 'bottom'` with `span: 'page'` sets the calendar and the matrix across both columns at the foot of their pages. Page 28 is the last page of text. On such a page 1.4.1 lifts a page-wide float to one line under the text, which is why the matrix ends 10 mm above the bottom margin.
+`:swatch{color="leaf"}` sets a square three quarters of the type size, filled with a palette entry and outlined in the text colour; these pages use it in running text, in two captions and in a note. The chart's key goes in its caption, because every part of a split table repeats the caption and the note is set under the last part only. The calendar is a resource type of its own with an empty caption prefix, and its caption opens on the key instead of a `Tabella` label. `position: 'bottom'` with `span: 'page'` sets the calendar and the matrix across both columns at the foot of their pages. Page 28 is the last page of text. On a chapter’s closing page a page-wide float moves up to one line under the text, which is why the matrix ends 10 mm above the bottom margin; `layout.hugClosingFloats: false` would leave it at the foot.
 
 ### 5 · A house style and a variant per table
 
 <Excerpt region="styles" />
 
-`tableStyle` sets the house style: an ink head with paper-coloured labels in Commissioner, hairlines between the rows, and the Italian continuation strings, which 1.4.1 ships in English and Spanish only. Each named style states only what its table changes. The calendar sets its days in Gilda Display at 15 pt; the matrix drops the head's fill; the matrix and the chart draw grid rules in the paper's colour, 2 pt and 1 pt wide, which cut their fills into tiles.
+`tableStyle` sets the house style: an ink head with paper-coloured labels in Commissioner, hairlines between the rows, and the line that ends each part of a split table. An Italian document closes a part with `Continua` and adds `(segue)` to the next part’s caption; the almanac spells the first one out, `Continua alla pagina seguente`. Each named style states only what its table changes. The calendar sets its days in Gilda Display at 15 pt; the matrix drops the head's fill; the matrix and the chart draw grid rules in the paper's colour, 2 pt and 1 pt wide, which cut their fills into tiles.
 
 ### 6 · The month opens on a painting
 
 <Excerpt region="opener" />
 
-The first-level heading is drawn from a slot of elements. The watercolour is an image element at the head of the page, and the kicker, the proverb and its source come from the heading's attributes. An image element reserves no height in 1.4.1, and `minHeight` makes up for it: 92 mm of painting plus 5 mm of air, less the 22 mm top margin, is 75 mm, which rounds up to 16 lines of 14 pt (79 mm). The first line of text sits 101 mm from the top of the page, 9 mm under the soil. The title moves 1.5 mm left, the side bearing of Gilda Display's M at 84 pt, and the M's serif lines up with the kicker; the proverb moves back by the same amount.
+The first-level heading is drawn from a slot of elements. The watercolour is an image element at the head of the page, and the kicker, the proverb and its source come from the heading's attributes. The opener reserves down to the painting’s foot, and `minHeight` is a floor set a little lower: 92 mm of painting plus 5 mm of air, less the 22 mm top margin, is 75 mm, which rounds up to 16 lines of 14 pt (79 mm). The first line of text sits 101 mm from the top of the page, 9 mm under the soil. The title moves 1.5 mm left, the side bearing of Gilda Display's M at 84 pt, and the M's serif lines up with the kicker; the proverb moves back by the same amount.
 
 ## Variations
 
@@ -55,8 +55,8 @@ The first-level heading is drawn from a slot of elements. The watercolour is an 
 The head then faces the right edge of the page, and the reader turns the book the other way.
 
 ```diff
--const chartPlacement = { rotate: 'ccw' }; // a float, never 'here' (gotcha: here-table-no-split)
-+const chartPlacement = { rotate: 'cw' }; // a float, never 'here' (gotcha: here-table-no-split)
+-const chartPlacement = { rotate: 'ccw' }; // a float: 'here' ignores the turn
++const chartPlacement = { rotate: 'cw' }; // a float: 'here' ignores the turn
 ```
 
 ## Pitfalls

@@ -34,7 +34,7 @@ The tables, captions, notes and alt texts live in `content.resources.<lang>.md`,
 
 <Excerpt region="art" />
 
-Each panel is a loop over *R* from 0 to 1 through the same `ppv()` that fills Table 4. Drawing the curves from the formula shows something the 2005 figure hides: its curves match *u* = 0, 0.05, 0.20 and 0.80, while its legend says 0.05, 0.20, 0.50 and 0.80. This version draws the legend's values and adds no bias as a dashed curve, and the caption note says so. The labels are text in the label face: the SVG carries the face as an inline `@font-face` for the canvas, and the PDF sets them in the face the provider supplies.
+Each panel is a loop over *R* from 0 to 1 through the same `ppv()` that fills Table 4. Drawing the curves from the formula shows something the 2005 figure hides: its curves match *u* = 0, 0.05, 0.20 and 0.80, while its legend says 0.05, 0.20, 0.50 and 0.80. This version draws the legend's values and adds no bias as a dashed curve, and the caption note says so. The labels are text that names the label face: `loadSvg` passes the drawing through `inlineSvgFonts`, which embeds that face for the canvas, and the PDF sets them in the face the provider supplies.
 
 ### 5 · A first page and a box for an essay
 

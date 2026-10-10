@@ -22,13 +22,13 @@ El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada jornada 
 
 <Excerpt region="split" />
 
-La parrilla del jueves se cita en la página 2 y va en la cabeza de una página. Un flotante nunca sube por encima de su referencia, así que la parrilla abre la página 3. No cabe en ella, y `overflow: 'split'` la corta entre dos filas, nunca dentro de una celda combinada ([Tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)). La página 3 acaba con la fila de las 17.30 y el aviso debajo. La 4 repite la fila de cabecera y el pie completo, con la leyenda de colores, seguido de `(continuació)`, y la nota solo aparece bajo esta última parte. La del viernes va al pie de una página y cabe bajo el texto que la cita en la página 5. Postext 1.4.1 solo trae en inglés y en español los nombres de los tipos de recurso y estos dos textos, así que las palabras catalanas, plurales incluidos, se escriben sobre `defaultResourceTypes('ca')` y en el estilo de tabla. `numberingTemplate: '{n}'` con `resetOn: 'never'` numera las dos parrillas en una sola serie: Taula 1 y Taula 2.
+La parrilla del jueves se cita en la página 2 y va en la cabeza de una página. Un flotante nunca sube por encima de su referencia, así que la parrilla abre la página 3. No cabe en ella, y `overflow: 'split'` la corta entre dos filas, nunca dentro de una celda combinada ([Tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)). La página 3 acaba con la fila de las 17.30 y el aviso debajo. La 4 repite la fila de cabecera y el pie completo, con la leyenda de colores, seguido de `(continuació)`, y la nota solo aparece bajo esta última parte. La del viernes va al pie de una página y cabe bajo el texto que la cita en la página 5. `defaultResourceTypes('ca')` da a los tipos sus nombres en catalán, Figura y Taula. Los textos catalanes del motor para una tabla partida son `(cont.)` y `Continua`; el estilo de tabla los escribe enteros. `numberingTemplate: '{n}'` con `resetOn: 'never'` numera las dos parrillas en una sola serie: Taula 1 y Taula 2.
 
 ### 3 · Corta los rellenos en piezas
 
 <Excerpt region="tiles" />
 
-`setCellBackground`, en la respuesta corta, da a cada sesión el color de la paleta de su itinerario, y unos filetes de 1,6 pt del color del papel cortan los rellenos en piezas separadas por líneas blancas ([Estilo de tablas](/es/docs/configuration#estilo-de-tablas)). Una tabla tiene un solo color de texto para las celdas del cuerpo, así que el blanco de la plenaria es un chip cuyo estilo fija el color y quita el relleno, el borde y el margen lateral del chip. Las horas y las partes del día también son chips, en Chivo Mono ([Estilos de chip](/es/docs/configuration#estilos-de-chip)). Un chip nunca se parte entre dos líneas; el título de una plenaria y la línea de su ponente caben cada uno en una línea de la celda de tres salas. En la nota del plano, el chip `sala` deja el texto tal cual y mantiene en una línea el número y el nombre de cada sala, cosa que en 1.4.1 no consigue un espacio de no separación.
+`setCellBackground`, en la respuesta corta, da a cada sesión el color de la paleta de su itinerario, y unos filetes de 1,6 pt del color del papel cortan los rellenos en piezas separadas por líneas blancas ([Estilo de tablas](/es/docs/configuration#estilo-de-tablas)). Una tabla tiene un solo color de texto para las celdas del cuerpo, así que el blanco de la plenaria es un chip cuyo estilo fija el color y quita el relleno, el borde y el margen lateral del chip. Las horas y las partes del día también son chips, en Chivo Mono ([Estilos de chip](/es/docs/configuration#estilos-de-chip)). Un chip nunca se parte entre dos líneas; el título de una plenaria y la línea de su ponente caben cada uno en una línea de la celda de tres salas. En la nota del plano, el chip `sala` deja el texto tal cual y mantiene en una línea el número y el nombre de cada sala, como haría un espacio de no separación entre sus palabras.
 
 ### 4 · Abre cada jornada con una banda
 
@@ -40,7 +40,7 @@ El diseño del título de primer nivel dibuja la banda: una caja de 76 mm de alt
 
 <Excerpt region="bios" />
 
-Cada ponente es un párrafo de un bloque `:::paragraphs{style="bio"}`. El nombre en negrita empieza en el borde de la columna y las líneas siguientes entran 4 mm, en sangría francesa, así que los nombres quedan alineados columna abajo, como en un índice ([Estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)). El texto va en bandera, un ajuste en el que 1.4.1 no evita las últimas líneas de una sola palabra, así que cada nota se reescribió hasta que su última línea tuvo al menos dos.
+Cada ponente es un párrafo de un bloque `:::paragraphs{style="bio"}`. El nombre en negrita empieza en el borde de la columna y las líneas siguientes entran 4 mm, en sangría francesa, así que los nombres quedan alineados columna abajo, como en un índice ([Estilos de párrafo](/es/docs/configuration#estilos-de-párrafo)).
 
 ## Variantes
 
@@ -61,7 +61,3 @@ Si se cuenta por títulos de primer nivel, como en los tipos predefinidos, salen
 -  numberingTemplate: '{n}', resetOn: 'never' })); // Taula 1, Taula 2: one count, not per day
 +  numberingTemplate: '{h1}.{n}', resetOn: 'h1' })); // Taula 1.1, Taula 2.1: per day
 ```
-
-## Errores frecuentes
-
-- Las columnas de la página 4 se igualan a mano, con un `:::columnbreak` antes de la nota de Rosa Fontanet. Postext 1.4.1 no iguala la última página de un capítulo cuando la abre el resto de una tabla partida, así que la primera columna llega al pie y la segunda se queda corta. Mueve el salto cada vez que cambie el texto del jueves.

@@ -18,7 +18,7 @@ Seven pages from a volume of collected works (全集) on an A5 page bound on the
 
 The code is [the short answer](#the-short-answer) above. On a page with `writingMode: 'vertical-rl'`, `layoutType: 'double'` stacks the two columns: the first fills the upper tier from the right, then the lower one, and the gutter is the band between them ([Vertical writing](/en/docs/configuration#vertical-writing)). The [character grid](/en/docs/configuration#character-grid) counts characters down one tier, so each tier is 25 characters of 9 pt and the gutter is rounded to a whole two characters; the 21 lines of 15.75 pt across fit 116.7 mm of the 148 mm page. The rule between the tiers runs across the page, 0.4 pt in a warm grey.
 
-Postext's balancer would end both tiers of a story's last page at the same line, which is how Chinese newspapers and most European two-column books close a chapter. A Japanese book in tiers lets the text fall: the upper tier runs the whole page before the lower one starts. `balancing.trailing: false` is that choice, and `enabled: false`, which implies it, also stops the balancer from adding lines above the headings on a character grid ([Column balancing](/en/docs/configuration#column-balancing)).
+Postext's balancer would end both tiers of a story's last page at the same line, which is how Chinese newspapers and most European two-column books close a chapter. A Japanese book in tiers lets the text fall: the upper tier runs the whole page before the lower one starts. `balancing.trailing: false` is that choice, and vertical tiers are not balanced at all unless `enabled: true` turns the balancer on ([Column balancing](/en/docs/configuration#column-balancing)).
 
 ### 2 · Run the work's title down both tiers
 
@@ -40,11 +40,11 @@ The second level, `lineSpan: 3` with `indent: em(8)`, sets 一 二 三 eight cha
 
 ### Level the last page
 
-Leave `balancing` out and the last page of each work is cut level: page 214 ends with 10 lines in the upper tier and 11 in the lower, the closing a Chinese or European book in columns uses.
+Turn balancing on and the last page of each work is cut level: page 214 ends with 10 lines in the upper tier and 11 in the lower, the closing a Chinese or European book in columns uses. On the character grid the balancer adds only whole lines, so every character keeps its cell.
 
 ```diff
--const balancing = { enabled: false, trailing: false };
-+const balancing = {}; // the defaults: the closing band is cut level
+-const balancing = { trailing: false };
++const balancing = { enabled: true }; // the closing band is cut level
 ```
 
 ### Open each work on the next page

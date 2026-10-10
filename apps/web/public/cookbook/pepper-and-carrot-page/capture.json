@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "pepper-and-carrot-page",
-  "sourceHash": "02bf4a04f2a9380cfbf69b239a352b530ec88f490423053c389fca299f82010c",
+  "sourceHash": "07c9aa08831cc93e20ba512e605878e46c15524a6ec8aca691f4f0d0fd872404",
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T14:45:50.987Z",
+  "capturedAt": "2026-10-10T13:37:01.576Z",
   "variants": {
     "en": {
-      "hash8": "dc668d17",
+      "hash8": "85210fb6",
       "vdtHash": "5b1c728f7fbbd533a4750aa355861202d1b3b50a",
       "timings": {
-        "importMs": 313,
-        "fontsMs": 301,
-        "buildMs": 103,
-        "totalMs": 1528,
-        "builds": 2
+        "importMs": 229,
+        "fontsMs": 297,
+        "buildMs": 408,
+        "totalMs": 2069,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -99,22 +99,22 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 687854,
+        "bytes": 687852,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 675750
+        "bytes": 675753
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -280,14 +280,14 @@
       }
     },
     "es": {
-      "hash8": "34f39743",
+      "hash8": "e9060594",
       "vdtHash": "a90c36d43fad75d592c989d7768284ce2a715a43",
       "timings": {
-        "importMs": 324,
-        "fontsMs": 240,
-        "buildMs": 108,
-        "totalMs": 1471,
-        "builds": 2
+        "importMs": 161,
+        "fontsMs": 167,
+        "buildMs": 170,
+        "totalMs": 1114,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -368,22 +368,22 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 689888,
+        "bytes": 689889,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 675995
+        "bytes": 675998
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -549,14 +549,14 @@
       }
     },
     "ca": {
-      "hash8": "9806d52b",
+      "hash8": "550bb6fc",
       "vdtHash": "c1acac32fe32e65510d5ce5e71eafdab2db766f6",
       "timings": {
-        "importMs": 149,
-        "fontsMs": 166,
-        "buildMs": 108,
-        "totalMs": 1215,
-        "builds": 2
+        "importMs": 169,
+        "fontsMs": 157,
+        "buildMs": 172,
+        "totalMs": 1062,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -642,17 +642,17 @@
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 675874
+        "bytes": 675877
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -818,13 +818,13 @@
       }
     },
     "zh": {
-      "hash8": "2fd9d62b",
+      "hash8": "f37ecfd1",
       "vdtHash": "8b40fa0916623ac081d84978d36feb6c069d0414",
       "timings": {
-        "importMs": 154,
-        "fontsMs": 434,
-        "buildMs": 168,
-        "totalMs": 1365,
+        "importMs": 165,
+        "fontsMs": 365,
+        "buildMs": 163,
+        "totalMs": 1265,
         "builds": 1
       },
       "specimen": {
@@ -867,7 +867,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 167242,
+          "bytes": 167388,
           "alt": "第 2 页。"
         },
         {
@@ -878,7 +878,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 105102,
+          "bytes": 103772,
           "alt": "第 3 页。"
         }
       ],
@@ -906,22 +906,22 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 742999,
+        "bytes": 743172,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 676461
+        "bytes": 676137
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1088,13 +1088,13 @@
       }
     },
     "ar": {
-      "hash8": "9d4bb2fb",
+      "hash8": "3134cc08",
       "vdtHash": "a4ca6da349dc5fbfdffab04252ec4b91e132b04c",
       "timings": {
-        "importMs": 289,
-        "fontsMs": 184,
-        "buildMs": 181,
-        "totalMs": 1238,
+        "importMs": 161,
+        "fontsMs": 128,
+        "buildMs": 161,
+        "totalMs": 3149,
         "builds": 1
       },
       "specimen": {
@@ -1182,17 +1182,17 @@
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 676755
+        "bytes": 676758
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1361,13 +1361,13 @@
       }
     },
     "ja": {
-      "hash8": "8887aa50",
+      "hash8": "b4566f93",
       "vdtHash": "d96a7805773f5919b05691d4d1559da70cc6a370",
       "timings": {
-        "importMs": 152,
-        "fontsMs": 443,
-        "buildMs": 277,
-        "totalMs": 1483,
+        "importMs": 164,
+        "fontsMs": 407,
+        "buildMs": 164,
+        "totalMs": 1317,
         "builds": 1
       },
       "specimen": {
@@ -1421,7 +1421,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 103374,
+          "bytes": 102300,
           "alt": "3ページ。"
         }
       ],
@@ -1450,22 +1450,22 @@
       },
       "pdf": {
         "file": "pepper-and-carrot-page.pdf",
-        "bytes": 725150,
+        "bytes": 725158,
         "pages": 3
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 676784
+        "bytes": 676819
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1633,14 +1633,14 @@
       }
     },
     "pt": {
-      "hash8": "b53e6bb2",
+      "hash8": "aefec940",
       "vdtHash": "760a4756a869fb1c7ad83e264894eebbb35ee21b",
       "timings": {
-        "importMs": 238,
-        "fontsMs": 197,
-        "buildMs": 106,
-        "totalMs": 1349,
-        "builds": 2
+        "importMs": 164,
+        "fontsMs": 165,
+        "buildMs": 167,
+        "totalMs": 1064,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -1726,17 +1726,17 @@
       },
       "sandbox": {
         "file": "pepper-and-carrot-page.postext",
-        "bytes": 675982
+        "bytes": 675984
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

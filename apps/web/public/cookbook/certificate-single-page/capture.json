@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "certificate-single-page",
-  "sourceHash": "0701720fad693f764ea0a3f7d679170b24307e9a8bb94ef0f500a069146ade02",
+  "sourceHash": "0a22726777fb01f66aa2b326a256684648e957924c72ff14c754ba3292687d05",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.783Z",
+  "capturedAt": "2026-10-10T13:32:12.268Z",
   "variants": {
     "en": {
-      "hash8": "88be1952",
-      "vdtHash": "4546b25334e3cf1dd9847da678179afb126bd00a",
+      "hash8": "66713c08",
+      "vdtHash": "9e7f834a65281cc1f4bc902a08b908f9f13a1e9b",
       "timings": {
-        "importMs": 201,
-        "fontsMs": 59,
-        "buildMs": 27,
-        "totalMs": 829,
+        "importMs": 166,
+        "fontsMs": 33,
+        "buildMs": 17,
+        "totalMs": 815,
         "builds": 1
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Rosarivo"
         ],
         "pages": 3,
-        "ownLines": 180
+        "ownLines": 174
       },
       "pages": [
         {
@@ -50,7 +50,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 130200,
+          "bytes": 130282,
           "alt": "Opening page 1: Imogen Achterberg."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 127404,
+          "bytes": 128158,
           "alt": "Opening page 2: Tomás Okafor."
         },
         {
@@ -72,7 +72,7 @@
           "h": 1294,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 127414,
+          "bytes": 127274,
           "alt": "Opening page 3: Ruth Adair."
         }
       ],
@@ -100,18 +100,17 @@
       },
       "pdf": {
         "file": "certificate-single-page.pdf",
-        "bytes": 259523,
+        "bytes": 259522,
         "pages": 3
       },
       "sandbox": {
         "file": "certificate-single-page.postext",
-        "bytes": 30247,
+        "bytes": 30185,
         "folio": "a05bb7c0"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
@@ -236,17 +235,23 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "7549fe04",
-      "vdtHash": "d090ff63e40e1a7c3a99c69edb00df8b538ebf61",
+      "hash8": "e644ea3c",
+      "vdtHash": "f89d7783c5c82acb318507363bd71fa7dfc00a82",
       "timings": {
-        "importMs": 240,
-        "fontsMs": 60,
-        "buildMs": 29,
-        "totalMs": 870,
+        "importMs": 161,
+        "fontsMs": 33,
+        "buildMs": 17,
+        "totalMs": 812,
         "builds": 1
       },
       "specimen": {
@@ -268,7 +273,7 @@
           "Rosarivo"
         ],
         "pages": 3,
-        "ownLines": 180
+        "ownLines": 174
       },
       "pages": [
         {
@@ -279,7 +284,7 @@
           "h": 1414,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 137324,
+          "bytes": 137074,
           "alt": "Página de apertura 1: Lucía Beltrán Ochoa."
         },
         {
@@ -290,7 +295,7 @@
           "h": 1414,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 135134,
+          "bytes": 134578,
           "alt": "Página de apertura 2: Íñigo Sarasola."
         },
         {
@@ -301,7 +306,7 @@
           "h": 1414,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 132426,
+          "bytes": 132548,
           "alt": "Página de apertura 3: Ana Rius."
         }
       ],
@@ -329,18 +334,17 @@
       },
       "pdf": {
         "file": "certificate-single-page.pdf",
-        "bytes": 251253,
+        "bytes": 251274,
         "pages": 3
       },
       "sandbox": {
         "file": "certificate-single-page.postext",
-        "bytes": 28772,
+        "bytes": 28730,
         "folio": "a05bb7c0"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
@@ -465,7 +469,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

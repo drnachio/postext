@@ -33,13 +33,11 @@
     "cjk-locale-tag",
     "cjk-face-region",
     "cjk-no-italic",
-    "headings-drop-h1-break",
-    "style-inherits-break",
-    "fonts-first"
+    "style-inherits-break"
   ],
   "explainsWarnings": ["cjkGridClamped"],
   "related": ["spanish-pocket-novel", "justification-lab", "trade-paperback-novel", "baseline-grid-book-page"],
-  "engine": { "postext": "1.9.0", "postextPdf": "1.9.0" },
+  "engine": { "postext": "1.25.0", "postextPdf": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "pdf", "images", "cjk"],
   "sample": { "locales": ["en", "es"] },
   "capture": { "hero": [1, 2], "card": "spread", "pages": "all" },
@@ -90,5 +88,5 @@
   },
   "license": { "code": "MIT", "content": "MIT" },
   "created": "2026-09-29",
-  "updated": "2026-09-30"
+  "updated": "2026-10-10"
 }

@@ -84,6 +84,54 @@
       "pt": "Superfície da API"
     }
   },
+  "buildDocumentWithFonts": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Loading fonts before layout",
+      "es": "Cargar las fuentes antes de componer",
+      "ca": "Carregar les fonts abans de compondre",
+      "zh": "排版前加载字体",
+      "ar": "تحميل الخطوط قبل الإخراج",
+      "ja": "レイアウトの前にフォントを読み込む",
+      "pt": "Carregar as fontes antes do layout"
+    }
+  },
+  "prepareFonts": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Loading fonts before layout",
+      "es": "Cargar las fuentes antes de componer",
+      "ca": "Carregar les fonts abans de compondre",
+      "zh": "排版前加载字体",
+      "ar": "تحميل الخطوط قبل الإخراج",
+      "ja": "レイアウトの前にフォントを読み込む",
+      "pt": "Carregar as fontes antes do layout"
+    }
+  },
+  "withLoadedFonts": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Loading fonts before layout",
+      "es": "Cargar las fuentes antes de componer",
+      "ca": "Carregar les fonts abans de compondre",
+      "zh": "排版前加载字体",
+      "ar": "تحميل الخطوط قبل الإخراج",
+      "ja": "レイアウトの前にフォントを読み込む",
+      "pt": "Carregar as fontes antes do layout"
+    }
+  },
+  "inlineSvgFonts": {
+    "slug": "configuration",
+    "heading": {
+      "en": "Fonts in SVG text",
+      "es": "Fuentes en el texto de los SVG",
+      "ca": "Fonts al text dels SVG",
+      "zh": "SVG文字中的字体",
+      "ar": "الخطوط في نصوص SVG",
+      "ja": "SVGの文字のフォント",
+      "pt": "Fontes no texto dos SVG"
+    }
+  },
   "clearMeasurementCache": {
     "slug": "configuration",
     "heading": {

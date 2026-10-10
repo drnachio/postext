@@ -29,8 +29,6 @@ Both tools work at once on any knob of rock in the bed, and the result is one of
 
 ::resource{id="roche"}
 
-:::space{lines=1}
-
 Its up-glacier face, polished by abrasion, is smooth and gentle; its down-glacier face, where the ice plucked blocks away, is steep and rough. Look at which way the rough face points and you know which way the ice was going. The Genevan naturalist Horace-Bénédict de Saussure gave it its French name at the end of the eighteenth century.
 
 ## Troughs

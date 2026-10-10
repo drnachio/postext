@@ -18,8 +18,9 @@ import {
 } from "./detect.ts";
 import { KIT_IMPORTS, imageSize, isAllowedUrl, lintPen, lintRecipe, previewDraftsAllowed } from "./lint.ts";
 import { REPO_DIR } from "./paths.ts";
-import { listRecipeSlugs, readKit } from "./sources.ts";
-import type { KitBlock, RecipeMeta, RecipeSources, SampleLocale } from "./types.ts";
+import { loadRegistry } from "./registry.ts";
+import { listRecipeSlugs, readKit, readRecipeMeta } from "./sources.ts";
+import type { KitBlock, RecipeMeta, RecipeSources, Registry, SampleLocale } from "./types.ts";
 
 // ─── A pen that follows every convention ────────────────────────────────────
 
@@ -259,20 +260,55 @@ describe("lintPen (fixture)", () => {
   });
 
   it("catches the engine traps", () => {
-    expect(lint((s) => s.replace("const config = () => ({", "const config = {").replace("\n});\n\n// ─── 2", "\n};\n\n// ─── 2")).fails).toContain(
-      "script.js: the config is a factory, `const config = () => ({ … })` (the engine caches resolved configs per object)",
+    // One object is fine since postext 1.25 checks a config changed in place (#629).
+    expect(lint((s) => s.replace("const config = () => ({", "const config = {").replace("\n});\n\n// ─── 2", "\n};\n\n// ─── 2")).fails).toEqual([]);
+    expect(lint((s) => s.replace("const config = () => ({", "const config = build({")).fails).toContain(
+      "script.js: declare the config as `const config = { … }` (or a factory, `const config = () => ({ … })`)",
     );
-    const noBreak = lint((s) => s.replace("      breakBefore: { enabled: true, parity: 'odd' },\n", "")).fails;
-    expect(noBreak.some((f) => f.includes("any `headings` object drops the default H1 page break"))).toBe(true);
     const stack = lint((s) => s.replace("fontFamily: 'Archivo'", "fontFamily: 'Archivo, sans-serif'")).fails;
-    expect(stack.some((f) => /^script\.js line \d+: fontFamily holds one family, not a stack \("Archivo, sans-serif"\)$/.test(f))).toBe(true);
-    expect(lint((s) => s.replace("  header:", "  orderedLists: { numberFormat: 'decimal' },\n  header:")).fails.some((f) => f.includes("numberFormat: 'arabic'"))).toBe(true);
+    expect(stack.some((f) => /^script\.js line \d+: fontFamily names one family, not a stack \("Archivo, sans-serif"\): the engine sets the first name and ignores the rest$/.test(f))).toBe(true);
     expect(lint((s) => s.replace("  header:", "  headingStyle: [],\n  header:")).fails.some((f) => f.includes("`headingStyle` is not a config key"))).toBe(true);
     expect(lint((s) => s.replace("  footer: { elements: [] },\n", "")).fails).toContain("script.js: the config must set `footer` (never the default skin)");
     const bitmap = lint((s) => s.replace(", width: 1200, height: 800", "")).fails;
     expect(bitmap.some((f) => f.endsWith(": bitmaps declare width and height at print size"))).toBe(true);
     const clock = lint((s) => s.replace("const palette", "const seed = Math.random() + Date.now() + new Date().getTime();\nconst palette")).fails;
     expect(clock.filter((f) => f.includes("captures must be deterministic"))).toHaveLength(3);
+  });
+
+  it("asks for the H1 break and 'arabic' only below postext 1.5, which fixed both (#641)", () => {
+    const noBreak = (s: string) => s.replace("      breakBefore: { enabled: true, parity: 'odd' },\n", "");
+    const decimal = (s: string) => s.replace("  header:", "  orderedLists: { numberFormat: 'decimal' },\n  header:");
+    // The fixture pins 1.4.1, where any headings object dropped the break
+    // and a list numbered in 'decimal' printed "undefined".
+    expect(lint(noBreak).fails).toEqual([
+      "script.js: up to postext 1.4 any `headings` object drops the default H1 page break; restate it: " +
+        "`levels: [{ level: 1, breakBefore: { … } }]`, or pin postext ≥ 1.5.0, which keeps it (gotcha headings-drop-h1-break)",
+    ]);
+    expect(lint(decimal).fails.some((f) => f.includes("up to postext 1.4 ordered lists use numberFormat: 'arabic'"))).toBe(true);
+    // From 1.5.0 a partial headings object merges onto the level's default:
+    // a pen may restate the break, and none has to.
+    for (const version of ["1.5.0", "1.25.0"] as const) {
+      const meta: RecipeMeta = { ...fixtureMeta(), engine: { postext: version, postextPdf: "1.4.1" } };
+      const pin = (s: string) => s.replace("Needs postext ≥ 1.4.1", `Needs postext ≥ ${version}`);
+      expect(lint(pin, { meta }).fails).toEqual([]);
+      expect(lint((s) => noBreak(pin(s)), { meta }).fails).toEqual([]);
+      expect(lint((s) => decimal(pin(s)), { meta }).fails).toEqual([]);
+    }
+    const older: RecipeMeta = { ...fixtureMeta(), engine: { postext: "1.4.9", postextPdf: "1.4.1" } };
+    expect(lint((s) => noBreak(s.replace("≥ 1.4.1", "≥ 1.4.9")), { meta: older }).fails).toHaveLength(1);
+  });
+
+  it("takes loadBundleFonts as loading the faces (#641)", () => {
+    const warning = (fails: string[]) => fails.filter((f) => f.includes("load the faces before the build"));
+    expect(warning(lint().warns)).toEqual([]);
+    const none = (s: string) => s.replace("await loadFonts(FONTS, markdown);\n", "");
+    expect(warning(lint(none).warns)).toEqual([
+      "script.js: load the faces before the build: `buildDocumentWithFonts(content, config, kitFonts(FONTS))`, or `loadBundleFonts(bundle)` for a bundle's own files",
+    ]);
+    const fromBundle = (s: string) => s.replace("await loadFonts(FONTS, markdown);\n", "await loadBundleFonts(bundle); // the faces the bundle carries\n");
+    expect(warning(lint(fromBundle).warns)).toEqual([]);
+    // A mention in a comment is not a call.
+    expect(warning(lint((s) => none(s).replace("// ─── 4", "// loadBundleFonts(bundle) would load them\n// ─── 4")).warns)).toHaveLength(1);
   });
 
   it("checks the content files", () => {
@@ -710,7 +746,7 @@ describe("detect", () => {
     const imports = parseImports(pen.js);
     expect(imports.map((i) => i.url)).toEqual(["https://esm.sh/postext", "https://esm.sh/postext-pdf"]);
     expect(usedApis(pen.js)).toEqual([
-      "buildDocument", "clearMeasurementCache", "decompressWoff2", "defaultResourceTypes", "registerResourceImage",
+      "buildDocument", "decompressWoff2", "defaultResourceTypes", "registerResourceImage",
       "renderPageToCanvas", "renderToPdf",
     ]);
     // A spread is a use; a property of the same name is not.
@@ -803,5 +839,28 @@ describe("recipe pens", () => {
     const preview = previewDraftsAllowed();
     const failures = listRecipeSlugs().flatMap((slug) => lintRecipe(slug, { preview }).fails.map((f) => `${slug}: ${f}`));
     expect(failures).toEqual([]);
+  }, 120_000);
+
+  it("fail a note about a pitfall fixed at or before the recipe's pin (#641)", () => {
+    const registry = loadRegistry();
+    // A recipe that lists a pitfall the engine still has, and that pitfall.
+    const found = listRecipeSlugs()
+      .map((slug) => ({ slug, meta: readRecipeMeta(slug) }))
+      .flatMap(({ slug, meta }) => (meta.gotchas ?? []).filter((id) => registry.gotchas[id] && !registry.gotchas[id].fixedIn).map((id) => ({ slug, meta, id })))[0];
+    expect(found).toBeDefined();
+    const { slug, meta, id } = found;
+    const fixedIn = (version: RecipeMeta["engine"]["postext"]): Registry => ({ ...registry, gotchas: { ...registry.gotchas, [id]: { ...registry.gotchas[id], fixedIn: version } } });
+    const notes = (options: Parameters<typeof lintRecipe>[1]) => lintRecipe(slug, options).fails.filter((f) => f.startsWith(`recipe.json › gotchas: "${id}" is fixed in postext`));
+    // Fixed in the version the recipe pins: the id goes, with no flag asked.
+    expect(notes({ registry: fixedIn(meta.engine.postext) })).toEqual([
+      `recipe.json › gotchas: "${id}" is fixed in postext ${meta.engine.postext} and this recipe pins ${meta.engine.postext}: take it out of the list`,
+    ]);
+    // Fixed in a later release: the recipe's engine still has the pitfall,
+    // until --as-of reads the recipe as of that release.
+    expect(notes({ registry: fixedIn("99.0.0") })).toEqual([]);
+    expect(notes({ registry: fixedIn("99.0.0"), fixedAsOf: "99.0.0" })).toEqual([
+      `recipe.json › gotchas: "${id}" is fixed in postext 99.0.0 and the recipe is read as of 99.0.0: take it out of the list`,
+    ]);
+    expect(notes({ registry })).toEqual([]);
   }, 120_000);
 });

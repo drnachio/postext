@@ -34,7 +34,7 @@ Las tablas, los pies, las notas y los textos alternativos están en `content.res
 
 <Excerpt region="art" />
 
-Cada panel recorre *R* de 0 a 1 con la misma `ppv()` que rellena la tabla 4. Dibujar las curvas con la fórmula revela algo que la figura de 2005 esconde: sus curvas corresponden a *u* = 0; 0,05; 0,20 y 0,80, mientras que su leyenda dice 0,05; 0,20; 0,50 y 0,80. Esta versión dibuja los valores de la leyenda, añade en trazo discontinuo la curva sin sesgo y lo explica en la nota del pie. Los rótulos son texto en la letra de los rótulos: el SVG lleva la fuente como `@font-face` en línea para el lienzo, y el PDF los compone con la fuente que entrega el proveedor.
+Cada panel recorre *R* de 0 a 1 con la misma `ppv()` que rellena la tabla 4. Dibujar las curvas con la fórmula revela algo que la figura de 2005 esconde: sus curvas corresponden a *u* = 0; 0,05; 0,20 y 0,80, mientras que su leyenda dice 0,05; 0,20; 0,50 y 0,80. Esta versión dibuja los valores de la leyenda, añade en trazo discontinuo la curva sin sesgo y lo explica en la nota del pie. Los rótulos son texto que nombra la letra de los rótulos: `loadSvg` pasa el dibujo por `inlineSvgFonts`, que incrusta esa fuente para el lienzo, y el PDF los compone con la fuente que entrega el proveedor.
 
 ### 5 · Una primera página y un recuadro para un ensayo
 

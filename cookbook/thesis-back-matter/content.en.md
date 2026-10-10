@@ -28,7 +28,7 @@ The participants:index{term="participants"} were students at one university:inde
 
 Huey:index{term="Huey, Edmund Burke"} (1908) thought that a complete analysis of what we do when we read would be almost the acme of a psychologist’s achievements. The experiments reported here add a small part to that analysis; the replication proposed above could measure how far readers rely on the position of a passage on the page when they look back.
 
-# Interview guide {style="appendix" letter="A"}
+# Interview guide {style="appendix" startAt=1}
 
 The interviews:index{term="interviews"} took place within a week of each participant’s:index{term="participants"} second session. They were audio-recorded,:index{term="interviews!recording of"} transcribed:index{term="transcription"} in full and analysed thematically:index{term="thematic analysis"} following Braun:index{term="Braun, Virginia"} and Clarke:index{term="Clarke, Victoria"} (2006); :ref{id="session-plan" style="full"} gives their timing:index{term="interviews!timing of"}: a free recall:index{term="recall"} of the two study texts, the questions below and a short debriefing.:index{term="debriefing"} The questions were asked in this order,:index{term="interviews!questions asked"} and a prompt:index{term="interviews!prompts in"} only when the participant had not already covered its point.
 

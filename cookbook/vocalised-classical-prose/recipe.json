@@ -38,15 +38,13 @@
   ],
   "gotchas": [
     "arabic-locale-tag",
-    "arabic-fonts-subset",
-    "headings-drop-h1-break",
-    "fonts-first"
+    "arabic-fonts-subset"
   ],
   "explainsWarnings": [
     "arabicMarksExceedLeading"
   ],
   "engine": {
-    "postext": "1.15.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -125,7 +123,7 @@
     "content": "MIT"
   },
   "created": "2026-10-04",
-  "updated": "2026-10-04",
+  "updated": "2026-10-10",
   "related": [
     "qasida-diwan-page"
   ]

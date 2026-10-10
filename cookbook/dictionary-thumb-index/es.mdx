@@ -22,7 +22,7 @@ El código está en [la respuesta corta](#la-respuesta-corta), más arriba. `TAB
 
 <Excerpt region="running-heads" />
 
-Las cabeceras son elementos de texto anclados a la página y filtrados por `parity` y por `pages: 'body'` ([elementos de texto](/es/docs/configuration#elementos-de-texto)). El título de la página 1 abarca las dos columnas, y eso la convierte en página de apertura. Las cabeceras no salen en ella, y su folio lo pone el pie, un elemento con `pages: 'opener'` que se imprime 6 mm por debajo de la caja. En las impares, `{chapterTitle}` imprime la letra del último título de nivel 1 que hay en la página o antes de ella, *Letra C*. Desde postext 1.5.0, `{firstMark.<clave>}` y `{lastMark.<clave>}` imprimen en su lugar el primer y el último lema de la página, las palabras guía que llevan casi todos los diccionarios; esta receta se compuso con la 1.4.1 y conserva la letra.
+Las cabeceras son elementos de texto anclados a la página y filtrados por `parity` y por `pages: 'body'` ([elementos de texto](/es/docs/configuration#elementos-de-texto)). El título de la página 1 abarca las dos columnas, y eso la convierte en página de apertura. Las cabeceras no salen en ella, y su folio lo pone el pie, un elemento con `pages: 'opener'` que se imprime 6 mm por debajo de la caja. En las impares, `{chapterTitle}` imprime la letra del último título de nivel 1 que hay en la página o antes de ella, *Letra C*. `{firstMark.<clave>}` y `{lastMark.<clave>}` imprimen en su lugar el primer y el último lema de la página, las palabras guía que llevan casi todos los diccionarios; esta receta conserva la letra, que es lo que indexan sus pestañas.
 
 ### 3 · Color para los lemas y nada más
 
@@ -34,13 +34,13 @@ Cada entrada es un párrafo de un bloque `:::paragraphs{style="entry"}`, con san
 
 <Excerpt region="letter-heads" />
 
-`LETTER`, 55,8 pt, es el cuerpo con el que una mayúscula de Alegreya SC 900 (0,652 em de alto) se apoya en la cuarta línea de base y llega a la altura de las mayúsculas de la primera línea de texto. La letra y el filete color latón acaban dentro de la quinta línea, y el bloque del título baja hasta la siguiente línea de la rejilla base, así que cada inicial ocupa cinco líneas y las entradas de debajo siguen en la rejilla. En la <PageRef page={3}>página 3</PageRef>, la C que encabeza la segunda columna mide lo mismo que las cuatro primeras líneas de la primera. El nivel 1 declara `breakBefore: { enabled: false }`, y los estilos de las letras lo heredan. En 1.4.1 cualquier objeto `headings` ya quita el salto de página del nivel 1; con el valor escrito, las letras seguirán en la columna aunque una versión posterior recupere ese salto.
+`LETTER`, 55,8 pt, es el cuerpo con el que una mayúscula de Alegreya SC 900 (0,652 em de alto) se apoya en la cuarta línea de base y llega a la altura de las mayúsculas de la primera línea de texto. La letra y el filete color latón acaban dentro de la quinta línea, y el bloque del título baja hasta la siguiente línea de la rejilla base, así que cada inicial ocupa cinco líneas y las entradas de debajo siguen en la rejilla. En la <PageRef page={3}>página 3</PageRef>, la C que encabeza la segunda columna mide lo mismo que las cuatro primeras líneas de la primera. El nivel 1 declara `breakBefore: { enabled: false }`, que desactiva el salto de página que un título de nivel 1 tiene por defecto, y los estilos de las letras lo heredan, así que la B y la C empiezan a media columna.
 
 ### 5 · El título a lo ancho de las dos columnas
 
 <Excerpt region="title" />
 
-El estilo del título abarca la página con una banda que reúne el ancla, el nombre, un subtítulo y una firma tomados de atributos del título, y un filete doble ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El filete fino acaba 45,1 mm por debajo del borde superior de la caja, así que la banda se ajusta a 13 líneas de la rejilla, 47,7 mm. Bajo un título a todo el ancho, el filete de columna empieza igualmente en el borde superior de la caja y cruzaría el título. Un rectángulo del color del papel lo tapa hasta el filete fino, y el filete de columna solo asoma por debajo. `{titleText}` une con un espacio las líneas del título oculto, y 1.4.1 corta un título a todo el ancho a la medida de una columna. En inglés, con el cuerpo del H1 por defecto, la banda imprimía *Word- Book*; por eso el estilo del título da al título oculto el cuerpo del texto, con el que el nombre cabe en una línea de la columna de 60 mm.
+El estilo del título abarca la página con una banda que reúne el ancla, el nombre, un subtítulo y una firma tomados de atributos del título, y un filete doble ([span y diseño avanzado](/es/docs/configuration#span-y-diseño-avanzado)). El filete fino acaba 45,1 mm por debajo del borde superior de la caja, así que la banda se ajusta a 13 líneas de la rejilla, 47,7 mm. El filete de columna empieza debajo de la banda, en la línea donde empieza el texto de las dos columnas.
 
 ## Variantes
 
@@ -55,5 +55,4 @@ Los índices de pestañas impresos suelen mostrar solo la de la letra en curso; 
 
 ## Errores frecuentes
 
-- En postext 1.4.1 el filete de columna bajo un título a todo el ancho empieza en el borde superior de la caja aunque la banda mida un número entero de líneas de la rejilla, como esta. Lo tapa un rectángulo del color de la página, pintado debajo de los demás elementos del diseño.
 - Una columna de 60 mm admite unos 50 caracteres, y el inglés de Smyth no se puede reescribir. En la captura, 18 de las 218 líneas justificadas inglesas (un 8 %) estiran el espacio más de 1,7 veces su ancho normal, frente a menos de un 2 % en la edición española, cuya traducción se ajustó a la columna. El inglés llegaba al 17 % antes de cambiar por otras las cinco entradas que peor componían (*Aground*, *Aloft*, *Belay*, *Cockpit*, *Crow’s nest*). Elige entradas que compongan bien, o ensancha la columna.

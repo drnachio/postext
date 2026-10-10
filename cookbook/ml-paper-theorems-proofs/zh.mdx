@@ -40,7 +40,7 @@ Rafailov、Sharma、Mitchell、Ermon、Manning和Finn的论文*Direct Preference
 
 <Excerpt region="art" />
 
-图1按原图的方框和文字画成SVG。作为图像绘制的SVG看不到页面的网络字体，所以`inlineFace()`把标签用到的两个Work Sans文件嵌进去，`tex()`把`y_w ≻ y_l`写成MathJax路径，与公式用的是同一套字形。箭头是画出来的路径，不用SVG的marker，所以图在PDF里仍是矢量。
+图1按原图的方框和文字画成SVG。标签在`font-family`里写明Work Sans，`loadSvg`把SVG交给引擎的`inlineSvgFonts`，由它嵌入标签用到的两个Work Sans文件；`tex()`把`y_w ≻ y_l`写成MathJax路径，与公式用的是同一套字形。箭头是画出来的路径，不用SVG的marker，所以图在PDF里仍是矢量。
 
 ## 变化
 

@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 102 · A stapled zine with a card cover sheet ═══════════════
 // https://postext.dev/en/cookbook/saddle-stitched-card-cover
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code
-// Fonts: Newsreader, Bricolage Grotesque (SIL OFL 1.1) · Needs postext ≥ 1.13.4
+// Fonts: Newsreader, Bricolage Grotesque (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 //
 // Eight pages, two sheets folded and stapled through the fold. The outer sheet (pages 1–2 and
 // 7–8) is salmon card, the inner sheet newsprint: two :::paper fences put the card on the
 // cover pages, and postext-folio draws the book saddle-stitched, closed until you turn the
 // cover. The flat pages below print on white: only the 3D book knows about paper.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+import { buildDocumentWithFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { createFolioFromDocument } from 'https://esm.sh/postext-folio';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -100,7 +100,7 @@ const feature = (id) => ({ id, numbered: false, breakBefore: { enabled: true, pa
 const headingStyles = [cover, back, feature('feature'), feature('back-matter')];
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us',
   colorPalette,
   page: { sizePreset: 'custom', width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150,
@@ -113,7 +113,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: SANS, color: col('ink'), fontWeight: 800, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // parity 'any': a level-1 heading opens the next page, whichever side it falls on.
     { level: 1, fontSize: pt(25), breakBefore: { enabled: true, parity: 'any' } },
     { level: 2, fontSize: pt(10), lineHeight: pt(LEAD), fontWeight: 700, color: col('blue'),
       marginTop: pt(LEAD), marginBottom: pt(0) },
@@ -151,8 +151,7 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Low Tide · a stapled zine in Folio' });
 
 // #region answer: the zine as a stapled booklet, closed on the desk until the cover turns

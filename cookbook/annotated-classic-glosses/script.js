@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 032 · Annotated classic with margin glosses ════════════
 // https://postext.dev/en/cookbook/annotated-classic-glosses
 // Code: MIT · Text: Lewis Carroll (PD), glosses (CC BY 4.0) · Headpiece: diffusion models
-// Fonts: Unna, Rozha One, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: Unna, Rozha One, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // The mad tea-party as an annotated edition: the text keeps to one column, and its glosses stand
 // in the outer margin beside the lines they explain, changing sides with the spread.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en')
@@ -20,8 +20,7 @@ const palette = {
   muted: '#6e645b', // running heads, the note on this edition
   paper: '#f8f3e6', // the page, and the tablecloth
 };
-// col(id): a colour linked to its entry. It carries the hex too, because 1.4.1 paints
-// design elements from the hex alone (gotcha: palette-skips-designs).
+// col(id): a colour linked to its palette entry, with the entry's hex beside the id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const entry = (id, hex, name = id) => ({ id, name, value: { hex, model: 'hex' } });
 const colorPalette = [
@@ -87,23 +86,19 @@ const SIDE_W = CONTENT_W * layout.sideColumnPercent / 100; // 33 mm: the glosses
 const TEXT_W = CONTENT_W - SIDE_W - layout.gutterWidth.value;
 // #endregion
 
-// #region text: book texture and a flush opening paragraph
+// #region text: book texture, and a first paragraph set flush
 const bodyText = { // justified and hyphenated (en-us) by default
   // Copy-fitted to the 89.5 mm column: at 9.5 pt '“Have some wine,” the March Hare said in
   // an encouraging tone.' fits one line. At 10.4 pt every measure from 77 to 93 mm left
   // it a short last line: 'couraging tone.', 'aging tone.', 'ing tone.' or 'tone.'.
   fontFamily: TEXT, fontSize: pt(9.5), lineHeight: pt(LEAD), color: col('ink'),
   boldColor: col('ink'), italicColor: col('ink'), firstLineIndent: mm(4),
+  // The chapter's first paragraph is set flush, though the fences of glosses a and b stand
+  // between the heading and it: a box that leaves the flow is not the block after a heading.
+  indentAfterHeading: false,
   // Unna's space is narrow, 0.22 em. At the default 0.6 the line breaker set 'Alice felt
   // dreadfully puzzled. The Hatter’s remark seemed to have' with its spaces at 0.69.
   minWordSpacing: 0.75 };
-const paragraphStyles = [
-  // The chapter's first paragraph, set flush. indentAfterHeading: false would do it
-  // without glosses, but the gloss fences between the heading and this paragraph
-  // count as the block after the heading, so the default stays and the paragraph takes
-  // this style (gotcha: side-box-after-heading).
-  { id: 'opening', firstLineIndent: pt(0) },
-];
 // #endregion
 
 // #region opener: a headpiece, the chapter's numeral and title, a headnote with a drop cap
@@ -111,26 +106,23 @@ const HEADPIECE = 72; // mm: the depth of the painting at the head of the page
 const HEADNOTE = { size: 9.8, lead: LEAD }; // pt: the headnote keeps the body's leading
 const CAPS = { text: 0.597, initial: 0.56 }; // cap heights, em: Unna and Rozha One
 // The initial's size: its capital runs from the first line's cap height down to the
-// last baseline it spans. The default size is as tall as both line boxes, so its top
-// rises above the first line's capitals.
+// last baseline it spans. At the default size it stops short of the first line's capitals.
 const dropSize = (lines) => pt(((lines - 1) * HEADNOTE.lead + CAPS.text * HEADNOTE.size)
   / CAPS.initial);
 const below = (id, y, width) => ({ anchor: { to: `#${id}`, edge: 'below' },
   offset: { y: mm(y) }, size: { width } });
-// The opener reserves the height of its lowest text, rounded up to the grid, and the
+// The opener reserves the height of its lowest element, rounded up to the grid, and the
 // heading's default bottom margin adds one blank line: with a four-line headnote the
-// text starts on line 23. The painting reserves nothing
-// (gotcha: opener-image-no-reserve), so the kicker, the title and the headnote hang
-// below it and carry the reserve past it.
+// text starts on line 23. The kicker, the title and the headnote hang below the painting.
 const opener = { enabled: true, slot: { elements: [
   // An image element draws a resource without number or caption. It hangs from the
-  // trim's corner over the margin, which 1.4.1 paints only when level 1 spans the page.
+  // trim's corner, over the top margin and both side margins.
   { kind: 'image', id: 'headpiece', resourceId: 'tea-table',
     placement: { anchor: { to: 'page', edge: 'top-left' },
       size: { width: mm(TRIM_W) } } },
   // The numeral comes from the heading line,
   // # A Mad Tea-Party {num="VII" headnote="…" …}: the excerpt stands alone, so
-  // {chapterNumber} would print 1 (gotcha: heading-number-placeholders).
+  // {chapterNumber} would count its one heading and print 1.
   { kind: 'text', id: 'kicker', content: 'Chapter {attr.num}', fontFamily: LABEL,
     fontWeight: 600, fontSize: pt(9), letterSpacing: pt(2), textTransform: 'uppercase',
     color: col('jam'), align: 'left',
@@ -139,14 +131,11 @@ const opener = { enabled: true, slot: { elements: [
   { kind: 'text', id: 'title', content: '{titleText}', fontFamily: DISPLAY,
     fontSize: pt(40), lineHeight: 1.05, color: col('ink'), align: 'left', // wraps when longer
     placement: below('kicker', 2, 'fill') },
-  // Drop caps exist only in design text, which is set ragged
-  // (gotcha: design-text-ragged): the headnote is the editor's voice, italic and ragged;
-  // Carroll's text opens in the flow.
+  // The drop cap opens the headnote, the editor's voice, italic and ragged; Carroll's
+  // text opens in the flow, justified.
   { kind: 'text', id: 'headnote', content: '{attr.headnote}', fontFamily: TEXT,
     italic: true, fontSize: pt(HEADNOTE.size),
-    // A design text's lineHeight multiplies its size
-    // (gotcha: design-lineheight-multiple).
-    lineHeight: HEADNOTE.lead / HEADNOTE.size, color: col('ink'),
+    lineHeight: pt(HEADNOTE.lead), color: col('ink'),
     align: 'left',
     dropCap: { lines: 2, fontFamily: DISPLAY, fontSize: dropSize(2), color: col('lawn'),
       gap: mm(1.5) },
@@ -157,7 +146,7 @@ const opener = { enabled: true, slot: { elements: [
     align: 'left', placement: { anchor: { to: '#headnote', edge: 'right-of' },
       offset: { x: layout.gutterWidth }, size: { width: mm(SIDE_W) } } },
   { kind: 'text', id: 'edition', content: '{attr.source}', fontFamily: TEXT,
-    fontSize: pt(7.5), lineHeight: 10 / 7.5, color: col('muted'), align: 'left',
+    fontSize: pt(7.5), lineHeight: pt(10), color: col('muted'), align: 'left',
     placement: { anchor: { to: '#edition-label', edge: 'below' }, offset: { y: mm(0.8) },
       size: { width: mm(SIDE_W) } } },
 ] } };
@@ -167,7 +156,7 @@ const opener = { enabled: true, slot: { elements: [
 const HEAD = 14; // mm from the top trim to the heads' baseline
 const INSET = 8; // mm from the folio's outer edge to the running head's
 const DROP = 13; // mm from the bottom trim up to the foot of the drop folio's box
-// In 1.4.1 a design text's first baseline sits 0.96 em below the top of its box: the default
+// A design text's first baseline sits 0.96 em below the top of its box: the default
 // lineHeight, 1.2, times 0.8, where the baseline falls in the line box.
 const BASELINE = 1.2 * 0.8;
 const baseline = (size) => mm(HEAD - BASELINE * size * PT);
@@ -189,13 +178,11 @@ const footer = { elements: [{ ...head('drop-folio', 'odd', '{pageNumber}', -OUTE
   pages: 'opener', placement: { anchor: { to: 'page', edge: 'bottom-right' },
     offset: { x: mm(-OUTER), y: mm(-DROP) } } }] };
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
-  colorPalette, page, layout, bodyText, paragraphStyles, calloutStyles, chipStyles, header,
-  footer,
+const config = () => ({
+  colorPalette, page, layout, bodyText, calloutStyles, chipStyles, header, footer,
   headings: {
     fontFamily: DISPLAY, fontWeight: 400, color: col('ink'), // Rozha One has one weight
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
       // 'odd' puts the opener on a recto; span 'page' lets its design cross the channel.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
         advancedDesign: opener },
@@ -216,18 +203,17 @@ const resources = [{ id: 'tea-table', typeId: 'figure', kind: 'bitmap', createdA
     + 'end and a red arm-chair at the other.' }];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Unna: ['400', '400i', '700'], // 700: the folios and the gloss letters
   'Rozha One': ['400'],
   'Cormorant SC': ['600'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await loadImage('tea-table-1560.jpg', asset('tea-table-1560.jpg'));
 const continuation = { pageNumbering: { startAt: 81 } }; // chapter VII of a book: an odd folio
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Annotated classic with margin glosses' });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

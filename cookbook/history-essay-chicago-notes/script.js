@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 089 · A history essay with Chicago notes ═══════════════
 // https://postext.dev/en/cookbook/history-essay-chicago-notes
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Crimson Pro, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.12.0
+// Fonts: Crimson Pro, IBM Plex Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -17,7 +17,7 @@ const palette = {
   ink: '#211d1a', green: '#24493d', tint: '#dfe8e2', rule: '#b7b0a4', muted: '#6a645b',
   paper: '#fbf9f4',
 };
-// A design element paints the hex written beside its paletteId (gotcha: palette-skips-designs).
+// col() links a colour to its palette entry; the hex is the value the entry holds today.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.green })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -80,8 +80,8 @@ const head = (id, content, parity, edge, x, align) => ({
   align, placement: at('page', edge, x, 12),
 });
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: t({ en: 'en-us', es: 'es' }), // the hyphenation patterns of each edition
   colorPalette,
   citations,
   footnotes,
@@ -102,7 +102,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: {
     fontFamily: TEXT, fontWeight: 600, color: col('ink'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': the H1 opens on the next page, either side (the default waits for a recto).
       { level: 1, fontSize: pt(25), breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: opener },
       { level: 2, fontFamily: LABEL, fontWeight: 600, fontSize: pt(8.5), letterSpacing: pt(1.3),
@@ -127,15 +127,14 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ '';
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the design uses (gotcha: fonts-first).
+// Every face the design uses.
 const FONTS = {
   'Crimson Pro': ['300', '400', '400i', '600', '600i'],
   'IBM Plex Sans Condensed': ['400', '600'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown }, config(), kitFonts(FONTS));
 const title = t({ en: 'A history essay with Chicago notes',
   es: 'Un ensayo de historia con notas de Chicago' });
 showPages(doc, { title });

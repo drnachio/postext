@@ -16,13 +16,13 @@ El full tècnic del PX-7021, un sensor de temperatura d'un fabricant imaginari, 
 
 ### 1 · Enganxa les dades i després dona forma a la taula
 
-El codi és a [la resposta curta](#la-resposta-curta), més amunt. A postext 1.4.1, `parseTSV` deixa `headerRowCount` sense fixar, així que les dues files de capçalera es declaren a mà; si la taula es partís, totes dues es repetirien a cada part. Els pesos de `columnWidths` sumen 180, l'amplada de la caixa de text en mil·límetres, de manera que cada pes és l'amplada real de la seva columna a la pàgina. `mergeCells` conserva cada cel·la coberta i la marca amb `hiddenBy`, i així cap columna no es desplaça. `setAlignment` treballa cel·la a cel·la i esborra l'alineació vertical si no l'hi passes; per això gairebé totes les crides tornen a posar `'middle'`. El gris s'alterna de paràmetre en paràmetre, així que les dues files d'«Accuracy» comparteixen fons; alternant per files, la segona quedaria en blanc.
+El codi és a [la resposta curta](#la-resposta-curta), més amunt. `parseTSV(tsv, { headerRows: 2 })` marca les dues files de capçalera; si la taula es partís, totes dues es repetirien a cada part. Els pesos de `columnWidths` sumen 180, l'amplada de la caixa de text en mil·límetres, de manera que cada pes és l'amplada real de la seva columna a la pàgina. `mergeCells` conserva cada cel·la coberta i la marca amb `hiddenBy`, i així cap columna no es desplaça. `setAlignment` treballa cel·la a cel·la i esborra l'alineació vertical si no l'hi passes; per això gairebé totes les crides tornen a posar `'middle'`. El gris s'alterna de paràmetre en paràmetre, així que les dues files d'«Accuracy» comparteixen fons; alternant per files, com fa `bodyAlternateBackground` a l'estil de taula, la segona quedaria en blanc.
 
 ### 2 · Cada model passa a ser un recurs
 
 <Excerpt region="resources" />
 
-Cada taula i cada dibuix és un recurs amb el seu peu, i les taules hi afegeixen una nota i un estil amb nom. Els peus i les notes admeten cursiva, subíndexs i superíndexs: la taula elèctrica dona les condicions de mesura amb `*V*~DD~` al peu, que a les taules va a sobre, i numera les notes amb `^1^`. Un flotant ocupa el primer espai lliure després del seu primer `:ref`. La taula 1 es cita a la pàgina 1 i va a dalt, a tota l'amplada, així que obre la pàgina 2. El dibuix de l'encapsulat va a baix, també a tota l'amplada, i la resta de taules es queden amb la col·locació per defecte, un flotant de l'amplada d'una columna. Col·locada `here`, una taula no es parteix mai.
+Cada taula i cada dibuix és un recurs amb el seu peu, i les taules hi afegeixen una nota i un estil amb nom. Els peus i les notes admeten cursiva, subíndexs i superíndexs: la taula elèctrica dona les condicions de mesura amb `*V*~DD~` al peu, que a les taules va a sobre, i numera les notes amb `^1^`. Un flotant ocupa el primer espai lliure després del seu primer `:ref`. La taula 1 es cita a la pàgina 1 i va a dalt, a tota l'amplada, així que obre la pàgina 2. El dibuix de l'encapsulat va a baix, també a tota l'amplada, i la resta de taules es queden amb la col·locació per defecte, un flotant de l'amplada d'una columna. Col·locada `here`, una taula es queda al text; si no cap en el que resta de la columna, també es parteix entre files.
 
 ### 3 · Deixa que una taula llarga es parteixi sola
 
@@ -40,7 +40,7 @@ La taula de terminals i el mapa de registres surten de la mateixa funció, `grou
 
 <Excerpt region="drawing" />
 
-Un SVG arriba al canvas com a imatge, i una imatge no pot fer servir les fonts web de la pàgina, així que els rètols dels terminals, del circuit i de l'encapsulat sortirien amb una font del sistema. El PDF rep el marcatge tal com és i compon cada `<text>` com a text seleccionable amb les fonts que incrusta. Per al canvas, cada dibuix es registra una altra vegada amb el fitxer de Fira Mono a dins, baixat una sola vegada amb el carregador de fonts del bloc pdf del kit.
+Els rètols dels terminals, del circuit i de l'encapsulat són elements `<text>` que demanen Fira Mono, la lletra de rètols del document. Un SVG arriba al canvas com a imatge, així que el `loadSvg` del kit passa abans el marcatge per `inlineSvgFonts`, que incrusta a l'SVG les fonts que anomena el seu text; el canvas dibuixa llavors els rètols en Fira Mono. El PDF compon cada `<text>` com a text seleccionable amb les fonts que incrusta.
 
 ### 6 · Obertura, capçalera i peu de pàgina
 
@@ -73,4 +73,4 @@ L'estil de peu del tipus taula pot pintar una barra darrere del peu; aquí és d
 
 - La primera part d'una taula partida deixa el peu de la seva columna al text quan hi caben tres línies o més a sota, i sempre ho fa en una columna que ja té un flotant. Fes que una taula llarga comenci en una columna sense altres flotants, com el mapa de registres, i ajusta'n les files perquè la primera part arribi al peu de la columna.
 - Els elements de text de disseny van centrats per defecte. L'entradeta té una amplada fixa, així que necessita `align: 'left'` per alinear-se sota la referència.
-- A l'última pàgina d'un capítol, postext 1.4.1 puja els flotants a tota l'amplada que van sota el text i els deixa a una línia de distància, de manera que una figura `bottom` queda just sota l'última línia i no al peu de la pàgina. La pàgina 4 està redactada per omplir les columnes, i el dibuix de l'encapsulat fa 48,3 mm d'alçada perquè el text de sobre acabi en una línia de la retícula de base. Així el dibuix no té lloc per pujar i acaba a la mateixa altura que el peu de les altres pàgines.
+- A l'última pàgina d'un capítol, Postext puja els flotants a tota l'amplada que van sota el text i els deixa a una línia de distància, de manera que una figura `bottom` queda just sota l'última línia i no al peu de la pàgina. La pàgina 4 està redactada per omplir les columnes, i el dibuix de l'encapsulat fa 48,3 mm d'alçada perquè el text de sobre acabi en una línia de la retícula de base. Així el dibuix no té lloc per pujar i acaba a la mateixa altura que el peu de les altres pàgines. Amb `layout.hugClosingFloats: false` no els puja.

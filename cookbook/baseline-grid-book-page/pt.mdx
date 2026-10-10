@@ -64,13 +64,12 @@ A resposta curta calcula a margem inferior: os 280 mm do formato, menos os 24 mm
 Sem balanceamento, a página 11 coloca as últimas catorze linhas e o colofão na primeira coluna e deixa a segunda vazia.
 
 ```diff
--const balancing = { stretchAfterFloats: false };
+-const balancing = { enabled: true };
 +const balancing = { enabled: false };
 ```
 
 ## Erros comuns
 
-- Um nível de título com `span: 'page'` e sem `advancedDesign` deveria atravessar as duas colunas, mas o postext 1.4.1 o mede com a largura de uma só: “O cânone secreto” sai numa linha na largura da página, mas reserva a altura de duas, com o fio de coluna desenhado através da faixa. Aqui o título fica na primeira coluna.
 - A regra de que um flutuante `top` nunca cai na página que o cita vale para os flutuantes na largura da página. Um flutuante `top` de coluna pode cair na página que o cita, na cabeça de uma coluna posterior, como a Figura 1.1 na página 9.
 - O tamanho da página, as margens e a medianiz usam unidades absolutas (mm, pt, cm, in). Ali um `em` não tem corpo de letra com que se medir, e a composição para com “dimensionToPx: baseFontSizePx is required for unit "em"”.
 - O espaço entre palavras da Vollkorn é estreito, 0,2 em, então numa coluna de uns 50 caracteres algumas linhas justificadas ficam frouxas ou apertadas. O texto de exemplo foi ajustado linha a linha com o relatório de linhas frouxas da captura; confira de novo depois de qualquer mudança no texto ou na medida.

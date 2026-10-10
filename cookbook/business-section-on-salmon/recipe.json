@@ -45,13 +45,9 @@
     "Q38"
   ],
   "gotchas": [
-    "headings-drop-h1-break",
     "page-span-heading-new-page",
     "paper-run-whole-leaves",
-    "folio-cover-pages-even",
-    "svg-no-webfonts",
-    "overflow-ellipsis-default",
-    "fonts-first"
+    "folio-cover-pages-even"
   ],
   "related": [
     "newspaper-front-page",
@@ -61,7 +57,7 @@
   ],
   "workarounds": [],
   "engine": {
-    "postext": "1.18.0"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -197,5 +193,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-06",
-  "updated": "2026-10-06"
+  "updated": "2026-10-10"
 }

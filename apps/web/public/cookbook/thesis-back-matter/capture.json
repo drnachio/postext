@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "thesis-back-matter",
-  "sourceHash": "9b404c868f21f54dd9f1437a4db43452cc52766b1b63cdb51a83d9d7ae367e94",
+  "sourceHash": "7d7173e1e1791d3fb528dea5bf498019d11130f30df8792b176199c2b610b857",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.518Z",
+  "capturedAt": "2026-10-10T13:38:51.937Z",
   "variants": {
     "en": {
-      "hash8": "a36fa4b9",
-      "vdtHash": "e9d60ef100984eb6334908fe197d3daf771f2b26",
+      "hash8": "461ab32f",
+      "vdtHash": "d3fffdfe54cbd7bd276c78145c2b01458ea425c4",
       "timings": {
-        "importMs": 189,
-        "fontsMs": 62,
-        "buildMs": 80,
-        "totalMs": 2556,
-        "builds": 2
+        "importMs": 162,
+        "fontsMs": 26,
+        "buildMs": 118,
+        "totalMs": 937,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -73,7 +73,7 @@
           "file": "p03.webp",
           "strip": "p03.s.webp",
           "bytes": 81948,
-          "alt": "Opening page 173: Interview guide. Table A.1. Timing of an interview session."
+          "alt": "Opening page 173: A Interview guide. Table A.1. Timing of an interview session."
         },
         {
           "n": 4,
@@ -152,18 +152,17 @@
       },
       "pdf": {
         "file": "thesis-back-matter.pdf",
-        "bytes": 116195,
+        "bytes": 116201,
         "pages": 7
       },
       "sandbox": {
         "file": "thesis-back-matter.postext",
-        "bytes": 20434,
+        "bytes": 20441,
         "folio": "8d599631"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "defaultResourceTypes",
           "renderPageToCanvas",
@@ -180,7 +179,6 @@
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.referenceBold",
-          "bodyText.referenceColor",
           "calloutStyles",
           "calloutStyles[].backgroundEnabled",
           "calloutStyles[].body",
@@ -255,6 +253,7 @@
           "headingStyles[].layout.gutterWidth",
           "headingStyles[].layout.layoutType",
           "headingStyles[].numbered",
+          "headingStyles[].numberingTemplate",
           "headings",
           "headings.balancing",
           "headings.balancing.maxLinesPerHeading",
@@ -423,6 +422,11 @@
           "worst": 1.56
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

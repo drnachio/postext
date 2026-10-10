@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "vertical-newspaper-tiers",
-  "sourceHash": "3daea922e3e125da21e383681a09f03e7557e7b857907745f9707e0c608542c0",
+  "sourceHash": "a38d2b72950ce732b5a065f17f80082116280aba751a29bb4680f5f87623d21d",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.547Z",
+  "capturedAt": "2026-10-10T13:39:44.795Z",
   "variants": {
     "en": {
-      "hash8": "82e0bca8",
+      "hash8": "0db39a53",
       "vdtHash": "4314e230195b458784bb410c7c41cdfa6b4d9cf0",
       "timings": {
-        "importMs": 179,
-        "fontsMs": 412,
-        "buildMs": 53,
-        "totalMs": 1208,
+        "importMs": 182,
+        "fontsMs": 344,
+        "buildMs": 51,
+        "totalMs": 1124,
         "builds": 1
       },
       "specimen": {
@@ -40,7 +40,7 @@
           "Noto Serif TC"
         ],
         "pages": 2,
-        "ownLines": 179
+        "ownLines": 180
       },
       "pages": [
         {
@@ -91,7 +91,7 @@
       },
       "pdf": {
         "file": "vertical-newspaper-tiers.pdf",
-        "bytes": 379502,
+        "bytes": 379485,
         "pages": 2
       },
       "sandbox": {
@@ -102,11 +102,11 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -341,13 +341,13 @@
       }
     },
     "es": {
-      "hash8": "ce4a0dea",
+      "hash8": "4fd8bbfb",
       "vdtHash": "b3f782d917419cebafda94a9a128694b3d931d07",
       "timings": {
-        "importMs": 180,
-        "fontsMs": 398,
-        "buildMs": 53,
-        "totalMs": 1195,
+        "importMs": 183,
+        "fontsMs": 329,
+        "buildMs": 52,
+        "totalMs": 1105,
         "builds": 1
       },
       "specimen": {
@@ -370,7 +370,7 @@
           "Noto Serif TC"
         ],
         "pages": 2,
-        "ownLines": 179
+        "ownLines": 180
       },
       "pages": [
         {
@@ -421,7 +421,7 @@
       },
       "pdf": {
         "file": "vertical-newspaper-tiers.pdf",
-        "bytes": 379642,
+        "bytes": 379618,
         "pages": 2
       },
       "sandbox": {
@@ -432,11 +432,11 @@
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

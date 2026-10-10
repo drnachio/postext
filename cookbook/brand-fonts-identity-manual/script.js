@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 040 · Brand fonts in layout, PDF and bundle ════════════
 // https://postext.dev/en/cookbook/brand-fonts-identity-manual
 // Code: MIT · Text and drawings: original (CC BY 4.0) · Metro de Alba is a fictional network
-// Fonts: Public Sans, Big Shoulders Display, Spline Sans Mono (OFL 1.1) · Needs postext ≥ 1.19.1
+// Fonts: Public Sans, Big Shoulders Display, Spline Sans Mono (OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, setCellBackground, createBundle,
+  buildDocument, renderPageToCanvas, registerResourceImage, defaultResourceTypes, setCellBackground,
+  createBundle,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -35,9 +35,8 @@ async function loadBrandFonts() {
   }));
 }
 
-// 2 · The PDF embeds the same bytes as TrueType. It also asks for faces no text uses (the
-// display face's italic, the monospace's SemiBold): answer with the family's closest file.
-// 1.4.1 writes an unused copy of that file for each of them (gotcha: pdf-font-copies).
+// 2 · The PDF embeds the same bytes as TrueType. renderToPdf asks for the faces the pages
+// paint; a weight or slant the brand lacks gets the family's closest file, embedded once.
 async function brandFontProvider(family, weight, style) {
   const cost = (f) => (f.style === style ? 0 : 1000) + Math.abs(f.weight - weight);
   const own = brandFaces().filter((f) => f.family === family);
@@ -70,7 +69,7 @@ const COLOURS = [ // id, name, screen, print (coated stock)
 ];
 const palette = { ...Object.fromEntries(COLOURS.map(([id, , hex]) => [id, hex])),
   paper: '#ffffff', section: '#e4572e' }; // section: the line colour of the current section
-// col() writes the hex too: 1.4.1 designs read it, not the link (gotcha: palette-skips-designs).
+// col(): a colour linked to its palette entry, with the entry's hex beside the link.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = [...Object.entries(palette), ['main-color', palette.ink]]
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -91,8 +90,7 @@ const GUTTER = 8, COL = (PAGE.width - MARGIN.inner - MARGIN.outer - GUTTER) / 2;
 const BAND = 13, LEAD = 14; // mm: the ink band at the head of each page; pt: the leading
 
 // #region sections: a giant zero-padded number in the section's line colour
-// Texts wrap (gotcha: overflow-ellipsis-default); lineHeight is a multiple (gotcha:
-// design-lineheight-multiple). The body starts ten grid lines down, in both columns.
+// The body starts ten grid lines down, in both columns.
 const opener = { enabled: true, minHeight: pt(10 * LEAD), slot: { elements: [
   { kind: 'text', id: 'number', content: '{number}', fontFamily: DISPLAY, fontWeight: 800,
     fontSize: pt(130), lineHeight: 1, color: col('section'), align: 'left', overflow: 'wrap',
@@ -166,18 +164,18 @@ const resourceTypes = [...defaultResourceTypes(LANG),
 const FOOT = { position: 'bottom' }; // cited in one paragraph: its page's foot, one per column
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, resourceTypes, customFonts: customFonts(),
   page: { width: mm(PAGE.width), height: mm(PAGE.height), dpi: 150,
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.inner),
       right: mm(MARGIN.outer), mirror: true } },
   layout: { layoutType: 'double', gutterWidth: mm(GUTTER) },
   bodyText: { fontFamily: TEXT, fontSize: pt(9.8), lineHeight: pt(LEAD), color: col('ink'),
-    referenceColor: col('ink'), // references skip the palette (gotcha: palette-skips-designs)
+    referenceColor: col('ink'), // references in Ink, like the text around them
     boldFontWeight: 600, // the brand has no Bold: its SemiBold sets **emphasis**
     textAlign: 'left', firstLineIndent: mm(0), paragraphSpacing: true },
   headings: { fontFamily: DISPLAY, fontWeight: 800, levels: [ // ink: main-color
-    // span: 'page' breaks already; restated in case it goes (gotcha: headings-drop-h1-break)
+    // Each section opens a page, on either side.
     { level: 1, span: 'page', numberingTemplate: '{1:01}', marginBottom: pt(0),
       breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
     { level: 2, fontSize: pt(17), lineHeight: pt(2 * LEAD), marginTop: pt(0), // two lines,
@@ -208,8 +206,7 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
-// Its frontmatter fills {title} · {subtitle} in the band and the PDF's title and author:
-// every value is quoted (gotcha: quote-frontmatter).
+// Its frontmatter fills {title} · {subtitle} in the band and the PDF's title and author.
 
 const ART = {}; // fileId → SVG markup: registered for the pages, packed into the bundle
 const drawing = (id, typeId, fileId, [w, h], caption, altText, placement) => ({ id, typeId,
@@ -357,7 +354,7 @@ const FONTS = {
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // #region build: the brand's faces first, then the pages, then a PDF from the same bytes
-await loadBrandFonts(); // the answer, step 1 (gotcha: fonts-first)
+await loadBrandFonts(); // the answer, step 1
 for (const [fileId, markup] of Object.entries(ART)) await loadSvg(fileId, markup);
 const doc = buildDocument({ markdown, resources }, config());
 showPages(doc, { title: 'Metro de Alba · Identity manual' });

@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 026 · Type specimen with every font loaded before layout ═════════
 // https://postext.dev/en/cookbook/fonts-before-layout
-// Code: MIT · Text: original (CC BY 4.0) · Picture: cut from the pen's own first and last builds
-// Fonts: Ysabeau Office, Noto Serif Display, IBM Plex Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
+// Code: MIT · Text: original (CC BY 4.0) · Picture: cut from the pen's own early and last builds
+// Fonts: Ysabeau Office, Noto Serif Display, IBM Plex Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocument, buildDocumentWithFonts, renderPageToCanvas, defaultResourceTypes,
   registerResourceImage } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -14,12 +14,11 @@ const MARGIN = { top: 22, bottom: 24, inner: 20, outer: 48 }; // mm: inner is th
 const MEASURE = PAGE.width - MARGIN.inner - MARGIN.outer; // 112 mm: about 70 letters at 11 pt
 const FIELD = 122; // mm from the top edge: the ultramarine field of the opener
 const LEAD = 15.5; // pt: the body leading and the step of every vertical space
-const DPI = 150; // font strings carry px at this resolution; the audit turns them back into pt
+const DPI = 150; // the page's resolution: the proof on page 4 is cut at twice this
 const [TEXT, DISPLAY, MONO] = ['Ysabeau Office', 'Noto Serif Display', 'IBM Plex Mono'];
 const palette = { ink: '#16161a', ultramarine: '#3246d3', mist: '#c9d0f6', // mist: 4.6:1 on
   rule: '#cfc9bd', muted: '#6b6a70', paper: '#ffffff' }; // ultramarine, for labels on the field
-// Every colour keeps its palette id beside its hex, because 1.4.1 paints design slots from the
-// hex (gotcha: palette-skips-designs); main-color catches any default left unstated.
+// Every colour is linked to its palette entry; main-color catches any default left unstated.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = () => Object.entries({ ...palette, 'main-color': palette.ultramarine })
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -28,7 +27,7 @@ const label = { fontFamily: MONO, fontSize: pt(7.5), letterSpacing: pt(1.2),
 const display = { fontFamily: DISPLAY, fontWeight: 900, italic: true };
 
 // #region type: the text face at 11 on 15.5 pt, and a waterfall of it on two leads a line
-const bodyText = () => ({ // one family name, never a CSS stack (gotcha: font-family-one-name)
+const bodyText = () => ({
   fontFamily: TEXT, fontSize: pt(11), lineHeight: pt(LEAD), color: col('ink'),
   boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
   textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true }); // ragged and spaced
@@ -52,17 +51,16 @@ const ITALIC_FOOT = 5; // mm: the italic A's foot reaches this far left of the g
 const at = (x, y, width) => ({ anchor: { to: 'page', edge: 'top-left' },
   offset: { x: mm(x), y: mm(y) }, ...(width && { size: { width: mm(width) } }) });
 const text = (id, content, style, placement) => ({ kind: 'text', id, content, align: 'left',
-  overflow: 'wrap', ...style, placement }); // design text wraps instead of ending in an ellipsis
+  overflow: 'wrap', ...style, placement }); // a running head wraps too, never '…'
 const cover = () => ({ level: 1, fontSize: pt(30), italic: true, // headings.levels[0]
-  breakBefore: { enabled: true, parity: 'odd' }, // restated (gotcha: headings-drop-h1-break)
-  span: 'page', // lets the field reach the top edge: in the column it stops at the top margin
+  breakBefore: { enabled: true, parity: 'odd' }, // the cover is a recto
+  span: 'page', // the heading is set across the page; its field hangs from the bleed
   advancedDesign: { enabled: true, minHeight: mm(Y.end - MARGIN.top), // from the top margin
     slot: { elements: [
       { kind: 'box', id: 'field', style: { backgroundColor: col('ultramarine') }, placement: {
         anchor: { to: 'bleed', edge: 'top-left' }, size: { width: 'fill', height: mm(FIELD) } } },
       text('kicker', '{attr.kicker}', { ...label, fontWeight: 700, color: col('paper') },
         at(MARGIN.inner, Y.kicker)),
-      // lineHeight multiplies the size (gotcha: design-lineheight-multiple)
       text('glyphs', '{attr.glyphs}', { ...display, fontSize: pt(240), lineHeight: 1,
         color: col('paper') }, at(MARGIN.inner + ITALIC_FOOT, Y.glyphs)),
       text('label', '{attr.label}', { ...label, color: col('mist') }, at(MARGIN.inner, Y.label)),
@@ -87,7 +85,7 @@ const header = () => ({ elements: [
 const footer = () => ({ elements: [
   head('drop-folio', '{pageNumber}', 'all', 'bottom-right', -MARGIN.outer, 'opener')] });
 
-const config = () => ({ // a new object per build (gotcha: config-cache-identity)
+const config = () => ({
   // "Table 1", not "Table 1.1": the booklet has one chapter. Table captions sit above.
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}',
     ...(type.id === 'table' && { captionStyle: { position: 'above' } }) })),
@@ -111,28 +109,34 @@ const config = () => ({ // a new object per build (gotcha: config-cache-identity
 // ─── 2 · Content ────────────────────────────────────────────────────────────
 // The table and the picture come from the builds themselves (section 4).
 let audit = { rows: [], note: '' };
+const content = () => ({ markdown, resources: resources() }); // read again for each build
 const here = { position: 'here' }; // both sit where ::resource puts them
 const resources = () => [
   { id: 'faces', typeId: 'table', kind: 'table', createdAt: 0, updatedAt: 0, placement: here,
-    caption: 'Faces this document asked for, read from its own layout.', note: audit.note,
-    table: { model: { headerRowCount: 1, columnWidths: [3, 2, 5], rows: [
-      ['Family', 'Face', 'Sizes (pt)'].map((content) => ({ content, isHeader: true })),
+    caption: 'Every face this booklet declares: whether Postext found it set in the pages, and '
+      + 'the files the browser fetched for it.', note: audit.note,
+    table: { model: { headerRowCount: 1, columnWidths: [31, 19, 28, 34], rows: [
+      ['Family', 'Face', 'In the pages', 'Files fetched']
+        .map((cell) => ({ content: cell, isHeader: true })),
       ...audit.rows] } } },
   proofFigure(), // drawn from the builds just below
 ];
 
-// #region art-proof: page 1's first paragraph from the first build, over the same from the last
+// #region art-proof: page 1's first paragraph from the early build, over the same from the last
 const STRIP = { lines: 8, overrun: 10 }; // page 1's first paragraph; mm shown past the measure
 const PROOF = { // px: two strips a lead apart, cut at 300 dpi
   width: Math.round(((MEASURE + STRIP.overrun) / 25.4) * 2 * DPI),
   height: Math.round((((2 * STRIP.lines + 1) * LEAD) / 72) * 2 * DPI) };
-const proof = { moved: 0, total: 0 }; // lines of text the first build broke elsewhere, of all
+const proof = { moved: 0, total: 0, faces: 0 }; // lines the early build broke elsewhere, of all
+const fallbacksIn = (doc) => // a build lists each face its font set could not give
+  (doc.contentWarnings ?? []).filter((w) => w.kind === 'fontFallback').length;
 const proofFigure = () => ({ id: 'proof', typeId: 'figure', kind: 'bitmap', createdAt: 0,
   updatedAt: 0, placement: here,
   bitmap: { fileId: 'proof.png', format: 'png', width: PROOF.width, height: PROOF.height },
-  caption: 'The first paragraph of page 1 as the first build set it, measured before the fonts '
-    + 'had arrived (above), and as the last build set it (below). The first build broke '
-    + `${proof.moved} of its ${proof.total} lines of text elsewhere. The rule marks the measure.`,
+  caption: 'The first paragraph of page 1 as the early build set it, measured before the fonts '
+    + 'had arrived (above), and as the last build set it (below). The early build broke '
+    + `${proof.moved} of its ${proof.total} lines of text elsewhere, and its own warnings name `
+    + `${proof.faces} faces set in a fallback. The rule marks the measure.`,
   altText: `Two strips of the same ${STRIP.lines} lines of text. In the upper strip the lines `
     + 'break in other places and some run past a vertical rule; in the lower one every line '
     + 'stops short of it.' });
@@ -141,12 +145,13 @@ function drawProof(first, last) {
     .map((b) => b.lines.map((l) => l.text));
   const [before, after] = [first, last].map(linesOf);
   proof.total = before.flat().length;
+  proof.faces = fallbacksIn(first);
   proof.moved = before.flatMap((lines, i) => lines.filter((t, j) => t !== after[i]?.[j])).length;
   const canvas = Object.assign(document.createElement('canvas'), PROOF);
   const ctx = canvas.getContext('2d');
   const strip = (PROOF.height * STRIP.lines) / (2 * STRIP.lines + 1);
   const edge = Math.round((PROOF.width * MEASURE) / (MEASURE + STRIP.overrun));
-  // The renderer clips each column 2 pt past its edge, which would cut the first build's lines
+  // The renderer clips each column 2 pt past its edge, which would cut the early build's lines
   // at the measure: paint a copy of page 1 whose column reaches across the whole strip.
   const wide = (column) => ({ ...column,
     bbox: { ...column.bbox, width: column.bbox.width + (STRIP.overrun / 25.4) * DPI } });
@@ -163,21 +168,23 @@ function drawProof(first, last) {
   ctx.fillStyle = palette.ultramarine; // a hairline at the measure, and each strip's name
   ctx.fillRect(edge, 0, 2, PROOF.height);
   ctx.font = `700 ${(7 / 72) * 2 * DPI}px "IBM Plex Mono"`; // 7 pt, loaded by now
-  ['first', 'last'].forEach((name, i) => // on the last line of each strip
+  ['early', 'last'].forEach((name, i) => // on the last line of each strip
     ctx.fillText(name, edge + 12, (i ? PROOF.height : strip) - 16));
   registerResourceImage('proof.png', canvas);
 }
 // #endregion
 
-const markdown = /* @content */ ''; // content.<lang>.md: every frontmatter value is quoted
+const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the layout asks for (page 3 lists them), each declared from two files.
+// Every face the design may ask for (page 3 lists them), each declared from two files.
 const FONTS = {
   'Ysabeau Office': ['400', '400i', '700', '700i'], // text, waterfall, pangrams, lead
   'Noto Serif Display': ['900', '900i'], // the glyphs, the title, the subheads
   'IBM Plex Mono': ['400', '400i', '700', '700i'], // labels, chips, the table, captions
 };
+const facesOf = (fonts) => Object.entries(fonts).flatMap(([family, specs]) => specs.map((spec) =>
+  ({ family, weight: parseInt(spec, 10), style: spec.endsWith('i') ? 'italic' : 'normal' })));
 
 // #region declare: one FontFace per file, as a stylesheet has one @font-face rule per file
 const SUBSETS = { // the characters each file covers, copied from the family's @font-face CSS
@@ -186,95 +193,63 @@ const SUBSETS = { // the characters each file covers, copied from the family's @
   'latin-ext': 'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,'
     + 'U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,'
     + 'U+A720-A7FF' };
+const FILES = new Map(); // FontFace → the subset its file covers, for the audit
 function declareFaces(fonts) { // Fontsource's static files stand in for your own /fonts/ folder
-  for (const [family, specs] of Object.entries(fonts)) {
+  for (const { family, weight, style } of facesOf(fonts)) {
     const id = family.toLowerCase().replaceAll(' ', '-');
-    for (const spec of specs) {
-      const [weight, style] = [spec.slice(0, 3), spec.endsWith('i') ? 'italic' : 'normal'];
-      for (const [subset, unicodeRange] of Object.entries(SUBSETS)) {
-        const file = `${id}@5/files/${id}-${subset}-${weight}-${style}.woff2`;
-        // Adding a face fetches nothing: the file downloads when a load or a line needs it.
-        const url = `https://cdn.jsdelivr.net/npm/@fontsource/${file}`;
-        document.fonts.add(new FontFace(family, `url(${url})`, { weight, style, unicodeRange }));
-      }
+    for (const [subset, unicodeRange] of Object.entries(SUBSETS)) {
+      const file = `${id}@5/files/${id}-${subset}-${weight}-${style}.woff2`;
+      // Adding a face fetches nothing: the file downloads when a load or a line needs it.
+      const face = new FontFace(family, `url(https://cdn.jsdelivr.net/npm/@fontsource/${file})`,
+        { weight: `${weight}`, style, unicodeRange });
+      FILES.set(face, subset);
+      document.fonts.add(face);
     }
   }
 }
 // #endregion
 
-// #region answer: build, collect every font the layout asked for, load it, clear, build again
-// Every block, table, caption, chip, opener and running head keeps the font string it is set in
-// (fontString, headerFontString…) and those of the bold and italics it may use (boldFontString…).
-function fontStringsIn(doc) {
-  const found = new Map(); // font string → true when something is set in it
-  const walk = (node) => {
-    if (!node || typeof node !== 'object') return;
-    for (const [key, value] of Object.entries(node)) {
-      if (typeof value !== 'string' || !/fontString$/i.test(key)) walk(value);
-      else found.set(value, found.get(value) || !/(bold|italic)FontString$/i.test(key));
-    }
-  };
-  walk(doc.pages); walk(doc.blocks); // not doc.config: it is large and holds no font strings
-  return found;
-}
-function faceOf(font) { // 'italic 700 22.9px "Source Serif 4"' → { family, weight, style, px }
-  const [, italic, weight = '400', px, family] = /^(italic )?(\d+ )?([\d.]+)px (.+)$/.exec(font);
-  return { family: family.replaceAll('"', ''), weight: weight.trim(), px: Number(px),
-    style: italic ? 'italic' : 'normal' };
-}
-const nameOf = (face) => `${face.family} ${face.weight} ${face.style}`; // a FontFace works too
-async function buildWithLoadedFonts(build, sample) { // → every build, first to last
-  const builds = [];
-  while (builds.length < 4) {
-    builds.push(build()); // the first one measures with whatever faces the browser has
-    // fonts.check() says yes to an undeclared family and to a face it can fake, so each face that
-    // something is set in needs a FontFace of its own; a bold or italic that is only named loads
-    // if declared (a family with no italic has none). load() fetches the files the sample needs.
-    const declared = new Set([...document.fonts].map(nameOf)), missing = new Set(), pending = [];
-    for (const [font, set] of fontStringsIn(builds.at(-1))) {
-      const name = nameOf(faceOf(font));
-      if (!declared.has(name)) { if (set) missing.add(name); }
-      else if (!document.fonts.check(font, sample)) pending.push(font);
-    }
-    if (missing.size) throw new Error(`No FontFace for ${[...missing].join(', ')}`);
-    if (!pending.length) return builds;
-    await Promise.all(pending.map((font) => document.fonts.load(font, sample)));
-    clearMeasurementCache(); // the widths measured with a fallback stay cached until cleared
-  }
-  throw new Error(`The fonts had not settled after ${builds.length} builds.`);
-}
-// #endregion
-
-// #region audit: page 3's table, one row per face the walk found, with every size it set
-function auditOf(builds) {
-  const doc = builds.at(-1), faces = new Map(), declared = new Set([...document.fonts].map(nameOf));
-  for (const face of [...fontStringsIn(doc).keys()].map(faceOf)) {
-    const name = `${face.weight}${face.style === 'italic' ? ' italic' : ''}`; // '400 italic'
-    const key = `${Object.keys(FONTS).indexOf(face.family)} ${name}`; // FONTS order, upright first
-    // A face with no file is only named, never set: the browser fakes it if a line asks for it.
-    if (!faces.has(key)) faces.set(key, { family: face.family, sizes: new Set(),
-      face: declared.has(nameOf(face)) ? name : `${name} · no file` });
-    faces.get(key).sizes.add(Math.round((face.px * 72 * 10) / DPI) / 10); // px back to pt
-  }
-  const rows = [...faces].sort(([a], [b]) => a.localeCompare(b)).map(([, f], i, all) => [
+// #region audit: page 3's table: every face declared or set, the report's word, its files
+const SET = { loaded: 'yes', synthesized: 'faked', missing: 'in a fallback' }; // the report
+const nameOf = (f) => `${f.family.replaceAll('"', '')} ${f.weight} ${f.style}`; // or a FontFace
+function auditOf(doc, report) {
+  const found = Object.keys(SET).flatMap((kind) => report[kind].map((f) => [nameOf(f), kind]));
+  const inPages = new Map(found);
+  const loaded = [...FILES].filter(([face]) => face.status === 'loaded');
+  const faces = new Map([...facesOf(FONTS), ...Object.keys(SET).flatMap((kind) => report[kind])]
+    .map((f) => [nameOf(f), f])); // the declared faces, then any the pages set without a file
+  const rows = [...faces].map(([name, f], i, all) => [
     i && all[i - 1][1].family === f.family ? '' : f.family, // each family named once
-    f.face, [...f.sizes].sort((a, b) => a - b).join(' · ')].map((content) => ({ content })));
-  const files = [...document.fonts].filter((face) => face.status === 'loaded').length;
-  const warnings = doc.warnings?.length || 'no'; // what else to read in a finished layout
-  return { rows, note: `Build ${builds.length}: ${rows.length} faces · ${files} files loaded · `
-    + `${doc.converged ? 'converged' : 'not converged'} · ${warnings} layout warnings` };
+    `${f.weight}${f.style === 'italic' ? ' italic' : ''}`, SET[inPages.get(name)] ?? 'no',
+    loaded.filter(([face]) => nameOf(face) === name).map(([, subset]) => subset).join(' · ')
+      || 'none'].map((cell) => ({ content: cell })));
+  // What else to read in a finished layout: its content warnings, its passes, its warnings.
+  return { rows, note: `${report.loaded.length} of ${rows.length} faces set in the pages · `
+    + `${loaded.length} of ${FILES.size} files fetched · fontFallback warnings: `
+    + `${fallbacksIn(doc) || 'none'} · ${doc.converged ? '' : 'not '}converged · layout warnings: `
+    + `${doc.warnings?.length || 'none'}` };
 }
 // #endregion
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-// #region build: declare the files, build until the fonts settle, audit, build the last time
+// #region answer: one call loads every face the config and the text ask for, then builds
+// buildDocumentWithFonts starts with prepareFonts: it reads the config and the text for every
+// face they ask for (text, headings, chips, table, captions, opener, running heads), in each
+// weight and slant, and loads them for the characters the document sets. The page declares its
+// files (declareFaces), so they load through document.fonts; a face nothing declares would be
+// asked of a resolve(family, weight, style) option. Then it builds, reads the faces the pages
+// are set in, loads any that the config did not name and builds again.
+let report; // { loaded, missing, synthesized }: lists of { family, weight, style }
+const build = () => buildDocumentWithFonts(content(), config(),
+  { onFonts: (found) => { report = found; } }); // what the last look at the pages found
+
 kitStatus('Loading fonts…'); // the kit's bar: it also reports any error thrown below
+const early = buildDocument(content(), config()); // on purpose: the page has no font yet (page 4)
 declareFaces(FONTS);
-const build = () => buildDocument({ markdown, resources: resources() }, config());
-const builds = await buildWithLoadedFonts(build, markdown);
-audit = auditOf(builds); // page 3's table
-drawProof(builds[0], builds.at(-1)); // page 4's picture
-const doc = (await buildWithLoadedFonts(build, markdown)).at(-1); // nothing is left to load
+const fitted = await build(); // every face loaded before a line is measured
+audit = auditOf(fitted, report); // page 3's table
+drawProof(early, fitted); // page 4's picture
+const doc = await build(); // nothing left to load: the same pages, table and picture filled in
 showPages(doc, { title: 'Load every font before layout' });
 // #endregion
 

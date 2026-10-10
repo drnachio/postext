@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "names-and-subjects-indexes",
-  "sourceHash": "250c8006d2919e649632eb23fd3711b8422e36d7fbceaa1c26f97323539a58b3",
+  "sourceHash": "d8f78309ef60638a08614def6638477bf4b488386f0b40871001d3150e928cb9",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.196Z",
+  "capturedAt": "2026-10-10T13:36:24.394Z",
   "variants": {
     "en": {
-      "hash8": "c7a96649",
+      "hash8": "3a6d377d",
       "vdtHash": "abc2b6e55e034adc2d9612c30c36cc1d0b6a5e84",
       "timings": {
-        "importMs": 192,
-        "fontsMs": 73,
-        "buildMs": 265,
-        "totalMs": 2659,
-        "builds": 2
+        "importMs": 189,
+        "fontsMs": 28,
+        "buildMs": 129,
+        "totalMs": 969,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Libre Franklin"
         ],
         "pages": 7,
-        "ownLines": 143
+        "ownLines": 141
       },
       "pages": [
         {
@@ -152,18 +152,17 @@
       },
       "pdf": {
         "file": "names-and-subjects-indexes.pdf",
-        "bytes": 116589,
+        "bytes": 116593,
         "pages": 7
       },
       "sandbox": {
         "file": "names-and-subjects-indexes.postext",
-        "bytes": 17026,
+        "bytes": 17025,
         "folio": "581a62c9"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "renderPageToCanvas",
           "renderToPdf"
@@ -391,14 +390,14 @@
       }
     },
     "es": {
-      "hash8": "62276c58",
+      "hash8": "f2162b44",
       "vdtHash": "b48ac6ef8eac5e87e51db729d46c10bd1c1c3a7b",
       "timings": {
-        "importMs": 205,
-        "fontsMs": 72,
-        "buildMs": 78,
-        "totalMs": 1113,
-        "builds": 2
+        "importMs": 163,
+        "fontsMs": 27,
+        "buildMs": 109,
+        "totalMs": 920,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -419,7 +418,7 @@
           "Libre Franklin"
         ],
         "pages": 7,
-        "ownLines": 143
+        "ownLines": 141
       },
       "pages": [
         {
@@ -532,7 +531,7 @@
       },
       "pdf": {
         "file": "names-and-subjects-indexes.pdf",
-        "bytes": 130375,
+        "bytes": 130379,
         "pages": 7
       },
       "sandbox": {
@@ -542,8 +541,7 @@
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "decompressWoff2",
           "renderPageToCanvas",
           "renderToPdf"

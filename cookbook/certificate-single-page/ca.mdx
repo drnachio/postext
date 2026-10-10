@@ -28,13 +28,13 @@ Un element d'imatge dibuixa un recurs a la mida que li dona la seva col·locaci�
 
 <Excerpt region="title" />
 
-Cada línia s'ancora a la vora `'top'` de la pàgina, que la centra, amb una `y` mesurada des del tall, de manera que el bloc no es mou encara que canviïn els marges; `y()` estira aquestes posicions de la mida carta a l'A4. El nom és el mateix text del títol, que entra amb `{titleText}`, així que apareix als marcadors i a les etiquetes del PDF. Amb `overflow: 'wrap'`, un nom llarg passa a una segona línia; amb el valor per defecte es tallaria amb punts suspensius. `centred()` desplaça cada línia espaiada cap a la dreta la meitat del seu espaiat. Sense aquest ajust, cadascuna queda aquesta mateixa distància a l'esquerra del centre de la pàgina: 0,4 mm l'avanttítol, 0,5 mm *Diploma* i 0,7 mm *d'aprofitament*.
+Cada línia s'ancora a la vora `'top'` de la pàgina, que la centra, amb una `y` mesurada des del tall, de manera que el bloc no es mou encara que canviïn els marges; `y()` estira aquestes posicions de la mida carta a l'A4. El nom és el mateix text del títol, que entra amb `{titleText}`, així que apareix als marcadors i a les etiquetes del PDF. Un nom llarg passa a una segona línia, perquè un disseny de títol parteix el seu text (`overflow: 'wrap'`). Les línies espaiades no demanen cap correcció: l'espaiat que segueix l'última lletra queda fora de la mesura, així que el que se centra són les lletres.
 
 ### 4 · Penja el segell i les signatures d'una mateixa vora
 
 <Excerpt region="signatures" />
 
-Tot el que va al peu es mesura des de `SIGN`, la vora superior del segell, i el marge inferior de l'estil tanca la caixa de text en aquesta mateixa vora, de manera que un text massa llarg per a la pàgina passa a la següent en lloc de ficar-se sota el segell. Si fossin a l'obertura, les línies i els noms comptarien per a la seva alçada ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)), i com que arriben per sota de la caixa de text, la 1.4.1 descartaria tota la reserva: el text començaria 7,6 mm per sota del marge superior, muntat sobre el títol. `LINE` pren l'amplada que queda entre els marges de la pàgina, li resta el disc del segell (34 mm), la reparteix entre les dues signatures i treu 3 mm a cada meitat, de manera que cada línia s'atura a 3 mm del segell en els dos formats (53 mm de llarg en A4 i 56 mm en mida carta). Cada nom i cada càrrec és un text tan ample com la seva línia, i així queda centrat a sota.
+Tot el que va al peu es mesura des de `SIGN`, la vora superior del segell, i el marge inferior de l'estil tanca la caixa de text en aquesta mateixa vora, de manera que un text massa llarg per a la pàgina passa a la següent en lloc de ficar-se sota el segell. Si fossin a l'obertura, les línies i els noms comptarien per a la seva alçada ([span i disseny avançat](/ca/docs/configuration#span-i-disseny-avançat)), i com que arriben per sota de la caixa de text, l'obertura es quedaria la pàgina sencera i enviaria el text a la següent. `LINE` pren l'amplada que queda entre els marges de la pàgina, li resta el disc del segell (34 mm), la reparteix entre les dues signatures i treu 3 mm a cada meitat, de manera que cada línia s'atura a 3 mm del segell en els dos formats (53 mm de llarg en A4 i 56 mm en mida carta). Cada nom i cada càrrec és un text tan ample com la seva línia, i així queda centrat a sota.
 
 ### 5 · Converteix la llista de classe en títols
 
@@ -46,13 +46,13 @@ Cada fila es converteix en un títol `#` que anomena l'estil i porta el número 
 
 <Excerpt region="pdf" />
 
-La classe és un únic document, així que `renderToPdf` escriu un sol fitxer de tres pàgines, amb un marcador per títol que porta el nom de l'alumne. `renderToPdf` també accepta una llista de documents, com els capítols d'un llibre, però amb un document per alumne caldria cridar `buildDocument` per a cadascun. Amb títols, tota la classe es compon d'una vegada, i el visor mostra els tres diplomes d'aquesta mateixa composició. A més de les quatre variants que imprimeixen les pàgines, el PDF demana la negreta i la negreta cursiva de Rosarivo, que Fontsource no té: el proveïdor de fonts del kit ajusta cada petició a la variant més propera de la família ([per què un proveïdor de fonts?](/ca/docs/configuration#per-què-un-proveïdor-de-fonts)).
+La classe és un únic document, així que `renderToPdf` escriu un sol fitxer de tres pàgines, amb un marcador per títol que porta el nom de l'alumne. `renderToPdf` també accepta una llista de documents, com els capítols d'un llibre, però amb un document per alumne caldria cridar `buildDocument` per a cadascun. Amb títols, tota la classe es compon d'una vegada, i el visor mostra els tres diplomes d'aquesta mateixa composició. El PDF incrusta les quatre variants que imprimeixen les pàgines, i el proveïdor de fonts del kit les porta de Fontsource ([per què un proveïdor de fonts?](/ca/docs/configuration#per-què-un-proveïdor-de-fonts)).
 
 ## Variants
 
 ### Genera un PDF per alumne
 
-Un botó per alumne compon el seu diploma com a document a part, amb un `config()` nou, i fa servir el número de sèrie com a nom del fitxer; cadascun pesa uns 238 KB.
+Un botó per alumne compon el seu diploma com a document a part, amb `buildDocumentWithFonts` com la composició del mateix pen, i fa servir el número de sèrie com a nom del fitxer; cadascun pesa uns 236 KB.
 
 ```diff
 -offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
@@ -60,9 +60,10 @@ Un botó per alumne compon el seu diploma com a document a part, amb un `config(
 -document.querySelector('[data-postext-pdf]').textContent = t({ en: 'Class list → one PDF',
 -  es: 'Toda la clase en un PDF' });
 +for (const [name, serial] of CLASS) {
-+  offerPdf(() => renderToPdf(buildDocument({ markdown:
-+    `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`, metadata, resources },
-+    config()), { fontProvider: fontsourceProvider, resourceBytes: imageBytes }), `${serial}.pdf`);
++  const one = `# ${name} {style="certificate" serial="${serial}"}\n\n${markdown}`;
++  offerPdf(async () => renderToPdf(await buildDocumentWithFonts({ markdown: one, metadata,
++    resources }, config(), kitFonts(FONTS)), { fontProvider: fontsourceProvider,
++    resourceBytes: imageBytes }), `${serial}.pdf`);
 +  document.querySelector(`[data-postext-pdf="${serial}.pdf"]`).textContent = name;
 +}
 ```
@@ -75,8 +76,3 @@ El dibuix SVG i la configuració llegeixen el mateix objecte `palette`, de maner
 -  teal: '#1f5f5b', // the frame, the title lines
 +  teal: '#2b3a67', // the frame, the title lines
 ```
-
-## Errors freqüents
-
-- A la 1.4.1, un text de disseny centrat amb `letterSpacing` queda mig espai a l'esquerra de la seva àncora, i un d'alineat a la dreta acaba un espai abans de la seva àncora, perquè la seva amplada inclou l'espaiat que segueix l'última lletra. `space()` torna les línies espaiades al seu lloc.
-- postext-pdf 1.4.1 escriu un SVG al contingut de cada pàgina que el dibuixa, sense una còpia compartida: l'orla suma uns 205 KB a cada pàgina, de manera que el PDF de tres pàgines pesa 670 KB (58 KB sense l'orla) i el d'una classe de trenta en pesaria uns 6,4 MB.

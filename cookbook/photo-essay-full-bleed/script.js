@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 068 · Photo essay with full-bleed plates ═══════════════
 // https://postext.dev/en/cookbook/photo-essay-full-bleed
 // Code: MIT · Text: original (CC BY 4.0) · Plates: diffusion models
-// Fonts: Andada Pro, Syne, Syne Mono (SIL OFL 1.1) · Needs postext ≥ 1.8.0
+// Fonts: Andada Pro, Syne, Syne Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Sierra, a landscape photobook: one day in a mountain range in six plates, each on a page of
 // its own and one across the gutter of a spread, with three short texts between them.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'es'; // @lang: the language of the sample document ('en' | 'es')
@@ -20,7 +20,7 @@ const palette = {
   muted: '#5f646d', // the running foot and the caption of the small plate
   white: '#fbfaf7', // type set on the plates
 };
-// Design elements read the hex, not the palette, in 1.4.1 (gotcha: palette-skips-designs).
+// col() links a colour to its palette entry; the hex is the value the entry holds.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries(palette)
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -46,11 +46,9 @@ const plate = ({ id, art, half, ink = 'white', extra = () => [] }) => ({
   // The left half opens on an even page, a verso, so the right half faces it across the
   // gutter (gotcha: parity-page1-recto).
   ...(half === 'verso' && { breakBefore: { enabled: true, parity: 'even' } }),
-  // No margins: the plate's column is the page, and minHeight fills it, so what follows starts
-  // on the next page. Images reserve no room (gotcha: opener-image-no-reserve), and a minHeight
-  // taller than the column is dropped whole (gotcha: opener-taller-than-column).
-  margins: { top: mm(0), bottom: mm(0), left: mm(0), right: mm(0) },
-  advancedDesign: { enabled: true, minHeight: mm(PAGE.height), slot: { elements: [
+  // The picture is as deep as the page, more than the column holds: the plate claims the
+  // whole page, and what follows starts on the next one.
+  advancedDesign: { enabled: true, slot: { elements: [
     { kind: 'image', id: 'picture', resourceId: art, // the recto half is the same picture,
       placement: at('page', 'top-left', half === 'recto' ? -PAGE.width : 0, 0, // moved left
         { width: mm(half ? 2 * PAGE.width : PAGE.width), height: mm(PAGE.height) }) },
@@ -98,7 +96,7 @@ const textOpener = { enabled: true, slot: { elements: [
     letterSpacing: pt(0.8), color: col('accent'), align: 'left',
     placement: at('container', 'top-left', 0, 0) },
   { kind: 'text', id: 'title', content: '{titleText}', fontFamily: 'Syne', fontWeight: 700,
-    fontSize: pt(28), lineHeight: 1.05, // a multiple (gotcha: design-lineheight-multiple)
+    fontSize: pt(28), lineHeight: 1.05, // a multiple of the size
     color: col('ink'), align: 'left', overflow: 'wrap',
     placement: at('#hours', 'below', 0, 2.5, { width: 'fill' }) },
 ] } };
@@ -116,9 +114,9 @@ const footer = { elements: [
 ] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
-  // The English sample is British English, set with the US patterns: 1.4.1 ships no en-gb.
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
+const config = () => ({
+  // The English sample is British English: every English tag hyphenates with the US patterns.
+  locale: t({ en: 'en-us', es: 'es' }),
   colorPalette,
   resourceTypes: [lamina],
   page: { width: mm(PAGE.width), height: mm(PAGE.height), dpi: 150,
@@ -130,14 +128,13 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     color: col('ink'), boldColor: col('ink'), italicColor: col('ink'), // both default to blue
     referenceColor: col('ink'), referenceBold: false, // 'lámina IV' reads as a word of the text
     firstLineIndent: mm(4), indentAfterHeading: false, // justified and hyphenated by default
-    minWordSpacing: 0.7, maxWordSpacing: 1.6, // a narrower range than the defaults, 0.6 to 2
-    maxRuntTracking: 0 }, // tracking 1.4.1 never paints (gotcha: runt-tracking-unpainted)
+    minWordSpacing: 0.7, maxWordSpacing: 1.6 }, // a narrower range than the defaults, 0.6 to 2
   // A heading's own line is measured even where its design paints the title: set it in a face
   // the page loads, or the kit fetches Open Sans for it.
   headings: { fontFamily: 'Syne', levels: [
-    // A text follows its plate with no forced break (gotcha: headings-drop-h1-break): the
-    // plate fills its page, so the text still starts a page, and that page stays a body page,
-    // with its running foot.
+    // A text follows its plate with no break of its own, so the default H1 break is switched
+    // off: the plate fills its page, the text still starts a page, and that page stays a body
+    // page, with its running foot.
     { level: 1, breakBefore: { enabled: false }, advancedDesign: textOpener },
   ] },
   headingStyles: PLATES.map(plate),
@@ -180,14 +177,13 @@ const resources = [ // the five the heading styles draw, never cited, and plate 
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   'Andada Pro': ['400'], Syne: ['700', '800'], 'Syne Mono': ['400'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 const files = resources.map((r) => r.bitmap.fileId); // a resource names a file: load each
 await Promise.all(files.map((f) => loadImage(f, asset(f))));
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Sierra: a photo essay in landscape',
   es: 'Sierra: un ensayo fotográfico apaisado' }) });
 

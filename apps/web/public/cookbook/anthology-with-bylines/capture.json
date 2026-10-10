@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "anthology-with-bylines",
-  "sourceHash": "46924e1fe8d5ee5ed9f94a3cbff9fb7320836180d26213caaa1e23a964a67a05",
+  "sourceHash": "4bfd7fd35889e5a09520e2b75f147c42c825890761212f94ac80b8e823f2ba44",
   "engine": {
-    "postext": "1.23.0",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-09T18:24:37.868Z",
+  "capturedAt": "2026-10-10T13:30:00.651Z",
   "variants": {
     "en": {
-      "hash8": "db6c9ea7",
+      "hash8": "54760cd7",
       "vdtHash": "3a20b04ee50cb20bae50c8931025b36e54967128",
       "timings": {
-        "importMs": 116,
-        "fontsMs": 42,
-        "buildMs": 25,
-        "totalMs": 819,
-        "builds": 2
+        "importMs": 126,
+        "fontsMs": 28,
+        "buildMs": 57,
+        "totalMs": 813,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Spectral"
         ],
         "pages": 9,
-        "ownLines": 180
+        "ownLines": 175
       },
       "pages": [
         {
@@ -60,7 +60,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 70494,
+          "bytes": 70508,
           "alt": "Opening page 2: Contents."
         },
         {
@@ -177,13 +177,12 @@
       },
       "sandbox": {
         "file": "anthology-with-bylines.postext",
-        "bytes": 243469,
+        "bytes": 243445,
         "folio": "6cdad6f3"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -197,7 +196,6 @@
           "bodyText.indentAfterHeading",
           "bodyText.italicColor",
           "bodyText.lineHeight",
-          "bodyText.maxRuntTracking",
           "bodyText.maxWordSpacing",
           "bodyText.minWordSpacing",
           "bodyText.referenceColor",
@@ -314,7 +312,6 @@
           "toc.levels[].level",
           "toc.levels[].marginBottom",
           "toc.levels[].numberColor",
-          "toc.levels[].numberFontSize",
           "toc.levels[].numberFontWeight",
           "toc.levels[].numberGap",
           "toc.levels[].numberWidth",
@@ -344,7 +341,7 @@
           "paragraphStyles",
           "toc"
         ],
-        "configLeaves": 346,
+        "configLeaves": 344,
         "designElements": 17,
         "directives": [
           ":::toc",
@@ -414,11 +411,6 @@
             "check": "C20",
             "severity": "warn",
             "detail": "the edition's images weigh 0.93 MB (warning at 0.9 MB for 9 pages)"
-          },
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
           }
         ]
       }

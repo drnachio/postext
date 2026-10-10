@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "history-essay-chicago-notes",
-  "sourceHash": "4180e417c38338d53866bc2d4324441ab5faff39c6edd9800409d3d06036bdaf",
+  "sourceHash": "53dc71244108984246997bbf3b90cc43bf1395345c6315ebb8b2fd98f8ff2e5e",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.018Z",
+  "capturedAt": "2026-10-10T13:34:26.234Z",
   "variants": {
     "en": {
-      "hash8": "e3194070",
+      "hash8": "cae9c8f3",
       "vdtHash": "898072464f8c5741c20e334b5d6a640a744ecd01",
       "timings": {
-        "importMs": 230,
-        "fontsMs": 75,
-        "buildMs": 57,
-        "totalMs": 4602,
-        "builds": 2
+        "importMs": 179,
+        "fontsMs": 32,
+        "buildMs": 426,
+        "totalMs": 1264,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "IBM Plex Sans Condensed"
         ],
         "pages": 4,
-        "ownLines": 132
+        "ownLines": 131
       },
       "pages": [
         {
@@ -114,7 +114,7 @@
       },
       "pdf": {
         "file": "history-essay-chicago-notes.pdf",
-        "bytes": 86072,
+        "bytes": 86071,
         "pages": 4
       },
       "sandbox": {
@@ -126,8 +126,7 @@
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",
@@ -323,14 +322,14 @@
       }
     },
     "es": {
-      "hash8": "a86eb772",
+      "hash8": "95485edc",
       "vdtHash": "bf4264bd051500f1780024e7d1f064ef0bde8c52",
       "timings": {
-        "importMs": 227,
-        "fontsMs": 65,
-        "buildMs": 28,
-        "totalMs": 1441,
-        "builds": 2
+        "importMs": 233,
+        "fontsMs": 32,
+        "buildMs": 437,
+        "totalMs": 1302,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -350,7 +349,7 @@
           "IBM Plex Sans Condensed"
         ],
         "pages": 4,
-        "ownLines": 132
+        "ownLines": 131
       },
       "pages": [
         {
@@ -431,15 +430,14 @@
       },
       "sandbox": {
         "file": "history-essay-chicago-notes.postext",
-        "bytes": 18114,
+        "bytes": 18115,
         "folio": "d7c0312b"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",

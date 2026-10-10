@@ -18,13 +18,13 @@ O capítulo 2 de *Mountain Landforms*, um livro didático de geomorfologia numa 
 
 <Excerpt region="palette" />
 
-Toda cor da configuração aponta para uma destas entradas, e as pinturas foram geradas nos mesmos tons de ardósia, azul-geleira e musgo, então as figuras ficam nas cores da página. Uma pintura mantém as próprias cores: um novo valor para `glacier` muda a fita, a placa e os rótulos, não o gelo das figuras. A cor de destaque é escura o bastante para letra pequena: 5,2:1 sobre o branco nos rótulos das legendas e nas citações, 4,5:1 sobre a placa de gelo no antetítulo. Cada figura é um SVG que incorpora a pintura como um JPEG em data URL e põe os rótulos por cima como texto, com um halo branco fino, para que fiquem nítidos e acompanhem o idioma da edição. Os rótulos são em IBM Plex Sans Condensed, incorporada em cada SVG, porque um SVG carregado como imagem não tem acesso às fontes web da página.
+Toda cor da configuração aponta para uma destas entradas, e as pinturas foram geradas nos mesmos tons de ardósia, azul-geleira e musgo, então as figuras ficam nas cores da página. Uma pintura mantém as próprias cores: um novo valor para `glacier` muda a fita, a placa e os rótulos, não o gelo das figuras. A cor de destaque é escura o bastante para letra pequena: 5,2:1 sobre o branco nos rótulos das legendas e nas citações, 4,5:1 sobre a placa de gelo no antetítulo. Cada figura é um SVG que incorpora a pintura como um JPEG em data URL e põe os rótulos por cima como texto, com um halo branco fino, para que fiquem nítidos e acompanhem o idioma da edição. Os rótulos nomeiam a IBM Plex Sans Condensed no próprio SVG, e o `loadSvg` do kit incorpora os dois pesos que eles usam com o `inlineSvgFonts` do motor, porque um SVG exibido como imagem não alcança sozinho as fontes da página.
 
 ### 2 · Dê nome às figuras no idioma do leitor
 
 <Excerpt region="captions" />
 
-`defaultResourceTypes(LANG)` dá nome aos tipos no idioma da amostra: as legendas dizem *Figure 2.3* aqui e *Figura 2.3* na edição em espanhol, onde só `locale: 'es'` hifenizaria o texto mas deixaria todas as legendas em inglês. Cada citação então toma a forma que a frase pede: `case="lower"` para *(fig. 2.1)* e, com `style="full"`, para *(figure 2.2)*; `style="number"` depois de um plural (*figures 2.4 and 2.5*); e `text="…"` para uma expressão como *the chapter’s first figure*, que não imprime número. Essa expressão remete a uma figura já posicionada; como primeira menção, ela ainda numeraria e posicionaria a figura.
+`locale` dá nome aos tipos embutidos no idioma do documento: as legendas dizem *Figure 2.3* aqui e *Figura 2.3* na edição em espanhol, em que o mesmo `'es'` escolhe os padrões de hifenização do espanhol. Cada citação então toma a forma que a frase pede: `case="lower"` para *(fig. 2.1)* e, com `style="full"`, para *(figure 2.2)*; `style="number"` depois de um plural (*figures 2.4 and 2.5*); e `text="…"` para uma expressão como *the chapter’s first figure*, que não imprime número. Essa expressão remete a uma figura já posicionada; como primeira menção, ela ainda numeraria e posicionaria a figura.
 
 ### 3 · Uma fita e uma placa de gelo para a abertura
 
@@ -32,11 +32,11 @@ Toda cor da configuração aponta para uma destas entradas, e as pinturas foram 
 
 A abertura são duas caixas e quatro textos: uma fita que pende do alto com o número do capítulo na ponta, uma placa de gelo que sangra pela borda externa, o antetítulo tirado do atributo `topic` do título, e o título e a linha fina encadeados abaixo dele. `minHeight` reserva a placa e pelo menos 5 mm abaixo dela, arredondados para cima em linhas inteiras da grade (uns 7 mm aqui), de modo que a Figura 2.1 ainda cabe na faixa do pé da mesma página. Os cabeços ficam nos cantos externos sobre um fio fino na cor `rule`, e `pages: 'body'` os tira da abertura, que recebe um fólio no pé.
 
-### 4 · Recuse ids desconhecidos antes da composição
+### 4 · Pare num id desconhecido ou numa figura não citada
 
 <Excerpt region="check" />
 
-Um `:ref` para um id que nenhum recurso tem imprime "?", e uma figura que ninguém menciona nunca é posicionada; o Sandbox avisa sobre o primeiro caso, mas o postext 1.4.1 não dá aviso a um pen em nenhum dos dois. A verificação lê o Markdown com `parseMarkdown`, o analisador do próprio motor, então encontra todos os `:ref` e `::resource` que a numeração e o posicionamento vão ler. Ela transforma um id desconhecido ou repetido, uma figura não citada, uma figura `here` sem linha `::resource` ou um tipo inexistente num único erro antes de a primeira página ser diagramada.
+Um `:ref` ou um `::resource` para um id que nenhum recurso tem imprime "?" e não posiciona nada; a diagramação registra cada um em `doc.contentWarnings` como `unknownResourceId`, com o id e o lugar dele no texto-fonte. Uma figura que ninguém menciona nunca é posicionada e não gera aviso, então a verificação lê o Markdown com `parseMarkdown`, o analisador do próprio motor, e compara as menções com as figuras. Um id desconhecido, uma figura não citada ou uma figura `here` sem linha `::resource` viram um único erro antes de as páginas serem mostradas.
 
 ### 5 · Comece a contagem onde o livro está
 
@@ -51,7 +51,10 @@ Este é o capítulo 2 de um livro mais longo, então a continuação registra um
 Tire o capítulo dos números e as figuras saem de 1 a 7; para uma contagem única no livro inteiro, diagrame os capítulos com `buildBundle` ou passe a cada capítulo o `continuationAfter()` do anterior.
 
 ```diff
--  resourceTypes: defaultResourceTypes(LANG),
+-  inlineSvgFonts, parseMarkdown,
++  inlineSvgFonts, parseMarkdown, defaultResourceTypes,
+@@
+   locale: t({ en: 'en-us', es: 'es' }),
 +  resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type,
 +    numberingTemplate: '{n}', resetOn: 'never' })),
 ```
@@ -73,7 +76,3 @@ Uma página em coluna e meia dá às figuras e às legendas um canal externo em 
 ### Faça as tabelas flutuarem do mesmo jeito
 
 Tabelas também são recursos, citadas e posicionadas pelas mesmas regras, e uma tabela longa se divide entre páginas: veja <RecipeLink slug="technical-datasheet">a ficha técnica</RecipeLink>.
-
-## Erros comuns
-
-- Na <PageRef page={4}>página 30</PageRef>, o parágrafo sobre os lagos cita a Figura 2.7 na primeira frase, porque uma figura entra na fila onde começa o parágrafo que a cita. Se essa frase fechasse o parágrafo anterior, que começa na página 29, a figura teria aberto a página 30, acima da linha que a cita.

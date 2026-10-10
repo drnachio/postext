@@ -20,22 +20,14 @@
   "answers": ["Q30", "Q31", "Q25"],
   "gaps": ["markdown-extras"],
   "gotchas": [
-    "ellipsis-mid-word", "overflow-ellipsis-default", "negative-offsets", "palette-skips-designs",
-    "header-paints-over-text", "parity-page1-recto", "headings-drop-h1-break", "quote-frontmatter",
-    "fonts-first", "style-italic-colour", "hyphenation-locales"
+    "negative-offsets",
+    "header-paints-over-text",
+    "parity-page1-recto"
   ],
   "explainsWarnings": ["headerFooterUnknownPlaceholder", "headerFooterMetadataMissing"],
   "related": ["walking-guide-thumb-tabs", "book-from-chapters", "chapter-opener-bleed-band"],
-  "workarounds": [
-    { "followup": "EF-05", "package": "postext", "note": "the H1 breakBefore is restated because a headings object drops it" },
-    { "followup": "EF-11", "package": "postext", "note": "every frontmatter value is quoted (a bare number or date would print empty)" },
-    { "followup": "EF-76", "package": "postext", "note": "maxWidth (CAP) is fitted to essay IV's title in each edition so the ellipsis follows a whole word; ellipsis-end cuts between letters and keeps a trailing space ('false …'), so other titles would still be cut mid-word" },
-    { "followup": "EF-71", "package": "postext", "note": "every header, footer and opener colour carries its hex beside its paletteId, because design slots never read the palette; repointing main-color leaves the built-in head blue" },
-    { "followup": "EF-68", "package": "postext", "note": "the colophon names no title in italics: its muted paragraph style has no italicColor, so an italic run would print in bodyText.italicColor, the ink" },
-    { "followup": "EF-89", "package": "postext", "note": "runtMinCharacters: 16 lets essay IV end on 'our minds.': at the default 20 both 'our minds.' and 'minds.' fall under the threshold, and the flat runtPenalty cannot prefer the two-word ending, so Knuth–Plass keeps the tighter first line and leaves 'minds.' alone" },
-    { "followup": "EF-14", "package": "postext", "note": "locale is the exact bundled code ('en-us' | 'es'): a region-tagged code such as 'es-ES' silently hyphenates as American English (gotcha hyphenation-locales)" }
-  ],
-  "engine": { "postext": "1.4.1" },
+  "workarounds": [],
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer"],
   "sample": { "locales": ["en", "es"] },
   "capture": {
@@ -81,5 +73,5 @@
   },
   "license": { "code": "MIT", "content": "MIT" },
   "created": "2026-09-25",
-  "updated": "2026-09-25"
+  "updated": "2026-10-10"
 }

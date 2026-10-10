@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 136 · A living newspaper of video loops ══════════════
 // https://postext.dev/en/cookbook/living-newspaper-video-loops
 // Code: MIT · Text: original (CC BY 4.0) · Clips: generated with diffusion models (CC BY 4.0)
-// Fonts: Oswald, Libre Caslon Text, Courier Prime (SIL OFL 1.1) · Needs postext ≥ 1.18.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+// Fonts: Oswald, Libre Caslon Text, Courier Prime (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 import { createFolioFromDocument } from 'https://esm.sh/postext-folio';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en')
@@ -36,7 +37,7 @@ const typed = (size, look = {}) => ({ fontFamily: 'Courier Prime', fontSize: pt(
   color: col('ink'), ...look }); // the dateline and the captions: a typewriter
 const at = (to, edge, x = 0, y = 0) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) } });
 const text = (id, content, look, placement) => ({ kind: 'text', id, content, align: 'left',
-  overflow: 'wrap', color: col('ink'), ...look, placement }); // never the ellipsis default
+  overflow: 'wrap', color: col('ink'), ...look, placement }); // wraps, in a running head too
 const rule = (id, under, weight, gap = 0) => ({ kind: 'rule', id, thickness: pt(weight),
   color: col('ink'), placement: { ...at(under, 'above', 0, -gap), size: { width: 'fill' } } });
 const depth = (lines) => ({ kind: 'box', id: 'depth', style: {}, placement: {
@@ -188,7 +189,7 @@ const ads = { ...briefs, id: 'ads', background: col('paper'),
   body: { ...typed(8), lineHeight: pt(10.6), textAlign: 'left', firstLineIndent: pt(0) } };
 const label = { fontFamily: 'Courier Prime', fontSize: pt(8), firstLineIndent: pt(0) };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, resourceTypes, videoStyle,
   page: { sizePreset: 'tabloid', dpi: 150, backgroundColor: col('paper'), // 280 × 430 mm
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.side),
@@ -201,7 +202,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     minWordSpacing: 0.75, maxWordSpacing: 1.6, avoidWidows: true, avoidOrphans: true,
     maxJustifyTracking: 15 }, // ‰ of an em: narrow columns justify with a little tracking
   headings: { fontFamily: 'Oswald', fontWeight: 600, marginBottom: pt(0), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // Each section opens a page, on either side.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: section },
     { level: 2, fontSize: pt(20), lineHeight: pt(22), marginTop: pt(LEAD) },
@@ -246,10 +247,9 @@ const FONTS = { 'Libre Caslon Text': ['400', '400i', '700'], Oswald: ['600', '70
   'Courier Prime': ['400', '400i', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all(resources.filter((r) => r.kind === 'video').map(({ video: { poster } }) =>
   loadImage(poster.fileId, asset(poster.fileId)))); // the printed frames
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'The Wexcombe Lantern · a living newspaper' });
 
 // #region folio: the newspaper in 3D, every clip playing on the open pages at once

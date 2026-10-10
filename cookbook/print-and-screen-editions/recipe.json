@@ -19,10 +19,9 @@
   },
   "answers": ["Q04", "Q15"],
   "gotchas": [
-    "html-limits", "palette-skips-designs", "config-cache-identity",
-    "viewer-settings-sandbox-only", "fonts-first", "headings-drop-h1-break",
-    "opener-reserves-anchored", "resource-types-locale", "hyphenation-locales",
-    "overflow-ellipsis-default", "float-stretch-closing-page", "ragged-run-punctuation"
+    "html-limits",
+    "viewer-settings-sandbox-only",
+    "opener-reserves-anchored"
   ],
   "explainsWarnings": [],
   "related": [
@@ -31,19 +30,8 @@
     "magazine-feature-opener",
     "pdf-with-embedded-fonts"
   ],
-  "workarounds": [
-    { "followup": "EF-05", "package": "postext", "note": "the print H1 restates breakBefore because a headings object drops it" },
-    { "followup": "EF-71", "package": "postext", "note": "relink() rewrites every palette-linked colour from the night palette before the screen build: 1.4.1 leaves design-slot colours and bodyText.referenceColor at their inline hex (gotcha palette-skips-designs)" },
-    { "followup": "EF-55", "package": "postext", "note": "both samples are copy-fitted so no note spills a two-line, widow-protected tail onto a new page: 1.4.1 gives that page's column one line of height and the canvas clips the second line (EF-72 repro: append \"At night it throws a car’s headlights back at the driver, which is why fog lamps sit low and shine flat.\" to the fourth paragraph of the English Fog note; the issue grows to 5 pages and page 4's 29 px column holds a 58 px, two-line block)" },
-    { "followup": "EF-33", "package": "postext", "note": "resourceTypes: defaultResourceTypes(LANG), because config.locale does not name the figures (gotcha resource-types-locale)" },
-    { "followup": "EF-14", "package": "postext", "note": "exact hyphenation codes 'en-us' and 'es' (gotcha hyphenation-locales)" },
-    { "followup": "EF-62", "package": "postext", "note": "the samples cite figures as 'as Fig. 2 shows' / 'la fig. 2 muestra', never '(Fig. 2)': the resizable screen edition is ragged and would sooner or later break a line between '(' and the reference (gotcha ragged-run-punctuation)" },
-    { "followup": "EF-70", "package": "postext", "note": "headings.balancing.stretchAfterFloats: false keeps the text level under a column float on a note's closing page: without it 1.4.1 drops that column one 14 pt line, on the English Rain page (under the gauge) and the Spanish Wind page (under the rose) (gotcha float-stretch-closing-page)" },
-    { "followup": "EF-96", "package": "postext", "note": "the shadow root wraps renderToHtml's output in a div with all: initial: 1.4.1's .pt-doc inherits the host's letter-spacing, word-spacing and text-transform, which overprint lines measured without them" },
-    { "followup": "EF-91", "package": "postext", "note": "the screen pane keeps a min-height of 400 px (style.css and the script's fallback): in 1.4.1 an advanced-design opener taller than the page's content area loses its whole reservation, minHeight included, and the body prints over it with no warning; at 240 × 340 and 270 × 320 px the Rain opener (in English, the title and a seven-line lead) overlaps the first paragraph in both languages" },
-    { "followup": "EF-97", "package": "postext", "note": "the screen overrides set bodyText.avoidWidows: false: with it on, 1.4.1 places a paragraph taller than the page's content area whole in an empty column with room for one line (under a float), when the widow rule refuses a one-line split, so it runs off the foot of the page (seen at panes of 240–280 × 410–520 px)" }
-  ],
-  "engine": { "postext": "1.4.1" },
+  "workarounds": [],
+  "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": {
     "locales": ["en", "es"]
@@ -96,5 +84,5 @@
   },
   "license": { "code": "MIT", "content": "CC-BY-4.0" },
   "created": "2026-09-25",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

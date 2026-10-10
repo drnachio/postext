@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 124 · A school reader with furigana: per character, per word ═══
 // https://postext.dev/en/cookbook/jukugo-furigana-textbook
 // Code: MIT · Text: 新美南吉「ごん狐」(1932), Aozora Bunko 628 (PD); readings: CC BY 4.0
-// Fonts: Klee One, Zen Maru Gothic (SIL OFL 1.1) · Needs postext ≥ 1.16.1
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Klee One, Zen Maru Gothic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the frame; the story is Japanese in both
@@ -87,7 +87,7 @@ const foot = (id, content, parity, edge, x, extra) => ({ kind: 'text', id, conte
     y: mm(-12) } }, ...extra });
 const folio = { fontWeight: 700, color: col('red') };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   page: { sizePreset: 'custom', width: mm(182), height: mm(257), dpi: 150, // B5
@@ -100,7 +100,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: { fontFamily: ROUND, fontWeight: 700, color: col('red'),
     balancing: { enabled: false }, // nothing added above heads: the grid holds
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': the H1 opens on the next page, either side (the default waits for a recto).
       { level: 1, breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
       { level: 2, fontSize: pt(16), lineSpan: 2 }, // 一, 二…: two lines of the grid
     ] },
@@ -125,7 +125,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md: the same Japanese page in both
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Klee One': ['400'], // the text and its readings: the hand of a school textbook
   'Zen Maru Gothic': ['400', '500', '700'], // the title, heads, badge, box title, folios
 };
@@ -139,8 +139,8 @@ await loadCjkFonts({ [ROUND]: FONTS[ROUND] },
   `${all(/^#.*$/gm)}${all(/title="[^"]*"/g)}${all(/colophon"\}\n[^\n]*/g)}よみもの四年作0123456789`);
 // Page 1 is page 24 of the reader, a verso: the lesson opens on a spread.
 const continuation = { pageIndexOffset: 23, pageNumbering: { startAt: 24 } };
-const doc = await buildWithFonts(() => buildDocument({ markdown, continuation }, config()),
-  markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, continuation }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'A school reader with furigana',
   es: 'Un libro de lectura con furigana' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

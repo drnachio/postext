@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "clinical-trial-consort-flow",
-  "sourceHash": "eb0bac01a4eed7c1576bf0c55690360f3fc8fa81fc99e0be1de1044f8c062e9a",
+  "sourceHash": "1b167bdda9bb933190acda65b80470b952a38da5a3978d046c52bf8bed2e3090",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.851Z",
+  "capturedAt": "2026-10-10T13:41:18.184Z",
   "variants": {
     "en": {
-      "hash8": "08811864",
+      "hash8": "619aa6cc",
       "vdtHash": "66b11a839c07e8e426215b1a76cdc3646a75a866",
       "timings": {
-        "importMs": 340,
-        "fontsMs": 115,
-        "buildMs": 540,
-        "totalMs": 3337,
-        "builds": 2
+        "importMs": 685,
+        "fontsMs": 209,
+        "buildMs": 526,
+        "totalMs": 2058,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Nunito Sans"
         ],
         "pages": 8,
-        "ownLines": 227
+        "ownLines": 225
       },
       "pages": [
         {
@@ -130,24 +130,24 @@
       },
       "pdf": {
         "file": "clinical-trial-consort-flow.pdf",
-        "bytes": 775751,
+        "bytes": 237924,
         "pages": 8
       },
       "sandbox": {
         "file": "clinical-trial-consort-flow.postext",
-        "bytes": 121783,
+        "bytes": 121950,
         "folio": "a7ebcb67"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "defaultResourceTypes",
           "initMathEngine",
+          "inlineSvgFonts",
           "mergeCells",
           "registerCitationEngine",
           "registerResourceImage",

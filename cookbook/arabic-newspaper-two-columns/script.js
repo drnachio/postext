@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 108 · A two-column Arabic newspaper page ══════════════════
 // https://postext.dev/en/cookbook/arabic-newspaper-two-columns
 // Code: MIT · Text: original Arabic news copy (CC BY 4.0) · Map: drawn in code
-// Fonts: Aref Ruqaa, Noto Kufi Arabic, Noto Naskh Arabic (SIL OFL 1.1) · Needs postext ≥ 1.15.0
+// Fonts: Aref Ruqaa, Noto Kufi Arabic, Noto Naskh Arabic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocument, withLoadedFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -86,7 +86,7 @@ const header = { elements: [folio('even', 'right', -SIDE), folio('odd', 'left', 
       size: { width: mm(TRIM.width - 2 * SIDE) } } }] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ar', // written out, never LANG (gotcha: arabic-locale-tag): rtl, digits ٠–٩
   colorPalette, resourceTypes, layout,
   page: { width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
@@ -97,7 +97,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     textAlign: 'justify', firstLineIndent: em(1), indentAfterHeading: false },
   headings: { fontFamily: HEAD, fontWeight: 800, color: col('ink'), marginBottom: pt(0),
     levels: [
-      // Restated (gotcha: headings-drop-h1-break); 'any': a section opens the next page.
+      // parity 'any': a section opens the next page, with no blank page before it.
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: flag },
       { level: 2, fontSize: pt(12.5), lineHeight: pt(20), marginTop: pt(LEAD / 2) },
@@ -192,7 +192,7 @@ const resources = [{ id: 'prayer', typeId: 'panel', kind: 'table', createdAt: 0,
     + 'universidad a la izquierda, con dieciocho estaciones marcadas con anillos.' }) }];
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Aref Ruqaa': ['700'], // NAME: the nameplate
   'Noto Kufi Arabic': ['400', '600', '700', '800', '900'], // HEAD: headlines, flags, labels
   'Noto Naskh Arabic': ['400', '700'], // TEXT: the stories, captions; bold emphasis
@@ -203,7 +203,8 @@ await loadFonts(FONTS, markdown);
 // Each Arabic face's letters live in a file of their own (gotcha: arabic-fonts-subset).
 await loadArabicFonts(FONTS, markdown + JSON.stringify(resources));
 await loadSvg('route.svg', routeSvg());
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown, resources }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A two-column Arabic newspaper page',
   es: 'Una página de periódico árabe a dos columnas' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: arabicPdfProvider, resourceBytes: imageBytes }),

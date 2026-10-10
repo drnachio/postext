@@ -18,7 +18,7 @@ pageNotes: { "6": "La pàgina 6 queda en blanc: Hivern ocupa una sola pàgina, a
 
 <Excerpt region="chapters" />
 
-Cada estació és un document propi, així que pots reescriure un capítol sense obrir els altres. El primer document porta el frontmatter, la coberta i l'índex. A Postext 1.4.1 els documents següents no n'hereten cap metadada, i el PDF pren el títol i l'autora només del primer.
+Cada estació és un document propi, així que pots reescriure un capítol sense obrir els altres. El primer document porta el frontmatter, la coberta i l'índex. Les seves metadades són les del llibre: `{title}` i `{author}` les imprimeixen a tots els capítols, i el PDF en pren el títol i l'autora.
 
 ### 2 · Regles que passen d'un document a l'altre
 
@@ -40,7 +40,7 @@ El codi d'aquest pas és [la resposta curta](#la-resposta-curta) de més amunt. 
 
 <Excerpt region="running-heads" />
 
-Només el primer document té frontmatter, així que a Postext 1.4.1 `{title}` surt buit a tots els documents següents, Tardor inclòs. Per això la capçalera de les pàgines parelles porta el títol del llibre escrit com a text fix. `{chapterTitle}` i `{pageNumber}` es resolen pàgina a pàgina i surten a tots els documents; la pàgina 11, l'única senar de text seguit, porta ESTIU al costat del foli. `pages: 'body'` deixa sense capçalera les obertures i la pàgina en blanc.
+Només el primer document té frontmatter, i `buildBundle` el passa a tots els capítols, així que la capçalera de les pàgines parelles imprimeix el `{title}` del llibre als cinc documents. `{chapterTitle}` i `{pageNumber}` es resolen pàgina a pàgina i surten a tots els documents; la pàgina 11, l'única senar de text seguit, porta ESTIU al costat del foli. `pages: 'body'` deixa sense capçalera les obertures i la pàgina en blanc.
 
 ### 6 · Plecs en pantalla, un PDF per al llibre
 
@@ -64,7 +64,10 @@ Passa un sol document a `renderToPdf` per treure una prova de Primavera, numerad
 Un comptador de figures que no es reinicia numera els quatre quadres de l'1 al 4 en tot el llibre, en lloc d'1.1 a 4.1.
 
 ```diff
--  resourceTypes: defaultResourceTypes(LANG),
+   buildBundle, prepareFonts, withLoadedFonts, renderPageToCanvas, registerResourceImage,
++  defaultResourceTypes,
+@@
+   locale: t({ en: 'en-us', es: 'es' }),
 +  resourceTypes: defaultResourceTypes(LANG)
 +    .map((type) => ({ ...type, numberingTemplate: '{n}', resetOn: 'never' })),
 ```

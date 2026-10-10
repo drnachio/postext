@@ -16,25 +16,25 @@ Cinco páginas de *Mon sort est changé*, uma edição de 14 × 21 cm com três 
 
 ### 1 · Leia o local e a data do título
 
-O código é [a resposta curta](#a-resposta-curta) logo acima. Cada carta é um título de nível 1 cujos atributos guardam o local e a data, e o cabeçalho os imprime como `{attr.place}, le {attr.date}.` ([atributos do título](/pt/docs/document-format#atributos-de-título)). A caixa da data vai até a borda direita da coluna (`width: 'fill'`), e `align: 'right'` encosta o texto nessa borda; sem isso, o texto de design sai centralizado. A saudação, a assinatura e o pós-escrito são [estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo) aplicados com `:::paragraphs{style="…"}`. Na versão 1.4.1, um estilo de parágrafo não tem ajuste de itálico nem de caixa, então a assinatura usa a IM Fell DW Pica SC, uma família cujas minúsculas são desenhadas como versaletes.
+O código é [a resposta curta](#a-resposta-curta) logo acima. Cada carta é um título de nível 1 cujos atributos guardam o local e a data, e o cabeçalho os imprime como `{attr.place}, le {attr.date}.` ([atributos do título](/pt/docs/document-format#atributos-de-título)). A caixa da data vai até a borda direita da coluna (`width: 'fill'`), e `align: 'right'` encosta o texto nessa borda; sem isso, o texto de design sai centralizado. A saudação, a assinatura e o pós-escrito são [estilos de parágrafo](/pt/docs/configuration#estilos-de-parágrafo) aplicados com `:::paragraphs{style="…"}`. A assinatura usa a IM Fell DW Pica SC, uma família cujas minúsculas são desenhadas como versaletes. Com `inlineMarks: true`, a linha de local e data lê as marcas do seu atributo, então `date="1^er^ avril 1778"` eleva a terminação do ordinal.
 
 ### 2 · Componha as cartas em sequência
 
 <Excerpt region="letters" />
 
-Com `breakBefore` desligado, uma carta começa duas linhas da grade (`marginTop`) abaixo da linha da grade em que a anterior termina. Na <PageRef page={4}>página 4</PageRef>, o pós-escrito, com entrelinha de 12,6 pt, termina entre duas linhas da grade, e por isso ficam cerca de três linhas em branco acima da carta III. Na página 2, a carta I vai até o pé da página e a carta II abre a página 3. O ajuste está escrito porque a versão 1.4.1 já tira a quebra do nível 1 assim que a configuração tem um objeto `headings`, e um motor corrigido abriria cada carta numa página ímpar ([quebra antes](/pt/docs/configuration#quebra-antes)). `numberingTemplate: '{1:I}'` numera as cartas de I a III, e o cabeçalho imprime o numeral por `{number}`.
+Com `breakBefore` desligado, uma carta começa duas linhas da grade (`marginTop`) abaixo da linha da grade em que a anterior termina. Na <PageRef page={4}>página 4</PageRef>, o pós-escrito, com entrelinha de 12,6 pt, termina entre duas linhas da grade, e por isso ficam cerca de três linhas em branco acima da carta III. Na página 2, a carta I vai até o pé da página e a carta II abre a página 3. Com o padrão do nível 1, cada carta abriria numa página ímpar ([quebra antes](/pt/docs/configuration#quebra-antes)). `numberingTemplate: '{1:I}'` numera as cartas de I a III, e o cabeçalho imprime o numeral por `{number}`.
 
 ### 3 · Ponha a data da carta na página ímpar
 
 <Excerpt region="running-heads" />
 
-Num cabeçalho de página, `{attr.date}` pega o atributo do último título de nível 1 que começa naquela página ou antes dela. A página 3 imprime 12 juin 1740, e a página 5, onde continua a carta de Voltaire iniciada na 4, imprime 1er avril 1778 ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). Os cabeços ficam 12 mm abaixo da borda superior da página, o fólio na margem externa e o texto 8 mm mais para dentro. `pages: 'body'` os mantém fora da capa, que conta como abertura porque o seu título ocupa a largura da página. A data é composta no itálico da Crimson Pro, o mesmo do local e data que ela repete, e os nomes na página par, nos versaletes dos números das cartas.
+Num cabeçalho de página, `{attr.date}` pega o atributo do último título de nível 1 que começa naquela página ou antes dela. A página 3 imprime 12 juin 1740, e a página 5, onde continua a carta de Voltaire iniciada na 4, imprime 1er avril 1778 com a terminação elevada ([elementos de texto](/pt/docs/configuration#elementos-de-texto)). Os cabeços ficam 12 mm abaixo da borda superior da página, o fólio na margem externa e o texto 8 mm mais para dentro. `pages: 'body'` os mantém fora da capa, que conta como abertura porque o seu título ocupa a largura da página. A data é composta no itálico da Crimson Pro, o mesmo do local e data que ela repete, e os nomes na página par, nos versaletes dos números das cartas.
 
-### 4 · Faça da capa um título e feche a página dela
+### 4 · Faça da capa um título
 
 <Excerpt region="cover" />
 
-A capa é o primeiro título, no [estilo de título](/pt/docs/configuration#estilos-de-título) `cover`: um elemento de imagem ancorado à sangria leva a encadernação desenhada, um segundo põe a fotografia 72 mm abaixo do alto, e o título, os nomes e o subtítulo vêm do título e do frontmatter. `numbered: false` a deixa fora da contagem, e assim a primeira carta de Frederico é a I. O design reserva espaço só até o seu texto mais baixo, o subtítulo, e nenhum para as imagens. Sem o `:::pagebreak` depois do título, a nota introdutória e a carta I começariam na página 1, por cima das cartas fotografadas e do selo.
+A capa é o primeiro título, no [estilo de título](/pt/docs/configuration#estilos-de-título) `cover`: um elemento de imagem ancorado à sangria leva a encadernação desenhada, um segundo põe a fotografia 72 mm abaixo do alto, e o título, os nomes e o subtítulo vêm do título e do frontmatter. `numbered: false` a deixa fora da contagem, e assim a primeira carta de Frederico é a I. A imagem da encadernação enche a página, e uma abertura reserva espaço até o seu elemento mais baixo, então a capa ocupa toda a página 1 e a nota introdutória começa na 2 sem nenhum `:::pagebreak`.
 
 ### 5 · Hifenize o francês e mantenha os espaços abertos
 
@@ -46,7 +46,7 @@ A capa é o primeiro título, no [estilo de título](/pt/docs/configuration#esti
 
 <Excerpt region="palette" />
 
-`col()` escreve o hexadecimal de cada cor ao lado do seu id na paleta. Na versão 1.4.1, a paleta chega aos estilos de texto, mas não aos elementos de design, que pintam esse hexadecimal: os cabeçalhos das cartas, os cabeços e a capa. O itálico da nota introdutória e do colofão usa a cor de itálico padrão, que está ligada a `main-color`; com essa entrada na cor da tinta, ele sai na tinta e não no azul do motor, #295AA3.
+`col()` liga cada cor à sua entrada na paleta, e a ligação vale tanto nos estilos de texto quanto nos elementos de design: os cabeçalhos das cartas, os cabeços e a capa. O itálico da nota introdutória e do colofão usa a cor de itálico padrão, que está ligada a `main-color`; com essa entrada na cor da tinta, ele sai na tinta e não no azul do motor, #295AA3.
 
 ## Variações
 
@@ -64,5 +64,5 @@ Os mesmos atributos podem dar à página ímpar o local e a data completos, *À 
 
 - A página ímpar pega a data da última carta que *começa* nela ou antes. Uma página que termina uma carta e abre a seguinte traz a data da carta nova, do mesmo modo que o cabeço de um dicionário dá a última entrada da página.
 - Um título sem o atributo imprime um texto vazio, sem aviso: uma carta sem `place="…"` ganha uma linha de local e data que começa com vírgula. Confira o título de cada carta.
-- As cartas mantêm os ; : ? e ! da transcrição sem espaço antes. A tradição francesa põe ali um espaço fino inseparável, mas a versão 1.4.1 quebra a linha nesse espaço como em qualquer outro, e um sinal poderia começar uma linha.
-- A Crimson Pro não tem as letras modificadoras ᵉ (U+1D49) e ʳ (U+02B3), então 1ᵉʳ escrito em Unicode sairia numa fonte substituta. A nota introdutória, que é texto corrido, compõe `1^er^` como sobrescrito; a linha de local e data e o cabeço da página ímpar são texto de design e imprimem 1er com a terminação no mesmo corpo do número.
+- As cartas mantêm os ; : ? e ! da transcrição sem espaço antes. A tradição francesa põe ali um espaço fino inseparável (U+202F); digitado ali, ele mantém o sinal na linha da palavra.
+- A Crimson Pro não tem as letras modificadoras ᵉ (U+1D49) e ʳ (U+02B3), então 1ᵉʳ escrito em Unicode sairia numa fonte substituta. Escreva `1^er^`: a nota introdutória, que é texto corrido, o compõe como sobrescrito, e o mesmo fazem a linha de local e data e o cabeço da página ímpar, cujos elementos de texto levam `inlineMarks: true`.

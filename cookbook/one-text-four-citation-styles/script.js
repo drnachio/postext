@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 093 · One text in four citation styles ════════════════
 // https://postext.dev/en/cookbook/one-text-four-citation-styles
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Source Serif 4, Source Sans 3 (SIL OFL 1.1) · Needs postext ≥ 1.12.0
+// Fonts: Source Serif 4, Source Sans 3 (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
 
@@ -70,7 +70,7 @@ const opener = (s, i) => ({
 // #endregion
 
 let at = 0; // the entry of SHOWN being built
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: t({ en: 'en-us', es: 'es' }),
   colorPalette: colorPalette(SHOWN[at].band),
   citations: citations(SHOWN[at].style),
@@ -85,7 +85,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     avoidWidows: true, avoidOrphans: true, avoidRunts: true,
   },
   headings: { fontFamily: SERIF, color: col('ink'), levels: [
-    { level: 1, breakBefore: { enabled: true, parity: 'any' }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: true, parity: 'any' }, // the essay opens a page
       advancedDesign: opener(SHOWN[at], at) },
   ] },
   header: { elements: [] },
@@ -108,7 +108,6 @@ const FONTS = {
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 // #region build: one text, four documents, shown as two spreads
 // The style is set for the whole document, so each style is a build of its own.
 const docs = [];
@@ -116,7 +115,7 @@ for (at = 0; at < SHOWN.length; at++) {
   // pageIndexOffset makes each page the next one of a book, so the desk pairs them:
   // APA beside Chicago, IEEE beside ISO 690.
   const content = { markdown, continuation: { pageIndexOffset: at + 1 } };
-  docs.push(await buildWithFonts(() => buildDocument(content, config()), markdown));
+  docs.push(await buildDocumentWithFonts(content, config(), kitFonts(FONTS)));
 }
 // #endregion
 showPages(docs, { title: t({ en: 'One text, four styles', es: 'Un texto, cuatro estilos' }) });

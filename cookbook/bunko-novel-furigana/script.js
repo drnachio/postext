@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 117 · A bunko novel set vertically, with furigana ════════
 // https://postext.dev/en/cookbook/bunko-novel-furigana
 // Code: MIT · Text: 夏目漱石『夢十夜』, Aozora Bunko 799 (public domain) · Pictures: none
-// Fonts: Shippori Mincho B1, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Shippori Mincho B1, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -59,7 +59,7 @@ const cjk = {
 const night = {
   level: 1, fontFamily: MINCHO, fontWeight: 600, fontSize: pt(12.5),
   lineSpan: 3, indent: em(5), // JLReq §4.1.3
-  breakBefore: { enabled: false }, // the nights run on (gotcha: headings-drop-h1-break)
+  breakBefore: { enabled: false }, // the nights run on
 };
 // #endregion
 
@@ -110,7 +110,7 @@ const titlePage = {
 };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   page,
@@ -149,7 +149,8 @@ await loadCjkFonts({ [MINCHO]: ['400'] }, markdown, { vertical: true });
 await loadCjkFonts({ [MINCHO]: ['600', '800'] }, `${heads}${title}${author}`);
 await loadCjkFonts({ [GOTHIC]: ['400'] }, `${title}一二三四五六七八九十`, { vertical: true });
 // #endregion
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A bunko novel set vertically, with furigana',
   es: 'Una novela en formato bunko, en vertical y con furigana' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 137 · An AI preprint with prompt exemplars in boxes ═══════
 // https://postext.dev/en/cookbook/ai-preprint-prompt-exemplars
 // Code: MIT · Text: Wei et al. 2022, arXiv:2201.11903 (CC BY 4.0) · Charts: drawn in code
-// Fonts: Newsreader, IBM Plex Sans, IBM Plex Mono (SIL OFL 1.1) · Needs postext ≥ 1.19.0
+// Fonts: Newsreader, IBM Plex Sans, IBM Plex Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerCitationEngine,
-  registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine, registerResourceImage,
+  inlineSvgFonts,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 import { createCiteprocEngine, STYLES, LOCALES } from 'https://esm.sh/postext-citeproc';
@@ -30,7 +30,7 @@ const ZERO = pt(0);
 
 // #region answer: Figure 1 as boxes: two columns, a tab on each box, a ✓ or ✗ in the corner
 // :::columns{count=2 breaks="4"} inside the "figure" box opens the right column at its fourth
-// block; each nested box counts as one block (gotcha: callout-columns).
+// block; each nested box counts as one block.
 const tab = (fill) => ({ fontFamily: SANS, fontSize: pt(7), fontWeight: 600,
   color: col('paper'), background: col(fill), position: 'top-left', inset: mm(3),
   height: mm(4.2), offset: mm(2.1), paddingX: mm(2.2) }); // straddles the top edge
@@ -121,7 +121,7 @@ const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'bottom', 
     edge: 'bottom' }, offset: { x: ZERO, y: mm(-14) }, size: { width: mm(20) } } })] };
 
 const sans = (size) => ({ fontFamily: SANS, fontSize: pt(size), fontWeight: 600 });
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'en-us', colorPalette, citations, resourceTypes, header, footer,
   crossRefs: { section: 'Section {n}' }, // \cref prints "Section 3"
   calloutStyles: [...promptBoxes,
@@ -148,7 +148,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     indentAfterHeading: false, hyphenation: { enabled: true }, optimalLineBreaking: true,
     avoidWidows: true, avoidOrphans: true, avoidRunts: true },
   headings: { fontFamily: SANS, color: col('ink'), fontWeight: 600, levels: [
-    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // gotcha: headings-drop-h1-break
+    { level: 1, breakBefore: { enabled: true, parity: 'any' } }, // a new page, either side
     { level: 2, ...sans(11), numberingTemplate: '{2}', numberSeparator: ' ',
       lineHeight: pt(LEAD), marginTop: pt(LEAD), marginBottom: pt(LEAD / 2) },
     { level: 3, ...sans(9.6), numberingTemplate: '{2}.{3}', numberSeparator: ' ',
@@ -235,32 +235,20 @@ const resources = () => [
     createdAt: 0, updatedAt: 0, svg: { fileId: `${id}.svg`, width: 64, height: 64 } })),
 ];
 
-// #region art: the two charts and the two marks, labels in IBM Plex Sans carried in the SVG
+// #region art: the two charts and the two marks, labels in IBM Plex Sans
 const n2 = (v) => +v.toFixed(2);
-// An SVG image sees no web fonts (gotcha: svg-no-webfonts): the face goes inline.
-async function inlineFace(family, weight) {
-  const id = family.toLowerCase().replace(/\s+/g, '-');
-  const url = `https://cdn.jsdelivr.net/npm/@fontsource/${id}@5/files/${id}-latin-${weight}`
-    + '-normal.woff2';
-  const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
-  let bin = '';
-  for (const b of bytes) bin += String.fromCharCode(b);
-  return `@font-face{font-family:'${family}';font-weight:${weight};`
-    + `src:url(data:font/woff2;base64,${btoa(bin)}) format('woff2')}`;
-}
 const label = (x, y, s, { size = 2.5, anchor = 'start', fill = palette.muted, w = 400 } = {}) =>
   `<text x="${n2(x)}" y="${n2(y)}" font-size="${size}" text-anchor="${anchor}" fill="${fill}" `
   + `font-family="${SANS}" font-weight="${w}">${s}</text>`;
-const frame = (w, h, faces, body) => `<svg xmlns="http://www.w3.org/2000/svg" `
-  + `width="${w * 10}" height="${h * 10}" viewBox="0 0 ${w} ${h}"><style>${faces}</style>`
-  + `${body}</svg>`;
+const frame = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" `
+  + `width="${w * 10}" height="${h * 10}" viewBox="0 0 ${w} ${h}">${body}</svg>`;
 const dashes = (x0, x1, y, on = 1.4, off = 1) => {
   let d = '';
   for (let x = x0; x < x1; x += on + off) d += `M${n2(x)} ${n2(y)}H${n2(Math.min(x + on, x1))}`;
   return d;
 };
 
-function barChart(faces) { // Figure 2: 86 × 36 mm, a column wide
+function barChart() { // Figure 2: 86 × 36 mm, a column wide
   const bars = [['Finetuned GPT-3 175B', 33, palette.rule], ['Prior best', 55, palette.muted],
     ['PaLM 540B: standard prompting', 18, palette.rule],
     ['PaLM 540B: chain-of-thought prompting', 57, palette.accent]];
@@ -278,7 +266,7 @@ function barChart(faces) { // Figure 2: 86 × 36 mm, a column wide
       + `<rect x="${L}" y="${n2(y)}" width="${n2(x(v) - L)}" height="${H}" fill="${fill}"/>`
       + label(x(v) + 1.2, y + H * 0.68, v, { fill: palette.ink, size: 2.7, w: 600 });
   });
-  return frame(W, 38, faces, out + label(x(50), 37.4, 'GSM8K solve rate (%)',
+  return frame(W, 38, out + label(x(50), 37.4, 'GSM8K solve rate (%)',
     { anchor: 'middle', size: 2.4 }));
 }
 
@@ -292,7 +280,7 @@ function series(set, model) { // the Table 2 rows of a model family, standard an
   const val = (r, k) => parseFloat(r[2].split(' ')[col0 + k]);
   return [rows.map((r) => val(r, 0)), rows.map((r) => val(r, 1))];
 }
-function scaleChart(faces) { // Figure 4: 178 × 86 mm, three benchmarks by three families
+function scaleChart() { // Figure 4: 178 × 86 mm, three benchmarks by three families
   const [L, G, PW, PH, T] = [20, 7, 47.3, 17, 13];
   let out = '';
   const legend = [['Standard prompting', palette.muted, 0.7], ['Chain-of-thought prompting',
@@ -334,7 +322,7 @@ function scaleChart(faces) { // Figure 4: 178 × 86 mm, three benchmarks by thre
       });
     });
   });
-  return frame(178, 90, faces, out + label(L + (3 * PW + 2 * G) / 2, 89,
+  return frame(178, 90, out + label(L + (3 * PW + 2 * G) / 2, 89,
     'Model scale (# parameters in billions)', { anchor: 'middle', size: 2.5 }));
 }
 const markSvg = (fill, path) => '<svg xmlns="http://www.w3.org/2000/svg" width="64" '
@@ -346,19 +334,17 @@ const markSvg = (fill, path) => '<svg xmlns="http://www.w3.org/2000/svg" width="
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = {
   Newsreader: ['400', '400i', '600', '700'],
-  'IBM Plex Sans': ['400', '500', '600'],
-  'IBM Plex Mono': ['400', '500', '600'],
+  'IBM Plex Sans': ['400', '500', '600', '700'],
+  'IBM Plex Mono': ['400', '500', '600', '700'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 const source = [markdown, later, refs].join('\n\n');
-await loadFonts(FONTS, source);
-const faces = (await inlineFace(SANS, 400)) + (await inlineFace(SANS, 600));
-await Promise.all([loadSvg('gsm8k.svg', barChart(faces)), loadSvg('scale.svg', scaleChart(faces)),
+await Promise.all([loadSvg('gsm8k.svg', barChart()), loadSvg('scale.svg', scaleChart()),
   loadSvg('right.svg', markSvg(palette.green, 'M18 33l9 9 19-20')),
   loadSvg('wrong.svg', markSvg(palette.red, 'M21 21l22 22M43 21L21 43'))]);
 const content = { markdown: source, resources: resources() };
-const doc = await buildWithFonts(() => buildDocument(content, config()), source);
+const doc = await buildDocumentWithFonts(content, config(), kitFonts(FONTS));
 showPages(doc, { title: 'An AI preprint with prompt exemplars' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

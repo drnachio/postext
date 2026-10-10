@@ -22,7 +22,7 @@ El código está en [la respuesta corta](#la-respuesta-corta), más arriba. El T
 
 <Excerpt region="split" />
 
-La carta de la página 1 cita la lista con `:ref{id="vegetables" text="the price list"}`, y `text` imprime esas palabras en lugar de un número. Una tabla citada flota al primer hueco libre después de la cita, que aquí es la cabeza de la página 2. La lista no cabe entera, así que el motor la corta entre filas después de Jimmy Nardello, nunca dentro de una clase combinada. En la página 3 se repiten la fila de cabecera y la banda del pie, ahora con el sufijo; el aviso va bajo la primera parte y la nota, bajo la última ([tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)). `parseTSV` no marca ninguna celda como cabecera, así que hay que poner `headerRowCount: 1` a mano para que la primera fila se pinte como cabecera y se repita en la página 3. El sufijo y el aviso van en cursiva con la letra del pie, y por eso la banda se compone en Gelasio y no en Cabin Condensed, que no tiene cursiva.
+La carta de la página 1 cita la lista con `:ref{id="vegetables" text="the price list"}`, y `text` imprime esas palabras en lugar de un número. Una tabla citada flota al primer hueco libre después de la cita, que aquí es la cabeza de la página 2. La lista no cabe entera, así que el motor la corta entre filas después de Jimmy Nardello, nunca dentro de una clase combinada. En la página 3 se repiten la fila de cabecera y la banda del pie, ahora con el sufijo; el aviso va bajo la primera parte y la nota, bajo la última ([tablas más altas que la página](/es/docs/configuration#tablas-más-altas-que-la-página)). `parseTSV(tsv, { headerRows: 1 })` convierte la primera fila en la cabecera, que se pinta como tal y se repite en la página 3. El sufijo y el aviso van en cursiva con la letra del pie, y por eso la banda se compone en Gelasio y no en Cabin Condensed, que no tiene cursiva.
 
 ### 3 · Un recurso para cada sobre
 
@@ -40,7 +40,7 @@ Las dos tablas de la hoja de pedido usan el estilo con nombre `form`, con filete
 
 <Excerpt region="cover" />
 
-La pintura de la cubierta es un elemento de imagen, y una imagen no suma nada a la altura que reserva una apertura. Sin `minHeight`, la carta empezaría a 55 mm del borde superior de la página, encima del girasol. `SINK` deja 10 mm de aire bajo la pintura y redondea la distancia desde el margen superior a líneas enteras de 13 pt, 34 en total, así que las dos columnas de la carta arrancan en la rejilla base, a 177,9 mm del borde.
+La cubierta reserva hasta el borde inferior de su pintura, a 164 mm del borde superior de la página, y sin `minHeight` la carta empezaría en la primera línea de la rejilla base que queda debajo, pegada a la tierra. `minHeight` es un mínimo algo más bajo: `SINK` deja 10 mm de aire bajo la pintura y redondea la distancia desde el margen superior a líneas enteras de 13 pt, 34 en total, así que las dos columnas de la carta arrancan en la rejilla base, a 177,9 mm del borde. El marco de la cubierta llega hasta el pie de la página; `reserve: false` lo deja fuera de esa cuenta.
 
 ## Variantes
 
@@ -65,4 +65,4 @@ Al 40 %, las filas bajan a 29 mm, pero las dos judías comparten una celda combi
 ## Errores frecuentes
 
 - Un recurso que nadie cita no se coloca nunca. Si quitas el `:ref` de la carta, el catálogo se queda sin lista de precios.
-- En columnas de 75 mm, Knuth–Plass puede dejar una línea justificada con los espacios más abiertos de lo que permite `maxWordSpacing`. La carta y las notas del campo de ensayo se reescribieron hasta que la línea más abierta estiró sus espacios 1,33 veces su ancho normal. Las notas ocupan además 14 líneas justas: con 13, el equilibrado de columnas de la página de cierre deja una línea de la rejilla base en blanco sobre From Our Trial Garden, y el título empieza una línea más abajo que el texto de la otra columna.
+- En columnas de 75 mm, Knuth–Plass puede dejar una línea justificada con los espacios más abiertos de lo que permite `maxWordSpacing`; `bodyText.maxJustifyTracking` deja que una línea así tome un poco de interletraje en su lugar. Aquí la carta y las notas del campo de ensayo se reescribieron hasta que la línea más abierta estiró sus espacios 1,33 veces su ancho normal.

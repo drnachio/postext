@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "kanji-numerals-and-dates",
-  "sourceHash": "c43bf8b6abcce936f761e3b20a09fffec1f1b8ef8bf84f3f393a792bb21b33f6",
+  "sourceHash": "d2450b05b54462670b15f2cfeb7eaba47ce36db8fc39029f755f5bf8b875e952",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.075Z",
+  "capturedAt": "2026-10-10T13:35:13.404Z",
   "variants": {
     "en": {
-      "hash8": "5c4bf110",
+      "hash8": "4d002c00",
       "vdtHash": "84f0c4fe9df4f6631c5282e24efa839e3392fd6a",
       "timings": {
-        "importMs": 205,
-        "fontsMs": 466,
-        "buildMs": 67,
-        "totalMs": 1305,
+        "importMs": 509,
+        "fontsMs": 1578,
+        "buildMs": 361,
+        "totalMs": 5684,
         "builds": 1
       },
       "specimen": {
@@ -116,23 +116,23 @@
       },
       "pdf": {
         "file": "kanji-numerals-and-dates.pdf",
-        "bytes": 174832,
+        "bytes": 174930,
         "pages": 4
       },
       "sandbox": {
         "file": "kanji-numerals-and-dates.postext",
-        "bytes": 14705,
+        "bytes": 14706,
         "folio": "5113964e"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "formatNumeral",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -385,13 +385,13 @@
       }
     },
     "es": {
-      "hash8": "94d9dc88",
+      "hash8": "07c05143",
       "vdtHash": "2bfa7a26959cca47f13a2848b6e3f5aef29ba666",
       "timings": {
-        "importMs": 204,
-        "fontsMs": 445,
-        "buildMs": 63,
-        "totalMs": 1288,
+        "importMs": 183,
+        "fontsMs": 410,
+        "buildMs": 60,
+        "totalMs": 1273,
         "builds": 1
       },
       "specimen": {
@@ -490,23 +490,23 @@
       },
       "pdf": {
         "file": "kanji-numerals-and-dates.pdf",
-        "bytes": 174936,
+        "bytes": 175043,
         "pages": 4
       },
       "sandbox": {
         "file": "kanji-numerals-and-dates.postext",
-        "bytes": 14698,
+        "bytes": 14700,
         "folio": "5113964e"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "formatNumeral",
           "loadVerticalAlternates",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

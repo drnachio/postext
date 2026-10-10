@@ -1,12 +1,11 @@
 // ═══ Postext Cookbook · Nº 051 · Two-ink riso zine: art in one spot colour ═════════
 // https://postext.dev/en/cookbook/riso-zine-single-ink
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code (CC BY 4.0)
-// Fonts: Epilogue, Anton, Space Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Epilogue, Anton, Space Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A four-page zine for a risograph with a blue drum and a fluorescent pink one. The drawings
 // are made in full colour and printed from the pink drum as tints of pink.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  applySingleInkToSvg,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -23,7 +22,7 @@ const screen = (hex, share) => `#${[1, 3, 5].map((i) => Math.round(share
   * parseInt(hex.slice(i, i + 2), 16) + (1 - share) * parseInt(PAPER.slice(i, i + 2), 16))
   .toString(16).padStart(2, '0')).join('')}`;
 const palette = { ...DRUMS, 'spot-25': screen(DRUMS.spot, 0.25), paper: PAPER };
-// The hex rides with the id: design elements read the hex (gotcha: palette-skips-designs).
+// Every colour is linked to its palette entry by id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // The engine's defaults link to main-color: aimed at the spot, none of them adds a third ink.
 const colorPalette = [...Object.entries(palette), ['main-color', DRUMS.spot]]
@@ -32,13 +31,15 @@ const colorPalette = [...Object.entries(palette), ['main-color', DRUMS.spot]]
 
 // #region answer: drawings in any colours, printed from the pink drum
 // renderToPdf reads the ink from the config and recolours every SVG it is handed; the canvas
-// paints an SVG as registered (gotcha: single-ink-canvas). So the screen gets a recoloured
-// copy and the PDF the drawing as drawn: one pass each, as a second pass lightens it again.
+// does the same to a picture registered with singleInk: true. Both get the drawing as drawn.
 const diagramStyle = { singleInk: true, inkColor: col('spot') };
 const printFiles = new Map(); // fileId → the bytes renderToPdf embeds
 async function registerArt(fileId, svg) {
-  await loadSvg(fileId, applySingleInkToSvg(svg, diagramStyle.inkColor.hex)); // the canvas
-  printFiles.set(fileId, new TextEncoder().encode(svg)); // the PDF, recoloured there
+  const img = new Image();
+  img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  await img.decode();
+  registerResourceImage(fileId, img, { singleInk: true }); // the canvas tints it as it paints
+  printFiles.set(fileId, new TextEncoder().encode(svg)); // the PDF recolours these bytes
 }
 const pdfOptions = { fontProvider: fontsourceProvider,
   resourceBytes: (id) => printFiles.get(id) }; // the drawings as drawn, the PNG as it is
@@ -64,8 +65,8 @@ const twice = (id, { placement: { offset: { x, y }, ...rest }, ...element }) => 
   { ...element, id, color: col('ink'), placement: { ...rest, offset: { x, y } } }];
 const rule = (id, direction, x, y, size) => ({ kind: 'rule', id, direction, color: col('ink'),
   thickness: pt(id === 'pole' ? 3 : 0.8), placement: at('page', 'top-left', x, y, size) });
-// span: 'page' lets the design paint outside the text block: kept in the column, the
-// issue line above it and the pole below it are cut off at the column's edges.
+// span: 'page' lets the design run past the text block's foot: kept in the column, the
+// pole would be cut off there.
 const cover = { id: 'cover', span: 'page', header: { elements: [] }, footer: { elements: [] },
   advancedDesign: { enabled: true, slot: { elements: [
     { kind: 'image', id: 'moon', resourceId: 'moon',
@@ -75,7 +76,7 @@ const cover = { id: 'cover', span: 'page', header: { elements: [] }, footer: { e
     rule('pole', 'vertical', 98, 62, { height: mm(TRIM.height - 62) }), // off the foot
     { kind: 'box', id: 'flag', style: { backgroundColor: col('ink'), borderRadius: mm(1) },
       placement: at('page', 'top-left', 89, 62, { width: mm(18), height: mm(21) }) },
-    // One word a line: the box is narrower than two of them (gotcha: design-text-newline).
+    // One word a line: the box is narrower than two of them.
     { kind: 'text', id: 'stops', content: '{attr.stops}', ...mono, fontSize: pt(9),
       lineHeight: 1.25, align: 'center', color: col('paper'), overflow: 'wrap',
       placement: at('#flag', 'top-left', 3, 2.5, { width: mm(12) }) },
@@ -85,7 +86,7 @@ const cover = { id: 'cover', span: 'page', header: { elements: [] }, footer: { e
       fontSize: pt(9), color: col('ink'), align: 'left', overflow: 'wrap',
       placement: at('page', 'top-left', MARGIN.inner, 13, { width: mm(46) }) },
     ...twice('title', { kind: 'text', content: '{titleText}', fontFamily: 'Anton', fontSize: pt(86),
-      lineHeight: 0.9, // a multiple (gotcha: design-lineheight-multiple)
+      lineHeight: 0.9,
       textTransform: 'uppercase', align: 'left',
       overflow: 'wrap', placement: at('page', 'top-left', MARGIN.inner, 94, { width: mm(76) }) }),
   ] } } };
@@ -126,10 +127,6 @@ async function registerSnapshot(fileId, svg, width, height) {
 }
 const INSET = 30; // mm: the snapshot's width; its height follows the map's 100 × 69.5
 const drawn = { id: 'drawn', marginTop: pt(LEAD), advancedDesign: { enabled: true,
-    // A floor at the picture's height, which a design's images do not reserve (gotcha:
-    // opener-image-no-reserve). The note is about as tall today; with a shorter note the
-    // next block would run over the picture.
-    minHeight: mm(INSET * 0.695 + 1),
     slot: { elements: [
       { kind: 'image', id: 'inset', resourceId: 'as-drawn',
         placement: at('container', 'top-left', 0, 0.5, { width: mm(INSET), height: 'auto' }) },
@@ -156,7 +153,7 @@ const feet = [['even', 'left', 1, '{pageNumber} · {title} · {subtitle}'],
 const back = { id: 'back', span: 'page', // the setting moon runs past the text block
   breakBefore: { enabled: true, parity: 'even' },
   header: { elements: [] }, footer: { elements: [] },
-  // The blind is MEASURE / 4 tall; its room is set by hand (gotcha: opener-image-no-reserve).
+  // The blind is MEASURE / 4 tall: the floor leaves 6 mm of air under it.
   advancedDesign: { enabled: true, minHeight: mm(MEASURE / 4 + 6), slot: { elements: [
     { kind: 'image', id: 'blind', resourceId: 'blind',
       placement: at('container', 'top-left', 0, 0, { width: mm(MEASURE), height: 'auto' }) },
@@ -164,7 +161,7 @@ const back = { id: 'back', span: 'page', // the setting moon runs past the text 
       placement: at('page', 'bottom-right', 30, 34, { width: mm(76), height: mm(76) }) },
   ] } } };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, diagramStyle, resourceTypes: [drawing],
   page: { sizePreset: 'custom', width: mm(TRIM.width), height: mm(TRIM.height), dpi: 150,
     backgroundColor: col('paper'), margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom),
@@ -175,7 +172,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     // reference colour follows boldColor.
     boldColor: col('ink'), italicColor: col('ink'),
     textAlign: 'left', firstLineIndent: pt(0), paragraphSpacing: true },
-  // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+  // parity 'any': the article opens the next page, whichever side it falls on.
   headings: { fontFamily: 'Anton', fontWeight: 400, color: col('ink'), levels: [
     { level: 1, breakBefore: { enabled: true, parity: 'any' }, advancedDesign: opener },
     { level: 2, fontSize: pt(15), marginTop: pt(LEAD), marginBottom: pt(2) }] },
@@ -221,7 +218,7 @@ function mulberry32(seed) {
 }
 const f2 = (n) => +n.toFixed(2);
 // A single-stroke capital alphabet on a 4 × 6 grid with 45° corners, like the map's lines.
-// SVG text in an image cannot reach web fonts (gotcha: svg-no-webfonts), so labels are paths.
+// The labels are paths, stroked like the lines and recoloured with them.
 const GLYPHS = {
   A: ['0 6 0 1 1 0 3 0 4 1 4 6', '0 3.5 4 3.5'], B: ['0 0 3 0 4 1 4 2 3 3 0 3',
     '3 3 4 4 4 5 3 6 0 6 0 0'], C: ['4 1 3 0 1 0 0 1 0 5 1 6 3 6 4 5'],
@@ -387,19 +384,18 @@ function blind(text = 'NOT IN SERVICE') {
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Text, display and label faces, loaded before the build (gotcha: fonts-first).
+// Text, display and label faces, loaded before the build.
 const FONTS = { Epilogue: ['400', '700'], Anton: ['400'], 'Space Mono': ['400', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 const map = network();
 await Promise.all([registerArt('network.svg', map), registerArt('moon.svg', moon()),
   registerArt('blind.svg', blind()), registerSnapshot('as-drawn.png', map, 600, 417)]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Night Buses: a two-ink riso zine' });
 offerPdf(() => renderToPdf(doc, pdfOptions), `${RECIPE}.pdf`);
 // A grey proof: the pages as a photocopier or a one-drum reprint would print them.
 offerPdf(() => renderToPdf(doc, { ...pdfOptions, colorSpace: 'grayscale' }),
   `${RECIPE}-grey-proof.pdf`);
 
-// @kit core fonts viewer pdf images · the Cookbook inlines cookbook/_kit/*.js here
+// @kit core fonts viewer pdf · the Cookbook inlines cookbook/_kit/*.js here

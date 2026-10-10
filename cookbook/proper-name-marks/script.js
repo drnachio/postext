@@ -1,11 +1,11 @@
 // ═══ Postext Cookbook · Nº 077 · Proper-name and book-title marks, across and down ═════
 // https://postext.dev/en/cookbook/proper-name-marks
 // Code: MIT · Text: Sima Qian, Shiji 7 (PD) · Punctuation, headnote, conventions: CC BY 4.0
-// Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
+// Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // Specimen pages for a classical reader: the opening of the Basic Annals of Xiang Yu with
 // its proper-name lines and wavy title lines, set down the page and then across it.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -106,7 +106,7 @@ const footer = { elements: [
 // bodyStyle sets its list numbers bold unless its orderedLists say otherwise.
 const front = { id: 'front', bodyStyle: { fontFamily: KAI, orderedLists: { fontWeight: 400 } } };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'zh-Hant', // Taiwan: full-width centred punctuation (gotcha: cjk-locale-tag)
   colorPalette,
   page: {
@@ -125,7 +125,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: {
     fontFamily: HEI, fontWeight: 700, color: col('band'),
     levels: [
-      // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+      // parity 'any': the H1 opens on the next page, either side (the default waits for a recto).
       { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
         advancedDesign: opener, marginBottom: pt(0) },
       // No space above: 題解 sits on the fifth line, where the other pages' text starts;
@@ -172,7 +172,8 @@ await loadCjkFonts({ [SONG]: ['400'] }, markdown + NUMERALS, { vertical: true })
 await loadCjkFonts({ [SONG]: ['700'] }, heads);
 await loadCjkFonts({ [HEI]: ['400', '700'] }, heads + colophon, { vertical: true });
 await loadCjkFonts({ [KAI]: ['400'] }, preface + heads + NUMERALS, { vertical: true });
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'Name and title marks, down and across',
   es: 'Marcas de nombre y de título, en vertical y en horizontal' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

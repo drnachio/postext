@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "chinese-name-index",
-  "sourceHash": "248e0618282b27492be2dcdeb83584c13d68a08344a4c7060e5b379346c814c6",
+  "sourceHash": "40210ec24cc5c7047f1dc9e7b844bcb37ad5793af8b7ac1b2102661dada2e517",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.816Z",
+  "capturedAt": "2026-10-10T13:52:52.614Z",
   "variants": {
     "en": {
-      "hash8": "ed9b68c5",
-      "vdtHash": "3d6700b81d644051f452c8a8a34fae97a9444c3a",
+      "hash8": "b3ee1349",
+      "vdtHash": "1a0eb15c1d61a6694da694b1489cd6aeecec12e3",
       "timings": {
-        "importMs": 200,
-        "fontsMs": 545,
-        "buildMs": 125,
-        "totalMs": 1531,
+        "importMs": 498,
+        "fontsMs": 1387,
+        "buildMs": 443,
+        "totalMs": 3467,
         "builds": 2
       },
       "specimen": {
@@ -119,7 +119,7 @@
           "h": 1450,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 37840,
+          "bytes": 38630,
           "alt": "Opening page 7: 人名索引."
         },
         {
@@ -130,7 +130,7 @@
           "h": 1450,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 38100,
+          "bytes": 37258,
           "alt": "Page 8."
         },
         {
@@ -163,7 +163,7 @@
           "h": 1450,
           "file": "p15.webp",
           "strip": "p15.s.webp",
-          "bytes": 38212,
+          "bytes": 39666,
           "alt": "Opening page 7: 人名索引."
         },
         {
@@ -174,7 +174,7 @@
           "h": 1450,
           "file": "p16.webp",
           "strip": "p16.s.webp",
-          "bytes": 44364,
+          "bytes": 42862,
           "alt": "Page 8."
         }
       ],
@@ -226,21 +226,21 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 306875,
+        "bytes": 307058,
         "pages": 8
       },
       "sandbox": {
         "file": "chinese-name-index.postext",
-        "bytes": 20903,
+        "bytes": 21497,
         "folio": "8948df8d"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -308,6 +308,8 @@
           "headingStyles[].numbered",
           "headingStyles[].span",
           "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -371,7 +373,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 238,
+        "configLeaves": 239,
         "designElements": 11,
         "directives": [
           ":::index",
@@ -432,6 +434,7 @@
           "back-of-book-index",
           "character-grid",
           "cjk-line-breaking",
+          "column-balancing",
           "heading-attributes",
           "heading-styles",
           "opener-design",
@@ -448,7 +451,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 2,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -459,17 +462,23 @@
           "share": 0,
           "worst": 0.09
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     },
     "es": {
-      "hash8": "123c22b3",
-      "vdtHash": "3e1da01925ffe042b2ce2f1485d41af6294281c0",
+      "hash8": "dbb132fc",
+      "vdtHash": "340fd2720dca8b879e2003244464b1ee4c2a8f6e",
       "timings": {
-        "importMs": 198,
-        "fontsMs": 522,
+        "importMs": 199,
+        "fontsMs": 475,
         "buildMs": 109,
-        "totalMs": 1479,
+        "totalMs": 1451,
         "builds": 2
       },
       "specimen": {
@@ -571,7 +580,7 @@
           "h": 1450,
           "file": "p07.webp",
           "strip": "p07.s.webp",
-          "bytes": 37840,
+          "bytes": 38630,
           "alt": "Página de apertura 7: 人名索引."
         },
         {
@@ -582,7 +591,7 @@
           "h": 1450,
           "file": "p08.webp",
           "strip": "p08.s.webp",
-          "bytes": 39902,
+          "bytes": 39128,
           "alt": "Página 8."
         },
         {
@@ -615,7 +624,7 @@
           "h": 1450,
           "file": "p15.webp",
           "strip": "p15.s.webp",
-          "bytes": 38212,
+          "bytes": 39666,
           "alt": "Página de apertura 7: 人名索引."
         },
         {
@@ -626,7 +635,7 @@
           "h": 1450,
           "file": "p16.webp",
           "strip": "p16.s.webp",
-          "bytes": 45702,
+          "bytes": 44168,
           "alt": "Página 8."
         }
       ],
@@ -678,21 +687,21 @@
       },
       "pdf": {
         "file": "chinese-name-index.pdf",
-        "bytes": 307322,
+        "bytes": 307497,
         "pages": 8
       },
       "sandbox": {
         "file": "chinese-name-index.postext",
-        "bytes": 20946,
+        "bytes": 21541,
         "folio": "8948df8d"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -760,6 +769,8 @@
           "headingStyles[].numbered",
           "headingStyles[].span",
           "headings",
+          "headings.balancing",
+          "headings.balancing.enabled",
           "headings.color",
           "headings.fontFamily",
           "headings.fontWeight",
@@ -823,7 +834,7 @@
           "page",
           "paragraphStyles"
         ],
-        "configLeaves": 238,
+        "configLeaves": 239,
         "designElements": 11,
         "directives": [
           ":::index",
@@ -884,6 +895,7 @@
           "back-of-book-index",
           "character-grid",
           "cjk-line-breaking",
+          "column-balancing",
           "heading-attributes",
           "heading-styles",
           "opener-design",
@@ -900,7 +912,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 2,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -911,7 +923,13 @@
           "share": 0,
           "worst": 0.09
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }

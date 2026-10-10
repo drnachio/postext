@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 067 · Atlas sheet: numbered maps and a rotated overview ═════
 // https://postext.dev/en/cookbook/atlas-map-sheet
 // Code: MIT · Text: original (CC BY 4.0) · Maps: generated in code from seed 1874 (CC BY 4.0)
-// Fonts: Marcellus, Alegreya Sans, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Marcellus, Alegreya Sans, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, setCellBackground, setAlignment,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
+  setAlignment,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -20,8 +20,7 @@ const palette = {
   deep: '#8fb9c6', sea: '#cfe3e8', // the maps' water: over and under 20 m
   land: '#efe6cf', hill1: '#d9c9a3', hill2: '#bfa97a', forest: '#7f9b6a', // and their land
 };
-// col(id) links a colour to its entry. It carries the hex too: 1.4.1 paints design elements
-// and the reference colour from the hex (gotcha: palette-skips-designs).
+// col(id) links a colour to its palette entry; the drawings read the same hex from `palette`.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.band }) // the defaults' id
   .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
@@ -76,7 +75,7 @@ const pin = (to, edge, x, y, size) => ({ anchor: { to, edge }, offset: { x: mm(x
   ...(size && { size }) }); // to: 'page', 'bleed' or '#id' of an element listed before
 const text = (id, content, family, size, color, placement, extra) => ({ kind: 'text', id,
   content, fontFamily: family, fontSize: pt(size), color: col(color), align: 'left',
-  overflow: 'wrap', placement, ...extra }); // not '…' (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', placement, ...extra }); // a long running head wraps too, never '…'
 const opener = { enabled: true,
   // The band reserves down to its foot; minHeight adds AIR, in whole grid lines.
   minHeight: pt(LEAD * Math.ceil((BAND + AIR - PAGE.top) / (LEAD * PT))),
@@ -89,7 +88,7 @@ const opener = { enabled: true,
     text('kicker', '{attr.sheet} · {titleText}', LABEL, 9.5, 'sea', pin('page', 'top-left',
       PAGE.inner, 23), { fontWeight: 500, letterSpacing: pt(1.4) }),
     text('title', '{title}', DISPLAY, 56, 'paper', pin('#kicker', 'below', -1, 2),
-      { lineHeight: 1 }), // a multiple, never pt() (gotcha: design-lineheight-multiple)
+      { lineHeight: 1 }),
     text('lead', '{attr.lead}', TEXT, 10.5, 'sea', pin('#title', 'below', 1, 3,
       { width: mm(128) }), { italic: true, lineHeight: 1.35 }),
   ] } }; // hook-up: headings.levels[0] = { span: 'page', breakBefore, advancedDesign: opener }
@@ -117,7 +116,7 @@ const imprint = { id: 'imprint', footer: { elements: [
     + 'Kirkwick' }), LABEL, 8, 'muted', pin('#rule', 'below', 0, 2),
   { letterSpacing: pt(0.6) })] } };
 
-// #region gazetteer: the places numbered north to south, zebra rows filled cell by cell
+// #region gazetteer: the places numbered north to south, in a table with zebra rows
 const CHART = { y0: -5, square: 8 }; // Map 4's grid: 8 km squares from its top-left corner
 const PLACES = [ // name, what it is (en, es), island, x and y in km on the sheet, map mark
   ['Skarra', ['lighthouse', 'faro'], 'Skarra', 34.4, 5.4, 'light'],
@@ -150,18 +149,14 @@ function gazetteer() {
       square(p)]))] };
   for (let row = 0; row < m.rows.length; row++) {
     for (const c of [0, 4]) m = setAlignment(m, { row, col: c }, 'center');
-    // A table style has one body fill: every other row is filled here (gotcha: no-zebra).
-    if (row % 2 === 0 && row > 0) {
-      for (let c = 0; c < 5; c++) m = setCellBackground(m, { row, col: c }, col('sea'));
-    }
   }
-  return m;
+  return m; // the zebra rows are the table style's: tableStyle.bodyAlternateBackground
 }
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, header, footer, captionStyle,
-  // Spanish names Tabla; the map type is named in the pen (gotcha: resource-types-locale).
+  // The maps' own type, then the built-in table type in the sheet's language, counting 1, 2…
   resourceTypes: [mapType, { ...defaultResourceTypes(LANG)[1], numberingTemplate: '{n}' }],
   page: { width: mm(PAGE.w), height: mm(PAGE.h), dpi: 150, backgroundColor: col('paper'),
     margins: { top: mm(PAGE.top), bottom: mm(PAGE.bottom), left: mm(PAGE.inner),
@@ -171,7 +166,7 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('band'), // refs in blue
     textAlign: 'left', firstLineIndent: mm(0), paragraphSpacing: true }, // ragged, a line apart
   headings: { fontFamily: DISPLAY, fontWeight: 400, color: col('band'), levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+    // 'odd': the sheet opens on a recto, with no blank page forced before it.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'odd' },
       advancedDesign: opener, marginBottom: pt(0) }, // else a grid line more under the band
     { level: 2, fontSize: pt(14), lineHeight: pt(LEAD * 1.5), marginTop: pt(LEAD / 2),
@@ -179,7 +174,8 @@ const config = () => ({ // a factory: configs are cached by identity (gotcha: co
   ] },
   tableStyle: { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
     headerBackground: col('band'), headerColor: col('paper'), headerFontFamily: LABEL,
-    headerFontSize: pt(8.5), bodyFontSize: pt(8.8), cellPadding: mm(1.2) },
+    headerFontSize: pt(8.5), bodyFontSize: pt(8.8), cellPadding: mm(1.2),
+    bodyAlternateBackgroundEnabled: true, bodyAlternateBackground: col('sea') }, // every 2nd row
   chipStyles: [{ id: 'no', background: col('road'), color: col('paper'), bold: true,
     borderWidth: pt(0), borderRadius: em(1), paddingX: em(0.45), fontSize: em(0.92) },
   { id: 'key', backgroundEnabled: false, borderWidth: pt(0), paddingX: pt(0) }],
@@ -194,8 +190,8 @@ const SEED = 1874; // the survey's year, and the seed every coast and depth is d
 
 // #region art: one seeded height field, drawn as four maps and a compass rose
 // Heights and depths come from a few hills and bays warped by value noise; marching squares
-// turn each band of RELIEF into closed paths. Numbers are strokes: an SVG drawn as an image
-// cannot reach the page's web fonts (gotcha: svg-no-webfonts). No markers or filters.
+// turn each band of RELIEF into closed paths. Numbers and letters are strokes, drawn by
+// label(), so the maps carry no font. No markers or filters.
 function mulberry32(seed) { // a seeded PRNG: never Math.random() in a recipe
   return () => {
     seed = (seed + 0x6d2b79f5) | 0;
@@ -627,15 +623,14 @@ await loadSvg('rose.svg', rose(ROSE)); // drawn by the opener, never cited, so n
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the layout uses, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the layout uses, loaded before the build
   'Alegreya Sans': ['400', '400i', '700'], // text, lead, place names and chips
   'Alegreya Sans SC': ['400', '500', '700'], // captions, heads, kicker, table head, labels
   Marcellus: ['400'], // the atlas's name, section heads and folios: one weight, no italic
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'The Solan Isles · Sheet 1', es: 'Las islas Solan · Hoja 1' }) });
 
 // @kit core fonts viewer images · the Cookbook inlines cookbook/_kit/*.js here

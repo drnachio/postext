@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 133 · A broadsheet on six columns ════════════════════
 // https://postext.dev/en/cookbook/broadsheet-six-columns
 // Code: MIT · Text: original (CC BY 4.0) · Photos: generated (CC BY 4.0)
-// Fonts: Newsreader, Playfair Display, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.18.0
+// Fonts: Newsreader, Playfair Display, Archivo Narrow (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -34,11 +34,10 @@ const caps = (size, weight, colour = 'ink') => sans(size, weight, { color: col(c
   textTransform: 'uppercase', letterSpacing: pt(size * 0.14) });
 const at = (to, edge, x = 0, y = 0) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) } });
 const text = (id, content, look, placement) => ({ kind: 'text', id, content, align: 'left',
-  overflow: 'wrap', color: col('ink'), ...look, placement }); // (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap', color: col('ink'), ...look, placement });
 const rule = (id, under, weight, gap = 0) => ({ kind: 'rule', id, thickness: pt(weight),
   color: col('ink'), placement: { ...at(under, 'above', 0, -gap), size: { width: 'fill' } } });
-// An empty box a whole number of grid lines deep sets each opener's depth, so no sliver of
-// column is left beside it for the rule to run through (gotcha: column-rule-through-opener).
+// An empty box sets each opener's depth: a whole number of grid lines.
 const depth = (lines) => ({ kind: 'box', id: 'depth', style: {}, placement: {
   ...at('container', 'top-left'), size: { width: 'fill', height: pt(lines * LEAD) } } });
 
@@ -55,7 +54,7 @@ const nameplate = { enabled: true, slot: { elements: [
       { ...at('#foot', 'above', 0, -1.5), size: { width: 'fill' } })),
   rule('thin', '#date-left', 0.5, 1.6), rule('heavy', '#thin', 3, 0.7),
   text('name', '{titleText}', { fontFamily: 'Playfair Display', fontSize: pt(64),
-    fontWeight: 900, lineHeight: 1, align: 'center' }, // (gotcha: design-lineheight-multiple)
+    fontWeight: 900, lineHeight: 1, align: 'center' },
   { ...at('#heavy', 'above', 0, -2.5), size: { width: 'fill' } }),
   ...ear('left', [['w-kicker', 'Weather', caps(7.5, 700, 'accent')],
     ['w-outlook', '{attr.outlook}', { fontFamily: 'Newsreader', fontSize: pt(9.5), italic: true,
@@ -145,7 +144,7 @@ const opinion = { id: 'opinion', advancedDesign: flag, // its section runs in fi
   layout: { layoutType: 'multiple', columnCount: 5 } }; // 67 mm: a 47-character measure
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   colorPalette, resourceTypes,
   page: { sizePreset: 'broadsheet', dpi: 150, backgroundColor: col('paper'), // 375 × 597 mm
     margins: { top: mm(MARGIN.top), bottom: mm(MARGIN.bottom), left: mm(MARGIN.side),
@@ -161,7 +160,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
   headings: { fontFamily: 'Playfair Display', fontWeight: 700, color: col('ink'),
     balancing: { trailing: false }, // every page closes a section: fill each column to the foot
     levels: [
-    // Restated (gotcha: headings-drop-h1-break): each section opens a page of its own.
+    // Each section opens a page of its own, recto or verso.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' }, advancedDesign: flag },
     { level: 2, fontSize: pt(17), lineHeight: pt(19), marginTop: pt(LEAD), marginBottom: pt(3) },
     { level: 3, fontFamily: 'Archivo Narrow', fontSize: pt(9.5), lineHeight: pt(LEAD),
@@ -289,19 +288,18 @@ const back = /* @content:back */ ''; // content.back.en.md: page 4
 const markdown = [front, city, views, back].join('\n\n');
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Newsreader: ['400', '400i', '600', '700', '700i'], 'Playfair Display': ['700', '800', '900'],
   'Archivo Narrow': ['400', '600', '700'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 await Promise.all([loadImage('quays-1440.jpg', asset('quays-1440.jpg')),
   loadImage('barrier-1152.jpg', asset('barrier-1152.jpg')),
   loadImage('terrace-1440.jpg', asset('terrace-1440.jpg')),
   loadImage('baths-1536x768.jpg', asset('baths-1536x768.jpg')),
   loadImage('stage-1800.jpg', asset('stage-1800.jpg')),
   ...Object.entries(SKY).map(([id, svg]) => loadSvg(`${id}.svg`, svg))]);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'The Corrington Despatch' });
 
 // @kit

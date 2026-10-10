@@ -1,13 +1,13 @@
 // ═══ Postext Cookbook · Nº 002 · Two-column paper with numbered equations ══════════
 // https://postext.dev/en/cookbook/journal-article-with-maths
 // Code: MIT · Text: original (CC BY 4.0) · Figures: generated in code (CC BY 4.0)
-// Fonts: STIX Two Text, Schibsted Grotesk, Azeret Mono (SIL OFL 1.1) · Needs postext ≥ 1.24.0
+// Fonts: STIX Two Text, Schibsted Grotesk, Azeret Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A research article in a fictional physics journal: a title block across the page, numbered
 // sections, MathJax formulas in the text and in the figures, a table computed from the data.
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage,
-  defaultResourceTypes, initMathEngine, renderMath,
-} from 'https://esm.sh/postext?bundle';
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
+  initMathEngine, renderMath,
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -31,30 +31,18 @@ const [BODY, LEAD] = [9.5, 12.6]; // pt: body size and leading, the grid both co
 // mm: the A4 trim, the head, foot and side margins, and the gutter between the two columns
 const [TRIM_W, TRIM_H, TOP, BOTTOM, M, GUTTER] = [210, 297, 22, 22, 17, 6];
 const MEASURE = TRIM_W - 2 * M; // mm: the text width, which the band's type and rules align to
-const COLUMN = (MEASURE - GUTTER) / 2; // mm: one of the two columns
-const PT_PER_MM = 72 / 25.4; // a point is 1/72 in, and an inch 25.4 mm
 
-// #region answer: maths from a CDN: the bundled engine, MathJax awaited, numbered equations
-// Every postext symbol comes from https://esm.sh/postext?bundle, which carries MathJax: in
-// 1.4.1 the plain URL makes initMathEngine() throw "Can't find handler for document".
-await initMathEngine(); // gotcha: math-bundle. Unawaited, formulas paint as grey boxes, unwarned
+// #region answer: maths from a CDN: MathJax awaited before the build, equations numbered by \tag
+// initMathEngine comes from https://esm.sh/postext with every other symbol: MathJax ships
+// inside the package. Import from one URL only, since two URLs load two engines.
+await initMathEngine(); // gotcha: math-bundle. Unawaited, formulas paint as grey boxes
 const math = { // on by default: $…$ inline, $$…$$ display, and \$ for a literal dollar sign
   fontSizeScale: 1.07, // TeX's x-height is 0.442 em, STIX Two Text's 0.473 em: ×1.07
   marginTop: pt(LEAD), // display maths: a line above, half a line below, and the grid snap
   marginBottom: pt(LEAD / 2), // then rounds the space below up to the next baseline
 };
-// Equation numbers: in 1.4.1 a \tag makes a formula 0 wide, so it vanishes unwarned (gotcha:
-// math-tag-vanishes). numbered() sets the line instead: the formula centred, its number flush
-// right, in ems of the maths as drawn, measured once rather than assumed.
-const MATH_EM = renderMath('\\mathmakebox[10em]{}', true, 100).widthPx / 1000;
-const COLUMN_EM = (COLUMN * PT_PER_MM) / (BODY * math.fontSizeScale * MATH_EM);
-const NUMBER_EM = 3; // room for "(7)", and as much on the left so the formula stays centred
-const FORMULA_EM = (COLUMN_EM - 2 * NUMBER_EM - 0.1).toFixed(2); // 0.1: rounding never overflows
-// Column maths only: a numbered formula in a page-wide box would need MEASURE, not COLUMN.
-const numbered = (md) => md.replace(/\$\$([^$]+?)\\tag\{([^}]+)\}\s*\$\$/g, (_, body, n) =>
-  `$$\\mathmakebox[${NUMBER_EM}em]{}\\mathmakebox[${FORMULA_EM}em]{${body.trim()}}`
-  + `\\mathmakebox[${NUMBER_EM}em][r]{(${n})}$$`);
-// Then build from the rewritten text: buildDocument({ markdown: numbered(markdown), … }).
+// Equation numbers are written in the Markdown: $$T_0 = 2\pi\sqrt{\frac{L}{g}} \, . \tag{1}$$
+// A numbered formula spans its column, the equation centred and its number flush right.
 // Formulas are MathJax paths: renderToPdf writes them as vector outlines, with no maths font.
 // #endregion
 
@@ -65,7 +53,7 @@ const text = (id, content, family, size, color, placement, extra) => ({ kind: 't
 const at = (to, edge, x, y, width) => ({ anchor: { to, edge }, offset: { x: mm(x), y: mm(y) },
   ...(width && { size: { width: mm(width) } }) });
 const caps = (size, fontWeight = 600) => ({ fontWeight, letterSpacing: pt(size * 0.18),
-  textTransform: 'uppercase' }); // tracked capitals: design text and callout titles take them
+  textTransform: 'uppercase' }); // tracked capitals: the band, the abstract, the back matter
 const [RULE_Y, BAND, BYLINE] = [21, 130, 152]; // mm from the top: rule, band foot, byline foot
 const titleBlock = {
   enabled: true,
@@ -88,8 +76,8 @@ const titleBlock = {
       caps(7.5)), // 39 mm above the band's foot: room for itself and a two-line title
     text('title', '{titleText}', SANS, 36, 'paper', at('#kicker', 'below', 0, 3, 170),
       { fontWeight: 700, lineHeight: 1.04 }), // broken where the heading line has its \\
-    // Design text prints ^1^ as it is (gotcha: design-text-no-inline-marks): the author
-    // marks in the attribute are the characters ¹ and ², which the latin subset carries.
+    // The author marks in the attribute are the characters ¹ and ², which the latin subset
+    // carries: a design text prints ^1^ as written unless it sets inlineMarks: true.
     text('authors', '{attr.authors}', SANS, 11, 'ink', at('page', 'top-left', M, BAND + 7, 120),
       { fontWeight: 600 }),
     text('affiliations', '{attr.affiliations}', SANS, 7.5, 'muted',
@@ -123,7 +111,7 @@ const footer = { elements: [
     { ...folio, align: 'right', pages: 'opener', overflow: 'clip' }),
 ] };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   resourceTypes, colorPalette, // resourceTypes below: Figure 1, Table 1 through the article
   page: { width: mm(TRIM_W), height: mm(TRIM_H), dpi: 150, pageNumbering: { startAt: 213 },
     margins: { top: mm(TOP), bottom: mm(BOTTOM), left: mm(M), right: mm(M), mirror: true } },
@@ -134,8 +122,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     indentAfterHeading: false, minWordSpacing: 0.78, // no line's spaces below 0.78 of a space
     maxRuntTracking: 4 }, // a runt fix tightens by 4/1000 em at most (default 10): no dark lines
   math,
-  headings: { fontFamily: SANS, color: col('journal'), levels, // bold by default; levels below
-    balancing: { stretchAfterFloats: false } }, // gotcha: float-stretch-closing-page (page 4)
+  headings: { fontFamily: SANS, color: col('journal'), levels }, // bold by default; levels below
   headingStyles, calloutStyles, chipStyles, paragraphStyles, // defined below
   tableStyle: { rules: 'booktabs', borderColor: col('ink'), // journal rules: top, header, bottom
     headerBackgroundEnabled: false, headerColor: col('journal'), headerFontFamily: SANS,
@@ -148,8 +135,8 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 // #region numbering: numbered sections styled by level, an uncounted title, figures 1, 2, 3
 // Each level has its own template, {2} for a section and {2}.{3} for a subsection, and its own
 // type. Heads snap the text after them back onto the grid, so the two columns stay level.
-const levels = [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }, // the title; its
-  // break is restated, as a headings object drops it (gotcha: headings-drop-h1-break)
+const levels = [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }, // the title: an
+  // article opens on the next page, recto or verso
   { level: 2, numberingTemplate: '{2}', fontSize: pt(11.5), lineHeight: pt(LEAD * 2),
     marginTop: pt(LEAD), marginBottom: pt(0) }, // "1 Introduction", journal green
   { level: 3, numberingTemplate: '{2}.{3}', fontSize: pt(10), lineHeight: pt(LEAD),
@@ -157,9 +144,8 @@ const levels = [{ level: 1, breakBefore: { enabled: true, parity: 'any' } }, // 
 ];
 const headingStyles = [ // the article title and the back matter are headings, but uncounted
   { id: 'article', numbered: false, span: 'page', advancedDesign: titleBlock },
-  // In 1.4.1 a heading takes no letterSpacing: the back-matter capitals stay untracked.
-  { id: 'back', numbered: false, fontSize: pt(7.5), lineHeight: pt(9), // bold, from its H2 level
-    textTransform: 'uppercase', marginTop: pt(LEAD), marginBottom: pt(2) },
+  { id: 'back', numbered: false, fontSize: pt(7.5), lineHeight: pt(9), ...caps(7.5, 700),
+    marginTop: pt(LEAD), marginBottom: pt(2) }, // tracked capitals, like the abstract's label
 ];
 // The default "{h1}.{n}" prints Figure 1 here too, as an empty {h1} drops with its dot; "{n}"
 // says outright that figures and tables count through the article. Tables caption above.
@@ -208,9 +194,8 @@ const table = { headerRowCount: 1, columnWidths: [1.25, 1.35, 1, 1.1, 1.2], rows
   ['Amplitude', 'Measured', 'Eq. (6)', 'Over *T*~0~', 'Residual'],
   ...runs.map(([deg, T]) => [`${deg}°`, fixed(T, 4), fixed(exact(deg), 4),
     `${fixed((exact(deg) / T0 - 1) * 100, 2)}%`, `${fixed((T / exact(deg) - 1) * 100, 3, 1)}%`]),
-].map((row) => row.map(cell)) }; // cells take no maths (gap: math-in-captions): *T*~0~ is plain
-// An SVG cannot see the page's fonts (gotcha: svg-no-webfonts), so the figure labels are
-// MathJax paths too: the same italic θ as the text, and vector in the PDF.
+].map((row) => row.map(cell)) }; // *T*~0~ is plain markup: the header stays in its sans
+// The figure labels are MathJax paths too: the same italic θ as the text, and vector in the PDF.
 const R = (x) => Math.round(x * 100) / 100; // coordinates to 0.01 mm keep the SVG short
 function tex(markup, x, y, size, anchor = 0, color = 'ink') { // anchor 0 left, .5 centre, 1 right
   const r = renderMath(markup, false, 100); // paths in MathJax units: 1000 to the em
@@ -324,19 +309,17 @@ function phase() { // 176 × 76 mm, across the page: the orbits of Eq. (3)
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages paint, loaded before the first build (gotcha: fonts-first)
+const FONTS = { // every face the pages paint, loaded before the first build
   'STIX Two Text': ['400', '400i', '700'],
   'Schibsted Grotesk': ['400', '400i', '500', '600', '700', '700i'],
   'Azeret Mono': ['400', '600'],
 };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
 for (const [id, draw] of Object.entries({ strobe, geometry, period, phase })) {
   await loadSvg(`${id}.svg`, draw()); // registered for the canvas, kept as bytes for the PDF
 }
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown: numbered(markdown), resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: 'Two-column paper with numbered equations' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`); // text in the Fontsource faces; formulas and figures as vector paths

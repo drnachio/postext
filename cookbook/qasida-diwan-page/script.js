@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 110 · A qasida on a diwan page, in two hemistichs ═══════════
 // https://postext.dev/en/cookbook/qasida-diwan-page
 // Code: MIT · Text: al-Mutanabbī, Dīwān, ar.wikisource (PD) · Pictures: none
-// Fonts: Amiri, Aref Ruqaa, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.15.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Amiri, Aref Ruqaa, Noto Kufi Arabic (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -109,7 +109,7 @@ const footer = { elements: [head('drop-folio', '{pageNumber}', 'all', 'bottom', 
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { y: mm(-12) } } })] };
 // #endregion
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ar', // right to left, bound on the right, digits ٠–٩ (gotcha: arabic-locale-tag)
   colorPalette,
   page: { width: mm(170), height: mm(240), dpi: 150, backgroundColor: col('paper'),
@@ -119,7 +119,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(1.5), indentAfterHeading: false,
     optimalLineBreaking: true, avoidWidows: true, avoidOrphans: true, ...bodyKashida },
-  // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+  // Each poem opens a page, on either side of the spine.
   headings: { fontFamily: RUQAA, fontWeight: 700, color: col('rubric'),
     levels: [{ level: 1, fontSize: pt(34), breakBefore: { enabled: true, parity: 'any' },
       advancedDesign: opener }] },
@@ -138,7 +138,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   Amiri: ['400', '400i', '700'], // NASKH: the poem, the headnote, the poet; the note's Latin
   'Aref Ruqaa': ['700'], // RUQAA: ديوان and the title
   'Noto Kufi Arabic': ['500'], // KUFI: metre, rhyme, running heads and folios
@@ -148,7 +148,8 @@ const FONTS = { // every face the pages use, loaded before the build (gotcha: fo
 await loadFonts(FONTS, markdown);
 // The arabic file of each face, which loadFonts leaves out (gotcha: arabic-fonts-subset).
 await loadArabicFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'A qasida on a diwan page',
   es: 'Una casida en una página de diván' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: arabicPdfProvider }), `${RECIPE}.pdf`);

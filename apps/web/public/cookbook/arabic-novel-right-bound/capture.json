@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "arabic-novel-right-bound",
-  "sourceHash": "69c9046db3ba45269e4d7e47542dcf4021299ad567d138f158fb908f92c578f2",
+  "sourceHash": "4b934a6d3b83813bed70e06e18d9fd033e03bc180341d70072f3ad23bd8cb1e5",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.639Z",
+  "capturedAt": "2026-10-10T13:30:00.692Z",
   "variants": {
     "en": {
-      "hash8": "ab0f80b5",
+      "hash8": "88acfb1d",
       "vdtHash": "228ba9f283926971b507cfd33681a3d1e4d915c7",
       "timings": {
-        "importMs": 199,
-        "fontsMs": 75,
-        "buildMs": 53,
-        "totalMs": 993,
-        "builds": 2
+        "importMs": 220,
+        "fontsMs": 61,
+        "buildMs": 80,
+        "totalMs": 917,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Reem Kufi"
         ],
         "pages": 7,
-        "ownLines": 158
+        "ownLines": 159
       },
       "pages": [
         {
@@ -153,22 +153,22 @@
       },
       "pdf": {
         "file": "arabic-novel-right-bound.pdf",
-        "bytes": 85130,
+        "bytes": 85133,
         "pages": 7
       },
       "sandbox": {
         "file": "arabic-novel-right-bound.postext",
-        "bytes": 34697,
+        "bytes": 34694,
         "folio": "217e1225"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -353,14 +353,14 @@
       }
     },
     "es": {
-      "hash8": "2293cb11",
+      "hash8": "088ac91c",
       "vdtHash": "5b351374d59c99b443d9d730fcdda48da34370b8",
       "timings": {
-        "importMs": 206,
-        "fontsMs": 69,
-        "buildMs": 46,
-        "totalMs": 964,
-        "builds": 2
+        "importMs": 166,
+        "fontsMs": 59,
+        "buildMs": 81,
+        "totalMs": 843,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -381,7 +381,7 @@
           "Reem Kufi"
         ],
         "pages": 7,
-        "ownLines": 158
+        "ownLines": 159
       },
       "pages": [
         {
@@ -495,22 +495,22 @@
       },
       "pdf": {
         "file": "arabic-novel-right-bound.pdf",
-        "bytes": 85083,
+        "bytes": 85082,
         "pages": 7
       },
       "sandbox": {
         "file": "arabic-novel-right-bound.postext",
-        "bytes": 34756,
+        "bytes": 34752,
         "folio": "217e1225"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "folio-book-on-a-desk",
-  "sourceHash": "5b44e08746137e4673a7f06aeeb12a77a6a9189e8543ca557da7e80cfebc1e3b",
+  "sourceHash": "b808ddd65d810c66ecc12ef60cbeac8ac0a337df41e7cef632480f62a00b387f",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.958Z",
+  "capturedAt": "2026-10-10T13:33:44.488Z",
   "variants": {
     "en": {
-      "hash8": "854bd2ca",
+      "hash8": "747b9a2c",
       "vdtHash": "2890142d818eab48c2a1bfe9536b661ee3937bb0",
       "timings": {
-        "importMs": 185,
-        "fontsMs": 36,
-        "buildMs": 14,
-        "totalMs": 898,
-        "builds": 2
+        "importMs": 2466,
+        "fontsMs": 3,
+        "buildMs": 35,
+        "totalMs": 3104,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Work Sans"
         ],
         "pages": 4,
-        "ownLines": 120
+        "ownLines": 119
       },
       "pages": [
         {
@@ -119,8 +119,7 @@
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createFolioFromDocument",
           "renderPageToCanvas"
         ],

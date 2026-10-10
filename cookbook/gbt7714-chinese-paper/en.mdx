@@ -18,7 +18,7 @@ Two pages of a research article in an invented journal of publishing studies, �
 
 The code is [the short answer](#the-short-answer) above. The citation engine is registered once, before the first build, and `postext-citeproc` ships the three GB/T 7714 styles: numeric, author-date and notes ([Citations](/en/docs/configuration#citations)). In the text a citation is a key in square brackets. `[@tinker1963]` prints a superscript [1], and `[@rayner2016; @dyson2001; @lin2023]` prints [2–4]. Two numbers in a row stay a list, [5,6]. A work cited again keeps its first number: [4] in the third paragraph, and [1] and [2] later in the article.
 
-The standard asks for “et al.” after the first three authors of a Western work and 等 after those of a Chinese one. The bundled CSL file holds two layouts for that, one for works in English, but the English one is commented out, so every entry gets 等. The answer takes the style’s XML from `STYLES`, uncomments that layout and passes the result as a custom style. Each entry then takes its layout from its own `language` field: Rayner and four co-authors become “RAYNER K, SCHOTTER E R, MASSON M E J, et al.”, and 林岚 and three co-authors become “林岚, 周明远, 陈思齐, 等”. `locale: 'zh-CN'` writes the rest of the list’s words in Chinese.
+The standard asks for “et al.” after the first three authors of a Western work and 等 after those of a Chinese one. The bundled CSL file holds two layouts for that, one of them for works in English, and each entry takes its layout from its own `language` field: Rayner and four co-authors become “RAYNER K, SCHOTTER E R, MASSON M E J, et al.”, and 林岚 and three co-authors become “林岚, 周明远, 陈思齐, 等”. `locale: 'zh-CN'` writes the rest of the list’s words in Chinese.
 
 ### 2 · The references in a CSL-YAML block
 
@@ -56,9 +56,8 @@ Some journals print citation numbers on the line, at the text size. `marker` cha
 Mixed bibliographies are sometimes sorted with the Chinese works ahead of the Western ones. In a numeric style the numbers then no longer run in order down the list, so this suits the author-date style better.
 
 ```diff
--  customStyle: GBT.replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/, '$1'),
-+  customStyle: STYLES['china-national-standard-gb-t-7714-2015-author-date']
-+    .replace(/<!-- (<layout[^>]*locale="en">[\s\S]*?<\/layout>)\s*-->/g, '$1'),
+-  style: 'china-national-standard-gb-t-7714-2015-numeric',
++  style: 'china-national-standard-gb-t-7714-2015-author-date',
    locale: 'zh-CN', // 等, 卷, 版 and the other terms of the list
 -  bibliography: { fontSize: em(7.5 / BODY), lineHeight: pt(12), entrySpacing: pt(1.5),
 +  bibliography: { groupByLanguage: true, fontSize: em(7.5 / BODY), lineHeight: pt(12),
@@ -69,4 +68,4 @@ Mixed bibliographies are sometimes sorted with the Chinese works ahead of the We
 - A narrative citation, `@zhou2019` without brackets, names the authors and adds the number, but a key runs on through Chinese characters, so `@zhou2019认为` reads as a key that does not exist. Write the name in the text and the citation after it, `周明远[@zhou2019]认为`, as Chinese papers do anyway.
 - The bundled numeric style prints no locators: `[@zhou2019, 页 45]` gives [5] without the page. GB/T 7714 puts the page after the bracket in the superscript, [5]45; until the style does, write the page in the sentence.
 - LXGW WenKai TC, the only Kai on Fontsource, is a Taiwan face: it draws ，and 。 in the middle of the cell, and under `zh-Hans` the engine trims the right half of the cell, which cuts into the glyph. The abstract is set in Noto Serif SC, and the Kai is kept for the authors’ names, which have no punctuation.
-- On a character grid, column balancing would add lines above heads and spread the characters of a paragraph to fill a short column. `headings.balancing.enabled: false` keeps every line on the grid, and the second column of page 1 ends three lines short instead: the head 2 结果 needs its own two lines and two of text under it, so it opens page 2.
+- On a character grid column balancing is off by default, so every line stays on the grid and the second column of page 1 ends three lines short: the head 2 结果 needs its own two lines and two of text under it, so it opens page 2. `headings.balancing.enabled: true` would fill that column with whole grid lines above its heads, never by spreading characters off their cells.

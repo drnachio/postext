@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 122 · Kanbun with its reading marks, and the Japanese reading ═══
 // https://postext.dev/en/cookbook/kanbun-kundoku
 // Code: MIT · Text: 論語, 孟浩然「春暁」 (public domain); kunten and readings CC BY 4.0
-// Fonts: Zen Old Mincho, Klee One, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.16.1
+// Fonts: Zen Old Mincho, Klee One, Noto Sans JP (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, loadVerticalAlternates,
+  buildDocument, withLoadedFonts, renderPageToCanvas, loadVerticalAlternates,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -56,7 +56,6 @@ const paragraphStyles = [
 const at = (down, across) => ({ anchor: { to: 'container', edge: 'top-left' },
   offset: { x: pt(down), y: pt(across) } });
 const TITLE = 26; // pt
-// gotcha: headings-drop-h1-break
 const part = { level: 1, breakBefore: { enabled: true, parity: 'any' },
   advancedDesign: { enabled: true, minHeight: pt(5 * LEAD), slot: { elements: [
     { kind: 'text', id: 'title', content: '{titleText}', fontFamily: MINCHO, fontWeight: 700,
@@ -85,7 +84,7 @@ const first = { id: 'first', footer: { elements: [{ kind: 'text', id: 'colophon'
   placement: { anchor: { to: 'page', edge: 'bottom' }, offset: { y: mm(-7) },
     size: { width: mm(118) } } }] } };
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   locale: 'ja', // written out, never LANG (gotcha: ja-locale-tag)
   colorPalette,
   page: {
@@ -101,8 +100,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('ink'),
     textAlign: 'justify', firstLineIndent: em(1), indentAfterHeading: true,
   },
-  headings: { fontFamily: MINCHO, color: col('ink'), levels: [part, passage],
-    balancing: { enabled: false } }, // gotcha: cjk-grid-balancing
+  headings: { fontFamily: MINCHO, color: col('ink'), levels: [part, passage] },
   headingStyles: [first],
   paragraphStyles,
   header,
@@ -136,7 +134,8 @@ await loadCjkFonts({ [GOTHIC]: ['400', '700'] },
   `${heads}${colophon}${markdown.match(/kicker="([^"]*)"/)[1]}漢文訓読一二三四五六七八九十`,
   { vertical: true });
 // #endregion
-const doc = await buildWithFonts(() => buildDocument({ markdown }, config()), markdown);
+const doc = await withLoadedFonts(() => buildDocument({ markdown }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showBook(doc, { title: t({ en: 'Kanbun with its reading marks, and the Japanese reading',
   es: 'Kanbun con sus marcas de lectura y la lectura japonesa' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

@@ -1,8 +1,8 @@
 ---
 title: "Editor en directe amb la composició en un Web Worker"
-summary: "Markdown al costat d'una pàgina de butxaca: un worker creat des d'un blob compon amb fonts pròpies i cada pulsació cancel·la la composició en curs."
+summary: "Markdown al costat d'una pàgina de butxaca: un Web Worker compon amb fonts pròpies i cada pulsació cancel·la la composició en curs."
 plain: "Un editor en directe per a una edició de butxaca de La màquina del temps. Cada vegada que escrius, la pàgina es torna a compondre en segon pla, i la pantalla continua responent."
-description: "Compon en un Web Worker arrencat des d'un blob del mateix origen, passa-li les fonts, cancel·la la composició a cada pulsació i pinta al fil principal."
+description: "Compon en un Web Worker que arrenca amb una sola crida, passa-li les fonts, cancel·la la composició a cada pulsació i pinta al fil principal."
 question: "Com mantinc fluid un editor en compondre un text llarg, amb fonts i cancel·lació en un Web Worker?"
 aliases: ["Web Worker", "createLayoutWorker", "registerFonts", "AbortController", "cancel·lar una composició", "previsualització en directe", "fora del fil principal", "editor de Markdown", "sense interfície", "Node"]
 pageNotes: { "1": "La portada: als 84 mm de dalt, un camp bordeus emmarcat per un doble filet daurat porta un quadrant de llautó amb quatre esferes petites; a sota, sobre paper crema, The Time Machine en Cinzel en dues línies, An Invention en cursiva bordeus, un filet curt de llautó i H. G. Wells en versaletes.", "2": "El text del capítol I comença a la novena línia, sota un número romà bordeus, un filet curt de llautó i INTRODUCTION en versals espaiades; els dos primers paràgrafs omplen la resta de la pàgina i el foli va al peu.", "3": "Una pàgina senar de rèpliques breus, amb Introduction en versaletes bordeus sobre el text i el foli al marge exterior.", "4": "Una pàgina parella amb The Time Machine a la capçalera i el foli al marge exterior; una frase del Viatger del Temps va en cursiva.", "5": "Una pàgina senar sobre la geometria de quatre dimensions, amb la capçalera Introduction." }
@@ -14,17 +14,17 @@ Compons el capítol I de *La màquina del temps*, de H. G. Wells, en anglès, co
 
 ## Elaboració
 
-### 1 · Arrenca el worker des d'un blob
+### 1 · Arrenca el worker amb una crida
 
-El codi d'aquest pas és [la resposta curta](#la-resposta-curta). A la 1.4.1, `createLayoutWorker()` sense opcions arrenca el fitxer del worker que hi ha al costat del mòdul. Si el mòdul ve d'esm.sh, aquest fitxer és d'un altre origen i el constructor `Worker` llança un SecurityError. Un URL de blob creat per la pàgina té l'origen de la pàgina, així que la resposta curta arrenca un worker de mòdul des d'un blob d'una sola línia que importa `postext/worker/entry` d'esm.sh, i el passa a `createLayoutWorker({ worker })`. L'objecte que retorna té un `build()` que accepta el mateix contingut i la mateixa configuració que `buildDocument()` i es resol amb el mateix tipus de document ([Executar la composició en un Web Worker](/ca/docs/configuration#executar-la-composició-en-un-web-worker)).
+El codi d'aquest pas és [la resposta curta](#la-resposta-curta). `createLayoutWorker()` va sense opcions. Si el mòdul ve d'esm.sh, el fitxer del worker és d'un altre origen i el constructor `Worker` el rebutjaria, així que el motor arrenca la seva entrada de worker a través d'un blob de l'origen de la pàgina, en la mateixa versió que ha importat la pàgina. En una aplicació empaquetada, la mateixa crida arrenca el fitxer del worker que hi ha al costat del mòdul. L'objecte que retorna té un `build()` que accepta el mateix contingut i la mateixa configuració que `buildDocument()` i es resol amb el mateix tipus de document ([Executar la composició en un Web Worker](/ca/docs/configuration#executar-la-composició-en-un-web-worker)).
 
-<Note>Postext no té mode de servidor: mesura el text amb un canvas, així que compon en un navegador o en un worker. Per a una feina per lots, obre la pàgina a Chrome en mode headless amb Puppeteer i treu-ne les pàgines o el PDF. Per a un projecte `.postext` al disc, el `render.mjs` de la skill postext-port executa el motor a Node i, en lloc del canvas, mesura amb fontkit sobre les fonts del mateix projecte ([Scripts](/ca/docs/skill#scripts)).</Note>
+<Note>El paquet postext mesura el text amb un canvas, així que compon en un navegador o en un worker. Per a una feina per lots, la línia d'ordres de postext (postext-cli) compon un llibre i n'escriu el PDF sense navegador; l'altra via és obrir la pàgina a Chrome en mode headless amb Puppeteer. Per a un projecte `.postext` al disc, el `render.mjs` de la skill postext-port executa el motor a Node i, en lloc del canvas, mesura amb fontkit sobre les fonts del mateix projecte ([Scripts](/ca/docs/skill#scripts)).</Note>
 
 ### 2 · Carrega cada font dues vegades
 
 <Excerpt region="fonts" />
 
-El worker té el seu propi `FontFaceSet` i no veu les fonts que ha carregat la pàgina, així que la resposta curta baixa els mateixos fitxers de Fontsource i passa els seus bytes a `registerFonts()`, amb el pes com a cadena (`'400'`). Si treus aquesta crida, el worker de la 1.4.1 mesura amb una font de reserva i no avisa: compon aquest capítol en 175 línies en lloc de 190, i ja la primera línia acaba en «him)» en lloc d'en «of». Un fitxer que no es baixa tampoc no dona error. Si al worker li arriba una pàgina 404 en lloc de la Baskervville rodona, `registerFonts()` es resol igualment i el capítol surt en 186 línies, amb un avís només a la consola del worker. Per això la resposta curta comprova el codi HTTP de cada baixada abans d'enviar cap byte, i si alguna falla llança un error amb la font i el codi. La pàgina carrega a més les mateixes fonts amb `loadFonts()`, perquè el canvas pinta amb les de la pàgina.
+El worker té el seu propi `FontFaceSet` i no veu les fonts que ha carregat la pàgina, així que la resposta curta baixa els mateixos fitxers de Fontsource i passa els seus bytes a `registerFonts()`, amb el pes com a cadena (`'400'`). Si treus aquesta crida, el worker mesura amb una font de reserva: compon aquest capítol en 175 línies en lloc de 190, ja la primera línia acaba en «him)» en lloc d'en «of», i la consola de la pàgina anomena una vegada cada família que falta. Un fitxer que no es baixa es veu pitjor. Si al worker li arriba una pàgina 404 en lloc de la Baskervville rodona, `registerFonts()` es resol igualment i el capítol surt en 186 línies, amb un avís només a la consola del worker. Per això la resposta curta comprova el codi HTTP de cada baixada abans d'enviar cap byte, i si alguna falla llança un error amb la font i el codi. La pàgina carrega a més les mateixes fonts amb `loadFonts()`, perquè el canvas pinta amb les de la pàgina.
 
 ### 3 · Compon a cada pulsació, pinta al fil principal
 
@@ -38,7 +38,7 @@ El worker té el seu propi `FontFaceSet` i no veu les fonts que ha carregat la p
 
 <Excerpt region="title" />
 
-La línia `# The Time Machine {style="title"}` compon la pàgina 1 amb l'estil de títol `title`, els `header` i `footer` buits del qual la deixen sense capçaleres ni foli. `numbered: false` deixa el títol fora del compte de capítols, així que Introduction continua sent el capítol I. La làmina s'ancora a la cantonada superior esquerra de la sang i el nom de l'autor queda per sota del peu de la columna; `span: 'page'` permet que el disseny pinti als dos llocs. Sense aquesta opció, la 1.4.1 retalla el disseny a la columna: la làmina perd els seus 15 mm de dalt i el nom de l'autor no es pinta.
+La línia `# The Time Machine {style="title"}` compon la pàgina 1 amb l'estil de títol `title`, els `header` i `footer` buits del qual la deixen sense capçaleres ni foli. `numbered: false` deixa el títol fora del compte de capítols, així que Introduction continua sent el capítol I. La làmina s'ancora a la cantonada superior esquerra de la sang, i el nom de l'autor queda per sota del peu de la columna. Un disseny que es queda a la seva columna es talla al peu de la columna, així que l'estil porta `span: 'page'`; sense aquesta opció, el nom de l'autor no es pinta.
 
 ### 5 · Capçaleres segons el tipus de pàgina
 
@@ -50,9 +50,4 @@ La línia `# The Time Machine {style="title"}` compon la pàgina 1 amb l'estil d
 
 <Excerpt region="opener" />
 
-El `{number}` del disseny imprimeix el número del capítol amb la forma que li dona `numberingTemplate: '{1:I}'`, una I romana. `minHeight` reserva almenys vuit línies, així que el text comença a la novena mentre el títol n'ocupi una o dues, i més avall si un títol més llarg necessita més espai. `breakBefore` es repeteix perquè qualsevol objecte `headings` anul·la el salt de pàgina de l'H1 per defecte; `parity: 'any'` deixa que el capítol obri a la pàgina 2, davant de la seva segona pàgina.
-
-## Errors freqüents
-
-- A postext 1.4.1, una composició amb memòria cau de mesures pot tallar les línies d'una altra manera que una sense, i el worker sempre en fa servir una. Amb la mesura de 90 mm d'aquesta recepta, el capítol ocupa 190 línies en els dos casos, però amb marges de 13 i 10 mm (una mesura de 87 mm) i l'espaiat entre paraules per defecte ocupa 196 línies sense memòria cau i 199 amb memòria cau. El pen dona al fil principal una memòria cau pròpia (`createMeasurementCache()`), així que els dos fils continuen component les mateixes pàgines si canvies la mesura.
-- Un mapa d'importacions de la pàgina no arriba al worker. Si fixes `https://esm.sh/postext@1.4.1` a la pàgina, fixa l'`import` del blob a la mateixa versió, o cada fil pot executar una versió diferent.
+El `{number}` del disseny imprimeix el número del capítol amb la forma que li dona `numberingTemplate: '{1:I}'`, una I romana. `minHeight` reserva almenys vuit línies, així que el text comença a la novena mentre el títol n'ocupi una o dues, i més avall si un títol més llarg necessita més espai. `breakBefore` amb `parity: 'any'` deixa que el capítol obri a la pàgina 2, davant de la seva segona pàgina; el valor per defecte el portaria a la 3, una pàgina senar.

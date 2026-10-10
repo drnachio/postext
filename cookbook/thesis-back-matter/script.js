@@ -1,9 +1,9 @@
 // ═══ Postext Cookbook · Nº 031 · Thesis back matter: appendix, glossary and index ═══
 // https://postext.dev/en/cookbook/thesis-back-matter
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Libertinus Serif, Serif Display and Sans (SIL OFL 1.1) · Needs postext ≥ 1.7.0
+// Fonts: Libertinus Serif, Serif Display and Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import {
-  buildDocument, renderPageToCanvas, clearMeasurementCache, defaultResourceTypes,
+  buildDocumentWithFonts, renderPageToCanvas, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
@@ -28,20 +28,21 @@ const BAND = 62; // mm from the trim's top: the black band at the head of every 
 // of either parity, the appendix a recto (a style that sets no break inherits its level's
 // 'odd': gotcha style-inherits-break), stays out of the chapter count (numbered: false, so
 // its band has no numeral) and brings its own running heads; the glossary and the index
-// set their pages in two columns until the next '#'. config() takes both lists below.
+// set their pages in two columns until the next '#'. The appendix counts, in letters: its
+// template prints the level's counter as A, B… config() takes both lists below.
 const twoColumns = { layoutType: 'double', gutterWidth: mm(6) };
 const backMatter = (id, extra) => ({ id, numbered: false, breakBefore: { enabled: true,
   parity: 'any' }, advancedDesign: opener('Back matter'), header: sectionHeads, ...extra });
 const headingStyles = () => [
-  backMatter('appendix', { breakBefore: { enabled: true, parity: 'odd' }, // {letter="A"}
-    header: appendixHeads, advancedDesign: opener('Appendix', '{attr.letter}') }),
+  backMatter('appendix', { numbered: true, numberingTemplate: '{1:A}', header: appendixHeads,
+    breakBefore: { enabled: true, parity: 'odd' }, advancedDesign: opener('Appendix') }),
   backMatter('glossary', { layout: twoColumns }),
   backMatter('references'),
   backMatter('index', { layout: twoColumns }),
 ];
 // One paragraph per entry, in :::paragraphs{style="…"}: the turnover lines hang, so the
 // first word of every entry stands clear at the left. Ragged, as APA asks of references,
-// and so never hyphenated (gotcha: ragged-no-hyphenation). The index has its own settings.
+// with every word whole (hyphenation.ragged is off). The index has its own settings.
 const entries = (id, size, lead, hang, extra) => ({ id, fontSize: pt(size),
   lineHeight: pt(lead), textAlign: 'left', hangingIndent: em(hang), ...extra });
 const paragraphStyles = () => [
@@ -59,21 +60,21 @@ const above = (size, lineHeight = 1.2) => 0.8 * size * lineHeight * PT;
 const below = (size, lineHeight = 1.2) => 0.2 * size * lineHeight * PT;
 const KICKER = 4.3, TITLE = BAND - TOP - 9.5; // mm under the text block's top: two baselines
 // A bottom-aligned box that ends below() under a baseline sets its last line on it. The
-// numeral's line is 0.72 of its size: a line taller than its box would hang from its top.
+// numeral's line is 0.72 of its size, so the line fits inside its box.
 const text = (id, content, family, size, lineHeight, baseline, edge, w, extra) => ({
   kind: 'text', id, content, fontFamily: family, fontSize: pt(size), lineHeight,
   color: col('paper'), overflow: 'wrap', align: edge.endsWith('right') ? 'right' : 'left',
   verticalAlign: 'bottom', ...extra, placement: { anchor: { to: 'container', edge },
     size: { width: mm(w), height: mm(baseline + below(size, lineHeight)) } } });
-// The mark: '{number}', empty on an unnumbered heading, or the appendix's '{attr.letter}'.
-const opener = (label, mark = '{number}') => ({ enabled: true, minHeight: pt(SINK * LEAD),
+// The mark is '{number}': the chapter's 6, the appendix's A, nothing on an unnumbered heading.
+const opener = (label) => ({ enabled: true, minHeight: pt(SINK * LEAD),
   slot: { elements: [
     { kind: 'box', id: 'band', style: { backgroundColor: col('band') }, placement: {
       anchor: { to: 'page', edge: 'top-left' }, size: { width: 'fill', height: mm(BAND) } } },
     text('label', label, LABEL, 8, 1.2, KICKER, 'top-left', 80,
       { fontWeight: 700, letterSpacing: pt(1.6), textTransform: 'uppercase' }),
     text('title', '{titleText}', DISPLAY, 34, 1.04, TITLE, 'top-left', 84),
-    text('mark', mark, DISPLAY, 118, 0.72, TITLE, 'top-right', 34),
+    text('mark', '{number}', DISPLAY, 118, 0.72, TITLE, 'top-right', 34),
     text('note', '{attr.note}', TEXT, 8.6, 1.3, TITLE, 'top-right', 44, { italic: true }),
   ] } });
 // #endregion
@@ -104,10 +105,11 @@ const footer = { elements: [{ kind: 'text', id: 'drop-folio', content: '{pageNum
   placement: { anchor: { to: 'container', edge: 'top' }, offset: { y: mm(12 - above(9.5)) } } }] };
 // #endregion
 
-// #region appendix: the letter comes from the heading, '# Interview guide {letter="A"}'
-// In 1.4.1 a heading style cannot change the numbering: the appendix is unnumbered, and its
-// letter feeds the band (see answer), the running head and a table type that counts A.1.
-const appendixHeads = heads('Appendix {attr.letter}. {chapterTitle}');
+// #region appendix: lettered by its style, '# Interview guide {style="appendix" startAt=1}'
+// The style's '{1:A}' (see answer) prints the level's counter as a letter, and startAt=1 on the
+// first appendix restarts it after chapter 6. The band and the running head read that letter.
+// A resource template's {h1} is always a number, so the tables get a type that counts A.1.
+const appendixHeads = heads('Appendix {chapterNumber}. {chapterTitle}');
 const appendixTables = { ...defaultResourceTypes(LANG).find((type) => type.id === 'table'),
   id: 'table-a', numberingTemplate: 'A.{n}' }; // a copy of 'table'
 // #endregion
@@ -122,20 +124,19 @@ const index = { fontFamily: TEXT, fontSize: pt(9), lineHeight: pt(11.6), color: 
     marginTop: pt(7.5) } };
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
+const config = () => ({
   colorPalette, header: chapterHeads, footer, layout: { layoutType: 'single' },
   page: { sizePreset: 'custom', width: mm(176), height: mm(250), dpi: 150, // B5
     margins: { top: mm(TOP), bottom: mm(24), left: mm(INNER), right: mm(OUTER), mirror: true } },
   bodyText: { fontFamily: TEXT, fontSize: pt(11), lineHeight: pt(LEAD), color: col('ink'),
-    // 'Table 6.1' in roman and in ink, outside the palette's reach (gotcha: palette-skips-designs)
-    referenceColor: col('ink'), referenceBold: false,
+    referenceBold: false, // 'Table 6.1' in roman, like the citations around it
     firstLineIndent: mm(4.5), indentAfterHeading: false, minWordSpacing: 0.8, maxWordSpacing: 1.8 },
   // Exact heading margins (snapToGrid: false), no lines added above them; the chapter's heads
   // measure whole grid lines.
   headings: { fontFamily: DISPLAY, fontWeight: 400, color: col('ink'), snapToGrid: false,
     balancing: { maxLinesPerHeading: 0 }, levels: [
-      // The H1 break restated (gotcha: headings-drop-h1-break). span: 'page' (the styles inherit
-      // it) sets the band above the columns: inside a column, its top would be clipped.
+      // Chapters open on a recto. span: 'page' (the styles inherit it) sets the band and the
+      // title across both columns of the glossary and the index.
       { level: 1, numberingTemplate: '{1}', span: 'page', marginBottom: pt(0),
         advancedDesign: opener('Chapter'), breakBefore: { enabled: true, parity: 'odd' } },
       { level: 2, numberingTemplate: '{1}.{2}', fontSize: pt(14), lineHeight: pt(LEAD),
@@ -147,7 +148,7 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
   resourceTypes: [...defaultResourceTypes(LANG), appendixTables], // tables 6.1… and A.1…
   // Captions in the text face, as APA sets a table's number and title.
   captionStyle: { fontSize: pt(9), position: 'above', gap: pt(4), note: { fontSize: pt(8) } },
-  // Rules only and a bold header: filled header cells show seams between the columns.
+  // Rules only and a bold header on white: an APA table has no fills and no vertical rules.
   tableStyle: { rules: 'horizontal', borderColor: col('rule'), borderWidth: pt(0.5),
     headerBackgroundEnabled: false, headerFontSize: pt(9.5),
     bodyFontSize: pt(9.5), cellPadding: mm(1) },
@@ -181,15 +182,14 @@ const resources = [
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 const FONTS = { 'Libertinus Serif': ['400', '400i', '700'], 'Libertinus Serif Display': ['400'],
-  'Libertinus Sans': ['700'] }; // every face the pages use, loaded first (gotcha: fonts-first)
+  'Libertinus Sans': ['700'] }; // every face the pages use, loaded first
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 // The thesis's sixth and last chapter opens on page 171, a recto.
 const continuation = { pageIndexOffset: 170, pageNumbering: { startAt: 171 }, headings: { h1: 5 } };
-await loadFonts(FONTS, markdown);
 // The index is laid out again until its page numbers settle, inside this one call.
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, resources, continuation }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources, continuation }, config(),
+  kitFonts(FONTS));
 showPages(doc, { title: 'Reading on Screens and Paper: the back matter' });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider }), `${RECIPE}.pdf`);
 

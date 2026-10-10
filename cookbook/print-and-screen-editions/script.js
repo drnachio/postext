@@ -1,9 +1,10 @@
 // ═══ Postext Cookbook · Nº 011 · One source, print and screen editions ═══════════
 // https://postext.dev/en/cookbook/print-and-screen-editions
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: code (CC BY 4.0) · Photo: diffusion models
-// Fonts: Newsreader, Gloock, Reddit Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
-import { buildDocument, renderPageToCanvas, renderToHtml, applyHtmlViewerOverrides,
-  clearMeasurementCache, registerResourceImage, defaultResourceTypes,
+// Fonts: Newsreader, Gloock, Reddit Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import {
+  buildDocument, prepareFonts, withLoadedFonts, renderPageToCanvas, renderToHtml,
+  applyHtmlViewerOverrides, registerResourceImage, defaultResourceTypes,
 } from 'https://esm.sh/postext';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -18,17 +19,9 @@ const night = { ink: '#e6e8eb', rain: '#9cc3e6', slate: '#56657a', fog: '#1b2129
 const paletteOf = (values) => // main-color: the engine's defaults follow the rain blue
   Object.entries({ ...values, 'main-color': values.rain })
     .map(([id, hex]) => ({ id, name: id, value: { hex, model: 'hex' } }));
-const col = (id) => ({ hex: day[id], model: 'hex', paletteId: id }); // the hex: a day fallback
-// Workaround (gotcha: palette-skips-designs): 1.4.1 re-reads the palette into the text,
-// table and box styles and the page background, but not into design-slot elements or
-// bodyText.referenceColor, so rewrite every linked colour from the palette the config carries.
-function relink(config) {
-  const hex = Object.fromEntries(config.colorPalette.map(({ id, value }) => [id, value.hex]));
-  const walk = (v) => (Array.isArray(v) ? v.map(walk) : !v || typeof v !== 'object' ? v
-    : Object.hasOwn(hex, v.paletteId) ? { ...v, hex: hex[v.paletteId] }
-      : Object.fromEntries(Object.entries(v).map(([k, x]) => [k, walk(x)])));
-  return walk(config);
-}
+// Every colour names its palette entry: text, captions, the openers' design elements and the
+// reference colour follow whichever palette the config carries. The hex is the day value.
+const col = (id) => ({ hex: day[id], model: 'hex', paletteId: id });
 // #endregion
 const px = (value) => ({ value, unit: 'px' }); // screen sizes, written as CSS pixels
 const [TOP, BAND, AIR] = [22, 86, 9]; // mm: top margin, the fog band's depth, air under it
@@ -36,7 +29,7 @@ const [TOP, BAND, AIR] = [22, 86, 9]; // mm: top margin, the fog band's depth, a
 // #region opener: print opens each note under a fog band; the screen keeps the words only
 const text = (id, content, fontFamily, style) => ({ kind: 'text', id, content, fontFamily,
   color: col('ink'), align: 'left', ...style,
-  overflow: 'wrap' }); // titles break onto more lines (gotcha: overflow-ellipsis-default)
+  overflow: 'wrap' }); // titles break onto more lines
 const kicker = text('kicker', '{partTitle} · {attr.kicker}', 'Reddit Sans',
   { fontWeight: 600, textTransform: 'uppercase', color: col('rain') });
 const title = text('title', '{titleText}', 'Gloock');
@@ -73,10 +66,7 @@ const screenOverrides = () => ({
   page: { dpi: 96, margins: { top: px(40), bottom: px(40), mirror: false } },
   layout: { layoutType: 'single', // one column
     fitFiguresToPage: true }, // tall figures shrink to the pane; off by default, as in print
-  bodyText: { fontSize: px(17), lineHeight: px(27), textAlign: 'left', // ragged for reading
-    // A paragraph may start on the last line of a screen page. With the rule on, 1.4.1 can force
-    // a paragraph taller than the pane whole into a one-line gap under a figure, and off the page.
-    avoidWidows: false },
+  bodyText: { fontSize: px(17), lineHeight: px(27), textAlign: 'left' }, // ragged for reading
   // Heading levels merge on `level`: the print level keeps everything not restated here.
   headings: { levels: [{ level: 1, span: 'column', breakBefore: { enabled: false },
     marginTop: px(40), marginBottom: px(26),
@@ -92,8 +82,8 @@ const MIN_SIDE = 34; // px: the side margins of a narrow pane
 function screenConfig({ width, height }) {
   const merged = applyHtmlViewerOverrides(config()); // print + overrides, a fresh object
   const side = px(Math.max(MIN_SIDE, (width - MEASURE) / 2));
-  return relink({ ...merged, page: { ...merged.page, width: px(width), height: px(height),
-    margins: { ...merged.page.margins, left: side, right: side } } });
+  return { ...merged, page: { ...merged.page, width: px(width), height: px(height),
+    margins: { ...merged.page.margins, left: side, right: side } } };
 }
 // #endregion
 
@@ -127,11 +117,10 @@ const colophon = { id: 'colophon', fontFamily: 'Reddit Sans', fontSize: pt(7.5),
   lineHeight: pt(11), color: col('muted'), textAlign: 'left', firstLineIndent: pt(0),
   marginTop: pt(14) };
 
-// A factory: the engine caches resolved configs per object (gotcha: config-cache-identity).
 const config = () => ({
-  locale: t({ en: 'en-us', es: 'es' }), // exact codes (gotcha: hyphenation-locales)
-  // The locale does not name the figures (gotcha: resource-types-locale): "Figura" in Spanish,
-  // one count for the whole issue, and a lower-case "fig." in Spanish running text.
+  locale: t({ en: 'en-us', es: 'es' }), // hyphenation, and "Figura" in the Spanish captions
+  // The built-in types, retuned: one count for the whole issue, and a lower-case "fig." in
+  // Spanish running text.
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}',
     resetOn: 'never', ...(type.id === 'figure' && { shortLabel: t({ en: 'Fig.', es: 'fig.' }) }),
   })),
@@ -143,11 +132,8 @@ const config = () => ({
     boldColor: col('ink'), italicColor: col('ink'), referenceColor: col('rain'),
     textAlign: 'justify', // the default, stated for contrast with the screen's ragged 'left'
     firstLineIndent: mm(4.5), indentAfterHeading: false }, // hyphenation, widows: on by default
-  headings: { fontFamily: 'Gloock', fontWeight: 400, color: col('ink'),
-    // Off: 1.4.1 drops the column under a closing page's column float a line (here English Rain
-    // under the gauge, Spanish Wind under the rose; gotcha: float-stretch-closing-page).
-    balancing: { stretchAfterFloats: false }, levels: [
-    // Restated: any headings object drops the H1 break (gotcha: headings-drop-h1-break).
+  headings: { fontFamily: 'Gloock', fontWeight: 400, color: col('ink'), levels: [
+    // Each note opens on the next page, recto or verso.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' },
       marginTop: pt(0), marginBottom: pt(0), advancedDesign: printOpener },
   ] },
@@ -278,15 +264,16 @@ async function drawFigures() { // the drawings in both palettes, the part page's
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // text, display and label faces, loaded before the build (gotcha: fonts-first)
+const FONTS = { // text, display and label faces, loaded before the build
   Newsreader: ['400', '400i', '700'], Gloock: ['400'],
   'Reddit Sans': ['400', '400i', '600', '700'] }; // 400: captions and the colophon
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
-await loadFonts(FONTS, markdown);
+await prepareFonts(markdown, config(), kitFonts(FONTS));
 await drawFigures();
-const doc = await buildWithFonts( // print: every page on the kit's desk, and one beside the screen
-  () => buildDocument({ markdown, resources: figures('day') }, config()), markdown);
+const doc = await withLoadedFonts( // print: every page on the kit's desk, and one beside the screen
+  () => buildDocument({ markdown, resources: figures('day') }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'One source, print and screen editions',
   es: 'Un solo original, ediciones impresa y de pantalla' }) });
 
@@ -315,15 +302,13 @@ pane.setAttribute('aria-label', t({ en: 'Screen edition', es: 'Edición de panta
 // #region screen: the HTML edition in a Shadow DOM, laid out again when its pane resizes
 const FOLDED = 200; // px: a pane narrower or shorter than this is hidden or squeezed; skip it
 if (!pane.clientHeight) { // no style.css: a height, and a corner to drag the pane smaller, but
-  // not under 400 px, where 1.4.1 sets text over the opener (gotcha: opener-taller-than-column)
+  // not under 400 px, where an opener can take a whole page and push its text to the next
   pane.style.cssText = 'height:580px;min-height:400px;min-width:240px;overflow:auto;resize:both';
 }
 pane.style.background = night.paper; // the pane's own ground, beside the pages and the scrollbar
-const shadow = pane.attachShadow({ mode: 'open' }); // the page's selectors cannot reach in, but
-// inherited text properties (letter-spacing, text-transform…) can, and the lines were measured
-// without them: `all: initial` on the wrapper stops them at the edition's edge.
-const inShadow = `<style>:host>div{all:initial;display:block}`
-  + `::selection{background:${night.rain}55}</style>`; // selected text takes the night blue
+const shadow = pane.attachShadow({ mode: 'open' }); // the page's selectors cannot reach in, and
+// the edition's root resets the text properties it would inherit (letter-spacing…) by itself
+const inShadow = `<style>::selection{background:${night.rain}55}</style>`; // the night blue
 let size = '';
 function showScreen() {
   const [width, height] = [pane.clientWidth, pane.clientHeight];
@@ -333,8 +318,8 @@ function showScreen() {
   const screenDoc = buildDocument({ markdown, resources: figures('night') },
     screenConfig({ width, height }));
   const place = pane.scrollTop / pane.scrollHeight; // the reader's place, kept across rebuilds
-  shadow.innerHTML = `${inShadow}<div>${renderToHtml(screenDoc,
-    { mode: 'single', padding: 0, resourceImageUrl: imageUrl })}</div>`;
+  shadow.innerHTML = inShadow + renderToHtml(screenDoc,
+    { mode: 'single', padding: 0, resourceImageUrl: imageUrl });
   const fig = first && screenDoc.pages.find((page) => holds(page, 'gauge')); // 'single' mode
   pane.scrollTop = fig ? fig.index * height : place * pane.scrollHeight; // stacks pane-tall pages
   screenLabel.textContent =

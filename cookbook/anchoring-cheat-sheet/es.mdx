@@ -46,7 +46,7 @@ Lo que tenga que salir en todas las páginas, como esta banda, va en la ranura d
 
 ### Añade 3 mm de sangre y marcas de corte
 
-Con 3 mm de `BLEED` se activan las marcas de corte, y el cielo y la banda del pie, que cuelgan de la sangre, entran 3 mm en ella mientras `INSET` deja el texto en el margen; el Sol, la Luna y la corona cuelgan de la página, y como la 1.4.1 no recorta los elementos de diseño a la sangre, siguen por el margen blanco hasta el borde de la hoja.
+Con 3 mm de `BLEED` se activan las marcas de corte, y el cielo y la banda del pie, que cuelgan de la sangre, entran 3 mm en ella mientras `INSET` deja el texto en el margen; el Sol, la Luna y la corona cuelgan de la página, y todo lo que pinta una página se recorta a la sangre, así que el Sol acaba 3 mm más allá del corte y fuera de la sangre solo quedan las marcas de corte.
 
 ```diff
 -const BLEED = 0; // mm; 3 for the printer, which switches on page.cutLines below
@@ -66,6 +66,6 @@ Con 20 mm menos de `SKY` sube el borde del cielo, y con él la entradilla, el t�
 
 ## Errores frecuentes
 
-- En un pen, la versión 1.4.1 no avisa de un anclaje cíclico ni de uno roto. El panel Revisión del Sandbox los señala en la cabecera, el pie, las portadillas de parte y los niveles de título, pero no en los estilos de título como `guides`. Un elemento anclado a un `#id` que no existe se coloca respecto al contenedor: un borde de elemento como `'below'` cae en la esquina superior izquierda del contenedor, con su desplazamiento, y un borde de contenedor como `'top-right'`, en esa esquina. En un bucle, un elemento cae de la misma manera y los demás se encadenan a él.
-- En la 1.4.1, `'align-left'` y `'align-top'` llevan al mismo punto: los dos ponen la esquina superior izquierda del elemento sobre la de su ancla.
+- En un pen nada avisa de un anclaje cíclico ni de uno roto. El panel Revisión del Sandbox los señala en la cabecera, el pie, las portadillas de parte y los niveles de título, pero no en los estilos de título como `guides`. Un elemento anclado a un `#id` que no existe se coloca respecto al contenedor: un borde de elemento como `'below'` cae en la esquina superior izquierda del contenedor, con su desplazamiento, y un borde de contenedor como `'top-right'`, en esa esquina. En un bucle, un elemento cae de la misma manera y los demás se encadenan a él.
+- `'align-left'` y `'align-top'` llevan al mismo punto: los dos ponen la esquina superior izquierda del elemento sobre la de su ancla.
 - Un borde se pinta centrado sobre el contorno de la caja, así que cada marco rosa de 1 pt sobresale 0,5 pt de la caja que traza, aunque la documentación de la configuración dice que los trazos se pintan por dentro.

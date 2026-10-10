@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "nights-ordinal-headings",
-  "sourceHash": "f37e08762b385a0671d5bd4f264f461ca2285944ad21c8b807c5672c5c0412c3",
+  "sourceHash": "b653346cb92154669a6c76fac8c2daedc8ccc2d74586dd475c0d639a47b3ce96",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.206Z",
+  "capturedAt": "2026-10-10T13:36:24.475Z",
   "variants": {
     "en": {
-      "hash8": "b52c523e",
+      "hash8": "4c32cff0",
       "vdtHash": "1263d254e9c26061a2984eef19642b79c11d18e7",
       "timings": {
-        "importMs": 203,
-        "fontsMs": 111,
-        "buildMs": 113,
-        "totalMs": 985,
+        "importMs": 214,
+        "fontsMs": 74,
+        "buildMs": 104,
+        "totalMs": 936,
         "builds": 1
       },
       "specimen": {
@@ -39,7 +39,7 @@
           "Noto Kufi Arabic"
         ],
         "pages": 10,
-        "ownLines": 157
+        "ownLines": 158
       },
       "pages": [
         {
@@ -199,15 +199,15 @@
       },
       "sandbox": {
         "file": "nights-ordinal-headings.postext",
-        "bytes": 32623
+        "bytes": 32619
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -390,13 +390,13 @@
       }
     },
     "es": {
-      "hash8": "aa10db7b",
+      "hash8": "a2b8119d",
       "vdtHash": "a866cc528ab650667eb2c6765f54e9df295c4b66",
       "timings": {
-        "importMs": 200,
-        "fontsMs": 88,
-        "buildMs": 114,
-        "totalMs": 962,
+        "importMs": 168,
+        "fontsMs": 70,
+        "buildMs": 100,
+        "totalMs": 878,
         "builds": 1
       },
       "specimen": {
@@ -418,7 +418,7 @@
           "Noto Kufi Arabic"
         ],
         "pages": 10,
-        "ownLines": 157
+        "ownLines": 158
       },
       "pages": [
         {
@@ -578,15 +578,15 @@
       },
       "sandbox": {
         "file": "nights-ordinal-headings.postext",
-        "bytes": 32676
+        "bytes": 32671
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

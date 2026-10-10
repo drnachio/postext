@@ -16,7 +16,7 @@ Les pàgines de març d'un almanac d'hort en italià. La pàgina 27 s'obre amb u
 
 ### 1 · Gira el gràfic i deixa que continuï
 
-El codi és [la resposta curta](#la-resposta-curta) de més amunt. Amb `rotate: 'ccw'`, la taula passa a ser un flotant a l'amplada de la pàgina, en pàgines pròpies ([Col·locació](/ca/docs/document-format#collocació)), amb la capçalera cap a la vora esquerra, i s'enganxa al llom tant a la pàgina senar com a la parella. Girada, la taula es compon a l'alçada de la caixa de text i n'ocupa 227 dels 237 mm: les 47 línies senceres de 14 pt que caben a la retícula, menys una per a la separació del flotant. Les seves files s'apilen a l'amplada dels 176 mm de la caixa; quan ja no hi caben, la taula es talla entre dues files i continua a la pàgina següent, sota les seves dues files de capçalera i el seu peu, que acaba en `(segue)` ([Taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). Només un flotant pot girar o partir-se: amb `position: 'here'` el gir s'ignora i la taula no es parteix mai. La capçalera porta tres classes de cel·les combinades: `Coltura` ocupa les seves dues files, cada estació abasta els seus mesos i cada mes, les seves dues quinzenes.
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Amb `rotate: 'ccw'`, la taula passa a ser un flotant a l'amplada de la pàgina, en pàgines pròpies ([Col·locació](/ca/docs/document-format#collocació)), amb la capçalera cap a la vora esquerra, i s'enganxa al llom tant a la pàgina senar com a la parella. Girada, la taula es compon a l'alçada de la caixa de text i n'ocupa 227 dels 237 mm: les 47 línies senceres de 14 pt que caben a la retícula, menys una per a la separació del flotant. Les seves files s'apilen a l'amplada dels 176 mm de la caixa; quan ja no hi caben, la taula es talla entre dues files i continua a la pàgina següent, sota les seves dues files de capçalera i el seu peu, que acaba en `(segue)` ([Taules més altes que la pàgina](/ca/docs/configuration#taules-més-altes-que-la-pàgina)). Només un flotant pot girar: amb `position: 'here'` el gir s'ignora, i la taula es partiria sense girar, entre files, on s'acaba la seva columna. La capçalera porta tres classes de cel·les combinades: `Coltura` ocupa les seves dues files, cada estació abasta els seus mesos i cada mes, les seves dues quinzenes.
 
 ### 2 · Un calendari calculat amb dates
 
@@ -28,25 +28,25 @@ Amb `Date.UTC`, cada data es converteix en un número de dia, i d'aquest número
 
 <Excerpt region="matrix" />
 
-Les parelles s'escriuen com a TSV, un símbol per cel·la. A postext 1.4.1, `parseTSV` crea cel·les normals i deixa `headerRowCount` sense fixar, així que s'afegeix a mà `headerRowCount: 1` perquè la fila amb els noms dels cultius sigui la capçalera. Els pesos de `columnWidths` reparteixen en mil·límetres els 176 mm de la mesura: 26 per als noms i 15 per a cada cultiu. Cada símbol correspon a una entrada de la paleta, que `setCellBackground` posa de fons a la cel·la; el `+` i el `−` s'imprimeixen també, en un xip a 1,4 em, perquè la matriu es llegeixi en una còpia en escala de grisos. La diagonal aparella cada cultiu amb si mateix, i allà `setCellImage` posa el seu dibuix, al 62 % de l'amplada interior de la cel·la.
+Les parelles s'escriuen com a TSV, un símbol per cel·la. `parseTSV(tsv, { headerRows: 1 })` converteix la fila amb els noms dels cultius en la capçalera. Els pesos de `columnWidths` reparteixen en mil·límetres els 176 mm de la mesura: 26 per als noms i 15 per a cada cultiu. Cada símbol correspon a una entrada de la paleta, que `setCellBackground` posa de fons a la cel·la; el `+` i el `−` s'imprimeixen també, en un xip a 1,4 em, perquè la matriu es llegeixi en una còpia en escala de grisos. La diagonal aparella cada cultiu amb si mateix, i allà `setCellImage` posa el seu dibuix, al 62 % de l'amplada interior de la cel·la.
 
 ### 4 · Posa la llegenda amb mostres de color
 
 <Excerpt region="resources" />
 
-`:swatch{color="leaf"}` compon un quadrat de tres quarts del cos, emplenat amb una entrada de la paleta i perfilat en el color del text; aquestes pàgines el fan servir al text corrent, en dos peus i en una nota. La llegenda del gràfic va al seu peu, perquè cada part d'una taula partida repeteix el peu, mentre que la nota només surt sota l'última. El calendari és un tipus de recurs propi amb el prefix del peu buit, i el seu peu comença per la llegenda i no per una etiqueta `Tabella`. `position: 'bottom'` amb `span: 'page'` col·loca el calendari i la matriu a l'amplada de les dues columnes, al peu de la seva pàgina. La pàgina 28 és l'última amb text. En una pàgina així, la 1.4.1 puja el flotant a l'amplada de la pàgina fins a una línia per sota del text; per això la matriu acaba 10 mm per sobre del marge inferior.
+`:swatch{color="leaf"}` compon un quadrat de tres quarts del cos, emplenat amb una entrada de la paleta i perfilat en el color del text; aquestes pàgines el fan servir al text corrent, en dos peus i en una nota. La llegenda del gràfic va al seu peu, perquè cada part d'una taula partida repeteix el peu, mentre que la nota només surt sota l'última. El calendari és un tipus de recurs propi amb el prefix del peu buit, i el seu peu comença per la llegenda i no per una etiqueta `Tabella`. `position: 'bottom'` amb `span: 'page'` col·loca el calendari i la matriu a l'amplada de les dues columnes, al peu de la seva pàgina. La pàgina 28 és l'última amb text. A l'última pàgina d'un capítol, un flotant a l'amplada de la pàgina puja fins a una línia per sota del text; per això la matriu acaba 10 mm per sobre del marge inferior, i amb `layout.hugClosingFloats: false` es quedaria al peu de la pàgina.
 
 ### 5 · Un estil de la casa i una variant per taula
 
 <Excerpt region="styles" />
 
-`tableStyle` fixa l'estil de la casa: capçalera amb fons de tinta i rètols en Commissioner del color del paper, filets fins entre files i els textos de continuació en italià, que la 1.4.1 només porta en anglès i en espanyol. Cada estil amb nom indica només el que canvia la seva taula. El calendari compon els dies en Gilda Display a 15 pt; la matriu treu l'emplenament de la capçalera, i la matriu i el gràfic tracen una retícula de filets del color del paper, de 2 pt i 1 pt, que talla els seus emplenaments en caselles.
+`tableStyle` fixa l'estil de la casa: capçalera amb fons de tinta i rètols en Commissioner del color del paper, filets fins entre files i la línia que tanca cada part d'una taula partida. Un document en italià tanca la part amb `Continua` i afegeix `(segue)` al peu de la part següent; l'almanac escriu la primera sencera, `Continua alla pagina seguente`. Cada estil amb nom indica només el que canvia la seva taula. El calendari compon els dies en Gilda Display a 15 pt; la matriu treu l'emplenament de la capçalera, i la matriu i el gràfic tracen una retícula de filets del color del paper, de 2 pt i 1 pt, que talla els seus emplenaments en caselles.
 
 ### 6 · El mes s'obre amb una aquarel·la
 
 <Excerpt region="opener" />
 
-El títol de primer nivell es dibuixa amb una ranura d'elements. L'aquarel·la és un element d'imatge al cap de la pàgina, i l'avanttítol, la dita i la seva font surten dels atributs del títol. A la 1.4.1 un element d'imatge no reserva alçada, i `minHeight` ho compensa: 92 mm d'aquarel·la més 5 mm d'aire, menys els 22 mm del marge superior, donen 75 mm, que s'arrodoneixen cap amunt a 16 línies de 14 pt (79 mm). La primera línia de text queda a 101 mm de la vora superior de la pàgina, 9 mm per sota de la terra. El títol es desplaça 1,5 mm a l'esquerra, el que mesura el blanc lateral de la M de Gilda Display a 84 pt, i així el remat de la M s'alinea amb l'avanttítol; la dita es desplaça el mateix cap a la dreta.
+El títol de primer nivell es dibuixa amb una ranura d'elements. L'aquarel·la és un element d'imatge al cap de la pàgina, i l'avanttítol, la dita i la seva font surten dels atributs del títol. L'obertura reserva fins a la vora inferior de l'aquarel·la, i `minHeight` és un mínim una mica més baix: 92 mm d'aquarel·la més 5 mm d'aire, menys els 22 mm del marge superior, donen 75 mm, que s'arrodoneixen cap amunt a 16 línies de 14 pt (79 mm). La primera línia de text queda a 101 mm de la vora superior de la pàgina, 9 mm per sota de la terra. El títol es desplaça 1,5 mm a l'esquerra, el que mesura el blanc lateral de la M de Gilda Display a 84 pt, i així el remat de la M s'alinea amb l'avanttítol; la dita es desplaça el mateix cap a la dreta.
 
 ## Variants
 
@@ -55,8 +55,8 @@ El títol de primer nivell es dibuixa amb una ranura d'elements. L'aquarel·la �
 La capçalera mira llavors a la vora dreta de la pàgina, i el lector gira el llibre cap a l'altre costat.
 
 ```diff
--const chartPlacement = { rotate: 'ccw' }; // a float, never 'here' (gotcha: here-table-no-split)
-+const chartPlacement = { rotate: 'cw' }; // a float, never 'here' (gotcha: here-table-no-split)
+-const chartPlacement = { rotate: 'ccw' }; // a float: 'here' ignores the turn
++const chartPlacement = { rotate: 'cw' }; // a float: 'here' ignores the turn
 ```
 
 ## Errors freqüents

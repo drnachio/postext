@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "legal-opinion-oscola",
-  "sourceHash": "70bd13eb2c0ff5d26c2124f0108c096885548de798e6ca73a52001467cccde3c",
+  "sourceHash": "5b846a6c2e6fad62e254314379c5989f6cc06735c13e137cda26a8ece82bb2ce",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.115Z",
+  "capturedAt": "2026-10-10T13:35:13.441Z",
   "variants": {
     "en": {
-      "hash8": "f75e32fe",
+      "hash8": "00fecfc8",
       "vdtHash": "befe6b0e5fca16cba211cfd372710d730d74c63a",
       "timings": {
-        "importMs": 252,
-        "fontsMs": 69,
-        "buildMs": 56,
-        "totalMs": 1160,
-        "builds": 2
+        "importMs": 180,
+        "fontsMs": 31,
+        "buildMs": 136,
+        "totalMs": 970,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -39,7 +39,7 @@
           "Libre Franklin"
         ],
         "pages": 4,
-        "ownLines": 158
+        "ownLines": 157
       },
       "pages": [
         {
@@ -115,20 +115,19 @@
       },
       "pdf": {
         "file": "legal-opinion-oscola.pdf",
-        "bytes": 89511,
+        "bytes": 89512,
         "pages": 4
       },
       "sandbox": {
         "file": "legal-opinion-oscola.postext",
-        "bytes": 22983,
+        "bytes": 22985,
         "folio": "223edec1"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",
@@ -329,14 +328,14 @@
       }
     },
     "es": {
-      "hash8": "bb314b6c",
+      "hash8": "47d487fd",
       "vdtHash": "a98f2a9e46d9aa968d59092714341f6cb8924bbc",
       "timings": {
-        "importMs": 232,
-        "fontsMs": 67,
-        "buildMs": 390,
-        "totalMs": 1833,
-        "builds": 2
+        "importMs": 193,
+        "fontsMs": 32,
+        "buildMs": 422,
+        "totalMs": 1271,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -357,7 +356,7 @@
           "Libre Franklin"
         ],
         "pages": 4,
-        "ownLines": 158
+        "ownLines": 157
       },
       "pages": [
         {
@@ -433,20 +432,19 @@
       },
       "pdf": {
         "file": "legal-opinion-oscola.pdf",
-        "bytes": 93457,
+        "bytes": 93458,
         "pages": 4
       },
       "sandbox": {
         "file": "legal-opinion-oscola.postext",
-        "bytes": 22987,
+        "bytes": 22989,
         "folio": "223edec1"
       },
       "detected": {
         "apis": [
           "LOCALES",
           "STYLES",
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",

@@ -45,16 +45,11 @@
   ],
   "gotchas": [
     "math-bundle",
-    "dollar-math",
-    "svg-no-webfonts",
-    "headings-drop-h1-break",
-    "quote-frontmatter",
-    "fonts-first",
-    "config-cache-identity"
+    "dollar-math"
   ],
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "math": true
   },
   "kit": [
@@ -84,10 +79,6 @@
       "pages": [
         10,
         10
-      ],
-      "console": [
-        "module \"buffer\" not found",
-        "module \"esprima\" not found"
       ]
     }
   },
@@ -130,7 +121,7 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-10-06",
-  "updated": "2026-10-06",
+  "updated": "2026-10-10",
   "downloads": {
     "pdf": true
   },

@@ -1,10 +1,11 @@
 // ═══ Postext Cookbook · Nº 058 · Business letter to DIN 5008 ═════════════════════
 // https://postext.dev/en/cookbook/din-business-letter
 // Code: MIT · Text: original, in German (CC BY 4.0) · Logo, signature: drawn in code (CC BY 4.0)
-// Fonts: Nunito Sans, Familjen Grotesk, Reddit Mono (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: Nunito Sans, Familjen Grotesk, Reddit Mono (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 // A German quotation on A4 whose H1 design pins the letterhead and the address to DIN 5008.
-import { buildDocument, renderPageToCanvas, clearMeasurementCache, registerResourceImage }
-  from 'https://esm.sh/postext';
+import {
+  buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,
+} from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -17,7 +18,7 @@ const palette = {
   muted: '#5b6670', pen: '#26408f', // labels, return line, company data; the signature's ink
   marks: '#98a3ad', rule: '#c9d1d8', // fold marks, window corners; the hairline in the footer
 };
-// col(id) links a palette entry and keeps its hex for designs (gotcha: palette-skips-designs).
+// col(id): a colour linked to its palette entry, with the entry's hex beside the id.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // main-color is the engine's default accent: the dashes of the list take it.
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.brand })
@@ -36,20 +37,20 @@ const WINDOW = DIN.field.w - 2 * (DIN.left - DIN.field.x); // 75 mm: text inset 
 const PT = 25.4 / 72; // mm per point
 const [LEAD, ROW] = [15, 12]; // pt: the body's leading, a row of the information block
 
-// Design text is centred and cut with '…' by default (gotcha: overflow-ellipsis-default).
+// Design text is centred by default, and a header or footer line ends in '…': left, wrapped.
 const text = (id, content, face, placement, more) => ({ kind: 'text', id, content,
   align: 'left', overflow: 'wrap', ...face, placement, ...more }); // more: pages, align
 const rule = (id, colour, placement, direction = 'horizontal') => ({ kind: 'rule', id,
   direction, thickness: pt(0.5), color: col(colour), placement });
 const face = (fontFamily, size, fontWeight, colour, more) => ({ fontFamily, fontSize: pt(size),
   fontWeight, color: col(colour), ...more });
-const FACE = { // lineHeight is a multiple, never pt() (gotcha: design-lineheight-multiple)
-  label: face('Reddit Mono', 7, 400, 'muted', { lineHeight: ROW / 7 }),
-  value: face('Nunito Sans', 9, 400, 'ink', { lineHeight: ROW / 9 }),
+const FACE = { // lineHeight: a dimension is the line's depth, a number multiplies the size
+  label: face('Reddit Mono', 7, 400, 'muted', { lineHeight: pt(ROW) }),
+  value: face('Nunito Sans', 9, 400, 'ink', { lineHeight: pt(ROW) }),
   from: face('Reddit Mono', 6.5, 400, 'muted', { lineHeight: 1.2 }),
   address: face('Nunito Sans', 10, 400, 'ink', // six lines fill the address zone
-    { lineHeight: (DIN.field.h - DIN.notes) / 6 / PT / 10 }),
-  subject: face('Familjen Grotesk', 11, 700, 'ink', { lineHeight: LEAD / 11 }),
+    { lineHeight: mm((DIN.field.h - DIN.notes) / 6) }),
+  subject: face('Familjen Grotesk', 11, 700, 'ink', { lineHeight: pt(LEAD) }),
   small: face('Reddit Mono', 7, 400, 'muted', { lineHeight: 1.45 }),
 };
 const FROM = 'Fensterwerkstatt Tessin · Rennbahnstr. 48 · 13086 Berlin'; // 72 mm: fits
@@ -64,18 +65,15 @@ const firstPage = () => ({ enabled: true, slot: { elements: [ // in paint order
   text('from', FROM, FACE.from, at(DIN.left, ZONE - 3.6)), // the return line, underlined
   rule('from-rule', 'muted', { anchor: { to: '#from', edge: 'below' }, offset: { y: mm(0.6) },
     size: { width: mm(WINDOW) } }),
-  // One attribute holds the whole address. Its '\n' starts a new line only when
-  // paragraphIndent is above zero (gotcha: design-text-newline).
-  text('to', '{attr.to}', { ...FACE.address, paragraphIndent: pt(0.01) },
-    at(DIN.left, ZONE, { width: mm(WINDOW) })),
+  // One attribute holds the whole address: each '\n' in it starts a new line.
+  text('to', '{attr.to}', FACE.address, at(DIN.left, ZONE, { width: mm(WINDOW) })),
   ...infoBlock(), // labels, and values from {attr.*}
   text('subject', '{titleText}', FACE.subject, at(DIN.left, SUBJECT, { width: mm(TEXT) })),
 ] } });
 // The H1 reserves the sheet down to its lowest element (gotcha: opener-reserves-anchored).
 // fontFamily: the design paints the H1, but the build measures it (default: Open Sans).
 const headings = () => ({ fontFamily: 'Familjen Grotesk', levels: [{ level: 1,
-  span: 'page', // a design kept in the column would be cut off at the top margin
-  breakBefore: { enabled: true, parity: 'any' }, // gotcha: headings-drop-h1-break
+  breakBefore: { enabled: true, parity: 'any' }, // a letter starts on the next sheet
   marginBottom: pt(2 * LEAD), // two blank lines between the subject and the salutation
   advancedDesign: firstPage() }] });
 // #endregion
@@ -159,8 +157,8 @@ const resources = [ // an image element draws the logo; nothing cites it
 ];
 // #endregion
 
-const config = () => ({ // a factory: configs are cached by identity (gotcha: config-cache-identity)
-  locale: 'de', resourceTypes, colorPalette, // German hyphenation (gotcha: hyphenation-locales)
+const config = () => ({
+  locale: 'de', resourceTypes, colorPalette, // German hyphenation
   page: { sizePreset: 'custom', width: mm(210), height: mm(297), dpi: 150, margins: {
     top: mm(DIN.top), bottom: mm(DIN.bottom), left: mm(DIN.left), right: mm(DIN.right) } },
   layout: { layoutType: 'single' },
@@ -236,15 +234,14 @@ function signatureSvg() { // 'M. Tessin' in a quick, forward-leaning hand
 // #endregion
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-// Every face the pages paint, loaded before the first build (gotcha: fonts-first).
+// Every face the pages paint, loaded before the first build.
 const FONTS = { 'Nunito Sans': ['400', '700'], 'Familjen Grotesk': ['700'],
   'Reddit Mono': ['400', '500'] };
 
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await loadSvg('logo.svg', logoSvg(palette.paper));
 await loadSvg('signature.svg', signatureSvg());
-await loadFonts(FONTS, markdown);
-const doc = await buildWithFonts(() => buildDocument({ markdown, resources }, config()), markdown);
+const doc = await buildDocumentWithFonts({ markdown, resources }, config(), kitFonts(FONTS));
 showPages(doc, { title: t({ en: 'Business letter to DIN 5008', es: 'Carta comercial DIN 5008' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: fontsourceProvider, resourceBytes: imageBytes }),
   `${RECIPE}.pdf`);

@@ -46,7 +46,7 @@ Anything that has to print on every page, such as this band, goes in the header 
 
 ### Add a 3 mm bleed and crop marks
 
-Three millimetres of `BLEED` switch on the cut lines and push the sky and the foot band 3 mm into the bleed they hang from, while `INSET` keeps the text on the margin; the Sun, the Moon and the corona hang from the page, and because 1.4.1 does not clip design elements to the bleed they run on across the white margin to the sheet’s edge.
+Three millimetres of `BLEED` switch on the cut lines and push the sky and the foot band 3 mm into the bleed they hang from, while `INSET` keeps the text on the margin; the Sun, the Moon and the corona hang from the page, and everything a page paints is clipped to the bleed, so the Sun ends 3 mm past the trim and the slug holds only the crop marks.
 
 ```diff
 -const BLEED = 0; // mm; 3 for the printer, which switches on page.cutLines below
@@ -66,6 +66,6 @@ Taking 20 mm off `SKY` lifts the sky’s edge, and with it the standfirst, the t
 
 ## Pitfalls
 
-- In a pen, 1.4.1 reports neither a cyclic nor a dangling anchor. The Sandbox’s Checks panel lists them in the header, the footer, part pages and heading levels, but not in heading styles such as `guides`. An element pinned to an `#id` that does not exist is placed against the container: an element edge such as `'below'` falls back to the container’s top-left corner, offset included, and a container edge such as `'top-right'` to that corner. In a loop, one element falls back the same way and the others chain off it.
-- `'align-left'` and `'align-top'` land on the same point in 1.4.1: both put the element’s top-left corner on its anchor’s top-left corner.
+- A pen gets no report of a cyclic or a dangling anchor. The Sandbox’s Checks panel lists them in the header, the footer, part pages and heading levels, but not in heading styles such as `guides`. An element pinned to an `#id` that does not exist is placed against the container: an element edge such as `'below'` falls back to the container’s top-left corner, offset included, and a container edge such as `'top-right'` to that corner. In a loop, one element falls back the same way and the others chain off it.
+- `'align-left'` and `'align-top'` land on the same point: both put the element’s top-left corner on its anchor’s top-left corner.
 - A border is painted centred on the box’s edge, so each 1 pt pink frame reaches 0.5 pt outside the box it traces, although the configuration docs say strokes are painted inside.

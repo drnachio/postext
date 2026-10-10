@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 041 · .postext round trip in two languages ════════════
 // https://postext.dev/en/cookbook/bundle-round-trip
 // Code: MIT · Text: original (CC BY 4.0) · Drawings: generated in code (CC BY 4.0)
-// Fonts: DM Sans, DM Serif Display, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.4.1
+// Fonts: DM Sans, DM Serif Display, Instrument Sans (SIL OFL 1.1) · Needs postext ≥ 1.25.0
 import { createBundle, openBundle, loadBundleFonts, registerBundleImages, buildBundle,
-  bundleFontProvider, bundleResourceBytes, defaultResourceTypes, renderPageToCanvas,
-  clearMeasurementCache } from 'https://esm.sh/postext';
+  bundleFontProvider, bundleResourceBytes, defaultResourceTypes, renderPageToCanvas }
+  from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -14,7 +14,7 @@ const RECIPE = 'bundle-round-trip';
 const palette = { ink: '#172130', muted: '#56606c', // text; the colophon
   estuary: '#25476a', mud: '#8a6f4d', // the one accent; the wheel's wood in the drawings
   sand: '#e9dcc4', foam: '#eef2f3', rule: '#c4ced6', paper: '#ffffff' };
-// The hex rides along: design elements read it, not the palette (gotcha: palette-skips-designs).
+// Each colour carries its hex and the palette entry it follows.
 const col = (id) => ({ hex: palette[id], model: 'hex', paletteId: id });
 // The engine's defaults link to 'main-color': point it at the estuary blue.
 const colorPalette = Object.entries({ ...palette, 'main-color': palette.estuary })
@@ -28,8 +28,7 @@ const WATER = 98; // mm from the top of the cover: where the sand ends and the e
 const at = (x, y, width, edge = 'top-left') => ({ anchor: { to: 'page', edge },
   offset: { x: mm(x), y: mm(y) }, size: { width: mm(width) } });
 const text = (id, content, family, size, placement, look) => ({ kind: 'text', id, content,
-  fontFamily: family, fontSize: pt(size), color: col('estuary'), overflow: 'wrap', // gotcha:
-  placement, ...look }); // overflow-ellipsis-default
+  fontFamily: family, fontSize: pt(size), color: col('estuary'), placement, ...look });
 const caps = { fontFamily: LABEL, fontWeight: 700, textTransform: 'uppercase',
   letterSpacing: pt(1.15) };
 const [MEASURE, EDGE] = [PAGE.w - 2 * PAGE.side, 17]; // mm; EDGE: trim to kicker and facts
@@ -43,7 +42,7 @@ const cover = { id: 'cover', advancedDesign: { enabled: true, slot: { elements: 
     backgroundColor: col('estuary'), padding: { top: mm(8), right: mm(2.4), bottom: mm(2.2),
       left: mm(2.4) } } }),
   text('title', '{titleText}', DISPLAY, 50, at(PAGE.side - 0.8, 25, MEASURE + 2),
-    { italic: true, lineHeight: 0.96 }), // a multiple (gotcha: design-lineheight-multiple)
+    { italic: true, lineHeight: 0.96 }), // 48 pt from line to line
   text('lead', '{attr.lead}', TEXT, 11, at(PAGE.side + 2, WATER + 50, MEASURE - 4),
     { color: col('foam'), italic: true, lineHeight: 1.4 }),
   text('facts', '{attr.facts}', LABEL, 7.5, at(PAGE.side, -EDGE, MEASURE, 'bottom-left'),
@@ -51,13 +50,12 @@ const cover = { id: 'cover', advancedDesign: { enabled: true, slot: { elements: 
 ] } } };
 // #endregion
 
-const config = () => ({ // a factory, never a shared object (gotcha: config-cache-identity)
-  // #region labels: the edition's language, written into the file with the rest of the config
-  // Hyphenation patterns and the PDF's /Lang, by exact code (gotcha: hyphenation-locales).
+const config = () => ({
+  // #region labels: the edition's language and its figure numbers, written into the file
+  // Hyphenation patterns and the PDF's /Lang.
   locale: t({ en: 'en-us', es: 'es' }),
-  // Figura and Tabla travel inside the Spanish file. Left out, they follow whoever opens it:
-  // the Sandbox at /en/sandbox prints Figure 1.1 (gotcha: bundle-labels-reader-locale).
-  // '{n}' numbers them 1, 2, 3: a leaflet has no chapters to number its figures by.
+  // '{n}' numbers the figures 1, 2, 3: a leaflet has no chapters to number them by. Without
+  // resourceTypes the reader builds Figure 1.1 or Figura 1.1, in the language of the file.
   resourceTypes: defaultResourceTypes(LANG).map((type) => ({ ...type, numberingTemplate: '{n}' })),
   // #endregion
   colorPalette, customFonts,
@@ -69,8 +67,8 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
     boldColor: col('ink'), italicColor: col('ink'), firstLineIndent: mm(4),
     indentAfterHeading: false, minWordSpacing: 0.75, maxWordSpacing: 1.6 },
   headings: { fontFamily: DISPLAY, fontWeight: 400, levels: [ // in main-color: the estuary
-    // The H1 break, restated (gotcha: headings-drop-h1-break). In the column, the cover design
-    // is cut at the text block's top and bottom edges; span: 'page' paints it from the trim.
+    // In the column, the cover design is cut at the foot of the text block; span: 'page'
+    // paints it down to the trim.
     { level: 1, span: 'page', breakBefore: { enabled: true, parity: 'any' } },
     { level: 2, fontSize: pt(15), lineHeight: pt(LEAD * 1.25), marginTop: pt(LEAD * 0.5),
       marginBottom: pt(LEAD * 0.25) },
@@ -98,8 +96,8 @@ const config = () => ({ // a factory, never a shared object (gotcha: config-cach
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // #region art: the cover's wheel in the estuary, and the mill in section
-// No words in the drawings: an SVG drawn as an image cannot use web fonts (gotcha:
-// svg-no-webfonts). Every length is in millimetres of the printed page.
+// No words in the drawings: the caption and the alt text say what each one shows. Every
+// length is in millimetres of the printed page.
 const SECTION = { w: 79, h: 35 }; // the mill in section, as wide as the text
 const n = (v) => +v.toFixed(2);
 const svgDoc = (w, h, body) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w * 10}" `
@@ -245,7 +243,7 @@ const resources = [
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
 // Every face the pages use. They travel inside the bundle, so the reader loads them from
-// there, before the layout (gotcha: fonts-first).
+// there, before the layout.
 const FONTS = { 'DM Sans': ['400', '400i', '700'], 'DM Serif Display': ['400', '400i'],
   'Instrument Sans': ['400', '700'] };
 
@@ -271,7 +269,7 @@ const faceFiles = Object.fromEntries(await Promise.all(customFonts.flatMap(({ na
 // up each fileId (a drawing's svg.fileId, a face's variant fileId) in `files`.
 const { bytes, warnings } = await createBundle({
   name: t({ en: 'The Tide Mill of Arenal', es: 'El molino de mareas de Arenal' }),
-  locale: LANG, // one language per bundle: createBundle 1.4.1 writes no translations
+  locale: LANG, // one language per file; `localized` would add the other edition to it
   markdown, config: config(), resources,
   files: { ...drawings, ...faceFiles },
   thumbnail: { data: drawings['cover.svg'], mime: 'image/svg+xml' }, // the book's picture

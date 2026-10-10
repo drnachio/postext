@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "balloon-kinds",
-  "sourceHash": "31c30cd6cd519388d3c663052caa4ec8a4f1cf5632042128ef27e51bf48ee5bd",
+  "sourceHash": "d2fbd9cf8f90a7b6bc89da17b9d1fd98df56199fe6e8add05aed055156a1a2be",
   "engine": {
-    "postext": "1.21.0",
-    "postextPdf": "1.21.0",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-07T14:45:50.514Z",
+  "capturedAt": "2026-10-10T13:31:25.082Z",
   "variants": {
     "en": {
-      "hash8": "3ac20aeb",
+      "hash8": "23b8aa56",
       "vdtHash": "aa6038474d3814b65b099c7673ca550da790f2ac",
       "timings": {
-        "importMs": 290,
-        "fontsMs": 187,
-        "buildMs": 1090,
-        "totalMs": 2269,
+        "importMs": 178,
+        "fontsMs": 91,
+        "buildMs": 832,
+        "totalMs": 1676,
         "builds": 1
       },
       "specimen": {
@@ -93,17 +93,17 @@
       },
       "sandbox": {
         "file": "balloon-kinds.postext",
-        "bytes": 954648
+        "bytes": 954651
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -288,13 +288,13 @@
       }
     },
     "es": {
-      "hash8": "e6f3fe48",
+      "hash8": "8f39c5ee",
       "vdtHash": "d92725194a04f0c55e91328d6ba3e31a2b0605aa",
       "timings": {
-        "importMs": 759,
-        "fontsMs": 296,
-        "buildMs": 1041,
-        "totalMs": 2716,
+        "importMs": 170,
+        "fontsMs": 103,
+        "buildMs": 828,
+        "totalMs": 1672,
         "builds": 1
       },
       "specimen": {
@@ -370,17 +370,17 @@
       },
       "sandbox": {
         "file": "balloon-kinds.postext",
-        "bytes": 954789
+        "bytes": 954792
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -565,13 +565,13 @@
       }
     },
     "ca": {
-      "hash8": "69a65d43",
+      "hash8": "2a791937",
       "vdtHash": "b6e9f48a51be5d712f6a516304ef8d349f628a67",
       "timings": {
-        "importMs": 618,
-        "fontsMs": 161,
-        "buildMs": 1049,
-        "totalMs": 2450,
+        "importMs": 170,
+        "fontsMs": 89,
+        "buildMs": 822,
+        "totalMs": 3948,
         "builds": 1
       },
       "specimen": {
@@ -647,17 +647,17 @@
       },
       "sandbox": {
         "file": "balloon-kinds.postext",
-        "bytes": 954835
+        "bytes": 954837
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -842,13 +842,13 @@
       }
     },
     "zh": {
-      "hash8": "1a77d5b5",
+      "hash8": "757cc4d0",
       "vdtHash": "e5d8d8201d02170f703ecfc8d5157acf8a7fc672",
       "timings": {
-        "importMs": 663,
-        "fontsMs": 824,
-        "buildMs": 1266,
-        "totalMs": 3409,
+        "importMs": 168,
+        "fontsMs": 277,
+        "buildMs": 1014,
+        "totalMs": 2037,
         "builds": 1
       },
       "specimen": {
@@ -891,7 +891,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 254884,
+          "bytes": 256046,
           "alt": "第 2 页。"
         }
       ],
@@ -919,22 +919,22 @@
       },
       "pdf": {
         "file": "balloon-kinds.pdf",
-        "bytes": 1027594,
+        "bytes": 1027834,
         "pages": 2
       },
       "sandbox": {
         "file": "balloon-kinds.postext",
-        "bytes": 954977
+        "bytes": 955292
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1120,13 +1120,13 @@
       }
     },
     "ar": {
-      "hash8": "98218331",
+      "hash8": "dcf86422",
       "vdtHash": "5f6b4d44638e4ee94b5f0efa78ce82129df9bb4f",
       "timings": {
-        "importMs": 1077,
-        "fontsMs": 298,
-        "buildMs": 1049,
-        "totalMs": 3097,
+        "importMs": 170,
+        "fontsMs": 105,
+        "buildMs": 856,
+        "totalMs": 1676,
         "builds": 1
       },
       "specimen": {
@@ -1198,22 +1198,22 @@
       },
       "pdf": {
         "file": "balloon-kinds.pdf",
-        "bytes": 1012843,
+        "bytes": 1012844,
         "pages": 2
       },
       "sandbox": {
         "file": "balloon-kinds.postext",
-        "bytes": 955250
+        "bytes": 955253
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1401,13 +1401,13 @@
       }
     },
     "ja": {
-      "hash8": "5d0a82da",
+      "hash8": "d46a87d2",
       "vdtHash": "0e6ee466ff2c3d5c774c0f76df332dee818e9800",
       "timings": {
-        "importMs": 628,
-        "fontsMs": 982,
-        "buildMs": 1067,
-        "totalMs": 3308,
+        "importMs": 169,
+        "fontsMs": 370,
+        "buildMs": 587,
+        "totalMs": 3735,
         "builds": 1
       },
       "specimen": {
@@ -1450,7 +1450,7 @@
           "h": 1542,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 250686,
+          "bytes": 250818,
           "alt": "2ページ。"
         }
       ],
@@ -1479,22 +1479,22 @@
       },
       "pdf": {
         "file": "balloon-kinds.pdf",
-        "bytes": 1059954,
+        "bytes": 1060026,
         "pages": 2
       },
       "sandbox": {
         "file": "balloon-kinds.postext",
-        "bytes": 955351
+        "bytes": 955336
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -1677,23 +1677,17 @@
           "share": 0,
           "worst": 0
         },
-        "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          }
-        ]
+        "findings": []
       }
     },
     "pt": {
-      "hash8": "fd07f3fc",
+      "hash8": "3dc81081",
       "vdtHash": "d590b47ec89fa4eea9cd847a57dabb02f06b39dc",
       "timings": {
-        "importMs": 627,
-        "fontsMs": 257,
-        "buildMs": 1087,
-        "totalMs": 2588,
+        "importMs": 167,
+        "fontsMs": 88,
+        "buildMs": 862,
+        "totalMs": 1689,
         "builds": 1
       },
       "specimen": {
@@ -1769,17 +1763,17 @@
       },
       "sandbox": {
         "file": "balloon-kinds.postext",
-        "bytes": 954890
+        "bytes": 954893
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
           "decompressWoff2",
           "loadVerticalAlternates",
           "registerResourceImage",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

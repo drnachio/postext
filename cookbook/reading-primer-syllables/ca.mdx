@@ -40,7 +40,7 @@ Entre l'última frase i el requadre per pintar, el Markdown porta `:::space{line
 
 <Excerpt region="opener" />
 
-La Mm és el text del títol (`{titleText}`), i el número de la unitat, la sèrie i el nom de la lletra són atributs d'aquesta mateixa línia. La franja, la papallona i la poma són imatges, i una obertura no reserva alçada per a les imatges. Sense `minHeight`, l'obertura acaba al peu de la paraula *manzana*, a 88,7 mm de la vora superior de la pàgina, i el títol de la primera activitat comença a 99,3 mm, 2,6 mm per sobre del punt més baix de l'ona (101,9 mm). Amb un `minHeight` de 16 línies de la retícula de base, l'obertura acaba a 102,7 mm, i les dues línies de `marginTop` del títol el baixen a 113,3 mm, sobre la retícula i 11,4 mm per sota de l'ona.
+La Mm és el text del títol (`{titleText}`), i el número de la unitat, la sèrie i el nom de la lletra són atributs d'aquesta mateixa línia. La franja, la papallona i la poma són imatges. La franja fa 104 mm d'alçada, i l'obertura reserva la pàgina fins al seu peu, així que el títol de la primera activitat comença a 113,3 mm, sobre la retícula i 11,4 mm per sota del punt més baix de l'ona (101,9 mm).
 
 ### 6 · Icones al costat dels títols d'activitat
 
@@ -58,9 +58,3 @@ Un radi més gran que la meitat de l'alçada del xip es retalla a aquesta meitat
 -  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5) };
 +  paddingX: em(0.26), paddingY: em(0.05), gap: em(0.5), borderRadius: em(1) };
 ```
-
-## Errors freqüents
-
-Dona a `minHeight` línies senceres de la retícula de base. Amb 85 mm, 0,33 mm més enllà de la línia 16, el primer títol va començar 0,33 mm fora de la retícula. El seu bloc es va allargar llavors fins a la línia següent, 15,5 mm en lloc de 10,6, i tot el que va a sota a la pàgina 37 va baixar 5,3 mm.
-
-Amb l'equilibratge de columnes actiu, un `minHeight` de 16 línies deixava les activitats de la pàgina 37 on les deixaven 17: a la pàgina li sobrava una línia de la retícula de base, i l'equilibratge la posava damunt del títol de la primera activitat. La configuració el desactiva (`headings.balancing`), així que la línia sobrant es queda al peu de la pàgina.

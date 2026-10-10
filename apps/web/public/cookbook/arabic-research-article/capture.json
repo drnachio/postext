@@ -1,24 +1,24 @@
 {
   "schemaVersion": 1,
   "slug": "arabic-research-article",
-  "sourceHash": "c41e929f0963937fdcc2dad24c4800f1d91b084d38661bfd06af0ceb0b4f5b08",
+  "sourceHash": "971e27dcb2c4eb371facd15e91158c125f778068e0e00ed8ff3ef489ba722fba",
   "engine": {
-    "postext": "1.19.1",
-    "postextPdf": "1.19.1",
+    "postext": "1.25.0",
+    "postextPdf": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.649Z",
+  "capturedAt": "2026-10-10T13:30:00.709Z",
   "variants": {
     "en": {
-      "hash8": "76b5ae6d",
+      "hash8": "a7a8efce",
       "vdtHash": "16c436f40ba1b93d20fa56d7590bb222a7e9915a",
       "timings": {
-        "importMs": 247,
-        "fontsMs": 89,
-        "buildMs": 43,
-        "totalMs": 1554,
-        "builds": 2
+        "importMs": 180,
+        "fontsMs": 68,
+        "buildMs": 482,
+        "totalMs": 2924,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Noto Kufi Arabic"
         ],
         "pages": 5,
-        "ownLines": 138
+        "ownLines": 139
       },
       "pages": [
         {
@@ -131,7 +131,7 @@
       },
       "sandbox": {
         "file": "arabic-research-article.postext",
-        "bytes": 14349,
+        "bytes": 14348,
         "folio": "baed3d35"
       },
       "detected": {
@@ -139,12 +139,12 @@
           "LOCALES",
           "STYLES",
           "buildDocument",
-          "clearMeasurementCache",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",
@@ -386,14 +386,14 @@
       }
     },
     "es": {
-      "hash8": "f7c2283e",
+      "hash8": "1bb66211",
       "vdtHash": "b5e797f89542a90d0f4e6f5f3964039b6598a078",
       "timings": {
-        "importMs": 256,
-        "fontsMs": 83,
-        "buildMs": 133,
-        "totalMs": 5657,
-        "builds": 2
+        "importMs": 180,
+        "fontsMs": 65,
+        "buildMs": 488,
+        "totalMs": 1278,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -413,7 +413,7 @@
           "Noto Kufi Arabic"
         ],
         "pages": 5,
-        "ownLines": 138
+        "ownLines": 139
       },
       "pages": [
         {
@@ -501,12 +501,12 @@
       },
       "pdf": {
         "file": "arabic-research-article.pdf",
-        "bytes": 98917,
+        "bytes": 98920,
         "pages": 5
       },
       "sandbox": {
         "file": "arabic-research-article.postext",
-        "bytes": 14427,
+        "bytes": 14426,
         "folio": "baed3d35"
       },
       "detected": {
@@ -514,12 +514,12 @@
           "LOCALES",
           "STYLES",
           "buildDocument",
-          "clearMeasurementCache",
           "createCiteprocEngine",
           "decompressWoff2",
           "registerCitationEngine",
           "renderPageToCanvas",
-          "renderToPdf"
+          "renderToPdf",
+          "withLoadedFonts"
         ],
         "configKeys": [
           "bodyText",

@@ -200,13 +200,17 @@ export interface RecipeMeta {
   };
   /** ≥ 1; answers[0] is the primary question shown in the band. */
   answers: QuestionId[];
-  /** Unsupported features this recipe works around (Workaround badge). */
+  /** Unsupported features this recipe works around (Workaround badge). One
+   *  the engine closed at or before the recipe's pin leaves the list
+   *  (`fixedGaps`). */
   gaps?: GapId[];
   gotchas?: GotchaId[];
   explainsWarnings?: WarningKind[];
   /** ≤ 4 hand-picked related recipes; the rest are computed. */
   related?: Slug[];
-  /** Engine bugs the recipe routes around; revisited when they are fixed. */
+  /** Notes on code a reader would not expect. With a `followup`: an engine
+   *  bug the recipe routes around, deleted when it is fixed (`fixedNotes`).
+   *  Without one: a design note, kept with the code. */
   workarounds?: { issue?: number; followup?: string; package: "postext" | "postext-pdf"; note: string }[];
 
   engine: {
@@ -371,8 +375,10 @@ export interface Gap {
   explanation: Localized;
   docs?: DocAnchor;
   /** The engine version that closed this gap. A fixed gap stays in the
-   *  registry so the recipes and questions that name it still resolve, but
-   *  it is no longer offered as a gap and gives no Workaround badge. */
+   *  registry so the questions and the older-pinned recipes that name it
+   *  still resolve, but it is no longer offered as a gap and gives no
+   *  Workaround badge; a recipe pinned at it or later drops the id
+   *  (`fixedGaps`). */
   fixedIn?: SemVer;
 }
 

@@ -1,8 +1,8 @@
 // ═══ Postext Cookbook · Nº 086 · A Chinese dictionary page with guide words ═════════
 // https://postext.dev/en/cookbook/chinese-dictionary-page
 // Code: MIT · Text: 康熙字典 (1716), Wikisource transcription, CC BY-SA 4.0 · Pinyin: CC BY 4.0
-// Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.9.0
-import { buildDocument, renderPageToCanvas, clearMeasurementCache } from 'https://esm.sh/postext';
+// Fonts: Noto Serif TC, Noto Sans TC, LXGW WenKai TC (SIL OFL 1.1) · Needs postext ≥ 1.25.0
+import { buildDocument, withLoadedFonts, renderPageToCanvas } from 'https://esm.sh/postext';
 import { renderToPdf, decompressWoff2 } from 'https://esm.sh/postext-pdf';
 
 const LANG = 'en'; // @lang: the language of the sample document ('en' | 'es')
@@ -94,8 +94,8 @@ const headword = { level: 2, fontSize: pt(15), lineHeight: pt(2 * LEAD), marginT
 // #region senses: one paragraph to an entry, the sense numbers ① ② in cinnabar
 // As the Kangxi Dictionary sets an entry: the rhyme-book readings (反切), then the senses
 // run in, each after its number. '**②**' marks a number, and the text prints its bold in
-// cinnabar: the only bold on these pages. A word joiner (U+2060, invisible) follows each
-// number in the Markdown: no line ends on a number, away from the sense it opens.
+// cinnabar: the only bold on these pages. A circled number is a Chinese character to the
+// composer: no line ends on one, away from the sense it opens, and no space follows it.
 const bodyText = { fontFamily: SONG, fontSize: pt(BODY), lineHeight: pt(LEAD), color: col('ink'),
   boldColor: col('cinnabar'), italicColor: col('ink'), referenceColor: col('ink'),
   textAlign: 'justify', firstLineIndent: pt(0) }; // no indent: the headword opens the entry
@@ -108,7 +108,7 @@ const paragraphStyles = [
   { id: 'colophon', ...colophon, fontFamily: SONG, marginTop: pt(3) },
 ];
 
-const config = () => ({ // a factory: the engine caches resolved configs per object
+const config = () => ({
   // Taiwan's rules: full-width punctuation, centred in Noto Serif TC, and the basic
   // line breaking. Written out, never LANG (gotcha: cjk-locale-tag).
   locale: 'zh-Hant',
@@ -127,8 +127,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
     // that cannot take the next headword and two lines of its text ends short instead.
     balancing: { enabled: false },
     levels: [
-      // No letter opens in these pages; restated all the same, since any headings object
-      // drops the H1 break (gotcha: headings-drop-h1-break).
+      // No letter opens in these pages; one that did would start the next page, on either side.
       { level: 1, breakBefore: { enabled: true, parity: 'any' } },
       headword,
     ] },
@@ -141,7 +140,7 @@ const config = () => ({ // a factory: the engine caches resolved configs per obj
 const markdown = /* @content */ ''; // content.<lang>.md, inlined by the Cookbook
 
 // ─── 3 · Fonts ──────────────────────────────────────────────────────────────
-const FONTS = { // every face the pages use, loaded before the build (gotcha: fonts-first)
+const FONTS = { // every face the pages use, loaded before the build
   'Noto Serif TC': ['400', '700', '900'], // SONG: the entries, readings, credits; the headwords
   'Noto Sans TC': ['700'], // HEI: guide words, folios, the tab
   'LXGW WenKai TC': ['400'], // KAI: the colophon's sentence of Chinese
@@ -162,8 +161,9 @@ await loadCjkFonts({ [KAI]: ['400'] }, all(/style="colophon-zh"\}\n(.+)\n/g));
 // #endregion
 // Pages 634 to 637 of the dictionary: page 1 is a verso, so the four lie as two spreads.
 const continuation = { pageIndexOffset: 633, pageNumbering: { startAt: 634 } };
-const doc = await buildWithFonts(
-  () => buildDocument({ markdown, continuation }, config()), markdown);
+const doc = await withLoadedFonts(
+  () => buildDocument({ markdown, continuation }, config()),
+  { ...kitFonts(FONTS), text: markdown });
 showPages(doc, { title: t({ en: 'A Chinese dictionary page',
   es: 'Una página de diccionario chino' }) });
 offerPdf(() => renderToPdf(doc, { fontProvider: cjkPdfProvider }), `${RECIPE}.pdf`);

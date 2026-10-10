@@ -40,7 +40,7 @@ The title is the only level-1 heading, and its `paper` style draws a slot of des
 
 <Excerpt region="art" />
 
-Figure 1 is drawn as SVG from the boxes and words of the original. An SVG drawn as an image cannot use the page's web fonts, so `inlineFace()` embeds the two Work Sans files the labels use, and `tex()` writes the `y_w ≻ y_l` labels as MathJax paths, the same glyphs the equations use. Arrowheads are drawn paths rather than SVG markers, so the figure stays vector in the PDF.
+Figure 1 is drawn as SVG from the boxes and words of the original. Its labels name Work Sans in `font-family`, and `loadSvg` passes the markup through the engine's `inlineSvgFonts`, which embeds the two Work Sans files they use; `tex()` writes the `y_w ≻ y_l` labels as MathJax paths, the same glyphs the equations use. Arrowheads are drawn paths rather than SVG markers, so the figure stays vector in the PDF.
 
 ## Variations
 

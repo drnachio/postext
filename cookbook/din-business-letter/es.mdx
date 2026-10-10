@@ -20,13 +20,13 @@ La Fensterwerkstatt Tessin, un taller berlinés inventado que restaura dobles ve
 
 `at()` ancla un elemento por su esquina superior izquierda a `'page'`, la caja de corte ([posicionamiento de elementos](/es/docs/configuration#posicionamiento-de-elementos)). Cada `x` y cada `y` miden, por tanto, la distancia a la esquina de la hoja, y las cifras de la norma se copian tal cual: la dirección, a 25 mm del borde izquierdo y a 62,7 mm del superior; la primera etiqueta del bloque de información, a 125 y 50. Todos estos elementos forman el diseño del H1. El texto del título es el asunto (`{titleText}`), y la dirección y las referencias son atributos suyos, así que el papel de cartas queda en la configuración y la carta, en el Markdown. El asunto, a 100,6 mm, es el elemento más bajo, de modo que el título reserva la hoja hasta el pie del asunto. `marginBottom` añade las dos líneas en blanco, y el saludo empieza en la siguiente línea de la rejilla base, a 117 mm.
 
-La dirección es un único atributo con `\n` entre sus líneas. En la 1.4.1, un texto de diseño solo convierte en salto de línea el `\n` de un atributo si su `paragraphIndent` es mayor que cero. La dirección usa 0,01 pt, una sangría que no se ve; con 0, la barra y la n salen impresas en la dirección. Sin `span: 'page'`, el diseño se queda en la columna de texto y se recorta en el margen superior de 27 mm: el logotipo y el nombre desaparecen, y de la banda solo quedan los 5 mm de abajo.
+La dirección es un único atributo con `\n` entre sus líneas, y cada `\n` abre una línea nueva en el texto de diseño. El título está en la columna de texto, y su diseño pinta igualmente la banda, el logotipo y el nombre por encima del margen superior de 27 mm, porque cada elemento va fijado a la página.
 
 ### 2 · Encadena el bloque de información desde una etiqueta fija
 
 <Excerpt region="info" />
 
-Solo la primera etiqueta está fijada a la hoja. Las demás cuelgan `'below'` de la anterior, y cada valor cuelga de su etiqueta con `'align-top'` y 29 mm de desplazamiento, así que añadir una fila a `INFO` no obliga a calcular coordenadas. El texto de diseño sitúa la línea base al 80 % de la altura de línea. La etiqueta de 7 pt (`lineHeight: 12 / 7`) y el valor de 9 pt (`12 / 9`) tienen los dos una línea de 12 pt, y por eso comparten línea base en cada fila de 4,23 mm.
+Solo la primera etiqueta está fijada a la hoja. Las demás cuelgan `'below'` de la anterior, y cada valor cuelga de su etiqueta con `'align-top'` y 29 mm de desplazamiento, así que añadir una fila a `INFO` no obliga a calcular coordenadas. El texto de diseño sitúa la línea base al 80 % de la altura de línea. La etiqueta de 7 pt y el valor de 9 pt llevan los dos `lineHeight: pt(ROW)`, una línea de 12 pt, y por eso comparten línea base en cada fila de 4,23 mm.
 
 ### 3 · Dibuja el membrete en el mismo diseño
 
@@ -44,9 +44,8 @@ Cualquier elemento del diseño del H1 fijado por debajo del asunto suma altura a
 
 <Excerpt region="signature" />
 
-`::resource{id="signature"}` pone el dibujo bajo «Mit freundlichen Grüßen», y `width: 0.297` le da 49 mm de ancho y 21,1 mm de alto, algo menos de cuatro líneas de 15 pt. El texto que sigue a un recurso en el flujo vuelve a la rejilla base. Con `0.25`, el dibujo medía 17,8 mm de alto, y los 3,4 mm que la rejilla añadía debajo alejaban el nombre de la firma. El tipo de recurso tiene el `captionPrefix` vacío, y la 1.4.1 no compone pie cuando el prefijo y el pie están vacíos, así que bajo la firma no aparece ni rótulo ni número ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)). El logotipo es un recurso del mismo tipo, y solo lo dibuja el elemento de imagen. Ningún `:ref` ni `::resource` lo nombra, así que nunca entra en el flujo.
+`::resource{id="signature"}` pone el dibujo bajo «Mit freundlichen Grüßen», y `width: 0.297` le da 49 mm de ancho y 21,1 mm de alto, algo menos de cuatro líneas de 15 pt. El texto que sigue a un recurso en el flujo vuelve a la rejilla base. Con `0.25`, el dibujo medía 17,8 mm de alto, y los 3,4 mm que la rejilla añadía debajo alejaban el nombre de la firma. El tipo de recurso tiene el `captionPrefix` vacío, y Postext no compone pie cuando el prefijo y el pie están vacíos, así que bajo la firma no aparece ni rótulo ni número ([tipos de recurso](/es/docs/configuration#tipos-de-recurso)). El logotipo es un recurso del mismo tipo, y solo lo dibuja el elemento de imagen. Ningún `:ref` ni `::resource` lo nombra, así que nunca entra en el flujo.
 
 ## Errores frecuentes
 
-- La tarjeta sobre `\n` en los atributos dice que, con `paragraphIndent` a 0, el texto se queda en una sola línea. En la 1.4.1 la dirección se parte al llenar sus 75 mm de ancho, y los dos caracteres `\n` salen impresos donde debería haber un salto de línea.
 - `{totalPages}` cuenta las páginas de todo el documento: con dos cartas en un mismo Markdown, la segunda hoja de la primera diría «Seite 2 von 4». Compón cada carta por separado.

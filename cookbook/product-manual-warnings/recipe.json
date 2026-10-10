@@ -49,55 +49,23 @@
   ],
   "gaps": [],
   "gotchas": [
-    "resource-types-locale",
-    "here-table-no-split",
     "top-float-next-page",
     "merged-cells-hiddenby",
-    "list-number-centred",
-    "svg-no-webfonts",
-    "palette-skips-designs",
-    "runt-tracking-unpainted"
+    "list-number-centred"
   ],
   "workarounds": [
     {
-      "followup": "EF-33",
       "package": "postext",
-      "note": "1.4.1 names resource types and writes table continuation strings in English and Spanish only: Abbildung, Tabelle, (Fortsetzung) and Fortsetzung auf der nächsten Seite are written by hand"
+      "note": "the table style spells out the continuation strings of a split table, (Fortsetzung) and Fortsetzung auf der nächsten Seite, where the engine's own German strings are (Forts.) and Wird fortgesetzt"
     },
     {
-      "followup": "EF-58",
       "package": "postext",
-      "note": "1.4.1 centres an ordered-list number on its first line, so the 15 pt step numbers hung about 1 pt below the 9.3 pt text: numberVerticalOffset pt(-1) sets their foot on the baseline"
+      "note": "an ordered-list number is centred on its first line, so the 15 pt step numbers hung about 1 pt below the 9.3 pt text: numberVerticalOffset pt(-1) sets their foot on the baseline (gotcha list-number-centred)"
     },
     {
       "followup": "EF-34",
       "package": "postext",
       "note": "a merged cell needs placeholder cells marked hiddenBy where it spreads: the fault cells of the troubleshooting table are merged with mergeCells, which writes them"
-    },
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "col() writes the hex beside each paletteId: 1.4.1 paints the cover, section tab, running-head and folio colours from the hex"
-    },
-    {
-      "followup": "EF-111",
-      "package": "postext",
-      "note": "bodyText.maxRuntTracking is 0, so no runt is fixed with tracking the canvas does not paint"
-    },
-    {
-      "followup": "EF-56",
-      "package": "postext",
-      "note": "design text lineHeight is given as a multiple (1 on the cover title, 1.2 in the section tab)"
-    },
-    {
-      "followup": "EF-113",
-      "package": "postext",
-      "note": "the cover style sets span: 'page' in this single-column manual so the teal wall paints from the page's top edge; kept in the column, its design is clipped at the 19 mm top margin"
-    },
-    {
-      "followup": "EF-165",
-      "package": "postext",
-      "note": "1.4.1 spaces the item after a nested list by the nested list's itemSpacing: the steps are 5 pt apart and the bullets 0, so the nested bullets hang only from the last step, where no step follows them"
     }
   ],
   "related": [
@@ -107,7 +75,7 @@
     "section-heads-field-manual"
   ],
   "engine": {
-    "postext": "1.4.1"
+    "postext": "1.25.0"
   },
   "kit": [
     "core",
@@ -177,5 +145,5 @@
     "content": "CC-BY-4.0"
   },
   "created": "2026-09-26",
-  "updated": "2026-09-26"
+  "updated": "2026-10-10"
 }

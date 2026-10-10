@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "recipe-card",
-  "sourceHash": "eb2bbe2ec03f9d7e11a008182e14e72a6b5081c21106fae0784287bac6730a01",
+  "sourceHash": "ecdf1a86b83bbae61e1aaee191455994fe87bc289028d2ebc9a91650d87bf830",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:19.363Z",
+  "capturedAt": "2026-10-10T13:37:31.852Z",
   "variants": {
     "en": {
-      "hash8": "2555e884",
-      "vdtHash": "ffcb9dcd33fccccf5ff020fc94282fe7cb4c1622",
+      "hash8": "f4348bf3",
+      "vdtHash": "d9244626546dce03f38e887964c7962bf560c7f9",
       "timings": {
-        "importMs": 146,
-        "fontsMs": 44,
-        "buildMs": 10,
-        "totalMs": 830,
-        "builds": 2
+        "importMs": 125,
+        "fontsMs": 27,
+        "buildMs": 37,
+        "totalMs": 785,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -38,7 +38,7 @@
           "Young Serif"
         ],
         "pages": 2,
-        "ownLines": 188
+        "ownLines": 187
       },
       "pages": [
         {
@@ -84,13 +84,12 @@
       },
       "sandbox": {
         "file": "recipe-card.postext",
-        "bytes": 416848,
+        "bytes": 416841,
         "folio": "3a99731f"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -185,7 +184,6 @@
           "headings.levels",
           "headings.levels[].breakBefore",
           "headings.levels[].level",
-          "headings.levels[].span",
           "layout",
           "layout.layoutType",
           "orderedLists",
@@ -234,7 +232,7 @@
           "paragraphStyles",
           "unorderedLists"
         ],
-        "configLeaves": 315,
+        "configLeaves": 314,
         "designElements": 13,
         "directives": [
           ":::callout",
@@ -292,7 +290,6 @@
           "heading-attributes",
           "heading-styles",
           "nested-callouts",
-          "opener-band",
           "opener-design",
           "page-background",
           "paragraph-styles",
@@ -311,6 +308,11 @@
         },
         "findings": [
           {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation.pageIndexOffset 57: page 1 is a verso in the recipe, a recto in the Sandbox"
@@ -319,14 +321,14 @@
       }
     },
     "es": {
-      "hash8": "3f3c2183",
-      "vdtHash": "f2ade94d5f4b68473c10144c5100a54c672008fa",
+      "hash8": "32950e94",
+      "vdtHash": "9f33fe5a8572ed57cd8bdc43156f67c1776702d7",
       "timings": {
-        "importMs": 150,
-        "fontsMs": 41,
-        "buildMs": 9,
-        "totalMs": 1596,
-        "builds": 2
+        "importMs": 124,
+        "fontsMs": 28,
+        "buildMs": 35,
+        "totalMs": 780,
+        "builds": 1
       },
       "specimen": {
         "trimMm": [
@@ -347,7 +349,7 @@
           "Young Serif"
         ],
         "pages": 2,
-        "ownLines": 188
+        "ownLines": 187
       },
       "pages": [
         {
@@ -393,13 +395,12 @@
       },
       "sandbox": {
         "file": "recipe-card.postext",
-        "bytes": 417153,
+        "bytes": 417146,
         "folio": "3a99731f"
       },
       "detected": {
         "apis": [
-          "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "registerResourceImage",
           "renderPageToCanvas"
         ],
@@ -494,7 +495,6 @@
           "headings.levels",
           "headings.levels[].breakBefore",
           "headings.levels[].level",
-          "headings.levels[].span",
           "layout",
           "layout.layoutType",
           "orderedLists",
@@ -543,7 +543,7 @@
           "paragraphStyles",
           "unorderedLists"
         ],
-        "configLeaves": 315,
+        "configLeaves": 314,
         "designElements": 13,
         "directives": [
           ":::callout",
@@ -601,7 +601,6 @@
           "heading-attributes",
           "heading-styles",
           "nested-callouts",
-          "opener-band",
           "opener-design",
           "page-background",
           "paragraph-styles",
@@ -619,6 +618,11 @@
           "worst": 0
         },
         "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
           {
             "check": "sandbox",
             "severity": "info",

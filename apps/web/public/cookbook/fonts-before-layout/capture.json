@@ -1,22 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "fonts-before-layout",
-  "sourceHash": "59395e8c61be6294fb8494fb2e58adf36fa0253f94e587ac7c2d3a13b1dbbf41",
+  "sourceHash": "bcf02b75fc1a04ae685a3cb75231e80747c51bf4dde458c4b36bbf9897c9b4d9",
   "engine": {
-    "postext": "1.19.1",
+    "postext": "1.25.0",
     "source": "npm"
   },
   "chrome": "131.0.6778.204",
-  "capturedAt": "2026-10-06T18:34:18.960Z",
+  "capturedAt": "2026-10-10T13:33:44.498Z",
   "variants": {
     "en": {
-      "hash8": "5d3ea477",
-      "vdtHash": "e5a86dd0a8926294941f562709b7d700cfc0b283",
+      "hash8": "c96d2244",
+      "vdtHash": "0c1ef201c84c95cf7ac8d8dff7a325431f209674",
       "timings": {
-        "importMs": 159,
-        "fontsMs": 2,
-        "buildMs": 11,
-        "totalMs": 8687,
+        "importMs": 130,
+        "fontsMs": 1,
+        "buildMs": 7,
+        "totalMs": 4104,
         "builds": 3
       },
       "specimen": {
@@ -38,7 +38,7 @@
           "Ysabeau Office"
         ],
         "pages": 4,
-        "ownLines": 217
+        "ownLines": 188
       },
       "pages": [
         {
@@ -49,7 +49,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 60122,
+          "bytes": 59774,
           "alt": "Opening page 1: Three faces, proofed."
         },
         {
@@ -71,8 +71,8 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 68914,
-          "alt": "Page 3: The proof. Table 1. Faces this document asked for, read from its own layout."
+          "bytes": 80054,
+          "alt": "Page 3: The proof. Table 1. Every face this booklet declares: whether Postext found it set in the pages, and the files the browser fetched for it."
         },
         {
           "n": 4,
@@ -82,8 +82,8 @@
           "h": 1333,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 83752,
-          "alt": "Page 4: What the first build got wrong. Figure 1. The first paragraph of page 1 as the first build set it, measured before the fonts had arrived (above), and as the last build set it (below). The first build broke 23 of its 43 lines of text elsewhere. The rule marks the measure."
+          "bytes": 82754,
+          "alt": "Page 4: What the early build got wrong. Figure 1. The first paragraph of page 1 as the early build set it, measured before the fonts had arrived (above), and as the last build set it (below). The early build broke 23 of its 45 lines of text elsewhere, and its own warnings name…"
         }
       ],
       "spreads": [
@@ -114,13 +114,13 @@
       },
       "sandbox": {
         "file": "fonts-before-layout.postext",
-        "bytes": 423773,
+        "bytes": 422065,
         "folio": "4b67afad"
       },
       "detected": {
         "apis": [
           "buildDocument",
-          "clearMeasurementCache",
+          "buildDocumentWithFonts",
           "defaultResourceTypes",
           "registerResourceImage",
           "renderPageToCanvas"
@@ -323,7 +323,13 @@
           "share": 0,
           "worst": 0
         },
-        "findings": []
+        "findings": [
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          }
+        ]
       }
     }
   }
