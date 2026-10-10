@@ -33,7 +33,7 @@ const LEAD = 17; // pt: the leading of every line, verse and prose alike
 //   Decaying more and more,
 const verse = {
   fontFamily: 'IM Fell English', fontSize: pt(12.4), lineHeight: pt(LEAD), color: col('ink'),
-  textAlign: 'center', // ragged on both sides; 1.4.1 hyphenates justified text only
+  textAlign: 'center', // ragged on both sides; only justified text is hyphenated by default
   firstLineIndent: pt(0), // the default 1.5 em moves every line 3.3 mm off the titles' axis
 };
 // #endregion
@@ -53,14 +53,13 @@ const MARGIN = { top: 22, bottom: 24, inner: 17, outer: 21 }; // mm: the measure
 const titles = {
   fontFamily: 'IM Fell Great Primer', fontWeight: 400, color: col('violet'), textAlign: 'center',
   levels: [
-    // The keepsake's title opens page 1, where a break changes nothing. It is restated because
-    // any headings object drops it, and a second # title would then run on
-    // (gotcha: headings-drop-h1-break).
+    // The keepsake's title opens page 1, where a break changes nothing; a second # title
+    // would open on a recto.
     { level: 1, fontSize: pt(40), lineHeight: pt(LEAD * 3), textTransform: 'uppercase',
       marginBottom: pt(LEAD), breakBefore: { enabled: true, parity: 'odd' } },
     // A poem opens the next page, recto or verso: The Altar (page 2) faces Easter Wings.
-    // 1.4.1 drops the top margin of a heading that opens a page, so the title is lowered by
-    // its line box instead: three lines deep, it sets the title about 5 mm down. The default
+    // A heading that opens a page drops its top margin, so the title is lowered by its
+    // line box instead: three lines deep, it sets the title about 5 mm down. The default
     // half-em margin under it rounds up to a whole line, and each poem starts on line 5.
     { level: 2, fontSize: pt(24), lineHeight: pt(LEAD * 3), textTransform: 'uppercase',
       breakBefore: { enabled: true, parity: 'any' } },
@@ -85,9 +84,7 @@ const config = () => ({
       right: mm(MARGIN.outer), mirror: true },
   },
   layout: { layoutType: 'single' }, // the default is two columns
-  // 1.4.1 does not link referenceColor to main-color (gotcha: palette-skips-designs), so a
-  // :ref added to these pages would print in the default blue.
-  bodyText: { ...verse, referenceColor: col('ink') },
+  bodyText: verse, // a :ref added to these pages takes main-color, the ink, like bold and italic
   headings: titles,
   header: { elements: [] }, // a folded keepsake of four pages: no running heads,
   footer: { elements: [] }, // and no folios

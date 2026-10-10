@@ -25,30 +25,14 @@
   },
   "answers": ["Q23", "Q43", "Q44", "Q24"],
   "gaps": ["rotated-text"],
-  "gotchas": ["headings-drop-h1-break", "ragged-runts"],
+  "gotchas": [],
   "related": [
     "poetry-collection",
     "bilingual-facing-verse",
     "critical-edition-line-numbers",
     "first-page-from-markdown"
   ],
-  "workarounds": [
-    {
-      "followup": "EF-71",
-      "package": "postext",
-      "note": "bodyText.referenceColor is set in ink because 1.4.1 does not link it to main-color: the pages have no :ref, but without it the resolved reference colour stays #295AA3 and the capture's default-skin check (C17) fails"
-    },
-    {
-      "followup": "EF-147",
-      "package": "postext",
-      "note": "centred text gets no runt protection and breaks first-fit, so the prose on page 4 was reworded until no paragraph ends on a lone word and no line splits 'pages 34 and 35' or opens a quotation on its last word, and no Spanish line ends on a one-letter word; the colophon is set a paragraph per line"
-    },
-    {
-      "followup": "EF-05",
-      "package": "postext",
-      "note": "headings.levels[0] restates breakBefore (parity 'odd'): the title opens page 1, so it changes nothing on these pages, but any headings object drops the H1 break in 1.4.1 and a second # title added to the keepsake would run on without it"
-    }
-  ],
+  "workarounds": [],
   "engine": { "postext": "1.25.0" },
   "kit": ["core", "fonts", "viewer"],
   "sample": {

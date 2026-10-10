@@ -16,7 +16,7 @@ Uma plaquete de quatro páginas A5, uma folha A4 dobrada uma vez, com dois poema
 
 ### 1 · Um verso é um parágrafo centralizado
 
-O código é [a resposta curta](#a-resposta-curta) lá em cima. O Postext junta as linhas de um parágrafo do Markdown numa só, então cada verso é um parágrafo, com uma linha em branco depois. `textAlign: 'center'` compõe cada verso na sua largura natural, sobre o eixo da medida, e como a versão 1.4.1 só hifeniza texto justificado, nenhuma palavra é dividida ([texto do corpo](/pt/docs/configuration#texto-do-corpo)). Cada verso é a primeira linha do seu parágrafo, então o recuo de primeira linha padrão, de 1,5 em, o empurraria 3,3 mm para a direita do eixo dos títulos; `firstLineIndent: pt(0)` mantém poemas e títulos no mesmo eixo.
+O código é [a resposta curta](#a-resposta-curta) lá em cima. O Postext junta as linhas de um parágrafo do Markdown numa só, então cada verso é um parágrafo, com uma linha em branco depois. `textAlign: 'center'` compõe cada verso na sua largura natural, sobre o eixo da medida, e como só o texto justificado é hifenizado, a não ser que `hyphenation.ragged` esteja ligado, nenhuma palavra é dividida ([texto do corpo](/pt/docs/configuration#texto-do-corpo)). Cada verso é a primeira linha do seu parágrafo, então o recuo de primeira linha padrão, de 1,5 em, o empurraria 3,3 mm para a direita do eixo dos títulos; `firstLineIndent: pt(0)` mantém poemas e títulos no mesmo eixo.
 
 ### 2 · A medida comporta o verso mais longo
 
@@ -28,7 +28,7 @@ Um verso que não cabe passa para a linha seguinte, e as duas metades são centr
 
 <Excerpt region="titles" />
 
-Nenhum nível tem design, só ajustes tipográficos, e `headings.textAlign` centraliza os três ([títulos](/pt/docs/configuration#títulos)). A paridade `'any'` abre cada poema na página seguinte, par ou ímpar, de modo que o altar da página 2 fica de frente para as asas da página 3. Um `marginTop` não consegue baixar esses títulos, porque a versão 1.4.1 descarta o espaço acima de um título que abre página. Em vez disso, a caixa de linha do nível 2, com três linhas de altura, baixa cada título cerca de 5 mm, e os dois poemas começam na linha 5 da mancha. O nível 1 abre o documento e aqui não precisa de quebra; ela é declarada de novo para que um segundo título `#` ainda abra numa página ímpar. O nível 3 compõe os quatro rótulos das páginas 1 e 4 nos versaletes da IM Fell English SC, no corpo do texto.
+Nenhum nível tem design, só ajustes tipográficos, e `headings.textAlign` centraliza os três ([títulos](/pt/docs/configuration#títulos)). A paridade `'any'` abre cada poema na página seguinte, par ou ímpar, de modo que o altar da página 2 fica de frente para as asas da página 3. Um `marginTop` não consegue baixar esses títulos, porque o espaço acima de um título que abre página é descartado. Em vez disso, a caixa de linha do nível 2, com três linhas de altura, baixa cada título cerca de 5 mm, e os dois poemas começam na linha 5 da mancha. O nível 1 abre o documento e aqui não precisa de quebra; ele a leva mesmo assim, para que um segundo título `#` abra numa página ímpar. O nível 3 compõe os quatro rótulos das páginas 1 e 4 nos versaletes da IM Fell English SC, no corpo do texto.
 
 ### 4 · O Markdown espaça e quebra as páginas
 
@@ -52,14 +52,14 @@ Com a paridade `'odd'`, *The Altar* e *Easter Wings* abrem nas páginas 3 e 5, a
 Com `textAlign: 'left'`, cada verso começa na margem e os dois poemas mantêm só o contorno da direita; o resto do texto corrido, do subtítulo ao colofão, também passa a ser alinhado à esquerda, e só os títulos continuam centralizados.
 
 ```diff
--  textAlign: 'center', // ragged on both sides; 1.4.1 hyphenates justified text only
-+  textAlign: 'left', // ragged right; 1.4.1 hyphenates justified text only
+-  textAlign: 'center', // ragged on both sides; only justified text is hyphenated by default
++  textAlign: 'left', // ragged right; only justified text is hyphenated by default
 ```
 
 ## Erros comuns
 
 - Um verso longo demais para a medida quebra, e as duas metades são centralizadas cada uma por si. Meça o verso mais largo antes de escolher o corpo e as margens. Para versos alinhados à esquerda, com as quebras em recuo, veja <RecipeLink slug="poetry-collection">Poemas compostos verso a verso</RecipeLink>.
 - Os espaços no início de um parágrafo são descartados, então não dá para dar forma a um verso com espaços. A largura de cada verso vem só das suas palavras, e uma tradução precisa encontrar versos mais ou menos tão largos quanto os do original, como faz a edição espanhola.
-- A centralização mantém cada verso na sua largura natural, então a laje e a base de *The Altar* não saem retas: o terceiro e o quarto versos da laje são mais estreitos que os dois primeiros. Justificar também não os endireita, porque a versão 1.4.1 deixa a última linha de um parágrafo justificado na largura natural, e cada um destes versos é um parágrafo.
+- A centralização mantém cada verso na sua largura natural, então a laje e a base de *The Altar* não saem retas: o terceiro e o quarto versos da laje são mais estreitos que os dois primeiros. Justificar também não os endireita, porque a última linha de um parágrafo justificado fica na largura natural, e cada um destes versos é um parágrafo.
 - A folha de rosto e a última página estão preenchidas até a última linha da grade. Uma linha a mais na folha de rosto, vinda de uma epígrafe mais longa, de um verso que quebra ou de um `:::space` maior, leva o rótulo do pé e as duas linhas embaixo dele para uma página própria; uma linha a mais na última página leva sozinha a última linha do colofão para uma quinta página. Para acrescentar uma linha a qualquer uma das duas páginas, tire uma de um `:::space` acima dela.
 - O Postext não compõe texto de lado, como os impressores de 1633 compuseram *Easter Wings*: só figuras e tabelas inteiras giram. Aqui as estrofes ficam em pé, e a nota da página 4 diz isso.
