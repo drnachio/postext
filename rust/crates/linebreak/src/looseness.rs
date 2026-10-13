@@ -10,8 +10,8 @@ use crate::options::Options;
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum LoosenessMode {
     /// Two searches: the natural one (linear), then one that keeps line
-    /// counts apart but never lets a line other than the last be very
-    /// loose, the only chains the target may take. Its cost stays linear.
+    /// counts apart but never lets a line be very loose, the only chains
+    /// the target may take. Its cost stays linear.
     #[default]
     TwoPass,
     /// The TypeScript engine up to #780: one search with every line count

@@ -1,0 +1,10 @@
+[package]
+name = "postext-shape"
+description = "Text shaping and width measurement for postext: HarfRust on the book's own font files."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+harfrust = "0.14"

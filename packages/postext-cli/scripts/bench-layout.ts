@@ -4,11 +4,13 @@
 // hash of the VDT, so that a change to the engine can be judged on speed
 // and on output that must not move.
 //
-//   bun scripts/bench-layout.ts [--runs N] [--warm] [--json] [--kp-dump FILE] <book> [<book> …]
+//   bun scripts/bench-layout.ts [--runs N] [--warm] [--json] [--kp-dump FILE] [--wasm-kp] <book> [<book> …]
 //
 // --kp-dump writes every Knuth–Plass call of the first run (items, options
 // with the line widths it reads, breaks) to FILE as JSON lines: the corpus
-// another line breaker is replayed against (rust/bench).
+// another line breaker is replayed against (rust/bench). --wasm-kp breaks
+// the lines with the Rust line breaker compiled to WebAssembly
+// (rust/target/postext_wasm.opt.wasm) instead of the TypeScript one.
 //
 // Each run lays the book out on a fresh measurement cache (cold) unless
 // --warm, which reuses the first run's cache (what the Sandbox's worker
@@ -27,6 +29,7 @@ let runs = 3;
 let warm = false;
 let json = false;
 let kpDump: string | undefined;
+let wasmKp = false;
 const books: string[] = [];
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i]!;
@@ -34,11 +37,20 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--warm') warm = true;
   else if (a === '--json') json = true;
   else if (a === '--kp-dump') kpDump = argv[++i];
+  else if (a === '--wasm-kp') wasmKp = true;
   else books.push(a);
 }
 
 process.env.DISABLE_SYSTEM_FONTS_LOAD = '1';
 await import('../src/env');
+
+if (wasmKp) {
+  const { readFileSync } = await import('node:fs');
+  const here = new URL('.', import.meta.url).pathname;
+  // @ts-expect-error: a plain ES module of the Rust workspace, untyped.
+  const { loadLineBreaker } = await import('../../../rust/crates/wasm/js/linebreak.mjs');
+  (globalThis as { __postextKpImpl?: unknown }).__postextKpImpl = await loadLineBreaker(readFileSync(`${here}../../../rust/target/postext_wasm.opt.wasm`));
+}
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 

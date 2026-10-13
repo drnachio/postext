@@ -12,8 +12,9 @@ use crate::prefix::Prefix;
 #[derive(Clone, Copy)]
 pub(crate) struct Pass {
     pub looseness: i32,
-    /// No line but the last may be very loose (fitness 3); a search that
-    /// runs out of nodes gives up instead of forcing a break.
+    /// No line may be very loose (fitness 3; a last line is that loose
+    /// only when it is empty); a search that runs out of nodes gives up
+    /// instead of forcing a break.
     pub constrained: bool,
 }
 
@@ -146,7 +147,7 @@ impl Search {
                 if (fc as i32 - a.fitness as i32).abs() > 1 {
                     d += o.fitness_class_demerit;
                 }
-                if pass.constrained && fc == 3 && i != terminal {
+                if pass.constrained && fc == 3 {
                     continue;
                 }
                 let total_demerits = a.total_demerits + d;

@@ -8,5 +8,7 @@ publish = false
 
 [dependencies]
 postext-linebreak = { path = "../crates/linebreak" }
+postext-shape = { path = "../crates/shape" }
+harfrust = "0.14"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }
