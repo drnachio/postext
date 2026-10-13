@@ -4,13 +4,17 @@
 // hash of the VDT, so that a change to the engine can be judged on speed
 // and on output that must not move.
 //
-//   bun scripts/bench-layout.ts [--runs N] [--warm] [--json] [--kp-dump FILE] [--wasm-kp] <book> [<book> …]
+//   bun scripts/bench-layout.ts [--runs N] [--warm] [--json] [--kp-dump FILE] [--wasm-kp] [--rust-shaping] <book> [<book> …]
 //
 // --kp-dump writes every Knuth–Plass call of the first run (items, options
 // with the line widths it reads, breaks) to FILE as JSON lines: the corpus
 // another line breaker is replayed against (rust/bench). --wasm-kp breaks
 // the lines with the Rust line breaker compiled to WebAssembly
 // (rust/target/postext_wasm.opt.wasm) instead of the TypeScript one.
+// --rust-shaping measures text in the book's faces with HarfRust compiled
+// to WebAssembly (rust/target/postext_wasm_shape.opt.wasm, see
+// scripts/rustShaping.ts) instead of Skia: the widths Chrome measures, and
+// what a book's layout gains or moves with them (#779, Findings 6-8).
 //
 // Each run lays the book out on a fresh measurement cache (cold) unless
 // --warm, which reuses the first run's cache (what the Sandbox's worker
@@ -30,6 +34,7 @@ let warm = false;
 let json = false;
 let kpDump: string | undefined;
 let wasmKp = false;
+let rustShaping = false;
 const books: string[] = [];
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i]!;
@@ -38,6 +43,7 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--json') json = true;
   else if (a === '--kp-dump') kpDump = argv[++i];
   else if (a === '--wasm-kp') wasmKp = true;
+  else if (a === '--rust-shaping') rustShaping = true;
   else books.push(a);
 }
 
@@ -96,6 +102,7 @@ for (const path of books) {
   const reporter = new Reporter('quiet', true);
   const ctx: CommandContext = { command: 'check', inputs: [path], opts, reporter };
   const { book, fonts } = await openBook(ctx);
+  const shaping = rustShaping ? await (await import('./rustShaping')).installRustShaping(fonts) : undefined;
   const times: number[] = [];
   let hash = '';
   let pages = 0;
@@ -128,9 +135,11 @@ for (const path of books) {
     medianMs: Math.round(sorted[Math.floor(sorted.length / 2)]!),
     msPerPage: r2(sorted[Math.floor(sorted.length / 2)]! / pages),
     rssMB: Math.round(process.memoryUsage().rss / 2 ** 20),
+    ...(shaping ? { shaped: shaping.stats() } : {}),
     hash,
   };
   results.push(row);
-  if (!json) process.stdout.write(`${row.book}: ${row.pages} pp, median ${row.medianMs} ms (${row.msPerPage} ms/page) runs ${row.runs.join(' ')} rss ${row.rssMB} MB hash ${row.hash}\n`);
+  if (!json) process.stdout.write(`${row.book}: ${row.pages} pp, median ${row.medianMs} ms (${row.msPerPage} ms/page) runs ${row.runs.join(' ')} rss ${row.rssMB} MB hash ${row.hash}${row.shaped ? ` shaped ${JSON.stringify(row.shaped)}` : ''}\n`);
+  shaping?.uninstall();
 }
 if (json) process.stdout.write(`${JSON.stringify(results, null, 2)}\n`);

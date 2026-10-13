@@ -3,7 +3,7 @@
 # (WebAssembly, later a Node addon) are thin crates over them.
 [workspace]
 resolver = "3"
-members = ["crates/linebreak", "crates/shape", "crates/wasm", "bench"]
+members = ["crates/linebreak", "crates/shape", "crates/wasm", "crates/wasm-shape", "bench"]
 
 [workspace.package]
 version = "0.1.0"
