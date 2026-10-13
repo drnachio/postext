@@ -2,7 +2,7 @@
 // Markdown (default fonts, no network). With POSTEXT_BIN set, the same
 // runs against a built executable.
 import { describe, expect, it } from 'bun:test';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -186,6 +186,60 @@ describe('postext cli', () => {
     const report = JSON.parse(run(['check', 'ch', '--config', 'config.json', '--font-dir', 'fd', '--offline', '--json'], dir).stdout) as { warnings: { kind: string }[] };
     expect(report.warnings.filter((w) => w.kind === 'fontFallback')).toEqual([]);
   }, 60_000);
+
+  // #782: a rebuild lays out again only the chapters a change reaches and
+  // paints only their pages; a changed picture lays out everything.
+  it('rebuilds only what a change reaches in --watch', async () => {
+    const dir = book();
+    mkdirSync(join(dir, 'res'));
+    const square = (fill: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="${fill}"/></svg>`;
+    writeFileSync(join(dir, 'res', 'sq.svg'), square('#c00'));
+    writeFileSync(join(dir, 'ch', '03.md'), '# Three\n\n::resource{id="sq"}\n');
+    const proc = Bun.spawn([...cmd, 'build', 'ch', '--resources', 'res', '--images', 'out', '--dpi', '20', '--offline', '--watch'], {
+      cwd: dir, env: { ...process.env, NO_COLOR: '1', POSTEXT_CACHE_DIR: join(dir, '.cache') }, stderr: 'pipe', stdout: 'ignore',
+    });
+    const reader = proc.stderr.getReader();
+    let log = '';
+    /** The log from now until a line matching `re`. */
+    const until = async (re: RegExp): Promise<string> => {
+      const from = log.length;
+      const deadline = Date.now() + 30_000;
+      while (!re.test(log.slice(from))) {
+        if (Date.now() > deadline) throw new Error(`timed out waiting for ${re}:\n${log}`);
+        const { value, done } = await reader.read();
+        if (done) throw new Error(`exited:\n${log}`);
+        log += new TextDecoder().decode(value);
+      }
+      return log.slice(from);
+    };
+    try {
+      const first = await until(/watching/);
+      expect(first).toMatch(/wrote \d+ PNG images/);
+      const pages = readdirSync(join(dir, 'out')).sort();
+      const stamp = () => pages.map((p) => statSync(join(dir, 'out', p)).mtimeMs);
+      const before = stamp();
+      writeFileSync(join(dir, 'ch', '02.md'), '# Two\n\nOther text.\n\n- a\n- b\n');
+      const edit = await until(/rebuilt in/);
+      expect(edit).toContain('1 of 3 chapters laid out');
+      // Chapter two's pages only.
+      const [, written, unchanged] = /wrote (\d+) PNG images .*, (\d+) unchanged/.exec(edit) ?? [];
+      expect(Number(written) + Number(unchanged)).toBe(pages.length);
+      expect(Number(unchanged)).toBeGreaterThan(0);
+      // The first chapter's page is left as it was.
+      expect(stamp()[0]).toBe(before[0]);
+      const last = join(dir, 'out', pages[pages.length - 1]!);
+      const red = readFileSync(last);
+      writeFileSync(join(dir, 'res', 'sq.svg'), square('#00c'));
+      const picture = await until(/rebuilt in/);
+      expect(picture).not.toContain('chapters laid out');
+      expect(picture).toMatch(new RegExp(`wrote ${pages.length} PNG images`));
+      // The picture is drawn anew.
+      expect(readFileSync(last).equals(red)).toBe(false);
+    } finally {
+      proc.kill('SIGINT');
+      await proc.exited;
+    }
+  }, 90_000);
 
   it('check --strict fails on warnings with exit code 3', () => {
     const dir = book();

@@ -36,7 +36,7 @@
  */
 
 import type { ContentWarning, VDTBlock, VDTDocument, VDTLine } from './vdt';
-import { measureInkBox, measureInkProfile, type InkProfile } from './measure/canvas';
+import { measureInkBox, measureInkProfile, measureLanguageKey, measurementGeneration, type InkProfile } from './measure/canvas';
 import { fontEm } from './measure/vertical';
 import { segmentFont, segmentPositions } from './cjkMarks';
 
@@ -89,15 +89,29 @@ interface Ink {
   descent: number;
 }
 
-/** Ink boxes measured, per font and text (cleared with each document's
- *  annotation pass: fonts may have changed between builds). */
+/** Ink boxes measured, per measuring language, font and text. They are
+ *  kept from one document to the next (a book's chapters and rounds ask
+ *  for the same words: clearing them each time was a third of Alf Layla's
+ *  layout, #785) and dropped when a font is loaded or evicted
+ *  (`measurementGeneration`, as the measurement cache does). */
 let inkCache = new Map<string, Ink>();
-const MAX_INK_ENTRIES = 50_000;
+const MAX_INK_ENTRIES = 500_000;
+/** The measurement generation the ink and profile caches hold. */
+let inkGeneration = -1;
+
+/** Drops the ink caches when the fonts changed since they were filled. */
+function currentInkCaches(): void {
+  const generation = measurementGeneration();
+  if (generation === inkGeneration) return;
+  inkGeneration = generation;
+  inkCache = new Map();
+  profileCache = new Map();
+}
 
 /** The ink box of `text` set in `font`, px above and below the baseline:
  *  measured, else estimated (see `ESTIMATE`). */
 export function inkBoxOf(text: string, font: string): Ink {
-  const key = `${font}\u0000${text}`;
+  const key = `${measureLanguageKey()}\u0000${font}\u0000${text}`;
   const cached = inkCache.get(key);
   if (cached) return cached;
   if (inkCache.size >= MAX_INK_ENTRIES) inkCache = new Map();
@@ -182,12 +196,13 @@ export function lineWordInks(line: VDTLine, block: BlockLike): WordInk[] {
 
 const round = (v: number): number => Math.round(v * 1000) / 1000;
 
-/** Ink profiles painted, per font and text (`null`: none could be). */
+/** Ink profiles painted, per measuring language, font and text (`null`:
+ *  none could be), kept as the ink boxes are. */
 let profileCache = new Map<string, InkProfile | null>();
 const MAX_PROFILE_ENTRIES = 5_000;
 
 function profileOf(word: WordInk): InkProfile | null {
-  const key = `${word.font}\u0000${word.text}`;
+  const key = `${measureLanguageKey()}\u0000${word.font}\u0000${word.text}`;
   let profile = profileCache.get(key);
   if (profile === undefined) {
     if (profileCache.size >= MAX_PROFILE_ENTRIES) profileCache = new Map();
@@ -255,8 +270,7 @@ export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
     }
   }
   if (!any) return [];
-  inkCache = new Map();
-  profileCache = new Map();
+  currentInkCaches();
   /** Lines of the columns that hold a marked line, with their words. */
   const columns = new Map<string, { line: VDTLine; block: VDTBlock; words: WordInk[]; em: number }[]>();
   const marked = new Set<string>();

@@ -86,7 +86,9 @@ interface FullWidthEntry {
   byWidth: Map<number, MathRender>;
 }
 
-const MAX_CACHE = 512;
+/** Renders kept (#786): a textbook has hundreds of different ones, asked for
+ *  again in every chapter and round of its layout. */
+const MAX_CACHE = 4096;
 /** Measures kept per full-width formula (a book sets them in a handful). */
 const MAX_WIDTHS = 8;
 const cache = new Map<string, MathRender | FullWidthEntry>();

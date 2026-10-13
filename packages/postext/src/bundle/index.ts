@@ -5,6 +5,8 @@ export { openBundle, createBundle, bundleFileMime } from './api';
 export type { PostextBundle, OpenBundleOptions, CreateBundleInput, CreateBundleLocale, CreatedBundle, BundleFileData } from './api';
 export { buildBundle } from './book';
 export type { BuildBundleOptions } from './book';
+export { createBundleLayoutCache } from './layoutCache';
+export type { BundleLayoutCache, BundleLayoutStats } from './layoutCache';
 export { loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundleFontProvider, bundleSvgFontProvider, svgInlinesFonts, diagramInkHex } from './adapters';
 export type { BundleSource, BundleFontProviderOptions, BundleFontRequest, BundleImageOptions } from './adapters';
 

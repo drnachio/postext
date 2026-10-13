@@ -11,7 +11,7 @@ import {
   type MeasurementCache,
   type VDTDocument,
 } from 'postext';
-import { buildBundle } from 'postext/bundle';
+import { buildBundle, type BundleLayoutCache } from 'postext/bundle';
 import type { Options } from './args';
 import { fontFallbackWarnings, type FontSet } from './fonts';
 import type { Book, BookChapter } from './input';
@@ -24,6 +24,9 @@ export interface Layout {
   /** The chapters laid out (all, or those of --chapters). */
   chapters: BookChapter[];
   pageCount: number;
+  /** For each chapter, whether this layout laid it out (false: the
+   *  document of an earlier layout stands, from the layout cache). */
+  laidOut: boolean[];
 }
 
 const MATH_RE = /\$[^$\n]+\$|\$\$/;
@@ -31,6 +34,11 @@ const MATH_RE = /\$[^$\n]+\$|\$\$/;
 const CITATION_RE = /\[[^\]\n]*@[\p{L}\d_][^\]\n]*\]|^(?:references|bibliography|csl|citation-style)\s*:/mu;
 
 let citeprocLoaded = false;
+
+type ParseIssues = ReturnType<typeof parseMarkdownWithIssues>['issues'];
+/** The parse problems of each chapter text of the last layout: --watch
+ *  parses again only the chapters that changed. */
+let issuesByText = new Map<string, ParseIssues>();
 
 /** "chapters/02.md:14" for an offset in a chapter's Markdown. */
 export function sourceAt(chapter: BookChapter | undefined, offset: number | undefined): string | undefined {
@@ -61,7 +69,16 @@ export function shapedBySkia<T extends { bodyText?: object }>(config: T): T {
   return { ...config, bodyText: { ...config.bodyText, shapingLanguage: 'host' } };
 }
 
-export async function layOut(book: Book, opts: Options, reporter: Reporter, cache?: MeasurementCache, fonts?: FontSet): Promise<Layout> {
+/** Lay `book` out. With a `layoutCache` (--watch), only the chapters whose
+ *  inputs changed since the layout that filled it are laid out again. */
+export async function layOut(
+  book: Book,
+  opts: Options,
+  reporter: Reporter,
+  cache?: MeasurementCache,
+  fonts?: FontSet,
+  layoutCache?: BundleLayoutCache,
+): Promise<Layout> {
   const chapters = selectChapters(book, opts);
   const text = chapters.map((c) => c.markdown);
   if (text.some((t) => MATH_RE.test(t))) await reporter.time('math', () => initMathEngine());
@@ -69,11 +86,15 @@ export async function layOut(book: Book, opts: Options, reporter: Reporter, cach
     await reporter.time('citations', () => import('postext-citeproc/register'));
     citeprocLoaded = true;
   }
+  const issues = new Map<string, ParseIssues>();
   for (const [i, chapter] of chapters.entries()) {
-    for (const issue of parseMarkdownWithIssues(chapter.markdown).issues ?? []) {
+    const found = issues.get(chapter.markdown) ?? issuesByText.get(chapter.markdown) ?? parseMarkdownWithIssues(chapter.markdown).issues;
+    issues.set(chapter.markdown, found);
+    for (const issue of found ?? []) {
       reporter.warn({ kind: issue.kind, severity: 'warning', message: describeIssue(issue), at: sourceAt(chapters[i], issue.sourceStart) });
     }
   }
+  issuesByText = issues;
   // Where the book starts (`preset.json`'s `start`) is where its first
   // chapter does: a selection that leaves that chapter out (--chapters) is
   // laid out from page 1, as it always was.
@@ -82,15 +103,17 @@ export async function layOut(book: Book, opts: Options, reporter: Reporter, cach
     { chapters, config: shapedBySkia(book.config), resources: book.resources, ...(start ? { start } : {}) },
     {
       cache: cache ?? createMeasurementCache(),
-      onChapter: (index, doc) => reporter.detail(`  laid out ${chapters[index]!.file ?? chapters[index]!.title}: ${doc.pages.length} pages`),
+      ...(layoutCache ? { layoutCache } : {}),
     },
   ));
+  const laidOut = layoutCache ? layoutCache.stats.laidOut : docs.map(() => true);
+  docs.forEach((doc, i) => reporter.detail(`  ${laidOut[i] ? 'laid out' : 'kept'} ${chapters[i]!.file ?? chapters[i]!.title}: ${doc.pages.length} pages`));
   docs.forEach((doc, i) => reportDocWarnings(doc, chapters[i]!, reporter));
   // A weight the family ships, set in another face (#741).
   if (fonts) for (const warning of fontFallbackWarnings(docs, fonts)) reporter.warn(warning);
   const pageCount = docs.reduce((n, d) => n + d.pages.length, 0);
   reporter.data.pages = pageCount;
-  return { docs, chapters, pageCount };
+  return { docs, chapters, pageCount, laidOut };
 }
 
 function describeIssue(issue: { kind: string }): string {

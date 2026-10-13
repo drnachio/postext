@@ -367,6 +367,10 @@ function isUnprinted(c: string | undefined): boolean {
   return c === '\u00AD' || c === '\u200B';
 }
 
+/** What a reference counts as in a line's units (see `stampSourceRanges`):
+ *  a noncharacter, which no plain text holds. */
+const REF_UNIT = '\uFFFF';
+
 /** ASCII punctuation: what a backslash may escape (CommonMark). */
 const ESCAPABLE_RE = /[!-/:-@[-`{-~]/;
 
@@ -415,36 +419,41 @@ export function stampSourceRanges(
   const plain = contentBlock.text;
   let cumPlain = 0;
   const lastLineIdx = measured.lines.length - 1;
-  // The line's characters as plain text counts them. An inline `:ref`
-  // segment renders a multi-char label but occupies a single placeholder
-  // char in the block's plain text / `sourceMap` (mirrors the math
-  // placeholder); the later runs of a reference painted in pieces (small
-  // capitals) count 0.
-  const unitsOf = (line: MeasuredBlock['lines'][number]): (string | null)[] => {
-    const units: (string | null)[] = [];
-    if (line.segments && line.segments.length > 0) {
-      for (const seg of line.segments) {
-        // Brackets the layout added (a book title's 《》, a warichu note's)
-        // are no plain text.
-        // A leader (#622) is no character either.
-        if (seg.refContinues || seg.inserted || seg.leader) continue;
-        if (seg.refResourceId !== undefined) units.push(null);
-        else {
-          // Tatweels kashida justification inserted are no plain text.
-          const text = writtenText(seg);
-          for (let k = 0; k < text.length; k++) units.push(text[k]!);
-        }
-      }
-    } else {
-      for (let k = 0; k < line.text.length; k++) units.push(line.text[k]!);
+  // The line's characters as plain text counts them, one string a line
+  // (#784: an array of one-character strings per line was a tenth of a
+  // book's layout). An inline `:ref` segment renders a multi-char label but
+  // occupies a single placeholder char in the block's plain text /
+  // `sourceMap` (mirrors the math placeholder): it counts as `REF_UNIT`,
+  // which matches no plain character; the later runs of a reference painted
+  // in pieces (small capitals) count 0.
+  const unitsOf = (line: MeasuredBlock['lines'][number]): string => {
+    if (!line.segments || line.segments.length === 0) return line.text;
+    let units = '';
+    for (const seg of line.segments) {
+      if (seg.refContinues || seg.inserted || seg.leader) continue;
+      units += seg.refResourceId !== undefined ? REF_UNIT : writtenText(seg);
     }
     return units;
   };
-  let nextUnits = measured.lines.length > 0 ? unitsOf(measured.lines[0]!) : [];
+  /** The first of {@link unitsOf}, without the rest. */
+  const firstUnitOf = (line: MeasuredBlock['lines'][number]): string | undefined => {
+    if (!line.segments || line.segments.length === 0) return line.text[0];
+    for (const seg of line.segments) {
+      // Brackets the layout added (a book title's 《》, a warichu note's)
+      // are no plain text.
+      // A leader (#622) is no character either.
+      if (seg.refContinues || seg.inserted || seg.leader) continue;
+      if (seg.refResourceId !== undefined) return REF_UNIT;
+      // Tatweels kashida justification inserted are no plain text.
+      const text = writtenText(seg);
+      if (text.length > 0) return text[0];
+    }
+    return undefined;
+  };
   for (let li = 0; li < measured.lines.length; li++) {
     const line = measured.lines[li]!;
-    const units = nextUnits;
-    nextUnits = li < lastLineIdx ? unitsOf(measured.lines[li + 1]!) : [];
+    const units = unitsOf(line);
+    const nextFirst = li < lastLineIdx ? firstUnitOf(measured.lines[li + 1]!) : undefined;
     // Walk the plain text along the line. An author's soft hyphen or
     // zero-width space inside the line is plain text the line may not print
     // (the plain path drops every U+200B); a hyphenated line's final hyphen
@@ -458,7 +467,7 @@ export function stampSourceRanges(
       const c = units[u];
       // A zero-width character the line holds and the plain text does not
       // (a break opportunity a measurer inserted) is no source character.
-      if (isUnprinted(c ?? undefined) && c !== plain[i]) continue;
+      if (isUnprinted(c) && c !== plain[i]) continue;
       while (isUnprinted(plain[i]) && c !== plain[i]) i++;
       if (u === units.length - 1 && line.hyphenated && c === '-' && plain[i] !== '-') {
         // The hyphen of a break inside an `l·l` stands for the middle dot
@@ -479,7 +488,7 @@ export function stampSourceRanges(
     // italic word and the number after it) part where they meet when the
     // group is wider than the line, and the second line keeps the space.
     const after = plain[line.plainEnd];
-    const opensNext = after !== undefined && NO_BREAK_SPACES.includes(after) && nextUnits[0] === after;
+    const opensNext = after !== undefined && NO_BREAK_SPACES.includes(after) && nextFirst === after;
     // The ideographic space (U+3000) is a character of CJK text: a line
     // that ends before one leaves it to the next.
     // A line that ends inside a reference label (#702) consumed a space of

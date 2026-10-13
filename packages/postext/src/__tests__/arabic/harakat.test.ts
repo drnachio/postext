@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { buildDocument } from '../../pipeline';
 import { annotateArabicMarks, hasArabicMarks, lineWordInks, markInkOverhang } from '../../arabicMarks';
 import { columnClipRect } from '../../columnClip';
+import { clearMeasurementCache } from '../../measure';
 import type { PostextConfig } from '../../types';
 import type { VDTBlock, VDTColumn, VDTDocument, VDTLine } from '../../vdt';
 
@@ -31,6 +32,10 @@ class StubCtx {
 
 beforeEach(() => {
   inkMetrics = null;
+  // Another measurer from here on: what was measured with the last one is
+  // dropped, as a host does when its faces change (the ink caches live
+  // across documents, #785).
+  clearMeasurementCache();
 });
 
 const pt = (value: number) => ({ value, unit: 'pt' as const });

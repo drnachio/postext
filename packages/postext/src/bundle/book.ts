@@ -4,9 +4,11 @@
 // the bundle says its book starts (`start`), every chapter reads the
 // book's metadata (the first chapter's front matter), a chapter printing
 // the contents (`:::toc`) receives the whole book's outline, and
-// `{bookTotalPages}` counts the whole book.
+// `{bookTotalPages}` counts the whole book. With a `layoutCache`, a
+// chapter laid out before with the same inputs is not laid out again.
 
 import { bookCitationContexts, citationSourceOf, needsCitationContext } from '../citations/context';
+import type { CitationContext } from '../citations/context';
 import type { DocumentMetadata, LayoutContinuation, OutlineEntry, PostextConfig, Resource } from '../types';
 import type { VDTDocument } from '../vdt';
 import { buildDocument, continuationAfter, contentOutline, outlineFromDoc, outlineKey } from '../pipeline';
@@ -17,6 +19,8 @@ import { extractFrontmatter } from '../frontmatter';
 import { configUsesPlaceholder } from '../design/placeholders';
 import { bundleStart } from './manifest';
 import type { BundleChapter, BundleStart } from './types';
+import { beginLayoutBuild, createBundleLayoutCache, jsonKey } from './layoutCache';
+import type { BundleLayoutCache, ChapterRecord } from './layoutCache';
 
 export interface BuildBundleOptions extends BuildDocumentOptions {
   /** Configuration to lay out with instead of the bundle's own. */
@@ -32,6 +36,12 @@ export interface BuildBundleOptions extends BuildDocumentOptions {
   /** Called after each chapter is laid out (the last round's, when the
    *  contents take several). */
   onChapter?: (index: number, doc: VDTDocument) => void;
+  /** The chapters an earlier build of the same book laid out (#782): a
+   *  chapter whose inputs are unchanged is taken from it instead of laid
+   *  out again, and the cache is left holding this build's. Its `stats`
+   *  then say which chapters were laid out. `onProgress` and `onPass` hear
+   *  only from the chapters laid out. */
+  layoutCache?: BundleLayoutCache;
 }
 
 /** How many times the book is laid out at most while the contents' page
@@ -75,6 +85,34 @@ function firstContentPage(doc: VDTDocument): { pageLabel: string; pageIndex: num
   return page ? { pageLabel: page.pageLabel, pageIndex: (doc.pageIndexOffset ?? 0) + page.index } : undefined;
 }
 
+/** A resource as its layout reads it: without the times it was stored
+ *  at, which a bundle opened again stamps anew. */
+function layoutFields(resource: Resource): Partial<Resource> {
+  const copy: Partial<Resource> = { ...resource };
+  delete copy.createdAt;
+  delete copy.updatedAt;
+  return copy;
+}
+
+/** What every chapter's citations read (the book's references and
+ *  citations, the same in every context), as text for the book key. */
+function sharedCitationKey(ctx: CitationContext | undefined): unknown {
+  return ctx ? [ctx.items, ctx.nocite, ctx.clusters, ctx.placed, ctx.chapters ?? null] : null;
+}
+
+/** What one chapter's citations read besides the book's: its own. */
+function localCitationKey(ctx: CitationContext | undefined): unknown {
+  return ctx ? [ctx.local, ctx.last, ctx.issues, ctx.captions ?? null] : null;
+}
+
+/** The key a chapter's layout is recorded under: everything it reads that
+ *  is not the book's. The JSON parts hold no raw NUL, so the text after
+ *  the second one is the Markdown, whatever it holds. */
+function chapterKey(markdown: string, continuation: LayoutContinuation | undefined, outlineText: string, citations: CitationContext | undefined): string | undefined {
+  const head = jsonKey([continuation ?? null, localCitationKey(citations)]);
+  return head === undefined ? undefined : `${head}\u0000${outlineText}\u0000${markdown}`;
+}
+
 /** Lay out every chapter of `bundle`, in order; returns one `VDTDocument`
  *  per chapter. Hand the array to `renderToPdf` for the whole book, or
  *  paint `docs[i]` for one chapter. A bundle that holds part of a longer
@@ -85,7 +123,7 @@ export function buildBundle(
   bundle: { chapters: readonly Pick<BundleChapter, 'markdown'>[]; config: PostextConfig; resources?: readonly Resource[]; start?: BundleStart },
   options: BuildBundleOptions = {},
 ): VDTDocument[] {
-  const { config: configOverride, cache: sharedCache, onChapter, metadata: givenMetadata, ...buildOptions } = options;
+  const { config: configOverride, cache: sharedCache, onChapter, metadata: givenMetadata, layoutCache, ...buildOptions } = options;
   const config = configOverride ?? bundle.config;
   const resources = [...(bundle.resources ?? [])];
   const cache = sharedCache ?? createMeasurementCache();
@@ -95,29 +133,33 @@ export function buildBundle(
   const first = chapters[0];
   const metadata: DocumentMetadata = { ...(givenMetadata ?? {}), ...(first ? extractFrontmatter(first.markdown).metadata : {}) };
   const sources = chapters.map((c, index) => (index === 0 ? c.markdown : blankFrontmatter(c.markdown)));
+  // Without a cache of its own, the build still keeps the chapters a round
+  // of the contents leaves as they were for the next round.
+  const build = beginLayoutBuild(layoutCache ?? createBundleLayoutCache(), jsonKey([config, resources.map(layoutFields), metadata]));
   // A chapter printing the contents (`:::toc`) or the index (`:::index`)
   // reads the whole book's outline; so does one whose references name
   // anchors, which may lie in another chapter (#262).
-  const hasToc = sources.map((markdown) => {
+  const hasToc = sources.map((markdown) => build.derive(`toc\u0000${markdown}`, () => {
     const { hasToc: toc, hasIndex, hasRefs } = contentOutline({ markdown, resources }, config);
     return toc || hasIndex || hasRefs;
-  });
+  }));
   const anyToc = hasToc.some(Boolean);
   // Citations are numbered and listed across the book (#272): each chapter
   // is formatted against the book's references and citations.
   // Every chapter's front matter counts here (its references), not only
   // the first's.
-  const citationSources = chapters.map((c, index) => {
+  const citationSources = chapters.map((c, index) => build.derive(`cite\u0000${index === 0 ? 1 : 0}\u0000${c.markdown}`, () => {
     try {
       return citationSourceOf(c.markdown);
     } catch {
       // Front matter the YAML reader rejects counts for nothing.
       return citationSourceOf(sources[index]!);
     }
-  });
+  }));
   const citations = citationSources.some((s) => needsCitationContext(s.blocks, s.metadata))
     ? bookCitationContexts(citationSources, resources)
     : undefined;
+  build.bookInputs(jsonKey(sharedCitationKey(citations?.[0])));
   // `{bookTotalPages}` needs the page count of the whole book, known once
   // every chapter is laid out: the book goes round once more with it. It
   // never moves a page break, so one more round settles it.
@@ -132,10 +174,10 @@ export function buildBundle(
 
   let outline: OutlineEntry[] | undefined;
   let bookPageCount: number | undefined;
-  let docs: VDTDocument[] = [];
   for (let round = 0; ; round++) {
-    docs = [];
-    const continuations: (LayoutContinuation | undefined)[] = [];
+    if (round > 0) build.nextRound();
+    const records: ChapterRecord[] = [];
+    const outlineText = outline ? jsonKey(outline) : '';
     let counters: LayoutContinuation | undefined = Object.keys(startCounters).length > 0 ? startCounters : undefined;
     let physical = startOffset;
     let next: { startAt: number; format: VDTDocument['pages'][number]['pageNumberFormat'] } | undefined;
@@ -144,32 +186,45 @@ export function buildBundle(
       const continuation: LayoutContinuation | undefined = index === 0
         ? (start || bookPageCount !== undefined ? { ...start, ...total } : undefined)
         : { ...counters, pageIndexOffset: physical, ...(next ? { pageNumbering: next } : {}), ...total };
-      const doc = buildDocument(
-        { markdown, metadata, resources, ...(continuation ? { continuation } : {}), ...(hasToc[index] && outline ? { outline } : {}), ...(citations ? { citations: citations[index] } : {}) },
-        config,
-        cache,
-        buildOptions,
-      );
-      docs.push(doc);
-      continuations.push(continuation);
-      const last = doc.pages[doc.pages.length - 1];
-      physical += doc.pages.length;
-      if (last) next = { startAt: last.pageNumberValue + 1, format: last.pageNumberFormat };
-      counters = continuationAfter({ markdown, resources }, config, counters);
+      const printsOutline = hasToc[index] && outline !== undefined;
+      const key = printsOutline && outlineText === undefined ? undefined : chapterKey(markdown, continuation, printsOutline ? outlineText! : '', citations?.[index]);
+      const record = build.chapter(key, () => {
+        const doc = buildDocument(
+          { markdown, metadata, resources, ...(continuation ? { continuation } : {}), ...(printsOutline ? { outline } : {}), ...(citations ? { citations: citations[index] } : {}) },
+          config,
+          cache,
+          buildOptions,
+        );
+        const last = doc.pages[doc.pages.length - 1];
+        const firstContent = firstContentPage(doc);
+        return {
+          doc,
+          pageCount: doc.pages.length,
+          ...(last ? { next: { startAt: last.pageNumberValue + 1, format: last.pageNumberFormat } } : {}),
+          outline: outlineFromDoc(doc, contentOutline({ markdown }, config, continuation).outline),
+          ...(firstContent ? { firstContent } : {}),
+        };
+      });
+      records.push(record);
+      physical += record.pageCount;
+      if (record.next) next = record.next;
+      const before = counters;
+      const beforeKey = jsonKey(before);
+      counters = build.derive(beforeKey === undefined ? undefined : `next\u0000${beforeKey}\u0000${markdown}`, () => continuationAfter({ markdown, resources }, config, before));
     });
     // Another round for the contents while their page labels move (at
     // most MAX_ROUNDS layouts), and for the book's page count while the
     // one printed is not the one laid out (at most one more).
     let outlineMoved = false;
     if (anyToc) {
-      const bookOutline = sources.flatMap((markdown, index) => {
-        const entries = outlineFromDoc(docs[index]!, contentOutline({ markdown }, config, continuations[index]).outline);
+      const bookOutline = records.flatMap((record, index) => {
+        const entries = record.outline;
         // A part that reached no page of its chapter — set without a
         // divider page (`parts.page: false`) by a fence closing the
         // chapter — starts with the next chapter's content, as its running
         // heads do.
         if (!entries.some((e) => e.kind === 'part' && e.pageIndex === undefined)) return entries;
-        const next = docs.slice(index + 1).map(firstContentPage).find((p) => p !== undefined);
+        const next = records.slice(index + 1).map((r) => r.firstContent).find((p) => p !== undefined);
         return next ? entries.map((e) => (e.kind === 'part' && e.pageIndex === undefined ? { ...e, ...next } : e)) : entries;
       });
       outlineMoved = !outline || outlineKey(outline) !== outlineKey(bookOutline);
@@ -182,6 +237,7 @@ export function buildBundle(
     const again = (outlineMoved && round + 1 < MAX_ROUNDS) || (totalMoved && round + 1 < MAX_ROUNDS + 1);
     if (!again) break;
   }
+  const docs = build.finish();
   if (onChapter) docs.forEach((doc, index) => onChapter(index, doc));
   return docs;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildBundle, buildDocument, renderToHtml, type PostextConfig, type VDTDocument } from 'postext';
+import { buildBundle, buildDocument, createBundleLayoutCache, renderToHtml, type PostextConfig, type VDTDocument } from 'postext';
 import '../register';
 
 // Deterministic text measurement stub (no DOM in the node test env).
@@ -214,6 +214,27 @@ describe('books', () => {
     expect(lines(docs[1]!).join('\n')).toContain('Then [2] and [1].');
     expect(entries(docs[0]!)).toEqual([]);
     expect(entries(docs[1]!)).toEqual(['lopez2019', 'garcia2020']);
+  });
+
+  // #782: a layout cache keeps the chapters an edit leaves alone, unless
+  // the edit moves the book's citations, which every chapter reads.
+  it('lays out every chapter again when the book’s citations change', () => {
+    const cfg: PostextConfig = { ...config, citations: { style: 'ieee' } };
+    const book = (two: string) => ({
+      chapters: [{ markdown: `${FRONT}# One\n\nFirst [@lopez2019].\n` }, { markdown: `# Two\n\n${two}\n` }, { markdown: '# Three\n\nNo works cited.\n' }],
+      config: cfg,
+      resources: [],
+    });
+    const cache = createBundleLayoutCache();
+    const text = (docs: VDTDocument[]) => docs.map((d) => lines(d).join('\n'));
+    buildBundle(book('Then [@garcia2020] and [@lopez2019].'), { layoutCache: cache });
+    const word = buildBundle(book('Later [@garcia2020] and [@lopez2019].'), { layoutCache: cache });
+    expect(cache.stats.laidOut).toEqual([false, true, false]);
+    expect(text(word)).toEqual(text(buildBundle(book('Later [@garcia2020] and [@lopez2019].'))));
+    const cited = buildBundle(book('Later [@lopez2019] only.'), { layoutCache: cache });
+    expect(cache.stats.laidOut).toEqual([true, true, true]);
+    expect(entries(cited[2]!)).toEqual(['lopez2019']);
+    expect(text(cited)).toEqual(text(buildBundle(book('Later [@lopez2019] only.'))));
   });
 
   it('per-chapter bibliographies list each chapter’s works', () => {
