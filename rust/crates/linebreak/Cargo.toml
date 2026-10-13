@@ -1,0 +1,9 @@
+[package]
+name = "postext-linebreak"
+description = "Knuth–Plass line breaking for postext: the paragraph's items in, the breaks out."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]

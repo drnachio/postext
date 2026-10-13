@@ -1,0 +1,24 @@
+# The Rust engine of postext (#779): a Cargo workspace beside the pnpm one.
+# Each crate does one thing and has no dependencies of its own; bindings
+# (WebAssembly, later a Node addon) are thin crates over them.
+[workspace]
+resolver = "3"
+members = ["crates/linebreak", "crates/wasm", "bench"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/drnachio/postext"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+debug = false
+
+# Benchmarks keep symbols for profilers.
+[profile.bench]
+inherits = "release"
+debug = true

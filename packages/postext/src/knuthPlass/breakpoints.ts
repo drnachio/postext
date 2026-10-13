@@ -127,7 +127,20 @@ function chainWithinStretchLimit(node: ActiveNode): boolean {
   return true;
 }
 
+/** A research hook (#779): when set, every call is reported with its
+ *  breaks, so that a benchmark can record the real calls of a book and
+ *  replay them against another implementation. Unset, it costs one read. */
+type BreakpointsTap = (items: KPItem[], options: KPOptions, breaks: number[]) => void;
+
 export function computeBreakpoints(items: KPItem[], options: KPOptions): number[] {
+  const tap = (globalThis as { __postextKpTap?: BreakpointsTap }).__postextKpTap;
+  if (!tap) return breakpoints(items, options);
+  const breaks = breakpoints(items, options);
+  tap(items, options, breaks);
+  return breaks;
+}
+
+function breakpoints(items: KPItem[], options: KPOptions): number[] {
   const {
     lineWidth,
     consecutiveHyphenDemerit = DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT,

@@ -1,0 +1,12 @@
+[package]
+name = "postext-bench"
+description = "Replays corpora recorded from real books (packages/postext-cli/scripts/bench-layout.ts) against the Rust engine."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+postext-linebreak = { path = "../crates/linebreak" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["float_roundtrip"] }
