@@ -569,6 +569,10 @@ export { parseChineseNumeral } from './chineseNumerals';
 export { collectConfigWarnings } from './configWarnings';
 export type { MathRender, MathPath, MathViewBox } from './math/types';
 export { initMathEngine, isMathReady, onMathReady, renderMath, placeholderRender, clearMathCache } from './math';
+// The Rust line breaker compiled to WebAssembly (#779): the same breaks as
+// the TypeScript one, faster; started on its own, `initLineBreaker` starts
+// it early.
+export { initLineBreaker, useWasmLineBreaker } from './knuthPlass';
 export { applySingleInkToSvg } from './svg/singleInk';
 // The document's fonts inside SVG pictures (#630).
 export { svgFontRequests, svgDeclaredFontFamilies, inlineSvgFonts, inlineSvgFontsSync, inlineSvgFontsDetailed, inlineSvgFontsDetailedSync, chainSvgFontProviders, injectSvgStyle, fontFaceRule, sniffFontFormat, parseFontFamilyList, isFontFaceOnlyStyleSheet, DEFAULT_SVG_FONT_MAX_BYTES } from './svg/fonts';

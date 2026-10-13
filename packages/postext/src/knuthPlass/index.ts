@@ -15,6 +15,7 @@ export type {
   RichTokenMeta,
 } from './types';
 
-export { computeBreakpoints } from './breakpoints';
+export { computeBreakpoints, computeBreakpointsTs } from './breakpoints';
+export { initLineBreaker, useWasmLineBreaker } from './wasm/engine';
 export { pretextSegmentsToItems, reconstructPretextLines } from './pretextAdapter';
 export { richTokensToItems, reconstructRichLines } from './richAdapter';

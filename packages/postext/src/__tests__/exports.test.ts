@@ -612,6 +612,8 @@ describe("package exports", () => {
       "renderMath",
       "placeholderRender",
       "clearMathCache",
+      "initLineBreaker",
+      "useWasmLineBreaker",
       "applySingleInkToSvg",
       "svgFontRequests",
       "svgDeclaredFontFamilies",
