@@ -111,7 +111,8 @@ export interface KPOptions {
    *  such line, whichever is looser, and it has no more lines past 3× the
    *  normal space (which the pipeline sets ragged) than the natural one
    *  (EF-65). Falls back silently to the natural solution when no such
-   *  sequence exists. Default 0 (off). */
+   *  sequence exists. A positive value is found by a second search after
+   *  the natural one, which never lets a line be very loose (#780). Default 0 (off). */
   looseness?: number;
   /** The line index from which `lineWidth` no longer varies (1 when only
    *  the first line is indented, 0 when no line is). Lets the DP merge
@@ -119,7 +120,8 @@ export interface KPOptions {
    *  two nodes at the same break with the same fitness class face the same
    *  future, so the cheaper one dominates — without it the set of active
    *  nodes grows with the paragraph and the search goes quadratic. Ignored
-   *  while `looseness` asks for an exact line count, long or short. */
+   *  while `looseness` asks for an exact line count, long or short (by the
+   *  natural search a positive one starts with, too). */
   lineWidthUniformFrom?: number;
   /** Tracking a justified line may take, in px added after every character
    *  (either way), when its word spaces alone would stretch past the

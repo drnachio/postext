@@ -115,32 +115,58 @@ function computeBadness(r: number): number {
   return Math.min(b, BADNESS_CAP);
 }
 
-/** Quality gate for the looseness target: every line in the chain must stay
- *  within the stretch limit (fitness class ≤ 2, i.e. adjustment ratio < 1.0
- *  — word spacing strictly below `maxStretchRatio`). The paragraph's last
- *  line never trips this: its closing glue has near-infinite stretch, so its
- *  ratio is ≈ 0. */
-function chainWithinStretchLimit(node: ActiveNode): boolean {
-  for (let n: ActiveNode | null = node; n !== null && n.position >= 0; n = n.previous) {
-    if (n.fitnessClass === 3) return false;
-  }
-  return true;
+/** The positions of the chain ending at `node`, first line first. */
+function traceBreaks(node: ActiveNode): number[] {
+  const breaks: number[] = [];
+  for (let n: ActiveNode | null = node; n !== null && n.position >= 0; n = n.previous) breaks.push(n.position);
+  return breaks.reverse();
 }
 
-/** A research hook (#779): when set, every call is reported with its
- *  breaks, so that a benchmark can record the real calls of a book and
- *  replay them against another implementation. Unset, it costs one read. */
+/** Research hooks (#779), read once per call and absent in normal runs:
+ *  `__postextKpTap` sees every call with its breaks, so a benchmark can
+ *  record a book's calls and replay them against another implementation;
+ *  `__postextKpImpl` answers the calls instead (the Rust line breaker
+ *  compiled to WebAssembly). */
 type BreakpointsTap = (items: KPItem[], options: KPOptions, breaks: number[]) => void;
+type BreakpointsImpl = (items: KPItem[], options: KPOptions) => number[];
+interface BreakpointsHooks {
+  __postextKpTap?: BreakpointsTap;
+  __postextKpImpl?: BreakpointsImpl;
+}
 
 export function computeBreakpoints(items: KPItem[], options: KPOptions): number[] {
-  const tap = (globalThis as { __postextKpTap?: BreakpointsTap }).__postextKpTap;
-  if (!tap) return breakpoints(items, options);
-  const breaks = breakpoints(items, options);
-  tap(items, options, breaks);
+  const hooks = globalThis as BreakpointsHooks;
+  const breaks = (hooks.__postextKpImpl ?? breakpoints)(items, options);
+  hooks.__postextKpTap?.(items, options, breaks);
   return breaks;
 }
 
 function breakpoints(items: KPItem[], options: KPOptions): number[] {
+  const looseness = options.looseness ?? 0;
+  if (looseness <= 0) return search(items, options) ?? [];
+  // A longer setting (TeX \looseness > 0: one line more, to fill a short
+  // column) takes two searches (#780). The natural one, whose nodes merge by
+  // fitness class and so stay few. Then one that keeps every line count
+  // apart for the target, but never lets a line be very loose (fitness
+  // class 3, word spacing at `maxStretchRatio` or more): such a chain can never be the longer setting, and counted in
+  // it was what made a single search quadratic (25 000 active nodes on one
+  // paragraph, 39 % of a whole book's layout). It also made that search
+  // lose settings: a cheaper chain with a very loose line could take the
+  // key of the only acceptable one. None found: the natural setting.
+  const natural = search(items, { ...options, looseness: 0 }) ?? [];
+  if (natural.length === 0) return natural;
+  return search(items, options, natural.length + looseness) ?? natural;
+}
+
+/**
+ * The dynamic programme. Without `longerTo`: the natural breaks, or for a
+ * negative looseness the shorter setting when it passes its gates (null
+ * only when nothing could be set). With `longerTo`: the cheapest setting
+ * of exactly that many lines with no very loose line, or null
+ * when there is none.
+ */
+function search(items: KPItem[], options: KPOptions, longerTo?: number): number[] | null {
+  const longer = longerTo !== undefined;
   const {
     lineWidth,
     consecutiveHyphenDemerit = DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT,
@@ -421,6 +447,10 @@ function breakpoints(items: KPItem[], options: KPOptions): number[] {
       if (Math.abs(fc - a.fitnessClass) > 1) {
         d += fitnessClassDemerit;
       }
+      // A longer setting has no very loose line, its last one included (a
+      // last line is that loose only when it is empty: broken at the
+      // closing glue, which would add a line of nothing).
+      if (longer && fc === 3) continue;
 
       const totalDemerits = a.totalDemerits + d;
 
@@ -485,8 +515,10 @@ function breakpoints(items: KPItem[], options: KPOptions): number[] {
       activeNodes = activeNodes.filter((a) => a.position === i);
     }
 
-    // Emergency fallback: if active set is empty, force a break here
+    // Emergency fallback: if active set is empty, force a break here (a
+    // longer setting gives up instead).
     if (activeNodes.length === 0) {
+      if (longer) return null;
       activeNodes.push({
         position: i,
         line: 1, // We lost track — start fresh
@@ -508,40 +540,42 @@ function breakpoints(items: KPItem[], options: KPOptions): number[] {
   }
 
   // Find best final node: only consider nodes at the last breakpoint position
-  // (the forced penalty at the end of the paragraph).
+  // (the forced penalty at the end of the paragraph); for a longer setting,
+  // those of its line count only.
   const lastBreakPosition = items.length - 1;
   let best: ActiveNode | null = null;
   for (const a of activeNodes) {
     if (a.position !== lastBreakPosition) continue;
+    if (longer && a.line !== longerTo) continue;
     if (best === null || a.totalDemerits < best.totalDemerits) {
       best = a;
     }
   }
+  if (longer) return best ? traceBreaks(best) : null;
 
-  // Looseness (TeX \looseness): among the surviving final nodes, prefer the
-  // lowest-demerit sequence with exactly (natural + looseness) lines — one
-  // line long, to fill a short column, or one line short, to pull up a runt
-  // last line or take a line out of a column that runs over. The DP never
-  // merges nodes with different line counts, so when such a sequence is
-  // feasible a final node for it exists here. A long sequence is gated on
-  // chain quality so it never stretches a line beyond the user's limit. A
-  // short one never shrinks a space past `minShrinkRatio` (such a break
-  // never becomes a node), but it can stretch one: fitting the paragraph in
-  // fewer lines may take a break sequence with a line far looser than any
-  // the natural one sets. It is gated too (EF-65): none of its lines that
-  // stay justified may be looser than `maxStretchRatio` or than the natural
-  // sequence's loosest such line, whichever is looser, and it may not have
-  // more lines past `RAGGED_SPACE_RATIO` (set ragged) than the natural one.
-  // A line the natural sequence sets ragged does not raise the bar. When
-  // nothing matches, the natural solution stands.
+  // A shorter setting (TeX \looseness < 0: one line short, to pull up a
+  // runt last line or take a line out of a column that runs over): among
+  // the surviving final nodes, the lowest-demerit sequence with exactly
+  // (natural + looseness) lines. The DP never merges nodes with different
+  // line counts under a looseness target, so when such a sequence is
+  // feasible a final node for it exists here. It never shrinks a space past
+  // `minShrinkRatio` (such a break never becomes a node), but it can
+  // stretch one: fitting the paragraph in fewer lines may take a break
+  // sequence with a line far looser than any the natural one sets. So it is
+  // gated (EF-65): none of its lines that stay justified may be looser than
+  // `maxStretchRatio` or than the natural sequence's loosest such line,
+  // whichever is looser, and it may not have more lines past
+  // `RAGGED_SPACE_RATIO` (set ragged) than the natural one. A line the
+  // natural sequence sets ragged does not raise the bar. When nothing
+  // matches, the natural solution stands. (A longer setting is
+  // `computeBreakpoints`' second search.)
   const looseness = options.looseness ?? 0;
-  if (looseness !== 0 && best) {
+  if (looseness < 0 && best) {
     const targetLine = best.line + looseness;
     const loosestAllowed = Math.max(options.maxStretchRatio, best.loosest) + 1e-9;
     let alternative: ActiveNode | null = null;
     for (const a of activeNodes) {
       if (a.position !== lastBreakPosition || a.line !== targetLine) continue;
-      if (looseness > 0 && !chainWithinStretchLimit(a)) continue;
       if (gateShort && (a.loosest > loosestAllowed || a.ragged > best.ragged)) continue;
       if (alternative === null || a.totalDemerits < alternative.totalDemerits) alternative = a;
     }
@@ -559,15 +593,5 @@ function breakpoints(items: KPItem[], options: KPOptions): number[] {
     }
   }
 
-  if (!best) return [];
-
-  // Traceback
-  const breaks: number[] = [];
-  let node: ActiveNode | null = best;
-  while (node !== null && node.position >= 0) {
-    breaks.push(node.position);
-    node = node.previous;
-  }
-  breaks.reverse();
-  return breaks;
+  return best ? traceBreaks(best) : [];
 }
