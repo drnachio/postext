@@ -2,8 +2,10 @@
 // font loaded from its file (FontFace), as the Sandbox does. Run from
 // apps/web, where puppeteer-core is installed:
 //   node ../../rust/bench/probes/chrome-widths.mjs <font> <px> <words.txt> [lang]
-import puppeteer from 'puppeteer-core';
+import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
+// puppeteer-core is apps/web's: resolved from the working directory.
+const puppeteer = createRequire(`${process.cwd()}/`)('puppeteer-core');
 const [font, size, words, lang = ''] = process.argv.slice(2);
 const browser = await puppeteer.launch({ executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', headless: true, args: ['--no-sandbox'] });
 const page = await browser.newPage();
