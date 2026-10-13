@@ -67,8 +67,8 @@ import type {
   VDTTableSlice,
 } from '../vdt';
 import { createBoundingBox } from '../vdt';
-import { measureRichBlock, measureTextWidth, buildFontString } from '../measure';
-import type { MeasureBlockOptions } from '../measure';
+import { cachedMeasureRichSnippet, measureRichBlock, measureTextWidth, buildFontString } from '../measure';
+import type { MeasureBlockOptions, MeasurementCache } from '../measure';
 import { isSwatchFill, measureRichSnippet } from '../measure/rich';
 import { isBlankText, refLabelPieces } from '../measure/spaces';
 import { linkSegments } from '../measure/links';
@@ -123,6 +123,9 @@ interface AnnotationScope {
 const NBSP = ' ';
 
 export interface ResourceLayoutInput {
+  /** Where the caption, the note and the table cells are measured through
+   *  (#781): a table is laid out on every pass of every build. */
+  cache?: MeasurementCache;
   resource: Resource;
   resourceType: ResourceType | undefined;
   number: string;
@@ -535,6 +538,39 @@ function takeCellItemMarker(spans: InlineSpan[]): { marker: CellItemMarker; span
   return { marker: { text, ws, column: indentColumn(indent) }, spans: stripped };
 }
 
+/** The measurement cache of the resource block being laid out, if its
+ *  caller gave one: captions, notes and cells are measured through it. Set
+ *  for the length of a call (`withSnippetCache`), as the writing mode and
+ *  the direction a block is measured in are. */
+let snippetCache: MeasurementCache | undefined;
+
+function withSnippetCache<T>(cache: MeasurementCache | undefined, fn: () => T): T {
+  if (cache === undefined || cache === snippetCache) return fn();
+  const outer = snippetCache;
+  snippetCache = cache;
+  try {
+    return fn();
+  } finally {
+    snippetCache = outer;
+  }
+}
+
+/** {@link measureRichSnippet}, through the block's cache when it has one. */
+function measureSnippet(
+  spans: InlineSpan[],
+  normal: string,
+  bold: string,
+  italic: string,
+  boldItalic: string,
+  maxWidthPx: number,
+  lineHeightPx: number,
+  options: MeasureBlockOptions,
+) {
+  return snippetCache
+    ? cachedMeasureRichSnippet(spans, normal, bold, italic, boldItalic, maxWidthPx, lineHeightPx, options, snippetCache)
+    : measureRichSnippet(spans, normal, bold, italic, boldItalic, maxWidthPx, lineHeightPx, options);
+}
+
 /** The four faces a caption or note run is set in (normal, bold, italic,
  *  bold italic). */
 type SnippetFonts = readonly [string, string, string, string];
@@ -566,7 +602,7 @@ function measureSnippetLines(
         })
       : lines;
   const measure = (ps: InlineSpan[]): VDTLine[] =>
-    aligned(linkSegments(measureRichSnippet(ps, normal, bold, italic, boldItalic, maxWidthPx, lineHeightPx, options).lines, ps));
+    aligned(linkSegments(measureSnippet(ps, normal, bold, italic, boldItalic, maxWidthPx, lineHeightPx, options).lines, ps));
   if (!spans.some((s) => !s.ref && !s.math && FORCED_BREAK_RE.test(s.text))) return measure(spans);
   const lines: VDTLine[] = [];
   for (const piece of splitCellParagraphs(spans, FORCED_BREAK_RE)) {
@@ -597,7 +633,7 @@ function measureCellContent(
   let y = 0;
   const tracking = set.letterSpacingPx ?? 0;
   const measure = (ps: InlineSpan[], w: number) => {
-    const m = measureRichSnippet(
+    const m = measureSnippet(
       ps, set.fontString, set.boldFontString, set.italicFontString, set.boldItalicFontString,
       Math.max(1, w), set.lineHeightPx, tracking !== 0 ? { textAlign: 'left', letterSpacingPx: tracking } : { textAlign: 'left' },
     );
@@ -1223,6 +1259,8 @@ function mirrorTableLayout<T extends { layout: VDTResourceTableLayout }>(result:
 /** What {@link layoutCaptionText} sets: a caption's text and where it
  *  comes from. */
 export interface CaptionTextInput {
+  /** Where the caption is measured through (see `ResourceLayoutInput`). */
+  cache?: MeasurementCache;
   /** The description as written (inline Markdown); may be empty. */
   text: string;
   /** The resource type whose prefix opens the caption and whose own
@@ -1266,6 +1304,10 @@ export interface CaptionTextLayout {
  * force (a resource block sets it horizontally).
  */
 export function layoutCaptionText(input: CaptionTextInput): CaptionTextLayout {
+  return withSnippetCache(input.cache, () => layoutCaptionTextIn(input));
+}
+
+function layoutCaptionTextIn(input: CaptionTextInput): CaptionTextLayout {
   const { resolved, resourceType, number, resourceNumbering, resourceTypes, resources } = input;
   const dpi = resolved.page.dpi;
   const bodyStyle = resolveBodyStyle(resolved);
@@ -1352,7 +1394,12 @@ export function layoutCaptionText(input: CaptionTextInput): CaptionTextLayout {
   };
 }
 
-export function layoutResourceBlock(input: ResourceLayoutInput): {
+export function layoutResourceBlock(input: ResourceLayoutInput): ResourceBlockLayout {
+  return withSnippetCache(input.cache, () => layoutResourceBlockIn(input));
+}
+
+/** A resource block laid out (see {@link layoutResourceBlock}). */
+export interface ResourceBlockLayout {
   block: ResolvedResourceBlock;
   totalHeight: number;
   /** Height of the caption + note band set beside the body
@@ -1361,7 +1408,9 @@ export function layoutResourceBlock(input: ResourceLayoutInput): {
   /** Row metrics of a table laid out in full (no `slice`), for
    *  {@link planTableSlice}. */
   tableRows?: TableRowMetrics;
-} {
+}
+
+function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout {
   // Captions, notes and table cells are set horizontally on every page: a
   // resource of a vertical flow stands upright, its text read as on a
   // horizontal page.
@@ -1871,14 +1920,14 @@ const UPRIGHT_MIN_PICTURE_SHARE = 0.75;
  * (`originX` 0, `originY` the block's height in the flow), as
  * `offsetResourceBlockToAbsolute` expects.
  */
-function layoutUprightResourceBlock(input: ResourceLayoutInput, maxLength: number): ReturnType<typeof layoutResourceBlock> {
+function layoutUprightResourceBlock(input: ResourceLayoutInput, maxLength: number): ResourceBlockLayout {
   const base: ResourceLayoutInput = { ...input, upright: undefined, rotate: 'ccw' };
   const at = (length: number) => layoutResourceBlock({ ...base, rotatedLength: length });
   let length = Math.max(1, maxLength);
   let out = at(length);
   if (input.resource.kind === 'bitmap' || input.resource.kind === 'svg' || input.resource.kind === 'video') {
     const floor = out.block.bodyRect.width * UPRIGHT_MIN_PICTURE_SHARE;
-    const holds = (o: ReturnType<typeof layoutResourceBlock>) =>
+    const holds = (o: ResourceBlockLayout) =>
       o.block.rotation!.height <= input.columnWidth + 0.5 && o.block.bodyRect.width >= floor;
     let settled = false;
     for (let round = 0; round < 4; round++) {

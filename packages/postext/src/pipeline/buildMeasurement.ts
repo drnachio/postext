@@ -76,6 +76,7 @@ export function runMeasurement(input: MeasurementInput): MeasurementResult {
       return { measured: { lines: [], totalHeight: 0 } };
     }
     const { block, totalHeight, tableRows, asideHeight } = layoutResourceBlock({
+      ...(cache ? { cache } : {}),
       resource: input.resource,
       resourceType: input.resourceType,
       number: input.resourceNumber ?? '',

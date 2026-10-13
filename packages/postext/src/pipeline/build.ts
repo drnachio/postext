@@ -1181,6 +1181,7 @@ function placeDocumentPass(
     const numbered = typeId !== undefined ? stripNumbers[blockIdx] : undefined;
     const caption = place.caption
       ? layoutCaptionText({
+          ...(cache ? { cache } : {}),
           text: place.caption,
           // A type the strip is not counted in (no caption, an unknown id)
           // lends nothing: the caption is plain.
@@ -1444,6 +1445,7 @@ function placeDocumentPass(
     // (`flexFigure`, #442).
     const flexPx = balanceExtraPx?.get(flexFloatKey(resourceId)) ?? 0;
     return layoutResourceBlock({
+      ...(cache ? { cache } : {}),
       resource,
       resourceType: resourceTypeById.get(resource.typeId),
       number: resourceNumberById.get(resourceId) ?? '',

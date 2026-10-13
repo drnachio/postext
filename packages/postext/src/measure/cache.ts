@@ -1,7 +1,7 @@
 import type { InlineSpan } from '../parse';
 import type { MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './types';
 import { measureBlock } from './plain';
-import { measureRichBlock } from './rich';
+import { measureRichBlock, measureRichSnippet } from './rich';
 import { getHyphenationLocale, getHyphenationRulesKey } from '../hyphenate';
 import { hasCJK } from './cjk';
 import { getCjkLineBreak } from './cjkClasses';
@@ -171,6 +171,29 @@ export function cachedMeasureBlock(
   const cached = current(cache)._blocks.get(key);
   if (cached) return cloneMeasuredBlock(cached);
   const result = measureBlock(text, font, maxWidthPx, lineHeightPx, options);
+  cache._blocks.set(key, result);
+  return cloneMeasuredBlock(result);
+}
+
+/** {@link cachedMeasureRichBlock} for a table cell's paragraph or a piece
+ *  of a caption or a note ({@link measureRichSnippet}), in a key space of
+ *  its own: a text of nothing but no-break spaces sets a line there and
+ *  none in the body (#781). */
+export function cachedMeasureRichSnippet(
+  spans: InlineSpan[],
+  normalFont: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+  maxWidthPx: number,
+  lineHeightPx: number,
+  options: MeasureBlockOptions | undefined,
+  cache: MeasurementCache,
+): MeasuredBlock {
+  const key = `S${buildRichCacheKey(spans, [normalFont, boldFont, italicFont, boldItalicFont], maxWidthPx, lineHeightPx, options)}`;
+  const cached = current(cache)._blocks.get(key);
+  if (cached) return cloneMeasuredBlock(cached);
+  const result = measureRichSnippet(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
   cache._blocks.set(key, result);
   return cloneMeasuredBlock(result);
 }

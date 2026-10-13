@@ -1,8 +1,8 @@
 import type { InlineSpan } from '../parse';
 import type { MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './types';
 import { measureBlock } from './plain';
-import { measureRichBlock } from './rich';
-import { cachedMeasureBlock as cachedPlainBlock, cachedMeasureRichBlock as cachedRichBlock } from './cache';
+import { measureRichBlock, measureRichSnippet } from './rich';
+import { cachedMeasureBlock as cachedPlainBlock, cachedMeasureRichBlock as cachedRichBlock, cachedMeasureRichSnippet as cachedRichSnippet } from './cache';
 import { hasCompound } from './breakRules';
 
 export type { BreakTrace, LineInsetStep, LineWidthStep, MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './types';
@@ -94,4 +94,24 @@ export function cachedMeasureRichBlock(
   return options?.keepBreaks || options?.restWidths || options?.lineInsets
     ? measureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options)
     : cachedRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cacheFor(cache, options, spans.map((s) => s.text).join('')));
+}
+
+/** {@link measureRichSnippet} (a table cell's paragraph, a piece of a
+ *  caption or a note) through `cache`, as {@link cachedMeasureRichBlock}
+ *  does it (#781): a table is laid out on every pass of every build, and
+ *  its cells measured afresh each time were a third of a warm relayout. */
+export function cachedMeasureRichSnippet(
+  spans: InlineSpan[],
+  normalFont: string,
+  boldFont: string,
+  italicFont: string,
+  boldItalicFont: string,
+  maxWidthPx: number,
+  lineHeightPx: number,
+  options: MeasureBlockOptions | undefined,
+  cache: MeasurementCache,
+): MeasuredBlock {
+  return options?.keepBreaks || options?.restWidths || options?.lineInsets
+    ? measureRichSnippet(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options)
+    : cachedRichSnippet(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cacheFor(cache, options, spans.map((s) => s.text).join('')));
 }
