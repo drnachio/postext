@@ -306,20 +306,32 @@ jobs:
 
   # The release notes (#releases) and the docs & translations notice
   # (#docs-and-translations) in the Postext Discord, minutes after the
-  # release instead of at the next scheduled run of the feeds
-  # (drnachio/postext-discord, feeds.yml). Only after a release that
-  # published; never fails it. Needs the DISCORD_FEEDS_TOKEN secret: a
-  # fine-grained token with Actions read/write on drnachio/postext-discord.
+  # release instead of at the next scheduled run of the feeds. The scripts
+  # live in the public drnachio/postext-discord; the bot's credentials are
+  # the DISCORD_TOKEN and GUILD_ID secrets. Only after a release that
+  # published; never fails it.
   discord:
     name: Announce on Discord
     needs: release
     runs-on: ubuntu-latest
-    permissions: {}
+    permissions:
+      contents: read
+    concurrency:
+      group: discord-release
+      cancel-in-progress: false
     steps:
-      - name: Run the Discord feeds
+      - uses: actions/checkout@v4
+        with:
+          repository: drnachio/postext-discord
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Release notes and docs & translations notice
         continue-on-error: true
         env:
-          GH_TOKEN: ${{ secrets.DISCORD_FEEDS_TOKEN }}
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          GUILD_ID: ${{ secrets.GUILD_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          if [ -z "$GH_TOKEN" ]; then echo "DISCORD_FEEDS_TOKEN is not set: skipping"; exit 0; fi
-          gh workflow run feeds.yml -R drnachio/postext-discord
+          node releases.mjs
+          node docs.mjs

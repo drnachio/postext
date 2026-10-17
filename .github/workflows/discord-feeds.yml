@@ -1,33 +1,39 @@
 name: Discord feeds
 
 # A closed issue's summary in #github-feed of the Postext Discord, minutes
-# after it closes instead of at the next scheduled run of the feeds
-# (drnachio/postext-discord, feeds.yml). Needs the DISCORD_FEEDS_TOKEN
-# secret: a fine-grained token with Actions read/write on
-# drnachio/postext-discord.
+# after it closes instead of at the next scheduled run of the feeds. The
+# script lives in the public drnachio/postext-discord; the bot's
+# credentials are the DISCORD_TOKEN and GUILD_ID secrets.
 on:
   issues:
     types: [closed]
 
-permissions: {}
+permissions:
+  contents: read
 
 # Issues are often closed in a batch: each closing restarts the wait, so a
-# batch ends in one run of the feeds, which posts every summary at once.
+# batch ends in one run, which posts every summary at once.
 concurrency:
   group: discord-feeds
   cancel-in-progress: true
 
 jobs:
-  feeds:
-    name: Run the Discord feeds
+  issues:
+    name: Closed issues to Discord
     runs-on: ubuntu-latest
     steps:
       - name: Wait for the rest of the batch
         run: sleep 90
-      - name: Dispatch
+      - uses: actions/checkout@v4
+        with:
+          repository: drnachio/postext-discord
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Post the summaries
         continue-on-error: true
         env:
-          GH_TOKEN: ${{ secrets.DISCORD_FEEDS_TOKEN }}
-        run: |
-          if [ -z "$GH_TOKEN" ]; then echo "DISCORD_FEEDS_TOKEN is not set: skipping"; exit 0; fi
-          gh workflow run feeds.yml -R drnachio/postext-discord
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          GUILD_ID: ${{ secrets.GUILD_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node issues.mjs
