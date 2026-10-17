@@ -303,3 +303,23 @@ jobs:
         run: node scripts/npm-publish.mjs
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # The release notes (#releases) and the docs & translations notice
+  # (#docs-and-translations) in the Postext Discord, minutes after the
+  # release instead of at the next scheduled run of the feeds
+  # (drnachio/postext-discord, feeds.yml). Only after a release that
+  # published; never fails it. Needs the DISCORD_FEEDS_TOKEN secret: a
+  # fine-grained token with Actions read/write on drnachio/postext-discord.
+  discord:
+    name: Announce on Discord
+    needs: release
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Run the Discord feeds
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.DISCORD_FEEDS_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "DISCORD_FEEDS_TOKEN is not set: skipping"; exit 0; fi
+          gh workflow run feeds.yml -R drnachio/postext-discord

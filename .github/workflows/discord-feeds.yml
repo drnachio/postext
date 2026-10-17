@@ -1,0 +1,33 @@
+name: Discord feeds
+
+# A closed issue's summary in #github-feed of the Postext Discord, minutes
+# after it closes instead of at the next scheduled run of the feeds
+# (drnachio/postext-discord, feeds.yml). Needs the DISCORD_FEEDS_TOKEN
+# secret: a fine-grained token with Actions read/write on
+# drnachio/postext-discord.
+on:
+  issues:
+    types: [closed]
+
+permissions: {}
+
+# Issues are often closed in a batch: each closing restarts the wait, so a
+# batch ends in one run of the feeds, which posts every summary at once.
+concurrency:
+  group: discord-feeds
+  cancel-in-progress: true
+
+jobs:
+  feeds:
+    name: Run the Discord feeds
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for the rest of the batch
+        run: sleep 90
+      - name: Dispatch
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.DISCORD_FEEDS_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then echo "DISCORD_FEEDS_TOKEN is not set: skipping"; exit 0; fi
+          gh workflow run feeds.yml -R drnachio/postext-discord
