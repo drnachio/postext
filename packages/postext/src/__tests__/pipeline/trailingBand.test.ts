@@ -211,4 +211,31 @@ describe('trailing band balance', () => {
     expect(out.result.ranWith).toEqual([300]);
     expect(out.result.spanPlacedInBand.has(300)).toBe(true);
   });
+
+  // Driver-level: a cap that runs out of retries in the last round is
+  // dropped after that round placed the layout with it. That layout cut a
+  // band for a boundary that did not arrive in it (a span heading opened
+  // under it, with the rest of the band's text pushed under the heading).
+  it('places the layout again without a cap the last round dropped', () => {
+    const cap = (startContentIndex: number, lines: number): BandCap =>
+      ({ kind: 'trailing', startContentIndex, startPart: 0, lines, retries: 0 });
+    const report = (placed: number[], ranWith: number[], proposals: [number, BandCap][] = []):
+      BandPassReport & { ranWith: number[] } => ({
+      bandCapProposals: new Map(proposals),
+      spanPlacedInBand: new Set(placed),
+      bandCapsApplied: new Set(ranWith),
+      ranWith,
+    });
+    const initial = report([], [], [[100, cap(50, 20)], [200, cap(150, 10)]]);
+    const lines: number[] = [];
+    const out = resolveTrailingCaps(initial, new Map(), (caps) => {
+      const ran = [...caps.keys()];
+      if (caps.has(100)) lines.push(caps.get(100)!.lines);
+      // 100 never fits its cut; 200 always does.
+      return report(caps.has(200) ? [200] : [], ran);
+    });
+    expect(lines).toEqual([20, 21, 22, 23]);
+    expect([...out.caps.keys()]).toEqual([200]);
+    expect(out.result.ranWith).toEqual([200]);
+  });
 });

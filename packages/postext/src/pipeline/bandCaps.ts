@@ -452,12 +452,15 @@ export function* resolveTrailingCapsGen<T extends BandPassReport>(
     ({ result: initial, caps: new Map(spanCaps), passCount });
 
   let result = initial;
+  /** The caps `result` was placed with. */
+  let ranWith: ReadonlySet<number> = new Set();
   // A cap whose lines are shorter than the grid's retries in finer steps
   // and gets as many more passes as it gets retries (#711).
   const passBound = (): number =>
     MAX_BAND_PASSES + Math.max(0, ...[...caps.values()].map((c) => (c.retryLimit ?? MAX_BAND_CAP_RETRIES) - MAX_BAND_CAP_RETRIES));
   for (let extra = 0; extra < passBound(); extra++) {
     result = runPass(caps);
+    ranWith = new Set(caps.keys());
     passCount++;
     yield;
     if ([...spanCaps.keys()].some((i) => !result.spanPlacedInBand.has(i))) return giveUp();
@@ -487,8 +490,11 @@ export function* resolveTrailingCapsGen<T extends BandPassReport>(
   // Dropping a cap moves the flow after it, which can unsettle a cap that
   // was delivered: that one is dropped in turn (each round drops at least
   // one), so the caps still delivered are kept rather than all given up.
+  // A cap the last round dropped (out of retries) still cut the layout that
+  // round placed: that layout is placed again without it.
   let failing = trailingKeys().filter((i) => !result.spanPlacedInBand.has(i));
-  while (failing.length > 0) {
+  let stale = [...ranWith].some((i) => !caps.has(i));
+  while (failing.length > 0 || stale) {
     for (const i of failing) caps.delete(i);
     if (trailingKeys().length === 0) return giveUp();
     result = runPass(caps);
@@ -496,6 +502,7 @@ export function* resolveTrailingCapsGen<T extends BandPassReport>(
     yield;
     if ([...spanCaps.keys()].some((i) => !result.spanPlacedInBand.has(i))) return giveUp();
     failing = trailingKeys().filter((i) => !result.spanPlacedInBand.has(i));
+    stale = false;
   }
   return { result, caps, passCount };
 }

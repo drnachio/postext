@@ -3969,14 +3969,20 @@ function placeDocumentPass(
       );
       height = Math.max(height, design.height, design.textFloor);
     }
-    // Level the band first: in this pass the cap is proposed (the heading
-    // moves on as before); in the capped pass the heading arrives in the
-    // band cut level for it and the cap counts as delivered.
+    // Level the band first: in this pass the cap is proposed and the
+    // heading opens under the uneven columns; in the capped pass it arrives
+    // in the band cut level for it and the cap counts as delivered. A cap
+    // the driver drops (the band's blocks do not split level within its
+    // retries, a float the cut would displace) leaves this pass's layout,
+    // so the heading stays on its page: moved on here, it left the rest of
+    // the page empty. While a float cited in the text before is still
+    // waiting, the heading moves on as before, so the float is set ahead
+    // of it and not in the article it opens.
     const capHere = activeCap !== null && activeCap.spanIndex === blockIdx
       && activeCap.pageIndex === page.index && activeCap.band === band;
     proposeTrailingCap(blockIdx);
     const used = cols.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight));
-    if (!capHere && Math.max(...used) - Math.min(...used) > baselineGrid + 0.5 && bandCapProposals.has(blockIdx)) return false;
+    if (!capHere && pendingFloats.length > 0 && Math.max(...used) - Math.min(...used) > baselineGrid + 0.5 && bandCapProposals.has(blockIdx)) return false;
     const cutY = gridUpOnPage(page, bandUsedBottomWithSide(page, cols));
     const top = gridUpOnPage(page, cutY + Math.max(pendingSpacing, style.marginTopPx));
     const minLines = resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
