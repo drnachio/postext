@@ -1,18 +1,18 @@
 {/* docs/configuration-html-folio-epub-de.mdx */}
 
 export const metadata = {
-  title: 'Programmatische Nutzung: HTML, Folio und EPUB',
-  sidebarTitle: 'HTML, Folio und EPUB',
-  description: 'Das gesetzte Buch in einer Webseite, als 3D-Buch mit postext-folio und als EPUB 3 mit festem Layout oder umfließend mit postext-epub',
+  title: 'Programmatische Nutzung: HTML, Folio, EPUB und SCORM',
+  sidebarTitle: 'HTML, Folio, EPUB, SCORM',
+  description: 'Das gesetzte Buch in einer Webseite, als 3D-Buch mit postext-folio, als EPUB 3 mit festem Layout oder umfließend mit postext-epub und als SCORM-Paket für ein LMS mit postext-scorm',
   lang: 'de',
-  lastUpdated: '2026-10-22',
+  lastUpdated: '2026-10-25',
   readingTime: '16 min',
   order: 23,
   parent: 'configuration',
-  plainSummary: "Diese Seite richtet sich an Menschen, die Code schreiben und ein Buch auf einem Bildschirm zeigen wollen. Der erste Abschnitt bettet die Seiten in eine Webseite ein und erklärt, worin sich diese Ansicht vom Canvas und vom PDF unterscheidet. Der zweite zeigt das Buch in 3D, aufgeschlagen auf einem Tisch, mit Seiten, die der Leser umblättert. Der letzte Abschnitt erstellt ein E-Book im Format EPUB, mit festen Seiten oder mit Text, der sich dem Bildschirm anpasst, und prüft die Datei.",
+  plainSummary: "Diese Seite richtet sich an Menschen, die Code schreiben und ein Buch auf einem Bildschirm zeigen wollen. Der erste Abschnitt bettet die Seiten in eine Webseite ein und erklärt, worin sich diese Ansicht vom Canvas und vom PDF unterscheidet. Der zweite zeigt das Buch in 3D, aufgeschlagen auf einem Tisch, mit Seiten, die der Leser umblättert. Der dritte erstellt ein E-Book im Format EPUB, mit festen Seiten oder mit Text, der sich dem Bildschirm anpasst, und prüft die Datei. Der letzte erstellt ein SCORM-Paket, die Art von Datei, die die Lernplattform einer Schule oder eines Unternehmens (ein LMS wie Moodle) als Kurs installiert; seine Übungen senden ihre Punktzahlen an die Plattform.",
 };
 
-# Programmatische Nutzung: HTML, Folio und EPUB
+# Programmatische Nutzung: HTML, Folio, EPUB und SCORM
 
 
 ## Den HTML-Betrachter einbinden
@@ -445,3 +445,80 @@ Beide Darstellungen enthalten Metadaten nach EPUB Accessibility 1.1 (Zugriffsmod
 ### Eine Datei mit EPUBCheck prüfen
 
 [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) ist der Referenzvalidator für EPUB; E-Book-Shops prüfen die Dateien, die sie erhalten, damit. Ist er installiert (`brew install epubcheck` oder die Java-Version), listet `epubcheck book.epub` Fehler, Warnungen und Nutzungshinweise auf; die Nutzungshinweise, die eine Ausgabe von Postext übrig lässt (`CSS-028`, `OBS-001`, `HTM_062`), dienen nur der Information. Im Repository von Postext prüft `pnpm --filter postext-epub epubcheck` die Beispielbücher der Testsuite, `node packages/postext-epub/scripts/epubcheck.mjs book.postext --layout both` setzt eine `.postext`-Datei oder einen Preset-Ordner und prüft beide Darstellungen, und `pnpm --filter postext-epub validate` führt die ganze Matrix der Bücher aus (der Leitfaden, die Presets der Schaustücke, chinesische und arabische Bücher sowie Bücher aus den Rezepten), von denen jedes ohne Fehler und Warnungen besteht.
+
+## SCORM-Pakete (`postext-scorm`)
+
+`postext-scorm` schreibt ein Buch oder die daraus gewählten Kapitel und Abschnitte als SCORM-Paket: das Zip-Archiv, das ein Lernmanagementsystem (LMS: Moodle, Canvas, Blackboard, SCORM Cloud und die meisten anderen) als Kurs importiert. Der Inhalt ist der des EPUB-Schreibers, feste Seiten oder umfließender Text, als HTML5-Seiten; jeder Teil, den das LMS verfolgt, läuft in einem kleinen Player, und die Übungen darin senden ihre Punktzahl, den Abschluss und ob bestanden wurde an das LMS. Es ist der Schreiber hinter dem Tab **SCORM** der Sandbox.
+
+```bash
+npm install postext postext-epub postext-scorm
+```
+
+`postext` und `postext-epub` sind Peer-Abhängigkeiten: Aktualisieren Sie die drei gemeinsam.
+
+### Ein Paket schreiben
+
+```ts
+import { openBundle, buildBundle } from 'postext';
+import { renderToScorm, scormTree, scormOrganization, treeLeaves } from 'postext-scorm';
+
+const bundle = await openBundle(fileBytes);
+const docs = buildBundle(bundle);
+
+// The book's spine: chapters and their headings down to the third level.
+const tree = scormTree(bundle.chapters.map((c) => ({ markdown: c.markdown, title: c.title })));
+// Chapter 1 whole, and two sections of chapter 2.
+const picked = new Set([tree[0]!, tree[1]!.children[0]!, tree[1]!.children[2]!].flatMap(treeLeaves).map((n) => n.id));
+
+const zip = await renderToScorm(docs, {
+  version: '1.2',
+  layout: 'fixed',
+  items: scormOrganization(tree, picked),
+  metadata: { title: 'Lantern', language: 'en' },
+  fonts, resourceBytes, // as for renderToEpub
+});
+```
+
+- **`renderToScorm(docs, options): Promise<Uint8Array>`** schreibt das Zip-Archiv. `docs` sind die Kapiteldokumente, die `renderToEpub` nimmt. `options` ist `{ version, layout, items?, metadata, fonts?, svgFonts?, resourceBytes?, cover?, passingScore?, onProgress?, onWarning?, signal? }`; `metadata`, `fonts`, `svgFonts`, `resourceBytes` und `cover` sind die des EPUB-Schreibers.
+- **`version`**: `'1.2'` oder `'2004'` (SCORM 2004, 4. Ausgabe). Jedes LMS nimmt SCORM 1.2 an. SCORM 2004 hält Abschluss und Erfolg getrennt, gibt eine skalierte Punktzahl und bewahrt bis zu 64.000 Zeichen gespeicherter Antworten auf, wo SCORM 1.2 nur 4.096 aufbewahrt; wählen Sie es, wenn das LMS es annimmt und diese Punkte wichtig sind.
+- **`layout`**: `'fixed'`, jede gedruckte Seite in das Fenster eingepasst, oder `'reflowable'`, der Text für das Fenster neu gesetzt, wie in [Festes Layout und umfließend](#festes-layout-und-umfließend).
+- **`items`**: die Gliederung, die das LMS zeigt, ein Baum aus `{ title, doc?, range?, children? }`. Ein Eintrag mit `children` fasst diese zusammen; einer ohne ist ein SCO, ein Teil, den das LMS einzeln startet, verfolgt und bewertet: das Kapitel `doc` ganz oder dessen `range` (`{ start, end? }`, Positionen im Markdown des Kapitels, wie es geschrieben ist, Frontmatter eingeschlossen). Ohne `items` ist jedes Kapitel ein SCO.
+- **`scormTree(chapters, config?)`** listet die Kapitel und ihre Überschriften der Ebenen 1 bis 3 auf, jede mit dem Bereich, für den sie steht: von ihrer Zeile bis zur nächsten Überschrift ihrer Ebene oder einer höheren. Die erste Überschrift unter einem Kapitel oder einer Überschrift nimmt auch den Text davor mit, sodass Titel und Einleitungsabsätze eines Kapitels zu seinem ersten Abschnitt gehören. **`scormOrganization(tree, picked)`** macht aus einer Menge gewählter Blatt-IDs `items`: Ein ganz gewählter Knoten ist ein SCO, ein teilweise gewählter fasst die Einträge seiner Kinder zusammen. `treeLeaves(node)` und `pickState(node, picked)` (`'all'`, `'some'`, `'none'`) helfen bei einem Baum mit Kontrollkästchen.
+- **`passingScore`**: der Anteil richtiger bewerteter Antworten in Prozent, ab dem bestanden ist, über dem `exercises.digital.passingScore` der Dokumente. `0` oder nicht gesetzt: weder bestanden noch nicht bestanden.
+
+### Was das Paket enthält
+
+<table>
+  <thead>
+    <tr>
+      <th>Pfad</th>
+      <th>Was es ist</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>imsmanifest.xml</code></td><td>Das Manifest: die Gliederung, eine Ressource je SCO und eine gemeinsame Ressource (Stile, Schriften, Bilder, Skripte), von der jedes SCO abhängt.</td></tr>
+    <tr><td><code>sco-1.html</code>, <code>sco-2.html</code>…</td><td>Eine Startseite je SCO: der Player und der LMS-Adapter, mit der Liste seiner Dokumente. Ohne Skripte ist sie eine Liste von Links.</td></tr>
+    <tr><td><code>content/</code></td><td>Die Inhaltsdokumente, Stile, Schriften und Bilder des EPUB-Schreibers.</td></tr>
+    <tr><td><code>player/</code></td><td>Skript und Stylesheet des Players.</td></tr>
+    <tr><td><code>*.xsd</code></td><td>Die Schemas von IMS und ADL, die das Manifest nennt.</td></tr>
+  </tbody>
+</table>
+
+Ein festes SCO enthält jede gedruckte Seite, die sein Teil berührt, sodass eine Seite, die zwei Teile teilen, in beiden erscheint. Ein umfließendes SCO enthält genau den Text seines Teils, an seinen Überschriften geschnitten. Links von den Seiten eines SCO zu denen eines anderen werden entfernt, da ein LMS ein SCO danach verfolgt, was es öffnet. Der Player zeigt ein Dokument auf einmal, mit ← und → (oder Bild auf und Bild ab bei festen Seiten), dem Inhalt des SCO und der Position; ein rechts gebundenes Buch blättert nach links.
+
+### Was beim LMS ankommt
+
+Der Player findet die API des LMS so, wie SCORM es verlangt (`API` für SCORM 1.2, `API_1484_11` für SCORM 2004, die Kette der übergeordneten Fenster hinauf, dann beim öffnenden Fenster), und meldet:
+
+- **Punktzahl.** Eine Übung zählt ihre letzte Prüfung: richtige bewertete Felder von allen bewerteten Feldern, also die Punktzahl, die ihre Leiste zeigt. Die Punktzahl eines SCO ist die Summe der richtigen Felder geteilt durch die Summe der bewerteten Felder seiner Übungen, sodass ein Kreuzworträtsel mit zwanzig Feldern mehr wiegt als eine Richtig-oder-falsch-Aufgabe; eine nie geprüfte Übung zählt kein Feld als richtig. SCORM 1.2 erhält sie als Prozentwert (`cmi.core.score.raw`, von 0 bis 100), SCORM 2004 als Bruch (`cmi.score.scaled`) mit den Feldern als `raw` und `max`. Eine Übung gehört zu dem Teil, in dem ihr Block steht: Nur dieses SCO zählt sie, auch wenn ihre Seite ebenfalls in einem benachbarten SCO erscheint.
+- **Abschluss.** Ein SCO ist abgeschlossen, sobald alle seine Seiten oder Dokumente gezeigt wurden und jede Übung, die es zählt, geprüft wurde (oder keine Prüfung mehr hat). Bis dahin ist es unvollständig, und das LMS merkt sich die Stelle des Lesers für den nächsten Besuch.
+- **Erfolg.** Mit einer Bestehensgrenze ist ein abgeschlossenes SCO daran gemessen bestanden oder nicht bestanden. Das Manifest trägt sie (`adlcp:masteryscore` in SCORM 1.2, ein primäres Lernziel mit `minNormalizedMeasure` in SCORM 2004), und der Player übernimmt den Wert, den das LMS zurückgibt, sodass ein LMS mit eigener Grenze Vorrang hat.
+- **Interaktionen.** Jede Prüfung schreibt die Übung als Interaktion: eine ID aus ihrem Anker oder ihrer Nummer, einen Typ aus ihrer Art (`true-false`, `choice`, `fill-in`, `other`), die Antwort des Lesers, die richtige Antwort, das Ergebnis und eine Gewichtung nach ihren bewerteten Feldern; SCORM 2004 fügt eine Beschreibung hinzu und führt eine Interaktion je Übung, SCORM 1.2 fügt je Prüfung eine hinzu.
+- **Rollup.** SCORM 2004 gewichtet im Manifest das Maß jedes SCO nach seinen bewerteten Feldern, sodass die Punktzahl des Kurses alle richtigen Felder von allen bewerteten Feldern ist. SCORM 1.2 hat kein eigenes Rollup: Die Bewertungsmethode des LMS entscheidet (Moodle bietet die höchste Punktzahl, den Durchschnitt oder die Summe der Punktzahlen der SCOs).
+- **Antworten.** Sie gehen mit den verbrauchten Prüfungen und Neuanfängen in `cmi.suspend_data`, sodass die Grenzen eines Versuchs ([Bewertung](/de/docs/configuration-exercises#bewertung)) über Besuche und Geräte hinweg gelten. Jenseits der 4.096 Zeichen von SCORM 1.2 gehen die Zähler weiterhin an das LMS, und die Antworten bleiben im Browser des Lesers.
+
+Außerhalb eines LMS (die Startseite allein oder das Paket auf einem Webserver) findet der Player keine API: Das Buch liest sich gleich, und die Übungen behalten ihre Antworten im Browser, wie die eines HTML- oder EPUB-Buchs.
+
+### Ein Paket prüfen
+
+Die Testsuite validiert die Manifeste beider Versionen mit `xmllint` gegen die Schemas von IMS und ADL. Um ein Paket auszuprobieren, importieren Sie das Zip-Archiv in ein LMS (die SCORM-Aktivität von Moodle nimmt beide Versionen an) oder in [SCORM Cloud](https://cloud.scorm.com/). Ein lokaler Ersatz geht auch: [scorm-again](https://github.com/jcputney/scorm-again) stellt die APIs von SCORM 1.2 und 2004 in einer Seite bereit, die die Startseite in einem Rahmen lädt, und weist jeden Wert zurück, den das Datenmodell nicht zulässt.

@@ -3,13 +3,13 @@
 export const metadata = {
   title: 'Sandbox: die Vorschauen',
   sidebarTitle: 'Vorschauen',
-  description: 'Die Tabs Canvas, PDF, Folio, HTML und EPUB 3 im Hauptansichtsbereich: was jeder zeigt und was er kann',
+  description: 'Die Tabs Canvas, PDF, Folio, HTML, EPUB 3 und SCORM im Hauptansichtsbereich: was jeder zeigt und was er kann',
   lang: 'de',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-25',
   readingTime: '14 min',
   order: 43,
   parent: 'sandbox',
-  plainSummary: "Diese Seite behandelt den rechten Bereich der Sandbox, in dem die fertigen Seiten erscheinen. Fünf Tabs zeigen dasselbe Buch auf fünf Arten: als Seitenbilder, als PDF-Datei, als 3D-Buch zum Durchblättern, als Webseite und als E-Book im Format EPUB. Ein Wechsel des Tabs setzt das Buch nicht neu, deshalb zeigt jeder Tab dieselben Seiten. Die Seite erklärt, was jeder Tab zeigt und was Sie darin tun können.",
+  plainSummary: "Diese Seite behandelt den rechten Bereich der Sandbox, in dem die fertigen Seiten erscheinen. Fünf Tabs zeigen dasselbe Buch auf fünf Arten: als Seitenbilder, als PDF-Datei, als 3D-Buch zum Durchblättern, als Webseite und als E-Book im Format EPUB. Ein sechster erstellt aus den Kapiteln, die Sie wählen, ein SCORM-Paket für die Lernplattform einer Schule oder eines Unternehmens. Ein Wechsel des Tabs setzt das Buch nicht neu, deshalb zeigt jeder Tab dieselben Seiten. Die Seite erklärt, was jeder Tab zeigt und was Sie darin tun können.",
 };
 
 # Sandbox: die Vorschauen
@@ -17,7 +17,7 @@ export const metadata = {
 
 ## Hauptansichtsbereich
 
-Die rechte Seite der Oberfläche zeigt die gerenderte Ausgabe. Es gibt fünf Tabs, einen je Darstellungsart, in dieser Reihenfolge: **Canvas**, **PDF**, **Folio**, **HTML** und **EPUB 3**. Ein Tabwechsel löst kein neues Layout aus: Derselbe VDT speist jedes Backend, sodass der Inhalt, den Sie sehen, in allen Darstellungsarten übereinstimmt. Der Tab Folio wird nur angeboten, wo der Browser WebGL2 hat und der Bildschirm nicht der eines Smartphones ist (siehe [Tab Folio](#tab-folio)).
+Die rechte Seite der Oberfläche zeigt die gerenderte Ausgabe. Es gibt sechs Tabs, einen je Darstellungsart, in dieser Reihenfolge: **Canvas**, **PDF**, **Folio**, **HTML**, **EPUB 3** und **SCORM** (der letzte schreibt aus dem Inhalt des EPUB ein Paket für eine Lernplattform). Ein Tabwechsel löst kein neues Layout aus: Derselbe VDT speist jedes Backend, sodass der Inhalt, den Sie sehen, in allen Darstellungsarten übereinstimmt. Der Tab Folio wird nur angeboten, wo der Browser WebGL2 hat und der Bildschirm nicht der eines Smartphones ist (siehe [Tab Folio](#tab-folio)).
 
 Jeder Ansichtsbereich führt die Layout-Pipeline in einem eigenen **Web Worker** (`postext/worker`) aus. Ein Hook `useLayoutWorker` je Ansichtsbereich hält das Worker-Handle, übergibt ihm die Schriften als übertragbare `ArrayBuffer` und steuert die Builds mit **Abbruch nach dem Prinzip „der Letzte gewinnt“** – ein Tastendruck oder das Ziehen eines Schiebereglers bricht das `AbortSignal` des vorherigen Builds ab, bevor der nächste beginnt, sodass sich bei schnellem Tippen im Haupt-Thread nie veraltete Arbeit staut. Wird ein Ansichtsbereich ausgehängt, gibt er seinen Worker frei und weist jeden ausstehenden Build zurück. Das hier verwendete Integrationsmuster beschreibt [Konfiguration → Layout in einem Web Worker ausführen](/de/docs/configuration-programmatic-usage#layout-in-einem-web-worker-ausführen).
 
@@ -148,3 +148,15 @@ Solange keine gewählt ist, öffnet sich der Tab auf einem Tablet wie einem iPad
 - **Die Datei prüfen.** Beide Darstellungsformen des Leitfadens und der Beispielbücher bestehen [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) 5.4 ohne Fehler oder Warnungen. Um Ihr eigenes Buch zu prüfen, laden Sie es herunter und führen Sie `epubcheck book.epub` aus, oder lesen Sie es in Apple Books, Thorium Reader oder Calibre.
 
 Wie Sie dieselben Dateien aus Ihrem eigenen Code schreiben, beschreibt [EPUB-Bücher](/de/docs/configuration-html-folio-epub#epub-bücher-postext-epub).
+
+### Tab SCORM
+
+Lädt ein SCORM-Paket des Buchteils herunter, den Sie wählen, geschrieben mit dem Paket `postext-scorm`: das Zip-Archiv, das ein Lernmanagementsystem (Moodle, Canvas, Blackboard und die meisten anderen) als Kurs importiert. Die Übungen darin lassen sich lösen und senden ihre Punktzahl, den Abschluss und ob bestanden wurde an das LMS.
+
+- **Der Baum.** Der Tab listet die Kapitel des Buchs (die Kapiteldateien des Bedienfelds **Kapitel**) und in jedem seine Überschriften bis zur dritten Ebene auf, jede mit einem Kontrollkästchen. Ein angekreuztes Kapitel kreuzt alle seine Abschnitte an; ein teilweise angekreuztes Kapitel zeigt ein gemischtes Kästchen. **Alle** und **Keine** kreuzen alles an oder heben alle Kreuze auf, und der Pfeil neben einem Kapitel klappt seine Abschnitte ein. Was Sie auslassen, wird für jedes Buch in diesem Browser gespeichert (ein später hinzugefügtes Kapitel ist angekreuzt). Eine Überschrift steht für den Text von ihrer Zeile bis zur nächsten Überschrift ihrer Ebene oder einer höheren; der erste Abschnitt eines Kapitels nimmt auch den Titel und die Einleitungsabsätze des Kapitels mit.
+- **SCOs.** Jeder ganz angekreuzte Knoten wird ein SCO, ein Teil, den das LMS einzeln startet, verfolgt und bewertet: ein ganzes Kapitel oder ein Abschnitt. Ein teilweise angekreuztes Kapitel wird im Inhaltsverzeichnis des LMS eine Gruppe mit seinen angekreuzten Abschnitten darin. Die Zeile neben der Schaltfläche sagt, wie viele SCOs das Paket enthält.
+- **Inhalt und Version.** Links in der Tab-Leiste behält, wie im Tab EPUB 3, **Festes Layout** jede gedruckte Seite, an das Fenster angepasst, und **Umfließend** setzt den Text für das Fenster neu, für Smartphones und schmale Bildschirme (die eigene Wahl des Tabs, `postext-sandbox-scorm-layout`). Über dem Baum wird **SCORM 1.2** von jedem LMS angenommen; **SCORM 2004** (4. Ausgabe) hält Abschluss und Erfolg getrennt, gibt eine skalierte Punktzahl und bewahrt längere Antworten auf. Beide Einstellungen werden zwischen Besuchen gespeichert.
+- **Herunterladen.** **SCORM-Paket herunterladen** setzt das ganze Buch, wie der Tab PDF für **Ganzes Buch** (Nummerierung und Querverweise laufen von den vorigen Kapiteln weiter), und speichert das Zip-Archiv, benannt nach dem Titel des Buchs und der Version. Ein Fortschrittsbalken zählt die Kapitel und die Schritte des Schreibers; Screenreader hören, wann das Paket fertig oder fehlgeschlagen ist. Schriften und Bilder kommen so hinein wie im EPUB.
+- **Im LMS.** Jedes SCO öffnet sich in einem kleinen Player: die Seiten oder der Text, ein Dokument auf einmal, der Inhalt des SCO, ← und → zum Blättern. Seine Übungen melden ihre Ergebnisse, wie [Übungen in einem SCORM-Paket](/de/docs/exercises#übungen-in-einem-scorm-paket) beschreibt, und die Grenzen eines Versuchs aus **Gestaltung → Übungen → Bewertung** gelten dort. Außerhalb eines LMS geöffnet, lässt sich das Paket trotzdem lesen und behält die Antworten im Browser.
+
+Wie Sie dasselbe Paket aus Ihrem eigenen Code schreiben, beschreibt [SCORM-Pakete](/de/docs/configuration-html-folio-epub#scorm-pakete-postext-scorm).

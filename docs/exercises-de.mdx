@@ -3,12 +3,12 @@
 export const metadata = {
   title: 'Übungen',
   sidebarTitle: 'Übungen',
-  description: 'Wie Postext die Übungen eines Schulbuchs oder Arbeitshefts setzt: der Block :::exercise, seine zwölf Arten von der Auswahlaufgabe bis zur schriftlichen Division, Lösungen im Markdown, Nummerierung, Lösungen nach der Übung, auf dem Kopf, am Ende des Kapitels oder des Buchs, die Lehrerausgabe, die Prüfungen und Übungen, die im HTML-Betrachter und im EPUB am Bildschirm gelöst werden',
+  description: 'Wie Postext die Übungen eines Schulbuchs oder Arbeitshefts setzt: der Block :::exercise, seine zwölf Arten von der Auswahlaufgabe bis zur schriftlichen Division, Lösungen im Markdown, Nummerierung, Lösungen nach der Übung, auf dem Kopf, am Ende des Kapitels oder des Buchs, die Lehrerausgabe, die Prüfungen, Übungen, die im HTML-Betrachter und im EPUB am Bildschirm gelöst werden, Grenzen für einen Test und Ergebnisse, die ein SCORM-Paket an ein LMS sendet',
   lang: 'de',
-  lastUpdated: '2026-10-24',
+  lastUpdated: '2026-10-25',
   readingTime: '16 min',
   order: 36,
-  plainSummary: "Diese Seite erklärt, wie Übungen in ein Postext-Buch kommen: Fragen mit Antworten zum Ankreuzen, Aussagen zum Beurteilen, Lückentexte, Paare zum Verbinden, Wörter in einem Buchstabengitter, Rechenaufgaben und mehr. Jede Übung steht mit ihren Lösungen im Text des Kapitels, und Postext druckt sie in der passenden Form: mit Nummer, Antwortmöglichkeiten und Linien zum Ausfüllen. Die Lösungen stehen nach der Übung, auf dem Kopf, am Ende des Kapitels oder gar nicht im Druck. Aus demselben Text entsteht auch eine Lehrerausgabe, in der alle Lösungen eingetragen sind. Im HTML-Betrachter und in EPUB-Büchern lassen sich die Übungen am Bildschirm lösen und prüfen.",
+  plainSummary: "Diese Seite erklärt, wie Übungen in ein Postext-Buch kommen: Fragen mit Antworten zum Ankreuzen, Aussagen zum Beurteilen, Lückentexte, Paare zum Verbinden, Wörter in einem Buchstabengitter, Rechenaufgaben und mehr. Jede Übung steht mit ihren Lösungen im Text des Kapitels, und Postext druckt sie in der passenden Form: mit Nummer, Antwortmöglichkeiten und Linien zum Ausfüllen. Die Lösungen stehen nach der Übung, auf dem Kopf, am Ende des Kapitels oder gar nicht im Druck. Aus demselben Text entsteht auch eine Lehrerausgabe, in der alle Lösungen eingetragen sind. Im HTML-Betrachter und in EPUB-Büchern lassen sich die Übungen am Bildschirm lösen und prüfen, und ein SCORM-Paket sendet die Ergebnisse an die Lernplattform einer Schule oder eines Unternehmens.",
 };
 
 # Übungen
@@ -358,6 +358,8 @@ Das Bedienfeld **Prüfungen** der Sandbox und `collectContentWarnings` melden, w
 
 Im HTML-Betrachter und in EPUB-Büchern lassen sich die Übungen lösen. Man tippt in die Lücken und klickt auf Antworten, Aussagen, Verbindungspunkte und Gitterfelder, prüft dann die Antworten, lässt sich die Lösung zeigen oder beginnt neu. Richtige und falsche Antworten werden mit einer Farbe und einem Zeichen angezeigt (`digital.correctColor`, `digital.wrongColor`) und Bildschirmlesern angesagt. Die Antworten bleiben im Browser gespeichert, je Buch, und sind beim nächsten Besuch wieder da (`exercises.digital.persist`). Mit `exercises.digital.check: 'instant'` wird jede Antwort geprüft, sobald sie gegeben ist; `exercises.digital.interactive: false` zeigt die Seiten wie gedruckt. Der Lösungsschlüssel ist in einem EPUB immer enthalten, unabhängig von der Platzierung im Druck, sodass auch ein Lesesystem ohne Skripte die Lösungen hat. In einem umfließenden EPUB wachsen Raster und Schreibflächen mit der Schrift des Lesers, und auf einer Seite von rechts nach links folgen die Felder zum Ausfüllen dem gespiegelten Raster. Paare verbindet man, indem man einen Punkt und dann den anderen anklickt oder von einem zum anderen zieht; die Wörter einer Sortierübung zieht man in ihre Spalte oder wählt sie aus einem Menü. Die Leiste zeigt nur die Schaltflächen, die etwas bewirken: kein „Prüfen“, wenn es nichts zu prüfen gibt, kein „Lösung zeigen“ ohne Lösung und gar keine Leiste, wenn nichts zu beantworten ist.
 
+Für einen Test kann das Buch oder ein Übungsstil einen Versuch begrenzen: wie oft er geprüft wird (`digital.maxChecks`), ob und wie oft man neu beginnt (`digital.reset`, `digital.maxResets`) und wann die Lösung erscheint (`digital.showSolution`). Die Schaltflächen zeigen, wie viele Prüfungen und Neuanfänge bleiben. Siehe [Bewertung](/de/docs/configuration-exercises#bewertung).
+
 Der Bildschirm kann den Übungen über `htmlViewer.overrides` eine eigene Form geben; diese Einstellungen werden über die Konfiguration des Buchs gelegt, bevor der HTML-Betrachter setzt. Der Druck behält seine:
 
 ```ts
@@ -373,6 +375,10 @@ const config: PostextConfig = {
   },
 };
 ```
+
+## Übungen in einem SCORM-Paket
+
+Ein SCORM-Paket (der Tab **SCORM** der Sandbox oder `postext-scorm` aus Code) enthält die Übungen wie der HTML-Betrachter und sendet ihre Ergebnisse an das Lernmanagementsystem, in dem das Paket läuft. Jeder Teil des Buchs, den das LMS verfolgt, meldet eine Punktzahl (die richtigen bewerteten Antworten von allen bewerteten, aus der letzten Prüfung jeder Übung), ob er abgeschlossen ist (jede Seite gesehen und jede Übung geprüft) und, mit `exercises.digital.passingScore`, ob er bestanden ist. Jede Prüfung wird außerdem als Interaktion geschrieben, mit der Antwort des Lesers und der richtigen. Die Antworten und die verbrauchten Prüfungen werden im LMS gespeichert, sodass die Grenzen eines Versuchs von einem Besuch und einem Gerät zum nächsten gelten. Siehe [SCORM-Pakete](/de/docs/configuration-html-folio-epub#scorm-pakete-postext-scorm).
 
 ## Übungsstile
 

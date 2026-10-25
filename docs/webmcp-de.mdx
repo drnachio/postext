@@ -535,16 +535,18 @@ Was der Agent ändert, sehen Sie. Um Sie auf etwas hinzuweisen:
 ```
 
 `sandbox_set_view` wählt außerdem den Betrachter (`canvas`, `pdf`, `folio`,
-`html`, `epub`), den Modus Inhalt oder Gestaltung (`mode`), das seitliche
+`html`, `epub`, `scorm`), den Modus Inhalt oder Gestaltung (`mode`), das seitliche
 Bedienfeld, Kapitel oder ganzes Buch, den Zoom,
 die Schriftgröße für den Leser, die Druckvorschau und die Gruppe des Bedienfelds
-Gestaltung. `sandbox_go_to_page` blättert über `step`, `page`, `position`, eine
+Gestaltung sowie im Tab SCORM den Inhalt (`scormLayout`), die Version
+(`scormVersion`) und die Kapitel und Abschnitte, die das Paket aufnimmt
+(`scormPick`, IDs aus den `contents` des Tabs). `sandbox_go_to_page` blättert über `step`, `page`, `position`, eine
 Textpassage `text`, einen `anchor` oder einen Eintrag im Inhaltsverzeichnis
 eines EPUB (`contents`).
 `sandbox_run_viewer` betätigt eine Schaltfläche der Werkzeugleiste:
-`regenerate` erzeugt das PDF oder EPUB neu und wartet darauf, `print` öffnet
-den Druckdialog, den Sie bestätigen, `download` speichert das PDF oder das
-EPUB, und `play_video` und `stop_video` starten und stoppen ein Video auf
+`regenerate` erzeugt das PDF, das EPUB oder das SCORM-Paket neu und wartet darauf, `print` öffnet
+den Druckdialog, den Sie bestätigen, `download` speichert das PDF, das
+EPUB oder ein neu erzeugtes SCORM-Paket, und `play_video` und `stop_video` starten und stoppen ein Video auf
 einer Seite.
 
 ### Comicseiten

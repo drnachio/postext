@@ -3,13 +3,13 @@
 export const metadata = {
   title: 'Sandbox: le anteprime',
   sidebarTitle: 'Anteprime',
-  description: 'Le schede Canvas, PDF, Folio, HTML ed EPUB 3 dell’area di visualizzazione principale: che cosa mostra ciascuna e che cosa permette di fare',
+  description: 'Le schede Canvas, PDF, Folio, HTML, EPUB 3 e SCORM dell’area di visualizzazione principale: che cosa mostra ciascuna e che cosa permette di fare',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-25',
   readingTime: '15 min',
   order: 43,
   parent: 'sandbox',
-  plainSummary: "Questa pagina riguarda il lato destro della Sandbox, dove compaiono le pagine finite. Cinque schede mostrano lo stesso libro in cinque modi: come immagini delle pagine, come file PDF, come libro 3D da sfogliare, come pagina web e come e-book EPUB. Cambiare scheda non reimpagina il libro, quindi ogni scheda mostra le stesse pagine. La pagina spiega che cosa mostra ogni scheda e che cosa ci puoi fare.",
+  plainSummary: "Questa pagina riguarda il lato destro della Sandbox, dove compaiono le pagine finite. Cinque schede mostrano lo stesso libro in cinque modi: come immagini delle pagine, come file PDF, come libro 3D da sfogliare, come pagina web e come e-book EPUB. Una sesta crea un pacchetto SCORM dei capitoli che scegli, per la piattaforma di apprendimento di una scuola o di un’azienda. Cambiare scheda non reimpagina il libro, quindi ogni scheda mostra le stesse pagine. La pagina spiega che cosa mostra ogni scheda e che cosa ci puoi fare.",
 };
 
 # Sandbox: le anteprime
@@ -17,7 +17,7 @@ export const metadata = {
 
 ## Area di visualizzazione principale
 
-Il lato destro dell’interfaccia mostra il risultato dell’impaginazione. Sono disponibili cinque schede, una per ogni tipo di output, in quest’ordine: **Canvas**, **PDF**, **Folio**, **HTML** ed **EPUB 3**. Cambiare scheda non rilancia l’impaginazione: lo stesso VDT alimenta ogni backend, quindi il contenuto che vedi è coerente tra le modalità. La scheda Folio viene offerta solo dove il browser ha WebGL2 e lo schermo non è quello di un telefono (vedi [Scheda Folio](#scheda-folio)).
+Il lato destro dell’interfaccia mostra il risultato dell’impaginazione. Sono disponibili sei schede, una per ogni tipo di output, in quest’ordine: **Canvas**, **PDF**, **Folio**, **HTML**, **EPUB 3** e **SCORM** (l’ultima scrive, a partire dal contenuto dell’EPUB, un pacchetto per una piattaforma di apprendimento). Cambiare scheda non rilancia l’impaginazione: lo stesso VDT alimenta ogni backend, quindi il contenuto che vedi è coerente tra le modalità. La scheda Folio viene offerta solo dove il browser ha WebGL2 e lo schermo non è quello di un telefono (vedi [Scheda Folio](#scheda-folio)).
 
 Ogni area di visualizzazione esegue la pipeline di impaginazione dentro un **Web Worker** dedicato (`postext/worker`). Un hook `useLayoutWorker` per ogni area di visualizzazione possiede il riferimento al worker, vi invia i font come `ArrayBuffer` trasferibili, e pilota le build con un **annullamento a favore dell’ultima richiesta**: un tasto premuto o il trascinamento di un cursore interrompe l’`AbortSignal` della build precedente prima che parta la successiva, così scrivere velocemente non accoda mai lavoro superato sul thread principale. Quando un’area di visualizzazione viene smontata, il suo worker viene eliminato e ogni build in sospeso viene rifiutata. Vedi [Configurazione → Eseguire l’impaginazione in un Web Worker](/it/docs/configuration-programmatic-usage#eseguire-limpaginazione-in-un-web-worker) per lo schema di integrazione usato qui.
 
@@ -148,3 +148,15 @@ Finché non se ne sceglie uno, la scheda si apre con il layout fisso su un table
 - **Verificare il file.** Entrambe le rese della guida e dei libri di esempio superano [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) 5.4 senza errori né avvisi. Per verificare il tuo libro, scaricalo ed esegui `epubcheck book.epub`, oppure leggilo in Apple Books, Thorium Reader o Calibre.
 
 Vedi [Libri EPUB](/it/docs/configuration-html-folio-epub#libri-epub-postext-epub) per scrivere gli stessi file dal tuo codice.
+
+### Scheda SCORM
+
+Scarica un pacchetto SCORM della parte del libro che scegli, scritto con il pacchetto `postext-scorm`: lo zip che un sistema di gestione dell’apprendimento (Moodle, Canvas, Blackboard e la maggior parte degli altri) importa come corso. Gli esercizi che contiene si possono risolvere e inviano all’LMS il punteggio, il completamento e l’esito (superato o non superato).
+
+- **L’albero.** La scheda elenca i capitoli del libro (i file di capitolo del pannello **Capitoli**) e, dentro ciascuno, i suoi titoli fino al terzo livello, ognuno con una casella di controllo. Selezionare un capitolo seleziona tutte le sue sezioni; un capitolo selezionato in parte mostra una casella mista. **Tutto** e **Niente** selezionano o deselezionano tutto, e la freccia accanto a un capitolo ne chiude le sezioni. Ciò che lasci fuori viene ricordato per ogni libro in questo browser (un capitolo aggiunto in seguito risulta selezionato). Un titolo rappresenta il testo dalla sua riga fino al titolo successivo del suo livello o di uno superiore; la prima sezione di un capitolo prende anche il titolo e i paragrafi di apertura del capitolo.
+- **SCO.** Ogni nodo selezionato per intero diventa uno SCO, una parte che l’LMS avvia, segue e valuta a sé: un capitolo intero o una sezione. Un capitolo selezionato in parte diventa un gruppo nell’indice dell’LMS con dentro le sue sezioni selezionate. La riga accanto al pulsante dice quanti SCO contiene il pacchetto.
+- **Contenuto e versione.** A sinistra della barra delle schede, come nella scheda EPUB 3, **Layout fisso** mantiene ogni pagina stampata, adattata alla finestra, e **Layout fluido** ricompone il testo per la finestra, per telefoni e schermi stretti (una scelta propria della scheda, `postext-sandbox-scorm-layout`). Sopra l’albero, **SCORM 1.2** è accettato da ogni LMS; **SCORM 2004** (4ª edizione) tiene distinti completamento e superamento, dà un punteggio in scala e conserva risposte più lunghe. Entrambe le scelte vengono ricordate tra una visita e l’altra.
+- **Download.** **Scarica il pacchetto SCORM** impagina l’intero libro, come fa la scheda PDF per **Libro intero** (numerazione e rimandi proseguono dai capitoli precedenti), e salva lo zip, con un nome fatto del titolo del libro e della versione. Una barra di avanzamento conta i capitoli e le fasi del generatore; gli screen reader annunciano quando il pacchetto è pronto o non è riuscito. Font e immagini entrano come nell’EPUB.
+- **Nell’LMS.** Ogni SCO si apre in un piccolo player: le pagine o il testo un documento alla volta, l’indice dello SCO, ← e → per spostarsi. I suoi esercizi comunicano i risultati come descrive [Esercizi in un pacchetto SCORM](/it/docs/exercises#esercizi-in-un-pacchetto-scorm), e lì valgono i limiti di un tentativo impostati in **Grafica → Esercizi → Valutazione**. Aperto fuori da un LMS, il pacchetto si legge comunque e conserva le risposte nel browser.
+
+Vedi [Pacchetti SCORM](/it/docs/configuration-html-folio-epub#pacchetti-scorm-postext-scorm) per scrivere lo stesso pacchetto dal tuo codice.

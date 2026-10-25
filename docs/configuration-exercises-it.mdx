@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Impostazioni degli esercizi',
   description: 'Gli stili degli esercizi (exerciseStyles) e le impostazioni degli esercizi del libro (exercises): numeri, carattere della consegna, lettere e caselle delle opzioni, spazi da completare, risposte vero/falso, collegamenti, riquadri di parole, aree di scrittura, schemi, divisione in colonna, segni di difficoltà, icone, colore delle risposte, posizione delle soluzioni, guida per l’insegnante ed edizioni a schermo',
   lang: 'it',
-  lastUpdated: '2026-10-24',
+  lastUpdated: '2026-10-25',
   readingTime: '12 min',
   order: 17,
   parent: 'configuration',
@@ -371,7 +371,7 @@ Un’icona si stampa come simbolo in linea dopo il numero: l’immagine di `reso
 
 ### Colori a schermo
 
-`digital` imposta come il visualizzatore HTML e i libri EPUB mostrano una risposta controllata.
+`digital` imposta come il visualizzatore HTML, i libri EPUB e i pacchetti SCORM mostrano una risposta controllata, e i limiti di un tentativo per gli esercizi dello stile, al di sopra di quelli del libro (vedi [Valutazione](#valutazione)).
 
 <table>
   <thead>
@@ -385,6 +385,7 @@ Un’icona si stampa come simbolo in linea dopo il numero: l’immagine di `reso
   <tbody>
     <tr><td><code>correctColor</code></td><td><code>ColorValue</code></td><td>un verde (<code>#1e8e3e</code>)</td><td>Una risposta giusta.</td></tr>
     <tr><td><code>wrongColor</code></td><td><code>ColorValue</code></td><td>un rosso (<code>#c5221f</code>)</td><td>Una risposta sbagliata.</td></tr>
+    <tr><td><code>maxChecks</code>, <code>reset</code>, <code>maxResets</code>, <code>showSolution</code></td><td></td><td>quelli del libro</td><td>I limiti di un tentativo per gli esercizi dello stile: uno stile per un test accanto agli esercizi di allenamento del libro. Vedi <a href="#valutazione">Valutazione</a>.</td></tr>
   </tbody>
 </table>
 
@@ -443,7 +444,7 @@ const config: PostextConfig = {
 
 ### Edizioni a schermo
 
-`exercises.digital` imposta il comportamento degli esercizi nel visualizzatore HTML e nei libri EPUB.
+`exercises.digital` imposta il comportamento degli esercizi nel visualizzatore HTML, nei libri EPUB e nei pacchetti SCORM.
 
 <table>
   <thead>
@@ -458,6 +459,11 @@ const config: PostextConfig = {
     <tr><td><code>interactive</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Esercizi che il lettore può risolvere. <code>false</code> li mostra come a stampa.</td></tr>
     <tr><td><code>persist</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Conserva le risposte del lettore nel browser, libro per libro.</td></tr>
     <tr><td><code>check</code></td><td><code>'button' | 'instant'</code></td><td><code>'button'</code></td><td><code>'button'</code>: le risposte si controllano quando il lettore lo chiede. <code>'instant'</code>: ogni risposta si controlla appena viene data.</td></tr>
+    <tr><td><code>maxChecks</code></td><td><code>number</code></td><td><code>0</code></td><td>Quante volte si può premere Verifica in un tentativo. <code>0</code>: nessun limite. Vedi <a href="#valutazione">Valutazione</a>.</td></tr>
+    <tr><td><code>reset</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Offre Ricomincia, che cancella le risposte e apre un nuovo tentativo.</td></tr>
+    <tr><td><code>maxResets</code></td><td><code>number</code></td><td><code>0</code></td><td>Quante volte si può usare Ricomincia. <code>0</code>: nessun limite.</td></tr>
+    <tr><td><code>showSolution</code></td><td><code>'always' | 'afterCheck' | 'noChecksLeft' | 'never'</code></td><td><code>'always'</code></td><td>Quando la barra offre la soluzione.</td></tr>
+    <tr><td><code>passingScore</code></td><td><code>number</code></td><td><code>0</code></td><td>La percentuale di risposte valutate giuste che basta per superare; un pacchetto SCORM indica superato o non superato rispetto a questa soglia. <code>0</code>: nessuna soglia.</td></tr>
   </tbody>
 </table>
 
@@ -473,3 +479,24 @@ const config: PostextConfig = {
   },
 };
 ```
+
+### Valutazione
+
+Per impostazione predefinita un esercizio serve per allenarsi: il lettore verifica tutte le volte che vuole, ricomincia e guarda la soluzione. Quattro impostazioni lo trasformano in un test, per il libro in `exercises.digital` e per uno stile nel suo `digital`, che prevale per gli esercizi di quello stile:
+
+```ts
+const config: PostextConfig = {
+  exercises: { digital: { passingScore: 60 } },
+  exerciseStyles: [
+    { id: 'exercise' },
+    { id: 'test', extends: 'exercise', digital: { maxChecks: 1, maxResets: 1, showSolution: 'noChecksLeft' } },
+  ],
+};
+```
+
+- **`maxChecks`** conta quante volte si preme Verifica in un tentativo. Il pulsante mostra quante verifiche restano («Verifica (ancora 2)»); quando sono finite mostra «Nessuna verifica rimasta», le risposte si bloccano e il punteggio resta sulla barra.
+- **`reset`** e **`maxResets`**: Ricomincia cancella le risposte e apre un nuovo tentativo, che ha di nuovo tutte le sue verifiche. `maxResets: 1` permette di ricominciare una volta, quindi due tentativi in tutto, e il pulsante mostra quante volte si può ancora ricominciare; `reset: false` toglie il pulsante.
+- **`showSolution`**: `'always'`; `'afterCheck'`, dopo che il tentativo è stato verificato; `'noChecksLeft'`, quando le sue verifiche sono finite o tutte le sue risposte sono risultate giuste; `'never'`. Finché le verifiche sono limitate, mostrare la soluzione chiude il tentativo.
+- **`passingScore`** è la soglia rispetto a cui un pacchetto SCORM indica superato o non superato (vedi [Pacchetti SCORM](/it/docs/configuration-html-folio-epub#pacchetti-scorm-postext-scorm)).
+
+Le parole dei pulsanti seguono la lingua del documento. Con `check: 'instant'` non c’è il pulsante Verifica, quindi `maxChecks` non si applica; le altre impostazioni sì. Le verifiche usate e le volte in cui si è ricominciato si conservano con le risposte: in un LMS, un pacchetto SCORM le conserva nell’LMS, quindi valgono su qualsiasi dispositivo; in una pagina HTML o in un libro EPUB restano nel browser del lettore, e chi ne cancella i dati riparte da capo.

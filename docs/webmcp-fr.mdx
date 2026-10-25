@@ -511,12 +511,14 @@ Ce que l’agent modifie, vous le voyez. Pour attirer votre attention sur quelqu
 ```
 
 `sandbox_set_view` choisit aussi la visionneuse (`canvas`, `pdf`, `folio`, `html`,
-`epub`), le mode Contenu ou Maquette (`mode`), le panneau latéral, chapitre ou livre entier, le zoom, la taille de caractère du lecteur,
-l’aperçu d’impression et le groupe du panneau Maquette. `sandbox_go_to_page` tourne
+`epub`, `scorm`), le mode Contenu ou Maquette (`mode`), le panneau latéral, chapitre ou livre entier, le zoom, la taille de caractère du lecteur,
+l’aperçu d’impression et le groupe du panneau Maquette, et dans l’onglet SCORM le
+contenu (`scormLayout`), la version (`scormVersion`) et les chapitres et
+sections que prend le paquet (`scormPick`, des identifiants tirés du `contents` de l’onglet). `sandbox_go_to_page` tourne
 les pages par `step`, `page`, `position`, un passage `text`, une `anchor` ou une
 entrée `contents` d’un EPUB. `sandbox_run_viewer` actionne un bouton de barre d’outils :
-`regenerate` écrit de nouveau le PDF ou l’EPUB et attend la fin, `print` ouvre la
-boîte de dialogue d’impression pour que vous confirmiez, `download` enregistre le PDF ou l’EPUB, et
+`regenerate` écrit de nouveau le PDF, l’EPUB ou le paquet SCORM et attend la fin, `print` ouvre la
+boîte de dialogue d’impression pour que vous confirmiez, `download` enregistre le PDF, l’EPUB ou un nouveau paquet SCORM, et
 `play_video` et `stop_video` lancent et arrêtent une vidéo sur une page.
 
 ### Pages de bande dessinée

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '練習問題の設定',
   description: '練習問題スタイル（exerciseStyles）と本全体の練習問題の設定（exercises）：番号のバッジ、指示文の書式、選択肢の記号と印、空欄、正誤の答え、線で結ぶ問題、語群、書き込み欄、マス目、わり算の筆算、難易度の印、アイコン、答えの色、解答を印刷する場所、教師用の版、画面の版',
   lang: 'ja',
-  lastUpdated: '2026-10-24',
+  lastUpdated: '2026-10-25',
   readingTime: '12分',
   order: 17,
   parent: 'configuration',
@@ -371,7 +371,7 @@ const config: PostextConfig = {
 
 ### 画面の色
 
-`digital`は、HTMLビューアーとEPUBの本で答え合わせをした答えの見せ方を設定します。
+`digital`は、HTMLビューアー、EPUBの本、SCORMパッケージで答え合わせをした答えの見せ方と、そのスタイルの練習問題での1回の解答の制限を、本全体の設定に優先して設定します（[評価](#評価)を参照）。
 
 <table>
   <thead>
@@ -385,6 +385,7 @@ const config: PostextConfig = {
   <tbody>
     <tr><td><code>correctColor</code></td><td><code>ColorValue</code></td><td>緑（<code>#1e8e3e</code>）</td><td>正しい答えの色です。</td></tr>
     <tr><td><code>wrongColor</code></td><td><code>ColorValue</code></td><td>赤（<code>#c5221f</code>）</td><td>まちがった答えの色です。</td></tr>
+    <tr><td><code>maxChecks</code>、<code>reset</code>、<code>maxResets</code>、<code>showSolution</code></td><td></td><td>本全体の設定</td><td>そのスタイルの練習問題での1回の解答の制限です。本全体の練習とは別に、テスト用のスタイルを作るときに使います。<a href="#評価">評価</a>を参照してください。</td></tr>
   </tbody>
 </table>
 
@@ -443,7 +444,7 @@ const config: PostextConfig = {
 
 ### 画面での練習問題
 
-`exercises.digital`は、HTMLビューアーとEPUBの本での練習問題の動きを設定します。
+`exercises.digital`は、HTMLビューアー、EPUBの本、SCORMパッケージでの練習問題の動きを設定します。
 
 <table>
   <thead>
@@ -458,6 +459,11 @@ const config: PostextConfig = {
     <tr><td><code>interactive</code></td><td><code>boolean</code></td><td><code>true</code></td><td>読者が答えられる練習問題にします。<code>false</code>なら印刷と同じ形で見せます。</td></tr>
     <tr><td><code>persist</code></td><td><code>boolean</code></td><td><code>true</code></td><td>読者の答えを本ごとにブラウザーに保存します。</td></tr>
     <tr><td><code>check</code></td><td><code>'button' | 'instant'</code></td><td><code>'button'</code></td><td><code>'button'</code>：読者が求めたときに答え合わせをします。<code>'instant'</code>：答えるたびに答え合わせをします。</td></tr>
+    <tr><td><code>maxChecks</code></td><td><code>number</code></td><td><code>0</code></td><td>1回の解答で「答え合わせ」を押せる回数です。<code>0</code>：制限なし。<a href="#評価">評価</a>を参照してください。</td></tr>
+    <tr><td><code>reset</code></td><td><code>boolean</code></td><td><code>true</code></td><td>「やり直す」を出します。答えを消して、新しい解答を始めます。</td></tr>
+    <tr><td><code>maxResets</code></td><td><code>number</code></td><td><code>0</code></td><td>「やり直す」を使える回数です。<code>0</code>：制限なし。</td></tr>
+    <tr><td><code>showSolution</code></td><td><code>'always' | 'afterCheck' | 'noChecksLeft' | 'never'</code></td><td><code>'always'</code></td><td>バーが解答を出すタイミングです。</td></tr>
+    <tr><td><code>passingScore</code></td><td><code>number</code></td><td><code>0</code></td><td>合格になる正解率で、採点対象の答えのうち正解のパーセントです。SCORMパッケージはこれに照らして合格か不合格かを報告します。<code>0</code>：なし。</td></tr>
   </tbody>
 </table>
 
@@ -473,3 +479,24 @@ const config: PostextConfig = {
   },
 };
 ```
+
+### 評価
+
+既定では、練習問題は練習です。読者は何度でも答え合わせをし、やり直し、解答を見られます。4つの設定で練習問題をテストにできます。本全体については`exercises.digital`で、スタイルについてはそのスタイルの`digital`で設定し、スタイルの練習問題にはスタイルの設定が優先します。
+
+```ts
+const config: PostextConfig = {
+  exercises: { digital: { passingScore: 60 } },
+  exerciseStyles: [
+    { id: 'exercise' },
+    { id: 'test', extends: 'exercise', digital: { maxChecks: 1, maxResets: 1, showSolution: 'noChecksLeft' } },
+  ],
+};
+```
+
+- **`maxChecks`**：1回の解答で「答え合わせ」を押した回数を数えます。ボタンには残りの回数が出ます（「答え合わせ（残り2回）」）。使い切るとボタンは「答え合わせは終わりです」になり、答えは固定され、得点がバーに残ります。
+- <strong>`reset`</strong>と<strong>`maxResets`</strong>：「やり直す」は答えを消して新しい解答を始め、答え合わせの回数も元に戻ります。`maxResets: 1`なら最初からやり直せるのは1回で、解答は全部で2回になり、ボタンには残りの回数が出ます。`reset: false`にするとボタンがなくなります。
+- **`showSolution`**：`'always'`（いつも）、`'afterCheck'`（その回の解答の答え合わせをしたあと）、`'noChecksLeft'`（答え合わせを使い切ったか、答えがすべて正解だったあと）、`'never'`（出さない）。答え合わせの回数が制限されているときは、解答を見るとその回の解答は終わります。
+- **`passingScore`**：SCORMパッケージが合格か不合格かを判定する基準です（[SCORMパッケージ](/ja/docs/configuration-html-folio-epub#scormパッケージpostext-scorm)を参照）。
+
+ボタンの文言は文書の言語に従います。`check: 'instant'`では「答え合わせ」ボタンがないので`maxChecks`は働きませんが、ほかの設定は有効です。使った答え合わせとやり直しの回数は、答えと一緒に保存されます。LMSでは、SCORMパッケージがそれをLMSに保存するので、どの端末でも同じ制限が続きます。HTMLページやEPUBの本では読者のブラウザーに保存され、ストレージを消した読者は最初からになります。

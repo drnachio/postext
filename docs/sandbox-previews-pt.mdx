@@ -3,13 +3,13 @@
 export const metadata = {
   title: 'Sandbox: as visualizações',
   sidebarTitle: 'Visualizações',
-  description: 'As abas Canvas, PDF, Folio, HTML e EPUB 3 da área de visualização principal: o que cada uma mostra e o que permite fazer',
+  description: 'As abas Canvas, PDF, Folio, HTML, EPUB 3 e SCORM da área de visualização principal: o que cada uma mostra e o que permite fazer',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-10-25',
   readingTime: '16 min',
   order: 43,
   parent: 'sandbox',
-  plainSummary: "Esta página trata do lado direito do Sandbox, onde aparecem as páginas prontas. Cinco abas mostram o mesmo livro de cinco maneiras: como imagens de página, como arquivo PDF, como livro em 3D que você pode folhear, como página web e como livro digital EPUB. Trocar de aba não diagrama o livro de novo; por isso, todas as abas mostram as mesmas páginas. A página explica o que cada aba mostra e o que você pode fazer nela.",
+  plainSummary: "Esta página trata do lado direito do Sandbox, onde aparecem as páginas prontas. Cinco abas mostram o mesmo livro de cinco maneiras: como imagens de página, como arquivo PDF, como livro em 3D que você pode folhear, como página web e como livro digital EPUB. Uma sexta gera um pacote SCORM com os capítulos que você escolher, para a plataforma de ensino de uma escola ou de uma empresa. Trocar de aba não diagrama o livro de novo; por isso, todas as abas mostram as mesmas páginas. A página explica o que cada aba mostra e o que você pode fazer nela.",
 };
 
 # Sandbox: as visualizações
@@ -17,7 +17,7 @@ export const metadata = {
 
 ## Área de visualização principal
 
-O lado direito da interface mostra o resultado renderizado. Há cinco abas, uma por modo de renderização, nesta ordem: **Canvas**, **PDF**, **Folio**, **HTML** e **EPUB 3**. Trocar de aba não refaz a diagramação: o mesmo VDT alimenta todos os renderizadores; por isso, o conteúdo que você vê é coerente entre os modos. A aba Folio só aparece quando o navegador tem WebGL2 e a tela não é de celular (veja [Aba Folio](#aba-folio)).
+O lado direito da interface mostra o resultado renderizado. Há seis abas, uma por modo de renderização, nesta ordem: **Canvas**, **PDF**, **Folio**, **HTML**, **EPUB 3** e **SCORM** (a última grava um pacote para uma plataforma de ensino a partir do conteúdo do EPUB). Trocar de aba não refaz a diagramação: o mesmo VDT alimenta todos os renderizadores; por isso, o conteúdo que você vê é coerente entre os modos. A aba Folio só aparece quando o navegador tem WebGL2 e a tela não é de celular (veja [Aba Folio](#aba-folio)).
 
 Cada área de visualização executa o pipeline de layout dentro de um **Web Worker** próprio (`postext/worker`). Um hook `useLayoutWorker` por visualização detém o handle do worker, envia as fontes para ele como `ArrayBuffer`s transferíveis e conduz as builds com **cancelamento em que a última vence**: uma tecla digitada ou o arraste de um controle deslizante aborta o `AbortSignal` da build anterior antes que a seguinte comece, de modo que digitar rápido nunca acumula trabalho obsoleto na thread principal. Desmontar uma visualização descarta o worker dela e rejeita qualquer build pendente. Veja [Configuração → Executar a diagramação em um Web Worker](/pt/docs/configuration-programmatic-usage#executar-a-diagramação-em-um-web-worker) para o padrão de integração usado aqui.
 
@@ -148,3 +148,15 @@ Enquanto nenhuma for escolhida, a aba abre no layout fixo em um tablet como o iP
 - **Verificar o arquivo.** As duas diagramações do guia e dos livros de exemplo passam no [W3C EPUBCheck](https://www.w3.org/publishing/epubcheck/) 5.4 sem erros nem avisos. Para verificar o seu próprio livro, baixe-o e execute `epubcheck book.epub`, ou leia-o no Apple Books, no Thorium Reader ou no Calibre.
 
 Veja [Livros EPUB](/pt/docs/configuration-html-folio-epub#livros-epub-postext-epub) para gravar os mesmos arquivos a partir do seu próprio código.
+
+### Aba SCORM
+
+Baixa um pacote SCORM da parte do livro que você escolher, gravado com o pacote `postext-scorm`: o zip que um sistema de gestão de aprendizagem (Moodle, Canvas, Blackboard e a maioria dos outros) importa como um curso. Os exercícios dele podem ser respondidos e enviam ao LMS a nota, a conclusão e a aprovação ou reprovação.
+
+- **A árvore.** A aba lista os capítulos do livro (os arquivos de capítulo do painel **Capítulos**) e, dentro de cada um, os títulos até o terceiro nível, cada um com uma caixa de seleção. Marcar um capítulo marca todas as seções dele; um capítulo marcado em parte mostra uma caixa mista. **Tudo** e **Nada** marcam ou desmarcam tudo, e a seta ao lado de um capítulo recolhe as seções dele. O que você deixa de fora fica guardado para cada livro neste navegador (um capítulo acrescentado depois aparece marcado). Um título representa o texto da sua linha até o próximo título do mesmo nível ou acima; a primeira seção de um capítulo leva também o título do capítulo e os parágrafos iniciais.
+- **SCOs.** Cada nó marcado inteiro vira um SCO, uma parte que o LMS abre, acompanha e avalia à parte: um capítulo inteiro ou uma seção. Um capítulo marcado em parte vira um grupo no sumário do LMS, com as seções marcadas dentro. A linha ao lado do botão diz quantos SCOs o pacote contém.
+- **Conteúdo e versão.** À esquerda da barra de abas, como na aba EPUB 3, **Layout fixo** mantém cada página impressa, ajustada à janela, e **Refluível** compõe o texto de novo para a janela, para celulares e telas estreitas (a escolha é própria desta aba, `postext-sandbox-scorm-layout`). Acima da árvore, **SCORM 1.2** é aceito por qualquer LMS; **SCORM 2004** (4ª edição) separa conclusão e aprovação, dá uma nota em escala e guarda respostas mais longas. As duas escolhas ficam guardadas entre as visitas.
+- **Download.** **Baixar pacote SCORM** diagrama o livro inteiro, como a aba PDF faz em **Livro inteiro** (a numeração e as referências continuam a partir dos capítulos anteriores), e salva o zip com o título do livro e a versão no nome. Uma barra de progresso conta os capítulos e as etapas do gerador; os leitores de tela anunciam quando o pacote está pronto ou quando falhou. As fontes e as imagens entram como no EPUB.
+- **No LMS.** Cada SCO abre num pequeno player: as páginas ou o texto, um documento por vez, o sumário do SCO, e ← e → para navegar. Os exercícios informam o que [Exercícios num pacote SCORM](/pt/docs/exercises#exercícios-num-pacote-scorm) descreve, e os limites de uma tentativa definidos em **Design → Exercícios → Avaliação** valem lá. Aberto fora de um LMS, o pacote continua legível e guarda as respostas no navegador.
+
+Veja [Pacotes SCORM](/pt/docs/configuration-html-folio-epub#pacotes-scorm-postext-scorm) para gravar o mesmo pacote a partir do seu próprio código.

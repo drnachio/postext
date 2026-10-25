@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '练习设置',
   description: '练习样式（exerciseStyles）和全书的练习设置（exercises）：题号的样子、题目要求的字体、选项的序号和勾选记号、填空处、判断题的答案、连线、词库、书写区、方格、竖式除法、难度记号、图标、答案的颜色、答案印在哪里、教师用书和屏幕版本',
   lang: 'zh',
-  lastUpdated: '2026-10-24',
+  lastUpdated: '2026-10-25',
   readingTime: '12分钟',
   order: 17,
   parent: 'configuration',
@@ -371,7 +371,7 @@ const config: PostextConfig = {
 
 ### 屏幕上的颜色
 
-`digital`设定HTML阅读器和EPUB电子书怎样显示核对过的答案。
+`digital`设定HTML阅读器、EPUB电子书和SCORM包怎样显示核对过的答案，以及本样式练习的作答限制，优先于全书的设置（见[测评](#测评)）。
 
 <table>
   <thead>
@@ -385,6 +385,7 @@ const config: PostextConfig = {
   <tbody>
     <tr><td><code>correctColor</code></td><td><code>ColorValue</code></td><td>绿色（<code>#1e8e3e</code>）</td><td>答对的答案。</td></tr>
     <tr><td><code>wrongColor</code></td><td><code>ColorValue</code></td><td>红色（<code>#c5221f</code>）</td><td>答错的答案。</td></tr>
+    <tr><td><code>maxChecks</code>、<code>reset</code>、<code>maxResets</code>、<code>showSolution</code></td><td></td><td>全书的设置</td><td>本样式练习的作答限制：在全书的练习之外另设一种测验用的样式。见<a href="#测评">测评</a>。</td></tr>
   </tbody>
 </table>
 
@@ -443,7 +444,7 @@ const config: PostextConfig = {
 
 ### 屏幕版本
 
-`exercises.digital`设定练习在HTML阅读器和EPUB电子书中的行为。
+`exercises.digital`设定练习在HTML阅读器、EPUB电子书和SCORM包中的行为。
 
 <table>
   <thead>
@@ -458,6 +459,11 @@ const config: PostextConfig = {
     <tr><td><code>interactive</code></td><td><code>boolean</code></td><td><code>true</code></td><td>读者可以作答的练习。<code>false</code>按印刷版的样子显示。</td></tr>
     <tr><td><code>persist</code></td><td><code>boolean</code></td><td><code>true</code></td><td>把读者的答案按书保存在浏览器中。</td></tr>
     <tr><td><code>check</code></td><td><code>'button' | 'instant'</code></td><td><code>'button'</code></td><td><code>'button'</code>：读者要求时才核对答案。<code>'instant'</code>：每填一个答案就立即核对。</td></tr>
+    <tr><td><code>maxChecks</code></td><td><code>number</code></td><td><code>0</code></td><td>每次作答可以按“检查”的次数。<code>0</code>：不限。见<a href="#测评">测评</a>。</td></tr>
+    <tr><td><code>reset</code></td><td><code>boolean</code></td><td><code>true</code></td><td>提供“重做”，清除答案，开始新的一次作答。</td></tr>
+    <tr><td><code>maxResets</code></td><td><code>number</code></td><td><code>0</code></td><td>可以使用“重做”的次数。<code>0</code>：不限。</td></tr>
+    <tr><td><code>showSolution</code></td><td><code>'always' | 'afterCheck' | 'noChecksLeft' | 'never'</code></td><td><code>'always'</code></td><td>按钮栏何时提供答案。</td></tr>
+    <tr><td><code>passingScore</code></td><td><code>number</code></td><td><code>0</code></td><td>及格所需的正确率：答对的计分答案占全部计分答案的百分比；SCORM包据此报告通过或未通过。<code>0</code>：不设。</td></tr>
   </tbody>
 </table>
 
@@ -473,3 +479,24 @@ const config: PostextConfig = {
   },
 };
 ```
+
+### 测评
+
+默认情况下，练习只用于练习：读者想检查几次就检查几次，可以重做，也可以查看答案。有四项设置可以把练习变成测验：全书的设在`exercises.digital`中，样式的设在样式的`digital`中，对本样式的练习优先于全书的设置：
+
+```ts
+const config: PostextConfig = {
+  exercises: { digital: { passingScore: 60 } },
+  exerciseStyles: [
+    { id: 'exercise' },
+    { id: 'test', extends: 'exercise', digital: { maxChecks: 1, maxResets: 1, showSolution: 'noChecksLeft' } },
+  ],
+};
+```
+
+- **`maxChecks`**：统计一次作答中按“检查”的次数。按钮上显示还剩几次（“检查（还剩 2 次）”）；用完后按钮显示“检查次数已用完”，答案被锁定，得分留在按钮栏上。
+- <strong>`reset`</strong>和<strong>`maxResets`</strong>：“重做”清除答案，开始新的一次作答，检查次数也随之恢复。`maxResets: 1`允许重新开始一次，即总共两次作答，按钮上显示还剩几次；`reset: false`去掉这个按钮。
+- **`showSolution`**：`'always'`；`'afterCheck'`，本次作答检查过之后；`'noChecksLeft'`，检查次数用完或答案全部答对之后；`'never'`。检查次数有限时，查看答案即结束本次作答。
+- **`passingScore`**：SCORM包据此报告通过或未通过（见[SCORM包](/zh/docs/configuration-html-folio-epub#scorm包postext-scorm)）。
+
+按钮上的文字随文档语言而定。设`check: 'instant'`时没有“检查”按钮，所以`maxChecks`不起作用，其他设置仍然有效。已用的检查次数和重做次数与答案一起保存：在LMS中，SCORM包把它们保存在LMS里，所以在任何设备上都有效；在HTML页面或EPUB电子书中，它们保存在读者的浏览器里，清除了浏览器存储的读者要从头开始。

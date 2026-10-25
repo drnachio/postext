@@ -519,13 +519,15 @@ El que canvia l'agent, ho veus tu. Per assenyalar-te alguna cosa:
 ```
 
 `sandbox_set_view` també tria el visor (`canvas`, `pdf`, `folio`, `html`,
-`epub`), el mode Contingut o Disseny (`mode`), el tauler lateral, capítol o llibre sencer, el zoom, la mida de lletra
-del lector, la previsualització d'impressió i el grup del tauler Disseny.
+`epub`, `scorm`), el mode Contingut o Disseny (`mode`), el tauler lateral, capítol o llibre sencer, el zoom, la mida de lletra
+del lector, la previsualització d'impressió i el grup del tauler Disseny, i a la pestanya SCORM
+el contingut (`scormLayout`), la versió (`scormVersion`) i els capítols i les
+seccions que entren al paquet (`scormPick`, ids de la llista `contents` de la pestanya).
 `sandbox_go_to_page` passa pàgines per `step`, `page`, `position`, un passatge
 de `text`, una `anchor` o una entrada `contents` del sumari d'un EPUB.
 `sandbox_run_viewer` prem un botó de la barra d'eines: `regenerate` torna a
-generar el PDF o l'EPUB i n'espera el resultat, `print` obre el diàleg
-d'impressió perquè el confirmis tu, `download` desa el PDF o l'EPUB, i
+generar el PDF, l'EPUB o el paquet SCORM i n'espera el resultat, `print` obre el diàleg
+d'impressió perquè el confirmis tu, `download` desa el PDF, l'EPUB o un paquet SCORM acabat d'escriure, i
 `play_video` i `stop_video` reprodueixen i aturen un vídeo d'una pàgina.
 
 ### Pàgines de còmic
