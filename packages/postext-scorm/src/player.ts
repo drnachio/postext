@@ -392,11 +392,19 @@ function scormPlayer(): void {
     commit();
   }
 
+  // The frame opens only the package's own documents: a path under
+  // `content/` and a plain fragment, never an address of another kind.
+  const DOC_PATH = /^content\/[\w\-./]+\.x?html$/;
+  const FRAGMENT = /^#[\w\-.:]*$/;
+
   function show(i: number, hash?: string): void {
     if (i < 0 || i >= data.docs.length) return;
-    const same = i === at && !hash;
+    const href = String(data.docs[i]!.href);
+    const fragment = hash && FRAGMENT.test(hash) ? hash : '';
+    if (!DOC_PATH.test(href) || href.indexOf('..') >= 0) return;
+    const same = i === at && !fragment;
     at = i;
-    if (!same) frame.setAttribute('src', data.docs[i]!.href + (hash || ''));
+    if (!same) frame.setAttribute('src', href + fragment);
     paint();
   }
 
