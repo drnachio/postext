@@ -13,6 +13,7 @@ import type {
   Dimension,
   ExerciseAnswersStyle,
   ExerciseArithmeticStyle,
+  ExerciseAssessmentConfig,
   ExerciseAreaStyle,
   ExerciseBankStyle,
   ExerciseBlankStyle,
@@ -24,6 +25,7 @@ import type {
   ExerciseMatchStyle,
   ExerciseNumberStyle,
   ExerciseOptionsStyle,
+  ExerciseShowSolution,
   ExercisesConfig,
   ExerciseSolutionsConfig,
   ExerciseStyleConfig,
@@ -54,19 +56,26 @@ export interface ExerciseWords {
   /** A crossword's clue lists. */
   across: string;
   down: string;
+  /** The Check button while an attempt's checks are limited (#1268):
+   *  `{n}` checks left. */
+  checkLeft: string;
+  /** The Check button once they are spent. */
+  noChecksLeft: string;
+  /** Try again while its uses are limited: `{n}` left. */
+  resetLeft: string;
 }
 
 const WORDS: Record<string, ExerciseWords> = {
-  en: { exercise: 'Exercise', trueFalse: ['T', 'F'], solutions: 'Solutions', check: 'Check', showSolution: 'Show solution', hideSolution: 'Hide solution', reset: 'Try again', correct: 'Correct!', wrong: 'Not quite', hint: 'Hint', blank: 'blank', score: '{right} of {total} right', across: 'Across', down: 'Down' },
-  es: { exercise: 'Ejercicio', trueFalse: ['V', 'F'], solutions: 'Soluciones', check: 'Comprobar', showSolution: 'Ver la solución', hideSolution: 'Ocultar la solución', reset: 'Volver a empezar', correct: '¡Correcto!', wrong: 'Revisa la respuesta', hint: 'Pista', blank: 'hueco', score: '{right} de {total} bien', across: 'Horizontales', down: 'Verticales' },
-  ca: { exercise: 'Exercici', trueFalse: ['V', 'F'], solutions: 'Solucions', check: 'Comprova', showSolution: 'Mostra la solució', hideSolution: 'Amaga la solució', reset: 'Torna a començar', correct: 'Correcte!', wrong: 'Revisa la resposta', hint: 'Pista', blank: 'buit', score: '{right} de {total} bé', across: 'Horitzontals', down: 'Verticals' },
-  fr: { exercise: 'Exercice', trueFalse: ['V', 'F'], solutions: 'Corrigés', check: 'Vérifier', showSolution: 'Voir la solution', hideSolution: 'Masquer la solution', reset: 'Recommencer', correct: 'Bravo !', wrong: 'Pas tout à fait', hint: 'Indice', blank: 'blanc', score: '{right} sur {total}', across: 'Horizontalement', down: 'Verticalement' },
-  de: { exercise: 'Übung', trueFalse: ['R', 'F'], solutions: 'Lösungen', check: 'Prüfen', showSolution: 'Lösung zeigen', hideSolution: 'Lösung ausblenden', reset: 'Neu beginnen', correct: 'Richtig!', wrong: 'Noch nicht ganz', hint: 'Tipp', blank: 'Lücke', score: '{right} von {total} richtig', across: 'Waagerecht', down: 'Senkrecht' },
-  it: { exercise: 'Esercizio', trueFalse: ['V', 'F'], solutions: 'Soluzioni', check: 'Verifica', showSolution: 'Mostra la soluzione', hideSolution: 'Nascondi la soluzione', reset: 'Ricomincia', correct: 'Esatto!', wrong: 'Non proprio', hint: 'Suggerimento', blank: 'spazio', score: '{right} su {total}', across: 'Orizzontali', down: 'Verticali' },
-  pt: { exercise: 'Exercício', trueFalse: ['V', 'F'], solutions: 'Gabarito', check: 'Verificar', showSolution: 'Ver a resposta', hideSolution: 'Ocultar a resposta', reset: 'Recomeçar', correct: 'Correto!', wrong: 'Quase lá', hint: 'Dica', blank: 'lacuna', score: '{right} de {total} certas', across: 'Horizontais', down: 'Verticais' },
-  zh: { exercise: '练习', trueFalse: ['√', '×'], solutions: '参考答案', check: '检查', showSolution: '查看答案', hideSolution: '隐藏答案', reset: '重做', correct: '正确！', wrong: '再想想', hint: '提示', blank: '空', score: '答对 {right}/{total}', across: '横向', down: '纵向' },
-  ja: { exercise: '練習', trueFalse: ['○', '×'], solutions: '解答', check: '答え合わせ', showSolution: '解答を見る', hideSolution: '解答を隠す', reset: 'やり直す', correct: '正解！', wrong: 'もう一度', hint: 'ヒント', blank: '空欄', score: '{total}問中{right}問正解', across: 'ヨコのカギ', down: 'タテのカギ' },
-  ar: { exercise: 'تمرين', trueFalse: ['صح', 'خطأ'], solutions: 'الحلول', check: 'تحقّق', showSolution: 'اعرض الحل', hideSolution: 'أخفِ الحل', reset: 'أعد المحاولة', correct: 'صحيح!', wrong: 'ليس تمامًا', hint: 'تلميح', blank: 'فراغ', score: '{right} من {total}', across: 'أفقيًا', down: 'عموديًا' },
+  en: { exercise: 'Exercise', trueFalse: ['T', 'F'], solutions: 'Solutions', check: 'Check', showSolution: 'Show solution', hideSolution: 'Hide solution', reset: 'Try again', correct: 'Correct!', wrong: 'Not quite', hint: 'Hint', blank: 'blank', score: '{right} of {total} right', across: 'Across', down: 'Down', checkLeft: 'Check ({n} left)', noChecksLeft: 'No checks left', resetLeft: 'Try again ({n} left)' },
+  es: { exercise: 'Ejercicio', trueFalse: ['V', 'F'], solutions: 'Soluciones', check: 'Comprobar', showSolution: 'Ver la solución', hideSolution: 'Ocultar la solución', reset: 'Volver a empezar', correct: '¡Correcto!', wrong: 'Revisa la respuesta', hint: 'Pista', blank: 'hueco', score: '{right} de {total} bien', across: 'Horizontales', down: 'Verticales', checkLeft: 'Comprobar (quedan {n})', noChecksLeft: 'Sin más comprobaciones', resetLeft: 'Volver a empezar (quedan {n})' },
+  ca: { exercise: 'Exercici', trueFalse: ['V', 'F'], solutions: 'Solucions', check: 'Comprova', showSolution: 'Mostra la solució', hideSolution: 'Amaga la solució', reset: 'Torna a començar', correct: 'Correcte!', wrong: 'Revisa la resposta', hint: 'Pista', blank: 'buit', score: '{right} de {total} bé', across: 'Horitzontals', down: 'Verticals', checkLeft: 'Comprova (en queden {n})', noChecksLeft: 'Sense més comprovacions', resetLeft: 'Torna a començar (en queden {n})' },
+  fr: { exercise: 'Exercice', trueFalse: ['V', 'F'], solutions: 'Corrigés', check: 'Vérifier', showSolution: 'Voir la solution', hideSolution: 'Masquer la solution', reset: 'Recommencer', correct: 'Bravo !', wrong: 'Pas tout à fait', hint: 'Indice', blank: 'blanc', score: '{right} sur {total}', across: 'Horizontalement', down: 'Verticalement', checkLeft: 'Vérifier (encore {n})', noChecksLeft: 'Plus de vérifications', resetLeft: 'Recommencer (encore {n})' },
+  de: { exercise: 'Übung', trueFalse: ['R', 'F'], solutions: 'Lösungen', check: 'Prüfen', showSolution: 'Lösung zeigen', hideSolution: 'Lösung ausblenden', reset: 'Neu beginnen', correct: 'Richtig!', wrong: 'Noch nicht ganz', hint: 'Tipp', blank: 'Lücke', score: '{right} von {total} richtig', across: 'Waagerecht', down: 'Senkrecht', checkLeft: 'Prüfen (noch {n})', noChecksLeft: 'Keine Prüfung mehr', resetLeft: 'Neu beginnen (noch {n})' },
+  it: { exercise: 'Esercizio', trueFalse: ['V', 'F'], solutions: 'Soluzioni', check: 'Verifica', showSolution: 'Mostra la soluzione', hideSolution: 'Nascondi la soluzione', reset: 'Ricomincia', correct: 'Esatto!', wrong: 'Non proprio', hint: 'Suggerimento', blank: 'spazio', score: '{right} su {total}', across: 'Orizzontali', down: 'Verticali', checkLeft: 'Verifica (ancora {n})', noChecksLeft: 'Nessuna verifica rimasta', resetLeft: 'Ricomincia (ancora {n})' },
+  pt: { exercise: 'Exercício', trueFalse: ['V', 'F'], solutions: 'Gabarito', check: 'Verificar', showSolution: 'Ver a resposta', hideSolution: 'Ocultar a resposta', reset: 'Recomeçar', correct: 'Correto!', wrong: 'Quase lá', hint: 'Dica', blank: 'lacuna', score: '{right} de {total} certas', across: 'Horizontais', down: 'Verticais', checkLeft: 'Verificar (restam {n})', noChecksLeft: 'Sem mais verificações', resetLeft: 'Recomeçar (restam {n})' },
+  zh: { exercise: '练习', trueFalse: ['√', '×'], solutions: '参考答案', check: '检查', showSolution: '查看答案', hideSolution: '隐藏答案', reset: '重做', correct: '正确！', wrong: '再想想', hint: '提示', blank: '空', score: '答对 {right}/{total}', across: '横向', down: '纵向', checkLeft: '检查（还剩 {n} 次）', noChecksLeft: '检查次数已用完', resetLeft: '重做（还剩 {n} 次）' },
+  ja: { exercise: '練習', trueFalse: ['○', '×'], solutions: '解答', check: '答え合わせ', showSolution: '解答を見る', hideSolution: '解答を隠す', reset: 'やり直す', correct: '正解！', wrong: 'もう一度', hint: 'ヒント', blank: '空欄', score: '{total}問中{right}問正解', across: 'ヨコのカギ', down: 'タテのカギ', checkLeft: '答え合わせ（残り{n}回）', noChecksLeft: '答え合わせは終わりです', resetLeft: 'やり直す（残り{n}回）' },
+  ar: { exercise: 'تمرين', trueFalse: ['صح', 'خطأ'], solutions: 'الحلول', check: 'تحقّق', showSolution: 'اعرض الحل', hideSolution: 'أخفِ الحل', reset: 'أعد المحاولة', correct: 'صحيح!', wrong: 'ليس تمامًا', hint: 'تلميح', blank: 'فراغ', score: '{right} من {total}', across: 'أفقيًا', down: 'عموديًا', checkLeft: 'تحقّق (بقي {n})', noChecksLeft: 'لم يبقَ تحقّق', resetLeft: 'أعد المحاولة (بقي {n})' },
 };
 
 /** The primary language subtag of a locale, lower-cased. */
@@ -105,7 +114,8 @@ export interface ResolvedExerciseStyle {
   answers: ExerciseAnswersStyle & { color: ColorValue };
   /** Over `exercises.solutions` (only the fields the style sets). */
   solutions: ExerciseSolutionsConfig;
-  digital: Required<ExerciseDigitalStyle>;
+  /** Its colours, and the limits it sets over the book's (#1268). */
+  digital: Required<Pick<ExerciseDigitalStyle, 'correctColor' | 'wrongColor'>> & ExerciseAssessmentConfig;
   marginTop: Dimension;
   marginBottom: Dimension;
   itemSpacing: Dimension;
@@ -236,7 +246,7 @@ function resolveStyle(s: ExerciseStyleConfig, lang: string, words: ExerciseWords
     icons: s.icons ?? {},
     answers: { ...(s.answers ?? {}), color: s.answers?.color ?? HEX('#d6246e') },
     solutions: s.solutions ?? {},
-    digital: { correctColor: s.digital?.correctColor ?? HEX('#1e8e3e'), wrongColor: s.digital?.wrongColor ?? HEX('#c5221f') },
+    digital: { correctColor: s.digital?.correctColor ?? HEX('#1e8e3e'), wrongColor: s.digital?.wrongColor ?? HEX('#c5221f'), ...assessmentOf(s.digital) },
     marginTop: s.marginTop ?? EM(1),
     marginBottom: s.marginBottom ?? EM(1),
     itemSpacing: s.itemSpacing ?? EM(0.25),
@@ -267,9 +277,51 @@ export function resolveExercisesConfig(config: ExercisesConfig | undefined, loca
       interactive: config?.digital?.interactive ?? true,
       persist: config?.digital?.persist ?? true,
       check: config?.digital?.check ?? 'button',
+      maxChecks: count(config?.digital?.maxChecks) ?? 0,
+      reset: config?.digital?.reset ?? true,
+      maxResets: count(config?.digital?.maxResets) ?? 0,
+      showSolution: showSolutionOf(config?.digital?.showSolution) ?? 'always',
+      passingScore: Number.isFinite(config?.digital?.passingScore) ? Math.max(0, Math.min(100, config!.digital!.passingScore!)) : 0,
     },
     words,
     language: languageOf(locale),
+  };
+}
+
+/** A limit as a whole number of times, `undefined` when unset or not a
+ *  number. */
+function count(value: number | undefined): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.floor(value)) : undefined;
+}
+
+const SHOW_SOLUTION: readonly ExerciseShowSolution[] = ['always', 'afterCheck', 'noChecksLeft', 'never'];
+const showSolutionOf = (value: unknown): ExerciseShowSolution | undefined =>
+  SHOW_SOLUTION.includes(value as ExerciseShowSolution) ? (value as ExerciseShowSolution) : undefined;
+
+/** The limits a style sets over the book's: only those it names. */
+function assessmentOf(d: ExerciseAssessmentConfig | undefined): ExerciseAssessmentConfig {
+  if (!d) return {};
+  const out: ExerciseAssessmentConfig = {};
+  const checks = count(d.maxChecks);
+  if (checks !== undefined) out.maxChecks = checks;
+  if (typeof d.reset === 'boolean') out.reset = d.reset;
+  const resets = count(d.maxResets);
+  if (resets !== undefined) out.maxResets = resets;
+  const show = showSolutionOf(d.showSolution);
+  if (show) out.showSolution = show;
+  return out;
+}
+
+/** The limits an exercise of `style` keeps to: the style's over the
+ *  book's (#1268). */
+export function assessmentLimitsOf(style: Pick<ResolvedExerciseStyle, 'digital'>, book: ResolvedExercisesConfig): Required<ExerciseAssessmentConfig> {
+  const d = book.digital;
+  const s = style.digital;
+  return {
+    maxChecks: s.maxChecks ?? d.maxChecks,
+    reset: s.reset ?? d.reset,
+    maxResets: s.maxResets ?? d.maxResets,
+    showSolution: s.showSolution ?? d.showSolution,
   };
 }
 
@@ -341,6 +393,11 @@ export function stripExercisesDefaults(config: ExercisesConfig | undefined, loca
     if (d.interactive !== undefined && d.interactive !== true) digital.interactive = d.interactive;
     if (d.persist !== undefined && d.persist !== true) digital.persist = d.persist;
     if (d.check !== undefined && d.check !== 'button') digital.check = d.check;
+    if (d.maxChecks !== undefined && d.maxChecks !== 0) digital.maxChecks = d.maxChecks;
+    if (d.reset !== undefined && d.reset !== true) digital.reset = d.reset;
+    if (d.maxResets !== undefined && d.maxResets !== 0) digital.maxResets = d.maxResets;
+    if (d.showSolution !== undefined && d.showSolution !== 'always') digital.showSolution = d.showSolution;
+    if (d.passingScore !== undefined && d.passingScore !== 0) digital.passingScore = d.passingScore;
     if (Object.keys(digital).length > 0) out.digital = digital;
   }
   return Object.keys(out).length > 0 ? out : undefined;

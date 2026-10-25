@@ -241,7 +241,7 @@ export async function buildReflowablePublication(docs: EpubSource, options: Rend
     if (xhtml.includes(`src="${videoSrc}"`)) scripted = true;
     if (xhtml.includes(`src="${exerciseSrc}"`)) exercisesScripted = true;
     items.push({ id: file.itemId, href: file.href, mediaType: 'application/xhtml+xml', data: xhtml });
-    spine.push({ idref: file.itemId });
+    spine.push({ idref: file.itemId, doc: file.doc });
     onProgress?.({ phase: 'documents', done: i + 1, total: book.files.length });
   });
   if (scripted) items.push(videoScriptItem());

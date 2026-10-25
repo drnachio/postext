@@ -16,6 +16,7 @@
     { "name": "area: pdf", "color": "0e8a16", "description": "postext-pdf: PDF output, tagging, fonts in PDF" },
     { "name": "area: html", "color": "0e8a16", "description": "HTML renderer and viewer" },
     { "name": "area: epub", "color": "0e8a16", "description": "postext-epub: EPUB 3 output" },
+    { "name": "area: scorm", "color": "0e8a16", "description": "postext-scorm: SCORM packages for learning management systems" },
     { "name": "area: folio", "color": "0e8a16", "description": "postext-folio: the 3D book viewer", "from": ["folio"] },
     { "name": "area: sandbox", "color": "0e8a16", "description": "postext-sandbox: editor, panels, previews, WebMCP tools" },
     { "name": "area: cli", "color": "0e8a16", "description": "postext-cli: the command line and its page images" },

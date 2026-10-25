@@ -186,6 +186,10 @@ export interface EpubSpineEntry {
   /** Spine itemref properties (`page-spread-left`, `page-spread-right`,
    *  `rendition:page-spread-center`, `rendition:layout-pre-paginated`…). */
   properties?: string[];
+  /** The input document (its index in `EpubSource`) the content document
+   *  comes from, for a host that packs the publication otherwise (a SCORM
+   *  package, #1265). Not written in the package. Absent on the cover. */
+  doc?: number;
 }
 
 export interface EpubNavPoint {

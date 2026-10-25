@@ -111,7 +111,7 @@ export type { ComicDirectionContext } from './defaults/comics.js';
 export { layoutVideo, playMarkTriangle, qrModuleRuns } from './pipeline/videoOverlay.js';
 export { encodeQr } from './video/qr.js';
 export { coordinateVideoPlayback, playsAlongside, videosToPause, VIDEO_PLAYBACK_SCRIPT } from './video/playback.js';
-export { attachExercises, checkExerciseSlot, exerciseSolutionValue, isGradedSlot, normalizeAnswer, EXERCISE_SCRIPT, type AttachExercisesOptions, type ExerciseValue } from './exercises/runtime.js';
+export { attachExercises, checkExerciseSlot, exercisePoints, exerciseSolutionValue, isGradedSlot, normalizeAnswer, EXERCISE_RUNTIME, EXERCISE_SCRIPT, type AttachExercisesOptions, type ExerciseResult, type ExerciseResultSlot, type ExerciseStore, type ExerciseValue } from './exercises/runtime.js';
 export { exerciseDataJson, exerciseDataOf, type ExerciseData, type ExerciseDigital, type ExerciseDigitalStyleInfo, type ExerciseDigitalWords } from './exercises/digital.js';
 export type { ExerciseGridInfo, ExerciseRecord, ExerciseSlot, ExerciseSlotKind } from './exercises/record.js';
 export type { QrMatrix, QrErrorCorrection } from './video/qr.js';
@@ -143,7 +143,9 @@ export type {
   ExerciseAnswersStyle,
   ExerciseSolutionPlacement,
   ExerciseSolutionsConfig,
+  ExerciseAssessmentConfig,
   ExerciseDigitalStyle,
+  ExerciseShowSolution,
   ExerciseStyleConfig,
   ExercisesConfig,
   ChipUnderline,

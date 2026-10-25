@@ -4420,9 +4420,35 @@ export interface ExerciseSolutionsConfig {
   layout?: 'key' | 'full';
 }
 
+/** When an exercise's bar offers its solution (#1268). */
+export type ExerciseShowSolution = 'always' | 'afterCheck' | 'noChecksLeft' | 'never';
+
+/** How far a reader may go with an exercise in the digital outputs (HTML,
+ *  EPUB, SCORM; #1268): the limits that turn practice into a test. Set
+ *  for the book in `exercises.digital`, for a style in its `digital`. */
+export interface ExerciseAssessmentConfig {
+  /** Check presses an attempt allows: once they are spent, the answers
+   *  lock until Try again starts a new attempt. `0`: no limit. Default
+   *  `0`. Not with `check: 'instant'`, which has no Check button. */
+  maxChecks?: number;
+  /** Offer Try again, which clears the answers and starts a new attempt.
+   *  Default `true`. */
+  reset?: boolean;
+  /** Try again uses allowed: `maxResets + 1` attempts in all. `0`: no
+   *  limit. Default `0`. */
+  maxResets?: number;
+  /** When the bar offers Show solution: `'always'`; `'afterCheck'`, once
+   *  the attempt has been checked; `'noChecksLeft'`, once the attempt's
+   *  checks are spent or its answers checked all right; `'never'`. Showing
+   *  the solution ends the attempt when checks are limited. Default
+   *  `'always'`. */
+  showSolution?: ExerciseShowSolution;
+}
+
 /** How an exercise behaves in the HTML and EPUB outputs
- *  (`exerciseStyles[].digital`). */
-export interface ExerciseDigitalStyle {
+ *  (`exerciseStyles[].digital`): its colours, and limits over the book's
+ *  (`exercises.digital`). */
+export interface ExerciseDigitalStyle extends ExerciseAssessmentConfig {
   /** Default a green. */
   correctColor?: ColorValue;
   /** Default a red. */
@@ -4474,8 +4500,8 @@ export interface ExercisesConfig {
   /** What shuffles are drawn from: change it for another version of a
    *  test. Default `1`. */
   seed?: number;
-  /** The HTML and EPUB outputs. */
-  digital?: {
+  /** The HTML, EPUB and SCORM outputs. */
+  digital?: ExerciseAssessmentConfig & {
     /** Answerable exercises. Default `true`. */
     interactive?: boolean;
     /** Keep the reader's answers in the browser. Default `true`. */
@@ -4483,6 +4509,10 @@ export interface ExercisesConfig {
     /** `'button'`: checked on demand; `'instant'`: as answered. Default
      *  `'button'`. */
     check?: 'button' | 'instant';
+    /** The score that passes, a percentage of the graded slots right
+     *  (#1268): a SCORM package reports passed or failed against it.
+     *  `0`: none, no pass or fail. Default `0`. */
+    passingScore?: number;
   };
 }
 

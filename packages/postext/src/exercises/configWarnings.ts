@@ -59,9 +59,10 @@ const LEVEL_KEYS = { glyph: true, empty: true, max: true, color: true } satisfie
 const ICON_KEYS = { resourceId: true, glyph: true, fontFamily: true, color: true, alt: true, size: true } satisfies Record<keyof ExerciseIcon, true>;
 const ANSWERS_KEYS = { color: true, fontFamily: true, italic: true } satisfies Record<keyof ExerciseAnswersStyle, true>;
 const SOLUTIONS_KEYS = { placement: true, box: true, heading: true, layout: true } satisfies Record<keyof ExerciseSolutionsConfig, true>;
-const DIGITAL_KEYS = { correctColor: true, wrongColor: true } satisfies Record<keyof ExerciseDigitalStyle, true>;
+const ASSESSMENT_KEYS = { maxChecks: true, reset: true, maxResets: true, showSolution: true } as const;
+const DIGITAL_KEYS = { correctColor: true, wrongColor: true, ...ASSESSMENT_KEYS } satisfies Record<keyof ExerciseDigitalStyle, true>;
 const EXERCISES_KEYS = { edition: true, solutions: true, seed: true, digital: true } satisfies Record<keyof ExercisesConfig, true>;
-const EXERCISES_DIGITAL_KEYS = { interactive: true, persist: true, check: true } satisfies Record<keyof NonNullable<ExercisesConfig['digital']>, true>;
+const EXERCISES_DIGITAL_KEYS = { interactive: true, persist: true, check: true, passingScore: true, ...ASSESSMENT_KEYS } satisfies Record<keyof NonNullable<ExercisesConfig['digital']>, true>;
 
 /** The words each setting takes, and the one read in place of another. */
 const CHOICES = {
@@ -81,6 +82,7 @@ const CHOICES = {
   solutionsLayout: [['key', 'full'], 'full'],
   edition: [['student', 'teacher'], 'student'],
   check: [['button', 'instant'], 'button'],
+  showSolution: [['always', 'afterCheck', 'noChecksLeft', 'never'], 'always'],
 } as const satisfies Record<string, readonly [readonly string[], string]>;
 
 const record = (v: unknown): Record<string, unknown> | undefined =>
@@ -180,6 +182,7 @@ export function exerciseConfigWarnings(config: Pick<PostextConfig, 'exerciseStyl
       keys(s.answers, ANSWERS_KEYS, `${at}.answers`);
       solutions(s.solutions, `${at}.solutions`);
       keys(s.digital, DIGITAL_KEYS, `${at}.digital`);
+      choice(record(s.digital)?.showSolution, CHOICES.showSolution, `${at}.digital.showSolution`);
     });
   }
 
@@ -192,6 +195,7 @@ export function exerciseConfigWarnings(config: Pick<PostextConfig, 'exerciseStyl
     if (digital) {
       keys(digital, EXERCISES_DIGITAL_KEYS, 'exercises.digital');
       choice(digital.check, CHOICES.check, 'exercises.digital.check');
+      choice(digital.showSolution, CHOICES.showSolution, 'exercises.digital.showSolution');
     }
   }
   return out;
