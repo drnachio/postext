@@ -312,4 +312,53 @@ describe('a span: page heading that opens mid-page (#539)', () => {
     expect(doc.pages).toHaveLength(2);
     expect(second!.pageIndex).toBe(1);
   });
+
+  it('moves on while a float cited before it is still waiting', () => {
+    // The figure across both columns closes the first article; its band
+    // does not fit under the text. Opened under the uneven columns, the
+    // heading took the room and the figure went under it, inside the
+    // article it opens.
+    const figure: Resource = {
+      id: 'fig', typeId: 'figure', kind: 'bitmap', caption: 'A figure.', createdAt: 0, updatedAt: 0,
+      bitmap: { fileId: 'fig.png', format: 'png', width: 1600, height: 900 }, placement: { position: 'top', span: 'column', columns: 2 },
+    };
+    const md = ['# The first article {style="article"}', '', filler(3), '', filler(3), '', '::resource{id="fig"}', '', '# The second article {style="article"}', '', filler(6)].join('\n');
+    const doc = buildDocument({ markdown: md, resources: [figure] }, config(article({ spanBreak: false })), createMeasurementCache());
+    const [, second] = headings(doc);
+    const fig = doc.pages.flatMap((p) => p.floats ?? [])[0]!;
+    expect(fig.pageIndex).toBe(0);
+    expect(second!.pageIndex).toBe(1);
+  });
+
+  it('levels the band before the next heading once the cut above it is delivered', () => {
+    // The cut levelling the first article failed in one pass and its
+    // figure, still waiting, went under the second heading. The third
+    // heading measured its cut in that band, figure included: too tall
+    // once the figure went back above, the cut held the band without
+    // levelling it, and the third article opened the next page.
+    const figure: Resource = {
+      id: 'fig', typeId: 'figure', kind: 'bitmap', caption: 'A figure.', createdAt: 0, updatedAt: 0,
+      bitmap: { fileId: 'fig.png', format: 'png', width: 1600, height: 900 }, placement: { position: 'top', span: 'column', columns: 2 },
+    };
+    const body = Array.from({ length: 8 }, () => filler(3));
+    body.splice(5, 0, '::resource{id="fig"}');
+    const md = [
+      '# The first article {style="article"}', '', body.join('\n\n'), '',
+      '# The second article {style="article"}', '', filler(6), '', filler(6), '',
+      '# The third article {style="article"}', '', filler(9),
+    ].join('\n');
+    const layout: PostextConfig['layout'] = { layoutType: 'multiple', columnCount: 3 };
+    const doc = buildDocument({ markdown: md, resources: [figure] }, { ...config(article({ spanBreak: false })), layout }, createMeasurementCache());
+    const [, second, third] = headings(doc);
+    expect(doc.pages).toHaveLength(1);
+    expect([second!.pageIndex, third!.pageIndex]).toEqual([0, 0]);
+    // The band under the second heading ends level, within a line, and
+    // the third heading opens under it.
+    const page = doc.pages[0]!;
+    const band = page.columns[second!.columnIndex]!.band ?? 0;
+    const ends = textColumnsOf(page).filter((c) => (c.band ?? 0) === band).map((c) => c.bbox.y + c.bbox.height - c.availableHeight);
+    expect(ends).toHaveLength(3);
+    expect(Math.max(...ends) - Math.min(...ends)).toBeLessThan(60);
+    expect(third!.bbox.y).toBeGreaterThanOrEqual(Math.max(...ends) - 0.5);
+  });
 });

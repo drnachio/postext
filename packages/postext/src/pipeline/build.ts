@@ -3977,12 +3977,17 @@ function placeDocumentPass(
     // so the heading stays on its page: moved on here, it left the rest of
     // the page empty. While a float cited in the text before is still
     // waiting, the heading moves on as before, so the float is set ahead
-    // of it and not in the article it opens.
+    // of it and not in the article it opens. So it does in a capped pass
+    // whose cap was not delivered: set under the heading, the float would
+    // take room in the band the next boundary measures its cap in, and
+    // that cap, too tall once this one is delivered, would hold the band
+    // without levelling it.
     const capHere = activeCap !== null && activeCap.spanIndex === blockIdx
       && activeCap.pageIndex === page.index && activeCap.band === band;
     proposeTrailingCap(blockIdx);
     const used = cols.map((c) => c.bbox.y + (c.bbox.height - c.availableHeight));
-    if (!capHere && pendingFloats.length > 0 && Math.max(...used) - Math.min(...used) > baselineGrid + 0.5 && bandCapProposals.has(blockIdx)) return false;
+    if (pendingFloats.length > 0 && Math.max(...used) - Math.min(...used) > baselineGrid + 0.5
+      && (capHere ? !spanPlacedInBand.has(blockIdx) : bandCapProposals.has(blockIdx))) return false;
     const cutY = gridUpOnPage(page, bandUsedBottomWithSide(page, cols));
     const top = gridUpOnPage(page, cutY + Math.max(pendingSpacing, style.marginTopPx));
     const minLines = resolved.bodyText.avoidWidows ? Math.max(1, resolved.bodyText.widowMinLines) : 1;
