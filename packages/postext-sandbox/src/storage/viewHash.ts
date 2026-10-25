@@ -47,7 +47,7 @@ export interface ViewHash {
 export const EMPTY_VIEW_HASH: ViewHash = { preset: null, project: null, lang: null, view: null, chapter: null, page: null };
 
 /** The viewers, in the order of the tab bar (the guide names them so). */
-export const VIEWPORT_TABS: readonly ViewportTab[] = ['canvas', 'pdf', 'folio', 'html', 'epub'];
+export const VIEWPORT_TABS: readonly ViewportTab[] = ['canvas', 'pdf', 'folio', 'html', 'epub', 'scorm'];
 
 /** Whether a stored or linked value names one of the viewers. */
 export function isViewportTab(value: unknown): value is ViewportTab {

@@ -41,6 +41,7 @@ import { SandboxWebMcp } from './webmcp/SandboxWebMcp.js';
 const FolioViewport = lazy(() => import('./viewport/FolioViewport.js').then((m) => ({ default: m.FolioViewport })));
 // So does the EPUB writer with the EPUB tab.
 const EpubViewport = lazy(() => import('./viewport/EpubViewport.js').then((m) => ({ default: m.EpubViewport })));
+const ScormViewport = lazy(() => import('./viewport/ScormViewport.js').then((m) => ({ default: m.ScormViewport })));
 
 const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
   projects: 'navBooks',
@@ -206,6 +207,12 @@ function SandboxLayout({
         return (
           <Suspense fallback={<div className="h-full w-full" style={{ backgroundColor: 'var(--surface)' }} />}>
             <EpubViewport />
+          </Suspense>
+        );
+      case 'scorm':
+        return (
+          <Suspense fallback={<div className="h-full w-full" style={{ backgroundColor: 'var(--surface)' }} />}>
+            <ScormViewport />
           </Suspense>
         );
       default:

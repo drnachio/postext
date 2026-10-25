@@ -511,12 +511,14 @@ What the agent changes, you see. To point you at something:
 ```
 
 `sandbox_set_view` also chooses the viewer (`canvas`, `pdf`, `folio`, `html`,
-`epub`), the Content or Design mode (`mode`), the side panel, chapter or whole book, zoom, the reader's type size,
-the print preview and the Design panel's group. `sandbox_go_to_page` turns
+`epub`, `scorm`), the Content or Design mode (`mode`), the side panel, chapter or whole book, zoom, the reader's type size,
+the print preview and the Design panel's group, and on the SCORM tab the
+content (`scormLayout`), the version (`scormVersion`) and the chapters and
+sections the package takes (`scormPick`, ids from the tab's `contents`). `sandbox_go_to_page` turns
 pages by `step`, `page`, `position`, a `text` passage, an `anchor` or an
 EPUB's `contents` entry. `sandbox_run_viewer` presses a toolbar button:
-`regenerate` writes the PDF or EPUB again and waits for it, `print` opens the
-print dialog for you to confirm, `download` saves the PDF or the EPUB, and
+`regenerate` writes the PDF, EPUB or SCORM package again and waits for it, `print` opens the
+print dialog for you to confirm, `download` saves the PDF, the EPUB or a fresh SCORM package, and
 `play_video` and `stop_video` play and stop a video on a page.
 
 ### Comic pages

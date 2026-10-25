@@ -15,7 +15,7 @@ import {
 import type { PostextConfig, VDTDocument, Resource, LayoutContinuation } from 'postext';
 import { clearMeasurementCache, stripConfigDefaults } from 'postext';
 import { PROJECT_RECORD_VERSION } from '../storage/projectMigration.js';
-import type { EpubLayout, PanelId, ViewportTab, SandboxLabels } from '../types/index.js';
+import type { EpubLayout, PanelId, ScormVersion, ViewportTab, SandboxLabels } from '../types/index.js';
 import type { HashBundleEditions, HashBundleResolver } from '../types/props.js';
 import { DEFAULT_LABELS } from '../types/index.js';
 import {
@@ -31,7 +31,7 @@ import {
   type ViewHash,
   type ViewHashBook,
 } from '../storage/viewHash.js';
-import { loadConfig, loadStoredConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, loadViewerLocale, loadEpubLayout, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, savePresetId, saveProjectId, saveHiddenPresetIds, saveViewerLocale, saveEpubLayout, loadPresetGeneral, savePresetGeneral, loadWorkingLayers, saveWorkingLayers } from '../storage/persistence.js';
+import { loadConfig, loadStoredConfig, loadBook, loadViewport, loadSidebarPercent, loadPanel, loadPresetApplied, loadPresetId, loadProjectId, loadHiddenPresetIds, loadViewerLocale, loadEpubLayout, loadScormLayout, loadScormVersion, saveScormLayout, saveScormVersion, saveConfig, saveBook, saveViewport, saveSidebarPercent, savePanel, savePresetApplied, savePresetId, saveProjectId, saveHiddenPresetIds, saveViewerLocale, saveEpubLayout, loadPresetGeneral, savePresetGeneral, loadWorkingLayers, saveWorkingLayers } from '../storage/persistence.js';
 import { defaultEpubLayout } from '../epub/defaultLayout.js';
 import { loadResources, saveResource, deleteResource } from '../storage/resources.js';
 import { customFontsSignature, setCustomFonts } from '../controls/fontLoader.js';
@@ -202,6 +202,11 @@ export interface SandboxState {
    *  this choice stands in its place in the bar. A view preference, kept
    *  in `localStorage` like the tab itself. */
   epubLayout: EpubLayout;
+  /** The SCORM tab's content (#1266): the printed pages, or reflowable
+   *  text, as the EPUB tab's renditions; and the SCORM data model of its
+   *  package. View preferences, kept in `localStorage`. */
+  scormLayout: EpubLayout;
+  scormVersion: ScormVersion;
   /** What the last layout of each chapter on its own recorded (page count
    *  and how its numbering ends), keyed by chapter id. Chapters are laid out
    *  one at a time; the layouts of the chapters before the active one give
@@ -345,6 +350,8 @@ export type SandboxAction =
   | { type: 'SET_PDF_SCOPE'; payload: LayoutScope }
   | { type: 'SET_CANVAS_SCOPE'; payload: LayoutScope }
   | { type: 'SET_EPUB_LAYOUT'; payload: EpubLayout }
+  | { type: 'SET_SCORM_LAYOUT'; payload: EpubLayout }
+  | { type: 'SET_SCORM_VERSION'; payload: ScormVersion }
   | { type: 'SPLIT_CHAPTER'; payload: { id: string; at: number; newId: string } }
   | { type: 'SPLIT_CHAPTER_AT_HEADINGS'; payload: { id: string; newIds: string[] } }
   | { type: 'MERGE_CHAPTER_WITH_PREVIOUS'; payload: string }
@@ -501,6 +508,12 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
     case 'SET_EPUB_LAYOUT':
       if (action.payload === state.epubLayout) return state;
       return { ...state, epubLayout: action.payload };
+    case 'SET_SCORM_LAYOUT':
+      if (action.payload === state.scormLayout) return state;
+      return { ...state, scormLayout: action.payload };
+    case 'SET_SCORM_VERSION':
+      if (action.payload === state.scormVersion) return state;
+      return { ...state, scormVersion: action.payload };
     case 'SPLIT_CHAPTER':
       return withBook(state, splitChapterAt(bookOf(state), action.payload.id, action.payload.at, action.payload.newId));
     case 'SPLIT_CHAPTER_AT_HEADINGS': {
@@ -1373,6 +1386,8 @@ export function SandboxProvider({
       canvasScope: effectiveCanvasScope(book.canvasScope, book.chapters.length),
       ...(book.start ? { bookStart: book.start } : {}),
       epubLayout: loadEpubLayout() ?? defaultEpubLayout(),
+      scormLayout: loadScormLayout() ?? 'fixed',
+      scormVersion: loadScormVersion() ?? '1.2',
       chapterLayouts: {},
       hiddenPresetIds: loadHiddenPresetIds(),
       config,
@@ -2234,6 +2249,12 @@ export function SandboxProvider({
     if (!hydratedRef.current) return;
     saveEpubLayout(state.epubLayout);
   }, [state.epubLayout]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    saveScormLayout(state.scormLayout);
+    saveScormVersion(state.scormVersion);
+  }, [state.scormLayout, state.scormVersion]);
 
   useEffect(() => {
     if (!hydratedRef.current) return;

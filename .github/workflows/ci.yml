@@ -57,7 +57,7 @@ jobs:
           - { name: web 1/2, packages: web, shard: 1/2 }
           - { name: web 2/2, packages: web, shard: 2/2 }
           # Small suites, whole, one after another
-          - { name: citeproc epub folio cli, packages: postext-citeproc postext-epub postext-folio postext-cli }
+          - { name: citeproc epub folio cli, packages: postext-citeproc postext-epub postext-scorm postext-folio postext-cli }
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup

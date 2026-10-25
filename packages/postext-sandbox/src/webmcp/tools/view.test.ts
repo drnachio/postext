@@ -346,7 +346,7 @@ describe('sandbox_run_viewer', () => {
   it('keeps each command to the viewers that have it', async () => {
     const { host } = harness();
     expect((await run(host, { action: 'print' })).error).toMatch(/print is a command of the pdf viewer, and the viewer is canvas/);
-    expect((await run(host, { viewer: 'canvas', action: 'download' })).error).toMatch(/download is a command of the pdf and epub viewers/);
+    expect((await run(host, { viewer: 'canvas', action: 'download' })).error).toMatch(/download is a command of the pdf, epub and scorm viewers/);
     expect((await run(host, { viewer: 'pdf', action: 'play_video' })).error).toMatch(/play_video is a command of the folio and html viewers/);
     expect((await run(host, { viewer: 'pdf', action: 'regenerate', resource: 'intro' })).error).toMatch(/resource says which video to play/);
     expect((await run(host, { viewer: 'pdf', action: 'print', wait: false })).error).toBe('wait goes with action regenerate, not print.');

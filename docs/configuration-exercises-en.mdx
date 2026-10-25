@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Exercise settings',
   description: 'Exercise styles (exerciseStyles) and the book\'s exercise settings (exercises): number badges, instruction type, option labels and markers, blanks, true/false answers, matching, word banks, writing areas, grids, long division, difficulty marks, icons, the answers\' colour, where solutions print, the teacher\'s edition and the screen editions',
   lang: 'en',
-  lastUpdated: '2026-10-24',
+  lastUpdated: '2026-10-25',
   readingTime: '12 min',
   order: 17,
   parent: 'configuration',
@@ -371,7 +371,7 @@ An icon prints as an inline symbol after the number: the picture of `resourceId`
 
 ### Screen colours
 
-`digital` sets how the HTML viewer and EPUB books show a checked answer.
+`digital` sets how the HTML viewer, EPUB books and SCORM packages show a checked answer, and the limits of an attempt for the style's exercises, over the book's (see [Assessment](#assessment)).
 
 <table>
   <thead>
@@ -385,6 +385,7 @@ An icon prints as an inline symbol after the number: the picture of `resourceId`
   <tbody>
     <tr><td><code>correctColor</code></td><td><code>ColorValue</code></td><td>a green (<code>#1e8e3e</code>)</td><td>A right answer.</td></tr>
     <tr><td><code>wrongColor</code></td><td><code>ColorValue</code></td><td>a red (<code>#c5221f</code>)</td><td>A wrong answer.</td></tr>
+    <tr><td><code>maxChecks</code>, <code>reset</code>, <code>maxResets</code>, <code>showSolution</code></td><td></td><td>the book's</td><td>The limits of an attempt for the style's exercises: a style for a test beside the book's practice. See <a href="#assessment">Assessment</a>.</td></tr>
   </tbody>
 </table>
 
@@ -443,7 +444,7 @@ const config: PostextConfig = {
 
 ### Screen editions
 
-`exercises.digital` sets how exercises behave in the HTML viewer and in EPUB books.
+`exercises.digital` sets how exercises behave in the HTML viewer, in EPUB books and in SCORM packages.
 
 <table>
   <thead>
@@ -458,6 +459,11 @@ const config: PostextConfig = {
     <tr><td><code>interactive</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Exercises the reader can answer. <code>false</code> shows them as printed.</td></tr>
     <tr><td><code>persist</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Keep the reader's answers in the browser, per book.</td></tr>
     <tr><td><code>check</code></td><td><code>'button' | 'instant'</code></td><td><code>'button'</code></td><td><code>'button'</code>: answers are checked when the reader asks. <code>'instant'</code>: each answer is checked as it is given.</td></tr>
+    <tr><td><code>maxChecks</code></td><td><code>number</code></td><td><code>0</code></td><td>Check presses an attempt allows. <code>0</code>: no limit. See <a href="#assessment">Assessment</a>.</td></tr>
+    <tr><td><code>reset</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Offer Try again, which clears the answers and starts a new attempt.</td></tr>
+    <tr><td><code>maxResets</code></td><td><code>number</code></td><td><code>0</code></td><td>Try again uses allowed. <code>0</code>: no limit.</td></tr>
+    <tr><td><code>showSolution</code></td><td><code>'always' | 'afterCheck' | 'noChecksLeft' | 'never'</code></td><td><code>'always'</code></td><td>When the bar offers the solution.</td></tr>
+    <tr><td><code>passingScore</code></td><td><code>number</code></td><td><code>0</code></td><td>The percentage of graded answers right that passes; a SCORM package reports passed or failed against it. <code>0</code>: none.</td></tr>
   </tbody>
 </table>
 
@@ -473,3 +479,24 @@ const config: PostextConfig = {
   },
 };
 ```
+
+### Assessment
+
+By default an exercise is practice: the reader checks as often as they like, starts again and looks at the solution. Four settings make it a test, for the book in `exercises.digital` and for a style in its `digital`, which wins for that style's exercises:
+
+```ts
+const config: PostextConfig = {
+  exercises: { digital: { passingScore: 60 } },
+  exerciseStyles: [
+    { id: 'exercise' },
+    { id: 'test', extends: 'exercise', digital: { maxChecks: 1, maxResets: 1, showSolution: 'noChecksLeft' } },
+  ],
+};
+```
+
+- **`maxChecks`** counts the Check presses of an attempt. The button shows how many are left ("Check (2 left)"); once they are spent it reads "No checks left", the answers lock and the score stays on the bar.
+- **`reset`** and **`maxResets`**: Try again clears the answers and starts a new attempt, with its checks back. `maxResets: 1` allows one fresh start, two attempts in all, and the button shows how many are left; `reset: false` takes the button away.
+- **`showSolution`**: `'always'`; `'afterCheck'`, once the attempt has been checked; `'noChecksLeft'`, once its checks are spent or its answers checked all right; `'never'`. While checks are limited, showing the solution ends the attempt.
+- **`passingScore`** is what a SCORM package reports passed or failed against (see [SCORM packages](/en/docs/configuration-html-folio-epub#scorm-packages-postext-scorm)).
+
+The words on the buttons follow the document language. With `check: 'instant'` there is no Check button, so `maxChecks` does not apply; the other settings do. The checks and fresh starts used are kept with the answers: in an LMS, a SCORM package keeps them in the LMS, so they hold on any device; in an HTML page or an EPUB book they live in the reader's browser, and a reader who clears its storage starts again.

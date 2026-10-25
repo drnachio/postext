@@ -62,7 +62,7 @@ import { SearchScope } from '../search/SearchScope.js';
 import { useBookTexts } from '../../frameStyles/useBookTexts.js';
 import { applyExerciseStyleRename, planExerciseStyleRename } from '../../frameStyles/exerciseRefs.js';
 import { counterFormatOptions, resetOnOptions } from '../settings/counterOptions.js';
-import { SolutionsFields, boxStyleOptions, exerciseLocaleOf } from './exerciseFields.js';
+import { AssessmentFields, SolutionsFields, boxStyleOptions, exerciseLocaleOf } from './exerciseFields.js';
 
 const EM_UNITS: DimensionUnit[] = ['em', 'pt', 'mm'];
 const LINE_UNITS: DimensionUnit[] = ['pt', 'px'];
@@ -590,6 +590,20 @@ function ExerciseStyleCard(props: ExerciseStyleCardProps) {
       <CollapsibleSection title={labels.exerciseStyleDigitalGroup} sectionId={`${sectionId}.digital`} variant="subsection">
         <ColorPicker label={labels.exerciseStyleDigitalCorrect} value={resolved.digital.correctColor} onChange={(v) => digital({ correctColor: v })} fieldId={`${fieldId}-digital-correct`} {...row('digital', 'correctColor')} />
         <ColorPicker label={labels.exerciseStyleDigitalWrong} value={resolved.digital.wrongColor} onChange={(v) => digital({ wrongColor: v })} fieldId={`${fieldId}-digital-wrong`} {...row('digital', 'wrongColor')} />
+      </CollapsibleSection>
+
+      <CollapsibleSection title={labels.exercisesAssessmentGroup} sectionId={`${sectionId}.assessment`} variant="subsection">
+        <AssessmentFields
+          shown={{
+            maxChecks: resolved.digital.maxChecks ?? book.digital.maxChecks,
+            reset: resolved.digital.reset ?? book.digital.reset,
+            maxResets: resolved.digital.maxResets ?? book.digital.maxResets,
+            showSolution: resolved.digital.showSolution ?? book.digital.showSolution,
+          }}
+          unset={(field) => partUnset('digital', field)}
+          set={digital}
+          reset={(field) => resetPart('digital', field)}
+        />
       </CollapsibleSection>
 
       <CollapsibleSection title={labels.exerciseStyleSpacingGroup} sectionId={`${sectionId}.spacing`} variant="subsection">

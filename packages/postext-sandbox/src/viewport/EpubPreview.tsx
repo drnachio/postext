@@ -68,7 +68,7 @@ export const EpubPreview = memo(function EpubPreview({ bytes, generating, progre
   );
 });
 
-function progressText(progress: EpubGenerationProgress | null, labels: ReturnType<typeof useSandboxLabels>): string {
+export function progressText(progress: EpubGenerationProgress | null, labels: ReturnType<typeof useSandboxLabels>): string {
   if (!progress) return labels.epubGenerating;
   switch (progress.phase) {
     case 'layout':
@@ -100,7 +100,7 @@ export function progressFraction(progress: EpubGenerationProgress | null): { fra
   }
 }
 
-function ProgressBar({ progress, label }: { progress: EpubGenerationProgress | null; label: string }) {
+export function ProgressBar({ progress, label }: { progress: EpubGenerationProgress | null; label: string }) {
   const { fraction, pulse } = progressFraction(progress);
   return (
     <div

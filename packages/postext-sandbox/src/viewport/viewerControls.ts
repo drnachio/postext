@@ -26,6 +26,9 @@ export interface ViewerSettings {
   interaction?: 'hand' | 'orbit' | 'select' | 'magnify';
   /** The floating bar kept on screen. */
   toolbarPinned?: boolean;
+  /** SCORM: the ids of the tree's nodes ticked (`contents[].href`); a node
+   *  named is ticked whole, the rest left out (#1266). */
+  scormPick?: string[];
 }
 
 /** An entry of the EPUB's table of contents: where it goes (`href`, a
@@ -35,6 +38,9 @@ export interface ViewerContentsEntry {
   title: string;
   href: string;
   depth: number;
+  /** SCORM: the tree's node (`href` is its id) ticked whole, in part or
+   *  not at all. */
+  picked?: 'all' | 'some' | 'none';
 }
 
 /** A warning of the last EPUB written: its kind as the writer names it

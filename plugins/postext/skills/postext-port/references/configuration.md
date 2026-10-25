@@ -1410,16 +1410,24 @@ ExerciseStyleConfig {
   icons: { [id]: { resourceId? | glyph + fontFamily?, color?, alt?, size?=0.75 } }  (inline symbols after the number, size in ems; beside a shaped number they take its height and band),
   answers: { color=#d6246e, fontFamily?, italic=false }  (teacher's edition, example items, key marks),
   solutions?: ExerciseSolutionsConfig (over the book's, for this style's exercises),
-  digital: { correctColor=#1e8e3e, wrongColor=#c5221f }
+  digital: { correctColor=#1e8e3e, wrongColor=#c5221f, maxChecks?, reset?, maxResets?, showSolution? (over the book's) }
 }
 ExercisesConfig (config.exercises) {
   edition='student'|'teacher' (teacher: every answer printed in its slot in answers.color),
   solutions: { placement='none'|'after'|'inverted'|'chapterEnd'|'directive', box?: calloutStyles id,
                heading=lang ("Solutions", "Soluciones", "参考答案"…), layout='full'|'key' },
   seed=1 (every shuffle; change it for another version of a test),
-  digital: { interactive=true, persist=true (answers kept in the browser), check='button'|'instant' }
+  digital: { interactive=true, persist=true (answers kept in the browser), check='button'|'instant',
+             maxChecks=0 (Check presses per attempt; 0 no limit; not with 'instant'), reset=true (Try again),
+             maxResets=0 (fresh starts; 0 no limit), showSolution='always'|'afterCheck'|'noChecksLeft'|'never'
+             (≥ 1.63; showing it ends an attempt with limited checks), passingScore=0 (percent; a SCORM package's pass mark) }
 }
 ```
+For a test beside practice, give a style limits (`{ id: 'test', extends: 'exercise', digital: { maxChecks: 1,
+maxResets: 0, showSolution: 'noChecksLeft' } }`) and keep the book's defaults for the rest. A source that is a course
+for an LMS (a SCORM package, an e-learning module) maps its quiz rules here; the Sandbox's **SCORM** tab (and
+`postext-scorm`'s `renderToScorm`) then exports chapters or sections as SCOs that report score, completion and
+pass or fail. Limits bind in an LMS; in HTML and EPUB they live in the reader's browser.
 The HTML viewer and EPUB make exercises answerable (type, click or drag, Check / Show solution / start again; the
 bar shows only the buttons that apply, none for an exercise with nothing to answer); the key is always in an EPUB.
 Every word of a `mark` text is markable on screen (wrong ones count). A fence's `area=none` (a talking exercise)

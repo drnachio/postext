@@ -13,22 +13,23 @@ import { EditModeSwitch } from '../editing/EditModeSwitch.js';
 import { HistoryButtons } from '../history/HistoryButtons.js';
 
 /** The expansion of each tab label that is an abbreviation. */
-const TAB_ABBR: Partial<Record<ViewportTab, keyof SandboxLabels>> = { pdf: 'abbrPdf', html: 'abbrHtml', epub: 'abbrEpub' };
+const TAB_ABBR: Partial<Record<ViewportTab, keyof SandboxLabels>> = { pdf: 'abbrPdf', html: 'abbrHtml', epub: 'abbrEpub', scorm: 'abbrScorm' };
 
 /** The bar above the preview: the scope selector of the tab shown at the
  *  left (each tab lays out the active chapter or the whole book — the
  *  canvas, the folio and the HTML preview share one choice, kept with the
  *  book; the PDF has its own; only while the book has more than one
- *  chapter) and the Canvas / PDF / Folio / HTML / EPUB 3 tabs at the right.
- *  The EPUB tab always builds the whole book, so in its place it shows the
- *  rendition: a fixed layout or a reflowable book. The phone layout has no
+ *  chapter) and the Canvas / PDF / Folio / HTML / EPUB 3 / SCORM tabs at
+ *  the right. The EPUB and SCORM tabs always lay out the whole book, so in
+ *  its place they show the rendition: a fixed layout or a reflowable book
+ *  (each tab its own). The phone layout has no
  *  activity bar at the side, so it passes the logo (`leading`) and the
  *  theme and language controls (`trailing`) to this bar, and the scope (or
  *  rendition) choice shows as icons. The tabs, the logo, the scope and the
  *  trailing controls do not fit one row on a phone held upright, so below
  *  640px the bar has two rows: logo, scope and controls above, the tabs
  *  below sharing the full width — five of them fit at 320px (a phone's
- *  screen offers no Folio, so it shows four). */
+ *  screen offers no Folio, so it shows five). */
 export function ViewportTabs({ compact = false, leading, trailing }: { compact?: boolean; leading?: ReactNode; trailing?: ReactNode } = {}) {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
@@ -38,6 +39,7 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
   const pdfScope = useSandboxSelector((s) => s.pdfScope);
   const canvasScope = useSandboxSelector((s) => s.canvasScope);
   const epubLayout = useSandboxSelector((s) => s.epubLayout);
+  const scormLayout = useSandboxSelector((s) => s.scormLayout);
   const chapterCount = useSandboxSelector((s) => s.chapters.length);
   const multiChapter = chapterCount > 1;
   // A long book is shown a chapter at a time on the canvas and in HTML
@@ -117,11 +119,12 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
   }, [compact, activeViewport, multiChapter]);
 
   const scopeControl = (icons: boolean, measureRef?: RefObject<HTMLDivElement | null>) => {
-    const control = activeViewport === 'epub' ? (
+    const scorm = activeViewport === 'scorm';
+    const control = activeViewport === 'epub' || scorm ? (
       <SegmentedControl<EpubLayout>
-        value={epubLayout}
-        onValueChange={(next) => dispatch({ type: 'SET_EPUB_LAYOUT', payload: next })}
-        ariaLabel={labels.epubLayout}
+        value={scorm ? scormLayout : epubLayout}
+        onValueChange={(next) => dispatch({ type: scorm ? 'SET_SCORM_LAYOUT' : 'SET_EPUB_LAYOUT', payload: next })}
+        ariaLabel={scorm ? labels.scormLayout : labels.epubLayout}
         size="sm"
         options={icons
           ? [
@@ -129,8 +132,8 @@ export function ViewportTabs({ compact = false, leading, trailing }: { compact?:
               { value: 'reflowable', label: <TextWrap size={13} aria-hidden="true" />, title: labels.epubLayoutReflowable },
             ]
           : [
-              { value: 'fixed', label: labels.epubLayoutFixed, title: labels.epubLayoutFixedHint },
-              { value: 'reflowable', label: labels.epubLayoutReflowable, title: labels.epubLayoutReflowableHint },
+              { value: 'fixed', label: labels.epubLayoutFixed, title: scorm ? labels.scormLayoutFixedHint : labels.epubLayoutFixedHint },
+              { value: 'reflowable', label: labels.epubLayoutReflowable, title: scorm ? labels.scormLayoutReflowableHint : labels.epubLayoutReflowableHint },
             ]}
       />
     ) : multiChapter ? (
